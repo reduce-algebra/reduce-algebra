@@ -1,0 +1,100 @@
+\documentclass[12pt]{article}
+%Sets size of page and margins
+\oddsidemargin 1mm  \evensidemargin 1mm
+%\topmargin -25mm %   \headheight 0pt   \headsep 0pt
+\textwidth 16cm
+
+\title{The REDUCE package SSTOOLS \\
+       **** Preliminary Documentation ***}
+\author{Thomas Wolf \\                        
+        Department of Mathematics \\
+        Brock University \\
+        St.Catharines \\
+        Ontario, Canada L2S 3A1 \\
+        twolf@brocku.ca \\
+        \\
+        Eberhard Schruefer \\
+        eschruefer@ca-musings.de}
+
+\begin{document}
+\maketitle
+\section{Purpose}
+{\tt SSTOOLS} is a collection of procedures
+that facilitates computations with supersymmetric algebraic and differential
+expressions.
+
+\section{Overview}
+A detailed description is available through the online tutorial \\
+{\tt https://lie.ac.brocku.ca/crack/susy/}. An essentially equivalent 
+description is available after loading {\sc SsTools} and issuing the command
+{\tt sshelp()\$}. The correct functioning of all procedures is tested through
+reading in and running {\tt sstools.tst}. This test also illustrates
+the commutator rules for products of the different fields and their
+derivatives with respect to besonic and fermionic variables.
+
+The topics in the tutorial and in {\tt sshelp()\$} are:
+\begin{description} \itemsep -3pt
+\item{Purpose}
+\item{Interactive Session}
+\item{Loading Files}
+\item{Notation}
+\item{Initializations}
+\item{The command coeffn}
+\item{The procedure SSym}
+\item{The procedure SSConL}
+\item{The procedure FindSSWeights}
+\item{The procedure Linearize}
+\item{The procedure GenSSPoly}
+\item{The procedure ToCoo}
+\item{The procedure ToField}
+\item{Discovery of recursion operators}
+\item{Verification of symmetries}
+\end{description}
+
+%\section{Requirements}
+%{\sc Reduce} version ID 3500 or higher from April 5, 2016 or later,
+%and the package {\sc Crack} in a version that comes with {\sc Reduce}.
+%If {\sc Crack} is downloaded from \\
+%{\tt http://lie.math.brocku.ca/crack/src/crack.tar.gz} then 
+%one does \\
+%\verb+    IN "crack.red"$+ \\
+%(and appropriate paths) or compilation with \\
+%\verb+    FASLOUT "crack"$+ \\
+%\verb+    IN "crack.red"$+ \\
+%\verb+    FASLEND$+ \\
+%\verb+    BYE$+ \\
+%and loads {\sc Crack} afterwards with \verb+ LOAD_PACKAGE crack$.+
+
+\begin{thebibliography}{99}
+
+\bibitem{bi1}
+Hussin, V., Kiselev, A.V., Krutov, A.O., Wolf, T.: N=2 Supersymmetric a=4 -
+Korteweg-de Vries hierarchy derived via Gardner's deformation of
+Kaup-Bousinesq equation, J. Math. Phys. 51, 083507 (2010);
+doi:10.1063/1.3447731 (19 pages) link, pdf file
+
+\bibitem{bi2}
+Kiselev, A. and Wolf, T.: Supersymmetric Representations and Integrable
+Super-Extensions of the Burgers and Bussinesq Equations, SIGMA, Vol. 2 (2006),
+Paper 030, 19 pages (arXiv math-ph/0511071). ps file, pdf file
+
+\bibitem{bi3}
+Kiselev, A. and Wolf, T.: On weakly non-local, nilpotent, and super-recursion
+operators for N=1 homogeneous super-equations, Proc. Int. Workshop
+``Supersymmetries and Quantum Symmetries'' (SQS'05), Dubna, July 24--31, 2005,
+JINR, p. 231--237. (arXiv nlin.SI/0511056)
+http://theor.jinr.ru/~sqs05/SQS05.pdf dvi file, ps file,
+
+\bibitem{bi4}
+Kiselev, A. and Wolf, T.: Classification of integrable super-equations by the
+SsTools environment, Comp Phys Comm, Vol. 177, no. 3 (2007) p 315-328 (and on
+arXiv: nlin.SI/0609065). dvi file, ps file, pdf file
+
+\bibitem{bi5}
+I. S. Krasil'shchik, P. H. M. Kersten, Symmetries and recursion operators for
+classical and supersymmetric differential equations, Kluwer Acad. Publ.,
+Dordrecht etc, (2000) 
+
+\end{thebibliography}
+
+\end{document}

@@ -32,7 +32,8 @@ fluid '(!*asymp!* !*exp !*factor !*gcd !*lcm !*mcd !*rationalize frlis!*
         !*roundall !*rounded !*sqfree !*sub2 asymplis!* dmode!* subfg!*
         ncmp!* powlis!* wtl!* !*!*processed !*ncmp);
 
-global '(!*group rd!-tolerance!* cr!-tolerance!* !*physop!-loaded);
+global '(!*group rd!-tolerance!* cr!-tolerance!* !*physop!-loaded
+         !*sstools!-loaded);
 
 put('roundall,'simpfg,'((t (rmsubs))));
 
@@ -239,11 +240,13 @@ symbolic procedure noncomfp1 u;
 
 symbolic procedure multfnc(u,v);
   if !*physop!-loaded then physop!-multfnc(u, v)
-  else poly!-multfnc(u, v);
+   else if !*sstools!-loaded then sstools!-multfnc(u,v) 
+   else poly!-multfnc(u, v);
 
 symbolic procedure poly!-multfnc(u,v);
    % Returns canonical product of U and V, with both main vars non-
    % commutative.
+   if !*sstools!-loaded then sstools!-multfnc(u,v) else
    begin scalar x,y;
       x := poly!-multf(lc u,!*t2f lt v);
       if null x then nil

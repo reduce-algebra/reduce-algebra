@@ -196,7 +196,8 @@
  (lalr          "lalr"                  test                 csl psl)
  (ranum         "ranum"                 test                 csl psl)
  (listvecops    "listvecops"            test                 csl psl)
- (cde            "cde"                  test                 csl psl)
+ (cde           "cde"                   test                 csl psl)
+ (sstools       "sstools"               test                 csl psl)
 )
 
 % End of configuration data

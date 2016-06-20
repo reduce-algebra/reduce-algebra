@@ -1,0 +1,1970 @@
+off echo$
+
+
+The sole purpose of this file is to facilitate checking that the
+used version of SSTOOLS works correctly. A description of the
+syntax can be currently found in the online tutorial at
+https://lie.ac.brocku.ca/crack/susy/.
+That tutorial explains all calculations below.
+
+To verify the correctness of SSTOOLS check once the correctness of
+all commands in sstools.tst and then run it and check whether all
+printed relations are identities.
+
+Initial test$
+
+b(1)*df(f(1),x)*d(1,f(1))-d(1,f(1))*b(1)*df(f(1),x) = 0 = 0$
+
+Rules for powers$
+
+f(1)**2 = 0 = 0$
+
+b(1)**3=
+b(1)**3$
+
+df(b(1),x)**2=
+df(b(1),x)**2$
+
+d(1,f(1))**2=
+d(1,f(1))**2$
+
+d(1,b(1))**2 = 0 = 0$
+
+df(b(1),t)**2=
+df(b(1),t)**2$
+
+f(i) become constant:$
+
+nodepend f,x,t,s$
+
+df(f(1),x) = 0 = 0$
+
+f(i) depend again on x,t,s:$
+
+depend f,x,t,s$
+
+df(f(1),x)=
+df(f(1),x)$
+
+Normal bosonic derivatives$
+
+df(b(1),t)**2=
+df(b(1),t)**2$
+
+df(b(1),s)**2=
+df(b(1),s)**2$
+
+Now s changes parity:$
+
+on  s_changes_parity$
+
+df(b(1),s)**2 = 0 = 0$
+
+df(b(1),s)*df(b(1),s) = 0 = 0$
+
+df(f(1),s)*df(f(1),s) = 
+df(f(1),s)**2 = 
+df(f(1),s)**2$
+
+Now s does NOT change parity:$
+
+off s_changes_parity$
+
+df(b(1),s)*df(b(1),s) = 
+df(b(1),s)**2 = 
+df(b(1),s)**2$
+
+df(f(1),s)*df(f(1),s) = 0 = 0$
+
+df(f(1),s)**2 = 0 = 0$
+
+Commutator of derivatives:$
+
+df(df(b(1),s),t)-df(df(b(1),t),s) = 0 = 0$
+
+df(df(f(1),s),t)-df(df(f(1),t),s) = 0 = 0$
+
+Now s changes parity:$
+
+on  s_changes_parity$
+
+df(df(b(1),s),t)-df(df(b(1),t),s) = 0 = 0$
+
+df(df(f(1),s),t)-df(df(f(1),t),s) = 0 = 0$
+
+d(1,df(b(1),s))-df(d(1,b(1)),s) = 
+2*d(1,df(b(1),s)) = 
+2*d(1,df(b(1),s))$
+
+d(1,df(f(1),s))-df(d(1,f(1)),s) = 
+2*d(1,df(f(1),s)) = 
+2*d(1,df(f(1),s))$
+
+d(1,df(b(1),t))-df(d(1,b(1)),t) = 0 = 0$
+
+d(1,df(f(1),t))-df(d(1,f(1)),t) = 0 = 0$
+
+Now t changes parity as well:$
+
+on  t_changes_parity$
+
+df(df(b(1),s),t)-df(df(b(1),t),s) = 
+2*df(b(1),s,t) = 
+2*df(b(1),s,t)$
+
+df(df(f(1),s),t)-df(df(f(1),t),s) = 
+2*df(f(1),s,t) = 
+2*df(f(1),s,t)$
+
+Now s,t do not change parity anymore:$
+
+off s_changes_parity$
+
+off t_changes_parity$
+
+Commutator relations:$
+
+f(1)*f(2)+f(2)*f(1) = 0 = 0$
+
+b(1)*f(2)+f(2)*b(1) = 
+2*f(2)*b(1) = 
+2*f(2)*b(1)$
+
+b(1)*b(2)+b(2)*b(1) = 
+2*b(2)*b(1)=
+2*b(2)*b(1)$
+
+d(1,b(1))*d(1,b(1)) = 0 = 0$
+
+Rules for d(i,..):$
+
+df(b(1),x)=
+df(b(1),x)$
+
+df(f(1),x)=
+df(f(1),x)$
+
+d(1,d(2,f(1)))+d(2,d(1,f(1))) = 0 = 0$
+
+d(1,d(2,b(1)))+d(2,d(1,b(1))) = 0 = 0$
+
+d(1,-f(1)) = 
+ - d(1,f(1)) = 
+ - d(1,f(1))$
+
+d(1,a) = 0 = 0$
+
+d(1,f(1)**3) = 0 = 0$
+
+d(1,u*f(1)+f(2)/v) = 
+(d(1,f(2)) + d(1,f(1))*u*v)/v = 
+(d(1,f(2)) + d(1,f(1))*u*v)/v$
+
+df(d(1,f(1)),x) = 
+d(1,df(f(1),x)) = 
+d(1,df(f(1),x))$
+
+df(d(1,f(1)),t) = 
+d(1,df(f(1),t)) = 
+d(1,df(f(1),t))$
+
+d(1,f(1))**2 = 
+d(1,f(1))**2 = 
+d(1,f(1))**2$
+
+d(1,b(1))**2 = 0 = 0$
+
+Now t changes parity:$
+
+on  t_changes_parity$
+
+df(d(1,f(1)),t) = 
+ - d(1,df(f(1),t)) = 
+ - d(1,df(f(1),t))$
+
+Now t does NOT change parity:$
+
+off t_changes_parity$
+
+d(1,b(1)**3) = 
+3*d(1,b(1))*b(1)**2=
+3*d(1,b(1))*b(1)**2$
+
+Product rule for df(..,x):$
+
+Now t changes parity:$
+
+on  t_changes_parity$
+
+df(f(1)*b(1),t) = 
+b(1)*df(f(1),t) - f(1)*df(b(1),t) = 
+b(1)*df(f(1),t) - f(1)*df(b(1),t)$
+
+df(b(1)*f(1),t) = 
+b(1)*df(f(1),t) - f(1)*df(b(1),t) = 
+b(1)*df(f(1),t) - f(1)*df(b(1),t)$
+
+df(f(1)*f(2),t) = 
+f(2)*df(f(1),t) - f(1)*df(f(2),t) = 
+f(2)*df(f(1),t) - f(1)*df(f(2),t)$
+
+df(f(2)*f(1),t) = 
+ - f(2)*df(f(1),t) + f(1)*df(f(2),t) = 
+ - f(2)*df(f(1),t) + f(1)*df(f(2),t)$
+
+From now on t does NOT change parity:$
+
+off t_changes_parity$
+
+df(f(1)*b(1),t) = 
+b(1)*df(f(1),t) + f(1)*df(b(1),t) = 
+b(1)*df(f(1),t) + f(1)*df(b(1),t)$
+
+df(b(1)*f(1),t) = 
+b(1)*df(f(1),t) + f(1)*df(b(1),t) = 
+b(1)*df(f(1),t) + f(1)*df(b(1),t)$
+
+df(f(1)*f(2),t) = 
+ - f(2)*df(f(1),t) + f(1)*df(f(2),t)=
+ - f(2)*df(f(1),t) + f(1)*df(f(2),t)$
+
+df(f(2)*f(1),t) = 
+f(2)*df(f(1),t) - f(1)*df(f(2),t)=
+f(2)*df(f(1),t) - f(1)*df(f(2),t)$
+
+Product rule for d(i,..):$
+
+d(1,f(1)*b(1)) = 
+d(1,b(1))*f(1) + d(1,f(1))*b(1) = 
+d(1,b(1))*f(1) + d(1,f(1))*b(1)$
+
+d(1,b(1)*f(1)) = 
+d(1,b(1))*f(1) + d(1,f(1))*b(1) = 
+d(1,b(1))*f(1) + d(1,f(1))*b(1)$
+
+d(1,f(1)*f(2)) = 
+ - d(1,f(2))*f(1) + d(1,f(1))*f(2) = 
+ - d(1,f(2))*f(1) + d(1,f(1))*f(2)$
+
+d(1,f(2)*f(1)) = 
+d(1,f(2))*f(1) - d(1,f(1))*f(2) = 
+d(1,f(2))*f(1) - d(1,f(1))*f(2)$
+
+d(1,b(1)*b(2)) = 
+d(1,b(2))*b(1) + d(1,b(1))*b(2) = 
+d(1,b(2))*b(1) + d(1,b(1))*b(2)$
+
+Further combined tests$
+
+d(1,d(1,d(2,b(1)))**2) = 
+2*d(2,df(b(1),x))*d(1,d(2,b(1))) = 
+2*d(2,df(b(1),x))*d(1,d(2,b(1)))$
+
+ - d(2,b(1))*d(1,d(2,b(1))) + d(1,d(2,b(1)))*d(2,b(1)) = 0 = 0$
+
+An assignment:$
+
+df(f(1),s):=d(1,b(1))$
+
+df(f(1),x,s) = 
+d(1,df(b(1),x)) = 
+d(1,df(b(1),x))$
+
+Clearing that assignment:$
+
+clear df(f(1),s)$
+
+df(f(1),s)=
+df(f(1),s)$
+
+Now check of a LET-rule:$
+
+rule:={f(1) => 1}$ let rule$
+
+df(f(1),x) = 0 = 0$
+
+Now clearing the LET-rule:$
+
+clearrules rule$
+
+d(1,b(1))-d(first {1},b(1)) = 0 = 0$
+
+Now theta and ff are defined as fermions:$
+
+fermion theta,ff$
+
+df(theta(1),theta(1)) = 1 = 1$
+
+df(theta(1),theta(2)) = 0 = 0$
+
+df(theta(1)*theta(2),theta(1)) = theta(2) = theta(2)$
+
+df(theta(1)*theta(2),theta(2)) = - theta(1) =  - theta(1)$
+
+df(theta(1)*ff(1,0),theta(1)) = ff(1,0) = ff(1,0)$
+
+df(ff(1,0)*theta(2),theta(2)) = - ff(1,0)= - ff(1,0)$
+
+Now a test that the function is_fermionic() works correctly:$
+
+nil=nil$
+
+  t=  t$
+
+nil=nil$
+
+Coefficient test:$
+
+coeffn(D(1,b(1))*D(1,df(b(2),x,2)),
+                 D(1,df(b(2),x,2)), 1) = 
+ - d(1,b(1))=
+ - d(1,b(1))$
+
+Matrix computation:$
+
+mat(( - f(2)*f(1),0),(0,0))$
+=
+mat(( - f(2)*f(1),0),(0,0))$
+=
+mat(( - f(2)*f(1),0),(0,0))$
+=
+mat(( - f(2)*f(1),0),(0,0))$
+
+aa:=f(1)*mat((1,0),(0,0)) = 
+mat((f(1),0),(0,0))
+mat((f(1),0),(0,0))$
+
+f(2)*aa = 
+mat((f(2)*f(1),0),(0,0))
+mat((f(2)*f(1),0),(0,0))$
+= - aa*f(2) =
+mat((f(2)*f(1),0),(0,0))$
+
+
+-----------------------------------------------------
+
+To check the correctness of the following computations 
+one needs to compare the output with the file sstools.rlg .
+
+#####################################################$
+
+Tests related to symmetry computations:$
+
+=====================================================$
+
+1. Symmetry computation$
+
+#######  This is the case N1f1b1t4s5w22.  #######
+
+The system:
+
+                                    2
+f =b*f *p7 + Df*Db*p6 + f  *p8 + f*b *p10 + f*b *p9
+ t    x                  2x                    x
+
+    3                    2
+b =b *p5 + b*b *p3 + (Df) *p1 + b  *p4 - f*f *p2
+ t            x                  2x         x
+
+From each of the following lists at least one element must be non-zero:
+
+{p2,p1}
+{p10,p9,p7,p6}
+{q14,q13,q12,q11,q10,q9,q8,q7,q6,q5,q4,q3,q2,q1}
+
+
+
+
+All symmetries of solution 1 printed separately:
+
+Solution 1, symmetry 1. :
+
+The system: 
+
+f =b*f *p3
+ t    x
+
+    3                    2
+b =b *p5 + b*b *p3 + (Df) *p1 - f*f *p2
+ t            x                    x
+
+The symmetry: 
+
+f =Df*f
+ s     x
+
+b = - Db*f  + Df*b
+ s        x       x
+
+And now in machine readable form: 
+The system: 
+
+df(f(1),t)=b(1)*df(f(1),x)*p3$
+
+df(b(1),t)=b(1)**3*p5 + b(1)*df(b(1),x)*p3 + d(1,f(1))**2*p1 - f(1)*df(f(1),x)*
+p2$
+
+The symmetry: 
+
+df(f(1),s)=d(1,f(1))*df(f(1),x)$
+
+df(b(1),s)= - d(1,b(1))*df(f(1),x) + d(1,f(1))*df(b(1),x)$
+-----------------------------------
+
+All symmetries of solution 2 printed separately:
+
+Solution 2, symmetry 1. :
+
+The system: 
+
+      2
+f =f*b *p10
+ t
+
+       3
+b = - b *p10 - f*f *p2
+ t                x
+
+The symmetry: 
+
+f =Df*f*b
+ s
+
+b = - 2*Db*f*b
+ s
+
+And now in machine readable form: 
+The system: 
+
+df(f(1),t)=f(1)*b(1)**2*p10$
+
+df(b(1),t)= - b(1)**3*p10 - f(1)*df(f(1),x)*p2$
+
+The symmetry: 
+
+df(f(1),s)=d(1,f(1))*f(1)*b(1)$
+
+df(b(1),s)= - 2*d(1,b(1))*f(1)*b(1)$
+-----------------------------------
+
+All symmetries of solution 3 printed separately:
+
+Solution 3, symmetry 1. :
+
+The system: 
+
+f =b*f *p3
+ t    x
+
+    3
+b =b *p5 + b*b *p3 - f*f *p2
+ t            x         x
+
+The symmetry: 
+
+f =Df*f
+ s     x
+
+b = - Db*f  + Df*b
+ s        x       x
+
+And now in machine readable form: 
+The system: 
+
+df(f(1),t)=b(1)*df(f(1),x)*p3$
+
+df(b(1),t)=b(1)**3*p5 + b(1)*df(b(1),x)*p3 - f(1)*df(f(1),x)*p2$
+
+The symmetry: 
+
+df(f(1),s)=d(1,f(1))*df(f(1),x)$
+
+df(b(1),s)= - d(1,b(1))*df(f(1),x) + d(1,f(1))*df(b(1),x)$
+-----------------------------------
+
+All symmetries of solution 4 printed separately:
+
+Solution 4, symmetry 1. :
+
+The system: 
+
+f =b*f *p7
+ t    x
+
+b =b*b *p7 - f*f *p2
+ t    x         x
+
+The symmetry: 
+
+f =Df*f
+ s     x
+
+b = - Db*f  + Df*b
+ s        x       x
+
+And now in machine readable form: 
+The system: 
+
+df(f(1),t)=b(1)*df(f(1),x)*p7$
+
+df(b(1),t)=b(1)*df(b(1),x)*p7 - f(1)*df(f(1),x)*p2$
+
+The symmetry: 
+
+df(f(1),s)=d(1,f(1))*df(f(1),x)$
+
+df(b(1),s)= - d(1,b(1))*df(f(1),x) + d(1,f(1))*df(b(1),x)$
+-----------------------------------
+
+4 solutions were found.
+
+=====================================================
+
+2. Symmetry computation
+
+#######  This is the case N1f1b1t4s5w22.  #######
+
+The system:
+
+f =b*f *p9
+ t    x
+
+b =b*b *p9 - f*f *p4
+ t    x         x
+
+
+
+All symmetries of solution 1 printed separately:
+
+Solution 1, symmetry 1. :
+
+The system: 
+
+f =b*f *p9
+ t    x
+
+b =b*b *p9 - f*f *p4
+ t    x         x
+
+The symmetry: 
+
+f =Df*f
+ s     x
+
+b = - Db*f  + Df*b
+ s        x       x
+
+And now in machine readable form: 
+The system: 
+
+df(f(1),t)=b(1)*df(f(1),x)*p9$
+
+df(b(1),t)=b(1)*df(b(1),x)*p9 - f(1)*df(f(1),x)*p4$
+
+The symmetry: 
+
+df(f(1),s)=d(1,f(1))*df(f(1),x)$
+
+df(b(1),s)= - d(1,b(1))*df(f(1),x) + d(1,f(1))*df(b(1),x)$
+-----------------------------------
+
+1 solution was found.
+
+=====================================================
+
+3. Symmetry computation
+
+#######  This is the case N1f2b4t1s4w111313.  #######
+
+The system:
+
+f(2) = - 2*f(2)*b(1)*p1 - 2*f(1)*b(3)*p1
+    t
+
+b(3) =2*b(3)*b(1)*p1 + Df(2)*p2
+    t
+
+Extra conditions:
+
+d(1,df(b(4),~t,~x,~n)) => df( - f(2)*df(b(1),x) - f(1)*df(b(3),x),t,x,n)$
+
+d(1,df(b(4),~x,~n)) => df( - f(2)*df(b(1),x) - f(1)*df(b(3),x),x,n)$
+
+d(1,df(b(4),~x)) =>  - df(f(2),x)*df(b(1),x) - df(f(1),x)*df(b(3),x) - f(2)*df(b
+(1),x,2) - f(1)*df(b(3),x,2)$
+
+df(b(4),x,~n) => d(1,df( - f(2)*df(b(1),x) - f(1)*df(b(3),x),x,n - 1))$
+
+df(b(4),x) =>  - d(1,df(b(3),x))*f(1) - d(1,df(b(1),x))*f(2) - d(1,f(2))*df(b(1)
+,x) - d(1,f(1))*df(b(3),x)$
+
+d(1,df(b(2),~t,~x,~n)) => df( - f(1)*df(b(1),x),t,x,n)$
+
+d(1,df(b(2),~x,~n)) => df( - f(1)*df(b(1),x),x,n)$
+
+d(1,df(b(2),~x)) =>  - df(f(1),x)*df(b(1),x) - f(1)*df(b(1),x,2)$
+
+df(b(2),x,~n) => d(1,df( - f(1)*df(b(1),x),x,n - 1))$
+
+df(b(2),x) =>  - d(1,df(b(1),x))*f(1) - d(1,f(1))*df(b(1),x)$
+
+df(f(1),t) =>  - 2*f(1)*b(1)*p1$
+
+df(b(1),t) => b(1)**2*p1 + d(1,f(1))*p2$
+
+d(1,b(2)) =>  - f(1)*df(b(1),x)$
+
+df(b(2),t) => (d(1,f(1))**2*p2 - 2*f(1)*df(f(1),x)*p2)/2$
+
+d(1,b(4)) =>  - f(2)*df(b(1),x) - f(1)*df(b(3),x)$
+
+df(b(4),t) => d(1,f(2))*d(1,f(1))*p2 - f(2)*df(f(1),x)*p2 - f(1)*df(f(2),x)*p2$
+
+
+
+All symmetries of solution 1 printed separately:
+
+Solution 1, symmetry 1. :
+
+The system: 
+
+f(2) = - 2*f(2)*b(1)*p1 - 2*f(1)*b(3)*p1
+    t
+
+b(3) =2*b(3)*b(1)*p1 + Df(2)*p2
+    t
+
+The symmetry: 
+
+             2                            2
+f(2) =(Df(1)) *f(1)*p2 + 4*Df(1)*f(1)*b(1) *p1 - 6*f(1)*b(2)*b(1)*p1
+    s
+
+                 2                     2       1         2
+b(3) =3*b(2)*b(1) *p1 + Db(1)*f(1)*b(1) *p1 - ---*(Df(1)) *b(1)*p2
+    s                                          2
+
+ + 3*Df(1)*b(2)*p2 - Df(1)*Db(1)*f(1)*p2
+
+
+And now in machine readable form: 
+The system: 
+
+df(f(2),t)= - 2*f(2)*b(1)*p1 - 2*f(1)*b(3)*p1$
+
+df(b(3),t)=2*b(3)*b(1)*p1 + d(1,f(2))*p2$
+
+The symmetry: 
+
+df(f(2),s)=d(1,f(1))**2*f(1)*p2 + 4*d(1,f(1))*f(1)*b(1)**2*p1 - 6*f(1)*b(2)*b(1)
+*p1$
+
+df(b(3),s)=3*b(2)*b(1)**2*p1 + d(1,b(1))*f(1)*b(1)**2*p1 - 1/2*d(1,f(1))**2*b(1)
+*p2 + 3*d(1,f(1))*b(2)*p2 - d(1,f(1))*d(1,b(1))*f(1)*p2$
+
+Solution 1, symmetry 2. :
+
+The system: 
+
+f(2) = - 2*f(2)*b(1)*p1 - 2*f(1)*b(3)*p1
+    t
+
+b(3) =2*b(3)*b(1)*p1 + Df(2)*p2
+    t
+
+The symmetry: 
+
+                                             2       3          2
+f(2) =Df(2)*Df(1)*f(1)*p2 + 2*Df(2)*f(1)*b(1) *p1 + ----*(Df(1)) *f(2)*p2
+    s                                                11
+
+    6                  2       1
+ + ----*Df(1)*f(2)*b(1) *p1 + ----*f(2)*f(1)*f(1) *p2
+    11                         11                x
+
+                       2       16                 2
+b(3) =2*Db(3)*f(1)*b(1) *p1 + ----*Db(1)*f(2)*b(1) *p1
+    s                          11
+
+                                14         2            28                 2
+ + 4*Db(1)*f(1)*b(3)*b(1)*p1 + ----*(Df(1)) *b(3)*p2 + ----*Df(1)*b(3)*b(1) *p1
+                                11                      11
+
+                          5                          2
+ + Df(1)*Db(3)*f(1)*p2 + ----*Df(1)*Db(1)*f(2)*p2 - ----*f(2)*b(1)*f(1) *p2
+                          11                         11                x
+
+    1                         10
+ + ----*f(2)*f(1)*b(1) *p2 - ----*f(1)*b(3)*f(1) *p2
+    11                x       11                x
+
+And now in machine readable form: 
+The system: 
+
+df(f(2),t)= - 2*f(2)*b(1)*p1 - 2*f(1)*b(3)*p1$
+
+df(b(3),t)=2*b(3)*b(1)*p1 + d(1,f(2))*p2$
+
+The symmetry: 
+
+df(f(2),s)=d(1,f(2))*d(1,f(1))*f(1)*p2 + 2*d(1,f(2))*f(1)*b(1)**2*p1 + 3/11*d(1,
+f(1))**2*f(2)*p2 + 6/11*d(1,f(1))*f(2)*b(1)**2*p1 + 1/11*f(2)*f(1)*df(f(1),x)*p2
+$
+
+df(b(3),s)=2*d(1,b(3))*f(1)*b(1)**2*p1 + 16/11*d(1,b(1))*f(2)*b(1)**2*p1 + 4*d(1
+,b(1))*f(1)*b(3)*b(1)*p1 + 14/11*d(1,f(1))**2*b(3)*p2 + 28/11*d(1,f(1))*b(3)*b(1
+)**2*p1 + d(1,f(1))*d(1,b(3))*f(1)*p2 + 5/11*d(1,f(1))*d(1,b(1))*f(2)*p2 - 2/11*
+f(2)*b(1)*df(f(1),x)*p2 + 1/11*f(2)*f(1)*df(b(1),x)*p2 - 10/11*f(1)*b(3)*df(f(1)
+,x)*p2$
+-----------------------------------
+off echo$
+
+
+1 solution was found.
+
+=====================================================
+
+4. Symmetry computation
+
+#######  This is the case N1f2b4t1s4w111313.  #######
+
+The system:
+
+f(2) = - 2*f(2)*b(1)*p1 - 2*f(1)*b(3)*p1
+    t
+
+b(3) =2*b(3)*b(1)*p1 + Df(2)*p2
+    t
+
+Extra conditions:
+
+d(1,df(b(4),~t,~x,~n)) => df( - f(2)*df(b(1),x) - f(1)*df(b(3),x),t,x,n)$
+
+d(1,df(b(4),~x,~n)) => df( - f(2)*df(b(1),x) - f(1)*df(b(3),x),x,n)$
+
+d(1,df(b(4),~x)) =>  - df(f(2),x)*df(b(1),x) - df(f(1),x)*df(b(3),x) - f(2)*df(b
+(1),x,2) - f(1)*df(b(3),x,2)$
+
+df(b(4),x,~n) => d(1,df( - f(2)*df(b(1),x) - f(1)*df(b(3),x),x,n - 1))$
+
+df(b(4),x) =>  - d(1,df(b(3),x))*f(1) - d(1,df(b(1),x))*f(2) - d(1,f(2))*df(b(1)
+,x) - d(1,f(1))*df(b(3),x)$
+
+d(1,df(b(2),~t,~x,~n)) => df( - f(1)*df(b(1),x),t,x,n)$
+
+d(1,df(b(2),~x,~n)) => df( - f(1)*df(b(1),x),x,n)$
+
+d(1,df(b(2),~x)) =>  - df(f(1),x)*df(b(1),x) - f(1)*df(b(1),x,2)$
+
+df(b(2),x,~n) => d(1,df( - f(1)*df(b(1),x),x,n - 1))$
+
+df(b(2),x) =>  - d(1,df(b(1),x))*f(1) - d(1,f(1))*df(b(1),x)$
+
+df(f(1),t) =>  - 2*f(1)*b(1)*p1$
+
+df(b(1),t) => b(1)**2*p1 + d(1,f(1))*p2$
+
+d(1,b(2)) =>  - f(1)*df(b(1),x)$
+
+df(b(2),t) => (d(1,f(1))**2*p2 - 2*f(1)*df(f(1),x)*p2)/2$
+
+d(1,b(4)) =>  - f(2)*df(b(1),x) - f(1)*df(b(3),x)$
+
+df(b(4),t) => d(1,f(2))*d(1,f(1))*p2 - f(2)*df(f(1),x)*p2 - f(1)*df(f(2),x)*p2$
+
+
+
+All symmetries of solution 1 printed separately:
+
+Solution 1, symmetry 1. :
+
+The system: 
+
+f(2) = - 2*f(2)*b(1)*p1 - 2*f(1)*b(3)*p1
+    t
+
+b(3) =2*b(3)*b(1)*p1 + Df(2)*p2
+    t
+
+The symmetry: 
+
+             2                            2
+f(2) =(Df(1)) *f(1)*p2 + 4*Df(1)*f(1)*b(1) *p1 - 6*f(1)*b(2)*b(1)*p1
+    s
+
+                 2                     2       1         2
+b(3) =3*b(2)*b(1) *p1 + Db(1)*f(1)*b(1) *p1 - ---*(Df(1)) *b(1)*p2
+    s                                          2
+
+ + 3*Df(1)*b(2)*p2 - Df(1)*Db(1)*f(1)*p2
+
+
+And now in machine readable form: 
+The system: 
+
+df(f(2),t)= - 2*f(2)*b(1)*p1 - 2*f(1)*b(3)*p1$
+
+df(b(3),t)=2*b(3)*b(1)*p1 + d(1,f(2))*p2$
+
+The symmetry: 
+
+df(f(2),s)=d(1,f(1))**2*f(1)*p2 + 4*d(1,f(1))*f(1)*b(1)**2*p1 - 6*f(1)*b(2)*b(1)
+*p1$
+
+df(b(3),s)=3*b(2)*b(1)**2*p1 + d(1,b(1))*f(1)*b(1)**2*p1 - 1/2*d(1,f(1))**2*b(1)
+*p2 + 3*d(1,f(1))*b(2)*p2 - d(1,f(1))*d(1,b(1))*f(1)*p2$
+
+Solution 1, symmetry 2. :
+
+The system: 
+
+f(2) = - 2*f(2)*b(1)*p1 - 2*f(1)*b(3)*p1
+    t
+
+b(3) =2*b(3)*b(1)*p1 + Df(2)*p2
+    t
+
+The symmetry: 
+
+                                             2       3          2
+f(2) =Df(2)*Df(1)*f(1)*p2 + 2*Df(2)*f(1)*b(1) *p1 + ----*(Df(1)) *f(2)*p2
+    s                                                11
+
+    6                  2       1
+ + ----*Df(1)*f(2)*b(1) *p1 + ----*f(2)*f(1)*f(1) *p2
+    11                         11                x
+
+                       2       16                 2
+b(3) =2*Db(3)*f(1)*b(1) *p1 + ----*Db(1)*f(2)*b(1) *p1
+    s                          11
+
+                                14         2            28                 2
+ + 4*Db(1)*f(1)*b(3)*b(1)*p1 + ----*(Df(1)) *b(3)*p2 + ----*Df(1)*b(3)*b(1) *p1
+                                11                      11
+
+                          5                          2
+ + Df(1)*Db(3)*f(1)*p2 + ----*Df(1)*Db(1)*f(2)*p2 - ----*f(2)*b(1)*f(1) *p2
+                          11                         11                x
+
+    1                         10
+ + ----*f(2)*f(1)*b(1) *p2 - ----*f(1)*b(3)*f(1) *p2
+    11                x       11                x
+
+And now in machine readable form: 
+The system: 
+
+df(f(2),t)= - 2*f(2)*b(1)*p1 - 2*f(1)*b(3)*p1$
+
+df(b(3),t)=2*b(3)*b(1)*p1 + d(1,f(2))*p2$
+
+The symmetry: 
+
+df(f(2),s)=d(1,f(2))*d(1,f(1))*f(1)*p2 + 2*d(1,f(2))*f(1)*b(1)**2*p1 + 3/11*d(1,
+f(1))**2*f(2)*p2 + 6/11*d(1,f(1))*f(2)*b(1)**2*p1 + 1/11*f(2)*f(1)*df(f(1),x)*p2
+$
+
+df(b(3),s)=2*d(1,b(3))*f(1)*b(1)**2*p1 + 16/11*d(1,b(1))*f(2)*b(1)**2*p1 + 4*d(1
+,b(1))*f(1)*b(3)*b(1)*p1 + 14/11*d(1,f(1))**2*b(3)*p2 + 28/11*d(1,f(1))*b(3)*b(1
+)**2*p1 + d(1,f(1))*d(1,b(3))*f(1)*p2 + 5/11*d(1,f(1))*d(1,b(1))*f(2)*p2 - 2/11*
+f(2)*b(1)*df(f(1),x)*p2 + 1/11*f(2)*f(1)*df(b(1),x)*p2 - 10/11*f(1)*b(3)*df(f(1)
+,x)*p2$
+-----------------------------------
+off echo$
+
+
+1 solution was found.
+
+=====================================================
+
+5. Symmetry computation
+
+#######  This is the case N1f2b2t1s6w1111.  #######
+
+The system:
+
+f(2) = - 2*f(2)*b(1)*p1 - 2*f(1)*b(2)*p1
+    t
+
+b(2) =2*b(2)*b(1)*p1 + Df(2)*p2
+    t
+
+Extra conditions:
+
+df(f(1),t) =>  - 2*f(1)*b(1)*p1$
+
+df(b(1),t) => b(1)**2*p1 + d(1,f(1))*p2$
+
+
+
+All symmetries of solution 1 printed separately:
+
+Solution 1, symmetry 1. :
+
+The system: 
+
+f(2) = - 2*f(2)*b(1)*p1 - 2*f(1)*b(2)*p1
+    t
+
+b(2) =2*b(2)*b(1)*p1 + Df(2)*p2
+    t
+
+The symmetry: 
+
+                                     1
+f(2) =Db(1)*f(2)*b(1)*f(1) *p1*p2 + ---*Db(1)*f(2)*f(1)*b(1) *p1*p2
+    s                     x          6                      x
+
+    5
+ + ---*Db(1)*f(1)*b(2)*f(1) *p1*p2 - Db(1)*f(1)*b(1)*f(2) *p1*p2
+    6                      x                             x
+
+    5                   2          1
+ + ----*Df(2) *f(1)*b(1) *p1*p2 + ---*Df(1) *f(1)*b(2)*b(1)*p1*p2
+    12       x                     2       x
+
+    1            2                1                       2
+ + ---*Df(2)*b(1) *f(1) *p1*p2 + ----*Df(2)*Df(1) *f(1)*p2
+    2                  x          12             x
+
+    5                      2    1
+ + ---*Df(2)*Df(1)*f(1) *p2  - ---*Df(2)*f(1)*b(1)*b(1) *p1*p2
+    8                  x        2                      x
+
+    1         2         2    3
+ + ---*(Df(1)) *f(2) *p2  + ---*Df(1)*b(2)*b(1)*f(1) *p1*p2
+    8               x        2                      x
+
+    1            2                5                       2
+ + ---*Df(1)*b(1) *f(2) *p1*p2 + ----*Df(1)*Df(2) *f(1)*p2
+    4                  x          24             x
+
+    1                      2    1
+ + ---*Df(1)*Df(1) *f(2)*p2  + ---*Df(1)*f(2)*b(1)*b(1) *p1*p2
+    8             x             2                      x
+
+    2                                 1                      2
+ + ---*Df(1)*f(1)*b(2)*b(1) *p1*p2 + ----*f(2)*f(1)*f(1)  *p2
+    3                      x          24                2x
+
+    1                     2
+ - ---*f(1)*f(2) *f(1) *p2
+    4           x     x
+
+          1             2                1                      2
+b(2) = - ----*Db(2)*b(1) *f(1) *p1*p2 + ---*Db(2)*Df(1) *f(1)*p2
+    s     12                  x          8             x
+
+    4                                 1
+ + ---*Db(2)*f(1)*b(1)*b(1) *p1*p2 - ---*Db(1)*b(2)*b(1)*f(1) *p1*p2
+    3                      x          6                      x
+
+    1            2                1                      2
+ - ---*Db(1)*b(1) *f(2) *p1*p2 - ---*Db(1)*Df(1) *f(2)*p2
+    3                  x          8             x
+
+    5                                 1
+ + ---*Db(1)*f(2)*b(1)*b(1) *p1*p2 + ---*Db(1)*f(1)*b(2)*b(1) *p1*p2
+    6                      x          2                      x
+
+    1                                 5                   2
+ - ---*Db(1)*f(1)*b(1)*b(2) *p1*p2 + ----*Db(2) *f(1)*b(1) *p1*p2
+    6                      x          12       x
+
+    5                   2          1
+ + ----*Db(1) *f(2)*b(1) *p1*p2 + ---*Db(1) *f(1)*b(2)*b(1)*p1*p2
+    12       x                     3       x
+
+    1                  2          7            2
+ + ---*Df(1) *b(2)*b(1) *p1*p2 + ---*Df(2)*b(1) *b(1) *p1*p2
+    6       x                     6                  x
+
+    1                      2    1                      2
+ - ---*Df(2)*Db(1)*f(1) *p2  + ---*Df(2)*Db(1) *f(1)*p2
+    8                  x        8             x
+
+    1                      2    5                      2
+ + ---*Df(2)*Df(1) *b(1)*p2  + ---*Df(2)*Df(1)*b(1) *p2
+    6             x             6                  x
+
+    1         2         2    4
+ + ---*(Df(1)) *b(2) *p2  + ---*Df(1)*b(2)*b(1)*b(1) *p1*p2
+    3               x        3                      x
+
+    2            2                5                       2
+ + ---*Df(1)*b(1) *b(2) *p1*p2 - ----*Df(1)*Db(2)*f(1) *p2
+    3                  x          12                  x
+
+    13                      2    5                       2
+ - ----*Df(1)*Db(1)*f(2) *p2  + ----*Df(1)*Db(2) *f(1)*p2
+    24                  x        24             x
+
+    1                       2    1                      2
+ + ----*Df(1)*Db(1) *f(2)*p2  - ---*Df(1)*Df(1) *b(2)*p2
+    12             x             6             x
+
+    1                      2    1                     2
+ - ----*f(2)*b(1)*f(1)  *p2  - ---*f(2)*f(1) *b(1) *p2
+    12                2x        4           x     x
+
+    1                      2    1                      2
+ + ----*f(2)*f(1)*b(1)  *p2  + ----*f(1)*b(2)*f(1)  *p2
+    24                2x        12                2x
+
+    5                      2    1                      2
+ - ----*f(1)*f(2) *b(1) *p2  + ----*f(1)*f(1) *b(2) *p2
+    24           x     x        24           x     x
+
+And now in machine readable form: 
+The system: 
+
+df(f(2),t)= - 2*f(2)*b(1)*p1 - 2*f(1)*b(2)*p1$
+
+df(b(2),t)=2*b(2)*b(1)*p1 + d(1,f(2))*p2$
+
+The symmetry: 
+
+df(f(2),s)=d(1,b(1))*f(2)*b(1)*df(f(1),x)*p1*p2 + 1/6*d(1,b(1))*f(2)*f(1)*df(b(1
+),x)*p1*p2 + 5/6*d(1,b(1))*f(1)*b(2)*df(f(1),x)*p1*p2 - d(1,b(1))*f(1)*b(1)*df(f
+(2),x)*p1*p2 + 5/12*d(1,df(f(2),x))*f(1)*b(1)**2*p1*p2 + 1/2*d(1,df(f(1),x))*f(1
+)*b(2)*b(1)*p1*p2 + 1/2*d(1,f(2))*b(1)**2*df(f(1),x)*p1*p2 + 1/12*d(1,f(2))*d(1,
+df(f(1),x))*f(1)*p2**2 + 5/8*d(1,f(2))*d(1,f(1))*df(f(1),x)*p2**2 - 1/2*d(1,f(2)
+)*f(1)*b(1)*df(b(1),x)*p1*p2 + 1/8*d(1,f(1))**2*df(f(2),x)*p2**2 + 3/2*d(1,f(1))
+*b(2)*b(1)*df(f(1),x)*p1*p2 + 1/4*d(1,f(1))*b(1)**2*df(f(2),x)*p1*p2 + 5/24*d(1,
+f(1))*d(1,df(f(2),x))*f(1)*p2**2 + 1/8*d(1,f(1))*d(1,df(f(1),x))*f(2)*p2**2 + 1/
+2*d(1,f(1))*f(2)*b(1)*df(b(1),x)*p1*p2 + 2/3*d(1,f(1))*f(1)*b(2)*df(b(1),x)*p1*
+p2 + 1/24*f(2)*f(1)*df(f(1),x,2)*p2**2 - 1/4*f(1)*df(f(2),x)*df(f(1),x)*p2**2$
+
+df(b(2),s)= - 1/12*d(1,b(2))*b(1)**2*df(f(1),x)*p1*p2 + 1/8*d(1,b(2))*d(1,df(f(1
+),x))*f(1)*p2**2 + 4/3*d(1,b(2))*f(1)*b(1)*df(b(1),x)*p1*p2 - 1/6*d(1,b(1))*b(2)
+*b(1)*df(f(1),x)*p1*p2 - 1/3*d(1,b(1))*b(1)**2*df(f(2),x)*p1*p2 - 1/8*d(1,b(1))*
+d(1,df(f(1),x))*f(2)*p2**2 + 5/6*d(1,b(1))*f(2)*b(1)*df(b(1),x)*p1*p2 + 1/2*d(1,
+b(1))*f(1)*b(2)*df(b(1),x)*p1*p2 - 1/6*d(1,b(1))*f(1)*b(1)*df(b(2),x)*p1*p2 + 5/
+12*d(1,df(b(2),x))*f(1)*b(1)**2*p1*p2 + 5/12*d(1,df(b(1),x))*f(2)*b(1)**2*p1*p2 
++ 1/3*d(1,df(b(1),x))*f(1)*b(2)*b(1)*p1*p2 + 1/6*d(1,df(f(1),x))*b(2)*b(1)**2*p1
+*p2 + 7/6*d(1,f(2))*b(1)**2*df(b(1),x)*p1*p2 - 1/8*d(1,f(2))*d(1,b(1))*df(f(1),x
+)*p2**2 + 1/8*d(1,f(2))*d(1,df(b(1),x))*f(1)*p2**2 + 1/6*d(1,f(2))*d(1,df(f(1),x
+))*b(1)*p2**2 + 5/6*d(1,f(2))*d(1,f(1))*df(b(1),x)*p2**2 + 1/3*d(1,f(1))**2*df(b
+(2),x)*p2**2 + 4/3*d(1,f(1))*b(2)*b(1)*df(b(1),x)*p1*p2 + 2/3*d(1,f(1))*b(1)**2*
+df(b(2),x)*p1*p2 - 5/12*d(1,f(1))*d(1,b(2))*df(f(1),x)*p2**2 - 13/24*d(1,f(1))*d
+(1,b(1))*df(f(2),x)*p2**2 + 5/24*d(1,f(1))*d(1,df(b(2),x))*f(1)*p2**2 + 1/12*d(1
+,f(1))*d(1,df(b(1),x))*f(2)*p2**2 - 1/6*d(1,f(1))*d(1,df(f(1),x))*b(2)*p2**2 - 1
+/12*f(2)*b(1)*df(f(1),x,2)*p2**2 - 1/4*f(2)*df(f(1),x)*df(b(1),x)*p2**2 + 1/24*f
+(2)*f(1)*df(b(1),x,2)*p2**2 + 1/12*f(1)*b(2)*df(f(1),x,2)*p2**2 - 5/24*f(1)*df(f
+(2),x)*df(b(1),x)*p2**2 + 1/24*f(1)*df(f(1),x)*df(b(2),x)*p2**2$
+
+Solution 1, symmetry 2. :
+
+The system: 
+
+f(2) = - 2*f(2)*b(1)*p1 - 2*f(1)*b(2)*p1
+    t
+
+b(2) =2*b(2)*b(1)*p1 + Df(2)*p2
+    t
+
+The symmetry: 
+
+             2                        2
+f(2) =(Df(1)) *f(1) *p2 + 2*Df(1)*b(1) *f(1) *p1
+    s              x                        x
+
+                     2                   2                        2
+b(2) = - 2*Db(1)*b(1) *f(1) *p1 + (Df(1)) *b(1) *p2 + 2*Df(1)*b(1) *b(1) *p1
+    s                      x                   x                        x
+
+ - 2*Df(1)*Db(1)*f(1) *p2
+                     x
+
+And now in machine readable form: 
+The system: 
+
+df(f(2),t)= - 2*f(2)*b(1)*p1 - 2*f(1)*b(2)*p1$
+
+df(b(2),t)=2*b(2)*b(1)*p1 + d(1,f(2))*p2$
+
+The symmetry: 
+
+df(f(2),s)=d(1,f(1))**2*df(f(1),x)*p2 + 2*d(1,f(1))*b(1)**2*df(f(1),x)*p1$
+
+df(b(2),s)= - 2*d(1,b(1))*b(1)**2*df(f(1),x)*p1 + d(1,f(1))**2*df(b(1),x)*p2 + 2
+*d(1,f(1))*b(1)**2*df(b(1),x)*p1 - 2*d(1,f(1))*d(1,b(1))*df(f(1),x)*p2$
+
+Solution 1, symmetry 3. :
+
+The system: 
+
+f(2) = - 2*f(2)*b(1)*p1 - 2*f(1)*b(2)*p1
+    t
+
+b(2) =2*b(2)*b(1)*p1 + Df(2)*p2
+    t
+
+The symmetry: 
+
+                      2   2    1         2                         2         2
+f(2) =Df(1) *f(1)*b(1) *p1  - ---*(Df(1)) *f(1) *p1*p2 - Df(1)*b(1) *f(1) *p1
+    s      x                   2               x                         x
+
+    1
+ + ---*Df(1)*Df(1) *f(1)*p1*p2
+    2             x
+
+                  2         2                             2
+b(2) =2*Db(1)*b(1) *f(1) *p1  + 2*Db(1)*f(1)*b(1)*b(1) *p1
+    s                   x                             x
+
+                   2   2    3
+ + Db(1) *f(1)*b(1) *p1  + ---*Df(1)*Db(1)*f(1) *p1*p2
+        x                   2                  x
+
+    1                             1
+ + ---*Df(1)*Db(1) *f(1)*p1*p2 - ---*f(1)*f(1) *b(1) *p1*p2
+    2             x               2           x     x
+
+And now in machine readable form: 
+The system: 
+
+df(f(2),t)= - 2*f(2)*b(1)*p1 - 2*f(1)*b(2)*p1$
+
+df(b(2),t)=2*b(2)*b(1)*p1 + d(1,f(2))*p2$
+
+The symmetry: 
+
+df(f(2),s)=d(1,df(f(1),x))*f(1)*b(1)**2*p1**2 - 1/2*d(1,f(1))**2*df(f(1),x)*p1*
+p2 - d(1,f(1))*b(1)**2*df(f(1),x)*p1**2 + 1/2*d(1,f(1))*d(1,df(f(1),x))*f(1)*p1*
+p2$
+
+df(b(2),s)=2*d(1,b(1))*b(1)**2*df(f(1),x)*p1**2 + 2*d(1,b(1))*f(1)*b(1)*df(b(1),
+x)*p1**2 + d(1,df(b(1),x))*f(1)*b(1)**2*p1**2 + 3/2*d(1,f(1))*d(1,b(1))*df(f(1),
+x)*p1*p2 + 1/2*d(1,f(1))*d(1,df(b(1),x))*f(1)*p1*p2 - 1/2*f(1)*df(f(1),x)*df(b(1
+),x)*p1*p2$
+-----------------------------------
+off echo$
+
+
+1 solution was found.
+
+ZERO = 0
+
+ZERO = 0
+
+#####################################################
+
+Tests related to conservation law computations:
+
+##### ssconl: This is the case N1f1b1t4w22. #####
+
+The system to be investigated:
+
+f(1) =b(1)*f(1) *p9
+    t          x
+
+          3                             2
+b(1) =b(1) *p3 + b(1)*b(1) *p9 + (Df(1)) *p2 - f(1)*f(1) *p4
+    t                     x                             x
+
+Each CL has the form:  
+    Dt(Pt) + sum_i Di(Pd(i)) = Q1*PDE1 + ..
+where, e.g. PDE1 is (left hand side) - (right hand side) of PDE 1.
+
+NEXT: FERMIONIC CONSERVATION LAWS OF WEIGHT 10
+
+45 conditions for 21 unknowns
+3 (possibly trivial) fermionic conservation laws of weight 10:
+
+NEXT: BOSONIC CONSERVATION LAWS OF WEIGHT 10
+
+45 conditions for 21 unknowns
+4 (possibly trivial) bosonic conservation laws of weight 10:
+
+>>>>> 1. Non-trivial conservation law: 
+
+At first in the form of a conserved current vanishing mod eqn.s:
+
+
+      f*f
+         x
+Pt = ------
+       p9
+
+Px = 0
+
+Pd[1] =  - Db*f*f  + Df *f*b - Df*b*f
+                 x     x             x
+
+----- and in machine readable form:
+
+Pt = (f(1)*df(f(1),x))/p9$
+
+Px = 0$
+
+Pd[1] =  - d(1,b(1))*f(1)*df(f(1),x) + d(1,df(f(1),x))*f(1)*b(1) - d(1,f(1))*b(1
+)*df(f(1),x)$
+
+Now as conserved current with characteristic functions:
+
+      f*f
+         x
+Pt = ------
+       p9
+
+Px = 0
+
+         Df *f - Df*f
+           t         t
+Pd[1] = ---------------
+              p9
+
+                       - 2*f
+                            x
+Q[ - b*f *p9 + f ] = ---------
+        x       t       p9
+
+      3                    2
+Q[ - b *p3 - b*b *p9 - (Df) *p2 + b  + f*f *p4] = 0
+                x                  t      x
+
+----- and in machine readable form:
+
+Pt = (f(1)*df(f(1),x))/p9$
+
+Px = 0$
+
+Pd[1] = (d(1,df(f(1),t))*f(1) - d(1,f(1))*df(f(1),t))/p9$
+
+Q[ - b(1)*df(f(1),x)*p9 + df(f(1),t)] = ( - 2*df(f(1),x))/p9$
+
+Q[ - b(1)**3*p3 - b(1)*df(b(1),x)*p9 - d(1,f(1))**2*p2 + df(b(1),t) + f(1)*df(f(
+1),x)*p4] = 0$
+
+>>>>> 2. Non-trivial conservation law: 
+
+At first in the form of a conserved current vanishing mod eqn.s:
+
+
+      b*b *p9 + f*f *p4
+         x         x
+Pt = -------------------
+             p9
+
+Px = 0
+
+                 3                          2          2
+Pd[1] =  - 4*Db*b *p3 - 2*Db*b*b *p9 - Db *b *p9 - (Df) *Db*p2 - 2*Df*b*f *p2
+                                x        x                               x
+
+----- and in machine readable form:
+
+Pt = (b(1)*df(b(1),x)*p9 + f(1)*df(f(1),x)*p4)/p9$
+
+Px = 0$
+
+Pd[1] =  - 4*d(1,b(1))*b(1)**3*p3 - 2*d(1,b(1))*b(1)*df(b(1),x)*p9 - d(1,df(b(1)
+,x))*b(1)**2*p9 - d(1,f(1))**2*d(1,b(1))*p2 - 2*d(1,f(1))*b(1)*df(f(1),x)*p2$
+
+Now as conserved current with characteristic functions:
+
+      b*b *p9 + f*f *p4
+         x         x
+Pt = -------------------
+             p9
+
+Px = 0
+
+          - Db*b *p9 - Db *b*p9 + Df *f*p4 - Df*f *p4
+                t        t          t            t
+Pd[1] = ----------------------------------------------
+                              p9
+
+                       - 2*f *p4
+                            x
+Q[ - b*f *p9 + f ] = ------------
+        x       t         p9
+
+      3                    2
+Q[ - b *p3 - b*b *p9 - (Df) *p2 + b  + f*f *p4] = 0
+                x                  t      x
+
+----- and in machine readable form:
+
+Pt = (b(1)*df(b(1),x)*p9 + f(1)*df(f(1),x)*p4)/p9$
+
+Px = 0$
+
+Pd[1] = ( - d(1,b(1))*df(b(1),t)*p9 - d(1,df(b(1),t))*b(1)*p9 + d(1,df(f(1),t))*
+f(1)*p4 - d(1,f(1))*df(f(1),t)*p4)/p9$
+
+Q[ - b(1)*df(f(1),x)*p9 + df(f(1),t)] = ( - 2*df(f(1),x)*p4)/p9$
+
+Q[ - b(1)**3*p3 - b(1)*df(b(1),x)*p9 - d(1,f(1))**2*p2 + df(b(1),t) + f(1)*df(f(
+1),x)*p4] = 0$
+
+>>>>> 3. Non-trivial conservation law: 
+
+At first in the form of a conserved current vanishing mod eqn.s:
+
+
+         2
+Pt = (Df)
+
+
+Px = 0
+
+Pd[1] =  - 2*Df*b*f *p9
+                   x
+
+----- and in machine readable form:
+
+Pt = d(1,f(1))**2$
+
+Px = 0$
+
+Pd[1] =  - 2*d(1,f(1))*b(1)*df(f(1),x)*p9$
+
+Now as conserved current with characteristic functions:
+
+         2
+Pt = (Df)
+
+
+Px = 0
+
+Pd[1] =  - 2*Df*f
+                 t
+
+Q[ - b*f *p9 + f ] =  - 2*f
+        x       t          x
+
+      3                    2
+Q[ - b *p3 - b*b *p9 - (Df) *p2 + b  + f*f *p4] = 0
+                x                  t      x
+
+----- and in machine readable form:
+
+Pt = d(1,f(1))**2$
+
+Px = 0$
+
+Pd[1] =  - 2*d(1,f(1))*df(f(1),t)$
+
+Q[ - b(1)*df(f(1),x)*p9 + df(f(1),t)] =  - 2*df(f(1),x)$
+
+Q[ - b(1)**3*p3 - b(1)*df(b(1),x)*p9 - d(1,f(1))**2*p2 + df(b(1),t) + f(1)*df(f(
+1),x)*p4] = 0$
+
+NEXT: FERMIONIC CONSERVATION LAWS OF WEIGHT 11
+
+67 conditions for 30 unknowns
+5 (possibly trivial) fermionic conservation laws of weight 11:
+
+NEXT: BOSONIC CONSERVATION LAWS OF WEIGHT 11
+
+68 conditions for 30 unknowns
+5 (possibly trivial) bosonic conservation laws of weight 11:
+
+NEXT: FERMIONIC CONSERVATION LAWS OF WEIGHT 12
+
+93 conditions for 44 unknowns
+7 (possibly trivial) fermionic conservation laws of weight 12:
+
+NEXT: BOSONIC CONSERVATION LAWS OF WEIGHT 12
+
+88 conditions for 44 unknowns
+7 (possibly trivial) bosonic conservation laws of weight 12:
+
+NEXT: FERMIONIC CONSERVATION LAWS OF WEIGHT 13
+
+130 conditions for 63 unknowns
+11 (possibly trivial) fermionic conservation laws of weight 13:
+
+NEXT: BOSONIC CONSERVATION LAWS OF WEIGHT 13
+
+132 conditions for 63 unknowns
+12 (possibly trivial) bosonic conservation laws of weight 13:
+
+>>>>> 1. Non-trivial conservation law: 
+
+At first in the form of a conserved current vanishing mod eqn.s:
+
+
+      Df*f*f
+            x
+Pt = ---------
+        p9
+
+Px = 0
+
+               2
+Pd[1] =  - (Df) *b*f  - Df*Db*f*f  + Df*Df *f*b
+                    x            x        x
+
+----- and in machine readable form:
+
+Pt = (d(1,f(1))*f(1)*df(f(1),x))/p9$
+
+Px = 0$
+
+Pd[1] =  - d(1,f(1))**2*b(1)*df(f(1),x) - d(1,f(1))*d(1,b(1))*f(1)*df(f(1),x) + 
+d(1,f(1))*d(1,df(f(1),x))*f(1)*b(1)$
+
+Now as conserved current with characteristic functions:
+
+      Df*f*f
+            x
+Pt = ---------
+        p9
+
+Px = 0
+
+                2
+          - (Df) *f  + Df*Df *f
+                   t        t
+Pd[1] = ------------------------
+                   p9
+
+                       - 3*Df*f
+                               x
+Q[ - b*f *p9 + f ] = ------------
+        x       t         p9
+
+      3                    2
+Q[ - b *p3 - b*b *p9 - (Df) *p2 + b  + f*f *p4] = 0
+                x                  t      x
+
+----- and in machine readable form:
+
+Pt = (d(1,f(1))*f(1)*df(f(1),x))/p9$
+
+Px = 0$
+
+Pd[1] = ( - d(1,f(1))**2*df(f(1),t) + d(1,f(1))*d(1,df(f(1),t))*f(1))/p9$
+
+Q[ - b(1)*df(f(1),x)*p9 + df(f(1),t)] = ( - 3*d(1,f(1))*df(f(1),x))/p9$
+
+Q[ - b(1)**3*p3 - b(1)*df(b(1),x)*p9 - d(1,f(1))**2*p2 + df(b(1),t) + f(1)*df(f(
+1),x)*p4] = 0$
+
+>>>>> 2. Non-trivial conservation law: 
+
+At first in the form of a conserved current vanishing mod eqn.s:
+
+
+      Db*b*f *p9 + Db*f*b *p9 + Db *f*b*p9 + 2*Df*f*f *p2 - Df*f*f *p4
+            x            x        x                  x            x
+Pt = ------------------------------------------------------------------
+                                     p9
+
+Px = 0
+
+            2                    2          3             2
+Pd[1] =  - b *f *b *p9 + Db*Df *b *p9 + (Df) *Db*p2 - (Df) *f*b *p2
+               x  x           x                                x
+
+            3                                                  2
+ + 4*Df*Db*b *p3 + 2*Df*Db*b*b *p9 - 2*Df*Db*f*f *p2 + Df*Db *b *p9
+                              x                 x           x
+
+        3            2                  2
+ - 4*f*b *b *p3 - f*b *b  *p9 - 2*f*b*b  *p9
+           x            2x             x
+
+----- and in machine readable form:
+
+Pt = (d(1,b(1))*b(1)*df(f(1),x)*p9 + d(1,b(1))*f(1)*df(b(1),x)*p9 + d(1,df(b(1),
+x))*f(1)*b(1)*p9 + 2*d(1,f(1))*f(1)*df(f(1),x)*p2 - d(1,f(1))*f(1)*df(f(1),x)*p4
+)/p9$
+
+Px = 0$
+
+Pd[1] =  - b(1)**2*df(f(1),x)*df(b(1),x)*p9 + d(1,b(1))*d(1,df(f(1),x))*b(1)**2*
+p9 + d(1,f(1))**3*d(1,b(1))*p2 - d(1,f(1))**2*f(1)*df(b(1),x)*p2 + 4*d(1,f(1))*d
+(1,b(1))*b(1)**3*p3 + 2*d(1,f(1))*d(1,b(1))*b(1)*df(b(1),x)*p9 - 2*d(1,f(1))*d(1
+,b(1))*f(1)*df(f(1),x)*p2 + d(1,f(1))*d(1,df(b(1),x))*b(1)**2*p9 - 4*f(1)*b(1)**
+3*df(b(1),x)*p3 - f(1)*b(1)**2*df(b(1),x,2)*p9 - 2*f(1)*b(1)*df(b(1),x)**2*p9$
+
+Now as conserved current with characteristic functions:
+
+      Db*b*f *p9 + Db*f*b *p9 + Db *f*b*p9 + 2*Df*f*f *p2 - Df*f*f *p4
+            x            x        x                  x            x
+Pt = ------------------------------------------------------------------
+                                     p9
+
+Px = 0
+
+                                             2             2
+Pd[1] = ( - b*f *b *p9 + Db*Df *b*p9 - 2*(Df) *f *p2 + (Df) *f *p4 + Df*Db*b *p9
+               t  x           t                 t             t             t
+
+          + Df*Db *b*p9 + 2*Df*Df *f*p2 - Df*Df *f*p4 - f*b*b   *p9 - f*b *b *p9
+                 t               t             t             t,x         t  x
+
+         )/p9
+
+                       - 6*Df*f *p2 + 3*Df*f *p4
+                               x            x
+Q[ - b*f *p9 + f ] = ----------------------------
+        x       t                 p9
+
+      3                    2
+Q[ - b *p3 - b*b *p9 - (Df) *p2 + b  + f*f *p4] = 0
+                x                  t      x
+
+----- and in machine readable form:
+
+Pt = (d(1,b(1))*b(1)*df(f(1),x)*p9 + d(1,b(1))*f(1)*df(b(1),x)*p9 + d(1,df(b(1),
+x))*f(1)*b(1)*p9 + 2*d(1,f(1))*f(1)*df(f(1),x)*p2 - d(1,f(1))*f(1)*df(f(1),x)*p4
+)/p9$
+
+Px = 0$
+
+Pd[1] = ( - b(1)*df(f(1),t)*df(b(1),x)*p9 + d(1,b(1))*d(1,df(f(1),t))*b(1)*p9 - 
+2*d(1,f(1))**2*df(f(1),t)*p2 + d(1,f(1))**2*df(f(1),t)*p4 + d(1,f(1))*d(1,b(1))*
+df(b(1),t)*p9 + d(1,f(1))*d(1,df(b(1),t))*b(1)*p9 + 2*d(1,f(1))*d(1,df(f(1),t))*
+f(1)*p2 - d(1,f(1))*d(1,df(f(1),t))*f(1)*p4 - f(1)*b(1)*df(b(1),t,x)*p9 - f(1)*
+df(b(1),t)*df(b(1),x)*p9)/p9$
+
+Q[ - b(1)*df(f(1),x)*p9 + df(f(1),t)] = ( - 6*d(1,f(1))*df(f(1),x)*p2 + 3*d(1,f(
+1))*df(f(1),x)*p4)/p9$
+
+Q[ - b(1)**3*p3 - b(1)*df(b(1),x)*p9 - d(1,f(1))**2*p2 + df(b(1),t) + f(1)*df(f(
+1),x)*p4] = 0$
+
+>>>>> 3. Non-trivial conservation law: 
+
+At first in the form of a conserved current vanishing mod eqn.s:
+
+
+       - Db*b*f *p9 + Df*b*b *p9 + Df*f*f *p4
+               x            x            x
+Pt = -----------------------------------------
+                        p9
+
+Px = 0
+
+                   2          3               2                    3
+Pd[1] =  - Db*Df *b *p9 - (Df) *Db*p2 - 2*(Df) *b*f *p2 - 4*Df*Db*b *p3
+                x                                  x
+
+                             2
+ - 2*Df*Db*b*b *p9 - Df*Db *b *p9
+              x           x
+
+----- and in machine readable form:
+
+Pt = ( - d(1,b(1))*b(1)*df(f(1),x)*p9 + d(1,f(1))*b(1)*df(b(1),x)*p9 + d(1,f(1))
+*f(1)*df(f(1),x)*p4)/p9$
+
+Px = 0$
+
+Pd[1] =  - d(1,b(1))*d(1,df(f(1),x))*b(1)**2*p9 - d(1,f(1))**3*d(1,b(1))*p2 - 2*
+d(1,f(1))**2*b(1)*df(f(1),x)*p2 - 4*d(1,f(1))*d(1,b(1))*b(1)**3*p3 - 2*d(1,f(1))
+*d(1,b(1))*b(1)*df(b(1),x)*p9 - d(1,f(1))*d(1,df(b(1),x))*b(1)**2*p9$
+
+Now as conserved current with characteristic functions:
+
+       - Db*b*f *p9 + Df*b*b *p9 + Df*f*f *p4
+               x            x            x
+Pt = -----------------------------------------
+                        p9
+
+Px = 0
+
+                              2
+          - Db*Df *b*p9 - (Df) *f *p4 - Df*Db*b *p9 - Df*Db *b*p9 + Df*Df *f*p4
+                 t               t             t           t             t
+Pd[1] = ------------------------------------------------------------------------
+                                           p9
+
+                       - 3*Df*f *p4
+                               x
+Q[ - b*f *p9 + f ] = ---------------
+        x       t          p9
+
+      3                    2
+Q[ - b *p3 - b*b *p9 - (Df) *p2 + b  + f*f *p4] = 0
+                x                  t      x
+
+----- and in machine readable form:
+
+Pt = ( - d(1,b(1))*b(1)*df(f(1),x)*p9 + d(1,f(1))*b(1)*df(b(1),x)*p9 + d(1,f(1))
+*f(1)*df(f(1),x)*p4)/p9$
+
+Px = 0$
+
+Pd[1] = ( - d(1,b(1))*d(1,df(f(1),t))*b(1)*p9 - d(1,f(1))**2*df(f(1),t)*p4 - d(1
+,f(1))*d(1,b(1))*df(b(1),t)*p9 - d(1,f(1))*d(1,df(b(1),t))*b(1)*p9 + d(1,f(1))*d
+(1,df(f(1),t))*f(1)*p4)/p9$
+
+Q[ - b(1)*df(f(1),x)*p9 + df(f(1),t)] = ( - 3*d(1,f(1))*df(f(1),x)*p4)/p9$
+
+Q[ - b(1)**3*p3 - b(1)*df(b(1),x)*p9 - d(1,f(1))**2*p2 + df(b(1),t) + f(1)*df(f(
+1),x)*p4] = 0$
+
+>>>>> 4. Non-trivial conservation law: 
+
+At first in the form of a conserved current vanishing mod eqn.s:
+
+
+         3
+Pt = (Df)
+
+
+Px = 0
+
+                 2
+Pd[1] =  - 3*(Df) *b*f *p9
+                      x
+
+----- and in machine readable form:
+
+Pt = d(1,f(1))**3$
+
+Px = 0$
+
+Pd[1] =  - 3*d(1,f(1))**2*b(1)*df(f(1),x)*p9$
+
+Now as conserved current with characteristic functions:
+
+         3
+Pt = (Df)
+
+
+Px = 0
+
+                 2
+Pd[1] =  - 3*(Df) *f
+                    t
+
+Q[ - b*f *p9 + f ] =  - 6*Df*f
+        x       t             x
+
+      3                    2
+Q[ - b *p3 - b*b *p9 - (Df) *p2 + b  + f*f *p4] = 0
+                x                  t      x
+
+----- and in machine readable form:
+
+Pt = d(1,f(1))**3$
+
+Px = 0$
+
+Pd[1] =  - 3*d(1,f(1))**2*df(f(1),t)$
+
+Q[ - b(1)*df(f(1),x)*p9 + df(f(1),t)] =  - 6*d(1,f(1))*df(f(1),x)$
+
+Q[ - b(1)**3*p3 - b(1)*df(b(1),x)*p9 - d(1,f(1))**2*p2 + df(b(1),t) + f(1)*df(f(
+1),x)*p4] = 0$
+
+NEXT: FERMIONIC CONSERVATION LAWS OF WEIGHT 14
+
+177 conditions for 88 unknowns
+16 (possibly trivial) fermionic conservation laws of weight 14:
+
+NEXT: BOSONIC CONSERVATION LAWS OF WEIGHT 14
+
+169 conditions for 88 unknowns
+16 (possibly trivial) bosonic conservation laws of weight 14:
+
+NEXT: FERMIONIC CONSERVATION LAWS OF WEIGHT 15
+
+246 conditions for 124 unknowns
+23 (possibly trivial) fermionic conservation laws of weight 15:
+
+NEXT: BOSONIC CONSERVATION LAWS OF WEIGHT 15
+
+257 conditions for 124 unknowns
+23 (possibly trivial) bosonic conservation laws of weight 15:
+
+#####################################################
+
+Tests related to determining homogeneity weights:
+This system has the following homogeneities:
+
+W[b] = 0
+
+W[p1] = 6
+
+W[b] = -2
+
+W[b] = arbcomplex(2) + 3
+
+W[f] = arbcomplex(2) + 4
+
+W[f] = arbcomplex(2) + 2
+
+W[b] = arbcomplex(2) + 3
+
+W[f] = arbcomplex(2) + 2
+
+W[b] = arbcomplex(2) + 1
+
+W[f] = arbcomplex(2) + 2
+
+W[f] = arbcomplex(2)
+
+W[b] = arbcomplex(2) + 1
+
+W[f] = arbcomplex(2)
+
+W[th(2)] = -1
+
+W[th(1)] = -1
+
+W[p5] = 0
+
+W[p3] = 0
+
+W[x] = -2
+=================================
+
+W[b] = arbcomplex(1)
+
+W[p1] =  - arbcomplex(1) + 6
+
+W[b] = arbcomplex(1) - 2
+
+W[b] = 3
+
+W[f] = 4
+
+W[f] = 2
+
+W[b] = 3
+
+W[f] = 2
+
+W[b] = 1
+
+W[f] = 2
+
+W[f] = 0
+
+W[b] = 1
+
+W[f] = 0
+
+W[th(2)] = -1
+
+W[th(1)] = -1
+
+W[p5] = 0
+
+W[p3] = 0
+
+W[x] = -2
+=================================
+The program returns a list of 2 homogeneities,
+each homogeneity being a list of
+a list of all f(1),b(2),.. weights and
+a list of all b(1),b(2),.. weights and
+a list of the weights of equations/expressions
+in the input. In this output free parameters
+arbcomplex(i) are replaced by 1:
+
+{{{1,3},{},{7,5}},{{0,2},{},{6,4}}}
+
+
+#####################################################
+
+Tests related to linearizations:
+
+The following linearization generates conditions for the right hand sides 
+of the symmetry: 
+
+   D_s f(1) = f(3)   D_s f(2) = f(4)   D_s b(1) = b(2)
+
+The original system:
+
+    3             5
+f =b *f *p1 + (Df) *f  *p2
+ t     x             2x
+
+                                               2
+ - 2*f*b*p1 - 2*f*b*p1=2*Db *f  *f *p3 + f  *p3
+                           x  2x  x       3x
+
+DDb=DDf*f*b
+
+
+The linearized system: 
+
+        2          3                  4              5
+f =3*b*b *f *p1 + b *f *p1 + 5*Df*(Df) *f  *p2 + (Df) *f  *p2
+ t         x          x                  2x             2x
+
+               2             2                                      2
+( - 16*Db*f*f*b *p1 - 14*(Df) *f*b*p2 - 5*Df*Db*f*f*p2 - 28*Df*f*b*b *p1
+
+
+  - 44*f*b*p1 - 44*f*b*p1 - 44*f*b*p1 - 2*f*f*b*f *p2)/22
+                                                 x
+
+                                                             2
+=2*Db *f  *f *p3 + 2*Db *f  *f *p3 - 2*Db *f *f  *p3 + f  *p3
+     x  2x  x          x  2x  x          x  x  2x       3x
+
+DDb=DDf*f*b + DDf*f*b + DDf*f*b
+
+
+and in machine readable form: 
+
+df(f(3),t)=3*b(2)*b(1)**2*df(f(2),x)*p1 + b(1)**3*df(f(4),x)*p1 + 5*d(1,f(4))*d(
+1,f(2))**4*df(f(1),x,2)*p2 + d(1,f(2))**5*df(f(3),x,2)*p2$
+
+( - 16*d(1,b(1))*f(2)*f(1)*b(1)**2*p1 - 14*d(1,f(1))**2*f(1)*b(3)*p2 - 5*d(1,f(1
+))*d(1,b(1))*f(2)*f(1)*p2 - 28*d(1,f(1))*f(1)*b(3)*b(1)**2*p1 - 44*f(4)*b(1)*p1 
+- 44*f(3)*b(3)*p1 - 44*f(2)*b(2)*p1 - 2*f(2)*f(1)*b(1)*df(f(1),x)*p2)/22=2*d(1,
+df(b(2),x))*df(f(2),x,2)*df(f(1),x)*p3 + 2*d(1,df(b(1),x))*df(f(4),x,2)*df(f(1),
+x)*p3 - 2*d(1,df(b(1),x))*df(f(3),x)*df(f(2),x,2)*p3 + df(f(3),x,3)*p3**2$
+
+d(1,d(2,b(2)))=d(1,d(2,f(3)))*f(1)*b(1) + d(1,d(2,f(1)))*f(3)*b(1) + d(1,d(2,f(1
+)))*f(1)*b(2)$
+
+#####################################################
+
+Tests related to generating polynomials:
+
+{D b*b*c126 + D b *c127 + D f*f*c125 + D b*b*c130 - D D f*c128 + D b *c131
+  2            2 x         2            1            1 2          1 x
+
+  + D f*f*c129 + f *c132 + f*b*c133,
+     1            x
+
+ D b*f*c135 + D f *c136 + D f*b*c134 + D b*f*c138 + D f *c139 + D f*b*c137
+  2            2 x         2            1            1 x         1
+
+  - f*f*c140,
+
+ {c140,
+
+  c139,
+
+  c138,
+
+  c137,
+
+  c136,
+
+  c135,
+
+  c134,
+
+  c133,
+
+  c132,
+
+  c131,
+
+  c130,
+
+  c129,
+
+  c128,
+
+  c127,
+
+  c126,
+
+  c125}}
+
+#####################################################
+
+Tests related to Taylor expansions:
+
+                                                     2
+hh :=  - f(2,1,1)  + f(2,0,0)  *p3*p5 - f(1,0,0)  *p3  - f(2,1,1)*f(1,0,0)*th(2)
+                 x           2x                 3x
+
+       + f(2,1,1)*th(2)*th(1)*b(1,1,0) + f(1,1,1)*th(2)*th(1)*b(2,1,0)
+
+       + f(1,0,0)*b(2,1,0) - f(1,0,0)*th(2)*th(1)*b(2,0,1)
+                                                          x
+
+       + f(1,0,0)*th(1)*f(2,0,0)  + th(2)*b(2,1,0)*b(1,0,1) + th(2)*b(2,1,0)
+                                x                                           2x
+
+                                                     2
+       + th(2)*b(2,0,1)  *p3*p5 - th(2)*b(1,0,1)  *p3
+                       2x                       3x
+
+       + th(2)*th(1)*b(1,0,1)*f(2,0,0)  + th(2)*th(1)*f(2,1,1)  *p3*p5
+                                      x                       2x
+
+                                                           2
+       + th(2)*th(1)*f(2,0,0)   - th(2)*th(1)*f(1,1,1)  *p3
+                             3x                       3x
+
+       + th(1)*b(2,1,0)*b(1,1,0) + th(1)*b(2,1,0)  *p3*p5 - th(1)*b(2,0,1)
+                                                 2x                       2x
+
+                            2
+       - th(1)*b(1,1,0)  *p3
+                       3x
+
+#####################################################
+
+Tests related to inverting Taylor expansions:
+This system is not homogeneous.The input expression does not have a homogeneity
+which could be used to compute a field form.
+This system has the following homogeneities:
+
+W[f(2,0)] = -1
+
+W[b(2,1)] = 0
+
+W[f(2)] = -1
+
+W[f(1,0)] = arbcomplex(1)
+
+W[b(1,1)] = arbcomplex(1) + 1
+
+W[f(1)] = arbcomplex(1)
+
+W[th(1)] = -1
+
+W[x] = -2
+=================================
+The program returns a list of one homogeneity
+which is a list of
+a list of all f(1),b(2),.. weights and
+a list of all b(1),b(2),.. weights and
+a list of the weights of equations/expressions
+in the input. In this output free parameters
+arbcomplex(i) are replaced by 1:
+
+{{{1,-1},{},{1}}}
+
+
+All symmetries of solution 1 printed separately:
+-----------------------------------
+off echo$
+
+The expression to be transformed has a homogeneity
+but a field form does not exist.
+This system has the following homogeneity:
+
+W[f(1,0)] = 1
+
+W[b(1,1)] = 2
+
+W[f(1)] = 1
+
+W[th(1)] = -1
+
+W[x] = -2
+=================================
+The program returns a list of one homogeneity
+which is a list of
+a list of all f(1),b(2),.. weights and
+a list of all b(1),b(2),.. weights and
+a list of the weights of equations/expressions
+in the input. 
+
+{{{1},{},{3}}}
+
+The expression to be transformed has a homogeneity
+but a field form does not exist.
+
+#####################################################
+
+
