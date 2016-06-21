@@ -731,7 +731,7 @@ end$
 %-------
 
 symbolic operator listine$
-symbolic procedure listine(N,sys,sym,fl,ineql,non_lin_test)$
+symbolic procedure listine(N,sys,sym,fl,ineql,non_lin_test,save_lists)$
 % generation of conditions for the unknown coefficients
 begin scalar eqn,ineql,cnd,h,k,fb,flcp,nfl,evolist,rs$
  fl:=cdr fl$ 
@@ -840,9 +840,11 @@ begin scalar eqn,ineql,cnd,h,k,fb,flcp,nfl,evolist,rs$
   print_list_of_lists(ineql)$
   terpri()$
  >>$
- out "inelist"$
- print_list_of_lists(ineql)$
- shut "inelist"$
+ if save_lists then <<
+  out  "inelist"$
+  print_list_of_lists(ineql)$
+  shut "inelist"$
+ >>$
 
  ineql:=for each cnd in ineql collect 
  if null cdr cnd then car cnd
@@ -1010,11 +1012,15 @@ algebraic procedure ssym(N,tw,sw,afwlist,abwlist,eqnlist,fl,inelist,mode)$
 %                    fermionic lin fields are f(nf+1)..b(nf+nb)
 %            tpar: t/nil, whether time variable t changes parity"$        
 %            spar: t/nil, whether symmetry variable s changes parity"$
+%            log : t/nil, whether files drvlist, evolist, unolist, inelist
+%                         are generated to hold data, for example, for 
+%                         automatic web page generation
+%
 begin scalar g,h,k,cpu,gti,fbno,psys,psym,msysp,msymp,totpow,syspow,sympow,
              newcd,afblist,sublist,zerocoeff,fl_e,non_lin_test,do_ine_test,
              init,subl,subl2,sys,sym,ls,rs,linsub,filter,forbid,rhssyl,sycon,
              nw,w,np,p,nq,q,psycon,cn,lp,verbose,plain_com,power_split_com,
-             msgbak,interactive,nfr,nfe,nbr,nbe,nf,nb,lhslist$
+             msgbak,interactive,nfr,nfe,nbr,nbe,nf,nb,lhslist,save_lists$
  backup_reduce_flags()$
  lisp <<
   record_hist:=nil;
@@ -1042,6 +1048,7 @@ begin scalar g,h,k,cpu,gti,fbno,psys,psym,msysp,msymp,totpow,syspow,sympow,
                         else algebraic(off t_changes_parity);
   if member('spar,mode) then algebraic(on  s_changes_parity)
                         else algebraic(off s_changes_parity);
+  if member('log,mode) then save_lists:=t$
 
   if member('lin,mode) then << % @#@#
    nf:=length afwlist - 1;
@@ -1273,25 +1280,29 @@ write"nfr= ",nfr," nfe=",nfe,
   sys:=sub(sublist,sys)$
   sym:=sub(sublist,sym)
  >>$
- off nat$
- out  "drvlist"$
- for each g in sys do write lhs g," := ",rhs g$ 
- for each g in sym do write lhs g," := ",rhs g$ 
- write"end$"$
- shut "drvlist"$
+ if lisp(save_lists) then <<
+  off nat$
+  out  "drvlist"$
+  for each g in sys do write lhs g," := ",rhs g$ 
+  for each g in sym do write lhs g," := ",rhs g$ 
+  write"end$"$
+  shut "drvlist"$
+ >>$
  on nat$
  on dfprint$
  off noarg$
- out  "evolist"$
- for each g in sys do write lhs g," := ",rhs g$ 
- lisp <<terpri()$
-        write"</pre> with symmetries"$ terpri()$
-        write"<pre>">>$
- for each g in sym do write lhs g," := ",rhs g$ 
- shut "evolist"$
- out  "unolist"$
- lisp <<listprint(reverse cdr fl)$terpri()>>$
- shut "unolist"$
+ if lisp(save_lists) then <<
+  out  "evolist"$
+  for each g in sys do write lhs g," := ",rhs g$ 
+  lisp <<terpri()$
+         write"</pre> with symmetries"$ terpri()$
+         write"<pre>">>$
+  for each g in sym do write lhs g," := ",rhs g$ 
+  shut "evolist"$
+  out  "unolist"$
+  lisp <<listprint(reverse cdr fl)$terpri()>>$
+  shut "unolist"$
+ >>$
 
  if interactive then <<off batch_mode$ lisp(print_:= 6 )>>
                 else <<on  batch_mode$ lisp(print_:=nil)>>$
@@ -1341,7 +1352,7 @@ write"nfr= ",nfr," nfe=",nfe,
  >>$
 
  if do_ine_test then <<
-  inelist:=listine(N,sys,sym,fl,inelist,non_lin_test);
+  inelist:=listine(N,sys,sym,fl,inelist,non_lin_test,save_lists);
   g:=inelist$ 
   while g neq {} and first g neq 0 do g:=rest g$ 
   if g neq {} then return <<
@@ -3698,6 +3709,7 @@ symbolic operator sshelp$
 symbolic procedure sshelp$
 begin scalar ps,s$
  lines_written:=0$
+ rds nil; wrs nil$              % Switch I/O to terminal
  ps:=promptstring!*$  promptstring!*:=redfront_color ""$
  repeat <<
   write"To read about the following topics input the corresponding number:"$
@@ -3716,7 +3728,6 @@ begin scalar ps,s$
   write"  Exit help                     (12)"$ terpri()$
   terpri()$
   write"Choice: "$
-  rds nil; wrs nil$              % Switch I/O to terminal
   s:=read()$
   if ifl!* then rds cadr ifl!*$  %  Resets I/O streams
   if ofl!* then wrs cdr ofl!*$
