@@ -80,8 +80,8 @@ module rlsched;
 rl_mkserv('posgqea,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
    (list)),'rl_s2a!-gqea,t);
 
-rl_mkserv('gqea,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
-   (list)),'rl_s2a!-gqea,t);
+%% rl_mkserv('gqea,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
+%%    (list)),'rl_s2a!-gqea,t);
 
 %% rl_mkserv('lqe,'(rl_simp rl_a2s!-atl rl_a2s!-pt),nil,nil,'rl_s2a!-gqe,t);
 
@@ -126,8 +126,8 @@ rl_mkserv('qeipo,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
 rl_mkserv('qews,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
-rl_mkserv('gentheo,'(rl_a2s!-atl rl_simp),'(rl_a2s!-varl),'((list)),
-   'rl_s2a!-gqe,t);
+%% rl_mkserv('gentheo,'(rl_a2s!-atl rl_simp),'(rl_a2s!-varl),'((list)),
+%%    'rl_s2a!-gqe,t);
 
 rl_mkserv('tnf,'(rl_simp rl_a2s!-terml),nil,nil,'rl_mk!*fof,t);
 
@@ -137,13 +137,13 @@ rl_mkserv('tnf,'(rl_simp rl_a2s!-terml),nil,nil,'rl_mk!*fof,t);
 %% 
 %% rl_mkserv('ifstruct,'(rl_simp),'(rl_a2s!-id),'(v),'rl_s2a!-struct,t);
 
-rl_mkserv('varl,'(rl_simp),nil,nil,'rl_s2a!-varl,t);
-
-rl_mkserv('fvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,t);
-
-rl_mkserv('bvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,t);
-
-rl_mkserv('qvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,t);
+%% rl_mkserv('varl,'(rl_simp),nil,nil,'rl_s2a!-varl,t);
+%% 
+%% rl_mkserv('fvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,t);
+%% 
+%% rl_mkserv('bvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,t);
+%% 
+%% rl_mkserv('qvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,t);
 
 rl_mkserv('decdeg1,'(rl_simp),'(rl_a2s!-decdeg1),'(fvarl),'rl_s2a!-decdeg1,t);
 
@@ -330,7 +330,7 @@ rl_blackBox('rl_subalchk, 1);
 
 rl_blackBox('rl_eqnrhskernels, 1);
 
-rl_blackBox('rl_getineq, 2);
+%% rl_blackBox('rl_getineq, 2);
 
 rl_blackBox('rl_qefsolset, 5);
 

@@ -313,7 +313,7 @@ inline procedure cl_mkER(theo,eqr);
 declare cl_mk1EQR: (Formula,EquationL) -> ExtendedQeResult;
 inline procedure cl_mk1EQR(f,eql);
    % Make singleton extended qe result.
-   {{f,eql}};
+   {f . eql};
 
 asserted procedure cl_gqe(f: Formula, theo: Theory, xbvl: KernelL): TheoryFormulaPair;
    % Generic quantifier elimination. Returns a pair $\Theta . \phi$. $\Theta$ is

@@ -1,8 +1,11 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010 T. Sturm
-% ----------------------------------------------------------------------
+module pasfmisc;
+% This module provides a collection of algorithms shared by all other modules
+% in Presburger arithmetic standard form (PASF) context.
+
+revision('pasfmisc, "$Id$");
+
+copyright('pasfmisc, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,18 +30,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(pasf_misc_rcsid!* pasf_misc_copyright!*);
-   pasf_misc_rcsid!* :=
-      "$Id$";
-   pasf_misc_copyright!* :=
-      "(c) 1995-2009 by A. Dolzmann, A. Seidl, T. Sturm, 2010 T. Sturm"
->>;
-
-module pasfmisc;
-% This module provides a collection of algorithms shared by all other modules
-% in Presburger arithmetic standard form (PASF) context.
 
 procedure pasf_atf2iv(atf);
    % Presburger arithmetic standard form atomic formula to interval. [atf] is
@@ -753,32 +744,35 @@ procedure pasf_expanda(answ,phi);
    % components. The argument [phi] is not yet used. This is planned
    % to be the original quantified formula so that its matrix can be
    % possibly used for finding suitable values.
-   begin scalar guard,w,badl,goodl,gdis,sample;
+   begin scalar guard, w, ww, badl, goodl, gdis, sample;
       for each a in answ do <<
 	 secondvalue!* := nil;
       	 guard := pasf_expand car a;
 	 w := secondvalue!*;
 	 sample := pasf_findsample(cadr a,caddr a,w);
-	 if car sample then
-	    badl := lto_insert({guard,nconc(cdr sample,'!! . car sample)},badl)
+	 ww := nil;
+	 for each equ in cdr sample do
+	    ww := lto_insert(cadr equ . caddr equ, ww);
+ 	 if car sample then
+	    badl := lto_insert(guard . reversip(('implicit . 'list . car sample) . ww), badl)
 	 else
-	    goodl := lto_insert({guard,cdr sample},goodl)
+	    goodl := lto_insert(guard . reversip ww, goodl)
       >>;
-      gdis := cl_simpl(rl_smkn('or,for each gp in goodl collect car gp),nil,-1);
+      gdis := cl_simpl(rl_smkn('or, for each gp in goodl collect car gp), nil, -1);
       if !*rlqeasri then
       	 badl := for each gp in badl join
-	    if pasf_srip(car gp,gdis) then <<
+	    if pasf_srip(car gp, gdis) then <<
 	       if !*rlverbose then ioto_prin2 "(SRI) ";
 	       nil
 	    >> else
 	       {gp};
-      return nconc(reversip goodl,reversip badl)
+      return nconc(reversip goodl, reversip badl)
    end;
 
 procedure pasf_srip(prem,concl);
    % Presburger arithmetic standard form simplifier-recognized
    % implication.
-   cl_simpl(rl_mk2('impl,prem,concl),nil,-1) eq 'true;
+   cl_simpl(rl_mk2('impl, prem, concl), nil, -1) eq 'true;
 
 procedure pasf_findsample(rangel,points,hitl);
    begin scalar w,answ,nrangel;

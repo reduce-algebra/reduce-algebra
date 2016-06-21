@@ -39,7 +39,7 @@ rl_type {
    a2s = rl_identity1,
    s2a = rl_identity1,
    doc = {
-      syntax = "An object that is not formally specified but explained with the service using it"}};
+      syntax = "An object that is not formally specified but explained with the service using it."}};
 
 asserted procedure rl_identity1(x: Any): Any;
    % Unary identity function.
@@ -64,7 +64,7 @@ rl_type {
    name = TruthValue,
    inherits = Formula,
    doc = {
-      syntax = "{true, false}, a finite subset of first-order formulas.",
+      syntax = "An element from the finite subset {true, false} of first-order formulas.",
       example = "true"}};
 
 % Atomic formulas
@@ -75,7 +75,7 @@ rl_type {
    a2s = rl_a2sAtom,
    equational,
    doc = {
-      syntax = "An atomic formula in the current domain",
+      syntax = "An atomic formula in the current domain.",
       example = "x^4*y^2 + y^2*x^4 - 3*x^2*y^2 + 1 >= 0"}};
 
 asserted procedure rl_a2sAtom(x);
@@ -93,7 +93,10 @@ asserted procedure rl_a2sAtom(x);
 rl_type {
    name = Term,
    a2s = rl_simpterm,
-   s2a = rl_prepterm};
+   s2a = rl_prepterm,
+   doc = {
+      syntax = "A term in the current domain.",
+      example = "x^4*y^2 + y^2*x^4 - 3*x^2*y^2 + 1"}};
 
 % Variables do not inherit Term. There is a difference between a kernel and the
 % corresponding standard form.
@@ -101,7 +104,9 @@ rl_type {
 rl_type {
    name = Variable,
    a2s = rl_a2sVariable,
-   s2a = rl_identity1};
+   s2a = rl_identity1,
+   doc = {
+      syntax = "A REDUCE Variable."}};
 
 asserted procedure rl_a2sVariable(x: Any): List;
    if sfto_kernelp x then x else typerr(x, "Variable");
@@ -161,7 +166,7 @@ rl_type {
    name = KwBnf,
    a2s = rl_a2sKwBnf,
    doc = {
-      syntax = "The finite set {auto, cnf, dnf}",
+      syntax = "An element from the finite set {auto, cnf, dnf}.",
       semantics = "A keyword to be passed as an option. Keywords arguments are not evaluated.",
       example = "cnf"}};
 
@@ -171,20 +176,6 @@ asserted procedure rl_a2sKwBnf(bnf: Id): Id;
       	 typerr(bnf, "Bnf");
       bnf
    >>;
-
-% Point
-
-rl_type {
-   name = Point,
-   doc = {
-      syntax = "A list of equations assigning values to some parameters.",
-      example = "{a=3.14, b=22/7, c=0}"},
-   a2s = rl_a2sPoint};
-
-asserted procedure rl_a2sPoint(u: List): Alist;
-   for each x in cdr reval u collect
-      cadr x . caddr x;
-
 
 % Parametric Point
 
@@ -209,15 +200,13 @@ asserted procedure rl_s2aQeAnswer(res): List;
 
 rl_type {
    name = Rational,
-   s2a = rl_a2sRational,
+   a2s = rl_a2sRational,
    doc = {
-      syntax = "An element from the set Q of rational numbers.",
+      syntax = "A rational number of arbitrary precision.",
       example = "1, -1/2, 0.1"}};
 
 asserted procedure rl_a2sRational(x): SF;
-   simp x;
-
-
+   reval x;
 
 % Compound types:
 
@@ -226,7 +215,9 @@ asserted procedure rl_a2sRational(x): SF;
 rl_type {
    name = List,
    a2s = rl_a2sList,
-   s2a = rl_s2aList};
+   s2a = rl_s2aList,
+   doc = {
+      syntax = "A homogeneous List."}};
 
 asserted procedure rl_a2sList(l: List, a2sElement: Any): List;
    begin scalar w, !*rlsimpl;
@@ -244,7 +235,9 @@ asserted procedure rl_s2aList(l: List, s2aElement: Any): List;
 rl_type {
    name = Pair,
    a2s = rl_a2sPair,
-   s2a = rl_s2aPair};
+   s2a = rl_s2aPair,
+   doc = {
+      syntax = "A not necessarily homogeneous List with two elements."}};
 
 asserted procedure rl_a2sPair(x: Any, a2sElem1: Any, a2sElem2: Any): List;
    begin scalar w, !*rlsimpl;
@@ -265,7 +258,7 @@ asserted procedure rl_s2aPair(x: Any, a2sElem1: Any, a2sElem2: Any): List;
 rl_type {name = MList,
    s2a = rl_s2aMList,
    doc = {
-      syntax = "A List of Pairs associating its elements with numbers, e.g., occurrences.",
+      syntax = "A homogeneous List of Pairs {x, n}, where n is an Integer.",
       example = "{{a+b = 0, 4}, {a = c-d, 1}}"}};
 
 asserted procedure rl_s2aMList(l: List, a2sElement: Any): List;
@@ -279,7 +272,7 @@ rl_type {
    s2a = rl_s2aAssignment,
    equational,
    doc = {
-      syntax = "An equation, where the left hand side is a Variable",
+      syntax = "An equation v = x, where v is a Variable.",
       example = "v_1 = x^4*y^2 + y^2*x^4 - 3*x^2*y^2 + 1 >= 0"}};
 
 asserted procedure rl_a2sAssignment(x: Any, a2sLhs: Any): List;
@@ -302,7 +295,7 @@ procedure rl_a2s!-sflist(x);
    rl_a2sList(x, 'rl_simpterm);
 
 procedure rl_a2s!-idlist(x);
-   rl_a2sList(x, rl_a2sVariable);
+   rl_a2sList(x, 'rl_a2sVariable);
 
 copyd('rl_a2s!-number, 'rl_a2sInteger);
 

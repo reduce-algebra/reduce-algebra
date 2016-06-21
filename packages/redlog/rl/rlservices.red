@@ -142,9 +142,19 @@ rl_service {
    doc = "local quantifier elimination",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions on the parameters"},
-   arg = {pos = 3, name = point, type = Point, default = {}, doc = "point where generated theory must be consistent"},
+   arg = {pos = 3, name = point, type = List(Assignment(Rational)), default = {}, doc = "point where generated theory must be consistent"},
    returns = {type = Pair(List(Atom), Formula)},
    blackbox = {name = negateat, argnum = 1},
+   mode = both};
+
+rl_service {
+   name = gentheo,
+   doc = "heuristically add assumptions to theory to make formula true",
+   arg = {pos = 1, name = theory, type = List(Atom), doc = "input theory"},
+   arg = {pos = 2, name = formula, type = Formula, doc = "input formula"},
+   arg = {pos = 3, name = exclude, type = List(Variable), default = {}, doc = "variables not to make assumptions on"},
+   returns = {type = Pair(List(Atom), Formula)},
+   blackbox = {name = getineq, argnum = 2},
    mode = both};
 
 rl_service {
@@ -222,7 +232,17 @@ rl_service {
    doc = "quantifier elimination with answer",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
-   returns = {type = QeAnswer},
+   returns = {type = List(Pair(Formula, List(Assignment(Any))))},
+   blackbox = {name = negateat, argnum = 1},
+   mode = both};
+
+rl_service {
+   name = gqea,
+   doc = "generic quantifier elimination with answer",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
+   arg = {pos = 3, name = except, type = List(Variable), default = {}, doc = "parameters to exclude from assumptions"},
+   returns = {type = Pair(List(Atom),List(Pair(Formula, List(Assignment(Any)))))},
    blackbox = {name = negateat, argnum = 1},
    mode = both};
 
@@ -231,7 +251,7 @@ rl_service {
    doc = "positive quantifier elimination with answer",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
-   returns = {type = QeAnswer},
+   returns = {type = List(Pair(Formula, List(Assignment(Any))))},
    blackbox = {name = negateat, argnum = 1},
    mode = both};
 
@@ -241,7 +261,7 @@ rl_service {
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = probability, type = Rational, default = 1, doc = "probability in [0,1]"},
    arg = {pos = 3, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
-   returns = {type = QeAnswer},
+   returns = {type = List(Pair(Formula, List(Assignment(Any))))},
    mode = both};
 
 rl_service {
@@ -385,6 +405,34 @@ rl_service {
    doc = "theory simplifer",
    arg = {pos = 1, name = theory, type = List(Atom), doc = "a list of atoms"},
    returns = {type = List(Atom)},
+   mode = both};
+
+rl_service {
+   name = varl,
+   doc = "lists of variables sperarated wrt. free and bound occurrences",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   returns = {type = Pair(List(Variable), List(Variable))},
+   mode = both};
+
+rl_service {
+   name = fvarl,
+   doc = "list of variables with free occurrences",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   returns = {type = List(Variable)},
+   mode = both};
+
+rl_service {
+   name = bvarl,
+   doc = "list of variables with bound occurrences",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   returns = {type = List(Variable)},
+   mode = both};
+
+rl_service {
+   name = qvarl,
+   doc = "list of variables that are arguments of quantifier symbols",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   returns = {type = List(Variable)},
    mode = both};
 
 rl_service {

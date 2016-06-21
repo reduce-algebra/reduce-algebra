@@ -53,6 +53,8 @@ asserted procedure rl_help(x: Id);
 	 return rl_helpOverviewServices();
       if x eq 'types then
 	 return rl_helpOverviewTypes();
+      if eqcar(x, 'quotient) and eqn(caddr x, rl_helpTypeArity cadr x) then
+	 x := cadr x;
       docal := get(x, 'docal);
       if not docal then
 	 return;
@@ -93,12 +95,19 @@ asserted procedure rl_stringDescriptionListWrapper(al: AList, xdtl: List): List;
    lto_stringDescriptionList(al, rlhelp_leftMargin!*, rlhelp_colSep!*, linelength nil - rlhelp_rightMargin!*, xdtl);
 
 asserted procedure rl_helpOverview();
-   <<
+   begin scalar bl, cl, types;
       ioto_tprin2t "REDLOG SERVICES";
       rl_helpOverviewCSL for each s in rl_services!* collect id2string s;
       terpri();
       ioto_tprin2t "REDLOG TYPES";
-      rl_helpOverviewCSL rl_typeStrings rl_services!*;
+      for each s in rl_typeStrings rl_services!* do <<
+	 bl . cl := rl_helpOverviewTypesDecompose s;
+	 for each x in bl do
+	    types := lto_insert(x, types);
+	 for each x in cl do
+	    types := lto_insert(rl_helpTypeConcArity x, types)
+      >>;
+      rl_helpOverviewCSL sort(types, 'rl_stringLeq);
       terpri();
       ioto_tprin2t "REDLOG SWITCHES";
       rl_helpOverviewCSL for each s in rl_services!* join
@@ -110,8 +119,8 @@ asserted procedure rl_helpOverview();
 	 '(("?services" . "more information on services")
            ("?types" . "more information on types")
            ("?switches" . "more information on switches")
-	   ("?X" . "for a specific service, type, or switch X")), nil);
-   >>;
+	   ("?X" . "for a specific service, type, or switch X")), nil)
+   end;
 
 asserted procedure rl_helpOverviewCSL(l: List): List;
    begin scalar sl;
@@ -142,15 +151,58 @@ asserted procedure rl_helpOverviewServices();
    end;
 
 asserted procedure rl_helpOverviewTypes();
-   begin scalar al;
-      ioto_tprin2t "REDLOG TYPES";
-      al := for each s in sort(rl_typeStrings rl_services!*, 'rl_stringLeq) collect
-      	 s . (lto_catsoc('syntax, get(lto_string2id s, 'docal)) or "");
-      rl_printDescriptionList(al, nil);
+   begin scalar bl,cl, bal, cal, sal, xdtl;
+      for each s in rl_typeStrings rl_services!* collect <<
+	 bl . cl := rl_helpOverviewTypesDecompose s;
+	 for each x in bl do
+      	    push(x . (lto_catsoc('syntax, get(lto_string2id x, 'docal)) or ""), bal);
+	 for each x in cl do
+      	    push(rl_helpTypeConcArity x . (lto_catsoc('syntax, get(lto_string2id x, 'docal)) or ""), cal)
+      >>;
+      bal := sort(list2set bal, function(lambda x, y; rl_stringLeq(car x, car y)));
+      cal := sort(list2set cal, function(lambda x, y; rl_stringLeq(car x, car y)));
+      sal := '(("?X" . "for a specific type X"));
+      xdtl := for each pr in append(sal, append(bal, cal)) collect car pr;
+      ioto_tprin2t "REDLOG BASIC TYPES";
+      rl_printDescriptionList(bal, xdtl);
+      terpri();
+      ioto_tprin2t "REDLOG COMPOUND TYPES";
+      rl_printDescriptionList(cal, xdtl);
       terpri();
       ioto_tprin2t "SEE ALSO";
-      rl_printDescriptionList('(("?X" . "for a specific service X")),
- 	 for each pr in al collect car pr)
+      rl_printDescriptionList(sal, xdtl)
+   end;
+
+asserted procedure rl_helpOverviewTypesDecompose(s: String): DottedPair;
+   rl_helpOverviewTypesDecompose1(ioto_sxread s, nil, nil) where !*lower=nil, !*raise=nil;
+
+asserted procedure rl_helpOverviewTypesDecompose1(x: Any, bl: List, cl: List): DottedPair;
+   begin
+      if idp x then
+      	 return (id2string x . bl) . cl;
+      push(id2string car x, cl);
+      for each y in cdr x do
+	 bl . cl := rl_helpOverviewTypesDecompose1(y, bl, cl);
+      return bl . cl
+   end;
+
+asserted procedure rl_helpTypeConcArity(s: String): String;
+   % We are context sensitive. [x] is a compound type as an identifier. We add
+   % "/n", where n is its arity. The arity is derived from the a2s/s2a property.
+   % If this fails we add "/?". We return an uninterned case-sensitive
+   % identifier. String conversion happens outside.
+   begin scalar !*lower, !*raise;
+      scalar arity, w;
+      arity := rl_helpTypeArity s;
+      w :=  if fixp arity then '!/ .  explode(arity) else '(!/ !?);
+      return id2string compress nconc(explodec s, w)
+   end;
+
+asserted procedure rl_helpTypeArity(s: String): String;
+   begin scalar !*lower, !*raise, lcx, ar;
+      lcx := intern lto_downcase compress explodec s;
+      ar :=  get(get(lcx, 'a2s) or get(lcx, 's2a), 'number!-of!-args);
+      return if fixp ar then ar - 1
    end;
 
 asserted procedure rl_typeStrings(services: List): List;

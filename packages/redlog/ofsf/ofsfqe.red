@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm
-% ----------------------------------------------------------------------
+module ofsfqe;  % Ordered field standard form quantifier elimination.
+
+revision('ofsfqe, "$Id$");
+
+copyright('ofsfqe, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ofsf_qe_rcsid!* ofsf_qe_copyright!*);
-   ofsf_qe_rcsid!* :=
-      "$Id$";
-   ofsf_qe_copyright!* := "(c) 1995-2009 A. Dolzmann T. Sturm, 2010-2011 T. Sturm"
->>;
-
-module ofsfqe;
-% Ordered field standard form quantifier elimination. Submodule of [ofsf].
 
 %DS
 % <variable> ::= <kernel>
@@ -1926,7 +1917,7 @@ procedure ofsf_qemkans(an,svf);
 	 ofsf_qebacksub res
       else
 	 ofsf_qenobacksub res;
-      if !*rlqebacksub then res := sort(res, function ordpcadr);
+      if !*rlqebacksub then res := sort(res, function ordpcar);
       if !*rlverbose then <<
 	 ioto_tprin2 {"++++ Time for answer processing: ", time() - time, " ms"};
 	 gctime := gctime() - gctime;
@@ -2545,8 +2536,8 @@ procedure ofsf_qebacksub(eql);
    % where $v$ is a variable and $w$ is an SQ. Returns a list of equations.
    begin scalar subl,e;
       return for each w in eql join <<
-	 e := {'equal,car w,prepsq subsq(cdr w,subl)};
-	 subl := (car w . caddr e) . subl;
+	 e := car w . prepsq subsq(cdr w, subl);
+	 push(e, subl);
 	 if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then {e}
       >>
    end;
@@ -2558,7 +2549,7 @@ procedure ofsf_qenobacksub(eql);
    % an equation and $a$ is an answer translation.
    for each w in eql join
       if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then
-	 {{'equal,car w,prepsq cdr w}};
+	 {car w . prepsq cdr w};
 
 procedure ofsf_croot(u,n);
    if eqn(n,1) then u else reval {'expt,u,{'quotient,1,n}};

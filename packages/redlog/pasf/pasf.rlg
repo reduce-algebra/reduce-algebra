@@ -41,9 +41,7 @@ rlqea rlex sec;
    a = ----------,
            2
 
-   !,
-
-   _k16 + 2 >= 0 and _k16 - 2 <= 0}},
+   implicit = {_k16 + 2 >= 0 and _k16 - 2 <= 0}}},
 
  {true,
 
@@ -57,9 +55,7 @@ rlqea rlex sec;
    a = ------,
          2
 
-   !,
-
-   _k12 + 2 >= 0 and _k12 - 2 <= 0}}}
+   implicit = {_k12 + 2 >= 0 and _k12 - 2 <= 0}}}}
 
 
 rlqe ex(n,sec);
@@ -272,10 +268,9 @@ z - 3 > 0
 
 end;
 
-Tested on x86_64-mac_10.11_elcapitan-darwin15.5.0 CSL
-Time (counter 1): 4429 ms  plus GC time: 350 ms
-
-End of Lisp run after 4.42+0.49 seconds
-real         5.13
-user         5.01
-sys          0.11
+Tested on x86_64-mac_10.11_elcapitan-darwin15.5.0 PSL
+Time (counter 1): 1970 ms  plus GC time: 20 ms
+Quitting
+real         2.80
+user         2.09
+sys          0.49

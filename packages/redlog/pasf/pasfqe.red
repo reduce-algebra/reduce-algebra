@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010 T. Sturm
-% ----------------------------------------------------------------------
+module pasfqe; % Presburger arithmetic standard form quantifier elimination.
+
+revision('pasfqe, "$Id$");
+
+copyright('pasfqe, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,18 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(pasf_qe_rcsid!* pasf_qe_copyright!*);
-   pasf_qe_rcsid!* :=
-      "$Id$";
-   pasf_qe_copyright!* :=
-      "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010 T. Sturm"
->>;
-
-module pasfqe;
-% Presburger arithmetic standard form quantifier elimination. Submodule of
-% PASF.
 
 % ---- Quantifier elimination control ----------------------------------------
 

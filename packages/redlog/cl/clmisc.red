@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm
-% ----------------------------------------------------------------------
+module clmisc;  % Common logic miscellaneous algorithms.
+
+revision('clmisc, "$Id$");
+
+copyright('clmisc, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(cl_misc_rcsid!* cl_misc_copyright!*);
-   cl_misc_rcsid!* :=
-      "$Id$";
-   cl_misc_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm"
->>;
-
-module clmisc;
-% Common logic miscellaneous algorithms. Submodule of [cl].
 
 procedure cl_apply2ats(f,client);
    % Common logic apply to atomic formulas. [f] is formula; [client]
@@ -687,10 +678,6 @@ procedure cl_eval!-gand(gand, argl, subal, evalat, gtrue);
 	 res := cl_eval(pop argl, subal, evalat);
       return res
    end;
-
-procedure ofsf_subconstat(at, v, q);
-   if ofsf_evalatp(ofsf_op at, numr ofsf_subf(ofsf_arg2l at, v, q)) then 'true else 'false;
-
 
 procedure cl_dfgPrint(f,fname);
    % Prefix print.

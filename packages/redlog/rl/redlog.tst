@@ -104,6 +104,9 @@ part(rlatl walter,1,1);
 cox6 := ex({u,v},x=u*v and y=u**2 and z=v**2)$
 rlcad cox6;
 
+% Generate Theory
+rlgentheo({a=0}, a*x+b<>0);
+
 % Algebraically closed fields standard form:
 sub(x=a,x=0 and a=0 and ex(x,x=y) and ex(a,x<>a));
 
