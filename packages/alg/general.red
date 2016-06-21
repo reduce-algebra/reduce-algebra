@@ -305,6 +305,9 @@ symbolic procedure lesspcdr(u, v);
 symbolic procedure identity!-function x;
   x;
 
+symbolic procedure ordpcar(u, v);
+  ordp(car u, car v);
+
 symbolic procedure ordpcadr(u, v);
   ordp(cadr u, cadr v);
 
