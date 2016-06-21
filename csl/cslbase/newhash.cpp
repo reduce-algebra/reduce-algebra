@@ -1,4 +1,4 @@
-// newhash.cpp                                         A C Norman, May 2016
+// newhash.cpp                                             A C Norman, 2016
 
 /**************************************************************************
  * Copyright (C) 2016, Codemist.                         A C Norman       *
@@ -320,8 +320,11 @@ void dumptable(LispObject tt, const char *s, bool checkdups)
                 if (ht(h2) == SPID_HASHEMPTY) s4 = " @@@";
             }
             if (h1 != i && h2 != i && h3 != i) s4 = "@@@";
-            printf("%3" PRIuMAX ": [%" PRIu64 "] %s%d %s%d %s%d%s (%" PRIu64 ")\n",
-                (uintmax_t)i, (uint64_t)k, s1, h1, s2, h2, s3, h3, s4, (uintmax_t)vv);
+            printf("%3" PRIuMAX ": [%" PRIu64 "] %s%" PRIuMAX " %s%" PRIuMAX
+                   " %s%" PRIuMAX "%s (%" PRIu64 ")\n",
+                (uintmax_t)i, (uint64_t)k,
+                s1, (uintmax_t)h1, s2, (uintmax_t)h2, s3, (uintmax_t)h3, s4,
+                (uintmax_t)vv);
         }
     }
     if (bad && checkdups)
@@ -2246,6 +2249,22 @@ LispObject Lnewhash_flavour(LispObject nil, LispObject tab)
 
 // Now some support code for displaying statistics.
 
+// I wanted to use the function lrand48() which is in SVID and POSIX - but
+// is nevetheless not available everywhere. Well I see that this was declared
+// obsolete by SVID 3. Anyway is intended to be my own implementation
+// that should (if I have got it correct) be compatible. It is ONLY used
+// for testing.
+
+#define lrand_a UINT64_C(0x5DEECE66D)
+#define lrand_b UINT64_C(0xB)
+
+static uint64_t lrand_seed = UINT64_C(0x1234ABCD330E);
+
+static long my_lrand48()
+{   lrand_seed = lrand_a*lrand_seed + lrand_b;
+    return (long)((lrand_seed >> 17) & UINT64_C(0x7FFFFFFF));
+}
+
 void showstats(size_t n)
 {
     size_t i;
@@ -2259,7 +2278,7 @@ void showstats(size_t n)
         {   size_t j = instrumented_lookup(ht(i)); // should be there
             if (i != j) printf("??? i=%" PRIuMAX " j=%" PRIuMAX "(%" PRIxMAX ")\n",
                                (uintmax_t)i, (uintmax_t)j, (uintmax_t)j);
-            instrumented_lookup(lrand48());        // probably not there
+            instrumented_lookup(my_lrand48());      // probably not there
         }
     }
     printf("Table occupancy %" PRIuMAX "/%" PRIuMAX " = %.2f\n",
