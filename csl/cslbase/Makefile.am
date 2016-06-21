@@ -1879,7 +1879,7 @@ endif !canrun
 bootstraprecompile:
 if canrun
 	chmod 664 $(gensrc)/*
-	if !test -f bootstrapreduce.img; then $(MAKE) bootstrapreduce.img; fi
+	if ! test -f bootstrapreduce.img; then $(MAKE) bootstrapreduce.img; fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/recompile.red \
@@ -1894,7 +1894,7 @@ endif !canrun
 recompile:
 if canrun
 	chmod 664 $(gensrc)/*
-	if !test -f $(REDUCE_IMG); then $(MAKE) $(REDUCE_IMG); fi
+	if ! test -f $(REDUCE_IMG); then $(MAKE) $(REDUCE_IMG); fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
 	./reduce$(COM) -v -w $(CYGSRC)/recompile.red \
@@ -1905,6 +1905,16 @@ if canrun
 else !canrun
 	echo Can not build images on this platfrom
 endif !canrun
+
+# Pseudo-targets with names like "packagename.bootfasl" and "packagename.fasl"
+# can be used to trigger recompilation of just a single package.
+
+%.bootfasl:
+	$(MAKE) bootstraprecompile which=$*
+
+%.fasl:
+	$(MAKE) recompile which=$*
+
 
 # Copy HTML help files in a directory reduce.doc.
 # This rule lets the index file stand for all others, so if others
@@ -2037,7 +2047,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	  echo "Inline definitions have not changed"; \
 	  mv old-inline-defs.dat $(INLINE_DEFS); \
 	else \
-	  $(RM) old-inline-defs.dat; \
+	  $(RM) -f old-inline-defs.dat; \
 	fi
 	mv $(gensrc)/make.tmp $(gensrc)/make.stamp
 
