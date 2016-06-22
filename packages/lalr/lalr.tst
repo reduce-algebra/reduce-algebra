@@ -200,7 +200,7 @@ demonstrate_lexer lexer_style_rlisp;
 'x'
 "strings \" twice \" escapes & embedded "" quotes"
 quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
-0xBadFace
+0x10000
 #if nil
 conditional
 #endif
@@ -215,7 +215,7 @@ demonstrate_lexer lexer_style_C;
 'x'
 "strings \" twice \" escapes & embedded "" quotes"
 quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
-0xBadFace
+0x10000
 #if nil
 conditional
 #endif
@@ -230,7 +230,7 @@ demonstrate_lexer lexer_style_SML;
 'x'
 "strings \" twice \" escapes & embedded "" quotes"
 quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
-0xBadFace
+0x10000
 #if nil
 conditional
 #endif
@@ -245,7 +245,7 @@ demonstrate_lexer lexer_style_script;
 'x'
 "strings \" twice \" escapes & embedded "" quotes"
 quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
-0xBadFace
+0x10000
 #if nil
 conditional
 #endif

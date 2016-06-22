@@ -136,7 +136,6 @@ nil
 %  Result: (4 200)
 %  Result: (4 3.542)
 %  Result: (3 "a string")
-%  Result: (2 nil)
 %  Result: (5 (quote (quoted lisp)))
 %  Result: (5 (backquote (backquoted (!, comma) (!,!@ comma_at))))
 %  Result: (2 !+)
@@ -149,7 +148,6 @@ nil
 %  Result: (5 begin)
 %  Result: (2 !;)
 %  Result: (2 !;)
-%  Result: (2 !;)
 %
 %  nil
 
@@ -159,14 +157,17 @@ nil
 % syntax and so the rest of this test file will be able to continue happily.
 
 
-<< off echo;
-   lex_init();
-   for i := 1:18 do <<
-     tt := yylex();
-     if not zerop posn() then terpri();
-     princ "Result: ";
-     print list(tt, yylval) >>;
-   on echo >>;
+begin
+  scalar tt;
+  off echo;
+  lex_init();
+  for i := 1:16 do <<
+    tt := yylex();
+    if not zerop posn() then terpri();
+    princ "Result: ";
+    print list(tt, yylval) >>;
+  on echo
+end;
 
 Result: (1 symbol)
 Result: (5 200)
@@ -184,8 +185,10 @@ Result: (29 !<!=)
 Result: (27 begin)
 Result: (1 !;)
 Result: (1 !;)
-Result: (1 !;)
-Result: (1 !;)
+
+nil
+ ;
+
 
 nil
 
@@ -195,28 +198,16 @@ nil
 
 symbolic procedure demonstrate_lexer style;
   begin
+    scalar tt, r;
     lex_init();
 % This sets one of the "lexer styles".
     lexer_style!* := style;
-    r := nil;
     while << tt := yylex(); yylval neq '!; >> do r := (tt . yylval) . r;
 % Because the list that I print as a result can overflow line-length I
 % will display it using portable_print so that Lisp-level discrepancies
 % about how lines get broken will not cause confusion.
     portable_print reverse r
   end;
-*** nonlocal use of undeclared variable r in procedure demonstrate_lexer 
-
-*** nonlocal use of undeclared variable tt in procedure demonstrate_lexer 
-
-*** nonlocal use of undeclared variable tt in procedure demonstrate_lexer 
-
-*** nonlocal use of undeclared variable r in procedure demonstrate_lexer 
-
-*** nonlocal use of undeclared variable r in procedure demonstrate_lexer 
-
-*** nonlocal use of undeclared variable r in procedure demonstrate_lexer 
-
 
 
 demonstrate_lexer
@@ -228,20 +219,27 @@ demonstrate_lexer
 demonstrate_lexer lexer_style_rlisp;
 
 
-% Rlisp comment "C/SML strings\n""two strings not 1" char 'x'
-// Rlisp'n'SML here :=:
-/* /* C comments do not nest */ !Eek */
-(* SML (* comments *) nest *)
+% Rlisp
+# script comment test $
+// C line
+/* C block /* no_nesting */ outside */
+(* SML (* nesting *) inside *)
+'x'
+"strings \" twice \" escapes & embedded "" quotes"
+quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
+0x10000
 #if nil
-Not in Rlisp
+conditional
 #endif
-end;
-((1 . !/) (1 . !/) (1 . rlisp) (6 quote n) (6 quote sml) (1 . here) (1 . !:
-) (1 . !=) (1 . !:) (1 . !/) (1 . !*) (1 . !/) (1 . !*) (1 . c) (1 .
-comments) (1 . do) (1 . not) (1 . nest) (1 . !*) (1 . !/) (1 . !Eek) (1 . !*
-) (1 . !/) (1 . !() (1 . !*) (1 . sml) (1 . !() (1 . !*) (1 . comments) (1
-. !*) (1 . !)) (1 . nest) (1 . !*) (1 . !)) (1 . !#if) (1) (1 . not) (1 . in
-) (1 . rlisp) (1 . !#endif) (1 . end))
+;
+((1 . !#) (1 . script) (1 . !/) (1 . !/) (1 . c) (1 . line) (1 . !/) (1 . !*
+) (1 . c) (1 . block) (1 . !/) (1 . !*) (1 . no_nesting) (1 . !*) (1 . !/) (
+1 . outside) (1 . !*) (1 . !/) (1 . !() (1 . !*) (1 . sml) (1 . !() (1 . !*
+) (1 . nesting) (1 . !*) (1 . !)) (1 . inside) (1 . !*) (1 . !)) (6 quote x
+) (6 quote "strings \") (1 . twice) (1 . !\) (3 .
+" escapes & embedded "" quotes") (1 . quote) (6 quote !-) (6 quote chars) (1
+. !:) (1 . !=) (1 . !:) (1 . !!!!) (1 . !_) (1 . !_) (1 . abc) (1 .
+mixed!Case) (1 . a!-b) (5 . 65536))
 
 nil
 ;
@@ -257,20 +255,27 @@ nil
 demonstrate_lexer lexer_style_C;
 
 
-% Rlisp comment "C/SML strings\n""two strings not 1" char 'x'
-// Rlisp'n'SML here :=:
-/* /* C comments do not nest */ !Eek */
-(* SML (* comments *) nest *)
+% Rlisp
+# script comment test $
+// C line
+/* C block /* no_nesting */ outside */
+(* SML (* nesting *) inside *)
+'x'
+"strings \" twice \" escapes & embedded "" quotes"
+quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
+0x10000
 #if nil
-Not in Rlisp
+conditional
 #endif
-end;
-((1 . !%) (1 . rlisp) (1 . comment) (3 .
-"C/SML strings\n""two strings not 1") (1 . char) (4 . "x") (1 . !/) (1 . !/
-) (1 . rlisp) (4 . "n") (1 . !Sml) (1 . here) (1 . !:) (1 . !=) (1 . !:) (1
-. !!) (1 . eek) (1 . !*) (1 . !/) (1 . !() (1 . !*) (1 . sml) (1 . !() (1 .
-!*) (1 . comments) (1 . !*) (1 . !)) (1 . nest) (1 . !*) (1 . !)) (1 . !#) (
-1 . if) (1) (1 . not) (1 . in) (1 . rlisp) (1 . !#) (1 . endif) (1 . end))
+;
+((1 . !%) (1 . rlisp) (1 . !#) (1 . script) (1 . comment) (1 . test) (1 . !$
+) (1 . outside) (1 . !*) (1 . !/) (1 . !() (1 . !*) (1 . sml) (1 . !() (1 .
+!*) (1 . nesting) (1 . !*) (1 . !)) (1 . inside) (1 . !*) (1 . !)) (4 . "x"
+) (3 . "strings \"" twice \"" escapes & embedded ") (3 . " quotes") (1 .
+quote) (4 . "-") (1 . chars) (1 . !:) (1 . !=) (1 . !:) (1 . !!) (1 . !!) (1
+. !!) (1 . !!) (1 . !_) (1 . !_abc) (1 . mixed) (1 . !!) (1 . case) (1 . a)
+(1 . !!) (1 . !-) (1 . b) (5 . 65536) (1 . !#) (1 . if) (1) (1 . conditional
+) (1 . !#) (1 . endif))
 
 nil
 ;
@@ -286,20 +291,26 @@ nil
 demonstrate_lexer lexer_style_SML;
 
 
-% Rlisp comment "C/SML strings\n""two strings not 1" char 'x'
-// Rlisp'n'SML here :=:
-/* /* C comments do not nest */ !Eek */
-(* SML (* comments *) nest *)
+% Rlisp
+# script comment test $
+// C line
+/* C block /* no_nesting */ outside */
+(* SML (* nesting *) inside *)
+'x'
+"strings \" twice \" escapes & embedded "" quotes"
+quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
+0x10000
 #if nil
-Not in Rlisp
+conditional
 #endif
-end;
-((1 . !%) (1 . rlisp) (1 . comment) (3 .
-"C/SML strings\n""two strings not 1") (1 . char) (2 . !'x!') (1 . !/!/) (1
-. rlisp!'n!'sml) (1 . here) (1 . !:!=!:) (1 . !/!*) (1 . !/!*) (1 . c) (1 .
-comments) (1 . do) (1 . not) (1 . nest) (1 . !*!/) (1 . !!) (1 . eek) (1 .
-!*!/) (1 . !#) (1 . if) (1) (1 . not) (1 . in) (1 . rlisp) (1 . !#) (1 .
-endif) (1 . end))
+;
+((1 . !%) (1 . rlisp) (1 . !#) (1 . script) (1 . comment) (1 . test) (1 . !$
+) (1 . !/!/) (1 . c) (1 . line) (1 . !/!*) (1 . c) (1 . block) (1 . !/!*) (1
+. no_nesting) (1 . !*!/) (1 . outside) (1 . !*!/) (2 . !'x!') (3 .
+"strings \"" twice \"" escapes & embedded ") (3 . " quotes") (1 . quote!') (
+1 . !-) (2 . !'chars) (1 . !:!=!:) (1 . !#) (1 . !#) (1 . !_) (1 . !_abc) (1
+. mixed) (1 . !!) (1 . case) (1 . a) (1 . !!!-) (1 . b) (5 . 65536) (1 . !#
+) (1 . if) (1) (1 . conditional) (1 . !#) (1 . endif))
 
 nil
 ;
@@ -315,22 +326,28 @@ nil
 demonstrate_lexer lexer_style_script;
 
 
-% Rlisp comment "C/SML strings\n""two strings not 1" char 'x'
-// Rlisp'n'SML here :=:
-/* /* C comments do not nest */ !Eek */
-(* SML (* comments *) nest *)
+% Rlisp
+# script comment test $
+// C line
+/* C block /* no_nesting */ outside */
+(* SML (* nesting *) inside *)
+'x'
+"strings \" twice \" escapes & embedded "" quotes"
+quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
+0x10000
 #if nil
-Not in Rlisp
+conditional
 #endif
-end;
-((1 . !%) (1 . rlisp) (1 . comment) (3 .
-"C/SML strings\n""two strings not 1") (1 . char) (1 . !') (1 . x) (1 . !') (
-1 . !/) (1 . !/) (1 . rlisp) (1 . !') (1 . n) (1 . !') (1 . sml) (1 . here)
-(1 . !:) (1 . !=) (1 . !:) (1 . !/) (1 . !*) (1 . !/) (1 . !*) (1 . c) (1 .
-comments) (1 . do) (1 . not) (1 . nest) (1 . !*) (1 . !/) (1 . !!) (1 . eek
-) (1 . !*) (1 . !/) (1 . !() (1 . !*) (1 . sml) (1 . !() (1 . !*) (1 .
-comments) (1 . !*) (1 . !)) (1 . nest) (1 . !*) (1 . !)) (1 . not) (1 . in)
-(1 . rlisp) (1 . end))
+;
+((1 . !%) (1 . rlisp) (1 . !/) (1 . !/) (1 . c) (1 . line) (1 . !/) (1 . !*
+) (1 . c) (1 . block) (1 . !/) (1 . !*) (1 . no_nesting) (1 . !*) (1 . !/) (
+1 . outside) (1 . !*) (1 . !/) (1 . !() (1 . !*) (1 . sml) (1 . !() (1 . !*
+) (1 . nesting) (1 . !*) (1 . !)) (1 . inside) (1 . !*) (1 . !)) (1 . !') (1
+. x) (1 . !') (3 . "strings \"" twice \"" escapes & embedded ") (3 .
+" quotes") (1 . quote) (1 . !') (1 . !-) (1 . !') (1 . chars) (1 . !:) (1 .
+!=) (1 . !:) (1 . !!) (1 . !!) (1 . !!) (1 . !!) (1 . !_) (1 . !_abc) (1 .
+mixed) (1 . !!) (1 . case) (1 . a) (1 . !!) (1 . !-) (1 . b) (5 . 65536) (1
+. conditional))
 
 nil
 ;
@@ -347,7 +364,7 @@ nil
 lexer_style!* := lexer_style_rlisp;
 
 
-1247425
+312513
 
 
 on lalr_verbose;

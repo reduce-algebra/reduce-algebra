@@ -140,7 +140,7 @@ module 'yylex;
 %         are "!" as an escape character, "'" to introduce quoted expressions
 %         "%" for comments and "#if" for conditional inclusion.
 %  C/C++: Both "/*..*/" and "//" comments with broadly C-like rules for
-%         names and strings.
+%         names and strings. I do not support preprocessor directives.
 %  SML:   Provided because I happen to have some SML that I wish to process.
 %         "(*..*)" nesting comments and sequences of operator-characters
 %         making up a single token are characteristic.
@@ -588,6 +588,11 @@ symbolic procedure lex_init();
 % condtional compilation guarding parts of it - the exploitation of that
 % possibility is to be discouraged!
 %
+% "#else" is treated exacty as "#elif t" and any "#else", "#elif" or
+% "#endif" statements that are stray at top level not associated with an
+% "#if" will be trerated as if there had been an extra "#if t" just before
+% the start of the file.
+%
 % Making the condition a raw Lisp expression makes sure that parsing it
 % is easy. It makes it possible to express arbitrary conditions, but it is
 % hoped that most conditions will not be very elaborate - things like
@@ -597,18 +602,11 @@ symbolic procedure lex_init();
 %         magic();
 %    #endif
 % or
-%    #if debugging_mode   % NB if variable is unset that counts as nil
-%    print "message";      % so care should be taken to select the most
-%    #endif               % useful default sense for such tests
+%    #if debugging_mode   % NB if variable is unset that counts as nil...
+%    print "message";     % ...so care should be taken to select the most...
+%    #endif               % ...useful default sense for such tests.
 % should be about as complicated as reasonable people need.
 %
-% NOTE: in the implementation of this in rlisp/tok.red there was for
-% some time a bug whereby
-%  #if t ; ... ; #elif x ; ... ; #else XXX #endif
-% included the text XXX because #else was taken as just flipping the
-% acceptance state. I need to review and test the code here to ensure that
-% it does not suffer from the same badness!
-% 
 % Two further facilities are provided:
 %    #eval (any lisp expression)
 % causes that expression to be evaluated at parse time.  Apart from any
@@ -640,146 +638,133 @@ symbolic procedure lex_init();
 %       preprocessor, this system recognizes directives within rather than
 %       just at the start of lines.
 
+symbolic procedure lex_process_directive();
+  begin
+    scalar w;
+    if yylval = '!#endif or yylval = !$eof!$ then return t
+    else if yylval = '!#if then <<
+      read_s_expression();
+      w := errorset(yylval, nil, nil);
+      if errorp w or null car w then return lex_skip_to_else_or_endif t
+      else return t >>
+    else if yylval = '!#else then return lex_skip_to_else_or_endif nil
+    else if yylval = '!#elif then <<
+      read_s_expression();
+      return lex_skip_to_else_or_endif nil >>
+    else return nil
+  end;
+
+% This detects end of file, "#endif" as an unescaped symbol and
+% optionally "#else" or "elif TRUE".
+
+symbolic procedure lex_is_else_or_endif(w, elif);
+  if w = lex_eof_code then t
+  else if w neq lex_symbol_code then nil
+  else if lex_escaped then nil
+  else if yylval = '!#endif then t
+  else if not elif then nil
+  else if yylval = '!#else then t
+  else if yylval neq '!#elif then nil
+  else <<
+    read_s_expression();
+    w := errorset(yylval, nil, nil);
+    ((not errorp w) and car w) >>;
+    
+
+symbolic procedure lex_skip_to_else_or_endif elif;
+  begin
+% This skips to the next "#endif", and if its argument is true
+% it will also stop at either "else" or "#elif true".
+% It also stops at end of file just to be safe. There are five special
+% treatments that may be worth noting:
+% (1) As it scans if this code finds a futther "#if" it will skip
+%     ahead to the "#endif" matching that before looking for the "#endif"
+%     that it wants.
+% (2) A word "#if" or "#endif" that is entered with escape characters
+%     will not be treated as special. So "!#endif" and "#!endif" and
+%     "#endi!f" (and so on) are treated as being merely random tokens and
+%     so are skipped past.
+% (3) Comments and all material in them are ignored while setching for
+%     the "#endif". In RLISP mode that will mean anything from a percent
+%     characdter to the end of line, or anything from the symbol "comment"
+%     to the next dollar or semicolon.
+% (4) If the character "'" (ie single quote) is found then RLISP syntax
+%     has that followed by a Lisp style s-expression. Keywords present as
+%     or within that expression will not be recognized or processed.
+% (5) The keyword "#elif" is not of itself significant, but the item
+%     after it will be read as an s-expression and not recognized as a
+%     keyword. Similarly for "#eval" and "#define"
+% So here is a sequence illustrating some of the above
+%        !#endif       [escape character present, so nothing special]
+%        '#endif       [Lisp-style quoted, so nothing special]
+%        "#endif"      [a string not a symbol, so nothing special]
+%        #elif #endif  [In place as a condition for #elif, so nothing special]
+%        #eval (de #endif (#endif) #endif) [similarly]
+%        comment #endif;  [Within a comment, so nothing special]
+%        % #endif      [Within a comment, so nothing special]
+%        !#elif #endif [The #elif is escaped so is not special, hence
+%                       the #endif here IS noticed and acted upon]
+% Is it always fun when there is significantly more comment than code?
+%
+    while not lex_is_else_or_endif(lex_basic_token(), elif) do <<
+      if yylval = '!#if and not lex_escaped then <<
+        read_s_expression();
+        lex_skip_to_else_or_endif nil >>
+      else if yylval = '!#define and not lex_escaped then <<
+        read_s_expression();
+        read_s_expression() >>
+      else if (yylval = '!#elif or
+               yylval = '!#eval) and not lex_escaped then
+        read_s_expression() >>;
+    return t
+  end;
 
 symbolic procedure yylex();
   begin
-    scalar w, done;
+    scalar w, w1, done;
 % I take a rather robust view here - words that are intended to be used as
 % keywords may not be written with included escape characters. Thus for
 % instance this lexer will view "be!gin" or "!begin" as being a simple
 % symbol and NOT being the keyword "begin".
     w := lex_basic_token();
-% The "while not done" loop is so that I can restart the scan after seeing
-% a pre-processor directive such as #if.
-    while not done do <<
-% The word "COMMENT" introduces a comment that terminates at the next ";"
-% or "$". But note that "co!mment" (for instance) would not since that will
-% be classifed as a symbol not as a keyword because of the embedded escape.
-% So if you REALLY want to have a symbol with name "comment" in your input
-% you can write it as (again for instance) "!comment" so it is not processed
-% here. Ha ha ha "comment" is now a keyword in that it will never generate
-% a lexer-code to pass back as a result. But it is recognised in the same
-% sort of circumstances that keywords are. Note that I only accept COMMENT
-% if I will also accept the special syntax    '(s-expression)   so I am
-% parsing RLISP.
-    while w = lex_symbol_code and yylval = 'COMMENT and
-          lexer_option(lexer_lispquote) and
-          not lex_escaped do <<
-      while not (lex_char = '!; or lex_char = '!$) do yyreadch();
-      yyreadch();
-      w := lex_basic_token() >>;
-% If a word was spelt out directly (without any escape characters in it) it
-% may be a keyword - if it is, then deal with it it here.
-    if w = lex_symbol_code and not lex_escaped then <<
-% #define provides a simple (very simple) macro substitution scheme that is
-% probably too limited to be really useful. I will only make the substitution
-% if "#if" processing is enabled.
-      if done := get(yylval, '!#define) and lexer_option(lexer_hashif) then <<
-        yylval := done;
-        if numberp done then w := lex_number_code
-        else if stringp done then w := lex_string_code;
-        done := t >> 
-      else done := t >>
-% A word with escapes in might be a pre-processor directive because I will
-% allow "!#if" as well as "#if" to be used. That is going to require
-% lex_basic_token() to accept #if (and other cases) directly.
-    else if w = lex_symbol_code then <<
-% Note that the conditional compilation keywords are not recognised within
-% quoted expressions, so "'!#if" is safe here.
-      if yylval eq '!#if and lexer_option(lexer_hashif) then <<
+    while not done and
+          w = lex_symbol_code and
+          not lex_escaped and
+          lexer_option(lexer_hashif) do <<
+% First deal with "#if"  conditionals.
+      if lex_process_directive() then w := lex_basic_token()
+% Also deal with new "#define" settings.
+      else if yylval = '!#define then <<
         read_s_expression();
-        w := lex_conditional yylval >>
-      else if (yylval eq '!#else or
-               yylval eq '!#elif) and lexer_option(lexer_hashif) then <<
-        if if_depth = 0 then yyerror "Unexpected #else of #elif"
-        else if_depth := if_depth-1;
-        yylval := nil;
-        w := lex_skipping(w, nil) >>
-      else if yylval eq '!#endif and lexer_option(lexer_hashif) then <<
-        if if_depth = 0 then yyerror "Unexpected #endif"
-        else if_depth := if_depth-1;
+        w := yylval;   % Should be a symbol
+        read_s_expression();
+        w1 := yylval;  % Should be symbol, number or string
+% I only instate the definitition if it seems sensible.
+        if idp w and (idp w1 or numberp w1 or stringp w1) then <<
+          if not zerop posn() then terpri();
+          princ "+++ "; prin w; princ " => "; print w1;
+          put(1, '!#define, list w1) >>;
         w := lex_basic_token() >>
-      else if yylval eq '!#eval and lexer_option(lexer_hashif) then << 
+% Next the "#eval" directive
+      else if yylval = '!#eval then <<
         read_s_expression();
         errorset(yylval, nil, nil);
         w := lex_basic_token() >>
-      else if yylval eq '!#define and lexer_option(lexer_hashif) then <<
-        read_s_expression();
-        w := yylval;    % Ought to be a symbol, number of string
-        done := read_s_expression();
-        if idp w or numberp w or stringp w then
-          put(w, '!#define, done);
-        w := lex_basic_token();
-        done := nil >>
-      else if not lex_escaped then <<
-        if (done := get(yylval, '!#define)) and
-           lexer_option(lexer_hashif) then <<
-          yylval := done;
-          if numberp done then w := lex_number_code
-          else if stringp done then w := lex_string_code;
-          done := t >>
-        else done := t >>
-      else done := t >>
-    else done := t >>;
+% If I have a symbol previously set using "#define" then expand it.
+% The expansion will not be subject to re-expansion and will not be
+% treated as a preprocessor-style keyword.
+      else if w1 := get(yylval, '!#define) then <<
+        yylval := car w1;
+        if numberp w1 then w := lex_number_code
+        else if stringp w1 then w := lex_string_code;
+        done := t >>
+% A symbol that is nothing special merely stands for itself.
+      else done := t >>;
     if !*tracelex then <<
       if posn() neq 0 then terpri();
       prin2 "yylex = "; prin1 yylval; prin2 " type "; print w >>;
     return w;
   end;
-
-
-
-% If, when reading ordinary text, I come across the token #if I read
-% the expression following. If that evaluates to TRUE I just keep on
-% on reading. So the sequence "#if t" is in effect ignored. Then
-% if later on I just ignore an "#endif" all will be well.  If on the other
-% hand the expression evaluates to NIL (or if evaluation fails), I will
-% call lex_skipping() to discard more tokens (up to and including
-% the next "#else", "#elif t" or "#endif"). I keep a count of how many
-% "#if t" equivalents I have passed so that I can match them with their
-% corresponding "#endif" statements and moan if an "#else" or "#endif"
-% occurs out of place.
-%
-% If I wanted to support this in C mode I would need to introduce the
-% symbol "#ifdef" as well, and have a rather different scheme for
-% decoding conditions. However at present I ONLY support #if in RLISP mode.
-
-symbolic procedure lex_conditional x;
-  begin
-    scalar w;
-    w := lex_basic_token();
-    x := errorset(x, nil, nil);
-    if errorp x or null car x then return lex_skipping(w, nil);
-    if_depth := if_depth+1;
-    return w
-  end;
-
-% I call lex_skipping when I find "#if nil" or "#else" or "#elif"
-% that is processed. When a top-level "#else" or "#elif" is found it
-% is discarded before calling lex_skipping, since it must follow a
-% successful "#if" and hence introduce material to be thrown away.
-
-symbolic procedure lex_skipping(w, x);
-  begin
-    scalar done;
-% In this code x keep track of the depth of testing of "#if" constructions
-    while not done do <<
-      if w = lex_eof_code then done := t   % End of file
-      else <<
-        if w = '!:symbol then <<
-          if yylval = '!#endif then <<
-            if null x then done := t
-            else x := cdr x >>
-          else if yylval = '!#if then x := nil . x
-          else if yylval = '!#else and null x then done := t
-          else if yylval = '!#elif and null x then <<
-            read_s_expression();
-            done := errorset(yylval, nil, nil);
-            if errorp done or null car done then done := nil >> >>;
-      w := lex_basic_token() >> >>;
-    return w
-  end;
-
 
 % lex_basic_token() will read the next token from the current input stream
 % and leave a value in yylval to show what was found.
@@ -875,6 +860,9 @@ symbolic procedure lex_basic_token();
            lex_skip_line_comment()) or
           (lex_start_block_comment lex_char and
            lex_skip_block_comment()) do yyreadch();
+    if lex_char = !$eof!$ then <<
+      yylval := lex_char;
+      return lex_eof_code >>; 
 %
 % Symbols start with a letter or an escaped character and continue with
 % letters, digits, underscores and escapes.
@@ -896,6 +884,17 @@ symbolic procedure lex_basic_token();
 %       princ "symbol is '"; prin yylval;
 %       princ "' lex_escaped="; prin lex_escaped;
 %       princ " lex_code="; print get(yylval, 'lex_code) >>;
+% If the token I just saw was COMMENT and Rlisp mode is active I will
+% discard characters up to a ";" or "$" and then look for a token
+% again. Note that the stuff within the comment is read character by
+% character and any stuff at all apart from ";" and "$" can appear and
+% will be ignored.
+      if yylval = 'COMMENT and
+         lexer_option(lexer_lispquote) and
+         not lex_escaped then <<
+        while not (lex_char = '!; or lex_char = '!$) do yyreadch();
+        yyreadch();
+        return lex_basic_token() >>;
       if not lex_escaped and (w := get(yylval, 'lex_code)) then return w
       else if eqcar(r, '!') or
               get(r, 'lex_is_typename) then return lex_typename_code
