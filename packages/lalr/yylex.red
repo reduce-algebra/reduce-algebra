@@ -157,6 +157,10 @@ module 'yylex;
 fluid '(lexer_style!*
         lexer_style_rlisp lexer_style_C lexer_style_SML lexer_style_script);
 
+% One thing to note about "#define" here is that the naming that it
+% introduces is not carried through to the compiled module that is
+% generated... so thse names are NOT available to the end user!
+
 #define lexer_comment_percent        0x1    %  "%..." is a comment
 #define lexer_comment_hash           0x2    %  "#..." is a comment
 #define lexer_comment_slashslash     0x4    %  "//..." is a comment
@@ -530,7 +534,7 @@ symbolic procedure yypeek();
     return yypeek_char!*
   end;
 
-switch parser_errors_fatal;
+switch parse_errors_fatal;
 
 symbolic procedure yyerror msg;
   begin
@@ -548,9 +552,9 @@ symbolic procedure yyerror msg;
     princ "^^^";    % Marks where we had read as far as...
     if not (c = !$eol!$) then terpri();
     if lex_char = !$eof!$ then printc "<EOF>";
-    if !*parser_error_fatal then <<
+    if !*parse_errors_fatal then <<
       if not zerop posn() then terpri();
-      printc "+++ Quitting (parser_errors_fatal is set)";
+      printc "+++ Quitting (parse_errors_fatal is set)";
       quit >>;
   end;
 
@@ -755,7 +759,6 @@ symbolic procedure yylex();
 % Next the "#eval" directive
       else if yylval = '!#eval then <<
         read_s_expression();
-princ "#eval seen"; print yylval;
         errorset(yylval, nil, nil);
         w := lex_basic_token() >>
 % If I have a symbol previously set using "#define" then expand it.

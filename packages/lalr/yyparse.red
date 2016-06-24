@@ -196,11 +196,15 @@ symbolic procedure yyparse parser;
       % SHIFT
       if w > 0 then <<                            
         if next_input < 0 then next_input := yylex();
-        if next_input = 0 then error(0, "End of file detected");
+%       if next_input = lex_eof_code then
+%         error(0, "End of file detected");
         if next_input = lex_symbol_code or
+          next_input = lex_typename_code or
           next_input = lex_number_code or
           next_input = lex_string_code or
-          next_input = lex_list_code then
+          next_input = lex_char_code or
+          next_input = lex_list_code or
+          next_input = lex_eof_code then
           sym_stack := yylval . sym_stack
         else sym_stack := cdrassoc(next_input, terminal_codes) . sym_stack;    
         state_stack := w . state_stack;                 
@@ -211,7 +215,7 @@ symbolic procedure yyparse parser;
 
       % REDUCE
       else begin                                   
-        scalar lhs, rhs_n, fn, name;
+        scalar lhs, rhs_n, fn;
         w := -w;
         fn := getv(reduction_fn, w);
         rhs_n := getv8(reduction_rhs_n, w);             
