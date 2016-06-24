@@ -387,9 +387,9 @@ symbolic inline procedure lex_unicode_numeric c;
 % For hexadecimal input I am using basic Latin digits and letters.
 
 symbolic procedure lex_hexval c;
-  (if n >= 0x30 and n <= 0x39 then n - 0x30
-   else if n >= 0x41 and n <= 0x46 then n - 0x41 + 10
-   else if n >= 0x61 and n <= 0x66 then n - 0x61 + 10
+  (if n >= 0x30 and n <= 0x39 then n - 0x30            % "0" to "9"
+   else if n >= 0x41 and n <= 0x46 then n - 0x41 + 10  % "A" to "F"
+   else if n >= 0x61 and n <= 0x66 then n - 0x61 + 10  % "a" to "f"
    else nil) where n = car widestring2list symbol!-name c;
 
 symbolic procedure lex_keywords l;
@@ -412,14 +412,15 @@ symbolic procedure lex_keywords l;
         w := intern x;
         if null get(w, 'lex_code) then <<
           lex_keyword_names := w . lex_keyword_names;
-          put(w, 'lex_code, lex_next_code);
-          lex_codename := (lex_next_code . w) . lex_codename;
-          if !*tracelex then <<
-            princ "Token '";
-            prin w;
-            princ "' allocated code ";
-            print lex_next_code >>;
-          lex_next_code := lex_next_code + 1 >>;
+          if null get(w, 'lex_next_code) then <<
+            put(w, 'lex_code, lex_next_code);
+            lex_codename := (lex_next_code . w) . lex_codename;
+            if !*tracelex then <<
+              princ "Token '";
+              prin w;
+              princ "' allocated code ";
+              print lex_next_code >>;
+            lex_next_code := lex_next_code + 1 >> >>;
         return >>; % remember that RETURN just exits the begin/end block.
 % Now I have something that may be introducing a dipthong. I will set things
 % up so that each case where there is a prefix "ABC" "X" that the token "ABC"
@@ -529,6 +530,8 @@ symbolic procedure yypeek();
     return yypeek_char!*
   end;
 
+switch parser_errors_fatal;
+
 symbolic procedure yyerror msg;
   begin
     scalar c;
@@ -545,6 +548,10 @@ symbolic procedure yyerror msg;
     princ "^^^";    % Marks where we had read as far as...
     if not (c = !$eol!$) then terpri();
     if lex_char = !$eof!$ then printc "<EOF>";
+    if !*parser_error_fatal then <<
+      if not zerop posn() then terpri();
+      printc "+++ Quitting (parser_errors_fatal is set)";
+      quit >>;
   end;
 
 % Before a succession of calls to yylex() it is necessary to
@@ -748,6 +755,7 @@ symbolic procedure yylex();
 % Next the "#eval" directive
       else if yylval = '!#eval then <<
         read_s_expression();
+princ "#eval seen"; print yylval;
         errorset(yylval, nil, nil);
         w := lex_basic_token() >>
 % If I have a symbol previously set using "#define" then expand it.

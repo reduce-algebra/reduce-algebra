@@ -23,7 +23,7 @@ chmod +x distrib/psl/redpsl
 cp $1/cslbuild/*/redfront/rfpsl distrib/psl/rfpsl
 chmod +x distrib/psl/rfpsl
 
-cp Reduce-source.tar.bz2 distrib/Reduce_source_`date +%Y%m%d`.tar.bz2
+cp Reduce-source.tar.bz2 distrib/Reduce_source_`date +%Y-%m-%d`.tar.bz2
 
 cp $1/doc/manual/manual.pdf distrib/reduce-manual.pdf
 

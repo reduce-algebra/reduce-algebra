@@ -126,6 +126,12 @@ symbolic procedure smemq(u,v);
     else if car v eq 'quote then nil
     else smemq(u,car v) or smemq(u,cdr v);
 
+symbolic procedure ssubst(a, b, c);
+   % Substitute a in place of b in c, excluding within quoted expressions.
+   if b = c then a
+   else if atom c or eqcar(c, 'quote) then c
+   else ssubst(a, b, car c) . ssubst(a, b, cdr c);
+
 symbolic procedure subsetp(u,v);
    % True if u is a subset of v.
    null u or car u member v and subsetp(cdr u,v);

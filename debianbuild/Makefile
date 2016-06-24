@@ -1,5 +1,5 @@
 
-SNAPSHOT=$(shell LANG=C date "+%Y%m%d")
+SNAPSHOT=$(shell LANG=C date "+%Y-%m-%d")
 MACHINE=$(shell uname -m)
 NOW=$(shell LANG=C date "+%a, %d %b %Y %T %z")
 CHANGELOG=reduce/debian/changelog

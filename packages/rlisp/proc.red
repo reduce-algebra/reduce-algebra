@@ -240,6 +240,42 @@ deflist ('((procedure procstat) (expr procstat) (fexpr procstat)
            (smacro procstat)),
         'stat);
 
+% If foo(a,b) is already a defined function than when you go
+%    symbolic emb procedure foo(u,v);
+%      <new body ... foo(u', v') ... >;
+% the function is redefined, but the inner call within it refers to the
+% existing definition. So this can wrap new stuff around an existing
+% procedure body. It is ONLY intended for debugging and I suggest that
+% functions that have been embedded should not be written out in
+% fasl files or saved on heap images (for instance it is not always going
+% to be certain that the proper identity of the gensym used here will
+% survive serialization). This may however be useful for debugging as
+% a more flexible alternative to use of "tr foo;". In reduce4 mode this was
+% wired into the parser, aned there is a commented out autoload directive
+% for the "embfn" function in PSL, so I avoided clashing with that name
+% here.
+
+put('emb, 'procfn, 'portable!-embfn);
+
+symbolic procedure portable!-embfn(name, args, body);
+  begin
+    scalar g;
+    if not eqcar(getd name, 'expr) then
+      rederr "Trying to embed around undefined function, or a fexpr or macro";
+    g := gensym();
+    return list('progn,
+      list('copyd, mkquote g, mkquote name),
+% I replace name by the gensym except NOT within quotes. This will have
+% untoward effects if name is also the the name of a fluid variable...
+% but since this is JUST for debugging I will ignore that refinement
+% just for now. Another case where this scheme will fail is if there
+% is a use of (eg) apply('name, ...) or an errorset that wants to
+% call the function and so creates a structure with its name in it. So you
+% see that overall this is a marginal and dodgy bit of code - but it can
+% still be really useful when used in SIMPLE ways.
+      list('de, name, args, ssubst(g, name, body)))
+  end;
+
 % Next line refers to bootstrapping process.
 
 if get('symbolic,'stat) eq 'procstat then remprop('symbolic,'stat);

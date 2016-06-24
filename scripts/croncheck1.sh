@@ -28,7 +28,7 @@ printf "script=$here/croncheck1.sh\n"
 
 pushd $here/..
 
-export today=`date +"%Y%m%d"`
+export today=`date +"%Y-%m-%d"`
 
 # Now I set up some (potentially) setup-specific configuration data - the
 # names and ports used by the virtual machines I will activate.

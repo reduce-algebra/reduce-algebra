@@ -11,6 +11,10 @@
 % used in the Heckmann and Wilhelm source code and not guarantee anything
 % beyond that. Completing it can be a nice project for somebody keen.
 %
+% The parser here is at present a crude hand-written one but really it would
+% now be a smary idea to re-work that and use the newly working Reduce
+% LALR parser generator...
+%
 % Put another way, the implementation follows a varient on YAGNI (You Ain't
 % Gonna Need It) except that when I do introduce support for an aspect of
 % SML syntax I will try to make what I parse agree properly with the full

@@ -116,12 +116,6 @@
 #include <stdlib.h>
 
 #include <stdint.h>
-/*
- * The next line is a bit of a cop-out! It was use din times before I could
- * rely on stdint.h
- *
- * typedef long int intptr_t;
- */
 
 intptr_t *heap;
 int heapfringe = 0;
