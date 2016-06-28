@@ -109,11 +109,11 @@ symbolic procedure string2bytelist u;
   begin
     scalar r, w;
     w := string2list u;
- a: if null w then return reversip r;
-    if minusp car w then r := (256+car w) . r
-    else r := car w . r;
-    w := cdr w;
-    go to a;
+    while w do <<
+       if minusp car w then r := (256+car w) . r
+       else r := car w . r;
+       w := cdr w >>;
+    return reversip r;
   end;
 
 % Make a symbol from the given list of bytes that are each on 0-255
@@ -152,22 +152,19 @@ symbolic procedure string!-store1(s, n, c);
   string!-store(s, n, c);
 
 symbolic procedure string!-store2(s, n, c1, c2);
-  progn(
-    string!-store(s, n, c1),
-    string!-store(s, n+1, c2));
+  << string!-store(s, n, c1);
+     string!-store(s, n+1, c2) >>;
 
 symbolic procedure string!-store3(s, n, c1, c2, c3);
-  progn(
-    string!-store(s, n, c1),
-    string!-store(s, n+1, c2),
-    string!-store(s, n+2, c3));
+ << string!-store(s, n, c1);
+    string!-store(s, n+1, c2);
+    string!-store(s, n+2, c3) >>;
 
 symbolic procedure string!-store4(s, n, c1, c2, c3, c4);
-  progn(
-    string!-store(s, n, c1),
-    string!-store(s, n+1, c2),
-    string!-store(s, n+2, c3),
-    string!-store(s, n+3, c4));
+ << string!-store(s, n, c1);
+    string!-store(s, n+1, c2);
+    string!-store(s, n+2, c3);
+    string!-store(s, n+3, c4) >>;
 
 % Take a list of integers (now each in the range 0-0x0010ffff) and
 % turn it into a string encoding those using utf-8
@@ -175,6 +172,9 @@ symbolic procedure string!-store4(s, n, c1, c2, c3, c4);
 % It will also support use of identifiers or strings as well as integers,
 % and will use the first character (n.b. not octet) as the code concerned.
 %
+
+% Look at the GOTOs in this...
+
 symbolic procedure list2widestring u;
   begin
     scalar u1, n, s, len;
@@ -259,37 +259,37 @@ symbolic procedure widestring2list u;
 % positive.
     w := string2list u;
 % Now I need to decode any utf-8 specials...
- a: if null w then return reversip r;
-    n := car w;
-    w := cdr w;
+    while w do <<
+       n := car w;
+       w := cdr w;
 % I am going to rely on the fact that bytes from the string that were
 % at least 0x80 in value come back looking negative here. Thus any values
 % that are positive are simple ASCII.
-    if not (land(n, 128) = 0) then progn(
-      if land(n, 224) = 192 then progn( % Start of 2 byte code
-        c := moan!-if!-truncated w,
-        w := cdr w,
-        n := lshift(land(n, 31), 6) + land(c, 63))
-      else if land(n, 240) = 224 then progn( % Start of 3 byte code
-        c := moan!-if!-truncated w,
-        w := cdr w,
-        n := lshift(land(n, 15), 12) + lshift(land(c, 63), 6),
-        c := moan!-if!-truncated w,
-        w := cdr w,
-        n := n + land(c, 63))
-      else if land(n, 248) = 240 then progn( % Start of 4 byte code
-        c := moan!-if!-truncated w,
-        w := cdr w,
-        n := lshift(land(n, 7), 18) + lshift(land(c, 63), 12),
-        c := moan!-if!-truncated w,
-        w := cdr w,
-        n := n + lshift(land(c, 63), 6),
-        c := moan!-if!-truncated w,
-        w := cdr w,
-        n := n + land(c, 63))
-      else error(0, "Improper byte in utf-8 string"));
-    r := n . r;
-    go to a;
+       if not (land(n, 128) = 0) then progn(
+         if land(n, 224) = 192 then progn( % Start of 2 byte code
+           c := moan!-if!-truncated w,
+           w := cdr w,
+           n := lshift(land(n, 31), 6) + land(c, 63))
+         else if land(n, 240) = 224 then progn( % Start of 3 byte code
+           c := moan!-if!-truncated w,
+           w := cdr w,
+           n := lshift(land(n, 15), 12) + lshift(land(c, 63), 6),
+           c := moan!-if!-truncated w,
+           w := cdr w,
+           n := n + land(c, 63))
+         else if land(n, 248) = 240 then progn( % Start of 4 byte code
+           c := moan!-if!-truncated w,
+           w := cdr w,
+           n := lshift(land(n, 7), 18) + lshift(land(c, 63), 12),
+           c := moan!-if!-truncated w,
+           w := cdr w,
+           n := n + lshift(land(c, 63), 6),
+           c := moan!-if!-truncated w,
+           w := cdr w,
+           n := n + land(c, 63))
+         else error(0, "Improper byte in utf-8 string"));
+       r := n . r >>;
+    return reversip r;
   end;
 
 % Return a list of bytes corresponding to the representation of the
@@ -325,18 +325,18 @@ symbolic procedure lengthc u;
 % those that are 10xxxxxx in binary).
 %
 symbolic procedure widelengthc u;
-  if idp u then length!-without!-followers string2list id2string u
-  else if stringp u then length!-without!-followers string2list u
-  else length explode2 u;
+   if idp u then length!-without!-followers string2list id2string u
+   else if stringp u then length!-without!-followers string2list u
+   else length explode2 u;
 
 symbolic procedure length!-without!-followers l;
   begin
     scalar n;
     n := 0;
-a:  if null l then return n;
-    if not (land(car l, 192) = 128) then n := n + 1;
-    l := cdr l;
-    go to a
+    while l do <<
+       if not (land(car l, 192) = 128) then n := n + 1;
+       l := cdr l >>;
+    return n
   end;
 
 %==========================================================================
@@ -351,7 +351,7 @@ a:  if null l then return n;
 % written in terms of the explicit LISP used.
 
 symbolic procedure prin2x u;
-  outl!* := u . outl!*;
+   outl!* := u . outl!*;
 
 % This character look-ahead is used when parsing names that
 % have colons within them, as in abc:def. In particular it is active when
@@ -432,6 +432,8 @@ symbolic procedure prin2x u;
 % In the code here I try to protect calls to liter, digit etc and as
 % a result all characters whose code exceeds 127 will be neither letters
 % not digits nor whitespace.
+
+% Check GOTO here
 
 symbolic procedure readch1;
   begin
@@ -562,6 +564,8 @@ symbolic procedure tokquote;
 
 put('!','tokprop,'tokquote);
 
+% Check GOTO here
+
 symbolic procedure token!-number x;
    % Read and return a valid number from input.
    % Adjusted by A.C. Norman to be less sensitive to input case and to
@@ -656,6 +660,9 @@ fluid '(!*line!-marker !*file!-marker);
 % desired literal symbol - hence the use of intern on a string!
 !*line!-marker := intern "__line__";
 !*file!-marker := intern "__file__";
+
+% This is a big ugly procedure with a lot of GOTO statements. It is overdue
+% for re-work.
 
 symbolic procedure token1;
 %

@@ -508,13 +508,13 @@ symbolic procedure lex_export_codes();
 % interpret UTF-8 multi-byte sequences as single characters where necessary.
 % So this code is (at least on CSL) unicode friendly.
 
-fluid '(lex_char yypeek_char!*);
-yypeek_char!* := nil;
+fluid '(lex_char lex_peek_char);
+lex_peek_char := nil;
 
 symbolic procedure yyreadch();
-  if not null yypeek_char!* then <<
-    lex_char := yypeek_char!*;
-    yypeek_char!* := nil;
+  if not null lex_peek_char then <<
+    lex_char := lex_peek_char;
+    lex_peek_char := nil;
     lex_char >>
   else <<
     lex_char := readch();
@@ -530,8 +530,8 @@ symbolic procedure yyreadch();
 symbolic procedure yypeek();
   begin
     scalar lex_char;
-    if null yypeek_char!* then yypeek_char!* := yyreadch();
-    return yypeek_char!*
+    if null lex_peek_char then lex_peek_char := yyreadch();
+    return lex_peek_char
   end;
 
 switch parse_errors_fatal;
@@ -652,8 +652,15 @@ symbolic procedure lex_init();
 symbolic procedure lex_process_directive();
   begin
     scalar w;
-    if yylval = '!#endif or yylval = !$eof!$ then return t
+    if yylval = '!#endif then <<
+      if zerop if_depth then printc "+++ #endif not follopwing #if";
+      if_depth := if_depth - 1;
+      return t >>
+    else if yylval = !$eof!$ then <<
+      if not zerop if_depth then printc "+++ #endif missing at end of file";
+      return t >>
     else if yylval = '!#if then <<
+      if_depth := if_depth + 1;
       read_s_expression();
       w := errorset(yylval, nil, nil);
       if errorp w or null car w then return lex_skip_to_else_or_endif t
@@ -672,7 +679,9 @@ symbolic procedure lex_is_else_or_endif(w, elif);
   if w = lex_eof_code then t
   else if w neq lex_symbol_code then nil
   else if lex_escaped then nil
-  else if yylval = '!#endif then t
+  else if yylval = '!#endif then <<
+    if zerop if_depth then printc "+++ #endif without previous #if";
+    t >>
   else if not elif then nil
   else if yylval = '!#else then t
   else if yylval neq '!#elif then nil
@@ -717,8 +726,10 @@ symbolic procedure lex_skip_to_else_or_endif elif;
 %                       the #endif here IS noticed and acted upon]
 % Is it always fun when there is significantly more comment than code?
 %
+    if zerop if_depth then printc "+++ #else of #elif witout preceeding #if";
     while not lex_is_else_or_endif(lex_basic_token(), elif) do <<
       if yylval = '!#if and not lex_escaped then <<
+        if_depth := if_depth + 1;
         read_s_expression();
         lex_skip_to_else_or_endif nil >>
       else if yylval = '!#define and not lex_escaped then <<

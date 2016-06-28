@@ -75,6 +75,7 @@ symbolic procedure mkprec;
    end;
 
 mkprec();
+% From here onwards the precedences of infix operators are established.
 
 symbolic procedure newtok u;
    begin scalar !*redeflg!*,x,y;
@@ -137,6 +138,11 @@ newtok '((!> !=) geq);
 newtok '((!]) !*rsqbkt!*);
 newtok '((!> !>) !*rsqbkt!*);
 newtok '((!/ !*) !*comment!*);
+
+% ... and from here on the full set of infix operators may be used with
+% their standard notation. So the ONLY files where (eg) "+" may not be used
+% will be support/build.red, support/XXXprolo.red, rlisp/rlisp.red
+% rlisp/module.red and this file.
 
 put('expt,'prtch,'!*!*);   % To ensure that FORTRAN output is correct.
 

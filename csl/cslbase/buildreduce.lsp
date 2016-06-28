@@ -35,14 +35,18 @@
 (setq !*savedef (and (not (memq 'embedded lispsystem!*))
                      (zerop (cdr (assoc 'c!-code lispsystem!*)))))
 
-%-- I once had this - these days I will feel I want more consistency between
-%-- the main and bootstrap version and I can use enable!-errorset to be able
-%-- to see backtraces if I need to. Or I can implement a "-g2" (or some such)
-%-- command line option to support it...
-%--
-%-- (cond  % When I have a bootstrap image I will get to see all backtraces
-%--        % since sometimes that is valuable for debugging messy cases!
-%--    (!*savedef (enable!-errorset 3 3)))
+% A command-line flag "-g" sets the variable !*backtrace and so can activate
+% this. But beware that otherwise !*backtrace may be an unset variable, and
+% so I use an errorset to protect myself.
+
+(prog (w)
+   (setq w (errorset '!*backtrace nil nil))
+   (cond
+      ((or (atom w) (null (car w))) (setq !*backtrace nil))
+      (t (enable!-errorset 3 3))))
+
+(cond
+   (!*backtrace (setq !*echo t)))
 
 (make!-special '!*native_code)
 (setq !*native_code nil)
@@ -185,7 +189,9 @@
 
 (global '(oldchan!*))
 
-(global '(!*raise crchar!* cursym!* nxtsym!* ttype!* !$eol!$))
+(fluid '(!*raise !*lower))
+
+(global '(crchar!* cursym!* nxtsym!* ttype!* !$eol!$))
 
 (put '!; 'switch!* '(nil !*semicol!*))
 
@@ -197,13 +203,26 @@
 
 (put '!. 'switch!* '(nil cons))
 
+(put '!= 'switch!* '(nil equal))
+
 (put '!: 'switch!* '(((!= nil setq)) !*colon!*))
+
+(put '!< 'switch!* '(((!= nil leq) (!< nil !*lsqbkt!*)) lessp))
+
+(put '!> 'switch!* '(((!= nil geq) (!> nil !*rsqbkt!*)) greaterp))
+
+% When the full pareser is loaded the function mkprec() will reset all
+% these precedences. Until then please parenthesize expressions carefully.
 
 (put '!*comma!* 'infix 1)
 
 (put 'setq 'infix 2)
 
 (put 'cons 'infix 3)
+
+(put 'equal 'infix 4)
+
+(put 'eq 'infix 5)
 
 (flag '(!*comma!*) 'nary)
 
@@ -235,7 +254,7 @@ a1    (cond
          ((flagp z 'delim) (go end1))
          ((eq z '!*lpar!*) (go lparen))
          ((eq z '!*rpar!*) (go end1))
-         ((setq y (get z 'infix)) (go infx))
+         ((and w (setq y (get z 'infix))) (go infx))
          ((setq y (get z 'stat)) (go stat)))
 a3    (setq w (cons z w))
 next  (setq z (scan))
@@ -456,6 +475,52 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 
 (de endstat nil (prog (x) (setq x cursym!*) (scan) (return (list x))))
 
+% It is only a rather small number of lines of code to support
+% both << >> blocks and WHILE statements here, and doing sop makes
+% it possible to write the full implementation of RLISP in a much
+% more civilised way. What I put in here is a little more than is used
+% to start with, but matches the eventual implementation. Eg the 'go
+% and 'nodel are not relevant until the read parser has been loaded.
+
+(de readprogn nil
+   (prog (lst)
+   a  (setq lst (cons (xread 'group) lst))
+      (cond ((null (eq cursym!* '!*rsqbkt!*)) (go a)))
+      (scan)
+      (return (cons 'progn (reverse lst))))) 
+
+(put '!*lsqbkt!* 'stat 'readprogn)
+(flag '(!*lsqbkt!*) 'go)
+(flag '(!*rsqbkt!*) 'delim)
+(flag '(!*rsqbkt!*) 'nodel)
+
+(de whilstat ()
+   (prog (!*blockp bool bool2)
+      (cond
+         ((flagp 'do 'delim) (setq bool2 t))
+         (t (flag '(do) 'delim)))
+      (setq bool (xread t))
+      (cond
+         (bool2 (remflag '(do) 'delim)))
+      (cond
+         ((not (eq cursym!* 'do)) (symerr 'while t)))
+      (return (list 'while bool (xread t)))))
+
+(dm while (u)
+   (prog (body bool lab)
+      (setq bool (cadr u))
+      (setq body (caddr u))
+      (setq lab 'whilelabel) 
+      (return (list
+         'prog nil
+    lab  (list 'cond
+            (list (list 'not bool) '(return nil)))
+         body
+         (list 'go lab)))))
+
+(put 'while 'stat 'whilstat)
+(flag '(while) 'nochange)
+
 % Now we have just enough to be able to start to express ourselves in
 % (a subset of) rlisp.
 
@@ -468,6 +533,8 @@ rds(xxx := open("$reduce/packages/support/build.red", 'input));
 (load!-package!-sources prolog_file 'support)
 
 (load!-package!-sources 'revision 'support)
+
+(cond (!*backtrace (setq !*echo t)))
 
 (load!-package!-sources 'rlisp 'rlisp)
 

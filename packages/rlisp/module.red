@@ -28,13 +28,10 @@
 %
 
 
-%
-% WARNING. This code is loaded quite early in the process of
-% bootstrapping. As a result it has to be written such that it
-% will work properly with the cut-down bootstrap version of the
-% RLISP parser. Various constructions such as <<...>> are not
-% available....
-%
+% The code here is loaded rather early in the bootstrap process, and so
+% is processed by a provisional rather than the final version of the
+% rlisp parser. Most features of the language are available, but do careful
+% testing after any edits in case you faul foul of any of the restrictions!
 
 fluid '(!*backtrace !*mode !*faslp);
 
@@ -90,7 +87,7 @@ put('load,'formfn,'formload);
 
 
 symbolic procedure formload(u,vars,mode);
-   if eq(mode, 'symbolic) then
+   if mode eq 'symbolic then
       list('progn,
 % Adapted to maintain loaded!-modules!*
            list('setq, 'loaded!-modules!*,
@@ -106,28 +103,28 @@ symbolic procedure load!-package u;
 % yields the symbol !.!.!/huhu as expected...
        else if null idp u then rederr list(u,"is not a package name")
        else if memq(u,loaded!-packages!*)
-%       then progn(lprim list("Package",u,"already loaded"), return u)
+%       then << lprim list("Package",u,"already loaded"); return u >>
         then return u
        else if or(atom(x:= errorset(list('evload,list('quote,list u)),
                                nil,!*backtrace)),
                   cdr x)
         then rederr
            list("error in loading package",u,"or package not found");
-      loaded!-packages!* := u . loaded!-packages!*;
-      loaded!-modules!* := union(loaded!-modules!*, list u);
-      x := get(u,'package);
-      if x then x := cdr x;
-   a: if null x then return install!-patches u
-       else if null atom get(car x,'package) then load!-package car x
-       else if or(atom(y := errorset(list('evload,
-                                         list('quote,list car x)),
-                                    nil,!*backtrace)),
-                  cdr y)
-        then rederr list("module",car x,"of package",u,
-                         "cannot be loaded");
-      loaded!-modules!* := union(loaded!-modules!*, list car x);
-      x := cdr x;
-      go to a
+       loaded!-packages!* := u . loaded!-packages!*;
+       loaded!-modules!* := union(loaded!-modules!*, list u);
+       x := get(u,'package);
+       if x then x := cdr x;
+       while x do <<
+          if null atom get(car x,'package) then load!-package car x
+          else if or(atom(y := errorset(list('evload,
+                                            list('quote,list car x)),
+                                       nil,!*backtrace)),
+                     cdr y)
+           then rederr list("module",car x,"of package",u,
+                            "cannot be loaded");
+         loaded!-modules!* := union(loaded!-modules!*, list car x);
+         x := cdr x >>;
+      return install!-patches u
    end;
 
 % Now a more user-friendly version.
@@ -137,12 +134,10 @@ remprop('load!_package,'stat);
 remprop('packages!_to!_load,'stat);
 
 symbolic procedure load!_package u;
-   begin scalar x;
-      x := u;
-   a: if null x then return nil;
-      load!-package car x;
-      x := cdr x;
-      go to a
+   begin
+      while u do <<
+         load!-package car u;
+         u := cdr u >>
    end;
 
 symbolic procedure packages!_to!_load u;
@@ -157,7 +152,12 @@ put('packages!_to!_load,'stat,'rlis);
 flag('(load!-package load!_package),'eval);
 
 
-% Support for patching REDUCE sources.
+% Support for patching REDUCE sources. The whole mechanism set up here is
+% now no longer used. In the past when distribution was on CD (or magnetic
+% tape, or on large piles of floppy disc) users received a base version
+% of the system and then relativly small patch files could be distributed
+% to update the system or correct errors. Now with the faster networks
+% this whole idea is not so necessary.
 
 symbolic procedure patchstat;
    % Read a patch for a given package.
@@ -168,21 +168,19 @@ symbolic procedure patchstat;
       y := xread nil;
       if eqcar(y,'symbolic) then y := cadr y
        else if flagpcar(y,'modefn)
-        then progn(!*mode := car y, y := cadr y);
-      if eq(y,'endpatch)
-       then progn(u := name!-for!-patched!-version(x, z),
-                  z2 :=  list('de,u,nil,'progn . reversip z) . z2,
-                  z2 := list('patches!-load!-check,mkquote x,mkquote u) . z2,
-                  return ('patch . reversip z2))
-       else if eqcar(y,'procedure)
-        then progn(
-               v := cadr y,
-               u := name!-for!-patched!-version(v, y),
-               z := list('instate!-patches,mkquote v,mkquote u,mkquote x) . z,
-               z2  := convertmode(('procedure . u . cddr y),nil,
-                                  'symbolic,!*mode)
-                     . z2)
-       else z := convertmode(y,nil,'symbolic,!*mode) . z;
+        then << !*mode := car y; y := cadr y >>;
+      if eq(y,'endpatch) then <<
+         u := name!-for!-patched!-version(x, z);
+         z2 := list('de,u,nil,'progn . reversip z) . z2;
+         z2 := list('patches!-load!-check,mkquote x,mkquote u) . z2;
+         return ('patch . reversip z2) >>
+      else if eqcar(y,'procedure) then <<
+         v := cadr y;
+         u := name!-for!-patched!-version(v, y);
+         z := list('instate!-patches,mkquote v,mkquote u,mkquote x) . z;
+         z2  := convertmode(('procedure . u . cddr y),nil,
+                             'symbolic,!*mode) . z2 >>
+      else z := convertmode(y,nil,'symbolic,!*mode) . z;
       go to a;
    end;
 
@@ -197,15 +195,16 @@ symbolic procedure instate!-patches(new,old,pkg);
   begin scalar x;
      x := getd old;
      if x then putd(new,car x,cdr x)
-      else rerror('module,1,list(new,"has a badly set-up patch"));
+     else rerror('module,1,list(new,"has a badly set-up patch"));
      return nil
   end;
 
 symbolic procedure install!-patches u;
-   % Written this way for bootstrapping.
-   if eq(u,'patches) then nil
-    else if (u := get(u,'patchfn))
-     then begin scalar !*usermode,!*redefmsg; eval list u end;
+   if u eq 'patches then nil
+   else if (u := get(u,'patchfn)) then
+   begin scalar !*usermode,!*redefmsg;
+      eval list u
+   end;
 
 symbolic procedure patches!-load!-check(u,v);
    begin

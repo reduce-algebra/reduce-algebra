@@ -20,13 +20,27 @@
 
 (put '!. 'switch!* '(nil cons))
 
+(put '!= 'switch!* '(nil equal))
+
 (put '!: 'switch!* '(((!= nil setq)) !*colon!*))
+
+(put '!< 'switch!* '(((!= nil leq) (!< nil !*lsqbkt!*)) lessp))
+
+(put '!> 'switch!* '(((!= nil geq) (!> nil !*rsqbkt!*)) greaterp))
+
+% When the real parser is loaded the function mkprec will reset all
+% precedence values here. So until then please fully parenthesize
+% any expressions.
 
 (put '!*comma!* 'infix 1)
 
 (put 'setq 'infix 2)
 
 (put 'cons 'infix 3)
+
+(put 'equal 'infix 4)
+
+(put 'eq 'infix 5)
 
 (flag '(!*comma!*) 'nary)
 
@@ -58,7 +72,7 @@ a1    (cond
          ((flagp z 'delim) (go end1))
          ((eq z '!*lpar!*) (go lparen))
          ((eq z '!*rpar!*) (go end1))
-         ((setq y (get z 'infix)) (go infx))
+         ((and w (setq y (get z 'infix))) (go infx))
          ((setq y (get z 'stat)) (go stat)))
 a3    (setq w (cons z w))
 next  (setq z (scan))
@@ -277,4 +291,68 @@ a     (setq hold (nconc hold (list (xread1 nil))))
       (return (list x (list 'quote (list (xread t)))))))
 
 (de endstat nil (prog (x) (setq x cursym!*) (scan) (return (list x))))
+
+% It is only a rather small number of lines of code to support
+% both << >> blocks and WHILE statements here, and doing so makes
+% it possible to write the full implementation of RLISP in a much
+% more civilised way. What I put in here is a little more than is used
+% to start with, but matches the eventual implementation. Eg the 'go
+% and 'nodel are not relevant until the read parser has been loaded.
+
+(de readprogn nil
+   (prog (lst)
+   a  (setq lst (cons (xread 'group) lst))
+      (cond ((null (eq cursym!* '!*rsqbkt!*)) (go a)))
+      (scan)
+      (return (cons 'progn (reverse lst)))))
+
+(put '!*lsqbkt!* 'stat 'readprogn)
+(flag '(!*lsqbkt!*) 'go)
+(flag '(!*rsqbkt!*) 'delim)
+(flag '(!*rsqbkt!*) 'nodel)
+
+% There is a "wonderful" mess here! The file support/pslprolo.red gives
+% the symbol "do" a newnam that maps it onto "~do" when read. This is to
+% avoid conflict with a PSL version of a FOR loop. A consequence is that
+% up until pslprolo is read in the input characters "do" are read as the
+% symbol with that simple name, while afterwards you get a version with
+% a "~" stuck on the front. The test in the code here will continue to test
+% for what it used to! So to survive parsing WHILE loops both before and
+% after I need to allow for both spellings. 
+
+(de whilstat ()
+   (prog (!*blockp bool bool2)
+      (cond
+         ((flagp 'do 'delim) (setq bool2 t))
+         (t (flag '(do !~do) 'delim)))
+      (setq bool (xread t))
+      (cond
+         (bool2 (remflag '(do !~do) 'delim)))
+% A few lines of debugging @@@
+(terpri) (prin2 "^^^^^^ cursym!* = ") (print cursym!*)
+(print (prop 'do))
+(print (prop '!~do))
+(print (prop 'while))
+(print (getd 'while))
+(print (prop 'whilstat))
+      (cond
+         ((and (not (eq cursym!* 'do))
+               (not (eq cursym!* '!~do))) (symerr 'while t)))
+      (return (list 'while bool (xread t)))))
+
+(dm while (u)
+   (prog (body bool lab)
+      (setq bool (cadr u))
+      (setq body (caddr u))
+      (setq lab 'whilelabel)
+      (return (list
+         'prog nil
+    lab  (list 'cond
+            (list (list 'not bool) '(return nil)))
+         body
+         (list 'go lab)))))
+
+(put 'while 'stat 'whilstat)
+(flag '(while) 'nochange)
+
 

@@ -91,7 +91,7 @@ module smacro;  % Support for SMACRO expansion
 %    ... f(v, v+3) ...
 % Oh dear: v+3 is probably not tagged as side-effect free and both a and b
 % are used twice in the function body. But there seems to be a clear
-% expectation that the firts argument will be textually substituted so that
+% expectation that the first argument will be textually substituted so that
 % the assignments take full effect.
 %
 %    smacro procedure f a; ... a ... (lambda (a) ...) ...;

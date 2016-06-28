@@ -36,9 +36,10 @@ symbolic procedure create!-package(u,v);
    % Make module list u into a package with path v.
    % Second argument is no longer used.
    if null idp car u then typerr(car u,"package name")
-    else progn(put(car u,'package,u),
-%          put(car u,'path,if null v then list car u else v),
-           car u);
+   else <<
+      put(car u,'package,u);
+%     put(car u,'path,if null v then list car u else v);
+      car u >>;
 
 % create!-package('(pslprolo),nil);
 
@@ -48,13 +49,12 @@ fluid '(!*quotenewnam);
 
 symbolic procedure define!-alias!-list u;
    begin scalar x;
-   a: if null u then return nil;
+   while u do <<
       x := intern compress append(explode '!~,explode car u);
       put(car u,'newnam,x);
       put(x,'oldnam,car u);
       put(car u,'quotenewnam,x);
-      u := cdr u;
-      go to a
+      u := cdr u >>
    end;
 
 
@@ -102,8 +102,6 @@ load f!-strings; % for string-store
 
 % The following PSL variables differ from the Standard LISP Report
 
-%remprop('!*comp,'vartype);
-%remprop('!*raise,'vartype);
 remprop('cursym!*,'vartype);
 
 % At some early stages in the bootstrapping the variable lispsystem!*

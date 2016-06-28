@@ -36,12 +36,12 @@ symbolic procedure create!-package(u,v);
    % Make module list u into a package with path v.
    % Second argument is no longer used.
    if null idp car u then typerr(car u,"package name")
-    else progn(
+   else <<
 % If building the bootstrap version report the name of each package.
-           (if member('cold!-start, lispsystem!*) then progn(
-              terpri(), princ "+++ Creating a package: ", print car u)),
-           put(car u,'package,u),
-           car u);
+      (if member('cold!-start, lispsystem!*) then <<
+          terpri(); princ "+++ Creating a package: "; print car u >>);
+      put(car u,'package,u);
+      car u >>;
 
 % create!-package('(cslprolo),nil);
 
@@ -50,14 +50,10 @@ symbolic procedure evload l;
 % early in the bootstrap sequence, and the nicer syntax I might prefer
 % to use may not be stable...
   begin
-top: if null l then return nil;
-     load!-module car l;
-     l := cdr l;
-     go to top
+     while l do <<
+        load!-module car l;
+        l := cdr l >>
   end;
-
-% Back when Reduce was updated using a patching mechanism I needed to define
-% COPYD here, but that is no longer the case.
 
 % The following are built into CSL and so any definition found within
 % the REDUCE sources should be viewed as "portability" but should be ignored.

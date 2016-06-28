@@ -28,8 +28,12 @@
 %
 
 
-% The baroque syntax in this file is a consequence of the bootstrapping
-% process.
+% The code here is loaded rather early in the bootstrap process, and so
+% is processed by a provisional rather than the final version of the
+% rlisp parser. Most features of the language are available, but do careful
+% testing after any edits in case you faul foul of any of the restrictions!
+
+
 
 global '(loaded!-packages!*);
 
@@ -40,10 +44,11 @@ global '(loaded!-packages!*);
 
 
 % Since some of the early modules may have tabs in them, we must redefine
-% seprp.
+% seprp. Note that there is a TAB in this definition and that may not be
+% readily visible when merely editing the file.
 
 symbolic procedure seprp u;
-    or(eq(u,'! ),eq(u,'!	),eq(u,!$eol!$));
+    or(u eq '! , u eq '!	, u eq !$eol!$);
 
 symbolic procedure mkfil u;
    % Converts file descriptor U into valid system filename.
@@ -54,12 +59,10 @@ symbolic procedure mkfil u;
 symbolic procedure string!-downcase u;
    begin scalar z;
       u := explode2 u;
-% This has to be written in the bootstrap kernel of the RLISP language
-% and so looks a little ugly.
-   a: if null u then return list2string reversip z;
-      z := red!-char!-downcase car u . z;
-      u := cdr u;
-      go to a;
+      while u do <<
+         z := red!-char!-downcase car u . z;
+         u := cdr u >>;
+      return list2string reversip z;
    end;
 
 global '(charassoc!*);
@@ -80,6 +83,7 @@ charassoc!* :=
 
 % The previous version of this would fail if either string contained a
 % doublequote character.
+
 symbolic procedure concat(u,v);
    list2string append(string2list u, string2list v);
 
@@ -90,11 +94,11 @@ symbolic procedure module2!-to!-file(u,v);
    % Converts the module u in package directory v to a fully rooted file
    % name.
    if memq('vsl, lispsystem!*) then
-     concat("../packages/",concat(mkfil v,
-            concat("/",concat(mkfil u,".red"))))
+      concat("../packages/",concat(mkfil v,
+             concat("/",concat(mkfil u,".red"))))
    else
-     concat("$reduce/packages/",concat(mkfil v,
-            concat("/",concat(mkfil u,".red"))));
+      concat("$reduce/packages/",concat(mkfil v,
+             concat("/",concat(mkfil u,".red"))));
 
 % I do not do anything about a cache of inline procedure definitions here
 % because the bootstrap build using load!-package!-sources happens all in
@@ -105,16 +109,20 @@ symbolic procedure inmodule(u,v);
       u := open(module2!-to!-file(u,v),'input);
       v := rds u;
       cursym!* := '!*semicol!*;
-   a: if eq(cursym!*,'end) then return progn(rds v, close u);
-      prin2 eval form xread nil;
-      go to a;
+      while not (cursym!* eq 'end) do <<
+         prin2 eval form xread nil >>;
+      rds v;
+      close u;
    end;
 
 symbolic procedure load!-package!-sources(u,v);
    begin scalar !*int,!*echo,w;
+      if and(member('csl, lispsystem!*), !*backtrace) then !*echo := t;
       inmodule(u,v);
       if (w := get(u,'package)) then w := cdr w;
-   a: if w then progn(inmodule(car w,v), w := cdr w, go to a);
+      while w do <<
+         inmodule(car w, v);
+         w := cdr w >>;
       loaded!-packages!* := u . loaded!-packages!*;
    end;
 

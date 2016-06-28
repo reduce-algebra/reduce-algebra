@@ -38,7 +38,7 @@ create!-package('(lalr genparser genparserprint yylex yyparse), nil);
 
 switch tracelex, lalr_verbose;
 
-fluid '(lex_char);
+fluid '(lex_char lex_peek_char);
 global '(yylval last64 last64p which_line if_depth);
 global '(next_lex_code);
 global '(dot_char rpar_char rsquare_char);

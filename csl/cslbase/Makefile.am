@@ -10,6 +10,8 @@ ACLOCAL_AMFLAGS = -I m4
 # I want to be able to see what gets built and why, so here is a GNU
 # make trace facility.
 
+# A user may go "make CSLFLAGS=-g" to force "-g" into built-times Lisp flags...
+
 TRACE = $(warning TRACE: $@ :: $?)
 
 AM_CPPFLAGS = $(TRACE)
@@ -1814,7 +1816,8 @@ if canrun
 # will be. I make the access rights 664 not 644 in case you are a group member
 # for the file-space not actually the owner.
 	chmod 664 $(gensrc)/*
-	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
+	./reduce$(COM) -w -z $(CSLFLAGS) -Dno_init_file \
+		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-o- -- buildlogs/reduce.log \
 		-j reduce.dep
@@ -1855,7 +1858,8 @@ if canrun
 # before starting the build job.
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	./reduce$(COM) -w -z -Dno_init_file $(CYGSRC)/buildreduce.lsp \
+	./reduce$(COM) -w -z $(CSLFLAGS) \
+		-Dno_init_file $(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-o ./reduce.img/ \
 		-- buildlogs/reduce.log \
@@ -1946,7 +1950,7 @@ if canrun
 	mkdir -p buildlogs
 	echo Building in `pwd`
 	chmod 664 $(gensrc)/*
-	./bootstrapreduce$(EXEEXT) -w -z -Dno_init_file \
+	./bootstrapreduce$(EXEEXT) -w -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-o- -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
@@ -2248,7 +2252,7 @@ csl.img:	csl$(COM) $(csldep)
 if canrun
 	mkdir -p buildlogs
 	echo Building in `pwd`
-	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
+	./csl$(COM) -w -v -z $(CSLFLAGS) "$(CYGSRC)/buildcsl.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-o- -- buildlogs/csl.img.log \
 		-j csl.dep
@@ -2269,7 +2273,7 @@ csl.dir:	csl$(COM) $(csldep)
 	-$(TRACE)$(RM) -rf csl.img
 if canrun
 	mkdir -p buildlogs
-	./csl$(COM) -w -v -z "$(CYGSRC)/buildcsl.lsp" \
+	./csl$(COM) -w -v -z $(CSLFLAGS) "$(CYGSRC)/buildcsl.lsp" \
 		-o ./csl.img/ -D@cslbase="$(CYGSRC)" \
 		-- buildlogs/csl.img.log \
 		-j csl.dep
