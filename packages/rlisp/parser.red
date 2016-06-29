@@ -43,17 +43,15 @@ global '(cursym!*);
 
 symbolic procedure comm1 u;
    begin scalar bool;
-        if u eq 'end then go to b;
-  a:    if cursym!* eq '!*semicol!*
-           or u eq 'end
-                and cursym!* memq
-                   '(end else then until !*rpar!* !*rsqbkt!*)
-          then return nil
-         else if u eq 'end and null bool
-          then progn(lprim list("END-COMMENT NO LONGER SUPPORTED"),
-                     bool := t);
-  b:    scan();
-        go to a
+      if u eq 'end then scan();
+      while not
+         (cursym!* eq '!*semicol!* or
+          (u eq 'end and
+           cursym!* memq '(end else then until !*rpar!* !*rsqbkt!*))) do <<
+         if u eq 'end and null bool then <<
+            lprim list("END-COMMENT NO LONGER SUPPORTED");
+            bool := t >>;
+         scan() >>
    end;
 
 
@@ -82,9 +80,8 @@ symbolic procedure functionstat;
       x := scan();
       return list('function,
                   if x eq '!*lpar!* then xread1 t
-                   else if idp x and null(x eq 'lambda)
-                    then progn(scan(),x)
-                   else symerr("Function",t))
+                  else if idp x and null(x eq 'lambda) then << scan(); x >>
+                  else symerr("Function", t))
    end;
 
 put('function,'stat,'functionstat);
@@ -95,10 +92,8 @@ put('function,'stat,'functionstat);
 symbolic procedure lamstat;
    begin scalar x,y;
         x:= xread 'lambda;
-%       x := flagtype(if null x then nil else remcomma x,'scalar);
         if x then x := remcomma x;
         y := list('lambda,x,xread t);
-%       remtype x;
         return y
    end;
 
@@ -110,10 +105,11 @@ put ('lambda,'stat,'lamstat);
 symbolic procedure readprogn;
    %Expects a list of statements terminated by a >>;
    begin scalar lst;
-    a:  lst := aconc!*(lst,xread 'group);
-        if null(cursym!* eq '!*rsqbkt!*) then go to a;
-        scan();
-        return ('progn . lst)
+      lst := list xread 'group;
+      while not (cursym!* eq '!*rsqbkt!*) do
+         lst := aconc!*(lst,xread 'group);
+      scan();
+      return ('progn . lst)
    end;
 
 put('!*lsqbkt!*,'stat,'readprogn);

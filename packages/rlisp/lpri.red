@@ -33,81 +33,89 @@ fluid '(!*defn !*echo !*fort !*int !*msg !*nat !*protfg errmsg!*);
 global '(cursym!* erfg!* ofl!* outl!*);
 
 symbolic procedure lpri u;
+   while u do <<
+      prin2 car u;
+      prin2 " ";
+      u := cdr u >>;
+
+symbolic procedure lpriw(u, v);
    begin
-    a:  if null u then return nil;
-        prin2 car u;
-        prin2 " ";
-        u := cdr u;
-        go to a
+      u := u . if v and atom v then list v else v;
+      if null ofl!* then <<
+% In the simple case where no "out" commands have been used this
+% just calls lpri to display a message.
+         terpri();
+         lpri u;
+         terpri() >>
+      else <<
+         if not (!*fort or not !*nat or !*defn) then <<
+% Write the message to the current output unless current output satisfies
+% various special conditions.
+            terpri();
+            lpri u;
+            terpri() >>;
+% Also write it to the standard output.
+         wrs nil;
+         lpri u;
+         terpri();
+         wrs cdr ofl!* >>
    end;
 
-symbolic procedure lpriw (u,v);
-   begin scalar x;
-        u := u . if v and atom v then list v else v;
-        if ofl!* and (!*fort or not !*nat or !*defn) then go to c;
-        terpri();
-    a:  lpri u;
-        terpri();
-        if null x then go to b;
-        wrs cdr x;
-        return nil;
-    b:  if null ofl!* then return nil;
-    c:  x := ofl!*;
-        wrs nil;
-        go to a
-   end;
 
 symbolic procedure lprim u;
    !*msg and lpriw("***",u);
 
 symbolic procedure lprie u;
-   begin scalar x;
-        if !*int then go to a;
-        x:= !*defn;
-        !*defn := nil;
-    a:  erfg!* := t;
-        lpriw ("*****",u);
-        if null !*int then !*defn := x
+   begin
+      scalar x;
+     if not !*int then <<
+        x := !*defn;
+        !*defn := nil>>;
+     erfg!* := t;
+     lpriw("*****", u);
+     if null !*int then !*defn := x
    end;
 
 symbolic procedure printty u;
-   begin scalar ofl;
-        if null !*fort and !*nat then print u;
-        if null ofl!* then return nil;
-        ofl := ofl!*;
-        wrs nil;
-        print u;
-        wrs cdr ofl
+   begin
+      scalar ofl;
+      if null !*fort and !*nat then print u;
+      if null ofl!* then return nil;
+      ofl := ofl!*;
+      wrs nil;
+      print u;
+      wrs cdr ofl
    end;
 
-symbolic procedure rerror(packagename,number,message);
-   progn(errmsg!* := message, rederr message);
+symbolic procedure rerror(packagename, number, message);
+   << errmsg!* := message; rederr message >>;
 
 symbolic procedure rederr u;
    begin if not !*protfg then lprie u; error1() end;
 
 symbolic procedure symerr(u,v);
-   begin scalar x;
-        erfg!* := t;
-        if numberp cursym!* or not(x := get(cursym!*,'prtch))
-          then x := cursym!*;
-        terpri();
-        if !*echo then terpri();
-        outl!* := car outl!* . '!$!$!$ . cdr outl!*;
-        comm1 t;
-        outl!* := reversip!* outl!*;
-   a:   if null outl!* then go to b;
-        prin2 car outl!*;
-        outl!* := cdr outl!*;
-        go to a;
-   b:   terpri();
-        if null v then rerror('rlisp,5,u)
-         else rerror('rlisp,6,
-                     x . ("invalid" .
-                         (if u then list("in",u,"statement") else nil)))
+   begin
+      scalar x;
+      erfg!* := t;
+      if numberp cursym!* or not(x := get(cursym!*,'prtch)) then
+         x := cursym!*;
+      terpri();
+      if !*echo then terpri();
+      outl!* := car outl!* . '!$!$!$ . cdr outl!*;
+      comm1 t;
+      outl!* := reversip!* outl!*;
+      while outl!* do <<
+         prin2 car outl!*;
+         outl!* := cdr outl!* >>;
+      terpri();
+      if null v then rerror('rlisp,5,u)
+      else rerror('rlisp, 6,
+         if u then list(x, "invalid", "in", u, "statement")
+         else list(x, "invalid"))
    end;
 
-symbolic procedure typerr(u,v); rerror('rlisp,6,list(u,"invalid as",v));
+symbolic procedure typerr(u, v);
+   rerror('rlisp, 6, list(u, "invalid as", v));
 
 endmodule;
 

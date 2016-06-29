@@ -61,17 +61,18 @@ put('cond,'formfn,'formcond);
 symbolic procedure formlamb(u,vars,mode);
    begin scalar v, b, fl;
       v := cadr u;
-v1:   if null v then go to v2;
-      if null car v or car v eq 't then rsverr car v;
-      v := cdr v;
-v2:   v := cadr u;
-      b := list form1(caddr u, pairvars(v,vars,mode),mode);
+      while v do <<
+% Trying to rebind NIL or T as a lambda-variable would be an error.
+         if null car v or car v eq 't then rsverr car v;
+         v := cdr v >>;
+      v := cadr u;
+      b := list form1(caddr u, pairvars(v, vars, mode), mode);
 #if (memq 'csl lispsystem!*)
-l:    if null v then go to x;
-      if fluidp car v or globalp car v then fl := car v . fl;
-      v := cdr v;
-      go to l;
-x:    if fl then b := list('declare, 'special . fl) . b;
+% See comments elsewhere in the source about why DECLARE is important here.
+      while v do <<
+         if fluidp car v or globalp car v then fl := car v . fl;
+         v := cdr v >>;
+      if fl then b := list('declare, 'special . fl) . b;
       v := cadr u;
 #endif
       return 'lambda . v . b;
@@ -257,19 +258,22 @@ flag('(difference minus plus times),'intfn);
    % cause problems (i.e., result can be rational);
 
 symbolic procedure formlis(u,vars,mode);
-   begin scalar x;
-   a: if null u then return reversip!* x;
-      x := form1(car u,vars,mode) . x;
-      u := cdr u;
-      go to a
+   begin
+      scalar x;
+% Note that I do not have the "FOR EACH x IN ..." syntax available yet...
+      while u do <<
+         x := form1(car u, vars, mode) . x;
+         u := cdr u >>;
+      return reversip!* x;
    end;
 
 symbolic procedure formclis(u,vars,mode);
-   begin scalar x;
-   a: if null u then return reversip!* x;
-      x := formc(car u,vars,mode) . x;
-      u := cdr u;
-      go to a
+   begin
+      scalar x;
+      while u do <<
+         x := formc(car u,vars,mode) . x;
+         u := cdr u >>;
+      return reversip!* x;
    end;
 
 symbolic procedure form u;
@@ -374,22 +378,22 @@ symbolic procedure !*!*a2s(u,vars);
 
 symbolic procedure !*!*s2a(u,vars); u;
 
-symbolic procedure formc(u,vars,mode);
+symbolic procedure formc(u, vars, mode);
    %this needs to be generalized;
-   if !*rlisp88 and flagpcar(u,'modefn) and null(car u eq 'symbolic)
-     then typerr("algebraic expression","Rlisp88 form")
-    else if mode eq 'algebraic and intexprnp(u,vars) then u
-    else convertmode(u,vars,'symbolic,mode);
+   if !*rlisp88 and flagpcar(u, 'modefn) and null(car u eq 'symbolic) then
+      typerr("algebraic expression", "Rlisp88 form")
+   else if mode eq 'algebraic and intexprnp(u, vars) then u
+   else convertmode(u, vars, 'symbolic, mode);
 
 symbolic procedure intargfn(u,vars,mode);
    % transforms array element U into expression with integer arguments.
    % Array name is treated as an algebraic variable;
    begin scalar x,y;
       y := cdr u;
-   a: if y then progn(x := convertmode(car y,vars,'integer,mode) . x,
-                      y := cdr y,
-                      go to a);
-      return 'list . form1(car u,vars,'algebraic) . reversip!* x
+      while y do <<
+         x := convertmode(car y, vars, 'integer, mode) . x;
+         y := cdr y >>;
+      return 'list . form1(car u, vars, 'algebraic) . reversip!* x
    end;
 
 put('algebraic,'integer,'!*!*a2i);
@@ -435,13 +439,13 @@ symbolic procedure formbool(u,vars,mode);
                    vars,mode))
     else list('boolvalue!*,formc!*(u,vars,mode));
 
-symbolic procedure formboollis(u,vars,mode,bool);
+symbolic procedure formboollis(u, vars, mode, bool);
    begin scalar x;
-   a: if null u then return reversip!* x
-       else if bool then x := formbool(car u,vars,mode) . x
-       else x := formc!*(car u,vars,mode) . x;
-      u := cdr u;
-      go to a
+      while u do <<
+         if bool then x := formbool(car u, vars, mode) . x
+         else x := formc!*(car u, vars, mode) . x;
+         u := cdr u >>;
+      return reversip!* x;
    end;
 
 symbolic procedure bool!-eval u; lispeval u;
@@ -572,13 +576,12 @@ symbolic procedure formsetq1(u,vars,mode);
       resu := gensym();
       vars := (gens . 'scalar) . vars;
       li := cdr cadr u;
-   a: if null li then go b;
-      coll := formsetq0(list('setq, car li, list('car, gens)), vars, mode)
-         . coll;
-      coll := list('setq, gens, list('cdr, gens)) . coll;
-      li := cdr li;
-      go a;
-   b: coll := list('return, resu) . coll;
+      while li do <<
+         coll := formsetq0(list('setq, car li, list('car, gens)), vars, mode) .
+                 coll;
+         coll := list('setq, gens, list('cdr, gens)) . coll;
+         li := cdr li >>;
+      coll := list('return, resu) . coll;
       return('prog . list(gens, resu) .
              formsetq0(list('setq, gens, caddr u), vars, mode) .
              list('setq, resu, gens) .
@@ -604,9 +607,9 @@ put('setq,'formfn,'formsetq);
 
 % Table of SETQFNs.
 
-symbolic procedure setcar(a,b); progn(rplaca(a,b),b);
+symbolic procedure setcar(a,b); << rplaca(a,b); b >>;
 
-symbolic procedure setcdr(a,b); progn(rplacd(a,b),b);
+symbolic procedure setcdr(a,b); << rplacd(a,b); b >>;
 
 put('car,'setqfn,'(lambda (u v) (setcar u v)));
 
@@ -707,12 +710,9 @@ symbolic procedure rlis;
 symbolic procedure flagop u; begin flag(u,'flagop); rlistat u end;
 
 symbolic procedure rlistat u;
-   begin
-    a:  if null u then return nil;
-        put(car u,'stat,'rlis);
-        u := cdr u;
-        go to a
-   end;
+   while u do <<
+      put(car u,'stat,'rlis);
+      u := cdr u >>;
 
 rlistat '(flagop);
 
@@ -722,10 +722,10 @@ symbolic procedure formrlis(u,vars,mode);
                   if car u eq 'share
                     then (begin scalar x,y;
                              y := cdr u;
-                          a: if null y then return reversip!* x;
-                             x := mkquote car y . x;
-                             y := cdr y;
-                             go to a
+                             while y do <<
+                                x := mkquote car y . x;
+                                y := cdr y >>;
+                             return reversip!* x
                          end)
                    else formlis(cdr u,vars,'algebraic))
     else if not idlistp cdr u
@@ -739,10 +739,10 @@ symbolic procedure mkarg(u,vars);
     else if atom u then if atsoc(u,vars) then u else mkquote u
     else if car u memq '(quote !:dn!: !:int!:) then mkquote u
     else begin scalar x;
-         a: if null u then return 'list . reversip!* x;
-            x := mkarg(car u,vars) . x;
-            u := cdr u;
-            go to a
+            while u do <<
+               x := mkarg(car u,vars) . x;
+               u := cdr u >>;
+            return 'list . reversip!* x;
          end;
 
 % Form functions needed for number input.
@@ -751,17 +751,16 @@ put('!:dn!:,'formfn,'dnform);
 
 symbolic procedure dnform(u,vars,mode);
    if mode eq 'symbolic then  % Format as nnn.Emmm then is in FP format
-     compress nconc!*(explode cadr u,'!. . 'e . explode cddr u)
-    else progn(if !*adjprec then precmsg length explode abs cadr u,
-               mkquote if cddr u >= 0
-                         then decimal2internal(cadr u,cddr u)
-                        else u);
+      compress nconc!*(explode cadr u,'!. . 'e . explode cddr u)
+   else << if !*adjprec then precmsg length explode abs cadr u;
+           mkquote (if cddr u >= 0 then decimal2internal(cadr u,cddr u)
+                    else u) >>;
 
 put('!:int!:,'formfn,'intform);
 
 symbolic procedure intform(u,vars,mode);
    if mode eq 'symbolic then mkquote cadr u
-   else progn(precmsg length explode abs cadr u, mkquote cadr u);
+   else << precmsg length explode abs cadr u; mkquote cadr u >>;
 
 endmodule;
 

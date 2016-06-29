@@ -52,22 +52,21 @@ put('goto,'newnam,'go);
 
 symbolic procedure decl u;
    begin scalar varlis,w;
-   a: if cursym!* eq '!*semicol!* then go to c
-       else if cursym!* eq 'local and !*reduce4 then nil
-       else if not flagp(cursym!*,'type) then return varlis
-       else if !*reduce4 then typerr(cursym!*,"local declaration");
+   a: while cursym!* eq '!*semicol!* do scan();
+      if cursym!* eq 'local and !*reduce4 then nil
+      else if not flagp(cursym!*,'type) then return varlis
+      else if !*reduce4 then typerr(cursym!*,"local declaration");
       w := cursym!*;
       scan();
-      if null !*reduce4
-        then if cursym!* eq 'procedure then return procstat1 w
-              else if cursym!* eq '!*semicol!*
-               then progn(lprim list("Empty variable list in",w,"declaration"),
-                          return nil)
-              else varlis
-                  := append(varlis,pairvars(remcomma xread1 nil,nil,w))
-       else varlis := append(varlis,read_param_list nil);
+      if null !*reduce4 then
+         if cursym!* eq 'procedure then return procstat1 w
+          else if cursym!* eq '!*semicol!* then <<
+             lprim list("Empty variable list in",w,"declaration");
+             return nil >>
+          else varlis := append(varlis,pairvars(remcomma xread1 nil,nil,w))
+      else varlis := append(varlis,read_param_list nil);
       if not(cursym!* eq '!*semicol!*) or null u then symerr(nil,t);
-   c: scan();
+      scan();
       go to a
    end;
 
@@ -97,7 +96,9 @@ symbolic procedure blocktyperr u;
 
 symbolic procedure mapovercar u;
    begin scalar x;
- a: if u then progn(x := caar u . x, u := cdr u, go to a);
+   while u do <<
+      x := caar u . x;
+      u := cdr u >>;
    return reversip!* x
    end;
 
@@ -106,38 +107,38 @@ symbolic procedure blockstat;
         !*blockp := t;
         scan();
         if cursym!* memq '(nil !*rpar!*)
-          then rerror('rlisp,9,"BEGIN invalid");
+          then rerror('rlisp, 9, "BEGIN invalid");
         varlis := decl t;
-    a:  if cursym!* eq 'end and not(nxtsym!* eq '!:) then go to b;
+    a:  if cursym!* eq 'end and not(nxtsym!* eq '!:) then <<
+           comm1 'end;
+           return mkblock(varlis, hold) >>;
         x := xread1 nil;
-        if eqcar(x,'end) then go to c;
-        not(cursym!* eq 'end) and scan();
-        if x
-          then progn((if eqcar(x,'equal)
-                 then lprim list("top level",cadr x,"= ... in block")),
-                      hold := aconc!*(hold,x));
+        if eqcar(x, 'end) then return mkblock(varlis, hold);
+        if not(cursym!* eq 'end) then scan();
+        if x then <<
+           (if eqcar(x, 'equal) then
+               lprim list("top level", cadr x, "= ... in block"));
+           hold := aconc!*(hold, x) >>;
         go to a;
-    b:  comm1 'end;
-    c:  return mkblock(varlis,hold)
    end;
 
 symbolic procedure mkblock(u,v); 'rblock . (u . v);
 
 putd('rblock,'macro,
- '(lambda (u) (cons 'prog (cons (mapovercar (cadr u)) (cddr u)))));
+   '(lambda (u) (cons 'prog (cons (mapovercar (cadr u)) (cddr u)))));
 
 symbolic procedure symbvarlst(vars,body,mode);
    begin scalar x,y;
-      if null(mode eq 'symbolic) then return nil;
+      if not (mode eq 'symbolic) then return nil;
       y := vars;
-   a: if null y then return nil;
-      x := if pairp car y then caar y else car y;
-      if not fluidp x and not globalp x and not smemq(x,body)
-         and not !*novarmsg
-        then lprim list("local variable",x,"in procedure",
-                        fname!*,"not used");
-      y := cdr y;
-      go to a
+      while y do <<
+         x := if pairp car y then caar y else car y;
+         if not fluidp x and
+            not globalp x and
+            not smemq(x,body) and
+            not !*novarmsg then
+            lprim list("local variable",x,"in procedure", fname!*,"not used");
+         y := cdr y >>;
    end;
 
 symbolic procedure make_prog_declares(v, b);
@@ -145,14 +146,29 @@ symbolic procedure make_prog_declares(v, b);
 #if (memq 'csl lispsystem!*)
 % This detects any bound variables that are fluid (or global) at the
 % time I process this code and adds in a DECLARE to remind us about
-% that fact.
+% that fact. I should put in an explanation for the benefit of those who
+% do not expect this. In CSL some definitions are extracted from the body
+% of the source for compilation into C (and similar issues could potentially
+% arise with in-lining of function definitions). The consequence of this is
+% that the code concerned is compiled at a stage that is NOT when it has
+% just been read from its source file. If the function binds and fluid
+% variables then the fluid declaration MUST be visible at the time it is
+% compiled, and the only way to achieve this is for the declaration to be
+% included as part of the code. I use the Common Lisp notation for this
+% with "declare special" stuck in as a first item in the procedure body.
+% This is not actually very CSL specific... if one built a system using any
+% Lisp with everything initially interpreted then there is no good guarantee
+% that fluid declarations for eveything will be in force at run-time - and so
+% attempts to compile parts of the code incrementally at that late stage
+% could cause disaster. Well there would be further issues in that case
+% depending on whether the interpreter treated variable bindings as lexical
+% or fluid in the absence of declarations.
      scalar w, r;
      w := v;
-  l: if null w then go to x;
-     if fluidp car w or globalp car w then r := car w . r;
-     w := cdr w;
-     go to l;
-  x: if r then b := list('declare, 'special . r) . b;
+     while w do <<
+        if fluidp car w or globalp car w then r := car w . r;
+        w := cdr w >>;
+     if r then b := list('declare, 'special . r) . b;
 #endif
      return ('prog . v . b)
    end;
@@ -168,14 +184,14 @@ symbolic procedure formblock(u,vars,mode);
 
 symbolic procedure initprogvars u;
    begin scalar x,y,z;
-    a: if null u then return(reversip!* x . reversip!* y)
-       else if null caar u or caar u eq 't then rsverr caar u
-       else if (z := get(caar u,'initvalue!*))
-          or (z := get(cdar u,'initvalue!*))
-        then y := mksetq(caar u,z) . y;
-      x := caar u . x;
-      u := cdr u;
-      go to a
+      while u do <<
+         if null caar u or caar u eq 't then rsverr caar u
+         else if (z := get(caar u,'initvalue!*)) or
+                 (z := get(cdar u,'initvalue!*)) then
+            y := mksetq(caar u,z) . y;
+         x := caar u . x;
+         u := cdr u >>;
+      return (reversip!* x . reversip!* y)
    end;
 
 symbolic procedure formprog(u,vars,mode);

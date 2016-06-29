@@ -33,22 +33,22 @@ create!-package('(rlisp module newtok rsupport slfns superv tok xread
                   smacro io infix switch where list array inter charname),
                  nil);
 
-flag('(rlisp),'core!_package);
+flag('(rlisp), 'core!_package);
 
 date!* := date();
 
 fluid '(revision!*);
-if null version!* then progn(
-  if null revision!* then
-    version!* := "REDUCE"
-  else version!* := compress ('!" . append (explode2 "REDUCE (",
-    append(explode2 revision!*, '(!) !")))));
+if null version!* then <<
+  if null revision!* then version!* := "REDUCE"
+  else version!* :=
+    compress ('!" . append (explode2 "REDUCE (",
+      append(explode2 revision!*, '(!) !")))) >>;
 
 % Hook to Rlisp88.
 
-put('rlisp88,'simpfg,'((t (load!-package 'rlisp88) (rlisp88!_on))));
+put('rlisp88, 'simpfg, '((t (load!-package 'rlisp88) (rlisp88!_on))));
 
-flag('(rlisp88),'switch);
+flag('(rlisp88), 'switch);
 
 % endmodule;
 
