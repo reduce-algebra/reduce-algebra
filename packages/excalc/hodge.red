@@ -71,11 +71,71 @@ symbolic procedure hodgek u;
                               addf(dimex!*,negf deg!*form cadr u)),
                                    resimp sgn!*) .+ nil
     else if basisformp u then dual list u
-    else if eqcar(u,'wedge) and boundindp(cdr u,basisforml!*) then
-            dual cdr u
+    else if eqcar(u,'wedge) 
+            then if boundindp(cdr u,basisforml!*) then dual cdr u
+                  else (if x then xpndhodge2(cdr u,x)
+                         else mkhodge u) where x = xpndablehodgep cdr u
     else if basisforml!* and null deg!*form u
             then dual0 u
     else mkhodge u;
+
+
+symbolic procedure all1formsp u;
+   if deg!*form car u = 1 
+      then if cdr u then all1formsp cdr u
+            else t
+    else nil;
+
+symbolic procedure xpndablehodgep u;
+   xpndablehodge1(u,0,nil);
+
+symbolic procedure xpndablehodge1(u,v,w);
+   if null u then if w then v . w else nil
+    else if eqcar(car u,'hodge) and eqcar(cadar u,'wedge)
+      then if all1formsp(cdadar u) then xpndablehodge1(cdr u,v,u)
+            else nil
+    else if deg!*form car u = 1 
+      then xpndablehodge1(cdr u,if null w then v+1 else v,w)
+    else nil;
+
+symbolic procedure xpndhodge2(u,v);
+   begin scalar h,rw,x;
+     h := cadr v;
+     rw := cddr v;
+     x := cdadr h .* multsq(mksgnsq multf(car v,deg!*form h),sgn!*) .+ nil;
+     a: if h eq car u then go to b;
+        x := hodgeinnerprodwedgepf(car u,x);
+        u := cdr u;
+        go to a;
+     b: if null rw then go to c;
+        x := hodgeinnerprodwedgepf(car rw,x);
+        rw := cdr rw;
+        go to b;
+     c: return mkuniquewedge x
+   end;
+
+symbolic procedure hodgeinnerprodwedgepf(u,v);
+   if null v then nil
+    else addpf(multpfsq(hodgeinnerprodwedge1(u,caar v),cdar v),
+               hodgeinnerprodwedgepf(u,cdr v));
+
+symbolic procedure hodgeinnerprodwedge1(u,v);
+   if null rwf v then mkunarywedge hodgeinnerprod(u,lwf v)
+    else addpf(if null rwf rwf v and (deg!*form lwf rwf v = 1)
+                  then multpfsq(!*k2pf list lwf v,
+                                multsq(mksgnsq deg!*form lwf v,
+                                       !*pf2sq hodgeinnerprod(u,lwf rwf v)))
+                else wedgepf2(!*k2pf lwf v,
+                              hodgeinnerprodwedge1(u,rwf v)),
+               if deg!*form lwf v = 1
+                  then multpfsq(!*k2pf rwf v,
+                                !*pf2sq hodgeinnerprod(u,lwf v))
+                else wedgepf2(hodgeinnerprod(u,lwf v),
+                              rwf v .* (1 ./ 1) .+ nil));
+
+symbolic procedure hodgeinnerprod(u,v);
+   hodgepf mkuniquewedge wedgepf2(!*k2pf u,mkunarywedge mkhodge v);
+
 
 symbolic procedure dual0 u;
    (multpfsq(mkwedge ('wedge . basisforml!*),

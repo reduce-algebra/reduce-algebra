@@ -31,21 +31,12 @@ module excalc; % header for EXCALC, a differential geometry package.
 %*********************************************************************;
 %                   Differential Geometry Package                     ;
 %*********************************************************************;
-% This version runs in REDUCE 3.6                                     ;
 %*********************************************************************;
 % Version: 2.5                                                        ;
-% E. Schruefer 09/20/93, 05/29/95                                     ;
+% Eberhard Schruefer 1993-2016                                        ;
 %*********************************************************************;
-% Last version 2 release.                                             ;
 %*********************************************************************;
-% Eberhard Schruefer                                                  ;
-% German National Research Center for Information Technology (GMD)    ;
-% Institut SCAI.ALG                                                   ;
-% Schloss Birlinghoven                                                ;
-% 53754 St. Augustin                                                  ;
-% Germany                                                             ;
-%*********************************************************************;
-% E-mail: schruefer@gmd.de         FAX: +49 2241 14 2618              ;
+% E-mail: eschruefer@ca-musings.de                                    ;
 %*********************************************************************;
 
 
