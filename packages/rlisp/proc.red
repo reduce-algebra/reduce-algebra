@@ -92,23 +92,22 @@ symbolic procedure formproc(u,vars,mode);
         u := cddr u;
         type := ftype!* := car u;
         if flagp(name,'lose) and (!*lose or null !*defn)
-          then return progn(lprim list(name,
-                            "not defined (LOSE flag)"),
-                        '(quote nil))
+          then return << lprim list(name,
+                            "not defined (LOSE flag)");
+                        '(quote nil) >>
          else if !*redeflg!* and getd name
           then lprim list(name,"redefined");
         varlis := cadr u;
-   v1:  if null varlis then go to v2;
-        if null car varlis or car varlis eq 't then rsverr car varlis;
-        varlis := cdr varlis;
-   v2:  varlis := cadr u;
+        while varlis do <<
+           if null car varlis or car varlis eq 't then rsverr car varlis;
+           varlis := cdr varlis >>;
+        varlis := cadr u;
 #if (memq 'csl lispsystem!*)
-   l:   if null varlis then go to x;
-        if fluidp car varlis or globalp car varlis then
-          fl := car varlis . fl;
-        varlis := cdr varlis;
-        go to l;
-   x:   varlis := cadr u;
+        while varlis do <<
+           if fluidp car varlis or globalp car varlis then
+              fl := car varlis . fl;
+           varlis := cdr varlis >>;
+        varlis := cadr u;
 #endif
         body := caddr u;
         x := if eqcar(body,'rblock) then cadr body else nil;
@@ -207,24 +206,26 @@ symbolic procedure pairxvars(u,v,vars,mode);
    %the convention which allows a top level prog to change the mode
    %of such a variable;
    begin scalar x,y;
-   a: if null u then return append(reversip!* x,vars) . v
-       else if (y := atsoc(car u,v))
-        then <<v := delete(y,v);
-               if not(cdr y eq 'scalar) then x := (car u . cdr y) . x
-                else x := (car u . mode) . x>>
-       else if null idp car u or get(car u,'infix) or get(car u,'stat)
+      while u do <<
+         if (y := atsoc(car u,v)) then <<
+            v := delete(y,v);
+            if not(cdr y eq 'scalar) then x := (car u . cdr y) . x
+            else x := (car u . mode) . x >>
+         else if null idp car u or get(car u,'infix) or get(car u,'stat)
              then symerr(list("Invalid parameter:",car u),nil)
-       else x := (car u . mode) . x;
-      u := cdr u;
-      go to a
+         else x := (car u . mode) . x;
+         u := cdr u >>;
+      return append(reversip!* x,vars) . v
    end;
+
+% Another function with quite a few labels and gotos...
 
 symbolic procedure procstat1 mode;
    begin scalar bool,u,type,x,y,z;
       bool := erfg!*;
-      if fname!* then progn(bool := t, go to a5)
+      if fname!* then << bool := t; go to a5 >>
        else if cursym!* eq 'procedure then type := 'expr
-       else progn(type := cursym!*,scan());
+       else << type := cursym!*; scan() >>;
       if not(cursym!* eq 'procedure) then go to a5;
       if !*reduce4 then go to a1;
       x := errorset!*('(xread (quote proc)),nil);
@@ -233,10 +234,10 @@ symbolic procedure procstat1 mode;
       fname!* := car x;   % Function name.
       if idp fname!* % and null(type memq ftypes!*)
         then if null fname!* or fname!* eq 't
-               then progn(rsverr fname!*, go to a3)
+               then << rsverr fname!*; go to a3 >>
               else if (z := gettype fname!*)
                        and null(z memq '(procedure operator))
-               then progn(typerr(list(z,fname!*),"procedure"), go to a3);
+               then << typerr(list(z,fname!*),"procedure"); go to a3 >>;
       u := cdr x;
       y := u;   % Variable list.
       if idlistp y then x := car x . y
@@ -244,7 +245,7 @@ symbolic procedure procstat1 mode;
       go to a2;
   a1: fname!* := scan();
       if not idp fname!*
-        then progn(typerr(fname!*,"procedure name"), go to a3);
+        then << typerr(fname!*,"procedure name"); go to a3 >>;
       scan();
       y := errorset!*(list('read_param_list,mkquote mode),nil);
       if errorp y then go to a3;
@@ -253,7 +254,7 @@ symbolic procedure procstat1 mode;
   a2: if idp fname!* and not getd fname!* then flag(list fname!*,'fnc);
          % To prevent invalid use of function name in body.
   a3: if eof!*>0 then
-        progn(cursym!* := '!*semicol!*, curescaped!* := nil, go to a4);
+        << cursym!* := '!*semicol!*; curescaped!* := nil; go to a4 >>;
       z := errorset!*('(xread t),nil);
       if not errorp z then z := car z;
 %     if not atom z and eqcar(car z,'!*comment!*) then z := cadr z;
@@ -263,7 +264,7 @@ symbolic procedure procstat1 mode;
                 mode,type,y,z);
   a4: remflag(list fname!*,'fnc);
       fname!* := nil;
-      if erfg!* then progn(z := nil,if not bool then error1());
+      if erfg!* then << z := nil; if not bool then error1() >>;
       return z;
   a5: errorset!*('(symerr (quote procedure) t),nil);
       go to a3

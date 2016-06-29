@@ -42,9 +42,6 @@ symbolic procedure revalpart u;
       v := cdr u;
       while v do
          begin scalar x,y,ishold;
-%@@@ Debugging print here
-%          princ "part ["; prin expn; princ "] : "; print car v;
-%@@@ End of debug print
            ishold := eqcar(expn, '!*hold);
            if atom expn then <<parterr2(expn,car v); bool := t>>
             else if not numberp(x := reval car v)

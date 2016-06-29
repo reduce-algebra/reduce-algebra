@@ -752,6 +752,7 @@ symbolic procedure build_reduce_modules names;
     make!-special '!*native_code;
     !*native_code := nil;
     get_configuration_data();
+    if !*backtrace then !*echo := t;  % To help with debugging...
     w := explodec car names;
     if !*savedef then w := append(explodec "[Bootstrap] ", w);
     window!-heading list!-to!-string w;

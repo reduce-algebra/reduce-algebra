@@ -38,8 +38,9 @@ symbolic procedure create!-package(u,v);
    if null idp car u then typerr(car u,"package name")
    else <<
 % If building the bootstrap version report the name of each package.
-      (if member('cold!-start, lispsystem!*) then <<
-          terpri(); princ "+++ Creating a package: "; print car u >>);
+      if member('cold!-start, lispsystem!*) then <<
+          if !*backtrace then << !*echo := t; enable!-errorset(3,3) >>;
+          terpri(); princ "+++ Creating a package: "; print car u >>;
       put(car u,'package,u);
       car u >>;
 

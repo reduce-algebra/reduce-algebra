@@ -58,17 +58,17 @@ symbolic procedure remcomma u;
 
 symbolic procedure eolcheck;
    if null !*eoldelimp then nil
-    else begin
-   a: if nxtsym!* eq !$eol!$
-        then progn(nxtsym!* := (if cursym!* eq 'end then '!;
-                                 else token()),
-                   go to a)
-     end;
+   else while nxtsym!* eq !$eol!$ do
+           nxtsym!* := (if cursym!* eq 'end then '!;
+                        else token());
 
 symbolic procedure xcomment(u,commentlist);
-   progn((if commentlist
-           then u := 'COMMENT . aconc(reversip commentlist,u)),
-         u);
+   if commentlist then 'COMMENT . aconc(reversip commentlist,u)
+   else u;
+
+% The code here has MANY labels and goto statements and may be in need
+% or re-writing to make it clearer... If I get to work on this it will
+% need to be re-worked in phases I suspect...
 
 symbolic procedure xread1 u;
    begin scalar v,w,x,y,z,z1,z2,commentlist;
@@ -94,9 +94,9 @@ symbolic procedure xread1 u;
         % z1: next symbol
         % z2: temporary storage;
         % commentlist: association list of read comments.
-        if commentlist!*
-          then progn(commentlist := commentlist!*,
-                     commentlist!* := nil);
+        if commentlist!* then <<
+           commentlist := commentlist!*;
+           commentlist!* := nil >>;
   a:    z := cursym!*;
   a1:   if null idp z then nil
          else if z eq '!*lpar!* then go to lparen
@@ -108,8 +108,8 @@ symbolic procedure xread1 u;
 %        else if nxtsym!* eq '!: then nil
          else if flagp(z,'delim) then go to delimit
          else if y := get(z,'stat) then go to stat
-         else if null !*reduce4 and flagp(z,'type)
-          then progn(w := lispapply('decstat,nil) . w, go to a);
+         else if null !*reduce4 and flagp(z,'type) then <<
+            w := lispapply('decstat,nil) . w; go to a >>;
   a2:   y := nil;
   a3:   w := z . w;
         % allow for implicit * after a number.
@@ -120,7 +120,7 @@ symbolic procedure xread1 u;
            and null(get(z1,'switch!*) and null(z1 eq '!())
            and null get(z1,'infix)
            and null (!*eoldelimp and z1 eq !$eol!$)
-          then progn(cursym!* := 'times, curescaped!* := nil, go to a)
+          then << cursym!* := 'times; curescaped!* := nil; go to a >>
          else if u eq 'proc and length w > 2
           then symerr("Syntax error in procedure header",nil);
   next: z := scan();
@@ -131,7 +131,7 @@ symbolic procedure xread1 u;
         if scan() eq '!*rpar!* then go to lp1    % no args
          else if flagpcar(w,'struct) then z := xread1 car w
          else z := xread1 'paren;
-        if flagp(u,'struct) then progn(z := remcomma z, go to a3)
+        if flagp(u,'struct) then << z := remcomma z; go to a3 >>
          else if null eqcar(z,'!*comma!*) then go to a3
          else if null w         % then go to a3
            then (if u eq 'lambda then go to a3
@@ -287,8 +287,8 @@ flag ('(begin),'go);
 
 symbolic procedure xread u;
    begin
-   a: scan();
-      if !*eoldelimp and cursym!* eq '!*semicol!* then go to a;
+      while << scan();
+               !*eoldelimp and cursym!* eq '!*semicol!* >> do nil;
       return xread1 u
    end;
 

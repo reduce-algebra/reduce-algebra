@@ -46,13 +46,13 @@ symbolic procedure xmodule u;
       modulename!* := u;
       mode!-list!* := !*mode . mode!-list!*;
       !*mode := 'symbolic;
-      while (y := command()) neq '(symbolic (endmodule)) do
-         progn(if eqcar(cadr y,'progn)
-                 then x := append(reversip for each j in cdadr y
-                                     collect list(car y,j),x)
-                else x := y . x,
-               if null atom cadr y and caadr y memq '(exports imports)
-                 then eval cadr y);
+      while (y := command()) neq '(symbolic (endmodule)) do <<
+         if eqcar(cadr y,'progn) then
+            x := append(reversip for each j in cdadr y
+                                 collect list(car y,j),x)
+         else x := y . x,
+         if null atom cadr y and caadr y memq '(exports imports) then
+            eval cadr y >>;
       x := reversip x;
       begin scalar !*defn, dfprint!*,!*nocrefpri;
          !*nocrefpri := t;
@@ -83,21 +83,24 @@ deflist('((xmodule rlis)),'stat);
 symbolic procedure xmodloop u;
    begin scalar x;
       flag(intfns!*,'internalfunction);
-   a: if null u then go to b;
-      x := cadar u;
-      if null atom x
-          and ((car x eq 'put
-               and caddr x = mkquote 'number!-of!-args
-               and memq(cadadr x,intfns!*))
-           or car x memq '(exports imports))
-        then nil
-       else if errorp(x := errorset!*(list('begin11,mkquote car u),t))
-        then progn(u := 'err2,go to b)
-       else if car x then progn(u := car x,go to b);
-      u := cdr u;
-      go to a;
-   b: remflag(intfns!*,'internalfunction);
-      return u
+      while x := u do <<
+         x := cadar u;
+         if null atom x and
+            ((car x eq 'put and
+              caddr x = mkquote 'number!-of!-args and
+              memq(cadadr x,intfns!*)) or
+             car x memq '(exports imports)) then nil
+         else if errorp(
+            x := errorset!*(list('begin11, mkquote car u), t)) then <<
+            x := 'err2;
+% Setting u to '(nil) will cause the while loop to terminate promptly.
+            u := '(nil) >>
+         else if car x then <<
+            x := car x;
+            u := '(nil) >>;
+         u := cdr u >>;
+      remflag(intfns!*,'internalfunction);
+      return x
    end;
 
 % Augment list of functions not needing "imports" references.

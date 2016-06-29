@@ -77,33 +77,33 @@ author2!* := "Codemist, 1989-2016";
 
 symbolic macro procedure find!-loadable!-packages u;
   begin
-    scalar i, w, e, r, r1;
+    scalar i, e;
 % Configuration information is held in a file called something like
 % "package.map".
     if boundp 'minireduce and symbol!-value 'minireduce then
-         i := "package.map"
+       i := "package.map"
     else i := "$reduce/packages/package.map";
     i := open(i, 'input);
     i := rds i;
     e := !*echo;
     !*echo := nil;
-    w := read();
+    u := read();
     !*echo := e;
     i := rds i;
     close i;
 % I make a list of all the packages that are tagged as suitable for use with
 % CSL.
-    w :=
-      for each x in w conc
+    u :=
+      for each x in u conc
          if member('csl, cddr x) then list car x else nil;
 % Now I delete the ones that will have already been loaded, since there
 % would be no merit in loading any of those a second time.
     for each x in '(rlisp cslrend smacros poly arith alg
                     mathpr tmprint entry cslcompat user
                     cslprolo) do
-      w := delete(x, w);
+      u := delete(x, u);
 % Put things in alphabetic order at least to keep things neat.
-    return mkquote sort(w, 'orderp)
+    return mkquote sort(u, 'orderp)
   end;
 
 loadable!-packages!* := find!-loadable!-packages();

@@ -118,7 +118,7 @@ symbolic procedure errorp u;
 
 symbolic procedure printprompt u;
    %Prints the prompt expression for input;
-   progn(ofl!* and wrs nil, prin2 u, ofl!* and wrs cdr ofl!*);
+   << ofl!* and wrs nil; prin2 u; ofl!* and wrs cdr ofl!* >>;
 
 symbolic procedure setcloc!*;
    % Used to set for file input a global variable CLOC!* to dotted pair
@@ -151,8 +151,8 @@ symbolic procedure commdemo;
                 z := if errorp z then '(algebraic(aeval 0))
                      else car z;
                      % eat rest of line quietly.
-             q: y  := readch();
-                if y neq !$eol!$ then go to q;
+                while (y := readch() neq !$eol!$ and
+                       y neq !$eof!$) do nil;
                 rds cadr x;
                 crbuf!* := crbuf;
                 crbuf1!* := crbuf1;
@@ -160,9 +160,9 @@ symbolic procedure commdemo;
                 ifl!* := ifl;
                 !*echo := echo;
           end
-       else
+       else<<
              % Read command from current input.
-          progn(rds cadr x, !*echo := echo, z := command());
+          rds cadr x; !*echo := echo; z := command() >>;
        return z
    end;
 
@@ -191,7 +191,7 @@ symbolic procedure command;
        else if !*struct then y := structchk y;
       if !*pret and (atom y or null (car y memq '(in out shut)))
         then if null y and cursym!* eq 'end then rprint 'end
-              else progn(rprint y,terpri());
+              else << rprint y; terpri() >>;
       if !*slin then return list('symbolic,y);
       x := form y;
       % Determine target mode.
@@ -207,12 +207,12 @@ symbolic procedure command;
         then mode := 'symbolic
        else mode := !*mode;
       return list(mode,convertmode1(x,nil,'symbolic,mode));
-   c: if !*debug then progn(prin2 "Parse: ",prettyprint y);
+   c: if !*debug then << prin2 "Parse: "; prettyprint y >>;
     % Mode analyze input.
       if key!* eq '!*semicol!* then go to a;  % Should be a comment.
       if null !*reduce4 then y := form y else y := n!_form y;
 %     y := n!_form y;
-      if !*debug then progn(terpri(),prin2 "Form: ",prettyprint y);
+      if !*debug then << terpri(); prin2 "Form: "; prettyprint y >>;
       return y
    end;
 
@@ -241,9 +241,9 @@ symbolic procedure begin1a prefixchars;
       cursym!* := '!*semicol!*;
       curescaped!* := nil;
   a:  if terminalp()
-        then progn((if !*nosave!* or statcounter=0 then nil
-                     else add2buflis()),
-                   update!_prompt());
+        then <<(if !*nosave!* or statcounter=0 then nil
+                     else add2buflis());
+                   update!_prompt()>> ;
       !*nosave!* := nil;
       !*strind := 0;     % Used by some versions of input editor.
       parserr := nil;
@@ -252,16 +252,16 @@ symbolic procedure begin1a prefixchars;
          and null !*lessspace
         then terpri();
       if tslin!*
-        then progn(!*slin := car tslin!*,
-                   lreadfn!* := cdr tslin!*,
-                   tslin!* := nil);
+        then << !*slin := car tslin!*;
+                lreadfn!* := cdr tslin!*;
+                tslin!* := nil >>;
       x := initl!*;
- b:   if x then progn(sinitl car x, x := cdr x, go to b);
+ b:   if x then << sinitl car x; x := cdr x; go to b >>;
       remflag(forkeywords!*,'delim);
       remflag(repeatkeywords!*,'delim);
       remflag( whilekeywords!*,'delim);
       if !*int then erfg!* := nil;   % To make editing work properly.
-      if cursym!* eq 'end then progn(comm1 'end, return nil)
+      if cursym!* eq 'end then << comm1 'end; return nil >>
        % Note that key* was set from *previous* command in following.
        else if terminalp() and null(key!* eq 'ed)
         then printprompt promptexp!*;
@@ -276,13 +276,14 @@ symbolic procedure begin1a prefixchars;
        else if result eq 'end then return nil
        else if result eq 'err2 then go to err2
        else if result eq 'err3 then go to err3;
-  c:  if crbuf1!* then
-        progn(lprim "Closing object improperly removed. Redo edit.",
-                crbuf1!* := nil, return nil)
+  c:  if crbuf1!* then <<
+         lprim "Closing object improperly removed. Redo edit.";
+         crbuf1!* := nil;
+         return nil >>
         else if eof!*>4
-         then progn(lprim "End-of-file read", return lispeval '(bye))
+         then << lprim "End-of-file read"; return lispeval '(bye) >>
        else if terminalp()
-        then progn(crbuf!* := nil,!*nosave!* := t,go to a)
+        then << crbuf!* := nil; !*nosave!* := t; go to a >>
        else return nil;
   err1:
       if eofcheck() or eof!*>0 then go to c
@@ -293,15 +294,15 @@ symbolic procedure begin1a prefixchars;
   err3:
       erfg!* := t;
       if null !*int and null !*errcont
-        then progn(!*defn := t,
-                   !*echo := t,
+        then << !*defn := t;
+                   !*echo := t;
                    (if null cmsg!*
-                      then lprie "Continuing with parsing only ..."),
-                   cmsg!* := t)
+                      then lprie "Continuing with parsing only ...");
+                   cmsg!* := t >>
        else if null !*errcont
-        then progn(result := pause1 parserr,
-                   (if result then return null lispeval result),
-                   erfg!* := nil)
+        then << result := pause1 parserr;
+                   (if result then return null lispeval result);
+                   erfg!* := nil >>
        else erfg!* := nil;
       go to a
    end;
@@ -316,34 +317,35 @@ symbolic procedure begin11 x;
    begin scalar errmsg!*,mode,result,newrule!*;
       if cursym!* eq 'end
          then if terminalp() and null !*lisp!_hook
-                then progn(cursym!* := '!*semicol!*,
-                           curescaped!* := nil,
-                           !*nosave!* := t,
-                           return nil)
-               else progn(comm1 'end, return 'end)
+                then << cursym!* := '!*semicol!*;
+                           curescaped!* := nil;
+                           !*nosave!* := t;
+                           return nil >>
+               else << comm1 'end; return 'end >>
        else if eqcar((if !*reduce4 then x else cadr x),'retry)
         then if programl!* then x := programl!*
-              else progn(lprim "No previous expression",return nil);
-      if null !*reduce4 then progn(mode := car x,x := cadr x);
+              else << lprim "No previous expression"; return nil >>;
+      if null !*reduce4 then << mode := car x; x := cadr x >>;
       program!* := x;    % Keep it around for debugging purposes.
       if eofcheck() then return 'c else eof!* := 0;
       add2inputbuf(x,if !*reduce4 then nil else mode);
       if null atom x
           and car x memq '(bye quit)
         then if getd 'bye
-               then progn(lispeval x, !*nosave!* := t, return nil)
-              else progn(!*byeflag!* := t, return nil)
+               then << lispeval x; !*nosave!* := t; return nil >>
+              else << !*byeflag!* := t; return nil >>
        else if null !*reduce4 and eqcar(x,'ed)
-        then progn((if getd 'cedit and terminalp()
+        then <<(if getd 'cedit and terminalp()
                       then cedit cdr x
-                     else lprim "ED not supported"),
-                   !*nosave!* := t, return nil)
+                     else lprim "ED not supported");
+                   !*nosave!* := t;
+                    return nil >>
        else if !*defn
         then if erfg!* then return nil
               else if null flagp(key!*,'ignore)
                 and null eqcar(x,'quote)
-               then progn((if x then dfprint x else nil),
-                          if null flagp(key!*,'eval) then return nil);
+               then << (if x then dfprint x else nil);
+                          if null flagp(key!*,'eval) then return nil >>;
       if !*output and ifl!* and !*echo and null !*lessspace
         then terpri();
 % If the (Lisp) variable ulimit!* is set to an integer value than that
@@ -353,20 +355,19 @@ symbolic procedure begin11 x;
 % there is a garbage collection. However because of bootstrapping I do not
 % yet have the macro "with-timeout" and so I need to use a forward
 % reference to an ordinary function.
-      if fixp ulimit!* then progn(
-%       result := with!-timeout(ulimit!*, errorset!*(x, t)),
-        result := errorset!_with!_timeout(ulimit!*, x),
-        if not atom result then result := car result)
+      if fixp ulimit!* then <<
+        result := errorset!_with!_timeout(ulimit!*, x);
+        if not atom result then result := car result >>
       else result := errorset!*(x,t);
       if errorp result or erfg!*
-        then progn(programl!* := list(mode,x),return 'err2)
+        then << programl!* := list(mode,x); return 'err2 >>
        else if !*defn then return nil;
       if null !*reduce4
         then if null(mode eq 'symbolic) then x := getsetvars x else nil
-       else progn(result := car result,
-                  (if null result then result := mkobject(nil,'noval)),
-                  mode := type result,
-                  result := value result);
+       else << result := car result;
+                  (if null result then result := mkobject(nil,'noval));
+                  mode := type result;
+                  result := value result >>;
       add2resultbuf((if null !*reduce4 then car result else result),
                     mode);
       if null !*output then return nil
@@ -393,7 +394,7 @@ symbolic procedure begin11 x;
       if null !*reduce4
         then return if errorp result then 'err3 else nil
        else if null(!*mode eq 'noval) % and !*debug
-        then progn(terpri(), prin2 "of type: ", print mode);
+        then << terpri(); prin2 "of type: "; print mode >>;
       return nil
    end;
 
@@ -418,29 +419,26 @@ flag ('(deflist flag fluid global remflag remprop unfluid),'eval);
 symbolic procedure close!-input!-files;
    % Close all input files currently open;
    begin
-      if ifl!* then progn(rds nil,ifl!* := nil);
-  aa: if null ipl!* then return nil;
-      close cadar ipl!*;
-      ipl!* := cdr ipl!*;
-      go to aa
+      if ifl!* then << rds nil; ifl!* := nil >>;
+      while ipl!* do <<
+         close cadar ipl!*;
+         ipl!* := cdr ipl!* >>;
    end;
 
 symbolic procedure close!-output!-files;
    % Close all output files currently open;
    begin
-      if ofl!* then progn(wrs nil,ofl!* := nil);
-  aa: if null opl!* then return nil;
-      close cdar opl!*;
-      opl!* := cdr opl!*;
-      go to aa
+      if ofl!* then << wrs nil; ofl!* := nil >>;
+      while opl!* do <<
+         close cdar opl!*;
+         opl!* := cdr opl!* >>;
    end;
 
 symbolic procedure add2buflis;
    begin
       if null crbuf!* then return nil;
       crbuf!* := reversip crbuf!*;   %put in right order;
-   a: if crbuf!* and seprp car crbuf!*
-        then progn(crbuf!* := cdr crbuf!*, go to a);
+      while crbuf!* and seprp car crbuf!* do crbuf!* := cdr crbuf!*;
       crbuflis!* := (statcounter . crbuf!*) . crbuflis!*;
       crbuf!* := nil
    end;
@@ -457,15 +455,15 @@ symbolic procedure add2resultbuf(u,mode);
 % main definition of add2resultbuf so that at the cost of a small extra test
 % here there will not be a need for copying and replacing the main definition.
 % Note that functions like lr_results etc are ones in the libreduce package.
-      if !*libreduce!_active then progn(
-         lr!_result(),
-         if null(semic!* eq '!$) then lr!_printer(u,mode),
-         lr!_statcounter(),
-         prin2 statcounter,
-         lr!_mode(),
-         prin2 (if !*mode eq 'symbolic then 1 else 0),
-         lr!_posttext(),
-         terpri());
+      if !*libreduce!_active then <<
+         lr!_result();
+         if null(semic!* eq '!$) then lr!_printer(u,mode);
+         lr!_statcounter();
+         prin2 statcounter;
+         lr!_mode();
+         prin2 (if !*mode eq 'symbolic then 1 else 0);
+         lr!_posttext();
+         terpri() >>;
       if mode eq 'symbolic
        or (null u and (null !*reduce4 or null(mode eq 'empty!_list)))
        or !*nosave!* then return nil;
@@ -495,12 +493,7 @@ symbolic procedure dfprint u;
    if dfprint!* then lispapply(dfprint!*,list u)
     else if cmsg!* then nil
     else if null eqcar(u,'progn) then prettyprint u
-    else begin
-            a:  u := cdr u;
-                if null u then return nil;
-                dfprint car u;
-                go to a
-         end;
+    else while (u := cdr u) do dfprint car u;
 
 
 symbolic procedure showtime;
@@ -515,7 +508,7 @@ symbolic procedure showtime;
       terpri();
       prin2 "Time: "; prin2 x; prin2 " ms";
       if null(y=0)
-        then progn(prin2 "  plus GC time: ", prin2 y, prin2 " ms");
+        then << prin2 "  plus GC time: "; prin2 y; prin2 " ms" >>;
       terpri();
       return if !*reduce4 then mknovalobj() else nil
    end;
@@ -551,7 +544,7 @@ symbolic procedure showtime1;
       terpri();
       prin2 "Time (counter 1): "; prin2 x; prin2 " ms";
       if null(y=0)
-        then progn(prin2 "  plus GC time: ", prin2 y, prin2 " ms");
+        then << prin2 "  plus GC time: "; prin2 y; prin2 " ms" >>;
       terpri();
       return if !*reduce4 then mknovalobj() else nil
    end;
@@ -568,7 +561,7 @@ symbolic procedure showtime2;
       terpri();
       prin2 "Time (counter 2): "; prin2 x; prin2 " ms";
       if null(y=0)
-        then progn(prin2 "  plus GC time: ", prin2 y, prin2 " ms");
+        then << prin2 "  plus GC time: "; prin2 y; prin2 " ms" >>;
       terpri();
       return if !*reduce4 then mknovalobj() else nil
    end;
@@ -585,36 +578,34 @@ symbolic procedure showtime3;
       terpri();
       prin2 "Time (counter 3): "; prin2 x; prin2 " ms";
       if null(y=0)
-        then progn(prin2 "  plus GC time: ", prin2 y, prin2 " ms");
+        then << prin2 "  plus GC time: "; prin2 y; prin2 " ms" >>;
       terpri();
       return if !*reduce4 then mknovalobj() else nil
    end;
 
 symbolic procedure resettime;
-% Beware - because of bootstrapping restrictions I can not use
-% << ... >> for progn here!
-  progn(otime!* := time(),
-       ogctime!* := gctime(),
-       if !*reduce4 then mknovalobj() else nil);
+  << otime!* := time();
+     ogctime!* := gctime();
+     if !*reduce4 then mknovalobj() else nil >>;
 
 symbolic procedure resettime1;
-  progn(otime1!* := time(),
-       ogctime1!* := gctime(),
-       if !*reduce4 then mknovalobj() else nil);
+  << otime1!* := time();
+     ogctime1!* := gctime();
+     if !*reduce4 then mknovalobj() else nil >>;
 
 symbolic procedure resettime2;
-  progn(otime2!* := time(),
-       ogctime2!* := gctime(),
-       if !*reduce4 then mknovalobj() else nil);
+  << otime2!* := time();
+     ogctime2!* := gctime();
+     if !*reduce4 then mknovalobj() else nil >>;
 
 symbolic procedure resettime3;
-  progn(otime3!* := time(),
-       ogctime3!* := gctime(),
-       if !*reduce4 then mknovalobj() else nil);
+  << otime3!* := time();
+     ogctime3!* := gctime();
+     if !*reduce4 then mknovalobj() else nil >>;
 
 
 symbolic procedure sinitl u;
-   set(u,eval get(u,'initl));
+   set(u, eval get(u, 'initl));
 
 % Beware - at least under PSL at this stage if you use "_" within a name
 % you need to escape it.
@@ -652,12 +643,12 @@ symbolic procedure read!-init!-file name;
                then x; % for (Open) VMS
    if null fname then return nil
     else if !*mode neq 'algebraic and null !*rlisp88
-     then progn(oldmode := !*mode, !*mode := 'algebraic);
+     then << oldmode := !*mode; !*mode := 'algebraic >>;
    x := errorset(list('in!_list1,fname,nil),nil,nil);
-   if errorp x or erfg!* then
-     progn(terpri(),
-           prin2 "***** Error processing resource file ",
-           prin2t fname);
+   if errorp x or erfg!* then <<
+      terpri();
+      prin2 "***** Error processing resource file ";
+      prin2t fname >>;
    close!-input!-files();
    erfg!*:= cmsg!* := !*defn := nil;
    if oldmode then !*mode := oldmode;
