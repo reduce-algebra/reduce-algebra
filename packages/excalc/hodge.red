@@ -102,7 +102,8 @@ symbolic procedure xpndhodge2(u,v);
    begin scalar h,rw,x;
      h := cadr v;
      rw := cddr v;
-     x := cdadr h .* multsq(mksgnsq multf(car v,deg!*form h),sgn!*) .+ nil;
+     x := cdadr h .* multsq(mksgnsq multf(car v,deg!*form h),
+                            resimp sgn!*) .+ nil;
      a: if h eq car u then go to b;
         x := hodgeinnerprodwedgepf(car u,x);
         u := cdr u;
@@ -116,22 +117,25 @@ symbolic procedure xpndhodge2(u,v);
 
 symbolic procedure hodgeinnerprodwedgepf(u,v);
    if null v then nil
-    else addpf(multpfsq(hodgeinnerprodwedge1(u,caar v),cdar v),
+    else addpf(multpfsq(hodgeinnerprodwedge1(u,caar v,nil),cdar v),
                hodgeinnerprodwedgepf(u,cdr v));
 
-symbolic procedure hodgeinnerprodwedge1(u,v);
-   if null rwf v then mkunarywedge hodgeinnerprod(u,lwf v)
+symbolic procedure hodgeinnerprodwedge1(u,v,w);
+   if null rwf v 
+      then mkunarywedge multpfsq(hodgeinnerprod(u,lwf v),mksgnsq w)
     else addpf(if null rwf rwf v and (deg!*form lwf rwf v = 1)
                   then multpfsq(!*k2pf list lwf v,
-                                multsq(mksgnsq deg!*form lwf v,
+                                multsq(mksgnsq addf(deg!*form lwf v,w),
                                        !*pf2sq hodgeinnerprod(u,lwf rwf v)))
                 else wedgepf2(!*k2pf lwf v,
-                              hodgeinnerprodwedge1(u,rwf v)),
+                              hodgeinnerprodwedge1(u,rwf v,
+                                                   addf(w,deg!*form lwf v))),
                if deg!*form lwf v = 1
                   then multpfsq(!*k2pf rwf v,
-                                !*pf2sq hodgeinnerprod(u,lwf v))
+                                multsq(!*pf2sq hodgeinnerprod(u,lwf v),
+                                       mksgnsq w))
                 else wedgepf2(hodgeinnerprod(u,lwf v),
-                              rwf v .* (1 ./ 1) .+ nil));
+                              rwf v .* mksgnsq w .+ nil));
 
 symbolic procedure hodgeinnerprod(u,v);
    hodgepf mkuniquewedge wedgepf2(!*k2pf u,mkunarywedge mkhodge v);
