@@ -328,13 +328,6 @@ a     (setq hold (nconc hold (list (xread1 nil))))
       (setq bool (xread t))
       (cond
          (bool2 (remflag '(do !~do) 'delim)))
-% A few lines of debugging @@@
-(terpri) (prin2 "^^^^^^ cursym!* = ") (print cursym!*)
-(print (prop 'do))
-(print (prop '!~do))
-(print (prop 'while))
-(print (getd 'while))
-(print (prop 'whilstat))
       (cond
          ((and (not (eq cursym!* 'do))
                (not (eq cursym!* '!~do))) (symerr 'while t)))

@@ -103,13 +103,18 @@ module 'yylex;
 %     character within names.
 %     Common Lisp allows names to be written as "|any chars|" and may
 %     have special treatment of ":" within names: I will not support those
-%     options.
+%     options. Sor SML I allow dots within names (so they are "long
+%     identifiers". I do not at this stage provide any hooks to link those
+%     into the module system.
 %
 % (2) Strings will be in (") marks, but there is an issue about escapes.
 %     Many languages allow (\) escapes within strings and the exact rules
 %     can be messy. But if that is what is provided I think I should
 %     merely accept that the character after a (\) is treated as a generic
-%     character and is not special even if it is (\) or (").
+%     character and is not special even if it is (\) or ("). This means
+%     that the (Lisp) string that I build will have the backslash present,
+%     so in some cases a layer of past-lexing translation will be needed
+%     to interpret escapes.
 %
 % (3) Character literals may be like string literals but with single
 %     quotes?
@@ -119,19 +124,26 @@ module 'yylex;
 %
 % I intend (at least at present) to take a simple view that numbers are
 % written in a naive simple way. That means that (at present) I will not
-% support suffix notation such as "1LL", and if I support non-decimal
-% notation at all it will be as in C/C++. Floating point may only use
+% support suffix notation such as "1LL". Floating point may only use
 % the letter (E) or (e) as an exponent marker. I am certainly not going to
-% play games with Common Lisp "potential numbers"!
+% play games with Common Lisp "potential numbers"! But I do allow hex
+% numbers wioth 0xDDDD. For SML I make a prefix "~" for negation part of
+% the numeric token, but I do not support "word" values as in 0xDDDD. There
+% is no octal input, so numbers that start with a zero are not handled in any
+% special magic manner, and 077 means 77 (decimal) not 63 (decimal).
 %
 
 % (R)LISP SPECIALS
 %
 % For Rlisp/Lisp I want (') to act as a read-macro that leads to the
-% parsing of an s-expression! I will also make the lexer handle "#if" style
-% conditional sections.
+% parsing of an s-expression! (`), (,) and (,@) are also introduce or
+% are accepted within s-expressions in a way that it is hoped will feel
+% reasonable to Lisp users.
 %
 %
+% PREPROCESSING
+%
+% I can support the RLISP version of #if, #define and #eval.
 %
 % In the face of all this I will simplify and support just a small menu
 % of regimes:
@@ -140,10 +152,20 @@ module 'yylex;
 %         are "!" as an escape character, "'" to introduce quoted expressions
 %         "%" for comments and "#if" for conditional inclusion.
 %  C/C++: Both "/*..*/" and "//" comments with broadly C-like rules for
-%         names and strings. I do not support preprocessor directives.
+%         names and strings. I do not support preprocessor directives at all
+%         because the version of #if that I could support is not quite
+%         comfortably C-like enough. I could presumably upgrade that to come
+%         close to having a full C pre-processor if I really needed to.
 %  SML:   Provided because I happen to have some SML that I wish to process.
 %         "(*..*)" nesting comments and sequences of operator-characters
-%         making up a single token are characteristic.
+%         making up a single token are characteristic. Identifiers can be
+%         built from punctuation sequences such as |==|, and names can have
+%         embedded dots, as in "package_part.detail_part". No special
+%         interpretation of the dots is done here. There is special
+%         treatment for type names. A symbol can start with a (') and is then
+%         classed as a type-name not a name, and other symbols can be
+%         manually markes as type identifiers (eg words like "int" and "list"
+%         will be).
 %  Simple: For simple scripting I will provide a lexical scheme where "#"
 %         introduces a comment and syntax is otherwise rather C-like.
 %  TeX:   No strings, and names can be things lile "\begin" and "\(".
@@ -155,7 +177,8 @@ module 'yylex;
 % and treated specially.
 
 fluid '(lexer_style!*
-        lexer_style_rlisp lexer_style_C lexer_style_SML lexer_style_script);
+        lexer_style_rlisp lexer_style_C lexer_style_SML
+        lexer_style_script lexer_style_TeX);
 
 % One thing to note about "#define" here is that the naming that it
 % introduces is not carried through to the compiled module that is
@@ -180,15 +203,15 @@ fluid '(lexer_style!*
 #define lexer_cont_prime         0x10000    %  a'' is a symbol
 #define lexer_sml_operators      0x20000    %  +++*+++ is a symbol
 #define lexer_lispquote          0x40000    %  '(s-expression) accepted
-#define lexer_spare1             0x80000    % 2^19   spare
-#define lexer_spare2            0x100000    % 2^20   spare
-#define lexer_spare3            0x200000    % 2^21   spare
-#define lexer_spare4            0x400000    % 2^22   spare
-#define lexer_spare5            0x800000    % 2^23   spare
+#define lexer_dotted_names       0x80000    %  a.b.c is a symbol
+#define lexer_spare1            0x100000    % 2^20   spare
+#define lexer_spare2            0x200000    % 2^21   spare
+#define lexer_spare3            0x400000    % 2^22   spare
+#define lexer_spare4            0x800000    % 2^23   spare
 
 % Establish simple names for some plausible combinations of options.
 
-lexer_style_rlisp :=          % For use with Standard Lisp/Rlisp/REDUCE
+lexer_style_rlisp :=          % For use with Standard Lisp/Rlisp/REDUCE.
    lexer_comment_percent +
    lexer_hashif +
    lexer_string +
@@ -197,7 +220,7 @@ lexer_style_rlisp :=          % For use with Standard Lisp/Rlisp/REDUCE
    lexer_escape_pling +
    lexer_lispquote;
   
-lexer_style_C :=              % For use with C, C++, Java
+lexer_style_C :=              % For use with C, C++, Java.
    lexer_comment_slashslash +
    lexer_comment_slashstar +
    lexer_char +
@@ -206,23 +229,28 @@ lexer_style_C :=              % For use with C, C++, Java
    lexer_start_underscore +
    lexer_cont_underscore;
   
-lexer_style_SML :=            % For use with SML
+lexer_style_SML :=            % For use with SML.
    lexer_comment_lparstar +
    lexer_comment_nesting +
    lexer_string +
    lexer_string_escapes +
    lexer_start_underscore +
    lexer_cont_underscore +
+   lexer_dotted_names +
    lexer_start_prime +
    lexer_cont_prime +
    lexer_sml_operators;
   
-lexer_style_script :=         % For simple configuration files and scripts
+lexer_style_script :=         % For simple configuration files and scripts.
    lexer_comment_hash +
    lexer_string +
    lexer_string_escapes +
    lexer_start_underscore +
    lexer_cont_underscore;
+  
+lexer_style_TeX :=            % For TeX. 
+   lexer_comment_percent +
+   lexer_start_backslash;
   
 lexer_style!* := lexer_style_rlisp;
 
@@ -608,7 +636,7 @@ symbolic procedure lex_init();
 % is easy. It makes it possible to express arbitrary conditions, but it is
 % hoped that most conditions will not be very elaborate - things like
 %    #if (not (member 'csl lispsystem!*))
-%         error();
+%         error(..., ...);
 %    #else
 %         magic();
 %    #endif
@@ -844,11 +872,12 @@ symbolic procedure lexer_word_continues ch;
   liter ch or
   digit ch or
   (ch = '!_ and lexer_option(lexer_cont_underscore)) or
+  (ch = '!. and lexer_option(lexer_dotted_names)) or
   (ch = '!' and lexer_option(lexer_cont_prime));
 
 symbolic procedure lex_basic_token();
   begin
-    scalar r, w;
+    scalar r, w, negate;
 % The item I peeked ahead and read will have started with a letter or an
 % exclamation mark so should be a :symbol or some keyword, and not either
 % a number or a string. And one further key fact is that it can not have
@@ -926,12 +955,17 @@ symbolic procedure lex_basic_token();
 % here I keep a flag (in w) to indicate if I had a floating or integer
 % value, but in the end I ignore this and hand back the lexical category
 % for :number in both cases.
-    else if digit lex_char then <<
+% For SML I seem to need "~NNNN" to parse as a number.
+    else if digit lex_char or
+       (lex_char = '!~ and lexer_option(lexer_sml_operators) and
+        lex_unicode_numeric(yypeek())) then <<
+      if lex_char = '!~ then << negate := t; yyreadch() >>;
 % I support hexadecimal input with syntax like 0xDDDD for hex digits DDDD.
       if lex_char = '!0 and (yypeek() = 'x or yypeek() = '!X) then <<
         yylval := 0;
         yyreadch();
         while (w := lex_hexval yyreadch()) do yylval := 16*yylval + w;
+        if negate then yylval := -yylval;
         return lex_number_code >>;
       r := list lex_char;
       while << yyreadch(); digit lex_char >> do r := lex_char . r;
@@ -957,6 +991,7 @@ symbolic procedure lex_basic_token();
           while << yyreadch(); digit lex_char >> do r := lex_char . r >> >>;
 % Here I have a number, so I can use compress to parse it.
       yylval := compress reversip r;
+      if negate then yylval := -yylval;
       return lex_number_code >>
     else if lex_char = '!" and lexer_option(lexer_string) then <<
       if lexer_option(lexer_string_rlisp) then

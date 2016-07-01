@@ -304,13 +304,88 @@ symbolic procedure lalr_cleanup();
 
 fluid '(pending_rules!*);
 
+symbolic procedure lalr_extract_nonterminals r;
+% r should be a list (s1 s2 ...)
+  if null r then nil
+  else if atom r then rederr list("Malformed production", r,
+    "(RHS should be a list of tokens, not a non-nil atom)")
+  else if stringp car r then lalr_extract_nonterminals cdr r
+  else if idp car r then <<
+    if get(car r, 'lex_fixed_code) then lalr_extract_nonterminals cdr r
+    else car r . lalr_extract_nonterminals cdr r >>
+  else if atom car r then rederr list("Malformed production", r,
+    "(atomic item in token list should be symbol or string)")
+  else if memq(caar r, '(opt star plus list listplus or)) then
+     append(lalr_extract_nonterminals cdar r, lalr_extract_nonterminals cdr r)
+  else rederr list("Malformed production", r,
+    "(unrecognised item in rule)");
+
+% The procedure checks for missing, duplicated or malformed entries
+% in the grammar specification, so that problems of that simple
+% sort can be reported early.
+
+symbolic procedure lalr_check_grammar g;
+  begin
+    scalar r, q, w, w1;
+    if null g then rederr "Empty grammar is illegal";
+% Some check for basic sanity of the grammar structure, and that
+% no non-terminals are multiply defined in it.
+    for each x on g do
+       if atom car x then rederr list("Improper item", car x,
+                                      "at top level in grammar")
+       else if not idp caar x then
+          rederr list("Malformed grammar rule", car x,
+                      "does not start with identifier")
+       else if assoc(caar x, cdr x) then
+          rederr list("Non-terminal", caar x, "repeated in grammar")
+       else if atom cdar x or atom cadar x then
+          rederr list("Malformed grammar rule", car x,
+                      "has empty right hand side");
+% I now want a search of the grammar collecting all the non-terminals
+% reachable from the initial one. I will have a queue called q.
+    q := list car g;
+    r := nil;
+    while q do <<
+       w := car q;   % Take next item from queue
+       q := cdr q;
+       r := w . r;   % Put it in result list
+% w is something like
+%    (lhs   ( (s1 s2 ... sn) actions)
+%           ( (t1 t2 ...) actions))
+       for each p in cdr w do <<
+% p will be ( (s1 s2 ...) actions)
+          for each s in lalr_extract_nonterminals car p do <<
+% s should range over s1, s2, ...
+             w1 := assoc(s, g);
+             if null w1 then rederr list("Symbol", s,
+                "used in grammar but not defined");
+% If I identify a non-terminal that is neither queued nor put in
+% the result already then put it in the queue for later processing.
+             if not assoc(s, r) and not assoc(s, q) then
+                q := w1 . q >> >> >>;
+% Now see if any of the initial productions have not been used up.
+     for each x in r do g := delasc(car x, g);
+     if g and !*msg then <<
+        lprim "Unused clauses in grammar:";
+        prettyprint g >>;
+% The result list has been built up in reversed order... so put it back.
+% This is important because the first non-terminal listed will be the
+% main target that the parser tries to satisfy.
+     return reversip r
+  end;
+
 symbolic procedure lalr_expand_grammar g;
   begin
     scalar pending_rules!*, w, r;
+% Before I do anything else I wish to check that the grammar as passed
+% is basically well formed and does not have either missing or redundant
+% rules in it.
+    g := lalr_check_grammar g;
     pending_rules!* := g;
 % The use of the fluid variable pending_rules!* here is because when I
-% expand one rule that may generate othersd which willl themselves in turn
+% expand one rule that may generate others which will themselves in turn
 % need to be scanned.
+    r := nil;
     while pending_rules!* do <<
       w := car pending_rules!*;
       pending_rules!* := cdr pending_rules!*;
@@ -395,7 +470,7 @@ symbolic procedure expand_terminal z;
       pending_rules!* :=
         (g1 . for each q in cdr z collect list list q) . pending_rules!*;
       return g1 >>
-    else error(0, "Invalid item in a rule")
+    else rederr "Invalid item in a rule"
   end;
 
 
@@ -448,12 +523,8 @@ symbolic procedure lalr_set_grammar(precedence_list, grammar);
   end;
 
 symbolic procedure lalr_augment_grammar grammar;
-  begin
-    if assoc('!S!', grammar) then
-      return grammar
-    else 
-      return list('!S!', list list caar grammar) . grammar
-  end;
+   if assoc('!S!', grammar) then grammar
+   else list('!S!', list list caar grammar) . grammar;
 
 symbolic procedure lalr_create_precedence_table (precedence_list, lex_codes);
   begin
@@ -1124,7 +1195,7 @@ symbolic procedure lalr_process_reductions;
            reduction_fn, reduction_lhs, reduction_rhs_length;
 
     code := -1;
-    % print nonterminals; print lalr_productions car nonterminals; error(1,"");
+    % print nonterminals; print lalr_productions car nonterminals; rederr "";
     for each x in nonterminals do 
       for each production in lalr_productions x do <<
         canonical_reduction := (x . length car production) . cdr production;
@@ -1182,6 +1253,5 @@ symbolic procedure lalr_construct_fn(lambda_expr, args_n);
 symbolic procedure lalr_make_arglist n;
   for i := 1:n collect
     intern list2string ('!$ . explode2 i);
-
 
 end;

@@ -479,8 +479,6 @@ LispObject make_stream_handle(void)
     return w;
 }
 
-#ifdef COMMON
-
 LispObject Lmake_broadcast_stream_n(LispObject nil, int nargs, ...)
 {   LispObject r = nil, w, w1;
     va_list a;
@@ -601,6 +599,11 @@ LispObject Lmake_echo_stream(LispObject nil, LispObject a, LispObject b)
     return onevalue(w);
 }
 
+// string input streams are not implemented yet, but I can read from a
+// list so all I would need to do would be to use explodec to turn the
+// string into a list of characters and then I have at least all the
+// basic mechanisms necessary.
+
 LispObject Lmake_string_input_stream_n(LispObject, int, ...)
 {   return aerror("make-string-input-stream");
 }
@@ -648,8 +651,6 @@ LispObject Lget_output_stream_string(LispObject nil, LispObject a)
     }
     return a;
 }
-
-#endif // COMMON
 
 //
 // (make-function-stream 'fn) makes a stream where output just passes
@@ -5558,6 +5559,8 @@ setup_type const print_setup[] =
     {"list-directory",          Llist_directory, too_many_1, wrong_no_1},
     {"chdir",                   Lchange_directory, too_many_1, wrong_no_1},
     {"make-function-stream",    Lmake_function_stream, too_many_1, wrong_no_1},
+    {"make-string-output-stream",wrong_no_na, wrong_no_nb, Lmake_string_output_stream},
+    {"get-output-stream-string",Lget_output_stream_string, too_many_1, wrong_no_1},
     {"get-current-directory",   wrong_no_na, wrong_no_nb, Lget_current_directory},
     {"user-homedir-pathname",   wrong_no_na, wrong_no_nb, Luser_homedir_pathname},
     {"get-lisp-directory",      wrong_no_na, wrong_no_nb, Lget_lisp_directory},
@@ -5603,39 +5606,6 @@ setup_type const print_setup[] =
     {"set-print-precision",     Lprint_precision, too_many_1, wrong_no_1},
     {"setprintprecision",       Lprint_precision, too_many_1, wrong_no_1},
     {"getprintprecision",       wrong_no_na, wrong_no_nb, Lget_precision},
-#ifdef COMMON
-    {"charpos",                 Lposn_1, wrong_no_nb, Lposn},
-    {"finish-output",           Lflush1, wrong_no_nb, Lflush},
-    {"make-synonym-stream",     Lmake_synonym_stream, too_many_1, wrong_no_1},
-    {"make-broadcast-stream",   Lmake_broadcast_stream_1, Lmake_broadcast_stream_2, Lmake_broadcast_stream_n},
-    {"make-concatenated-stream",Lmake_concatenated_stream_1, Lmake_concatenated_stream_2, Lmake_concatenated_stream_n},
-    {"make-two-way-stream",     too_few_2, Lmake_two_way_stream, wrong_no_2},
-    {"make-echo-stream",        too_few_2, Lmake_echo_stream, wrong_no_2},
-    {"make-string-input-stream",Lmake_string_input_stream_1, Lmake_string_input_stream_2, Lmake_string_input_stream_n},
-    {"make-string-output-stream",wrong_no_na, wrong_no_nb, Lmake_string_output_stream},
-    {"get-output-stream-string",Lget_output_stream_string, too_many_1, wrong_no_1},
-    {"close",                   Lclose, too_many_1, wrong_no_1},
-    {"~tyo",                    Ltyo, too_many_1, wrong_no_1},
-// At least as a temporary measure I provide these in COMMON mode too
-    {"explode",                 Lexplode, too_many_1, wrong_no_1},
-    {"explodec",                Lexplodec, too_many_1, wrong_no_1},
-    {"explode2",                Lexplodec, too_many_1, wrong_no_1},
-    {"explode2lc",              Lexplode2lc, too_many_1, wrong_no_1},
-    {"exploden",                Lexploden, too_many_1, wrong_no_1},
-    {"explodecn",               Lexplodecn, too_many_1, wrong_no_1},
-    {"explode2n",               Lexplodecn, too_many_1, wrong_no_1},
-    {"explode2lcn",             Lexplode2lcn, too_many_1, wrong_no_1},
-    {"explodehex",              Lexplodehex, too_many_1, wrong_no_1},
-    {"explodeoctal",            Lexplodeoctal, too_many_1, wrong_no_1},
-    {"explodebinary",           Lexplodebinary, too_many_1, wrong_no_1},
-    {"prin",                    Lprin, too_many_1, wrong_no_1},
-    {"prin1",                   Lprin, too_many_1, wrong_no_1},
-    {"princ",                   Lprinc, too_many_1, wrong_no_1},
-    {"prin2",                   Lprinc, too_many_1, wrong_no_1},
-    {"prin2a",                  Lprin2a, too_many_1, wrong_no_1},
-    {"print",                   Lprint, too_many_1, wrong_no_1},
-    {"printc",                  Lprintc, too_many_1, wrong_no_1},
-#else
     {"close",                   Lclose, too_many_1, wrong_no_1},
     {"explode",                 Lexplode, too_many_1, wrong_no_1},
     {"explodec",                Lexplodec, too_many_1, wrong_no_1},
@@ -5657,6 +5627,17 @@ setup_type const print_setup[] =
     {"prin2a",                  Lprin2a, too_many_1, wrong_no_1},
     {"print",                   Lprint, too_many_1, wrong_no_1},
     {"printc",                  Lprintc, too_many_1, wrong_no_1},
+#ifdef COMMON
+    {"charpos",                 Lposn_1, wrong_no_nb, Lposn},
+    {"finish-output",           Lflush1, wrong_no_nb, Lflush},
+    {"make-synonym-stream",     Lmake_synonym_stream, too_many_1, wrong_no_1},
+    {"make-broadcast-stream",   Lmake_broadcast_stream_1, Lmake_broadcast_stream_2, Lmake_broadcast_stream_n},
+    {"make-concatenated-stream",Lmake_concatenated_stream_1, Lmake_concatenated_stream_2, Lmake_concatenated_stream_n},
+    {"make-two-way-stream",     too_few_2, Lmake_two_way_stream, wrong_no_2},
+    {"make-echo-stream",        too_few_2, Lmake_echo_stream, wrong_no_2},
+    {"make-string-input-stream",Lmake_string_input_stream_1, Lmake_string_input_stream_2, Lmake_string_input_stream_n},
+    {"~tyo",                    Ltyo, too_many_1, wrong_no_1},
+#else
     {"tyo",                     Ltyo, too_many_1, wrong_no_1},
 #endif
     {NULL,                      0, 0, 0}

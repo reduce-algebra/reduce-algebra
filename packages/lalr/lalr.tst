@@ -283,8 +283,11 @@ grammar := '(
   (s  ((cc cc)  )   % One production for S, no explicit semantic here
   )
   (cc (("c" cc) (list 'c !$2))   % First production for C
-      (("d")    'd           )   % Second production for C
-  ))$
+      (("d")    'd           ))  % Second production for C
+% I put in a redundant (unused) clause here to illustrate that it is
+% detected and reported.
+  (redundant (()))
+  )$
 
 g := lalr_create_parser(nil, grammar)$
 

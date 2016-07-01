@@ -400,13 +400,19 @@ grammar := '(
   (s  ((cc cc)  )   % One production for S, no explicit semantic here
   )
   (cc (("c" cc) (list 'c !$2))   % First production for C
-      (("d")    'd           )   % Second production for C
-  ))$
+      (("d")    'd           ))  % Second production for C
+% I put in a redundant (unused) clause here to illustrate that it is
+% detected and reported.
+  (redundant (()))
+  )$
 
 
 
 g := lalr_create_parser(nil, grammar)$
 
+
+*** Unused clauses in grammar: 
+((redundant (nil)))
 === Terminal symbols ===
    d [28]
    c [27]
@@ -1112,39 +1118,39 @@ Token '!,' allocated code 57
 [4] LALR_INTERNAL_18: to                        { nil }
                     | <empty>                   { nil }
 
-[5] FUNCALL         : FUNCALL CLOSEDEXPRESSION  { nil }
+[5] SEQUENCE        : LALR_INTERNAL_19          { nil }
+
+[6] LALR_INTERNAL_19: EXPRESSION LALR_INTERNAL_21 
+                                                { ((cons !$1 !$2)) }
+                    | <empty>                   { nil }
+
+[7] LALR_INTERNAL_21: ; EXPRESSION LALR_INTERNAL_21 
+                                                { ((cons !$2 !$3)) }
+                    | <empty>                   { nil }
+
+[8] FUNCALL         : FUNCALL CLOSEDEXPRESSION  { nil }
                     | CLOSEDEXPRESSION          { nil }
 
-[6] CLOSEDEXPRESSION: [ EXPRLIST ]              { ((cons (quote bracket) !$2)) }
+[9] CLOSEDEXPRESSION: [ EXPRLIST ]              { ((cons (quote bracket) !$2)) }
                     | ( SEQUENCE )              { ((cons (quote paren) !$2)) }
                     | ( EXPRLIST )              { ((cons (quote paren) !$2)) }
                     | let SEQUENCE in SEQUENCE end 
                                                 { ((list (quote letstat) !$2 
                                                   !$4)) }
-                    | LALR_INTERNAL_19          { nil }
+                    | LALR_INTERNAL_22          { nil }
                     | :number                   { nil }
                     | :symbol                   { nil }
 
-[7] LALR_INTERNAL_19: :string LALR_INTERNAL_19  { ((cons !$1 !$2)) }
+[10] LALR_INTERNAL_22: :string LALR_INTERNAL_22 { ((cons !$1 !$2)) }
                     | :string                   { ((list !$1)) }
 
-[8] EXPRLIST        : LALR_INTERNAL_21          { nil }
-
-[9] LALR_INTERNAL_21: EXPRESSION LALR_INTERNAL_23 
-                                                { ((cons !$1 !$2)) }
-                    | <empty>                   { nil }
-
-[10] LALR_INTERNAL_23: , EXPRESSION LALR_INTERNAL_23 
-                                                { ((cons !$2 !$3)) }
-                    | <empty>                   { nil }
-
-[11] SEQUENCE       : LALR_INTERNAL_24          { nil }
+[11] EXPRLIST       : LALR_INTERNAL_24          { nil }
 
 [12] LALR_INTERNAL_24: EXPRESSION LALR_INTERNAL_26 
                                                 { ((cons !$1 !$2)) }
                     | <empty>                   { nil }
 
-[13] LALR_INTERNAL_26: ; EXPRESSION LALR_INTERNAL_26 
+[13] LALR_INTERNAL_26: , EXPRESSION LALR_INTERNAL_26 
                                                 { ((cons !$2 !$3)) }
                     | <empty>                   { nil }
 
@@ -1156,20 +1162,20 @@ LALR_INTERNAL_15:   :string [ ( let :number :symbol return goto go if fun
 LALR_INTERNAL_17:   NIL ; 
 EXPRESSION:         :string :symbol :number let ( [ fun if go goto return 
 LALR_INTERNAL_18:   NIL to 
+SEQUENCE:           :string :symbol :number let ( [ NIL fun if go goto return 
+LALR_INTERNAL_19:   :string [ ( let :number :symbol NIL return goto go if fun 
+LALR_INTERNAL_21:   NIL ; 
 FUNCALL:            :string [ ( let :number :symbol 
 CLOSEDEXPRESSION:   :string :symbol :number let ( [ 
-LALR_INTERNAL_19:   :string 
+LALR_INTERNAL_22:   :string 
 EXPRLIST:           :string :symbol :number let ( [ NIL fun if go goto return 
-LALR_INTERNAL_21:   :string [ ( let :number :symbol NIL return goto go if fun 
-LALR_INTERNAL_23:   NIL , 
-SEQUENCE:           :string :symbol :number let ( [ NIL fun if go goto return 
 LALR_INTERNAL_24:   :string [ ( let :number :symbol NIL return goto go if fun 
-LALR_INTERNAL_26:   NIL ; 
+LALR_INTERNAL_26:   NIL , 
 
 === LALR ITEMSET COLLECTION ===
 Itemset 0
  S' -> . PROGRAM [$]
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [:=/>/=>/neq/==/<=/</-/+///*/eof/:string
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [:=/>/=>/neq/==/<=/</-/+///*/eof/:string
 /:symbol/:number/let/(/[/;]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [:=/>/=>/neq/==/<=/</-/+///*/eof/:string/:sy
 mbol/:number/let/(/[/;]
@@ -1207,9 +1213,9 @@ ber/let/(/[/;/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [:=/>/=>/neq/==/<=/</-/+///*/:string/:sym
 bol/:number/let/(/[/;/eof]
  LALR_INTERNAL_15 -> . EXPRESSION LALR_INTERNAL_17 [eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [:=/>/=>/neq/==/<=/</-/+///*/eof
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [:=/>/=>/neq/==/<=/</-/+///*/eof
 /[/(/let/:number/:symbol/:string/;]
- LALR_INTERNAL_19 -> . :string [:=/>/=>/neq/==/<=/</-/+///*/eof/[/(/let/:number/
+ LALR_INTERNAL_22 -> . :string [:=/>/=>/neq/==/<=/</-/+///*/eof/[/(/let/:number/
 :symbol/:string/;]
  PROGRAM -> . LALR_INTERNAL_15 eof [$]
 GOTO(PROGRAM) = 1
@@ -1217,7 +1223,7 @@ GOTO(LALR_INTERNAL_15) = 2
 GOTO(EXPRESSION) = 3
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -1267,7 +1273,7 @@ GOTO(*) = 32
 GOTO(;) = 80
 
 Itemset 4
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [end/else/then/in/)/,/]/:=/>/=>/neq/==/<
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [end/else/then/in/)/,/]/:=/>/=>/neq/==/<
 =/</-/+///*/:string/:symbol/:number/let/(/[/;/eof]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [end/else/then/in/)/,/]/:=/>/=>/neq/==/<=/</
 -/+///*/:string/:symbol/:number/let/(/[/;/eof]
@@ -1314,12 +1320,12 @@ q/=>/>/:=/then/;/[/(/let/:number/:symbol/:string/*///+/-/</<=/==/neq/=>/>/:=/[/(
 />/:=/end/;/[/(/let/:number/:symbol/:string/*///+/-/</<=/==/neq/=>/>/:=/,/[/(/le
 t/:number/:symbol/:string/*///+/-/</<=/==/neq/=>/>/:=/;/[/(/let/:number/:symbol/
 :string/*///+/-/</<=/==/neq/=>/>/:=]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [eof/;/[/(/let/:number/:symbol/:
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [eof/;/[/(/let/:number/:symbol/:
 string/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/in/then/else/end]
- LALR_INTERNAL_19 -> . :string [eof/;/[/(/let/:number/:symbol/:string/*///+/-/</
+ LALR_INTERNAL_22 -> . :string [eof/;/[/(/let/:number/:symbol/:string/*///+/-/</
 <=/==/neq/=>/>/:=/]/,/)/in/then/else/end]
 GOTO(CLOSEDEXPRESSION) = 19
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -1352,7 +1358,7 @@ ing/*///+/-/</<=/==/neq/=>/>/:=/end/;/[/(/let/:number/:symbol/:string/*///+/-/</
 ;/[/(/let/:number/:symbol/:string/*///+/-/</<=/==/neq/=>/>/:=]
 
 Itemset 6
- CLOSEDEXPRESSION -> LALR_INTERNAL_19 . [;/[/(/let/:number/:symbol/:string/eof/*
+ CLOSEDEXPRESSION -> LALR_INTERNAL_22 . [;/[/(/let/:number/:symbol/:string/eof/*
 ///+/-/</<=/==/neq/=>/>/:=/,/[/(/let/:number/:symbol/:string/]/*///+/-/</<=/==/n
 eq/=>/>/:=/,/[/(/let/:number/:symbol/:string/)/*///+/-/</<=/==/neq/=>/>/:=/;/[/(
 /let/:number/:symbol/:string/)/*///+/-/</<=/==/neq/=>/>/:=/;/[/(/let/:number/:sy
@@ -1376,11 +1382,11 @@ mbol/:string/*///+/-/</<=/==/neq/=>/>/:=/;/[/(/let/:number/:symbol/:string/end/*
 /=>/>/:=/;/[/(/let/:number/:symbol/:string/*///+/-/</<=/==/neq/=>/>/:=]
 
 Itemset 7
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [end/else/=/then/in/)/]/,/:=/>/=
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [end/else/=/then/in/)/]/,/:=/>/=
 >/neq/==/<=/</-/+///*/eof/[/(/let/:number/:symbol/:string/;]
- LALR_INTERNAL_19 -> . :string [end/else/=/then/in/)/]/,/:=/>/=>/neq/==/<=/</-/+
+ LALR_INTERNAL_22 -> . :string [end/else/=/then/in/)/]/,/:=/>/=>/neq/==/<=/</-/+
 ///*/eof/[/(/let/:number/:symbol/:string/;]
- LALR_INTERNAL_19 -> :string . LALR_INTERNAL_19 [;/:string/:symbol/:number/let/(
+ LALR_INTERNAL_22 -> :string . LALR_INTERNAL_22 [;/:string/:symbol/:number/let/(
 /[/eof/*///+/-/</<=/==/neq/=>/>/:=/,/:string/:symbol/:number/let/(/[/]/*///+/-/<
 /<=/==/neq/=>/>/:=/,/:string/:symbol/:number/let/(/[/)/*///+/-/</<=/==/neq/=>/>/
 :=/;/:string/:symbol/:number/let/(/[/)/*///+/-/</<=/==/neq/=>/>/:=/;/:string/:sy
@@ -1402,7 +1408,7 @@ ber/let/(/[/*///+/-/</<=/==/neq/=>/>/:=/:string/:symbol/:number/let/(/[/*///+/-/
 mbol/:number/let/(/[/*///+/-/</<=/==/neq/=>/>/:=/;/:string/:symbol/:number/let/(
 /[/end/*///+/-/</<=/==/neq/=>/>/:=/,/:string/:symbol/:number/let/(/[/*///+/-/</<
 =/==/neq/=>/>/:=/;/:string/:symbol/:number/let/(/[/*///+/-/</<=/==/neq/=>/>/:=]
- LALR_INTERNAL_19 -> :string . [;/:string/:symbol/:number/let/(/[/eof/*///+/-/</
+ LALR_INTERNAL_22 -> :string . [;/:string/:symbol/:number/let/(/[/eof/*///+/-/</
 <=/==/neq/=>/>/:=/,/:string/:symbol/:number/let/(/[/]/*///+/-/</<=/==/neq/=>/>/:
 =/,/:string/:symbol/:number/let/(/[/)/*///+/-/</<=/==/neq/=>/>/:=/;/:string/:sym
 bol/:number/let/(/[/)/*///+/-/</<=/==/neq/=>/>/:=/;/:string/:symbol/:number/let/
@@ -1424,11 +1430,11 @@ ymbol/:number/let/(/[/*///+/-/</<=/==/neq/=>/>/:=/;/:string/:symbol/:number/let/
 (/[/*///+/-/</<=/==/neq/=>/>/:=/;/:string/:symbol/:number/let/(/[/end/*///+/-/</
 <=/==/neq/=>/>/:=/,/:string/:symbol/:number/let/(/[/*///+/-/</<=/==/neq/=>/>/:=/
 ;/:string/:symbol/:number/let/(/[/*///+/-/</<=/==/neq/=>/>/:=]
-GOTO(LALR_INTERNAL_19) = 78
+GOTO(LALR_INTERNAL_22) = 78
 GOTO(:string) = 7
 
 Itemset 8
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [:=/>/=>/neq/==/<=/</-/+///*/]/:string/:
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [:=/>/=>/neq/==/<=/</-/+///*/]/:string/:
 symbol/:number/let/(/[/,]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [:=/>/=>/neq/==/<=/</-/+///*/]/:string/:symb
 ol/:number/let/(/[/,]
@@ -1483,23 +1489,23 @@ et/:number/:symbol/:string/*///+/-/</<=/==/neq/=>/>/:=/;/[/(/let/:number/:symbol
  EXPRESSION -> . if SEQUENCE then SEQUENCE else EXPRESSION [:=/>/=>/neq/==/<=/</
 -/+///*/,/]]
  EXPRESSION -> . fun FUNCALL = EXPRESSION [:=/>/=>/neq/==/<=/</-/+///*/,/]]
- EXPRLIST -> . LALR_INTERNAL_21 []]
+ EXPRLIST -> . LALR_INTERNAL_24 []]
  FUNCALL -> . CLOSEDEXPRESSION [:=/>/=>/neq/==/<=/</-/+///*/:string/:symbol/:num
 ber/let/(/[/,/]]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [:=/>/=>/neq/==/<=/</-/+///*/:string/:sym
 bol/:number/let/(/[/,/]]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [:=/>/=>/neq/==/<=/</-/+///*/]/[
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [:=/>/=>/neq/==/<=/</-/+///*/]/[
 /(/let/:number/:symbol/:string/,]
- LALR_INTERNAL_19 -> . :string [:=/>/=>/neq/==/<=/</-/+///*/]/[/(/let/:number/:s
+ LALR_INTERNAL_22 -> . :string [:=/>/=>/neq/==/<=/</-/+///*/]/[/(/let/:number/:s
 ymbol/:string/,]
- LALR_INTERNAL_21 -> . EXPRESSION LALR_INTERNAL_23 []]
- LALR_INTERNAL_21 -> . []]
+ LALR_INTERNAL_24 -> . EXPRESSION LALR_INTERNAL_26 []]
+ LALR_INTERNAL_24 -> . []]
 GOTO(EXPRESSION) = 75
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(EXPRLIST) = 76
-GOTO(LALR_INTERNAL_21) = 67
+GOTO(LALR_INTERNAL_24) = 68
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -1513,7 +1519,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 9
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [,/:=/>/=>/neq/==/<=/</-/+///*/)/:string
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [,/:=/>/=>/neq/==/<=/</-/+///*/)/:string
 /:symbol/:number/let/(/[/;]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [,/:=/>/=>/neq/==/<=/</-/+///*/)/:string/:sy
 mbol/:number/let/(/[/;]
@@ -1590,28 +1596,28 @@ et/:number/:symbol/:string/*///+/-/</<=/==/neq/=>/>/:=/;/[/(/let/:number/:symbol
  EXPRESSION -> . if SEQUENCE then SEQUENCE else EXPRESSION [,/:=/>/=>/neq/==/<=/
 </-/+///*/;/)]
  EXPRESSION -> . fun FUNCALL = EXPRESSION [,/:=/>/=>/neq/==/<=/</-/+///*/;/)]
- EXPRLIST -> . LALR_INTERNAL_21 [)]
+ EXPRLIST -> . LALR_INTERNAL_24 [)]
  FUNCALL -> . CLOSEDEXPRESSION [,/:=/>/=>/neq/==/<=/</-/+///*/:string/:symbol/:n
 umber/let/(/[/;/)]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [,/:=/>/=>/neq/==/<=/</-/+///*/:string/:s
 ymbol/:number/let/(/[/;/)]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [,/:=/>/=>/neq/==/<=/</-/+///*/)
+ LALR_INTERNAL_19 -> . EXPRESSION LALR_INTERNAL_21 [)]
+ LALR_INTERNAL_19 -> . [)]
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [,/:=/>/=>/neq/==/<=/</-/+///*/)
 /[/(/let/:number/:symbol/:string/;]
- LALR_INTERNAL_19 -> . :string [,/:=/>/=>/neq/==/<=/</-/+///*/)/[/(/let/:number/
+ LALR_INTERNAL_22 -> . :string [,/:=/>/=>/neq/==/<=/</-/+///*/)/[/(/let/:number/
 :symbol/:string/;]
- LALR_INTERNAL_21 -> . EXPRESSION LALR_INTERNAL_23 [)]
- LALR_INTERNAL_21 -> . [)]
  LALR_INTERNAL_24 -> . EXPRESSION LALR_INTERNAL_26 [)]
  LALR_INTERNAL_24 -> . [)]
- SEQUENCE -> . LALR_INTERNAL_24 [)]
+ SEQUENCE -> . LALR_INTERNAL_19 [)]
 GOTO(EXPRESSION) = 65
+GOTO(SEQUENCE) = 66
+GOTO(LALR_INTERNAL_19) = 46
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
-GOTO(EXPRLIST) = 66
-GOTO(LALR_INTERNAL_21) = 67
-GOTO(SEQUENCE) = 68
-GOTO(LALR_INTERNAL_24) = 46
+GOTO(LALR_INTERNAL_22) = 6
+GOTO(EXPRLIST) = 67
+GOTO(LALR_INTERNAL_24) = 68
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -1625,7 +1631,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 10
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [:=/>/=>/neq/==/<=/</-/+///*/in/:string/
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [:=/>/=>/neq/==/<=/</-/+///*/in/:string/
 :symbol/:number/let/(/[/;]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [:=/>/=>/neq/==/<=/</-/+///*/in/:string/:sym
 bol/:number/let/(/[/;]
@@ -1685,19 +1691,19 @@ string/end/*///+/-/</<=/==/neq/=>/>/:=/,/[/(/let/:number/:symbol/:string/*///+/-
 ber/let/(/[/;/in]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [:=/>/=>/neq/==/<=/</-/+///*/:string/:sym
 bol/:number/let/(/[/;/in]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [:=/>/=>/neq/==/<=/</-/+///*/in/
+ LALR_INTERNAL_19 -> . EXPRESSION LALR_INTERNAL_21 [in]
+ LALR_INTERNAL_19 -> . [in]
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [:=/>/=>/neq/==/<=/</-/+///*/in/
 [/(/let/:number/:symbol/:string/;]
- LALR_INTERNAL_19 -> . :string [:=/>/=>/neq/==/<=/</-/+///*/in/[/(/let/:number/:
+ LALR_INTERNAL_22 -> . :string [:=/>/=>/neq/==/<=/</-/+///*/in/[/(/let/:number/:
 symbol/:string/;]
- LALR_INTERNAL_24 -> . EXPRESSION LALR_INTERNAL_26 [in]
- LALR_INTERNAL_24 -> . [in]
- SEQUENCE -> . LALR_INTERNAL_24 [in]
+ SEQUENCE -> . LALR_INTERNAL_19 [in]
 GOTO(EXPRESSION) = 44
+GOTO(SEQUENCE) = 61
+GOTO(LALR_INTERNAL_19) = 46
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
-GOTO(SEQUENCE) = 61
-GOTO(LALR_INTERNAL_24) = 46
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -1735,7 +1741,7 @@ ing/*///+/-/</<=/==/neq/=>/>/:=/;/[/(/let/:number/:symbol/:string/end/*///+/-/</
 ;/[/(/let/:number/:symbol/:string/*///+/-/</<=/==/neq/=>/>/:=]
 
 Itemset 12
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)
 /in/then/else/:string/:symbol/:number/let/(/[/end]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/in/
 then/else/:string/:symbol/:number/let/(/[/end]
@@ -1800,14 +1806,14 @@ of]
 else/:string/:symbol/:number/let/(/[/end]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/
 in/then/else/:string/:symbol/:number/let/(/[/end]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [eof/;/*///+/-/</<=/==/neq/=>/>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [eof/;/*///+/-/</<=/==/neq/=>/>/
 :=/]/,/)/in/then/else/[/(/let/:number/:symbol/:string/end]
- LALR_INTERNAL_19 -> . :string [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/in/then/
+ LALR_INTERNAL_22 -> . :string [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/in/then/
 else/[/(/let/:number/:symbol/:string/end]
 GOTO(EXPRESSION) = 60
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -1876,7 +1882,7 @@ GOTO(LALR_INTERNAL_18) = 56
 GOTO(to) = 57
 
 Itemset 16
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [:=/>/=>/neq/==/<=/</-/+///*/then/:strin
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [:=/>/=>/neq/==/<=/</-/+///*/then/:strin
 g/:symbol/:number/let/(/[/;]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [:=/>/=>/neq/==/<=/</-/+///*/then/:string/:s
 ymbol/:number/let/(/[/;]
@@ -1937,19 +1943,19 @@ neq/=>/>/:=/,/*///+/-/</<=/==/neq/=>/>/:=/;/*///+/-/</<=/==/neq/=>/>/:=]
 ber/let/(/[/;/then]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [:=/>/=>/neq/==/<=/</-/+///*/:string/:sym
 bol/:number/let/(/[/;/then]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [:=/>/=>/neq/==/<=/</-/+///*/the
+ LALR_INTERNAL_19 -> . EXPRESSION LALR_INTERNAL_21 [then]
+ LALR_INTERNAL_19 -> . [then]
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [:=/>/=>/neq/==/<=/</-/+///*/the
 n/[/(/let/:number/:symbol/:string/;]
- LALR_INTERNAL_19 -> . :string [:=/>/=>/neq/==/<=/</-/+///*/then/[/(/let/:number
+ LALR_INTERNAL_22 -> . :string [:=/>/=>/neq/==/<=/</-/+///*/then/[/(/let/:number
 /:symbol/:string/;]
- LALR_INTERNAL_24 -> . EXPRESSION LALR_INTERNAL_26 [then]
- LALR_INTERNAL_24 -> . [then]
- SEQUENCE -> . LALR_INTERNAL_24 [then]
+ SEQUENCE -> . LALR_INTERNAL_19 [then]
 GOTO(EXPRESSION) = 44
+GOTO(SEQUENCE) = 45
+GOTO(LALR_INTERNAL_19) = 46
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
-GOTO(SEQUENCE) = 45
-GOTO(LALR_INTERNAL_24) = 46
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -1963,7 +1969,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 17
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [:string/:symbol/:number/let/(/[/=]
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [:string/:symbol/:number/let/(/[/=]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [:string/:symbol/:number/let/(/[/=]
  CLOSEDEXPRESSION -> . ( EXPRLIST ) [:string/:symbol/:number/let/(/[/=]
  CLOSEDEXPRESSION -> . ( SEQUENCE ) [:string/:symbol/:number/let/(/[/=]
@@ -1984,12 +1990,12 @@ eq/=>/>/:=/;/*///+/-/</<=/==/neq/=>/>/:=/end/;/*///+/-/</<=/==/neq/=>/>/:=/,/*//
 /+/-/</<=/==/neq/=>/>/:=/;/*///+/-/</<=/==/neq/=>/>/:=]
  FUNCALL -> . CLOSEDEXPRESSION [:string/:symbol/:number/let/(/[/=]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [:string/:symbol/:number/let/(/[/=]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [[/(/let/:number/:symbol/:string
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [[/(/let/:number/:symbol/:string
 /=]
- LALR_INTERNAL_19 -> . :string [[/(/let/:number/:symbol/:string/=]
+ LALR_INTERNAL_22 -> . :string [[/(/let/:number/:symbol/:string/=]
 GOTO(FUNCALL) = 18
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -1998,7 +2004,7 @@ GOTO(:number) = 11
 GOTO(:symbol) = 14
 
 Itemset 18
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [:string/:symbol/:number/let/(/[/=]
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [:string/:symbol/:number/let/(/[/=]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [:string/:symbol/:number/let/(/[/=]
  CLOSEDEXPRESSION -> . ( EXPRLIST ) [:string/:symbol/:number/let/(/[/=]
  CLOSEDEXPRESSION -> . ( SEQUENCE ) [:string/:symbol/:number/let/(/[/=]
@@ -2009,11 +2015,11 @@ Itemset 18
  EXPRESSION -> fun FUNCALL . = EXPRESSION [end/else/then/in/)/,/]/:=/>/=>/neq/==
 /<=/</-/+///*/;/eof]
  FUNCALL -> FUNCALL . CLOSEDEXPRESSION [=/[/(/let/:number/:symbol/:string]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [=/[/(/let/:number/:symbol/:stri
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [=/[/(/let/:number/:symbol/:stri
 ng]
- LALR_INTERNAL_19 -> . :string [=/[/(/let/:number/:symbol/:string]
+ LALR_INTERNAL_22 -> . :string [=/[/(/let/:number/:symbol/:string]
 GOTO(CLOSEDEXPRESSION) = 19
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -2027,7 +2033,7 @@ Itemset 19
 <=/</-/+///*/:string/:symbol/:number/let/(/[/;/eof]
 
 Itemset 20
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)
 /in/then/else/:string/:symbol/:number/let/(/[/end]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/in/
 then/else/:string/:symbol/:number/let/(/[/end]
@@ -2083,14 +2089,14 @@ of]
 else/:string/:symbol/:number/let/(/[/end]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/
 in/then/else/:string/:symbol/:number/let/(/[/end]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [eof/;/*///+/-/</<=/==/neq/=>/>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [eof/;/*///+/-/</<=/==/neq/=>/>/
 :=/]/,/)/in/then/else/[/(/let/:number/:symbol/:string/end]
- LALR_INTERNAL_19 -> . :string [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/in/then/
+ LALR_INTERNAL_22 -> . :string [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/in/then/
 else/[/(/let/:number/:symbol/:string/end]
 GOTO(EXPRESSION) = 21
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -2141,7 +2147,7 @@ GOTO(/) = 31
 GOTO(*) = 32
 
 Itemset 22
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
 =/</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</
 -/+///*/;/:string/:symbol/:number/let/(/[/eof]
@@ -2197,14 +2203,14 @@ end/else/then/in/)/,/]]
 /*/;/:string/:symbol/:number/let/(/[/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION []/,/)/in/then/else/end/:=/>/=>/neq/==/<=
 /</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/
 neq/==/<=/</-/+///*/;/[/(/let/:number/:symbol/:string/eof]
- LALR_INTERNAL_19 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
+ LALR_INTERNAL_22 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
 /*/;/[/(/let/:number/:symbol/:string/eof]
 GOTO(EXPRESSION) = 43
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -2218,7 +2224,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 23
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
 =/</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</
 -/+///*/;/:string/:symbol/:number/let/(/[/eof]
@@ -2274,14 +2280,14 @@ end/else/then/in/)/,/]]
 /*/;/:string/:symbol/:number/let/(/[/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION []/,/)/in/then/else/end/:=/>/=>/neq/==/<=
 /</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/
 neq/==/<=/</-/+///*/;/[/(/let/:number/:symbol/:string/eof]
- LALR_INTERNAL_19 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
+ LALR_INTERNAL_22 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
 /*/;/[/(/let/:number/:symbol/:string/eof]
 GOTO(EXPRESSION) = 42
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -2295,7 +2301,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 24
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
 =/</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</
 -/+///*/;/:string/:symbol/:number/let/(/[/eof]
@@ -2351,14 +2357,14 @@ end/else/then/in/)/,/]]
 /*/;/:string/:symbol/:number/let/(/[/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION []/,/)/in/then/else/end/:=/>/=>/neq/==/<=
 /</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/
 neq/==/<=/</-/+///*/;/[/(/let/:number/:symbol/:string/eof]
- LALR_INTERNAL_19 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
+ LALR_INTERNAL_22 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
 /*/;/[/(/let/:number/:symbol/:string/eof]
 GOTO(EXPRESSION) = 41
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -2372,7 +2378,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 25
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
 =/</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</
 -/+///*/;/:string/:symbol/:number/let/(/[/eof]
@@ -2428,14 +2434,14 @@ end/else/then/in/)/,/]]
 /*/;/:string/:symbol/:number/let/(/[/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION []/,/)/in/then/else/end/:=/>/=>/neq/==/<=
 /</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/
 neq/==/<=/</-/+///*/;/[/(/let/:number/:symbol/:string/eof]
- LALR_INTERNAL_19 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
+ LALR_INTERNAL_22 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
 /*/;/[/(/let/:number/:symbol/:string/eof]
 GOTO(EXPRESSION) = 40
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -2449,7 +2455,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 26
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
 =/</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</
 -/+///*/;/:string/:symbol/:number/let/(/[/eof]
@@ -2505,14 +2511,14 @@ end/else/then/in/)/,/]]
 /*/;/:string/:symbol/:number/let/(/[/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION []/,/)/in/then/else/end/:=/>/=>/neq/==/<=
 /</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/
 neq/==/<=/</-/+///*/;/[/(/let/:number/:symbol/:string/eof]
- LALR_INTERNAL_19 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
+ LALR_INTERNAL_22 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
 /*/;/[/(/let/:number/:symbol/:string/eof]
 GOTO(EXPRESSION) = 39
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -2526,7 +2532,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 27
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
 =/</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</
 -/+///*/;/:string/:symbol/:number/let/(/[/eof]
@@ -2582,14 +2588,14 @@ end/else/then/in/)/,/]]
 /*/;/:string/:symbol/:number/let/(/[/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION []/,/)/in/then/else/end/:=/>/=>/neq/==/<=
 /</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/
 neq/==/<=/</-/+///*/;/[/(/let/:number/:symbol/:string/eof]
- LALR_INTERNAL_19 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
+ LALR_INTERNAL_22 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
 /*/;/[/(/let/:number/:symbol/:string/eof]
 GOTO(EXPRESSION) = 38
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -2603,7 +2609,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 28
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
 =/</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</
 -/+///*/;/:string/:symbol/:number/let/(/[/eof]
@@ -2659,14 +2665,14 @@ end/else/then/in/)/,/]]
 /*/;/:string/:symbol/:number/let/(/[/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION []/,/)/in/then/else/end/:=/>/=>/neq/==/<=
 /</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/
 neq/==/<=/</-/+///*/;/[/(/let/:number/:symbol/:string/eof]
- LALR_INTERNAL_19 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
+ LALR_INTERNAL_22 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
 /*/;/[/(/let/:number/:symbol/:string/eof]
 GOTO(EXPRESSION) = 37
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -2680,7 +2686,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 29
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
 =/</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</
 -/+///*/;/:string/:symbol/:number/let/(/[/eof]
@@ -2736,14 +2742,14 @@ end/else/then/in/)/,/]]
 /*/;/:string/:symbol/:number/let/(/[/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION []/,/)/in/then/else/end/:=/>/=>/neq/==/<=
 /</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/
 neq/==/<=/</-/+///*/;/[/(/let/:number/:symbol/:string/eof]
- LALR_INTERNAL_19 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
+ LALR_INTERNAL_22 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
 /*/;/[/(/let/:number/:symbol/:string/eof]
 GOTO(EXPRESSION) = 36
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -2757,7 +2763,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 30
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
 =/</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</
 -/+///*/;/:string/:symbol/:number/let/(/[/eof]
@@ -2813,14 +2819,14 @@ end/else/then/in/)/,/]]
 /*/;/:string/:symbol/:number/let/(/[/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION []/,/)/in/then/else/end/:=/>/=>/neq/==/<=
 /</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/
 neq/==/<=/</-/+///*/;/[/(/let/:number/:symbol/:string/eof]
- LALR_INTERNAL_19 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
+ LALR_INTERNAL_22 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
 /*/;/[/(/let/:number/:symbol/:string/eof]
 GOTO(EXPRESSION) = 35
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -2834,7 +2840,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 31
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
 =/</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</
 -/+///*/;/:string/:symbol/:number/let/(/[/eof]
@@ -2890,14 +2896,14 @@ end/else/then/in/)/,/]]
 /*/;/:string/:symbol/:number/let/(/[/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION []/,/)/in/then/else/end/:=/>/=>/neq/==/<=
 /</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/
 neq/==/<=/</-/+///*/;/[/(/let/:number/:symbol/:string/eof]
- LALR_INTERNAL_19 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
+ LALR_INTERNAL_22 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
 /*/;/[/(/let/:number/:symbol/:string/eof]
 GOTO(EXPRESSION) = 34
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -2911,7 +2917,7 @@ GOTO(if) = 16
 GOTO(fun) = 17
 
 Itemset 32
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/neq/==/<
 =/</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</
 -/+///*/;/:string/:symbol/:number/let/(/[/eof]
@@ -2967,14 +2973,14 @@ end/else/then/in/)/,/]]
 /*/;/:string/:symbol/:number/let/(/[/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION []/,/)/in/then/else/end/:=/>/=>/neq/==/<=
 /</-/+///*/;/:string/:symbol/:number/let/(/[/eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 []/,/)/in/then/else/end/:=/>/=>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 []/,/)/in/then/else/end/:=/>/=>/
 neq/==/<=/</-/+///*/;/[/(/let/:number/:symbol/:string/eof]
- LALR_INTERNAL_19 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
+ LALR_INTERNAL_22 -> . :string []/,/)/in/then/else/end/:=/>/=>/neq/==/<=/</-/+//
 /*/;/[/(/let/:number/:symbol/:string/eof]
 GOTO(EXPRESSION) = 33
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -3428,10 +3434,10 @@ n/;/*///+/-/</<=/==/neq/=>/>/:=/then/;/*///+/-/</<=/==/neq/=>/>/:=/end/;/*///+/-
  EXPRESSION -> EXPRESSION . * EXPRESSION [in/;/*///+/-/</<=/==/neq/=>/>/:=/then/
 ;/*///+/-/</<=/==/neq/=>/>/:=/then/;/*///+/-/</<=/==/neq/=>/>/:=/end/;/*///+/-/<
 /<=/==/neq/=>/>/:=]
- LALR_INTERNAL_24 -> EXPRESSION . LALR_INTERNAL_26 [in/then/then/end]
- LALR_INTERNAL_26 -> . ; EXPRESSION LALR_INTERNAL_26 [end/then/in]
- LALR_INTERNAL_26 -> . [end/then/in]
-GOTO(LALR_INTERNAL_26) = 52
+ LALR_INTERNAL_19 -> EXPRESSION . LALR_INTERNAL_21 [in/then/then/end]
+ LALR_INTERNAL_21 -> . ; EXPRESSION LALR_INTERNAL_21 [end/then/in]
+ LALR_INTERNAL_21 -> . [end/then/in]
+GOTO(LALR_INTERNAL_21) = 52
 GOTO(:=) = 22
 GOTO(>) = 23
 GOTO(=>) = 24
@@ -3453,10 +3459,10 @@ Itemset 45
 GOTO(then) = 47
 
 Itemset 46
- SEQUENCE -> LALR_INTERNAL_24 . [)/in/then/then/else/end]
+ SEQUENCE -> LALR_INTERNAL_19 . [)/in/then/then/else/end]
 
 Itemset 47
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [eof/]/,/)/in/then/end/:=/>/=>/neq/==/<=
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [eof/]/,/)/in/then/end/:=/>/=>/neq/==/<=
 /</-/+///*/else/:string/:symbol/:number/let/(/[/;]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [eof/]/,/)/in/then/end/:=/>/=>/neq/==/<=/</-
 /+///*/else/:string/:symbol/:number/let/(/[/;]
@@ -3514,19 +3520,19 @@ f/:=/>/=>/neq/==/<=/</-/+///*/;/else]
 */:string/:symbol/:number/let/(/[/;/else]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [eof/]/,/)/in/then/end/:=/>/=>/neq/==/<=/
 </-/+///*/:string/:symbol/:number/let/(/[/;/else]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [eof/]/,/)/in/then/end/:=/>/=>/n
+ LALR_INTERNAL_19 -> . EXPRESSION LALR_INTERNAL_21 [else]
+ LALR_INTERNAL_19 -> . [else]
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [eof/]/,/)/in/then/end/:=/>/=>/n
 eq/==/<=/</-/+///*/else/[/(/let/:number/:symbol/:string/;]
- LALR_INTERNAL_19 -> . :string [eof/]/,/)/in/then/end/:=/>/=>/neq/==/<=/</-/+///
+ LALR_INTERNAL_22 -> . :string [eof/]/,/)/in/then/end/:=/>/=>/neq/==/<=/</-/+///
 */else/[/(/let/:number/:symbol/:string/;]
- LALR_INTERNAL_24 -> . EXPRESSION LALR_INTERNAL_26 [else]
- LALR_INTERNAL_24 -> . [else]
- SEQUENCE -> . LALR_INTERNAL_24 [else]
+ SEQUENCE -> . LALR_INTERNAL_19 [else]
 GOTO(EXPRESSION) = 48
+GOTO(SEQUENCE) = 49
+GOTO(LALR_INTERNAL_19) = 46
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
-GOTO(SEQUENCE) = 49
-GOTO(LALR_INTERNAL_24) = 46
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -3564,10 +3570,10 @@ neq/=>/>/:=/else/;/*///+/-/</<=/==/neq/=>/>/:=]
 neq/=>/>/:=/else/;/*///+/-/</<=/==/neq/=>/>/:=]
  EXPRESSION -> if SEQUENCE then EXPRESSION . [end/else/then/in/)/,/]/:=/>/=>/neq
 /==/<=/</-/+///*/;/eof]
- LALR_INTERNAL_24 -> EXPRESSION . LALR_INTERNAL_26 [else]
- LALR_INTERNAL_26 -> . ; EXPRESSION LALR_INTERNAL_26 [else]
- LALR_INTERNAL_26 -> . [else]
-GOTO(LALR_INTERNAL_26) = 52
+ LALR_INTERNAL_19 -> EXPRESSION . LALR_INTERNAL_21 [else]
+ LALR_INTERNAL_21 -> . ; EXPRESSION LALR_INTERNAL_21 [else]
+ LALR_INTERNAL_21 -> . [else]
+GOTO(LALR_INTERNAL_21) = 52
 GOTO(:=) = 22
 GOTO(>) = 23
 GOTO(=>) = 24
@@ -3587,7 +3593,7 @@ Itemset 49
 GOTO(else) = 50
 
 Itemset 50
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)
 /in/then/else/:string/:symbol/:number/let/(/[/end]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/in/
 then/else/:string/:symbol/:number/let/(/[/end]
@@ -3643,14 +3649,14 @@ of]
 else/:string/:symbol/:number/let/(/[/end]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/
 in/then/else/:string/:symbol/:number/let/(/[/end]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [eof/;/*///+/-/</<=/==/neq/=>/>/
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [eof/;/*///+/-/</<=/==/neq/=>/>/
 :=/]/,/)/in/then/else/[/(/let/:number/:symbol/:string/end]
- LALR_INTERNAL_19 -> . :string [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/in/then/
+ LALR_INTERNAL_22 -> . :string [eof/;/*///+/-/</<=/==/neq/=>/>/:=/]/,/)/in/then/
 else/[/(/let/:number/:symbol/:string/end]
 GOTO(EXPRESSION) = 51
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -3701,10 +3707,10 @@ GOTO(/) = 31
 GOTO(*) = 32
 
 Itemset 52
- LALR_INTERNAL_24 -> EXPRESSION LALR_INTERNAL_26 . [)/else/end/then/in]
+ LALR_INTERNAL_19 -> EXPRESSION LALR_INTERNAL_21 . [)/else/end/then/in]
 
 Itemset 53
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [)/;/else/end/then/:=/>/=>/neq/==/<=/</-
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [)/;/else/end/then/:=/>/=>/neq/==/<=/</-
 /+///*/:string/:symbol/:number/let/(/[/in]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [)/;/else/end/then/:=/>/=>/neq/==/<=/</-/+//
 /*/:string/:symbol/:number/let/(/[/in]
@@ -3756,15 +3762,15 @@ nd/else/;/)]
 tring/:symbol/:number/let/(/[/in]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [;/)/else/end/then/:=/>/=>/neq/==/<=/</-/
 +///*/:string/:symbol/:number/let/(/[/in]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [)/;/else/end/then/:=/>/=>/neq/=
+ LALR_INTERNAL_21 -> ; . EXPRESSION LALR_INTERNAL_21 [)/else/end/then/in]
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [)/;/else/end/then/:=/>/=>/neq/=
 =/<=/</-/+///*/[/(/let/:number/:symbol/:string/in]
- LALR_INTERNAL_19 -> . :string [)/;/else/end/then/:=/>/=>/neq/==/<=/</-/+///*/[/
+ LALR_INTERNAL_22 -> . :string [)/;/else/end/then/:=/>/=>/neq/==/<=/</-/+///*/[/
 (/let/:number/:symbol/:string/in]
- LALR_INTERNAL_26 -> ; . EXPRESSION LALR_INTERNAL_26 [)/else/end/then/in]
 GOTO(EXPRESSION) = 54
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -3800,10 +3806,10 @@ eq/=>/>/:=]
 eq/=>/>/:=]
  EXPRESSION -> EXPRESSION . * EXPRESSION [)/in/then/end/else/;/*///+/-/</<=/==/n
 eq/=>/>/:=]
- LALR_INTERNAL_26 -> . ; EXPRESSION LALR_INTERNAL_26 [else/end/then/in/)]
- LALR_INTERNAL_26 -> . [else/end/then/in/)]
- LALR_INTERNAL_26 -> ; EXPRESSION . LALR_INTERNAL_26 [)/in/then/end/else]
-GOTO(LALR_INTERNAL_26) = 55
+ LALR_INTERNAL_21 -> . ; EXPRESSION LALR_INTERNAL_21 [else/end/then/in/)]
+ LALR_INTERNAL_21 -> . [else/end/then/in/)]
+ LALR_INTERNAL_21 -> ; EXPRESSION . LALR_INTERNAL_21 [)/in/then/end/else]
+GOTO(LALR_INTERNAL_21) = 55
 GOTO(:=) = 22
 GOTO(>) = 23
 GOTO(=>) = 24
@@ -3818,7 +3824,7 @@ GOTO(*) = 32
 GOTO(;) = 53
 
 Itemset 55
- LALR_INTERNAL_26 -> ; EXPRESSION LALR_INTERNAL_26 . [)/else/end/then/in]
+ LALR_INTERNAL_21 -> ; EXPRESSION LALR_INTERNAL_21 . [)/else/end/then/in]
 
 Itemset 56
  EXPRESSION -> go LALR_INTERNAL_18 . :symbol [end/else/then/in/)/,/]/:=/>/=>/neq
@@ -3879,7 +3885,7 @@ Itemset 61
 GOTO(in) = 62
 
 Itemset 62
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [:=/>/=>/neq/==/<=/</-/+///*/end/:string
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [:=/>/=>/neq/==/<=/</-/+///*/end/:string
 /:symbol/:number/let/(/[/;]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [:=/>/=>/neq/==/<=/</-/+///*/end/:string/:sy
 mbol/:number/let/(/[/;]
@@ -3918,19 +3924,19 @@ string/eof/*///+/-/</<=/==/neq/=>/>/:=/,/]/)/in/then/=/else/end]
 ber/let/(/[/;/end]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [:=/>/=>/neq/==/<=/</-/+///*/:string/:sym
 bol/:number/let/(/[/;/end]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [:=/>/=>/neq/==/<=/</-/+///*/end
+ LALR_INTERNAL_19 -> . EXPRESSION LALR_INTERNAL_21 [end]
+ LALR_INTERNAL_19 -> . [end]
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [:=/>/=>/neq/==/<=/</-/+///*/end
 /[/(/let/:number/:symbol/:string/;]
- LALR_INTERNAL_19 -> . :string [:=/>/=>/neq/==/<=/</-/+///*/end/[/(/let/:number/
+ LALR_INTERNAL_22 -> . :string [:=/>/=>/neq/==/<=/</-/+///*/end/[/(/let/:number/
 :symbol/:string/;]
- LALR_INTERNAL_24 -> . EXPRESSION LALR_INTERNAL_26 [end]
- LALR_INTERNAL_24 -> . [end]
- SEQUENCE -> . LALR_INTERNAL_24 [end]
+ SEQUENCE -> . LALR_INTERNAL_19 [end]
 GOTO(EXPRESSION) = 44
+GOTO(SEQUENCE) = 63
+GOTO(LALR_INTERNAL_19) = 46
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
-GOTO(SEQUENCE) = 63
-GOTO(LALR_INTERNAL_24) = 46
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -3975,14 +3981,14 @@ Itemset 65
 //+/-/</<=/==/neq/=>/>/:=]
  EXPRESSION -> EXPRESSION . * EXPRESSION [)/,/*///+/-/</<=/==/neq/=>/>/:=/)/;/*/
 //+/-/</<=/==/neq/=>/>/:=]
- LALR_INTERNAL_21 -> EXPRESSION . LALR_INTERNAL_23 [)]
- LALR_INTERNAL_23 -> . , EXPRESSION LALR_INTERNAL_23 [)]
- LALR_INTERNAL_23 -> . [)]
+ LALR_INTERNAL_19 -> EXPRESSION . LALR_INTERNAL_21 [)]
+ LALR_INTERNAL_21 -> . ; EXPRESSION LALR_INTERNAL_21 [)]
+ LALR_INTERNAL_21 -> . [)]
  LALR_INTERNAL_24 -> EXPRESSION . LALR_INTERNAL_26 [)]
- LALR_INTERNAL_26 -> . ; EXPRESSION LALR_INTERNAL_26 [)]
+ LALR_INTERNAL_26 -> . , EXPRESSION LALR_INTERNAL_26 [)]
  LALR_INTERNAL_26 -> . [)]
-GOTO(LALR_INTERNAL_23) = 71
-GOTO(LALR_INTERNAL_26) = 52
+GOTO(LALR_INTERNAL_21) = 52
+GOTO(LALR_INTERNAL_26) = 71
 GOTO(,) = 72
 GOTO(:=) = 22
 GOTO(>) = 23
@@ -3998,31 +4004,31 @@ GOTO(*) = 32
 GOTO(;) = 53
 
 Itemset 66
- CLOSEDEXPRESSION -> ( EXPRLIST . ) [end/else/=/then/in/)/]/,/:=/>/=>/neq/==/<=/
+ CLOSEDEXPRESSION -> ( SEQUENCE . ) [end/else/=/then/in/)/]/,/:=/>/=>/neq/==/<=/
 </-/+///*/eof/:string/:symbol/:number/let/(/[/;]
 GOTO()) = 70
 
 Itemset 67
- EXPRLIST -> LALR_INTERNAL_21 . []/)]
-
-Itemset 68
- CLOSEDEXPRESSION -> ( SEQUENCE . ) [end/else/=/then/in/)/]/,/:=/>/=>/neq/==/<=/
+ CLOSEDEXPRESSION -> ( EXPRLIST . ) [end/else/=/then/in/)/]/,/:=/>/=>/neq/==/<=/
 </-/+///*/eof/:string/:symbol/:number/let/(/[/;]
 GOTO()) = 69
 
-Itemset 69
- CLOSEDEXPRESSION -> ( SEQUENCE ) . [;/[/(/let/:number/:symbol/:string/eof/*///+
-/-/</<=/==/neq/=>/>/:=/,/]/)/in/then/=/else/end]
+Itemset 68
+ EXPRLIST -> LALR_INTERNAL_24 . []/)]
 
-Itemset 70
+Itemset 69
  CLOSEDEXPRESSION -> ( EXPRLIST ) . [;/[/(/let/:number/:symbol/:string/eof/*///+
 /-/</<=/==/neq/=>/>/:=/,/]/)/in/then/=/else/end]
 
+Itemset 70
+ CLOSEDEXPRESSION -> ( SEQUENCE ) . [;/[/(/let/:number/:symbol/:string/eof/*///+
+/-/</<=/==/neq/=>/>/:=/,/]/)/in/then/=/else/end]
+
 Itemset 71
- LALR_INTERNAL_21 -> EXPRESSION LALR_INTERNAL_23 . []/)]
+ LALR_INTERNAL_24 -> EXPRESSION LALR_INTERNAL_26 . []/)]
 
 Itemset 72
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 []/,/:=/>/=>/neq/==/<=/</-/+///*/:string
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 []/,/:=/>/=>/neq/==/<=/</-/+///*/:string
 /:symbol/:number/let/(/[/)]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] []/,/:=/>/=>/neq/==/<=/</-/+///*/:string/:sy
 mbol/:number/let/(/[/)]
@@ -4059,15 +4065,15 @@ mbol/:number/let/(/[/)]
 :number/let/(/[/)]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [,/]/:=/>/=>/neq/==/<=/</-/+///*/:string/
 :symbol/:number/let/(/[/)]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 []/,/:=/>/=>/neq/==/<=/</-/+///*
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 []/,/:=/>/=>/neq/==/<=/</-/+///*
 /[/(/let/:number/:symbol/:string/)]
- LALR_INTERNAL_19 -> . :string []/,/:=/>/=>/neq/==/<=/</-/+///*/[/(/let/:number/
+ LALR_INTERNAL_22 -> . :string []/,/:=/>/=>/neq/==/<=/</-/+///*/[/(/let/:number/
 :symbol/:string/)]
- LALR_INTERNAL_23 -> , . EXPRESSION LALR_INTERNAL_23 []/)]
+ LALR_INTERNAL_26 -> , . EXPRESSION LALR_INTERNAL_26 []/)]
 GOTO(EXPRESSION) = 73
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -4092,10 +4098,10 @@ Itemset 73
  EXPRESSION -> EXPRESSION . + EXPRESSION []/)/,/*///+/-/</<=/==/neq/=>/>/:=]
  EXPRESSION -> EXPRESSION . / EXPRESSION []/)/,/*///+/-/</<=/==/neq/=>/>/:=]
  EXPRESSION -> EXPRESSION . * EXPRESSION []/)/,/*///+/-/</<=/==/neq/=>/>/:=]
- LALR_INTERNAL_23 -> . , EXPRESSION LALR_INTERNAL_23 [)/]]
- LALR_INTERNAL_23 -> . [)/]]
- LALR_INTERNAL_23 -> , EXPRESSION . LALR_INTERNAL_23 []/)]
-GOTO(LALR_INTERNAL_23) = 74
+ LALR_INTERNAL_26 -> . , EXPRESSION LALR_INTERNAL_26 [)/]]
+ LALR_INTERNAL_26 -> . [)/]]
+ LALR_INTERNAL_26 -> , EXPRESSION . LALR_INTERNAL_26 []/)]
+GOTO(LALR_INTERNAL_26) = 74
 GOTO(,) = 72
 GOTO(:=) = 22
 GOTO(>) = 23
@@ -4110,7 +4116,7 @@ GOTO(/) = 31
 GOTO(*) = 32
 
 Itemset 74
- LALR_INTERNAL_23 -> , EXPRESSION LALR_INTERNAL_23 . []/)]
+ LALR_INTERNAL_26 -> , EXPRESSION LALR_INTERNAL_26 . []/)]
 
 Itemset 75
  EXPRESSION -> EXPRESSION . := EXPRESSION []/,/*///+/-/</<=/==/neq/=>/>/:=]
@@ -4124,10 +4130,10 @@ Itemset 75
  EXPRESSION -> EXPRESSION . + EXPRESSION []/,/*///+/-/</<=/==/neq/=>/>/:=]
  EXPRESSION -> EXPRESSION . / EXPRESSION []/,/*///+/-/</<=/==/neq/=>/>/:=]
  EXPRESSION -> EXPRESSION . * EXPRESSION []/,/*///+/-/</<=/==/neq/=>/>/:=]
- LALR_INTERNAL_21 -> EXPRESSION . LALR_INTERNAL_23 []]
- LALR_INTERNAL_23 -> . , EXPRESSION LALR_INTERNAL_23 []]
- LALR_INTERNAL_23 -> . []]
-GOTO(LALR_INTERNAL_23) = 71
+ LALR_INTERNAL_24 -> EXPRESSION . LALR_INTERNAL_26 []]
+ LALR_INTERNAL_26 -> . , EXPRESSION LALR_INTERNAL_26 []]
+ LALR_INTERNAL_26 -> . []]
+GOTO(LALR_INTERNAL_26) = 71
 GOTO(,) = 72
 GOTO(:=) = 22
 GOTO(>) = 23
@@ -4151,14 +4157,14 @@ Itemset 77
 /-/</<=/==/neq/=>/>/:=/,/]/)/in/then/=/else/end]
 
 Itemset 78
- LALR_INTERNAL_19 -> :string LALR_INTERNAL_19 . [end/else/=/then/in/)/]/,/:=/>/=
+ LALR_INTERNAL_22 -> :string LALR_INTERNAL_22 . [end/else/=/then/in/)/]/,/:=/>/=
 >/neq/==/<=/</-/+///*/eof/[/(/let/:number/:symbol/:string/;]
 
 Itemset 79
  LALR_INTERNAL_15 -> EXPRESSION LALR_INTERNAL_17 . [eof]
 
 Itemset 80
- CLOSEDEXPRESSION -> . LALR_INTERNAL_19 [:=/>/=>/neq/==/<=/</-/+///*/eof/:string
+ CLOSEDEXPRESSION -> . LALR_INTERNAL_22 [:=/>/=>/neq/==/<=/</-/+///*/eof/:string
 /:symbol/:number/let/(/[/;]
  CLOSEDEXPRESSION -> . [ EXPRLIST ] [:=/>/=>/neq/==/<=/</-/+///*/eof/:string/:sy
 mbol/:number/let/(/[/;]
@@ -4196,14 +4202,14 @@ ber/let/(/[/;/eof]
  FUNCALL -> . FUNCALL CLOSEDEXPRESSION [:=/>/=>/neq/==/<=/</-/+///*/:string/:sym
 bol/:number/let/(/[/;/eof]
  LALR_INTERNAL_17 -> ; . EXPRESSION LALR_INTERNAL_17 [eof]
- LALR_INTERNAL_19 -> . :string LALR_INTERNAL_19 [:=/>/=>/neq/==/<=/</-/+///*/eof
+ LALR_INTERNAL_22 -> . :string LALR_INTERNAL_22 [:=/>/=>/neq/==/<=/</-/+///*/eof
 /[/(/let/:number/:symbol/:string/;]
- LALR_INTERNAL_19 -> . :string [:=/>/=>/neq/==/<=/</-/+///*/eof/[/(/let/:number/
+ LALR_INTERNAL_22 -> . :string [:=/>/=>/neq/==/<=/</-/+///*/eof/[/(/let/:number/
 :symbol/:string/;]
 GOTO(EXPRESSION) = 81
 GOTO(FUNCALL) = 4
 GOTO(CLOSEDEXPRESSION) = 5
-GOTO(LALR_INTERNAL_19) = 6
+GOTO(LALR_INTERNAL_22) = 6
 GOTO(:string) = 7
 GOTO([) = 8
 GOTO(() = 9
@@ -4253,7 +4259,7 @@ Itemset 83
 
 +++++ Reduce/reduce conflict in itemset #65 on lookahead )
 Reduction #1: LALR_INTERNAL_26 -> <empty>
-Reduction #2: LALR_INTERNAL_23 -> <empty>
+Reduction #2: LALR_INTERNAL_21 -> <empty>
 Resolved in favour of reduction #1
 
 +++ Shift/reduce conflict in itemset #60 on lookahead =>
@@ -4277,7 +4283,7 @@ Shift: to state #24
 Resolved in favour of the shift operation
 
 +++++ Reduce/reduce conflict in itemset #48 on lookahead else
-Reduction #1: LALR_INTERNAL_26 -> <empty>
+Reduction #1: LALR_INTERNAL_21 -> <empty>
 Reduction #2: EXPRESSION -> if SEQUENCE then EXPRESSION 
 Resolved in favour of reduction #1
 
@@ -4393,11 +4399,11 @@ Resolved in favour of the shift operation
 
 +++++ Reduce/reduce conflict in itemset #9 on lookahead )
 Reduction #1: LALR_INTERNAL_24 -> <empty>
-Reduction #2: LALR_INTERNAL_21 -> <empty>
+Reduction #2: LALR_INTERNAL_19 -> <empty>
 Resolved in favour of reduction #1
 
 +++ Shift/reduce conflict in itemset #7 on lookahead :string
-Reduce: LALR_INTERNAL_19 -> :string 
+Reduce: LALR_INTERNAL_22 -> :string 
 Shift: to state #7
 Resolved in favour of the shift operation
 
@@ -4436,10 +4442,10 @@ STATE TERMINAL      ACTION
       (             shift to state 9
       [             shift to state 8
       <any>         reduce by #22: EXPRESSION -> [1 symbols] 
-5     <any>         reduce by #26: FUNCALL -> [1 symbols] 
-6     <any>         reduce by #30: CLOSEDEXPRESSION -> [1 symbols] 
+5     <any>         reduce by #31: FUNCALL -> [1 symbols] 
+6     <any>         reduce by #35: CLOSEDEXPRESSION -> [1 symbols] 
 7     :string       shift to state 7
-      <any>         reduce by #32: LALR_INTERNAL_19 -> [1 symbols] (lambda (
+      <any>         reduce by #37: LALR_INTERNAL_22 -> [1 symbols] (lambda (
                                                                    !$1) (list 
                                                                    !$1))
 8     :symbol       shift to state 14
@@ -4453,7 +4459,7 @@ STATE TERMINAL      ACTION
       let           shift to state 10
       (             shift to state 9
       [             shift to state 8
-      <any>         reduce by #35: LALR_INTERNAL_21 -> [0 symbols] 
+      <any>         reduce by #40: LALR_INTERNAL_24 -> [0 symbols] 
 9     :symbol       shift to state 14
       :string       shift to state 7
       :number       shift to state 11
@@ -4477,8 +4483,8 @@ STATE TERMINAL      ACTION
       let           shift to state 10
       (             shift to state 9
       [             shift to state 8
-      <any>         reduce by #40: LALR_INTERNAL_24 -> [0 symbols] 
-11    <any>         reduce by #30: CLOSEDEXPRESSION -> [1 symbols] 
+      <any>         reduce by #27: LALR_INTERNAL_19 -> [0 symbols] 
+11    <any>         reduce by #35: CLOSEDEXPRESSION -> [1 symbols] 
 12    :symbol       shift to state 14
       :string       shift to state 7
       :number       shift to state 11
@@ -4491,7 +4497,7 @@ STATE TERMINAL      ACTION
       (             shift to state 9
       [             shift to state 8
 13    :symbol       shift to state 59
-14    <any>         reduce by #30: CLOSEDEXPRESSION -> [1 symbols] 
+14    <any>         reduce by #35: CLOSEDEXPRESSION -> [1 symbols] 
 15    to            shift to state 57
       <any>         reduce by #24: LALR_INTERNAL_18 -> [0 symbols] 
 16    :symbol       shift to state 14
@@ -4505,7 +4511,7 @@ STATE TERMINAL      ACTION
       let           shift to state 10
       (             shift to state 9
       [             shift to state 8
-      <any>         reduce by #40: LALR_INTERNAL_24 -> [0 symbols] 
+      <any>         reduce by #27: LALR_INTERNAL_19 -> [0 symbols] 
 17    :symbol       shift to state 14
       :string       shift to state 7
       :number       shift to state 11
@@ -4519,7 +4525,7 @@ STATE TERMINAL      ACTION
       let           shift to state 10
       (             shift to state 9
       [             shift to state 8
-19    <any>         reduce by #25: FUNCALL -> [2 symbols] 
+19    <any>         reduce by #30: FUNCALL -> [2 symbols] 
 20    :symbol       shift to state 14
       :string       shift to state 7
       :number       shift to state 11
@@ -4778,9 +4784,9 @@ STATE TERMINAL      ACTION
       =>            shift to state 24
       >             shift to state 23
       :=            shift to state 22
-      <any>         reduce by #42: LALR_INTERNAL_26 -> [0 symbols] 
+      <any>         reduce by #29: LALR_INTERNAL_21 -> [0 symbols] 
 45    then          shift to state 47
-46    <any>         reduce by #38: SEQUENCE -> [1 symbols] 
+46    <any>         reduce by #25: SEQUENCE -> [1 symbols] 
 47    :symbol       shift to state 14
       :string       shift to state 7
       :number       shift to state 11
@@ -4792,7 +4798,7 @@ STATE TERMINAL      ACTION
       let           shift to state 10
       (             shift to state 9
       [             shift to state 8
-      <any>         reduce by #40: LALR_INTERNAL_24 -> [0 symbols] 
+      <any>         reduce by #27: LALR_INTERNAL_19 -> [0 symbols] 
 48    ;             shift to state 53
       *             shift to state 32
       /             shift to state 31
@@ -4805,7 +4811,7 @@ STATE TERMINAL      ACTION
       =>            shift to state 24
       >             shift to state 23
       :=            shift to state 22
-      else          reduce by #42: LALR_INTERNAL_26 -> [0 symbols] 
+      else          reduce by #29: LALR_INTERNAL_21 -> [0 symbols] 
       <any>         reduce by #9: EXPRESSION -> [4 symbols] (lambda (!$1 !$2 
                                                             !$3 !$4) (list (
                                                             quote cond) (list 
@@ -4838,7 +4844,7 @@ STATE TERMINAL      ACTION
                                                             list (quote cond) 
                                                             (list !$2 !$4) (
                                                             list t !$6)))
-52    <any>         reduce by #39: LALR_INTERNAL_24 -> [2 symbols] (lambda (
+52    <any>         reduce by #26: LALR_INTERNAL_19 -> [2 symbols] (lambda (
                                                                    !$1 !$2) (
                                                                    cons !$1 
                                                                    !$2))
@@ -4865,8 +4871,8 @@ STATE TERMINAL      ACTION
       =>            shift to state 24
       >             shift to state 23
       :=            shift to state 22
-      <any>         reduce by #42: LALR_INTERNAL_26 -> [0 symbols] 
-55    <any>         reduce by #41: LALR_INTERNAL_26 -> [3 symbols] (lambda (
+      <any>         reduce by #29: LALR_INTERNAL_21 -> [0 symbols] 
+55    <any>         reduce by #28: LALR_INTERNAL_21 -> [3 symbols] (lambda (
                                                                    !$1 !$2 
                                                                    !$3) (cons 
                                                                    !$2 !$3))
@@ -4902,9 +4908,9 @@ STATE TERMINAL      ACTION
       let           shift to state 10
       (             shift to state 9
       [             shift to state 8
-      <any>         reduce by #40: LALR_INTERNAL_24 -> [0 symbols] 
+      <any>         reduce by #27: LALR_INTERNAL_19 -> [0 symbols] 
 63    end           shift to state 64
-64    <any>         reduce by #29: CLOSEDEXPRESSION -> [5 symbols] (lambda (
+64    <any>         reduce by #34: CLOSEDEXPRESSION -> [5 symbols] (lambda (
                                                                    !$1 !$2 
                                                                    !$3 !$4 
                                                                    !$5) (list 
@@ -4926,21 +4932,21 @@ STATE TERMINAL      ACTION
       ,             shift to state 72
       <any>         reduce by #42: LALR_INTERNAL_26 -> [0 symbols] 
 66    )             shift to state 70
-67    <any>         reduce by #33: EXPRLIST -> [1 symbols] 
-68    )             shift to state 69
-69    <any>         reduce by #28: CLOSEDEXPRESSION -> [3 symbols] (lambda (
+67    )             shift to state 69
+68    <any>         reduce by #38: EXPRLIST -> [1 symbols] 
+69    <any>         reduce by #33: CLOSEDEXPRESSION -> [3 symbols] (lambda (
                                                                    !$1 !$2 
                                                                    !$3) (cons 
                                                                    (quote 
                                                                    paren) !$2)
                                                                    )
-70    <any>         reduce by #28: CLOSEDEXPRESSION -> [3 symbols] (lambda (
+70    <any>         reduce by #33: CLOSEDEXPRESSION -> [3 symbols] (lambda (
                                                                    !$1 !$2 
                                                                    !$3) (cons 
                                                                    (quote 
                                                                    paren) !$2)
                                                                    )
-71    <any>         reduce by #34: LALR_INTERNAL_21 -> [2 symbols] (lambda (
+71    <any>         reduce by #39: LALR_INTERNAL_24 -> [2 symbols] (lambda (
                                                                    !$1 !$2) (
                                                                    cons !$1 
                                                                    !$2))
@@ -4967,8 +4973,8 @@ STATE TERMINAL      ACTION
       >             shift to state 23
       :=            shift to state 22
       ,             shift to state 72
-      <any>         reduce by #37: LALR_INTERNAL_23 -> [0 symbols] 
-74    <any>         reduce by #36: LALR_INTERNAL_23 -> [3 symbols] (lambda (
+      <any>         reduce by #42: LALR_INTERNAL_26 -> [0 symbols] 
+74    <any>         reduce by #41: LALR_INTERNAL_26 -> [3 symbols] (lambda (
                                                                    !$1 !$2 
                                                                    !$3) (cons 
                                                                    !$2 !$3))
@@ -4984,15 +4990,15 @@ STATE TERMINAL      ACTION
       >             shift to state 23
       :=            shift to state 22
       ,             shift to state 72
-      <any>         reduce by #37: LALR_INTERNAL_23 -> [0 symbols] 
+      <any>         reduce by #42: LALR_INTERNAL_26 -> [0 symbols] 
 76    ]             shift to state 77
-77    <any>         reduce by #27: CLOSEDEXPRESSION -> [3 symbols] (lambda (
+77    <any>         reduce by #32: CLOSEDEXPRESSION -> [3 symbols] (lambda (
                                                                    !$1 !$2 
                                                                    !$3) (cons 
                                                                    (quote 
                                                                    bracket) 
                                                                    !$2))
-78    <any>         reduce by #31: LALR_INTERNAL_19 -> [2 symbols] (lambda (
+78    <any>         reduce by #36: LALR_INTERNAL_22 -> [2 symbols] (lambda (
                                                                    !$1 !$2) (
                                                                    cons !$1 
                                                                    !$2))
@@ -5060,26 +5066,26 @@ EXPRESSION          0       3
                     80      81
                     <any>   44
 LALR_INTERNAL_18    <any>   56
+SEQUENCE            47      49
+                    10      61
+                    62      63
+                    9       66
+                    <any>   45
+LALR_INTERNAL_19    <any>   46
+LALR_INTERNAL_21    54      55
+                    <any>   52
 FUNCALL             17      18
                     <any>   4
 CLOSEDEXPRESSION    18      19
                     4       19
                     <any>   5
-LALR_INTERNAL_19    7       78
+LALR_INTERNAL_22    7       78
                     <any>   6
 EXPRLIST            8       76
-                    <any>   66
-LALR_INTERNAL_21    <any>   67
-LALR_INTERNAL_23    73      74
+                    <any>   67
+LALR_INTERNAL_24    <any>   68
+LALR_INTERNAL_26    73      74
                     <any>   71
-SEQUENCE            47      49
-                    10      61
-                    62      63
-                    9       68
-                    <any>   45
-LALR_INTERNAL_24    <any>   46
-LALR_INTERNAL_26    54      55
-                    <any>   52
 
 
 
@@ -5116,14 +5122,14 @@ On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
 yylex = !) type 54
 On lookahead 54, reduce 1 symbols to nonterminal EXPRESSION, and goto state 73
-On lookahead 54, reduce 0 symbols to nonterminal LALR_INTERNAL_23
+On lookahead 54, reduce 0 symbols to nonterminal LALR_INTERNAL_26
 , and goto state 74
-On lookahead 54, reduce 3 symbols to nonterminal LALR_INTERNAL_23
+On lookahead 54, reduce 3 symbols to nonterminal LALR_INTERNAL_26
 , and goto state 71
-On lookahead 54, reduce 2 symbols to nonterminal LALR_INTERNAL_21
-, and goto state 67
-On lookahead 54, reduce 1 symbols to nonterminal EXPRLIST, and goto state 66
-Shift token !) onto stack, and shift to state 70
+On lookahead 54, reduce 2 symbols to nonterminal LALR_INTERNAL_24
+, and goto state 68
+On lookahead 54, reduce 1 symbols to nonterminal EXPRLIST, and goto state 67
+Shift token !) onto stack, and shift to state 69
 On lookahead -1, reduce 3 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 19
 On lookahead -1, reduce 2 symbols to nonterminal FUNCALL, and goto state 18
@@ -5178,14 +5184,14 @@ On lookahead -1, reduce 1 symbols to nonterminal CLOSEDEXPRESSION
 On lookahead -1, reduce 1 symbols to nonterminal FUNCALL, and goto state 4
 yylex = !) type 54
 On lookahead 54, reduce 1 symbols to nonterminal EXPRESSION, and goto state 73
-On lookahead 54, reduce 0 symbols to nonterminal LALR_INTERNAL_23
+On lookahead 54, reduce 0 symbols to nonterminal LALR_INTERNAL_26
 , and goto state 74
-On lookahead 54, reduce 3 symbols to nonterminal LALR_INTERNAL_23
+On lookahead 54, reduce 3 symbols to nonterminal LALR_INTERNAL_26
 , and goto state 71
-On lookahead 54, reduce 2 symbols to nonterminal LALR_INTERNAL_21
-, and goto state 67
-On lookahead 54, reduce 1 symbols to nonterminal EXPRLIST, and goto state 66
-Shift token !) onto stack, and shift to state 70
+On lookahead 54, reduce 2 symbols to nonterminal LALR_INTERNAL_24
+, and goto state 68
+On lookahead 54, reduce 1 symbols to nonterminal EXPRLIST, and goto state 67
+Shift token !) onto stack, and shift to state 69
 On lookahead -1, reduce 3 symbols to nonterminal CLOSEDEXPRESSION
 , and goto state 19
 On lookahead -1, reduce 2 symbols to nonterminal FUNCALL, and goto state 4
