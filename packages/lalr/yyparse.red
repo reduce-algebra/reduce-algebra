@@ -86,7 +86,9 @@ fluid '(parser_action_table parser_goto_table);
 % I have a compatibility fragment that uses simple Lisp vectors to store
 % the same information, but less compactly.
 
-fluid '(reduction_fn reduction_lhs reduction_rhs_n);
+global '(lex_initial_next_code);
+
+fluid '(reduction_fn reduction_lhs reduction_rhs_n next_input);
 
 % This is an alist from nonterminal category code to nonterminal symbol, 
 % provided strictly for verbose printing purposes. Note that genparserprint.red
@@ -198,13 +200,7 @@ symbolic procedure yyparse parser;
         if next_input < 0 then next_input := yylex();
 %       if next_input = lex_eof_code then
 %         error(0, "End of file detected");
-        if next_input = lex_symbol_code or
-          next_input = lex_typename_code or
-          next_input = lex_number_code or
-          next_input = lex_string_code or
-          next_input = lex_char_code or
-          next_input = lex_list_code or
-          next_input = lex_eof_code then
+        if next_input < lex_initial_next_code then
           sym_stack := yylval . sym_stack
         else sym_stack := cdrassoc(next_input, terminal_codes) . sym_stack;    
         state_stack := w . state_stack;                 
