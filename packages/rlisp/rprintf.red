@@ -109,7 +109,7 @@ symbolic procedure printf!-internal(fmt, args);
               for each x in cdr a do << princ " "; princ x >> >> >>
           else if c = '!o or c = '!O then prinoctal a
           else if c = '!p or c = '!P then prin a
-          else if c = '!r or c = '!R then << princ "'"; prin a princ "'" >>
+          else if c = '!r or c = '!R then << princ "'"; prin a; princ "'" >>
           else if (c = '!t or c = '!T) and fixp a then <<
             if posn() > a then terpri();
             ttab a >>
