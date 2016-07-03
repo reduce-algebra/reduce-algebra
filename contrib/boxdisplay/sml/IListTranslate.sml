@@ -1,13 +1,3 @@
-signature ILIST_TRANSLATE  =
-sig
-  val IListToHList: BasicTypes.style -> bool -> IListTypes.ilist -> BoxTypes.hlist
-end  (* signature ILIST_TRANSLATE *)
-(*----------*)
-
-structure IListTranslate: ILIST_TRANSLATE  =
-struct
-  open BasicTypes;  open BoxTypes;  open IListTypes
-  open ChangeKind;  open MathSpace;  open Spacing;  open MathPenalty
 
   fun IListToHList st insertPenalty iList  =
   let fun trans st prevKind  =
@@ -21,4 +11,3 @@ struct
              val penaltyList  =  mathPenalty  insertPenalty  newKind  rest
          in  spaceList  @  hList  @  penaltyList  @  trans st newKind rest  end
   in  trans st None iList  end
-end  (* structure IListTranslate *)

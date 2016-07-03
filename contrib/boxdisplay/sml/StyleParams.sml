@@ -1,30 +1,3 @@
-signature STYLE_PARAMS  =
-sig
-  val xHeight:        BasicTypes.style -> BasicTypes.dist
-  val MathUnit:       BasicTypes.style -> BasicTypes.dist
-  val atopNum:        BasicTypes.style -> BasicTypes.dist
-  val fractNum:       BasicTypes.style -> BasicTypes.dist
-  val Denom:          BasicTypes.style -> BasicTypes.dist
-  val Sup:    bool -> BasicTypes.style -> BasicTypes.dist
-  val SubAlone:       BasicTypes.style -> BasicTypes.dist
-  val SubWithSup:     BasicTypes.style -> BasicTypes.dist
-  val SupDrop:        BasicTypes.style -> BasicTypes.dist
-  val SubDrop:        BasicTypes.style -> BasicTypes.dist
-  val Delim:          BasicTypes.style -> BasicTypes.dist
-  val AxisHeight:     BasicTypes.style -> BasicTypes.dist
-  val RuleThickness:  BasicTypes.style -> BasicTypes.dist
-  val BigOpSupDist:   BasicTypes.style -> BasicTypes.dist
-  val BigOpSubDist:   BasicTypes.style -> BasicTypes.dist
-  val BigOpSupPos:    BasicTypes.style -> BasicTypes.dist
-  val BigOpSubPos:    BasicTypes.style -> BasicTypes.dist
-  val BigOpPadding:   BasicTypes.style -> BasicTypes.dist
-end  (* signature STYLE_PARAMS *)
-(*----------*)
-
-structure StyleParams: STYLE_PARAMS  =
-struct
-  open BasicTypes
-  open Size;  open FontParams
 
   fun use1sy f st  =  f (size SY st)
   fun use2sy f g   =  fn D  =>  f (size SY D)   |   st  =>  g (size SY st)
@@ -52,4 +25,3 @@ struct
   val BigOpSupPos    =  use1ex big_op_spacing3
   val BigOpSubPos    =  use1ex big_op_spacing4
   val BigOpPadding   =  use1ex big_op_spacing5
-end  (* structure StyleParams *)

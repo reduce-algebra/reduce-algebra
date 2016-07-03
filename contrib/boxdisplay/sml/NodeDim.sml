@@ -1,19 +1,3 @@
-signature NODE_DIM  =
-sig
-  (* width, height, depth of a node in a horizontal (!) list *)
-  val width:  BoxTypes.node -> BasicTypes.dist
-  val height: BoxTypes.node -> BasicTypes.dist
-  val depth:  BoxTypes.node -> BasicTypes.dist
-  (* width and size (height + depth) of a node in a vertical list *)
-  val vwidth: BoxTypes.node -> BasicTypes.dist
-  val vsize:  BoxTypes.node -> BasicTypes.dist
-end  (* signature NODE_DIM *)
-(*----------*)
-
-structure NodeDim: NODE_DIM  =
-struct
-  open BasicTypes;  open BoxTypes
-  open CharInfo;  open Distance
 
   fun width (Char info)                   =  charWidth info
   |   width (Box  (_, {width = w, ...}))  =  w
@@ -43,4 +27,3 @@ struct
   |   vsize (Glue {size, ...})                 =  size
   |   vsize (Kern  size)                       =  size
   |   vsize  _                                 =  zero
-end  (* structure NodeDim *)

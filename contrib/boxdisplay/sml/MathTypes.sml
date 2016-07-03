@@ -1,7 +1,3 @@
-structure MathTypes  =
-struct
-  open BasicTypes
-  open BoxTypes
   datatype kind = Ord | Op | Bin | Rel | Open | Close | Punct | Inner | None
   datatype limits  =  default | yes | no
   datatype space   =  SKern of dist  |  SGlue of glueSpec
@@ -32,4 +28,3 @@ struct
                                            (* no thickness -> default value *)
                       left: delim, right: delim}
   and script = {nucleus: noad list, supOpt: noad list option, subOpt: noad list option}
-end  (* structure MathTypes *)

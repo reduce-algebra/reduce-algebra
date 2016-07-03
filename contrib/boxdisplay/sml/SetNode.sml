@@ -1,17 +1,3 @@
-signature SET_NODE  =
-sig
-  val outChar:  BoxTypes.boxkind -> (FontTypes.fontNr * BasicTypes.charCode) -> unit
-  val outRule:  BoxTypes.boxkind -> BoxTypes.dim -> unit
-  val outKern:  BoxTypes.boxkind -> BoxTypes.dist -> unit
-  val outGlue:  BoxTypes.boxkind -> BoxTypes.glueParam -> BoxTypes.glueSpec -> unit
-end
-(*----------*)
-
-structure SetNode: SET_NODE  =
-struct
-  open BasicTypes;  open BoxTypes
-  open Distance;  open CharInfo
-  open OutHigh;  open DviCmd
 
   (* Invariant for horizontal stuff:
      reference point -> end point = reference point + (0, width)
@@ -49,4 +35,3 @@ struct
   fun outGlue kind glueParam glueSpec  =
       outKern kind (glueSize glueParam glueSpec)
 
-end

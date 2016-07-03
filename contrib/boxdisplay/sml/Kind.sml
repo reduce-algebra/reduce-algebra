@@ -1,12 +1,3 @@
-signature KIND  =
-sig
-  val noadKind: MathTypes.noad -> MathTypes.kind
-end  (* signature KIND *)
-(*----------*)
-
-structure Kind: KIND  =
-struct
-  open MathTypes
 
   fun nucKind [MathChar (k, _, _)]  =  k
   |   nucKind  ml                   =  Ord
@@ -28,4 +19,3 @@ struct
   |  _            =>  raise CannotHappen
   (* not called for the remaining possibilities:
      MPen, MSpace, Style, Choice *)
-end  (* structure Kind *)

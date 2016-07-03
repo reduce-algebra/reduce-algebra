@@ -1,15 +1,3 @@
-signature FONT_VECTOR  =
-sig
-  val famSizeVector:   (BasicTypes.family * BasicTypes.size) Vector.vector
-  val fontNumberVector: FontTypes.fontNr Vector.vector
-  val fontVector:       FontTypes.font   Vector.vector
-end
-(*----------*)
-
-structure FontVector: FONT_VECTOR  =
-struct
-  open BasicTypes;  open FontTypes
-  open General;  open Size;  open LoadFont
 (* Idea: famFont will compute a font number from family and style.
    This number is used to look up the font in fontVector.
    Vector fontVector is built from the repetition free list famSizePairs
@@ -46,4 +34,3 @@ struct
   val famSizeVector     =  vector famSizePairs
   val fontVector        =  vector (map loadFont famSizePairs)
 
-end

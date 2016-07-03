@@ -1,14 +1,3 @@
-signature MATH_SPACE  =
-sig
-  val makeSpace:    BoxTypes.style -> MathTypes.mathSpace -> BoxTypes.hlist
-  val makeSpaceOpt: BoxTypes.style -> MathTypes.mathSpace option -> BoxTypes.hlist
-end  (* signature MATH_SPACE *)
-(*----------*)
-
-structure MathSpace: MATH_SPACE  =
-struct
-  open BasicTypes;  open BoxTypes;  open MathTypes
-  open General;  open StyleParams
 
   fun translate (SKern s)  =  Kern s
   |   translate (SGlue g)  =  Glue g
@@ -29,4 +18,3 @@ struct
 
   fun makeSpaceOpt st  =  optFold [] (makeSpace st)
 
-end

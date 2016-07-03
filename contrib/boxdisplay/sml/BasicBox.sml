@@ -1,18 +1,4 @@
-signature BASIC_BOX  =
-sig
-  val rule: BasicTypes.dist -> BasicTypes.dist -> BoxTypes.node (* height and width *)
-  val ssGlue:   BoxTypes.glueSpec
-  val emptyBox: BoxTypes.box
-  val hbox: BoxTypes.dim -> BoxTypes.hlist -> BoxTypes.box  (* constructs hbox with given dimensions *)
-  val vbox: BoxTypes.dim -> BoxTypes.vlist -> BoxTypes.box  (* constructs vbox with given dimensions *)
-  val extend: BasicTypes.dist -> BoxTypes.node -> BoxTypes.hlist     (* extends to the right *)
-end  (* signature BASIC_BOX *)
-(*----------*)
 
-structure BasicBox: BASIC_BOX =
-struct
-  open BasicTypes;  open BoxTypes
-  open Distance
 
   fun rule h w  =  Rule {height = h, depth = zero, width = w}
 
@@ -44,4 +30,3 @@ struct
   let val extension  =  if  dist = zero  then  []  else  [Kern dist]
   in  node :: extension  end
 
-end  (* structure BasicBox *)

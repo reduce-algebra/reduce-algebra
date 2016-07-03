@@ -1,6 +1,3 @@
-structure IListTypes  =
-struct
-  open BoxTypes;  open MathTypes
 
   datatype item  =
     INoad  of  kind * hlist
@@ -9,4 +6,3 @@ struct
   | IStyle of  style
 
   type ilist  =  item list
-end  (* structure IListTypes *)

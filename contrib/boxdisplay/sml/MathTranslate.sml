@@ -1,33 +1,6 @@
-signature MATH_TRANSLATE  =
-sig
-  val cleanBox:      BasicTypes.style -> bool -> MathTypes.mlist -> BoxTypes.box
-  val doGenFraction: BasicTypes.style -> bool -> MathTypes.genfraction ->
-  BoxTypes.box
-  val doLeftRight:   BasicTypes.style -> bool -> BasicTypes.delim ->
-  MathTypes.mlist -> BasicTypes.delim -> BoxTypes.box
-  val doNucleus:     BasicTypes.style -> bool -> bool  -> MathTypes.mlist ->
-  BoxTypes.node * BasicTypes.dist * bool
-  val doGenScripts:  BasicTypes.style -> bool -> bool  -> bool  ->
-  MathTypes.script -> BoxTypes.hlist
-  val doBigOp:       BasicTypes.style -> bool -> MathTypes.limits ->
-  MathTypes.script -> BoxTypes.hlist
-  val NoadToHList:   BasicTypes.style -> bool -> MathTypes.noad  ->
-  BoxTypes.hlist
-  val MListToIList:  BasicTypes.style -> bool -> MathTypes.mlist ->
-  IListTypes.ilist
-  val MListToHList:  BasicTypes.style -> bool -> bool  -> MathTypes.mlist ->
-  BoxTypes.hlist
-end  (* signature MATH_TRANSLATE *)
-(*----------*)
 
-structure MathTranslate: MATH_TRANSLATE  =
-struct
-  open BasicTypes;  open BoxTypes;  open MathTypes;  open IListTypes
-  open General;  open Distance;  open BoxPack;  open AxisCenter
-  open Kind;  open ChangeStyle
-  open MakeChar;  open Accent;  open Radical;  open Boundaries
-  open MakeLine;  open GenFraction;  open MakeScripts;  open MakeLimOp
-  open IListTranslate
+  fun isSingleChar [MathChar _] = true
+    | isSingleChar _            = false
 
   fun cleanBox st cr ml  =
       boxList (MListToHList st cr false (* no penalties! *) ml)
@@ -56,6 +29,19 @@ struct
         else  makeScripts st cr isChar itCorr nucNode supOptBox subOptBox
   end
 
+  and doGenScripts1 st cr limits isOp script =
+  case #nucleus script of
+    [Accent (fam, ch, ml)] =>
+      let
+        val noAccentScript = {nucleus=ml, supOpt=(#supOpt script), subOpt=(#subOpt script)}
+        val noAccentHList = doGenScripts st cr limits isOp noAccentScript
+        val nucleus = NoadToHList st cr (Accent (fam,ch,ml))
+      in
+        (hd nucleus) :: (tl noAccentHList)
+      end
+  | _                      => doGenScripts st cr limits isOp script
+
+
   and doBigOp st cr lim script  =
   let val limits  =  (st = D  andalso  lim = default)  orelse  lim = yes
   in  doGenScripts st cr limits true script  end
@@ -63,13 +49,13 @@ struct
   and NoadToHList st cr  =
   fn MathChar(_, fam, ch)  =>  makeChar st fam ch
   |  Radical    (del, ml)  =>  HL (makeRadical st del    (cleanBox st true ml))
-  |  Accent (fam, ch, ml)  =>  HL (makeAccent  st fam ch (cleanBox st true ml))
+  |  Accent (fam, ch, ml)  =>  HL (makeAccent (isSingleChar ml) st fam ch (cleanBox st true ml))
   |  VCenter    ml  =>  [axisCenter   st (cleanBox st cr ml)]
   |  Overline   ml  =>  HL (makeOver  st (cleanBox st true ml))
   |  Underline  ml  =>  HL (makeUnder st (cleanBox st cr ml))
   |  GenFraction genFract  =>  HL (doGenFraction st cr genFract)
   |  LeftRight (left, ml, right)  =>  HL (doLeftRight st cr left ml right)
-  |  Script script   =>  doGenScripts st cr false false script
+  |  Script script   =>  doGenScripts1 st cr false false script
   |  BigOp (lim, script)  =>  doBigOp st cr lim script
   |  SubBox   b    =>  HL b
   |  MList    ml   =>  HL (cleanBox st cr ml)
@@ -91,4 +77,3 @@ struct
   let val il  =  MListToIList st cr  ml
       val hl  =  IListToHList st pen il
   in  hl  end
-end  (* structure MathTranslate *)

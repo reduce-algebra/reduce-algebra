@@ -1,26 +1,3 @@
-signature MAKE_SCRIPTS  =
-sig
-  val makeSup:
-          BasicTypes.style -> bool -> bool -> BasicTypes.dist -> BoxTypes.node
-          -> BoxTypes.box -> BoxTypes.hlist
-  val makeSub:
-          BasicTypes.style ->         bool ->   BoxTypes.node -> BoxTypes.box
-          -> BoxTypes.hlist
-  val makeSupSub:
-          BasicTypes.style -> bool -> bool -> BasicTypes.dist -> BoxTypes.node
-          -> BoxTypes.box -> BoxTypes.box -> BoxTypes.hlist
-  val makeScripts:
-          BasicTypes.style -> bool -> bool -> BasicTypes.dist -> BoxTypes.node
-          -> BoxTypes.box option -> BoxTypes.box option -> BoxTypes.hlist
-end  (* signature MAKE_SCRIPTS *)
-(*----------*)
-
-structure MakeScripts: MAKE_SCRIPTS  =
-struct
-  open BasicTypes;  open BoxTypes
-  open StyleParams;  open Const
-  open Distance;  open General;  open ChangeStyle
-  open BasicBox;  open MakeVBox;  open NodeDim
 
   fun almost_xHeight st  =  (xHeight st * 4) div 5
 
@@ -31,10 +8,12 @@ struct
       if  isChar  then  zero  else  dnuc + SubDrop (script st)
 
   fun SupPos st cr isChar hnuc dsup  =
-      Max [SupPos0 st isChar hnuc,  Sup cr st,    dsup + xHeight st div 4]
+      Int.max (SupPos0 st isChar hnuc,
+        Int.max(Sup cr st,    dsup + xHeight st div 4))
 
   fun SubAlonePos st isChar dnuc hsub  =
-      Max [SubPos0 st isChar dnuc,  SubAlone st,  hsub - almost_xHeight st]
+      Int.max (SubPos0 st isChar dnuc,
+        Int.max(SubAlone st,  hsub - almost_xHeight st))
 
   fun SubWithSupPos st isChar dnuc  =
       Int.max (SubPos0 st isChar dnuc,  SubWithSup st)
@@ -78,4 +57,3 @@ struct
          |  SOME subBox  =>  makeSupSub st cr isChar itCorr
                                         nucNode supBox subBox)
     )
-end  (* structure MakeScripts *)

@@ -1,27 +1,3 @@
-signature DVI_CMD  =
-sig
-  val SetChar : FontTypes.fontNr * BasicTypes.charCode -> unit
-  val PutChar : FontTypes.fontNr * BasicTypes.charCode -> unit
-  val SetRule : BasicTypes.dist * BasicTypes.dist -> unit
-  val PutRule : BasicTypes.dist * BasicTypes.dist -> unit
-  val Left    :        BasicTypes.dist -> unit
-  val Right   :        BasicTypes.dist -> unit
-  val Up      :        BasicTypes.dist -> unit
-  val Down    :        BasicTypes.dist -> unit
-  val Push    :        unit -> unit
-  val Pop     :        unit -> unit
-  val Bop     :        unit -> unit
-  val Eop     :        unit -> unit
-  val Pre     :        int  -> unit
-  val Post    :        int  -> unit
-end
-(*----------*)
-
-structure DviCmd: DVI_CMD  =
-struct
-  open BasicTypes
-  open OutDvi
-  open DviState
 
   fun FontDef f  =
     if  isDefined f  then  ()
@@ -67,4 +43,3 @@ struct
       tail (actPos ())
     )
 
-end

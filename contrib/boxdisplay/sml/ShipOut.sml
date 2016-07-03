@@ -1,12 +1,3 @@
-signature SHIP_OUT  =
-sig
-  val shipOut: BoxTypes.hlist list -> unit
-end
-
-structure ShipOut: SHIP_OUT  =
-struct
-  open Out;  open DviCmd;  open SetBox
-  open Distance
 
   val mag = 2000
   val lineSkip    =  distInt 50
@@ -26,4 +17,3 @@ struct
       ()
     )
 
-end

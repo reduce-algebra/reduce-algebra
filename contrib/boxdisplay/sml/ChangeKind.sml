@@ -1,25 +1,12 @@
-signature CHANGE_KIND  =
-sig
-  val changeKind: MathTypes.kind -> MathTypes.kind -> IListTypes.ilist ->
-  MathTypes.kind
-end  (* signature CHANGE_KIND *)
-(*----------*)
 
-structure ChangeKind: CHANGE_KIND  =
-struct
-  open MathTypes;  open IListTypes
-  open General
+  fun listKind [] = None
+    | listKind (INoad (k, _) :: _) = k
+    | listKind (_ :: t) = listKind t;
 
-  val rec listKind  =
-  fn  []                  =>   None
-  |   INoad (k, _) :: _   =>   k
-  |   _            :: t   =>   listKind t
-
-  val checkPrev  =  contains [Bin, Op, Rel, Open, Punct, None]
-  val checkNext  =  contains [Rel, Close, Punct, None]
+  fun checkPrev u  =  contains [Bin, Op, Rel, Open, Punct, None] u
+  fun checkNext u  =  contains [Rel, Close, Punct, None] u
 
   fun changeKind  prevKind  Bin  rest  =
         if  checkPrev prevKind  orelse  checkNext (listKind rest)
         then  Ord  else  Bin
   |   changeKind  _  k  _   =   k
-end  (* structure ChangeKind *)

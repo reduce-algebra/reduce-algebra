@@ -1,13 +1,3 @@
-signature SPACING  =
-sig
-  val mathSpacing: MathTypes.kind * MathTypes.kind -> MathTypes.mathSpace option
-end  (* signature SPACING *)
-(*----------*)
-
-structure Spacing: SPACING  =
-struct
-  open MathTypes
-  open MathGlue
 
   fun mathSpacing (None , _    )  =  noSkip
   |   mathSpacing (_    , None )  =  noSkip
@@ -26,4 +16,3 @@ struct
   |   mathSpacing (Op   , Ord  )  =  thinSkip
   |   mathSpacing       _         =  noSkip
 
-end  (* structure Spacing *)

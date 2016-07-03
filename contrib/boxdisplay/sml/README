@@ -1,10 +1,58 @@
 This directory contains the version of the SML implementation of
-TeX Maths Layout algorithms in close to its original form. It has been
-updated to allow for changes to the specification of SML from '90 to '97.
+TeX Maths Layout algorithms. It has been updated to allow for changes
+to the specification of SML from '90 to '97.
+
+Further to the minimal changes needed to work with SML-97 there are
+two sorts of change here. One is a collection of upgrades worked on
+by Zach Hauser that implement support for accents, delimiters and
+radicals. The second are some basically grotty cganges made by ACN that
+re-work this code to use less of the "clever" features of SML. Specifically
+the plan is to avoid use of ML modules (ie signatures and structures). To
+avoid higher order functions as much as reasonably possible, and to use
+function definitions with a definite number of arguments in place of
+curried ones. The motivation for these changes is to make mapping the
+SML code onto other languages easier.
+(1) The signature/structure scheme protects name-spaces and helps keep the
+    code modular. But the code here is only around 2500 lines long anyway
+    and that is not large enough to run terrible risks of name clashes.
+    Getting rid of the modules avoids the need to support the module-style
+    namespace protection in any re-write. I observe that there are only
+    a very few clashes anyway. Ha ha - when one removes the module stuff
+    you end up with only 1500 lines of code!
+(2) There seem to be remarkably few uses of higher order functions in the
+    original code. The only uses of FOLD are in a prologue. There are only
+    half a dozen uses of map. Cleaning them away does not do much damage
+    to the code structure and avoids need for full support for static
+    scoping of synamic variables and worries about closures in a translation.
+(3) Most of the functions in the original are defined as Curried but are
+    never partially applied. There are a number of cases where this is not
+    so, but merely making the extra arguments explicit sorts that out
+    rather easily. As with the other changes this will ease translation.
+    Making the change is a mess, but the SML type-checker can ensure that
+    I do not end up messing things up! Hmmm - on further thought this is not
+    necessary - in any translation I can treat "f x y" as if it has been
+    "f(x,y)" and so provided no partial application is used all will be well.
+    And any partial application would show up as functions being called with
+    the wrong number of args - an easy case to spot.
+    The original code contains a number of cases of
+       fun F x y = ...;
+       val G = F X;
+    that I can turn into
+       fun G y = F X y;
+    without significant loss of clarity, and I should make that conversion.
+(4) There was one instance of a use of an "infix" directive, which is used
+    with purely local scope and was easy to remove.
+(5) I would probably like to end up with symbol names all distinct even if
+    handled in a case-insensitive manner.
+
 
 Thanks are due to Heckmann and Wilhelm for this code.
 
                                                ACN February 2015
+                                                   June 2016
+
+
+
 
 
 =====================================================================
