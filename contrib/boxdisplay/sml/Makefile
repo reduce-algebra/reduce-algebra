@@ -9,11 +9,6 @@ test%:
 
 
 sml:
-	$O/cslbuild/i686-pc-cygwin/csl/bootstrapreduce -w sml.red -l sml.log
+	$O/bin/bootstrapreduce -w sml.red -l sml.log
 
-sml1:
-	$O/cslbuild/i686-pc-cygwin/csl/bootstrapreduce -w test.red -l test.log
-
-lispfile:
-	./lispfile.sh
 

@@ -194,8 +194,8 @@ grammar := '(
          ((exp ";" seqtail) (cons !$1 !$3)))
 
  (id_with_op
-         ((!:symbol) (printf "%f## sym: %r%n" !$1) !$1)
-         (("op" opname) (printf "%f## op sym: %r%n" !$2) !$2))
+         ((!:symbol) !$1)
+         (("op" opname) !$2))
 
 % The words accepted in INFIX and INFIXR directives  should probably include
 % things that have already been declared with an infix property. I want
@@ -329,10 +329,10 @@ grammar := '(
  (exprow ((lab "=" exp))
          ((lab "=" exp "," exprow)))
 
- (match  ((onematch) (printf "%f## onematch: %r%n" !$1) !$1)
+ (match  ((onematch) !$1)
          ((onematch "|" match)))
 
- (tracedpat ((pat) (printf "%f## pat = %r%n" !$1) !$1))
+ (tracedpat ((pat) !$1))
 
  (onematch ((tracedpat "=>" exp)))
 
@@ -384,9 +384,9 @@ grammar := '(
  (opttyp (())
          ((":" typ)))
 
- (atpat  ((con) (printf "%f## atpat con: %r%n" !$1) !$1)
+ (atpat  ((con) !$1)
          (("_"))
-         ((id_with_op) (printf "%f## atpat id_with_op: %r%n" !$1) !$1)
+         ((id_with_op) !$1)
          (("{" patrow "}"))
          ((unit))
          ((emptylist))
