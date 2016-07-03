@@ -71,10 +71,13 @@ symbolic macro procedure bldmsg u;
 
 symbolic procedure bldmsg!-internal(fmt, args);
   begin
+% Use printf, but with output to be collected into a string.
     scalar r, dest, save;
+% This uses a feature where output can be sent to a "stream" such that the
+% characters sent can later bo retrieved as a string. The function names
+% involved are taken from Common Lisp.
     dest := make!-string!-output!-stream();
     save := wrs dest;
-% Use printf, but with output to be collected into a string.
     printf!-internal(fmt, args);
     r := get!-output!-stream!-string dest;
     close dest;
@@ -102,24 +105,37 @@ symbolic procedure printf!-internal(fmt, args);
             a := car args;
             args := cdr args >>;
           if (c = '!b or c = '!B) and fixp a  then for i := 1:a do princ " "
+% "tyo" can take either an integer (in which case it treats that as a
+% character code) or a symbol (in which case it uses its first charafter,
+% or a not-quite-supported raw CSL character object.
           else if c = '!c or c = '!C then tyo a
           else if c = '!l or c = '!L then <<
             if not atom a then <<
               princ car a;
               for each x in cdr a do << princ " "; princ x >> >> >>
+% PSL can print in octal by resetting an "output base" variable, but there
+% is no expecxtation that the exact format used will match what CSL prints.
           else if c = '!o or c = '!O then prinoctal a
           else if c = '!p or c = '!P then prin a
           else if c = '!r or c = '!R then << princ "'"; prin a; princ "'" >>
           else if (c = '!t or c = '!T) and fixp a then <<
             if posn() > a then terpri();
             ttab a >>
+% "%w", "%d" and "%s" here all just use princ. The original idea was that
+% "%d" was for (decimal) integers and "%s" for strings, but there is no
+% really useful optimisation to be had by trying to find type-specific
+% print functions to call here.
           else if c = '!w or c = '!d or c = '!s or
                   c = '!W or c = '!D or c = '!S then princ a
+% As with octal output, PSL can achieve this a diffenent way and will
+% generate differently formatted output.
           else if c = '!x or c = '!X then prinhex a
 % Rather than generating an error I will display %? (where ? is any
 % unrecognized character) unchanged. 
           else << princ "%"; princ c >> >> >> >>
   end;
+
+flag('(printf bldmsg), 'variadic);
 
 #endif
 

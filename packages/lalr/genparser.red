@@ -195,8 +195,9 @@ symbolic procedure lalr_productions x;
 %          Nonterminals are represented by symbols. 
 %
 % In addition it will be possible to write shorthand items on the right
-% hand side of a production:
+% hand side of a production.
 %        (opt X Y Z)
+%        (seq X Y Z)
 %        (star X Y Z)
 %        (plus X Y Z)
 %        (list S X Y Z)
@@ -208,6 +209,10 @@ symbolic procedure lalr_productions x;
 % (opt X Y Z) is either X Y Z or nothing
 %   (G (())              % value will be either nil or (list X Y Z)
 %      ((X Y Z)))        % or if only one item X then X.
+%
+% (seq X Y Z) is just the sequence X Y Z and may be useful nested within
+% some of the other constructs
+% (G ((X Y Z)))
 %
 % (star X Y Z) is zero or more repetitions of X Y Z, and the
 % value it returns is a list of whatever each X Y Z generated
@@ -226,7 +231,13 @@ symbolic procedure lalr_productions x;
 %   (funcall ((!:symbol "("
 %                       (list "," expression)
 %                       ")")) (cons !$1 !$3))
-% to recognise function calls such as "f(A,B,C)" in a typical language.  
+% to recognise function calls such as "f(A,B,C)" in a typical language.
+% Note that this allows an empty sequence, so we have
+%         <empty>
+%         X
+%         X del Y
+%         X del Y del Z
+% etc.
 %   (G  (())
 %       ((G2 G1) (cons !$1 !$2))
 %   (G1 (())
@@ -244,6 +255,12 @@ symbolic procedure lalr_productions x;
 %   (G ((A))
 %      ((B))
 %      ((C)))
+%
+% Note that if you use multiple instances of these then you are quite
+% liable to introduce reduce/reduce conflicts. Eg imagine that you have
+% two instances of (star "x") or (opt "y") then x or y could be generated
+% by either, and at least without some care it may be hard to decide
+% which.
 %
 %
 %
@@ -315,7 +332,7 @@ symbolic procedure lalr_extract_nonterminals r;
     else car r . lalr_extract_nonterminals cdr r >>
   else if atom car r then rederr list("Malformed production", r,
     "(atomic item in token list should be symbol or string)")
-  else if memq(caar r, '(opt star plus list listplus or)) then
+  else if memq(caar r, '(opt seq star plus list listplus or)) then
      append(lalr_extract_nonterminals cdar r, lalr_extract_nonterminals cdr r)
   else rederr list("Malformed production", r,
     "(unrecognised item in rule)");
@@ -414,6 +431,12 @@ symbolic procedure expand_terminal z;
       pending_rules!* :=
         list(g1,
              '(()),
+             list cdr z) . pending_rules!*;
+      return g1 >>
+    else if eqcar(z, 'seq) then <<
+      g1 := expansion_name();
+      pending_rules!* :=
+        list(g1,
              list cdr z) . pending_rules!*;
       return g1 >>
     else if eqcar(z, 'star) then <<

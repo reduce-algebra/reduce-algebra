@@ -262,9 +262,12 @@ symbolic inline procedure lexer_option o;
 % enabled, and by checking that first it avoids using the somewhat slow MEMQ
 % test in cases where it is irrelevant.
 
+flag('(!! !% !& !$ !# !+ !- !/ !: !< != !> !? !@ !\ !~ !` !^ !| !*),
+     'sml_opchar);
+
 symbolic inline procedure sml_opchar ch;
   lexer_option(lexer_sml_operators) and
-  memq(ch, '(!! !% !& !$ !# !+ !- !/ !: !< != !> !? !@ !\ !~ !` !^ !| !*));
+  flagp(ch, 'smp_opchar);
 
 symbolic procedure all_sml_opchar l;
   null l or
@@ -958,7 +961,7 @@ symbolic procedure lex_basic_token();
 % For SML I seem to need "~NNNN" to parse as a number.
     else if digit lex_char or
        (lex_char = '!~ and lexer_option(lexer_sml_operators) and
-        lex_unicode_numeric(yypeek())) then <<
+        digit yypeek()) then <<
       if lex_char = '!~ then << negate := t; yyreadch() >>;
 % I support hexadecimal input with syntax like 0xDDDD for hex digits DDDD.
       if lex_char = '!0 and (yypeek() = 'x or yypeek() = '!X) then <<
