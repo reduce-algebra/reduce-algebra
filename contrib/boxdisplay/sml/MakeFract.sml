@@ -1,3 +1,14 @@
+signature MAKE_FRACT  =
+sig
+  val makeFract: BasicTypes.style -> BasicTypes.dist -> BasicTypes.dist ->
+  BoxTypes.box -> BoxTypes.box -> BoxTypes.node
+end  (* signature MAKE_FRACT *)
+(*----------*)
+
+structure MakeFract: MAKE_FRACT  =
+struct
+  open BasicTypes;  open BoxTypes
+  open Distance;  open StyleParams;  open MakeVBox
 
   fun fractMinDist D halfTh  =  6 * halfTh
   |   fractMinDist _ halfTh  =  2 * halfTh
@@ -20,3 +31,4 @@
       val fractBox  =  makeVBox w stroke (makeList distNum numBox)
                                          (makeList distDen denBox)
   in  Box (~axh, fractBox)  end
+end  (* structure MakeFract *)

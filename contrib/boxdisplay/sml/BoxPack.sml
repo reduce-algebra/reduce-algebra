@@ -1,3 +1,22 @@
+signature BOX_PACK  =
+sig
+  val boxList:       BoxTypes.hlist -> BoxTypes.box
+
+  val setWidth:      BasicTypes.dist -> BoxTypes.hlist -> BoxTypes.box
+  (* sets width to a given value, using glue adaptation *)
+
+  val increaseWidth: BasicTypes.dist -> BoxTypes.hlist -> BoxTypes.box
+  (* increases width by a given value which may be negative,
+     using glue adaptation *)
+
+  val rebox:         BasicTypes.dist -> BoxTypes.box -> BoxTypes.box
+end  (* signature BOX_PACK *)
+(*----------*)
+
+structure BoxPack: BOX_PACK  =
+struct
+  open BasicTypes;  open BoxTypes
+  open BasicBox;    open NodeListDim;  open HListGlue
 
   fun desiredDimensions w nl  =
       {width = w,  height = hlistHeight nl,  depth = hlistDepth nl}
@@ -28,3 +47,4 @@
       val dim  =  {width = newWidth, height = height, depth = depth}
   in  hlistGlue  dim  (newWidth - width)  (glue :: hl @ [glue])  end
 
+end  (* structure BoxPack *)

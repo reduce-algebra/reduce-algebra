@@ -83,9 +83,9 @@ prec := '(
           ("raise")
           ("else")
           ("do")
+          ("|")
           ("of")
           ("fn")
-          ("|")
           ("=>")
           ("as")
   )$
@@ -141,6 +141,89 @@ symbolic procedure process u;
       filestack := rds v . filestack >>
   end;
 
+fluid '(lexer_context context_stack);
+
+global '(infix_lookup);
+infix_lookup := mkhash(30, 2, 1.5)$
+
+<< puthash('(0 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
+   puthash('(1 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
+   puthash('(2 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
+   puthash('(3 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
+   puthash('(4 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
+   puthash('(5 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
+   puthash('(6 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
+   puthash('(7 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
+   puthash('(8 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
+   puthash('(9 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
+   puthash('(0 . left), infix_lookup, get('!:infix0, 'lex_fixed_code));
+   puthash('(1 . left), infix_lookup, get('!:infix1, 'lex_fixed_code));
+   puthash('(2 . left), infix_lookup, get('!:infix2, 'lex_fixed_code));
+   puthash('(3 . left), infix_lookup, get('!:infix3, 'lex_fixed_code));
+   puthash('(4 . left), infix_lookup, get('!:infix4, 'lex_fixed_code));
+   puthash('(5 . left), infix_lookup, get('!:infix5, 'lex_fixed_code));
+   puthash('(6 . left), infix_lookup, get('!:infix6, 'lex_fixed_code));
+   puthash('(7 . left), infix_lookup, get('!:infix7, 'lex_fixed_code));
+   puthash('(8 . left), infix_lookup, get('!:infix8, 'lex_fixed_code));
+   puthash('(9 . left), infix_lookup, get('!:infix9, 'lex_fixed_code));
+   puthash('(0 . right), infix_lookup, get('!:infixr0, 'lex_fixed_code));
+   puthash('(1 . right), infix_lookup, get('!:infixr1, 'lex_fixed_code));
+   puthash('(2 . right), infix_lookup, get('!:infixr2, 'lex_fixed_code));
+   puthash('(3 . right), infix_lookup, get('!:infixr3, 'lex_fixed_code));
+   puthash('(4 . right), infix_lookup, get('!:infixr4, 'lex_fixed_code));
+   puthash('(5 . right), infix_lookup, get('!:infixr5, 'lex_fixed_code));
+   puthash('(6 . right), infix_lookup, get('!:infixr6, 'lex_fixed_code));
+   puthash('(7 . right), infix_lookup, get('!:infixr7, 'lex_fixed_code));
+   puthash('(8 . right), infix_lookup, get('!:infixr8, 'lex_fixed_code));
+   puthash('(9 . right), infix_lookup, get('!:infixr9, 'lex_fixed_code));
+   nil >>;
+
+symbolic procedure makeinfix(id, prec, dirn);
+  begin
+% Allow for multiple declarations in one.
+    if not atom id then <<
+      for each x in id do makeinfix(x, prec, dirn);
+      return nil >>;
+    if not zerop posn() then terpri();
+    princ "@@@ Identifier "; princ id; princ " is now an operator: ";
+    princ prec; princ "  "; printc dirn;
+    lexer_context := list('type, id, get(id, 'lex_code)) . lexer_context;
+    put(id, 'lex_code, gethash(prec . dirn, infix_lookup));
+    return nil
+  end;
+
+symbolic procedure startcontext();
+  begin
+    context_stack := lexer_context . context_stack;
+    lexer_context := nil;
+    if not zerop posn() then terpri();
+    printc "Starting a nested context";
+  end;
+
+symbolic procedure endcontext();
+  begin
+    if not zerop posn() then terpri();
+    printc "Ending a nested context";
+% I now need to unwind any local type and infix declarations...
+    for each p in lexer_context do
+      if eqcar(p, 'infix) then put(cadr p, 'lex_code, cddr p)
+      else printf("+++ Unknown context save: %p%n", p);
+    lexer_context := car context_stack;
+    context_stack := cdr context_stack;
+  end;
+
+lexer_style!* := lexer_style_sml + 0x40; % Support #if and #eval too!
+
+% If parsing the SML code fails I will just exit from Reduce. Otherwise
+% it is likely that I will be faced with a mess of further silly messages
+% as Reduce tries to make sense if SML input itself.
+% I think I may need an option within lalr for parsing from a file, such
+% that errors merely close that file and return to using Reduce on
+% an outer file... ie so that parsed and regular Reduce stuff are kept
+% more separate.
+
+on parse_errors_fatal;
+
 % The grammar used here is derived from one found at
 %    https://www.mpi-sws.org/~rossberg/sml.html
 
@@ -148,7 +231,7 @@ symbolic procedure process u;
 % fron "The Definition of Standard ML (Revised)", 1997. At least that will
 % be definitive! I hope it will let me get rid of syntactic ambiguity.
 
-grammar := '(
+<< terpri(); lpri list("grammar has", length (grammar := '(
 
  (toplevel ((progs "EOF")))
 
@@ -319,8 +402,7 @@ grammar := '(
 
  (localid
          (("local") (startcontext)))
- (letid  (("let") (printc "+++ LET detected")
-                  (startcontext)))
+ (letid  (("let") (startcontext)))
  (endid  (("end") (endcontext)))
 
  (seqexps((exp))
@@ -330,7 +412,7 @@ grammar := '(
          ((lab "=" exp "," exprow)))
 
  (match  ((onematch) !$1)
-         ((onematch "|" match)))
+         ((match "|" onematch)))
 
  (tracedpat ((pat) !$1))
 
@@ -438,6 +520,9 @@ grammar := '(
  (tvs2   ((!:typename))
          ((tvs2 "," !:typename)))
 
+ (symbols ((!:symbol))
+         ((symbols !:symbol)))
+
  (dec1   (("val" valbind))
          (("val" tyvarseq valbind))
          (("fun" fvalbind))
@@ -445,13 +530,13 @@ grammar := '(
          (("type" typbind))
          (("datatype" datbind))
          (("datatype" datbind "withtype" typbind))
-         (("datatype" !:symbol "=" "datatype" !:symbol))
+         (("datatype" !:symbol "-=-" "datatype" !:symbol))
          (("abstype" datbind "with" dec "end"))
          (("abstype" datbind "withtype" typbind "with" dec "end"))
          (("exception" exnbind))
-%        (("structure" strbind))
          ((localid dec "in" dec endid))
-%        (("open" !:symbol))   % Could have multiple ids here
+         (("open" symbols))
+         (("structure" strbind))
          (("nonfix" opnames) (makeinfix !$2 0 'none))
          (("infix" opnames) (makeinfix !$2 0 'left))
          (("infix" digit opnames) (makeinfix !$3 !$2 'left))
@@ -497,17 +582,90 @@ grammar := '(
  (exnbind  ((id_with_op optoftyp optandexnbind))
            ((id_with_op "=" !:symbol optandexnbind)))
 
-% (str)
-% (strbind)
-% (sig)
-% (typrefin)
-% (spec)
-% (valdesc)
-% (typdesc)
-% (detdesc)
-% (condest)
-% (exndesc)
-% (strdesc)
+ (onestrbind ((!:symbol "=" strexp))
+           ((!:symbol ":" sigexp "=" strexp))
+           ((!:symbol ":>" sigexp "=" strexp))
+           )
+
+ (strbind  ((onestrbind))
+           ((strbind "and" onestrbind)))
+
+
+ (strexp   ((structid dec endid))
+           ((!:symbol))
+           ((strexp ":" sigexp))
+           ((strexp ":>" sigexp))
+           ((!:symbol "(" strexp ")"))
+           ((!:symbol "(" dec ")"))
+           ((letid dec "in" strexp endid))
+           )
+
+ (structid (("struct") (startcontext)))
+
+ (sigexp  ((sigid spec endid))
+          ((!:symbol))
+          ((sigexp "where" "type" !:symbol "=" typ))
+          ((sigexp "where" "type" tyvarseq !:symbol "=" typ))
+          )
+
+ (sigid   (("sig") (startcontext)))
+
+ (sigdec  (("signature" sigbind)))
+
+ (sigbind ((!:symbol "=" sigexp (opt "and" sigbind))))
+
+ (onespec (("val" valdesc))
+          (("type" typdesc))
+          (("eqtype" typdesc))
+          (("datatype" datdesc))
+          (("datatype" !:symbol "-=-" "datatype" !:symbol))
+          (("exception" exdesc))
+          (("structure" strdesc))
+          (("include" sigexp))
+          )
+
+ (spec    ((onespec))
+          ((spec ";" onespec))
+          ((spec onespec))
+          ((spec "sharing" "type" !:symbol eqsymlist))
+          )
+
+ (fundec  (("functor" funbind)))
+
+ (onefunbind ((!:symbol "(" !:symbol ":" sigexp ")" "=" strexp))
+          ((!:symbol "(" !:symbol ":" sigexp ")" ":" sigexp "=" strexp))
+          ((!:symbol "(" !:symbol ":" sigexp ")" ":>" sigexp "=" strexp))
+          ((!:symbol "(" spec ")" ":" sigexp "=" strexp))
+          ((!:symbol "(" spec ")" ":>" sigexp "=" strexp))
+          )
+
+ (funbind  ((onefunbind))
+           ((funbind "and" onefunbind)))
+
+ (eqsymlist (("=" !:symbol))
+          ((eqsymlist "=" !:symbol)))
+
+ (valdesc ((!:symbol ":" typ (opt "and" valdesc))))
+
+ (onetypdesc ((!:symbol))
+          ((tyvarseq !:symbol)))
+
+ (typdesc ((onetypdesc))
+          ((typdesc "and" onetypdesc))
+          )
+
+ (onedatdesc ((!:symbol "=" condesc))
+          ((tyvarseq !:symbol "=" condesc)))
+
+ (datdesc ((onedatdesc))
+          ((datdesc "and" onedatdesc)))
+
+ (condesc ((!:symbol (opt "of" typ) (opt "|" condesc))))
+
+ (exdesc  ((!:symbol (opt "of" typ) (opt "and" exdesc))))
+
+ (strdesc ((!:symbol ":" sigexp))
+          ((!:symbol ":" sigexp "and" strdesc)))
 
 % The syntax that I started from did not include the possibility of an
 % expression here. That sort of makes sense because consider
@@ -529,85 +687,12 @@ grammar := '(
 (prog     ((dec1))
           ((";" exp) !$2)
           ((";") nil)
-%         (("functor" fctbind))
-%         (("signature" sigbind))
+          ((fundec))
+          ((sigdec))
           )
 
-% (fctbind)
-% (sigbind)
-%
-  )$
+  )), "clauses") >>;
 
-fluid '(lexer_context context_stack);
-
-global '(infix_lookup);
-infix_lookup := mkhash(30, 2, 1.5)$
-
-<< puthash('(0 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
-   puthash('(1 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
-   puthash('(2 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
-   puthash('(3 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
-   puthash('(4 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
-   puthash('(5 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
-   puthash('(6 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
-   puthash('(7 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
-   puthash('(8 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
-   puthash('(9 . none), infix_lookup, get('!:symbol, 'lex_fixed_code));
-   puthash('(0 . left), infix_lookup, get('!:infix0, 'lex_fixed_code));
-   puthash('(1 . left), infix_lookup, get('!:infix1, 'lex_fixed_code));
-   puthash('(2 . left), infix_lookup, get('!:infix2, 'lex_fixed_code));
-   puthash('(3 . left), infix_lookup, get('!:infix3, 'lex_fixed_code));
-   puthash('(4 . left), infix_lookup, get('!:infix4, 'lex_fixed_code));
-   puthash('(5 . left), infix_lookup, get('!:infix5, 'lex_fixed_code));
-   puthash('(6 . left), infix_lookup, get('!:infix6, 'lex_fixed_code));
-   puthash('(7 . left), infix_lookup, get('!:infix7, 'lex_fixed_code));
-   puthash('(8 . left), infix_lookup, get('!:infix8, 'lex_fixed_code));
-   puthash('(9 . left), infix_lookup, get('!:infix9, 'lex_fixed_code));
-   puthash('(0 . right), infix_lookup, get('!:infixr0, 'lex_fixed_code));
-   puthash('(1 . right), infix_lookup, get('!:infixr1, 'lex_fixed_code));
-   puthash('(2 . right), infix_lookup, get('!:infixr2, 'lex_fixed_code));
-   puthash('(3 . right), infix_lookup, get('!:infixr3, 'lex_fixed_code));
-   puthash('(4 . right), infix_lookup, get('!:infixr4, 'lex_fixed_code));
-   puthash('(5 . right), infix_lookup, get('!:infixr5, 'lex_fixed_code));
-   puthash('(6 . right), infix_lookup, get('!:infixr6, 'lex_fixed_code));
-   puthash('(7 . right), infix_lookup, get('!:infixr7, 'lex_fixed_code));
-   puthash('(8 . right), infix_lookup, get('!:infixr8, 'lex_fixed_code));
-   puthash('(9 . right), infix_lookup, get('!:infixr9, 'lex_fixed_code));
-   nil >>;
-
-symbolic procedure makeinfix(id, prec, dirn);
-  begin
-% Allow for multiple declarations in one.
-    if not atom id then <<
-      for each x in id do makeinfix(x, prec, dirn);
-      return nil >>;
-    if not zerop posn() then terpri();
-    princ "@@@ Identifier "; princ id; princ " is now an operator: ";
-    princ prec; princ "  "; printc dirn;
-    lexer_context := list('type, id, get(id, 'lex_code)) . lexer_context;
-    put(id, 'lex_code, gethash(prec . dirn, infix_lookup));
-    return nil
-  end;
-
-symbolic procedure startcontext();
-  begin
-    context_stack := lexer_context . context_stack;
-    lexer_context := nil;
-    if not zerop posn() then terpri();
-    printc "Starting a nested context";
-  end;
-
-symbolic procedure endcontext();
-  begin
-    if not zerop posn() then terpri();
-    printc "Ending a nested context";
-% I now need to unwind any local type and infix declarations...
-    for each p in lexer_context do
-      if eqcar(p, 'infix) then put(cadr p, 'lex_code, cddr p)
-      else printf("+++ Unknown context save: %p%n", p);
-    lexer_context := car context_stack;
-    context_stack := cdr context_stack;
-  end;
 
 % While debugging it may be helpful to see the grammar diplayed with
 % indentation normalised...
@@ -618,19 +703,11 @@ symbolic procedure endcontext();
 % decode. But while debugging the grammar it may be necessary.
 % on lalr_verbose;
 
+%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 pp := lalr_create_parser(prec, grammar)$
 
-lexer_style!* := lexer_style_sml + 0x40; % Support #if and #eval too!
-
-% If parsing the SML code fails I will just exit from Reduce. Otherwise
-% it is likely that I will be faced with a mess of further silly messages
-% as Reduce tries to make sense if SML input itself.
-% I think I may need an option within lalr for parsing from a file, such
-% that errors merely close that file and return to using Reduce on
-% an outer file... ie so that parsed and regular Reduce stuff are kept
-% more separate.
-
-on parse_errors_fatal;
+%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 begin
    scalar !*raise, !*lower;
@@ -643,14 +720,6 @@ use "Library_Reduce.sml";
 (* I will often put test fragments of code here to see if I can
    parse them - and then later on so I can adjust the generated parse trees
    until they are reasonably Lisp-like. *)
-
-  fun getList size file  =
-    let val _  =  TextIO.inputLine file
-        val (info, eof)  =  getInfo size file
-    in
-      if eof then [info]
-      else info :: getList size file
-    end
 
 ;
 

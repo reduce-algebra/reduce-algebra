@@ -1,31 +1,37 @@
+signature ACCENT  =
+sig
+  val makeAccent: (BasicTypes.family * BasicTypes.charCode) option -> 
+                  BasicTypes.style -> BasicTypes.family -> 
+                  BasicTypes.charCode -> BoxTypes.box -> BoxTypes.box
+end  (* signature ACCENT *)
+(*----------*)
 
-  fun makeAccent singleChar st fam ch box  =  
-  let fun min a b = if a < b then a else b
-      fun max a b = if a > b then a else b
-      val x     = box
-      val u     = #width box
-      val s     = if not singleChar then 0 else
-                  let val (Char c) = (hd o #content) box
-                  in charAccentSkew c end
-      fun selectLargestAccent ch = 
-      let val fontNr   = fontNumber st fam
-          val maybeCh' = charLarger (fontNr, ch)
-      in case maybeCh' of 
-           NONE     => ch
-         | SOME ch' => if charWidth (fontNr, ch') <= u then selectLargestAccent ch' else ch end
-      val ch'   = selectLargestAccent ch
-      val chi   = xHeight st
-      val delta = min (#height x) chi
-      val y     = boxList (makeChar st fam ch')
-      val y'    = Box (s + half (u - (#width y)), y)
-      val vl    = [y', Kern (~delta), Box0 x]
-      val w = #width x and d = #depth x
-      val h = #height x - delta + #height y + #depth y
-  in { kind=VBox, width=w, depth=d, height=h, content=vl, glueParam=natural } end
+structure Accent: ACCENT  =
+struct
+  open BasicTypes;  open BoxTypes
+  open Int
+  open MakeChar; open CharInfo; open CharFunctions
+  open StyleParams
+  open NodeListDim; open Distance
+  open MakeVBox; open BoxPack
 
+  fun getSkew st (SOME (fam,ch)) = charAccentSkew (fontNumber st fam, ch)
+    | getSkew _  NONE              = 0 
 
-(*
-let val accent = boxList (makeChar st fam ch)
-      val (Box (0, boxx)) = makeAtop st accent box
-  in boxx end
-*)
+  fun widestAccent limit st fam ch =
+  let val font = fontNumber st fam
+  in case charLarger (font, ch) of 
+       SOME ch' => if charWidth (font, ch') > limit then ch
+                   else widestAccent limit st fam ch'
+     | NONE     => ch 
+  end
+
+  fun makeAccent singleChar st fam ch box = 
+  let val ch'        = widestAccent (#width box) st fam ch
+      val accentBox  = boxList (makeChar st fam ch')
+      val skew       = getSkew st singleChar
+      val hzShift    = skew + half (#width box - #width accentBox)
+      val vtKern     = min (#height box, xHeight st) 
+  in upVBox (#width box) box [Kern (~vtKern), Box (hzShift, accentBox)] end
+
+end  (* structure Accent *)

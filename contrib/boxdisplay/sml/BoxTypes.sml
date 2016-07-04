@@ -1,3 +1,7 @@
+structure BoxTypes  =
+struct
+  (* Data structures for boxes and their friends. *)
+  open BasicTypes;  open FontTypes
   datatype infOrder   =  normal | fil | fill | filll
   datatype glueParam  =  natural
                       |  stretching of (real * infOrder)
@@ -27,3 +31,4 @@
   type vlist  =  node list
   fun Box0 b  =  Box (0, b)        (* creates node with zero shift *)
   fun HL   b  =  [Box0 b]          (* creates horizontal list from box *)
+end  (* structure BoxTypes *)

@@ -1,7 +1,25 @@
+signature OUT_HIGH  =
+sig
+  val outChar    :  char   -> unit
+  val outStr     :  string -> unit  (* the naked string *)
+  val outString  :  string -> unit  (* the string preceded by its length *)
+  val outNat1    :  int    -> unit
+  val outNat2    :  int    -> unit
+  val outInt4    :  int    -> unit
+  val outZero    :  int    -> unit
+  val outInstrV  :  int -> int -> unit
+end
+(*----------*)
 
-  val byteChar    =  Word8.fromInt o Char.ord
+structure OutHigh: OUT_HIGH  =
+struct
+  open Powers2
+  open Out
 
-  val outNat1  =  outByte o Word8.fromInt
+  val byteSmall   =  Word8.fromInt
+  val byteChar    =  byteSmall o Char.ord
+
+  val outNat1  =  outByte o byteSmall
   val outChar  =  outByte o byteChar
 
   val outStr  =  List.app outChar o String.explode
@@ -14,10 +32,7 @@
   fun outNat3 n  =  ( outNat1 (n div two16);  outNat2 (n mod two16) )
 
   (* The following differs from Knuth's method since SML's integers
-     have 31 Bits only.
-     HAH I hope that the exact width of integers is not a global SML
-     characteristic, and that code here doe snot rely on having
-     exactly 31-bit integers! *)
+     have 31 Bits only *)
   fun splitInt4 n  =
       if  n >= 0  then  (n div two24,  n mod two24)
       else  let val n'  =  n  + two29
@@ -38,3 +53,4 @@
   if      n <> 0      then ( Code 1;  outNat1 (makeNat two8  n) ) else  ()
   end
 
+end

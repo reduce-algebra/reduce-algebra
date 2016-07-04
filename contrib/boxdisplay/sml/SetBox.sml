@@ -1,3 +1,18 @@
+signature SET_BOX  =
+sig
+  val setNode:   BoxTypes.boxkind -> BoxTypes.glueParam -> BoxTypes.node -> unit
+  val setList:   BoxTypes.boxkind -> BoxTypes.glueParam -> BoxTypes.node list -> unit
+  val setBox:    BoxTypes.boxkind -> BoxTypes.box -> unit
+  val setHList:  BoxTypes.hlist -> unit
+end
+(*----------*)
+
+structure SetBox: SET_BOX  =
+struct
+  open BasicTypes;  open BoxTypes
+  open Distance
+  open OutHigh;  open DviCmd;  open SetNode
+
   (* Invariant for horizontal stuff:
      reference point -> end point = reference point + (0, width)
      Invariant for vertical stuff:
@@ -38,5 +53,6 @@
       end
 *)
 
-  val setHList  =  setBox VBox o boxList
+  val setHList  =  setBox VBox o BoxPack.boxList
 
+end

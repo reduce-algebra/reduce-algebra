@@ -1,3 +1,13 @@
+signature LOAD_FONT  =
+sig
+  val loadFont: BasicTypes.family * BasicTypes.size -> FontTypes.font
+end
+(*----------*)
+
+structure LoadFont: LOAD_FONT  =
+struct
+  open BasicTypes;  open FontTypes
+  open TextIO;  open Distance
 
   fun famName RM = "RM"  |  famName MI = "MI"
   |   famName SY = "SY"  |  famName EX = "EX"
@@ -16,11 +26,11 @@
   (* The next two functions read until the next end of line,
      consuming the newline character *)
   fun getDist size file  =
-  realMult (valOf (Real.fromString (valOf (TextIO.inputLine file))), size)
+  realMult (valOf (Real.fromString (valOf (inputLine file))), size)
 
   fun getOctal file  =
   let fun found n  =
-      let val ch  =  valOf (TextIO.input1 file)
+      let val ch  =  valOf (input1 file)
       in  if Char.isDigit ch  then  found (8 * n + dig ch)  else  n  end
   in  found 0  end
 
@@ -28,7 +38,7 @@
      and reads until the next C or E, consuming this character *)
   fun getInfo size file  =
   let fun collect w h d i l t b r a =
-      case  valOf(TextIO.input1 file)  of
+      case  valOf(input1 file)  of
         #"W"  =>  let val w'  =  getDist size file
                   in  collect w' h  d  i  l  t  b  r  a  end
       | #"H"  =>  let val h'  =  getDist size file
@@ -45,9 +55,8 @@
                   in  collect w  h  d  i  l  t  b' r  a  end
       | #"R"  =>  let val r'  =  SOME (getOctal file)
                   in  collect w  h  d  i  l  t  b  r' a  end
-(* The M information is in fact at present ignored!!!! *)
       | #"M"  =>  let val m'  =  SOME (getOctal file)
-                  in  collect w  h  d  i  l  t  b  r a  end
+                  in  collect w  h  d  i  l  t  b  r  a  end
       | #"S"  =>  let val a' =   getDist size file
                   in  collect w  h  d  i  l  t  b  r  a' end
       (* The code above may be expressed simpler using references *)
@@ -58,16 +67,17 @@
   in  collect zero zero zero zero NONE NONE NONE NONE zero end
 
   fun getList size file  =
-  let val _  =  TextIO.inputLine file    (* skips remainder of C line *)
+  let val _  =  inputLine file    (* skips remainder of C line *)
       val (info, eof)  =  getInfo size file
   in  if  eof  then  [info]  else  info :: getList size file  end
 
   fun loadFont (fam, s)  =
   let val size  =  distInt s
       val fileName  =  FileName fam s
-      val file  =  TextIO.openIn fileName
+      val file  =  openIn fileName
       val infoList  =  getList size file
-  in  TextIO.closeIn file;  vector (infoList)  end
+  in  closeIn file;  vector (infoList)  end
 
 (* END destructive file reading *)
 
+end

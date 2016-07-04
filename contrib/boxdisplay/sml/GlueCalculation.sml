@@ -1,3 +1,32 @@
+signature GLUE_CALCULATION  =
+sig
+
+  exception Rigid        (* cannot stretch / shrink *)
+
+  val extractGlue: (BoxTypes.glueSpec -> (BasicTypes.dist * BoxTypes.infOrder)) ->
+                   BoxTypes.node list -> (BasicTypes.dist * BoxTypes.infOrder) list
+  (* Given an access function (#stretch or #shrink),
+     the relevant glue information is extracted from a node list. *)
+
+  val addGlue: BoxTypes.infOrder -> (BasicTypes.dist * BoxTypes.infOrder) list -> BasicTypes.dist
+  (* This function adds up the glue values of the given infinity order. *)
+
+  val totalGlue: (BasicTypes.dist * BoxTypes.infOrder) list -> BasicTypes.dist * BoxTypes.infOrder
+  (* This function adds up the glue values in the list,
+     separately by the infOrder,
+     and returns the highest order where the sum does not cancel out to zero,
+     and this sum *)
+
+  val getGlueParam: BasicTypes.dist -> BoxTypes.node list -> BoxTypes.glueParam
+  (* computes the glue parameter resulting from changing the natural size
+     of the node list by the given amount *)
+end  (* signature GLUE_CALCULATION *)
+(*----------*)
+
+structure GlueCalculation: GLUE_CALCULATION  =
+struct
+  open BasicTypes;  open BoxTypes
+  open Distance;  open BasicBox
 
   fun extractGlue  access  =
   let fun extr []              =  []
@@ -30,3 +59,4 @@
     )
     handle Rigid => natural
 
+end  (* structure GlueCalculation *)

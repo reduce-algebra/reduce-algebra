@@ -1,22 +1,47 @@
+signature INPUT  =
+sig
+  val trans      : string -> MathTypes.mlist
+  val overline   : MathTypes.mlist -> MathTypes.noad
+  val underline  : MathTypes.mlist -> MathTypes.noad
+  val fraction   : MathTypes.mlist -> MathTypes.mlist -> MathTypes.noad
+  val atop       : MathTypes.mlist -> MathTypes.mlist -> MathTypes.noad
+  val sup        : MathTypes.mlist -> MathTypes.mlist -> MathTypes.noad
+  val sub        : MathTypes.mlist -> MathTypes.mlist -> MathTypes.noad
+  val supsub     : MathTypes.mlist -> MathTypes.mlist -> MathTypes.mlist -> MathTypes.noad
+  val sum        : MathTypes.mlist option -> MathTypes.mlist option -> MathTypes.noad
+  val int        : MathTypes.mlist option -> MathTypes.mlist option -> MathTypes.noad
+  val math       : MathTypes.kind -> MathTypes.mlist -> MathTypes.noad
+  val style      : BasicTypes.style -> MathTypes.noad
+  val choice     : MathTypes.mlist -> MathTypes.mlist -> MathTypes.mlist -> MathTypes.mlist -> MathTypes.noad
+  val accent     : string -> MathTypes.mlist -> MathTypes.noad
+  val sqrt       : MathTypes.mlist -> MathTypes.noad
+  val delim      : string -> BasicTypes.delim
+end
+(*----------*)
+
+structure Input: INPUT  =
+struct
+  open BasicTypes;  open MathTypes
+  open Char
 
   val sumsym    =  MathChar (Op,    EX,  80)
   val intsym    =  MathChar (Op,    EX,  82)
 
   fun sym ch  =  
-  if  Char.isAlpha ch                      then  (Ord,   MI, ord ch)  else
-  if  Char.isDigit ch  orelse  ch = #"@"   then  (Ord,   RM, ord ch)  else
+  if  isAlpha ch                      then  (Ord,   MI, ord ch)  else
+  if  isDigit ch  orelse  ch = #"@"   then  (Ord,   RM, ord ch)  else
   if  ch = #"("   orelse  ch = #"["   then  (Open,  RM, ord ch)  else
   if  ch = #")"   orelse  ch = #"]"   then  (Close, RM, ord ch)  else
   if  ch = #"="   orelse  ch = #":"   then  (Rel,   RM, ord ch)  else
   if  ch = #"<"   orelse  ch = #">"   then  (Rel,   MI, ord ch)  else
-  if  contains [#"!", #"?", #";"]  ch   then  (Punct, RM, ord ch)  else
+  if  contains  "!?;"  ch             then  (Punct, RM, ord ch)  else
   case  ch  of
     #","  =>  (Punct, MI, 59)
   | #"+"  =>  (Bin,   RM, 43)
   | #"-"  =>  (Bin,   SY,  0)
   | #"*"  =>  (Bin,   SY,  3)
   | #"."  =>  (Bin,   SY,  1)
-  | _     =>  raise (NotImplemented ("Character " ^ Char.toString ch))
+  | _     =>  raise (NotImplemented ("Character " ^ toString ch))
 
   fun trans str  =  map (MathChar o sym) (String.explode str)
 
@@ -49,7 +74,7 @@
     | accent "check"   base = Accent (RM, 20,  base)
     | accent "tilde"   base = Accent (RM, 126, base)
     | accent "widehat" base = Accent (EX, 98,  base)
-    | accent _         _    = raise (NotImplemented "math accent")
+    | accent _         _    = raise (BasicTypes.NotImplemented "math accent")
 
   fun sqrt ml = Radical (SOME (SY, 112, EX, 112), ml)
 
@@ -60,4 +85,6 @@
     | delim "langle"   = SOME (SY, 104, EX, 10)
     | delim "rangle"   = SOME (SY, 105, EX, 11)
     | delim "null"     = NONE
+    | delim _          = raise (BasicTypes.NotImplemented "delim")
 
+end

@@ -1,21 +1,35 @@
-  type byte = Word8.word
+signature OUT  =
+sig
+  type byte
+  val startOut  :  string -> unit
+  val endOut    :  unit   -> unit
+  val outByte   :  byte   -> unit
+  val outPos    :  unit   -> int
+  exception NoOut
+end
+(*----------*)
 
+structure Out: OUT  =
+struct
+  open BinIO
+  type byte = Word8.word
   exception NoOut
 
-  val out = ref (NONE: BinIO.outstream option)
+  val out = ref (NONE: outstream option)
 
   fun startOut fileName   =
     ( case  !out  of  NONE    =>  ()
-                   |  SOME s  =>  BinIO.closeOut s;
-      out := SOME (BinIO.openOut fileName) )
+                   |  SOME s  =>  closeOut s;
+      out := SOME (openOut fileName) )
 
   fun getStream ()  =
       case  !out  of  NONE    =>  raise NoOut
                    |  SOME s  =>  s
 
-  fun outByte b  =  BinIO.output1   (getStream (), b)
+  fun outByte b  =  output1   (getStream (), b)
 
-  fun outPos ()  =  BinIO.StreamIO.filePosOut (BinIO.getPosOut (getStream ()))
+  fun outPos ()  =  StreamIO.filePosOut (getPosOut (getStream ()))
 
-  fun endOut ()  =  BinIO.closeOut  (getStream ())
+  fun endOut ()  =  closeOut  (getStream ())
 
+end

@@ -1,5 +1,18 @@
+signature DELIMITER  =
+sig
+  val varDelimiter:  BasicTypes.style -> BasicTypes.dist -> BasicTypes.delim ->
+  BoxTypes.node
+  val makeDelimiter: BasicTypes.style -> BasicTypes.delim -> BoxTypes.node
+end  (* signature DELIMITER *)
+(*----------*)
 
-  fun charBox info = boxList [Char info]
+structure Delimiter: DELIMITER  =
+struct
+  open BasicTypes;  open BoxTypes
+  open Const;  open StyleParams
+  open CharInfo ; open CharFunctions ; open MakeVBox 
+
+  fun charBox info = BoxPack.boxList [Char info]
 
   fun extensibleDelimiter size (fontNr, ch) = 
   let fun addFont ch = (fontNr, ch)
@@ -16,7 +29,7 @@
       val w = charWidth rep
       val vlist = if isSome bot then reps @ [Char (valOf bot)] else reps 
   in case top of
-       NONE      => dnVBox w (boxList[hd vlist]) (tl vlist)
+       NONE      => dnVBox w (BoxPack.boxList[hd vlist]) (tl vlist)
      | SOME top' => dnVBox w (charBox top') vlist 
   end
 
@@ -46,3 +59,4 @@
       in (Box0 o search) (st, sfam, sch) end
 
   fun makeDelimiter st del   =  varDelimiter st (Delim st) del
+end  (* structure Delimiter *)

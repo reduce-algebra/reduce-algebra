@@ -1,13 +1,14 @@
 (*
 *)
+open Input
 
-fun test f x  =  (f x) handle (ex as NotImplemented s)
+fun test f x  =  (f x) handle (ex as BasicTypes.NotImplemented s)
               => (print "        ---> "; print s; print " <---"; raise ex)
 
-val disp = test displayFormula
-val line = test inlineFormula
+val disp = test Formula.displayFormula
+val line = test Formula.inlineFormula
 
-fun form formula  =  shipOut [disp formula, line formula]
+fun form formula  =  ShipOut.shipOut [disp formula, line formula]
 
 val bigop  =  sum (SOME (trans "i=1")) (SOME (trans "n"))
 
@@ -26,8 +27,9 @@ val mlss'  =  fss sum @ fss int @ scr "a" @ scr "b" @ scr "aa" @ scr "ab"
 
 val overmlss'  =  [overline mlss']
 
-fun test1 ()  =  shipOut [disp mlar, line mlar, disp mleq, line mleq]
-fun test2 ()  =  shipOut [disp mlss', disp overmlss', line mlss', line overmlss']
+val out = ShipOut.shipOut
+fun test1 ()  =  out [disp mlar, line mlar, disp mleq, line mleq]
+fun test2 ()  =  out [disp mlss', disp overmlss', line mlss', line overmlss']
 
 
 
@@ -48,16 +50,16 @@ val mlaccentscripts = accent "check" (trans "a")           :: trans "+" @
                       supsub [accent "check" (trans  "a")] two two :: trans "+" @
                       [supsub (trans "a") two two]               
 
-fun testaccents () = shipOut [line mlwidehat, line mlaccents, line mlaccentscripts]
+fun testaccents () = out [line mlwidehat, line mlaccents, line mlaccentscripts]
 
 val mlradical = sqrt (trans "a") :: trans "=" @
                 sqrt (trans "2x-3") :: trans "." @
                 [sqrt [(supsub (trans "y") one one)]]
-fun testradical () = shipOut [disp mlradical]
+fun testradical () = out [disp mlradical]
 
 val mltall' = [atop [atop mlar mlar] [atop mlar mlar]]
 val mltall = [atop mltall' mltall'] 
-val mldelims = LeftRight (delim "lparen", mlar, delim "rparen") :: trans "+" @
-               LeftRight (delim "langle", mleq, delim "rangle") :: trans "+" @
-               [LeftRight (delim "lbracket", mltall, delim "rbracket")]
-fun testdelims () = shipOut [line mldelims, disp mldelims]
+val mldelims = MathTypes.LeftRight (delim "lparen", mlar, delim "rparen") :: trans "+" @
+               MathTypes.LeftRight (delim "langle", mleq, delim "rangle") :: trans "+" @
+               [MathTypes.LeftRight (delim "lbracket", mltall, delim "rbracket")]
+fun testdelims () = out [line mldelims, disp mldelims]

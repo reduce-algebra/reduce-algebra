@@ -1,3 +1,5 @@
+structure BasicTypes  =
+struct
   type charCode =  int
   type penalty  =  int
   type dist     =  int
@@ -15,3 +17,4 @@
 
   exception NotImplemented of string
   exception CannotHappen
+end  (* structure BasicTypes *)

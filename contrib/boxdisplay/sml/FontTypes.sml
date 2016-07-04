@@ -1,3 +1,6 @@
+structure FontTypes  =
+struct
+  open BasicTypes
   type fontNr  =  int
   type varCharInfo  =  {top: charCode option,
                         bot: charCode option,
@@ -10,3 +13,4 @@
                      larger:   charCode option,
                      varChar:  varCharInfo option}
   type font = charInfo Vector.vector
+end

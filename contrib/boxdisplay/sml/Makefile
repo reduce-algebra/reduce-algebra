@@ -8,7 +8,9 @@ test%:
 	echo 'use "all.sml"; $@();' | $(SML)
 
 
+
 sml:
-	$O/bin/bootstrapreduce -w sml.red -l sml.log
+	R=`./findreduce.sh` && \
+	$$R < sml.red | tee sml.log
 
 
