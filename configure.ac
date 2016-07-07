@@ -1013,15 +1013,21 @@ then
 #   then
       d=`pwd`
       cd $abssrcdir/csl/support-packages
-      a=`echo wxWidgets-v*.tar.bz2`
+# The next line should collect the names of all versions of wxWidgets that
+# I have .tar.bz2 files for, and they should end up in alphabetic order.
+      a=`echo wxWidgets-*-*-*.tar.bz2`
+# Here I keep the last item in the list, which shoudl be the latest version
+# present.
       a=${a##* }
+# Remove the ".tar.bz2" suffix
       b=${a%.tar.bz2}
       cd ..
       printf "will unpack a fresh copy of wxWidgets\n"
       rm -rf wxWidgets
       tar xfj support-packages/$a
-      chmod -R +rw wxWidgets-*
-      mv wxWidgets-* wxWidgets
+# At one stage I had trouble with the unpacked archive not being all
+# readable, so here I forcibly reset permssions
+      chmod -R +rw wxWidgets
 # Now I will force all autoconf-related files to be in the correct order.
 # This is because I really want to use the versions from the archive, and
 # I have seen cases where the default unpacked version triggers an attempt
@@ -1159,18 +1165,21 @@ then
             LDFLAGS=\"$LDFLAGS\" $passcc \
             --disable-shared --enable-unicode \
             --disable-compat28 --enable-compat30 \
-            --with-png=builtin --without-libjpeg \
-            --without-libtiff --with-libsvg=no \
-            --with-sdl=no --with-zlib=builtin \
-            --without-expat --with-regex=builtin \
-            --without-libiconv --with-libz=builtin \
-            --with-libpng=builtin --disable-richtext \
-            --disable-gif --disable-pcx --enable-graphics_ctx \
+            --enable-monolithic --disable-sys-libs \
+            --without-libjpeg --without-libtiff \
+            --without-libsvg --without-sdl \
+            --without-expat --without-libiconv \
+            --without-regex --disable-threads \
+            --disable-richtext --disable-gif \
+            --disable-pcx --enable-graphics_ctx \
+            --disable-mediactrl \
             --disable-tga --disable-pnm \
             --disable-svg --prefix=\"$builddir\""
     if test "x$enable_debug" != "xno"
     then
       doconfig="$doconfig --enable-debug"
+    else
+      doconfig="$doconfig --disable-debug"
     fi
     if test "x$with_cygwin" != "xno"
     then

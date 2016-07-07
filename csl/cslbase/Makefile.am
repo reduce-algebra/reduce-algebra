@@ -142,7 +142,7 @@ BUILT_SOURCES = $(WXC)
 MY_CPPFLAGS := $(shell ../bin/wx-config --cppflags 2>/dev/null)
 MY_CFLAGS   := $(shell ../bin/wx-config --cflags 2>/dev/null)
 MY_CXXFLAGS := $(shell ../bin/wx-config --cxxflags 2>/dev/null)
-MY_LIBS     := $(shell ../bin/wx-config --libs 2>/dev/null)
+MY_LIBS     := $(shell ../bin/wx-config --libs --static 2>/dev/null)
 
 AM_CPPFLAGS     += $(MY_CPPFLAGS)
 reduce_CPPFLAGS += $(MY_CPPFLAGS)
@@ -960,32 +960,16 @@ $(srcdir)/Makefile.am:
 
 if wx
 
-#
-# the wxWidgets snapshot that I have just uploaded builds as version
-# 3.1 while earlier ones I had been using were 2.9. This is a mild nuisance
-# but because hardly anybody will be working with the wxWidgets version at
-# this stage I will just go with the flow. If in doubt please go
-#   rm -rd cslbuild/*wx csl/wxWidgets; ./configure --with-csl --with-wx
-# to get the latest snapshot unpacked and built.
-#
-WXV=3.1
-
-# The master version of wxWidgets is kept in the source tree as a .tar
-# archive, and the file support-packages/wxWidgets_version is updated
-# whenever a new copy needs unpacking. This script probably depends on
-# use of "bash" as your shell... I ought to review that issue at some stage.
-
 $(srcdir)/../wxWidgets/wxWidgets_revision:	\
 		$(srcdir)/../support-packages/wxWidgets_revision
 	$(TRACE) ( cd $(srcdir)/../support-packages ; \
-	a=`echo wxWidgets-v*.tar.bz2` ; \
+	a=`echo wxWidgets-*-*-*.tar.bz2` ; \
 	a=$${a##* } ; \
 	b=$${a%.tar.bz2} ; \
 	cd .. ; \
 	rm -rf wxWidgets ; \
 	tar xfj support-packages/$$a ; \
-	chmod -R +rw wxWidgets-* ; \
-	mv wxWidgets-* wxWidgets ; \
+	chmod -R +rw wxWidgets ; \
 	find . \( -name configure.ac -o -name configure.in \
 	          -o -name Makefile.am \) -print | xargs touch ; \
 	sleep 1 ; \
@@ -997,39 +981,16 @@ $(srcdir)/../wxWidgets/wxWidgets_revision:	\
 	find wxWidgets -name config.h.in -print | xargs touch ; \
 	sleep 1 ; \
 	find wxWidgets -name Makefile.in -print | xargs touch ; \
-	cp $abssrcdir/csl/support-packages/wxWidgets_revision wxWidgets; \
 	cp $(srcdir)/../support-packages/wxWidgets_revision wxWidgets ; \
 	echo wxWidgets unpacked from archive $$a )
 
-BASELIB=../lib/libwx_baseu-$(WXV).a
-WXDEPS=../bin/wx-config $(BASELIB)
+# I use wx-config as my main and only indication that wxwidgets has been
+# built and installed.
 
-if cygwin
-$(BASELIB) ../bin/wx-config:	$(srcdir)/../wxWidgets/wxWidgets_revision
+WXDEPS=../bin/wx-config
+
+../bin/wx-config:	$(srcdir)/../wxWidgets/wxWidgets_revision
 	$(TRACE)@cd ../wxWidgets && $(MAKE) install
-else !cygwin
-# When I build wxWidgets locally I *ALWAYS* end up passing an explicit
-# "--host=..." option to the configure script. Well that is always except
-# when under cygwin in certain cases... A result of that is that
-# the libraries get installed with names that include the host identity.
-# The script here makes symbolic links from the host-qualified names from
-# plain undecorated ones as mentioned by "wx-config --libs". Well actually
-# if I build under raw cygwin that is not the case, so I disable this
-# hack in that situation.
-
-$(BASELIB):	../lib/libwx_baseu-$(WXV)-$(HOST).a
-	$(TRACE)cd ../lib; \
-	for x in *$(HOST).a; \
-	do \
-	  y=$${x%-$(HOST).a}.a; \
-	  echo ln -s -f $$x $$y; \
-	  ln -s -f $$x $$y; \
-	done
-
-../lib/libwx_baseu-$(WXV)-$(HOST).a ../bin/wx-config:	\
-		$(srcdir)/../wxWidgets/wxWidgets_revision
-	$(TRACE)@cd ../wxWidgets && $(MAKE) install
-endif !cygwin
 
 wxfontdemo$(EXEEXT): $(wxfontdemo_OBJECTS) $(wxfontdemo_DEPENDENCIES) $(WXDEPS)
 	-$(RM) -f wxfontdemo$(EXEEXT)
