@@ -1169,10 +1169,8 @@ then
             --without-libjpeg --without-libtiff \
             --without-libsvg --without-sdl \
             --without-expat --without-libiconv \
-            --without-regex --disable-threads \
-            --disable-richtext --disable-gif \
+            --without-regex --disable-richtext --disable-gif \
             --disable-pcx --enable-graphics_ctx \
-            --disable-mediactrl \
             --disable-tga --disable-pnm \
             --disable-svg --prefix=\"$builddir\""
     if test "x$enable_debug" != "xno"

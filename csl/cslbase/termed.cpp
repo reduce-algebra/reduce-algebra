@@ -432,7 +432,8 @@ static int input_line_size;
 static void term_putchar(int c);
 
 static wchar_t *term_wide_plain_getline(void)
-{   int n, ch;
+{   int n;
+    wint_t ch;
     int i;
 #ifdef TERMED_TEST
     fprintf(stderr, "plain_getline:");
@@ -4902,7 +4903,7 @@ static int lookup_name(const char *s)
 
 static int lookup_wide_name(const wchar_t *s)
 {   char narrow[20];
-    int i;
+    size_t i;
     for (i=0; i<sizeof(narrow)-1; i++)
     {   if (s[i] == 0) break;
         if (s[i] >= 0x7f) return -1; // not a basic ASCII character
@@ -4913,7 +4914,7 @@ static int lookup_wide_name(const wchar_t *s)
 }
 
 const char *lookup_code(int c)
-{   int i;
+{   size_t i;
 //
 // I do a simple linear search here. It is cheap-enough given that it is
 // only needed when the user types a special command, ALT-x. It does not

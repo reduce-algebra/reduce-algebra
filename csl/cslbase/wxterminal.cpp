@@ -1,5 +1,3 @@
-#define DEBUG 1 /* regardless of overall build mode! */
-
 //
 // "wxterminal.cpp"                           Copyright A C Norman 2012-14
 //
@@ -800,90 +798,6 @@ int get_current_directory(char *s, int n)
     else return strlen(s);
 }
 
-/*
- * The next procedure is responsible for establishing information about
- * both the "short-form" name of the program launched and the directory
- * it was found in. This latter directory may be a good place to keep
- * associated resources. Well many conventions would NOT view it as a
- * good place, but it is how I organise things!
- *
- * The way of finding the information concerned differs between Windows and
- * Unix/Linux, as one might expect.
- *
- * return non-zero value if failure.
- */
-
-#ifndef LONGEST_LEGAL_FILENAME
-#define LONGEST_LEGAL_FILENAME 1024
-#endif
-
-// /*
-//  * getenv() is a mild pain: Windows seems
-//  * to have a strong preference for upper case names.  To allow for
-//  * all this I do not call getenv() directly but go via the following
-//  * code that can patch things up.
-//  */
-//
-// const char *my_getenv(const char *s)
-// {
-// #ifdef WIN32
-//     char uppercasename[LONGEST_LEGAL_FILENAME];
-//     char *p = uppercasename;
-//     int c;
-//     memset(uppercasename, 0, sizeof(uppercasename));
-//     while ((c = *s++) != 0) *p++ = toupper(c);
-//     *p = 0;
-//     return getenv(uppercasename);
-// #else
-//     return getenv(s);
-// #endif
-// }
-
-
-
-/*
- * Different systems put or do not put underscores in front of these
- * names. My adaptation here should give me a chance to work whichever
- * way round it goes.
- */
-
-#ifndef S_IFMT
-# ifdef __S_IFMT
-#  define S_IFMT __S_IFMT
-# endif
-#endif
-
-#ifndef S_IFDIR
-# ifdef __S_IFDIR
-#  define S_IFDIR __S_IFDIR
-# endif
-#endif
-
-#ifndef S_IFREG
-# ifdef __S_IFREG
-#  define S_IFREG __S_IFREG
-# endif
-#endif
-
-#ifndef S_ISLNK
-# ifdef S_IFLNK
-#  ifdef S_IFMT
-#   define S_ISLNK(m) (((m) & S_IFMT) == S_IFLNK)
-#  endif
-# endif
-#endif
-
-
-#ifndef MACINTOSH
-
-static const char*fontNames[] =
-{
-    "cmuntt",            // "CMU Typewriter Text (Regular)"   .ttf
-    "fireflysung"        // "AR PL New Sung"                  .ttf
-};
-
-#endif // MACINTOSH
-
 // Some characters map onto double-width symbols from the CJK fonts, while
 // many come from cmuntt and are single width.
 // A VERY few characters are synthesised by drawing them since they are not
@@ -899,7 +813,7 @@ static const char*fontNames[] =
      ((ch) != 0x211c))    /* real */
 
 // The following table shows the character coverage provided by the
-// cmuntt.otf font I use (that is Computer Modern Typewriter Unicode).
+// cmuntt.otf font I use (that is Computer Modern Typewriter Text).
 // I will use that font whenever the relevant bit here says it is
 // appropriate, and will use my CJK font otherwise. This table was created
 // using a jiffy Java program, and at present related to the 0.6.3a version
@@ -1450,67 +1364,6 @@ uint32_t cmtt_coverage[2048] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000
 };
-
-
-#ifdef WIN32
-
-// The next flag instruct AddFontResourceEx that a font should be
-// available only to this application. I provide a definition here
-// in case MinGW32 does not have them in its header files.
-
-#ifndef FR_PRIVATE
-#define FR_PRIVATE   0x10
-#endif
-
-#endif
-
-
-#ifndef fontsdir
-#define fontsdir reduce.wxfonts
-#endif
-
-#define toString(x) toString1(x)
-#define toString1(x) #x
-
-int add_custom_fonts() // return 0 on success.
-{
-#ifndef MACINTOSH
-    int trouble = 0;
-// Note that on a Mac I put the required fonts in the Application Bundle.
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   char nn[LONGEST_LEGAL_FILENAME];
-// The font files I have come with a mix of .ttf and .otf suffixes. On
-// windows because I use wxGraphicsContext I use GDI+ and that seems to be
-// unable to cope with many .otf fonts, so in that case I use .ttf versions.
-// On other platforms I will use the original versions...
-        const char *suffix = i==0 ? "otf" : "ttf";
-#ifndef WIN32
-        if (i > 4) suffix = "otf";
-#endif
-        sprintf(nn, "%s/%s/%s.%s",
-                    programDir, toString(fontsdir), fontNames[i], suffix);
-        printf("Adding %s: ", nn); fflush(stdout);
-        wxString widename(nn);
-        if (wxFont::AddPrivateFont(widename))
-            printf(" OK\n");
-        else
-        {   printf("Failed\n");
-            trouble = 1;
-        }
-    }
-    printf("About to activate\n"); fflush(stdout);
-    if (wxFont::ActivatePrivateFonts())
-        printf("Activated OK\n");
-    else
-    {   printf("Activation failed\n");
-        trouble = 1;
-    }
-    fflush(stdout);
-    return trouble;
-#else  // MACINTOSH
-    return 0;
-#endif // MACINTOSH
-}
 
 int fwinText::MapChar(int c)
 {

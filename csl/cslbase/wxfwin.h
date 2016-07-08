@@ -58,6 +58,7 @@
 #ifndef header_wxfwin_h
 #define header_wxfwin_h 1
 
+#include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 
@@ -110,7 +111,7 @@ extern "C" const char *fullProgramName;
 //
 // programName holds just the "something" out of fullProgramName.
 // Note that I impose an arbitrary limit on the length of the name of the
-// executable.
+// executable. I do not support wide characters here.
 //
 extern "C" const char *programName;
 
@@ -173,6 +174,19 @@ extern "C" void fwin_exit(int return_code);
 //
 extern "C" int fwin_pause_at_end;
 
+
+//
+// I will use some application-specific fonts with my code, and this is
+// a function that arranges to make them evailable.
+
+extern void add_custom_fonts();
+
+//
+// When debugging fint-related stuff it may be useful to see a full list
+// of the fonts that are available. This function dumps that information
+// to the standard output.
+
+extern void display_font_information();
 
 //
 // fwin_minimize() indicates that the window should be shrunk to be just

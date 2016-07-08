@@ -474,11 +474,11 @@ wxfontdemo_SOURCES = wxfontdemo.cpp charmetrics.cpp
 wxfontdemo_LDADD = $(fwin_icon)
 wxfontdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
-wxfontdemo1_SOURCES = wxfontdemo1.cpp charmetrics.cpp
+wxfontdemo1_SOURCES = wxfontdemo1.cpp wxfwin.cpp termed.cpp charmetrics.cpp
 wxfontdemo1_LDADD = $(fwin_icon)
 wxfontdemo1_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
-wxdvi_SOURCES = wxdvi.cpp
+wxdvi_SOURCES = wxdvi.cpp wxfwin.cpp termed.cpp
 wxdvi_LDADD = $(fwin_icon)
 wxdvi_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 

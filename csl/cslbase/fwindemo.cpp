@@ -220,7 +220,8 @@ int fwin_main(int argc, const char **argv)
     fwin_printf("Type lines. Type \"quit\" to exit\n");
     fwin_ensure_screen();
     for (;;)
-    {   int i = 0, c, j;
+    {   int c, j;
+        size_t i = 0;
         while ((c = fwin_getchar()) != EOF && c != '\n')
         {   if (i < sizeof(line)-10) line[i++] = c;
         }

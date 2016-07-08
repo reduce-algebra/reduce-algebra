@@ -1,22 +1,10 @@
-#define DEBUG 1   // regardless of build mode for now!
-
 //
-// "wxfwin.cpp                                   Copyright A C Norman 2015
+// "wxfwin.cpp                                   Copyright A C Norman 2016
 //
 //
 // Window interface for old-fashioned C applications. Intended to
 // be better than just running them within rxvt/xterm, but some people will
 // always believe that running them under emacs is best!
-//
-// Note that although the graphical bits of wxfwin and coded in C++ the
-// parts needed for a text-only interface are in just C. This is so that
-// on limited platforms where graphics are not relevant the C++ libraries
-// do not have to be used.
-//
-// This starts off identical to an older version, fwin.c, but is kept
-// separate so that if I make changes during my wxWidgets project I will
-// not hurt things so badly. Well after not very long it has already diverged
-// a fair amount!
 //
 
 /**************************************************************************
@@ -92,6 +80,17 @@ extern char *getcwd(char *s, size_t n);
 #include <direct.h>
 #endif
 #endif // HAVE_DIRENT_H
+#endif
+
+#if !defined WIN32 && !defined MACINTOSH
+#ifdef HAVE_LIBXFT
+
+#include <X11/Xlib.h>
+#include <X11/Xft/Xft.h>
+
+#else   // HAVE_LIBXFT
+#error Other than on Windows you must have Xft installed.
+#endif  // HAVE_LIBXFT
 #endif
 
 #if defined MACINTOSH && defined MAC_FRAMEWORK
@@ -252,7 +251,7 @@ int lenAsUtf8(const char *s)
 #endif
 
 char about_box_title[40]       = "About XXX";
-char about_box_description[40] = "XXX version 1.1";
+char about_box_description[40] = "XXX version 1.2";
 // <icon appears here>
 char about_box_rights_1[40]    = "Author info";
 char about_box_rights_2[40]    = "Additional author";
@@ -276,6 +275,98 @@ static int programNameDotCom;
 #ifdef MACINTOSH
 static int macApp = 0;
 #endif
+
+
+static const char *fontNames[] =
+{
+// This adds the fonts that I expect to be used in my wxWidgets code. I
+// have to have ".ttf" not ".otf" for use on Windows. Well I *BELIEVE* that
+// maybe some of the .otf files behave, but latest experiments show
+// "CMU TYpewriter Text" as needing to be there in an explicitly .ttf format
+// for Windows use.
+#ifdef WIN32
+    "cmuntt.ttf",          // CMU Typewriter Text
+    "odokai.ttf",          // a successor to AR PL New Sung
+    "cslSTIX-Regular.ttf",
+    "cslSTIX-Bold.ttf",
+    "cslSTIX-Italic.ttf",
+    "cslSTIX-BoldItalic.ttf",
+    "cslSTIXMath-Regular.ttf"
+#else
+    "cmuntt.otf",          // CMU Typewriter Text
+    "odokai.ttf",          // a successor to AR PL New Sung
+    "cslSTIX-Regular.otf",
+    "cslSTIX-Bold.otf",
+    "cslSTIX-Italic.otf",
+    "cslSTIX-BoldItalic.otf",
+    "cslSTIXMath-Regular.otf"
+#endif
+};
+
+#ifndef fontsdir
+#define fontsdir reduce.wxfonts
+#endif
+
+#define toString(x) toString1(x)
+#define toString1(x) #x
+
+void add_custom_fonts()
+{
+#ifdef WIN32
+    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
+    {   char nn[LONGEST_LEGAL_FILENAME];
+        sprintf(nn, "%s\\%s\\%s",
+                    programDir, toString(fontsdir), fontNames[i]);
+        printf("Adding %s\n", nn); fflush(stdout);
+        if (AddFontResourceExA(nn, FR_PRIVATE, 0) == 0)
+        {   printf("AddFontResource failed\n");
+            fflush(stdout);
+        }
+    }
+    printf("About to activate\n"); fflush(stdout);
+    PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+    printf("Activated\n"); fflush(stdout);
+#elif defined UNIX
+    FcConfig *config = FcConfigGetCurrent();
+    if (config == NULL) config = FcConfigCreate();
+    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
+    {   char nn[LONGEST_LEGAL_FILENAME];
+        sprintf(nn, "%s\\%s\\%s",
+                    programDir, toString(fontsdir), fontNames[i]);
+        printf("Adding %s\n", nn); fflush(stdout);
+        if (!FcConfigAppFontAddFile(config, (const FcChar8 *)nn))
+        {   printf("FcConfigAppFontAddFile failed\n");
+            fflush(stdout);
+        }
+    }
+    FcConfigSetCurrent(config);
+    printf("Activated\n"); fflush(stdout);
+#elif defined MACINTOSH
+// Note that on a Mac I put the required fonts in the Application Bundle,
+// and so I do not need to take run-time action to make them available.
+#else
+#error Unknown platform so private fonts not supported.
+#endif
+}
+
+// The following may be useful while debugging...
+
+void display_font_information()
+{
+// THIS IS DISABLED AT PRESENT BECAUSE ON MY FIRST TRY THE wxWIDGETS HEADERS
+// AND RAW WINDOWS ONES CLASHED...
+//  wxArrayString flist(wxFontEnumerator::GetFacenames(wxFONTENCODING_SYSTEM));
+//  int nfonts;
+//  printf("There are %d fonts\n", nfonts=(int)flist.GetCount());
+//  fflush(stdout);
+//  for (int i=0; i<nfonts; i++)
+//      printf("%d) <%s>\n", i, (const char *)flist[i].mb_str());
+//  fflush(stdout);
+//  printf("End of debug output\n");
+//  fflush(stdout);
+}
+
+
 
 int windowed = 0;
 
@@ -897,7 +988,7 @@ static char forProgramDir[LONGEST_LEGAL_FILENAME];
 
 int find_program_directory(const char *argv0)
 {   wchar_t *a0;
-    int i, len, ndir, npgm, j;
+    int i, len, ndir, npgm;
 // In older code I believed that I could rely on Windows giving me
 // the full path of my executable in argv[0]. With bits of mingw/cygwin
 // anywhere near me that may not be so, so I grab the information directly
@@ -920,7 +1011,6 @@ int find_program_directory(const char *argv0)
 // If the current program is called c:\aaa\xxx.exe, then the directory
 // is just c:\aaa and the simplified program name is just xxx
 //
-    j = len-1;
     if (len > 4 &&
         a0[len-4] == '.' &&
         ((towlower(a0[len-3]) == 'e' &&
