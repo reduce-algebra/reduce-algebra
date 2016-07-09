@@ -51,6 +51,11 @@ symbolic procedure deg!*form u;
            else if x memq '(plus minus difference quotient) then
                      deg!*form cadr u
            else if x eq 'times then deg!*farg cdr u
+           else if x eq 'crossprod then 1
+           else if x eq 'rot then 1
+           else if x eq 'dotprod then nil
+           else if x eq 'div then nil
+           else if x eq 'spat then nil
            else nil) where x = car u;
 
 symbolic procedure simpexdegree u;
