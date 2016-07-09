@@ -142,7 +142,7 @@ rl_service {
    doc = "local quantifier elimination",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions on the parameters"},
-   arg = {pos = 3, name = point, type = List(Assignment(Rational)), default = {}, doc = "point where generated theory must be consistent"},
+   arg = {pos = 3, name = point, type = List(Assignment(Rational)), default = {}, doc = "point where generated theory will be consistent"},
    returns = {type = Pair(List(Atom), Formula)},
    blackbox = {name = negateat, argnum = 1},
    mode = both};
@@ -202,6 +202,22 @@ rl_service {
    mode = both};
 
 rl_service {
+   name = qeipo,
+   doc = "quantifier elimination in position",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
+   returns = {type = Formula},
+   mode = both};
+
+rl_service {
+   name = qews,
+   doc = "quantifier elimination with selection",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
+   returns = {type = Formula},
+   mode = both};
+
+rl_service {
    name = wqe,
    doc = "weak quantifier elimination (domain Z only)",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
@@ -237,7 +253,25 @@ rl_service {
    mode = both};
 
 rl_service {
+   name = wqea,
+   doc = "weak quantifier elimination with answer",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
+   returns = {type = List(Triplet(Formula, List(Formula), List(Assignment(Any))))},
+   mode = both};
+
+rl_service {
    name = gqea,
+   doc = "generic quantifier elimination with answer",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
+   arg = {pos = 3, name = except, type = List(Variable), default = {}, doc = "parameters to exclude from assumptions"},
+   returns = {type = Pair(List(Atom),List(Pair(Formula, List(Assignment(Any)))))},
+   blackbox = {name = negateat, argnum = 1},
+   mode = both};
+
+rl_service {
+   name = posgqea,
    doc = "generic quantifier elimination with answer",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},

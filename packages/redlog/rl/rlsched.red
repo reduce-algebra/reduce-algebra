@@ -77,8 +77,8 @@ module rlsched;
 %% rl_mkserv('posqe,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
 
-rl_mkserv('posgqea,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
-   (list)),'rl_s2a!-gqea,t);
+%% rl_mkserv('posgqea,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
+%%    (list)),'rl_s2a!-gqea,t);
 
 %% rl_mkserv('gqea,'(rl_simp),'(rl_a2s!-atl rl_a2s!-varl),'((list)
 %%    (list)),'rl_s2a!-gqea,t);
@@ -96,7 +96,7 @@ rl_mkserv('qeg,'(rl_simp),nil,nil,'rl_s2a!-simpl,t);
 
 %% rl_mkserv('wqe,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
-rl_mkserv('wqea,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-wqea,t);
+%% rl_mkserv('wqea,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-wqea,t);
 
 rl_mkserv('zsimpl,'(rl_simp),nil,nil,'rl_s2a!-simpl,t);
 
@@ -122,9 +122,9 @@ rl_mkserv('opt,'(rl_a2s!-atl rl_a2s!-targfn),
 %% rl_mkserv('ifacml,'(rl_simp),nil,nil,
 %%    function(lambda x; rl_s2a!-ml(x,'rl_s2a!-term)),t);
 
-rl_mkserv('qeipo,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
-
-rl_mkserv('qews,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
+%% rl_mkserv('qeipo,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
+%% 
+%% rl_mkserv('qews,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
 %% rl_mkserv('gentheo,'(rl_a2s!-atl rl_simp),'(rl_a2s!-varl),'((list)),
 %%    'rl_s2a!-gqe,t);

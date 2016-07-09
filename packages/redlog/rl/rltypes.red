@@ -253,6 +253,29 @@ asserted procedure rl_a2sPair(x: Any, a2sElem1: Any, a2sElem2: Any): List;
 asserted procedure rl_s2aPair(x: Any, a2sElem1: Any, a2sElem2: Any): List;
    'list . {apply(a2sElem1, {car x}), apply(a2sElem2, {cdr x})};
 
+% Triplets
+
+rl_type {
+   name = Triplet,
+   a2s = rl_a2sTriplet,
+   s2a = rl_s2aTriplet,
+   doc = {
+      syntax = "A not necessarily homogeneous List with three elements."}};
+
+asserted procedure rl_a2sTriplet(x: Any, a2sElem1: Any, a2sElem2: Any, a2sElem3: Any): List;
+   begin scalar w, !*rlsimpl;
+      x := reval x;
+      if not eqcar(x, 'list) then
+ 	 typerr(x, "Triplet");
+      x := cdr x;
+      if not eqn(length x, 3) then
+ 	 typerr(x, "Triplet");
+      return {apply(a2sElem1, {cadr x}), apply(a2sElem2, {caddr x}), apply(a2sElem2, {cadddr x})}
+   end;
+
+asserted procedure rl_s2aTriplet(x: Any, a2sElem1: Any, a2sElem2: Any, a2sElem3: Any): List;
+   'list . {apply(a2sElem1, {car x}), apply(a2sElem2, {cadr x}), apply(a2sElem3, {caddr x})};
+
 % Multiplicity lists
 
 rl_type {name = MList,

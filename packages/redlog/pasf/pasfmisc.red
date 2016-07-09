@@ -744,19 +744,16 @@ procedure pasf_expanda(answ,phi);
    % components. The argument [phi] is not yet used. This is planned
    % to be the original quantified formula so that its matrix can be
    % possibly used for finding suitable values.
-   begin scalar guard, w, ww, badl, goodl, gdis, sample;
+   begin scalar guard, w, badl, goodl, gdis, nrangel, answ;
       for each a in answ do <<
 	 secondvalue!* := nil;
       	 guard := pasf_expand car a;
 	 w := secondvalue!*;
-	 sample := pasf_findsample(cadr a,caddr a,w);
-	 ww := nil;
-	 for each equ in cdr sample do
-	    ww := lto_insert(cadr equ . caddr equ, ww);
- 	 if car sample then
-	    badl := lto_insert(guard . reversip(('implicit . 'list . car sample) . ww), badl)
+	 nrangel . answ := pasf_findsample(cadr a,caddr a,w);
+ 	 if nrangel then
+	    badl := lto_insert(guard . reversip(('implicit . 'list . nrangel) . reverse answ), badl)
 	 else
-	    goodl := lto_insert(guard . reversip ww, goodl)
+	    goodl := lto_insert(guard . answ, goodl)
       >>;
       gdis := cl_simpl(rl_smkn('or, for each gp in goodl collect car gp), nil, -1);
       if !*rlqeasri then
@@ -777,7 +774,7 @@ procedure pasf_srip(prem,concl);
 procedure pasf_findsample(rangel,points,hitl);
    begin scalar w,answ,nrangel;
       answ := for each point in points collect
-	 {car point,cadr point,prepsq subsq(simp caddr point,hitl)};
+	 car point . prepsq subsq(simp cdr point,hitl);
       nrangel := for each range in rangel join <<
 	 w := cl_simpl(cl_subfof(hitl,range),nil,-1);
 	 % FRAGE: Kann false rauskommen? Was dann?

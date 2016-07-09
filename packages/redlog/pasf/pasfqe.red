@@ -64,7 +64,7 @@ procedure pasf_wqea(phi,theo);
       for each r in res do
 	 ret := {answ_f r,for each b in answ_bl r collect b,
       	    for each eqn in answ_tl r collect
-	       pasf_mk2('equal,prepf pasf_arg2l eqn,prepsq pasf_arg2r eqn)} . ret;
+	       prepf pasf_arg2l eqn . prepsq pasf_arg2r eqn} . ret;
       return ret
    end;
 
