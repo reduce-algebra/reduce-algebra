@@ -673,23 +673,6 @@ void dviPanel::SelectFont(int n)
 
 int dviPanel::MapChar(int c)
 {
-#ifdef OLD
-// This function maps between a TeX character encoding and the one that is
-// used by the fonts and rendering engine that I use.
-    if (c < 0xa) return 0xa1 + c;
-    else if (c == 0xa) return 0xc5;
-#ifdef UNICODE
-// In Unicode mode I have access to the character at code point 0x2219. If
-// not I must insist on using my private version of the fonts where it is
-// at 0xb7.
-    else if (c == 0x14) return 0x2219;
-#endif
-    else if (c < 0x20) return 0xa3 + c;
-    else if (c == 0x20) return 0xc3;
-    else if (c == 0x7f) return 0xc4;
-    else if (c >= 0x80) return 0xa0;
-    else return c;
-#else
     if (c >= 0x80) return c;
     switch (currentFontMapping)
     {
@@ -703,7 +686,6 @@ case 2:
 case 3:
         return cmex_to_unicode[c];
     }
-#endif
 }
 
 double dviPanel::DVItoScreen(int n)
@@ -732,7 +714,22 @@ void dviPanel::SetChar(int32_t c)
 #if 0
     logprintf("SetChar%d [%c] %d %d\n", (int)c, (c <  0x20 || c >= 0x7f ? ' ' : (int)c), (int)h, (int)v);
 #endif
-    wxString s = (wchar_t)MapChar(c);
+    int k = MapChar(c);
+    wchar_t ccc[4];
+// For the benefit of Windows I need to represent code points in other
+// then the basic multilingual pane as surrogate pairs.
+    if (sizeof(wchar_t) == 4 ||
+        k <= 0xffff)
+    {   ccc[0] = k;
+        ccc[1] = 0;
+    }
+    else
+    {   k = (k - 0x10000) & 0xfffff;
+        ccc[0] = 0xd800 + (k >> 10);
+        ccc[1] = 0xdc00 + (k & 0x3ff);
+        ccc[2] = 0;
+    }
+    wxString s(ccc);
     double width, height, descent, xleading;
     gc->GetTextExtent(s, &width, &height, &descent, &xleading);
     gc->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
@@ -1273,7 +1270,7 @@ void dviPanel::OnPaint(wxPaintEvent &event)
     logprintf("Need to create fixed pitch font\n");
 // The graphicsFixedPitch font will be for a line spacing of exactly 10
 // pixels. This is of course TINY, but I will scale it as relevant.
-    graphicsFixedPitch = gc->CreateFont(10.0, wxT("csl-cmtt10"));
+    graphicsFixedPitch = gc->CreateFont(10.0, wxT("CMU Typewriter Text"));
     double dwidth, dheight, ddepth, dleading;
     gc->SetFont(graphicsFixedPitch);
     gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
