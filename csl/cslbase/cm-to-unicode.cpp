@@ -221,7 +221,7 @@ int cmmi_to_unicode[128] =
     unicode_RIGHTWARDS_HARPOON_WITH_BARB_UPWARDS,
     unicode_RIGHTWARDS_HARPOON_WITH_BARB_DOWNWARDS,
     nonstandard_ARROW_HOOK_LEFT,
-    nonstandrad_ARROW_HOOK_RIGHT,
+    nonstandard_ARROW_HOOK_RIGHT,
     unicode_CONTAINS_AS_NORMAL_SUBGROUP,
     unicode_NORMAL_SUBGROUP_OF,
     nonstandard_OLD_STYLE_DIGIT_ZERO,
@@ -420,7 +420,7 @@ int cmsy_to_unicode[128] =
     unicode_UP_DOWN_DOUBLE_ARROW,
     unicode_REVERSE_SOLIDUS,
     unicode_WREATH_PRODUCT,
-    nonstandard_SQRT,
+    nonstandard_SQUARE_ROOT_var,
     unicode_N_ARY_COPRODUCT,
     unicode_NABLA,
     unicode_INTEGRAL,
@@ -439,7 +439,7 @@ int cmsy_to_unicode[128] =
 };
 
 
-int cmex_to_unicode[12] =
+int cmex_to_unicode[128] =
 {  // not done yet!
 };
 

@@ -102,12 +102,6 @@
 #define unicode_COMMA                                                 0x002C
 #define unicode_HYPHEN_MINUS                                          0x002D
 #define unicode_FULL_STOP                                             0x002E
-#define unicode_MODIFIER_LETTER_PRIME                                 0x02B9
-#define unicode_INFINITY                                              0x221E
-#define unicode_ELEMENT_OF                                            0x2208
-#define unicode_CONTAINS_AS_MEMBER                                    0x220B
-#define unicode_INCREMENT                                             0x2206
-#define unicode_NABLA                                                 0x2207
 #define unicode_SOLIDUS                                               0x002F
 #define unicode_DIGIT_ZERO                                            0x0030
 #define unicode_DIGIT_ONE                                             0x0031
@@ -725,6 +719,7 @@
 #define unicode_MODIFIER_LETTER_SMALL_CAPITAL_INVERTED_R              0x02B6
 #define unicode_MODIFIER_LETTER_SMALL_W                               0x02B7
 #define unicode_MODIFIER_LETTER_SMALL_Y                               0x02B8
+#define unicode_MODIFIER_LETTER_PRIME                                 0x02B9
 #define unicode_MODIFIER_LETTER_DOUBLE_PRIME                          0x02BA
 #define unicode_MODIFIER_LETTER_TURNED_COMMA                          0x02BB
 #define unicode_MODIFIER_LETTER_APOSTROPHE                            0x02BC
@@ -7595,14 +7590,12 @@
 #define unicode_THERE_EXISTS                                          0x2203
 #define unicode_THERE_DOES_NOT_EXIST                                  0x2204
 #define unicode_EMPTY_SET                                             0x2205
-#define unicode_INCRE#define unicode_INCREMENT                                             0x2206
+#define unicode_INCREMENT                                             0x2206
 #define unicode_NABLA                                                 0x2207
-#dMENT                                             0x2206
-#define unicode_NABLA                                                 0x2207
+#define unicode_ELEMENT_OF                                            0x2208
 #define unicode_NOT_AN_ELEMENT_OF                                     0x2209
 #define unicode_SMALL_ELEMENT_OF                                      0x220A
-
-
+#define unicode_CONTAINS_AS_MEMBER                                    0x220B
 #define unicode_DOES_NOT_CONTAIN_AS_MEMBER                            0x220C
 #define unicode_SMALL_CONTAINS_AS_MEMBER                              0x220D
 #define unicode_END_OF_PROOF                                          0x220E
@@ -7621,6 +7614,7 @@
 #define unicode_CUBE_ROOT                                             0x221B
 #define unicode_FOURTH_ROOT                                           0x221C
 #define unicode_PROPORTIONAL_TO                                       0x221D
+#define unicode_INFINITY                                              0x221E
 #define unicode_RIGHT_ANGLE                                           0x221F
 #define unicode_ANGLE                                                 0x2220
 #define unicode_MEASURED_ANGLE                                        0x2221
@@ -27311,6 +27305,7 @@
 // These are probably what I am looking for...
 #define nonstandard_ARROW_HOOK_LEFT                                   0x1080DA
 #define nonstandard_ARROW_HOOK_RIGHT                                  0x1080DB
+#define nonstandard_MAPSTO                                            0x1080DC
 
 // Old style numerals.
 #define nonstandard_OLD_STYLE_DIGIT_ZERO                              0x1081AF

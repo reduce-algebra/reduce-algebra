@@ -43,8 +43,52 @@
 /* $Id$ */
 
 
-// The first few lines are essentially taken from the wxWidgets documentation
-// and will be the same for almost all wxWidgets code.
+//
+// I have some choices here where I am not certain what to do, so while
+// another window on mu computer shows a large re-compilation happening I
+// will document soem thoughts here.
+//
+// My previous GUI wanted to keep output at "80 columns of fixed-pitch
+// text". It achieved that by preventing attempts to change the window
+// width by dragging. A menu could let the user alter font size and that
+// would cause the window width to alter. It did not feel fully comfortable.
+//
+// My first try with wxWidgets allowed arbitrary changes in window width, and
+// then adjusted font size to match, so that as far as Reduce was concerned
+// there was always the same logical amount of space. That (I think) feels
+// nice. The way I do it involves creating and rendering fonts such that
+// their size is specified in floating point. That can be done if I use
+// a wxGraphicsContext and wxGraphicsFont. However a problem there is that
+// using stock wxWidgets I can not use that with private application-specific
+// fonts. I thus have my own private extensions to wxWidgets to cope. I had
+// tried submitting my changes back to the wxWidgets management (who were
+// polite and helpful) but I ran out of steam before being able to reach the
+// quality level if my code that they needed.
+// I different scheme I could try would be to render text into a memory
+// buffer (probably at somewhat high resolution) and then either use
+// drawImage and user-mode scaling or use ScaleImage to reduce the image
+// to a version to display. That way I could use fonts with a whole-number
+// size to draw into the bitmap image but get things rendered at whatever
+// scale I wanted. This might do anti-aliasing for me as I went and these
+// days may well be quite fast enough. I could then use a stock unmodified
+// version of wxWidgets which would be a generally good idea.
+//
+// So my choices seem to be
+// (1) window if fixed width and menus change font size leading to
+//     window size adjustment.
+// (2) window size can be dragged, but font enlarges in integer steps,
+//     leaving a margin to the right of the window quite often.
+// (3) use wxGraphicsContext and my custom extensions to wxWidgets to
+//     support continuously variable font sizes.
+// (4) draw text to an intermediate buffer then rescale the image for
+//     display.
+//
+// At present the code here uses strategy (3) but I am minded to re-work it
+// so it has a command-line switch or perhaps a compilation option to
+// use (4) instead so I can compare performance and appearance.
+//
+//                                                           ACN, July 2016
+//
 
 #include "wx/wxprec.h"
 
@@ -114,248 +158,19 @@ extern char *getcwd(char *s, size_t n);
 // cmr, cmmi, cmsy and cmex -- and I will map codepoints 0-127 in those
 // to parts of STIXMath... together with additional messy mappings that are
 // to do with how I once placed characters to get around systems that had
-// issues abiut use of control character codes for genuine glyphs.
+// issues about use of control character codes for genuine glyphs.
 
+// The font widths in the table here only apply to the original Computer
+// Modern fonts and so may be utterly wrong if I use any other fonts!
 #include "cmfont-widths.cpp"
 
-int cmrmap[256] =
-{
-    0x393,  0x01,   0x394,  0x398,  0x39e,  0x3a0,  0x3a3,  0x3a5,
-    0x3a6,  0x3a8,  0x3a9,  0xfb00, 0xfb01, 0xfb02, 0xfb03, 0xfb04,
-    0x131,  0x237,  0x60,   0xb4,   0x2c7,  0x2d8,  0xaf,   0x2da
-    0xb8,   0xdf,   0xe6,   0x153,  0xf8,   0xc6,   0x152,  0xd8,
-    0x1081b9, 0x21, 0x201d, 0x23,   0x24,   0x25,   0x26,   0x2019,
-    0x28,   0x29,   0x2a,   0x2b,   0x3c,   0x2d,   0x2e,   0x2f,
-    0x30,   0x31,   0x32,   0x33,   0x34,   0x35,   0x36,   0x37,
-    0x38,   0x39,   0x3a,   0x3b,   0xa1,   0x3d,   0xbf,   0x3f,
-    0x40,   0x41,   0x42,   0x43,   0x44,   0x45,   0x46,   0x47,
-    0x48,   0x49,   0x4a,   0x4b,   0x4c,   0x4d,   0x4e,   0x4f,
-    0x50,   0x51,   0x52,   0x53,   0x54,   0x55,   0x56,   0x57,
-    0x58,   0x59,   0x5a,   0x5b,   0x201c, 0x5d,   0x5e,   0x2d9,
-    0x2018, 0x61,   0x62,   0x63,   0x64,   0x65,   0x66,   0x67,
-    0x68,   0x69,   0x6a,   0x6b,   0x6c,   0x6d,   0x6e,   0x6f,
-    0x70,   0x71,   0x72,   0x73,   0x74,   0x75,   0x76,   0x77,
-    0x78,   0x79,   0x7a,   0x2013, 0x2014, 0x2dd,  0x7e,   0x7f,
-    0x80,   0x81,   0x82,   0x83,   0x84,   0x85,   0x86,   0x87,
-    0x88,   0x89,   0x8a,   0x8b,   0x8c,   0x8d,   0x8e,   0x8f,
-    0x90,   0x91,   0x92,   0x93,   0x94,   0x95,   0x96,   0x97,
-    0x98,   0x99,   0x9a,   0x9b,   0x9c,   0x9d,   0x9e,   0x9f,
-    0xa0,   0x393,  0x394,  0x398,  0x39b,  0x39e,  0x3a0,  0x3a3,
-    0x3a5,  0x3a6,  0x3a8,  0xab,   0xac,   0x3a9,  0xfb00, 0xfb01,
-    0xfb02, 0xfb03, 0xfb04, 0x131,  0x237,  0x60,   0xb4,   0x2c7,
-    0x2d8,  0xaf,   0x2da,  0xb8,   0xdf,   0xe6,   0x153,  0xf8,
-    0xc6,   0x152,  0xd8    0x1081b9, 0xa8  0x3a9,  0xc6,   0xc7,
-    0xc8,   0xc9,   0xca,   0xcb,   0xcc,   0xcd,   0xce,   0xcf,
-    0xd0,   0xd1,   0xd2,   0xd3,   0xd4,   0xd5,   0xd6,   0xd7,
-    0xd8,   0xd9,   0xda,   0xdb,   0xdc,   0xdd,   0xde,   0xdf,
-    0xe0,   0xe1,   0xe2,   0xe3,   0xe4,   0xe5,   0xe6,   0xe7,
-    0xe8,   0xe9,   0xea,   0xeb,   0xec,   0xed,   0xee,   0xef,
-    0xf0,   0xf1,   0xf2,   0xf3,   0xf4,   0xf5,   0xf6,   0xf7,
-    0xf8,   0xf9,   0xfa,   0xfb,   0xfc,   0xfd,   0xfe,   0xff,
-};
+// The information here (attempts to) map the codepoints of the original
+// Computer Moden fonts in ancient TeX coding onto Unicode code points,
+// where I will then use the STIXMath font for everything. Note that where
+// its metrics do not match cmr, cmmi, cmsy and cmex I will be a mess if the
+// dvi I am using used the original metrics!
 
-int cmmimap[256] = {
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0
-};
-
-int cmsymap[256] = {
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0
-};
-
-int cmexmap[256] = {
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0,
-0,      0,      0,      0,      0,      0,      0,      0
-};
-
-
+#include "cm-to-unicode.cpp"
 
 
 static FILE *logfile = NULL;
@@ -380,7 +195,6 @@ static void logprintf(const char *fmt, ...)
     fflush(stdout);
 #endif
 }
-
 
 
 class dviApp : public wxApp
@@ -440,8 +254,9 @@ private:
 // I will use a fixed limit.
 //
 #define MAX_FONTS 256
-    wxGraphicsFont graphicsFont[MAX_FONTS];       // the fonts I use here
+    wxGraphicsFont graphicsFont[MAX_FONTS];    // the fonts I use here
     bool graphicsFontValid[MAX_FONTS];         // the fonts I use here
+    int graphicsFontMapping[MAX_FONTS], currentFontMapping;
     font_width *fontWidth[MAX_FONTS], *currentFontWidth;
     double em;
 
@@ -510,7 +325,7 @@ int main(int argc, const char *argv[])
 // is not set. This is not a perfect test but it will spot the simple
 // cases. Eg I could look at stdin & stdout and check if it looks as if
 // they are pipes of they have been redirected...
-    {   const char *s = my_getenv("DISPLAY");
+    {   const char *s = getenv("DISPLAY");
         if (s==NULL || *s == 0) usegui = 0;
     }
 #endif
@@ -780,6 +595,7 @@ void dviPanel::DefFont(int k)
     int32_t designsize = s4() << 4;
     int arealen = *stringInput++;
     int namelen = *stringInput++;
+    int m;
     if (k >= MAX_FONTS)
     {   logprintf("This code can only cope with MAX_FONTS distinct fonts\n");
         return;
@@ -788,9 +604,16 @@ void dviPanel::DefFont(int k)
     {   logprintf("Fonts with an area specification are not supported\n");
         return;
     }
-    strcpy(fontname, "csl-");
-    for (int i=0; i<namelen; i++) fontname[i+4] = *stringInput++;
-    fontname[namelen+4] = 0;
+    for (int i=0; i<namelen; i++) fontname[i] = *stringInput++;
+    fontname[namelen] = 0;
+    if (strncmp(fontname, "cmr", 3) == 0) m = 0;
+    else if (strncmp(fontname, "cmmi", 4) == 0) m = 1;
+    else if (strncmp(fontname, "cmsy", 4) == 0) m = 2;
+    else if (strncmp(fontname, "cmex", 4) == 0) m = 3;
+    else
+    {   logprintf("Unknown font %s\n", fontname);
+        m = 0;
+    }
     if (graphicsFontValid[k]) return;
 #if 1
     logprintf("checksum = %.8x\n", checksum);
@@ -799,7 +622,7 @@ void dviPanel::DefFont(int k)
 #endif
     font_width *p = cm_font_width;
     while (p->name != NULL &&
-           strcmp(p->name, fontname+4) != 0) p++;
+           strcmp(p->name, fontname) != 0) p++;
     if (p->name == NULL)
     {   logprintf("Fonts not found in the private font-set I support\n");
         return;
@@ -825,8 +648,10 @@ void dviPanel::DefFont(int k)
 // Continue in a spirit of optimism!
     }
     logprintf("Designsize = %.4g\n", (double)designsize/1048576.0);
-    graphicsFont[k] = gc->CreateFont(designsize/1048576.0, fontname);
+// Everything come from STIXMath!!!!
+    graphicsFont[k] = gc->CreateFont(designsize/1048576.0, "cslSTIXMath");
     graphicsFontValid[k] = true;
+    graphicsFontMapping[k] = m;
     fontWidth[k] = p;
 }
 
@@ -842,11 +667,13 @@ void dviPanel::SelectFont(int n)
     }
     gc->SetFont(graphicsFont[n]);
     currentFontWidth = fontWidth[n];
+    currentFontMapping = graphicsFontMapping[n];
 }
 
 
 int dviPanel::MapChar(int c)
 {
+#ifdef OLD
 // This function maps between a TeX character encoding and the one that is
 // used by the fonts and rendering engine that I use.
     if (c < 0xa) return 0xa1 + c;
@@ -862,6 +689,21 @@ int dviPanel::MapChar(int c)
     else if (c == 0x7f) return 0xc4;
     else if (c >= 0x80) return 0xa0;
     else return c;
+#else
+    if (c >= 0x80) return c;
+    switch (currentFontMapping)
+    {
+default:
+case 0:
+        return cmr_to_unicode[c];
+case 1:
+        return cmmi_to_unicode[c];
+case 2:
+        return cmsy_to_unicode[c];
+case 3:
+        return cmex_to_unicode[c];
+    }
+#endif
 }
 
 double dviPanel::DVItoScreen(int n)
