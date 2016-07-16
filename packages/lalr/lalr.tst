@@ -179,13 +179,17 @@ symbolic procedure demonstrate_lexer style;
   begin
     scalar tt, r;
     lex_init();
+    lex_keywords '(">=");
 % This sets one of the "lexer styles".
     lexer_style!* := style;
     while << tt := yylex(); yylval neq '!; >> do r := (tt . yylval) . r;
-% Because the list that I print as a result can overflow line-length I
-% will display it using portable_print so that Lisp-level discrepancies
-% about how lines get broken will not cause confusion.
-    portable_print reverse r
+    for each x in reverse r do <<
+% CSL and PSL do not put "!" escapes in exactly the same places when
+% printing symbols with an underscore in the name - and thay also
+% disagree about where to break lines to respect linelength. The
+% function portable_print exists to provide consistent output in places
+% like here.
+      portable_print x >>
   end;
 
 % I will read exactly the same sequence of characters using various lexer
@@ -200,6 +204,8 @@ demonstrate_lexer lexer_style_rlisp;
 'x'
 "strings \" twice \" escapes & embedded "" quotes"
 quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
+>=
+>>
 0x10000
 #if nil
 conditional
@@ -215,6 +221,8 @@ demonstrate_lexer lexer_style_C;
 'x'
 "strings \" twice \" escapes & embedded "" quotes"
 quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
+>=
+>>
 0x10000
 #if nil
 conditional
@@ -230,6 +238,8 @@ demonstrate_lexer lexer_style_SML;
 'x'
 "strings \" twice \" escapes & embedded "" quotes"
 quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
+>=
+>>
 0x10000
 #if nil
 conditional
@@ -245,6 +255,8 @@ demonstrate_lexer lexer_style_script;
 'x'
 "strings \" twice \" escapes & embedded "" quotes"
 quote'-'chars :=: !!!! _ _ABC mixed!Case a!-b
+>=
+>>
 0x10000
 #if nil
 conditional

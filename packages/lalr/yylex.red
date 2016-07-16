@@ -258,16 +258,14 @@ symbolic inline procedure lexer_option o;
   not zerop land(lexer_style!*, o);
 
 % This identifies characters that SMLbuilds up to make operator-like
-% identifiers. It is relevant when lexer_option(lexer_sml_operators) is
-% enabled, and by checking that first it avoids using the somewhat slow MEMQ
-% test in cases where it is irrelevant.
+% identifiers.
 
 flag('(!! !% !& !$ !# !+ !- !/ !: !< != !> !? !@ !\ !~ !` !^ !| !*),
      'sml_opchar);
 
 symbolic inline procedure sml_opchar ch;
   lexer_option(lexer_sml_operators) and
-  flagp(ch, 'smp_opchar);
+  flagp(ch, 'sml_opchar);
 
 symbolic procedure all_sml_opchar l;
   null l or
@@ -1050,9 +1048,9 @@ symbolic procedure lex_basic_token();
 % TWO things here: I avoid advancing the input, and I return the lex_eof_code
 % as an end-of-file indication.
       if yylval = !$eof!$ then return lex_eof_code;
-      if (yylval = '!# and lexer_option(lexer_hashif)) or
+      if (yylval = '!# and lexer_option lexer_hashif) or
          get(yylval, 'lex_dipthong) or
-         sml_opchar(yylval) then yyreadch()
+         sml_opchar yylval then yyreadch()
       else lex_char := '! ;  % Try to avoid reading beyond where I HAVE to.
 % There is a bit of horribly magic needed here. I want
 %  #if #else #elif #endif #eval and #define
@@ -1061,8 +1059,10 @@ symbolic procedure lex_basic_token();
 % it is the case with no escape character I am concerned
 % about here, and that requires a 1-symbol look-ahead. Well even there
 % the look ahead only has to consider a whole symbol if the character after
-% the "#" is a letter (or an "!").
-      if (yylval = '!# and lexer_option(lexer_hashif) and liter lex_char)
+% the "#" is a letter (or an "!"). I think I should avoid enabling #ifdef
+% in SML mode to allow that operators with names starting with "#" do not
+% get messed up...
+      if (yylval = '!# and lexer_option lexer_hashif and liter lex_char)
          or lex_char = '!! then <<
         r := lex_basic_token();
 % Observe that I only check yylval here (not the type of token returned).
