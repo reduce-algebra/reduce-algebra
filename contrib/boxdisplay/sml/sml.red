@@ -98,8 +98,10 @@ put('mod,  'lisp_name, 'remainder);
 
 put('!+,   'lisp_name, 'plus);
 put('!-,   'lisp_name, 'difference);
+put('!^,   'lisp_name, 'stringconcat);
 
 put('!:!:, 'lisp_name, 'cons);
+put('!@,   'lisp_name, 'append);
 
 put('!>,   'lisp_name, 'greaterp);
 put('!<,   'lisp_name, 'lessp);
@@ -109,6 +111,7 @@ put('!<!=, 'lisp_name, 'leq);
 put('!<!>, 'lisp_name, 'neq);
 
 put('!:!=, 'lisp_name, 'set);
+put('o,    'lisp_name, 'compose_functions);
 
 fluid '(filestack);
 
@@ -212,8 +215,6 @@ symbolic procedure endcontext();
     context_stack := cdr context_stack;
   end;
 
-lexer_style!* := lexer_style_sml + 0x40; % Support #if and #eval too!
-
 % If parsing the SML code fails I will just exit from Reduce. Otherwise
 % it is likely that I will be faced with a mess of further silly messages
 % as Reduce tries to make sense if SML input itself.
@@ -224,12 +225,11 @@ lexer_style!* := lexer_style_sml + 0x40; % Support #if and #eval too!
 
 on parse_errors_fatal;
 
-% The grammar used here is derived from one found at
+% The grammar used here was originally derived from one found at
 %    https://www.mpi-sws.org/~rossberg/sml.html
-
-% I am re-working the original grammar that I had here using information
-% fron "The Definition of Standard ML (Revised)", 1997. At least that will
-% be definitive! I hope it will let me get rid of syntactic ambiguity.
+% but I re-worked it significantly using information fron "The Definition
+% of Standard ML (Revised)", 1997. At least that will be definitive!
+% I hope it will let me get rid of syntactic ambiguity.
 
 << terpri(); lpri list("grammar has", length (grammar := '(
 
@@ -294,19 +294,10 @@ on parse_errors_fatal;
 
  (opname  ((!:symbol))
           (("*"))
-          (("/"))
-          (("%"))
-          (("+"))
           (("-"))
-          ((":"))
-          (("::"))
+          (("-="))
+          (("->"))
           (("="))
-          (("<"))
-          (("<="))
-          ((">"))
-          ((">="))
-          (("<>"))
-          ((":="))
           ((!:infix0))
           ((!:infix1))
           ((!:infix2))
@@ -707,7 +698,45 @@ on parse_errors_fatal;
 
 pp := lalr_create_parser(prec, grammar)$
 
+
+%lexer_style!* := lexer_style_SML;
+lexer_style!* := lexer_style_SML + 0x40; % Support #if and #eval too!
+
 %@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+symbolic procedure demonstrate_lexer style;
+  begin
+    scalar tt, r;
+    lex_init();
+    lex_keywords '(">=");
+% This sets one of the "lexer styles".
+    lexer_style!* := style;
+    while << tt := yylex(); yylval neq '!; >> do r := (tt . yylval) . r;
+    for each x in reverse r do <<
+% CSL and PSL do not put "!" escapes in exactly the same places when
+% printing symbols with an underscore in the name - and thay also
+% disagree about where to break lines to respect linelength. The
+% function portable_print exists to provide consistent output in places
+% like here.
+      portable_print x >>
+  end;
+
+% I will read exactly the same sequence of characters using various lexer
+% styles so that token syntax, string treatment and comments show up.
+
+demonstrate_lexer lexer_style_SML;
+>
+>>
+:
+:=
+:=:
+-
+->
+->>
+
+;;;;
+
 
 begin
    scalar !*raise, !*lower;
@@ -738,6 +767,8 @@ use "Distance.sml";
 use "Size.sml";
 use "FontTypes.sml";
 use "LoadFont.sml";
+use "charmetrics.sml";
+use "Metrics.sml";
 use "FontVector.sml";
 use "CharInfo.sml";
 use "CharFunctions.sml";

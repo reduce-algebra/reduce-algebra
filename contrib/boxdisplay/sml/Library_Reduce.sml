@@ -34,7 +34,9 @@ infix 7 div;
 infix 7 mod;
 infix 6 +;
 infix 6 -;
+infixr 6 ^;
 infixr 5 ::;
+infixr 5 @;
 (* infix 4 =;  Must be FIXED because also used after VAL and FUN (etc) *)
 infix 4 <;
 infix 4 >;
@@ -42,5 +44,6 @@ infix 4 <=;
 infix 4 >=;
 infix 4 <>;
 infix 3 :=;
+infixr 3 o;
 
 (* end of Library_reduce.sml *)
