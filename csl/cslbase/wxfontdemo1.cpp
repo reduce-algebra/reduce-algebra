@@ -339,7 +339,8 @@ bool fontApp::OnInit()
 }
 
 #define CELLWIDTH  33
-#define CELLHEIGHT 60
+#define CELLOFFSET 45
+#define CELLHEIGHT (60+CELLOFFSET)
 
 fontFrame::fontFrame(const char *fname, int fsize)
        : wxFrame(NULL, wxID_ANY, "wxfontdemo")
@@ -582,7 +583,7 @@ printf("OnPaint invoked\n");
         {   dc.SetPen(*wxBLUE_PEN);
             dc.SetBrush(*wxTRANSPARENT_BRUSH);
             dc.DrawEllipse(CELLWIDTH*(j+1) - 6,
-                           CELLHEIGHT*(i/32+1) + CELLHEIGHT - 6,
+                           CELLHEIGHT*(i/32+1) + CELLHEIGHT - 6 - CELLOFFSET,
                            12, 12);
             int k = i + j;
             k += 0x80*page;
@@ -591,7 +592,7 @@ printf("OnPaint invoked\n");
                 (fontnum >= 0 && lookupchar(fontnum, k) == 0))
             {   dc.DrawRectangle(
                    CELLWIDTH*(j+1)+CELLWIDTH/3,
-                   CELLHEIGHT*(i/32+1)+CELLHEIGHT/3,
+                   CELLHEIGHT*(i/32+1)+CELLHEIGHT/3 - CELLOFFSET,
                    CELLWIDTH/3, CELLHEIGHT/3);
                 continue;
             }
@@ -610,7 +611,7 @@ printf("OnPaint invoked\n");
                 ccc[2] = 0;
             }
             wxString c(ccc);
-            double offset = d1-h1;
+            double offset = d1-h1 - CELLOFFSET;
             dc.DrawText(c,
                 CELLWIDTH*(j+1),
                 CELLHEIGHT*(i/32+1) + CELLHEIGHT + offset);

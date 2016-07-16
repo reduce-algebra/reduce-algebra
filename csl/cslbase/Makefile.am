@@ -482,11 +482,11 @@ wxdvi_SOURCES = wxdvi.cpp wxfwin.cpp termed.cpp
 wxdvi_LDADD = $(fwin_icon)
 wxdvi_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
-wxshowmath_SOURCES = wxshowmath.cpp charmetrics.cpp unimaths.cpp
+wxshowmath_SOURCES = wxshowmath.cpp wxfwin.cpp termed.cpp charmetrics.cpp unimaths.cpp
 wxshowmath_LDADD = $(fwin_icon)
 wxshowmath_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
-wxshowmathdemo_SOURCES = wxshowmathdemo.cpp
+wxshowmathdemo_SOURCES = wxshowmathdemo.cpp wxfwin.cpp termed.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
 wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 

@@ -1483,6 +1483,7 @@ int main(int argc, char *argv[])
 
     {   FILE *dest = fopen("charmetrics.h", "w");
         FILE *rdest = fopen("charmetrics.red", "w");
+        FILE *smldest = fopen("charmetrics.sml", "w");
         fprintf(dest, "// charmetrics.h                               Copyright (C) 2016 Codemist\n");
         fprintf(dest, "\n");
         fprintf(dest, "\n");
@@ -1522,7 +1523,7 @@ int main(int argc, char *argv[])
         fprintf(dest, "#define __STDC_CONSTANT_MACROS 1\n");
         fprintf(dest, "#endif\n");
         fprintf(dest, "\n#include <stdint.h>\n\n");
-        fprintf(dest, "// Character metric hash table created using the program charmetrics.c\n");
+        fprintf(dest, "// Character metric hash table created using the program charmetrics.cpp\n");
         fprintf(dest, "// sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfontxs\n");
         fprintf(dest, "// contains README files with full credits to the fonts this is used with\n");
         fprintf(dest, "\n\n");
@@ -1551,7 +1552,7 @@ int main(int argc, char *argv[])
         fprintf(dest, "extern const char *fontnames[31];\n\n");
         fprintf(rdest, "%% Character metrics for the STIX (and some other) fonts...\n");
         fprintf(rdest, "\n");
-        fprintf(rdest, "%% Character metric hash table created using the program charmetrics.c\n");
+        fprintf(rdest, "%% Character metric hash table created using the program charmetrics.cpp\n");
         fprintf(rdest, "%% sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");
         fprintf(rdest, "%% contains README files with full credits to the fonts this is used with\n");
         fprintf(rdest, "%% Author: Arthur Norman\n");
@@ -1666,11 +1667,74 @@ int main(int argc, char *argv[])
         fprintf(rdest, "\n");
         fprintf(rdest, "symbolic (hashsize!* := %d);\n", main_r.table_size);
         fprintf(rdest, "\n");
+        fprintf(smldest, "(* Character metrics for the STIX (and some other) fonts...\n");
+        fprintf(smldest, "\n");
+        fprintf(smldest, "Character metric hash table created using the program charmetrics.cpp\n");
+        fprintf(smldest, "sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts\n");
+        fprintf(smldest, "contains README files with full credits to the fonts this is used with\n");
+        fprintf(smldest, "Author: Arthur Norman\n");
+        fprintf(smldest, "\n");
+        fprintf(smldest, "Redistribution and use in source and binary forms, with or without\n");
+        fprintf(smldest, "modification, are permitted provided that the following conditions are met:\n");
+        fprintf(smldest, "\n");
+        fprintf(smldest, "   * Redistributions of source code must retain the relevant copyright\n");
+        fprintf(smldest, "     notice, this list of conditions and the following disclaimer.\n");
+        fprintf(smldest, "   * Redistributions in binary form must reproduce the above copyright\n");
+        fprintf(smldest, "     notice, this list of conditions and the following disclaimer in the\n");
+        fprintf(smldest, "     documentation and/or other materials provided with the distribution.\n");
+        fprintf(smldest, "\n");
+        fprintf(smldest, "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\n");
+        fprintf(smldest, "AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,\n");
+        fprintf(smldest, "THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR\n");
+        fprintf(smldest, "PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR\n");
+        fprintf(smldest, "CONTRIBUTORS\n");
+        fprintf(smldest, "BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR\n");
+        fprintf(smldest, "CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF\n");
+        fprintf(smldest, "SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS\n");
+        fprintf(smldest, "INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN\n");
+        fprintf(smldest, "CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)\n");
+        fprintf(smldest, "ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE\n");
+        fprintf(smldest, "POSSIBILITY OF SUCH DAMAGE.\n");
+        fprintf(smldest, "\n");
+        fprintf(smldest, "\n");
+        fprintf(smldest, "Also be aware of the (generally permissive) licenses associated with the\n");
+        fprintf(smldest, "fonts. Fill README files and license terms for the fonts themselves\n");
+        fprintf(smldest, "are in csl/cslbase/wxfonts.\n");
+        fprintf(smldest, "\n");
+        fprintf(smldest, "\n");
+        fprintf(smldest, "$Id$\n");
+        fprintf(smldest, "\n*)\n\n");
+        fprintf(smldest, "\n");
+        fprintf(smldest, "val F_cmuntt     = 0;\n");
+        fprintf(smldest, "val F_odokai     = 1;\n");
+        fprintf(smldest, "val F_Regular    = 2;\n");
+        fprintf(smldest, "val F_Bold       = 3;\n");
+        fprintf(smldest, "val F_Italic     = 4;\n");
+        fprintf(smldest, "val F_BoldItalic = 5;\n");
+        fprintf(smldest, "val F_Math       = 6;\n");
+        fprintf(smldest, "val F_end        = 7;\n");
+        fprintf(smldest, "\n");
+        fprintf(smldest, "fun font_number \"cmuntt\"     = F_cmuntt\n");
+        fprintf(smldest, "  | font_number \"odokai\"     = F_odokai\n");
+        fprintf(smldest, "  | font_number \"Regular\"    = F_Regular\n");
+        fprintf(smldest, "  | font_number \"Bold\"       = F_Bold\n");
+        fprintf(smldest, "  | font_number \"Italic\"     = F_Italic\n");
+        fprintf(smldest, "  | font_number \"BoldItalic\" = F_BoldItalic\n");
+        fprintf(smldest, "  | font_number \"Math\"       = F_Math\n");
+        fprintf(smldest, "  | font_number _            = 0;\n");
+        fprintf(smldest, "\n");
+        fprintf(smldest, "val hashsize = %d;\n", main_r.table_size);
+        fprintf(smldest, "\n");
         fprintf(dest, "const uint64_t charmetrics[%d][5] = \n{",
                 main_r.table_size);
         fprintf(rdest, "#eval (setq metrics_hash!* (list_to_metric_table '\n    (");
+        fprintf(smldest, "val metrics_hash = Vector.fromList\n"
+           "   (map Vector.fromList [");
         for (i=0; i<main_r.table_size; i++)
-        {   if (i != 0) fprintf(dest, ",");
+        {   if (i != 0)
+            {   fprintf(dest, ",");
+                fprintf(smldest, ",");
+            }
             fprintf(dest,
                     "\n    {UINT64_C(0x%.16" PRIx64 "), UINT64_C(0x%.16" PRIx64 "), UINT64_C(0x%.16" PRIx64 "),"
                     "\n                                   UINT64_C(0x%.16" PRIx64 "), UINT64_C(0x%.16" PRIx64 ")}",
@@ -1685,28 +1749,53 @@ int main(int argc, char *argv[])
                     (int)(hashtable[i][2]>>32),
                     (int)hashtable[i][3], (int)(hashtable[i][3]>>32),
                     (int)hashtable[i][4], (int)(hashtable[i][4]>>32));
+            fprintf(smldest, "\n     [0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 ",",
+                    (int)hashtable[i][0], (int)(hashtable[i][0]>>32),
+                    (int)hashtable[i][1], (int)(hashtable[i][1]>>32),
+                    (int)hashtable[i][2]);
+            fprintf(smldest, "\n      0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 ", 0x%.8" PRIx32 "]",
+                    (int)(hashtable[i][2]>>32),
+                    (int)hashtable[i][3], (int)(hashtable[i][3]>>32),
+                    (int)hashtable[i][4], (int)(hashtable[i][4]>>32));
         }
         fprintf(dest, "\n};\n\n");
-        fprintf(rdest, "\n    )))\n\n");
         fprintf(dest, "#define CHAR_METRICS_MODULUS %d\n", main_r.modulus2);
         fprintf(dest, "#define CHAR_METRICS_OFFSET %d\n\n", main_r.offset2);
+        fprintf(rdest, "\n    )))\n\n");
+        fprintf(smldest, "\n    ]);\n\n");
+        fprintf(smldest, "val CHAR_METRICS_MODULUS = %d;\n", main_r.modulus2);
+        fprintf(smldest, "val CHAR_METRICS_OFFSET = %d;\n\n", main_r.offset2);
         fprintf(dest, "const uint32_t topcentre[%d] = \n{",
                 topcentre_r.table_size);
         fprintf(rdest, "#eval (setq topcentre_hash!* (list_to_vec32 '\n    (");
+        fprintf(smldest, "val topcentre_hash = Vector.fromList [");
         for (i=0; i<topcentre_r.table_size; i++)
-        {   if (i != 0) fprintf(dest, ",");
+        {   if (i != 0)
+            {   fprintf(dest, ",");
+                fprintf(smldest, ",");
+            }
             fprintf(dest, "\n    UINT32_C(0x%.8" PRIx32 ")", topcentre[i]);
             fprintf(rdest, "\n     0x%.8" PRIx32, topcentre[i]);
+            fprintf(smldest, "\n     0x%.8" PRIx32, topcentre[i]);
         }
         fprintf(dest, "\n};\n\n");
         fprintf(dest, "#define TOPCENTRE_MODULUS %d\n", topcentre_r.modulus2);
         fprintf(dest, "#define TOPCENTRE_OFFSET %d\n\n", topcentre_r.offset2);
         fprintf(rdest, "\n    )))\n\n");
+        fprintf(smldest, "\n    ];\n\n");
+        fprintf(smldest, "val TOPCENTRE_SIZE = %d;\n", topcentre_r.table_size);
+        fprintf(smldest, "val TOPCENTRE_MODULUS = %d;\n", topcentre_r.modulus2);
+        fprintf(smldest, "val TOPCENTRE_OFFSET = %d;\n\n", topcentre_r.offset2);
         fprintf(dest, "const uint32_t variant_table[%d][6] = \n{",
                 variant_r.table_size);
         fprintf(rdest, "#eval (setq variant_hash!* (list_to_metric_table '\n    (");
+        fprintf(smldest, "val variant_hash = Vector.fromList\n"
+            "   (map Vector.fromList [");
         for (i=0; i<variant_r.table_size; i++)
-        {   if (i != 0) fprintf(dest, ",");
+        {   if (i != 0)
+            {   fprintf(dest, ",");
+                fprintf(smldest, ",");
+            }
             fprintf(dest, "\n    {0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x}",
                     variant_table[i][0], variant_table[i][1],
                     variant_table[i][2], variant_table[i][3],
@@ -1715,16 +1804,29 @@ int main(int argc, char *argv[])
                     variant_table[i][0], variant_table[i][1],
                     variant_table[i][2], variant_table[i][3],
                     variant_table[i][4], variant_table[i][5]);
+            fprintf(smldest, "\n     [0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x]" ,
+                    variant_table[i][0], variant_table[i][1],
+                    variant_table[i][2], variant_table[i][3],
+                    variant_table[i][4], variant_table[i][5]);
         }
         fprintf(dest, "\n};\n\n");
         fprintf(dest, "#define VARIANT_MODULUS %d\n", variant_r.modulus2);
         fprintf(dest, "#define VARIANT_OFFSET %d\n\n", variant_r.offset2);
         fprintf(rdest, "\n    )))\n\n");
+        fprintf(smldest, "\n    ]);\n\n");
+        fprintf(smldest, "val VARIANT_SIZE = %d;\n", variant_r.table_size);
+        fprintf(smldest, "val VARIANT_MODULUS = %d;\n", variant_r.modulus2);
+        fprintf(smldest, "val VARIANT_OFFSET = %d;\n\n", variant_r.offset2);
         fprintf(dest, "const uint32_t extension_table[%d][11] = \n{",
                 extension_r.table_size);
         fprintf(rdest, "#eval (setq extension_hash!* (list_to_metric_table '\n    (");
+        fprintf(smldest, "val extension_hash = Vector.fromList\n"
+            "   (map Vector.fromList [");
         for (i=0; i<extension_r.table_size; i++)
-        {   if (i != 0) fprintf(dest, ",");
+        {   if (i != 0)
+            {   fprintf(dest, ",");
+                fprintf(smldest, ",");
+            }
             fprintf(dest,
                     "\n    {0x%.8x,\n     0x%.8x, 0x%.8x,\n     0x%.8x, 0x%.8x,\n"
                     "     0x%.8x, 0x%.8x,\n     0x%.8x, 0x%.8x,\n"
@@ -1743,13 +1845,27 @@ int main(int argc, char *argv[])
                     extension_table[i][6], extension_table[i][7],
                     extension_table[i][8], extension_table[i][9],
                     extension_table[i][10]);
+            fprintf(smldest, "\n     [0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x,\n"
+                    "                 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x]" ,
+                    extension_table[i][0], extension_table[i][1],
+                    extension_table[i][2], extension_table[i][3],
+                    extension_table[i][4], extension_table[i][5],
+                    extension_table[i][6], extension_table[i][7],
+                    extension_table[i][8], extension_table[i][9],
+                    extension_table[i][10]);
         }
         fprintf(dest, "\n};\n\n");
         fprintf(dest, "#define EXTENSION_MODULUS %d\n", extension_r.modulus2);
         fprintf(dest, "#define EXTENSION_OFFSET %d\n\n", extension_r.offset2);
         fprintf(rdest, "\n    )))\n\n");
+        fprintf(smldest, "\n    ]);\n\n");
+        fprintf(smldest, "val EXTENSION_SIZE = %d;\n", extension_r.table_size);
+        fprintf(smldest, "val EXTENSION_MODULUS = %d;\n", extension_r.modulus2);
+        fprintf(smldest, "val EXTENSION_OFFSET = %d;\n\n", extension_r.offset2);
         fprintf(dest, "const int16_t fontkern[] = \n{");
         fprintf(rdest, "#eval (setq fontkern!* (list_to_vec16 '\n    (");
+        fprintf(smldest, "val fontkern = Vector.fromList [");
+// SML version not sorted yet...
         for (i=0; i<F_end; i++)
         {   int w = fprintf(dest, "\n    %d", fontkern[i]);
             if (i != F_end-1) fprintf(dest, ",");
@@ -1758,6 +1874,13 @@ int main(int argc, char *argv[])
             w = fprintf(rdest, "\n    %d ", fontkern[i]);
             while (++w < 16) fprintf(rdest, " ");
             fprintf(dest, "// %s", fontnames[i]);
+            if (fontkern[i] < 0)
+                w = fprintf(smldest, "\n    ~%d", -fontkern[i]);
+            else w = fprintf(smldest, "\n    %d", fontkern[i]);
+            if (i != F_end-1) fprintf(smldest, ",");
+            else fprintf(smldest, " ");
+            while (++w < 16) fprintf(smldest, " ");
+            fprintf(smldest, "(* %s ", fontnames[i]);
             if (i != F_end-2 &&
                 fontkern[i+1] != fontkern[i])
                 fprintf(dest, " [%d items]", fontkern[i+1]-fontkern[i]);
@@ -1765,16 +1888,25 @@ int main(int argc, char *argv[])
             if (i != F_end-2 &&
                 fontkern[i+1] != fontkern[i])
                 fprintf(rdest, " [%d items]", fontkern[i+1]-fontkern[i]);
+            if (i != F_end-2 &&
+                fontkern[i+1] != fontkern[i])
+                fprintf(smldest, " [%d items] ", fontkern[i+1]-fontkern[i]);
+            fprintf(smldest, "*)");
         }
         fprintf(dest, "\n};\n\n");
         fprintf(rdest, "\n    )))\n\n");
+        fprintf(smldest, "\n    ];\n\n");
         fprintf(dest, "const uint32_t kerntable[] = \n{");
         fprintf(rdest, "#eval (setq kerntable!* (list_to_vec32 '\n    (");
+        fprintf(smldest, "val kerntable = Vector.fromList [");
         for (i=0; i<kernp; i++)
         {   fprintf(dest, "\n    0x%.8" PRIx32, kerntable[i]);
             if (i != kernp-1) fprintf(dest, ",");
             else fprintf(dest, " ");
             fprintf(rdest, "\n    0x%.8" PRIx32 " ", kerntable[i]);
+            fprintf(smldest, "\n    0x%.8" PRIx32, kerntable[i]);
+            if (i != kernp-1) fprintf(smldest, ",");
+            else fprintf(smldest, " ");
             if ((kerntable[i] & IS_LIGATURE) != 0)
                 fprintf(dest, "   // [%d:%d] %s + %s ligature #%d (%s)",
                         i, i-fontkern[ktfontn[i]],
@@ -1797,11 +1929,24 @@ int main(int argc, char *argv[])
                         ktstart[i], ktfollow[i],
                         ktadjustment[i], ktfont[i]);
             if ((kerntable[i] & IS_BLOCKEND) != 0) fprintf(rdest, " ;;");
+            if ((kerntable[i] & IS_LIGATURE) != 0)
+                fprintf(smldest, "   (* [%d:%d] %s + %s ligature #%d (%s) *)",
+                        i, i-fontkern[ktfontn[i]],
+                        ktstart[i], ktfollow[i],
+                        kerntable[i]>>23, ktfont[i]);
+            else
+                fprintf(smldest, "   (* [%d:%d] %s + %s : %d (%s) *)",
+                        i, i-fontkern[ktfontn[i]],
+                        ktstart[i], ktfollow[i],
+                        ktadjustment[i], ktfont[i]);
+            if ((kerntable[i] & IS_BLOCKEND) != 0) fprintf(smldest, " (*;;*)");
         }
         fprintf(dest, "\n};\n\n");
         fprintf(rdest, "\n    )))\n\n");
+        fprintf(smldest, "\n    ];\n\n");
         fprintf(dest, "const uint32_t ligaturetable[] = \n{");
         fprintf(rdest, "#eval (setq ligaturetable!* (list_to_vec32 '\n    (");
+        fprintf(smldest, "val ligaturetable = Vector.fromList [");
         for (i=0; i<ligp; i++)
         {   int l = fprintf(dest, "\n    %" PRId32, ligtable[i]);
             if (i != ligp-1) fprintf(dest, ",");
@@ -1809,14 +1954,21 @@ int main(int argc, char *argv[])
             while (++l < 12) fprintf(dest, " ");
             l = fprintf(rdest, "\n    %" PRId32 " ", ligtable[i]);
             while (++l < 12) fprintf(rdest, " ");
+            l = fprintf(smldest, "\n    %" PRId32, ligtable[i]);
+            if (i != ligp-1) fprintf(smldest, ",");
+            else fprintf(smldest, " ");
+            while (++l < 12) fprintf(smldest, " ");
             fprintf(dest, "   // [%d] %s + %s => %s (%s)",
                     i, ltfirst[i], ltfollow[i], ltname[i], ltfont[i]);
             fprintf(rdest, "   %% [%d] %s + %s => %s (%s)",
+                    i, ltfirst[i], ltfollow[i], ltname[i], ltfont[i]);
+            fprintf(smldest, "   (* [%d] %s + %s => %s (%s) *)",
                     i, ltfirst[i], ltfollow[i], ltname[i], ltfont[i]);
         }
         fprintf(dest, "\n};\n\n");
         fprintf(rdest, "\n    )))\n\n");
         fprintf(dest, "// end of charmetrics.h\n");
+        fprintf(smldest, "\n   ];\n\n");
         fprintf(rdest, "%% The use of #eval means that the metrics above have been defined at\n");
         fprintf(rdest, "%% parse time. I now need to ensure that they will be available even\n");
         fprintf(rdest, "%% when this code is passed through the compiler and hence everything\n");
@@ -1919,10 +2071,10 @@ int main(int argc, char *argv[])
         fprintf(rdest, "    go to a\n");
         fprintf(rdest, "  end;\n");
         fprintf(rdest, "\n");
-        fprintf(rdest, "symbolic procedure accentposition codepoint;\n");
+        fprintf(rdest, "symbolic procedure accentposition key;\n");
         fprintf(rdest, "  begin\n");
         fprintf(rdest, "    scalar h1, h2, v, w;\n");
-        fprintf(rdest, "    h1 := remainder(codepoint, %d);\n", topcentre_r.table_size);
+        fprintf(rdest, "    h1 := remainder(key, %d);\n", topcentre_r.table_size);
         fprintf(rdest, "    %% Hash table probe 1.\n");
         fprintf(rdest, "    v := land(w := getv32(topcentre_hash!*, h1), 0x1fffff);\n");
         fprintf(rdest, "    if not (v = key) then <<\n");
@@ -1973,6 +2125,7 @@ int main(int argc, char *argv[])
         fprintf(rdest, "\n");
         fprintf(rdest, "end;\n\n");
         fprintf(rdest, "%% end of charmetrics.red\n");
+        fprintf(smldest, "(* end of charmetrics.sml *)\n");
         fclose(dest);
         fclose(rdest);
     }

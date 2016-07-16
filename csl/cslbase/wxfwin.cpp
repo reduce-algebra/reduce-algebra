@@ -41,6 +41,16 @@
 
 #include "config.h"
 
+#ifndef __STDC_CONSTANT_MACROS
+#define __STDC_CONSTANT_MACROS 1
+#endif
+
+#include "wx/wxprec.h"
+
+#ifndef WX_PRECOMP
+#include "wx/wx.h"
+#endif
+
 #ifdef WIN32
 #include <windows.h>
 #include <io.h>
@@ -389,7 +399,7 @@ void consoleWait()
     while (i > 0)
     {   char title[30];
         sprintf(title, "Exiting after %d seconds", i);
-        SetConsoleTitle(title);
+        SetConsoleTitleA(title);
         c0 = clock() + CLOCKS_PER_SEC;
         while (clock() < c0);
         i--;
@@ -738,11 +748,11 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
                 freopen("CONOUT$", "w+", stdout);
                 freopen("CONOUT$", "w+", stderr);
                 SetStdHandle(STD_INPUT_HANDLE,
-                             CreateFile("CONIN$",
+                             CreateFileA("CONIN$",
                                         GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL,
                                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
                 SetStdHandle(STD_OUTPUT_HANDLE,
-                             h = CreateFile("CONOUT$",
+                             h = CreateFileA("CONOUT$",
                                             GENERIC_READ|GENERIC_WRITE, FILE_SHARE_WRITE, NULL,
                                             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
                 SetStdHandle(STD_ERROR_HANDLE, h);
@@ -1608,7 +1618,7 @@ int Cmkdir(const char *name)
     s.nLength = sizeof(s);
     s.lpSecurityDescriptor = NULL;
     s.bInheritHandle = FALSE;
-    return CreateDirectory(name, &s);
+    return CreateDirectoryA(name, &s);
 }
 
 int truncate_file(FILE *f, long int where)
@@ -1623,7 +1633,7 @@ int truncate_file(FILE *f, long int where)
 
 void set_filedate(char *name, unsigned long int datestamp,
                   unsigned long int filetype)
-{   HANDLE h = CreateFile(name, GENERIC_WRITE, 0, NULL,
+{   HANDLE h = CreateFileA(name, GENERIC_WRITE, 0, NULL,
                           OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     SYSTEMTIME st;
     FILETIME ft;
@@ -1797,16 +1807,16 @@ void set_hostcase(int fg)
 // Hmm - buffer overflow worry with the next line!
 static char filename[LONGEST_LEGAL_FILENAME];
 
-static WIN32_FIND_DATA *found_files = NULL;
+static WIN32_FIND_DATAA *found_files = NULL;
 static int n_found_files = 0, max_found_files = 0;
 
 #define TABLE_INCREMENT 50
 
 static int more_files(void)
 {   if (n_found_files > max_found_files - 5)
-    {   WIN32_FIND_DATA *fnew = (WIN32_FIND_DATA *)
+    {   WIN32_FIND_DATAA *fnew = (WIN32_FIND_DATAA *)
                                 realloc((void *)found_files,
-                                        sizeof(WIN32_FIND_DATA)*
+                                        sizeof(WIN32_FIND_DATAA)*
                                         (max_found_files + TABLE_INCREMENT));
         if (fnew == NULL) return 1;  // failure flag
         found_files = fnew;
@@ -1816,8 +1826,8 @@ static int more_files(void)
 }
 
 int alphasort_files(const void *a, const void *b)
-{   const WIN32_FIND_DATA *fa = (const WIN32_FIND_DATA *)a,
-                               *fb = (const WIN32_FIND_DATA *)b;
+{   const WIN32_FIND_DATAA *fa = (const WIN32_FIND_DATAA *)a,
+                          *fb = (const WIN32_FIND_DATAA *)b;
     return strncmp(fb->cFileName, fa->cFileName, sizeof(fa->cFileName));
 }
 
@@ -1832,19 +1842,19 @@ static void exall(int namelength,
     printf("exall function called - but not implemented here\n");
     return; // Dummy version here
 #else
-    WIN32_FIND_DATA found;
+    WIN32_FIND_DATAA found;
     int rootlen = namelength, first = n_found_files;
-    HANDLE hSearch = FindFirstFile(filename, &found);
+    HANDLE hSearch = FindFirstFileA(filename, &found);
     if (hSearch == INVALID_HANDLE_VALUE) return;  // No files found at all
     for (;;)
     {   if (more_files()) break;
         found_files[n_found_files++] = found;
-        if (!FindNextFile(hSearch, &found)) break;
+        if (!FindNextFileA(hSearch, &found)) break;
     }
     FindClose(hSearch);
     qsort((void *)&found_files[first],
           n_found_files-first,
-          sizeof(WIN32_FIND_DATA),
+          sizeof(WIN32_FIND_DATAA),
           alphasort_files);
     while (rootlen>=0 && filename[rootlen]!='\\') rootlen--;
     while (n_found_files != first)
@@ -2179,12 +2189,12 @@ int delete_wildcard(char *filename, const char *old, size_t n)
     {
 #ifdef WIN32
         HANDLE h;
-        WIN32_FIND_DATA gg;
-        h = FindFirstFile(filename, &gg);
+        WIN32_FIND_DATAA gg;
+        h = FindFirstFileA(filename, &gg);
         if (h != INVALID_HANDLE_VALUE)
         {   for (;;)
             {   scan_directory(gg.cFileName, remove_files);
-                if (!FindNextFile(h, &gg)) break;
+                if (!FindNextFileA(h, &gg)) break;
             }
             FindClose(h);
         }

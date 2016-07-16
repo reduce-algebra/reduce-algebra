@@ -50,6 +50,8 @@
 
 #include"config.h"
 
+#include "wxfwin.h"
+
 #ifdef WIN32
 
 #include <windows.h>
@@ -125,8 +127,6 @@ static int logprintf(const char *fmt, ...)
 #endif
     return r;
 }
-
-
 
 class showmathApp : public wxApp
 {
@@ -204,362 +204,9 @@ BEGIN_EVENT_TABLE(showmathFrame, wxFrame)
     EVT_SIZE(            showmathFrame::OnSize)
 END_EVENT_TABLE()
 
-int get_current_directory(char *s, size_t n)
-{   if (getcwd(s, n) == 0)
-    {   switch(errno)
-        {   case ERANGE: return -2; // negative return value flags an error.
-            case EACCES: return -3;
-            default:     return -4;
-        }
-    }
-    else return strlen(s);
-}
-
-//
-// The next procedure is responsible for establishing information about
-// both the"short-form" name of the program launched and the directory
-// it was found in. This latter directory may be a good place to keep
-// associated resources. Well many conventions would NOT view it as a
-// good place, but it is how I organise things!
-//
-// The way of finding the information concerned differs between Windows and
-// Unix/Linux, as one might expect.
-//
-// return non-zero value if failure.
-//
-
 #ifndef LONGEST_LEGAL_FILENAME
 #define LONGEST_LEGAL_FILENAME 1024
 #endif
-
-const char *fullProgramName ="./wxshowmath.exe";
-const char *programName     ="wxshowmath.exe";
-const char *programDir      =".";
-
-//
-// getenv() is a mild pain: Windows seems
-// to have a strong preference for upper case names.  To allow for
-// all this I do not call getenv() directly but go via the following
-// code that can patch things up.
-//
-
-const char *my_getenv(const char *s)
-{
-#ifdef WIN32
-    char uppercasename[LONGEST_LEGAL_FILENAME];
-    char *p = uppercasename;
-    int c;
-    while ((c = *s++) != 0) *p++ = toupper(c);
-    *p = 0;
-    return getenv(uppercasename);
-#else
-    return getenv(s);
-#endif
-}
-
-#ifdef WIN32
-
-int programNameDotCom = 0;
-
-static char this_executable[LONGEST_LEGAL_FILENAME];
-
-int find_program_directory(const char *argv0)
-{   char *w;
-    int len, ndir, npgm;
-//
-// In older code I believed that I could rely on Windows giving me
-// the full path of my executable in argv[0]. With bits of mingw/cygwin
-// anywhere near me that may not be so, so I grab the information directly
-// from the Windows APIs.
-//
-    char execname[LONGEST_LEGAL_FILENAME];
-    GetModuleFileNameA(NULL, execname, LONGEST_LEGAL_FILENAME-2);
-    strcpy(this_executable, execname);
-    argv0 = this_executable;
-    programNameDotCom = 0;
-    if (argv0[0] == 0)      // should never happen - name is empty string!
-    {   programDir =".";
-        programName ="wxshowmath";  // nothing really known!
-        fullProgramName =".\\wxshowmath.exe";
-        return 0;
-    }
-
-    fullProgramName = argv0;
-    len = strlen(argv0);
-//
-// If the current program is called c:\aaa\xxx.exe, then the directory
-// is just c:\aaa and the simplified program name is just xxx
-//
-    if (len > 4 &&
-        argv0[len-4] == '.' &&
-        ((tolower(argv0[len-3]) == 'e' &&
-          tolower(argv0[len-2]) == 'x' &&
-          tolower(argv0[len-1]) == 'e') ||
-         (tolower(argv0[len-3]) == 'c' &&
-          tolower(argv0[len-2]) == 'o' &&
-          tolower(argv0[len-1]) == 'm')))
-    {   programNameDotCom = (tolower(argv0[len-3]) == 'c');
-        len -= 4;
-    }
-    for (npgm=0; npgm<len; npgm++)
-    {   int c = argv0[len-npgm-1];
-        if (c == '\\') break;
-    }
-    ndir = len - npgm - 1;
-    if (ndir < 0) programDir =".";  // none really visible
-    else
-    {   if ((w = (char *)malloc(ndir+1)) == NULL) return 1;
-        strncpy(w, argv0, ndir);
-        w[ndir] = 0;
-        programDir = w;
-    }
-    if ((w = (char *)malloc(npgm+1)) == NULL) return 1;
-    strncpy(w, argv0 + len - npgm, npgm);
-    w[npgm] = 0;
-    programName = w;
-    return 0;
-}
-
-#else // !WIN32
-// Now for Unix, Linux, BSD (and hence Macintosh) worlds.
-
-
-//
-// Different systems put or do not put underscores in front of these
-// names. My adaptation here should give me a chance to work whichever
-// way round it goes.
-//
-
-#ifndef S_IFMT
-# ifdef __S_IFMT
-#  define S_IFMT __S_IFMT
-# endif
-#endif
-
-#ifndef S_IFDIR
-# ifdef __S_IFDIR
-#  define S_IFDIR __S_IFDIR
-# endif
-#endif
-
-#ifndef S_IFREG
-# ifdef __S_IFREG
-#  define S_IFREG __S_IFREG
-# endif
-#endif
-
-#ifndef S_ISLNK
-# ifdef S_IFLNK
-#  ifdef S_IFMT
-#   define S_ISLNK(m) (((m) & S_IFMT) == S_IFLNK)
-#  endif
-# endif
-#endif
-
-
-//
-// The length set here is at least the longest length that I
-// am prepared to worry about. If anybody installs the program in a
-// very deep directory such that its fully rooted name is over-long
-// things may not behave well. But I am not going to fuss with dynamic
-// allocation of or expansion of the arrays I use here.
-//
-
-int find_program_directory(const char *argv0)
-{   char pgmname[LONGEST_LEGAL_FILENAME];
-    char *w;
-    const char *cw;
-    int n, n1;
-//
-// If the main reduce executable is has a full path-name /xxx/yyy/zzz then
-// I will use /xxx/yyy as its directory To find this I need to find the full
-// path for the executable. I ATTEMPT to follow the behaviour of"sh",
-//"bash" and"csh".  But NOTE WELL that if anybody launches this code in
-// an unusual manner (eg using an"exec" style function) that could confuse
-// me substantially. What comes in via argv[0] is typically just the final
-// component of the program name - what I am doing here is scanning to
-// see what path it might have corresponded to.
-//
-//
-// If the name of the executable starts with a"/" it is already an
-// absolute path name. I believe that if the user types (to the shell)
-// something like $DIR/bin/$PGMNAME or ~user/subdir/pgmname then the
-// environment variables and user-name get expanded out by the shell before
-// the command is actually launched.
-//
-    if (argv0 == NULL || argv0[0] == 0) // Information not there - return
-    {   programDir = (const char *)"."; // some sort of default.
-        programName = (const char *)"wxshowmath";
-        fullProgramName = (const char *)"./wxshowmath";
-        return 0;
-    }
-//
-// I will treat 3 cases here
-// (a)   /abc/def/ghi      fully rooted: already an absolute name;
-// (b)   abc/def/ghi       treat as ./abc/def/ghi;
-// (c)   ghi               scan $PATH to see where it may have come from.
-//
-    else if (argv0[0] == '/') fullProgramName = argv0;
-    else
-    {   for (cw=argv0; *cw!=0 && *cw!='/'; cw++);   // seek a"/" *
-        if (*cw == '/')      // treat as if relative to current dir
-        {   // If the thing is actually written as"./abc/..." then
-            // strip of the initial"./" here just to be tidy.
-            if (argv0[0] == '.' && argv0[1] == '/') argv0 += 2;
-            n = get_current_directory(pgmname, sizeof(pgmname));
-            if (n < 0) return 1;    // fail! 1=current directory failure
-            if (n + strlen(argv0) + 2 >= sizeof(pgmname) ||
-                pgmname[0] == 0)
-                return 2; // Current dir unavailable or full name too long
-            else
-            {   pgmname[n] = '/';
-                strcpy(&pgmname[n+1], argv0);
-                fullProgramName = pgmname;
-            }
-        }
-        else
-        {   const char *path = my_getenv("PATH");
-//
-// I omit checks for names of shell built-in functions, since my code is
-// actually being executed by here. So I get my search path and look
-// for an executable file somewhere on it. I note that the shells back this
-// up with hash tables, and so in cases where"rehash" might be needed this
-// code may become confused.
-//
-            struct stat buf;
-            uid_t myuid = geteuid(), hisuid;
-            gid_t mygid = getegid(), hisgid;
-            int protection;
-            int ok = 0;
-//
-// I expect $PATH to be a sequence of directories with":" characters to
-// separate them. I suppose it COULD be that somebody used directory names
-// that had embedded colons, and quote marks or escapes in $PATH to allow
-// for that. In such case this code will just fail to cope.
-//
-            if (path != NULL)
-            {   while (*path != 0)
-                {   while (*path == ':') path++; // skip over":"
-                    n = 0;
-                    while (*path != 0 && *path != ':')
-                    {   pgmname[n++] = *path++;
-                        if (n > (int)(sizeof(pgmname)-3-strlen(argv0)))
-                            return 3; // fail! 3=$PATH element overlong
-                    }
-//
-// Here I have separated off the next segment of my $PATH and put it at
-// the start of pgmname. Observe that to avoid buffer overflow I
-// exit abruptly if the entry on $PATH is itself too big for my buffer.
-//
-                    pgmname[n++] = '/';
-                    strcpy(&pgmname[n], argv0);
-// see if the file whose name I have just built up exists at all.
-                    if (stat(pgmname, &buf) == -1) continue;
-                    hisuid = buf.st_uid;
-                    hisgid = buf.st_gid;
-                    protection = buf.st_mode; // info about the file found
-//
-// I now want to check if there is a file of the right name that is
-// executable by the current (effective) user.
-//
-                    if (protection & S_IXOTH ||
-                        (mygid == hisgid && protection & S_IXGRP) ||
-                        (myuid == hisuid && protection & S_IXUSR))
-                    {   ok = 1;   // Haha - I have found the one we ...
-                        break;    // are presumably executing!
-                    }
-                }
-            }
-            if (!ok) return 4;    // executable not found via $PATH
-//
-// Life is not yet quite easy! $PATH may contain some items that do not
-// start with"/", ie that are still local paths relative to the
-// current directory. I want to be able to return an absolute fully
-// rooted path name! So unless the item we have at present starts with"/"
-// I will stick the current directory's location in front.
-//
-            if (pgmname[0] != '/')
-            {   char temp[LONGEST_LEGAL_FILENAME];
-                strcpy(temp, pgmname);
-                n = get_current_directory(pgmname, sizeof(pgmname));
-                if (n < 0) return 1;    // fail! 1=current directory failure
-                if ((n + strlen(temp) + 1) >= sizeof(pgmname)) return 9;
-                pgmname[n++] = '/';
-                strcpy(&pgmname[n], temp);
-            }
-            fullProgramName = pgmname;
-        }
-    }
-//
-// Now if I have a program name I will try to see if it is a symbolic link
-// and if so I will follow it.
-//
-    {   struct stat buf;
-        char temp[LONGEST_LEGAL_FILENAME];
-        if (lstat(fullProgramName, &buf) != -1 &&
-            S_ISLNK(buf.st_mode) &&
-            (n1 = readlink(fullProgramName,
-                           temp, sizeof(temp)-1)) > 0)
-        {   temp[n1] = 0;
-            strcpy(pgmname, temp);
-            fullProgramName = pgmname;
-        }
-    }
-//
-// Now fullProgramName is set up, but may refer to an array that
-// is stack allocated. I need to make it proper.
-//
-    w = (char *)malloc(1+strlen(fullProgramName));
-    if (w == NULL) return 5;           // 5 = malloc fails
-    strcpy(w, fullProgramName);
-    fullProgramName = w;
-#ifdef __CYGWIN__
-//
-// Now if I built on raw cygwin I may have an unwanted".com" or".exe"
-// suffix, so I will purge that! This code exists here because the raw
-// cygwin build has a somewhat schitzo view as to whether it is a Windows
-// or a Unix-like system.
-//
-    if (strlen(w) > 4)
-    {   w += strlen(w) - 4;
-        if (w[0] == '.' &&
-            ((tolower(w[1]) == 'e' &&
-              tolower(w[2]) == 'x' &&
-              tolower(w[3]) == 'e') ||
-             (tolower(w[1]) == 'c' &&
-              tolower(w[2]) == 'o' &&
-              tolower(w[3]) == 'm'))) w[0] = 0;
-    }
-#endif
-//
-// OK now I have the full name, which is of the form
-//   abc/def/fgi/xyz
-// and I need to split it at the final"/" (and by now I very fully expect
-// there to be at least one"/".
-//
-    for (n=strlen(fullProgramName)-1; n>=0; n--)
-        if (fullProgramName[n] == '/') break;
-    if (n < 0) return 6;               // 6 = no"/" in full file path
-    w = (char *)malloc(1+n);
-    if (w == NULL) return 7;           // 7 = malloc fails
-    strncpy(w, fullProgramName, n);
-    w[n] = 0;
-//
-// Note that if the executable was"/foo" then programDir will end up as""
-// so that programDir +"/" + programName works out properly.
-//
-    programDir = w;
-    n1 = strlen(fullProgramName) - n;
-    w = (char *)malloc(n1);
-    if (w == NULL) return 8;           // 8 = malloc fails
-    strncpy(w, fullProgramName+n+1, n1-1);
-    w[n1-1] = 0;
-    programName = w;
-    return 0;                          // whew!
-}
-
-#endif // WIN32
-
 
 int main(int argc, char *argv[])
 {   int i;
@@ -581,7 +228,7 @@ int main(int argc, char *argv[])
 // is not set. This is not a perfect test but it will spot the simple
 // cases. Eg I could look at stdin & stdout and check if it looks as if
 // they are pipes of they have been redirected...
-    {   const char *s = my_getenv("DISPLAY");
+    {   const char *s = getenv("DISPLAY");
         if (s==NULL || *s == 0) usegui = 0;
     }
 #endif
@@ -644,66 +291,6 @@ int main(int argc, char *argv[])
 }
 
 IMPLEMENT_APP_NO_MAIN(showmathApp)
-
-
-// The fontNames here are the file-names for the fonts that I will use.
-// On windows I will use ".ttf" and elsewhere ".otf". That is because
-// I (slighly) suspect that the .otf versions of many of the fonts are the
-// original versions and have the best hinting information, however
-// GDI+ on Wiindows can then not cope, so either I would need to move
-// to alternate technology there - mainly that should be possible once
-// wxWidgets has moved to use of DirectWrite and omce I feel happy abandoning
-// support for versions of Windows prior to Windows 7. I note that a Google
-// Summer of Code project to work on the DirectWrite support for wxWidgets
-// was scheduled for Summer 2014... and these days perhaps Windows XP will be
-// fading in importance and perhaps Vista never was important?
-
-// I will keep the names here in the same order as the index values
-// F_General etc in charmetric.h
-
-
-static const char *fontNames[] =
-{   "cmuntt",
-    "odokai",
-    "cslSTIX-Regular",
-    "cslSTIX-Bold",
-    "cslSTIX-Italic",
-    "cslSTIX-BoldItalic",
-    "cslSTIXMath-Regular"
-};
-
-#ifndef fontsdir
-#define fontsdir reduce.wxfonts
-#endif
-
-#define toString(x) toString1(x)
-#define toString1(x) #x
-
-void add_custom_fonts()
-{
-#ifndef MACINTOSH
-// Note that on a Mac I put the required fonts in the Application Bundle.
-    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
-    {   char nn[LONGEST_LEGAL_FILENAME];
-#ifdef WIN32
-        sprintf(nn,"%s/%s/%s.ttf",
-                programDir, toString(fontsdir), fontNames[i]);
-#else
-        sprintf(nn,"%s/%s/%s.%s",
-                programDir, toString(fontsdir), fontNames[i],
-                (strcmp(fontNames[i], "odokai") == 0 ? "ttf" : "otf"));
-#endif
-        wxString widename(nn);
-        if (!wxFont::AddPrivateFont(widename))
-            logprintf("Adding font %s failed\n", nn);
-    }
-    if (!wxFont::ActivatePrivateFonts())
-        logprintf("Activating private fonts failed\n");
-#endif // MACINTOSH
-}
-
-
-
 
 //
 // Now that start of my code in a proper sense!
@@ -1320,6 +907,13 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     delete gc;
     gc = NULL; // just to be tidy!
     return;
+}
+
+// A dummy definition that is needed because of wxfwin.cpp
+
+int windowed_worker(int argc, const char *argv[],
+                    fwin_entrypoint *fwin_main)
+{   return 0;
 }
 
 

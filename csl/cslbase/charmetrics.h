@@ -1,5 +1,4 @@
-// charmetrics.h                                Copyright (C) 2016 Codemist
-
+// charmetrics.h                               Copyright (C) 2016 Codemist
 
 
 /**************************************************************************
@@ -31,17 +30,16 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-
 // $Id$
 
 
-#if defined __cplusplus && !defined __STDC_CONSTANT_MACROS
+#ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
 #endif
 
 #include <stdint.h>
 
-// Character metric hash table created using the program charmetrics.c
+// Character metric hash table created using the program charmetrics.cpp
 // sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfontxs
 // contains README files with full credits to the fonts this is used with
 
@@ -20285,12 +20283,12 @@ const uint32_t topcentre[153] =
     UINT32_C(0x2ca00058),
     UINT32_C(0x2d400059),
     UINT32_C(0x2600005a),
-    UINT32_C(0x00000074),
+    UINT32_C(0x00000063),
     UINT32_C(0xe4400359),
-    UINT32_C(0x000020e9),
+    UINT32_C(0x00000069),
     UINT32_C(0x2941d44e),
     UINT32_C(0x0000006b),
-    UINT32_C(0x0000006e),
+    UINT32_C(0x000020e8),
     UINT32_C(0x1e000061),
     UINT32_C(0x1d800062),
     UINT32_C(0x1b400063),
@@ -20317,7 +20315,7 @@ const uint32_t topcentre[153] =
     UINT32_C(0x1f000078),
     UINT32_C(0x1e800079),
     UINT32_C(0x1bc0007a),
-    UINT32_C(0x0000034c),
+    UINT32_C(0x000020ec),
     UINT32_C(0xe20020e4),
     UINT32_C(0xe2a020e5),
     UINT32_C(0xe4c020e6),
@@ -20340,9 +20338,9 @@ const uint32_t topcentre[153] =
     UINT32_C(0x2d20004f),
     UINT32_C(0xe2a020d6),
     UINT32_C(0xe2a020d7),
-    UINT32_C(0x0000030c),
-    UINT32_C(0x0000030d),
-    UINT32_C(0x00000056),
+    UINT32_C(0x0000004a),
+    UINT32_C(0x0000004b),
+    UINT32_C(0x0000004e),
     UINT32_C(0xe54020db),
     UINT32_C(0xe08020dc),
     UINT32_C(0xe0c020dd),

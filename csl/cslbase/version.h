@@ -57,7 +57,7 @@
 // As of February 2016 I am making the file scripts/commit.sh update the
 // revision number stored here...
 
-#define REVISION 3746
+#define REVISION 3748
 
 #endif // header_version_h
 

@@ -1,6 +1,6 @@
 % Character metrics for the STIX (and some other) fonts...
 
-% Character metric hash table created using the program charmetrics.c
+% Character metric hash table created using the program charmetrics.cpp
 % sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/csl/cslbase/wxfonts
 % contains README files with full credits to the fonts this is used with
 % Author: Arthur Norman
@@ -20326,12 +20326,12 @@ symbolic (hashsize!* := 10057);
      0x2ca00058
      0x2d400059
      0x2600005a
-     0x00000074
+     0x00000063
      0xe4400359
-     0x000020e9
+     0x00000069
      0x2941d44e
      0x0000006b
-     0x0000006e
+     0x000020e8
      0x1e000061
      0x1d800062
      0x1b400063
@@ -20358,7 +20358,7 @@ symbolic (hashsize!* := 10057);
      0x1f000078
      0x1e800079
      0x1bc0007a
-     0x0000034c
+     0x000020ec
      0xe20020e4
      0xe2a020e5
      0xe4c020e6
@@ -20381,9 +20381,9 @@ symbolic (hashsize!* := 10057);
      0x2d20004f
      0xe2a020d6
      0xe2a020d7
-     0x0000030c
-     0x0000030d
-     0x00000056
+     0x0000004a
+     0x0000004b
+     0x0000004e
      0xe54020db
      0xe08020dc
      0xe0c020dd
@@ -26171,10 +26171,10 @@ symbolic procedure lookupligature codepoint;
     go to a
   end;
 
-symbolic procedure accentposition codepoint;
+symbolic procedure accentposition key;
   begin
     scalar h1, h2, v, w;
-    h1 := remainder(codepoint, 153);
+    h1 := remainder(key, 153);
     % Hash table probe 1.
     v := land(w := getv32(topcentre_hash!*, h1), 0x1fffff);
     if not (v = key) then <<

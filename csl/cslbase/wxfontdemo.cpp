@@ -853,6 +853,13 @@ void fontPanel::OnKeyDown(wxKeyEvent &event)
     if (n >= 0) page = n*0x1000/0x80;
     else switch (c)
     {
+    case 'q':
+    case 'Q':
+#ifdef WIN32
+        TerminateProcess(GetCurrentProcess(), 1);
+#else
+        exit(0);
+#endif
     case 'x':
     case 'X':
         page ^= 0x10000/0x80; // Second plane
