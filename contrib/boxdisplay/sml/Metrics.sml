@@ -237,7 +237,7 @@ fun accentposition key =
   let
     val h1 = key mod TOPCENTRE_SIZE
     val w = getv topcentre_hash h1
-    val v = andb(w, 0x1fffff);
+    val v = andb(w, 0x1fffff)
     in
       if v = key then extend11(>>(w, 21))
       else
