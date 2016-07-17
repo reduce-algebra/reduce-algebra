@@ -120,6 +120,25 @@ lth-imm-effa
 par1                                                                                         
 par2)))
 
+ (defopcode addsd (par1 par2) ((and (effap par1) (xmmregp par2)) (op-xmmreg-effa
+                                                                                 
+'                                                                                 
+(                                                                                  
+242                                                                                    
+15                                                                                     
+88)                                                                              
+par2                                                                             
+par1)))
+ (defoplength addsd (par1 par2) ((and (effap par1) (xmmregp par2)) (
+lth-xmmreg-effa                                                                     
+'                                                                                    
+(                                                                                     
+242                                                                                       
+15                                                                                        
+88)                                                                                 
+par2                                                                                
+par1)))
+
  (defopcode and (par1 par2) ((and (regp par1) (regp par2)) (op-reg-effa '(35) 
 par2                                                                    par1)) (
 (                                                                                
@@ -284,11 +303,89 @@ lth-imm-effa
 par1                                                                                  
 par2)))
 
+ (defopcode comisd (par1 par2) ((and (effap par1) (xmmregp par2)) (
+op-xmmreg-effa                                                                    
+'                                                                                  
+(                                                                                   
+102                                                                                     
+15                                                                                      
+47)                                                                               
+par2                                                                              
+par1)))
+ (defoplength comisd (par1 par2) ((and (effap par1) (xmmregp par2)) (
+lth-xmmreg-effa                                                                      
+'                                                                                     
+(                                                                                      
+102                                                                                        
+15                                                                                         
+47)                                                                                  
+par2                                                                                 
+par1)))
+
+ (defopcode comiss (par1 par2) ((and (effap par1) (xmmregp par2)) (
+op-xmmreg-effa                                                                    
+'                                                                                  
+(                                                                                   
+15                                                                                     
+47)                                                                               
+par2                                                                              
+par1)))
+ (defoplength comiss (par1 par2) ((and (effap par1) (xmmregp par2)) (
+lth-xmmreg-effa                                                                      
+'                                                                                     
+(                                                                                      
+15                                                                                        
+47)                                                                                  
+par2                                                                                 
+par1)))
+
  (defopcode cqto (par1 par2) (t (op-byte '(72 153))))
  (defoplength cqto (par1 par2) (t (lth-byte '(72 153))))
 
  (defopcode cs: (par1 par2) (t (op-byte '(46))))
  (defoplength cs: (par1 par2) (t (lth-byte '(46))))
+
+ (defopcode cvtsi2sdq (par1 par2) ((and (effap par1) (xmmregp par2)) (
+op-xmmreg-effa                                                                       
+'                                                                                     
+(                                                                                      
+242                                                                                        
+rex                                                                                        
+15                                                                                         
+42)                                                                                  
+par2                                                                                 
+par1)))
+ (defoplength cvtsi2sdq (par1 par2) ((and (effap par1) (xmmregp par2)) (
+lth-xmmreg-effa                                                                         
+'                                                                                        
+(                                                                                         
+242                                                                                           
+rex                                                                                           
+15                                                                                            
+42)                                                                                     
+par2                                                                                    
+par1)))
+
+ (defopcode cvttsd2si (par1 par2) ((and (effap par1) (regp par2)) (
+op-xmmreg-effa                                                                    
+'                                                                                  
+(                                                                                   
+242                                                                                     
+rex                                                                                     
+15                                                                                      
+44)                                                                               
+par2                                                                              
+par1)))
+ (defoplength cvttsd2si (par1 par2) ((and (effap par1) (regp par2)) (
+lth-xmmreg-effa                                                                      
+'                                                                                     
+(                                                                                      
+242                                                                                        
+rex                                                                                        
+15                                                                                         
+44)                                                                                  
+par2                                                                                 
+par1)))
 
  (defopcode cwd (par1 par2) (t (op-byte '(102 153))) (t (op-byte '(153))))
  (defoplength cwd (par1 par2) (t (lth-byte '(102 153))) (t (lth-byte '(153))))
@@ -312,6 +409,25 @@ par1)))
 
  (defopcode div (par1 par2) ((effap par1) (op-mul '(247 48) par1)))
  (defoplength div (par1 par2) ((effap par1) (lth-mul '(247 48) par1)))
+
+ (defopcode divsd (par1 par2) ((and (effap par1) (xmmregp par2)) (op-xmmreg-effa
+                                                                                 
+'                                                                                 
+(                                                                                  
+242                                                                                    
+15                                                                                     
+94)                                                                              
+par2                                                                             
+par1)))
+ (defoplength divsd (par1 par2) ((and (effap par1) (xmmregp par2)) (
+lth-xmmreg-effa                                                                     
+'                                                                                    
+(                                                                                     
+242                                                                                       
+15                                                                                        
+94)                                                                                 
+par2                                                                                
+par1)))
 
  (defopcode ds: (par1 par2) (t (op-byte '(62))))
  (defoplength ds: (par1 par2) (t (lth-byte '(62))))
@@ -420,6 +536,9 @@ lth-byte
 
  (defopcode fmulp (par1 par2) (t (op-byte '(222 201))))
  (defoplength fmulp (par1 par2) (t (lth-byte '(222 201))))
+
+ (defopcode fnstsw (par1 par2) ((effap par1) (op-effa '(221 56) par1)))
+ (defoplength fnstsw (par1 par2) ((effap par1) (lth-effa '(221 56) par1)))
 
  (defopcode fpatan (par1 par2) (t (op-byte '(217 243))))
  (defoplength fpatan (par1 par2) (t (lth-byte '(217 243))))
@@ -735,6 +854,9 @@ par1)))
  (defopcode jzl (par1 par2) ((adrp par1) (op-jump '(15 132) par1)))
  (defoplength jzl (par1 par2) ((adrp par1) (lth-jump '(15 132) par1)))
 
+ (defopcode ldmxcsr (par1 par2) ((effap par1) (op2-effa '(15 174 16) par1)))
+ (defoplength ldmxcsr (par1 par2) ((effap par1) (lth2-effa '(15 174 16) par1)))
+
  (defopcode lea (par1 par2) ((and (effap par1) (regp par2)) (op-reg-effa '(141) 
 par2                                                                     par1)) 
 (                                                                                
@@ -851,46 +973,198 @@ par2))      ((and (effap par1) (regp par2)) (op-reg-effa '(138) par2 par1)))
 par1                                                                         
 par2))        ((and (effap par1) (regp par2)) (lth-reg-effa '(138) par2 par1)))
 
+ (defopcode movq (par1 par2) ((and (regp par1) (xmmregp par2)) (op-xmmreg-effa '
+(                                                                                
+102                                                                                  
+rex                                                                                  
+15                                                                                   
+110)                                                                           
+par1                                                                           
+par2))      ((and (xmmregp par1) (regp par2)) (op-xmmreg-effa '(102 rex 15 126) 
+par1                                                          par2)) ((and (
+effap                                                                             
+par1)                                                                      (
+xmmregp                                                                             
+par2))                                                                (
+op-xmmreg-effa                                                                        
+'                                                                                      
+(                                                                                       
+102                                                                                         
+rex                                                                                         
+15                                                                                          
+110)                                                                                  
+par2                                                                                  
+par1))      ((and (xmmregp par1) (effap par2)) (op-xmmreg-effa '(102 rex 15 126)
+                                                               par1 par2)) ((and
+                                                                                 
+(                                                                                 
+xmmregp                                                                                   
+par1)                                                                            
+(                                                                                 
+xmmregp                                                                                   
+par2))                                                                      (
+op-xmmreg-effa                                                                              
+'                                                                                            
+(                                                                                             
+243                                                                                               
+15                                                                                                
+110)                                                                                        
+par1                                                                                        
+par2)))
+ (defoplength movq (par1 par2) ((and (regp par1) (xmmregp par2)) (
+lth-xmmreg-effa                                                                   
+'                                                                                  
+(                                                                                   
+102                                                                                     
+rex                                                                                     
+15                                                                                      
+110)                                                                              
+par1                                                                              
+par2))        ((and (xmmregp par1) (regp par2)) (lth-xmmreg-effa '(102 rex 15 
+126)                                                             par1 par2)) ((
+and                                                                                
+(                                                                                   
+effap                                                                                     
+par1)                                                                              
+(                                                                                   
+xmmregp                                                                                     
+par2))                                                                        (
+lth-xmmreg-effa                                                                                
+'                                                                                               
+(                                                                                                
+102                                                                                                  
+rex                                                                                                  
+15                                                                                                   
+110)                                                                                           
+par2                                                                                           
+par1))        ((and (xmmregp par1) (effap par2)) (lth-xmmreg-effa '(102 rex 15 
+126)                                                              par1 par2)) ((
+and                                                                                 
+(                                                                                    
+xmmregp                                                                                      
+par1)                                                                               
+(                                                                                    
+xmmregp                                                                                      
+par2))                                                                         (
+lth-xmmreg-effa                                                                                 
+'                                                                                                
+(                                                                                                 
+243                                                                                                   
+15                                                                                                    
+110)                                                                                            
+par1                                                                                            
+par2)))
+
+ (defopcode movsd (par1 par2) ((and (xmmregp par1) (xmmregp par2)) (
+op-xmmreg-effa                                                                     
+'                                                                                   
+(                                                                                    
+242                                                                                      
+15                                                                                       
+17)                                                                                
+par1                                                                               
+par2))      ((and (effap par1) (xmmregp par2)) (op-xmmreg-effa '(242 15 16) par2
+                                                               par1)) ((and (
+xmmregp                                                                              
+par1)                                                                       (
+effap                                                                              
+par2))                                                                 (
+op-xmmreg-effa                                                                         
+'                                                                                       
+(                                                                                        
+242                                                                                          
+15                                                                                           
+17)                                                                                    
+par1                                                                                   
+par2)))
+ (defoplength movsd (par1 par2) ((and (xmmregp par1) (xmmregp par2)) (
+lth-xmmreg-effa                                                                       
+'                                                                                      
+(                                                                                       
+242                                                                                         
+15                                                                                          
+17)                                                                                   
+par1                                                                                  
+par2))        ((and (effap par1) (xmmregp par2)) (lth-xmmreg-effa '(242 15 16) 
+par2                                                              par1)) ((and (
+xmmregp                                                                                 
+par1)                                                                          (
+effap                                                                                 
+par2))                                                                    (
+lth-xmmreg-effa                                                                            
+'                                                                                           
+(                                                                                            
+242                                                                                              
+15                                                                                               
+17)                                                                                        
+par1                                                                                       
+par2)))
+
  (defopcode movsx (par1 par2) ((and (regp par1) (regp par2)) (op-reg-effa-2 '(15
                                                                                  
+rex                                                                              
 191)                                                                        par1
                                                                             par2
 )))
  (defoplength movsx (par1 par2) ((and (regp par1) (regp par2)) (lth-reg-effa-2 '
 (                                                                                
 15                                                                                  
+rex                                                                                 
 191)                                                                           
 par1                                                                           
 par2)))
 
  (defopcode movw (par1 par2) ((and (regp par1) (effap par2)) (op-reg-effa-2 '(
 102                                                                               
+rex                                                                               
 137)                                                                        par1
                                                                             par2
-))          ((and (effap par1) (regp par2)) (op-reg-effa-2 '(102 139) par2 par1)
-))
+))          ((and (effap par1) (regp par2)) (op-reg-effa-2 '(102 rex 139) par2 
+par1)))
  (defoplength movw (par1 par2) ((and (regp par1) (effap par2)) (lth-reg-effa-2 '
 (                                                                                
 102                                                                                  
+rex                                                                                  
 137)                                                                           
 par1                                                                           
-par2))        ((and (effap par1) (regp par2)) (lth-reg-effa-2 '(102 139) par2 
-par1)))
+par2))        ((and (effap par1) (regp par2)) (lth-reg-effa-2 '(102 rex 139) 
+par2                                                          par1)))
 
  (defopcode movzx (par1 par2) ((and (regp par1) (regp par2)) (op-reg-effa-2 '(15
                                                                                  
+rex                                                                              
 183)                                                                        par1
                                                                             par2
 )))
  (defoplength movzx (par1 par2) ((and (regp par1) (regp par2)) (lth-reg-effa-2 '
 (                                                                                
 15                                                                                  
+rex                                                                                 
 183)                                                                           
 par1                                                                           
 par2)))
 
  (defopcode mul (par1 par2) ((effap par1) (op-mul '(247 32) par1)))
  (defoplength mul (par1 par2) ((effap par1) (lth-mul '(247 32) par1)))
+
+ (defopcode mulsd (par1 par2) ((and (effap par1) (xmmregp par2)) (op-xmmreg-effa
+                                                                                 
+'                                                                                 
+(                                                                                  
+242                                                                                    
+15                                                                                     
+89)                                                                              
+par2                                                                             
+par1)))
+ (defoplength mulsd (par1 par2) ((and (effap par1) (xmmregp par2)) (
+lth-xmmreg-effa                                                                     
+'                                                                                    
+(                                                                                     
+242                                                                                       
+15                                                                                        
+89)                                                                                 
+par2                                                                                
+par1)))
 
  (defopcode neg (par1 par2) ((regp par1) (op-effa '(247 24) par1)))
  (defoplength neg (par1 par2) ((regp par1) (lth-effa '(247 24) par1)))
@@ -1372,6 +1646,9 @@ par2)))
  (defopcode ss: (par1 par2) (t (op-byte '(54))))
  (defoplength ss: (par1 par2) (t (lth-byte '(54))))
 
+ (defopcode stmxcsr (par1 par2) ((effap par1) (op2-effa '(15 174 24) par1)))
+ (defoplength stmxcsr (par1 par2) ((effap par1) (lth2-effa '(15 174 24) par1)))
+
  (defopcode sub (par1 par2) ((and (regp par1) (effap par2)) (op-reg-effa '(41) 
 par1                                                                     par2)) 
 (                                                                                
@@ -1426,6 +1703,61 @@ par2))        ((and (smallimmediatep par1) (regp par2)) (lth-imm8-effa '(131 40)
                                                                        par1 par2
 ))            ((and (stdimmediatep par1) (effap par2)) (lth-imm-effa '(129 40) 
 par1                                                                 par2)))
+
+ (defopcode subsd (par1 par2) ((and (effap par1) (xmmregp par2)) (op-xmmreg-effa
+                                                                                 
+'                                                                                 
+(                                                                                  
+242                                                                                    
+15                                                                                     
+92)                                                                              
+par2                                                                             
+par1)))
+ (defoplength subsd (par1 par2) ((and (effap par1) (xmmregp par2)) (
+lth-xmmreg-effa                                                                     
+'                                                                                    
+(                                                                                     
+242                                                                                       
+15                                                                                        
+92)                                                                                 
+par2                                                                                
+par1)))
+
+ (defopcode ucomisd (par1 par2) ((and (effap par1) (xmmregp par2)) (
+op-xmmreg-effa                                                                     
+'                                                                                   
+(                                                                                    
+102                                                                                      
+15                                                                                       
+46)                                                                                
+par2                                                                               
+par1)))
+ (defoplength ucomisd (par1 par2) ((and (effap par1) (xmmregp par2)) (
+lth-xmmreg-effa                                                                       
+'                                                                                      
+(                                                                                       
+102                                                                                         
+15                                                                                          
+46)                                                                                   
+par2                                                                                  
+par1)))
+
+ (defopcode ucomiss (par1 par2) ((and (effap par1) (xmmregp par2)) (
+op-xmmreg-effa                                                                     
+'                                                                                   
+(                                                                                    
+15                                                                                      
+46)                                                                                
+par2                                                                               
+par1)))
+ (defoplength ucomiss (par1 par2) ((and (effap par1) (xmmregp par2)) (
+lth-xmmreg-effa                                                                       
+'                                                                                      
+(                                                                                       
+15                                                                                         
+46)                                                                                   
+par2                                                                                  
+par1)))
 
  (defopcode wait (par1 par2) (t (op-byte '(155))))
  (defoplength wait (par1 par2) (t (lth-byte '(155))))
