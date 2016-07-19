@@ -2065,7 +2065,21 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # I rather hope that the delay while C-code is re-created is long enough
 # to let any previous steps complete.
 
-standard-c-code $(generated_sources_deps) $(generated_lisp):	$(gensrc)/make.stamp
+# There is a further bit of fun here. I want to survive when various source
+# files within Reduce are renamed, moved or removed. I cope with this by
+# arranging that if I have a dependency on foo.red I put a line
+#      foo.red::	;
+# somewhere too. That is a rule with an empty recipe, so that if foo.red
+# is not present nobody fusses. I need to make it a double-colon rule
+# because there may be several such (eg from the builds of reduce and
+# bootstrapreduce). But the dependency tracking stuff for C sets up
+# rules for stuff in the .deps directory using single colons, so I need to
+# separate out how I handle those files.
+
+$(generated_source_deps):	$(gensrc)/make.stamp
+	$(MAKE) standard_c_code
+
+standard-c-code $(generated_lisp)::	$(gensrc)/make.stamp
 ## Recover from the removal of $@
 	if test -f $@; then touch $@; else \
 	  $(RM) -f $(gensrc)/make.stamp; \

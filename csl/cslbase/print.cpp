@@ -5554,7 +5554,7 @@ setup_type const print_setup[] =
     {"file-readablep",          Lfile_readable, too_many_1, wrong_no_1},
     {"file-writeablep",         Lfile_writeable, too_many_1, wrong_no_1},
     {"directoryp",              Ldirectoryp, too_many_1, wrong_no_1},
-    {"file-length",     Lfile_length, too_many_1, wrong_no_1},
+    {"file-length",             Lfile_length, too_many_1, wrong_no_1},
     {"truename",                Ltruename, too_many_1, wrong_no_1},
     {"list-directory",          Llist_directory, too_many_1, wrong_no_1},
     {"chdir",                   Lchange_directory, too_many_1, wrong_no_1},

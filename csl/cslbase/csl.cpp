@@ -762,6 +762,24 @@ static void report_dependencies()
         putc('\n', f);
     }
     putc('\n', f);
+// Now I put in empty rules for each file that was used... By making these
+// ones double-colon rules and by making any rules that might conflict
+// with them double colon ones too I avoid diagnostics from "make".
+    for (i=0; i<dependency_count; i++)
+    {   p = dependency_map[i];
+        if (p[0] != 0 &&
+            p[1] == ':' &&
+            (p[2] == '/' || p[2] == '\\'))
+        {   fprintf(f, "/cygdrive/%c", (char)tolower((unsigned char)p[0]));
+            p+=2;
+        }
+        while ((c = *p++) != 0)
+        {   if (c == ' ') putc('\\', f); // for spaces in file-name
+            putc(c == '\\' ? '/' : c, f);
+        }
+        fprintf(f, "::\t;\n");
+    }
+    putc('\n', f);
     fclose(f);
     dependency_file = NULL;
 }
