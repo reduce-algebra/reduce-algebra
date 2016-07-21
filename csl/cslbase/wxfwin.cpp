@@ -336,6 +336,10 @@ void add_custom_fonts()
     printf("About to activate\n"); fflush(stdout);
     PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
     printf("Activated\n"); fflush(stdout);
+#elif defined MACINTOSH
+// Note that on a Mac I put the required fonts in the Application Bundle,
+// and so I do not need to take run-time action to make them available.
+#else
 #elif defined UNIX
     FcConfig *config = FcConfigGetCurrent();
     if (config == NULL) config = FcConfigCreate();
@@ -351,10 +355,6 @@ void add_custom_fonts()
     }
     FcConfigSetCurrent(config);
     printf("Activated\n"); fflush(stdout);
-#elif defined MACINTOSH
-// Note that on a Mac I put the required fonts in the Application Bundle,
-// and so I do not need to take run-time action to make them available.
-#else
 #error Unknown platform so private fonts not supported.
 #endif
 }

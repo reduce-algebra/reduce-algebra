@@ -229,6 +229,10 @@ int page, regular, bold, italic;
 
 IMPLEMENT_APP_NO_MAIN(fontApp)
 
+#ifndef LONGEST_LEGAL_FILENAME
+#define LONGEST_LEGAL_FILENAME 1024
+#endif
+
 int main(int argc, const char *argv[])
 {
     int i;

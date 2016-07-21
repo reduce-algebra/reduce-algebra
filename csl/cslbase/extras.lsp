@@ -3,7 +3,7 @@
 
 
 %%
-%% Copyright (C) 2014, following the master REDUCE source files.          *
+%% Copyright (C) 2016, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -392,6 +392,21 @@ quote output))) (cond ((null d) (progn (close a) (return (error 0
 setq w (linelength 500)) (prog nil lab1022 (cond ((null (not (equal (setq c (
 readch)) !$eof!$))) (return nil))) (princ c) (go lab1022)) (linelength e) (
 rds b) (close a) (cond (dest (close (wrs d))))))
+
+(de bldmsg_internal (fmt args) (prog (r a) (setq fmt (explodec fmt)) (prog 
+nil lab1025 (cond ((null fmt) (return nil))) (progn (cond ((eqcar fmt (quote 
+!%)) (progn (setq fmt (cdr fmt)) (setq a (car args)) (setq args (cdr args)) (
+cond ((or (eqcar fmt (quote !p)) (eqcar fm (quote !P))) (setq a (explode a)))
+(t (setq a (explodec a)))) (prog (var1024) (setq var1024 a) lab1023 (cond ((
+null var1024) (return nil))) (prog (c) (setq c (car var1024)) (setq r (cons c
+r))) (setq var1024 (cdr var1024)) (go lab1023)))) (t (setq r (cons (car fmt)
+r)))) (setq fmt (cdr fmt))) (go lab1025)) (return (list2string (reversip r))
+)))
+
+(dm bldmsg (u) (list (quote bldmsg_internal) (cadr u) (cons (quote list) (
+cddr u))))
+
+(flag (quote (bldmsg)) (quote variadic))
 
 
 % end of file

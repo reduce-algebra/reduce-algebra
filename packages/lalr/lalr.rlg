@@ -210,6 +210,7 @@ symbolic procedure demonstrate_lexer style;
 % disagree about where to break lines to respect linelength. The
 % function portable_print exists to provide consistent output in places
 % like here.
+      if not zerop posn() then terpri();
       portable_print x >>
   end;
 
@@ -711,8 +712,7 @@ On lookahead -1, reduce 1 symbols to nonterminal CC, and goto state 5
 On lookahead -1, reduce 2 symbols to nonterminal CC, and goto state 6
 On lookahead -1, reduce 2 symbols to nonterminal S, and goto state 1
 Seems to have finished... 
-= 
-((c (c (c d))) (c d))
+= ((c (c (c d))) (c d))
 ;
 
 
@@ -729,8 +729,7 @@ d Shift token d onto stack, and shift to state 3
 On lookahead -1, reduce 1 symbols to nonterminal CC, and goto state 6
 On lookahead -1, reduce 2 symbols to nonterminal S, and goto state 1
 Seems to have finished... 
-= 
-(d d)
+= (d d)
 ;
 
 
@@ -792,8 +791,7 @@ leftsym
 ## R => L
 ## S => L = R
 
-= 
-(equal leftsym rightsym)
+= (equal leftsym rightsym)
 ;
 
 
@@ -822,8 +820,7 @@ pparse g$
 ## R => L
 ## S => L = R
 
-= 
-(equal (star (star (star (star abc)))) (star def))
+= (equal (star (star (star (star abc)))) (star def))
 ;
 
 
@@ -870,25 +867,22 @@ pparse g$
 
 
 a^b^c;
-= 
-(expt a (expt b c))
+= (expt a (expt b c))
 
 
 pparse g$
 
 
 a*b+c*d;
-= 
-(plus (times a b) (times c d))
+= (plus (times a b) (times c d))
 
 
 pparse g$
 
 
 a * (b/c + d/e/f) ^ 2 ^ g - "str" ;
-= 
-(difference (times a (expt (plus (quotient b c) (quotient (quotient d e) f)
-) (expt 2 g))) "str")
+= (difference (times a (expt (plus (quotient b c) (quotient (quotient d e) f))
+ (expt 2 g))) "str")
 
 
 % Demonstrate various of the short-hand notations...
@@ -905,8 +899,7 @@ pparse g$
 
 begin end
 
-= 
-(begin nil end)
+= (begin nil end)
 ;
 
 
@@ -922,8 +915,7 @@ pparse g$
 
 begin and also end
 
-= 
-(begin (and also) end)
+= (begin (and also) end)
 ;
 
 
@@ -946,8 +938,7 @@ pparse g$
 
 end
 
-= 
-nil
+= nil
 ;
 
 
@@ -963,8 +954,7 @@ pparse g$
 
 a a a a a a end
 
-= 
-(a a a a a a)
+= (a a a a a a)
 ;
 
 
@@ -987,8 +977,7 @@ pparse g$
 
 a end
 
-= 
-(a)
+= (a)
 ;
 
 
@@ -1004,8 +993,7 @@ pparse g$
 
 a a a a a a end
 
-= 
-(a a a a a a)
+= (a a a a a a)
 ;
 
 
@@ -1031,8 +1019,7 @@ pparse g$
 
 several ; words ; here eof
 
-= 
-(several words here)
+= (several words here)
 ;
 
 
@@ -1057,8 +1044,7 @@ pparse g$
 
 several ; words ; here eof
 
-= 
-(several words here)
+= (several words here)
 ;
 
 
@@ -1083,8 +1069,7 @@ pparse g$
 
 end
 
-= 
-nil
+= nil
 ;
 
 
@@ -1100,8 +1085,7 @@ pparse g$
 
 a b b a end
 
-= 
-(a b b a)
+= (a b b a)
 ;
 
 
@@ -5395,8 +5379,7 @@ On lookahead 27, reduce 2 symbols to nonterminal LALR_INTERNAL_15
 Shift token eof onto stack, and shift to state 83
 On lookahead -1, reduce 2 symbols to nonterminal PROGRAM, and goto state 1
 Seems to have finished... 
-= 
-((fun (f (paren a b)) (plus a b)) (f (paren 22 33)))
+= ((fun (f (paren a b)) (plus a b)) (f (paren 22 33)))
 
 end;
 

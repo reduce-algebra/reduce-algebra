@@ -189,6 +189,7 @@ symbolic procedure demonstrate_lexer style;
 % disagree about where to break lines to respect linelength. The
 % function portable_print exists to provide consistent output in places
 % like here.
+      if not zerop posn() then terpri();
       portable_print x >>
   end;
 

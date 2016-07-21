@@ -905,6 +905,34 @@ symbolic procedure fetch!-url(url, !&optional, dest);
     if dest then close wrs d
   end;
 
+% I need at least a minimal version of bldmsg to tide me over until the
+% full version in rlisp/rprint.red gets processed.
+
+symbolic procedure bldmsg_internal(fmt, args);
+  begin
+    scalar r, a;
+    fmt := explodec fmt;
+    while fmt do <<
+      if eqcar(fmt, '!%) then <<
+        fmt := cdr fmt;
+        a := car args;
+        args := cdr args;
+% Here I will make %p display using "prin" and %x for any other x use
+% "princ". This is a bit minimalist and does not cope well with
+% some options that the full version supports, but is about as concise
+% as I can make things here.
+        if eqcar(fmt, '!p) or eqcar(fm, '!P) then a := explode a
+        else a := explodec a;
+        for each c in a do r := c . r >>
+      else r := car fmt . r ;
+      fmt := cdr fmt >>;
+    return list2string reversip r
+  end;
+
+symbolic macro procedure bldmsg u;
+  list('bldmsg_internal, cadr u, 'list . cddr u);
+
+flag('(bldmsg), 'variadic);
 
 end;
 
