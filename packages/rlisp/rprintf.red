@@ -190,6 +190,24 @@ symbolic procedure p_prinl1(x, depth);
           go to top >> >>
   end;
 
+symbolic procedure p_printref(w, blankfirst, ch);
+% This prints "#NN#" possibly with a blank in front of it and
+% perhaps splitting the line. Well it can also do "#NN=".
+  begin
+    scalar len;
+    len := length explode w;
+    if blankfirst then len := len + 1;
+% Here I will break the line unless I can fit on "#nn#" or " #nn#" as
+% relevant.
+    if not bldmsg_chars!* and
+       posn() + 2 + len > !*ll!* then <<
+      blankfirst := nil;
+      terpri() >>;
+    p_princ("#", blankfirst);
+    p_princ(w, nil);
+    p_princ(ch, nil)
+  end;
+
 symbolic procedure p_prinl2(x, depth, escaped, blankfirst);
 % Scan a structure that was previously processed by p_prinl1. Thus all
 % nodes in x are already in the hash table. Those with value zero
@@ -210,29 +228,11 @@ symbolic procedure p_prinl2(x, depth, escaped, blankfirst);
       w := gethash(x,!*prinl_visited_nodes!*);
       if w and not zerop w then <<
         if w < 0 then <<
-          length := length explode (-w);
-          if blankfirst then length := length + 1;
-% Here I will break the line unless I can fit on "#nn#" or " #nn#" as
-% relevant.
-          if not bldmsg_chars!* and
-             posn() + 2 + length > !*ll!* then <<
-            blankfirst := nil;
-            terpri() >>;
-          p_princ("#", blankfirst);
-          p_princ(-w, nil);
-          p_princ("#", nil);
+          p_printref(-w, blankfirst, "#");
           return nil >>
         else <<
           puthash(x,!*prinl_visited_nodes!*, -w);
-          length := length explode w;
-          if blankfirst then length := length + 1;
-          if not bldmsg_chars!* and
-             posn() + 2 + length > !*ll!* then <<
-            blankfirst := nil;
-            terpri() >>;
-          p_princ("#", blankfirst);
-          p_princ(w, nil);
-          p_princ("=", nil);
+          p_printref(w, blankfirst, "=");
           blankfirst := nil >> >>;
       if vectorp x then <<
          p_princ("%(", blankfirst);
@@ -263,25 +263,18 @@ symbolic procedure p_prinl2(x, depth, escaped, blankfirst);
          (length := length + 1) > !*print!-length!* then <<
              p_princ("...", t);
              return p_princ(")", nil) >>;
-      p_prinl2(car x, depth+1, escaped, t);
-      x:=cdr x;
       w := gethash(x, !*prinl_visited_nodes!*);
-      if w and w neq 0 then
+      if w and not zerop w then <<
         if w < 0 then <<
           p_princ(".", t);
-          length := 1 + length explode (-w);
-          blankfirst := t;
-          if not bldmsg_chars!* and
-             posn() + 2 + length > !*ll!* then <<
-            blankfirst := nil;
-            terpri() >>;
-          p_princ("#", blankfirst);
-          p_princ(-w, nil);
-          return p_princ("#)", nil) >>
+          p_printref(-w, t, "#");
+          return p_princ(")", nil) >>
         else <<
           p_princ(".", t);
           p_prinl2(x, depth+1, escaped, t);
-          return p_princ(")", nil) >>;
+          return p_princ(")", nil) >> >>;
+      p_prinl2(car x, depth+1, escaped, t);
+      x:=cdr x;
       go to loop
     end;
 
@@ -563,7 +556,9 @@ symbolic procedure printf_internal(fmt, args);
           else if c = '!l or c = '!L then <<
             if not atom a then <<
               portable_princ car a;
-              for each x in cdr a do << p_princ(" ", nil); portable_princ x >> >> >>
+              for each x in cdr a do <<
+                p_princ(" ", nil);
+                portable_princ x >> >> >>
           else if c = '!o or c = '!O then p_prinoctal a
           else if c = '!p or c = '!P then portable_prin a
           else if c = '!q or c = '!Q then rlisp_prinl a
