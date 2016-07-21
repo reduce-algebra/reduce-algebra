@@ -566,9 +566,9 @@ symbolic procedure printf_internal(fmt, args);
               for each x in cdr a do << p_princ(" ", nil); portable_princ x >> >> >>
           else if c = '!o or c = '!O then p_prinoctal a
           else if c = '!p or c = '!P then portable_prin a
-          else if c = '!q or c = '!Q then prinl a
+          else if c = '!q or c = '!Q then rlisp_prinl a
           else if c = '!r or c = '!R then <<
-            p_princ("'", nil); prinl a; p_princ("'", nil) >>
+            p_princ("'", nil); rlisp_prinl a; p_princ("'", nil) >>
           else if (c = '!t or c = '!T) and fixp a then <<
             if p_posn() > a then p_princ(!$eol!$, nil);
             while p_posn() < a do p_princ(" ", nil) >>
@@ -607,6 +607,7 @@ flag('(rlisp_printf rlisp_bldmsg), 'variadic);
 
 put('printf, 'newnam, 'rlisp_printf);
 put('bldmsg, 'newnam, 'rlisp_bldmsg);
+put('prinl,  'newnam, 'rlisp_prinl);
 
 endmodule;
 
