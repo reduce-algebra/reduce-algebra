@@ -38,7 +38,7 @@
 #define __STDC_CONSTANT_MACROS 1
 #endif
 
-#include"wx/wxprec.h"
+#include "wx/wxprec.h"
 
 #ifndef WX_PRECOMP
 #include"wx/wx.h"
@@ -203,6 +203,29 @@ BEGIN_EVENT_TABLE(showmathFrame, wxFrame)
     EVT_MENU(wxID_ABOUT, showmathFrame::OnAbout)
     EVT_SIZE(            showmathFrame::OnSize)
 END_EVENT_TABLE()
+
+    {   switch(errno)
+        {
+    case ERANGE: return -2; // negative return value flags an error.
+    case EACCES: return -3;
+    default:     return -4;
+        }
+    }
+    else return strlen(s);
+}
+
+/*
+ * The next procedure is responsible for establishing information about
+ * both the"short-form" name of the program launched and the directory
+ * it was found in. This latter directory may be a good place to keep
+ * associated resources. Well many conventions would NOT view it as a
+ * good place, but it is how I organise things!
+ *
+ * The way of finding the information concerned differs between Windows and
+ * Unix/Linux, as one might expect.
+ *
+ * return non-zero value if failure.
+ */
 
 #ifndef LONGEST_LEGAL_FILENAME
 #define LONGEST_LEGAL_FILENAME 1024
@@ -544,7 +567,9 @@ void showmathFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 // At present this never gets activated!
     wxMessageBox(
         wxString::Format(
-            "wxshowmath (A C Norman 2015)\nwxWidgets version: %s\nOperating system: %s",
+            "wxshowmath (A C Norman 2015)\n"
+                "wxWidgets version: %s\n"
+                "Operating system: %s",
             wxVERSION_STRING,
             wxGetOsDescription()),
         "About wxshowmath",
@@ -615,24 +640,21 @@ static int32_t convert_font_name(char *dest, char *src)
     else if (strcmp(src, "Math") == 0) strcpy(dest, "cslSTIXMath");
     else sprintf(dest, "cslSTIX");
 // Here if the font name is suffixed as "-Bold" or "-Italic" or "-BoldItalic"
-// I will try to migrate the information into fontflags.
-    if (strstr(src, "BoldItalic") != NULL)
-        r = (wxFontFlag)(wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC);
-    else if (strstr(src, "Bold") != NULL)
-        r = (wxFontFlag)wxFONTFLAG_BOLD;
-    else if (strstr(src, "Italic") != NULL)
-        r = (wxFontFlag)wxFONTFLAG_ITALIC;
-
     if (strcmp(dest, "CMU Typewriter Text") == 0) r |= (F_cmuntt<<16);
     else if (strcmp(dest, "AR PL New Kai") == 0) r |= (F_odokai<<16);
     else if (strcmp(dest, "cslSTIXMath") == 0) r |= (F_Math<<16);
+// I have not thought through and implemented support for bold and italic
+// options here...
+#ifdef PENIDNG_BOLD_AND_ITALIC
     else if ((r & (wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC)) ==
              (wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC)) r |= (F_BoldItalic<<16);
     else if ((r & wxFONTFLAG_BOLD) ==
              wxFONTFLAG_BOLD) r |= (F_Bold<<16);
     else if ((r & wxFONTFLAG_ITALIC) ==
              wxFONTFLAG_ITALIC) r |= (F_Italic<<16);
-    else r |= (F_Regular<<16);
+    else
+#endif
+    r |= (F_Regular<<16);
 
     logprintf("Gives %s with flags %x\n", dest, r); fflush(stdout);
     return r;
@@ -821,7 +843,6 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
 #define H (24.0)
 #define XX 120.0
 #define YY 100.0
-
     {   wchar_t ccc[4];
         allow_for_utf16(ccc, stix_LEFT_CURLY_BRACKET_UPPER_HOOK);
         gc->DrawText(wxString(ccc), XX, YY-H-symbolsBaseline);
@@ -899,7 +920,6 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     while (in != NULL);
 
 
-
 // I will mark all the fonts I might have created as invalid now
 // that the context they were set up for is being left.
     for (int i=0; i<MAX_FONTS; i++) graphicsFontValid[i] = false;
@@ -915,6 +935,5 @@ int windowed_worker(int argc, const char *argv[],
                     fwin_entrypoint *fwin_main)
 {   return 0;
 }
-
 
 // end of wxshowmath.cpp

@@ -327,15 +327,15 @@ void add_custom_fonts()
     {   char nn[LONGEST_LEGAL_FILENAME];
         sprintf(nn, "%s\\%s\\%s",
                     programDir, toString(fontsdir), fontNames[i]);
-        printf("Adding %s\n", nn); fflush(stdout);
+//      printf("Adding %s\n", nn); fflush(stdout);
         if (AddFontResourceExA(nn, FR_PRIVATE, 0) == 0)
         {   printf("AddFontResource failed\n");
             fflush(stdout);
         }
     }
-    printf("About to activate\n"); fflush(stdout);
+//  printf("About to activate\n"); fflush(stdout);
     PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-    printf("Activated\n"); fflush(stdout);
+//  printf("Activated\n"); fflush(stdout);
 #elif defined MACINTOSH
 // Note that on a Mac I put the required fonts in the Application Bundle,
 // and so I do not need to take run-time action to make them available.
@@ -346,14 +346,14 @@ void add_custom_fonts()
     {   char nn[LONGEST_LEGAL_FILENAME];
         sprintf(nn, "%s\\%s\\%s",
                     programDir, toString(fontsdir), fontNames[i]);
-        printf("Adding %s\n", nn); fflush(stdout);
+//      printf("Adding %s\n", nn); fflush(stdout);
         if (!FcConfigAppFontAddFile(config, (const FcChar8 *)nn))
         {   printf("FcConfigAppFontAddFile failed\n");
             fflush(stdout);
         }
     }
     FcConfigSetCurrent(config);
-    printf("Activated\n"); fflush(stdout);
+//  printf("Activated\n"); fflush(stdout);
 #else
 #error Unknown platform so private fonts not supported.
 #endif

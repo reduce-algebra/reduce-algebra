@@ -908,7 +908,7 @@ symbolic procedure fetch!-url(url, !&optional, dest);
 % I need at least a minimal version of bldmsg to tide me over until the
 % full version in rlisp/rprint.red gets processed.
 
-symbolic procedure bldmsg_internal(fmt, args);
+symbolic procedure bldmsg_temp_internal(fmt, args);
   begin
     scalar r, a;
     fmt := explodec fmt;
@@ -921,7 +921,7 @@ symbolic procedure bldmsg_internal(fmt, args);
 % "princ". This is a bit minimalist and does not cope well with
 % some options that the full version supports, but is about as concise
 % as I can make things here.
-        if eqcar(fmt, '!p) or eqcar(fm, '!P) then a := explode a
+        if eqcar(fmt, '!p) or eqcar(fmt, '!P) then a := explode a
         else a := explodec a;
         for each c in a do r := c . r >>
       else r := car fmt . r ;
@@ -930,7 +930,7 @@ symbolic procedure bldmsg_internal(fmt, args);
   end;
 
 symbolic macro procedure bldmsg u;
-  list('bldmsg_internal, cadr u, 'list . cddr u);
+  list('bldmsg_temp_internal, cadr u, 'list . cddr u);
 
 flag('(bldmsg), 'variadic);
 

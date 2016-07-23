@@ -466,7 +466,7 @@ showmathdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindi
 showmathdemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 showmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP)
 
-wxdemo_SOURCES = wxdemo.cpp
+wxdemo_SOURCES = wxdemo.cpp wxfwin.cpp termed.cpp charmetrics.cpp
 wxdemo_LDADD = $(fwin_icon)
 wxdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
