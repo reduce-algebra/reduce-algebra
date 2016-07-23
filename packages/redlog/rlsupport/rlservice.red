@@ -394,14 +394,19 @@ asserted procedure rl_docSynopsis(f: Id, names: List, types: List, defaults: Ali
       push("(", sl);
       while types and car types neq "Switch" do <<
 	 name := pop names;
-	 push(pop types, sl);
-	 push(" ", sl);
 	 push(id2string name, sl);
 	 default := atsoc(name, defaults);
 	 if default then <<
 	    push(" = ", sl);
-	    push(ioto_smaprin cdr default, sl)
+	    if stringp cdr default then <<
+	       push("""", sl);
+	       push(cdr default, sl);
+	       push("""", sl)
+	    >> else
+	       push(ioto_smaprin cdr default, sl)
 	 >>;
+	 push(": ", sl);
+	 push(pop types, sl);
 	 if types then
 	    push(", ", sl)
       >>;
@@ -417,7 +422,7 @@ asserted procedure rl_docArguments(names: List, types: List, docs: List): Alist;
 	 pop types;
 	 push(id2string pop names . pop docs, sl)
       >>;
-      return sl
+      return reversip sl
    end;
 
 asserted procedure rl_docSwitches(names: List, types: List, docs: List): Alist;

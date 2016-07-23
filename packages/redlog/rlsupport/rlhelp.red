@@ -67,8 +67,11 @@ asserted procedure rl_help(x: Id);
 	 if cdr pr then <<
 	    if brk then terpri() else brk := t;
 	    ioto_tprin2t lto_Upcase id2string car pr;
-	    if stringp cdr pr then
-	       sl := rl_printParagraph cdr pr
+	    if car pr = 'synopsis then <<
+	       for i := 1:rlhelp_leftMargin!* do prin2 " ";
+	       prin2t cdr pr
+	    >> else if stringp cdr pr then
+	       rl_printParagraph cdr pr
 	    else  % cdr pr is an AList
 	       rl_printDescriptionList(cdr pr, xdtl)
 	 >>

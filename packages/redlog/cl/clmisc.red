@@ -682,7 +682,7 @@ procedure cl_eval!-gand(gand, argl, subal, evalat, gtrue);
 procedure cl_dfgPrint(f,fname);
    % Prefix print.
    <<
-      if fname then
+      if fname neq "" then
       	 out fname;
       prin2 "formula(";
       cl_dfgPrint1 f;
@@ -774,7 +774,7 @@ procedure cl_smt2Print(f,fname,linel);
    % Prefix print. [f] is an existential sentence, [fname] is a string, [linel] is a list of
    % strings.
    <<
-      if fname then
+      if fname neq "" then
       	 out fname;
       rl_smt2PrintLogic();
       if linel then

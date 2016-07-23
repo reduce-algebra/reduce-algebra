@@ -783,7 +783,15 @@ procedure pasf_findsample(rangel,points,hitl);
       return nrangel . answ
    end;
 
-procedure pasf_zsimpl(f);
+asserted procedure pasf_zsimpl(f: Formula): Formula;
+   % This procedure is not used anywhere throughout the code. It was a service,
+   % which I have removed. The input must be univariate, and there should be
+   % only bounds into one direction on the variable. The procedure tries to
+   % determine the corresponding upper or lower bound. The result is not
+   % equivalent: x>1 and  (x>10 or ncong(x,0,2)) yields x>=2 without the
+   % incongruence condition. Also, is has not been properly tested: It applies
+   % "minus" to standard forms, which can be seen when replacing 1 with 0 in our
+   % example. -- TS
    begin scalar w,z,fl,fb,best,gleq,glessp,gone;
       w := cl_fvarl f;
       if cdr w then rederr {"pasf_zsimpl: more than one variable: ",w};

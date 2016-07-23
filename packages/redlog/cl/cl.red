@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm
-% ----------------------------------------------------------------------
+module cl;  % Common logic. Generic functions on first order formulas.
+
+revision('cl, "$Id$");
+
+copyright('cl, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,18 +29,7 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(cl_rcsid!* cl_copyright!*);
-   cl_rcsid!* := "$Id$";
-   cl_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T Sturm"
->>;
-
-module cl;
-% Common logic. Generic functions on first order formulas. This module
-% contains context independent code possibly addressing some black
-% boxes.
-
-create!-package('(cl clsimpl clbnf clnf clqe cltab clmisc clresolv clsl),nil);
+create!-package('(cl clsimpl clbnf clnf clqe cltab clmisc clresolv clsl), nil);
 
 loadtime load!-package 'rltools;
 load!-package 'redlog;
@@ -59,13 +49,13 @@ exports cl_atfp,cl_cxfp,cl_atflp,cl_ncflp,cl_dnfp,cl_cnfp,cl_bnfp,cl_simpl,
    cl_cflip,cl_subfof,cl_termml,cl_termml1,cl_terml,cl_terml1,cl_struct,
    cl_ifstruct,cl_surep,cl_splt;
 
-imports rltools;
+imports rltools, redlog;
 
 fluid '(cl_identify!-atl!* cl_pal!* cl_lps!* cl_theo!*
    !*rlidentify !*rlsichk !*rlsism !*rlsiexpla !*rlbnfsm !*rlverbose
    !*rlsiidem !*rlsiso !*rlqepnf !*rlqedfs !*rlqeans !*rlqegsd !*rlqeheu
    !*rlqegen !*rlbnfsac !*rltnft !*rlsipw !*rlsipo !*rlqevarsel
-   !*rlspgs !*rlsithok !*rlqefb !*rlqelocal !*rlqeapprox !*rlresi !*rlqeprecise
+   !*rlspgs !*rlsithok !*rlqefb !*rlqelocal !*rlresi !*rlqeprecise
    !*rlqeaprecise !*rlqestdans !*slat);
 
 struct Formula;

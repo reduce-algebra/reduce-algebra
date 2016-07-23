@@ -85,9 +85,7 @@ module rlsched;
 
 %% rl_mkserv('lqe,'(rl_simp rl_a2s!-atl rl_a2s!-pt),nil,nil,'rl_s2a!-gqe,t);
 
-rl_mkserv('aqe,'(rl_simp rl_a2s!-atl rl_a2s!-aqepoints),nil,nil,'rl_s2a!-gqe,t);  % approximate qe (integers)
-
-rl_mkserv('qeg,'(rl_simp),nil,nil,'rl_s2a!-simpl,t);
+%% rl_mkserv('qeg,'(rl_simp),nil,nil,'rl_s2a!-simpl,t);
 
 %% rl_mkserv('pqe,'(rl_simp),'(rl_a2s!-sf rl_a2s!-atl),
 %%    '(1 (list)),'rl_s2a!-simpl,t);
@@ -98,14 +96,14 @@ rl_mkserv('qeg,'(rl_simp),nil,nil,'rl_s2a!-simpl,t);
 
 %% rl_mkserv('wqea,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-wqea,t);
 
-rl_mkserv('zsimpl,'(rl_simp),nil,nil,'rl_s2a!-simpl,t);
+%% rl_mkserv('zsimpl,'(rl_simp),nil,nil,'rl_s2a!-simpl,t);
 
 %% rl_mkserv('atnum,'(rl_simp),nil,nil,'aeval,t);
 
 %% rl_mkserv('qnum,'(rl_simp),nil,nil,'aeval,t);
 
-rl_mkserv('opt,'(rl_a2s!-atl rl_a2s!-targfn),
-   '(rl_a2s!-varl rl_a2s!-number),'((list) 8),'rl_s2a!-opt,t);
+%% rl_mkserv('opt,'(rl_a2s!-atl rl_a2s!-targfn),
+%%    '(rl_a2s!-varl rl_a2s!-number),'((list) 8),'rl_s2a!-opt,t);
 
 %% rl_mkserv('atl,'(rl_simp),nil,nil,'rl_s2a!-atl,t);
 
@@ -115,77 +113,68 @@ rl_mkserv('opt,'(rl_a2s!-atl rl_a2s!-targfn),
 
 %% rl_mkserv('atml,'(rl_simp),nil,nil,
 %%    function(lambda x; rl_s2a!-ml(x,'rl_mk!*fof)),t);
-%% 
+%%
 %% rl_mkserv('termml,'(rl_simp),nil,nil,
 %%    function(lambda x; rl_s2a!-ml(x,'rl_s2a!-term)),t);
-%% 
+%%
 %% rl_mkserv('ifacml,'(rl_simp),nil,nil,
 %%    function(lambda x; rl_s2a!-ml(x,'rl_s2a!-term)),t);
 
 %% rl_mkserv('qeipo,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
-%% 
+%%
 %% rl_mkserv('qews,'(rl_simp),'(rl_a2s!-atl),'((list)),'rl_s2a!-simpl,t);
 
 %% rl_mkserv('gentheo,'(rl_a2s!-atl rl_simp),'(rl_a2s!-varl),'((list)),
 %%    'rl_s2a!-gqe,t);
 
-rl_mkserv('tnf,'(rl_simp rl_a2s!-terml),nil,nil,'rl_mk!*fof,t);
+%% rl_mkserv('tnf,'(rl_simp rl_a2s!-terml),nil,nil,'rl_mk!*fof,t);
 
 %% rl_mkserv('terml,'(rl_simp),nil,nil,'rl_s2a!-terml,t);
 
 %% rl_mkserv('struct,'(rl_simp),'(rl_a2s!-id),'(v),'rl_s2a!-struct,t);
-%% 
+%%
 %% rl_mkserv('ifstruct,'(rl_simp),'(rl_a2s!-id),'(v),'rl_s2a!-struct,t);
 
 %% rl_mkserv('varl,'(rl_simp),nil,nil,'rl_s2a!-varl,t);
-%% 
+%%
 %% rl_mkserv('fvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,t);
-%% 
+%%
 %% rl_mkserv('bvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,t);
-%% 
+%%
 %% rl_mkserv('qvarl,'(rl_simp),nil,nil,'rl_s2a!-fbvarl,t);
 
-rl_mkserv('decdeg1,'(rl_simp),'(rl_a2s!-decdeg1),'(fvarl),'rl_s2a!-decdeg1,t);
+%% rl_mkserv('decdeg1,'(rl_simp),'(rl_a2s!-decdeg1),'(fvarl),'rl_s2a!-decdeg1,t);
+%%
+%% rl_mkserv('decdeg,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('decdeg,'(rl_simp),nil,nil,'rl_mk!*fof,t);
+%% rl_mkserv('explats,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('explats,'(rl_simp),nil,nil,'rl_mk!*fof,t);
+%% rl_mkserv('mkcanonic,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('mkcanonic,'(rl_simp),nil,nil,'rl_mk!*fof,t);
-
-rl_mkserv('xqe,'(rl_simp),nil,nil,'rl_mk!*fof,t);
-
-rl_mkserv('xqea,'(rl_simp),nil,nil,'rl_s2a!-qea,t);
+%% rl_mkserv('xqe,'(rl_simp),nil,nil,'rl_mk!*fof,t);
+%%
+%% rl_mkserv('xqea,'(rl_simp),nil,nil,'rl_s2a!-qea,t);
 
 %% rl_mkserv('cad,'(rl_simp),'(rl_a2s!-idlist rl_a2s!-sflist),'((list) (list)),
 %%    function(lambda x; rl_mk!*fof cdr x),t);
 
-rl_mkserv('gcad,'(rl_simp),'(rl_a2s!-idlist rl_a2s!-sflist),'((list) (list)),
-   'rl_s2a!-gqe,t);
+%% rl_mkserv('gcad,'(rl_simp),'(rl_a2s!-idlist rl_a2s!-sflist),'((list) (list)),
+%%    'rl_s2a!-gqe,t);
 
-rl_mkserv('cadporder,'(rl_simp),nil,nil,'rl_s2a!-idlist,t);
+%% rl_mkserv('cadporder,'(rl_simp),nil,nil,'rl_s2a!-idlist,t);
+%%
+%% rl_mkserv('gcadporder,'(rl_simp),nil,nil,'rl_s2a!-idlist,t);
 
-rl_mkserv('gcadporder,'(rl_simp),nil,nil,'rl_s2a!-idlist,t);
+%% rl_mkserv('cadproj,'(rl_simp),'(rl_a2s!-idlist),'((list)),
+%%    function(lambda x; rl_s2a!-sflistlist cdr x),t);
 
-rl_mkserv('cadproj,'(rl_simp),'(rl_a2s!-idlist),'((list)),
-   function(lambda x; rl_s2a!-sflistlist cdr x),t);
-
-% ibalp + tplp, undocumented
-rl_mkserv('kapur,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
-
-% tplp, undocumented
-rl_mkserv('miniscope,'(rl_simp),'(nil),'(nil),'rl_mk!*fof,t);
-
-% tplp, undocumented
-rl_mkserv('skolemize,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
-
-rl_mkserv('qsat,'(rl_simp),nil,nil,'rl_mk!*fof,t);
+%% rl_mkserv('qsat,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
 rl_mkserv('qsatoptions,'(rl_a2s!-qsatoptions),nil,nil,'rl_s2a!-qsatoptions,t);
 
-rl_mkserv('qsatdimacs,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
+%% rl_mkserv('qsatdimacs,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('readdimacs,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
+%% rl_mkserv('readdimacs,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
 
 % Does not work, because ofsf_cadswitches is missing.
 rl_mkserv('cadswitches,nil,nil,nil,function(lambda x; x),t);
@@ -195,17 +184,17 @@ rl_mkserv('expand,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 % Optional argument is not yet used:
 rl_mkserv('expanda,'(rl_simpa),'(rl_simp),'(false),'rl_s2a!-qea,t);
 
-rl_mkserv('hqe,'(rl_simp),nil,nil,'rl_mk!*fof,t);
+%% rl_mkserv('hqe,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('ghqe,'(rl_simp),nil,nil,'rl_s2a!-ghqe,t);
+%% rl_mkserv('ghqe,'(rl_simp),nil,nil,'rl_s2a!-ghqe,t);
 
 %% rl_mkserv('quine,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('resolve,'(rl_simp),nil,nil,'rl_mk!*fof,t);
+%% rl_mkserv('resolve,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('posresolve,'(rl_simp),nil,nil,'rl_mk!*fof,t);
+%% rl_mkserv('posresolve,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('tan2,'(rl_simp),nil,nil,'rl_mk!*fof,t);
+%% rl_mkserv('tan2,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
 rl_mkserv('!1equation,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,t);
 
@@ -215,10 +204,10 @@ rl_mkserv('depth,'(rl_simp),nil,nil,'aeval,t);
 
 rl_mkserv('qesil,'(rl_a2s!-fl),'(rl_a2s!-atl),'((list)),'rl_s2a!-fl,t);
 
-rl_mkserv('dfgprint,'(rl_simp),'(reval),'(nil),'aeval,t);
+%% rl_mkserv('dfgprint,'(rl_simp),'(reval),'(nil),'aeval,t);
 
-rl_mkserv('smt2Print,'(rl_simp),'(reval rl_a2s!-stringl),'(nil (list)),'aeval,t);
-rl_mkserv('smt2Read,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
+%% rl_mkserv('smt2Print,'(rl_simp),'(reval rl_a2s!-stringl),'(nil (list)),'aeval,t);
+%% rl_mkserv('smt2Read,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
 
 rl_mkserv('dima, '(rl_a2s!-sflist rl_a2s!-sf), nil, nil, 'rl_s2a!-formulal, t);
 
@@ -236,10 +225,19 @@ rl_mkserv('ptropsat, '(rl_simp), nil, nil, 'aeval, t);
 
 %% rl_mkserv('sign,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-% Symbolic only:
-rl_mkserv('surep,'(dummy dummy),nil,nil,nil,nil);
+% ibalp + tplp, undocumented
+rl_mkserv('kapur,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
 
-rl_mkserv('siaddatl,'(dummy dummy),nil,nil,nil,nil);
+% tplp, undocumented
+rl_mkserv('miniscope,'(rl_simp),'(nil),'(nil),'rl_mk!*fof,t);
+
+% tplp, undocumented
+rl_mkserv('skolemize,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
+
+% Symbolic only:
+%% rl_mkserv('surep,'(dummy dummy),nil,nil,nil,nil);
+
+%% rl_mkserv('siaddatl,'(dummy dummy),nil,nil,nil,nil);
 
 %% rl_mkserv('subfof,'(dummy dummy),nil,nil,nil,nil);
 
@@ -273,17 +271,17 @@ endmodule;  % [rlsched]
 module rlbboxes;  % Black box scheduler.
 
 %% rl_blackBox('rl_simplat1, 2);
-%% 
+%%
 %% rl_blackBox('rl_smupdknowl, 4);
 
 %% rl_blackBox('rl_smrmknowl, 2);
-%% 
+%%
 %% rl_blackBox('rl_smcpknowl, 1);
-%% 
+%%
 %% rl_blackBox('rl_smmkatl, 4);
-%% 
+%%
 %% rl_blackBox('rl_smsimpl!-impl, 5);
-%% 
+%%
 %% rl_blackBox('rl_smsimpl!-equiv1, 5);
 
 %% rl_blackBox('rl_negateat, 1);
@@ -341,7 +339,7 @@ rl_blackBox('rl_bestgaussp, 1);
 rl_blackBox('rl_esetunion, 2);
 
 %% rl_blackBox('rl_structat, 2);
-%% 
+%%
 %% rl_blackBox('rl_ifstructat, 2);
 
 rl_blackBox('rl_termmlat, 1);
@@ -359,23 +357,23 @@ rl_blackBox('rl_susibin, 2);
 rl_blackBox('rl_fbqe, 2);
 
 %% rl_blackBox('rl_qscsaat, 1);
-%% 
+%%
 %% rl_blackBox('rl_qssubat, 2);
-%% 
+%%
 %% rl_blackBox('rl_qsconsens, 3);
-%% 
+%%
 %% rl_blackBox('rl_qstrycons, 4);
-%% 
+%%
 %% rl_blackBox('rl_qsimpltestccl, 3);
-%% 
+%%
 %% rl_blackBox('rl_qssubsumep, 3);
-%% 
+%%
 %% rl_blackBox('rl_qstautp, 1);
-%% 
+%%
 %% rl_blackBox('rl_qssusuat, 3);
-%% 
+%%
 %% rl_blackBox('rl_qssiadd, 4);
-%% 
+%%
 %% rl_blackBox('rl_qssimpl, 3);
 
 rl_blackBox('rl_b2terml, 2);

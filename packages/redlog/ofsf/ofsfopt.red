@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module ofsfopt;  % Ordered field standard form linear optimization.
+
+revision('ofsfopt, "$Id$");
+
+copyright('ofsfopt, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -26,17 +27,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
-
-lisp <<
-   fluid '(ofsf_opt_rcsid!* ofsf_opt_copyright!*);
-   ofsf_opt_rcsid!* :=
-      "$Id$";
-   ofsf_opt_copyright!* := "Copyright (c) 1995-1999 A. Dolzmann and T. Sturm"
->>;
-
-module ofsfopt;
-% Ordered field standard form optimization. Submodule of [ofsf].
+%
 
 inline procedure ofsf_cvl(x);
    car x;
@@ -526,16 +517,16 @@ procedure ofsf_optsubsq(sq,al);
    if cdar al memq '(minf pinf) or sq memq '(minf pinf) then sq
    else subsq(sq,{caar al . prepsq cdar al});
 
-procedure ofsf_optmkans(ans);
+asserted procedure ofsf_optmkans(ans: List2): DottedPair;
    begin scalar w;
       if ans = '(nil nil) then return 'infeasible;
       if ans eq 'break then return {simp '(minus infinity),nil};
-      return {car ans,for each x in cadr ans collect
+      return mk!*sq car ans . for each x in cadr ans collect
       	 for each y in x collect <<
-	    w := atsoc(cdr y,'((minf . (minus infinity)) (pinf . infinity)));
+	    w := atsoc(cdr y, '((minf . (minus infinity)) (pinf . infinity)));
 	    w := if w then cdr w else mk!*sq cdr y;
-	    aeval {'equal,car y,w}
-	 >>}
+	    car y . w
+	 >>
    end;
 
 procedure ofsf_optmksol(u,v);

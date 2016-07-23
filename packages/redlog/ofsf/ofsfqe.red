@@ -2915,19 +2915,19 @@ procedure ofsf_elimsetr!-precise(atfal);
 	 'ofsf_qesubcr1 . nconc(equal21r,wo21r)}
    end;
 
-procedure ofsf_qeg(f);
-   % Generic QE-based reguler quantifier elimination.
-   begin scalar !*rlqegenct,ass,gres,res,w;
-      gres := cl_gqe(f,nil,nil);
+asserted procedure ofsf_qeg(f: Formula): Formula;
+   % Generic QE-based regular quantifier elimination.
+   begin scalar !*rlqegenct, ass, gres, res, w;
+      gres := cl_gqe(f, nil, nil);
       res := gres . for i := 1:length car gres collect <<
 	 ass := nth(car gres,i);
 	 w := for each fac in cdr fctrf ofsf_arg2l ass collect car fac;
 	 if cdr w then rederr "ofsf_qeg: uexpected nonvariable assumption";
- 	 (ofsf_0mk2('equal,ofsf_arg2l ass) . delq(ass,car gres)) .
-	    cl_qe(cl_subfof({prepf car w . 0},f),nil)
+ 	 (ofsf_0mk2('equal, ofsf_arg2l ass) . delq(ass, car gres)) .
+	    cl_qe(cl_subfof({prepf car w . 0}, f), nil)
       >>;
-      return cl_simpl(rl_smkn('or,for each case in res collect
-	 rl_mkn('and,cdr case . car case)),nil,-1)
+      return cl_simpl(rl_smkn('or, for each case in res collect
+	 rl_mkn('and, cdr case . car case)), nil, -1)
    end;
 
 endmodule;  % [ofsfqe]

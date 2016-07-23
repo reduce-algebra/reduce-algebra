@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1998-2009 Andreas Dolzmann
-% ----------------------------------------------------------------------
+module ofsfxopt;  % Ordered field standard form extended optimization.
+
+revision('ofsfxopt, "$Id$");
+
+copyright('ofsfxopt, "(c) 1998-2009 A. Dolzmann, 2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,15 +29,7 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(ofsf_xopt_rcsid!* ofsf_xopt_copyright!*);
-   ofsf_xopt_rcsid!* :=
-      "$Id$";
-   ofsf_xopt_copyright!* := "Copyright (c) 1998-2009 A. Dolzmann"
->>;
-
-module ofsfxopt;
-% Ordered field standard form extended optimization. A very restricted
+% A very restricted
 % form of the QE by virtual substitution. Pnf of input must be an
 % existential quantified weak parametric linear formula containing only
 % weak relations.
@@ -255,9 +248,9 @@ procedure ofsf_xopt!-trans!-ansl(u);
    % Translate ansl. [u] is a ANSL. Returns a answer as required by
    % [cl_qea].
    for each ans in ofsf_xopt!-ansl!-ansl u collect
-      {ofsf_xopt!-ans!-gd ans,
+      ofsf_xopt!-ans!-gd ans .
 	 for each ct in ofsf_xopt!-pt!-ctl ofsf_xopt!-ans!-pt ans collect
-	    {'equal,ofsf_xopt!-ct!-var ct,ofsf_xopt!-ct!-value ct}};
+	    ofsf_xopt!-ct!-var ct . ofsf_xopt!-ct!-value ct;
 
 procedure ofsf_xopt!-qe(f);
    % Quantifier elimination with answer. [f] is an existentially

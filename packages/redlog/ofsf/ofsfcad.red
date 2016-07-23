@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2000-2009 A. Dolzmann, A. Seidl, and T. Sturm
-% ----------------------------------------------------------------------
+module ofsfcad;  % Cylindcrical algebraic decomposition.
+
+revision('ofsfcad, "$Id$");
+
+copyright('ofsfcad, "(c) 2000-2009 A. Dolzmann, A. Seidl, T. Sturm, 2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ofsf_cad_rcsid!* ofsf_cad_copyright!*);
-   ofsf_cad_rcsid!* :=
-      "$Id$";
-   ofsf_cad_copyright!* := "(c) 2000-2009 A. Dolzmann, A. Seidl, T. Sturm"
->>;
-
-module ofsfcad;
 
 fluid '(ofsf_wd!*);
 
@@ -120,7 +112,10 @@ asserted procedure ofsf_cad1(phi: Formula, prjordl: List, aaplus: List): DottedP
    end;
 
 % rlcadproj entry point
-asserted procedure ofsf_cadproj(phi: Formula, prjordl: List): DottedPair;
+asserted procedure ofsf_cadproj(phi: Formula, prjordl: List): List;
+   cdr ofsf_cadproj1(phi, prjordl);
+
+asserted procedure ofsf_cadproj1(phi: Formula, prjordl: List): DottedPair;
    begin scalar cd, theo, ffl;
       cd := ofsf_cadpreparation(phi, prjordl, nil);
       if !*rlverbose then

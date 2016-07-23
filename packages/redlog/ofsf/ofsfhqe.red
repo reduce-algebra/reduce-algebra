@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2003-2009 Andreas Dolzmann and Lorenz Gilch
-% ----------------------------------------------------------------------
+module ofsfhqe;  % Ordered fields standard form Hermitian quantifier elimination.
+
+revision('ofsfhqe, "$Id$");
+
+copyright('ofsfhqe, "(c) 2003-2009 A. Dolzmann, L. Gilch, 2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -26,17 +27,7 @@
 % THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-% 
-
-lisp <<
-   fluid '(ofsf_hqe_rcsid!* ofsf_hqe_copyright!*);
-   ofsf_hqe_rcsid!* :=
-      "$Id$";
-   ofsf_hqe_copyright!* := "Copyright (c) 2003-2009 A. Dolzmann and L. Gilch"
->>;
-
-module ofsfhqe;
-% Ordered fields standard form Hermitian quantifier elimination.
+%
 
 % Real Root Counting Quantifier Elimination.
 % Input: A First-order formula
@@ -52,7 +43,7 @@ procedure ofsf_ghqe(f);
       res := ofsf_hqe f;
       !*rlhqegen := nil;
       ofsf_hqexvars!* := nil;
-      return {rl_smkn('and,rl_thsimpl ofsf_hqetheo!*),res}
+      return rl_thsimpl ofsf_hqetheo!* . res
    end;
 
 procedure ofsf_hqe(phi);
@@ -65,7 +56,7 @@ procedure ofsf_hqe(phi);
       if not !*rlverbose then
 	 off1 'rlhqevb;
       if not(!*cgbverbose and !*rlverbose and !*rlhqevb) then
-	 off1 'cgbverbose;      
+	 off1 'cgbverbose;
       w := ofsf_hqe0 phi;
       onoff('rlhqevb,svrlhqevb);
       onoff('cgbverbose,svcgbverbose);

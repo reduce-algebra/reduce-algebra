@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2000-2009 A. Dolzmann, L. Gilch, A. Seidl, and T. Sturm
-% ----------------------------------------------------------------------
+module ofsfcadproj;  % CAD projection
+
+revision('ofsfcadproj, "$Id$");
+
+copyright('ofsfcadproj, "(c) 2000-2009 A. Dolzmann, L. Gilch, A. Seidl, T. Sturm, 2016 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,14 +29,6 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(ofsf_cadproj_rcsid!* ofsf_cadproj_copyright!*);
-   ofsf_cadproj_rcsid!* :=
-      "$Id$";
-   ofsf_cadproj_copyright!* :=
-      "(c) 2000-2009 A. Dolzmann, L. Gilch, A. Seidl, T. Sturm"
->>;
-
 fluid '(ofsf_cadbvl!* !*rlpos);
 
 switch rlcadmc3;
@@ -44,8 +37,7 @@ on1 'rlcadmc3;
 switch rlpscsgen;
 on1 'rlpscsgen;
 
-module ofsfcadproj;
-% CAD projection. The following are given:
+% The following are given:
 % a) [pp]: a SFList over kernels contained in [varl]
 % b) [varl]: KernelList  (x_1, ..., x_r) [k] is an integer.
 % The whole projection code assumes that

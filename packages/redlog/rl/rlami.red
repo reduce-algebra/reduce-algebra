@@ -784,12 +784,6 @@ procedure rl_a2s!-qsatoptions(u);
       return w
    end;
 
-procedure rl_a2s!-string(s);
-   if not stringp s then
-      typerr(s,"string")
-   else
-      s;
-
 procedure rl_s2a!-ghqe(l);
    % Generic elimination result for algebraic mode. [l] is a lis of
    % the form $(theo res)$. Returns a list of the form $(theo res)$,

@@ -160,6 +160,23 @@ asserted procedure rl_a2sInteger(n: Any): Integer;
       return n
    end;
 
+% Strings
+
+rl_type {
+   name = String,
+   a2s = rl_a2sString,
+   s2a = rl_identity1,
+   doc = {
+      syntax = "A string."}};
+
+asserted procedure rl_a2sString(s: Any): String;
+   begin
+      s := reval s;
+      if not stringp s then
+      	 typerr(s, "string");
+      return s
+   end;
+
 % Keyword BNF
 
 rl_type {
@@ -177,26 +194,14 @@ asserted procedure rl_a2sKwBnf(bnf: Id): Id;
       bnf
    >>;
 
-% Parametric Point
-
-rl_type {
-   name = ParametricPoint,
-   doc = {
-      syntax = "A list of equations assigning to some variables parametric terms in an extended language."}};
-
-% QeAnswer
-
-rl_type {
-   name = QeAnswer,
-   s2a = rl_s2aQeAnswer,
-   doc = {
-      syntax = "A list of pairs {formula, sampleSolution}, where sampleSolution is a ?ParametricPoint in the vartiables of formula."}};
-
 asserted procedure rl_s2aQeAnswer(res): List;
    'list . for each x in res collect
       {'list, rl_mk!*fof car x, 'list . cadr x};
 
-% Rational
+% Rational: Rationals are currently passed as Lisp prefix. Note that floats are
+% also Rationals so that there will be something to do for switching to SQs.
+% Also, currently infinities are returned where Rationals are promised. So
+% things are not really clean here.
 
 rl_type {
    name = Rational,
@@ -207,6 +212,24 @@ rl_type {
 
 asserted procedure rl_a2sRational(x): SF;
    reval x;
+
+% LPolyQ: used as objective functions with linear optimization.
+
+rl_type {
+   name = LPolyQ,
+   a2s = rl_a2sLPolyQ,
+   doc = {
+      syntax = "A linear multivariate polynomial with rational coefficients.",
+      example = "x+y, (1/2)*x1+x2+3*x3-2, (z-1)/2"}};
+
+asserted procedure rl_a2sLPolyQ(x: Any): SQ;
+   begin scalar w;
+      w := simp x;
+      if not domainp denr w then
+      	 rederr {"variable in denominator of", ioto_smaprin x where !*nat=nil};
+      return w
+   end;
+
 
 % Compound types:
 
@@ -326,7 +349,7 @@ procedure rl_s2a!-fl(x);
    rl_s2aList(x, 'rl_mk!*fof);
 
 procedure rl_s2a!-idlist(x);
-   rl_a2sList(x, 'rl_identity1);
+   rl_s2aList(x, 'rl_identity1);
 
 copyd('rl_s2a!-atl, 'rl_s2a!-fl);
 copyd('rl_s2a!-qea, 'rl_s2aQeAnswer);

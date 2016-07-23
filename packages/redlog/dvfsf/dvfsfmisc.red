@@ -316,9 +316,9 @@ procedure dvfsf_explodezat1(op,lhs);
       for each x in zfactor lhs collect dvfsf_mk2(op,car x,numr simp 1));
 
 procedure dvfsf_mkcanonic(f);
-   % Discretely valued fields standard form make canonic. [f] is an
-   % variable free and quantifier free formula. Returns the unique and
-   % canonic representation of [f].
+   % Discretely valued fields standard form make canonic. [f] is a variable-free
+   % and quantifier-free formula. Returns the unique canonic representation of
+   % [f].
    begin scalar facl,u,fu,xl,op,pr;
       if rl_tvalp f then
 	 return f;

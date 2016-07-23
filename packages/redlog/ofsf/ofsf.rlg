@@ -119,7 +119,7 @@ rlhqe phi;
 rlghqe phi;
 
 
-{a <> 0,
+{{a <> 0},
 
         2            2                             2
  not(2*a  - 2*a*c + b  = 0 or (a <> 0 and 4*a*c - b  > 0))}
@@ -2096,9 +2096,8 @@ true
 
 end;
 
-Tested on x86_64-mac_10.11_elcapitan-darwin15.5.0 PSL
-Time (counter 1): 11270 ms  plus GC time: 70 ms
-Quitting
-real        12.02
-user        11.43
-sys          0.49
+Tested on x86_64-mac_10.11_elcapitan-darwin15.6.0 CSL
+Time (counter 1): 11019 ms  plus GC time: 990 ms
+1: real        13.96
+user        12.49
+sys          0.22
