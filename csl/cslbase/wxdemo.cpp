@@ -79,6 +79,8 @@
 #include "wx/wx.h"
 #endif
 
+#include "wx/dcgraph.h"
+
 #if !defined __WXMSW__ && !defined __WXPM__
 #include "fwin.xpm" // Icon to use in non-Windows cases
 #endif
@@ -139,9 +141,10 @@ static wxFont *ff3 = NULL;
 
 bool wxDemo::OnInit()
 {
+    ::wxInitAllImageHandlers();
     wxFontInfo ffi;
     ffi.FaceName("cslSTIXMath");
-//  ffi.FaceName("CMU Typewriter Text");
+//  ffi.FaceName("CMU Typewriter Text");  // alternative visual effect
     ff1 = new wxFont(ffi);
     ff1->SetPointSize(FONTSIZE1);
     ff2 = new wxFont(ffi);
@@ -200,11 +203,11 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 // to illustrate the SetUserScale capability.
     dc.SetUserScale(1.0, 1.0);
 // First draw a pale purple background for the window.
-    wxColour c1(230, 200, 255);
-    wxBrush b1(c1);
-    wxPen p1(c1);
-    dc.SetBrush(b1);
-    dc.SetPen(p1);
+    wxColour background_colour(230, 200, 255);
+    wxBrush background_brush(background_colour);
+    wxPen background_pen(background_colour);
+    dc.SetBrush(background_brush);
+    dc.SetPen(background_pen);
     dc.DrawRectangle(0, 0, WIDTH, HEIGHT);
         
     dc.SetPen(*wxRED_PEN);
@@ -225,8 +228,22 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
     dc.SetFont(*ff1);
     wxCoord w, h, d, xl;
     dc.GetTextExtent(msg, &w, &h, &d, &xl);
+    printf("Width if text measured as %d\n", w);
     dc.DrawText(msg, (WIDTH - w)/2,
                      HEIGHT/3 - (h-d));
+// Now to investigate overprinting... What I THINK this shows is that the
+// default behaviour is that the body of letters get written but the
+// background is untouched. This is as per SetBackgroundMode(wxTRANSPARENT).
+    dc.SetTextForeground(*wxRED);
+// Uncommenting these two lines causes bacground to letters to be filled with
+// yellow... and by the fact it confirms that the default behaviour is
+// to write letters with a transparent background.
+//  dc.SetTextBackground(*wxYELLOW);
+//  dc.SetBackgroundMode(wxSOLID);
+// This overprints the first few characters of my message with some junk.
+    dc.DrawText(".. ++", (WIDTH - w)/2,
+                     HEIGHT/3 - (h-d));
+    dc.SetTextForeground(*wxBLACK);
 
 
 //
@@ -245,10 +262,30 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
     dc.SetFont(*ff2);
 // GetTextExtents gives me a width based on the 3-point size of the font,
 // which means it is a much smaller integer values than I had with the
-// bigger font, and so quantization effects will be greater.
+// bigger font, and so quantization effects will be greater. Perhaps the
+// more important message that emerges here is that GetTextExtents does
+// not consuder UserScale when it returns its measurements - they come back
+// as if the text was rendered at scale 1. In that case the width here comes
+// out as a small number, and it LOOKS to me as if at least on some platforms
+// character placement (eg moving things to a pixel boundary) leads to
+// the width of the string overall not being scaled exactly linearly with font
+// size. Specifically here I find that on Windows the width I get here
+// does match the previous measure merely divided by the scale factor (and
+// hence there is a truncation error that has an effect on placement) but
+// with the X11 version I see a bigger discrepancy.
+//
+// The take-away mesage is that GetTextExtent only really works the way I
+// might expect when UserScale is 1.0, and that text on the screen will
+// not in general scale in width as neatly as one might hope when other
+// scale factors are used. So characters should usually be placed one by
+// one under full user control! Oh dear!! Well discovering things like
+// this is what this code is for. 
     dc.GetTextExtent(msg, &w, &h, &d, &xl);
+    printf("Width of text when scaled = %.2f*%d = %.2f\n", SCALE, w, w*SCALE);
+    fflush(stdout);
     dc.DrawText(msg, ((int)(WIDTH/SCALE) - w)/2,
                      (int)((2*HEIGHT)/(3*SCALE)) - (h-d));
+    dc.SetUserScale(1.0, 1.0);
 
 // Now I will draw a sequence is small characters across the middle of the
 // screen using a large real font and using user-scaling that shrinks things
@@ -267,18 +304,18 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 //             antialiasing scheme. Maybe DirectWrite could do better, but
 //             wxWidgets does not support that (yet?).
 //   HA HA HA. A rather more important issue becomes visible with more tests.
-//             if the font I use is cslSTIXMath then I suspecc it does not
-//             have too many WIndowsd-compatible hinting tables - whatever
-//             else the raw display seems fairly poor - in partiicular
+//             if the font I use is cslSTIXMath then I suspect it does not
+//             have too many Windows-compatible hinting tables - whatever
+//             else the raw display seems fairly poor - in particular
 //             the horizontal bar of the "e" is pretty well always invisible
 //             at the small scale I am using.
-// Cygwin X11: Very much the same except that the antialiasing of characters
+// Cygwin X11: Very much the same except that the anti-aliasing of characters
 //             shows up as shades of gray rather than as colours.
 // Ubuntu accessed via cygwin X server: as above for Cygwin direct.
 // Ubuntu running under virtualbox: somewhat more like the Windows case with
-//             colour antialiasting.
+//             colour anti-aliasing.
 // Macbook:    dramatically better display for two reasons. The first is that
-//             the raw screen resolution on my Macbook retina as much higer
+//             the raw screen resolution on my Macbook retina as much higher
 //             and so there are more pixels available to shape the characters
 //             even at 10-point size. Then it look as as if rendering has been
 //             using sub-pixel placement for individual characters, so the
@@ -287,15 +324,25 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 //             placement would lead to characters appearing blury if I had
 //             a lower resolution display.
 // I think I believe that for ordinary text it will make sense to go with
-// whatever the operating system provides - but for Maths I will have things
-// like superscripts and subscripts that are naturally rather small characters
+// whatever the operating system provides - except that exact layout will
+// then very with scale. But for Maths I will have things like superscripts
+// and subscripts that are naturally rather small characters
 // and where the spacing between them and the item they attach to is
-// critical enough that I will worry about it. So here I will first draw
+// critical enough that I will worry about it. And even more critically I
+// will build up huge delimiters by placing glyphs that represent parts
+// of them adjacent, and moving one of those parts by a single pixel could
+// leave a visible and unpleasant gap. So here I will first draw
 // characters onto a big bitmap, then scale that down and finally draw
 // the result. I will try that two ways...
+
     dc.SetUserScale(1.0, 1.0);
     dc.SetFont(*ff3);
     int ewidth, mwidth;
+    dc.SetUserScale(1.0/6.0, 1.0/6.0);
+    dc.SetPen(*wxCYAN_PEN);
+    dc.DrawLine(0, HEIGHT*6/2, WIDTH*6, HEIGHT*6/2);
+    dc.SetUserScale(1.0, 1.0);
+
     for (int y=0; y<10; y++)
         for (int x=0; x<10; x++)
         {   int x1, x2, y1;
@@ -304,39 +351,44 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 // boundaries on some platforms, and renders some characters badly when
 // the font does not provide enough hinting information. At least I think
 // that is what is going on.
-            dc.SetUserScale(1.0/6.0, 1.0/6.0);
-            dc.SetPen(*wxCYAN_PEN);
-            dc.DrawLine(0, HEIGHT*6/2, WIDTH*6, HEIGHT*6/2);
 
+// I measure "e" and "m" and space by characters an odd number of pixels
+// in the high resolution space, so that on-screen they do not all fall
+// at natural pixel boundaries.
             dc.GetTextExtent("e", &ewidth, &h, &d, &xl);
             dc.GetTextExtent("m", &mwidth, &h, &d, &xl);
             while (ewidth%2==0 || ewidth%3==0) ewidth++;
             while (mwidth%2==0 || mwidth%3==0) mwidth++;
-            mwidth |= 1;
+
+            dc.SetUserScale(1.0/6.0, 1.0/6.0);
             dc.DrawText("e", x1=ewidth*(x+10*y), y1=HEIGHT*6/2-(h-d)+y);
             dc.DrawText("m", x2=mwidth*(x+10*y), y1+60);
+            dc.SetUserScale(1.0, 1.0);
+//          
+//
 // Now a more complicated scheme. I will explicitly draw onto a large
 // bitmap then shrink it in a way that has an anti-aliasing effect. The
 // result is liable to be not that sharp but (on at least some platforms) it
 // may be fairer. 
-            dc.SetUserScale(1.0, 1.0);
+//
 // I will want to have a bitmap that will be neatly aligned against the
-// main grid when I print from it.
+// main grid when I print from it. I am coding this on the basis that my
+// high resolution regime has 6 times the resolution of the low resolution
+// one.
             int x1a = 6*(x1/6);
             int x2a = 6*(x2/6);
             int y1a = 6*(y1/6);
-// The size needs to be big enough for the laregest character in my font. I
+// The size needs to be big enough for the largest character in my font. I
 // am not worrying about that issue JUST yet...
             wxBitmap bitmap(60, 120, 32);
             wxMemoryDC memdc;
             memdc.SelectObject(bitmap);
+            memdc.SetBackground(background_brush);
+            memdc.Clear();
             memdc.SetFont(*ff3);
-            memdc.SetUserScale(1.0, 1.0);
-            memdc.SetPen(*wxWHITE_PEN);
-            memdc.SetBrush(*wxWHITE_BRUSH);
-            memdc.DrawRectangle(0, 0, 60, 120);
-            dc.GetTextExtent("e", &w, &h, &d, &xl);
-            memdc.DrawText("e", x1-x1a, y1-y1a+60-(h-d));
+// I will write a black letter on a standard (well in my case lilac) background.
+            memdc.GetTextExtent(wxT("e"), &w, &h, &d, &xl);
+            memdc.DrawText(wxT("e"), x1-x1a, y1-y1a+60-(h-d));
 // I believe I need to detach the bitmap from the Device Context before
 // messing around further.
             memdc.SelectObject(wxNullBitmap);
@@ -345,39 +397,43 @@ void DemoFrame::OnPaint(wxPaintEvent& event)
 // source. This gives an impression of more accurate positioning and character
 // shape than the simple use of DrawText direct on the output - but the cost
 // is that I lose hints and tend to end up with characters that have blurry
-// edges.
-            im.Rescale(10, 20); //, wxIMAGE_QUALITY_HIGH);
-            wxBitmap bm2 = im;
-#ifdef USE_DRAWBITMAP
-            dc.DrawBitmap(bm2, x1a/6, y1a/6+HEIGHT/3);
-#else
-            memdc.SelectObject(bm2);
-            dc.Blit(x1a/6, y1a/6+HEIGHT/3,     // destination coordinates
-                    10, 20,                    // size to copy
-                    &memdc,                    // source
-                    0, 0,                      // source coordinates
-                    wxAND);                    // tend to blacken
-            memdc.SelectObject(wxNullBitmap);
-#endif
+// edges. The original character was drawn as a black charecter on a white
+// background, but it may have ended up with some multi-colour fringes where
+// anti-aliasing believes it knows about LCD pixel layout. That is NOT
+// useful here because I am about to scale the image. But a consequence
+// can be that the resulting scaled image is also colourful. To avoid any
+// confusion I will map onto grayscales here...
+            im.ConvertToGreyscale();
+// Now I shrink the image to the size that characters should appear on the
+// screen.
+            im.Rescale(10, 20, wxIMAGE_QUALITY_HIGH);
+// This image now has black foreground and my standard background. I need to
+// give it a mask so that background bits do not get displayed...
+            im.SetMaskColour(background_colour.Red(),
+                             background_colour.Green(),
+                             background_colour.Blue());
+            wxBitmap bm2(im);
+            dc.DrawBitmap(bm2, x1a/6, y1a/6+HEIGHT/3, true);
+
+
+// Now basically the same stuff but without interleaved commentary, so you
+// can see it is not THAT much code after all! But also so that I can see
+// where it might be allocating fresh memory for each character it renders! 
 
             memdc.SelectObject(bitmap);
-            memdc.DrawRectangle(0, 0, 60, 120);
-            memdc.DrawText("m", x2-x2a, y1-y1a+60-(h-d));
+            memdc.SetBackground(background_brush);
+            memdc.Clear();
+            memdc.GetTextExtent(wxT("m"), &w, &h, &d, &xl);
+            memdc.DrawText(wxT("m"), x2-x2a, y1-y1a+60-(h-d));
             memdc.SelectObject(wxNullBitmap);
             im = bitmap.ConvertToImage();
-            im.Rescale(10, 20); //, wxIMAGE_QUALITY_HIGH);
-            wxBitmap bm3 = im;
-#ifdef USE_DRAWBITMAP
-            dc.DrawBitmap(bm3, x2a/6, y1a/6+HEIGHT/3+20);
-#else
-            memdc.SelectObject(bm3);
-            dc.Blit(x2a/6, y1a/6+HEIGHT/3+20,  // destination coordinates
-                    10, 20,                    // size to copy
-                    &memdc,                    // source
-                    0, 0,                      // source coordinates
-                    wxAND);                    // tend to blacken
-            memdc.SelectObject(wxNullBitmap);
-#endif
+            im.ConvertToGreyscale();
+            im.Rescale(10, 20, wxIMAGE_QUALITY_HIGH);
+            im.SetMaskColour(background_colour.Red(),
+                             background_colour.Green(),
+                             background_colour.Blue());
+            wxBitmap bm3(im);
+            dc.DrawBitmap(bm3, x2a/6, y1a/6+HEIGHT/3+20, true);
        }
 }
 
