@@ -204,16 +204,6 @@ BEGIN_EVENT_TABLE(showmathFrame, wxFrame)
     EVT_SIZE(            showmathFrame::OnSize)
 END_EVENT_TABLE()
 
-    {   switch(errno)
-        {
-    case ERANGE: return -2; // negative return value flags an error.
-    case EACCES: return -3;
-    default:     return -4;
-        }
-    }
-    else return strlen(s);
-}
-
 /*
  * The next procedure is responsible for establishing information about
  * both the"short-form" name of the program launched and the directory
@@ -298,7 +288,10 @@ int main(int argc, char *argv[])
 #if DEBUG
         logprintf("calling wxEntry\n");
 #endif
-
+        add_custom_fonts();
+#if DEBUG
+        logprintf("fonts added\n");
+#endif
         return wxEntry(argc, argv);
     }
 //
@@ -369,11 +362,6 @@ bool showmathApp::OnInit()
 #if DEBUG
     logprintf("in showmathApp::OnInit\n");
 #endif
-    add_custom_fonts();
-#if DEBUG
-    logprintf("fonts added\n");
-#endif
-
     const char *showmathfilename = NULL;
     if (argc > 1) showmathfilename = myargv[1];
 

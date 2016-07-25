@@ -51,6 +51,8 @@
 #include "wx/wx.h"
 #endif
 
+#include "wx/fontenum.h"
+
 #ifdef WIN32
 #include <windows.h>
 #include <io.h>
@@ -323,19 +325,39 @@ static const char *fontNames[] =
 void add_custom_fonts()
 {
 #ifdef WIN32
+#ifdef DO_NOT_SUPPORT_GRAPHICSCONTEXT
+// This is expected to be the final version of the code -- but it does
+// not let you use custom fonts with a wxGraphicsContext.
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
         sprintf(nn, "%s\\%s\\%s",
                     programDir, toString(fontsdir), fontNames[i]);
-//      printf("Adding %s\n", nn); fflush(stdout);
+        printf("Adding %s\n", nn); fflush(stdout);
         if (AddFontResourceExA(nn, FR_PRIVATE, 0) == 0)
         {   printf("AddFontResource failed\n");
             fflush(stdout);
         }
     }
-//  printf("About to activate\n"); fflush(stdout);
     PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
-//  printf("Activated\n"); fflush(stdout);
+#else
+// This version (default just for now) uses my extension to wxWidgets that
+// gives full support for private fonts.
+    for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
+    {   char nn[LONGEST_LEGAL_FILENAME];
+        sprintf(nn, "%s\\%s\\%s",
+                    programDir, toString(fontsdir), fontNames[i]);
+        printf("Adding %s\n", nn); fflush(stdout);
+        wxString nnn(nn);
+        if (!wxFont::AddPrivateFont(nnn))
+        {   printf("AddPrivateFont failed\n");
+            fflush(stdout);
+        }
+    }
+    if (!wxFont::ActivatePrivateFonts())
+    {   printf("ActivatePrivateFonts failed\n");
+        fflush(stdout);
+    }
+#endif
 #elif defined MACINTOSH
 // Note that on a Mac I put the required fonts in the Application Bundle,
 // and so I do not need to take run-time action to make them available.
@@ -344,11 +366,11 @@ void add_custom_fonts()
     if (config == NULL) config = FcConfigCreate();
     for (int i=0; i<(int)(sizeof(fontNames)/sizeof(fontNames[0])); i++)
     {   char nn[LONGEST_LEGAL_FILENAME];
-        sprintf(nn, "%s\\%s\\%s",
+        sprintf(nn, "%s/%s/%s",
                     programDir, toString(fontsdir), fontNames[i]);
 //      printf("Adding %s\n", nn); fflush(stdout);
         if (!FcConfigAppFontAddFile(config, (const FcChar8 *)nn))
-        {   printf("FcConfigAppFontAddFile failed\n");
+        {   printf("FcConfigAppFontAddFile failed for %s\n", nn);
             fflush(stdout);
         }
     }
@@ -363,20 +385,16 @@ void add_custom_fonts()
 
 void display_font_information()
 {
-// THIS IS DISABLED AT PRESENT BECAUSE ON MY FIRST TRY THE wxWIDGETS HEADERS
-// AND RAW WINDOWS ONES CLASHED...
-//  wxArrayString flist(wxFontEnumerator::GetFacenames(wxFONTENCODING_SYSTEM));
-//  int nfonts;
-//  printf("There are %d fonts\n", nfonts=(int)flist.GetCount());
-//  fflush(stdout);
-//  for (int i=0; i<nfonts; i++)
-//      printf("%d) <%s>\n", i, (const char *)flist[i].mb_str());
-//  fflush(stdout);
-//  printf("End of debug output\n");
-//  fflush(stdout);
+    wxArrayString flist(wxFontEnumerator::GetFacenames(wxFONTENCODING_SYSTEM));
+    int nfonts;
+    printf("There are %d fonts\n", nfonts=(int)flist.GetCount());
+    fflush(stdout);
+    for (int i=0; i<nfonts; i++)
+        printf("%d) <%s>\n", i, (const char *)flist[i].mb_str());
+    fflush(stdout);
+    printf("End of debug output\n");
+    fflush(stdout);
 }
-
-
 
 int windowed = 0;
 

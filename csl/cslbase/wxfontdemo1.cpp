@@ -293,6 +293,7 @@ int main(int argc, const char *argv[])
         }
 #endif
         add_custom_fonts();
+        printf("Custom fonts should now be available\n");
         wxDISABLE_DEBUG_SUPPORT();
         return wxEntry(argc, (char **)argv);
     }
