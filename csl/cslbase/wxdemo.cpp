@@ -56,7 +56,8 @@
 // so in fact to a multiple of 12 pixels in the final display. This can mess
 // with  inter-character spacing and hence how well the text is centred on
 // the line. Observe the (green) underlining is thick because if has been
-// scaled up.
+// scaled up. Also how the thick green line and the text do not end up
+// aligned the same way relative to each other on different platforms.
 //
 // Then there are (up to) three double lines of small letters. Each has a row
 // of "e" then a row of "m". The top one uses wxGraphicsContext where placement
