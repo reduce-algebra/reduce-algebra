@@ -124,6 +124,16 @@
 //     by anything like as large a factor as I had perhaps planned to?
 //
 
+// Having looked at other images that I have rescaled (using method (a),
+// i.e. a scaled wxGraphicsContext, I see some on-screen effects that are
+// really rather bad when I try to render mathematics. Specifically when I
+// draw a tall delimiter using multiple glyphs patched together at some
+// scales the different parts of the tower can end up with their edges
+// offset from each other horizontally by one pixel (I certainly see that
+// using both Windows and X11). The effect is that what should be a vertical
+// stroke that would be (say) 3 pixels wide ends up ragged and really noticably
+// ugly.
+
 
 #include "wxfwin.h"
 
