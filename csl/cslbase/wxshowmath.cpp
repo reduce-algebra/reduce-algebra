@@ -41,58 +41,71 @@
 // scale reduction to a second buffer sized as per the real window I am
 // painting in. That real window will never be larger than the screen size.
 
-// So the overview plan is that "hugebitmap" is a 1-bit deep (ie monochrome)
-// bitmap which has width that is OVERSAMPLE times that of the screen.
-// Its height will be twice OVERSAMPLE times the screen height.
-//
-// "bitmap" is a bitmap with depth the same as the screen (and I am often
-// going to expect that to be 24 or 32 bits) and size just matching the
-// screen.
+// So the overview plan is that "hugebitmap" is an in-memory bitmap which
+// is OVERSAMPLE times as large as the screen.
+// I had intended to use a monochrome bitmap which would have saved space
+// and might plausibly have saved time too - however testing using Cygwin/X11
+// showed X11-level crashes in propcessing that. So next I tried an 8-bit
+// deep bitmap, which behaved under Cygwin/X11 but caused the Windows version
+// of wxWidgets to complain that the bitmap could not be selected into its
+// wxMemoryDC. So now I use a bitmap that is 32-bit deep, which feels like
+// a serious excess. I suppose the good thing is that as and when I may wish
+// to render coloured text or componets in the user-interface they will show
+// up nicely!
 //
 // I will keep the size of the window smaller than the full screen size
 // and this will mean that the client size will be strictly smaller.
 //
-// If I have a window with client area of size w*h then a corner of bitmap
-// will be used to collect what is to be displayed on it. Because the bitmap
-// is thoroughtly compatible with the screen I can update bits of the
-// screen using simple (and fast) Blit operations.
+// I will than use a section of hugebitmap with the same proportions as
+// my client area. The exact size of this will be discussed later!
 //
-// I will than want to have a section of hugebitmap with the same proportions.
-// I will make it (about) between OVERSAMPLE to 2*OVERSAMPLE times as wide,
-// and I want to make its size a nice round number. I may arrange that
-// the whenever I change it I either halve or double its size.
-// Associated with hugebitmap is a font such that 80 characters fit
-// neatly across the width of the active region. This probably means that
-// I want the active width to be a multiple of 80.
+// When I need to update the screen I will copy from hugebitmap to the
+// screen using a a wxGraphicsContext that can re-scale. This achieves
+// a style of anti-aliasing and allows placement of characters on the
+// screen at places OVERSAMPLE more precise then would be manageable
+// otherwise.
 //
-// Let me first the user-interface for displaying characters and rectangles.
-// I will work in a standard coordinate space which I is expressed in integers
-// but has reasonably high resolution. I will make it such that 0-64000
-// represents or maps to the width of the screen. That number is a neat
-// multiple of 80 and fits with 16 bits. The highest standardized screen
-// resolution is at present 8K UHD with a width of 7680 so this is (roughly)
-// 8 times finer. I will use integer scaling to go from these user coordinates
-// first to a position within hugebitmap.
+// For my first version I will always reduce and redraw the whole of
+// hugebitmap, and will hope that wxWidgets neither gets upset by nor
+// wastes time on sampling parts that will end up outside the client
+// area of the window. This may give poor performance because every
+// single screen update will redraw the entire screen. It could be that
+// with graphics card support for the bitmap scaling and drawing that
+// it ends up fast enough. If it does not then I will arrange to shrink
+// from hugebitmap to screen-resolution tiles that can be drawn individually.
 //
-// Then when I need to update the screen I will map from hugebitmap to
-// bitmap, converting the monochrome hugebitmap to a greyscale version in
-// bitmap. In general this will not be scaling by a particularly nice
-// ratio! I will code that for myself. The result will not be able to
-// exploit font-smoothing based on the three separate colours used by an
-// LCD display.
+// Right now I do not have the correct sequencing between
 //
-// I will have to play games to arrange to be able to get just those parts of
+// At least with a debug build on either Windows or Cygwin-X11 what I have
+// now looks good, but performance is perhaps best described as calamitous.
+// Before I totally panic I will move try an optimised (release) build, and
+// I will also try on native Unix and on a Macintosh. But painting via
+// a row of tiles so that I do not need to process the whole screen every time
+// may well sort things out for me... at the cost of a layer of extra
+// complication in my code!
+//
+// Conclusion - with release code the Windows version now refreshes the
+// screen roughly fast enough for me - but it causes the screen to flicker
+// badly because it clears the whole screen before redrawing. On Unix it looks
+// as if behaviour is OK but performance just inadequate.
+//
+// I may have to play games to arrange to be able to get just those parts of
 // of the screen redrawn that I need to. When I want colour effects I will
 // arrange them to having areas of my screen marked for colour in bitmap
 // thoug not in hugebitmap, and I have not worke dout details of that
 // either. Colour may be reqired for distinguishing prompts, inputs,
 // regular output and diagnostics and for marking regions as selected.
+// Well now if I continue to use a 32-bit deep bitmap that is less of an
+// issue...
 //
 // I think I have written enough here for now - I should now start to
 // implement at least some parts of it!
 
 
-// Without the following things like UINT64_C will not be available.
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS 1
+#endif
+
 #ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
 #endif
@@ -158,6 +171,8 @@ extern char *getcwd(char *s, size_t n);
 
 #include"uninames.h"
 #include"charmetrics.h"
+
+static wxStopWatch sw;
 
 static FILE *logfile = NULL;
 
@@ -243,12 +258,13 @@ int screenWidth, screenHeight;
 // screen - that is so that if you use a portrait-laout window filling
 // (say) the left half of the screen you can map that using hugebitmap.
 // When you do that the oversampling will double.
-static const int OVERSAMPLE = 6;
+static const int OVERSAMPLE = 4;
 
 int hugeWidth, hugeHeight;
 wxBitmap *hugebitmap;
 wxMemoryDC *hugedc;
 wxFont *hugefont;
+int char_width_1000;
 
 // At any moment you will be using only part of the huge bitmap.
 // I need to know how large this is and how much larger the full
@@ -256,21 +272,13 @@ wxFont *hugefont;
 int usedWidth, usedHeight;
 double usedWidthRatio, usedHeightRatio;
 
-// The current client area has the following size. Note that when the
-// user drags on a border ro re-size the window I will need to update
-// this - and follow through all the consequences.
 int clientWidth, clientHeight;
-wxBitmap *bitmap;
-wxMemoryDC *bitdc;
-
-
 
 class showmathFrame : public wxFrame
 {
 public:
     showmathFrame(const char *showmathfilename);
 
-    bool CalculateUsed();    // returns true if scale changes
     void RepaintBuffer();
 
     void OnClose(wxCloseEvent &event);
@@ -402,6 +410,7 @@ bool showmathApp::OnInit()
         showmathfilename = tidyfilename;
     }
 #endif
+    sw.Start(0);  // start the StopWatch
     showmathFrame *frame = new showmathFrame(showmathfilename);
     frame->Show(true);
     return true;
@@ -429,12 +438,26 @@ showmathFrame::showmathFrame(const char *showmathfilename)
 // exactly 80 characters across it.
     sw = sw + (80 - sw%80);
     hugebitmap = new wxBitmap(hugeWidth=OVERSAMPLE*sw,
-                              hugeHeight=2*OVERSAMPLE*screenHeight, 1);
-    hugedc = new wxMemoryDC();
-    hugedc->SelectObject(*hugebitmap); // Writing to the DC writes into bitmap
-    bitmap = new wxBitmap(screenWidth, screenHeight, wxBITMAP_SCREEN_DEPTH);
-    bitdc = new wxMemoryDC();
-
+                              hugeHeight=2*OVERSAMPLE*screenHeight,
+                              32);
+    hugedc = new wxMemoryDC(*hugebitmap);
+    logprintf("bitmap=%p dc=%p\n", hugebitmap, hugedc);
+    hugedc->SelectObject(*hugebitmap);
+//
+// I will now create a font suitable for writing into the huge
+// bitmap. Well here I will just make one using "CMU Typewriter Text", a
+// fixed pitch font. I start by creating a font that is 1000 points. This
+// is of course ridiculously large, but maybe it lets me measure widths
+// accurately. Actually the size I use here is not that important and
+// I will (repeatedly) change it later on.
+    wxFontInfo hugefi(1000);
+    hugefi.FaceName("CMU Typewriter Text");
+    hugefont = new wxFont(hugefi);
+    hugedc->SetFont(*hugefont);
+    int w, h, d, xl;
+    hugedc->GetTextExtent("X", &w, &h, &d, &xl);
+    logprintf("w=%d, h=%d, d=%d xl=%d\n", w, h, d, xl);
+    char_width_1000 = w;
 // I am now going to pick a default initial size for the client area
 // of my main window. The choice here is perhaps somewhat arbitrary and
 // may only be good for MY screen.
@@ -453,7 +476,6 @@ showmathFrame::showmathFrame(const char *showmathfilename)
     {   clientHeight = 90*screenHeight/100;
         logprintf("reset to %d by %d to fix height\n", clientWidth, clientHeight);
     }
-
     panel = new showmathPanel(this, showmathfilename);
 // I put a minimum on the client size...
     SetMinClientSize(wxSize(400, 100));
@@ -461,8 +483,8 @@ showmathFrame::showmathFrame(const char *showmathfilename)
     SetMaxSize(wxSize(screenWidth, screenHeight));
     SetClientSize(clientWidth, clientHeight);
     Centre();
-
     RepaintBuffer();
+    panel->Refresh();
 
 
 }
@@ -471,26 +493,17 @@ void showmathFrame::RepaintBuffer()
 {
 // Now that I know how big by client window will be I can work out how
 // much of the huge bitmap I will use.
-    CalculateUsed();
+    usedWidth = OVERSAMPLE*clientWidth;
+    usedHeight = OVERSAMPLE*clientHeight;
     logprintf("usedWidth = %d\n", usedWidth);
-//
-// I will now create a font suitable for writing into the huge
-// bitmap. Well here I will just make one using "CMU Typewriter Text", a
-// fixed pitch font. I start by creating a font that is 1000 points. This
-// is of course ridiculously large, but maybe it lets me measure widths
-// accurately.
-    wxFontInfo hugefi(1000);
-    hugefi.FaceName("CMU Typewriter Text");
-    wxFont tempFont(hugefi);
-    int w, h, d, xl;
-    hugedc->SetFont(tempFont);
-    hugedc->GetTextExtent("X", &w, &h, &d, &xl);
-    logprintf("w=%d, h=%d, d=%d xl=%d\n", w, h, d, xl);
-// Now because I happen to have a known font and a simple bitmap to write into
-// I think that the font measurements I get ought to be pretty well constant,
-// but I will still act as if they might not be.
-    logprintf("Want to scale by %.3f to get width %d\n", usedWidth/(80.0*w), usedWidth);
-    int pointSize = (usedWidth*1000)/(80*w);
+    logprintf("huge bitmap %d*%d*%d\n",
+        hugebitmap->GetWidth(),
+        hugebitmap->GetHeight(),
+        hugebitmap->GetDepth());
+    logprintf("About to try selecting hugebitmap = %p\n", hugebitmap); 
+    hugedc->SelectObject(*hugebitmap); // Writing to the DC writes into bitmap
+    logprintf("Selected\n");
+    int pointSize = (usedWidth*1000)/(80*char_width_1000);
     logprintf("try point size = %d\n", pointSize);
 // There us a potential danger that xWidgets create a font here that was
 // not exactly what I wanted - and in particular that it might have created
@@ -498,11 +511,17 @@ void showmathFrame::RepaintBuffer()
 // neatly on the line. If that is the case I will decrease the requested
 // point size by 1 and try again.
     for (;;)
-    {   tempFont.SetPointSize(pointSize);
-        hugedc->SetFont(tempFont);
+    {   hugefont->SetPointSize(pointSize);
+        hugedc->SetFont(*hugefont);
+        int w, h, d, xl;
         hugedc->GetTextExtent("X", &w, &h, &d, &xl);
         logprintf("w=%d, h=%d, d=%d xl=%d\n", w, h, d, xl);
-        if (80*w <= usedWidth) break;
+        if (80*w <= usedWidth)
+        {   char_width = w;
+            char_offset = h - d;
+            char_linespace = h + xl;
+            break;
+        }
         pointSize--;
         logprintf("pointSize decreased and is now %d\n", pointSize);
         if (pointSize < 14) // I expect pointSize to be > 50
@@ -510,71 +529,30 @@ void showmathFrame::RepaintBuffer()
             exit(1);
         }
     }
-    char_width = w;   // Width of (fixed pitch) characters on hugebitmap.
     logprintf("Now 80 chars should have with %d in hugebitmap (cf %d)\n",
-              80*w, usedWidth);
-    char_offset = h - d;
-    char_linespace = h + xl;
-    hugefont = new wxFont(tempFont);
+              80*char_width, usedWidth);
+    usedWidth = 80*char_width;
 //
 // Now so that I can see what is going in a bit I will draw a row of
 // characters across the top of hugebitmap...
+    logprintf("About to set background\n");
     hugedc->SetBackground(*wxWHITE_BRUSH);
+    logprintf("About to clear\n");
     hugedc->Clear();
+    logprintf("cleared - so now write text (%" PRId64 ")\n", (int64_t)sw.Time());
     for (int i=0; i<80; i++)
         hugedc->DrawText(wxString((wchar_t)(i+0x21)),
            i*char_width,
            char_linespace - char_offset);
+    logprintf("text done - now blocks (%" PRId64 ")\n", (int64_t)sw.Time());
+#if 1
 // Draw blocks every 1000 pixels in hugebitmap
     for (int i=0; i<usedWidth; i+=1000)
         hugedc->DrawRectangle(i, 2*char_linespace, 500, char_linespace);
-// So far the above will not have any visible effect at all! 
-    bitdc->SelectObject(*bitmap); // Writing to the DC writes into bitmap
-// Since I will totally overwrite the bitmap when I do the scaled write to
-// it in a moment it is not really  necessary to fill it with a colour here.
-// But I will do so so I verify where the main bitmap wrote to.
-    bitdc->SetBackground(*wxCYAN);
-    bitdc->Clear();
-
-    fflush(stdout);
-
-// Copy into the smaller bitmap...
-    wxGraphicsContext *gg = wxGraphicsContext::Create(*bitdc);
-// With wxGraphicsContext the DrawBitmap function will scale the whole of the
-// bitmap that you are drawing to fit into the size region that you
-// specify... So I do not need to set any more global scaling options. As far
-// as I can see this always displays the FULL extent of the bitmap, so I will
-// hope that the implementation is clever when much of it would end up outside
-// the target bitmap and will not waste undue time scaling and anti-aliasing
-// that part.
-    gg->DrawBitmap(*hugebitmap, 0.0, 0.0,
-        clientWidth*usedWidthRatio, clientHeight*usedHeightRatio);
-    delete gg;
+    logprintf("blocks done\n");
+#endif
+    hugedc->SelectObject(wxNullBitmap);
 }
-
-
-
-bool showmathFrame::CalculateUsed()
-{
-// First find the smallest region I could use
-    int w = OVERSAMPLE*clientWidth,
-        h = OVERSAMPLE*clientHeight;
-// I *could* alwys use exactly the scale found here, but if I do so I will
-// need to create fresh fonts and re-draw the huge bitmap every time, and that
-// seems ugly. I would also like the hugeWidth to be a nice multiple
-// of the width of characters I place in it.
-// Right now I will not mess about!
-    logprintf("Client area is %d*%d\n", clientWidth, clientHeight);
-    logprintf("Will use a region of size %d*%d in hugebitmap\n", w, h);
-    logprintf("That gives a scale of %.3f\n", (double)clientWidth/(double)w);
-    usedWidth = w;
-    usedHeight = h;
-// How much bigger than the section that I am using is the full bitmap?
-    usedWidthRatio = (double)hugeWidth/(double)usedWidth;
-    usedHeightRatio = (double)hugeHeight/(double)usedHeight;
-    return true;
-}
-
 
 static char default_data[4096] =
     "deffont 1 Regular 24;"
@@ -714,16 +692,21 @@ void showmathFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 
 void showmathFrame::OnSize(wxSizeEvent &WXUNUSED(event))
 {   wxSize client(GetClientSize());
-    clientWidth = client.GetWidth();
-    clientHeight = client.GetHeight();
+    int w = client.GetWidth(), h = client.GetHeight();
+    logprintf("OnSize says size is now %d*%d\n", w, h);
+    if (clientWidth == w && clientHeight == h) return;
+    clientWidth = w;
+    clientHeight = h;
+    logprintf("New window size %d*%d\n", clientWidth, clientHeight);
     panel->SetSize(client);
-    RepaintBuffer();
 // Here I need to re-evaluate how much of the huge bitmnap I will be
 // using, clear that bitmap. Repaint it and then trasfer a copy to the
 // window-sized bitmap that I will actually repaint from. The "Refresh"
 // shown here will merely trigger repainting the screen from the
 // memory buffer bitnmap that I have.
+    logprintf("About to repaint\n");
     RepaintBuffer();
+    logprintf("Completed repaint\n");
     panel->Refresh();
 }
 
@@ -820,12 +803,32 @@ static void allow_for_utf16(wchar_t *ccc, int cp)
 }
 
 void showmathPanel::OnPaint(wxPaintEvent &event)
-{   wxPaintDC mydc(this);
-    mydc.Blit(0, 0, clientWidth, clientHeight,
-              bitdc, 0, 0);
-// Once when debugging I drew yellow squares to  help me understand how
-// things wer egetting rendered.
+{   logprintf("OnPaint called\n");
+    wxPaintDC mydc(this);
+    mydc.SetBackground(*wxWHITE_BRUSH);
+    wxGraphicsContext *gg = wxGraphicsContext::Create(mydc);
+// With wxGraphicsContext the DrawBitmap function will scale the whole of the
+// bitmap that you are drawing to fit into the size region that you
+// specify... So I do not need to set any more global scaling options. As far
+// as I can see this always displays the FULL extent of the bitmap, so I will
+// hope that the implementation is clever when much of it would end up outside
+// the target bitmap and will not waste undue time scaling and anti-aliasing
+// that part.
+    logprintf("About to draw bitmap (%" PRId64 ")\n", (int64_t)sw.Time());
+// On Linux (at least under virtualbox) this is astonishingly slow....
+// That could be because wxWidgets is trying to use GPU capabilities and
+// vmwate is not accelerating tham at all well? Anyway around 3 seconds
+// for processing the bitmap is BAD!
+//
+    double scaledWidth = hugeWidth*(double)clientWidth/usedWidth;
+    double scaledHeight = hugeHeight*(double)clientHeight/usedHeight;
+    gg->DrawBitmap(*hugebitmap, 0.0, 0.0, scaledWidth, scaledHeight);
+    logprintf("Done drawing bitmap (%" PRId64 ")\n", (int64_t)sw.Time());
+    delete gg;
+
 #if 1
+// Once when debugging I drew yellow squares to  help me understand how
+// things were getting rendered.
     mydc.SetBrush(*wxYELLOW_BRUSH);
     for (int i=50; i<1000; i+=100)
         mydc.DrawRectangle(i, i, 100, 100);

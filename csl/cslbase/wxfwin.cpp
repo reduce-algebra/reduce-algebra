@@ -332,7 +332,7 @@ void add_custom_fonts()
     {   char nn[LONGEST_LEGAL_FILENAME];
         sprintf(nn, "%s\\%s\\%s",
                     programDir, toString(fontsdir), fontNames[i]);
-        printf("Adding %s\n", nn); fflush(stdout);
+//      printf("Adding %s\n", nn); fflush(stdout);
         if (AddFontResourceExA(nn, FR_PRIVATE, 0) == 0)
         {   printf("AddFontResource failed\n");
             fflush(stdout);
@@ -346,7 +346,7 @@ void add_custom_fonts()
     {   char nn[LONGEST_LEGAL_FILENAME];
         sprintf(nn, "%s\\%s\\%s",
                     programDir, toString(fontsdir), fontNames[i]);
-        printf("Adding %s\n", nn); fflush(stdout);
+//      printf("Adding %s\n", nn); fflush(stdout);
         wxString nnn(nn);
         if (!wxFont::AddPrivateFont(nnn))
         {   printf("AddPrivateFont failed\n");
