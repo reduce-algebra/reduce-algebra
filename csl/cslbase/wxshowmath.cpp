@@ -114,6 +114,8 @@ extern char *getcwd(char *s, size_t n);
 
 static wxStopWatch sw;
 
+static int options = 5;  // default to using my own scaling
+
 static FILE *logfile = NULL;
 
 static int logprintf(const char *fmt, ...)
@@ -191,13 +193,13 @@ END_EVENT_TABLE()
 int screenWidth, screenHeight;
 
 wxBitmap *bigBitmap;
-wxMemoryDC *bigdc;
+wxMemoryDC *bigDC;
 // I have bigBitmap which is bigWidth*bigHeight, which is 4 times the
 // size of my screen (well my screen as reported and worked with by
 // wxWidgets). Eg for a HD monitor that means it will be 7680x4320 which
-// is 31 megapixels. If this bitmap uses 4 bits per pixel it will be
-// 126.5 Mbytes. I start to view this as excessive, but if I am going to
-// ignore worries about space efficiency at least for now!
+// is 31 megapixels. It turns out to be VITALLY IMPORTANT for performance
+// that I make this bitmnap have the same depth as my screen. It ends up
+// using quite a lot of memory!
 
 int bigWidth, bigHeight;
 
@@ -210,7 +212,7 @@ int clientWidth, clientHeight;
 
 // The client area will be mapped by a region in the top left hand corner of
 // bigBitmap. This will be larger by some factor that is in the range 3.5
-// to 4. usedScale recorsd this scale factor and usedWidth and usedHeight
+// to 4. usedScale records this scale factor and usedWidth and usedHeight
 // the size of this area. Note that the constraints I have documented ensure
 // that this fits within bigBitmap. I am going to arrange that usedWidth is
 // either a multiple of 80 or only a few pixels larger. That is so that I can
@@ -229,7 +231,9 @@ int usedWidth, usedHeight;
 // to wxWidgets to create the font. To help me choose a suitable point size
 // I record charWidth_1000 which is the width of a 1000-point character.
 
-wxBitmap *bigTile;
+wxBitmap *bigTile = NULL;
+wxBitmap *smallTile = NULL;
+wxMemoryDC *tileDC;
 int smallTileSize, bigTileSize;
 
 // bigfont is a fixed pitch font sized for use on bigBitmap, such that
@@ -292,14 +296,14 @@ END_EVENT_TABLE()
 #endif
 
 int main(int argc, char *argv[])
-{   int i;
-    int usegui = 1;
+{   int usegui = 1;
 // Find where I am invoked from before doing anything else
     find_program_directory(argv[0]);
 // The next fragment is not very useful in THIS program but stands in for
 // behaviour I want in more complicated cases.
-    for (i=1; i<argc; i++)
-    {   if (strncmp(argv[i],"-w", 2) == 0) usegui = 0;
+    for (int i=1; i<argc; i++)
+    {   if (strncmp(argv[i], "-w", 2) == 0) usegui = 0;
+        if (strncmp(argv[i], "-x", 2) == 0) options = atoi(argv[i]+2);
     }
 #if !defined WIN32 && !defined MACINTOSH
 // Under X11 I will demote to being a console mode application if DISPLAY
@@ -334,11 +338,10 @@ int main(int argc, char *argv[])
 // Well foo.app exists and is a directory, so I will try to use it
                 const char **nargs =
                     (const char **)malloc(sizeof(char *)*(argc+3));
-                int i;
                 nargs[0] ="/usr/bin/open";
                 nargs[1] = xname;
                 nargs[2] ="--args";
-                for (i=1; i<argc; i++)
+                for (int i=1; i<argc; i++)
                     nargs[i+2] = argv[i];
                 nargs[argc+2] = NULL;
 // /usr/bin/open foo.app --args [any original arguments]
@@ -362,7 +365,8 @@ int main(int argc, char *argv[])
 //
     printf("This program has been launched asking for use in a console\n");
     printf("type a line of text please\n");
-    while ((i = getchar()) != '\n' && i != EOF) putchar(i);
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) putchar(c);
     putchar('\n');
     printf("Exiting from demonstration of console mode use!\n");
     return 0;
@@ -381,7 +385,9 @@ bool showmathApp::OnInit()
 // The program can take an argument - grab that here and pass it down to
 // showmathFrame - or NULL if there was none.
     char **myargv = (char **)argv;
-    const char *showmathfilename = argc > 1 ? myargv[1] : NULL;
+    const char *showmathfilename = NULL;
+    for (int i=1; i<argc; i++)
+        if (myargv[i][0] != '-') showmathfilename = myargv[i];
 #ifdef WIN32
     static char tidyfilename[LONGEST_LEGAL_FILENAME];
     if (showmathfilename != NULL &&
@@ -412,15 +418,15 @@ showmathFrame::showmathFrame(const char *showmathfilename)
     wxRect screenArea(d0.GetClientArea());   // omitting task bar
     screenWidth = screenArea.GetWidth();
     screenHeight = screenArea.GetHeight();
-    logprintf("Usable area of screen is %d by %d\n", screenWidth, screenHeight);
 
     bigBitmap = new wxBitmap(bigWidth=4*screenWidth,
                              bigHeight=4*screenHeight,
-                             32);
-    bigdc = new wxMemoryDC(*bigBitmap);
+                             24); // wxBITMAP_SCREEN_DEPTH);
+    bigDC = new wxMemoryDC();
     bigTile = NULL;
-    logprintf("bitmap=%p dc=%p\n", bigBitmap, bigdc);
-    bigdc->SelectObject(*bigBitmap);
+    smallTile = NULL;
+    tileDC = new wxMemoryDC();
+    bigDC->SelectObject(*bigBitmap);
 //
 // I will now create a font suitable for writing into the big
 // bitmap. Well here I will just make one using "CMU Typewriter Text", a
@@ -431,11 +437,11 @@ showmathFrame::showmathFrame(const char *showmathfilename)
     wxFontInfo bigfi(1000);
     bigfi.FaceName("CMU Typewriter Text");
     bigfont = new wxFont(bigfi);
-    bigdc->SetFont(*bigfont);
+    bigDC->SetFont(*bigfont);
     int w, h, d, xl;
-    bigdc->GetTextExtent("X", &w, &h, &d, &xl);
-    logprintf("w=%d, h=%d, d=%d xl=%d\n", w, h, d, xl);
+    bigDC->GetTextExtent("X", &w, &h, &d, &xl);
     charWidth_1000 = w;
+    bigDC->SelectObject(wxNullBitmap);
 // I am now going to pick a default initial size for the client area
 // of my main window. The choice here is perhaps somewhat arbitrary and
 // may only be good for MY screen.
@@ -445,15 +451,8 @@ showmathFrame::showmathFrame(const char *showmathfilename)
 // clip it down to make it fit better. The consequence of this is that on
 // computers in general the window size may not end up a neat multiple
 // of anything in particular.
-    logprintf("initial try %d by %d\n", clientWidth, clientHeight);
-    if (10*clientWidth > 9*screenWidth)
-    {   clientWidth = 90*screenWidth/100;
-        logprintf("reset to %d by %d to fix width\n", clientWidth, clientHeight);
-    }
-    if (10*clientHeight > 9*screenHeight)
-    {   clientHeight = 90*screenHeight/100;
-        logprintf("reset to %d by %d to fix height\n", clientWidth, clientHeight);
-    }
+    if (10*clientWidth > 9*screenWidth) clientWidth = 90*screenWidth/100;
+    if (10*clientHeight > 9*screenHeight) clientHeight = 90*screenHeight/100;
     SetClientSize(clientWidth, clientHeight);
 // I put a minimum on the client size...
     SetMinClientSize(wxSize(400, 100));
@@ -536,15 +535,18 @@ void showmathFrame::RepaintBuffer()
     int uw = (bestP * clientWidth)/bestQ;
     bestErr = uw % 80;
     farey(7, 2, 4, 1, 25);
-    logprintf("I like scaling by %d/%d : error = %d\n", bestP, bestQ, bestErr);
 // My small times will be in the range 20x20 to 40*40 pixels, which means that
 // each covers say 2 lines of text and a width of 4 characters. 
-    {   int r = 40/bestP;
-        smallTileSize = r*bestP;
-        bigTileSize = r*bestQ;
+    {   int r = 40/bestQ;
+        bigTileSize = r*bestP;
+        smallTileSize = r*bestQ;
     }
     if (bigTile != NULL) delete bigTile;
-    bigTile = new wxBitmap(bigTileSize, bigTileSize, 32);
+    bigTile =
+        new wxBitmap(bigTileSize, bigTileSize, 24); // wxBITMAP_SCREEN_DEPTH);
+    if (smallTile != NULL) delete smallTile;
+    smallTile =
+        new wxBitmap(smallTileSize, smallTileSize, 24); // wxBITMAP_SCREEN_DEPTH);
 // The used region of the big bitmap will be bestP/bestQ times the size of
 // the client area. Well that might not be exactly an integer, so I will
 // round up here, and what I will end up with will be a width that is 0, 1,
@@ -553,17 +555,9 @@ void showmathFrame::RepaintBuffer()
 // seems like pretty good fitting to me.
     usedWidth = (bestP*clientWidth + bestQ - 1)/bestQ;
     usedHeight = (bestP*clientHeight + bestQ - 1)/bestQ;
-    logprintf("usedWidth = %d\n", usedWidth);
-    logprintf("big bitmap %d*%d*%d\n",
-        bigBitmap->GetWidth(),
-        bigBitmap->GetHeight(),
-        bigBitmap->GetDepth());
-    logprintf("About to try selecting bigBitmap = %p\n", bigBitmap); 
-    bigdc->SelectObject(*bigBitmap); // Writing to the DC writes into bitmap
-    logprintf("Selected. charWidth_1000=%d\n", charWidth_1000);
+    bigDC->SelectObject(*bigBitmap); // Writing to the DC writes into bitmap
 // Predict a point size to use...
     charPointSize = (usedWidth*1000 + 40*charWidth_1000)/(80*charWidth_1000);
-    logprintf("try point size = %d\n", charPointSize);
 // There us a potential danger that xWidgets create a font here that was
 // not exactly what I wanted - and in particular that it might have created
 // one (slightly) bigger than I wanted, leading to 80 characters not fitting
@@ -572,18 +566,11 @@ void showmathFrame::RepaintBuffer()
 // font ending up too small, in which case I will make it larger.
     for (;;)
     {   bigfont->SetPointSize(charPointSize);
-        bigdc->SetFont(*bigfont);
+        bigDC->SetFont(*bigfont);
         int w, h, d, xl;
-        bigdc->GetTextExtent("X", &w, &h, &d, &xl);
-        logprintf("w=%d, h=%d, d=%d xl=%d\n", w, h, d, xl);
-        if (80*w > usedWidth)
-        {   charPointSize--;
-            logprintf("charPointSize decreased and is now %d\n", charPointSize);
-        }
-        if (80*w <= usedWidth-80)
-        {   charPointSize++;
-            logprintf("charPointSize increased and is now %d\n", charPointSize);
-        }
+        bigDC->GetTextExtent("X", &w, &h, &d, &xl);
+        if (80*w > usedWidth) charPointSize--;
+        if (80*w <= usedWidth-80) charPointSize++;
         charWidth = w;
         charOffset = h - d;
         charLinespace = h + xl;
@@ -594,29 +581,22 @@ void showmathFrame::RepaintBuffer()
 //
 // Now so that I can see what is going in a bit I will draw a row of
 // characters across the top of bigBitmap...
-    logprintf("About to set background\n");
-    bigdc->SetBackground(*wxWHITE_BRUSH);
-    logprintf("About to clear\n");
+    bigDC->SetBackground(*wxWHITE_BRUSH);
     sw.Start(0);
-    bigdc->Clear();
-    logprintf("bigBitmap cleared in %" PRId64 "\n", (int64_t)sw.Time());
+    bigDC->Clear();
     sw.Start(0);
     for (int i=0; i<80; i++)
-    {   bigdc->DrawText(wxString((wchar_t)(i+0x21)),
+    {   bigDC->DrawText(wxString((wchar_t)(i+0x21)),
            i*charWidth,
            charLinespace - charOffset);
-        logprintf("%c:", i+0x21);
     }
-    logprintf("Line of text drawn in %" PRId64 "\n", (int64_t)sw.Time());
 #if 1
 // Draw blocks every 1000 pixels in bigBitmap
-    bigdc->SetBrush(*wxYELLOW_BRUSH);
+    bigDC->SetBrush(*wxYELLOW_BRUSH);
     for (int i=0; i<usedWidth; i+=1000)
-        bigdc->DrawRectangle(i, 2*charLinespace, 500, charLinespace);
-    logprintf("blocks done\n");
+        bigDC->DrawRectangle(i, 2*charLinespace, 500, charLinespace);
 #endif
-    bigdc->SelectObject(wxNullBitmap);
-    logprintf("bigBitmap filled in\n");
+    bigDC->SelectObject(wxNullBitmap);
 }
 
 static char default_data[4096] =
@@ -758,7 +738,6 @@ void showmathFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 void showmathFrame::OnSize(wxSizeEvent &WXUNUSED(event))
 {   wxSize clientSize(GetClientSize());
     int w = clientSize.GetWidth(), h = clientSize.GetHeight();
-    logprintf("OnSize says size is now %d*%d\n", w, h);
     if (clientWidth == w) logprintf("Width has not changed\n");
     if (clientHeight == h) logprintf("Height has not changed\n");
 //  if (clientWidth == w && clientHeight == h) return;
@@ -809,7 +788,8 @@ void showmathPanel::OnMouse(wxMouseEvent &event)
 // Log but take no action.
     logprintf("Mouse event\n");
     event.Skip();
-//  Refresh();     // forces redraw of everything
+// Here I use a mouse event to force a re-draw.
+    Refresh();     // forces redraw of everything
 }
 
 //- static int32_t convert_font_name(char *dest, char *src)
@@ -864,19 +844,10 @@ static void allow_for_utf16(wchar_t *ccc, int cp)
     }
 }
 
-int tileWidth, smallTileWidth;
-
 void showmathPanel::OnPaint(wxPaintEvent &event)
 {   logprintf("OnPaint called\n");
     wxPaintDC mydc(this);
     mydc.SetBackground(*wxWHITE_BRUSH);
-    wxGraphicsContext *gg = wxGraphicsContext::Create(mydc);
-// With wxGraphicsContext the DrawBitmap function will scale the whole of the
-// bitmap that you are drawing to fit into the size region that you
-// specify... So I do not need to set any more global scaling options.
-    double scaledWidth = bigWidth*(double)clientWidth/usedWidth;
-    double scaledHeight = bigHeight*(double)clientHeight/usedHeight;
-
 // Here I may not need to repaint the whole region. I will try to sort out
 // which bits need re-work... The code I am using here based on that in the
 // wxWidgets documentation relating to Paint Events.
@@ -898,9 +869,239 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     }
 
     sw.Start(0);
-    gg->DrawBitmap(*bigBitmap, 0.0, 0.0, scaledWidth, scaledHeight);
+// I show several strategies here so I can compare performance and quality.
+// Drawing the whole big bitmap all in one operation is by far the easiest
+// scheme, but apart from the cost issues (which are themselves bad) it tends
+// to lead to bad screen flicker and would mean that the whole screen had to
+// be refreshed for every small update.
+// The other version that uses a wxGraphicsContext scales the screen via
+// tiles. This does not save time when the whole client area needs drawing,
+// and indeed it may increase overheads a bit. But it will allow me to
+// repaint just parts of the screen when I need to.
+// Finally there is a version that avoids use of wxGraphicsContext and
+// instead tries StretchBlit, which at least on some platforms ough to end
+// up really fast since it goes done to the operating system (and ideally
+// to the video card and its driver). At present that appears to do low
+// quality re-sizing. At the time I was testing this a particular way that
+// quality issues showed up was that I drew a row of yellow boxes with
+// black borders below my test - the borders fails to be rendered.
+// When I use tiles and enable anti-aliasing as I draw then I see artefects at
+// tile borders, so perhaps I will try goint back to drawing the whole bitmap?
+//
+// I will let the user go "-xNNN" on the command to pick an option here. The
+// bottom decimal digit will pick a strategy.
+    wxGraphicsContext *gg;
+    double scaledWidth, scaledHeight;
+    int tileCount = 0;
+    switch (options % 10)
+    {
+    default:
+    case 0:
+// -x0 or default. Simply write whole bitmap using a wxGraphicsContext. This
+// is especially bad because it may inspect the whole of bigBitmap even though
+// much of it will not correspont to areas visible within the client area of
+// the window.
+        gg = wxGraphicsContext::Create(mydc);
+        scaledWidth = bigWidth*clientWidth/(double)usedWidth;
+        scaledHeight = bigHeight*clientWidth/(double)usedWidth;
+        gg->DrawBitmap(*bigBitmap, 0.0, 0.0, scaledWidth, scaledHeight);
+        delete gg;
+        break;
+    case 1:
+// -x1. This was to see if setting up a clipping region led DrawBitmap
+// to run fast by only looking at the relevent part. It seems it does not
+// gain anything like as much as one might ideally hope.
+        gg = wxGraphicsContext::Create(mydc);
+        scaledWidth = bigWidth*clientWidth/(double)usedWidth;
+        scaledHeight = bigHeight*clientWidth/(double)usedWidth;
+        tileCount = 0;
+        for (int y=0; y<clientHeight; y+=smallTileSize)
+        {   for (int x=0; x<clientWidth; x+=smallTileSize)
+            {
+// This is to see if drawing a big bitmap but subject to clipping is
+// as slow as drawing it without clipping.
+                gg->ResetClip();
+                gg->Clip(x, y, smallTileSize, smallTileSize);
+                gg->DrawBitmap(*bigBitmap, 0.0, 0.0, scaledWidth, scaledHeight);
+                tileCount++;
+            }
+        }
+        delete gg;
+        break;
+    case 2: case 12: case 22: case 32: case 42:
+    case 3: case 13: case 23: case 33: case 43:
+// -x2 and -x3.  -x2 has no anti-aliasing, -x3 has some.
+// Here I paint the bitmap tile by tile... Each tile corresponds to a whole
+// number of pixels in both big and screen resolution, so I rather hope there
+// is no scope for odd effects are tile boundaries. HOWEVER when I try things
+// I observe that there ARE visible artefects where tiles abut. Rats!
+        tileCount = 0;
+        bigDC->SelectObject(*bigBitmap);
+        gg = wxGraphicsContext::Create(mydc);
+        logprintf("interp=%d, antiA=%d\n",
+            gg->GetInterpolationQuality(), gg->GetAntialiasMode());
+        if (options % 10 == 2) gg->SetAntialiasMode(wxANTIALIAS_NONE);
+        else gg->SetAntialiasMode(wxANTIALIAS_DEFAULT);
+// What I find here is that settting an interpolation option other that NONE
+// leads to artefacts at tile boundaries, but not having interpolation leads
+// to poor randering of characters.
+        switch ((options/10) % 10)
+        {
+        case 0:
+            gg->SetInterpolationQuality(wxINTERPOLATION_NONE);
+            break;
+        case 1:
+            gg->SetInterpolationQuality(wxINTERPOLATION_FAST);
+            break;
+        case 2:
+            gg->SetInterpolationQuality(wxINTERPOLATION_GOOD);
+            break;
+        case 3:
+            gg->SetInterpolationQuality(wxINTERPOLATION_BEST);
+            break;
+        case 4:
+            gg->SetInterpolationQuality(wxINTERPOLATION_DEFAULT);
+            break;
+        }
+        logprintf("interp=%d, antiA=%d\n",
+            gg->GetInterpolationQuality(), gg->GetAntialiasMode());
+        for (int y=0; y<clientHeight; y+=smallTileSize)
+        {   int by = bigTileSize*(y/smallTileSize);
+            for (int x=0; x<clientWidth; x+=smallTileSize)
+            {   int bx = bigTileSize*(x/smallTileSize);
+                tileDC->SelectObject(*bigTile);
+                tileDC->Blit(0, 0, bigTileSize, bigTileSize,
+                             bigDC, bx, by);
+                tileDC->SelectObject(wxNullBitmap);
+                gg->DrawBitmap(*bigTile, x, y, smallTileSize, smallTileSize);
+                tileCount++;
+            }
+        }
+        bigDC->SelectObject(wxNullBitmap);
+        delete gg;
+        logprintf("Drew using %d tiles\n", tileCount);
+        break;
+    case 4:
+// -x4. Use StretchBlit on a regular DC rather than going via a Graphics
+// Context. This seems to implement a crude shrink that is does not end up
+// looking good!
+        tileCount = 0;
+        bigDC->SelectObject(*bigBitmap);
+        for (int y=0; y<clientHeight; y+=smallTileSize)
+        {   int by = bigTileSize*(y/smallTileSize);
+            for (int x=0; x<clientWidth; x+=smallTileSize)
+            {   int bx = bigTileSize*(x/smallTileSize);
+                mydc.StretchBlit(x, y, smallTileSize, smallTileSize,
+                    bigDC, bx, by, bigTileSize, bigTileSize);
+                tileCount++;
+            }
+        }
+        bigDC->SelectObject(wxNullBitmap);
+        logprintf("Drew using %d tiles\n", tileCount);
+        break;
+    case 5:
+        logprintf("This will be for my own code for down-sizing\n");
+        typedef wxPixelData<wxBitmap, wxNativePixelFormat> PixelData;
+        logprintf("bigBitmap = %p\n", bigBitmap);
+        logprintf("Line %d %" PRId64 "\n", __LINE__, (int64_t)sw.Time());
+// For reasons that I do not yet understand this next line frequently takes
+// an apprciable fraction of a second, and in doing so utterly dominates
+// all costs. This is BAD.
+        PixelData bigData(*bigBitmap);
+        logprintf("Line %d %" PRId64 " %d\n", __LINE__, (int64_t)sw.Time(),
+                  (int)time(NULL));
+        if (!bigData) logprintf("Creation of bigData failed\n");
+        PixelData smallData(*smallTile);
+        if (!smallData) logprintf("Creation of smallData failed\n");
+        PixelData::Iterator pBig(bigData);
+        PixelData::Iterator pSmall(smallData);
+
+        for (int tiley=0; tiley<clientHeight; tiley+=smallTileSize)
+        for (int tilex=0; tilex<clientWidth;  tilex+=smallTileSize)
+        {
+            pBig.MoveTo(bigData, (bigTileSize*tilex)/smallTileSize,
+                                 (bigTileSize*tiley)/smallTileSize);
+            pSmall.MoveTo(smallData, 0, 0);
+            int srcy=0, srcy1=smallTileSize, desty=0, desty1=bigTileSize;
+            int srcpixyR[40], srcpixyG[40], srcpixyB[40], 
+                destpixyR[160], destpixyG[160], destpixyB[160];
+            int scale = bigTileSize*bigTileSize;
+            for (int i=0; i<smallTileSize; i++)
+            {   srcpixyR[i] = 0;  srcpixyG[i] = 0;  srcpixyB[i] = 0; 
+                destpixyR[i] = 0; destpixyG[i] = 0; destpixyB[i] = 0;
+            }
+            while (desty < smallTileSize)
+            {
+                PixelData::Iterator rowStartSmall = pSmall;
+                PixelData::Iterator rowStartBig = pBig;
+                int srcx=0, srcx1=smallTileSize, destx=0, destx1=bigTileSize;
+                int srcpixxR=0, srcpixxG=0, srcpixxB=0,
+                    destpixxR=0, destpixxG=0, destpixxB=0,
+                    w;
+                while (destx < smallTileSize)
+                {
+// The next line is the only one where I access the source bitmap...
+                    srcpixxR = pBig.Red();
+                    srcpixxG = pBig.Green();
+                    srcpixxB = pBig.Blue();
+                    ++pBig;
+                    srcx++;
+                    if (srcx1 < destx1)
+                    {   destpixxR += smallTileSize*srcpixxR;
+                        destpixxG += smallTileSize*srcpixxG;
+                        destpixxB += smallTileSize*srcpixxB;
+                    }
+                    else
+                    {   w = srcx1 - destx1;
+                        srcpixyR[destx] = (srcpixxR*(smallTileSize-w) + destpixxR);
+                        srcpixyG[destx] = (srcpixxG*(smallTileSize-w) + destpixxG);
+                        srcpixyB[destx] = (srcpixxB*(smallTileSize-w) + destpixxB);
+                        destpixxR = srcpixxR*w;
+                        destpixxG = srcpixxG*w;
+                        destpixxB = srcpixxB*w;
+                        destx++;
+                        destx1 += bigTileSize;
+                    }
+                    srcx1 += smallTileSize;
+                }
+                pBig = rowStartBig;
+                pBig.OffsetY(bigData, 1);
+                srcy++;
+                if (srcy1 < desty1)
+                {   for (int i=0; i<smallTileSize; i++)
+                    {   destpixyR[i] += smallTileSize*srcpixyR[i];
+                        destpixyG[i] += smallTileSize*srcpixyG[i];
+                        destpixyB[i] += smallTileSize*srcpixyB[i];
+                    }
+                }
+                else
+                {   w = srcy1 - desty1;
+                    for (int i=0; i<smallTileSize; i++)
+                    {
+// The next line is the only one where I access the destination bitmap...
+                        pSmall.Red() =
+                            (srcpixyR[i]*(smallTileSize-w) + destpixyR[i])/scale;
+                        pSmall.Green() =
+                            (srcpixyG[i]*(smallTileSize-w) + destpixyG[i])/scale;
+                        pSmall.Blue() =
+                            (srcpixyB[i]*(smallTileSize-w) + destpixyB[i])/scale;
+                        ++pSmall;
+                        destpixyR[i] = srcpixyR[i]*w;
+                        destpixyG[i] = srcpixyG[i]*w;
+                        destpixyB[i] = srcpixyB[i]*w;
+                    }
+                    pSmall = rowStartSmall;
+                    pSmall.OffsetY(smallData, 1);
+                    desty++;
+                    desty1 += bigTileSize;
+                }
+                srcy1 += smallTileSize;
+            }
+            mydc.DrawBitmap(*smallTile, tilex, tiley);
+        }
+        break;
+    }
     logprintf("Scale frombitmap to screen in %" PRId64 "\n", (int64_t)sw.Time());
-    delete gg;
 
     return;
 
