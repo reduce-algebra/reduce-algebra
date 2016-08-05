@@ -147,7 +147,7 @@ public:
 };
 
 #define MAX_FONTS 16
-wxFont Font[MAX_FONTS];
+wxFont *Font[MAX_FONTS];
 int Baseline[MAX_FONTS];
 bool FontValid[MAX_FONTS];
 
@@ -155,7 +155,7 @@ bool FontValid[MAX_FONTS];
 class showmathPanel : public wxPanel
 {
 public:
-    showmathPanel(class showmathFrame *parent, const char *showmathfilename);
+    showmathPanel(class showmathFrame *parent, const char *showmathFilename);
 
     void OnPaint(wxPaintEvent &event);
 
@@ -166,16 +166,10 @@ public:
     void OnKeyUp(wxKeyEvent &event);
     void OnMouse(wxMouseEvent &event);
 
-private:
     wxFont FixedPitch;
     int FixedPitchBaseline;
 
-    void RenderDVI();        // sub-function used by OnPaint
-
     char *showmathData;  // the .showmath file's contents are stored here
-    unsigned const char *stringInput;
-
-
 
     DECLARE_EVENT_TABLE()
 };
@@ -236,11 +230,14 @@ wxBitmap *smallTile = NULL;
 wxMemoryDC *tileDC;
 int smallTileSize, bigTileSize;
 
-// bigfont is a fixed pitch font sized for use on bigBitmap, such that
+// bigFont is a fixed pitch font sized for use on bigBitmap, such that
 // each character there has width charWidth, and usedWidth is just over
 // 80*charWidth. The latter is so that the line neatly fills my window.
 
-wxFont *bigfont;
+wxFont *bigFont;
+
+// A maths font...
+wxFont *mathFont;
 
 int pointSize;   // size of the font.
 int charWidth_1000;  // width of characters when font is 1000 points.
@@ -270,7 +267,7 @@ int charLinespace;   // how much to separate lines by.
 class showmathFrame : public wxFrame
 {
 public:
-    showmathFrame(const char *showmathfilename);
+    showmathFrame(const char *showmathFilename);
 
     void RepaintBuffer();
 
@@ -385,29 +382,29 @@ bool showmathApp::OnInit()
 // The program can take an argument - grab that here and pass it down to
 // showmathFrame - or NULL if there was none.
     char **myargv = (char **)argv;
-    const char *showmathfilename = NULL;
+    const char *showmathFilename = NULL;
     for (int i=1; i<argc; i++)
-        if (myargv[i][0] != '-') showmathfilename = myargv[i];
+        if (myargv[i][0] != '-') showmathFilename = myargv[i];
 #ifdef WIN32
-    static char tidyfilename[LONGEST_LEGAL_FILENAME];
-    if (showmathfilename != NULL &&
-        strncmp(showmathfilename, "/cygdrive/", 10) == 0 &&
-        showmathfilename[11] == '/')
-    {   sprintf(tidyfilename, "%c:%s",
-                showmathfilename[10], showmathfilename+11);
-        showmathfilename = tidyfilename;
+    static char tidyFilename[LONGEST_LEGAL_FILENAME];
+    if (showmathFilename != NULL &&
+        strncmp(showmathFilename, "/cygdrive/", 10) == 0 &&
+        showmathFilename[11] == '/')
+    {   sprintf(tidyFilename, "%c:%s",
+                showmathFilename[10], showmathFilename+11);
+        showmathFilename = tidyFilename;
     }
 #endif
     sw.Start(0);  // start the StopWatch
-    showmathFrame *frame = new showmathFrame(showmathfilename);
+    showmathFrame *frame = new showmathFrame(showmathFilename);
     frame->Show(true);
     return true;
 }
 
-showmathFrame::showmathFrame(const char *showmathfilename)
+showmathFrame::showmathFrame(const char *showmathFilename)
     : wxFrame(NULL, wxID_ANY, "wxshowmath")
 {   SetIcon(wxICON(fwin));
-    panel = new showmathPanel(this, showmathfilename);
+    panel = new showmathPanel(this, showmathFilename);
     int numDisplays = wxDisplay::GetCount(); // how many displays?
 // It is not clear to me what I should do if there are several displays,
 // and if there are none I am probably in a mess!
@@ -436,8 +433,9 @@ showmathFrame::showmathFrame(const char *showmathfilename)
 // I will (repeatedly) change it later on.
     wxFontInfo bigfi(1000);
     bigfi.FaceName("CMU Typewriter Text");
-    bigfont = new wxFont(bigfi);
-    bigDC->SetFont(*bigfont);
+    bigFont = new wxFont(bigfi);
+    mathFont = new wxFont(wxFontInfo(10).FaceName(wxT("cslSTIXMath")));
+    bigDC->SetFont(*bigFont);
     int w, h, d, xl;
     bigDC->GetTextExtent("X", &w, &h, &d, &xl);
     charWidth_1000 = w;
@@ -465,6 +463,9 @@ showmathFrame::showmathFrame(const char *showmathfilename)
 }
 
 int bestP, bestQ, bestErr;
+
+// Check all rational numbers in a given range so I can see which
+// one will work best for me. Look up "Farey Sequence" for more insight.
 
 void farey(int p1, int q1, int p2, int q2, int maxQ)
 {
@@ -533,6 +534,42 @@ static uint64_t tileMap[64];
 
 #define maxSmallTileSize 120
 #define maxBigTileSize (4*maxSmallTileSize)
+
+static int32_t convert_font_name(char *dest, char *src)
+{
+// The font name passed should be one of
+//    cmuntt
+//    odokai
+//    math
+//    <anything else>
+//    <anything else>-Bold
+//    <anything else>-Italic
+//    <anything else>-BoldItalic
+//
+    int32_t r = wxFONTFLAG_DEFAULT;
+    if (strcmp(src, "cmuntt") == 0) strcpy(dest, "CMU Typewriter Text");
+    else if (strcmp(src, "odokai") == 0) strcpy(dest, "AR PL New Kai");
+    else if (strcmp(src, "Math") == 0) strcpy(dest, "cslSTIXMath");
+    else sprintf(dest, "cslSTIX");
+// Here if the font name is suffixed as "-Bold" or "-Italic" or "-BoldItalic"
+    if (strcmp(dest, "CMU Typewriter Text") == 0) r |= (F_cmuntt<<16);
+    else if (strcmp(dest, "AR PL New Kai") == 0) r |= (F_odokai<<16);
+    else if (strcmp(dest, "cslSTIXMath") == 0) r |= (F_Math<<16);
+// I have not thought through and implemented support for bold and italic
+// options here...
+#ifdef PENDING_BOLD_AND_ITALIC
+    else if ((r & (wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC)) ==
+             (wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC)) r |= (F_BoldItalic<<16);
+    else if ((r & wxFONTFLAG_BOLD) ==
+             wxFONTFLAG_BOLD) r |= (F_Bold<<16);
+    else if ((r & wxFONTFLAG_ITALIC) ==
+             wxFONTFLAG_ITALIC) r |= (F_Italic<<16);
+    else
+#endif
+    r |= (F_Regular<<16);
+    logprintf("Gives %s with flags %x\n", dest, r); fflush(stdout);
+    return r;
+}
 
 // I want to use the whole range of Unicode, and in particular I wish to
 // use characters beyond U+FFFF. If I am using a computer where wchar_t
@@ -608,8 +645,9 @@ void showmathFrame::RepaintBuffer()
 // font ending up too small, in which case I will make it larger.
     int width, height, descent, xleading;
     for (;;)
-    {   bigfont->SetPointSize(pointSize);
-        bigDC->SetFont(*bigfont);
+    {   bigFont->SetPointSize(pointSize);
+        mathFont->SetPointSize(pointSize);
+        bigDC->SetFont(*bigFont);
         bigDC->GetTextExtent("X", &width, &height, &descent, &xleading);
         if (80*width > usedWidth) pointSize--;
         if (80*width <= usedWidth-80) pointSize++;
@@ -620,6 +658,51 @@ void showmathFrame::RepaintBuffer()
     }
     logprintf("Now 80 chars should have with %d in bigBitmap (cf %d)\n",
               80*charWidth, usedWidth);
+
+
+// Now I should find how all my fonts will be arranged in terms of the
+// distance from the index point used by wxWidgets to the font base-line
+// as relevent in .afm metrics. Horribly this is something that seems
+// to be platform dependent, but rather than just testing what system I am
+// building on I will run some code to measure and make my choices on that
+// basis. The cases I check are ones that I believe reveal the differences!
+// This seems hideously hacky.
+    for (;;)
+    {   int depth, leading;
+        wxFont tf1(wxFontInfo(10000).FaceName(wxT("cslSTIX")).Bold().Italic());
+        bigDC->SetFont(tf1);
+        bigDC->GetTextExtent(wxString((wchar_t)'X'),
+                            &width, &height, &depth, &leading);
+        logprintf("%d %d [%d]\n", height, depth, height-depth);
+        if ((height - depth + 5)/10 == chardepth_WIN32[F_BoldItalic])
+        {   chardepth = chardepth_WIN32;
+            break;
+        }
+        tf1.SetStyle(wxFONTSTYLE_NORMAL);
+        tf1.SetFaceName(wxT("AR PL New Kai"));
+        bigDC->SetFont(tf1);
+        bigDC->GetTextExtent(wxString((wchar_t)'X'),
+                             &width, &height, &depth, &leading);
+        logprintf("%d %d [%d]\n", height, depth, height-depth);
+        if ((height - depth + 5)/10 == chardepth_X11[F_odokai])
+        {   chardepth = chardepth_X11;
+            break;
+        }
+        tf1.SetFaceName(wxT("cslSTIXMath"));
+        bigDC->SetFont(tf1);
+        bigDC->GetTextExtent(wxString((wchar_t)unicode_INTEGRAL),
+                             &width, &height, &depth, &leading);
+        logprintf("%d %d [%d]\n", height, depth, height-depth);
+        if ((height - depth + 5)/10 == chardepth_OSX[F_Math])
+        {   chardepth = chardepth_OSX;
+            break;
+        }
+        logprintf("\n+++ Character positioning not recognized\n");
+        chardepth = chardepth_X11;
+        break;
+    }
+    bigDC->SetFont(*bigFont);
+
 //
 // Now so that I can see what is going in a bit I will draw a row of
 // characters across the top of bigBitmap...
@@ -645,8 +728,7 @@ void showmathFrame::RepaintBuffer()
     int regularBaseline = height - descent;
     logprintf("regular baseline = %d\n", regularBaseline);
 
-    wxFont math(wxFontInfo(pointSize).FaceName(wxT("cslSTIXMath")));
-    bigDC->SetFont(math);
+    bigDC->SetFont(*mathFont);
     bigDC->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
     logprintf("%d %d %d %d math\n", width, height, descent, xleading);
     int mathBaseline = height - descent;
@@ -694,11 +776,8 @@ void showmathFrame::RepaintBuffer()
         s*XX, s*(YY+100.0)-regularBaseline);
     bigDC->DrawText(wxString((wchar_t)unicode_RIGHT_ANGLE_WITH_DOWNWARDS_ZIGZAG_ARROW),
         s*(XX+100.0), s*(YY+100.0)-regularBaseline);
-
-    bigDC->SelectObject(wxNullBitmap);
-    return;
-
-    const char *in = ""; //@@@@@@showmathData;
+// Now I will try a row of text.Or some material provided on an input file.
+    const char *in = panel->showmathData;
     logprintf("About to process data:\n\"%.70s\"... ...\n\n", in);
     do
     {   int x, y, n, cp, size;
@@ -721,20 +800,21 @@ void showmathFrame::RepaintBuffer()
 // deffont number name size;   define font with given number
                  0 <= n &&
                  n < MAX_FONTS)
-        {   //- int flags = convert_font_name(name1, name);
-            //- int col;
+        {   int flags = convert_font_name(name1, name);
+            int col;
             logprintf("font[%d] = \"%s\" size %d\n", n, name1, size);
-//-             graphicsFont[n] = gc->CreateFont((double)size, name1, flags & 0xffff);
-//-             gc->SetFont(graphicsFont[n]);
-//-             gc->GetTextExtent(wxString((wchar_t)'('), &width, &height, &descent, &xleading);
-//-             logprintf("( %s/%d: %.6g %.6g [%.6g]\n",
-//-                       name1, size, height, descent, height-descent);
-//-             col = logprintf("    %d,", (int)((height - descent)/10.0 + 0.5));
-//-             while (col++ < 20) logprintf(" ");
-//-             logprintf("// %s\n", name);
-//-             graphicsBaseline[n] =
-//-                 (double)size * (double)chardepth[(flags >> 16) & 0x1f] / 1000.0;
-//-             logprintf("from table baseline offset = %.6g\n", graphicsBaseline[n]);
+            Font[n] =
+               new wxFont(wxFontInfo((pointSize*size*5)/144).FaceName(name1));
+            bigDC->SetFont(*Font[n]);
+            bigDC->GetTextExtent(wxString((wchar_t)'('), &width, &height, &descent, &xleading);
+            logprintf("( %s/%d: %d %d [%d]\n",
+                      name1, size, height, descent, height-descent);
+            col = logprintf("    %d,", (int)((height - descent)/10.0 + 0.5));
+            while (col++ < 20) logprintf(" ");
+            logprintf("// %s\n", name);
+            Baseline[n] =   // This still needs review!
+                size * chardepth[(flags >> 16) & 0x1f] / 1000.0;
+            logprintf("from table baseline offset = %.6g\n", Baseline[n]);
         }
         else if (sscanf(in, "put %d %d %d 0x%x;", &n, &x, &y, &cp) == 4 ||
                  sscanf(in, "put %d %d %d %d;", &n, &x, &y, &cp) == 4)
@@ -742,14 +822,14 @@ void showmathFrame::RepaintBuffer()
 // put fontnum xpos ypos codepoint;  dump character onto screen
 // note x & y in units of 1/1000 point.
 //          logprintf("Font %d (%d,%d) char %d = %#x\n", n, x, y, cp, cp);
-//-             gc->SetFont(graphicsFont[n]);
+            bigDC->SetFont(*Font[n]);
             wchar_t ccc[4];
 // For the benefit of Windows I need to represent code points in other
 // then the basic multilingual pane as surrogate pairs. Well that will
 // probably apply anywhere where sizeof(wchar_t) < 4.
             allow_for_utf16(ccc, cp);
-//-             gc->DrawText(wxString(ccc),
-//-                          x/1000, 400-y/1000-graphicsBaseline[n]);
+            bigDC->DrawText(wxString(ccc),
+                         (s*x)/2400, s*150 + (400-y)/2400); //-graphicsBaseline[n]);
         }
         else logprintf("\nLine <%.32s> unrecognised\n", in);
         in = strchr(in, ';');
@@ -760,8 +840,8 @@ void showmathFrame::RepaintBuffer()
 // I will mark all the fonts I might have created as invalid now
 // that the context they were set up for is being left.
     for (int i=0; i<MAX_FONTS; i++) FontValid[i] = false;
-    return;
     bigDC->SelectObject(wxNullBitmap);
+    return;
 }
 
 static char default_data[4096] =
@@ -834,19 +914,18 @@ static char default_data[4096] =
 // that is the reason behind providing so many arguments to the parent
 // constructor
 
-showmathPanel::showmathPanel(showmathFrame *parent, const char *showmathfilename)
+showmathPanel::showmathPanel(showmathFrame *parent, const char *showmathFilename)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition,
               wxDefaultSize, 0L,"showmathPanel")
 {
 // I will read in any data once here and put it in a character buffer.
     FILE *f = NULL;
-    if (showmathfilename == NULL) showmathData = default_data;
+    if (showmathFilename == NULL) showmathData = default_data;
     else
     {   int i;
-        stringInput = NULL;
-        f = fopen(showmathfilename,"r");
+        f = fopen(showmathFilename,"r");
         if (f == NULL)
-        {   logprintf("File \"%s\" not found\n", showmathfilename);
+        {   logprintf("File \"%s\" not found\n", showmathFilename);
             exit(1);
         }
         fseek(f, (off_t)0, SEEK_END);
@@ -956,43 +1035,6 @@ void showmathPanel::OnMouse(wxMouseEvent &event)
 // Here I use a mouse event to force a re-draw.
     Refresh();     // forces redraw of everything
 }
-
-//- static int32_t convert_font_name(char *dest, char *src)
-//- {
-//- // The font name passed should be one of
-//- //    cmuntt
-//- //    odokai
-//- //    math
-//- //    <anything else>
-//- //    <anything else>-Bold
-//- //    <anything else>-Italic
-//- //    <anything else>-BoldItalic
-//- //
-//-     int32_t r = wxFONTFLAG_DEFAULT;
-//-     if (strcmp(src, "cmuntt") == 0) strcpy(dest, "CMU Typewriter Text");
-//-     else if (strcmp(src, "odokai") == 0) strcpy(dest, "AR PL New Kai");
-//-     else if (strcmp(src, "Math") == 0) strcpy(dest, "cslSTIXMath");
-//-     else sprintf(dest, "cslSTIX");
-//- // Here if the font name is suffixed as "-Bold" or "-Italic" or "-BoldItalic"
-//-     if (strcmp(dest, "CMU Typewriter Text") == 0) r |= (F_cmuntt<<16);
-//-     else if (strcmp(dest, "AR PL New Kai") == 0) r |= (F_odokai<<16);
-//-     else if (strcmp(dest, "cslSTIXMath") == 0) r |= (F_Math<<16);
-//- // I have not thought through and implemented support for bold and italic
-//- // options here...
-//- #ifdef PENDING_BOLD_AND_ITALIC
-//-     else if ((r & (wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC)) ==
-//-              (wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC)) r |= (F_BoldItalic<<16);
-//-     else if ((r & wxFONTFLAG_BOLD) ==
-//-              wxFONTFLAG_BOLD) r |= (F_Bold<<16);
-//-     else if ((r & wxFONTFLAG_ITALIC) ==
-//-              wxFONTFLAG_ITALIC) r |= (F_Italic<<16);
-//-     else
-//- #endif
-//-     r |= (F_Regular<<16);
-//-
-//-     logprintf("Gives %s with flags %x\n", dest, r); fflush(stdout);
-//-     return r;
-//- }
 
 void showmathPanel::OnPaint(wxPaintEvent &event)
 {   logprintf("OnPaint called\n");
@@ -1141,56 +1183,6 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
     logprintf("Scale %d tiles from bitmap to screen in %" PRId64 "\n",
         tileCount, (int64_t)sw.Time());
 
-//- // Now I should find how all my fonts will be arranged in terms of the
-//- // distance from the index point used by wxWidgets to the font base-line
-//- // as relevent in .afm metrics.
-//-     for (;;)
-//-     {   int ddd;
-//-         wxGraphicsFont tf1 =
-//-             gc->CreateFont(10000.0, "cslSTIX",
-//-                            wxFONTFLAG_BOLD + wxFONTFLAG_ITALIC);
-//-         gc->SetFont(tf1);
-//-         gc->GetTextExtent(wxString((wchar_t)'X'),
-//-                           &dwidth, &dheight, &ddepth, &dleading);
-//-         logprintf("%.6g %.6g [%.6g]\n",
-//-                   dheight, ddepth, dheight-ddepth);
-//-         ddd = (int)((dheight - ddepth)/10.0 + 0.5);
-//-         if (ddd == chardepth_WIN32[F_BoldItalic])
-//-         {   chardepth = chardepth_WIN32;
-//-             tf1 = FixedPitch;
-//-             break;
-//-         }
-//-         tf1 =
-//-             gc->CreateFont(10000.0, "AR PL New Kai", wxFONTFLAG_DEFAULT);
-//-         gc->SetFont(tf1);
-//-         gc->GetTextExtent(wxString((wchar_t)'X'),
-//-                           &dwidth, &dheight, &ddepth, &dleading);
-//-         logprintf("%.6g %.6g [%.6g]\n",
-//-                   dheight, ddepth, dheight-ddepth);
-//-         ddd = (int)((dheight - ddepth)/10.0 + 0.5);
-//-         if (ddd == chardepth_X11[F_odokai])
-//-         {   chardepth = chardepth_X11;
-//-             tf1 = FixedPitch;
-//-             break;
-//-         }
-//-         tf1 =
-//-             gc->CreateFont(10000.0, "cslSTIXMath", wxFONTFLAG_DEFAULT);
-//-         gc->SetFont(tf1);
-//-         gc->GetTextExtent(wxString((wchar_t)unicode_INTEGRAL),
-//-                           &dwidth, &dheight, &ddepth, &dleading);
-//-         logprintf("%.6g %.6g [%.6g]\n",
-//-                   dheight, ddepth, dheight-ddepth);
-//-         ddd = (int)((dheight - ddepth)/10.0 + 0.5);
-//-         if (ddd == chardepth_OSX[F_Math])
-//-         {   chardepth = chardepth_OSX;
-//-             tf1 = FixedPitch;
-//-             break;
-//-         }
-//-         logprintf("\n+++ Character positioning not recognized\n");
-//-         chardepth = chardepth_X11;
-//-         tf1 = FixedPitch;
-//-         break;
-//-     }
 
 }
 
