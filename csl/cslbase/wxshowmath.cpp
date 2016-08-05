@@ -116,16 +116,16 @@ static wxStopWatch sw;
 
 static int options = 5;  // default to using my own scaling
 
-static FILE *logfile = NULL;
+static FILE *logFile = NULL;
 
 static int logprintf(const char *fmt, ...)
 {   va_list a;
     int r = 0;
-    if (logfile == NULL) logfile = fopen("wxshowmath.log", "w");
-    if (logfile != NULL)
+    if (logFile == NULL) logFile = fopen("wxshowmath.log", "w");
+    if (logFile != NULL)
     {   va_start(a, fmt);
-        r = vfprintf(logfile, fmt, a);
-        fflush(logfile);
+        r = vfprintf(logFile, fmt, a);
+        fflush(logFile);
         va_end(a);
     }
 #ifndef MACINTOSH
@@ -227,7 +227,7 @@ int usedWidth, usedHeight;
 // ceiling(usedScale*clientWidth) and usedHeight = celing(usedScale*
 // clientHeight). If I do this I can align my tiles precisely on both
 // client and big bitmaps. Vertical measurements are in charOffset and
-// charLinespacing, and charPointSize records the point size passed
+// charLinespacing, and pointSize records the point size passed
 // to wxWidgets to create the font. To help me choose a suitable point size
 // I record charWidth_1000 which is the width of a 1000-point character.
 
@@ -242,7 +242,7 @@ int smallTileSize, bigTileSize;
 
 wxFont *bigfont;
 
-int charPointSize;   // size of the font.
+int pointSize;   // size of the font.
 int charWidth_1000;  // width of characters when font is 1000 points.
 int charWidth;       // for fixed pitch font, as on bigBitmap.
 int charOffset;      // so that I print relative to index point.
@@ -491,14 +491,14 @@ void farey(int p1, int q1, int p2, int q2, int maxQ)
 // limit the gap at the right hand end of the line to a given number of
 // pixels for all possible client widths in the range 400..2000.
 //        gap  necessary denominator
-//         10          13             
-//          8          16             
-//          6          18             
-//          5          19             
-//          4          22             
-//          3          25             
-//          2          31             
-//          1          40             
+//         10          13
+//          8          16
+//          6          18
+//          5          19
+//          4          22
+//          3          25  <<<< my choice
+//          2          31
+//          1          40
 //          0          53
 // Based on this table I pick 25 as my cut-off.
     for (int m = 2; m<80; m++)
@@ -524,6 +524,37 @@ void farey(int p1, int q1, int p2, int q2, int maxQ)
     }
 #endif
 
+// The map of tiles here can cover 64*64 tiles in all.  The small tiles
+// can be from 20x20 to 120*120 so that this can deal with a raw display
+// area up to 7680x7680, which is ridiculously large by the standards of
+// the year in which this code is being written. 
+
+static uint64_t tileMap[64];
+
+#define maxSmallTileSize 120
+#define maxBigTileSize (4*maxSmallTileSize)
+
+// I want to use the whole range of Unicode, and in particular I wish to
+// use characters beyond U+FFFF. If I am using a computer where wchar_t
+// is 16-bits I will need to do that by transmitting the code using
+// UTF-16. This applies on Windows. If I am on a machine where
+// wchar_t is a 32-bit type I can use a single unit to represent any
+// codepoint at all. This function adjusts...
+
+static void allow_for_utf16(wchar_t *ccc, int cp)
+{   if (sizeof(wchar_t) == 4 ||
+        cp <= 0xffff)
+    {   ccc[0] = cp;
+        ccc[1] = 0;
+    }
+    else
+    {   cp = (cp - 0x10000) & 0xfffff;
+        ccc[0] = 0xd800 + (cp >> 10);
+        ccc[1] = 0xdc00 + (cp & 0x3ff);
+        logprintf("Char mapped to %x %x\n", ccc[0], ccc[1]);
+        ccc[2] = 0;
+    }
+}
 
 void showmathFrame::RepaintBuffer()
 {
@@ -535,12 +566,23 @@ void showmathFrame::RepaintBuffer()
     int uw = (bestP * clientWidth)/bestQ;
     bestErr = uw % 80;
     farey(7, 2, 4, 1, 25);
-// My small times will be in the range 20x20 to 40*40 pixels, which means that
-// each covers say 2 lines of text and a width of 4 characters. 
-    {   int r = 40/bestQ;
+// My small tiles will have an ideal size such that there are about 64 of
+// them across the window. If the window is narrow I will keep the size
+// at least 20 pixels. So each tile is slightly larger than a single
+// character. I will also limit things so that the window is no more than
+// 64 tiles high. 
+    {   int nw = (clientWidth + 63)/64;  // ideal width
+        int nh = (clientHeight + 63)/64; // ideal height
+        int n = nh > nw ? nh : nw;       // use the larger
+        if (n < 20) n = 20;
+        int r = (n + bestQ - 1)/bestQ;
         bigTileSize = r*bestP;
         smallTileSize = r*bestQ;
     }
+    logprintf("Small tiles are %d square, with %d*%d covering window\n",
+        smallTileSize,
+        (clientWidth+smallTileSize-1)/smallTileSize,
+        (clientHeight+smallTileSize-1)/smallTileSize);
     if (bigTile != NULL) delete bigTile;
     bigTile =
         new wxBitmap(bigTileSize, bigTileSize, 24); // wxBITMAP_SCREEN_DEPTH);
@@ -557,23 +599,23 @@ void showmathFrame::RepaintBuffer()
     usedHeight = (bestP*clientHeight + bestQ - 1)/bestQ;
     bigDC->SelectObject(*bigBitmap); // Writing to the DC writes into bitmap
 // Predict a point size to use...
-    charPointSize = (usedWidth*1000 + 40*charWidth_1000)/(80*charWidth_1000);
+    pointSize = (usedWidth*1000 + 40*charWidth_1000)/(80*charWidth_1000);
 // There us a potential danger that xWidgets create a font here that was
 // not exactly what I wanted - and in particular that it might have created
 // one (slightly) bigger than I wanted, leading to 80 characters not fitting
 // neatly on the line. If that is the case I will decrease the requested
 // point size by 1 and try again. Equally I could at least imagine the
 // font ending up too small, in which case I will make it larger.
+    int width, height, descent, xleading;
     for (;;)
-    {   bigfont->SetPointSize(charPointSize);
+    {   bigfont->SetPointSize(pointSize);
         bigDC->SetFont(*bigfont);
-        int w, h, d, xl;
-        bigDC->GetTextExtent("X", &w, &h, &d, &xl);
-        if (80*w > usedWidth) charPointSize--;
-        if (80*w <= usedWidth-80) charPointSize++;
-        charWidth = w;
-        charOffset = h - d;
-        charLinespace = h + xl;
+        bigDC->GetTextExtent("X", &width, &height, &descent, &xleading);
+        if (80*width > usedWidth) pointSize--;
+        if (80*width <= usedWidth-80) pointSize++;
+        charWidth = width;
+        charOffset = height - descent;
+        charLinespace = height + xleading;
         break;
     }
     logprintf("Now 80 chars should have with %d in bigBitmap (cf %d)\n",
@@ -582,9 +624,7 @@ void showmathFrame::RepaintBuffer()
 // Now so that I can see what is going in a bit I will draw a row of
 // characters across the top of bigBitmap...
     bigDC->SetBackground(*wxWHITE_BRUSH);
-    sw.Start(0);
     bigDC->Clear();
-    sw.Start(0);
     for (int i=0; i<80; i++)
     {   bigDC->DrawText(wxString((wchar_t)(i+0x21)),
            i*charWidth,
@@ -596,6 +636,131 @@ void showmathFrame::RepaintBuffer()
     for (int i=0; i<usedWidth; i+=1000)
         bigDC->DrawRectangle(i, 2*charLinespace, 500, charLinespace);
 #endif
+
+// Next I move to draw some stuff that is a bit more "mathsy"
+    wxFont regular(wxFontInfo(pointSize).FaceName(wxT("cslSTIX")));
+    bigDC->SetFont(regular);
+    bigDC->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
+    logprintf("%d %d %d %d regular\n", width, height, descent, xleading);
+    int regularBaseline = height - descent;
+    logprintf("regular baseline = %d\n", regularBaseline);
+
+    wxFont math(wxFontInfo(pointSize).FaceName(wxT("cslSTIXMath")));
+    bigDC->SetFont(math);
+    bigDC->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
+    logprintf("%d %d %d %d math\n", width, height, descent, xleading);
+    int mathBaseline = height - descent;
+    logprintf("math baseline = %d\n", mathBaseline);
+
+// cslSTIXMath puts the glyphs used to build up big delimiters in a
+// private use area. It expects the code to use maths tables to discover
+// where they are rather than mere unicode names. But for this test and
+// demonstration I will just use absolute code-points.
+
+#define stix_LEFT_CURLY_BRACKET_UPPER_HOOK    0x10821c
+#define stix_LEFT_CURLY_BRACKET_MIDDLE_PIECE  0x10821d
+#define stix_CURLY_BRACKET_EXTENSION          0x10821f
+#define stix_LEFT_CURLY_BRACKET_LOWER_HOOK    0x10821e
+
+    lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_UPPER_HOOK);
+    logprintf("upper hook   %d %d\n", c_lly, c_ury);
+    lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
+    logprintf("middle piece %d %d\n", c_lly, c_ury);
+    lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_LOWER_HOOK);
+    logprintf("lower hook   %d %d\n", c_lly, c_ury);
+    lookupchar(F_Math, stix_CURLY_BRACKET_EXTENSION);
+    logprintf("extension    %d %d\n", c_lly, c_ury);
+
+    double s = (double)pointSize/10.0;
+#define H (10.0)
+#define XX 120.0
+#define YY 100.0
+    {   wchar_t ccc[4];
+        allow_for_utf16(ccc, stix_LEFT_CURLY_BRACKET_UPPER_HOOK);
+        logprintf("Character %#x %#x\n", ccc[0], ccc[1]);
+        bigDC->DrawText(wxString(ccc), s*XX, s*(YY-H)-mathBaseline);
+        allow_for_utf16(ccc, stix_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
+        bigDC->DrawText(wxString(ccc), s*XX, s*YY-mathBaseline);
+        allow_for_utf16(ccc, stix_CURLY_BRACKET_EXTENSION);
+        bigDC->DrawText(wxString(ccc), s*XX, s*(YY+H)-mathBaseline);
+        allow_for_utf16(ccc, stix_LEFT_CURLY_BRACKET_LOWER_HOOK);
+        bigDC->DrawText(wxString(ccc), s*XX, s*(YY+2.0*H)-mathBaseline);
+    }
+// The next two have codepoints in the Basic Multilingual Plane so
+// I do not need to mess around with encoding even on platforms like
+// Windows that use UTF16 internally.
+    bigDC->SetFont(regular);
+    bigDC->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_OMEGA),
+        s*XX, s*(YY+100.0)-regularBaseline);
+    bigDC->DrawText(wxString((wchar_t)unicode_RIGHT_ANGLE_WITH_DOWNWARDS_ZIGZAG_ARROW),
+        s*(XX+100.0), s*(YY+100.0)-regularBaseline);
+
+    bigDC->SelectObject(wxNullBitmap);
+    return;
+
+    const char *in = ""; //@@@@@@showmathData;
+    logprintf("About to process data:\n\"%.70s\"... ...\n\n", in);
+    do
+    {   int x, y, n, cp, size;
+        char name[100], name1[64];
+        while (isspace(*in)) in++;
+        if (*in == 0) break;
+        if (*in == '#' || *in == '%')
+// # ...     comments extend to the end of the line
+// % ...
+        {   n = 0;
+            while (*in != 0 && *in != '\n')
+                if (n < 99) name[n++] = *in++;
+                else in++;
+            name[n] = 0;
+            logprintf("%s\n", name);
+            if (*in == '\n') in++;
+            continue;
+        }
+        else if (sscanf(in, "deffont %d %60s %d;", &n, name, &size) == 3 &&
+// deffont number name size;   define font with given number
+                 0 <= n &&
+                 n < MAX_FONTS)
+        {   //- int flags = convert_font_name(name1, name);
+            //- int col;
+            logprintf("font[%d] = \"%s\" size %d\n", n, name1, size);
+//-             graphicsFont[n] = gc->CreateFont((double)size, name1, flags & 0xffff);
+//-             gc->SetFont(graphicsFont[n]);
+//-             gc->GetTextExtent(wxString((wchar_t)'('), &width, &height, &descent, &xleading);
+//-             logprintf("( %s/%d: %.6g %.6g [%.6g]\n",
+//-                       name1, size, height, descent, height-descent);
+//-             col = logprintf("    %d,", (int)((height - descent)/10.0 + 0.5));
+//-             while (col++ < 20) logprintf(" ");
+//-             logprintf("// %s\n", name);
+//-             graphicsBaseline[n] =
+//-                 (double)size * (double)chardepth[(flags >> 16) & 0x1f] / 1000.0;
+//-             logprintf("from table baseline offset = %.6g\n", graphicsBaseline[n]);
+        }
+        else if (sscanf(in, "put %d %d %d 0x%x;", &n, &x, &y, &cp) == 4 ||
+                 sscanf(in, "put %d %d %d %d;", &n, &x, &y, &cp) == 4)
+        {
+// put fontnum xpos ypos codepoint;  dump character onto screen
+// note x & y in units of 1/1000 point.
+//          logprintf("Font %d (%d,%d) char %d = %#x\n", n, x, y, cp, cp);
+//-             gc->SetFont(graphicsFont[n]);
+            wchar_t ccc[4];
+// For the benefit of Windows I need to represent code points in other
+// then the basic multilingual pane as surrogate pairs. Well that will
+// probably apply anywhere where sizeof(wchar_t) < 4.
+            allow_for_utf16(ccc, cp);
+//-             gc->DrawText(wxString(ccc),
+//-                          x/1000, 400-y/1000-graphicsBaseline[n]);
+        }
+        else logprintf("\nLine <%.32s> unrecognised\n", in);
+        in = strchr(in, ';');
+        if (in != NULL) in++;
+    }
+    while (in != NULL);
+
+// I will mark all the fonts I might have created as invalid now
+// that the context they were set up for is being left.
+    for (int i=0; i<MAX_FONTS; i++) FontValid[i] = false;
+    return;
     bigDC->SelectObject(wxNullBitmap);
 }
 
@@ -829,313 +994,153 @@ void showmathPanel::OnMouse(wxMouseEvent &event)
 //-     return r;
 //- }
 
-static void allow_for_utf16(wchar_t *ccc, int cp)
-{   if (sizeof(wchar_t) == 4 ||
-        cp <= 0xffff)
-    {   ccc[0] = cp;
-        ccc[1] = 0;
-    }
-    else
-    {   cp = (cp - 0x10000) & 0xfffff;
-        ccc[0] = 0xd800 + (cp >> 10);
-        ccc[1] = 0xdc00 + (cp & 0x3ff);
-//      logprintf("Char mapped to %x %x\n", ccc[0], ccc[1]);
-        ccc[2] = 0;
-    }
-}
-
 void showmathPanel::OnPaint(wxPaintEvent &event)
 {   logprintf("OnPaint called\n");
     wxPaintDC mydc(this);
-    mydc.SetBackground(*wxWHITE_BRUSH);
-// Here I may not need to repaint the whole region. I will try to sort out
-// which bits need re-work... The code I am using here based on that in the
-// wxWidgets documentation relating to Paint Events.
+//    mydc.SetBackground(*wxWHITE_BRUSH);
 //@ The fillowing few lines would make sense if the window I was working
 //@ with here was a scrolled one... which in the fullness of time it will be!
 //@    int vbX, vbY;
 //@    GetViewStart(&vbX, &vbY);
 //@    logprintf("top left of client is at %d %d\n", vbX, vbY);
     wxRegionIterator upd(GetUpdateRegion());
-    if (upd) logprintf("Have an update region\n");
-    else logprintf("No update regions reported\n");
+    if (!upd) return; // no update regiions reported!
+// Rather than re-painting the whole screen I should cover just the
+// regions I have been told to refresh. I will use tileMap to control
+// the actual painting.
+    for (int i=0; i<64; i++) tileMap[i] = 0;
     while (upd)
     {   int vX = upd.GetX();
         int vY = upd.GetY();
-        int vW = upd.GetW();
-        int vH = upd.GetH();
+        int vW = vX + upd.GetW();
+        int vH = vY + upd.GetH();
+// I set a bit in tileMap for each tile that will actually need painting.
         logprintf("Need to repaint %d %d %d %d\n", vX, vY, vW, vH);
+        for (int y=vY/smallTileSize;
+             y<=(vH+smallTileSize-1)/smallTileSize;
+             y++)
+            for (int x=vX/smallTileSize;
+                 x<=(vW+smallTileSize-1)/smallTileSize;
+                 x++)
+            {
+#ifdef SHOW_WHICH_TILES_WILL_BE_REDRAWN
+                logprintf("tile at %d %d to be redrawn\n",
+                    x*smallTileSize, y*smallTileSize);
+#endif
+                tileMap[y] |= ((uint64_t)1)<<x;
+            }
         upd++;
     }
-
+#ifdef DISPLAY_TILE_BITMAP
+    for (int y=0; y<64; y++)
+    {   uint64_t v = tileMap[y];
+        for (int x=0; x<64; x++)
+        {   putchar('0' + (int)(v & 1));
+            v = v >> 1;
+        }
+        putchar('\n');
+    }
+#endif
     sw.Start(0);
-// I show several strategies here so I can compare performance and quality.
-// Drawing the whole big bitmap all in one operation is by far the easiest
-// scheme, but apart from the cost issues (which are themselves bad) it tends
-// to lead to bad screen flicker and would mean that the whole screen had to
-// be refreshed for every small update.
-// The other version that uses a wxGraphicsContext scales the screen via
-// tiles. This does not save time when the whole client area needs drawing,
-// and indeed it may increase overheads a bit. But it will allow me to
-// repaint just parts of the screen when I need to.
-// Finally there is a version that avoids use of wxGraphicsContext and
-// instead tries StretchBlit, which at least on some platforms ough to end
-// up really fast since it goes done to the operating system (and ideally
-// to the video card and its driver). At present that appears to do low
-// quality re-sizing. At the time I was testing this a particular way that
-// quality issues showed up was that I drew a row of yellow boxes with
-// black borders below my test - the borders fails to be rendered.
-// When I use tiles and enable anti-aliasing as I draw then I see artefects at
-// tile borders, so perhaps I will try goint back to drawing the whole bitmap?
-//
-// I will let the user go "-xNNN" on the command to pick an option here. The
-// bottom decimal digit will pick a strategy.
-    wxGraphicsContext *gg;
-    double scaledWidth, scaledHeight;
     int tileCount = 0;
-    switch (options % 10)
-    {
-    default:
-    case 0:
-// -x0 or default. Simply write whole bitmap using a wxGraphicsContext. This
-// is especially bad because it may inspect the whole of bigBitmap even though
-// much of it will not correspont to areas visible within the client area of
-// the window.
-        gg = wxGraphicsContext::Create(mydc);
-        scaledWidth = bigWidth*clientWidth/(double)usedWidth;
-        scaledHeight = bigHeight*clientWidth/(double)usedWidth;
-        gg->DrawBitmap(*bigBitmap, 0.0, 0.0, scaledWidth, scaledHeight);
-        delete gg;
-        break;
-    case 1:
-// -x1. This was to see if setting up a clipping region led DrawBitmap
-// to run fast by only looking at the relevent part. It seems it does not
-// gain anything like as much as one might ideally hope.
-        gg = wxGraphicsContext::Create(mydc);
-        scaledWidth = bigWidth*clientWidth/(double)usedWidth;
-        scaledHeight = bigHeight*clientWidth/(double)usedWidth;
-        tileCount = 0;
-        for (int y=0; y<clientHeight; y+=smallTileSize)
-        {   for (int x=0; x<clientWidth; x+=smallTileSize)
+    typedef wxPixelData<wxBitmap, wxNativePixelFormat> PixelData;
+    PixelData bigData(*bigBitmap);
+    if (!bigData) logprintf("Creation of bigData failed\n");
+    PixelData smallData(*smallTile);
+    if (!smallData) logprintf("Creation of smallData failed\n");
+    PixelData::Iterator pBig(bigData);
+    PixelData::Iterator pSmall(smallData);
+    for (int tileY=0; tileY<clientHeight; tileY+=smallTileSize)
+    for (int tileX=0; tileX<clientWidth;  tileX+=smallTileSize)
+    {   if ((tileMap[tileY/smallTileSize] &
+             (((uint64_t)1)<<(tileX/smallTileSize))) == 0) continue;
+        tileCount++;
+        pBig.MoveTo(bigData, (bigTileSize*tileX)/smallTileSize,
+                             (bigTileSize*tileY)/smallTileSize);
+        pSmall.MoveTo(smallData, 0, 0);
+        int srcY=0, srcY1=smallTileSize, destY=0, destY1=bigTileSize;
+        int srcPixYR[maxSmallTileSize],
+            srcPixYG[maxSmallTileSize],
+            srcPixYB[maxSmallTileSize],
+            destPixYR[maxBigTileSize],
+            destPixYG[maxBigTileSize],
+            destPixYB[maxBigTileSize];
+        int scale = bigTileSize*bigTileSize;
+        for (int i=0; i<smallTileSize; i++)
+        {   srcPixYR[i] = 0;  srcPixYG[i] = 0;  srcPixYB[i] = 0;
+            destPixYR[i] = 0; destPixYG[i] = 0; destPixYB[i] = 0;
+        }
+        while (destY < smallTileSize)
+        {   PixelData::Iterator rowStartSmall = pSmall;
+            PixelData::Iterator rowStartBig = pBig;
+            int srcX=0, srcX1=smallTileSize, destX=0, destX1=bigTileSize;
+            int srcPixXR=0, srcPixXG=0, srcPixXB=0,
+                destPixXR=0, destPixXG=0, destPixXB=0,
+                w;
+            while (destX < smallTileSize)
             {
-// This is to see if drawing a big bitmap but subject to clipping is
-// as slow as drawing it without clipping.
-                gg->ResetClip();
-                gg->Clip(x, y, smallTileSize, smallTileSize);
-                gg->DrawBitmap(*bigBitmap, 0.0, 0.0, scaledWidth, scaledHeight);
-                tileCount++;
-            }
-        }
-        delete gg;
-        break;
-    case 2: case 12: case 22: case 32: case 42:
-    case 3: case 13: case 23: case 33: case 43:
-// -x2 and -x3.  -x2 has no anti-aliasing, -x3 has some.
-// Here I paint the bitmap tile by tile... Each tile corresponds to a whole
-// number of pixels in both big and screen resolution, so I rather hope there
-// is no scope for odd effects are tile boundaries. HOWEVER when I try things
-// I observe that there ARE visible artefects where tiles abut. Rats!
-        tileCount = 0;
-        bigDC->SelectObject(*bigBitmap);
-        gg = wxGraphicsContext::Create(mydc);
-        logprintf("interp=%d, antiA=%d\n",
-            gg->GetInterpolationQuality(), gg->GetAntialiasMode());
-        if (options % 10 == 2) gg->SetAntialiasMode(wxANTIALIAS_NONE);
-        else gg->SetAntialiasMode(wxANTIALIAS_DEFAULT);
-// What I find here is that settting an interpolation option other that NONE
-// leads to artefacts at tile boundaries, but not having interpolation leads
-// to poor randering of characters.
-        switch ((options/10) % 10)
-        {
-        case 0:
-            gg->SetInterpolationQuality(wxINTERPOLATION_NONE);
-            break;
-        case 1:
-            gg->SetInterpolationQuality(wxINTERPOLATION_FAST);
-            break;
-        case 2:
-            gg->SetInterpolationQuality(wxINTERPOLATION_GOOD);
-            break;
-        case 3:
-            gg->SetInterpolationQuality(wxINTERPOLATION_BEST);
-            break;
-        case 4:
-            gg->SetInterpolationQuality(wxINTERPOLATION_DEFAULT);
-            break;
-        }
-        logprintf("interp=%d, antiA=%d\n",
-            gg->GetInterpolationQuality(), gg->GetAntialiasMode());
-        for (int y=0; y<clientHeight; y+=smallTileSize)
-        {   int by = bigTileSize*(y/smallTileSize);
-            for (int x=0; x<clientWidth; x+=smallTileSize)
-            {   int bx = bigTileSize*(x/smallTileSize);
-                tileDC->SelectObject(*bigTile);
-                tileDC->Blit(0, 0, bigTileSize, bigTileSize,
-                             bigDC, bx, by);
-                tileDC->SelectObject(wxNullBitmap);
-                gg->DrawBitmap(*bigTile, x, y, smallTileSize, smallTileSize);
-                tileCount++;
-            }
-        }
-        bigDC->SelectObject(wxNullBitmap);
-        delete gg;
-        logprintf("Drew using %d tiles\n", tileCount);
-        break;
-    case 4:
-// -x4. Use StretchBlit on a regular DC rather than going via a Graphics
-// Context. This seems to implement a crude shrink that is does not end up
-// looking good!
-        tileCount = 0;
-        bigDC->SelectObject(*bigBitmap);
-        for (int y=0; y<clientHeight; y+=smallTileSize)
-        {   int by = bigTileSize*(y/smallTileSize);
-            for (int x=0; x<clientWidth; x+=smallTileSize)
-            {   int bx = bigTileSize*(x/smallTileSize);
-                mydc.StretchBlit(x, y, smallTileSize, smallTileSize,
-                    bigDC, bx, by, bigTileSize, bigTileSize);
-                tileCount++;
-            }
-        }
-        bigDC->SelectObject(wxNullBitmap);
-        logprintf("Drew using %d tiles\n", tileCount);
-        break;
-    case 5:
-        logprintf("This will be for my own code for down-sizing\n");
-        typedef wxPixelData<wxBitmap, wxNativePixelFormat> PixelData;
-        logprintf("bigBitmap = %p\n", bigBitmap);
-        logprintf("Line %d %" PRId64 "\n", __LINE__, (int64_t)sw.Time());
-// For reasons that I do not yet understand this next line frequently takes
-// an apprciable fraction of a second, and in doing so utterly dominates
-// all costs. This is BAD.
-        PixelData bigData(*bigBitmap);
-        logprintf("Line %d %" PRId64 " %d\n", __LINE__, (int64_t)sw.Time(),
-                  (int)time(NULL));
-        if (!bigData) logprintf("Creation of bigData failed\n");
-        PixelData smallData(*smallTile);
-        if (!smallData) logprintf("Creation of smallData failed\n");
-        PixelData::Iterator pBig(bigData);
-        PixelData::Iterator pSmall(smallData);
-
-        for (int tiley=0; tiley<clientHeight; tiley+=smallTileSize)
-        for (int tilex=0; tilex<clientWidth;  tilex+=smallTileSize)
-        {
-            pBig.MoveTo(bigData, (bigTileSize*tilex)/smallTileSize,
-                                 (bigTileSize*tiley)/smallTileSize);
-            pSmall.MoveTo(smallData, 0, 0);
-            int srcy=0, srcy1=smallTileSize, desty=0, desty1=bigTileSize;
-            int srcpixyR[40], srcpixyG[40], srcpixyB[40], 
-                destpixyR[160], destpixyG[160], destpixyB[160];
-            int scale = bigTileSize*bigTileSize;
-            for (int i=0; i<smallTileSize; i++)
-            {   srcpixyR[i] = 0;  srcpixyG[i] = 0;  srcpixyB[i] = 0; 
-                destpixyR[i] = 0; destpixyG[i] = 0; destpixyB[i] = 0;
-            }
-            while (desty < smallTileSize)
-            {
-                PixelData::Iterator rowStartSmall = pSmall;
-                PixelData::Iterator rowStartBig = pBig;
-                int srcx=0, srcx1=smallTileSize, destx=0, destx1=bigTileSize;
-                int srcpixxR=0, srcpixxG=0, srcpixxB=0,
-                    destpixxR=0, destpixxG=0, destpixxB=0,
-                    w;
-                while (destx < smallTileSize)
-                {
-// The next line is the only one where I access the source bitmap...
-                    srcpixxR = pBig.Red();
-                    srcpixxG = pBig.Green();
-                    srcpixxB = pBig.Blue();
-                    ++pBig;
-                    srcx++;
-                    if (srcx1 < destx1)
-                    {   destpixxR += smallTileSize*srcpixxR;
-                        destpixxG += smallTileSize*srcpixxG;
-                        destpixxB += smallTileSize*srcpixxB;
-                    }
-                    else
-                    {   w = srcx1 - destx1;
-                        srcpixyR[destx] = (srcpixxR*(smallTileSize-w) + destpixxR);
-                        srcpixyG[destx] = (srcpixxG*(smallTileSize-w) + destpixxG);
-                        srcpixyB[destx] = (srcpixxB*(smallTileSize-w) + destpixxB);
-                        destpixxR = srcpixxR*w;
-                        destpixxG = srcpixxG*w;
-                        destpixxB = srcpixxB*w;
-                        destx++;
-                        destx1 += bigTileSize;
-                    }
-                    srcx1 += smallTileSize;
-                }
-                pBig = rowStartBig;
-                pBig.OffsetY(bigData, 1);
-                srcy++;
-                if (srcy1 < desty1)
-                {   for (int i=0; i<smallTileSize; i++)
-                    {   destpixyR[i] += smallTileSize*srcpixyR[i];
-                        destpixyG[i] += smallTileSize*srcpixyG[i];
-                        destpixyB[i] += smallTileSize*srcpixyB[i];
-                    }
+// The next few lines are the only ones where I access the source bitmap...
+                srcPixXR = pBig.Red();
+                srcPixXG = pBig.Green();
+                srcPixXB = pBig.Blue();
+                ++pBig;
+                srcX++;
+                if (srcX1 < destX1)
+                {   destPixXR += smallTileSize*srcPixXR;
+                    destPixXG += smallTileSize*srcPixXG;
+                    destPixXB += smallTileSize*srcPixXB;
                 }
                 else
-                {   w = srcy1 - desty1;
-                    for (int i=0; i<smallTileSize; i++)
-                    {
-// The next line is the only one where I access the destination bitmap...
-                        pSmall.Red() =
-                            (srcpixyR[i]*(smallTileSize-w) + destpixyR[i])/scale;
-                        pSmall.Green() =
-                            (srcpixyG[i]*(smallTileSize-w) + destpixyG[i])/scale;
-                        pSmall.Blue() =
-                            (srcpixyB[i]*(smallTileSize-w) + destpixyB[i])/scale;
-                        ++pSmall;
-                        destpixyR[i] = srcpixyR[i]*w;
-                        destpixyG[i] = srcpixyG[i]*w;
-                        destpixyB[i] = srcpixyB[i]*w;
-                    }
-                    pSmall = rowStartSmall;
-                    pSmall.OffsetY(smallData, 1);
-                    desty++;
-                    desty1 += bigTileSize;
+                {   w = srcX1 - destX1;
+                    srcPixYR[destX] = (srcPixXR*(smallTileSize-w) + destPixXR);
+                    srcPixYG[destX] = (srcPixXG*(smallTileSize-w) + destPixXG);
+                    srcPixYB[destX] = (srcPixXB*(smallTileSize-w) + destPixXB);
+                    destPixXR = srcPixXR*w;
+                    destPixXG = srcPixXG*w;
+                    destPixXB = srcPixXB*w;
+                    destX++;
+                    destX1 += bigTileSize;
                 }
-                srcy1 += smallTileSize;
+                srcX1 += smallTileSize;
             }
-            mydc.DrawBitmap(*smallTile, tilex, tiley);
+            pBig = rowStartBig;
+            pBig.OffsetY(bigData, 1);
+            srcY++;
+            if (srcY1 < destY1)
+            {   for (int i=0; i<smallTileSize; i++)
+                {   destPixYR[i] += smallTileSize*srcPixYR[i];
+                    destPixYG[i] += smallTileSize*srcPixYG[i];
+                    destPixYB[i] += smallTileSize*srcPixYB[i];
+                }
+            }
+            else
+            {   w = srcY1 - destY1;
+                for (int i=0; i<smallTileSize; i++)
+                {
+// The next few lines are the only ones where I access the destination bitmap...
+                    pSmall.Red() =
+                        (srcPixYR[i]*(smallTileSize-w) + destPixYR[i])/scale;
+                    pSmall.Green() =
+                        (srcPixYG[i]*(smallTileSize-w) + destPixYG[i])/scale;
+                    pSmall.Blue() =
+                        (srcPixYB[i]*(smallTileSize-w) + destPixYB[i])/scale;
+                    ++pSmall;
+                    destPixYR[i] = srcPixYR[i]*w;
+                    destPixYG[i] = srcPixYG[i]*w;
+                    destPixYB[i] = srcPixYB[i]*w;
+                }
+                pSmall = rowStartSmall;
+                pSmall.OffsetY(smallData, 1);
+                destY++;
+                destY1 += bigTileSize;
+            }
+            srcY1 += smallTileSize;
         }
-        break;
+        mydc.DrawBitmap(*smallTile, tileX, tileY);
     }
-    logprintf("Scale frombitmap to screen in %" PRId64 "\n", (int64_t)sw.Time());
+    logprintf("Scale %d tiles from bitmap to screen in %" PRId64 "\n",
+        tileCount, (int64_t)sw.Time());
 
-    return;
-
-// The next could probably be done merely by setting a background colour
-    wxColour c1(230, 200, 255);
-    wxBrush b1(c1);
-//-     gc->SetBrush(b1);
-    wxSize window(mydc.GetSize());
-    logprintf("Window is %d by %d\n", window.GetWidth(), window.GetHeight());
-//-     gc->DrawRectangle(0.0, 0.0,
-//-                       (double)window.GetWidth(),
-//-                       (double)window.GetHeight());
-//-
-//- // The FixedPitch font will be for a line spacing of 24 pixels,
-//- // but I will scale it as relevant.
-//-     FixedPitch =
-//-         gc->CreateFont(
-//-             wxFont(wxFontInfo(24).FaceName(wxT("CMU Typewriter Text"))));
-//-     double dwidth, dheight, ddepth, dleading;
-//-     gc->SetFont(FixedPitch);
-//-     gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
-//-     charWidth = dwidth;
-//-     logprintf("charWidth=%#.6g\n", charWidth);
-//-     logprintf("height = %#.6g total height = %#.6g leading = %#.6g\n",
-//-               dheight-ddepth-dleading, dheight, dleading);
-//-
-//-     double screenWidth = (double)window.GetWidth();
-//-     double lineWidth = 80.0*charWidth;
-//-     double scale = screenWidth/lineWidth;
-//- // This will now scale everything so that I end up with 80 characters from
-//- // that fixed-pitch font across the width of my window.
-//-     gc->Scale(scale, scale);
-//-     logprintf("Scale now %.6g\n", scale); fflush(stdout);
-//-
 //- // Now I should find how all my fonts will be arranged in terms of the
 //- // distance from the index point used by wxWidgets to the font base-line
 //- // as relevent in .afm metrics.
@@ -1187,154 +1192,6 @@ void showmathPanel::OnPaint(wxPaintEvent &event)
 //-         break;
 //-     }
 
-//-     gc->SetFont(FixedPitch);
-//-     double width, height, descent, xleading;
-//-     gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
-//-     logprintf("%.6g %.6g %.6g %.6g fixedpitch\n", width, height, descent, xleading);
-//-     FixedPitchBaseline = height - descent;
-//-     logprintf("Fixed Pitch Baseline = %.6g\n", height-descent);
-//- // Sort of for fun I put a row of 80 characters at the top of the screen
-//- // so I can show how fixed pitch stuff might end up being rendered.
-//-     gc->SetFont(FixedPitch);
-//-     for (int i=0; i<80; i++)
-//-         gc->DrawText(wxString((wchar_t)(i+0x21)), (double)i*charWidth, 24.0-FixedPitchBaseline);
-#if 0
-    wxColour c2(29, 99, 25);
-    wxBrush b2(c2);
-    gc->SetBrush(b2);
-    for (int x=0; x<1000; x+=10)
-        for (int y=0; y<=1000; y+=10)
-            if (((x/10)+(y/10)) & 1 != 0)
-                gc->DrawRectangle((double)x, (double)y, 10.0, 10.0);
-#endif
-
-
-//- // Now I need to do something more serious!
-//-     wxGraphicsFont regular =
-//-         gc->CreateFont(wxFont(wxFontInfo(24).FaceName(wxT("cslSTIX"))));
-//-     if (regular.IsNull()) logprintf("cslSTIX font not created\n");
-//-     gc->SetFont(regular);
-//-     gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
-//-     logprintf("%.6g %.6g %.6g %.6g regular\n", width, height, descent, xleading);
-//-     double regularBaseline = height - descent;
-//-     logprintf("regular baseline = %.6g\n", height-descent);
-//-     wxGraphicsFont math =
-//-         gc->CreateFont(wxFont(wxFontInfo(24).FaceName(wxT("cslSTIXMath"))));
-//-     if (math.IsNull()) logprintf("cslSTIXMath font not created\n");
-//-     else logprintf("Sym font should be OK\n");
-//-     gc->SetFont(math);
-//-     gc->GetTextExtent(wxString((wchar_t)'x'), &width, &height, &descent, &xleading);
-//-     logprintf("%.6g %.6g %.6g %.6g math\n", width, height, descent, xleading);
-//-     gc->GetTextExtent(wxString((wchar_t)'M'), &width, &height, &descent, &xleading);
-//-     logprintf("%.6g %.6g %.6g %.6g math\n", width, height, descent, xleading);
-//-     gc->GetTextExtent(wxString((wchar_t)'j'), &width, &height, &descent, &xleading);
-//-     logprintf("%.6g %.6g %.6g %.6g math\n", width, height, descent, xleading);
-//-     double symbolsBaseline = height - descent;
-
-// cslSTIXMath puts the glyphs used to build up big delimiters in a
-// private use area. It expects the code to use maths tables to discover
-// where they are rather than mere unicode names.
-
-#define stix_LEFT_CURLY_BRACKET_UPPER_HOOK    0x10821c
-#define stix_LEFT_CURLY_BRACKET_MIDDLE_PIECE  0x10821d
-#define stix_CURLY_BRACKET_EXTENSION          0x10821f
-#define stix_LEFT_CURLY_BRACKET_LOWER_HOOK    0x10821e
-//-     gc->SetFont(math);
-//-     gc->GetTextExtent(wxT("M"), &dwidth, &dheight, &ddepth, &dleading);
-//-     logprintf("(D)charWidth=%#.3g\n", dwidth);
-//-     logprintf("(D)height = %#.3g total height = %#.3g leading = %#.3g\n",
-//-               dheight-ddepth-dleading, dheight, dleading);
-//-     lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_UPPER_HOOK);
-//-     logprintf("upper hook   %d %d\n", c_lly, c_ury);
-//-     lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
-//-     logprintf("middle piece %d %d\n", c_lly, c_ury);
-//-     lookupchar(F_Math, stix_LEFT_CURLY_BRACKET_LOWER_HOOK);
-//-     logprintf("lower hook   %d %d\n", c_lly, c_ury);
-//-     lookupchar(F_Math, stix_CURLY_BRACKET_EXTENSION);
-//-     logprintf("extension    %d %d\n", c_lly, c_ury);
-//- #define H (24.0)
-//- #define XX 120.0
-//- #define YY 100.0
-//-     {   wchar_t ccc[4];
-//-         allow_for_utf16(ccc, stix_LEFT_CURLY_BRACKET_UPPER_HOOK);
-//-         gc->DrawText(wxString(ccc), XX, YY-H-symbolsBaseline);
-//-         allow_for_utf16(ccc, stix_LEFT_CURLY_BRACKET_MIDDLE_PIECE);
-//-         gc->DrawText(wxString(ccc), XX, YY-symbolsBaseline);
-//-         allow_for_utf16(ccc, stix_CURLY_BRACKET_EXTENSION);
-//-         gc->DrawText(wxString(ccc), XX, YY+H-symbolsBaseline);
-//-         allow_for_utf16(ccc, stix_LEFT_CURLY_BRACKET_LOWER_HOOK);
-//-         gc->DrawText(wxString(ccc), XX, YY+2.0*H-symbolsBaseline);
-//-     }
-//- // The next two have codepoints in the Basic Multilingual Plane so
-//- // I do not need to mess around with encoding even on platforms like
-//- // Windows that use UTF16 internally.
-//-     gc->SetFont(regular);
-//-     gc->DrawText(wxString((wchar_t)unicode_GREEK_SMALL_LETTER_OMEGA),        XX, YY+100.0-regularBaseline);
-//-     gc->DrawText(wxString((wchar_t)unicode_RIGHT_ANGLE_WITH_DOWNWARDS_ZIGZAG_ARROW), XX+100.0, YY+100.0-regularBaseline);
-
-    char *in = showmathData;
-    logprintf("About to process data:\n\"%.70s\"... ...\n\n", in);
-    do
-    {   int x, y, n, cp, size;
-        char name[100], name1[64];
-        while (isspace(*in)) in++;
-        if (*in == 0) break;
-        if (*in == '#' || *in == '%')
-// # ...     comments extend to the end of the line
-// % ...
-        {   n = 0;
-            while (*in != 0 && *in != '\n')
-                if (n < 99) name[n++] = *in++;
-                else in++;
-            name[n] = 0;
-            logprintf("%s\n", name);
-            if (*in == '\n') in++;
-            continue;
-        }
-        else if (sscanf(in, "deffont %d %60s %d;", &n, name, &size) == 3 &&
-// deffont number name size;   define font with given number
-                 0 <= n &&
-                 n < MAX_FONTS)
-        {   //- int flags = convert_font_name(name1, name);
-            //- int col;
-            logprintf("font[%d] = \"%s\" size %d\n", n, name1, size);
-//-             graphicsFont[n] = gc->CreateFont((double)size, name1, flags & 0xffff);
-//-             gc->SetFont(graphicsFont[n]);
-//-             gc->GetTextExtent(wxString((wchar_t)'('), &width, &height, &descent, &xleading);
-//-             logprintf("( %s/%d: %.6g %.6g [%.6g]\n",
-//-                       name1, size, height, descent, height-descent);
-//-             col = logprintf("    %d,", (int)((height - descent)/10.0 + 0.5));
-//-             while (col++ < 20) logprintf(" ");
-//-             logprintf("// %s\n", name);
-//-             graphicsBaseline[n] =
-//-                 (double)size * (double)chardepth[(flags >> 16) & 0x1f] / 1000.0;
-//-             logprintf("from table baseline offset = %.6g\n", graphicsBaseline[n]);
-        }
-        else if (sscanf(in, "put %d %d %d 0x%x;", &n, &x, &y, &cp) == 4 ||
-                 sscanf(in, "put %d %d %d %d;", &n, &x, &y, &cp) == 4)
-        {
-// put fontnum xpos ypos codepoint;  dump character onto screen
-// note x & y in units of 1/1000 point.
-//          logprintf("Font %d (%d,%d) char %d = %#x\n", n, x, y, cp, cp);
-//-             gc->SetFont(graphicsFont[n]);
-            wchar_t ccc[4];
-// For the benefit of Windows I need to represent code points in other
-// then the basic multilingual pane as surrogate pairs. Well that will
-// probably apply anywhere where sizeof(wchar_t) < 4.
-            allow_for_utf16(ccc, cp);
-//-             gc->DrawText(wxString(ccc),
-//-                          x/1000, 400-y/1000-graphicsBaseline[n]);
-        }
-        else logprintf("\nLine <%.32s> unrecognised\n", in);
-        in = strchr(in, ';');
-        if (in != NULL) in++;
-    }
-    while (in != NULL);
-
-// I will mark all the fonts I might have created as invalid now
-// that the context they were set up for is being left.
-    for (int i=0; i<MAX_FONTS; i++) FontValid[i] = false;
-    return;
 }
 
 // A dummy definition that is needed because of wxfwin.cpp
