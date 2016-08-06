@@ -59,7 +59,9 @@ LispObject Lfrexp(LispObject nil, LispObject a)
 LispObject Lmodular_difference(LispObject nil, LispObject a, LispObject b)
 {   int32_t r;
     if (!modulus_is_large)
-    {   r = int_of_fixnum(a) - int_of_fixnum(b);
+    {   if (!is_fixnum(a)) return aerror1("modular-difference", a);
+        if (!is_fixnum(b)) return aerror1("modular-difference", b);
+        r = int_of_fixnum(a) - int_of_fixnum(b);
         if (r < 0) r += current_modulus;
         return onevalue(fixnum_of_int(r));
     }
@@ -70,7 +72,8 @@ LispObject Lmodular_difference(LispObject nil, LispObject a, LispObject b)
 
 LispObject Lmodular_minus(LispObject nil, LispObject a)
 {   if (!modulus_is_large)
-    {   if (a != fixnum_of_int(0))
+    {   if (!is_fixnum(a)) return aerror1("modular-minus", a);
+        if (a != fixnum_of_int(0))
         {   int32_t r = current_modulus - int_of_fixnum(a);
             a = fixnum_of_int(r);
         }
@@ -96,7 +99,9 @@ LispObject Lmodular_number(LispObject nil, LispObject a)
 LispObject Lmodular_plus(LispObject nil, LispObject a, LispObject b)
 {   int32_t r;
     if (!modulus_is_large)
-    {   r = int_of_fixnum(a) + int_of_fixnum(b);
+    {   if (!is_fixnum(a)) return aerror1("modular-plus", a);
+        if (!is_fixnum(b)) return aerror1("modular-plus", b);
+        r = int_of_fixnum(a) + int_of_fixnum(b);
         if (r >= current_modulus) r -= current_modulus;
         return onevalue(fixnum_of_int(r));
     }
@@ -144,6 +149,7 @@ LispObject large_modular_reciprocal(LispObject n, int safe)
 LispObject Lmodular_reciprocal(LispObject, LispObject n)
 {   int32_t a, b, x, y;
     if (modulus_is_large) return large_modular_reciprocal(n, 0);
+    if (!is_fixnum(n)) return aerror1("modular-reciprocal", n);
     a = current_modulus;
     b = int_of_fixnum(n);
     x = 0;
@@ -170,6 +176,7 @@ LispObject Lmodular_reciprocal(LispObject, LispObject n)
 LispObject Lsafe_modular_reciprocal(LispObject nil, LispObject n)
 {   int32_t a, b, x, y;
     if (modulus_is_large) return large_modular_reciprocal(n, 1);
+    if (!is_fixnum(n)) return aerror1("modular-reciprocal", n);
     a = current_modulus;
     b = int_of_fixnum(n);
     x = 0;
@@ -199,7 +206,9 @@ LispObject Lmodular_times(LispObject nil, LispObject a, LispObject b)
     uint32_t r, cm;
     int32_t aa, bb;
     if (!modulus_is_large)
-    {   cm = (uint32_t)current_modulus;
+    {   if (!is_fixnum(a)) return aerror1("modular-times", a);
+        if (!is_fixnum(b)) return aerror1("modular-times", b);
+        cm = (uint32_t)current_modulus;
         aa = int_of_fixnum(a);
         bb = int_of_fixnum(b);
 //
@@ -240,7 +249,7 @@ LispObject large_modular_expt(LispObject a, int x)
     p = modulus(a, large_modulus);
     errexit();
 //
-// This is not yet GC safe.
+// @@@ This is not yet GC safe.
 //
     while ((x & 1) == 0)
     {   w = times2(p, p);
