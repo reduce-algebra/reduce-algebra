@@ -78,7 +78,7 @@ symbolic procedure merge!-terms1(i,u,v,n);
   else begin scalar a,b;
     a:=getv(v,i);
     if domainp u or not(mvar u=m!-image!-variable) then
-      if not(car a=0) then errorf list("MERGING COEFFTS FAILED",u,a)
+      if not(car a=0) then errorf list("merging coeffts failed",u,a)
       else if cdr a then return cdr a
       else return u;
     b:=lt u;
@@ -86,7 +86,7 @@ symbolic procedure merge!-terms1(i,u,v,n);
       (if cdr a then tpow b .* cdr a else b) .+
         merge!-terms1(i #+ 1,red u,v,n)
     else if tdeg b #> car a then return b .+ merge!-terms1(i,red u,v,n)
-    else errorf list("MERGING COEFFTS FAILED ",u,a)
+    else errorf list("merging coeffts failed",u,a)
   end;
 
 symbolic procedure list!-terms!-in!-factor u;
@@ -294,13 +294,25 @@ symbolic procedure max!-degree(u,n);
     max!-degree(red u,max!-degree(lc u,n))
   else max!-degree(red u,max!-degree(lc u,ldeg u));
 
+symbolic procedure max!-coefficient!-degree u;
+% finds maximum degree of any single variable apart from the
+% main one in U.
+  begin
+    scalar r;
+    r := 1;
+    while not domainp u do <<
+      r := max!-degree(lc u, r);
+      u := red u >>;
+    return r
+  end;
+
 symbolic procedure diff!-over!-k!-mod!-p(u,k,v);
 % derivative of u wrt v divided by k (=number);
   if domainp u then nil
   else if mvar u = v then
-    if ldeg u = 1 then quotient!-mod!-p(lc u,modular!-number k)
+    if ldeg u = 1 then quotfail!-mod!-p(lc u,modular!-number k)
     else adjoin!-term(mksp(v,isub1 ldeg u),
-      quotient!-mod!-p(
+      quotfail!-mod!-p(
         times!-mod!-p(modular!-number ldeg u,lc u),
         modular!-number k),
       diff!-over!-k!-mod!-p(red u,k,v))

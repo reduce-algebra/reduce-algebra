@@ -50,6 +50,7 @@ fluid '(!*force!-zero!-set
         facvec
         fhatvec
         forbidden!-primes
+        smallest!-prime
         forbidden!-sets
         full!-gcd
         hensel!-growth!-size
@@ -110,7 +111,9 @@ global '(largest!-small!-modulus);
 
 %-----------------------------------------------------------------------
 %   This code works by using a local database of fluid variables
-%   whose meaning is (hopefully) obvious.
+%   whose meaning is (hopefully) obvious. When this code was written in the
+%   late 1970s and early 1980s the use of global state like this felt
+%   like a good idea. Over the years it has come to look a stylistic mistake!
 %   they are used as follows:
 %
 %   global name:            set in:               comments:
@@ -158,8 +161,8 @@ global '(largest!-small!-modulus);
 %***********************************************************************
 
 symbolic procedure factorize!-primitive!-polynomial u;
-% U is primitive square free and at least linear in
-% m!-image!-variable. M!-image!-variable is the variable preserved in
+% u is primitive square free and at least linear in
+% m!-image!-variable. m!-image!-variable is the variable preserved in
 % the univariate images. This function determines a random set of
 % integers and a prime to create a univariate modular image of u,
 % factorize it and determine the leading coeffts of the factors in the
@@ -443,9 +446,10 @@ symbolic procedure get!-some!-random!-sets();
 % the same time we pick a random prime to reduce this image
 % poly mod p.
   begin scalar image!-set,chosen!-prime,image!-lc,image!-mod!-p,
-        image!-content,image!-poly,f!-numvec,forbidden!-primes,i,j,
-        usable!-set!-found;
+        image!-content,image!-poly,f!-numvec,forbidden!-primes,
+        smallest!-prime,i,j,usable!-set!-found;
     valid!-image!-sets:=mkvect no!-of!-random!-sets;
+    smallest!-prime := 1 + max!-coefficient!-degree multivariate!-input!-poly;
     i:=0;
     while i < no!-of!-random!-sets do <<
 %     wtime:=time();

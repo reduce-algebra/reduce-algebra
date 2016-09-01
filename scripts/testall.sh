@@ -65,6 +65,8 @@ do
     ;;
   *)
     printf "\"$a\" is not a valid argument to this script.\n"
+    printf "Valid options are: --csl --psl --jlisp --cslboot --jlispboot\n"
+    printf "    --noregressions --install --keep --debug\n"
     printf "Stopping.\n"
     exit 1
     ;;

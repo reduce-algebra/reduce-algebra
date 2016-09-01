@@ -73,7 +73,7 @@ symbolic procedure uhensel!.extend(poly,best!-flist,lclist,p);
 %   timer:=readtime();
     number!-of!-factors:=length best!-flist;
     w:=expt(lc poly,number!-of!-factors -1);
-    if lc poly < 0 then errorf list("LC SHOULD NOT BE -VE",poly);
+    if lc poly < 0 then errorf list("LC should not be -ve",poly);
     coefftbd:=max(110,p+1,lc poly*get!-coefft!-bound(poly,ldeg poly));
     poly:=multf(poly,w);
     modular!-flist:=for each ff in best!-flist collect
@@ -142,7 +142,7 @@ symbolic procedure uhensel!.extend(poly,best!-flist,lclist,p);
       return t >>;
     factor!-trace begin scalar k;
       k:=0;
-      printstr "Univariate factors, possibly with adjusted leading";
+      printstr "Univariate factors, possibly with adjusted leading ";
       printstr "coefficients, are:";
       for each ww in cdr w do <<
         prin2!* " f("; prin2!* (k:=k #+ 1);
@@ -474,7 +474,7 @@ symbolic procedure hensel!-msg1(p,u0);
    begin scalar w;
     factor!-trace <<
       printstr
-         "We are now ready to use the Hensel construction to grow";
+         "We are now ready to use the Hensel construction to grow ";
       prin2!* "in powers of "; printstr current!-modulus;
       if not !*overview then <<prin2!* "Polynomial to factor (=U): ";
         printsf hensel!-poly>>;
@@ -489,10 +489,9 @@ symbolic procedure hensel!-msg1(p,u0);
       terpri!*(nil);
       prin2!* "The product of factors over the integers is ";
       printsf u0;
-      printstr "In each step below, the residue is U - (product of the";
-      printstr
-         "factors as far as we know them). The correction to each";
-      printstr "factor, f(i), is (a(i)*v) mod f0(i) where f0(i) is";
+      printstr "In each step below, the residue is U - (product of the ";
+      printstr "factors as far as we know them). The correction to each ";
+      printstr "factor, f(i), is (a(i)*v) mod f0(i) where f0(i) is ";
       prin2!* "f(i) mod "; prin2!* p;
       printstr "(ie. the f(i) used in calculating the a(i))"
       >>>>
@@ -671,13 +670,13 @@ symbolic procedure try!.combining1(l,poly,m,sofar,k);
 % start combining them K at a time
   if poly=1 then
     if null l then sofar
-    else errorf(list("TOO MANY BAD FACTORS:",l))
+    else errorf(list("too many bad factors:",l))
   else begin scalar n,res,ff,v,w,w1,combined!.factors,ll,lcfinv,oldmod;
     n:=length l;
     if n=1 then
       if ldeg car l > (ldeg poly)/2 then
         return ('one! bad! factor . sofar)
-      else errorf(list("ONE BAD FACTOR DOES NOT FIT:",l));
+      else errorf(list("one bad factor does not fit:",l));
     if n=2 or n=3 then <<
       w:=lc cdar l; % The LC of all the factors is the same.
       while not (w=lc poly) do poly:=quotfail(poly,w);
@@ -811,7 +810,7 @@ symbolic procedure factor!-trialdiv(poly,flist,m,llist,lcfinv);
               w:=general!-make!-modular!-symmetric tcoeff) then <<
       factor!-trace printstr " it didn't go (tc test)";
       set!-general!-modulus oldmod;
-%      if not(w = trailing!.coefft(car COMBINE(FLIST,M,LLIST,lcfinv),x))
+%      if not(w = trailing!.coefft(car combine(flist,m,llist,lcfinv),x))
 %             then <<
 %         printstr "incompatibility: we have";
 %         prin2!* w;
@@ -859,7 +858,7 @@ symbolic procedure combine(flist,m,l,lcfinv);
 %      lcfinv := general!-modular!-reciprocal lcf; Done once and for all
       res:=general!-reduce!-mod!-p car flist;
       for each ff in cdr flist do <<
-        if not(lcf=lc ff) then errorf "BAD LC IN FLIST";
+        if not(lcf=lc ff) then errorf "bad lc in flist";
         res:=general!-times!-mod!-p(
             general!-times!-mod!-p(lcfinv,
                 general!-reduce!-mod!-p ff),res);
@@ -872,7 +871,7 @@ symbolic procedure combine(flist,m,l,lcfinv);
       lcfinv := modular!-reciprocal lcf;
       res:=reduce!-mod!-p car flist;
       for each ff in cdr flist do <<
-        if not(lcf=lc ff) then errorf "BAD LC IN FLIST";
+        if not(lcf=lc ff) then errorf "bad lc in flist";
         res:=times!-mod!-p(times!-mod!-p(lcfinv,reduce!-mod!-p ff),res);
         lcfprod := lcfprod*lcf >>;
       res:=make!-modular!-symmetric res;

@@ -56,13 +56,13 @@ symbolic procedure pfactor(q,p);
 %   lncoeff := lc r;
     x := lnc r;
     r :=monic!-mod!-p r;
-%   print!-time "About to call FACTOR-FORM-MOD-P";
+%   print!-time "About to call factor-form-mod-p";
     r:=errorset!*(list('factor!-form!-mod!-p,mkquote r),t);
-%   print!-time "FACTOR-FORM-MOD-P returned";
+%   print!-time "factor-form-mod-p returned";
     if not errorp r
       then return x . for each j in car r
                           collect mod!-adjust car j . cdr j;
-    prin2t "****** FACTORIZATION FAILED******";
+    prin2t "****** Factorization failed ******";
     return list(1,prepf q)   % 1 needed by factorize.
   end;
 
@@ -175,7 +175,7 @@ symbolic procedure factorize!-pp!-mod!-p p;
 %   print!-time "primitive square-free case detected";
     vars:=variables!-in!-form p;
     if length vars=1 then return unifac!-mod!-p p;
-    errorf "SHAMBLED IN PFACTOR - MULTIVARIATE CASE RESURFACED"
+    errorf "shambled in pfactor - multivariate case resurfaced"
   end;
 
 symbolic procedure unifac!-mod!-p p;

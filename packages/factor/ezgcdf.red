@@ -92,7 +92,7 @@ symbolic procedure ezgcdf1(u,v);
 %    u := for each p in u collect <<
 %        w := simp!* p;
 %        if (denr w neq 1) then
-%           rederr "EZGCD requires polynomial arguments";
+%           rederr "ezgcd requires polynomial arguments";
 %        numr w >>;
 %    return (poly!-abs gcdlist u) ./ 1
 %  end;
@@ -104,7 +104,7 @@ symbolic procedure simpnprimitive p;
   begin
     scalar np,dp;
     if atom p or not atom cdr p then
-       rerror(ezgcd,2,"NPRIMITIVE requires just one argument");
+       rerror(ezgcd,2,"nprimitive requires just one argument");
     p := simp!* car p;
     if polyzerop(numr p) then return nil ./ 1;
     np := quotfail(numr p,numeric!-content numr p);
@@ -449,17 +449,17 @@ symbolic procedure gcdlist3(l,onestep,vlist);
     l1:=for each p in l collect p . ezgcd!-comfac p;
     l:=for each c in l1 collect
         quotfail1(car c,comfac!-to!-poly cdr c,
-                  "Content divison in GCDLIST3 failed");
+                  "Content divison in gcdlist3 failed");
     % All polys in L are now primitive.
     % Because all polys were monomial-primitive, there should
     % be no power of V to go in the result.
     gcont:=gcdlist for each c in l1 collect cddr c;
     if domainp gcont then if not(gcont=1)
-      then errorf "GCONT has numeric part";
+      then errorf "gcont has numeric part";
     % GCD of contents complete now;
     % Now I will remove duplicates from the list;
 %   trace!-time <<
-%      prin2t "GCDLIST3 on the polynomials";
+%      prin2t "gcdlist3 on the polynomials";
 %      for each p in l do print p >>;
     l := sort(for each p in l collect poly!-abs p,function ordp);
     w := nil;
@@ -515,10 +515,10 @@ symbolic procedure gcdlist31(l,vlist,gcont,gg,l1);
    begin scalar cofactor,lcg,old!-modulus,prime,w,w1,zeros!-list;
     old!-modulus:=set!-modulus nil; %Remember modulus;
     lcg:=for each poly in l collect lc poly;
-%    trace!-time << prin2t "L.C.S OF L ARE:";
+%    trace!-time << prin2t "l.c.s of l are:";
 %      for each lcpoly in lcg do printsf lcpoly >>;
     lcg:=gcdlist lcg;
-%    trace!-time << prin2!* "LCG (=GCD OF THESE) = ";
+%    trace!-time << prin2!* "lcg (=gcd of these) = ";
 %      printsf lcg >>;
 try!-again:
     unlucky!-case:=nil;
@@ -534,9 +534,9 @@ try!-again:
 %       prin2 " Zeros-list = ";
 %       prin2t zeros!-list >>
       >>;
-%   trace!-time prin2t list("IMAGE SET",image!-set);
+%   trace!-time prin2t list("image set",image!-set);
     gg:=make!-image!-mod!-p(car w,car vlist);
-%   trace!-time prin2t list("IMAGE SET",image!-set," GG",gg);
+%   trace!-time prin2t list("image set",image!-set," gg",gg);
     if unlucky!-case then <<
 %     trace!-time << prin2t "Unlucky case, try again";
 %       print image!-set >>;
@@ -546,7 +546,7 @@ make!-images:
     if null (w:=cdr w) then go to images!-created!-successfully;
     l1:=(car w . make!-image!-mod!-p(car w,car vlist)) . l1;
     if unlucky!-case then <<
-%    trace!-time << prin2t "UNLUCKY AGAIN...";
+%    trace!-time << prin2t "unlucky again...";
 %      prin2t l1;
 %      print image!-set >>;
       go to try!-again >>;
@@ -594,33 +594,33 @@ good!-cofactor!-found:
     w:=caar w;
 %    trace!-time << prin2!* "W= ";
 %      printsf w;
-%      prin2!* "GG= ";
+%      prin2!* "gg= ";
 %      printsf gg;
-%      prin2!* "COFACTOR= ";
+%      prin2!* "cofactor= ";
 %      printsf cofactor >>;
     image!-set:=sort(image!-set,function ordopcar);
-%    trace!-time << prin2 "IMAGE-SET = ";
+%    trace!-time << prin2 "image-set = ";
 %      prin2t image!-set;
-%      prin2 "PRIME= ";   prin2t prime;
-%      prin2t "L (=POLYLIST) IS:";
+%      prin2 "prime= ";   prin2t prime;
+%      prin2t "l (=polylist) is:";
 %      for each ll in l do printsf ll >>;
     gg:=reconstruct!-gcd(w,gg,cofactor,prime,image!-set,lcg);
     if gg='nogood then go to try!-again;
     go to result;
 special!-case: % Here I have to do the first step of a PRS method;
-%   trace!-time << prin2t "*** SPECIAL CASE IN GCD ***";
+%   trace!-time << prin2t "*** special case in gcd ***";
 %     prin2t l;
 %     prin2t "----->";
 %     prin2t gg >>;
     reduced!-degree!-lclst:=nil;
 try!-reduced!-degree!-again:
-%   trace!-time << prin2t "L1 =";
+%   trace!-time << prin2t "l1 =";
 %     for each ell in l1 do print ell >>;
     w1:=reduced!-degree(caadr l1,caar l1);
     w:=car w1; w1:=cdr w1;
     if not domainp w and
        (domainp w1 or ldeg w neq ldeg w1) then go to try!-again;
-%   trace!-time << prin2 "REDUCED!-DEGREE = "; printsf w;
+%   trace!-time << prin2 "reduced!-degree = "; printsf w;
 %     prin2 " and its image = "; printsf w1 >>;
             % reduce the degree of the 2nd poly using the 1st. Result is
             % a pair : (new poly . image new poly);
@@ -671,13 +671,13 @@ symbolic procedure make!-order!-consistent(l,m);
 % L is a subset of M. Make its order consistent with that
 % of M;
     if null l then nil
-    else if null m then errorf("Variable missing from KORD*")
+    else if null m then errorf("Variable missing from kord*")
     else if car m member l then car m .
        make!-order!-consistent(delete(car m,l),cdr m)
     else make!-order!-consistent(l,cdr m);
 
 symbolic procedure try!-max!-zeros!-for!-image!-set(l,vlist);
-  if null vlist then error(50,"VLIST NOT SET IN TRY-MAX-ZEROS-...")
+  if null vlist then error(50,"vlist not set in try-max-zeros-...")
   else begin scalar z;
     z:=for each v in cdr vlist collect
       if domainp lc car l or null quotf(lc car l,!*k2f v) then
@@ -703,16 +703,16 @@ symbolic procedure
     best!-known!-factors,prime!-base,
     m!-image!-variable, reconstructing!-gcd,full!-gcd;
     if not(current!-modulus=p) then
-      errorf("GCDLIST HAS NOT RESTORED THE MODULUS");
+      errorf("gcdlist has not restored the modulus");
             % *WARNING* GCDLIST does not restore the modulus so
               % I had better reset it here!  ;
     if poly!-minusp lcg then error(50,list("Negative GCD: ",lcg));
     full!-poly:=poly!-abs full!-poly;
     initialise!-hensel!-fluids(full!-poly,gg,cofactor,p,lcg);
-%    trace!-time << prin2t "TRUE LEADING COEFFTS ARE:";
+%    trace!-time << prin2t "true leading coeffts are:";
 %      for i:=1:2 do <<
 %        printsf getv(image!-factors,i);
-%        prin2!* " WITH L.C.:";
+%        prin2!* " with l.c.:";
 %        printsf getv(true!-leading!-coeffts,i) >> >>;
     if determine!-more!-coeffts()='done then
       return full!-gcd;
@@ -783,7 +783,7 @@ symbolic procedure degree!-order(a,b);
     else ldeg a<ldeg b;
 
 symbolic procedure make!-image!-mod!-p(p,v);
-% Form univariate image, set UNLUCKY!-CASE if leading coefficient
+% Form univariate image, set unlucky!-case if leading coefficient
 % gets destroyed;
   begin
     scalar lp;
@@ -925,9 +925,9 @@ symbolic procedure ezgcd!-sqfrf p;
     pdash := diff(p,v := mvar p);
     d := poly!-gcd(p,pdash); % p2*p3**2*p4**3*... ;
     if domainp d then return list p;
-    p := quotfail1(p,d,"GCD division in FACTOR-SQFRF failed");
+    p := quotfail1(p,d,"GCD division in factor-sqfrf failed");
     p1 := poly!-gcd(p,
-       addf(quotfail1(pdash,d,"GCD division in FACTOR-SQFRF failed"),
+       addf(quotfail1(pdash,d,"GCD division in factor-sqfrf failed"),
             negf diff(p,v)));
     return p1 . ezgcd!-sqfrf d
   end;
@@ -937,27 +937,27 @@ symbolic procedure reduced!-degree(u,v);
    %result is pair: (reduced poly of U by V . its image) where by
    % reduced I mean using V to kill the leading term of U;
    begin scalar var,w,x;
-%   trace!-time << prin2t "ARGS FOR REDUCED!-DEGREE ARE:";
+%   trace!-time << prin2t "args for reduced!-degree are:";
 %    printsf u;  printsf v >>;
     if u=v or quotf1(u,v) then return (nil . nil)
     else if ldeg v=1 then return (1 . 1);
-%   trace!-time prin2t "CASE NON-TRIVIAL SO TAKE A REDUCED!-DEGREE:";
+%   trace!-time prin2t "case non-trivial so take a reduced!-degree:";
     var := mvar u;
     if ldeg u=ldeg v then x := negf lc u
     else x:=(mksp(var,ldeg u - ldeg v) .* negf lc u) .+ nil;
     w:=addf(multf(lc v,u),multf(x,v));
 %   trace!-time printsf w;
     if degr(w,var)=0 then return (1 . 1);
-%   trace!-time << prin2 "REDUCED!-DEGREE-LCLST = ";
+%   trace!-time << prin2 "reduced!-degree-lclst = ";
 %     print reduced!-degree!-lclst >>;
     reduced!-degree!-lclst := addlc(v,reduced!-degree!-lclst);
-%   trace!-time << prin2 "REDUCED!-DEGREE-LCLST = ";
+%   trace!-time << prin2 "reduced!-degree-lclst = ";
 %     print reduced!-degree!-lclst >>;
     if x := quotf1(w,lc w) then w := x
     else for each y in reduced!-degree!-lclst do
       while (x := quotf1(w,y)) do w := x;
     u := v; v := ezgcd!-pp w;
-%   trace!-time << prin2t "U AND V ARE NOW:";
+%   trace!-time << prin2t "u and v are now:";
 %     printsf u; printsf v >>;
     if degr(v,var)=0 then return (1 . 1)
     else return (v . make!-univariate!-image!-mod!-p(v,var))

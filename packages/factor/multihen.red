@@ -200,6 +200,8 @@ temploop:
         if polyzerop(substres:=evaluate!-mod!-p(res,car v,cdr v))
          then <<
           k:=iadd1 k;
+% It is important here that k doe snot divide into the current modulus, and
+% I hope I arrange that by keeping my prime greater than the degree bound...
           res:=diff!-over!-k!-mod!-p(res,k,car v);
           correction!-factor:=
             times!-mod!-p(correction!-factor,growth!-factor) >>
@@ -399,14 +401,14 @@ symbolic procedure find!-msg3(best!-factors,v);
       printstr "factors so far as:";
       ezgcd_printvec("  f(",number!-of!-factors,") = ",best!-factors);
       printstr "Subtracting the product of these from the polynomial";
-      prin2!* "and differentiating wrt "; prinvar car v;
+      prin2!* " and differentiating wrt "; prinvar car v;
       printstr " gives a residue:"
     >>;
 
 symbolic procedure find!-msg4(predicted!-forms,v);
       factor!-trace <<
         printstr "To help reduce the number of Hensel steps we try";
-        prin2!* "predicting how many terms each factor will have wrt ";
+        prin2!* " predicting how many terms each factor will have wrt ";
         prinvar car v; printstr ".";
         printstr
           "Predictions are based on the bivariate factors :";

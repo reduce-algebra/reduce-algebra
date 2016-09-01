@@ -67,7 +67,7 @@ symbolic procedure quotfail!-in!-vector(a,da,b,db);
 % The quotient must be exact;
     if da#<0 then da
     else if db#<0 then errorf "Attempt to divide by zero"
-    else if da#<db then errorf "Bad degrees in QUOTFAIL-IN-VECTOR"
+    else if da#<db then errorf "Bad degrees in quotfail-in-vector"
     else begin
       scalar dc;
       dc:=da#-db; % Degree of result;
@@ -80,7 +80,7 @@ symbolic procedure quotfail!-in!-vector(a,da,b,db);
         putv(a,db#+i,q)
       end;
       for i:=0:db#-1 do if getv(a,i) neq 0 then
-        errorf "Quotient not exact in QUOTFAIL!-IN!-VECTOR";
+        errorf "Quotient not exact in quotfail!-in!-vector";
       for i:=0:dc do
         putv(a,i,getv(a,db#+i));
       return dc

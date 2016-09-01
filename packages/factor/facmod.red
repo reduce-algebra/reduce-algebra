@@ -58,7 +58,7 @@ symbolic procedure get!-factor!-count!-mod!-p
     old!-m:=set!-modulus p;
 %    PRIN2 "prime = ";% prin2t current!-modulus;
 %    PRIN2 "degree = ";% prin2t ldeg poly!-mod!-p;
-%   trace!-time display!-time("Entered GET-FACTOR-COUNT after ",time());
+%   trace!-time display!-time("Entered get-factor-count after ",time());
 %   wtime:=time();
     f!-count:=modular!-factor!-count();
 %   trace!-time display!-time("Factor count obtained in ",time()-wtime);
@@ -385,7 +385,7 @@ symbolic procedure convert!-null!-vectors!-to!-factors m!-info;
     factors:=list (poly!-vector . dpoly);
 try!-next!-null:
     if null!-space!-basis=nil then
-      errorf "RAN OUT OF NULL VECTORS TOO EARLY";
+      errorf "ran out of null vectors too early";
 %   wtime:=time();
     factors:=try!-all!-constants(factors,
         caar null!-space!-basis,cdar null!-space!-basis);

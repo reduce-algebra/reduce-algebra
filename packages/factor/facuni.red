@@ -38,6 +38,7 @@ fluid '(!*force!-prime
         factor!-level
         factor!-trace!-list
         forbidden!-primes
+        smallest!-prime
         hensel!-growth!-size
         input!-leading!-coefficient
         input!-polynomial
@@ -74,7 +75,7 @@ symbolic procedure univariate!-factorize poly;
 symbolic procedure univariate!-factorize1 poly;
   begin scalar
     valid!-primes,univariate!-input!-poly,best!-set!-pointer,
-    number!-of!-factors,irreducible,forbidden!-primes,
+    number!-of!-factors,irreducible,forbidden!-primes,smallest!-prime,
     no!-of!-best!-primes,no!-of!-random!-primes,bad!-case,
     target!-factor!-count,modular!-info,univariate!-factors,
     hensel!-growth!-size,alphalist,previous!-degree!-map,
@@ -94,6 +95,7 @@ symbolic procedure univariate!-factorize1 poly;
       printstr "to use in the Hensel construction." >>;
     initialize!-univariate!-fluids poly;
             % set up the fluids to start things off;
+    smallest!-prime := ldeg poly;
 tryagain:
     get!-some!-random!-primes();
     choose!-the!-best!-prime();

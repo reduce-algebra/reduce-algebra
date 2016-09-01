@@ -213,6 +213,14 @@ symbolic procedure random!-prime();
 % of how large an exception table I computed using 48 hours of CPU time
 % and large enough that primes selected this way will hardly ever
 % be unlucky just through being too small.
+% (35 years later...
+%  HA HA HA I bet that if I re-computed this table it would take MUCH less
+%  then 48 hours... YES when I write C code and run it on a 2016 computer I
+%  can reproduce the above table in under 14 seconds of CPU time! Note that
+%  the the two odd-looking bases 2926 and 3315 are 2*7*11*19 and 3*5*13*17.
+%  Use of these bases leaves me with just 88 entries in my exception table.
+%  I am now running a scan to see if I can identify a better pair that will
+%  lead to an even smaller table!)
     scalar p,w,oldmod,lsm, lsm2;
     lsm := largest!-small!-modulus;
     if lsm > 2**24 then lsm := 2**24;

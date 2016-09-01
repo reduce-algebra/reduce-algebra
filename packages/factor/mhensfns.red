@@ -34,6 +34,7 @@ fluid '(!*trfac
         factor!-level
         factor!-trace!-list
         forbidden!-primes
+        smallest!_prime
         hensel!-growth!-size
         image!-factors
         max!-unknowns
@@ -73,8 +74,10 @@ symbolic procedure choose!-larger!-prime n;
 % the primes we can choose are < 2**24 so if n is bigger
 % we collapse;
   if n > 2**24-1 then
-    errorf list("CANNOT CHOOSE PRIME > GIVEN NUMBER:",n)
-  else begin scalar p,flist!-mod!-p,k,fvec!-mod!-p,forbidden!-primes;
+    errorf list("Cannot choose prime > given number:",n)
+  else begin scalar p,flist!-mod!-p,k,fvec!-mod!-p,forbidden!-primes,
+                    smallest!-prime;
+    smallest!-prime := n;
 trynewprime:
     if p then forbidden!-primes:=p . forbidden!-primes;
     p:=random!-prime();
@@ -191,17 +194,17 @@ symbolic procedure primitive!.parts(flist,var,univariate!-inputs);
       errorf "Must take primitive parts wrt some non-null variable";
     if non!-monic then
       factor!-trace <<
-        printstr "Because we multiplied the original primitive";
-        printstr "polynomial by a multiple of its leading coefficient";
-        printstr "(see (a) above), the factors we have now are not";
-        printstr "necessarily primitive. However the required factors";
+        printstr "Because we multiplied the original primitive ";
+        printstr "polynomial by a multiple of its leading coefficient ";
+        printstr "(see (a) above), the factors we have now are not ";
+        printstr "necessarily primitive. However the required factors ";
         printstr "are merely their primitive parts." >>;
     return for each fw in flist collect
     << if not depends!-on!-var(fw,var) then
-            errorf list("WRONG VARIABLE",var,fw);
+            errorf list("wrong variable",var,fw);
        c:=comfac fw;
        if car c then errorf(list(
-         "FACTOR DIVISIBLE BY MAIN VARIABLE:",fw,car c));
+         "factor divisible by main variable:",fw,car c));
        primf:=quotfail(fw,cdr c);
        if not(cdr c=1) and univariate!-inputs then
          multiply!-alphas(cdr c,fw,primf);

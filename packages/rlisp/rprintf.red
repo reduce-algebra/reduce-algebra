@@ -81,7 +81,7 @@ symbolic procedure gensymp u;
 
 #endif
 
-% I will support bldmsg by having versions of the primt primitives that
+% I will support bldmsg by having versions of the print primitives that
 % dump characters in a list...
 
 fluid '(bldmsg_chars!* !*ll!*);
@@ -330,6 +330,95 @@ symbolic procedure portable_prin x;
     return x;
   end;
 
+% The following will print a prefix expression. It will use infix
+% notation and understand precedence for expt, times, quotient, plus,
+% difference and minus -- all other operators are treated as general
+% function applications. If !*SQ is encountered within the formula it
+% will be expanded out using prepsq.
+
+% The output from prepf does not use DIFFERENCE as an operator, but in
+% case one is fed in from some other odd source I will normalise things
+% here.
+
+symbolic procedure p_minus u;
+  if eqcar(u, 'minus) then cadr u
+  else if eqcar(u, 'plus) then
+    'plus . for each v in cdr u collect p_minus v
+  else if eqcar(u, 'difference) then
+    'plus . p_minus cadr u . cddr u
+  else list('minus, u);
+
+symbolic procedure p_diff2minus u;
+  begin
+    scalar r;
+    r := car u;
+    while u := cdr u do r := p_minus car u . r;
+    return 'plus . reverse r
+  end;
+
+symbolic procedure p_prefix(u, prec);
+  if atom u then p_princ(u, nil)
+  else if eqcar(u, '!*sq) then p_prefix(prepsq cadr u, prec)
+  else
+    begin
+      scalar op, p1;
+      op := car u;
+% I will have a crude code-based (rather than table-driven) treatment of the
+% small number of special cases of infix operators that I support here...
+      if op ='expt then <<
+        if prec > 3 then p_princ("(", nil);
+        p_prefix(cadr u, 4);
+        p_princ("^", nil);
+        p_prefix(caddr u, 3);
+        if prec > 3 then p_princ(")", nil);
+        return nil >>
+      else if op = 'times or op = 'quotient then <<
+        if prec > 2 then p_princ("(", nil);
+        p_prefix(car (u := cdr u), 2);
+        if op = 'times then << p1 := 2; op := "*" >>
+        else << p1 := 3; op := "/" >>;
+% If I have (quotient a (times b c)) I must parenthesize the use of "times",
+% but if I had (times a (quotient b c)) I need not parenthesize the quotient
+% because (a*(b/c)) has the same value as (a*b)/c so can be displated as
+% just a*b/c safely.
+        while not atom (u := cdr u) do <<
+          p_princ(op, nil);
+          p_prefix(car u, p1) >>;
+        if prec > 2 then p_princ(")", nil);
+        return nil >>;
+      if op = 'difference then return p_prefix(p_diff2minus cdr u, prec)
+      else if op = 'plus then <<
+        if prec > 1 then p_princ("(", nil);
+        p_prefix(car (u := cdr u), 1);
+        while not atom (u := cdr u) do <<
+          p1 := car u;
+          if eqcar(p1, 'minus) then <<
+            p1 := cadr p1;
+            p_princ(" - ", nil) >>
+          else p_princ(" + ", nil);
+          p_prefix(p1, 1) >>;
+        if prec > 1 then p_princ(")", nil);
+        return nil >>
+      else if op = 'minus then <<
+        p_princ("-", nil);
+        if prec < 2 then prec := 2;
+        return p_prefix(cadr u, prec) >>;
+% Here I have something I will display as a raw function application. I will
+% take special action if the "function" part is complicated!
+      if (not atom op) or (numberp op and minusp op) then <<
+        p_princ("(", nil);
+        p_prefix(op, 0);
+        p_princ(")", nil) >>
+      else p_princ(op, nil);
+      op := "(";
+% A function with no args needs "()" after it.
+      if atom (u := cdr u) then p_princ("(", nil)
+      else for each x in u do <<
+        p_princ(op, nil);
+        op := ",";
+        p_prefix(x, 0) >>;
+      return p_princ(")", nil)
+    end;
 
 % Sometimes I want to print a Lisp expression starting at the current
 % column and with confidence that My Lisp system will keep output within
@@ -437,8 +526,10 @@ verylong:
 %       %w    use prin2
 %       %x    print in hexadecimal
 % *     %%    print a '%' character
+%       %@f   print as standard form
+%       %@q   print as standard quotient
+%       %@p   print as prefix form
 % All except those marked with "*" use an argument.
-% The options marked with "@" may not be available in PSL.
 
 
 symbolic procedure bldmsg_internal(fmt, args);
@@ -576,8 +667,15 @@ symbolic procedure printf_internal(fmt, args);
 % As with octal output, PSL can achieve this a diffenent way and will
 % generate differently formatted output.
           else if c = '!x or c = '!X then p_prinhex a
+          else if c = '!@ then <<
+            c := car fmt;
+            fmt := cdr fmt;
+            if c = '!f or c = '!F then p_prefix(prepf a, 0)
+            else if c = '!q or c = '!Q then p_prefix(prepsq a, 0)
+            else if c = '!p or c = '!P then p_prefix(a, 0)
+            else << p_princ("%@", nil); p_princ(c, nil) >> >>
 % Rather than generating an error I will display %? (where ? is any
-% unrecognized character) unchanged. 
+% unrecognized character) unchanged.
           else << p_princ("%", nil); p_princ(c, nil) >> >> >> >>
   end;
 

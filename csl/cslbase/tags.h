@@ -556,13 +556,15 @@ typedef uintptr_t Header;
 //   100:xx 01 g010  stream and mixed1, 2 and 3
 //   1x1:11 01 g010  (spare, but classifies as a number: 2 codes)
 //   1xx:xx 01 g010  (spare: 14 codes)
+//   111:11 01 g010  used when calculatuing hash codes as if it was the
+//                   header for a CONS cell.
 
 //   yyy:yy 10 g010  bit-vector with yyyyy (1 to 32) bits in final word.
 
 // The final column here explains what size units of storage fit within
 // the object. For (eg) "encapsulated general pointer" I have made it
 // 64 and I should pad 32-bit cases to that width - but I do not expect
-// those sorts of data to survice serialization, so I annotate them here
+// those sorts of data to survive serialization, so I annotate them here
 // as "64?".
 
 //   000:00 11 g010  vec8-1                         8
@@ -795,7 +797,6 @@ typedef uintptr_t Header;
 #define TYPE_VEC8_2      ( 0x23 <<Tw) //
 #define TYPE_VEC8_3      ( 0x43 <<Tw) //
 #define TYPE_VEC8_4      ( 0x63 <<Tw) //
-
 #define TYPE_BPS_1       ( 0x0b <<Tw) // Bytecodes
 #define TYPE_BPS_2       ( 0x2b <<Tw) //
 #define TYPE_BPS_3       ( 0x4b <<Tw) //
@@ -839,6 +840,7 @@ typedef uintptr_t Header;
 #define TYPE_MIXED2       ( 0x45 <<Tw) // general, but limited to 3 pointers
 #define TYPE_MIXED3       ( 0x49 <<Tw) // only 3 pointers
 #define TYPE_STREAM       ( 0x4d <<Tw) // 3 pointers then binary data
+#define VIRTUAL_TYPE_CONS ( 0x7d <<Tw) // what a header for a CONS would be!
 
 #define HDR_IMMED_MASK    (( 0xf <<Tw) | TAG_BITS)
 #define TAG_CHAR          (( 0x4 <<Tw) | TAG_HDR_IMMED) // 24 bits payload

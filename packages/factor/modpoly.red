@@ -195,7 +195,7 @@ symbolic procedure monic!-mod!-p a;
    else if domainp a then 1
    else if lc a = 1 then a
    else if not domainp lc a then
-       errorf "LC NOT NUMERIC IN MONIC-MOD-P"
+       errorf "LC not numeric in monic-mod-p"
    else multiply!-by!-constant!-mod!-p(a,
      modular!-reciprocal lc a);
 
@@ -205,16 +205,16 @@ symbolic procedure quotfail!-mod!-p(a,b);
     exact!-quotient!-flag:=t;
     c:=quotient!-mod!-p(a,b);
     if exact!-quotient!-flag then return c
-    else errorf "QUOTIENT NOT EXACT (MOD P)"
+    else errorf "Quotient not exact (mod p)"
   end;
 
 symbolic procedure quotient!-mod!-p(a,b);
    % Truncated quotient of a by b.
-    if null b then errorf "B=0 IN QUOTIENT-MOD-P"
+    if null b then errorf "b=0 in quotient-mod-p"
     else if domainp b then begin
         scalar r;
         r := safe!-modular!-reciprocal b;
-        if null b then return exact!-quotient!-flag:=nil
+        if null r then return exact!-quotient!-flag:=nil
         else return multiply!-by!-constant!-mod!-p(a, r)
     end
     else if a=nil then nil
@@ -261,7 +261,7 @@ symbolic procedure negate!-term term;
 
 symbolic procedure remainder!-mod!-p(a,b);
    % Remainder when a is divided by b.
-    if null b then errorf "B=0 IN REMAINDER-MOD-P"
+    if null b then errorf "b=0 in remainder-mod-p"
     else if domainp b then nil
     else if domainp a then a
     else xremainder!-mod!-p(a,b,mvar b);
@@ -386,7 +386,7 @@ symbolic procedure evaluate!-mod!-p(a,v,n);
    % Evaluate polynomial A at the point V=N.
     if domainp a then a
     else if n=0 then evaluate!-mod!-p(a,v,nil)
-    else if v=nil then errorf "Variable=NIL in EVALUATE-MOD-P"
+    else if v=nil then errorf "Variable=NIL in evaluate-mod-p"
     else if mvar a=v then horner!-rule!-mod!-p(lc a,ldeg a,red a,n,v)
     else adjoin!-term(lpow a,
       evaluate!-mod!-p(lc a,v,n),

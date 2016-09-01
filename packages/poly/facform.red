@@ -30,9 +30,9 @@ module facform;  % Factored form representation for standard form polys.
 %
 
 
-% INTEGER FACTORS?
+% Integer factors?
 
-% SHOULDN'T SYMMETRIC TESTS ETC BE RUN RECURSIVELY?
+% Shouldn't symmetric tests etc be run recursively?
 
 fluid '(!*exp !*ezgcd !*factor !*force!-prime !*gcd !*ifactor !*nopowers
         !*kernreverse !*limitedfactors !*sqfree !*trfac current!-modulus

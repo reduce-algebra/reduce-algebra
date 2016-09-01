@@ -38,6 +38,7 @@ fluid '(!*force!-prime
         factor!-x
         factored!-lc
         forbidden!-primes
+        smallest!-prime
         forbidden!-sets
         image!-content
         image!-lc
@@ -253,7 +254,7 @@ tryagain:
       p:=random!-small!-prime();
       primes!-done:='all >>
     else primes!-done:=p . primes!-done;
-    if member(p,forbidden!-p) then goto tryagain;
+    if member(p,forbidden!-p) or p<=smallest!-prime then goto tryagain;
     return p
   end;
 
@@ -445,7 +446,7 @@ symbolic procedure distribute!.lc(r,im!.factors,s,v);
     % what's left:
     if delta<=0 then <<
       factor!-trace <<
-         prin2!* "FINAL DELTA IS -VE IN DISTRIBUTE!.LC";
+         prin2!* "final delta is -ve in distribute!.lc";
          printstr delta >>;
       delta := 1 >>;
     factor!-trace <<
