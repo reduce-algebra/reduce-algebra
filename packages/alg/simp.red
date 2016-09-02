@@ -1469,6 +1469,23 @@ symbolic procedure simpset u;
 
 put ('set, 'simpfn, 'simpset);
 
+symbolic procedure unset u;
+  for each j in u do unset1 j;
+
+rlistat '(unset);
+
+symbolic procedure unset1 u;
+  begin scalar x;
+    x := if atom u then get(u,'avalue)
+          else assoc(u,get(car u,'kvalue));
+    if null x or null kernp (x := cadadr x) then return;
+    x := numr mvar x;
+    if (atom x and null get(x,'avalue)) or
+       (null atom x and null assoc(x,get(car x,'kvalue)))
+       then clear u
+     else clear x
+  end; 
+
 % sqrt should now have a fixed simpfn - this one - which diverts to
 % whatever is actually needed.
 
