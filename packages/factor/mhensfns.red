@@ -34,7 +34,7 @@ fluid '(!*trfac
         factor!-level
         factor!-trace!-list
         forbidden!-primes
-        smallest!_prime
+        smallest!-prime
         hensel!-growth!-size
         image!-factors
         max!-unknowns
