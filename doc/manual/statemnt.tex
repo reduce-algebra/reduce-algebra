@@ -89,16 +89,18 @@ expression except the last is printed followed by a ``\texttt{:=}'' ending
 with the value of the last expression.
 
 
-\subsection{Set Statement}
+\subsection{Set and Unset Statements}
 \hypertarget{command:SET}{}
+\hypertarget{command:UNSET}{}
 \index{Set Statement}\index{Statement!Set}
+\index{Unset Statement}\index{Statement!Unset}
 
 In some cases, it is desirable to perform an assignment in which \emph{both}
 the left- and right-hand sides of an assignment\index{Assignment} are
-evaluated.  In this case, the \texttt{SET}\ttindex{SET} statement can be used
-with the syntax:
+evaluated.  In this case, the \texttt{SET}\ttindextype{SET}{statement} statement can
+be used with the syntax:
 \begin{syntax}
-        \texttt{SET(}meta{expression}\texttt{,}\meta{expression}\texttt{);}
+        \texttt{SET(}\meta{expression}\texttt{,}\meta{expression}\texttt{);}
 \end{syntax}
 For example, the statements
 \begin{verbatim}
@@ -106,6 +108,18 @@ For example, the statements
         set(mkid(a,j),x);
 \end{verbatim}
 assigns the value \texttt{X} to \texttt{A23}.
+
+To remove a value from such a variable, the \texttt{UNSET}\ttindextype{UNSET}{statement}
+statement can be used with the syntax:
+\begin{syntax}
+        \texttt{UNSET(}\meta{expression}\texttt{);}
+\end{syntax}
+For example, the statement
+\begin{verbatim}
+        j := 23;
+        unset(mkid(a,j));
+\end{verbatim}
+clears the value of \texttt{A23}.
 
 \section{Group Statements}
 

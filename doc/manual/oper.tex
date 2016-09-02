@@ -1094,12 +1094,17 @@ for example
 \end{verbatim}
 while \texttt{mkid(a+b,2)} gives an error.
 
-The \texttt{SET}\ttindex{SET} operator can be used to give a value to the
+The \texttt{SET}\ttindextype{SET}{statement} statement can be used to give a value to the
 identifiers created by \texttt{MKID}, for example
 \begin{verbatim}
         set(mkid(a,3),3);
 \end{verbatim}
 will give \var{A3} the value 2.
+Similarly, the \texttt{UNSET}\ttindextype{UNSET}{statement} statement can be used to
+remove the value from these identifiers, for example
+\begin{verbatim}
+        unset(mkid(a,3));
+\end{verbatim}
 
 
 \section{The Pochhammer Notation}
