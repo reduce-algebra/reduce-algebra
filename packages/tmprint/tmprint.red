@@ -302,7 +302,8 @@ procedure texmacsp;
    % Texmacs predicate. Returns [t] iff Texmacs is running.
    if getenv("TEXMACS_REDUCE_PATH") then t;
 
-copyd('linelength!-orig,'linelength);
+% Protect against copyd being called twice
+if not getd 'linelength!-orig then copyd('linelength!-orig,'linelength);
 remd('linelength);
 
 #if (memq 'psl lispsystem!*)
