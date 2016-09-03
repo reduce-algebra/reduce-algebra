@@ -55,7 +55,7 @@ module normform; % Package for the computation of several normal forms.
 
 
 create!-package('(normform jordan jordsymb ratjord froben matarg
-                  nestdom smithex smithex1),'(contrib normform));
+                  smithex smithex1),'(contrib normform));
 
 endmodule;
 
