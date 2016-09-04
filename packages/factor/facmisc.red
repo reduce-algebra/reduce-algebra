@@ -186,7 +186,7 @@ symbolic procedure miller!-rabin(a, n);
     scalar d, s, x;
 % The next 3 lines might be handled as preconditions rather than being tested
 % for explicitly here. But they do not cost much and leave the code more
-$ self-contained. Note that if gcd(a,n)!=1 this will return nil even if n
+% self-contained. Note that if gcd(a,n)!=1 this will return nil even if n
 % is prime...
     if n = 1 then return nil
     else if remainder(n, 2) = 0 then return (n = 2)
