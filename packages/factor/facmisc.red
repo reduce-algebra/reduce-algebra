@@ -157,47 +157,86 @@ symbolic procedure random!-teeny!-prime l;
     return p
   end;
 
-% symbolic procedure primep n;
-% Test if prime. Only for use on small integers.
-%    n=2 or
-%    (n>2 and not evenp n and primetest(n,3));
+% Here I have code that can test any number up to 2^27-1 for primality. It
+% uses Miller-Rabin with two carefully chosen bases such that in that
+% range there are only two strong pseudoprime left over, so a rather simple
+% test copes with those.
+% Note that when the code in this file was first implemented Miller had
+% published a deterministic prime test that relied on the Extended Riemenn
+% Hyposthesis, but Rabin not developed the probabilistic varient, and
+% computer searches to find "good" bases to use in tests for finite ranges
+% had not had a chance to get very far! So it is not really incompetence that
+% the original code here was less good!
 
-% symbolic procedure primetest(n,trial);
-%    if igreaterp(itimes(trial,trial),n) then t
-%    else if iremainder(n,trial)=0 then nil
-%    else primetest(n,iplus2(trial,2));
+% My choice of 2^27-1 is driven by the fact that CSL and the 32-bit version
+% of PSL have that as their largest "fixnum". 64-bit PSL and future 64-bit
+% versions of CSL can support larger fixnums, but then the prime checking
+% needs at least an test using a further modulus, or other cleverness. It is
+% also driven by a balance - to cover a larger range (say up to 2^32 or 2^48)
+% would leave the code that tests for primality slower... and finding good
+% bases to use in the testing would be harder. Well if you do a web search you
+% will find the clever idea of using just ONE Miller-Rabin test using a base
+% obtained by hashing the number that is to be tested, and a modest size
+% hash table and that trick lets you test primes up to 32-bits rather fast,
+% while more elaborate versions with only a couple of Miller-Rabin tests can
+% cope with 64-bit inputs.... What I have here is good enough for now!
 
+symbolic procedure miller!-rabin(a, n);
+  begin
+    scalar d, s, x;
+% The next 3 lines might be handled as preconditions rather than being tested
+% for explicitly here. But they do not cost much and leave the code more
+$ self-contained. Note that if gcd(a,n)!=1 this will return nil even if n
+% is prime...
+    if n = 1 then return nil
+    else if remainder(n, 2) = 0 then return (n = 2)
+    else if n <= 7 then return t;
+    d := n - 1;
+    s := 0;
+    while remainder(d, 2) = 0 do <<
+      d := d / 2;
+      s := s + 1 >>;
+    set!-modulus n;
+    a := remainder(a, n);
+    x := modular!-expt(a, d);
+% During development I had a few print statements - I leave them in, but
+% commented out, for the benefit of anybopdy who wants to play with the code.
+%   printf("%p^%p = %p mod %p%n", a, d, x, n);
+    if x = 1 or x = n-1 then return t;
+loop:
+%   printf("s = %p%n", s);
+    if s = 1 then return nil;
+    x := modular!-times(x, x);
+%   printf("now x = %p mod %p%n", x, n);
+    if x = 1 then return nil
+    else if x = n-1 then return t;
+    s := s - 1;
+    go to loop
+  end;
 
-% PSEUDO-PRIMES will be a list of all composite numbers which are
-% less than 2^24 and where 2926^(n-1) = 3315^(n-1) = 1 mod n.
-
-pseudo!-primes:=mkvect 87;
-
-begin
-  scalar i,l;
-  i:=0;
-  l:= '(2047     4033     33227    38503    56033
-        137149   145351   146611   188191   226801
-        252601   294409   328021   399001   410041
-        488881   512461   556421   597871   636641
-        665281   722261   742813   873181   950797
-        1047619  1084201  1141141  1152271  1193221
-        1373653  1398101  1461241  1584133  1615681
-        1627921  1755001  1857241  1909001  2327041
-        2508013  3057601  3363121  3542533  3581761
-        3828001  4069297  4209661  4335241  4510507
-        4588033  4650049  4877641  5049001  5148001
-        5176153  5444489  5481451  5892511  5968873
-        6186403  6189121  6733693  6868261  6955541
-        7398151  7519441  8086231  8134561  8140513
-        8333333  8725753  8927101  9439201  9494101
-        10024561 10185841 10267951 10606681 11972017
-        13390081 14063281 14469841 14676481 14913991
-        15247621 15829633 16253551);
-    while l do <<
-       putv(pseudo!-primes,i,car l);
-       i:=i+1;
-       l:=cdr l >>
+symbolic procedure primep27 n;
+  begin
+    scalar oldmod, r;
+% The next line is because 8958=2**3*1493. The cases of 2 and 3 are dealt
+% with specially anyway, but the effect is that trying a witness of 8958
+% in a naive manner would report 1493 as composite not prime.  The other
+% witness that I use is 4704=2^5*3*7^2 and primes up as far as 7 are handled
+% specially already...
+    if n = 1493 then return t;
+    oldmod := set!-modulus nil;
+    r := miller!-rabin(8958, n) and
+         miller!-rabin(4704, n) and
+% Using the abive two witnesses gets primaility detected for all numbers up
+% to 2^27 apart from the following two exceptions:
+%    9131401 = 2137*4273
+%    6089071 = 1951*3121.
+% These numbers are not especially magic and it is just that the particular
+% pair of bases used are the smallest pair I have found that leave so few
+% excepotional cases over for the range of numbers I am checking. 
+         not (n = 9131401 or
+              n = 6089071);
+    set!-modulus oldmod;
+    return r;
   end;
 
 symbolic procedure random!-prime();
@@ -205,55 +244,22 @@ symbolic procedure random!-prime();
 % I want a random prime that is smaller than largest-small-modulus.
 % I do this by generating random odd integers in the range lsm/2 to
 % lsm and filtering them for primality. Prime testing is done using
-% a Fermat test followed by lookup in an exception table that was
-% laboriously precomputed. This process should be distinctly faster
-% than trial-division testing of candidate primes, but the exception
-% table is tedious to compute, so I limit lsm to 2**24 here. This is
-% both the value that Cambridge Lisp can support directly, an indication
-% of how large an exception table I computed using 48 hours of CPU time
-% and large enough that primes selected this way will hardly ever
-% be unlucky just through being too small.
-% (35 years later...
-%  HA HA HA I bet that if I re-computed this table it would take MUCH less
-%  then 48 hours... YES when I write C code and run it on a 2016 computer I
-%  can reproduce the above table in under 14 seconds of CPU time! Note that
-%  the the two odd-looking bases 2926 and 3315 are 2*7*11*19 and 3*5*13*17.
-%  Use of these bases leaves me with just 88 entries in my exception table.
-%  I am now running a scan to see if I can identify a better pair that will
-%  lead to an even smaller table!)
-    scalar p,w,oldmod,lsm, lsm2;
+% a Miller-Rabin test using two bases and then explicit code to cope with
+% the small number of strong pseudoprimes left over.
+% The prime that I find here will be at least half the value of the largest
+% small modulus. One side effect of that is that when testing for primality
+% I do not need to worry at all about any special cases for small values, but
+% for safety and potential future use I still check everything.
+    scalar n, lsm, lsm2;
     lsm := largest!-small!-modulus;
-    if lsm > 2**24 then lsm := 2**24;
+    if lsm > 2**27 then lsm := 2**27;
     lsm2 := lsm/2;
-    % W will become 1 when P is prime;
-    oldmod := current!-modulus;
-    while not (w=1) do <<
-      p := remainder(next!-random!-number(), lsm);
-      if p < lsm2 then p := p + lsm2;
-      if evenp p then p := p + 1;
-      set!-modulus p;
-      w:=modular!-expt(modular!-number 2926,isub1 p);
-      if w=1
-         and (modular!-expt(modular!-number 3315,isub1 p) neq 1
-                 or pseudo!-prime!-p p)
-        then w:=0>>;
-    set!-modulus oldmod;
-    return p
+    repeat <<
+      n := remainder(next!-random!-number(), lsm);
+      if n < lsm2 then n := n + lsm2;
+      if evenp n then n := n + 1 >> until primep27 n;
+    return n
   end;
-
-symbolic procedure pseudo!-prime!-p n;
-  begin
-    scalar low,mid,high,v;
-    low:=0;
-    high:=87; % Size of vector of pseudo-primes;
-    while not (high=low) do << % Binary search in table;
-      mid:=iquotient(iplus2(iadd1 high,low),2);
-         % Mid point of (low,high);
-      v:=getv(pseudo!-primes,mid);
-      if igreaterp(v,n) then high:=isub1 mid else low:=mid >>;
-    return (getv(pseudo!-primes,low)=n)
-  end;
-
 
 % (4) useful routines for vectors.
 
