@@ -1774,7 +1774,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  * can be useful during system building where utterly self-contained and
  * predictable behaviour is important.
  */
-                        if (strcmp(w, "no-rcfile") == 0)
+                        else if (strcmp(w, "no-rcfile") == 0)
                         {   if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
                                 symbols_to_define[number_of_symbols_to_define] =
                                     "no_init_file",
