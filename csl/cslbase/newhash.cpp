@@ -33,8 +33,6 @@
 
 #include "headers.h"
 
-//bool new_hash_tables = true; // To help me with a transition
-
 // Various internal functions that work on hash tables return either an
 // index into a table or the marker value NOT_PRESENT.
 
@@ -46,7 +44,9 @@
 // by the time the index level is that size I will be have a table
 // with 16G slots in it and occupying 256 Gbytes of memory. At present
 // (2016) I view the limits there are such that they will not embarass
-// me for some while.
+// me for some while. My belief is that allocating space in chunks like this
+// is going to be more friendly as regards memory fragmentation than just
+// using huge contiguous blocks.
 
 #define VECTOR_CHUNK_WORDS  ((size_t)0x20000)
 
@@ -96,8 +96,6 @@ static LispObject get_large_vector(size_t n, LispObject initval)
         }
     }
     else v = getvector_init(CELL*(n+1), initval);
-    printf("large vector at %" PRIxPTR "\n", (uintptr_t)v);
-    printf("%x  %x  %x\n", (int)elt(v, 0), (int)elt(v, 1), (int)elt(v, 2));
     return v;
 }
 
@@ -105,7 +103,7 @@ static inline size_t words_in_large_vector(LispObject v)
 {   if (type_of_header(vechdr(v)) == TYPE_INDEXVEC)
     {   size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
 // See that the final chunk has its length treated individually. This
-// adds to the cost, but the extrs cost only arises when the vector is
+// adds to the cost, but the extra cost only arises when the vector is
 // rather large to start with, and so I am not going to worry.
         return VECTOR_CHUNK_WORDS*(n-1) +
             (length_of_header(vechdr(elt(v, n-1))) - CELL)/CELL;
@@ -155,17 +153,16 @@ static inline void putv_large_vector(LispObject v, size_t n, LispObject val)
 // function and inspecting the table but not performing any key comparisons
 // at all. Similarly when I insert data into a fairly empty table I will
 // (reasonably often) not need key comparison operations, because if
-// when I probe in the seque3nce I would as for a lookup I happen on
+// when I probe in the sequence I would as for a lookup I happen on
 // and EMPTY slot I know the key is not present and I have just found where
 // I should insert it.
 // Note that the decision just described means that deletion must
 // insert tombstone values, and if too many of those are present it can
 // degrade lookup time (but pretty well at worst to an average of two probes
-// for a successful lookup and three for an unsuccessful one). Rehashing
-// large tables can also leave behind tombstones and I have a trade off
-// between time and space used during rehashing and the number of tombstones
-// left. I will arrange that for most tables of reasonable size things are
-// handled nicely!
+// for a successful lookup and three for an unsuccessful one). I arrange
+// that rehashing always gets rid of tombstones, and garbage collection is
+// liable to mark all tables for rehashing, and so this issue will tend to
+// be a transient one.
 //
 // As with any general hash table implementation I occasionally need to
 // expand or contract the table and re-hash. For cuckoo hashing I sometimes
@@ -175,26 +172,31 @@ static inline void putv_large_vector(LispObject v, size_t n, LispObject val)
 //
 // I write HASH() for the code that will compute a hash function, and
 // COMPARE() for key comparison. COMPARE should never be called with an
-// EMPTY or TOMBSTONE value, and that may at times allow a minor optimisation
+// EMPTY or HASHTOMB value, and that may at times allow a minor optimisation
 // in its implementation.
 
 //
 // The following are the components that make up a hash table...
 //
 
-#define HASH_FLAVOUR    0
-#define HASH_COUNT      1
-#define HASH_SHIFT      2
-#define HASH_KEYS       3
-#define HASH_VALUES     4
-#define HASH_MULTIPLIER 5
+#define HASH_FLAVOUR    0  // EQ, EQL, ... and a rehash counter
+#define HASH_COUNT      1  // number of active keys
+#define HASH_SHIFT      2  // gives the total table size
+#define HASH_KEYS       3  // vector of keys
+#define HASH_VALUES     4  // vector of values
+#define HASH_MULTIPLIER 5  // a 64-bit multiplier
+
+// My default multiplier is pretty arbitrary, but its value is around
+// 2^64*0.6180 and when you truncate to 32-bits you get a value around
+// 2^32*0.6180 (the multiplier there is the golden ratio). 
 #define HASH_DEFAULT_MULTIPLIER UINT64_C(0x9e3779b99e3779bd)
 
 // While performing operations on a table I will often load its components
-// info some of the following static variables.
+// info some of the following static variables. When and if I move to
+// a multi-threaded world I will need these to use thread local storage.
 
 static LispObject h_table, v_table;
-static int h_shift = 64-18;
+static int h_flavour, h_shift = 64-18;
 static uint64_t h_multiplier = HASH_DEFAULT_MULTIPLIER;
 
 static size_t h_table_size = ((size_t)(1<<(64-h_shift)));
@@ -297,7 +299,7 @@ void dumptable(LispObject tt, const char *s, bool checkdups)
         size_t h2 = hx >> h_shift;
         size_t h3 = REHASH2(hx) >> h_shift;
         if (k == SPID_HASHEMPTY) printf("%3" PRIuMAX ": EMPTY\n", (uintmax_t)i);
-        else if (k == SPID_HASHTOMB) printf("%3" PRIuMAX ": TOMBSTONE\n", (uintmax_t)i);
+        else if (k == SPID_HASHTOMB) printf("%3" PRIuMAX ": HASHTOMB\n", (uintmax_t)i);
         else
         {   const char *s1=" ", *s2 = " ", *s3 = " ", *s4 = "";
             uintptr_t vv = getv_large_vector(v_table, i);
@@ -333,15 +335,15 @@ void dumptable(LispObject tt, const char *s, bool checkdups)
     }
 }
 
-static void corrupted(LispObject tt)
+static void corrupted(LispObject tt, int fromline)
 {
-    printf("Table is corrupted\n");
+    printf("Table is corrupted (from line %d)\n", fromline);
     dumptable(tt, "Table is corrupted", true);
     fflush(stdout);
     abort();
 }
 
-void checktable(LispObject tt)
+void checktable(LispObject tt, int fromline)
 {
     size_t i;
     for (i=0; i<h_table_size; i++)
@@ -353,21 +355,23 @@ void checktable(LispObject tt)
         size_t h3 = REHASH2(hx) >> h_shift;
         if (k != SPID_HASHEMPTY && k != SPID_HASHTOMB)
         {   if (h1 == i)
-            {   if (h2 != i && ht(h2) == k) corrupted(tt);
-                if (h3 != i && ht(h3) == k) corrupted(tt);
+            {   if (h2 != i && ht(h2) == k) corrupted(tt, fromline);
+                if (h3 != i && ht(h3) == k) corrupted(tt, fromline);
             }
             if (h2 == i)
-            {   if (h1 != i && ht(h1) == k) corrupted(tt);
-                if (h3 != i && ht(h3) == k) corrupted(tt);
-                if (h1 != i && ht(h1) == SPID_HASHEMPTY) corrupted(tt);
+            {   if (h1 != i && ht(h1) == k) corrupted(tt, fromline);
+                if (h3 != i && ht(h3) == k) corrupted(tt, fromline);
+                if (h1 != i && ht(h1) == SPID_HASHEMPTY)
+                    corrupted(tt, fromline);
             }
             if (h3 == i)
-            {   if (h1 != i && ht(h1) == k) corrupted(tt);
-                if (h2 != i && ht(h2) == k) corrupted(tt);
+            {   if (h1 != i && ht(h1) == k) corrupted(tt, fromline);
+                if (h2 != i && ht(h2) == k) corrupted(tt, fromline);
                 if (h1 != i && h2 != i &&
-                    (ht(h1) == SPID_HASHEMPTY || ht(h2) == SPID_HASHEMPTY)) corrupted(tt);
+                    (ht(h1) == SPID_HASHEMPTY || ht(h2) == SPID_HASHEMPTY))
+                    corrupted(tt, fromline);
             }
-            if (h1 != i && h2 != i && h3 != i) corrupted(tt);
+            if (h1 != i && h2 != i && h3 != i) corrupted(tt, fromline);
         }
     }
 }
@@ -448,7 +452,7 @@ size_t instrumented_lookup(LispObject key)
 // Deleting things from the table is really rather easy, apart from the
 // fact that I should shrink the table it it has become too empty. However
 // note that performing many deletions can leave the table cluttered with
-// TOMBSTONE values and that can prevent the lookup code being able to exit
+// HASHTOMB values and that can prevent the lookup code being able to exit
 // early when a key is not present and it encouters an EMPTY slot.
 
 // I need to track table occupancy and shrink the table if it becomes
@@ -526,36 +530,16 @@ bool hash_remove(LispObject key)
 // happen sooner. Depending on the precise interaction between the set of
 // kets used and the hash function adopted it is possible for there to be
 // an insert failure for even a very lightly loaded table.
-// When an insert fails it makes sense to look at the table occupancy.
-// My heuristic will be that if it is less than 60% I will first try
-// changing my hash multiplier. I will mark the table to the effect that
-// I have changed the multiplier so that if a subsequent insert also fails
-// I will not try that adjustment again.
-// If either the table was at least 60% full, or rehashing with a new
-// multiplier failed, or if a later insertion following an earlier change
-// of multiplier failed then I will double the table size. If on trying
-// to hash into the double-size table I get a failure I will try several
-// multiplier changes before failling back to re-doubling. When I have
-// successfully enlarged the table I will reset the flag that permits me
-// a multiplier change attempt again.
-// Some experimentation suggests that with the parameters I have here the
-// table will generally reach over 80% loading for tables of size up
-// to around 50K entries, and that that decreases to around 70% when the
-// table contains many million items. This decrease is reasonable since the
-// limited search depth I allow myself might become more limiting both for
-// larger search spaces of huge tables and the much larger number of times
-// searching is performed.
-
 
 // QSIZE is the size of the queue used in the breadth-first search. Higher
-// values make a few insert oparations more expensive but lead to better
+// values make a few insert operations more expensive but lead to better
 // ability to fit keys in. For most key inserts (even as you get towards
 // the highest table occupancy I support) the amount of queue used will be
 // trivial.
 
 #define QSIZE 100
 
-size_t hash_insert(LispObject key)
+size_t hash_insert_if_possible(LispObject key)
 {
     int Qn;
     int Q[QSIZE];
@@ -582,38 +566,40 @@ size_t hash_insert(LispObject key)
 // a way to rearrange data to fit the new key in. This can fail, in which
 // case I will return -1 leaving the table unchanged.
     if ((v1 = ht(n1 = (h>>h_shift))) == SPID_HASHEMPTY)   // Gap found.
-        return n1;
-    if (v1 != SPID_HASHTOMB && COMPARE(v1, key)) return n1;
+        return n1;   // Can put in first choice location
+    if (v1 != SPID_HASHTOMB && COMPARE(v1, key)) return n1; // Already present
     h = REHASH(h);
     if ((v2 = ht(n2 = (h>>h_shift))) == SPID_HASHEMPTY)
-        return n2;
-    if (v2 != SPID_HASHTOMB && COMPARE(v2, key)) return n2;
+        return n2;   // Can put in second choice location
+    if (v2 != SPID_HASHTOMB && COMPARE(v2, key)) return n2; // Already present
     h = REHASH2(h);
     v3 = ht(n3 = (h>>h_shift));
-    if (v3 != SPID_HASHEMPTY && v3 != SPID_HASHTOMB && COMPARE(v3, key)) return n3;
+    if (v3 != SPID_HASHEMPTY && v3 != SPID_HASHTOMB && COMPARE(v3, key))
+         return n3; // Already present
 // Here I have checked all three possible locations and the key is not
 // already present.
     occupancy++;
-// If in the investigation to date I have seen a TOMBSTONE I may re-use that
+// If in the investigation to date I have seen a HASHTOMB I may re-use that
 // entry.
     if (v1 == SPID_HASHTOMB) return n1;
-    if (v2 == SPID_HASHTOMB) return n1;
+    if (v2 == SPID_HASHTOMB) return n2;
 // Now I have checked the first three locations. I hope that a significant
 // proportion of cases will not get any further! But for when it does I
 // will move on to a breadth-first search of ways to rearrange items currently
 // in the table to make everything fit. At this stage since I KNOW that the
 // item I am inserting is not in the table already I do not need to do any
 // comparisons against key values - all I need to do is to watch out for
-// EMPTY or TOMBSTONE values in the table.
+// EMPTY or HASHTOMB values in the table.
     Q[2] = n1;
     Q[3] = (n1==n2) ? NOT_PRESENT : n2;
     Qn = 4;
     for (;;)
     {   LispObject newkey;
+// If insertion fails I will not have changed the table at all.
         if (Qn > QSIZE-2) return NOT_PRESENT; // Nothing left in queue. Failed.
         n = Q[Qn/2];                // A currently occupied location.
-// The queue may have some entries in it that are "not present" and those are to
-// be ignored in the search.
+// The queue may have some entries in it that are "not present" and those are
+// to be ignored in the search.
         if (n == NOT_PRESENT)
         {   Q[Qn++] = n;
             Q[Qn++] = n;
@@ -682,7 +668,8 @@ size_t hash_insert(LispObject key)
         for (j=0; j<Qn; j++) printf("%d: %d\n", j, Q[j]);
     }
 #endif
-// I have now just moved a key into a gap.
+// I have now just moved a key into a gap. I will make a chain of moves so
+// as to leave a place available where the key I wish to insert can go.
     Qn = Qn/2;
     while (Qn > 3)
     {  int j = Qn/2;   // parent
@@ -696,28 +683,30 @@ size_t hash_insert(LispObject key)
 #ifdef TRACE
     dumptable("After", true);
 #endif
-// I explicitly empty the table here so that when hash_insert returns one
-// can observe that the key that has been provided was a new one rather
-// that a re-use of some existing key. I will then of course typically
-// immediately write in the proper new value...
+// I return the table offset where I can put the new key. If the given key
+// had already been present in the table this will contain data. So if
+// the key was new I will empty the slot so that the caller can tell that
+// this is the situation. So note that this insert function does not
+// guarantee to succeed! It can return NOT_PRESENT to report that the table
+// did not have space for the new key, and in that case nothing has been
+// changed. In such cases rehashing may be required. And if it does return
+// a table offset H it will usually be essential to go setht(H,...) and
+// sethtv(H,...) promptly to put the data in there. If you do NOT put proper
+// data there promptly the table could be left in an invalid state.
     setht(Q[Qn], SPID_HASHEMPTY);
     return Q[Qn];
 }
 
-// table, separating figures as between cases that they key was already
-// present and when it was new. The cost of an insert operation when the key
-// is in fact already present should be the same as the cost of a lookup
-// when they key is present, so reporting numbers about it is perhaps
-// frivolous.
+// Instrumented variant.
 
 uint64_t already_n=0, already_h=0, already_c=0;
 uint64_t inserted_n=0, inserted_h=0, inserted_c=0;
 
-size_t instrumented_insert(LispObject key)
+size_t instrumented_insert_if_possible(LispObject key)
 {
     size_t r;
     hashcount = comparecount = 0;
-    r = hash_insert(key);
+    r = hash_insert_if_possible(key);
     if (r == NOT_PRESENT) return r;
     else if (ht(r) != SPID_HASHEMPTY && ht(r) != SPID_HASHTOMB)
     {   already_n++;
@@ -734,160 +723,86 @@ size_t instrumented_insert(LispObject key)
     }
 }
 
-// The rehashing that I do here does not trace the values associated with
-// keys and so is not yet in a final complete state!
 
-#define MAXPENDING 200
-static LispObject pending_for_rehash[MAXPENDING+1];
-static int npending = 0;
-
-static bool restore_pending(LispObject key)
-{   size_t i = 0;
-// There will always be room for the pending items (because they came from
-// the table in the first place!) so the search for an EMPTY location that
-// looks potentially unbounded should in fact be safe.
-    for (;;)
-    {   while (ht(i) != SPID_HASHEMPTY) i++;
-        setht(i, key);
-        if (npending == 0) break;
-        key = pending_for_rehash[--npending];
-    }
-// I return false here so that the call to restore_pendikng can (perhaps) be
-// a tail call, and its result indicates that the table is not yet in neat
-// order.
-    return false;
-}
-
-// When rehashing I will take items in the table one at a time in order
-// and remove them and then re-insert them. On the re-insert I am going to
-// insist that when the first k locations in the table have been rehashed
-// that on any insertion I only settle a key into a cell that is either its
-// first choice or is a one where its first choice has been within the
-// initial k table entried and it is in its second choice, or its
-// first two choices were in the first k entries, or it gets inserted in the
-// table at a location later than k. Actually I could place it ANYWHERE
-// after k, and I am minded to give my shuffling code the flexibility to
-// place items in more or less arbitrary locations towards the end of
-// the table as I go.
-
-bool hash_rehash(LispObject tab)
-{   size_t k, pos;
-    npending = 0;
-    for (k=0; k<h_table_size; k++)
-    {   LispObject key = ht(k);
-// TOMBSTONE values present at the start relate to the old hashing regime
-// and so are now irrelevant.
-        if (key == SPID_HASHTOMB)
-        {   setht(key, SPID_HASHEMPTY);
-            continue;
-        }
-// SPID_HASHEMPTY entries do not need anything done to them.
-        else if (key == SPID_HASHEMPTY) continue;
-// The first MAXPENDING keys that I encouter are lifted out and stored
-// for processing at the end. For tables with up to MAXPENDING items in
-// that is really good - it makes most re-inserts be into a rather empty
-// table and that speeds things up.
-        else if (npending < MAXPENDING)
-        {   pending_for_rehash[npending++] = key;
-            setht(k, SPID_HASHEMPTY);
-            occupancy--;
-            continue;
-        }
-        setht(k, SPID_HASHEMPTY);
-// If the seqence of inserts that I try to do to re-hash things fails
-// I can have a number of keys "pending" and thus not in the table.
-// I will just dump them ANYWHERE in the table (ie not at locations
-// especially related to their hash codes). To find gaps to put them
-// in I will do a naive linear scan of the table. I will argue that the
-// fact that an insert has failed is (a) pretty unusual and so cost here
-// is overall not very important and (b) because an insert failed perhaps
-// the table is reasonably full, so a linear scan will not wasts too much
-/// time scanning blank bits of it and finally (c) that when I rehash
-// the table will not be 100% full and so I will find space for the data
-// concerned.
-        if ((pos = hash_insert(key)) == NOT_PRESENT)
-            return restore_pending(key);
-        else setht(pos, key);
-    }
-    while (npending != 0)
-    {   LispObject key = pending_for_rehash[--npending];
-// In pathological cases this can fail to re-insert even the data that had been
-// previously present, and in that case the left-over stuff will be left in the
-// array pending_for_rehash.
-        if ((pos = hash_insert(key)) == NOT_PRESENT)
-            return restore_pending(key);
-        else setht(pos, key);
-    }
-// Rehashing should only ever be started when the table is of type
-// HASHX rather than HASH, so when it has succeeded I can turn it back into
-// a plain HASH.
-    vechdr(tab) ^= (TYPE_HASH ^ TYPE_HASHX);
-    return true;
-}
-
-// Double the size of the hash table, placing items in the table in
-// what amount to arbitratry locations. Thus the table will need to be
-// rehashed before use, so I ensure it ends up as HASHX.
-
-static void hash_double_size(LispObject tab)
+static void newhash_rehash(LispObject tab, bool after_gc)
 {   LispObject nil = C_nil;
-    LispObject ok = elt(tab, HASH_KEYS);
-    LispObject ov = elt(tab, HASH_VALUES);
-    LispObject nk, nv;
-    size_t i, n = words_in_large_vector(ok), n2, p;
-    push3(tab, ok, ov);
-// If the table is already large then I can expand it by just doubling
-// the size of the index vectors.
-    if (type_of_header(vechdr(ok)) == TYPE_INDEXVEC)
-    {   n = n/VECTOR_CHUNK_WORDS;
-        n2 = 2*n;
-        nk = getvector_init(CELL*(n2+1), nil);
-        errexitvn(3);
-        vechdr(nk) ^= (TYPE_SIMPLE_VEC ^ TYPE_INDEXVEC);
-        push(nk);
-        nv = getvector_init(CELL*(n2+1), nil);
-        pop4(nk, ov, ok, tab);
-        errexitv();
-        vechdr(nv) ^= (TYPE_SIMPLE_VEC ^ TYPE_INDEXVEC);
-        for (i=0; i<n; i++)
-        {   LispObject w;
-            elt(nk, i) = elt(ok, i);
-            elt(nv, i) = elt(ov, i);
-            push3(tab, nk, nv);
-            w = getvector_init(CELL*(VECTOR_CHUNK_WORDS+1), SPID_HASHEMPTY);
-            pop3(nv, nk, tab);
-            errexitv();
-            elt(nk, n+i) = w;
-            push3(tab, nk, nv);
-            w = getvector_init(CELL*(VECTOR_CHUNK_WORDS+1), nil);
-            pop3(nv, nk, tab);
-            errexitv();
-            elt(nv, n+i) = w;
+// The next line sets h_shift, h_table_size, h_table, v_table and h_multiplier
+    set_hash_operations(tab);
+    size_t old_table_size = h_table_size;
+    int flavour = int_of_fixnum(elt(tab, HASH_FLAVOUR));
+    size_t count = int_of_fixnum(elt(tab, HASH_COUNT));
+    int rehash_count = (flavour >> 8) & 0xff;
+    LispObject keyvec = h_table;  // The original data...
+    LispObject valvec = v_table;
+    checktable(tab, __LINE__);
+    h_table = v_table = nil;
+    for (;;)
+    {
+// Now I apply a rather guessed and made-up rule about when to increase the
+// size of a table. The rule as coded here is:
+//    If I am rehashing because a GC just happened I will not double
+//        size and will not increment the rehash count (on my first try);
+//    If the table is over 80% full then double its size;
+//    If it is over 66% full and has needed more than 3 rehashes to date then
+//        double its size;
+//    If it is less full than that but has needed more than 6 rehashes then
+//        double its size.
+        if (!after_gc) update_multiplier();
+        if (after_gc) after_gc = false;
+        else if (count >= 4*(h_table_size/5) ||
+            (count >= 2*(h_table_size/3) && rehash_count > 3) ||
+            rehash_count > 6)
+        {   h_shift--;
+            h_table = v_table = nil;
+            rehash_count = 0;
         }
-    }
-// Otherwise I need to allocate an entirely new set of tables and copy
-// everything across to them.
-    else
-    {   n2 = 2*n;
-        nk = get_large_vector(n2, SPID_HASHEMPTY);
-        errexitvn(3);
-        push(nk);
-        nv = get_large_vector(n2, nil);
-        pop4(nk, ov, ok, tab);
-        errexitv();
-        elt(tab, HASH_KEYS) = nk;
-        elt(tab, HASH_VALUES) = nv;
-        p = 0;
-        for (i=0; i<n; i++)
-        {   LispObject k = elt(ok, i);
+        else rehash_count++;
+        h_table_size = ((size_t)1) << (64-h_shift);
+        if (h_table == nil)
+        {   push(tab);
+            h_table = get_large_vector(h_table_size, SPID_HASHEMPTY);
+            errexitvn(1);
+            push(h_table);
+            v_table = get_large_vector(h_table_size, SPID_HASHEMPTY);
+            pop2(h_table, tab);
+            errexitv();
+            keyvec = elt(tab, HASH_KEYS);
+            valvec = elt(tab, HASH_VALUES);
+        }
+// I now have a fresh table in h_table, v_table etc, while the old
+// information is in keyvec and valvec.
+        size_t i;
+// Clean out the new table...
+        for (i=0; i<h_table_size; i++)
+        {   setht(i, SPID_HASHEMPTY);
+            sethtv(i, SPID_HASHEMPTY);
+        }
+        checktable(tab, __LINE__);
+// Now try inserting everything that was in the old one...
+        for (i=0; i<old_table_size; i++)
+        {   LispObject k = getv_large_vector(keyvec, i);
             if (k == SPID_HASHEMPTY || k == SPID_HASHTOMB) continue;
-            putv_large_vector(nk, p, k);
-            putv_large_vector(nv, p, getv_large_vector(ov, i));
-            p++;
+            size_t n = hash_insert_if_possible(k);
+            if (n == NOT_PRESENT) break; // failed!
+            setht(n, k);
+            sethtv(n, getv_large_vector(valvec, i));
+            checktable(tab, __LINE__);
         }
+        if (i>=old_table_size) break; // Managed to insert everything
+        // Here I failed and must try again.
     }
-    if (type_of_header(vechdr(tab)) == TYPE_HASH)
-        vechdr(tab) ^= (TYPE_HASH ^ TYPE_HASHX);
+// I must move the new information back into the original table.
+    push2(h_table, v_table);
+    LispObject w = make_lisp_unsigned64(h_multiplier);
+    pop2(v_table, h_table);
+    errexitv();
+    elt(tab, HASH_MULTIPLIER) = w;
+    elt(tab, HASH_SHIFT) = fixnum_of_int(h_shift);
+    elt(tab, HASH_KEYS) = h_table;
+    elt(tab, HASH_VALUES) = v_table;
+    elt(tab, HASH_FLAVOUR) =
+        fixnum_of_int((flavour & 0xff) | (rehash_count<<8));
+    checktable(tab, __LINE__);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1034,7 +949,6 @@ LispObject Lmknewhash(LispObject nil, int nargs, ...)
     {   size2 *= 2;
         shift--;
     }
-printf("size2 = %d\n", (int)size2);
     v1 = get_large_vector(size2, SPID_HASHEMPTY);
     errexit();
     push(v1);
@@ -1053,7 +967,7 @@ printf("size2 = %d\n", (int)size2);
 // If the "multiplier" is stored as NIL then a default value will be used.
 // Otherwise there will be a 64-bit integer stored in this location, and
 // extracting it for use will be an unwelcome extra cost.
-    vechdr(v) ^= (TYPE_SIMPLE_VEC ^ TYPE_HASH);
+    vechdr(v) ^= (TYPE_SIMPLE_VEC ^ TYPE_NEWHASH);
     return onevalue(v);
 }
 
@@ -1062,7 +976,7 @@ static uint64_t newhash_eql(LispObject key);
 static uint64_t newhash_cl_equal(LispObject key);
 static uint64_t newhash_equal(LispObject key);
 static uint64_t newhash_equalp(LispObject key);
-static uint64_t newhash_symtab(LispObject key);
+static uint64_t newhash_binary_vector(LispObject key);
 
 static bool newhash_compare_eq(LispObject key, LispObject hashentry);
 static bool newhash_compare_eql(LispObject key, LispObject hashentry);
@@ -1071,64 +985,52 @@ static bool newhash_compare_equal(LispObject key, LispObject hashentry);
 static bool newhash_compare_equalp(LispObject key, LispObject hashentry);
 static bool newhash_compare_symtab(LispObject key, LispObject hashentry);
 
+// The "flavour" field in a hash table will be a fixnum. It will have its
+// bottom 8 bits (that is amazingly more than I need!) to say what hash
+// regime will be in use. The next 8 bits are used to track whether the
+// table has needed to change its hash function and re-hash recently.
+
 static void set_hash_operations(LispObject tab)
 {
-    switch (elt(tab, HASH_FLAVOUR))
+    switch ((h_flavour = int_of_fixnum(elt(tab, HASH_FLAVOUR))) & 0xff)
     {
     default:
-    case fixnum_of_int(0):
+    case 0:
         hash_function = newhash_eq;
         hash_compare = newhash_compare_eq;
         break;
-    case fixnum_of_int(1):
+    case 1:
         hash_function = newhash_eql;
         hash_compare = newhash_compare_eql;
         break;
-    case fixnum_of_int(2):
+    case 2:
         hash_function = newhash_cl_equal;
         hash_compare = newhash_compare_cl_equal;
         break;
-    case fixnum_of_int(3):
+    case 3:
         hash_function = newhash_equal;
         hash_compare = newhash_compare_equal;
         break;
-    case fixnum_of_int(4):
+    case 4:
         hash_function = newhash_equalp;
         hash_compare = newhash_compare_equalp;
         break;
-    case fixnum_of_int(5):
-        hash_function = newhash_symtab;
+    case 5:
+        hash_function = newhash_binary_vector;
         hash_compare = newhash_compare_symtab;
         break;
     }
     h_shift = int_of_fixnum(elt(tab, HASH_SHIFT));
     h_table_size = ((size_t)(1<<(64-h_shift)));
-    printf("shift = %d size = %u\n", (int)h_shift, (unsigned int)h_table_size);
     h_table = elt(tab, HASH_KEYS);
     v_table = elt(tab, HASH_VALUES);
-    printf("h_table = %" PRIxPTR "\n", h_table);
-    printf("%x %x %x\n", (int)elt(h_table, 0), (int)elt(h_table, 1), (int)elt(h_table, 2));
-    printf("v_table = %" PRIxPTR "\n", v_table);
     if (elt(tab, HASH_MULTIPLIER) == C_nil)
         h_multiplier = HASH_DEFAULT_MULTIPLIER;
     else h_multiplier = (uint64_t)sixty_four_bits(elt(tab, HASH_MULTIPLIER));
 }
 
-#define HASH_OFFSET1  UINT64_C(0x1000000000000000)
-#define HASH_OFFSET2  UINT64_C(0x2000000000000000)
-#define HASH_OFFSET3  UINT64_C(0x3000000000000000)
-#define HASH_OFFSET4  UINT64_C(0x4000000000000000)
-#define HASH_OFFSET5  UINT64_C(0x5000000000000000)
-#define HASH_OFFSET6  UINT64_C(0x6000000000000000)
-#define HASH_OFFSET7  UINT64_C(0x7000000000000000)
-#define HASH_OFFSET8  UINT64_C(0x8000000000000000)
-#define HASH_OFFSET9  UINT64_C(0x9000000000000000)
-#define HASH_OFFSETa  UINT64_C(0xa000000000000000)
-#define HASH_OFFSETb  UINT64_C(0xb000000000000000)
-#define HASH_OFFSETc  UINT64_C(0xc000000000000000)
-#define HASH_OFFSETd  UINT64_C(0xd000000000000000)
-#define HASH_OFFSETe  UINT64_C(0xe000000000000000)
-#define HASH_OFFSETf  UINT64_C(0xf000000000000000)
+// Hashing under EQ is the easiest case, since I will just use the bitwise
+// representation of the object as basis for its hash value.
 
 static uint64_t newhash_eq(LispObject key)
 {
@@ -1177,23 +1079,37 @@ static uint64_t newhash_eq(LispObject key)
 // all worried by the byte-order uncertainty and results are fully entitled
 // to vary from machine to machine based on word-width as well as byte order.
 
-static uint64_t newhash_symtab(LispObject key)
+// This function is generically suitable for hashing any sort of Lisp vector
+// that contains binary data. It requires that the data is padded up to
+// a number of uintptr_t cells, which should be reasonable. On a 32-bit
+// machine it works 32 bits at a time, on a 64-bit one it works 64 bits
+// at a time. The header word of the vector is involved in the hash
+// calculation and that means that vectors of different types are distinguished
+// and the leading or trailing zeros in the raw data will not cause any
+// confusion. I can not use if for numbers because it used "vechdr" rather
+// then flthdr or numhdr to access the header word. I need to worry a bit
+// about its use for strings and bit-vectors because I will need to arrange
+// that non-simple strings and non-simple bit-vectors end up delivering the
+// same hash values as this version that has been optimised for use in the
+// simple case.
+
+static uint64_t newhash_binary_vector(LispObject key)
 {   uint64_t r;
     size_t n;
     uintptr_t *p;
 // Find number of bytes in use, and start the hash code off with the
 // header word (which involves the length).
-    r = vechdr(key);
+    r = (uint64_t)vechdr(key);
     n = length_of_byteheader(vechdr(key));
     p = (uintptr_t *)&celt(key, 0);
 // Hash the string 32 or 64-bits at a time depending on word-length.
     while (n >= sizeof(uintptr_t))
-    {   r = h_multiplier*r ^ *p++;
+    {   r = h_multiplier*r + *p++;
         n -= sizeof(uintptr_t);
     }
 // Any part-filled word at the end MUST be zero-padded.
-    if (n != 0) r = h_multiplier*r ^ *p;
-    return HASH_OFFSET1+h_multiplier*r;
+    if (n != 0) r = h_multiplier*r + *p;
+    return r;
 }
     
 static uint64_t newhash_eql(LispObject key)
@@ -1209,656 +1125,281 @@ static uint64_t newhash_eql(LispObject key)
 //
 {   uint64_t r;
     if (is_bfloat(key))
-    {   int h = type_of_header(flthdr(key));
-        switch (h)
+    {   Header h = flthdr(key);
+        r = h_multiplier*(uint64_t)h;
+        switch (type_of_header(h))
         {   case TYPE_SINGLE_FLOAT:
 // There is a nasty here. I want +0.0f and -0.0f to hash to the same
 // value becase the two values will compare as equal.
-                if (single_float_val(key) == 0.0)
-                    return HASH_OFFSET2 + h_multiplier;
-                else return HASH_OFFSET3 + h_multiplier*intfloat32_t_val(key);
+                if (single_float_val(key) == 0.0) return r*h_multiplier;
+                else return (r+intfloat32_t_val(key))*h_multiplier;
                 break;
             default:
             case TYPE_DOUBLE_FLOAT:
-                if (double_float_val(key) == 0.0)
-                    return HASH_OFFSET4 + h_multiplier;
-                else return HASH_OFFSET5 + h_multiplier*intfloat64_t_val(key);
+                if (double_float_val(key) == 0.0) return r*h_multiplier;
+                else return (r+intfloat64_t_val(key))*h_multiplier;
             case TYPE_LONG_FLOAT:
 // Here I will leave +0.0 and -0.0 hashing differently! That is just
 // laziness and needs fixing.
-                r = HASH_OFFSET6 + h_multiplier*intfloat128_t_val0(key);
-                return HASH_OFFSET7 + h_multiplier*(r + intfloat128_t_val1(key));
+                r = (r + intfloat128_t_val0(key))*h_multiplier;
+                return (r + intfloat128_t_val1(key))*h_multiplier;
         }
     }
     else if (is_numbers(key))
     {   Header h = numhdr(key);
         size_t n;
-        r = (uint64_t)h;
+        r = h_multiplier*(uint64_t)h;
         switch (type_of_header(h))
         {   case TYPE_BIGNUM:
                 n = length_of_header(h);
                 n = (n-CELL-4)/4;  // last index into the data
                 for (;;)
-                {   r = HASH_OFFSET8 + h_multiplier*(bignum_digits(key)[n] + r);
+                {   r = (r + (uint64_t)bignum_digits(key)[n])*h_multiplier;
                     if (n == 0) break;
                     n--;
                 }
                 return r;
             case TYPE_RATNUM:
             case TYPE_COMPLEX_NUM:
-                r = newhash_eql(numerator(key));
-                return HASH_OFFSET9 + h_multiplier*r + newhash_eql(denominator(key));
+                r = (r + newhash_eql(numerator(key)))*h_multiplier;
+                return (r + newhash_eql(denominator(key)))*h_multiplier;
             default:
-                return HASH_OFFSETa + h_multiplier;  // unknown type of number?
+                return (r + key)*h_multiplier;  // unknown type of number?
         }
     }
 // For non-numbers I hash as for EQ.
     else return h_multiplier*(uint64_t)key;
 }
 
-#define update_hash(a, b) (99999999+(a)+(b)-(a)-(b))
+// There are a range of EQUAL-like functions used for hashing.
+// CL_EQUAL
+//   Traverses lists and inspects the contents of strings and bit-vectors,
+//   but does not in general descend through vectors. There are supposed to
+//   be special cases for non-simple arrays (especially including non-simple
+//   strings and bitvectors) and structures that are "path-names". Common
+//   Lisp also demands that +0.0 and -0.0 be reported as different. I will
+//   not implement all these refinements on the YAGNI (You Ain'y Gonna Need It)
+//   principle.
+// EQUAL
+//   The Standard Lisp understanding where vectors are descended through.
+// EQUALP
+//   A further Common Lisp oddity, where notably strings are compared in a
+//   case insensitive manner! This is also expected to allow you to compute
+//   hash values for hash tables based on their content, and that seems a
+//   messy thing to support.
+//   I should view numbers of different types but similar values (eg 1 and
+//   1.0) as EQUALP. This issue is rather horrid. So for instance
+//   1152921504606846976 is a bignum  and has the value 2^60. Then since
+//   1152921504606846976.0 happens to be exactly a power of 2 its
+//   representation in floating point is exact, and it has therefore to hash
+//   to the same code as the integer version. This sort of thing has to
+//   happen for values up to the largest floating point value. In Common Lisp
+//   there are also rational values, and it looks probable that hashing the
+//   result of the calculation 1.0/3.0 must yield the same value as that for
+//   the rational number 6004799503160661/18014398509481984.
+//   So hashing here may be unexpectedly expensive, and it can certainly
+//   risk memory allocation and hence garbage collection. Oh dear. Perhaps I
+//   need a special variation on multiple-precision arithmetic just for use
+//   when converting floating point numbers so that garbage collection can be
+//   avoided. It I allow for long floats with a 16-bit exponent I believe
+//   that will mean dealing with integers of up to almost 10000 decimal
+//   digits, or around 1000 31-bit units.
+//
+// Well such a lot of the Common Lisp specification seems utterly over the
+// top to me that I am not goiing to implement it! The result will be that
+// my code will be shorter, simpler and faster, and I find it hard to
+// believe that SANE code can rely on the special-case pedantry mentioned
+// above. If somebody gets VERY keen at a later stage they can degrade the code
+// to. I observe that "clisp" (by Haible, Stoll, Steingold and others) does
+// make their EQUALP function do some of these ridiculous things... so perhaps
+// I ought to even though I view it as majorly silly.
 
-// Note that this code is not yet re-worked for the new hashing scheme.
+//
+// I will have one generic function with an extra argument that is used to
+// control its behaviour in the cases where these three regimes differ in
+// behaviour.
+
+
+#define CL_EQUAL  0
+#define EQUAL     1
+#define EQUALP    2
+
+static uint64_t newhash_generic_equal(LispObject key, int mode);
 
 static uint64_t newhash_cl_equal(LispObject key)
-//
-// This function is the one used hashing things under EQUAL, and note
-// that Common Lisp expects that EQUAL will NOT descend vectors or
-// structures, so this code had better not. But it is supposed to
-// descend path-names and it must treat non-simple strings and bitvectors
-// as if they were like ordinary strings and bitvectors.
-// Something that I view as ABSURD about Common Lisp is that this
-// is supposed to treat an ordinary simple general vector that happens to
-// to have character items in each position as if it was EQUAL to a
-// string made up from those characters. It is supposed to treat arrays
-// with displacements and fill pointers as mere containers and only
-// compare the items eventually stored. Well the Common Lisp Committee give
-// themselves s sort of get-out by explaining that they do not think there
-// is any globally sensible concept of "equality" so they provide EQUAL
-// and EQUALP and instruct anybody who does not approve to implement yet
-// a different version and give them a break. They say that this will hardly
-// cost anybody anything, imagining that extra lines of code in a Common Lisp
-// implementation are cost-free.
-//
-{   uint32_t r = 1, c;
-    LispObject nil = C_nil, w;
-    int32_t len;
-    int32_t bitoff;
-    unsigned char *data;
-    Header ha;
-#ifdef CHECK_STACK
-    if (check_stack("@" __FILE__,__LINE__))
-    {   err_printf("Stack too deep in hash calculation\n");
-        my_exit(EXIT_FAILURE);
-    }
-#endif
-    for (;;)
-    {   switch (TAG_BITS & (int32_t)key)
-        {   case TAG_CONS:
-                if (key == C_nil) return r;
-                r = update_hash(r, newhash_cl_equal(qcar(key)));
-                nil = C_nil;
-                if (exception_pending()) return 0;
-                key = qcdr(key);
-                continue;
-            case TAG_SYMBOL:
-                if (key == C_nil) return r;
-#ifdef OLD_HASH
-                key = get_pname(key);
-                nil = C_nil;
-                if (exception_pending()) return 0;
-                r = update_hash(r, 1); // makes name & string hash differently
-                // Drop through, because the pname is a string
-#else
-                return update_hash(1, (uint32_t)key);
-#endif
-            case TAG_VECTOR:
-            {   ha = vechdr(key);
-                len = type_of_header(ha);
-//
-// I need to treat strings and bitvectors here specially since in those
-// cases (and for pathnames) I must inspect the vector contents, while
-// in other cases I must not.
-//
-                if (is_string_header(ha))
-                {   len = length_of_byteheader(ha) - CELL;
-                    data = &ucelt(key, 0);
-                    goto hash_as_string;
-                }
-//
-// I might need to re-check that Common Lisp EQUAL and hence this
-// version of hashing inspects the bits in a bit-vector.
-//
-                else if (is_bitvec_header(ha))
-                {   len = length_of_bitheader(ha) - 8*CELL;
-                    bitoff = 0;
-                    data = &ucelt(key, 0);
-                    goto hash_as_bitvector;
-                }
-                else if (len == TYPE_ARRAY)
-                {
-//
-// Arrays are fun here! I need to pick up the special case of character
-// vectors and bit vectors and make them compute the same hash value as the
-// simple case of the same thing.
-//
-                    w = elt(key, 0);
-                    if (w == string_char_sym) ha = 0;
-#ifdef COMMON
-                    else if (w == bit_symbol) ha = 1;
-#endif
-                    else return update_hash(r, (uint32_t)key);
-//
-// The stuff here is just for "non-simple" strings and bit-vectors. This
-// code will not have been tested much - if at all.
-//
-                    w = elt(key, 1);                 // List of dimensions
-                    if (!consp(w) || consp(qcdr(w))) // 1 dim or more?
-                        return update_hash(r, (uint32_t)key);
-                    len = int_of_fixnum(qcar(w));    // This is the length
-                    w = elt(key, 5);                 // Fill pointer
-                    if (is_fixnum(w)) len = int_of_fixnum(w);
-                    w = elt(key, 3);       // displace adjustment
-                    key = elt(key, 2);     // vector holding the actual data
-                    data = &ucelt(key, 0);
-                    if (ha)
-                    {   bitoff = int_of_fixnum(w);
-                        goto hash_as_bitvector;
-                    }
-                    data += int_of_fixnum(w);
-                    goto hash_as_string;
-                }
-#ifdef COMMON
-//
-// Common Lisp demands that pathname structures be compared and hashed in
-// a way that is expected to look at their contents. Here I just descend
-// all components of the pathname.
-//
-                else if (len == TYPE_STRUCTURE &&
-                         elt(key, 0) == pathname_symbol)
-                {   len = doubleword_align_up(length_of_header(ha));
-                    while ((len -= CELL) != 0)
-                    {   LispObject ea =
-                            *((LispObject *)((char *)key + len - TAG_VECTOR));
-                        r = update_hash(r, newhash_cl_equal(ea));
-                        nil = C_nil;
-                        if (exception_pending()) return 0;
-                    }
-                    return r;
-                }
-#endif
-                else return update_hash(r, (uint32_t)key);
-            }
-            case TAG_HDR_IMMED:
-                if (is_bps(key))
-                {   data = (unsigned char *)data_of_bps(key);
-                    // I treat bytecode things as strings here
-                    len = length_of_byteheader(*(Header *)(data - CELL)) - CELL;
-                    goto hash_as_string;
-                }
-                else return update_hash(r, (uint32_t)key);
-            case TAG_BOXFLOAT:
-//
-// The "case TAG_BOXFLOAT:" above is not logically necessary, but at least
-// one release of a Silicon Graphics C compiler seems to miscompile this
-// function without it (when optimised). It is as if it seems the masking
-// with TAG_BITS in the switch() and therefore knows that there is just a
-// limited range of possibilities, so it omits the normal range-check one
-// would use before a table-branch. But it then leaves the branch table
-// that it generates NOT padded with the final case (TAG_BOXFLOAT) that is
-// needed, so when a floating point values does arise the code goes into the
-// yonder and usually crashes.
-//
-            default:
-                return update_hash(r, newhash_eql(key));
-        }
-
-    hash_as_string:
-//
-// Here len is the length of the string data structure, excluding header.
-// I work character by character here both because the final word of a
-// string will usually not be full and to avoid sensitivity to byte order.
-// but that may be adding to by costs in an unhelpful way, so maybe
-// I should work harder to do this word at a time?
-//
-        while (len > 0)
-        {   c = data[--len];
-            r = update_hash(r, c);
-        }
-        return r;
-    hash_as_bitvector:
-//
-// here len is the number of bits to scan, and bitoff is a BIT offset.
-// This really is clumsily inefficient but it is never used in Standard
-// Lisp mode anyway, so I can test and enhance it if anybody not only
-// uses Common Lisp but then relies on hashing bit-vectors.
-//
-        len += bitoff;
-        while (len > bitoff)
-        {   len--;
-            c = data[len >> 5] & (1u << (len & 31));
-            if (c != 0) c = 1;
-            r = update_hash(r, c);
-        }
-        return r;
-    }
+{   return newhash_generic_equal(key, CL_EQUAL);
 }
 
-uint64_t newhash_equal(LispObject key)
-//
-// This function is the one used hashing things under the Standard Lisp
-// version of EQUAL, which descends vectors but is still sensitive to
-// case and which views different types of numbers as different. I will
-// make it view displaced or fill-pointered vectors as equivalent to the
-// corresponding simple vectors: I am pretty well obliged to do that for
-// strings and bitvectors so it seems polite to do the same for general
-// vectors (which are the only other ones I support!).
-//
-{   uint64_t r = 1, c;
-    LispObject nil = C_nil, w;
-    int type;
-    size_t len, offset = 0;
-    unsigned char *data;
-    Header ha;
-#ifdef CHECK_STACK
-    if (check_stack("@" __FILE__,__LINE__))
-    {   err_printf("Stack too deep in hash calculation\n");
-        my_exit(EXIT_FAILURE);
-    }
-#endif
-    for (;;)
-    {   switch (TAG_BITS & (int32_t)key)
-        {   case TAG_CONS:
-                if (key == C_nil) return r;
-                r = update_hash(r, newhash_equal(qcar(key)));
-                nil = C_nil;
-                if (exception_pending()) return 0;
-                key = qcdr(key);
-                continue;
-            case TAG_SYMBOL:
-                if (key == C_nil) return r;
-#ifdef OLD_HASH
-                key = get_pname(key);
-                nil = C_nil;
-                if (exception_pending()) return 0;
-                r = update_hash(r, 1);
-                // Drop through, because the pname is a string
-#else
-                return update_hash(1, (uint32_t)key);
-#endif
-            case TAG_VECTOR:
-            {   ha = vechdr(key);
-                type = type_of_header(ha);
-                len = length_of_header(ha) - CELL; // counts in bytes here
-//
-// First I will separate off the two important cases of strings
-// and bitvectors.
-//
-                if (is_string_header(ha))
-                {   data = &ucelt(key, 0);
-                    len = length_of_byteheader(ha) - CELL;
-                    // and len is the length of the data in use
-                    goto hash_as_string;
-                }
-                else if (is_bitvec_header(ha))
-                {   len = (len - 1)*8 + ((ha & 0x380) >> 7) + 1;
-                    offset = 0;
-                    data = &ucelt(key, 0);
-                    goto hash_as_bitvector;
-                }
-#ifdef COMMON
-//
-// Common Lisp demands that pathname structures be compared and hashed in
-// a way that is expected to look at their contents. Here I just descend
-// all components of the pathname. All other structures are hashed on
-// the basis of EQ.
-//
-                if (type == TYPE_STRUCTURE &&
-                    elt(key, 0) != pathname_symbol)
-                    return update_hash(r, (uint32_t)key);
-#endif
-//
-// Now I will look for an array that is in fact just a vector.
-//
-                if (type == TYPE_ARRAY)
-                {   w = elt(key, 0);
-                    if (w == string_char_sym) ha = 0;
-#ifdef COMMON
-                    else if (w == bit_symbol) ha = 1;
-#endif
-                    else ha = 2;
-//
-// All this mess really needs careful review and testing!
-//
-                    w = elt(key, 1);        // List of dimensions
-                    if (consp(w) && !consp(qcdr(w)))   // 1 dim or not?
-                    {   len = int_of_fixnum(qcar(w));  // This is the length
-                        w = elt(key, 5);               // Fill pointer
-                        if (is_fixnum(w)) len = int_of_fixnum(w);
-                        w = elt(key, 3);       // displace adjustment
-                        key = elt(key, 2);     // vector holding the data
-                        switch (ha)
-                        {   case 0: data = &ucelt(key, int_of_fixnum(w));
-                                goto hash_as_string;
-                            case 1:
-                                data = &ucelt(key, 0);
-                                offset = int_of_fixnum(w);
-                                goto hash_as_bitvector;
-                            default:
-// /* The code here can CRASH if asked to hash a general array that
-// has been represented in chunks because it has over 32K elements.
-//
-                                ha = vechdr(key);
-                                offset = int_of_fixnum(w);
-                                break;
-                        }
-                    }
-                }
-//
-// Now in the case that I had a non-simple vector I have reset key to point
-// to the vector containing the true data, ha to the header of same and
-// len is the length that I want to use. offset is an offset into the vector.
-// For simple vectors all the same variables are set up (and offset will be
-// zero). All cases of strings and bitvectors should have been dealt with
-// so the only vectors containing binary are things like "file" structures,
-// and I do not expect them to hash portably: so I hash them in the basis of
-// EQ.  Hmm did I implement vectors of unboxed 8, 16 and 32-bit ints and of
-// floats? If so they might need to be treated above in the sort of way that
-// strings are.
-//
-                if (vector_holds_binary(ha))
-                    return update_hash(r, (uint32_t)key);
-                offset = CELL*offset;
-//
-// A "mixed" vector is something I use within CSL for various system
-// purposes, and it has three list items at the front and then a load of
-// binary data. I hash the binary data as raw 32-bit data.
-//
-                if (is_mixed_header(ha))
-                {   while (len > 3*CELL)
-                    {   uint32_t ea;
-                        len -= 4;
-                        ea = *(uint32_t *)((char *)key + CELL +
-                                           offset + len - TAG_VECTOR);
-//@@printf("Hashing binary item at offset %d in vector (o=%d)\n", offset+len, offset);
-                        r = update_hash(r, ea);
-                    }
-                }
-                while ((len -= CELL) >= 0)
-                {   LispObject ea =
-                        *((LispObject *)((char *)key + CELL +
-                                         offset + len - TAG_VECTOR));
-//@@printf("Hashing item at offset %d in vector (o=%d)\n", offset+len, offset);
-                    r = update_hash(r, newhash_equal(ea));
-                    nil = C_nil;
-                    if (exception_pending()) return 0;
-                }
-//@@printf("Hash = %.8x\n", r);
-                return r;
-            }
-            case TAG_HDR_IMMED:
-                if (is_bps(key))
-                {   data = (unsigned char *)data_of_bps(key);
-                    // I treat bytecode things as strings here
-                    len = length_of_byteheader(*(Header *)(data - CELL)) - CELL;
-                    goto hash_as_string;
-                }
-                else return update_hash(r, (uint32_t)key);
-            case TAG_BOXFLOAT:
-            default:// The default case here mainly covers numbers
-                return update_hash(r, newhash_eql(key));
-        }
-
-    hash_as_string:
-// Here len is the length of the string data structure, excluding header
-        {   int32_t w = 0;
-            while (len > 0)
-            {   c = data[--len];
-                w = (w << 8) | c;
-                if (w & 0xff000000)
-                {   r = update_hash(r, w);
-                    w = 0;
-                }
-            }
-            if (w != 0) r = update_hash(r, w);
-        }
-        return r;
-    hash_as_bitvector:
-// here len is the number of bits to scan, and offset is a BIT offset
-        len += offset;
-        while (len > offset)
-        {   len--;
-            c = data[len >> 3] & (1 << (len & 7));
-            if (c != 0) c = 1;
-            r = update_hash(r, c);
-        }
-        return r;
-    }
+static uint64_t newhash_equal(LispObject key)
+{   return newhash_generic_equal(key, EQUAL);
 }
 
 static uint64_t newhash_equalp(LispObject key)
-//
-// This function is the one used hashing things under the Common Lisp
-// version of EQUALP, which descends vectors but not structs (except
-// pathnames), which is case-insensitive and which views numbers of
-// different types but similar values (eg 1 and 1.0) as EQUALP). This last
-// issue is rather horrid. So for instance 1152921504606846976 is a bignum
-// and has the value 2^60. Then since 1152921504606846976.0 happens to be
-// exactly a power of 2 its representation in floating point is exact, and
-// it has therefore to hash to the same code as the integer version. This
-// sort of thing has to happen for values up to the largest floating point
-// value. In Common Lisp there are also rational values, and it looks probable
-// that hashing the result of the calculation 1.0/3.0 must yield the same
-/// value as that for the rational number 6004799503160661/18014398509481984.
-// So hashing here may be unexpectedly expensive, and it can certainly risk
-// memory allocation and hence garbage collection. Oh dear. Perhaps I need
-// a special variation on multiple-precision arithmetic just for use when
-// converting floating point numbers so that garbage collection can be
-// avoided. It I allow for long floats with a 16-bit exponent I believe that
-// will mean dealing with integers of up to almost 10000 decimal digits, or
-// around 1000 31-bit units.
-// Well on further thought the conversion from floating point to my internal
-// representation of a bignum is perhaps not really very messy after all!
-//
-{   uint32_t r = 1, c;
-    LispObject nil=C_nil, w;
-    int32_t type;
-    size_t len, offset = 0;
+{   return newhash_generic_equal(key, EQUALP);
+}
+
+static uint64_t newhash_nonsimple_string(LispObject key)
+{
+    printf("\nNon-simple-string\n");
+    return 0;
+}
+
+static uint64_t newhash_nonsimple_bitvector(LispObject key)
+{
+    printf("\nNon-simple-bitvector\n");
+    return 0;
+}
+
+// This function has not yet been fully implemented but is intended to let
+// me support EQUALP. If the input is a number that can be converted to
+// a float WITH NO LOSS OF ACCURACY then set bigfloat_result to the
+// converted value and return true. Otherwise return false.
+// Anything that is a float already can be converted. short, single and
+// double floats need widening. Integers can be converted if the value has
+// new enough leading bits nonzero and if the value will lead to no exponent
+// overflow. Ratios are OK if the numerator has limited nonzero leading bits
+// and if the denominator is a power of 2 so that there is no underflow.
+// Sub-normal numbers represent a special edge case for this.
+
+static float128_t bigfloat_result;
+
+static bool float_if_exact(LispObject x)
+{   if (is_fixnum(x))
+    {   i32_to_f128M(int_of_fixnum(x), &bigfloat_result);
+        return true;
+    }
+    else if (is_numbers(x))
+    {   if (is_bignum(x)) return false;       // @@@ More work
+        else if (is_ratio(x)) return false;   // @@@ More work
+// Do I need to spot the case of a complex number with zero complex
+// component?
+        else if (is_complex(x)) return false; // @@@@ More work
+        else return false;
+    }
+    else if (is_bfloat(x))
+    {   switch (type_of_header(flthdr(x)))
+        {
+        case TYPE_SINGLE_FLOAT:
+            f32_to_f128M(float32_t_val(x), &bigfloat_result);
+            return true;
+        case TYPE_DOUBLE_FLOAT:
+            f64_to_f128M(float64_t_val(x), &bigfloat_result);
+            return true;
+        case TYPE_LONG_FLOAT:
+            bigfloat_result = long_float_val(x);
+            return true;
+        default:
+            return false;
+        }
+    }
+    else if (is_sfloat(x)) return false;      // @@@ More work
+    else return false;
+}
+
+static uint64_t newhash_generic_equal(LispObject key, int mode)
+{   LispObject nil = C_nil;
+    size_t len;
     unsigned char *data;
-    Header ha;
+    Header h;
+    uint64_t r = 0;
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   err_printf("Stack too deep in hash calculation\n");
         my_exit(EXIT_FAILURE);
     }
 #endif
-    for (;;)
-    {   switch (TAG_BITS & (int32_t)key)
-        {   case TAG_CONS:
-                if (key == C_nil) return r;
-                r = update_hash(r, newhash_equalp(qcar(key)));
-                nil = C_nil;
-                if (exception_pending()) return 0;
-                key = qcdr(key);
-                continue;
-            case TAG_SYMBOL:
-                if (key == C_nil) return r;
-#ifdef OLD_HASH
-                key = get_pname(key);
-                nil = C_nil;
-                if (exception_pending()) return 0;
-                r = update_hash(r, 1);
-                // Drop through, because the pname is a string
-#else
-                return update_hash(1, (uint32_t)key);
-#endif
-            case TAG_VECTOR:
-            {   ha = vechdr(key);
-                type = type_of_header(ha);
-                len = length_of_header(ha) - CELL;  // counts in bytes here
+// I will iterate along any chain of CONS cells, and put a sort of virtual
+// header word on the front of each cell to keep the calculation robust.
+    while (is_cons(key) && key != nil)
+    {   r = (r + (VIRTUAL_TYPE_CONS | TAG_HDR_IMMED))*h_multiplier;
+        r = (r + newhash_generic_equal(qcar(key), mode))*h_multiplier;
+        key = qcdr(key);
+    }
+    switch (TAG_BITS & (int32_t)key)
+    {   case TAG_CONS:      // Arises because NIL is tagged as a CONS for CL!
+        case TAG_SYMBOL:
+            return (r + (uint64_t)key)*h_multiplier;
+        case TAG_VECTOR:
+            {   h = vechdr(key);
 //
-// First I will separate off the two important cases of strings and bitvectors
+// I need to treat strings and bitvectors here specially since in those
+// cases (and for pathnames, if they existed as a separate data type here!)
+// I must inspect the vector contents, while in other cases I must not.
 //
-                if (is_string_header(ha))
-                {   data = &ucelt(key, 0);
-                    len = length_of_byteheader(ha) - CELL;
-                    goto hash_as_string;
-                }
-                else if (is_bitvec_header(ha))
-                {   len = (len - 1)*8 + ((ha & 0x380) >> 7) + 1;
-                    offset = 0;
-                    data = &ucelt(key, 0);
-                    goto hash_as_bitvector;
-                }
-#ifdef COMMON
-//
-// Common Lisp demands that pathname structures be compared and hashed in
-// a way that is expected to look at their contents. Here I just descend
-// all components of the pathname. Other structs are not descended.
-//
-                if (len == TYPE_STRUCTURE &&
-                    elt(key, 0) != pathname_symbol)
-                    return update_hash(r, (uint32_t)key);
-#endif
-//
-// Now I will look for an array that is in fact just a vector.
-//
-                if (type == TYPE_ARRAY)
-                {   w = elt(key, 0);
-                    if (w == string_char_sym) ha = 0;
-#ifdef COMMON
-                    else if (w == bit_symbol) ha = 1;
-#endif
-                    else ha = 2;
-                    w = elt(key, 1);        // List of dimensions
-                    if (consp(w) && !consp(qcdr(w)))   // 1 dim or not?
-                    {   len = int_of_fixnum(qcar(w));  // This is the length
-                        w = elt(key, 5);               // Fill pointer
-                        if (is_fixnum(w)) len = int_of_fixnum(w);
-                        w = elt(key, 3);       // displace adjustment
-                        key = elt(key, 2);     // vector holding the data
-                        switch (ha)
-                        {   case 0: data = &ucelt(key, int_of_fixnum(w));
-                                goto hash_nearly_as_string;
-                            case 1:
-                                data = &ucelt(key, 0);
-                                offset = int_of_fixnum(w);
-                                goto hash_as_bitvector;
-                            default:
-// /* Trouble if a general array with over 32K elements gets to here
-                                ha = vechdr(key);
-                                offset = int_of_fixnum(w);
-                                break;
-                        }
+                if (is_string_header(h))
+                {   switch (mode)
+                    {   case CL_EQUAL:
+                            // drop through. Note that for non-simple
+                            // strings I am going to need to arrange to
+                            // compute the value as used here. Ugh Ugh!
+                        case EQUAL:
+                            r = (r + (uint64_t)h)*h_multiplier;
+                            return r + newhash_binary_vector(key);
+                        case EQUALP:
+// Here I must compute a case-insensitive hash value. Ugh this means I work
+// character by character and so slow things down.
+                            r = (r + (uint64_t)h)*h_multiplier;
+                            data = &ucelt(key, 0);
+                            len = length_of_byteheader(h) - CELL;
+                            while (len != 0)
+                            {   int c = *data++;
+// The string will be stored in UTF8. A consequence is that any bytes forming
+// part of a character beyond Basic Latin will have their top bit set. I will
+// case-convert Basic Latin characters (only).
+                                if ((c & 0x80) == 0) c = tolower(c);
+                                r = (r + (uint64_t)c)*h_multiplier;
+                            }
+                            return r;
                     }
                 }
-//
-// Now in the case that I had a non-simple vector I have reset key to point
-// to the vector containing the true data, ha to the header of same and
-// len is the length that I want to use. offset is an offset into the vector.
-// For simple vectors all the same variables are set up (and offset will be
-// zero). All cases of strings and bitvectors should have been dealt with
-// so the only vectors containing binary are things like "file" structures,
-// and I do not expect them to hash portably.
-//
-                if (vector_holds_binary(ha))
-                    return update_hash(r, (uint32_t)key);
-                offset = 8*offset;
-                if (is_mixed_header(ha))
-                {   while (len > 4*CELL)
-                    {   uint32_t ea;
-                        len -= 4;
-                        ea = *(uint32_t *)((char *)key +
-                                           offset + len - TAG_VECTOR);
-                        r = update_hash(r, ea);
-                    }
+                if (is_bitvec_header(h))
+                {   r = r*h_multiplier + (uint64_t)h;
+                    return r + newhash_binary_vector(key);
                 }
-                while ((len -= CELL) != 0)
-                {   LispObject ea =
-                        *((LispObject *)((char *)key +
-                                         offset + len - TAG_VECTOR));
-                    r = update_hash(r, newhash_equalp(ea));
-                    nil = C_nil;
-                    if (exception_pending()) return 0;
+// I will allow for non-simple vectors in whatever style I am in, including
+// allowing non-simple strings and bit-vectors to be handled in special ways.
+                if (is_array_header(h))
+                {   LispObject arraytype = elt(key, 0);
+                    if (arraytype == string_char_sym)
+                        return r + newhash_nonsimple_string(key);
+                    if (arraytype == bit_symbol)
+                        return r + newhash_nonsimple_bitvector(key);
+                    LispObject dims = elt(key, 1);
+                    LispObject vec = elt(key, 2);
+                    LispObject displace = elt(key, 3);
+                    LispObject adjustable = elt(key, 4);
+                    LispObject fill = elt(key, 5);
+                    dims = dims;
+                    vec = vec;
+                    displace = displace;
+                    adjustable = adjustable;
+                    fill = fill;
+// And hash using EQ!!!!
+                    return (r + (uint64_t)key)*h_multiplier;
                 }
-                return r;
+// here in the case of EQUAL and EQUALP I must descend vectors. Well EQUALP
+// is an especially jolly case in that a general vector that happens to
+// hold characters must compare as EQUALP to a string that agrees in a
+// case-insenstive manner, with offsets and fill-pointers all dealt with.
+// @@@@
+                else return (r + (uint64_t)key)*h_multiplier;
             }
-            case TAG_HDR_IMMED:
-                if (is_bps(key))
-                {   data = (unsigned char *)data_of_bps(key);
-                    // I treat bytecode things as strings here
-                    // Oops - what about the fact that strings get case-folded?
-                    len = length_of_header(*(Header *)(data - CELL)) - CELL;
-                    goto hash_nearly_as_string;
-                }
-                else if (is_char(key))
-                    key = pack_char(0, tolower(code_of_char(key)));
-                return update_hash(r, (uint32_t)key);
-            case TAG_BOXFLOAT:
-            default:// The default case here mainly covers numbers
-                if (is_float(key))
-                {   key = rational(key);  // painful expense
-                    nil = C_nil;
-                    if (exception_pending()) return 0;
-                }
-                if (is_numbers(key))
-                {   switch (type_of_header(numhdr(key)))
-                    {   case TYPE_RATNUM:
-                        case TYPE_COMPLEX_NUM:
-                            return update_hash(r,
-                                               update_hash(newhash_equalp(numerator(key)),
-                                                           newhash_equalp(denominator(key))));
-                        default:
-                            break;
-                    }
-                }
-                return update_hash(r, newhash_eql(key));
-        }
-//
-// Note that I scan the elements of a string or bitvector in the same order
-// that I would process a general vector of the same length, and I adjust the
-// vector contents to its generic representation before updating the hash
-// value. For strings I fold to lower case.
-//
-    hash_as_string:
-// Here len is the length of the string data structure, excluding header
-        {   int32_t w = 0;
-            while (len > 0)
-            {   c = data[--len];
-                c = tolower(c);
-                w = (w << 8) | c;
-                if (w & 0xff000000)
-                {   r = update_hash(r, w);
-                    w = 0;
-                }
-            }
-            if (w != 0) r = update_hash(r, w);
-        }
-        return r;
-    hash_nearly_as_string:
-// Here len is the length of the string data structure, excluding header
-        {   int32_t w = 0;
-            while (len > 0)
-            {   c = data[--len];
-                w = (w << 8) | c;
-                if (w & 0xff000000)
-                {   r = update_hash(r, w);
-                    w = 0;
-                }
-            }
-            if (w != 0) r = update_hash(r, w);
-        }
-        return r;
-    hash_as_bitvector:
-// here len is the number of bits to scan, and offset is a BIT offset
-        len += offset;
-        while (len > offset)
-        {   len--;
-            c = data[len >> 3] & (1 << (len & 7));
-            if (c != 0) c = 1;
-            r = update_hash(r, update_hash(1, fixnum_of_int(c)));
-        }
-        return r;
+// Here I should POSSIBLY look at non-simple strings and bitvectors and at
+// pathnames. For now I intend to follw the principle of "You Ain't Gonna
+// Need It" and just ignore the issues.
+        case TAG_BOXFLOAT:
+        case TAG_NUMBERS:
+// For EQUALP I am supposed to hash things such that numbers that differ in
+// type but have the same value will agree. I think that the most plausible
+// way to achieve that would be that if a number can be converted to a long
+// float without any rounding arising I should do that. For instance for
+// bignums that involves checking if the number of trailing zero bits is
+// big enough, and for ratios it involves verifying that the denominator is
+// a power of 2. I will not do that at present, but I could if I felt like
+// indulging myself with what is basically a waste of time.
+            return r + newhash_eql(key);
+        default:
+            return (r + (uint64_t)key)*h_multiplier;
     }
 }
 
@@ -1925,11 +1466,11 @@ LispObject Lget_newhash(LispObject nil, int nargs, ...)
     tab = va_arg(a, LispObject);
     dflt = va_arg(a, LispObject);
     va_end(a);
-    if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
-    {   if (type_of_header(vechdr(tab)) != TYPE_HASHX)
+    if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_NEWHASH)
+    {   if (type_of_header(vechdr(tab)) != TYPE_NEWHASHX)
             return aerror1("getnewhash", tab);
-        push2(key, dflt);
-        set_hash_operations(tab);
+        vechdr(tab) ^= (TYPE_NEWHASH ^ TYPE_NEWHASHX);
+        push3(key, tab, dflt);
 // Here I have a table that at some stage had all fitted into the table, and
 // I am not adding new data. I need to rehash it because garbage collection
 // may have shuffled memory and so hash values that are based on memory
@@ -1941,22 +1482,9 @@ LispObject Lget_newhash(LispObject nil, int nargs, ...)
 // Now garbage collection has messed things up it might be in a much nastier
 // state and expansion may be the only realistic option. OK I will allow
 // for that!
-        for (;;)
-        {   if (hash_rehash(tab)) break; // OK now
-            update_multiplier();
-            if (hash_rehash(tab)) break; // OK with new multiplier
-            update_multiplier();
-            if (hash_rehash(tab)) break; // One more try before I enlarge.
-// Now I should double the table size. I make hash_double_size double the
-// table size but leave the keys in incorrect locations, and so after it has
-// been called I need to use rehash() to restore them. But note that the
-// memory allocation might fail, and in that case I will have to give up.
-            push(tab);
-            hash_double_size(tab);
-            pop(tab);
-            errexitn(2);
-        }
-        pop2(dflt, key);
+printf("rehash from get_newhash in NEWHASHX case\n");
+        newhash_rehash(tab, true);
+        pop3(dflt, tab, key);
         errexit();
     }
 // Extract details of the (possibly updated) hash table. This will leave
@@ -1975,14 +1503,14 @@ LispObject Lmapnewhash(LispObject nil, LispObject fn, LispObject tab)
 //
 // I should consider what happens if there is a garbage collection while
 // I am performing this scan of the hash table. Well the table contents are
-// not rearranged by garnage collection - the main thing that happens is that
-// the table is re-tagged from TYPE_HASH to TYPE_HASHX. So I believe that
-// provided nobody tries either lookup or set operations on the table I
+// not rearranged by garbage collection - the main thing that happens is that
+// the table is re-tagged from TYPE_NEWHASH to TYPE_NEWHASHX. So I believe
+// that provided nobody tries either lookup or set operations on the table I
 // will be OK.
 //
 {   int32_t size, i;
     LispObject v, v1;
-    if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
+    if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_NEWHASH)
         return aerror1("maphash", tab);
     v = elt(tab, HASH_KEYS);
     v1 = elt(tab, HASH_VALUES);
@@ -2006,8 +1534,8 @@ LispObject Lnewhashcontents(LispObject nil, LispObject tab)
 {   size_t size, i;
     LispObject v, v1, r;
     if (!is_vector(tab) ||
-        (type_of_header(vechdr(tab)) != TYPE_HASH &&
-         type_of_header(vechdr(tab)) != TYPE_HASHX))
+        (type_of_header(vechdr(tab)) != TYPE_NEWHASH &&
+         type_of_header(vechdr(tab)) != TYPE_NEWHASHX))
         return aerror1("hashcontents", tab);
     v = elt(tab, HASH_KEYS);
     v1 = elt(tab, HASH_VALUES);
@@ -2061,83 +1589,53 @@ LispObject Lput_newhash(LispObject nil, int nargs, ...)
 {   va_list a;
     LispObject key, tab, val, k1;
     size_t pos;
-    int rehashes = 0;
-    bool table_ok = true;
+    bool after_gc = false;
     va_start(a, nargs);
     key = va_arg(a, LispObject);
     tab = va_arg(a, LispObject);
     val = va_arg(a, LispObject);
     va_end(a);
     argcheck(nargs, 3, "putnewhash");
-    if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
-    {   if (type_of_header(vechdr(tab)) == TYPE_HASHX) table_ok = false;
+    if (!is_vector(tab)) return aerror1("putnewhash", tab);
+    if (type_of_header(vechdr(tab)) != TYPE_NEWHASH)
+    {   if (type_of_header(vechdr(tab)) == TYPE_NEWHASHX)
+        {   after_gc = true;
+printf("HASHX found so setting after_gc\n");
+            vechdr(tab) ^= (TYPE_NEWHASH ^ TYPE_NEWHASHX);
+        }
         else return aerror1("putnewhash", tab);
     }
-// table_ok indicates if the hash table needs rehashing before it is valid...
+// after_gc indicates if the hash table needs rehashing before it is valid...
 // the FOR loop here is because it may be necessary to rehash or expand the
 // table before it can be used.
     for (;;)
     {   push3(key, tab, val);
         set_hash_operations(tab);
 // If there is a rehash pending I will just declare the insert attempt to
-// have faile dwithout acually trying it.
-        if (table_ok) pos = hash_insert(key);
-        else pos = NOT_PRESENT;
+// have failed without acually trying it.
+        if (after_gc) pos = NOT_PRESENT;
+        else pos = hash_insert_if_possible(key);
         pop3(val, tab, key);
         errexit();
         if (pos != NOT_PRESENT) break;  // success!
-// Now I need to rehash because either the table was tagged as HASHX when I
-// started or this insert attempt failed.
-        size_t n = int_of_fixnum(elt(tab, HASH_COUNT));
-// I will always double the table size if
-// (a) The table is at least 66.66% full;
-// (b) The table is at least 50% full and I have tried a couple of
-//     new hash multipliers at this table size already;
-// (c) After 5 attempts at rehashing with a new multiplier but at the
-//     same size.
-// Note that all the numbers used above are rather arbitrary! The
-// expectation is that usually the table will get to be over 70% full
-// before an insert fails, and so it will expand happily remaining always
-// between 35% and 70% full. Rule (b) is perhaps not really needed, but
-// it is there to trigger table expansion provided the table is at least
-// reasonably loaded without undue effort being spent on repeated rehashing
-// at the same size. Rule (c) is a cop out that suggests that if a succession
-// of rehash-in-place attempts fail then size-doubling so that the load on
-// the table is dramatically relieved is probably a good plan.
-// In one had a cluster of keys such that regardless of the hash multiplier
-// they all always collided the code here could lead to arbitrary expansion
-// of even an amost empty table. That means that it is important to ensure
-// that the hash function(s) used are such that for every pair of keys
-// a change in hash multiplier can lead to hash values altering in different
-// ways for the two keys. Furthermore here we want the high order bits of the
-// hash function to change. Ending up really confident about that seems hard.
-// Being happy about it in realistic cases is easy. Hmmmm.
-        if ((rehashes <= 2 && n < h_table_size - (h_table_size/3)) ||
-            (rehashes < 5 && n < h_table_size/2))
-        {   push3(key, tab, val);
-            hash_double_size(tab);
-            pop3(val, tab, key);
-            errexit();
-            rehashes = 0;
-// The code that double the table size leave the new table in need of
-// rehashing, and leaves it tagged as HASHX not HASH. So I drop through
-// to the rehash code here.
-        }
-        else
-        {   if (rehashes == 0 && !table_ok) (void)0;
-            else update_multiplier();
-// Beware GC in make_lisp_integer64...
-            push3(key, tab, val);
-            elt(tab, HASH_MULTIPLIER) = make_lisp_integer64(h_multiplier);
-            pop3(val, tab, key);
-            errexit();
-        }
-// Here I will rehash, leaving the table size alone.
-        table_ok = hash_rehash(tab);
-        rehashes++;
+        push3(key, tab, val);
+printf("call rehash with after_gc = %s\n", after_gc ? "true" : "false");
+        newhash_rehash(tab, after_gc);
+        pop3(val, tab, key);
+        errexit();
+        after_gc = false;
     }
     h_table = elt(tab, HASH_KEYS);
     k1 = getv_large_vector(h_table, pos);
+// The code here constrains the maximum number of items in a hash table to
+// the size of a fixnum. On a 32-bit machine that will remain at 2^27-1, ie
+// around 134 million. with reasonable hash table loading this will involve
+// a table that fills up around a gigabyte of your memory even before you
+// consider the space used to represent keys and values, so this is not a
+// significant problem. (An entry uses 4 bytes for the slot where the key
+// lives and 4 for where the associated value lives, so if you have 27-bits
+// worth of keys you have 27+3=30 bits of space all in, even assuming there
+// are no empty slots left in the table).
     if (k1 == SPID_HASHEMPTY || k1 == SPID_HASHTOMB)
         elt(tab, HASH_COUNT) += 0x10; // Increment count.
     putv_large_vector(h_table, pos, key);
@@ -2166,8 +1664,8 @@ LispObject Lclr_newhash(LispObject nil, LispObject tab)
 {   LispObject v;
     size_t size, i;
     if (!is_vector(tab) ||
-        (type_of_header(vechdr(tab)) != TYPE_HASH &&
-         type_of_header(vechdr(tab)) != TYPE_HASHX))
+        (type_of_header(vechdr(tab)) != TYPE_NEWHASH &&
+         type_of_header(vechdr(tab)) != TYPE_NEWHASHX))
         return aerror1("clrnewhash", tab);
     elt(tab, 1) = fixnum_of_int(0);
     v = elt(tab, HASH_KEYS);
@@ -2176,6 +1674,17 @@ LispObject Lclr_newhash(LispObject nil, LispObject tab)
     v = elt(tab, HASH_VALUES);
     size = words_in_large_vector(v);
     for (i=0; i<size; i++) putv_large_vector(v, i, nil);
+    return tab;
+}
+
+// This function exists just for testing and development - it takes a
+// hash table and forces re-hashing.
+
+LispObject Lnewhash_rehash(LispObject nil, LispObject tab)
+{   if (!is_vector(tab) ||
+        type_of_header(vechdr(tab)) != TYPE_NEWHASH)
+        return aerror1("newhash-rehash", tab);
+    vechdr(tab) ^= (TYPE_NEWHASH ^ TYPE_NEWHASHX);
     return tab;
 }
 
@@ -2196,10 +1705,11 @@ LispObject Lclr_newhash_0(LispObject nil, int nargs, ...)
 // obliged to be a positive fixnum. All this means that it is going to be
 // only slightly related to the hash functions used with the main hashing
 // scheme here -- where cooperation with the garbage collector can trigger
-// rehashing when items move in memory. SO THIS VERSION IS WRONG @@@@
+// rehashing when items move in memory. SO THIS VERSION IS WRONG BECAUSE
+// IT JUST USES INTERNAL HASHING METHODS AND THEY ARE NOT STABLE. @@@@ 
 
 LispObject Lsxnewhash(LispObject nil, LispObject key)
-{   uint64_t h = newhash_cl_equal(key);
+{   uint64_t h = newhash_generic_equal(key, EQUAL);
     errexit();
     h = h ^ (h >> 32);
     h = (h ^ (h >> 16)) & 0x03ffffff; // ensure it will be a positive fixnum
@@ -2236,8 +1746,8 @@ LispObject Lnewhash_flavour(LispObject nil, LispObject tab)
 {   LispObject v,flavour = fixnum_of_int(-1);
 
     if (!is_vector(tab) ||
-        (type_of_header(vechdr(tab)) != TYPE_HASH &&
-         type_of_header(vechdr(tab)) != TYPE_HASHX))
+        (type_of_header(vechdr(tab)) != TYPE_NEWHASH &&
+         type_of_header(vechdr(tab)) != TYPE_NEWHASHX))
         return aerror1("hashtable-flavour", tab);
     v = elt(tab, 0);
 // The code here needs to allow for user-specified hash functions. Well the
@@ -2310,6 +1820,7 @@ setup_type const newhash_setup[] =
     {"mapnewhash",              too_few_2, Lmapnewhash, wrong_no_2},
     {"newhashcontents",         Lnewhashcontents, too_many_1, wrong_no_1},
     {"newhashtable-flavour",    Lnewhash_flavour, too_many_1, wrong_no_1},
+    {"newhashrehash",           Lnewhash_rehash, too_many_1, wrong_no_1},
     {NULL,                      0, 0, 0}
 };
 

@@ -39,13 +39,12 @@
 #include "headers.h"
 
 //
-// (June 2016) I am working on a total replacement for this file that
+// (June 2016...) I am working on a total replacement for this file that
 // will use a different hashing scheme based on Cuckoo Hashing so that
 // I end up with a guarantee that every lookup will cost at worst 3 probes
 // (and in practise lookups are expected to average out at under 1.5 probes
 // when successful and under 2 when not). The new scheme will also cope with
-// large tables more efficiently. The variable new_hash_tables will be
-// true when the new scheme is installed, but false here. Perhaps the main
+// large tables more efficiently.  Perhaps the main
 // difference elsewhere in the code will be that the new scheme expects
 // the garbage collector to take hash tables as in need of rehashing, while
 // the old one did some rehashing within the garbage collector itself. The
@@ -54,8 +53,6 @@
 // just remain in a slightly messed up state saving the cost of gratuitously
 // rehashing them in an eager manner.
 //
-
-bool new_hash_tables = false; // To help me with a transition
 
 //
 // Common Lisp and Standard Lisp disagree about vector sizes.  Common

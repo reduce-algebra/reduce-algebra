@@ -1,4 +1,4 @@
-//  print.cpp                         Copyright (C) 1990-2015 Codemist    
+//  print.cpp                              Copyright (C) 1990-2015 Codemist
 
 //
 // Printing, plus some file-related operations.
@@ -2643,6 +2643,9 @@ restart:
                 case TYPE_SIMPLE_VEC:
                 case TYPE_OBJECT:
                 case TYPE_HASH:
+                case TYPE_NEWHASH:
+                case TYPE_NEWHASHX:
+                case TYPE_INDEXVEC:
                 {
 #ifndef COMMON
                     if (type_of_header(h) == TYPE_SIMPLE_VEC)
@@ -2655,9 +2658,14 @@ restart:
                         {   outprefix(blankp, 3);
                             putc_stream('#', active_stream); putc_stream('S', active_stream); putc_stream('(', active_stream);
                         }
-                        else if (type_of_header(h) == TYPE_HASH)
-                        {   outprefix(blankp, 3);
-                            putc_stream('#', active_stream); putc_stream('H', active_stream); putc_stream('(', active_stream);
+                        else if (type_of_header(h) == TYPE_HASH ||
+                                 type_of_header(h) == TYPE_NEWHASH ||
+                                 type_of_header(h) == TYPE_NEWHASHX)
+                        {   int ch = 'H';
+                            if (type_of_header(h) == TYPE_NEWHASH) ch = 'h';
+                            else if (type_of_header(h) == TYPE_NEWHASHX) ch = 'x';
+                            outprefix(blankp, 3);
+                            putc_stream('#', active_stream); putc_stream(ch, active_stream); putc_stream('(', active_stream);
                         }
                         else if (type_of_header(h) == TYPE_OBJECT)
                         {   outprefix(blankp, 3);

@@ -384,10 +384,8 @@ void validate_all(const char *why, int line, const char *file)
 
     for (i = first_nil_offset; i<last_nil_offset; i++) validate(BASE[i], __LINE__);
     for (sp=stack; sp>(LispObject *)stackbase; sp--) validate(*sp, __LINE__);
-    if (!new_hash_tables)
-    {   validate(eq_hash_tables, __LINE__);
-        validate(equal_hash_tables, __LINE__);
-    }
+    validate(eq_hash_tables, __LINE__);
+    validate(equal_hash_tables, __LINE__);
 //  term_printf("Validation complete\n");
 }
 
@@ -652,9 +650,8 @@ descend:
 // If I am using the new hash table scheme then when I mark a hash table
 // I will reset its header word so that it is tagged for rehashing before
 // its next use.
-            if (new_hash_tables &&
-                type_of_header(h) == TYPE_HASH)
-                vechdr(p) = h = h ^ (TYPE_HASHX ^ TYPE_HASH);
+            if (type_of_header(h) == TYPE_NEWHASH)
+                vechdr(p) = h = h ^ (TYPE_NEWHASHX ^ TYPE_NEWHASH);
             i = (intptr_t)doubleword_align_up(length_of_header(h));
             if (is_mixed_header(h))
                 i = 4*CELL;  // Only use first few pointers
@@ -1301,8 +1298,8 @@ top:
                 if (pp == NULL) return;
                 else goto top;
             }
-            if (new_hash_tables && type_of_header(h) == TYPE_HASH)
-                vechdr(p) = h = h ^ (TYPE_HASH ^ TYPE_HASHX);
+            if (type_of_header(h) == TYPE_NEWHASH)
+                vechdr(p) = h = h ^ (TYPE_NEWHASH ^ TYPE_NEWHASHX);
             *pp = flip_mark_bit_i(h);
             vechdr(p) = (Header)flip_mark_bit_p((LispObject)pp);
             if (vector_holds_binary(h))  // strings & bitvecs
@@ -1801,7 +1798,8 @@ static void relocate_vecheap(void)
                         other_mem += doubleword_align_up(length_of_header(h));
                         break;
                     case TYPE_HASH:
-                    case TYPE_HASHX:
+                    case TYPE_NEWHASH:
+                    case TYPE_NEWHASHX:
                     case TYPE_INDEXVEC:
                     case TYPE_SIMPLE_VEC:
                     case TYPE_ARRAY:
@@ -2034,8 +2032,8 @@ static void copy(LispObject *p)
                     len = symhdr_length, symbol_heads += symhdr_length;
                 else
                 {   len = doubleword_align_up(length_of_header(h));
-                    if (new_hash_tables && type_of_header(h) == TYPE_HASH)
-                        h = h ^ (TYPE_HASH ^ TYPE_HASHX);
+                    if (type_of_header(h) == TYPE_NEWHASH)
+                        h = h ^ (TYPE_NEWHASH ^ TYPE_NEWHASHX);
                     switch (type_of_header(h))
                     {
                         case TYPE_STRING_1:
@@ -2570,8 +2568,7 @@ static void lose_dead_hashtables(void)
 // This splices out from the list of hash tables all entries that point to
 // tables that have not been marked or copied this garbage collection.
 //
-{   if (new_hash_tables) return;
-    LispObject *p = &eq_hash_tables, q, r;
+{   LispObject *p = &eq_hash_tables, q, r;
     while ((q = *p) != C_nil)
     {   Header h;
         r = qcar(q);
@@ -3167,7 +3164,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 //
 // Now I need to perform some magic on the list of hash tables...
 //
-        if (!new_hash_tables) lose_dead_hashtables();
+        lose_dead_hashtables();
 // When I have transitions to the new hash table scheme the two lists
 // processed specially here become redundant and this fragment of code can
 // go, I think.
@@ -3245,7 +3242,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 //
 // Now I need to perform some magic on the list of hash tables...
 //
-        if (!new_hash_tables) lose_dead_hashtables();
+        lose_dead_hashtables();
         mark(&eq_hash_tables);
         mark(&equal_hash_tables);
 //
@@ -3298,15 +3295,13 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         abandon_heap_pages(bottom_page_number);
     }
 
-    if (!new_hash_tables)
-    {   LispObject qq;
+    LispObject qq;
 //
 // Note that EQUAL hash tables do not need to be rehashed here, though
 // they do if a heap image is exported from one system to another.
 //
-        for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
-            rehash_this_table(qcar(qq));
-    }
+    for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
+        rehash_this_table(qcar(qq));
 
     gc_time += pop_clock();
     t3 = base_time;

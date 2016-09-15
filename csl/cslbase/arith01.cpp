@@ -47,14 +47,25 @@
 // The typedefs that explain the layout of these structures are in "tags.h"
 //
 
-LispObject make_lisp_integer64(int64_t n)
-{   int64_t n1;
-    if (n < 0x08000000 && n >= -0x08000000) return fixnum_of_int((int32_t)n);
-    n1 = n >> 4;
-    if (n1 < 0x08000000 && n1 >= -0x08000000)
+LispObject make_lisp_unsigned64(uint64_t n)
+{   if (n < 0x08000000) return fixnum_of_int((int32_t)n);
+    if (n < 0x40000000)
         return make_one_word_bignum((int32_t)n);
-    n1 = n1 >> 35;
-    if (n1 < 0x08000000 && n1 >= -0x08000000)
+    if (n < UINT64_C(0x2000000000000000))
+        return make_two_word_bignum((int32_t)(n >> 31),
+                                    (int32_t)(n & 0x7fffffff));
+    return make_three_word_bignum(
+               (int32_t)(n >> 62),
+               (int32_t)((n >> 31) & 0x7fffffff),
+               (int32_t)(n & 0x7fffffff));
+}
+
+LispObject make_lisp_integer64(int64_t n)
+{   if (n < 0x08000000 && n >= -0x08000000) return fixnum_of_int((int32_t)n);
+    if (n < 0x40000000 && n >= -0x40000000)
+        return make_one_word_bignum((int32_t)n);
+    if (n < INT64_C(0x2000000000000000) &&
+        n >= -INT64_C(0x2000000000000000))
         return make_two_word_bignum((int32_t)(n >> 31),
                                     (int32_t)(n & 0x7fffffff));
     return make_three_word_bignum(

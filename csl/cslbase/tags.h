@@ -535,6 +535,7 @@ typedef uintptr_t Header;
 // The "vector" case here includes vector-like number cases
 #define is_vector_header_full_test(h) \
     (is_odds(h) && (((int)h & (0x3<<Tw)) != 0))
+#define is_array_header(h) (type_of_header(h) == TYPE_ARRAY)
 
 // The codes for yyyyy are as follows:
 
@@ -548,10 +549,11 @@ typedef uintptr_t Header;
 //   000:10 01 g010  structure
 //   000:11 01 g010  object
 //   001:00 01 g010  indexvec (used to implement huge vectors)
-//   001:01 01 g010  hash table
-//   001:10 01 g010  hash table with rehash pending
+//   001:01 01 g010  new style hash table
+//   001:10 01 g010  new hash table with rehash pending
 //   001:11 01 g010  rational number  *
-//   010:xx 01 g010  (spare: 4 codes, one a "number")
+//   010:00 01 g010  old style hash table
+//   010:xx 01 g010  (spare: 3 codes, one a "number")
 //   011:11 01 g010  complex number   *
 //   100:xx 01 g010  stream and mixed1, 2 and 3
 //   1x1:11 01 g010  (spare, but classifies as a number: 2 codes)
@@ -817,11 +819,12 @@ typedef uintptr_t Header;
 
 #define TYPE_SIMPLE_VEC   ( 0x01 <<Tw) // simple general vector
 #define TYPE_INDEXVEC     ( 0x11 <<Tw) // used for huge vectors
-#define TYPE_HASH         ( 0x15 <<Tw) // hash table
-#define TYPE_HASHX        ( 0x19 <<Tw) // hash table in need of re-hashing
+#define TYPE_NEWHASH      ( 0x15 <<Tw) // new style hash table
+#define TYPE_NEWHASHX     ( 0x19 <<Tw) // new hash table in need of re-hashing
+#define TYPE_HASH         ( 0x21 <<Tw) // old style hash table.
 #define TYPE_ARRAY        ( 0x05 <<Tw) // header record for general array
-#define TYPE_STRUCTURE    ( 0x09 <<Tw) // includes packages etc possibly
-#define TYPE_OBJECT       ( 0x0d <<Tw) // and "object"
+#define TYPE_STRUCTURE    ( 0x09 <<Tw) // .. includes packages etc possibly
+#define TYPE_OBJECT       ( 0x0d <<Tw) // .. and "object"
 
 #define TYPE_VEC32        ( 0x13 <<Tw) // contains 32-bit integers
 #define TYPE_VEC64        ( 0x17 <<Tw) // contains 32-bit integers

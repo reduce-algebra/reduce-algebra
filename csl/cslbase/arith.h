@@ -201,6 +201,7 @@ extern LispObject make_n_word_bignum(int32_t a1, uint32_t a2,
                                      uint32_t a3, int32_t n);
 extern LispObject make_lisp_integer32(int32_t n);
 extern LispObject make_lisp_integer64(int64_t n);
+extern LispObject make_lisp_unsigned64(uint64_t n);
 extern LispObject make_sfloat(double d);
 extern double float_of_integer(LispObject a);
 extern "C" LispObject add1(LispObject p);
