@@ -125,7 +125,12 @@ flag('(!*rsqbkt!*),'nodel);
 symbolic procedure endstat;
   %This procedure can also be used for any key-words  which  take  no
   %arguments;
-   begin scalar x; x := cursym!*; comm1 'end; return list x end;
+  begin
+    scalar x;
+    x := cursym!*;
+    comm1 'end;
+    return list x
+  end;
 
 put('end,'stat,'endstat);
 
@@ -137,13 +142,24 @@ put('quit,'stat,'endstat);
 
 flag('(bye quit),'eval);
 
-put('showtime,'stat,'endstat);
+symbolic procedure endstat1;
+  % A keyword that can optionally be followed with a string.
+  begin
+    scalar x, optarg;
+    x := cursym!*;
+    scan();
+    if stringp cursym!* then optarg := cursym!*;
+    while not (cursym!* eq '!*semicol!*) do scan();
+    return list(x, optarg)
+   end;
+
+put('showtime,'stat,'endstat1);
 % showtime, showtime1, showtime2 and showtime3 will just be independent
 % timing statements so that one can be used without interfering with
 % any of the others.
-put('showtime1,'stat,'endstat);
-put('showtime2,'stat,'endstat);
-put('showtime3,'stat,'endstat);
+put('showtime1,'stat,'endstat1);
+put('showtime2,'stat,'endstat1);
+put('showtime3,'stat,'endstat1);
 
 % "resettime" re-bases the counter but does not print anything.
 put('resettime,'stat,'endstat);

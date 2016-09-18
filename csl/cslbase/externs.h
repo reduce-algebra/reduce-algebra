@@ -574,6 +574,10 @@ extern LispObject user_base_9;
 extern void copy_into_nilseg(int fg);
 extern void copy_out_of_nilseg(int fg);
 
+#define LOG2_VECTOR_CHUNK_WORDS 17
+#define VECTOR_CHUNK_WORDS  ((size_t)(1<<LOG2_VECTOR_CHUNK_WORDS)) // 0x20000
+extern LispObject free_vectors[LOG2_VECTOR_CHUNK_WORDS+1];
+
 #define eq_hash_table_list     BASE[50] // In heap image
 #define equal_hash_table_list  BASE[51] // In heap image
 #define current_package_offset 52

@@ -23,7 +23,11 @@ floats and that would be unacceptable for Standard Lisp.
   (1.6) multi-dimensional arrays, offset arrays and other messy things
   (1.7) the Common Lisp Object system
 I view these as either gratuitous complication, as clashing with Standard Lisp
-usage in a way that would eb hard to resolve or just too much work to support.
+usage in a way that would be hard to resolve or just too much work to support.
+  (1.8) Equality and hashing support for all the above.
+Well some aspects of that "just happen", but others seem designed to add
+complexity and cost to an implementation.
+       
 
 (2) Multiple values, keyword arguments, local declarations, lexical scopes
 I probably now understand how to make an implementation of multiple values that

@@ -19,6 +19,7 @@
 #   --enable-conservative   development version not working yet!
 #   --enable-test     predefine a symbol EXPERIMENT used to protect
 #                     temporary or unfinished code developments.
+#   --enable-experiment  same effect as --enable-text
 #   --enable-jit      another experimental and incomplete extension.
 #   --enable-embedded well the EMBEDDED option is intended for use via
 #                     a heavily cleaned up minimalist build system, but
@@ -561,6 +562,23 @@ AC_ARG_ENABLE(test,
   [enable_test="no"])
 AC_MSG_RESULT([$enable_test])
 
+AC_ARG_ENABLE(experiment,
+  AC_HELP_STRING([--enable-experiment],
+                 [testing-mode version]),
+  [],
+  [enable_experiment="no"])
+AC_MSG_RESULT([$enable_experiment])
+
+if test "x$enable_experiment" = "xyes"
+then
+  enable_test="yes"
+fi
+
+AC_ARG_WITH(boehm,
+   AC_HELP_STRING([--with-boehm], [Can be used to disable use of boehm]),
+   [],
+   [with_boehm="no"])
+
 if test "x$enable_test" = "xyes"
 then
 # I force EXPERIMENT into CPPFLAGS because when u01.cpp to u60.cpp get
@@ -568,15 +586,10 @@ then
 # on the option!
   CPPFLAGS="$CPPFLAGS -DEXPERIMENT=1"
   AC_DEFINE(EXPERIMENT, [1], [True if this is an experimental testing mode variant])
-fi
-
 # Note that if I go "--enable-test" that causes a default "--with-boehm",
 # so that the conservative garbage collector will be available.
-
-AC_ARG_WITH(boehm,
-   AC_HELP_STRING([--with-boehm], [Can be used to disable use of boehm]),
-   [],
-   [with_boehm=$enable_test])
+  with_boehm="yes"
+fi
 
 if test "x$with_boehm" != "xno"
 then

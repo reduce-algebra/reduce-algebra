@@ -237,10 +237,10 @@ symbolic procedure xread1 u;
         v := z2 . cddr v;
         go to preced;
   stat: if null(y eq 'endstat) then eolcheck();
-        if null(flagp(z,'go)
-%          or (flagp(y,'endstatfn)
-           or null(u eq 'proc) and (flagp(y,'endstatfn)
-                or (null delcp nxtsym!* and null (nxtsym!* eq '!,))))
+        if null (flagp(z,'go) or
+                 (null(u eq 'proc) and
+                  (flagp(y,'endstatfn) or
+                   (null delcp nxtsym!* and null (nxtsym!* eq '!,)))))
           then go to a2;
         if z eq 'procedure and !*reduce4
           then if w then if cdr w or !*reduce4
@@ -279,7 +279,7 @@ symbolic procedure xread1 u;
 %symbolic procedure !*evlis u;
 %   mapcar(u,function lispeval);
 
-flag ('(endstat retstat),'endstatfn);
+flag ('(endstat endstat1 retstat),'endstatfn);
 
 flag ('(else then until),'nodel);
 

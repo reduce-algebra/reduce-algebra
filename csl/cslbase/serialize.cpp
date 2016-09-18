@@ -131,20 +131,20 @@
 // changed. This can arise if, for instance, hash codes are based on
 // a memory address or are sensitive to byte-order. I have two schemes
 // that can help here.
-// The existing (ie old) one is that after a new heap-image is re-loaded
-// all hash tables are rehashed. To help with this the system maintains
+// The existing old one was that after a new heap-image was re-loaded
+// all hash tables got rehashed. To help with this the system maintains
 // lists eq_hash_tables and equal_hash_tables.
-// The proposed scheme (ie not yet implemented!) is that during garbage
-// collection and when re-read from a serialised form ant object that
-// might have a header saying TYPE_HASH has that updates to be TYPE_HASHX
-// where this new marker indicates a hash table whos eelements may not be
-// in the correct locations. Then any operation on the hash table can
-// check for TYPE_HASHX and if it sees it re-hash and reset the table
-// to TYPE_HASH. If that strategy is followed it becomes unnecessary to
-// keep any global list of hash tables. Note that the object list is
-// a sort of hash table but its implementation may be separate from that
-// for the more user-accessible ones - but the issues here neverthless
-// apply.
+// The new scheme is that during garbage collection and when re-read from a
+// serialised form ant object that might have a header saying TYPE_NEWHASH
+// has that updates to be TYPE_NEWHASHX where this new marker indicates a
+// hash table whos eelements may not be in the correct locations. Then any
+// operation on the hash table can check for TYPE_NEWHASHX and if it sees
+// it re-hash and reset the table to TYPE_NEWHASH. If that strategy is
+// followed it becomes unnecessary to keep any global list of hash tables.
+// Note that the object list is a sort of hash table but its implementation
+// may be separate from that for the more user-accessible ones - but the
+// issues here neverthless apply. I intend to merge object list (ie package
+// system) table maintenance with more general hash table support soon.
 //
 // There are a few types where I feel that serialization is probably never
 // going to make sense. For instance open streams, references to foreign
@@ -257,8 +257,9 @@ static bool descend_symbols = true;
 // At present I have an unallocated code that will be usable to cope with
 // cases where I have not yet thought hard enought! At present the only idea
 // I have for this is "SER_CONS_BACKREF" to correspond to the sequence
-// of SER_CONS followewd by a backref to one of the last 32 items. This
-// is not terribly compelling!
+// of SER_CONS followed by a backref to one of the last 32 items. This
+// is not terribly compelling! So I will not use this code for now in case a
+// more pressing use emerges leter on.
 #define SER_SPARE    0xe0
 
 
@@ -979,7 +980,7 @@ void set_up_function_tables()
 // of just what is used, and so can help ensure that a heap image dumped
 // buy one system does not get re-loaded by an incompatible one.
 // Each entrypoint is allocated a sequence number and everything is
-// collected both in a hash tabke (codehash) that can map code-pointers
+// collected both in a hash table (codehash) that can map code-pointers
 // to index values, and a table (codepointers) that is a single
 // indexable array of the entrypoints. For Reduce there are somewhat under
 // 4000 pointers to handle here, so costs are not too severe.
@@ -1255,18 +1256,20 @@ down:
 //
 // One thing to observe here. If I have a vector that is a hash table using
 // EQ as its key then reading it in here will leave its entries all the right
-// values but not in the right places. My proposed response to that is to
-// arrange that a potentially messed up hash table has type code TYPE_HASHX
-// rather than TYPE_HASH. The hash code accessing functions will check for
+// values but not in the right places. My response to that is to
+// arrange that a potentially messed up hash table has type code TYPE_NEWHASHX
+// rather than TYPE_NEWHASH. The hash code accessing functions will check for
 // that, and if they find it they re-hash before use, restoring the key to
-// just TYPE_HASH. The consequence is that the rehashing work is not done
+// just TYPE_NEWHASH. The consequence is that the rehashing work is not done
 // until and unless it is actually needed.
         {   int type = ((c & 0x1f) << (Tw + 2)) | (0x01 << Tw) | TAG_HDR_IMMED,
-                    tag = is_number_header_full_test(type) ? TAG_NUMBERS :
-                          TAG_VECTOR;
+                tag = is_number_header_full_test(type) ? TAG_NUMBERS :
+                                                         TAG_VECTOR;
+            if (type == (TYPE_NEWHASH | TAG_HDR_IMMED))
+                type = TYPE_NEWHASHX | TAG_HDR_IMMED;
 // The size here will be the number of Lisp items held in the vector, so
-// what I need to pass to getvector scales that into bytes and allows for the
-// header word as well.
+// what I need to pass to getvector makes that into a byte count and allows
+// for the header word as well.
             size_t n = read_u64();
             w = *p = getvector(tag, type, CELL*(n+1));
 // Note that the "vector" just created may be tagged with TAG_NUMBERS
@@ -2368,7 +2371,7 @@ LispObject Lunserialize(LispObject nil, int nargs, ...)
 
 #ifdef EXPERIMENT
 
-// Here I will comments onw how the previous version of warm_setup (and
+// Here I will comments on how the previous version of warm_setup (and
 // hence "preserve") worked, and how the new one does. The intent is that this
 // will first help me know what I am doing as I code the new version, and
 // document some of the design decisions. Both the old ones and their
@@ -2519,6 +2522,7 @@ void write_everything()
 
 void warm_setup()
 {
+    printf("Trying warm_setup\n");
 #if 0
 //
 // Here I need to read in the bulk of the checkpoint file.
@@ -2747,7 +2751,7 @@ void warm_setup()
 // processed in a naive way. I keep it in a variable that is NOT in the range
 // of places where the garbage collector normally looks. But when it comes
 // to preserve and restart I need to save the information, so I have the two
-// lists I need saved in the nilseg under the aliass eq_hash_table_list and
+// lists I need saved in the nilseg under the alias eq_hash_table_list and
 // equal_hash_table_list. As soon as I can I extract them and put them
 // back in the magic special places they need to live.
 //

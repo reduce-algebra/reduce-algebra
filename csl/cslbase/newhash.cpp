@@ -33,6 +33,38 @@
 
 #include "headers.h"
 
+// This fragment takes a 64-bit number that is a power of 2 and
+// finds its logarithm, ie the number of bits that 1 needs to be shifted
+// left to yield it. The function will return garbage if its input is
+// not a power of 2.
+//
+// This table works because it is of length 67 and that is a prime, so
+// the sequence 2^i mod 67 cycles through 1 .. 66 as I runs from 0 to 65,
+// and 2^66 = 2^0 (mod 67). To help show this I have annotated the items at
+// offsets 1, 2, 4, 8, 16, 32 and 64.
+
+static unsigned char intlog2_table[] =
+{
+    0,      0,/*1*/ 1,/*2*/ 39,     2,/*4*/ 15,     40,     23,
+    3,/*8*/ 12,     16,     59,     41,     19,     24,     54,
+    4,/*16*/0,      13,     10,     17,     62,     60,     28,
+    42,     30,     20,     51,     25,     44,     55,     47,
+    5,/*32*/32,     0,      38,     14,     22,     11,     58,
+    18,     53,     63,     9,      61,     27,     29,     50,
+    43,     46,     31,     37,     21,     57,     52,     8,
+    26,     49,     45,     36,     56,     7,      48,     35,
+    6,/*64*/34,     33
+};
+
+static inline int intlog2(uint64_t n)
+{
+    return intlog2_table[n % (sizeof(intlog2_table)/sizeof(intlog2_table[0]))];
+}
+
+static inline bool is_power_of_two(uint64_t n)
+{    return (n == (n & (-n)));
+}
+
 // Various internal functions that work on hash tables return either an
 // index into a table or the marker value NOT_PRESENT.
 
@@ -48,7 +80,34 @@
 // is going to be more friendly as regards memory fragmentation than just
 // using huge contiguous blocks.
 
-#define VECTOR_CHUNK_WORDS  ((size_t)0x20000)
+//#define LOG2_VECTOR_CHUNK_WORDS 17     // in externs.h ...
+//#define VECTOR_CHUNK_WORDS  ((size_t)(1<<LOG2_VECTOR_CHUNK_WORDS)) // 0x20000
+
+// I use zero to mark entries here that are not in use.  As far as a
+// LispObject is concerned that is a pointer to a CONS cell but at
+// address zero, which should not arise. And anyway I am only going
+// to put references to vectors here and this array will be cleared by the
+// garbage collector rather than being scanned.
+
+LispObject free_vectors[LOG2_VECTOR_CHUNK_WORDS+1] = {0};
+
+// This will recover a saved vector if one is available.
+
+static LispObject gvector(size_t n, LispObject initval)
+{   size_t n1 = n/CELL - 1;    // size in words.
+    if (is_power_of_two(n1))   // special if size is a power of 2.
+    {   int i = intlog2(n1);   // identify what power of 2 we have.
+        LispObject r;
+        if (i <= LOG2_VECTOR_CHUNK_WORDS &&
+            (r = free_vectors[i]) != 0)
+        {   free_vectors[i] = elt(r, 0);
+            for (size_t j=0; j<n1; j++) elt(r, j) = initval;
+            return r;
+        }
+    }
+// If there is no saved vector then allocate a new one.
+    return getvector_init(n, initval);
+}
 
 static LispObject get_large_vector(size_t n, LispObject initval)
 {   LispObject v, nil = C_nil;
@@ -81,7 +140,7 @@ static LispObject get_large_vector(size_t n, LispObject initval)
 // VECTOR_CHUNK_WORDS, oterwise smaller.
         size_t last_size = n % VECTOR_CHUNK_WORDS;
         if (last_size == 0) last_size = VECTOR_CHUNK_WORDS;
-        v = getvector_init(CELL*(chunks+1), nil);
+        v = gvector(CELL*(chunks+1), nil);
         errexit();
 // The next line re-tags the top level vector as an index.
         vechdr(v) ^= (TYPE_SIMPLE_VEC ^ TYPE_INDEXVEC);
@@ -89,13 +148,13 @@ static LispObject get_large_vector(size_t n, LispObject initval)
         {   LispObject v1;
             int k = i==chunks-1 ? last_size : VECTOR_CHUNK_WORDS;
             push(v);
-            v1 = getvector_init(CELL*(k+1), initval);
+            v1 = gvector(CELL*(k+1), initval);
             pop(v);
             errexit();
             elt(v, i) = v1;
         }
     }
-    else v = getvector_init(CELL*(n+1), initval);
+    else v = gvector(CELL*(n+1), initval);
     return v;
 }
 
@@ -109,6 +168,26 @@ static inline size_t words_in_large_vector(LispObject v)
             (length_of_header(vechdr(elt(v, n-1))) - CELL)/CELL;
     }
     else return (length_of_header(vechdr(v)) - CELL)/CELL;
+}
+
+static inline void discard_raw_vector(LispObject v)
+{   size_t n1 = length_of_header(vechdr(v))/CELL - 1; // length in words
+    if (is_power_of_two(n1))   // only save vectors whose size if a power of 2
+    {   int i = intlog2(n1);   // identify what power of 2 we have
+        if (i <= LOG2_VECTOR_CHUNK_WORDS)
+        {   elt(v, 0) = free_vectors[i];
+            free_vectors[i] = v;
+        }
+    }
+}
+
+static void discard_large_vector(LispObject v)
+{   Header h = vechdr(v);
+    if (type_of_header(h) == TYPE_INDEXVEC)
+    {   size_t n1 = length_of_header(h)/CELL - 1;
+        for (size_t i=0; i<n1; i++) discard_raw_vector(elt(v, i));
+    }
+    discard_raw_vector(v);   
 }
 
 static inline LispObject getv_large_vector(LispObject v, size_t n)
@@ -731,10 +810,16 @@ static void newhash_rehash(LispObject tab, bool after_gc)
     size_t old_table_size = h_table_size;
     int flavour = int_of_fixnum(elt(tab, HASH_FLAVOUR));
     size_t count = int_of_fixnum(elt(tab, HASH_COUNT));
+#ifdef DEBUG
+    printf("call rehash with after_gc = %s, "
+           "size=%" PRId64 " and occupancy %.3f%%\n",
+           (after_gc ? "true" : "false"), (int64_t)h_table_size,
+           (100.0*count)/(double)h_table_size);
+#endif
     int rehash_count = (flavour >> 8) & 0xff;
     LispObject keyvec = h_table;  // The original data...
     LispObject valvec = v_table;
-    checktable(tab, __LINE__);
+//  checktable(tab, __LINE__);
     h_table = v_table = nil;
     for (;;)
     {
@@ -777,7 +862,7 @@ static void newhash_rehash(LispObject tab, bool after_gc)
         {   setht(i, SPID_HASHEMPTY);
             sethtv(i, SPID_HASHEMPTY);
         }
-        checktable(tab, __LINE__);
+//      checktable(tab, __LINE__);
 // Now try inserting everything that was in the old one...
         for (i=0; i<old_table_size; i++)
         {   LispObject k = getv_large_vector(keyvec, i);
@@ -786,7 +871,7 @@ static void newhash_rehash(LispObject tab, bool after_gc)
             if (n == NOT_PRESENT) break; // failed!
             setht(n, k);
             sethtv(n, getv_large_vector(valvec, i));
-            checktable(tab, __LINE__);
+//          checktable(tab, __LINE__);
         }
         if (i>=old_table_size) break; // Managed to insert everything
         // Here I failed and must try again.
@@ -796,13 +881,17 @@ static void newhash_rehash(LispObject tab, bool after_gc)
     LispObject w = make_lisp_unsigned64(h_multiplier);
     pop2(v_table, h_table);
     errexitv();
+// At this stage keyvec and valvec are no longer needed and so I can
+// recycle them.
+    discard_large_vector(elt(tab, HASH_KEYS));
+    discard_large_vector(elt(tab, HASH_VALUES));
     elt(tab, HASH_MULTIPLIER) = w;
     elt(tab, HASH_SHIFT) = fixnum_of_int(h_shift);
     elt(tab, HASH_KEYS) = h_table;
     elt(tab, HASH_VALUES) = v_table;
     elt(tab, HASH_FLAVOUR) =
         fixnum_of_int((flavour & 0xff) | (rehash_count<<8));
-    checktable(tab, __LINE__);
+//  checktable(tab, __LINE__);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -870,34 +959,6 @@ extern LispObject Lmknewhash(LispObject nil, int nargs, ...);
 
 LispObject Lmknewhash2(LispObject nil, LispObject a, LispObject b)
 {   return Lmknewhash(nil, 3, a, b, nil);
-}
-
-// This fragment takes a 64-bit number that is a power of 2 and
-// finds its logarithm, ie the number of bits that 1 needs to be shifted
-// left to yield it. The function will return garbage if its input is
-// not a power of 2.
-//
-// This table works because it is of length 67 and that is a prime, so
-// the sequence 2^i mod 67 cycles through 1 .. 66 as I runs from 0 to 65,
-// and 2^66 = 2^0 (mod 67). To help show this I have annotated the items at
-// offsets 1, 2, 4, 8, 16, 32 and 64.
-
-static unsigned char intlog2_table[] =
-{
-    0,      0,/*1*/ 1,/*2*/ 39,     2,/*4*/ 15,     40,     23,
-    3,/*8*/ 12,     16,     59,     41,     19,     24,     54,
-    4,/*16*/0,      13,     10,     17,     62,     60,     28,
-    42,     30,     20,     51,     25,     44,     55,     47,
-    5,/*32*/32,     0,      38,     14,     22,     11,     58,
-    18,     53,     63,     9,      61,     27,     29,     50,
-    43,     46,     31,     37,     21,     57,     52,     8,
-    26,     49,     45,     36,     56,     7,      48,     35,
-    6,/*64*/34,     33
-};
-
-static inline int intlog2(uint64_t n)
-{
-    return intlog2_table[n % (sizeof(intlog2_table)/sizeof(intlog2_table[0]))];
 }
 
 LispObject Lmknewhash(LispObject nil, int nargs, ...)
@@ -1619,7 +1680,6 @@ printf("HASHX found so setting after_gc\n");
         errexit();
         if (pos != NOT_PRESENT) break;  // success!
         push3(key, tab, val);
-printf("call rehash with after_gc = %s\n", after_gc ? "true" : "false");
         newhash_rehash(tab, after_gc);
         pop3(val, tab, key);
         errexit();

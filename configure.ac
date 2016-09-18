@@ -212,9 +212,6 @@ AC_ARG_WITH(boehm,
 # different version that will be reasonably tidy.
 LIBEDIT_VERSION=20140620-3.1
 
-# For now I will insist on an explicit request for this...
-AC_MSG_NOTICE([with_boehm = $with_boehm])
-
 # Ensure that at least one Lisp system is selected
 if test "x$with_psl" = "xno" && test "x$with_csl" = "xno"
 then
@@ -349,6 +346,19 @@ AC_ARG_ENABLE(test,
                  [testing-mode version (CSL only)]),
   [],
   [enable_test="no"])
+
+AC_ARG_ENABLE(experiment,
+  AC_HELP_STRING([--enable-experiment],
+                 [testing-mode version (CSL only)]),
+  [],
+  [enable_experiment="no"])
+
+if test "x$enable_experiment" = "xyes"
+then
+  enable_test="yes"
+fi
+
+
 
 AC_ARG_ENABLE(jit,
   AC_HELP_STRING([--enable-jit],
@@ -998,30 +1008,22 @@ then
 # be "no".
   if test "x$with_wx" != "xno"
   then
-# At one stage I only unpacked a fresh wxWidgets if either one was not
-# already unpacked or if the "--with-force" option was set. That may have
-# saved some time but it meant that it was necessary to take special
-# action when a new revision of wxWidgets got installed upstream. So now
-# I will always unpack here. This is still not perfect in that the
-# unpacking only happens when somebody does a top level
-#   ./configure --with-csl --with-wx
-# and generally lower level reconfigurations are not triggered automatically,
-# so I will do yet further work to work around that and make things appear
-# almost neat. These extra tricks require a file "wxWidgets_revision"
-# to be stored in various places...
-#   if test ! -d $abssrcdir/csl/wxWidgets || test "x$with_force" != "xno"
-#   then
-      d=`pwd`
-      cd $abssrcdir/csl/support-packages
+    d=`pwd`
+    cd $abssrcdir/csl/support-packages
 # The next line should collect the names of all versions of wxWidgets that
 # I have .tar.bz2 files for, and they should end up in alphabetic order.
-      a=`echo wxWidgets-*-*-*.tar.bz2`
+    a=`echo wxWidgets-*-*-*.tar.bz2`
 # Here I keep the last item in the list, which shoudl be the latest version
 # present.
-      a=${a##* }
+    a=${a##* }
 # Remove the ".tar.bz2" suffix
-      b=${a%.tar.bz2}
-      cd ..
+    b=${a%.tar.bz2}
+    cd ..
+# Now I need to check if the version of wxWidgets I have unpacked matches the
+# most recent one available.
+    if test $abssrcdir/csl/support-packages/wxWidgets_revision -nt \
+            wxWidgets/wxWidgets_revision
+    then
       printf "will unpack a fresh copy of wxWidgets\n"
       rm -rf wxWidgets
       tar xfj support-packages/$a
@@ -1063,7 +1065,7 @@ then
       find wxWidgets -name Makefile.in -print | xargs touch
       printf "wxWidgets unpacked from archive $a\n"
       cd $d
-#   fi
+    fi
 #
 # A short essay to explain why I pass down "--host=$host" here. There are
 # two points. The first is that I cope with 64-bit windows by use of
@@ -1238,6 +1240,14 @@ else
 
   cd "$builddir"
 fi
+
+if test "x$test" = "xyes"
+then
+  with_boehm="yes"
+fi
+
+# For now I will insist on an explicit request for this...
+AC_MSG_NOTICE([with_boehm = $with_boehm])
 
 if test "x$with_boehm" = "xno"
 then

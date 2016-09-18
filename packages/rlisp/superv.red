@@ -247,7 +247,7 @@ symbolic procedure begin1a prefixchars;
       !*nosave!* := nil;
       !*strind := 0;     % Used by some versions of input editor.
       parserr := nil;
-      if !*time then lispeval '(showtime);   % Since a STAT.
+      if !*time then lispeval '(showtime nil);   % Since a STAT.
       if !*output and null ofl!* and terminalp() and null !*defn
          and null !*lessspace
         then terpri();
@@ -496,7 +496,7 @@ symbolic procedure dfprint u;
     else while (u := cdr u) do dfprint car u;
 
 
-symbolic procedure showtime;
+symbolic procedure showtime optarg;
    begin scalar x,y;
       x := otime!*;
       otime!* := time();
@@ -506,6 +506,7 @@ symbolic procedure showtime;
       y := ogctime!* - y;
       if 'psl memq lispsystem!* then x := x - y;
       terpri();
+      if optarg then prin2 optarg;
       prin2 "Time: "; prin2 x; prin2 " ms";
       if null(y=0)
         then << prin2 "  plus GC time: "; prin2 y; prin2 " ms" >>;
@@ -532,7 +533,7 @@ symbolic procedure showtime;
 % do my replicating code rather than having a single parameterised
 % function.
 
-symbolic procedure showtime1;
+symbolic procedure showtime1 optarg;
    begin scalar x,y;
       x := otime1!*;
       otime1!* := time();
@@ -542,6 +543,7 @@ symbolic procedure showtime1;
       y := ogctime1!* - y;
       if 'psl memq lispsystem!* then x := x - y;
       terpri();
+      if optarg then prin2 optarg;
       prin2 "Time (counter 1): "; prin2 x; prin2 " ms";
       if null(y=0)
         then << prin2 "  plus GC time: "; prin2 y; prin2 " ms" >>;
@@ -549,7 +551,7 @@ symbolic procedure showtime1;
       return if !*reduce4 then mknovalobj() else nil
    end;
 
-symbolic procedure showtime2;
+symbolic procedure showtime2 optarg;
    begin scalar x,y;
       x := otime2!*;
       otime2!* := time();
@@ -559,6 +561,7 @@ symbolic procedure showtime2;
       y := ogctime2!* - y;
       if 'psl memq lispsystem!* then x := x - y;
       terpri();
+      if optarg then prin2 optarg;
       prin2 "Time (counter 2): "; prin2 x; prin2 " ms";
       if null(y=0)
         then << prin2 "  plus GC time: "; prin2 y; prin2 " ms" >>;
@@ -566,7 +569,7 @@ symbolic procedure showtime2;
       return if !*reduce4 then mknovalobj() else nil
    end;
 
-symbolic procedure showtime3;
+symbolic procedure showtime3 optarg;
    begin scalar x,y;
       x := otime3!*;
       otime3!* := time();
@@ -576,6 +579,7 @@ symbolic procedure showtime3;
       y := ogctime3!* - y;
       if 'psl memq lispsystem!* then x := x - y;
       terpri();
+      if optarg then prin2 optarg;
       prin2 "Time (counter 3): "; prin2 x; prin2 " ms";
       if null(y=0)
         then << prin2 "  plus GC time: "; prin2 y; prin2 " ms" >>;

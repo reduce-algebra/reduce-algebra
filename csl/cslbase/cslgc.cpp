@@ -3036,6 +3036,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         return aerror("reclaim-stack-limit");
     }
 
+    for (int i=0; i<LOG2_VECTOR_CHUNK_WORDS+1; i++)
+        free_vectors[i] = 0;
+
 #ifdef CONSERVATIVE
 //
 // if stg_class==GC_PRESERVE I will not need to process the C stack and
