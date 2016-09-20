@@ -223,5 +223,9 @@ limit(e^(x*sqrt(x^2+1))-e^(x^2),x,infinity); % infinity
 limit((e^x+x*log x)/(log(x^4+x+1)+e^sqrt(x^3+1)),x,infinity); % 0
 limit!-(log(x)^2/x^(1/3),x,0); % infinity
 limit (log(log(1+x)^2/x^(1/3)),x,infinity); % - infinity
+limit((x^2+5*x)/(exp(x)+x),x,infinity); % 0
+limit(x/(e^x + 1), x, infinity); % 0
+limit!+((x^7+exp(-1/x))/x^7,x,0); % 1
+limit!+((tan(sin(x))-sin(tan(x)))/(x^7+exp(-1/x)),x,0);
 
 end;
