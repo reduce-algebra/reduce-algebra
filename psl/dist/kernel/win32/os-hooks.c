@@ -91,6 +91,7 @@ jmp_buf mainenv,signalenv;
 char * abs_execfilepath = NULL;
 
 int Debug = 0;
+char * cygdrive_prefix = NULL;
 
 void clear_dtabsize();
 extern setupbpsandheap();
@@ -154,6 +155,7 @@ char *argv[];
   if (argc > 0)
     abs_execfilepath = _fullpath(NULL,argv[0],_MAX_PATH);
 
+  cygdrive_prefix = getenv("BPSL_CYGDRIVE_PREFIX");
   if (getenv("BPSL_DEBUG") != NULL)
      Debug = 1;
 
@@ -206,6 +208,53 @@ clear_iob()
 
 }
  
+char winpathbuffer[_MAX_PATH];
+
+int
+pathstringncompare(char *s1, char *s2, size_t len)
+{
+  while (*s1 !=0 && *s2 != 0 && len > 0 &&
+	 ((*s1 == *s2) || (*s1 == '/' && *s2 == '\\') || (*s2 == '\\' && *s2 == '/')))  {
+    s1++; s2++; len--;
+  }
+  if (len == 0) {
+    return 0;
+  } else if (*s1 > *s2) {
+    return 1;
+  } else if (*s2 > *s1) {    
+    return -1;
+  }
+}
+
+char *
+cygpath2winpath(char * cygpath)
+{
+  if (Debug > 0) {
+    fprintf(stderr,"input cygpath: %s\n",cygpath);
+    fprintf(stderr,"prefix is %s\n",cygdrive_prefix == NULL ? "(NULL)" : cygdrive_prefix);
+    fflush(stderr);
+  }
+
+  if (cygdrive_prefix != NULL && strlen(cygdrive_prefix) > 1 &&
+      (cygpath[0] == '/' || cygpath[0] == '\\') &&
+      pathstringncompare(cygpath,cygdrive_prefix,strlen(cygdrive_prefix))==0 &&
+      (cygpath[strlen(cygdrive_prefix)] == '/' || cygpath[strlen(cygdrive_prefix)] == '\\')) {
+
+    strcpy(winpathbuffer,cygpath + strlen(cygdrive_prefix));
+    if (Debug > 0) {
+      fprintf(stderr,"prefix found, rest is: %s\n",winpathbuffer);
+    }
+    
+    if (winpathbuffer[1] != 0 && (winpathbuffer[2] == '/' || winpathbuffer[2] == '\\')) {
+      winpathbuffer[0] = winpathbuffer[1];
+      winpathbuffer[1] = ':';
+      return winpathbuffer;
+    }
+  }
+  return cygpath;  
+}
+
+
 /*
  *    Some static area must be initialized on hot start.
  *    There may be other area to be initialized but we have no idea

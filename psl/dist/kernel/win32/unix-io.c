@@ -100,6 +100,8 @@ extern my_pwrite(char *buf, int len);
 extern my_pread(char *buf, int len);
 extern long pipe_write(HANDLE, LPSTR, long);
 
+extern char * cygpath2winpath(char * cygpath);
+
 unixinitio()
 {
 #ifdef ALPHA
@@ -327,7 +329,7 @@ char *fname;
       ;
       *c = '\0';
   }
-  return (collect);
+  return (cygpath2winpath(collect));
 }
 
 FILE * unixopen(filename, type)

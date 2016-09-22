@@ -121,6 +121,7 @@ char * external_getenv(char *);
 
 void setupbps();
 void getheap(int,int);
+char * cygpath2winpath(char * cygpath);
 
 /* Write this ourselves to keep from including half the math library */
 static power(x, n)
@@ -327,8 +328,8 @@ setupbpsandheap(argc,argv)
          s1 = imagefile;
          while(*s1) *s2++ = *s1++;
          *s2 = 0;
-     
-         imago = fopen (tempname,"rb");
+
+         imago = fopen (cygpath2winpath(tempname),"rb");
          if (imago == NULL) { 
 		   perror (tempname); 
 		   exit (-1);

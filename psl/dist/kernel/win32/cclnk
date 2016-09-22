@@ -1,6 +1,6 @@
 test -z "$TARGET" && TARGET=$pxk/bpsl.exe
 
-i686-pc-mingw32-gcc -m32 -o $(TARGET) -DBPSSIZE=8000000 \
+i686-pc-mingw32-gcc -m32 -o ${TARGET} -DBPSSIZE=8000000 \
 	$pxk/bps.c $pxk/bpsheap.c \
 	$pxk/echo.c $pxk/file-sta.c $pxk/float.c $pxk/misc.c $pxk/os-hooks.c \
 	$pxk/pslextra.c $pxk/pslsocke.c $pxk/pwd-fn.c $pxk/sigs.c \
