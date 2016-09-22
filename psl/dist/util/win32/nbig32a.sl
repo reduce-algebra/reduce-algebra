@@ -129,7 +129,7 @@
 	   bquotient bremainder bdivide-trivialtest
 	   bsimpledivide bharddivide bhardbug
 	   bgreaterp blessp bgeq bleq bunsignedgreaterp bunsignedgeq
-	   badd1 bsub1 bdivide1000000ip bread breadadd bsmalladd
+	   badd1 bsub1 bdivide1000000ip breadadd bsmalladd
 	   bnum bnumaux bsmalldiff biggcdn0 biggcdn1 bigit2float
     ) 'internalfunction)
 ))
@@ -255,10 +255,12 @@
    (setq b (bbsize u))
    (when (eq b 0) (return 0))
    (setq s (igetv u 1))
-   (when (or (wgreaterp b 1)
-             (and (wlessp s 0) (not(bbminusp u))))
-    (continuableerror 99 "BIGNUM too large to convert to SYS" u))
+   (when (wgreaterp b 1)(go error))
+   (when (wlessp s 0) 
+       (if (bbminusp u) (return s) (go error)))
    (return (if (bbminusp u) (wminus s) s))
+error
+   (continuableerror 99 "BIGNUM too large to convert to SYS" u)
   ))
 
 (de big2sysaux (u) (big2sys u))
@@ -374,28 +376,53 @@
   % be positive;                                                           
   (if (and (bbminusp v1) (bbminusp v2))
     (blnot (blor (blnot v1) (blnot v2)))
-    (prog (l1 l2 l3 v3)
+    (prog (l1 l2 l3 v3 n n1 c)
 	  (setq l1 (bbsize v1)) (setq l2 (bbsize v2)) (setq l3 (min l1 l2))
 	  (cond ((bbminusp v1) 
 		 % When one is negative, we have expand out to the
 		 % size of the other one.  Therefore, we use l2 as the
 		 % size, not l3.  When we exceed the size of the
-		 % negative number, then we just use (logicalbits**).
+		 % negative number, then we just use (logicalbits**) which
+		 % returns a word with all bits set.
 		 (setq v3 (gtpos l2)) (setq l3 l2)
+		 (setq c 1)		% carry to add to current word, see below
 		 (vfor (from i 1 l2 1) 
 		       (do 
 			(iputv v3 i
-			     (iland (cond ((igreaterp i l1) (logicalbits**))
-					    (t (isub1 (igetv v1 i))))
-				      (igetv v2 i))))))
+			     (iland
+			       (cond ((igreaterp i l1) (logicalbits**))
+				     (t (progn
+					  % compute two's complement as one's complement + 1
+					  (setq n (ilnot (igetv v1 i)))
+					  % two's complement is n+c
+					  % if n=(logicalbits**) and c=1, 
+					  % (we have a carry to the next word)
+					  % then set c=1 else 0
+					  (setq n1 (iplus2 n c))
+					  (if (not (and (weq n (logicalbits**)) (weq c 1)))
+					      (setq c 0))
+					  n1)))
+			       (igetv v2 i))))))
 		((bbminusp v2)
 		 (setq v3 (gtpos l1)) (setq l3 l1)
+		 (setq c 1)		% carry to add to current word, see below
 		 (vfor (from i 1 l1 1) 
 		       (do
 			(iputv v3 i
-			       (iland (igetv v1 i)
-				      (cond ((igreaterp i l2)(logicalbits**))
-					    (t (isub1 (igetv v2 i)))))))))
+			     (iland (igetv v1 i)
+			       (cond ((igreaterp i l2)(logicalbits**))
+				     (t (progn
+					  % compute two's complement as one's complement + 1
+					  (setq n (ilnot (igetv v2 i)))
+					  % two's complement is n+c
+					  % if n=(logicalbits**) and c=1, 
+					  % (we have a carry to the next word)
+					  % then set c=1 else 0
+					  (setq n1 (iplus2 n c))
+					  (if (not (and (weq n (logicalbits**)) (weq c 1)))
+					      (setq c 0))
+					  n1)))
+			       )))))
 
 		(t (setq v3 (gtpos l3))
 		   (vfor (from i 1 l3 1) 
@@ -422,7 +449,7 @@
       (setq l1 (bbsize v1))
       (setq l2 (idifference l1 nw))
       (when (ilessp l2 1) (return bzero*))
-      (setq v2 (if (bbminusp v1)(gtneg l2)(gtpos l2)))
+      (setq v2 (if (bbminusp v1)(gtpos l2)(gtpos l2)))
         % for shifts we have to handle the case nb=0
         % separately because processors tend to handle a shift for
         % nr=(-wordsize) bits as nop.
@@ -433,7 +460,7 @@
 	    (do 
 	      (progn
 		 (setq x (igetv v1 j))
-		 (iputv v2 i(wor carry (wshift x nb)))
+		 (iputv v2 i (wor carry (wshift x nb)))
 		 (setq carry (wshift x nr)))))
       (go ret)
    words
@@ -909,7 +936,7 @@
 		     (setq res (floatplus2 res
 				(floattimes2 (bigit2float (igetv v j)) base))) 
 		     (setq j(1+ j)))
-		 (when sn (setq res (minus res)))
+                 (when sn (setq res (floattimes2 -1.0 res)))
 		 (return (cleanstack res))))))
 
 (compiletime (setq system_list!* (cons bitsperword system_list!*)))
@@ -1115,17 +1142,22 @@
 	(setq sz (size s))
 	(setq res (gtpos 1))
 	(setq ch (indx s 0))
-	(when (and (igeq ch (char a)) (ileq ch (char z)))
-	  (setq ch (+w (idifference ch (char a)) 10)))
+	(when (and (igeq ch (char !A)) (ileq ch (char !Z)))
+	  (setq ch (+w (idifference ch (char !A)) 10)))
+	(when (and (igeq ch (char !a)) (ileq ch (char !z)))
+	  (setq ch (+w (idifference ch (char !a)) 10)))
 	(when (and (igeq ch (char 0)) (ileq ch (char 9)))
 	  (setq ch (idifference ch (char 0))))
 	(iputv res 1 0)
 	(setq accu ch)
 	(ifor (from i 1 sz 1) 
 	      (do (progn (setq ch (indx s i))
-			 (when (and (igeq ch (char a)) (ileq ch (char z)))
+			 (when (and (igeq ch (char !A)) (ileq ch (char !Z)))
 			   (setq ch 
-			    (idifference ch (idifference (char a) 10))))
+			    (idifference ch (idifference (char !A) 10))))
+			 (when (and (igeq ch (char !a)) (ileq ch (char !z)))
+			   (setq ch 
+			    (idifference ch (idifference (char !a) 10))))
 			 (when (and (igeq ch (char 0)) (ileq ch (char 9)))
 			   (setq ch (idifference ch (char 0))))
 			 (setq accu (+w (itimes2 radix accu) ch ))
@@ -1302,6 +1334,20 @@
 (de biglshift (u v) (checkifreallybig (blshift u v)))
 
 (de lshift (u v)
+   (setq v (int2sys v))  % bigger numbers make no sense as shift amount
+   (if (intp u)
+     (cond ((wleq v (minus bitsperword)) 0)
+           ((and (posintp u) (wlessp v 0)) (wshift u v))
+           ((wlessp v (iminus tagbitlength)) (wshift u v))
+           ((wlessp v 0) (sys2int (wshift u v)))
+           ((and (betap u) (wlessp v (iquotient bitsperword 2)))
+                  (sys2int (wshift u v)))
+           (t (biglshift (sys2big u) v)))
+     % Use int2big, not sys2big, since we might have fixnums.
+     (biglshift (int2big u) v)))
+
+(commentoutcode 
+  de lshift (u v)
   (setq v (int2sys v))  % bigger numbers make no sense as shift amount
   (if (betap u) 
     (cond ((wleq v (minus bitsperword)) 0)
