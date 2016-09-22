@@ -149,7 +149,11 @@ symbolic procedure endstat1;
     x := cursym!*;
     scan();
     if stringp cursym!* then optarg := cursym!*;
-    while not (cursym!* eq '!*semicol!*) do scan();
+    while not (cursym!* eq '!*semicol!*) and
+% The next line is to allow for an ENDSTAT1 to omit the semicolon that
+% would normally come after it if what happens next is a word like
+% ">>" or "else"...
+          not (idp cursym!* and flagp(cursym!*, 'delim)) do scan();
     return list(x, optarg)
    end;
 
