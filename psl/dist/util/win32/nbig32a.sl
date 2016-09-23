@@ -129,7 +129,7 @@
 	   bquotient bremainder bdivide-trivialtest
 	   bsimpledivide bharddivide bhardbug
 	   bgreaterp blessp bgeq bleq bunsignedgreaterp bunsignedgeq
-	   badd1 bsub1 bdivide1000000ip breadadd bsmalladd
+	   badd1 bsub1 bdivide1000000ip bread breadadd bsmalladd
 	   bnum bnumaux bsmalldiff biggcdn0 biggcdn1 bigit2float
     ) 'internalfunction)
 ))
@@ -257,7 +257,7 @@
    (setq s (igetv u 1))
    (when (wgreaterp b 1)(go error))
    (when (wlessp s 0) 
-       (if (bbminusp u) (return s) (go error)))
+       (if (bbminusp u) (return (wminus s)) (go error)))
    (return (if (bbminusp u) (wminus s) s))
 error
    (continuableerror 99 "BIGNUM too large to convert to SYS" u)
@@ -449,7 +449,7 @@ error
       (setq l1 (bbsize v1))
       (setq l2 (idifference l1 nw))
       (when (ilessp l2 1) (return bzero*))
-      (setq v2 (if (bbminusp v1)(gtpos l2)(gtpos l2)))
+      (setq v2 (if (bbminusp v1)(gtneg l2)(gtpos l2)))
         % for shifts we have to handle the case nb=0
         % separately because processors tend to handle a shift for
         % nr=(-wordsize) bits as nop.
@@ -1334,20 +1334,6 @@ error
 (de biglshift (u v) (checkifreallybig (blshift u v)))
 
 (de lshift (u v)
-   (setq v (int2sys v))  % bigger numbers make no sense as shift amount
-   (if (intp u)
-     (cond ((wleq v (minus bitsperword)) 0)
-           ((and (posintp u) (wlessp v 0)) (wshift u v))
-           ((wlessp v (iminus tagbitlength)) (wshift u v))
-           ((wlessp v 0) (sys2int (wshift u v)))
-           ((and (betap u) (wlessp v (iquotient bitsperword 2)))
-                  (sys2int (wshift u v)))
-           (t (biglshift (sys2big u) v)))
-     % Use int2big, not sys2big, since we might have fixnums.
-     (biglshift (int2big u) v)))
-
-(commentoutcode 
-  de lshift (u v)
   (setq v (int2sys v))  % bigger numbers make no sense as shift amount
   (if (betap u) 
     (cond ((wleq v (minus bitsperword)) 0)
