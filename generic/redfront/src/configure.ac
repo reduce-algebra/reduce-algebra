@@ -196,7 +196,7 @@ AC_DEFINE_UNQUOTED(PACKAGE_MAP,"$packagemap",
 
 dnl Checks for libraries.
 AC_CHECK_LIB(termcap,main,LIBS="-ltermcap $LIBS",\
-AC_MSG_ERROR("install a termcap library first"))
+AC_MSG_ERROR("Please install libtermcap-devel (or similar) first"))
   curses_header="no"
   AC_CHECK_HEADER(curses.h,
     [AC_DEFINE(HAVE_CURSES_H, [1], [Header file curses.h available])
