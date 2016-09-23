@@ -98,19 +98,24 @@ asserted procedure rl_stringDescriptionListWrapper(al: AList, xdtl: List): List;
    lto_stringDescriptionList(al, rlhelp_leftMargin!*, rlhelp_colSep!*, linelength nil - rlhelp_rightMargin!*, xdtl);
 
 asserted procedure rl_helpOverview();
-   begin scalar bl, cl, types;
+   begin scalar bl, cl, kwl, types, keywords;
       ioto_tprin2t "REDLOG SERVICES";
       rl_helpOverviewCSL for each s in rl_services!* collect id2string s;
       terpri();
-      ioto_tprin2t "REDLOG TYPES";
       for each s in rl_typeStrings rl_services!* do <<
-	 bl . cl := rl_helpOverviewTypesDecompose s;
+	 {bl, cl, kwl} := rl_helpOverviewTypesDecompose s;
 	 for each x in bl do
 	    types := lto_insert(x, types);
 	 for each x in cl do
-	    types := lto_insert(rl_helpTypeConcArity x, types)
+	    types := lto_insert(rl_helpTypeConcArity x, types);
+	 for each x in kwl do
+	    keywords := lto_insert(x, keywords)
       >>;
-      rl_helpOverviewCSL sort(types, 'rl_stringLeq);
+      ioto_tprin2t "REDLOG TYPES";
+      rl_helpOverviewCSL types;
+      terpri();
+      ioto_tprin2t "REDLOG KEYWORDS";
+      rl_helpOverviewCSL keywords;
       terpri();
       ioto_tprin2t "REDLOG SWITCHES";
       rl_helpOverviewCSL for each s in rl_services!* join
@@ -154,16 +159,17 @@ asserted procedure rl_helpOverviewServices();
    end;
 
 asserted procedure rl_helpOverviewTypes();
-   begin scalar bl,cl, bal, cal, sal, xdtl;
-      for each s in rl_typeStrings rl_services!* collect <<
-	 bl . cl := rl_helpOverviewTypesDecompose s;
+   begin scalar bl,cl, bal, cal, sal, xdtl, kwl1, kwl;
+      for each s in rl_typeStrings rl_services!* do <<
+	 {bl, cl, kwl1} := rl_helpOverviewTypesDecompose s;
 	 for each x in bl do
-      	    push(x . (lto_catsoc('syntax, get(lto_string2id x, 'docal)) or ""), bal);
+      	    bal := lto_insert(x . (lto_catsoc('syntax, get(lto_string2id x, 'docal)) or ""), bal);
 	 for each x in cl do
-      	    push(rl_helpTypeConcArity x . (lto_catsoc('syntax, get(lto_string2id x, 'docal)) or ""), cal)
+      	    cal := lto_insert(rl_helpTypeConcArity x . (lto_catsoc('syntax, get(lto_string2id x, 'docal)) or ""), cal);
+	 kwl := union(kwl, kwl1)
       >>;
-      bal := sort(list2set bal, function(lambda x, y; rl_stringLeq(car x, car y)));
-      cal := sort(list2set cal, function(lambda x, y; rl_stringLeq(car x, car y)));
+      bal := sort(bal, function(lambda x, y; rl_stringLeq(car x, car y)));
+      cal := sort(cal, function(lambda x, y; rl_stringLeq(car x, car y)));
       sal := '(("?X" . "for a specific type X"));
       xdtl := for each pr in append(sal, append(bal, cal)) collect car pr;
       ioto_tprin2t "REDLOG BASIC TYPES";
@@ -172,40 +178,46 @@ asserted procedure rl_helpOverviewTypes();
       ioto_tprin2t "REDLOG COMPOUND TYPES";
       rl_printDescriptionList(cal, xdtl);
       terpri();
+      ioto_tprin2t "REDLOG KEYWORDS";
+      rl_helpOverviewCSL kwl;
+      terpri();
       ioto_tprin2t "SEE ALSO";
       rl_printDescriptionList(sal, xdtl)
    end;
 
-asserted procedure rl_helpOverviewTypesDecompose(s: String): DottedPair;
-   rl_helpOverviewTypesDecompose1(ioto_sxread s, nil, nil) where !*lower=nil, !*raise=nil;
+asserted procedure rl_helpOverviewTypesDecompose(s: String): List3;
+   rl_helpOverviewTypesDecompose1(ioto_sxread s, nil, nil, nil) where !*lower=nil, !*raise=nil;
 
-asserted procedure rl_helpOverviewTypesDecompose1(x: Any, bl: List, cl: List): DottedPair;
-   begin
+asserted procedure rl_helpOverviewTypesDecompose1(x: Any, bl: List, cl: List, kwl: List): List3;
+   begin scalar carxs;
       if idp x then
-      	 return (id2string x . bl) . cl;
-      push(id2string car x, cl);
+      	 return {id2string x . bl, cl, kwl};
+      carxs := id2string car x;
+      push(carxs, cl);
+      if carxs = "Enum" then <<
+	 for each kw in cdr x do push(id2string kw, kwl);
+	 return {bl, cl, kwl}
+      >>;
       for each y in cdr x do
-	 bl . cl := rl_helpOverviewTypesDecompose1(y, bl, cl);
-      return bl . cl
+	 {bl, cl, kwl} := rl_helpOverviewTypesDecompose1(y, bl, cl, kwl);
+      return {bl, cl, kwl}
    end;
 
 asserted procedure rl_helpTypeConcArity(s: String): String;
    % We are context sensitive. [x] is a compound type as an identifier. We add
    % "/n", where n is its arity. The arity is derived from the a2s/s2a property.
-   % If this fails we add "/?". We return an uninterned case-sensitive
-   % identifier. String conversion happens outside.
-   begin scalar !*lower, !*raise;
-      scalar arity, w;
-      arity := rl_helpTypeArity s;
-      w :=  if fixp arity then '!/ .  explode(arity) else '(!/ !?);
-      return id2string compress nconc(explodec s, w)
-   end;
+   % If this fails we use "/?".
+   lto_sconcat {s, "/", rl_helpTypeArity s};
 
 asserted procedure rl_helpTypeArity(s: String): String;
    begin scalar !*lower, !*raise, lcx, ar;
       lcx := intern lto_downcase compress explodec s;
-      ar :=  get(get(lcx, 'a2s) or get(lcx, 's2a), 'number!-of!-args);
-      return if fixp ar then ar - 1
+      ar :=  if lcx eq 'keyword then
+	 'n
+      else
+	 get(get(lcx, 'a2s) or get(lcx, 's2a), 'number!-of!-args) or '!?;
+      if fixp ar then ar := ar - 1;
+      return ioto_smaprin ar
    end;
 
 asserted procedure rl_typeStrings(services: List): List;

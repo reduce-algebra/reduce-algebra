@@ -517,7 +517,7 @@ asserted procedure rl_convertArg(x: Any, type: Any, x2y: Id): Any;
    apply(rl_conversionFunction(type, x2y), {x});
 
 asserted procedure rl_conversionFunction(type: Any, x2y: Id): Any;
-   begin scalar type, super, f, fl;
+   begin scalar type, super, f, fl, kwl;
       if idp type then <<
 	 f := get(type, x2y);
 	 if f then
@@ -527,13 +527,40 @@ asserted procedure rl_conversionFunction(type: Any, x2y: Id): Any;
 	    return rl_conversionFunction(super, x2y);
 	 rederr {"missing", x2y, "conversion for type", type}
       >>;
+      if intern car type eq 'enum and x2y eq 'a2s then <<
+	 kwl := for each h in cdr type collect intern h;
+      	 return {'lambda, '(x), {'apply, {'function, 'rl_a2sKeyword}, {'list, 'x, mkquote kwl}}};
+      >>;
       % Now type is something like Pair(List(Atom), Formula), where Pair, List,
       % Atom, Formula have conversion functions of arity 1+2, 1+1, 1+0, 1+0,
-      % resp., counting "parameter functions + data."
+      % resp., counting "data + parameter functions."
       f . fl := for each ty in type collect
  	 {'function, rl_conversionFunction(ty, x2y)};
-      return {'lambda, '(x), {'apply,  f, {'cons, 'x, 'list . fl}}}
+      return {'lambda, '(x), {'apply, f, {'cons, 'x, 'list . fl}}}
    end;
+
+asserted procedure rl_a2sKeyword(x: Any, keywords: List);
+   if x memq keywords then
+      x
+   else
+      typerr(x, ioto_smaprin('!One!Of . keywords)) where !*lower=nil, !*raise=nil;
+
+put('enum, 'docal, {'syntax . "Admissible REDLOG KEYWORDS"});
+
+% The following documents how to implement fancy printing of Enum types.
+% However, with the current setup, it is necessary that the printed form can be
+% parsed by xread for type conversion.
+%
+% asserted procedure rl_priEnum(s);
+%    <<
+%       prin2!* "[";
+%       prin2!* cadr s;
+%       for each x in cddr s do << prin2!* "|", prin2!* x >>;
+%       prin2!* "]";
+%       terpri!* nil
+%    >>;
+%
+% put('!Enum, 'prifn, 'rl_priEnum);
 
 asserted procedure rl_exc(x: Any): DottedPair;
    % Create an "exception" as a return value in case of unexpected situations,

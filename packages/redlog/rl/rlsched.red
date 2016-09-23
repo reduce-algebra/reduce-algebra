@@ -170,19 +170,9 @@ module rlsched;
 
 %% rl_mkserv('qsat,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('qsatoptions,'(rl_a2s!-qsatoptions),nil,nil,'rl_s2a!-qsatoptions,t);
-
 %% rl_mkserv('qsatdimacs,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
 
 %% rl_mkserv('readdimacs,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
-
-% Does not work, because ofsf_cadswitches is missing.
-rl_mkserv('cadswitches,nil,nil,nil,function(lambda x; x),t);
-
-rl_mkserv('expand,'(rl_simp),nil,nil,'rl_mk!*fof,t);
-
-% Optional argument is not yet used:
-rl_mkserv('expanda,'(rl_simpa),'(rl_simp),'(false),'rl_s2a!-qea,t);
 
 %% rl_mkserv('hqe,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
@@ -196,28 +186,13 @@ rl_mkserv('expanda,'(rl_simpa),'(rl_simp),'(false),'rl_s2a!-qea,t);
 
 %% rl_mkserv('tan2,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-rl_mkserv('!1equation,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,t);
-
-rl_mkserv('enf,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,t);
-
-rl_mkserv('depth,'(rl_simp),nil,nil,'aeval,t);
-
-rl_mkserv('qesil,'(rl_a2s!-fl),'(rl_a2s!-atl),'((list)),'rl_s2a!-fl,t);
+%% rl_mkserv('depth,'(rl_simp),nil,nil,'aeval,t);
 
 %% rl_mkserv('dfgprint,'(rl_simp),'(reval),'(nil),'aeval,t);
 
 %% rl_mkserv('smt2Print,'(rl_simp),'(reval rl_a2s!-stringl),'(nil (list)),'aeval,t);
+
 %% rl_mkserv('smt2Read,'(rl_a2s!-string),nil,nil,'rl_mk!*fof,t);
-
-rl_mkserv('dima, '(rl_a2s!-sflist rl_a2s!-sf), nil, nil, 'rl_s2a!-formulal, t);
-
-rl_mkserv('sat2pol, '(rl_simp), nil, nil, function(lambda x; mk!*sq !*f2q x), t);
-
-rl_mkserv('psat2pol, '(rl_simp), nil, nil, function(lambda x; mk!*sq !*f2q x), t);
-
-rl_mkserv('tropsat, '(rl_simp), nil, nil, 'aeval, t);
-
-rl_mkserv('ptropsat, '(rl_simp), nil, nil, 'aeval, t);
 
 %% rl_mkserv('dpep,'(rl_simp),'(rl_a2s!-number),'(20), 'rl_mk!*fof, t);
 
@@ -225,8 +200,34 @@ rl_mkserv('ptropsat, '(rl_simp), nil, nil, 'aeval, t);
 
 %% rl_mkserv('sign,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
-% ibalp + tplp, undocumented
-rl_mkserv('kapur,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
+%% rl_mkserv('sat2pol, '(rl_simp), nil, nil, function(lambda x; mk!*sq !*f2q x), t);
+%% 
+%% rl_mkserv('psat2pol, '(rl_simp), nil, nil, function(lambda x; mk!*sq !*f2q x), t);
+
+%% ibalp + tplp, undocumented
+%% rl_mkserv('kapur,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
+
+%% rl_mkserv('!1equation,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,t);  % DCFSF
+
+%% rl_mkserv('enf,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,t);  % DCFSF
+
+rl_mkserv('qsatoptions,'(rl_a2s!-qsatoptions),nil,nil,'rl_s2a!-qsatoptions,t);
+
+% Does not work, because ofsf_cadswitches is missing.
+rl_mkserv('cadswitches,nil,nil,nil,function(lambda x; x),t);
+
+rl_mkserv('expand,'(rl_simp),nil,nil,'rl_mk!*fof,t);
+
+% Optional argument is not yet used:
+rl_mkserv('expanda,'(rl_simpa),'(rl_simp),'(false),'rl_s2a!-qea,t);
+
+rl_mkserv('qesil,'(rl_a2s!-fl),'(rl_a2s!-atl),'((list)),'rl_s2a!-fl,t);
+
+rl_mkserv('dima, '(rl_a2s!-sflist rl_a2s!-sf), nil, nil, 'rl_s2a!-formulal, t);
+
+rl_mkserv('tropsat, '(rl_simp), nil, nil, 'aeval, t);
+
+rl_mkserv('ptropsat, '(rl_simp), nil, nil, 'aeval, t);
 
 % tplp, undocumented
 rl_mkserv('miniscope,'(rl_simp),'(nil),'(nil),'rl_mk!*fof,t);

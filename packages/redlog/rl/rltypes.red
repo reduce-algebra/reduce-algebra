@@ -177,27 +177,6 @@ asserted procedure rl_a2sString(s: Any): String;
       return s
    end;
 
-% Keyword BNF
-
-rl_type {
-   name = KwBnf,
-   a2s = rl_a2sKwBnf,
-   doc = {
-      syntax = "An element from the finite set {auto, cnf, dnf}.",
-      semantics = "A keyword to be passed as an option. Keywords arguments are not evaluated.",
-      example = "cnf"}};
-
-asserted procedure rl_a2sKwBnf(bnf: Id): Id;
-   <<
-      if not memq(bnf, '(cnf dnf auto)) then
-      	 typerr(bnf, "Bnf");
-      bnf
-   >>;
-
-asserted procedure rl_s2aQeAnswer(res): List;
-   'list . for each x in res collect
-      {'list, rl_mk!*fof car x, 'list . cadr x};
-
 % Rational: Rationals are currently passed as Lisp prefix. Note that floats are
 % also Rationals so that there will be something to do for switching to SQs.
 % Also, currently infinities are returned where Rationals are promised. So
@@ -352,7 +331,6 @@ procedure rl_s2a!-idlist(x);
    rl_s2aList(x, 'rl_identity1);
 
 copyd('rl_s2a!-atl, 'rl_s2a!-fl);
-copyd('rl_s2a!-qea, 'rl_s2aQeAnswer);
 
 endmodule;
 

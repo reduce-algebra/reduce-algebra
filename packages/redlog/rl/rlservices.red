@@ -30,6 +30,15 @@ copyright('rlservices, "(c) 2016 T. Sturm");
 %
 
 rl_service {
+   name = !1equation,
+   doc = "equivalent DNF with one relevant equation in each branch (DCFSF)",
+   arg = {pos = 1, name = conjunction, type = Formula, doc = "conjunction of atoms"},
+   arg = {pos = 2, name = variable, type = Variable, doc = "variable to be considered"},
+   arg = {pos = 3, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
+   returns = {type = Formula},
+   mode = both};
+
+rl_service {
    name = all,
    doc = "universal closure",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
@@ -122,6 +131,13 @@ rl_service {  % There was the option variables = 'fvarl.
    mode = both};
 
 rl_service {
+   name = depth,
+   doc = "depth of the tree representation of a formula",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   returns = {type = Integer},
+   mode = both};
+
+rl_service {
    name = dfgprint,
    doc = "dump a formula as DFG input",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order formula"},
@@ -143,6 +159,15 @@ rl_service {
    doc = "deciding polynomial exponential problems",
    arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
    arg = {pos = 2, name = accuracy, type = Integer, default = 20, doc = "length of taylor expanson of exp"},
+   returns = {type = Formula},
+   mode = both};
+
+rl_service {
+   name = enf,
+   doc = "elimination normal form (DCFSF)",
+   arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
+   arg = {pos = 2, name = variable, type = Variable, doc = "variable to be eliminated next"},
+   arg = {pos = 3, name = assume, type = List(Atom), default = {}, doc = "atiomic input assumptions"},
    returns = {type = Formula},
    mode = both};
 
@@ -237,7 +262,7 @@ rl_service {
    doc = "Groebner simplifier",
    arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
-   arg = {pos = 3, name = form, type = KwBnf, default = auto, doc = "Boolean normal form to use"},
+   arg = {pos = 3, name = form, type = Enum(auto, cnf, dnf), default = auto, doc = "Boolean normal form to use"},
    returns = {type = Formula},
    mode = both};
 
@@ -260,6 +285,13 @@ rl_service {
    doc = "list of irreducible factors with numbers of occurrences",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    returns = {type = MList(Term)},
+   mode = both};
+
+rl_service {
+   name = kapur,
+   doc = "GB-based satisfiability",
+   arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
+   returns = {type = TruthValue},
    mode = both};
 
 rl_service {
@@ -379,6 +411,13 @@ rl_service {
    mode = both};
 
 rl_service {
+   name = psat2pol,
+   doc = "encode satisfiability into polynomial assuming all variables are positive",
+   arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
+   returns = {type = Term},
+   mode = both};
+
+rl_service {
    name = qe,
    doc = "quantifier elimination",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
@@ -485,6 +524,13 @@ rl_service {
    doc = "refined normal form (domain TERMS only)",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    returns = {type = Formula},
+   mode = both};
+
+rl_service {
+   name = sat2pol,
+   doc = "encode satisfiability into polynomial",
+   arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
+   returns = {type = Term},
    mode = both};
 
 rl_service {
