@@ -66,7 +66,7 @@ load!-package 'tps; %load!-package 'taylor;
 
 lisp(ps!:order!-limit := 100);
 
-switch usetaylor; off usetaylor;
+switch usetaylor=off;
 
 fluid '(!*precise lhop!# lplus!# !*protfg !*msg !*rounded !*complex !*factor
         !#nnn lim00!# !*crlimtest !*lim00rec);
@@ -124,18 +124,18 @@ symbolic procedure countof(u,v);
 
 symbolic procedure simplimit u;
    % The kludgey handling of cot needs to be fixed some day.
-   begin scalar fn,exprn,var,val,old,v,!*precise,!*protfg;
+   begin scalar fn,exprn,var,val,old,v,!*precise;
      if length u neq 4
        then rerror(limit,1,
                    {"Improper number of arguments to",car u,"operator"});
      fn:= car u; exprn := cadr u; var := !*a2k caddr u; val := cadddr u;
-     !*protfg := t;   % ACH: I'm not sure why this is needed.
      old := get('cot,'opmtch);
      put('cot,'opmtch,
          '(((!~x) (nil . t) (quotient (cos !~x) (sin !~x)) nil)));
-     v := errorset!*({'apply,mkquote fn,mkquote {exprn,var,val}},nil);
+     %% rebind !*protfg so that errors are not shown
+     v := errorset!*({'apply,mkquote fn,mkquote {exprn,var,val}},nil)
+		where !*protfg := t;
      put('cot,'opmtch,old);
-     !*protfg := nil;
      return if errorp v or (v := car v) = aeval 'failed
               then mksq({fn,aeval exprn,var,val},1)
              else simp!* v
@@ -149,11 +149,9 @@ symbolic procedure limit0(exp,x,a);
      if a = '(minus infinity) then
         return limit00(subsq(exp1,{x . {'quotient,-1,{'expt,x,2}}}),x);
      return
-        (<<!*protfg := t;
-           y := errorset!*
+        (<<y := errorset!*
              ({'subsq,mkquote(exp := simp!* exp),mkquote{(x . a)}},nil)
-              where !*expandlogs=t;
-           !*protfg := nil;
+              where !*expandlogs=t,!*protfg=t;
            if not (errorp y) and not ((y := car y) = aeval 'failed)
               then mk!*sq y
            else if neq(a,0) then limit00(subsq(exp1,{x .
@@ -247,15 +245,15 @@ symbolic procedure pwrdenp(p,x);
 
 symbolic procedure limitset(ex,x,a);
  if !*usetaylor then
-  <<!*protfg := t;
-    ex := errorset!*({'limit1t,mkquote ex,mkquote x,mkquote a},nil);
-    !*protfg := nil;
+  <<ex := errorset!*({'limit1t,mkquote ex,mkquote x,mkquote a},nil)
+            where !*protfg := t;
     if errorp ex then nil else car ex>>
  else % use tps.
   begin scalar oldpslim;
-      !*protfg := t; oldpslim := simppsexplim '(1);
-      ex := errorset!*({'limit1p,mkquote ex,mkquote x,mkquote a},nil);
-      !*protfg := nil; simppsexplim list car oldpslim;
+      oldpslim := simppsexplim '(1);
+      ex := errorset!*({'limit1p,mkquote ex,mkquote x,mkquote a},nil)
+              where !*protfg := t;
+      simppsexplim list car oldpslim;
       return if errorp ex then nil else car ex
   end;
 
@@ -332,11 +330,9 @@ ret:if not r then off rounded; if not c then off complex;
   where r=!*rounded,c=!*complex,!*msg=nil;
 
 symbolic procedure topevalsetsq u;
-  <<!*protfg := t;
-    if not r then on rounded; if not c then on complex;
+  <<if not r then on rounded; if not c then on complex;
     u := errorset!*({'simp!*,{'aeval,{'prepsq,{'simp!*,mkquote u}}}},
-      nil);
-    !*protfg := nil;
+      nil) where !*protfg := t;
     if not r then off rounded;if not c then off complex;
     if errorp u then nil else car u>>
   where r=!*rounded,c=!*complex,!*msg=nil;
