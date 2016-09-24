@@ -69,6 +69,9 @@ extern "C" LispObject Ltmpnam(LispObject nil, int nargs, ...);
 extern "C" LispObject Ltyi(LispObject env, int nargs, ...);
 extern "C" LispObject Lunserialize(LispObject env, int nargs, ...);
 
+// This is for the proposed new scheme where zero arg cases are treated
+// specially not as a add on to the general "n" case...
+extern "C" LispObject undefined0(LispObject env);
 //
 // things with one arg...
 //
@@ -465,6 +468,12 @@ extern "C" LispObject Ltruncate_2(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lunintern_2(LispObject env, LispObject a, LispObject b);
 #endif
 
+// Things for the forthcoming "exactly 3 arguments" case
+
+extern "C" LispObject undefined3(LispObject env, LispObject a1, LispObject a2,
+                                 LispObject a3);
+
+
 //
 // Things with three args or more args
 //
@@ -627,6 +636,12 @@ extern "C" LispObject om_listCDs(LispObject nil, int nargs, ...);
 extern "C" LispObject om_listSymbols(LispObject nil, LispObject lcd);
 extern "C" LispObject om_whichCDs(LispObject nil, LispObject lsym);
 #endif
+
+// The future code will handle 5 and more args by passing exactly 4 args
+// but the last will be a list of all the rest...
+
+extern "C" LispObject undefined4(LispObject env, size_t n, LispObject a1,
+                                 LispObject a2, LispObject a3, LispObject a4);
 
 #endif // header_entries_h
 

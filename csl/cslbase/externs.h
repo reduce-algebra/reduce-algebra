@@ -92,6 +92,8 @@ extern void **pages,
 extern void **new_heap_pages, **new_vheap_pages,
        **new_bps_pages, **new_native_pages;
 
+extern void *allocate_page(const char *why);
+
 #ifdef CONSERVATIVE
 
 #define PAGE_TYPE_CONS   0
@@ -583,6 +585,8 @@ extern LispObject free_vectors[LOG2_VECTOR_CHUNK_WORDS+1];
 #define current_package_offset 52
 
 extern void rehash_this_table(LispObject v);
+extern void simple_print(LispObject x);
+extern void simple_msg(const char *s, LispObject x);
 extern LispObject eq_hash_tables, equal_hash_tables;
 extern uint32_t hash_equal(LispObject key);
 extern uint32_t hash_for_checking(LispObject key, int depth);
@@ -699,23 +703,41 @@ typedef struct Ihandle
 extern int32_t compression_worth_while;
 #define CODESIZE                0x1000
 
-typedef struct entry_point1
+typedef struct _entry_point0
+{   no_args *p;
+    const char *s;
+} entry_point0;
+
+typedef struct _entry_point1
 {   one_args *p;
     const char *s;
 } entry_point1;
 
-typedef struct entry_point2
+typedef struct _entry_point2
 {   two_args *p;
     const char *s;
 } entry_point2;
 
-typedef struct entry_pointn
+typedef struct _entry_point3
+{   three_args *p;
+    const char *s;
+} entry_point3;
+
+typedef struct _entry_point4
+{   four_args *p;
+    const char *s;
+} entry_point4;
+
+typedef struct _entry_pointn
 {   n_args *p;
     const char *s;
 } entry_pointn;
 
+extern entry_point0 entries_table0[];
 extern entry_point1 entries_table1[];
 extern entry_point2 entries_table2[];
+extern entry_point3 entries_table3[];
+extern entry_point4 entries_table4[];
 extern entry_pointn entries_tablen[];
 extern entry_pointn entries_tableio[];
 
@@ -955,6 +977,7 @@ extern bool do_not_kill_native_code;
 extern void        set_fns(LispObject sym, one_args *f1,
                            two_args *f2, n_args *fn);
 extern void        setup(int restartp, double storesize);
+extern void        set_up_variables(int restart_flag);
 extern void        warm_setup();
 extern void        write_everything();
 extern LispObject  simplify_string(LispObject s);
@@ -1062,12 +1085,14 @@ extern uint32_t Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
 
 #define argcheck(var, n, msg) if ((var)!=(n)) return aerror(msg);
 
-extern n_args   *zero_arg_functions[];
-extern one_args *one_arg_functions[];
-extern two_args *two_arg_functions[];
-extern n_args   *three_arg_functions[];
-extern void     *useful_functions[];
-extern char     *address_of_var(int n);
+extern n_args      *no_arg_functions[];
+extern no_args     *new_no_arg_functions[];
+extern one_args    *one_arg_functions[];
+extern two_args    *two_arg_functions[];
+extern four_args   *four_arg_functions[];
+extern n_args      *three_arg_functions[];
+extern void        *useful_functions[];
+extern char        *address_of_var(int n);
 
 typedef struct setup_type
 {   const char *name;
@@ -1090,7 +1115,8 @@ extern setup_type const
     arith13_setup[], char_setup[], eval1_setup[], eval2_setup[],
     eval3_setup[], funcs1_setup[], funcs2_setup[], funcs3_setup[],
     lisphash_setup[], newhash_setup[], print_setup[], read_setup[],
-    mpi_setup[];
+    restart_setup[], mpi_setup[];
+
 extern setup_type const
     u01_setup[], u02_setup[], u03_setup[], u04_setup[],
     u05_setup[], u06_setup[], u07_setup[], u08_setup[], u09_setup[],

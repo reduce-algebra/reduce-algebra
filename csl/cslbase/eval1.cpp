@@ -2035,6 +2035,7 @@ LispObject Lmacroexpand_1_2(LispObject, LispObject a, LispObject b)
 LispObject autoload1(LispObject fname, LispObject a1)
 {   LispObject nil = C_nil;
     push2(a1, qcar(fname));
+// worry about 0 and 3 args special cases...
     set_fns(qcar(fname), undefined1, undefined2, undefinedn);
     qenv(qcar(fname)) = qcar(fname);
     fname = qcdr(fname);
@@ -2054,6 +2055,7 @@ LispObject autoload1(LispObject fname, LispObject a1)
 LispObject autoload2(LispObject fname, LispObject a1, LispObject a2)
 {   LispObject nil = C_nil;
     push3(a1, a2, qcar(fname));
+// 0 and 3 args special casess
     set_fns(qcar(fname), undefined1, undefined2, undefinedn);
     qenv(qcar(fname)) = qcar(fname);
     fname = qcdr(fname);
@@ -2076,6 +2078,7 @@ LispObject autoloadn(LispObject fname, int nargs, ...)
     va_start(a, nargs);
     push_args(a, nargs);
     push(qcar(fname));
+// 0 and 3 arg special cases...
     set_fns(qcar(fname), undefined1, undefined2, undefinedn);
     qenv(qcar(fname)) = qcar(fname);
     fname = qcdr(fname);
@@ -2092,6 +2095,11 @@ LispObject autoloadn(LispObject fname, int nargs, ...)
     return apply(fname, nargs, nil, fname, 0);
 }
 
+LispObject undefined0(LispObject fname)
+{
+    return error(1, err_undefined_function_0, fname);
+}
+
 LispObject undefined1(LispObject fname, LispObject)
 {
 //
@@ -2105,6 +2113,15 @@ LispObject undefined1(LispObject fname, LispObject)
 
 LispObject undefined2(LispObject fname, LispObject, LispObject)
 {   return error(1, err_undefined_function_2, fname);
+}
+
+LispObject undefined3(LispObject fname, LispObject, LispObject, LispObject)
+{   return error(1, err_undefined_function_3, fname);
+}
+
+LispObject undefined4(LispObject fname, size_t,
+                      LispObject, LispObject, LispObject, LispObject)
+{   return error(1, err_undefined_function_4, fname);
 }
 
 LispObject undefinedn(LispObject fname, int, ...)

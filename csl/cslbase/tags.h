@@ -718,6 +718,21 @@ typedef uintptr_t Header;
 
 #endif // MEMORY_TRACE
 
+// In the serialisation code I want to access the fields in a symbol as
+// if that symbol was a vector and the fields were indexed
+//  vselt(p, 0) : qvalue(p)
+//  vselt(p, 1) : qenv(p)
+//  vselt(p, 2) : qplist(p)
+//  vselt(p, 3) : qfastgets(p)
+//  vselt(p, 4) : qpackage(p)
+//  vselt(p, 5) : qpname(p)
+// and I want vselt to apply to vectors too and do just what elt does in
+// that case. I will also use vselt on things tagged as numbers (specifically
+// RATIO and COMPLEX.
+
+#define vselt(v, n) (*(LispObject *)(((intptr_t)(v) & ~((intptr_t)TAG_BITS)) + \
+                                    ((1 + (intptr_t)(n))*sizeof(LispObject))))
+
 //
 // The next are for 16-bit & 32 bit values and single-float & double-float
 // access. Note that halfwords are signed.
@@ -962,12 +977,12 @@ typedef struct Symbol_Head
     LispObject value;    // Global or special value cell
 
     LispObject env;      // Extra stuff to help function cell
-    LispObject pname;    // A string (always)
-
     LispObject plist;    // A list
-    LispObject fastgets; // to speed up flagp and get
 
+    LispObject fastgets; // to speed up flagp and get
     LispObject package;  // Home package - a package object                  *
+
+    LispObject pname;    // A string (always)
     intptr_t function0;  // Executable code always (no arguments)            *
 
     intptr_t function1;  // Executable code always (just 1 arg)
@@ -999,10 +1014,10 @@ typedef struct Symbol_Head
 #define qheader(p)     (*(Header      *)((char *)(p) + (0*CELL-TAG_SYMBOL)))
 #define qvalue(p)      (*(LispObject  *)((char *)(p) + (1*CELL-TAG_SYMBOL)))
 #define qenv(p)        (*(LispObject  *)((char *)(p) + (2*CELL-TAG_SYMBOL)))
-#define qpname(p)      (*(LispObject  *)((char *)(p) + (3*CELL-TAG_SYMBOL)))
-#define qplist(p)      (*(LispObject  *)((char *)(p) + (4*CELL-TAG_SYMBOL)))
-#define qfastgets(p)   (*(LispObject  *)((char *)(p) + (5*CELL-TAG_SYMBOL)))
-#define qpackage(p)    (*(LispObject  *)((char *)(p) + (6*CELL-TAG_SYMBOL)))
+#define qplist(p)      (*(LispObject  *)((char *)(p) + (3*CELL-TAG_SYMBOL)))
+#define qfastgets(p)   (*(LispObject  *)((char *)(p) + (4*CELL-TAG_SYMBOL)))
+#define qpackage(p)    (*(LispObject  *)((char *)(p) + (5*CELL-TAG_SYMBOL)))
+#define qpname(p)      (*(LispObject  *)((char *)(p) + (6*CELL-TAG_SYMBOL)))
 
 // The ifn() selector gives access to the qfn() cell, but treating its
 // contents as (intptr_t).

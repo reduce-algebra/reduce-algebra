@@ -4094,7 +4094,10 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 
             case OP_BUILTIN0:
                 debug_assert(1);
-                f345 = zero_arg_functions[next_byte];
+// At present this uses the "old" scheme for functions that do not take
+// arguments that passes the integer 0 to tell them of the lack of args
+// actually passed.
+                f345 = no_arg_functions[next_byte];
                 debug_record_int("BUILTIN0", most_recent_byte);
 // BUILTIN0:  A=fn()
                 save_pc();

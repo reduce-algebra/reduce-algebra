@@ -511,7 +511,7 @@ void relocate_native_function(unsigned char *bps)
 // offsets used are documented in file "eval4.c" and are as used with the
 // byte-code compiler.
 //
-                target = (unsigned char *)zero_arg_functions[*r++];
+                target = (unsigned char *)no_arg_functions[*r++];
                 break;
             case RELOC_1_ARGS:
                 target = (unsigned char *)one_arg_functions[*r++];
@@ -1090,6 +1090,15 @@ static void adjust_consheap(void)
 
 #endif // EXPERIMENT
 
+entry_point0 entries_table0[] =
+{
+    {0,                                 "illegal"},
+    {undefined0,                        "undefined0"},
+    {NULL,                              "dummy"}
+};
+
+#define entry_table_size0 ((int)(sizeof(entries_table0)/sizeof(entries_table0[0])))
+
 entry_point1 entries_table1[] =
 {
 //
@@ -1204,6 +1213,24 @@ entry_point2 entries_table2[] =
 };
 
 #define entry_table_size2 ((int)(sizeof(entries_table2)/sizeof(entries_table2[0])))
+
+entry_point3 entries_table3[] =
+{
+    {0,                                 "illegal"},
+    {undefined3,                        "undefined3"},
+    {NULL,                              "dummy"}
+};
+
+#define entry_table_size3 ((int)(sizeof(entries_table3)/sizeof(entries_table3[0])))
+
+entry_point4 entries_table4[] =
+{
+    {0,                                 "illegal"},
+    {undefined4,                        "undefined4"},
+    {NULL,                              "dummy"}
+};
+
+#define entry_table_size4 ((int)(sizeof(entries_table4)/sizeof(entries_table4[0])))
 
 entry_pointn entries_tablen[] =
 {   {0,                                  "illegal"},
@@ -2362,7 +2389,7 @@ void adjust_all(void)
 
 #endif // EXPERIMENT
 
-static void *allocate_page(const char *why)
+void *allocate_page(const char *why)
 {   if (pages_count == 0) fatal_error(err_no_store);
     return pages[--pages_count];
 }
@@ -3052,7 +3079,7 @@ setup_type const *setup_tables[] =
     arith06_setup, arith08_setup, arith10_setup, arith12_setup,
     arith13_setup, char_setup, eval1_setup, eval2_setup, eval3_setup,
     funcs1_setup, funcs2_setup, funcs3_setup, lisphash_setup,
-    newhash_setup, print_setup, read_setup, mpi_setup,
+    newhash_setup, print_setup, read_setup, restart_setup, mpi_setup,
     NULL
 };
 
@@ -3107,12 +3134,13 @@ static LispObject Lcheck_c_code(LispObject nil, int nargs, ...)
     return aerror1("check-c-code", name);
 }
 
-static setup_type const restart_setup[] =
+setup_type const restart_setup[] =
 //
 // things that are in modules that do not define enough Lisp entrypoints
 // to be worth giving separate entry-tables.
 //
-{   {"check-c-code",            wrong_no_na, wrong_no_nb, Lcheck_c_code},
+{
+    {"check-c-code",            wrong_no_na, wrong_no_nb, Lcheck_c_code},
     {"define-in-module",        Ldefine_in_module, too_many_1, wrong_no_1},
     {"modulep",                 Lmodule_exists, too_many_1, wrong_no_1},
     {"start-module",            Lstart_module, too_many_1, wrong_no_1},
@@ -3161,8 +3189,6 @@ static void count_symbols(setup_type const s[])
 {   size_t i;
     for (i=0; s[i].name != NULL; i++) defined_symbols++;
 }
-
-static void set_up_variables(int restart_flag);
 
 #ifndef EMBEDDED
 static setup_type_1 *find_def_table(LispObject mod, LispObject checksum);
@@ -3457,7 +3483,11 @@ void warm_setup()
 // fully set up. So on some windowed platforms this message, if it appears
 // at all, may show up in an unusual way. Sorry!
 //
+#ifndef EXPERIMENT
+// In the new world with a new seriialization-based form for image files
+// the checksums are no longer maintained in the way they used to be.
             fprintf(stderr, "\n+++ Initial Image file checksum failure\n");
+#endif
         }
         error_output = w;
     }
@@ -4784,6 +4814,7 @@ static void cold_setup()
 #define make_keyword(name) make_undefined_symbol(name)
 #endif
     gensym_base         = make_string("G");
+#if 0
 #ifdef COMMON
     expand_def_symbol   = make_undefined_symbol("expand-definer");
     format_symbol       = make_undefined_symbol("format");
@@ -4797,6 +4828,7 @@ static void cold_setup()
     features_symbol     = make_undefined_symbol("*features*");
     qheader(cl_symbols)      |= SYM_SPECIAL_VAR;
     qheader(features_symbol) |= SYM_SPECIAL_VAR;
+#endif
 #endif
 #define make_constant(name, value)       \
         w = make_undefined_symbol(name); \
@@ -5025,7 +5057,15 @@ static int alpha0(const void *a, const void *b)
 
 #endif
 
-static void set_up_variables(int restart_flag)
+// This sets up:
+//   lispsystem!*
+//   The standard input and output streams
+//   information about the command line arguments in lispargs!*
+//   floating point limit constants (which ought in fact to be the
+//       same on all platforms if I am using IEEE arithmetic...)
+//   input!-libraries and output!-library
+
+void set_up_variables(int restart_flag)
 {   LispObject nil = C_nil, w, w1;
     size_t i;
 #ifdef COMMON
@@ -5090,6 +5130,7 @@ static void set_up_variables(int restart_flag)
 
     /*! lispsys [~~~~~~~~] \end{description} % end of lispsystem* section [restart.c]
      */
+
     {
 #ifdef COMMON
         LispObject n = features_symbol;
@@ -5632,11 +5673,6 @@ static void set_up_variables(int restart_flag)
                   make_boxfloat(-DBL_MIN, TYPE_LONG_FLOAT));
     make_constant("internal-time-units-per-second",
                   fixnum_of_int(1000));
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-    memory_comment(3);  // creating symbols
-#endif
-#endif
     charvec = getvector_init(257*CELL, nil);
     faslvec = nil;
     faslgensyms = nil;
@@ -5665,7 +5701,6 @@ static void set_up_variables(int restart_flag)
         set_stream_write_fn(f, char_to_terminal);
         set_stream_write_other(f, write_action_terminal);
         qvalue(terminal_io) = f;
-
         f = lisp_standard_input;
         stream_type(f) = make_undefined_symbol("synonym-stream");
 #ifdef COMMON
@@ -6226,11 +6261,7 @@ void setup(int restart_flag, double store_size)
             fflush(stderr);
         }
 #endif
-#endif // !EXPERIMENT
 
-#ifdef EXPERIMENT
-        Iread(junkbuf, 8);
-#else // EXPERIMENT
         Cfread(junkbuf, 8);
 //
 // If the heap image had been made on a 64-bit machine but the current

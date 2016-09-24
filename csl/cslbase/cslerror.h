@@ -98,6 +98,7 @@ extern "C" void fatal_error(int code, ...);
 #define err_undefined_function_1  4      // + fn name
 #define err_undefined_function_2  5      // + fn name
 #define err_undefined_function_3  6      // + fn name
+#define err_undefined_function_4  7      // + fn name   (same code as _n)
 #define err_undefined_function_n  7      // + fn name
 #define err_wrong_no_args         8      // fn name, actual arg count
 #define err_unbound_lexical       9      // + name
@@ -141,7 +142,7 @@ static const char *error_message_table[] =
     "undefined function (1 arg)",
     "undefined function (2 args)",
     "undefined function (3 arg)",
-    "undefined function",
+    "undefined function",          // 4 or more args (or 0 in old scheme)
     "wrong number of arguments",
     "unbound lexical variable",
     "bad rplaca/rplacd",

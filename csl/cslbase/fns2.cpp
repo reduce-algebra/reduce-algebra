@@ -1530,8 +1530,8 @@ static uint32_t find_built_in_function(one_args *f1,
 // is not found.
 //
 {   int32_t index;
-    for (index=0; zero_arg_functions[index]!=NULL; index++)
-        if (fn == zero_arg_functions[index]) return pack_funtable(0, index);
+    for (index=0; no_arg_functions[index]!=NULL; index++)
+        if (fn == no_arg_functions[index]) return pack_funtable(0, index);
     for (index=0; one_arg_functions[index]!=NULL; index++)
         if (f1 == one_arg_functions[index]) return pack_funtable(1, index);
     for (index=0; two_arg_functions[index]!=NULL; index++)
@@ -1644,7 +1644,7 @@ LispObject Ltrace(LispObject nil, LispObject a)
 //
                     switch (nargs)
                 {       default:
-                        case 0: zero_arg_functions[funtable_index(table_entry)] =
+                        case 0: no_arg_functions[funtable_index(table_entry)] =
                                 tracedn_function;
                             break;
                         case 1: one_arg_functions[funtable_index(table_entry)] =
@@ -1714,7 +1714,7 @@ LispObject Luntrace(LispObject nil, LispObject a)
                 if (nargs != NOT_FOUND)
                     switch (nargs)
                 {       default:
-                        case 0: zero_arg_functions[funtable_index(table_entry)] =
+                        case 0: no_arg_functions[funtable_index(table_entry)] =
                                 displacedn;
                             break;
                         case 1: one_arg_functions[funtable_index(table_entry)] =
@@ -1827,7 +1827,7 @@ LispObject Ltraceset(LispObject nil, LispObject a)
 //
                     switch (nargs)
                 {       default:
-                        case 0: zero_arg_functions[funtable_index(table_entry)] =
+                        case 0: no_arg_functions[funtable_index(table_entry)] =
                                 tracedn_function;
                             break;
                         case 1: one_arg_functions[funtable_index(table_entry)] =

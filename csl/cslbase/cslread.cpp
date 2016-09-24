@@ -124,7 +124,7 @@ void validate_string_fn(LispObject s, const char *file, int line)
                 fprintf(stderr, "messed at len:%d len1:%d [%x]\n",
                         len, len1, celt(s, len-CELL));
                 for (i=0; i<len1; i++)
-                {   fprintf(stderr, "%p: %.2x   (%c)\n", p, *p, *p);
+                {   fprintf(stderr, "%3d %p: %.2x   (%c)\n", i, p, *p, *p);
                     p++;
                 }
                 fflush(stderr);
@@ -135,6 +135,7 @@ void validate_string_fn(LispObject s, const char *file, int line)
         return;
     }
     fprintf(stderr, "\n+++ Not even a string at %s %d\n", file, line);
+    fprintf(stderr, "Header = %" PRIx64 "\n", (int64_t)vechdr(s));
     fflush(stderr);
     *(int *)(LispObject)(-1) = 0x55555555;  // I hope this aborts
 }
@@ -1914,8 +1915,11 @@ LispObject iintern(LispObject str, int32_t h, LispObject p, int str_is_ok)
         qfastgets(s) = nil;
         qpackage(s) = p;
         qenv(s) = (LispObject)s;
+        ifn0(s) = (intptr_t)undefined0;
         ifn1(s) = (intptr_t)undefined1;
         ifn2(s) = (intptr_t)undefined2;
+        ifn3(s) = (intptr_t)undefined3;
+// The issue of ifn4 and ifnn is one to review from time to time...
         ifnn(s) = (intptr_t)undefinedn;
         qcount(s) = 0;
         push(s);

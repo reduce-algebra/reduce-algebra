@@ -1671,6 +1671,10 @@ LispObject Lsymbol_function(LispObject nil, LispObject a)
         pop(a);
         errexit();
         set_fns(b, f1, f2, fn);
+// Now I need to look forward to having more function cells
+        qfn0(b) = qfn0(a);
+        qfn3(b) = qfn3(a);
+
         qenv(b) = qenv(a);
 #ifdef COMMON
 // in Common Lisp mode gensyms that are "unprinted" are not special

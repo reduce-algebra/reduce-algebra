@@ -896,61 +896,105 @@ static void newhash_rehash(LispObject tab, bool after_gc)
 
 /////////////////////////////////////////////////////////////////////
 
-#ifdef DEBUG
+//#ifdef DEBUG
 
-static void simple_print(LispObject x)
+static int simple_column = 0;
+
+void simple_lineend(int n)
+{   if (simple_column + n > 70)
+    {   printf("\n");
+        simple_column = n;
+    }
+    else simple_column += n;
+}
+
+void simple_print1(LispObject x)
 {   LispObject nil = C_nil;
+    char buffer[32];
     if (x == nil)
-    {   printf("nil");
+    {   simple_lineend(3);
+        printf("nil");
+        return;
+    }
+    if (x == 0)
+    {   simple_lineend(3);
+        printf("@0@");
         return;
     }
     if (is_cons(x))
     {   const char *sep = "(";
         while (consp(x))
-        {   printf("%s", sep);
+        {   simple_lineend(1);
+            printf("%s", sep);
             sep = " ";
-            simple_print(qcar(x));
+            simple_print1(qcar(x));
             x = qcdr(x);
         }
         if (x != nil)
-        {   printf(" . ");
-            simple_print(x);
+        {   simple_lineend(3);
+            printf(" . ");
+            simple_print1(x);
         }
+        simple_lineend(3);
         printf(")");
         return;
     }
     else if (is_fixnum(x))
-    {   printf("%d", int_of_fixnum(x));
+    {   int k = sprintf(buffer, "%d", int_of_fixnum(x));
+        simple_lineend(k);
+        printf("%s", buffer);
         return;
     }
     else if (is_symbol(x))
-    {   int len;
+    {   size_t len;
         x = qpname(x);
         len = length_of_byteheader(vechdr(x)) - CELL;
+        simple_lineend(len);
         printf("%.*s", (int)len, &celt(x, 0));
     }
     else if (is_vector(x))
-    {   size_t i;
+    {   size_t i, len;
+        char buffer[32];
         if (is_string(x))
-        {   int len = length_of_byteheader(vechdr(x)) - CELL;
+        {   len = length_of_byteheader(vechdr(x)) - CELL;
+            simple_lineend(len+2);
             printf("\"%.*s\"", (int)len, &celt(x, 0));
             return;
         }
-        printf("[%" PRId64 ":", (int64_t)length_of_header(vechdr(x)) - CELL);
-        for (i=0; i<(length_of_header(vechdr(x)) - CELL)/CELL; i++)
-        {   printf(" ");
-            simple_print(elt(x, i));
+        len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
+        int nn = sprintf(buffer, "[%" PRId64 ":", len);
+        simple_lineend(nn);
+        printf("%s", buffer);
+        for (i=0; i<len; i++)
+        {   simple_lineend(1);
+            printf(" ");
+            if (i > 2 && is_mixed_header(vechdr(x)))
+            {   nn = sprintf(buffer, "%" PRIx64, (uint64_t)elt(x, i));
+                simple_lineend(nn);
+                printf("%s", buffer);
+            }
+            else simple_print1(elt(x, i));
         }
+        simple_lineend(1);
         printf("]");
         return;
     }
     else
-    {   printf("@%" PRIx64 "@", (int64_t)x);
+    {   char buffer[32];
+        int len = sprintf(buffer, "@%" PRIx64 "@", (int64_t)x);
+        simple_lineend(len);
+        printf("%s", buffer);
         return;
     }
 }
 
-#endif
+void simple_print(LispObject x)
+{   simple_column = 0;
+    simple_print1(x);
+}
+
+
+//#endif
 
 // A version of Lmkhash with just 2 arguments so you to not supply the
 // (unused and hence irrelevant) third argument.
@@ -1868,8 +1912,7 @@ void showstats(size_t n)
 }
 
 setup_type const newhash_setup[] =
-{
-    {"mknewhash",               wrong_no_3a, Lmknewhash2, Lmknewhash},
+{   {"mknewhash",               wrong_no_3a, Lmknewhash2, Lmknewhash},
     {"getnewhash",              Lget_newhash_1, Lget_newhash_2, Lget_newhash},
     {"putnewhash",              wrong_no_3a, Lput_newhash_2, Lput_newhash},
     {"remnewhash",              Lrem_newhash_1, Lrem_newhash, wrong_no_2},

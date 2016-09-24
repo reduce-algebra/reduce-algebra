@@ -111,9 +111,11 @@ static LispObject get_hash_vector(int32_t n)
     return v;
 }
 
-#ifdef DEBUG
+//#ifdef DEBUG
 
-static void simple_print(LispObject x)
+// Really only intended for debugging...
+
+void xsimple_print(LispObject x)
 {   LispObject nil = C_nil;
     if (x == nil)
     {   printf("nil");
@@ -124,12 +126,12 @@ static void simple_print(LispObject x)
         while (consp(x))
         {   printf("%s", sep);
             sep = " ";
-            simple_print(qcar(x));
+            xsimple_print(qcar(x));
             x = qcdr(x);
         }
         if (x != nil)
         {   printf(" . ");
-            simple_print(x);
+            xsimple_print(x);
         }
         printf(")");
         return;
@@ -154,7 +156,7 @@ static void simple_print(LispObject x)
         printf("[%" PRId64 ":", (int64_t)length_of_header(vechdr(x)) - CELL);
         for (i=0; i<(length_of_header(vechdr(x)) - CELL)/CELL; i++)
         {   printf(" ");
-            simple_print(elt(x, i));
+            xsimple_print(elt(x, i));
         }
         printf("]");
         return;
@@ -165,20 +167,20 @@ static void simple_print(LispObject x)
     }
 }
 
-void simple_msg(const char *s, LispObject x)
+void xsimple_msg(const char *s, LispObject x)
 {   return;   // Edit this when debugging!
     printf("%s", s);
-    simple_print(x);
+    xsimple_print(x);
     printf("\n");
 }
 
-#else
-
-void simple_msg(const char *s, LispObject x)
-{   return;
-}
-
-#endif
+// #else
+//
+// void xsimple_msg(const char *s, LispObject x)
+// {   return;
+// }
+//
+// #endif
 
 LispObject Lmkhash(LispObject nil, int nargs, ...)
 //
@@ -215,7 +217,7 @@ LispObject Lmkhash(LispObject nil, int nargs, ...)
     flavour = va_arg(a, LispObject);
     growth = va_arg(a, LispObject);
     va_end(a);
-    simple_msg("mkhash: type=", flavour);
+    xsimple_msg("mkhash: type=", flavour);
     if (!is_fixnum(size)) return aerror1("mkhash", size);
     size1 = int_of_fixnum(size);
     if (size1 <= 0) return aerror1("mkhash", size);
@@ -302,7 +304,7 @@ static uint32_t hash_eql(LispObject key)
 // painful! I would like the value to be insensitive to fine details
 // of the machine I am running on.
 //
-{   simple_msg("hash_eql: ", key);
+{   xsimple_msg("hash_eql: ", key);
     if (is_bfloat(key))
     {   int32_t h = type_of_header(flthdr(key));
 //
@@ -405,7 +407,7 @@ static uint32_t hash_cl_equal(LispObject key, bool descend)
     int32_t bitoff;
     unsigned char *data;
     Header ha;
-    simple_msg("hash_cl_equal: ", key);
+    xsimple_msg("hash_cl_equal: ", key);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   err_printf("Stack too deep in hash calculation\n");
@@ -581,7 +583,7 @@ uint32_t hash_equal(LispObject key)
     size_t len, offset = 0;
     unsigned char *data;
     Header ha;
-    simple_msg("hash_equal: ", key);
+    xsimple_msg("hash_equal: ", key);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   err_printf("Stack too deep in hash calculation\n");
@@ -772,7 +774,7 @@ static uint32_t hash_equalp(LispObject key)
     size_t len, offset = 0;
     unsigned char *data;
     Header ha;
-    simple_msg("hash_equalp: ", key);
+    xsimple_msg("hash_equalp: ", key);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   err_printf("Stack too deep in hash calculation\n");
@@ -996,7 +998,7 @@ LispObject Lget_hash(LispObject nil, int nargs, ...)
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
         return aerror1("gethash", tab);
     v = elt(tab, 0);
-    simple_msg("get_hash: ", key);
+    xsimple_msg("get_hash: ", key);
 // /* The code here needs to allow for user-specified hash functions
     if (is_fixnum(v)) flavour = int_of_fixnum(v);
     switch (flavour)
@@ -1328,7 +1330,7 @@ LispObject Lput_hash(LispObject nil, int nargs, ...)
     val = va_arg(a, LispObject);
     va_end(a);
     argcheck(nargs, 3, "puthash");
-    simple_msg("put_hash: ", key);
+    xsimple_msg("put_hash: ", key);
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
         return aerror1("puthash", tab);
     push3(key, tab, val);
@@ -1430,7 +1432,7 @@ LispObject Lput_hash_2(LispObject nil, LispObject a, LispObject b)
 }
 
 LispObject Lrem_hash(LispObject nil, LispObject key, LispObject tab)
-{   simple_msg("rem_hash: ", key);
+{   xsimple_msg("rem_hash: ", key);
     push2(key, tab);
     Lget_hash(nil, 3, key, tab, nil);
     pop2(tab, key);
@@ -1529,8 +1531,7 @@ LispObject Lhash_flavour(LispObject nil, LispObject tab)
 }
 
 setup_type const lisphash_setup[] =
-{
-    {"mkhash",                  wrong_no_3a, wrong_no_3b, Lmkhash},
+{   {"mkhash",                  wrong_no_3a, wrong_no_3b, Lmkhash},
     {"gethash",                 Lget_hash_1, Lget_hash_2, Lget_hash},
     {"puthash",                 wrong_no_3a, Lput_hash_2, Lput_hash},
     {"remhash",                 Lrem_hash_1, Lrem_hash, wrong_no_2},

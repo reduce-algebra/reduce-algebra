@@ -2237,7 +2237,7 @@ LispObject Lmv_list(LispObject nil, LispObject a)
 //
 
 
-n_args *zero_arg_functions[] =
+n_args *no_arg_functions[] =
 {   Lbatchp,                // 0
     Ldate,                  // 1
     Leject,                 // 2
@@ -2254,6 +2254,10 @@ n_args *zero_arg_functions[] =
     Ltyi,                   // 13
     Lload_spid,             /* 14 */  // ONLY used in compiled code
     NULL
+};
+
+no_args *new_no_arg_functions[] =
+{   NULL
 };
 
 one_args *one_arg_functions[] =
@@ -2371,6 +2375,15 @@ one_args *one_arg_functions[] =
     Lis_spid,               /* 111 */  // ONLY used in compiled code
     Lspid_to_nil,           /* 112 */  // ONLY used in compiled code
     Lmv_list,               /* 113 */  // ONLY used in compiled code
+    Lload_source,           // 114
+
+// I also need a FEW special forms where their setup is done by hand in
+// restart.cpp so there are not entries in the usual tables...
+    quote_fn,               // 115
+    progn_fn,               // 116
+    noisy_progn_fn,         // 117
+    declare_fn,             // 118
+    function_fn,            // 119
     NULL
 };
 
@@ -2464,5 +2477,10 @@ n_args *three_arg_functions[] =
     Lacons,                 // 9
     NULL
 };
+
+four_args *four_arg_functions[] =
+{   NULL
+};
+
 
 // end of eval4.cpp

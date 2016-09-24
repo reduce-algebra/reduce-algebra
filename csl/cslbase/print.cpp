@@ -1,4 +1,4 @@
-//  print.cpp                              Copyright (C) 1990-2015 Codemist
+//  print.cpp                              Copyright (C) 1990-2016 Codemist
 
 //
 // Printing, plus some file-related operations.
