@@ -1753,6 +1753,10 @@ unwind_special_bindings:
 #undef Return
 }
 
+static LispObject dummy_fn(LispObject arg, LispObject env)
+{   return arg;
+}
+
 setup_type const eval2_setup[] =
 //
 // A jolly curiosity - "function" and "declare" are ALSO set up in
@@ -1760,7 +1764,8 @@ setup_type const eval2_setup[] =
 // the redundant initialisation here too since I find it clearer that
 // way.
 //
-{   {"and",                     and_fn, (two_args *)noisy_and_fn, bad_specialn},
+{   {"~dummy-special-form~",    dummy_fn, (two_args *)dummy_fn, bad_specialn},
+    {"and",                     and_fn, (two_args *)noisy_and_fn, bad_specialn},
     {"catch",                   catch_fn, (two_args *)noisy_catch_fn, bad_specialn},
     {"cond",                    cond_fn, (two_args *)noisy_cond_fn, bad_specialn},
 //

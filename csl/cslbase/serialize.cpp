@@ -345,6 +345,10 @@ static inthash repeat_hash;
 LispObject *repeat_heap = NULL;
 size_t repeat_heap_size = 0, repeat_count = 0;
 
+// This tiny function exists just so that I can set a breakpoint on it.
+void myabort()
+{   abort();
+}
 
 void reader_setup_repeats(size_t n)
 {   printf("reader_set_up_repeats %d\n", (int)n);
@@ -352,7 +356,7 @@ void reader_setup_repeats(size_t n)
         repeat_heap != NULL)
     {   printf("\n+++ repeat heap processing error\n");
         fflush(stdout);
-        abort();
+        myabort();
     }
     repeat_heap_size = n;
     repeat_count = 0;
@@ -361,7 +365,7 @@ void reader_setup_repeats(size_t n)
     if (repeat_heap == NULL)
     {   printf("\n+++ unable to allocate repeat heap\n");
         fflush(stdout);
-        abort();
+        myabort();
     }
 // I fill the vector with fixnum_of_int(0) so it is GC safe.
     for (size_t i=0; i<n; i++)
@@ -376,7 +380,7 @@ void writer_setup_repeats()
     if (repeat_heap == NULL)
     {   printf("\n+++ unable to allocate repeat heap\n");
         fflush(stdout);
-        abort();
+        myabort();
     }
 }
 
@@ -476,7 +480,7 @@ int read_byte()
     {   if (serincount > sercounter)
         {   printf("\nRead too much\n");
             fflush(stdout);
-            abort();
+            myabort();
         }
         r = serbuffer[serincount++];
     }
@@ -1007,15 +1011,24 @@ intptr_t codepointers[NCODEPOINTERS];
 
 inthash codehash;
 
-bool insert_codepointer(uintptr_t x)
-{   if (hash_lookup(&codehash, x) != (size_t)(-1)) return false;
-    hash_set_value(&codehash, hash_insert(&codehash, x), ncodepointers);
+bool insert_codepointer(uintptr_t x, const char *s)
+{
+// If this codepointer is one I have seen before then do nothing and return
+// false.
+    if (hash_lookup(&codehash, x) != (size_t)(-1))
+    {   printf("function %s seen before\n", s);
+        return false;
+    }
+// Add to the table of code-pointers, recording where it goes.
+    size_t pos = hash_insert(&codehash, x);
+    hash_set_value(&codehash, pos, ncodepointers);
     if (ncodepointers >= NCODEPOINTERS)
     {   printf("Too many built-in functions. Please increase NCODEPOINTERS\n");
         printf("in serialize.cpp. Current value is %u\n", NCODEPOINTERS);
         fflush(stdout);
-        abort();
+        myabort();
     }
+    printf("function %s given code %d\n", s, (int)ncodepointers);
     codepointers[ncodepointers++] = x;
     return true;
 }
@@ -1024,9 +1037,9 @@ uint64_t use_setup(uint64_t crc, const setup_type *p)
 {   while (p->name != NULL)
     {   // printf("[%d] Name: %s\n", ncodepointers, p->name);
         unsigned char n = 0;
-        if (insert_codepointer((uintptr_t)(p->one))) n += 1;
-        if (insert_codepointer((uintptr_t)(p->two))) n += 2;
-        if (insert_codepointer((uintptr_t)(p->n))) n += 4;
+        if (insert_codepointer((uintptr_t)(p->one), p->name)) n += 1;
+        if (insert_codepointer((uintptr_t)(p->two), p->name)) n += 2;
+        if (insert_codepointer((uintptr_t)(p->n), p->name)) n += 4;
         crc = crc64(crc, &n, 1);
         crc = crc64(crc, (const unsigned char *)p->name, strlen(p->name));
         p++;
@@ -1041,6 +1054,9 @@ void set_up_function_tables()
     printf("Setting up functions table\n");
     hash_init(&codehash);
     ncodepointers = 0;
+// I put a value that I expect to be invalid at position zero in the table
+// so that if by accident I retrieve it I will see a visible crash (I hope).
+    codepointers[ncodepointers++] = (intptr_t)(-1);
 // The code here must find all the function addresses that are built
 // into CSL that might legitimately end up within a heap image. The
 // code sets up a 64-bit CRC code this is intended to be a signature
@@ -1051,51 +1067,68 @@ void set_up_function_tables()
 // to index values, and a table (codepointers) that is a single
 // indexable array of the entrypoints. For Reduce there are somewhat under
 // 4000 pointers to handle here, so costs are not too severe.
+    char b[32];
     for (entry_point0 *p = &entries_table0[1]; p->p!=NULL; p++)
-    {   insert_codepointer((uintptr_t)p->p);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
     }
     for (entry_point1 *p = &entries_table1[1]; p->p!=NULL; p++)
-    {   insert_codepointer((uintptr_t)p->p);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
     }
     for (entry_point2 *p = &entries_table2[1]; p->p!=NULL; p++)
-    {   insert_codepointer((uintptr_t)p->p);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
     }
     for (entry_point3 *p = &entries_table3[1]; p->p!=NULL; p++)
-    {   insert_codepointer((uintptr_t)p->p);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
     }
     for (entry_point4 *p = &entries_table4[1]; p->p!=NULL; p++)
-    {   insert_codepointer((uintptr_t)p->p);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
     }
     for (entry_pointn *p = &entries_tablen[1]; p->p!=NULL; p++)
-    {   insert_codepointer((uintptr_t)p->p);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
     }
     for (entry_pointn *p = &entries_tableio[1]; p->p!=NULL; p++)
-    {   insert_codepointer((uintptr_t)p->p);
+    {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
     }
-    for (n_args **p = no_arg_functions; *p!=NULL; p++)
-        insert_codepointer((uintptr_t)(uintptr_t)*p);
-    for (no_args **p = new_no_arg_functions; *p!=NULL; p++)
-        insert_codepointer((uintptr_t)(uintptr_t)*p);
-    for (one_args **p = one_arg_functions; *p!=NULL; p++)
-        insert_codepointer((uintptr_t)(uintptr_t)*p);
-    for (two_args **p = two_arg_functions; *p!=NULL; p++)
-        insert_codepointer((uintptr_t)(uintptr_t)*p);
-// For NOW three_arg_functions use the old va_arg scheme...
-    for (n_args **p = three_arg_functions; *p!=NULL; p++)
-        insert_codepointer((uintptr_t)(uintptr_t)*p);
-    for (four_args **p = four_arg_functions; *p!=NULL; p++)
-        insert_codepointer((uintptr_t)(uintptr_t)*p);
     const setup_type **p = setup_tables;
     while (*p != NULL) crc = use_setup(crc, *p++);
     p++;  // setup_tables is in two parts, separated by a NULL.
     while (*p != NULL) crc = use_setup(crc, *p++);
+//
+// I think that there ougtt not to be any extra things in the tables
+// scanned below, but let me check that!
+//
+    for (n_args **p = no_arg_functions; *p!=NULL; p++)
+    {   sprintf(b, "no_arg_functions[%d]", (int)(p-no_arg_functions));
+        insert_codepointer((uintptr_t)(uintptr_t)*p, b);
+    }
+    for (no_args **p = new_no_arg_functions; *p!=NULL; p++)
+    {   sprintf(b, "new_no_arg_functions[%d]", (int)(p-new_no_arg_functions));
+        insert_codepointer((uintptr_t)(uintptr_t)*p, b);
+    }
+    for (one_args **p = one_arg_functions; *p!=NULL; p++)
+    {   sprintf(b, "one_arg_functions[%d]", (int)(p-one_arg_functions));
+        insert_codepointer((uintptr_t)(uintptr_t)*p, b);
+    }
+    for (two_args **p = two_arg_functions; *p!=NULL; p++)
+    {   sprintf(b, "two_arg_functions[%d]", (int)(p-two_arg_functions));
+        insert_codepointer((uintptr_t)(uintptr_t)*p, b);
+    }
+// For NOW three_arg_functions use the old va_arg scheme...
+    for (n_args **p = three_arg_functions; *p!=NULL; p++)
+    {   sprintf(b, "three_arg_functions[%d]", (int)(p-three_arg_functions));
+        insert_codepointer((uintptr_t)(uintptr_t)*p, b);
+    }
+    for (four_args **p = four_arg_functions; *p!=NULL; p++)
+    {   sprintf(b, "four_arg_functions[%d]", (int)(p-four_arg_functions));
+        insert_codepointer((uintptr_t)(uintptr_t)*p, b);
+    }
     printf("There are %u entries in the code pointer table\n",
            (unsigned int)ncodepointers);
     printf("CRC for table of defined entrypoints = %" PRIx64 "\n", crc);
@@ -1103,22 +1136,29 @@ void set_up_function_tables()
 }
 
 void *read_function()
-{   return (void *)codepointers[read_u64()];
-}
-
-void myabort()
-{   abort();
+{   uint64_t handle = read_u64();
+    if (handle == 0 || handle >= ncodepointers)
+    {   printf("Invalid code handle read (%" PRIu64 ")\n", handle);
+        fflush(stdout);
+        myabort();
+    }
+    return (void *)codepointers[handle];
 }
 
 void write_function(void *p)
 {   size_t h = hash_lookup(&codehash, (intptr_t)p);
     if (h == (size_t)(-1))
     {   printf("Unknown item used as code pointer (%p)\n", p);
-        printf("Ltraceset = %p", Ltraceset);
         fflush(stdout);
         myabort();
     }
-    write_u64(hash_get_value(&codehash, h));
+    uint64_t handle = hash_get_value(&codehash, h);
+    if (handle == 0 || handle >= ncodepointers)
+    {   printf("Invalid code handle recovered\n");
+        fflush(stdout);
+        myabort();
+    }
+    write_u64(handle);
 }
 
 // In places here I need to find the start of a tagged vector-like
@@ -1330,7 +1370,7 @@ printf("FLOAT28\n");
 // A 28-bit short float
                     printf("SER_FLOAT28 not coded yet\n");
                     fflush(stdout);
-                    abort();
+                    myabort();
 
                 case SER_FLOAT32:
 printf("FLOAT32\n");
@@ -1361,7 +1401,10 @@ printf("CHAR or SPID\n");
 // shown here and I just send the rest of the data as a raw number. Note
 // that bytecode handles can be dealt with here if I understand them -
 // which for now I do not!
-                    prev = *p = ((LispObject)read_u64()<<(Tw+2)) | TAG_HDR_IMMED;
+{ uint64_t v = read_u64();
+  printf("SPID data = %" PRIx64 "\n", v<<(Tw+2));
+                    prev = *p = ((LispObject)v<<(Tw+2)) | TAG_HDR_IMMED;
+}
                     goto up;
 
                 case SER_BITVEC:
@@ -1384,7 +1427,7 @@ printf("NIL\n");
 printf("END\n");
                     printf("End of dump marker found - this is an error situation\n");
                     fflush(stdout);
-                    abort();
+                    myabort();
 
                 case SER_XXX14:
                 case SER_XXX15:
@@ -1401,7 +1444,7 @@ printf("END\n");
                 default:
                     printf("Unimplemented reader opcode (a) %.2x\n", c);
                     fflush(stdout);
-                    abort();
+                    myabort();
             }
             break;
         case SER_LVECTOR:
@@ -1590,18 +1633,18 @@ printf("reading vector of %d 32-bit itemd\n", (int)w);
                 {   prev = *p = getvector(tag, type, CELL+16*w);
                     printf("128-bit integer arrays not supported (yet?)\n");
                     fflush(stdout);
-                    abort();
+                    myabort();
                 }
                 else if (vector_i128(type))
                 {   prev = *p = getvector(tag, type, CELL+16*w);
                     printf("128-bit floats not supported (yet?)\n");
                     fflush(stdout);
-                    abort();
+                    myabort();
                 }
                 else
                 {   printf("Vector code is impossible\n");
                     fflush(stdout);
-                    abort();
+                    myabort();
                 }
             }
 printf("end of vector\n");
@@ -1611,7 +1654,7 @@ printf("end of vector\n");
         default:
             printf("Unimplemented reader opcode (b) %.2x\n", c);
             fflush(stdout);
-            abort();
+            myabort();
     }
 
 // The above deals with arriving at the description of an object. What follows
@@ -2152,7 +2195,7 @@ down:
             write_u64((uint64_t)qheader(p)>>(Tw+4));
             printf("qfn0 : %" PRIxPTR "\n", (intptr_t)qfn0(p));
             write_function((void *)(qfn0(p)));
-            printf("qfn2 : %" PRIxPTR "\n", (intptr_t)qfn1(p));
+            printf("qfn1 : %" PRIxPTR "\n", (intptr_t)qfn1(p));
             write_function((void *)(qfn1(p)));
             printf("qfn2 : %" PRIxPTR "\n", (intptr_t)qfn2(p));
             write_function((void *)(qfn2(p)));
@@ -2372,17 +2415,17 @@ printf("vector length was %d\n", (int)len);
             else if (vector_f128(h))
             {   printf("128-bit float arrays not supported (yet?)\n");
                 fflush(stdout);
-                abort();
+                myabort();
             }
             else if (vector_i128(h))
             {   printf("128-bit integer arrays not supported (yet?)\n");
                 fflush(stdout);
-                abort();
+                myabort();
             }
             else
             {   printf("Vector code is impossible\n");
                 fflush(stdout);
-                abort();
+                myabort();
             }
             goto up;
 
@@ -2417,7 +2460,7 @@ printf("vector length was %d\n", (int)len);
                 default:
                     printf("floating point representation not recognized\n");
                     fflush(stdout);
-                    abort();
+                    myabort();
             }
             if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly referenced vector");
 // A boxed float never contains further pointers, so there is no more

@@ -99,7 +99,7 @@ void hash_init_values(inthash *h)
 }
 
 // accessor and mutator functions for the values associated with a
-// hash entry at offset hx.I try to make these "kind" in the case that
+// hash entry at offset hx. I try to make these "kind" in the case that
 // the values part of the table has not yet been allocated.
 
 uintptr_t hash_get_value(inthash *h, size_t hx)
@@ -220,7 +220,7 @@ static void hash_double_size(inthash *h)
 
 // When the table needs rehashing I can just remove items one at a time and
 // re-insert them. Well it is not quite as nice as that because in
-// pathalogical cases he re-insertion might fail. I will allow for that by
+// pathalogical cases the re-insertion might fail. I will allow for that by
 // letting hash_rehash return true if it succeeds. If it fails then I will
 // ensure that all the data is still in it, but a further recovery step will
 // be called for. I expect that to be a very rare occurrence.
@@ -300,11 +300,12 @@ static bool hash_rehash(inthash *h)
 // The function that inserts into a table returns the location where the
 // item was placed, much like hash_lookup.
 
-size_t hash_insert(inthash *h, uintptr_t k)
+size_t hash_insert(inthash *h, uintptr_t key)
 {
 // I will start by reproducing the lookup code. This means that if you try
 // to insert something and it is already present nothing will change and you
 // just get handed back the index of where the existing entry is.
+    uintptr_t k = key;
     size_t hxx = ((h->mult1*k)>>h->shift)*4;
     assert(hxx < h->size);
     if (h->hash[hxx] == k) return hxx;
@@ -332,7 +333,7 @@ size_t hash_insert(inthash *h, uintptr_t k)
             if (kx == 0)
             {   h->hash[hx] = k;
                 if (h->value != NULL) h->value[hx] = v;
-                return hxx;
+                goto done;
             }
 // Here the first choice location is busy, so shuffle things to make space.
             assert(hx+1 < h->size);
@@ -350,21 +351,10 @@ size_t hash_insert(inthash *h, uintptr_t k)
 // I leave (k,v) as the item just ejected, so that as I go round the
 // loop an attempt will be made to insert it in the other half of the
 // table (using the other hash function).
-            if (k == 0) return hxx;
+            if (k == 0) goto done;
         }
-// Here I need to recover somehow. Note that the key k is at present
-// not in the table and the key originally bneing inserted is now at location
-// hxx. Swap these so that the item left to be inserted is still the original
-// one. Doing t=so will make it easier to return the right answer at the end!
-        {   uintptr_t temp = h->hash[hxx];
-            h->hash[hxx] = k;
-            k = temp;
-            if (h->value != NULL)
-            {   temp = h->value[hxx];
-                h->value[hxx] = v;
-                v = temp;
-            }
-        }
+// Here I need to recover somehow. The key/value pair (k, v) is at present
+// pending (ie not yet in the table).
 // I will try changing the multipliers a limited number of times if the
 // hash table is rather empty. Failing that I will double the size of
 // the table. I note that although this generally avoids having more
@@ -383,11 +373,22 @@ size_t hash_insert(inthash *h, uintptr_t k)
             }
             if (hash_rehash(h)) break;
         }
-// I now need to insert my original key. It will get inserted in its
-// first choice location, so let me record what that is going to be.
-        hxx = ((h->mult1*k)>>h->shift)*4;
-        assert(hxx < h->size);
     }
+done:
+// When I exit I want to return the table offset where the ket got inserted.
+// Because of all the shuffling that goes on it is hard to be certain where
+// that will be, and that is doubly so if I have re-hashed everything in the
+// process. So I take the crude way out and merely check the four possible
+// locations.
+    hxx = ((h->mult1*key)>>h->shift)*4;
+    assert(hxx < h->size);
+    if (h->hash[hxx] == key) return hxx;
+    if (h->hash[hxx+1] == key) return hxx+1;
+    hx2 = 2 + ((h->mult2*key)>>h->shift)*4;
+    assert(hx2 < h->size);
+    if (h->hash[hx2] == key) return hx2;
+    assert(h->hash[hx2+1] == key);
+    return hx2+1;
 }
 
 #ifdef TEST
@@ -395,6 +396,7 @@ size_t hash_insert(inthash *h, uintptr_t k)
 // If you predefine TEST when compiling this code you will get a
 // small test program
 
+#include <stdio.h>
 #include <time.h>
 
 #ifndef TESTSIZE
@@ -413,11 +415,16 @@ static uintptr_t data[TESTSIZE];
 
 int main(int argc, char *argv[])
 {   clock_t c0 = clock();
+#ifdef DETERMINISTIC
+    printf("Deterministic seeded with %d\n", DETERMINISTIC);
+    srand(DETERMINISTIC);
+#else
     srand(time(NULL));
+#endif
     for (int i=0; i<TESTSIZE; i++)
     {   intptr_t n;
     retry:
-        n = rand();
+        n = 1 + (rand() % 100);
 #ifdef EXPENSIVE
 // A painfully expensive extra loop to ensure that there are no
 // duplicate keys.
@@ -425,32 +432,58 @@ int main(int argc, char *argv[])
             if (n == data[j]) goto retry;
 #endif // EXPENSIVE
         data[i] = n;
+        printf("data[%d] = %d\n", i, (int)n);
     }
     printf("Random data set up in %.1f seconds\n",
            (double)(clock()-c0)/CLOCKS_PER_SEC);
 
     inthash h;
     c0 = clock();
+// Fill in data TESTCOUNT-1 times...
     for (int tries=0; tries<TESTCOUNT-1; tries++)
     {   hash_init(&h, TESTBITS);
         for (int i=0; i<TESTSIZE; i++)
         {   size_t hx = hash_insert(&h, data[i]);
+            hash_set_value(&h, hx, 0x54321*data[i]);
         }
         hash_finalize(&h);
     }
+// ... and then once more for the version that will be used for checking
+// read access.
     hash_init(&h, TESTBITS);
     for (int i=0; i<TESTSIZE; i++)
     {   size_t hx = hash_insert(&h, data[i]);
+        if (h.hash[hx] != data[i])
+        {   printf("Insert returned a bad value %d\n", (int)hx);
+            for (int i=0; i<h.size; i++)
+            {   printf("%d   %6lld  %6lld\n", i,
+                    (long long int)h.hash[i], (long long int)h.value[i]);
+            }
+            exit(1);
+        }
+        hash_set_value(&h, hx, data[i]);
     }
     printf("Hash table created in %.3f microseconds/call\n",
            1.0e6*(double)(clock()-c0)/CLOCKS_PER_SEC/TESTSIZE/TESTCOUNT);
     if (h.count != TESTSIZE)
         printf("hash table says it now has %d items in it\n", (int)h.count);
+    printf("h.size = %d\n", (int)h.size);
+    for (int i=0; i<h.size; i++)
+    {   printf("%d   %6lld  %6lld\n", i, (long long int)h.hash[i], (long long int)h.value[i]);
+    }
     c0 = clock();
     for (int tries=0; tries<TESTCOUNT; tries++)
         for (int i=0; i<TESTSIZE; i++)
-            if (hash_lookup(&h, data[i]) == (size_t)(-1))
+        {   size_t hx;
+            long long int r;
+            if ((hx = hash_lookup(&h, data[i])) == (size_t)(-1))
                 printf("Item number %d not found in table\n", i);
+            if ((r = hash_get_value(&h, hx)) != data[i])
+            {   printf("%llx at position %lld\n", (long long int)data[i], (long long int)hx);
+                printf("Got %llx should be %llx\n", r, (long long int)0x54321*data[i]);
+                exit(1);
+            }
+        }
     printf("Hash table lookup in %.3f microseconds/call\n",
            1.0e6*(double)(clock()-c0)/CLOCKS_PER_SEC/TESTSIZE/TESTCOUNT);
     printf("Average %.2f multiplier changes per %d inserts\n",
@@ -462,7 +495,7 @@ int main(int argc, char *argv[])
     printf("Average %.2f size doublings per %d inserts\n",
            (double)size_double/TESTCOUNT, TESTSIZE);
     printf("Final table size = %d occupancy = %.3f%%\n",
-           h.size, 100.0*(double)h.count/(double)h.size);
+           (int)h.size, 100.0*(double)h.count/(double)h.size);
     printf("Average occupancy = %.2f%% at doubling point\n",
            100.0*(double)count_size_double/(double)size_size_double);
     hash_finalize(&h);

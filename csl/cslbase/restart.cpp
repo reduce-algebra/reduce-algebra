@@ -1108,6 +1108,12 @@ entry_point1 entries_table1[] =
 // same except that it has tracing enabled.
 //
     {0,                                  "illegal"},
+// A few special forms that are set up manually so slip through the normal
+// scheme...
+    {quote_fn,                           "quote"},
+    {progn_fn,                           "progn"},
+    {declare_fn,                         "declare"},
+    {function_fn,                        "function"},
     {undefined1,                         "undefined1"},
     {autoload1,                          "autoload1"},
     {interpreted1,                       "interpreted1"},
@@ -1162,6 +1168,12 @@ entry_point1 entries_table1[] =
 
 entry_point2 entries_table2[] =
 {   {0,                                  "illegal"},
+// A few special forms that are set up manually so slip through the normal
+// scheme...
+    {(two_args *)quote_fn,               "quote"},
+    {(two_args *)progn_fn,               "progn"},
+    {(two_args *)declare_fn,             "declare"},
+    {(two_args *)function_fn,            "function"},
     {undefined2,                         "undefined2"},
     {autoload2,                          "autoload2"},
     {interpreted2,                       "interpreted2"},
