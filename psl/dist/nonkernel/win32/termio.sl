@@ -85,8 +85,8 @@
           (setf (wgetv nextposition u) 0) )
 
           % pick character from buffer
-    (setq c (strbyt (strinf(igetv iobuffer u))
-                     (wgetv nextposition u)))
+    (setq c (wand 16#ff (strbyt (strinf(igetv iobuffer u))
+                                (wgetv nextposition u))))
     (setf (wgetv nextposition u)
                (iadd1 (wgetv nextposition u)))
 
