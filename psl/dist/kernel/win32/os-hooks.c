@@ -214,7 +214,7 @@ int
 pathstringncompare(char *s1, char *s2, size_t len)
 {
   while (*s1 !=0 && *s2 != 0 && len > 0 &&
-	 ((*s1 == *s2) || (*s1 == '/' && *s2 == '\\') || (*s2 == '\\' && *s2 == '/')))  {
+	 ((*s1 == *s2) || (*s1 == '/' && *s2 == '\\') || (*s1 == '\\' && *s2 == '/')))  {
     s1++; s2++; len--;
   }
   if (len == 0) {
@@ -243,11 +243,16 @@ cygpath2winpath(char * cygpath)
     strcpy(winpathbuffer,cygpath + strlen(cygdrive_prefix));
     if (Debug > 0) {
       fprintf(stderr,"prefix found, rest is: %s\n",winpathbuffer);
+      fflush(stderr);
     }
     
     if (winpathbuffer[1] != 0 && (winpathbuffer[2] == '/' || winpathbuffer[2] == '\\')) {
       winpathbuffer[0] = winpathbuffer[1];
       winpathbuffer[1] = ':';
+      if (Debug > 0) {
+	fprintf(stderr,"windows path is: %s\n",winpathbuffer);
+	fflush(stderr);
+      }
       return winpathbuffer;
     }
   }
