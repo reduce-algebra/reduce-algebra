@@ -853,35 +853,6 @@ asserted procedure vsdc_atposl(dc: VSdc, p: Position);
       vsdc_putres(dc, al)
    end;
 
-% TODO: Deleting this commented (!) procedure causes PSL compilation problems...
-% asserted procedure vsdt_atposl(dt: VSdt, p: Position);
-%    % Compute positions of all atomic prime constituents. [p] is the
-%    % position of [vsdt_f dt]. Positions are reversed, i.e., the last
-%    % entry in the list is the index of a child of the root. Positions
-%    % of all atomic prime constituents are stored in [vsdt_data dt].
-%    begin scalar op, cl, c, cdt, cdtl, pcl, data; integer i;
-%       op := rl_op vsdt_f dt;
-%       if not rl_boolp op then <<
-% 	 vsdt_atposl!-at(dt, p);
-% 	 return
-%       >>;
-%       assert(op eq 'and or op eq 'or);
-%       cl := rl_argn vsdt_f dt;
-%       while cl do <<
-% 	 c := pop cl;
-% 	 i := i + 1;
-% 	 cdt := vsdt_mkfrom dt;
-% 	 vsdt_putf(cdt, c);
-% 	 vsdt_add2ttheo(cdt, append(pcl, cl), op eq 'or);
-% 	 vsdt_atposl(cdt, i . p);
-% 	 push(cdt, cdtl);
-% 	 push(c, pcl)
-%       >>;
-%       for each cdt in cdtl do
-% 	 data := append(data, vsdt_data cdt);
-%       vsdt_putdata(dt, data)
-%    end;
-
 asserted procedure vsdc_atposl!-at(dc: VSdc, p: Position);
    % Compute positions of all atomic prime constituents: atomic
    % formula subroutine. [p] is the position of [vsdc_f dc].
