@@ -406,7 +406,7 @@ struct VSpc checked by VSpcP;  % annotated prime constituent (APC)
 struct VScs checked by VScsP;  % candidate solutions
 struct VStp checked by VStpP;  % test point
 struct VSde checked by VSdeP;  % VS data for elimination set computation
-struct VSdt checked by VSdtP;  % VS data for formula traversal
+struct VSdc checked by VSdcP;  % VS data for candidate solutions computation
 % defined in module ofsfvssub:
 struct VSvs checked by VSvsP;  % VS
 struct VSar checked by VSarP;  % VS: arbitrary
@@ -419,7 +419,7 @@ struct PositionL checked by PositionLP;  % list of Position
 struct VSprL checked by VSprLP;  % list of VSpr
 struct VStpL checked by VStpLP;  % list of VStp
 struct VSndL checked by VSndLP;  % list of VSnd
-struct VSdtL checked by VSdtLP;  % list of VSdt
+struct VSdcL checked by VSdcLP;  % list of VSdc
 
 %%% checking procedures %%%
 
@@ -450,8 +450,8 @@ procedure VStpP(s);  % test point
 procedure VSdeP(s);  % VS data for elimination set computation
    vectorp s and getv(s, 0) eq 'vsde;
 
-procedure VSdtP(s);  % VS data for formula traversal
-   vectorp s and getv(s, 0) eq 'vsdt;
+procedure VSdcP(s);  % VS data for candidate solutions computation
+   vectorp s and getv(s, 0) eq 'vsdc;
 
 procedure VSvsP(s);  % VS
    VSarP s or VSdgP s or VStsP s;
@@ -483,8 +483,8 @@ procedure VStpLP(s);
 procedure VSndLP(s);
    null s or (pairp s and VSndP car s and VSndLP cdr s);
 
-procedure VSdtLP(s);
-   null s or (pairp s and VSdtP car s and VSdtLP cdr s);
+procedure VSdcLP(s);
+   null s or (pairp s and VSdcP car s and VSdcLP cdr s);
 
 % Access Functions
 inline procedure ofsf_op(atf);

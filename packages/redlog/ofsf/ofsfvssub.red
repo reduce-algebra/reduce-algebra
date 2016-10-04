@@ -100,26 +100,23 @@ asserted procedure vsds_new(): VSds;
       putv(ds, 3, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
       putv(ds, 4, 'undefined);        % [ptheo]: persistent theory
       putv(ds, 5, 'undefined);        % [ttheo]: temporary theory
-      putv(ds, 6, 'undefined);        % [data]: CollectedData
+      putv(ds, 6, 'undefined);        % [res]: quantifier-free formula; result of the virtual substitution
       return ds
    end;
-
-%DS
-% CollectedData ::= QfFormula
 
 procedure vsds_vs(ds);                          getv(ds, 1);
 procedure vsds_f(ds);                           getv(ds, 2);
 procedure vsds_bvl(ds);                         getv(ds, 3);
 procedure vsds_ptheo(ds);                       getv(ds, 4);
 procedure vsds_ttheo(ds);                       getv(ds, 5);
-procedure vsds_data(ds);                        getv(ds, 6);
+procedure vsds_res(ds);                         getv(ds, 6);
 
 procedure vsds_putvs(ds, vs);                   putv(ds, 1, vs);
 procedure vsds_putf(ds, f);                     putv(ds, 2, f);
 procedure vsds_putbvl(ds, bvl);                 putv(ds, 3, bvl);
 procedure vsds_putptheo(ds, ptheo);             putv(ds, 4, ptheo);
 procedure vsds_putttheo(ds, ttheo);             putv(ds, 5, ttheo);
-procedure vsds_putdata(ds, data);               putv(ds, 6, data);
+procedure vsds_putres(ds, res);                 putv(ds, 6, res);
 
 asserted procedure vsds_mk(vs: VSvs, f: QfFormula, bvl: KernelL, ptheo: Theory, ttheo: Theory): VSds;
    begin scalar ds;
@@ -129,7 +126,7 @@ asserted procedure vsds_mk(vs: VSvs, f: QfFormula, bvl: KernelL, ptheo: Theory, 
       vsds_putbvl(ds, bvl);
       vsds_putptheo(ds, ptheo);
       vsds_putttheo(ds, ttheo);
-      vsds_putdata(ds, nil);
+      vsds_putres(ds, nil);
       return ds
    end;
 
@@ -141,7 +138,7 @@ asserted procedure vsds_mkfrom(ds: VSds): VSds;
       vsds_putbvl(nds, vsds_bvl ds);
       vsds_putptheo(nds, vsds_ptheo ds);
       vsds_putttheo(nds, vsds_ttheo ds);
-      vsds_putdata(nds, vsds_data ds);
+      vsds_putres(nds, vsds_res ds);
       return nds
    end;
 
@@ -153,7 +150,7 @@ asserted procedure qff_applyvs(vs: VSvs, f: QfFormula, bvl: KernelL, theo: Theor
    begin scalar ds, ff;
       ds := vsds_mk(vs, f, bvl, theo, nil);
       vsds_applyvs ds;
-      ff := vsds_data ds;
+      ff := vsds_res ds;
       return vs_splitor ff
    end;
 
@@ -176,7 +173,7 @@ asserted procedure vsds_applyvsar(ds: VSds);
    % arbitrary]. It should be never needed to apply VSar.
    <<
       assert(nil);
-      vsds_putdata(ds, nil)
+      vsds_putres(ds, vsds_f ds)
    >>;
 
 asserted procedure vsds_applyvsdg(ds: VSds);
@@ -189,7 +186,7 @@ asserted procedure vsds_applyvsdg(ds: VSds);
       f := cl_apply2ats1(f, 'vsdg_decdeg, {vsvs_v vs, vsdg_g vs, vsdg_sv vs});
       if evenp vsdg_g vs then
 	 f := rl_mk2('and, ofsf_0mk2('geq, !*k2f vsdg_sv vs), f);
-      vsds_putdata(ds, f)
+      vsds_putres(ds, f)
    end;
 
 asserted procedure vsdg_decdeg(at: QfFormula, x: Kernel, g: Integer, y: Kernel): QfFormula;
@@ -214,16 +211,18 @@ asserted procedure vsds_applyvsts(ds: VSds);
       theo := append(vsds_ptheo ds, ttheo);
       g . ttheo := vsds_g2gtt(vstp_guard tp, theo, ttheo);
       if g eq 'false then <<
-	 vsds_putdata(ds, 'false);
+	 vsds_putres(ds, 'false);
 	 return
       >>;
       vsds_putttheo(ds, ttheo);
       f := qff_replacel(f, vstp_gpl tp, 'false);
-      % TODO: Here we will replace something with ['true].
+      % TODO: Here we could replace the position(s) that produced the
+      % test point [tp] with ['true]. WARNING: This replacement is NOT
+      % correct when using clustering!
       f := qff_condense(f, vstp_p tp);
       f := cl_apply2ats1(f, 'vsds_applyvsts!-at, {ds});
       f := cl_simpl(rl_mk2('and, g, f), theo, -1);
-      vsds_putdata(ds, f)
+      vsds_putres(ds, f)
    end;
 
 asserted procedure vsds_g2gtt(g: QfFormula, theo: Theory, ttheo: Theory): DottedPair;
@@ -254,7 +253,7 @@ asserted procedure vsds_g2gtt(g: QfFormula, theo: Theory, ttheo: Theory): Dotted
 %       f := vsds_f ds;
 %       v := vsvs_v vs;
 %       tp := vsts_tp vs;
-%       vsds_putdata(ds, cdr apply(car tp, nil . nil . f . v . cdr tp))
+%       vsds_putres(ds, cdr apply(car tp, nil . nil . f . v . cdr tp))
 %    end;
 
 asserted procedure qff_condense(f: QfFormula, p: Position): QfFormula;
@@ -293,26 +292,26 @@ asserted procedure vsds_applyvsts!-at(at: QfFormula, ds: VSds): QfFormula;
    % VS data for virtual substitution apply VSts: atomic formula
    % subroutine. [vsds_vs ds] is a test point substitution [x // tp],
    % where [tp] is a test point computed from formula [vsds_f ds].
-   begin scalar x, it, w, pr, theo;
+   begin scalar x, np, w, pr, theo;
       x := vsvs_v vsds_vs ds;
-      it := vstp_it vsts_tp vsds_vs ds;
-      w := if it memq '(minf pinf) then
-	 vsds_expand!-at!-inf(at, x, it)
-      else if it memq '(meps peps) then
-	 vsds_expand!-at!-eps(at, x, it)
+      np := vstp_np vsts_tp vsds_vs ds;
+      w := if np memq '(minf pinf) then
+	 vsds_expand!-at!-inf(at, x, np)
+      else if np memq '(meps peps) then
+	 vsds_expand!-at!-eps(at, x, np)
       else
 	 at;
-      if it memq '(minf pinf) then
+      if np memq '(minf pinf) then
 	 return w;
       pr := vstp_pr vsts_tp vsds_vs ds;
       theo := append(vsds_ptheo ds, vsds_ttheo ds);
       return cl_apply2ats1(w, 'vsds_applyvsts!-at!-pr, {pr, theo})
    end;
 
-asserted procedure vsds_expand!-at!-inf(at: QfFormula, x: Kernel, it: Id): QfFormula;
+asserted procedure vsds_expand!-at!-inf(at: QfFormula, x: Kernel, np: Id): QfFormula;
    % Expand atomic formula at +- infinity.
    begin scalar g, op;
-      assert(it memq '(minf pinf));
+      assert(np memq '(minf pinf));
       if rl_tvalp at then
 	 return at;
       g := rl_arg2l at;
@@ -323,27 +322,27 @@ asserted procedure vsds_expand!-at!-inf(at: QfFormula, x: Kernel, it: Id): QfFor
       	 return rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c));
       if op eq 'neq then
       	 return rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c));
-      return vsds_expand!-at!-inf1(op, g, x, it)
+      return vsds_expand!-at!-inf1(op, g, x, np)
    end;
 
-asserted procedure vsds_expand!-at!-inf1(op: Id, g: SF, x: Kernel, it: Id): QfFormula;
+asserted procedure vsds_expand!-at!-inf1(op: Id, g: SF, x: Kernel, np: Id): QfFormula;
    % Expand atomic formula at +- infinity subroutine.
    begin scalar w;
       assert(op memq '(lessp leq geq greaterp));
       if not sfto_mvartest(g, x) then
 	 return ofsf_0mk2(op, g);
-      w := if it eq 'minf and not evenp ldeg g then
+      w := if np eq 'minf and not evenp ldeg g then
 	 negf lc g
       else
 	 lc g;
       return rl_mkn('or, {ofsf_0mk2(ofsf_mkstrict op, w),
-	 rl_mkn('and, {ofsf_0mk2('equal, w), vsds_expand!-at!-inf1(op, red g, x, it)})})
+	 rl_mkn('and, {ofsf_0mk2('equal, w), vsds_expand!-at!-inf1(op, red g, x, np)})})
    end;
 
-asserted procedure vsds_expand!-at!-eps(at: QfFormula, x: Kernel, it: Id): QfFormula;
+asserted procedure vsds_expand!-at!-eps(at: QfFormula, x: Kernel, np: Id): QfFormula;
    % Expand atomic formula at test point +- eps.
    begin scalar g, op;
-      assert(it memq '(meps peps));
+      assert(np memq '(meps peps));
       if rl_tvalp at then
 	 return at;
       g := rl_arg2l at;
@@ -354,21 +353,21 @@ asserted procedure vsds_expand!-at!-eps(at: QfFormula, x: Kernel, it: Id): QfFor
       	 return rl_mkn('and, for each c in coeffs g collect ofsf_0mk2('equal, c));
       if op eq 'neq then
       	 return rl_mkn('or, for each c in coeffs g collect ofsf_0mk2('neq, c));
-      return vsds_expand!-at!-eps1(op, g, x, it)
+      return vsds_expand!-at!-eps1(op, g, x, np)
    end;
 
-asserted procedure vsds_expand!-at!-eps1(op: Id, g: SF, x: Kernel, it: Id): QfFormula;
+asserted procedure vsds_expand!-at!-eps1(op: Id, g: SF, x: Kernel, np: Id): QfFormula;
    % Expand atomic formula at test point +- eps subroutine.
    begin scalar dg;
       assert(op memq '(lessp leq geq greaterp));
       if not sfto_mvartest(g, x) then
 	 return ofsf_0mk2(op, g);
-      dg := if it eq 'peps then
+      dg := if np eq 'peps then
 	 diff(g, x)
       else
 	 negf diff(g, x);
       return rl_mkn('or, {ofsf_0mk2(ofsf_mkstrict op, g),
-	 rl_mkn('and, {ofsf_0mk2('equal, g), vsds_expand!-at!-eps1(op, dg, x, it)})})
+	 rl_mkn('and, {ofsf_0mk2('equal, g), vsds_expand!-at!-eps1(op, dg, x, np)})})
    end;
 
 asserted procedure vsds_applyvsts!-at!-pr(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;

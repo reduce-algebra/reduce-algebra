@@ -599,21 +599,21 @@ asserted procedure vsdb_2gmln!-printe(nd: VSnd, ss: Integer, tt: Integer);
       ioto_prin2t "label """;
       if vsvs_tsp vs then <<
 	 tp := vsts_tp vs;
-	 if vstp_it tp eq 'minf then <<
+	 if vstp_np tp eq 'minf then <<
       	    ioto_prin2t {vsvs_v vs, " = - inf"};
 	    ioto_prin2 "guard:";
 	    mathprint rl_prepfof vstp_guard tp
-	 >> else if vstp_it tp eq 'pinf then <<
+	 >> else if vstp_np tp eq 'pinf then <<
       	    ioto_prin2t {vsvs_v vs, " = + inf"};
 	    ioto_prin2 "guard:";
 	    mathprint rl_prepfof vstp_guard tp
-	 >> else if vstp_it tp eq 'meps then <<
+	 >> else if vstp_np tp eq 'meps then <<
       	    ioto_prin2t {vsvs_v vs, " = tp - eps"};
 	    mathprint prepf vspr_f vstp_pr tp;
 	    ioto_prin2t vspr_rsl vstp_pr tp;
 	    ioto_prin2 "guard:";
 	    mathprint rl_prepfof vstp_guard tp
-      	 >> else if vstp_it tp eq 'peps then <<
+      	 >> else if vstp_np tp eq 'peps then <<
       	    ioto_prin2t {vsvs_v vs, " = tp + eps"};
 	    mathprint prepf vspr_f vstp_pr tp;
 	    ioto_prin2t vspr_rsl vstp_pr tp;

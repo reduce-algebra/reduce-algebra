@@ -2656,7 +2656,7 @@ asserted procedure vsub_vsub(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
       % case 2
       w := assoc({ldeg f, ldeg g, op, vsub_nrsl rsl}, vsub!-fnalist!*);
       if w then <<
-	 pr := vspr_mk(negf vspr_f pr, vspr_v pr, vsub_nrsl rsl, vspr_c pr);
+	 pr := vspr_mk(negf vspr_f pr, vspr_v pr, vsub_nrsl rsl, vspr_rc pr);
       	 return cl_nnf apply(cdr w, {at, pr, theo})
       >>;
       % case 3
@@ -2669,7 +2669,7 @@ asserted procedure vsub_vsub(at: QfFormula, pr: VSpr, theo: Theory): QfFormula;
       w := assoc({ldeg f, ldeg g, ofsf_negateop op, vsub_nrsl rsl}, vsub!-fnalist!*);
       if w then <<
 	 at := ofsf_0mk2(ofsf_negateop op, g);
-	 pr := vspr_mk(negf vspr_f pr, vspr_v pr, vsub_nrsl rsl, vspr_c pr);
+	 pr := vspr_mk(negf vspr_f pr, vspr_v pr, vsub_nrsl rsl, vspr_rc pr);
 	 return cl_nnf rl_mk1('not, apply(cdr w, {at, pr, theo}))
       >>;
       rederr "no appropriate entry in vsub!-fnalist!*"
