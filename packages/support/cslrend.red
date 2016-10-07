@@ -317,7 +317,7 @@ switches!* := '(
     trtaylor                  trwu                      trxideal
     trxmod                    twogrid                   twosided
     unsafecar                 upper_matrix              useold
-    usetaylor                 usez                      utf8
+    limit_usetaylor           usez                      utf8
     utf82d                    utf82dround               utf8diffquot
     utf8exp                   utf8expall                utf8pad
     varopt                    vectorc                   verbatim
@@ -829,6 +829,10 @@ put('gc, 'simpfg, '((t (verbos t))
 global '(!*psl !*csl);
 !*psl := nil;
 !*csl := t;
+
+% Suppress RCREF error message about special being called with the wrong number of arguments
+
+flag('(special),'naryargs);
 
 endmodule;
 
