@@ -1952,6 +1952,26 @@ else !canrun
 	$(CP) $(gensrc)/bootstrapreduce.img .
 endif !canrun
 
+# The image here is JUST for debugging and related testing and development.
+# It is one that contains Rlisp and the most basic parts of Reduce, sufficient
+# such that the rest of Reduce should be buildable on top of it. The
+# standard "bootstrapreduce.img" target in effect builds this as an
+# intermediate step.
+
+boot.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
+	-$(TRACE)$(RM) -f boot.img
+if canrun
+	mkdir -p buildlogs
+	echo Building in `pwd`
+	chmod 664 $(gensrc)/*
+	./bootstrapreduce$(EXEEXT) -w -z $(CSLFLAGS) -Dno_init_file \
+		$(CYGSRC)/buildboot.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
+		-o boot.img -- buildlogs/boot.log \
+		-j boot.dep
+else !canrun
+	echo Can not build boot.img on this platform
+endif !canrun
+
 profile:	bootstrapreduce.img
 if canrun
 	$(TRACE)mkdir -p buildlogs

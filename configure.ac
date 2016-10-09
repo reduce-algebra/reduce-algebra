@@ -1241,7 +1241,9 @@ else
   cd "$builddir"
 fi
 
-if test "x$test" = "xyes"
+# If I am building the "test" (aka "experiment") version I will need to
+# have the Boehm conservative garbage collector...
+if test "x$enable_test" = "xyes"
 then
   with_boehm="yes"
 fi
