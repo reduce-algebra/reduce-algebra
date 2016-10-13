@@ -45,78 +45,11 @@
 static int validate_count = 0;
 #endif
 
-LispObject getcodevector(int type, size_t size)
-{
-//
-// type is the code (e.g. TYPE_BPS) that gets packed, together with
-// the size, into a header word.
-// I believe this only ever gets called with TYPE_BPS[_4] as the type.
-// size is measured in bytes and must allow space for the header word.
-// This obtains space in the BPS area
-//
-    LispObject nil = C_nil;
-#ifdef DEBUG_VALIDATE
-//
-// See comment in fns1 to the effect that doing a full validation every
-// time leads to a VERY BAD performance hit.
-//
-    if ((++validate_count) % 100 == 0)
-    {   copy_into_nilseg(false);
-        validate_all("getcodevector", __LINE__, __FILE__);
-    }
-#endif
-    for (;;)
-    {   int32_t alloc_size = (int32_t)doubleword_align_up(size);
-// Bytecodes go in a page for them that is distinct from the areas that
-// other sorts of LispObject get allocated.
-        char *cf = (char *)codefringe, *cl = (char *)codelimit;
-        int32_t free = cf - cl;
-        char *r;
-        if (alloc_size > free)
-        {   char msg[40];
-            sprintf(msg, "codevector %ld", (long)size);
-            reclaim(nil, msg, GC_BPS, alloc_size);
-            errexit();
-            continue;
-        }
-        r = cf - alloc_size;
-        codefringe = (LispObject)r;
-        *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
-//
-// codelimit is always 8 bytes above the base of the code-page. The
-// address I need to return for a code-vector points (in a packed way)
-// to the first byte of actual byte data, ie CELL bytes above the start
-// of the data-structure. Oh joy! Furthermore note that I go via the
-// type uint32_t so that if I am on a 64-bit system I know that the
-// top half of the object will contain just zero. This is to leave me scope
-// to use that when reloading a 32-bit image on a 64-bit system...
-//
-#ifdef DEBUG
-        {   LispObject w = (LispObject)(uint32_t)(TAG_BPS +
-                (((uint32_t)((r + CELL) - (cl - 8)) & (PAGE_POWER_OF_TWO-4)) << 6) +
-                (((uint32_t)(bps_pages_count-1))<<(PAGE_BITS+6)));
-            if (data_of_bps(w) != r+CELL)
-            {   fprintf(stderr, "\n+++ Packing BPS handled failed\n");
-                fprintf(stderr, "%.8x %.8x %.8x\n",
-                    (int)(intptr_t)r, (int)w, (int)(intptr_t)data_of_bps(w));
-                exit(1);
-            }
-            return w;
-        }
-#else
-        return (LispObject)(uint32_t)(TAG_BPS +
-            (((uint32_t)((r + CELL) - (cl - 8)) & (PAGE_POWER_OF_TWO-4)) << 6) +
-            (((uint32_t)(bps_pages_count-1))<<(PAGE_BITS+6)));
-#endif
-// Wow! Obscure!!
-    }
-}
-
 LispObject Lget_bps(LispObject nil, LispObject n)
 {   int32_t n1;
     if (!is_fixnum(n) || (int32_t)n<0) return aerror1("get-bps", n);
     n1 = int_of_fixnum(n);
-    n = getcodevector(TYPE_BPS_4, n1+CELL);
+    n = getvector(TAG_VECTOR, TYPE_BPS_4, n1+CELL);
     errexit();
     return onevalue(n);
 }
@@ -191,6 +124,9 @@ LispObject Lget_native(LispObject nil, LispObject n)
 
 bool do_not_kill_native_code = false;
 
+// Soon this will need to take FIVE functions not THREE. Specifically ones
+// that support 0, 1, 2, 3 and 4+ arguments.
+
 void set_fns(LispObject a, one_args *f1, two_args *f2, n_args *fn)
 {   LispObject nil = C_nil;
     LispObject w1, w2, w3 = nil;
@@ -255,6 +191,8 @@ static bool interpreter_entry(LispObject a)
 
 #endif
 
+// Here again I will need to deal with 0 and 3-argument cases...
+
 static const char *c_fn1(one_args *p, setup_type const s[])
 {   int i;
     for (i=0; s[i].name!=NULL; i++)
@@ -318,10 +256,10 @@ static const char *show_fnn(n_args *p)
 
 LispObject Lsymbol_fn_cell(LispObject nil, LispObject a)
 //
-// For debugging... This looks in the 3 function cells that any symbol
-// has and attempts to display the name of the function there. There are
-// enough tables for me to find the names of MANY things, but I do not
-// guarantee everything.
+// For debugging... This looks in the 3 (soon 5) function cells that any
+// symbol has and attempts to display the name of the function there.
+// There are enough tables for me to find the names of MANY things, but I
+// do not guarantee everything.
 //
 {   const char *s1, *s2, *sn;
     if (!symbolp(a)) return onevalue(nil);
@@ -330,6 +268,23 @@ LispObject Lsymbol_fn_cell(LispObject nil, LispObject a)
     sn = show_fnn(qfnn(a));
     trace_printf("%s %s %s\n", s1, s2, sn);
     return onevalue(nil);
+}
+
+LispObject Lsymbol_header(LispObject nil, LispObject a)
+{   if (!symbolp(a)) return onevalue(nil);
+    Header h = qheader(a);
+    trace_printf("Header:");
+    if ((h & SYM_SPECIAL_VAR) != 0) trace_printf(" fluid");
+    if ((h & SYM_GLOBAL_VAR) != 0) trace_printf(" global");
+    if ((h & SYM_SPECIAL_FORM) != 0) trace_printf(" special-form");
+    if ((h & SYM_MACRO) != 0) trace_printf(" macro");
+    if ((h & SYM_C_DEF) != 0) trace_printf(" C-def");
+    if ((h & SYM_CODEPTR) != 0) trace_printf(" codeptr");
+    if ((h & SYM_ANY_GENSYM) != 0) trace_printf(" any-gensym");
+    if ((h & SYM_TRACED) != 0) trace_printf(" traced");
+    if ((h & SYM_FASTGET_MASK) != 0) trace_printf(" fastget");
+    trace_printf("\n");
+    return onevalue(a);
 }
 
 LispObject Lsymbol_argcount(LispObject nil, LispObject a)
@@ -4541,6 +4496,7 @@ setup_type const funcs2_setup[] =
     {"symbol-env",              Lsymbol_env, too_many_1, wrong_no_1},
     {"symbol-make-fastget",     Lsymbol_make_fastget1, Lsymbol_make_fastget, wrong_no_2},
     {"symbol-fastgets",         Lsymbol_fastgets, too_many_1, wrong_no_1},
+    {"symbol-header",           Lsymbol_header, too_many_1, wrong_no_1},
     {"symbol-fn-cell",          Lsymbol_fn_cell, too_many_1, wrong_no_1},
     {"symbol-argcode",          Lsymbol_argcount, too_many_1, wrong_no_1},
     {"symbol-restore-fns",      Lsymbol_restore_fns, too_many_1, wrong_no_1},

@@ -897,7 +897,7 @@ symbolic procedure test_a_package names;
        princ "Tested on ";
        princ cdr assoc('platform, lispsystem!*);
        princ " CSL";
-       eval '(showtime1);
+       eval '(showtime1 nil);
        w := timeofday();
        walltime := (car w - car walltime) . (cdr w - cdr walltime);
        w := cdr walltime;

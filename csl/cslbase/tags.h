@@ -95,26 +95,21 @@
 #  define MAX_HEAPSIZE       (SIXTY_FOUR_BIT ? (512*1024) : 2048)
 #endif // MAX_HEAPSIZE
 
-#ifndef MAX_BPSSIZE
-//
-// Note once again that 64 (megabytes) is the largest valid value that can be
-// used here.  But also note that 64 Mbytes of bytecodes would be a pretty
-// large program!
-//
-#  define MAX_BPSSIZE           64
-#endif // MAX_BPSSIZE
-
 #define MEGABYTE                ((intptr_t)0x100000U)
 
 #if PAGE_BITS >= 20
 #define MAX_PAGES               (MAX_HEAPSIZE >> (PAGE_BITS-20))
-#define MAX_BPS_PAGES           (MAX_BPSSIZE >> (PAGE_BITS-20))
 #else
 #define MAX_PAGES               (MAX_HEAPSIZE << (20-PAGE_BITS))
-#define MAX_BPS_PAGES           (MAX_BPSSIZE << (20-PAGE_BITS))
 #endif
 
-#define MAX_NATIVE_PAGES        MAX_BPS_PAGES
+// Right at present I am not supporting native compilation at all, so
+// the concept of "native pages" and a limit on how many there may be is
+// a bit odd. However thye setting here should allow up to 64 Mbytes of
+// native code, which is more than enough for the zero bytes that I will
+// use!
+
+#define MAX_NATIVE_PAGES        16
 
 //
 // Windows seems to say it can use file names up to 260 chars, Unix and
@@ -192,8 +187,8 @@ typedef intptr_t LispObject;
 #define XTAG_BITS       15
 
 #define TAG_CONS        0   // Cons cells                                01
-#define TAG_VECTOR      1   // Regular Lisp vectors (except BPS maybe?)  02
-#define TAG_HDR_IMMED   2   // Char constants, BPS addresses, vechdrs etc04
+#define TAG_VECTOR      1   // Regular Lisp vectors                      02
+#define TAG_HDR_IMMED   2   // Char constants, vechdrs etc               04
 #define TAG_FORWARD     3   // For the Garbage Collector                 08
 // There are special constraints that mean I want symbols to have
 // tag code 4. These apply in the old garbage collector and the way I
@@ -683,8 +678,8 @@ typedef uintptr_t Header;
 #define is_vec8_header(h) ((type_of_header(h) & (0x1f<<Tw)) == TYPE_VEC8_1)
 #define is_vec8(n) is_vec8_header(vechdr(n))
 
-#define is_bpsvec_header(h) ((type_of_header(h) & (0x1f<<Tw)) == TYPE_BPS_1)
-#define is_bpsvec(n) is_bpsvec_header(vechdr(n))
+#define is_bps_header(h) ((type_of_header(h) & (0x1f<<Tw)) == TYPE_BPS_1)
+#define is_bps(n) is_bps_header(vechdr(n))
 
 #define is_vec16_header(h) ((type_of_header(h) & (0x3f<<Tw)) == TYPE_VEC16_1)
 #define is_vec16(n) is_vec16_header(vechdr(n))
@@ -718,8 +713,11 @@ typedef uintptr_t Header;
 
 #endif // MEMORY_TRACE
 
+#define data_of_bps(v) ((unsigned char *)(v) + (CELL-TAG_VECTOR))
+
 // In the serialisation code I want to access the fields in a symbol as
 // if that symbol was a vector and the fields were indexed
+//  vselt(p, -1) : qheader(p)
 //  vselt(p, 0) : qvalue(p)
 //  vselt(p, 1) : qenv(p)
 //  vselt(p, 2) : qplist(p)
@@ -862,8 +860,6 @@ typedef uintptr_t Header;
 
 #define HDR_IMMED_MASK    (( 0xf <<Tw) | TAG_BITS)
 #define TAG_CHAR          (( 0x4 <<Tw) | TAG_HDR_IMMED) // 24 bits payload
-#define TAG_BPS           (( 0x8 <<Tw) | TAG_HDR_IMMED) // I rather forget..
-      // why BPS is referred to using a weird handle like this!
 #define TAG_SPID          (( 0xc <<Tw) | TAG_HDR_IMMED) // Internal flag values
 
 #define SPID_NIL            (TAG_SPID+0x0000)  // NIL in checkpoint file
@@ -882,7 +878,6 @@ typedef uintptr_t Header;
 
 #define is_header(x) (((int)(x) & (0x3<<Tw)) != 0) // valid if TAG_HDR_IMMED
 #define is_char(x)   (((int)(x) & HDR_IMMED_MASK) == TAG_CHAR)
-#define is_bps(x)    (((int)(x) & HDR_IMMED_MASK) == TAG_BPS)
 #define is_spid(x)   (((int)(x) & HDR_IMMED_MASK) == TAG_SPID)
 #define is_library(x)(((int)(x) & 0xfffff)        == SPID_LIBRARY)
 #define library_number(x) (((x) >> 20) & 0xfff)
@@ -918,48 +913,6 @@ typedef uintptr_t Header;
 // character.
 //
 #define CHAR_EOF pack_char(0, 0x0010ffff)
-
-
-//
-// The following shows that a BPS entrypoint is represented with
-// 8 bits of tag at the bottom of the word.  There follow (PAGE_BITS-2)
-// bits of word-offset within the page.  Finally the rest of the word is
-// a page number.  This allows for up to 64 Mbytes of code space if I
-// am on a 32-bit machine. If PAGE_BITS is 22 (my current default on
-// most systems) this will be up to 16 pages each holding 4 Mbytes.
-// Given the compactness of the bytecode format the limit seems generous
-// enough at present! One thing to note here is that the packed address
-// in a BPS reference goes to the data not to the header that preceeds it.
-// If I am on a 64-bit machine I may need to have a way to refer to an
-// address in the top half of an oversized page. But I only ever need to do
-// that if I am on a 64-bit system and in that case I have all the top
-// 32-bits of the word available. There is a slight initial cause for
-// concern because when things are initially expanded to 64 bits it is
-// using sign-extension, so the top half of the item could be either
-// all zeros or all ones. But if I am careful when I create all BPS
-// pointers and when I adjust them after loading an image I can set a
-// bit in the top half of the word if necessary. I very much hope that
-// good optimising compilers will note whether SIXTY_FOUR_BIT is true
-// or false and optimise what is written here as a dynamic test into
-// reasonable code.
-//
-
-// Right now I am not sure that I remember why I handle BPS using these
-// rather peculiar packed handles rather than using a more straightforward
-// direct reference to a vector of bytes. I MAY look into that again and
-// try to rationalise things! But meanwhile the code here still ought to
-// work since I think I still have the same number of low bits used for
-// tagging in my handle.
-
-#define data_of_bps(v)                                        \
-  ((char *)(doubleword_align_up((intptr_t)                    \
-               bps_pages[((uint32_t)(v))>>(PAGE_BITS+6)]) +   \
-            (SIXTY_FOUR_BIT ?                                 \
-               (intptr_t)((((uint64_t)(v))>>(32-PAGE_BITS)) & \
-                          PAGE_POWER_OF_TWO) :                \
-               0) +                                           \
-            (((v) >> 6) & (PAGE_POWER_OF_TWO-4))))
-
 
 typedef int32_t junk;      // Unused 4-byte field for structures (for padding)
 typedef intptr_t junkxx;   // Unused cell-sized field for structures

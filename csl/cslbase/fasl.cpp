@@ -1,4 +1,4 @@
-//  fasl.cpp                          Copyright (C) 1990-2015 Codemist    
+//  fasl.cpp                               Copyright (C) 1990-2016 Codemist
 
 //
 // Binary file support for faster loading of precompiled code etc.
@@ -97,6 +97,8 @@ static int32_t recent_pointer = 0, hits = 0 , misses = 0, fasl_byte_count = 0;
 #define F_BP1       31 // 256 - 511 bytes of BPS
 #define F_BP2       32 // 512 - 767 bytes of BPS
 #define F_BP3       33 // 768 - 1023 bytes of BPS
+// Having a single function lead to over 1023 bytes of bytecode seems
+// horrible at present.
 #define F_HASH      34 // hash table
 #define F_VEC       35 // simple Lisp vector
 #define F_LST       36 // list, general length
@@ -140,7 +142,7 @@ static int32_t recent_pointer = 0, hits = 0 , misses = 0, fasl_byte_count = 0;
 
 #ifdef DEBUG_FASL
 
-static char *fasl_code_names[] =
+static const char *fasl_code_names[] =
 {   "END",      "NIL",      "TRU",      "EXT",
     "INT",      "NEG",      "BIG",      "RAT",
     "CPX",      "FPS",      "FPF",      "FPD",
@@ -164,7 +166,7 @@ static char *fasl_code_names[] =
 
 static char old_name[8];
 
-static char *fasl_code(int n)
+static const char *fasl_code(int n)
 {   if (n >= F_OLD)
     {   sprintf(old_name, "OLD%d", n - F_OLD);
         return old_name;
@@ -193,13 +195,14 @@ static int IgetcDebug()
 
 #define Igetc() IgetcDebug()
 
-static int IreadDebug(char *x, int n)
+static int IreadDebug(void *x, int n)
 {   int i;
     int k = Iread(x, n);
     trace_printf("Iread(%d) = %d:", n, k);
     for (i=0; i<k; i++)
-    {   trace_printf(" %d/%x", x[i], x[i]);
-        if (32 <= x[i] && x[i] < 0x7f) trace_printf("/'%c'", x[i]);
+    {   const unsigned char *xc = (const unsigned char *)x;
+        trace_printf(" %d/%x", xc[i], xc[i]);
+        if (32 <= xc[i] && xc[i] < 0x7f) trace_printf("/'%c'", xc[i]);
     }
     trace_printf("\n");
     return k;
@@ -421,6 +424,7 @@ static LispObject fastread1(int32_t ch, int32_t operand)
                 return r;
 
             case F_SYM:                 // n characters making a symbol
+// Is there a risk of buffer overflow here...???
                 if (Iread(&boffo_char(0), operand) != operand)
                     return aerror("FASL file corrupted");
                 fasl_byte_count += operand;
@@ -503,8 +507,7 @@ static LispObject fastread1(int32_t ch, int32_t operand)
                     return nil;
                 }
                 else
-                {
-                    r = getcodevector(TYPE_BPS_4, operand+CELL);
+                {   r = getvector(TAG_VECTOR, TYPE_BPS_4, operand+CELL);
                     errexit();
                     if (Iread(data_of_bps(r), operand) != operand)
                         return aerror("FASL file corrupted");
@@ -1754,13 +1757,14 @@ LispObject Ldefine_in_module(LispObject nil, LispObject a)
 
 #ifdef DEBUG_FASL
 
-static void IwriteDebug(char *x, int n, int line)
+static void IwriteDebug(void *x, int n, int line)
 {   int i;
     Iwrite(x, n);
     trace_printf("Iwrite %d %.8x %.8x", line, C_nil, C_stack);
     for (i=0; i<n ; i++)
-    {   trace_printf(" %d/%x", x[i], x[i]);
-        if (32 <= x[i] && x[i] < 0x7f) trace_printf("/'%c'", x[i]);
+    {   const unsigned char *xc = (const unsigned char *)x;
+        trace_printf(" %d/%x", xc[i], xc[i]);
+        if (32 <= xc[i] && xc[i] < 0x7f) trace_printf("/'%c'", xc[i]);
     }
     trace_printf("\n");
 }
@@ -1813,8 +1817,8 @@ static LispObject write_module1(LispObject a)
         Iputc((int)(a >> 8) & 0xff);
     }
     else if (is_bps(a))
-    {   char *d = data_of_bps(a);
-        int32_t len = length_of_byteheader(*(Header *)(d - CELL)) - CELL;
+    {   unsigned char *d = data_of_bps(a);
+        int32_t len = length_of_byteheader(vechdr(a)) - CELL;
         switch (len >> 8)
         {   case 3: Iputc(F_BP3);
                 break;

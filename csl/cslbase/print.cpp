@@ -2203,63 +2203,14 @@ restart:
             break;
 
         case TAG_HDR_IMMED:
-            if (is_bps(u))
-            {   Header h = *(Header *)(data_of_bps(u) - CELL);
-                len = length_of_byteheader(h) - CELL;
-                push(u);
-                outprefix(blankp, 3+2*len);
-//
-// At some stage I should look at all the special notations that use "#"
-// and ensure that none clash. Well here we go...
-//   #Gnnn            gensym    I note that no HTML5 entity names would clash!
-//   #<               closures etc
-//   #[xxx]           odds
-//   #{...}           SPID_LIBRARY
-//   #\dd             character
-//   #P:              structure
-//   #S(              another variant on structure
-//   #H(              hash table
-//   #(               simple vector
-//   #F[              stream
-//   #1[              mixed1
-//   #2[              mixed2
-//   #3[              mixed3
-//   #V8(             vec of bytes
-//   #V16(            vec of shorts
-//   #V32(            vec of 32-bit ints
-//   #FS(             vec of floats
-//   #FD(             vec of double
-//   #*               bit-vector
-//   #:               package info
-//   #C(              complex num
-//   #word;           )
-//   #Udigits;        ) extended input symbol
-//   #hexdigs;        )
-//   #Xhexdigs;       )
-//
-                putc_stream('#', active_stream); putc_stream('[', active_stream);
-                for (k = 0; k < len; k++)
-                {   int ch = ((char *)data_of_bps(stack[0]))[k];
-//
-// Code vectors are not ever going to be re-readable (huh - I suppose there
-// is no big reason why they should not be!) so I split them across multiple
-// lines if that seems useful.  Anyway a reader for them could understand to
-// expect that.
-//
-                    outprefix(false, 2);
-                    putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
-                    putc_stream(hexdig[ch & 0xf], active_stream);
-                }
-                popv(1);
-                putc_stream(']', active_stream);
-                return;
-            }
 //
 // A SPID is an object used internally by CSL in various places, and the
 // rules of the system are that it ought never to be visible to the user.
 // I print it here in case it arises because of a bug, or while I am testing.
-//
-            else if (is_spid(u))
+// For instance if I display the internal components of a hash table or
+// values passed around when optional arguments are being handled some of
+// these may arise.
+            if (is_spid(u))
             {   switch (u & 0xffff)
                 {
 //
@@ -2296,7 +2247,8 @@ restart:
                 return;
             }
 //
-// Assume if is a CHAR here
+// Assume if is a CHAR here. I may need to think hard about Unicode and utf8
+// here...
 //
             outprefix(blankp, escaped_printing & escape_yes ? 3 : 1);
             if (u != CHAR_EOF)
@@ -2316,12 +2268,65 @@ restart:
 #endif
             switch (type_of_header(h))
             {
+                case TYPE_BPS_1:
+                case TYPE_BPS_2:
+                case TYPE_BPS_3:
+                case TYPE_BPS_4:
+                    len = length_of_byteheader(h) - CELL;
+                    outprefix(blankp, 3+2*len);
+//
+// At some stage I should look at all the special notations that use "#"
+// and ensure that none clash. Well here we go...
+//   #Gnnn            gensym    I note that no HTML5 entity names would clash!
+//   #<               closures etc
+//   #[xxx]           odds
+//   #{...}           SPID_LIBRARY
+//   #\dd             character
+//   #P:              structure
+//   #S(              another variant on structure
+//   #H(              hash table
+//   #(               simple vector
+//   #F[              stream
+//   #1[              mixed1
+//   #2[              mixed2
+//   #3[              mixed3
+//   #V8(             vec of bytes
+//   #V16(            vec of shorts
+//   #V32(            vec of 32-bit ints
+//   #FS(             vec of floats
+//   #FD(             vec of double
+//   #*               bit-vector
+//   #:               package info
+//   #C(              complex num
+//   #word;           )
+//   #Udigits;        ) extended input symbol
+//   #hexdigs;        )
+//   #Xhexdigs;       )
+//
+                    putc_stream('#', active_stream);
+                    putc_stream('[', active_stream);
+                    for (k = 0; k < len; k++)
+                    {   int ch = celt(stack[0], k);
+//
+// Code vectors are not ever going to be re-readable (huh - I suppose there
+// is no big reason why they should not be!) so I split them across multiple
+// lines if that seems useful.  Anyway a reader for them could understand to
+// expect that.
+//
+                        outprefix(false, 2);
+                        putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
+                        putc_stream(hexdig[ch & 0xf], active_stream);
+                    }
+                    popv(1);
+                    putc_stream(']', active_stream);
+                    return;
+
                 case TYPE_STRING_1:
                 case TYPE_STRING_2:
                 case TYPE_STRING_3:
                 case TYPE_STRING_4:
-                len = length_of_byteheader(h) - CELL;
-                {   int32_t slen = 0;
+                    len = length_of_byteheader(h) - CELL;
+                    {   int32_t slen = 0;
 // /*
 // Getting the width of strings that contain tabs correct here is
 // something I have not yet attempted - the width to be accumulated in
@@ -2330,9 +2335,9 @@ restart:
 // And while I consider this, what about a string that contains
 // a newline character?
 //
-                    if (escaped_printing & escape_yes)
-                    {   for (k = 0; k < len; k++)
-                        {   int ch = celt(stack[0], k) & 0xff;
+                        if (escaped_printing & escape_yes)
+                        {   for (k = 0; k < len; k++)
+                            {   int ch = celt(stack[0], k) & 0xff;
 //
 // See later for an explanation of the extra lengths indicated here...
 // but in short they are for #xxxx; and #xxxxxx;
@@ -2341,16 +2346,16 @@ restart:
 // needed to specify a character. To avoid potential pain I will
 // always display using at least 4 hex digits.
 //
-                            if ((ch & 0xc0) == 0x80) /* nothing */;
-                            else if ((ch & 0xe0) == 0xc0) slen += 6;
-                            else if ((ch & 0xf0) == 0xe0) slen += 6;
-                            else if ((ch & 0x80) == 0x80) slen += 8;
-                            else if (ch == '"') slen += 2;
-                            else if (ch == '#' &&
-                                     maybemagic(stack[0], k+1, len))
-                                slen += 6;  // render as #hash;WORD;
+                                if ((ch & 0xc0) == 0x80) /* nothing */;
+                                else if ((ch & 0xe0) == 0xc0) slen += 6;
+                                else if ((ch & 0xf0) == 0xe0) slen += 6;
+                                else if ((ch & 0x80) == 0x80) slen += 8;
+                                else if (ch == '"') slen += 2;
+                                else if (ch == '#' &&
+                                         maybemagic(stack[0], k+1, len))
+                                    slen += 6;  // render as #hash;WORD;
 #ifdef COMMON
-                            else if (ch == '\\') slen += 2;
+                                else if (ch == '\\') slen += 2;
 //
 // I now guard this with "#ifdef COMMON". It is associated with displaying
 // control characters within strings as escapes, as in a newline within a
@@ -2360,62 +2365,62 @@ restart:
 // understand things like #NewLine; and #0a; so I should use that notation!
 // Any character in the range u+00 to u+1f can be rendered as #xx;
 //
-                            else if (iscntrl(ch)) slen += 3;
+                                else if (iscntrl(ch)) slen += 3;
 #else
-                            else if (ch <= 0x1f) slen += 4;
+                                else if (ch <= 0x1f) slen += 4;
 #endif
-                            else slen += 1;
+                                else slen += 1;
+                            }
+                            slen += 2;
                         }
-                        slen += 2;
-                    }
-                    else
-                    {   for (k=0; k < len; k++)
-                            if ((celt(stack[0], k) & 0xc0) != 0x80) slen++;
-                    }
-                    outprefix(blankp, slen);
+                        else
+                        {   for (k=0; k < len; k++)
+                                if ((celt(stack[0], k) & 0xc0) != 0x80) slen++;
+                        }
+                        outprefix(blankp, slen);
 //
 // I will write out the fast, easy, common case here, ie "princ" where
 // I do not have to do anything special with odd characters.
 //
-                    if (!(escaped_printing &
-                          (escape_yes | escape_fold_down |
-                           escape_fold_up | escape_capitalize)))
-                    {   for (k = 0; k < len; k++)
-                        {   int ch = celt(stack[0], k);
-                            putc_stream(ch, active_stream);
+                        if (!(escaped_printing &
+                              (escape_yes | escape_fold_down |
+                               escape_fold_up | escape_capitalize)))
+                        {   for (k = 0; k < len; k++)
+                            {   int ch = celt(stack[0], k);
+                                putc_stream(ch, active_stream);
+                            }
                         }
-                    }
-                    else
-                    {   if (escaped_printing & escape_yes)
-                            putc_stream('"', active_stream);
-                        for (k = 0; k < len; k++)
-                        {   int ch = celt(stack[0], k) & 0xff;
+                        else
+                        {   if (escaped_printing & escape_yes)
+                                putc_stream('"', active_stream);
+                            for (k = 0; k < len; k++)
+                            {   int ch = celt(stack[0], k) & 0xff;
 #ifdef COMMON
 //
 // In Common Lisp mode I do something special with '"' and '\', and
 // any control characters get mapped onto an escape sequence.
 //
-                            const char *hexdig = "0123456789abcdef";
-                            if ((escaped_printing & escape_yes) &&
-                                (ch == '"' || ch == '\\'))
-                            {   putc_stream('\\', active_stream);
-                                putc_stream(ch, active_stream);
-                            }
-                            else if (ch <= 0xff && iscntrl(ch))
-                            {   putc_stream('\\', active_stream);
-                                putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
-                                putc_stream(hexdig[ch & 0xf], active_stream);
-                            }
+                                const char *hexdig = "0123456789abcdef";
+                                if ((escaped_printing & escape_yes) &&
+                                    (ch == '"' || ch == '\\'))
+                                {   putc_stream('\\', active_stream);
+                                    putc_stream(ch, active_stream);
+                                }
+                                else if (ch <= 0xff && iscntrl(ch))
+                                {   putc_stream('\\', active_stream);
+                                    putc_stream(hexdig[(ch >> 4) & 0xf], active_stream);
+                                    putc_stream(hexdig[ch & 0xf], active_stream);
+                                }
 #else
 //
 // In Standard Lisp mode when I get a '"'  I print two doublequote. And that
 // will be the only special case! Well no - I will print control characters
 // in the form #xx; in escaped mode.
 //
-                            if ((escaped_printing & escape_yes) && ch == '"')
-                            {   putc_stream('"', active_stream);
-                                putc_stream('"', active_stream);
-                            }
+                                if ((escaped_printing & escape_yes) && ch == '"')
+                                {   putc_stream('"', active_stream);
+                                    putc_stream('"', active_stream);
+                                }
 #endif
 //
 // If a string contains text like "...#WORD;..." where WORD could possibly
@@ -2424,15 +2429,15 @@ restart:
 // sequence from being treated as something that represents an extended
 // character.
 //
-                            else if (ch == '#' &&
-                                     maybemagic(stack[0], k+1, len))
-                            {   putc_stream('#', active_stream);
-                                putc_stream('h', active_stream);
-                                putc_stream('a', active_stream);
-                                putc_stream('s', active_stream);
-                                putc_stream('h', active_stream);
-                                putc_stream(';', active_stream);
-                            }
+                                else if (ch == '#' &&
+                                         maybemagic(stack[0], k+1, len))
+                                {   putc_stream('#', active_stream);
+                                    putc_stream('h', active_stream);
+                                    putc_stream('a', active_stream);
+                                    putc_stream('s', active_stream);
+                                    putc_stream('h', active_stream);
+                                    putc_stream(';', active_stream);
+                                }
 //
 // The first byte of any multi-byte utf-8 sequence will be a code that is
 // at least 0xc0. In such cases I will represent the wide character as
@@ -2441,13 +2446,13 @@ restart:
 // if I am not displaying with escape_yes I just need to case fold it.
 // Well if I am doing an EXPLODE then this adjustment is not called for.
 //
-                            else if (ch >= 0xc0)
-                            {   int32_t n = 0;
-                                if ((ch & 0xe0) == 0xc0) // 2 byte
-                                {   n = ch & 0x1f;
-                                    k++;
-                                    ch = celt(stack[0], k);
-                                    n = (n << 6) | (ch & 0x3f);
+                                else if (ch >= 0xc0)
+                                {   int32_t n = 0;
+                                    if ((ch & 0xe0) == 0xc0) // 2 byte
+                                    {   n = ch & 0x1f;
+                                        k++;
+                                        ch = celt(stack[0], k);
+                                        n = (n << 6) | (ch & 0x3f);
 //
 // There is a portability issue here. ON some platforms (and perhaps with
 // some locales set) you may find (for instance) case conversion between
@@ -2455,99 +2460,99 @@ restart:
 // while in others only basic Latin characters will get case converted. This
 // effect may show up in the utf8-in-list regression test.
 //
-                                    if (escaped_printing & escape_fold_down)
-                                        n = towlower(n);
-                                    else if (escaped_printing & escape_fold_up)
-                                        n = towupper(n);
-                                    if ((escaped_printing & escape_yes) &&
-                                        !(escaped_printing & escape_exploding))
-                                    {   putc_stream('#', active_stream);
+                                        if (escaped_printing & escape_fold_down)
+                                            n = towlower(n);
+                                        else if (escaped_printing & escape_fold_up)
+                                            n = towupper(n);
+                                        if ((escaped_printing & escape_yes) &&
+                                            !(escaped_printing & escape_exploding))
+                                        {   putc_stream('#', active_stream);
 // This first digit is very often redundant here
-                                        putc_stream(hexdig[(n>>12)&0xf], active_stream);
-                                        putc_stream(hexdig[(n>>8)&0xf], active_stream);
-                                        putc_stream(hexdig[(n>>4)&0xf], active_stream);
-                                        putc_stream(hexdig[n&0xf], active_stream);
-                                        putc_stream(';', active_stream);
+                                            putc_stream(hexdig[(n>>12)&0xf], active_stream);
+                                            putc_stream(hexdig[(n>>8)&0xf], active_stream);
+                                            putc_stream(hexdig[(n>>4)&0xf], active_stream);
+                                            putc_stream(hexdig[n&0xf], active_stream);
+                                            putc_stream(';', active_stream);
+                                        }
+                                        else putc_utf8(n);
                                     }
-                                    else putc_utf8(n);
-                                }
-                                else if ((ch & 0xf0) == 0xe0) // 3 byte
-                                {   n = ch & 0x0f;
-                                    k++;
-                                    ch = celt(stack[0], k);
-                                    n = (n << 6) | (ch & 0x3f);
-                                    k++;
-                                    ch = celt(stack[0], k);
-                                    n = (n << 6) | (ch & 0x3f);
-                                    if (escaped_printing & escape_fold_down)
-                                        n = towlower(n);
-                                    else if (escaped_printing & escape_fold_up)
-                                        n = towupper(n);
-                                    if ((escaped_printing & escape_yes) &&
-                                        !(escaped_printing & escape_exploding))
-                                    {   putc_stream('#', active_stream);
-                                        putc_stream(hexdig[(n>>12)&0xf], active_stream);
-                                        putc_stream(hexdig[(n>>8)&0xf], active_stream);
-                                        putc_stream(hexdig[(n>>4)&0xf], active_stream);
-                                        putc_stream(hexdig[n&0xf], active_stream);
-                                        putc_stream(';', active_stream);
+                                    else if ((ch & 0xf0) == 0xe0) // 3 byte
+                                    {   n = ch & 0x0f;
+                                        k++;
+                                        ch = celt(stack[0], k);
+                                        n = (n << 6) | (ch & 0x3f);
+                                        k++;
+                                        ch = celt(stack[0], k);
+                                        n = (n << 6) | (ch & 0x3f);
+                                        if (escaped_printing & escape_fold_down)
+                                            n = towlower(n);
+                                        else if (escaped_printing & escape_fold_up)
+                                            n = towupper(n);
+                                        if ((escaped_printing & escape_yes) &&
+                                            !(escaped_printing & escape_exploding))
+                                        {   putc_stream('#', active_stream);
+                                            putc_stream(hexdig[(n>>12)&0xf], active_stream);
+                                            putc_stream(hexdig[(n>>8)&0xf], active_stream);
+                                            putc_stream(hexdig[(n>>4)&0xf], active_stream);
+                                            putc_stream(hexdig[n&0xf], active_stream);
+                                            putc_stream(';', active_stream);
+                                        }
+                                        else putc_utf8(n);
                                     }
-                                    else putc_utf8(n);
-                                }
-                                else // assume 4 byte
-                                {   n = ch & 0x07;
-                                    k++;
-                                    ch = celt(stack[0], k);
-                                    n = (n << 6) | (ch & 0x3f);
-                                    k++;
-                                    ch = celt(stack[0], k);
-                                    n = (n << 6) | (ch & 0x3f);
-                                    k++;
-                                    ch = celt(stack[0], k);
-                                    n = (n << 6) | (ch & 0x3f);
+                                    else // assume 4 byte
+                                    {   n = ch & 0x07;
+                                        k++;
+                                        ch = celt(stack[0], k);
+                                        n = (n << 6) | (ch & 0x3f);
+                                        k++;
+                                        ch = celt(stack[0], k);
+                                        n = (n << 6) | (ch & 0x3f);
+                                        k++;
+                                        ch = celt(stack[0], k);
+                                        n = (n << 6) | (ch & 0x3f);
 //
 // When case folding if the code-point is beyond U+ffff and I am on a machine
 // where sizeof(wchar_t) is 2 (eg Windows) I will not case fold. Gosh that
 // seems an obscure situation!
 //
-                                    if (sizeof(wchar_t) == 4 || n < 0x10000)
-                                    {   if (escaped_printing & escape_fold_down)
-                                            n = towlower(n);
-                                        else if (escaped_printing & escape_fold_up)
-                                            n = towupper(n);
+                                        if (sizeof(wchar_t) == 4 || n < 0x10000)
+                                        {   if (escaped_printing & escape_fold_down)
+                                                n = towlower(n);
+                                            else if (escaped_printing & escape_fold_up)
+                                                n = towupper(n);
+                                        }
+                                        if ((escaped_printing & escape_yes) &&
+                                            !(escaped_printing & escape_exploding))
+                                        {   putc_stream('#', active_stream);
+                                            putc_stream(hexdig[(n>>20)&0xf], active_stream);
+                                            putc_stream(hexdig[(n>>16)&0xf], active_stream);
+                                            putc_stream(hexdig[(n>>12)&0xf], active_stream);
+                                            putc_stream(hexdig[(n>>8)&0xf], active_stream);
+                                            putc_stream(hexdig[(n>>4)&0xf], active_stream);
+                                            putc_stream(hexdig[n&0xf], active_stream);
+                                            putc_stream(';', active_stream);
+                                        }
+                                        else putc_utf8(n);
                                     }
-                                    if ((escaped_printing & escape_yes) &&
-                                        !(escaped_printing & escape_exploding))
-                                    {   putc_stream('#', active_stream);
-                                        putc_stream(hexdig[(n>>20)&0xf], active_stream);
-                                        putc_stream(hexdig[(n>>16)&0xf], active_stream);
-                                        putc_stream(hexdig[(n>>12)&0xf], active_stream);
-                                        putc_stream(hexdig[(n>>8)&0xf], active_stream);
-                                        putc_stream(hexdig[(n>>4)&0xf], active_stream);
-                                        putc_stream(hexdig[n&0xf], active_stream);
-                                        putc_stream(';', active_stream);
-                                    }
-                                    else putc_utf8(n);
                                 }
-                            }
-                            else
+                                else
 //
 // Here I have a character in the range u+0000 to u+007f.
 //
-                            {   if (escaped_printing & escape_fold_down)
-                                    ch = tolower(ch);
-                                else if (escaped_printing & escape_fold_up)
-                                    ch = toupper(ch);
+                                {   if (escaped_printing & escape_fold_down)
+                                        ch = tolower(ch);
+                                    else if (escaped_printing & escape_fold_up)
+                                        ch = toupper(ch);
 // Just For Now I Will Not Implement The Option To Capitalize Things
-                                putc_stream(ch, active_stream);
+                                    putc_stream(ch, active_stream);
+                                }
                             }
                         }
+                        popv(1);
+                        if (escaped_printing & escape_yes)
+                            putc_stream('"', active_stream);
                     }
-                    popv(1);
-                    if (escaped_printing & escape_yes)
-                        putc_stream('"', active_stream);
-                }
-                return;
+                    return;
 
                 case TYPE_SP:
                     pop(u);

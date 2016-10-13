@@ -1,4 +1,4 @@
-// jit3.cpp                          Copyright (C) 2006-2015, Codemist    
+// jit3.cpp                          Copyright (C) 2006-2015, Codemist
 //                                                and J O'Connell
 
 
@@ -739,8 +739,7 @@ LispObject Jbpsupbv(LispObject, LispObject v)
 {   Header h;
     int32_t n;
     if (!(is_bps(v))) return aerror1("bps-upbv", v);
-    h = *(Header *)((char *)data_of_bps(v) - CELL);
-    n = length_of_byteheader(h) - CELL;
+    n = length_of_byteheader(vechdr(v)) - CELL;
     //return fixnum_of_int(n-1);
     return n;
 }
@@ -753,7 +752,9 @@ int Jbytecode_compile(LispObject def, int nargs)
     LispObject nil = C_nil;
     register unsigned char *ppc;
     LispObject code;
-    if(nargs>3)
+// Not re-worked for the nicer representation of bytecodes as a rather
+// ordinary sort of Lisp vector...
+    if (nargs>3)
     {   code = qcar(def)-1;
     }
     else

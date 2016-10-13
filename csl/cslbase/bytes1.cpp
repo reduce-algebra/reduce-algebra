@@ -1282,10 +1282,12 @@ static void trace_print_3(LispObject name, LispObject *stack)
     trace_printf("\n");
 }
 
-#define save_pc() pc = (unsigned int)(ppc - \
-                       (unsigned char *)data_of_bps(codevec))
+// Over garbage collection codevec may be relocated, so I keep an offset
+// (pc) relative to it so I track where ppc should point.
 
-#define restore_pc() ppc = (unsigned char *)data_of_bps(codevec) + pc
+#define save_pc() pc = (unsigned int)(ppc - (unsigned char *)codevec)
+
+#define restore_pc() ppc = (unsigned char *)codevec + pc
 
 #ifdef MEMORY_TRACE
 #define next_byte (cmemory_reference((intptr_t)ppc), *ppc++)
@@ -1310,13 +1312,13 @@ char *native_stack = NULL, *native_stack_base = NULL;
 //
 const char *name_of_caller = NULL;
 
-extern LispObject bytestream_interpret1(LispObject code, LispObject lit,
+extern LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                                         LispObject *entry_stack);
 #ifdef CHECK_STACK
 static int maxnest = 0;
 #endif
 
-LispObject bytestream_interpret(LispObject code, LispObject lit,
+LispObject bytestream_interpret(unsigned char *ppc, LispObject lit,
                                 LispObject *entry_stack)
 #ifdef CHECK_STACK
 {
@@ -1325,7 +1327,8 @@ LispObject bytestream_interpret(LispObject code, LispObject lit,
 // ultra deep recursions! This is only used when CHECK_STACK had been
 // defined at compile-time, and I view any performance consequences as
 // utterly unimportant provided it sometimes allows me to discover
-// what is leading to uncontrolled recursion.
+// what is leading to uncontrolled recursion. This must not trigger a GC
+// until it calls bytestread_interpret1.
 //
     LispObject w, nil = C_nil;
     int len = 0;
@@ -1346,7 +1349,7 @@ LispObject bytestream_interpret(LispObject code, LispObject lit,
         }
     }
     if (len > 20000) flip_exception();
-    else w = bytestream_interpret1(code, lit, entry_stack);
+    else w = bytestream_interpret1(ppc, lit, entry_stack);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -1357,7 +1360,7 @@ LispObject bytestream_interpret(LispObject code, LispObject lit,
     return w;
 }
 
-LispObject bytestream_interpret1(LispObject code, LispObject lit,
+LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                                  LispObject *entry_stack)
 #endif // CHECK_STACK
 {
@@ -1365,19 +1368,9 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 // entry_stack may be its "1" bit set if I am to be "noisy" whenever I
 // assign to a special/global variable.
 //
-    register unsigned char *ppc;
-    register LispObject A_reg;
+    LispObject A_reg;
     LispObject nil = C_nil;
     LispObject *stack = C_stack;
-//
-// The variables above this line are by a significant margin the
-// most important ones for this code.  It may be useful to use
-// 'register' declarations even with good optimising compilers, since
-// the structure of a bytestream interpreter can draw too much attention to
-// individual cases and not enough to the full outer loop.  Here the most
-// common paths are the "switch (*ppc++)" and various of the very short
-// and simple opcodes that are dispatched to.
-//
     LispObject r1, r2, r3;
     one_args *f1;
     two_args *f2;
@@ -1452,14 +1445,14 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 //
 #ifdef ACN
 // ... except that I will only go the whole hog if one defines ACN
-    {   int codetags = code & TAG_BITS;
-        code = (code & ~TAG_BITS) + TAG_HDR_IMMED;
-        push2(code, lit);
+    {   codevec = ((LispObject)ppc & ~(LispObject)3) + (TAG_VECTOR-CELL);
+        uintptr_t w = (uintptr_t)ppc - codevec;
+        push2(codevec, lit);
         C_stack = stack;
         callstack = cons(elt(lit, 0), callstack);
         stack = C_stack;
-        pop2(lit, code);
-        code = (code & ~TAG_BITS) | codetags;
+        pop2(lit, codevec);
+        ppc = (unsigned char *)(codevec + w);
         C_stack = stack;
         errexit();
     }
@@ -1474,19 +1467,16 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
 // The next lines are used to allow for functions with > 3 args, and for
 // &optional and &rest cases. Some of these need one or two bytes at the
 // start of the code-vector to indicate just how many arguments are
-// expected. In such cases the byte program-counter must start off
-// positioned just beyond these extra bytes.  The way that a code pointer
-// is packed in CSL means that for garbage collection a code-pointer is
-// stored with bottom 4 bits '0010', and it can address to a resolution of
-// one word (4 bytes).  However, the actual argument passed into this code
-// does not have to be garbage-collector safe until there is the first
-// chance of a garbage collection, and I exploit that to allow for 0, 1
-// 2 or 3 initial information bytes.  The ((code & ~3) + 2) restores
-// proper tagging, and (code & 3) holds an offset.
+// expected. In such cases the byte pointer ppc points to the first
+// byte of genuine executable stuff just beyond those prelude bytes. Hence
+// (ppc & ~3) will point at a word-aligned starting point for bytes
+// and ((ppc & ~3) + (TAG_VECTOR-CELL)) will be a proper LispObject value
+// that stands for the BPS object. Well that bit of arithmetic will need
+// some casts to make it valid, but writing if plainly is perhaps clearest.
+// I could in fact cope with up to 7 prefix bytes, but at present I only
+// have use for 0, 1 or 2.
 //
-    ppc = (unsigned char *)data_of_bps(code);
-    ppc = ppc + (code & 3);
-    codevec = (code & ~3) + TAG_HDR_IMMED;
+    codevec = ((LispObject)ppc & ~(LispObject)3) + (TAG_VECTOR-CELL);
 //
 // I am careful to reload stack from C_stack after any
 // function call, to allow that the garbage collector may relocate the
@@ -3987,7 +3977,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     nil = C_nil;
                     if (exception_pending()) goto callself_error_exit;
                 }
-                A_reg = bytestream_interpret(codevec-TAG_HDR_IMMED, litvec, stack-1);
+                A_reg = bytestream_interpret(data_of_bps(codevec), litvec, stack-1);
                 nil = C_nil;
                 if (exception_pending()) goto callself_error_exit;
                 stack = C_stack;
@@ -4030,7 +4020,7 @@ LispObject bytestream_interpret1(LispObject code, LispObject lit,
                     nil = C_nil;
                     if (exception_pending()) goto callself_error_exit;
                 }
-                A_reg = bytestream_interpret(codevec-TAG_HDR_IMMED, litvec, stack-2);
+                A_reg = bytestream_interpret(data_of_bps(codevec), litvec, stack-2);
                 nil = C_nil;
                 if (exception_pending()) goto callself_error_exit;
                 stack = C_stack;

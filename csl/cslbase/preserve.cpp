@@ -2445,36 +2445,6 @@ static void unadjust_vecheap(void)
     }
 }
 
-static void unadjust_bpsheap(void)
-{   int32_t page_number;
-    for (page_number = 0; page_number < bps_pages_count; page_number++)
-    {   void *page = bps_pages[page_number];
-        char *low = (char *)doubleword_align_up((intptr_t)page);
-        char *fr = low + car32(low);
-        // Clean up unused space
-        while ((fr -= sizeof(LispObject)) != low) qcar(fr) = 0;
-        fr = low + qcar(low);
-        while (fr < low + CSL_PAGE_SIZE)
-        {   Header h = *(Header *)fr;
-#ifdef ENVIRONMENT_VECTORS_IN_BPS_HEAP
-            switch (type_of_header(h))
-            {
-// This option is not actually used at present...
-                case TYPE_SIMPLE_VEC:
-                    for (i=CELL;
-                         i<doubleword_align_up(length_of_header(h));
-                         i+=CELL)
-                        unadjust((LispObject *)(fr+i));
-                    break;
-                default:
-                    break;
-            }
-#endif
-            fr += doubleword_align_up(length_of_header(h));
-        }
-    }
-}
-
 static void unadjust_all(void)
 {   int32_t i;
     LispObject nil = C_nil;
@@ -2500,7 +2470,6 @@ static void unadjust_all(void)
 
     unadjust_consheap();
     unadjust_vecheap();
-    unadjust_bpsheap();
 }
 
 #endif // EXPERIMENT
@@ -2634,8 +2603,6 @@ void preserve(const char *banner, int len)
         for (i=0; i<9; i++)
             saver[i] = BASE[i+13],
                        BASE[i+13] = 0;
-        // codefringe
-        // codelimit
         // stacklimit
         // ... ditto
         // ... ditto
@@ -2649,7 +2616,6 @@ void preserve(const char *banner, int len)
     }
     Cfwrite((const char *)&heap_pages_count, sizeof(heap_pages_count));
     Cfwrite((const char *)&vheap_pages_count, sizeof(vheap_pages_count));
-    Cfwrite((const char *)&bps_pages_count, sizeof(bps_pages_count));
 
     Cfwrite("\nVecseg:", 8);
     for (i=0; i<vheap_pages_count; i++)
@@ -2663,11 +2629,6 @@ void preserve(const char *banner, int len)
         Cfwrite((const char *)quadword_align_up(p), CSL_PAGE_SIZE);
     }
 
-    Cfwrite("\nCodeseg", 8);
-    for (i=0; i<bps_pages_count; i++)
-    {   intptr_t p = (intptr_t)bps_pages[i];
-        Cfwrite((const char *)doubleword_align_up(p), CSL_PAGE_SIZE);
-    }
 #ifndef COMMON
     Cfwrite("\n\nEnd of CSL dump file\n\n", 24);
 #else

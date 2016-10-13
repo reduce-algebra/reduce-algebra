@@ -169,29 +169,12 @@ LispObject address_sign;
 // 64-bit form and copied the copy can need 3 pages because the big vector in
 // the middle must all end up within one page.
 //
-// An initial heap image for the bootstrap version of Reduce is larger than
-// the one for the release version, but both easily fit within 1 page of
-// each of cons-heap, vector-heap and bps-heap. So loading the image in a
-// simple way requires 12 Mbytes of allocated memory. When I load into
-// double-sized pages I need 24 Mbytes of contiguous memory. To be certain
-// that I can manage a copying garbage collection even in worst case
-// situations that will not arise, I should have 2 pages of cons heap and
-// 3 for each of vector- and bps-heap available, ie 8 more pages. That is
-// 11 pages in all, and in fact I will allocate a further page for a stack,
-// so I need at least 12 pages, 48 Mbytes available at the start of a run.
-// On a 64-bit machine I will take the view that this is reasonable. Obviously
-// larger initial heap images will put more severe strains on everything!
-//
 // When expanding a page vectors that contain pointers will often double in
 // size, but if they hold an even number of items the padder word needed in
 // the 32-bit world will become superfluous. Vectors containing non-pointer
 // data (eg strings and bignums) will only expand by 4 bytes. In each case
 // if space is left unoccupied it must be filled with some form of valid
 // padding so that subsequent linear scans of the heap can succeed.
-//
-// There was an apparent pain as regards BPS pointers and refereces into
-// double-sized pages, but I found a solution to it (albeit a slightly
-// grungy one).
 //
 // I need to review the copying GC to verify that it will not be hurt
 // by having a few oversize pages, but my expectation is that it only looks
@@ -242,8 +225,6 @@ char *exit_charvec = NULL;
 intptr_t exit_reason;
 
 intptr_t byteflip;
-LispObject codefringe;
-LispObject volatile codelimit;
 LispObject fringe;
 LispObject volatile heaplimit;
 LispObject volatile vheaplimit;
@@ -308,7 +289,7 @@ LispObject eq_hash_tables, equal_hash_tables;
 // On an Intel 80x86 (because I am almost forced to) and on other machines
 // (much more cheerfully, and for choice!) I will arrange my memory as
 // a number of pages.  A general pool of these pages gets used
-// to satisfy requests for heap, vector heap and BPS space.
+// to satisfy requests for heap and vector heap space.
 //
 // Since this code was first written it has become silly to even consider
 // computers with 16-bit segmented addressing! It is still convenient to
@@ -321,11 +302,9 @@ LispObject eq_hash_tables, equal_hash_tables;
 void **pages,
      **heap_pages,
      **vheap_pages,
-     **bps_pages,
      **native_pages;
 void **new_heap_pages,
      **new_vheap_pages,
-     **new_bps_pages,
      **new_native_pages;
 
 #ifdef CONSERVATIVE
@@ -347,11 +326,9 @@ unsigned long jit_size;
 int32_t pages_count,
         heap_pages_count,
         vheap_pages_count,
-        bps_pages_count,
         native_pages_count;
 int32_t new_heap_pages_count,
         new_vheap_pages_count,
-        new_bps_pages_count,
         new_native_pages_count;
 
 char program_name[64] = {0};
@@ -920,30 +897,6 @@ static void adjust(LispObject *cp)
             convert_fp_rep((void *)&w, old_fp_rep, current_fp_rep, 0);
             *cp = w;
             return;
-        }
-//
-// A further messiness here! If I am remapping from a 64 bit image to a
-// 32-bit one I will move all bps items down one word (leaving their
-// headers starting doubleword aligned as before). So I need to change
-// all references to them. The constant 0x100 here is the place within the
-// BPS handle that corresponds to this.
-//
-        if (converting_to_32 && is_bps(p)) p -= 0x100;
-        else if (SIXTY_FOUR_BIT && converting_to_64 && is_bps(p))
-        {   uint32_t page = ((uint32_t)p)>>(PAGE_BITS+6);
-//
-// Here I want to double the offset within the page. The key complication
-// is that the 32-bit packed value here only has room to cope with a
-// reference into a normal-sized page, but I need to double all offsets.
-// I deal with that by using the bottom bit of the upper 32-bits as an
-// extension of the offset. So all NORMAL references will have their top
-// half all zero, while special ones that arise only when expanding an
-// image will have non-zerop top half.
-//
-            uint32_t offset = (((uint32_t)p) >> 5) & (2*PAGE_POWER_OF_TWO-8);
-            uint64_t x = (offset >> PAGE_BITS) & 1;
-            offset &= (PAGE_POWER_OF_TWO-8);
-            p = (x<<32) | (page<<(PAGE_BITS+6)) | (offset<<6) | TAG_BPS;
         }
         *cp = p;   // Immediate data here
     }
@@ -1606,7 +1559,7 @@ static void shrink_vecheap_page_to_32(char *p, char *fr)
 //
 // Now I must put in a padding object if needed to fill any gap left.
 // There would be no gap if the original vector had length zero, otherwise
-// I put in something that looks like a vector of bytes or like BPS.
+// I put in something that looks like a vector of bytes.
 //
                         newp++;
                         if (p != (char *)newp)
@@ -2230,148 +2183,6 @@ static void adjust_vecheap(void)
     }
 }
 
-static void adjust_bpsheap(void)
-//
-// This is needed so that (e.g.) headers in the code here get byte-flipped
-// if necessary.  Also to set codefringe.
-// The bpsheap has space allocated in it from the top downwards (for some
-// stray historical reason) and so the locic here is not at all the
-// same as that used when expanding or squashing the vector heap when
-// allowing for word length changes. What a shame!
-//
-{   int32_t page_number;
-    size_t i;
-    codelimit = codefringe = 0;
-    for (page_number = 0; page_number < bps_pages_count; page_number++)
-    {   void *page = bps_pages[page_number];
-        char *low = (char *)doubleword_align_up((intptr_t)page);
-        size_t len = flip_32((uint32_t)car32(low));
-        char *fr;
-//
-// The BPS heap also has to double its size if I am converting to a 64-bit
-// machine, ONLY because all the header words in it get larger. The data
-// in it is all bytes so remains unaltered.
-//
-        if (SIXTY_FOUR_BIT && converting_to_64) len *= 2;
-        car32(low) = len;
-        fr = low + len;
-        codefringe = (LispObject)fr;
-        codelimit = (LispObject)(low + 8);
-//
-// If the computer that created the image file has the same word length and
-// byte order and if I am not keeping environment vectors in the BPS
-// heap (and indeed at present I am not) then the page contains only
-// BPS vectors which contain binary and do not need any adjustment at all.
-// If in the future I do put environment vectors here then I will need to
-// scan to adjust all the reference values within them.
-//
-#ifndef ENVIRONMENT_VECTORS_IN_BPS_HEAP
-        if (!converting_to_32 && !converting_to_64 && !flip_needed) continue;
-#endif
-        if (SIXTY_FOUR_BIT && converting_to_64)
-        {   char *oldfr = (low + (fr - low)/2 + CSL_PAGE_SIZE);
-//
-// Here I will just move the data from where it had to be in the 32-bit world
-// to where it will end up in a 64-bit one. I will leave it in whatever byte
-// order it is in to start with (and that makes the sign extension process
-// a bit odd!). I do things this way so that the subsequent pass can correct
-// for byte-order without worrying about much need to move things.
-//
-            while (oldfr < low + 2*CSL_PAGE_SIZE)
-            {   Header h = (Header)flip_32(*(uint32_t *)oldfr);
-                size_t len, len32, len64, gap;
-                len = length_of_header(h); // 32 bit hdr + actual data
-//
-// Now establish the amount of space that will be used in both 32 and 64
-// bit layouts and the size of any padding that will be called for.
-//
-                len32 = doubleword_align_up(len);
-                len64 = doubleword_align_up(len + 4);
-                gap = 2*len32 - len64;
-                *(int64_t *)fr = flip_64(h + (1<<(Tw+7))); // write new header
-//
-// Now copy the data down as raw 32-bit words with no byte-flipping.
-// This will NOT be sufficient if I were ever to implement the
-// ENVIRONMENT_VECTORS_IN_BPS_HEAP idea, because in that case my lengths
-// as suggested above will be wrong and I would need to sign-extend all the
-// 32-bit data in the old vector into 64-bit values in the new. I am NOT
-// going to do that for now.
-//
-                for (i=4; i<len; i+=4)
-                {   *(int32_t *)(fr + i + 4) = *(int32_t *)(oldfr + i);
-                }
-                if (gap != 0)
-                    *(int64_t *)(fr + len64) = flip_64(make_padder(gap));
-                oldfr += len32;
-                fr += 2*len32;
-            }
-// And put fr back where it is needed for what follows...
-            fr = (char *)codefringe;
-        }
-
-        while (fr < low + (converting_to_64 ? 2*CSL_PAGE_SIZE : CSL_PAGE_SIZE))
-        {   Header h;
-            size_t len, llen;
-            if (converting_to_32) h = (Header)flip_64(*(int64_t *)fr);
-            else h = flip_bytes(*(Header *)fr);
-            len = length_of_header(h);
-            llen = doubleword_align_up(len);
-            switch (type_of_header(h))
-            {   case TYPE_SIMPLE_VEC:   // This option not used at present
-                    if (converting_to_32)
-                    {   // Since this is not used yet I will not put any code
-                        //* here to deal with it!
-                    }
-                    for (i=CELL; i<llen; i+=CELL)
-                        adjust((LispObject *)(fr+i));
-                    *(Header *)fr = h;
-                    break;
-                case TYPE_BPS_1:
-                case TYPE_BPS_2:
-                case TYPE_BPS_3:
-                case TYPE_BPS_4:
-                   len = length_of_byteheader(h);
-#ifdef DEBUG_WIDTH
-                    printf("BPS item length %d\n", len);
-#endif
-                    if (!SIXTY_FOUR_BIT && converting_to_32)
-                    {   for (i=4; i<llen-4; i+=4)
-                            *(int32_t *)(fr+i) = *(int32_t *)(fr+i+4);
-                        *(int32_t *)(fr+llen-4) = 0;
-                        if (doubleword_align_up(len-4) != llen)
-                            *(Header *)(fr+llen-8) = make_padder(8);
-                        h -= (1<<(Tw+7)); // reduce length of the BPS object
-                    }
-                    *(Header *)fr = h;
-                    break;
-                default:
-                    // This case should NEVER happen
-                    printf("Illegal header %.8x in BPS heap\n", (int32_t)h);
-                    fflush(stdout);
-                    my_exit(4);
-            }
-            fr += llen;
-        }
-    }
-//
-// Now the code that allocates fresh binary code space (eg for the compiler
-// or for loading pre-compiled modules) does not know about oversized
-// pages of the form that can arise when I convert a 32 bit image to make it
-// work in a 64-bit world. The effect is that I would run into trouble if
-// I allocated a new bit of code space and it lived in the upper half of
-// such a page. Specifically the bit marking it as belonging in the top
-// half-space could be missed off to very bad effect, including crashes within
-// the garbage collector. So if necessary I allocate a big padder block of
-// BPS here so that all subsequent allocations end up in the lower (and hence
-// standrard) part of the page. I prefer to do this here rather than to spread
-// support for double-sized pages into other parts of the code.
-//
-    if (SIXTY_FOUR_BIT && converting_to_64)
-    {   intptr_t w = codefringe - codelimit - CSL_PAGE_SIZE - 0x100;
-        if (w > 0) getcodevector(TYPE_BPS_4, w);
-    }
-}
-
 void adjust_all(void)
 {   int32_t i;
     LispObject nil = C_nil;
@@ -2396,7 +2207,6 @@ void adjust_all(void)
 
     adjust_consheap();
     adjust_vecheap();
-    adjust_bpsheap();
 }
 
 #endif // EXPERIMENT
@@ -2476,7 +2286,6 @@ void identify_page_types()
 {   identify_page(pages,               pages_count,            0);
     identify_page(heap_pages,          heap_pages_count,       1);
     identify_page(vheap_pages,         vheap_pages_count,      2);
-    identify_page(bps_pages,           bps_pages_count,        3);
     identify_page(native_pages,        native_pages_count,     4);
     identify_one((void *)stacksegment, CSL_PAGE_SIZE,          5);
     identify_one((void *)nilsegment,   NIL_SEGMENT_SIZE,       6);
@@ -2786,11 +2595,9 @@ static void init_heap_segments(double store_size)
 #endif
     heap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
     vheap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
-    bps_pages = (void **)my_malloc_2(MAX_BPS_PAGES*sizeof(void *));
     native_pages = (void **)my_malloc_2(MAX_NATIVE_PAGES*sizeof(void *));
     new_heap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
     new_vheap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
-    new_bps_pages = (void **)my_malloc_2(MAX_BPS_PAGES*sizeof(void *));
     new_native_pages = (void **)my_malloc_2(MAX_NATIVE_PAGES*sizeof(void *));
 #ifndef EXPERIMENT
     pair_c = (unsigned char *)my_malloc_2(CODESIZE);
@@ -2849,11 +2656,9 @@ static void init_heap_segments(double store_size)
 #endif
         new_heap_pages == NULL ||
         new_vheap_pages == NULL ||
-        new_bps_pages == NULL ||
         new_native_pages == NULL ||
         heap_pages == NULL ||
         vheap_pages == NULL ||
-        bps_pages == NULL ||
 #ifndef EXPERIMENT
         pair_c == NULL ||
         char_stack == NULL ||
@@ -2893,7 +2698,7 @@ static void init_heap_segments(double store_size)
         free_space = free_space/(CSL_PAGE_SIZE+4);
         if (free_space > MAX_PAGES) free_space = MAX_PAGES;
         pages_count = heap_pages_count = vheap_pages_count =
-                                             bps_pages_count = native_pages_count = 0;
+                      native_pages_count = 0;
         native_fringe = 0;
 //
 // I grab memory using a function called my_malloc_1(), which verifies that
@@ -3042,7 +2847,6 @@ void drop_heap_segments(void)
     abandon(pages,           pages_count);
     abandon(heap_pages,      heap_pages_count);
     abandon(vheap_pages,     vheap_pages_count);
-    abandon(bps_pages,       bps_pages_count);
     abandon(native_pages,    native_pages_count);
     my_free(stacksegment);
     my_free(nilsegment);
@@ -3326,11 +3130,9 @@ void warm_setup()
 //
     Cfread((char *)&heap_pages_count, sizeof(heap_pages_count));
     Cfread((char *)&vheap_pages_count, sizeof(vheap_pages_count));
-    Cfread((char *)&bps_pages_count, sizeof(bps_pages_count));
 
     heap_pages_count = flip_32(heap_pages_count);
     vheap_pages_count = flip_32(vheap_pages_count);
-    bps_pages_count = flip_32(bps_pages_count);
 
 //
 // Here I want to arrange to have at least one free page after re-loading
@@ -3350,13 +3152,12 @@ void warm_setup()
 // is around 0.5Mb for a normal Reduce and just over 1Mb for the bulkier
 // bootstrap version. That is just the heap image part of the full image file.
 // A consequence of this is that if my pages are 4Mb each even after
-// decompression I will use just one page each of cons, vector and bps heap
+// decompression I will use just one page each of cons and vector heap
 // here. However potentially somebody could use "preserve" to capture the
 // state in the middle of a huge calculation, in which case life would
 // end up messier... with LOTS of oversized pages.
 //
-    i = heap_pages_count+vheap_pages_count+
-        bps_pages_count+1 - pages_count;
+    i = heap_pages_count+vheap_pages_count+1 - pages_count;
 #ifdef MEMORY_TRACE
 //
 // The MEMORY_TRACE options requires that all store be in a single
@@ -3391,11 +3192,15 @@ void warm_setup()
     gc_method_is_copying = (pages_count >
                             3*(heap_pages_count +
                                (3*(vheap_pages_count +
-                                   bps_pages_count +
                                    native_pages_count))/2));
 #endif
     {   char dummy[16];
         Cfread(dummy, 8);
+        if (memcmp(dummy, "\nVecseg:", 8) != 0)
+        {   fprintf(stderr, "Corrupted image file (Vecsec:) \n");
+            fprintf(stderr, "Found <%.8s>\n", dummy);
+            abort();
+        }
     }
 #ifdef MEMORY_TRACE
 #ifndef CHECK_ONLY
@@ -3423,6 +3228,11 @@ void warm_setup()
 
     {   char dummy[16];
         Cfread(dummy, 8);
+        if (memcmp(dummy, "\nConsseg", 8) != 0)
+        {   fprintf(stderr, "Corrupted image file (Consseg)\n");
+            fprintf(stderr, "Found <%.8s>\n", dummy);
+            abort();
+        }
     }
 #ifdef MEMORY_TRACE
 #ifndef CHECK_ONLY
@@ -3436,28 +3246,6 @@ void warm_setup()
         heap_pages[i] = allocate_page("heap reload");
         p = quadword_align_up((intptr_t)heap_pages[i]);
         Cfread((char *)p, CSL_PAGE_SIZE);
-    }
-
-    {   char dummy[16];
-        Cfread(dummy, 8);
-    }
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-    memory_comment(14);  // BPS heap
-#endif
-#endif
-    for (i=0; i<bps_pages_count; i++)
-    {   intptr_t p;
-// When I want to make the page double size I do TWO allocations here.
-        if (converting_to_64) allocate_page("bps 64-bit padder");
-        bps_pages[i] = allocate_page("bps reload");
-        p = doubleword_align_up((intptr_t)bps_pages[i]);
-// Same issue as for Vheap pages
-        if (converting_to_64)
-        {   Cfread(CSL_PAGE_SIZE+(char *)p, CSL_PAGE_SIZE);
-            car32(p) = car32(CSL_PAGE_SIZE+(char *)p);
-        }
-        else Cfread((char *)p, CSL_PAGE_SIZE);
     }
 
     {   char endmsg[32];
@@ -3496,7 +3284,7 @@ void warm_setup()
 // at all, may show up in an unusual way. Sorry!
 //
 #ifndef EXPERIMENT
-// In the new world with a new seriialization-based form for image files
+// In the new world with a new serialization-based form for image files
 // the checksums are no longer maintained in the way they used to be.
             fprintf(stderr, "\n+++ Initial Image file checksum failure\n");
 #endif
@@ -3512,8 +3300,7 @@ void warm_setup()
 // I will allocate more pages (if necessary) to ensure that a copying
 // garbage collection will be possible.
 //
-        i = 2*heap_pages_count+3*vheap_pages_count+
-            3*bps_pages_count - pages_count;
+        i = 2*heap_pages_count+3*vheap_pages_count - pages_count;
         while (i-- > 0)
         {   void *page = my_malloc_1((size_t)(CSL_PAGE_SIZE + 16));
             if (page == NULL)
@@ -4644,8 +4431,6 @@ static void cold_setup()
     heaplimit = quadword_align_up((intptr_t)p);
     fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
     heaplimit = (LispObject)((char *)heaplimit + SPARE);
-
-    codelimit = codefringe = 0; // no BPS to start with
 
     miscflags = 3;
     qplist(nil) = nil;
@@ -6275,6 +6060,11 @@ void setup(int restart_flag, double store_size)
 #endif
 
         Cfread(junkbuf, 8);
+        if (memcmp(junkbuf, "\nNilseg:", 8) != 0)
+        {   fprintf(stderr, "Corrupted image file (Nilseg)\n");
+            fprintf(stderr, "Found <%.8s>\n", junkbuf);
+            abort();
+        }
 //
 // If the heap image had been made on a 64-bit machine but the current
 // system is running at 32-bits then the region in the file I need to
@@ -6468,7 +6258,7 @@ void setup(int restart_flag, double store_size)
 //
     if (init_flags & INIT_EXPANDABLE)
     {   int32_t more = heap_pages_count + vheap_pages_count +
-                       bps_pages_count + native_pages_count;
+                       native_pages_count;
         more = 3 *more - pages_count;
         while (more-- > 0)
         {   void *page = (void *)my_malloc_1((size_t)(CSL_PAGE_SIZE + 16));
@@ -6570,8 +6360,6 @@ void copy_into_nilseg(int fg)
     size_t i;
     if (fg)     // move non list bases too
     {   BASE[12]                                = byteflip;
-        BASE[13]                                = codefringe;
-        *(LispObject volatile *)&BASE[14]       = codelimit;
 //
 // The messing around here is to ensure that on 64-bit architectures
 // stacklimit is kept properly aligned.
@@ -6760,8 +6548,6 @@ void copy_out_of_nilseg(int fg)
     size_t i;
     if (fg)
     {   byteflip         = BASE[12];
-        codefringe       = BASE[13];
-        codelimit        = *(LispObject volatile *)&BASE[14];
         fringe           = BASE[18];
         heaplimit        = *(LispObject volatile *)&BASE[19];
         vheaplimit       = *(LispObject volatile *)&BASE[20];

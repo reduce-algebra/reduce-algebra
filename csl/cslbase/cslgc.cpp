@@ -79,6 +79,14 @@
 #include <conio.h>
 #endif
 
+void validate_failed()
+{
+    ensure_screen();
+    fflush(stdout);
+    fflush(stderr);
+    abort();
+}
+
 #ifdef DEBUG_VALIDATE
 
 //
@@ -121,8 +129,7 @@ static int bitmap_mark_cons(LispObject p)
     {   term_printf("\n%p is not a cons pointer\n", (void *)p);
         term_printf("Validation for %s at line %d of file %s (%d)\n",
                     validate_why, validate_line, validate_file, validate_line1);
-        ensure_screen();
-        abort();
+        validate_failed();
     }
     for (i=0; i<heap_pages_count; i++)
     {   void *page = heap_pages[i];
@@ -153,11 +160,7 @@ static int bitmap_mark_cons(LispObject p)
     term_printf("VecHeap: %d\n", vheap_pages_count);
     for (i=0; i<vheap_pages_count; i++)
         term_printf("%d:  %p\n", i, (void *)vheap_pages[i]);
-    term_printf("BpsHeap: %d\n", bps_pages_count);
-    for (i=0; i<bps_pages_count; i++)
-        term_printf("%d:  %p\n", i, (void *)bps_pages[i]);
-    ensure_screen();
-    abort();
+    validate_failed();
     return 1;
 }
 
@@ -185,8 +188,26 @@ static int bitmap_mark_vec(LispObject p)
     {   term_printf("\n%p is not a vector pointer\n", (void *)p);
         term_printf("Validation for %s at line %d of file %s (%d)\n",
                     validate_why, validate_line, validate_file, validate_line1);
-        ensure_screen();
-        abort();
+        validate_failed();
+    }
+// Now I will check if the header looks good...
+    if (is_vector(p))
+    {   Header h = vechdr(p);
+        if (!is_vector_header_full_test(h))
+        {   term_printf("header of vector is wrong\n");
+            term_printf("Validation for %s at line %d of file %s (%d)\n",
+                        validate_why, validate_line, validate_file, validate_line1);
+            validate_failed();
+        }
+    }
+    if (is_symbol(p))
+    {   Header h = qheader(p);
+        if (!is_symbol_header_full_test(h))
+        {   term_printf("symbol header is wrong at %" PRIxPTR "\n", h);
+            term_printf("Validation for %s at line %d of file %s (%d)\n",
+                        validate_why, validate_line, validate_file, validate_line1);
+            validate_failed();
+        }
     }
     {   LispObject x = p;
         if (is_symbol(x)) x = qpname(x);
@@ -222,11 +243,7 @@ static int bitmap_mark_vec(LispObject p)
     term_printf("VecHeap: %d\n", vheap_pages_count);
     for (i=0; i<vheap_pages_count; i++)
         term_printf("%d:  %p\n", i, (void *)vheap_pages[i]);
-    term_printf("BpsHeap: %d\n", bps_pages_count);
-    for (i=0; i<bps_pages_count; i++)
-        term_printf("%d:  %p\n", i, (void *)bps_pages[i]);
-    ensure_screen();
-    abort();
+    validate_failed();
     return 1;
 }
 
@@ -257,7 +274,7 @@ static void validate(LispObject p, int line1)
     volatile const char *info = "unknown";
     Header h = 0;
     validate_line1 = line1;
-    intptr_t i = 0;
+    size_t i = 0;
     (void)info;   // Tends to prevent gcc from moaning about definition
                   // without use.
 top:
@@ -266,8 +283,7 @@ top:
     {   term_printf("NULL item found\n");
         term_printf("Validation for %s at line %d of file %s (%d)\n",
                     validate_why, validate_line, validate_file, validate_line1);
-        ensure_screen();
-        abort();
+        validate_failed();
     }
 //
 // The code here is going to be simply recursive so that if any problem
@@ -298,8 +314,7 @@ top:
             term_printf("\nBad object in VALIDATE (%.8lx)\n", (long)p);
             term_printf("Validation for %s at line %d of file %s (%d)\n",
                         validate_why, validate_line, validate_file, validate_line1);
-            ensure_screen();
-            abort();
+            validate_failed();
 
         case TAG_SYMBOL:
             info = "symbol";
@@ -730,8 +745,7 @@ ascend:
     switch ((int)b & TAG_BITS)
     {   default:
             term_printf("Bad tag bits in GC\n");
-            ensure_screen();
-            abort();
+            validate_failed();
 
         case TAG_CONS:
             w = qcdr(b);
@@ -787,8 +801,7 @@ ascend:
                 goto try_env;
             }
             term_printf("Backpointer not found in GC\n");
-            ensure_screen();
-            abort();            // backpointer not found
+            validate_failed();            // backpointer not found
 
         try_env:
             p = qenv(b);
@@ -957,8 +970,7 @@ ascend_from_vector:
     switch ((int)b & TAG_BITS)
     {   default:
             term_printf("Bad tag bits in GC\n");
-            ensure_screen();
-            abort();
+            validate_failed();
 
         case TAG_CONS:
             w = qcdr(b);
@@ -1023,8 +1035,7 @@ ascend_from_vector:
                 goto try_env;
             }
             term_printf("Failure in GC\n");
-            ensure_screen();
-            abort();
+            validate_failed();
 
         case TAG_NUMBERS:
 //
@@ -1194,8 +1205,7 @@ top:
 #endif
             // Fatal error really called for here
             term_printf("\nBad object in GC (%.8lx)\n", (long)p);
-            ensure_screen();
-            abort();
+            validate_failed();
             return;
 
         case TAG_SYMBOL:
@@ -1380,7 +1390,6 @@ bool volatile already_in_gc, tick_on_gc_exit;
 bool volatile interrupt_pending, tick_pending;
 LispObject volatile saveheaplimit;
 LispObject volatile savevheaplimit;
-LispObject volatile savecodelimit;
 LispObject * volatile savestacklimit;
 
 
@@ -1526,8 +1535,7 @@ static void adjust_vec_heap(void)
                 else len = doubleword_align_up(length_of_header(h));
                 if (len == 0)
                 {   term_printf("+++++ zero-length header %x\n", (int)h);
-                    ensure_screen();
-                    abort();
+                    validate_failed();
                 }
                 low += len;
             }
@@ -1537,7 +1545,7 @@ static void adjust_vec_heap(void)
             if (low >= fr) break;
 //
 // Otherwise I have found an active vector. Its header should have been
-// left with a back-pointer chain through all places that refereed to the
+// left with a back-pointer chain through all places that refered to the
 // vector.
 //
             h1 = h;
@@ -1645,8 +1653,7 @@ static void move_vec_heap(void)
 #ifdef DEBUG
             if (l >= CSL_PAGE_SIZE)
             {   term_printf("heap mangled - vector length wrong\n");
-                ensure_screen();
-                abort();
+                validate_failed();
             }
 #endif // DEBUG
             free = (uintptr_t)(new_high - p);
@@ -1931,8 +1938,7 @@ static void copy(LispObject *p)
                         qcar(fr) = SPID_GCMARK;
                         if (pages_count == 0)
                         {   term_printf("pages_count = 0 in GC\n");
-                            ensure_screen();
-                            abort();
+                            validate_failed();
                             return;
                         }
                         p = pages[--pages_count];
@@ -1953,65 +1959,6 @@ static void copy(LispObject *p)
                     qcar(a) = flip_mark_bit_p(w);
                     break;
                 }   // end of treatment of CONS
-                else if (is_bps(a))
-                {   char *d = data_of_bps(a) - CELL, *rr;
-                    int32_t alloc_size;
-                    Header h = *(Header *)d;
-                    int32_t len;
-                    if (is_bps(h))  // Replacement handle in header field?
-                    {   *p = h ;
-                        break;
-                    }
-                    len = length_of_header(h);
-                    alloc_size = doubleword_align_up(len);
-                    bytestreams += alloc_size;
-                    for (;;)
-                    {   char *cf = (char *)codefringe,
-                                  *cl = (char *)codelimit;
-                        int32_t free = (int32_t)(cf - cl);
-                        if (alloc_size > free)
-                        {   void *p;
-                            if (codelimit != 0)
-                            {   int32_t len = (int32_t)(cf - (cl - 8));
-                                car32(cl - 8) = len;
-                            }
-                            if (pages_count == 0)
-                            {   term_printf("pages_count = 0 in GC\n");
-                                ensure_screen();
-                                abort();
-                                return;
-                            }
-                            p = pages[--pages_count];
-                            zero_out(p);
-                            new_bps_pages[new_bps_pages_count++] = p;
-                            cl = (char *)doubleword_align_up((intptr_t)p);
-                            codefringe = (LispObject)(cl + CSL_PAGE_SIZE);
-                            codelimit = (LispObject)(cl + 8);
-                            continue;
-                        }
-                        rr = cf - alloc_size;
-                        codefringe = (LispObject)rr;
-//
-// See comments in fns2.c for the curious packing here! Note that I carefully
-// ensure that I compute everything as a uint32_t before I turn it into a
-// Header, and as a result the top half of the Header will always be
-// zero if I am on a 64-bit system. This should be proper for a reference
-// into a new page, but remember that I put a non-zero value in the top
-// half of a 64-bit word when expanding a 32-bit heap image for use of a
-// 64-bit machine via the use of double-sized pages.
-//
-                        *(Header *)d = *p = (Header)(uint32_t)(TAG_BPS +
-                                                               (((uint32_t)((rr + CELL) - (cl - 8)) &
-                                                                       (PAGE_POWER_OF_TWO-4)) << 6) +
-                                                               (((uint32_t)
-                                                                       (new_bps_pages_count-1))<<(PAGE_BITS+6)));
-                        // Wow! How obscure!!
-                        *(Header *)rr = h;
-                        memcpy(rr+CELL, d+CELL, alloc_size-CELL);
-                        break;
-                    }
-                    break;
-                }
                 else break;        // Immediate data drops out here
             }
             else                    // Here I have a symbol or vector
@@ -2063,8 +2010,7 @@ static void copy(LispObject *p)
                         qcar(vfr) = 0;          // sentinel value
                         if (pages_count == 0)
                         {   term_printf("pages_count = 0 in GC\n");
-                            ensure_screen();
-                            abort();
+                            validate_failed();
                             return;
                         }
                         p1 = pages[--pages_count];
@@ -2356,9 +2302,7 @@ LispObject Lmapstore(LispObject nil, LispObject a)
                     if (is_cons(e))
                     {   e = qcar(e);
                         if (is_bps(e))
-                        {   Header ch = *(Header *)(data_of_bps(e) - CELL);
-                            clen = length_of_byteheader(ch) - CELL;
-                        }
+                            clen = length_of_byteheader(vechdr(e)) - CELL;
                     }
                     n = qcount(low + TAG_SYMBOL);
                     if (n != 0 && clen != 0)
@@ -2452,7 +2396,6 @@ LispObject Lmapstore0(LispObject nil, int nargs, ...)
 }
 
 static bool reset_limit_registers(intptr_t vheap_need,
-                                     intptr_t bps_need,
                                      intptr_t native_need,
                                      bool stack_flag)
 //
@@ -2476,7 +2419,6 @@ static bool reset_limit_registers(intptr_t vheap_need,
         full = (pages_count <=
                 heap_pages_count +
                 (3*(vheap_pages_count +
-                    bps_pages_count +
                     native_pages_count) + 1)/2);
     else
         full = (pages_count <= 1);
@@ -2509,21 +2451,6 @@ static bool reset_limit_registers(intptr_t vheap_need,
         len = (uintptr_t)(vf - (vh - (CSL_PAGE_SIZE - 8)));
         car32(vh - (CSL_PAGE_SIZE - 8)) = len;
     }
-    {   char *cl = (char *)codelimit,
-                  *cf = (char *)codefringe;
-        len = (uintptr_t)(cf - cl);
-    }
-    if (bps_need != 0 && bps_need >= (intptr_t)len)
-    {   char *cl;
-        if (full || bps_pages_count >= MAX_BPS_PAGES - 1) return false;
-        p = pages[--pages_count];
-        space_now++;
-        zero_out(p);
-        bps_pages[bps_pages_count++] = p;
-        cl = (char *)doubleword_align_up((intptr_t)p);
-        codefringe = (LispObject)(cl + CSL_PAGE_SIZE);
-        codelimit = (LispObject)(cl + 8);
-    }
     if (native_need != 0)
     {   if (full || native_pages_count >= MAX_NATIVE_PAGES - 1) return false;
         p = pages[--pages_count];
@@ -2545,10 +2472,8 @@ static void tidy_fringes(void)
 //
 {   char *fr = (char *)fringe,
          *vf = (char *)vfringe,
-         *cf = (char *)codefringe,
          *hl = (char *)heaplimit,
-         *vl = (char *)vheaplimit,
-         *cl = (char *)codelimit;
+         *vl = (char *)vheaplimit;
     int32_t len = (int32_t)(fr - (hl - SPARE));
 //
 // If I used the top bit of this location to save info that a page
@@ -2557,10 +2482,6 @@ static void tidy_fringes(void)
     car32(hl - SPARE) = len;
     len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
     car32(vl - (CSL_PAGE_SIZE - 8)) = (LispObject)len;
-    if (codelimit != 0)
-    {   len = (int32_t)(cf - (cl - 8));
-        car32(cl - 8) = len;
-    }
 }
 
 static void lose_dead_hashtables(void)
@@ -2622,7 +2543,7 @@ int async_interrupt(int type)
 #endif // HAVE_FWIN
 
 static void report_at_end(LispObject nil)
-{   int n = heap_pages_count + vheap_pages_count + bps_pages_count;
+{   int n = heap_pages_count + vheap_pages_count;
     int n1 = n + pages_count;
     double fn = (double)n*(CSL_PAGE_SIZE/(1024.0*1024.0));
     double fn1 = (double)n1*(CSL_PAGE_SIZE/(1024.0*1024.0));
@@ -2771,7 +2692,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     clock_t t0, t1, t2, t3;
     int bottom_page_number;
     LispObject *sp, nil = C_nil;
-    intptr_t vheap_need = 0, bps_need = 0, native_need = 0;
+    intptr_t vheap_need = 0, native_need = 0;
 #ifdef DEBUG_GC
     term_printf("Start of a garbage collection %d\n", gc_number);
 #endif // DEBUG_GC
@@ -2789,8 +2710,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
                  (void *)C_stackbase, (void *)C_stacktop);
 #endif // CONSERVATIVE
     stop_after_gc = 0;
-    if (stg_class == GC_VEC) vheap_need = size;
-    else if (stg_class == GC_BPS) bps_need = size;
+    if (stg_class == GC_VEC || stg_class == GC_BPS) vheap_need = size;
     else if (stg_class == GC_NATIVE) native_need = size;
     already_in_gc = true;
 #if defined WIN32 && !defined __CYGWIN__
@@ -2821,7 +2741,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         {   tick_pending = 0;
             heaplimit = saveheaplimit;
             vheaplimit = savevheaplimit;
-            codelimit = savecodelimit;
             stacklimit = savestacklimit;
         }
         tidy_fringes();
@@ -2872,7 +2791,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         {   tick_pending = 0;
             heaplimit = saveheaplimit;
             vheaplimit = savevheaplimit;
-            codelimit = savecodelimit;
             stacklimit = savestacklimit;
         }
         tidy_fringes();
@@ -2891,7 +2809,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     {   tidy_fringes();
         if (stg_class != GC_PRESERVE &&
             stg_class != GC_USER_HARD &&
-            reset_limit_registers(vheap_need, bps_need, native_need, true))
+            reset_limit_registers(vheap_need, native_need, true))
         {   already_in_gc = false;
             pop_clock();
 #ifdef DEBUG_VALIDATE
@@ -3076,7 +2994,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 //
         new_heap_pages_count = 0;
         new_vheap_pages_count = 0;
-        new_bps_pages_count = 0;
         trailing_heap_pages_count = 1;
         trailing_vheap_pages_count = 1;
         {   void *pp = pages[--pages_count];
@@ -3107,10 +3024,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             vheaplimit = (LispObject)vl;
             len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
             car32(vl - (CSL_PAGE_SIZE - 8)) = (LispObject)len;
-//
-// The BPS heap can start of utterly non-existent.
-//
-            codefringe = codelimit = 0;
         }
 
 //
@@ -3192,8 +3105,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             pages[pages_count++] = heap_pages[--heap_pages_count];
         while (vheap_pages_count!=0)
             pages[pages_count++] = vheap_pages[--vheap_pages_count];
-        while (bps_pages_count!=0)
-            pages[pages_count++] = bps_pages[--bps_pages_count];
 
 //
 // Flip the descriptors for the old and new semi-spaces.
@@ -3204,15 +3115,10 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             w = vheap_pages;
             vheap_pages = new_vheap_pages;
             new_vheap_pages = w;
-            w = bps_pages;
-            bps_pages = new_bps_pages;
-            new_bps_pages = w;
             heap_pages_count = new_heap_pages_count;
             new_heap_pages_count = 0;
             vheap_pages_count = new_vheap_pages_count;
             new_vheap_pages_count = 0;
-            bps_pages_count = new_bps_pages_count;
-            new_bps_pages_count = 0;
         }
     }
     else
@@ -3281,18 +3187,12 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 
         {   char *fr = (char *)fringe,
                  *vf = (char *)vfringe,
-                 *cf = (char *)codefringe,
                  *hl = (char *)heaplimit,
-                 *vl = (char *)vheaplimit,
-                 *cl = (char *)codelimit;
+                 *vl = (char *)vheaplimit;
             uintptr_t len = (uintptr_t)(fr - (hl - SPARE));
             car32(hl - SPARE) = len;
             len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
             car32(vl - (CSL_PAGE_SIZE - 8)) = len;
-            if (codelimit != 0)
-            {   len = (uintptr_t)(cf - (cl - 8));
-                car32(cl - 8) = len;
-            }
         }
 
         abandon_heap_pages(bottom_page_number);
@@ -3380,9 +3280,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // real memory more sophisticated calculations may be possible.
 //
     if (init_flags & INIT_EXPANDABLE)
-    {   int ideal = ok_to_grab_memory(heap_pages_count +
-                                      vheap_pages_count +
-                                      bps_pages_count);
+    {   int ideal = ok_to_grab_memory(heap_pages_count + vheap_pages_count);
         int more;
         if (ideal > MAX_PAGES) ideal = MAX_PAGES;
         if (max_store_size != 0.0)
@@ -3419,7 +3317,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         }
     }
 #endif // MEMORY_TRACE
-    if (!reset_limit_registers(vheap_need, bps_need, native_need, false))
+    if (!reset_limit_registers(vheap_need, native_need, false))
     {   if (stack < stacklimit || stacklimit != stackbase)
         {   report_at_end(nil);
             term_printf("\n+++ No space left at all\n");
@@ -3441,8 +3339,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 //
     gc_method_is_copying = (pages_count >
                             3*(heap_pages_count +
-                               (3*(vheap_pages_count + bps_pages_count +
-                                   native_pages_count))/2));
+                             (3*(vheap_pages_count + native_pages_count))/2));
     if (force_reclaim_method < 0) gc_method_is_copying = 0;
     else if (force_reclaim_method > 0) gc_method_is_copying = 1;
     if (stop_after_gc)

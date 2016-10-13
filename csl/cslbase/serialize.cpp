@@ -210,6 +210,9 @@ static bool descend_symbols = true;
 #define   SER_NIL          0x12    // the very special case of NIL
 #define   SER_END          0x13    // a redundant marker for end of heap dump
 
+#ifdef DEBUG_SERIALIZE
+#define   SER_OPNEXT      0x14    // for debugging
+
 static const char *ser_various_names[] =
 {   "RAWSYMBOL",
     "DUPRAWSYMBOL",
@@ -231,7 +234,7 @@ static const char *ser_various_names[] =
     "BITVEC",
     "NIL",
     "END",
-    "op14",
+    "op14",   // OPNEXT
     "op15"
     "op16",
     "op17",
@@ -244,6 +247,8 @@ static const char *ser_various_names[] =
     "op1e",
     "op1f"
 };
+
+#endif
 
 // The ones from here on have not yet been allocated
 
@@ -297,6 +302,8 @@ static const char *ser_various_names[] =
 // more pressing use emerges leter on.
 #define SER_SPARE    0xe0
 
+#ifdef DEBUG_SERIALIZE
+
 static const char *ser_opnames[] =
 {   "misc",
     "BACKREF0",
@@ -314,6 +321,7 @@ static void ser_print_opname(int n)
     else printf("%s %d", ser_opnames[top], n & 0x1f);
 }
 
+#endif
 
 // For a full Reduce image there are around 7000 items that have multiple
 // references to the, but my code makes the tables that I use expand as
@@ -347,12 +355,12 @@ size_t repeat_heap_size = 0, repeat_count = 0;
 
 // This tiny function exists just so that I can set a breakpoint on it.
 void myabort()
-{   abort();
+{   fflush(stdout);
+    abort();
 }
 
 void reader_setup_repeats(size_t n)
-{   printf("reader_set_up_repeats %d\n", (int)n);
-    if (repeat_heap_size != 0 ||
+{   if (repeat_heap_size != 0 ||
         repeat_heap != NULL)
     {   printf("\n+++ repeat heap processing error\n");
         fflush(stdout);
@@ -398,8 +406,7 @@ void writer_setup_repeats()
 // not using move-to-front at all.
 
 LispObject reader_repeat_old(size_t n)
-{
-    if (n == 1) return repeat_heap[1];
+{   if (n == 1) return repeat_heap[1];
     LispObject w;
     for (;;)
     {   size_t n2 = n/2;           // parent in binary heap
@@ -473,8 +480,14 @@ int serincount = 0;
 unsigned char serbuffer[SERSIZE];
 
 
-int read_byte()
+int read_opcode_byte()
 {   int r;
+#ifdef DEBUG_SERIALIZE
+// In this case each serialization opcode is prceeded by SER_OPNEXT. This
+// should mean that if anything gets out of step because seruialzation
+// data is malformed that this is noticed and reported promptly. Such failures
+// either reflext internal inconsistency between the serialization read and
+// write code or some corruption of data after writing but before reading.
     if (binary_read_file != NULL) r = Igetc();
     else
     {   if (serincount > sercounter)
@@ -486,9 +499,65 @@ int read_byte()
     }
     r &= 0xff;
     printf("Read %d = %.2x ", r, r);
+    if (r != SER_OPNEXT)
+    {   printf("\nExpected OPNEXT but did not find it\n");
+        myabort();
+    }
+    else printf("SER_OPNEXT\n");
+#endif
+    if (binary_read_file != NULL) r = Igetc();
+    else
+    {   if (serincount > sercounter)
+        {   printf("\nRead too much\n");
+            fflush(stdout);
+            myabort();
+        }
+        r = serbuffer[serincount++];
+    }
+    r &= 0xff;
+#ifdef DEBUG_SERIALIZE
+    printf("Read %d = %.2x ", r, r);
     ser_print_opname(r);
+    printf("\n");
+#endif
+    return r;
+}
+
+int read_data_byte()
+{   int r;
+    if (binary_read_file != NULL) r = Igetc();
+    else
+    {   if (serincount > sercounter)
+        {   printf("\nRead too much\n");
+            fflush(stdout);
+            myabort();
+        }
+        r = serbuffer[serincount++];
+    }
+    r &= 0xff;
+#ifdef DEBUG_SERIALIZE
+    printf("Read %d = %.2x\n", r, r);
+#endif
+    return r;
+}
+
+int read_string_byte()
+{   int r;
+    if (binary_read_file != NULL) r = Igetc();
+    else
+    {   if (serincount > sercounter)
+        {   printf("\nRead too much\n");
+            fflush(stdout);
+            myabort();
+        }
+        r = serbuffer[serincount++];
+    }
+    r &= 0xff;
+#ifdef DEBUG_SERIALIZE
+    printf("Read %d = %.2x ", r, r);
     if (0x20 <= r && r <= 0x7f) printf(" = '%c'", r);
     printf("\n");
+#endif
     return r;
 }
 
@@ -497,13 +566,33 @@ int read_byte()
 // transcript of what there is... That will not be useful for much more
 // the debugging!
 
-void write_byte(int byte, const char *msg, ...)
-{   va_list a;
+void write_opcode(int byte, const char *msg, ...)
+{
+#ifdef DEBUG_SERIALIZE
+    va_list a;
+    printf("<opcode prefix> %.2x\n", SER_OPNEXT);
+    if (binary_write_file != NULL) Iputc(SER_OPNEXT);
+    else if (sercounter < SERSIZE) serbuffer[sercounter++] = SER_OPNEXT;
     printf("%.2x: ", byte & 0xff);
     va_start(a, msg);
     vprintf(msg, a);
     printf("\n");
     va_end(a);
+#endif
+    if (binary_write_file != NULL) Iputc(byte);
+    else if (sercounter < SERSIZE) serbuffer[sercounter++] = byte;
+}
+
+void write_byte(int byte, const char *msg, ...)
+{
+#ifdef DEBUG_SERIALIZE
+    va_list a;
+    printf("%.2x: ", byte & 0xff);
+    va_start(a, msg);
+    vprintf(msg, a);
+    printf("\n");
+    va_end(a);
+#endif
     if (binary_write_file != NULL) Iputc(byte);
     else if (sercounter < SERSIZE) serbuffer[sercounter++] = byte;
 }
@@ -519,11 +608,11 @@ uint64_t read_u64()
 {   uint64_t r = 0;
     int b, i;
     for (i=0; i<8; i++)
-    {   if (((b = read_byte()) & 0x80) != 0)
+    {   if (((b = read_data_byte()) & 0x80) != 0)
             return (r << 7)  | (b & 0x7f);
         r = (r << 7) | b;
     }
-    return (r << 8) | read_byte();
+    return (r << 8) | read_data_byte();
 }
 
 // Write a 64-bit unsigned value in a format compatible with read_u64()
@@ -536,8 +625,17 @@ void write_u64(uint64_t n)
         return;
     }
     int final = 7;
-    if ((n & UINT64_C(0xff000000000000)) != 0) final = 8;
     bool any = false;
+// There is a case here that has caught me out.
+// A number with 57 bits (eg 0x01aabbbbccccdddd) needs 9 bytes to encode it,
+// and these will be used for 7+7+7+7+7+7+7+8 bits apiece. Thus the leading
+// byte will be all zero (because the final byte will use all 8 of its bits).
+// So schemes that otherwise discard leading zeros must not do so in this
+// particular situation!
+    if ((n & UINT64_C(0xff00000000000000)) != 0)
+    {   final = 8;
+        any = true;
+    }
     for (int i=0; i<8; i++)
     {   int b = (n >> (7*(7-i)+final)) & 0x7f;
         if (any || (b != 0))
@@ -579,16 +677,16 @@ typedef union _float32u
 float read_f32()
 {   float32u u;
     if ((current_fp_rep & FP_BYTE_ORDER) == 0)
-    {   u.i[0] = read_byte();
-        u.i[1] = read_byte();
-        u.i[2] = read_byte();
-        u.i[3] = read_byte();
+    {   u.i[0] = read_data_byte();
+        u.i[1] = read_data_byte();
+        u.i[2] = read_data_byte();
+        u.i[3] = read_data_byte();
     }
     else
-    {   u.i[3] = read_byte();
-        u.i[2] = read_byte();
-        u.i[1] = read_byte();
-        u.i[0] = read_byte();
+    {   u.i[3] = read_data_byte();
+        u.i[2] = read_data_byte();
+        u.i[1] = read_data_byte();
+        u.i[0] = read_data_byte();
     }
     return u.f;
 }
@@ -621,16 +719,16 @@ double read_f64()
     {   int j = i;
         if ((current_fp_rep & FP_WORD_ORDER) != 0) j = j ^ 4;
         if ((current_fp_rep & FP_BYTE_ORDER) == 0)
-        {   u.i[j+0] = read_byte();
-            u.i[j+1] = read_byte();
-            u.i[j+2] = read_byte();
-            u.i[j+3] = read_byte();
+        {   u.i[j+0] = read_data_byte();
+            u.i[j+1] = read_data_byte();
+            u.i[j+2] = read_data_byte();
+            u.i[j+3] = read_data_byte();
         }
         else
-        {   u.i[j+3] = read_byte();
-            u.i[j+2] = read_byte();
-            u.i[j+1] = read_byte();
-            u.i[j+0] = read_byte();
+        {   u.i[j+3] = read_data_byte();
+            u.i[j+2] = read_data_byte();
+            u.i[j+1] = read_data_byte();
+            u.i[j+0] = read_data_byte();
         }
     }
     return u.f;
@@ -1049,6 +1147,18 @@ uint64_t use_setup(uint64_t crc, const setup_type *p)
 
 uint64_t function_crc = 0;
 
+void *residual_functions[] =
+{   (void *)Lload_spid,
+    (void *)Leval,
+    (void *)Lis_spid,
+    (void *)Lspid_to_nil,
+    (void *)Lmv_list,
+    (void *)Lload_source,
+    (void *)noisy_progn_fn,
+    (void *)Lcons,
+    NULL
+};
+
 void set_up_function_tables()
 {   uint64_t crc = 0;
     printf("Setting up functions table\n");
@@ -1101,34 +1211,16 @@ void set_up_function_tables()
     p++;  // setup_tables is in two parts, separated by a NULL.
     while (*p != NULL) crc = use_setup(crc, *p++);
 //
-// I think that there ougtt not to be any extra things in the tables
-// scanned below, but let me check that!
+// There are a few entrypoints that do not manage to end up in the
+// usual tables, so I put them spomewhere special. Some of them exist
+// solely for use from (native) compiled code or other unusual
+// situations...
 //
-    for (n_args **p = no_arg_functions; *p!=NULL; p++)
-    {   sprintf(b, "no_arg_functions[%d]", (int)(p-no_arg_functions));
+    for (void **p = residual_functions; *p!=NULL; p++)
+    {   sprintf(b, "residual_functions[%d]", (int)(p-residual_functions));
         insert_codepointer((uintptr_t)(uintptr_t)*p, b);
     }
-    for (no_args **p = new_no_arg_functions; *p!=NULL; p++)
-    {   sprintf(b, "new_no_arg_functions[%d]", (int)(p-new_no_arg_functions));
-        insert_codepointer((uintptr_t)(uintptr_t)*p, b);
-    }
-    for (one_args **p = one_arg_functions; *p!=NULL; p++)
-    {   sprintf(b, "one_arg_functions[%d]", (int)(p-one_arg_functions));
-        insert_codepointer((uintptr_t)(uintptr_t)*p, b);
-    }
-    for (two_args **p = two_arg_functions; *p!=NULL; p++)
-    {   sprintf(b, "two_arg_functions[%d]", (int)(p-two_arg_functions));
-        insert_codepointer((uintptr_t)(uintptr_t)*p, b);
-    }
-// For NOW three_arg_functions use the old va_arg scheme...
-    for (n_args **p = three_arg_functions; *p!=NULL; p++)
-    {   sprintf(b, "three_arg_functions[%d]", (int)(p-three_arg_functions));
-        insert_codepointer((uintptr_t)(uintptr_t)*p, b);
-    }
-    for (four_args **p = four_arg_functions; *p!=NULL; p++)
-    {   sprintf(b, "four_arg_functions[%d]", (int)(p-four_arg_functions));
-        insert_codepointer((uintptr_t)(uintptr_t)*p, b);
-    }
+
     printf("There are %u entries in the code pointer table\n",
            (unsigned int)ncodepointers);
     printf("CRC for table of defined entrypoints = %" PRIx64 "\n", crc);
@@ -1138,7 +1230,8 @@ void set_up_function_tables()
 void *read_function()
 {   uint64_t handle = read_u64();
     if (handle == 0 || handle >= ncodepointers)
-    {   printf("Invalid code handle read (%" PRIu64 ")\n", handle);
+    {   printf("Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
+                handle, handle);
         fflush(stdout);
         myabort();
     }
@@ -1154,7 +1247,8 @@ void write_function(void *p)
     }
     uint64_t handle = hash_get_value(&codehash, h);
     if (handle == 0 || handle >= ncodepointers)
-    {   printf("Invalid code handle recovered\n");
+    {   printf("Invalid code handle recovered for writing codepointer\n");
+        printf("codehash hash-table presumed messed up!\n");
         fflush(stdout);
         myabort();
     }
@@ -1204,12 +1298,11 @@ down:
 // case is LEAF which will include immediate data such as FIXNUMS, but
 // alse big-numbers, strings and back-references to previously-read
 // structures.
-    c = read_byte();
+    c = read_opcode_byte();
     switch (c & 0xe0)
     {   case SER_VARIOUS:
             switch (c)
             {   case SER_CONS:
-printf("SER_CONS\n");
 // I should protect pbase, b, r and s across this, and I need to worry about
 // p because it could point within any previously allocated structure
 // or it could point at r. To make that safe I believe I will need to
@@ -1221,7 +1314,6 @@ printf("SER_CONS\n");
                     p = &qcar(b);
                     goto down;
                 case SER_DUPCONS:
-printf("SER_DUPCONS\n");
 // As SER_CONS but the item constructed will be referenced again so it need
 // to be entered in the relevant table. Thie could have been rendered as
 // SER_CONS; SER_DUP but I have chosen to provide a single opcode to handle it
@@ -1233,7 +1325,6 @@ printf("SER_DUPCONS\n");
                     goto down;
 
                 case SER_BIGBACKREF:
-printf("SER_BIGBACKREF\n");
 // Back references with an offset from 1..64 are dealt with using special
 // compact opcodes. Here I have something that reaches further back. The main
 // opcode is followed by a sequence of bytes and if this represents the value
@@ -1251,28 +1342,22 @@ printf("SER_BIGBACKREF\n");
                     goto up;
 
                 case SER_DUP:
-printf("SER_DUP\n");
-// This is issues just after a SER_VECTOR (etc) code that will
+// This is issued just after a SER_VECTOR (etc) code that will
 // have left pbase referring to the object just allocated.
                     reader_repeat_new(prev);
                     goto down;
 
                 case SER_POSFIXNUM:
-printf("SER_POSFIXNUM\n");
 // This case reads a 64-bit value and construct either a fixnum or a boxnum
 // as relevant. If it creates a boxnum then that could possibly be a shared
 // object, and against the possibility of that I set pbase so that a
 // SER_DUP opcode can behave meaningfully. Note that this can make
 // a full 64-bit positive integer because it reads and processes its input
 // as an unsigned value.
-{ uint64_t vv;
-                    prev = *p = make_lisp_unsigned64(vv=read_u64());
-printf("value of integer = %" PRIu64 "\n", vv);
-}
+                    prev = *p = make_lisp_unsigned64(read_u64());
                     goto up;
 
                 case SER_NEGFIXNUM:
-printf("SER_NEGFIXNUM\n");
 // Negative (small to medium-sized) integers are given a separate code here
 // beause packing then using sign-and-magnitude seems easier. The extra "-1"
 // here is both to avoid having the duplicated case of +0 and -0 and to
@@ -1285,7 +1370,6 @@ printf("SER_NEGFIXNUM\n");
                     goto up;
 
                 case SER_DUPRAWSYMBOL:
-printf("DUP");
                 case SER_RAWSYMBOL:
 // SER_RAWSYMBOL is used while dumping complete heap-images. The opcode here
 // is followed by information to go into the header word of the symbol (various
@@ -1294,15 +1378,16 @@ printf("DUP");
 // that all the list-like components will be transmitted (much as if they were
 // elements in a vector). The key parts of this work using the same scheme as
 // for SER_LVECTOR.
-printf("RAWSYMBOL\n");
                     prev = w = *p = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
-                    if (c == SER_DUPRAWSYMBOL)
-                    {   printf("adding to repeat table\n");
-                        reader_repeat_new(prev);
-                    }
+                    if (c == SER_DUPRAWSYMBOL) reader_repeat_new(prev);
+// Note that the vector as created will have its LENGTH encoded in the
+// header, but for symbols that is incorrect so I need to re-write the
+// header wholesale here. Note that a symbol header has the normal tag for
+// headers in its low bits then two zero bits to indicate that it is
+// a symbol.
+                    qheader(w) = (Header)((read_u64()<<(Tw+4)) + TAG_HDR_IMMED);
 // I will first fill in the fields that hold binary data or pointers to
 // executable code.
-                    qheader(w) |= (Header)(read_u64()<<(Tw+4));
                     qfn0(w) = (no_args *)read_function();
                     qfn1(w) = (one_args *)read_function();
                     qfn2(w) = (two_args *)read_function();
@@ -1313,13 +1398,6 @@ printf("RAWSYMBOL\n");
 // say that it COULD.
                     qfn4(w) = (four_args *)read_function();
                     qcount(w) = read_u64();
-printf("header = %" PRIx64 "\n", (uintptr_t)qheader(w));
-printf("fn0 = %" PRIx64 "\n", (uintptr_t)qfn0(w));
-printf("fn1 = %" PRIx64 "\n", (uintptr_t)qfn1(w));
-printf("fn2 = %" PRIx64 "\n", (uintptr_t)qfn2(w));
-printf("fn3 = %" PRIx64 "\n", (uintptr_t)qfn3(w));
-printf("fn4 = %" PRIx64 "\n", (uintptr_t)qfn4(w));
-printf("count = %" PRIx64 "\n", qcount(w));
 // Now to allow me to feel safe I will put NIL in all the other fields
 // on a provisional basis. They get their proper values later.
                     qvalue(w) = qenv(w) = qpname(w) = qplist(w) =
@@ -1329,7 +1407,6 @@ printf("count = %" PRIx64 "\n", qcount(w));
 #define PNAME_INDEX (&qpname(w) - &qvalue(w))
                     s = cons(fixnum_of_int(PNAME_INDEX), s);
                     prev = pbase = b;
-printf("p = %p for pname cell of symbol, b = %p\n", p, (void *)qvalue(w));
                     p = &qpname(b);
                     goto down;
 
@@ -1338,7 +1415,6 @@ printf("p = %p for pname cell of symbol, b = %p\n", p, (void *)qvalue(w));
                 case SER_DUPSYMBOL:
                 case SER_GENSYM:
                 case SER_DUPGENSYM:
-printf("(dup)SYMBOL or (dup)GENSYM\n");
 // All of these cases are followed by a length marker and the the octets
 // making up the UTF-8 name of the symbol. If the "DUP" options is present
 // then the symbol must be entered in the table of items that are referenced
@@ -1353,7 +1429,7 @@ printf("(dup)SYMBOL or (dup)GENSYM\n");
 // issue of the interaction between serialization and a package system is
 // not thought through at present - things will be read in in the
 // current package (to the extent that such a concept exists or makes sense).
-                    for (size_t i=0; i<len; i++) packbyte(read_byte());
+                    for (size_t i=0; i<len; i++) packbyte(read_string_byte());
                     if (c == SER_GENSYM || c == SER_DUPGENSYM)
                     {   w = copy_string(boffo, boffop);
                         w = Lgensym1(C_nil, w);
@@ -1366,33 +1442,28 @@ printf("(dup)SYMBOL or (dup)GENSYM\n");
                 }
 
                 case SER_FLOAT28:
-printf("FLOAT28\n");
 // A 28-bit short float
                     printf("SER_FLOAT28 not coded yet\n");
                     fflush(stdout);
                     myabort();
 
                 case SER_FLOAT32:
-printf("FLOAT32\n");
 // a 32-bit single float
                     prev = *p = make_boxfloat(read_f32(), TYPE_SINGLE_FLOAT);
                     goto up;
 
                 case SER_FLOAT64:
-printf("FLOAT64\n");
 // a 64-bit (long) float
                     prev = *p = make_boxfloat(read_f64(), TYPE_DOUBLE_FLOAT);
                     goto up;
 
                 case SER_FLOAT128:
-printf("FLOAT128\n");
 // a 128-bit (double-length) float.
                     prev = *p = make_boxfloat(0.0, TYPE_LONG_FLOAT);
                     long_float_val(prev) = read_f128();
                     goto up;
 
                 case SER_CHARSPID:
-printf("CHAR or SPID\n");
 // a packed characters literal. Characters that are Basic Latin can be coded
 // here with just 2 bytes, so for instance 'A' is SER_CHAR/0x41. Codes up to
 // U+3fff come in 3 bytes and so on. Note that the encoding is NOT utf8 - it is
@@ -1401,30 +1472,26 @@ printf("CHAR or SPID\n");
 // shown here and I just send the rest of the data as a raw number. Note
 // that bytecode handles can be dealt with here if I understand them -
 // which for now I do not!
-{ uint64_t v = read_u64();
-  printf("SPID data = %" PRIx64 "\n", v<<(Tw+2));
-                    prev = *p = ((LispObject)v<<(Tw+2)) | TAG_HDR_IMMED;
-}
+                    {   uint64_t v = read_u64();
+                        prev = *p = ((LispObject)v<<(Tw+2)) | TAG_HDR_IMMED;
+                    }
                     goto up;
 
                 case SER_BITVEC:
-printf("BITVEC\n");
                     w = read_u64();
                     {   size_t len = CELL + (w + 7)/8; // length in bytes
                         prev = *p = getvector(TAG_VECTOR, bitvechdr_(w), len);
                         char *x = &celt(prev, 0);
-                        for (size_t i=0; i<(size_t)w; i++) *x++ = read_byte();
+                        for (size_t i=0; i<(size_t)w; i++) *x++ = read_data_byte();
                         while (((intptr_t)x & 7) != 0) *x++ = 0;
                     }
                     goto up;
 
                 case SER_NIL:
-printf("NIL\n");
                     prev = *p = C_nil;
                     goto up;
 
                 case SER_END:
-printf("END\n");
                     printf("End of dump marker found - this is an error situation\n");
                     fflush(stdout);
                     myabort();
@@ -1448,7 +1515,6 @@ printf("END\n");
             }
             break;
         case SER_LVECTOR:
-printf("LVECTOR\n");
 // The issue of protection of p against garbage collection is perhaps
 // harder here, because if may not be possible to allocate a vector
 // until garbage collection is over. But p does not point to the start
@@ -1484,22 +1550,31 @@ printf("LVECTOR\n");
 // what I need to pass to getvector makes that into a byte count and allows
 // for the header word as well.
             size_t n = read_u64();
-printf("Create a vector with %" PRId64 " cells plus the header word\n", n);
-            w = *p = getvector(tag, type, CELL*(n+1));
+            prev = w = *p = getvector(tag, type, CELL*(n+1));
 // Note that the "vector" just created may be tagged with TAG_NUMBERS
-// rather than TAG_VECTOR
-            if (!SIXTY_FOUR_BIT && ((n & 1) != 0))
+// rather than TAG_VECTOR, so I use the access macro "vselt" rather than
+// "elt" - and that survives whichever case I am in.
+// Now if I am on a 32-bit system and the vector uses a header word and then
+// and even number of words of data it will use a padder word to bring its
+// total size up to a 64-bit boundary. Tidy up that final word.
+            if (!SIXTY_FOUR_BIT && ((n & 1) == 0))
                 vselt(w, n) = fixnum_of_int(0);
+// If the vector does not have any content at all then I am now done.
+            if (n == 0) goto up;
 // In case there is a GC before I have finished filling in proper values
 // in the vector I will out in values that are at least safe.
             for (size_t i=0; i<n; i++) vselt(w, i) = fixnum_of_int(0);
-            if (is_mixed_header(vechdr(w)))
-            {   n = 2;  // Ie elements 0, 1 and 2
-                printf("Header of mixed = %" PRIx64 "\n", (uint64_t)vechdr(w));
-            }
+            if (is_mixed_header(vechdr(w))) n = 2;  // Ie elements 0, 1 and 2
             else n--; // final element is at n-1
 // Vectors chain through the first entry. If a vector was empty so it did not
 // have a first entry to use here it would have needed to be dumped as a LEAF.
+// But a special additional issue is that if the vector omly has one item in it
+// then I must NOT set up back-pointers and the "s-stack" in quite the usual
+// manner...
+            if (n == 0)
+            {   p = &vselt(w, 0);
+                goto down;
+            }
             vselt(w, 0) = b;
             b = w;
             s = cons(fixnum_of_int(n), s);
@@ -1510,26 +1585,20 @@ printf("Create a vector with %" PRId64 " cells plus the header word\n", n);
 
 
         case SER_BACKREF0:
-printf("BACKREF0\n");
             *p = reader_repeat_old(1 + (c & 0x1f));
-            printf("backref %d => %" PRIxPTR "\n", 1 + (c & 0x1f), (uintptr_t)*p);
             goto up;
 
         case SER_BACKREF1:
-printf("BACKREF1\n");
             *p = reader_repeat_old(1 + 32 + (c & 0x1f));
-//      printf("backref %d => %" PRIxPTR "\n", 33 + (c & 0x1f), (uintptr_t)*p);
             goto up;
 
         case SER_FIXNUM:
-printf("FIXNUM\n");
             c = c & 0x1f;
             if ((c & 0x10) != 0) c |= ~0x0f; // sign extend
             *p = fixnum_of_int(c);
             goto up;
 
         case SER_STRING:
-printf("STRING\n");
 // String will be very much like BVECTOR except that because I expect it to be
 // an especially important case I pack a length code into the 5-bit field of
 // the opcode byte and the type information is implicit. This code only copes
@@ -1538,12 +1607,9 @@ printf("STRING\n");
             w = (c & 0x1f) + 1;
             prev = *p = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w);
             {   char *x = &celt(prev, 0);
-                for (size_t i=0; i<(size_t)w; i++) *x++ = read_byte();
+                for (size_t i=0; i<(size_t)w; i++) *x++ = read_string_byte();
                 while (((intptr_t)x & 7) != 0) *x++ = 0;
             }
-        printf("String: %.*s\n", (int)w, &celt(prev, 0));
-//      printf("at end of SER_STRING prev = %" PRIxPTR "\n",
-//             (uintptr_t)prev);
             goto up;
 
 // I had considered having a special opcode to deal with strings of length 0
@@ -1554,12 +1620,10 @@ printf("STRING\n");
 // information.
 
         case SER_BVECTOR:
-printf("BINARY-VECTOR (inc longer strings)\n");
 // The general case for vectors containing binary information is followed
 // by a length code that shows how many items there are in the vector.
 // This counts in the natural size for the vector.
             w = read_u64();
-printf("w = %d at line %d\n", (int)w, __LINE__);
 // Here I have assembled 7 bits of type information in c. CCCCC comes from the
 // opcode. The header I want for my vector will be
 //     wwwwwwww....wwww CCC CC 10 g100
@@ -1569,25 +1633,22 @@ printf("w = %d at line %d\n", (int)w, __LINE__);
                 if (vector_i8(type))
                 {   prev = *p = getvector(tag, type, CELL+w);
                     char *x = (char *)start_contents(prev);
-printf("reading vector of %d bytes type %x\n", (int)w, type);
-                    for (size_t i=0; i<(size_t)w; i++) *x++ = read_byte();
+                    if (is_string_header(type))
+                        for (size_t i=0; i<(size_t)w; i++)
+                            *x++ = read_string_byte();
+                    else for (size_t i=0; i<(size_t)w; i++)
+                        *x++ = read_data_byte();
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
-printf("Maybe long string: \"%.*s\"\n", (int)w, (char *)start_contents(prev));
-printf("Header = %" PRIx64 "\n", (uint64_t)vechdr(prev));
-printf("simple print: (%" PRIx64 ")", prev); fflush(stdout);
-simple_print(prev); printf("\n");
-fflush(stdout);
                 }
                 else if (vector_i32(type))
                 {   prev = *p = getvector(tag, type, CELL+4*w);
                     uint32_t *x = (uint32_t *)start_contents(prev);
-printf("reading vector of %d 32-bit itemd\n", (int)w);
 // 32-bit integers are transmitted most significant byte first.
                     for (size_t i=0; i<(size_t)w; i++)
-                    {   uint32_t q = read_byte() & 0xff;
-                        q = (q << 8) | (read_byte() & 0xff);
-                        q = (q << 8) | (read_byte() & 0xff);
-                        *x++ = (q << 8) | (read_byte() & 0xff);
+                    {   uint32_t q = read_data_byte() & 0xff;
+                        q = (q << 8) | (read_data_byte() & 0xff);
+                        q = (q << 8) | (read_data_byte() & 0xff);
+                        *x++ = (q << 8) | (read_data_byte() & 0xff);
                     }
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
@@ -1603,8 +1664,8 @@ printf("reading vector of %d 32-bit itemd\n", (int)w);
                 {   prev = *p = getvector(tag, type, CELL+2*w);
                     uint16_t *x = (uint16_t *)start_contents(prev);
                     for (size_t i=0; i<(size_t)w; i++)
-                    {   uint32_t q = read_byte() & 0xff;
-                        *x++ = (q << 8) | (read_byte() & 0xff);
+                    {   uint32_t q = read_data_byte() & 0xff;
+                        *x++ = (q << 8) | (read_data_byte() & 0xff);
                     }
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
@@ -1613,14 +1674,14 @@ printf("reading vector of %d 32-bit itemd\n", (int)w);
                     uint64_t *x = (uint64_t *)start_contents64(prev);
                     if (!SIXTY_FOUR_BIT) *(int32_t *)start_contents(prev) = 0;
                     for (size_t i=0; i<(size_t)w; i++)
-                    {   uint64_t q = read_byte() & 0xff;
-                        q = (q << 8) | (read_byte() & 0xff);
-                        q = (q << 8) | (read_byte() & 0xff);
-                        q = (q << 8) | (read_byte() & 0xff);
-                        q = (q << 8) | (read_byte() & 0xff);
-                        q = (q << 8) | (read_byte() & 0xff);
-                        q = (q << 8) | (read_byte() & 0xff);
-                        *x++ = (q << 8) | (read_byte() & 0xff);
+                    {   uint64_t q = read_data_byte() & 0xff;
+                        q = (q << 8) | (read_data_byte() & 0xff);
+                        q = (q << 8) | (read_data_byte() & 0xff);
+                        q = (q << 8) | (read_data_byte() & 0xff);
+                        q = (q << 8) | (read_data_byte() & 0xff);
+                        q = (q << 8) | (read_data_byte() & 0xff);
+                        q = (q << 8) | (read_data_byte() & 0xff);
+                        *x++ = (q << 8) | (read_data_byte() & 0xff);
                     }
                 }
                 else if (vector_f32(type))
@@ -1647,7 +1708,6 @@ printf("reading vector of %d 32-bit itemd\n", (int)w);
                     myabort();
                 }
             }
-printf("end of vector\n");
             goto up;
 
         case SER_SPARE:
@@ -1663,7 +1723,13 @@ printf("end of vector\n");
 
 up:
 // If the back-pointer chain is empty then I am done and can return.
-    if (b == fixnum_of_int(0)) return r;
+    if (b == fixnum_of_int(0))
+    {   if (r == 0)
+        {   printf("serial reader about to return zero\n");
+            myabort();
+        }
+        return r;
+    }
 // When I have done everything that fills in the CAR of a CONS cell I
 // just need to go and deal with the CDR.
     if (consp(b))
@@ -1675,7 +1741,24 @@ up:
 // The remaining cases are when b points to a vector or symbol. I use the
 // stack s to track how far along it I am, and need to do special things when
 // I am almost complete
+    if (!is_cons(s))
+    {   printf("s bad at line %d in serialize.cpp\n", __LINE__);
+        simple_print(s);
+        myabort();
+    }
+    if (!is_fixnum(qcar(s)))
+    {   printf("car s bad at line %d in serialize.cpp\n", __LINE__);
+        simple_print(qcar(s));
+        myabort();
+    }
     intptr_t n = int_of_fixnum(qcar(s)) - 1;
+    if (n < 0)
+    {   printf("car s negative at line %d in serialize.cpp\n", __LINE__);
+        printf("qcar(s) = %" PRIx64 " in raw hex\n", (int64_t)qcar(s));
+        printf("value of qcar(s) as list: ");
+        simple_print(qcar(s));
+        myabort();
+    }
     if (n == 0)
     {   w = b;
         pbase = w;
@@ -1684,7 +1767,6 @@ up:
 // In the case of a symbol the index n selects as between qvalue, pname and
 // the other fields making up a symbol.
         p = &vselt(w, 0);
-printf("p = %p for item zero of vector, b = %p\n", p, (void *)b);
         b = vselt(w, 0);
 // I could and possibly should push the released cell from s onto a local
 // freelist and use that where I do a CONS if possible...
@@ -1696,7 +1778,6 @@ printf("p = %p for item zero of vector, b = %p\n", p, (void *)b);
     qcar(s) = fixnum_of_int(n); // write back decreased index
     pbase = b;
     p = &vselt(b, n);
-printf("p = %p for item %d of vector, b = %p\n", p, (int)n, (void *)b);
     goto down;
 }
 
@@ -1782,7 +1863,7 @@ static int address_used(uint64_t addr)
 //
 // Furthermore rather than using malloc here (and free later) I should try
 // to use some space that is allocated to me but not currently in use. If I
-// have a 2-space copying collectior I have half my whole memory available!
+// have a 2-space copying collector I have half my whole memory available!
 // Even if I am using a non-copying collector I expect there to be LOTS of
 // space available. So maybe what I need rather than malloc is a call that
 // allocates a vector-like region in the heap, but falls back to malloc (eg
@@ -1920,7 +2001,6 @@ down:
             goto down;
 
         case TAG_SYMBOL:
-            qpackage(p) = fixnum_of_int(43); // @@@
             if (address_used(p - TAG_SYMBOL))
             {   hash_insert(&repeat_hash, p);
                 goto up;
@@ -2094,7 +2174,7 @@ void write_data(LispObject p)
 down:
     if (p == 0) p = SPID_NIL; // reload as a SPID.
     else if (p == C_nil)
-    {   write_byte(SER_NIL, "nil");
+    {   write_opcode(SER_NIL, "nil");
         goto up;
     }
     if ((i = hash_lookup(&repeat_hash, p)) != (size_t)(-1))
@@ -2102,10 +2182,10 @@ down:
         {   size_t n = find_index_in_repeats(i);
             char msg[20];
             sprintf(msg, "back %" PRIuPTR, (uintptr_t)n);
-            if (n <= 32) write_byte(SER_BACKREF0 + n - 1, msg);
-            else if (n <= 64) write_byte(SER_BACKREF1 + n - 33, msg);
+            if (n <= 32) write_opcode(SER_BACKREF0 + n - 1, msg);
+            else if (n <= 64) write_opcode(SER_BACKREF1 + n - 33, msg);
             else
-            {   write_byte(SER_BIGBACKREF, msg);
+            {   write_opcode(SER_BIGBACKREF, msg);
                 write_u64(n - 65);
             }
             goto up;
@@ -2122,8 +2202,8 @@ down:
 // I have a separate opcode for a cons csll that is will have further
 // references to it bacause there was easy space in my opcode map for that.
             if (i != (size_t)-1)
-                write_byte(SER_DUPCONS, "cons that will be re-used");
-            else write_byte(SER_CONS, "cons");
+                write_opcode(SER_DUPCONS, "cons that will be re-used");
+            else write_opcode(SER_CONS, "cons");
             w = p;
             p = qcar(p);
             qcar(w) = b;
@@ -2150,21 +2230,21 @@ down:
                 if (isgensym)
                 {   if (i != (size_t)-1)
                     {   sprintf(msg, "dup-gensym, length=%" PRIuPTR, (uintptr_t)n);
-                        write_byte(SER_DUPGENSYM, msg);
+                        write_opcode(SER_DUPGENSYM, msg);
                     }
                     else
                     {   sprintf(msg, "gensym, length=%" PRIuPTR, (uintptr_t)n);
-                        write_byte(SER_GENSYM, msg);
+                        write_opcode(SER_GENSYM, msg);
                     }
                 }
                 else
                 {   if (i != (size_t)-1)
                     {   sprintf(msg, "dup-symbol, length=%" PRIuPTR, (uintptr_t)n);
-                        write_byte(SER_DUPSYMBOL, msg);
+                        write_opcode(SER_DUPSYMBOL, msg);
                     }
                     else
                     {   sprintf(msg, "symbol, length=%" PRIuPTR, (uintptr_t)n);
-                        write_byte(SER_SYMBOL, msg);
+                        write_opcode(SER_SYMBOL, msg);
                     }
                 }
                 write_u64(n);  // number of bytes in the name
@@ -2178,35 +2258,28 @@ down:
                 goto up;
             }
             if (i != (size_t)-1)
-                write_byte(SER_DUPRAWSYMBOL, "raw symbol header");
-            else write_byte(SER_RAWSYMBOL, "raw symbol header");
+                write_opcode(SER_DUPRAWSYMBOL, "raw symbol header");
+            else write_opcode(SER_RAWSYMBOL, "raw symbol header");
 // Here I need to cope with the tagging bits and function cells, and
 // the count field... Each of these uses a variable length coding scheme that
 // will be 1 byte long in easy cases but can cope with 2^64 possibilities in
 // all if necessary.
-            printf("header : %" PRIxPTR "\n", qheader(p));
-            {   LispObject name = qpname(p);
-                if (is_vector(name) && is_string(name))
-                {   printf("Symbol name: %.*s\n",
-                        (int)(length_of_byteheader(vechdr(name))-CELL),
-                        &celt(name, 0));
-                }
-            }
-            write_u64((uint64_t)qheader(p)>>(Tw+4));
-            printf("qfn0 : %" PRIxPTR "\n", (intptr_t)qfn0(p));
+//@         {   LispObject name = qpname(p);
+//@             if (is_vector(name) && is_string(name))
+//@             {   printf("Symbol (%p : %p) name: \"%.*s\"\n",
+//@                     (void *)p, (void *)name,
+//@                     (int)(length_of_byteheader(vechdr(name))-CELL),
+//@                     &celt(name, 0));
+//@             }
+//@         }
+            write_u64(((uint64_t)qheader(p))>>(Tw+4));
             write_function((void *)(qfn0(p)));
-            printf("qfn1 : %" PRIxPTR "\n", (intptr_t)qfn1(p));
             write_function((void *)(qfn1(p)));
-            printf("qfn2 : %" PRIxPTR "\n", (intptr_t)qfn2(p));
             write_function((void *)(qfn2(p)));
-            printf("qfn3 : %" PRIxPTR "\n", (intptr_t)qfn3(p));
             write_function((void *)(qfn3(p)));
-            printf("qfn4 : %" PRIxPTR "\n", (intptr_t)qfn4(p));
             write_function((void *)(qfn4(p)));
-            printf("qcount : %" PRIx64 "\n", (int64_t)qcount(p));
             write_u64(qcount(p));
             w = p;
-            printf("qpname : %" PRIxPTR "\n", (intptr_t)qpname(p));
             p = qpname(p);
             qpname(w) = b;
             b = (LispObject)&qpname(w) + BACKPOINTER_SYMBOL;
@@ -2220,10 +2293,13 @@ down:
             h = vechdr(p);
         writevector:
             if (vector_holds_binary(h)) goto write_binary_vector;
-            write_byte(SER_LVECTOR | ((h>>(Tw+2)) & 0x1f), "lisp vector");
-// Length of a list-containig vector is given in CELLS
+            write_opcode(SER_LVECTOR | ((h>>(Tw+2)) & 0x1f), "lisp vector");
+// Length of a list-containing vector is given in CELLS.
             write_u64(length_of_header(h)/CELL - 1);
-            if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly referenced vector");
+// Observe that for vectors containing List data the DUP comes after the
+// SER_LVECTOR opcode but before the sequences that fill in vector contents.
+            if (i != (size_t)-1)
+                write_opcode(SER_DUP, "repeatedly referenced vector");
 // For now the data beyond the 3 list-holding items in a MIXED structure
 // will not be dumped. I may need to review that later on.
             if (is_mixed_header(h)) len = 3;
@@ -2246,21 +2322,21 @@ down:
                 len != 0)
             {   char msg[40];
                 sprintf(msg, "string, length=%" PRIuPTR, (intptr_t)len);
-                write_byte(SER_STRING+len-1, msg);
+                write_opcode(SER_STRING+len-1, msg);
                 for (size_t j=0; j<len; j++)
                 {   int c = ucelt(p, j);
                     if (0x20 < c && c <= 0x7e) sprintf(msg, "'%c'", c);
                     else sprintf(msg, "%#.2x", c);
                     write_byte(c, msg);
                 }
-                if (i != (size_t)-1) write_byte(SER_DUP, "dup string");
+                if (i != (size_t)-1) write_opcode(SER_DUP, "dup string");
                 goto up;
             }
             else if (is_bitvec_header(h))
             {   char msg[40];
                 len = length_of_bitheader(h);
                 sprintf(msg, "bitvec, length=%" PRIuPTR, (intptr_t)len);
-                write_byte(SER_BITVEC, msg);
+                write_opcode(SER_BITVEC, msg);
                 write_u64(len);
                 len = (len + 7)/8;
                 for (size_t j=0; j<len; j++)
@@ -2270,7 +2346,7 @@ down:
                     msg[8] = 0;
                     write_byte(c, msg);
                 }
-                if (i != (size_t)-1) write_byte(SER_DUP, "dup bitvector");
+                if (i != (size_t)-1) write_opcode(SER_DUP, "dup bitvector");
                 goto up;
             }
 // If I have a big-integer that uses at most two (32-bit) words then
@@ -2289,13 +2365,14 @@ down:
                     char msg[16];
                     sprintf(msg, "int value=%" PRId64, n);
                     if (n < 0)
-                    {   write_byte(SER_NEGFIXNUM, msg);
+                    {   write_opcode(SER_NEGFIXNUM, msg);
                         write_u64(-n-1);
                     }
                     else
-                    {   write_byte(SER_POSFIXNUM, msg);
+                    {   write_opcode(SER_POSFIXNUM, msg);
                         write_u64(n);
                     }
+                    if (i != (size_t)-1) write_opcode(SER_DUP, "dup bignum");
                     goto up;
                 }
                 else if (length_of_header(h) == CELL+8)
@@ -2305,15 +2382,16 @@ down:
                     sprintf(msg, "int value=%" PRId64, n);
 // The value I have here fitted within two bignum digits and so is really at
 // most 62 bits. A consequence of that is that negating it can not lead to
-// arithmetic onerflow within a signed 64-bit word. Whew!
+// arithmetic overflow within a signed 64-bit word. Whew!
                     if (n < 0)
-                    {   write_byte(SER_NEGFIXNUM, msg);
+                    {   write_opcode(SER_NEGFIXNUM, msg);
                         write_u64(-n-1);
                     }
                     else
-                    {   write_byte(SER_POSFIXNUM, msg);
+                    {   write_opcode(SER_POSFIXNUM, msg);
                         write_u64(n);
                     }
+                    if (i != (size_t)-1) write_opcode(SER_DUP, "dup bignum");
                     goto up;
                 }
 // I will treat bignums with 3 or more words using a general scheme
@@ -2336,13 +2414,9 @@ down:
 // work around this is here in the writing-code. The "type" field will be
 // forced to be (eg) TYPE_STRING_4 which should then make all behave OK.
             {   Header h1 = h;
-printf("Header starts as %" PRIx64 "\n", h1);
-if (vector_i8(h)) printf("vec8\n");
-if (vector_i16(h)) printf("vec16\n");
                 if (vector_i8(h1)) h1 |= (0x60 << Tw);
                 else if (vector_i16(h1)) h1 |= (0x40 << Tw);
-printf("Header ends as %" PRIx64 "\n", h1);
-                write_byte(SER_BVECTOR | ((h1>>(Tw+2)) & 0x1f), "binary vector");
+                write_opcode(SER_BVECTOR | ((h1>>(Tw+2)) & 0x1f), "binary vector");
             }
 // The code that follows must match up with the code that reads vectors
 // back in. It has to convert data to a portable form that is agnostic
@@ -2352,8 +2426,6 @@ printf("Header ends as %" PRIx64 "\n", h1);
             if (vector_i8(h))
             {   char *x = (char *)start_contents(p);
                 write_u64(len = length_of_byteheader(h) - CELL);
-printf("vector length was %d\n", (int)len);
-                if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
 // I *could* detect strings etc here to display the comments more tidily,
 // but since they are just for debugging that seems like too much work
 // for today.
@@ -2363,7 +2435,6 @@ printf("vector length was %d\n", (int)len);
             {   uint32_t *x = (uint32_t *)start_contents(p);
 // The packed length is the length in words.
                 write_u64(len = (length_of_header(h) - CELL)/4);
-                if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
 // 32-bit integers are transmitted most significant byte first.
                 for (size_t i=0; i<len; i++)
                 {   uint32_t q = *x++;
@@ -2376,13 +2447,11 @@ printf("vector length was %d\n", (int)len);
             else if (vector_f64(h))
             {   double *x = (double *)start_contents64(p);
                 write_u64(len = (length_of_header(h) - CELL)/8);
-                if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
                 for (size_t i=0; i<len; i++) write_f64(*x++);
             }
             else if (vector_i16(h))
             {   uint16_t *x = (uint16_t *)start_contents(p);
                 write_u64(len = length_of_hwordheader(h) - CELL/2);
-                if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
                 for (size_t i=0; i<len; i++)
                 {   uint32_t q = *x++;
                     write_byte((q>>8) & 0xff, "high byte");
@@ -2392,7 +2461,6 @@ printf("vector length was %d\n", (int)len);
             else if (vector_i64(h))
             {   uint64_t *x = (uint64_t *)start_contents64(p);
                 write_u64(len = (length_of_header(h) - CELL)/8);
-                if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
 // 64-bit integers are transmitted most significant byte first.
                 for (size_t i=0; i<len/8; i++)
                 {   uint64_t q = *x++;
@@ -2409,7 +2477,6 @@ printf("vector length was %d\n", (int)len);
             else if (vector_f32(h))
             {   float *x = (float *)start_contents(p);
                 write_u64(len = (length_of_header(h) - CELL)/4);
-                if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly ref. vector");
                 for (size_t i=0; i<len/4; i++) write_f32(*x++);
             }
             else if (vector_f128(h))
@@ -2427,6 +2494,8 @@ printf("vector length was %d\n", (int)len);
                 fflush(stdout);
                 myabort();
             }
+            if (i != (size_t)-1)
+                write_opcode(SER_DUP, "repeatedly ref. vector");
             goto up;
 
         case TAG_NUMBERS:
@@ -2438,14 +2507,14 @@ printf("vector length was %d\n", (int)len);
             {   case TYPE_SINGLE_FLOAT:
                 {   char msg[32];
                     sprintf(msg, "float %.7g", (double)single_float_val(p));
-                    write_byte(SER_FLOAT32, msg);
+                    write_opcode(SER_FLOAT32, msg);
                     write_f32(single_float_val(p));
                 }
                 break;
                 case TYPE_DOUBLE_FLOAT:
                 {   char msg[32];
                     sprintf(msg, "double %.16g", double_float_val(p));
-                    write_byte(SER_FLOAT64, msg);
+                    write_opcode(SER_FLOAT64, msg);
                     write_f64(double_float_val(p));
                 }
                 break;
@@ -2453,7 +2522,7 @@ printf("vector length was %d\n", (int)len);
                 {   char msg[32];
 // At present I do not have a good scheme to display the 128-bit float value.
                     sprintf(msg, "long double");
-                    write_byte(SER_FLOAT128, msg);
+                    write_opcode(SER_FLOAT128, msg);
                     write_f128(long_float_val(p));
                 }
                 break;
@@ -2462,7 +2531,8 @@ printf("vector length was %d\n", (int)len);
                     fflush(stdout);
                     myabort();
             }
-            if (i != (size_t)-1) write_byte(SER_DUP, "repeatedly referenced vector");
+            if (i != (size_t)-1)
+                write_opcode(SER_DUP, "repeatedly referenced vector");
 // A boxed float never contains further pointers, so there is no more
 // to do here.
             goto up;
@@ -2472,17 +2542,17 @@ printf("vector length was %d\n", (int)len);
             if (-16 <= w64 && w64 < 15)
             {   char msg[8];
                 sprintf(msg, "int, value=%d", (int)w64);
-                write_byte(SER_FIXNUM | ((int)w64 & 0x1f), msg);
+                write_opcode(SER_FIXNUM | ((int)w64 & 0x1f), msg);
             }
             else
             {   char msg[32];
                 sprintf(msg, "int value=%" PRId64, w64);
                 if (w64 < 0)
-                {   write_byte(SER_NEGFIXNUM, msg);
+                {   write_opcode(SER_NEGFIXNUM, msg);
                     write_u64(-w64-1);
                 }
                 else
-                {   write_byte(SER_POSFIXNUM, msg);
+                {   write_opcode(SER_POSFIXNUM, msg);
                     write_u64(w64);
                 }
             }
@@ -2493,7 +2563,7 @@ printf("vector length was %d\n", (int)len);
         {   char msg[40];
             uint64_t nn = ((uint64_t)p) >> (Tw+2);
             sprintf(msg, "char/spid, value=%#" PRIx64, (uint64_t)p);
-            write_byte(SER_CHARSPID, msg);
+            write_opcode(SER_CHARSPID, msg);
             write_u64(nn);
         }
         goto up;
@@ -2741,23 +2811,20 @@ void write_everything()
 // descend_symbols set to true the scanning code views NIL as such a special
 // case that it does not descend through it or view multiple references to
 // it as worth noting.
-printf("nil = %p, lisp_true = %p\n", (void *)nil, (void *)lisp_true);
     scan_data(qvalue(nil));
     scan_data(qenv(nil));
     scan_data(qpname(nil));
     scan_data(qplist(nil));
     scan_data(qfastgets(nil));
-scan_data(lisp_true);
-scan_data(lambda);
-    scan_data(fixnum_of_int(42)); //qpackage(nil));
+    scan_data(qpackage(nil));
 // Next the major list-bases.
    for (int i = first_nil_offset; i<last_nil_offset; i++) scan_data(BASE[i]);
 // The following two are not full list bases - they are weak pointers. I hope
 // that in a while I will re-work how I get hash tables rehashed following
 // garbage collection and preserve/restart do I will not end up needing these
 // lists at all.
-//@    scan_data(eq_hash_tables);
-//@    scan_data(equal_hash_tables);
+    scan_data(eq_hash_tables);
+    scan_data(equal_hash_tables);
 // Now I should have identified all cyclic and shared data - including
 // eveything in the object list/package structures.
     release_map();
@@ -2773,17 +2840,6 @@ scan_data(lambda);
     write_u64(modulus_is_large);
     write_u64(trap_floating_overflow);
 
-    printf("miscflags = %" PRIu64 "\n",                    miscflags);
-    printf("gensym_ser = %" PRIu64 "\n",                   gensym_ser);
-    printf("print_precision = %" PRIu64 "\n",              print_precision);
-    printf("current_modulus = %" PRIu64 "\n",              current_modulus);
-    printf("fastget_size = %" PRIu64 "\n",                 fastget_size);
-    printf("package_bits = %" PRIu64 "\n",                 package_bits);
-    printf("modulus_is_large = %" PRIu64 "\n",             modulus_is_large);
-    printf("trap_floating_overflow = %" PRIu64 "\n",       (uint64_t)trap_floating_overflow);
-
-
-
 // At the start of a heap image I have a CRC for the tables of function
 // entrypoints, then the number of repeated objects.
     write_u64(function_crc);
@@ -2791,33 +2847,24 @@ scan_data(lambda);
 // Now inspect all structures again, this time writing a serialized form
 // for everything.
 
-printf("About to write value of nil\n");
-simple_print(qvalue(nil)); printf("\n");
     write_data(qvalue(nil));
     write_data(qenv(nil));
     write_data(qpname(nil));
     write_data(qplist(nil));
     write_data(qfastgets(nil));
-
-printf("Now write T and LAMBDA\n");
-    write_data(lisp_true);   // TEMP
-    write_data(lambda);      // TEMP
-
-printf("Written LAMBDA\n");
-
-    write_data(fixnum_of_int(42)); // qpackage(nil));
+    write_data(qpackage(nil));
 // Next the major list-bases.
     for (int i = first_nil_offset; i<last_nil_offset; i++) write_data(BASE[i]);
 // The following two are not full list bases - they are weak pointers. I hope
 // that in a while I will re-work how I get hash tables rehashed following
 // garbage collection and preserve/restart do I will not end up needing these
 // lists at all.
-//@    write_data(eq_hash_tables);
-//@    write_data(equal_hash_tables);
-// Tidy up at the end. I do not logically need an exlicit end of data marker
+    write_data(eq_hash_tables);
+    write_data(equal_hash_tables);
+// Tidy up at the end. I do not logically need an explicit end of data marker
 // in the serialised form, but putting one there seems lile a way to make
 // me feel more robust against corrupred image files.
-    write_byte(SER_END, "end of data");
+    write_opcode(SER_END, "end of data");
     hash_finalize(&repeat_hash);
     if (repeat_heap_size != 0)
     {   repeat_heap_size = 0;
@@ -2842,12 +2889,26 @@ void warm_setup()
     fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
     heaplimit = (LispObject)((char *)heaplimit + SPARE);
 
-    codelimit = codefringe = 0; // no BPS to start with
     set_up_function_tables();
 
     qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_SPECIAL_VAR;
     for (i=first_nil_offset; i<last_nil_offset; i++) BASE[i] = nil;
+    *stack = nil;
+    eq_hash_tables = equal_hash_tables = nil;
     qcount(nil) = 0;
+// Make things GC safe first...
+    qvalue(nil) = nil;
+    qenv(nil) = nil;
+    qpname(nil) = nil;
+    qplist(nil) = nil;
+    qfastgets(nil) = nil;
+    qpackage(nil) = nil;
+    copy_out_of_nilseg(false);
+#define boffo_size 256
+    boffo = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
+    memset((void *)((char *)boffo + (CELL - TAG_VECTOR)), '@', boffo_size);
+    BASE[60] = boffo;
+
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
 
@@ -2860,70 +2921,50 @@ void warm_setup()
     modulus_is_large = read_u64();
     trap_floating_overflow = read_u64();
 
-
-    printf("miscflags = %" PRIu64 "\n",                    miscflags);
-    printf("gensym_ser = %" PRIu64 "\n",                   gensym_ser);
-    printf("print_precision = %" PRIu64 "\n",              print_precision);
-    printf("current_modulus = %" PRIu64 "\n",              current_modulus);
-    printf("fastget_size = %" PRIu64 "\n",                 fastget_size);
-    printf("package_bits = %" PRIu64 "\n",                 package_bits);
-    printf("modulus_is_large = %" PRIu64 "\n",             modulus_is_large);
-    printf("trap_floating_overflow = %" PRIu64 "\n",       (uint64_t)trap_floating_overflow);
-
     uint64_t entrypt_checksum = read_u64();
     size_t repeatsize = read_u64();
-    printf("entrypt_checksum = %" PRIu64 "\n",             entrypt_checksum);
-    printf("repeatsize = %" PRIu64 "\n",                   repeatsize);
+    printf("entrypt_checksum = %" PRIu64 "\n", entrypt_checksum);
+    printf("repeatsize = %" PRIu64 "\n", repeatsize);
     reader_setup_repeats(repeatsize);
-printf("About to read value of nil\n");
+
+// Now I can use serial_read...
+
     qvalue(nil) = serial_read();
-    printf("nil = %" PRIx64 "  qvalue(nil) = %" PRIx64 "\n", nil, qvalue(nil)); 
     qenv(nil) = serial_read();
-    printf("nil = %" PRIx64 "  qenv(nil) = %" PRIx64 "\n", nil, qenv(nil)); 
     qpname(nil) = serial_read();
-    printf("nil = %" PRIx64 "  qpname(nil) = %" PRIx64 "\n", nil, qpname(nil));
-    simple_print(qpname(nil)); printf("\n");
     qplist(nil) = serial_read();
-    printf("nil = %" PRIx64 "  qplist(nil) = %" PRIx64 "\n", nil, qplist(nil));
-    simple_print(qplist(nil)); printf("\n");
     qfastgets(nil) = serial_read();
-    printf("nil = %" PRIx64 "  qfastgets(nil) = %" PRIx64 "\n", nil, qfastgets(nil));
-    simple_print(qfastgets(nil)); printf("\n");
 
-    printf("\nNow read T\n");
-    lisp_true = serial_read();      // TEMP @@@
-    fflush(stdout);
-    printf("lisp_true = %" PRIx64 "\n", (uint64_t)lisp_true);
-    fflush(stdout);
-    printf("value(lisp_true) = %" PRIx64 "\n", (uint64_t)qvalue(lisp_true));
-    fflush(stdout);
-    simple_print(qvalue(lisp_true)); printf("\n");
-    fflush(stdout);
-    lambda = serial_read();
-    fflush(stdout);
-    printf("lambda = %" PRIx64 "\n", (uint64_t)lambda);
-    fflush(stdout);
-    printf("value(lambda) = %" PRIx64 "\n", (uint64_t)qvalue(lambda));
-    fflush(stdout);
-    simple_print(qvalue(lambda)); printf("\n");
-    fflush(stdout);
-
-// This next one is a BIGGY bacause the package structure is liable to
+// This next one is a BIGGY because the package structure is liable to
 // include all other symbols, and through them basically everything!
     qpackage(nil) = serial_read();
-    printf("nil = %" PRIx64 "  qpackage(nil) = %" PRIx64 "\n", nil, qpackage(nil));
-    simple_print(qpackage(nil)); printf("\n");
-    for (int i=first_nil_offset; i<last_nil_offset; i++)
-    {   printf("About to read value for BASE[%d]\n", i);
-        BASE[i] = serial_read();
-    }
-    printf("All BASE items read\n");
-//@    eq_hash_tables = serial_read();
-//@    equal_hash_tables = serial_read();
-    if (read_byte() == SER_END) printf("OK\n");
-    else printf("Out of step\n");
 
+// I want to be able to call validate_all() while I am doing this
+// reading - and that may copy stuff into the BASE locations from elsewhere,
+// so I need to be a bit indirect about loading values into there. Apologies!
+    for (int i=first_nil_offset; i<last_nil_offset; i++)
+    {   // printf("About to read value for BASE[%d]\n", i);
+        // for (int j=0; j<5; j++)
+        //     printf("%" PRIxPTR " ", stackbase[j]);
+        // printf(" [%d]\n", (int)(stack-stackbase));
+        // fflush(stdout);
+        // validate_all("serial reading", __LINE__, __FILE__);
+        LispObject v = serial_read();
+        // printf(" = "); simple_print(v); printf("\n");
+        push(v);
+    }
+    eq_hash_tables = serial_read();
+    equal_hash_tables = serial_read();
+    for (int i=last_nil_offset-1; i>=first_nil_offset; i--)
+        pop(BASE[i])
+    printf("All BASE items read\n");
     copy_out_of_nilseg(false);
+
+    if (read_opcode_byte() == SER_END) printf("OK\n");
+    else printf("Out of step\n");
+#ifdef DEBUG_VALIDATE
+    validate_all("warm setup", __LINE__, __FILE__);
+#endif
 
     {   char endmsg[32];
         Iread(endmsg, 24);  // the termination record
@@ -2944,6 +2985,8 @@ printf("About to read value of nil\n");
         error_output = 0;
         if (IcloseInput(true))
         {
+#if 0
+// @@@ At present the new reading regime does not accumulate a checksum!
 //
 // I write a moan to stderr, even though in some cases this will not be
 // visible, because the general-purpose Lisp print streams have not yet been
@@ -2953,9 +2996,15 @@ printf("About to read value of nil\n");
             fprintf(stderr, "\n+++ Initial Image file checksum failure\n");
 // Again this does not cause an abrupt halt. I also think that at present
 // I probably do not compute the checksum carefully.
+#endif
         }
         error_output = w;
     }
+    if (repeat_heap_size != 0)
+    {   repeat_heap_size = 0;
+        free(repeat_heap);
+    }
+    repeat_heap = NULL;
 
     inject_randomness((int)clock());
 
@@ -2973,6 +3022,8 @@ printf("About to read value of nil\n");
 //
     eq_hash_tables = eq_hash_table_list;
     equal_hash_tables = equal_hash_table_list;
+printf("eq_hash_tables = "); simple_print(eq_hash_tables); printf("\n");
+printf("equal_hash_tables = "); simple_print(equal_hash_tables); printf("\n");
     eq_hash_table_list = equal_hash_table_list = nil;
     {   LispObject qq;
         for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
@@ -2991,7 +3042,7 @@ printf("About to read value of nil\n");
         }
     }
 
-//@@    set_up_functions(1);   SHould not be necessary these days...
+//@@    set_up_functions(1);   Sould not be necessary these days...
     set_up_variables(true);
 //
 //@@ // Now I have closed the main heap image, but if there is any hard machine

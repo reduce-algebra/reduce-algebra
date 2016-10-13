@@ -583,9 +583,8 @@ LispObject Lsputv4(LispObject, int nargs, ...)
 LispObject Lbpsupbv(LispObject, LispObject v)
 {   Header h;
     int32_t n;
-    if (!(is_bps(v))) return aerror1("bps-upbv", v);
-    h = *(Header *)((char *)data_of_bps(v) - CELL);
-    n = length_of_byteheader(h) - CELL;
+    if (!is_bps(v)) return aerror1("bps-upbv", v);
+    n = length_of_byteheader(vechdr(h)) - CELL;
     return onevalue(fixnum_of_int(n-1));
 }
 
@@ -603,11 +602,10 @@ LispObject Lbpsputv(LispObject, int nargs, ...)
     if (!is_bps(v)) return aerror1("bpsputv", v);
     else if (!is_fixnum(n)) return aerror1("bps-putv", n);
     else if (!is_fixnum(x)) return aerror1("bps-putv contents", x);
-    h = *(Header *)((char *)data_of_bps(v) - CELL);
-    hl = length_of_byteheader(h) - CELL;
+    hl = length_of_byteheader(vechdr(v)) - CELL;
     n1 = int_of_fixnum(n);
     if (n1 < 0 || n1 >= hl) return aerror1("bps-putv", n);
-    *((char *)data_of_bps(v) + n1) = (char)int_of_fixnum(x);
+    celt(v, n1) = (char)int_of_fixnum(x);
     return onevalue(x);
 }
 
@@ -686,11 +684,10 @@ LispObject Lbpsgetv(LispObject, LispObject v, LispObject n)
     size_t n1, hl;
     if (!is_bps(v)) return aerror1("bps-getv", v);
     else if (!is_fixnum(n)) return aerror1("bps-getv", n);
-    h = *(Header *)((char *)data_of_bps(v) - CELL);
-    hl = length_of_byteheader(h) - CELL;
+    hl = length_of_byteheader(vechdr(v)) - CELL;
     n1 = int_of_fixnum(n);
     if (n1 < 0 || n1 >= hl) return aerror1("bps-getv", n);
-    n1 = *((char *)data_of_bps(v) + n1);
+    n1 = celt(v, n1);
     return onevalue(fixnum_of_int(n1 & 0xff));
 }
 
@@ -913,8 +910,7 @@ char *address_of_var(int n)
         switch (n)
     {       default:    p = 0;                              break;
             case  12:   p = (char *)&byteflip;              break;
-            case  13:   p = (char *)&codefringe;            break;
-            case  14:   p = (char *)&codelimit;             break;
+
 #ifdef COMMON
             case  16:   p = (char *)&stacklimit;            break;
 #else
@@ -2161,10 +2157,6 @@ static LispObject Lbgetv(LispObject, LispObject v, LispObject n)
 LispObject Lupbv(LispObject nil, LispObject v)
 {   Header h;
     int32_t n;
-//
-// in non segmented mode this will support BPS, but really
-// you ought not to rely on that.
-//
     if (!(is_vector(v))) return onevalue(nil); // Standard Lisp demands..
     h = vechdr(v);
     n = length_of_header(h) - CELL;
@@ -2181,6 +2173,10 @@ LispObject Lupbv(LispObject nil, LispObject v)
             case TYPE_STRING_2:
             case TYPE_STRING_3:
             case TYPE_STRING_4:
+            case TYPE_BPS_1:
+            case TYPE_BPS_2:
+            case TYPE_BPS_3:
+            case TYPE_BPS_4:
             case TYPE_VEC8_1:
             case TYPE_VEC8_2:
             case TYPE_VEC8_3:
@@ -2236,7 +2232,7 @@ LispObject Lvecbnd(LispObject, LispObject v)
     }
     else switch (type_of_header(h))
         {   case TYPE_STRING:
-            case TYPE_VEC8:
+            case TYPE_BPS:
                 n = length_of_byteheader(h) - CELL;
                 break;
             case TYPE_VEC16:

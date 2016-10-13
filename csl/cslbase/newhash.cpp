@@ -961,6 +961,19 @@ void simple_print1(LispObject x)
             printf("\"%.*s\"", (int)len, &celt(x, 0));
             return;
         }
+        else if (vector_holds_binary(vechdr(x)) &&
+                 vector_i8(vechdr(x)))
+        {   len = length_of_byteheader(vechdr(x)) - CELL;
+            printf("<Header is %" PRIxPTR ">", vechdr(x));
+            simple_lineend(2*len+3);
+            printf("#8[");
+            for (size_t i=0; i<len; i++)
+            {   simple_lineend(2);
+                printf("%.2x", celt(x, i) & 0xff);
+            }
+            printf("]");
+            return;
+        }
         len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
         int nn = sprintf(buffer, "[%" PRId64 ":", len);
         simple_lineend(nn);
@@ -991,6 +1004,12 @@ void simple_print1(LispObject x)
 void simple_print(LispObject x)
 {   simple_column = 0;
     simple_print1(x);
+}
+
+void simple_msg(const char *s, LispObject x)
+{   printf("%s", s);
+    simple_print(x);
+    printf("\n");
 }
 
 
@@ -1501,7 +1520,8 @@ static uint64_t newhash_generic_equal(LispObject key, int mode)
 // bignums that involves checking if the number of trailing zero bits is
 // big enough, and for ratios it involves verifying that the denominator is
 // a power of 2. I will not do that at present, but I could if I felt like
-// indulging myself with what is basically a waste of time.
+// indulging myself with what is basically a waste of time. I have put in
+// functions that are placeholders for a conversion that would be needed.
             return r + newhash_eql(key);
         default:
             return (r + (uint64_t)key)*h_multiplier;

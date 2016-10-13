@@ -1607,6 +1607,7 @@ LispObject Lsymbol_function(LispObject nil, LispObject a)
     two_args *f2;
     n_args *fn;
     if (!symbolp(a)) return onevalue(nil);
+// @@ This will need adapting for fn0 and fn3...
     f1 = qfn1(a); f2 = qfn2(a); fn = qfnn(a);
     if ((qheader(a) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0 ||
         (f1 == undefined1 && f2 == undefined2 &&
@@ -1666,15 +1667,15 @@ LispObject Lsymbol_function(LispObject nil, LispObject a)
 #ifdef COMMON
         b = Lgensym2(nil, a);
 #else
-        b = Lgensym1(nil, a);
+        b = Lgensym0(nil, a, "#code");
 #endif
         pop(a);
         errexit();
-        set_fns(b, f1, f2, fn);
-// Now I need to look forward to having more function cells
         qfn0(b) = qfn0(a);
+        qfn1(b) = qfn1(a);
+        qfn2(b) = qfn2(a);
         qfn3(b) = qfn3(a);
-
+        qfnn(b) = qfnn(a);
         qenv(b) = qenv(a);
 #ifdef COMMON
 // in Common Lisp mode gensyms that are "unprinted" are not special
@@ -1753,7 +1754,7 @@ LispObject getvector(int tag, int type, size_t size)
 // hits performance, so I will do it occasionally. The 1 in 500 indicated
 // at present is a pretty random choice of frequency!
 //
-    if ((++validate_count) % 500 == 0)
+    if (true || (++validate_count) % 500 == 0)
     {   copy_into_nilseg(false);
         validate_all("getvector", __LINE__, __FILE__);
     }

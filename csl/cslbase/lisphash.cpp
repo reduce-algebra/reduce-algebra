@@ -111,77 +111,6 @@ static LispObject get_hash_vector(int32_t n)
     return v;
 }
 
-//#ifdef DEBUG
-
-// Really only intended for debugging...
-
-void xsimple_print(LispObject x)
-{   LispObject nil = C_nil;
-    if (x == nil)
-    {   printf("nil");
-        return;
-    }
-    if (is_cons(x))
-    {   const char *sep = "(";
-        while (consp(x))
-        {   printf("%s", sep);
-            sep = " ";
-            xsimple_print(qcar(x));
-            x = qcdr(x);
-        }
-        if (x != nil)
-        {   printf(" . ");
-            xsimple_print(x);
-        }
-        printf(")");
-        return;
-    }
-    else if (is_fixnum(x))
-    {   printf("%d", int_of_fixnum(x));
-        return;
-    }
-    else if (is_symbol(x))
-    {   int len;
-        x = qpname(x);
-        len = length_of_byteheader(vechdr(x)) - CELL;
-        printf("%.*s", (int)len, &celt(x, 0));
-    }
-    else if (is_vector(x))
-    {   size_t i;
-        if (is_string(x))
-        {   int len = length_of_byteheader(vechdr(x)) - CELL;
-            printf("\"%.*s\"", (int)len, &celt(x, 0));
-            return;
-        }
-        printf("[%" PRId64 ":", (int64_t)length_of_header(vechdr(x)) - CELL);
-        for (i=0; i<(length_of_header(vechdr(x)) - CELL)/CELL; i++)
-        {   printf(" ");
-            xsimple_print(elt(x, i));
-        }
-        printf("]");
-        return;
-    }
-    else
-    {   printf("@%" PRIx64 "@", (int64_t)x);
-        return;
-    }
-}
-
-void xsimple_msg(const char *s, LispObject x)
-{   return;   // Edit this when debugging!
-    printf("%s", s);
-    xsimple_print(x);
-    printf("\n");
-}
-
-// #else
-//
-// void xsimple_msg(const char *s, LispObject x)
-// {   return;
-// }
-//
-// #endif
-
 LispObject Lmkhash(LispObject nil, int nargs, ...)
 //
 // (mkhash size flavour growth)
@@ -217,7 +146,6 @@ LispObject Lmkhash(LispObject nil, int nargs, ...)
     flavour = va_arg(a, LispObject);
     growth = va_arg(a, LispObject);
     va_end(a);
-    xsimple_msg("mkhash: type=", flavour);
     if (!is_fixnum(size)) return aerror1("mkhash", size);
     size1 = int_of_fixnum(size);
     if (size1 <= 0) return aerror1("mkhash", size);
@@ -304,8 +232,7 @@ static uint32_t hash_eql(LispObject key)
 // painful! I would like the value to be insensitive to fine details
 // of the machine I am running on.
 //
-{   xsimple_msg("hash_eql: ", key);
-    if (is_bfloat(key))
+{   if (is_bfloat(key))
     {   int32_t h = type_of_header(flthdr(key));
 //
 // For floating point values I look at the binary representation of
@@ -407,7 +334,6 @@ static uint32_t hash_cl_equal(LispObject key, bool descend)
     int32_t bitoff;
     unsigned char *data;
     Header ha;
-    xsimple_msg("hash_cl_equal: ", key);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   err_printf("Stack too deep in hash calculation\n");
@@ -513,13 +439,7 @@ static uint32_t hash_cl_equal(LispObject key, bool descend)
                 else return update_hash(r, (uint32_t)key);
             }
             case TAG_HDR_IMMED:
-                if (is_bps(key))
-                {   data = (unsigned char *)data_of_bps(key);
-                    // I treat bytecode things as strings here
-                    len = length_of_byteheader(*(Header *)(data - CELL)) - CELL;
-                    goto hash_as_string;
-                }
-                else return update_hash(r, (uint32_t)key);
+                return update_hash(r, (uint32_t)key);
             case TAG_BOXFLOAT:
 //
 // The "case TAG_BOXFLOAT:" above is not logically necessary, but at least
@@ -583,7 +503,6 @@ uint32_t hash_equal(LispObject key)
     size_t len, offset = 0;
     unsigned char *data;
     Header ha;
-    xsimple_msg("hash_equal: ", key);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   err_printf("Stack too deep in hash calculation\n");
@@ -722,13 +641,7 @@ uint32_t hash_equal(LispObject key)
                 return r;
             }
             case TAG_HDR_IMMED:
-                if (is_bps(key))
-                {   data = (unsigned char *)data_of_bps(key);
-                    // I treat bytecode things as strings here
-                    len = length_of_byteheader(*(Header *)(data - CELL)) - CELL;
-                    goto hash_as_string;
-                }
-                else return update_hash(r, (uint32_t)key);
+                return update_hash(r, (uint32_t)key);
             case TAG_BOXFLOAT:
             default:// The default case here mainly covers numbers
                 return update_hash(r, hash_eql(key));
@@ -774,7 +687,6 @@ static uint32_t hash_equalp(LispObject key)
     size_t len, offset = 0;
     unsigned char *data;
     Header ha;
-    xsimple_msg("hash_equalp: ", key);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   err_printf("Stack too deep in hash calculation\n");
@@ -893,14 +805,7 @@ static uint32_t hash_equalp(LispObject key)
                 return r;
             }
             case TAG_HDR_IMMED:
-                if (is_bps(key))
-                {   data = (unsigned char *)data_of_bps(key);
-                    // I treat bytecode things as strings here
-                    // Oops - what about the fact that strings get case-folded?
-                    len = length_of_header(*(Header *)(data - CELL)) - CELL;
-                    goto hash_nearly_as_string;
-                }
-                else if (is_char(key))
+                if (is_char(key))
                     key = pack_char(0, tolower(code_of_char(key)));
                 return update_hash(r, (uint32_t)key);
             case TAG_BOXFLOAT:
@@ -998,7 +903,6 @@ LispObject Lget_hash(LispObject nil, int nargs, ...)
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
         return aerror1("gethash", tab);
     v = elt(tab, 0);
-    xsimple_msg("get_hash: ", key);
 // /* The code here needs to allow for user-specified hash functions
     if (is_fixnum(v)) flavour = int_of_fixnum(v);
     switch (flavour)
@@ -1330,7 +1234,6 @@ LispObject Lput_hash(LispObject nil, int nargs, ...)
     val = va_arg(a, LispObject);
     va_end(a);
     argcheck(nargs, 3, "puthash");
-    xsimple_msg("put_hash: ", key);
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
         return aerror1("puthash", tab);
     push3(key, tab, val);
@@ -1359,10 +1262,10 @@ LispObject Lput_hash(LispObject nil, int nargs, ...)
         ht_elt(work_0, hashoffset+2) = val;
         elt(tab, 1) += 0x10;    // increment count of used entries
 #ifdef DEBUG
-        if (elt(tab, 1) > biggest_hash+10000)
-        {   err_printf("Hash size now %d\n", (int)int_of_fixnum(elt(tab, 1)));
-            biggest_hash = elt(tab, 1);
-        }
+//@     if (elt(tab, 1) > biggest_hash+10000)
+//@     {   err_printf("Hash size now %d\n", (int)int_of_fixnum(elt(tab, 1)));
+//@         biggest_hash = elt(tab, 1);
+//@     }
 #endif
         if (elt(tab, 1) > elt(tab, 2))
         {   LispObject size = elt(tab, 2),
@@ -1432,8 +1335,7 @@ LispObject Lput_hash_2(LispObject nil, LispObject a, LispObject b)
 }
 
 LispObject Lrem_hash(LispObject nil, LispObject key, LispObject tab)
-{   xsimple_msg("rem_hash: ", key);
-    push2(key, tab);
+{   push2(key, tab);
     Lget_hash(nil, 3, key, tab, nil);
     pop2(tab, key);
     errexit();

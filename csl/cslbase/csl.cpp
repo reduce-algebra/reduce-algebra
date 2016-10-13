@@ -1,4 +1,4 @@
-// csl.cpp                            Copyright (C) 1989-2016 Codemist    
+// csl.cpp                                 Copyright (C) 1989-2016 Codemist
 
 //
 // This is Lisp system for use when delivering Lisp applications
@@ -134,6 +134,12 @@
 
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
+#endif
+
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
 #endif
 
 #ifndef HAVE_FWIN
@@ -1090,11 +1096,6 @@ static void lisp_main(void)
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             pages[pages_count++] = w;
                     }
-                    while (bps_pages_count != 0)
-                    {   char *w = (char *)bps_pages[--bps_pages_count];
-                        if (!(w > big_chunk_start && w <= big_chunk_end))
-                            pages[pages_count++] = w;
-                    }
                     {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
                         char *w1 = w + CSL_PAGE_SIZE + 16;
                         while (w1 <= big_chunk_end)
@@ -1212,11 +1213,6 @@ static void lisp_main(void)
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             pages[pages_count++] = w;
                     }
-                    while (bps_pages_count != 0)
-                    {   char *w = (char *)bps_pages[--bps_pages_count];
-                        if (!(w > big_chunk_start && w <= big_chunk_end))
-                            pages[pages_count++] = w;
-                    }
 //
 // Finally rebuild a contiguous block of pages from the wholesale block.
 //
@@ -1309,8 +1305,6 @@ void sigint_handler(int code)
             heaplimit = fringe;
             savevheaplimit = vheaplimit;
             vheaplimit = vfringe;
-            savecodelimit = codelimit;
-            codelimit = codefringe;
             savestacklimit = stacklimit;
             stacklimit = stackbase;
         }
@@ -1370,8 +1364,6 @@ int deal_with_tick(void)
             heaplimit = fringe;
             savevheaplimit = vheaplimit;
             vheaplimit = vfringe;
-            savecodelimit = codelimit;
-            codelimit = codefringe;
             savestacklimit = stacklimit;
             stacklimit = stackbase;
         }
@@ -2391,6 +2383,15 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     }
                     errorset_min = 3;
                     errorset_max = 3;
+// -gw switches on debugging and also causes a 5-second pause before the code
+// really gets going. The intent of this pause is so that a debgger can start
+// and perhaps have time to attach to the task.
+                    if (opt[2] == 'w')
+#ifdef WIN32
+                        Sleep(5000);
+#else
+                        sleep(5);
+#endif
                     continue;
 
 /*! options [-h] \item [{\ttfamily -h}] \index{{\ttfamily -h}}
@@ -2970,7 +2971,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #endif
         C_nil = nil;
         pages_count = heap_pages_count = vheap_pages_count =
-                                             bps_pages_count = native_pages_count = 0;
+                      native_pages_count = 0;
         stacksegment = (LispObject *)my_malloc(CSL_PAGE_SIZE);
 //
 // I am lazy about protection against malloc failure here.

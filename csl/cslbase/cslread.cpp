@@ -819,7 +819,11 @@ start_again:
     {   if ((restartp & 1)==0 || (qheader(v) & SYM_C_DEF) != 0 || !first_try)
         {   if (qenv(v) == v) qenv(v) = nil;
 // only set env field to nil if it was otherwise not in use
-            ifn1(v) = (intptr_t)f1; ifn2(v) = (intptr_t)f2; ifnn(v) = (intptr_t)fn;
+            ifn0(v) = (intptr_t)undefined0;
+            ifn1(v) = (intptr_t)f1;
+            ifn2(v) = (intptr_t)f2;
+            ifn3(v) = (intptr_t)undefined3;
+            ifnn(v) = (intptr_t)fn;
             qheader(v) |= SYM_C_DEF;
         }
         else
@@ -870,7 +874,11 @@ start_again:
             while (consp(v1))
             {   LispObject w = qcar(v1);
                 v1 = qcdr(v1);
-                ifn1(w) = (intptr_t)f1; ifn2(w) = (intptr_t)f2; ifnn(w) = (intptr_t)fn;
+                ifn0(w) = (intptr_t)undefined0;
+                ifn1(w) = (intptr_t)f1;
+                ifn2(w) = (intptr_t)f2;
+                ifn3(w) = (intptr_t)undefined3;
+                ifnn(w) = (intptr_t)fn;
             }
         }
     }
@@ -939,8 +947,8 @@ static LispObject rehash(LispObject v, LispObject chunks, int grow)
     if (grow > 0)
     {
 #ifdef DEBUG
-        term_printf("Grow hash from %d chunks\n", number_of_chunks);
-        ensure_screen();
+//      term_printf("Grow hash from %d chunks\n", number_of_chunks);
+//      ensure_screen();
 #endif
         if (number_of_chunks == 1)
         {
@@ -1006,8 +1014,8 @@ static LispObject rehash(LispObject v, LispObject chunks, int grow)
     nil = C_nil;
     stackcheck1(0, v);
 #ifdef DEBUG
-    term_printf("... to %d chunks\n", number_of_chunks);
-    ensure_screen();
+//  term_printf("... to %d chunks\n", number_of_chunks);
+//  ensure_screen();
 #endif
     push(v);
 try_again:
@@ -1067,7 +1075,7 @@ try_again:
     }
     popv(1);
 #ifdef DEBUG
-    term_printf("Rehashing done\n");
+//  term_printf("Rehashing done\n");
     ensure_screen();
 #endif
 
@@ -1633,8 +1641,10 @@ static LispObject Lmake_symbol(LispObject nil, LispObject str)
     qfastgets(s) = nil;
     qpackage(s) = nil;
     qenv(s) = s;
+    ifn0(s) = (intptr_t)undefined0;
     ifn1(s) = (intptr_t)undefined1;
     ifn2(s) = (intptr_t)undefined2;
+    ifn3(s) = (intptr_t)undefined3;
     ifnn(s) = (intptr_t)undefinedn;
     qcount(s) = 0;      // set counts to zero to be tidy
     return onevalue(s);
@@ -1677,11 +1687,57 @@ LispObject Lgensym(LispObject nil, int nargs, ...)
     qfastgets(id) = nil;
     qpackage(id) = nil; // Marks it as a uninterned
     qenv(id) = id;
+    ifn0(id) = (intptr_t)undefined0;
     ifn1(id) = (intptr_t)undefined1;
     ifn2(id) = (intptr_t)undefined2;
+    ifn3(id) = (intptr_t)undefined3;
     ifnn(id) = (intptr_t)undefinedn;
     qcount(id) = 0;     // to be tidy
 
+    return onevalue(id);
+}
+
+LispObject Lgensym0(LispObject nil, LispObject a, const char *suffix)
+{   LispObject id, genbase;
+    uint32_t len, len1 = strlen(suffix);
+    char genname[64];
+#ifdef COMMON
+    if (complex_stringp(a))
+    {   a = simplify_string(a);
+        errexit();
+    }
+#endif
+    if (is_vector(a) &&is_string_header(vechdr(a))) genbase = a;
+    else if (symbolp(a)) genbase = qpname(a);  // copy gensym base
+    else return aerror1("gensym0", a);
+    push(genbase);
+    stackcheck0(0);
+    len = length_of_byteheader(vechdr(genbase)) - CELL;
+    if (len > 63-len1) len = 63-len1; // Unpublished truncation of the string
+    sprintf(genname, "%.*s%s", (int)len,
+            (char *)genbase + (CELL-TAG_VECTOR), suffix);
+    stack[0] = make_string(genname);
+    errexitn(1);
+    id = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+    errexitn(1);
+    pop(genbase);
+#ifdef COMMON
+    qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
+#else
+    qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_UNPRINTED_GENSYM+SYM_ANY_GENSYM;
+#endif
+    qvalue(id) = unset_var;
+    qpname(id) = genbase;
+    qplist(id) = nil;
+    qfastgets(id) = nil;
+    qpackage(id) = nil; // Marks it as a uninterned
+    qenv(id) = id;
+    ifn0(id) = (intptr_t)undefined0;
+    ifn1(id) = (intptr_t)undefined1;
+    ifn2(id) = (intptr_t)undefined2;
+    ifn3(id) = (intptr_t)undefined3;
+    ifnn(id) = (intptr_t)undefinedn;
+    qcount(id) = 0;     // to be tidy
     return onevalue(id);
 }
 
@@ -1728,8 +1784,10 @@ LispObject Lgensym1(LispObject nil, LispObject a)
     qfastgets(id) = nil;
     qpackage(id) = nil; // Marks it as a uninterned
     qenv(id) = id;
+    ifn0(id) = (intptr_t)undefined0;
     ifn1(id) = (intptr_t)undefined1;
     ifn2(id) = (intptr_t)undefined2;
+    ifn3(id) = (intptr_t)undefined3;
     ifnn(id) = (intptr_t)undefinedn;
     qcount(id) = 0;     // to be tidy
     return onevalue(id);
@@ -1768,8 +1826,10 @@ LispObject Lgensym2(LispObject nil, LispObject a)
     qfastgets(id) = nil;
     qpackage(id) = nil; // Marks it as a uninterned
     qenv(id) = id;
+    ifn0(id) = (intptr_t)undefined0;
     ifn1(id) = (intptr_t)undefined1;
     ifn2(id) = (intptr_t)undefined2;
+    ifn3(id) = (intptr_t)undefined3;
     ifnn(id) = (intptr_t)undefinedn;
     qcount(id) = 0;     // to be tidy
     return onevalue(id);

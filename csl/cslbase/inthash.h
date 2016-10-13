@@ -94,15 +94,33 @@
 // main table are recorded with the numeric value 0 in them, because 0
 // will not be a valid key.
 
+#ifdef CHECK_INTHASH
+
+typedef struct _hash_alist
+{
+    uintptr_t key;
+    uintptr_t value;
+    struct _hash_alist *next;
+} hash_alist;
+
+#endif
+
 typedef struct _inthash
 {
     size_t size;
     size_t count;
-    uintptr_t *hash;
-    uintptr_t *value;
+    uintptr_t *keys;
+    uintptr_t *values;
     int shift;
     size_t mult1;
     size_t mult2;
+#ifdef CHECK_INTHASH
+// If I am debugging I will run a simple association-list style table
+// alongside the hash table and compare results. This will be really bad
+// for performance but should allow me to verify proper behaviour of
+// everything.
+    hash_alist *chain;
+#endif
 } inthash;
 
 // Before any use the hash one must initialize the structure. The argument

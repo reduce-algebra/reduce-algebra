@@ -87,10 +87,10 @@ extern int32_t mpi_rank,mpi_size;
 
 extern void **pages,
        **heap_pages, **vheap_pages,
-       **bps_pages, **native_pages;
+       **native_pages;
 
 extern void **new_heap_pages, **new_vheap_pages,
-       **new_bps_pages, **new_native_pages;
+       **new_native_pages;
 
 extern void *allocate_page(const char *why);
 
@@ -98,7 +98,6 @@ extern void *allocate_page(const char *why);
 
 #define PAGE_TYPE_CONS   0
 #define PAGE_TYPE_VECTOR 1
-#define PAGE_TYPE_BPS    2
 #define PAGE_TYPE_NATIVE 3
 
 typedef struct page_map_t
@@ -111,10 +110,10 @@ typedef struct page_map_t
 
 extern int32_t pages_count,
        heap_pages_count, vheap_pages_count,
-       bps_pages_count, native_pages_count;
+       native_pages_count;
 
 extern int32_t new_heap_pages_count, new_vheap_pages_count,
-       new_bps_pages_count, new_native_pages_count;
+       new_native_pages_count;
 
 extern int32_t native_pages_changed;
 extern int32_t native_fringe;
@@ -431,9 +430,6 @@ extern LispObject C_nil;
 
 extern intptr_t byteflip;
 
-extern LispObject codefringe;
-extern LispObject volatile codelimit;
-
 extern LispObject * volatile stacklimit;
 
 extern LispObject fringe;
@@ -594,7 +590,6 @@ extern uint32_t hash_for_checking(LispObject key, int depth);
 //
 // The following are used to help <escape> processing.
 //
-extern LispObject volatile savecodelimit;
 extern LispObject * volatile savestacklimit;
 extern LispObject volatile saveheaplimit;
 extern LispObject volatile savevheaplimit;
@@ -861,7 +856,7 @@ extern void        set_up_functions(int restartp);
 extern void        get_user_files_checksum(unsigned char *);
 extern "C" LispObject acons(LispObject a, LispObject b, LispObject c);
 extern "C" LispObject ash(LispObject a, LispObject b);
-extern LispObject bytestream_interpret(LispObject code, LispObject lit,
+extern LispObject bytestream_interpret(unsigned char *code, LispObject lit,
                                        LispObject *entry_stack);
 extern bool     complex_stringp(LispObject a);
 extern LispObject  copy_string(LispObject a, size_t n);
@@ -902,7 +897,6 @@ extern "C" LispObject get(LispObject a, LispObject b);
 #endif
 extern LispObject getvector(int tag, int type, size_t length);
 extern LispObject getvector_init(size_t n, LispObject v);
-extern LispObject getcodevector(int type, size_t size);
 extern uint32_t  hash_lisp_string(LispObject s);
 extern void lose_C_def(LispObject a);
 extern "C" bool        geq2(LispObject a, LispObject b);
