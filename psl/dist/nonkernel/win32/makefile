@@ -200,7 +200,7 @@ $(PL)/sys-macros.b: $(PU)/sys-macros.sl
 	(cd $(PU);  make $(MFLAGS) $(PL)/sys-macros.b)
 
 $(PNKL)/token-decls.b: $(PNK)/token-decls.sl
-      $(PDIST)/mkpnknt $(PNK) token-decls
+	$(PDIST)/mkpnknt $(PNK) token-decls
 
 clean:
 	rm -f $(PXNKFILES)
