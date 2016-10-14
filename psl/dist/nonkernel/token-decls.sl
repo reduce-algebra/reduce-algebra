@@ -28,12 +28,13 @@
 (define-constant plussign          19)
 (define-constant decimalpoint      20)
 (define-constant idsurround        21)
+(define-constant escapeiffirst     22)
 
 (ds tokentypeofchar (ch)
   (intinf (vecitm (vecinf currentscantable*) ch)))
 
 (ds currentdiphthongindicator ()
-  (vecitm (vecinf currentscantable*) 128))
+  (vecitm (vecinf currentscantable*) 256))
 
 (ds resetbuf ()
   (setq currentchar 0))

@@ -77,7 +77,7 @@
 
 (putv LispScanTable* 44 13)   % CHAR not yet defined;  44 = (char !,)
 
-(put '!, (getv LispScanTable* 128) '((!@ . !,!@)(!. . !,!.)))
+(put '!, (getv LispScanTable* 256) '((!@ . !,!@)(!. . !,!.)))
 
 (deflist
   '((!` backquote-read-macro)

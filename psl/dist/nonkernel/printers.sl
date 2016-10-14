@@ -280,6 +280,7 @@
 		   (progn (setq ch (strbyt itm i))
 			  (setq tokentype (tokentypeofchar ch))
 			  (unless (or (wleq tokentype 10)
+				      (weq tokentype escapeiffirst)
 				      (weq tokentype plussign)
 				      (weq tokentype minussign))
 			    (channelwritechar channel idescapechar*))
@@ -371,7 +372,7 @@
 		     (setq n (wplus2 n 1))
 		     (setq itm (cdr itm)))
 		   (cond ((pairp itm)
-			  (checklinefit 3 channel 'channelwritestring
+			  (checklinefit 4 channel 'channelwritestring
 			   " ..."))
 			 (itm
 			  (checklinefit 3 channel 'channelwritestring
@@ -679,14 +680,18 @@
 		 (checklinefit 10 channel 'channelwriteinteger itm)
 	  (checklinefit (flatsize itm)  channel 'channelwriteinteger itm)))
     ((id-tag) % leave room for possible escape chars
-     (checklinefit (wplus2 (strlen (strinf (symnam (idinf itm)))) 1)
-		   channel 'channelprintid itm))
+        (if (eq channel 4) % explode , flatsize etc
+                 (checklinefit (wtimes2 2 (strlen (strinf (symnam (idinf itm)))))
+                               channel 'channelprintid itm)
+          (checklinefit (flatsize itm) channel 'channelprintid itm)))
     ((unbound-tag) % leave room for possible escape chars
      (checklinefit (wplus2 (strlen (strinf (symnam (idinf itm)))) 16)
 		   channel 'channelprintunbound itm))
-    ((string-tag)
-     (checklinefit (wplus2 (strlen (strinf itm)) 1) channel
-		   'channelprintstring itm))
+    ((string-tag) % use flatsize to correctly count string delimiters inside string
+        (if (eq channel 4) % explode , flatsize etc
+	         (checklinefit (wtimes2 2 (strlen (strinf itm)))
+		               channel 'channelprintstring itm)
+	  (checklinefit (flatsize itm) channel 'channelprintstring itm)))
     ((code-tag)
      (checklinefit 14 channel 'channelwritecodepointer itm))
     ((fixnum-tag)

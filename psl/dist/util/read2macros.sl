@@ -53,7 +53,7 @@
 
 (putv LispScanTable* (char !#) 13)
 
-(put '!# (getv LispScanTable* 128) '((!. . !#!.)
+(put '!# (getv LispScanTable* 256) '((!. . !#!.)
 				     (!/ . !#!/)
 				     (!' . !#!')
 				     (!+ . !#!+)

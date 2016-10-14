@@ -105,8 +105,8 @@
 (put '!#M 'LispReadMacro 'throw-away-next-form)
 (put '!#Q 'LispReadMacro 'throw-away-next-form)
 
-(push '(M . !#M) (get '!# (getv LispScanTable* 128)))
-(push '(Q . !#Q) (get '!# (getv LispScanTable* 128)))
+(push '(M . !#M) (get '!# (getv LispScanTable* 256)))
+(push '(Q . !#Q) (get '!# (getv LispScanTable* 256)))
 
 (comment "So we can add #+psl to maclisp code")
 
