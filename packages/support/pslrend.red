@@ -401,15 +401,21 @@ symbolic procedure initrlisp;
 
 symbolic procedure rlispmain;
   begin scalar l;
-    rlispscantable!* := mkvect 128;
+    rlispscantable!* := mkvect 256;
     l := '(17 11 11 11 11 11 11 11 11 17 17 11 17 17 11 11 11 11 11 11
            11 11 11 11 11 11 11 11 11 11 11 11 17 14 15 11 11 12 11 11
            11 11 13 11 11 11 20 11 00 01 02 03 04 05 06 07 08 09 13 11
            13 11 13 11 11 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10
-           10 10 10 10 10 10 10 10 10 10 10 11 16 11 11 10 11 10 10 10
+           10 10 10 10 10 10 10 10 10 10 10 11 16 11 11 22 11 10 10 10
            10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10
-           10 10 10 11 11 11 11 11 rlispdipthong);
-    for i:=0:128 do <<putv(rlispscantable!*,i,car l); l := cdr l>>;
+           10 10 10 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11
+           11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11
+           11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11
+           11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11
+           11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11
+           11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11
+           11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 rlispdipthong);
+    for i:=0:256 do <<putv(rlispscantable!*,i,car l); l := cdr l>>;
     currentreadmacroindicator!* := 'rlispreadmacro;
     currentscantable!* := rlispscantable!*;
     errout!* := 1;  % Errors to standard output, not special stream;
