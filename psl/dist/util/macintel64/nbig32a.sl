@@ -375,28 +375,53 @@ error
   % be positive;                                                           
   (if (and (bbminusp v1) (bbminusp v2))
     (blnot (blor (blnot v1) (blnot v2)))
-    (prog (l1 l2 l3 v3)
+    (prog (l1 l2 l3 v3 n n1 c)
 	  (setq l1 (bbsize v1)) (setq l2 (bbsize v2)) (setq l3 (min l1 l2))
 	  (cond ((bbminusp v1) 
 		 % When one is negative, we have expand out to the
 		 % size of the other one.  Therefore, we use l2 as the
 		 % size, not l3.  When we exceed the size of the
-		 % negative number, then we just use (logicalbits**).
+		 % negative number, then we just use (logicalbits**) which
+		 % returns a word with all bits set.
 		 (setq v3 (gtpos l2)) (setq l3 l2)
+		 (setq c 1)		% carry to add to current word, see below
 		 (vfor (from i 1 l2 1) 
 		       (do 
 			(iputv v3 i
-			     (iland (cond ((igreaterp i l1) (logicalbits**))
-					    (t (isub1 (igetv v1 i))))
-				      (igetv v2 i))))))
+			     (iland
+			       (cond ((igreaterp i l1) (logicalbits**))
+				     (t (progn
+					  % compute two's complement as one's complement + 1
+					  (setq n (ilnot (igetv v1 i)))
+					  % two's complement is n+c
+					  % if n=(logicalbits**) and c=1, 
+					  % (we have a carry to the next word)
+					  % then set c=1 else 0
+					  (setq n1 (iplus2 n c))
+					  (if (not (and (weq n (logicalbits**)) (weq c 1)))
+					      (setq c 0))
+					  n1)))
+			       (igetv v2 i))))))
 		((bbminusp v2)
 		 (setq v3 (gtpos l1)) (setq l3 l1)
+		 (setq c 1)		% carry to add to current word, see below
 		 (vfor (from i 1 l1 1) 
 		       (do
 			(iputv v3 i
-			       (iland (igetv v1 i)
-				      (cond ((igreaterp i l2)(logicalbits**))
-					    (t (isub1 (igetv v2 i)))))))))
+			     (iland (igetv v1 i)
+			       (cond ((igreaterp i l2)(logicalbits**))
+				     (t (progn
+					  % compute two's complement as one's complement + 1
+					  (setq n (ilnot (igetv v2 i)))
+					  % two's complement is n+c
+					  % if n=(logicalbits**) and c=1, 
+					  % (we have a carry to the next word)
+					  % then set c=1 else 0
+					  (setq n1 (iplus2 n c))
+					  (if (not (and (weq n (logicalbits**)) (weq c 1)))
+					      (setq c 0))
+					  n1)))
+			       )))))
 
 		(t (setq v3 (gtpos l3))
 		   (vfor (from i 1 l3 1) 
