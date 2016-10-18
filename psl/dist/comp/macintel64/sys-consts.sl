@@ -39,6 +39,7 @@
 (define-constant infbitlength                   56) 
 (define-constant addressingunitsperitem         8)
 (define-constant charactersperword              8) 
+(makeunbound 'bitsperword) % avoid ugly message in REDUCE
 (define-constant bitsperword                    64)
 (define-constant bitsperword2                   16)
 (define-constant addressingunitsperfunctioncell 8) 
