@@ -746,9 +746,15 @@ procedure lpdo_mykernp(id);
       expl := reversip explode id;
       if car expl neq '!_ then
 	 return nil;
-      expl := reversip cdr expl;
+      % _ character may be escaped with !, so take care to handle that
+      expl := cdr expl;
+      if car expl eq '!! then
+ 	 expl := cdr expl;
+      expl := reversip expl;
       v := car expl;
       expl := cdr expl;
+      % Again, protect against _ being escaped by !
+      if car expl eq '!! and eqcar(cdr expl,'!_) then expl := cdr expl;
       if car expl neq '!_ then
 	 return nil;
       expl := cdr expl;
