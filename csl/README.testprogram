@@ -24,27 +24,30 @@ and check for a collection of things that are expected and not as a carefully
 engineered and precise qualification test for your platform!
 
 From the trunk directory you can go
-        make csltest
-OR      scripts/csl-sanity-check.sh
-and each carries out the steps described below.
+       scripts/csl-sanity-check.sh
+which carries out the steps described below.
 
 
-To use this manually
+The explanation here is for the benefit of peopel who wish to run through
+the checks manually - presumably because there is some problem for them.
 
-[optionally]    autoreconf -f -i -v
+[optionally]    autoreconf -f -i -v    [in trunk/csl]
         This will re-make the various autoconf-related files. You may not
         need to do this, but if you get complaints about automake
         version compatibility this is what you should try. Note that
         the script .../trunk/autogen.sh performs this process in all relevant
         parts of your local tree, so can be useful if autoreconf proves
-        necessary here.
+        necessary here. Indeed I would tend to view the use of the
+        autogen.sh script in the trunk directory as preferable since it
+        recreates configure-related scripts throughout the REDUCE tree.
 
-./configure
+./configure [in trunk/csl]
         Some people will quite properly prefer
           cd /tmp; .../reduce-algebra/trunk/csl/configure
         so that the test performed here does not leave any files within the
         main source tree. The top-level mechanisms to run the tests build
-        the test stuff in the ...trunk/cslbuild directory.
+        the test stuff in the ...trunk/cslbuild directory. Again this indicates
+        that useing scripts/csl-sanity-check is generally a good plan.
         The configure script will take of the order of 30 second to (say)
         ten minutes depending on how fast your computer and which operating
         system it is running. If all goes well the final few lines of output
@@ -56,7 +59,7 @@ To use this manually
         If this is not the case and you get a diagnostic I hope it will be
         a clean one asking you to install some particular tool or library.
         Note that for the package management systems that come with many
-        operating systems you will need to install the "development" varient
+        operating systems you will need to install the "development" variant
         of support for a package. Eg "ncurses-dev" rather than only "ncurses".
 
         If the configure script fails but without a clear message asking you
@@ -76,7 +79,7 @@ make
         Note that if you are not using either cygwin or Linux then it
         might be prudent to check that you use the GNU version of "make"
         rather than any other version, since for the main Reduce build
-        you will need that. You can veiify that you have GNU make by
+        you will need that. You can verify that you have GNU make by
         giving the command
                 make --version
         and if "make" does not give a brief response identifying itself
