@@ -612,7 +612,7 @@ uint64_t read_u64()
 // Write a 64-bit unsigned value in a format compatible with read_u64()
 
 void write_u64(uint64_t n)
-{   char msg[32];
+{   char msg[40];
     if (n == (n & 0x7f))
     {   sprintf(msg, "small int %#.2x = %d", (int)n, (int)n);
         write_byte(n | 0x80, msg);
@@ -2137,7 +2137,7 @@ down:
     if ((i = hash_lookup(&repeat_hash, p)) != (size_t)(-1))
     {   if (hash_get_value(&repeat_hash, i) != 0)
         {   size_t n = find_index_in_repeats(i);
-            char msg[20];
+            char msg[40];
             sprintf(msg, "back %" PRIuPTR, (uintptr_t)n);
             if (n <= 32) write_opcode(SER_BACKREF0 + n - 1, msg);
             else if (n <= 64) write_opcode(SER_BACKREF1 + n - 33, msg);
@@ -2207,7 +2207,7 @@ down:
                 write_u64(n);  // number of bytes in the name
                 for (size_t i=0; i<n; i++)
                 {   int c = celt(w, i) & 0xff;
-                    char msg[8];
+                    char msg[40];
                     if (0x20 < c && c <= 0x7e) sprintf(msg, "'%c'", c);
                     else sprintf(msg, "%#.2x", c);
                     write_byte(c, msg);
@@ -2319,7 +2319,7 @@ down:
             else if (is_bignum_header(h))
             {   if (length_of_header(h) == CELL+4)
                 {   int64_t n = (int32_t)bignum_digits(p)[0];
-                    char msg[16];
+                    char msg[40];
                     sprintf(msg, "int value=%" PRId64, n);
                     if (n < 0)
                     {   write_opcode(SER_NEGFIXNUM, msg);
@@ -2335,7 +2335,7 @@ down:
                 else if (length_of_header(h) == CELL+8)
                 {   int64_t n = (int32_t)bignum_digits(p)[0] |
                                 ((int64_t)(int32_t)bignum_digits(p)[1] << 31);
-                    char msg[16];
+                    char msg[40];
                     sprintf(msg, "int value=%" PRId64, n);
 // The value I have here fitted within two bignum digits and so is really at
 // most 62 bits. A consequence of that is that negating it can not lead to
@@ -2459,21 +2459,21 @@ down:
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(p)))
             {   case TYPE_SINGLE_FLOAT:
-                {   char msg[32];
+                {   char msg[40];
                     sprintf(msg, "float %.7g", (double)single_float_val(p));
                     write_opcode(SER_FLOAT32, msg);
                     write_f32(single_float_val(p));
                 }
                 break;
                 case TYPE_DOUBLE_FLOAT:
-                {   char msg[32];
+                {   char msg[40];
                     sprintf(msg, "double %.16g", double_float_val(p));
                     write_opcode(SER_FLOAT64, msg);
                     write_f64(double_float_val(p));
                 }
                 break;
                 case TYPE_LONG_FLOAT:
-                {   char msg[32];
+                {   char msg[40];
 // At present I do not have a good scheme to display the 128-bit float value.
                     sprintf(msg, "long double");
                     write_opcode(SER_FLOAT128, msg);
@@ -2493,12 +2493,12 @@ down:
         case TAG_FIXNUM:
             w64 = int_of_fixnum(p);
             if (-16 <= w64 && w64 < 15)
-            {   char msg[8];
+            {   char msg[40];
                 sprintf(msg, "int, value=%d", (int)w64);
                 write_opcode(SER_FIXNUM | ((int)w64 & 0x1f), msg);
             }
             else
-            {   char msg[32];
+            {   char msg[40];
                 sprintf(msg, "int value=%" PRId64, w64);
                 if (w64 < 0)
                 {   write_opcode(SER_NEGFIXNUM, msg);
