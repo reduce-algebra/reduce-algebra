@@ -2,8 +2,7 @@
 
 symbolic;
 
-load!-source := t;
-for each m in library!-members() do load!-source m;
+load!-selected!-source();
 
 linelength 100;
 
@@ -18,10 +17,11 @@ symbolic procedure remdups z;
     z := remdups z;
 % I know that fmprint and tmprint are near duplicates and so I will not
 % mention clashes that only involve exactly those two.
-    if not atom z and not atom cdr z and cddr z and
-      not (cdr z = '("fmprint" "tmprint")) then <<
+    if length z > 1 and
+      not (z = '("fmprint" "tmprint") or
+           z = '("tmprint" "fmprint")) then <<
       prin n; ttab 30; princ " defined in      ";
-      for each z1 in cdr z do <<
+      for each z1 in z do <<
         princ " "; princ z1>>;
       terpri() >> >> >>;
 

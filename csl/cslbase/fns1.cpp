@@ -3541,6 +3541,7 @@ setup_type const funcs1_setup[] =
 
     {"bpsp",                    Lbpsp, too_many_1, wrong_no_1},
     {"codep",                   Lcodep, too_many_1, wrong_no_1},
+    {"cons",                    too_few_2, Lcons, wrong_no_2},
     {"constantp",               Lconstantp, too_many_1, wrong_no_1},
     {"date",                    Ldate1, wrong_no_nb, Ldate},
     {"date-and-time",           Ldate_and_time1, wrong_no_nb, Ldate_and_time},

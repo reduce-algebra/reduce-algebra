@@ -270,21 +270,72 @@ LispObject Lsymbol_fn_cell(LispObject nil, LispObject a)
     return onevalue(nil);
 }
 
-LispObject Lsymbol_header(LispObject nil, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
-    Header h = qheader(a);
-    trace_printf("Header:");
-    if ((h & SYM_SPECIAL_VAR) != 0) trace_printf(" fluid");
-    if ((h & SYM_GLOBAL_VAR) != 0) trace_printf(" global");
-    if ((h & SYM_SPECIAL_FORM) != 0) trace_printf(" special-form");
-    if ((h & SYM_MACRO) != 0) trace_printf(" macro");
-    if ((h & SYM_C_DEF) != 0) trace_printf(" C-def");
-    if ((h & SYM_CODEPTR) != 0) trace_printf(" codeptr");
-    if ((h & SYM_ANY_GENSYM) != 0) trace_printf(" any-gensym");
-    if ((h & SYM_TRACED) != 0) trace_printf(" traced");
-    if ((h & SYM_FASTGET_MASK) != 0) trace_printf(" fastget");
-    trace_printf("\n");
-    return onevalue(a);
+// This should show the header of any symbol, any vector or
+// any numeric value that has a header... It is JUST for debugging, and it
+// prints information but does not return a useful value.
+
+LispObject Lobject_header(LispObject nil, LispObject a)
+{   if (is_symbol(a))
+    {   Header h = qheader(a);
+        trace_printf("Symbol: (%" PRIxPTR ") ", h);
+        if ((h & SYM_SPECIAL_VAR) != 0) trace_printf(" fluid");
+        if ((h & SYM_GLOBAL_VAR) != 0) trace_printf(" global");
+        if ((h & SYM_SPECIAL_FORM) != 0) trace_printf(" special-form");
+        if ((h & SYM_MACRO) != 0) trace_printf(" macro");
+        if ((h & SYM_C_DEF) != 0) trace_printf(" C-def");
+        if ((h & SYM_CODEPTR) != 0) trace_printf(" codeptr");
+        if ((h & SYM_ANY_GENSYM) != 0) trace_printf(" any-gensym");
+        if ((h & SYM_TRACED) != 0) trace_printf(" traced");
+        if ((h & SYM_FASTGET_MASK) != 0) trace_printf(" fastget");
+        trace_printf("\n");
+    }
+    else if (is_vector(a))
+    {   Header h = vechdr(a);
+        trace_printf("Symbol: (%" PRIxPTR ") ", h);
+        trace_printf("Rounded up length in bytes units = %" PRIuPTR "\n",
+                     length_of_header(h));
+        if (!vector_holds_binary(h))
+            trace_printf("Holds %" PRIuPTR " pointers\n",
+                         length_of_header(h)/CELL);
+        else if (is_bitvec_header(h))
+            trace_printf("Bits %" PRIuPTR "\n", length_of_bitheader(h));
+        else if (vector_i8(h))
+            trace_printf("Bytes %" PRIuPTR "\n", length_of_byteheader(h));
+        else if (vector_i16(h))
+            trace_printf("Halfwords %" PRIuPTR "\n", length_of_hwordheader(h));
+        else if (vector_i32(h))
+            trace_printf("32-bit data " PRIuPTR "\n",
+                length_of_header(h)/4);
+        else if (vector_i64(h))
+            trace_printf("64-bit data " PRIuPTR "\n",
+                length_of_header(h)/8);
+        else if (vector_i128(h))
+            trace_printf("128-bit data " PRIuPTR "\n",
+                length_of_header(h)/16);
+        else if (vector_f32(h))
+            trace_printf("32-bit floating point data " PRIuPTR "\n",
+                length_of_header(h)/4);
+        else if (vector_f64(h))
+            trace_printf("64-bit floating point data " PRIuPTR "\n",
+                length_of_header(h)/8);
+        else if (vector_f128(h))
+            trace_printf("128-bit floating point data " PRIuPTR "\n",
+                length_of_header(h)/16);
+        else trace_printf("Unknown vector type\n");
+    }
+// I will expand the following two cases if at some stage my debugging needs
+// make that important.
+    else if (is_numbers(a))
+    {   Header h = numhdr(a);
+        trace_printf("Number: (%" PRIxPTR ") ", h);
+        trace_printf("\n");
+    }
+    else if (is_bfloat(a))
+    {   Header h = flthdr(a);
+        trace_printf("Floating point: (%" PRIxPTR ") ", h);
+        trace_printf("\n");
+    }
+    return onevalue(nil);
 }
 
 LispObject Lsymbol_argcount(LispObject nil, LispObject a)
@@ -4496,7 +4547,7 @@ setup_type const funcs2_setup[] =
     {"symbol-env",              Lsymbol_env, too_many_1, wrong_no_1},
     {"symbol-make-fastget",     Lsymbol_make_fastget1, Lsymbol_make_fastget, wrong_no_2},
     {"symbol-fastgets",         Lsymbol_fastgets, too_many_1, wrong_no_1},
-    {"symbol-header",           Lsymbol_header, too_many_1, wrong_no_1},
+    {"object-header",           Lobject_header, too_many_1, wrong_no_1},
     {"symbol-fn-cell",          Lsymbol_fn_cell, too_many_1, wrong_no_1},
     {"symbol-argcode",          Lsymbol_argcount, too_many_1, wrong_no_1},
     {"symbol-restore-fns",      Lsymbol_restore_fns, too_many_1, wrong_no_1},

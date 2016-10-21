@@ -38,7 +38,9 @@
 (rdf "$srcdir/fastgets.lsp")
 (rdf "$srcdir/compat.lsp")
 (rdf "$srcdir/extras.lsp")
-(rdf "$srcdir/compiler.lsp")
+(rdf (cond
+  ((memq 'jlisp lispsystem!*) "$srcdir/compiler-for-jlisp.lsp")
+  (t "$srcdir/compiler.lsp")))
 
 (compile!-all)
 
@@ -58,7 +60,9 @@
 (faslend)
 
 (faslout 'compiler)
-(rdf "$srcdir/compiler.lsp")
+(rdf (cond
+  ((memq 'jlisp lispsystem!*) "$srcdir/compiler-for-jlisp.lsp")
+  (t "$srcdir/compiler.lsp")))
 (faslend)
 
 (setq !*comp t)

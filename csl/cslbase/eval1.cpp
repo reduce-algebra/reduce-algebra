@@ -2495,6 +2495,7 @@ setup_type const eval1_setup[] =
 // optimisation in this area...
 //
     {"idapply",                 Lapply_1, Lapply_2, Lapply_n},
+    {"eval",                    Leval, too_many_1, wrong_no_1},
     {"apply",                   Lapply_1, Lapply_2, Lapply_n},
     {"apply0",                  Lapply0, too_many_1, wrong_no_1},
     {"apply1",                  too_few_2, Lapply1, wrong_no_2},

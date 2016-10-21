@@ -1,3 +1,4 @@
+//#define DEBUG_FASL 1
 //  fasl.cpp                               Copyright (C) 1990-2016 Codemist
 
 //
@@ -50,8 +51,164 @@
 #include "sockhdr.h"
 #endif
 
+// I need to explain the operations that happen on FASL files as regards
+// preservation of source code. I am taking the 2016 re-work of code to
+// try to rationalise and simplify behaviour.
+//
+// The starting point for the complication is that the compiler
+// arranges that if the variable !*savedef is set when it compiles
+// something then the original source is saved under a '!*savedef
+// tag on the property list of the name of the function concerned. For
+// simple in-store compilation this happens immediately. For compilation
+// into a FASL file the definition is written into the file, but whether
+// it is instated onto the property list depends on the circumstances
+// associated with loading the module.
+//
+// The when load!-module is used to load the code this extra information
+// is ignored.
+//
+// There is however a scheme that can load !*savedef properties without
+// processing and of the other parts of the FASL file. This is the function
+// load!-source.
+// Neither random executable things nor compiled code get loaded by this. A
+// particular thing to note is that if the compiled module was such that
+// normal loading of it with load!-module led to subsidiary modules being
+// loaded then this will not happen with load!-source. Thus to load all
+// the modules making up a package involves finding out some other way what
+// they are. I am expecting it will be rather more common to want to load
+// all the source for everything that is available, and that can be
+// achieved using
+//   for each lib in input!-libraries do
+//      for each mod in library!-members lib do load!-source mod;
+// (or just use library!-members() without an argument to scan the first or
+// only available library). But using load!-source without an argument
+// achieves essentially just this. Well actually there are extra complications
+// which mean that MOST people should use load!-source withgout an argument!
+// In general it will be possible to have a number of read-only image files
+// present together with at most one read-write one. The (Lisp) variable
+// input!-libraries contains a list of rather abstract objects giving
+// each library in the order that they will be searched when looking for
+// a module to load. The variable output!-library is either nil (if no
+// writable library is present) or is one of the libraries in the
+// input!-libraries list. When load!-module (or load!-source or of course
+// load!-selected!-source) loads a module it always does so from the first
+// library that contains a module with the given name. Thus an image file
+// that is earlier in the search order can make one that comes later. There
+// is (at present????) no provision for loading modules from later in the
+// search order.
+// library!-members lists the modules present in a specified library. So
+// if this is done for several libraries some module names may end up listed
+// several times, but every time the module name is used only the first
+// instance of that module will be accessed. For load!-source it will not
+// matter if a module is scanned several times since the same !*savedef
+// information will be instated and because I can be careful and only add
+// mention of any given module once to the source record.
+//
+// The simple case "load!-source mod" loads all !*savedef information in the
+// given module. Clearly if it is called repeatedly and several modules are
+// scanned the !*savedef information present at the end will be the last
+// version loaded. In addition to setting up !*savedef properties the
+// load!-source function also records, for each function, which module
+// it was found in. This ends up as as load!-source property for the name
+// of the function, and will be a list of the names of modules in which
+// a definition was found. This scheme is intended to be useful for cross-
+// referencing style code that tracks down where in the source some function
+// is defined. It is also there so that it is possible to identify cases
+// where the same name is used for functions present in several modules. This
+// shows up when (at the end of a sequence of uses of load!-source) some names
+// have load!-source properties with multiple entries.
+// The return value of load!-source is a list of the functions whose source
+// has just been loaded.
+//
+// A second function "load!-selected!-source mod" is available for selective
+// loading of !*savedef information.
+// In this case !*savedef information is read from the module, but only
+// saved for the user if a checksum computed on it matches an integer value
+// present as a load!-selected!-source property of its name of if the
+// load!-selected!-source property is something else non-nil (typically t).
+// The checksum is calculated using md5 but then truncated to 60 bits so
+// there is some (small) possibility of an unwanted definition ending up
+// loaded. The load!-source propery-list entry will be set up for all
+// functions, not just for the ones where checksums match and so not only
+// can this be used to detect any cases of hash collisions, but it provides
+// a way to collect just this source module information.
+//
+// load!-source and load!-selected!-source scan all available modules if
+// they are called without an argument, and this will often be the most
+// convenient way to use them.
+//
+// Note that the above is a change from previous behaviour which inspected
+// variables !*savedef and load!-source at load-time to decide what to do.
+// I hope it is cleaner and simpler, and by virtue of this block of comments
+// it is certainly better documented!
+//
+// Uses with the build of Reduce:
+//   The bootstrap build of Reduce has !*savedef set while it compiles the
+//   code. This puts saved definitions in the FASL files and they will be
+//   present at build time, but they do not get loaded by load!_module.
+//
+//   The "make profile" option in the Makefile measures which functions are
+//   most heavily used. The measurements it records include an ordered
+//   list of functions and then a checksum of the associated !*savedef
+//   information using the same scheme that load!-selected will. This is
+//   done so that if two modules each define a function called (say) foo
+//   and profile information about each of these gets generated it will be
+//   possible to distinguish between them.
+//
+//   The procedure that compiled from Reduce (ie Lisp) into C++ picks up
+//   checksum information from the profile records and uses
+//   load!-selected!-source to recover just the matching Lisp source.
+//   It converts that into C++ and inserts the checksum into tables as part
+//   of that C++ code. When the (final) version of Reduce is compiling
+//   itself and it finds a defininition of some function (again suppose
+//   it is called foo), it checks if it has a compiled-in C++ function
+//   with the same name and the same checksum, and if so it ignores the
+//   new definition. This leaves the C++ version to be used. If a newer
+//   version of the Reduce sources provide an updated or changed definition
+//   then with very high probability the new checksum will not match the
+//   one associated with the C++ code, and this will lead to the newer
+//   definition being compiled into bytecodes for use. So source changes
+//   in Reduce may over time degrade the number of functions where faster
+//   C++ versions of functions are used.
+//
+//   Code used via scripts/clash.sh uses load!-selected!-source
+//   with no checksum on property lists. This just loads the information
+//   about which modules functions are defined in. It is then possible
+//   to identify and report cases where there are multiple versions of
+//   functions with the same name present somewher in Reduce.
+//   Given that Reduce can not check for this at build time an analysis
+//   tool like this can help detect potential problem clashes or opportunities
+//   to bring functions to a common place where they are available to all
+//   packages that might benefit from them.
+//
+//   Planned future code for global type-checking of Reduce will use
+//   load!-source to gain access to all the source code in a spirit of
+//   what other programming systems call "reflection" but that Lisp has
+//   pretty much been able to take for granted since the 1960s. In a similar
+//   style future cross-referencing code might plausibly work based on
+//   !*savedef information rather than by scanning source files. In general
+//   tools for code analysis and improvement may find use for all of this. 
+//
+//   If a debugging tool wanted to recover the source version of just a single
+//   function it could set the load!-selected!-source property of the function
+//   name to T and call load!-selected!-source - thus recovering the !*savedef
+//   information for just that name without needing a checksum in advance.
+//
+// So here is a go at a summary:
+//   load!-module     Loads code and loads any savedef entries present.
+//   load!-source     Loads all savedefs and sets function location info.
+//   load!-selected!-source
+//                    As load!-source but ONLY loads the savedef of a
+//                    function if the load!-selected!-source property of
+//                    the name of the function is either true or it
+//                    is an integer matching a checksum of the saved
+//                    definition. Even this load!-selected!-source only
+//                    recovers selected !*savedef information it loads
+//                    function location information for everything.
+
+
+
 bool fasl_output_file = false;  // An output file is open?
-static int skipping_input = 0, skipping_output = 0;
 static int32_t recent_pointer = 0, hits = 0 , misses = 0, fasl_byte_count = 0;
 
 //
@@ -119,7 +276,7 @@ static int32_t recent_pointer = 0, hits = 0 , misses = 0, fasl_byte_count = 0;
 //
 #define F_REP       48 // Used to be followed by 2 bytes giving FP rep
 #define F_CHAR      49 // bits, font, code
-#define F_SDEF      50 // associated with fn definition - Lisp coded version
+//#define F_SDEF    50 // associated with fn definition - Lisp coded version
 #define F_STRUCT    51 // Structure or e-vector
 #define F_DEFOPT    52 // function definition, &optional args
 #define F_DEFHOPT   53 // function definition, &optional args + initform
@@ -266,8 +423,7 @@ static LispObject fastread1(int32_t ch, int32_t operand)
             if (Iread(&boffo_char(0), operand) != operand)
                 return aerror("FASL file corrupted");
             fasl_byte_count += operand;
-            if (skipping_input == 2) r = nil;
-            else if (ch == F_PKGINT)
+            if (ch == F_PKGINT)
             {   if (operand0 == 0)
                 {   r = iintern(boffo, (int32_t)operand, CP, 0);
                     errexit();
@@ -296,8 +452,6 @@ static LispObject fastread1(int32_t ch, int32_t operand)
 // so that if re-used they will be rapidly available. See comment under
 // F_GENSYM for a delicacy here.
 //
-            if (skipping_input == 0 ||
-                (ch == F_PKGINT && operand0 == 0)) // NB keep gensyms!
             {   recent_pointer++;
                 if (recent_pointer == KEEP_RECENT) recent_pointer = 0;
                 w = elt(faslvec, recent_pointer);
@@ -330,20 +484,13 @@ static LispObject fastread1(int32_t ch, int32_t operand)
             if (Iread(&boffo_char(0), operand) != operand)
                 return aerror("FASL file corrupted");
             fasl_byte_count += operand;
-            if (skipping_input == 2) r = nil;
             r = iintern(boffo, (int32_t)operand, CP, 0);
             errexit();
             r = Lgensym2(nil, r);
             errexit();
 //
 // The KEEP_RECENT most recently used symbols are stored in a cyclic buffer
-// so that if re-used they will be rapidly available. Note as a real curiosity
-// then gensyms will be stored in this even if skipping_input is non-zero.
-// this is essential so that gensyms within saved-definitions are
-// can get processed properly. Specifically so that repeated use of a gensym
-// within a saved definition leads to two references to the same thing
-// rather than to the creation of two new gensyms.  The same issue should
-// arise for un-interned Common Lisp symbols.
+// so that if re-used they will be rapidly available.
 //
             recent_pointer++;
             if (recent_pointer == KEEP_RECENT) recent_pointer = 0;
@@ -428,21 +575,12 @@ static LispObject fastread1(int32_t ch, int32_t operand)
                 if (Iread(&boffo_char(0), operand) != operand)
                     return aerror("FASL file corrupted");
                 fasl_byte_count += operand;
-//
-// skipping_input is usually zero.  If it is 1 then I read in expressions
-// as normal save that I do not update the recently-mentioned-symbol cache.
-// skipping_input==2 causes me to parse the input FASL file but not
-// return a useful result.  Well actually everything will be read in
-// as normal save that symbols will all be mapped onto NIL.
-//
-                if (skipping_input == 2) r = nil;
-                else r = iintern(boffo, operand, CP, 0);
+                r = iintern(boffo, operand, CP, 0);
                 errexit();
 //
 // The KEEP_RECENT most recently used symbols are stored in a cyclic buffer
 // so that if re-used they will be rapidly available.
 //
-                if (skipping_input == 0)
                 {   recent_pointer++;
                     if (recent_pointer == KEEP_RECENT) recent_pointer = 0;
                     w = elt(faslvec, recent_pointer);
@@ -499,14 +637,6 @@ static LispObject fastread1(int32_t ch, int32_t operand)
                 operand += 256;
             // drop through
             case F_BP0:                 // n bytes making BPS
-// See the other place where qvalue(savedef) == savedef is tested.
-                if (qvalue(savedef) == savedef)
-                {   int32_t i;
-                    for (i=0; i<operand; i++) Igetc();
-                    fasl_byte_count += operand;
-                    return nil;
-                }
-                else
                 {   r = getvector(TAG_VECTOR, TYPE_BPS_4, operand+CELL);
                     errexit();
                     if (Iread(data_of_bps(r), operand) != operand)
@@ -571,8 +701,6 @@ static LispObject fastread1(int32_t ch, int32_t operand)
     }
 }
 
-static bool just_reading_source = false;
-
 static LispObject fastread(void)
 {   int32_t operand = 0, ch = Igetc();
     LispObject nil = C_nil;
@@ -596,24 +724,6 @@ static LispObject fastread(void)
                 errexit();
                 return list2(quote_symbol, r);
 
-            case F_SDEF:
-//
-// I am THINKING about an option that avoids reading in definitions here
-// when *SAVEDEF is nil, and just skips the bytes in the FASL file.  The
-// problem with doing so is that of the table of recently referred to
-// symbols - which must be kept in step between FASL writing and reading
-// whether or not *SAVEDEF is active.
-//
-                if (qvalue(savedef) == nil) skipping_input = 2;
-                else skipping_input = 1;
-                r = fastread();
-                skipping_input = 0;
-                errexit();
-                ch = Igetc();
-                fasl_byte_count++;
-                if (ch == EOF) return aerror("premature EOF in FASL file");
-                ch &= 0xff;
-            // And drop through
             case F_DEF0:                    // introduces defn of compiled code
             case F_DEF1:
             case F_DEF2:
@@ -629,89 +739,6 @@ static LispObject fastread(void)
                 pop(r);
                 errexit();
                 push(name);
-                if (qvalue(savedef) != nil)
-                {   if (just_reading_source)
-                    {   LispObject w;
-#ifdef COMMON
-                        w = get(name, loadsource_symbol, nil);
-#else
-                        w = get(name, loadsource_symbol);
-#endif
-                        if (w == nil &&
-                            qvalue(loadsource_symbol) != nil) w = lisp_true;
-                        if (w != nil)
-                        {   LispObject w1, chk = w;
-                            bool include = true;
-                            push3(chk, name, r);
-                            if (consp(w))
-                            {   if (integerp(qcar(w)))
-                                {   chk = qcar(w);
-                                    w = list2star(qcar(w),
-                                                  current_module, qcdr(w));
-                                }
-                                else w = cons(current_module, w);
-                            }
-                            else
-                            {   if (integerp(w)) w = list2(w, current_module);
-                                else w = ncons(current_module);
-                            }
-                            pop3(r, name, chk);
-                            errexit();
-//
-// If the load-source property is an integer then the source is only
-// loaded if the definition concerned matched that as an MD5 checksum.
-// (well actually I compute MD5 then truncate the digest to 60 bits).
-// (I allow a property (integer ...) too).
-// If load-source started off as just T then the last definition loaded
-// will be the one that survives, but the load-source property will
-// be replaced by a list of the modules that provided definitions (which
-// may or may not be conflicting ones).
-//
-                            if (integerp(chk) != nil && consp(r))
-                            {   push4(name, r, chk, w);
-                                w1 = Lmd60(nil, qcdr(r));
-                                pop4(w, chk, r, name);
-                                errexit();
-                                push4(name, r, chk, w);
-                                include = numeq2(w1, chk);
-#ifdef DEBUG_FASL
-                                prin_to_trace(name); trace_printf("\n");
-                                prin_to_trace(r);    trace_printf("\n");
-                                prin_to_trace(w1);   trace_printf("\n");
-                                prin_to_trace(w);    trace_printf("\n");
-                                prin_to_trace(chk);  trace_printf("\n");
-                                trace_printf(" MD5 equality = %d\n", include);
-#endif
-                                pop4(w, chk, r, name);
-                                errexit();
-                            }
-#ifdef DEBUG_FASL
-                            else trace_printf("simple case\n");
-#endif
-                            if (include)
-                            {   push2(name, r);
-                                putprop(name, loadsource_symbol, w);
-#ifdef DEBUG_FASL
-                                trace_printf("record sourceloc\n");
-#endif
-                                pop2(r, name);
-                                errexit();
-#ifdef DEBUG_FASL
-                                trace_printf("record savedef\n");
-#endif
-                                push2(name, r);
-// here I build up a list of the functions whose definitions were loaded
-                                w1 = cons(name, qvalue(work_symbol));
-                                pop2(r, name);
-                                errexit();
-                                qvalue(work_symbol) = w1;
-                                putprop(name, savedef, r);
-                            }
-                        }
-                    }
-                    else putprop(name, savedef, r);
-                    errexit();
-                }
                 bps = fastread();
                 errexitn(1);
                 push(bps);
@@ -962,7 +989,13 @@ static LispObject fastread(void)
                 if (Iread((char *)&w1, 4) != 4)
                     return aerror("FASL file corrupted");
                 fasl_byte_count += 4;
-                convert_fp_rep(&w1, 0, current_fp_rep, 0);
+// For a while I will not allow floating point values to be created
+// with one byte-order in FASL files and loaded with the other. The nearest to
+// an extent architecture I know of where this will impact me is SPARC, and
+// that is not very widely used these days - and SOONISH I will re-work the
+// whole FASL scheme in a way that will fix this issue in what I hope will
+// be a better way.
+//@@            convert_fp_rep(&w1, 0, current_fp_rep, 0);
                 return w1;
             }
 
@@ -984,8 +1017,8 @@ static LispObject fastread(void)
                 if (Iread((char *)r + CELL - TAG_BOXFLOAT, 4) != 4)
                     return aerror("FASL file corrupted");
                 fasl_byte_count += 4;
-                convert_fp_rep((char *)r + CELL - TAG_BOXFLOAT,
-                               0, current_fp_rep, 1);
+//@@            convert_fp_rep((char *)r + CELL - TAG_BOXFLOAT,
+//@@                           0, current_fp_rep, 1);
                 return r;
 
             case F_FPD:
@@ -997,8 +1030,8 @@ static LispObject fastread(void)
                 if (Iread((char *)r + 8 - TAG_BOXFLOAT, 8) != 8)
                     return aerror("FASL file corrupted");
                 fasl_byte_count += 8;
-                convert_fp_rep((char *)r + 8 - TAG_BOXFLOAT,
-                               0, current_fp_rep, 2);
+//@@            convert_fp_rep((char *)r + 8 - TAG_BOXFLOAT,
+//@@                           0, current_fp_rep, 2);
                 return r;
 
             case F_FPL:
@@ -1010,8 +1043,8 @@ static LispObject fastread(void)
                     return aerror("FASL file corrupted");
                 fasl_byte_count += 8;
 // Beware offset of 8 here if long floats -> 3 words
-                convert_fp_rep((char *)r + 8 - TAG_BOXFLOAT,
-                               0, current_fp_rep, 3);
+//@@            convert_fp_rep((char *)r + 8 - TAG_BOXFLOAT,
+//@@                           0, current_fp_rep, 3);
                 return r;
 
             case F_ID1:
@@ -1033,14 +1066,12 @@ static LispObject fastread(void)
                 if (Iread(&boffo_char(0), operand) != operand)
                     return aerror("FASL file corrupted");
                 fasl_byte_count += operand;
-                if (skipping_input == 2) r = nil;
-                else r = iintern(boffo, operand, CP, 0);
+                r = iintern(boffo, operand, CP, 0);
                 errexit();
 //
 // The KEEP_RECENT most recently used symbols are stored in a cyclic buffer
 // so that if re-used they will be rapidly available.
 //
-                if (skipping_input == 0)
                 {   recent_pointer++;
                     if (recent_pointer == KEEP_RECENT) recent_pointer = 0;
                     w = elt(faslvec, recent_pointer);
@@ -1123,8 +1154,7 @@ static char *trim_module_name(char *name, int32_t *lenp)
 LispObject Lcopy_module(LispObject nil, LispObject file)
 //
 // copy-module will ensure that the output PDS contains a copy of
-// the module that is named. As a special case (copy-module nil) will
-// copy the help data "module". There is no provision for copying
+// the module that is named. There is no provision for copying
 // startup banner data - that must be set up by hand.
 //
 {   Header h;
@@ -1209,11 +1239,7 @@ LispObject Lcopy_native(LispObject nil, LispObject src, LispObject dest)
 //
     while ((c = getc(srcfile)) != -1) Iputc(c);
     fclose(srcfile);
-//
-// After writing the stuff I go IcloseOutput(0) where the arg 0 indicates that
-// I will not want a checksum planted.
-//
-    if (IcloseOutput(0)) return onevalue(nil);
+    if (IcloseOutput()) return onevalue(nil);
 // return T on success
     return onevalue(lisp_true);
 }
@@ -1263,18 +1289,12 @@ LispObject Lbanner(LispObject nil, LispObject info)
     int i;
     int32_t len;
     char *name;
-    Ihandle save;
     if (info == nil)
     {   char b[64];
-        Icontext(&save);
-        if (Iopen_banner(0))
-        {   Irestore_context(save);
-            return onevalue(nil);
-        }
+        if (Iopen_banner(0)) return onevalue(nil);
         for (i=0; i<64; i++)
             b[i] = (char)Igetc();
-        IcloseInput(false);
-        Irestore_context(save);
+        IcloseInput();
         info = make_string(b);
         validate_string(info);
         errexit();
@@ -1307,15 +1327,10 @@ LispObject Lbanner(LispObject nil, LispObject info)
 // the implementation of Iopen_banner(-1) will report failure in that
 // case rather than creating a fresh image file.
 //
-        Icontext(&save);
-        if (Iopen_banner(-1))
-        {   Irestore_context(save);
-            return onevalue(nil);
-        }
+        if (Iopen_banner(-1)) return onevalue(nil);
         if (len > 63) len = 63;
         for (i=0; i<64; i++) Iputc(i >= len ? 0 : name[i]);
-        IcloseOutput(1);
-        Irestore_context(save);
+        IcloseOutput();
     }
     return onevalue(lisp_true);
 }
@@ -1342,29 +1357,26 @@ LispObject Lwritable_libraryp(LispObject nil, LispObject file)
     return onevalue(Lispify_predicate(i & D_WRITE_OK));
 }
 
+#define F_LOAD_MODULE     0
+#define F_LOAD_SOURCE     1
+#define F_SELECTED_SOURCE 2
+
+// This is a single function that will implement load-module,
+// load-source and select-source.
+
 static LispObject load_module(LispObject nil, LispObject file,
-                              int sourceonly)
+                              int option)
 //
 // load_module() rebinds *package* in COMMON mode, but also note that
-// it DOES rebind a whole load of variables so that loading one module
-// can be done while in the process of loading another.
-// also rebinds *echo to nil in case we are reading from a stream.
+// it also rebinds *echo to nil in case we are reading from a stream.
 //
 {   char filename[LONGEST_LEGAL_FILENAME];
     Header h;
     int32_t len;
-    Ihandle save;
     LispObject v;
     bool from_stream = false;
-    int close_mode;
+    bool close_mode;
     char *modname;
-    int32_t save_recent = recent_pointer,
-            save_byte_count = fasl_byte_count;
-#ifdef NAG
-    char *ptr;
-    int32_t old_symbol_protect_flag;
-#endif
-
     memset(filename, 0, sizeof(filename));
     if (is_stream(file)) h=0, from_stream = true;
     else if (symbolp(file))
@@ -1373,13 +1385,20 @@ static LispObject load_module(LispObject nil, LispObject file,
         h = vechdr(file);
     }
     else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
-        return aerror("load-module");
+    {   switch (option)
+        {
+        default:
+            return aerror("load-module");
+        case F_LOAD_SOURCE:
+            return aerror("load-source");
+        case F_SELECTED_SOURCE:
+            return aerror("load-selected-source");
+        }
+    }
     current_module = file;
     if (from_stream)
-    {   Icontext(&save);
-        if (Iopen_from_stdin())
+    {   if (Iopen_from_stdin())
         {   err_printf("Failed to load module from stream\n");
-            Irestore_context(save);
             return error(1, err_no_fasl, file);
         }
         push(qvalue(standard_input));
@@ -1391,18 +1410,15 @@ static LispObject load_module(LispObject nil, LispObject file,
     {   len = length_of_byteheader(h) - CELL;
         modname = (char *)file + CELL - TAG_VECTOR;
         modname = trim_module_name(modname, &len);
-        Icontext(&save);
         if (Iopen(modname, (int)len, IOPEN_CHECKED, filename))
         {   err_printf("Failed to find \"%s\"\n", filename);
-            Irestore_context(save);
             return error(1, err_no_fasl, file);
         }
     }
-    v = getvector_init(CELL*(KEEP_RECENT+1), nil);
+    v = getvector_init(CELL*(KEEP_RECENT+1), nil); //@@@ will soon not be needed
     nil = C_nil;
     if (exception_pending())
-    {   IcloseInput(false);
-        Irestore_context(save);
+    {   IcloseInput();
         if (from_stream)
         {   flip_exception();
             pop(qvalue(echo_symbol));
@@ -1411,8 +1427,6 @@ static LispObject load_module(LispObject nil, LispObject file,
         }
         return nil;
     }
-    push(qvalue(work_symbol));
-    qvalue(work_symbol) = nil; // list of functions loaded in source form
 //
 // I will account time spent fast-loading things as "storage management"
 // overhead to be counted as "garbage collector time" rather than
@@ -1421,7 +1435,7 @@ static LispObject load_module(LispObject nil, LispObject file,
     push_clock();
     if (verbos_flag & 2)
     {   freshline_trace();
-        if (sourceonly)
+        if (option != F_LOAD_MODULE)
         {   if (from_stream) trace_printf("Loading source from a stream\n");
             else trace_printf("Loading source for \"%s\"\n", filename);
         }
@@ -1430,85 +1444,183 @@ static LispObject load_module(LispObject nil, LispObject file,
             else trace_printf("Fast-loading \"%s\"\n", filename);
         }
     }
-
-#ifdef NAG
-//
-// This next bit is designed to ensure that, under the default configuration,
-// the user can overwrite bits of the system that are re-defined in the kernel,
-// but loading the Lisp versions from a "standard" image file will have no
-// effect.  This is totally AXIOM dependent!
-//
-    old_symbol_protect_flag = symbol_protect_flag;
-    ptr = strrchr(filename, '/');
-// /* BEWARE for Axiom purposes!!!!!!!!
-    if (ptr && strlen(ptr) > 5 && strncmp(ptr+1,"axiom",5) == 0)
-        symbol_protect_flag = 1;
-#endif
-    push(CP);
-    push(faslvec);
+    push3(CP, faslvec, faslgensyms);
     faslvec = v;
-    push(faslgensyms);
     faslgensyms = nil;
-    push(qvalue(savedef));
-    if (sourceonly) qvalue(savedef) = savedef;
-    just_reading_source = sourceonly;
     recent_pointer = 0;
     fasl_byte_count = 0;
-    skipping_input = 0;
-    for (;;)
-    {   LispObject r = fastread();
-        nil = C_nil;
-        if (exception_pending() || r == eof_symbol) break;
-#ifdef DEBUG_FASL
-        trace_printf("FASL: ");
-        loop_print_trace(r);
-        trace_printf("\n");
-#endif
-        if (!sourceonly) voideval(r, nil);
-        nil = C_nil;
-        if (exception_pending()) break;
-    }
+    LispObject r = fastread();
+    nil = C_nil;
+    if (!exception_pending() && r != eof_symbol &&
+        option != F_LOAD_MODULE) r = fastread();
     close_mode = true;
     if (exception_pending()) flip_exception(), close_mode = false;
-    pop(qvalue(savedef));
-    pop(faslgensyms);
-    pop(faslvec);
-    pop(CP);
-    if (sourceonly) file = qvalue(work_symbol);
-    else file = nil;
-    pop(qvalue(work_symbol));
-// If something already smashed there is no joy in checking the checksum
-    push(file);
-    IcloseInput(close_mode);
-    Irestore_context(save);
-#ifdef NAG
-    symbol_protect_flag = old_symbol_protect_flag;
-#endif
-    pop(file);
+    pop3(faslgensyms, faslvec, CP);
+    IcloseInput();
     if (from_stream)
     {   pop(qvalue(echo_symbol));
         pop(qvalue(standard_input));
     }
-    recent_pointer = save_recent;
-    fasl_byte_count = save_byte_count;
     gc_time += pop_clock();
     if (!close_mode)
     {   flip_exception();
         return nil;
     }
+// I will process the stuff I just read AFTER I have closed the stream
+// etc. That will mean I never try using nested reading of fasl streams.
+    if (option == F_LOAD_MODULE)
+    {   voideval(r, nil); // voideval is a macro and NEEDS the {} shown here!
+    }
+    else
+    {
+// Now r should be a list of the form ( (name def) (name def) )
+#ifdef DEBUG_FASL
+        trace_printf("SAVEDEF info: ");
+        loop_print_trace(r);
+        trace_printf("\n");
+#endif
+        file = nil;
+        while (is_cons(r))
+        {   LispObject p = qcar(r);
+            r = qcdr(r);
+            LispObject name, def;
+            if (is_cons(p) && is_cons(qcdr(p)))
+            {   name = qcar(p);
+                def = qcar(qcdr(p));
+            }
+            else continue;
+// if I am in load_selected_source mode I need to check before I set up
+// !*savedef information.
+            bool getsavedef = true;
+            if (option == F_SELECTED_SOURCE)
+            {   LispObject w;
+#ifdef COMMON
+                w = get(name, load_selected_source_symbol, nil);
+#else
+                w = get(name, load_selected_source_symbol);
+#endif
+                if (w == nil) getsavedef = false;
+                else if (integerp(w) != nil && consp(def))
+                {   push4(name, file, r, def);
+// The md60 function is called on something like (fname (args...) body...)
+                    def = cons(name, qcdr(def));
+                    errexitn(4);
+                    LispObject w1 = Lmd60(nil, def);
+                    if (!numeq2(w, w1)) getsavedef = false;
+                    pop4(def, r, file, name);
+                }
+            }
+            if (getsavedef)
+            {   push3(name, file, r)
+                putprop(name, savedef, def);
+                pop3(r, file, name);
+                nil = C_nil;
+                if (exception_pending()) break;
+// Build up a list of the names of all functions whose !*savedef information
+// has been established.
+                push2(r, name);
+                file = cons(name, file);
+                pop2(name, r);
+                nil = C_nil;
+                if (exception_pending()) break;
+            }
+// Now set up the load_source property on the function name to indicate the
+// module it was found in.
+            LispObject w;
+#ifdef COMMON
+            w = get(name, load_source_symbol, nil);
+#else
+            w = get(name, load_source_symbol);
+#endif
+            push3(name, file, r)
+            w = cons(current_module, w);
+            pop3(r, file, name);
+            nil = C_nil;
+            if (exception_pending()) break;
+            push3(name, file, r)
+            putprop(name, load_source_symbol, w);
+            pop3(r, file, name);
+            nil = C_nil;
+            if (exception_pending()) break;
+        }
+    }
+    errexit();
 #ifdef DEBUG_VALIDATE
     copy_into_nilseg(false);
     validate_all("end of fast-load", __LINE__, __FILE__);
 #endif
-    return onevalue(file);
-}
-
-LispObject Lload_source(LispObject nil, LispObject file)
-{   return load_module(nil, file, 1);
+    if (option == F_LOAD_MODULE) return onevalue(nil);
+    else return onevalue(file);
 }
 
 LispObject Lload_module(LispObject nil, LispObject file)
-{   return load_module(nil, file, 0);
+{   return load_module(nil, file, F_LOAD_MODULE);
+}
+
+LispObject Lload_source(LispObject nil, LispObject file)
+{   return load_module(nil, file, F_LOAD_SOURCE);
+}
+
+LispObject load_source0(int option)
+{
+// First I will scan all the input libraries collectin a list of the
+// names of modules present in them. I will discard any duplicates
+// names.
+    LispObject nil = C_nil;
+    LispObject mods = nil;
+    for (LispObject l = qvalue(input_libraries); is_cons(l); l = qcdr(l))
+    {   push2(mods, l);
+        LispObject m = Llibrary_members(nil, qcar(l));
+        pop2(l, mods);
+        errexit();
+        while (is_cons(m))
+        {   LispObject m1 = qcar(m);
+            m = qcdr(m);
+            if (Lmemq(nil, m1, mods) != nil) continue;
+            push2(l, m);
+            mods = cons(m1, mods);
+            pop2(m, l);
+            errexit();
+        }
+    }
+//@ printf("list of modules = "); simple_print(mods); printf("\n");
+// Now I will do load-source or load-selected-source on each module, and
+// form the union of the results, which should give me a consolidated
+// list of the names of functions seen.
+    LispObject r = nil;
+    while (is_cons(mods))
+    {   LispObject m = qcar(mods);
+        mods = qcdr(mods);
+        push2(r, mods);
+//@ printf("Call load_module on "); simple_print(m); printf("\n");
+//@ printf("1 r = "); simple_print(r); printf("\n");
+        LispObject w = load_module(nil, m, option);
+        pop2(mods, r);
+//@ printf("2 r = "); simple_print(r); printf("\n");
+//@ printf("2 w = "); simple_print(w); printf("\n");
+        errexit();
+        push(mods);
+        r = Lunion(nil, r, w);
+        pop(mods);
+//@ printf("3 r = "); simple_print(r); printf("\n");
+        errexit();
+//@ printf("result from union = "); simple_print(r); printf("\n");
+    }
+    return onevalue(r); 
+}
+
+LispObject Lload_selected_source(LispObject nil, LispObject file)
+{   return load_module(nil, file, F_SELECTED_SOURCE);
+}
+
+LispObject Lload_source0(LispObject nil, int nargs, ...)
+{   argcheck(nargs, 0, "load-source");
+    return load_source0(F_LOAD_SOURCE);   
+}
+
+LispObject Lload_selected_source0(LispObject nil, int nargs, ...)
+{   argcheck(nargs, 0, "load-selected-source");
+    return load_source0(F_SELECTED_SOURCE);
 }
 
 #ifdef DEBUG_FASL
@@ -1583,7 +1695,6 @@ LispObject Lstart_module(LispObject nil, LispObject name)
 #endif
 #endif
     recent_pointer = 0;
-    skipping_output = 0;
     if (name == nil)
     {   if (fasl_output_file)
         {   int k = (int)Ioutsize() & 0x3;
@@ -1617,7 +1728,7 @@ LispObject Lstart_module(LispObject nil, LispObject name)
 //
             while (k != 3) k++, Iputc(F_NIL);
             Iputc(F_END);
-            IcloseOutput(1);
+            IcloseOutput();
             faslvec = nil;
             faslgensyms = nil;
             fasl_output_file = false;
@@ -1646,7 +1757,7 @@ LispObject Lstart_module(LispObject nil, LispObject name)
         faslgensyms = nil;
         fasl_stream = name;
         fasl_output_file = true;
-        Iopen_to_stdout(); // initialises checksum calculation
+        Iopen_to_stdout();
         return onevalue(lisp_true);
     }
     else
@@ -1711,18 +1822,6 @@ LispObject Ldefine_in_module(LispObject nil, LispObject a)
 #endif
 #endif
     if (!is_fixnum(a)) return aerror("define-in-module");
-    if (a == fixnum_of_int(-1))
-    {   Iputc(F_SDEF);
-//
-// An expression preceeded with F_SDEF will be loaded again only if
-// the variable "*savedef" is true at the time of loading, or if
-// the load-source function is called and the function whose definition
-// is involved has a load-source property.
-//
-        skipping_output = 1;
-        return onevalue(nil);
-    }
-    skipping_output = 0;
     args = int_of_fixnum(a);
     opts = args >> 8;
     ntail = opts >> 10;
@@ -1786,7 +1885,6 @@ static LispObject write_module1(LispObject a)
             case TYPE_SINGLE_FLOAT:
                 Iputc(F_FPF);
                 bits[0] = ((uint32_t *)((char *)a + CELL - TAG_BOXFLOAT))[0];
-                convert_fp_rep(bits, current_fp_rep, 0, 1);
                 Iwrite(bits, 4);
                 break;
             case TYPE_DOUBLE_FLOAT:
@@ -1794,14 +1892,12 @@ static LispObject write_module1(LispObject a)
                 // nb offset here is 8 in both 32 and 64 bit modes
                 bits[0] = ((uint32_t *)((char *)a + 8 - TAG_BOXFLOAT))[0];
                 bits[1] = ((uint32_t *)((char *)a + 8 - TAG_BOXFLOAT))[1];
-                convert_fp_rep(bits, current_fp_rep, 0, 2);
                 Iwrite(bits, 8);
                 break;
             case TYPE_LONG_FLOAT:
                 Iputc(F_FPL);
                 bits[0] = ((uint32_t *)((char *)a + 8 - TAG_BOXFLOAT))[0];
                 bits[1] = ((uint32_t *)((char *)a + 8 - TAG_BOXFLOAT))[1];
-                convert_fp_rep(bits, current_fp_rep, 0, 3);
                 Iwrite(bits, 8);
                 break;
         }
@@ -1915,17 +2011,26 @@ static LispObject write_module1(LispObject a)
     return nil;
 }
 
-LispObject Lwrite_module(LispObject nil, LispObject a)
+LispObject Lwrite_module(LispObject nil, LispObject a, LispObject b)
 {
 #ifdef DEBUG_FASL
-    push(a);
+    push2(a, b);
     trace_printf("FASLOUT: ");
     loop_print_trace(a);
     errexit();
     trace_printf("\n");
-    pop(a);
+    loop_print_trace(b);
+    errexit();
+    trace_printf("\n");
+    pop2(b, a);
 #endif
-    return write_module0(nil, a);
+    push(b);
+    write_module0(nil, a);
+    errexit();
+    pop(b);
+    write_module0(nil, b);
+    errexit();
+    return onevalue(nil);
 }
 
 static LispObject write_module0(LispObject nil, LispObject a)
@@ -2040,7 +2145,6 @@ static LispObject write_module0(LispObject nil, LispObject a)
             }
         }
         misses++;
-        if (skipping_output == 0 || pkgid == 1)
         {   recent_pointer++;
             if (recent_pointer == KEEP_RECENT) recent_pointer = 0;
             w1 = elt(faslvec, recent_pointer);
@@ -2142,7 +2246,6 @@ static LispObject write_module0(LispObject nil, LispObject a)
 // See comment where F_GENSYM is read to understand why gensyms must be
 // recorded even when skipping...
 //
-        if (skipping_output == 0 || pkgid == 1)
         {   recent_pointer++;
             if (recent_pointer == KEEP_RECENT) recent_pointer = 0;
             w1 = elt(faslvec, recent_pointer);
@@ -2289,7 +2392,7 @@ static LispObject write_module0(LispObject nil, LispObject a)
     }
     else if (is_sfloat(a))
     {   uint32_t w = (uint32_t)a;
-        convert_fp_rep(&w, current_fp_rep, 0, 0);
+//@@    convert_fp_rep(&w, current_fp_rep, 0, 0);
         Iputc(F_FPS);
         Iwrite((char *)&w, 4);
     }
@@ -2333,1024 +2436,6 @@ LispObject Lset_help_file(LispObject nil, LispObject a, LispObject b)
 #endif
     return onevalue(nil);
 }
-
-#if 0
-
-//
-// write-help-module (now) takes as argument a file-name. It expects the
-// file to be in INFO format. It copies the text from the file into
-// a section of the image file and builds an index (which will remain in
-// memory).
-//
-
-//
-// write-help-module has two arguments here because the previous version did
-// and changing that would cause short-term confusion...
-//
-
-static void merge_sort(char *a, char *b, int left, int right)
-{   int next = left+8, mid, i, j;
-    if (left==right) return;    // Empty vector to sort
-    while (next < right && a[next] != 0) next += 8;
-    if (next >= right) return;  // Only one item there
-    mid = ((left+right)/2) & ~7;
-    if (mid <= next) mid = next;
-    else while (a[mid] != 0) mid -= 8;
-//
-// Now (left..mid) is non-empty because mid >= next, and (mid..right) is not
-// empty because mid rounded downwards and the vector has at least two
-// items in it.
-//
-    merge_sort(a, b, left, mid);
-    merge_sort(a, b, mid, right);
-    for (i=left; i<=right; i++) b[i] = a[i];
-    i = left; j = mid; next = left;
-// Now merge back from b to a
-    while (i < mid && j < right)
-    {   int i1 = i+4, j1=j+4, k;
-        for (k=0; k<28; k++)
-        {   if (b[i1] != b[j1]) break;
-            i1++;
-            j1++;
-        }
-        if (b[i1] <= b[j1])
-        {   do
-            {   *(int32_t *)(&a[next]) = *(int32_t *)(&b[i]);
-                *(int32_t *)(&a[next+4]) = *(int32_t *)(&b[i+4]);
-                next += 8;
-                i += 8;
-            }
-            while (b[i] != 0);
-        }
-        else
-        {   do
-            {   *(int32_t *)(&a[next]) = *(int32_t *)(&b[j]);
-                *(int32_t *)(&a[next+4]) = *(int32_t *)(&b[j+4]);
-                next += 8;
-                j += 8;
-            }
-            while (b[j] != 0);
-        }
-    }
-    while (i < mid) a[next++] = b[i++];
-    while (j < right) a[next++] = b[j++];
-}
-
-//
-// To get some sort of compression on the help text I will collect
-// statistics about which pairs of characters occur adjacent to one
-// another. I will first use an array of 256*256 unsigned characters. When
-// a particular pair records 255 in this count field I will enter it in
-// an overflow hash table. The space for each of these tables will be
-// grabbed using malloc(), so if you try to build a help database on
-// a machine where grabbing an extra 100K of memory is awkward then you
-// may be out of luck.
-//
-
-typedef struct char_pair_hash
-{   int32_t count;
-    char c1, c2;
-} char_pair_hash;
-
-//
-// I observe (having done the experiment) that the REDUCE help database
-// causes overflow for somewhat under 400 character-pairs. Thus a hash
-// table with room for twice that number should suffice for now. Note that
-// an utterly worst-case file would have to be over 256Kbytes long for
-// more than 1000 character pairs each to occur over 256 times, and all
-// realistic text files will be a very long way from that case. If, by
-// mistake, one fed this code a file that was already compressed it would
-// collapse with an overfull hash table. Tough luck - in such cases I will
-//* just deliver slightly silly results.
-//
-
-#define OVERFLOW_SIZE 1000
-
-#define PASS_COUNT 12
-
-static int compare_char_counts(void const *aa, void const *bb)
-{   return ((char_pair_hash *)bb)->count -
-           ((char_pair_hash *)aa)->count;
-}
-
-#define INFO_CHAR   ('_' & 0x1f)
-
-LispObject Lwrite_help_module(LispObject nil,
-                              LispObject name, LispObject)
-{   int i, c1, c2, c3, pass, linep;
-    int32_t info_seen;
-    unsigned char cx1[256], cx2[256];
-    char buff[16], line[256];
-//
-// There can be no more than 256 items put in the coded[] hash table, and
-// in general I expect it to be considerably less than that. So having the
-// table of size 409 (a prime) guarantees it will never get too full so
-// performance ought to be pretty good.
-//
-#define CODED_SIZE  409
-    char_pair_hash coded[CODED_SIZE];
-    int32_t buffp;
-    Ihandle save;
-    LispObject v = nil, v1;
-    int32_t indexlength = -10000, saving;
-    int32_t helpsize = 0, len;
-    char filename[LONGEST_LEGAL_FILENAME];
-    Header h;
-    FILE *file;
-    unsigned char *frequencies;
-    char_pair_hash *overflow;
-    memset(filename, 0, sizeof(filename));
-#if 0
-#ifdef SOCKETS
-//
-// Security measure - remote client can not do write-help-module"
-//
-    if (socket_server != 0) return onevalue(nil);
-#endif
-#endif
-#ifdef COMMON
-    if (complex_stringp(name))
-    {   name = simplify_string(name);
-        errexit();
-        h = vechdr(name);
-    }
-    else
-#endif
-        if (symbolp(name))
-        {   name = get_pname(name);
-            errexit();
-            h = vechdr(name);
-        }
-        else if (!(is_vector(name))) return aerror("write-help-module");
-        else if (type_of_header(h = vechdr(name)) != TYPE_STRING)
-            return aerror("write-help-module");
-    len = length_of_byteheader(h) - CELL;
-    if (len > sizeof(filename)) len = sizeof(filename);
-    file = open_file(filename, (char *)name + (CELL-TAG_VECTOR),
-                     (size_t)len, "r", NULL);
-    if (file == NULL) return aerror("write-help-module");
-    Icontext(&save);
-    if (Iopen_help(-1))        // Open help sub-file for writing
-    {   Irestore_context(save);
-        fclose(file);
-        return aerror("Unable to open help file");
-    }
-    for (i=0; i<CODED_SIZE; i++)
-    {   coded[i].c1 = coded[i].c2 = 0;
-        coded[i].count = 0;
-    }
-    frequencies = (unsigned char *)malloc(0x10000);
-    overflow = (char_pair_hash *)malloc(OVERFLOW_SIZE*sizeof(char_pair_hash));
-    if (frequencies == NULL || overflow == NULL)
-    {   Irestore_context(save);
-        fclose(file);
-        free((void *)frequencies);
-        free((void *)overflow);
-        return aerror("Not enough memory to build help database");
-    }
-    for (i=0; i<256; i++) cx1[i] = cx2[i] = 0;
-    for (pass=1; pass<=PASS_COUNT; pass++)
-    {   term_printf("Start of pass %d\n", pass);
-        if (pass == PASS_COUNT)
-        {   v = getvector(TAG_VECTOR, TYPE_STRING, CELL+4+indexlength);
-            nil = C_nil;
-//
-// I will get another vectors the same size so that I have plenty of
-// space for a simple-minded implementation of merge-sort.
-//
-            if (!exception_pending())
-            {   push(v);
-                v1 = getvector(TAG_VECTOR, TYPE_STRING, CELL+4+indexlength);
-                pop(v);
-                nil = C_nil;
-            }
-            else v1 = nil;
-            if (exception_pending())
-            {   flip_exception();
-                IcloseOutput(1);
-                Irestore_context(save);
-                fclose(file);
-                free((void *)frequencies);
-                free((void *)overflow);
-                flip_exception();
-                return nil;
-            }
-        }
-        indexlength = 512;
-        fseek(file, SEEK_SET, 0L);
-        for (i=0; i<0x10000; i++) frequencies[i] = 0;
-        for (i=0; i<OVERFLOW_SIZE; i++)
-        {   overflow[i].c1 = overflow[i].c2 = 0;
-            overflow[i].count = 0;
-        }
-        for (i=0; i<16; i++) buff[i] = 0;
-        buffp = 0;
-        i = 100;
-        saving = 0;
-// An "info" file has a little header at the top - skip that
-        while ((c2 = getc(file)) != EOF &&
-               c2 != INFO_CHAR) /* do nothing */;
-        c2 = getc(file);        // newline following the ^_
-        linep = 0;
-        info_seen = 0;
-        while ((c2 = getc(file)) != EOF)
-        {   uint32_t x;
-            int n;
-            if (c2 == '\n')
-            {   line[linep] = 0;
-                if (linep == 1 && line[0] == INFO_CHAR)
-                {   int32_t bp = buffp;
-//
-// I flush the compression look-ahead buffer when I find a "^_" record
-// so that the break between help topics is on a real byte boundary and so
-// that I can tell where in the help file this boundary will fall.
-//
-                    for (;;)
-                    {   bp++;
-                        c1 = buff[bp & 15];
-                        buff[bp & 15] = 0;
-                        if (c1 == 0) break;
-                        if (pass == PASS_COUNT)
-                        {   if (c1 == INFO_CHAR) Iputc(0);
-                            else Iputc(c1);
-                            helpsize++;
-                        }
-                    }
-                    info_seen = helpsize;
-                    linep = 0;
-                    continue;  // Throws away the '\n' after '^_'
-                }
-                else if (info_seen >= 0)
-                {   if (strcmp(line, "Tag Table:") == 0) break;
-//
-// Here I must spot "File:" lines and count the size of the node name and/or
-// insert it in the index vector.
-//
-                    if (strncmp(line, "File: ", 6) == 0)
-                    {   linep = linep-6;
-                        while (linep>0 &&
-                               strncmp(&line[linep], "Node: ", 6) != 0)
-                            linep--;
-                        if (linep != 0)
-                        {   char *node = &line[linep+6];
-                            int nodelen = 0;
-//
-// I will force node labels into upper case here. I use upper rather than
-// lower case mainly because it turns out to make it easier for me to compare
-// the sorted order of my key-table with the order imposed by a (DOS) sort
-// utility I have. In particular it makes the collating order of '_' with
-// letters compatible with the independent external utility.
-//
-                            while (node[nodelen] != ',' &&
-                                   node[nodelen] != 0)
-                            {   node[nodelen] = (char)toupper(node[nodelen]);
-                                nodelen++;
-                            }
-                            if (nodelen > 28) nodelen = 28;
-                            if (pass == PASS_COUNT)
-                            {   ucelt(v, indexlength++) = 0;
-                                ucelt(v, indexlength++) = (unsigned char)(info_seen & 0xff);
-                                ucelt(v, indexlength++) = (unsigned char)((info_seen >> 8) & 0xff);
-                                ucelt(v, indexlength++) = (unsigned char)((info_seen >> 16) & 0xff);
-                                while (nodelen-- != 0)
-                                    celt(v, indexlength++) = *node++;
-                                while (indexlength & 7)
-                                    celt(v, indexlength++) = 0;
-                            }
-                            else indexlength = indexlength +
-                                                   ((nodelen + 11) & ~7);
-                        }
-                    }
-                    info_seen = -1;
-                }
-                else info_seen = -1;
-                linep = 0;
-            }
-            else if (linep < 255) line[linep++] = (char)c2;
-//
-// I truncate lines at 255 characters. This is not so comfortable as all that!
-// The Reduce Help Database ends up with lines of up to 195 characters long,
-// in cases where the names of several adjacent sections are all ridiculously
-// long.
-//
-            cx1[c2] = (unsigned char)c2;
-            for (;;)
-            {   c3 = buff[(buffp-1) & 15];
-                if (c3 != 0)
-                {   int c4 = 0;
-                    int32_t hash = ((((c3 & 0xff)<<8)+
-                                     (c2 & 0xff))*32359) % CODED_SIZE;
-                    for (;;)
-                    {   if (coded[hash].count == 0) break;
-                        else if (coded[hash].c1 == c3 &&
-                                 coded[hash].c2 == c2)
-                        {   c4 = coded[hash].count;
-                            buffp--;
-                            buff[buffp & 15] = 0;
-                            saving++;
-                            break;
-                        }
-                        hash++;
-                        if (hash == CODED_SIZE) hash = 0;
-                    }
-                    if (c4 != 0)
-                    {   c2 = c4;
-                        continue;
-                    }
-                }
-                break;
-            }
-            c1 = buff[(buffp+1) & 15];
-            c3 = buff[(buffp+2) & 15];
-            buff[buffp & 15] = (char)c2;
-            buffp++;
-            buff[buffp & 15] = 0;
-            c2 = c3;
-            if (c1 == 0 || c2 == 0 || c1 == INFO_CHAR ||
-                c2 == INFO_CHAR) continue;
-            if (pass == PASS_COUNT)
-            {   if (c1 == INFO_CHAR) Iputc(0);  // terminate a section
-                else Iputc(c1);
-                helpsize++;
-            }
-            x = ((c1 & 0xff) << 8) | (c2 & 0xff);
-            n = frequencies[x];
-            if (--i == 0)
-            {   stackcheck0(0);
-                i = 100;
-            }
-            if (n == 255)
-            {   x = (x*32359) % OVERFLOW_SIZE;
-//
-// In general I expect inserting character-pairs in this table will only
-// take a few probes. But any scan that takes over 3*OVERFLOW_SIZE/4 is
-// abandoned. The effect is that worst-case behaviour could eventually
-// fill the table up totally, so this long-stop would be the only thing
-// preventing the code from looping for ever. So then it would run around
-// 200 times slower than usual, but it would eventually finish! Such bad cases
-// can not happen with reasonable input data.
-//
-                for (n=0; n<(3*OVERFLOW_SIZE)/4; n++)
-                {   if (overflow[x].count == 0)
-                    {   overflow[x].c1 = (char)c1;
-                        overflow[x].c2 = (char)c2;
-                        overflow[x].count = 256;
-                        break;
-                    }
-                    else if (c1 == overflow[x].c1 &&
-                             c2 == overflow[x].c2)
-                    {   overflow[x].count++;
-                        break;
-                    }
-                    x = x + 1;
-                    if (x == OVERFLOW_SIZE) x = 0;
-                }
-            }
-            else frequencies[x] = (unsigned char)(n+1);
-        }
-//
-// It is possible (probable!) that at the end of processing there are a few
-// characters left buffered up. Flush them out now.
-//
-        if (pass == PASS_COUNT)
-        {   for (;;)
-            {   buffp++;
-                c1 = buff[buffp & 15];
-                buff[buffp & 15] = 0;
-                if (c1 == INFO_CHAR) Iputc(0);
-                else Iputc(c1);
-                helpsize++;
-                if (c1 == 0) break;  // NB I write a zero to terminate
-            }
-        }
-        term_printf("Saving this pass was %d\n", saving);
-        qsort(overflow, (size_t)OVERFLOW_SIZE, sizeof(char_pair_hash),
-              compare_char_counts);
-        if (pass < PASS_COUNT)
-        {   for (i=0; i<(pass==PASS_COUNT-1 ? OVERFLOW_SIZE : 10); i++)
-            {   int rep;
-                int32_t hash;
-                if (overflow[i].c1 == 0 || overflow[i].c2 == 0) continue;
-                for (rep=1; rep<256; rep++)
-                    if (cx1[rep]==0) break;
-                if (rep == 256) break;
-                c1 = overflow[i].c1;
-                c2 = overflow[i].c2;
-                cx1[rep] = (unsigned char)c1;
-                cx2[rep] = (unsigned char)c2;
-                hash = ((((c1 & 0xff)<<8)+(c2 & 0xff))*32359) % CODED_SIZE;
-                for (;;)
-                {   if (coded[hash].count == 0)
-                    {   coded[hash].c1 = (char)c1;
-                        coded[hash].c2 = (char)c2;
-                        coded[hash].count = rep;
-                        break;
-                    }
-                    else if (coded[hash].c1 == c1 &&
-                             coded[hash].c2 == c2) break;
-                    hash++;
-                    if (hash == CODED_SIZE) hash = 0;
-                }
-                term_printf("%.2x %.2x => %.2x (%d)\n",
-                            c1 & 0xff, c2 & 0xff, rep & 0xff, overflow[i].count);
-            }
-        }
-    }
-    celt(v, indexlength) = 0;   // needed as a terminator
-    for (i=0; i<256; i++)
-    {   celt(v, 2*i) = cx1[i];
-        celt(v, 2*i+1) = cx2[i];
-    }
-    i = Ioutsize() & 3;
-    while ((i & 3) != 0) Iputc(0), i++;   // Pad to multiple of 4 bytes
-    IcloseOutput(1);
-    fclose(file);
-    free((void *)frequencies);
-    free((void *)overflow);
-    trace_printf("%ld bytes of help data\n", (long)helpsize);
-    Irestore_context(save);
-//
-// Now I have made a help module and an associated index vector, however
-// the index information is at present unordered. I want to sort it but
-// the situation is a little curious - the items in the vector are of
-// variable length and so most of the sorting methods I can think of
-// are not easily applied.  I guess that merge-sort is the solution...
-//
-    merge_sort(&celt(v, 0), &celt(v1, 0), 512, indexlength);
-
-    help_index = v;   // Only set up the index vector if all seemed OK
-    return onevalue(nil);
-}
-
-//
-// Here I will have a simulation of some modest part of the "curses"
-// interface that Unix tends to support. I will certainly not support
-// everything - just a minimum that I think I need for my help browser.
-// I support the following environments
-// (a) Watcom C for DOS, using the Watcom graphics library
-// (b) Unix using real "curses", but adding two new functions initkb()
-//     and resetkb() to switch to unbuffered un-echoed input from getch()
-// (c) Watcom C and Windows (win32) using a separate 25 by 80 window
-//     for all the text output here.  This case will be flagged by having
-//     the pre-processor symbol WIN32 defined.
-//
-
-#include <ctype.h>
-
-#ifdef WIN32
-
-//
-// Under win32 I will have the implementation of all this stuff as
-// part of my window manager code, and hence elsewhere. So I just provide
-// a collection of declarations to show what will be available.
-//
-
-//
-// For Windows I will only support an 80 by 25 window. I guess it
-// would be easy enough to permit other sizes, except that I do not have
-// an easy answer to what should happen if the user re-sizes the window
-// while other things are going on. Hence my conservative caution - at
-// least for now!
-//
-extern int LINES, COLS;
-
-// initscr() must be called once at the start of a run
-extern void initscr(void);
-
-//
-// initkb() and resetkb() delimit regions in the code where keyboard
-// input is treated as requests to the curses window but is accepted
-// with no delay and no echo.  Also mouse events can be posted during
-// this time.
-//
-extern void initkb(void);
-extern void resetkb(void);
-
-extern int mouse_button;  // set non-zero when user presses a button
-extern int mouse_cx;      // 0 <= mouse_cx < COLS
-extern int mouse_cy;      // 0 <= mouse_cy < LINES
-
-// refresh() is called to force the screen to be up to date
-extern void refresh();
-
-// endwin() hides the curses window, restoring simple text handling
-extern void endwin(void);
-
-// Move text insertion point. Origin (0,0) is top left of screen
-extern void move(int y, int x);
-
-// standout() and standend() delimit inverse video (or whatever) text
-extern void standout(void);
-extern void standend(void);
-
-// erase() clears the whole screen
-extern void erase(void);
-
-//
-// addch() and addstr() add text to the screen, advancing the cursor. I
-// view it as illegal to write beyond either right or bottom margin of the
-// screen.
-//
-extern void addch(int ch);
-extern void addstr(char *s);
-
-//
-// getch() reads a character from the keyboard. It does not wait for
-// a newline, and does not echo anything. Because the name getch() may be
-// in use in some C libraries in a way that could conflict I use some
-// re-naming here.  If there has been a mouse-click recently then getch()
-// should return a value (0x100 + bits) where the odd bits may indicate which
-// button was pressed. In that case (mouse_cx,mouse_cy) will be the
-// character-position coordinates at which the hit was taken. Systems
-// that can not support a mouse do not have to worry about this and can always
-// return a value in the range 0..255, or EOF. On some systems getch() will
-// return 0 with no delay if there is no character available (so that
-// the application will busy-wait). On others it is entitled to wait until
-// the user presses a key. But (once again) it should not do line editing or
-// wait for an ENTER.
-//
-extern int my_getch(void);
-#undef getch
-#define getch() my_getch()
-
-#else // WIN32
-
-//
-// Assume Unix here - or some system providing Unix compatibility.
-// Note that "curses" may not always be installed, but is needed here
-// if the embedded help system is to work.
-//
-
-
-#include <curses.h>
-
-//
-// In fact for the curses-Unix style interface I do not support a mouse,
-// but that is no great problem - I just let mouse_button remain zero
-// always.
-//
-
-int mouse_button = 0;  // set non-zero when user presses a button
-int mouse_cx = 0;      // 0 <= mouse_cx < COLS
-int mouse_cy = 0;      // 0 <= mouse_cy < LINES
-
-
-void initkb()
-{   cbreak();
-    noecho();
-}
-
-void resetkb()
-{   nocbreak();
-    echo();
-}
-
-
-#endif // WIN32
-
-//
-// End of curses compatibility code
-//
-
-char file[256], node[256], next[256], prev[256], up[256];
-long int topic_start = 0, topic_header_size = 0;
-
-void find_word(char *buffer, char *tag, char *value)
-{   int len = strlen(tag), ch;
-    *value = 0;
-    while (*buffer != 0)
-    {   if (strncmp(buffer, tag, len) != 0)
-        {   buffer++;
-            continue;
-        }
-        buffer += len;
-        while ((ch = *buffer) == ' ' && ch != 0) buffer++;
-        if (ch == 0) return;
-        while ((ch = *buffer++) != ',' && ch != 0) *value++ = (char)ch;
-        *value = 0;
-        return;
-    }
-}
-
-static int shown_lines = 0;
-
-static unsigned char cstack[28];
-static int cstackp;
-
-//
-// I have here some fairly simple compression on the help text. Characters
-// can either stand for themselves or for pairs of characters. The table in
-// the first 512 bytes of the index table indicates which. If at location
-// (2*i, 2*i+1) this table contains (p,q) then q=0 means that the character
-// i stands for itself (and p=i). Otherwise i expands to p followed by q where
-// each of these are subject to the same potential expansion. Code 0 is
-// reserved as a section or file terminator.
-//
-
-static int getc_help(void)
-{   LispObject v = help_index;
-    unsigned char *p;
-    int k, c2;
-    p = &ucelt(v, 0);
-    if (cstackp == 0) k = Igetc();
-    else k = cstack[--cstackp];
-    for (;;)
-    {   if (k == EOF || k == 0) return 0;
-        c2 = p[2*k+1];
-        if (c2 == 0) return k;
-        cstack[cstackp++] = (unsigned char)c2;
-        k = p[2*k];
-    }
-}
-
-#define MAX_MENUS  32
-
-static int at_end_of_topic = 0;
-static int menu_line[MAX_MENUS], menu_col[MAX_MENUS], max_menu, active_menu;
-static char menu_text[MAX_MENUS][40];
-
-void display_next_page(void)
-{   int ch, line = 0, col, llen = 80, i, j;
-    char buffer[256];
-    if (COLS < 80) llen = COLS;
-    erase();
-    at_end_of_topic = 0;
-    max_menu = active_menu = -1;
-//
-// There is an "ugly" here. The sprintf that formats the header line
-// does not protect against over-long topic-names that could lead to over-full
-// buffers. I make the buffer 256 characters long and hope! I force a '\0'
-// in at column 80 (or whatever) later on to effect truncation.
-//
-    sprintf(buffer, "Node: %s, Next: %s, Prev: %s, Up:%s",
-            node, next, prev, up);
-    buffer[llen] = 0;
-    move(0, 0);
-    addstr(buffer);
-    while (++line < LINES)
-    {   col = 0;
-        while ((ch = getc_help()) != '\n')
-        {   if (ch == 0 || ch == EOF)
-            {   at_end_of_topic = 1;
-                break;
-            }
-            if (col < llen) buffer[col++] = (char)ch;
-        }
-        if (at_end_of_topic) break;
-        buffer[col] = 0;
-        for (i=0; i<col &&
-             !(buffer[i]=='*' &&
-               buffer[i+1]==' '); i++);
-        for (j=i+1; j<col &&
-             !(buffer[j]==':' &&
-               buffer[j+1]==':'); j++);
-        if (j < col && max_menu < MAX_MENUS-2)
-        {   max_menu++;
-            menu_line[max_menu] = line;
-            menu_col[max_menu] = i + 2;
-            memset(menu_text[max_menu], 0, 39);
-            strncpy(menu_text[max_menu], &buffer[i+2], j-i-2);
-            menu_text[max_menu][39] = 0;
-        }
-        move(line, 0);
-        addstr(buffer);
-        shown_lines++;
-    }
-    refresh();
-}
-
-void skip_some_lines(int n)
-{   int ch, line = 0, col;
-    char buffer[16];
-    at_end_of_topic = 0;
-    while (++line <= n)
-    {   col = 0;
-        while ((ch = getc_help()) != '\n')
-        {   if (ch == 0 || ch == EOF)
-            {   at_end_of_topic = 1;
-                break;
-            }
-            if (col < 8) buffer[col++] = (char)ch;
-        }
-        if (at_end_of_topic) break;
-        shown_lines++;
-    }
-}
-
-static int topic_in_index(char *key)
-{   int len = strlen(key);
-    LispObject v = help_index;
-    int32_t size, i, low, high, offset;
-    int k, l;
-    char *p;
-    if (len > 28) len = 28;
-    if (!is_vector(v)) return 0;
-    size = length_of_byteheader(vechdr(v)) - CELL;
-    p = &celt(v, 0);
-
-//
-// The first 512 bytes of the help index contain data for the decompression
-// process, and so are not used in the following search.
-// I stop at size-4 on the next line because I added an extra 4 bytes
-// of padding on the end of the help index to terminate the last entry.
-//
-    low = 512;
-    high = size-4;
-//
-// Do a binary search a bit, but when I am down to a fairly narrow
-// range drop down to linear scan.  Note that binary search is somewhat
-// curious given that the items in my index are variable length!
-//
-    while (high > low + 64)  // largest item in table is 28 bytes
-    {   int32_t mid = (high + low)/2;
-        mid &= ~7;           // Align it properly
-//
-// At this stage mid might point part way through an index entry. Move it
-// up until it points at something that has a zero first byte. Because
-// I started off with low and high well separated this is guaranteed to
-// terminate with mid strictly between low and high.  I slide up rather
-// than down to (slightly) balance the rounding down that happened in
-// the original calculation of the mid-point.
-//
-        while (p[mid] != 0) mid += 8;
-        for (k=0; k<len && toupper(key[k]) == p[mid+k+4]; k++) {};
-        if (k < len)
-        {   if (toupper(key[k]) < p[mid+k+4]) high = mid;
-            else low = mid;
-            continue;
-        }
-        else if (p[mid+k+4] != 0)
-        {   high = mid;
-            continue;
-        }
-        low = high = mid;   // Found it exactly
-        break;
-    }
-    l = 0;
-    for (i=low; i<high; i=i+l+4)
-    {   l = 4;
-        while (p[i+l+4] != 0) l += 8;
-        if (len > l) continue;
-        for (k=0; k<len && toupper(key[k]) == p[i+k+4]; k++) {};
-        if (k < len) continue;
-        if (p[i+len+4] != 0) continue;
-        l = 0;   // Match found: mark the fact with l=0
-        break;
-    }
-    if (l != 0) return 0;  // Failed to find the key
-    offset = p[i+3] & 0xff;
-    offset = (offset << 8) + (p[i+2] & 0xff);
-    offset = (offset << 8) + (p[i+1] & 0xff);
-    IcloseInput(false);
-    if (Iopen_help(offset)) return 0;
-    topic_start = offset;
-    cstackp = 0;
-    return 1;
-}
-
-int find_topic(char *s)
-{   char buffer[256];
-    int i, c1;
-    if (!topic_in_index(s)) return 0;
-    shown_lines = 0;
-    cstackp = 0;
-    for (i=0, c1=getc_help(); c1!='\n'; c1=getc_help())
-        if (i < 250) buffer[i++] = (char)c1;
-    buffer[i] = 0;
-    topic_header_size = i;
-    find_word(buffer, "Node:", node);
-    find_word(buffer, "File:", file);
-    find_word(buffer, "Next:", next);
-    find_word(buffer, "Prev:", prev);
-    find_word(buffer, "Up:",   up);
-    display_next_page();
-    return 1;
-}
-
-void restart_topic(void)
-{   IcloseInput(false);
-    if (!Iopen_help(topic_start))
-    {   int i;
-        for (i=0; i<topic_header_size; i++) getc_help();
-    }
-    cstackp = 0;
-}
-
-static void help_about_help_browser(void)
-{   int ch;
-    erase();
-    move( 1, 0); addstr("*** HELP BROWSER COMMANDS ***");
-
-    move( 3, 0); addstr("b      go Back to start of topic");
-    move( 4, 0); addstr("space  move on one page through topic");
-    move( 5, 0); addstr("delete move back one page in topic");
-    move( 6, 0); addstr("?, h   display this Help text");
-    move( 7, 0); addstr("n      go to Next topic");
-    move( 8, 0); addstr("p      go to Previous topic");
-    move( 9, 0); addstr("u      go Up a level");
-    move(10, 0); addstr("q      Quit");
-    move(11, 0); addstr("tab, m Select next Menu item");
-    move(12, 0); addstr("ENTER, f  Follow selected menu item");
-    move(13, 0); addstr("1-9    First 9 menu items visible");
-
-    move(15, 0); addstr("[Type SPACE or ENTER to continue]");
-    refresh();
-    while ((ch = getch()) != ' ' && ch != '\n' && ch != '\r');
-}
-
-static int help_main(char *s)
-{   int i, w;
-    initscr();
-    initkb();
-    if (!find_topic(s)) return 1;
-    for (;;)
-    {   w = getch();
-        switch (tolower(w))
-        {   case 'q': break;
-            case 'n': if (next[0] != 0)
-                {   if (!find_topic(next)) goto redisplay_current_topic;
-                }
-                continue;
-            case 'p': if (prev[0] != 0)
-                {   if (!find_topic(prev)) goto redisplay_current_topic;
-                }
-                continue;
-            case 'u': if (up[0] != 0)
-                {   if (!find_topic(up)) goto redisplay_current_topic;
-                }
-                continue;
-            case ' ': if (!at_end_of_topic) display_next_page();
-                continue;
-            case 0x8:
-            case 0x7f:
-            case 0xff:
-                if (shown_lines <= (LINES-2)) continue;
-                i = shown_lines - 2*LINES + 2;
-                if (i < 0) i = 0;
-                restart_topic();
-                shown_lines = 0;
-                skip_some_lines(i);
-                display_next_page();
-                continue;
-            case '?':
-            case 'h': help_about_help_browser();
-                // Drop through
-            redisplay_current_topic:
-            case 'b': restart_topic();
-                shown_lines = 0;
-                display_next_page();
-                continue;
-            case '\t':
-            case 'm': // For this version I make "m" skip to the next menu item
-                if (max_menu < 0) continue;
-                if (active_menu >= 0)
-                {   move(menu_line[active_menu], menu_col[active_menu]);
-                    addstr(menu_text[active_menu]);
-                    active_menu++;
-                    if (active_menu > max_menu) active_menu = 0;
-                }
-                else active_menu = 0;
-                move(menu_line[active_menu], menu_col[active_menu]);
-                standout();
-                addstr(menu_text[active_menu]);
-                standend();
-                refresh();
-                continue;
-            case '\n': // Follow a menu item, as selected
-            case '\r':
-            case 'f': if (max_menu >= 0 && active_menu >= 0)
-                {   if (!find_topic(menu_text[active_menu]))
-                        goto redisplay_current_topic;
-                }
-                continue;
-            case '1': case '2': case '3': case '4': case '5':
-            case '6': case '7': case '8': case '9':
-                w = w - '1';
-                if (w <= max_menu)
-                {   if (!find_topic(menu_text[w]))
-                        goto redisplay_current_topic;
-                }
-                continue;
-            default:  continue;
-        }
-        break;
-    }
-    resetkb();
-    endwin();
-    return 0;
-}
-
-static void help(char *word, int len)
-{   Ihandle save;
-    char key[32];
-    Icontext(&save);
-    if (Iopen_help(0)) debug_printf("\nNo heap available\n");
-    else
-    {   if (len > 28) len = 28;
-        key[len] = 0;
-        while (--len >= 0) key[len] = word[len];
-//      memcpy(key, word, len);  <curses.h> on a sparc kills this!!
-//      key[len] = 0;            by its attempts to mix BSD & sysV.
-
-        if (help_main(key)) debug_printf("\nNo help available\n");
-
-        IcloseInput(false);
-    }
-    Irestore_context(save);
-    return;
-}
-
-LispObject lisp_help(LispObject nil, LispObject a)
-{   switch ((int)a & TAG_BITS)
-    {   case TAG_SYMBOL:
-#ifndef COMMON
-            if (a == nil)
-            {   help("Top", 3);   // this tag is the default one to give
-                return onevalue(nil);
-            }
-#endif
-            a = get_pname(a);
-            errexit();
-        case TAG_VECTOR:
-            if (type_of_header(vechdr(a)) == TYPE_STRING)
-            {   Header h = vechdr(a);
-                int32_t len = length_of_byteheader(h);  // counts in bytes
-                len -= CELL;
-                help(&celt(a, 0), len);
-                return onevalue(nil);
-            }
-
-        case TAG_CONS:
-#ifdef COMMON
-            if (a == nil)
-            {   help("Top", 3);
-                return onevalue(nil);
-            }
-#endif
-            while (consp(a))
-            {   push(a);
-                lisp_help(nil, qcar(a));
-                pop(a);
-                errexit();
-                a = qcdr(a);
-            }
-            return onevalue(nil);
-
-        case TAG_BOXFLOAT:
-        default:
-            return onevalue(nil);
-    }
-}
-
-LispObject Lhelp(LispObject nil, LispObject a)
-{   return lisp_help(nil, a);
-}
-
-LispObject Lhelp_2(LispObject nil, LispObject a, LispObject b)
-{   push(b);
-    lisp_help(nil, a);
-    pop(b);
-    errexit();
-    return lisp_help(nil, b);
-}
-
-LispObject Lhelp_n(LispObject nil, int nargs, ...)
-{   if (nargs == 0) help("Top", 0);
-    else
-    {   va_list a;
-        int i;
-        va_start(a, nargs);
-        push_args(a, nargs);
-        for (i=0; i<nargs; i++)
-        {   LispObject c = stack[i-nargs+1];
-            lisp_help(nil, c);
-            errexitn(nargs);
-        }
-        popv(nargs);
-    }
-    return onevalue(nil);
-}
-
-#else
-
-LispObject Lwrite_help_module(LispObject nil, LispObject a, LispObject b)
-{   return onevalue(nil);
-}
-
-LispObject Lhelp(LispObject nil, LispObject a)
-{   term_printf("HELP not built in to this version of the system\n");
-    return onevalue(nil);
-}
-
-LispObject Lhelp_2(LispObject nil, LispObject a, LispObject b)
-{   return Lhelp(nil, a);
-}
-
-LispObject Lhelp_n(LispObject nil, int nargs, ...)
-{   return Lhelp(nil, nil);
-}
-
-#endif // code for (old) embedded help system - now removed
 
 char prompt_string[MAX_PROMPT_LENGTH];
 

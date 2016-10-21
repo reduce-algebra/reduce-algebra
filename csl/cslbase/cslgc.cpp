@@ -3,6 +3,12 @@
 //
 // Garbage collection.
 //
+//    October 2016 and once again I REMOVE the mark/slide collector. This
+//    decision is to simplify the code and ease a transition to a replacement
+//    copying collector, and because I no longer view 32-bit machines as
+//    high priority. Well a Raspberry Pi with 1 Gbyte can still do serious
+//    size calculations even with the copying collector.
+//
 //    HMMMM - the justification I gave for removing the mark/slide
 //    collector is DUBIOUS. Specifically on a machine that is limited by
 //    address-space not by actual real memory the fact that the copying
@@ -200,7 +206,7 @@ static int bitmap_mark_vec(LispObject p)
             validate_failed();
         }
     }
-    if (is_symbol(p))
+    else if (is_symbol(p))
     {   Header h = qheader(p);
         if (!is_symbol_header_full_test(h))
         {   term_printf("symbol header is wrong at %" PRIxPTR "\n", h);
@@ -269,7 +275,7 @@ static void validate(LispObject p, int line1)
 // collector. A consequence is that it may be called when the heap is in
 // a corrupt state. The variable "info" here is set to give a small amount
 // of information about what has been being scanned, but is not inspected
-// by the code. It is present so thata debugger can ceck it following any
+// by the code. It is present so that a debugger can check it following any
 // crash.
     volatile const char *info = "unknown";
     Header h = 0;
@@ -277,7 +283,6 @@ static void validate(LispObject p, int line1)
     size_t i = 0;
     (void)info;   // Tends to prevent gcc from moaning about definition
                   // without use.
-top:
     if (p == nil) return;
     if (p == 0)
     {   term_printf("NULL item found\n");
@@ -288,19 +293,15 @@ top:
 //
 // The code here is going to be simply recursive so that if any problem
 // is detected I have maximum information on the stack about where it
-// came from. Well that would be asking for stack overflow, so I iterate
-// in the CDR direction on lists.
+// came from. But note that this could use a LOT of stack....
 //
     if (is_immed_or_cons(p))
     {   if (!is_cons(p)) return;
         info = "cons cell";
         if (bitmap_mark_cons(p)) return;
         validate(qcar(p), __LINE__);
-        p = qcdr(p);
-        info = "unknown";
-        h = 0;
-        i = 0;
-        goto top;
+        validate(qcdr(p), __LINE__);
+        return;
     }
 // here we have a vector of some sort
     switch ((int)p & TAG_BITS)
@@ -367,7 +368,7 @@ void validate_all(const char *why, int line, const char *file)
     validate_line = line;
     validate_line1 = 0;
     validate_file = file;   // In case a diagnostic is needed
-    term_printf("Validate heap for %s at line %d of %s\n", why, line, file);
+//  term_printf("Validate heap for %s at line %d of %s\n", why, line, file);
     if (heap_map == NULL)
     {   if ((heap_map =
                 (int32_t (*)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256])
@@ -396,6 +397,7 @@ void validate_all(const char *why, int line, const char *file)
     validate(qplist(nil), __LINE__);
     validate(qpname(nil), __LINE__);
     validate(qfastgets(nil), __LINE__);
+    validate(qpackage(nil), __LINE__);
 
     for (i = first_nil_offset; i<last_nil_offset; i++) validate(BASE[i], __LINE__);
     for (sp=stack; sp>(LispObject *)stackbase; sp--) validate(*sp, __LINE__);
@@ -423,934 +425,12 @@ int check_env(LispObject env)
 #endif // SOCKETS
 
 int gc_number = 0;
-bool gc_method_is_copying = false;     // true if copying, false if sliding
-int force_reclaim_method = 0;
 int reclaim_trap_count = -1;
 int reclaim_stack_limit = 0;
 
 static intptr_t cons_cells, symbol_heads, strings, user_vectors,
        big_numbers, box_floats, bytestreams, other_mem,
        litvecs, getvecs;
-
-#define is_immed(x) (is_immed_or_cons(x) && !is_cons(x))
-
-// Marking (in the mark and sweep collector) is done using either this
-// pointer reversing code or one that uses recursion (which may be faster).
-
-static void non_recursive_mark(LispObject *top)
-{
-//
-// This code is written about as neatly as I know how ... I want to think of
-// it in terms of three chunks - descending down into lists, regular
-// climbing back out, and the special case of climbing back out when I have
-// just processed a vector.  I like to think of this as a finite state
-// machine with three major groups of states, and a bunch of subsidiary
-// states that deal with (e.g.) scanning along vectors.
-//
-    LispObject b = (LispObject)top,
-               p = *top,
-               w,
-               nil = C_nil;
-    Header h, *q;
-    size_t i;
-//
-// When I get to descend I have b as an unmarked address that is either
-// equal to top, or is a back-pointer as set up below.  p is a normal
-// (i.e. unmarked) Lisp pointer, representing a tree to be marked. Only
-// at the very top of a call can p be immediate data at descend, and in that
-// case no marking is needed.
-// NB that the initial back pointer will seem tagged as either a CONS or a
-// SYMBOL, but certainly as a pointer datatype.
-//
-
-descend:
-    switch ((int)p & TAG_BITS)
-    {
-//
-// If I have a cons cell I need to check if it has been visited before or
-// if one or both components are immediate - and extend my backwards
-// chain one step.
-//
-        case TAG_CONS:
-#ifdef COMMON
-            if (p == nil) goto ascend;
-#endif // COMMON
-            w = qcar(p);
-            if (is_immed(w))
-            {   if (is_marked_i(w)) goto ascend;
-//
-// To test if this cons cell was marked I had to classify the item
-// in its car, and if this was immediate data it makes sense to go
-// right ahead and probe the cdr.
-//
-                qcar(p) = flip_mark_bit_i(w);
-                w = qcdr(p);
-//
-// Since I am not allowing myself to descend onto immediate data
-// I check for it here, and if both car and cdr of p were immediate
-// I can ascend forthwith.
-//
-                if (is_immed(w) || w == nil) goto ascend;
-//
-// Here I fill in a back-pointer and descend into the cdr of a pair.
-//
-                qcdr(p) = flip_mark_bit_p(b);
-                b = p;
-                p = w;
-                goto descend;
-            }
-            else if (is_marked_p(w)) goto ascend;
-//
-// Here I fill in a back-pointer and descend into the car of a pair.
-// [would it be worth taking a special case on w == nil here?]
-//
-            qcar(p) = flip_mark_bit_p(b);
-            b = p;
-            p = w;
-            goto descend;
-
-//
-//  case TAG_FIXNUM:
-//  case TAG_HDR_IMMED:          Doers this mean I do not mark codevectors?
-//  case TAG_SFLOAT:
-//
-        default:
-            return;             // assert (b==(Lisp_Object)top) here.
-
-        case TAG_SYMBOL:
-#ifndef COMMON
-            if (p == nil) goto ascend;
-#endif // COMMON
-            h = qheader(p);
-//
-// When I have finished every item that has been visited must be marked,
-// with cons cells marked in their car fields and vectors etc in the header
-// word.  Furthermore the header of all vectors (including symbols) must
-// have been replaced by the start of a back-pointer chain identifying the
-// words that started off pointing at the vector.  The pointers in this
-// chain must be marked, word-aligned pointers. Note a special curiosity:
-// the back-chain of references to a vector can thread through the CDR
-// field of CONS cells and through either odd or even words within vectors.
-// Thus althouh marked with the pointer mark bit the rest of tagging on these
-// chain words is a bit funny! Specifically the tag bits will say "0" or "4",
-// ie CONS or SYMBOL (and not HDR_IMMED).
-//
-            if (!is_odds(h) || is_marked_h(h))  // Visited before
-            {   q = &qheader(p);                // where I should chain
-                p = h;                          // the previous header
-                goto ascend_from_vector;
-            }
-//
-// Now this is the first visit to a symbol.
-//
-            qheader(p) = h = flip_mark_bit_h(h);
-//
-// When components of a symbol are immediate or nil I do nothing.
-// (the test for nil is because I expect it to be cheap and to catch
-// common cases)
-//
-            w = qvalue(p);
-            if (!is_immed(w) && w != nil)
-            {   qvalue(p) = flip_mark_bit_p(b);
-                b = p;
-                p = w;
-                goto descend;
-            }
-            w = qenv(p);
-            if (!is_immed(w) && w != nil)
-            {   qenv(p) = flip_mark_bit_p(b);
-                b = p;
-                p = w;
-                goto descend;
-            }
-            w = qpname(p);
-            if (!is_immed(w) && w != nil)
-            {   qpname(p) = flip_mark_bit_p(b);
-                b = p;
-                p = w;
-                goto descend;
-            }
-            w = qplist(p);
-            if (!is_immed(w) && w != nil)
-            {   qplist(p) = flip_mark_bit_p(b);
-                b = p;
-                p = w;
-                goto descend;
-            }
-            w = qfastgets(p);
-            if (!is_immed(w) && w != nil)
-            {   qfastgets(p) = flip_mark_bit_p(b);
-                b = p;
-                p = w;
-                goto descend;
-            }
-            w = qpackage(p);
-            if (!is_immed(w) && w != nil)
-            {   qpackage(p) = flip_mark_bit_p(b);
-                b = p;
-                p = w;
-                goto descend;
-            }
-//
-// When all components of the vector are marked I climb up the
-// back-pointer chain.
-//
-            q = &qheader(p);
-            p = h;
-            goto ascend_from_vector;
-
-        case TAG_NUMBERS:
-            h = numhdr(p);
-            if (!is_odds(h) || is_marked_h(h)) // marked already.
-            {   q = &numhdr(p);
-                p = h;
-                goto ascend_from_vector;
-            }
-//
-// For CSL the only case here is that of big integers, which have just
-// binary data in them.  For Common Lisp I also have to cope with
-// ratios and complex numbers.
-//
-            if (is_bignum_header(h))
-            {   q = &numhdr(p);
-                p = flip_mark_bit_h(h);
-                goto ascend_from_vector;
-            }
-            numhdr(p) = h = flip_mark_bit_h(h);
-            w = real_part(p);   // Or numerator of a ratio!
-            if (!is_immed(w))
-            {   real_part(p) = flip_mark_bit_p(b);
-                b = p;
-                p = w;
-                goto descend;
-            }
-            w = imag_part(p);   // Or denominator of a ratio!
-            if (!is_immed(w))
-            {   imag_part(p) = flip_mark_bit_p(b);
-                b = p;
-                p = w;
-                goto descend;
-            }
-//
-// get here if both components of a ratio/complex are immediate (e.g fixnums)
-//
-            q = &numhdr(p);
-            p = h;
-            goto ascend_from_vector;
-
-        case TAG_BOXFLOAT:
-            h = flthdr(p);
-            if (!is_odds(h) || is_marked_h(h))
-            {   q = &flthdr(p);
-                p = h;
-                goto ascend_from_vector;
-            }
-            q = &flthdr(p);
-            p = flip_mark_bit_h(h);
-            goto ascend_from_vector;
-
-        case TAG_VECTOR:
-            h = vechdr(p);
-            if (!is_odds(h) || is_marked_h(h))
-            {   q = &vechdr(p);
-                p = h;
-                goto ascend_from_vector;
-            }
-            if (vector_holds_binary(h))
-            {   q = &vechdr(p);
-                p = flip_mark_bit_h(h);
-                goto ascend_from_vector;
-            }
-            vechdr(p) = h = flip_mark_bit_h(h);
-// If I am using the new hash table scheme then when I mark a hash table
-// I will reset its header word so that it is tagged for rehashing before
-// its next use.
-            if (type_of_header(h) == TYPE_NEWHASH)
-                vechdr(p) = h = h ^ (TYPE_NEWHASHX ^ TYPE_NEWHASH);
-            i = (intptr_t)doubleword_align_up(length_of_header(h));
-            if (is_mixed_header(h))
-                i = 4*CELL;  // Only use first few pointers
-            while (i >= 2*CELL)
-            {   i -= CELL;
-                q = (Header *)((char *)p - TAG_VECTOR + i);
-                w = *q;
-                if (is_immed(w) || w == nil) continue;
-//
-// For vectors I have to use all available mark bits to keep track of
-// where I am...
-//
-                if (i == CELL)
-//
-// When descending into the first (or only) word of a vector I leave the
-// back-pointer marked, and note that the header word just before it
-// will be marked (either as a header word or as a pointer)
-//
-                {   *q = flip_mark_bit_p(b);
-                    b = p;
-                    p = w;
-                }
-                else if (SIXTY_FOUR_BIT)
-                {   *q = b;
-                    b = (LispObject)((char *)p + i);
-                    p = w;
-                }
-                else if ((i & 4) == 0)
-//
-// When descending a pointer at an even (word) address I leave the
-// back-pointer unmarked.
-//
-                {   *q = b;
-                    b = (LispObject)((char *)p + i);
-                    p = w;
-                }
-                else
-//
-// Finally when I descend into a pointer at an odd (word) address other
-// than the special case of the first such, I leave an unmarked back-pointer
-// but mark the word before the one I am following.  The effect of all this is
-// that when I get back to the vector I am able to discriminate between these
-// various cases...
-//
-                {   *q = b;
-                    b = (LispObject)((char *)p + i - 4);
-                    p = w;
-                    w = *(LispObject *)((char *)b - TAG_VECTOR);
-                    if (is_immed(w)) w = flip_mark_bit_i(w);
-                    else w = flip_mark_bit_p(w);
-                    *(LispObject *)((char *)b - TAG_VECTOR) = w;
-                }
-                goto descend;
-            }
-//
-// I drop through to here if all items in the vector were in fact
-// immediate values (e.g. fixnums), and thus there was no need to
-// dig deeper.
-//
-            q = &vechdr(p);
-            p = h;
-            goto ascend_from_vector;
-    }
-
-
-
-
-
-//
-// When I get to ascend b is a back-pointer, and p is an unmarked pointer
-// to be put back into the place I descended through.
-//
-ascend:
-    if (b == (LispObject)top) return;
-
-    switch ((int)b & TAG_BITS)
-    {   default:
-            term_printf("Bad tag bits in GC\n");
-            validate_failed();
-
-        case TAG_CONS:
-            w = qcdr(b);
-            if (is_immed(w) || w == nil)
-            {   w = qcar(b);
-                qcar(b) = flip_mark_bit_p(p);
-                p = b;
-                b = flip_mark_bit_p(w);
-                goto ascend;
-            }
-            else if (is_marked_p(w))
-            {   qcdr(b) = p;
-                p = b;
-                b = flip_mark_bit_p(w);
-                goto ascend;
-            }
-            else
-            {   qcdr(b) = qcar(b);
-                qcar(b) = flip_mark_bit_p(p);
-                p = w;
-                goto descend;
-            }
-
-        case TAG_SYMBOL:
-            w = qpackage(b);
-            if (!is_immed(w) && is_marked_p(w))
-            {   qpackage(b) = p;
-                goto try_nothing;
-            }
-            w = qfastgets(b);
-            if (!is_immed(w) && is_marked_p(w))
-            {   qfastgets(b) = p;
-                goto try_package;
-            }
-            w = qplist(b);
-            if (!is_immed(w) && is_marked_p(w))
-            {   qplist(b) = p;
-                goto try_fastgets;
-            }
-            w = qpname(b);
-            if (!is_immed(w) && is_marked_p(w))
-            {   qpname(b) = p;
-                goto try_plist;
-            }
-            w = qenv(b);
-            if (!is_immed(w) && is_marked_p(w))
-            {   qenv(b) = p;
-                goto try_pname;
-            }
-            w = qvalue(b);
-            if (!is_immed(w) && is_marked_p(w))
-            {   qvalue(b) = p;
-                goto try_env;
-            }
-            term_printf("Backpointer not found in GC\n");
-            validate_failed();            // backpointer not found
-
-        try_env:
-            p = qenv(b);
-            if (!is_immed(p) && p != nil && !is_marked_p(p))
-            {   qenv(b) = w;
-                goto descend;
-            }
-        try_pname:
-            p = qpname(b);
-            if (!is_immed(p) && p != nil && !is_marked_p(p))
-            {   qpname(b) = w;
-                goto descend;
-            }
-        try_plist:
-            p = qplist(b);
-            if (!is_immed(p) && p != nil && !is_marked_p(p))
-            {   qplist(b) = w;
-                goto descend;
-            }
-        try_fastgets:
-            p = qfastgets(b);
-            if (!is_immed(p) && p != nil && !is_marked_p(p))
-            {   qfastgets(b) = w;
-                goto descend;
-            }
-        try_package:
-            p = qpackage(b);
-            if (!is_immed(p) && p != nil && !is_marked_p(p))
-            {   qpackage(b) = w;
-                goto descend;
-            }
-        try_nothing:
-            q = &qheader(b);
-            p = *q;
-            b = flip_mark_bit_p(w);
-            goto ascend_from_vector;
-
-        case TAG_NUMBERS:
-//
-// If I get back to a NUMBERS than it must have been a ratio or a complex.
-//
-            w = imag_part(b);
-            if (is_immed(w))
-            {   w = real_part(b);
-                real_part(b) = p;
-                q = &numhdr(b);
-                p = *q;
-                b = flip_mark_bit_p(w);
-                goto ascend_from_vector;
-            }
-            else if (is_marked_p(w))
-            {   imag_part(b) = p;
-                q = &numhdr(p);
-                p = *q;
-                b = flip_mark_bit_p(w);
-                goto ascend_from_vector;
-            }
-            else
-            {   imag_part(b) = real_part(b);
-                real_part(b) = p;
-                p = w;
-                goto descend;
-            }
-
-        case TAG_VECTOR:
-//
-// If I get back to a vector it must have been a vector of Lisp_Objects,
-// not a vector of binary data.  My back-pointer points part-way into it.
-// The back-pointer will be doubleword aligned, so on 32-bit systems
-// it is not quite enough to tell me which cell of the vector was involved,
-// and so in that case I do a further inspection of mark bits in the two
-// parts of the doubleword concerned.
-//
-            w = *(LispObject *)((char *)b - TAG_VECTOR);
-            if (!SIXTY_FOUR_BIT)
-            {   if (is_immed(w) || is_marked_p(w))
-//
-// Here I had been marking the pointer that was stored at an odd (word)
-// address.
-//
-                {   LispObject w1 = *(LispObject *)((char *)b - TAG_VECTOR + 4);
-                    *(LispObject *)((char *)b - TAG_VECTOR + 4) = p;
-                    if (is_marked_p(w1))     // End of this vector
-                    {   q = (Header *)((char *)b - TAG_VECTOR);
-                        p = w;
-                        b = flip_mark_bit_p(w1);
-                        goto ascend_from_vector;
-                    }
-                    p = w;
-                    w = w1;
-                    if (!is_immed(p))
-                    {   p = flip_mark_bit_p(p);
-                        if (p != nil)
-                        {   *(LispObject *)((char *)b - TAG_VECTOR) = w1;
-                            goto descend;
-                        }
-                    }
-                    else p = flip_mark_bit_i(p);
-                }
-            }
-            *(LispObject *)((char *)b - TAG_VECTOR) = p;
-//
-// Now the doubleword I returned to has been marked (and tidied up),
-// so I need to scan back towards the header.
-//
-        scan_vector_more:
-            for (;;)
-            {   LispObject w2;
-//
-// NB on the next line I step back by 8 on both 32 and 64-bit machines!
-// That is because the back-pointers I use can only refer to a doubleword
-// so on 32-bit systems I have to go 2 cells at a go. Ugh.
-//
-                b = (LispObject)((char *)b - 8);
-                w2 = *(LispObject *)((char *)b - TAG_VECTOR);
-                if (!SIXTY_FOUR_BIT)
-                    p = *(LispObject *)((char *)b - TAG_VECTOR + CELL);
-                if ((is_odds(w2) && is_header(w2)) ||
-                    (!is_immed(w2) && is_marked_p(w2)))
-//
-// In this case I have reached the doubleword containing the header.
-//
-                {   if (!SIXTY_FOUR_BIT && !is_immed(p) && p != nil)
-                    {   *(LispObject *)((char *)b - TAG_VECTOR + CELL) =
-                            flip_mark_bit_p(w);
-                        goto descend;
-                    }
-                    else
-                    {   q = (Header *)((char *)b - TAG_VECTOR);
-                        p = w2;
-                        b = w;
-                        goto ascend_from_vector;
-                    }
-                }
-//
-// Otherwise I have another general doubleword to cope with.
-//
-                if (!SIXTY_FOUR_BIT && !is_immed(p) && p != nil)
-                {   if (is_immed(w2)) w2 = flip_mark_bit_i(w2);
-                    else w2 = flip_mark_bit_p(w2);
-                    *(LispObject *)((char *)b - TAG_VECTOR) = w2;
-                    *(LispObject *)((char *)b - TAG_VECTOR + CELL) = w;
-                    goto descend;
-                }
-                if (!is_immed(w2) && w2 != nil)
-                {   p = w2;
-                    *(LispObject *)((char *)b - TAG_VECTOR) = w;
-                    goto descend;
-                }
-                continue;   // Step back another doubleword
-            }
-    }
-
-ascend_from_vector:
-//
-// Here the item just marked was a vector.  I need to leave a reversed
-// chain of pointers through its header word. q points to that header,
-// and p contains what used to be in the word at q.
-//
-    if (b == (LispObject)top)
-    {   *q = flip_mark_bit_p(b);
-        *top = p;
-        return;
-    }
-
-    switch ((int)b & TAG_BITS)
-    {   default:
-            term_printf("Bad tag bits in GC\n");
-            validate_failed();
-
-        case TAG_CONS:
-            w = qcdr(b);
-            if (is_immed(w) || w == nil)
-            {   w = qcar(b);
-                qcar(b) = p;
-                *q = flip_mark_bit_p((LispObject *)&qcar(b));
-                p = b;
-                b = flip_mark_bit_p(w);
-                goto ascend;
-            }
-            else if (is_marked_p(w))
-            {   qcdr(b) = p;
-                *q = flip_mark_bit_p((LispObject *)&qcdr(b));
-                p = b;
-                b = flip_mark_bit_p(w);
-                goto ascend;
-            }
-            else
-            {   qcdr(b) = qcar(b);
-                qcar(b) = p;
-                *q = flip_mark_bit_p((LispObject *)&qcar(b));
-                p = w;
-                goto descend;
-            }
-
-        case TAG_SYMBOL:
-            w = qpackage(b);
-            if (!is_immed(w) && is_marked_p(w))
-            {   qpackage(b) = p;
-                *q = flip_mark_bit_p((LispObject *)&qpackage(b));
-                goto try_nothing;
-            }
-            w = qfastgets(b);
-            if (!is_immed(w) && is_marked_p(w))
-            {   qfastgets(b) = p;
-                *q = flip_mark_bit_p((LispObject *)&qfastgets(b));
-                goto try_package;
-            }
-            w = qplist(b);
-            if (!is_immed(w) && is_marked_p(w))
-            {   qplist(b) = p;
-                *q = flip_mark_bit_p((LispObject *)&qplist(b));
-                goto try_fastgets;
-            }
-            w = qpname(b);
-            if (!is_immed(w) && is_marked_p(w))
-            {   qpname(b) = p;
-                *q = flip_mark_bit_p((LispObject *)&qpname(b));
-                goto try_plist;
-            }
-            w = qenv(b);
-            if (!is_immed(w) && is_marked_p(w))
-            {   qenv(b) = p;
-                *q = flip_mark_bit_p((LispObject *)&qenv(b));
-                goto try_pname;
-            }
-            w = qvalue(b);
-            if (!is_immed(w) && is_marked_p(w))
-            {   qvalue(b) = p;
-                *q = flip_mark_bit_p((LispObject *)&qvalue(b));
-                goto try_env;
-            }
-            term_printf("Failure in GC\n");
-            validate_failed();
-
-        case TAG_NUMBERS:
-//
-// If I get back to a NUMBERS than it must have been a ratio or a complex.
-//
-            w = imag_part(b);
-            if (is_immed(w))
-            {   w = real_part(b);
-                real_part(b) = p;
-                *q = flip_mark_bit_p((LispObject *)&real_part(b));
-                q = &numhdr(b);
-                p = *q;
-                b = flip_mark_bit_p(w);
-                goto ascend_from_vector;
-            }
-            else if (is_marked_p(w))
-            {   imag_part(b) = p;
-                *q = flip_mark_bit_p((LispObject *)&imag_part(b));
-                q = &numhdr(p);
-                p = *q;
-                b = flip_mark_bit_p(w);
-                goto ascend_from_vector;
-            }
-            else
-            {   imag_part(b) = real_part(b);
-                real_part(b) = p;
-                *q = flip_mark_bit_p((LispObject *)&real_part(b));
-                p = w;
-                goto descend;
-            }
-
-        case TAG_VECTOR:
-//
-// If I get back to a vector it must have been a vector of Lisp_Objects,
-// not a vector of binary data.  My back-pointer points part-way into it.
-// I can tell where I am by inspecting the state of mark bits on both parts
-// of the doubleword so identified.
-//
-            w = *(LispObject *)((char *)b - TAG_VECTOR);
-            if (!SIXTY_FOUR_BIT && (is_immed(w) || is_marked_p(w)))
-//
-// Here I had been marking the pointer that was stored at an odd (word)
-// address.
-//
-            {   LispObject w1 = *(LispObject *)((char *)b - TAG_VECTOR + 4);
-                *(LispObject *)((char *)b - TAG_VECTOR + 4) = p;
-                *q = flip_mark_bit_p((LispObject)((char *)b - TAG_VECTOR + 4));
-                if (is_marked_p(w1))     // End of this vector
-                {   q = (Header *)((char *)b - TAG_VECTOR);
-                    p = *q;              // May not be same as w still!
-                    b = flip_mark_bit_p(w1);
-                    goto ascend_from_vector;
-                }
-                p = w;
-                w = w1;
-                if (!is_immed(p))
-                {   p = flip_mark_bit_p(p);
-                    if (p != nil)
-                    {   *(LispObject *)((char *)b - TAG_VECTOR) = w1;
-                        goto descend;
-                    }
-                }
-                else p = flip_mark_bit_i(p);
-                *(LispObject *)((char *)b - TAG_VECTOR) = p;
-            }
-            else
-            {   *(LispObject *)((char *)b - TAG_VECTOR) = p;
-                *q = flip_mark_bit_p((LispObject)((char *)b - TAG_VECTOR));
-            }
-
-//
-// Now the doubleword I returned to has been marked (and tidied up),
-// so I need to scan back towards the header.
-//
-            goto scan_vector_more;
-    }
-}
-
-static void mark(LispObject *pp)
-{
-//
-// This mark procedure works by using the regular Lisp stack to
-// store things while traversing the lists.  A null pointer on the
-// stack marks the end of the section that is being used.  If too
-// much stack is (about to be) used I switch over to the pointer-
-// reversing code given above, which is slower but which uses
-// bounded workspace.  My measurements (on just one computer) show the
-// stack-based code only 25% faster than the pointer-reversing version,
-// which HARDLY seems enough to justify all this extra code, but then
-// fast garbage collection is very desirable and every little speed-up
-// will help.
-//
-    LispObject p, q, nil = C_nil;
-    LispObject *sp = stack, *sl = stacklimit;
-    Header h;
-    size_t i;
-    *++sp = (LispObject)NULL;
-top:
-//
-// normally here pp is a pointer to a Lisp_Object and hence an even
-// number - I exploit this so that if I find an odd number stacked I
-// view it as indicating a return into a vector...
-//
-    if (((intptr_t)pp & 1) != 0)
-    {   i = ((intptr_t)pp) - 1;        // saved value of i
-        p = *sp--;
-        goto in_vector;
-    }
-    p = *pp;
-    if (is_immed_or_cons(p))
-    {
-#ifdef COMMON
-        if (!is_cons(p) || p == nil || flip_mark_bit_p(p) == nil)
-        {   pp = (LispObject *)(*sp--);
-            if (pp == NULL) return;
-            else goto top;
-        }
-#else // COMMON
-        if (!is_cons(p))       // Do not mark BPS?
-        {   pp = (LispObject *)(*sp--);
-            if (pp == NULL) return;
-            else goto top;
-        }
-#endif // COMMON
-//
-// Here, and in analagous places, I have to unset the mark bit - this is
-// because I set the mark bit on a cons cell early (as I need to) then
-// call mark(&car(p)) [in effect], and the effect is that p here sees the
-// marked pointer...
-//
-        if (is_marked_p(p)) p = flip_mark_bit_p(p);
-        q = qcar(p);
-        if (is_immed_or_cons(q) && !is_cons(q))
-        {   if (is_marked_i(q))
-            {   pp = (LispObject *)(*sp--);
-                if (pp == NULL) return;
-                else goto top;
-            }
-            qcar(p) = flip_mark_bit_i(q);
-            pp = &qcdr(p);
-            goto top;
-        }
-        else if (is_marked_p(q))
-        {   pp = (LispObject *)(*sp--);
-            if (pp == NULL) return;
-            else goto top;
-        }
-        else
-        {   qcar(p) = flip_mark_bit_p(q);
-            q = qcdr(p);
-            if (!is_immed(q) && q != nil)
-            {   if (sp >= sl) non_recursive_mark(&qcdr(p));
-                else *++sp = (LispObject)&qcdr(p);
-            }
-            pp = &qcar(p);
-            goto top;
-        }
-    }
-// here we have a vector of some sort
-    switch ((int)p & TAG_BITS)
-{       default:            // The case-list is exhaustive!
-        case TAG_CONS:      // Already processed
-        case TAG_FIXNUM:    // Invalid here
-        case TAG_HDR_IMMED: // Invalid here
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:    // Invalid here
-#endif
-            // Fatal error really called for here
-            term_printf("\nBad object in GC (%.8lx)\n", (long)p);
-            validate_failed();
-            return;
-
-        case TAG_SYMBOL:
-            if (is_marked_p(p)) p = flip_mark_bit_p(p);
-#ifndef COMMON
-//
-// NIL is outside the main heap, and so marking it must NOT involve
-// the regular pointer-chaining operations.
-//
-            if (p == nil)
-            {   pp = (LispObject *)(*sp--);
-                if (pp == NULL) return;
-                else goto top;
-            }
-#endif // COMMON
-            h = qheader(p);
-            if (!is_odds(h)) // already visited
-            {   *pp = (LispObject)h;
-                qheader(p) = (Header)flip_mark_bit_p((LispObject)pp);
-                pp = (LispObject *)(*sp--);
-                if (pp == NULL) return;
-                else goto top;
-            }
-            *pp = flip_mark_bit_i(h);
-            qheader(p) = (Header)flip_mark_bit_p((LispObject)pp);
-            if (sp >= sl)
-            {   non_recursive_mark(&qvalue(p));
-                non_recursive_mark(&qenv(p));
-                non_recursive_mark(&qpname(p));
-                non_recursive_mark(&qpackage(p));
-            }
-            else
-            {   q = qvalue(p);
-                if (!is_immed(q) && q != nil)
-                    *++sp = (LispObject)&qvalue(p);
-                q = qenv(p);
-                if (!is_immed(q) && q != nil)
-                    *++sp = (LispObject)&qenv(p);
-                q = qpname(p);
-                if (!is_immed(q) && q != nil)
-                    *++sp = (LispObject)&qpname(p);
-                q = qfastgets(p);
-                if (!is_immed(q) && q != nil)
-                    *++sp = (LispObject)&qfastgets(p);
-                q = qpackage(p);
-                if (!is_immed(q) && q != nil)
-                    *++sp = (LispObject)&qpackage(p);
-            }
-            pp = &qplist(p);    // iterate into plist not value?
-            goto top;
-
-        case TAG_NUMBERS:
-            if (is_marked_p(p)) p = flip_mark_bit_p(p);
-            h = numhdr(p);
-            if (!is_odds(h)) // already visited
-            {   *pp = (LispObject)h;
-                numhdr(p) = (Header)flip_mark_bit_p((LispObject)pp);
-                pp = (LispObject *)(*sp--);
-                if (pp == NULL) return;
-                else goto top;
-            }
-            *pp = flip_mark_bit_i(h);
-            numhdr(p) = (Header)flip_mark_bit_p((LispObject)pp);
-            if (is_bignum_header(h))
-            {   pp = (LispObject *)(*sp--);
-                if (pp == NULL) return;
-                else goto top;
-            }
-            q = real_part(p);
-            if (!is_immed(q))
-            {   if (sp >= sl) non_recursive_mark(&real_part(p));
-                else *++sp = (LispObject)&real_part(p);
-            }
-            pp = (LispObject *)&imag_part(p);
-            goto top;
-
-        case TAG_BOXFLOAT:
-            if (is_marked_p(p)) p = flip_mark_bit_p(p);
-            h = flthdr(p);
-            if (!is_odds(h)) // already visited
-            {   *pp = (LispObject)h;
-                flthdr(p) = (Header)flip_mark_bit_p((LispObject)pp);
-                pp = (LispObject *)(*sp--);
-                if (pp == NULL) return;
-                else goto top;
-            }
-            *pp = flip_mark_bit_i(h);
-            flthdr(p) = (Header)flip_mark_bit_p((LispObject)pp);
-            pp = (LispObject *)(*sp--);
-            if (pp == NULL) return;
-            else goto top;
-
-        case TAG_VECTOR:
-            if (is_marked_p(p)) p = flip_mark_bit_p(p);
-            h = vechdr(p);
-            if (!is_odds(h)) // already visited
-            {   *pp = (LispObject)h;
-                vechdr(p) = (Header)flip_mark_bit_p((LispObject)pp);
-                pp = (LispObject *)(*sp--);
-                if (pp == NULL) return;
-                else goto top;
-            }
-            if (type_of_header(h) == TYPE_NEWHASH)
-                vechdr(p) = h = h ^ (TYPE_NEWHASH ^ TYPE_NEWHASHX);
-            *pp = flip_mark_bit_i(h);
-            vechdr(p) = (Header)flip_mark_bit_p((LispObject)pp);
-            if (vector_holds_binary(h))  // strings & bitvecs
-            {   pp = (LispObject *)(*sp--);
-                if (pp == NULL) return;
-                else goto top;
-            }
-            i = (intptr_t)doubleword_align_up(length_of_header(h));
-            if (is_mixed_header(h))
-                i = 4*CELL;  // Only use first few pointers
-        in_vector:
-            if (sp >= sl)
-            {   while (i >= 3*CELL)
-                {   i -= CELL;
-                    non_recursive_mark((LispObject *)((char *)p - TAG_VECTOR + i));
-                }
-            }
-            else
-            {   while (i >= 3*CELL)
-                {   i -= CELL;
-                    pp = (LispObject *)((char *)p - TAG_VECTOR + i);
-                    q = *pp;
-                    if (!is_immed(q) && q != nil)
-                    {   *++sp = p;
-                        *++sp = i + 1;
-                        goto top;
-                    }
-                }
-            }
-//
-// Because we padded up to an even number of words for the vector in total
-// there are always an odd number of pointers to trace, and in particular
-// always at least one - so it IS reasonable to iterate on the first item in
-// the vector, and there can not be any worries about zero-length vectors
-// to hurt me.  WELL actually in 64-bit mode I might have had a zero
-// length vector! I should have treated that as if it contained binary..
-//
-            pp = (LispObject *)((char *)p - TAG_VECTOR + i - CELL);
-            goto top;
-    }
-}
 
 LispObject Lgc0(LispObject nil, int nargs, ...)
 {   argcheck(nargs, 0, "reclaim");
@@ -1394,459 +474,6 @@ LispObject * volatile savestacklimit;
 
 
 static int stop_after_gc = 0;
-
-static int fold_cons_heap(void)
-{
-//
-// This is amazingly messy because the heap is segmented.
-//
-    int top_page_number = 0,
-        bottom_page_number = (int)heap_pages_count - 1;
-    void *top_page = heap_pages[top_page_number],
-         *bottom_page = heap_pages[bottom_page_number];
-    char *top_low = (char *)quadword_align_up((intptr_t)top_page),
-         *bottom_low = (char *)quadword_align_up((intptr_t)bottom_page);
-    char *top_start = top_low + CSL_PAGE_SIZE,
-         *bottom_start = bottom_low + CSL_PAGE_SIZE;
-//
-// BEWARE if the lengths here might be marked to indicate a double-sized
-// page.
-//
-    char *top_fringe = top_low + car32(top_low),
-         *bottom_fringe = bottom_low + car32(bottom_low);
-    if (bottom_fringe != (char *)fringe)
-    {   term_printf("disaster wrt heap fringe %p %p\n",
-                    (void *)bottom_fringe, (void *)fringe);
-        my_exit(EXIT_FAILURE);
-    }
-    fringe -= sizeof(Cons_Cell);
-    for (;;)
-    {   LispObject p;
-// scan up from fringe to find a busy cell
-        for (;;)
-        {   fringe += sizeof(Cons_Cell);
-            if (top_page_number == bottom_page_number &&
-                top_start == (char *)fringe)
-//
-// The cast to (unsigned) on the next line is unexpectedly delicate.  The
-// difference between two pointers is of type ptrdiff_t, which is a signed
-// type.  If this is implemented as int (and that in turn is a 16 bit value)
-// then the following subtraction can overflow and give a value that appears
-// to have the wrong sign.  The implicit widening to (Lisp_Object) could
-// then propagate the sign bit in an unhelpful manner.  Going via a variable
-// of type (unsigned) ought to mend things. Ok so 16-bit ints are now a
-// thing of that past so this no longer worried me!
-//
-            {   uintptr_t len = (uintptr_t)((char *)fringe - top_low);
-                car32(top_low) = len;
-                return bottom_page_number;
-            }
-            if ((char *)fringe >= bottom_start)
-            {
-//
-// If the heap were to be left totally empty this would be WRONG
-//
-                bottom_page = heap_pages[--bottom_page_number];
-                bottom_low = (char *)quadword_align_up((intptr_t)bottom_page);
-                bottom_start = bottom_low + CSL_PAGE_SIZE;
-                fringe = (LispObject)(bottom_low + car32(bottom_low));
-                heaplimit = (LispObject)(bottom_low + SPARE);
-                fringe -= sizeof(Cons_Cell);
-                continue;
-            }
-            p = qcar(fringe);
-            if (is_immed_or_cons(p) && !is_cons(p))
-            {   if (is_marked_i(p))
-                {   qcar(fringe) = flip_mark_bit_i(p);
-                    break;
-                }
-            }
-            else if (is_marked_p(p))
-            {   qcar(fringe) = flip_mark_bit_p(p);
-                break;
-            }
-        }
-// scan down from the top to find a free cell, unmarking is I go
-        for (;;)
-        {   top_start -= sizeof(Cons_Cell);
-            if (top_page_number == bottom_page_number &&
-                top_start == (char *)fringe)
-            {   uintptr_t len = (uintptr_t)((char *)fringe - top_low);
-                car32(top_low) = len;
-                return bottom_page_number;
-            }
-            if (top_start < top_fringe)
-            {   top_page_number++;
-                top_page = heap_pages[top_page_number];
-                top_low = (char *)quadword_align_up((intptr_t)top_page);
-                top_start = top_low + CSL_PAGE_SIZE;
-                top_fringe = top_low + car32(top_low);
-                continue;
-            }
-            p = qcar(top_start);
-            if (is_immed_or_cons(p) && !is_cons(p))
-            {   if (!is_marked_i(p)) break;
-                else qcar(top_start) = flip_mark_bit_i(p);
-            }
-            else if (!is_marked_p(p)) break;
-            else qcar(top_start) = flip_mark_bit_p(p);
-        }
-// Now relocate one cell
-        qcar(top_start) = qcar(fringe);
-        qcdr(top_start) = qcdr(fringe);
-        {   LispObject forward = flip_mark_bit_p(top_start + TAG_VECTOR);
-            qcar(fringe) = forward;
-            qcdr(fringe) = forward;
-        }
-    }
-}
-
-static void adjust_vec_heap(void)
-//
-// This scans over the vector heap working out where each vector
-// is going to get relocated to, and then changing pointers to reflect
-// where the vectors will end up.
-//
-{   LispObject nil = C_nil;
-    int32_t page_number, new_page_number = 0;
-    void *new_page = vheap_pages[0];
-    char *new_low = (char *)doubleword_align_up((intptr_t)new_page);
-    char *new_high = new_low + (CSL_PAGE_SIZE - 8);
-    char *p = new_low + 8;
-    for (page_number = 0; page_number < vheap_pages_count; page_number++)
-    {   void *page = vheap_pages[page_number];
-        char *low = (char *)doubleword_align_up((intptr_t)page);
-        char *fr = low + car32(low);
-        *(LispObject *)fr = nil;
-        low += 8;
-        for (;;)
-        {   Header h;
-            LispObject h1;
-            char *p1;
-            int32_t l;
-            uintptr_t free;
-//
-// Here a vector will have an ordinary vector-header (which is tagged
-// as HDR_IMMED) if it was not marked.
-//
-            while (is_odds(h = *(Header *)low))
-            {   intptr_t len;
-                if (is_symbol_header(h)) len = symhdr_length;
-                else len = doubleword_align_up(length_of_header(h));
-                if (len == 0)
-                {   term_printf("+++++ zero-length header %x\n", (int)h);
-                    validate_failed();
-                }
-                low += len;
-            }
-//
-// It could be that all (remaining) the vectors in this page are unmarked...
-//
-            if (low >= fr) break;
-//
-// Otherwise I have found an active vector. Its header should have been
-// left with a back-pointer chain through all places that refered to the
-// vector.
-//
-            h1 = h;
-            while (!is_odds(h1))
-            {   LispObject h2;
-                h2 = *(LispObject *)clear_mark_bit_p(h1);
-                if (is_vector(h2))
-//
-// Forwarding pointer for relocated cons cell. This is delicate because
-// of the number of spare bits I have on a 32-bit system. The back-pointer
-// chain via the heaver word of a vector can run through other vector
-// cells (in the middle of vectors) and it can also go via either CAR or CDR
-// field of a cons cell. The funny case here is if it is via the CDR field
-// of a CONS cell and that CONS has been relocated. Then the CONS contains
-// a forwarding address that points to the start of the relocated object.
-// Sometimes I want to end up with a pointer to the CDR bit again. The
-// "+ (h1 & CELL)" is there to achieve that. I somewhat feel that I ought to
-// have been able to do something cleaner, but changing it now seems to me
-// to be too delicate.
-//
-                    h1 = (LispObject)((char *)h2 - TAG_VECTOR + (h1 & CELL));
-                else h1 = h2;
-            }
-
-            if (is_symbol_header(h1)) l = symhdr_length;
-            else l = doubleword_align_up(length_of_header(h1));
-//
-// I subtract the pointers (new_high - p) into an unsigned int because
-// on a 16-bit machine that might be vital!  The type ptrdiff_t is a signed
-// type and in bad cases the subtraction might overflow, but I know that the
-// answer here is supposed to be positive.  Hmm I think that these days
-// worry about 16 bit machines is no longer worthwhile...
-//
-            free = (uintptr_t)(new_high - p);
-            if (l > (intptr_t)free)
-            {   new_page_number++;
-                new_page = vheap_pages[new_page_number];
-                new_low = (char *)doubleword_align_up((intptr_t)new_page);
-                new_high = new_low + (CSL_PAGE_SIZE - 8);
-                p = new_low + 8;
-            }
-
-//
-// Because I did not have enough bits to store the critical information
-// somewhere nicer I have to reconstruct the tag bits to go with the
-// vector out of the header word associated with it.
-// Here is had BETTER be a vector!
-//
-            if (is_symbol_header(h1)) p1 = p + TAG_SYMBOL;
-            else if (is_numbers_header(h1)) p1 = p + TAG_NUMBERS;
-            else if (is_boxfloat_header(h1)) p1 = p + TAG_BOXFLOAT;
-            else p1 = p + TAG_VECTOR;
-
-            while (!is_odds(h))
-            {   h = clear_mark_bit_p(h);
-                h1 = *(LispObject *)h;
-//
-// The two above lines fail if amalgamated - both on Zortech C 3.0.1 and
-// on a VAX/VMS C compiler.  Hence two lines of code where once I had one.
-//
-                if (is_vector(h1))
-                    h = (LispObject)((char *)h1 - TAG_VECTOR + (h & CELL));
-                else
-                {   *(LispObject *)h = (LispObject)p1;
-                    h = h1;
-                }
-            }
-            *(LispObject *)low = set_mark_bit_h(h);
-            low += l;
-            p += l;
-            if (low >= fr) break;
-        }
-    }
-}
-
-static void move_vec_heap(void)
-//
-// This moves data down in the vector heap, supposing that all pointer
-// relocation will be dealt with elsewhere.  Calculations made here must remain
-// in step with those in adjust_vecheap.
-//
-{   int32_t page_number, new_page_number = 0;
-    void *new_page = vheap_pages[0];
-    char *new_low = (char *)doubleword_align_up((intptr_t)new_page);
-    char *new_high = new_low + (CSL_PAGE_SIZE - 8);
-    char *p = new_low + 8;
-    for (page_number = 0; page_number < vheap_pages_count; page_number++)
-    {   void *page = vheap_pages[page_number];
-        char *low = (char *)doubleword_align_up((intptr_t)page);
-        char *fr = low + car32(low);
-// @@@ The next line looks suspicious to me...
-        *(LispObject *)fr = set_mark_bit_h(TAG_HDR_IMMED + (8<<10));
-        low += 8;
-        for (;;)
-        {   Header h;
-            intptr_t l;
-            uintptr_t free;
-            while (!is_marked_h(h = *(Header *)low))
-                if (is_symbol_header(h)) low += symhdr_length;
-                else low += doubleword_align_up(length_of_header(h));
-            if (low >= fr) break;
-
-            if (is_symbol_header(h)) l = symhdr_length;
-            else l = doubleword_align_up(length_of_header(h));
-#ifdef DEBUG
-            if (l >= CSL_PAGE_SIZE)
-            {   term_printf("heap mangled - vector length wrong\n");
-                validate_failed();
-            }
-#endif // DEBUG
-            free = (uintptr_t)(new_high - p);
-            if (l > (intptr_t)free)
-            {   uintptr_t len = (uintptr_t)(p - new_low);
-                car32(new_low) = len;
-//
-// I fill the end of the page with zero words so that the data there is
-// definite in value, and to help file-compression when I dump a heap
-// image.
-//
-#ifdef CLEAR_OUT_MEMORY
-                while (free != 0)
-                {   *(int32_t *)p = 0;
-                    p += 4;
-                    free -= 4;
-                }
-#endif // CLEAR_OUT_MEMORY
-                new_page_number++;
-                new_page = vheap_pages[new_page_number];
-                new_low = (char *)doubleword_align_up((intptr_t)new_page);
-                new_high = new_low + (CSL_PAGE_SIZE - 8);
-                p = new_low + 8;
-            }
-
-            *(Header *)p = clear_mark_bit_h(h);
-            p += CELL;
-            low += CELL;
-            l -= CELL;
-            while (l != 0)
-            {   *(int32_t *)p = *(int32_t *)low;
-                p += 4;
-                low += 4;
-                l -= 4;
-            }
-        }
-    }
-    {   uintptr_t len = (uintptr_t)(p - new_low);
-#ifdef CLEAR_OUT_MEMORY
-        uintptr_t free = (uintptr_t)(new_high - p);
-#endif // CLEAR_OUT_MEMORY
-        car32(new_low) = len;
-#ifdef CLEAR_OUT_MEMORY
-        while (free != 0)
-        {   *(int32_t *)p = 0;
-            p += 4;
-            free -= 4;
-        }
-#endif // CLEAR_OUT_MEMORY
-    }
-    vfringe = (LispObject)p;
-    vheaplimit = (LispObject)(new_low + (CSL_PAGE_SIZE - 8));
-    new_page_number++;
-    while (vheap_pages_count > new_page_number)
-        pages[pages_count++] = vheap_pages[--vheap_pages_count];
-
-}
-
-static int compress_heap(void)
-{   int n = fold_cons_heap();
-    adjust_vec_heap();
-    move_vec_heap();
-    return n;
-}
-
-static void relocate(LispObject *cp)
-//
-// If p is a pointer to a cons cell that has been moved, fix it up.
-//
-{   LispObject nil = C_nil,
-                   p = (*cp);   // BEWARE "p =* cp;" anachronism here!
-    if (p == nil) return; // nil is separate from the main heap
-    else if (is_cons(p))
-    {   LispObject p1;
-        p1 = qcar(p);
-        if (is_vector(p1) && is_marked_p(p1))
-            *cp = clear_mark_bit_p(p1 - TAG_VECTOR + TAG_CONS);
-    }
-}
-
-static void relocate_consheap(int bottom_page_number)
-{   int page_number;
-    for (page_number = 0; page_number <= bottom_page_number; page_number++)
-    {   void *page = heap_pages[page_number];
-        char *low = (char *)quadword_align_up((intptr_t)page);
-        char *start = low + CSL_PAGE_SIZE;
-        char *fr = low + car32(low);
-        while (fr < start)
-        {   relocate((LispObject *)fr);
-            fr += sizeof(LispObject);
-            cons_cells += sizeof(LispObject);
-        }
-    }
-}
-
-static void relocate_vecheap(void)
-{   int page_number;
-    size_t i;
-    for (page_number = 0; page_number < vheap_pages_count; page_number++)
-    {   void *page = vheap_pages[page_number];
-        char *low = (char *)doubleword_align_up((intptr_t)page);
-        char *fr = low + car32(low);
-        low += 8;
-        while (low < fr)
-        {   Header h = *(Header *)low;
-            if (is_symbol_header(h))
-            {   Symbol_Head *s = (Symbol_Head *)low;
-                relocate(&(s->value));
-                relocate(&(s->env));
-//
-// To keep track of literal vectors I suppose here that they are never shared,
-// and I then account for things that are either V or (B . V) in an environment
-// cell, where B is binary code and V is a vector. Since all I am doing here
-// is collecting statistics any shared lit-vectors just leads to a slightly
-// mangled reported number and I do not actually mind that.
-//
-                {   LispObject e = s->env;
-                    if (is_cons(e) && is_bps(qcar(e))) e = qcdr(e);
-                    if (is_vector(e))
-                        litvecs += doubleword_align_up(
-                                       length_of_header(vechdr(e)));
-                }
-//              relocate(&(s->pname));  can never be a cons cell
-                relocate(&(s->plist));
-                relocate(&(s->fastgets));
-                {   LispObject e = s->fastgets;
-                    if (is_vector(e))
-                        getvecs += doubleword_align_up(
-                                       length_of_header(vechdr(e)));
-                }
-                relocate(&(s->package));
-                low += symhdr_length;
-                symbol_heads += symhdr_length;
-                continue;
-            }
-            else switch (type_of_header(h))
-                {   case TYPE_RATNUM:
-                    case TYPE_COMPLEX_NUM:
-                        relocate((LispObject *)(low+CELL));
-                        relocate((LispObject *)(low+2*CELL));
-                        other_mem += 2*CELL;
-                        break;
-                    case TYPE_MIXED1:
-                    case TYPE_MIXED2:
-                    case TYPE_MIXED3:
-                    case TYPE_STREAM:
-                        for (i=CELL; i<4*CELL; i+=CELL)
-                            relocate((LispObject *)(low+i));
-                        other_mem += doubleword_align_up(length_of_header(h));
-                        break;
-                    case TYPE_HASH:
-                    case TYPE_NEWHASH:
-                    case TYPE_NEWHASHX:
-                    case TYPE_INDEXVEC:
-                    case TYPE_SIMPLE_VEC:
-                    case TYPE_ARRAY:
-                    case TYPE_STRUCTURE:
-                        for (i=CELL; i<doubleword_align_up(length_of_header(h)); i+=CELL)
-                            relocate((LispObject *)(low+i));
-                        if (type_of_header(h) == TYPE_SIMPLE_VEC)
-                            user_vectors += doubleword_align_up(length_of_header(h));
-                        else other_mem += doubleword_align_up(length_of_header(h));
-                        break;
-                    case TYPE_STRING_1:
-                    case TYPE_STRING_2:
-                    case TYPE_STRING_3:
-                    case TYPE_STRING_4:
-// length_of_header() here gives the length rounded up to a multiple of 4
-// bytes so is quite appropriate here.
-                        strings += doubleword_align_up(length_of_header(h));
-                        break;
-                    case TYPE_BIGNUM:
-                        big_numbers += doubleword_align_up(length_of_header(h));
-                        break;
-                    case TYPE_SINGLE_FLOAT:
-                    case TYPE_LONG_FLOAT:
-                    case TYPE_DOUBLE_FLOAT:
-                        box_floats += doubleword_align_up(length_of_header(h));
-                        break;
-
-                    default:
-                        break;
-                }
-            low += doubleword_align_up(length_of_header(h));
-        }
-    }
-}
-
-static void abandon_heap_pages(int bottom_page_number)
-{   bottom_page_number++;
-    while (heap_pages_count > bottom_page_number)
-        pages[pages_count++] = heap_pages[--heap_pages_count];
-}
 
 static void zero_out(void *p)
 {   char *p1 = (char *)doubleword_align_up((intptr_t)p);
@@ -2406,7 +1033,6 @@ static bool reset_limit_registers(intptr_t vheap_need,
 {   void *p;
     uintptr_t len;
     bool full;
-    if (gc_method_is_copying)
 //
 // I wonder about the next test - memory would only really be full
 // if there was enough LIVE data to fill all the available free pages,
@@ -2416,12 +1042,10 @@ static bool reset_limit_registers(intptr_t vheap_need,
 // old and new spaces so if there are some large vectors they may leave
 // nasty gaps at the end of a page.
 //
-        full = (pages_count <=
-                heap_pages_count +
-                (3*(vheap_pages_count +
-                    native_pages_count) + 1)/2);
-    else
-        full = (pages_count <= 1);
+    full = (pages_count <=
+            heap_pages_count +
+            (3*(vheap_pages_count +
+                native_pages_count) + 1)/2);
     if (fringe <= heaplimit)
     {   if (full) return false;
         p = pages[--pages_count];
@@ -2900,8 +1524,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 #ifdef DEBUG
             if (reclaim_trap_count >= 0)
                 trace_printf("Will trap at GC %d. ", reclaim_trap_count);
-            trace_printf("GC method: %s\n",
-                         gc_method_is_copying ? "copying" : "sliding");
 #endif
         }
     }
@@ -2925,10 +1547,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         trace_printf(
             "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
             (long)gc_number, why, t/100, t%100, gct/100, gct%100);
-#ifdef DEBUG
-        trace_printf("GC method: %s\n",
-                     gc_method_is_copying ? "copying" : "sliding");
-#endif
     }
 #endif // WINDOW_SYSTEM
 //
@@ -2978,7 +1596,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             big_numbers = box_floats = bytestreams = other_mem =
                                            litvecs = getvecs = 0;
 
-    if (gc_method_is_copying)
     {
 //
 // Here I need to sort of what sort of GC I should do. In the new world
@@ -3062,6 +1679,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // structure...
 //
         for (i = first_nil_offset; i<last_nil_offset; i++)
+        {
             if (i != current_package_offset)
             {   // current-package - already copied by hand
 #ifdef DEBUG_GC
@@ -3069,6 +1687,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 #endif // DEBUG_GC
                 copy(&BASE[i]);
             }
+        }
 
 #ifdef DEBUG_GC
         term_printf("About to copy the stack\n");
@@ -3121,82 +1740,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             new_vheap_pages_count = 0;
         }
     }
-    else
-    {
-#ifdef DEBUG_WITH_HASH
-        for (sp=stack; sp>(LispObject *)stackbase; sp--)
-        {   int n = sp - (LispObject *)stackbase;
-            if (n < GCHASH) stackhash[n] = hash_for_checking(*sp, 0);
-        }
-#endif
-//
-// The list bases to mark from are
-// (a) nil    [NB: mark(nil) would be ineffective],
-// (b) the special ones addressed relative to nil,
-// (c) everything on the Lisp stack,
-// (d) the package structure,
-// (e) the argument (p) passed to reclaim().
-//
-        qheader(nil) = set_mark_bit_h(qheader(nil));
-        // nil has nil as value & env   ...
-        mark(&qplist(nil));         // ... thus only its plist and ...
-        mark(&qpname(nil));         // ... pname cell need marking,
-        // ... since packages are done later
-        mark(&qfastgets(nil));      // + the fastgets vector, if any
-
-        for (i = first_nil_offset; i<last_nil_offset; i++) mark(&BASE[i]);
-        for (sp=stack; sp>(LispObject *)stackbase; sp--)
-        {   mark(sp);
-        }
-//
-// Now I need to perform some magic on the list of hash tables...
-//
-        lose_dead_hashtables();
-        mark(&eq_hash_tables);
-        mark(&equal_hash_tables);
-//
-// What about the package structure... ? I assume it has been marked by
-// what I have just done.
-//
-        qheader(nil) = clear_mark_bit_h(qheader(nil));
-        t1 = read_clock();
-
-        bottom_page_number = compress_heap();    // Folds cons cells upwards
-
-        t2 = read_clock();
-
-//
-// Again I should remind you, gentle reader, that the value cell
-// and env cells of nil will always contain nil, which does not move,
-// and so I do not need to relocate them here.
-//
-        relocate(&(qplist(nil)));
-//      relocate(&(qpname(nil)));   never a cons cell
-        relocate(&(qfastgets(nil)));
-        relocate(&(qpackage(nil)));
-
-        for (i = first_nil_offset; i<last_nil_offset; i++)
-            relocate(&BASE[i]);
-
-        for (sp=stack; sp>(LispObject *)stackbase; sp--) relocate(sp);
-
-        relocate_consheap(bottom_page_number);
-        relocate(&eq_hash_tables);
-        relocate(&equal_hash_tables);
-        relocate_vecheap();
-
-        {   char *fr = (char *)fringe,
-                 *vf = (char *)vfringe,
-                 *hl = (char *)heaplimit,
-                 *vl = (char *)vheaplimit;
-            uintptr_t len = (uintptr_t)(fr - (hl - SPARE));
-            car32(hl - SPARE) = len;
-            len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
-            car32(vl - (CSL_PAGE_SIZE - 8)) = len;
-        }
-
-        abandon_heap_pages(bottom_page_number);
-    }
 
     LispObject qq;
 //
@@ -3233,14 +1776,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // (verbos 4) gets the system to tell me how long each phase of GC took,
 // but (verbos 1) must be ORd in too.
 //
-    {   if (gc_method_is_copying)
-            trace_printf("Copy %ld ms\n",
-                         (long int)(1000.0 * (double)(t3-t0)/(double)CLOCKS_PER_SEC));
-        else
-            trace_printf("Mark %ld, compact %ld, relocate %ld ms\n",
-                         (long int)(1000.0 * (double)(t1-t0)/(double)CLOCKS_PER_SEC),
-                         (long int)(1000.0 * (double)(t2-t1)/(double)CLOCKS_PER_SEC),
-                         (long int)(1000.0 * (double)(t3-t2)/(double)CLOCKS_PER_SEC));
+    {   
+        trace_printf("Copy %ld ms\n",
+                     (long int)(1000.0 * (double)(t3-t0)/(double)CLOCKS_PER_SEC));
     }
 
 // (verbos 5) causes a display breaking down how space is used
@@ -3328,20 +1866,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 #ifdef DEBUG_VALIDATE
     validate_all("end of gc", __LINE__, __FILE__);
 #endif
-//
-// I will make the next garbage collection a copying one if the heap is
-// at most 25% full, or a sliding one if it is more full than that. And
-// I take a conservative view with regard to the possibility that
-// when copying big vectors I can need to leave pages partly empty.
-// Eg consider copying a number of vectors each of which is just over
-// 1/3 of the size of a page. The first two fit in a new page, but the third
-// will then not, so I abandon the rest of that page and start a fresh one.
-//
-    gc_method_is_copying = (pages_count >
-                            3*(heap_pages_count +
-                             (3*(vheap_pages_count + native_pages_count))/2));
-    if (force_reclaim_method < 0) gc_method_is_copying = 0;
-    else if (force_reclaim_method > 0) gc_method_is_copying = 1;
     if (stop_after_gc)
     {
 #ifdef MEMORY_TRACE

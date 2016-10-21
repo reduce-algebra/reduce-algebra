@@ -362,11 +362,11 @@ while fg do <<
 
 
 % Now I scan all pre-compiled modules to recover source versions of the
-% selected REDUCE functions. The values put as load!-source properties
-% are checksums of the recovered definitions that I would be prepared
-% to accept.
+% selected REDUCE functions. The values put as load!-selected!-source
+% properties are checksums of the recovered definitions that I would be
+% prepared to accept.
 
-for each n in w_reduce do put(car n, 'load!-source, cdr n);
+for each n in w_reduce do put(car n, 'load!-selected!-source, cdr n);
 
 w_reduce := for each n in w_reduce collect car n$
 
@@ -382,24 +382,15 @@ for each x in append(at_start, at_end) do <<
 
 w_reduce := append(at_start, append(nreverse w_reduce, at_end))$
 
-for each m in library!-members() do load!-source m;
-
-% Up through Reduce 3.8 there was a mechanism for distributing patches
-% that could be installed to correct or upgrade a base version. In the
-% Open Source model it seems way easiest for people to fetch or build
-% a full new image, and so I am not going to deal with patches any more.
+load!-selected!-source();
 
  >>;
 
 if everything then <<
+% If I have the (experimental and not really sane) option that will try
+% to convert EVERYTHING then I will load all source definitions...
 
-
-% load!-source being true causes a !*savedef to be loaded for every function
-% in the module. Without it a definition only gets picked up if a load!-source
-% property has been set on the name.
-
-load!-source := t;
-for each m in library!-members() do load!-source m;
+load!-source();
 
 % Hah but I really want the core versions of anything that might get redefined
 % to be the one left - so I will re-load all the core modules!

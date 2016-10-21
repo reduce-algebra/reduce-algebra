@@ -820,6 +820,9 @@ flag('(test_package), 'opfn);
 
 flag('(call!-foreign!-function), 'variadic);
 
+% These two can take either 0 or 1 args...
+flag('(load!-source load!-selected!-source), 'variadic);
+
 % Arrange (for PSL compatibility) that "on gc;" and "off gc;" switch
 % garbage collector messages on or off.
 

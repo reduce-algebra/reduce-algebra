@@ -2440,12 +2440,8 @@ setup_type const eval3_setup[] =
     {"prog",                    prog_fn, (two_args *)noisy_prog_fn, bad_specialn},
     {"prog1",                   prog1_fn, (two_args *)noisy_prog1_fn, bad_specialn},
     {"prog2",                   prog2_fn, (two_args *)noisy_prog2_fn, bad_specialn},
-//
-// progn and quote are initialised in restart.cpp so do not need
-// to me included here - I put them in as comments as a reminder.
-//  {"progn",                   progn_fn, (two_args *)noisy_progn_fn, bad_specialn},
-//  {"quote",                   quote_fn, (two_args *)quote_fn, bad_specialn},
-//
+    {"progn",                   progn_fn, (two_args *)noisy_progn_fn, bad_specialn},
+    {"quote",                   quote_fn, (two_args *)quote_fn, bad_specialn},
     {"return",                  return_fn, (two_args *)noisy_return_fn, bad_specialn},
     {"setq",                    setq_fn, (two_args *)noisy_setq_fn, bad_specialn},
     {"noisy-setq",              noisy_setq_fn, (two_args *)noisy_setq_fn, bad_specialn},

@@ -43,7 +43,11 @@
 
 (rdf "$cslbase/compat.lsp")
 (rdf "$cslbase/extras.lsp")
-(rdf "$cslbase/compiler.lsp")
+(rdf (cond
+  ((memq 'jlisp lispsystem!*) "$cslbase/compiler-for-jlisp.lsp")
+  (t "$cslbase/compiler.lsp")))
+
+(setq !*print!-array!* t)
 
 % First I compile those things that appear to be most heavily used in the
 % compiler. This should speed up the whole bootstrap compilation process
@@ -82,7 +86,9 @@
 (setq !*native_code nil)
 
 (faslout 'compiler)
-(rdf "$cslbase/compiler.lsp")
+(rdf (cond
+  ((memq 'jlisp lispsystem!*) "$cslbase/compiler-for-jlisp.lsp")
+  (t "$cslbase/compiler.lsp")))
 (faslend)
 
 (bytecounts)

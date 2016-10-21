@@ -101,118 +101,6 @@ extern int load_count, load_limit;
 
 LispObject address_sign;
 
-#ifndef EXPERIMENT
-
-//
-// OK, so I will write a short essay here about the issues of converting
-// between 32 and 64-bit formats. Let me deal with the easier case first.
-// If the image file I wish to reload had been made on a 64-bit computer
-// but now I am just a 32-bit one I can take every item
-//   | abcdabcdabcdabcd | efghefghefghefgh |
-// and convert it in memory to
-//   | abcdabcd | efghefgh | pad_pad_ | pad_pad_ |
-// where the start address of the object is the same and my image encoding
-// means that truncating the data does not hurt. I must be careful that
-// strings, bignums and other types of stuff that contain raw binary do
-// not end up squashed, and as a matter of caution (if only while I debug
-// this) I will fill vacated space with tidy padding. Actually I now see
-// that I MUST fill up the gaps that are left with validly structured
-// material that has correct length codes in it if I shrink/compact the
-// data before I relocate pointers in it, since if I do not the attempt to
-// relocate pointers etc will fail.
-// The cost to a person with a 32-bit machine will be that there is a
-// little more time spent loading the image file, and the image file
-// will be a bit bulkier (with all that padding) so the first garbage
-// collection will need to happen sooner.
-//
-// Things are less pleasant if the image file had been made on a 32-bit
-// machine but is now being loaded on a 64-bit one. The reason this is
-// messier is that data must be expanded and moved, not just compacted with
-// gaps left.
-//
-// The basic idea is that when an object made out of 32-bit values is
-// seen it gets expanded out into 64-bit items. The image file format is
-// such that mere sign-extension should suffice for this. Then when addresses
-// are adjusted later during the reload process all offsets need to be
-// doubled. So the expansion must place each expanded object starting at
-// twice the offset from its page-start as it originally was. This is not
-// too bad. But what is nastier is that this means that the page it is put
-// into has to be a double-sized one. Normally all CSL heap is built within
-// fixed size (at present 4 Mbyte) pages. So when a 32-bit heap is to be
-// reloaded on a 64-bit machine it must be put in 8 Mbyte pages to allow for
-// the expansion. Trying to use a pair of normal sized pages seems really hard
-// because there may be a big object spanning the middle of the original
-// page - ie the place where one wanted to split it. There is an insuperable
-// problem if a 32-bit image contains a vector that would fit on that
-// architecture but not on a 64-bit one, so on 32-bit machine to allow for
-// conversion I may need to here. I also need to tune my internal
-// representation for hash tables to allow for this.
-//
-// So when reloading a 32-bit image on a 64-bit machine I must make double-
-// sized pages to reload into. That is not too bad. But then I must consider
-// their subsequent usage. There are three major concerns - the garbage
-// collector, the code that creates a new image file and freeing memory at
-// the end of a run. Before creating a new image file garbage collection is
-// performed, so if AFTER garbage collection all pages are the correct size
-// all will be well. I will ensure that that is the case.
-//
-// The sliding garbage collector leaves data in the page it started in, and
-// has no guaranteed way to shrink a page to become single size. But in the
-// case I am considering I am on a 64-bit machine and I can perhaps assume
-// that I have "plenty" of free memory - in that case I can force the first
-// garbage collection of the run to be a copying one, and fail if there is
-// insufficient memory for that to be possible. That is OK if I can
-// ensure that the total memory available is at least three the size of the
-// image that I am loading. The need for this size is to cope with a 32-bit
-// vector page that is 1/4 full of small vectors, then has a single vector
-// of maximum size and finally fills up to its top. When expanded to
-// 64-bit form and copied the copy can need 3 pages because the big vector in
-// the middle must all end up within one page.
-//
-// When expanding a page vectors that contain pointers will often double in
-// size, but if they hold an even number of items the padder word needed in
-// the 32-bit world will become superfluous. Vectors containing non-pointer
-// data (eg strings and bignums) will only expand by 4 bytes. In each case
-// if space is left unoccupied it must be filled with some form of valid
-// padding so that subsequent linear scans of the heap can succeed.
-//
-// I need to review the copying GC to verify that it will not be hurt
-// by having a few oversize pages, but my expectation is that it only looks
-// at the size of NEW pages that it allocates.
-//
-// At the end of a run I go "free()" on all the pages I allocated. If in
-// the copying collector I detect when I have copied out from an oversized
-// page and I return it to the pool as a pair of regular pages (a good thing
-// to do!) then if I tried to free the upper such page disaster could ensue.
-// A way to avoid that pain is to demand that the double size pages all
-// reside within an initial single block that I already allocate at the
-// start of a run and that gets freed wholesale. I will need a way to detect
-// when the garbage collector is discarding a big page.
-//
-// Note that I have a plan to introduce a conservative garbage collector
-// at some stage, and that would lead to some old pages needing to be
-// retained across a mostly-copying collection. In consequence over-sized
-// pages would live for some longer time. But my plans in that direction
-// are that the conservative system can be replaced by a precise copying
-// collector in at least the key case that a new heap image is about to
-// be created, and so at least some of the isssues can be side-stepped.
-// Detecting valid references might well need information about the size
-// of pages - but I can record that somehow when I get to that point.
-// See the file "conservative.txt" for elaboration on my plans. In the
-// very worst case I could instantly do a first precise compacting garbage
-// collection immediately after a restart so as to normalise the heap. The
-// cost effect would be that the restart took longer, but probably not by
-// very much!
-//
-// Hmm that is all a bit of a business, but I hope I have covered
-// everything that will matter!
-//
-
-
-static int converting_to_32 = 0, converting_to_64 = 0;
-
-#endif // EXPERIMENT
-
 LispObject C_nil;
 LispObject *stackbase;
 LispObject * volatile stacklimit;
@@ -274,8 +162,8 @@ LispObject help_index, cfunarg, lex_words, get_counts, fastget_names;
 LispObject input_libraries, output_library, current_file, break_function;
 LispObject standard_output, standard_input, debug_io;
 LispObject error_output, query_io, terminal_io, trace_output, fasl_stream;
-LispObject native_code, native_symbol, traceprint_symbol, loadsource_symbol;
-LispObject hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
+LispObject native_code, native_symbol, traceprint_symbol, load_source_symbol;
+LispObject load_selected_source_symbol, bytecoded_symbol, nativecoded_symbol;
 LispObject gchook, resources, callstack, procstack, procmem, trap_time;
 LispObject used_space, avail_space, eof_symbol, call_stack;
 LispObject workbase[51];
@@ -349,9 +237,6 @@ int32_t native_pages_changed;
 int32_t native_fringe;
 int current_fp_rep;
 bool trap_floating_overflow = true;
-static int old_fp_rep;
-static bool flip_needed;
-static int old_page_bits;
 
 int procstackp;
 
@@ -594,454 +479,6 @@ void relocate_native_function(unsigned char *bps)
         }
     }
 }
-
-#ifndef EXPERIMENT
-
-static int32_t fread_count;
-static unsigned char *fread_ptr;
-
-#define FREAD_BUFFER_SIZE ((CSL_PAGE_SIZE - 1) & ~0xfff)
-
-static unsigned char *pair_c, *char_stack;
-static unsigned short int *pair_prev;
-
-static void Cfread(char *p, int32_t n)
-{
-//
-// The decompression process does not need hashed access to see if
-// character-pairs have been seen before, but it can need a stack to
-// unwind codes that have very lengthy expansions.
-//
-    int c1, k;
-    unsigned int prev, c, next_code;
-    int32_t count = fread_count;
-    unsigned char *ptr = fread_ptr;
-    if (n < compression_worth_while)
-    {   while (n > count)
-        {   memcpy(p, ptr, (size_t)count);
-            p += count;
-            n -= count;
-            ptr = (unsigned char *)stack;
-            count = Iread(ptr, FREAD_BUFFER_SIZE);
-        }
-        if (n != 0)
-        {   memcpy(p, ptr, (size_t)n);
-            ptr += n;
-            count -= n;
-        }
-        fread_count = count;
-        fread_ptr = ptr;
-        return;
-    }
-
-    next_code = 256;
-
-    if (count == 0)
-    {   ptr = (unsigned char *)stack;
-        count = Iread(ptr, FREAD_BUFFER_SIZE);
-    }
-    c = *ptr++;
-    count--;
-
-    if (count == 0)
-    {   ptr = (unsigned char *)stack;
-        count = Iread(ptr, FREAD_BUFFER_SIZE);
-    }
-    c = (c << 8) | *ptr++;
-    count--;
-
-    prev = c >> 4;
-    *p++ = (char)prev;    // The first character is not compressed
-    n--;
-
-    while (n > 0)
-    {   if (count == 0)
-        {   ptr = (unsigned char *)stack;
-            count = Iread(ptr, FREAD_BUFFER_SIZE);
-        }
-        c = ((c & 0xf) << 8) | *ptr++;
-        count--;
-//
-// Decode the next 12 bit character
-//
-        c1 = c;
-        k = 1;
-        while (c1 >= 256)
-        {   char_stack[k++] = pair_c[c1];
-            if (pair_prev[c1] > CODESIZE || k >= CODESIZE)
-            {   term_printf("Bad decoded char %x -> %x, k=%d\n", c1, pair_prev[c1], k);
-                my_exit(EXIT_FAILURE);
-            }
-            c1 = pair_prev[c1];
-        }
-//
-// Write the decoded stuff into the output array.
-//
-        n -= k;
-        *p++ = (char)c1;
-        while (k != 1)
-        {   *p++ = char_stack[--k];
-        }
-//
-// ... then build up the decoding tables ready for next time.  Of course
-// the table building in this decoder MUST exactly match the behaviour of
-// the compression code above.
-//
-        if (next_code >= CODESIZE) next_code = 256;
-        else
-        {   pair_prev[next_code] = (unsigned short int)prev;
-            pair_c[next_code] = (unsigned char)c1;
-            next_code++;
-        }
-        prev = c;
-
-        if (n <= 0) break;
-
-//
-// read the next 12 bit character.
-//
-        if (count == 0)
-        {   ptr = (unsigned char *)stack;
-            count = Iread(ptr, FREAD_BUFFER_SIZE);
-        }
-        c = *ptr++;
-        count--;
-        if (count == 0)
-        {   ptr = (unsigned char *)stack;
-            count = Iread(ptr, FREAD_BUFFER_SIZE);
-        }
-        c = (c << 8) | *ptr++;
-        count--;
-//
-// Decode it...
-//
-        c1 = c >> 4;
-        k = 1;
-        while (c1 >= 256)
-        {   char_stack[k++] = pair_c[c1];
-            if (pair_prev[c1] > CODESIZE || k >= CODESIZE)
-            {   term_printf("Bad decoded char %x -> %x, k=%d\n", c1, pair_prev[c1], k);
-                my_exit(EXIT_FAILURE);
-            }
-            c1 = pair_prev[c1];
-        }
-//
-// Write the decoded stuff into the output array.
-//
-        n -= k;
-        *p++ = (char)c1;
-        while (k != 1)
-        {   *p++ = char_stack[--k];
-        }
-//
-// ... then build up the decoding tables ready for next time.  Of course
-// the table building in this decoder MUST exactly match the behaviour of
-// the compression code above.
-//
-        if (next_code >= CODESIZE) next_code = 256;
-        else
-        {   pair_prev[next_code] = (unsigned short int)prev;
-            pair_c[next_code] = (unsigned char)c1;
-            next_code++;
-        }
-        prev = c >> 4;
-    }
-    fread_count = count;
-    fread_ptr = ptr;
-}
-
-#endif
-
-// On a TEMPORARY (I hope) basis I need convert_fp_rep because it is
-// used from fasl.cpp...
-
-//
-// There is a misery here in that the width of a Lisp_Object on the
-// current architecture can not be a compile-time constant and so I can
-// not parameterise how to swap bytes based on "#ifdef". Hence I need to
-// write things as run-time checks. But then the version of the code I
-// will not execute has weird types - so I put in explicit casts so that
-// there is at last some local consistency and expect the compiler to
-// optimise away the code that is not wanted.
-//
-
-#define flip_bytes(a)                                             \
-    (!flip_needed ? (a) :                                         \
-     SIXTY_FOUR_BIT ? (LispObject)flip_64bits((uint64_t)(a)) :   \
-     (LispObject)flip_32bits((uint32_t)(a)))
-
-//
-// If I know a value is just 32-bits but it may need flipping I can use this
-//
-
-#define flip_32(a)                                                \
-    (!flip_needed ? (a) :                                         \
-     flip_32bits(a))
-
-static uint32_t flip_32bits(uint32_t x)
-{   uint32_t b0, b1, b2, b3;
-    b0 = (x >> 24) & 0xffU;
-    b1 = (x >> 8) & 0xff00U;
-    b2 = (x << 8) & 0xff0000U;
-    b3 = (x << 24) & 0xff000000U;
-    return b0 | b1 | b2 | b3;
-}
-
-#define flip_64(a)                                                \
-    (!flip_needed ? (a) :                                         \
-     flip_64bits(a))
-
-static uint64_t flip_64bits(uint64_t x)
-{   uint64_t b0, b1, b2, b3, b4, b5, b6, b7;
-    b0 = (x >> 56) & ((uint64_t)0xff);
-    b1 = (x >> 40) & (((uint64_t)0xff)<<8);
-    b2 = (x >> 24) & (((uint64_t)0xff)<<16);
-    b3 = (x >> 8)  & (((uint64_t)0xff)<<24);
-    b4 = (x << 8)  & (((uint64_t)0xff)<<32);
-    b5 = (x << 24) & (((uint64_t)0xff)<<40);
-    b6 = (x << 40) & (((uint64_t)0xff)<<48);
-    b7 = (x << 56) & (((uint64_t)0xff)<<56);
-    return b0 | b1 | b2 | b3 | b4 | b5 | b6 | b7;
-}
-
-#define flip_halfwords(a) \
-    (flip_needed ? flip_halfwords_fn(a) : (a))
-
-static uint32_t flip_halfwords_fn(uint32_t x)
-{   uint32_t b0, b1, b2, b3;
-    b0 = (x >> 8) & 0xffU;
-    b1 = (x << 8) & 0xff00U;
-    b2 = (x >> 8) & 0xff0000U;
-    b3 = (x << 8) & 0xff000000U;
-    return b0 | b1 | b2 | b3;
-}
-
-
-void convert_fp_rep(void *p, int old_rep, int new_rep, int type)
-{   uint32_t *f = (uint32_t *)p;
-//@printf("Convert %.8x %.8x from %x to %x (length %d words)\n",
-//@       f[0], f[1], old_rep, new_rep, type);
-//@fflush(stdout);
-    if (old_rep == new_rep) return;
-//
-// type == 0 for sfloat, 1 for single float, 2 for double and 3 for extended.
-// in CSL mode only case 2 can arise. If I ever implement "long floats"
-// (ie 80-bit values) I will need to re-visit this code.
-//
-    if (type >= 2 && ((old_rep ^ new_rep) & FP_WORD_ORDER))
-    {   uint32_t w = f[0];
-        f[0] = f[1];
-        f[1] = w;
-    }
-//
-// Note that I flip the bytes in each word and ALSO flip the order of the
-// words to achieve a full 64-bit flip here.
-//
-    if ((old_rep ^ new_rep) & FP_BYTE_ORDER)
-    {   f[0] = flip_32bits(f[0]);
-        if (type >= 2) f[1] = flip_32bits(f[1]);
-    }
-    return;
-}
-
-#ifndef EXPERIMENT
-
-#define PAGE_MASK               ((((uint32_t)1) << (32-PAGE_BITS)) - 1)
-#define OFFSET_MASK             ((((uint32_t)1) << PAGE_BITS) - 1)
-
-static void adjust(LispObject *cp)
-//
-// If p is a pointer to an object that has moved, adjust it.
-//
-{   LispObject nil = C_nil, p = flip_bytes(*cp);
-//
-// The value 0 ought not to occur, but to be conservative I detect it and
-// treat it as signalling NIL.
-//
-    if  (p == SPID_NIL || p == 0) *cp = nil;
-    else if (is_cons(p))
-    {
-//
-// The next line arranges to use JUST the low 32-bits of the item in the
-// saved heap image. That means that if I have a heap image created on a
-// 32-bit system and try to reload it on a 64-bit one there is no worry
-// about whether I sign extended to move from 32 to 64-bits. But it also
-// means that an image is limited to around 4 Gbytes. If at some stage
-// somebody tried to use PRESERVE etc to take snapshots of a huge job on
-// a 64-bit machine this will cause pain. So at some stage I need to
-// re-think it.
-//
-        intptr_t h = (intptr_t)heap_pages[(p>>PAGE_BITS) & PAGE_MASK];
-// If I am expanding a 32-bit image onto a 64-bit computer then I will
-// have allocated double-sized pages (on a temporary basis) and placed
-// all items at exactly twice their original offset from the page
-// start. But note that OFFSET_MASK only allows for offsets up to the
-// normal page size.
-//
-        p &= OFFSET_MASK;
-//
-// In a bunch of places that I check for converting_to_64 I only do so if
-// SIXTY_FOUR_BIT is set. That is because SIXTY_FOUR_BIT is something that
-// (while not a constant at preprocessor time) is a constant by the stage
-// that compiler optimisation should be being done, and so on 32-bit
-// machines the extra work should be removed totally... at least of the
-// compiler is up to scratch.
-// Note that TAG_CONS=0 so merely doubling the offset field here is OK.
-//
-        if (SIXTY_FOUR_BIT && converting_to_64) p *= 2;
-        *cp = (LispObject)((char *)quadword_align_up(h) + p);
-    }
-    else if (is_immed_or_cons(p))
-    {   if (is_sfloat(p))
-        {   intptr_t w = flip_32(p);    // delicate here!!
-            convert_fp_rep((void *)&w, old_fp_rep, current_fp_rep, 0);
-            *cp = w;
-            return;
-        }
-        *cp = p;   // Immediate data here
-    }
-    else
-    {   intptr_t h = (intptr_t)vheap_pages[(p>>PAGE_BITS) & PAGE_MASK];
-        p &= OFFSET_MASK;
-// Here I must double the offset but preserve the tag information
-        if (SIXTY_FOUR_BIT && converting_to_64) p += (p & ~TAG_BITS);
-        *cp = (LispObject)((char *)doubleword_align_up(h) + p);
-    }
-}
-
-//
-// expand_to_64() must take a 32-bit value that is in potentially flipped
-// byte order and convert it into a (potentially byte flipped) 64-bit value
-// by sign extending it. So the cast to int32_t here is to ensure that it is
-// signed so that the cast to int64_t sign extends (this is vital for
-// fixnums). Similarly shrink_to_32 must understand that it is working on
-// possibly flipped values.
-// Observe that if byte-flipping is not required then things become a little
-// easier and hence faster, so I specialize on that case.
-//
-
-#define expand_to_64(x) \
-    (flip_needed ? (LispObject)flip_64bits((int64_t)(int32_t)flip_32bits(x)) : \
-     ((LispObject)(int64_t)(int32_t)(x)))
-
-#define shrink_to_32(x) \
-    (flip_needed ? (LispObject)flip_32bits((int32_t)flip_64bits(x)) : \
-     (LispObject)(x))
-
-static void adjust_consheap(void)
-{
-//
-// layout of CONS heap:
-//
-// The lowest 32-bit of the heap contains a value "low" that is the offset
-// (in bytes) of the lowest active data in the heap. From there up to
-// CSL_PAGE_SIZE the page is just full on pairs of Lisp_Objects.
-// when allocating within the heap I create new cells downwards, and I
-// stop as I approach the bottom of the page. I leave SPARE bytes free
-// in simple cases so that I can overrun that limit a bit in functions that
-// want to perform up to around 3 cons operations but with only one overflow
-// test.
-//
-// On a temporary basis when loading a 64-bit image into a 32-bit system I
-// can create a double-sized page where the top limit is 2*CSL_PAGE_SIZE
-// and I will need some way to identify that when I come to garbage collect.
-//
-    int32_t page_number;
-    for (page_number = 0; page_number < heap_pages_count; page_number++)
-    {   void *page = heap_pages[page_number];
-        char *low = (char *)quadword_align_up((intptr_t)page);
-        char *start = low +
-                      (converting_to_64 ? 2*CSL_PAGE_SIZE : CSL_PAGE_SIZE);
-        int32_t len = flip_32((uint32_t)car32(low));
-        char *fr;
-        if (SIXTY_FOUR_BIT && converting_to_64)
-        {
-// If I am converting from a 32-bit image to a 64-bit one I need to
-// expand each cell into one that is double its width. And when I do so
-// here I will need to reflect that the items stored have not yet had
-// any byte-order corrections applied.
-//
-            char *oldp = low + CSL_PAGE_SIZE;
-            char *newp = low + 2*CSL_PAGE_SIZE;
-            fr = low + len;
-//
-// The "-8" and "-16" above reflect the size of Cons cells in the new and
-// old heap. So oldp points to the top existing 32-bit cell, and newp to
-// where it must be copied to. fr points to the lowest cell in use in the
-// 32-bit world. Note that each cell is copied to a location that has
-// exactly twice the offset from the start of page that it originally had.
-//
-            while (oldp >= fr)
-            {   oldp -= 4;
-                newp -= 8;
-                *(LispObject *)newp = expand_to_64(*(int32_t *)oldp);
-                oldp -= 4;
-                newp -= 8;
-                *(LispObject *)newp = expand_to_64(*(int32_t *)oldp);
-            }
-//
-// Done! By copying from the top downwards I will never overwrite what I
-// am reading from. Now the low point of the new heap should be just
-// twice the original value.
-//
-            len *= 2;
-        }
-        else if (converting_to_32)
-        {
-//
-// If the original image was a 64-bit one but the new one is 32-bits I just
-// need to truncate every cell to 32-bits and fill in the gaps that are
-// left with something safe. Well the gaps should in fact never get inspected
-// and so leaving mess in them ought to be OK - but of I look forward to
-// a future potential conservative garbage collector that may change at
-// least slightly, so I will try to be tidy here. The bit-pattern I use
-// to fill, PADWORD, remains unchanged when byte-flipped and denotes
-// a fixnum either way.
-//
-#define PADWORD (TAG_FIXNUM + (TAG_FIXNUM<<24))
-            fr = low + len;
-            while (fr < start)
-            {   *(LispObject *)fr = shrink_to_32(*(int64_t *)fr);
-                *(LispObject *)(fr+4) = shrink_to_32(*(int64_t *)(fr+8));
-                *(LispObject *)(fr+8) =
-                    *(LispObject *)(fr+12) = PADWORD;
-                fr += 16;
-            }
-        }
-        car32(low) = len;
-        fr = low + len;
-        fringe = (LispObject)fr;
-        heaplimit = (LispObject)(low + SPARE);
-#ifdef DEBUG_WIDTH
-        {   int32_t *w = (int32_t *)fringe;
-            printf("Consheap\n");
-            while ((char *)w < start)
-            {   printf("%p %.8x: %.8x%.8x %.8x%.8x\n",
-                       w, (int)((char *)w-low), w[1], w[0], w[3], w[2]);
-                w += 4;
-            }
-            printf("\n");
-        }
-#endif
-        while (fr < start)
-        {   adjust((LispObject *)fr);
-            fr += sizeof(LispObject);
-        }
-#ifdef DEBUG_WIDTH
-        {   int32_t *w = (int32_t *)fringe;
-            printf("Adjusted Consheap\n");
-            while ((char *)w < start)
-            {   printf("%p %.8x: %.8x%.8x %.8x%.8x\n",
-                       w, (int)((char *)w-low), w[1], w[0], w[3], w[2]);
-                w += 4;
-            }
-            printf("\n");
-        }
-#endif
-    }
-}
-
-#endif // EXPERIMENT
 
 entry_point0 entries_table0[] =
 {
@@ -1300,916 +737,6 @@ entry_pointn entries_tableio[] =
 };
 
 #define entry_table_sizeio ((int)(sizeof(entries_tableio)/sizeof(entries_tableio[0])))
-
-#ifndef EXPERIMENT
-
-static struct entry_lookup1
-{   int32_t code;
-    one_args *entry;
-    const char *s;
-} entry_lookup1[entry_table_size1];
-
-static struct entry_lookup2
-{   int32_t code;
-    two_args *entry;
-    const char *s;
-} entry_lookup2[entry_table_size2];
-
-static struct entry_lookupn
-{   int32_t code;
-    n_args *entry;
-    const char *s;
-} entry_lookupn[entry_table_sizen];
-
-static int order_lookup_entries(void const *aa, void const *bb)
-{
-//
-// I rely here on having entry_lookup[1,2,n] all the same shape so that
-// when I want to sort I only use one comparison function.
-//
-    struct entry_lookup1 *a = (struct entry_lookup1 *)aa,
-                         *b = (struct entry_lookup1 *)bb;
-    intptr_t ap = (intptr_t)a->entry, bp = (intptr_t)b->entry;
-    if (ap < bp) return -1;
-    else if (ap > bp) return 1;
-    else return 0;
-}
-
-void set_up_entry_lookup(void)
-//
-// This makes a sorted version of entries_table.  Since the table is
-// only a few dozen words long it hardly seems worth being too clever,
-// but the C library provides qsort() for me so I use it.
-//
-{   int i;
-    for (i=0; i<entry_table_size1; i++)
-    {   entry_lookup1[i].code = i;
-        entry_lookup1[i].entry = entries_table1[i].p;
-        entry_lookup1[i].s = entries_table1[i].s;
-    }
-    qsort((void *)entry_lookup1,
-          entry_table_size1, sizeof(struct entry_lookup1),
-          order_lookup_entries);
-    for (i=0; i<entry_table_size2; i++)
-    {   entry_lookup2[i].code = i;
-        entry_lookup2[i].entry = entries_table2[i].p;
-        entry_lookup2[i].s = entries_table2[i].s;
-    }
-    qsort((void *)entry_lookup2,
-          entry_table_size2, sizeof(struct entry_lookup2),
-          order_lookup_entries);
-    for (i=0; i<entry_table_sizen; i++)
-    {   entry_lookupn[i].code = i;
-        entry_lookupn[i].entry = entries_tablen[i].p;
-        entry_lookupn[i].s = entries_tablen[i].s;
-    }
-    qsort((void *)entry_lookupn,
-          entry_table_sizen, sizeof(struct entry_lookupn),
-          order_lookup_entries);
-}
-
-int32_t code_up_fn1(one_args *e)
-{   int low = 0, high = entry_table_size1-1;
-    while (low < high)
-    {   int mid = (high + low)/2;
-        intptr_t s = (intptr_t)entry_lookup1[mid].entry;
-        if (s == (intptr_t)e) return entry_lookup1[mid].code;
-        if ((intptr_t)s < (intptr_t)e) low = mid + 1;
-        else high = mid - 1;
-    }
-    if (low == high &&
-        entry_lookup1[low].entry == e) return entry_lookup1[low].code;
-    else return 0;
-}
-
-int32_t code_up_fn2(two_args *e)
-{   int low = 0, high = entry_table_size2-1;
-    while (low < high)
-    {   int mid = (high + low)/2;
-        intptr_t s = (intptr_t)entry_lookup2[mid].entry;
-        if (s == (intptr_t)e) return entry_lookup2[mid].code;
-        if ((intptr_t)s < (intptr_t)e) low = mid + 1;
-        else high = mid - 1;
-    }
-    if (low == high &&
-        entry_lookup2[low].entry == e) return entry_lookup2[low].code;
-    else return 0;
-}
-
-int32_t code_up_fnn(n_args *e)
-{   int low = 0, high = entry_table_sizen-1;
-    while (low < high)
-    {   int mid = (high + low)/2;
-        intptr_t s = (intptr_t)entry_lookupn[mid].entry;
-        if (s == (intptr_t)e) return entry_lookupn[mid].code;
-        if ((intptr_t)s < (intptr_t)e) low = mid + 1;
-        else high = mid - 1;
-    }
-    if (low == high &&
-        entry_lookupn[low].entry == e) return entry_lookupn[low].code;
-    else return 0;
-}
-
-int32_t code_up_io(void *e)
-{   int i;
-    for (i=0; i<entry_table_sizeio; i++)
-    {   if (entries_tableio[i].p == e) return i;
-    }
-    return 0;
-}
-
-static void shrink_vecheap_page_to_32(char *p, char *fr)
-{   if (!SIXTY_FOUR_BIT)
-    {   int32_t *newp;  // specific widths used here
-        int64_t *oldp;
-        size_t i, len, lose = 0;
-#ifdef DEBUG_WIDTH
-        int ii;
-#endif
-        while (p < fr)
-        {
-// Fetch header as a 64-bit value, truncate to 32-bit
-            Header h = (Header)flip_64(*(int64_t *)p), h1;
-#ifdef DEBUG_WIDTH
-//
-// I use printf() not term_printf() here because at the stage I run this
-// code I can not be confident that Lisp-style streams are fully set up.
-// And the debug display here is only DEBUG display and so I do not feel
-// to bad if it is generated in a way that could conflict with use of a
-// windowed application.
-//
-            printf("p=%p Header = %.16llx = %.16llx (is_sym=%d)\n",
-                   p, *(long long *)p, (long long)h, (int)is_symbol_header(h));
-            printf("Length = %d\n", (int)length_of_header(h));
-            for(ii=-32; ii<=32; ii+=4)
-            {   if (ii == 0) printf("\n%p: ", p);
-                printf("%.8x ", *(int32_t *)(p+ii));
-                if (ii==0) printf("\n");
-            }
-            printf("\n");
-            fflush(stdout);
-            if (!is_symbol_header(h) && length_of_header(h) == 0) exit(8);
-#endif
-            if (is_symbol_header(h))
-            {
-//
-// Symbol headers do not contain any explicit length info and so do not
-// need to be changed at all here.
-//
-#ifdef DEBUG_WIDTH
-                for (i=0; i<80; i+=4)
-                {   printf("%.8x ", *(int32_t *)(p+i));
-                    if (((i/4)%8) == 7) printf("\n");
-                }
-                printf("\n");
-#endif
-                *(LispObject *)p = flip_32(h);  // write back header
-//
-// I do not know if I police it anywhere, but if one tried to mix images from
-// Common and plain mode the result would be a crash, if only because symbols
-// are represented as a different length. That is because in Common Lisp mode
-// there has to be an extra field to hold the identity of the package that
-// a symbol lives in.
-//
-                for (i=1; i<(symhdr_length/4); i++)
-                {   ((LispObject *)p)[i] =
-                        shrink_to_32(((int64_t *)p)[i]);
-                }
-//
-// Insert a padding vector - a byte-vector should be a safe case to use. I
-// provide myself with a "make_padder" macro to create the relevant header.
-// I do not tidy up the contents of the padder block, but since the block is
-// tagged as a vector of 8 bit bytes this does not matter.
-//
-// NOTE that with the December 2015 structure for a Symbol_head that on
-// a 32-bit machine the length is 56 bytes and on a 64-bit one it is only
-// 104. This relates to putting a 64-bit "count" fild in the header. To allow
-// for this I have to use symhdr_length-8 in my padding here!
-                *(LispObject *)(p+symhdr_length) =
-                    flip_32(make_padder(symhdr_length-8));
-#ifdef DEBUG_WIDTH
-                for (i=0; i<80; i+=4)
-                {   printf("%.8x ", *(int32_t *)(p+i));
-                    if (((i/4)%8) == 7) printf("\n");
-                }
-                printf("\n");
-#endif
-// ... and similarly here the "-8" related to the 64-bit header having been
-// 8 bytes shorter than twice the length of the 32-bit one.
-                p += 2*symhdr_length-8;
-            }
-            else switch (type_of_header(h))
-                {
-//
-// If I do not have a symbol then I have some sort of vector where the
-// header word contains length information. I need to discriminate here
-// between all the cases where the following data is in 64-bit fields
-// (and so needs truncating to fit in 32) as against cases where the
-// follow-on data is in 8, 16 or 32-bit chunks in a format that does not
-// depend on the word-length of the host machine. It seems fairly important
-// that I cover every possible sort of tag that could ever exist.
-//
-                    case TYPE_RATNUM:
-                    case TYPE_COMPLEX_NUM:
-                    case TYPE_HASH:
-                    case TYPE_SIMPLE_VEC:
-                    case TYPE_ARRAY:
-                    case TYPE_STRUCTURE:
-                    case TYPE_MIXED1:
-                    case TYPE_MIXED2:
-                    case TYPE_MIXED3:
-                    case TYPE_STREAM:
-//                  case TYPE_LITVEC:
-//
-// "len" will be the length of the old 64-bit version, and in the 64-bit
-// world there will never be a padding word at the end of a vector.
-//
-                        len = doubleword_align_up(length_of_header(h));
-#ifdef DEBUG_WIDTH
-                        printf("Shrinking vec (%d) to 32 bits:\n", len);
-                        for (i=0; i<len; i+=4)
-                        {   printf("%.8x ", *(int32_t *)(p+i));
-                            if (((i/4) % 8) == 7) printf("\n");
-                        }
-                        printf("\n");
-#endif
-                        newp = (int32_t *)p;
-                        oldp = (int64_t *)p;
-// lose will be the number of 32-bit units I shrink by. I count 1 to
-// start with for the header word.
-                        lose = 1;
-                        for (i=8; i<len; i+=8)
-                        {   ++newp;
-                            ++oldp;
-                            *newp = shrink_to_32(*oldp);
-                            lose++;
-                        }
-//
-// Now the length needed in the new header will be (newp-p+4)
-//
-                        h1 = h - (lose << (Tw+7));
-#ifdef DEBUG_WIDTH
-                        printf("new object length = %d, h=%.8x\n",
-                               (int)(((char *)newp)-p+4), (int)h1);
-#endif
-                        *(LispObject *)p = flip_32(h1);  // write back header
-                        if ((4 & (intptr_t)newp) == 0)
-                            *++newp = flip_32(SPID_NIL); // fill to doubleword
-                        p += len;
-//
-// Now I must put in a padding object if needed to fill any gap left.
-// There would be no gap if the original vector had length zero, otherwise
-// I put in something that looks like a vector of bytes.
-//
-                        newp++;
-                        if (p != (char *)newp)
-                            *newp = flip_32(make_padder(p - (char *)newp));
-#ifdef DEBUG_WIDTH
-                        printf("AFTER shrinking vec to 32 bits:\n");
-                        for (i=0; i<len; i+=4)
-                        {   printf("%.8x ", *(int32_t *)(p-len+i));
-                            if (((i/4) % 8) == 7) printf("\n");
-                        }
-                        printf("\n");
-#endif
-                        break;
-                    case TYPE_STRING_1:
-                    case TYPE_STRING_2:
-                    case TYPE_STRING_3:
-                    case TYPE_STRING_4:
-#ifdef DEBUG_WIDTH
-                        printf("String: %p: \"%s\"\n", p, ((char *)p)+2*CELL);
-#endif
-                    case TYPE_BIGNUM:
-                    case TYPE_VEC32:
-                    case TYPE_VEC16_1:
-                    case TYPE_VEC16_2:
-                    case TYPE_VEC8_1:
-                    case TYPE_VEC8_2:
-                    case TYPE_VEC8_3:
-                    case TYPE_VEC8_4:
-                    case TYPE_BPS_1:
-                    case TYPE_BPS_2:
-                    case TYPE_BPS_3:
-                    case TYPE_BPS_4:
-                    case TYPE_ENCAPSULATE:
-                    case TYPE_MAPLEREF:
-                    case TYPE_FOREIGN:
-                    case TYPE_SP:
-                    case TYPE_BITVEC_1:
-                    case TYPE_BITVEC_2:
-                    case TYPE_BITVEC_3:
-                    case TYPE_BITVEC_4:
-                    case TYPE_BITVEC_5:
-                    case TYPE_BITVEC_6:
-                    case TYPE_BITVEC_7:
-                    case TYPE_BITVEC_8:
-                    case TYPE_BITVEC_9:
-                    case TYPE_BITVEC_10:
-                    case TYPE_BITVEC_11:
-                    case TYPE_BITVEC_12:
-                    case TYPE_BITVEC_13:
-                    case TYPE_BITVEC_14:
-                    case TYPE_BITVEC_15:
-                    case TYPE_BITVEC_16:
-                    case TYPE_BITVEC_17:
-                    case TYPE_BITVEC_18:
-                    case TYPE_BITVEC_19:
-                    case TYPE_BITVEC_20:
-                    case TYPE_BITVEC_21:
-                    case TYPE_BITVEC_22:
-                    case TYPE_BITVEC_23:
-                    case TYPE_BITVEC_24:
-                    case TYPE_BITVEC_25:
-                    case TYPE_BITVEC_26:
-                    case TYPE_BITVEC_27:
-                    case TYPE_BITVEC_28:
-                    case TYPE_BITVEC_29:
-                    case TYPE_BITVEC_30:
-                    case TYPE_BITVEC_31:
-                    case TYPE_BITVEC_32:
-                    case TYPE_SINGLE_FLOAT:
-                    case TYPE_DOUBLE_FLOAT:
-                    case TYPE_LONG_FLOAT:
-                    case TYPE_VECFLOAT32:
-                    case TYPE_VECFLOAT64:
-                        len = doubleword_align_up(length_of_header(h));
-// I copy all the stuff that will go into the 32-bit version
-#ifdef DEBUG_WIDTH
-                        for (i=-16; i<=8; i+=4) printf("%.8x ", *(int32_t *)(p+len+i)); printf("\n");
-#endif
-                        switch (type_of_header(h))
-                        {   case TYPE_DOUBLE_FLOAT:
-                            case TYPE_VECFLOAT64:
-//@@@ At present long floats do not survive checkpoint & restart!
-                            case TYPE_LONG_FLOAT:
-//
-// double precision floating point data has to remain 64-bit aligned, and so
-// when the header word shrinks the data remains where it was, with a zero
-// padding word ahead of it.
-//
-                                *(uint32_t *)(p+4) = 0;
-// Size of floats is the same in each case.
-                                *(LispObject *)p = flip_32(h);  // write back header
-                                break;
-                            default:
-//
-// These all shrink by one word because their header word has become
-// 4 bytes rather than 8 bytes wide. This certainly means that there is
-// a 32-bit word beyond the stuff that I copy that I can and should fill
-// with zero. Sometimes this will end up counting as part of the new
-// 32-bit representation, sometimes it will be part of a gap left over.
-// If I were very keen I could put in a zero as required when it is the
-// word used to round up a vector size of an even number of words, and
-// make_padder(8) when it represents a gap between real items.
-//
-                                for (i=4; i<len-4; i+=4)
-                                    *(uint32_t *)(p+i) =
-                                        *(uint32_t *)(p+i+4);
-                                *(uint32_t *)(p+len-4) = 0;
-//
-// Here I write the header word back into memory shortening things by
-// 4 bytes because the header has changed from a 64 to a 32-bit value.
-// But I then expect to find the next item the distance on that the
-// 64-bit header indicated. Note that all the binary data here stays the
-// same length itself, and that even for bitvectors, strings etc I can
-// shrink by 4 bytes by the same change to the header word.
-//
-#ifdef DEBUG_WIDTH
-                                printf("h=%.8x h1=%.8x\n", (int)h, (int)h - (1<<(Tw+7)));
-#endif
-                                *(LispObject *)p = flip_32(h - (1<<(Tw+7)));  // write back header
-                        }
-#ifdef DEBUG_WIDTH
-                        for (i=-16; i<=8; i+=4) printf("%.8x ", *(int32_t *)(p+len+i)); printf("\n");
-                        printf("move on after binary stuff by %d\n", len);
-                        printf("len=%d len-4=%d\n", (int)len, (int)doubleword_align_up(length_of_header(h)-4));
-#endif
-// Test if the vector has shrunk in memory - if so insert padding
-                        if (len != (size_t)doubleword_align_up(length_of_header(h)-4))
-                            *(int32_t *)(p + len - 8) = flip_32(make_padder(8));
-#ifdef DEBUG_WIDTH
-                        for (i=-16; i<=8; i+=4) printf("%.8x ", *(int32_t *)(p+len+i)); printf("\n");
-#endif
-                        p += len;
-                        break;
-                    default:
-                        printf("Unrecognized type info in vector header %.8x\n", (int32_t)h);
-                        fflush(stdout);
-                        my_exit(4);
-                }
-        }
-    }
-}
-
-//
-// In what follows low will point to the 64-bit vector to be filled in
-// and olow to the 32-bit one being copied. fr is the fringe in the
-// 64-bit world. Much of the logic here is closely related to that in
-// shrink_vecheap_page. If SIXTY_FOUR_BIT could be a compile-time
-// constant I could use #ifdef to avoid compiling one or the other
-// of these. As things are I can get most of the benefit of that if
-// I have a good optimising compiler.
-//
-
-static void expand_vecheap_page(char *low, char *olow, char *fr)
-{
-//@printf("expand vecheap page %p %p %p\n", low, olow, fr);
-    if (SIXTY_FOUR_BIT)
-    {   int64_t *newp = (int64_t *)low;  // specific widths used here
-        int32_t *oldp = (int32_t *)olow;
-        size_t i, len;
-#ifdef DEBUG_WIDTH
-        int ii;
-#endif
-        while ((char *)newp < fr)
-        {
-// Fetch header as a 32-bit value, widen to 64-bit
-            Header h = (Header)flip_32(*oldp);
-#ifdef DEBUG_WIDTH
-//
-// I use printf() not term_printf() here because at the stage I run this
-// code I can not be confident that Lisp-style streams are fully set up.
-// And the debug display here is only DEBUG display and so I do not feel
-// to bad if it is generated in a way that could conflict with use of a
-// windowed application.
-//
-            printf("oldp=%p Header = %.16llx (%d)\n", oldp, (long long)h, (int)is_symbol_header(h));
-            printf("Length = %d\n", (int)length_of_header(h));
-            for(ii=-32; ii<=32; ii+=4)
-            {   if (ii == 0) printf("\n%p: ", oldp);
-                printf("%.8x ", *(int32_t *)(((char *)oldp)+ii));
-                if (ii == 0) printf("\n");
-            }
-            printf("\n");
-            fflush(stdout);
-            if (!is_symbol_header(h) && length_of_header(h) == 0) exit(8);
-#endif
-            if (is_symbol_header(h))
-            {
-//
-// Symbol headers do not contain any explicit length info and so do not
-// need to be changed at all here.
-//
-#ifdef DEBUG_WIDTH
-                for (i=0; i<80; i+=4)
-                {   printf("%.8x ", *(int32_t *)((char *)oldp+i));
-                    if (((i/4)%8) == 7) printf("\n");
-                }
-                printf("\n");
-#endif
-                *newp = flip_64(h); // write back header
-//
-//+ I do not know if I police it anywhere, but if one tried to mix images from
-//+ Common and plain mode the result would be a crash, if only because symbols
-//+ are represented as a different length. That is because in Common Lisp mode
-//+ there has to be an extra field to hold the identity of the package that
-//+ a symbol lives in.
-// The comment above is now out of date in that I am moving to a single format
-// for symbols - however a different complication arises. That is that the
-// the symbol contains a 64-bit count field, and this does not double its
-// size when moved to a 64-bit world. So a 32-bit symbol is 56 bytes and
-// a 64-bit one 104 bytes
-                for (i=1; i<(symhdr_length/8); i++)
-                {   newp[i] = expand_to_64(oldp[i]);
-                }
-// Now the code above copied all except the final "count" field properly.
-// That is a 64-bit value on both sizes of machine.
-                newp[12] = flip_64(*(uint64_t *)(&oldp[12]));
-                newp[13] = make_padder(8);
-// The "+4" on the next line is allowing for the fact that the count field
-// is a 64-bit value even on 32-bit machines, and it keeps the addresses
-// in the scan doubleword aligned. The +8 then allows for the fact that
-// doubling the size of a 32-bit symbol header gives a larger size than
-// that of a 64-bit symbol header.
-                oldp = (int32_t *)((char *)oldp + symhdr_length/2+4);
-                newp = (int64_t *)((char *)newp + symhdr_length+8);
-            }
-            else switch (type_of_header(h))
-                {
-//
-// If I do not have a symbol then I have some sort of vector where the
-// header word contains length information. I need to discriminate here
-// between all the cases where the following data is in 64-bit fields
-// (and so needs truncating to fit in 32) as against cases where the
-// follow-on data is in 8, 16 or 32-bit chunks in a format that does not
-// depend on the word-length of the host machine. It seems fairly important
-// that I cover every possible sort of tag that could ever exist.
-//
-                    case TYPE_RATNUM:
-                    case TYPE_COMPLEX_NUM:
-                    case TYPE_HASH:
-                    case TYPE_SIMPLE_VEC:
-                    case TYPE_ARRAY:
-                    case TYPE_STRUCTURE:
-                    case TYPE_MIXED1:
-                    case TYPE_MIXED2:
-                    case TYPE_MIXED3:
-                    case TYPE_STREAM:
-//      case TYPE_LITVEC:
-//
-// "len" will be the length of the old 32-bit version, and the data in
-// memory may have a padder word after that. However the 64-bit version I
-// copy this into never needs a padder word as part of the vector itself,
-// but to preserve layout it may need one after it. Note that for all
-// these sorts of vector the length should already be a multiple of 4. I
-// remind myself of that because strings (for instance) can have odd lengths
-// recorded in the header.
-//
-                        len = length_of_header(h);
-                        *newp++ = flip_64((h & 0x3ff) + (len<<11)); // double length
-                        oldp++;
-                        for (i=4; i<len; i+=4)
-                        {   *newp++ = expand_to_64(*oldp);
-                            oldp++;
-                        }
-//
-// Now if the 32-bit vector has a length that corresponded to an even
-// number of cells of data (so with the header that makes an odd number
-// in all) I need to skip over the padder word in the 32-bit space and
-// write in something safe in the 64-bit one.
-//
-                        if ((len & 4) != 0)
-                        {   *newp++ = flip_64(make_padder(8));
-                            oldp++;
-                        }
-                        break;
-                    case TYPE_DOUBLE_FLOAT:
-                    case TYPE_LONG_FLOAT:
-                    case TYPE_VECFLOAT64:
-//
-// In these cases the representation on the 32-bit machine was
-//    || header | 0 || data | data || ...
-// and on the 64-bit one the length of the structure remains unchanged and
-// the header (on widening to 64-bits) merely usesup the space that the
-// zero padder word filled.
-//
-//@printf("expand in FP case\n");
-                        len = word_align_up(length_of_header(h));
-//@for (i=-8; i<20; i+=4) printf("%.8x ", *(int32_t *)(i + (char *)oldp));
-//@printf("\n");
-                        *newp++ = flip_64(h);
-                        oldp++;
-                        oldp++;
-// Now newp, oldp point at the raw data. Copy it down
-                        for (i=8; i<len; i+=4)
-                        {   *((int32_t *)newp) = *oldp;
-                            newp = (int64_t *)(((char *)newp)+4);
-                            oldp++;
-                        }
-//@for (i=-8; i<20; i+=4) printf("%.8x ", *(int32_t *)(i + (char *)oldp));
-//@printf("\n");
-#ifdef DEBUG_WIDTH
-                        for (i=-20; i<=8; i+=4)
-                            printf("%.8x ",
-                                   *(int32_t *)(((char *)newp)+i)); printf("\n");
-#endif
-//@printf("*oldp = %.8x %.8x %.8x\n", oldp[-1], oldp[0], oldp[1]);
-//
-// Offsets within the expanded heap all have to be twice what they
-// where in the original 32-bit version. That means I need to insert
-// some padding here.
-//
-                        *newp = flip_64(make_padder(len));
-                        newp = (int64_t *)((char *)newp + len);
-                        break;
-                    case TYPE_STRING_1:
-                    case TYPE_STRING_2:
-                    case TYPE_STRING_3:
-                    case TYPE_STRING_4:
-#ifdef DEBUG_WIDTH
-                        printf("String: %p: \"%s\"\n", oldp, ((char *)oldp)+4);
-#endif
-                    case TYPE_BIGNUM:
-                    case TYPE_VEC32:
-                    case TYPE_VEC16_1:
-                    case TYPE_VEC16_2:
-                    case TYPE_VEC8_1:
-                    case TYPE_VEC8_2:
-                    case TYPE_VEC8_3:
-                    case TYPE_VEC8_4:
-                    case TYPE_BPS_1:
-                    case TYPE_BPS_2:
-                    case TYPE_BPS_3:
-                    case TYPE_BPS_4:
-                    case TYPE_MAPLEREF:
-                    case TYPE_FOREIGN:
-                    case TYPE_ENCAPSULATE:
-                    case TYPE_SP:
-                    case TYPE_BITVEC_1:
-                    case TYPE_BITVEC_2:
-                    case TYPE_BITVEC_3:
-                    case TYPE_BITVEC_4:
-                    case TYPE_BITVEC_5:
-                    case TYPE_BITVEC_6:
-                    case TYPE_BITVEC_7:
-                    case TYPE_BITVEC_8:
-                    case TYPE_BITVEC_9:
-                    case TYPE_BITVEC_10:
-                    case TYPE_BITVEC_11:
-                    case TYPE_BITVEC_12:
-                    case TYPE_BITVEC_13:
-                    case TYPE_BITVEC_14:
-                    case TYPE_BITVEC_15:
-                    case TYPE_BITVEC_16:
-                    case TYPE_BITVEC_17:
-                    case TYPE_BITVEC_18:
-                    case TYPE_BITVEC_19:
-                    case TYPE_BITVEC_20:
-                    case TYPE_BITVEC_21:
-                    case TYPE_BITVEC_22:
-                    case TYPE_BITVEC_23:
-                    case TYPE_BITVEC_24:
-                    case TYPE_BITVEC_25:
-                    case TYPE_BITVEC_26:
-                    case TYPE_BITVEC_27:
-                    case TYPE_BITVEC_28:
-                    case TYPE_BITVEC_29:
-                    case TYPE_BITVEC_30:
-                    case TYPE_BITVEC_31:
-                    case TYPE_BITVEC_32:
-                    case TYPE_SINGLE_FLOAT:
-//        case TYPE_DOUBLE_FLOAT:
-//        case TYPE_LONG_FLOAT:
-                    case TYPE_VECFLOAT32:
-//
-// The effects of alignment and passing here are distinctly odd. A 32-bit
-// item can be in one of two forms
-//      || header | d0 || d1 | -  ||         length 4 mod 8
-// or   || header | d0 || d1 | d2 ||         length 8 mod 8
-// where the double vertical bars denote doubleword boundaries and the "-"
-// is padder data.
-//
-// In the 64-bit world these two cases map onto
-//      || h e a d e r || d0 | d1 ||
-// and  || h e a d e r || d0 | d1 || d2 | - ||
-// in each case a dummy item must be places after to fill up space to where
-// the next new item will fall. Well actually there is a special case
-//      || header | d0 ||
-// ->   || h e a d e r || d0 | - ||
-// does not need that filler.
-// An item in the 32-bit world may sometimes only partly fill its final
-// 32-bit word. In this part of the code I can copy data as raw 32-bit
-// values - any byte-order adjustments get done later.
-//
-                        len = word_align_up(length_of_header(h));
-//
-// The vector increases in size of 4 bytes because the header-word is
-// twice as wide.
-//
-                        *newp++ = flip_64(h + (1<<(Tw+7)));
-                        oldp++;
-// Now newp, oldp point at the raw data. Copy it down
-                        for (i=4; i<len; i+=4)
-                        {   *((int32_t *)newp) = *oldp;
-                            newp = (int64_t *)(((char *)newp)+4);
-                            oldp++;
-                        }
-//
-// Sometimes I need to pad out the new version to be a whole number of
-// doublewords.
-//
-                        if ((len & 4) == 0)
-                        {   *((int32_t *)newp) = 0;
-                            newp = (int64_t *)(((char *)newp)+4);
-                        }
-                        else oldp++;
-//
-// Now I have oldp and newp both doubleword aligned again. In many
-// cases I now need to insert a dummy header at newp so that items in the
-// new space all end up at twice the address they had in the old.
-//
-                        len = 2*doubleword_align_up(len) -
-                              doubleword_align_up(len+4);
-// len is now the amount of gap to fill
-                        if (len != 0)
-                        {   *newp = flip_64(make_padder(len));
-                            newp = (int64_t *)(((char *)newp) + len);
-                        }
-#ifdef DEBUG_WIDTH
-                        for (i=-16; i<=8; i+=4) printf("%.8x ", *(int32_t *)(newp+len+i)); printf("\n");
-#endif
-                        break;
-                    default:
-                        printf("Unrecognized type info in vector header %.8x\n", (int32_t)h);
-//@for (i=-8; i<20; i+=4) printf("%.8x ", *(int32_t *)(i + (char *)oldp));
-//@printf("\n");
-//@printf("%p %p %p\n", oldp, newp, fr);
-                        fflush(stdout);
-                        my_exit(4);
-                }
-        }
-    }
-}
-
-
-static void adjust_vecheap(void)
-{   int32_t page_number;
-    intptr_t iw;
-    for (page_number = 0; page_number < vheap_pages_count; page_number++)
-    {   void *page = vheap_pages[page_number];
-        char *low = (char *)doubleword_align_up((intptr_t)page);
-        size_t len = flip_32((uint32_t)car32(low));
-        char *fr;
-        size_t i;
-#ifdef DEBUG_WIDTH
-        printf("len = %d = %x (%d:%.8x)\n", len, len, car32(low), car32(low));
-        for (i=0; i<4*32; i+=4)
-        {   printf("%.8x ", *(int32_t *)(low+i));
-            if ((i/4)%8 == 7) printf("\n");
-        }
-        fflush(stdout);
-#endif
-        if (SIXTY_FOUR_BIT && converting_to_64) len *= 2;
-        car32(low) = len;
-        fr = low + len;
-        vfringe = (LispObject)fr;
-        if (SIXTY_FOUR_BIT && converting_to_64)
-            vheaplimit = (LispObject)(low + 2*(CSL_PAGE_SIZE - 8));
-        else vheaplimit = (LispObject)(low + (CSL_PAGE_SIZE - 8));
-        if (SIXTY_FOUR_BIT && converting_to_64)
-        {   *(Header *)(low+8) = make_padder(8);
-//
-// I want all expanded vectors to fall at an address exactly twice
-// as far from the page base as they started. Hence the first one must start
-// at offset 16 not 8. I put a padder in at 8 to fill the gap.
-//
-            low += 16;
-        }
-        else low += 8;
-        if (converting_to_64)
-        {
-//
-// vecheap allocation is from the low end of the heap upwards, and
-// because I have to parse the heap to perform the correct expansion
-// I must start from the bottom. To cope with that I have loaded
-// my 32-bit heap CSL_PAGE_SIZE bytes up into the double sized page.
-// Now when I copy stuff downwards the last item comes from
-// low+CSL_PAGE_SIZE+len and it gets written back to low+2*len. So since
-// len is at worst CSL_PAGE_SIZE-8 I will not trip over myself - just.
-//
-            expand_vecheap_page(low, low+CSL_PAGE_SIZE-8, fr);
-        }
-        else if (converting_to_32) shrink_vecheap_page_to_32(low, fr);
-//
-// Now the data is at least arranged to be the correct width.
-//
-        while (low < fr)
-        {   Header h = flip_bytes(*(Header *)low);
-            *(Header *)low = h;
-            if (is_symbol_header(h))
-            {   LispObject ss = (LispObject)(low + TAG_SYMBOL);
-                adjust(&qvalue(ss));
-                adjust(&qenv(ss));
-                adjust(&qpname(ss));
-                adjust(&qplist(ss));
-                adjust(&qfastgets(ss));
-                adjust(&qpackage(ss));
-//
-// The mess here is because when CSL is re-loaded the position of all
-// C-coded entrypoints will very probably have changed since the
-// previous run - the set of entrypoints tested for here has to be
-// a complete list, except for ones established via "restart.c".  Note
-// that setup establishes entrypoints later on, so I can afford to leave
-// junk in the function cells of things that will be initialised then.
-// Thus if a "real" function pointer left over from last time happens
-// to look like one of the small integers used here to stand for special
-// built-in cases the false-hit I get here is not important.
-//
-                iw = flip_bytes(ifn1(ss));
-                if (0 < iw && iw < entry_table_size1)
-                    ifn1(ss) = (intptr_t)entries_table1[iw].p;
-                else ifn1(ss) = (intptr_t)undefined1;
-                iw = flip_bytes(ifn2(ss));
-                if (0 < iw && iw < entry_table_size2)
-                    ifn2(ss) = (intptr_t)entries_table2[iw].p;
-                else ifn2(ss) = (intptr_t)undefined2;
-                iw = flip_bytes(ifnn(ss));
-                if (0 < iw && iw < entry_table_sizen)
-                    ifnn(ss) = (intptr_t)entries_tablen[iw].p;
-                else ifnn(ss) = (intptr_t)undefinedn;
-                qcount(ss) = flip_64bits(qcount(ss));
-                low += symhdr_length;
-                continue;
-            }
-            else switch (type_of_header(h))
-                {   case TYPE_RATNUM:
-                    case TYPE_COMPLEX_NUM:
-                        adjust((LispObject *)(low+CELL));
-                        adjust((LispObject *)(low+2*CELL));
-                        break;
-                    case TYPE_HASH:
-                    case TYPE_SIMPLE_VEC:
-                    case TYPE_ARRAY:
-                    case TYPE_STRUCTURE:
-                        for (i=CELL; i<doubleword_align_up(length_of_header(h)); i+=CELL)
-                            adjust((LispObject *)(low+i));
-                        break;
-                    case TYPE_MIXED1:
-                    case TYPE_MIXED2:
-                    case TYPE_MIXED3:
-                    case TYPE_STREAM:
-                        for (i=CELL; i<4*CELL; i+=CELL) adjust((LispObject *)(low+i));
-                        if (!SIXTY_FOUR_BIT)
-                        {   for (; i<doubleword_align_up(length_of_header(h)); i+=4)
-                                *(uint32_t *)(low+i) =
-                                    flip_bytes(*(uint32_t *)(low+i));
-                        }
-                        if (type_of_header(h) == TYPE_STREAM)
-                        {   LispObject ss = (LispObject)(low + TAG_VECTOR);
-                            iw = elt(ss, 4);
-                            if (0 < iw && iw < entry_table_sizeio)
-                                elt(ss, 4) = (intptr_t)entries_tableio[iw].p;
-                            else elt(ss, 4) = (intptr_t)char_to_illegal;
-                            iw = elt(ss, 5);
-                            if (0 < iw && iw < entry_table_sizeio)
-                                elt(ss, 5) = (intptr_t)entries_tableio[iw].p;
-                            else elt(ss, 5) = (intptr_t)write_action_illegal;
-                            iw = elt(ss, 8);
-                            if (0 < iw && iw < entry_table_sizeio)
-                                elt(ss, 8) = (intptr_t)entries_tableio[iw].p;
-                            else elt(ss, 8) = (intptr_t)char_from_illegal;
-                            iw = elt(ss, 9);
-                            if (0 < iw && iw < entry_table_sizeio)
-                                elt(ss, 9) = (intptr_t)entries_tableio[iw].p;
-                            else elt(ss, 9) = (intptr_t)read_action_illegal;
-                        }
-                        break;
-                    case TYPE_BIGNUM:
-                    case TYPE_VEC32:
-                        for (i=CELL; i<doubleword_align_up(length_of_header(h)); i+=4)
-                            *(uint32_t *)(low+i) =
-                                flip_32(*(uint32_t *)(low+i));
-                        break;
-                    case TYPE_VEC16_1:
-                    case TYPE_VEC16_2:
-                        for (i=CELL; i<doubleword_align_up(length_of_header(h)); i+=4)
-                            *(uint32_t *)(low+i) =
-                                flip_halfwords(*(uint32_t *)(low+i));
-                        break;
-                    case TYPE_DOUBLE_FLOAT:
-//
-// note that this conversion is triggered by the vector header, not by
-// the pointer to the object, so punning associated with the pnames of
-// un-printed gensyms will not cause any confusion.
-//
-                        convert_fp_rep((void *)(low + 8),
-                                       old_fp_rep, current_fp_rep, 2);
-                        break;
-                    case TYPE_SINGLE_FLOAT:
-                        convert_fp_rep((void *)(low + CELL),
-                                       old_fp_rep, current_fp_rep, 1);
-                        break;
-                    case TYPE_LONG_FLOAT:
-// Beware - if long floats move up to 3-word values the +8 here will change
-                        convert_fp_rep((void *)(low + 8),
-                                       old_fp_rep, current_fp_rep, 3);
-                        break;
-                    case TYPE_VECFLOAT32:
-                        for (i=CELL; i<doubleword_align_up(length_of_header(h)); i+=4)
-                            convert_fp_rep((void *)(low+i),
-                                           old_fp_rep, current_fp_rep, 1);
-                        break;
-                    case TYPE_VECFLOAT64:
-                        for (i=8; i<doubleword_align_up(length_of_header(h)); i+=8)
-                            convert_fp_rep((void *)(low+i),
-                                           old_fp_rep, current_fp_rep, 2);
-                        break;
-                    default:
-                        break;
-                }
-            low += doubleword_align_up(length_of_header(h));
-        }
-    }
-}
-
-void adjust_all(void)
-{   int32_t i;
-    LispObject nil = C_nil;
-    qheader(nil)  = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_SPECIAL_VAR;
-#ifdef COMMON
-    qheader(nil) |= SYM_EXTERN_IN_HOME;
-#endif
-    qvalue(nil)   = nil;
-    qenv(nil)     = nil;
-    ifn1(nil)     = (intptr_t)undefined1;
-    ifn2(nil)     = (intptr_t)undefined2;
-    ifnn(nil)     = (intptr_t)undefinedn;
-    adjust(&(qpname(nil)));     // not a gensym
-    adjust(&(qplist(nil)));
-    adjust(&(qfastgets(nil)));
-    adjust(&(qpackage(nil)));
-
-    copy_into_nilseg(false);
-    for (i = first_nil_offset; i<last_nil_offset; i++)
-        adjust(&BASE[i]);
-    copy_out_of_nilseg(false);
-
-    adjust_consheap();
-    adjust_vecheap();
-}
-
-#endif // EXPERIMENT
 
 void *allocate_page(const char *why)
 {   if (pages_count == 0) fatal_error(err_no_store);
@@ -2554,16 +1081,6 @@ static void *my_malloc_2(size_t n)
     return (void *)r;
 }
 
-static LispObject Lreclaim_method(LispObject nil, LispObject a)
-{   if (a == nil)
-        return onevalue(gc_method_is_copying ? lisp_true : nil);
-    if (!is_fixnum(a)) return aerror1("reclaim-method", a);
-    force_reclaim_method = int_of_fixnum(a);
-    if (force_reclaim_method < 0) gc_method_is_copying = 0;
-    else if (force_reclaim_method > 0) gc_method_is_copying = 1;
-    return onevalue(a);
-}
-
 static LispObject Lreclaim_trap(LispObject nil, LispObject a)
 {   int32_t previous = reclaim_trap_count;
     if (!is_fixnum(a)) return aerror1("reclaim-trap", a);
@@ -2599,9 +1116,6 @@ static void init_heap_segments(double store_size)
     new_heap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
     new_vheap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
     new_native_pages = (void **)my_malloc_2(MAX_NATIVE_PAGES*sizeof(void *));
-#ifndef EXPERIMENT
-    pair_c = (unsigned char *)my_malloc_2(CODESIZE);
-#endif
 //
 // Sets up codebuffer for jit functions
 //
@@ -2641,15 +1155,6 @@ static void init_heap_segments(double store_size)
 #endif
     jit_space_p = jit_space;
 #endif
-
-#ifndef EXPERIMENT
-//
-// The next line is utterly unsatisfactory at present
-//
-    char_stack = (unsigned char *)my_malloc_2(CSL_PAGE_SIZE+16 /*CODESIZE*/);
-    pair_prev = (unsigned short int *)
-                my_malloc_2(CODESIZE*sizeof(unsigned short int));
-#endif
     if (pages == NULL ||
 #ifdef CONSERVATIVE
         page_map == NULL ||
@@ -2659,39 +1164,12 @@ static void init_heap_segments(double store_size)
         new_native_pages == NULL ||
         heap_pages == NULL ||
         vheap_pages == NULL ||
-#ifndef EXPERIMENT
-        pair_c == NULL ||
-        char_stack == NULL ||
-        pair_prev == NULL ||
-#endif
         native_pages == NULL)
     {   fatal_error(err_no_store);
     }
 
-    {
-//
-// Using an int32_t here was about to get embarassing as I move to 64-bit
-// machines and the amount of memory I ought to use grows to be over
-// 2 or over 4 Gbytes... so I use an intrpr_t.
-// This just sets up a DEFAULT allocation, which is 128 Mbytes on
-// 64-bit machines and 32 Mbytes on 32-bit ones. Later on I override this
-// in one of two ways. On a TINY machine with a smaller page size I
-// give myself just 16 Mbytes, and then if the user indicated a desire
-// for a particular initial heap-size using the "-Knnn" command line option
-// I will use that.
-//
-        intptr_t free_space = SIXTY_FOUR_BIT ? 128000000 : 32000000;
+    {   intptr_t free_space = SIXTY_FOUR_BIT ? 128000000 : 32000000;
         intptr_t request;
-//
-// There are two special cases where I will override the default, both
-// of which relate to "trick" builds for small machines. The two cases I
-// have most recently used these were
-// (a) Building for an HP Ipaq 4700 PDA
-// (b) Building to run on a Linksys router (!)
-//
-#if defined UNDER_CE || PAGE_BITS < 20
-        free_space = 16000000;
-#endif
         request = (intptr_t)store_size;
 // By doing this in intptr_t I should avoid overflow
         if (request != 0) free_space = 1024*request;
@@ -2956,15 +1434,21 @@ setup_type const restart_setup[] =
 // to be worth giving separate entry-tables.
 //
 {
+    {"~load-spid",              wrong_no_na, wrong_no_nb, Lload_spid},
+    {"~is-spid",                Lis_spid, too_many_1, wrong_no_1},
+    {"~spid-to-nil",            Lspid_to_nil, too_many_1, wrong_no_1},
+    {"~mv-list",                Lmv_list, too_many_1, wrong_no_1},
     {"check-c-code",            wrong_no_na, wrong_no_nb, Lcheck_c_code},
     {"define-in-module",        Ldefine_in_module, too_many_1, wrong_no_1},
     {"modulep",                 Lmodule_exists, too_many_1, wrong_no_1},
     {"start-module",            Lstart_module, too_many_1, wrong_no_1},
-    {"write-module",            Lwrite_module, too_many_1, wrong_no_1},
+    {"write-module",            too_few_2, Lwrite_module, wrong_no_2},
     {"copy-module",             Lcopy_module, too_many_1, wrong_no_1},
     {"copy-native",             too_few_2, Lcopy_native, wrong_no_2},
     {"delete-module",           Ldelete_module, too_many_1, wrong_no_1},
     {"load-module",             Lload_module, too_many_1, wrong_no_1},
+    {"load-source",             Lload_source, too_many_1, Lload_source0},
+    {"load-selected-source",    Lload_selected_source, too_many_1, Lload_selected_source0},
     {"list-modules",            wrong_no_na, wrong_no_nb, Llist_modules},
     {"writable-libraryp",       Lwritable_libraryp, too_many_1, wrong_no_1},
     {"library-members",         Llibrary_members, too_many_1, Llibrary_members0},
@@ -2986,7 +1470,6 @@ setup_type const restart_setup[] =
 #endif
     {"reclaim-trap",            Lreclaim_trap, too_many_1, wrong_no_1},
     {"reclaim-stack-limit",     Lreclaim_stack_limit, too_many_1, wrong_no_1},
-    {"reclaim-method",          Lreclaim_method, too_many_1, wrong_no_1},
     {"resource-limit",          too_few_2, Lresource_limit2, Lresource_limitn},
     {"errorset",                Lerrorset1, Lerrorset2, Lerrorsetn},
     {NULL,                      0, 0, 0}
@@ -3114,602 +1597,6 @@ static void record_dynamic_module(char *name, setup_type_1 *entries)
         hash = (hash + 1) % loaded_dynamic_size;
     }
 }
-
-#ifndef EXPERIMENT
-
-void warm_setup()
-{
-//
-// Here I need to read in the bulk of the checkpoint file.
-//
-    LispObject nil = C_nil;
-    int32_t i;
-//
-// NOTE that I have made these variable of type int32_t so that
-// their size is the same (ie 4) whether I am on a 32 or 64-bit machine
-//
-    Cfread((char *)&heap_pages_count, sizeof(heap_pages_count));
-    Cfread((char *)&vheap_pages_count, sizeof(vheap_pages_count));
-
-    heap_pages_count = flip_32(heap_pages_count);
-    vheap_pages_count = flip_32(vheap_pages_count);
-
-//
-// Here I want to arrange to have at least one free page after re-loading
-// an image.  If malloc can give me enough I grab it here. Note that I do
-// not yet know how many pages will be needed for hard code, which is a
-// bit of a nuisance!
-// And if I am loading a 32-bit image on a 64-bit machine I will arrange that
-// all the pages that I reload stuff into here are (temporarily) double
-// the usual size. Because the 32-bit image was created on a 32-bit system (!)
-// it can have a total heap of at most 2Gb, ie 512 pages (for so long as my
-// page size is 4Mb, ie PAGE_BITS=22). So I could have a bitmap that
-// indicated which of the first up to 512 pages was oversized if I was
-// worried. Right now I will just allocate the memory large and on a 64-bit
-// machine not worry about the waste if later on I do not use half of it!
-//
-// When I look at a Reduce image I find that the (compressed) main heap image
-// is around 0.5Mb for a normal Reduce and just over 1Mb for the bulkier
-// bootstrap version. That is just the heap image part of the full image file.
-// A consequence of this is that if my pages are 4Mb each even after
-// decompression I will use just one page each of cons and vector heap
-// here. However potentially somebody could use "preserve" to capture the
-// state in the middle of a huge calculation, in which case life would
-// end up messier... with LOTS of oversized pages.
-//
-    i = heap_pages_count+vheap_pages_count+1 - pages_count;
-#ifdef MEMORY_TRACE
-//
-// The MEMORY_TRACE options requires that all store be in a single
-// contiguous chunk, and hence can not cope with any piecemeal allocation
-// in the form that follows. That means it is incompatible with loading
-// 32-bit images on a 64-bit machine! So if I find anybody trying I
-// abort. OK so the message merely says "not enough memory" but that is better
-// than trying to continue and then crashing messily!
-//
-    if (i > 0 || converting_to_64) fatal_error(err_no_store);
-#else
-//
-// If I am converting to 64-bits I need all my memory here to be
-// contiguous. So rather than check I have enough here I will do
-// that later,,,
-//
-    if (i>0 && converting_to_64) fatal_error(err_no_store);
-    while (i-- > 0)
-    {   void *page = my_malloc_1((size_t)(CSL_PAGE_SIZE + 16));
-        if (page == NULL)
-        {   fatal_error(err_no_store);
-        }
-        else pages[pages_count++] = page;
-    }
-//
-// Now I have at least just enough pages to load op the heap image. Well I
-// really hope I have a fair amount in hand or else garbage collection will
-// be a pain! But at least we can get started. Depending on how full memory
-// looks I will select the type for the first garbage collection. See
-// comments in gc.c for further thoughts about this.
-//
-    gc_method_is_copying = (pages_count >
-                            3*(heap_pages_count +
-                               (3*(vheap_pages_count +
-                                   native_pages_count))/2));
-#endif
-    {   char dummy[16];
-        Cfread(dummy, 8);
-        if (memcmp(dummy, "\nVecseg:", 8) != 0)
-        {   fprintf(stderr, "Corrupted image file (Vecsec:) \n");
-            fprintf(stderr, "Found <%.8s>\n", dummy);
-            abort();
-        }
-    }
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-    memory_comment(6);  // vector heap
-#endif
-#endif
-    for (i=0; i<vheap_pages_count; i++)
-    {   intptr_t p;
-// When I want to make the page double size I do TWO allocations here.
-        if (converting_to_64) allocate_page("vheap 64-bit padder");
-        vheap_pages[i] = allocate_page("vheap reload");
-        p = doubleword_align_up((intptr_t)vheap_pages[i]);
-//
-// Vheap pages that need expanding to 64-bits will most easily by copied
-// in an order that goes best if I put the initial raw 32-bit data in the
-// top half of the double-sized page.
-//
-        if (converting_to_64)
-        {   Cfread(CSL_PAGE_SIZE+(char *)p, CSL_PAGE_SIZE);
-// For convenience later I copy the length field down to the bottom now
-            car32(p) = car32(CSL_PAGE_SIZE+(char *)p);
-        }
-        else Cfread((char *)p, CSL_PAGE_SIZE);
-    }
-
-    {   char dummy[16];
-        Cfread(dummy, 8);
-        if (memcmp(dummy, "\nConsseg", 8) != 0)
-        {   fprintf(stderr, "Corrupted image file (Consseg)\n");
-            fprintf(stderr, "Found <%.8s>\n", dummy);
-            abort();
-        }
-    }
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-    memory_comment(5);  // cons heap
-#endif
-#endif
-    for (i=0; i<heap_pages_count; i++)
-    {   intptr_t p;
-// When I want to make the page double size I do TWO allocations here.
-        if (converting_to_64) allocate_page("heap 64-bit padder");
-        heap_pages[i] = allocate_page("heap reload");
-        p = quadword_align_up((intptr_t)heap_pages[i]);
-        Cfread((char *)p, CSL_PAGE_SIZE);
-    }
-
-    {   char endmsg[32];
-        Cfread(endmsg, 24);  // the termination record
-//
-// Although I check here I will not make the system crash if I see an
-// error - at least until I have tested things and found this test
-// properly reliable.
-//
-#ifdef COMMON
-        if (strncmp(endmsg, "\n\nEnd of CCL dump file\n\n", 24) != 0)
-#else
-        if (strncmp(endmsg, "\n\nEnd of CSL dump file\n\n", 24) != 0)
-#endif
-        {   term_printf("\n+++ Bad end record |%s|\n", endmsg);
-        }
-    }
-//
-// There is a delicacy here - Cfread uses Iread to read chunks of
-// data from the real input file, but it never goes beyond the recorded
-// end of file mark.  This buffering ensures that at this stage any
-// pending part-word of data will have been read - this because the
-// read buffer used is a multiple of 4 bytes long.  This point matters
-// with regard to checksum validation on these files. For an image in a native
-// directory I must have set up the initial read_bytes_remaining allowing for
-// the final checksum...
-//
-    {   LispObject w = error_output;
-        error_output = 0;
-        if (IcloseInput(true))
-        {
-//
-// I write a moan to stderr, even though in some cases this will not be
-// visible, because the general-purpose Lisp print streams have not yet been
-// fully set up. So on some windowed platforms this message, if it appears
-// at all, may show up in an unusual way. Sorry!
-//
-#ifndef EXPERIMENT
-// In the new world with a new serialization-based form for image files
-// the checksums are no longer maintained in the way they used to be.
-            fprintf(stderr, "\n+++ Initial Image file checksum failure\n");
-#endif
-        }
-        error_output = w;
-    }
-
-#ifndef MEMORY_TRACE
-    if (converting_to_64)
-    {
-//
-// Now if the heap image was a 32-bit one but I am now on a 64-bit machine
-// I will allocate more pages (if necessary) to ensure that a copying
-// garbage collection will be possible.
-//
-        i = 2*heap_pages_count+3*vheap_pages_count - pages_count;
-        while (i-- > 0)
-        {   void *page = my_malloc_1((size_t)(CSL_PAGE_SIZE + 16));
-            if (page == NULL)
-            {   fatal_error(err_no_store);
-            }
-            else pages[pages_count++] = page;
-        }
-        gc_method_is_copying = 1;
-    }
-#endif // MEMORY_TRACE
-
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-    memory_comment(9);  // adjusting
-#endif
-#endif
-    inject_randomness((int)clock());
-    adjust_all();
-
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-    memory_comment(12);  // remainder of setup
-#endif
-#endif
-//
-// An explanation is needed here. Hash tables can be really odd things in
-// that if they are keyed on the EQ test they are based on memory addresses
-// that objects lie at. So the garbage collector has to do magic things with
-// them! I therefore keep a list of all hash tables, but it must not be
-// processed in a naive way. I keep it in a variable that is NOT in the range
-// of places where the garbage collector normally looks. But when it comes
-// to preserve and restart I need to save the information, so I have the two
-// lists I need saved in the nilseg under the aliass eq_hash_table_list and
-// equal_hash_table_list. As soon as I can I extract them and put them
-// back in the magic special places they need to live.
-//
-    eq_hash_tables = eq_hash_table_list;
-    equal_hash_tables = equal_hash_table_list;
-    eq_hash_table_list = equal_hash_table_list = nil;
-    {   LispObject qq;
-        for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
-        {   if (!is_vector(qcar(qq)))
-            {   printf("qq=%p should be a vector\n", (void *)qcar(qq));
-                exit(4);
-            }
-            rehash_this_table(qcar(qq));
-        }
-        for (qq = equal_hash_tables; qq!=nil; qq=qcdr(qq))
-        {   if (!is_vector(qcar(qq)))
-            {   printf("qq=%p should be a vector\n", (void *)qcar(qq));
-                exit(4);
-            }
-            rehash_this_table(qcar(qq));
-        }
-    }
-
-//
-// The following few lines allude to a historical oddity from before the time
-// when 32 bit and 64-bit images could be used interchangably. The fields
-// stored used to be explicitly 32-bit ones even on a 64-bit machine. Now they
-// are 64-bit values in that case. When they were 32-bit values on a 64-bit
-// machine they lived in the low memory address of that (double)word. Now
-// where they live depends on the byte order of the machine that wrote them!
-// this all really messes up conversion between different word lengths and
-// different byte orderings. Part of the hack to unwind that is that if I am
-// NOW on a 64-bit machine I may end up after flipping with data in the
-// top not the low part of the 64-bit words, so I patch that.
-//
-    gensym_ser = flip_bytes(gensym_ser);
-    print_precision = flip_bytes(print_precision);
-    miscflags = flip_bytes(miscflags);
-    current_modulus = flip_bytes(current_modulus);
-    fastget_size = flip_bytes(fastget_size);
-    package_bits = flip_bytes(package_bits);
-    modulus_is_large = flip_bytes(modulus_is_large);
-//
-// The adjustments used here can arise when I have read a 32-bit image in
-// on a 64-bit machine, but may possibly arise if I load an ancient 64-bit
-// image on a computer with the opposite byte order. I think one might say
-// that this sort of trouble relates to my breaching various rules related
-// to strict aliasing! Observe that I expect and indeed demand that the
-// quantities stored here are really just 31-bits - that is to reduce pain
-// associated with sign extension into the high 32-bits of a 64-bit value.
-// So you see it seems best to do this even if I am not converting from
-// 32 to 64 bits.
-//
-    if (SIXTY_FOUR_BIT)
-    {   if ((int32_t)gensym_ser==0)
-            gensym_ser =
-                (LispObject)(((int64_t)gensym_ser)>>32) & 0x7fffffff;
-        if ((int32_t)print_precision==0)
-            print_precision =
-                (LispObject)(((int64_t)print_precision)>>32) & 0x7fffffff;
-        if ((int32_t)miscflags==0)
-            miscflags =
-                (LispObject)(((int64_t)miscflags)>>32) & 0x7fffffff;
-        if ((int32_t)current_modulus==0)
-            current_modulus =
-                (LispObject)(((int64_t)current_modulus)>>32) & 0x7fffffff;
-        if ((int32_t)fastget_size==0)
-            fastget_size =
-                (LispObject)(((int64_t)fastget_size)>>32) & 0x7fffffff;
-        if ((int32_t)package_bits==0)
-            package_bits =
-                (LispObject)(((int64_t)package_bits)>>32) & 0x7fffffff;
-        if ((int32_t)modulus_is_large==0)
-            modulus_is_large =
-                (LispObject)(((int64_t)modulus_is_large)>>32) & 0x7fffffff;
-    }
-
-    set_up_functions(1);
-    set_up_variables(1);
-//
-// Now I have closed the main heap image, but if there is any hard machine
-// code available for this architecture I should load it. When I do this
-// the main heap has been loaded and relocated and all the entrypoints
-// in it that relate to kernel code have been inserted.
-//
-    if (native_code_tag != 0) // Not worth trying if none available
-    {   if (!IopenRoot(NULL, -native_code_tag, 0))
-        {   int32_t nn = Igetc() & 0xff;
-            nn = nn + ((Igetc() & 0xff) << 8);
-            native_pages_count = nn;
-            for (i=0; i<native_pages_count; i++)
-            {   intptr_t p;
-//
-// Because I did not know earlier how many pages would be needed here I
-// may not have overall enough. So I expand my heap (if possible)
-// when things start to look tight here.
-//
-                if (pages_count <= 1)
-                {   void *page = my_malloc_1((size_t)(CSL_PAGE_SIZE + 16));
-                    if (page == NULL)
-                    {   fatal_error(err_no_store);
-                    }
-                    else pages[pages_count++] = page;
-                }
-                native_pages[i] = allocate_page("native code");
-                p = (intptr_t)native_pages[i];
-                p = doubleword_align_up(p);
-                fread_count = 0;
-                Cfread((char *)p, CSL_PAGE_SIZE);
-                native_fringe = car32(p);
-                relocate_native_code((unsigned char *)p, native_fringe);
-            }
-            IcloseInput(true);
-        }
-    }
-//
-// With a warm start I must instate the definitions of all functions
-// that may have been compiled into hard code on this platform. Functions that
-// may be hard-coded on SOME platform may also be in a mess and will have
-// a byte-coded definition put back in place at this point. Observe that this
-// happens AFTER the system has otherwise been loaded and relocated.
-//
-    {   LispObject f_list = native_code, byte_code_def;
-        do_not_kill_native_code = 1;
-        while (f_list != nil)
-        {   LispObject w, fn, defs;
-            int32_t nargs;
-            int instated_something = 0;
-            byte_code_def = nil;
-            w = qcar(f_list);
-            f_list = qcdr(f_list);
-            fn = qcar(w); w = qcdr(w);
-            nargs = int_of_fixnum(qcar(w));
-            defs = qcdr(w);
-            while (defs != nil)
-            {   int32_t n, tag, type, off;
-                intptr_t page;
-                void *e;
-                w = qcar(defs);
-                defs = qcdr(defs);
-                n = int_of_fixnum(qcar(w));
-                w = qcdr(w);
-                tag = (n >> 20) & 0xff;
-                type = (n >> 18) & 0x3;
-                page = n & 0x3ffff;
-                if (tag == 0)
-                {   byte_code_def = qcdr(w);
-                    continue;
-                }
-                if (tag != native_code_tag) continue; // Not for me today
-                instated_something = 1;
-                off = int_of_fixnum(qcar(w));
-                w = qcdr(w);
-//
-// Now fn should be a symbol, the function to be defined. w is the thing to go
-// into its environment cell. page and off define a location in the hard
-// code space and type tells me which of the 3 function cells to put that in.
-//
-// I will not (yet) mess around with the removal of C definition
-// flags and all the other delicacies. Note that this means attempts to
-// redefine built-in functions with user-provided native code varients
-// may cause all sorts of muddle! Please do not try it, but when you
-// do (!) tell me and I will attempt to work out what ought to happen.
-// Maybe it will all be OK provided that a consistent byte-code definition
-// is in place before any native code gets generated.
-//
-                page = (intptr_t)native_pages[page];
-                page = doubleword_align_up(page);
-                e = (void *)((char *)page + off);
-                switch (type)
-                {
-//
-// Warning - I just support nargs being a simple integer here, with no
-// fancy encoding for variable numbers of args or &rest args etc. I think
-// that for native code all such cases need to be dealt with via non-zero
-// type code so that the 3 individual function cells get filled in one
-// by 1.
-//
-                    case 0: switch (nargs)
-                        {   case 0: set_fns(fn, wrong_no_0a, wrong_no_0b, (n_args *)e);
-                                break;
-                            case 1: set_fns(fn, (one_args *)e, too_many_1, wrong_no_1);
-                                break;
-                            case 2: set_fns(fn, too_few_2, (two_args *)e, wrong_no_2);
-                                break;
-                            case 3: set_fns(fn, wrong_no_3a, wrong_no_3b, (n_args *)e);
-                                break;
-                            default:set_fns(fn, wrong_no_na, wrong_no_nb, (n_args *)e);
-                                break;
-                        }
-                        break;
-//
-// A non-zero type field allows me to fill in just one of the function cells.
-// Note that I ought to arrange to get ALL of them filled in somehow, either
-// by using type=0 or by using all three of type = 1,2,3.
-//
-                    case 1: ifn1(fn) = (intptr_t)e;
-                        break;
-                    case 2: ifn2(fn) = (intptr_t)e;
-                        break;
-                    case 3: ifnn(fn) = (intptr_t)e;
-                        break;
-                }
-                qenv(fn) = w;
-            }
-            if (!instated_something && byte_code_def != nil)
-            {   w = cons(fixnum_of_int(nargs), byte_code_def);
-//
-// You can look at this bit of code and moan, saying "What happens if
-// the call to CONS causes a garbage collection?". Well I have this policy
-// that garbage collection attempts during startup should be thought of
-// as fatal, and that the user should give enough memory to make it possible
-// to get at least started. I hope that I do not generate much litter here
-// and in other places within the startup code. Not thinking about GC
-// safety leaves the code neater and easier to work with.
-//
-                Lsymbol_set_definition(nil, fn, w);
-            }
-        }
-        do_not_kill_native_code = 0;
-    }
-//
-// The stuff above is about the internal native compilation that I am no
-// longer pursuing. Well I may look back at it some day, but it would
-// involve CSL itselh having compiler back-ends for all relevant architectures
-// and now I am moving to using a local C compiler to do that stuff.
-//
-    {   LispObject n = native_defs;
-        const char *p;
-        while (n != nil)
-        {   LispObject w, name, mod, fname, env, env1, checksum;
-            setup_type_1 *table, *tp;
-            uint32_t *pp;
-            size_t len;
-            name = qcar(n);
-            n = qcdr(n);
-            w = get(name, nativecoded_symbol);
-            if (consp(w))
-            {   mod = qcar(w);
-                w = qcdr(w);
-                if (consp(w))
-                {   fname = qcar(w);
-                    w = qcdr(w);
-                    if (consp(w))
-                    {   checksum = qcar(w);
-                        env = qcdr(w);
-                    }
-                    else continue;
-                }
-                else continue;
-            }
-            else continue;
-//
-// If I get here I have
-//   name     the Lisp symbol that may get a native definition
-//   mod      a string that names the module it lives in
-//   fname    the name of the function in the native code to load
-//   env      an environment to give the native definition
-//   checksum module checksum
-// name and fname may differ, for instance fname is the name that the
-// function had when it was compiled, but a copy of the definition may
-// have been copied to name...
-//
-#ifdef TRACE_NATIVE
-            trace_printf("Possible native def: ");
-            prin_to_trace(name);
-            trace_printf("\nmodule: ");
-            prin_to_trace(mod);
-            trace_printf("\nfname: ");
-            prin_to_trace(fname);
-            trace_printf("\nEnv: ");
-            prin_to_trace(env);
-            trace_printf("\nChecksum: ");
-            prin_to_trace(checksum);
-            trace_printf("\n");
-#endif
-//
-// First I will try to ensure that the module concerned gets loaded. It
-// may have been already, in which case I just need its handle.
-//
-            push4(name, fname, env, n);
-#ifdef EMBEDDED
-            continue;
-#else // EMBEDDED
-            table = find_def_table(mod, checksum);
-            pop4(n, env, fname, name);
-            if (table == NULL) continue;  // This module is not available
-#endif // EMBEDDED
-#ifdef TRACE_NATIVE
-            trace_printf("setup table at %p\n", table);
-#endif
-// Now seek for fname in there...
-            tp = table;
-            while (tp->name != NULL) tp++;
-#ifdef SOON
-            modname = "???";
-            if (strcmp(modname, (char *)tp->one) != 0)
-            {   trace_printf("Module name %s disagrees with %s\n",
-                             modname, (char *)tp->one);
-                continue;
-            }
-#else
-#ifdef DEBUG_NATIVE
-            modname = "???";
-            trace_printf("module itself says it is called %s, wants to be %s\n", (char *)tp->one, modname);
-#endif
-#endif
-            push4(name, fname, env, n);
-            p = get_string_data(fname, "restart:native_code", &len);
-            pop4(n, env, fname, name);
-            nil = C_nil;
-            if (exception_pending()) continue;
-            while (tp!=table)
-            {   tp--;
-                if (strncmp(p, tp->name, len) == 0 &&
-                    strlen(tp->name)==len)
-                {   p = NULL;
-                    break;
-                }
-            }
-            if (p != NULL) continue;
-//
-// I will ONLY install native code if I have a bytecoded version in place
-// already. Note that I will require the function now about to be
-// redefined to have a bytecoded form that agrees wrt a checksum with the
-// native code version from the dynamically loaded module.
-// WELL there is an issue about the tail-call specials. They have a
-// symbol in the env cell and no checksum for me to look at at all. I
-// think I will just trust things in those cases.
-//
-            env1 = qenv(name);
-#ifdef TRACE_NATIVE
-            prin_to_trace(env1);
-            trace_printf(" is the bytecoded version\n");
-#endif
-            if (!is_symbol(env))
-            {   if (!consp(env1) || !is_bps(qcar(env1))) continue;
-                env1 = qcdr(env1);
-                if (!is_vector(env1)) continue;
-                env1 = Lgetv(nil, env1, Lupbv(nil, env1));
-#ifdef TRACE_NATIVE
-                prin_to_trace(env1); trace_printf(" should be checksum again\n");
-#endif
-                if (!is_numbers(env1) || !is_bignum(env1)) continue;
-                pp = bignum_digits(env1);
-#ifdef TRACE_NATIVE
-                trace_printf("%u %u vs %u %u\n", pp[0], pp[1], tp->c2, tp->c1);
-#endif
-                if (pp[0] != tp->c2 || pp[1] != tp->c1) continue;
-            }
-            if (load_limit != 0x7fffffff)
-            {   if (load_count >= load_limit) continue;
-                prin_to_trace(name);
-                trace_printf(" : %d\n", load_count++);
-            }
-//
-// Gosh: now I can actually make the function available to users!
-//
-#ifdef TRACE_NATIVE
-            trace_printf("actually set up native function\n");
-#endif
-//
-// The symbol I am about to define is already on native_defs and
-// has all the property-list info that it needs, so I am in the
-// happy situation of not needing to do much here.
-//
-            ifn1(name) = (intptr_t)tp->one;
-            ifn2(name) = (intptr_t)tp->two;
-            ifnn(name) = (intptr_t)tp->n;
-            qenv(name) = env;
-        }
-    }
-    inject_randomness((int)clock());
-}
-
-#endif
 
 static char dll_cache_directory[LONGEST_LEGAL_FILENAME] = {0};
 
@@ -3848,7 +1735,6 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
     const char *sname, *checkname;
     char modname[80], xmodname[LONGEST_LEGAL_FILENAME];
     char sname1[LONGEST_LEGAL_FILENAME];
-    Ihandle save;
     FILE *dest;
     int c;
     LispObject nil = C_nil;
@@ -3941,10 +1827,8 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
             || (stbuf.st_mode & S_IRUSR) == 0
 #endif
            )
-        {   Icontext(&save);
-            if (Iopen(modname, strlen(modname), IOPEN_UNCHECKED, xmodname))
-            {   Irestore_context(save);
-                trace_printf("module not found\n");
+        {   if (Iopen(modname, strlen(modname), IOPEN_UNCHECKED, xmodname))
+            {   trace_printf("module not found\n");
                 return NULL;
             }
 
@@ -3963,14 +1847,12 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 //
             dest = fopen(objname, "wb");
             if (dest == NULL)              // failed to write to temp file
-            {   IcloseInput(0);
-                Irestore_context(save);
+            {   IcloseInput();
                 return NULL;
             }
             while ((c = Igetc()) != EOF)
                 putc(c, dest);
-            IcloseInput(0);
-            Irestore_context(save);
+            IcloseInput();
             if (fclose(dest) != 0)
             {   trace_printf("failed to write DLL to temp directory\n");
                 return NULL;
@@ -4646,7 +2528,9 @@ static void cold_setup()
     bytecoded_symbol    = make_undefined_symbol("bytecoded-definition");
     nativecoded_symbol  = make_undefined_symbol("native-code-definition");
     traceprint_symbol   = make_undefined_symbol("trace-print");
-    loadsource_symbol   = make_symbol("load-source", 0, Lload_source, too_many_1, wrong_no_1);
+    load_source_symbol  = make_symbol("load-source", 0, Lload_source, too_many_1, Lload_source0);
+    load_selected_source_symbol =
+                          make_symbol("load-selected-source", 0, Lload_selected_source, too_many_1, Lload_selected_source0);
     prinl_symbol        = make_symbol("prinl", 0, Lprin, too_many_1, wrong_no_1);
     emsg_star           = make_undefined_symbol("emsg*");
     redef_msg           = make_undefined_symbol("*redefmsg");
@@ -4665,14 +2549,11 @@ static void cold_setup()
 //  count_high          = make_undefined_symbol("count-high*");
     qheader(lower_symbol) |= SYM_SPECIAL_VAR;
     qheader(echo_symbol)  |= SYM_SPECIAL_VAR;
-    qheader(hankaku_symbol) |= SYM_SPECIAL_VAR;
     qheader(comp_symbol)  |= SYM_SPECIAL_VAR;
     qheader(emsg_star)    |= SYM_SPECIAL_VAR;
     qheader(redef_msg)    |= SYM_SPECIAL_VAR;
     qheader(break_function)    |= SYM_SPECIAL_VAR;
     qvalue(break_function)      = nil;
-    qheader(loadsource_symbol) |= SYM_SPECIAL_VAR;
-    qvalue(loadsource_symbol)   = nil;
     qheader(gchook)       |= SYM_SPECIAL_VAR;
     qvalue(gchook)         = nil;
     qheader(trap_time)    |= SYM_SPECIAL_VAR;
@@ -4696,7 +2577,6 @@ static void cold_setup()
 #endif
     }
     qvalue(echo_symbol)    = nil;
-    qvalue(hankaku_symbol) = nil;
     qvalue(comp_symbol)    = nil;
     qvalue(emsg_star)      = nil;
     qvalue(redef_msg)      = lisp_true;
@@ -4773,7 +2653,9 @@ void set_up_functions(int restart_flag)
     large_modulus            = fixnum_of_int(1);
     cons_symbol              = make_symbol("cons", restart_flag, too_few_2, Lcons, wrong_no_2);
     eval_symbol              = make_symbol("eval", restart_flag, Leval, too_many_1, wrong_no_1);
-    loadsource_symbol        = make_symbol("load-source", restart_flag, Lload_source, too_many_1, wrong_no_1);
+    load_source_symbol       = make_symbol("load-source", restart_flag, Lload_source, too_many_1, Lload_source0);
+    load_selected_source_symbol =
+                                make_symbol("load-selected-source", restart_flag, Lload_selected_source, too_many_1, Lload_selected_source0);
 //
 // The main bunch of symbols can be handed using a table that
 // gives names and values.
@@ -4865,10 +2747,16 @@ static int alpha0(const void *a, const void *b)
 void set_up_variables(int restart_flag)
 {   LispObject nil = C_nil, w, w1;
     size_t i;
+// There are a number of system variables that are not saved in
+// image files and so that have to be set up manually in every case.
 #ifdef COMMON
     LispObject saved_package = CP;
     CP = find_package("LISP", 4);
 #endif
+    charvec = getvector_init(257*CELL, nil);
+    faslvec = nil;
+    faslgensyms = nil;
+    multiplication_buffer = nil;
     qvalue(macroexpand_hook) = make_symbol("funcall", restart_flag, Lfuncall1, Lfuncall2, Lfuncalln);
     input_libraries = make_undefined_symbol("input-libraries");
     qheader(input_libraries)  |= SYM_SPECIAL_VAR;
@@ -5470,9 +3358,6 @@ void set_up_variables(int restart_flag)
                   make_boxfloat(-DBL_MIN, TYPE_LONG_FLOAT));
     make_constant("internal-time-units-per-second",
                   fixnum_of_int(1000));
-    charvec = getvector_init(257*CELL, nil);
-    faslvec = nil;
-    faslgensyms = nil;
 
     qheader(terminal_io = make_undefined_symbol("*terminal-io*"))
     |= SYM_SPECIAL_VAR;
@@ -5881,8 +3766,10 @@ void get_user_files_checksum(unsigned char *b)
 
 #ifdef __ARM__
 // June 2016: on the Raspberry pi this code gets messed up by -O2 and -O3.
-// This may well be my fault, but for now I will half the fort by sticking in
-// a pragma to downgrade the optimization (with a "z") level... Ugh.
+// This may well be my fault, but for now I will hold the fort by sticking in
+// a pragma to downgrade the optimization (with a "z") level... Ugh. Every so
+// often I should revisit this and see if I can understand what aspect of the
+// code causes pain, or whether the Raspberry Pi version of g++ has moved on!
 #pragma GCC optimize ("1")
 #endif
 
@@ -5929,7 +3816,6 @@ void setup(int restart_flag, double store_size)
                         filename);
             my_exit(EXIT_FAILURE);
         }
-#ifdef EXPERIMENT
         Iread(junkbuf, 112);
         if (init_flags & INIT_VERBOSE)
         {   term_printf("Created: %.25s\n", &junkbuf[64]);
@@ -5952,60 +3838,18 @@ void setup(int restart_flag, double store_size)
                 my_exit(EXIT_FAILURE);
             }
         }
-#else
-//
-// I read input via a buffer of size FREAD_BUFFER_SIZE, which I pre-fill
-// at this stage before I even try to read anything
-//
-        fread_ptr = (unsigned char *)stack;
-        fread_count = Iread(fread_ptr, FREAD_BUFFER_SIZE);
-//
-// I can adjust here (automatically) for whatever compression threshold
-// had been active when the image file was created.
-//
-        compression_worth_while = 128;
-        Cfread(junkbuf, 112);
-        {   int fg = junkbuf[111];
-            while (fg != 0) compression_worth_while <<= 1, fg--;
-        }
-        if (init_flags & INIT_VERBOSE)
-        {   term_printf("Created: %.25s\n", &junkbuf[64]);
-            // Time dump was taken
-        }
-        {   unsigned char chk[16];
-            get_user_files_checksum(chk);
-            for (i=0; i<16; i++)
-            {   if (chk[i] != (junkbuf[90+i] & 0xff))
-                {   term_printf(
-                        "\n+++ Image file belongs with a different version\n");
-                    term_printf(
-                        "    of the executable file (incompatible code\n");
-                    term_printf(
-                        "    has been optimised into C and incorporated)\n");
-                    term_printf(
-                        "    Unable to use this image file, so stopping\n");
-                    term_printf(
-                        "    File is: %s\n", filename);
-                    my_exit(EXIT_FAILURE);
-                }
-            }
-        }
-#endif // EXPERIMENT
 //
 // To make things more responsive for the user I will display a
 // banner rather early (before reading the bulk of the image file).
 // The banner that I will display is one provided to be by PRESERVE.
 //
-        {   Ihandle save;
-            char b[64];
-            Icontext(&save);
+        {   char b[64];
 #define BANNER_CODE (-1002)
             if (IopenRoot(filename, BANNER_CODE, 0)) b[0] = 0;
             else
             {   for (i=0; i<64; i++) b[i] = (char)Igetc();
-                IcloseInput(false);
+                IcloseInput();
             }
-            Irestore_context(save);
 //
 // A banner set via startup-banner takes precedence over one from preserve.
 // But as a very special hack I detect if --texmacs was on the command
@@ -6024,201 +3868,6 @@ void setup(int restart_flag, double store_size)
                 }
             }
         }
-#ifndef EXPERIMENT
-//
-// Now I need to start worrying about 32 vs 64-bit image files.
-//
-        if (SIXTY_FOUR_BIT)
-        {   converting_to_32 = 0;
-            converting_to_64 = ((rootDirectory->h.version & 0x80) == 0);
-        }
-        else
-        {   converting_to_32 = ((rootDirectory->h.version & 0x80) != 0);
-            converting_to_64 = 0;
-        }
-//
-// If if image file was made by a 32-bit system but I am now running in
-// 64-bit mode or vice versa things are tricky and testing (especially
-// between machines that are big- and little-endian) will be limited.
-// However it is supposed to work.
-//
-
-#ifdef DEBUG
-//
-// Temporary alert while I develop code to support width conversion... This
-// should never appear unless you are loading a "different word width" image
-// and in that case I want you to have been warned that there may be glitches.
-//
-//
-// If I am debugging a brief indication that I need to re-size the heap
-// is probably justifiable.
-//
-        if (converting_to_32 || converting_to_64)
-        {   printf("->32 = %d  ->64 = %d\n", converting_to_32, converting_to_64);
-            fflush(stderr);
-        }
-#endif
-
-        Cfread(junkbuf, 8);
-        if (memcmp(junkbuf, "\nNilseg:", 8) != 0)
-        {   fprintf(stderr, "Corrupted image file (Nilseg)\n");
-            fprintf(stderr, "Found <%.8s>\n", junkbuf);
-            abort();
-        }
-//
-// If the heap image had been made on a 64-bit machine but the current
-// system is running at 32-bits then the region in the file I need to
-// read here is twice as big as is needed. I must shrink it. I need
-// some temporary space while I do that. I will use the memory at
-// pages[0], which is a bit of a cheat, but I have allocated that already
-// but do not use it until later.
-//
-        if (converting_to_32)
-        {   int64_t *p = (int64_t *)pages[0];
-            int32_t *q = (int32_t *)BASE;
-// read twice as much because it should be in 64-bit units
-            Cfread((char *)p, (2*sizeof(LispObject))*last_nil_offset);
-//
-// At present I just truncate the values in all the nil-segment to 32-bits.
-// I can imagine a further messy case if I ever introduce wide fixnums for
-// 64-bit machines. In that case I would need to detect when a value here
-// fell into that category and convert it to a reference to a newly created
-// bignum. But that should not arise at the moment!
-//
-// Now in fact here and in the conversion the other way I have a bit of
-// pain in that I can not merely truncate because it could be that I should
-// be adjusting the byte order. In that case I would need to preserve the
-// other 4 bytes of each 8-byte quantity. Unfortunately in the normal
-// pattern on things I load the nil-segment BEFORE I test to see if I need
-// to do a byte-order conversion! So here I put in an ad-hoc early check
-// on the byte-order signature... Ugh.
-//
-            uint64_t temp_byteflip = p[12];
-//
-// The test here will only be needed in the case that the image was made on
-// a 64-bit system, in which case the value of byteflip is 00000000xxxxxxxx
-// if no flip is needed, and xxxxxxxx00000000 if it is. Note that the
-// fact that the 32-bit part never has its top bit set removes risk of
-// sign-extension ever having propagated ffffffff into where I want 00000000.
-// Note also that these days I will ensure that EVERY item in the nil-segment
-// is an intprt_t so I can handle all of them uniformly.
-//
-            flip_needed = (temp_byteflip & 0x7fffffffU) == 0;
-            for (i=0; i<last_nil_offset; i++)
-            {   int64_t w = *p++;
-                int32_t r;
-//
-// Items 24-31 are handled in a very odd way here because once they were
-// 32-bit values stashed in the lower 4 bytes of the field regardless of
-// byte-order. I keep any non-zero part of a 64-bit word in that case.
-//
-                if (i<24 || i>31) r = (int32_t)(flip_needed ? (w>>32) : w);
-                else if ((int32_t)w == 0) r = (int32_t)(w>>32);
-                else r = (int32_t)w;
-                *q++ = r;
-            }
-        }
-        else if (converting_to_64)
-        {
-//
-// The heap image was made by a 32-bit system but I am a 64-bit one. So
-// when I read in the nilseg it will need to be expanded out to 64-bit
-// values. I will sign extend in each case.. that will cope with the
-// packed representation of Lisp_Objects (because immediate data is
-// all naturally signed, and pointer data is really only 31 bits wide to
-// leave room for a GC bit).
-// As in the case of narrowing the data I will need to cope with possible
-// byte-order effects. In the normal case I will expand abcdefgh into
-// ssssssssabcdefgh where s is the sign bit I propagate. If I am
-// flipping bytes it will need to turn into abcdefghssssssss where s comes
-// from the top bit of h. That is because later on I will turn that back
-// into sssssssshgfedcba.
-// Note also that the amount I read will be based on 32-bit data not 64
-// hence the odd-looking "/2" in the next line.
-//
-            Cfread((char *)BASE, (sizeof(LispObject)/2)*last_nil_offset);
-//
-// Copying from the top downwards avoids clobbering stuff here. As with the
-// conversion in the other direction I could have extra work to do if I
-// introduced 64-bit fixnums. I would need to detect fixnums that fitted in
-// 64-bits but not 32 and convert them into bignums...
-//
-//
-// Beware here that I want to sign extend data but it may at present be
-// in the wrong byte order for the current machine - but to know that I
-// must first establish if flipping is required!
-//
-            i = ((int32_t *)BASE)[12]; // 32-bit value of byteflip
-            if (((i >> 16) & 0xffffU) == 0x5678U) flip_needed = false;
-            else if ((i & 0xffffU) == 0x7856U) flip_needed = true;
-            else
-            {   term_printf("\n+++ The checkpoint file is corrupt\n");
-                my_exit(EXIT_FAILURE);
-            }
-            for (i=last_nil_offset; i!=0; i--)
-            {   *(int64_t *)((char *)BASE+8*(i-1)) =
-                    expand_to_64(*(int32_t *)((char *)BASE+4*i));
-            }
-        }
-        else Cfread((char *)BASE, sizeof(LispObject)*last_nil_offset);
-        copy_out_of_nilseg(true);
-#ifndef COMMON
-        qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_SPECIAL_VAR;// BEFORE nil...
-#endif
-//
-// Now the value in byteflip is really a 32-bit value saved an intptr_t,
-// and if my bytes are in a funny order because the 64-bit values had been
-// saved on a machine with the other byte-order it may be that the 32-bits
-// that I want are in fact in the top half of the 64-bit word. So if I am on
-// a 64-bit machine I adjust for that. I do not take the mere fact of the
-// low half being zero as full evidence that I am flipped, since I would
-// like to check for the 0x5678 pattern as an extra consistency check.
-//
-        if (SIXTY_FOUR_BIT)
-        {   if ((byteflip & 0x7fffffff) == 0)
-                byteflip = (LispObject)((int64_t)byteflip >> 32);
-        }
-        if (((byteflip >> 16) & 0xffffU) == 0x5678U)
-        {   flip_needed = false;
-            old_fp_rep = (int)(byteflip & FP_MASK);
-            old_page_bits = (int)((byteflip >> 8) & 0x1f);
-        }
-        else if ((byteflip & 0xffffU) == 0x7856U)
-        {   flip_needed = true;
-            old_fp_rep = (int)(flip_32bits(byteflip) & FP_MASK);
-            old_page_bits = (int)((flip_32bits(byteflip) >> 8) & 0x1f);
-        }
-        else
-        {   term_printf("\n+++ The checkpoint file is corrupt\n");
-//
-// Note: I use different numbers to check byte-ordering on segmented feature
-// non-segmented systems, since the heap image formats are not compatible.
-// A result will be that use of the wrong sort of image will lead to a
-// "checkpoint file corrupt" message rather than a more serious shambles.
-//
-            my_exit(EXIT_FAILURE);
-        }
-        if (old_page_bits == 0) old_page_bits = 16; // Old default value
-//
-// I could in fact recover in the case that old_page_bits < PAGE_BITS, since
-// I could just map the old small pages into the new big ones with a little
-// padding where needed.  I will not do that JUST yet.  In general it will
-// not be possible to load an image with large pages into a CSL that only
-// has small ones - eg there might be some vector that just would not fit
-// in the small page size.  Even discounting that worry rearranging the
-// heap to allow for the discontinuities at the smaller page granularity would
-// be pretty painful.  Again in the limit something very much akin to the
-// normal garbage collector could probably do it if it ever became really
-// necessary.
-//
-        if (old_page_bits != PAGE_BITS)
-        {   term_printf("\n+++ The checkpoint file was made on a machine\n");
-            term_printf("where CSL had been configured with a different page\n");
-            term_printf("size. It is not usable with this version.\n");
-            my_exit(EXIT_FAILURE);
-        }
-        // The saved value of NIL is not needed in this case
-#endif // EXPERIMENT
     }
     else
     {   for (i=first_nil_offset; i<last_nil_offset; i++)
@@ -6228,20 +3877,6 @@ void setup(int restart_flag, double store_size)
 
     savestacklimit = stacklimit = &stack[stack_segsize*CSL_PAGE_SIZE/4-200];
     // allow some slop at end
-//
-// Note that the value of byteflip on 1 32-bit machine will look like
-//     0x5678nm0b   where nm is certainly less than 64 and b is just a few
-// bits. If the byte order is reversed this becomes
-//     0x0bnm7856
-// On a 64-bit system it is
-//     0x000000005678nm0b
-// or  0x0bnm785600000000
-// and in ALL cases it is positive, so whether it is represented as a
-// signed or unsigned value is immaterial.
-//
-    byteflip = 0x56780000 |
-               ((int32_t)current_fp_rep) |
-               (((int32_t)PAGE_BITS) << 8);
     native_pages_changed = 0;
     if ((restart_flag & 1) != 0) warm_setup();
     else cold_setup();
@@ -6475,8 +4110,8 @@ void copy_into_nilseg(int fg)
     BASE[146]    = native_code;
     BASE[147]    = native_symbol;
     BASE[148]    = traceprint_symbol;
-    BASE[149]    = loadsource_symbol;
-    BASE[150]    = hankaku_symbol;
+    BASE[149]    = load_source_symbol;
+    BASE[150]    = load_selected_source_symbol;
     BASE[151]    = bytecoded_symbol;
     BASE[152]    = nativecoded_symbol;
     BASE[153]    = gchook;
@@ -6651,8 +4286,8 @@ void copy_out_of_nilseg(int fg)
     native_code           = BASE[146];
     native_symbol         = BASE[147];
     traceprint_symbol     = BASE[148];
-    loadsource_symbol     = BASE[149];
-    hankaku_symbol        = BASE[150];
+    load_source_symbol    = BASE[149];
+    load_selected_source_symbol = BASE[150];
     bytecoded_symbol      = BASE[151];
     nativecoded_symbol    = BASE[152];
     gchook                = BASE[153];
@@ -6733,7 +4368,7 @@ void copy_out_of_nilseg(int fg)
 // Please note that these days MD5 is not considered cryptographically secure,
 // and the implementation here will not be robust against side-attacks etc.
 // The proper uses hare are as a checksum fur use when chance rather than
-// malic is the opponent.
+// malice is the opponent.
 //
 
 #include "md5.cpp"

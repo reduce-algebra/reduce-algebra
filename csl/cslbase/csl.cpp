@@ -1047,7 +1047,6 @@ static void lisp_main(void)
                 {   const char *msg = "";
                     int len = 0;
                     return_code = EXIT_SUCCESS;
-                    compression_worth_while = 128;
                     if (is_vector(exit_value) &&
                         is_string(exit_value))
                     {   msg = &celt(exit_value, 0);
@@ -1067,7 +1066,6 @@ static void lisp_main(void)
                     Lrds(nil, nil);
                     Lwrs(nil, nil);
                     return_code = EXIT_SUCCESS;
-                    compression_worth_while = 128;
                     if (is_vector(exit_value) &&
                         is_string(exit_value))
                     {   msg = &celt(exit_value, 0);
@@ -2833,12 +2831,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
 
                 case 'y':
-                    if (number_of_symbols_to_define < MAX_SYMBOLS_TO_DEFINE)
-                        symbols_to_define[number_of_symbols_to_define] =
-                            "*hankaku",
-                            undefine_this_one[number_of_symbols_to_define++] = false;
-                    else
-                        term_printf("Too many requests: \"-Y\" ignored\n");
                     continue;
 
 /*! options [-z] \item [{\ttfamily -z}] \index{{\ttfamily -z}}

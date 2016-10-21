@@ -473,8 +473,8 @@ extern LispObject standard_output, standard_input, debug_io;
 extern LispObject error_output, query_io, terminal_io;
 extern LispObject trace_output, fasl_stream;
 extern LispObject native_code, native_symbol, traceprint_symbol;
-extern LispObject loadsource_symbol;
-extern LispObject hankaku_symbol, bytecoded_symbol, nativecoded_symbol;
+extern LispObject load_source_symbol, load_selected_source_symbol;
+extern LispObject bytecoded_symbol, nativecoded_symbol;
 extern LispObject gchook, resources, callstack, procstack, procmem;
 extern LispObject trap_time;
 
@@ -643,7 +643,7 @@ extern void review_switch_settings();
 
 #ifdef SOCKETS
 extern int sockets_ready;
-extern void flush_socket(void);
+extern void flush_socket();
 #endif
 
 extern void report_file(const char *s);
@@ -661,7 +661,6 @@ extern int native_code_tag;
 extern const char *standard_directory;
 
 extern int gc_number;
-extern bool gc_method_is_copying;
 extern int force_reclaim_method, reclaim_trap_count, reclaim_stack_limit;
 
 #define INIT_QUIET      1
@@ -678,15 +677,6 @@ extern int tty_count;
 extern FILE *spool_file;
 extern char spool_file_name[32];
 
-typedef struct Ihandle
-{   FILE *f;        // File within which this sub-file lives
-    long int o;     // Offset (as returned by ftell)
-    long int n;     // Number of bytes remaining unread here
-    uint32_t chk;   // Checksum
-    int status;     // Reading or Writing
-    int nativedir;  // true if a system directory not my own PDS
-} Ihandle;
-
 //
 // If there is no more than 100 bytes of data then I will deem
 // file compression frivolous.  The compression code assumes that
@@ -695,7 +685,6 @@ typedef struct Ihandle
 // the initial header record (112 bytes).
 //
 
-extern int32_t compression_worth_while;
 #define CODESIZE                0x1000
 
 typedef struct _entry_point0
@@ -736,7 +725,7 @@ extern entry_point4 entries_table4[];
 extern entry_pointn entries_tablen[];
 extern entry_pointn entries_tableio[];
 
-extern void set_up_entry_lookup(void);
+extern void set_up_entry_lookup();
 extern int32_t code_up_fn1(one_args *e);
 extern int32_t code_up_fn2(two_args *e);
 extern int32_t code_up_fnn(n_args *e);
@@ -771,39 +760,36 @@ extern void memory_comment(int n);
 extern void push_args(va_list a, int nargs);
 extern void push_args_1(va_list a, int nargs);
 
-extern void Iinit(void);
-extern void IreInit(void);
-extern void Icontext(Ihandle *);
-extern void Irestore_context(Ihandle);
-extern void Ilist(void);
+extern void Iinit();
+extern void IreInit();
+extern void Ilist();
 extern bool open_output(const char *s, int len);
 #define IOPEN_OUT       0
 #define IOPEN_UNCHECKED 1
 #define IOPEN_CHECKED   2
 extern bool Iopen(const char *name, int len, int dirn, char *expanded_name);
-extern bool Iopen_from_stdin(void), Iopen_to_stdout(void);
+extern bool Iopen_from_stdin(), Iopen_to_stdout();
 extern bool IopenRoot(char *expanded_name, int hard, int sixtyfour);
 extern bool Iwriterootp(char *expanded);
-extern bool Iopen_help(int32_t offset);
 extern bool Iopen_banner(int code);
 extern bool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
                         char *expanded_name);
 extern bool Icopy(const char *name, int len);
 extern bool Idelete(const char *name, int len);
-extern bool IcloseInput(int check_checksum);
-extern bool IcloseOutput(int write_checksum);
-extern bool Ifinished(void);
-extern int  Igetc(void);
+extern bool IcloseInput();
+extern bool IcloseOutput();
+extern bool Ifinished();
+extern int  Igetc();
 extern int32_t Iread(void *buff, int32_t size);
 extern bool Iputc(int ch);
 extern bool Iwrite(const void *buff, int32_t size);
-extern long int Ioutsize(void);
+extern long int Ioutsize();
 extern const char *CSLtmpdir();
 extern const char *CSLtmpnam(const char *suffix, int32_t suffixlen);
 extern int Cmkdir(const char *s);
 extern char *look_in_lisp_variable(char *o, int prefix);
 
-extern void CSL_MD5_Init(void);
+extern void CSL_MD5_Init();
 extern void CSL_MD5_Update(const unsigned char *data, int len);
 extern void CSL_MD5_Final(unsigned char *md);
 extern bool CSL_MD5_busy;
@@ -812,19 +798,19 @@ extern void checksum(LispObject a);
 extern unsigned char unpredictable[256];
 extern void inject_randomness(int n);
 
-extern void ensure_screen(void);
+extern void ensure_screen();
 extern int window_heading;
 extern void my_exit(int n);
 extern void *my_malloc(size_t n);
 
 extern clock_t base_time;
 extern double *clock_stack;
-extern void push_clock(void);
-extern double pop_clock(void);
+extern void push_clock();
+extern double pop_clock();
 extern double consolidated_time[10], gc_time;
 extern bool volatile already_in_gc, tick_on_gc_exit;
 extern bool volatile interrupt_pending, tick_pending;
-extern int deal_with_tick(void);
+extern int deal_with_tick();
 extern bool trap_floating_overflow;
 extern int current_fp_rep;
 extern const char *errorset_msg;
@@ -851,7 +837,7 @@ extern "C" void record_get(LispObject tag, bool found);
 // See impex.def for the list of names where this can happen.
 
 extern int         primep(int32_t);
-extern void        adjust_all(void);
+extern void        adjust_all();
 extern void        set_up_functions(int restartp);
 extern void        get_user_files_checksum(unsigned char *);
 extern "C" LispObject acons(LispObject a, LispObject b, LispObject c);
@@ -860,15 +846,15 @@ extern LispObject bytestream_interpret(unsigned char *code, LispObject lit,
                                        LispObject *entry_stack);
 extern bool     complex_stringp(LispObject a);
 extern LispObject  copy_string(LispObject a, size_t n);
-extern void        freshline_trace(void);
-extern void        freshline_debug(void);
+extern void        freshline_trace();
+extern void        freshline_debug();
 extern "C" LispObject cons(LispObject a, LispObject b);
 extern LispObject cons_no_gc(LispObject a, LispObject b);
 extern LispObject cons_gc_test(LispObject a);
 extern void       convert_fp_rep(void *p, int old_rep, int new_rep, int type);
 extern LispObject Ceval(LispObject u, LispObject env);
 extern LispObject noisy_Ceval(LispObject u, LispObject env);
-extern uint32_t   Crand(void);
+extern uint32_t   Crand();
 extern "C" LispObject Cremainder(LispObject a, LispObject b);
 extern void        Csrand(uint32_t a, uint32_t b);
 extern void        discard(LispObject a);
@@ -886,8 +872,8 @@ extern LispObject apply(LispObject fn, int nargs,
                         LispObject env, LispObject fname, int noisy);
 extern LispObject apply_lambda(LispObject def, int nargs,
                                LispObject env, LispObject name, int noisy);
-extern void        deallocate_pages(void);
-extern void        drop_heap_segments(void);
+extern void        deallocate_pages();
+extern void        drop_heap_segments();
 extern LispObject gcd(LispObject a, LispObject b);
 extern LispObject get_pname(LispObject a);
 #ifdef COMMON
@@ -933,7 +919,7 @@ extern FILE        *open_file(char *filename, const char *original_name,
                               size_t n, const char *dirn, FILE *old_file);
 extern "C" LispObject plus2(LispObject a, LispObject b);
 extern void        preserve(const char *msg, int len);
-extern void        preserve_native_code(void);
+extern void        preserve_native_code();
 extern void        relocate_native_function(unsigned char *bps);
 extern LispObject prin(LispObject u);
 extern const char *get_string_data(LispObject a, const char *why, size_t *len);
@@ -1020,7 +1006,7 @@ extern void validate_string_fn(LispObject a, const char *f, int l);
      is_symbol(a) ? (qvalue(a) == unset_var ? error(1, err_unset_var, a) : \
                      onevalue(qvalue(a))) : \
      onevalue(a))
-// voideval(a, b) is like (void)eval(a, b)
+// voideval(a, b) is like ()eval(a, b)
 #define voideval(a, b) \
     if (is_cons(a)) Ceval(a, b) // Beware "else" after this
 #define noisy_eval(a, b) \
@@ -1028,7 +1014,7 @@ extern void validate_string_fn(LispObject a, const char *f, int l);
      is_symbol(a) ? (qvalue(a) == unset_var ? error(1, err_unset_var, a) : \
                      onevalue(qvalue(a))) : \
      onevalue(a))
-// voideval(a, b) is like (void)eval(a, b)
+// voideval(a, b) is like ()eval(a, b)
 #define noisy_voideval(a, b) \
     if (is_cons(a)) noisy_Ceval(a, b) // Beware "else" after this
 #endif

@@ -1135,6 +1135,10 @@ then
 
 fi
 
+# These days I want zlib to do the compression I want.
+AC_CHECK_HEADERS(zlib.h)
+AC_SEARCH_LIBS(deflate, z)
+
 # Some platforms appear to require the Xcursor library. The next line
 # should arrange that it gets scanned if it is available.
 # It is obviously irrelevant on Windows and if no GUI is required,

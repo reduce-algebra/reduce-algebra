@@ -33,6 +33,17 @@
 %%
 
 
+% At one stage I had an option here that compiled Lisp into C,
+% dynamically invoked a C compiler to turn that into a loadable
+% module (ie on Windows a DLL), and then loaded that module in. All that
+% was quite delicate (perhaps especially arranging that the DLL could be
+% loaded and that it had access to all the internal parts of CSL it
+% needed). The cost of writing out C code and invoking gcc to process it
+% was also bad. So I have removed all traces of that experiment apart from
+% this comment. Anybody who wants to try following that path again can recover
+% old versions of this file from the subversion repository to see exactly
+% what I used to do.
+
 
 % Pretty-well all internal functions defined here and all fluid and
 % global variables have been written with names of the form s!:xxx. This
@@ -380,8 +391,7 @@ symbolic procedure s!:prinhex4 n;
 %
 
 flag('(comp plap pgwd pwrds notailcall ord nocompile
-       carcheckflag savedef r2i
-       native_code save_native strip_native), 'switch); % for RLISP
+       carcheckflag savedef r2i), 'switch); % for RLISP
 
 if not boundp '!*comp then <<      % compile automatically on "de"
    fluid '(!*comp);
@@ -425,24 +435,9 @@ if not boundp '!*r2i then << % apply Recursion to Iteration conversions
 
 % If this flag is set then I will generate C code for the functions that
 % I compile as well as the usual bytecoded stuff for the FASL file.
-% Making it all link up is a slight delicacy!
-
-if not boundp '!*native_code then << % Compile via C
-    fluid '(!*native_code);
-% By default I will leave compilation into native code switched off
-% at this level. When I build an image I will adjust the switch
-% to set a more carefully selected application-specific default.
-    !*native_code := nil >>;
-
-if not boundp '!*save_native then << % Do not delete the C code (for debugging)
-    fluid '(!*save_native);
-    !*save_native := nil >>;
-
-if not boundp '!*strip_native then << % strip symbols from C code
-    fluid '(!*strip_native);
-    !*strip_native := t >>; % At least on Windows not stripping uses a LOT of space
-
-global '(s!:native_file);
+% Making it all link up is a slight delicacy! Indeed this scheme worked,
+% but the overhead of calling the C compiler and the delicacy of then
+% creating DLLs and linking to them made it pretty unattractive. So
 
 fluid '(s!:current_function s!:current_label s!:current_block s!:current_size
         s!:current_procedure s!:other_defs s!:lexical_env s!:has_closure
@@ -5321,6 +5316,8 @@ top:u := errorset('(read), t, !*backtrace);
     go to top
   end;
 
+fluid '(s!:fasl_code s!:fasl_savedef);
+
 symbolic procedure s!:fslout0 u;
    s!:fslout1(u, nil);
 
@@ -5368,34 +5365,16 @@ symbolic procedure s!:fslout1(u, loadonly);
 !#endif
     else if !*nocompile then <<  % Funny option not for general use!
        if not eqcar(u, 'faslend) and
-          not eqcar(u, 'carcheck) then write!-module u >>
-% If I have a regular function definition, ie NOT a macro, and if it
-% does not appear to use any of the Lisp features that my native-mode
-% compiler does not support then I will turn pass it through for
-% further work.
+          not eqcar(u, 'carcheck) then s!:fasl_code := u . s!:fasl_code >>
+% If I have a regular function definition, ie NOT a macro then I will
+% pass it through for further work.
     else if eqcar(u, 'de) or eqcar(u, 'defun) then <<
-% For now I will just DISABLE native compilation for the win64 case where
-% for a variety of reasons I have not got it sorted out.
-        if !*native_code and
-           (not memq('win64, lispsystem!*)) then <<
-           if c!:valid_fndef(caddr u, cdddr u) then begin
-               scalar pending_functions, u1;
-               c!:ccmpout1a u;
-               while pending_functions do <<
-                  u1 := car pending_functions;
-                  pending_functions := cdr pending_functions;
-                  s!:fslout0 u1 >>
-           end
-           else <<
-              princ "+++ ";
-              prin cadr u;
-              printc " can not be compiled into native code" >> >>;
         u := cdr u;
         if (w := get(car u, 'c!-version)) and
             w = md60 (car u . cadr u . s!:fully_macroexpand_list cddr u) then <<
             princ "+++ "; prin car u;
-            printc " not compiled (C version available)";
-            write!-module list('restore!-c!-code, mkquote car u) >>
+            printc " not compiled (C++ version available)";
+            s!:fasl_code := list('restore!-c!-code, mkquote car u) . s!:fasl_code >>
         else if flagp(car u, 'lose) then <<
             princ "+++ "; prin car u;
             printc " not compiled (LOSE flag)" >>
@@ -5419,7 +5398,7 @@ symbolic procedure s!:fslout1(u, loadonly);
 %       if (w := get(car u, 'c!-version)) and
 %           md60 u = w then <<
 %           princ "+++ "; prin car u;
-%           printc " not compiled (C version available flag)";
+%           printc " not compiled (C++ version available)";
 %           return nil >>
 %       else 
         if flagp(car u, 'lose) then <<
@@ -5429,7 +5408,7 @@ symbolic procedure s!:fslout1(u, loadonly);
         w := cadr u;
         if w and null cdr w then w := car w . '!&optional . gensym() . nil;
         for each p in s!:compile1(g, w, cddr u, nil) do s!:fslout2(p, u);
-        write!-module list('dm, car u, '(u !&optional e), list(g, 'u, 'e))
+        s!:fasl_code := list('dm, car u, '(u !&optional e), list(g, 'u, 'e)) . s!:fasl_code
       end    
     else if eqcar(u, 'putd) then begin
 % If people put (putd 'name 'expr '(lambda ...)) in their file I will
@@ -5444,9 +5423,9 @@ symbolic procedure s!:fslout1(u, loadonly);
          u := (if a2 = 'expr then 'de else 'dm) . a1 . cdr a3;
 % More complicated uses of PUTD may defeat the C-version hack...
          s!:fslout1(u, loadonly) >>
-      else write!-module u end
+      else s!:fasl_code := u . s!:fasl_code end
     else if not eqcar(u, 'faslend) and
-            not eqcar(u, 'carcheck) then write!-module u
+            not eqcar(u, 'carcheck) then s!:fasl_code := u . s!:fasl_code
   end;
 
 symbolic procedure s!:fslout2(p, u);
@@ -5458,129 +5437,46 @@ symbolic procedure s!:fslout2(p, u);
     env := cdddr p;
     if !*savedef and name = car u then <<
 % I associate the saved definition with the top-level function
-% that is being defined, and ignore any embedded lambda expressions
-        define!-in!-module(-1);    % savedef marker
-        write!-module('lambda . cadr u . s!:fully_macroexpand_list cddr u) >>;
-% If the FASL file format tail-call definitions are represented by giving the
-% number of args in the thing to chain to as an integer where otherwise
-% a vector of bytecodes would be provided.
-    w := irightshift(nargs, 18);
-    nargs := logand(nargs, 262143); % 0x3ffff
-    if not (w = 0) then code := w - 1;
-    define!-in!-module nargs;
-    write!-module name;
-    write!-module code;
-    write!-module env
+% that is being defined, and ignore any embedded lambda expressions. Note that
+% the material put on s!:fasldefs is not executable code, it is just data.
+        s!:fasl_savedef :=
+            list(name, 'lambda . cadr u . s!:fully_macroexpand_list cddr u) .
+                s!:fasl_savedef >>;
+% What I emit here is just what I would have executed if I had been
+% compiling for immediate use.
+    s!:fasl_code :=
+        list('symbol!-set!-definition,
+             mkquote name,
+             mkquote (nargs .  code . env)) . s!:fasl_code
   end;
 
 remprop('faslend, 'stat);
 
+
 symbolic procedure faslend;
   begin
-    scalar copysrc, copydest;
     if null s!:faslmod_name then return nil;
+    if not start!-module car s!:faslmod_name then <<
+       if posn() neq 0 then terpri();
+       princ "+++ Failed to open FASL output file for ";
+       printc s!:faslmod_name;
+       return nil >>;
+% I write out two lists. The first is a PROGN expression to be evaluated,
+% and its contents should be exactly the sequence of forms that would have
+% been eveluated if compilation had been in-memory rather than to a file.
+% The second is "saved source" information and is a list in the form
+% ((name definition) (name definition) ...) and is only non-nil if !*savedef
+% was set at compile-time.
+    write!-module('progn . nreverse s!:fasl_code,
+                  nreverse s!:fasl_savedef);
+    start!-module nil;
     princ "Completed FASL files for ";
     print car s!:faslmod_name;
-    if !*native_code and
-       (not memq('win64, lispsystem!*)) then begin
-        scalar cmnd, w, w1, obj, deff;
-        w := C!-end1 nil;
-        close C_file;
-        cmnd := append(explodec s!:native_file, '(!")); 
-% I will need to review the tests on "win32" here if am ever to stand a chance
-% of making a win64 system build native code in this way. At present the fact
-% that for win64 I tend to cross-compile would make building the DLLs there
-% especially tricky, so I am not going to worry too much about that just yet.
-        if 'win32 memq lispsystem!* then obj := "dll"
-        else obj := "so";
-        obj := tmpnam obj;
-% NB worry re win64. There are at least two things to fuss about for the
-% win64 case
-% (a) at present I can only cross-build for win64, and at present I have
-%     not set up any scheme that lets me do this native compilation in a
-%     cross-build style.
-% (b) the ".def" file has to be different in the Microsoft C/win64 build, and
-%     I have to pass an export library "reduce.lib" to the compilation rather
-%     than the list of imports mentioned in the .def file here.
-% (c) I have not quite sorted out and stabilised MSVC vs Mingw-w64...
-        if 'win32 memq lispsystem!* then begin
-           scalar nn;
-           nn := car s!:faslmod_name;
-% The name-conversion here had better match one done when I actually
-% created the C code... The issue is that module names that have a "-"
-% in them give trouble since "-" is not a good constituent for a
-% C name. So I map it onto "_".
-           nn := list2string
-               (for each c in explodec nn collect
-                   if c = '!- then '!_ else c);
-           deff := tmpnam "def";
-           w1 := open(deff, 'output);
-           w1 := wrs w1;
-           princ "LIBRARY "; princ car s!:faslmod_name; printc ".dll";
-           printc "EXPORTS";
-           printc " init";
-           princ " "; princ nn; printc "_setup";
-% If I build using msvc (eg the cross-build for Windows-64) I must NOT
-% have IMPORTS definitions here but instead I must include reduce.lib as
-% input to the compilation. But I will not support this on win64 until
-% I sort out how to work around that. Or until I really agree that I am using
-% MinGW-w64.
-           printc "IMPORTS";
-           print!-imports();
-           close wrs w1;
-           cmnd := append(explodec deff, '!  . cmnd)
-        end;
-        cmnd := append(explodec obj, '!  . cmnd);
-        cmnd := append(explodec " -o ", cmnd);
-        for each x in reverse cdr assoc('compiler!-command, lispsystem!*) do
-           cmnd :=append(explodec x, '!  . cmnd);
-        cmnd := compress ('!" . cmnd);
-% As a debugging and confidence-building feature I will print the command
-% that is to be obeyed before I obey it. One issue on Windows systems is that
-% the C compiler is liable to be a "console application" and so if I launch
-% it normally it will create itself a console. So I have a special call
-% that executes commands "quietly" to avoid a messy black window popping
-% up as I run the compiler.
-        print cmnd;
-        if not zerop silent!-system cmnd then <<
-% I will always leave the C code around in the temp directory in this case,
-% since debugging may be in order.
-           princ "+++ C compilation for ";
-           prin car s!:faslmod_name;
-           printc " failed" >>
-        else <<
-           if !*strip_native then <<
-              cmnd := compress ('!" . append(explodec "strip ",
-                                          append(explodec obj, '(!"))));
-              print cmnd;
-              silent!-system cmnd >>;
-% Once I have done the compilation I can delete the .c and .def files
-% Now copy <obj> into the image file keyed by the linker attribute from
-% lispsystem!*. Rather than do that right now I will do if after I have
-% closed the main FAST output file that I am generating (so I only try
-% to have one such active at once). If the module was called xxx and the
-% machine architecture is yyy I will use the name xxx/yyy.
-           copysrc := obj;
-           copydest := list2string append(explodec car s!:faslmod_name,
-                            '!. . explodec cdr assoc('linker, lispsystem!*));
-           if not !*save_native then <<
-              delete!-file s!:native_file;
-              if 'win32 memq lispsystem!* then delete!-file deff >>;
-% Write an entry at the end of the module to instate the compiled code
-% that has just been generated (if possible).
-           write!-module
-              list('instate!-c!-code,
-                   mkquote car s!:faslmod_name,
-                   mkquote w) >>
-    end;
-    start!-module nil;
-    if copysrc then <<  % Copy object code into place
-        copy!-native(copysrc, copydest);
-        if not !*save_native then delete!-file copysrc >>;
     dfprint!* := s!:dfprintsave;
     !*defn := nil;
     !*comp := cdr s!:faslmod_name;
     s!:faslmod_name := nil;
+    s!:fasl_code := s!:fasl_savedef := nil;
     return nil
   end;
 
@@ -5629,19 +5525,8 @@ symbolic procedure faslout u;
 % most convenient for the call to map onto (faslout '(xxx)), while direct
 % use from Lisp favours (faslout 'xxx)
     if not atom u then u := car u;
-    if not start!-module u then <<
-       if posn() neq 0 then terpri();
-       princ "+++ Failed to open FASL output file"; terpri();
-       return nil >>;
-    if !*native_code and
-       (not memq('win64, lispsystem!*)) then <<
-%       if not getd 'c!:ccompilestart then load!-module "ccomp";
-        s!:native_file := tmpnam "c";
-        c!:ccompilestart(s!:trim!.c s!:file s!:native_file, 
-                         u,
-                         s!:dir s!:native_file,
-                         t) >>;
     s!:faslmod_name := u . !*comp;
+    s!:fasl_code := s!:fasl_savedef := nil;
     s!:dfprintsave := dfprint!*;
     dfprint!* := 's!:fslout0;
     !*defn := t;

@@ -104,6 +104,7 @@ endif !exeext
 .PHONY:	profile
 .PHONY:	prof-inst
 .PHONY:	c-code
+.PHONY:	just-c-code
 .PHONY:	standard-c-code
 .PHONY:	partial-c-code
 .PHONY:	full-c-code
@@ -1869,7 +1870,7 @@ if canrun
 	if ! test -f bootstrapreduce.img; then $(MAKE) bootstrapreduce.img; fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/recompile.red \
+	./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 	chmod 664 $(gensrc)/*
@@ -1884,7 +1885,7 @@ if canrun
 	if ! test -f $(REDUCE_IMG); then $(MAKE) $(REDUCE_IMG); fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	./reduce$(COM) -v -w $(CYGSRC)/recompile.red \
+	./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 	chmod 664 $(gensrc)/*
@@ -1976,7 +1977,7 @@ profile:	bootstrapreduce.img
 if canrun
 	$(TRACE)mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	./bootstrapreduce$(EXEEXT) -w -Dno_init_file \
+	./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- buildlogs/profile.log
@@ -1992,7 +1993,7 @@ specialprofile:	bootstrapreduce.img
 if canrun
 	$(TRACE)mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	./bootstrapreduce$(EXEEXT) -w -Dno_init_file -Dtracefluid \
+	./bootstrapreduce$(EXEEXT) -w (CSLFLAGS) -Dno_init_file -Dtracefluid \
 		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- buildlogs/profile.log
@@ -2041,10 +2042,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	  $(RM) bootstrapreduce.img; \
 	  $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
 	fi
-	./bootstrapreduce$(EXEEXT) -i- -w -Dno_init_file $(CYGSRC)/make-c-code.red \
-		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
-		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
-		-- buildlogs/c-code.log
+	$(MAKE) $(AM_MAKEFLAGS) just-c-code
 	chmod 664 $(gensrc)/*
 # If the inline-defs file has not changed I will restore the old one. Its
 # contents will be just what I would have seen in the new one but its
@@ -2057,6 +2055,17 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	  $(RM) -f old-inline-defs.dat; \
 	fi
 	mv $(gensrc)/make.tmp $(gensrc)/make.stamp
+
+# This target assumes that bootstrapreduce.img is up to date and on that
+# basis regenerates the C++ code. It is really only intended for direct use
+# while debugging.
+
+just-c-code:
+	./bootstrapreduce$(EXEEXT) -i- -w $(CSLFLAGS) \
+		-Dno_init_file $(CYGSRC)/make-c-code.red \
+		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
+		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
+		-- buildlogs/c-code.log
 
 # The following rule can lead to race conditions with parallel make if
 # several generated files have been deleted but not the make.stamp file.
@@ -2115,7 +2124,8 @@ partial-c-code:	bootstrapreduce.img $(gensrc)/profile.dat
 if canrun
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
+	./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
+		-Dno_init_file $(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/partial-c-code.log
@@ -2130,7 +2140,8 @@ full-c-code:	bootstrapreduce.img $(gensrc)/profile.dat
 if canrun
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-c-code.red \
+	./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
+		-Dno_init_file $(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c -Dfull_c_code \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/full-c-code.log
@@ -2145,7 +2156,8 @@ j-code:	bootstrapreduce.img $(gensrc)/profile.dat
 if canrun
 	mkdir -p buildlogs
 	mkdir -p $(CYGSRC)/../../cslbuild/generated-java
-	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-j-code.red \
+	./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
+		-Dno_init_file $(CYGSRC)/make-j-code.red \
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-java \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/j-code.log
@@ -2157,7 +2169,8 @@ smacros smacros.red:	bootstrapreduce.img
 if canrun
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	./bootstrapreduce$(EXEEXT) -w -Dno_init_file $(CYGSRC)/make-smacros.red \
+	./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
+		-Dno_init_file $(CYGSRC)/make-smacros.red \
 		-Dhow_many=$(how_many) -Dhow_big=$(how_big) \
 		-L buildlogs/smacros.log
 	echo You may now copy smacros.red to trunk/packages/support
@@ -2168,10 +2181,10 @@ endif !canrun
 testslow:	bootstrapreduce.img
 if canrun
 	mkdir -p testlogs
-	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
+	./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/testslow.log
-	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/checkall.red \
+	./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/checkslow.log
 else !canrun
@@ -2181,11 +2194,11 @@ endif !canrun
 testall:	$(REDUCE_IMG)
 if canrun
 	mkdir -p testlogs
-	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
+	./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/testreduce.log
-	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \
+	./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/checkall.log
 else !canrun
@@ -2195,7 +2208,7 @@ endif !canrun
 testslow1:	bootstrapreduce.img
 if canrun
 	mkdir -p testlogs
-	./bootstrapreduce$(EXEEXT) -v -w $(CYGSRC)/testall.red \
+	./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/test$(which).log -Dwhich=$(which)
@@ -2208,7 +2221,7 @@ if valgrind
 countall:	$(REDUCE_IMG)
 	mkdir -p testlogs
 	valgrind --tool=exp-bbv --instr-count-only=yes \
-		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
+		./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=30000 -Dconslimit=$(conslimit) \
 		-- testlogs/countreduce.log
@@ -2220,7 +2233,7 @@ endif valgrind
 test1:	$(REDUCE_IMG)
 if canrun
 	mkdir -p testlogs
-	./reduce$(COM) -v -w $(CYGSRC)/testall.red \
+	./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/test$(which).log -Dwhich=$(which) \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit)
@@ -2233,7 +2246,7 @@ if valgrind
 count1:	$(REDUCE_IMG)
 	mkdir -p testlogs
 	valgrind --tool=exp-bbv --instr-count-only=yes \
-		./reduce$(COM) -v -w $(CYGSRC)/testall.red \
+		./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/count$(which).log -Dwhich=$(which) \
 		-Dcpulimit=30000 -Dconslimit=$(conslimit)
@@ -2243,7 +2256,7 @@ endif valgrind
 checkall:	$(REDUCE_IMG)
 if canrun
 	mkdir -p testlogs
-	./reduce$(COM) -v -w $(CYGSRC)/checkall.red \
+	./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/checkall.log
 else !canrun

@@ -896,13 +896,14 @@ static void newhash_rehash(LispObject tab, bool after_gc)
 
 /////////////////////////////////////////////////////////////////////
 
-//#ifdef DEBUG
+// This is simplified printing and sends its output to stderr. It is ONLY
+// intended for use while debugging.
 
 static int simple_column = 0;
 
 void simple_lineend(int n)
 {   if (simple_column + n > 70)
-    {   printf("\n");
+    {   fprintf(stderr, "\n");
         simple_column = n;
     }
     else simple_column += n;
@@ -913,36 +914,36 @@ void simple_print1(LispObject x)
     char buffer[32];
     if (x == nil)
     {   simple_lineend(3);
-        printf("nil");
+        fprintf(stderr, "nil");
         return;
     }
     if (x == 0)
     {   simple_lineend(3);
-        printf("@0@");
+        fprintf(stderr, "@0@");
         return;
     }
     if (is_cons(x))
     {   const char *sep = "(";
         while (consp(x))
         {   simple_lineend(1);
-            printf("%s", sep);
+            fprintf(stderr, "%s", sep);
             sep = " ";
             simple_print1(qcar(x));
             x = qcdr(x);
         }
         if (x != nil)
         {   simple_lineend(3);
-            printf(" . ");
+            fprintf(stderr, " . ");
             simple_print1(x);
         }
         simple_lineend(3);
-        printf(")");
+        fprintf(stderr, ")");
         return;
     }
     else if (is_fixnum(x))
     {   int k = sprintf(buffer, "%d", int_of_fixnum(x));
         simple_lineend(k);
-        printf("%s", buffer);
+        fprintf(stderr, "%s", buffer);
         return;
     }
     else if (is_symbol(x))
@@ -950,7 +951,7 @@ void simple_print1(LispObject x)
         x = qpname(x);
         len = length_of_byteheader(vechdr(x)) - CELL;
         simple_lineend(len);
-        printf("%.*s", (int)len, &celt(x, 0));
+        fprintf(stderr, "%.*s", (int)len, &celt(x, 0));
     }
     else if (is_vector(x))
     {   size_t i, len;
@@ -958,45 +959,45 @@ void simple_print1(LispObject x)
         if (is_string(x))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
             simple_lineend(len+2);
-            printf("\"%.*s\"", (int)len, &celt(x, 0));
+            fprintf(stderr, "\"%.*s\"", (int)len, &celt(x, 0));
             return;
         }
         else if (vector_holds_binary(vechdr(x)) &&
                  vector_i8(vechdr(x)))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
-            printf("<Header is %" PRIxPTR ">", vechdr(x));
+            fprintf(stderr, "<Header is %" PRIxPTR ">", vechdr(x));
             simple_lineend(2*len+3);
-            printf("#8[");
+            fprintf(stderr, "#8[");
             for (size_t i=0; i<len; i++)
             {   simple_lineend(2);
-                printf("%.2x", celt(x, i) & 0xff);
+                fprintf(stderr, "%.2x", celt(x, i) & 0xff);
             }
-            printf("]");
+            fprintf(stderr, "]");
             return;
         }
         len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
         int nn = sprintf(buffer, "[%" PRId64 ":", len);
         simple_lineend(nn);
-        printf("%s", buffer);
+        fprintf(stderr, "%s", buffer);
         for (i=0; i<len; i++)
         {   simple_lineend(1);
-            printf(" ");
+            fprintf(stderr, " ");
             if (i > 2 && is_mixed_header(vechdr(x)))
             {   nn = sprintf(buffer, "%" PRIx64, (uint64_t)elt(x, i));
                 simple_lineend(nn);
-                printf("%s", buffer);
+                fprintf(stderr, "%s", buffer);
             }
             else simple_print1(elt(x, i));
         }
         simple_lineend(1);
-        printf("]");
+        fprintf(stderr, "]");
         return;
     }
     else
     {   char buffer[32];
         int len = sprintf(buffer, "@%" PRIx64 "@", (int64_t)x);
         simple_lineend(len);
-        printf("%s", buffer);
+        fprintf(stderr, "%s", buffer);
         return;
     }
 }
@@ -1007,13 +1008,10 @@ void simple_print(LispObject x)
 }
 
 void simple_msg(const char *s, LispObject x)
-{   printf("%s", s);
+{   fprintf(stderr, "%s", s);
     simple_print(x);
-    printf("\n");
+    fprintf(stderr, "\n");
 }
-
-
-//#endif
 
 // A version of Lmkhash with just 2 arguments so you to not supply the
 // (unused and hence irrelevant) third argument.

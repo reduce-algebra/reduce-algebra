@@ -317,8 +317,8 @@ static const char *ser_opnames[] =
 
 static void ser_print_opname(int n)
 {   int top = (n >> 5) & 0x7;
-    if (top == 0) printf("%s", ser_various_names[n & 0x1f]);
-    else printf("%s %d", ser_opnames[top], n & 0x1f);
+    if (top == 0) fprintf(stderr, "%s", ser_various_names[n & 0x1f]);
+    else fprintf(stderr, "%s %d", ser_opnames[top], n & 0x1f);
 }
 
 #endif
@@ -356,14 +356,14 @@ size_t repeat_heap_size = 0, repeat_count = 0;
 // This tiny function exists just so that I can set a breakpoint on it.
 void myabort()
 {   fflush(stdout);
+    fflush(stderr);
     abort();
 }
 
 void reader_setup_repeats(size_t n)
 {   if (repeat_heap_size != 0 ||
         repeat_heap != NULL)
-    {   printf("\n+++ repeat heap processing error\n");
-        fflush(stdout);
+    {   fprintf(stderr, "\n+++ repeat heap processing error\n");
         myabort();
     }
     repeat_heap_size = n;
@@ -371,8 +371,7 @@ void reader_setup_repeats(size_t n)
     if (n == 0) return; // No repeats present, so not table needed.
     repeat_heap = (LispObject *)malloc((n+1)*sizeof(LispObject));
     if (repeat_heap == NULL)
-    {   printf("\n+++ unable to allocate repeat heap\n");
-        fflush(stdout);
+    {   fprintf(stderr, "\n+++ unable to allocate repeat heap\n");
         myabort();
     }
 // I fill the vector with fixnum_of_int(0) so it is GC safe.
@@ -386,8 +385,7 @@ void writer_setup_repeats()
     repeat_heap =
         (LispObject *)malloc((repeat_heap_size+1)*sizeof(LispObject));
     if (repeat_heap == NULL)
-    {   printf("\n+++ unable to allocate repeat heap\n");
-        fflush(stdout);
+    {   fprintf(stderr, "\n+++ unable to allocate repeat heap\n");
         myabort();
     }
 }
@@ -491,34 +489,32 @@ int read_opcode_byte()
     if (binary_read_file != NULL) r = Igetc();
     else
     {   if (serincount > sercounter)
-        {   printf("\nRead too much\n");
-            fflush(stdout);
+        {   fprintf(stderr, "\nRead too much\n");
             myabort();
         }
         r = serbuffer[serincount++];
     }
     r &= 0xff;
-    printf("Read %d = %.2x ", r, r);
+    fprintf(stderr, "Read %d = %.2x ", r, r);
     if (r != SER_OPNEXT)
-    {   printf("\nExpected OPNEXT but did not find it\n");
+    {   fprintf(stderr, "\nExpected OPNEXT but did not find it\n");
         myabort();
     }
-    else printf("SER_OPNEXT\n");
+    else fprintf(stderr, "SER_OPNEXT\n");
 #endif
     if (binary_read_file != NULL) r = Igetc();
     else
     {   if (serincount > sercounter)
-        {   printf("\nRead too much\n");
-            fflush(stdout);
+        {   fprintf(stderr, "\nRead too much\n");
             myabort();
         }
         r = serbuffer[serincount++];
     }
     r &= 0xff;
 #ifdef DEBUG_SERIALIZE
-    printf("Read %d = %.2x ", r, r);
+    fprintf(stderr, "Read %d = %.2x ", r, r);
     ser_print_opname(r);
-    printf("\n");
+    fprintf(stderr, "\n");
 #endif
     return r;
 }
@@ -528,15 +524,14 @@ int read_data_byte()
     if (binary_read_file != NULL) r = Igetc();
     else
     {   if (serincount > sercounter)
-        {   printf("\nRead too much\n");
-            fflush(stdout);
+        {   fprintf(stderr, "\nRead too much\n");
             myabort();
         }
         r = serbuffer[serincount++];
     }
     r &= 0xff;
 #ifdef DEBUG_SERIALIZE
-    printf("Read %d = %.2x\n", r, r);
+    fprintf(stderr, "Read %d = %.2x\n", r, r);
 #endif
     return r;
 }
@@ -546,17 +541,16 @@ int read_string_byte()
     if (binary_read_file != NULL) r = Igetc();
     else
     {   if (serincount > sercounter)
-        {   printf("\nRead too much\n");
-            fflush(stdout);
+        {   fprintf(stderr, "\nRead too much\n");
             myabort();
         }
         r = serbuffer[serincount++];
     }
     r &= 0xff;
 #ifdef DEBUG_SERIALIZE
-    printf("Read %d = %.2x ", r, r);
-    if (0x20 <= r && r <= 0x7f) printf(" = '%c'", r);
-    printf("\n");
+    fprintf(stderr, "Read %d = %.2x ", r, r);
+    if (0x20 <= r && r <= 0x7f) fprintf(stderr, " = '%c'", r);
+    fprintf(stderr, "\n");
 #endif
     return r;
 }
@@ -570,13 +564,13 @@ void write_opcode(int byte, const char *msg, ...)
 {
 #ifdef DEBUG_SERIALIZE
     va_list a;
-    printf("<opcode prefix> %.2x\n", SER_OPNEXT);
+    fprintf(stderr, "<opcode prefix> %.2x\n", SER_OPNEXT);
     if (binary_write_file != NULL) Iputc(SER_OPNEXT);
     else if (sercounter < SERSIZE) serbuffer[sercounter++] = SER_OPNEXT;
-    printf("%.2x: ", byte & 0xff);
+    fprintf(stderr, "%.2x: ", byte & 0xff);
     va_start(a, msg);
-    vprintf(msg, a);
-    printf("\n");
+    vfprintf(stderr, msg, a);
+    fprintf(stderr, "\n");
     va_end(a);
 #endif
     if (binary_write_file != NULL) Iputc(byte);
@@ -587,9 +581,9 @@ void write_byte(int byte, const char *msg, ...)
 {
 #ifdef DEBUG_SERIALIZE
     va_list a;
-    printf("%.2x: ", byte & 0xff);
+    fprintf(stderr, "%.2x: ", byte & 0xff);
     va_start(a, msg);
-    vprintf(msg, a);
+    vfprintf(stderr, msg, a);
     printf("\n");
     va_end(a);
 #endif
@@ -1114,26 +1108,25 @@ bool insert_codepointer(uintptr_t x, const char *s)
 // If this codepointer is one I have seen before then do nothing and return
 // false.
     if (hash_lookup(&codehash, x) != (size_t)(-1))
-    {   printf("function %s seen before\n", s);
+    {   //fprintf(stderr, "function %s seen before\n", s);
         return false;
     }
 // Add to the table of code-pointers, recording where it goes.
     size_t pos = hash_insert(&codehash, x);
     hash_set_value(&codehash, pos, ncodepointers);
     if (ncodepointers >= NCODEPOINTERS)
-    {   printf("Too many built-in functions. Please increase NCODEPOINTERS\n");
-        printf("in serialize.cpp. Current value is %u\n", NCODEPOINTERS);
-        fflush(stdout);
+    {   fprintf(stderr, "Too many built-in functions. Please increase NCODEPOINTERS\n");
+        fprintf(stderr, "in serialize.cpp. Current value is %u\n", NCODEPOINTERS);
         myabort();
     }
-    printf("function %s given code %d\n", s, (int)ncodepointers);
+    //fprintf(stderr, "function %s given code %d\n", s, (int)ncodepointers);
     codepointers[ncodepointers++] = x;
     return true;
 }
 
 uint64_t use_setup(uint64_t crc, const setup_type *p)
 {   while (p->name != NULL)
-    {   // printf("[%d] Name: %s\n", ncodepointers, p->name);
+    {   // fprintf(stderr, "[%d] Name: %s\n", ncodepointers, p->name);
         unsigned char n = 0;
         if (insert_codepointer((uintptr_t)(p->one), p->name)) n += 1;
         if (insert_codepointer((uintptr_t)(p->two), p->name)) n += 2;
@@ -1147,21 +1140,8 @@ uint64_t use_setup(uint64_t crc, const setup_type *p)
 
 uint64_t function_crc = 0;
 
-void *residual_functions[] =
-{   (void *)Lload_spid,
-    (void *)Leval,
-    (void *)Lis_spid,
-    (void *)Lspid_to_nil,
-    (void *)Lmv_list,
-    (void *)Lload_source,
-    (void *)noisy_progn_fn,
-    (void *)Lcons,
-    NULL
-};
-
 void set_up_function_tables()
 {   uint64_t crc = 0;
-    printf("Setting up functions table\n");
     hash_init(&codehash);
     ncodepointers = 0;
 // I put a value that I expect to be invalid at position zero in the table
@@ -1210,29 +1190,15 @@ void set_up_function_tables()
     while (*p != NULL) crc = use_setup(crc, *p++);
     p++;  // setup_tables is in two parts, separated by a NULL.
     while (*p != NULL) crc = use_setup(crc, *p++);
-//
-// There are a few entrypoints that do not manage to end up in the
-// usual tables, so I put them spomewhere special. Some of them exist
-// solely for use from (native) compiled code or other unusual
-// situations...
-//
-    for (void **p = residual_functions; *p!=NULL; p++)
-    {   sprintf(b, "residual_functions[%d]", (int)(p-residual_functions));
-        insert_codepointer((uintptr_t)(uintptr_t)*p, b);
-    }
 
-    printf("There are %u entries in the code pointer table\n",
-           (unsigned int)ncodepointers);
-    printf("CRC for table of defined entrypoints = %" PRIx64 "\n", crc);
     function_crc = crc;
 }
 
 void *read_function()
 {   uint64_t handle = read_u64();
     if (handle == 0 || handle >= ncodepointers)
-    {   printf("Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
+    {   fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
                 handle, handle);
-        fflush(stdout);
         myabort();
     }
     return (void *)codepointers[handle];
@@ -1241,15 +1207,13 @@ void *read_function()
 void write_function(void *p)
 {   size_t h = hash_lookup(&codehash, (intptr_t)p);
     if (h == (size_t)(-1))
-    {   printf("Unknown item used as code pointer (%p)\n", p);
-        fflush(stdout);
+    {   fprintf(stderr, "Unknown item used as code pointer (%p)\n", p);
         myabort();
     }
     uint64_t handle = hash_get_value(&codehash, h);
     if (handle == 0 || handle >= ncodepointers)
-    {   printf("Invalid code handle recovered for writing codepointer\n");
-        printf("codehash hash-table presumed messed up!\n");
-        fflush(stdout);
+    {   fprintf(stderr, "Invalid code handle recovered for writing codepointer\n");
+        fprintf(stderr, "codehash hash-table presumed messed up!\n");
         myabort();
     }
     write_u64(handle);
@@ -1337,7 +1301,7 @@ down:
 // If one is needed beyond that it can be a final 8-bit value.
 // This allows for up to 2^64 back-references.
                     *p = reader_repeat_old(w = (1 + 64 + read_u64()));
-//           printf("backref %" PRIuPTR " => %" PRIxPTR "\n",
+//           fprintf(stderr, "backref %" PRIuPTR " => %" PRIxPTR "\n",
 //                  (uintptr_t)w, (uintptr_t)*p);
                     goto up;
 
@@ -1443,8 +1407,7 @@ down:
 
                 case SER_FLOAT28:
 // A 28-bit short float
-                    printf("SER_FLOAT28 not coded yet\n");
-                    fflush(stdout);
+                    fprintf(stderr, "SER_FLOAT28 not coded yet\n");
                     myabort();
 
                 case SER_FLOAT32:
@@ -1492,8 +1455,7 @@ down:
                     goto up;
 
                 case SER_END:
-                    printf("End of dump marker found - this is an error situation\n");
-                    fflush(stdout);
+                    fprintf(stderr, "End of dump marker found - this is an error situation\n");
                     myabort();
 
                 case SER_XXX14:
@@ -1509,8 +1471,7 @@ down:
                 case SER_XXX1e:
                 case SER_XXX1f:
                 default:
-                    printf("Unimplemented reader opcode (a) %.2x\n", c);
-                    fflush(stdout);
+                    fprintf(stderr, "Unimplemented reader opcode (a) %.2x\n", c);
                     myabort();
             }
             break;
@@ -1628,8 +1589,8 @@ down:
 // opcode. The header I want for my vector will be
 //     wwwwwwww....wwww CCC CC 10 g100
             {   int type = ((c & 0x1f)<<(Tw+2)) | (0x3<<Tw),
-                    tag = is_number_header_full_test(type) ? TAG_NUMBERS :
-                                                             TAG_VECTOR;
+                    tag = is_bignum_header(type) ? TAG_NUMBERS :
+                                                   TAG_VECTOR;
                 if (vector_i8(type))
                 {   prev = *p = getvector(tag, type, CELL+w);
                     char *x = (char *)start_contents(prev);
@@ -1692,19 +1653,16 @@ down:
                 }
                 else if (vector_f128(type))
                 {   prev = *p = getvector(tag, type, CELL+16*w);
-                    printf("128-bit integer arrays not supported (yet?)\n");
-                    fflush(stdout);
+                    fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
                     myabort();
                 }
                 else if (vector_i128(type))
                 {   prev = *p = getvector(tag, type, CELL+16*w);
-                    printf("128-bit floats not supported (yet?)\n");
-                    fflush(stdout);
+                    fprintf(stderr, "128-bit floats not supported (yet?)\n");
                     myabort();
                 }
                 else
-                {   printf("Vector code is impossible\n");
-                    fflush(stdout);
+                {   fprintf(stderr, "Vector code is impossible\n");
                     myabort();
                 }
             }
@@ -1712,8 +1670,7 @@ down:
 
         case SER_SPARE:
         default:
-            printf("Unimplemented reader opcode (b) %.2x\n", c);
-            fflush(stdout);
+            fprintf(stderr, "Unimplemented reader opcode (b) %.2x\n", c);
             myabort();
     }
 
@@ -1725,7 +1682,7 @@ up:
 // If the back-pointer chain is empty then I am done and can return.
     if (b == fixnum_of_int(0))
     {   if (r == 0)
-        {   printf("serial reader about to return zero\n");
+        {   fprintf(stderr, "serial reader about to return zero\n");
             myabort();
         }
         return r;
@@ -1742,20 +1699,20 @@ up:
 // stack s to track how far along it I am, and need to do special things when
 // I am almost complete
     if (!is_cons(s))
-    {   printf("s bad at line %d in serialize.cpp\n", __LINE__);
+    {   fprintf(stderr, "s bad at line %d in serialize.cpp\n", __LINE__);
         simple_print(s);
         myabort();
     }
     if (!is_fixnum(qcar(s)))
-    {   printf("car s bad at line %d in serialize.cpp\n", __LINE__);
+    {   fprintf(stderr, "car s bad at line %d in serialize.cpp\n", __LINE__);
         simple_print(qcar(s));
         myabort();
     }
     intptr_t n = int_of_fixnum(qcar(s)) - 1;
     if (n < 0)
-    {   printf("car s negative at line %d in serialize.cpp\n", __LINE__);
-        printf("qcar(s) = %" PRIx64 " in raw hex\n", (int64_t)qcar(s));
-        printf("value of qcar(s) as list: ");
+    {   fprintf(stderr, "car s negative at line %d in serialize.cpp\n", __LINE__);
+        fprintf(stderr, "qcar(s) = %" PRIx64 " in raw hex\n", (int64_t)qcar(s));
+        fprintf(stderr, "value of qcar(s) as list: ");
         simple_print(qcar(s));
         myabort();
     }
@@ -1851,7 +1808,7 @@ static int address_used(uint64_t addr)
     addr -= ((uint64_t)i) << 18;
 // Now addr is just an 18-bit number. Discard the low 3 bits
     addr >>= 3;
-//  printf("address-used %" PRIxPTR " = %d\n", (uintptr_t)addr,
+//  fprintf(stderr, "address-used %" PRIxPTR " = %d\n", (uintptr_t)addr,
 //         m5[addr >> 3] & (1 << (addr & 7)));
     return (m5[addr >> 3] & (1 << (addr & 7))) != 0;
 }
@@ -1895,7 +1852,7 @@ static uint8_t *new_final_map_block()
 
 static void mark_address_as_used(uint64_t addr)
 {
-//  printf("mark_address_as_used %" PRIxPTR "\n", (intptr_t)addr);
+//  fprintf(stderr, "mark_address_as_used %" PRIxPTR "\n", (intptr_t)addr);
     unsigned int i = (unsigned int)(addr >> 54);
     uint8_t *****m1 = used_map[i];
     if (m1 == NULL) used_map[i] = m1 = (uint8_t *****)new_map_block();
@@ -1981,7 +1938,7 @@ void scan_data(LispObject p)
     Header h;
 down:
     if (p == 0)
-    {   printf("Zero pointer found\n"); // An error - but I feel safest
+    {   fprintf(stderr, "Zero pointer found\n"); // An error - but I feel safest
         // if I detect it and do not crash.
         goto up;
     }
@@ -2082,7 +2039,7 @@ down:
 // Forwarding addresses should only be present while the garbage collector
 // is active, and so ought not to be found. I will print a message and
 // basically ignore them.
-            printf("\n+++ Forwarding address detected in heap scan\n");
+            fprintf(stderr, "\n+++ Forwarding address detected in heap scan\n");
             goto up;
     }
 
@@ -2266,7 +2223,7 @@ down:
 // all if necessary.
 //@         {   LispObject name = qpname(p);
 //@             if (is_vector(name) && is_string(name))
-//@             {   printf("Symbol (%p : %p) name: \"%.*s\"\n",
+//@             {   fprintf(stderr, "Symbol (%p : %p) name: \"%.*s\"\n",
 //@                     (void *)p, (void *)name,
 //@                     (int)(length_of_byteheader(vechdr(name))-CELL),
 //@                     &celt(name, 0));
@@ -2480,18 +2437,15 @@ down:
                 for (size_t i=0; i<len/4; i++) write_f32(*x++);
             }
             else if (vector_f128(h))
-            {   printf("128-bit float arrays not supported (yet?)\n");
-                fflush(stdout);
+            {   fprintf(stderr, "128-bit float arrays not supported (yet?)\n");
                 myabort();
             }
             else if (vector_i128(h))
-            {   printf("128-bit integer arrays not supported (yet?)\n");
-                fflush(stdout);
+            {   fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
                 myabort();
             }
             else
-            {   printf("Vector code is impossible\n");
-                fflush(stdout);
+            {   fprintf(stderr, "Vector code is impossible\n");
                 myabort();
             }
             if (i != (size_t)-1)
@@ -2527,8 +2481,7 @@ down:
                 }
                 break;
                 default:
-                    printf("floating point representation not recognized\n");
-                    fflush(stdout);
+                    fprintf(stderr, "floating point representation not recognized\n");
                     myabort();
             }
             if (i != (size_t)-1)
@@ -2572,7 +2525,7 @@ down:
 // Forwarding addresses should only be present while the garbage collector
 // is active, and so ought not to be found. I will print a message and
 // basically ignore them.
-            printf("\n+++ Forwarding address detected in heap scan\n");
+            fprintf(stderr, "\n+++ Forwarding address detected in heap scan\n");
             goto up;
     }
 
@@ -2708,8 +2661,6 @@ LispObject Lunserialize(LispObject nil, int nargs, ...)
     repeat_heap = NULL;
     return onevalue(r);
 }
-
-#ifdef EXPERIMENT
 
 // Here I will comments on how the previous version of warm_setup (and
 // hence "preserve") worked, and how the new one does. The intent is that this
@@ -2875,7 +2826,6 @@ void write_everything()
 
 void warm_setup()
 {
-    printf("Trying warm_setup\n");
 // I must start by getting the heaps so that allocation etc is possible.
     void *p;
     size_t i;
@@ -2923,8 +2873,6 @@ void warm_setup()
 
     uint64_t entrypt_checksum = read_u64();
     size_t repeatsize = read_u64();
-    printf("entrypt_checksum = %" PRIu64 "\n", entrypt_checksum);
-    printf("repeatsize = %" PRIu64 "\n", repeatsize);
     reader_setup_repeats(repeatsize);
 
 // Now I can use serial_read...
@@ -2943,25 +2891,26 @@ void warm_setup()
 // reading - and that may copy stuff into the BASE locations from elsewhere,
 // so I need to be a bit indirect about loading values into there. Apologies!
     for (int i=first_nil_offset; i<last_nil_offset; i++)
-    {   // printf("About to read value for BASE[%d]\n", i);
+    {   // fprintf(stderr, "About to read value for BASE[%d]\n", i);
         // for (int j=0; j<5; j++)
-        //     printf("%" PRIxPTR " ", stackbase[j]);
-        // printf(" [%d]\n", (int)(stack-stackbase));
-        // fflush(stdout);
+        //     fprintf(stderr, "%" PRIxPTR " ", stackbase[j]);
+        // fprintf(stderr, " [%d]\n", (int)(stack-stackbase));
+        // fflush(stderr);
         // validate_all("serial reading", __LINE__, __FILE__);
         LispObject v = serial_read();
-        // printf(" = "); simple_print(v); printf("\n");
+        // fprintf(stderr, " = "); simple_print(v); fprintf(stderr, "\n");
         push(v);
     }
     eq_hash_tables = serial_read();
     equal_hash_tables = serial_read();
     for (int i=last_nil_offset-1; i>=first_nil_offset; i--)
         pop(BASE[i])
-    printf("All BASE items read\n");
     copy_out_of_nilseg(false);
 
-    if (read_opcode_byte() == SER_END) printf("OK\n");
-    else printf("Out of step\n");
+    if (read_opcode_byte() != SER_END)
+    {   fprintf(stderr, "Out of step\n");
+        myabort();
+    }
 #ifdef DEBUG_VALIDATE
     validate_all("warm setup", __LINE__, __FILE__);
 #endif
@@ -2983,21 +2932,7 @@ void warm_setup()
     }
     {   LispObject w = error_output;
         error_output = 0;
-        if (IcloseInput(true))
-        {
-#if 0
-// @@@ At present the new reading regime does not accumulate a checksum!
-//
-// I write a moan to stderr, even though in some cases this will not be
-// visible, because the general-purpose Lisp print streams have not yet been
-// fully set up. So on some windowed platforms this message, if it appears
-// at all, may show up in an unusual way. Sorry!
-//
-            fprintf(stderr, "\n+++ Initial Image file checksum failure\n");
-// Again this does not cause an abrupt halt. I also think that at present
-// I probably do not compute the checksum carefully.
-#endif
-        }
+        IcloseInput();
         error_output = w;
     }
     if (repeat_heap_size != 0)
@@ -3022,327 +2957,31 @@ void warm_setup()
 //
     eq_hash_tables = eq_hash_table_list;
     equal_hash_tables = equal_hash_table_list;
-printf("eq_hash_tables = "); simple_print(eq_hash_tables); printf("\n");
-printf("equal_hash_tables = "); simple_print(equal_hash_tables); printf("\n");
     eq_hash_table_list = equal_hash_table_list = nil;
     {   LispObject qq;
         for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
         {   if (!is_vector(qcar(qq)))
-            {   printf("qq=%p should be a vector\n", (void *)qcar(qq));
+            {   fprintf(stderr, "qq=%p should be a vector\n", (void *)qcar(qq));
                 exit(4);
             }
             rehash_this_table(qcar(qq));
         }
         for (qq = equal_hash_tables; qq!=nil; qq=qcdr(qq))
         {   if (!is_vector(qcar(qq)))
-            {   printf("qq=%p should be a vector\n", (void *)qcar(qq));
+            {   fprintf(stderr, "qq=%p should be a vector\n", (void *)qcar(qq));
                 exit(4);
             }
             rehash_this_table(qcar(qq));
         }
     }
-
-//@@    set_up_functions(1);   Sould not be necessary these days...
+// There are various things such as lispsystem* and the various standard
+// output streams that may depend on the particular system I am loading on
+// and so have to be set up as if from cold...
     set_up_variables(true);
-//
-//@@ // Now I have closed the main heap image, but if there is any hard machine
-//@@ // code available for this architecture I should load it. When I do this
-//@@ // the main heap has been loaded and relocated and all the entrypoints
-//@@ // in it that relate to kernel code have been inserted. Well this is all part
-//@@ // of a previous experiment no longer active... so I hope it never gets
-//@@ // activated.
-//@@ //
-//@@     if (native_code_tag != 0) // Not worth trying if none available
-//@@     {   if (!IopenRoot(NULL, -native_code_tag, 0))
-//@@         {   int32_t nn = Igetc() & 0xff;
-//@@             nn = nn + ((Igetc() & 0xff) << 8);
-//@@             native_pages_count = nn;
-//@@             for (i=0; i<native_pages_count; i++)
-//@@             {   intptr_t p;
-//@@ //
-//@@ // Because I did not know earlier how many pages would be needed here I
-//@@ // may not have overall enough. So I expand my heap (if possible)
-//@@ // when things start to look tight here.
-//@@ //
-//@@                 if (pages_count <= 1)
-//@@                 {   void *page = my_malloc_1((size_t)(CSL_PAGE_SIZE + 16));
-//@@                     if (page == NULL)
-//@@                     {   fatal_error(err_no_store);
-//@@                     }
-//@@                     else pages[pages_count++] = page;
-//@@                 }
-//@@                 native_pages[i] = allocate_page("native code");
-//@@                 p = (intptr_t)native_pages[i];
-//@@                 p = doubleword_align_up(p);
-//@@                 fread_count = 0;
-//@@                 Cfread((char *)p, CSL_PAGE_SIZE);
-//@@                 native_fringe = car32(p);
-//@@                 relocate_native_code((unsigned char *)p, native_fringe);
-//@@             }
-//@@             IcloseInput(true);
-//@@         }
-//@@     }
-//@@ //
-//@@ // With a warm start I must instate the definitions of all functions
-//@@ // that may have been compiled into hard code on this platform. Functions that
-//@@ // may be hard-coded on SOME platform may also be in a mess and will have
-//@@ // a byte-coded definition put back in place at this point. Observe that this
-//@@ // happens AFTER the system has otherwise been loaded and relocated.
-//@@ //
-//@@     {   LispObject f_list = native_code, byte_code_def;
-//@@         do_not_kill_native_code = 1;
-//@@         while (f_list != nil)
-//@@         {   LispObject w, fn, defs;
-//@@             int32_t nargs;
-//@@             int instated_something = 0;
-//@@             byte_code_def = nil;
-//@@             w = qcar(f_list);
-//@@             f_list = qcdr(f_list);
-//@@             fn = qcar(w); w = qcdr(w);
-//@@             nargs = int_of_fixnum(qcar(w));
-//@@             defs = qcdr(w);
-//@@             while (defs != nil)
-//@@             {   int32_t n, tag, type, off;
-//@@                 intptr_t page;
-//@@                 void *e;
-//@@                 w = qcar(defs);
-//@@                 defs = qcdr(defs);
-//@@                 n = int_of_fixnum(qcar(w));
-//@@                 w = qcdr(w);
-//@@                 tag = (n >> 20) & 0xff;
-//@@                 type = (n >> 18) & 0x3;
-//@@                 page = n & 0x3ffff;
-//@@                 if (tag == 0)
-//@@                 {   byte_code_def = qcdr(w);
-//@@                     continue;
-//@@                 }
-//@@                 if (tag != native_code_tag) continue; // Not for me today
-//@@                 instated_something = 1;
-//@@                 off = int_of_fixnum(qcar(w));
-//@@                 w = qcdr(w);
-//@@ //
-//@@ // Now fn should be a symbol, the function to be defined. w is the thing to go
-//@@ // into its environment cell. page and off define a location in the hard
-//@@ // code space and type tells me which of the 3 function cells to put that in.
-//@@ //
-//@@ // I will not (yet) mess around with the removal of C definition
-//@@ // flags and all the other delicacies. Note that this means attempts to
-//@@ // redefine built-in functions with user-provided native code varients
-//@@ // may cause all sorts of muddle! Please do not try it, but when you
-//@@ // do (!) tell me and I will attempt to work out what ought to happen.
-//@@ // Maybe it will all be OK provided that a consistent byte-code definition
-//@@ // is in place before any native code gets generated.
-//@@ //
-//@@                 page = (intptr_t)native_pages[page];
-//@@                 page = doubleword_align_up(page);
-//@@                 e = (void *)((char *)page + off);
-//@@                 switch (type)
-//@@                 {
-//@@ //
-//@@ // Warning - I just support nargs being a simple integer here, with no
-//@@ // fancy encoding for variable numbers of args or &rest args etc. I think
-//@@ // that for native code all such cases need to be dealt with via non-zero
-//@@ // type code so that the 3 individual function cells get filled in one
-//@@ // by 1.
-//@@ //
-//@@                     case 0: switch (nargs)
-//@@                         {   case 0: set_fns(fn, wrong_no_0a, wrong_no_0b, (n_args *)e);
-//@@                                 break;
-//@@                             case 1: set_fns(fn, (one_args *)e, too_many_1, wrong_no_1);
-//@@                                 break;
-//@@                             case 2: set_fns(fn, too_few_2, (two_args *)e, wrong_no_2);
-//@@                                 break;
-//@@                             case 3: set_fns(fn, wrong_no_3a, wrong_no_3b, (n_args *)e);
-//@@                                 break;
-//@@                             default:set_fns(fn, wrong_no_na, wrong_no_nb, (n_args *)e);
-//@@                                 break;
-//@@                         }
-//@@                         break;
-//@@ //
-//@@ // A non-zero type field allows me to fill in just one of the function cells.
-//@@ // Note that I ought to arrange to get ALL of them filled in somehow, either
-//@@ // by using type=0 or by using all three of type = 1,2,3.
-//@@ //
-//@@                     case 1: ifn1(fn) = (intptr_t)e;
-//@@                         break;
-//@@                     case 2: ifn2(fn) = (intptr_t)e;
-//@@                         break;
-//@@                     case 3: ifnn(fn) = (intptr_t)e;
-//@@                         break;
-//@@                 }
-//@@                 qenv(fn) = w;
-//@@             }
-//@@             if (!instated_something && byte_code_def != nil)
-//@@             {   w = cons(fixnum_of_int(nargs), byte_code_def);
-//@@ //
-//@@ // You can look at this bit of code and moan, saying "What happens if
-//@@ // the call to CONS causes a garbage collection?". Well I have this policy
-//@@ // that garbage collection attempts during startup should be thought of
-//@@ // as fatal, and that the user should give enough memory to make it possible
-//@@ // to get at least started. I hope that I do not generate much litter here
-//@@ // and in other places within the startup code. Not thinking about GC
-//@@ // safety leaves the code neater and easier to work with.
-//@@ //
-//@@                 Lsymbol_set_definition(nil, fn, w);
-//@@             }
-//@@         }
-//@@         do_not_kill_native_code = 0;
-//@@     }
-//@@ //
-//@@ // The stuff above is about the internal native compilation that I am no
-//@@ // longer pursuing. Well I may look back at it some day, but it would
-//@@ // involve CSL itself having compiler back-ends for all relevant architectures
-//@@ // and now I am moving to using a local C compiler to do that stuff.
-//@@ //
-//@@     {   LispObject n = native_defs;
-//@@         const char *p;
-//@@         while (n != nil)
-//@@         {   LispObject w, name, mod, fname, env, env1, checksum;
-//@@             setup_type_1 *table, *tp;
-//@@             uint32_t *pp;
-//@@             size_t len;
-//@@             name = qcar(n);
-//@@             n = qcdr(n);
-//@@             w = get(name, nativecoded_symbol);
-//@@             if (consp(w))
-//@@             {   mod = qcar(w);
-//@@                 w = qcdr(w);
-//@@                 if (consp(w))
-//@@                 {   fname = qcar(w);
-//@@                     w = qcdr(w);
-//@@                     if (consp(w))
-//@@                     {   checksum = qcar(w);
-//@@                         env = qcdr(w);
-//@@                     }
-//@@                     else continue;
-//@@                 }
-//@@                 else continue;
-//@@             }
-//@@             else continue;
-//@@ //
-//@@ // If I get here I have
-//@@ //   name     the Lisp symbol that may get a native definition
-//@@ //   mod      a string that names the module it lives in
-//@@ //   fname    the name of the function in the native code to load
-//@@ //   env      an environment to give the native definition
-//@@ //   checksum module checksum
-//@@ // name and fname may differ, for instance fname is the name that the
-//@@ // function had when it was compiled, but a copy of the definition may
-//@@ // have been copied to name...
-//@@ //
-//@@ #ifdef TRACE_NATIVE
-//@@             trace_printf("Possible native def: ");
-//@@             prin_to_trace(name);
-//@@             trace_printf("\nmodule: ");
-//@@             prin_to_trace(mod);
-//@@             trace_printf("\nfname: ");
-//@@             prin_to_trace(fname);
-//@@             trace_printf("\nEnv: ");
-//@@             prin_to_trace(env);
-//@@             trace_printf("\nChecksum: ");
-//@@             prin_to_trace(checksum);
-//@@             trace_printf("\n");
-//@@ #endif
-//@@ //
-//@@ // First I will try to ensure that the module concerned gets loaded. It
-//@@ // may have been already, in which case I just need its handle.
-//@@ //
-//@@             push4(name, fname, env, n);
-//@@ #ifdef EMBEDDED
-//@@             continue;
-//@@ #else // EMBEDDED
-//@@             table = find_def_table(mod, checksum);
-//@@             pop4(n, env, fname, name);
-//@@             if (table == NULL) continue;  // This module is not available
-//@@ #endif // EMBEDDED
-//@@ #ifdef TRACE_NATIVE
-//@@             trace_printf("setup table at %p\n", table);
-//@@ #endif
-//@@ // Now seek for fname in there...
-//@@             tp = table;
-//@@             while (tp->name != NULL) tp++;
-//@@ #ifdef SOON
-//@@             modname = "???";
-//@@             if (strcmp(modname, (char *)tp->one) != 0)
-//@@             {   trace_printf("Module name %s disagrees with %s\n",
-//@@                              modname, (char *)tp->one);
-//@@                 continue;
-//@@             }
-//@@ #else
-//@@ #ifdef DEBUG_NATIVE
-//@@             modname = "???";
-//@@             trace_printf("module itself says it is called %s, wants to be %s\n", (char *)tp->one, modname);
-//@@ #endif
-//@@ #endif
-//@@             push4(name, fname, env, n);
-//@@             p = get_string_data(fname, "restart:native_code", &len);
-//@@             pop4(n, env, fname, name);
-//@@             nil = C_nil;
-//@@             if (exception_pending()) continue;
-//@@             while (tp!=table)
-//@@             {   tp--;
-//@@                 if (strncmp(p, tp->name, len) == 0 &&
-//@@                     strlen(tp->name)==len)
-//@@                 {   p = NULL;
-//@@                     break;
-//@@                 }
-//@@             }
-//@@             if (p != NULL) continue;
-//@@ //
-//@@ // I will ONLY install native code if I have a bytecoded version in place
-//@@ // already. Note that I will require the function now about to be
-//@@ // redefined to have a bytecoded form that agrees wrt a checksum with the
-//@@ // native code version from the dynamically loaded module.
-//@@ // WELL there is an issue about the tail-call specials. They have a
-//@@ // symbol in the env cell and no checksum for me to look at at all. I
-//@@ // think I will just trust things in those cases.
-//@@ //
-//@@             env1 = qenv(name);
-//@@ #ifdef TRACE_NATIVE
-//@@             prin_to_trace(env1);
-//@@             trace_printf(" is the bytecoded version\n");
-//@@ #endif
-//@@             if (!is_symbol(env))
-//@@             {   if (!consp(env1) || !is_bps(qcar(env1))) continue;
-//@@                 env1 = qcdr(env1);
-//@@                 if (!is_vector(env1)) continue;
-//@@                 env1 = Lgetv(nil, env1, Lupbv(nil, env1));
-//@@ #ifdef TRACE_NATIVE
-//@@                 prin_to_trace(env1); trace_printf(" should be checksum again\n");
-//@@ #endif
-//@@                 if (!is_numbers(env1) || !is_bignum(env1)) continue;
-//@@                 pp = bignum_digits(env1);
-//@@ #ifdef TRACE_NATIVE
-//@@                 trace_printf("%u %u vs %u %u\n", pp[0], pp[1], tp->c2, tp->c1);
-//@@ #endif
-//@@                 if (pp[0] != tp->c2 || pp[1] != tp->c1) continue;
-//@@             }
-//@@             if (load_limit != 0x7fffffff)
-//@@             {   if (load_count >= load_limit) continue;
-//@@                 prin_to_trace(name);
-//@@                 trace_printf(" : %d\n", load_count++);
-//@@             }
-//@@ //
-//@@ // Gosh: now I can actually make the function available to users!
-//@@ //
-//@@ #ifdef TRACE_NATIVE
-//@@             trace_printf("actually set up native function\n");
-//@@ #endif
-//@@ //
-//@@ // The symbol I am about to define is already on native_defs and
-//@@ // has all the property-list info that it needs, so I am in the
-//@@ // happy situation of not needing to do much here.
-//@@ //
-//@@             ifn1(name) = (intptr_t)tp->one;
-//@@             ifn2(name) = (intptr_t)tp->two;
-//@@             ifnn(name) = (intptr_t)tp->n;
-//@@             qenv(name) = env;
-//@@         }
-//@@     }
-//@@     inject_randomness((int)clock());
-//@@ #endif // 0
+// I used to have an elaborate scheme for saving and re-loading native code,
+// but now if I ever wish to re-instate that I will want to implement it
+// afresh.  I can look in old subversion revisions to see what I did before
+// if that will help.
 }
-
-#endif // EXPERIMENT
 
 // end of serialize.cpp
