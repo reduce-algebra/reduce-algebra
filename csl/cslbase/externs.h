@@ -632,7 +632,7 @@ extern FILE *binary_read_file;
 
 extern FILE *binary_write_file;
 
-extern int boffop;
+extern size_t boffop;
 extern void packbyte(int c);
 
 #ifdef HAVE_FWIN
@@ -641,10 +641,8 @@ extern char **switches;
 extern void review_switch_settings();
 #endif
 
-#ifdef SOCKETS
-extern int sockets_ready;
+extern bool sockets_ready;
 extern void flush_socket();
-#endif
 
 extern void report_file(const char *s);
 
@@ -676,6 +674,9 @@ extern int force_reclaim_method, reclaim_trap_count, reclaim_stack_limit;
 extern int tty_count;
 extern FILE *spool_file;
 extern char spool_file_name[32];
+
+extern LispObject *repeat_heap;
+extern size_t repeat_heap_size, repeat_count;
 
 //
 // If there is no more than 100 bytes of data then I will deem
@@ -763,26 +764,34 @@ extern void push_args_1(va_list a, int nargs);
 extern void Iinit();
 extern void IreInit();
 extern void Ilist();
-extern bool open_output(const char *s, int len);
+extern bool open_output(const char *s, size_t len);
 #define IOPEN_OUT       0
-#define IOPEN_UNCHECKED 1
-#define IOPEN_CHECKED   2
-extern bool Iopen(const char *name, int len, int dirn, char *expanded_name);
+#define IOPEN_IN        1
+extern bool Iopen(const char *name, size_t len, int dirn, char *expanded_name);
 extern bool Iopen_from_stdin(), Iopen_to_stdout();
-extern bool IopenRoot(char *expanded_name, int hard, int sixtyfour);
+extern bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour);
 extern bool Iwriterootp(char *expanded);
 extern bool Iopen_banner(int code);
-extern bool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
-                        char *expanded_name);
-extern bool Icopy(const char *name, int len);
-extern bool Idelete(const char *name, int len);
+extern bool Imodulep(const char *name, size_t len, char *datestamp,
+                     size_t *size, char *expanded_name);
+extern char *trim_module_name(char *name, size_t *lenp);
+extern bool Icopy(const char *name, size_t len);
+extern bool Idelete(const char *name, size_t len);
 extern bool IcloseInput();
 extern bool IcloseOutput();
 extern bool Ifinished();
 extern int  Igetc();
-extern int32_t Iread(void *buff, int32_t size);
+extern bool Iread(void *buff, size_t size);
 extern bool Iputc(int ch);
-extern bool Iwrite(const void *buff, int32_t size);
+extern bool Iwrite(const void *buff, size_t size);
+extern bool def_init();
+extern bool inf_init();
+extern bool def_finish();
+extern bool inf_finish();
+extern int  Zgetc();
+extern bool Zread(void *buff, size_t size);
+extern bool Zputc(int ch);
+extern bool Zwrite(const void *buff, size_t size);
 extern long int Ioutsize();
 extern const char *CSLtmpdir();
 extern const char *CSLtmpnam(const char *suffix, int32_t suffixlen);
@@ -790,7 +799,7 @@ extern int Cmkdir(const char *s);
 extern char *look_in_lisp_variable(char *o, int prefix);
 
 extern void CSL_MD5_Init();
-extern void CSL_MD5_Update(const unsigned char *data, int len);
+extern void CSL_MD5_Update(const unsigned char *data, size_t len);
 extern void CSL_MD5_Final(unsigned char *md);
 extern bool CSL_MD5_busy;
 extern unsigned char *CSL_MD5(unsigned char *data, int n, unsigned char *md);
@@ -918,7 +927,7 @@ extern LispObject nreverse(LispObject a);
 extern FILE        *open_file(char *filename, const char *original_name,
                               size_t n, const char *dirn, FILE *old_file);
 extern "C" LispObject plus2(LispObject a, LispObject b);
-extern void        preserve(const char *msg, int len);
+extern void        preserve(const char *msg, size_t len);
 extern void        preserve_native_code();
 extern void        relocate_native_function(unsigned char *bps);
 extern LispObject prin(LispObject u);
@@ -967,7 +976,8 @@ extern int32_t     thirty_two_bits(LispObject a);
 extern int64_t     sixty_four_bits(LispObject a);
 
 extern uint64_t crc64(uint64_t crc, const void *buf, size_t size);
-extern uint32_t crc32(uint32_t crc, const void *buf, size_t size);
+// I now use the zlib version of crc32 so do not need a declaration here.
+// extern uint32_t crc32(uint32_t crc, const void *buf, size_t size);
 
 #ifdef DEBUG
 extern void validate_string_fn(LispObject a, const char *f, int l);

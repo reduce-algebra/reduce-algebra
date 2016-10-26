@@ -5372,6 +5372,7 @@ symbolic procedure s!:fslout1(u, loadonly);
         u := cdr u;
         if (w := get(car u, 'c!-version)) and
             w = md60 (car u . cadr u . s!:fully_macroexpand_list cddr u) then <<
+            if not zerop posn() then terpri();
             princ "+++ "; prin car u;
             printc " not compiled (C++ version available)";
             s!:fasl_code := list('restore!-c!-code, mkquote car u) . s!:fasl_code >>
@@ -5397,6 +5398,7 @@ symbolic procedure s!:fslout1(u, loadonly);
 %
 %       if (w := get(car u, 'c!-version)) and
 %           md60 u = w then <<
+%           if not zerop posn() then terpri();
 %           princ "+++ "; prin car u;
 %           printc " not compiled (C++ version available)";
 %           return nil >>

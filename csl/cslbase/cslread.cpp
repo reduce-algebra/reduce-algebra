@@ -38,10 +38,6 @@
 
 #include "headers.h"
 
-#ifdef SOCKETS
-#include "sockhdr.h"
-#endif
-
 #ifdef WIN32
 #include <windows.h>
 #endif
@@ -87,7 +83,7 @@ int first_char(LispObject ch)
 static int curchar = NOT_CHAR;
 FILE *non_terminal_input;
 
-int boffop;
+size_t boffop;
 #define boffo_char(i) ucelt(boffo, i)
 
 
@@ -163,17 +159,6 @@ LispObject copy_string(LispObject str, size_t n)
 
 LispObject Lbatchp(LispObject nil, int nargs, ...)
 {   argcheck(nargs, 0, "batchp");
-#if 0
-#ifdef SOCKETS
-//
-// If CSL is being run as a service (ie accessed via a socket) then I will
-// deem it to be in "interactive" mode. This leaves responsibility for stopping
-// after errors (if that is what is wanted) with the other end of the
-// communications link.
-//
-    if (socket_server != 0) return onevalue(nil);
-#endif
-#endif
 //
 // If the user had specified input files on the command line I will say that
 // we are in batch mode even if there is a terminal present somewhere. So
@@ -233,14 +218,6 @@ LispObject Lsystem(LispObject nil, LispObject a)
     int32_t len;
     int w;
     memset(parmname, 0, sizeof(parmname));
-#if 0
-#ifdef SOCKETS
-//
-// Security measure - remote client can not do "system"
-//
-    if (socket_server != 0) return onevalue(nil);
-#endif
-#endif
     if (a == nil)            // enquire if command processor is available
     {   w = my_system(NULL);
         return onevalue(Lispify_predicate(w != 0));
@@ -284,14 +261,6 @@ static LispObject Lsilent_system(LispObject nil, LispObject a)
     memset(cmd, 0, sizeof(cmd));
 #ifdef SHELL_EXECUTE
     memset(args, 0, sizeof(args));
-#endif
-#if 0
-#ifdef SOCKETS
-//
-// Security measure - remote client can not do "system"
-//
-    if (socket_server != 0) return onevalue(nil);
-#endif
 #endif
     if (a == nil)            // enquire if command processor is available
         return onevalue(lisp_true); // always is on Windows!
@@ -3075,13 +3044,13 @@ static bool read_failure;
 
 void packbyte(int c)
 {   LispObject nil = C_nil;
-    int32_t boffo_size = length_of_byteheader(vechdr(boffo));
+    size_t boffo_size = length_of_byteheader(vechdr(boffo));
 //
 // I expand boffo (maybe) several characters earlier than you might
 // consider necessary. Some of that is to be extra certain about having
 // space in it when I pack a multi-byte character.
 //
-    if (boffop >= (int)boffo_size-(int)CELL-8)
+    if (boffop >= boffo_size-CELL-8)
     {   LispObject new_boffo =
             getvector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
         nil = C_nil;
@@ -4415,14 +4384,6 @@ LispObject Lspool(LispObject nil, LispObject file)
     Header h;
     int32_t len;
     memset(filename, 0, sizeof(filename));
-#if 0
-#ifdef SOCKETS
-//
-// Security measure - remote client can not do "spool"
-//
-    if (socket_server != 0) return onevalue(nil);
-#endif
-#endif
     if (spool_file != NULL)
     {
 #ifdef COMMON

@@ -1,7 +1,6 @@
 // entries.h                               Copyright (C) Codemist 1991-2016
 
 
-
 /**************************************************************************
  * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
@@ -407,6 +406,7 @@ extern "C" LispObject Limin(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Linorm(LispObject nil, LispObject a, LispObject k);
 extern "C" LispObject Linstate_c_code(LispObject nil, LispObject a, LispObject b);
 extern "C" LispObject Lintersect(LispObject nil, LispObject a, LispObject b);
+extern "C" LispObject Lintersect_symlist(LispObject nil, LispObject a, LispObject b);
 extern "C" LispObject Liplus2(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Liquotient(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Liremainder(LispObject env, LispObject a, LispObject b);
@@ -456,6 +456,7 @@ extern "C" LispObject Lsymbol_set_env(LispObject env, LispObject a, LispObject b
 extern "C" LispObject Lthrow_one_value(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Ltimes2(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lunion(LispObject nil, LispObject a, LispObject b);
+extern "C" LispObject Lunion_symlist(LispObject nil, LispObject a, LispObject b);
 extern "C" LispObject Lwrite_module(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lxcons(LispObject env, LispObject a, LispObject b);
 

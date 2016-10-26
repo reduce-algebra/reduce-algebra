@@ -1,4 +1,12 @@
+#ifndef ZLIB_DEMO
 // preserve.cpp                       Copyright (c) Codemist    , 1990-2016
+#else
+// zlibdemo.cpp                       Copyright (c) Codemist    , 1990-2016
+#endif
+
+// The file preserve.cpp can be preprocessed to generate zlibdemo.cpp,
+// which is why the header line above is "strange".
+
 
 /**************************************************************************
  * Copyright (C) 2016, Codemist.                         A C Norman       *
@@ -30,6 +38,19 @@
  *************************************************************************/
 
 // $Id$
+
+
+#ifndef ZLIB_DEMO
+
+// If this file is compiled with ZLIB_DEMO defined it will be a program that
+// can be used as either
+//     zlibdemo source dest
+// to compress the source file and create the destination one, or
+//     slibdemo -d source dest
+// to uncompress from source to dest.
+//
+// I will use "unifdef" to create the separate file zlibdemo.cpp from this one
+// but this is the master version...
 
 
 #include "headers.h"
@@ -84,6 +105,324 @@
 #include "image.cpp"
 #endif
 
+#else // ZLIB_DEMO
+
+// Free-standing demonstration of how I use zlib to compress image files.
+
+#include <stdio.h>
+#include <zlib.h>
+#include <string.h>
+#include <assert.h>
+
+
+FILE *src, *dest;
+
+static int Igetc()
+{   return getc(src);
+}
+
+static bool Iputc(int ch)
+{   return (putc(ch, dest) == EOF);
+}
+
+bool Iread(void *buff, size_t size)
+// Reads (size) bytes into the indicated buffer.  Returns true if
+// if fails to read the expected number of bytes.
+{
+    unsigned char *p = (unsigned char *)buff;
+    while (size > 0)
+    {   int c;
+        if ((c = Igetc()) == EOF) return true;
+        *p++ = c;
+        size--;
+    }
+    return false;
+}
+
+bool Iwrite(const void *buff, size_t size)
+//
+// Writes (size) bytes from the given buffer, returning true if trouble.
+//
+{   const unsigned char *p = (const unsigned char *)buff;
+    for (size_t i=0; i<size; i++)
+        if (Iputc(p[i])) return true;
+    return false;
+}
+
+#endif
+
+// I will use zlib to compress image files. The code here arranges to
+// buffer chunks of data for compressing or decompressing and adds
+// CRC checking so that corrupted data can be noticed.
+
+#define CHUNK ((size_t)16384)
+
+static z_stream strm;
+static unsigned char in[CHUNK];
+static unsigned char out[CHUNK];
+
+const char *Zreturncode(int rc)
+{   switch (rc)
+    {
+    default:
+        return "Unknown return code from zlib";
+    case Z_OK:
+        return "OK";
+    case Z_STREAM_END:
+        return "STREAM_END";
+    case Z_NEED_DICT:
+        return "NEED_DICT";
+    case Z_ERRNO:
+        return "ERRNO";
+    case Z_STREAM_ERROR:
+        return "STREAM_ERROR";
+    case Z_DATA_ERROR:
+        return "DATA_ERROR";
+    case Z_MEM_ERROR:
+        return "MEM_ERROR";
+    case Z_BUF_ERROR:
+        return "BUF_ERROR";
+    case Z_VERSION_ERROR:
+        return "VERSION_ERROR";
+    }
+}
+
+bool def_init()
+{   strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    int rc = deflateInit(&strm, Z_BEST_COMPRESSION);
+    strm.avail_in = 0;
+    return (rc != Z_OK);
+}
+
+// Zputc will return true if it FAILS.
+
+bool Zputc(int ch)
+{   in[strm.avail_in++] = ch;
+    if (strm.avail_in != CHUNK) return false; // Just buffer the data
+    strm.next_in = in;
+    do
+    {   strm.next_out = out;
+        strm.avail_out = CHUNK;
+// Here I know I have plenty of space in the output buffer, and furthermore
+// I should have CHUNK of data in the input buffer. So progress should be
+// possible and hence Z_BUF_ERROR should never be returned. Z_STREAM_END
+// can only arise if Z_FINISH had been passed as the flush input to deflate,
+// and Z_STREAM_ERROR is a genuine error...
+        int rc = deflate(&strm, Z_NO_FLUSH);
+        if (rc != Z_OK) return true;
+        unsigned int n = CHUNK - strm.avail_out;
+// Sometimes even though I have provided a whole chunk of input there
+// will not (yet) be any output available. I do not want to emit a block
+// of length zero both because that would be silly and because I use a
+// block-length of zero to signify end of stream.
+        if (n != 0)
+        {
+// Write the length of the block as 2 bytes.
+            if (Iputc(n >> 8)) return true;
+            if (Iputc(n)) return true;
+// Calculate and write a CRC for this block.
+            int crc_out = crc32(crc32(0, NULL, 0), out, n);
+            if (Iputc(crc_out>>24)) return true;
+            if (Iputc(crc_out>>16)) return true;
+            if (Iputc(crc_out>>8)) return true;
+            if (Iputc(crc_out)) return true;
+            if (Iwrite(out, n)) return true;
+        }
+// I will keep going until I have used up all this input block.
+    } while (strm.avail_in != 0);
+    return false;
+}
+
+bool def_finish()
+{   do
+    {   strm.next_in = in;
+        strm.avail_out = CHUNK;
+        strm.next_out = out;
+        int rc;
+        if ((rc = deflate(&strm, Z_FINISH)) != Z_OK &&
+             rc != Z_STREAM_END) return true;
+        size_t n = CHUNK - strm.avail_out;
+        if (n != 0)
+        {   if (Iputc(n >> 8)) return true;
+            if (Iputc(n)) return true;
+            int crc_out = crc32(crc32(0, NULL, 0), out, n);
+            if (Iputc(crc_out>>24)) return true;
+            if (Iputc(crc_out>>16)) return true;
+            if (Iputc(crc_out>>8)) return true;
+            if (Iputc(crc_out)) return true;
+            if (Iwrite(out, n)) return true;
+        }
+    } while (strm.avail_out == 0);
+    int rc = deflateEnd(&strm);
+    if (rc != Z_OK) return true;
+    if (Iputc(0)) return true;  // Termination bytes
+    if (Iputc(0)) return true;
+    return false;
+}
+
+bool Zwrite(const void *b, size_t n)
+{   const char *c = (const char *)b;
+    while (n-- != 0) if (Zputc(*c++)) return true;
+    return false;
+}
+
+static size_t n_out;
+static unsigned char *p_out;
+static int z_eof;
+
+bool inf_init()
+{   strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    n_out = 0;
+    p_out = out;
+    z_eof = 0;
+    int rc = inflateInit(&strm);
+    strm.avail_in = 0;
+    strm.next_in = in;
+    return (rc != Z_OK);
+}
+
+// Although the value of EOF on *many* systems will be -1, the standards do
+// not guarantee that. So for Zgetc() I will arrange that I explictly return
+// (-1) for end-of-file and error conditions, so that I can rely on that.
+
+int Zgetc()
+{   for (;;)
+    {   if (n_out != 0)    // Use byte from the current decompressed chunk.
+        {   n_out--;
+            return *p_out++;
+        }
+        if (z_eof != 0) return (z_eof = -1);
+// Here the zlib output buffer is empty. If the input buffer contains anything
+// at all I will just call inflate() again. 
+// I do not believe that inflate can ever leave input untouched in its input
+// buffer while there is space in the output buffer.
+        if (strm.avail_in == 0)
+        {
+// The compressed material is arrabnged in blocks. Each block starts with
+// a 2-byte length field.
+            int ch, n = Igetc();
+// If I get an end of file (or error) report when trying to read part of the
+// length information then the stream is corrupted, and I just return and end
+// of file marker. When I do so I set z_eof so that further calls to Zgetc()
+// will also return (-1).
+            if (n == EOF) return (z_eof = -1);
+            ch = Igetc();
+            if (ch == EOF) return (z_eof = -1);
+            n = (n << 8) | ch;
+// If the block-length is 0 we have reached the end of the stream. Because
+// I am trying to read data here I must have already emitted all the bytes
+// that could be generated from everything that had been seen earlier, so
+// I can return an end-of-file marker.
+            if (n == 0) return (z_eof = -1);
+// Following the 2-byte length there is a 4-byte CRC. Again I watch carefully
+// so that an EOF while trying to read this will be reported back to the
+// caller (just as and end of file condition).
+            int crc_needed = Igetc();
+            if (crc_needed == EOF) return (z_eof = -1);
+            for (int i=0; i<3; i++)
+            {   int w = Igetc();
+                if (w == EOF) return (z_eof = -1);
+                crc_needed = (crc_needed << 8) | w;
+            }
+// Now I read the number of bytes I have been told to expect. If I am not
+// able to read thet many it is an error.
+            if (Iread(in, n)) return (z_eof = -1);
+// Compute a CRC on the block just read and complain if it is not as
+// expected.
+            int crc = crc32(crc32(0, NULL, 0), in, n);
+            if (crc != crc_needed) return (z_eof = -1);
+// Set the zlib input buffer information so that this new block can be
+// processed. There will be at least 1 new byte of data!
+            strm.next_in = in;
+            strm.avail_in = n;
+        }
+        strm.next_out = out;
+        strm.avail_out = CHUNK;
+// Inflate whatever data is in the input buffer. I require that this EITHER
+// removes at least one byte from the input buffer OR puts at least one
+// byte in the output buffer, or that it return Z_STREAM_END. If it grabs
+// input then it will eventually empty the input buffer so more will be read.
+// Whenever it generates output that is offered to the caller.
+        int rc = inflate(&strm, Z_SYNC_FLUSH);
+// I check the return code and exit if something has gone wrong.
+        if (rc != Z_OK &&
+            rc != Z_STREAM_END &&
+            rc != Z_BUF_ERROR) return (z_eof = -1);
+        if (rc == Z_STREAM_END) z_eof = (-1);
+        p_out = out;
+        n_out = CHUNK - strm.avail_out;
+    }
+}
+
+bool Zread(void *b, size_t n)
+{   char *c = (char *)b;
+    while (n-- != 0)
+    {   int n = Zgetc();
+        if (n == -1) return true;
+        *c++ = n;
+    }
+    return false;
+}
+
+bool inf_finish()
+{   return (inflateEnd(&strm) != Z_OK);
+}
+
+#ifdef ZLIB_DEMO
+
+// compress or decompress from src to dest
+
+int main(int argc, char **argv)
+{
+// Check argument number and format. I expect either
+//      zlibdemo src compressed-dest
+// OR   zlibdemo -d compressed-src dest
+//
+    if (argc < 3 ||
+        (argc == 3 && strcmp(argv[1] , "-d") == 0) ||
+        (argc == 4 && strcmp(argv[1], "-d") != 0) ||
+        argc > 4)
+    {   fputs("Usage: zlibdemo [-d] source dest\n", stderr);
+        return 1;
+    }
+
+    if (argc == 3)
+    {   src = fopen(argv[1], "r");
+        assert(src != NULL);
+        dest = fopen(argv[2], "wb");
+        assert(dest != NULL);
+        def_init();
+        int ch;
+        while ((ch = getc(src)) != EOF) Zputc(ch);
+        def_finish();
+        fclose(src);
+        fclose(dest);
+        return 0;
+     }
+
+    else
+    {   src = fopen(argv[2], "rb");
+        assert(src != NULL);
+        dest = fopen(argv[3], "w");
+        assert(dest != NULL);
+        inf_init();
+        int ch;
+        while ((ch = Zgetc()) != -1) putc(ch, dest);
+        inf_finish();
+        fclose(src);
+        fclose(dest);
+        return 0;
+    }
+}
+
+// end of zlibdemo.cpp
+
+
+#else // ZLIB_DEMO
 
 //
 // These routines pack multiple binary files into one big one.  The
@@ -270,7 +609,7 @@ static bool version_moan(int v)
 {
     if ((v & 0x7f) == IMAGE_FORMAT_VERSION) return false;
 // This printing of a newline here lookes really odd to me!
-    term_printf("\n");
+//  term_printf("\n");
     return true;
 }
 
@@ -500,9 +839,9 @@ void Iinit(void)
     CSL_MD5_Update((unsigned char *)"Copyright 2016 Codemist    ", 24);
 }
 
-#define IMAGE_CODE  (-1000)
-#define HELP_CODE   (-1001)
-#define BANNER_CODE (-1002)
+#define IMAGE_CODE  ((size_t)(-1000))
+#define HELP_CODE   ((size_t)(-1001))
+#define BANNER_CODE ((size_t)(-1002))
 
 //
 // The code here was originally written to support module names up to
@@ -537,23 +876,25 @@ void Iinit(void)
 // return is the number of entries involved.
 //
 
-static int samename(const char *n1, directory *d, int j, int len)
+static int samename(const char *n1, directory *d, int j, size_t len)
 //
 // Compare the given names, given that n1 is of length len and n2 is
 // blank-padded to exactly name_size characters. The special cases
 // with n1 NULL allow len to encode what I am looking for.
 //
 {   const char *n2 = &d->d[j].D_name;
-    int i, n, recs;
+    size_t i, n, recs;
     if (len == IMAGE_CODE)
         return (memcmp(n2, "InitialImage", 12) == 0);
     if (len == HELP_CODE)
         return (memcmp(n2, "HelpDataFile", 12) == 0);
     if (len == BANNER_CODE)
         return (memcmp(n2, "Start-Banner", 12) == 0);
-    if (len < 0)
+    if ((intptr_t)len < 0)   // Hard code has never been fully supported
+                             // and the use of "negative length codes" for
+                             // using it is dodgy!
     {   char hard[16];
-        sprintf(hard, "HardCode<%.2x>", (-len) & 0xff);
+        sprintf(hard, "HardCode<%.2x>", (int)((-len) & 0xff));
         return (memcmp(n2, hard, 12) == 0);
     }
     if ((n2[11] & 0xff) > 0x80) return 0;
@@ -577,8 +918,8 @@ static int samename(const char *n1, directory *d, int j, int len)
     else return recs;
 }
 
-static void fasl_file_name(char *nn, directory *d, const char *name, int len)
-{   int np;
+static void fasl_file_name(char *nn, directory *d, const char *name, size_t len)
+{   size_t np;
     strcpy(nn, d->full_filename);
     np = strlen(nn);
 #ifdef WIN32
@@ -590,7 +931,8 @@ static void fasl_file_name(char *nn, directory *d, const char *name, int len)
     {   if (len == IMAGE_CODE) strcpy(&nn[np], "InitialImage");
         else if (len == HELP_CODE) strcpy(&nn[np], "HelpDataFile");
         else if (len == BANNER_CODE) strcpy(&nn[np], "Start-Banner");
-        else if (len < 0) sprintf(&nn[np], "HardCode-%.2x", (-len) & 0xff);
+        else if ((intptr_t)len < 0) sprintf(&nn[np], "HardCode-%.2x",
+                                            (int)((-len) & 0xff));
     }
     else
     {   memcpy(&nn[np], name, len);
@@ -599,8 +941,8 @@ static void fasl_file_name(char *nn, directory *d, const char *name, int len)
 }
 
 
-static bool open_input(directory *d, const char *name, int len,
-                          int32_t offset, int checked)
+static bool open_input(directory *d, const char *name, size_t len,
+                          size_t offset)
 //
 // Set up binary_read_file to access the given module, returning true
 // if it was not found in the given directory. I used to pass the
@@ -624,7 +966,6 @@ static bool open_input(directory *d, const char *name, int len,
         fseek(binary_read_file, 0L, SEEK_END);
         read_bytes_remaining = ftell(binary_read_file);
 #endif
-        if (checked) read_bytes_remaining -= 4;
 #ifdef BUILTIN_IMAGE
         binary_read_filep = reduce_image + offset;
 #else
@@ -771,7 +1112,7 @@ static directory *enlarge_directory(int current_size)
     return d1;
 }
 
-bool open_output(const char *name, int len)
+bool open_output(const char *name, size_t len)
 //
 // Set up binary_write_file to access the given module, returning true
 // if anything went wrong. Remember name==NULL for initial image & help
@@ -870,8 +1211,8 @@ bool open_output(const char *name, int len)
     }
     else if (len == HELP_CODE) name = "HelpDataFile", len = IMAGE_CODE, n = 1;
     else if (len == BANNER_CODE) name = "Start-Banner", len = IMAGE_CODE, n = 1;
-    else if (len < 0)
-    {   sprintf(hard, "HardCode<%.2x>", (-len) & 0xff);
+    else if ((intptr_t)len < 0)
+    {   sprintf(hard, "HardCode<%.2x>", (int)((-len) & 0xff));
         name = hard, len = IMAGE_CODE, n = 1;
     }
     else if (len <= 11) n = 1;
@@ -892,7 +1233,7 @@ bool open_output(const char *name, int len)
         memcpy(&d->d[i].D_position, d->h.eof, 4);
     }
     else
-    {   int np;
+    {   size_t np;
         const char *p;
 //
 // First I will clear all the relevant fields to blanks.
@@ -1124,7 +1465,7 @@ LispObject Llibrary_members0(LispObject nil, int nargs, ...)
     else return onevalue(nil);
 }
 
-bool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
+bool Imodulep(const char *name, size_t len, char *datestamp, size_t *size,
                  char *expanded_name)
 //
 // Hands back information about whether the given module exists, and
@@ -1177,7 +1518,7 @@ bool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
                 if (name == NULL) sprintf(expanded_name,
                                               "%s%sInitialImage%s", n, p1, p2);
                 else sprintf(expanded_name,
-                                 "%s%s%.*s%s", n, p1, len, name, p2);
+                                 "%s%s%.*s%s", n, p1, (int)len, name, p2);
                 return false;
             }
         }
@@ -1187,7 +1528,7 @@ bool Imodulep(const char *name, int len, char *datestamp, int32_t *size,
 
 directory *rootDirectory = NULL;
 
-bool IopenRoot(char *expanded_name, int hard, int sixtyfour)
+bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour)
 //
 // Opens the "InitialImage" file so that it can be loaded. Note that
 // when I am about to do this I do not have a valid heap image loaded, and
@@ -1200,7 +1541,7 @@ bool IopenRoot(char *expanded_name, int hard, int sixtyfour)
     if (hard == 0) hard = IMAGE_CODE;
     for (i=0; i<number_of_fasl_paths; i++)
     {
-        bool bad = open_input(fasl_files[i], NULL, hard, 0, 1);
+        bool bad = open_input(fasl_files[i], NULL, hard, 0);
 //
 // The name that I return (for possible display in error messages) will be
 // either that of the file that was opened, or one relating to the last
@@ -1217,14 +1558,14 @@ bool IopenRoot(char *expanded_name, int hard, int sixtyfour)
             else if (hard == BANNER_CODE)
                 sprintf(expanded_name, "%s(InitialImage)", n);
             else sprintf(expanded_name, "%s(HardCode<%.2x>)",
-                             n, (-hard) & 0xff);
+                             n, (int)((-hard) & 0xff));
         }
         if (!bad) return false;
     }
     return true;
 }
 
-bool Iopen(const char *name, int len, int forinput, char *expanded_name)
+bool Iopen(const char *name, size_t len, int forinput, char *expanded_name)
 //
 // Make file with the given name available through this package of
 // routines.  (name) is a pointer to a string (len characters valid) that
@@ -1245,8 +1586,7 @@ bool Iopen(const char *name, int len, int forinput, char *expanded_name)
             LispObject oo = qcar(il); il = qcdr(il);
             if (!is_library(oo)) continue;
             i = library_number(oo);
-            bad = open_input(fasl_files[i], name, len,
-                             0, forinput==IOPEN_CHECKED);
+            bad = open_input(fasl_files[i], name, len, 0);
 //
 // The name that I return (for possible display in error messages) will be
 // either that of the file that was opened, or one relating to the last
@@ -1264,7 +1604,7 @@ bool Iopen(const char *name, int len, int forinput, char *expanded_name)
 #endif
                     p2 = "";
                 }
-                sprintf(expanded_name, "%s%s%.*s%s", n, p1, len, name, p2);
+                sprintf(expanded_name, "%s%s%.*s%s", n, p1, (int)len, name, p2);
             }
             if (!bad) return false;
         }
@@ -1293,7 +1633,7 @@ bool Iopen(const char *name, int len, int forinput, char *expanded_name)
         }
         if (len == IMAGE_CODE)
             sprintf(expanded_name, "%s%sInitialImage%s", p1, n, p2);
-        else sprintf(expanded_name, "%s%s%.*s%s", n, p1, len, name, p2);
+        else sprintf(expanded_name, "%s%s%.*s%s", n, p1, (int)len, name, p2);
     }
     return open_output(name, len);
 }
@@ -1338,7 +1678,7 @@ bool Iopen_banner(int code)
             LispObject oo = qcar(il); il = qcdr(il);
             if (!is_library(oo)) continue;
             bad = open_input(fasl_files[library_number(oo)],
-                             NULL, BANNER_CODE, 0, 0);
+                             NULL, BANNER_CODE, 0);
             if (!bad) return false;
         }
         return true;
@@ -1370,7 +1710,7 @@ bool Iopen_to_stdout(void)
     return false;
 }
 
-bool Idelete(const char *name, int len)
+bool Idelete(const char *name, size_t len)
 {   int i, nrec;
     directory *d;
     LispObject oo = qvalue(output_library);
@@ -1412,7 +1752,7 @@ bool Idelete(const char *name, int len)
     return true;
 }
 
-bool Icopy(const char *name, int len)
+bool Icopy(const char *name, size_t len)
 //
 // Find the named module in one of the input files, and if the place that
 // it is found is not already the output file copy it to the output. These days
@@ -1422,7 +1762,6 @@ bool Icopy(const char *name, int len)
 //
 {   int i, ii, j, n;
     long int k, l, save = read_bytes_remaining;
-    uint32_t chk1;
     char hard[16];
     directory *d, *id;
     LispObject il, oo = qvalue(output_library);
@@ -1480,8 +1819,8 @@ found:
         name = "HelpDataFile", len = IMAGE_CODE, n = 1;
     else if (len == BANNER_CODE)
         name = "Start-Banner", len = IMAGE_CODE, n = 1;
-    else if (len < 0)
-    {   sprintf(hard, "HardCode<%.2x>", (-len) & 0xff);
+    else if ((intptr_t)len < 0)
+    {   sprintf(hard, "HardCode<%.2x>", (int)((-len) & 0xff));
         name = hard, len = IMAGE_CODE, n = 1;
     }
     else if (len <= 11) n = 1;
@@ -1502,7 +1841,7 @@ found:
         memcpy(&d->d[i].D_position, d->h.eof, 4);
     }
     else
-    {   int np;
+    {   size_t np;
         const char *p;
 //
 // First I will clear all the relevant fields to blanks.
@@ -1551,10 +1890,8 @@ ofound:
     if (fseek(d->f, bits32(&d->d[i].D_position), SEEK_SET) != 0 ||
         fseek(id->f, bits32(&id->d[ii].D_position), SEEK_SET) != 0) return true;
     l = bits24(&id->d[ii].D_size);
-    chk1 = 0;
     for (k=0; k<l; k++)
     {   int c = getc(id->f);
-        uint32_t chk_temp;
         if (c == EOF) return true;
         putc(c, d->f);
     }
@@ -1592,7 +1929,6 @@ bool IcloseOutput()
 // was most recently opened.
 //
 {   int r;
-    LispObject nil = C_nil;
     directory *d = current_output_directory;
     Istatus = I_INACTIVE;
     current_output_directory = NULL;
@@ -1717,142 +2053,6 @@ bool Ifinished(void)
         if (finished_with(j)) failed = true;
     return failed;
 }
-// This is a modification of the public domain sample code to use
-// zlib, adapted so that it has a putc/getc style interface and it can
-// tell where a compressed input stream ends.
-
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-#include "zlib.h"
-
-#define CHUNK 16384
-
-z_stream strm;
-unsigned char in[CHUNK];
-unsigned char out[CHUNK];
-
-void def_init()
-{   strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    assert(deflateInit(&strm, Z_BEST_COMPRESSION) == Z_OK);
-    strm.avail_in = 0;
-}
-
-void zputc(int ch)
-{   in[strm.avail_in++] = ch;
-    if (strm.avail_in != CHUNK) return;
-    strm.next_in = in;
-    do
-    {   strm.next_out = out;
-        strm.avail_out = CHUNK;
-// Here I know I have plenty of space in the output buffer, and furthermore
-// I should have CHUNK of data in the input buffer. So progress should be
-// possible and hence Z_BUF_ERROR sgould never be returned. Z_STREAM_END
-// can only arise if Z_FINISH had been passed as the flush input to deflate,
-// and Z_STREAM_ERROR is a genuine error...
-        assert(deflate(&strm, Z_NO_FLUSH) == Z_OK);
-        unsigned int n = CHUNK - strm.avail_out;
-// Sometimes even though I have provided a whole chunk of input there
-// will not (yet) be any output available.
-        if (n != 0)
-        {   assert(putc((n >> 8) & 0xff, stdout) != EOF);
-            assert(putc(n & 0xff, stdout) != EOF);
-            assert(fwrite(out, 1, n, stdout) == n);
-        }
-// I will keep going until I have used up all this input block.
-    } while (strm.avail_in != 0);
-}
-
-void def_finish()
-{   do
-    {   strm.next_in = in;
-        strm.avail_out = CHUNK;
-        strm.next_out = out;
-        int rc;
-        assert((rc = deflate(&strm, Z_FINISH)) == Z_OK ||
-               rc == Z_STREAM_END);
-        unsigned int n = CHUNK - strm.avail_out;
-        if (n != 0)
-        {   assert(putc((n >> 8) & 0xff, stdout) != EOF);
-            assert(putc(n & 0xff, stdout) != EOF);
-            assert(fwrite(out, 1, n, stdout) == n);
-        }
-    } while (strm.avail_out == 0);
-    assert(deflateEnd(&strm) == Z_OK);
-    assert(putc(0, stdout) != EOF);  // Termination bytes
-    assert(putc(0, stdout) != EOF);
-    assert(!ferror(stdout));
-}
-
-static unsigned int n_out;
-static unsigned char *p_out;
-static int n_pending;
-static bool z_eof;
-
-void inf_init()
-{   strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    strm.avail_in = 0;
-    strm.next_in = in;
-    n_out = 0;
-    p_out = out;
-    z_eof = false;
-    n_pending = 0;
-    assert(inflateInit(&strm) == Z_OK);
-}
-
-int zgetc()
-{   if (n_out != 0)    // Use up current decompressed chunk.
-    {   n_out--;
-        return *p_out++;
-    }
-    if (z_eof) return EOF;
-// I will do what I need to to fill the input buffer as full as the amount
-// of available data will let me.
-    if (strm.avail_in == 0)
-    {   while (strm.avail_in < CHUNK && n_pending >= 0)
-        {   if (n_pending == 0)
-            {   int ch = getc(stdin);
-                assert(ch != EOF);
-                n_pending = ch & 0xff;
-                ch = getc(stdin);
-                assert(ch != EOF);
-                n_pending = (n_pending << 8) | (ch & 0xff);
-                if (n_pending == 0)
-                {   n_pending = -1;
-                    break;
-                }
-            }
-            int n = n_pending;
-            if (n + strm.avail_in > CHUNK) n = CHUNK - strm.avail_in;
-            assert(fread(&in[strm.avail_in], 1, n, stdin) == n);
-            strm.avail_in += n;
-            n_pending -= n;
-        }
-        strm.next_in = in;
-    }
-    strm.next_out = out;
-    strm.avail_out = CHUNK;
-    int rc;
-    strm.avail_in, strm.avail_out;
-    rc = inflate(&strm, Z_SYNC_FLUSH);
-    assert(rc == Z_OK ||
-           rc == Z_STREAM_END ||
-           rc == Z_BUF_ERROR);
-    if (rc == Z_STREAM_END) z_eof = true;
-    p_out = out;
-    n_out = CHUNK - strm.avail_out;
-    return zgetc();
-}
-
-void inf_finish()
-{   assert(inflateEnd(&strm) == Z_OK);
-}
-
-// Soon I will adapt this to use the zlib-based compression...
 
 int Igetc(void)
 //
@@ -1866,7 +2066,6 @@ int Igetc(void)
 //
 {   long int n_left = read_bytes_remaining;
     int c;
-    uint32_t chk_temp;
     if (n_left <= 0)
     {   if (n_left == 0) return EOF;
         else
@@ -1891,22 +2090,18 @@ int Igetc(void)
     return (c & 0xff);
 }
 
-int32_t Iread(void *buff, int32_t size)
-//
-// Reads (size) bytes into the indicated buffer.  Returns number of
-// bytes read.
-//
+bool Iread(void *buff, size_t size)
+// Reads (size) bytes into the indicated buffer.  Returns true if
+// if fails to read the expected number of bytes.
 {
     unsigned char *p = (unsigned char *)buff;
-    int nread = 0;
     while (size > 0)
     {   int c = Igetc();
-        if (c == EOF) break;
+        if (c == EOF) return true;
         *p++ = c;
-        nread++;
         size--;
     }
-    return nread;
+    return false;
 }
 
 long int Ioutsize(void)
@@ -1917,9 +2112,13 @@ bool Iputc(int ch)
 //
 // Puts one character into image system, returning true if there
 // was trouble.
+// If start-module is given a Lisp stream as an argument then it will
+// save that in fasl_stream and the code must write bytes to there. Otherwise
+// (ie in the normal situation!) I will have used Iopen to set up the
+// stream, and it will have set binary_write_file to the stream and positioned
+// it at the point I should start writing.
 //
-{   uint32_t chk_temp;
-    LispObject nil = C_nil;
+{   LispObject nil = C_nil;
     write_bytes_written++;
     if (fasl_stream != nil && fasl_stream != SPID_NIL)
         putc_stream(ch, fasl_stream);
@@ -1927,34 +2126,17 @@ bool Iputc(int ch)
     return false;
 }
 
-#define FWRITE_CHUNK 0x4000
-
-bool Iwrite(const void *buff, int32_t size)
+bool Iwrite(const void *buff, size_t size)
 //
 // Writes (size) bytes from the given buffer, returning true if trouble.
 //
 {   const unsigned char *p = (const unsigned char *)buff;
-    int32_t i;
-    uint32_t chk_temp;
-    LispObject nil = C_nil;
-    if ((fasl_stream != nil && fasl_stream != SPID_NIL))
-    {   for (i=0; i<size; i++)
-            if (Iputc(p[i])) return true;
-        return false;
-    }
-    write_bytes_written += size;
-    while (size >= FWRITE_CHUNK)
-    {   if (fwrite(p, 1, FWRITE_CHUNK, binary_write_file) != FWRITE_CHUNK)
-            return true;
-        p += FWRITE_CHUNK;
-        size -= FWRITE_CHUNK;
-    }
-    if (size == 0) return false;
-    else return
-            (fwrite(p, 1, (size_t)size, binary_write_file) != (size_t)size);
+    for (size_t i=0; i<size; i++)
+        if (Iputc(p[i])) return true;
+    return false;
 }
 
-void preserve(const char *banner, int len)
+void preserve(const char *banner, size_t len)
 {   int32_t i;
     bool int_flag = false;
     LispObject nil = C_nil;
@@ -1984,7 +2166,7 @@ void preserve(const char *banner, int len)
         for (i=0; i<128; i++) msg[i] = ' ';
         if (len > 60) len = 60; // truncate if necessary
         if (len == 0 || banner[0] == 0) msg[0] = 0;
-        else sprintf(msg, "%.*s", len, banner);
+        else sprintf(msg, "%.*s", (int)len, banner);
 // 26 bytes starting from byte 64 shows the time of the dump
         sprintf(msg+64, "%.25s\n", ctime(&t0));
 // 16 bytes starting at byte 90 are for a checksum of the u01.c etc checks
@@ -1992,24 +2174,27 @@ void preserve(const char *banner, int len)
 // 106 to 109 free at present but available if checksum goes to 160 bits
         msg[110] = 0;
         msg[111] = 0;
+// Write initial record uncompresssed...
         Iwrite(msg, 112); // Exactly 112 bytes in the header records
     }
-
-    write_everything();
+    def_init();  // I should check the return code...
+    write_everything(); // neede sreturn code...
 
     copy_into_nilseg(true);
 #ifndef COMMON
-    Iwrite("\n\nEnd of CSL dump file\n\n", 24);
+    Zwrite("\n\nEnd of CSL dump file\n\n", 24);  // return code
 #else
-    Iwrite("\n\nEnd of CCL dump file\n\n", 24);
+    Zwrite("\n\nEnd of CCL dump file\n\n", 24);  // return code
 #endif
+    def_finish();   // I should check the return code...
 //
 // Here I pad the image file to be a multiple of 4 bytes long.  Since it is a
 // binary file the '\n' characters I put in will always be just 1 byte each
 // (for text files that might have expanded).  See comments in fasl.c for
 // a diatribe about why I do this, or at least why rather a long while ago
 // this was necessary on at least one sort of computer.
-//
+// Note that this is writing directly to the file... not via the compression
+// layer.
     {   int k = (int)((-write_bytes_written) & 3);
         while (k != 0) k--, Iputc(NEWLINE_CHAR);
     }
@@ -2025,5 +2210,7 @@ void preserve(const char *banner, int len)
     if (int_flag) term_printf("\nInterrupt during (preserve) was ignored\n");
     return;
 }
+
+#endif // ZLIB_DEMO
 
 // end of file preserve.cpp

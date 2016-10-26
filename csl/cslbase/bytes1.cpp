@@ -153,6 +153,14 @@ LispObject get(LispObject a, LispObject b)
         return onevalue(nil);
     }
     w = qcar(pl);
+if ((intptr_t)w < 0)
+{  fprintf(stderr, "\n@@@ messed up symbol ");
+   simple_print(a);
+   fprintf(stderr, " GETTING ");
+   simple_print(b);
+   fprintf(stderr, "\n");
+   return aerror("get messed up");
+}
     if (qcar(w) == b)
     {
 #ifdef RECORD_GET
@@ -226,6 +234,11 @@ LispObject get(LispObject a, LispObject b)
     }
 }
 
+static void myabort()
+{  ensure_screen();
+   abort();
+}
+
 LispObject putprop(LispObject a, LispObject b, LispObject c)
 {   LispObject nil = C_nil;
     LispObject pl;
@@ -246,6 +259,14 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
     pl = qplist(a);
     while (pl != nil)
     {   LispObject w = qcar(pl);
+if ((intptr_t)w < 0)
+{  fprintf(stderr, "\n@@@ putprop mess for symbol %p<", (void *)a);
+   simple_print(a);
+   fprintf(stderr, "> property %p<", (void *)b);
+   simple_print(b);
+   fprintf(stderr, ">\n");
+   myabort();
+}
         if (qcar(w) == b)
         {   qcdr(w) = c;
             return c;

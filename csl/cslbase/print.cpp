@@ -103,11 +103,6 @@ int32_t terminal_line_length = (int32_t)0x80000000;
 
 void ensure_screen()
 {
-#if 0
-#ifdef SOCKETS
-    if (socket_server != 0) flush_socket();
-#endif
-#endif
 #ifdef HAVE_FWIN
     fwin_ensure_screen();
 #else
@@ -1104,22 +1099,6 @@ LispObject Lopen(LispObject nil, LispObject name, LispObject dir)
     memset(fn1, 0, sizeof(fn1));
     if (!is_fixnum(dir)) return aerror1("open", dir);
     d = (int)int_of_fixnum(dir);
-
-#if 0
-#ifdef SOCKETS
-//
-// If I am working as a socket server I will prohibit operations that
-// could (easily) corrupt the local machine. Here I prevent anybody from
-// opening files for output. I also prevent use of pipes.
-//
-    if (socket_server != 0 &&
-        ((d & DIRECTION_MASK) == DIRECTION_OUTPUT ||
-         (d & DIRECTION_MASK) == DIRECTION_IO ||
-         (d & OPEN_PIPE) != 0))
-        return aerror1("open invalid in server mode", dir);
-#endif
-#endif
-
 #ifdef DEBUG_OPENING_FILES
     trace_printf("Open file:");
     switch (d & DIRECTION_MASK)
@@ -1491,11 +1470,6 @@ LispObject Lcreate_directory(LispObject nil, LispObject name)
     w = get_string_data(name, "create-directory", &len);
     errexit();
     if (len >= sizeof(filename)) len = sizeof(filename);
-#if 0
-#ifdef SOCKETS
-    if (socket_server != 0) return aerror("create-directory");
-#endif
-#endif
     len = create_directory(filename, w, (size_t)len);
     return onevalue(Lispify_predicate(len == 0));
 }
@@ -1690,11 +1664,6 @@ LispObject Lrename_file(LispObject nil, LispObject from, LispObject to)
     memset(to_name, 0, sizeof(to_name));
     if (from == unset_var) return onevalue(nil);
     if (to == unset_var) return onevalue(nil);
-#if 0
-#ifdef SOCKETS
-    if (socket_server != 0) return aerror("rename-file");
-#endif
-#endif
     push(to);
     from_w = get_string_data(from, "rename-file", &from_len);
     pop(to);
@@ -4559,13 +4528,7 @@ static FILE *binary_open(LispObject nil, LispObject name, const char *dir, const
 }
 
 static LispObject Lbinary_open_output(LispObject nil, LispObject name)
-{
-#if 0
-#ifdef SOCKETS
-    if (socket_server != 0) return aerror("binary-open-output");
-#endif
-#endif
-    binary_outfile = binary_open(nil, name, "wb", "binary_open_output");
+{   binary_outfile = binary_open(nil, name, "wb", "binary_open_output");
     errexit();
     return onevalue(nil);
 }
@@ -4998,6 +4961,8 @@ const char *WSAErrName(int i)
     }
 }
 
+bool sockets_ready = false;
+
 int ensure_sockets_ready(void)
 {   if (!sockets_ready)
     {
@@ -5016,7 +4981,7 @@ int ensure_sockets_ready(void)
             return 1;      // Version 1.1 of winsock needed
         }
 #endif
-        sockets_ready = 1;
+        sockets_ready = true;
     }
     return 0;
 }

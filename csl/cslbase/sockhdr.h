@@ -69,41 +69,11 @@
 #endif
 #endif
 
-#if 0
-//
-// At one time I could make Reduce serve on a socket - I am removing that
-// code now, but leaving remains visible in case anybody else needs it.
-//
-
-#define default_csl_server_port 1206
-#define MAX_USERS                 10  // approx concurrent remote users
-#define REMOTE_STORE            8000  // Allow 8 Mbytes per remote user
-#define MAX_CPU_TIME             300  // Approx CPU limit (seconds)
-#define MAX_ELAPSED_TIME          45  // Approx elapsed time limit (mins)
-
-extern clock_t cpu_timeout;
-extern time_t  elapsed_timeout;
-
 //
 // Now some declarations for my own variables and functions.
 //
 
-#ifndef header_tags_h
-//
-// If used as part of the CSL Lisp system header_tags_h will already
-// be defined, and the type LispObject will exist. Otherwise I should
-// define it here.
-//
-typedef int LispObject;
-#endif
-
-#define PERMITTED_BACKLOG 5
-
-extern int sockets_ready;
-extern SOCKET socket_server;
-extern char *WSAErrName(int i);
+extern const char *WSAErrName(int i);
 extern int ensure_sockets_ready(void);
-
-#endif // 0
 
 // End of sockhdr.h

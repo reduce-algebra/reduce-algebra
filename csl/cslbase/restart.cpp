@@ -1439,7 +1439,6 @@ setup_type const restart_setup[] =
     {"~spid-to-nil",            Lspid_to_nil, too_many_1, wrong_no_1},
     {"~mv-list",                Lmv_list, too_many_1, wrong_no_1},
     {"check-c-code",            wrong_no_na, wrong_no_nb, Lcheck_c_code},
-    {"define-in-module",        Ldefine_in_module, too_many_1, wrong_no_1},
     {"modulep",                 Lmodule_exists, too_many_1, wrong_no_1},
     {"start-module",            Lstart_module, too_many_1, wrong_no_1},
     {"write-module",            too_few_2, Lwrite_module, wrong_no_2},
@@ -1827,7 +1826,7 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
             || (stbuf.st_mode & S_IRUSR) == 0
 #endif
            )
-        {   if (Iopen(modname, strlen(modname), IOPEN_UNCHECKED, xmodname))
+        {   if (Iopen(modname, strlen(modname), IOPEN_IN, xmodname))
             {   trace_printf("module not found\n");
                 return NULL;
             }
@@ -1850,6 +1849,9 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
             {   IcloseInput();
                 return NULL;
             }
+// This uses Igets not Zgetc because it wants to access the raw compressed
+// data so it can just copy it across. At least at present if I ever have
+// DLLs nested within the image file I will put them there uncompressed.
             while ((c = Igetc()) != EOF)
                 putc(c, dest);
             IcloseInput();
@@ -3816,6 +3818,7 @@ void setup(int restart_flag, double store_size)
                         filename);
             my_exit(EXIT_FAILURE);
         }
+// The initial record at the start of an image file is not compressed...
         Iread(junkbuf, 112);
         if (init_flags & INIT_VERBOSE)
         {   term_printf("Created: %.25s\n", &junkbuf[64]);
@@ -3848,6 +3851,8 @@ void setup(int restart_flag, double store_size)
             if (IopenRoot(filename, BANNER_CODE, 0)) b[0] = 0;
             else
             {   for (i=0; i<64; i++) b[i] = (char)Igetc();
+// The banner will not be subject to compression technology because it will
+// normally be too short to benefit.
                 IcloseInput();
             }
 //
@@ -4380,7 +4385,7 @@ void CSL_MD5_Init(void)
     MD5_Init(&context);
 }
 
-void CSL_MD5_Update(const unsigned char *data, int len)
+void CSL_MD5_Update(const unsigned char *data, size_t len)
 {   MD5_Update(&context, data, len);
 }
 
@@ -4389,6 +4394,4 @@ void CSL_MD5_Final(unsigned char *md)
     CSL_MD5_busy = false;
 }
 
-
 // end of restart.cpp
-

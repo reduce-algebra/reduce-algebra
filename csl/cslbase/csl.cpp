@@ -3,7 +3,7 @@
 //
 // This is Lisp system for use when delivering Lisp applications
 // (such as REDUCE) on pretty-well any computer that has an ANSI
-// C compiler.
+// C++ compiler.
 //
 
 /**************************************************************************
@@ -116,10 +116,6 @@
 
 #include "version.h"
 
-#ifdef SOCKETS
-#include "sockhdr.h"
-#endif
-
 #ifndef WIN32
 #include <sys/wait.h>
 #endif
@@ -148,21 +144,6 @@
 // but the window was minimised I need to restore it...
 //
 #define fwin_restore()
-#endif
-
-#ifdef SOCKETS
-
-#if 0
-// Being removed
-static int port_number, remote_store, current_users, max_users;
-SOCKET socket_server;
-clock_t cpu_timeout;
-time_t elapsed_timeout;
-static int char_to_socket(int c);
-#endif
-
-int sockets_ready = 0;
-
 #endif
 
 //
@@ -804,9 +785,6 @@ void my_exit(int n)
     MPI_Finalize();
 #endif
     ensure_screen();
-#ifdef SOCKETS
-    if (sockets_ready) WSACleanup();
-#endif
 #ifdef WINDOW_SYSTEM
     pause_for_user();
 #endif
@@ -1642,12 +1620,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     }
     fwin_pause_at_end = 1;
 #endif
-#ifdef SOCKETS
-#if 0
-    sockets_ready = 0;
-    socket_server = 0;
-#endif
-#endif
 //
 // Now that the window manager is active I can send output through
 // xx_printf() and get it on the screen neatly.
@@ -2170,8 +2142,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                         load_limit = 0x7fffffff;
                     continue;
 
-#if 0
-
 /*! options [-f] \item [{\ttfamily -f}] \index{{\ttfamily -f}}
  * At one stage CSL could run as a socket server, and {\ttfamily -f portnumber}
  * activated that mode. {\ttfamily -f-} used a default port, 1206 (a number
@@ -2182,186 +2152,16 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
 
 
-#ifdef SOCKETS
                 case 'f':
 //
 //                     -F
-// This is used with syntax -Fnnn or -F nnn (with nnn a number above
-// 1000 but less than 65536) to cause the system to run not as a normal
-// interactive application but as a server listening on the indicated port.
-// The case -F- (which could of course be "-F -") indicates use of the
-// default port for CSL, which I hereby declare to be 1206. This number may
-// need to be changed later if I find it conflicts with some other common
-// package or usage, but was selected in memory of the project number
-// at one time allocated to the Archimedeans Computing Group.
-// On some systems if I want to set up a server that can serve multiple
-// clients I may need to re-invoke CSL afresh for each new client, and in
-// such cases the internally generated tasks can be passed information
-// from their parent task using -F followed by non-numeric information.
-// Any user who attempts such usage will get "what they deserve".
-//
-                    if (c2 != 0) w = &opt[2];
-                    else if (i != argc) w = argv[++i];
-                    else break; // Illegal at end of command-line
-                    port_number = default_csl_server_port;
-                    remote_store = REMOTE_STORE;
-                    max_users = MAX_USERS;
-                    if (strcmp(w, "-") == 0)
-                        port_number = default_csl_server_port;
-                    else if (sscanf(w, "%d:%d:%d",
-                                    &port_number, &max_users, &remote_store) < 1 ||
-                             port_number <= 1000 ||
-                             port_number >= 65536 ||
-                             max_users < 2 || max_users > 50 ||
-                             remote_store < 4000 || remote_store > 20000)
-                    {   fwin_restore();
-                        term_printf("\"%s\" is valid (want port:users:store\n", w);
-                        continue;
-                    }
-                    store_size = (double)remote_store;
-                    init_flags &= ~INIT_EXPANDABLE;
-                    current_users = 0;
-//
-// The code here is probably a bit painfully system-specific, and so one
-// could argue that it should go in a separate file. However a LOT of the
-// socket interface is the same regardless of the host, or a few simple
-// macros can have made it so. So if SOCKETS has been defined I will
-// suppose I can continue here on that basis. I do quite want to put the
-// basic socket code in csl.c since it is concerned with system startup and
-// the selection of sources and sinks for IO.
-//
-                    if (ensure_sockets_ready() == 0)
-                    {   SOCKET sock1, sock2;
-                        struct sockaddr_in server_address, client_address;
-#ifdef HAVE_SOCKLEN_T
-                        socklen_t sin_size;
-#else
-                        int sin_size;
-#endif
-                        sock1 = socket(AF_INET, SOCK_STREAM, 0);
-                        if (sock1 == SOCKET_ERROR)
-                        {   fwin_restore();
-                            term_printf("Unable to create a socket\n");
-                            continue;
-                        }
-                        server_address.sin_family = AF_INET;
-                        server_address.sin_port = htons(port_number);
-                        server_address.sin_addr.s_addr = INADDR_ANY;
-                        memset((char *)&(server_address.sin_zero), 0, 8);
-                        if (bind(sock1, (struct sockaddr *)&server_address,
-                                 sizeof(struct sockaddr)) == SOCKET_ERROR)
-                        {   fwin_restore();
-                            term_printf("Unable to bind socket to port %d\n",
-                                        port_number);
-                            closesocket(sock1);
-                            continue;
-                        }
-                        if (listen(sock1, PERMITTED_BACKLOG) == SOCKET_ERROR)
-                        {   fwin_restore();
-                            term_printf("Failure in listen() on port %d\n",
-                                        port_number);
-                            closesocket(sock1);
-                            continue;
-                        }
-                        for (;;)
-                        {   struct hostent *h;
-                            time_t t0;
-                            sin_size = sizeof(struct sockaddr_in);
-                            sock2 = accept(sock1,
-                                           (struct sockaddr *)&client_address,
-                                           &sin_size);
-                            if (sock2 == SOCKET_ERROR)
-                            {   fwin_restore();
-                                term_printf("Trouble with accept()\n");
-                                continue;  // NB local continue here
-                            }
-                            t0 = time(NULL);
-                            term_printf("%.24s from %s",
-                                        ctime(&t0),
-                                        inet_ntoa(client_address.sin_addr));
-                            h = gethostbyaddr((char *)&client_address.sin_addr,
-                                              sizeof(client_address.sin_addr), AF_INET);
-                            if (h != NULL)
-                                term_printf(" = %s", h->h_name);
-                            else term_printf(" [unknown host]");
-//
-// Here I have a bit of a mess. Under Unix I can do a fork() so that the
-// requests that are coming in are handled by a separate process. The
-// code is pretty easy. However with Windows I can only create a fresh process
-// by re-launching CSL from the file it was originally fetched from. I
-// will try to do that in a while, but for now I will leave the
-// Windows version of this code only able to handle a single client
-// session.
-//
-#ifdef WIN32
-                            closesocket(sock1);
-                            socket_server = sock2;
-                            cpu_timeout = clock() + CLOCKS_PER_SEC*MAX_CPU_TIME;
-                            elapsed_timeout = time(NULL) + 60*MAX_ELAPSED_TIME;
-                            procedural_output = char_to_socket;
-                            term_printf("Welcome to the Codemist server\n");
-                            ensure_screen();
-                            break;
-#else // WIN32
-                            while (waitpid(-1, NULL, WNOHANG) > 0) current_users--;
-                            if (current_users >= max_users)
-                            {   term_printf(" refused\n");
-                                socket_server = sock2;
-                                ensure_screen();
-                                procedural_output = char_to_socket;
-                                term_printf(
-                                    "\nSorry, there are already %d people using this service\n",
-                                    current_users);
-                                term_printf("Please try again later.\n");
-                                ensure_screen();
-                                procedural_output = NULL;
-                                closesocket(socket_server);
-                                socket_server = 0;
-                                continue;
-                            }
-                            else term_printf(" %d of %d\n",
-                                                 ++current_users, max_users);
-                            ensure_screen();
-                            if (!fork())
-                            {   // Child process here
-                                closesocket(sock1);
-                                fcntl(sock2, F_SETFL, O_NONBLOCK);
-                                socket_server = sock2;
-                                cpu_timeout = clock() + CLOCKS_PER_SEC*MAX_CPU_TIME;
-                                elapsed_timeout = time(NULL) + 60*MAX_ELAPSED_TIME;
-                                ensure_screen();
-                                procedural_output = char_to_socket;
-                                term_printf("Welcome, you are user %d of %d\n",
-                                            current_users, max_users);
-                                term_printf(
-                                    "You have been allocated %d seconds CPU time"
-                                    " and %d minutes elapsed time\n",
-                                    MAX_CPU_TIME, MAX_ELAPSED_TIME);
-                                break;
-                            }
-                            else
-                            {   closesocket(sock2);
-                                if (current_users < 0) current_users = 0;
-                                continue;
-//
-// This loops serving as many clients as happen to come along. Having said
-// "csl -fnnn" it will be necessary (in due course) to kill the daemon
-// by interrupting it with a ^C or some such. When the master process is
-// terminated in that way any clients that remain active may continue to
-// hang around until they have finished in the usual way.
-//
-                            }
-#endif // WIN32
-                        }
-                    }
-//
-// The "continue" here gets executed when I have been contacted by some
-// client and have an active socket open. It parses the rest of the
-// command line and then completes the process of getting CSL running.
-//
+// No longer used, so SPARE!
+// I *ONCE* had a scheme where Reduce could run as a remote server accessed
+// via the network. That has not been used for a long while now and if
+// something similar becomes needed in the future it should be re-implemented
+// from the ground up. Here I will not even issue a complaint if somebody
+// specifies "-f".
                     continue;
-#endif // SOCKETS
-#endif // 0
 
 /*! options [-g] \item [{\ttfamily -g}] \index{{\ttfamily -g}}
  * In line with the implication of this option for C compilers, this enables
@@ -2944,7 +2744,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
     if (module_enquiry != NULL)
     {   char datestamp[32], fullname[LONGEST_LEGAL_FILENAME];
-        int32_t size;
+        size_t size;
         int i;
         LispObject nil;
         memset(fullname, 0, sizeof(fullname));
@@ -2988,8 +2788,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             size = 0;
             strcpy(fullname, module_enquiry);
         }
-        term_printf("%.24s   size=%ld file=%s\n",
-                    datestamp, (long)size, fullname);
+        term_printf("%.24s   size=%" PRIuPTR " file=%s\n",
+                    datestamp, (uintptr_t)size, fullname);
         init_flags &= ~INIT_VERBOSE;
 #ifdef HAVE_FWIN
         fwin_pause_at_end = 0;
@@ -3166,110 +2966,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #endif // HAVE_LIBFOX
 #endif // HAVE_FWIN
 }
-
-#if 0
-#ifdef SOCKETS
-
-#define SOCKET_BUFFER_SIZE 1024
-//
-// The following two "character codes" are used when CSL is run as
-// a socket server and wrap around prompt text. This could be in
-// conflict with any code that tries to use these codes for other
-// purposes or that handles prompts itself...
-//
-#define CH_PROMPT          0x9a
-#define CH_ENDPROMPT       0x9c
-
-static char socket_in[SOCKET_BUFFER_SIZE], socket_out[SOCKET_BUFFER_SIZE];
-static int socket_in_p = 0, socket_in_n = 0,
-           socket_out_p = 0, socket_prev = '\n';
-
-static int char_from_socket(void)
-{   int c;
-    clock_t c0;
-    time_t t0;
-    if (socket_server == 0)
-    {   socket_prev = ' ';
-        return EOF;
-    }
-//
-// I generate a prompt whenever I am about to read the character that
-// follows a newline. The prompt is issued surrounded by control
-// characters 0x9a and 0x9c. That curious arrangement is inherited from
-// internal behaviour in my Windows interface code and could be altered
-// if something truly better could be invented.
-//
-    if (socket_prev == '\n')
-    {   term_printf("%c%s%c", CH_PROMPT, prompt_string, CH_ENDPROMPT);
-        ensure_screen();
-    }
-    if (socket_in_n == 0)
-    {   for (;;)
-        {   socket_in_n = recv(socket_server, socket_in, SOCKET_BUFFER_SIZE, 0);
-            c0 = clock();
-            t0 = time(NULL);
-            if (c0 > cpu_timeout || t0 > elapsed_timeout)
-            {   cpu_timeout = c0 + 20;
-                elapsed_timeout = t0 + 20;
-                term_printf(
-                    "\nSorry: timeout on this session. Closing down.\n");
-                socket_prev = ' ';
-                return EOF;
-            }
-            if (socket_in_n <= 0)
-#ifndef EWOULDBLOCK
-#  define EWOULDBLOCK WSAEWOULDBLOCK
-#endif
-            {   if (errno == EWOULDBLOCK)
-                {
-#ifdef WIN32
-                    Sleep(1000);  // Arg in milliseconds here
-#else
-                    sleep(1);  // Delay 1 second before re-polling
-#endif
-                    continue;
-                }
-                closesocket(socket_server);
-                socket_server = 0;
-                socket_prev = ' ';
-                return EOF;
-            }
-            else break;
-        }
-        socket_in_p = 0;
-    }
-    c = socket_in[socket_in_p++];
-    if (c == 0x0a || c == 0x0d) c = '\n';
-    socket_in_n--;
-    socket_prev = c;
-    return c & 0xff;
-}
-
-static int char_to_socket(int c)
-{   if (socket_server == 0) return 1;
-    socket_out[socket_out_p++] = (char)c;
-    if (c == '\n' || socket_out_p == SOCKET_BUFFER_SIZE)
-    {   if (send(socket_server, socket_out, socket_out_p, 0) < 0)
-        {   closesocket(socket_server);
-            socket_server = 0;
-            return 1;
-        }
-        socket_out_p = 0;
-    }
-    return 0;
-}
-
-void flush_socket(void)
-{   if (socket_server == 0) return;
-    if (send(socket_server, socket_out, socket_out_p, 0) < 0)
-    {   closesocket(socket_server);
-        socket_server = 0;
-    }
-    socket_out_p = 0;
-}
-
-#endif
-#endif
 
 static void cslaction(void)
 //

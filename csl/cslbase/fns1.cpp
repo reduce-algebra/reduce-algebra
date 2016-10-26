@@ -1263,7 +1263,7 @@ LispObject Lintersect(LispObject nil, LispObject a, LispObject b)
             errexitn(3);
 //
 // Here I want to arrange that items only appear in the result list multiple
-// times if they occur multipl times in BOTH the input lists.
+// times if they occur multiple times in BOTH the input lists.
 //
             if (n1 != 0)
             {   int32_t n2 = membercount(qcar(stack[-1]), stack[-2]);
@@ -1283,6 +1283,51 @@ LispObject Lintersect(LispObject nil, LispObject a, LispObject b)
         a = qcdr(a);
     }
     popv(1);
+    a = nil;
+    while (consp(r))
+    {   b = r;
+        r = qcdr(r);
+        qcdr(b) = a;
+        a = b;
+    }
+    return onevalue(a);
+}
+
+// If you have two lists where all items in both lists are just symbols
+// then I can form the intersection in deterministic linear time using a
+// tag bit in symbol headers.
+
+LispObject Lintersect_symlist(LispObject nil, LispObject a, LispObject b)
+{   LispObject r = nil, w;
+// First tag all the symbols in the list b. Any items that are not
+// symbols just get ignored.
+    for (w = b; consp(w); w = qcdr(w))
+    {   LispObject x = qcar(w);
+        if (is_symbol(x)) qheader(x) |= SYM_TAGGED;
+    }
+    push(b);
+// Now for each item in a push it onto a result list (r) if it a
+// symbol that is tagged, i.e. if it was present in b.
+    while (consp(a))
+    {   LispObject x = qcar(a);
+        if (is_symbol(x) && (qheader(x) & SYM_TAGGED))
+        {   push(a);
+            r = cons(x, r);
+            pop(a);
+            nil = C_nil;
+            if (exception_pending()) break;
+        }
+        a = qcdr(a);
+    }
+// This code that clears the tags on everything in the list b should
+// continue to work even if I am in an exception state.
+    pop(b);
+    while (consp(b))
+    {   qheader(qcar(b)) &= ~(Header)SYM_TAGGED;
+        b = qcdr(b);
+    }
+    errexit(); // I can now afford to exit if a cons failed earlier!
+// The above built up the result in reversed order, so I fix that here.
     a = nil;
     while (consp(r))
     {   b = r;
@@ -1315,6 +1360,52 @@ LispObject Lunion(LispObject nil, LispObject a, LispObject b)
         a = qcdr(a);
     }
     return onevalue(b);
+}
+
+// union-symlist expects both arguments to be lists of symbols, and on that
+// basis can run in linear time.
+
+LispObject Lunion_symlist(LispObject nil, LispObject a, LispObject b)
+{   LispObject r = nil, w;
+// First tag all the symbols in the list b. Any items that are not
+// symbols just ignored.
+    for (w = b; consp(w); w = qcdr(w))
+    {   LispObject x = qcar(w);
+        if (is_symbol(x)) qheader(x) |= SYM_TAGGED;
+    }
+    push(b);
+// Now for each item in a push it onto a result list (r) if it a
+// symbol that is NOT tagged, i.e. if it was not present in b.
+    while (consp(a))
+    {   LispObject x = qcar(a);
+        if (is_symbol(x) && (qheader(x) & SYM_TAGGED) == 0)
+        {   push(a);
+            r = cons(x, r);
+            pop(a);
+            nil = C_nil;
+            if (exception_pending()) break;
+        }
+        a = qcdr(a);
+    }
+// This code that clears the tags on everything in the list b should
+// continue to work even if I am in an exception state.
+    pop(b);
+    a = b;
+    while (consp(a))
+    {   qheader(qcar(a)) &= ~(Header)SYM_TAGGED;
+        a = qcdr(a);
+    }
+    errexit(); // I can now afford to exit if a cons failed earlier!
+// What I now have is a reversed list of new items in r, and the existing
+// list b. So reverse r onto the front of b.
+    a = b;
+    while (consp(r))
+    {   b = r;
+        r = qcdr(r);
+        qcdr(b) = a;
+        a = b;
+    }
+    return onevalue(a);
 }
 
 
@@ -1773,23 +1864,10 @@ LispObject getvector(int tag, int type, size_t size)
 //
 // There is a real NASTY here - it is quite possible that I ought to implement
 // a scheme whereby large vectors can be allocated as a series of chunks so as
-// to avoid the current absolute limit on size.  At one stage I used a page
-// size of just 64K on small machines, and for embedded applications that
-// may still be sensible. But MOSTLY I now have 4Mb pages. But as discussed
-// in restart.c I need to limit the size of a vector to HALF the page
-// size of I am later on going to reload on a 64-bit machine, so here I
-// have a rather odd test that tries to enforce this on "standard" machines
-// but not on truly tiny ones. The specific judgement applied here is
-// that if the page size is at least 2M and I am on a 32-bit machine I will
-// use at most half the page. To be specific about the consequences, it means
-// that I can have an array of length up to about 512K cells not 1M in
-// that case. If I ask for something too big I will report the request size
-// as if it has been for a vector of lisp items.
-//
-        if (alloc_size >
-            ((CSL_PAGE_SIZE>2000000 &&
-              !SIXTY_FOUR_BIT) ? CSL_PAGE_SIZE/2 - 32 :
-             CSL_PAGE_SIZE - 32))
+// to avoid the current absolute limit on size.
+// For now there is a limit on the size of the largest vector you can
+// create.
+        if (alloc_size > (CSL_PAGE_SIZE - 32))
             return aerror1("vector request too big",
                            fixnum_of_int(alloc_size/CELL-1));
         if (alloc_size > free)
@@ -1848,6 +1926,11 @@ LispObject getvector(int tag, int type, size_t size)
             }
             reclaim(nil, msg, GC_VEC, alloc_size);
             errexit();
+// Note the CONTINUE here so that I go and repeat the test. Consider the
+// case where I have a page almost full but then garbage collection recovers
+// a lof of space but still leaves the final used page almost full... I
+// need the garbage collector to take care with its final argument to be
+// certain that the loop here terminates!
             continue;
         }
         vfringe = (LispObject)(r + alloc_size);
@@ -3564,6 +3647,7 @@ setup_type const funcs1_setup[] =
     {"indirect",                Lindirect, too_many_1, wrong_no_1},
     {"integerp",                Lintegerp, too_many_1, wrong_no_1},
     {"intersection",            too_few_2, Lintersect, wrong_no_2},
+    {"intersection_symlist",    too_few_2, Lintersect_symlist, wrong_no_2},
     {"list2",                   too_few_2, Llist2, wrong_no_2},
     {"list2*",                  wrong_no_na, wrong_no_nb, Llist2star},
     {"list3",                   wrong_no_na, wrong_no_nb, Llist3},
@@ -3591,6 +3675,7 @@ setup_type const funcs1_setup[] =
     {"time",                    wrong_no_na, wrong_no_nb, Ltime},
     {"datelessp",               too_few_2, Ldatelessp, wrong_no_2},
     {"union",                   too_few_2, Lunion, wrong_no_2},
+    {"union-symlist",           too_few_2, Lunion_symlist, wrong_no_2},
     {"unmake-global",           Lunmake_global, too_many_1, wrong_no_1},
     {"unmake-special",          Lunmake_special, too_many_1, wrong_no_1},
     {"xcons",                   too_few_2, Lxcons, wrong_no_2},

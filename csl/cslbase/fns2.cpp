@@ -37,10 +37,6 @@
 
 #include "headers.h"
 
-#ifdef SOCKETS
-#include "sockhdr.h"
-#endif
-
 #ifdef DEBUG_VALIDATE
 static int validate_count = 0;
 #endif
@@ -825,14 +821,6 @@ LispObject Lsymbol_set_native(LispObject nil, int nargs, ...)
     LispObject fn, args, bpsbase, offset, env, w1, w2, w3;
     int32_t pagenumber, t_p, arginfo;
     intptr_t address, page, bps;
-#if 0
-#ifdef SOCKETS
-//
-// Security measure - deny symbol-set-native to remote users
-//
-    if (socket_server != 0) return aerror("symbol-set-native");
-#endif
-#endif
     argcheck(nargs, 5, "symbol-set-native");
     va_start(a, nargs);
     fn = va_arg(a, LispObject);
@@ -2114,14 +2102,6 @@ static LispObject Lrestart_lisp2(LispObject nil,
 //
 {   int n;
     char *v;
-#if 0
-#ifdef SOCKETS
-//
-// Security measure - deny restart-csl to remote users
-//
-    if (socket_server != 0) return aerror("restart-csl");
-#endif
-#endif
     ensure_screen();
     n = 0;
     v = NULL;

@@ -8,44 +8,7 @@
 //    copying collector, and because I no longer view 32-bit machines as
 //    high priority. Well a Raspberry Pi with 1 Gbyte can still do serious
 //    size calculations even with the copying collector.
-//
-//    HMMMM - the justification I gave for removing the mark/slide
-//    collector is DUBIOUS. Specifically on a machine that is limited by
-//    address-space not by actual real memory the fact that the copying
-//    collector can only afford to fill up half the address-space before
-//    leaping into action may be SAD. So on 64-bit systems where address
-//    space is cheap I think that only copying is good, but on a 32-bit
-//    system in the case that a user's task needs a gigabyte or so of
-//    memory the call has to be different. I am thus reinstating the
-//    old mark/slide collector! But note that this will NOT be compatible
-//    with my experiment towards a conservative collector (ditto if I ever
-//    tried to go generational!).
-//
-//    Version 5. The mark/slide code is being removed on the
-//    grounds that machines these days have LOTS of memory so ot should
-//    not really be needed, and it is a lot of messy code to support.
-//    there is also a start at support for a
-//    conservative garbage collector so that the separate C
-//    stack that I used to need is no longer called for: the hope is
-//    that this may seriously speed up much code... but it makes
-//    "cons" a little messier and "allocate_vector" a lot messier,
-//    and a somewhat-copying conservative GC hurts on the complication
-//    front quite a lot! That is enabled via --enable-conservative in
-//    that autoconf stuff, and is NOT working yet.
-//
-//    Fourth major version - now using Foster-style
-//    algorithm for relocating vector heap, and support for handling
-//    BPS via segmented handles. Pointer-reversing mark phase to go
-//    with same.
-//
-//    Furthermore there is (optionally) a copying 2-space garbage
-//    collector as well as the mark/slide one.  Now do you understand
-//    why this file seems so very long?
-//
-// The code in parts of this file (and also in preserve.c & restart.c)
-// is painfully sensitive to memory layout and I have some messy
-// conditional inclusion of code depending on whether a Lisp_Object is
-// a 32 or 64-bit value.
+//    This shortens and simplifies the code quite a lot!
 //
 
 /**************************************************************************
@@ -85,8 +48,11 @@
 #include <conio.h>
 #endif
 
+char valcause[40] = "None";
+
 void validate_failed()
 {
+    fprintf(stderr, "valcause = %s\n", valcause);
     ensure_screen();
     fflush(stdout);
     fflush(stderr);
@@ -140,12 +106,6 @@ static int bitmap_mark_cons(LispObject p)
     for (i=0; i<heap_pages_count; i++)
     {   void *page = heap_pages[i];
         char *base = (char *)quadword_align_up((intptr_t)page);
-//
-// This checking is INCORRECT just after you have loaded a 32-bit image
-// on a 64-bit machine because in that situation the pages can be
-// twice the regular size until the first copying garbage collection has
-// regularised matters.
-//
         if ((intptr_t)base <= (intptr_t)p &&
             (intptr_t)p <= (intptr_t)(base+CSL_PAGE_SIZE))
         {   unsigned int offset = ((unsigned int)((char *)p - base)) >> 3;
@@ -184,7 +144,7 @@ static int bitmap_mark_vec(LispObject p)
     LispObject nil = C_nil;
 //
 // Check that the object is corectly tagged. Note that NIL must be
-// handled specially since althout it is (sort of) a symbol it does not
+// handled specially since although it is (sort of) a symbol it does not
 // live in any of the vheap_pages.
 //
     if (!is_symbol(p) &&
@@ -363,7 +323,7 @@ static void validate(LispObject p, int line1)
 void validate_all(const char *why, int line, const char *file)
 {   LispObject *sp = NULL;
     LispObject nil = C_nil;
-    int i;
+    size_t i;
     validate_why = why;
     validate_line = line;
     validate_line1 = 0;
@@ -394,15 +354,33 @@ void validate_all(const char *why, int line, const char *file)
 // (c) everything on the Lisp stack,
 // (d) the package structure,
 //
+    sprintf(valcause, "plist nil\n");
     validate(qplist(nil), __LINE__);
+    sprintf(valcause, "pname nil\n");
     validate(qpname(nil), __LINE__);
+    sprintf(valcause, "fastgets nil\n");
     validate(qfastgets(nil), __LINE__);
+    sprintf(valcause, "package nil\n");
     validate(qpackage(nil), __LINE__);
 
-    for (i = first_nil_offset; i<last_nil_offset; i++) validate(BASE[i], __LINE__);
-    for (sp=stack; sp>(LispObject *)stackbase; sp--) validate(*sp, __LINE__);
+    for (i = first_nil_offset; i<last_nil_offset; i++)
+    {   sprintf(valcause, "BASE[%" PRIuPTR "]\n", (uintptr_t)i);
+        validate(BASE[i], __LINE__);
+    }
+    for (sp=stack; sp>(LispObject *)stackbase; sp--)
+    {   sprintf(valcause, "stack[%" PRIuPTR "]\n", (uintptr_t)(stack-sp));
+        validate(*sp, __LINE__);
+    }
+    if (repeat_heap != NULL)
+    {   for (i=1; i<=repeat_count; i++)
+            validate(repeat_heap[i], __LINE__);
+    }
+
+    sprintf(valcause, "eq_hash_tabled\n");
     validate(eq_hash_tables, __LINE__);
+    sprintf(valcause, "equal_hash_tabled\n");
     validate(equal_hash_tables, __LINE__);
+    sprintf(valcause, "validation complete\n");
 //  term_printf("Validation complete\n");
 }
 
@@ -419,10 +397,6 @@ int check_env(LispObject env)
 }
 
 #endif // DEBUG_VALIDATE: the validate code
-
-#ifdef SOCKETS
-#include "sockhdr.h"
-#endif // SOCKETS
 
 int gc_number = 0;
 int reclaim_trap_count = -1;
@@ -1313,8 +1287,7 @@ uint32_t stackhash[GCHASH];
 
 LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 {   intptr_t i;
-    clock_t t0, t1, t2, t3;
-    int bottom_page_number;
+    clock_t t0, t1, t2;
     LispObject *sp, nil = C_nil;
     intptr_t vheap_need = 0, native_need = 0;
 #ifdef DEBUG_GC
@@ -1696,6 +1669,13 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 #ifdef DEBUG_GC
         term_printf("Stack processed\n");
 #endif // DEBUG_GC
+// When running the deserialization code I keep references to multiply-
+// used items in repeat_heap, and if garbage collection occurs they must be
+// updated.
+        if (repeat_heap != NULL)
+        {   for (i=1; i<=repeat_count; i++)
+                copy(&repeat_heap[i]);
+        }
 //
 // Now I need to perform some magic on the list of hash tables...
 //
@@ -1721,9 +1701,18 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // Throw away the old semi-space - it is now junk.
 //
         while (heap_pages_count!=0)
-            pages[pages_count++] = heap_pages[--heap_pages_count];
+        {   void *spare = heap_pages[--heap_pages_count];
+// I will fill the old space with explicit rubbish in the hope that that
+// will generate failures as promptly as possible if it somehow gets
+// referenced...
+            memset(spare, 0x55, (size_t)CSL_PAGE_SIZE+16);
+            pages[pages_count++] = spare;
+        }
         while (vheap_pages_count!=0)
-            pages[pages_count++] = vheap_pages[--vheap_pages_count];
+        {   void *spare = vheap_pages[--vheap_pages_count];
+            memset(spare, 0xaa, (size_t)CSL_PAGE_SIZE+16);
+            pages[pages_count++] = spare;
+        }
 
 //
 // Flip the descriptors for the old and new semi-spaces.
@@ -1750,7 +1739,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         rehash_this_table(qcar(qq));
 
     gc_time += pop_clock();
-    t3 = base_time;
+    t2 = base_time;
 
 #ifdef DEBUG_VALIDATE
     validate_all("gc end", __LINE__, __FILE__);
@@ -1778,7 +1767,8 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 //
     {   
         trace_printf("Copy %ld ms\n",
-                     (long int)(1000.0 * (double)(t3-t0)/(double)CLOCKS_PER_SEC));
+                     (long int)(1000.0 *
+                                (double)(t2-t0)/(double)CLOCKS_PER_SEC));
     }
 
 // (verbos 5) causes a display breaking down how space is used

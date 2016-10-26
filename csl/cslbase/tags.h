@@ -500,24 +500,31 @@ typedef uintptr_t Header;
 #define  SYM_C_DEF          (0x0000100<<Tw)  // has definition from C kernel
 #define  SYM_CODEPTR        (0x0000200<<Tw)  // just carries code pointer
 #define  SYM_ANY_GENSYM     (0x0000400<<Tw)  // gensym, printed or not
-#define  SYM_TRACED         (0x0000800<<Tw)
-#define  SYM_FASTGET_MASK   (0x003f000<<Tw)  // used to support "fast" gets
-#define  SYM_FASTGET_SHIFT  (12+Tw)
+#define  SYM_TRACED         (0x0000800<<Tw)  // function is traced.
+#define  SYM_TAGGED         (0x0001000<<Tw)  // used for special versions
+                                             // of UNION and INTERSECTION.
+#define  SYM_FASTGET_MASK   (0x007e000<<Tw)  // used to support "fast" gets
+#define  SYM_FASTGET_SHIFT  (13+Tw)
 //
-// In Common Lisp mode I use the rest of the header to help speed up
-// test for the availability of a symbol in a package (while I am printing).
-// In Standard Lisp mode I only allocate a print-name to a gensym when I
-// first print it, so I have a bit that tells me when a gensym is still
-// not printed.
 //
 #ifdef COMMON
+// In Common Lisp mode I use the rest of the header to help speed up
+// test for the availability of a symbol in a package (while I am printing).
+// Note that on a 32-bit machine I have just 9 bits for that. I think that
+// will help with the first 9 packages I come across (or many more on a
+// 64-bit machine). If I ever enable package support!
 #define  SYM_EXTERN_IN_HOME (0x0040000<<Tw)  // external in its home package
 #define  SYM_IN_PACKAGE     (((int)0xff800000)/(1<<(4-Tw)))
                                             // availability in 9/10 packages
 #define  SYM_IN_PKG_SHIFT   (19+Tw)
 #define  SYM_IN_PKG_COUNT   (13-Tw)
 #else // COMMON
-#define  SYM_UNPRINTED_GENSYM (0x0040000<<Tw)// not-yet-printed gensym
+// In Standard Lisp mode I only allocate a print-name to a gensym when I
+// first print it, so I have a bit that tells me when a gensym is still
+// not printed.
+#define  SYM_UNPRINTED_GENSYM (0x0080000<<Tw)// not-yet-printed gensym
+// Here in Standard Lisp mode I have 8 bits left in a symbol header even
+// on a 32-bit system.
 #endif // COMMON
 
 #define symhdr_length       (doubleword_align_up(sizeof(Symbol_Head)))

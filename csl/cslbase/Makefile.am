@@ -57,6 +57,7 @@ plain_wxdvi = wxdvi
 plain_wxshowmath = wxshowmath
 plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
+plain_zlibdemo = zlibdemo
 plain_gctest = gctest
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
@@ -76,6 +77,7 @@ plain_wxdvi = wxdvi.unnecessary.except.on.windows
 plain_wxshowmath = wxshowmath.unnecessary.except.on.windows
 plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 plain_dyndemo = dyndemo.unnecessary.except.on.windows
+plain_zlibdemo = zlibdemo.unnecessary.except.on.windows
 plain_gctest = gctest.unnecessary.except.on.windows
 endif !exeext
 
@@ -96,6 +98,7 @@ endif !exeext
 .PHONY: $(plain_termdemo)
 .PHONY: $(plain_softfloatdemo)
 .PHONY: $(plain_dyndemo)
+.PHONY: $(plain_zlibdemo)
 .PHONY: $(plain_gctest)
 
 .PHONY: report-dlls
@@ -206,11 +209,11 @@ endif !wx
 if mac_framework
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) softfloatdemo$(EXEEXT) $(foxdemotarget) \
-	$(wxdemotarget)
+	zlibdemo$(EXEEXT) $(wxdemotarget)
 else !mac_framework
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) softfloatdemo$(EXEEXT) $(foxdemotarget) \
-	dyndemo$(EXEEXT) $(wxdemotarget)
+	dyndemo$(EXEEXT) zlibdemo$(EXEEXT) $(wxdemotarget)
 endif !mac_framework
 
 if boehm
@@ -518,6 +521,12 @@ if !darwin
 	$(STRIP) dyndemo$(EXEEXT)
 endif !darwin
 endif !debug
+
+zlibdemo_SOURCES = zlibdemo.cpp
+zlibdemo_LDADD = -lz
+
+$(srcdir)/zlibdemo.cpp:	$(srcdir)/preserve.cpp
+	unifdef -DZLIB_DEMO < $(srcdir)/preserve.cpp > $(srcdir)/zlibdemo.cpp
 
 
 
@@ -1513,6 +1522,9 @@ $(plain_softfloatdemo):	softfloatdemo.exe
 
 $(plain_dyndemo):	dyndemo.exe
 	echo "$(MAKE) dyndemo.exe is preferred"
+
+$(plain_zlibdemo):	zlibdemo.exe
+	echo "$(MAKE) zlibdemo.exe is preferred"
 
 if boehm
 

@@ -40,7 +40,7 @@
 // including a complete heap image.
 // It represents the new code that supports preserve/restart and checkpoint
 // facilities in Lisp, and I may in the future use it as a replacement
-// for the current "fasl" scheme, so that a common serialised representation
+// for the current "fasl" scheme, so that a common serialized representation
 // is used everywhere. It could then also provide users who wanted it with
 // a way to write Lisp structures to disc (or transmit them across a
 // network) such that structure sharing and cyclic structures were supported.
@@ -56,7 +56,7 @@
 // some codes are used with 3-bits of opcode and 5 of embedded data. For
 // instance integers in the range -16 to +15 can be handled that way in
 // a single byte. Looped and shared structures are handled by allowing the
-// seruialised form to keep a record of selected items as they are read and
+// serialized form to keep a record of selected items as they are read and
 // then refer back to them. References to the most recent 32 such items can
 // be done especially efficiently. A form of "move to front" buffering is
 // used in the table of re-used items. This is organised as a binary heap
@@ -135,7 +135,7 @@
 // all hash tables got rehashed. To help with this the system maintains
 // lists eq_hash_tables and equal_hash_tables.
 // The new scheme is that during garbage collection and when re-read from a
-// serialised form ant object that might have a header saying TYPE_NEWHASH
+// serialized form ant object that might have a header saying TYPE_NEWHASH
 // has that updates to be TYPE_NEWHASHX where this new marker indicates a
 // hash table whos eelements may not be in the correct locations. Then any
 // operation on the hash table can check for TYPE_NEWHASHX and if it sees
@@ -188,38 +188,148 @@ static bool descend_symbols = true;
 
 #define SER_OPBITS   0xe0     // top 3 bits of byte are major opcode
 
-#define SER_VARIOUS  0x00     // a bunch of 32 "miscellaneous" codes
-#define   SER_RAWSYMBOL    0x00    // a symbol
-#define   SER_DUPRAWSYMBOL 0x01    // a symbol, but will be referenced again
-#define   SER_SYMBOL       0x02    // a symbol, but intern it as you read
-#define   SER_DUPSYMBOL    0x03    // as above, but will be referenced again
-#define   SER_GENSYM       0x04    // a gensym
-#define   SER_DUPGENSYM    0x05    // a gensym that will be referenced again
-#define   SER_BIGBACKREF   0x06    // reference more than 64 items ago
-#define   SER_POSFIXNUM    0x07    // positive (or unsigned) 64-bit integer
-#define   SER_NEGFIXNUM    0x08    // negative integer up to 63 bits
-#define   SER_FLOAT28      0x09    // short float
-#define   SER_FLOAT32      0x0a    // single float
-#define   SER_FLOAT64      0x0b    // double float
-#define   SER_FLOAT128     0x0c    // long float
-#define   SER_CHARSPID     0x0d    // char object, "special identifier" etc
-#define   SER_CONS         0x0e    // cons cell
-#define   SER_DUPCONS      0x0f    // cons cell that is referred to multiple times
-#define   SER_DUP          0x10    // used with items that have multiple references
-#define   SER_BITVEC       0x11    // bit-vector
-#define   SER_NIL          0x12    // the very special case of NIL
-#define   SER_END          0x13    // a redundant marker for end of heap dump
+#define SER_VARIOUS  0xe0     // a bunch of 32 "miscellaneous" codes
+// In heap image mode I use the two "RAWSYMBOL" codes, while in FASL file
+// mode I use SYMBOl & GENSYM. I could common-up the opcodes and so give
+// myself two more spare codes!
+#define   SER_RAWSYMBOL    0xe0    // a symbol
+#define   SER_DUPRAWSYMBOL 0xe1    // a symbol, but will be referenced again
+#define   SER_SYMBOL       0xe2    // a symbol, but intern it as you read
+#define   SER_DUPSYMBOL    0xe3    // as above, but will be referenced again
+#define   SER_GENSYM       0xe4    // a gensym
+#define   SER_DUPGENSYM    0xe5    // a gensym that will be referenced again
+#define   SER_BIGBACKREF   0xe6    // reference more than 64 items ago
+#define   SER_POSFIXNUM    0xe7    // positive (or unsigned) 64-bit integer
+#define   SER_NEGFIXNUM    0xe8    // negative integer up to 63 bits
+#define   SER_FLOAT28      0xe9    // short float
+#define   SER_FLOAT32      0xea    // single float
+#define   SER_FLOAT64      0xeb    // double float
+#define   SER_FLOAT128     0xec    // long float
+#define   SER_CHARSPID     0xed    // char object, "special identifier" etc
+#define   SER_CONS         0xee    // cons cell
+#define   SER_DUPCONS      0xef    // cons cell that is referred to multiple times
+#define   SER_DUP          0xf0    // used with items that have multiple references
+#define   SER_BITVEC       0xf1    // bit-vector
+#define   SER_NIL          0xf2    // the very special case of NIL
+#define   SER_END          0xf3    // a (redundant) marker for end of heap dump
+#define   SER_OPNEXT       0xf4    // for debugging
+#define   SER_XXX15        0xf5
+#define   SER_XXX16        0xf6
+#define   SER_XXX17        0xf7
+#define   SER_XXX18        0xf8
+#define   SER_XXX19        0xf9
+#define   SER_XXX1a        0xfa
+#define   SER_XXX1b        0xab
+#define   SER_XXX1c        0xfc
+#define   SER_XXX1d        0xfd
+#define   SER_XXX1e        0xfe
+
+// I make the byte 0xff illegal so that if I get EOF (which is traditionally
+// the value -1) and mask it to 8 bits I will see a complaint.
+#define   SER_ILLEGAL      0xff
+
+// SER_LIST has 32 variants, and these are used to build lists of length
+// 1, 2, 3 or 4 with an arbitrary mix of the cons cells involved being
+// ones that will be referenced again.  Well I am NOT using these yet - the
+// codes are listed here as a POSSIBILITY and at present there are two
+// major issues. The first is that there are too many codes to fit in the
+// range that I have, and the second is that the codes that allow for
+// shared structure are not going to be needed at all frequently, so
+// including them all would seem terribly wasteful.
+
+#define SER_LIST     0x00
+// Here are the sub-cases. I will use an infix operator "." to stand for
+// a CONS cell that is only referenced once and "::" for one that will have
+// multiple references to it...
+#define LIST_NCONS       0x00     // a . nil
+#define LIST_DNCONS      0x01     // a :: nil
+#define LIST_CONS        0x02     // b . a
+#define LIST_DCONS       0x03     // b :: a
+#define LIST_xxLIST2     0x04     // b . a . nil
+#define LIST_xDLIST2     0x05     // b . a :: nil
+#define LIST_DxLIST2     0x06     // b :: a . nil
+#define LIST_DDLIST2     0x07     // b :: a :: nil
+#define LIST_xxL2STAR    0x08     // c . b . a
+#define LIST_xDL2STAR    0x09     // c . b :: a
+#define LIST_DxL2STAR    0x0a     // c :: b . a
+#define LIST_DDL2STAR    0x0b     // c :: b :: a
+#define LIST_xxxLIST3    0x0c     // c . b . a . nil
+#define LIST_xxDLIST3    0x0d     // c . b . a :: nil
+#define LIST_xDxLIST3    0x0e     // c . b :: a . nil
+#define LIST_xDDLIST3    0x0f     // c . b :: a :: nil
+#define LIST_DxxLIST3    0x10     // c :: b . a . nil
+#define LIST_DxDLIST3    0x11     // c :: b . a :: nil
+#define LIST_DDxLIST3    0x12     // c :: b :: a . nil
+#define LIST_DDDLIST3    0x13     // c :: b :: a :: nil
+#define LIST_xxxL3STAR   0x14     // d . c . b . a
+#define LIST_xxDL3STAR   0x15     // d . c . b :: a
+#define LIST_xDxL3STAR   0x16     // d . c :: b . a
+#define LIST_xDDL3STAR   0x17     // d . c :: b :: a
+#define LIST_DxxL3STAR   0x18     // d :: c . b . a
+#define LIST_DxDL3STAR   0x19     // d :: c . b :: a
+#define LIST_DDxL3STAR   0x1a     // d :: c :: b . a
+#define LIST_DDDL3STAR   0x1b     // d :: c :: b :: a
+
+#define LIST_xxxxLIST4   0x1c     // d . c . b . a . nil
+#define LIST_xxDxLIST4   0x1d     // d . c . b :: a . nil
+#define LIST_xDxxLIST4   0x1e     // d . c :: b . a . nil
+#define LIST_xDDxLIST4   0x1f     // d . c :: b :: a . nil
+#define LIST_DxxxLIST4   0x20     // d :: c . b . a . nil
+#define LIST_DxDxLIST4   0x21     // d :: c . b :: a . nil
+#define LIST_DDxxLIST4   0x22     // d :: c :: b . a . nil
+#define LIST_DDDxLIST4   0x23     // d :: c :: b :: a . nil
+#define LIST_xxxDLIST4   0x24     // d . c . b . a :: nil
+#define LIST_xxDDLIST4   0x25     // d . c . b :: a :: nil
+#define LIST_xDxDLIST4   0x26     // d . c :: b . a :: nil
+#define LIST_xDDDLIST4   0x27     // d . c :: b :: a :: nil
+#define LIST_DxxDLIST4   0x28     // d :: c . b . a :: nil
+#define LIST_DxDDLIST4   0x29     // d :: c . b :: a :: nil
+#define LIST_DDxDLIST4   0x2a     // d :: c :: b . a :: nil
+#define LIST_DDDDLIST4   0x2b     // d :: c :: b :: a :: nil
+
+// 64 most recent shared items in a single byte.
+#define SER_BACKREF0 0x20     // reference to item 1 to 32 ago
+#define SER_BACKREF1 0x40     // reference to item 33 to 64 ago
+
+// I expect strings to be important enough that at least short ones have
+// special treatment. The length-code here will stand for 1-32 not 0-31.
+#define SER_STRING   0x60     // a string with 1-32 bytes
+
+// very small integers perhaps also deserve help.
+#define SER_FIXNUM   0x80     // integer -16 to +15
+
+// In CSL header words have a 7-bit field that identifies the type
+// of the object. Two bits there discriminate between bit-vectors, vectors
+// holding lists, vectors holding binary data and anything else. I can fit in
+// 5 bits here so to simplify coding I will use that as just a copy of the
+// remaining 5 bits from the type field in the two important classes of
+// vector.  Bit-vectors will need to be dealt with otherwise. These cases
+// will deal with simple lisp vectors, with bignums and with strings that are
+// too long for the special SER_STRING case.
+#define SER_LVECTOR  0xa0     // vector holding lists
+#define SER_BVECTOR  0xc0     // vector holding binary info
+
 
 #ifdef DEBUG_SERIALIZE
-#define   SER_OPNEXT      0x14    // for debugging
+
+static const char *ser_opnames[] =
+{   "LIST"
+    "BACKREF0",
+    "BACKREF1",
+    "STRING",
+    "FIXNUM",
+    "LVECTOR",
+    "BVECTOR",
+    "various"
+};
 
 static const char *ser_various_names[] =
-{   "RAWSYMBOL",
-    "DUPRAWSYMBOL",
-    "SYMBOL",
-    "DUPSYMBOL",
-    "GENSYM",
-    "DUPGENSYM",
+{   "RAWSYMBOL",    // only used in image files
+    "DUPRAWSYMBOL", // only used in image files
+    "SYMBOL",       // only in FASL files
+    "DUPSYMBOL",    // only in FASL files
+    "GENSYM",       // only in FASL files
+    "DUPGENSYM",    // only in FASL files
     "BIGBACKREF",
     "POSFIXNUM",
     "NEGFIXNUM",
@@ -234,90 +344,24 @@ static const char *ser_various_names[] =
     "BITVEC",
     "NIL",
     "END",
-    "op14",   // OPNEXT
-    "op15"
-    "op16",
-    "op17",
-    "op18",
-    "op19",
-    "op1a",
-    "op1b",
-    "op1c",
-    "op1d",
-    "op1e",
-    "op1f"
-};
-
-#endif
-
-// The ones from here on have not yet been allocated
-
-// Ideas:   SER_SYMBOL_CONS        for     "sym "
-//          SER_SYMBOL_NIL                 "sym)"
-//          SER_CONS_SYMBOL_CONS           "(sym "
-//          SER_DUPSYMBOL_CONS
-//          SER_DUPSYMBOL_NIL
-//          SER_CONS_DUPSYMBOL_CONS
-//          SER_CONSCONS                   "(("
-//          SER_CONS_CONS_CONS             "((("
-
-#define   SER_XXX14        0x14
-#define   SER_XXX15        0x15
-#define   SER_XXX16        0x16
-#define   SER_XXX17        0x17
-#define   SER_XXX18        0x18
-#define   SER_XXX19        0x19
-#define   SER_XXX1a        0x1a
-#define   SER_XXX1b        0xab
-#define   SER_XXX1c        0x1c
-#define   SER_XXX1d        0x1d
-#define   SER_XXX1e        0x1e
-#define   SER_XXX1f        0x1f
-
-// The next two opcodes make it possible for me to re-use one of the
-// 64 most recent shared items in a single byte.
-#define SER_BACKREF0 0x20     // reference to item 1 to 32 ago
-#define SER_BACKREF1 0x40     // reference to item 33 to 64 ago
-// I expect strings to be important enough that at least short ones have
-// special treatment. The length-code here will stand for 1-32 not 0-31.
-#define SER_STRING   0x60     // a string with 1-32 bytes
-// very small integers perhaps also deserve help.
-#define SER_FIXNUM   0x80     // integer -16 to +15
-// In CSL header words have a 7-bit field that identifies the type
-// of the object. Two bits there discriminate between bit-vectors, vectors
-// holding lists, vectors holding binary data and anything else. I can fit in
-// 5 bits here so to simplify coding I will use that as just a copy of the
-// remaining 5 bits from the type field in the two important classes of
-// vector.  Bit-vectors will need to be dealt with otherwise. These cases
-// will deal with simple lisp vectors, with bignums and with strings that are
-// too long for the special SER_STRING case.
-#define SER_LVECTOR  0xa0     // vector holding lists
-#define SER_BVECTOR  0xc0     // vector holding binary info
-
-// At present I have an unallocated code that will be usable to cope with
-// cases where I have not yet thought hard enought! At present the only idea
-// I have for this is "SER_CONS_BACKREF" to correspond to the sequence
-// of SER_CONS followed by a backref to one of the last 32 items. This
-// is not terribly compelling! So I will not use this code for now in case a
-// more pressing use emerges leter on.
-#define SER_SPARE    0xe0
-
-#ifdef DEBUG_SERIALIZE
-
-static const char *ser_opnames[] =
-{   "misc",
-    "BACKREF0",
-    "BACKREF1",
-    "STRING",
-    "FIXNUM",
-    "LVECTOR",
-    "BVECTOR",
-    "SPARE"
+    "OPNEXT",  // only used while debugging
+    "op15",    // spare
+    "op16",    // spare
+    "op17",    // spare
+    "op18",    // spare
+    "op19",    // spare
+    "op1a",    // spare
+    "op1b",    // spare
+    "op1c",    // spare
+    "op1d",    // spare
+    "op1e",    // spare
+    "ILLEGAL"  // so that EOF is illegal
 };
 
 static void ser_print_opname(int n)
 {   int top = (n >> 5) & 0x7;
-    if (top == 0) fprintf(stderr, "%s", ser_various_names[n & 0x1f]);
+    if (top == (SER_VARIOUS>>5))
+        fprintf(stderr, "%s", ser_various_names[n & 0x1f]);
     else fprintf(stderr, "%s %d", ser_opnames[top], n & 0x1f);
 }
 
@@ -375,8 +419,8 @@ void reader_setup_repeats(size_t n)
         myabort();
     }
 // I fill the vector with fixnum_of_int(0) so it is GC safe.
-    for (size_t i=0; i<n; i++)
-        repeat_heap[--n] = fixnum_of_int(0);
+    for (size_t i=0; i<repeat_heap_size; i++)
+        repeat_heap[i] = fixnum_of_int(0);
 }
 
 void writer_setup_repeats()
@@ -388,6 +432,8 @@ void writer_setup_repeats()
     {   fprintf(stderr, "\n+++ unable to allocate repeat heap\n");
         myabort();
     }
+    for (size_t i=0; i<=repeat_heap_size; i++)
+        repeat_heap[i] = fixnum_of_int(0);
 }
 
 // Given an index 1, 2, ... find the item that was referred to recently
@@ -468,33 +514,15 @@ size_t find_index_in_repeats(size_t h)
     return h;
 }
 
-// For testing I will put serialized data into a buffer... This is
-// just a test harness and does not reflect what I will eventually need
-// to do!
-
-#define SERSIZE 4000000
-int sercounter = 0;
-int serincount = 0;
-unsigned char serbuffer[SERSIZE];
-
-
 int read_opcode_byte()
 {   int r;
-#ifdef DEBUG_SERIALIZE
-// In this case each serialization opcode is prceeded by SER_OPNEXT. This
-// should mean that if anything gets out of step because seruialzation
+#if defined DEBUG_SERIALIZE && defined DEBUG_OPNEXT
+// In this case each serialization opcode is preceeded by SER_OPNEXT. This
+// should mean that if anything gets out of step because serialzation
 // data is malformed that this is noticed and reported promptly. Such failures
 // either reflext internal inconsistency between the serialization read and
 // write code or some corruption of data after writing but before reading.
-    if (binary_read_file != NULL) r = Igetc();
-    else
-    {   if (serincount > sercounter)
-        {   fprintf(stderr, "\nRead too much\n");
-            myabort();
-        }
-        r = serbuffer[serincount++];
-    }
-    r &= 0xff;
+    r = Zgetc() & 0xff;
     fprintf(stderr, "Read %d = %.2x ", r, r);
     if (r != SER_OPNEXT)
     {   fprintf(stderr, "\nExpected OPNEXT but did not find it\n");
@@ -502,15 +530,7 @@ int read_opcode_byte()
     }
     else fprintf(stderr, "SER_OPNEXT\n");
 #endif
-    if (binary_read_file != NULL) r = Igetc();
-    else
-    {   if (serincount > sercounter)
-        {   fprintf(stderr, "\nRead too much\n");
-            myabort();
-        }
-        r = serbuffer[serincount++];
-    }
-    r &= 0xff;
+    r = Zgetc() & 0xff;
 #ifdef DEBUG_SERIALIZE
     fprintf(stderr, "Read %d = %.2x ", r, r);
     ser_print_opname(r);
@@ -521,15 +541,7 @@ int read_opcode_byte()
 
 int read_data_byte()
 {   int r;
-    if (binary_read_file != NULL) r = Igetc();
-    else
-    {   if (serincount > sercounter)
-        {   fprintf(stderr, "\nRead too much\n");
-            myabort();
-        }
-        r = serbuffer[serincount++];
-    }
-    r &= 0xff;
+    r = Zgetc() & 0xff;
 #ifdef DEBUG_SERIALIZE
     fprintf(stderr, "Read %d = %.2x\n", r, r);
 #endif
@@ -538,15 +550,7 @@ int read_data_byte()
 
 int read_string_byte()
 {   int r;
-    if (binary_read_file != NULL) r = Igetc();
-    else
-    {   if (serincount > sercounter)
-        {   fprintf(stderr, "\nRead too much\n");
-            myabort();
-        }
-        r = serbuffer[serincount++];
-    }
-    r &= 0xff;
+    r = Zgetc() & 0xff;
 #ifdef DEBUG_SERIALIZE
     fprintf(stderr, "Read %d = %.2x ", r, r);
     if (0x20 <= r && r <= 0x7f) fprintf(stderr, " = '%c'", r);
@@ -556,25 +560,26 @@ int read_string_byte()
 }
 
 
-// I will arrange that the dumping code mostly prints out a human-readable
-// transcript of what there is... That will not be useful for much more
-// the debugging!
+// If DEBUG_SERIALIZE is set I will arrange that the dumping code prints
+// out a human-readable transcript of what there is.
+// Arranging to set up and pass down the strings that form parts of this
+// will have costs, so I will try to pass dummy data in the production
+// version. That will either be a fixed string or a reference to a character
+// array that has been left uninitialized.
 
 void write_opcode(int byte, const char *msg, ...)
 {
-#ifdef DEBUG_SERIALIZE
+#if defined DEBUG_SERIALIZE && defined DEBUG_OPNEXT
     va_list a;
     fprintf(stderr, "<opcode prefix> %.2x\n", SER_OPNEXT);
-    if (binary_write_file != NULL) Iputc(SER_OPNEXT);
-    else if (sercounter < SERSIZE) serbuffer[sercounter++] = SER_OPNEXT;
+    Zputc(SER_OPNEXT);
     fprintf(stderr, "%.2x: ", byte & 0xff);
     va_start(a, msg);
     vfprintf(stderr, msg, a);
     fprintf(stderr, "\n");
     va_end(a);
 #endif
-    if (binary_write_file != NULL) Iputc(byte);
-    else if (sercounter < SERSIZE) serbuffer[sercounter++] = byte;
+    Zputc(byte);
 }
 
 void write_byte(int byte, const char *msg, ...)
@@ -587,8 +592,7 @@ void write_byte(int byte, const char *msg, ...)
     printf("\n");
     va_end(a);
 #endif
-    if (binary_write_file != NULL) Iputc(byte);
-    else if (sercounter < SERSIZE) serbuffer[sercounter++] = byte;
+    Zputc(byte);
 }
 
 // This reads from 1 to 9 bytes in a variable length encoding to make up an
@@ -614,7 +618,10 @@ uint64_t read_u64()
 void write_u64(uint64_t n)
 {   char msg[40];
     if (n == (n & 0x7f))
-    {   sprintf(msg, "small int %#.2x = %d", (int)n, (int)n);
+    {
+#ifdef DEBUG_SERIALIZE
+        sprintf(msg, "small int %#.2x = %d", (int)n, (int)n);
+#endif
         write_byte(n | 0x80, msg);
         return;
     }
@@ -634,16 +641,25 @@ void write_u64(uint64_t n)
     {   int b = (n >> (7*(7-i)+final)) & 0x7f;
         if (any || (b != 0))
         {   any = true;
+#ifdef DEBUG_SERIALIZE
             sprintf(msg, "%#" PRIx64, ((uint64_t)b) << (7*(7-i)+final));
+#endif
             write_byte(b, msg);
         }
     }
     if (final == 7)
-    {   sprintf(msg, "%#.2x = %" PRIu64, (int)n & 0x7f, n);
+    {
+#ifdef DEBUG_SERIALIZE
+        sprintf(msg, "%#.2x = %" PRIu64, (int)n & 0x7f, n);
+
+#endif
         write_byte(0x80 | (n & 0x7f), msg);
     }
     else
-    {   sprintf(msg, "%#.2x = %" PRIu64, (int)n & 0xff, n);
+    {
+#ifdef DEBUG_SERIALIZE
+        sprintf(msg, "%#.2x = %" PRIu64, (int)n & 0xff, n);
+#endif
         write_byte(n & 0xff, msg);
     }
 }
@@ -981,112 +997,7 @@ int main(void)
 
 // [End of crc64 source code]
 
-// I will also include a 32-bit CRC implementation, also subject to
-// the generous license terms shown in the code:
-
-/*-
- *  COPYRIGHT (C) 1986 Gary S. Brown.  You may use this program, or
- *  code or tables extracted from it, as desired without restriction.
- *
- *  First, the polynomial itself and its table of feedback terms.  The
- *  polynomial is
- *  X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X^1+X^0
- *
- *  Note that we take it "backwards" and put the highest-order term in
- *  the lowest-order bit.  The X^32 term is "implied"; the LSB is the
- *  X^31 term, etc.  The X^0 term (usually shown as "+1") results in
- *  the MSB being 1
- *
- *  Note that the usual hardware shift register implementation, which
- *  is what we're using (we're merely optimizing it by doing eight-bit
- *  chunks at a time) shifts bits into the lowest-order term.  In our
- *  implementation, that means shifting towards the right.  Why do we
- *  do it this way?  Because the calculated CRC must be transmitted in
- *  order from highest-order term to lowest-order term.  UARTs transmit
- *  characters in order from LSB to MSB.  By storing the CRC this way
- *  we hand it to the UART in the order low-byte to high-byte; the UART
- *  sends each low-bit to hight-bit; and the result is transmission bit
- *  by bit from highest- to lowest-order term without requiring any bit
- *  shuffling on our part.  Reception works similarly
- *
- *  The feedback terms table consists of 256, 32-bit entries.  Notes
- *
- *      The table can be generated at runtime if desired; code to do so
- *      is shown later.  It might not be obvious, but the feedback
- *      terms simply represent the results of eight shift/xor opera
- *      tions for all combinations of data and CRC register values
- *
- *      The values must be right-shifted by eight bits by the "updcrc
- *      logic; the shift must be unsigned (bring in zeroes).  On some
- *      hardware you could probably optimize the shift in assembler by
- *      using byte-swap instructions
- *      polynomial $edb88320
- *
- *
- * CRC32 code derived from work by Gary S. Brown.
- * Very minor changes by ACN to insert case so code compiled as C++ and
- * get layout consisten with other code via use of astyle.
- */
-
-// #include <sys/param.h>
-// #include <sys/systm.h>
-
-static uint32_t crc32_tab[] =
-{   0x00000000U,0x77073096U,0xee0e612cU,0x990951baU,0x076dc419U,0x706af48fU,
-    0xe963a535U,0x9e6495a3U,0x0edb8832U,0x79dcb8a4U,0xe0d5e91eU,0x97d2d988U,
-    0x09b64c2bU,0x7eb17cbdU,0xe7b82d07U,0x90bf1d91U,0x1db71064U,0x6ab020f2U,
-    0xf3b97148U,0x84be41deU,0x1adad47dU,0x6ddde4ebU,0xf4d4b551U,0x83d385c7U,
-    0x136c9856U,0x646ba8c0U,0xfd62f97aU,0x8a65c9ecU,0x14015c4fU,0x63066cd9U,
-    0xfa0f3d63U,0x8d080df5U,0x3b6e20c8U,0x4c69105eU,0xd56041e4U,0xa2677172U,
-    0x3c03e4d1U,0x4b04d447U,0xd20d85fdU,0xa50ab56bU,0x35b5a8faU,0x42b2986cU,
-    0xdbbbc9d6U,0xacbcf940U,0x32d86ce3U,0x45df5c75U,0xdcd60dcfU,0xabd13d59U,
-    0x26d930acU,0x51de003aU,0xc8d75180U,0xbfd06116U,0x21b4f4b5U,0x56b3c423U,
-    0xcfba9599U,0xb8bda50fU,0x2802b89eU,0x5f058808U,0xc60cd9b2U,0xb10be924U,
-    0x2f6f7c87U,0x58684c11U,0xc1611dabU,0xb6662d3dU,0x76dc4190U,0x01db7106U,
-    0x98d220bcU,0xefd5102aU,0x71b18589U,0x06b6b51fU,0x9fbfe4a5U,0xe8b8d433U,
-    0x7807c9a2U,0x0f00f934U,0x9609a88eU,0xe10e9818U,0x7f6a0dbbU,0x086d3d2dU,
-    0x91646c97U,0xe6635c01U,0x6b6b51f4U,0x1c6c6162U,0x856530d8U,0xf262004eU,
-    0x6c0695edU,0x1b01a57bU,0x8208f4c1U,0xf50fc457U,0x65b0d9c6U,0x12b7e950U,
-    0x8bbeb8eaU,0xfcb9887cU,0x62dd1ddfU,0x15da2d49U,0x8cd37cf3U,0xfbd44c65U,
-    0x4db26158U,0x3ab551ceU,0xa3bc0074U,0xd4bb30e2U,0x4adfa541U,0x3dd895d7U,
-    0xa4d1c46dU,0xd3d6f4fbU,0x4369e96aU,0x346ed9fcU,0xad678846U,0xda60b8d0U,
-    0x44042d73U,0x33031de5U,0xaa0a4c5fU,0xdd0d7cc9U,0x5005713cU,0x270241aaU,
-    0xbe0b1010U,0xc90c2086U,0x5768b525U,0x206f85b3U,0xb966d409U,0xce61e49fU,
-    0x5edef90eU,0x29d9c998U,0xb0d09822U,0xc7d7a8b4U,0x59b33d17U,0x2eb40d81U,
-    0xb7bd5c3bU,0xc0ba6cadU,0xedb88320U,0x9abfb3b6U,0x03b6e20cU,0x74b1d29aU,
-    0xead54739U,0x9dd277afU,0x04db2615U,0x73dc1683U,0xe3630b12U,0x94643b84U,
-    0x0d6d6a3eU,0x7a6a5aa8U,0xe40ecf0bU,0x9309ff9dU,0x0a00ae27U,0x7d079eb1U,
-    0xf00f9344U,0x8708a3d2U,0x1e01f268U,0x6906c2feU,0xf762575dU,0x806567cbU,
-    0x196c3671U,0x6e6b06e7U,0xfed41b76U,0x89d32be0U,0x10da7a5aU,0x67dd4accU,
-    0xf9b9df6fU,0x8ebeeff9U,0x17b7be43U,0x60b08ed5U,0xd6d6a3e8U,0xa1d1937eU,
-    0x38d8c2c4U,0x4fdff252U,0xd1bb67f1U,0xa6bc5767U,0x3fb506ddU,0x48b2364bU,
-    0xd80d2bdaU,0xaf0a1b4cU,0x36034af6U,0x41047a60U,0xdf60efc3U,0xa867df55U,
-    0x316e8eefU,0x4669be79U,0xcb61b38cU,0xbc66831aU,0x256fd2a0U,0x5268e236U,
-    0xcc0c7795U,0xbb0b4703U,0x220216b9U,0x5505262fU,0xc5ba3bbeU,0xb2bd0b28U,
-    0x2bb45a92U,0x5cb36a04U,0xc2d7ffa7U,0xb5d0cf31U,0x2cd99e8bU,0x5bdeae1dU,
-    0x9b64c2b0U,0xec63f226U,0x756aa39cU,0x026d930aU,0x9c0906a9U,0xeb0e363fU,
-    0x72076785U,0x05005713U,0x95bf4a82U,0xe2b87a14U,0x7bb12baeU,0x0cb61b38U,
-    0x92d28e9bU,0xe5d5be0dU,0x7cdcefb7U,0x0bdbdf21U,0x86d3d2d4U,0xf1d4e242U,
-    0x68ddb3f8U,0x1fda836eU,0x81be16cdU,0xf6b9265bU,0x6fb077e1U,0x18b74777U,
-    0x88085ae6U,0xff0f6a70U,0x66063bcaU,0x11010b5cU,0x8f659effU,0xf862ae69U,
-    0x616bffd3U,0x166ccf45U,0xa00ae278U,0xd70dd2eeU,0x4e048354U,0x3903b3c2U,
-    0xa7672661U,0xd06016f7U,0x4969474dU,0x3e6e77dbU,0xaed16a4aU,0xd9d65adcU,
-    0x40df0b66U,0x37d83bf0U,0xa9bcae53U,0xdebb9ec5U,0x47b2cf7fU,0x30b5ffe9U,
-    0xbdbdf21cU,0xcabac28aU,0x53b39330U,0x24b4a3a6U,0xbad03605U,0xcdd70693U,
-    0x54de5729U,0x23d967bfU,0xb3667a2eU,0xc4614ab8U,0x5d681b02U,0x2a6f2b94U,
-    0xb40bbe37U,0xc30c8ea1U,0x5a05df1bU,0x2d02ef8d
-};
-
-uint32_t crc32(uint32_t crc, const void *buf, size_t size)
-{   uint8_t *p = (uint8_t *)buf;
-    crc = crc ^ ~0U;
-    while (size-- != 0)
-        crc = crc32_tab[(uint8_t)crc ^ *p++] ^ (crc >> 8);
-    return crc ^ ~0U;
-}
-
-// [End of crc32 source code]
-
+// I use a function "crc32" from zlib...
 
 // A raw CSL Lisp provides around 850 entrypounts, while a full copy of
 // Reduce with all the files u01.cpp to u60.cpp populated ends up with
@@ -1157,7 +1068,6 @@ void set_up_function_tables()
 // to index values, and a table (codepointers) that is a single
 // indexable array of the entrypoints. For Reduce there are somewhat under
 // 4000 pointers to handle here, so costs are not too severe.
-    char b[32];
     for (entry_point0 *p = &entries_table0[1]; p->p!=NULL; p++)
     {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
@@ -1232,24 +1142,49 @@ void write_function(void *p)
 
 #define start_contents64(p) (((uintptr_t)(p) & ~(uintptr_t)7) + 8)
 
-// At present this code does not go push/pop around calls that allocate
-// memory and hence might trigger garbage collection. It also doed not
-// check for failure in allocation. If it is ONLY used during system start-up
-// to read a heap image into an otherwise empty context then any garbage
-// collection or allocation failure would amount to a fatal error. Well at
-// a minimum my code does not at present detect and report that. I will
-// probably only really think of updating it if (and when) I make serialisation
-// and deserialisation generally available for use within a running system.
+// Within serial_read there are a number of places where I have to
+// take special care to be garbage-collection safe. This macro encapsulates
+// the rather ugly scheme that I use. Note that p is a raw pointer to
+// somewhere within the object that pbase identifies (or as a special
+// case p=&r and pbase is fixnum_of_int(0)). The protected statement must
+// not assign to any of the variables that are stacked here! It will
+// usually be a good idea to go "GC_PROTECT(prev = ...);".
+
+#ifndef DEBUG_VALIDATE
+void validate_all(const char *why, int line, const char *file)
+{
+}
+#endif
+
+#define GC_PROTECT(stmt)                             \
+    do                                               \
+    {   push4(r, s, pbase, b);                       \
+        validate_all("GC_PROTECT start", __LINE__, __FILE__); \
+        ip = (LispObject)p - pbase;                  \
+        stmt;                                        \
+        nil = C_nil;                                 \
+        if (exception_pending()) return nil;         \
+        pop4(b, pbase, s, r);                        \
+        p = (LispObject *)(pbase + ip);              \
+        validate_all("GC_PROTECT end", __LINE__, __FILE__); \
+    } while (0)
+
+
+// This code will need to be able to report failure if either
+// the underlying byte-stream is coprrupted or if storage allocation
+// here fails. It also needs to be safe against garbage collection.
 
 LispObject serial_read()
 {   LispObject *p;    // a pointer to where to put the next item
     LispObject r,     // result of the entire reading process
                pbase, // needed to make the code GC safe
+               ip,    // ditto
                prev,  // recent object read, for use with SER_DUP
                w,     // working variable
                s,     // a (linked) stack used with vectors (and symbols
                       // if the SER_RAWSYMBOL opcode is encountered).
                b;     // a back-pointer chain
+    LispObject nil = C_nil;
     int c;
     prev = pbase = r = s = b = fixnum_of_int(0);
     p = &r;
@@ -1266,23 +1201,26 @@ down:
     switch (c & 0xe0)
     {   case SER_VARIOUS:
             switch (c)
-            {   case SER_CONS:
-// I should protect pbase, b, r and s across this, and I need to worry about
-// p because it could point within any previously allocated structure
-// or it could point at r. To make that safe I believe I will need to
-// write out cons in-line , because then I can manage to update *p before
-// and garbage collection, and save r after that and before a garbage
-// collection.
-                    b = *p = cons(fixnum_of_int(0), b);
+            {   case SER_ILLEGAL:
+// If read_opcode_byte() fails it will return EOF and I am assuming that
+// has the value -1. I am further assuming that my machine is a twos
+// complement one and hence (-1) & 0xff will be 0xff, which is SER_ILLEGAL.
+// If I see that I will abandon reading and return in an error state.
+                    flip_exception();
+                    return nil;
+                case SER_CONS:
+                    GC_PROTECT(prev = cons(fixnum_of_int(0), b));
+                    *p = b = prev;
                     pbase = b;
                     p = &qcar(b);
                     goto down;
                 case SER_DUPCONS:
 // As SER_CONS but the item constructed will be referenced again so it need
-// to be entered in the relevant table. Thie could have been rendered as
+// to be entered in the relevant table. This could have been rendered as
 // SER_CONS; SER_DUP but I have chosen to provide a single opcode to handle it
 // compactly.
-                    b = *p = cons(fixnum_of_int(0), b);
+                    GC_PROTECT(prev = cons(fixnum_of_int(0), b));
+                    *p = b = prev;
                     pbase = b;
                     p = &qcar(b);
                     reader_repeat_new(pbase);
@@ -1300,9 +1238,7 @@ down:
 // and so on using 7 bits per byte... up until I have used 8 bytes.
 // If one is needed beyond that it can be a final 8-bit value.
 // This allows for up to 2^64 back-references.
-                    *p = reader_repeat_old(w = (1 + 64 + read_u64()));
-//           fprintf(stderr, "backref %" PRIuPTR " => %" PRIxPTR "\n",
-//                  (uintptr_t)w, (uintptr_t)*p);
+                    *p = reader_repeat_old(1 + 64 + read_u64());
                     goto up;
 
                 case SER_DUP:
@@ -1318,7 +1254,8 @@ down:
 // SER_DUP opcode can behave meaningfully. Note that this can make
 // a full 64-bit positive integer because it reads and processes its input
 // as an unsigned value.
-                    prev = *p = make_lisp_unsigned64(read_u64());
+                    GC_PROTECT(prev = make_lisp_unsigned64(read_u64()));
+                    *p = prev;
                     goto up;
 
                 case SER_NEGFIXNUM:
@@ -1330,7 +1267,8 @@ down:
 // -128 to +127 (rather than -127 to +127).
 // Note that the code that writes stuff out should only generate this
 // when the value concerned will fit within a 64-bit signed value.
-                    prev = *p = make_lisp_integer64(-1-read_u64());
+                    GC_PROTECT(prev = make_lisp_integer64(-1-read_u64()));
+                    *p = prev;
                     goto up;
 
                 case SER_DUPRAWSYMBOL:
@@ -1342,7 +1280,9 @@ down:
 // that all the list-like components will be transmitted (much as if they were
 // elements in a vector). The key parts of this work using the same scheme as
 // for SER_LVECTOR.
-                    prev = w = *p = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+                    GC_PROTECT(prev =
+                        getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length));
+                    *p = w = prev;
                     if (c == SER_DUPRAWSYMBOL) reader_repeat_new(prev);
 // Note that the vector as created will have its LENGTH encoded in the
 // header, but for symbols that is incorrect so I need to re-write the
@@ -1369,7 +1309,8 @@ down:
                     qvalue(w) = b; // the back-pointer.
                     b = w;
 #define PNAME_INDEX (&qpname(w) - &qvalue(w))
-                    s = cons(fixnum_of_int(PNAME_INDEX), s);
+                    GC_PROTECT(prev = cons(fixnum_of_int(PNAME_INDEX), s));
+                    s = prev;
                     prev = pbase = b;
                     p = &qpname(b);
                     goto down;
@@ -1393,13 +1334,21 @@ down:
 // issue of the interaction between serialization and a package system is
 // not thought through at present - things will be read in in the
 // current package (to the extent that such a concept exists or makes sense).
-                    for (size_t i=0; i<len; i++) packbyte(read_string_byte());
-                    if (c == SER_GENSYM || c == SER_DUPGENSYM)
-                    {   w = copy_string(boffo, boffop);
-                        w = Lgensym1(C_nil, w);
+// Well what I say above is not quite true after all. Serialization is used
+// for FASL files, so a FASL file that used a symbol with an absurdly
+// long name could lead to boffo overflow here, triggering garbage collection.
+                    for (size_t i=0; i<len; i++)
+                    {   if (boffop >=
+                            length_of_byteheader(vechdr(boffo))-CELL-8)
+                        GC_PROTECT(packbyte(read_string_byte()));
+                        else packbyte(read_string_byte());
                     }
-                    else w = iintern(boffo, (int32_t)boffop, CP, 0);
-                    prev = *p = w;
+                    if (c == SER_GENSYM || c == SER_DUPGENSYM)
+                    {   GC_PROTECT(prev = copy_string(boffo, boffop));
+                        GC_PROTECT(prev = Lgensym1(C_nil, prev));
+                    }
+                    else GC_PROTECT(prev = iintern(boffo, (int32_t)boffop, CP, 0));
+                    *p = prev;
                     if (c == SER_DUPSYMBOL || c == SER_DUPGENSYM)
                         reader_repeat_new(prev);
                     goto up;
@@ -1412,18 +1361,21 @@ down:
 
                 case SER_FLOAT32:
 // a 32-bit single float
-                    prev = *p = make_boxfloat(read_f32(), TYPE_SINGLE_FLOAT);
+                    GC_PROTECT(prev = make_boxfloat(read_f32(), TYPE_SINGLE_FLOAT));
+                    *p = prev;
                     goto up;
 
                 case SER_FLOAT64:
 // a 64-bit (long) float
-                    prev = *p = make_boxfloat(read_f64(), TYPE_DOUBLE_FLOAT);
+                    GC_PROTECT(prev = make_boxfloat(read_f64(), TYPE_DOUBLE_FLOAT));
+                    *p = prev;
                     goto up;
 
                 case SER_FLOAT128:
 // a 128-bit (double-length) float.
-                    prev = *p = make_boxfloat(0.0, TYPE_LONG_FLOAT);
+                    GC_PROTECT(prev = make_boxfloat(0.0, TYPE_LONG_FLOAT));
                     long_float_val(prev) = read_f128();
+                    *p = prev;
                     goto up;
 
                 case SER_CHARSPID:
@@ -1443,9 +1395,12 @@ down:
                 case SER_BITVEC:
                     w = read_u64();
                     {   size_t len = CELL + (w + 7)/8; // length in bytes
-                        prev = *p = getvector(TAG_VECTOR, bitvechdr_(w), len);
+                        GC_PROTECT(prev =
+                            getvector(TAG_VECTOR, bitvechdr_(w), len));
+                        *p = prev;
                         char *x = &celt(prev, 0);
-                        for (size_t i=0; i<(size_t)w; i++) *x++ = read_data_byte();
+                        for (size_t i=0; i<(size_t)w; i++)
+                            *x++ = read_data_byte();
                         while (((intptr_t)x & 7) != 0) *x++ = 0;
                     }
                     goto up;
@@ -1458,7 +1413,7 @@ down:
                     fprintf(stderr, "End of dump marker found - this is an error situation\n");
                     myabort();
 
-                case SER_XXX14:
+                case SER_OPNEXT:
                 case SER_XXX15:
                 case SER_XXX16:
                 case SER_XXX17:
@@ -1469,32 +1424,12 @@ down:
                 case SER_XXX1c:
                 case SER_XXX1d:
                 case SER_XXX1e:
-                case SER_XXX1f:
                 default:
-                    fprintf(stderr, "Unimplemented reader opcode (a) %.2x\n", c);
+                    fprintf(stderr, "Unimplemented/unknown reader opcode (a) %.2x\n", c);
                     myabort();
             }
             break;
         case SER_LVECTOR:
-// The issue of protection of p against garbage collection is perhaps
-// harder here, because if may not be possible to allocate a vector
-// until garbage collection is over. But p does not point to the start
-// of an item and is not tagged, so the garbage collector will not know
-// what to do with it. Well for just system startup that is not really an
-// issue in that garbage collection can not sanely arise until the heap has
-// been restored.
-// The scheme I can adopt is roughly:
-//    {   intptr_t poff = p - pbase;
-//        push(pbase, r, s, b);
-//        reclaim();
-//        pop(n, s, r, pbase);
-//        if (pbase==fixnum_of_int(0)) p = &r;
-//        else p = pbase + poff;
-//    }
-//
-// read_byte() must also deliver information on the type and the size
-// of the vector that I need to create.
-//
 // One thing to observe here. If I have a vector that is a hash table using
 // EQ as its key then reading it in here will leave its entries all the right
 // values but not in the right places. My response to that is to
@@ -1511,7 +1446,8 @@ down:
 // what I need to pass to getvector makes that into a byte count and allows
 // for the header word as well.
             size_t n = read_u64();
-            prev = w = *p = getvector(tag, type, CELL*(n+1));
+            GC_PROTECT(prev = getvector(tag, type, CELL*(n+1)));
+            w = *p = prev;
 // Note that the "vector" just created may be tagged with TAG_NUMBERS
 // rather than TAG_VECTOR, so I use the access macro "vselt" rather than
 // "elt" - and that survives whichever case I am in.
@@ -1538,7 +1474,8 @@ down:
             }
             vselt(w, 0) = b;
             b = w;
-            s = cons(fixnum_of_int(n), s);
+            GC_PROTECT(prev = cons(fixnum_of_int(n), s));
+            s = prev;
             prev = pbase = b;
             p = &vselt(b, n);
         }
@@ -1566,9 +1503,13 @@ down:
 // with strings with length 1-32. The associated data is JUST the bytes
 // making up the string, with padding at the end.
             w = (c & 0x1f) + 1;
-            prev = *p = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w);
+            GC_PROTECT(prev = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
+            *p = prev;
             {   char *x = &celt(prev, 0);
                 for (size_t i=0; i<(size_t)w; i++) *x++ = read_string_byte();
+// Fill in end of the memory block with zero bytes so it is properly tidy.
+// This is needed so that comaprisons between strings and hash value
+// calculations are easier.
                 while (((intptr_t)x & 7) != 0) *x++ = 0;
             }
             goto up;
@@ -1592,8 +1533,9 @@ down:
                     tag = is_bignum_header(type) ? TAG_NUMBERS :
                                                    TAG_VECTOR;
                 if (vector_i8(type))
-                {   prev = *p = getvector(tag, type, CELL+w);
-                    char *x = (char *)start_contents(prev);
+                {   GC_PROTECT(prev = getvector(tag, type, CELL+w));
+                    *p = prev;
+                    unsigned char *x = (unsigned char *)start_contents(prev);
                     if (is_string_header(type))
                         for (size_t i=0; i<(size_t)w; i++)
                             *x++ = read_string_byte();
@@ -1602,7 +1544,8 @@ down:
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_i32(type))
-                {   prev = *p = getvector(tag, type, CELL+4*w);
+                {   GC_PROTECT(prev = getvector(tag, type, CELL+4*w));
+                    *p = prev;
                     uint32_t *x = (uint32_t *)start_contents(prev);
 // 32-bit integers are transmitted most significant byte first.
                     for (size_t i=0; i<(size_t)w; i++)
@@ -1614,7 +1557,8 @@ down:
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_f64(type))
-                {   prev = *p = getvector(tag, type, CELL+8*w);
+                {   GC_PROTECT(prev = getvector(tag, type, CELL+8*w));
+                    *p = prev;
                     double *x = (double *)start_contents64(prev);
 // There has to be a padder word in these objects on a 32-bit machine so
 // that the data is 64-bit aligned. Clean it up.
@@ -1622,7 +1566,8 @@ down:
                     for (size_t i=0; i<(size_t)w; i++) *x++ = read_f64();
                 }
                 else if (vector_i16(type))
-                {   prev = *p = getvector(tag, type, CELL+2*w);
+                {   GC_PROTECT(prev = getvector(tag, type, CELL+2*w));
+                    *p = prev;
                     uint16_t *x = (uint16_t *)start_contents(prev);
                     for (size_t i=0; i<(size_t)w; i++)
                     {   uint32_t q = read_data_byte() & 0xff;
@@ -1631,7 +1576,8 @@ down:
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_i64(type))
-                {   prev = *p = getvector(tag, type, CELL+8*w);
+                {   GC_PROTECT(prev = getvector(tag, type, CELL+8*w));
+                    *p = prev;
                     uint64_t *x = (uint64_t *)start_contents64(prev);
                     if (!SIXTY_FOUR_BIT) *(int32_t *)start_contents(prev) = 0;
                     for (size_t i=0; i<(size_t)w; i++)
@@ -1646,18 +1592,21 @@ down:
                     }
                 }
                 else if (vector_f32(type))
-                {   prev = *p = getvector(tag, type, CELL+4*w);
+                {   GC_PROTECT(prev = getvector(tag, type, CELL+4*w));
+                    *p = prev;
                     float *x = (float *)start_contents(prev);
                     for (size_t i=0; i<(size_t)w; i++) *x++ = read_f32();
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_f128(type))
-                {   prev = *p = getvector(tag, type, CELL+16*w);
+                {   GC_PROTECT(prev = getvector(tag, type, CELL+16*w));
+                    *p = prev;
                     fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
                     myabort();
                 }
                 else if (vector_i128(type))
-                {   prev = *p = getvector(tag, type, CELL+16*w);
+                {   GC_PROTECT(prev = getvector(tag, type, CELL+16*w));
+                    *p = prev;
                     fprintf(stderr, "128-bit floats not supported (yet?)\n");
                     myabort();
                 }
@@ -1668,7 +1617,7 @@ down:
             }
             goto up;
 
-        case SER_SPARE:
+        case SER_LIST:  // NOT yet implemented, or even finally decided about.
         default:
             fprintf(stderr, "Unimplemented reader opcode (b) %.2x\n", c);
             myabort();
@@ -1963,8 +1912,8 @@ down:
                 goto up;
             }
             mark_address_as_used(p - TAG_SYMBOL);
-// I have two modes if serialisation. One views symbols as "just other bits
-// of data" and descendes through them so that the contents of their value
+// I have two modes if serialization. One views symbols as "just other bits
+// of data" and descends through them so that the contents of their value
 // cells, property lists and so on get inspected. That version is used
 // when creating a full heap image. The other stops when it finda a symbol,
 // and when writing data out just writes out its name (or somewhat more
@@ -2138,7 +2087,9 @@ down:
     {   if (hash_get_value(&repeat_hash, i) != 0)
         {   size_t n = find_index_in_repeats(i);
             char msg[40];
+#ifdef DEBUG_SERIALIZE
             sprintf(msg, "back %" PRIuPTR, (uintptr_t)n);
+#endif
             if (n <= 32) write_opcode(SER_BACKREF0 + n - 1, msg);
             else if (n <= 64) write_opcode(SER_BACKREF1 + n - 33, msg);
             else
@@ -2186,21 +2137,33 @@ down:
                 }
                 if (isgensym)
                 {   if (i != (size_t)-1)
-                    {   sprintf(msg, "dup-gensym, length=%" PRIuPTR, (uintptr_t)n);
+                    {
+#ifdef DEBUG_SERIALIZE
+                        sprintf(msg, "dup-gensym, length=%" PRIuPTR, (uintptr_t)n);
+#endif
                         write_opcode(SER_DUPGENSYM, msg);
                     }
                     else
-                    {   sprintf(msg, "gensym, length=%" PRIuPTR, (uintptr_t)n);
+                    {
+#ifdef DEBUG_SERIALIZE
+                        sprintf(msg, "gensym, length=%" PRIuPTR, (uintptr_t)n);
+#endif
                         write_opcode(SER_GENSYM, msg);
                     }
                 }
                 else
                 {   if (i != (size_t)-1)
-                    {   sprintf(msg, "dup-symbol, length=%" PRIuPTR, (uintptr_t)n);
+                    {
+#ifdef DEBUG_SERIALIZE
+                        sprintf(msg, "dup-symbol, length=%" PRIuPTR, (uintptr_t)n);
+#endif
                         write_opcode(SER_DUPSYMBOL, msg);
                     }
                     else
-                    {   sprintf(msg, "symbol, length=%" PRIuPTR, (uintptr_t)n);
+                    {
+#ifdef DEBUG_SERIALIZE
+                        sprintf(msg, "symbol, length=%" PRIuPTR, (uintptr_t)n);
+#endif
                         write_opcode(SER_SYMBOL, msg);
                     }
                 }
@@ -2208,8 +2171,10 @@ down:
                 for (size_t i=0; i<n; i++)
                 {   int c = celt(w, i) & 0xff;
                     char msg[40];
+#ifdef DEBUG_SERIALIZE
                     if (0x20 < c && c <= 0x7e) sprintf(msg, "'%c'", c);
                     else sprintf(msg, "%#.2x", c);
+#endif
                     write_byte(c, msg);
                 }
                 goto up;
@@ -2278,12 +2243,16 @@ down:
                 (len = length_of_byteheader(h) - CELL) <= 32 &&
                 len != 0)
             {   char msg[40];
+#ifdef DEBUG_SERIALIZE
                 sprintf(msg, "string, length=%" PRIuPTR, (intptr_t)len);
+#endif
                 write_opcode(SER_STRING+len-1, msg);
                 for (size_t j=0; j<len; j++)
                 {   int c = ucelt(p, j);
+#ifdef DEBUG_SERIALIZE
                     if (0x20 < c && c <= 0x7e) sprintf(msg, "'%c'", c);
                     else sprintf(msg, "%#.2x", c);
+#endif
                     write_byte(c, msg);
                 }
                 if (i != (size_t)-1) write_opcode(SER_DUP, "dup string");
@@ -2292,15 +2261,19 @@ down:
             else if (is_bitvec_header(h))
             {   char msg[40];
                 len = length_of_bitheader(h);
+#ifdef DEBUG_SERIALIZE
                 sprintf(msg, "bitvec, length=%" PRIuPTR, (intptr_t)len);
+#endif
                 write_opcode(SER_BITVEC, msg);
                 write_u64(len);
                 len = (len + 7)/8;
                 for (size_t j=0; j<len; j++)
                 {   int c = ucelt(p, j);
+#ifdef DEBUG_SERIALIZE
                     for (int k=0; k<8; k++)
                         msg[k] = (c & (1<<k)) != 0 ? '1' : '0';
                     msg[8] = 0;
+#endif
                     write_byte(c, msg);
                 }
                 if (i != (size_t)-1) write_opcode(SER_DUP, "dup bitvector");
@@ -2320,7 +2293,9 @@ down:
             {   if (length_of_header(h) == CELL+4)
                 {   int64_t n = (int32_t)bignum_digits(p)[0];
                     char msg[40];
+#ifdef DEBUG_SERIALIZE
                     sprintf(msg, "int value=%" PRId64, n);
+#endif
                     if (n < 0)
                     {   write_opcode(SER_NEGFIXNUM, msg);
                         write_u64(-n-1);
@@ -2336,7 +2311,9 @@ down:
                 {   int64_t n = (int32_t)bignum_digits(p)[0] |
                                 ((int64_t)(int32_t)bignum_digits(p)[1] << 31);
                     char msg[40];
+#ifdef DEBUG_SERIALIZE
                     sprintf(msg, "int value=%" PRId64, n);
+#endif
 // The value I have here fitted within two bignum digits and so is really at
 // most 62 bits. A consequence of that is that negating it can not lead to
 // arithmetic overflow within a signed 64-bit word. Whew!
@@ -2381,11 +2358,12 @@ down:
 // Also note that the "vector" may be tagged as TAG_VECTOR or TAG_NUMBERS and
 // so I need code that uses a mask operation to address its start.
             if (vector_i8(h))
-            {   char *x = (char *)start_contents(p);
+            {   unsigned char *x = (unsigned char *)start_contents(p);
                 write_u64(len = length_of_byteheader(h) - CELL);
 // I *could* detect strings etc here to display the comments more tidily,
 // but since they are just for debugging that seems like too much work
-// for today.
+// for today. I also transmit as unsigned bytes regardless of whether the
+// final use will be signe dor unsigned.
                 for (size_t i=0; i<len; i++) write_byte(*x++, "part of vec8/string");
             }
             else if (vector_i32(h))
@@ -2460,14 +2438,18 @@ down:
             switch (type_of_header(flthdr(p)))
             {   case TYPE_SINGLE_FLOAT:
                 {   char msg[40];
+#ifdef DEBUG_SERIALIZE
                     sprintf(msg, "float %.7g", (double)single_float_val(p));
+#endif
                     write_opcode(SER_FLOAT32, msg);
                     write_f32(single_float_val(p));
                 }
                 break;
                 case TYPE_DOUBLE_FLOAT:
                 {   char msg[40];
+#ifdef DEBUG_SERIALIZE
                     sprintf(msg, "double %.16g", double_float_val(p));
+#endif
                     write_opcode(SER_FLOAT64, msg);
                     write_f64(double_float_val(p));
                 }
@@ -2475,7 +2457,9 @@ down:
                 case TYPE_LONG_FLOAT:
                 {   char msg[40];
 // At present I do not have a good scheme to display the 128-bit float value.
+#ifdef DEBUG_SERIALIZE
                     sprintf(msg, "long double");
+#endif
                     write_opcode(SER_FLOAT128, msg);
                     write_f128(long_float_val(p));
                 }
@@ -2494,12 +2478,16 @@ down:
             w64 = int_of_fixnum(p);
             if (-16 <= w64 && w64 < 15)
             {   char msg[40];
+#ifdef DEBUG_SERIALIZE
                 sprintf(msg, "int, value=%d", (int)w64);
+#endif
                 write_opcode(SER_FIXNUM | ((int)w64 & 0x1f), msg);
             }
             else
             {   char msg[40];
+#ifdef DEBUG_SERIALIZE
                 sprintf(msg, "int value=%" PRId64, w64);
+#endif
                 if (w64 < 0)
                 {   write_opcode(SER_NEGFIXNUM, msg);
                     write_u64(-w64-1);
@@ -2515,7 +2503,9 @@ down:
 // Immediate data (eg characters and SPIDs).
         {   char msg[40];
             uint64_t nn = ((uint64_t)p) >> (Tw+2);
+#ifdef DEBUG_SERIALIZE
             sprintf(msg, "char/spid, value=%#" PRIx64, (uint64_t)p);
+#endif
             write_opcode(SER_CHARSPID, msg);
             write_u64(nn);
         }
@@ -2605,13 +2595,53 @@ up:
 
 bool setup_codepointers = false;
 
+LispObject Lwrite_module(LispObject nil, LispObject a, LispObject b)
+{
+#ifdef DEBUG_FASL
+    push2(a, b);
+    trace_printf("FASLOUT: ");
+    loop_print_trace(a);
+    errexit();
+    trace_printf("\n");
+    loop_print_trace(b);
+    errexit();
+    trace_printf("\n");
+    pop2(b, a);
+#endif
+    if (!setup_codepointers)
+    {   set_up_function_tables();
+        setup_codepointers = true;
+    }
+    descend_symbols = false;
+    hash_init(&repeat_hash, 13); // allow 8K entries to start with.
+    scan_data(a);
+    scan_data(b);
+    release_map();
+    writer_setup_repeats();
+    write_u64(repeat_heap_size);
+// Note that the serialization code ought not to allocate store or
+// do anything that could provoke garbage collection, and so I do not
+// need to stack stuff here. Any asynchronous interrupt during serialization
+// would be liable to be fatal since the implementation traverses data using
+// pointer reversal, so in general much of the heap can be in a corrupted
+// state while that is going on.
+    write_data(a);
+    write_data(b);
+    hash_finalize(&repeat_hash);
+    if (repeat_heap_size != 0)
+    {   repeat_heap_size = 0;
+        free(repeat_heap);
+    }
+    repeat_heap = NULL;
+    return onevalue(nil);
+}
+
 LispObject Lserialize(LispObject nil, LispObject a)
 {   if (!setup_codepointers)
     {   set_up_function_tables();
         setup_codepointers = true;
     }
     descend_symbols = false;
-    sercounter = 0;
     hash_init(&repeat_hash, 13); // allow 8K entries to start with.
     scan_data(a);
     release_map();
@@ -2633,7 +2663,6 @@ LispObject Lserialize1(LispObject nil, LispObject a)
         setup_codepointers = true;
     }
     descend_symbols = true;
-    sercounter = 0;
     hash_init(&repeat_hash, 13); // allow 8K entries to start with.
     scan_data(a);
     release_map();
@@ -2649,9 +2678,271 @@ LispObject Lserialize1(LispObject nil, LispObject a)
     return onevalue(nil);
 }
 
+// This is a single function that will implement load-module,
+// load-source and select-source.
+
+#define F_LOAD_MODULE     0
+#define F_LOAD_SOURCE     1
+#define F_SELECTED_SOURCE 2
+
+static LispObject load_module(LispObject nil, LispObject file,
+                              int option)
+//
+// load_module() rebinds *package* in COMMON mode, but also note that
+// it also rebinds *echo to nil in case we are reading from a stream.
+//
+{   char filename[LONGEST_LEGAL_FILENAME];
+    Header h;
+    size_t len;
+    bool from_stream = false;
+    bool close_mode;
+    char *modname;
+    memset(filename, 0, sizeof(filename));
+    if (is_stream(file)) h=0, from_stream = true;
+    else if (symbolp(file))
+    {   file = get_pname(file);
+        errexit();
+        h = vechdr(file);
+    }
+    else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
+    {   switch (option)
+        {
+        default:
+            return aerror("load-module");
+        case F_LOAD_SOURCE:
+            return aerror("load-source");
+        case F_SELECTED_SOURCE:
+            return aerror("load-selected-source");
+        }
+    }
+    current_module = file;
+    if (from_stream)
+    {   if (Iopen_from_stdin())
+        {   err_printf("Failed to load module from stream\n");
+            return error(1, err_no_fasl, file);
+        }
+        push(qvalue(standard_input));
+        qvalue(standard_input) = file;
+        push(qvalue(echo_symbol));
+        qvalue(echo_symbol) = nil;
+    }
+    else
+    {   len = length_of_byteheader(h) - CELL;
+        modname = (char *)file + CELL - TAG_VECTOR;
+        modname = trim_module_name(modname, &len);
+        if (Iopen(modname, len, IOPEN_IN, filename))
+        {   err_printf("Failed to find \"%s\"\n", filename);
+            return error(1, err_no_fasl, file);
+        }
+    }
+//
+// I will account time spent fast-loading things as "storage management"
+// overhead to be counted as "garbage collector time" rather than
+// regular "cpu time"
+//
+    push_clock();
+    if (verbos_flag & 2)
+    {   freshline_trace();
+        if (option != F_LOAD_MODULE)
+        {   if (from_stream) trace_printf("Loading source from a stream\n");
+            else trace_printf("Loading source for \"%s\"\n", filename);
+        }
+        else
+        {   if (from_stream) trace_printf("Fast-loading from a stream\n");
+            else trace_printf("Fast-loading \"%s\"\n", filename);
+        }
+    }
+    inf_init(); // Ready for reading from compressed stream
+    push(CP);
+    reader_setup_repeats(read_u64());
+    LispObject r = serial_read();
+    nil = C_nil;
+    if (!exception_pending() && r != eof_symbol &&
+        option != F_LOAD_MODULE) r = serial_read();
+    if (repeat_heap_size != 0)
+    {   repeat_heap_size = 0;
+        free(repeat_heap);
+    }
+    repeat_heap = NULL;
+    close_mode = true;
+    if (exception_pending()) flip_exception(), close_mode = false;
+    pop(CP);
+    inf_finish();
+    IcloseInput();
+    if (from_stream)
+    {   pop(qvalue(echo_symbol));
+        pop(qvalue(standard_input));
+    }
+    gc_time += pop_clock();
+    if (!close_mode)
+    {   flip_exception();
+        return nil;
+    }
+// I will process the stuff I just read AFTER I have closed the stream
+// etc. That will mean I never try using nested reading of fasl streams.
+    if (option == F_LOAD_MODULE)
+    {   voideval(r, nil); // voideval is a macro and NEEDS the {} shown here!
+    }
+    else
+    {
+// Now r should be a list of the form ( (name def) (name def) )
+#ifdef DEBUG_FASL
+        trace_printf("SAVEDEF info: ");
+        loop_print_trace(r);
+        trace_printf("\n");
+#endif
+        file = nil;
+        while (is_cons(r))
+        {   LispObject p = qcar(r);
+            r = qcdr(r);
+            LispObject name, def;
+            if (is_cons(p) && is_cons(qcdr(p)))
+            {   name = qcar(p);
+                def = qcar(qcdr(p));
+            }
+            else continue;
+// if I am in load_selected_source mode I need to check before I set up
+// !*savedef information.
+            bool getsavedef = true;
+            if (option == F_SELECTED_SOURCE)
+            {   LispObject w;
+#ifdef COMMON
+                w = get(name, load_selected_source_symbol, nil);
+#else
+                w = get(name, load_selected_source_symbol);
+#endif
+                if (w == nil) getsavedef = false;
+                else if (integerp(w) != nil && consp(def))
+                {   push4(name, file, r, def);
+// The md60 function is called on something like (fname (args...) body...)
+                    def = cons(name, qcdr(def));
+                    errexitn(4);
+                    LispObject w1 = Lmd60(nil, def);
+                    if (!numeq2(w, w1)) getsavedef = false;
+                    pop4(def, r, file, name);
+                }
+            }
+            if (getsavedef)
+            {   push3(name, file, r)
+                putprop(name, savedef, def);
+                pop3(r, file, name);
+                nil = C_nil;
+                if (exception_pending()) break;
+// Build up a list of the names of all functions whose !*savedef information
+// has been established.
+                push2(r, name);
+                file = cons(name, file);
+                pop2(name, r);
+                nil = C_nil;
+                if (exception_pending()) break;
+            }
+// Now set up the load_source property on the function name to indicate the
+// module it was found in.
+            LispObject w;
+#ifdef COMMON
+            w = get(name, load_source_symbol, nil);
+#else
+            w = get(name, load_source_symbol);
+#endif
+            push3(name, file, r)
+            w = cons(current_module, w);
+            pop3(r, file, name);
+            nil = C_nil;
+            if (exception_pending()) break;
+            push3(name, file, r)
+            putprop(name, load_source_symbol, w);
+            pop3(r, file, name);
+            nil = C_nil;
+            if (exception_pending()) break;
+        }
+    }
+    errexit();
+#ifdef DEBUG_VALIDATE
+    copy_into_nilseg(false);
+    validate_all("end of fast-load", __LINE__, __FILE__);
+#endif
+    if (option == F_LOAD_MODULE) return onevalue(nil);
+    else return onevalue(file);
+}
+
+LispObject Lload_module(LispObject nil, LispObject file)
+{   return load_module(nil, file, F_LOAD_MODULE);
+}
+
+LispObject Lload_source(LispObject nil, LispObject file)
+{   return load_module(nil, file, F_LOAD_SOURCE);
+}
+
+LispObject load_source0(int option)
+{
+// First I will scan all the input libraries collecting a list of the
+// names of modules present in them. I will discard any duplicates
+// names.
+    LispObject nil = C_nil;
+    LispObject mods = nil;
+    for (LispObject l = qvalue(input_libraries); is_cons(l); l = qcdr(l))
+    {   push2(mods, l);
+        LispObject m = Llibrary_members(nil, qcar(l));
+        pop2(l, mods);
+        errexit();
+        while (is_cons(m))
+        {   LispObject m1 = qcar(m);
+            m = qcdr(m);
+            if (Lmemq(nil, m1, mods) != nil) continue;
+            push2(l, m);
+            mods = cons(m1, mods);
+            pop2(m, l);
+            errexit();
+        }
+    }
+//@ printf("list of modules = "); simple_print(mods); printf("\n");
+// Now I will do load-source or load-selected-source on each module, and
+// form the union of the results, which should give me a consolidated
+// list of the names of functions seen.
+    LispObject r = nil;
+    while (is_cons(mods))
+    {   LispObject m = qcar(mods);
+        mods = qcdr(mods);
+        push2(r, mods);
+//@ printf("Call load_module on "); simple_print(m); printf("\n");
+//@ printf("1 r = "); simple_print(r); printf("\n");
+        LispObject w = load_module(nil, m, option);
+        pop2(mods, r);
+//@ printf("2 r = "); simple_print(r); printf("\n");
+//@ printf("2 w = "); simple_print(w); printf("\n");
+        errexit();
+        push(mods);
+// The special version of UNION here always works in linear time, and that
+// is MUCH better than the more general version. Well with bootstrapreduce
+// the final result list from load!-source() ends up of length about
+// 20,000 and so the quadratic version of Lunion does work sort of
+// proportional to 400 million - which does complete but which noticably
+// slows things down.
+        r = Lunion_symlist(nil, r, w);
+        pop(mods);
+//@ printf("3 r = "); simple_print(r); printf("\n");
+        errexit();
+//@ printf("result from union = "); simple_print(r); printf("\n");
+    }
+    return onevalue(r); 
+}
+
+LispObject Lload_selected_source(LispObject nil, LispObject file)
+{   return load_module(nil, file, F_SELECTED_SOURCE);
+}
+
+LispObject Lload_source0(LispObject nil, int nargs, ...)
+{   argcheck(nargs, 0, "load-source");
+    return load_source0(F_LOAD_SOURCE);   
+}
+
+LispObject Lload_selected_source0(LispObject nil, int nargs, ...)
+{   argcheck(nargs, 0, "load-selected-source");
+    return load_source0(F_SELECTED_SOURCE);
+}
+
 LispObject Lunserialize(LispObject nil, int nargs, ...)
 {   LispObject r;
-    serincount = 0;
     reader_setup_repeats(read_u64());
     r = serial_read();
     if (repeat_heap_size != 0)
@@ -2756,7 +3047,6 @@ void write_everything()
         setup_codepointers = true;
     }
     descend_symbols = true;
-    sercounter = 0;
     hash_init(&repeat_hash, 13); // allow 8K entries to start with.
 // First scan the components of NIL. I have to do this because even with
 // descend_symbols set to true the scanning code views NIL as such a special
@@ -2813,7 +3103,7 @@ void write_everything()
     write_data(eq_hash_tables);
     write_data(equal_hash_tables);
 // Tidy up at the end. I do not logically need an explicit end of data marker
-// in the serialised form, but putting one there seems lile a way to make
+// in the serialized form, but putting one there seems lile a way to make
 // me feel more robust against corrupred image files.
     write_opcode(SER_END, "end of data");
     hash_finalize(&repeat_hash);
@@ -2862,6 +3152,8 @@ void warm_setup()
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
 
+    inf_init();
+
     miscflags = read_u64();
     gensym_ser = read_u64();
     print_precision = read_u64();
@@ -2872,6 +3164,15 @@ void warm_setup()
     trap_floating_overflow = read_u64();
 
     uint64_t entrypt_checksum = read_u64();
+    if (entrypt_checksum != function_crc)
+    {
+// This was of reporting the problem is not neat, but may hold the fort
+// for at least a while.
+        fprintf(stderr, "Checksums %" PRIx64 "  vs %" PRIx64 "\n",
+                        entrypt_checksum, function_crc);
+        fprintf(stderr, "o not match. Image made by incompatible version\n");
+        exit(1);
+    }
     size_t repeatsize = read_u64();
     reader_setup_repeats(repeatsize);
 
@@ -2916,7 +3217,7 @@ void warm_setup()
 #endif
 
     {   char endmsg[32];
-        Iread(endmsg, 24);  // the termination record
+        Zread(endmsg, 24);  // the termination record
 //
 // Although I check here I will not make the system crash if I see an
 // error - at least until I have tested things and found this test
@@ -2930,6 +3231,9 @@ void warm_setup()
         {   fprintf(stderr, "\n+++ Bad end record |%s|\n", endmsg);
         }
     }
+
+    inf_finish();
+
     {   LispObject w = error_output;
         error_output = 0;
         IcloseInput();
@@ -2978,10 +3282,13 @@ void warm_setup()
 // output streams that may depend on the particular system I am loading on
 // and so have to be set up as if from cold...
     set_up_variables(true);
+
+// NOTE:
 // I used to have an elaborate scheme for saving and re-loading native code,
 // but now if I ever wish to re-instate that I will want to implement it
 // afresh.  I can look in old subversion revisions to see what I did before
 // if that will help.
+
 }
 
 // end of serialize.cpp
