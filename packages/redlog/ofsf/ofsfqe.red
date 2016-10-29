@@ -1931,7 +1931,7 @@ procedure ofsf_qemkstdans(an,svf);
    % [svf] is a relic from a former approach to reconstruct the intermediate
    % results from the quantifier-free starting formula for the outermost
    % quantifier block. These were computed using ofsf_qemkansfl.
-   begin scalar fl, y, yy, f, v, sub, xargl, nan, anunan, a, b, c, d;
+   begin scalar y, yy, f, v, sub, xargl, nan, anunan, a, b, c, d;
       integer ofsf_anuc!*;
       ofsf_anuc!* := 10000;
       if !*rlverbose then
@@ -1943,12 +1943,13 @@ procedure ofsf_qemkstdans(an,svf);
 	 if sub eq 'arbitrary then <<
 	    if !*rlverbose then
 	       ioto_tprin2 {"++++ ", v, " = arbitrary -> 0"};
-	    push({v, 'ofsf_qesubcq, {'true, nil ./ 1}}, nan)
+	    push({v, 'ofsf_qesubcq, {'true, nil ./ 1}}, nan);
+	    push(v . ofsf_arbitrary2anu(), anunan)
 	 >> else if sub eq 'ofsf_shift!-indicator then <<
 	    if !*rlverbose then
 	       ioto_tprin2 {"++++ ", v, " = shift"};
 	    push({v, sub, xargl}, nan);
-	    push(ofsf_shift2anu(v, ofsf_extractid cadr xargl, caddr xargl, anunan), anunan)
+	    push(v . ofsf_shift2anu(v, ofsf_extractid cadr xargl, caddr xargl, anunan), anunan)
 	 >> else if sub eq 'ofsf_qesubcq then <<
 	    if !*rlverbose then
 	       ioto_tprin2 {"++++ ", v, " = quotient"};
@@ -2017,7 +2018,6 @@ procedure ofsf_qemkstdans(an,svf);
 	 >> else
 	    rederr "BUG IN ofsf_qemkstdans"
       >>;
-      assert(null fl);
       return reversip nan
    end;
 
@@ -2083,6 +2083,9 @@ procedure ofsf_mirror(f, v);
 procedure ofsf_mirrorat(atf, v);
    ofsf_0mk2(ofsf_op atf, numr ofsf_subf(ofsf_arg2l atf, v, negsq !*k2q v));
 
+procedure ofsf_arbitrary2anu();
+   anu_mk(aex_fromsf !*k2f ofsf_genavar(), iv_mk(-1 ./ 1, 1 ./ 1));
+
 procedure ofsf_shift2anu(v, base, dgcd, anunan);
    begin scalar w, basevar, avar, sgn, aex, cb;
       w := atsoc(base, anunan);
@@ -2092,14 +2095,14 @@ procedure ofsf_shift2anu(v, base, dgcd, anunan);
       avar := ofsf_genavar();
       sgn := aex_sgn aex_fromsfial(!*k2f basevar, {basevar . base});
       if eqn(sgn, 0) then
-	 return v . anu_mk(aex_fromsf !*k2f basevar, iv_mk(-1 ./ 1, 1 ./ 1));
+	 return anu_mk(aex_fromsf !*k2f basevar, iv_mk(-1 ./ 1, 1 ./ 1));
       aex := aex_fromsfial(addf(exptf(!*k2f avar, dgcd), negf !*k2f basevar), {basevar . base});
       cb := addsq(aex_cauchybound(aex, avar), 1 ./ 1);
       % It can not happen that dgcd is even and the sign is negative:
       assert(not (eqn(sgn, -1) and evenp dgcd));
       if eqn(sgn, 1) then
-	 return v . anu_mk(aex, iv_mk(nil ./ 1, cb));
-      return v . anu_mk(aex, iv_mk(negsq cb, nil ./ 1))
+	 return anu_mk(aex, iv_mk(nil ./ 1, cb));
+      return anu_mk(aex, iv_mk(negsq cb, nil ./ 1))
    end;
 
 procedure ofsf_q2anu(q, anunan);
