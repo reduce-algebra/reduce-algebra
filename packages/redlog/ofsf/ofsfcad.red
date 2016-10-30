@@ -88,8 +88,8 @@ asserted procedure ofsf_cad1(phi: Formula, prjordl: List, aaplus: List): DottedP
    % prenex normal form.
    begin scalar cd;
       cd := ofsf_cadpreparation(phi, prjordl, aaplus);
-      if !*rlverbose then
-	 caddata_print cd;
+      if ofsf_cadverbosep() then
+      	 caddata_print cd;
       if !*rlcadpreponly then <<
 	 if !*rlverbose then
 	    ioto_tprin2t "+ rlcadpreponly is on: Jump into finish.";
@@ -118,8 +118,8 @@ asserted procedure ofsf_cadproj(phi: Formula, prjordl: List): List;
 asserted procedure ofsf_cadproj1(phi: Formula, prjordl: List): DottedPair;
    begin scalar cd, theo, ffl;
       cd := ofsf_cadpreparation(phi, prjordl, nil);
-      if !*rlverbose then
-	 caddata_print cd;
+      if ofsf_cadverbosep() then
+      	 caddata_print cd;
       ofsf_cadprojection cd;
       % if !*rlverbose then
       for each f in caddata_theo cd do
@@ -138,8 +138,8 @@ asserted procedure ofsf_cadpnum(phi: Formula, prjordl: List): List;
    begin scalar cd, dd, resl;
       scalar !*rlcadtrimtree;
       cd := ofsf_cadpreparation(phi, prjordl, nil);
-      if !*rlverbose then
-	 caddata_print cd;
+      if ofsf_cadverbosep() then
+      	 caddata_print cd;
       ofsf_cadprojection cd;
       ofsf_cadextension cd;
       ofsf_restorekord cd;
@@ -270,7 +270,7 @@ asserted procedure ofsf_cadprojection(cd: CadData): Any;
 	 else <<
 	    % ioto_tprin2t {"+ (#F1,...,#Fr)=",
 	    %    for each ffi in ffl collect length ffi};
-	    ioto_tprin2 "+ Number of projection factors of level r,...,1: ";
+	    ioto_tprin2 "+ number of projection factors of level r,...,1: ";
       	    for i := 0 : r - 2 do
 	       ioto_prin2 {length getv(ff, r-i), ","};
 	    ioto_prin2t length getv(ff, 1)
@@ -287,7 +287,7 @@ asserted procedure ofsf_cadextension(cd: CadData): Any;
       dd := ofsf_partialtree cd;
       if !*rlverbose then <<
 	 r := caddata_r cd;
-	 ioto_tprin2 "+ Number of partial CAD tree nodes of level 0,...,r: ";
+	 ioto_tprin2 "+ number of partial CAD tree nodes of level 0,...,r: ";
 	 for i := 0 : r - 1 do
 	    ioto_prin2 {length atree_childrenatlevel(dd, i), ","};
 	 ioto_prin2t length atree_childrenatlevel(dd, r)
@@ -1578,7 +1578,7 @@ asserted procedure ofsf_solutionformula(cd: CadData): Any;
       yyi := list2set for each cell in yy collect
       	 length acell_getsp cell;
       if !*rlverbose then
-	 ioto_prin2t {"+ Levels to be considered: ", yyi};
+	 ioto_prin2t {"+ levels to be considered: ", yyi};
       ffl := caddata_ffl cd;
       fflk := for each i in yyi join
 	 append(nth(ffl, i), nil);
@@ -1619,7 +1619,7 @@ asserted procedure ofsf_solutionformula1(dd: Atree, ffk: List, yy: List, k: Inte
       >>;
       for each cell in yy do <<
 	 acell_putdesc(cell, ofsf_signature4(ffk, acell_getsp cell));
-	 if !*rlverbose then <<
+	 if ofsf_cadverbosep() then <<
 	    ioto_prin2 {"[", cellstogo, " ",
 	       "sig", acell_getdesc cell, " ",
 	       (if acell_gettv cell eq 'true then "true" else "false"), "] "};

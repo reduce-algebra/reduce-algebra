@@ -190,7 +190,7 @@ on1 'rlcaddnfformula;
 off1 'rlcadpreponly;
 off1 'rlcadprojonly;
 off1 'rlcadextonly;
-on1 'rlcadverbose;
+off1 'rlcadverbose;
 on1  'rlcadfasteval;
 off1 'rlcadfulldimonly;
 on1  'rlcadtrimtree;

@@ -925,8 +925,9 @@ asserted procedure ofsf_defpdel(l: SFList, theo: List): SFList;
    for each f in l join
       if not ofsf_surep(ofsf_0mk2('neq, f), theo) then
 	 {f}
-      else if !*rlverbose then <<
-	 ioto_prin2 "*";
+      else <<
+	 if ofsf_cadverbosep() then
+	    ioto_prin2 "*";
 	 nil
       >>;
 
