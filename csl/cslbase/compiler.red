@@ -5458,6 +5458,12 @@ remprop('faslend, 'stat);
 symbolic procedure faslend;
   begin
     if null s!:faslmod_name then return nil;
+// The protocol that CSL support for writing file is (these days!)
+//     start!-module <name of module to write to>;
+//     write!-module(<expression to evaluate on load!-module>,
+//                   <list of definitions for load!-source>);
+//     start!-module nil;
+//
     if not start!-module car s!:faslmod_name then <<
        if posn() neq 0 then terpri();
        princ "+++ Failed to open FASL output file for ";

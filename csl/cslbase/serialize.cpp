@@ -1,5 +1,8 @@
 // serialize.cpp                                Copyright (C) 2016 Codemist
 
+// #define DEBUG_SERIALIZE 1 // Re-instate this when you neew detailed
+//                           // tracing of what happend in this file.
+
 
 // $Id$
 
@@ -186,9 +189,118 @@
 
 static bool descend_symbols = true;
 
-#define SER_OPBITS   0xe0     // top 3 bits of byte are major opcode
+#define SER_OPBITS         0xe0     // top 3 bits of byte are major opcode
 
-#define SER_VARIOUS  0xe0     // a bunch of 32 "miscellaneous" codes
+
+// 64 most recent shared items in a single byte.
+#define SER_BACKREF0       0x00     // reference to item 1 to 32 ago
+#define SER_BACKREF1       0x20     // reference to item 33 to 64 ago
+
+// I expect strings to be important enough that at least short ones have
+// special treatment. The length-code here will stand for 1-32 not 0-31.
+#define SER_STRING         0x40     // a string with 1-32 bytes
+
+// very small integers perhaps also deserve help.
+#define SER_FIXNUM         0x60     // integer -16 to +15
+
+// In CSL header words have a 7-bit field that identifies the type
+// of the object. Two bits there discriminate between bit-vectors, vectors
+// holding lists, vectors holding binary data and anything else. I can fit in
+// 5 bits here so to simplify coding I will use that as just a copy of the
+// remaining 5 bits from the type field in the two important classes of
+// vector.  Bit-vectors will need to be dealt with otherwise. These cases
+// will deal with simple lisp vectors, with bignums and with strings that are
+// too long for the special SER_STRING case.
+#define SER_LVECTOR        0x80     // vector holding lists
+#define SER_BVECTOR        0xa0     // vector holding binary info
+
+// SER_LIST has 32 variants, and these are used to build lists of length
+// 1, 2, 3 or 4 with an arbitrary mix of the cons cells involved being
+// ones that will be referenced again.
+// In the explanation here I will use CONS to stand for data that is not
+// shared and DCONS for one that must be entered into the duplicates table.
+// It is not clear to me that there is a really nice way to pick the opcode
+// values here to make either writing or reading these really neat and
+// clean.
+// The naming convention I use for the actual opcodes is a prefix of SER_L_,
+// then "a" for a unique CONS and "A" for one that will be shared, and if the
+// opcode puts a NIL on the end of the list that is it, if it adds on more
+// data (as for instance like (LIST* a b c tail) there will be a final _S.
+//
+// I introduce these because I expect that in many Lisp contexts that
+// a substantial proportion of lists will be rather short, so for instance
+// using these a functon call (f a b c) will be rendered as
+//           L_aaaa f a b c                  (ideally 5 bytes)
+// whereas with my original scheme it would have been
+//           CONS f CONS a CONS b CONS c NIL (ideally 9 bytes)
+// and (f) will now be L_a_S f (2 bytes) while it used to be CONS f nil (3).
+// A serious fraction of the space used in a bootstrapreduce image file
+// is saved function definitions, and they are certainly heavy on lists
+// of length 1, 2, 3 and 4, and so should benefit. Of course the saving will
+// in gebneral not be as good as the above best cases indicate, and the net
+// saving aftger zlib has done some compression may be even less impressive!
+
+#define SER_LIST           0xc0
+
+// Cases that involve a single CONS cell, which may or may not be shared.
+#define SER_L_a            0xc0     // (CONS a nil)
+#define SER_CONS_NIL       SER_L_a  //   alternative name!
+#define SER_L_A            0xc1     // (DCONS a nil)
+#define SER_CONS_DUP_NIL   SER_L_A
+#define SER_L_a_S          0xc2     // (CONS b a)
+#define SER_CONS           SER_L_a_S
+#define SER_L_A_S          0xc3     // (DCONS b a)
+#define SER_CONS_DUP       SER_L_A_S
+// Cases with two CONS cells, each of which may or may not be shared.
+#define SER_L_aa           0xc4     // (CONS b (CONS a nil))
+#define SER_L_Aa           0xc5     // (DCONS b (CONS a nil))
+#define SER_L_aA           0xc6     // (CONS b (DCONS a nil))
+#define SER_L_AA           0xc7     // (DCONS b (DCONS a nil))
+#define SER_L_aa_S         0xc8     // (CONS c (CONS b a))
+#define SER_L_Aa_S         0xc9     // (DCONS c (CONS b a))
+#define SER_L_aA_S         0xca     // (CONS c (DCONS b a))
+#define SER_L_AA_S         0xcb     // (DCONS c (DCONS b a))
+// For cases that create 4 CONS cells I will only allow for the very first
+// one to be shared. I expect this case to apply if I have a really
+// long list because I rather expect that only the head of the list stands
+// much change of having multiple references to it. This case will
+// also cope nicely with re-loading the source form of function calls
+// (f c b a) with 3 arguments. If there is sharing on other than the
+// first item I will need to use one of the opcodes that create 3 CONS cells
+// to build the front of the list.
+#define SER_L_aaaa         0xcc     // (CONS d (CONS c (CONS b (CONS a nil))
+#define SER_L_Aaaa         0xcd     // (DCONS d (CONS c (CONS b (CONS a nil))
+#define SER_L_aaaa_S       0xce     // (CONS e (CONS d (CONS c (CONS b a))
+#define SER_L_Aaaa_S       0xcf     // (DCONS e (CONS d (CONS c (CONS b a))
+// Lots of cases with 3 CONS cells, as in (list c b a) and (SER_L* d c b a)
+// again with full control over whether the cells are shared or not.
+#define SER_L_aaa          0xd0     // (CONS c (CONS b (CONS a nil))
+#define SER_L_Aaa          0xd1     // (DCONS c (CONS b (CONS a nil))
+#define SER_L_aAa          0xd2     // (CONS c (DCONS b (CONS a nil))
+#define SER_L_AAa          0xd3     // (DCONS c (DCONS b (CONS a nil))
+#define SER_L_aaA          0xd4     // (CONS c (CONS b (DCONS a nil))
+#define SER_L_AaA          0xd5     // (DCONS c (CONS b (DCONS a nil))
+#define SER_L_aAA          0xd6     // (CONS c (DCONS b (DCONS a nil))
+#define SER_L_AAA          0xd7     // (DCONS c (DCONS b (DCONS a nil))
+#define SER_L_aaa_S        0xd8     // (CONS d (CONS c (CONS b a))
+#define SER_L_Aaa_S        0xd9     // (DCONS c (CONS b (CONS a nil))
+#define SER_L_aAa_S        0xda     // (CONS d (DCONS c (CONS b a))
+#define SER_L_AAa_S        0xdb     // (DCONS c (DCONS b (CONS a nil))
+#define SER_L_aaA_S        0xdc     // (CONS d (CONS c (DCONS b a))
+#define SER_L_AaA_S        0xdd     // (DCONS c (CONS b (DCONS a nil))
+#define SER_L_aAA_S        0xde     // (CONS d (DCONS c (DCONS b a))
+#define SER_L_AAA_S        0xdf     // (DCONS c (DCONS b (DCONS a nil))
+
+// SER_VARIOUS is used for a collection of individual bytes-codes
+// that cover symbols, floating point values, characters and bit-vectors.
+// There are also codes to support large values where the other dedicated
+// opcodes provide optimised support for small ones, and control bytes
+// such as DUP and END. At present I have 12 values unallocated so those can
+// de deployed if I find further features that I need or that would represent
+// really useful optimisations.
+
+#define SER_VARIOUS        0xe0
+
 // In heap image mode I use the two "RAWSYMBOL" codes, while in FASL file
 // mode I use SYMBOl & GENSYM. I could common-up the opcodes and so give
 // myself two more spare codes!
@@ -206,121 +318,75 @@ static bool descend_symbols = true;
 #define   SER_FLOAT64      0xeb    // double float
 #define   SER_FLOAT128     0xec    // long float
 #define   SER_CHARSPID     0xed    // char object, "special identifier" etc
-#define   SER_CONS         0xee    // cons cell
-#define   SER_DUPCONS      0xef    // cons cell that is referred to multiple times
-#define   SER_DUP          0xf0    // used with items that have multiple references
-#define   SER_BITVEC       0xf1    // bit-vector
-#define   SER_NIL          0xf2    // the very special case of NIL
-#define   SER_END          0xf3    // a (redundant) marker for end of heap dump
-#define   SER_OPNEXT       0xf4    // for debugging
-#define   SER_XXX15        0xf5
-#define   SER_XXX16        0xf6
-#define   SER_XXX17        0xf7
-#define   SER_XXX18        0xf8
-#define   SER_XXX19        0xf9
-#define   SER_XXX1a        0xfa
-#define   SER_XXX1b        0xab
-#define   SER_XXX1c        0xfc
-#define   SER_XXX1d        0xfd
-#define   SER_XXX1e        0xfe
+#define   SER_DUP          0xee    // used with items that have multiple references
+#define   SER_BITVEC       0xef    // bit-vector
+#define   SER_NIL          0xf0    // the very special case of NIL
+#define   SER_END          0xf1    // a (redundant) marker for end of heap dump
+#define   SER_OPNEXT       0xf2    // for debugging
+#define   SER_LIST_n       0xf3    // for (list ...) with > 4 args
+#define   SER_LIST_n_S     0xf4    // for (list!* ...) with > 5 args
+#define   SER_REPEAT       0xf5    // provides simple run-length coding
+#define   SER_spare_f6     0xf6
+#define   SER_spare_f7     0xf7
+#define   SER_spare_f8     0xf8
+#define   SER_spare_f9     0xf9
+#define   SER_spare_fa     0xfa
+#define   SER_spare_fb     0xab
+#define   SER_spare_fc     0xfc
+#define   SER_spare_fd     0xfd
+#define   SER_spare_fe     0xfe
 
 // I make the byte 0xff illegal so that if I get EOF (which is traditionally
 // the value -1) and mask it to 8 bits I will see a complaint.
 #define   SER_ILLEGAL      0xff
 
-// SER_LIST has 32 variants, and these are used to build lists of length
-// 1, 2, 3 or 4 with an arbitrary mix of the cons cells involved being
-// ones that will be referenced again.  Well I am NOT using these yet - the
-// codes are listed here as a POSSIBILITY and at present there are two
-// major issues. The first is that there are too many codes to fit in the
-// range that I have, and the second is that the codes that allow for
-// shared structure are not going to be needed at all frequently, so
-// including them all would seem terribly wasteful.
-
-#define SER_LIST     0x00
-// Here are the sub-cases. I will use an infix operator "." to stand for
-// a CONS cell that is only referenced once and "::" for one that will have
-// multiple references to it...
-#define LIST_NCONS       0x00     // a . nil
-#define LIST_DNCONS      0x01     // a :: nil
-#define LIST_CONS        0x02     // b . a
-#define LIST_DCONS       0x03     // b :: a
-#define LIST_xxLIST2     0x04     // b . a . nil
-#define LIST_xDLIST2     0x05     // b . a :: nil
-#define LIST_DxLIST2     0x06     // b :: a . nil
-#define LIST_DDLIST2     0x07     // b :: a :: nil
-#define LIST_xxL2STAR    0x08     // c . b . a
-#define LIST_xDL2STAR    0x09     // c . b :: a
-#define LIST_DxL2STAR    0x0a     // c :: b . a
-#define LIST_DDL2STAR    0x0b     // c :: b :: a
-#define LIST_xxxLIST3    0x0c     // c . b . a . nil
-#define LIST_xxDLIST3    0x0d     // c . b . a :: nil
-#define LIST_xDxLIST3    0x0e     // c . b :: a . nil
-#define LIST_xDDLIST3    0x0f     // c . b :: a :: nil
-#define LIST_DxxLIST3    0x10     // c :: b . a . nil
-#define LIST_DxDLIST3    0x11     // c :: b . a :: nil
-#define LIST_DDxLIST3    0x12     // c :: b :: a . nil
-#define LIST_DDDLIST3    0x13     // c :: b :: a :: nil
-#define LIST_xxxL3STAR   0x14     // d . c . b . a
-#define LIST_xxDL3STAR   0x15     // d . c . b :: a
-#define LIST_xDxL3STAR   0x16     // d . c :: b . a
-#define LIST_xDDL3STAR   0x17     // d . c :: b :: a
-#define LIST_DxxL3STAR   0x18     // d :: c . b . a
-#define LIST_DxDL3STAR   0x19     // d :: c . b :: a
-#define LIST_DDxL3STAR   0x1a     // d :: c :: b . a
-#define LIST_DDDL3STAR   0x1b     // d :: c :: b :: a
-
-#define LIST_xxxxLIST4   0x1c     // d . c . b . a . nil
-#define LIST_xxDxLIST4   0x1d     // d . c . b :: a . nil
-#define LIST_xDxxLIST4   0x1e     // d . c :: b . a . nil
-#define LIST_xDDxLIST4   0x1f     // d . c :: b :: a . nil
-#define LIST_DxxxLIST4   0x20     // d :: c . b . a . nil
-#define LIST_DxDxLIST4   0x21     // d :: c . b :: a . nil
-#define LIST_DDxxLIST4   0x22     // d :: c :: b . a . nil
-#define LIST_DDDxLIST4   0x23     // d :: c :: b :: a . nil
-#define LIST_xxxDLIST4   0x24     // d . c . b . a :: nil
-#define LIST_xxDDLIST4   0x25     // d . c . b :: a :: nil
-#define LIST_xDxDLIST4   0x26     // d . c :: b . a :: nil
-#define LIST_xDDDLIST4   0x27     // d . c :: b :: a :: nil
-#define LIST_DxxDLIST4   0x28     // d :: c . b . a :: nil
-#define LIST_DxDDLIST4   0x29     // d :: c . b :: a :: nil
-#define LIST_DDxDLIST4   0x2a     // d :: c :: b . a :: nil
-#define LIST_DDDDLIST4   0x2b     // d :: c :: b :: a :: nil
-
-// 64 most recent shared items in a single byte.
-#define SER_BACKREF0 0x20     // reference to item 1 to 32 ago
-#define SER_BACKREF1 0x40     // reference to item 33 to 64 ago
-
-// I expect strings to be important enough that at least short ones have
-// special treatment. The length-code here will stand for 1-32 not 0-31.
-#define SER_STRING   0x60     // a string with 1-32 bytes
-
-// very small integers perhaps also deserve help.
-#define SER_FIXNUM   0x80     // integer -16 to +15
-
-// In CSL header words have a 7-bit field that identifies the type
-// of the object. Two bits there discriminate between bit-vectors, vectors
-// holding lists, vectors holding binary data and anything else. I can fit in
-// 5 bits here so to simplify coding I will use that as just a copy of the
-// remaining 5 bits from the type field in the two important classes of
-// vector.  Bit-vectors will need to be dealt with otherwise. These cases
-// will deal with simple lisp vectors, with bignums and with strings that are
-// too long for the special SER_STRING case.
-#define SER_LVECTOR  0xa0     // vector holding lists
-#define SER_BVECTOR  0xc0     // vector holding binary info
-
 
 #ifdef DEBUG_SERIALIZE
 
 static const char *ser_opnames[] =
-{   "LIST"
-    "BACKREF0",
+{   "BACKREF0",
     "BACKREF1",
     "STRING",
     "FIXNUM",
     "LVECTOR",
     "BVECTOR",
+    "list",
     "various"
+};
+
+static const char *ser_list_names[] =
+{   "L_a       (CONS a nil)",
+    "L_A       (DCONS a nil)",
+    "L_a_S     (CONS b a)",
+    "L_A_S     (DCONS b a)",
+    "L_aa      (CONS b (CONS a nil))",
+    "L_Aa      (DCONS b (CONS a nil))",
+    "L_aA      (CONS b (DCONS a nil))",
+    "L_AA      (DCONS b (DCONS a nil))",
+    "L_aa_S    (CONS c (CONS b a))",
+    "L_Aa_S    (DCONS c (CONS b a))",
+    "L_aA_S    (CONS c (DCONS b a))",
+    "L_AA_S    (DCONS c (DCONS b a))",
+    "L_aaaa    (CONS d (CONS c (CONS b (CONS a nil))",
+    "L_Aaaa    (DCONS d (CONS c (CONS b (CONS a nil))",
+    "L_aaaa_S  (CONS e (CONS d (CONS c (CONS b a))",
+    "L_Aaaa_S  (DCONS e (CONS d (CONS c (CONS b a))",
+    "L_aaa     (CONS c (CONS b (CONS a nil))",
+    "L_Aaa     (DCONS c (CONS b (CONS a nil))",
+    "L_aAa     (CONS c (DCONS b (CONS a nil))",
+    "L_AAa     (DCONS c (DCONS b (CONS a nil))",
+    "L_aaA     (CONS c (CONS b (DCONS a nil))",
+    "L_AaA     (DCONS c (CONS b (DCONS a nil))",
+    "L_aAA     (CONS c (DCONS b (DCONS a nil))",
+    "L_AAA     (DCONS c (DCONS b (DCONS a nil))",
+    "L_aaa_S   (CONS d (CONS c (CONS b a))",
+    "L_Aaa_S   (DCONS c (CONS b (CONS a nil))",
+    "L_aAa_S   (CONS d (DCONS c (CONS b a))",
+    "L_AAa_S   (DCONS c (DCONS b (CONS a nil))",
+    "L_aaA_S   (CONS d (CONS c (DCONS b a))",
+    "L_AaA_S   (DCONS c (CONS b (DCONS a nil))",
+    "L_aAA_S   (CONS d (DCONS c (DCONS b a))",
+    "L_AAA_S   (DCONS c (DCONS b (DCONS a nil))"
 };
 
 static const char *ser_various_names[] =
@@ -338,14 +404,14 @@ static const char *ser_various_names[] =
     "FLOAT64",
     "FLOAT128",
     "CHARSPID",
-    "CONS",
-    "DUPCONS",
     "DUP",
     "BITVEC",
     "NIL",
     "END",
     "OPNEXT",  // only used while debugging
-    "op15",    // spare
+    "LIST_n",
+    "LIST_n_S",
+    "REPEAT",
     "op16",    // spare
     "op17",    // spare
     "op18",    // spare
@@ -362,6 +428,8 @@ static void ser_print_opname(int n)
 {   int top = (n >> 5) & 0x7;
     if (top == (SER_VARIOUS>>5))
         fprintf(stderr, "%s", ser_various_names[n & 0x1f]);
+    else if (top == (SER_LIST>>5))
+        fprintf(stderr, "%s", ser_list_names[n & 0x1f]);
     else fprintf(stderr, "%s %d", ser_opnames[top], n & 0x1f);
 }
 
@@ -569,13 +637,17 @@ int read_string_byte()
 
 void write_opcode(int byte, const char *msg, ...)
 {
-#if defined DEBUG_SERIALIZE && defined DEBUG_OPNEXT
-    va_list a;
+#ifdef DEBUG_SERIALIZE
+#ifdef DEBUG_OPNEXT
     fprintf(stderr, "<opcode prefix> %.2x\n", SER_OPNEXT);
     Zputc(SER_OPNEXT);
+#endif
     fprintf(stderr, "%.2x: ", byte & 0xff);
+    va_list a;
     va_start(a, msg);
     vfprintf(stderr, msg, a);
+    fprintf(stderr, " : ");
+    ser_print_opname(byte);
     fprintf(stderr, "\n");
     va_end(a);
 #endif
@@ -1151,9 +1223,7 @@ void write_function(void *p)
 // usually be a good idea to go "GC_PROTECT(prev = ...);".
 
 #ifndef DEBUG_VALIDATE
-void validate_all(const char *why, int line, const char *file)
-{
-}
+#define validate_all(why, line, file) /* Nothing */
 #endif
 
 #define GC_PROTECT(stmt)                             \
@@ -1188,6 +1258,8 @@ LispObject serial_read()
     int c;
     prev = pbase = r = s = b = fixnum_of_int(0);
     p = &r;
+    uint64_t opcode_repeats = 1, repeat_arg = 0;
+    bool repeat_arg_ready = false;
 down:
 // read_byte() needs to read from the stream representation of things
 // and return a code... In this initial sketch I will only need to look
@@ -1197,9 +1269,11 @@ down:
 // case is LEAF which will include immediate data such as FIXNUMS, but
 // alse big-numbers, strings and back-references to previously-read
 // structures.
-    c = read_opcode_byte();
+// If the next opcode is to be executed just once I need to read it.
+    if (opcode_repeats == 1) c = read_opcode_byte();
     switch (c & 0xe0)
     {   case SER_VARIOUS:
+        case SER_LIST:
             switch (c)
             {   case SER_ILLEGAL:
 // If read_opcode_byte() fails it will return EOF and I am assuming that
@@ -1208,25 +1282,229 @@ down:
 // If I see that I will abandon reading and return in an error state.
                     flip_exception();
                     return nil;
-                case SER_CONS:
-                    GC_PROTECT(prev = cons(fixnum_of_int(0), b));
-                    *p = b = prev;
-                    pbase = b;
-                    p = &qcar(b);
-                    goto down;
-                case SER_DUPCONS:
-// As SER_CONS but the item constructed will be referenced again so it need
-// to be entered in the relevant table. This could have been rendered as
-// SER_CONS; SER_DUP but I have chosen to provide a single opcode to handle it
-// compactly.
-                    GC_PROTECT(prev = cons(fixnum_of_int(0), b));
-                    *p = b = prev;
-                    pbase = b;
-                    p = &qcar(b);
-                    reader_repeat_new(pbase);
+                case SER_REPEAT:
+                    assert(opcode_repeats == 1);
+// If you prefix something with "SER_REPEAT nn" then the opcode you next
+// use will be used nn+3 times. If the opcode uses operands then they
+// will be read for each instance, so perhaps this will make most sense
+// for 1-byte codes. Consider when this will give an improvement: if a
+// single byte opcode is used only 3 times it will be good enough to
+// write it out repeatedly. Only when it will be used 4 or more times
+// will use of REPEAT save space.
+//   op op op op
+//   REPEAT <4> op
+// If I could support opcodes that took an integer follower replicated its
+// value as well as the opcode the first saving case (assuming that the
+// integers all fit in 1 byte) would be
+//   op arg op arg op arg
+//   REPEAT <3> op arg
+// and it is because of that that I arrange that I offset the argument to
+// REPEAT by 3.
+// I will set the top bit in opcode_repeats if there is an argument
+// saved in repeat_arg.
+#define TOP_BIT = ((uint64_t)1) << 63)
+                    opcode_repeats = 3 + read_u64();
+// Normally I would read the opcode byte at the label "down:", but here I
+// have just set the variable that disables that! Observe that the code
+// here treats "SER_REPEAT n" as a prefix put immediately before the opcode
+// that is to be repeated. The processing of that opcode must then
+// decrement opcode_repeats, and if it did not then you would just
+// get an infinite loop. So it is important to be just a bit careful that
+// a REPEAT is only seen where it is wanted! I am putting in assert statements
+// to police that!
+                    c = read_opcode_byte();
                     goto down;
 
+// The various sub-cases op SER_LIST all build fragments of list with
+// various lengths, termination and extents of sharing. It seems hard to
+// common up the code as much as would be desirable, but I have at least
+// arranged thinhs such that for an opcode that create n CONS cells
+// the n bottom bits indicate which of those cells will have multiple
+// references and so need to go in the repeat table.
+                case SER_L_a:
+                case SER_L_A:
+                    assert(opcode_repeats == 1);
+                    GC_PROTECT(prev = cons(fixnum_of_int(0), nil));
+                    if (c & 1) reader_repeat_new(prev);
+                    *p = prev;
+                    pbase = prev;
+                    p = &qcar(pbase);
+                    goto down;
+                    myabort();
+                case SER_L_a_S:
+                case SER_L_A_S:
+                    assert(opcode_repeats == 1);
+                    GC_PROTECT(prev = cons(b, fixnum_of_int(0)));
+                    if (c & 1) reader_repeat_new(prev);
+                    *p = b = prev;
+                    pbase = b;
+                    p = &qcdr(b);
+                    goto down;
+
+                case SER_L_aa:
+                case SER_L_aA:
+                case SER_L_Aa:
+                case SER_L_AA:
+                    assert(opcode_repeats == 1);
+                    GC_PROTECT(prev = list2(nil, nil));
+// Here I need to set things up just as if I had CONS CONS NIL
+// where note that the old sequence CONS a b would create (CONS b a), ie
+// the CDR field is transmitted before the CAR one.
+                    if (c & 1) reader_repeat_new(prev);
+                    if (c & 2) reader_repeat_new(qcdr(prev));
+                    qcar(prev) = b;
+                    b = *p = prev;
+                    pbase = qcdr(b);
+                    p = &qcar(pbase);
+                    goto down;
+
+                case SER_L_aa_S:
+                case SER_L_aA_S:
+                case SER_L_Aa_S:
+                case SER_L_AA_S:
+                    assert(opcode_repeats == 1);
+                    GC_PROTECT(prev = list2(nil, nil));
+// Here I need to set things up just as if I had CONS CONS in the
+// old model (ie L_a_S L_a_S in the new one!)
+                    if (c & 1) reader_repeat_new(prev);
+                    if (c & 2) reader_repeat_new(qcdr(prev));
+                    qcar(prev) = b;
+                    b = *p = prev;
+                    pbase = qcdr(b);
+                    qcar(pbase) = b;
+                    b = pbase;
+                    p = &qcdr(pbase);
+                    goto down;
+
+                case SER_L_aaa:
+                case SER_L_aaA:
+                case SER_L_aAa:
+                case SER_L_aAA:
+                case SER_L_Aaa:
+                case SER_L_AaA:
+                case SER_L_AAa:
+                case SER_L_AAA:
+                    assert(opcode_repeats == 1);
+                    GC_PROTECT(prev = list3(nil, nil, nil));
+                    if (c & 1) reader_repeat_new(prev);
+                    if (c & 2) reader_repeat_new(qcdr(prev));
+                    if (c & 4) reader_repeat_new(qcdr(qcdr(prev)));
+                    qcar(prev) = b;
+                    b = *p = prev;
+                    pbase = qcdr(b);
+                    qcar(pbase) = b;
+                    b = pbase;
+                    pbase = qcdr(b);
+                    p = &qcar(pbase);
+                    goto down;
+
+                case SER_L_aaa_S:
+                case SER_L_aaA_S:
+                case SER_L_aAa_S:
+                case SER_L_aAA_S:
+                case SER_L_Aaa_S:
+                case SER_L_AaA_S:
+                case SER_L_AAa_S:
+                case SER_L_AAA_S:
+                    assert(opcode_repeats == 1);
+                    GC_PROTECT(prev = list3(nil, nil, nil));
+                    if (c & 1) reader_repeat_new(prev);
+                    if (c & 2) reader_repeat_new(qcdr(prev));
+                    if (c & 4) reader_repeat_new(qcdr(qcdr(prev)));
+                    qcar(prev) = b;
+                    b = *p = prev;
+                    pbase = qcdr(b);
+                    qcar(pbase) = b;
+                    b = pbase;
+                    pbase = qcdr(b);
+                    qcar(pbase) = b;
+                    b = pbase;
+                    p = &qcdr(pbase);
+                    goto down;
+
+                case SER_L_aaaa:
+                case SER_L_Aaaa:
+                    assert(opcode_repeats == 1);
+                    GC_PROTECT(prev = list4(nil, nil, nil, nil));
+// Note that for the longest sequence here only the start CONS cell
+// can be shared.
+                    if (c & 1) reader_repeat_new(prev);
+                    qcar(prev) = b;
+                    b = *p = prev;
+                    pbase = qcdr(b);
+                    qcar(pbase) = b;
+                    b = pbase;
+                    pbase = qcdr(b);
+                    qcar(pbase) = b;
+                    b = pbase;
+                    pbase = qcdr(pbase);
+                    p = &qcar(pbase);
+                    goto down;
+
+                case SER_L_aaaa_S:
+                case SER_L_Aaaa_S:
+                    assert(opcode_repeats == 1);
+                    GC_PROTECT(prev = list4(nil, nil, nil, nil));
+                    if (c & 1) reader_repeat_new(prev);
+                    qcar(prev) = b;
+                    b = *p = prev;
+                    pbase = qcdr(b);
+                    qcar(pbase) = b;
+                    b = pbase;
+                    pbase = qcdr(b);
+                    qcar(pbase) = b;
+                    b = pbase;
+                    pbase = qcdr(pbase);
+                    qcar(pbase) = b;
+                    b = pbase;
+                    p = &qcdr(pbase);
+                    goto down;
+// The next two cover a general case of lists where there are no second
+// references to any of the top-level CONS cells and where the length is
+// greater than 4. Well in fact it makes sense to arrange that I only
+// use these if the list os longer than 8 cons cells, because at length 8
+// for (list 1 2 3 4 5 6 7 8) I can go
+//     SER_L_aaaa_S SER_L_aaaa 8 7 6 5  4 3 2 1
+// or  SER_LIST_n 8   8 7 6 5 4 3 2 1
+// and the use of a length code with the LIST_n case means it ends up using
+// just the same number of bytes. So see, it only starts to pay back at all
+// for even longer lists, which is why I offset its argument-byte by 9.
+                case SER_LIST_n:
+                case SER_LIST_n_S:
+                    assert(opcode_repeats == 1);
+                    {   uint64_t n = 9 + read_u64();
+                        prev = nil;
+// I make a list of the right length and point to it.
+                        for (uint64_t i=0; i<n; i++)
+                            GC_PROTECT(prev = cons(nil, prev));
+                        *p = prev;
+// Now put in the back-pointer chains.
+                        while (qcdr(prev) != nil)
+                        {   qcar(prev) = b;
+                            b = prev;
+                            prev = qcdr(prev);
+                        }
+// Set up the very last CONS cell.
+                        if (c == SER_LIST_n)
+                        {   pbase = prev;
+                            p = &qcar(prev);
+                        }
+                        else
+                        {   qcdr(prev) = b;
+                            b = prev;
+                            pbase = prev;
+                            p = &qcdr(prev);
+                        }
+                        goto down;
+                    }
+
                 case SER_BIGBACKREF:
+// I expect there to be a great many uses of back-references and that
+// could include runs if reference to the same item. But note that when
+// you may a back-reference that applies a move to front strategy and
+// so multiple successive references to the same item will (after the
+// first) be "BACKREF 1" and that is not the "big" case as present here.
+                    assert(opcode_repeats == 1);
 // Back references with an offset from 1..64 are dealt with using special
 // compact opcodes. Here I have something that reaches further back. The main
 // opcode is followed by a sequence of bytes and if this represents the value
@@ -1242,6 +1520,9 @@ down:
                     goto up;
 
                 case SER_DUP:
+// Beware with SER_REPEAT that SER_DUP is a postfix to an opcode. I think
+// that REPEAT should not be used if DUP will.
+                    assert(opcode_repeats == 1);
 // This is issued just after a SER_VECTOR (etc) code that will
 // have left pbase referring to the object just allocated.
                     reader_repeat_new(prev);
@@ -1254,7 +1535,27 @@ down:
 // SER_DUP opcode can behave meaningfully. Note that this can make
 // a full 64-bit positive integer because it reads and processes its input
 // as an unsigned value.
-                    GC_PROTECT(prev = make_lisp_unsigned64(read_u64()));
+//
+// This is the first instance in this code of a case that will handle
+// SER_REPEAT, so I will put in a commentary about how it works.
+// First I will note that if I have repeat_arg_ready that will suppress
+// reading the operand. In all cases the operand will end up in
+// repeat_arg.
+                    if (!repeat_arg_ready) repeat_arg = read_u64();
+// If I repeat a fixnum then all the repeated copied will end up EQ
+// while if I made them one at a time they could end up separate if
+// they needed to be bignums. Since they are immutable objects I do not
+// believe that should cause any trouble.
+                    GC_PROTECT(prev = make_lisp_unsigned64(repeat_arg));
+// Now in the non-simple case I must decrement the repeat counter and
+// if it has got back to 1 reset eveything to a simple state. But when I
+// read the process items within the repeat block I must leave
+// repeat_arg_ready set to true.
+                    if (opcode_repeats != 1)
+                    {   opcode_repeats--;
+                        if (opcode_repeats == 1) repeat_arg_ready = false;
+                        else repeat_arg_ready = true;
+                    } 
                     *p = prev;
                     goto up;
 
@@ -1267,7 +1568,13 @@ down:
 // -128 to +127 (rather than -127 to +127).
 // Note that the code that writes stuff out should only generate this
 // when the value concerned will fit within a 64-bit signed value.
-                    GC_PROTECT(prev = make_lisp_integer64(-1-read_u64()));
+                    if (!repeat_arg_ready) repeat_arg = -1-read_u64();
+                    GC_PROTECT(prev = make_lisp_integer64(repeat_arg));
+                    if (opcode_repeats != 1)
+                    {   opcode_repeats--;
+                        if (opcode_repeats == 1) repeat_arg_ready = false;
+                        else repeat_arg_ready = true;
+                    } 
                     *p = prev;
                     goto up;
 
@@ -1280,6 +1587,7 @@ down:
 // that all the list-like components will be transmitted (much as if they were
 // elements in a vector). The key parts of this work using the same scheme as
 // for SER_LVECTOR.
+                    assert(opcode_repeats == 1);
                     GC_PROTECT(prev =
                         getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length));
                     *p = w = prev;
@@ -1326,8 +1634,9 @@ down:
 // repeatedly. in the "GENSYM" case the name is the base-name of the gensym,
 // pergaps very often just "G", and the name read in will be set up as
 // if not yet printed, so a sequence number will be added leter.
-                {   size_t len = read_u64();
-                    boffop = 0;
+                    assert(opcode_repeats == 1);
+                    {   size_t len = read_u64();
+                        boffop = 0;
 // HAHAHA - if BOFFO does not exist properly at this stage then I am in
 // deep trouble. But these opcodes will only be used at times I am
 // serializing for re-loading into a working Lisp. Note that the whole
@@ -1337,62 +1646,83 @@ down:
 // Well what I say above is not quite true after all. Serialization is used
 // for FASL files, so a FASL file that used a symbol with an absurdly
 // long name could lead to boffo overflow here, triggering garbage collection.
-                    for (size_t i=0; i<len; i++)
-                    {   if (boffop >=
-                            length_of_byteheader(vechdr(boffo))-CELL-8)
-                        GC_PROTECT(packbyte(read_string_byte()));
-                        else packbyte(read_string_byte());
+                        for (size_t i=0; i<len; i++)
+                        {   if (boffop >=
+                                length_of_byteheader(vechdr(boffo))-CELL-8)
+                            GC_PROTECT(packbyte(read_string_byte()));
+                            else packbyte(read_string_byte());
+                        }
+                        if (c == SER_GENSYM || c == SER_DUPGENSYM)
+                        {   GC_PROTECT(prev = copy_string(boffo, boffop));
+                            GC_PROTECT(prev = Lgensym1(C_nil, prev));
+                        }
+                        else GC_PROTECT(prev = iintern(boffo, (int32_t)boffop, CP, 0));
+                        *p = prev;
+                        if (c == SER_DUPSYMBOL || c == SER_DUPGENSYM)
+                            reader_repeat_new(prev);
+                        goto up;
                     }
-                    if (c == SER_GENSYM || c == SER_DUPGENSYM)
-                    {   GC_PROTECT(prev = copy_string(boffo, boffop));
-                        GC_PROTECT(prev = Lgensym1(C_nil, prev));
-                    }
-                    else GC_PROTECT(prev = iintern(boffo, (int32_t)boffop, CP, 0));
-                    *p = prev;
-                    if (c == SER_DUPSYMBOL || c == SER_DUPGENSYM)
-                        reader_repeat_new(prev);
-                    goto up;
-                }
 
                 case SER_FLOAT28:
 // A 28-bit short float
+                    assert(opcode_repeats == 1);
                     fprintf(stderr, "SER_FLOAT28 not coded yet\n");
                     myabort();
 
                 case SER_FLOAT32:
 // a 32-bit single float
+                    assert(opcode_repeats == 1);
                     GC_PROTECT(prev = make_boxfloat(read_f32(), TYPE_SINGLE_FLOAT));
                     *p = prev;
                     goto up;
 
                 case SER_FLOAT64:
 // a 64-bit (long) float
+                    assert(opcode_repeats == 1);
+// I can image the case of dumping a vector all of whose elements were the
+// value 0.0, and in the case supporting repeats here could be helpful.
+// But at present I think that will be an uncommon case with Reduce and so
+// I will give priority to other cases.
                     GC_PROTECT(prev = make_boxfloat(read_f64(), TYPE_DOUBLE_FLOAT));
                     *p = prev;
                     goto up;
 
                 case SER_FLOAT128:
 // a 128-bit (double-length) float.
+                    assert(opcode_repeats == 1);
                     GC_PROTECT(prev = make_boxfloat(0.0, TYPE_LONG_FLOAT));
                     long_float_val(prev) = read_f128();
                     *p = prev;
                     goto up;
 
                 case SER_CHARSPID:
-// a packed characters literal. Characters that are Basic Latin can be coded
+// A packed characters literal. Characters that are Basic Latin can be coded
 // here with just 2 bytes, so for instance 'A' is SER_CHAR/0x41. Codes up to
 // U+3fff come in 3 bytes and so on. Note that the encoding is NOT utf8 - it is
 // the variable length encoding.
 // SPIDs are alse encoded here. In each case they are with the low bits
-// shown here and I just send the rest of the data as a raw number. Note
-// that bytecode handles can be dealt with here if I understand them -
-// which for now I do not!
-                    {   uint64_t v = read_u64();
-                        prev = *p = ((LispObject)v<<(Tw+2)) | TAG_HDR_IMMED;
-                    }
+// shown here and I just send the rest of the data as a raw number.
+// It turns out that this case arises with a repeat rather often because the
+// "fastget" scheme means that rather a lot of symbols end up with vector of
+// length 64 attached to them and most of the vector contents will be
+// SPID_NOPROP. Well somewhat to my astonishment when I look at a freshly-
+// loaded bootstrapreduce I find that almost 3000 symbols have a fastget
+// table associated with them (so around 1.5Mbytes is taken up with those
+// vectors on a 64-bit machine, and that before zlib compression around 300K
+// may be used for them in the saved image file before I use SER_REPEAT.
+// If I use full Reduce the basic number of fastget-vectors is about the same.
+// As I load packages the number used can increase noticably.
+                    if (!repeat_arg_ready) repeat_arg = read_u64();
+                    prev = *p = ((LispObject)repeat_arg<<(Tw+2)) | TAG_HDR_IMMED;
+                    if (opcode_repeats != 1)
+                    {   opcode_repeats--;
+                        if (opcode_repeats == 1) repeat_arg_ready = false;
+                        else repeat_arg_ready = true;
+                    } 
                     goto up;
 
                 case SER_BITVEC:
+                    assert(opcode_repeats == 1);
                     w = read_u64();
                     {   size_t len = CELL + (w + 7)/8; // length in bytes
                         GC_PROTECT(prev =
@@ -1407,6 +1737,8 @@ down:
 
                 case SER_NIL:
                     prev = *p = C_nil;
+// repeat_arg_ready should remain tidily false here.
+                    if (opcode_repeats != 1) opcode_repeats--;
                     goto up;
 
                 case SER_END:
@@ -1414,16 +1746,18 @@ down:
                     myabort();
 
                 case SER_OPNEXT:
-                case SER_XXX15:
-                case SER_XXX16:
-                case SER_XXX17:
-                case SER_XXX18:
-                case SER_XXX19:
-                case SER_XXX1a:
-                case SER_XXX1b:
-                case SER_XXX1c:
-                case SER_XXX1d:
-                case SER_XXX1e:
+                    fprintf(stderr, "OPNEXT opcode out of place\n");
+                    myabort();
+
+                case SER_spare_f6:
+                case SER_spare_f7:
+                case SER_spare_f8:
+                case SER_spare_f9:
+                case SER_spare_fa:
+                case SER_spare_fb:
+                case SER_spare_fc:
+                case SER_spare_fd:
+                case SER_spare_fe:
                 default:
                     fprintf(stderr, "Unimplemented/unknown reader opcode (a) %.2x\n", c);
                     myabort();
@@ -1438,6 +1772,7 @@ down:
 // that, and if they find it they re-hash before use, restoring the key to
 // just TYPE_NEWHASH. The consequence is that the rehashing work is not done
 // until and unless it is actually needed.
+            assert(opcode_repeats == 1);
         {   int type = ((c & 0x1f) << (Tw + 2)) | (0x01 << Tw),
                 tag = is_number_header_full_test(type) ? TAG_NUMBERS :
                                                          TAG_VECTOR;
@@ -1479,21 +1814,31 @@ down:
             prev = pbase = b;
             p = &vselt(b, n);
         }
-        goto down;
+            goto down;
 
 
         case SER_BACKREF0:
+// Investigation of bootstrapreduce.img shows a reasonable number of
+// repeat-runs of "SER_BACKREF0 <1>" to reference the top item in the
+// repeat heap. The efford involved in supporting SER_REPEAT to compress
+// such sequences is minimal here, so I do so.
             *p = reader_repeat_old(1 + (c & 0x1f));
+            if (opcode_repeats != 1) opcode_repeats--;
             goto up;
 
         case SER_BACKREF1:
+            assert(opcode_repeats == 1);
+// I do not view repeated instances of BACKREF1 as significant.
             *p = reader_repeat_old(1 + 32 + (c & 0x1f));
             goto up;
 
         case SER_FIXNUM:
             c = c & 0x1f;
+// This does not use repeat_arg because the operand is entirely
+// included within the opcode byte.
             if ((c & 0x10) != 0) c |= ~0x0f; // sign extend
             *p = fixnum_of_int(c);
+            if (opcode_repeats != 1) opcode_repeats--;
             goto up;
 
         case SER_STRING:
@@ -1502,6 +1847,7 @@ down:
 // the opcode byte and the type information is implicit. This code only copes
 // with strings with length 1-32. The associated data is JUST the bytes
 // making up the string, with padding at the end.
+            assert(opcode_repeats == 1);
             w = (c & 0x1f) + 1;
             GC_PROTECT(prev = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
             *p = prev;
@@ -1522,6 +1868,7 @@ down:
 // information.
 
         case SER_BVECTOR:
+            assert(opcode_repeats == 1);
 // The general case for vectors containing binary information is followed
 // by a length code that shows how many items there are in the vector.
 // This counts in the natural size for the vector.
@@ -1617,7 +1964,6 @@ down:
             }
             goto up;
 
-        case SER_LIST:  // NOT yet implemented, or even finally decided about.
         default:
             fprintf(stderr, "Unimplemented reader opcode (b) %.2x\n", c);
             myabort();
@@ -1636,12 +1982,12 @@ up:
         }
         return r;
     }
-// When I have done everything that fills in the CAR of a CONS cell I
-// just need to go and deal with the CDR.
+// When I have done everything that fills in the CDR of a CONS cell I
+// just need to go and deal with the CAR.
     if (consp(b))
     {   pbase = b;
-        p = &qcdr(b);
-        b = qcdr(b);
+        p = &qcar(b);
+        b = qcar(b);
         goto down;
     }
 // The remaining cases are when b points to a vector or symbol. I use the
@@ -1868,9 +2214,21 @@ void release_map()
     }
 }
 
+
+// I need to comment on the backpointer tagging here. In a tidy world I would
+// use TAG_CONS, TAG_SYMBOL and TAG_VECTOR to identify what I was descending
+// through. However for symbols and vectors I want back-pointers to be able to
+// identify any one of the cells with the object. On a 32-bit system those
+// are arranges at 4-byte granularity, so I can only afford to use the low
+// TWO bits to track my progress. Done this way I have to use the same
+// backpointer tags for lisp vector and also rational and complex numbers,
+// and in general it is a bit of a mess!
+// I believe I really only need one code for return to a CONS cell, but when I
+// first wrote this I used two, so I will leave that alone at least for now.
+
 #define BACKPOINTER_MASK   3
-#define BACKPOINTER_CAR    0
-#define BACKPOINTER_CDR    1
+#define BACKPOINTER_CDR    0
+#define BACKPOINTER_CAR    1
 #define BACKPOINTER_SYMBOL 2
 #define BACKPOINTER_VECTOR 3
 
@@ -1882,7 +2240,7 @@ void release_map()
 // needed during each of the two passes.
 
 void scan_data(LispObject p)
-{   LispObject b = 0 + BACKPOINTER_CDR, w;
+{   LispObject b = 0 + BACKPOINTER_CAR, w;
     uintptr_t len;
     Header h;
 down:
@@ -1901,9 +2259,9 @@ down:
             }
             mark_address_as_used(p - TAG_CONS);
             w = p;
-            p = qcar(p);
-            qcar(w) = b;
-            b = w - TAG_CONS + BACKPOINTER_CAR;
+            p = qcdr(p);
+            qcdr(w) = b;
+            b = w - TAG_CONS + BACKPOINTER_CDR;
             goto down;
 
         case TAG_SYMBOL:
@@ -1915,14 +2273,18 @@ down:
 // I have two modes if serialization. One views symbols as "just other bits
 // of data" and descends through them so that the contents of their value
 // cells, property lists and so on get inspected. That version is used
-// when creating a full heap image. The other stops when it finda a symbol,
+// when creating a full heap image. The other stops when it finds a symbol,
 // and when writing data out just writes out its name (or somewhat more
 // subtle information if it is a gensym). On reading things back in in this
 // letter case the name as dumped is just looked up in the object list. This
 // way of doing things may be useful for preserving data on disc or sending
 // it to a separate process. It captures the information that "print" would
 // except that it also understands about structure sharing within the object
-// that is being written.
+// that is being written. If at some stage I introduce a package system (a la
+// Common Lisp) I will need to re-visit what I do in that case so that
+// symbols with the same name but that live in different packages get
+// processed nicely. I rather suspect that realiable serialization in that
+// context is an issue that was originally only half thought through...
             if (!descend_symbols) goto up;
             w = p;
             p = qpname(p);
@@ -1995,25 +2357,25 @@ down:
 up:
     switch (b & BACKPOINTER_MASK)
 {       default:
-        case BACKPOINTER_CAR:
+        case BACKPOINTER_CDR:
 // This is where I had just finished scanning the CAR of a cell and now
 // need to deal with the CDR.
-            w = qcar(b - BACKPOINTER_CAR + TAG_CONS);
-            qcar(b - BACKPOINTER_CAR + TAG_CONS) = p;
-            p = qcdr(b - BACKPOINTER_CAR + TAG_CONS);
-            qcdr(b - BACKPOINTER_CAR + TAG_CONS) = w;
-            b = b + BACKPOINTER_CDR - BACKPOINTER_CAR;
+            w = qcdr(b - BACKPOINTER_CDR + TAG_CONS);
+            qcdr(b - BACKPOINTER_CDR + TAG_CONS) = p;
+            p = qcar(b - BACKPOINTER_CDR + TAG_CONS);
+            qcar(b - BACKPOINTER_CDR + TAG_CONS) = w;
+            b = b + BACKPOINTER_CAR - BACKPOINTER_CDR;
             goto down;
 
-        case BACKPOINTER_CDR:
+        case BACKPOINTER_CAR:
 // The termination of the back-pointer chain is to address zero as if one
 // had come down the CDR side of it.
-            if (b == 0 + BACKPOINTER_CDR) return; // finished!
+            if (b == 0 + BACKPOINTER_CAR) return; // finished!
 // I have just finished the CDR, so now I can repair the structure and go
 // up another level.
-            w = b - BACKPOINTER_CDR + TAG_CONS;
-            b = qcdr(w);
-            qcdr(w) = p;
+            w = b - BACKPOINTER_CAR + TAG_CONS;
+            b = qcar(w);
+            qcar(w) = p;
             p = w;
             goto up;
 
@@ -2071,12 +2433,39 @@ up:
 // be in there. The first time an object is visited then hash table entry
 // will exist but has zero in its data field.
 
+// The code here has two HUGE delicacies. The first is that it uses the
+// bottom two bits of pointers in its back-pointer chain, and so while
+// it is working these are NOT valid in the normal CSL sense, and garbage
+// collection would FAIL. And probably fail messily. This should in fact be
+// OK because writing data here ought never to try to allocate store, and
+// hance should never trigger garbage collection. But I ought to try to
+// remember that I must never permit any asynchronous event to interrupt
+// what happens here. The second issue is that once this code has started
+// reversing pointers it must be allowed to run to completion so it restores
+// them. Well what could disturb it? In the short term there are two
+// possibilities. One is "^C" or equivalent and the other is a failure
+// report from the file-writing layer. In a potential multi-threaded
+// future work done in a different thread could be an issue, so this whole
+// body of code will need to go within a critical section...
+
+// I now note that when used via the FASL mechanism this code will be give
+// a list of all the material that has to go in the module. And then for
+// the savedef stuff again it will be given a list whose length is equal to
+// the number of functions begin defined. At present that will generate a
+// faiurly long stream of "list4*" opcodes, and it seems clear that having
+// a general case for long unshared lists would at least count as tidy.
+// I may think about implementing that later, but the absolute space overhead
+// here is only 2 bits per function being defined in each list, so it may
+// not be a disaster even if it looks a little ugly.
+
 void write_data(LispObject p)
-{   LispObject b = 0 + BACKPOINTER_CDR, w;
+{   LispObject b = 0 + BACKPOINTER_CAR, w;
     uintptr_t len;
     int64_t w64;
     Header h;
+    LispObject nil = C_nil, tail1, tail2, tail3, tail4;
     size_t i;
+    size_t i2=-1, i3=-1, i4=-1;
 down:
     if (p == 0) p = SPID_NIL; // reload as a SPID.
     else if (p == C_nil)
@@ -2104,19 +2493,182 @@ down:
     }
 // Here we will have i==-1 if the object is not going to be referenced again.
     switch (p & TAG_BITS)
-{       default:
-
+    {   default:
         case TAG_CONS:
-// I have a separate opcode for a cons csll that is will have further
-// references to it bacause there was easy space in my opcode map for that.
-            if (i != (size_t)-1)
-                write_opcode(SER_DUPCONS, "cons that will be re-used");
-            else write_opcode(SER_CONS, "cons");
-            w = p;
-            p = qcar(p);
-            qcar(w) = b;
-// Reverse pointers with the back-pointer being tagged with 0
-            b = w - TAG_CONS + BACKPOINTER_CAR;
+// Here I have (CONS b a) but I need to look ahead to see if the CDR
+// field contains a further cons, and if so whether it is shared. I
+// should look ahead far enough that I can detect the following cases,
+// which I list in order of preference. For each CONS listed I need to
+// know that it is not one that has already been dumped, but also if
+// there will be a back-reference to it somewhere later in the file.
+// I fear that this code is going to be somewhat ugly.
+//         (CONS d (CONS c (CONS b (CONS a nil))))
+//         (CONS e (CONS d (CONS c (CONS b a))))
+//         (CONS c (CONS b (CONS a nil)))
+//         (CONS d (CONS c (CONS b a)))
+//         (CONS b (CONS a nil))
+//         (CONS c (CONS b a))
+//         (CONS a nil)
+//         (CONS b a)
+// niltail will do what is sort of obvious from its name
+            i2 = i3 = i4 = (size_t)(-1);
+            tail1 = qcdr(p);
+// Let me talk through the logic of the next lines. I will consider the tail
+// of the list something I can consolidate into one of my more elaborate
+// composite list-building opcoded subject to
+//  (a) its must be another CONS cell (and being nil instead is special!)
+//  (b) AND either (b.1) it must have no repeated references to it at all
+//              OR (b.2) this is the first time I have seen it.
+// In other cases I must stop here. There is a further wrinkle. The
+// check for "have I seen this before" is based on me having called
+// find_index_in_repeats and while I have done that for the first cell of
+// the chain I have not done so for the subsequent cells, so I will need
+// to check against those explicitly.
+//
+// First check if the case that I have is (CONS a nil)...
+            if (tail1 == nil)
+            {   if (i != (size_t)-1)
+                    write_opcode(SER_L_A, "ncons that will be re-used");
+                else write_opcode(SER_L_a, "ncons");
+                w = p;
+                p = qcar(p);
+                qcar(w) = b;
+                b = w - TAG_CONS + BACKPOINTER_CAR;
+                goto down;
+            }
+// Now I have (CONS b a). If a is not a CONS or if it is one that has
+// multiple references and this is not the first time it has been visited
+// then I do not have scope for further optimisaion so use just the SER_CONS
+// code.
+            if (!is_cons(tail1) ||
+                ((i2 = hash_lookup(&repeat_hash, tail1)) != (size_t)(-1) &&
+                 hash_get_value(&repeat_hash, i2) != 0))
+            {   // Write out just (CONS b a)
+                if (i != (size_t)-1)
+                    write_opcode(SER_L_A_S, "cons that will be re-used");
+                else write_opcode(SER_L_a_S, "cons");
+                w = p;
+                p = qcdr(p);
+                qcdr(w) = b;
+ // Reverse pointers with the back-pointer being tagged with 0
+                b = w - TAG_CONS + BACKPOINTER_CDR;
+                goto down;
+            }
+            tail2 = qcdr(tail1);
+            if (tail2 == nil)
+            {
+// Here the case I have is (LIST b a) and either or both of the CONS cells
+// concerned may need to be entered into the table of shared items.
+                write_opcode(
+                   i==(size_t)(-1) ?
+                     (i2==(size_t)(-1) ? SER_L_aa : SER_L_aA) :
+                     (i2==(size_t)(-1) ? SER_L_Aa : SER_L_AA), "list2");
+                if (i2 != (size_t)(-1)) find_index_in_repeats(i2);
+                qcdr(p) = b;
+                b = p - TAG_CONS + BACKPOINTER_CDR;
+                p = qcar(tail1);
+                qcar(tail1) = b;
+                b = tail1 - TAG_CONS + BACKPOINTER_CAR;
+                goto down;
+            }
+// Here is (LIST!* c b a). If a is not a cons or is a back-reference
+// (and it is not a reference to the first CONS in this block) I can do no
+// more.
+            if (!is_cons(tail2) ||
+                tail2 == tail1 ||
+                ((i3 = hash_lookup(&repeat_hash, tail2)) != (size_t)(-1) &&
+                  hash_get_value(&repeat_hash, i3) != 0))
+            {   write_opcode(
+                   i==(size_t)(-1) ?
+                     (i2==(size_t)(-1) ? SER_L_aa_S : SER_L_aA_S) :
+                     (i2==(size_t)(-1) ? SER_L_Aa_S : SER_L_AA_S), "list2*");
+                if (i2 != (size_t)(-1)) find_index_in_repeats(i2);
+                qcdr(p) = b;
+                b = p - TAG_CONS + BACKPOINTER_CDR;
+                p = tail2;
+                qcdr(tail1) = b;
+                b = tail1 - TAG_CONS + BACKPOINTER_CDR;
+                goto down;
+            }
+            tail3 = qcdr(tail2);
+            if (tail3 == nil)
+            {   write_opcode(
+                   i==(size_t)(-1) ?
+                     (i2==(size_t)(-1) ?
+                       (i3==(size_t)(-1) ? SER_L_aaa : SER_L_aaA) :
+                       (i3==(size_t)(-1) ? SER_L_aAa : SER_L_aAA)) :
+                     (i2==(size_t)(-1) ?
+                       (i3==(size_t)(-1) ? SER_L_Aaa : SER_L_AaA) :
+                       (i3==(size_t)(-1) ? SER_L_AAa : SER_L_AAA)), "list3");
+                if (i2 != (size_t)(-1)) find_index_in_repeats(i2);
+                if (i3 != (size_t)(-1)) find_index_in_repeats(i3);
+                qcdr(p) = b;
+                b = p - TAG_CONS + BACKPOINTER_CDR;
+                qcdr(tail1) = b;
+                b = tail1 - TAG_CONS + BACKPOINTER_CDR;
+                p = qcar(tail2);
+                qcar(tail2) = b;
+                b = tail2 - TAG_CONS + BACKPOINTER_CAR;
+                goto down;
+            }
+// I must now use this LIST!* case if any of the CONS cells other than the
+// very first one have multiple references. That is because the "list4" and
+// "list4*" opcodes only allow tagging the first cons as shared.
+            if (!is_cons(tail3) ||
+                tail3 == tail2 ||
+                tail3 == tail1 ||
+                i2 != (size_t)(-1) ||
+                i3 != (size_t)(-1) ||
+                ((i4 = hash_lookup(&repeat_hash, tail3)) != (size_t)(-1) &&
+                 hash_get_value(&repeat_hash, i4) != 0))
+            {   write_opcode(
+                   i==(size_t)(-1) ?
+                     (i2==(size_t)(-1) ?
+                       (i3==(size_t)(-1) ? SER_L_aaa_S : SER_L_aaA_S) :
+                       (i3==(size_t)(-1) ? SER_L_aAa_S : SER_L_aAA_S)) :
+                     (i2==(size_t)(-1) ?
+                       (i3==(size_t)(-1) ? SER_L_Aaa_S : SER_L_AaA_S) :
+                       (i3==(size_t)(-1) ? SER_L_AAa_S : SER_L_AAA_S)),
+                    "list3*");
+                if (i2 != (size_t)(-1)) find_index_in_repeats(i2);
+                if (i3 != (size_t)(-1)) find_index_in_repeats(i3);
+                qcdr(p) = b;
+                b = p - TAG_CONS + BACKPOINTER_CDR;
+                qcdr(tail1) = b;
+                b = tail1 - TAG_CONS + BACKPOINTER_CDR;
+                p = qcdr(tail2);
+                qcdr(tail2) = b;
+                b = tail2 - TAG_CONS + BACKPOINTER_CDR;
+                goto down;
+            }
+            tail4 = qcdr(tail3);
+            if (tail4 == nil)
+            {   write_opcode(
+                   i==(size_t)(-1) ? SER_L_aaaa : SER_L_Aaaa, "list4");
+                qcdr(p) = b;
+                b = p - TAG_CONS + BACKPOINTER_CDR;
+                qcdr(tail1) = b;
+                b = tail1 - TAG_CONS + BACKPOINTER_CDR;
+                qcdr(tail2) = b;
+                b = tail2 - TAG_CONS + BACKPOINTER_CDR;
+                p = qcar(tail3);
+                qcar(tail3) = b;
+                b = tail3 - TAG_CONS + BACKPOINTER_CAR;
+                goto down;
+            }
+// Here I wish to scan yet further to see if I can use a SER_LIST or SER_LIST_S
+// opcode to cope with very long lists...
+            write_opcode(
+                   i==(size_t)(-1) ? SER_L_aaaa_S : SER_L_Aaaa_S, "list4*");
+            qcdr(p) = b;
+            b = p - TAG_CONS + BACKPOINTER_CDR;
+            qcdr(tail1) = b;
+            b = tail1 - TAG_CONS + BACKPOINTER_CDR;
+            qcdr(tail2) = b;
+            b = tail2 - TAG_CONS + BACKPOINTER_CDR;
+            p = qcdr(tail3);
+            qcdr(tail3) = b;
+            b = tail3 - TAG_CONS + BACKPOINTER_CDR;
             goto down;
 
         case TAG_SYMBOL:
@@ -2522,25 +3074,25 @@ down:
 up:
     switch (b & BACKPOINTER_MASK)
 {       default:
-        case BACKPOINTER_CAR:
-// This is where I had just finished scanning the CAR of a cell and now
-// need to deal with the CDR.
-            w = qcar(b - BACKPOINTER_CAR + TAG_CONS);
-            qcar(b - BACKPOINTER_CAR + TAG_CONS) = p;
-            p = qcdr(b - BACKPOINTER_CAR + TAG_CONS);
-            qcdr(b - BACKPOINTER_CAR + TAG_CONS) = w;
-            b = b + BACKPOINTER_CDR - BACKPOINTER_CAR;
+        case BACKPOINTER_CDR:
+// This is where I had just finished scanning the CDR of a cell and now
+// need to deal with the CAR.
+            w = qcdr(b - BACKPOINTER_CDR + TAG_CONS);
+            qcdr(b - BACKPOINTER_CDR + TAG_CONS) = p;
+            p = qcar(b - BACKPOINTER_CDR + TAG_CONS);
+            qcar(b - BACKPOINTER_CDR + TAG_CONS) = w;
+            b = b + BACKPOINTER_CAR - BACKPOINTER_CDR;
             goto down;
 
-        case BACKPOINTER_CDR:
+        case BACKPOINTER_CAR:
 // The termination of the back-pointer chain is to address zero as if one
-// had come down the CDR side of it.
-            if (b == 0 + BACKPOINTER_CDR) return; // finished!
-// I have just finished the CDR, so now I can repair the structure and go
+// had come down the CAR side of it.
+            if (b == 0 + BACKPOINTER_CAR) return; // finished!
+// I have just finished the CAR, so now I can repair the structure and go
 // up another level.
-            w = b - BACKPOINTER_CDR + TAG_CONS;
-            b = qcdr(w);
-            qcdr(w) = p;
+            w = b - BACKPOINTER_CAR + TAG_CONS;
+            b = qcar(w);
+            qcar(w) = p;
             p = w;
             goto up;
 
@@ -2757,6 +3309,11 @@ static LispObject load_module(LispObject nil, LispObject file,
     reader_setup_repeats(read_u64());
     LispObject r = serial_read();
     nil = C_nil;
+#ifdef DEBUG_SERIALIZE
+    fprintf(stderr, "Re-input: ");
+    simple_print(r); // @@@
+    fprintf(stderr, "\n");
+#endif
     if (!exception_pending() && r != eof_symbol &&
         option != F_LOAD_MODULE) r = serial_read();
     if (repeat_heap_size != 0)
@@ -2924,7 +3481,7 @@ LispObject load_source0(int option)
         errexit();
 //@ printf("result from union = "); simple_print(r); printf("\n");
     }
-    return onevalue(r); 
+    return onevalue(r);
 }
 
 LispObject Lload_selected_source(LispObject nil, LispObject file)
@@ -2933,7 +3490,7 @@ LispObject Lload_selected_source(LispObject nil, LispObject file)
 
 LispObject Lload_source0(LispObject nil, int nargs, ...)
 {   argcheck(nargs, 0, "load-source");
-    return load_source0(F_LOAD_SOURCE);   
+    return load_source0(F_LOAD_SOURCE);
 }
 
 LispObject Lload_selected_source0(LispObject nil, int nargs, ...)

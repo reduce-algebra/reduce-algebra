@@ -391,7 +391,7 @@ int main(int argc, char **argv)
     }
 
     if (argc == 3)
-    {   src = fopen(argv[1], "r");
+    {   src = strcmp(argv[1], "-") == 0 ? stdin : fopen(argv[1], "r");
         assert(src != NULL);
         dest = fopen(argv[2], "wb");
         assert(dest != NULL);
@@ -407,7 +407,7 @@ int main(int argc, char **argv)
     else
     {   src = fopen(argv[2], "rb");
         assert(src != NULL);
-        dest = fopen(argv[3], "w");
+        dest = strcmp(argv[3], "-") == 0 ? stdout : fopen(argv[3], "w");
         assert(dest != NULL);
         inf_init();
         int ch;
