@@ -273,7 +273,12 @@ asserted procedure vs_blockmainloop(db: VSdb);
 	       	  vsdb_scinsert(db, nd)
 	       else
 		  vsdb_expandNode(db, nd)
-	    >>
+	    >> % else
+ 	       % vsdb_scinsert(db, nd)
+	       %
+	       % One can use this "else" branch to document also those
+	       % nodes that were dropped because they contained a
+	       % formula occurring elsewhere in the QE tree.
 	 >>
       >>
    end;
