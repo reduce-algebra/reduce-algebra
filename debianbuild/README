@@ -4,10 +4,11 @@ package
 
   devscripts
 
-To build the packages, run the following command from the debianbuild/reduce
+To build the packages, run the following commands from the debianbuild
 directory:
 
-  debuild -b -uc -us
+  make clean
+  make
 
 After successful completion, you should have three .deb package files for
 CSL, PSL and common files, respectively.
