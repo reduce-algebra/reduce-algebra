@@ -624,6 +624,9 @@ extern const char **csl_argv;
 extern bool fasl_output_file;
 extern size_t output_directory;
 
+extern LispObject *repeat_heap;
+extern size_t repeat_count;
+
 #ifdef BUILTIN_IMAGE
 const unsigned char *binary_read_filep;
 #else
@@ -633,6 +636,7 @@ extern FILE *binary_read_file;
 extern FILE *binary_write_file;
 
 extern size_t boffop;
+extern void packcharacter(int c);
 extern void packbyte(int c);
 
 #ifdef HAVE_FWIN
@@ -641,8 +645,10 @@ extern char **switches;
 extern void review_switch_settings();
 #endif
 
+#ifdef SOCKETS
 extern bool sockets_ready;
 extern void flush_socket();
+#endif
 
 extern void report_file(const char *s);
 
@@ -674,9 +680,6 @@ extern int force_reclaim_method, reclaim_trap_count, reclaim_stack_limit;
 extern int tty_count;
 extern FILE *spool_file;
 extern char spool_file_name[32];
-
-extern LispObject *repeat_heap;
-extern size_t repeat_heap_size, repeat_count;
 
 //
 // If there is no more than 100 bytes of data then I will deem

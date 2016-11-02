@@ -38,6 +38,10 @@
 
 #include "headers.h"
 
+#ifdef SOCKETS
+#include "sockhdr.h"
+#endif
+
 #ifdef WIN32
 #include <windows.h>
 #endif
@@ -159,6 +163,17 @@ LispObject copy_string(LispObject str, size_t n)
 
 LispObject Lbatchp(LispObject nil, int nargs, ...)
 {   argcheck(nargs, 0, "batchp");
+#if 0
+#ifdef SOCKETS
+//
+// If CSL is being run as a service (ie accessed via a socket) then I will
+// deem it to be in "interactive" mode. This leaves responsibility for stopping
+// after errors (if that is what is wanted) with the other end of the
+// communications link.
+//
+    if (socket_server != 0) return onevalue(nil);
+#endif
+#endif
 //
 // If the user had specified input files on the command line I will say that
 // we are in batch mode even if there is a terminal present somewhere. So
@@ -218,6 +233,14 @@ LispObject Lsystem(LispObject nil, LispObject a)
     int32_t len;
     int w;
     memset(parmname, 0, sizeof(parmname));
+#if 0
+#ifdef SOCKETS
+//
+// Security measure - remote client can not do "system"
+//
+    if (socket_server != 0) return onevalue(nil);
+#endif
+#endif
     if (a == nil)            // enquire if command processor is available
     {   w = my_system(NULL);
         return onevalue(Lispify_predicate(w != 0));
@@ -261,6 +284,14 @@ static LispObject Lsilent_system(LispObject nil, LispObject a)
     memset(cmd, 0, sizeof(cmd));
 #ifdef SHELL_EXECUTE
     memset(args, 0, sizeof(args));
+#endif
+#if 0
+#ifdef SOCKETS
+//
+// Security measure - remote client can not do "system"
+//
+    if (socket_server != 0) return onevalue(nil);
+#endif
 #endif
     if (a == nil)            // enquire if command processor is available
         return onevalue(lisp_true); // always is on Windows!
@@ -427,13 +458,14 @@ static int value_in_radix(int c, int radix)
     else return -1;
 }
 
-LispObject intern(int len, bool escaped)
+LispObject intern(size_t len, bool escaped)
 //
 // This takes whatever is in the first len characters of
 // the Lisp string boffo, and maps it into a number, string
 // or symbol as relevant.
 //
-{   int i, numberp = escaped ? -1 : 0;
+{   size_t i;
+    int numberp = escaped ? -1 : 0;
     int fplength = 2;
     int explicit_fp_format = 0;
     LispObject nil = C_nil;
@@ -582,13 +614,13 @@ LispObject intern(int len, bool escaped)
 // Not a number... look up in package system
 #ifdef COMMON
             if (!escaped && boffo_char(0) == ':')
-            {   int i = 0;
+            {   size_t i = 0;
                 for (i = 0; i<boffop; i++) boffo_char(i) = boffo_char(i+1);
                 boffop--;
-                return iintern(boffo, (int32_t)boffop, qvalue(keyword_package), 0);
+                return iintern(boffo, boffop, qvalue(keyword_package), 0);
             }
 #endif
-            return iintern(boffo, (int32_t)boffop, CP, 0);
+            return iintern(boffo, boffop, CP, 0);
 
 
         case 5:         // Integer written as 12345.    (note trailing ".")
@@ -601,8 +633,8 @@ LispObject intern(int len, bool escaped)
 // arithmetic to combine the chunks.
 //
             if (boffo_char(0) == '+')
-            {   int i = 0;
-                for (i = 0; i<boffop; i++) boffo_char(i) = boffo_char(i+1);
+            {   for (size_t i = 0; i<boffop; i++)
+                    boffo_char(i) = boffo_char(i+1);
                 boffop--;
             }
             {   LispObject v = fixnum_of_int(0);
@@ -774,7 +806,7 @@ LispObject make_symbol(char const *s, int restartp,
 #endif
         strcpy((char *)&boffo_char(0), s);
 start_again:
-    v = iintern(boffo, (int32_t)strlen((char *)&boffo_char(0)), CP, 0);
+    v = iintern(boffo, strlen((char *)&boffo_char(0)), CP, 0);
     errexit();
     if (first_try) v0 = v;
 //
@@ -1824,7 +1856,7 @@ static LispObject Lreset_gensym(LispObject nil, LispObject a)
     return fixnum_of_int(old);
 }
 
-LispObject iintern(LispObject str, int32_t h, LispObject p, int str_is_ok)
+LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
 //
 // Look up the first h chars of the string str with respect to the package p.
 // The last arg is a boolean that allows me to decide if (when a new symbol
@@ -3042,15 +3074,18 @@ static LispObject backquote_expander(LispObject a)
 
 static bool read_failure;
 
-void packbyte(int c)
+// Here c is a Unicode character - it gets expanded to UTF-8 format
+// as necessary.
+
+void packcharacter(int c)
 {   LispObject nil = C_nil;
-    size_t boffo_size = length_of_byteheader(vechdr(boffo));
+    int32_t boffo_size = length_of_byteheader(vechdr(boffo));
 //
 // I expand boffo (maybe) several characters earlier than you might
 // consider necessary. Some of that is to be extra certain about having
 // space in it when I pack a multi-byte character.
 //
-    if (boffop >= boffo_size-CELL-8)
+    if (boffop >= (size_t)boffo_size-CELL-8)
     {   LispObject new_boffo =
             getvector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
         nil = C_nil;
@@ -3085,6 +3120,28 @@ void packbyte(int c)
         boffo_char(boffop++) = 0x80 + (c & 0x3f);
     }
     else boffo_char(boffop++) = c;
+}
+
+// packbyte() packs a BYTE not a CHARACTER so the material packed
+// must already be in UTF-8 format.
+
+void packbyte(int c)
+{   LispObject nil = C_nil;
+    int32_t boffo_size = length_of_byteheader(vechdr(boffo));
+    if (boffop >= (size_t)boffo_size-CELL-8)
+    {   LispObject new_boffo =
+            getvector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
+        nil = C_nil;
+        if (exception_pending())
+        {   flip_exception();
+            read_failure = true;
+            return;
+        }
+        memcpy((void *)((char *)new_boffo + (CELL-TAG_VECTOR)),
+               &boffo_char(0), boffop);
+        boffo = new_boffo;
+    }
+    boffo_char(boffop++) = c;
 }
 
 #ifdef COMMON
@@ -3185,7 +3242,7 @@ static LispObject read_s(LispObject stream)
                                curchar != EOF &&
                                curchar != CTRL_D)
                         {   push(stream);
-                            packbyte(curchar);
+                            packcharacter(curchar);
                             pop(stream);
                             curchar = getc_stream(stream);
                             errexit();
@@ -3202,7 +3259,7 @@ static LispObject read_s(LispObject stream)
                         errexit();
                         if (curchar == '"')
                         {   push(stream);
-                            packbyte(curchar);
+                            packcharacter(curchar);
                             pop(stream);
                             continue;    // Handle "abc""def" for Standard Lisp
                         }
@@ -3226,7 +3283,7 @@ static LispObject read_s(LispObject stream)
             {   boffop = 0;
                 if (curchar == '+' || curchar == '-')
                 {   push(stream);
-                    packbyte(curchar);
+                    packcharacter(curchar); // in fact char is Basic Latin
                     pop(stream);
                     curchar = getc_stream(stream);
                     errexit();
@@ -3236,7 +3293,7 @@ static LispObject read_s(LispObject stream)
                 }
                 while (curchar <= 0xff && isdigit(curchar))
                 {   push(stream);
-                    packbyte(curchar);
+                    packcharacter(curchar);  // Should be '0 to '9' (only)
                     pop(stream);
                     curchar = getc_stream(stream);
                     errexit();
@@ -3244,13 +3301,13 @@ static LispObject read_s(LispObject stream)
 // accept possible decimal point
                 if (curchar == '.')
                 {   push(stream);
-                    packbyte(curchar);
+                    packcharacter(curchar);
                     pop(stream);
                     curchar = getc_stream(stream);
                     errexit();
                     while (curchar <= 0xff && isdigit(curchar))
                     {   push(stream);
-                        packbyte(curchar);
+                        packcharacter(curchar);
                         pop(stream);
                         curchar = getc_stream(stream);
                         errexit();
@@ -3265,20 +3322,20 @@ static LispObject read_s(LispObject stream)
                     curchar == 'd' || curchar == 'D' ||
                     curchar == 'l' || curchar == 'L')
                 {   push(stream);
-                    packbyte(curchar);
+                    packcharacter(curchar);
                     pop(stream);
                     curchar = getc_stream(stream);
                     errexit();
                     if (curchar == '+' || curchar == '-')
                     {   push(stream);
-                        packbyte(curchar);
+                        packcharacter(curchar);
                         pop(stream);
                         curchar = getc_stream(stream);
                         errexit();
                     }
                     while (curchar <= 0xff && isdigit(curchar))
                     {   push(stream);
-                        packbyte(curchar);
+                        packcharacter(curchar);
                         pop(stream);
                         curchar = getc_stream(stream);
                         errexit();
@@ -3290,7 +3347,7 @@ static LispObject read_s(LispObject stream)
             case '_':       // This seems to have to be a funny case for REDUCE
                 boffop = 0;
                 push(stream);
-                packbyte(curchar);
+                packcharacter(curchar);
                 pop(stream);
                 curchar = getc_stream(stream);
                 errexit();
@@ -3356,7 +3413,7 @@ static LispObject read_s(LispObject stream)
 //
                 do
                 {   push(stream);
-                    packbyte(curchar);
+                    packcharacter(curchar);
                     pop(stream);
                     curchar = getc_stream(stream);
                     errexit();
@@ -3446,7 +3503,7 @@ static LispObject read_s(LispObject stream)
                 {   // In the case ppp:sss it MUST be external in ppp
                     LispObject wx;
                     push(w);
-                    wx = iintern(boffo, (int32_t)boffop, w, 4);
+                    wx = iintern(boffo, boffop, w, 4);
                     pop(w);
                     errexit();
                     if (mv_2 == nil)
@@ -3464,7 +3521,7 @@ static LispObject read_s(LispObject stream)
 // already existed (since in all other packages nothing is external unless
 // it already exists and has been exported).
 //
-                return iintern(boffo, (int32_t)boffop, w, 0);
+                return iintern(boffo, boffop, w, 0);
 #else
                 return intern(boffop, escaped);
 #endif
@@ -4384,6 +4441,14 @@ LispObject Lspool(LispObject nil, LispObject file)
     Header h;
     int32_t len;
     memset(filename, 0, sizeof(filename));
+#if 0
+#ifdef SOCKETS
+//
+// Security measure - remote client can not do "spool"
+//
+    if (socket_server != 0) return onevalue(nil);
+#endif
+#endif
     if (spool_file != NULL)
     {
 #ifdef COMMON
@@ -4828,7 +4893,7 @@ LispObject Lreadline1(LispObject nil, LispObject stream)
     boffop = 0;
     while ((ch = getc_stream(stream)) != EOF && ch != '\n')
     {   errexit();
-        if (ch != '\r') packbyte(ch);
+        if (ch != '\r') packcharacter(ch);
         n++;
     }
     errexit();

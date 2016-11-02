@@ -96,10 +96,10 @@ typedef struct Package
 #define NO_PREFIX           'x'
 
 extern bool is_constituent(int c);
-extern LispObject intern(int len, bool escaped);
-extern LispObject iintern(LispObject str, int32_t h, LispObject p,
+extern LispObject intern(size_t len, bool escaped);
+extern LispObject iintern(LispObject str, size_t h, LispObject p,
                           int str_is_ok /* NOT a bool */);
-extern LispObject find_package(char *name, int len);
+extern LispObject find_package(char *name, size_t len);
 extern LispObject read_from_vector(char *v);
 
 #define MAX_PROMPT_LENGTH 80

@@ -200,6 +200,8 @@ typedef intptr_t LispObject;
 #define TAG_FIXNUM      7   // 28-bit integers                           80
 #define XTAG_SFLOAT     15  // Short float, 28 bits of immediate data    80
 
+#define is_forward(p)              ((((int)(p)) & TAG_BITS) == TAG_FORWARD)
+
 #define is_number(p)               ((((int)(p)) & TAG_BITS) >= TAG_NUMBERS)
 
 #define is_float(p)       (((0xc040 >> (((int)(p)) & XTAG_BITS)) & 1) != 0)
@@ -228,78 +230,6 @@ typedef intptr_t LispObject;
 #define int_of_fixnum(x) (((int32_t)(x) & ~(int32_t)15)/16)
 
 //
-// The garbage collector needs a spare bit in EVERY word at present. I hope
-// to remove that need soon.
-//
-
-#define GC_BIT_I        8               // Used with FIXNUM, CHAR, SFLOAT
-#define GC_BIT_H        8               // Used in Header words
-
-#define GC_BIT_P        ((intptr_t)~((~(uintptr_t)0) >> 1))
-//
-// The above curious definition of GC_BIT_P is intended to ensure that
-// it looks like a negative value. This matters a lot if there is some
-// 64-bit arithmetic lurking somewhere, because then what goes on in the
-// upper 32 bits can come and bite me.  I will try to avoid trouble by
-// having all constants in this code written in a way that avoids any
-// need for explicit 'L' suffices. So this one goes
-//      00000000      0000000000000000   zero, cast to uintptr_t
-//      ffffffff      ffffffffffffffff   complement
-//      7fffffff      7fffffffffffffff   shift right one, NB unsigned
-//      80000000      8000000000000000   complement again, and cast to signed!
-// I really hope that the compiler processes this constant expression at
-// compile time, and that it gets the calculation right!
-//
-
-//
-// Here I assume that all valid pointers EITHER have top bit zero OR have
-// top bit one.  If this is so I can flip the top bit in a pointer to mark
-// things for the garbage collector.  Beware, I suppose, stack-allocated
-// objects on a VAX.  But note that garbage collection is only really
-// interested in the heap, which can probably be kept within one half of
-// the address space.  The nastiest case I have come across so far is
-// the Intel 80x86 where addresses spread over all 32 bits of a long int,
-// in a rather wasteful way.  For that very special machine I have to
-// invent specialist storage management schemes!
-//
-// [November 2003] Note well that many Linux systems are configured with
-// 3G of user space and 1G of systerm space within the 4G address map of a
-// 32-bit architecture. This can cause it to seem as if over 2G of memory
-// can be issued to the user. It also means that when amounts of memory
-// around a Gbyte are being allocated just where in the memory map things
-// are gets jolly uncertain and delicate. Specifically it may depend on the
-// excat version of Linux that you run. It all feels a big misery to me.
-// using that top bit could be held to be a mistake! However once one moves
-// to having 64-bit machines as standard it becomes possible to relax again.
-//
-
-#define is_marked_i(w)      (((int)(w) & GC_BIT_I) != 0)
-
-//
-// I assume that in any one run of CSL either all (malloc)
-// addresses have their top bit set OR all have their top bit clear, but
-// I can not predict in advance which case will apply.  This miserable
-// state arises with Win32 - under Windows-NT addresses are in the range
-// 0 to 0x7fffffff, while the same binary executing under Win32s has
-// addresses in the range 0x80000000 to 0xffffffff.
-// Note that many Linux (and maybe other) systems use the top 1G of a
-// 4G space for system, with the lower 3G for user space. Some will let
-// malloc return space above or below the 2G mark in a way that the user can
-// not easily control. Those worried need to move to 64 bit machines soon.
-// There the mark bit ix 0x8000000000000000.
-//
-
-extern LispObject address_sign;  // 0, 0x80000000 or 0x8000000000000000
-#define is_marked_p(w)      (((LispObject)(w) - address_sign) < 0)
-#define clear_mark_bit_p(w) (((LispObject)(w) & ~GC_BIT_P) + \
-                              address_sign)
-
-#define flip_mark_bit_i(w)  ((LispObject)(w) ^ GC_BIT_I)
-#define flip_mark_bit_h(w)  ((Header)(w) ^ GC_BIT_H)
-#define flip_mark_bit_p(w)  ((LispObject)(w) ^ GC_BIT_P)
-#define is_marked_h(w)      (((int)(w) & GC_BIT_H) != 0)
-
-//
 // Exceptions are marked by setting a bit in NIL.  The following macros
 // provide an abstraction of this interface.  At one stage I used the
 // most significant bit in nil, but now for various reasons I have concluded
@@ -311,11 +241,6 @@ extern LispObject address_sign;  // 0, 0x80000000 or 0x8000000000000000
 
 #define ignore_exception() \
    do { nil = C_nil; if (exception_pending()) flip_exception(); } while (0)
-
-#define set_mark_bit_h(h)   ((Header)(h) | GC_BIT_H)
-#define clear_mark_bit_h(h) ((Header)(h) & ~GC_BIT_H)
-#define set_mark_bit_i(h)   ((LispObject)(h) | GC_BIT_I)
-#define clear_mark_bit_i(h) ((LispObject)(h) & ~GC_BIT_I)
 
 #define is_cons(p)   ((((int)(p)) & TAG_BITS) == TAG_CONS)
 #define is_fixnum(p) ((((int)(p)) & TAG_BITS) == TAG_FIXNUM)
@@ -605,7 +530,7 @@ typedef uintptr_t Header;
 //   111:11 11 g010  float128          *            F128
 
 // I have tests that let me discern the size of storage units within a
-// vector. This matters for serialisation and deserialisation because the
+// vector. This matters for serialization and deserialization because the
 // source and target machines may use different ordering for bytes within
 // words etc.
 
@@ -722,7 +647,7 @@ typedef uintptr_t Header;
 
 #define data_of_bps(v) ((unsigned char *)(v) + (CELL-TAG_VECTOR))
 
-// In the serialisation code I want to access the fields in a symbol as
+// In the serialization code I want to access the fields in a symbol as
 // if that symbol was a vector and the fields were indexed
 //  vselt(p, -1) : qheader(p)
 //  vselt(p, 0) : qvalue(p)

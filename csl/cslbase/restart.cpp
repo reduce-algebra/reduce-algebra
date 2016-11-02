@@ -99,8 +99,6 @@ extern int load_count, load_limit;
 //
 #include "machineid.cpp"
 
-LispObject address_sign;
-
 LispObject C_nil;
 LispObject *stackbase;
 LispObject * volatile stacklimit;
@@ -1055,16 +1053,6 @@ static void *my_malloc_1(size_t n)
 // first call - instead I just remember what it was.  On subsequent calls
 // I will check it.
 //
-    if (nilsegment != NULL)
-    {
-// The way I write this seems to matter on an Raspberry Pi with optimization
-// level -O3 as of June 2016. I hope this version works and the previous
-// version of this line with a "+" rather than a "^" and without the cast
-// seemed not to!
-        if ((intptr_t)(pun ^ address_sign) < 0) return NULL;
-        // fatal_error(err_top_bit);
-    }
-    else address_sign = pun & GC_BIT_P;
     return (void *)r;
 }
 
@@ -3906,10 +3894,6 @@ void setup(int restart_flag, double store_size)
 // CF the code in gc.c -- I can still use my_malloc_1 here, which makes this
 // code just a tiny bit safer.
 //
-            intptr_t pun = (intptr_t)page;
-            intptr_t pun1 = (intptr_t)((char *)page + CSL_PAGE_SIZE + 16);
-            if ((intptr_t)(pun ^ pun1) < 0) page = NULL;
-            if ((intptr_t)(pun ^ address_sign) < 0) page = NULL;
             if (page == NULL)
             {   init_flags &= ~INIT_EXPANDABLE;
                 break;

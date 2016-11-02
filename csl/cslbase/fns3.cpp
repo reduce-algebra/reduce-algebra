@@ -581,16 +581,14 @@ LispObject Lsputv4(LispObject, int nargs, ...)
 }
 
 LispObject Lbpsupbv(LispObject, LispObject v)
-{   Header h;
-    int32_t n;
+{   size_t n;
     if (!is_bps(v)) return aerror1("bps-upbv", v);
-    n = length_of_byteheader(vechdr(h)) - CELL;
+    n = length_of_byteheader(vechdr(v)) - CELL;
     return onevalue(fixnum_of_int(n-1));
 }
 
 LispObject Lbpsputv(LispObject, int nargs, ...)
-{   Header h;
-    va_list a;
+{   va_list a;
     int32_t n1, hl;
     LispObject v, n, x;
     argcheck(nargs, 3, "bpsputv");
@@ -680,8 +678,7 @@ LispObject Lbytegetv(LispObject, LispObject v, LispObject n)
 }
 
 LispObject Lbpsgetv(LispObject, LispObject v, LispObject n)
-{   Header h;
-    size_t n1, hl;
+{   size_t n1, hl;
     if (!is_bps(v)) return aerror1("bps-getv", v);
     else if (!is_fixnum(n)) return aerror1("bps-getv", n);
     hl = length_of_byteheader(vechdr(v)) - CELL;

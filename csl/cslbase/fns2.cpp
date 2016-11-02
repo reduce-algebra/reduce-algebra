@@ -2089,7 +2089,7 @@ static LispObject Lrestart_lisp2(LispObject nil,
 // There is no provision here to force a cold start followed by a reload
 // of some particular module.
 //
-// The second argument (if provided) is passed through (via serialisation
+// The second argument (if provided) is passed through (via serialization
 // as a string of characters) and remade as a Lisp object to be passed to
 // the custom restart function as an argument. Thus in (restart!-lisp 'xx) the
 // function xx should not take any arguments, while in the call

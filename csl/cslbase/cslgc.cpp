@@ -455,14 +455,6 @@ static void zero_out(void *p)
 }
 
 
-//
-// You may like to observe how much more compact the code for the copying
-// garbage collector is when compared with the mark/slide mess.  It is
-// naturally and easily non-recursive and does not get involved in any
-// over-dubious punning on bit-patterns... It just requires a lot of spare
-// memory for the new semi-space.
-//
-
 static int trailing_heap_pages_count,
        trailing_vheap_pages_count;
 
@@ -518,8 +510,8 @@ static void copy(LispObject *p)
             {   if (is_cons(a))
                 {   LispObject w;
                     w = qcar(a);
-                    if (is_cons(w) && is_marked_p(w)) // a forwarding address
-                    {   *p = flip_mark_bit_p(w);
+                    if (is_forward(w))
+                    {   *p = w - TAG_FORWARD + TAG_CONS;
                         break;
                     }
                     fr = fr - sizeof(Cons_Cell);
@@ -557,7 +549,7 @@ static void copy(LispObject *p)
                     term_printf("new data for cons %p %p\n", (void *)w, (void *)qcdr(a));
 #endif // DEBUG_GC
                     *p = w = (LispObject)(fr + TAG_CONS);
-                    qcar(a) = flip_mark_bit_p(w);
+                    qcar(a) = w + TAG_FORWARD;
                     break;
                 }   // end of treatment of CONS
                 else break;        // Immediate data drops out here
@@ -572,8 +564,10 @@ static void copy(LispObject *p)
 #ifdef DEBUG_GC
                 term_printf("Header is %p\n", (void *)h);
 #endif // DEBUG_GC
-                if (!is_odds(h))
-                {   *p = h;
+// If the symbol/number/vector has already been copied then its header
+// word contains a forwarding address. Re-tag it.
+                if (is_forward(h))
+                {   *p = h - TAG_FORWARD + tag;
                     break;
                 }
                 if (tag == TAG_SYMBOL)
@@ -624,7 +618,8 @@ static void copy(LispObject *p)
                         car32(vl - (CSL_PAGE_SIZE - 8)) = free1;
                         continue;
                     }
-                    *(LispObject *)a = *p = (LispObject)(vfr + tag);
+                    *p = (LispObject)(vfr + tag);
+                    *(LispObject *)a = (LispObject)(vfr + TAG_FORWARD); 
                     *(Header *)vfr = h;
                     memcpy((char *)vfr+CELL, (char *)a+CELL, len-CELL);
                     vfr += len;
@@ -1092,7 +1087,7 @@ static void lose_dead_hashtables(void)
     {   Header h;
         r = qcar(q);
         h = vechdr(r);
-        if (is_odds(h) && !is_marked_h(h)) *p = qcdr(q);
+        if (!is_forward((LispObject)h)) *p = qcdr(q);
         else p = &qcdr(q);
     }
     p = &equal_hash_tables;
@@ -1100,7 +1095,7 @@ static void lose_dead_hashtables(void)
     {   Header h;
         r = qcar(q);
         h = vechdr(r);
-        if (is_odds(h) && !is_marked_h(h)) *p = qcdr(q);
+        if (!is_forward((LispObject)h)) *p = qcdr(q);
         else p = &qcdr(q);
     }
 }
@@ -1195,8 +1190,13 @@ static LispObject ambiguous[AMBIGUOUS_CACHE_SIZE];
 static int nambiguous;
 static LispObject *C_stack_remaining;
 
+// The next function is intended to allow me to detect some values as
+// being certain not to be valid LispObjects, and hence not in need of
+// processing by a conservative coollector. For now this is does not
+// do anything meaningful!
+
 static bool certainly_not_valid(LispObject p)
-{   switch (p & (GC_BIT_P | 0x7))
+{   switch (p & 0x7)
     {   case TAG_CONS:
 
         case TAG_SYMBOL:
@@ -1286,7 +1286,7 @@ uint32_t stackhash[GCHASH];
 #endif
 
 LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
-{   intptr_t i;
+{   size_t i;
     clock_t t0, t1, t2;
     LispObject *sp, nil = C_nil;
     intptr_t vheap_need = 0, native_need = 0;
@@ -1652,8 +1652,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // structure...
 //
         for (i = first_nil_offset; i<last_nil_offset; i++)
-        {
-            if (i != current_package_offset)
+        {   if (i != current_package_offset)
             {   // current-package - already copied by hand
 #ifdef DEBUG_GC
                 term_printf("About to copy list-base %d\n", i);
@@ -1820,7 +1819,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         more = ideal - pages_count;
         while (more-- > 0)
         {   void *page = (void *)my_malloc((size_t)(CSL_PAGE_SIZE + 8));
-            intptr_t pun, pun1;
 //
 // When I first grabbed memory in restart.c I used my_malloc_1(), which
 // gobbles a large stack frame and then called regular malloc - the idea
@@ -1831,12 +1829,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // win in all ways.
 //
 //
-// Verify that new block does not span zero & has correct sign bit
-//
-            pun = (intptr_t)page;
-            pun1 = (intptr_t)((char *)page + CSL_PAGE_SIZE + 8);
-            if ((pun ^ pun1) < 0) page = NULL;
-            if ((pun + address_sign) < 0) page = NULL;
             if (page == NULL)
             {   init_flags &= ~INIT_EXPANDABLE;
                 break;
