@@ -911,7 +911,7 @@ void simple_lineend(int n)
 
 void simple_print1(LispObject x)
 {   LispObject nil = C_nil;
-    char buffer[32];
+    char buffer[40];
     if (x == nil)
     {   simple_lineend(3);
         fprintf(stderr, "nil");
@@ -941,7 +941,7 @@ void simple_print1(LispObject x)
         return;
     }
     else if (is_fixnum(x))
-    {   int k = sprintf(buffer, "%d", int_of_fixnum(x));
+    {   int k = sprintf(buffer, "%" PRId64, (int64_t)int_of_fixnum(x));
         simple_lineend(k);
         fprintf(stderr, "%s", buffer);
         return;
@@ -955,7 +955,6 @@ void simple_print1(LispObject x)
     }
     else if (is_vector(x))
     {   size_t i, len;
-        char buffer[32];
         if (is_string(x))
         {   len = length_of_byteheader(vechdr(x)) - CELL;
             simple_lineend(len+2);
@@ -993,10 +992,29 @@ void simple_print1(LispObject x)
         fprintf(stderr, "]");
         return;
     }
+    else if (is_numbers(x) && is_bignum(x))
+    {   size_t len = (length_of_header(numhdr(x))-CELL)/4;
+        size_t i;
+        int clen;
+        for (i=len; i>0; i--)
+        {   int32_t d = bignum_digits(x)[i-1];
+// I will print bignums in a manner that shows the 31-bit digits that they
+// are made up from.
+            if (i == len) clen = sprintf(buffer, "@#%d", d);
+            else clen = sprintf(buffer, ":%u", d);
+            simple_lineend(clen);
+            fprintf(stderr, "%s", buffer);
+        }
+        return;
+    }
     else
     {   char buffer[32];
-        int len = sprintf(buffer, "@%" PRIx64 "@", (int64_t)x);
-        simple_lineend(len);
+// This default case includes bignums, and I am not keen on needing
+// to render them here! But it certainly looks ugly when they get
+// displayed as @xxxxx@ with the xxxxx being a bunch of hex digits giving
+// the memory address the data lies at!
+        int clen = sprintf(buffer, "@%" PRIx64 "@", (int64_t)x);
+        simple_lineend(clen);
         fprintf(stderr, "%s", buffer);
         return;
     }

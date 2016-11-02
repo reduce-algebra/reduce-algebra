@@ -2,6 +2,7 @@
 
 // #define DEBUG_SERIALIZE 1 // Re-instate this when you neew detailed
 //                           // tracing of what happend in this file.
+// #define DEBUG_OPNEXT    1
 
 
 // $Id$
@@ -323,8 +324,8 @@ static bool descend_symbols = true;
 #define   SER_NIL          0xf0    // the very special case of NIL
 #define   SER_END          0xf1    // a (redundant) marker for end of heap dump
 #define   SER_OPNEXT       0xf2    // for debugging
-#define   SER_LIST_n       0xf3    // for (list ...) with > 4 args
-#define   SER_LIST_n_S     0xf4    // for (list!* ...) with > 5 args
+#define   SER_NIL2         0xf3    // NIL NIL
+#define   SER_NIL3         0xf4    // NIL NIL NIL
 #define   SER_REPEAT       0xf5    // provides simple run-length coding
 #define   SER_spare_f6     0xf6
 #define   SER_spare_f7     0xf7
@@ -409,8 +410,8 @@ static const char *ser_various_names[] =
     "NIL",
     "END",
     "OPNEXT",  // only used while debugging
-    "LIST_n",
-    "LIST_n_S",
+    "NIL2",
+    "NIL3",
     "REPEAT",
     "op16",    // spare
     "op17",    // spare
@@ -461,6 +462,17 @@ static void ser_print_opname(int n)
 // I will need a hash table that records information about items in the
 // heap that are visited several times. I use the one from inthash.cpp.
 
+// I have a scheme where if some opcode is used many times in a row
+// I can put a SER_REPEAT prefix. I detect and handle such cases using a
+// peep-hole optimiser here. I put declarations here so I can refer to
+// the variables even though the code that does interesting stuff with
+// them is lower down.
+
+static int delayed_byte = -1;
+static uint64_t delayed_count = 0, delayed_arg = 0;
+static bool delayed_has_arg = false;
+static char delayed_message[80];
+
 static inthash repeat_hash;
 LispObject *repeat_heap = NULL;
 size_t repeat_heap_size = 0, repeat_count = 0;
@@ -502,6 +514,10 @@ void writer_setup_repeats()
     }
     for (size_t i=0; i<=repeat_heap_size; i++)
         repeat_heap[i] = fixnum_of_int(0);
+// I will call this before generating any output bytes, and so here is a
+// convenient place to prime the peephole optimiser.
+    delayed_byte = -1;
+    delayed_count = 0;
 }
 
 // Given an index 1, 2, ... find the item that was referred to recently
@@ -635,8 +651,101 @@ int read_string_byte()
 // version. That will either be a fixed string or a reference to a character
 // array that has been left uninitialized.
 
+extern void write_u64(uint64_t n);
+extern void write_opcode(int byte, const char *msg, ...);
+
+void write_delayed(int byte, const char *msg, ...)
+{
+// If the new byte matches a previously delayed one I increment the
+// repeat count. If it does not then I must flush any pending repeated
+// sequence before starting this new one.
+    if (byte == delayed_byte) delayed_count++;
+    else
+    {   if (delayed_byte != -1) write_opcode(-1, "flushing delayed");
+#ifdef DEBUG_SERIALIZE
+        va_list a;
+        va_start(a, msg);
+        vsprintf(delayed_message, msg, a);
+        va_end(a);
+#endif
+        delayed_byte = byte;
+        delayed_has_arg = false;
+        delayed_count = 1;
+    }
+}
+
+void write_delayed_with_arg(int byte, uint64_t arg, const char *msg, ...)
+{
+    if (byte == delayed_byte &&
+        arg == delayed_arg) delayed_count++;
+    else
+    {   if (delayed_byte != -1) write_opcode(-1, "flushing delayed");
+#ifdef DEBUG_SERIALIZE
+        va_list a;
+        va_start(a, msg);
+        vsprintf(delayed_message, msg, a);
+        va_end(a);
+#endif
+        delayed_byte = byte;
+        delayed_arg = arg;
+        delayed_has_arg = true;
+        delayed_count = 1;
+    }
+}
+
 void write_opcode(int byte, const char *msg, ...)
 {
+// If I have something pending I need to write it out. If there is a long
+// enough run I will use the SER_REPEAT prefix, and that becomes worthwhile
+// slightly sooner for cases that take an operand. If that is not
+// useful I will just emit the pending material 1, 2 or 3 times in a
+// simple manner.
+    if (delayed_count != 0)
+    {   uint64_t n = delayed_count;
+        int b = delayed_byte;
+        delayed_count = 0;
+// If I called write_opcode from here before resetting delayed_count to
+// zero that would generate an infinite recursion! Also the recursive calls
+// to write_opcode here clobber delayed_byte, which is why I just captured
+// it into the variable b.
+        if (delayed_has_arg)
+        {   if (n >= 3)
+            {   write_opcode(SER_REPEAT, "repeat %" PRIu64, n);
+                write_u64(n-3);
+                write_opcode(b, delayed_message);
+                write_u64(delayed_arg);
+            }
+            else for (uint64_t i=0; i<n; i++)
+            {   write_opcode(b, delayed_message);
+                write_u64(delayed_arg);
+            }
+            delayed_has_arg = false;
+            delayed_arg = 0;
+        }
+        else
+        {   if (n >= 4)
+            {   write_opcode(SER_REPEAT, "repeat %" PRIu64, n);
+                write_u64(n-3);
+                write_opcode(b, delayed_message);
+            }
+// I view NIL as special enough that I provide single bytes for even short
+// runs.
+            else if (n < 4 && b == SER_NIL)
+            {   if (n == 1) write_opcode(SER_NIL, "NIL");
+                else if (n == 2) write_opcode(SER_NIL2, "NIL NIL");
+                else if (n == 3) write_opcode(SER_NIL3, "NIL NIL NIL");
+                else myabort();
+            }
+            else for (uint64_t i=0; i<n; i++)
+                write_opcode(b, delayed_message);
+        }
+    }
+// Arrange that the peephole scheme is tidy.
+    delayed_byte = -1;
+    delayed_count = 0;
+// Sometimes I just want to call this to flush the delay. I can do that
+// by using the otherwise illegal value -1 as an opcode.
+    if (byte == -1) return;
 #ifdef DEBUG_SERIALIZE
 #ifdef DEBUG_OPNEXT
     fprintf(stderr, "<opcode prefix> %.2x\n", SER_OPNEXT);
@@ -1258,7 +1367,7 @@ LispObject serial_read()
     int c;
     prev = pbase = r = s = b = fixnum_of_int(0);
     p = &r;
-    uint64_t opcode_repeats = 1, repeat_arg = 0;
+    uint64_t opcode_repeats = 0, repeat_arg = 0;
     bool repeat_arg_ready = false;
 down:
 // read_byte() needs to read from the stream representation of things
@@ -1270,7 +1379,11 @@ down:
 // alse big-numbers, strings and back-references to previously-read
 // structures.
 // If the next opcode is to be executed just once I need to read it.
-    if (opcode_repeats == 1) c = read_opcode_byte();
+    if (opcode_repeats == 0)
+    {   c = read_opcode_byte();
+        repeat_arg_ready = false;
+    }
+    else opcode_repeats--;
     switch (c & 0xe0)
     {   case SER_VARIOUS:
         case SER_LIST:
@@ -1283,7 +1396,7 @@ down:
                     flip_exception();
                     return nil;
                 case SER_REPEAT:
-                    assert(opcode_repeats == 1);
+                    assert(opcode_repeats == 0);
 // If you prefix something with "SER_REPEAT nn" then the opcode you next
 // use will be used nn+3 times. If the opcode uses operands then they
 // will be read for each instance, so perhaps this will make most sense
@@ -1300,9 +1413,8 @@ down:
 //   REPEAT <3> op arg
 // and it is because of that that I arrange that I offset the argument to
 // REPEAT by 3.
-// I will set the top bit in opcode_repeats if there is an argument
-// saved in repeat_arg.
-#define TOP_BIT = ((uint64_t)1) << 63)
+// The "3+" is because the data in the byte-stream is offset by that
+// amount because shorter runs do not benefit from use of SER_REPEAT.
                     opcode_repeats = 3 + read_u64();
 // Normally I would read the opcode byte at the label "down:", but here I
 // have just set the variable that disables that! Observe that the code
@@ -1323,17 +1435,15 @@ down:
 // references and so need to go in the repeat table.
                 case SER_L_a:
                 case SER_L_A:
-                    assert(opcode_repeats == 1);
                     GC_PROTECT(prev = cons(fixnum_of_int(0), nil));
                     if (c & 1) reader_repeat_new(prev);
                     *p = prev;
                     pbase = prev;
                     p = &qcar(pbase);
                     goto down;
-                    myabort();
+
                 case SER_L_a_S:
                 case SER_L_A_S:
-                    assert(opcode_repeats == 1);
                     GC_PROTECT(prev = cons(b, fixnum_of_int(0)));
                     if (c & 1) reader_repeat_new(prev);
                     *p = b = prev;
@@ -1345,7 +1455,6 @@ down:
                 case SER_L_aA:
                 case SER_L_Aa:
                 case SER_L_AA:
-                    assert(opcode_repeats == 1);
                     GC_PROTECT(prev = list2(nil, nil));
 // Here I need to set things up just as if I had CONS CONS NIL
 // where note that the old sequence CONS a b would create (CONS b a), ie
@@ -1362,7 +1471,6 @@ down:
                 case SER_L_aA_S:
                 case SER_L_Aa_S:
                 case SER_L_AA_S:
-                    assert(opcode_repeats == 1);
                     GC_PROTECT(prev = list2(nil, nil));
 // Here I need to set things up just as if I had CONS CONS in the
 // old model (ie L_a_S L_a_S in the new one!)
@@ -1384,7 +1492,6 @@ down:
                 case SER_L_AaA:
                 case SER_L_AAa:
                 case SER_L_AAA:
-                    assert(opcode_repeats == 1);
                     GC_PROTECT(prev = list3(nil, nil, nil));
                     if (c & 1) reader_repeat_new(prev);
                     if (c & 2) reader_repeat_new(qcdr(prev));
@@ -1406,7 +1513,6 @@ down:
                 case SER_L_AaA_S:
                 case SER_L_AAa_S:
                 case SER_L_AAA_S:
-                    assert(opcode_repeats == 1);
                     GC_PROTECT(prev = list3(nil, nil, nil));
                     if (c & 1) reader_repeat_new(prev);
                     if (c & 2) reader_repeat_new(qcdr(prev));
@@ -1424,7 +1530,6 @@ down:
 
                 case SER_L_aaaa:
                 case SER_L_Aaaa:
-                    assert(opcode_repeats == 1);
                     GC_PROTECT(prev = list4(nil, nil, nil, nil));
 // Note that for the longest sequence here only the start CONS cell
 // can be shared.
@@ -1443,7 +1548,6 @@ down:
 
                 case SER_L_aaaa_S:
                 case SER_L_Aaaa_S:
-                    assert(opcode_repeats == 1);
                     GC_PROTECT(prev = list4(nil, nil, nil, nil));
                     if (c & 1) reader_repeat_new(prev);
                     qcar(prev) = b;
@@ -1459,44 +1563,48 @@ down:
                     b = pbase;
                     p = &qcdr(pbase);
                     goto down;
-// The next two cover a general case of lists where there are no second
-// references to any of the top-level CONS cells and where the length is
-// greater than 4. Well in fact it makes sense to arrange that I only
-// use these if the list os longer than 8 cons cells, because at length 8
-// for (list 1 2 3 4 5 6 7 8) I can go
-//     SER_L_aaaa_S SER_L_aaaa 8 7 6 5  4 3 2 1
-// or  SER_LIST_n 8   8 7 6 5 4 3 2 1
-// and the use of a length code with the LIST_n case means it ends up using
-// just the same number of bytes. So see, it only starts to pay back at all
-// for even longer lists, which is why I offset its argument-byte by 9.
-                case SER_LIST_n:
-                case SER_LIST_n_S:
-                    assert(opcode_repeats == 1);
-                    {   uint64_t n = 9 + read_u64();
-                        prev = nil;
-// I make a list of the right length and point to it.
-                        for (uint64_t i=0; i<n; i++)
-                            GC_PROTECT(prev = cons(nil, prev));
-                        *p = prev;
-// Now put in the back-pointer chains.
-                        while (qcdr(prev) != nil)
-                        {   qcar(prev) = b;
-                            b = prev;
-                            prev = qcdr(prev);
-                        }
-// Set up the very last CONS cell.
-                        if (c == SER_LIST_n)
-                        {   pbase = prev;
-                            p = &qcar(prev);
-                        }
-                        else
-                        {   qcdr(prev) = b;
-                            b = prev;
-                            pbase = prev;
-                            p = &qcdr(prev);
-                        }
-                        goto down;
-                    }
+// I was considering the following, however SER_REPEAT along with the
+// existing code SER_L_aaaa_S (otherwise LIST4!*) achieves pretty well
+// what I need in what may count as a simpler way that does not use up
+// extra opcode space.
+//@@ // The next two cover a general case of lists where there are no second
+//@@ // references to any of the top-level CONS cells and where the length is
+//@@ // greater than 4. Well in fact it makes sense to arrange that I only
+//@@ // use these if the list is longer than 8 cons cells, because at length 8
+//@@ // for (list 1 2 3 4 5 6 7 8) I can go
+//@@ //     SER_L_aaaa_S SER_L_aaaa 8 7 6 5  4 3 2 1
+//@@ // or  SER_LIST_n 8   8 7 6 5 4 3 2 1
+//@@ // and the use of a length code with the LIST_n case means it ends up using
+//@@ // just the same number of bytes. So see, it only starts to pay back at all
+//@@ // for even longer lists, which is why I offset its argument-byte by 9.
+//@@                 case SER_LIST_n:
+//@@                 case SER_LIST_n_S:
+//@@                     assert(opcode_repeats == 0);
+//@@                     {   uint64_t n = 9 + read_u64();
+//@@                         prev = nil;
+//@@ // I make a list of the right length and point to it.
+//@@                         for (uint64_t i=0; i<n; i++)
+//@@                             GC_PROTECT(prev = cons(nil, prev));
+//@@                         *p = prev;
+//@@ // Now put in the back-pointer chains.
+//@@                         while (qcdr(prev) != nil)
+//@@                         {   qcar(prev) = b;
+//@@                             b = prev;
+//@@                             prev = qcdr(prev);
+//@@                         }
+//@@ // Set up the very last CONS cell.
+//@@                         if (c == SER_LIST_n)
+//@@                         {   pbase = prev;
+//@@                             p = &qcar(prev);
+//@@                         }
+//@@                         else
+//@@                         {   qcdr(prev) = b;
+//@@                             b = prev;
+//@@                             pbase = prev;
+//@@                             p = &qcdr(prev);
+//@@                         }
+//@@                         goto down;
+//@@                     }
 
                 case SER_BIGBACKREF:
 // I expect there to be a great many uses of back-references and that
@@ -1504,7 +1612,7 @@ down:
 // you may a back-reference that applies a move to front strategy and
 // so multiple successive references to the same item will (after the
 // first) be "BACKREF 1" and that is not the "big" case as present here.
-                    assert(opcode_repeats == 1);
+                    assert(opcode_repeats == 0);
 // Back references with an offset from 1..64 are dealt with using special
 // compact opcodes. Here I have something that reaches further back. The main
 // opcode is followed by a sequence of bytes and if this represents the value
@@ -1522,7 +1630,7 @@ down:
                 case SER_DUP:
 // Beware with SER_REPEAT that SER_DUP is a postfix to an opcode. I think
 // that REPEAT should not be used if DUP will.
-                    assert(opcode_repeats == 1);
+                    assert(opcode_repeats == 0);
 // This is issued just after a SER_VECTOR (etc) code that will
 // have left pbase referring to the object just allocated.
                     reader_repeat_new(prev);
@@ -1541,21 +1649,15 @@ down:
 // First I will note that if I have repeat_arg_ready that will suppress
 // reading the operand. In all cases the operand will end up in
 // repeat_arg.
-                    if (!repeat_arg_ready) repeat_arg = read_u64();
+                    if (!repeat_arg_ready)
+                    {   repeat_arg = read_u64();
+                        repeat_arg_ready = true;
+                    }
 // If I repeat a fixnum then all the repeated copied will end up EQ
 // while if I made them one at a time they could end up separate if
 // they needed to be bignums. Since they are immutable objects I do not
 // believe that should cause any trouble.
                     GC_PROTECT(prev = make_lisp_unsigned64(repeat_arg));
-// Now in the non-simple case I must decrement the repeat counter and
-// if it has got back to 1 reset eveything to a simple state. But when I
-// read the process items within the repeat block I must leave
-// repeat_arg_ready set to true.
-                    if (opcode_repeats != 1)
-                    {   opcode_repeats--;
-                        if (opcode_repeats == 1) repeat_arg_ready = false;
-                        else repeat_arg_ready = true;
-                    } 
                     *p = prev;
                     goto up;
 
@@ -1568,13 +1670,11 @@ down:
 // -128 to +127 (rather than -127 to +127).
 // Note that the code that writes stuff out should only generate this
 // when the value concerned will fit within a 64-bit signed value.
-                    if (!repeat_arg_ready) repeat_arg = -1-read_u64();
+                    if (!repeat_arg_ready)
+                    {   repeat_arg = -1-read_u64();
+                        repeat_arg_ready = true;
+                    }
                     GC_PROTECT(prev = make_lisp_integer64(repeat_arg));
-                    if (opcode_repeats != 1)
-                    {   opcode_repeats--;
-                        if (opcode_repeats == 1) repeat_arg_ready = false;
-                        else repeat_arg_ready = true;
-                    } 
                     *p = prev;
                     goto up;
 
@@ -1587,7 +1687,7 @@ down:
 // that all the list-like components will be transmitted (much as if they were
 // elements in a vector). The key parts of this work using the same scheme as
 // for SER_LVECTOR.
-                    assert(opcode_repeats == 1);
+                    assert(opcode_repeats == 0);
                     GC_PROTECT(prev =
                         getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length));
                     *p = w = prev;
@@ -1634,7 +1734,7 @@ down:
 // repeatedly. in the "GENSYM" case the name is the base-name of the gensym,
 // pergaps very often just "G", and the name read in will be set up as
 // if not yet printed, so a sequence number will be added leter.
-                    assert(opcode_repeats == 1);
+                    assert(opcode_repeats == 0);
                     {   size_t len = read_u64();
                         boffop = 0;
 // HAHAHA - if BOFFO does not exist properly at this stage then I am in
@@ -1665,20 +1765,20 @@ down:
 
                 case SER_FLOAT28:
 // A 28-bit short float
-                    assert(opcode_repeats == 1);
+                    assert(opcode_repeats == 0);
                     fprintf(stderr, "SER_FLOAT28 not coded yet\n");
                     myabort();
 
                 case SER_FLOAT32:
 // a 32-bit single float
-                    assert(opcode_repeats == 1);
+                    assert(opcode_repeats == 0);
                     GC_PROTECT(prev = make_boxfloat(read_f32(), TYPE_SINGLE_FLOAT));
                     *p = prev;
                     goto up;
 
                 case SER_FLOAT64:
 // a 64-bit (long) float
-                    assert(opcode_repeats == 1);
+                    assert(opcode_repeats == 0);
 // I can image the case of dumping a vector all of whose elements were the
 // value 0.0, and in the case supporting repeats here could be helpful.
 // But at present I think that will be an uncommon case with Reduce and so
@@ -1689,7 +1789,7 @@ down:
 
                 case SER_FLOAT128:
 // a 128-bit (double-length) float.
-                    assert(opcode_repeats == 1);
+                    assert(opcode_repeats == 0);
                     GC_PROTECT(prev = make_boxfloat(0.0, TYPE_LONG_FLOAT));
                     long_float_val(prev) = read_f128();
                     *p = prev;
@@ -1712,17 +1812,15 @@ down:
 // may be used for them in the saved image file before I use SER_REPEAT.
 // If I use full Reduce the basic number of fastget-vectors is about the same.
 // As I load packages the number used can increase noticably.
-                    if (!repeat_arg_ready) repeat_arg = read_u64();
+                    if (!repeat_arg_ready)
+                    {   repeat_arg = read_u64();
+                        repeat_arg_ready = true;
+                    }
                     prev = *p = ((LispObject)repeat_arg<<(Tw+2)) | TAG_HDR_IMMED;
-                    if (opcode_repeats != 1)
-                    {   opcode_repeats--;
-                        if (opcode_repeats == 1) repeat_arg_ready = false;
-                        else repeat_arg_ready = true;
-                    } 
                     goto up;
 
                 case SER_BITVEC:
-                    assert(opcode_repeats == 1);
+                    assert(opcode_repeats == 0);
                     w = read_u64();
                     {   size_t len = CELL + (w + 7)/8; // length in bytes
                         GC_PROTECT(prev =
@@ -1735,10 +1833,15 @@ down:
                     }
                     goto up;
 
+                case SER_NIL3:
+                    assert(opcode_repeats == 0);
+                    opcode_repeats++;
+                case SER_NIL2:
+                    assert(c == SER_NIL3 || opcode_repeats == 0);
+                    opcode_repeats++;
+                    c = SER_NIL;
                 case SER_NIL:
                     prev = *p = C_nil;
-// repeat_arg_ready should remain tidily false here.
-                    if (opcode_repeats != 1) opcode_repeats--;
                     goto up;
 
                 case SER_END:
@@ -1772,48 +1875,48 @@ down:
 // that, and if they find it they re-hash before use, restoring the key to
 // just TYPE_NEWHASH. The consequence is that the rehashing work is not done
 // until and unless it is actually needed.
-            assert(opcode_repeats == 1);
-        {   int type = ((c & 0x1f) << (Tw + 2)) | (0x01 << Tw),
-                tag = is_number_header_full_test(type) ? TAG_NUMBERS :
-                                                         TAG_VECTOR;
-            if (type == TYPE_NEWHASH) type = TYPE_NEWHASHX;
+            assert(opcode_repeats == 0);
+            {   int type = ((c & 0x1f) << (Tw + 2)) | (0x01 << Tw),
+                    tag = is_number_header_full_test(type) ? TAG_NUMBERS :
+                                                             TAG_VECTOR;
+                if (type == TYPE_NEWHASH) type = TYPE_NEWHASHX;
 // The size here will be the number of Lisp items held in the vector, so
 // what I need to pass to getvector makes that into a byte count and allows
 // for the header word as well.
-            size_t n = read_u64();
-            GC_PROTECT(prev = getvector(tag, type, CELL*(n+1)));
-            w = *p = prev;
+                size_t n = read_u64();
+                GC_PROTECT(prev = getvector(tag, type, CELL*(n+1)));
+                w = *p = prev;
 // Note that the "vector" just created may be tagged with TAG_NUMBERS
 // rather than TAG_VECTOR, so I use the access macro "vselt" rather than
 // "elt" - and that survives whichever case I am in.
 // Now if I am on a 32-bit system and the vector uses a header word and then
 // and even number of words of data it will use a padder word to bring its
 // total size up to a 64-bit boundary. Tidy up that final word.
-            if (!SIXTY_FOUR_BIT && ((n & 1) == 0))
-                vselt(w, n) = fixnum_of_int(0);
+                if (!SIXTY_FOUR_BIT && ((n & 1) == 0))
+                    vselt(w, n) = fixnum_of_int(0);
 // If the vector does not have any content at all then I am now done.
-            if (n == 0) goto up;
+                if (n == 0) goto up;
 // In case there is a GC before I have finished filling in proper values
 // in the vector I will out in values that are at least safe.
-            for (size_t i=0; i<n; i++) vselt(w, i) = fixnum_of_int(0);
-            if (is_mixed_header(vechdr(w))) n = 2;  // Ie elements 0, 1 and 2
-            else n--; // final element is at n-1
+                for (size_t i=0; i<n; i++) vselt(w, i) = fixnum_of_int(0);
+                if (is_mixed_header(vechdr(w))) n = 2;  // Ie elements 0, 1 and 2
+                else n--; // final element is at n-1
 // Vectors chain through the first entry. If a vector was empty so it did not
 // have a first entry to use here it would have needed to be dumped as a LEAF.
 // But a special additional issue is that if the vector omly has one item in it
 // then I must NOT set up back-pointers and the "s-stack" in quite the usual
 // manner...
-            if (n == 0)
-            {   p = &vselt(w, 0);
-                goto down;
+                if (n == 0)
+                {   p = &vselt(w, 0);
+                    goto down;
+                }
+                vselt(w, 0) = b;
+                b = w;
+                GC_PROTECT(prev = cons(fixnum_of_int(n), s));
+                s = prev;
+                prev = pbase = b;
+                p = &vselt(b, n);
             }
-            vselt(w, 0) = b;
-            b = w;
-            GC_PROTECT(prev = cons(fixnum_of_int(n), s));
-            s = prev;
-            prev = pbase = b;
-            p = &vselt(b, n);
-        }
             goto down;
 
 
@@ -1823,22 +1926,18 @@ down:
 // repeat heap. The efford involved in supporting SER_REPEAT to compress
 // such sequences is minimal here, so I do so.
             *p = reader_repeat_old(1 + (c & 0x1f));
-            if (opcode_repeats != 1) opcode_repeats--;
             goto up;
 
         case SER_BACKREF1:
-            assert(opcode_repeats == 1);
-// I do not view repeated instances of BACKREF1 as significant.
+// I do not view repeated instances of BACKREF1 as significant, but it is
+// so cheap to support that I will.
             *p = reader_repeat_old(1 + 32 + (c & 0x1f));
             goto up;
 
         case SER_FIXNUM:
-            c = c & 0x1f;
-// This does not use repeat_arg because the operand is entirely
-// included within the opcode byte.
-            if ((c & 0x10) != 0) c |= ~0x0f; // sign extend
-            *p = fixnum_of_int(c);
-            if (opcode_repeats != 1) opcode_repeats--;
+            repeat_arg = c & 0x1f;
+            if ((c & 0x10) != 0) repeat_arg |= (uint64_t)~0xf; // sign extend
+            *p = fixnum_of_int((int64_t)repeat_arg);
             goto up;
 
         case SER_STRING:
@@ -1847,7 +1946,7 @@ down:
 // the opcode byte and the type information is implicit. This code only copes
 // with strings with length 1-32. The associated data is JUST the bytes
 // making up the string, with padding at the end.
-            assert(opcode_repeats == 1);
+            assert(opcode_repeats == 0);
             w = (c & 0x1f) + 1;
             GC_PROTECT(prev = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
             *p = prev;
@@ -1868,7 +1967,7 @@ down:
 // information.
 
         case SER_BVECTOR:
-            assert(opcode_repeats == 1);
+            assert(opcode_repeats == 0);
 // The general case for vectors containing binary information is followed
 // by a length code that shows how many items there are in the vector.
 // This counts in the natural size for the vector.
@@ -2342,8 +2441,7 @@ down:
 
         case TAG_FIXNUM:
         case TAG_HDR_IMMED:
-// Immediate data (eg small integers, characters) ought not to need any more,
-// however I may need to review this when I consider bytecode streams.
+// Immediate data (eg small integers, characters) ought not to need any more.
             goto up;
 
         case TAG_FORWARD:
@@ -2469,7 +2567,7 @@ void write_data(LispObject p)
 down:
     if (p == 0) p = SPID_NIL; // reload as a SPID.
     else if (p == C_nil)
-    {   write_opcode(SER_NIL, "nil");
+    {   write_delayed(SER_NIL, "nil");
         goto up;
     }
     if ((i = hash_lookup(&repeat_hash, p)) != (size_t)(-1))
@@ -2479,8 +2577,8 @@ down:
 #ifdef DEBUG_SERIALIZE
             sprintf(msg, "back %" PRIuPTR, (uintptr_t)n);
 #endif
-            if (n <= 32) write_opcode(SER_BACKREF0 + n - 1, msg);
-            else if (n <= 64) write_opcode(SER_BACKREF1 + n - 33, msg);
+            if (n <= 32) write_delayed(SER_BACKREF0 + n - 1, msg);
+            else if (n <= 64) write_delayed(SER_BACKREF1 + n - 33, msg);
             else
             {   write_opcode(SER_BIGBACKREF, msg);
                 write_u64(n - 65);
@@ -2525,11 +2623,17 @@ down:
 // the chain I have not done so for the subsequent cells, so I will need
 // to check against those explicitly.
 //
+// I write all those opcode using write_delayed and that means that
+// sequences of them end up run-length encoded. SER_REPEAT plus LIST4*
+// combine to allow a compact representation of very long lists. Because
+// this works reasonably well I am not going to have a "LIST_n" opcode
+// to cope with that case.
+//
 // First check if the case that I have is (CONS a nil)...
             if (tail1 == nil)
             {   if (i != (size_t)-1)
-                    write_opcode(SER_L_A, "ncons that will be re-used");
-                else write_opcode(SER_L_a, "ncons");
+                    write_delayed(SER_L_A, "ncons that will be re-used");
+                else write_delayed(SER_L_a, "ncons");
                 w = p;
                 p = qcar(p);
                 qcar(w) = b;
@@ -2545,8 +2649,8 @@ down:
                  hash_get_value(&repeat_hash, i2) != 0))
             {   // Write out just (CONS b a)
                 if (i != (size_t)-1)
-                    write_opcode(SER_L_A_S, "cons that will be re-used");
-                else write_opcode(SER_L_a_S, "cons");
+                    write_delayed(SER_L_A_S, "cons that will be re-used");
+                else write_delayed(SER_L_a_S, "cons");
                 w = p;
                 p = qcdr(p);
                 qcdr(w) = b;
@@ -2559,7 +2663,7 @@ down:
             {
 // Here the case I have is (LIST b a) and either or both of the CONS cells
 // concerned may need to be entered into the table of shared items.
-                write_opcode(
+                write_delayed(
                    i==(size_t)(-1) ?
                      (i2==(size_t)(-1) ? SER_L_aa : SER_L_aA) :
                      (i2==(size_t)(-1) ? SER_L_Aa : SER_L_AA), "list2");
@@ -2578,7 +2682,7 @@ down:
                 tail2 == tail1 ||
                 ((i3 = hash_lookup(&repeat_hash, tail2)) != (size_t)(-1) &&
                   hash_get_value(&repeat_hash, i3) != 0))
-            {   write_opcode(
+            {   write_delayed(
                    i==(size_t)(-1) ?
                      (i2==(size_t)(-1) ? SER_L_aa_S : SER_L_aA_S) :
                      (i2==(size_t)(-1) ? SER_L_Aa_S : SER_L_AA_S), "list2*");
@@ -2592,7 +2696,7 @@ down:
             }
             tail3 = qcdr(tail2);
             if (tail3 == nil)
-            {   write_opcode(
+            {   write_delayed(
                    i==(size_t)(-1) ?
                      (i2==(size_t)(-1) ?
                        (i3==(size_t)(-1) ? SER_L_aaa : SER_L_aaA) :
@@ -2621,7 +2725,7 @@ down:
                 i3 != (size_t)(-1) ||
                 ((i4 = hash_lookup(&repeat_hash, tail3)) != (size_t)(-1) &&
                  hash_get_value(&repeat_hash, i4) != 0))
-            {   write_opcode(
+            {   write_delayed(
                    i==(size_t)(-1) ?
                      (i2==(size_t)(-1) ?
                        (i3==(size_t)(-1) ? SER_L_aaa_S : SER_L_aaA_S) :
@@ -2643,7 +2747,7 @@ down:
             }
             tail4 = qcdr(tail3);
             if (tail4 == nil)
-            {   write_opcode(
+            {   write_delayed(
                    i==(size_t)(-1) ? SER_L_aaaa : SER_L_Aaaa, "list4");
                 qcdr(p) = b;
                 b = p - TAG_CONS + BACKPOINTER_CDR;
@@ -2656,9 +2760,7 @@ down:
                 b = tail3 - TAG_CONS + BACKPOINTER_CAR;
                 goto down;
             }
-// Here I wish to scan yet further to see if I can use a SER_LIST or SER_LIST_S
-// opcode to cope with very long lists...
-            write_opcode(
+            write_delayed(
                    i==(size_t)(-1) ? SER_L_aaaa_S : SER_L_Aaaa_S, "list4*");
             qcdr(p) = b;
             b = p - TAG_CONS + BACKPOINTER_CDR;
@@ -2849,13 +2951,8 @@ down:
                     sprintf(msg, "int value=%" PRId64, n);
 #endif
                     if (n < 0)
-                    {   write_opcode(SER_NEGFIXNUM, msg);
-                        write_u64(-n-1);
-                    }
-                    else
-                    {   write_opcode(SER_POSFIXNUM, msg);
-                        write_u64(n);
-                    }
+                        write_delayed_with_arg(SER_NEGFIXNUM, -n-1, msg);
+                    else write_delayed_with_arg(SER_POSFIXNUM, n, msg);
                     if (i != (size_t)-1) write_opcode(SER_DUP, "dup bignum");
                     goto up;
                 }
@@ -2870,13 +2967,8 @@ down:
 // most 62 bits. A consequence of that is that negating it can not lead to
 // arithmetic overflow within a signed 64-bit word. Whew!
                     if (n < 0)
-                    {   write_opcode(SER_NEGFIXNUM, msg);
-                        write_u64(-n-1);
-                    }
-                    else
-                    {   write_opcode(SER_POSFIXNUM, msg);
-                        write_u64(n);
-                    }
+                        write_delayed_with_arg(SER_NEGFIXNUM, -n-1, msg);
+                    else write_delayed_with_arg(SER_POSFIXNUM, n, msg);
                     if (i != (size_t)-1) write_opcode(SER_DUP, "dup bignum");
                     goto up;
                 }
@@ -3033,7 +3125,7 @@ down:
 #ifdef DEBUG_SERIALIZE
                 sprintf(msg, "int, value=%d", (int)w64);
 #endif
-                write_opcode(SER_FIXNUM | ((int)w64 & 0x1f), msg);
+                write_delayed(SER_FIXNUM | ((int)w64 & 0x1f), msg);
             }
             else
             {   char msg[40];
@@ -3041,13 +3133,9 @@ down:
                 sprintf(msg, "int value=%" PRId64, w64);
 #endif
                 if (w64 < 0)
-                {   write_opcode(SER_NEGFIXNUM, msg);
-                    write_u64(-w64-1);
-                }
+                    write_delayed_with_arg(SER_NEGFIXNUM, -w64-1, msg);
                 else
-                {   write_opcode(SER_POSFIXNUM, msg);
-                    write_u64(w64);
-                }
+                    write_delayed_with_arg(SER_POSFIXNUM, w64, msg);
             }
             goto up;
 
@@ -3058,8 +3146,7 @@ down:
 #ifdef DEBUG_SERIALIZE
             sprintf(msg, "char/spid, value=%#" PRIx64, (uint64_t)p);
 #endif
-            write_opcode(SER_CHARSPID, msg);
-            write_u64(nn);
+            write_delayed_with_arg(SER_CHARSPID, nn, msg);
         }
         goto up;
 
@@ -3087,7 +3174,11 @@ up:
         case BACKPOINTER_CAR:
 // The termination of the back-pointer chain is to address zero as if one
 // had come down the CAR side of it.
-            if (b == 0 + BACKPOINTER_CAR) return; // finished!
+            if (b == 0 + BACKPOINTER_CAR)
+            {   write_opcode(-1, "Finished");  // Needed to flush any pending
+                                               // repeated opcode.
+                return; // finished!
+            }
 // I have just finished the CAR, so now I can repair the structure and go
 // up another level.
             w = b - BACKPOINTER_CAR + TAG_CONS;
@@ -3748,7 +3839,7 @@ void warm_setup()
 // I want to be able to call validate_all() while I am doing this
 // reading - and that may copy stuff into the BASE locations from elsewhere,
 // so I need to be a bit indirect about loading values into there. Apologies!
-    for (int i=first_nil_offset; i<last_nil_offset; i++)
+    for (i=first_nil_offset; i<last_nil_offset; i++)
     {   // fprintf(stderr, "About to read value for BASE[%d]\n", i);
         // for (int j=0; j<5; j++)
         //     fprintf(stderr, "%" PRIxPTR " ", stackbase[j]);
@@ -3761,12 +3852,13 @@ void warm_setup()
     }
     eq_hash_tables = serial_read();
     equal_hash_tables = serial_read();
-    for (int i=last_nil_offset-1; i>=first_nil_offset; i--)
+    for (i=last_nil_offset-1; i>=first_nil_offset; i--)
         pop(BASE[i])
     copy_out_of_nilseg(false);
 
-    if (read_opcode_byte() != SER_END)
-    {   fprintf(stderr, "Out of step\n");
+    if ((i = read_opcode_byte()) != SER_END)
+    {   fprintf(stderr, "Did not find SER_END opcode where expected\n");
+        fprintf(stderr, "Byte that was read was %.2x\n", (int)i);
         myabort();
     }
 #ifdef DEBUG_VALIDATE
