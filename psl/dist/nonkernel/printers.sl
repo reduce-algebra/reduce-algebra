@@ -293,6 +293,7 @@
 		   (progn (setq ch (strbyt itm i))
 			  (setq tokentype (tokentypeofchar ch))
 			  (unless (or (wleq tokentype 10)
+                                      (weq tokentype escapeiffirst)
 				      (weq tokentype plussign)
 				      (weq tokentype minussign))
 			    (channelwritechar channel idescapechar*))
