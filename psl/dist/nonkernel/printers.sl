@@ -93,7 +93,7 @@
 	 idescapechar*
 	 *lower    % print IDs with uppercase chars lowered / outmoded
 	 **low-case % lower case PSL
-     output-case*  % eq 'raise: print IDs with lowercase chars raised
+	 output-case*  % eq 'raise: print IDs with lowercase chars raised
 	 ))
 
 
@@ -142,7 +142,7 @@
   (prog (uplim)
 	(setq uplim (strlen (strinf strng)))
 	(for (from i 0 uplim 1)
-	      (do (channelwritechar channel (strbyt (strinf strng) i))))))
+	      (do (channelwritechar channel (wand 16#ff (strbyt (strinf strng) i)))))))
 
 (de writestring (s)
   (channelwritestring out* s))
@@ -233,7 +233,7 @@
     (channelwritechar channel (char !"))
     (setq len (strlen (strinf strng)))
     (for (from i 0 len 1)
-	 (do (progn (setq ch (strbyt (strinf strng) i))
+	 (do (progn (setq ch (wand 16#ff (strbyt (strinf strng) i)))
 		    (when (weq ch (char !"))
 		      (channelwritechar channel (char !")))
 		    (channelwritechar channel ch))))
@@ -253,7 +253,7 @@
       (setq itm (strinf (symnam (idinf itm))))
       (setq len (strlen itm))
       (for (from i 0 len 1)
-	   (do (progn (setq ch (output-switch-case (strbyt itm i)))
+	   (do (progn (setq ch (output-switch-case (wand 16#ff (strbyt itm i))))
 		      (channelwritechar channel ch))))))))
 
 (de channelwriteunbound (channel itm)
@@ -269,7 +269,7 @@
   (prog (len ch tokentype)
     (setq itm (strinf (symnam (idinf itm))))
     (setq len (strlen itm))
-    (setq ch (strbyt itm 0))
+    (setq ch (wand 16#ff (strbyt itm 0)))
     (when (or (wneq (tokentypeofchar ch) 10) (charneedsescape ch))
       (channelwritechar channel idescapechar*))
     (if (or (and **low-case (not (eq output-case* 'raise))) 
@@ -277,7 +277,7 @@
       (progn (channelwritechar channel ch)
 	     (for (from i 1 len 1)
 		  (do
-		   (progn (setq ch (strbyt itm i))
+		   (progn (setq ch (wand 16#ff (strbyt itm i)))
 			  (setq tokentype (tokentypeofchar ch))
 			  (unless (or (wleq tokentype 10)
 				      (weq tokentype escapeiffirst)
@@ -290,7 +290,7 @@
       (progn (channelwritechar channel (output-switch-case ch))
 	     (for (from i 1 len 1)
 		  (do
-		   (progn (setq ch (strbyt itm i))
+		   (progn (setq ch (wand 16#ff (strbyt itm i)))
 			  (setq tokentype (tokentypeofchar ch))
 			  (unless (or (wleq tokentype 10)
                                       (weq tokentype escapeiffirst)
