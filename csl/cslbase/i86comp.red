@@ -2046,7 +2046,7 @@ put('movr, ' c!:opcode_printer, function c!:pmovr);
 
 symbolic procedure c!:pld_eltenv(elno);
  <<
-   % #define elt(v, n)  (*(Lisp_Object *)((char *)(v)-2+(((int32_t)(n))<<2)))
+   % #define elt(v, n)  (*(Lisp_Object *)((char *)(v)-2+(((intptr_t)(n))<<2)))
 
    i!:gopcode(mov, edx,{ebp,off_env});
    i!:gopcode(mov, eax,{edx,4*elno-2})

@@ -154,6 +154,7 @@ LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
 LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
 LispObject prompt_thing, faslgensyms, prinl_symbol, emsg_star, redef_msg;
 LispObject expr_symbol, fexpr_symbol, macro_symbol;
+LispObject big_divisor, big_dividend, big_quotient, big_fake1, big_fake2;
 LispObject cl_symbols, active_stream, current_module;
 LispObject native_defs, features_symbol, lisp_package, sys_hash_table;
 LispObject help_index, cfunarg, lex_words, get_counts, fastget_names;
@@ -233,7 +234,6 @@ char **loadable_packages = NULL, **switches = NULL;
 int native_code_tag;
 int32_t native_pages_changed;
 int32_t native_fringe;
-int current_fp_rep;
 bool trap_floating_overflow = true;
 
 int procstackp;
@@ -2747,6 +2747,20 @@ void set_up_variables(int restart_flag)
     faslvec = nil;
     faslgensyms = nil;
     multiplication_buffer = nil;
+// big_fake1 and big_fake2 represent a witty issue - when a bignum is
+// serilized and it uses only one or two words its value gets written
+// as a 64-bit numeric value. When it is re-loaded that value is packed
+// as a number - either a fixnum or a bignum as relevant. So the FAKE
+// nature of big_fake1 and big_fake2 will lead to the ser8ialization process
+// reloading fixnums if one is on a 64-bit machine. Thus defeating the whole
+// point of them!
+    big_fake1 = make_one_word_bignum(0);
+    big_fake2 = make_two_word_bignum(0, 0);
+// It makes sense to reset big_divisor and big_dividend on reloading a heap
+// image so that any very large allocation from the previous run is discarded.
+    big_divisor = make_four_word_bignum(0, 0, 0, 0);
+    big_dividend = make_four_word_bignum(0, 0, 0, 0);
+    big_quotient = make_four_word_bignum(0, 0, 0, 0);
     qvalue(macroexpand_hook) = make_symbol("funcall", restart_flag, Lfuncall1, Lfuncall2, Lfuncalln);
     input_libraries = make_undefined_symbol("input-libraries");
     qheader(input_libraries)  |= SYM_SPECIAL_VAR;
@@ -4038,6 +4052,11 @@ void copy_into_nilseg(int fg)
     BASE[73]     = active_stream;
     BASE[74]     = current_module;
     BASE[75]     = native_defs;
+    BASE[76]     = big_divisor;
+    BASE[77]     = big_dividend;
+    BASE[78]     = big_quotient;
+    BASE[79]     = big_fake1;
+    BASE[80]     = big_fake2;
 
     BASE[90]     = append_symbol;
     BASE[91]     = applyhook;
@@ -4214,6 +4233,11 @@ void copy_out_of_nilseg(int fg)
     active_stream         = BASE[73];
     current_module        = BASE[74];
     native_defs           = BASE[75];
+    big_divisor           = BASE[76];
+    big_dividend          = BASE[77];
+    big_quotient          = BASE[78];
+    big_fake1             = BASE[79];
+    big_fake2             = BASE[80];
 
     append_symbol         = BASE[90];
     applyhook             = BASE[91];

@@ -41,7 +41,7 @@
 #include "headers.h"
 
 
-LispObject make_n_word_bignum(int32_t a1, uint32_t a2, uint32_t a3, int32_t n)
+LispObject make_n_word_bignum(int32_t a1, uint32_t a2, uint32_t a3, size_t n)
 //
 // This make a bignum with n words of data and digits a1, a2, a3 and
 // then n zeros.  Will only be called with n>=0 and a1, a2, a3 already
@@ -49,7 +49,7 @@ LispObject make_n_word_bignum(int32_t a1, uint32_t a2, uint32_t a3, int32_t n)
 // as passed is the number of zero words to be inserted before the 3
 // words at the end!
 //
-{   int32_t i;
+{   size_t i;
     LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+12), nil;
     errexit();
     for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
@@ -60,31 +60,21 @@ LispObject make_n_word_bignum(int32_t a1, uint32_t a2, uint32_t a3, int32_t n)
     return w;
 }
 
-static LispObject make_power_of_two(int32_t x)
+static LispObject make_power_of_two(size_t n)
 //
-// Create the number 2^x where x is positive.  Used to make the
-// denominator of a rational representation of a float.  Endless fun
+// Create the number 2^n where n is positive.  Used to make the
+// denominator of a rational representation of a float.  Some fun
 // to cope with various small cases before I get to the general call
 // to make_n_word_bignum.
 //
-{   if (x < 27) return fixnum_of_int(((int32_t)1) << x);
-    else if (x < 30) return make_one_word_bignum(((int32_t)1) << x);
-    else if (x == 30) return make_two_word_bignum(0, 0x40000000);
-    else if (x < 61) return make_two_word_bignum(((int32_t)1) << (x-31), 0);
-    else if ((x % 31) == 30)
-        return make_n_word_bignum(0, 0x40000000, 0, (x/31)-2);
-    else return make_n_word_bignum(((int32_t)1) << (x % 31), 0, 0, (x/31)-2);
+{   if (n < 64) return make_lisp_unsigned64((uint64_t)1 << n);
+    else if ((n % 31) == 30)
+        return make_n_word_bignum(0, 0x40000000, 0, (n/31)-2);
+    else return make_n_word_bignum(((int32_t)1) << (n % 31), 0, 0, (n/31)-2);
 }
 
-static LispObject make_fix_or_big2(int32_t a1, uint32_t a2)
-{   if ((a1==0 && (a2 & fix_mask)==0) ||
-        (a1==-1 && (a2 & 0x78000000)==0x78000000))
-        return fixnum_of_int(a2);
-    else if (a1==0 && (a2 & 0x40000000)==0)
-        return make_one_word_bignum(a2);
-    else if (a1==-1 && (a2 & 0x40000000)!=0)
-        return make_one_word_bignum(a2|~0x7fffffff);
-    else return make_two_word_bignum(a1, a2);
+static inline LispObject make_fix_or_big2(int32_t a1, uint32_t a2)
+{   return make_lisp_integer64(((int64_t)a1 << 31) | a2);
 }
 
 LispObject rationalf(double d)
@@ -217,9 +207,9 @@ LispObject rational(LispObject a)
     {   case TAG_FIXNUM:
             return a;
 #ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
+        case XTAG_SFLOAT:
         {   Float_union aa;
-            aa.i = a - TAG_SFLOAT;
+            aa.i = a - XTAG_SFLOAT;
             return rationalf((double)aa.f);
         }
 #endif
@@ -245,9 +235,9 @@ LispObject rationalize(LispObject a)
     {   case TAG_FIXNUM:
             return a;
 #ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
+        case XTAG_SFLOAT:
         {   Float_union aa;
-            aa.i = a - TAG_SFLOAT;
+            aa.i = a - XTAG_SFLOAT;
             return rationalizef((double)aa.f);
         }
 #endif
@@ -278,7 +268,7 @@ static bool lesspis(LispObject a, LispObject b)
     return 0;
 #else
     Float_union bb;
-    bb.i = b - TAG_SFLOAT;
+    bb.i = b - XTAG_SFLOAT;
 //
 // Any fixnum can be converted to a float without introducing any
 // error at all...
@@ -293,7 +283,7 @@ bool lesspib(LispObject, LispObject b)
 // the bignum must be at least as great as that of the fixnum, hence
 // to do a comparison I just need to look at sign of the bignum.
 //
-{   int32_t len = bignum_length(b);
+{   size_t len = bignum_length(b);
     int32_t msd = bignum_digits(b)[(len-CELL-4)/4];
     return (msd >= 0);
 }
@@ -315,7 +305,7 @@ bool lesspdb(double a, LispObject b)
 //
 // a is a floating point number and b a bignum.  Compare them.
 //
-{   int32_t n = (bignum_length(b)-CELL-4)/4;
+{   size_t n = (bignum_length(b)-CELL-4)/4;
     int32_t bn = (int32_t)bignum_digits(b)[n];
 //
 // The value represented by b can not be in the range that fixnums
@@ -331,7 +321,7 @@ bool lesspdb(double a, LispObject b)
     if (n == 0) return a < (double)bn;
 //
 // For two-digit bignums I first check if the float is so big that I can
-// tell that it dominames the bignum, and if not I subtract the top digit
+// tell that it dominates the bignum, and if not I subtract the top digit
 // of the bignum from both sides... in the critical case where the two
 // values are almost the same that subtraction will not lead to loss of
 // accuracy (at least provided that my floating point was implemented
@@ -398,7 +388,7 @@ bool lesspbd(LispObject b, double a)
 //
 // Code as for lesspdb, but use '>' test instead of '<'
 //
-{   int32_t n = (bignum_length(b)-CELL-4)/4;
+{   size_t n = (bignum_length(b)-CELL-4)/4;
     int32_t bn = (int32_t)bignum_digits(b)[n];
 //
 // The value represented by b can not be in the range that fixnums
@@ -512,7 +502,7 @@ static bool lesspsi(LispObject a, LispObject b)
     return 0;
 #else
     Float_union aa;
-    aa.i = a - TAG_SFLOAT;
+    aa.i = a - XTAG_SFLOAT;
     return (double)aa.f < (double)int_of_fixnum(b);
 #endif
 }
@@ -523,7 +513,7 @@ static bool lesspsb(LispObject a, LispObject b)
     return 0;
 #else
     Float_union aa;
-    aa.i = a - TAG_SFLOAT;
+    aa.i = a - XTAG_SFLOAT;
     return lesspdb((double)aa.f, b);
 #endif
 }
@@ -534,7 +524,7 @@ static bool lesspsr(LispObject a, LispObject b)
     return 0;
 #else
     Float_union aa;
-    aa.i = a - TAG_SFLOAT;
+    aa.i = a - XTAG_SFLOAT;
     return lesspdr((double)aa.f, b);
 #endif
 }
@@ -545,13 +535,13 @@ static bool lesspsf(LispObject a, LispObject b)
     return 0;
 #else
     Float_union aa;
-    aa.i = a - TAG_SFLOAT;
+    aa.i = a - XTAG_SFLOAT;
     return (double)aa.f < float_of_number(b);
 #endif
 }
 
 bool lesspbi(LispObject a, LispObject)
-{   int32_t len = bignum_length(a);
+{   size_t len = bignum_length(a);
     int32_t msd = bignum_digits(a)[(len-CELL-4)/4];
     return (msd < 0);
 }
@@ -562,14 +552,14 @@ static bool lesspbs(LispObject a, LispObject b)
     return 0;
 #else
     Float_union bb;
-    bb.i = b - TAG_SFLOAT;
+    bb.i = b - XTAG_SFLOAT;
     return lesspbd(a, (double)bb.f);
 #endif
 }
 
 static bool lesspbb(LispObject a, LispObject b)
-{   int32_t lena = bignum_length(a),
-                lenb = bignum_length(b);
+{   size_t lena = bignum_length(a),
+           lenb = bignum_length(b);
     if (lena > lenb)
     {   int32_t msd = bignum_digits(a)[(lena-CELL-4)/4];
         return (msd < 0);
@@ -581,17 +571,18 @@ static bool lesspbb(LispObject a, LispObject b)
     lena = (lena-CELL-4)/4;
     // lenb == lena here
     {   int32_t msa = bignum_digits(a)[lena],
-                    msb = bignum_digits(b)[lena];
+                msb = bignum_digits(b)[lena];
         if (msa < msb) return true;
         else if (msa > msb) return false;
 //
 // Now the leading digits of the numbers agree, so in particular the numbers
 // have the same sign.
 //
-        while (--lena >= 0)
-        {   uint32_t da = bignum_digits(a)[lena],
-                         db = bignum_digits(b)[lena];
-            if (da == db) continue;
+        for (;;)
+        {   lena--;
+            uint32_t da = bignum_digits(a)[lena],
+                     db = bignum_digits(b)[lena];
+            if (da == db && lena != 0) continue;
             return (da < db);
         }
         return false;      // numbers are the same
@@ -615,7 +606,7 @@ static bool lessprs(LispObject a, LispObject b)
     return 0;
 #else
     Float_union bb;
-    bb.i = b - TAG_SFLOAT;
+    bb.i = b - XTAG_SFLOAT;
     return lessprd(a, (double)bb.f);
 #endif
 }
@@ -632,7 +623,7 @@ static bool lesspfs(LispObject a, LispObject b)
     return 0;
 #else
     Float_union bb;
-    bb.i = b - TAG_SFLOAT;
+    bb.i = b - XTAG_SFLOAT;
     return float_of_number(a) < (double)bb.f;
 #endif
 }
@@ -661,9 +652,9 @@ bool lessp2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
 // For fixnums the comparison happens directly
-                    return ((int32_t)a < (int32_t)b);
+                    return ((intptr_t)a < (intptr_t)b);
 #ifdef SHORT_FLOAT
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                     return lesspis(a, b);
 #endif
                 case TAG_NUMBERS:
@@ -683,14 +674,14 @@ bool lessp2(LispObject a, LispObject b)
                     return (bool)aerror2("bad arg for lessp", a, b);
             }
 #ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
+        case XTAG_SFLOAT:
             switch (b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return lesspsi(a, b);
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                 {   Float_union aa, bb;
-                    aa.i = a - TAG_SFLOAT;
-                    bb.i = b - TAG_SFLOAT;
+                    aa.i = a - XTAG_SFLOAT;
+                    bb.i = b - XTAG_SFLOAT;
                     return (aa.f < bb.f);
                 }
                 case TAG_NUMBERS:
@@ -718,7 +709,7 @@ bool lessp2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return lesspbi(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return lesspbs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -742,7 +733,7 @@ bool lessp2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return lesspri(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return lessprs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -769,7 +760,7 @@ bool lessp2(LispObject a, LispObject b)
             {   case TAG_FIXNUM:
                     return lesspfi(a, b);
 #ifdef SHORT_FLOAT
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                     return lesspfs(a, b);
 #endif
                 case TAG_NUMBERS:

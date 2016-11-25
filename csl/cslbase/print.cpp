@@ -1,4 +1,4 @@
-//  print.cpp                              Copyright (C) 1990-2016 Codemist
+#//  print.cpp                              Copyright (C) 1990-2016 Codemist
 
 //
 // Printing, plus some file-related operations.
@@ -1888,7 +1888,6 @@ static void fp_sprint(char *buff, double x, int prec)
 
 static void fp_sprint128(char *buff, float128_t x, int prec)
 {
-    char *saveb = buff;
 #ifdef DEBUG
     volatile char *fullbuff = buff; // Useful for when running under a debugger
     (void)fullbuff;
@@ -1929,17 +1928,14 @@ static void fp_sprint128(char *buff, float128_t x, int prec)
         char_ins(buff, '0');
     }
     while (*buff != 0 && *buff != '.' && !exponent_mark(*buff)) buff++;
-//  printf("Point A, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
     if (*buff == 0 || exponent_mark(*buff))     // ddd to ddd.0
     {   char_ins(buff, '0');            // and dddEnnn to ddd.0Ennn
         char_ins(buff, '.');
     }
     while (*buff != 0 && !exponent_mark(*buff)) buff++;
-//  printf("Point B, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
     if (*(buff-1) == '.') char_ins(buff++, '0');// ddd. to ddd.0
     while (*(buff-1) == '0' &&                  // ddd.nnn0 to ddd.nnn
            *(buff-2) != '.') char_del(--buff);
-//  printf("Point C, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
     if (*buff == 0) return; // no exponent mark present
     buff++;
     if (*buff == 0) strcpy(buff, "+e00");
@@ -1947,7 +1943,6 @@ static void fp_sprint128(char *buff, float128_t x, int prec)
     buff++;
     if (*(buff+1) == 0) char_ins(buff, '0');
     else if (*buff == '0' && *(buff+2) != 0) char_del(buff);
-//  printf("Point E, buff=\"%s\" saveb=\"%s\"\n", buff, saveb);
 }
 
 
@@ -2070,20 +2065,19 @@ restart:
             putc_stream(')', active_stream);
             return;
 
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-        {   Float_union uu;
-            uu.i = u - TAG_SFLOAT;
-            fp_sprint(my_buff, (double)uu.f, print_precision);
-        }
-        goto float_print_tidyup;
-#endif
-
         case TAG_FIXNUM:
+// The tag bits for a short float match those for a fixnum if I just look
+// at the low 3 bits. Yuk - that means I need an extra test here.
+            if (is_sfloat(u))
+            {   Float_union uu;
+                uu.i = u - XTAG_SFLOAT;
+                fp_sprint(my_buff, (double)uu.f, print_precision);
+                goto float_print_tidyup;
+            }
             if (escaped_printing & escape_hex)
-            {   int32_t v = int_of_fixnum(u);
+            {   intptr_t v = int_of_fixnum(u);
                 int width = escape_width(escaped_printing);
-                int32_t mask;
+                uintptr_t mask;
 //
 // The printing style adopted here for negative numbers follows that used in
 // the big number printing code.  A prefix "~" stands for an infinite initial
@@ -2100,10 +2094,10 @@ restart:
 //
                 len = 0;
                 if (v < 0)
-                {   mask = 0x0f000000;
+                {   mask = ((uintptr_t)0xf)<<(8*sizeof(intptr_t)-4);
                     my_buff[len++] = '~';
                     width--;
-                    while ((v & mask) == mask && mask != 0)
+                    while (((uintptr_t)v & mask) == mask && mask != 0)
                     {   v = v ^ (mask << 4);
                         mask = mask >> 4;
                     }
@@ -2111,23 +2105,25 @@ restart:
                 }
                 else k = '0';
                 mask = 0xf;
-                while ((v & mask) != v)
+                while (((uintptr_t)v & mask) != (uintptr_t)v)
                 {   width--;
                     mask = (mask<<4) | 0xf;
                 }
                 while (--width > 0) my_buff[len++] = (char)k;
-                sprintf(&my_buff[len], "%lx", (long)v);
+                sprintf(&my_buff[len], "%" PRIxPTR, v);
             }
             else if (escaped_printing & escape_octal)
-            {   int32_t v = int_of_fixnum(u);
+            {   intptr_t v = int_of_fixnum(u);
                 int width = escape_width(escaped_printing);
-                int32_t mask;
+                uintptr_t mask;
                 len = 0;
                 if (v < 0)
-                {   mask = 0x38000000;
+                {   int sh = 8*sizeof(intptr_t)-3;
+                    sh = (sh/3)*3;
+                    mask = ((uintptr_t)0x7)<<sh;
                     my_buff[len++] = '~';
                     width--;
-                    while ((v & mask) == mask && mask != 0)
+                    while (((uintptr_t)v & mask) == mask && mask != 0)
                     {   v = v ^ (mask << 3);
                         mask = mask >> 3;
                     }
@@ -2135,20 +2131,20 @@ restart:
                 }
                 else k = '0';
                 mask = 0x7;
-                while ((v & mask) != v)
+                while (((uintptr_t)v & mask) != (uintptr_t)v)
                 {   width--;
                     mask = (mask<<3) | 0x7;
                 }
                 while (--width > 0) my_buff[len++] = (char)k;
-                sprintf(&my_buff[len], "%lo", (long)v);
+                sprintf(&my_buff[len], "%" PRIoPTR, v);
             }
             else if (escaped_printing & escape_binary)
-            {   int32_t v = int_of_fixnum(u);
+            {   intptr_t v = int_of_fixnum(u);
 //          int width = escape_width(escaped_printing);
-                uint32_t mask = 0x40000000;
+                uint64_t mask = ((uint64_t)1)<<(8*sizeof(intptr_t)-1);
                 len = 0;
                 if (v < 0)
-                {   while ((v & mask) == mask && mask != 0)
+                {   while (((uintptr_t)v & mask) == mask && mask != 0)
                     {   v = v ^ (mask << 1);
                         mask = mask >> 1;
                     }
@@ -2159,16 +2155,16 @@ restart:
 //
 // /* Width specifier not processed here (yet), sorry.
 //
-                mask = 0x80000000;
-                while ((v & mask) == 0 && mask != 1) mask = mask >> 1;
+                mask = ((uintptr_t)1)<<(8*sizeof(intptr_t)-1);
+                while (((uintptr_t)v & mask) == 0 && mask != 1) mask = mask >> 1;
                 while (mask != 0)
-                {   my_buff[len++] = (v & mask) ? '1' : '0';
+                {   my_buff[len++] = ((uintptr_t)v & mask) ? '1' : '0';
                     mask = mask >> 1;
                 }
                 my_buff[len] = 0;
             }
             else
-                sprintf(my_buff, "%ld", (long)int_of_fixnum(u));
+                sprintf(my_buff, "%" PRIdPTR, (intptr_t)int_of_fixnum(u));
             break;
 
         case TAG_HDR_IMMED:
@@ -3263,15 +3259,21 @@ restart:
                     }
                     else if (escaped_printing & escape_hex)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
-                        int q = (current_fp_rep & FP_WORD_ORDER) ? 1 : 0;
                         sprintf(my_buff, "{%.8" PRIx32 "/%.8" PRIx32 ":%#.15g}",
-                            p[1-q], p[q], double_float_val(u));
+#ifdef LITTLEENDIAN
+                            p[1], p[0], double_float_val(u));
+#else
+                            p[0], p[1], double_float_val(u));
+#endif
                     }
                     else if (escaped_printing & escape_octal)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
-                        int q = (current_fp_rep & FP_WORD_ORDER) ? 1 : 0;
                         sprintf(my_buff, "{%.11" PRIo32 "/%.11" PRIo32 ":%#.8g}",
-                            p[1-q], p[q], double_float_val(u));
+#ifdef LITTLEENDIAN
+                            p[1], p[0], double_float_val(u));
+#else
+                            p[0], p[1], double_float_val(u));
+#endif
                     }
                     else fp_sprint(my_buff, double_float_val(u), print_precision);
                     break;
@@ -3329,9 +3331,7 @@ restart:
                     sprintf(my_buff, "?%.8lx?", (long)(uint32_t)u);
                     break;
             }
-#ifdef SHORT_FLOAT
         float_print_tidyup:   // label to join in from short float printing
-#endif
             break;
 
         case TAG_NUMBERS:
@@ -3457,6 +3457,24 @@ void prin_to_trace(LispObject u)
     if (!is_stream(active_stream)) active_stream = lisp_trace_output;
     internal_prin(u, 0);
     ignore_exception();
+    ensure_screen();
+    if (countdown > 5) countdown = 5;
+}
+
+// This is JUST for debugging. Itr prints a message then something (using
+// radix 16), then a newline.
+void prinhex_to_trace(const char *msg, LispObject u)
+{   LispObject nil = C_nil;
+    int32_t c = other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
+                                   qvalue(standard_output));
+    escaped_printing = escape_yes+escape_hex;
+    active_stream = qvalue(trace_output);
+    if (!is_stream(active_stream)) active_stream = lisp_trace_output;
+    if (c != 0) putc_stream('\n', active_stream);
+    trace_printf("## %s: ", msg);
+    internal_prin(u, escape_yes+escape_hex);
+    ignore_exception();
+    putc_stream('\n', active_stream);
     ensure_screen();
     if (countdown > 5) countdown = 5;
 }
@@ -4132,9 +4150,10 @@ static LispObject Lprinbinary2(LispObject nil, LispObject a, LispObject b)
 
 LispObject Lposn(LispObject, int nargs, ...)
 {   argcheck(nargs, 0, "posn");
-    return onevalue(fixnum_of_int((int32_t)
-                                  other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
-                                          qvalue(standard_output))));
+    return onevalue(
+       fixnum_of_int((int32_t)
+           other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
+                              qvalue(standard_output))));
 }
 
 LispObject Lposn_1(LispObject, LispObject stream)

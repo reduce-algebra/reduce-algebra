@@ -20,7 +20,7 @@
 # are then "--csl --psl" is assumed.
 
 # Part of the intent here is that if any further variants of Reduce get created
-# it should be reasonably straightforward to extent the code here tu support
+# it should be reasonably straightforward to extent the code here to support
 # testing them. Changes will be needed in "test1.sh" too.
 
 # I want this script to be one I can launch from anywhere, so

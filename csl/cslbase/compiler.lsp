@@ -2617,13 +2617,14 @@ s!:fasl_supervisor) (princ "End of file ") (prin u) (terpri) (close (rds w)))
 (quote carcheck)))) (setq s!:fasl_code (cons u s!:fasl_code)))))) (t (cond ((
 or (eqcar u (quote de)) (eqcar u (quote defun))) (progn (setq u (cdr u)) (
 cond ((and (setq w (get (car u) (quote c!-version))) (equal w (md60 (cons (
-car u) (cons (cadr u) (s!:fully_macroexpand_list (cddr u))))))) (progn (princ
-"+++ ") (prin (car u)) (printc " not compiled (C++ version available)") (
-setq s!:fasl_code (cons (list (quote restore!-c!-code) (mkquote (car u))) 
-s!:fasl_code)))) (t (cond ((flagp (car u) (quote lose)) (progn (princ "+++ ")
-(prin (car u)) (printc " not compiled (LOSE flag)"))) (t (progn (cond ((setq
-w (get (car u) (quote c!-version))) (progn (princ "+++ ") (prin (car u)) (
-princ " reports C version with checksum ") (print w) (print 
+car u) (cons (cadr u) (s!:fully_macroexpand_list (cddr u))))))) (progn (cond 
+((not (zerop (posn))) (terpri))) (princ "+++ ") (prin (car u)) (printc 
+" not compiled (C++ version available)") (setq s!:fasl_code (cons (list (
+quote restore!-c!-code) (mkquote (car u))) s!:fasl_code)))) (t (cond ((flagp 
+(car u) (quote lose)) (progn (princ "+++ ") (prin (car u)) (printc 
+" not compiled (LOSE flag)"))) (t (progn (cond ((setq w (get (car u) (quote 
+c!-version))) (progn (princ "+++ ") (prin (car u)) (princ 
+" reports C version with checksum ") (print w) (print 
 "+++ differing from this version:") (setq w (cons (car u) (cons (cadr u) (
 s!:fully_macroexpand_list (cddr u))))) (princ "::: ") (prettyprint w) (princ 
 "+++ which has checksum ") (print (md60 w))))) (prog (var1176) (setq var1176 
@@ -3620,41 +3621,41 @@ c!:printf "    if (!car_legal(%v)) " r3) (c!:pgoto (c!:find_error_label (list
 (flag (quote (igreaterp)) (quote c!:uses_nil))
 
 (de c!:piminus (op r1 r2 r3 depth) (c!:printf 
-"    %v = (LispObject)(2-((int32_t)(%v)));\n" r1 r3))
+"    %v = (LispObject)(2*TAG_FIXNUM-((intptr_t)(%v)));\n" r1 r3))
 
 (put (quote iminus) (quote c!:opcode_printer) (function c!:piminus))
 
 (de c!:piadd1 (op r1 r2 r3 depth) (c!:printf 
-"    %v = (LispObject)((int32_t)(%v) + 0x10);\n" r1 r3))
+"    %v = (LispObject)((intptr_t)(%v) + 0x10);\n" r1 r3))
 
 (put (quote iadd1) (quote c!:opcode_printer) (function c!:piadd1))
 
 (de c!:pisub1 (op r1 r2 r3 depth) (c!:printf 
-"    %v = (LispObject)((int32_t)(%v) - 0x10);\n" r1 r3))
+"    %v = (LispObject)((intptr_t)(%v) - 0x10);\n" r1 r3))
 
 (put (quote isub1) (quote c!:opcode_printer) (function c!:pisub1))
 
 (de c!:piplus2 (op r1 r2 r3 depth) (progn (c!:printf 
-"    %v = (LispObject)(int32_t)((int32_t)%v +" r1 r2) (c!:printf 
-" (int32_t)%v - TAG_FIXNUM);\n" r3)))
+"    %v = (LispObject)(intptr_t)((intptr_t)%v +" r1 r2) (c!:printf 
+" (intptr_t)%v - TAG_FIXNUM);\n" r3)))
 
 (put (quote iplus2) (quote c!:opcode_printer) (function c!:piplus2))
 
 (de c!:pidifference (op r1 r2 r3 depth) (progn (c!:printf 
-"    %v = (LispObject)(int32_t)((int32_t)%v - (int32_t)%v" r1 r2 r3) (
+"    %v = (LispObject)(intptr_t)((intptr_t)%v - (intptr_t)%v" r1 r2 r3) (
 c!:printf " + TAG_FIXNUM);\n")))
 
 (put (quote idifference) (quote c!:opcode_printer) (function c!:pidifference)
 )
 
 (de c!:pitimes2 (op r1 r2 r3 depth) (progn (c!:printf 
-"    %v = fixnum_of_int((int32_t)(int_of_fixnum(%v) *" r1 r2) (c!:printf 
+"    %v = fixnum_of_int((intptr_t)(int_of_fixnum(%v) *" r1 r2) (c!:printf 
 " int_of_fixnum(%v)));\n" r3)))
 
 (put (quote itimes2) (quote c!:opcode_printer) (function c!:pitimes2))
 
 (de c!:pmodular_plus (op r1 r2 r3 depth) (progn (c!:printf 
-"    {   int32_t w = int_of_fixnum(%v) + int_of_fixnum(%v);\n" r2 r3) (
+"    {   intptr_t w = int_of_fixnum(%v) + int_of_fixnum(%v);\n" r2 r3) (
 c!:printf "        if (w >= current_modulus) w -= current_modulus;\n") (
 c!:printf "        %v = fixnum_of_int(w);\n" r1) (c!:printf "    }\n")))
 
@@ -3662,7 +3663,7 @@ c!:printf "        %v = fixnum_of_int(w);\n" r1) (c!:printf "    }\n")))
 c!:pmodular_plus))
 
 (de c!:pmodular_difference (op r1 r2 r3 depth) (progn (c!:printf 
-"    {   int32_t w = int_of_fixnum(%v) - int_of_fixnum(%v);\n" r2 r3) (
+"    {   intptr_t w = int_of_fixnum(%v) - int_of_fixnum(%v);\n" r2 r3) (
 c!:printf "        if (w < 0) w += current_modulus;\n") (c!:printf 
 "        %v = fixnum_of_int(w);\n" r1) (c!:printf "    }\n")))
 
@@ -3670,7 +3671,7 @@ c!:printf "        if (w < 0) w += current_modulus;\n") (c!:printf
 c!:pmodular_difference))
 
 (de c!:pmodular_minus (op r1 r2 r3 depth) (progn (c!:printf 
-"    {   int32_t w = int_of_fixnum(%v);\n" r3) (c!:printf 
+"    {   intptr_t w = int_of_fixnum(%v);\n" r3) (c!:printf 
 "        if (w != 0) w = current_modulus - w;\n") (c!:printf 
 "        %v = fixnum_of_int(w);\n" r1) (c!:printf "    }\n")))
 
@@ -3712,13 +3713,13 @@ r1 r2 r3))
 
 (de c!:pqgetv (op r1 r2 r3 depth) (progn (c!:printf 
 "    %v = *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +" r1 r2) (c!:printf
-" (((int32_t)%v-TAG_FIXNUM)/(16/CELL)));\n" r3)))
+" (((intptr_t)%v-TAG_FIXNUM)/(16/CELL)));\n" r3)))
 
 (put (quote qgetv) (quote c!:opcode_printer) (function c!:pqgetv))
 
 (de c!:pqputv (op r1 r2 r3 depth) (progn (c!:printf 
 "    *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +" r2) (c!:printf 
-" (((int32_t)%v-TAG_FIXNUM)/(16/CELL))) = %v;\n" r3 r1)))
+" (((intptr_t)%v-TAG_FIXNUM)/(16/CELL))) = %v;\n" r3 r1)))
 
 (put (quote qputv) (quote c!:opcode_printer) (function c!:pqputv))
 
@@ -3817,13 +3818,13 @@ c!:printf "{ popv(%s); return onevalue(%v); }\n" depth lab)))))))
 
 (put (quote ifequal) (quote c!:exit_helper) (function c!:pifequal))
 
-(de c!:pifilessp (s depth) (c!:printf "((int32_t)(%v)) < ((int32_t)(%v))" (
+(de c!:pifilessp (s depth) (c!:printf "((intptr_t)(%v)) < ((intptr_t)(%v))" (
 car s) (cadr s)))
 
 (put (quote ifilessp) (quote c!:exit_helper) (function c!:pifilessp))
 
-(de c!:pifigreaterp (s depth) (c!:printf "((int32_t)(%v)) > ((int32_t)(%v))" 
-(car s) (cadr s)))
+(de c!:pifigreaterp (s depth) (c!:printf 
+"((intptr_t)(%v)) > ((intptr_t)(%v))" (car s) (cadr s)))
 
 (put (quote ifigreaterp) (quote c!:exit_helper) (function c!:pifigreaterp))
 

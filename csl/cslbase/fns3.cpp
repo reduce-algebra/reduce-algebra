@@ -138,9 +138,11 @@ LispObject Lencapsulatedp(LispObject nil, LispObject a)
 }
 
 //
-// The next few functions are an EXPERIMENT and apply when a reference to
+// The next few functions are an experiment and apply when a reference to
 // a native Maple object has somehow been imported into CSL and packed
-// up as an "encapsulated pointer" as per above.
+// up as an "encapsulated pointer" as per above. It was used at a time
+// when I was playing by building all of Reduce as a dynamically loadable
+// library and loading it into Maple...
 //
 
 LispObject Lmaple_atomic_value(LispObject nil, LispObject a)
@@ -622,11 +624,11 @@ LispObject Lsgetv(LispObject nil, LispObject v, LispObject n)
     int w;
     int32_t n1, hl;
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
-        return aerror1("schar", v);
-    else if (!is_fixnum(n)) return aerror1("schar", n);
+        return aerror1("schar on non-string", v);
+    else if (!is_fixnum(n)) return aerror1("schar index type incorrect", n);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("schar", n);
+    if (n1 < 0 || n1 >= hl) return aerror1("schar index out of range", n);
     w = celt(v, n1) & 0xff;
 #ifdef COMMON
     return onevalue(pack_char(0, w));
@@ -2220,7 +2222,8 @@ LispObject Lvecbnd(LispObject, LispObject v)
     h = vechdr(v);
     n = length_of_header(h) - CELL;
 #ifdef EXPERIMENT
-// UNRECONSTRUCTED here -- see code in upbv for hints
+// UNRECONSTRUCTED here -- see code in upbv for hints. But at present this is
+// disabled by the "#ifdef COMMON" so is not a pressing issue.
 #error unreconstructed
 #endif
     if (is_bitvec_header(h))

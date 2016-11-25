@@ -45,9 +45,6 @@
 // Division
 //
 
-#ifndef IDIVIDE
-#ifdef HAVE_UINT64_T
-
 uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
 //
 //         *qp = (a,b) / c,  return the remainder
@@ -72,101 +69,17 @@ uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
     return (uint32_t)(p % (uint64_t)c);
 }
 
-#else
-
-uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
-//
-//         *qp = (a,b) / c,  return the remainder
-//
-// The double-length value (a,b) is given as a 62-bit positive number.  Its
-// low order 31 bits are in b, and the 0x80000000 bit of b is zero.  The
-// high order part (in a) is also represented with the 0x80000000 bit zero.
-// The divisor c is a positive value that is at most 0x7fffffff, and the
-// procedure will only be called when the correct quotient is in the
-// (inclusive) range 0 to 0x7fffffff.  The above constraints can be thought
-// of in two ways: (a) Idivide used a 31-bit word and is working on
-// unsigned values.  The 31-bit quantities happen to be being passed around
-// in 32 bit registers, but the top bit of those registers will never be used
-// and will contain zero, or (b) the range of values used is such that
-// a 64 by 32-bit division can be performed, and by constraining the range
-// of values this 64 by 32-bit division only has to handle positive numbers,
-// but depending on the hardware of your computer you are entitled to use
-// either signed or unsigned arithmetic.
-//
-{   int i;
-    uint32_t q = 0;
-//
-// I have a loop that needs to be executed 32 times, with just
-// slightly different behaviour the last time around.  Since it is
-// fairly short, I unwind it three-fold into a loop executed 10 times
-// plus a postlude.  I also do a test at the start that decides if the
-// quotient will be small (less than about 16 bits) an in that case
-// loop rather less often - my reasoning is that a plausible distribution
-// of quotients is exponential so the short route will be taken about
-// half of the time, and will save almost half of the work done here at the
-// cost of a not-too-expensive extra test to begin with.
-//
-    if (a < (c >> 15))
-    {   a = (a << 15) | (b >> 16);
-        b = (b << 15) & 0x7fffffff;
-        i = 5;
-    }
-    else i = 0;
-    do
-    {   q = q << 3;         // accumulate quotient 3 bits at a time
-        if (a >= c)         // bit 1 of 3...
-        {   a = a - c;
-            q = q + 4;
-        }
-        a = a << 1;         // shift (a,b) doubleword left 1 bit
-        b = b << 1;
-        if (((int32_t)b) < 0) a = a + 1;
-        if (a >= c)         // bit 2 of 3...
-        {   a = a - c;
-            q = q + 2;
-        }
-        a = a << 1;
-        b = b << 1;
-        if (((int32_t)b) < 0) a = a + 1;
-        if (a >= c)         // bit 3 of 3...
-        {   a = a - c;
-            q = q + 1;
-        }
-        a = a << 1;
-        b = b << 1;
-        if (((int32_t)b) < 0) a = a + 1;
-        i++;
-    }
-    while (i < 10);
-    q = q << 2;             // 2 more bits to be included
-    if (a >= c)
-    {   a = a - c;
-        q = q + 2;
-    }
-    a = a << 1;
-    b = b << 1;
-    if (((int32_t)b) < 0) a = a + 1;
-    if (a >= c)             // the final bit of the quotient
-    {   a = a - c;          // leave remainder in a, b should be zero
-        q = q + 1;
-    }
-    if (qp != NULL) *qp = q;
-    return a;
-}
-
-#endif
-#endif // IDIVIDE
-
 static LispObject quotis(LispObject a, LispObject b)
 {
+    mv_2 = fixnum_of_int(0);
 #ifndef SHORT_FLOAT
     return fixnum_of_int(0);
 #else
     Float_union bb;
-    bb.i = b - TAG_SFLOAT;
+    bb.i = b - XTAG_SFLOAT;
     if (bb.f == 0.0) return aerror2("bad arg for quotient", a, b);
     bb.f = (float) ((float)int_of_fixnum(a) / bb.f);
-    return (bb.i & ~(int32_t)0xf) + TAG_SFLOAT;
+    return (bb.i & ~(int32_t)0xf) + XTAG_SFLOAT;
 #endif
 }
 
@@ -175,10 +88,24 @@ static LispObject quotib(LispObject a, LispObject b)
 //
 // a fixnum divided by a bignum always gives 0, regardless of signs etc.,
 // save in the one case of (-#x8000000)/(#x8000000) which must yield -1
+// (an an analagous case in the 64-bit world...)
 //
-    if (int_of_fixnum(a) == fix_mask && bignum_length(b) == CELL+4 &&
-        bignum_digits(b)[0] == 0x08000000) return fixnum_of_int(-1);
-    else return fixnum_of_int(0);
+// The use of "magic numbers" here is without doubt ugly and is really not
+// the way to have clear maintainable code. Apologies but in the short term
+// I do not have a nicer solution to offer.
+    if (a == MOST_NEGATIVE_FIXNUM &&
+        ((SIXTY_FOUR_BIT && bignum_length(b) == CELL+8 &&
+          bignum_digits(b)[0] == 0 &&
+          bignum_digits(b)[1] == 0x10000000) ||
+         (!SIXTY_FOUR_BIT && bignum_length(b) == CELL+4 &&
+          bignum_digits(b)[0] == 0x08000000)))
+    {   mv_2 = fixnum_of_int(0);
+        return fixnum_of_int(-1);
+    }
+    else
+    {   mv_2 = a;
+        return fixnum_of_int(0);
+    }
 }
 
 static LispObject CLquotib(LispObject a, LispObject b)
@@ -205,6 +132,9 @@ static LispObject CLquotib(LispObject a, LispObject b)
     return make_ratio(a, b);
 }
 
+// Remember that in Common Lisp there is a rendancy for QUOTIENT to
+// return rational numbers...
+
 static LispObject CLquotbi(LispObject a, LispObject b)
 {   return CLquotib(a, b);
 }
@@ -215,6 +145,7 @@ static LispObject CLquotbb(LispObject a, LispObject b)
 
 static LispObject quotir(LispObject a, LispObject b)
 {   LispObject w, nil;
+    mv_2 = fixnum_of_int(0);
     if (a == fixnum_of_int(0)) return a;
     push3(b, a, C_nil);
 #define g   stack[0]
@@ -263,6 +194,7 @@ static LispObject quotic(LispObject a, LispObject b)
 // the moment I will ignore that miserable fact
 //
 {   LispObject u, v, nil;
+    mv_2 = fixnum_of_int(0);
     push2(a, b);
 #define b stack[0]
 #define a stack[-1]
@@ -301,6 +233,7 @@ fail:
 
 static LispObject quotif(LispObject a, LispObject b)
 {   double d = float_of_number(b);
+    mv_2 = fixnum_of_int(0);
     if (d == 0.0) return aerror2("bad arg for quotient", a, b);
     d = (double)int_of_fixnum(a) / d;
     if (trap_floating_overflow &&
@@ -313,19 +246,21 @@ static LispObject quotif(LispObject a, LispObject b)
 
 static LispObject quotsi(LispObject a, LispObject b)
 {
+    mv_2 = fixnum_of_int(0);
 #ifndef SHORT_FLOAT
     return fixnum_of_int(0);
 #else
     Float_union aa;
     if (b == fixnum_of_int(0)) return aerror2("bad arg for quotient", a, b);
-    aa.i = a - TAG_SFLOAT;
+    aa.i = a - XTAG_SFLOAT;
     aa.f = (float) (aa.f / (float)int_of_fixnum(b));
-    return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
+    return (aa.i & ~(int32_t)0xf) + XTAG_SFLOAT;
 #endif
 }
 
 static LispObject quotsb(LispObject a, LispObject b)
 {   double d = float_of_number(b);
+    mv_2 = fixnum_of_int(0);
     if (d == 0.0) return aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / d;
     return make_sfloat(d);
@@ -337,6 +272,7 @@ static LispObject quotsb(LispObject a, LispObject b)
 
 static LispObject quotsf(LispObject a, LispObject b)
 {   double d = float_of_number(b);
+    mv_2 = fixnum_of_int(0);
     if (d == 0.0) return aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / d;
     if (trap_floating_overflow &&
@@ -351,18 +287,20 @@ LispObject quotbn(LispObject a, int32_t n)
 //
 // Divide a bignum by an integer, where the integer is (by now)
 // a natural C int32_t but limited to 31 not 32 bits active.  I.e.
-// this can be used when dividing by a fixnum or by dividing by
+// this can be used when dividing by a small fixnum or by dividing by
 // a one-word bignum.  I will not call this with n=-1, which would
 // be the one case where it could cause the quotient to be bigger
-// than the dividend.  Leaves nwork set to the remainder.
+// than the dividend.  I also filter out the special easy case n=1
+// before I get here. Leaves nwork set to the remainder.
+// NOTE NOTE NOTE that on a 64-bit system this is not good enough
+// for dividing by a general fixnum.
 //
 {   LispObject nil;
     int sign;
-    int32_t lena = (bignum_length(a)-CELL)/4-1, i, lenc, lenx;
+    size_t lena = (bignum_length(a)-CELL)/4-1, i, lenc, lenx;
     uint32_t carry;
-    if (lena == 0)      // one-word bignum as numerator
-    {   int32_t p = (int32_t)bignum_digits(a)[0], w;
-        nil = C_nil;    // So I can access nwork
+    if (!SIXTY_FOUR_BIT && lena == 0)   // one-word bignum as numerator
+    {   int32_t p = (int32_t)bignum_digits(a)[0];
         nwork = p % n;
 //
 // C does not define what happens on non-exact division involving
@@ -373,79 +311,67 @@ LispObject quotbn(LispObject a, int32_t n)
         {   if (nwork > 0) nwork -= n;
         }
         else if (nwork < 0) nwork += n;
-// Remainder should be correct (with correct sign) by now, regardless
+// Remainder should be correct (with correct sign) by now, regardless of
+// what C had done.
         p = (p - nwork) / n;
-        w = p & fix_mask;
-        if (w == 0 || w == fix_mask) return fixnum_of_int(p);
-        else return make_one_word_bignum(p);
+        return make_lisp_integer32(p);
     }
-    else if (lena == 1)
-//
-// I treat division of a 2-word bignum by a fixnum or 1-word bignum as
-// a special case since it can lead to a fixnum result - if the divisor is
-// just one word long and the dividend is 3 or more words I would
-// certainly have a bignum result.  Thus by separating off the code here
-// I (a) remove the need for test relating to big- to fixnum conversion
-// later on and (b) avoid allocating heap in this tolerably common case
-// when sometimes I will not need to.
-//
-    {   uint32_t a0 = bignum_digits(a)[0];
-        int32_t a1 = (int32_t)bignum_digits(a)[1];
-        if (a1 < 0)
-        {   sign = 3;
-            if (a0 == 0) a1 = -a1;
-            else
-            {   a0 = clear_top_bit(-(int32_t)a0);
-                a1 = ~a1;
-            }
+    else if (lena == 1)   // two-word bignum as numerator
+    {   int64_t a0 = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+        int64_t p = a0 / n;
+        nwork = a0 % n;
+        if (nwork != 0 &&
+            (nwork ^ a0) < 0) 
+        {  if (p < 0)
+           {   p++;
+               nwork -= n;
+           }
+           else
+           {   p--;
+               nwork += n;
+           }
         }
-        else sign = 0;
-        if (n < 0) sign ^= 1, n = -n;
-        if (a1 < n) // result can be calculated in one word - good!
-        {   uint32_t q, r;
-            Ddivide(r, q, (uint32_t)a1, a0, n);
-            if ((sign & 2) != 0) r = -(int32_t)r;
-            nil = C_nil;
-            nwork = r;
-            a0 = q;
-            if (a0 == 0) return fixnum_of_int(0);
-            if ((sign & 1) == 0)
-            {   if ((a0 & fix_mask) == 0) return fixnum_of_int(a0);
-                else if ((a0 & 0x40000000) == 0)
-                    return make_one_word_bignum(a0);
-                else return make_two_word_bignum(0, a0);
-            }
-            a0 = -(int32_t)a0;
-            if (((int32_t)a0 & fix_mask) == fix_mask) return fixnum_of_int(a0);
-            else if ((a0 & 0xc0000000U) == 0xc0000000U)
-                return make_one_word_bignum(a0);
-            else return make_two_word_bignum(-1, clear_top_bit(a0));
-        }
-//
-// here the quotient will involve exactly two digits.
-//
-        else
-        {   uint32_t q1, q0, r;
-            Ddivide(r, q1, 0, (uint32_t)a1, n);
-            Ddivide(r, q0, r, a0, n);
-            if ((sign & 2) != 0) r = -(int32_t)r;
-            nil = C_nil;
-            nwork = r;
-            if ((sign & 1) != 0)
-            {   if (q0 == 0) q1 = -(int32_t)q1;
-                else
-                {   q1 = ~q1;
-                    q0 = clear_top_bit(-(int32_t)q0);
-                }
-            }
-            if (q1 == 0 && (q0 & 0x40000000) == 0)
-                return make_one_word_bignum(q0);
-            return make_two_word_bignum(q1, q0);
-        }
+        return make_lisp_integer64(p);
     }
-//
 // That has dealt with the special cases - now the input is a bignum
-// with at least 3 digits and the quotient will certainly be a bignum.
+// with at least 3 digits and the quotient will certainly be a bignum if
+// you are on a 32-bit machine. On a 64-bit system the extreme case will
+// be 1:00000000:0000000 (ie 2^62) divided by (-2^30) = -2^32 which is
+// a fixnum, so I will need to be ready to truncate in that case. Well
+// I would rather not allocate memory that I am then going to abandon, so I
+// will write out the 3-word/1-word case here specially.
+    if (SIXTY_FOUR_BIT && lena == 2)
+    {   int32_t a2 = bignum_digits(a)[2];
+        int32_t a1 = bignum_digits(a)[1];
+        int32_t a0 = bignum_digits(a)[0];
+        int64_t hi = (int64_t)a2<<31 | a1;
+        int64_t q1 = hi/n;
+        int64_t lo = (hi%n)<<31 | a0;
+        int64_t q0 = lo/n;
+        int32_t r0 = (int32_t)(lo%n);
+// Now fix the sign of the remainder...
+        if (r0 != 0 &&
+            (r0 ^ a2) < 0) 
+        {  if (q1 < 0)
+           {   q0++;
+               r0 -= n;
+           }
+           else
+           {   q0--;
+               r0 += n;
+           }
+        }
+        nwork = r0;   // Remainder should now be OK
+        q1 += q0>>31;
+        q0 &= 0x7fffffff;
+// Now the quotient is in (q1,q0) where q1 may be up to 61 bits, or could
+// be fairly small. I need to see if the full result can be a fixnum.
+        if ((q1<<(31+4))>>(31+4) == q1) return fixnum_of_int(q1<<31 | q0);
+        if ((q1<<(64-31))>>(64-31) == q1)
+            return make_two_word_bignum((int32_t)q1, (uint32_t)q0);
+        return make_three_word_bignum((int32_t)(q1>>31),
+            (uint32_t)(q1&0x7fffffff), (uint32_t)q0);
+    }
 // Start by allocating a workspace copy of the dividend.  negateb will
 // leave a a bignum, although it may change its length.
 //
@@ -464,11 +390,10 @@ LispObject quotbn(LispObject a, int32_t n)
 //
     lena = (bignum_length(a)-CELL)/4;
     carry = 0;
-    for (i=lena-1; i>=0; i--)
-        Ddivide(carry, bignum_digits(a)[i], carry, bignum_digits(a)[i], n);
-    if ((sign & 2) != 0) carry = -(int32_t)carry;
-    nil = C_nil;
-    nwork = carry;                  // leave remainder available to caller
+    for (i=lena; i>0; i--)
+        Ddivide(carry, bignum_digits(a)[i-1], carry, bignum_digits(a)[i-1], n);
+    if ((sign & 2) != 0) nwork = -(int32_t)carry;
+    else nwork = carry;
     lena--;
     while (bignum_digits(a)[lena] == 0) lena--;
     if ((bignum_digits(a)[lena] & 0x40000000) != 0) lena++;
@@ -482,7 +407,7 @@ LispObject quotbn(LispObject a, int32_t n)
         if (carry == 0xffffffffU && (bignum_digits(a)[i-1] & 0x40000000) != 0)
         {   bignum_digits(a)[lena] = 0;
             lena--;
-            bignum_digits(a)[i-1] |= ~0x7fffffff;
+            bignum_digits(a)[i-1] |= 0x80000000U;
         }
         else bignum_digits(a)[i] = carry;
     }
@@ -513,12 +438,13 @@ LispObject quotbn1(LispObject a, int32_t n)
 // This version is JUST the same as quotbn() except that it does not
 // hand back a useful quotient - it is intended for use when only
 // the remainder is wanted. For consistency I leave that where quotbn() did.
-//
-{   LispObject nil;
+// The motivation for this is that I can avoid needing to allocate memory
+// for the quotient...
+{   LispObject nil = C_nil;
     int sign;
     int32_t lena = (bignum_length(a)-CELL)/4-1, i;
     uint32_t carry;
-    if (lena == 0)      // one-word bignum as numerator
+    if (!SIXTY_FOUR_BIT && lena == 0)      // one-word bignum as numerator
     {   int32_t p = (int32_t)bignum_digits(a)[0];
         nil = C_nil;    // So I can access nwork
         nwork = p % n;
@@ -532,50 +458,16 @@ LispObject quotbn1(LispObject a, int32_t n)
         }
         else if (nwork < 0) nwork += n;
 // Remainder should be correct (with correct sign) by now, regardless
-        else return nil;
+        return nil;
     }
     else if (lena == 1)
-//
-// I treat division of a 2-word bignum by a fixnum or 1-word bignum as
-// a special case since it can lead to a fixnum result - if the divisor is
-// just one word long and the dividend is 3 or more words I would
-// certainly have a bignum result.  Thus by separating off the code here
-// I (a) remove the need for test relating to big- to fixnum conversion
-// later on and (b) avoid allocating heap in this tolerably common case
-// when sometimes I will not need to.
-//
-    {   uint32_t a0 = bignum_digits(a)[0];
-        int32_t a1 = (int32_t)bignum_digits(a)[1];
-        if (a1 < 0)
-        {   sign = 3;
-            if (a0 == 0) a1 = -a1;
-            else
-            {   a0 = clear_top_bit(-(int32_t)a0);
-                a1 = ~a1;
-            }
+    {   int64_t p = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+        nwork = p % n;
+        if (p < 0)
+        {   if (nwork > 0) nwork -= n;
         }
-        else sign = 0;
-        if (n < 0) sign ^= 1, n = -n;
-        if (a1 < n) // result can be calculated in one word - good!
-        {   uint32_t r;
-            Ddivider(r, (uint32_t)a1, a0, n);
-            if ((sign & 2) != 0) r = -(int32_t)r;
-            nil = C_nil;
-            nwork = r;
-            return nil;
-        }
-//
-// here the quotient will involve two digits.
-//
-        else
-        {   uint32_t r;
-            Ddivider(r, 0, (uint32_t)a1, n);
-            Ddivider(r, r, a0, n);
-            if ((sign & 2) != 0) r = -(int32_t)r;
-            nil = C_nil;
-            nwork = r;
-            return nil;
-        }
+        else if (nwork < 0) nwork += n;
+        return nil;
     }
 //
 // That has dealt with the special cases - now the input is a bignum
@@ -587,6 +479,9 @@ LispObject quotbn1(LispObject a, int32_t n)
 // Also note that I could fold the negateb() in with the division, and
 // thereby save allocating a big hunk of extra memory.
 //
+// The code here is something of a cop-out in that it allocates memory for
+// a copy of a even though it really does not need to. Maybe I should revisit
+// it sometime.
     if ((int32_t)bignum_digits(a)[lena] < 0) a = negateb(a), sign = 3;
     else a = copyb(a), sign = 0;
     errexit();
@@ -606,7 +501,8 @@ LispObject quotbn1(LispObject a, int32_t n)
         Ddivide(carry, bignum_digits(a)[i], carry, bignum_digits(a)[i], n);
     if ((sign & 2) != 0) carry = -(int32_t)carry;
     nil = C_nil;
-    nwork = carry;                  // leave remainder available to caller
+// Beware and force carry to be treated as a signed value here!
+    nwork = (int32_t)carry;          // leave remainder available to caller
     return nil;
 }
 
@@ -615,471 +511,470 @@ static LispObject quotbi(LispObject a, LispObject b)
 //
 // dividing by 1 or -1 seems worth optimising.
 //
+    mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(1)) return a;
     else if (b == fixnum_of_int(-1)) return negateb(a);
     else if (b == fixnum_of_int(0))
         return aerror2("bad arg for quotient", a, b);
-    else return quotbn(a, int_of_fixnum(b));
+// Beware: quotbn can only take a 31-bit second argument...
+    intptr_t n = int_of_fixnum(b);
+// Check if b fits within 31-bits of signed integer...
+    if (!SIXTY_FOUR_BIT ||
+        ((int32_t)(n<<1))>>1 == n) return quotbn(a, (int32_t)n);
+// I should only get here on a 64-bit machine! I fake up a 2-word bignum
+// for the value. On a 64-bit system that is NOT a standardly valid bignum,
+// but it will allow me to call quotbb.
+#ifdef HAVE_INT128_T
+// Here I could cope with any case of a bignum with up to 4 digits divided
+// but a 60-bit fixnum by converting things to the very wide type int128_t
+// and just doing the division there. I will consider that sometime
+// but not today!
+#endif
+    return quotbb(a, make_fake_bignum(n), QUOTBB_QUOTIENT_NEEDED);
+}
+
+static LispObject quotrembi(LispObject a, LispObject b)
+{
+//
+// dividing by 1 or -1 seems worth optimising.
+//
+    mv_2 = fixnum_of_int(0);
+    if (b == fixnum_of_int(1)) return a;
+    else if (b == fixnum_of_int(-1)) return negateb(a);
+    else if (b == fixnum_of_int(0))
+        return aerror2("bad arg for quotient", a, b);
+// Beware: quotbn can only take a 31-bit second argument...
+    intptr_t n = int_of_fixnum(b);
+// Check if b fits within 31-bits of signed integer...
+    if (!SIXTY_FOUR_BIT ||
+        ((int32_t)(n<<1))>>1 == n)
+    {   LispObject q = quotbn(a, (int32_t)n);
+        mv_2 = fixnum_of_int(nwork);
+        return q;
+    }
+// I should only get here on a 64-bit machine! I fake up a 2-word bignum
+// for the value. On a 64-bit system that is NOT a standardly valid bignum,
+// but it will allow me to call quotbb.
+#ifdef HAVE_INT128_T
+// Here I could cope with any case of a bignum with up to 4 digits divided
+// but a 60-bit fixnum by converting things to the very wide type int128_t
+// and just doing the division there. I will consider that sometime
+// but not today!
+#endif
+    return quotbb(a, make_fake_bignum(n),
+                  QUOTBB_QUOTIENT_NEEDED | QUOTBB_REMAINDER_NEEDED);
 }
 
 #define quotbs(a, b) quotsb(a, b)
 
-LispObject quotbb(LispObject a, LispObject b)
-//
-// Divide one bignum by another.   This can compute the
-// remainder at the same time as the quotient, and leaves same around
-// in mv_2.  If it is not needed then setting up the remainder is
-// a cost - but usually a modest one (in context), so I think that
-// the simplification is worth-while.
-//
-{   LispObject nil, olda;
-    int sign;
-    int32_t lena, lenb, lenc, lenx, i;
-    uint32_t carry, scale, v1;
-    LispObject q, r;
-//
-// If I am dividing by a one-word bignum I can go a bit faster...
-//
-    lenb = (bignum_length(b)-CELL-4)/4;
-    if (lenb == 0)
-    {   q = quotbn(a, bignum_digits(b)[0]);
-        errexit();
-//
-// Now lots of frivolity packing up the remainder...
-//
-        r = (LispObject)(nwork & fix_mask);
-        if ((int32_t)r == 0 || (int32_t)r == fix_mask)
-            mv_2 = fixnum_of_int(nwork);
-        else
-        {   push(q);
-            a = make_one_word_bignum(nwork);
-            pop(q);
-            errexit();
-            mv_2 = a;
-        }
-        return q;
-    }
-//
-// Convert to sign and magnitude representation
-//
-    push2(a, b);
-    lena = (bignum_length(a)-CELL-4)/4;
-    if ((int32_t)bignum_digits(a)[lena] < 0)
-    {   a = negateb(a);
-        sign = 3;
-    }
+// show() and show1() are not actually called by live code but where used in
+// trace code currently commented out. I will leave them here just for now.
+
+static void show(const char *msg, LispObject a, size_t lena)
+{   trace_printf("%s", msg);
+    if (is_fixnum(a)) trace_printf("#FIX% " PRIx64, int_of_fixnum(a));
     else
-    {   a = copyb(a);
-        sign = 0;
+    {   size_t i = lena;
+        for (;;)
+        {   trace_printf(" %.8x", bignum_digits(a)[i]);
+            if (i == 0) break;
+            i--;
+        }
     }
-    pop(b);
-    errexit();
-    lena = (bignum_length(a)-CELL-4)/4;
+    trace_printf("\n");
+}
 
-    push(a);
-    if ((int32_t)bignum_digits(b)[lenb] < 0)
-    {   b = negateb(b);
-//
-// I MUST NOT do    lenb = (bignum_length(b)-CELL-4)/4;     here because the
-// negateb may have failed and therefore handed back junk rather than
-// a bignum.  E.g. an interrupt provoked by the user or a store-jam might
-// lead to a failure report here. So I must defer re-finding the length until
-// I have checked for exceptions.
-//
-        sign ^= 1;
+static void show1(const char *msg, uint32_t atop, LispObject a, size_t lena)
+{   trace_printf("%s %.8x : ", msg, atop);
+    size_t i = lena;
+    for (;;)
+    {   trace_printf(" %.8x", bignum_digits(a)[i]);
+        if (i == 0) break;
+        i--;
     }
-    else b = copyb(b);
-    pop2(a, olda);  // original a, with original sign
-    errexit();
-    lenb = (bignum_length(b)-CELL-4)/4;
-//
-// Now that the numbers are unsigned it could be that I can drop
-// a leading zero that had previously been necessary.  That could reveal
-// that I have a one-word divisor after all...
-//
-    if (bignum_digits(b)[lenb] == 0) lenb--;
-    if (lenb == 0)
-    {   a = quotbn(a, bignum_digits(b)[0]);
-        errexit();
-        if ((sign & 2) != 0) nwork = -nwork;
-        if ((sign & 1) != 0) a = negate(a);
-        errexit();
-        r = (LispObject)(nwork & fix_mask);
-        if (r == 0 || (int32_t)r == fix_mask) mv_2 = fixnum_of_int(nwork);
-        else
-        {   push(a);
-            if (signed_overflow(nwork))
-            {   if ((int32_t)nwork < 0)
-                    b = make_two_word_bignum(-1, clear_top_bit(nwork));
-                else b = make_two_word_bignum(0, nwork);
-            }
-            else b = make_one_word_bignum(nwork);
-            pop(a);
-            errexit();
-            mv_2 = b;
-        }
-        return a;
-    }
-//
-// Now the divisor is at least two digits long.
-//
-    if (bignum_digits(a)[lena] == 0) lena--;
-//
-// I will take a special case when the lengths of the two numbers
-// match since in that case the quotient will be only one digit long.
-// Also after I have filtered the lena<=lenb cases out, and have treated
-// one-word cases of b specially I will know that the numerator a has
-// at least two digits.
-//
-    if (lena < lenb)
-    {   mv_2 = olda;
-        return fixnum_of_int(0);
-    }
-    else if (lenb == lena)
-    {   uint32_t p0 = bignum_digits(a)[lena-1], p1 = bignum_digits(a)[lena],
-                     q0 = bignum_digits(b)[lenb-1], q1 = bignum_digits(b)[lena],
-                     r0, r1, q, w, carry1;
-//
-// If the dividend is smaller than the divisor I can return zero right now.
-//
-        if (p1 < q1 || (p1 == q1 && p0 < q0))
-        {   mv_2 = olda;
-            return fixnum_of_int(0);
-        }
-//
-// I scale the divisor so that it will have its top bit set (top wrt the
-// 31 bit field that is in use, that is), and scale the top two digits
-// of the dividend to match.  The resulting values can then be divided to get
-// a pretty good estimate for the true quotient.  Note that the division on
-// the next line is UNSIGNED arithmetic.
-//
-        scale = 0x80000000U / ((uint32_t)1 + q1);
-        Dmultiply(carry, w, q0, scale, 0);
-        Dmultiply(q, w, q1, scale, carry);
-        q = w;
-        Dmultiply(carry, w, p0, scale, 0);
-        Dmultiply(carry, w, p1, scale, carry);
-        if (carry == q) q = 0x7fffffff;
-        else
-        {   Ddivide(q, w, carry, w, q);
-            q = w;
-        }
-//
-// q is now my estimated quotient, based on a quick look at high digits.
-//
-        Dmultiply(carry, w, q0, q, 0);
-        r0 = w;
-        Dmultiply(carry, w, q1, q, carry);
-        r1 = w;
-        r0 = r0 - p0;
-        if ((int32_t)r0 < 0)
-        {   r0 = clear_top_bit(r0);
-            r1 = r1 - p1 - 1;
-        }
-        else r1 = r1 - p1;
-// /*
-// the next line is a cop-out for now - if my estimated quotient
-// was close enough to the true value than the residual I get here
-// ought to be fairly small - if it is not I have bungled.  Over several years
-// of tests and use I have not seen the disaster message triggered, but the
-// code should stay in until I can write the paragraph of comment that
-// should go here explaing why all is well...
-//
-        if (carry != 0 && (int32_t)r1 < 0 &&
-            carry != 1 && r1 != ~0x7fffffffU)
-        {   err_printf("\n+++!!!+++ carry needed (line %d of \"%s\")\n",
-                       __LINE__, __FILE__);
-            my_exit(EXIT_FAILURE);
-        }
-//
-// That obtained the remainder from (p1,p0)/(q1,q0) - now adjust q until
-// the remainder has the sign I want it to have.
-//
-// /* I do not look at carry here - I have a nasty suspicion that I should..
-        while ((int32_t)r1 > 0 ||
-               (r1 == 0 && r0 != 0))
-        {   q--;
-            r0 = r0 - q0;
-            if ((int32_t)r0 < 0)
-            {   r0 = clear_top_bit(r0);
-                r1 = r1 - q1 - 1;
-            }
-            else r1 = r1 - q1;
-        }
-//
-// Now q is (p1,p0)/(q1,q0), which is an over-estimate for the true
-// quotient, but by at worst 1.  Compute a proper full-length remainder
-// now, using the original unscaled input numbers.
-//
-        carry = 0;
-        carry1 = 0xffffffffU;
-        for (i=0; i<=lena; i++)
-        {   Dmultiply(carry, w, bignum_digits(b)[i], q, carry);
-            carry1 = bignum_digits(a)[i] + clear_top_bit(~w) + top_bit(carry1);
-            bignum_digits(a)[i] = clear_top_bit(carry1);
-        }
-        if ((int32_t)carry1 >= 0) // need to correct it!
-        {   q--;
-            for (i=0; i<=lena; i++)
-            {   carry1 = bignum_digits(a)[i] + bignum_digits(b)[i] +
-                         top_bit(carry1);
-                bignum_digits(a)[i] = clear_top_bit(carry1);
-            }
-        }
-//
-// Now the quotient is correct - but since I want to hand back a neat
-// remainder I have more to do - I must convert the value stored in a
-// into a legitimate result, and store it in mv_2.
-//
-        while (lena > 0 && bignum_digits(a)[lena] == 0) lena--;
-        if ((bignum_digits(a)[lena] & 0x40000000) != 0) lena++;
-        if (lena == 0)  // Maybe fixnum remainder?
-        {   int32_t rr = bignum_digits(a)[0];
-            if (rr != 0 && (sign & 2) != 0)
-            {   rr = -rr;
-                if ((rr & fix_mask) == fix_mask)
-                {   mv_2 = fixnum_of_int(rr);
-                    goto return_q;
-                }
-            }
-            else if ((rr & fix_mask) == 0)
-            {   mv_2 = fixnum_of_int(rr);
-                goto return_q;
-            }
-        }
-        if ((sign & 2) != 0)
-        {   carry = 0xffffffffU;
-            for (i=0; i<lena; i++)
-            {   carry = clear_top_bit(~bignum_digits(a)[i]) + top_bit(carry);
-                bignum_digits(a)[i] = clear_top_bit(carry);
-            }
-            carry = ~bignum_digits(a)[i] + top_bit(carry);
-            bignum_digits(a)[i] = carry;
-//
-// if my remainder is -2^(31*n-1) then I need to shrink lena here, which
-// seems like a messy case to have to consider.
-//
-            if (carry == 0xffffffffU &&
-                (bignum_digits(a)[i-1] & 0x40000000) != 0)
-            {   bignum_digits(a)[lena] = 0;
-                lena--;
-                bignum_digits(a)[i-1] |= ~0x7fffffff;
-            }
-        }
-//
-// Now tidy up the space that I am about to discard, so that it will not
-// upset the garbage collector.
-//
-        lenx = (bignum_length(a)-CELL)/4;
-        if (SIXTY_FOUR_BIT)
-        {   lenx = (lenx+1) & ~1;
-            lenc = (lena+2) & ~1;
-        }
-        else
-        {   lenx |= 1;  // round up to allow for allocation in doublewords
-            lenc = (lena+1) | 1;
-        }
-        if (lenc != lenx) // space to discard?
-            *(Header *)&bignum_digits(a)[lenc] = make_bighdr(lenx-lenc);
-        numhdr(a) = make_bighdr(lena+1+CELL/4);
-        mv_2 = a;
-    return_q:
-        if (q != 0 && (sign & 1) != 0)
-        {   q = -(int32_t)q;
-            if (((int32_t)q & fix_mask) == fix_mask) return fixnum_of_int(q);
-            if ((q & 0x40000000) == 0)
-                return make_two_word_bignum(-1, clear_top_bit(q));
-        }
-        else if ((q & fix_mask) == 0) return fixnum_of_int(q);
-        else if ((q & 0x40000000) != 0) return make_two_word_bignum(0, q);
-        return make_one_word_bignum(q);
-    }
-//
-// Now both a and b have been made positive, and their original signs
-// have been recorded so that I can tidy up at the end.  The 1 bit in sign
-// tells me what sign the quotient will have, the 2 bit gives the sign
-// for the remainder.  Both a and b have been copied so it will be OK to
-// overwrite them in the process of doing the division.  The length of
-// a is strictly greater than that of b, which itself is at least 2 digits,
-// so this is a real case of long division, although the quotient may still
-// end up small (but non-zero).
-//
+    trace_printf("\n");
+}
 
 //
-// I find a scale factor to multiply a and b by so that the leading digit of
-// the divisor is fairly large.  Again note that the arithmetic is UNSIGNED.
-//
-    scale = 0x80000000U / ((uint32_t)1 + (uint32_t)bignum_digits(b)[lenb]);
-
-    carry = 0;
-    for (i=0; i<=lenb; i++)
-        Dmultiply(carry, bignum_digits(b)[i],
-                  bignum_digits(b)[i], scale, carry);
-    v1 = bignum_digits(b)[lenb];
-
-    carry = 0;
-    for (i=0; i<=lena; i++)
-        Dmultiply(carry, bignum_digits(a)[i],
-                  bignum_digits(a)[i], scale, carry);
-//
-// The scaled value of the numerator a may involve an extra digit
-// beyond those that I have space for in the vector.  Hold this digit
-// in the variable 'carry'.  Note that scaling the divisor did NOT cause
-// it to change length.
+// It is probably way over the top to make all the sub-functions for
+// division "inline", but at least while I am writing it doing so will
+// help discipline me into using procedural abstraction and not writing
+// too much out longhand... And many of these are short enough anyway that
+// the burden of inline expansion will not be huge, and maybe the most
+// common use-cases will be when the big numbers are not very big and so
+// procedure call overhead may be noticable.
 //
 
-    while (lena >= lenb)
-    {   uint32_t w, h0, h1, v2, u2, carry1, carry2, qq, rr;
-        if (carry == v1)
-        {   qq = 0x7fffffff;
-            rr = carry + bignum_digits(a)[lena];
-        }
-        else
-        {   Ddivide(rr, w, carry, bignum_digits(a)[lena], v1);
-            qq = w;
-        }
-        v2 = bignum_digits(b)[lenb-1];
-        Dmultiply(h1, h0, v2, qq, 0);
-        u2 = bignum_digits(a)[lena-1];
-        if (h1 > rr ||
-            (h1 == rr && h0 > u2))
-        {   qq--;
-            h0 -= v2;
-            if ((int32_t)h0 < 0)
-            {   h0 = clear_top_bit(h0);
-                h1--;
-            }
-            rr += v1;
-            if (h1 > rr ||
-                (h1 == rr && h0 > u2)) qq--;
-        }
-//
-// Now subtract off q*b from a, up as far as lena.
-//
-        carry1 = 0;
-        carry2 = 0xffffffffU;
-        for (i=0; i<=lenb; i++)
-        {   Dmultiply(carry1, w, bignum_digits(b)[i], qq, carry1);
-            carry2 = bignum_digits(a)[lena-lenb+i] +
-                     clear_top_bit(~w) + top_bit(carry2);
-            bignum_digits(a)[lena-lenb+i] = clear_top_bit(carry2);
-        }
-        carry2 = carry + clear_top_bit(~carry1) + top_bit(carry2);
-        if ((int32_t)carry2 >= 0) // overshot..
-        {   qq--;
-            carry2 = 0;
-            for (i=0; i<=lenb; i++)
-            {   carry2 = bignum_digits(a)[lena-lenb+i] +
-                         bignum_digits(b)[i] + top_bit(carry2);
-                bignum_digits(a)[lena-lenb+i] = clear_top_bit(carry2);
-            }
-        }
-        carry = bignum_digits(a)[lena];
-        bignum_digits(a)[lena] = qq; // good place to store the quotient
+// If |a| < |b| then a/b is zero. I judge the sizes by looking at how
+// many digits are used in the bignum representations. There is a jolly
+// extra level of though needed here in my case because of the 2s complement
+// representation of numbers. If either a or b is of the form -2^(31*n-1)
+// then it will be stored using a digit less than is needed for +2^(31*n-1).
+// All other numbers retain the same number of big-digits when their absolute
+// value is taken. So the test on the number of digits of the signed values
+// here risks misleading if a or b are of that form. Well the only problem
+// would be if the test succeeded unexpectedly and I returned zero. That
+// might arise for the case a = -2^k and b = +2^k. From that state consider
+// small chnges. If |a| increases even by 1 then lena increases and the
+// special case exit is not activated. If |a| decreases then the quotient
+// will legitimately be zero. If |b| increases then the true quotient ends up
+// as zero, while if |b| decreases then lenb decreases and the special
+// exit is not activated. Any other case where |lena|==|lenb| will have the
+// lengths of a and b unchanged by negation so there can be no risk. So it
+// seems that I have just a single edge case to test for!
+
+static inline LispObject short_numerator(LispObject a, size_t lena,
+                                         LispObject b, size_t lenb)
+{   mv_2 = a;
+// I can only have trouble if the representation of a is just one
+// digit shorter than that of b and a starts off [-2^30,...] while
+// b starts off [0,2^30,...].
+    if (lena != lenb-1 ||
+        (int32_t)bignum_digits(a)[lena] != -0x40000000 ||
+        (int32_t)bignum_digits(b)[lenb] != 0 ||
+        bignum_digits(b)[lenb-1] != 0x40000000U) return fixnum_of_int(0);
+// Furthermore all further digits of both a and b must be zero for the
+// odd case to apply.
+    for (size_t i=0; i<lena; i++)
+        if (bignum_digits(a)[i] != 0x00000000U ||
+            bignum_digits(b)[i] != 0x00000000U) return fixnum_of_int(0);
+// Here we go - return (-1) remainder zero.
+    mv_2 = fixnum_of_int(0);
+    return fixnum_of_int(-1);
+}
+
+static inline size_t copy_unsigned(LispObject r, LispObject a, size_t lena)
+{   if (bignum_digits(a)[lena] == 0) lena--;
+    for (size_t i=0; i<=lena; i++)
+       bignum_digits(r)[i] = bignum_digits(a)[i];
+    return lena;
+}
+
+// The following should only ever be used for negating numbers that
+// start off negative, so the result should always be positive.
+
+static inline size_t copy_negated(LispObject r, LispObject a, size_t lena)
+{   uint32_t carry = 1;
+//  show("input to copy_negated ", a, lena);
+//  trace_printf("with lena = %d\n", (int)lena);
+    for (size_t i=0; i<lena; i++) // all except the top digit
+    {   uint32_t d = (bignum_digits(a)[i] ^ 0x7fffffff) + carry;
+        bignum_digits(r)[i] = d & 0x7fffffff;
+        carry = d >> 31;
+    }
+    if ((bignum_digits(r)[lena] = ~bignum_digits(a)[lena] + carry) == 0)
         lena--;
-    }
+//  show("result of copy_negated ", r, lena);
+//  trace_printf("with lena = %d\n", (int)lena);
+    return lena;
+}
 
-    lena = (bignum_length(a)-CELL-4)/4;
+#define SIGN_QUOTIENT_NEGATIVE   1
+#define SIGN_REMAINDER_NEGATIVE  2
 
-//
-// Now the quotient is in the top digits of a, and the remainder is left
-// (scaled up) in the low bit (plus carry)
-//
-    bignum_digits(b)[lenb] = carry/scale;
-    carry = carry%scale;
-    for (i=lenb-1; i>=0; i--)
-        Ddivide(carry, bignum_digits(b)[i],
-                carry, bignum_digits(a)[i], scale);
-    if (carry != 0)
-    {   err_printf("+++!!!+++ Incorrect unscaling line %d file \"%s\" (%ld)\n",
-                   __LINE__, __FILE__, (long)carry);
-        my_exit(EXIT_FAILURE);
+static inline int make_positive_and_copy(LispObject &a, size_t &lena,
+                                         LispObject &b, size_t &lenb)
+{
+// Before I do anything else I will ensure that there is space available
+// in the working variables... And I will leave myself a few bytes in hand.
+    while (bignum_length(a)+16 >= bignum_length(big_dividend))
+    {   size_t newlen = 2*bignum_length(big_dividend);
+        push2(a, b);
+//      trace_printf("newlen = %d\n", (int)newlen);
+        LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, newlen), nil;
+        pop2(b, a);
+        errexit();
+        big_dividend = w;
     }
-    for (i=0; i<=lena-lenb; i++)
-        bignum_digits(a)[i] = bignum_digits(a)[i+lenb];
-    for (; i < lena; i++) bignum_digits(a)[i] = 0;
-    lena = lena - lenb;
-    while (bignum_digits(a)[lena] == 0) lena--;
+    while (bignum_length(b)+16 >= bignum_length(big_divisor))
+    {   size_t newlen = 2*bignum_length(big_divisor);
+        push2(a, b);
+//      trace_printf("newlen = %d\n", (int)newlen);
+        LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, newlen), nil;
+        pop2(b, a);
+        errexit();
+        big_divisor = w;
+    }
+    while (bignum_length(a)-bignum_length(b)+16 >= bignum_length(big_quotient))
+    {   size_t newlen = 2*bignum_length(big_quotient);
+        push2(a, b);
+//      trace_printf("newlen = %d\n", (int)newlen);
+        LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, newlen), nil;
+        pop2(b, a);
+        errexit();
+        big_quotient = w;
+    }
+    int sign = 0;
+// While copying |a| into big_dividend and |b| into big_divisor I know that
+// the results will be positive, so I discard any leading zero digits that
+// might normally end up on the front of the numbers.
+    if ((int32_t)bignum_digits(a)[lena] < 0)
+    {   lena = copy_negated(big_dividend, a, lena);
+        sign = SIGN_QUOTIENT_NEGATIVE | SIGN_REMAINDER_NEGATIVE;
+    }
+    else lena = copy_unsigned(big_dividend, a, lena);
+    if ((int32_t)bignum_digits(b)[lenb] < 0)
+    {   lenb = copy_negated(big_divisor, b, lenb);
+        sign ^= SIGN_QUOTIENT_NEGATIVE;
+    }
+    else lenb = copy_unsigned(big_divisor, b, lenb);
+    a = big_dividend;
+    b = big_divisor;
+//  trace_printf("operands made positive, lengths %d %d\n", (int)lena, (int)lenb);
+//  show("a: ", a, lena);
+//  show("b: ", b, lenb);
+    return sign;
+}
+
+// This multiplies a by scale (in place) and returns any digit that
+// carries out from the top. The value of scale is exected to be at
+// most 0x40000000U and each digit in a is at most 0x7fffffffU, so the
+// carry digit returned is at worst 0x3fffffffU.
+
+static inline uint32_t timesbn(LispObject a, size_t len, uint32_t scale)
+{   uint32_t carry = 0;
+    for (size_t i=0; i<=len; i++)
+    {   uint64_t d = (uint64_t)bignum_digits(a)[i] * (uint64_t)scale + carry;
+        bignum_digits(a)[i] = (uint32_t)d & 0x7fffffff;
+        carry = (uint32_t)(d >> 31);
+    }
+    return carry;   
+}
+
+static inline int32_t multiply_and_subtract(LispObject a, size_t lena,
+                                            uint32_t q0,
+                                            LispObject b, size_t lenb)
+{   int32_t carry = 0;
+    for (size_t i=0; i<=lenb; i++)
+    {   int64_t d = (int64_t)bignum_digits(a)[lena-lenb+i] -
+                    (int64_t)bignum_digits(b)[i]*(int64_t)q0 +
+                    (int64_t)carry;
+//      trace_printf("%.8x - %.8x * %.8x + %.8x = %" PRIx64 "\n",
+//          bignum_digits(a)[lena-lenb+i],
+//          bignum_digits(b)[i],
+//          q0,
+//          carry,
+//          d);
+        bignum_digits(a)[lena-lenb+i] = (uint32_t)d & 0x7fffffff;
+        carry = (int32_t)(d >> 31);
+//      trace_printf("digit for a = %.8x\n", bignum_digits(a)[lena-lenb+i]);
+//      trace_printf("new carry = %.8x\n", (int)carry);
+    }
+//  trace_printf("return %.8x\n", carry);
+    return carry;   
+}
+
+static inline int32_t add_back_correction(LispObject a, size_t lena,
+                                          LispObject b, size_t lenb)
+{    uint32_t carry = 0;
+     for (size_t i=0; i<=lenb; i++)
+     {   uint32_t d = (uint32_t)bignum_digits(a)[lena-lenb+i] +
+                      (uint32_t)bignum_digits(b)[i] +
+                      carry;
+         bignum_digits(a)[lena-lenb+i] = d & 0x7fffffff;
+         carry = d >> 31;
+     }
+     return carry;   
+}
+
+static inline uint32_t next_quotient_digit(uint32_t atop,
+                                           LispObject a, size_t &lena,
+                                           LispObject b, size_t lenb)
+{   uint64_t p0 = (uint64_t)atop<<31 | bignum_digits(a)[lena];
+    uint32_t q0 =  p0 / (uint64_t)bignum_digits(b)[lenb];
+    uint32_t r0 =  p0 % (uint64_t)bignum_digits(b)[lenb];
+// At this stage q0 may be correct or it may be an over-estimate by 1 or 2,
+// but never any worse than that.
 //
-// the above loop terminates properly since the quotient will be non-zero,
-// which in turn is because I was dividing p by q where p had strictly
-// more digits than q, and was hence strictly greater than q.
+// The test on the next line should detect all case where q0 was in error
+// by 2 and most when it was in error by 1. 
 //
-    if ((bignum_digits(a)[lena] & 0x40000000) != 0) lena++;
-    if ((sign & 1) != 0)            // quotient will be negative
-    {   carry = 0xffffffffU;
-        for (i=0; i<lena; i++)
-        {   carry = clear_top_bit(~bignum_digits(a)[i]) + top_bit(carry);
-            bignum_digits(a)[i] = clear_top_bit(carry);
-        }
-        carry = ~bignum_digits(a)[i] + top_bit(carry);
-        if (carry == 0xffffffffU && (bignum_digits(a)[i-1] & 0x40000000) != 0)
-        {   bignum_digits(a)[lena] = 0;
-            lena--;
-            bignum_digits(a)[i-1] |= ~0x7fffffff;
-        }
-        else bignum_digits(a)[i] = carry;
+//  trace_printf("First try has q0 = %.8x\n", q0);
+    if (q0 == 0x80000000U ||
+        (uint64_t)q0*(uint64_t)bignum_digits(b)[lenb-1] >
+        ((uint64_t)r0<<31 | bignum_digits(a)[lena-1]))
+    {   // trace_printf("Initial correction of q0 by 1\n");
+        q0--;
     }
-    lenx = (bignum_length(a)-CELL)/4;
-    if (SIXTY_FOUR_BIT)
-    {   lenx = (lenx+1) & ~1;  // round up to allow for allocation in doublewords
-        lenc = (lena+2) & ~1;
-    }
-    else
-    {   lenx |= 1;  // round up to allow for allocation in doublewords
-        lenc = (lena+1) | 1;
-    }
-    if (lenc != lenx) // space to discard?
-        *(Header *)&bignum_digits(a)[lenc] = make_bighdr(lenx-lenc);
-    numhdr(a) = make_bighdr(lena+1+CELL/4);
-    if (lena == 0)
-    {   int32_t d = bignum_digits(a)[0];
-        int32_t x = d & fix_mask;
-        if (x == 0 || x == fix_mask) a = fixnum_of_int(d);
-    }
+//  trace_printf("Leading quotient digit = %d = %#x\n", q0, q0);
 //
-// Here I need to tidy up the discarded space that could otherwise
-// kill the poor old garbage collector..
+// Now I want to go "a = a - b*q0*2^(31*(lena-lenb));" so that a
+// is set to an accurate remainder after using q0 as (part of) the
+// quotient. This may carry an overshoot into atop and if so I will need
+// to reduce q0 again and compensate.
 //
-    while (lenb >= 0 && bignum_digits(b)[lenb] == 0) lenb--;
-    if (lenb < 0) mv_2 = fixnum_of_int(0); // hah - zero remainder!
-    else
-    {   if ((bignum_digits(b)[lenb] & 0x40000000) != 0) lenb++;
-        if ((sign & 2) != 0)    // need to negate the remainder
-        {   carry = 0xffffffffU;
-            for (i=0; i<lenb; i++)
-            {   carry = clear_top_bit(~bignum_digits(b)[i]) + top_bit(carry);
-                bignum_digits(b)[i] = clear_top_bit(carry);
-            }
-            carry = ~bignum_digits(b)[i] + top_bit(carry);
-            if (carry == 0xffffffffU && (bignum_digits(b)[i-1] & 0x40000000) != 0)
-            {   bignum_digits(b)[lenb] = 0;
-                lenb--;
-                bignum_digits(b)[i-1] |= ~0x7fffffff;
-            }
-            else bignum_digits(b)[i] = carry;
-        }
-        lenx = (bignum_length(b)-CELL)/4;
-        if (SIXTY_FOUR_BIT)
-        {   lenx = (lenx+1) & ~1;  // round up to allow for allocation in doublewords
-            lenc = (lenb+2) & ~1;
-        }
-        else
-        {   lenx |= 1;  // round up to allow for allocation in doublewords
-            lenc = (lenb+1) | 1;
-        }
-        if (lenc != lenx) // space to discard?
-            *(Header *)&bignum_digits(b)[lenc] = make_bighdr(lenx-lenc);
-        numhdr(b) = make_bighdr(lenb+1+CELL/4);
-        mv_2 = b;
-        if (lenb == 0)
-        {   int32_t r1, rr;
-            rr = bignum_digits(b)[0];
-            r1 = rr & fix_mask;
-            if (r1 == 0 || r1 == fix_mask) mv_2 = fixnum_of_int(rr);
-        }
+    atop += multiply_and_subtract(a, lena, q0, b, lenb);
+//  show1("sets a to ", atop, a, lena);
+    if ((int32_t)atop < 0)
+    {   q0--;
+        atop = add_back_correction(a, lena, b, lenb);
+// When I add back b I ought to get a carry...
+        assert(atop == 1);
     }
-    return a;
+    lena--;  // a is now one digit shorter.
+    return q0;
+}
+
+// a is a scaled positive value that , when divided by the scale factor
+// will be less than the original divisor.
+
+static inline size_t unscale(LispObject a, size_t lena, uint32_t scale)
+{   uint32_t atop = 0;
+    size_t i = lena;
+    for (;;)
+    {   uint64_t d = (uint64_t)atop<<31 | bignum_digits(a)[i];
+        bignum_digits(a)[i] = (uint32_t)(d / scale);
+        atop = (uint32_t)(d % scale);
+        if (i == 0) break;
+        i--;
+    }
+    while (lena != 0 && bignum_digits(a)[lena] == 0) lena--;
+// Deal with the CSL oddity that the top digit of a bignum is treated as
+// a signed 31-bit value, and so I sometimes need a leading zero ahead of it.
+    if ((bignum_digits(a)[lena] & 0x40000000) != 0)
+    {   lena++;
+        bignum_digits(a)[lena] = 0;
+    }
+    return lena;
+}
+
+// Adjust the quotient format so it will be OK for my awkward internal
+// representation.
+
+static inline size_t fix_up_bignum_length(LispObject q, size_t lenq)
+{
+    if ((bignum_digits(q)[lenq] & 0x40000000U) != 0)
+    {   lenq++;
+        bignum_digits(q)[lenq] = 0;
+    }
+    else while (lenq != 0 &&
+        bignum_digits(q)[lenq] == 0 &&
+        (bignum_digits(q)[lenq-1] & 0x40000000U) == 0) lenq--;
+    return lenq;
+}
+
+// For this one the input starts off positive and so it will end up negative.
+// That could lead to it being able to get away with just one fewer digit.
+
+static inline size_t negate_in_place(LispObject a, size_t lena)
+{   uint32_t carry = 1;
+    for (size_t i=0; i<lena; i++)
+    {   uint32_t d = (bignum_digits(a)[i] ^ 0x7fffffff) + carry;
+        bignum_digits(a)[i] = d & 0x7fffffff;
+        carry = d >> 31; 
+//      trace_printf("negate in place: %.8x %.8x\n", bignum_digits(a)[i], carry);
+    }
+// I treat the top digit specially since it is thought of as a signed value.
+    int32_t d = ~bignum_digits(a)[lena] + carry;
+//  trace_printf("top digits = %.8x\n", d);
+    if (d == -1 &&
+        lena != 0 &&
+        (bignum_digits(a)[lena-1] & 0x40000000U) != 0)
+    {   lena--;   // Shorten the number.
+//  trace_printf("shorten and force top bit of previous\n");
+        bignum_digits(a)[lena] |= 0x80000000;
+    }
+    else bignum_digits(a)[lena] = d;
+    return lena;
+}
+
+static inline LispObject pack_up_result(LispObject a, size_t lena)
+{
+//  show("pack_up_result ", a, lena);
+    if (lena == 0 &&
+        (SIXTY_FOUR_BIT || valid_as_fixnum((int32_t)bignum_digits(a)[0])))
+        return fixnum_of_int((int32_t)bignum_digits(a)[0]);
+    else if (SIXTY_FOUR_BIT && lena == 1)
+    {   int64_t r = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+        if (valid_as_fixnum(r)) return fixnum_of_int(r);
+    }
+    LispObject r = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lena+4);
+//  trace_printf("lena = %d  r = %p\n", (int)lena, (void *)r);
+    LispObject nil;
+    errexit();
+    size_t i;
+    for (i=0; i<=lena; i++)
+        bignum_digits(r)[i] = bignum_digits(a)[i];
+    if ((SIXTY_FOUR_BIT && (i & 1) != 0) ||
+        (!SIXTY_FOUR_BIT && (i & 1) == 0)) bignum_digits(a)[i] = 0;
+    return r;    
+}
+
+// I need to make copies of both numerator and denominator here because
+// both get scaled. To avoid turning over more memory than I have to
+// I will use fixed workspace held in big_divisor and big_dividend. These
+// start off as 4-digit bignums, but I will reallocate/expand them here
+// as need-be.  Right at the end of the calculation I will need to
+// transcribe from big_dividend into a fresh new bignum that is returned as
+// the remainder from this division. In these two workspace numbers I
+// will only use the number of low digits relevant in the current calculation,
+// and space beyond that may contain arbitrary garbage. This scheme has a
+// consequence that if somewhere in a calculation the user does operations
+// on really seriously long bignums then these workspace values get
+// expanded and then remain large. Hmmm by expectation is that any space waste
+// that arises will be small in the context of everything else.
+
+LispObject quotbb(LispObject a, LispObject b, int need)
+{   LispObject nil = C_nil;
+    size_t lena = (bignum_length(a)-CELL-4)/4,
+           lenb = (bignum_length(b)-CELL-4)/4;
+// If a has fewer digits than b then the quotient will be zero and I should
+// report that without further messing around. Howver there is enough
+// delicacy here that I lift processing into a sepaarte procedure!
+    if (lena < lenb) return short_numerator(a, lena, b, lenb);
+// I copy the absolute values of a and b to places where it will be
+// OK to overwrite them, taking their absolute values as I go. I record
+// whether the eventual quotient and/or remainder will need to be negated
+// at the end. This leaves the two inputs as rows of unsigned 31-bit digits
+// with a[alen] and b[blen] both non-zero.
+    mv_2 = a;
+    int sign = make_positive_and_copy(a, lena, b, lenb);
+// Tidying up the numbers may reveal a zero-quotient case if on input
+// a and b use the same number of digits but a is of the form
+// [0, 0x4xxxxxxx] while b is [nnnn, mmmm] and so within make_positive_and_copy
+// the leading zero on a is removed.
+    if (lena < lenb) return fixnum_of_int(0);
+// By now a and b both have strictly positive leading digits.
+    size_t lenq = lena-lenb; // potential length of quotient.
+// I will multiply a and b by a scale factor that gets the top digit of "b"
+// reasonably large. The value stored in "a" can become one digit longer,
+// but there is space to store that.
+//
+// The scale factor used here is as per Knuth II edition II. Edition III
+// proposed 0x7fffffffU/bignum_digits(b)[lenb] and if you look at just the
+// leading digit of b alone that seems OK, but I am concerned that when you
+// take lower digits of b into account that multiplying b by it can overflow.
+    uint32_t scale = 0x80000000U / (bignum_digits(b)[lenb] + 1);
+//  trace_printf("scale factor = %.8x\n", scale);
+// When I scale the dividend expands into an extra digit but the scale
+// factor has been chosen so that the divisor does not. So beware that
+// a now has digits running from 0 to lena+1.
+    bignum_digits(a)[lena+1] = timesbn(a, lena, scale);
+    uint32_t btop = timesbn(b, lenb, scale);
+    assert(btop == 0);
+    size_t m = lenq;
+    for (;;)
+    {   uint32_t q = next_quotient_digit(
+            bignum_digits(a)[lena+1], a, lena,
+            b, lenb);
+        bignum_digits(big_quotient)[m] = q;
+        if (m == 0) break;
+        m--;
+    }
+// Unscale and correct the signs.
+    lena = unscale(a, lena+1, scale);
+    if (sign & SIGN_REMAINDER_NEGATIVE)
+        lena = negate_in_place(a, lena);
+// Ensure that the quotient has a prefix zero digit if needbe.
+    lenq = fix_up_bignum_length(big_quotient, lenq);
+    if (sign & SIGN_QUOTIENT_NEGATIVE)
+        lenq = negate_in_place(big_quotient, lenq);
+// Now I need to pack the results so that they are suitable for use
+// elsewhere in the system. 
+    a = pack_up_result(a, lena);
+    errexit();
+    mv_2 = a;
+    return pack_up_result(big_quotient, lenq);
 }
 
 #define quotbr(a, b) quotir(a, b)
@@ -1090,6 +985,7 @@ LispObject quotbb(LispObject a, LispObject b)
 
 static LispObject quotri(LispObject a, LispObject b)
 {   LispObject w, nil;
+    mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(1)) return a;
     else if (b == fixnum_of_int(0))
         return aerror2("bad arg for quotient", a, b);
@@ -1134,6 +1030,7 @@ fail:
 
 static LispObject quotrr(LispObject a, LispObject b)
 {   LispObject w, nil;
+    mv_2 = fixnum_of_int(0);
     push5(numerator(a), denominator(a),
           denominator(b), numerator(b), // NB switched order
           C_nil);
@@ -1192,6 +1089,7 @@ fail:
 
 static LispObject quotci(LispObject a, LispObject b)
 {   LispObject r = real_part(a), i = imag_part(a), nil;
+    mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(0)) return aerror2("bad arg for quotient", a, b);
     push2(b, r);
     i = quot2(i, b);
@@ -1216,6 +1114,7 @@ static LispObject quotci(LispObject a, LispObject b)
 
 static LispObject quotfi(LispObject a, LispObject b)
 {   double d;
+    mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(0)) return aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / (double)int_of_fixnum(b);
     if (trap_floating_overflow &&
@@ -1228,6 +1127,7 @@ static LispObject quotfi(LispObject a, LispObject b)
 
 static LispObject quotfs(LispObject a, LispObject b)
 {   double d = float_of_number(b);
+    mv_2 = fixnum_of_int(0);
     if (d == 0.0) return aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / d;
     if (trap_floating_overflow &&
@@ -1247,6 +1147,7 @@ static LispObject quotfs(LispObject a, LispObject b)
 static LispObject quotff(LispObject a, LispObject b)
 {   int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
     int32_t hc;
+    mv_2 = fixnum_of_int(0);
 // If EITHER argument is a long float I will need to do things differently,
 // bacause I can not use machine-native arithmetic on float128_t.
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
@@ -1285,7 +1186,7 @@ LispObject quot2(LispObject a, LispObject b)
                     if (b == fixnum_of_int(0))
                         return aerror2("bad arg for quotient", a, b);
                     else
-                    {   int32_t r, aa, bb;
+                    {   intptr_t r, aa, bb;
                         aa = int_of_fixnum(a);
                         bb = int_of_fixnum(b);
 // calculate remainder and force its sign to be correct
@@ -1300,11 +1201,14 @@ LispObject quot2(LispObject a, LispObject b)
 // the only case where dividing one fixnum by another can lead to
 // a bignum result is (-0x08000000/(-1)) which JUST overflows.
 //
-                        if (r != 0x08000000) return fixnum_of_int(r);
-                        else return make_one_word_bignum(r);
+                        if (!SIXTY_FOUR_BIT && r == 0x08000000)
+                            return make_one_word_bignum(r);
+                        if (SIXTY_FOUR_BIT && r == INT64_C(0x0800000000000000))
+                            return make_lisp_integer64(r);
+                        else return fixnum_of_int(r);
                     }
 #ifdef SHORT_FLOAT
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                     return quotis(a, b);
 #endif
                 case TAG_NUMBERS:
@@ -1326,16 +1230,16 @@ LispObject quot2(LispObject a, LispObject b)
                     return aerror1("bad arg for quotient",  b);
             }
 #ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
+        case XTAG_SFLOAT:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return quotsi(a, b);
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                 {   Float_union aa, bb;
-                    aa.i = a - TAG_SFLOAT;
-                    bb.i = b - TAG_SFLOAT;
+                    aa.i = a - XTAG_SFLOAT;
+                    bb.i = b - XTAG_SFLOAT;
                     aa.f = (float) (aa.f / bb.f);
-                    return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
+                    return (aa.i & ~(int32_t)0xf) + XTAG_SFLOAT;
                 }
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
@@ -1364,14 +1268,14 @@ LispObject quot2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return quotbi(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return quotbs(a, b);
 #endif
                         case TAG_NUMBERS:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
-                                    return quotbb(a, b);
+                                    return quotbb(a, b, QUOTBB_QUOTIENT_NEEDED);
                                 case TYPE_RATNUM:
                                     return quotbr(a, b);
                                 case TYPE_COMPLEX_NUM:
@@ -1390,7 +1294,7 @@ LispObject quot2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return quotri(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return quotrs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -1416,7 +1320,7 @@ LispObject quot2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return quotci(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return quotcs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -1445,7 +1349,209 @@ LispObject quot2(LispObject a, LispObject b)
             {   case TAG_FIXNUM:
                     return quotfi(a, b);
 #ifdef SHORT_FLOAT
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
+                    return quotfs(a, b);
+#endif
+                case TAG_NUMBERS:
+                {   int32_t hb = type_of_header(numhdr(b));
+                    switch (hb)
+                    {   case TYPE_BIGNUM:
+                            return quotfb(a, b);
+                        case TYPE_RATNUM:
+                            return quotfr(a, b);
+                        case TYPE_COMPLEX_NUM:
+                            return quotfc(a, b);
+                        default:
+                            return aerror1("bad arg for quotient",  b);
+                    }
+                }
+                case TAG_BOXFLOAT:
+                    return quotff(a, b);
+                default:
+                    return aerror1("bad arg for quotient",  b);
+            }
+        default:
+            return aerror1("bad arg for quotient",  a);
+    }
+}
+
+LispObject quotrem2(LispObject a, LispObject b)
+{   switch ((int)a & TAG_BITS)
+    {   case TAG_FIXNUM:
+            switch ((int)b & TAG_BITS)
+            {   case TAG_FIXNUM:
+//
+// This is where fixnum / fixnum arithmetic happens - the case I most want to
+// make efficient.
+//
+                    if (b == fixnum_of_int(0))
+                        return aerror2("bad arg for divide", a, b);
+                    else
+                    {   intptr_t r, aa, bb;
+                        aa = int_of_fixnum(a);
+                        bb = int_of_fixnum(b);
+// calculate remainder and force its sign to be correct
+                        r = aa % bb;
+                        if (aa < 0)
+                        {   if (r > 0) r -= bb;
+                        }
+                        else if (r < 0) r += bb;
+                        mv_2 = fixnum_of_int(r);
+// then the division can be an exact one, as here
+                        r = (aa - r)/bb;
+//
+// the only case where dividing one fixnum by another can lead to
+// a bignum result is (-0x08000000/(-1)) which JUST overflows.
+//
+                        if (r == -MOST_NEGATIVE_FIXVAL)
+                            return make_lisp_integerptr(r);
+                        else return fixnum_of_int(r);
+                    }
+#ifdef SHORT_FLOAT
+                case XTAG_SFLOAT:
+                    return quotis(a, b);
+#endif
+                case TAG_NUMBERS:
+                {   int32_t hb = type_of_header(numhdr(b));
+                    switch (hb)
+                    {   case TYPE_BIGNUM:
+                            return quotib(a, b);
+                        case TYPE_RATNUM:
+                            return quotir(a, b);
+                        case TYPE_COMPLEX_NUM:
+                            return quotic(a, b);
+                        default:
+                            return aerror1("bad arg for quotient",  b);
+                    }
+                }
+                case TAG_BOXFLOAT:
+                    return quotif(a, b);
+                default:
+                    return aerror1("bad arg for quotient",  b);
+            }
+#ifdef SHORT_FLOAT
+        case XTAG_SFLOAT:
+            switch ((int)b & TAG_BITS)
+            {   case TAG_FIXNUM:
+                    return quotsi(a, b);
+                case XTAG_SFLOAT:
+                {   Float_union aa, bb;
+                    aa.i = a - XTAG_SFLOAT;
+                    bb.i = b - XTAG_SFLOAT;
+                    aa.f = (float) (aa.f / bb.f);
+                    return (aa.i & ~(int32_t)0xf) + XTAG_SFLOAT;
+                }
+                case TAG_NUMBERS:
+                {   int32_t hb = type_of_header(numhdr(b));
+                    switch (hb)
+                    {   case TYPE_BIGNUM:
+                            return quotsb(a, b);
+                        case TYPE_RATNUM:
+                            return quotsr(a, b);
+                        case TYPE_COMPLEX_NUM:
+                            return quotsc(a, b);
+                        default:
+                            return aerror1("bad arg for quotient",  b);
+                    }
+                }
+                case TAG_BOXFLOAT:
+                    return quotsf(a, b);
+                default:
+                    return aerror1("bad arg for quotient",  b);
+            }
+#endif
+        case TAG_NUMBERS:
+        {   int32_t ha = type_of_header(numhdr(a));
+            switch (ha)
+            {   case TYPE_BIGNUM:
+                    switch ((int)b & TAG_BITS)
+                    {   case TAG_FIXNUM:
+                            return quotrembi(a, b);
+#ifdef SHORT_FLOAT
+                        case XTAG_SFLOAT:
+                            return quotbs(a, b);
+#endif
+                        case TAG_NUMBERS:
+                        {   int32_t hb = type_of_header(numhdr(b));
+                            switch (hb)
+                            {   case TYPE_BIGNUM:
+                                    return quotbb(a, b,
+                                        QUOTBB_QUOTIENT_NEEDED |
+                                        QUOTBB_REMAINDER_NEEDED);
+                                case TYPE_RATNUM:
+                                    return quotbr(a, b);
+                                case TYPE_COMPLEX_NUM:
+                                    return quotbc(a, b);
+                                default:
+                                    return aerror1("bad arg for quotient",  b);
+                            }
+                        }
+                        case TAG_BOXFLOAT:
+                            return quotbf(a, b);
+                        default:
+                            return aerror1("bad arg for quotient",  b);
+                    }
+                case TYPE_RATNUM:
+                    switch ((int)b & TAG_BITS)
+                    {   case TAG_FIXNUM:
+                            return quotri(a, b);
+#ifdef SHORT_FLOAT
+                        case XTAG_SFLOAT:
+                            return quotrs(a, b);
+#endif
+                        case TAG_NUMBERS:
+                        {   int32_t hb = type_of_header(numhdr(b));
+                            switch (hb)
+                            {   case TYPE_BIGNUM:
+                                    return quotrb(a, b);
+                                case TYPE_RATNUM:
+                                    return quotrr(a, b);
+                                case TYPE_COMPLEX_NUM:
+                                    return quotrc(a, b);
+                                default:
+                                    return aerror1("bad arg for quotient",  b);
+                            }
+                        }
+                        case TAG_BOXFLOAT:
+                            return quotrf(a, b);
+                        default:
+                            return aerror1("bad arg for quotient",  b);
+                    }
+                case TYPE_COMPLEX_NUM:
+                    switch ((int)b & TAG_BITS)
+                    {   case TAG_FIXNUM:
+                            return quotci(a, b);
+#ifdef SHORT_FLOAT
+                        case XTAG_SFLOAT:
+                            return quotcs(a, b);
+#endif
+                        case TAG_NUMBERS:
+                        {   int32_t hb = type_of_header(numhdr(b));
+                            switch (hb)
+                            {   case TYPE_BIGNUM:
+                                    return quotcb(a, b);
+                                case TYPE_RATNUM:
+                                    return quotcr(a, b);
+                                case TYPE_COMPLEX_NUM:
+                                    return quotcc(a, b);
+                                default:
+                                    return aerror1("bad arg for quotient",  b);
+                            }
+                        }
+                        case TAG_BOXFLOAT:
+                            return quotcf(a, b);
+                        default:
+                            return aerror1("bad arg for quotient",  b);
+                    }
+                default:    return aerror1("bad arg for quotient",  a);
+            }
+        }
+        case TAG_BOXFLOAT:
+            switch ((int)b & TAG_BITS)
+            {   case TAG_FIXNUM:
+                    return quotfi(a, b);
+#ifdef SHORT_FLOAT
+                case XTAG_SFLOAT:
                     return quotfs(a, b);
 #endif
                 case TAG_NUMBERS:
@@ -1495,7 +1601,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                     if (b == fixnum_of_int(0))
                         return aerror2("bad arg for /", a, b);
                     else
-                    {   int32_t r, aa, bb, w;
+                    {   intptr_t r, aa, bb, w;
                         aa = int_of_fixnum(a);
                         bb = int_of_fixnum(b);
                         if (bb < 0) aa = -aa, bb = -bb;
@@ -1506,8 +1612,12 @@ LispObject CLquot2(LispObject a, LispObject b)
 // the only case where dividing one fixnum by another can lead to
 // a bignum result is (-0x08000000/(-1)) which JUST overflows.
 //
-                            if (r != 0x08000000) return fixnum_of_int(r);
-                            else return make_one_word_bignum(r);
+                            if (!SIXTY_FOUR_BIT && r == 0x08000000)
+                                return make_one_word_bignum(r);
+                            else if (SIXTY_FOUR_BIT &&
+                                r == INT64_C(0x0800000000000000))
+                                return make_lisp_integer64(r);
+                            else return fixnum_of_int(r);
                         }
                         w = bb;
                         if (r < 0) r = -r;
@@ -1521,7 +1631,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                         return make_ratio(fixnum_of_int(aa), fixnum_of_int(bb));
                     }
 #ifdef SHORT_FLOAT
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                     return quotis(a, b);
 #endif
                 case TAG_NUMBERS:
@@ -1543,16 +1653,16 @@ LispObject CLquot2(LispObject a, LispObject b)
                     return aerror1("bad arg for /",  b);
             }
 #ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
+        case XTAG_SFLOAT:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return quotsi(a, b);
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                 {   Float_union aa, bb;
-                    aa.i = a - TAG_SFLOAT;
-                    bb.i = b - TAG_SFLOAT;
+                    aa.i = a - XTAG_SFLOAT;
+                    bb.i = b - XTAG_SFLOAT;
                     aa.f = (float) (aa.f / bb.f);
-                    return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
+                    return (aa.i & ~(int32_t)0xf) + XTAG_SFLOAT;
                 }
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
@@ -1581,7 +1691,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return CLquotbi(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return quotbs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -1607,7 +1717,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return quotri(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return quotrs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -1633,7 +1743,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return quotci(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return quotcs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -1662,7 +1772,7 @@ LispObject CLquot2(LispObject a, LispObject b)
             {   case TAG_FIXNUM:
                     return quotfi(a, b);
 #ifdef SHORT_FLOAT
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                     return quotfs(a, b);
 #endif
                 case TAG_NUMBERS:
@@ -1687,6 +1797,5 @@ LispObject CLquot2(LispObject a, LispObject b)
             return aerror1("bad arg for /",  a);
     }
 }
-
 
 // end of arith03.cpp

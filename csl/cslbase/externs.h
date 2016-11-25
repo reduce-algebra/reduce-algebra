@@ -176,7 +176,7 @@ extern LispObject multiplication_buffer;
                           memory_reference((intptr_t)stack); } while (0)
 #define push6(a,b,c,d,e,f) do {push3(a,b,c); push3(d,e,f); } while (0)
 
-#define my_pop()        (memory_reference((int32_t)stack), (*stack--))
+#define my_pop()        (memory_reference((intptr_t)stack), (*stack--))
 #define pop(a)          { memory_reference((intptr_t)stack); (a) = *stack--; }
 #define pop2(a,b)       { memory_reference((intptr_t)stack); (a) = *stack--; memory_reference((intptr_t)stack); (b) = *stack--; }
 #define pop3(a,b,c)     { memory_reference((intptr_t)stack); (a) = *stack--; memory_reference((intptr_t)stack); (b) = *stack--; memory_reference((intptr_t)stack); (c) = *stack--; }
@@ -464,6 +464,8 @@ extern LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
 extern LispObject prompt_thing, faslgensyms;
 extern LispObject prinl_symbol, emsg_star, redef_msg;
 extern LispObject expr_symbol, fexpr_symbol, macro_symbol;
+extern LispObject big_divisor, big_dividend, big_quotient;
+extern LispObject big_fake1, big_fake2;
 extern LispObject cl_symbols, active_stream, current_module;
 extern LispObject native_defs, features_symbol, lisp_package;
 extern LispObject sys_hash_table, help_index, cfunarg, lex_words;
@@ -824,7 +826,6 @@ extern bool volatile already_in_gc, tick_on_gc_exit;
 extern bool volatile interrupt_pending, tick_pending;
 extern int deal_with_tick();
 extern bool trap_floating_overflow;
-extern int current_fp_rep;
 extern const char *errorset_msg;
 extern int errorset_code;
 extern void unwind_stack(LispObject *, bool findcatch);
@@ -910,7 +911,6 @@ extern "C" LispObject list4(LispObject a, LispObject b,
                         LispObject c, LispObject d);
 extern "C" LispObject lognot(LispObject a);
 extern LispObject macroexpand(LispObject form, LispObject env);
-extern LispObject make_one_word_bignum(int32_t n);
 extern LispObject make_package(LispObject name);
 extern LispObject make_string(const char *b);
 extern LispObject make_nstring(const char *b, int32_t n);
@@ -940,6 +940,7 @@ extern void prin_to_terminal(LispObject u);
 extern void prin_to_debug(LispObject u);
 extern void prin_to_query(LispObject u);
 extern void prin_to_trace(LispObject u);
+extern void prinhex_to_trace(const char *msg, LispObject value);
 extern void prin_to_error(LispObject u);
 extern void loop_print_stdout(LispObject o);
 extern void loop_print_terminal(LispObject o);
@@ -957,6 +958,7 @@ extern void        print_bighexoctbin(LispObject u,
 extern LispObject putprop(LispObject a, LispObject b,
                           LispObject c);
 extern "C" LispObject quot2(LispObject a, LispObject b);
+extern "C" LispObject quotrem2(LispObject a, LispObject b);
 extern "C" LispObject rational(LispObject a);
 extern void        read_eval_print(int noisy);
 extern "C" LispObject reclaim(LispObject value_to_return, const char *why,
@@ -1066,15 +1068,11 @@ extern void validate_string_fn(LispObject a, const char *f, int l);
 // Helpers for the bignum arithmetic code...
 //
 
-#ifndef IMULTIPLY
 extern uint32_t Imultiply(uint32_t *rlow, uint32_t a,
                           uint32_t b, uint32_t c);
-#endif
-#ifndef IDIVIDE
 extern uint32_t Idivide(uint32_t *qp, uint32_t a,
                         uint32_t b, uint32_t c);
 extern uint32_t Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
-#endif
 
 #define argcheck(var, n, msg) if ((var)!=(n)) return aerror(msg);
 

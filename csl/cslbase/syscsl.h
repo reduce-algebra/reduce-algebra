@@ -354,22 +354,11 @@ extern void write_profile(const char *filename);
 
 #endif
 
-//
-// Imultiply and Idivide are things that you may want to re-implement in
-// machine code - if so here are their signatures, and you should #define
-// IMULTIPLY/IDIVIDE in machine.h to say what you have done.  See arithXX.c
-// for the portable versions.
-//
-
-#ifdef IMULTIPLY
 extern uint32_t Imultiply(uint32_t *rlow, uint32_t a,
                           uint32_t b, uint32_t c);
-#endif
-#ifdef IDIVIDE
 extern uint32_t Idivide(uint32_t *qp, uint32_t a,
                         uint32_t b, uint32_t c);
 extern uint32_t Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
-#endif
 
 //
 // When the garbage collector observes that memory is tight it can attempt

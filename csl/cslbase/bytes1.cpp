@@ -1,4 +1,4 @@
-// bytes1.cpp                        Copyright (C) 1991-2016, Codemist    
+// bytes1.cpp                             Copyright (C) 1991-2016, Codemist
 //
 //
 // Bytecode interpreter for Lisp
@@ -153,14 +153,6 @@ LispObject get(LispObject a, LispObject b)
         return onevalue(nil);
     }
     w = qcar(pl);
-if ((intptr_t)w < 0)
-{  fprintf(stderr, "\n@@@ messed up symbol ");
-   simple_print(a);
-   fprintf(stderr, " GETTING ");
-   simple_print(b);
-   fprintf(stderr, "\n");
-   return aerror("get messed up");
-}
     if (qcar(w) == b)
     {
 #ifdef RECORD_GET
@@ -259,14 +251,6 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
     pl = qplist(a);
     while (pl != nil)
     {   LispObject w = qcar(pl);
-if ((intptr_t)w < 0)
-{  fprintf(stderr, "\n@@@ putprop mess for symbol %p<", (void *)a);
-   simple_print(a);
-   fprintf(stderr, "> property %p<", (void *)b);
-   simple_print(b);
-   fprintf(stderr, ">\n");
-   myabort();
-}
         if (qcar(w) == b)
         {   qcdr(w) = c;
             return c;
@@ -2007,7 +1991,7 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 continue;
 
             case OP_ADD1:
-                if (is_fixnum(A_reg) && A_reg != fixnum_of_int(0x07ffffff))
+                if (is_fixnum(A_reg) && A_reg != MOST_POSITIVE_FIXNUM)
                 {   A_reg += 0x10;
                     continue;
                 }
@@ -2025,10 +2009,19 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 
             case OP_PLUS2:
                 if (is_fixnum(A_reg) && is_fixnum(B_reg))
-                {   n = int_of_fixnum(A_reg) + int_of_fixnum(B_reg);
-                    k = n & fix_mask;
-                    if (k == 0 || k == fix_mask)
-                    {   A_reg = fixnum_of_int(n);
+                {   intptr_t nn = int_of_fixnum(A_reg) + int_of_fixnum(B_reg);
+                    if (valid_as_fixnum(nn))
+                    {   A_reg = fixnum_of_int(nn);
+                        continue;
+                    }
+                    else
+                    {   save_pc();
+                        C_stack = stack;
+                        A_reg = make_lisp_integerptr(nn);
+                        nil = C_nil;
+                        if (exception_pending()) goto error_exit;
+                        stack = C_stack;
+                        restore_pc();
                         continue;
                     }
                 }
@@ -2045,7 +2038,7 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 continue;
 
             case OP_SUB1:
-                if (is_fixnum(A_reg) && A_reg != fixnum_of_int(~0x07ffffff))
+                if (is_fixnum(A_reg) && A_reg != MOST_NEGATIVE_FIXNUM)
                 {   A_reg -= 0x10;
                     continue;
                 }
@@ -2063,10 +2056,19 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 
             case OP_DIFFERENCE:
                 if (is_fixnum(A_reg) && is_fixnum(B_reg))
-                {   n = int_of_fixnum(B_reg) - int_of_fixnum(A_reg);
-                    k = n & fix_mask;
-                    if (k == 0 || k == fix_mask)
-                    {   A_reg = fixnum_of_int(n);
+                {   intptr_t nn = int_of_fixnum(B_reg) - int_of_fixnum(A_reg);
+                    if (valid_as_fixnum(nn))
+                    {   A_reg = fixnum_of_int(nn);
+                        continue;
+                    }
+                    else
+                    {   save_pc();
+                        C_stack = stack;
+                        A_reg = make_lisp_integerptr(nn);
+                        nil = C_nil;
+                        if (exception_pending()) goto error_exit;
+                        stack = C_stack;
+                        restore_pc();
                         continue;
                     }
                 }
@@ -5051,6 +5053,19 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #endif
             continue;
         }
+// In normal cases if I get a tail call to another function that is also
+// bytecoded I will transfer to it using this incantation of the byte-stream
+// interpreter. If the function concerned was one that was to be traced
+// I will display a message of the form "Tail call to..." as I transfer
+// to it. But in that case it seems hard to arrange that I then print the
+// result of the function when I finally return from it (which may be
+// via a further chain of tail calls). There are times when this is horrible
+// because I want to see what I am doing! My fixup here is that if the
+// system has been compiled fro debugging then I do not take the call as
+// a tail on e- and in consequence tracing will be nicer. But this could
+// lead to extreme stack use, so if you define another magic symbol at
+// compile time you lose the trace capability but regain compact stacks...
+#if !defined DEBUG || defined TAILCALL_EVEN_WHEN_DEBUGGING
         else if (f345 == tracebytecoded0 || f345 == tracesetbytecoded0)
         {   r2 = elt(litvec, 0);
             lit = qenv(r1);
@@ -5081,6 +5096,7 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #endif
             continue;
         }
+#endif
         C_stack = ((LispObject *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
@@ -5169,6 +5185,7 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #endif
             continue;
         }
+#if !defined DEBUG || defined TAILCALL_EVEN_WHEN_DEBUGGING
         else if (f1 == tracebytecoded1 || f1 == tracesetbytecoded1)
         {   r2 = elt(litvec, 0);
             lit = qenv(r1);
@@ -5196,6 +5213,7 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #endif
             continue;
         }
+#endif
         C_stack = ((LispObject *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
@@ -5308,6 +5326,7 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #endif
             continue;
         }
+#if !defined DEBUG || defined TAILCALL_EVEN_WHEN_DEBUGGING
         else if (f2 == tracebytecoded2 || f2 == tracesetbytecoded2)
         {   r2 = elt(litvec, 0);
             lit = qenv(r1);
@@ -5335,6 +5354,7 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #endif
             continue;
         }
+#endif
         C_stack = ((LispObject *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);
@@ -5425,6 +5445,7 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #endif
             continue;
         }
+#if !defined DEBUG || defined TAILCALL_EVEN_WHEN_DEBUGGING
         else if (f345 == tracebytecoded3 || f345 == tracesetbytecoded3)
         {   r3 = elt(litvec, 0);
             lit = qenv(r1);
@@ -5452,6 +5473,7 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #endif
             continue;
         }
+#endif
         C_stack = ((LispObject *)((intptr_t)entry_stack & ~(intptr_t)1));
 #ifndef NO_BYTECOUNT
         if (callstack != nil) callstack = qcdr(callstack);

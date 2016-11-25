@@ -68,15 +68,6 @@
 //
 
 //
-// I provide symbols IMULTIPLY and IDIVIDE which can be asserted if the
-// corresponding routines have been provided elsewhere (e.g. in machine
-// code for extra speed)
-//
-
-#ifndef IMULTIPLY
-
-#ifdef HAVE_UINT64_T
-//
 // If I have 64-bit unsigneds available this function in not in fact needed
 // since a macro in arith.h arranges that the multiplication is done
 // in-line.  However this version is left here in the source code as
@@ -103,134 +94,126 @@ uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b, uint32_t c)
     return (uint32_t)(r >> 31);
 }
 
-
-#else
-
-uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b, uint32_t c)
-//
-//          (result, *rlow) = a*b + c     as 62-bit product
-//
-// The code given here forms the produce by doing three single-precision
-// (16*16->32) multiplies and using shifts etc to glue the partial results
-// together.  This is slightly faster than the above (maybe simpler?) code
-// on at least some machines.
-//
-{   uint32_t ah, bh;
-    uint32_t w0, w1, w2;
-    ah = a >> 16;
-//
-// On some machines I know that multi-bit shifts are especially painful,
-// while on others it is nasty to access the literal value needed as a
-// mask here.  Hence I make some show of providing an alternative.
-//
-    a &= 0xffff;
-    bh = b >> 16;
-    b &= 0xffff;
-//
-// At present I can not see any way of issuing any of these multiplies
-// any earlier, or of doing useful work between the times that I launch
-// them, or even delaying before I use their results.  This will be rather
-// sad on machines where multiplication could overlap with other operations.
-//
-    w2 = ah*bh;
-    w1 = (a + ah)*(b + bh);
-    w0 = a*b;
-//
-// The largest exact result that can be computed by the next line (given
-// that a and b start off just 31 bit) is 0xfffd0002
-//
-    w1 = (w1 - w2) - w0;  // == (a*bh + b*ah)
-//
-// I split into 30 bits in the lower word and 32 in the upper, so I have
-// 2 bits available for temporary carry effects in the lower part.
-//
-    w2 = (w2 << 2) + (w1 >> 14) + (w0 >> 30) + (c >> 30);
-    w1 &= 0x3fff;
-    w0 = (c & 0x3fffffff) + (w0 & 0x3fffffffU) + (w1 << 16);
-    w0 += ((w2 & 1) << 30);
-    w2 = (w2 >> 1) + (w0 >> 31);
-    *rlow = w0 & 0x7fffffffU;
-    return w2;
-}
-
-#endif
-#endif // IMULTIPLY
-
 static LispObject timesii(LispObject a, LispObject b)
 //
 // multiplying two fixnums together is much messier than adding them,
-// mainly because the result can easily be a two-word bignum
+// mainly because the result can easily be a bignum
 //
-{   uint32_t aa = (uint32_t)int_of_fixnum(a),
-                 bb = (uint32_t)int_of_fixnum(b);
-    uint32_t temp, low, high;
+{   int64_t aa = (int64_t)int_of_fixnum(a),
+            bb = (int64_t)int_of_fixnum(b);
 //
 // Multiplication by 0 or by 1 is just possibly common enough to be worth
 // filtering out the following special cases.  Avoidance of the tedious
 // checks for overflow may make this useful even if Imultiply is very fast.
 //
-    if (aa <= 1)
+    if ((uint64_t)aa <= 1U)
     {   if (aa == 0) return fixnum_of_int(0);
         else return b;
     }
-    else if (bb <= 1)
+    else if ((uint64_t)bb <= 1U)
     {   if (bb == 0) return fixnum_of_int(0);
         else return a;
     }
-//
-// I dump the low part of the product in temp then copy to a variable low
-// because temp has to have its address taken and so is not a candidate for
-// living in a register.
-//
-    Dmultiply(high, temp, clear_top_bit(aa), clear_top_bit(bb), 0);
-//
-// The result handed back here has only 31 bits active in its low part.
-//
-    low = temp;
-//
-// The next two lines convert the unsigned product produced by Imultiply
-// into a signed product.
-//
-    if ((int32_t)aa < 0) high -= bb;
-    if ((int32_t)bb < 0) high -= aa;
-    if ((high & 0x40000000) == 0) high = clear_top_bit(high);
-    else high = set_top_bit(high);
-    if (high == 0 && (low & 0x40000000) == 0)
-    {   // one word positive result
-        if (low <= 0x07ffffff) return fixnum_of_int(low);
-        else return make_one_word_bignum(low);
+    if (!SIXTY_FOUR_BIT) return make_lisp_integer64(aa*bb);
+// Here I am on a 64-bit machine... First I will see if the two inputs
+// would have fitted nicely in 32-bit words because if they would have then I
+// can just multiply them to get a 64-bit result.
+    if (aa == (int32_t)aa)
+    {   if (bb == (int32_t)bb) return make_lisp_integer64(aa*bb);
+        int32_t blo = (int32_t)bb & 0x7fffffff;
+        int32_t bhi = (int32_t)(bb>>31);
+        int64_t lo = aa*blo;
+        int64_t hi = aa*bhi + (lo>>31);
+        lo &= 0x7fffffff;
+        if ((hi<<(31+4))>>(31+4) == hi) // Result can be a fixnum
+            return fixnum_of_int(hi<<31 | lo);
+        if ((hi<<(64-31))>>(64-31) == hi) // Result can be a 2-word bignum
+            return make_two_word_bignum((int32_t)hi, (uint32_t)lo);
+        else return make_three_word_bignum((int32_t)(hi>>31),
+            (uint32_t)(hi & 0x7fffffff), (uint32_t)lo);
     }
-    else if (high == 0xffffffffU && (low & 0x40000000) != 0)
-    {   // one word negative result
-        low = set_top_bit(low);
-        if (((int32_t)low & fix_mask) == fix_mask) return fixnum_of_int(low);
-        else return make_one_word_bignum(low);
+    else if (bb == (int32_t)bb)
+    {
+// here b fits in 32-bits but a does not. This is basically the same code
+// as for the same state but the other way around
+        int32_t alo = (int32_t)aa & 0x7fffffff;
+        int32_t ahi = (int32_t)(aa>>31);
+        int64_t lo = bb*alo;
+        int64_t hi = bb*ahi + (lo>>31);
+        lo &= 0x7fffffff;
+        if ((hi<<(31+4))>>(31+4) == hi) // Result can be a fixnum
+            return fixnum_of_int(hi<<31 | lo);
+        if ((hi<<(64-31))>>(64-31) == hi) // Result can be a 2-word bignum
+            return make_two_word_bignum((int32_t)hi, (uint32_t)lo);
+        else return make_three_word_bignum((int32_t)(hi>>31),
+            (uint32_t)(hi & 0x7fffffff), (uint32_t)lo);
     }
-    else return make_two_word_bignum(high, low);
+// Here both operands are larger than 32-bits, so I have to use the most
+// general procedure. Well at least each input is at most 60-bits wide,
+// so I have some range in hand while I work in 64-bit integers. Also
+// here I know that the result will be at least a 64-bit value and so
+// will need to be at least a 3-word bignum.
+    int32_t alo = (int32_t)aa & 0x7fffffff;
+    int32_t ahi = (int32_t)(aa>>31);
+    int32_t blo = (int32_t)bb & 0x7fffffff;
+    int32_t bhi = (int32_t)(bb>>31);
+// alo and blo are both 31-bit integers and hence look positive
+    int64_t lo = (int64_t)alo*(int64_t)blo;
+// ahi and bhi are only 29-bit (signed) values, so mid ends up at
+// worst a 61-bit value.
+    int64_t mid = (int64_t)alo*(int64_t)bhi + (int64_t)ahi*(int64_t)blo;
+// hi is limited to 58 bits
+    int64_t hi = (int64_t)ahi*(int64_t)bhi;
+    mid += lo>>31;
+    lo &= 0x7fffffff;
+    hi += mid>>31;
+    mid &= 0x7fffffff;
+    if ((hi<<(64-31))>>(64-31) == hi) // Result can be a 2-word bignum
+        return make_three_word_bignum((int32_t)hi,
+            (uint32_t)mid, (uint32_t)lo);
+    else return make_four_word_bignum((int32_t)(hi>>31),
+        (uint32_t)(hi & 0x7fffffff), (uint32_t)mid, (uint32_t)lo);
 }
 
 static LispObject timesis(LispObject a, LispObject b)
 {
-#ifndef SHORT_FLOAT
-    return fixnum_of_int(0);
-#else
     Float_union bb;
-    bb.i = b - TAG_SFLOAT;
-    bb.f = (float) ((float)int_of_fixnum(a) * bb.f);
-    return (bb.i & ~(int32_t)0xf) + TAG_SFLOAT;
-#endif
+    bb.i = b - XTAG_SFLOAT;
+    bb.f = (float)((float)int_of_fixnum(a) * bb.f);
+    return low32((bb.i & ~0xf) + XTAG_SFLOAT);
 }
 
 //
 // This code has existed since around 1990, but in January 2008 a bug
-// surfaced relating to cases such as (-2)*(2^61-1) where the top digit of the
-// bignum is close to overflowing and so needing an additional word.
+// surfaced relating to cases such as (-2)*(2^61-1) where the top digit
+// of the bignum is close to overflowing and so needing an additional word.
+//
 // The ability of bugs to persist in code that is notionally simple is
 // something to remind oneself about constantly!
 //
+// In the case of a 64-bit machine the fixnum argument a could be over
+// 2^31 (by rather a lot). That would really mess this code up a lot, so
+// if that case arises I will divert into timesbb.
+
+static LispObject timesbb(LispObject a, LispObject b);
 
 static LispObject timesib(LispObject a, LispObject b)
-{   int32_t aa = int_of_fixnum(a);
+{   if (SIXTY_FOUR_BIT)
+    {   int64_t aa = int_of_fixnum(a);
+        if (((a<<33)>>33) != a)  // See if a is too big for the easy code
+        {   push(b);
+// This makes a 2-word bignum that is not normally valid on a 64-bit
+// platform, but that is useful as direct input to timesbb.
+            a = make_two_word_bignum((int32_t)(aa>>31),
+                                     (uint32_t)(aa&0x7fffffff));
+            pop(b);
+            LispObject nil = C_nil;
+            errexit();
+            return timesbb(a, b);
+        }
+// Here a is just a 31-bit signed value.
+    }
+    int32_t aa = int_of_fixnum(a);
     size_t lenb, i;
     uint32_t carry, ms_dig, w;
     LispObject c, nil;
@@ -291,7 +274,7 @@ static LispObject timesib(LispObject a, LispObject b)
 //
     carry = 0;
 //
-// here aa is > 0, and a fortiori the 0x80000000 bit of aa is clear,
+// Here aa is > 0, and a fortiori the 0x80000000 bit of aa is clear,
 // so I do not have to worry about the difference between 31 and 32
 // bit values for aa.
 //
@@ -1838,13 +1821,40 @@ LispObject times2(LispObject a, LispObject b)
 LispObject times2(LispObject a, LispObject b)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
-            switch ((int)b & TAG_BITS)
+            if (is_sfloat(a))
+            {   switch (b & TAG_BITS)
+                {   case TAG_FIXNUM:
+                        return timessi(a, b);
+                    case XTAG_SFLOAT:
+                    {   Float_union aa, bb; // timesss() coded in-line
+                        aa.i = a - XTAG_SFLOAT;
+                        bb.i = b - XTAG_SFLOAT;
+                        aa.f = (float) (aa.f * bb.f);
+                        return low32((aa.i & ~0xf) + XTAG_SFLOAT);
+                    }
+                    case TAG_NUMBERS:
+                    {   int hb = type_of_header(numhdr(b));
+                        switch (hb)
+                        {   case TYPE_BIGNUM:
+                                return timessb(a, b);
+                            case TYPE_RATNUM:
+                                return timessr(a, b);
+                            case TYPE_COMPLEX_NUM:
+                                return timessc(a, b);
+                            default:
+                                return aerror1("bad arg for times",  b);
+                        }
+                    }
+                    case TAG_BOXFLOAT:
+                        return timessf(a, b);
+                    default:
+                        return aerror1("bad arg for times",  b);
+                }
+            }
+            else switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
-                    return timesii(a, b);
-#ifdef SHORT_FLOAT
-                case TAG_SFLOAT:
-                    return timesis(a, b);
-#endif
+                    if (is_sfloat(b)) return timesis(a, b);
+                    else return timesii(a, b);
                 case TAG_NUMBERS:
                 {   int hb = type_of_header(numhdr(b));
                     switch (hb)
@@ -1863,37 +1873,6 @@ LispObject times2(LispObject a, LispObject b)
                 default:
                     return aerror1("bad arg for times",  b);
             }
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-            switch (b & TAG_BITS)
-            {   case TAG_FIXNUM:
-                    return timessi(a, b);
-                case TAG_SFLOAT:
-                {   Float_union aa, bb; // timesss() coded in-line
-                    aa.i = a - TAG_SFLOAT;
-                    bb.i = b - TAG_SFLOAT;
-                    aa.f = (float) (aa.f * bb.f);
-                    return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
-                }
-                case TAG_NUMBERS:
-                {   int hb = type_of_header(numhdr(b));
-                    switch (hb)
-                    {   case TYPE_BIGNUM:
-                            return timessb(a, b);
-                        case TYPE_RATNUM:
-                            return timessr(a, b);
-                        case TYPE_COMPLEX_NUM:
-                            return timessc(a, b);
-                        default:
-                            return aerror1("bad arg for times",  b);
-                    }
-                }
-                case TAG_BOXFLOAT:
-                    return timessf(a, b);
-                default:
-                    return aerror1("bad arg for times",  b);
-            }
-#endif
         case TAG_NUMBERS:
         {   int ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1902,7 +1881,7 @@ LispObject times2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return timesbi(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return timesbs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -1928,7 +1907,7 @@ LispObject times2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return timesri(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return timesrs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -1954,7 +1933,7 @@ LispObject times2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return timesci(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return timescs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -1983,7 +1962,7 @@ LispObject times2(LispObject a, LispObject b)
             {   case TAG_FIXNUM:
                     return timesfi(a, b);
 #ifdef SHORT_FLOAT
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                     return timesfs(a, b);
 #endif
                 case TAG_NUMBERS:

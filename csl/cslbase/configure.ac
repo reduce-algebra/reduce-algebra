@@ -1218,6 +1218,17 @@ AC_CHECK_TYPES([complex double], [], [],
     #include <complex.h>
     #endif])
 
+# On SOME platforms gcc (and clang) support a type "__int128". In particular
+# it is available on 64-bits Intel/AMD platforms, which are one of the
+# most common situations and hence one where using the hardware support
+# for multiplication and division here can be good.
+#
+AC_CHECK_TYPES([__int128, unsigned __int128])
+# I would view the following as better names for 128-bit integer types and
+# will map __int128 etc onto them. But if they exist already I will expect
+# them to do what they should.
+AC_CHECK_TYPES([int128_t, unsigned uint128_t])
+
 # With luck the above types from newer C standards will be available. If
 # they are I can rely on them an I then do not need to worry about
 # the sized of the older-style native types such as "long". And for

@@ -845,15 +845,6 @@ void write_u64(uint64_t n)
     }
 }
 
-// For the transport of floating point values I will suppose that for
-// floats the only problem is that for some machines the byte order
-// may be backwards. For doubles I will allow for both the possibility
-// of ordering within each 32-bit word and ordering of the low and high
-// order word of the whole number.
-// I will evaluation the situation on the machine I am running on and
-// act accordingly. This should already have been done, and current_fp_rep
-// should give information!
-
 // Note that the type-punning used here (even as against an array of char)
 // seems to go beyond what C++ guarantees to support. I believe that at
 // least at present gcc guarantees to treat it in a way where those of an
@@ -865,38 +856,39 @@ typedef union _float32u
     float f;
 } float32u;
 
+// softfloat.h will have defined LITTLEENDIAN in the case that applies
+// for (eg) INtel, and not for teh case of Sun/Sparc.
+
 float read_f32()
 {   float32u u;
-    if ((current_fp_rep & FP_BYTE_ORDER) == 0)
-    {   u.i[0] = read_data_byte();
-        u.i[1] = read_data_byte();
-        u.i[2] = read_data_byte();
-        u.i[3] = read_data_byte();
-    }
-    else
-    {   u.i[3] = read_data_byte();
-        u.i[2] = read_data_byte();
-        u.i[1] = read_data_byte();
-        u.i[0] = read_data_byte();
-    }
+#ifdef LITTLEENDIAN
+    u.i[0] = read_data_byte();
+    u.i[1] = read_data_byte();
+    u.i[2] = read_data_byte();
+    u.i[3] = read_data_byte();
+#else
+    u.i[3] = read_data_byte();
+    u.i[2] = read_data_byte();
+    u.i[1] = read_data_byte();
+    u.i[0] = read_data_byte();
+#endif
     return u.f;
 }
 
 void write_f32(double f)
 {   float32u u;
     u.f = f;
-    if ((current_fp_rep & FP_BYTE_ORDER) == 0)
-    {   write_byte(u.i[0], "part of float");
-        write_byte(u.i[1], "part of float");
-        write_byte(u.i[2], "part of float");
-        write_byte(u.i[3], "part of float");
-    }
-    else
-    {   write_byte(u.i[3], "part of float");
-        write_byte(u.i[2], "part of float");
-        write_byte(u.i[1], "part of float");
-        write_byte(u.i[0], "part of float");
-    }
+#ifdef LITTLEENDIAN
+    write_byte(u.i[0], "part of float");
+    write_byte(u.i[1], "part of float");
+    write_byte(u.i[2], "part of float");
+    write_byte(u.i[3], "part of float");
+#else
+    write_byte(u.i[3], "part of float");
+    write_byte(u.i[2], "part of float");
+    write_byte(u.i[1], "part of float");
+    write_byte(u.i[0], "part of float");
+#endif
 }
 
 typedef union _float64u
@@ -906,44 +898,50 @@ typedef union _float64u
 
 double read_f64()
 {   float64u u;
-    for (int i=0; i<8; i+=4)
-    {   int j = i;
-        if ((current_fp_rep & FP_WORD_ORDER) != 0) j = j ^ 4;
-        if ((current_fp_rep & FP_BYTE_ORDER) == 0)
-        {   u.i[j+0] = read_data_byte();
-            u.i[j+1] = read_data_byte();
-            u.i[j+2] = read_data_byte();
-            u.i[j+3] = read_data_byte();
-        }
-        else
-        {   u.i[j+3] = read_data_byte();
-            u.i[j+2] = read_data_byte();
-            u.i[j+1] = read_data_byte();
-            u.i[j+0] = read_data_byte();
-        }
-    }
+#ifdef LITTLEENDIAN
+    u.i[0] = read_data_byte();
+    u.i[1] = read_data_byte();
+    u.i[2] = read_data_byte();
+    u.i[3] = read_data_byte();
+    u.i[4] = read_data_byte();
+    u.i[5] = read_data_byte();
+    u.i[6] = read_data_byte();
+    u.i[7] = read_data_byte();
+#else
+    u.i[7] = read_data_byte();
+    u.i[6] = read_data_byte();
+    u.i[5] = read_data_byte();
+    u.i[4] = read_data_byte();
+    u.i[3] = read_data_byte();
+    u.i[2] = read_data_byte();
+    u.i[1] = read_data_byte();
+    u.i[0] = read_data_byte();
+#endif
     return u.f;
 }
 
 void write_f64(double f)
 {   float64u u;
     u.f = f;
-    for (int i=0; i<8; i+=4)
-    {   int j = i;
-        if ((current_fp_rep & FP_WORD_ORDER) != 0) j = j ^ 4;
-        if ((current_fp_rep & FP_BYTE_ORDER) == 0)
-        {   write_byte(u.i[j+0] , "part of double");
-            write_byte(u.i[j+1] , "part of double");
-            write_byte(u.i[j+2] , "part of double");
-            write_byte(u.i[j+3] , "part of double");
-        }
-        else
-        {   write_byte(u.i[j+3] , "part of double");
-            write_byte(u.i[j+2] , "part of double");
-            write_byte(u.i[j+1] , "part of double");
-            write_byte(u.i[j+0] , "part of double");
-        }
-    }
+#ifdef LITTLEENDIAN
+    write_byte(u.i[0], "part of double");
+    write_byte(u.i[1], "part of double");
+    write_byte(u.i[2], "part of double");
+    write_byte(u.i[3], "part of double");
+    write_byte(u.i[4], "part of double");
+    write_byte(u.i[5], "part of double");
+    write_byte(u.i[6], "part of double");
+    write_byte(u.i[7], "part of double");
+#else
+    write_byte(u.i[7], "part of double");
+    write_byte(u.i[6], "part of double");
+    write_byte(u.i[5], "part of double");
+    write_byte(u.i[4], "part of double");
+    write_byte(u.i[3], "part of double");
+    write_byte(u.i[2], "part of double");
+    write_byte(u.i[1], "part of double");
+    write_byte(u.i[0], "part of double");
+#endif
 }
 
 
@@ -3689,6 +3687,10 @@ LispObject Lunserialize(LispObject nil, int nargs, ...)
 void write_everything()
 {   LispObject nil = C_nil;
     set_up_function_tables();
+// These may have been messed with during the run. Reset them here to
+// be tidy.
+    big_divisor = make_four_word_bignum(0, 0, 0, 0);
+    big_dividend = make_four_word_bignum(0, 0, 0, 0);
     copy_into_nilseg(false);
     if (!setup_codepointers)
     {   set_up_function_tables();

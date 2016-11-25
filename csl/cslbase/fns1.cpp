@@ -1,4 +1,4 @@
-// fns1.cpp                           Copyright (C) 1989-2015 Codemist    
+// fns1.cpp                                Copyright (C) 1989-2016 Codemist    
 
 //
 // Basic functions part 1.
@@ -758,9 +758,8 @@ LispObject Lfixp(LispObject nil, LispObject a)
 // Standard Lisp defines fixp to say yes to bignums as well as
 // fixnums. The code here is as in intergerp.
 //
-    int tag = ((int)a) & TAG_BITS;
-    if (tag == TAG_FIXNUM) return onevalue(lisp_true);
-    else if (tag == TAG_NUMBERS)
+    if (is_fixnum(a)) return onevalue(lisp_true);
+    else if (is_numbers(a))
     {   Header h = *(Header *)((char *)a - TAG_NUMBERS);
         if (type_of_header(h) == TYPE_BIGNUM) return onevalue(lisp_true);
         else return onevalue(nil);
@@ -770,24 +769,14 @@ LispObject Lfixp(LispObject nil, LispObject a)
 }
 
 LispObject Lfloatp(LispObject nil, LispObject p)
-{   int tag = TAG_BITS & (int)p;
-#ifdef SHORT_FLOATS
-    if (tag == TAG_SFLOAT) return onevalue(lisp_true);
-#endif
-// Beware the next line if I move boxed floats to within TAG_NUMBERS
-    if (tag == TAG_BOXFLOAT) return onevalue(lisp_true);
+{   if (is_bfloat(p)) return onevalue(lisp_true);
+    else if (is_sfloat(p)) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
 static LispObject Lshort_floatp(LispObject nil, LispObject p)
-{
-#ifdef SHORT_FLOATS
-    int tag = TAG_BITS & (int)p;
-    if (tag == TAG_SFLOAT) return onevalue(lisp_true);
+{   if (is_sfloat(p)) return onevalue(lisp_true);
     else return onevalue(nil);
-#else
-    return onevalue(nil);
-#endif
 }
 
 static LispObject Lsingle_floatp(LispObject nil, LispObject p)
@@ -1182,7 +1171,7 @@ static LispObject Lliststar(LispObject nil, int nargs, ...)
 static LispObject Lfill_vector(LispObject, int nargs, ...)
 {   va_list a;
     LispObject v, il;
-    int32_t i;
+    intptr_t i;
     if (nargs < 3) return aerror("fill-vector");
     va_start(a, nargs);
     v = va_arg(a, LispObject);
@@ -1220,11 +1209,11 @@ LispObject Lpair(LispObject nil, LispObject a, LispObject b)
 }
 
 
-static int32_t membercount(LispObject a, LispObject b)
+static size_t membercount(LispObject a, LispObject b)
 //
 // Counts how many times a is a member of the list b
 //
-{   int32_t r = 0;
+{   size_t r = 0;
 #ifdef COMMON
     LispObject nil = C_nil;
 #endif
@@ -1259,14 +1248,14 @@ LispObject Lintersect(LispObject nil, LispObject a, LispObject b)
         errexitn(3);
 // Here I ignore any item in a that is not also in b
         if (w != nil)
-        {   int32_t n1 = membercount(qcar(stack[-1]), stack[0]);
+        {   size_t n1 = membercount(qcar(stack[-1]), stack[0]);
             errexitn(3);
 //
 // Here I want to arrange that items only appear in the result list multiple
 // times if they occur multiple times in BOTH the input lists.
 //
             if (n1 != 0)
-            {   int32_t n2 = membercount(qcar(stack[-1]), stack[-2]);
+            {   size_t n2 = membercount(qcar(stack[-1]), stack[-2]);
                 errexitn(3);
                 if (n2 > n1) n1 = 0;
             }
@@ -1845,14 +1834,14 @@ LispObject getvector(int tag, int type, size_t size)
 // hits performance, so I will do it occasionally. The 1 in 500 indicated
 // at present is a pretty random choice of frequency!
 //
-    if (true || (++validate_count) % 500 == 0)
+    if ((++validate_count) % 500 == 0)
     {   copy_into_nilseg(false);
         validate_all("getvector", __LINE__, __FILE__);
     }
 #endif
     for (;;)
     {   char *r = (char *)vfringe;
-        uint32_t free = (size_t)((char *)vheaplimit - r);
+        size_t free = (size_t)((char *)vheaplimit - r);
 //
 // On a 64-bit system the allocation size will be a multiple of 8 anyway, so
 // the doubleword_align here will have no effect! The result is that I never
@@ -2013,9 +2002,7 @@ double pop_clock(void)
 }
 
 LispObject Ltime(LispObject nil, int nargs, ...)
-{   uint32_t tt, tthigh;
-    double td;
-    LispObject r;
+{   LispObject r;
     if (clock_stack == &consolidated_time[0])
     {   clock_t t0 = read_clock();
         double delta = (double)(t0 - base_time)/(double)CLOCKS_PER_SEC;
@@ -2023,49 +2010,17 @@ LispObject Ltime(LispObject nil, int nargs, ...)
         consolidated_time[0] += delta;
     }
     argcheck(nargs, 0, "time");
-//
-// If I just converted to an uint32_t value here I would get overflow
-// after 2^32 milliseconds, which is 49.7 days. This is, I fear, just within
-// the range that could come and bite me! So I will arrange the
-// conversion so I get a greater range supported!
-//
-    td = 1000.0 * consolidated_time[0];
-//
-// By dividing by 2^16 I get a value tthigh that only only approaches overflow
-// after almost 9000 years. That seems good enough to me!
-//
-    tthigh = (uint32_t)(td/(double)0x10000);
-//
-// On the next line the conversion of thigh back to a double and the
-// multiplication ought not to introduce any error at all, and so td should
-// and up an accurate remainder.
-//
-    td -= (double)0x10000 * (double)tthigh;
-    if (td < 0.0)
-    {   tthigh--;
-        td += (double)0x10000;
-    }
-    tt = (uint32_t)td;
-//
-// Now I shuffle bits in tt and tthigh to get a proper CSL-ish representation
-// of a 2-word integer, with the low 31 bits in tt.
-//
-    tt += (tthigh & 0x7fff) << 16;
-    tthigh >>= 15;
-    if ((tt & 0x80000000) != 0)
-    {   tt &= 0x7fffffff;
-        tthigh++;
-    }
-    if (tthigh != 0) r = make_two_word_bignum(tthigh, tt);
-    else if ((tt & fix_mask) != 0) r = make_one_word_bignum(tt);
-    else return onevalue(fixnum_of_int(tt));
+    r = make_lisp_unsigned64((uint64_t)(1000.0 * consolidated_time[0]));
     errexit();
     return onevalue(r);
 }
 
-LispObject Lgctime(LispObject, int nargs, ...)
-{   argcheck(nargs, 0, "gctime");
-    return onevalue(fixnum_of_int((int32_t)(1000.0 * gc_time)));
+LispObject Lgctime(LispObject nil, int nargs, ...)
+{   LispObject r;
+    argcheck(nargs, 0, "gctime");
+    r = make_lisp_unsigned64((uint64_t)(1000.0 * gc_time));
+    errexit();
+    return onevalue(r);
 }
 
 LispObject Ldecoded_time(LispObject nil, int nargs, ...)
@@ -2186,20 +2141,15 @@ LispObject Ldatestamp(LispObject nil, int nargs, ...)
 //
 // Returns date-stamp integer, which on many systems will be the
 // number of seconds between 1970.0.0 and now, but which could be
-// pretty-well other things, as per the C "time_t" type.
+// pretty-well almost any other thing, as per the C "time_t" type.
+// I do not allow for time-zones etc here either!
 //
-{   LispObject w;
+{   LispObject r;
     time_t t = time(NULL);
-//
-// Hmmm - I need to check time_t on a 64-bit machine!
-//
-    uint32_t n = (uint32_t)t;   // NON-PORTABLE assumption about time_t
     argcheck(nargs, 0, "datestamp");
-    if ((n & fix_mask) == 0) w = fixnum_of_int(n);
-    else if ((n & 0xc0000000U) == 0) w = make_one_word_bignum(n);
-    else w = make_two_word_bignum((n >> 31) & 1, n & 0x7fffffff);
+    r = make_lisp_integer64((int64_t)t);
     errexit();
-    return onevalue(w);
+    return onevalue(r);
 }
 
 LispObject Ltimeofday(LispObject nil, int nargs, ...)
@@ -2212,22 +2162,22 @@ LispObject Ltimeofday(LispObject nil, int nargs, ...)
 {   LispObject w;
     time_t t = time(NULL);
 //
-// Note that the 32-bit time used here will wrap in 2038.
+// Note that if this is a 32-bit value it will wrap in 2038. Probably some
+// other API should be used here!
 //
-    uint32_t n = (uint32_t)t, un = 0;
+    uint64_t n = (uint64_t)t;
+    uint32_t un = 0;  // will be for microseconds, so value will be 0-999999
 #ifdef HAVE_SYS_TIME_H
 #ifdef HAVE_GETTIMEOFDAY
-// If more precise informatuon is available then use it
+// If more precise information is available then use it
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    n = (uint32_t)tv.tv_sec;
+    n = (uint64_t)tv.tv_sec;
     un = (uint32_t)tv.tv_usec;
 #endif
 #endif
     argcheck(nargs, 0, "datestamp");
-    if ((n & fix_mask) == 0) w = fixnum_of_int(n);
-    else if ((n & 0xc0000000U) == 0) w = make_one_word_bignum(n);
-    else w = make_two_word_bignum((n >> 31) & 1, n & 0x7fffffff);
+    w = make_lisp_unsigned64(n);
     errexit();
     w = cons(w, fixnum_of_int(un));
     errexit();
@@ -2301,36 +2251,50 @@ static LispObject Ldatelessp(LispObject nil, LispObject a, LispObject b)
     return onevalue(Lispify_predicate(res));
 }
 
-static LispObject Lrepresentation1(LispObject nil, LispObject a)
+LispObject Lrepresentation1(LispObject nil, LispObject a)
 //
 // Intended for debugging, and use with indirect (q.v.)
 //
-{   if (SIXTY_FOUR_BIT)
-    {   a = make_lisp_integer64((int64_t)a);
-        errexit();
-        return onevalue(a);
-    }
-    else
-    {   a = make_lisp_integer32((int32_t)a);
-        errexit();
-        return onevalue(a);
-    }
+{   a = make_lisp_integer64((intptr_t)a);
+    errexit();
+    return onevalue(a);
 }
 
-static LispObject Lrepresentation2(LispObject nil,
-                                   LispObject a, LispObject b)
+LispObject Lrepresentation2(LispObject nil, LispObject a, LispObject b)
 //
 // Intended for debugging, and use with indirect (q.v.).  arg2, if
-// present and non-nil makes this more verbose.
+// present and non-nil makes this more verbose. If arg2 is numeric it
+// prints slightly less than if it is other non-nil things!
 //
 {   if (SIXTY_FOUR_BIT)
-    {   if (b != nil) trace_printf(" %.16" PRIx64 " ", (uint64_t)a);
-        a = make_lisp_integer64((int64_t)a);
+    {   if (b != nil)
+        {   if (!is_fixnum(b))
+                trace_printf("R = %.16" PRIx64 " ", (uint64_t)a);
+            if (is_numbers(a) && is_bignum(a))
+            {   size_t len = (length_of_header(numhdr(a))-CELL)/4;
+                for (size_t i=len; i>0; i--)
+                    trace_printf("%.8x ", bignum_digits(a)[i-1]);
+            }
+            else if (is_fixnum(a))
+                trace_printf("#%cFIX:%" PRIx64, ((intptr_t)a>=0 ? 'p' : 'n'),
+                             int_of_fixnum(a));
+            trace_printf("\n");
+        }
+        a = make_lisp_integer64((intptr_t)a);
         errexit();
         return onevalue(a);
     }
     else
-    {   if (b != nil) trace_printf(" %.8lx ", (long)(uint32_t)a);
+    {   if (b != nil)
+        {   if (!is_fixnum(b))
+                trace_printf("R = %.8lx ", (long)(uint32_t)a);
+            if (is_numbers(a) && is_bignum(a))
+            {   size_t len = (length_of_header(numhdr(a))-CELL)/4;
+                for (size_t i=len; i>0; i--)
+                    trace_printf("%.8x ", bignum_digits(a)[i-1]);
+            }
+            trace_printf("\n");
+        }
         a = make_lisp_integer32((int32_t)a);
         errexit();
         return onevalue(a);
@@ -2338,9 +2302,7 @@ static LispObject Lrepresentation2(LispObject nil,
 }
 
 LispObject Lindirect(LispObject, LispObject a)
-{   if (SIXTY_FOUR_BIT)
-        return onevalue(*(LispObject *)(intptr_t)sixty_four_bits(a));
-    else return onevalue(*(LispObject *)(intptr_t)thirty_two_bits(a));
+{   return onevalue(*(LispObject *)(intptr_t)sixty_four_bits(a));
 }
 
 //

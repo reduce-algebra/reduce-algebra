@@ -2199,11 +2199,6 @@ void preserve(const char *banner, size_t len)
         while (k != 0) k--, Iputc(NEWLINE_CHAR);
     }
 //
-//  flip_needed = false; Since I stop after (preserve) these lines are unnecessary?
-//  old_fp_rep = current_fp_rep;
-//
-
-//
 // I need to check for write errors here and moan if there were any...
 //
     if (IcloseOutput()) error(0, err_write_err);

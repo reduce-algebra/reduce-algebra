@@ -41,15 +41,135 @@
 #include "headers.h"
 
 //
+// The following verifies that a number is properly formatted - a
+// fixnum if small enough or a decently normalised bignum.  For use when
+// there is suspicion of a bug wrt such matters. Call is
+//   validate_number("msg", numberToCheck, nX, nY)
+// where nX and nY are values shown in any diagnostic.
+//
+
+// If I make validate-number stop absolutely that can be useful if I am
+// running under a debugger, because I can put a break-point on Lstop
+// and there I when I run normally I know I do not run on beyond trouble.
+// But if I let it exit reporting an error I may get a Lisp-level backtrace...
+// and that too can be helpful. So while I decide and to make temporary
+// changes easier I will parameterize the code...
+
+// #define VALIDATE_STOPS 1
+
+LispObject validate_number(char *s, LispObject a, LispObject b, LispObject c)
+{   int32_t la, msd, nsd;
+    if (!is_numbers(a)) return a;
+    la = (length_of_header(numhdr(a))-CELL-4)/4;
+    if (la < 0)
+    {   trace_printf("%s: number with no digits (%.8x)\n", s, numhdr(a));
+        prin_to_trace(b), trace_printf("\n");
+        prin_to_trace(c), trace_printf("\n");
+#ifdef VALIDATE_STOPS
+        Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+#else
+        return aerror1("validate-number", a);
+#endif
+    }
+    if (la == 0)
+    {   if (SIXTY_FOUR_BIT)
+        {   trace_printf("One word bignum invalid on 64-bit platform\n");
+            prin_to_trace(a), trace_printf("\n");
+            prin_to_trace(b), trace_printf("\n");
+            prin_to_trace(c), trace_printf("\n");
+#ifdef VALIDATE_STOPS
+            Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+#else
+            return aerror1("validate-number", a);
+#endif
+        }
+        else
+        {   msd = bignum_digits(a)[0];
+            if (valid_as_fixnum(msd))
+            {   trace_printf("%s: %.8x should be fixnum\n", s, msd);
+                prin_to_trace(b), trace_printf("\n");
+                prin_to_trace(c), trace_printf("\n");
+#ifdef VALIDATE_STOPS
+                Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+#else
+                return aerror1("validate-number", a);
+#endif
+            }
+            if (signed_overflow(msd))
+            {   trace_printf("%s: %.8x should be two-word\n", s, msd);
+                prin_to_trace(b), trace_printf("\n");
+                prin_to_trace(c), trace_printf("\n");
+#ifdef VALIDATE_STOPS
+                Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+#else
+                return aerror1("validate-number", a);
+#endif
+            }
+            return a;
+        }
+    }
+    if (SIXTY_FOUR_BIT && la == 1)
+    {   int64_t v = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+        if (valid_as_fixnum(v))
+        {   trace_printf("%s: %#" PRIx64 " should be fixnum\n", s, v);
+            prin_to_trace(b), trace_printf("\n");
+            prin_to_trace(c), trace_printf("\n");
+#ifdef VALIDATE_STOPS
+            Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+#else
+            return aerror1("validate-number", a);
+#endif
+        }
+    }
+    msd = bignum_digits(a)[la];
+    if (signed_overflow(msd))
+    {   trace_printf("%s: %.8x should be longer\n", s, msd);
+        prin_to_trace(b), trace_printf("\n");
+        prin_to_trace(c), trace_printf("\n");
+#ifdef VALIDATE_STOPS
+        Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+#else
+        return aerror1("validate-number", a);
+#endif
+    }
+    if (msd == 0 && ((nsd = bignum_digits(a)[la-1]) & 0x40000000) == 0)
+    {   trace_printf("%s: 0: %.8x should be shorter\n", s, nsd);
+        prin_to_trace(b), trace_printf("\n");
+        prin_to_trace(c), trace_printf("\n");
+#ifdef VALIDATE_STOPS
+        Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+#else
+        return aerror1("validate-number", a);
+#endif
+    }
+    else if (msd == -1 && ((nsd = bignum_digits(a)[la-1]) & 0x40000000) != 0)
+    {   trace_printf("%s: -1: %.8x should be shorter\n", s, nsd);
+        prin_to_trace(b), trace_printf("\n");
+        prin_to_trace(c), trace_printf("\n");
+#ifdef VALIDATE_STOPS
+        Lstop(nil, fixnum_of_int(1)); // System error, so stop.
+#else
+        return aerror1("validate-number", a);
+#endif
+    }
+    return a; // OK
+}
+
+
+
+//
 // I start off with a collection of utility functions that create
 // Lisp structures to represent various sorts of numbers
 // and which extract values from same.
 // The typedefs that explain the layout of these structures are in "tags.h"
 //
 
-LispObject make_lisp_unsigned64(uint64_t n)
-{   if (n < 0x08000000) return fixnum_of_int((int32_t)n);
-    if (n < 0x40000000)
+// The functions here are called via inline functions that are in arith.h and
+// that check if all that is needed is fixnum_of_int, so here I know that
+// I have to create a bignum.
+
+LispObject make_lisp_unsigned64_fn(uint64_t n)
+{   if (!SIXTY_FOUR_BIT && n < 0x40000000)
         return make_one_word_bignum((int32_t)n);
     if (n < UINT64_C(0x2000000000000000))
         return make_two_word_bignum((int32_t)(n >> 31),
@@ -60,9 +180,8 @@ LispObject make_lisp_unsigned64(uint64_t n)
                (int32_t)(n & 0x7fffffff));
 }
 
-LispObject make_lisp_integer64(int64_t n)
-{   if (n < 0x08000000 && n >= -0x08000000) return fixnum_of_int((int32_t)n);
-    if (n < 0x40000000 && n >= -0x40000000)
+LispObject make_lisp_integer64_fn(int64_t n)
+{   if (!SIXTY_FOUR_BIT && (n < 0x40000000 && n >= -0x40000000))
         return make_one_word_bignum((int32_t)n);
     if (n < INT64_C(0x2000000000000000) &&
         n >= -INT64_C(0x2000000000000000))
@@ -74,20 +193,66 @@ LispObject make_lisp_integer64(int64_t n)
                (int32_t)(n & 0x7fffffff));
 }
 
-LispObject make_lisp_integer32(int32_t n)
-{   int32_t n1;
-    if (n < 0x08000000 && n >= -0x08000000) return fixnum_of_int(n);
-    n1 = n >> 4;
-    if (n1 < 0x08000000 && n1 >= -0x08000000)
+LispObject make_lisp_unsignedptr_fn(uintptr_t n)
+{   if (!SIXTY_FOUR_BIT && n < 0x40000000)
+        return make_one_word_bignum((int32_t)n);
+    if (!SIXTY_FOUR_BIT || n < (uintptr_t)UINT64_C(0x2000000000000000))
+        return make_two_word_bignum((int32_t)(n >> 31),
+                                    (int32_t)(n & 0x7fffffff));
+    return make_three_word_bignum(
+               (int32_t)(n >> 62),
+               (int32_t)((n >> 31) & 0x7fffffff),
+               (int32_t)(n & 0x7fffffff));
+}
+
+LispObject make_lisp_integerptr_fn(intptr_t n)
+{   if (!SIXTY_FOUR_BIT && (n < 0x40000000 && n >= -0x40000000))
+        return make_one_word_bignum((int32_t)n);
+    if (!SIXTY_FOUR_BIT ||
+        (n < (intptr_t)INT64_C(0x2000000000000000) &&
+         n >= -(intptr_t)INT64_C(0x2000000000000000)))
+        return make_two_word_bignum((int32_t)(n >> 31),
+                                    (int32_t)(n & 0x7fffffff));
+    return make_three_word_bignum(
+               (int32_t)(n >> 62),
+               (int32_t)((n >> 31) & 0x7fffffff),
+               (int32_t)(n & 0x7fffffff));
+}
+
+LispObject make_lisp_integer32_fn(int32_t n)
+{   if (!SIXTY_FOUR_BIT && (n < 0x40000000 && n >= -0x40000000))
         return make_one_word_bignum(n);
     return make_two_word_bignum(n >> 31, n & 0x7fffffff);
+}
+
+// There are places within the arithmetic code where the simplest
+// implementatiom for combining a bignum and a fixnum seemed to be to
+// convert the fixnum into a bignum representation, even though that
+// should never arise "in the wild". This function makes a 1 or 2 word
+// bignum as necessary.
+
+LispObject make_fake_bignum(intptr_t n)
+{   LispObject w, nil;
+// I can be a 1-word bignum if the value is up to 31-bits...
+    if (!SIXTY_FOUR_BIT ||
+        (-0x40000000 <= n &&
+         n < 0x40000000))
+    {   bignum_digits(big_fake1)[0] = n;
+        if (SIXTY_FOUR_BIT) bignum_digits(big_fake1)[1] = 0;  // padding
+        return big_fake1;
+    }
+    bignum_digits(big_fake2)[1] = (int32_t)(n >> 31);
+    bignum_digits(big_fake2)[0] = (uint32_t)(n & 0x7fffffff);
+    if (!SIXTY_FOUR_BIT) bignum_digits(big_fake2)[2] = 0;     // padding
+    return big_fake2;
 }
 
 LispObject make_one_word_bignum(int32_t n)
 //
 // n is an integer - create a bignum representation of it.  This is
 // done when n is outside the range 0xf8000000 to 0x07ffffff, but
-// inside the range 0xc0000000 to 0x3fffffff.
+// inside the range 0xc0000000 to 0x3fffffff on a 32-bit machine. It
+// should never be needed on a 64-bit system!
 //
 {   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4);
     LispObject nil;
@@ -128,6 +293,24 @@ LispObject make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
     return w;
 }
 
+LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
+                                 uint32_t a1, uint32_t a0)
+//
+// This make a 4-word bignum from the 4-word value (a3,a2,a1,a0), where it
+// must have been arranged already that the values are correctly
+// normalized.
+//
+{   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+16);
+    LispObject nil;
+    errexit();
+    bignum_digits(w)[0] = a0;
+    bignum_digits(w)[1] = a1;
+    bignum_digits(w)[2] = a2;
+    bignum_digits(w)[3] = a3;
+    if (!SIXTY_FOUR_BIT) bignum_digits(w)[4] = 0;
+    return w;
+}
+
 LispObject make_sfloat(double d)
 //
 // Turn a regular floating point value into a Lisp "short float", which
@@ -140,6 +323,7 @@ LispObject make_sfloat(double d)
 {
 #ifndef SHORT_FLOAT
 // SFLOAT is (perhaps temporarily?) not supported in the experimental branch.
+// This can be reinstated soon...
     return fixnum_of_int(0);
 #else
     Float_union w;
@@ -149,7 +333,7 @@ LispObject make_sfloat(double d)
     {   floating_clear_flags();
         return aerror("exception with short float");
     }
-    return (w.i & ~(int32_t)0xf) + TAG_SFLOAT;
+    return (w.i & ~(int32_t)0xf) + XTAG_SFLOAT;
 #endif
 }
 
@@ -173,7 +357,7 @@ LispObject make_boxfloat(double a, int32_t type)
             {   floating_clear_flags();
                 return aerror("exception with short float");
             }
-            return (aa.i & ~(intptr_t)0xf) + TAG_SFLOAT;
+            return (aa.i & ~(intptr_t)0xf) + XTAG_SFLOAT;
 #endif
         }
         case TYPE_SINGLE_FLOAT:
@@ -364,7 +548,7 @@ double float_of_number(LispObject a)
 #ifdef SHORT_FLOAT
     else if (is_sfloat(a))
     {   Float_union w;
-        w.i = a - TAG_SFLOAT;
+        w.i = a - XTAG_SFLOAT;
         return (double)w.f;
     }
 #endif
@@ -432,7 +616,7 @@ float128_t float128_of_number(LispObject a)
 #ifdef SHORT_FLOAT
     else if (is_sfloat(a))
     {   Float_union w;
-        w.i = a - TAG_SFLOAT;
+        w.i = a - XTAG_SFLOAT;
         f32_to_f128M(w.f32, &r);
         return r;
     }
@@ -500,10 +684,10 @@ int32_t thirty_two_bits(LispObject a)
 //
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
-            return int_of_fixnum(a);
+            return (int32_t)int_of_fixnum(a);
         case TAG_NUMBERS:
             if (is_bignum(a))
-            {   int len = bignum_length(a);
+            {   size_t len = bignum_length(a);
 //
 // Note that I keep 31 bits per word and use a 2s complement representation.
 // thus if I have a one-word bignum I just want its contents but in all
@@ -525,21 +709,21 @@ int32_t thirty_two_bits(LispObject a)
 int64_t sixty_four_bits(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
-            return int_of_fixnum(a);
+            return (int64_t)int_of_fixnum(a);
         case TAG_NUMBERS:
             if (is_bignum(a))
             {   int len = bignum_length(a);
                 switch (len)
                 {   case CELL+4:
-// One word bignum. Double caset to stress sign extension.
+// One word bignum. Do a double cast to stress how sign extension is needed.
                         return (int64_t)(int32_t)bignum_digits(a)[0];
                     case CELL+8:
                         return bignum_digits(a)[0] |
-                               ((int64_t)(int32_t)bignum_digits(a)[1] << 31);
+                               (bignum_digits64(a, 1) << 31);
                     default:
                         return bignum_digits(a)[0] |
-                               ((int64_t)bignum_digits(a)[1] << 31) |
-                               ((int64_t)bignum_digits(a)[2] << 62);
+                               (bignum_digits64(a, 1) << 31) |
+                               (bignum_digits64(a, 2) << 62);
                 }
             }
         // else drop through
@@ -633,9 +817,9 @@ static LispObject plusis(LispObject a, LispObject b)
     return fixnum_of_int(0);
 #else
     Float_union bb;
-    bb.i = b - TAG_SFLOAT;
-    bb.f = (float)((float)int_of_fixnum(a) + bb.f);
-    return (bb.i & ~(int32_t)0xf) + TAG_SFLOAT;
+    bb.i = b - XTAG_SFLOAT;
+    bb.f = (float)((double)int_of_fixnum(a) + bb.f);
+    return (bb.i & ~(int32_t)0xf) + XTAG_SFLOAT;
 #endif
 }
 
@@ -648,65 +832,85 @@ static LispObject plusib(LispObject a, LispObject b)
 //
 // Add a fixnum to a bignum, returning a result as a fixnum or bignum
 // depending on its size.  This seems much nastier than one would have
-// hoped.
+// hoped. Well all in all a LOT of the arithmetic ends up being way messier
+// that an idealist would have expected. This is perhaps related to there
+// being potential transition cases when input or output values are around
+// 27, 30, 59, 61, 92, ... bits wide.
 //
-{   int32_t len = bignum_length(b)-CELL, i, sign = int_of_fixnum(a), s;
+{   size_t len = bignum_length(b)-CELL, i;
+    intptr_t s1 = int_of_fixnum(a); // BEWARE - may be bigger than a digit.
     LispObject c, nil;
     len = len/4;         // This is always 4 because even on a 64-bit
-    // machine where CELL=8 I use 4-byte B-digits
-    if (len == 1)
-    {   int32_t t;
+                         // machine where CELL=8 I use 4-byte B-digits
+// If you are on a 64-bit machine it should NEVER be possible to end up
+// with a 1-word bignum, because the relevant range always fits within
+// a fixnum. The test on SIXTY_FOUR_BIT here should end up letting a reasonably
+// clever compiler omit the code that covers this case.
+    if (!SIXTY_FOUR_BIT && len == 1)
+    {   int32_t s;
 //
 // Partly because it will be a common case and partly because it has
 // various special cases I have special purpose code to cope with
-// adding a fixnum to a one-word bignum.
+// adding a fixnum to a one-word bignum. This only happens if we are
+// on a 32-bit machine and hence the fixnum is at worst 28-bits wide.
 //
-        s = (int32_t)bignum_digits(b)[0] + sign;
-        t = s + s;
-        if (top_bit_set(s ^ t))  // needs to turn into two-word bignum
+        s = (int32_t)bignum_digits(b)[0] + (int32_t)s1;
+// top_bit_set looks at 32-bit values...
+        if (signed_overflow(s))  // needs to turn into two-word bignum
         {   if (s < 0) return make_two_word_bignum(-1, clear_top_bit(s));
             else return make_two_word_bignum(0, s);
         }
-        t = s & fix_mask;    // Will it fit as a fixnum?
-        if (t == 0 || t == fix_mask) return fixnum_of_int(s);
+        if (valid_as_fixnum(s)) return fixnum_of_int(s);
         // here the result is a one-word bignum
-        return make_one_word_bignum(s);
+        else return make_one_word_bignum(s);
     }
 //
 // Now, after all the silly cases have been handled, I have a calculation
-// which seems set to give a multi-word result.  The result here can at
-// least never shrink to a fixnum since subtracting a fixnum can at
-// most shrink the length of a number by one word.  I omit the stack-
-// check here in the hope that code here never nests enough for trouble.
+// which seems set to give a multi-word result. On a 64-bit machine one can
+// have (say) a positive two-word bignum and add a negative fixnum
+// yielding a fixnum result. On a 32-bit machine that behaviour is not
+// possible - the smallest value result will still be at least a 1-word
+// bignum.
 //
+// So let me write out the 2-word case longhand in the 64-bit case...
+    if (len == 2)
+    {   int64_t s = (bignum_digits64(b,1)<<31 | bignum_digits(b)[0]) +
+                    (int64_t)s1;
+// a 2-word bignum has at worst 62 bits and a fixnum 28 or 60, so their
+// sum can not overflow a 64-bit word.
+        return make_lisp_integer64(s);
+    }
+// b now has at least 3 digits.
     push(b);
     c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*len);
     pop(b);
     errexit();
-    s = bignum_digits(b)[0] + clear_top_bit(sign);
-    bignum_digits(c)[0] = clear_top_bit(s);
-    if (sign >= 0) sign = 0; else sign = 0x7fffffff; // extend the sign
-
-    len--;
-    for (i=1; i<len; i++)
-    {   s = bignum_digits(b)[i] + sign + top_bit(s);
-        bignum_digits(c)[i] = clear_top_bit(s);
+// Add in the lowest bit by hand
+    int32_t d0 = bignum_digits(b)[0] + clear_top_bit(s1);
+    bignum_digits(c)[0] = clear_top_bit(d0);
+    s1 = s1>>31;
+    if (top_bit_set(d0)) s1 = s1 + 1;
+// Now s1 is at most 29 bits... I can treat it as a carry from the
+// previous digit. Note that it may be either positive or negative
+    for (i=1; i<len-1; i++)
+    {   int32_t s = bignum_digits(b)[i] + (s1 & 0x7fffffff);
+        s1 = s1 >> 31; // Note that s1 was signed so this is -1, 0 or 1
+        bignum_digits(c)[i] = s & 0x7fffffff;
+        s1 += top_bit(s);
     }
-    // Now just the most significant digit remains to be processed
-    if (sign != 0) sign = -1;
-    {   s = bignum_digits(b)[i] + sign + top_bit(s);
-        if (!signed_overflow(s))         // did it overflow?
-        {
+    s1 = s1 + (int32_t)bignum_digits(b)[i];
+    if (!signed_overflow(s1))         // did it overflow?
+    {
 //
 // Here the most significant digit did not produce an overflow, but maybe
 // what we actually had was some cancellation and the MSD is now zero
 // or -1, so that the number should shrink...
 //
-            if ((s == 0 && (bignum_digits(c)[i-1] & 0x40000000) == 0) ||
-                (s == -1 && (bignum_digits(c)[i-1] & 0x40000000) != 0))
-            {   // shrink the number
-                numhdr(c) -= pack_hdrlength(1L);
-                if (s == -1) bignum_digits(c)[i-1] |= ~0x7fffffff;
+        if ((s1 == 0 && (bignum_digits(c)[i-1] & 0x40000000) == 0) ||
+            (s1 == -1 && (bignum_digits(c)[i-1] & 0x40000000) != 0))
+        {   // shrink the number
+            numhdr(c) -= pack_hdrlength(1L);
+            if (s1 == -1) bignum_digits(c)[i-1] |= 0x80000000;
 //
 // Now sometimes the shrinkage will leave a padding word, sometimes it
 // will really allow me to save space. As a jolly joke with a 64-bit
@@ -715,11 +919,11 @@ static LispObject plusib(LispObject a, LispObject b)
 // 32-bits wide and I need padding if there are ar even number of additional
 // data words.
 //
-                if ((SIXTY_FOUR_BIT && ((i & 1) != 0)) ||
-                    (!SIXTY_FOUR_BIT && ((i & 1) == 0)))
-                {   bignum_digits(c)[i] = 0;   // leave the unused word tidy
-                    return c;
-                }
+            if ((SIXTY_FOUR_BIT && ((i & 1) != 0)) ||
+                (!SIXTY_FOUR_BIT && ((i & 1) == 0)))
+            {   bignum_digits(c)[i] = 0;   // leave the unused word tidy
+                return c;
+            }
 //
 // Having shrunk the number I am leaving a doubleword of unallocated space
 // in the heap.  Dump a header word into it to make it look like an
@@ -727,51 +931,54 @@ static LispObject plusib(LispObject a, LispObject b)
 // It I left it containing arbitrary junk I could wreck myself. The
 // make_bighdr(2L) makes a header for a number that fills 2 32-bit words
 // in all.
+// AHAHA. With the "Late 2016" model garbage collector and preserve/restart
+// scheme I believe there will never be any linear scanning of active
+// heap apart from the code that dumps out profile counts - and I may be able
+// to rework those so that they identify the symbols that contain counts in
+// some other way. So once I have reworked "mapstore" I can drop the
+// messing around here that fills in little gaps left over when big numbers
+// shrink. That will feel good.
 //
-                *(Header *)&bignum_digits(c)[i] = make_bighdr(2L);
-                return c;
-            }
-            bignum_digits(c)[i] = s;  // length unchanged
+            *(Header *)&bignum_digits(c)[i] = make_bighdr(2L);
             return c;
         }
+        bignum_digits(c)[i] = s1;  // length unchanged
+        return c;
+    }
 //
 // Here the result is one word longer than the input-bignum.
 // Once again SOMTIMES this will not involve allocating more store,
 // but just encroaching into the previously unused word that was padding
 // things out to a multiple of 8 bytes.
 //
-        if ((SIXTY_FOUR_BIT && ((i & 1) == 0)) ||
-            (!SIXTY_FOUR_BIT && ((i & 1) == 1)))
-        {   bignum_digits(c)[i++] = clear_top_bit(s);
-            bignum_digits(c)[i] = top_bit_set(s) ? -1 : 0;
-            numhdr(c) += pack_hdrlength(1L);
-            return c;
-        }
-        push(c);
-//
-// NB on the next line there is a +8. One +4 is because I had gone len--
-// somewhere earlier. The other +4 is to increase the length of the number
-// by one word.
-//
-        b = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8+4*len);
-        pop(c);
-        errexit();
-        for (i=0; i<len; i++)
-            bignum_digits(b)[i] = bignum_digits(c)[i];
+    if ((SIXTY_FOUR_BIT && ((i & 1) == 0)) ||
+        (!SIXTY_FOUR_BIT && ((i & 1) == 1)))
+    {   bignum_digits(c)[i++] = clear_top_bit(s1);
+        bignum_digits(c)[i] = top_bit_set(s1) ? -1 : 0;
+        numhdr(c) += pack_hdrlength(1L);
+        return c;
+    }
+    push(c);
+    b = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
+    pop(c);
+    errexit();
+    for (i=0; i<len-1; i++)
+        bignum_digits(b)[i] = bignum_digits(c)[i];
 //
 // I move the top digit across by hand since if the number is negative
-// I must lost its top bit
+// I must lose its top bit
 //
-        bignum_digits(b)[i++] = clear_top_bit(s);
+    bignum_digits(b)[i++] = clear_top_bit(s1);
 // Now the one-word extension to the number
-        bignum_digits(b)[i++] = top_bit_set(s) ? -1 : 0;
+    bignum_digits(b)[i++] = top_bit_set(s1) ? -1 : 0;
 //
 // Finally because I know that I expanded into a new doubleword I should
-// tidy up the second word of the newly allocated pair.
+// tidy up the second word of the newly allocated pair. I know I added two
+// extra words because if I was just filling in the second of two existing
+// words I did not do not do the fresh getvector() here...
 //
-        bignum_digits(b)[i] = 0;
-        return b;
-    }
+    bignum_digits(b)[i] = 0;
+    return b;
 }
 
 static LispObject plusir(LispObject a, LispObject b)
@@ -893,8 +1100,8 @@ static LispObject plusbb(LispObject a, LispObject b)
 // add two bignums.
 //
 {   int32_t la = bignum_length(a),
-                lb = bignum_length(b),
-                i, s, carry;
+            lb = bignum_length(b),
+            i, s, carry;
     LispObject c, nil;
     if (la < lb)    // maybe swap order of args
     {   LispObject t = a;
@@ -905,30 +1112,23 @@ static LispObject plusbb(LispObject a, LispObject b)
 //
 // now (a) is AT LEAST as long as b.  I have special case code for
 // when both args are single-word bignums, since I expect that to be
-// an especially common case.
+// an especially common case on 32-bit machines.
 //
-    if (la == CELL+4)    // and hence b also has only 1 digit
-    {   int32_t va = bignum_digits(a)[0],
-                    vb = bignum_digits(b)[0],
-                    vc = va + vb;
-        if (signed_overflow(vc)) // we have a 2-word bignum result
-        {   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8);
-            errexit();
-            bignum_digits(w)[0] = clear_top_bit(vc);
-            bignum_digits(w)[1] = top_bit_set(vc) ? -1 : 0;
-            if (!SIXTY_FOUR_BIT) bignum_digits(w)[2] = 0;
-            return w;
-        }
-//
-// here the result fits into one word - maybe it will squash down into
-// a fixnum?
-//
-        else
-        {   vb = vc & fix_mask;
-            if (vb == 0 || vb == fix_mask) return fixnum_of_int(vc);
-            else return make_one_word_bignum(vc);
-        }
+    if (!SIXTY_FOUR_BIT && la == CELL+4) // and hence b also has only 1 digit
+    {   int32_t vc = bignum_digits(a)[0] + bignum_digits(b)[0];
+// Because the digits are only 31-bits wide I do not get overflow when I add
+// them in a 32-bit integer.
+        return make_lisp_integer32(vc);
     }
+    if (la == CELL+8)
+    {   int64_t va = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+        int64_t vb = (!SIXTY_FOUR_BIT && lb == CELL+4) ?
+                     bignum_digits64(b, 0) :
+                     bignum_digits64(b, 1)<<31 | bignum_digits(b)[0];
+        return make_lisp_integer64(va + vb);
+    }
+// Now at least one operand uses 3 words... I will do a general bignum add
+// which may sometimes be overkill, but ought to be safe.
     push2(a, b);
     c = getvector(TAG_NUMBERS, TYPE_BIGNUM, la);
     pop2(b, a);
@@ -975,6 +1175,14 @@ static LispObject plusbb(LispObject a, LispObject b)
         if (carry == 0)
         {   int32_t j = i-1;
             while ((msd = bignum_digits(c)[j]) == 0 && j > 0) j--;
+            if (SIXTY_FOUR_BIT && j == 1)
+            {   int64_t s = bignum_digits64(c,1)<<31 | bignum_digits(c)[0];
+                if (valid_as_fixnum(s)) return fixnum_of_int(s);
+            }
+            else if (j == 0)
+            {   int32_t s = bignum_digits(c)[0];
+                if (valid_as_fixnum(s)) return fixnum_of_int(s);
+            }
 //
 // ... but I may need a zero word on the front if the next word down
 // has its top bit set... (top of 31 bits, that is)
@@ -982,10 +1190,6 @@ static LispObject plusbb(LispObject a, LispObject b)
             if ((msd & 0x40000000) != 0)
             {   j++;
                 if (i == j) return c;
-            }
-            if (j == 0)
-            {   int32_t s = bignum_digits(c)[0];
-                if ((s & fix_mask) == 0) return fixnum_of_int(s);
             }
 //
 // If I am shrinking by one word and had an even length to start with
@@ -1019,13 +1223,19 @@ static LispObject plusbb(LispObject a, LispObject b)
         {   int32_t j = i-1;
             msd = carry;    // in case j = 0
             while ((msd = bignum_digits(c)[j]) == 0x7fffffff && j > 0) j--;
+            if (SIXTY_FOUR_BIT && j == 1)
+            {   int64_t s = (bignum_digits64(c,1) |
+                             INT64_C(0xffffffff80000000))<<31 |
+                            bignum_digits(c)[0];
+                if (valid_as_fixnum(s)) return fixnum_of_int(s);
+            }
+            else if (j == 0)
+            {   int32_t s = bignum_digits(c)[0] | 0x80000000;
+                if (valid_as_fixnum(s)) return fixnum_of_int(s);
+            }
             if ((msd & 0x40000000) == 0)
             {   j++;
                 if (i == j) return c;
-            }
-            if (j == 0)
-            {   int32_t s = bignum_digits(c)[0] | ~0x7fffffff;
-                if ((s & fix_mask) == fix_mask) return fixnum_of_int(s);
             }
             if ((SIXTY_FOUR_BIT && (j == i-1) && ((i & 1) != 0)) ||
                 (!SIXTY_FOUR_BIT && (j == i-1) && ((i & 1) == 0)))
@@ -1207,64 +1417,6 @@ static LispObject plusff(LispObject a, LispObject b)
 // and now for the dispatch code...
 //
 
-//
-// The following verifies that a number is properly formatted - a
-// fixnum if small enough or a decently normalised bignum.  For use when
-// there is suspicion of a bug wrt such matters. Call is
-//   validate_number("msg", numberToCheck, nX, nY)
-// where nX and nY must be numbers and are shown in any
-// diagnostic.
-//
-
-void validate_number(char *s, LispObject a, LispObject b, LispObject c)
-{   int32_t la, w, msd;
-    if (!is_numbers(a)) return;
-    la = (length_of_header(numhdr(a))-CELL-4)/4;
-    if (la < 0)
-    {   trace_printf("%s: number with no digits (%.8x)\n", s, numhdr(a));
-        if (is_number(b)) prin_to_trace(b), trace_printf("\n");
-        if (is_number(c)) prin_to_trace(c), trace_printf("\n");
-        my_exit(EXIT_FAILURE);
-    }
-    if (la == 0)
-    {   msd = bignum_digits(a)[0];
-        w = msd & fix_mask;
-        if (w == 0 || w == fix_mask)
-        {   trace_printf("%s: %.8x should be fixnum\n", s, msd);
-            if (is_number(b)) prin_to_trace(b), trace_printf("\n");
-            if (is_number(c)) prin_to_trace(c), trace_printf("\n");
-            my_exit(EXIT_FAILURE);
-        }
-        if (signed_overflow(msd))
-        {   trace_printf("%s: %.8x should be two-word\n", s, msd);
-            if (is_number(b)) prin_to_trace(b), trace_printf("\n");
-            if (is_number(c)) prin_to_trace(c), trace_printf("\n");
-            my_exit(EXIT_FAILURE);
-        }
-        return;
-    }
-    msd = bignum_digits(a)[la];
-    if (signed_overflow(msd))
-    {   trace_printf("%s: %.8x should be longer\n", s, msd);
-        if (is_number(b)) prin_to_trace(b), trace_printf("\n");
-        if (is_number(c)) prin_to_trace(c), trace_printf("\n");
-        my_exit(EXIT_FAILURE);
-    }
-    if (msd == 0 && ((msd = bignum_digits(a)[la-1]) & 0x40000000) == 0)
-    {   trace_printf("%s: 0: %.8x should be shorter\n", s, msd);
-        if (is_number(b)) prin_to_trace(b), trace_printf("\n");
-        if (is_number(c)) prin_to_trace(c), trace_printf("\n");
-        my_exit(EXIT_FAILURE);
-    }
-    if (msd == -1 && ((msd = bignum_digits(a)[la-1]) & 0x40000000) != 0)
-    {   trace_printf("%s: -1: %.8x should be shorter\n", s, msd);
-        if (is_number(b)) prin_to_trace(b), trace_printf("\n");
-        if (is_number(c)) prin_to_trace(c), trace_printf("\n");
-        my_exit(EXIT_FAILURE);
-    }
-}
-
-
 LispObject plus2(LispObject a, LispObject b)
 //
 // I probably want to change the specification of plus2 so that the fixnum +
@@ -1279,15 +1431,14 @@ LispObject plus2(LispObject a, LispObject b)
 //
 // This is where fixnum + fixnum arithmetic happens - the case I most want to
 // make efficient. Note that even if this becomes a bignum it can only be a
-// one word one.
+// rather short one.
 //
-                {   int32_t r = int_of_fixnum(a) + int_of_fixnum(b);
-                    int32_t t = r & fix_mask;
-                    if (t == 0 || t == fix_mask) return fixnum_of_int(r);
-                    else return make_one_word_bignum(r);
+                {   intptr_t r = int_of_fixnum(a) + int_of_fixnum(b);
+                    if (valid_as_fixnum(r)) return fixnum_of_int(r);
+                    else return make_lisp_integer64(r);
                 }
 #ifdef SHORT_FLOAT
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                     return plusis(a, b);
 #endif
                 case TAG_NUMBERS:
@@ -1309,16 +1460,16 @@ LispObject plus2(LispObject a, LispObject b)
                     return aerror1("bad arg for plus",  b);
             }
 #ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
+        case XTAG_SFLOAT:
             switch (b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return plussi(a, b);
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                 {   Float_union aa, bb;
-                    aa.i = a - TAG_SFLOAT;
-                    bb.i = b - TAG_SFLOAT;
+                    aa.i = a - XTAG_SFLOAT;
+                    bb.i = b - XTAG_SFLOAT;
                     aa.f = (float)(aa.f + bb.f);
-                    return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
+                    return (aa.i & ~(int32_t)0xf) + XTAG_SFLOAT;
                 }
                 case TAG_NUMBERS:
                 {   int32_t hb = type_of_header(numhdr(b));
@@ -1347,7 +1498,7 @@ LispObject plus2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return plusbi(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return plusbs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -1373,7 +1524,7 @@ LispObject plus2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return plusri(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return plusrs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -1399,7 +1550,7 @@ LispObject plus2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return plusci(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return pluscs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -1428,7 +1579,7 @@ LispObject plus2(LispObject a, LispObject b)
             {   case TAG_FIXNUM:
                     return plusfi(a, b);
 #ifdef SHORT_FLOAT
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                     return plusfs(a, b);
 #endif
                 case TAG_NUMBERS:
@@ -1459,15 +1610,15 @@ LispObject difference2(LispObject a, LispObject b)
     switch ((int)b & TAG_BITS)
     {   case TAG_FIXNUM:
             if (is_fixnum(a))
-            {   int32_t r = int_of_fixnum(a) - int_of_fixnum(b);
-                int32_t t = r & fix_mask;
-                if (t == 0 || t == fix_mask) return fixnum_of_int(r);
-                else return make_one_word_bignum(r);
+            {   intptr_t r = int_of_fixnum(a) - int_of_fixnum(b);
+                if (valid_as_fixnum(r)) return fixnum_of_int(r);
+                else return make_lisp_integer64(r);
             }
-            else if (b != ~0x7ffffffe) return plus2(a, 2*TAG_FIXNUM-b);
+            else if (b != MOST_NEGATIVE_FIXNUM)
+                return plus2(a, 2*TAG_FIXNUM-b);
             else
             {   push(a);
-                b = make_one_word_bignum(-int_of_fixnum(b));
+                b = make_lisp_integerptr(-MOST_NEGATIVE_FIXVAL);
                 break;
             }
         case TAG_NUMBERS:
@@ -1492,8 +1643,8 @@ LispObject add1(LispObject p)
 // just hand over to the general addition code.
 //
 {   if (is_fixnum(p))
-    {   if (p == (0x7ffffff0+TAG_FIXNUM)) // ONLY possible overflow case here
-            return make_one_word_bignum(0x08000000);
+    {   if (p == MOST_POSITIVE_FIXNUM) // ONLY possible overflow case here
+            return make_lisp_integerptr(1+MOST_POSITIVE_FIXVAL);
         else return (LispObject)(p + 0x10);
     }
     else return plus2(p, fixnum_of_int(1));
@@ -1505,8 +1656,8 @@ LispObject sub1(LispObject p)
 // just hand over to the general addition code.
 //
 {   if (is_fixnum(p))
-    {   if (p == (int32_t)(0x80000000+TAG_FIXNUM))
-            return make_one_word_bignum(int_of_fixnum(p) - 1);
+    {   if (p == MOST_NEGATIVE_FIXNUM)
+            return make_lisp_integerptr(MOST_NEGATIVE_FIXVAL - 1);
         else return (LispObject)(p - 0x10);
     }
     else return plus2(p, fixnum_of_int(-1));

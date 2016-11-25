@@ -35,14 +35,24 @@
 #ifndef header_arith_h
 #define header_arith_h 1
 
+// Tidy up re possible 128-bit arithemetic support.
+
+#if defined HAVE___INT128 && !defined __HAVE_INT128_T
+typedef __int128 int128_t;
+#define HAVE_INT128_T
+#endif
+
+#if defined HAVE_UNSIGNED___INT128 && !defined __HAVE_UINT128_T
+typedef unsigned __int128 uint128_t;
+#define HAVE_UINT128_T
+#endif
+
 #define TWO_32    4294967296.0      // 2^32
 #define TWO_31    2147483648.0      // 2^31
 #define TWO_24    16777216.0        // 2^24
 #define TWO_22    4194304.0         // 2^22
 #define TWO_21    2097152.0         // 2^21
 #define TWO_20    1048576.0         // 2^20
-
-#define M2_31_1   -2147483649.0     // -(2^31 + 1)
 
 //
 // I am going to need to rely on my C compiler turning these strings
@@ -87,11 +97,14 @@
 // as digits in bignums.
 //
 
+// NOTE please that these are all using 32-bit arthmetic. They are only
+// intended for use on values that are digits making up parts of bignums.
+
 #define top_bit_set(n)     (((int32_t)(n)) < 0)
-#define top_bit(n)         (((uint32_t)(n)) >> 31)
-#define set_top_bit(n)     ((n) | (uint32_t)0x80000000)
-#define clear_top_bit(n)   ((n) & 0x7fffffff)
-#define signed_overflow(n) top_bit_set((n) ^ (((int32_t)(n))<<1))
+#define top_bit(n)         ((int32_t)(((uint32_t)(n)) >> 31))
+#define set_top_bit(n)     ((int32_t)(n) | (int32_t)0x80000000)
+#define clear_top_bit(n)   ((int32_t)(n) & 0x7fffffff)
+#define signed_overflow(n) top_bit_set((int32_t)(n) ^ (((int32_t)(n))<<1))
 
 // The following tests for IEEE infinities and NaNs depends on arithmetic
 // being regular double-precision rounded to a 64-bit double at each stage.
@@ -101,6 +114,7 @@
 // obvious IEEE manner.
 #define floating_edge_case(r) (1.0/(r) == 0.0 || (r) != (r))
 #define floating_clear_flags() ((void)0)
+
 // An alternative possible implementation could go
 //    #include <fenv.h>
 //    {
@@ -118,90 +132,121 @@
 #define floating_edge_case128(r) \
     (f128M_infinite(r) || f128M_nan(r))
 
-#ifdef HAVE_UINT64_T
 //
 // Here I do some arithmetic in-line. In the following macros I need to
 // take care that the names used for local variables do not clash with
 // those used in the body of the code. Hence the names r64 and c64, which
 // I must agree not to use elsewhere.  Note also the "do {} while (0)" idiom
 // to avoid nasty problems with C syntax and the need for semicolons.
-//
-#define IMULTIPLY 1      // External function not needed
+// I should make a transition to use of inline functions!
+
 #define Dmultiply(hi, lo, a, b, c)                        \
  do { uint64_t r64 = (uint64_t)(a) * (uint64_t)(b) +      \
                      (uint32_t)(c);                       \
       (lo) = 0x7fffffffu & (uint32_t)r64;                 \
       (hi) = (uint32_t)(r64 >> 31); } while (0)
-#define IDIVIDE   1
+
 #define Ddivide(r, q, a, b, c)                                \
  do { uint64_t r64 = (((uint64_t)(a)) << 31) | (uint64_t)(b); \
       uint64_t c64 = (uint64_t)(uint32_t)(c);                 \
       q = (uint32_t)(r64 / c64);                              \
       r = (uint32_t)(r64 % c64); } while (0)
+
 #define Ddiv10_9(r, q, a, b) Ddivide(r, q, a, b, 1000000000u)
+
 #define Ddivideq(q, a, b, c)                                  \
  do { uint64_t r64 = (((uint64_t)(a)) << 31) | (uint64_t)(b); \
       uint64_t c64 = (uint64_t)(uint32_t)(c);                 \
       q = (uint32_t)(r64 / c64); } while (0)
+
 #define Ddiv10_9q(r, q, a, b) Ddivideq(q, a, b, 1000000000u)
+
 #define Ddivider(r, a, b, c)                                  \
  do { uint64_t r64 = (((uint64_t)(a)) << 31) | (uint64_t)(b); \
       uint64_t c64 = (uint64_t)(uint32_t)(c);                 \
       r = (uint32_t)(r64 % c64); } while (0)
+
 #define Ddiv10_9r(r, q, a, b) Ddivider(r, a, b, 1000000000u)
-#else
-#define Dmultiply(hi, lo, a, b, c) ((hi) = Imultiply(&(lo), (a), (b), (c)))
-#define Ddivide(r, q, a, b, c) ((r) = Idivide(&(q), (a), (b), (c)))
-#define Ddiv10_9(r, q, a, b)   ((r) = Idiv10_9(&(q), (a), (b)))
-#define Ddivideq(q, a, b, c) (Idivide(&(q), (a), (b), (c)))
-#define Ddiv10_9q(q, a, b)   (Idiv10_9(&(q), (a), (b)))
-#define Ddivider(r, a, b, c) ((r) = Idivide(NULL, (a), (b), (c)))
-#define Ddiv10_9r(r, a, b)   ((r) = Idiv10_9(NULL, (a), (b)))
-#endif
 
-#define fix_mask (-0x08000000)
+//#define fixnum_minusp(a) ((intptr_t)(a) < 0)
 
-#define fixnum_minusp(a) ((int32_t)(a) < 0)
 #define bignum_minusp(a) \
     ((int32_t)bignum_digits(a)[((bignum_length(a)-CELL)/4)-1]<0)
 
-extern LispObject negateb(LispObject);
-extern LispObject copyb(LispObject);
-extern LispObject negate(LispObject);
-extern LispObject plus2(LispObject a, LispObject b);
+extern "C" LispObject negateb(LispObject);
+extern "C" LispObject copyb(LispObject);
+extern "C" LispObject negate(LispObject);
+extern "C" LispObject plus2(LispObject a, LispObject b);
 extern "C" LispObject difference2(LispObject a, LispObject b);
-extern LispObject times2(LispObject a, LispObject b);
+extern "C" LispObject times2(LispObject a, LispObject b);
 extern "C" LispObject quot2(LispObject a, LispObject b);
-extern LispObject CLquot2(LispObject a, LispObject b);
-extern LispObject quotbn(LispObject a, int32_t n);
-extern LispObject quotbn1(LispObject a, int32_t n);
-extern LispObject quotbb(LispObject a, LispObject b);
+extern "C" LispObject CLquot2(LispObject a, LispObject b);
+extern "C" LispObject quotbn(LispObject a, int32_t n);
+extern "C" LispObject quotbn1(LispObject a, int32_t n);
+#define QUOTBB_QUOTIENT_NEEDED    1
+#define QUOTBB_REMAINDER_NEEDED   2
+extern "C" LispObject quotbb(LispObject a, LispObject b, int needs);
 extern "C" LispObject Cremainder(LispObject a, LispObject b);
-extern LispObject rembi(LispObject a, LispObject b);
-extern LispObject rembb(LispObject a, LispObject b);
-extern LispObject shrink_bignum(LispObject a, int32_t lena);
-extern LispObject modulus(LispObject a, LispObject b);
-extern LispObject rational(LispObject a);
-extern LispObject rationalize(LispObject a);
-extern LispObject lcm(LispObject a, LispObject b);
-extern LispObject lengthen_by_one_bit(LispObject a, int32_t msd);
-extern bool numeq2(LispObject a, LispObject b);
+extern "C" LispObject rembi(LispObject a, LispObject b);
+extern "C" LispObject rembb(LispObject a, LispObject b);
+extern "C" LispObject shrink_bignum(LispObject a, size_t lena);
+extern "C" LispObject modulus(LispObject a, LispObject b);
+extern "C" LispObject rational(LispObject a);
+extern "C" LispObject rationalize(LispObject a);
+extern "C" LispObject lcm(LispObject a, LispObject b);
+extern "C" LispObject lengthen_by_one_bit(LispObject a, int32_t msd);
+extern "C" bool numeq2(LispObject a, LispObject b);
 extern "C" bool zerop(LispObject a);
-extern bool onep(LispObject a);
-extern bool minusp(LispObject a);
-extern bool plusp(LispObject a);
-extern bool lesspbd(LispObject a, double b);
-extern bool lessprd(LispObject a, double b);
-extern bool lesspdb(double a, LispObject b);
-extern bool lesspdr(double a, LispObject b);
+extern "C" bool onep(LispObject a);
+extern "C" bool minusp(LispObject a);
+extern "C" bool plusp(LispObject a);
+extern "C" bool lesspbd(LispObject a, double b);
+extern "C" bool lessprd(LispObject a, double b);
+extern "C" bool lesspdb(double a, LispObject b);
+extern "C" bool lesspdr(double a, LispObject b);
+
+extern LispObject validate_number(char *s, LispObject a,
+                                  LispObject b, LispObject c);
+
+extern LispObject make_fake_bignum(intptr_t n);
 extern LispObject make_one_word_bignum(int32_t n);
 extern LispObject make_two_word_bignum(int32_t a, uint32_t b);
 extern LispObject make_three_word_bignum(int32_t a, uint32_t b, uint32_t c);
+extern LispObject make_four_word_bignum(int32_t a, uint32_t b,
+                                        uint32_t c, uint32_t d);
 extern LispObject make_n_word_bignum(int32_t a1, uint32_t a2,
-                                     uint32_t a3, int32_t n);
-extern LispObject make_lisp_integer32(int32_t n);
-extern LispObject make_lisp_integer64(int64_t n);
-extern LispObject make_lisp_unsigned64(uint64_t n);
+                                     uint32_t a3, size_t n);
+
+extern LispObject make_lisp_integer32_fn(int32_t n);
+static inline LispObject make_lisp_integer32(int32_t n)
+{   if (SIXTY_FOUR_BIT || valid_as_fixnum(n)) return fixnum_of_int(n);
+    else return make_lisp_integer32_fn(n);
+}
+
+extern LispObject make_lisp_integer64_fn(int64_t n);
+static inline LispObject make_lisp_integer64(int64_t n)
+{   if (valid_as_fixnum(n)) return fixnum_of_int(n);
+    else return make_lisp_integer64_fn(n);
+}
+
+extern LispObject make_lisp_unsigned64_fn(uint64_t n);
+static inline LispObject make_lisp_unsigned64(uint64_t n)
+{   if (n < ((uint64_t)1)<<(8*sizeof(intptr_t)-5)) return fixnum_of_int(n);
+    else return make_lisp_unsigned64_fn(n);
+}
+
+extern LispObject make_lisp_integerptr_fn(intptr_t n);
+static inline LispObject make_lisp_integerptr(intptr_t n)
+{   if (valid_as_fixnum(n)) return fixnum_of_int(n);
+    else return make_lisp_integerptr_fn(n);
+}
+
+extern LispObject make_lisp_unsignedptr_fn(uintptr_t n);
+static inline LispObject make_lisp_unsignedptr(uintptr_t n)
+{   if (n < ((uintptr_t)1)<<(8*sizeof(intptr_t)-5)) return fixnum_of_int(n);
+    else return make_lisp_unsignedptr_fn(n);
+}
+
 extern LispObject make_sfloat(double d);
 extern double float_of_integer(LispObject a);
 extern "C" LispObject add1(LispObject p);

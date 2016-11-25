@@ -87,7 +87,7 @@ LispObject bytecoded0(LispObject def, int nargs, ...)
         pop(def);
     }
 #endif
-    def = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack);
+    LispObject r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack);
     nil = C_nil;
     if (exception_pending())
     {   flip_exception();
@@ -96,7 +96,26 @@ LispObject bytecoded0(LispObject def, int nargs, ...)
         return nil;
     }
     pop2(codevec, litvec);
-    return def;
+#ifdef DEBUG
+    if (trace_all)
+    {   trace_all = 0;
+        push(r);
+        freshline_trace();
+        trace_printf("Value of ");
+        loop_print_trace(name_from(def));
+        trace_printf(" = ");
+        loop_print_trace(r);
+        trace_printf("\n");
+        trace_all = 1;
+        nil = C_nil;
+        if (exception_pending())
+        {   popv(1);
+            return nil;
+        }
+        pop(r);
+    }
+#endif
+    return r;
 }
 
 LispObject bytecoded1(LispObject def, LispObject a)
@@ -158,6 +177,25 @@ LispObject bytecoded1(LispObject def, LispObject a)
         return nil;
     }
     pop2(codevec, litvec);
+#ifdef DEBUG
+    if (trace_all)
+    {   trace_all = 0;
+        push(r);
+        freshline_trace();
+        trace_printf("Value of ");
+        loop_print_trace(name_from(def));
+        trace_printf(" = ");
+        loop_print_trace(r);
+        trace_printf("\n");
+        trace_all = 1;
+        nil = C_nil;
+        if (exception_pending())
+        {   popv(1);
+            return nil;
+        }
+        pop(r);
+    }
+#endif
     return r;
 }
 
@@ -213,6 +251,25 @@ LispObject bytecoded2(LispObject def, LispObject a, LispObject b)
         return nil;
     }
     pop2(codevec, litvec);
+#ifdef DEBUG
+    if (trace_all)
+    {   trace_all = 0;
+        push(r);
+        freshline_trace();
+        trace_printf("Value of ");
+        loop_print_trace(name_from(def));
+        trace_printf(" = ");
+        loop_print_trace(r);
+        trace_printf("\n");
+        trace_all = 1;
+        nil = C_nil;
+        if (exception_pending())
+        {   popv(1);
+            return nil;
+        }
+        pop(r);
+    }
+#endif
     return r;
 }
 
@@ -282,6 +339,25 @@ LispObject bytecoded3(LispObject def, int nargs, ...)
         return nil;
     }
     pop2(codevec, litvec);
+#ifdef DEBUG
+    if (trace_all)
+    {   trace_all = 0;
+        push(r);
+        freshline_trace();
+        trace_printf("Value of ");
+        loop_print_trace(name_from(def));
+        trace_printf(" = ");
+        loop_print_trace(r);
+        trace_printf("\n");
+        trace_all = 1;
+        nil = C_nil;
+        if (exception_pending())
+        {   popv(1);
+            return nil;
+        }
+        pop(r);
+    }
+#endif
     return r;
 }
 
@@ -330,6 +406,25 @@ LispObject bytecodedn(LispObject def, int nargs, ...)
         return nil;
     }
     pop2(codevec, litvec);
+#ifdef DEBUG
+    if (trace_all)
+    {   trace_all = 0;
+        push(r);
+        freshline_trace();
+        trace_printf("Value of ");
+        loop_print_trace(name_from(def));
+        trace_printf(" = ");
+        loop_print_trace(r);
+        trace_printf("\n");
+        trace_all = 1;
+        nil = C_nil;
+        if (exception_pending())
+        {   popv(1);
+            return nil;
+        }
+        pop(r);
+    }
+#endif
     return r;
 }
 

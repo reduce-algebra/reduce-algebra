@@ -208,6 +208,7 @@ then
   then
     timecmd="$timecmd -p"
   fi
+  timeoutcmd=`type -P timeout`
 else
   testfortime=`type time 2>&1 | grep -v "not found"`
   if test -n "$testfortime"
@@ -219,6 +220,29 @@ else
   else
     timecmd=""
   fi
+  testfortimeout=`type timeout 2>&1 | grep -v "not found"`
+  if test -n "$testfortimeout"
+  then
+    set -- $testfortimeout
+    # remove all but last parameter
+    shift `expr $# - 1`
+    timeoutcmd="$1 -p"
+  else
+    timeoutcmd=""
+  fi
+fi
+
+# If I can I will limit the time that each test script can possibly use.
+# I would like to make the limit such that everything has a decent chance of
+# running to completion but that tests that get stuck do not delay me
+# unduly. The most extreme test at the time of writing this is qsum which
+# uses around 20 seconds on a decent speed desktop machine. So a limit
+# at 120 seconds seems tolerably safe for all but machine if the Raspberry
+# Pi class!
+
+if test "x$timeoutcmd" != "x"
+then
+  timeoutcmd="$timeoutcmd 120"
 fi
 
 # If I am running on Windows I need to have the file name in
@@ -314,7 +338,7 @@ gflag=$4
 
 mkdir -p $name-times
 
-$timecmd sh -c "$here/bin/$command -v -w $gflag > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timeoutcmd $timecmd sh -c "$here/bin/$command -v -w $gflag > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -378,7 +402,7 @@ then
 
 mkdir -p psl-times
 
-$timecmd sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timeoutcmd $timecmd sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redefmsg := nil);
@@ -438,7 +462,7 @@ then
   wh=`cygpath -m $wh`
 fi
 
-$timecmd sh -c "java -jar $wh/jlisp/$command -v -w $gflag > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timeoutcmd $timecmd sh -c "java -jar $wh/jlisp/$command -v -w $gflag > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);

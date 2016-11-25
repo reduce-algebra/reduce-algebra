@@ -391,13 +391,12 @@ static LispObject Ldecode_float(LispObject nil, LispObject a)
 static LispObject Lfloat_denormalized_p(LispObject nil, LispObject a)
 {   switch ((int)a & TAG_BITS)
     {
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-            if ((a & 0x7fffffff) == TAG_SFLOAT) return onevalue(nil);  // 0.0
-            {   int32_t x = (int32_t)a & 0x7f800000;
+        case XTAG_SFLOAT & TAG_BITS:
+            if (!is_sfloat(a)) return onevalue(nil); // actually a fixnum!
+            if ((a & 0x7fffffffU) == XTAG_SFLOAT) return onevalue(nil);  // 0.0
+            {   uint32_t x = (uint32_t)a & 0x7f800000U;
                 return onevalue(x == 0 ? lisp_true : nil);
             }
-#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -426,12 +425,12 @@ static LispObject Lfloat_denormalized_p(LispObject nil, LispObject a)
 static LispObject Lfloat_infinity_p(LispObject nil, LispObject a)
 {   switch ((int)a & TAG_BITS)
     {
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-            {   int32_t x = (int32_t)a & 0x7f800000;
-                return onevalue(x == 0x7f800000 ? lisp_true : nil);
+        case XTAG_SFLOAT & TAG_BITS:
+            if (!is_sfloat(a)) return onevalue(nil);
+            else
+            {   uint32_t x = (uint32_t)a & 0x7f800000U;
+                return onevalue(x == 0x7f800000U ? lisp_true : nil);
             }
-#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -467,12 +466,12 @@ static LispObject Lfloat_infinity_p(LispObject nil, LispObject a)
 static LispObject Lfp_infinite(LispObject nil, LispObject a)
 {   switch ((int)a & TAG_BITS)
     {
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-            {   int32_t x = (int32_t)a & 0x7f800000;
-                return onevalue(x == 0x7f800000 ? lisp_true : nil);
+        case XTAG_SFLOAT & TAG_BITS:
+            if (!is_sfloat(a)) return onevalue(nil);
+            else
+            {   uint32_t x = (uint32_t)a & 0x7f800000U;
+                return onevalue(x == 0x7f800000U ? lisp_true : nil);
             }
-#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -498,15 +497,15 @@ static LispObject Lfp_infinite(LispObject nil, LispObject a)
 static LispObject Lfp_nan(LispObject nil, LispObject a)
 {   switch ((int)a & TAG_BITS)
     {
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-            {   int32_t x;
-                a &= 0x7fffffff;
-                if (a == 0x7f800000) return onevalue(nil);
-                x = (int32_t)a & 0x7f800000;
-                return onevalue(x == 0x7f800000 ? lisp_true : nil);
+        case XTAG_SFLOAT & TAG_BITS:
+            if (!is_sfloat(a)) return onevalue(nil);
+            else
+            {   uint32_t x;
+                a &= 0x7fffffffU;
+                if (a == 0x7f800000U) return onevalue(nil);
+                x = (uint32_t)a & 0x7f800000U;
+                return onevalue(x == 0x7f800000U ? lisp_true : nil);
             }
-#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -540,12 +539,12 @@ static LispObject Lfp_nan(LispObject nil, LispObject a)
 static LispObject Lfp_finite(LispObject nil, LispObject a)
 {   switch ((int)a & TAG_BITS)
     {
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-            {   int32_t x = (int32_t)a & 0x7f800000;
-                return onevalue(x != 0x7f800000 ? lisp_true : nil);
+        case XTAG_SFLOAT & TAG_BITS:
+            if (!is_sfloat(a)) return onevalue(nil);
+            else
+            {   uint32_t x = (uint32_t)a & 0x7f800000U;
+                return onevalue(x != 0x7f800000U ? lisp_true : nil);
             }
-#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -588,12 +587,11 @@ static LispObject Lfp_subnorm(LispObject nil, LispObject a)
 {   int32_t x = 0;
     switch ((int)a & TAG_BITS)
     {
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-            if ((a & 0x7fffffff) == TAG_SFLOAT) return onevalue(nil);  // 0.0
-            x = (int32_t)a & 0x7f800000;
+        case XTAG_SFLOAT & TAG_BITS:
+            if (!is_sfloat(a)) return onevalue(nil);
+            else if ((a & 0x7fffffffU) == XTAG_SFLOAT) return onevalue(nil);  // 0.0
+            x = (uint32_t)a & 0x7f800000U;
             return onevalue(x == 0 ? lisp_true : nil);
-#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -606,8 +604,11 @@ static LispObject Lfp_subnorm(LispObject nil, LispObject a)
                     return onevalue(nil);
                 case TYPE_DOUBLE_FLOAT:
                     if (double_float_val(a) == 0.0) return onevalue(nil);
-                    x = ((int32_t *)double_float_addr(a))[
-                            current_fp_rep&FP_WORD_ORDER ? 0 : 1] & 0x7ff00000;
+#ifdef LITTLEENDIAN
+                    x = ((int32_t *)double_float_addr(a))[1] & 0x7ff00000;
+#else
+                    x = ((int32_t *)double_float_addr(a))[0] & 0x7ff00000;
+#endif
                     return onevalue(x == 0 ? lisp_true : nil);
             }
         default:
@@ -628,11 +629,10 @@ static LispObject Lfp_signbit(LispObject nil, LispObject a)
 #endif
     switch ((int)a & TAG_BITS)
     {
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-            if ((int32_t)a < 0) return onevalue(lisp_true);
+        case XTAG_SFLOAT & TAG_BITS:
+            if (!is_sfloat(a)) return onevalue(nil);
+            else if ((int32_t)a < 0) return onevalue(lisp_true);
             else return onevalue(nil);
-#endif
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -650,8 +650,11 @@ static LispObject Lfp_signbit(LispObject nil, LispObject a)
 #ifdef HAVE_SIGNBIT
                     return onevalue(signbit(double_float_val(a)) ? lisp_true : nil);
 #else
-                    x = ((int32_t *)double_float_addr(a))[
-                            current_fp_rep&FP_WORD_ORDER ? 0 : 1];
+#ifdef LITTLEENDIAN
+                    x = ((int32_t *)double_float_addr(a))[1];
+#else
+                    x = ((int32_t *)double_float_addr(a))[0];
+#endif
                     return onevalue(x < 0 ? lisp_true : nil);
 #endif
             }
@@ -674,10 +677,9 @@ static LispObject Lfloat_digits(LispObject, LispObject a)
 {   int tag = (int)a & TAG_BITS;
     switch (tag)
     {
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-            return onevalue(fixnum_of_int(20));
-#endif
+        case XTAG_SFLOAT & TAG_BITS:
+            if (!is_sfloat(a)) return aerror("float_digits");
+            else return onevalue(fixnum_of_int(20));
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -699,10 +701,9 @@ static LispObject Lfloat_precision(LispObject, LispObject a)
 // /* I do not cope with de-normalised numbers here
     switch (tag)
     {
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-            return onevalue(fixnum_of_int(20));
-#endif
+        case XTAG_SFLOAT & TAG_BITS:
+            if (!is_sfloat(a)) return aerror("float_precision");
+            else return onevalue(fixnum_of_int(20));
         case TAG_BOXFLOAT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
@@ -799,15 +800,13 @@ static LispObject Linteger_decode_float(LispObject nil, LispObject a)
     else
     {   d = frexp(d, &x);
         if (d == 1.0) d = 0.5, x++;
-#ifdef SHORT_FLOAT
-        if (tag == TAG_SFLOAT)
+        if (tag == XTAG_SFLOAT & TAG_BITS)
         {   d *= TWO_20;
             x -= 20;
             a1 = (int32_t)d;
             a = fixnum_of_int(a1);
         }
         else
-#endif
         if (tag == TAG_BOXFLOAT &&
                  type_of_header(flthdr(a)) == TYPE_SINGLE_FLOAT)
         {   d *= TWO_24;
@@ -881,132 +880,79 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
 //
 // This converts from a double to a Lisp integer, which will
 // quite often have to be a bignum.  No overflow is permitted - the
-// result can always be accurate.
+// result can always be accurate. This dies not support long (ie 128-bit)
+// floats (yet!).
 //
-{   int32_t a0, a1, a2, a3;
-    int x, x1;
-    bool negative;
-    double d = float_of_number(a);
+{   bool negative;
+    double d = float_of_number(a), d1;
     if (!(d == d)) return aerror("NaN in fix");
     if (1.0/d == 0.0) return aerror("infinity in fix");
-    if (M2_31_1 < d && d < TWO_31)
-    {   int32_t a = (int32_t)d;
-//
-// If my floating point value is in the range -(2^31+1) to +2^31 (exclusive)
-// then when C truncates it I will get an integer in the inclusive range
-// from -2^31 to 2^31-1, i.e. the whole range of C 32-bit integers.
-// If I then apply a rounding mode other than truncation I may just have
-// overflow, which I have to detect specially.
-//
-        int32_t w;
-        double f;
+    int x;
+    d1 = frexp(d, &x);
+    if (x < 63)  // i.e. |d| < 2^63
+    {   int64_t n = (int64_t)d;
+// Here the absolute value of d was strictly smaller than 2^63 and it
+// was truncated towards zero in the conversion to an integer, so n
+// is a value that would fit in a 64-bit integer. Fixing the rounding mode
+// can only possibly change its value by +1 or -1, and that means that the
+// only possibility for overflow is if it starts of as 0x7fffffffffffffff and
+// has to be rounded up. If d is negative then the range of negative integers
+// is such that rounding can not overflow.
+        double f;   // The fraction part that is left over...
         switch (roundmode)
-        {   case FIX_TRUNCATE:
-                break;          // C casts truncate, so this is OK
+        {   default:
+            case FIX_TRUNCATE:  // The cast truncated so I am done.
+                return make_lisp_integer64(n);
             case FIX_ROUND:
-                f = d - (double)a;
-                if (f > 0.5)
-                {   if (a == 0x7fffffff) return make_two_word_bignum(1, 0);
-                    else a++;
-                }
-                else if (f < -0.5)
-                {   if (a == ~0x7fffffff)
-                        return make_two_word_bignum(-2, 0x7fffffff);
-                    else a--;
-                }
-                // The rounding rule on the next lines show what I do in 1/2ulp cases
-                else if (f == 0.5) a = (a+1) & ~1;
-                else if (f == -0.5)
-                {   if (a == ~0x7fffffff)
-                        return make_two_word_bignum(-2, 0x7fffffff);
-                    else a = a & ~1;
-                }
-                break;
+                f = d - (double)n;
+                if (f > 0.5) n++;
+                else if (f < -0.5) n--;
+                else if (f == 0.5) n = (n+1) & ~1;
+                else if (f == -0.5) n = n & ~1;
+// By converting positive values as unsigned integers I avoid overflow.
+                if (d < 0.0) return make_lisp_integer64(n);
+                else return make_lisp_unsigned64(n);
             case FIX_FLOOR:
-                f = d - (double)a;
-                if (f < 0.0)
-                {   if (a == ~0x7fffffff)
-                        return make_two_word_bignum(-2, 0x7fffffff);
-                    else a--;
-                }
+                f = d - (double)n;
+                if (f < 0.0) n--;  // no overflow possible
+                return make_lisp_integer64(n);
                 break;
             case FIX_CEILING:
-                f = d - (double)a;
-                if (f > 0.0)
-                {   if (a == 0x7fffffff) return make_two_word_bignum(1, 0);
-                    else a++;
-                }
-                break;
+                f = d - (double)n;
+                if (f > 0.0) n++;
+                if (d < 0.0) return make_lisp_integer64(n);
+                else return make_lisp_unsigned64(n);
         }
-        w = a & fix_mask;
-        if (w == 0 || w == fix_mask) return fixnum_of_int(a);
-        else if (!signed_overflow(a)) return make_one_word_bignum(a);
-        else if (a > 0) return make_two_word_bignum(0, a);
-        else return make_two_word_bignum(-1, clear_top_bit(a));
-    }
-    if (d < 0.0) d = -d, negative = true;
+    }        
+// Now I know that the result will be at least a 63-bit integer, which means
+// it will be at least a 3-word bignum. Life is even better than that. If
+// the input as that large then since a double precision float only has 56
+// bits for its mantissa I know now that I will not need to do any rounding,
+// and so all the complication regarding the rounding mode does not apply.
+    if (d1 < 0.0) d1 = -d1, negative = true;
     else negative = false;
-    d = frexp(d, &x); // 0.5 <= abs(d) < 1.0, x = the (binary) exponent
-    if (d == 1.0) d = 0.5, x++;
-    d *= TWO_31;
-    a1 = (int32_t)d;      // 2^31 > d >= 2^30
-    d -= (double)a1;
-    a2 = (uint32_t)(d*TWO_31);  // This conversion should be exact
+    if (d1 == 1.0) d1 = 0.5, x++;
+    d1 *= TWO_31;
+    int32_t a1 = (int32_t)d1;      // 2^31 > d1 >= 2^30
+    d1 -= (double)a1;
+    uint32_t a2 = (uint32_t)(d1*TWO_31);  // This conversion should be exact
     if (negative)
     {   if (a2 == 0) a1 = -a1;
         else a2 = clear_top_bit(-a2), a1 = ~a1;
     }
     x -= 62;
-    if (x < 0)              // Need to shift right x places
-    {   x = -x;             // The shift amount here can be 31 at most...
-        a3 = a2 << (32 - x);
-        a2 = clear_top_bit((a2 >> x) | (a1 << (31 - x)));
-        a1 = ASR(a1, x);
-        switch (roundmode)
-        {   case FIX_TRUNCATE:
-                if (a1 < 0 && a3 != 0)  // proper rounding on -ve values
-                {   a2++;
-                    if (a2 < 0) // carry
-                    {   a2 = 0;
-                        a1++;
-                    }
-                }
-                break;
-            case FIX_ROUND:
-                if ((a3 & 0x80000000U) != 0 &&
-                    (a3 != ~0x7fffffff || (a2 & 1) != 0))
-                {   a2++;
-                    if (a2 < 0) // carry
-                    {   a2 = 0;
-                        a1++;
-                    }
-                }
-                break;
-            case FIX_FLOOR: // Comes out in wash of 2's complement
-                break;
-            case FIX_CEILING:
-                if (a3 != 0)
-                {   a2++;
-                    if (a2 < 0) // carry
-                    {   a2 = 0;
-                        a1++;
-                    }
-                }
-                break;
-        }
-        return make_two_word_bignum(a1, a2);
-    }
 // Now the double-length value (a1,a2) is correct and exact, and it
 // needs shifting left by x bits.  This will give a 3 or more word bignum.
 // Note that no rounding etc is needed at all here since there are no
 // fractional bits in the representation.
 //
+    int32_t a0;
     if (a1 < 0)
     {   a0 = -1;
         a1 = clear_top_bit(a1);
     }
     else a0 = 0;
-    x1 = x / 31;
+    int x1 = x / 31;
     x = x % 31;
     a0 = (a0 << x) | (a1 >> (31-x));
     a1 = clear_top_bit(a1 << x) | (a2 >> (31-x));

@@ -1,4 +1,4 @@
-//  arith06.cpp                       Copyright (C) 1990-2016 Codemist    
+//  arith06.cpp                           Copyright (C) 1990-2016 Codemist
 
 //
 // Arithmetic functions... lots of Lisp entrypoints.
@@ -50,8 +50,8 @@
 LispObject Ladd1(LispObject nil, LispObject a)
 {   if (is_fixnum(a))
     {   // fixnums have data shifted left 4 bits
-        if (a == (0x7ffffff0+TAG_FIXNUM)) // ONLY possible overflow case here
-            a = make_one_word_bignum(0x08000000);
+        if (a == MOST_POSITIVE_FIXNUM) // ONLY possible overflow case here
+            a = make_lisp_integerptr_fn(MOST_POSITIVE_FIXVAL+1);
         else return onevalue((LispObject)(a + 0x10));   // the cheap case
     }
     else a = plus2(a, fixnum_of_int(1));
@@ -61,8 +61,8 @@ LispObject Ladd1(LispObject nil, LispObject a)
 
 LispObject Lsub1(LispObject nil, LispObject a)
 {   if (is_fixnum(a))
-    {   if (a == (int32_t)(0x80000000+TAG_FIXNUM))
-            return make_one_word_bignum(int_of_fixnum(a) - 1);
+    {   if (a == MOST_NEGATIVE_FIXNUM)
+            return make_lisp_integerptr_fn(MOST_NEGATIVE_FIXVAL - 1);
         else return onevalue((LispObject)(a - 0x10));
     }
     else a = plus2(a, fixnum_of_int(-1));
@@ -152,14 +152,14 @@ static int msd_table[256] =
 };
 
 LispObject Lmsd(LispObject, LispObject a)
-{   int32_t top;
-    int32_t r = 0;
+{   intptr_t top;
+    intptr_t r = 0;
     if (is_fixnum(a)) top = int_of_fixnum(a);
     else if (is_numbers(a))
     {   Header h = numhdr(a);
         if (!is_bignum_header(h)) return aerror1("bad arg for msd", a);
         r = (length_of_header(h)-CELL)/4 - 1;
-        top = bignum_digits(a)[r];
+        top = (int32_t)bignum_digits(a)[r];
         r = 31*r;
     }
     else return aerror1("bad arg for msd", a);
@@ -169,6 +169,12 @@ LispObject Lmsd(LispObject, LispObject a)
 // the bignum involved MUST be fully normalised with its top bit set.
 // The effect of this code is that I return (msd 0) => 0.
 //
+// If sizeof(intptr_t)==4 most of the next statement becomes silly, but
+// if test on SIXTY_FOUR_BIT would ensure it dis not get executed and the
+// slightly odd casts should render it valid.
+    if (SIXTY_FOUR_BIT &&
+        top >= (intptr_t)INT64_C(0x100000000))
+        r += 32, top = (intptr_t)((int64_t)top >> 32);
     if (top >= 0x10000) r += 16, top >>= 16;
     if (top >= 0x100)   r += 8,  top >>= 8;
     return onevalue(fixnum_of_int(r + msd_table[top]));
@@ -194,8 +200,8 @@ static int lsd_table[256] =
 };
 
 LispObject Llsd(LispObject, LispObject a)
-{   int32_t top;
-    int32_t r = 0;
+{   intptr_t top;
+    intptr_t r = 0;
     if (is_fixnum(a))
     {   top = int_of_fixnum(a);
 // lsd(0) is taken to have the value 0 here - it is a bit of an odd case
@@ -204,12 +210,15 @@ LispObject Llsd(LispObject, LispObject a)
     else if (is_numbers(a))
     {   Header h = numhdr(a);
         if (!is_bignum_header(h)) return aerror1("bad arg for lsd", a);
-        while ((top = bignum_digits(a)[r]) == 0) r++;
+        while ((top = (int32_t)bignum_digits(a)[r]) == 0) r++;
         r = 31*r;
     }
     else return aerror1("bad arg for lsd", a);
     if (top < 0) return aerror1("negative arg for lsd", a);   // -ve arg
-// top is non-zero here
+// top is non-zero here. See code in msd re the sixty four bit support.
+    if (SIXTY_FOUR_BIT &&
+        (top & (uintptr_t)UINT64_C(0xffffffff)) == 0)
+        r += 32, top = (intptr_t)((int64_t)top >> 32);
     if ((top & 0xffffu) == 0) r += 16, top >>= 16;
     if ((top & 0xff) == 0)    r += 8,  top >>= 8;
     return onevalue(fixnum_of_int(r + lsd_table[top & 0xff]));
@@ -222,14 +231,18 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
 // just k bits, and returns a correction to the associated exponent.
 // It combines aspects of msd, lsd, ash and a rounding operation.
 //
-{   int32_t top, bottom, kk, bits;
-    int32_t rtop = 0, rbottom = 0;
+{   intptr_t kk;
+    size_t bits;
+    intptr_t top;
+    uintptr_t bottom;
+    size_t rtop = 0, rbottom = 0;
     bool was_fixnum = false, was_negative = false, round_up;
-    if (is_fixnum(k) && (int32_t)k >= 0) kk = int_of_fixnum(k);
+    if (is_fixnum(k) && (intptr_t)k >= 0) kk = int_of_fixnum(k);
     else return aerror1("bad args for inorm", k);
     if (is_fixnum(a))
-    {   top = int_of_fixnum(a);
+    {   top = int_of_fixnum(a);   // Beware - can now have up to 60 bits in it
         if (top == 0) return aerror1("zero arg for inorm", a);
+        was_negative = (top < 0);
         bottom = top;
         was_fixnum = true;
     }
@@ -237,7 +250,7 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
     {   Header h = numhdr(a);
         if (!is_bignum_header(h)) return aerror1("bad arg for inorm", a);
         rtop = (length_of_header(h)-CELL)/4 - 1;
-        top = bignum_digits(a)[rtop];
+        top = (int32_t)bignum_digits(a)[rtop];
         was_negative = (top < 0);
         rtop = 31*rtop;
         while ((bottom = bignum_digits(a)[rbottom]) == 0) rbottom++;
@@ -245,12 +258,26 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
     }
     else return aerror1("bad arg for inorm", a);
     if (top < 0) top = ~top;  // Now top is guaranteed positive
+// In the 64-bit case with a fixnum input the value in top may be
+// over 2^32...
+    if (SIXTY_FOUR_BIT &&
+        top >= (intptr_t)INT64_C(0x100000000))
+        rtop += 32, top = (intptr_t)((int64_t)top >> 32);
     if (top >= 0x10000) rtop += 16, top >>= 16;
     if (top >= 0x100)   rtop += 8,  top >>= 8;
+    assert(top >= 0 && top <= 0xff);
     rtop = rtop + msd_table[top];
+// now rtop identifies the top bit
+    if (SIXTY_FOUR_BIT &&
+        (bottom & (uintptr_t)UINT64_C(0xffffffff)) == 0)
+        rbottom += 32, bottom = (intptr_t)((int64_t)bottom >> 32);
     if ((bottom & 0xffffu) == 0) rbottom += 16, bottom >>= 16;
     if ((bottom & 0xff) == 0)    rbottom += 8,  bottom >>= 8;
     rbottom = rbottom + lsd_table[bottom & 0xff];
+// Now rbottom identifies the bottom bit.
+// Well rtop is the highest 1-bit in either the number or (if the number
+// started off negative) ~number, while rbottom is the lowest bit in the
+// original 2s complement value as presented.
 //
 // The next line adjusts for the odd case where the input number is
 // minus an exact power of 2, in which case finding its most significant bit
@@ -261,7 +288,7 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
     bits = rtop - rbottom;             // bits used in the number
     if (bits <= kk) kk = rbottom;      // no rounding wanted
     else if (was_fixnum)
-    {   int bit;
+    {   intptr_t bit;
 //
 // If the input was a fixnum and I need to decrease its precision
 // I will do it in-line here, mainly so that the bignum code that comes
@@ -269,7 +296,7 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
 // any fixnums around.
 //
         kk = rtop - kk;
-        bit = ((int32_t)1) << (kk - 1);
+        bit = ((intptr_t)1) << (kk - 1);
         top = int_of_fixnum(a);
         if (top < 0)
         {   top = -top;
@@ -295,11 +322,11 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
 // word, and so there are no issues about +ve vs -ve numbers to bother me.
 //
         while ((top & 0xf) == 0)
-        {   top = (top & ~0xf)/16;
+        {   top = top/16;
             kk += 4;
         }
         while ((top & 0x1) == 0)
-        {   top = (top & ~1)/2;
+        {   top = top/2;
             kk += 1;
         }
         a = cons(fixnum_of_int(top), fixnum_of_int(kk));
@@ -307,7 +334,7 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
         return onevalue(a);
     }
     else
-    {   int32_t wk, bk;
+    {   size_t wk, bk;
 //
 // Here my input was a bignum and I have established that I not only need
 // to shift it right but that I will need to lose some non-zero digits from
@@ -319,8 +346,8 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
         kk = rtop - kk;
         if (rbottom == kk-1) round_up = true;
         else
-        {   int32_t wk1 = (kk-1) / 31, bk1 = (kk-1) % 31;
-            int32_t bit = ((int32_t)1) << bk1;
+        {   size_t wk1 = (kk-1) / 31, bk1 = (kk-1) % 31;
+            intptr_t bit = ((intptr_t)1) << bk1;
             round_up = ((bit & bignum_digits(a)[wk1]) != 0);
             if (was_negative) round_up = !round_up;
         }
@@ -336,7 +363,7 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
 //
         if (was_negative == round_up)
         {   for (;;)
-            {   int32_t bit = ((int32_t)1) << bk;
+            {   intptr_t bit = ((int32_t)1) << bk;
                 if ((bignum_digits(a)[wk] & bit) != 0) break;
                 kk++;
                 bk++;
@@ -350,7 +377,7 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
 // will be promoted into a 1 achieve the rounding I need.
 //
         {   for (;;)
-            {   int32_t bit = ((int32_t)1) << bk;
+            {   intptr_t bit = ((intptr_t)1) << bk;
                 if ((bignum_digits(a)[wk] & bit) == 0) break;
                 kk++;
                 bk++;
@@ -385,7 +412,7 @@ static LispObject Lplus(LispObject nil, int nargs, ...)
 //
 // This adds up a whole bunch of numbers together.
 //    (+ a1 a2 a3 a4 a5)                     is computed as
-//    (+ a1 (+ a2 (* a3 (+ a4 a5))))
+//    (+ a1 (+ a2 (+ a3 (+ a4 a5))))
 //
 {   va_list a;
     int i;
@@ -406,9 +433,8 @@ static LispObject Lplus(LispObject nil, int nargs, ...)
     {   LispObject w;
         pop(w);
         if (is_fixnum(r) && is_fixnum(w))
-        {   int32_t c = int_of_fixnum(r) + int_of_fixnum(w);
-            int32_t w1 = c & fix_mask;
-            if (w1 == 0 || w1 == fix_mask)
+        {   intptr_t c = int_of_fixnum(r) + int_of_fixnum(w);
+            if (valid_as_fixnum(c))
             {   r = fixnum_of_int(c);
                 continue;
             }
@@ -523,15 +549,11 @@ LispObject Lquotient_1(LispObject nil, LispObject b)
 LispObject Ldivide(LispObject nil, LispObject a, LispObject b)
 {   LispObject q, r;
     stackcheck2(0, a, b);
-    push2(a, b);
-    q = quot2(a, b);
-    pop2(b, a);
+    mv_2 = SPID_NIL;
+    q = quotrem2(a, b);
     errexit();
-    push(q);
-    r = Cremainder(a, b);
-    pop(q);
-    errexit();
-    q = cons(q, r);
+    if (is_spid(mv_2)) return aerror2("divide", a, b);
+    q = cons(q, mv_2);
     errexit();
     return onevalue(q);
 }
@@ -556,9 +578,8 @@ LispObject Ltrap_floating_overflow(LispObject nil, LispObject a)
 
 LispObject Lplus2(LispObject nil, LispObject p, LispObject q)
 {   if (is_fixnum(p) && is_fixnum(q))
-    {   int32_t c = int_of_fixnum(p) + int_of_fixnum(q);
-        int32_t w = c & fix_mask;
-        if (w == 0 || w == fix_mask) return onevalue(fixnum_of_int(c));
+    {   intptr_t c = int_of_fixnum(p) + int_of_fixnum(q);
+        if (valid_as_fixnum(c)) return onevalue(fixnum_of_int(c));
     }
     p = plus2(p, q);
     errexit();
@@ -1225,26 +1246,35 @@ LispObject Lrandom_2(LispObject nil, LispObject a, LispObject bb)
     b = bb;
 #endif // COMMON
     if (is_fixnum(a))
-    {   int32_t v = int_of_fixnum(a), p, q;
-        if (v <= 0) return aerror1("random", a);
+    {   size_t v = int_of_fixnum(a), p, q;
+        if (v <= 0) return aerror1("random-number", a);
 // (random 1) always returns zero - a rather silly case!
         else if (v == 1) return onevalue(fixnum_of_int(0));
 //
 // I generate a value that is an exact multiple of my range (v) and
 // pick random bitpatterns until I find one less than that.  On average
-// I will have only VERY slightly less than one draw needed, and doing things
+// I will have only VERY slightly more than one draw needed, and doing things
 // this way ought to ensure that my pseudo random numbers are uniformly
 // distributed provided that the underlying generator is well behaved.
 //
-        p = v*(0x7fffffff/v);
-        do q = ((uint32_t)Crand()) >> 1; while (q > p);
-        return onevalue(fixnum_of_int(q % v));
+        if (SIXTY_FOUR_BIT)
+        {   p = v*(INT64_C(0x7fffffffffffffff)/v);
+            do
+            {   q = (int64_t)Crand()<<31 ^ Crand();
+            } while (q > p);
+            return onevalue(fixnum_of_int(q % v));
+        }
+        else
+        {   p = v*(0x7fffffff/v);
+            do q = ((uint32_t)Crand()) >> 1; while (q > p);
+            return onevalue(fixnum_of_int(q % v));
+        }
     }
     if (is_numbers(a))
     {   int32_t len, len1, msd;
         uint32_t w, w1;
         LispObject r;
-        if (!is_bignum(a)) return aerror1("random", a);
+        if (!is_bignum(a)) return aerror1("random-number", a);
         len = bignum_length(a);
         push(a);
         r = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
@@ -1281,7 +1311,8 @@ LispObject Lrandom_2(LispObject nil, LispObject a, LispObject bb)
 //
         for (len--; len>=0; len--)
             bignum_digits(r)[len] = ((uint32_t)Crand())>>1;
-        return onevalue(shrink_bignum(r, len1));
+        a = shrink_bignum(r, len1);
+        return onevalue(a);
     }
     if (is_bfloat(a))
     {   Header h = flthdr(a);
@@ -1307,31 +1338,25 @@ LispObject Lrandom_2(LispObject nil, LispObject a, LispObject bb)
         errexit();
         return onevalue(a);
     }
-#ifdef SHORT_FLOAT
     if (is_sfloat(a))
     {   Float_union d;
-        float v;
-        d.i = a - TAG_SFLOAT;
-//
-// similar idea to boxfloat case, but only 31 bits randomness used.
-// SOFTWARE_FLOATING_POINT conversion needed here, maybe
-//
+        Float_union v;
+        d.i = a - XTAG_SFLOAT;
         do
-        {   v = (float)(int32_t)(Crand() & 0x7fffffff)/(float)TWO_31;
-            v = v*d.f;
+        {   v.f = (float)(int32_t)(Crand() & 0x7fffffff)/(float)TWO_31;
+            v.f = v.f*d.f;
         }
-        while (v == d.f);
-        d.f = v;
-        return onevalue((d.i & ~(int32_t)0xf) + TAG_SFLOAT);
+        while ((v.i & ~0xf) == (d.i & ~0xf));
+        d.f = v.f;
+        return onevalue(low32((d.i & ~0xf) + XTAG_SFLOAT));
     }
-#endif
-    return aerror1("random", a);
+    return aerror1("random-number", a);
 }
 
 LispObject Lrandom(LispObject nil, LispObject a)
 {   if (is_fixnum(a))
-    {   int32_t v = int_of_fixnum(a), p, q;
-        if (v <= 0) return aerror1("random", a);
+    {   intptr_t v = int_of_fixnum(a), p, q;
+        if (v <= 0) return aerror1("random-number -ve argument", a);
 // (random 1) always returns zero - a rather silly case!
         else if (v == 1) return onevalue(fixnum_of_int(0));
 //
@@ -1341,15 +1366,24 @@ LispObject Lrandom(LispObject nil, LispObject a)
 // this way ought to ensure that my pseudo random numbers are uniformly
 // distributed provided that the underlying generator is well behaved.
 //
-        p = v*(0x7fffffff/v);
-        do q = ((uint32_t)Crand()) >> 1; while (q > p);
-        return onevalue(fixnum_of_int(q % v));
+        if (SIXTY_FOUR_BIT)
+        {   p = v*(INT64_C(0x7fffffffffffffff)/v);
+            do
+            {   q = (int64_t)Crand()<<31 ^ Crand();
+            } while (q > p);
+            return onevalue(fixnum_of_int(q % v));
+        }
+        else
+        {   p = v*(0x7fffffff/v);
+            do q = ((uint32_t)Crand()) >> 1; while (q > p);
+            return onevalue(fixnum_of_int(q % v));
+        }
     }
     if (is_numbers(a))
     {   int32_t len, len1, msd;
         uint32_t w, w1;
         LispObject r;
-        if (!is_bignum(a)) return aerror1("random", a);
+        if (!is_bignum(a)) return aerror1("random-number", a);
         len = bignum_length(a);
         push(a);
         r = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
@@ -1412,30 +1446,25 @@ LispObject Lrandom(LispObject nil, LispObject a)
         errexit();
         return onevalue(a);
     }
-#ifdef COMMON
     if (is_sfloat(a))
     {   Float_union d;
-        float v;
-        d.i = a - TAG_SFLOAT;
-//
-// similar idea to boxfloat case, but only 31 bits randomness used.
-// SOFTWARE_FLOATING_POINT conversion needed here, maybe
-//
+        Float_union v;
+        d.i = a - XTAG_SFLOAT;
         do
-        {   v = (float)(int32_t)(Crand() & 0x7fffffff)/(float)TWO_31;
-            v = v*d.f;
+        {   v.f = (float)(int32_t)(Crand() & 0x7fffffff)/(float)TWO_31;
+            v.f = v.f*d.f;
         }
-        while (v == d.f);
-        d.f = v;
-        return onevalue((d.i & ~(int32_t)0xf) + TAG_SFLOAT);
+        while ((v.i & ~0xf) == (d.i & ~0xf));
+        d.f = v.f;
+        return onevalue(low32((d.i & ~0xf) + XTAG_SFLOAT));
     }
-#endif
-    return aerror1("random", a);
+    return aerror1("random-number", a);
 }
 
 LispObject Lnext_random(LispObject, int nargs, ...)
 //
-// Returns a random positive fixnum.  27 bits in this Lisp!
+// Returns a random positive fixnum.  27 bits in this Lisp! At present this
+// returns 27 bits whether on a 32 or 64-bit machine...
 //
 {   int32_t r;
     argcheck(nargs, 0, "next-random");
@@ -1486,7 +1515,7 @@ LispObject Lmd5(LispObject nil, LispObject a)
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
         for (i=CELL; i<len; i+=4)
-        {   sprintf((char *)md, "%.8lx", (unsigned long)bignum_digits(a)[(i-CELL)/4]);
+        {   sprintf((char *)md, "%.8x", bignum_digits(a)[(i-CELL)/4]);
             CSL_MD5_Update(md, 8);
         }
     }
@@ -1505,6 +1534,14 @@ LispObject Lmd5(LispObject nil, LispObject a)
     v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
     v2 = md[8] + (md[9]<<8) + (md[10]<<16) + (md[11]<<24);
     v3 = md[12] + (md[13]<<8) + (md[14]<<16) + (md[15]<<24);
+// I will deal with caes where the top 64 bits are all zero first - very
+// uncommon I know, but disposoing of that case here will simplify the code
+// that follows!
+    if (v3 == 0 && v2 == 0)
+    {   r = make_lisp_unsigned64((uint64_t)v1<<32 | v0);
+        errexit();
+        return onevalue(r);
+    }
     v4 = v3 >> 28;
     v3 = ((v3 << 3) | (v2 >> 29)) & 0x7fffffff;
     v2 = ((v2 << 2) | (v1 >> 30)) & 0x7fffffff;
@@ -1519,9 +1556,7 @@ LispObject Lmd5(LispObject nil, LispObject a)
     if (v4 != 0 || (v3 & 0x40000000) != 0) len = CELL+20;
     else if (v3 != 0 || (v2 & 0x40000000) != 0) len = CELL+16;
     else if (v2 != 0 || (v1 & 0x40000000) != 0) len = CELL+12;
-    else if (v1 != 0 || (v0 & 0x40000000) != 0) len = CELL+8;
-    else if ((v0 & fix_mask) != 0) len = CELL+4;
-    else return onevalue(fixnum_of_int(v0));
+    else abort();  // All smaller cases were filtered earlier!
     r = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
     errexit();
     if (SIXTY_FOUR_BIT)
@@ -1533,11 +1568,8 @@ LispObject Lmd5(LispObject nil, LispObject a)
             case CELL+12:
                 bignum_digits(r)[3] = v3;
                 bignum_digits(r)[2] = v2;
-            case CELL+8:
-            case CELL+4:
                 bignum_digits(r)[1] = v1;
                 bignum_digits(r)[0] = v0;
-                break;
         }
     }
     else
@@ -1547,12 +1579,9 @@ LispObject Lmd5(LispObject nil, LispObject a)
                 bignum_digits(r)[4] = v4; // zeros out padding word as necessary
                 bignum_digits(r)[3] = v3;
             case CELL+12:
-            case CELL+8:
                 bignum_digits(r)[2] = v2;
                 bignum_digits(r)[1] = v1;
-            case CELL+4:
                 bignum_digits(r)[0] = v0;
-                break;
         }
     }
 //  validate_number("MD5", r, r, r);
@@ -1581,6 +1610,11 @@ LispObject Lmd5string(LispObject nil, LispObject a)
     v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
     v2 = md[8] + (md[9]<<8) + (md[10]<<16) + (md[11]<<24);
     v3 = md[12] + (md[13]<<8) + (md[14]<<16) + (md[15]<<24);
+    if (v3 == 0 && v2 == 0)
+    {   r = make_lisp_unsigned64((uint64_t)v1<<32 | v0);
+        errexit();
+        return onevalue(r);
+    }
     v4 = v3 >> 28;
     v3 = ((v3 << 3) | (v2 >> 29)) & 0x7fffffff;
     v2 = ((v2 << 2) | (v1 >> 30)) & 0x7fffffff;
@@ -1595,9 +1629,7 @@ LispObject Lmd5string(LispObject nil, LispObject a)
     if (v4 != 0 || (v3 & 0x40000000) != 0) len = CELL+20;
     else if (v3 != 0 || (v2 & 0x40000000) != 0) len = CELL+16;
     else if (v2 != 0 || (v1 & 0x40000000) != 0) len = CELL+12;
-    else if (v1 != 0 || (v0 & 0x40000000) != 0) len = CELL+8;
-    else if ((v0 & fix_mask) != 0) len = CELL+4;
-    else return onevalue(fixnum_of_int(v0));
+    else abort();
     r = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
     errexit();
     if (SIXTY_FOUR_BIT)
@@ -1609,8 +1641,6 @@ LispObject Lmd5string(LispObject nil, LispObject a)
             case CELL+12:
                 bignum_digits(r)[3] = v3;
                 bignum_digits(r)[2] = v2;
-            case CELL+8:
-            case CELL+4:
                 bignum_digits(r)[1] = v1;
                 bignum_digits(r)[0] = v0;
                 break;
@@ -1623,10 +1653,8 @@ LispObject Lmd5string(LispObject nil, LispObject a)
                 bignum_digits(r)[4] = v4; // zeros out padding word as necessary
                 bignum_digits(r)[3] = v3;
             case CELL+12:
-            case CELL+8:
                 bignum_digits(r)[2] = v2;
                 bignum_digits(r)[1] = v1;
-            case CELL+4:
                 bignum_digits(r)[0] = v0;
                 break;
         }
@@ -1640,10 +1668,17 @@ LispObject Lmd5string(LispObject nil, LispObject a)
 // of number not 128. It is for use when the full 128 bits of checksum
 // would be clumsy overkill.
 //
+// Note that this version really does compute md5 and then just return the
+// low 60 bits. A previous implementation that I had went to some trouible
+// to ensure that the value returned was always represented as a bignum,
+// and specifically that the top 32 bits of that value were never all zero.
+// I now forget my exact reasoning for doing that, and it was clerarly a
+// rather odd thing to do! On a 64-bit machine a 60-bit value will be
+// a fixnum half the time (ie when its most significant bit is zero).
+//
 
 LispObject Lmd60(LispObject nil, LispObject a)
-{   LispObject r;
-    unsigned char md[16];
+{   unsigned char md[16];
     uint32_t v0, v1;
     int32_t len, i;
     if (is_fixnum(a))
@@ -1655,7 +1690,7 @@ LispObject Lmd60(LispObject nil, LispObject a)
     {   len = length_of_header(numhdr(a));
         CSL_MD5_Init();
         for (i=CELL; i<len; i+=4)
-        {   sprintf((char *)md, "%.8lx", (unsigned long)bignum_digits(a)[(i-CELL)/4]);
+        {   sprintf((char *)md, "%.8x", bignum_digits(a)[(i-CELL)/4]);
             CSL_MD5_Update(md, 8);
         }
     }
@@ -1669,51 +1704,10 @@ LispObject Lmd60(LispObject nil, LispObject a)
     CSL_MD5_Final(md);
     v0 = md[0] + (md[1]<<8) + (md[2]<<16) + (md[3]<<24);
     v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
-    v1 = ((v1 << 1) | (v0 >> 31)) & 0x3fffffff;
-    v0 &= 0x7fffffff;
-    if (v1 != 0 || (v0 & 0x40000000) != 0) len = CELL+8;
-#ifdef PERMIT_SHORT_CHECKSUMS
-    else if ((v0 & fix_mask) != 0) len = CELL+4;
-    else return onevalue(fixnum_of_int(v0));
-#else
-    else
-    {
-//
-// Here I ensure that the checksum that I return is a 2-word bignum
-// This SKEWS the distribution somewhat, in that results lower than 2^30
-// will never be returned. In the very unusual case that the low 61 bits
-// of md5 were all zero I return a somewhat arbitrary alternative value.
-//
-        if (v0 != 0)
-        {   v1 = v0;
-            v0 = md[8] + (md[9]<<8) + (md[10]<<16) + (md[11]<<24);
-            v0 &= 0x7fffffff;
-            len = CELL+8;
-        }
-        else
-        {   v1 = 0x12345678;
-            len = CELL+8;
-        }
-    }
-#endif
-    r = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
+    a = make_lisp_unsigned64((uint64_t)v1<<32 | v0);
     errexit();
-    if (SIXTY_FOUR_BIT)
-    {   bignum_digits(r)[1] = v1;
-        bignum_digits(r)[0] = v0;
-    }
-    else
-    {   switch (len)
-        {   case CELL+8:
-                bignum_digits(r)[2] = 0;
-                bignum_digits(r)[1] = v1;
-            case CELL+4:
-                bignum_digits(r)[0] = v0;
-                break;
-        }
-    }
-//  validate_number("MD60", r, r, r);
-    return onevalue(r);
+//  validate_number("MD60", a, a, a);
+    return onevalue(a);
 }
 
 static LispObject Llogand2(LispObject env, LispObject a1, LispObject a2)
@@ -1730,6 +1724,18 @@ static LispObject Llogxor2(LispObject env, LispObject a1, LispObject a2)
 
 static LispObject Llogor2(LispObject env, LispObject a1, LispObject a2)
 {   return Lboolfn(env, 2, a1, a2);
+}
+
+static LispObject Lvalidate(LispObject nil, LispObject a)
+{   validate_number("validate-number", a, fixnum_of_int(0), fixnum_of_int(0));
+    errexit();
+    return onevalue(a);
+}
+
+static LispObject Lvalidate2(LispObject nil, LispObject a, LispObject b)
+{   validate_number("validate-number", a, b, fixnum_of_int(0));
+    errexit();
+    return onevalue(a);
 }
 
 setup_type const arith06_setup[] =
@@ -1812,6 +1818,7 @@ setup_type const arith06_setup[] =
     {"geq",                     Lgeq_1, Lgeq, Lgeq_n},
     {"logor",                   Lidentity, Llogor2, Lboolfn},
     {"lor",                     Lidentity, Llogor2, Lboolfn},
+    {"validate-number",         Lvalidate, Lvalidate2, wrong_no_1},
     {NULL,                      0, 0, 0}
 };
 

@@ -41,15 +41,6 @@
 
 
 
-//
-// I provide symbols IMULTIPLY and IDIVIDE which can be asserted if the
-// corresponding routines have been provided elsewhere (e.g. in machine
-// code for extra speed)
-//
-
-#ifndef IDIVIDE
-#ifdef HAVE_UINT64_T
-
 uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
 //
 // Same behaviour as Idivide(qp, high, low, 1000000000U).
@@ -59,102 +50,6 @@ uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
     *qp = (uint32_t)(p / (uint64_t)1000000000U);
     return (uint32_t)(p % (uint64_t)1000000000U);
 }
-
-
-#else
-
-uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
-//
-// Same behaviour as Idivide(qp, high, low, 1000000000U).
-// If Idivide is coded in assembler then this will probably be
-// easy and sensible to implement as an alternative entrypoint.
-// The code given here is intended for use on computers where
-// division is a slow operation - it works by a sort of long
-// division, forming guessed for the partial quotients my
-// multiplying by a (binary scaled) reciprocal of 1000000000.
-//
-// Used for printing only - i.e. only in this file
-//
-{
-#define RECIP_10_9  70368U   // 2^46/10^9
-#define TEN_9_16H   15258U
-#define TEN_9_16L   51712U    // 10^9 in 2 chunks, base 2^16
-#define TEN_9_15H   30517U
-#define TEN_9_15L   18944U    // 10^9 in 2 chunks, base 2^15
-
-    uint32_t w = ((high >> 14) * RECIP_10_9) >> 16;
-//
-// The above line sets w to the first partial quotient.  Multiply
-// it back up by 10^9 (working base 2^16 while so doing) and subtract
-// that off from the original number to get a residue.
-//
-    uint32_t w1 = w * TEN_9_16L, w2, w3, w4, w5;
-    w2 = w1 >> 16;
-    high -= (w * TEN_9_16H + w2);
-    low -= ((w1 << 15) & 0x7fffffff);
-    if ((int32_t)low < 0)
-    {   high--;
-        low &= 0x7fffffff;
-    }
-//
-// Now do the same sort of operation again to get the next
-// part of the quotient.
-//
-    w3 = (high * RECIP_10_9) >> 15;
-//
-// when I multiply back up by 10^9 and subtract off I need to use
-// all the bits that there are in my 32-bit words, and it seems to
-// turn out that working base 2^15 rather than 2^16 here is best.
-//
-    w4 = w3 * TEN_9_15H;
-    w5 = w4 >> 16;
-    high -= w5;
-    w4 -= (w5 << 16);
-    low -= (w3 * TEN_9_15L);
-    if ((int32_t)low < 0)
-    {   high--;         // propage a borrow
-        low &= 0x7fffffff;
-    }
-    low -= (w4 << 15);
-    if ((int32_t)low < 0)
-    {   high--;         // propagate another borrow
-        low &= 0x7fffffff;
-    }
-//
-// The quotient that I compute here is almost correct - I will
-// adjust it by 1, 2, 3 or 4..
-//
-    w = (w << 15) + w3;
-//
-// If high was nonzero I subtract (2*high*10^9) from low, and need not
-// consider high again.
-//
-    if (high != 0)
-    {   low -= (2000000000U + 0x80000000U);
-        w += 2;
-        if (high != 1)
-        {   low -= (2000000000U + 0x80000000U);
-            w += 2;
-        }
-    }
-//
-// final adjustment..
-//
-    if (low >= 1000000000U)
-    {   low -= 1000000000U;
-        w += 1;
-        if (low >= 1000000000U)
-        {   low -= 1000000000U;
-            w += 1;
-        }
-    }
-    *qp = w;
-    return low;
-}
-
-#endif
-#endif // IDIVIDE
-
 
 //
 // Arithmetic comparison: lesseq
@@ -171,7 +66,7 @@ static bool lesseqis(LispObject a, LispObject b)
     return 0;
 #else
     Float_union bb;
-    bb.i = b - TAG_SFLOAT;
+    bb.i = b - XTAG_SFLOAT;
     return (double)int_of_fixnum(a) <= (double)bb.f;
 #endif
 }
@@ -197,7 +92,7 @@ static bool lesseqsi(LispObject a, LispObject b)
     return 0;
 #else
     Float_union aa;
-    aa.i = a - TAG_SFLOAT;
+    aa.i = a - XTAG_SFLOAT;
     return (double)aa.f <= (double)int_of_fixnum(b);
 #endif
 }
@@ -208,7 +103,7 @@ static bool lesseqsb(LispObject a, LispObject b)
     return 0;
 #else
     Float_union aa;
-    aa.i = a - TAG_SFLOAT;
+    aa.i = a - XTAG_SFLOAT;
     return !lesspbd(b, (double)aa.f);
 #endif
 }
@@ -219,7 +114,7 @@ static bool lesseqsr(LispObject a, LispObject b)
     return 0;
 #else
     Float_union aa;
-    aa.i = a - TAG_SFLOAT;
+    aa.i = a - XTAG_SFLOAT;
     return !lessprd(b, (double)aa.f);
 #endif
 }
@@ -230,7 +125,7 @@ static bool lesseqsf(LispObject a, LispObject b)
     return 0;
 #else
     Float_union aa;
-    aa.i = a - TAG_SFLOAT;
+    aa.i = a - XTAG_SFLOAT;
     return (double)aa.f <= float_of_number(b);
 #endif
 }
@@ -243,7 +138,7 @@ static bool lesseqbs(LispObject a, LispObject b)
     return 0;
 #else
     Float_union bb;
-    bb.i = b - TAG_SFLOAT;
+    bb.i = b - XTAG_SFLOAT;
     return !lesspdb((double)bb.f, a);
 #endif
 }
@@ -296,7 +191,7 @@ static bool lesseqrs(LispObject a, LispObject b)
     return 0;
 #else
     Float_union bb;
-    bb.i = b - TAG_SFLOAT;
+    bb.i = b - XTAG_SFLOAT;
     return !lesspdr((double)bb.f, a);
 #endif
 }
@@ -324,7 +219,7 @@ static bool lesseqfs(LispObject a, LispObject b)
     return 0;
 #else
     Float_union bb;
-    bb.i = b - TAG_SFLOAT;
+    bb.i = b - XTAG_SFLOAT;
     return float_of_number(a) <= (double)bb.f;
 #endif
 }
@@ -348,9 +243,9 @@ bool lesseq2(LispObject a, LispObject b)
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
 // For fixnums the comparison can be done directly
-                    return ((int32_t)a <= (int32_t)b);
+                    return ((intptr_t)a <= (intptr_t)b);
 #ifdef SHORT_FLOAT
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                     return lesseqis(a, b);
 #endif
                 case TAG_NUMBERS:
@@ -370,14 +265,14 @@ bool lesseq2(LispObject a, LispObject b)
                     return (bool)aerror2("bad arg for leq", a, b);
             }
 #ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
+        case XTAG_SFLOAT:
             switch (b & TAG_BITS)
             {   case TAG_FIXNUM:
                     return lesseqsi(a, b);
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                 {   Float_union aa, bb;
-                    aa.i = a - TAG_SFLOAT;
-                    bb.i = b - TAG_SFLOAT;
+                    aa.i = a - XTAG_SFLOAT;
+                    bb.i = b - XTAG_SFLOAT;
                     return (aa.f <= bb.f);
                 }
                 case TAG_NUMBERS:
@@ -405,7 +300,7 @@ bool lesseq2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return lesseqbi(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return lesseqbs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -429,7 +324,7 @@ bool lesseq2(LispObject a, LispObject b)
                     {   case TAG_FIXNUM:
                             return lesseqri(a, b);
 #ifdef SHORT_FLOAT
-                        case TAG_SFLOAT:
+                        case XTAG_SFLOAT:
                             return lesseqrs(a, b);
 #endif
                         case TAG_NUMBERS:
@@ -456,7 +351,7 @@ bool lesseq2(LispObject a, LispObject b)
             {   case TAG_FIXNUM:
                     return lesseqfi(a, b);
 #ifdef SHORT_FLOAT
-                case TAG_SFLOAT:
+                case XTAG_SFLOAT:
                     return lesseqfs(a, b);
 #endif
                 case TAG_NUMBERS:
@@ -493,12 +388,22 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
 #ifdef NEED_TO_CHECK_BIGNUM_FORMAT
 // The next few lines are to help me track down bugs...
     {   int32_t d1 = bignum_digits(u)[(len-4)/4];
-        if (len == 4)
-        {   int32_t m = d1 & fix_mask;
-            if (m == 0 || m == fix_mask)
+        if (!SIXTY_FOUR_BIT && len == 4)
+        {   if (valid_as_fixnum(d1))
                 printf("[%.8lx should be fixnum]", (long)d1);
             if (signed_overflow(d1))
                 printf("[%.8lx needs 2 words]", (long)d1);
+        }
+        else if (SIXTY_FOUR_BIT && len == 4)
+            printf("[%.8lx should be a fixnum]", (long)bignum_digits(u)[0]);
+        if (SIXTY_FOUR_BIT && len == 8)
+        {   int64_t v = bignum_digits64(u, 1)<<31 +
+                        bignum_digits(u)[0]);
+            if (valid_as_fixnum(v))
+                printf("[%.8lx should be fixnum]", (long)d1);
+            if (signed_overflow(bignum_digits(u)[1]))
+                printf("[%.8lx:%.8lx needs 3 words]",
+                    (long)d1, (long)bignum_digits(u)[0]);
         }
         else
         {   int32_t d0 = bignum_digits(u)[(len-8)/4];
@@ -509,6 +414,11 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
     }
 // end of temp code
 #endif
+// The code I have here looks DREADFUL and I believe I should be able to
+// shrink it a lot - especially if I believe that int64_t is available
+// as a 64-bit integer type. But despite being ugly and the case of one
+// word bignums not being possible in a64-bit world this should still work and
+// so I will leave it alone for now...
     switch (len)
     {   case 4:         // one word bignum - especially easy!
         {   int32_t dig0 = bignum_digits(u)[0];

@@ -268,10 +268,9 @@ static void validate(LispObject p, int line1)
 {       default:            // The case-list is exhaustive!
         case TAG_CONS:      // Already processed
         case TAG_FIXNUM:    // Invalid here
+// Note that XTAG_SFLOAT is just TAG_FIXNUM with the 0x08 bit set too...
+//      case XTAG_SFLOAT:   // Invalid here
         case TAG_HDR_IMMED: // Invalid here
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:    // Invalid here
-#endif
             term_printf("\nBad object in VALIDATE (%.8lx)\n", (long)p);
             term_printf("Validation for %s at line %d of file %s (%d)\n",
                         validate_why, validate_line, validate_file, validate_line1);
@@ -826,6 +825,15 @@ static int profile_cf(const void *a, const void *b)
     else if (aa->w < bb->w) return 1;
     else return -1;
 }
+
+// The mapstore function is only interested in symbols. But here it works by
+// expecting there to be a separate "vector heap" that contains only items
+// that have header words, and that these header words will all be present and
+// correct with no gaps in the data. I *BELIEVE* this and validate() are the
+// only places where I still rely on keeping CONS and VECTOR heaps separate
+// and where I rely on the vector heap always having neat header words
+// immediately after every object... And validate() is "only" a debugging aid
+// and could be discarded.
 
 
 LispObject Lmapstore(LispObject nil, LispObject a)

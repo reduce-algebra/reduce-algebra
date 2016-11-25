@@ -390,17 +390,15 @@ static LispObject make_complex_float(Complex v, LispObject a)
 {   int32_t type;
     LispObject a1, a2, nil;
     a = real_part(a);
-#ifdef SHORT_FLOAT
     if (is_sfloat(a))
     {   Float_union r, i;
         r.f = (float)v.real;
         i.f = (float)v.imag;
-        a1 = make_complex((r.i & ~(int32_t)0xf) + TAG_SFLOAT,
-                          (i.i & ~(int32_t)0xf) + TAG_SFLOAT);
+        a1 = make_complex(low32((r.i & ~0xf) + XTAG_SFLOAT),
+                          low32((i.i & ~0xf) + XTAG_SFLOAT));
         errexit();
         return onevalue(a1);
     }
-#endif
     if (is_bfloat(a)) type = type_of_header(flthdr(a));
     else type = TYPE_SINGLE_FLOAT;
 // There are MANY uses of make_boxfloat here. In pretty well all cases I let
@@ -1172,56 +1170,57 @@ typedef struct trigfn
 {   double (*real)(double);
     double (*imag)(double);
     Complex (*complex)(Complex);
+    const char *name;
 } trigfn_record;
 
 static trigfn_record const trig_functions[] =
-{   {racos,  iacos,  CSLcacos},  // acos   0  inverse cos, rads, [0, pi)
-    {racosd, iacosd, CSLcacosd}, // acosd  1  inverse cos, degs, [0, 180)
-    {racosh, iacosh, CSLcacosh}, // acosh  2  inverse hyperbolic cosine
-    {racot,  NULL,   CSLcacot},  // acot   3  inverse cot, rads, (0, pi)
-    {racotd, NULL,   CSLcacotd}, // acotd  4  inverse cot, degs, (0, 180)
-    {racoth, iacoth, CSLcacoth}, // acoth  5  inverse hyperbolic cotangent
-    {racsc,  iacsc,  CSLcacsc},  // acsc   6  inverse cosec, [-pi/2, pi/2]
-    {racscd, iacscd, CSLcacscd}, // acscd  7  inverse cosec, degs, [-90, 90]
-    {racsch, NULL,   CSLcacsch}, // acsch  8  inverse hyperbolic coseCSLcant
-    {rasec,  iasec,  CSLcasec},  // asec   9  inverse sec, rads, [0, pi)
-    {rasecd, iasecd, CSLcasecd}, // asecd  10 inverse sec, degs, [0, 180)
-    {rasech, iasech, CSLcasech}, // asech  11 inverse hyperbolic seCSLcant
-    {rasin,  iasin,  CSLcasin},  // asin   12 inverse sin, rads, [-pi/2, pi/2]
-    {rasind, iasind, CSLcasind}, // asind  13 inverse sin, degs, [-90, 90]
-    {CSLasinh, NULL, CSLcasinh}, // asinh  14 inverse hyperbolic sin
-    {atan,   NULL,   CSLcatan},  // atan   15 1-arg inverse tan, (-pi/2, pi/2)
-    {ratand, NULL,   CSLcatand}, // atand  16 inverse tan, degs, (-90, 90)
-    {NULL,   NULL,   NULL},   // atan2  17 2-arg inverse tan, [0, 2pi)
-    {NULL,   NULL,   NULL},   // atan2d 18 2-arg inverse tan, degs, [0, 360)
-    {ratanh, iatanh, CSLcatanh}, // atanh  19 inverse hyperbolic tan
-    {rcbrt,  NULL,   ccbrt},  // cbrt   20 cube root
-    {my_cos, NULL,   Ccos},   // cos    21 cosine, rads
-    {rcosd,  NULL,   CSLccosd},  // cosd   22 cosine, degs
-    {cosh,   NULL,   CSLccosh},  // cosh   23 hyperbolic cosine
-    {rcot,   NULL,   CSLccot},   // cot    24 cotangent, rads
-    {rcotd,  NULL,   CSLccotd},  // cotd   25 cotangent, degs
-    {rcoth,  NULL,   CSLccoth},  // coth   26 hyperbolic cotangent
-    {rcsc,   NULL,   CSLccsc},   // csc    27 cosecant, rads
-    {rcscd,  NULL,   CSLccscd},  // cscd   28 cosecant, degs
-    {rcsch,  NULL,   CSLccsch},  // csch   29 hyperbolic cosecant
-    {exp,    NULL,   Cexp},   // exp    30 exp(x) = e^z, e approx 2.71828
-    {NULL,   NULL,   NULL},   // expt   31 expt(a,b) = a^b
-    {NULL,   NULL,   NULL},   // hypot  32 hypot(a,b) = sqrt(a^2+b^2)
-    {rln,    iln,    Cln},    // ln     33 log base e, e approx 2.71828
-    {NULL,   NULL,   NULL},   // log    34 2-arg log
-    {rlog10, ilog10, CSLclog10}, // log10  35 log to base 10
-    {rsec,   NULL,   CSLcsec},   // sec    36 secant, rads
-    {rsecd,  NULL,   CSLcsecd},  // secd   37 secant, degs
-    {rsech,  NULL,   CSLcsech},  // sech   38 hyperbolic secant
-    {my_sin, NULL,   CSLcsin},   // sin    39 sine, rads
-    {rsind,  NULL,   CSLcsind},  // sind   40 sine, degs
-    {sinh,   NULL,   CSLcsinh},  // sinh   41 hyperbolic sine
-    {rsqrt,  isqrt,  CSLcsqrt},  // sqrt   42 square root
-    {tan,    NULL,   CSLctan},   // tan    43 tangent, rads
-    {rtand,  NULL,   CSLctand},  // tand   44 tangent, degs
-    {tanh,   NULL,   CSLctanh},  // tanh   45 hyperbolic tangent
-    {rlog2,  ilog2,  CSLclog2}   // log2   46 log to base 2
+{   {racos,  iacos,  CSLcacos,  "acos"},  // acos   0  inverse cos, rads, [0, pi)
+    {racosd, iacosd, CSLcacosd, "acosd"}, // acosd  1  inverse cos, degs, [0, 180)
+    {racosh, iacosh, CSLcacosh, "acosh"}, // acosh  2  inverse hyperbolic cosine
+    {racot,  NULL,   CSLcacot,  "acot"},  // acot   3  inverse cot, rads, (0, pi)
+    {racotd, NULL,   CSLcacotd, "acotd"}, // acotd  4  inverse cot, degs, (0, 180)
+    {racoth, iacoth, CSLcacoth, "acoth"}, // acoth  5  inverse hyperbolic cotangent
+    {racsc,  iacsc,  CSLcacsc,  "acsc"},  // acsc   6  inverse cosec, [-pi/2, pi/2]
+    {racscd, iacscd, CSLcacscd, "acscd"}, // acscd  7  inverse cosec, degs, [-90, 90]
+    {racsch, NULL,   CSLcacsch, "acsch"}, // acsch  8  inverse hyperbolic coseCSLcant
+    {rasec,  iasec,  CSLcasec,  "asec"},  // asec   9  inverse sec, rads, [0, pi)
+    {rasecd, iasecd, CSLcasecd, "asecd"}, // asecd  10 inverse sec, degs, [0, 180)
+    {rasech, iasech, CSLcasech, "asech"}, // asech  11 inverse hyperbolic seCSLcant
+    {rasin,  iasin,  CSLcasin,  "asin"},  // asin   12 inverse sin, rads, [-pi/2, pi/2]
+    {rasind, iasind, CSLcasind, "asind"}, // asind  13 inverse sin, degs, [-90, 90]
+    {CSLasinh, NULL, CSLcasinh, "asinh"}, // asinh  14 inverse hyperbolic sin
+    {atan,   NULL,   CSLcatan,  "atan"},  // atan   15 1-arg inverse tan, (-pi/2, pi/2)
+    {ratand, NULL,   CSLcatand, "atand"}, // atand  16 inverse tan, degs, (-90, 90)
+    {NULL,   NULL,   NULL,      "atan2"}, // atan2  17 2-arg inverse tan, [0, 2pi)
+    {NULL,   NULL,   NULL,      "atan2d"},// atan2d 18 2-arg inverse tan, degs, [0, 360)
+    {ratanh, iatanh, CSLcatanh, "atanh"}, // atanh  19 inverse hyperbolic tan
+    {rcbrt,  NULL,   ccbrt,     "cbrt"},  // cbrt   20 cube root
+    {my_cos, NULL,   Ccos,      "cos"},   // cos    21 cosine, rads
+    {rcosd,  NULL,   CSLccosd,  "cosd"},  // cosd   22 cosine, degs
+    {cosh,   NULL,   CSLccosh,  "cosh"},  // cosh   23 hyperbolic cosine
+    {rcot,   NULL,   CSLccot,   "cot"},   // cot    24 cotangent, rads
+    {rcotd,  NULL,   CSLccotd,  "cotd"},  // cotd   25 cotangent, degs
+    {rcoth,  NULL,   CSLccoth,  "coth"},  // coth   26 hyperbolic cotangent
+    {rcsc,   NULL,   CSLccsc,   "csc"},   // csc    27 cosecant, rads
+    {rcscd,  NULL,   CSLccscd,  "cscd"},  // cscd   28 cosecant, degs
+    {rcsch,  NULL,   CSLccsch,  "csch"},  // csch   29 hyperbolic cosecant
+    {exp,    NULL,   Cexp,      "exp"},   // exp    30 exp(x) = e^z, e approx 2.71828
+    {NULL,   NULL,   NULL,      "expt"},  // expt   31 expt(a,b) = a^b
+    {NULL,   NULL,   NULL,      "hypot"}, // hypot  32 hypot(a,b) = sqrt(a^2+b^2)
+    {rln,    iln,    Cln,       "ln"},    // ln     33 log base e, e approx 2.71828
+    {NULL,   NULL,   NULL,      "log"},   // log    34 2-arg log
+    {rlog10, ilog10, CSLclog10, "log10"}, // log10  35 log to base 10
+    {rsec,   NULL,   CSLcsec,   "sec"},   // sec    36 secant, rads
+    {rsecd,  NULL,   CSLcsecd,  "secd"},  // secd   37 secant, degs
+    {rsech,  NULL,   CSLcsech,  "sech"},  // sech   38 hyperbolic secant
+    {my_sin, NULL,   CSLcsin,   "sin"},   // sin    39 sine, rads
+    {rsind,  NULL,   CSLcsind,  "sind"},  // sind   40 sine, degs
+    {sinh,   NULL,   CSLcsinh,  "sinh"},  // sinh   41 hyperbolic sine
+    {rsqrt,  isqrt,  CSLcsqrt,  "sqrt"},  // sqrt   42 square root
+    {tan,    NULL,   CSLctan,   "tan"},   // tan    43 tangent, rads
+    {rtand,  NULL,   CSLctand,  "tand"},  // tand   44 tangent, degs
+    {tanh,   NULL,   CSLctanh,  "tanh"},  // tanh   45 hyperbolic tangent
+    {rlog2,  ilog2,  CSLclog2,  "log2"}   // log2   46 log to base 2
 };
 
 static LispObject Ltrigfn(unsigned int which_one, LispObject a)
@@ -1242,17 +1241,15 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
     if (which_one > 46) return aerror("trigfn internal error");
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
-            d = (double)int_of_fixnum(a);
+            if (is_sfloat(a))
+            {   Float_union aa;
+                aa.i = a - XTAG_SFLOAT;
+                d = (double)aa.f;
+                restype = 0;
+                break;
+            }
+            else d = (double)int_of_fixnum(a);
             break;
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-        {   Float_union aa;
-            aa.i = a - TAG_SFLOAT;
-            d = (double)aa.f;
-            restype = 0;
-            break;
-        }
-#endif
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1298,7 +1295,10 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
             if (trap_floating_overflow &&
                 floating_edge_case(d))
             {   floating_clear_flags();
-                return aerror("error in floating point elementary function");
+                const char *name = trig_functions[which_one].name;
+                char errbuff[64];
+                sprintf(errbuff, "error in floating point %s", name);
+                return aerror(errbuff);
             }
             a = make_boxfloat(d, restype);
             errexit();
@@ -1316,7 +1316,10 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
                 (floating_edge_case(c1r) ||
                  floating_edge_case(c1i)))
             {   floating_clear_flags();
-                return aerror("error in floating point elementary function");
+                const char *name = trig_functions[which_one].name;
+                char errbuff[64];
+                sprintf(errbuff, "error in floating point %s", name);
+                return aerror(errbuff);
             }
             a = make_boxfloat(d, restype);
 //
@@ -1334,7 +1337,10 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 // For now at least I will keep raising an error in cases where the
 // result would not be real
 //
-            return aerror("Elementary function argument out of range");
+            const char *name = trig_functions[which_one].name;
+            char errbuff[64];
+            sprintf(errbuff, "Arg for %s out of range", name);
+            return aerror1(errbuff, a);
 #endif
             rp = make_boxfloat(c1r, restype);
             errexit();
@@ -1361,14 +1367,12 @@ static LispObject makenum(LispObject a, int32_t n)
     LispObject nil = C_nil;
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
-            return fixnum_of_int(n);
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-        {   Float_union aa;
-            aa.f = (float)n;
-            return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
-        }
-#endif
+            if (is_sfloat(a))
+            {   Float_union aa;
+                aa.f = (float)n;
+                return low32((aa.i & ~0xf) + XTAG_SFLOAT);
+            }
+            else return fixnum_of_int(n);
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -1653,9 +1657,7 @@ LispObject Labsval(LispObject nil, LispObject a)
 //
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-#endif
+//      case XTAG_SFLOAT:
             break;
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));

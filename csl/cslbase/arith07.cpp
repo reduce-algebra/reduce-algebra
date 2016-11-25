@@ -1,4 +1,4 @@
-//  arith07.cpp                       Copyright (C) 1990-2016 Codemist    
+//  arith07.cpp                           Copyright (C) 1990-2016 Codemist    
 
 //
 // Arithmetic functions.  negation plus a load of Common Lisp things
@@ -64,20 +64,46 @@ LispObject negateb(LispObject a)
 // which might confuse the caller... in a similar way negating
 // the value -0x40000000 will need to promote from a one-word
 // bignum to a 2-word bignum.  How messy just for negation!
+// In an analogous manner negating the positive number of the style
+// 0x40000000 can lead to a negative result that uses one less digit.
+// Well on a 64-bit machine it is a 2-word bignum that can end up
+// negated to get a fixnum result.
 //
 {   LispObject b, nil;
-    int32_t len = bignum_length(a), i, carry;
-    if (len == CELL+4)   // one-word bignum - do specially
-    {   len = -(int32_t)bignum_digits(a)[0];
-        if (len == fix_mask) return fixnum_of_int(len);
-        else if (len == 0x40000000) return make_two_word_bignum(0, len);
-        else return make_one_word_bignum(len);
+    size_t len = bignum_length(a), i;
+    int32_t carry;
+// There are two messy special cases here. The first is that there is a
+// positive value (2^27 or 2^59) which has to be represented as a bignum,
+// but when you negate it you get a fixnum.
+// Then there will be negative values (the smallest being -2^31 or -2^62)
+// that fit in a certain number of words of bignum, but their absolute
+// value needs one more word...
+// Note that on a 64-bit machine there ought never to be any one-word
+// bignums because all the values representable with just one 31-bit digit
+// can be handled as fixnums instead.
+    if (SIXTY_FOUR_BIT && len == CELL+8)   // two-word bignum - do specially
+    {   if (bignum_digits(a)[0] == 0 &&
+            bignum_digits(a)[1] == (int32_t)0x10000000)
+            return MOST_NEGATIVE_FIXNUM;
+        else if (bignum_digits(a)[0] == 0 &&
+            (int32_t)bignum_digits(a)[1] == -(int32_t)(1<<30))
+            return make_three_word_bignum(0, 1<<30, 0);
+        int32_t d0 = bignum_digits(a)[0];
+        int32_t d1 = ~bignum_digits(a)[1];
+        if (d0 = (1<<30)) d1++;
+        else return make_two_word_bignum(d1, (-d0) & 0x7fffffff);
+    }
+    if (!SIXTY_FOUR_BIT && len == CELL+4)   // one-word bignum - do specially
+    {   int32_t d0 = -(int32_t)bignum_digits(a)[0];
+        if (d0 == MOST_NEGATIVE_FIXVAL) return MOST_NEGATIVE_FIXNUM;
+        else if (d0 == 0x40000000) return make_two_word_bignum(0, d0);
+        else return make_one_word_bignum(d0);
     }
     push(a);
     b = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
     pop(a);
     errexit();
-    len = (len-CELL)/4-1;
+    len = (len-CELL-4)/4;
     carry = -1;
     for (i=0; i<len; i++)
     {   carry = clear_top_bit(~bignum_digits(a)[i]) + top_bit(carry);
@@ -127,22 +153,8 @@ LispObject negate(LispObject a)
 {   LispObject nil;   // needed for errexit()
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
-        {   int32_t aa = -int_of_fixnum(a);
-//
-// negating the number -#x8000000 (which is a fixnum) yields a value
-// which just fails to be a fixnum.
-//
-            if (aa != 0x08000000) return fixnum_of_int(aa);
-            else return make_one_word_bignum(aa);
-        }
-#ifdef SHORT_FLOAT
-        case TAG_SFLOAT:
-        {   Float_union aa;
-            aa.i = a - TAG_SFLOAT;
-            aa.f = (float) (-aa.f);
-            return (aa.i & ~(int32_t)0xf) + TAG_SFLOAT;
-        }
-#endif
+            if (is_sfloat(a)) return a ^ (LispObject)0x80000000U;
+            else return make_lisp_integer64(-int_of_fixnum(a));
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
@@ -207,14 +219,25 @@ LispObject negate(LispObject a)
 // It should, however, serve for IEEE and IBM FP formats.
 //
 
+#ifdef LITTLEENDIAN
 #define _fp_normalize(high, low)                                          \
     {   double temp;           /* access to representation     */         \
         temp = high;           /* take original number         */         \
-        ((int32_t *)&temp)[current_fp_rep & FP_WORD_ORDER] = 0;           \
+        ((int32_t *)&temp)[0] = 0;                                        \
                                /* make low part of mantissa 0  */         \
         low += (high - temp);  /* add into low-order result    */         \
         high = temp;                                                      \
     }
+#else
+#define _fp_normalize(high, low)                                          \
+    {   double temp;           /* access to representation     */         \
+        temp = high;           /* take original number         */         \
+        ((int32_t *)&temp)[1] = 0;                                        \
+                               /* make low part of mantissa 0  */         \
+        low += (high - temp);  /* add into low-order result    */         \
+        high = temp;                                                      \
+    }
+#endif
 
 //
 // A modern C system will provide a datatype "complex double" which

@@ -2838,68 +2838,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #endif
 
 //
-// Now dynamic code detects the floating point representation that is in use.
-// I thought/hoped that doing it this way would be safer than relying on having
-// pre-defined symbols that tracked the machine architecture.
-//
-        {   union fpch
-            {   double d;
-                unsigned char c[8];
-            } d;
-//
-// The following looks at the floating point representation of the
-// number 1/7 (in double precision) and picks out two bytes from
-// the middle of the first word - where I hope that rounding issues
-// will be remote.  Investigation shows that these two bytes can be
-// used to discriminate among at least a worthwhile range of
-// representations, and I will exploit this to help me re-load
-// heap-images in a way that allows images to be portable across
-// different architectures.
-//
-            int w;
-            d.d = 1.0/7.0;
-// The coding here was adjusted to survive a Debian ARM Linux port.
-            w = ((d.c[1] & 0xff) << 8) | (d.c[2] & 0xff);
-            switch (w)
-            {
-//
-// At one stage I detected (on of the) VAX representations and the one used
-// by the IBM s60/s370. These days I am only going to recognise cases that
-// use IEEE layout. Even with that the example machines noted here reveal
-// that even though IEEE explains what bits should be in the floating point
-// value different manufacturers pack the words and bytes in a variety of
-// ways! Well the mere shuffling of bytes is something I can deal with. If I
-// really needed to make image files portable to old-style IBM mainframes
-// or on a xArch machine set up to use hexadecimal floating point mode then
-// what I have here would moan. But if I just override the moan I will
-// be able to build images and reload them on that particular machine.
-//
-// It seems that REALLY OLD version of ARM software - possibly before
-// hardware floating point was generally installed there, used little endian
-// representations except that the two 32-bit units of a 64-bit float were
-// stored with the more significant one first. A test in 2016 on a Raspberry
-// Pi indicates that things are now such that the ARM seems to match the Intel
-// layout. That means that the only two orders I am now aware of arising are
-// fully little endian and fully big endian. In the notation used here this
-// is either nothing or is both byte and words swapped.
-                case 0x2449:    current_fp_rep = 0;
-                    break;           // Intel, MIPS, modern ARM
-                case 0x49c2:    current_fp_rep = FP_WORD_ORDER;
-                    break;           // ancient ARM!!!
-                case 0x4924:    current_fp_rep = FP_BYTE_ORDER;
-                    break;           // may never happen?
-                case 0xc249:    current_fp_rep = FP_WORD_ORDER|FP_BYTE_ORDER;
-                    break;           // SPARC
-//
-// The next line is probably not very good under a window manager, but
-// it is a case that ought never to arise, so I will not bother.
-//
-                default:        term_printf("Unknown floating point format %.4x\n", w);
-                    my_exit(EXIT_FAILURE);
-            }
-        }
-
-//
 // Up until the time I call setup() I may only use term_printf for
 // output, because the other relevant streams will not have been set up.
 //    1 bit:    0 for cold, 1 for warm.

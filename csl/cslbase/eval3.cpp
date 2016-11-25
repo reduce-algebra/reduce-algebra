@@ -63,8 +63,7 @@ static LispObject plus_fn(LispObject args, LispObject env)
         errexitn(2);
         if (is_fixnum(r) && is_fixnum(w))
         {   int32_t c = int_of_fixnum(r) + int_of_fixnum(w);
-            int32_t w1 = c & fix_mask;
-            if (w1 == 0 || w1 == fix_mask) r = fixnum_of_int(c);
+            if (valid_as_fixnum(c)) r = fixnum_of_int(c);
             else r = plus2(r, w);
         }
         else r = plus2(r, w);
@@ -95,8 +94,7 @@ static LispObject noisy_plus_fn(LispObject args, LispObject env)
         errexitn(2);
         if (is_fixnum(r) && is_fixnum(w))
         {   int32_t c = int_of_fixnum(r) + int_of_fixnum(w);
-            int32_t w1 = c & fix_mask;
-            if (w1 == 0 || w1 == fix_mask) r = fixnum_of_int(c);
+            if (valid_as_fixnum(c)) r = fixnum_of_int(c);
             else r = plus2(r, w);
         }
         else r = plus2(r, w);

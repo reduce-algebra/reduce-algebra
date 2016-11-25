@@ -716,7 +716,6 @@ LispObject intern(size_t len, bool escaped)
             switch (fplength)
             {
                 case 0:
-#ifdef SHORT_FLOAT
                 {   Float_union ff;
                     ff.f = (float)atof((char *)&boffo_char(0));
                     if (trap_floating_overflow &&
@@ -724,11 +723,8 @@ LispObject intern(size_t len, bool escaped)
                     {   floating_clear_flags();
                         return aerror("bad short float input");
                     }
-                    return TAG_SFLOAT + (ff.i & ~(int32_t)0xf);
+                    return low32(XTAG_SFLOAT + (ff.i & ~0xfU));
                 }
-#else
-                printf("Short-float now turned into single\n");
-#endif
                 case 1:
                     f = (float)atof((char *)&boffo_char(0));
                     r = getvector(TAG_BOXFLOAT, TYPE_SINGLE_FLOAT,

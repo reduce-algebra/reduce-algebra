@@ -57,7 +57,7 @@ LispObject Lfrexp(LispObject nil, LispObject a)
 }
 
 LispObject Lmodular_difference(LispObject nil, LispObject a, LispObject b)
-{   int32_t r;
+{   intptr_t r;
     if (!modulus_is_large)
     {   if (!is_fixnum(a)) return aerror1("modular-difference", a);
         if (!is_fixnum(b)) return aerror1("modular-difference", b);
@@ -74,7 +74,7 @@ LispObject Lmodular_minus(LispObject nil, LispObject a)
 {   if (!modulus_is_large)
     {   if (!is_fixnum(a)) return aerror1("modular-minus", a);
         if (a != fixnum_of_int(0))
-        {   int32_t r = current_modulus - int_of_fixnum(a);
+        {   intptr_t r = current_modulus - int_of_fixnum(a);
             a = fixnum_of_int(r);
         }
         return onevalue(a);
@@ -85,7 +85,7 @@ LispObject Lmodular_minus(LispObject nil, LispObject a)
 }
 
 LispObject Lmodular_number(LispObject nil, LispObject a)
-{   int32_t r;
+{   intptr_t r;
     if (!modulus_is_large)
     {   a = Cremainder(a, fixnum_of_int(current_modulus));
         errexit();
@@ -97,7 +97,7 @@ LispObject Lmodular_number(LispObject nil, LispObject a)
 }
 
 LispObject Lmodular_plus(LispObject nil, LispObject a, LispObject b)
-{   int32_t r;
+{   intptr_t r;
     if (!modulus_is_large)
     {   if (!is_fixnum(a)) return aerror1("modular-plus", a);
         if (!is_fixnum(b)) return aerror1("modular-plus", b);
@@ -147,7 +147,7 @@ LispObject large_modular_reciprocal(LispObject n, int safe)
 }
 
 LispObject Lmodular_reciprocal(LispObject, LispObject n)
-{   int32_t a, b, x, y;
+{   intptr_t a, b, x, y;
     if (modulus_is_large) return large_modular_reciprocal(n, 0);
     if (!is_fixnum(n)) return aerror1("modular-reciprocal", n);
     a = current_modulus;
@@ -157,7 +157,7 @@ LispObject Lmodular_reciprocal(LispObject, LispObject n)
     if (b == 0) return aerror1("modular-reciprocal", n);
     if (b < 0) b = current_modulus - ((-b)%current_modulus);
     while (b != 1)
-    {   int32_t w, t;
+    {   intptr_t w, t;
         if (b == 0)
             return aerror2("non-prime modulus in modular-reciprocal",
                            fixnum_of_int(current_modulus), n);
@@ -174,7 +174,7 @@ LispObject Lmodular_reciprocal(LispObject, LispObject n)
 }
 
 LispObject Lsafe_modular_reciprocal(LispObject nil, LispObject n)
-{   int32_t a, b, x, y;
+{   intptr_t a, b, x, y;
     if (modulus_is_large) return large_modular_reciprocal(n, 1);
     if (!is_fixnum(n)) return aerror1("modular-reciprocal", n);
     a = current_modulus;
@@ -184,7 +184,7 @@ LispObject Lsafe_modular_reciprocal(LispObject nil, LispObject n)
     if (b == 0) return onevalue(nil);
     if (b < 0) b = current_modulus - ((-b)%current_modulus);
     while (b != 1)
-    {   int32_t w, t;
+    {   intptr_t w, t;
         if (b == 0) return onevalue(nil);
         w = a / b;
         t = b;
@@ -200,15 +200,12 @@ LispObject Lsafe_modular_reciprocal(LispObject nil, LispObject n)
 
 LispObject Lmodular_times(LispObject nil, LispObject a, LispObject b)
 {
-#ifndef HAVE_UINT64_T
-    uint32_t h, l;
-#endif
-    uint32_t r, cm;
-    int32_t aa, bb;
+    uintptr_t r, cm;
+    intptr_t aa, bb;
     if (!modulus_is_large)
     {   if (!is_fixnum(a)) return aerror1("modular-times", a);
         if (!is_fixnum(b)) return aerror1("modular-times", b);
-        cm = (uint32_t)current_modulus;
+        cm = (uintptr_t)current_modulus;
         aa = int_of_fixnum(a);
         bb = int_of_fixnum(b);
 //
@@ -217,19 +214,23 @@ LispObject Lmodular_times(LispObject nil, LispObject a, LispObject b)
 // and hence a*b will be < 2^31 and hence in range for 32-bit signed
 // arithmetic.  I make this test because I expect Imultiply and Idivide
 // to be pretty painful, while regular C multiplication and division are
-// (probably!) much better.
+// (probably!) much better. Plus similar fun in the 64-bit case.
 //
-        if (cm <= 46341U) r = (aa * bb) % cm;
-        else
-        {
-#ifdef HAVE_UINT64_T
-            r = (uint32_t)(((uint64_t)aa * (uint64_t)bb) % (uint32_t)cm);
-#else
-            Dmultiply(h, l, aa, bb, 0);
-            Ddivide(r, l, h, l, cm);
-#endif
+        if (!SIXTY_FOUR_BIT && cm <= 46341U)
+            return onevalue(fixnum_of_int((aa * bb) % cm));
+        else if (cm <= 0xffffffffu)
+        {   int64_t r = ((int64_t)aa * (int64_t)bb) % (int64_t)cm;
+            if (r < 0) r += cm;
+            return onevalue(fixnum_of_int((intptr_t)r));
         }
-        return onevalue(fixnum_of_int(r));
+#ifdef HAVE_INT128_T
+// Ha ha I can do better here!
+#endif
+        else
+        {   a = times2(a, b);
+            errexit();
+            return modulus(a, cm);
+        }
     }
     a = times2(a, b);
     errexit();
@@ -272,8 +273,8 @@ LispObject large_modular_expt(LispObject a, int x)
 }
 
 LispObject Lmodular_expt(LispObject, LispObject a, LispObject b)
-{   int32_t x, r, p;
-    uint32_t h, l;
+{   intptr_t x, r, p;
+    uintptr_t h, l;
     x = int_of_fixnum(b);
     if (x == 0) return onevalue(fixnum_of_int(1));
     if (modulus_is_large) return large_modular_expt(a, x);
@@ -304,13 +305,18 @@ LispObject Lmodular_expt(LispObject, LispObject a, LispObject b)
 }
 
 LispObject Lset_small_modulus(LispObject nil, LispObject a)
-{   int32_t r;
+{   intptr_t r;
     LispObject old = modulus_is_large ? large_modulus :
                      fixnum_of_int(current_modulus);
     if (a==nil) return onevalue(old);
-    else if (!is_fixnum(a))
-    {   if (!is_numbers(a) || !is_bignum(a))
+    else if (!is_fixnum(a) ||
+             int_of_fixnum(a)>0x07ffffff) // only allow 27-bits!
+    {   if ((!is_numbers(a) || !is_bignum(a)) && !is_fixnum(a))
             return aerror1("set-small-modulus", a);
+// In the 28-bit-fixnum world I would only have a "large" modulus when it
+// was a bignum. Now I can have a fixnum whose value is over 0x07ffffff and
+// count that as large, mainly because reducing modulu an integer that is that
+// large is slightly messy so I have not coded it here.
         modulus_is_large = 1;
         large_modulus = a;
         return old;
@@ -334,18 +340,19 @@ LispObject Lset_small_modulus(LispObject nil, LispObject a)
 
 LispObject Liadd1(LispObject, LispObject a)
 {   if (!is_fixnum(a)) return aerror1("iadd1", a);
-    return onevalue((LispObject)((int32_t)a + 0x10));
+    return onevalue((LispObject)((intptr_t)a + 0x10));
 }
 
 LispObject Lidifference(LispObject, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("idifference", a, b);
-    return onevalue((LispObject)((int32_t)a - (int32_t)b + TAG_FIXNUM));
+    return onevalue((LispObject)((intptr_t)a - (intptr_t)b + TAG_FIXNUM));
 }
 
 //
 // xdifference is provided just for the support of the CASE operator. It
 // subtracts its arguments but returns NIL if either argument is not
-// an small integer or if the result overflows.
+// an small integer or if the result overflows. Small is 28-bits in this
+// context at present.
 //
 
 LispObject Lxdifference(LispObject nil, LispObject a, LispObject b)
@@ -390,7 +397,7 @@ static LispObject Lilogand(LispObject, int nargs, ...)
         {   va_end(a);
             return aerror1("ilogand", w);
         }
-        r = (LispObject)((int32_t)r & (int32_t)w);
+        r = (LispObject)((intptr_t)r & (intptr_t)w);
     }
     va_end(a);
     return onevalue(r);
@@ -410,7 +417,7 @@ static LispObject Lilogor(LispObject, int nargs, ...)
         {   va_end(a);
             return aerror1("ilogor", w);
         }
-        r = (LispObject)((int32_t)r | (int32_t)w);
+        r = (LispObject)((intptr_t)r | (intptr_t)w);
     }
     va_end(a);
     return onevalue(r);
@@ -430,7 +437,7 @@ static LispObject Lilogxor(LispObject, int nargs, ...)
         {   va_end(a);
             return aerror1("ilogxor", w);
         }
-        r = (LispObject)(((int32_t)r ^ (int32_t)w) + TAG_FIXNUM);
+        r = (LispObject)(((intptr_t)r ^ (intptr_t)w) + TAG_FIXNUM);
     }
     va_end(a);
     return onevalue(r);
@@ -463,11 +470,11 @@ LispObject Limax(LispObject, LispObject a, LispObject b)
 
 LispObject Liminus(LispObject, LispObject a)
 {   if (!is_fixnum(a)) return aerror1("iminus", a);
-    return onevalue((LispObject)(2*TAG_FIXNUM - (int32_t)a));
+    return onevalue((LispObject)(2*TAG_FIXNUM - (intptr_t)a));
 }
 
 LispObject Liminusp(LispObject nil, LispObject a)
-{   return onevalue(Lispify_predicate((int32_t)a < (int32_t)fixnum_of_int(0)));
+{   return onevalue(Lispify_predicate((intptr_t)a < (intptr_t)fixnum_of_int(0)));
 }
 
 static LispObject Liplus(LispObject, int nargs, ...)
@@ -484,7 +491,7 @@ static LispObject Liplus(LispObject, int nargs, ...)
         {   va_end(a);
             return aerror1("iplus", w);
         }
-        r = (LispObject)((int32_t)r + (int32_t)w - TAG_FIXNUM);
+        r = (LispObject)((intptr_t)r + (intptr_t)w - TAG_FIXNUM);
     }
     va_end(a);
     return onevalue(r);
@@ -492,11 +499,11 @@ static LispObject Liplus(LispObject, int nargs, ...)
 
 LispObject Liplus2(LispObject, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("iplus2", a, b);
-    return onevalue((LispObject)((int32_t)a + (int32_t)b - TAG_FIXNUM));
+    return onevalue((LispObject)((intptr_t)a + (intptr_t)b - TAG_FIXNUM));
 }
 
 LispObject Liquotient(LispObject, LispObject a, LispObject b)
-{   int32_t aa, bb, c;
+{   intptr_t aa, bb, c;
     if (!is_fixnum(a) || !is_fixnum(b) ||
         b == fixnum_of_int(0)) return aerror2("iquotient", a, b);
 // C does not define the exact behaviour of /, % on -ve args
@@ -511,7 +518,7 @@ LispObject Liquotient(LispObject, LispObject a, LispObject b)
 }
 
 LispObject Liremainder(LispObject, LispObject a, LispObject b)
-{   int32_t aa, bb, c;
+{   intptr_t aa, bb, c;
     if (!is_fixnum(a) || !is_fixnum(b) ||
         b == fixnum_of_int(0)) return aerror2("iremainder", a, b);
 // C does not define the exact behaviour of /, % on -ve args
@@ -532,13 +539,13 @@ LispObject Lirightshift(LispObject, LispObject a, LispObject b)
 
 LispObject Lisub1(LispObject, LispObject a)
 {   if (!is_fixnum(a)) return aerror1("isub1", a);
-    return onevalue((LispObject)((int32_t)a - 0x10));
+    return onevalue((LispObject)((intptr_t)a - 0x10));
 }
 
 static LispObject Litimes(LispObject, int nargs, ...)
 {   va_list a;
     LispObject rr;
-    int32_t r;
+    intptr_t r;
     if (nargs == 0) return onevalue(fixnum_of_int(1));
     if (nargs > ARG_CUT_OFF) return aerror("too many args for itimes");
     va_start(a, nargs);
@@ -563,11 +570,11 @@ LispObject Litimes2(LispObject, LispObject a, LispObject b)
 }
 
 LispObject Lionep(LispObject nil, LispObject a)
-{   return onevalue(Lispify_predicate((int32_t)a == (int32_t)fixnum_of_int(1)));
+{   return onevalue(Lispify_predicate((intptr_t)a == (intptr_t)fixnum_of_int(1)));
 }
 
 LispObject Lizerop(LispObject nil, LispObject a)
-{   return onevalue(Lispify_predicate((int32_t)a == (int32_t)fixnum_of_int(0)));
+{   return onevalue(Lispify_predicate((intptr_t)a == (intptr_t)fixnum_of_int(0)));
 }
 
 #ifdef FP_EVALUATE

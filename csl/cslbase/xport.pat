@@ -5,7 +5,12 @@
 # note that a URL can be like
 #   scp://user@host=port:path
 
-Master=home  scp://$u@$a:/y/projects/reduce-algebra/trunk/csl/cslbase
+Master=home  scp://acn1@codemist.dynu.com:/y/projects/reduce-algebra/trunk/csl/cslbase
+Master=gauguin  scp://acn1@gauguin.trin.cam.ac.uk:reduce-algebra/trunk/csl/cslbase
+
+Master=hometest  scp://acn1@codemist.dynu.com:/y/projects/testing-reduce/csl/cslbase
+Master=gauguintest  scp://acn1@gauguin.trin.cam.ac.uk:testing-reduce/csl/cslbase
+
 
 hostcase
 

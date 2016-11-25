@@ -42,9 +42,8 @@ static int validate_count = 0;
 #endif
 
 LispObject Lget_bps(LispObject nil, LispObject n)
-{   int32_t n1;
-    if (!is_fixnum(n) || (int32_t)n<0) return aerror1("get-bps", n);
-    n1 = int_of_fixnum(n);
+{   if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("get-bps", n);
+    intptr_t n1 = int_of_fixnum(n);
     n = getvector(TAG_VECTOR, TYPE_BPS_4, n1+CELL);
     errexit();
     return onevalue(n);
@@ -66,16 +65,16 @@ LispObject Lget_bps(LispObject nil, LispObject n)
 // an experimental extension to CSL and is not ready for general use anyway!
 //
 
-LispObject get_native_code_vector(int32_t size)
+LispObject get_native_code_vector(size_t size)
 {
 //
 // Create some space for native code and return a handle that identifies
 // its start point. size is measured in bytes.
 //
     LispObject nil = C_nil;
-    if (size <= 0) size = 8;
+    if (size == 0) size = 8;
     for (;;)
-    {   int32_t alloc_size = (intptr_t)doubleword_align_up(size);
+    {   size_t alloc_size = (size_t)doubleword_align_up(size);
         intptr_t cf = native_fringe;
         intptr_t free = CSL_PAGE_SIZE - cf - 0x100; // 256 bytes to be safe
 //
@@ -110,9 +109,8 @@ LispObject get_native_code_vector(int32_t size)
 }
 
 LispObject Lget_native(LispObject nil, LispObject n)
-{   int32_t n1;
-    if (!is_fixnum(n) || (int32_t)n<0) return aerror1("get-native", n);
-    n1 = int_of_fixnum(n);
+{   if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("get-native", n);
+    intptr_t n1 = int_of_fixnum(n);
     n = get_native_code_vector(n1);
     errexit();
     return onevalue(n);
@@ -721,7 +719,7 @@ LispObject Lsymbol_make_fastget1(LispObject nil, LispObject a)
 }
 
 LispObject Lsymbol_make_fastget(LispObject nil, LispObject a, LispObject n)
-{   int32_t n1, p, q;
+{   intptr_t n1, p, q;
     Header h;
     if (!symbolp(a)) return onevalue(nil);
     h = qheader(a);
@@ -1003,8 +1001,8 @@ LispObject Lsymbol_set_native(LispObject nil, int nargs, ...)
 }
 
 static bool restore_fn_cell(LispObject a, char *name,
-                               int32_t len, setup_type const s[])
-{   int i;
+                               size_t len, setup_type const s[])
+{   size_t i;
     for (i=0; s[i].name != NULL; i++)
     {   if (strlen(s[i].name) == (size_t)len &&
             memcmp(name, s[i].name, len) == 0) break;
@@ -1026,8 +1024,8 @@ static bool restore_fn_cell(LispObject a, char *name,
 
 static LispObject Lrestore_c_code(LispObject nil, LispObject a)
 {   char *name;
-    int32_t len;
-    int i;
+    size_t len;
+    size_t i;
     LispObject pn;
     if (!symbolp(a)) return aerror1("restore-c-code", a);
     push(a);
@@ -1138,7 +1136,8 @@ LispObject Lsymbol_set_definition(LispObject nil,
     }
     else if (!consp(b)) return aerror1("symbol-set-definition", b);
     else if (is_fixnum(qcar(b)))
-    {   int32_t nargs = (int)int_of_fixnum(qcar(b)), nopts, flagbits, ntail;
+    {   int32_t nargs = (int32_t)int_of_fixnum(qcar(b)),
+                nopts, flagbits, ntail;
         nopts = nargs >> 8;
         flagbits = nopts >> 8;
         ntail = flagbits >> 2;
@@ -2314,15 +2313,15 @@ bool eql_fn(LispObject a, LispObject b)
 //
 // (these tests done before eql_fn is called).
 //  if (a == b) return true;
-//  if ((((int32_t)a ^ (int32_t)b) & TAG_BITS) != 0) return false;
+//  if ((((intptr_t)a ^ (intptr_t)b) & TAG_BITS) != 0) return false;
 //
 // Actually in Common Lisp mode where I have short floats as immediate data
-// I have further pain here with (eql 0.0 -0.0).
+// I have further pain here with (eql 0.0s -0.0s), and (eql NaN NaN) might
+// improperly return true because of the early EQ test. 
 //
-#ifdef SHORT_FLOAT
-    if ((a == TAG_SFLOAT && b == (TAG_SFLOAT|(intptr_t)0x80000000)) ||
-        (a == (TAG_SFLOAT|(intptr_t)0x80000000) && b == TAG_SFLOAT)) return true;
-#endif
+    if ((a == XTAG_SFLOAT && b == (XTAG_SFLOAT|(intptr_t)0x80000000U)) ||
+        (a == (XTAG_SFLOAT|(intptr_t)0x80000000U) && b == XTAG_SFLOAT))
+        return true;
     if (!is_number(a) || is_immed_or_cons(a)) return false;
     if (is_bfloat(a))
     {   Header h = flthdr(a);
@@ -2932,7 +2931,7 @@ static bool vec_equal(LispObject a, LispObject b)
 // EQUAL on all components.
 //
 {   Header ha = vechdr(a), hb = vechdr(b);
-    int32_t l;
+    size_t l;
     if (ha != hb) return false;
 //
 // This used to check all the way up to the end of the final doubleword
@@ -2941,7 +2940,7 @@ static bool vec_equal(LispObject a, LispObject b)
 // Checking only the words that matter is just marginally quicker and
 // will fail less often if I do not pad properly!
 //
-    l = (int32_t)word_align_up(length_of_header(ha));
+    l = (size_t)word_align_up(length_of_header(ha));
     if (vector_holds_binary(ha))
     {   while ((l -= 4) != 0)
             if (*((uint32_t *)((char *)a + l - TAG_VECTOR)) !=
@@ -2952,14 +2951,14 @@ static bool vec_equal(LispObject a, LispObject b)
     {   if (is_mixed_header(ha))
         {   while (l > 16)
             {   uint32_t ea = *((uint32_t *)((char *)a + l - TAG_VECTOR - 4)),
-                             eb = *((uint32_t *)((char *)b + l - TAG_VECTOR - 4));
+                         eb = *((uint32_t *)((char *)b + l - TAG_VECTOR - 4));
                 if (ea != eb) return false;
                 l -= 4;
             }
         }
         while ((l -= CELL) != 0)
         {   LispObject ea = *((LispObject *)((char *)a + l - TAG_VECTOR)),
-                           eb = *((LispObject *)((char *)b + l - TAG_VECTOR));
+                       eb = *((LispObject *)((char *)b + l - TAG_VECTOR));
             if (ea == eb) continue;
             if (!equal(ea, eb)) return false;
         }
@@ -3206,8 +3205,8 @@ LispObject Lnreverse(LispObject nil, LispObject a)
 {   LispObject b = nil;
 #ifdef COMMON
     if (is_vector(a))
-    {   int32_t n = Llength(nil, a) - 0x10;
-        int32_t i = TAG_FIXNUM;
+    {   intptr_t n = Llength(nil, a) - 0x10;
+        intptr_t i = TAG_FIXNUM;
         while (n > i)
         {   LispObject w = Laref2(nil, a, i);
             Laset(nil, 3, a, i, Laref2(nil, a, n));
@@ -3536,34 +3535,16 @@ LispObject Llastpair(LispObject nil, LispObject a)
 
 LispObject Llength(LispObject nil, LispObject a)
 {
-//
-// The use of 64-bit computers generates a real jolly here. In CSL at
-// present FIXNUMs are 28 bits, so the largest positive fixnum is around
-// 131,000,000. If I count lengths in fixnums as I did in my initial
-// version here and I look at a list longer than that (which of necessity
-// uses around 2G of memory on a 64 bit machine) I get an overflow and a
-// silly answer. I might JUST be able to get the same overflow on a 32-bit
-// system using just a bit over 1G of memory.
-//
-// If I do the counts in 32-bit "unsigned int" arithmetic then the
-// world is safe until I have filled 64G with cons cells. Right now that
-// feels safe... but having been bitten here once I will arrange to go
-// distinctly beyond that just to be certain - or at least to put off the
-// issue for long enough that I can be confident that it will not matter.
-//
     if (a == nil) return onevalue(fixnum_of_int(0));
     if (is_cons(a))
-    {   uint32_t n, nhigh;
+    {   size_t n = 1;
 //
 // Possibly I should do something to trap cyclic lists.. But doing so
 // would tend to be extra cost so unless it becomes a vital issue because
 // of some bug I will not worry.
 //
-        n = 1;
-        nhigh = 0;
-//
 // I have unrolled the loop here 4 times since I expect length to be
-// tolerably heavily used.  Look at the assembly code generated for
+// tolerably heavily used. Look at the assembly code generated for
 // this to see if it was useful or counterproductive!
 //
         for (;;)
@@ -3585,30 +3566,21 @@ LispObject Llength(LispObject nil, LispObject a)
                 break;
             }
             n += 4;
-            if ((n & 0x80000000) != 0)
-            {   n = 0;
-                nhigh++;
-            }
         }
-        if (nhigh != 0) return make_two_word_bignum(nhigh, n);
-        else if ((n & fix_mask) != 0) return make_one_word_bignum(n);
-        else return fixnum_of_int(n);
+        a = make_lisp_unsigned64(n);
+        errexit();
+        return onevalue(a);
     }
-#ifndef COMMON
-    return onevalue(fixnum_of_int(0));  // aerror("length");???
-#else
 //
 // Common Lisp expects length to find the length of vectors
-// as well as lists. I believe that because of my "page size" limit no
-// bector can have more than 2^27 entries. The first possible dodgy case
-// would be a bit-vector, and one of those that was 16Mbytes long would
-// hit the limit... while at the time of writing this I use 4 Mbyte pages
-// even on 64-bit machines.
+// as well as lists. I might as well do that in Standard Lisp mode
+// too. Otherwise length of atoms (except NIL) lead to zero.
 //
-    else if (!is_vector(a)) return aerror1("length", a);
-    else
+    else if (is_vector(a))
     {   Header h = vechdr(a);
-        int32_t n = length_of_header(h) - CELL;
+        size_t n = length_of_header(h) - CELL;
+// If at any stage I move to a segmented representation for huge vectors I
+// will need to re-work this!
         if (type_of_header(h) == TYPE_ARRAY)
         {   LispObject dims = elt(a, 1);
             LispObject fillp = elt(a, 5);
@@ -3617,15 +3589,14 @@ LispObject Llength(LispObject nil, LispObject a)
             if (is_fixnum(fillp)) dims = fillp;
             return onevalue(dims);
         }
-        if (is_bitvec_header(h))
-        {   n = (n - 1)*8;
-// Dodgy constant on next line - critically dependent on tag codes used!
-            n += ((h & 0x380) >> 7) + 1;
-        }
-        else if (!is_string_header(h)) n = n/CELL;
-        return onevalue(fixnum_of_int(n));
+        if (is_bitvec_header(h)) n = length_of_bitheader(h) - 8*CELL;
+        else if (is_string_header(h)) n = length_of_byteheader(h) - CELL;
+        else n = (length_of_header(h) - CELL)/CELL;
+        a = make_lisp_unsigned64(n);
+        errexit();
+        return onevalue(a);
     }
-#endif
+    else return onevalue(fixnum_of_int(0));
 }
 
 #ifdef COMMON
