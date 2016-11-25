@@ -226,7 +226,7 @@ else
     set -- $testfortimeout
     # remove all but last parameter
     shift `expr $# - 1`
-    timeoutcmd="$1 -p"
+    timeoutcmd="$1"
   else
     timeoutcmd=""
   fi

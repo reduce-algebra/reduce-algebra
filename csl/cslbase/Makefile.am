@@ -526,7 +526,7 @@ zlibdemo_SOURCES = zlibdemo.cpp
 zlibdemo_LDADD = -lz
 
 $(srcdir)/zlibdemo.cpp:	$(srcdir)/preserve.cpp
-	unifdef -DZLIB_DEMO < $(srcdir)/preserve.cpp > $(srcdir)/zlibdemo.cpp
+	unifdef -x2 -DZLIB_DEMO < $(srcdir)/preserve.cpp > $(srcdir)/zlibdemo.cpp
 
 
 
