@@ -99,12 +99,52 @@ typedef unsigned __int128 uint128_t;
 
 // NOTE please that these are all using 32-bit arthmetic. They are only
 // intended for use on values that are digits making up parts of bignums.
+// Note that some C++ compilers try to be VERY clever about assuming that
+// integer arithmetic will never overflow, so I need to do things in
+// unsigned mode if the top bit is liable to arise as a carry-bit.
 
 #define top_bit_set(n)     (((int32_t)(n)) < 0)
 #define top_bit(n)         ((int32_t)(((uint32_t)(n)) >> 31))
-#define set_top_bit(n)     ((int32_t)(n) | (int32_t)0x80000000)
+#define set_top_bit(n)     ((int32_t)((uint32_t)(n) | (uint32_t)0x80000000U))
 #define clear_top_bit(n)   ((int32_t)(n) & 0x7fffffff)
-#define signed_overflow(n) top_bit_set((int32_t)(n) ^ (((int32_t)(n))<<1))
+
+// As with fixnum_of_int I need to take care here that the arithmetic I do
+// here can not overflow, since if it did the behaviour would be undefined
+// and a modern optimising compiler would be entitled to do pretty much
+// whatever it felt like. I hope that good compilers will observe that the
+// mask operation as written here is not really needed on most machines.
+
+#define signed_overflow(n) \
+  top_bit_set((uint32_t)(n) ^ ((uint32_t)(n) << 1))
+
+// ADD32 forces and addition to be done as unsigned arithmetic, and may be
+// useful when this avoids risk of a carry into the most significant bit
+// being interpreted as overflow and hence undefined behaviour.
+
+#define ADD32(a, b) ((uint32_t)(a) + (uint32_t)(b))
+
+
+// The following all take an intptr_t or int64_t values (as per their name)
+// and check if their argument would bit in a 29 or 31-bit signed value. I
+// try fairly hard to avoid overflow and keep the code here so that the
+// only way in which it goes beyond what the C/C++ standards guarantee is
+// an assumption that numbers are 2s complement and that casts between
+// signed and unsigned values leave the bitwise representations unchanged.
+
+#define signed29_in_64(n)                                                   \
+  (((int64_t)(((uint64_t)(n) & 0x1fffffffU) << 35) / ((int64_t)1 << 35)) == \
+   (uint64_t)(n))
+
+#define signed31_in_64(n)                                                   \
+  (((int64_t)(((uint64_t)(n) & 0x7fffffffU) << 33) / ((int64_t)1 << 33)) == \
+   (uint64_t)(n))
+
+#define _S31_ (8*sizeof(intptr_t) - 31)
+
+#define signed31_in_ptr(n)                                                  \
+  (((intptr_t)(((uintptr_t)(n) & 0x7fffffffU) << _S31_) /                   \
+    ((intptr_t)1 << _S31_)) == (uintptr_t)(n))
+
 
 // The following tests for IEEE infinities and NaNs depends on arithmetic
 // being regular double-precision rounded to a 64-bit double at each stage.

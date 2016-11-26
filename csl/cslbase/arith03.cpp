@@ -366,15 +366,16 @@ LispObject quotbn(LispObject a, int32_t n)
         q0 &= 0x7fffffff;
 // Now the quotient is in (q1,q0) where q1 may be up to 61 bits, or could
 // be fairly small. I need to see if the full result can be a fixnum.
-        if ((q1<<(31+4))>>(31+4) == q1) return fixnum_of_int(q1<<31 | q0);
-        if ((q1<<(64-31))>>(64-31) == q1)
+        if (signed29_in_64(q1)) return fixnum_of_int(q1<<31 | q0);
+        if (signed31_in_64(q1))
             return make_two_word_bignum((int32_t)q1, (uint32_t)q0);
         return make_three_word_bignum((int32_t)(q1>>31),
             (uint32_t)(q1&0x7fffffff), (uint32_t)q0);
     }
 // Start by allocating a workspace copy of the dividend.  negateb will
 // leave a a bignum, although it may change its length.
-//
+// I am (reasonably) happy to allocate new space here for to work in
+// because it will be used as the result that I hand back.
     if ((int32_t)bignum_digits(a)[lena] < 0) a = negateb(a), sign = 3;
     else a = copyb(a), sign = 0;
     errexit();
@@ -400,10 +401,10 @@ LispObject quotbn(LispObject a, int32_t n)
     if ((sign & 1) != 0)            // quotient will be negative
     {   carry = 0xffffffffU;
         for (i=0; i<lena; i++)
-        {   carry = clear_top_bit(~bignum_digits(a)[i]) + top_bit(carry);
+        {   carry = ADD32(clear_top_bit(~bignum_digits(a)[i]), top_bit(carry));
             bignum_digits(a)[i] = clear_top_bit(carry);
         }
-        carry = ~bignum_digits(a)[i] + top_bit(carry);
+        carry = ADD32(~bignum_digits(a)[i], top_bit(carry));
         if (carry == 0xffffffffU && (bignum_digits(a)[i-1] & 0x40000000) != 0)
         {   bignum_digits(a)[lena] = 0;
             lena--;
@@ -446,7 +447,6 @@ LispObject quotbn1(LispObject a, int32_t n)
     uint32_t carry;
     if (!SIXTY_FOUR_BIT && lena == 0)      // one-word bignum as numerator
     {   int32_t p = (int32_t)bignum_digits(a)[0];
-        nil = C_nil;    // So I can access nwork
         nwork = p % n;
 //
 // C does not define what happens on non-exact division involving
@@ -520,7 +520,7 @@ static LispObject quotbi(LispObject a, LispObject b)
     intptr_t n = int_of_fixnum(b);
 // Check if b fits within 31-bits of signed integer...
     if (!SIXTY_FOUR_BIT ||
-        ((int32_t)(n<<1))>>1 == n) return quotbn(a, (int32_t)n);
+        signed31_in_ptr(n)) return quotbn(a, (int32_t)n);
 // I should only get here on a 64-bit machine! I fake up a 2-word bignum
 // for the value. On a 64-bit system that is NOT a standardly valid bignum,
 // but it will allow me to call quotbb.
@@ -547,7 +547,7 @@ static LispObject quotrembi(LispObject a, LispObject b)
     intptr_t n = int_of_fixnum(b);
 // Check if b fits within 31-bits of signed integer...
     if (!SIXTY_FOUR_BIT ||
-        ((int32_t)(n<<1))>>1 == n)
+        signed31_in_ptr(n))
     {   LispObject q = quotbn(a, (int32_t)n);
         mv_2 = fixnum_of_int(nwork);
         return q;
@@ -768,8 +768,8 @@ static inline int32_t add_back_correction(LispObject a, size_t lena,
                                           LispObject b, size_t lenb)
 {    uint32_t carry = 0;
      for (size_t i=0; i<=lenb; i++)
-     {   uint32_t d = (uint32_t)bignum_digits(a)[lena-lenb+i] +
-                      (uint32_t)bignum_digits(b)[i] +
+     {   uint32_t d = bignum_digits(a)[lena-lenb+i] +
+                      bignum_digits(b)[i] +
                       carry;
          bignum_digits(a)[lena-lenb+i] = d & 0x7fffffff;
          carry = d >> 31;
@@ -951,6 +951,7 @@ LispObject quotbb(LispObject a, LispObject b, int need)
 // a now has digits running from 0 to lena+1.
     bignum_digits(a)[lena+1] = timesbn(a, lena, scale);
     uint32_t btop = timesbn(b, lenb, scale);
+    (void)btop; // To try to get rid of warning on unused variable btop.
     assert(btop == 0);
     size_t m = lenq;
     for (;;)

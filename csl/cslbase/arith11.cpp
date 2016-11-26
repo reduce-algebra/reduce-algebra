@@ -50,7 +50,7 @@ LispObject rembi(LispObject a, LispObject b)
     else if (b == fixnum_of_int(1) ||
              b == fixnum_of_int(-1)) return fixnum_of_int(0);
     intptr_t n = int_of_fixnum(b);
-    if ((((int32_t)n)<<1)>>1 == n)
+    if (signed31_in_ptr(n))
     {   quotbn1(a, n);
         errexit();
         return fixnum_of_int(nwork);
@@ -393,7 +393,7 @@ static LispObject modbi(LispObject a, LispObject b)
     if (b == fixnum_of_int(1) || b == fixnum_of_int(-1))
         return fixnum_of_int(0);
     intptr_t n = int_of_fixnum(b);
-    if ((((int32_t)n)<<1)>>1 == n)
+    if (signed31_in_ptr(n))
     {   quotbn1(a, n);
         errexit();
 // The modulus must have the same sign as b (ie as n).

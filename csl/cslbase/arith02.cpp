@@ -125,9 +125,12 @@ static LispObject timesii(LispObject a, LispObject b)
         int64_t lo = aa*blo;
         int64_t hi = aa*bhi + (lo>>31);
         lo &= 0x7fffffff;
-        if ((hi<<(31+4))>>(31+4) == hi) // Result can be a fixnum
+// The value I have is now (hi,lo) where lo contains 31 bits. I can turn this
+// into a fixnum if hi is a 29-bit signed value.
+        if (signed29_in_64(hi)) // Result can be a fixnum
             return fixnum_of_int(hi<<31 | lo);
-        if ((hi<<(64-31))>>(64-31) == hi) // Result can be a 2-word bignum
+// If hi would fit in a 31-bit integer I can use a 2-word bignum.
+        if (signed31_in_64(hi)) // Result can be a 2-word bignum
             return make_two_word_bignum((int32_t)hi, (uint32_t)lo);
         else return make_three_word_bignum((int32_t)(hi>>31),
             (uint32_t)(hi & 0x7fffffff), (uint32_t)lo);
@@ -141,9 +144,9 @@ static LispObject timesii(LispObject a, LispObject b)
         int64_t lo = bb*alo;
         int64_t hi = bb*ahi + (lo>>31);
         lo &= 0x7fffffff;
-        if ((hi<<(31+4))>>(31+4) == hi) // Result can be a fixnum
+        if (signed29_in_64(hi)) // Result can be a fixnum
             return fixnum_of_int(hi<<31 | lo);
-        if ((hi<<(64-31))>>(64-31) == hi) // Result can be a 2-word bignum
+        if (signed31_in_64(hi)) // Result can be a 2-word bignum
             return make_two_word_bignum((int32_t)hi, (uint32_t)lo);
         else return make_three_word_bignum((int32_t)(hi>>31),
             (uint32_t)(hi & 0x7fffffff), (uint32_t)lo);
@@ -168,7 +171,7 @@ static LispObject timesii(LispObject a, LispObject b)
     lo &= 0x7fffffff;
     hi += mid>>31;
     mid &= 0x7fffffff;
-    if ((hi<<(64-31))>>(64-31) == hi) // Result can be a 2-word bignum
+    if (signed31_in_64(hi)) // Result can be a 3-word bignum
         return make_three_word_bignum((int32_t)hi,
             (uint32_t)mid, (uint32_t)lo);
     else return make_four_word_bignum((int32_t)(hi>>31),
@@ -199,21 +202,12 @@ static LispObject timesbb(LispObject a, LispObject b);
 
 static LispObject timesib(LispObject a, LispObject b)
 {   if (SIXTY_FOUR_BIT)
-    {   int64_t aa = int_of_fixnum(a);
-        if (((a<<33)>>33) != a)  // See if a is too big for the easy code
-        {   push(b);
-// This makes a 2-word bignum that is not normally valid on a 64-bit
-// platform, but that is useful as direct input to timesbb.
-            a = make_two_word_bignum((int32_t)(aa>>31),
-                                     (uint32_t)(aa&0x7fffffff));
-            pop(b);
-            LispObject nil = C_nil;
-            errexit();
-            return timesbb(a, b);
-        }
+    {   intptr_t aa = int_of_fixnum(a);
+        if (!signed31_in_ptr(aa))  // See if a is too big for the easy code
+            return timesbb(make_fake_bignum(aa), b);
 // Here a is just a 31-bit signed value.
     }
-    int32_t aa = int_of_fixnum(a);
+    int32_t aa = (int32_t)int_of_fixnum(a);
     size_t lenb, i;
     uint32_t carry, ms_dig, w;
     LispObject c, nil;
@@ -231,15 +225,15 @@ static LispObject timesib(LispObject a, LispObject b)
     lenb = (lenb-CELL)/4;
     if (aa < 0)
     {   aa = -aa;
-        carry = 0xffffffffU;
+        carry = 0x80000000U;
         for (i=0; i<lenb-1; i++)
-        {   carry = clear_top_bit(~bignum_digits(b)[i]) + top_bit(carry);
+        {   carry = ADD32(clear_top_bit(~bignum_digits(b)[i]), top_bit(carry));
             bignum_digits(c)[i] = clear_top_bit(carry);
         }
 //
 // I do the most significant digit separately.
 //
-        carry = ~bignum_digits(b)[i] + top_bit(carry);
+        carry = ADD32(~bignum_digits(b)[i], top_bit(carry));
 //
 // there is a special case needed here - if b started off as a number
 // like 0xc0000000,0,0,0 then negating it would call for extension of
@@ -1319,7 +1313,7 @@ static LispObject timesbb(LispObject a, LispObject b)
     size_t lena, lenb, lenc, i;
     lena = (bignum_length(a) - CELL)/4;
     lenb = (bignum_length(b) - CELL)/4;
-    if (lena == 1 && lenb == 1)
+    if (!SIXTY_FOUR_BIT && lena == 1 && lenb == 1)
 //
 // I am going to deem multiplication of two one-word bignums worthy of
 // a special case, since it is probably fairly common and it will be cheap
@@ -1327,7 +1321,9 @@ static LispObject timesbb(LispObject a, LispObject b)
 // off the signs, because Imultiply can only deal with 31-bit unsigned values.
 // One-word bignums each have value at least 2^27 (or else they would have
 // been represented as fixnums) so the result here will always be a two-word
-// bignum.
+// bignum. This can not arise on a 64-bit machine because in that case any
+// value that could have aspired to be a 1-word bignum would in fact have
+// ended up as a fixnum.
 //
     {   int32_t va = (int32_t)bignum_digits(a)[0],
                     vb = (int32_t)bignum_digits(b)[0], vc;
@@ -1369,7 +1365,8 @@ static LispObject timesbb(LispObject a, LispObject b)
 // have to get longer (because of the twos complement assymmetry),
 // but can never cause it to shrink,  In particular it can never lead
 // to demotion to a fixnum, so after this call to negateb it is still
-// OK to assume that a is a bignum.
+// OK to assume that a is a bignum. The manner in which the call to
+// negate allocates more memory is ugly here.
 //
         a = negateb(a);
         pop(b);
@@ -1468,9 +1465,9 @@ static LispObject timesbb(LispObject a, LispObject b)
     errexit();
     d = multiplication_buffer;
     {   uint32_t *da = &bignum_digits(a)[0],
-                      *db = &bignum_digits(b)[0],
-                       *dc = &bignum_digits(c)[0],
-                        *dd = &bignum_digits(d)[0];
+                 *db = &bignum_digits(b)[0],
+                 *dc = &bignum_digits(c)[0],
+                 *dd = &bignum_digits(d)[0];
         long_times(dc, da, db, dd, lena, lenb, lenc);
     }
 //
@@ -1515,12 +1512,12 @@ static LispObject timesbb(LispObject a, LispObject b)
 // its length just lena+lenb, even if it had been padded out earlier.
 //
     if (sign < 0)
-    {   uint32_t carry = 0xffffffffU;
+    {   uint32_t carry = 0x80000000U;
         for (i=0; i<lenc-1; i++)
-        {   carry = clear_top_bit(~bignum_digits(c)[i]) + top_bit(carry);
+        {   carry = ADD32(clear_top_bit(~bignum_digits(c)[i]), top_bit(carry));
             bignum_digits(c)[i] = clear_top_bit(carry);
         }
-        carry = ~bignum_digits(c)[i] + top_bit(carry);
+        carry = ADD32(~bignum_digits(c)[i], top_bit(carry));
         if (carry != 0xffffffffU)
         {   bignum_digits(c)[i] = carry;
             return c;   // no truncation needed

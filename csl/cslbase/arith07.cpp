@@ -106,7 +106,32 @@ LispObject negateb(LispObject a)
     len = (len-CELL-4)/4;
     carry = -1;
     for (i=0; i<len; i++)
-    {   carry = clear_top_bit(~bignum_digits(a)[i]) + top_bit(carry);
+    {
+// The next couple of lines really caught me out wrt compiler optimisation
+// before I put in all the casts. I used to have what was in effect
+//    carry = (signed_x ^ 0x7fffffff) + (int32_t)((uint32_t)carry>>31);
+//      ... ((uint32_t)carry >> 31);
+// and a compiler seems to have observed that the masking leaves the left
+// operand of the addition positive, and that the unsigned shift right
+// leaves the right operand positive too. So based on an assumption that
+// signed integer overflow will not happen it deduces that the sum will also
+// be positive, and hence that on the next line (carry>>31) will be zero.
+// For the assumption to fail there will have had to be integer overflow, and
+// the C/C++ standards say that the consequence of that are undefined - a term
+// that can include behaviour as per the optimised code here.
+//
+// To avoid that I am working on the basis that casts between int32_t and
+// uint32_t will leave bit representations unchanged and that arithmetic uses
+// twos complement for signed values. Then by casting to unsigned at times
+// I can allow a carry to propagate into the top bit of a word without that
+// counting as an overflow, and that should force the compiler to do the
+// arithmetic in full.
+//
+// Having spotted this particular case I now worry about how many related
+// ones there may be hiding in the code!
+//
+        carry = (int32_t)((uint32_t)clear_top_bit(~bignum_digits(a)[i]) +
+                          (uint32_t)top_bit(carry));
         bignum_digits(b)[i] = clear_top_bit(carry);
     }
 //

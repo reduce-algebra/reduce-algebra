@@ -196,13 +196,18 @@ typedef intptr_t LispObject;
 //
 
 // fixnums now use the whole of an intptr_t, so they have 28 useful bits on
-// a 32-bit machine and 60-bits on a 64-bit machine.
+// a 32-bit machine and 60-bits on a 64-bit machine. I believe that the
+// left-shift here will do what I want provided that ULONG_MAX+1 (or whatever)
+// is a power of 2 the way it will be on a 2s complement machine.
 
-#define fixnum_of_int(x)    ((LispObject)(TAG_FIXNUM + (((intptr_t)(x))*16)))
+#define fixnum_of_int(x) ((LispObject)((((uintptr_t)(x))<<4)+TAG_FIXNUM))
 
 // The code here manages to get compiled as a simple arithmetic right shift
 // on enough architectures that I will not worry about writing it as a 
-// division.
+// division. My intent here is (x>>4) with the shift being arithmetic in that
+// it should replicate the top bit of the word as it shifts. Masking off
+// low bits and then doing a signed division should achieve this affect in a
+// portable manner. 
 
 #define int_of_fixnum(x) (((intptr_t)(x) & ~(intptr_t)15)/16)
 
@@ -215,7 +220,8 @@ typedef intptr_t LispObject;
 // code I had that read thinge like (x < 0x08000000 && x >= -0x08000000)
 // which involves referring to two literal values and performing two
 // comparisons. Of perhaps { t = (x & fix_mask); if (t==0 | t == fix_mask) ..}
-// which is comparable.
+// which is comparable. Ifyou had a compiler that was less clever the resulting
+// code here could be horrible!
 
 #define valid_as_fixnum(x) (int_of_fixnum(fixnum_of_int(x)) == (x))
 

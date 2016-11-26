@@ -800,7 +800,7 @@ static LispObject Linteger_decode_float(LispObject nil, LispObject a)
     else
     {   d = frexp(d, &x);
         if (d == 1.0) d = 0.5, x++;
-        if (tag == XTAG_SFLOAT & TAG_BITS)
+        if (tag == (XTAG_SFLOAT & TAG_BITS))
         {   d *= TWO_20;
             x -= 20;
             a1 = (int32_t)d;
