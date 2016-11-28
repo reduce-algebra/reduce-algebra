@@ -531,7 +531,7 @@ procedure cl_surep(at,atl);
    % a THEORY. Returns bool. Heurictically check whether [at] follows
    % from [atl].
    if !*rlspgs then
-      rl_gsd(at,atl) eq 'true or rl_multsurep(at,atl)
+      rl_gsn(at, atl, 'dnf) eq 'true or rl_multsurep(at,atl)
    else
       rl_simpl(at,atl,-1) eq 'true or rl_multsurep(at,atl);
 

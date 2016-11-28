@@ -779,7 +779,7 @@ procedure cd_gsd(f,cd);
    % Condition Groebner simplifier. [f] is a formula; [cd] is a
    % condition. Simplies [f] wrt. the theory [cd].
    begin scalar !*rlgsvb;
-      return rl_gsd(f,cd)
+      return rl_gsn(f, cd, 'dnf)
    end;
 
 procedure cd_ordp(cd1,cd2);
