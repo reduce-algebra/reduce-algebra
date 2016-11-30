@@ -57,7 +57,8 @@
 
 // #define VALIDATE_STOPS 1
 
-LispObject validate_number(char *s, LispObject a, LispObject b, LispObject c)
+LispObject validate_number(const char *s, LispObject a,
+                           LispObject b, LispObject c)
 {   int32_t la, msd, nsd;
     if (!is_numbers(a)) return a;
     la = (length_of_header(numhdr(a))-CELL-4)/4;
@@ -109,7 +110,7 @@ LispObject validate_number(char *s, LispObject a, LispObject b, LispObject c)
         }
     }
     if (SIXTY_FOUR_BIT && la == 1)
-    {   int64_t v = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+    {   int64_t v = ASL64(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
         if (valid_as_fixnum(v))
         {   trace_printf("%s: %#" PRIx64 " should be fixnum\n", s, v);
             prin_to_trace(b), trace_printf("\n");
@@ -168,16 +169,11 @@ LispObject validate_number(char *s, LispObject a, LispObject b, LispObject c)
 // that check if all that is needed is fixnum_of_int, so here I know that
 // I have to create a bignum.
 
-LispObject make_lisp_unsigned64_fn(uint64_t n)
-{   if (!SIXTY_FOUR_BIT && n < 0x40000000)
-        return make_one_word_bignum((int32_t)n);
-    if (n < UINT64_C(0x2000000000000000))
-        return make_two_word_bignum((int32_t)(n >> 31),
-                                    (int32_t)(n & 0x7fffffff));
-    return make_three_word_bignum(
-               (int32_t)(n >> 62),
-               (int32_t)((n >> 31) & 0x7fffffff),
-               (int32_t)(n & 0x7fffffff));
+LispObject make_lisp_integer32_fn(int32_t n)
+{   if (!SIXTY_FOUR_BIT && (n < 0x40000000 && n >= -0x40000000))
+        return make_one_word_bignum(n);
+    return make_two_word_bignum((int32_t)ASR(n, 31),
+                                (uint32_t)(n & 0x7fffffff));
 }
 
 LispObject make_lisp_integer64_fn(int64_t n)
@@ -185,24 +181,24 @@ LispObject make_lisp_integer64_fn(int64_t n)
         return make_one_word_bignum((int32_t)n);
     if (n < INT64_C(0x2000000000000000) &&
         n >= -INT64_C(0x2000000000000000))
-        return make_two_word_bignum((int32_t)(n >> 31),
-                                    (int32_t)(n & 0x7fffffff));
+        return make_two_word_bignum((int32_t)ASR(n, 31),
+                                    (uint32_t)(n & 0x7fffffff));
     return make_three_word_bignum(
-               (int32_t)(n >> 62),
-               (int32_t)((n >> 31) & 0x7fffffff),
-               (int32_t)(n & 0x7fffffff));
+               (int32_t)ASR(n, 62),
+               (uint32_t)((n >> 31) & 0x7fffffff),
+               (uint32_t)(n & 0x7fffffff));
 }
 
-LispObject make_lisp_unsignedptr_fn(uintptr_t n)
+LispObject make_lisp_unsigned64_fn(uint64_t n)
 {   if (!SIXTY_FOUR_BIT && n < 0x40000000)
         return make_one_word_bignum((int32_t)n);
-    if (!SIXTY_FOUR_BIT || n < (uintptr_t)UINT64_C(0x2000000000000000))
+    if (n < UINT64_C(0x2000000000000000))
         return make_two_word_bignum((int32_t)(n >> 31),
-                                    (int32_t)(n & 0x7fffffff));
+                                    (uint32_t)(n & 0x7fffffff));
     return make_three_word_bignum(
                (int32_t)(n >> 62),
-               (int32_t)((n >> 31) & 0x7fffffff),
-               (int32_t)(n & 0x7fffffff));
+               (uint32_t)((n >> 31) & 0x7fffffff),
+               (uint32_t)(n & 0x7fffffff));
 }
 
 LispObject make_lisp_integerptr_fn(intptr_t n)
@@ -211,19 +207,53 @@ LispObject make_lisp_integerptr_fn(intptr_t n)
     if (!SIXTY_FOUR_BIT ||
         (n < (intptr_t)INT64_C(0x2000000000000000) &&
          n >= -(intptr_t)INT64_C(0x2000000000000000)))
-        return make_two_word_bignum((int32_t)(n >> 31),
-                                    (int32_t)(n & 0x7fffffff));
+        return make_two_word_bignum((int32_t)ASR(n, 31),
+                                    (uint32_t)(n & 0x7fffffff));
     return make_three_word_bignum(
-               (int32_t)(n >> 62),
-               (int32_t)((n >> 31) & 0x7fffffff),
-               (int32_t)(n & 0x7fffffff));
+               (int32_t)ASR(n, 62),
+               (uint32_t)((n >> 31) & 0x7fffffff),
+               (uint32_t)(n & 0x7fffffff));
 }
 
-LispObject make_lisp_integer32_fn(int32_t n)
-{   if (!SIXTY_FOUR_BIT && (n < 0x40000000 && n >= -0x40000000))
-        return make_one_word_bignum(n);
-    return make_two_word_bignum(n >> 31, n & 0x7fffffff);
+LispObject make_lisp_unsignedptr_fn(uintptr_t n)
+{   if (!SIXTY_FOUR_BIT && n < 0x40000000)
+        return make_one_word_bignum((int32_t)n);
+    if (!SIXTY_FOUR_BIT || n < (uintptr_t)UINT64_C(0x2000000000000000))
+        return make_two_word_bignum((int32_t)(n >> 31),
+                                    (uint32_t)(n & 0x7fffffff));
+    return make_three_word_bignum(
+               (int32_t)(n >> 62),
+               (uint32_t)((n >> 31) & 0x7fffffff),
+               (uint32_t)(n & 0x7fffffff));
 }
+
+#ifdef HAVE_INT128_T
+
+LispObject make_lisp_integer128_fn(int128_t r)
+{
+// The result will be a bignum using 2, 3 or 4 digits.
+    if (r < (int128_t)INT64_C(0x2000000000000000) &&
+        r >= (int128_t)-INT64_C(0x2000000000000000))
+        return make_two_word_bignum((int32_t)ASR(r, 31),
+                                    (uint32_t)(r & 0x7fffffff));
+// I will split off the high and low 62-bit chunks...
+    uint64_t lo = (uint64_t)(r & INT64_C(0x3fffffffffffffffU));
+    int64_t hi = (int64_t)ASR(r, 62);
+    if (hi < INT64_C(0x40000000) &&
+        hi >= -INT64_C(0x40000000))
+        return make_three_word_bignum(
+               (int32_t)hi,
+               (uint32_t)((lo >> 31) & 0x7fffffff),
+               (uint32_t)(lo & 0x7fffffff));
+    else
+        return make_four_word_bignum(
+               (int32_t)ASR(hi, 31),
+               (uint32_t)(hi & 0x7fffffff),
+               (uint32_t)((lo >> 31) & 0x7fffffff),
+               (uint32_t)(lo & 0x7fffffff));
+}
+
+#endif // HAVE_INT128_T
 
 // There are places within the arithmetic code where the simplest
 // implementatiom for combining a bignum and a fixnum seemed to be to
@@ -232,8 +262,8 @@ LispObject make_lisp_integer32_fn(int32_t n)
 // bignum as necessary.
 
 LispObject make_fake_bignum(intptr_t n)
-{   LispObject w, nil;
-// I can be a 1-word bignum if the value is up to 31-bits...
+{
+// It could be made into a 1-word bignum if the value is up to 31-bits...
     if (!SIXTY_FOUR_BIT ||
         (-0x40000000 <= n &&
          n < 0x40000000))
@@ -241,7 +271,10 @@ LispObject make_fake_bignum(intptr_t n)
         if (SIXTY_FOUR_BIT) bignum_digits(big_fake1)[1] = 0;  // padding
         return big_fake1;
     }
-    bignum_digits(big_fake2)[1] = (int32_t)(n >> 31);
+// Otherwise it must be a 2-digit bignum. That could cope with 31+31=62 bit
+// numbers and a fixnum can only be 60 bits, so I never need a 3-digit
+// bignum.
+    bignum_digits(big_fake2)[1] = (int32_t)ASR(n, 31);
     bignum_digits(big_fake2)[0] = (uint32_t)(n & 0x7fffffff);
     if (!SIXTY_FOUR_BIT) bignum_digits(big_fake2)[2] = 0;     // padding
     return big_fake2;
@@ -692,7 +725,7 @@ int32_t thirty_two_bits(LispObject a)
 // Note that I keep 31 bits per word and use a 2s complement representation.
 // thus if I have a one-word bignum I just want its contents but in all
 // other cases I need just one bit from the next word up.
-//
+// The left shift by 31-bits is OK because it is on an unsigned value.
                 if (len == CELL+4) return bignum_digits(a)[0]; // One word bignum
                 return bignum_digits(a)[0] | (bignum_digits(a)[1] << 31);
             }
@@ -719,11 +752,11 @@ int64_t sixty_four_bits(LispObject a)
                         return (int64_t)(int32_t)bignum_digits(a)[0];
                     case CELL+8:
                         return bignum_digits(a)[0] |
-                               (bignum_digits64(a, 1) << 31);
+                               ASL64(bignum_digits64(a, 1), 31);
                     default:
                         return bignum_digits(a)[0] |
-                               (bignum_digits64(a, 1) << 31) |
-                               (bignum_digits64(a, 2) << 62);
+                               ((uint64_t)bignum_digits(a)[1] << 31) |
+                               ASL64(bignum_digits64(a, 2), 62);
                 }
             }
         // else drop through
@@ -874,7 +907,7 @@ static LispObject plusib(LispObject a, LispObject b)
 //
 // So let me write out the 2-word case longhand in the 64-bit case...
     if (len == 2)
-    {   int64_t s = (bignum_digits64(b,1)<<31 | bignum_digits(b)[0]) +
+    {   int64_t s = (ASL64(bignum_digits64(b,1),31) | bignum_digits(b)[0]) +
                     (int64_t)s1;
 // a 2-word bignum has at worst 62 bits and a fixnum 28 or 60, so their
 // sum can not overflow a 64-bit word.
@@ -1121,10 +1154,10 @@ static LispObject plusbb(LispObject a, LispObject b)
         return make_lisp_integer32(vc);
     }
     if (la == CELL+8)
-    {   int64_t va = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+    {   int64_t va = ASL64(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
         int64_t vb = (!SIXTY_FOUR_BIT && lb == CELL+4) ?
                      bignum_digits64(b, 0) :
-                     bignum_digits64(b, 1)<<31 | bignum_digits(b)[0];
+                     ASL64(bignum_digits64(b, 1), 31) | bignum_digits(b)[0];
         return make_lisp_integer64(va + vb);
     }
 // Now at least one operand uses 3 words... I will do a general bignum add
@@ -1176,7 +1209,8 @@ static LispObject plusbb(LispObject a, LispObject b)
         {   int32_t j = i-1;
             while ((msd = bignum_digits(c)[j]) == 0 && j > 0) j--;
             if (SIXTY_FOUR_BIT && j == 1)
-            {   int64_t s = bignum_digits64(c,1)<<31 | bignum_digits(c)[0];
+            {   int64_t s = ASL64(bignum_digits64(c,1), 31) |
+                            bignum_digits(c)[0];
                 if (valid_as_fixnum(s)) return fixnum_of_int(s);
             }
             else if (j == 0)
@@ -1224,8 +1258,8 @@ static LispObject plusbb(LispObject a, LispObject b)
             msd = carry;    // in case j = 0
             while ((msd = bignum_digits(c)[j]) == 0x7fffffff && j > 0) j--;
             if (SIXTY_FOUR_BIT && j == 1)
-            {   int64_t s = (bignum_digits64(c,1) |
-                             INT64_C(0xffffffff80000000))<<31 |
+            {   int64_t s = ASL64(bignum_digits64(c,1) |
+                                  INT64_C(0xffffffff80000000), 31) |
                             bignum_digits(c)[0];
                 if (valid_as_fixnum(s)) return fixnum_of_int(s);
             }

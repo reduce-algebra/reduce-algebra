@@ -229,9 +229,10 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
 // This is a piece of magic especially designed to speed up the
 // REDUCE big-float code.  It adjusts the integer a until it has
 // just k bits, and returns a correction to the associated exponent.
-// It combines aspects of msd, lsd, ash and a rounding operation.
+// It combines aspects of msd, lsd, ash and a rounding operation. k must
+// be positive.
 //
-{   intptr_t kk;
+{   uintptr_t kk;
     size_t bits;
     intptr_t top;
     uintptr_t bottom;
@@ -547,7 +548,7 @@ LispObject Lquotient_1(LispObject nil, LispObject b)
 }
 
 LispObject Ldivide(LispObject nil, LispObject a, LispObject b)
-{   LispObject q, r;
+{   LispObject q;
     stackcheck2(0, a, b);
     mv_2 = SPID_NIL;
     q = quotrem2(a, b);

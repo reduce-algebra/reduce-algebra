@@ -133,17 +133,15 @@ typedef unsigned __int128 uint128_t;
 
 #define signed29_in_64(n)                                                   \
   (((int64_t)(((uint64_t)(n) & 0x1fffffffU) << 35) / ((int64_t)1 << 35)) == \
-   (uint64_t)(n))
+   (int64_t)(n))
 
 #define signed31_in_64(n)                                                   \
   (((int64_t)(((uint64_t)(n) & 0x7fffffffU) << 33) / ((int64_t)1 << 33)) == \
-   (uint64_t)(n))
-
-#define _S31_ (8*sizeof(intptr_t) - 31)
+   (int64_t)(n))
 
 #define signed31_in_ptr(n)                                                  \
-  (((intptr_t)(((uintptr_t)(n) & 0x7fffffffU) << _S31_) /                   \
-    ((intptr_t)1 << _S31_)) == (uintptr_t)(n))
+  (((intptr_t)(((uintptr_t)(n)&0x7fffffffU) << (8*sizeof(intptr_t) - 31)) / \
+    ((intptr_t)1 << (8*sizeof(intptr_t) - 31))) == (intptr_t)(n))
 
 
 // The following tests for IEEE infinities and NaNs depends on arithmetic
@@ -245,7 +243,7 @@ extern "C" bool lessprd(LispObject a, double b);
 extern "C" bool lesspdb(double a, LispObject b);
 extern "C" bool lesspdr(double a, LispObject b);
 
-extern LispObject validate_number(char *s, LispObject a,
+extern LispObject validate_number(const char *s, LispObject a,
                                   LispObject b, LispObject c);
 
 extern LispObject make_fake_bignum(intptr_t n);
@@ -259,19 +257,20 @@ extern LispObject make_n_word_bignum(int32_t a1, uint32_t a2,
 
 extern LispObject make_lisp_integer32_fn(int32_t n);
 static inline LispObject make_lisp_integer32(int32_t n)
-{   if (SIXTY_FOUR_BIT || valid_as_fixnum(n)) return fixnum_of_int(n);
+{   if (SIXTY_FOUR_BIT || valid_as_fixnum(n)) return fixnum_of_int((intptr_t)n);
     else return make_lisp_integer32_fn(n);
 }
 
 extern LispObject make_lisp_integer64_fn(int64_t n);
 static inline LispObject make_lisp_integer64(int64_t n)
-{   if (valid_as_fixnum(n)) return fixnum_of_int(n);
+{   if (valid_as_fixnum(n)) return fixnum_of_int((intptr_t)n);
     else return make_lisp_integer64_fn(n);
 }
 
 extern LispObject make_lisp_unsigned64_fn(uint64_t n);
 static inline LispObject make_lisp_unsigned64(uint64_t n)
-{   if (n < ((uint64_t)1)<<(8*sizeof(intptr_t)-5)) return fixnum_of_int(n);
+{   if (n < ((uint64_t)1)<<(8*sizeof(intptr_t)-5))
+        return fixnum_of_int((intptr_t)n);
     else return make_lisp_unsigned64_fn(n);
 }
 
@@ -283,9 +282,20 @@ static inline LispObject make_lisp_integerptr(intptr_t n)
 
 extern LispObject make_lisp_unsignedptr_fn(uintptr_t n);
 static inline LispObject make_lisp_unsignedptr(uintptr_t n)
-{   if (n < ((uintptr_t)1)<<(8*sizeof(intptr_t)-5)) return fixnum_of_int(n);
+{   if (n < ((uintptr_t)1)<<(8*sizeof(intptr_t)-5))
+        return fixnum_of_int((intptr_t)n);
     else return make_lisp_unsignedptr_fn(n);
 }
+
+#ifdef HAVE_INT128_T
+
+extern LispObject make_lisp_integer128_fn(int128_t n);
+static inline LispObject make_lisp_integer128(int128_t n)
+{   if (valid_as_fixnum(n)) return fixnum_of_int((intptr_t)n);
+    else return make_lisp_integer128_fn(n);
+}
+
+#endif
 
 extern LispObject make_sfloat(double d);
 extern double float_of_integer(LispObject a);

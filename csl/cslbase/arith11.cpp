@@ -832,7 +832,7 @@ static bool numeqsb(LispObject a, LispObject b)
 // result left is zero and (b) there are no more bits left.
 //
     x = x / 31;
-    if (x != len) return false;
+    if (x < 0 || (size_t)x != len) return false;
     w = bignum_digits(b)[len];
     d1 = (d1 - (double)w) * TWO_31;
     u = bignum_digits(b)[--len];

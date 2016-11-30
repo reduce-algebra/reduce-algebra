@@ -58,7 +58,38 @@
 
 % This will check near 2^0 to 2^100.
 
-% I will check 1-arg functions first...
+% While testing it is sometimes useful to be able to resume testing some
+% way through, so one can set the variable "startat" so that small cases
+% get skipped. E.g. the commented out setting to 59 causes the testing to
+% begin where the first argument to functions is about to be a bignum not
+% a fixnum on 64-bit platforms.
+
+(fluid '(startat))
+(setq startat -1)
+% (setq startat 58)
+
+(progn
+  (dolist (mode '(plus times quotient))
+     (terpri)
+     (princ "Start testing in mode ") (printc mode)
+     (cond
+       ((eq mode 'quotient) (setq limit 200))
+       (t (setq limit 100)))
+     (when (atom (errorset
+       '(dotimes (i limit)
+         (when (geq i startat)
+           (setq a (expt 2 i))
+           (validate!-number a (list "power of 2" i))
+           (princ i) (ttab 5) (princ "check near ") (print a)
+           (checknear a 0 mode)
+           (checknear 0 a mode)
+           (dotimes (j limit)
+             (setq b (expt 2 j))
+             (validate!-number b (list "power of 2" i))
+             (checknear a b mode)))) t t))
+       (terpri)
+       (printc "+++ Stopping")
+       (stop 1))))
 
 (checknear1 0)
 
@@ -71,57 +102,5 @@
   (terpri)
   (printc "+++ Stopping")
   (stop 1))
-
-% While testing it is sometimes useful to be able to resume testing some
-% way through, so one can set the variable "startat" so that small cases
-% get skipped. E.g. the commented out setting to 59 causes the testing to
-% begin where the first argument to functions is about to be a bignum not
-% a fixnum on 64-bit platforms.
-
-(fluid '(startat))
-(setq startat -1)
-% (setq startat 58)
-
-(setq onlydivide nil)
-
-(progn
-  (terpri)
-  (when (atom (errorset
-    '(dotimes (i 100)
-      (when (geq i startat)
-        (setq a (expt 2 i))
-        (validate!-number a (list "power of 2" i))
-        (princ i) (ttab 5) (princ "check near ") (print a)
-        (checknear a 0)
-        (checknear 0 a)
-        (dotimes (j 100)
-          (setq b (expt 2 j))
-          (validate!-number b (list "power of 2" i))
-          (checknear a b)))) t t))
-    (terpri)
-    (printc "+++ Stopping")
-    (stop 1)))
-
-(setq onlydivide t)
-
-% For quotient and remainder I want to check values with twice as many bits
-% because I want to cover cases where the quotient is up to 100 bits long.
-
-(progn
-  (terpri)
-  (when (atom (errorset
-    '(dotimes (i 200)
-      (when (geq i startat)
-        (setq a (expt 2 i))
-        (validate!-number a (list "power of 2" i))
-        (princ i) (ttab 5) (princ "check just division near ") (print a)
-        (checknear 0 a)
-        (dotimes (j 200)
-          (setq b (expt 2 j))
-          (validate!-number b (list "power of 2" i))
-          (checknear a b)))) t t))
-    (terpri)
-    (printc "+++ Stopping")
-    (stop 1)))
 
 % End of bigarith.lsp

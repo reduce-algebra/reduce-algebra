@@ -126,4 +126,6 @@ January 2016: Updates to fwin.cpp to break a single huge procedure into
 January 2016: Correction of typos in the FXReduceMenus.cpp
       (and another few of the same...)     
 
+November 2016: Correction re updating the switches menu state.
+
 <end of CHANGED>

@@ -348,20 +348,20 @@ bool lesspdb(double a, LispObject b)
     {   int32_t a0, a1, a2;
         int x, x1;
         a = frexp(a, &x); // 0.5 <= abs(a) < 1.0, x = (binary) exponent
-        if (a == 1.0) a = 0.5, x++;    // For Zortech
+        if (a == 1.0) a = 0.5, x++;    // For Zortech, which once needed this!
         a *= TWO_31;
-        a1 = (int32_t)a;                 // 2^31 > |a| >= 2^30
+        a1 = (int32_t)a;               // 2^31 > |a| >= 2^30
         if (a < 0.0) a1--;             // now maybe a1 is -2^31
         a -= (double)a1;
-        a2 = (uint32_t)(a * TWO_31); // This conversion should be exact
+        a2 = (uint32_t)(a * TWO_31);   // This conversion should be exact
         x -= 62;
 //
 // If the float is smaller in absolute value than the bignum life is easy
 //
         if (x < 0) return (bn >= 0);
-        x1 = x/31 + 2;
-        if (n != x1)
-        {   if (n < x1) return a < 0.0;
+        x1 = x/31 + 2;   // number of words of bignum it would need
+        if (n != (size_t)x1)
+        {   if (n < (size_t)x1) return a < 0.0;
             else return (bn >= 0);
         }
 //
@@ -443,8 +443,8 @@ bool lesspbd(LispObject b, double a)
 //
         if (x < 0) return (bn < 0);
         x1 = x/31 + 2;
-        if (n != x1)
-        {   if (n < x1) return a >= 0.0;
+        if (n != (size_t)x1)
+        {   if (n < (size_t)x1) return a >= 0.0;
             else return (bn < 0);
         }
 //

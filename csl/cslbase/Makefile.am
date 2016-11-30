@@ -525,7 +525,7 @@ endif !debug
 zlibdemo_SOURCES = zlibdemo.cpp
 zlibdemo_LDADD = -lz
 
-$(srcdir)/zlibdemo.cpp:	$(srcdir)/preserve.cpp
+remake-zlibdemo-source:	$(srcdir)/preserve.cpp
 	unifdef -x2 -DZLIB_DEMO < $(srcdir)/preserve.cpp > $(srcdir)/zlibdemo.cpp
 
 

@@ -55,7 +55,7 @@
 //   Sometimes this file will live within my copy of the FOX library as
 //   an extension. If however I am building a system without a GUI at all
 //   I can use this file to link on to my own terminal handling code. This
-//   is controlled ny HAVE_CONFIG_H and through that PART_OF_FOX.
+//   is controlled by HAVE_CONFIG_H and through that PART_OF_FOX.
 //
 //   Then there are variations as between Windows, OX X and Linux. At
 //   present systems other then Windows and OS X will use the Linux
@@ -282,6 +282,8 @@ int fwin_use_xft = 0;
 #endif // HAVE_LIBXFT
 
 int fwin_pause_at_end = 0;
+
+#ifdef PART_OF_FOX
 
 #ifdef WIN32
 
@@ -689,7 +691,7 @@ static int unix_and_osx_checks(int windowed)
 
 #endif // __APPLE__
 #endif // WIN32
-
+#endif // PART_OF_FOX
 
 #ifndef EMBEDDED
 

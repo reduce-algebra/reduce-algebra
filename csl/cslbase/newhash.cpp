@@ -627,7 +627,7 @@ size_t hash_insert_if_possible(LispObject key)
     size_t n, n1, n2, n3;
 #ifdef TRACE
     uint64_t hx = REHASH(h);
-    printf("Insert %"PRIx64" %d %d %d\n",
+    printf("Insert %" PRIx64 " %d %d %d\n",
         key,
         (int)(h >> h_shift),
         (int)(hx >> h_shift),
@@ -687,7 +687,7 @@ size_t hash_insert_if_possible(LispObject key)
         newkey = ht(n);          // The key stored there.
         h = HASH(newkey);
 #ifdef TRACE
-        printf("Consider moving %d [%"PRIx64"] to %d %d %d\n",
+        printf("Consider moving %d [%" PRIx64 "] to %d %d %d\n",
            n, (uint64_t)newkey,
            (int)(h>>h_shift),
            (int)(REHASH(h)>>h_shift),
@@ -739,7 +739,7 @@ size_t hash_insert_if_possible(LispObject key)
         Q[Qn++] = n2;
     }
 #ifdef TRACE
-    printf("Have found a gap and moved something to it (%"PRIx64")\n",
+    printf("Have found a gap and moved something to it (%" PRIx64 ")\n",
            (uint64_t)key);
     printf("before unwind Qn=%d\n", Qn);
     dumptable(tt, "Before", false);
@@ -753,7 +753,7 @@ size_t hash_insert_if_possible(LispObject key)
     while (Qn > 3)
     {  int j = Qn/2;   // parent
 #ifdef TRACE
-       printf("move %"PRIx64" from %d to %d\n", ht(Q[j]), Q[j], Q[Qout]);
+       printf("move %" PRIx64 " from %d to %d\n", ht(Q[j]), Q[j], Q[Qout]);
 #endif
        setht(Q[Qn], ht(Q[j]));
        sethtv(Q[Qn], htv(Q[j]));

@@ -88,9 +88,9 @@ LispObject negateb(LispObject a)
         else if (bignum_digits(a)[0] == 0 &&
             (int32_t)bignum_digits(a)[1] == -(int32_t)(1<<30))
             return make_three_word_bignum(0, 1<<30, 0);
-        int32_t d0 = bignum_digits(a)[0];
-        int32_t d1 = ~bignum_digits(a)[1];
-        if (d0 = (1<<30)) d1++;
+        uint32_t d0 = bignum_digits(a)[0];
+        int32_t d1 = (int32_t)~bignum_digits(a)[1];
+        if (d0 == 0) d1++;
         else return make_two_word_bignum(d1, (-d0) & 0x7fffffff);
     }
     if (!SIXTY_FOUR_BIT && len == CELL+4)   // one-word bignum - do specially
@@ -130,14 +130,14 @@ LispObject negateb(LispObject a)
 // Having spotted this particular case I now worry about how many related
 // ones there may be hiding in the code!
 //
-        carry = (int32_t)((uint32_t)clear_top_bit(~bignum_digits(a)[i]) +
-                          (uint32_t)top_bit(carry));
+        carry = ADD32(clear_top_bit(~bignum_digits(a)[i]),
+                      top_bit(carry));
         bignum_digits(b)[i] = clear_top_bit(carry);
     }
 //
 // Handle the top digit separately since it is signed.
 //
-    carry = ~bignum_digits(a)[i] + top_bit(carry);
+    carry = ADD32(~bignum_digits(a)[i], top_bit(carry));
     if (!signed_overflow(carry))
     {
 //
@@ -244,25 +244,32 @@ LispObject negate(LispObject a)
 // It should, however, serve for IEEE and IBM FP formats.
 //
 
+typedef union _char_double
+{   double d;
+    char c[8];
+} char_double_union;
+
 #ifdef LITTLEENDIAN
-#define _fp_normalize(high, low)                                          \
-    {   double temp;           /* access to representation     */         \
-        temp = high;           /* take original number         */         \
-        ((int32_t *)&temp)[0] = 0;                                        \
-                               /* make low part of mantissa 0  */         \
-        low += (high - temp);  /* add into low-order result    */         \
-        high = temp;                                                      \
-    }
+#define LOW_BITS_OFFSET 0
 #else
-#define _fp_normalize(high, low)                                          \
-    {   double temp;           /* access to representation     */         \
-        temp = high;           /* take original number         */         \
-        ((int32_t *)&temp)[1] = 0;                                        \
-                               /* make low part of mantissa 0  */         \
-        low += (high - temp);  /* add into low-order result    */         \
-        high = temp;                                                      \
-    }
+#define LOW_BITS_OFFSET 4
 #endif
+
+// The code here explictly puns between a double and a row of char values
+// so that it can force the bottom 32-bits of the represenattion of the
+// double to be zero. The use of the char type here and then memset to clear
+// it is intended to keep me safe from strict-aliasing concerns, and modern
+// C compilers are liable to map the use of memset onto a simple store
+// instruction.
+
+#define _fp_normalize(high, low)                                          \
+    {   char_double_union temp;  /* access to representation     */       \
+        temp.d = high;           /* take original number         */       \
+        memset(&temp.c[LOW_BITS_OFFSET], 0, 4);                           \
+                                 /* make low part of mantissa 0  */       \
+        low += (high - temp.d);  /* add into low-order result    */       \
+        high = temp.d;                                                    \
+    }
 
 //
 // A modern C system will provide a datatype "complex double" which

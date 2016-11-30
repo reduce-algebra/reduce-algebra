@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist.                         A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -55,7 +55,7 @@
 //   Sometimes this file will live within my copy of the FOX library as
 //   an extension. If however I am building a system without a GUI at all
 //   I can use this file to link on to my own terminal handling code. This
-//   is controlled ny HAVE_CONFIG_H and through that PART_OF_FOX.
+//   is controlled by HAVE_CONFIG_H and through that PART_OF_FOX.
 //
 //   Then there are variations as between Windows, OX X and Linux. At
 //   present systems other then Windows and OS X will use the Linux
@@ -282,6 +282,8 @@ int fwin_use_xft = 0;
 #endif // HAVE_LIBXFT
 
 int fwin_pause_at_end = 0;
+
+#ifdef PART_OF_FOX
 
 #ifdef WIN32
 
@@ -689,7 +691,7 @@ static int unix_and_osx_checks(int windowed)
 
 #endif // __APPLE__
 #endif // WIN32
-
+#endif // PART_OF_FOX
 
 #ifndef EMBEDDED
 
@@ -717,8 +719,8 @@ int main(int argc, const char *argv[])
                 "argc == 0. You tried to launch the code in a funny way?\n");
         return 1;
     }
-    if (find_program_directory(argv[0]))
-    {   fprintf(stderr, "Unable to identify program name and directory\n");
+    if ((i = find_program_directory(argv[0])) != 0)
+    {   fprintf(stderr, "Unable to identify program name and directory (%d)\n", i);
         return 1;
     }
     texmacs_mode = 0;
@@ -734,23 +736,7 @@ int main(int argc, const char *argv[])
         }
         else if (strcmp(argv[i], "--args") == 0) break;
     }
-#ifdef __APPLE__
-// I am uncertain about this but hope this improves behaviour. It may be that
-// it is a penalty that arises when fontconfig is linked in statically.
-    {   FILE *f = fopen("/opt/X11/lib/X11/fontconfig/fonts.conf", "r");
-        if (f == NULL)
-        {   fprintf(stderr, "fontconfig configuration file now where I expect it to be...\n");
-            fprintf(stderr, "Have you installed XQuartz?\n");
-            fprintf(stderr, "You may need to set FONTCONFIG_PATH.\n");
-        }
-        else
-        {   fclose(f);
-            setenv("FONTCONFIG_PATH",
-                   "/opt/X11/lib/X11/fontconfig",
-                   0);  // If a value already exists leave it alone.
-        }
-    }
-#endif
+
 #ifdef PART_OF_FOX
 //
 // As the very first thing I will do, I will seek an argument
@@ -857,7 +843,6 @@ int main(int argc, const char *argv[])
 #ifdef WIN32
     sort_out_windows_console(windowed);
 #endif // WIN32
-#endif // EMBEDDED
 
 // Windowed or not, if there is an argument "-b" or "-bxxxx" then the
 // string xxx will do something about screen colours. An empty string
@@ -891,6 +876,8 @@ void sigint_handler(int code)
     if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
     return;
 }
+
+#endif // EMBEDDED
 
 
 #ifdef SIGBREAK
@@ -1731,7 +1718,7 @@ void process_file_name(char *filename, const char *old, size_t n)
         }
     }
 #else // WIN32
-#ifdef __APPLE__
+#if defined __APPLE__ && !defined EMBEDDED
 //
 // For MacOS the issue of "aliases" arises. The "preferred" file system
 // is HFS+ and that supports both links and aliases, but at the very least
@@ -1918,17 +1905,16 @@ int Cmkdir(const char *s)
 
 #include <utime.h>
 
-#ifdef EMBEDDED
-#ifdef __ARM_EABI__
+#if defined EMBEDDED && defined __ARM_EABI__ && !defined __linux__
 
 void utime(const char *s, struct utimbuf *t);
 
-#endif // __ARM_EABI__
-#endif // EMBEDDED
+#endif // EMBEDDED etc
 
 void set_filedate(char *name, unsigned long int datestamp,
                   unsigned long int filetype)
 {
+#ifndef EMBEDDED
 #ifdef UTIME_TIME_T
     time_t tt[2];
 #else // UTIME_TIME_T
@@ -1946,6 +1932,7 @@ void set_filedate(char *name, unsigned long int datestamp,
     tt.actime = tt.modtime = t0;
 #endif // UTIME_TIME_T
     utime(name, &tt);
+#endif // EMBEDDED
 }
 
 void put_fileinfo(date_and_type *p, char *name)
@@ -2761,13 +2748,13 @@ int get_users_home_directory(char *b, size_t len)
 #endif // DO_NOT_USE_GETUID
 
 #ifdef EMBEDDED
-#ifdef __ARM_EABI__
+#if defined __ARM_EABI__ && !defined __linux__
 
     int rmdir(const char *s)
     {   return 0;
     }
 
-    char *getcwd(char *s, size_t n)
+    const char *getcwd(char *s, size_t n)
     {   return ".";
     }
 

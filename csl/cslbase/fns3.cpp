@@ -690,6 +690,8 @@ LispObject Lbpsgetv(LispObject, LispObject v, LispObject n)
     return onevalue(fixnum_of_int(n1 & 0xff));
 }
 
+#ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
+
 //
 // native-putv and native-getv have an optional trailing argument that
 // should have the value 1, 2 or 4 to indicate the number of bytes to be
@@ -1056,6 +1058,9 @@ LispObject Lnative_address1(LispObject nil, LispObject x)
     if (sizeof(intptr_t) == 4) return make_lisp_integer32((int32_t)p);
     else return make_lisp_integer64((int64_t)p);
 }
+
+#endif // REINSTATE_NATIVE_CODE_EXPERIMENT
+
 
 
 //
@@ -2493,10 +2498,12 @@ setup_type const funcs3_setup[] =
     {"bps-putv",                wrong_no_3a, wrong_no_3b, Lbpsputv},
     {"bps-getv",                too_few_2, Lbpsgetv, wrong_no_2},
     {"bps-upbv",                Lbpsupbv, too_many_1, wrong_no_1},
+#ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
     {"native-type",             wrong_no_na, wrong_no_nb, Lnative_type},
     {"native-putv",             wrong_no_3a, wrong_no_3b, Lnativeputv},
     {"native-getv",             too_few_2, Lnativegetv, Lnativegetvn},
     {"native-address",          Lnative_address1, Lnative_address, wrong_no_2},
+#endif
     {"eupbv",                   Lupbv, too_many_1, wrong_no_1},
     {"schar",                   too_few_2, Lsgetv, wrong_no_2},
     {"scharn",                  too_few_2, Lsgetvn, wrong_no_2},

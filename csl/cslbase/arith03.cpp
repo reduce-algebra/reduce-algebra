@@ -525,12 +525,38 @@ static LispObject quotbi(LispObject a, LispObject b)
 // for the value. On a 64-bit system that is NOT a standardly valid bignum,
 // but it will allow me to call quotbb.
 #ifdef HAVE_INT128_T
-// Here I could cope with any case of a bignum with up to 4 digits divided
-// but a 60-bit fixnum by converting things to the very wide type int128_t
-// and just doing the division there. I will consider that sometime
-// but not today!
-#endif
+// Here I  cope with any case of a bignum with up to 4 digits divided
+// by a 60-bit fixnum by converting things to the very wide type int128_t
+// and just doing the division there. This may be faster than using long
+// division!
+    size_t lena = (bignum_length(a)-CELL-4)/4;
+    int128_t p;
+    switch (lena)
+    {   case 0: // should never arise but put code in for frivolity!
+            p = bignum_digits64(a, 0);
+            break;
+        case 1:
+            p = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+            break;
+        case 2:
+            p = bignum_digits64(a, 2)<<31 | bignum_digits(a)[1];
+            p = ((uint128_t)p << 31) | bignum_digits(a)[0];
+            break;
+        case 3:        
+            p = bignum_digits64(a, 3)<<31 | bignum_digits(a)[2];
+            p = ((uint128_t)p << 31) | bignum_digits(a)[1];
+            p = ((uint128_t)p << 31) | bignum_digits(a)[0];
+            break;
+    default:
+        return quotbb(a, make_fake_bignum(n), QUOTBB_QUOTIENT_NEEDED);
+    }
+    p = p / int_of_fixnum(b);
+// Now I need to re-pack the quotient, which could be anything up to a 3-digit
+// bignum.
+    return make_lisp_integer128(p);
+#else
     return quotbb(a, make_fake_bignum(n), QUOTBB_QUOTIENT_NEEDED);
+#endif
 }
 
 static LispObject quotrembi(LispObject a, LispObject b)
@@ -556,13 +582,36 @@ static LispObject quotrembi(LispObject a, LispObject b)
 // for the value. On a 64-bit system that is NOT a standardly valid bignum,
 // but it will allow me to call quotbb.
 #ifdef HAVE_INT128_T
-// Here I could cope with any case of a bignum with up to 4 digits divided
-// but a 60-bit fixnum by converting things to the very wide type int128_t
-// and just doing the division there. I will consider that sometime
-// but not today!
-#endif
+    size_t lena = (bignum_length(a)-CELL-4)/4;
+    int128_t p;
+    switch (lena)
+    {   case 0: // should never arise but put code in for frivolity!
+            p = bignum_digits64(a, 0);
+            break;
+        case 1:
+            p = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
+            break;
+        case 2:
+            p = bignum_digits64(a, 2)<<31 | bignum_digits(a)[1];
+            p = ((uint128_t)p << 31) | bignum_digits(a)[0];
+            break;
+        case 3:        
+            p = bignum_digits64(a, 3)<<31 | bignum_digits(a)[2];
+            p = ((uint128_t)p << 31) | bignum_digits(a)[1];
+            p = ((uint128_t)p << 31) | bignum_digits(a)[0];
+            break;
+    default:
+        return quotbb(a, make_fake_bignum(n),
+                      QUOTBB_QUOTIENT_NEEDED | QUOTBB_REMAINDER_NEEDED);
+    }
+// Because b is a fixnum the remainder must be.
+    mv_2 = fixnum_of_int((int64_t)(p % int_of_fixnum(b)));
+    p = p / int_of_fixnum(b);
+    return make_lisp_integer128(p);
+#else
     return quotbb(a, make_fake_bignum(n),
                   QUOTBB_QUOTIENT_NEEDED | QUOTBB_REMAINDER_NEEDED);
+#endif
 }
 
 #define quotbs(a, b) quotsb(a, b)

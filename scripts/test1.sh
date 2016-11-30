@@ -237,12 +237,13 @@ fi
 # running to completion but that tests that get stuck do not delay me
 # unduly. The most extreme test at the time of writing this is qsum which
 # uses around 20 seconds on a decent speed desktop machine. So a limit
-# at 120 seconds seems tolerably safe for all but machine if the Raspberry
-# Pi class!
+# at 600 seconds seems tolerably safe for most machine. It is sufficient for
+# if the Raspberry Pi 3, where the sstools and qsum take a fair proportion
+# of that.
 
 if test "x$timeoutcmd" != "x"
 then
-  timeoutcmd="$timeoutcmd 120"
+  timeoutcmd="$timeoutcmd 600"
 fi
 
 # If I am running on Windows I need to have the file name in

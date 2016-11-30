@@ -56,6 +56,9 @@ LispObject Lfrexp(LispObject nil, LispObject a)
     return Lcons(nil, fixnum_of_int((int32_t)x), a);
 }
 
+// N.B. that the moduklar arithmetic functions must cope with any small
+// modulus that could fit in a fixnum.
+
 LispObject Lmodular_difference(LispObject nil, LispObject a, LispObject b)
 {   intptr_t r;
     if (!modulus_is_large)
@@ -110,9 +113,8 @@ LispObject Lmodular_plus(LispObject nil, LispObject a, LispObject b)
     return modulus(a, large_modulus);
 }
 
-LispObject large_modular_reciprocal(LispObject n, int safe)
+LispObject large_modular_reciprocal(LispObject n, bool safe)
 {   LispObject a, b, x, y, nil = C_nil;
-    a = large_modulus;
     b = n;
     x = fixnum_of_int(0);
     y = fixnum_of_int(1);
@@ -120,13 +122,9 @@ LispObject large_modular_reciprocal(LispObject n, int safe)
     {   if (safe) return onevalue(nil);
         else return aerror1("modular-reciprocal", n);
     }
-//
-// This code is not garbage-collector safe and also needs loads or errexit()
-// escapes in case it is interrupted part way through. But even in this
-// state it can be subjected to some initial testing.
-//
     b = modulus(b, large_modulus);
     errexit();
+    a = large_modulus;
     while (b != fixnum_of_int(1))
     {   LispObject w, t;
         if (b == fixnum_of_int(0))
@@ -134,12 +132,27 @@ LispObject large_modular_reciprocal(LispObject n, int safe)
             else return aerror2("non-prime modulus in modular-reciprocal",
                                     large_modulus, n);
         }
+        push2(x, y);
         w = quot2(a, b);
+        pop2(y, x);
+        errexit();
         t = b;
-        b = difference2(a, times2(b, w));
+        push5(a, x, y, w, t)
+        b = times2(b, w);
+        pop5(t, w, y, x, a);
+        errexit();
+        push4(x, y, w, t)
+        b = difference2(a, b);
+        pop4(t, w, y, x);
         a = t;
         t = y;
-        y = difference2(x, times2(y, w));
+        push4(a, b, x, t);
+        y = times2(y, w);
+        pop4(t, x, b, a);
+        errexit();
+        push3(a, b, t);
+        y = difference2(x, y);
+        pop3(t, b, a);
         x = t;
     }
     y = modulus(y, large_modulus);
@@ -148,7 +161,9 @@ LispObject large_modular_reciprocal(LispObject n, int safe)
 
 LispObject Lmodular_reciprocal(LispObject, LispObject n)
 {   intptr_t a, b, x, y;
-    if (modulus_is_large) return large_modular_reciprocal(n, 0);
+    if (modulus_is_large) return large_modular_reciprocal(n, false);
+// If the modulus is "small" I can do all this using native integer
+// arithmetic.
     if (!is_fixnum(n)) return aerror1("modular-reciprocal", n);
     a = current_modulus;
     b = int_of_fixnum(n);
@@ -175,7 +190,7 @@ LispObject Lmodular_reciprocal(LispObject, LispObject n)
 
 LispObject Lsafe_modular_reciprocal(LispObject nil, LispObject n)
 {   intptr_t a, b, x, y;
-    if (modulus_is_large) return large_modular_reciprocal(n, 1);
+    if (modulus_is_large) return large_modular_reciprocal(n, true);
     if (!is_fixnum(n)) return aerror1("modular-reciprocal", n);
     a = current_modulus;
     b = int_of_fixnum(n);
@@ -200,7 +215,7 @@ LispObject Lsafe_modular_reciprocal(LispObject nil, LispObject n)
 
 LispObject Lmodular_times(LispObject nil, LispObject a, LispObject b)
 {
-    uintptr_t r, cm;
+    uintptr_t cm;
     intptr_t aa, bb;
     if (!modulus_is_large)
     {   if (!is_fixnum(a)) return aerror1("modular-times", a);
@@ -208,29 +223,41 @@ LispObject Lmodular_times(LispObject nil, LispObject a, LispObject b)
         cm = (uintptr_t)current_modulus;
         aa = int_of_fixnum(a);
         bb = int_of_fixnum(b);
-//
-// The constant 46341 is sqrt(2^31) suitable rounded - if my modulus
-// is no bigger than that then a and b will both be strictly smaller,
-// and hence a*b will be < 2^31 and hence in range for 32-bit signed
-// arithmetic.  I make this test because I expect Imultiply and Idivide
-// to be pretty painful, while regular C multiplication and division are
-// (probably!) much better. Plus similar fun in the 64-bit case.
-//
-        if (!SIXTY_FOUR_BIT && cm <= 46341U)
-            return onevalue(fixnum_of_int((aa * bb) % cm));
-        else if (cm <= 0xffffffffu)
-        {   int64_t r = ((int64_t)aa * (int64_t)bb) % (int64_t)cm;
-            if (r < 0) r += cm;
+// If I am on a 32-bit machine and the modulus is at worst 16 bits I can use
+// 32-bit arithmetic to complete the job.
+        if (!SIXTY_FOUR_BIT && cm <= 0xffffU)
+        {   uint32_t r = ((uint32_t)aa * (uint32_t)bb) % (uint32_t)cm;
             return onevalue(fixnum_of_int((intptr_t)r));
         }
+// On a 32 or 64-bit machine if the modulus is at worst 32 bits I can do
+// a 64-bit (unsigned) multiplication and remainder step.
+        else if (cm <= 0xffffffffU)
+        {   uint64_t r = ((uint64_t)aa*(uint64_t)bb) % (uint64_t)cm;
+// Because I am in a state where modulus_is_large is not set I know that the
+// modulus fits in a fixnum, hence the result will. So even though all value
+// that are of type uint64_t might not be valid as fixnums the one I have
+// here will be.
+            return onevalue(fixnum_of_int((intptr_t)r));
+        }
+// Now my modulus is over 32-bits...
 #ifdef HAVE_INT128_T
-// Ha ha I can do better here!
-#endif
+// If I have an int128_t bit type I can use it and the code is really neat!
+        else
+        {   int64_t r = (int64_t)(((int128_t)aa*(int128_t)bb) % (int128_t)cm);
+            return onevalue(fixnum_of_int((intptr_t)r));
+        }
+#else
+// In the final case I can just drop through and do standard CSL
+// arithmetic. This will never arise on a 32-bit machine (because any "small"
+// modulus will fit in 32 bits and so the 64-bit multiplication and division
+// suffice), and it should not apply on most x86_64 hosts because they can
+// support 128-bit integers.
         else
         {   a = times2(a, b);
             errexit();
-            return modulus(a, cm);
+            return modulus(a, fixnum_of_int(cm));
         }
+#endif
     }
     a = times2(a, b);
     errexit();
@@ -249,11 +276,8 @@ LispObject large_modular_expt(LispObject a, int x)
 {   LispObject r, p, w, nil = C_nil;
     p = modulus(a, large_modulus);
     errexit();
-//
-// @@@ This is not yet GC safe.
-//
     while ((x & 1) == 0)
-    {   w = times2(p, p);
+    {   p = times2(p, p);
         errexit();
         p = modulus(p, large_modulus);
         errexit();
@@ -261,80 +285,94 @@ LispObject large_modular_expt(LispObject a, int x)
     }
     r = p;
     while (x != 1)
-    {   w = times2(p, p);
+    {   push(r);
+        w = times2(p, p);
+        pop(r);
+        errexit();
+        push(r);
         p = modulus(w, large_modulus);
+        pop(r);
+        errexit();
         x = x/2;
         if ((x & 1) != 0)
-        {   w = times2(r, p);
+        {   push(p);
+            w = times2(r, p);
+            pop(p);
+            errexit();
+            push(p);
             r = modulus(w, large_modulus);
+            pop(p);
+            errexit();
         }
     }
     return onevalue(r);
 }
 
-LispObject Lmodular_expt(LispObject, LispObject a, LispObject b)
+static inline intptr_t muldivptr(uintptr_t a, uintptr_t b, uintptr_t c)
+{   if (!SIXTY_FOUR_BIT || c <= 0xffffffffU)
+        return ((uint64_t)a * (uint64_t)b) % (uintptr_t)c;
+    else
+#ifdef HAVE_UINT128_T
+        return (intptr_t)(((uint128_t)a * (uint128_t)a) % (uintptr_t)c);
+#else
+    {   LispObject w = times2(fixnum_of_int(a), fixnum_of_int(a)), nil;
+        errexit();
+        return int_of_fixnum(modulus(w, fixnum_of_int(c)));
+    }
+#endif
+}
+
+LispObject Lmodular_expt(LispObject nil, LispObject a, LispObject b)
 {   intptr_t x, r, p;
-    uintptr_t h, l;
     x = int_of_fixnum(b);
     if (x == 0) return onevalue(fixnum_of_int(1));
     if (modulus_is_large) return large_modular_expt(a, x);
     p = int_of_fixnum(a);
-//
-// I could play games here on half-length current_modulus and use
-// native C arithmetic, but I judge this case not to be quite that
-// critically important. Also on 64-bit machines I could do more
-// work in-line.
-//
     p = p % current_modulus; // In case somebody is being silly!
+// I now want this to work for any modulus up to the size of the largest
+// fixnum. That could be 60-bits in the newer world. The function
+// muldivptr takes unsigned arguments but that should be OK because any
+// valid modulus and any valid modular number will be positive.
     while ((x & 1) == 0)
-    {   Dmultiply(h, l, p, p, 0);
-        Ddivide(p, l, h, l, current_modulus);
+    {   p = muldivptr((uintptr_t)p, (uintptr_t)p, (uintptr_t)current_modulus);
+        errexit();
         x = x/2;
     }
     r = p;
     while (x != 1)
-    {   Dmultiply(h, l, p, p, 0);
-        Ddivide(p, l, h, l, current_modulus);
+    {   p = muldivptr((uintptr_t)p, (uintptr_t)p, (uintptr_t)current_modulus);
+        errexit();
         x = x/2;
         if ((x & 1) != 0)
-        {   Dmultiply(h, l, r, p, 0);
-            Ddivide(r, l, h, l, current_modulus);
+        {   r = muldivptr((uintptr_t)r, (uintptr_t)p, (uintptr_t)current_modulus);
+            errexit();
         }
     }
     return onevalue(fixnum_of_int(r));
 }
 
+// I can set any (positive) integer as a modulus here. I will treat it
+// internally as "small" if it fits in a fixnum.
+
 LispObject Lset_small_modulus(LispObject nil, LispObject a)
-{   intptr_t r;
-    LispObject old = modulus_is_large ? large_modulus :
+{   LispObject old = modulus_is_large ? large_modulus :
                      fixnum_of_int(current_modulus);
     if (a==nil) return onevalue(old);
-    else if (!is_fixnum(a) ||
-             int_of_fixnum(a)>0x07ffffff) // only allow 27-bits!
-    {   if ((!is_numbers(a) || !is_bignum(a)) && !is_fixnum(a))
+    else if (!is_fixnum(a))
+    {   if (!is_numbers(a) ||
+            !is_bignum(a) ||
+            minusp(a))
             return aerror1("set-small-modulus", a);
-// In the 28-bit-fixnum world I would only have a "large" modulus when it
-// was a bignum. Now I can have a fixnum whose value is over 0x07ffffff and
-// count that as large, mainly because reducing modulu an integer that is that
-// large is slightly messy so I have not coded it here.
         modulus_is_large = 1;
+        current_modulus = 0;   // should not be referenced.
         large_modulus = a;
         return old;
     }
-    r = int_of_fixnum(a);
-//
-// I now allow a small modulus of up to 2^27. One I stopped at 2^24
-// for compatibility with Cambridge Lisp, but that is now so long in the
-// past that worrying about it seems unnecessary.
-//
-    if (r > 0x07ffffff)
-    {   // return aerror1("set-small-modulus", a);
-        modulus_is_large = 1;
-        large_modulus = a;
-        return old;
-    }
+    if ((intptr_t)a < 0 || a == fixnum_of_int(0))
+        return aerror1("set!-small!-modulus", a);
     modulus_is_large = 0;
-    current_modulus = r;
+    large_modulus = nil; // Should not be referenced.
+    current_modulus = int_of_fixnum(a);;
     return onevalue(old);
 }
 

@@ -1138,22 +1138,59 @@ typedef struct Single_Float
 // on signed types. The underlying reason may relate to the possibility that
 // numbers might be stored in sign-and-magnitude notation or some other
 // scheme other than the 2s complement that is in practice universal these
-// days. The macro here assumes 2s complement arithmetic, but first tests
-// for that and if so just does the shift. Otherwise it arranges to extend
-// the sign bit manually, using division by powers of 2 on unsigned values
-// to do the main shift operation. I believe that even though this looks
-// rather messy here it will lead to simple compiled code with modern C++
-// compilers. I do this for intptr_t, which is what is needed for fixnums.
+// days. I provide support here that will guarantee to do right shifts
+// in arithmetic mode - and hope that modern compilers will map them
+// onto the single machine instruction that is generally what I want.
 
-// Maybe it will be more sense if I just insist that CSL will only run on
-// systems where right shifts on signed values are arithmetic!
+// Shifts by more than the word-length are invalid, and I should not perform
+// any, but the code may indicate some guarded by SIXTY_FOUR_BIT, so
+// I will fudge things here!
 
-#define ASR(v, n) \
-  (((-1) >> 1) == -1 ? ((intptr_t)(v)) >> (n) : \
-   (intptr_t)(v) >= 0 ?                         \
-     (intptr_t)((uintptr_t)(v) / (uintptr_t)((uintptr_t)1 << (n))) : \
-   (intptr_t)(((uintptr_t)(v) / (uintptr_t)((uintptr_t)1 << (n))) | \
-             (- ((intptr_t)1 << (8*sizeof(intptr_t) - (n))))))
+#define MAXSHIFT(n, a)   ((n) >= (int)8*sizeof(a) || (n) < 0 ? 0 : (n))
+
+#ifdef SIGNED_SHIFTS_ARE_ARITHMETIC
+
+// In this case I can make it simpler for the compiler! Something that is
+// "implementation defined" is much safer to use than anything that is
+// "undefined" in that the optimiser has to preserve whetever semantics the
+// implementation settled on!
+
+#define ASR(a, n) ((a) >> MAXSHIFT((n), a))
+
+#else // SIGNED_SHIFTS_ARE_ARITHMETIC
+
+// I use <type_traits> so ensure that I have a signed type for when I do the
+// division. It is a header file that was introduced in C++-11, but g++
+// supports it with -std-gnu++0x, and I have checked and it seems to
+// exists as far back as Fedora 9 (which is, I think, now as old as I am
+// interested in going).
+
+// I will note that at the time of introducing this it is the first place
+// where I use significant C++ features and even more than that the first
+// place where I rely on C++11. And this will only ever happen on computers
+// where either native ">>" does not seem to be a signed shift when applied
+// to signed integers, or where I am cross compiling and so am not in a
+// position to verify that.
+
+#include <type_traits>
+
+template <typename T>
+static inline T ASR(T a, int n)
+{   typedef typename std::make_signed<T>::type ST;
+    return ((ST)(a&~(((T)1<<MAXSHIFT(n,T))-1)))/((ST)1<<MAXSHIFT(n,T));
+}
+
+#endif // SIGNED_SHIFTS_ARE_ARITHMETIC
+
+// The behaviour of left shifts on negative (signed) values seems to be
+// labelled as undefined in C/C++, so any time I am going to do a left shift
+// I need to work in an unsigned type. Rather than messing with templates
+// again I will have versions for each possible width that I might use.
+
+#define ASL32(a,n)  ((int32_t)((uint32_t)(a)<<MAXSHIFT((n),uint32_t)))
+#define ASLptr(a,n) ((intptr_t)((uintptr_t)(a)<<MAXSHIFT((n),uintptr_t)))
+#define ASL64(a,n)  ((int64_t)((uint64_t)(a)<<MAXSHIFT((n),uint64_t)))
+#define ASL128(a,n) ((int128_t)((uint128_t)(a)<<MAXSHIFT((n),uint128_t)))
 
 #endif // header_tags_h
 

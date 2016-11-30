@@ -49,6 +49,8 @@ LispObject Lget_bps(LispObject nil, LispObject n)
     return onevalue(n);
 }
 
+#ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
+
 ///*
 // WARNING. This code is intended to allocate space into which I will post
 // executable code. Under a really old-fashioned "spirit of C" even though
@@ -76,7 +78,7 @@ LispObject get_native_code_vector(size_t size)
     for (;;)
     {   size_t alloc_size = (size_t)doubleword_align_up(size);
         intptr_t cf = native_fringe;
-        intptr_t free = CSL_PAGE_SIZE - cf - 0x100; // 256 bytes to be safe
+        size_t free = CSL_PAGE_SIZE - cf - 0x100; // 256 bytes to be safe
 //
 // When I start up a cold CSL I will have native_fringe set to zero and
 // native_pages_count also zero, indicating that there is none of this stuff
@@ -118,12 +120,15 @@ LispObject Lget_native(LispObject nil, LispObject n)
 
 bool do_not_kill_native_code = false;
 
+#endif // REINSTATE_NATIVE_CODE_EXPERIMENT
+
 // Soon this will need to take FIVE functions not THREE. Specifically ones
 // that support 0, 1, 2, 3 and 4+ arguments.
 
 void set_fns(LispObject a, one_args *f1, two_args *f2, n_args *fn)
 {   LispObject nil = C_nil;
     LispObject w1, w2, w3 = nil;
+#ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
 //
 // If I redefine a function for any reason (except to set trace options
 // on a bytecoded definition) I will discard any native-coded definitions
@@ -142,6 +147,7 @@ void set_fns(LispObject a, one_args *f1, two_args *f2, n_args *fn)
             else qcdr(w3) = w1;
         }
     }
+#endif // REINSTATE_NATIVE_CODE_EXPERIMENT
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR))
     {   if (symbol_protect_flag)
@@ -786,6 +792,8 @@ void lose_C_def(LispObject a)
     else putprop(b, work_symbol, c);
 }
 
+#ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
+
 //
 // (symbol-set-native fn args bpsbase offset env)
 // where bpsbase is as handed back by (make-native nnn) and offset is
@@ -999,6 +1007,8 @@ LispObject Lsymbol_set_native(LispObject nil, int nargs, ...)
     qenv(fn) = env;
     return onevalue(fn);
 }
+
+#endif // REINSTATE_NATIVE_CODE_EXPERIMENT
 
 static bool restore_fn_cell(LispObject a, char *name,
                                size_t len, setup_type const s[])
@@ -4494,7 +4504,6 @@ setup_type const funcs2_setup[] =
     {"lastpair",                Llastpair, too_many_1, wrong_no_1},
     {"length",                  Llength, too_many_1, wrong_no_1},
     {"make-bps",                Lget_bps, too_many_1, wrong_no_1},
-    {"make-native",             Lget_native, too_many_1, wrong_no_1},
     {"symbol-env",              Lsymbol_env, too_many_1, wrong_no_1},
     {"symbol-make-fastget",     Lsymbol_make_fastget1, Lsymbol_make_fastget, wrong_no_2},
     {"symbol-fastgets",         Lsymbol_fastgets, too_many_1, wrong_no_1},
@@ -4504,7 +4513,10 @@ setup_type const funcs2_setup[] =
     {"symbol-restore-fns",      Lsymbol_restore_fns, too_many_1, wrong_no_1},
     {"symbol-argcount",         Lsymbol_argcount, too_many_1, wrong_no_1},
     {"symbol-set-env",          too_few_2, Lsymbol_set_env, wrong_no_2},
+#ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
+    {"make-native",             Lget_native, too_many_1, wrong_no_1},
     {"symbol-set-native",       wrong_no_na, wrong_no_nb, Lsymbol_set_native},
+#endif
     {"symbol-set-definition",   too_few_2, Lsymbol_set_definition, wrong_no_2},
     {"restore-c-code",          Lrestore_c_code, too_many_1, wrong_no_1},
     {"set-autoload",            too_few_2, Lset_autoload, wrong_no_2},

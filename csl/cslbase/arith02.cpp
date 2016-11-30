@@ -101,6 +101,20 @@ static LispObject timesii(LispObject a, LispObject b)
 //
 {   int64_t aa = (int64_t)int_of_fixnum(a),
             bb = (int64_t)int_of_fixnum(b);
+// If I am on a 32-bit system then fixnums are only 28 bits wide so using
+// int64_t multiplication can never overflow.
+    if (!SIXTY_FOUR_BIT) return make_lisp_integer64(aa*bb);
+#ifdef HAVE_INT128_T
+// If I have an integer type with width 128 bits I will just use it straight
+// away, and expect that the resulting generated code will in effect contain
+// and special case tricks to cover small values that might be useful.
+    return make_lisp_integer128((int128_t)aa * (int128_t)bb);
+#else // HAVE_INT128_T
+//
+// The code here should never be activated on a 32-bit machine and never on
+// a 64-bit machine that supports int128_t, and that means that x86_64 does
+// not come through here. At the time of writing aarch64 (ie 64-bit ARM
+// uses this...
 //
 // Multiplication by 0 or by 1 is just possibly common enough to be worth
 // filtering out the following special cases.  Avoidance of the tedious
@@ -114,25 +128,24 @@ static LispObject timesii(LispObject a, LispObject b)
     {   if (bb == 0) return fixnum_of_int(0);
         else return a;
     }
-    if (!SIXTY_FOUR_BIT) return make_lisp_integer64(aa*bb);
 // Here I am on a 64-bit machine... First I will see if the two inputs
 // would have fitted nicely in 32-bit words because if they would have then I
 // can just multiply them to get a 64-bit result.
     if (aa == (int32_t)aa)
     {   if (bb == (int32_t)bb) return make_lisp_integer64(aa*bb);
         int32_t blo = (int32_t)bb & 0x7fffffff;
-        int32_t bhi = (int32_t)(bb>>31);
+        int32_t bhi = (int32_t)ASR(bb, 31);
         int64_t lo = aa*blo;
-        int64_t hi = aa*bhi + (lo>>31);
+        int64_t hi = aa*bhi + ASR(lo, 31);
         lo &= 0x7fffffff;
 // The value I have is now (hi,lo) where lo contains 31 bits. I can turn this
 // into a fixnum if hi is a 29-bit signed value.
         if (signed29_in_64(hi)) // Result can be a fixnum
-            return fixnum_of_int(hi<<31 | lo);
+            return fixnum_of_int(ASL64(hi, 31) | lo);
 // If hi would fit in a 31-bit integer I can use a 2-word bignum.
         if (signed31_in_64(hi)) // Result can be a 2-word bignum
             return make_two_word_bignum((int32_t)hi, (uint32_t)lo);
-        else return make_three_word_bignum((int32_t)(hi>>31),
+        else return make_three_word_bignum((int32_t)ASR(hi,31),
             (uint32_t)(hi & 0x7fffffff), (uint32_t)lo);
     }
     else if (bb == (int32_t)bb)
@@ -140,15 +153,15 @@ static LispObject timesii(LispObject a, LispObject b)
 // here b fits in 32-bits but a does not. This is basically the same code
 // as for the same state but the other way around
         int32_t alo = (int32_t)aa & 0x7fffffff;
-        int32_t ahi = (int32_t)(aa>>31);
+        int32_t ahi = (int32_t)ASR(aa,31);
         int64_t lo = bb*alo;
-        int64_t hi = bb*ahi + (lo>>31);
+        int64_t hi = bb*ahi + ASR(lo, 31);
         lo &= 0x7fffffff;
         if (signed29_in_64(hi)) // Result can be a fixnum
-            return fixnum_of_int(hi<<31 | lo);
+            return fixnum_of_int(ASL64(hi, 31) | lo);
         if (signed31_in_64(hi)) // Result can be a 2-word bignum
             return make_two_word_bignum((int32_t)hi, (uint32_t)lo);
-        else return make_three_word_bignum((int32_t)(hi>>31),
+        else return make_three_word_bignum((int32_t)ASR(hi, 31),
             (uint32_t)(hi & 0x7fffffff), (uint32_t)lo);
     }
 // Here both operands are larger than 32-bits, so I have to use the most
@@ -157,9 +170,9 @@ static LispObject timesii(LispObject a, LispObject b)
 // here I know that the result will be at least a 64-bit value and so
 // will need to be at least a 3-word bignum.
     int32_t alo = (int32_t)aa & 0x7fffffff;
-    int32_t ahi = (int32_t)(aa>>31);
+    int32_t ahi = (int32_t)ASR(aa, 31);
     int32_t blo = (int32_t)bb & 0x7fffffff;
-    int32_t bhi = (int32_t)(bb>>31);
+    int32_t bhi = (int32_t)ASR(bb, 31);
 // alo and blo are both 31-bit integers and hence look positive
     int64_t lo = (int64_t)alo*(int64_t)blo;
 // ahi and bhi are only 29-bit (signed) values, so mid ends up at
@@ -167,15 +180,16 @@ static LispObject timesii(LispObject a, LispObject b)
     int64_t mid = (int64_t)alo*(int64_t)bhi + (int64_t)ahi*(int64_t)blo;
 // hi is limited to 58 bits
     int64_t hi = (int64_t)ahi*(int64_t)bhi;
-    mid += lo>>31;
+    mid += ASR(lo, 31);
     lo &= 0x7fffffff;
-    hi += mid>>31;
+    hi += ASR(mid, 31);
     mid &= 0x7fffffff;
     if (signed31_in_64(hi)) // Result can be a 3-word bignum
         return make_three_word_bignum((int32_t)hi,
             (uint32_t)mid, (uint32_t)lo);
-    else return make_four_word_bignum((int32_t)(hi>>31),
+    else return make_four_word_bignum((int32_t)ASR(hi,31),
         (uint32_t)(hi & 0x7fffffff), (uint32_t)mid, (uint32_t)lo);
+#endif // HAVE_INT128_T
 }
 
 static LispObject timesis(LispObject a, LispObject b)
@@ -246,7 +260,7 @@ static LispObject timesib(LispObject a, LispObject b)
 //
         if (carry == 0x40000000)
         {   bignum_digits(c)[i] = (aa & 1) << 30;
-            aa = aa >> 1;
+            aa = (aa & ~1)/2;
             goto extend_by_one_word;
         }
         if ((carry & 0x40000000) != 0) carry = set_top_bit(carry);
@@ -659,7 +673,7 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 #ifdef DEBUG_PARALLEL_KARATSUBA
 
 static void shownum(FILE *log, uint32_t *p, int n, const char *s)
-{   int i, k, d, some = 0;
+{   int32_t i, k, d, some = 0;
     fprintf(log, "%s:", s);
     k = 31*n;  // Number of bits
     d = 0;

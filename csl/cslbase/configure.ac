@@ -669,18 +669,16 @@ then
      AC_MSG_NOTICE(--hash-style=both not available)])
 fi
 
-AC_MSG_NOTICE([Checking for "--std=gnu++11"])
-if test "x$GCC" = "xyes"
+# The following seems to be an "official" way to ensure that I have at least
+# -std-gnu++11 (or gnu++0x) available.
+
+AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
+
+# If I can not use C++-14 I will INSIST on C++-11
+
+if test "x$HAVE_CXX14" != "x1"
 then
-# I need gnu++11 so that non-ANSI functions such as putc-unlocked are
-# left available to me.
-  OLDCPPFLAGS="$CPPFLAGS"
-  CPPFLAGS="$CPPFLAGS --std=gnu++11"
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
-                                  [[printf("\n");]])],
-    [AC_MSG_NOTICE(Will use --std=gnu++11)],
-    [CPPFLAGS="$OLDCPPFLAGS"
-     AC_MSG_NOTICE(--std=gnu++11 not available)])
+  AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
 fi
 
 # I have alternative ways of doing things on Windows and Macintosh, but
@@ -1253,6 +1251,29 @@ fi
 
 AC_CHECK_SIZEOF(wchar_t)
 
+# The behaviour of signed shifts on negaive left operands is implementation
+# defined. In most cases the shift will be arithmetic, but one could
+# imagine it being logical or even something worse. I am going to assume that
+# if the test I do here succeeds for type "int" that the same sort of thing
+# will be done for all integer types. Even that is not utterly guaranteed!
+# If I am cross-compiling and can not run the test program I take a
+# pessimistic stance and assume that shifts might not be tidy.
+
+# Note that left shifts on negative signed values are considered undefined,
+# and shifts on initially positive signed values that go as far as
+# populating the sign bit are only sanctioned from C++-14 onwards.
+
+AC_RUN_IFELSE([AC_LANG_PROGRAM([[]],
+  [[int x=-256; int y=x>>4; return (y==-16) ? 0 : 1;]])],
+  [arithmetic_shifts="yes"],   # True
+  [arithmetic_shifts="no"],    # False
+  [arithmetic_shifts="no"])    # Cross-compiling
+AC_MSG_NOTICE([Signed shifts status [yes for arithmetic] : $arithmetic_shifts])
+if test "x$arithmetic_shifts" = "xyes"
+then
+  AC_DEFINE(SIGNED_SHIFTS_ARE_ARITHMETIC, [1], [Not guaranteed by ANSI spec])
+fi
+
 AC_CHECK_TYPES([socklen_t],[],[],[#include <sys/socket.h>])
 
 AC_CHECK_LIB(socket, socket)
@@ -1424,23 +1445,19 @@ fi
 
 if test "x$macintosh_build" = "xyes"
 then
-# 10.0  Cheetah  )
-# 10.1  Puma     )
-# 10.2  Jaguar   ) I will not support these at all any more
-# 10.3  Panther  )
-# 10.4  Tiger    )
-# 10.5  Leopard  )
-# 10.6  Snow Leopard
-# 10.7  Lion
-# 10.8  Mountain Lion   This is the oldest version I will worry about,
-#                       and actually I am in the process of stopping
-#                       thinking about anything earlier than Yosemite.
-# 10.9  Mavericks       It seems that I may NEED to specify this as the
-#                       oldest supported platform, because changes that
-#                       Apple made that are triggered by (merely) setting
-#                       an earlier deployment target appear to cause trouble.
-# 10.10 Yosemite        My test machine runs this.
-# 10.11 El Capitan     ... I will now be moving to test on this
+# 10.0  Cheetah       )
+# 10.1  Puma          )
+# 10.2  Jaguar        ) I will not support these at all any more
+# 10.3  Panther       )
+# 10.4  Tiger         )
+# 10.5  Leopard       )
+# 10.6  Snow Leopard  )
+# 10.7  Lion          )
+# 10.8  Mountain Lion )
+# 10.9  Mavericks     )
+# 10.10 Yosemite       Now the oldest deployment target I support
+# 10.11 El Capitan
+# 10.12 Sierra         Now the version I build and test on.
 
 # Well now that 10.11 has been released I will always target
 # 10.10 and support for earlier versions is no longer guaranteed. I
@@ -1564,4 +1581,3 @@ AM_CONDITIONAL(redfront, test "x$with_redfront" != "xno")
 AC_OUTPUT
 
 # end of "configure.ac"
-

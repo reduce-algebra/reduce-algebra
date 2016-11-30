@@ -238,6 +238,13 @@ bool trap_floating_overflow = true;
 
 int procstackp;
 
+#if REINSTATE_NATIVE_CODE_EXPERIMENT
+
+// This was at one time part of a consideration about support for native
+// compilation, and I will (at least for now) leave it present in the
+// source in case I try going down that path again. For now it is not used.
+
+
 //
 // The next function is handed a page
 // of hard code that has just been loaded into memory and it must scan it
@@ -477,6 +484,8 @@ void relocate_native_function(unsigned char *bps)
         }
     }
 }
+
+#endif //NATIVE_CODE_SUPPORT
 
 entry_point0 entries_table0[] =
 {
@@ -3673,7 +3682,7 @@ void review_switch_settings()
         LispObject nil, starsw;
         sw = qcdr(sw);
         if (is_symbol(s)) s = qpname(s);
-        if (!is_vector(s) || !is_string_header(s)) continue;
+        if (!is_vector(s) || !is_string_header(vechdr(s))) continue;
         n1 = length_of_byteheader(vechdr(s))-CELL;
         if (n1 > 60) continue;
         sprintf(sname, "*%.*s", n1, &celt(s, 0));
