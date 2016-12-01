@@ -164,10 +164,14 @@ static bool lesseqbb(LispObject a, LispObject b)
 // Now the leading digits of the numbers agree, so in particular the numbers
 // have the same sign.
 //
-        while (--lena >= 0)
-        {   uint32_t da = bignum_digits(a)[lena],
-                         db = bignum_digits(b)[lena];
-            if (da == db) continue;
+        if (lena != 0) for (;;)
+        {   lena--;
+            uint32_t da = bignum_digits(a)[lena],
+                     db = bignum_digits(b)[lena];
+            if (da == db)
+            {   if (lena == 0) return true;
+                else continue;
+            }
             return (da < db);
         }
         return true;     // numbers are the same

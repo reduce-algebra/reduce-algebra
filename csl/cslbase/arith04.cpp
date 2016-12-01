@@ -578,7 +578,7 @@ static bool lesspbb(LispObject a, LispObject b)
 // Now the leading digits of the numbers agree, so in particular the numbers
 // have the same sign.
 //
-        for (;;)
+        if (lena != 0) for (;;)
         {   lena--;
             uint32_t da = bignum_digits(a)[lena],
                      db = bignum_digits(b)[lena];
