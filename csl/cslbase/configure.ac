@@ -669,16 +669,50 @@ then
      AC_MSG_NOTICE(--hash-style=both not available)])
 fi
 
+
+# The behaviour of signed shifts on negaive left operands is implementation
+# defined. In most cases the shift will be arithmetic, but one could
+# imagine it being logical or even something worse. I am going to assume that
+# if the test I do here succeeds for type "int" that the same sort of thing
+# will be done for all integer types. Even that is not utterly guaranteed!
+# If I am cross-compiling and can not run the test program I take a
+# pessimistic stance and assume that shifts might not be tidy.
+
+# Note that left shifts on negative signed values are considered undefined,
+# and shifts on initially positive signed values that go as far as
+# populating the sign bit are only sanctioned from C++-14 onwards.
+
+AC_RUN_IFELSE([AC_LANG_PROGRAM([[]],
+  [[int x=-256; int y=x>>4; return (y==-16) ? 0 : 1;]])],
+  [arithmetic_shifts="yes"],   # True
+  [arithmetic_shifts="no"],    # False
+  [arithmetic_shifts="no"])    # Cross-compiling
+AC_MSG_NOTICE([Signed shifts status [yes for arithmetic] : $arithmetic_shifts])
+if test "x$arithmetic_shifts" = "xyes"
+then
+  AC_DEFINE(SIGNED_SHIFTS_ARE_ARITHMETIC, [1], [Not guaranteed by ANSI spec])
+  cxx11="optional"
+else
+  cxx11="mandatory"
+fi
+
 # The following seems to be an "official" way to ensure that I have at least
 # -std-gnu++11 (or gnu++0x) available.
 
 AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
 
-# If I can not use C++-14 I will INSIST on C++-11
+# If I can not use C++-14 I will INSIST on C++-11 if signed shifts are
+# not arithmetic since in that case I will use a messy template to
+# emulate what I need.
 
 if test "x$HAVE_CXX14" != "x1"
 then
-  AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
+  if test "x$cxx11" == "xoptional"
+  then
+    AX_CXX_COMPILE_STDCXX([11], [ext], [optional])
+  else
+    AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
+  fi
 fi
 
 # I have alternative ways of doing things on Windows and Macintosh, but
@@ -1250,29 +1284,6 @@ then
 fi
 
 AC_CHECK_SIZEOF(wchar_t)
-
-# The behaviour of signed shifts on negaive left operands is implementation
-# defined. In most cases the shift will be arithmetic, but one could
-# imagine it being logical or even something worse. I am going to assume that
-# if the test I do here succeeds for type "int" that the same sort of thing
-# will be done for all integer types. Even that is not utterly guaranteed!
-# If I am cross-compiling and can not run the test program I take a
-# pessimistic stance and assume that shifts might not be tidy.
-
-# Note that left shifts on negative signed values are considered undefined,
-# and shifts on initially positive signed values that go as far as
-# populating the sign bit are only sanctioned from C++-14 onwards.
-
-AC_RUN_IFELSE([AC_LANG_PROGRAM([[]],
-  [[int x=-256; int y=x>>4; return (y==-16) ? 0 : 1;]])],
-  [arithmetic_shifts="yes"],   # True
-  [arithmetic_shifts="no"],    # False
-  [arithmetic_shifts="no"])    # Cross-compiling
-AC_MSG_NOTICE([Signed shifts status [yes for arithmetic] : $arithmetic_shifts])
-if test "x$arithmetic_shifts" = "xyes"
-then
-  AC_DEFINE(SIGNED_SHIFTS_ARE_ARITHMETIC, [1], [Not guaranteed by ANSI spec])
-fi
 
 AC_CHECK_TYPES([socklen_t],[],[],[#include <sys/socket.h>])
 
