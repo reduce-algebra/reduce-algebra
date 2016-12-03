@@ -707,7 +707,7 @@ AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
 
 if test "x$HAVE_CXX14" != "x1"
 then
-  if test "x$cxx11" == "xoptional"
+  if test "x$cxx11" = "xoptional"
   then
     AX_CXX_COMPILE_STDCXX([11], [ext], [optional])
   else
