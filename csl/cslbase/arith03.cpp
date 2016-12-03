@@ -838,13 +838,10 @@ static inline uint32_t next_quotient_digit(uint32_t atop,
 // The test on the next line should detect all case where q0 was in error
 // by 2 and most when it was in error by 1. 
 //
-//  trace_printf("First try has q0 = %.8x\n", q0);
     if (q0 == 0x80000000U ||
         (uint64_t)q0*(uint64_t)bignum_digits(b)[lenb-1] >
         ((uint64_t)r0<<31 | bignum_digits(a)[lena-1]))
-    {   // trace_printf("Initial correction of q0 by 1\n");
         q0--;
-    }
 //  trace_printf("Leading quotient digit = %d = %#x\n", q0, q0);
 //
 // Now I want to go "a = a - b*q0*2^(31*(lena-lenb));" so that a
@@ -967,9 +964,35 @@ LispObject quotbb(LispObject a, LispObject b, int need)
 {   LispObject nil = C_nil;
     size_t lena = (bignum_length(a)-CELL-4)/4,
            lenb = (bignum_length(b)-CELL-4)/4;
+// On 32-bit machines I may have a denominator that still fits in 31-bits.
+// In that case I can optimise. The case lenb==0 ought not to arise on a
+// 64-bit machine... And to avoid ending up with a division by a 1-word
+// value it turns out that I MUST detect and filter out cases where the
+// divisor is "really only 31-bits" but it has an extension word stuck on the
+// front at thus stage. The reason for all this is that the main LONG division
+// code assumes that the denominator b has at least two digits in it, and
+// if it is erroneously allowed to run on a 1-digit number it accesses a
+// "digit -1" which does not exist. In reality in that case it treats
+// the header word of the bignum as if it has been part of the numeric data.
+    if (!SIXTY_FOUR_BIT && (lenb == 0 ||
+        (lenb == 1 && (bignum_digits(b)[1]==0 ||
+                       (int32_t)bignum_digits(b)[1]==-1))))
+    {   int32_t nn = (int32_t)bignum_digits(b)[0];
+        if (lenb != 0 && (int32_t)bignum_digits(b)[1]==-1)
+            nn = (int32_t)((uint32_t)nn | 0x80000000U);
+        LispObject q = quotbn(a, nn);
+        if ((need & QUOTBB_REMAINDER_NEEDED) != 0)
+        {   push(q);
+            a = make_lisp_integer32(nwork);
+            pop(q);
+            errexit();
+            mv_2 = a;
+        }
+        return q;
+    }
 // If a has fewer digits than b then the quotient will be zero and I should
-// report that without further messing around. Howver there is enough
-// delicacy here that I lift processing into a sepaarte procedure!
+// report that without further messing around. However there is enough
+// delicacy here that I lift processing into a separate procedure!
     if (lena < lenb) return short_numerator(a, lena, b, lenb);
 // I copy the absolute values of a and b to places where it will be
 // OK to overwrite them, taking their absolute values as I go. I record
@@ -994,7 +1017,6 @@ LispObject quotbb(LispObject a, LispObject b, int need)
 // leading digit of b alone that seems OK, but I am concerned that when you
 // take lower digits of b into account that multiplying b by it can overflow.
     uint32_t scale = 0x80000000U / (bignum_digits(b)[lenb] + 1);
-//  trace_printf("scale factor = %.8x\n", scale);
 // When I scale the dividend expands into an extra digit but the scale
 // factor has been chosen so that the divisor does not. So beware that
 // a now has digits running from 0 to lena+1.
@@ -1012,19 +1034,27 @@ LispObject quotbb(LispObject a, LispObject b, int need)
         m--;
     }
 // Unscale and correct the signs.
-    lena = unscale(a, lena+1, scale);
-    if (sign & SIGN_REMAINDER_NEGATIVE)
-        lena = negate_in_place(a, lena);
+    if ((need && QUOTBB_REMAINDER_NEEDED) != 0)
+    {   lena = unscale(a, lena+1, scale);
+        if (sign & SIGN_REMAINDER_NEGATIVE)
+            lena = negate_in_place(a, lena);
+    }
+    if ((need & QUOTBB_QUOTIENT_NEEDED) != 0)
 // Ensure that the quotient has a prefix zero digit if needbe.
-    lenq = fix_up_bignum_length(big_quotient, lenq);
-    if (sign & SIGN_QUOTIENT_NEGATIVE)
-        lenq = negate_in_place(big_quotient, lenq);
+    {   lenq = fix_up_bignum_length(big_quotient, lenq);
+        if (sign & SIGN_QUOTIENT_NEGATIVE)
+            lenq = negate_in_place(big_quotient, lenq);
+    }
+    if ((need && QUOTBB_REMAINDER_NEEDED) != 0)
 // Now I need to pack the results so that they are suitable for use
 // elsewhere in the system. 
-    a = pack_up_result(a, lena);
-    errexit();
-    mv_2 = a;
-    return pack_up_result(big_quotient, lenq);
+    {   a = pack_up_result(a, lena);
+        errexit();
+        mv_2 = a;
+    }
+    if ((need & QUOTBB_QUOTIENT_NEEDED) != 0)
+        return pack_up_result(big_quotient, lenq);
+    else return nil;
 }
 
 #define quotbr(a, b) quotir(a, b)
