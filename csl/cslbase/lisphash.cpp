@@ -68,7 +68,7 @@
 #define HASH_CHUNK_WORDS  (HASH_CHUNK_SIZE/CELL)
 
 static LispObject get_hash_vector(int32_t n)
-{   LispObject v, nil = C_nil;
+{   LispObject v;
 //
 // A major ugliness here is that I need to support hash tables that are
 // larger than the largest simple vector I can use (as limited by
@@ -111,7 +111,7 @@ static LispObject get_hash_vector(int32_t n)
     return v;
 }
 
-LispObject Lmkhash(LispObject nil, int nargs, ...)
+LispObject Lmkhash(LispObject env, int nargs, ...)
 //
 // (mkhash size flavour growth)
 //
@@ -329,7 +329,7 @@ static uint32_t hash_cl_equal(LispObject key, bool descend)
 // false this will not descend through lists.
 //
 {   uint32_t r = 1, c;
-    LispObject nil = C_nil, w;
+    LispObject w;
     int32_t len;
     int32_t bitoff;
     unsigned char *data;
@@ -343,17 +343,15 @@ static uint32_t hash_cl_equal(LispObject key, bool descend)
     for (;;)
     {   switch (TAG_BITS & (int32_t)key)
         {   case TAG_CONS:
-                if (key == C_nil || !descend) return r;
+                if (key == nil || !descend) return r;
                 r = update_hash(r, hash_cl_equal(qcar(key), true));
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 key = qcdr(key);
                 continue;
             case TAG_SYMBOL:
-                if (key == C_nil) return r;
+                if (key == nil) return r;
 #ifdef OLD_HASH
                 key = get_pname(key);
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 r = update_hash(r, 1); // makes name & string hash differently
                 // Drop through, because the pname is a string
@@ -430,7 +428,6 @@ static uint32_t hash_cl_equal(LispObject key, bool descend)
                     {   LispObject ea =
                             *((LispObject *)((char *)key + len - TAG_VECTOR));
                         r = update_hash(r, hash_cl_equal(ea, true));
-                        nil = C_nil;
                         if (exception_pending()) return 0;
                     }
                     return r;
@@ -498,7 +495,7 @@ uint32_t hash_equal(LispObject key)
 // vectors (which are the only other ones I support!).
 //
 {   uint32_t r = 1, c;
-    LispObject nil = C_nil, w;
+    LispObject w;
     int32_t type;
     size_t len, offset = 0;
     unsigned char *data;
@@ -512,17 +509,15 @@ uint32_t hash_equal(LispObject key)
     for (;;)
     {   switch (TAG_BITS & (int32_t)key)
         {   case TAG_CONS:
-                if (key == C_nil) return r;
+                if (key == nil) return r;
                 r = update_hash(r, hash_equal(qcar(key)));
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 key = qcdr(key);
                 continue;
             case TAG_SYMBOL:
-                if (key == C_nil) return r;
+                if (key == nil) return r;
 #ifdef OLD_HASH
                 key = get_pname(key);
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 r = update_hash(r, 1);
                 // Drop through, because the pname is a string
@@ -634,7 +629,6 @@ uint32_t hash_equal(LispObject key)
                                           offset + len - TAG_VECTOR));
 //@@printf("Hashing item at offset %d in vector (o=%d)\n", offset+len, offset);
                     r = update_hash(r, hash_equal(ea));
-                    nil = C_nil;
                     if (exception_pending()) return 0;
                 }
 //@@printf("Hash = %.8x\n", r);
@@ -682,7 +676,7 @@ static uint32_t hash_equalp(LispObject key)
 // different types but similar values (eg 1 and 1.0) as EQUALP).
 //
 {   uint32_t r = 1, c;
-    LispObject nil=C_nil, w;
+    LispObject w;
     int32_t type;
     size_t len, offset = 0;
     unsigned char *data;
@@ -696,17 +690,15 @@ static uint32_t hash_equalp(LispObject key)
     for (;;)
     {   switch (TAG_BITS & (int32_t)key)
         {   case TAG_CONS:
-                if (key == C_nil) return r;
+                if (key == nil) return r;
                 r = update_hash(r, hash_equalp(qcar(key)));
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 key = qcdr(key);
                 continue;
             case TAG_SYMBOL:
-                if (key == C_nil) return r;
+                if (key == nil) return r;
 #ifdef OLD_HASH
                 key = get_pname(key);
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 r = update_hash(r, 1);
                 // Drop through, because the pname is a string
@@ -799,7 +791,6 @@ static uint32_t hash_equalp(LispObject key)
                         *((LispObject *)((char *)key +
                                          offset + len - TAG_VECTOR));
                     r = update_hash(r, hash_equalp(ea));
-                    nil = C_nil;
                     if (exception_pending()) return 0;
                 }
                 return r;
@@ -812,7 +803,6 @@ static uint32_t hash_equalp(LispObject key)
             default:// The default case here mainly covers numbers
                 if (is_float(key))
                 {   key = rational(key);  // painful expense
-                    nil = C_nil;
                     if (exception_pending()) return 0;
                 }
                 if (is_numbers(key))
@@ -890,7 +880,7 @@ static bool large_hash_table;
       &elt(elt((v), 2+(n)/HASH_CHUNK_WORDS), (n)%HASH_CHUNK_WORDS) : \
       &elt((v), (n))))
 
-LispObject Lget_hash(LispObject nil, int nargs, ...)
+LispObject Lget_hash(LispObject env, int nargs, ...)
 {   int32_t size, p, flavour = -1, hashstride, nprobes;
     va_list a;
     LispObject v, key, tab, dflt;
@@ -1013,7 +1003,6 @@ static void reinsert_hash(LispObject v, int32_t size, int32_t flavour,
                           LispObject key, LispObject val)
 {   int32_t p;
     uint32_t hcode, hstride;
-    LispObject nil = C_nil;
 //@@printf("hash_reinsert\n");
     switch (flavour)
 {       default: // case 0:
@@ -1129,7 +1118,7 @@ void rehash_this_table(LispObject v)
     large_hash_table = old_large;
 }
 
-LispObject Lmaphash(LispObject nil, LispObject fn, LispObject tab)
+LispObject Lmaphash(LispObject env, LispObject fn, LispObject tab)
 //
 // There is a big worry here if the table is re-hashed because of
 // a garbage collection while I am in the middle of things. To
@@ -1162,7 +1151,7 @@ LispObject Lmaphash(LispObject nil, LispObject fn, LispObject tab)
     return onevalue(nil);
 }
 
-LispObject Lhashcontents(LispObject nil, LispObject tab)
+LispObject Lhashcontents(LispObject env, LispObject tab)
 //
 // There is a big worry here if the table is re-hashed because of
 // a garbage collection while I am in the middle of things. To
@@ -1195,7 +1184,7 @@ restart:
     return onevalue(r);
 }
 
-LispObject Lget_hash_1(LispObject nil, LispObject key)
+LispObject Lget_hash_1(LispObject env, LispObject key)
 {
 #ifdef COMMON
     return Lget_hash(nil, 3, key, sys_hash_table, nil);
@@ -1217,7 +1206,7 @@ LispObject Lget_hash_1(LispObject nil, LispObject key)
 #endif
 }
 
-LispObject Lget_hash_2(LispObject nil, LispObject key, LispObject tab)
+LispObject Lget_hash_2(LispObject env, LispObject key, LispObject tab)
 {   return Lget_hash(nil, 3, key, tab, nil);
 }
 
@@ -1225,7 +1214,7 @@ LispObject Lget_hash_2(LispObject nil, LispObject key, LispObject tab)
 static int biggest_hash = 0;
 #endif
 
-LispObject Lput_hash(LispObject nil, int nargs, ...)
+LispObject Lput_hash(LispObject env, int nargs, ...)
 {   va_list a;
     LispObject key, tab, val;
     va_start(a, nargs);
@@ -1330,11 +1319,11 @@ LispObject Lput_hash(LispObject nil, int nargs, ...)
 }
 
 
-LispObject Lput_hash_2(LispObject nil, LispObject a, LispObject b)
+LispObject Lput_hash_2(LispObject env, LispObject a, LispObject b)
 {   return Lput_hash(nil, 3, a, sys_hash_table, b);
 }
 
-LispObject Lrem_hash(LispObject nil, LispObject key, LispObject tab)
+LispObject Lrem_hash(LispObject env, LispObject key, LispObject tab)
 {   push2(key, tab);
     Lget_hash(nil, 3, key, tab, nil);
     pop2(tab, key);
@@ -1352,7 +1341,7 @@ LispObject Lrem_hash(LispObject nil, LispObject key, LispObject tab)
     }
 }
 
-LispObject Lrem_hash_1(LispObject nil, LispObject a)
+LispObject Lrem_hash_1(LispObject env, LispObject a)
 {   return Lrem_hash(nil, a, sys_hash_table);
 }
 
@@ -1370,7 +1359,7 @@ LispObject Lclr_hash(LispObject, LispObject tab)
     return tab;
 }
 
-LispObject Lclr_hash_0(LispObject nil, int nargs, ...)
+LispObject Lclr_hash_0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "clrhash");
     return Lclr_hash(nil, sys_hash_table);
 }
@@ -1385,7 +1374,7 @@ LispObject Lclr_hash_0(LispObject nil, int nargs, ...)
 // to use. But the KEY issue here is that the hash function used to support
 // built-in hash tables is probably not going to be suitable.
 
-LispObject Lsxhash(LispObject nil, LispObject key)
+LispObject Lsxhash(LispObject env, LispObject key)
 {
 //
 // Does not descend vectors
@@ -1397,7 +1386,7 @@ LispObject Lsxhash(LispObject nil, LispObject key)
     return onevalue(fixnum_of_int(h));
 }
 
-LispObject Leqlhash(LispObject nil, LispObject key)
+LispObject Leqlhash(LispObject env, LispObject key)
 {
 //
 // Only handles atoms
@@ -1409,7 +1398,7 @@ LispObject Leqlhash(LispObject nil, LispObject key)
     return onevalue(fixnum_of_int(h));
 }
 
-LispObject Lequalhash(LispObject nil, LispObject key)
+LispObject Lequalhash(LispObject env, LispObject key)
 {
 //
 // Descends vectors as the Standard Lisp EQUAL function does.
@@ -1421,7 +1410,7 @@ LispObject Lequalhash(LispObject nil, LispObject key)
     return onevalue(fixnum_of_int(h));
 }
 
-LispObject Lhash_flavour(LispObject nil, LispObject tab)
+LispObject Lhash_flavour(LispObject env, LispObject tab)
 {   LispObject v,flavour = fixnum_of_int(-1);
 
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)

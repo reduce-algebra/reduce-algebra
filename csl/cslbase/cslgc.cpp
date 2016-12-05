@@ -96,7 +96,6 @@ static int32_t (*heap_map)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256];
 
 static int bitmap_mark_cons(LispObject p)
 {   int32_t i;
-    LispObject nil = C_nil;
     if (!consp(p))
     {   term_printf("\n%p is not a cons pointer\n", (void *)p);
         term_printf("Validation for %s at line %d of file %s (%d)\n",
@@ -141,7 +140,6 @@ static int32_t (*vecheap_map)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256];
 static int bitmap_mark_vec(LispObject p)
 {   int32_t i;
     const char *info = "unknown";
-    LispObject nil = C_nil;
 //
 // Check that the object is corectly tagged. Note that NIL must be
 // handled specially since although it is (sort of) a symbol it does not
@@ -230,7 +228,7 @@ static int bitmap_mark_vec(LispObject p)
 //
 
 static void validate(LispObject p, int line1)
-{   LispObject nil = C_nil;
+{
 // This code is activate when there is a suspected bug in the garbage
 // collector. A consequence is that it may be called when the heap is in
 // a corrupt state. The variable "info" here is set to give a small amount
@@ -321,7 +319,6 @@ static void validate(LispObject p, int line1)
 
 void validate_all(const char *why, int line, const char *file)
 {   LispObject *sp = NULL;
-    LispObject nil = C_nil;
     size_t i;
     validate_why = why;
     validate_line = line;
@@ -405,12 +402,12 @@ static intptr_t cons_cells, symbol_heads, strings, user_vectors,
        big_numbers, box_floats, bytestreams, other_mem,
        litvecs, getvecs;
 
-LispObject Lgc0(LispObject nil, int nargs, ...)
+LispObject Lgc0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "reclaim");
     return Lgc(nil, lisp_true);
 }
 
-LispObject Lgc(LispObject nil, LispObject a)
+LispObject Lgc(LispObject env, LispObject a)
 {
 //
 // If GC is called with a non-nil argument the garbage collection
@@ -421,7 +418,7 @@ LispObject Lgc(LispObject nil, LispObject a)
                    a != nil ? GC_USER_HARD : GC_USER_SOFT, 0);
 }
 
-LispObject Lverbos(LispObject nil, LispObject a)
+LispObject Lverbos(LispObject env, LispObject a)
 //
 // (verbos 0) or (verbos nil)       silent garbage collection
 // (verbos 1) or (verbos t)         standard GC messages
@@ -463,8 +460,7 @@ static void copy(LispObject *p)
 // and returns a copy to the pointer.  If scans the copied material to copy
 // all relevent sub-structures to the new semi-space.
 //
-{   LispObject nil = C_nil;
-    char *fr = (char *)fringe, *vfr = (char *)vfringe;
+{   char *fr = (char *)fringe, *vfr = (char *)vfringe;
     char *tr_fr = fr, *tr_vfr = vfr;
     void *p1;
 #define CONT           0
@@ -836,7 +832,7 @@ static int profile_cf(const void *a, const void *b)
 // and could be discarded.
 
 
-LispObject Lmapstore(LispObject nil, LispObject a)
+LispObject Lmapstore(LispObject env, LispObject a)
 //
 // Argument controls what happens:
 //    nil or 0      print statistics and reset to zero
@@ -863,7 +859,6 @@ LispObject Lmapstore(LispObject nil, LispObject a)
     }
     if ((what & 2) != 0)
     {   Lgc0(nil, 0); // Force GC at start to avoid one in the middle
-        nil = C_nil;
         if (exception_pending()) return nil;
         gcn = gc_number;
     }
@@ -949,11 +944,9 @@ LispObject Lmapstore(LispObject nil, LispObject a)
                                     w1 = list3((LispObject)(low + TAG_SYMBOL),
                                                fixnum_of_int(clen),
                                                make_lisp_integer64(n));
-                                    nil = C_nil;
                                     if (exception_pending() || gcn != gc_number)
                                         return nil;
                                     res = cons(w1, res);
-                                    nil = C_nil;
                                     if (exception_pending() || gcn != gc_number)
                                         return nil;
                                 }
@@ -994,7 +987,7 @@ LispObject Lmapstore(LispObject nil, LispObject a)
     return onevalue(res);
 }
 
-LispObject Lmapstore0(LispObject nil, int nargs, ...)
+LispObject Lmapstore0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "mapstore");
     return Lmapstore(nil, nil);
 }
@@ -1091,7 +1084,7 @@ static void lose_dead_hashtables(void)
 // tables that have not been marked or copied this garbage collection.
 //
 {   LispObject *p = &eq_hash_tables, q, r;
-    while ((q = *p) != C_nil)
+    while ((q = *p) != nil)
     {   Header h;
         r = qcar(q);
         h = vechdr(r);
@@ -1099,7 +1092,7 @@ static void lose_dead_hashtables(void)
         else p = &qcdr(q);
     }
     p = &equal_hash_tables;
-    while ((q = *p) != C_nil)
+    while ((q = *p) != nil)
     {   Header h;
         r = qcar(q);
         h = vechdr(r);
@@ -1146,7 +1139,7 @@ int async_interrupt(int type)
 
 #endif // HAVE_FWIN
 
-static void report_at_end(LispObject nil)
+static void report_at_end()
 {   int n = heap_pages_count + vheap_pages_count;
     int n1 = n + pages_count;
     double fn = (double)n*(CSL_PAGE_SIZE/(1024.0*1024.0));
@@ -1272,8 +1265,7 @@ static void cache_ambiguous()
 #endif // CONSERVATIVE
 
 LispObject use_gchook(LispObject p, LispObject arg)
-{   LispObject nil = C_nil;
-    LispObject g = gchook;
+{   LispObject g = gchook;
     if (symbolp(g) && g != unset_var)
     {   g = qvalue(g);
         if (symbolp(g) && g != unset_var && g != nil)
@@ -1299,7 +1291,7 @@ uint32_t stackhash[GCHASH];
 LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 {   size_t i;
     clock_t t0, t1, t2;
-    LispObject *sp, nil = C_nil;
+    LispObject *sp;
     intptr_t vheap_need = 0, native_need = 0;
 #ifdef DEBUG_GC
     term_printf("Start of a garbage collection %d\n", gc_number);
@@ -1538,7 +1530,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // to date.
 //
     ensure_screen();
-    nil = C_nil;
     if (exception_pending())
     {   stop_after_gc = 1;
         flip_exception();
@@ -1850,12 +1841,12 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 #endif // MEMORY_TRACE
     if (!reset_limit_registers(vheap_need, native_need, false))
     {   if (stack < stacklimit || stacklimit != stackbase)
-        {   report_at_end(nil);
+        {   report_at_end();
             term_printf("\n+++ No space left at all\n");
             my_exit(EXIT_FAILURE);    // totally drastic...
         }
     }
-    report_at_end(nil);
+    report_at_end();
 #ifdef DEBUG_VALIDATE
     validate_all("end of gc", __LINE__, __FILE__);
 #endif

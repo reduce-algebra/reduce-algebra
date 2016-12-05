@@ -264,7 +264,7 @@ LispObject error(int nargs, int code, ...)
 //
 {   va_list a;
     int i;
-    LispObject nil = C_nil, w1;
+    LispObject w1;
     LispObject *w = (LispObject *)&work_1;
     if (nargs > ARG_CUT_OFF) nargs = ARG_CUT_OFF;
     if (miscflags & HEADLINE_FLAG)
@@ -312,7 +312,7 @@ LispObject cerror(int nargs, int code1, int code2, ...)
 //
 // nargs indicated the number of EXTRA args after code1 & code2.
 //
-{   LispObject nil = C_nil, w1;
+{   LispObject w1;
     va_list a;
     int i;
     LispObject *w = (LispObject *)&work_1;
@@ -324,7 +324,6 @@ LispObject cerror(int nargs, int code1, int code2, ...)
         va_end(a);
         for (i=0; i<nargs; i++) push(*--w);
         stackcheck0(nargs-2);
-        nil = C_nil;
         for (i=0; i<nargs; i++)
         {   LispObject p;
             pop(p);
@@ -356,8 +355,7 @@ LispObject cerror(int nargs, int code1, int code2, ...)
 // This can be used when a resource expires...
 //
 LispObject resource_exceeded()
-{   LispObject nil = C_nil;
-    exit_reason = UNWIND_RESOURCE;
+{   exit_reason = UNWIND_RESOURCE;
     exit_value = exit_tag = nil;
     exit_count = 0;
     flip_exception();
@@ -368,7 +366,7 @@ LispObject interrupted(LispObject p)
 //
 // Could return onevalue(p) to proceed from the interrupt event...
 //
-{   LispObject nil = C_nil, w;
+{   LispObject w;
 //
 // If I have a windowed system I expect that the mechanism for
 // raising an exception will have had a menu that gave me a chance
@@ -413,7 +411,7 @@ LispObject interrupted(LispObject p)
             "\n+++ [%.2f+%.2f] Type C to continue, A to abort, X to exit\n",
             consolidated_time[0], gc_time);
 #endif
-        ensure_screen(); nil = C_nil;
+        ensure_screen();
         if (exception_pending()) return nil;
         push(prompt_thing);
         prompt_thing = nil;  // switch off the regular prompts
@@ -444,7 +442,7 @@ LispObject interrupted(LispObject p)
 #ifndef HAVE_FWIN
                     term_printf("C to continue, A to abort, X to exit: ");
 #endif
-                    ensure_screen(); nil = C_nil;
+                    ensure_screen();
                     if (exception_pending()) return nil;
                     continue;
                 default:                    // wait for A or C
@@ -479,7 +477,7 @@ LispObject interrupted(LispObject p)
 }
 
 LispObject aerror(const char *s)
-{   LispObject nil = C_nil, w;
+{   LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error bad args for %s\n", s);
     if ((w = qvalue(break_function)) != nil &&
@@ -498,7 +496,7 @@ LispObject aerror(const char *s)
 }
 
 LispObject aerror0(const char *s)
-{   LispObject nil = C_nil, w;
+{   LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error: %s\n", s);
     if ((w = qvalue(break_function)) != nil &&
@@ -523,7 +521,7 @@ LispObject aerror0(const char *s)
 }
 
 LispObject aerror1(const char *s, LispObject a)
-{   LispObject nil = C_nil, w;
+{   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -551,7 +549,7 @@ LispObject aerror1(const char *s, LispObject a)
 }
 
 LispObject aerror2(const char *s, LispObject a, LispObject b)
-{   LispObject nil = C_nil, w;
+{   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
         loop_print_error(a);
@@ -910,7 +908,6 @@ jmp_buf *global_jb;
 
 static void lisp_main(void)
 {
-    volatile LispObject nil;
     volatile int i;
 #if defined __linux__ && defined DEBUG
     struct itimerval tv;
@@ -948,11 +945,9 @@ static void lisp_main(void)
 // for a second try if I get a (cold-start) call.
 //
     {   LispObject * volatile save = stack;
-        nil = C_nil;
         errorset_msg = NULL;
         try
         {   START_TRY_BLOCK;
-            nil = C_nil;
             terminal_pushed = NOT_CHAR;
             if (supervisor != nil && !ignore_restart_fn)
             {   miscflags |= BACKTRACE_MSG_BITS;
@@ -961,7 +956,6 @@ static void lisp_main(void)
 //
                 if (exit_charvec != NULL)
                 {   LispObject a = read_from_vector(exit_charvec);
-                    nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
                         a = nil;
@@ -989,8 +983,7 @@ static void lisp_main(void)
             else read_eval_print(lisp_true);
         }
         catch (LispSignal e)
-        {   nil = C_nil;
-            if (errorset_msg != NULL)
+        {   if (errorset_msg != NULL)
             {   term_printf("\n%s detected\n", errorset_msg);
                 errorset_msg = NULL;
             }
@@ -1018,7 +1011,6 @@ static void lisp_main(void)
 #endif
 #endif
         }
-        nil = C_nil;
         if (exception_pending())
         {   flip_exception();
             if (exit_reason == UNWIND_RESTART)
@@ -1036,7 +1028,6 @@ static void lisp_main(void)
                     push2(codevec, litvec);
                     preserve(msg, len);
                     pop2(litvec, codevec);
-                    nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
                         return_code = EXIT_FAILURE;
@@ -1057,7 +1048,6 @@ static void lisp_main(void)
                     push2(litvec, codevec);
                     preserve(msg, len);
                     pop2(codevec, litvec);
-                    nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
                         return_code = EXIT_FAILURE;
@@ -1231,7 +1221,6 @@ static void lisp_main(void)
                             ignore_exception();
                         }
                         w = make_undefined_symbol(new_fn);
-                        nil = C_nil;
                         if (exception_pending()) ignore_exception();
                         else supervisor = w;
                     }
@@ -2771,7 +2760,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     {   char datestamp[32], fullname[LONGEST_LEGAL_FILENAME];
         size_t size;
         int i;
-        LispObject nil;
         memset(fullname, 0, sizeof(fullname));
 //
 // Imodulep expects input_libraries to be set up. So I will fudge the
@@ -2786,7 +2774,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #else
         nil = doubleword_align_up(nilsegment) + TAG_SYMBOL;
 #endif
-        C_nil = nil;
         pages_count = heap_pages_count = vheap_pages_count =
                       native_pages_count = 0;
         stacksegment = (LispObject *)my_malloc(CSL_PAGE_SIZE);
@@ -3067,14 +3054,12 @@ int cslfinish(character_writer *w)
 int execute_lisp_function(const char *fname,
                           character_reader *r,
                           character_writer *w)
-{   LispObject nil;
-    LispObject ff;
+{   LispObject ff;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
     ff = make_undefined_symbol(fname);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 1;  // Failed to make the symbol
@@ -3085,7 +3070,6 @@ int execute_lisp_function(const char *fname,
     ensure_screen();
     procedural_input = NULL;
     procedural_output = NULL;
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // Failure during evaluation
@@ -3232,28 +3216,24 @@ int PROC_set_callbacks(character_reader *r,
 }
 
 int PROC_load_package(const char *name)
-{   LispObject nil = C_nil;
-    LispObject w = nil, w1 = nil;
+{   LispObject w = nil, w1 = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
     w1 = make_undefined_symbol("load-package");
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 1;  // Failed to make the load-package
     }
     push(w1);
     w = make_undefined_symbol(name);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // Failed to make name
     }
     pop(w1);
     Lapply1(nil, w1, w);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 3;  // Failed to load the package
@@ -3262,14 +3242,12 @@ int PROC_load_package(const char *name)
 }
 
 int PROC_set_switch(const char *name, int val)
-{   LispObject nil = C_nil;
-    LispObject w = nil, w1 = nil;
+{   LispObject w = nil, w1 = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
     w1 = make_undefined_symbol("onoff");
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 1;  // Failed to make the onoff
@@ -3277,13 +3255,11 @@ int PROC_set_switch(const char *name, int val)
     push(w1);
     w = make_undefined_symbol(name);
     pop(w1);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // Failed to make name
     }
     Lapply2(nil, 3, w1, w, val == 0 ? nil : lisp_true);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 3;  // Failed to set the switch
@@ -3292,8 +3268,7 @@ int PROC_set_switch(const char *name, int val)
 }
 
 int PROC_gc_messages(int n)
-{   LispObject nil = C_nil;
-    Lverbos(nil, fixnum_of_int(n)); // can not fail
+{   Lverbos(nil, fixnum_of_int(n)); // can not fail
     return 0;
 }
 
@@ -3304,8 +3279,7 @@ int PROC_gc_messages(int n)
 //
 
 int PROC_clear_stack()
-{   LispObject nil = C_nil;
-    procstack = nil;
+{   procstack = nil;
     return 0;       // can never fail!
 }
 
@@ -3315,20 +3289,17 @@ int PROC_clear_stack()
 //
 
 int PROC_push_symbol(const char *name)
-{   LispObject nil = C_nil;
-    LispObject w = nil;
+{   LispObject w = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
     w = make_undefined_symbol(name);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 1;  // Failed to make the symbol
     }
     w = cons(w, procstack);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // Failed to push onto stack
@@ -3343,20 +3314,17 @@ int PROC_push_symbol(const char *name)
 //
 
 int PROC_push_string(const char *data)
-{   LispObject nil = C_nil;
-    LispObject w = nil;
+{   LispObject w = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
     w = make_string(data);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 1;  // Failed to make the string
     }
     w = cons(w, procstack);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // Failed to push onto stack
@@ -3377,20 +3345,17 @@ int PROC_push_string(const char *data)
 //
 
 int PROC_push_small_integer(int32_t n)
-{   LispObject nil = C_nil;
-    LispObject w = nil;
+{   LispObject w = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
     w = make_lisp_integer32(n);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 1;  // Failed to create number
     }
     w = cons(w, procstack);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // Failed to push onto stack
@@ -3400,8 +3365,7 @@ int PROC_push_small_integer(int32_t n)
 }
 
 int PROC_push_big_integer(const char *n)
-{   LispObject nil = C_nil;
-    LispObject w = nil;
+{   LispObject w = nil;
     int len = 0;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
@@ -3412,20 +3376,17 @@ int PROC_push_big_integer(const char *n)
     while (*n != 0)
     {   packbyte(*n++);
         len++;
-        nil = C_nil;
         if (exception_pending())
         {   flip_exception();
             return 1;  // boffo trouble
         }
     }
     w = intern(len, 0);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // conversion to number
     }
     w = cons(w, procstack);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 3;  // Failed to push onto stack
@@ -3435,21 +3396,18 @@ int PROC_push_big_integer(const char *n)
 }
 
 int PROC_push_floating(double n)
-{   LispObject nil = C_nil;
-    LispObject w = nil;
+{   LispObject w = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
 // Here I have to construct a Lisp (boxed) float
     w = make_boxfloat(n, TYPE_DOUBLE_FLOAT);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 1;  // Failed to create the float
     }
     w = cons(w, procstack);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // Failed to push onto stack
@@ -3469,8 +3427,7 @@ int PROC_push_floating(double n)
 //
 
 int PROC_make_function_call(const char *name, int n)
-{   LispObject nil = C_nil;
-    LispObject w = nil, w1 = nil;
+{   LispObject w = nil, w1 = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
@@ -3478,7 +3435,6 @@ int PROC_make_function_call(const char *name, int n)
     while (n > 0)
     {   if (procstack == nil) return 1; // Not enough args available
         w = cons(qcar(procstack), w);
-        nil = C_nil;
         if (exception_pending())
         {   flip_exception();
             return 2;  // Failed to push onto stack
@@ -3489,19 +3445,16 @@ int PROC_make_function_call(const char *name, int n)
     push(w);
     w1 = make_undefined_symbol(name);
     pop(w);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 3;  // Failed to create function name
     }
     w = cons(w1, w);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 4;  // Failed to cons on function name
     }
     w = cons(w, procstack);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 5;  // Failed to push onto stack
@@ -3515,8 +3468,7 @@ int PROC_make_function_call(const char *name, int n)
 //
 
 int PROC_save(int n)
-{   LispObject nil = C_nil;
-    if (n < 0 || n > 99) return 1; // index out of range
+{   if (n < 0 || n > 99) return 1; // index out of range
     if (procstack == nil) return 2; // Nothing available to save
     elt(procmem, n) = qcar(procstack);
     procstack = qcdr(procstack);
@@ -3528,8 +3480,7 @@ int PROC_save(int n)
 //
 
 int PROC_load(int n)
-{   LispObject nil = C_nil;
-    LispObject w = nil;
+{   LispObject w = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
@@ -3537,7 +3488,6 @@ int PROC_load(int n)
     if (n < 0 || n > 99) return 1; // index out of range
     w = elt(procmem, n);
     w = cons(w, procstack);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // Failed to push onto stack
@@ -3551,8 +3501,7 @@ int PROC_load(int n)
 //
 
 int PROC_dup()
-{   LispObject nil = C_nil;
-    LispObject w = nil;
+{   LispObject w = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
@@ -3560,7 +3509,6 @@ int PROC_dup()
     if (procstack == nil) return 1; // no item to duplicate
     w = qcar(procstack);
     w = cons(w, procstack);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // Failed to push onto stack
@@ -3570,8 +3518,7 @@ int PROC_dup()
 }
 
 int PROC_pop()
-{   LispObject nil = C_nil;
-    if (procstack == nil) return 1; // stack is empty
+{   if (procstack == nil) return 1; // stack is empty
     procstack = qcdr(procstack);
     return 0;
 }
@@ -3584,21 +3531,18 @@ int PROC_pop()
 //
 
 int PROC_simplify()
-{   LispObject nil = C_nil;
-    LispObject w = nil, w1 = nil;
+{   LispObject w = nil, w1 = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
     if (procstack == nil) return 1; // stack is empty
     w = make_undefined_symbol("simp");
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // Failed find "simp"
     }
     w = Lapply1(nil, w, qcar(procstack));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 3;  // Call to simp failed
@@ -3606,13 +3550,11 @@ int PROC_simplify()
     push(w);
     w1 = make_undefined_symbol("mk*sq");
     pop(w);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 4;  // Failed to find "mk!*sq"
     }
     w = Lapply1(nil, w1, w);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 5;  // Call to mk!*sq failed
@@ -3629,8 +3571,7 @@ int PROC_simplify()
 //
 
 static void PROC_standardise_gensyms(LispObject w)
-{   LispObject nil = C_nil;
-    if (consp(w))
+{   if (consp(w))
     {   push(qcdr(w));
         PROC_standardise_gensyms(qcar(w));
         pop(w);
@@ -3645,15 +3586,13 @@ static void PROC_standardise_gensyms(LispObject w)
 }
 
 int PROC_lisp_eval()
-{   LispObject nil = C_nil;
-    LispObject w = nil;
+{   LispObject w = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
     if (procstack == nil) return 1; // stack is empty
     w = Ceval(qcar(procstack), nil);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // Evaluation failed
@@ -3661,7 +3600,6 @@ int PROC_lisp_eval()
     push(w);
     PROC_standardise_gensyms(w);
     pop(w);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 3;  // gensym patchup failed
@@ -3671,10 +3609,9 @@ int PROC_lisp_eval()
 }
 
 static LispObject PROC_standardise_printed_form(LispObject w)
-{   LispObject nil = C_nil, w1;
-    if (consp(w))
+{   if (consp(w))
     {   push(qcdr(w));
-        w1 = PROC_standardise_printed_form(qcar(w));
+        LispObject w1 = PROC_standardise_printed_form(qcar(w));
         pop(w);
         errexit();
         push(w1);
@@ -3711,8 +3648,7 @@ static LispObject PROC_standardise_printed_form(LispObject w)
 //
 
 int PROC_make_printable()
-{   LispObject nil = C_nil;
-    LispObject w = nil, w1 = nil;
+{   LispObject w = nil, w1 = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
@@ -3722,13 +3658,11 @@ int PROC_make_printable()
 // I want to use "simp" again so that I can then use prepsq!
 //
     w = make_undefined_symbol("simp");
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 2;  // Failed find "simp"
     }
     w = Lapply1(nil, w, qcar(procstack));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 3;  // Call to simp failed
@@ -3736,13 +3670,11 @@ int PROC_make_printable()
     push(w);
     w1 = make_undefined_symbol("prepsq");
     pop(w);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 4;  // Failed to find "prepsq"
     }
     w = Lapply1(nil, w1, w);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 5;  // Call to prepsq failed
@@ -3753,7 +3685,6 @@ int PROC_make_printable()
 // strings. Both of these could be viewed as mildly obscure!
 //
     w = PROC_standardise_printed_form(w);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         return 6;  // standardise_printed_form failed
@@ -3763,8 +3694,7 @@ int PROC_make_printable()
 }
 
 PROC_handle PROC_get_value()
-{   LispObject nil = C_nil;
-    LispObject w;
+{   LispObject w;
     if (procstack == nil) w = fixnum_of_int(0);
     else
     {   w = qcar(procstack);
@@ -3774,9 +3704,8 @@ PROC_handle PROC_get_value()
 }
 
 PROC_handle PROC_get_raw_value()
-{   LispObject nil = C_nil;
-    LispObject w;
-    if (procstack == C_nil) w = nil;
+{   LispObject w;
+    if (procstack == nil) w = nil;
     else
     {   w = qcar(procstack);
         procstack = qcdr(procstack);
@@ -3797,7 +3726,7 @@ int PROC_atom(PROC_handle p)
 //
 
 int PROC_null(PROC_handle p)
-{   return ((LispObject)p) == C_nil;
+{   return ((LispObject)p) == nil;
 }
 
 //

@@ -239,10 +239,10 @@ typedef intptr_t LispObject;
 // means that TAG_SYMBOL must be even!
 //
 #define exception_pending() (((int)nil & 1) != 0)
-#define flip_exception()    (nil = C_nil = (nil ^ 1))
+#define flip_exception()    (nil = (nil ^ 1))
 
 #define ignore_exception() \
-   do { nil = C_nil; if (exception_pending()) flip_exception(); } while (0)
+   do { if (exception_pending()) flip_exception(); } while (0)
 
 #define is_cons(p)   ((((int)(p)) & TAG_BITS) == TAG_CONS)
 #define is_fixnum(p) ((((int)(p)) & XTAG_BITS) == TAG_FIXNUM)

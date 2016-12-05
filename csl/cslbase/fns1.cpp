@@ -52,8 +52,7 @@
 /*****************************************************************************/
 
 LispObject integerp(LispObject p)
-{   LispObject nil = C_nil;
-    int tag = ((int)p) & TAG_BITS;
+{   int tag = ((int)p) & TAG_BITS;
     if (tag == TAG_FIXNUM) return lisp_true;
     else if (tag == TAG_NUMBERS)
     {   Header h = *(Header *)((char *)p - TAG_NUMBERS);
@@ -98,8 +97,7 @@ LispObject cons_gc_test(LispObject p)
 }
 
 LispObject ncons(LispObject a)
-{   LispObject nil = C_nil;
-    LispObject r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
+{   LispObject r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
     qcar(r) = a;
     qcdr(r) = nil;
     fringe = r;
@@ -112,7 +110,6 @@ LispObject ncons(LispObject a)
 LispObject list2(LispObject a, LispObject b)
 {
 // Note that building two cons cells at once saves some overhead here
-    LispObject nil = C_nil;
     LispObject r = (LispObject)((char *)fringe - 2*sizeof(Cons_Cell));
     qcar(r) = a;
     qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
@@ -155,8 +152,7 @@ LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
 }
 
 LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
-{   LispObject nil = C_nil;
-    LispObject r = (LispObject)((char *)fringe - 4*sizeof(Cons_Cell));
+{   LispObject r = (LispObject)((char *)fringe - 4*sizeof(Cons_Cell));
     qcar(r) = a;
     qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
     qcar((char *)r+sizeof(Cons_Cell)) = b;
@@ -190,8 +186,7 @@ LispObject acons(LispObject a, LispObject b, LispObject c)
 }
 
 LispObject list3(LispObject a, LispObject b, LispObject c)
-{   LispObject nil = C_nil;
-    LispObject r = (LispObject)((char *)fringe - 3*sizeof(Cons_Cell));
+{   LispObject r = (LispObject)((char *)fringe - 3*sizeof(Cons_Cell));
     qcar(r) = a;
     qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
     qcar((char *)r+sizeof(Cons_Cell)) = b;
@@ -677,19 +672,19 @@ LispObject Lrplacd(LispObject,
     return onevalue(a);
 }
 
-LispObject Lsymbolp(LispObject nil, LispObject a)
+LispObject Lsymbolp(LispObject env, LispObject a)
 {   return onevalue(Lispify_predicate(symbolp(a)));
 }
 
-LispObject Latom(LispObject nil, LispObject a)
+LispObject Latom(LispObject env, LispObject a)
 {   return onevalue(Lispify_predicate(!consp(a)));
 }
 
-LispObject Lconsp(LispObject nil, LispObject a)
+LispObject Lconsp(LispObject env, LispObject a)
 {   return onevalue(Lispify_predicate(consp(a)));
 }
 
-LispObject Lconstantp(LispObject nil, LispObject a)
+LispObject Lconstantp(LispObject env, LispObject a)
 //
 // This version is as required for Standard Lisp - it is inadequate
 // for Common Lisp.
@@ -722,13 +717,13 @@ LispObject Lidentity(LispObject, LispObject a)
 
 #ifdef COMMON
 
-LispObject Llistp(LispObject nil, LispObject a)
+LispObject Llistp(LispObject env, LispObject a)
 {   return onevalue(Lispify_predicate(is_cons(a)));
 }
 
 #endif
 
-LispObject Lnumberp(LispObject nil, LispObject a)
+LispObject Lnumberp(LispObject env, LispObject a)
 {   return onevalue(Lispify_predicate(is_number(a)));
 }
 
@@ -736,7 +731,7 @@ LispObject Lintegerp(LispObject, LispObject a)
 {   return onevalue(integerp(a));
 }
 
-LispObject Leq_safe(LispObject nil, LispObject a)
+LispObject Leq_safe(LispObject env, LispObject a)
 {
 //
 // True if you can safely use EQ tests to check equality. Thus true for
@@ -749,7 +744,7 @@ LispObject Leq_safe(LispObject nil, LispObject a)
                     is_odds(a) ? lisp_true : nil);
 }
 
-LispObject Lfixp(LispObject nil, LispObject a)
+LispObject Lfixp(LispObject env, LispObject a)
 {
 #ifdef COMMON
     return onevalue(is_fixnum(a) ? lisp_true : nil);
@@ -768,18 +763,18 @@ LispObject Lfixp(LispObject nil, LispObject a)
 #endif
 }
 
-LispObject Lfloatp(LispObject nil, LispObject p)
+LispObject Lfloatp(LispObject env, LispObject p)
 {   if (is_bfloat(p)) return onevalue(lisp_true);
     else if (is_sfloat(p)) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
-static LispObject Lshort_floatp(LispObject nil, LispObject p)
+static LispObject Lshort_floatp(LispObject env, LispObject p)
 {   if (is_sfloat(p)) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
-static LispObject Lsingle_floatp(LispObject nil, LispObject p)
+static LispObject Lsingle_floatp(LispObject env, LispObject p)
 {   int tag = TAG_BITS & (int)p;
     if (tag == TAG_BOXFLOAT &&
         type_of_header(flthdr(p)) == TYPE_SINGLE_FLOAT)
@@ -787,7 +782,7 @@ static LispObject Lsingle_floatp(LispObject nil, LispObject p)
     else return onevalue(nil);
 }
 
-static LispObject Ldouble_floatp(LispObject nil, LispObject p)
+static LispObject Ldouble_floatp(LispObject env, LispObject p)
 {   int tag = TAG_BITS & (int)p;
     if (tag == TAG_BOXFLOAT &&
         type_of_header(flthdr(p)) == TYPE_DOUBLE_FLOAT)
@@ -795,7 +790,7 @@ static LispObject Ldouble_floatp(LispObject nil, LispObject p)
     else return onevalue(nil);
 }
 
-static LispObject Llong_floatp(LispObject nil, LispObject p)
+static LispObject Llong_floatp(LispObject env, LispObject p)
 {   int tag = TAG_BITS & (int)p;
     if (tag == TAG_BOXFLOAT &&
         type_of_header(flthdr(p)) == TYPE_LONG_FLOAT)
@@ -803,7 +798,7 @@ static LispObject Llong_floatp(LispObject nil, LispObject p)
     else return onevalue(nil);
 }
 
-LispObject Lrationalp(LispObject nil, LispObject a)
+LispObject Lrationalp(LispObject env, LispObject a)
 {   return onevalue(
                Lispify_predicate(
                    is_fixnum(a) ||
@@ -811,7 +806,7 @@ LispObject Lrationalp(LispObject nil, LispObject a)
                     (is_bignum(a) || is_ratio(a)))));
 }
 
-LispObject Lcomplexp(LispObject nil, LispObject a)
+LispObject Lcomplexp(LispObject env, LispObject a)
 {   return onevalue(Lispify_predicate(is_numbers(a) && is_complex(a)));
 }
 
@@ -824,7 +819,7 @@ bool complex_stringp(LispObject a)
 // an adjustment.
 //
 {   Header h;
-    LispObject w, nil = C_nil;
+    LispObject w;
     if (!is_vector(a)) return false;
     h = vechdr(a);
     if (type_of_header(h) != TYPE_ARRAY) return false;
@@ -840,13 +835,13 @@ bool complex_stringp(LispObject a)
 
 #endif
 
-LispObject Lwarn_about_protected_symbols(LispObject nil, LispObject a)
+LispObject Lwarn_about_protected_symbols(LispObject env, LispObject a)
 {   LispObject retval = Lispify_predicate(warn_about_protected_symbols);
     warn_about_protected_symbols = (a != nil);
     return onevalue(retval);
 }
 
-LispObject Lprotect_symbols(LispObject nil, LispObject a)
+LispObject Lprotect_symbols(LispObject env, LispObject a)
 {   LispObject retval = Lispify_predicate(symbol_protect_flag);
     symbol_protect_flag = (a != nil);
     return onevalue(retval);
@@ -858,7 +853,7 @@ bool stringp(LispObject a)
 //
 {   Header h;
 #ifdef COMMON
-    LispObject w, nil = C_nil;
+    LispObject w;
 #endif
     if (!is_vector(a)) return false;
     h = vechdr(a);
@@ -877,7 +872,7 @@ bool stringp(LispObject a)
 #endif
 }
 
-LispObject Lstringp(LispObject nil, LispObject a)
+LispObject Lstringp(LispObject env, LispObject a)
 //
 // simple-string-p
 //
@@ -887,13 +882,13 @@ LispObject Lstringp(LispObject nil, LispObject a)
 
 #ifdef COMMON
 
-static LispObject Lc_stringp(LispObject nil, LispObject a)
+static LispObject Lc_stringp(LispObject env, LispObject a)
 {   return onevalue(Lispify_predicate(stringp(a)));
 }
 
 #endif
 
-LispObject Lhash_table_p(LispObject nil, LispObject a)
+LispObject Lhash_table_p(LispObject env, LispObject a)
 //
 // hash-table-p
 //
@@ -902,7 +897,7 @@ LispObject Lhash_table_p(LispObject nil, LispObject a)
     else return onevalue(lisp_true);
 }
 
-static LispObject Lsimple_bit_vector_p(LispObject nil,
+static LispObject Lsimple_bit_vector_p(LispObject env,
                                        LispObject a)
 //
 // simple-bit-vector-p
@@ -911,7 +906,7 @@ static LispObject Lsimple_bit_vector_p(LispObject nil,
     else return onevalue(Lispify_predicate(is_bitvec_header(vechdr(a))));
 }
 
-LispObject Lsimple_vectorp(LispObject nil, LispObject a)
+LispObject Lsimple_vectorp(LispObject env, LispObject a)
 //
 // simple-vector-p
 //
@@ -920,12 +915,12 @@ LispObject Lsimple_vectorp(LispObject nil, LispObject a)
                                  type_of_header(vechdr(a))==TYPE_SIMPLE_VEC));
 }
 
-LispObject Lbpsp(LispObject nil, LispObject a)
+LispObject Lbpsp(LispObject env, LispObject a)
 {   if (!(is_bps(a))) return onevalue(nil);
     else return onevalue(lisp_true);
 }
 
-LispObject Lthreevectorp(LispObject nil, LispObject a)
+LispObject Lthreevectorp(LispObject env, LispObject a)
 //
 // This is useful for REDUCE - it checks if something is a vector
 // of size 3!
@@ -942,7 +937,7 @@ LispObject Lthreevectorp(LispObject nil, LispObject a)
 
 #ifdef COMMON
 
-static LispObject Larrayp(LispObject nil, LispObject a)
+static LispObject Larrayp(LispObject env, LispObject a)
 {   Header h;
     if (!(is_vector(a))) return onevalue(nil);
     h = vechdr(a);
@@ -958,13 +953,13 @@ static LispObject Larrayp(LispObject nil, LispObject a)
     else return onevalue(nil);
 }
 
-static LispObject Lcomplex_arrayp(LispObject nil, LispObject a)
+static LispObject Lcomplex_arrayp(LispObject env, LispObject a)
 {   if (!(is_vector(a))) return onevalue(nil);
     else return onevalue(Lispify_predicate(
                                  type_of_header(vechdr(a))==TYPE_ARRAY));
 }
 
-static LispObject Lconvert_to_array(LispObject nil, LispObject a)
+static LispObject Lconvert_to_array(LispObject env, LispObject a)
 {   if (!(is_vector(a))) return onevalue(nil);
     vechdr(a) = TYPE_ARRAY + (vechdr(a) & ~header_mask);
     return onevalue(a);
@@ -972,7 +967,7 @@ static LispObject Lconvert_to_array(LispObject nil, LispObject a)
 
 #endif
 
-static LispObject Lstructp(LispObject nil, LispObject a)
+static LispObject Lstructp(LispObject env, LispObject a)
 //
 // structp
 //
@@ -981,7 +976,7 @@ static LispObject Lstructp(LispObject nil, LispObject a)
                                  type_of_header(vechdr(a))==TYPE_STRUCTURE));
 }
 
-static LispObject Lconvert_to_struct(LispObject nil, LispObject a)
+static LispObject Lconvert_to_struct(LispObject env, LispObject a)
 {   if (!(is_vector(a))) return onevalue(nil);
     vechdr(a) = TYPE_STRUCTURE + (vechdr(a) & ~header_mask);
     return onevalue(a);
@@ -1011,7 +1006,7 @@ LispObject Lxcons(LispObject, LispObject a, LispObject b)
     else return onevalue((LispObject)((char *)r + TAG_CONS));
 }
 
-LispObject Lncons(LispObject nil, LispObject a)
+LispObject Lncons(LispObject env, LispObject a)
 {   LispObject r;
     r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
     qcar(r) = a;
@@ -1023,19 +1018,19 @@ LispObject Lncons(LispObject nil, LispObject a)
     else return onevalue((LispObject)((char *)r + TAG_CONS));
 }
 
-LispObject Llist2(LispObject nil, LispObject a, LispObject b)
+LispObject Llist2(LispObject env, LispObject a, LispObject b)
 {   a = list2(a, b);
     errexit();
     return onevalue(a);
 }
 
-LispObject Lmkquote(LispObject nil, LispObject a)
+LispObject Lmkquote(LispObject env, LispObject a)
 {   a = list2(quote_symbol, a);
     errexit();
     return onevalue(a);
 }
 
-LispObject Llist2star(LispObject nil, int nargs, ...)
+LispObject Llist2star(LispObject env, int nargs, ...)
 {   va_list aa;
     LispObject a, b, c;
     argcheck(nargs, 3, "list2*");
@@ -1049,7 +1044,7 @@ LispObject Llist2star(LispObject nil, int nargs, ...)
     return onevalue(a);
 }
 
-LispObject Lacons(LispObject nil, int nargs, ...)
+LispObject Lacons(LispObject env, int nargs, ...)
 {   va_list aa;
     LispObject a, b, c;
     argcheck(nargs, 3, "acons");
@@ -1063,7 +1058,7 @@ LispObject Lacons(LispObject nil, int nargs, ...)
     return onevalue(a);
 }
 
-LispObject Llist3(LispObject nil, int nargs, ...)
+LispObject Llist3(LispObject env, int nargs, ...)
 {   va_list aa;
     LispObject a, b, c;
     argcheck(nargs, 3, "list3");
@@ -1077,7 +1072,7 @@ LispObject Llist3(LispObject nil, int nargs, ...)
     return onevalue(a);
 }
 
-LispObject Llist3star(LispObject nil, int nargs, ...)
+LispObject Llist3star(LispObject env, int nargs, ...)
 {   va_list aa;
     LispObject a, b, c, d;
     argcheck(nargs, 4, "list3*");
@@ -1092,7 +1087,7 @@ LispObject Llist3star(LispObject nil, int nargs, ...)
     return onevalue(a);
 }
 
-LispObject Llist4(LispObject nil, int nargs, ...)
+LispObject Llist4(LispObject env, int nargs, ...)
 {   va_list aa;
     LispObject a, b, c, d;
     argcheck(nargs, 4, "list4");
@@ -1115,7 +1110,7 @@ LispObject Llist4(LispObject nil, int nargs, ...)
 // rather than as functions, guessing that that will be more efficient.
 //
 
-LispObject Llist(LispObject nil, int nargs, ...)
+LispObject Llist(LispObject env, int nargs, ...)
 {   LispObject r = nil, w, w1;
     va_list a;
     va_start(a, nargs);
@@ -1135,7 +1130,7 @@ LispObject Llist(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-static LispObject Lliststar(LispObject nil, int nargs, ...)
+static LispObject Lliststar(LispObject env, int nargs, ...)
 {   LispObject r, w, w1;
     va_list a;
     if (nargs == 0) return onevalue(nil);
@@ -1188,7 +1183,7 @@ static LispObject Lfill_vector(LispObject, int nargs, ...)
 
 #endif
 
-LispObject Lpair(LispObject nil, LispObject a, LispObject b)
+LispObject Lpair(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil;
     while (consp(a) && consp(b))
     {   push2(a, b);
@@ -1214,9 +1209,6 @@ static size_t membercount(LispObject a, LispObject b)
 // Counts how many times a is a member of the list b
 //
 {   size_t r = 0;
-#ifdef COMMON
-    LispObject nil = C_nil;
-#endif
     if (is_symbol(a) || is_fixnum(a))
     {   while (consp(b))
         {   if (a == qcar(b)) r++;
@@ -1239,7 +1231,7 @@ static size_t membercount(LispObject a, LispObject b)
 // output if and only if the items involved are duplicated in both
 // input lists.
 //
-LispObject Lintersect(LispObject nil, LispObject a, LispObject b)
+LispObject Lintersect(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil, w;
     push(b);
     while (consp(a))
@@ -1286,7 +1278,7 @@ LispObject Lintersect(LispObject nil, LispObject a, LispObject b)
 // then I can form the intersection in deterministic linear time using a
 // tag bit in symbol headers.
 
-LispObject Lintersect_symlist(LispObject nil, LispObject a, LispObject b)
+LispObject Lintersect_symlist(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil, w;
 // First tag all the symbols in the list b. Any items that are not
 // symbols just get ignored.
@@ -1303,7 +1295,6 @@ LispObject Lintersect_symlist(LispObject nil, LispObject a, LispObject b)
         {   push(a);
             r = cons(x, r);
             pop(a);
-            nil = C_nil;
             if (exception_pending()) break;
         }
         a = qcdr(a);
@@ -1334,7 +1325,7 @@ LispObject Lintersect_symlist(LispObject nil, LispObject a, LispObject b)
 // added in reversed order.  Duplicates in B remain there, and but
 // duplicates in A are dropped.
 //
-LispObject Lunion(LispObject nil, LispObject a, LispObject b)
+LispObject Lunion(LispObject env, LispObject a, LispObject b)
 {   while (consp(a))
     {   LispObject c;
         push2(a, b);
@@ -1354,7 +1345,7 @@ LispObject Lunion(LispObject nil, LispObject a, LispObject b)
 // union-symlist expects both arguments to be lists of symbols, and on that
 // basis can run in linear time.
 
-LispObject Lunion_symlist(LispObject nil, LispObject a, LispObject b)
+LispObject Lunion_symlist(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil, w;
 // First tag all the symbols in the list b. Any items that are not
 // symbols just ignored.
@@ -1371,7 +1362,6 @@ LispObject Lunion_symlist(LispObject nil, LispObject a, LispObject b)
         {   push(a);
             r = cons(x, r);
             pop(a);
-            nil = C_nil;
             if (exception_pending()) break;
         }
         a = qcdr(a);
@@ -1398,7 +1388,7 @@ LispObject Lunion_symlist(LispObject nil, LispObject a, LispObject b)
 }
 
 
-LispObject Lenable_errorset(LispObject nil, LispObject a, LispObject b)
+LispObject Lenable_errorset(LispObject env, LispObject a, LispObject b)
 {   LispObject r = cons(fixnum_of_int(errorset_min),
                         fixnum_of_int(errorset_max));
     errexit();
@@ -1436,7 +1426,7 @@ LispObject Lenable_errorset(LispObject nil, LispObject a, LispObject b)
     return r;
 }
 
-LispObject Lenable_backtrace(LispObject nil, LispObject a)
+LispObject Lenable_backtrace(LispObject env, LispObject a)
 {
 //
 //    (enable-backtrace nil)    errors silent unless ALWAYS_NOISY set
@@ -1465,7 +1455,7 @@ LispObject Lenable_backtrace(LispObject nil, LispObject a)
 
 #ifdef NAG
 
-LispObject Lunwind(LispObject nil, int nargs, ...)
+LispObject Lunwind(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "unwind");
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
@@ -1485,7 +1475,7 @@ LispObject Lunwind(LispObject nil, int nargs, ...)
 // the system will unwind in the usual manner.
 //
 
-LispObject Lerror(LispObject nil, int nargs, ...)
+LispObject Lerror(LispObject env, int nargs, ...)
 {   va_list a;
     LispObject w;
 #ifdef COMMON
@@ -1504,7 +1494,6 @@ LispObject Lerror(LispObject nil, int nargs, ...)
     {   pop2(w, w1);
         nargs -= 2;
         w = list2star(w1, w, r);
-        nil = C_nil;
         if (exception_pending()) flip_exception();
         else r = w;
     }
@@ -1512,7 +1501,6 @@ LispObject Lerror(LispObject nil, int nargs, ...)
     {   pop(w);
         nargs--;
         w = cons(w, r);
-        nil = C_nil;
         if (exception_pending()) flip_exception();
         else r = w;
     }
@@ -1568,15 +1556,15 @@ LispObject Lerror(LispObject nil, int nargs, ...)
     return nil;
 }
 
-LispObject Lerror1(LispObject nil, LispObject a1)
+LispObject Lerror1(LispObject env, LispObject a1)
 {   return Lerror(nil, 1, a1);
 }
 
-LispObject Lerror2(LispObject nil, LispObject a1, LispObject a2)
+LispObject Lerror2(LispObject env, LispObject a1, LispObject a2)
 {   return Lerror(nil, 2, a1, a2);
 }
 
-LispObject Lerror0(LispObject nil, int nargs, ...)
+LispObject Lerror0(LispObject env, int nargs, ...)
 {
 //
 // Silently provoked error - unwind to surrounding errorset level. Note that
@@ -1617,32 +1605,32 @@ LispObject Lmake_global(LispObject, LispObject a)
     return onevalue(a);
 }
 
-LispObject Lunmake_special(LispObject nil, LispObject a)
+LispObject Lunmake_special(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
     qheader(a) &= ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR);
     return onevalue(a);
 }
 
-LispObject Lunmake_global(LispObject nil, LispObject a)
+LispObject Lunmake_global(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
     qheader(a) &= ~(SYM_SPECIAL_VAR | SYM_GLOBAL_VAR);
     return onevalue(a);
 }
 
-LispObject Lsymbol_specialp(LispObject nil, LispObject a)
+LispObject Lsymbol_specialp(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
     else if ((qheader(a) & (SYM_SPECIAL_VAR | SYM_GLOBAL_VAR)) ==
              SYM_SPECIAL_VAR) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
-LispObject Lsymbol_globalp(LispObject nil, LispObject a)
+LispObject Lsymbol_globalp(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
     else if ((qheader(a) & SYM_GLOBAL_VAR) != 0) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
-LispObject Lboundp(LispObject nil, LispObject a)
+LispObject Lboundp(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
 #if !defined COMMON && 0
 //
@@ -1670,19 +1658,19 @@ LispObject Lsymbol_value(LispObject, LispObject a)
     else return onevalue(qvalue(a));
 }
 
-LispObject Lset(LispObject nil, LispObject a, LispObject b)
+LispObject Lset(LispObject env, LispObject a, LispObject b)
 {   if (!symbolp(a) || a == nil || a == lisp_true) return aerror("set");
     qvalue(a) = b;
     return onevalue(b);
 }
 
-LispObject Lmakeunbound(LispObject nil, LispObject a)
+LispObject Lmakeunbound(LispObject env, LispObject a)
 {   if (!symbolp(a) || a == nil || a == lisp_true) return aerror("makeunbound");
     qvalue(a) = unset_var;
     return onevalue(a);
 }
 
-LispObject Lsymbol_function(LispObject nil, LispObject a)
+LispObject Lsymbol_function(LispObject env, LispObject a)
 {   one_args *f1;
     two_args *f2;
     n_args *fn;
@@ -1792,13 +1780,13 @@ LispObject Lsymbol_function(LispObject nil, LispObject a)
     }
 }
 
-LispObject Lspecial_form_p(LispObject nil, LispObject a)
+LispObject Lspecial_form_p(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
     else if ((qheader(a) & SYM_SPECIAL_FORM) != 0) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
-LispObject Lcodep(LispObject nil, LispObject a)
+LispObject Lcodep(LispObject env, LispObject a)
 //
 // This responds TRUE for the special pseudo-symbols that are used to
 // carry compiled code objects.  It returns NIL on the symbols that
@@ -1827,7 +1815,6 @@ LispObject getvector(int tag, int type, size_t size)
 // 32-bit or 64-bit representation. However it would be hard to unwind
 // that now!]
 //
-    LispObject nil = C_nil;
 #ifdef DEBUG_VALIDATE
 //
 // If I do a full validation every time I allocate a vector that REALLY
@@ -1934,7 +1921,7 @@ LispObject getvector(int tag, int type, size_t size)
 }
 
 LispObject getvector_init(size_t n, LispObject k)
-{   LispObject p, nil;
+{   LispObject p;
     push(k);
     p = getvector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(k);
@@ -1954,7 +1941,6 @@ LispObject Lstop(LispObject, LispObject code)
 // I ignore "env" and set up nil for myself here to make it easier to call
 // this function from random places in my interface code...
 //
-    LispObject nil = C_nil;
     if (!is_fixnum(code)) return aerror("stop");
     exit_value = code;
     exit_tag = fixnum_of_int(0);    // Flag to say "stop"
@@ -2001,7 +1987,7 @@ double pop_clock(void)
     return delta + *clock_stack--;
 }
 
-LispObject Ltime(LispObject nil, int nargs, ...)
+LispObject Ltime(LispObject env, int nargs, ...)
 {   LispObject r;
     if (clock_stack == &consolidated_time[0])
     {   clock_t t0 = read_clock();
@@ -2015,7 +2001,7 @@ LispObject Ltime(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-LispObject Lgctime(LispObject nil, int nargs, ...)
+LispObject Lgctime(LispObject env, int nargs, ...)
 {   LispObject r;
     argcheck(nargs, 0, "gctime");
     r = make_lisp_unsigned64((uint64_t)(1000.0 * gc_time));
@@ -2023,7 +2009,7 @@ LispObject Lgctime(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-LispObject Ldecoded_time(LispObject nil, int nargs, ...)
+LispObject Ldecoded_time(LispObject env, int nargs, ...)
 {   time_t t0 = time(NULL);
 //
 //        tm_sec      -- seconds 0..59
@@ -2068,7 +2054,7 @@ LispObject Ldecoded_time(LispObject nil, int nargs, ...)
 // argument will suffice).
 //
 
-LispObject Ldate(LispObject nil, int nargs, ...)
+LispObject Ldate(LispObject env, int nargs, ...)
 {   LispObject w;
     time_t t = time(NULL);
     char today[32];
@@ -2092,7 +2078,7 @@ LispObject Ldate(LispObject nil, int nargs, ...)
     return onevalue(w);
 }
 
-LispObject Ldate1(LispObject nil, LispObject a1)
+LispObject Ldate1(LispObject env, LispObject a1)
 {   LispObject w;
     time_t t = time(NULL);
     char today[32];
@@ -2103,7 +2089,7 @@ LispObject Ldate1(LispObject nil, LispObject a1)
     return onevalue(w);
 }
 
-LispObject Ldate_and_time(LispObject nil, int nargs, ...)
+LispObject Ldate_and_time(LispObject env, int nargs, ...)
 {   LispObject w;
     time_t t = time(NULL);
     char today[32];
@@ -2115,7 +2101,7 @@ LispObject Ldate_and_time(LispObject nil, int nargs, ...)
     return onevalue(w);
 }
 
-LispObject Ldate_and_time1(LispObject nil, LispObject a1)
+LispObject Ldate_and_time1(LispObject env, LispObject a1)
 {   LispObject w;
     time_t t = time(NULL);
     char today[32], today1[32];
@@ -2137,7 +2123,7 @@ LispObject Ldate_and_time1(LispObject nil, LispObject a1)
     return onevalue(w);
 }
 
-LispObject Ldatestamp(LispObject nil, int nargs, ...)
+LispObject Ldatestamp(LispObject env, int nargs, ...)
 //
 // Returns date-stamp integer, which on many systems will be the
 // number of seconds between 1970.0.0 and now, but which could be
@@ -2152,7 +2138,7 @@ LispObject Ldatestamp(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-LispObject Ltimeofday(LispObject nil, int nargs, ...)
+LispObject Ltimeofday(LispObject env, int nargs, ...)
 //
 // This is like datestamp, in that it returns information about the
 // current real time. However it returns a pair of two values, the
@@ -2215,7 +2201,7 @@ static int getmon(char *s)
     return r;
 }
 
-static LispObject Ldatelessp(LispObject nil, LispObject a, LispObject b)
+static LispObject Ldatelessp(LispObject env, LispObject a, LispObject b)
 //
 // This is maybe a bit of an abomination!  The functions (date) and
 // (filedate "filename") [and also (modulep 'modulename)] return times
@@ -2251,7 +2237,7 @@ static LispObject Ldatelessp(LispObject nil, LispObject a, LispObject b)
     return onevalue(Lispify_predicate(res));
 }
 
-LispObject Lrepresentation1(LispObject nil, LispObject a)
+LispObject Lrepresentation1(LispObject env, LispObject a)
 //
 // Intended for debugging, and use with indirect (q.v.)
 //
@@ -2260,7 +2246,7 @@ LispObject Lrepresentation1(LispObject nil, LispObject a)
     return onevalue(a);
 }
 
-LispObject Lrepresentation2(LispObject nil, LispObject a, LispObject b)
+LispObject Lrepresentation2(LispObject env, LispObject a, LispObject b)
 //
 // Intended for debugging, and use with indirect (q.v.).  arg2, if
 // present and non-nil makes this more verbose. If arg2 is numeric it
@@ -2319,7 +2305,7 @@ LispObject Lindirect(LispObject, LispObject a)
 // closed when the system exits.
 //
 
-LispObject Lopen_foreign_library(LispObject nil, LispObject name)
+LispObject Lopen_foreign_library(LispObject env, LispObject name)
 {
 #ifdef WIN32
     HANDLE a;
@@ -2410,7 +2396,7 @@ LispObject Lopen_foreign_library(LispObject nil, LispObject name)
 // for a function called "fname". If one can not be found return nil.
 //
 
-LispObject Lfind_foreign_function(LispObject nil, LispObject name,
+LispObject Lfind_foreign_function(LispObject env, LispObject name,
                                   LispObject lib)
 {   LispObject r;
     void *b;
@@ -2462,7 +2448,7 @@ LispObject Lfind_foreign_function(LispObject nil, LispObject name,
 // any arguments and not expecting any result.
 //
 
-LispObject Lcallf1(LispObject nil, LispObject entry)
+LispObject Lcallf1(LispObject env, LispObject entry)
 {   void *f;
     if (Lencapsulatedp(nil, entry) == nil)
         return aerror("call-foreign-function");
@@ -2549,8 +2535,7 @@ int name_matches(LispObject a, const char *s)
 // here a LOT nicer!
 
 LispObject callforeign(void *f, int returntype, int nargs, int signature)
-{   LispObject nil = C_nil;
-    int rt = (returntype == String) ?
+{   int rt = (returntype == String) ?
              (sizeof(char *)==4 ? Int32 : Int64) :
              returntype;
     switch (rt)
@@ -3390,7 +3375,7 @@ int dumparg(int i, LispObject type, LispObject value)
     return typecode << (2*i);
 }
 
-LispObject Lcallfn(LispObject nil, int nargs, ...)
+LispObject Lcallfn(LispObject env, int nargs, ...)
 {   int i;
     LispObject w;
     void *f;
@@ -3457,7 +3442,7 @@ LispObject Lcallfn(LispObject nil, int nargs, ...)
     return onevalue(w);
 }
 
-LispObject Lcallf2(LispObject nil, LispObject entry, LispObject arg)
+LispObject Lcallf2(LispObject env, LispObject entry, LispObject arg)
 {   return Lcallfn(nil, 2, entry, arg);;
 }
 
@@ -3466,7 +3451,7 @@ LispObject Lcallf2(LispObject nil, LispObject entry, LispObject arg)
 // they can be stored and used...
 //
 
-static LispObject Lget_callback(LispObject nil, LispObject a)
+static LispObject Lget_callback(LispObject env, LispObject a)
 {   void *r = NULL;
     if (!is_fixnum(a)) return aerror("get_callback needs an integer arg");
     switch (int_of_fixnum(a))

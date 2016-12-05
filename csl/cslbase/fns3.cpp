@@ -49,7 +49,7 @@
 // same - it is just a different way of talking about them.
 //
 
-LispObject Lmkvect(LispObject nil, LispObject n)
+LispObject Lmkvect(LispObject env, LispObject n)
 {   int32_t n1;
     if (!is_fixnum(n)) return aerror1("mkvect", n);
     n1 = int_of_fixnum(n)*CELL;
@@ -63,7 +63,7 @@ LispObject Lmkvect(LispObject nil, LispObject n)
 }
 
 #ifdef COMMON
-LispObject Lmksimplevec(LispObject nil, LispObject n)
+LispObject Lmksimplevec(LispObject env, LispObject n)
 {   int32_t n1;
     if (!is_fixnum(n)) return aerror1("make-simple-vector", n);
     n1 = int_of_fixnum(n)*CELL;
@@ -76,7 +76,7 @@ LispObject Lmksimplevec(LispObject nil, LispObject n)
 // This one creates a "structure" tagged vector.
 //
 
-LispObject Lmkevect(LispObject nil, LispObject n)
+LispObject Lmkevect(LispObject env, LispObject n)
 {   int32_t n1;
     if (!is_fixnum(n)) return aerror1("mkevect", n);
     n1 = int_of_fixnum(n)*CELL;
@@ -98,7 +98,7 @@ LispObject Lmkevect(LispObject nil, LispObject n)
 // fairly unsafe). It is intended for internal or experimental use only.
 //
 
-LispObject Lmkxvect(LispObject nil, LispObject n)
+LispObject Lmkxvect(LispObject env, LispObject n)
 {   size_t n1;
     if (!is_fixnum(n)) return aerror1("mkxvect", n);
     n1 = int_of_fixnum(n)*CELL;
@@ -118,7 +118,6 @@ LispObject encapsulate_pointer(void *data)
 // Creates a boxed up representation of a pointer.
 //
 {   LispObject w = getvector(TAG_VECTOR, TYPE_ENCAPSULATE, 2*CELL);
-    LispObject nil;
     errexit();
     *(void **)&elt(w, 0) = data;
     return w;
@@ -131,7 +130,7 @@ void *extract_pointer(LispObject a)
     else return *(void **)&elt(a, 0);
 }
 
-LispObject Lencapsulatedp(LispObject nil, LispObject a)
+LispObject Lencapsulatedp(LispObject env, LispObject a)
 {   if (is_vector(a) && type_of_header(vechdr(a)) == TYPE_ENCAPSULATE)
         return onevalue(lisp_true);
     else return nil;
@@ -145,7 +144,7 @@ LispObject Lencapsulatedp(LispObject nil, LispObject a)
 // library and loading it into Maple...
 //
 
-LispObject Lmaple_atomic_value(LispObject nil, LispObject a)
+LispObject Lmaple_atomic_value(LispObject env, LispObject a)
 {   LispObject v;
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_MAPLEREF)
@@ -169,7 +168,7 @@ LispObject Lmaple_tag(LispObject, LispObject a)
         type_of_header(vechdr(a)) != TYPE_MAPLEREF)
         return aerror1("not an encapsulated pointer", a);
     v = (LispObject)extract_pointer(a);
-    if ((v & 1) != 0) return onevalue(C_nil); // an atomic value
+    if ((v & 1) != 0) return onevalue(nil); // an atomic value
     v1 = (LispObject *)v;
     v = *v1;    // the header word of the Maple object
 // The following line will be incorrect on 64-bit machines
@@ -183,7 +182,7 @@ LispObject Lmaple_length(LispObject, LispObject a)
         type_of_header(vechdr(a)) != TYPE_MAPLEREF)
         return aerror1("not an encapsulated pointer", a);
     v = (LispObject)extract_pointer(a);
-    if ((v & 1) != 0) return onevalue(C_nil); // an atomic value
+    if ((v & 1) != 0) return onevalue(nil); // an atomic value
     v1 = (LispObject *)v;
     v = *v1;    // the header word of the Maple object
 // The following line will be incorrect on 64-bit machines
@@ -196,7 +195,7 @@ LispObject Lmaple_string_data(LispObject, LispObject a)
     return onevalue(make_string(s));
 }
 
-LispObject Lmaple_integer(LispObject nil, LispObject a)
+LispObject Lmaple_integer(LispObject env, LispObject a)
 {   LispObject r = fixnum_of_int(0);
     LispObject *p = (LispObject *)extract_pointer(a);
     int i;
@@ -229,7 +228,7 @@ LispObject Lmaple_component(LispObject, LispObject a, LispObject nn)
         type_of_header(vechdr(a)) != TYPE_MAPLEREF)
         return aerror1("not an encapsulated pointer", a);
     v = (LispObject)extract_pointer(a);
-    if ((v & 1) != 0) return onevalue(C_nil); // an atomic value
+    if ((v & 1) != 0) return onevalue(nil); // an atomic value
     v1 = (LispObject *)v;
     v = *v1;    // the header word of the Maple object
     n = int_of_fixnum(nn);
@@ -290,7 +289,7 @@ LispObject Lgetv(LispObject, LispObject v, LispObject n)
 // Here I make a (simple) string.
 //
 
-LispObject Lsmkvect(LispObject nil, LispObject n)
+LispObject Lsmkvect(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("make-simple-string", n);
@@ -309,7 +308,7 @@ LispObject Lsmkvect(LispObject nil, LispObject n)
 // Here I make a vector capable of holding 8-bit binary integers.
 //
 
-LispObject Lmkvect8(LispObject nil, LispObject n)
+LispObject Lmkvect8(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect8", n);
@@ -328,7 +327,7 @@ LispObject Lmkvect8(LispObject nil, LispObject n)
 // Here I make a vector capable of holding 16-bit binary integers.
 //
 
-LispObject Lmkvect16(LispObject nil, LispObject n)
+LispObject Lmkvect16(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect16", n);
@@ -347,7 +346,7 @@ LispObject Lmkvect16(LispObject nil, LispObject n)
 // Here I make a vector capable of holding 32-bit binary integers.
 //
 
-LispObject Lmkvect32(LispObject nil, LispObject n)
+LispObject Lmkvect32(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect32", n);
@@ -366,7 +365,7 @@ LispObject Lmkvect32(LispObject nil, LispObject n)
 // Here I make a vector capable of holding 32-bit floats.
 //
 
-LispObject Lmkfvect32(LispObject nil, LispObject n)
+LispObject Lmkfvect32(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkfvect32", n);
@@ -385,7 +384,7 @@ LispObject Lmkfvect32(LispObject nil, LispObject n)
 // Here I make a vector capable of holding 64-bit floats.
 //
 
-LispObject Lmkfvect64(LispObject nil, LispObject n)
+LispObject Lmkfvect64(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkfvect64", n);
@@ -410,7 +409,7 @@ LispObject simplify_string(LispObject s)
 // doing so seems to make bootstrapping easier.
 //
 {   Header h;
-    LispObject w, nil = C_nil, h1;
+    LispObject w, h1;
     size_t i, n = 0;
     if (!is_vector(s)) return aerror("simplify-string");
     h = vechdr(s);
@@ -425,7 +424,6 @@ LispObject simplify_string(LispObject s)
     h1 = elt(s, 5);                         // Fill pointer
     if (is_fixnum(h1)) n = int_of_fixnum(h1);
     stackcheck1(0, s);
-    nil = C_nil;
     push(s);
     w = getvector(TAG_VECTOR, TYPE_STRING_4, n+CELL);
     pop(s);
@@ -619,7 +617,7 @@ LispObject Lbpsputv(LispObject, int nargs, ...)
 // even though the result is packed as a character.
 //
 
-LispObject Lsgetv(LispObject nil, LispObject v, LispObject n)
+LispObject Lsgetv(LispObject env, LispObject v, LispObject n)
 {   Header h;
     int w;
     int32_t n1, hl;
@@ -904,7 +902,6 @@ void *useful_functions[] =
 
 char *address_of_var(int n)
 {   char *p = NULL;
-    LispObject nil = C_nil;
     if (n == 0) p = (char *)nil;
     else if (n == 1) p = (char *)&stack;
     else
@@ -1030,7 +1027,7 @@ char *address_of_var(int n)
 }
 
 
-LispObject Lnative_address1(LispObject nil, LispObject x)
+LispObject Lnative_address1(LispObject env, LispObject x)
 {   int32_t n;
     intptr_t p;
     if (consp(x))
@@ -1192,7 +1189,7 @@ LispObject Lfputv32(LispObject, int nargs, ...)
     return onevalue(x);
 }
 
-LispObject Lfgetv32(LispObject nil, LispObject v, LispObject n)
+LispObject Lfgetv32(LispObject env, LispObject v, LispObject n)
 {   Header h;
     size_t n1, hl;
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VECFLOAT32)
@@ -1236,7 +1233,7 @@ LispObject Lfputv64(LispObject, int nargs, ...)
     return onevalue(x);
 }
 
-LispObject Lfgetv64(LispObject nil, LispObject v, LispObject n)
+LispObject Lfgetv64(LispObject env, LispObject v, LispObject n)
 {   Header h;
     size_t n1, hl;
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VECFLOAT64)
@@ -1259,7 +1256,7 @@ LispObject Lfgetv64(LispObject nil, LispObject v, LispObject n)
 //       (dotimes (i len new) (putv new i (car old)) (setq old (cdr old)))))
 //
 
-LispObject Llist_to_vector(LispObject nil, LispObject a)
+LispObject Llist_to_vector(LispObject env, LispObject a)
 {   LispObject v;
     int32_t n = CELL;
 //
@@ -1362,7 +1359,7 @@ static LispObject Lputvec(LispObject, int nargs, ...)
 //    (aref (getv v 2) (+ (getv v 3) n1)))
 //
 
-LispObject Laref(LispObject nil, int nargs, ...)
+LispObject Laref(LispObject env, int nargs, ...)
 {   Header h;
     LispObject v, n, w;
     intptr_t hl, n1;
@@ -1480,15 +1477,15 @@ LispObject Laref(LispObject nil, int nargs, ...)
     return aerror("aref unknown type for vector representation");
 }
 
-static LispObject Laref1(LispObject nil, LispObject a)
+static LispObject Laref1(LispObject env, LispObject a)
 {   return Laref(nil, 1, a);
 }
 
-LispObject Laref2(LispObject nil, LispObject a, LispObject b)
+LispObject Laref2(LispObject env, LispObject a, LispObject b)
 {   return Laref(nil, 2, a, b);
 }
 
-LispObject Lelt(LispObject nil, LispObject v, LispObject n)
+LispObject Lelt(LispObject env, LispObject v, LispObject n)
 {   Header h;
     LispObject w;
     int32_t hl, n1, b;
@@ -1588,7 +1585,7 @@ LispObject Lelt(LispObject nil, LispObject v, LispObject n)
 // for AREF.
 //
 
-LispObject Laset(LispObject nil, int nargs, ...)
+LispObject Laset(LispObject env, int nargs, ...)
 {   Header h;
     LispObject v, n, w, x;
     int32_t hl, n1, b;
@@ -1718,15 +1715,15 @@ LispObject Laset(LispObject nil, int nargs, ...)
     return aerror("aset unknown type for vector representation");
 }
 
-static LispObject Laset1(LispObject nil, LispObject a)
+static LispObject Laset1(LispObject env, LispObject a)
 {   return aerror("aset");
 }
 
-static LispObject Laset2(LispObject nil, LispObject a, LispObject b)
+static LispObject Laset2(LispObject env, LispObject a, LispObject b)
 {   return Laset(nil, 2, a, b);
 }
 
-static LispObject Lsetelt(LispObject nil, int nargs, ...)
+static LispObject Lsetelt(LispObject env, int nargs, ...)
 {   LispObject v, n, x;
     Header h;
     LispObject w;
@@ -1834,7 +1831,7 @@ static LispObject Lsetelt(LispObject nil, int nargs, ...)
 //         (and (arrayp x) (length-one-p (svref x 1)))))
 //
 
-LispObject Lvectorp(LispObject nil, LispObject a)
+LispObject Lvectorp(LispObject env, LispObject a)
 {   Header h;
     int32_t tt;
     if (!is_vector(a)) return onevalue(nil);
@@ -1857,7 +1854,7 @@ LispObject Lvectorp(LispObject nil, LispObject a)
 //       (t (aref s n))))
 //
 
-static LispObject Lchar(LispObject nil, LispObject v, LispObject n)
+static LispObject Lchar(LispObject env, LispObject v, LispObject n)
 {   Header h;
     if (!is_vector(v)) return aerror("char");
     h = vechdr(v);
@@ -1879,7 +1876,7 @@ static LispObject Lchar(LispObject nil, LispObject v, LispObject n)
 //       (t (aset s n c))))
 //
 
-static LispObject Lcharset(LispObject nil, int nargs, ...)
+static LispObject Lcharset(LispObject env, int nargs, ...)
 {   LispObject v, n, c;
     Header h;
     va_list a;
@@ -1914,7 +1911,7 @@ static LispObject Lcharset(LispObject nil, int nargs, ...)
 //       s))
 //
 
-static LispObject Lmake_string(LispObject nil, int nargs, ...)
+static LispObject Lmake_string(LispObject env, int nargs, ...)
 {   va_list a;
     LispObject w, n, key, init;
     int32_t nn, z, blanks;
@@ -1948,7 +1945,7 @@ static LispObject Lmake_string(LispObject nil, int nargs, ...)
     return onevalue(w);
 }
 
-static LispObject Lmake_string1(LispObject nil, LispObject n)
+static LispObject Lmake_string1(LispObject env, LispObject n)
 {   LispObject w;
     int32_t nn, z, blanks;
     if (!is_fixnum(n) || (int32_t)n<0) return aerror1("make-string", n);
@@ -1969,7 +1966,7 @@ static LispObject Lmake_string1(LispObject nil, LispObject n)
     return onevalue(w);
 }
 
-static LispObject Lmake_string2(LispObject nil, LispObject a, LispObject b)
+static LispObject Lmake_string2(LispObject env, LispObject a, LispObject b)
 {   return Lmake_string(nil, 2, a, b);
 }
 
@@ -1982,7 +1979,7 @@ static LispObject Lmake_string2(LispObject nil, LispObject a, LispObject b)
 //       (t (error "String expected, but found ~S" x))))
 //
 
-static LispObject Lstring(LispObject nil, LispObject a)
+static LispObject Lstring(LispObject env, LispObject a)
 {   Header h;
     LispObject w;
     if (!is_vector(a))
@@ -2016,7 +2013,7 @@ static LispObject Lstring(LispObject nil, LispObject a)
 //       (dotimes (i len new) (putv new i (svref old i)))))
 //
 
-static LispObject Lcopy_vector(LispObject nil, LispObject a)
+static LispObject Lcopy_vector(LispObject env, LispObject a)
 {   // not done yet!
     return onevalue(nil);
 }
@@ -2032,7 +2029,7 @@ static LispObject Lcopy_vector(LispObject nil, LispObject a)
 //           (setq args (cdr args)))))
 //
 
-static LispObject Lvector(LispObject nil, int nargs, ...)
+static LispObject Lvector(LispObject env, int nargs, ...)
 {   LispObject r = nil, w;
     va_list a;
     va_start(a, nargs);
@@ -2051,16 +2048,16 @@ static LispObject Lvector(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-static LispObject Lvector1(LispObject nil, LispObject a)
+static LispObject Lvector1(LispObject env, LispObject a)
 {   return Lvector(nil, 1, a);
 }
 
-static LispObject Lvector2(LispObject nil, LispObject a, LispObject b)
+static LispObject Lvector2(LispObject env, LispObject a, LispObject b)
 {   return Lvector(nil, 2, a, b);
 }
 
 
-static LispObject Lshrink_vector(LispObject nil,
+static LispObject Lshrink_vector(LispObject env,
                                  LispObject v, LispObject n)
 {   int32_t n1, n2;
     if (!is_vector(v)) return aerror1("shrink-vector", v);
@@ -2083,7 +2080,7 @@ static LispObject Lshrink_vector(LispObject nil,
 
 #endif // COMMON
 
-static LispObject Lmake_simple_bitvector(LispObject nil, LispObject n)
+static LispObject Lmake_simple_bitvector(LispObject env, LispObject n)
 {   int32_t bytes;
     LispObject w;
     size_t n1;
@@ -2158,7 +2155,7 @@ static LispObject Lbgetv(LispObject, LispObject v, LispObject n)
     else return onevalue(fixnum_of_int(1));
 }
 
-LispObject Lupbv(LispObject nil, LispObject v)
+LispObject Lupbv(LispObject env, LispObject v)
 {   Header h;
     int32_t n;
     if (!(is_vector(v))) return onevalue(nil); // Standard Lisp demands..
@@ -2264,7 +2261,7 @@ LispObject Lvecbnd(LispObject, LispObject v)
 //
 
 LispObject list_subseq(LispObject sequence, int32_t start, int32_t end)
-{   LispObject nil=C_nil, copy, last, new, seq=sequence;
+{   LispObject copy, last, new, seq=sequence;
     int32_t seq_length, pntr = start;
 
     seq_length = end - start;
@@ -2298,7 +2295,7 @@ LispObject list_subseq(LispObject sequence, int32_t start, int32_t end)
 }
 
 LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
-{   LispObject nil=C_nil, copy;
+{   LispObject copy;
     Header h;
     int32_t hl, seq_length, i;
 
@@ -2383,7 +2380,7 @@ LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
         return aerror1("vector-subseq*",sequence);
 }
 
-LispObject Llist_subseq1(LispObject nil, LispObject seq, LispObject start)
+LispObject Llist_subseq1(LispObject env, LispObject seq, LispObject start)
 {   LispObject len;
     int32_t first, last;
 
@@ -2402,7 +2399,7 @@ LispObject Llist_subseq1(LispObject nil, LispObject seq, LispObject start)
     return list_subseq(seq, first, last);
 }
 
-LispObject Llist_subseq2(LispObject nil, int32_t nargs, ...)
+LispObject Llist_subseq2(LispObject env, int32_t nargs, ...)
 {   va_list args;
     int32_t first, last;
     LispObject seq, start, end;
@@ -2420,7 +2417,7 @@ LispObject Llist_subseq2(LispObject nil, int32_t nargs, ...)
     return list_subseq(seq, first, last);
 }
 
-LispObject Lvector_subseq1(LispObject nil, LispObject seq, LispObject start)
+LispObject Lvector_subseq1(LispObject env, LispObject seq, LispObject start)
 {   LispObject len;
     int32_t first, last;
 
@@ -2441,7 +2438,7 @@ LispObject Lvector_subseq1(LispObject nil, LispObject seq, LispObject start)
     return vector_subseq(seq, first, last);
 }
 
-LispObject Lvector_subseq2(LispObject nil, int32_t nargs, ...)
+LispObject Lvector_subseq2(LispObject env, int32_t nargs, ...)
 {   va_list args;
     int32_t first, last;
     LispObject seq, start, end;
@@ -2464,7 +2461,7 @@ LispObject Lvector_subseq2(LispObject nil, int32_t nargs, ...)
 // This definition is so that exports and imports can be the same in
 // both COMMON and regular cases.
 //
-LispObject Lvectorp(LispObject nil, LispObject a)
+LispObject Lvectorp(LispObject env, LispObject a)
 {   return Lsimple_vectorp(nil, a);
 }
 

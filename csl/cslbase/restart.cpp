@@ -1,4 +1,4 @@
-//  restart.cpp                       Copyright (C) 1989-2016 Codemist    
+//  restart.cpp                           Copyright (C) 1989-2016 Codemist    
 
 //
 // Code needed to start off Lisp when no initial heap image is available,
@@ -99,7 +99,7 @@ extern int load_count, load_limit;
 //
 #include "machineid.cpp"
 
-LispObject C_nil;
+LispObject nil;
 LispObject *stackbase;
 LispObject * volatile stacklimit;
 
@@ -852,8 +852,7 @@ char *cmemory_reference(intptr_t p)
         if (memory_count >= car_counter &&
             (unsigned long int)a >= car_low &&
             (unsigned long int)a <= car_high)
-        {   LispObject nil = C_nil;
-            if (exception_pending()) nil = (LispObject)((intptr_t)nil ^ 1);
+        {   if (exception_pending()) nil = (LispObject)((intptr_t)nil ^ 1);
             interrupt_pending = 1;
             miscflags |= HEADLINE_FLAG | MESSAGES_FLAG;
             car_counter = 0x7fffffff; // Do not interrupt again
@@ -1078,7 +1077,7 @@ static void *my_malloc_2(size_t n)
     return (void *)r;
 }
 
-static LispObject Lreclaim_trap(LispObject nil, LispObject a)
+static LispObject Lreclaim_trap(LispObject env, LispObject a)
 {   int32_t previous = reclaim_trap_count;
     if (!is_fixnum(a)) return aerror1("reclaim-trap", a);
     reclaim_trap_count = int_of_fixnum(a);
@@ -1087,7 +1086,7 @@ static LispObject Lreclaim_trap(LispObject nil, LispObject a)
     return onevalue(fixnum_of_int(previous));
 }
 
-static LispObject Lreclaim_stack_limit(LispObject nil, LispObject a)
+static LispObject Lreclaim_stack_limit(LispObject env, LispObject a)
 {   int32_t previous = reclaim_stack_limit;
     if (!is_fixnum(a)) return aerror1("reclaim-stack-limit", a);
     reclaim_stack_limit = int_of_fixnum(a);
@@ -1227,9 +1226,9 @@ static void init_heap_segments(double store_size)
                 pool = pool + NIL_SEGMENT_SIZE;
 #ifdef COMMON
 // NB here that NIL is tagged as a CONS not as a symbol
-                C_nil = doubleword_align_up(nilsegment) + TAG_CONS + 8;
+                nil = doubleword_align_up(nilsegment) + TAG_CONS + 8;
 #else
-                C_nil = doubleword_align_up(nilsegment) + TAG_SYMBOL;
+                nil = doubleword_align_up(nilsegment) + TAG_SYMBOL;
 #endif
 //
 // If at the end of the run I am going to free some space I had better not
@@ -1382,7 +1381,7 @@ setup_type const *setup_tables[] =
 // performance issue.
 //
 
-static LispObject Lcheck_c_code(LispObject nil, int nargs, ...)
+static LispObject Lcheck_c_code(LispObject env, int nargs, ...)
 {   LispObject name, lc1, lc2, lc3;
     int32_t c1=-1, c2=-1, c3=-1;
     long int x1=-2, x2=-2, x3=-2;
@@ -1733,7 +1732,6 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
     char sname1[LONGEST_LEGAL_FILENAME];
     FILE *dest;
     int c;
-    LispObject nil = C_nil;
     char setupname[80];
     char *p;
     setup_type_1 *dll;
@@ -1755,10 +1753,8 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 #endif
 
     sname = get_string_data(mod, "find_def_table", &len);
-    nil = C_nil;
     if (exception_pending()) return NULL;
     checkname = get_string_data(checksum, "find_def_table", &checklen);
-    nil = C_nil;
     if (exception_pending()) return NULL;
 #ifdef TRACE_NATIVE
     trace_printf("Checksum given as \"%.*s\"\n", checklen, checkname);
@@ -1943,7 +1939,7 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 #endif
         return NULL;
     }
-    (*init)(&C_nil, &stack, &stacklimit);
+    (*init)(&nil, &stack, &stacklimit);
 //
 // Wheee - I have now loaded and initialised the module.
 //
@@ -1982,7 +1978,7 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
 {   const char *p;
     setup_type_1 *b;
     size_t len;
-    LispObject nil = C_nil, xchecksum;
+    LispObject xchecksum;
 #ifdef TRACE_NATIVE
     trace_printf("setup_dynamic %s\n", modname);
     /*  prin_to_trace(fns); */ trace_printf("\n");
@@ -2013,7 +2009,6 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
         return 0;
     }
     p = get_string_data(qcar(fns), "instate_c_code", &len);
-    nil = C_nil;
     if (exception_pending()) return 0;
     if (strncmp(p, (char *)b->two, len) != 0)
     {   trace_printf("Module signature %.*s disagrees with %s\n",
@@ -2053,7 +2048,6 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
                 uint32_t *pp;
                 env = qcar(env);
                 p = get_string_data(fname, "instate_c_code", &len);
-                nil = C_nil;
                 if (exception_pending())
                 {
 #ifdef TRACE_NATIVE
@@ -2154,12 +2148,10 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
                         goto next_def;
                     }
                 }
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 push2(name, fname);
                 env = Llist_to_vector(nil, env);
                 pop2(fname, name);
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 if (load_limit != 0x7fffffff)
                 {   if (load_count >= load_limit) goto next_def;
@@ -2190,7 +2182,6 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
                 push4(name, fname, env, xchecksum);
                 ww = cons(fname, native_defs);
                 pop4(xchecksum, env, fname, name);
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 native_defs = ww;
             already_native:
@@ -2199,22 +2190,18 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
                 push4(name, fname, env, xchecksum);
                 ww = cons(ww, qenv(fname));
                 pop4(xchecksum, env, fname, name);
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 push4(name, fname, env, xchecksum);
                 putprop(fname, bytecoded_symbol, ww);
                 pop4(xchecksum, env, fname, name);
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 push4(name, fname, env, xchecksum);
                 ww = list3star(name, fname, xchecksum, env);
                 pop4(xchecksum, env, fname, name);
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 push4(name, fname, env, xchecksum);
                 putprop(fname, nativecoded_symbol, ww);
                 pop4(xchecksum, env, fname, name);
-                nil = C_nil;
                 if (exception_pending()) return 0;
                 ifn1(fname) = (intptr_t)b->one;
                 ifn2(fname) = (intptr_t)b->two;
@@ -2256,7 +2243,7 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
 // modules concerned have somehow got out of step...
 //
 
-LispObject Linstate_c_code(LispObject nil, LispObject name, LispObject fns)
+LispObject Linstate_c_code(LispObject env, LispObject name, LispObject fns)
 {
 //
 // See if there is a module in the image file with the given name and
@@ -2285,7 +2272,6 @@ LispObject Linstate_c_code(LispObject nil, LispObject name, LispObject fns)
     if (!consp(fns)) return onevalue(nil);
 
     sname = get_string_data(name, "instate-c-code", &len);
-    nil = C_nil;
     if (exception_pending()) return nil;
 
 #ifdef EMBEDDED
@@ -2301,7 +2287,7 @@ LispObject Linstate_c_code(LispObject nil, LispObject name, LispObject fns)
 }
 
 static void cold_setup()
-{   LispObject nil = C_nil, w;
+{   LispObject w;
     void *p;
     size_t i;
     p = vheap_pages[vheap_pages_count++] = allocate_page("vheap cold setup");
@@ -2744,7 +2730,7 @@ static int alpha0(const void *a, const void *b)
 //   input!-libraries and output!-library
 
 void set_up_variables(int restart_flag)
-{   LispObject nil = C_nil, w, w1;
+{   LispObject w, w1;
     size_t i;
 // There are a number of system variables that are not saved in
 // image files and so that have to be set up manually in every case.
@@ -3568,7 +3554,6 @@ void set_up_variables(int restart_flag)
 // parsing fails I (silently) treat the value as just NIL.
 //
 #endif
-                nil = C_nil;
                 if (exception_pending()) v = flip_exception();
             }
             pop(n);
@@ -3679,7 +3664,7 @@ void review_switch_settings()
         int n1;
         char *v;
         char **p;
-        LispObject nil, starsw;
+        LispObject starsw;
         sw = qcdr(sw);
         if (is_symbol(s)) s = qpname(s);
         if (!is_vector(s) || !is_string_header(vechdr(s))) continue;
@@ -3691,7 +3676,6 @@ void review_switch_settings()
         }
         if ((v=*p) == NULL) continue;
         starsw = make_undefined_symbol(sname);
-        nil = C_nil;
         if (exception_pending())
         {   flip_exception();
             continue;
@@ -3799,10 +3783,8 @@ void setup(int restart_flag, double store_size)
 //    4, 8, ...   not used yet!
 //
     int32_t i;
-    LispObject nil;
     if ((restart_flag & 2) != 0) init_heap_segments(store_size);
     garbage_collection_permitted = false;
-    nil = C_nil;
 #ifdef TIDY_UP_MEMORY_AT_START
 //
 // The following feature, which should not be neded, is liable to be
@@ -4001,8 +3983,7 @@ uint32_t hash_for_checking(LispObject a, int depth)
 #endif
 
 void copy_into_nilseg(int fg)
-{   LispObject nil = C_nil;
-    multiplication_buffer = nil;
+{   multiplication_buffer = nil;
 
     size_t i;
     if (fg)     // move non list bases too
@@ -4196,8 +4177,7 @@ void copy_into_nilseg(int fg)
 }
 
 void copy_out_of_nilseg(int fg)
-{   LispObject nil = C_nil;
-    size_t i;
+{   size_t i;
     if (fg)
     {   byteflip         = BASE[12];
         fringe           = BASE[18];

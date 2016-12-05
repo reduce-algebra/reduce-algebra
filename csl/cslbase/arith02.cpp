@@ -224,7 +224,7 @@ static LispObject timesib(LispObject a, LispObject b)
     int32_t aa = (int32_t)int_of_fixnum(a);
     size_t lenb, i;
     uint32_t carry, ms_dig, w;
-    LispObject c, nil;
+    LispObject c;
 //
 // I will split off the (easy) cases of the fixnum being -1, 0 or 1.
 //
@@ -338,8 +338,7 @@ static LispObject timesir(LispObject a, LispObject b)
 //
 // multiply integer (fixnum or bignum) by ratio.
 //
-{   LispObject nil = C_nil;
-    LispObject w = nil;
+{   LispObject w = nil;
     if (a == fixnum_of_int(0)) return a;
     else if (a == fixnum_of_int(1)) return b;
     push3(b, a, nil);
@@ -347,16 +346,12 @@ static LispObject timesir(LispObject a, LispObject b)
 #define a   stack[-1]
 #define b   stack[-2]
     g = gcd(a, denominator(b));
-    nil = C_nil;
     if (exception_pending()) goto fail;
     a = quot2(a, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     g = quot2(denominator(b), g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     a = times2(a, numerator(b));
-    nil = C_nil;
     if (exception_pending()) goto fail;
 //
 // make_ratio tidies things up if the denominator was exactly 1
@@ -374,8 +369,7 @@ static LispObject timesic(LispObject a, LispObject b)
 //
 // multiply an arbitrary non-complex number by a complex one
 //
-{   LispObject nil;
-    LispObject r = real_part(b), i = imag_part(b);
+{   LispObject r = real_part(b), i = imag_part(b);
     push2(a, r);
     i = times2(a, i);
     pop2(r, a);
@@ -1323,7 +1317,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // procedure.
 //
 {   int sign = 1;
-    LispObject c, d, nil;
+    LispObject c, d;
     size_t lena, lenb, lenc, i;
     lena = (bignum_length(a) - CELL)/4;
     lenb = (bignum_length(b) - CELL)/4;
@@ -1610,8 +1604,7 @@ static LispObject timesrr(LispObject a, LispObject b)
 //
 // multiply a pair of rational numbers
 //
-{   LispObject nil = C_nil;
-    LispObject w = nil;
+{   LispObject w = nil;
     push5(numerator(a), denominator(a),
           numerator(b), denominator(b), nil);
 #define g   stack[0]
@@ -1620,28 +1613,20 @@ static LispObject timesrr(LispObject a, LispObject b)
 #define da  stack[-3]
 #define na  stack[-4]
     g = gcd(na, db);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     na = quot2(na, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     db = quot2(db, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     g = gcd(nb, da);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     nb = quot2(nb, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     da = quot2(da, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     na = times2(na, nb);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     da = times2(da, db);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     w = make_ratio(na, da);
 fail:
@@ -1670,8 +1655,7 @@ static LispObject timescc(LispObject a, LispObject b)
 //
 // multiply a pair of complex values
 //
-{   LispObject nil = C_nil;
-    LispObject w = nil;
+{   LispObject w = nil;
     push4(real_part(a), imag_part(a),
           real_part(b), imag_part(b));
     push2(nil, nil);
@@ -1682,25 +1666,18 @@ static LispObject timescc(LispObject a, LispObject b)
 #define ia  stack[-4]
 #define ra  stack[-5]
     u = times2(ra, rb);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     v = times2(ia, ib);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     v = negate(v);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     u = plus2(u, v);                    // real part of result
-    nil = C_nil;
     if (exception_pending()) goto fail;
     v = times2(ra, ib);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     ib = times2(rb, ia);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     v = plus2(v, ib);                   // imaginary part
-    nil = C_nil;
     if (exception_pending()) goto fail;
     w = make_complex(u, v);
 fail:
@@ -1787,7 +1764,7 @@ extern LispObject genuine_times2(LispObject a, LispObject b);
 
 
 LispObject times2(LispObject a, LispObject b)
-{   LispObject ab1, aa, bb, nil = C_nil;
+{   LispObject ab1, aa, bb;
     push2(a, b);
     ab1 = plus2(a, b);               // a + b
     errexitn(2);

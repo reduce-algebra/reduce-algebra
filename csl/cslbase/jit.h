@@ -249,11 +249,11 @@ extern void Jcall_abs_fn(void *addr_big_endian);
 //
 
 #define Jsetup_nil() { put4bytes(0x83ec38a1);   \
-        put_addr(&C_nil);                       \
+        put_addr(&nil);                         \
         mov_rm32_rm32_disp(EAX,EBPM,-2); }
 
 #define Jnil_eq_C_nil() { putbyte(0xa1);        \
-        put_addr(&C_nil);                       \
+        put_addr(&nil);                         \
         mov_rm32_rm32_disp(EAX,EBPM,-2); }
 
 #define Jresult() { put3bytes(0x8b45f4); }

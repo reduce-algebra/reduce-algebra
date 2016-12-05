@@ -1,7 +1,7 @@
 #ifndef ZLIB_DEMO
-// preserve.cpp                       Copyright (c) Codemist    , 1990-2016
+// preserve.cpp                           Copyright (c) Codemist, 1990-2016
 #else
-// zlibdemo.cpp                       Copyright (c) Codemist    , 1990-2016
+// zlibdemo.cpp                           Copyright (c) Codemist, 1990-2016
 #endif
 
 // The file preserve.cpp can be preprocessed to generate zlibdemo.cpp,
@@ -1358,8 +1358,7 @@ static void list_one_library(LispObject oo, bool out_only)
 }
 
 void Ilist(void)
-{   LispObject nil = C_nil;
-    LispObject il = qvalue(input_libraries), w;
+{   LispObject il = qvalue(input_libraries), w;
     LispObject ol = qvalue(output_library);
     while (consp(il))
     {   w = qcar(il); il = qcdr(il);
@@ -1374,7 +1373,7 @@ static LispObject mods;
 
 static void collect_modules(const char *name, int why, long int size)
 {   int k = 0;
-    LispObject nil = C_nil, v;
+    LispObject v;
     char *p = (char *)&celt(boffo, 0);
     if (why != SCAN_FILE) return;
     if (exception_pending()) return;
@@ -1394,13 +1393,13 @@ static void collect_modules(const char *name, int why, long int size)
     errexitv();
 }
 
-LispObject Llibrary_members(LispObject nil, LispObject oo)
+LispObject Llibrary_members(LispObject env, LispObject oo)
 {   int i, j, k;
     directory *d = fasl_files[library_number(oo)];
-    LispObject v, r = C_nil;
+    LispObject v, r = nil;
     char *p;
     if (d->full_filename != NULL)
-    {   mods = C_nil;
+    {   mods = nil;
         scan_directory(d->full_filename, collect_modules);
         errexit();
         return onevalue(mods);
@@ -1448,7 +1447,7 @@ LispObject Llibrary_members(LispObject nil, LispObject oo)
     return onevalue(r);
 }
 
-LispObject Llibrary_members0(LispObject nil, int nargs, ...)
+LispObject Llibrary_members0(LispObject env, int nargs, ...)
 //
 // This returns a list of the modules in the first library on the current
 // search path.
@@ -1473,9 +1472,6 @@ bool Imodulep(const char *name, size_t len, char *datestamp, size_t *size,
 // that in Iopen.
 //
 {   int i;
-#ifdef COMMON
-    LispObject nil = C_nil;   // used in the consp test.
-#endif
     LispObject il = qvalue(input_libraries);
     while (consp(il))
     {   int j;
@@ -2069,11 +2065,9 @@ int Igetc(void)
     if (n_left <= 0)
     {   if (n_left == 0) return EOF;
         else
-        {   LispObject nil = C_nil;
-            LispObject stream = qvalue(standard_input);
+        {   LispObject stream = qvalue(standard_input);
             if (!is_stream(stream)) return EOF;
             c = getc_stream(stream);
-            nil = C_nil;
             if (exception_pending()) return EOF;
         }
     }
@@ -2118,8 +2112,7 @@ bool Iputc(int ch)
 // stream, and it will have set binary_write_file to the stream and positioned
 // it at the point I should start writing.
 //
-{   LispObject nil = C_nil;
-    write_bytes_written++;
+{   write_bytes_written++;
     if (fasl_stream != nil && fasl_stream != SPID_NIL)
         putc_stream(ch, fasl_stream);
     else if (putc(ch, binary_write_file) == EOF) return true;
@@ -2139,7 +2132,6 @@ bool Iwrite(const void *buff, size_t size)
 void preserve(const char *banner, size_t len)
 {   int32_t i;
     bool int_flag = false;
-    LispObject nil = C_nil;
     if (Iopen(NULL, 0, IOPEN_OUT, NULL))
     {   err_printf("+++ PRESERVE failed to open image file\n");
         return;
@@ -2153,7 +2145,6 @@ void preserve(const char *banner, size_t len)
     exit_tag = exit_value = catch_tags =
         codevec = litvec = B_reg = faslvec = faslgensyms = nil;
     Lmapstore(nil, fixnum_of_int(4)); // Reset all counts to zero.
-    nil = C_nil;
 //
 // if the user generated a SIGINT this is where it gets noticed...
 //

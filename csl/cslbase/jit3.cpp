@@ -1,5 +1,5 @@
-// jit3.cpp                          Copyright (C) 2006-2015, Codemist
-//                                                and J O'Connell
+// jit3.cpp                              Copyright (C) 2006-2016, Codemist
+//                                                         and J O'Connell
 
 
 //
@@ -72,7 +72,7 @@ LispObject *Jdo_freebind(LispObject bvec, LispObject *stk)
     {   LispObject v = *(LispObject *)((intptr_t)bvec + k - TAG_VECTOR);
         //push(qvalue(v));
         *++stk = qvalue(v);
-        qvalue(v) = C_nil;
+        qvalue(v) = nil;
     }
 //
 // TAG_FBIND is a value that can NEVER occur elsewhere in the Lisp system,
@@ -107,19 +107,16 @@ void test()
 
 void breakpoint()
 {
-
-    //Lisp_Object nil = C_nil;
-
 //        printf("\nSTART OF JIT CODE\n");
 
-//        printf("stack: %x\tlitvec: %x\tC_nil: %x\t&C_nil: %x\n",(Lisp_Object)stack,(Lisp_Object)litvec,C_nil,(Lisp_Object)&C_nil);
+//        printf("stack: %x\tlitvec: %x\tnil: %x\t&nil: %x\n",(Lisp_Object)stack,(Lisp_Object)litvec,nil,(Lisp_Object)&nil);
 //        printf("stack: %x\tstack: %x\tstack[-1]: %x\tstack[0]: %x\tstack[1]: %x\n",(Lisp_Object)stack,(Lisp_Object)stack,stack[-1],stack[0],stack[1]);
     printf("\nstack: %p\n",stack);
     int i;
     for(i=0; i<6; i++)
     {   printf("stack[%d]: %x ",i-5,stack[i-5]);
     }
-    printf("C_nil: %p",(void *)C_nil);
+    printf("nil: %p",(void *)nil);
     return;
 }
 
@@ -161,15 +158,13 @@ void Jprint()
 }
 
 void push_litvec()
-{   LispObject nil = C_nil;
-    //push(litvec);
+{   //push(litvec);
     *++stack = litvec;
     return;
 }
 
 void pop_litvec()
-{   LispObject nil = C_nil;
-    //pop(litvec);
+{   //pop(litvec);
     litvec = *stack--;
     return;
 }
@@ -224,7 +219,7 @@ void call0(int fname)
     mov_rm32_rm32_disp(EBPM,EAX,-8);
     put2bytes(0xffd0);//call *eax
     store_A_reg_from(EAX);
-    mov_addr_r32(&C_nil,EAX);
+    mov_addr_r32(&nil,EAX);
     store_nil_from(EAX);
     //exception pending
     mov_addr_r32(stack,EAX);
@@ -260,7 +255,7 @@ void call1(int fname)
     mov_rm32_rm32_disp(EBPM,EAX,-6);
     put2bytes(0xffd0);//call *eax
     store_A_reg_from(EAX);
-    mov_addr_r32(&C_nil,EAX);
+    mov_addr_r32(&nil,EAX);
     store_nil_from(EAX);
     //exception pending
     mov_addr_r32(stack,EAX);
@@ -299,7 +294,7 @@ void call2(int fname)
     mov_rm32_rm32_disp(EBPM,EAX,-7);
     put2bytes(0xffd0);//call *eax
     store_A_reg_from(EAX);
-    mov_addr_r32(&C_nil,EAX);
+    mov_addr_r32(&nil,EAX);
     store_nil_from(EAX);
     //exception pending
     mov_addr_r32(stack,EAX);
@@ -338,7 +333,7 @@ void call2r(int fname)
     mov_rm32_rm32_disp(EBPM,EAX,-7);
     put2bytes(0xffd0);//call *eax
     store_A_reg_from(EAX);
-    mov_addr_r32(&C_nil,EAX);
+    mov_addr_r32(&nil,EAX);
     store_nil_from(EAX);
     //exception pending
     mov_addr_r32(stack,EAX);
@@ -385,7 +380,7 @@ void jcall2(int fname)
     mov_rm32_rm32(EAX,ESPM);
     Jcall_abs_fn(reclaim);
     store_A_reg_from(EAX);
-    mov_addr_r32(&C_nil,EAX);
+    mov_addr_r32(&nil,EAX);
     store_nil_from(EAX);
     //exception pending
     mov_addr_r32(stack,EAX);
@@ -442,8 +437,8 @@ void Jcheck_nargs3()
     //                                     fixnum_of_int((int32_t)nargs));
     //
 
-    mov_addr_r32(&C_nil,EAX);
-    mov_rm32_rm32_disp(EAX,EBPM,-6); //nil=C_nil
+    mov_addr_r32(&nil,EAX);
+    mov_rm32_rm32_disp(EAX,EBPM,-6); //nil=nil
     mov_rm32_rm32_disp(EBPM,EAX,3); //mov 0xc(%ebp), %eax
     cmp_imm_r32(0x3,EAX);
     cond_jump("L1",JE);
@@ -581,13 +576,13 @@ void Jpop_vecs()
     //
     //sub_imm8_addr(0x8,stack); FIXME ILLEGAL INSTRUCTION?
     //
-    //mov_rm32_rm32_disp(EBPM,EDX,-2); //mov -8(%ebp), %edx //C_nil
+    //mov_rm32_rm32_disp(EBPM,EDX,-2); //mov -8(%ebp), %edx //nil
     //add_imm32_rm32(CODEVEC,EDX); //add 216, %edx
     //mov_addr_r32(stack,EAX); //mov stack, %eax
     //add_imm32_rm32(0x8, EAX); //addl $0x8,%eax
     //mov_rm32_rm32(EAXM,EAX); //mov (%eax),%eax
     //mov_rm32_rm32(EAX,EDXM); //mov %eax, (%edx)
-    //mov_rm32_rm32_disp(EBPM,EDX,-2); //mov -8(%ebp), %edx //C_nil
+    //mov_rm32_rm32_disp(EBPM,EDX,-2); //mov -8(%ebp), %edx //nil
     //add_imm32_rm32(LITVEC,EDX); //add 220, %edx
     //mov_addr_r32(stack,EAX); //mov stack, %eax
     //add_imm32_rm32(0x4, EAX); //addl $0x4,%eax
@@ -605,17 +600,17 @@ void Jpush_stack(int nargs) //ifndef MEMORY_TRACE in externs.h
     //and check for BASE.  nil-4 in common lisp
 
     add_label("L0");
-    //Jnil_eq_C_nil();//nil=C_nil
+    //Jnil_eq_nil();//nil=nil
     //
     //mov_addr_r32(stack,EDX); //mov stack, %edx
     //add_imm32_rm32(0x4, EDX); //add 04, %edx
-    //mov_rm32_rm32_disp(EBPM,EAX,-2);//mov -8(%ebp), %eax //C_nil
+    //mov_rm32_rm32_disp(EBPM,EAX,-2);//mov -8(%ebp), %eax //nil
     //add_imm32_rm32(LITVEC, EAX); //add 220, %eax
     //mov_rm32_rm32(EAXM,EAX); //mov (%eax),%eax
     //mov_rm32_rm32(EAX,EDXM); //mov %eax, (%edx)
     //mov_addr_r32(stack,EDX); //mov stack, %edx
     //add_imm32_rm32(0x8, EDX); //add 08, %edx
-    //mov_rm32_rm32_disp(EBPM,EAX,-2);//mov -8(%ebp), %eax //C_nil
+    //mov_rm32_rm32_disp(EBPM,EAX,-2);//mov -8(%ebp), %eax //nil
     //add_imm32_rm32(CODEVEC, EAX); //add 216 eax
     //mov_rm32_rm32(EAXM,EAX); //mov (%eax),%eax
     //mov_rm32_rm32(EAX,EDXM); //mov %eax, (%edx)
@@ -680,7 +675,7 @@ void Jstackcheck1(int k)
     Jcall_abs_fn(reclaim);
     mov_rm32_rm32_disp(EAX,EBPM,2);
     //
-    //mov_addr_r32(&C_nil,EAX);
+    //mov_addr_r32(&nil,EAX);
     //mov_rm32_rm32_disp(EAX,EBPM,-6); //FIXME consistent address for nil?
     //
     //exceptionpending
@@ -749,7 +744,6 @@ int Jbytecode_compile(LispObject def, int nargs)
     // A_reg uses register ECX
     //
 
-    LispObject nil = C_nil;
     register unsigned char *ppc;
     LispObject code;
 // Not re-worked for the nicer representation of bytecodes as a rather
@@ -777,8 +771,8 @@ int Jbytecode_compile(LispObject def, int nargs)
     add_label("bytestream_interpret");
     init_stack_pointers();
     sub_imm32_rm32(0x78, ESP); //sub 0x78,esp FIXME not AMD64 comp
-    //Lisp_Object nil = C_nil
-    mov_addr_r32(&C_nil,EAX); //nil=C_nil
+    //Lisp_Object nil = nil
+    mov_addr_r32(&nil,EAX); //nil=nil
     mov_rm32_rm32_disp(EAX,EBPM,-1); //mov %eax, -4(ebp)
     //Lisp_Object *stack = stack
     mov_addr_r32(stack,EAX); //mov stack, %eax
@@ -1050,7 +1044,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 mov_rm32_rm32(EAX,ESPM);
                 Jcall_abs_fn(list2);
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception
                 mov_addr_r32(stack,EAX);
@@ -1158,7 +1152,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 mov_rm32_rm32(ECX,ESPM);
                 Jcall_abs_fn(plus2);
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending?
                 mov_addr_r32(stack,EAX);
@@ -1193,7 +1187,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 mov_rm32_rm32(ECX,ESPM);
                 Jcall_abs_fn(plus2);
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending?
                 mov_addr_r32(stack,EAX);
@@ -1216,7 +1210,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 Jcall_abs_fn(times2);
                 mov_rm32_rm32(EAX,ECX);
                 store_A_reg_from(ECX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending?
                 mov_addr_r32(stack,EAX);
@@ -1257,7 +1251,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 mov_rm32_rm32(EAX,ESPM);
                 Jcall_abs_fn(lessp2);
                 mov_rm32_rm32_disp(EAX,EBPM,-11);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending
                 mov_addr_r32(stack,EAX);
@@ -1315,7 +1309,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 mov_rm32_rm32_disp(EBPM,EAX,-6);
                 put2bytes(0xffd0); //call *eax
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending
                 mov_addr_r32(stack,EAX);
@@ -1344,7 +1338,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 mov_rm32_rm32(EAX,ESPM);
                 Jcall_abs_fn(apply);
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending
                 mov_addr_r32(stack,EAX);
@@ -1382,7 +1376,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 mov_rm32_rm32_disp(EBPM,EAX,-7);
                 put2bytes(0xffd0); //call *eax
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending
                 mov_addr_r32(stack,EAX);
@@ -1413,7 +1407,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 mov_rm32_rm32(EAX,ESPM);
                 Jcall_abs_fn(apply);
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending
                 mov_addr_r32(stack,EAX);
@@ -1450,7 +1444,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 mov_rm32_rm32(EAX,ESPM);
                 Jcall_abs_fn(Lgetv);
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending
                 mov_addr_r32(stack,EAX);
@@ -2188,7 +2182,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 put2bytes(0xffd0); //call *eax
                 mov_rm32_rm32(EAX,ECX);
                 store_A_reg_from(ECX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending?
                 mov_addr_r32(stack,EAX);
@@ -2220,7 +2214,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 put2bytes(0xffd0); //call *eax
                 mov_rm32_rm32(EAX,ECX);
                 store_A_reg_from(ECX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending?
                 mov_addr_r32(stack,EAX);
@@ -2281,7 +2275,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 mov_rm32_rm32(EAX,ESPM);
                 Jcall_abs_fn(reclaim);
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception
                 mov_addr_r32(stack,EAX);
@@ -2470,7 +2464,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 put2bytes(0xffd0);//call *eax
                 //Jpop(1,EDI);
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //Jcall_abs_fn(pop_litvec);
                 //Jexception_pending();
@@ -2499,7 +2493,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 put2bytes(0xffd0); //call *eax
                 //mov_rm32_rm32(EAX,ECX);
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending? FIXME
                 mov_addr_r32(stack,EAX);
@@ -2528,7 +2522,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 put2bytes(0xffd0); //call *eax
                 //mov_rm32_rm32(EAX,ECX);
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending? FIXME
                 mov_addr_r32(stack,EAX);
@@ -2560,7 +2554,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 put2bytes(0xffd0); //call *eax
                 //mov_rm32_rm32(EAX,ECX);
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending? FIXME
                 mov_addr_r32(stack,EAX);
@@ -3332,7 +3326,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 put2bytes(0xffd0); //call *eax
                 mov_rm32_rm32(EAX,ECX);
                 store_A_reg_from(ECX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending? FIXME
                 mov_addr_r32(stack,EAX);
@@ -3361,7 +3355,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 put2bytes(0xffd0); //call *eax
                 mov_rm32_rm32(EAX,ECX);
                 store_A_reg_from(ECX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending? FIXME
                 mov_addr_r32(stack,EAX);
@@ -3511,7 +3505,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 mov_rm32_rm32(EAX,ESPM);
                 Jcall_abs_fn(reclaim);
                 store_A_reg_from(EAX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending?
                 mov_addr_r32(stack,EAX);
@@ -3534,7 +3528,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 Jcall_abs_fn(cons);
                 mov_rm32_rm32(EAX,ECX);
                 store_A_reg_from(ECX);
-                mov_addr_r32(&C_nil,EAX);
+                mov_addr_r32(&nil,EAX);
                 store_nil_from(EAX);
                 //exception pending?
                 mov_addr_r32(stack,EAX);
@@ -3573,12 +3567,12 @@ void build_gotos(LispObject def, int nargs)
     //mov eax, 4(esp)
     //mov 1, (esp)
     Jcall_abs_fn(error);
-    mov_addr_r32(&C_nil, EAX);
+    mov_addr_r32(&nil, EAX);
     store_nil_from(EAX);
     load_nil_into(EAX);
     //xor 1, eax
-    mov_r32_addr(EAX, &C_nil);
-    mov_addr_r32(&C_nil, EAX);
+    mov_r32_addr(EAX, &nil);
+    mov_addr_r32(&nil, EAX);
     store_nil_from(EAX);
     jump("pop_stack_and_exit");
 
@@ -3602,7 +3596,7 @@ void build_gotos(LispObject def, int nargs)
     Jcall_abs_fn(loop_print_error);
     //mov LC13, (esp)
     Jcall_abs_fn(err_printf);
-    mov_addr_r32(&C_nil, EAX);
+    mov_addr_r32(&nil, EAX);
     store_nil_from(EAX);
     load_nil_into(EAX);
     //and_imm_r32(0x1, EAX);
@@ -3610,8 +3604,8 @@ void build_gotos(LispObject def, int nargs)
     cond_jump("pop_stack_and_exit0", JE);
     load_nil_into(EAX);
     //xor 1, eax
-    mov_r32_addr(EAX,&C_nil);//FIXME macro for flipexception
-    mov_addr_r32(&C_nil, EAX);
+    mov_r32_addr(EAX,&nil);//FIXME macro for flipexception
+    mov_addr_r32(&nil, EAX);
     store_nil_from(EAX);
     add_label("pop_stack_and_exit0");
     //mov 1, 4(esp)
@@ -3773,9 +3767,9 @@ char* Jcompile(LispObject def, int nargs)
     //move ebp and esp around for start of function call
     init_stack_pointers();
 
-    //Lisp_Object nil = C_nil
+    //Lisp_Object nil = nil
     //add 0x38 to esp
-    //put the address of C_nil in -8(%ebp) as a local var
+    //put the address of nil in -8(%ebp) as a local var
     Jsetup_nil();
 
     Jpush(6,EAX,EBX,EDX,ECX,ESI,EDI); //preserve state of registers
@@ -3837,8 +3831,8 @@ char* Jcompile(LispObject def, int nargs)
     //store result from bytestream_interpret(eax) in -4(ebp)
     mov_rm32_rm32_disp(EAX,EBPM,-1); //mov eax, -4(ebp)
 
-    //nil = C_nil
-    //Jnil_eq_C_nil();
+    //nil = nil
+    //Jnil_eq_nil();
 
     //pop(codevec, litvec)
     Jpop_vecs();

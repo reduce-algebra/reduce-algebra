@@ -1669,7 +1669,6 @@ symbolic procedure j!:pcall(op, r1, r2, r3, depth);
     if not flagp(car r3, 'j!:no_errors) then <<
        if null cadr r3 and depth = 0 then j!:printf("    errexit();\n")
        else <<
-           j!:printf("    nil = C_nil;\n");
            j!:printf("    if (exception_pending()) ");
            j!:pgoto(j!:find_error_label(nil, cadr r3, depth) , depth) >> >>;
     if boolfn then j!:printf("    %v = %v ? lisp_true : nil;\n", r1, r1);
@@ -2141,8 +2140,6 @@ symbolic procedure j!:optimise_flowgraph(j!:startpoint, j!:all_blocks,
     j!:startpoint := j!:branch_chain(j!:startpoint, t); % ... AGAIN to tidy up
     remflag(j!:all_blocks, 'j!:visited);
     if does_call then nil_used := t;
-    if nil_used then j!:printf "    Lisp_Object nil = C_nil;\n"
-    else if nilbase_used then j!:printf "    nil_as_base\n";
     if locs then <<
       j!:printf("    Lisp_Object %s", car locs);
       for each v in cdr locs do j!:printf(", %s", v);
@@ -2173,7 +2170,6 @@ symbolic procedure j!:optimise_flowgraph(j!:startpoint, j!:all_blocks,
        j!:pushpop('push, args);
        j!:printf "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n";
        j!:pushpop('pop, reverse args);
-       j!:printf "        nil = C_nil;\n";
        j!:printf "        if (exception_pending()) return nil;\n";
        j!:printf "    }\n" >>;
     if reloadenv then j!:printf("    push(env);\n")

@@ -212,20 +212,13 @@ static void pack_cell(LispObject a)
     // clutter the stack with unnecessary variables, so I don't
     // define it in CSL mode.
     //
-#ifdef COMMON
-    LispObject nil = C_nil;
-#endif
     if (consp(a)) pack_open(), pack_cell(qcar(a)), pack_list(qcdr(a));
     else pack_space(), pack_atom(a);
 }
 
 static void pack_list(LispObject a)
-{
-#ifdef COMMON
-    LispObject nil = C_nil;
-#endif
-    if (consp(a)) pack_comma(), pack_cell(qcar(a)), pack_list(qcdr(a));
-    else if (a == C_nil) pack_close();
+{   if (consp(a)) pack_comma(), pack_cell(qcar(a)), pack_list(qcdr(a));
+    else if (a == nil) pack_close();
     else pack_dot(), pack_atom(a);
 }
 
@@ -280,13 +273,12 @@ static LispObject unpack_atom()
             push(getvector(TAG_VECTOR,type_of_header(a),size));
             {   int i;
                 for (i=0; i<(size>>2)-1; ++i) elt(*stack,i) = unpack_cell();
-                if (!(i&1)) elt(*stack,i) = C_nil;
+                if (!(i&1)) elt(*stack,i) = nil;
             }
             return my_pop();
 
         case TYPE_SYMBOL:
-        {   LispObject nil = C_nil;
-            a = unpack_atom();  // Name in a string
+        {   a = unpack_atom();  // Name in a string
             return iintern(a, length_of_byteheader(vechdr(a))-CELL, CP, 0);
         }
         default:
@@ -301,7 +293,7 @@ static LispObject unpack_cell(void)
         case '(': return unpack_list();
         default :
         {   err_printf("Syntax error in message.\n");
-            return C_nil;
+            return nil;
         }
     }
 }
@@ -309,7 +301,7 @@ static LispObject unpack_cell(void)
 static LispObject unpack_list(void)
 {   push(unpack_cell());
     switch (unpack_char())
-    {   case ')': return cons(my_pop(),C_nil);
+    {   case ')': return cons(my_pop(),nil);
         case '.':
         {   LispObject tail = unpack_atom();
             return cons(my_pop(), tail);

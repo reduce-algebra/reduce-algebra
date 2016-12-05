@@ -61,7 +61,6 @@
 void record_get(LispObject tag, bool found)
 {
 #ifdef RECORD_GET
-    LispObject nil = C_nil;
     LispObject w;
     push(tag);
     w = Lget_hash_2(nil, tag, get_counts);
@@ -108,7 +107,7 @@ void record_get(LispObject tag, bool found)
 #ifndef COMMON
 
 LispObject get(LispObject a, LispObject b)
-{   LispObject pl, prev, w, nil = C_nil;
+{   LispObject pl, prev, w;
     int n;
 //
 // In CSL mode plists are structured like association lists, and
@@ -232,8 +231,7 @@ static void myabort()
 }
 
 LispObject putprop(LispObject a, LispObject b, LispObject c)
-{   LispObject nil = C_nil;
-    LispObject pl;
+{   LispObject pl;
     int n;
     if (!symbolp(a)) return c;
     if (symbolp(b) && (n = header_fastget(qheader(b))) != 0)
@@ -258,7 +256,6 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
         else pl = qcdr(pl);
     }
     stackcheck3(0, a, b, c);
-    nil = C_nil;
     push2(a, c);
     b = acons(b, c, qplist(a));
     pop2(c, a);
@@ -269,7 +266,6 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
 
 static LispObject remprop(LispObject a, LispObject b)
 {   LispObject pl, prevp;
-    LispObject nil = C_nil;
     int n;
     if (!symbolp(a)) return nil;
     if (symbolp(b) && (n = header_fastget(qheader(b))) != 0)
@@ -295,7 +291,7 @@ static LispObject remprop(LispObject a, LispObject b)
 }
 
 LispObject get_0(LispObject a, int n)
-{   LispObject w, nil = C_nil;
+{   LispObject w;
     if (!symbolp(a)) return onevalue(nil);
     {   if ((w = qfastgets(a)) == nil)
             return onevalue(nil);
@@ -308,8 +304,7 @@ LispObject get_0(LispObject a, int n)
 #else // in a COMMON world I have to use flat plists
 
 LispObject get(LispObject a, LispObject b, LispObject c)
-{   LispObject nil = C_nil;
-    LispObject pl;
+{   LispObject pl;
     int n;
     if (!symbolp(a))
     {
@@ -371,8 +366,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
 }
 
 LispObject putprop(LispObject a, LispObject b, LispObject c)
-{   LispObject nil = C_nil;
-    LispObject pl;
+{   LispObject pl;
     int n;
     if (!symbolp(a)) return c;
     if (symbolp(b) && (n = header_fastget(qheader(b))) != 0)
@@ -397,7 +391,6 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
         else pl = qcdr(qcdr(pl));
     }
     stackcheck3(0, a, b, c);
-    nil = C_nil;
     push2(a, c);
     b = list2star(b, c, qplist(a));
     pop2(c, a);
@@ -407,8 +400,7 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
 }
 
 static LispObject remprop(LispObject a, LispObject b)
-{   LispObject nil = C_nil;
-    LispObject pl, prevp = nil;
+{   LispObject pl, prevp = nil;
     int n;
     if (!symbolp(a)) return nil;
     if (symbolp(b) && (n = header_fastget(qheader(b))) != 0)
@@ -436,7 +428,7 @@ static LispObject remprop(LispObject a, LispObject b)
 
 #ifndef COMMON
 
-LispObject Lget(LispObject nil, LispObject a, LispObject b)
+LispObject Lget(LispObject env, LispObject a, LispObject b)
 {   LispObject pl, prev, w;
     int n;
 //
@@ -569,13 +561,13 @@ LispObject Lget_3(LispObject, int nargs, ...)
     return onevalue(get(a, b, c));
 }
 
-LispObject Lget(LispObject nil, LispObject a, LispObject b)
+LispObject Lget(LispObject env, LispObject a, LispObject b)
 {   return onevalue(get(a, b, nil));
 }
 
 #endif
 
-LispObject Lputprop(LispObject nil, int nargs, ...)
+LispObject Lputprop(LispObject env, int nargs, ...)
 {   va_list aa;
     LispObject a, b, c;
     argcheck(nargs, 3, "put");
@@ -591,14 +583,13 @@ LispObject Lputprop(LispObject nil, int nargs, ...)
 
 #ifdef COMMON
 
-LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
+LispObject Lflagp(LispObject env, LispObject a, LispObject b)
 {   a = get(a, b, unset_var);
     errexit();
     return onevalue(a == unset_var ? nil : lisp_true);
 }
 
-LispObject Lflagpcar(LispObject nil,
-                     LispObject a, LispObject b)
+LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
 {
 // Fairly heavily used by Reduce test file - hence in here
     if (!consp(a)) return onevalue(nil);
@@ -608,8 +599,7 @@ LispObject Lflagpcar(LispObject nil,
     return onevalue(a == unset_var ? nil : lisp_true);
 }
 
-LispObject Lflag(LispObject nil,
-                 LispObject a, LispObject b)
+LispObject Lflag(LispObject env, LispObject a, LispObject b)
 {   while (consp(a))
     {   LispObject v = qcar(a);
         a = qcdr(a);
@@ -622,8 +612,7 @@ LispObject Lflag(LispObject nil,
     return onevalue(nil);
 }
 
-LispObject Lremflag(LispObject nil,
-                    LispObject a, LispObject b)
+LispObject Lremflag(LispObject env, LispObject a, LispObject b)
 {   while (consp(a))
     {   LispObject v = qcar(a);
         a = qcdr(a);
@@ -638,7 +627,7 @@ LispObject Lremflag(LispObject nil,
 
 #else
 
-LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
+LispObject Lflagp(LispObject env, LispObject a, LispObject b)
 {   LispObject pl, prev, w;
     int n;
     if (!symbolp(a))
@@ -750,7 +739,7 @@ LispObject Lflagp(LispObject nil, LispObject a, LispObject b)
     }
 }
 
-LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
+LispObject Lflagpcar(LispObject env, LispObject a, LispObject b)
 {   LispObject pl, prev, w;
     int n;
 // Fairly heavily used by Reduce test file - hence in here
@@ -874,7 +863,7 @@ LispObject Lflagpcar(LispObject nil, LispObject a, LispObject b)
     }
 }
 
-LispObject Lflag(LispObject nil, LispObject a, LispObject b)
+LispObject Lflag(LispObject env, LispObject a, LispObject b)
 {   int n = 0;
     if (symbolp(b)) n = header_fastget(qheader(b));
     while (consp(a))
@@ -919,7 +908,7 @@ LispObject Lflag(LispObject nil, LispObject a, LispObject b)
     return onevalue(nil);
 }
 
-LispObject Lremflag(LispObject nil, LispObject a, LispObject b)
+LispObject Lremflag(LispObject env, LispObject a, LispObject b)
 {   int n = 0;
     if (symbolp(b)) n = header_fastget(qheader(b));
     while (consp(a))
@@ -956,7 +945,7 @@ LispObject Lremprop(LispObject, LispObject a, LispObject b)
 }
 
 
-LispObject Lplist(LispObject nil, LispObject a)
+LispObject Lplist(LispObject env, LispObject a)
 {   LispObject r;
     int i;
     if (!symbolp(a)) return aerror1("plist", a);
@@ -996,7 +985,7 @@ static uint64_t total = 0, frequencies[256];
 
 #endif
 
-LispObject bytecounts(LispObject nil, int nargs, ...)
+LispObject bytecounts(LispObject env, int nargs, ...)
 {
 #if !defined NO_BYTECOUNT || defined RECORD_GET
     int32_t i;
@@ -1059,7 +1048,7 @@ LispObject bytecounts(LispObject nil, int nargs, ...)
     return onevalue(nil);
 }
 
-LispObject bytecounts1(LispObject nil, LispObject a)
+LispObject bytecounts1(LispObject env, LispObject a)
 {
 #ifdef RECORD_GET
     int32_t i, size;
@@ -1119,7 +1108,7 @@ static inline void do_freebind(LispObject bvec)
     for (k=CELL; k<n; k+=CELL)
     {   LispObject v = *(LispObject *)((intptr_t)bvec + k - TAG_VECTOR);
         push(qvalue(v));
-        qvalue(v) = C_nil;
+        qvalue(v) = nil;
     }
 //
 // SPID_FBIND is a value that can NEVER occur elsewhere in the Lisp system,
@@ -1156,11 +1145,9 @@ static inline void do_freerstr()
 #ifdef OUT_OF_LINE
 
 static LispObject poll_jump_back(LispObject A_reg)
-{   LispObject nil = C_nil;
-    if (--countdown < 0) deal_with_tick();
+{   if (--countdown < 0) deal_with_tick();
     if (stack >= stacklimit)
     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-        nil = C_nil;
         if (exception_pending()) return SPID_ERROR;
     }
     return A_reg;
@@ -1171,7 +1158,7 @@ static LispObject poll_jump_back(LispObject A_reg)
 #ifdef COMMON
 
 static inline void do_pvbind(LispObject vals, LispObject vars)
-{   LispObject val, var, nil = C_nil;
+{   LispObject val, var;
     push4(nil, SPID_PVBIND, vars, vals);
     while (consp(vars))
     {   var = qcar(vars);
@@ -1179,7 +1166,6 @@ static inline void do_pvbind(LispObject vals, LispObject vars)
         if (!symbolp(var) || var == nil) continue;
         push(vars);
         var = acons(var, qvalue(var), stack[-4]);
-        nil = C_nil;
         if (exception_pending())
         {   popv(2);
         }
@@ -1197,7 +1183,7 @@ static inline void do_pvbind(LispObject vals, LispObject vars)
 }
 
 static inline void do_pvrestore()
-{   LispObject w, nil = C_nil;
+{   LispObject w;
     popv(1);
     pop(w);
     while (w != nil)
@@ -1214,7 +1200,6 @@ static LispObject encapsulate_sp(LispObject *sp)
 // Creates a boxed up representation of a pointer into the stack.
 //
 {   LispObject w = getvector(TAG_VECTOR, TYPE_SP, 2*CELL);
-    LispObject nil;
     errexit();
     elt(w, 0) = (LispObject)sp;
     return w;
@@ -1314,7 +1299,7 @@ LispObject bytestream_interpret(unsigned char *ppc, LispObject lit,
 // what is leading to uncontrolled recursion. This must not trigger a GC
 // until it calls bytestread_interpret1.
 //
-    LispObject w, nil = C_nil;
+    LispObject w;
     int len = 0;
     call_stack = cons_no_gc(elt(lit, 0), call_stack);
     for (w = call_stack; w != nil; w = qcdr(w)) len++;
@@ -1325,7 +1310,6 @@ LispObject bytestream_interpret(unsigned char *ppc, LispObject lit,
         while (w != nil)
         {   *++stack = w;
             prin_to_trace(qcar(w)); // should be a symbol
-            nil = C_nil;
             if (exception_pending()) flip_exception();
             w = *stack--;
             w = qcdr(w);
@@ -1334,7 +1318,6 @@ LispObject bytestream_interpret(unsigned char *ppc, LispObject lit,
     }
     if (len > 20000) flip_exception();
     else w = bytestream_interpret1(ppc, lit, entry_stack);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         call_stack = qcdr(call_stack);
@@ -1359,7 +1342,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
     bool traceset_flag = ((uintptr_t)entry_stack & 1) != 0;
     if (traceset_flag) entry_stack = (LispObject *)((uintptr_t)entry_stack-1);
     LispObject A_reg;
-    LispObject nil = C_nil;
     LispObject r1, r2, r3;
     one_args *f1;
     two_args *f2;
@@ -1469,7 +1451,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
     if ((char *)fringe <= (char *)heaplimit)
     {   save_pc();
         A_reg = cons_gc_test(A_reg);
-        nil = C_nil;
         if (exception_pending()) goto call_error_exit;
         restore_pc();
     }
@@ -1524,7 +1505,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 //
                 err_printf("\nUnrecognized opcode byte %x\n", *(ppc-1));
                 aerror("compiler failure");
-                nil = C_nil;
                 goto error_exit;
 
             case OP_ONEVALUE:
@@ -1580,7 +1560,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
             case OP_PVBIND:
                 save_pc();
                 do_pvbind(A_reg, B_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 continue;
@@ -1690,7 +1669,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     save_pc();
                     A_reg = reclaim((LispObject)((char *)r1 + TAG_CONS),
                                     "bytecoded ncons", GC_CONS, 0);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                     pop(B_reg);
@@ -1705,7 +1683,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 push(B_reg);
                 save_pc();
                 A_reg = ncons(A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 pop(B_reg);
@@ -1722,7 +1699,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 {   save_pc();
                     A_reg = reclaim((LispObject)((char *)r1 + TAG_CONS),
                                     "bytecoded xcons", GC_CONS, 0);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                 }
@@ -1730,7 +1706,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #else
                 save_pc();
                 A_reg = cons(A_reg, B_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -1749,7 +1724,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 {   save_pc();
                     A_reg = reclaim((LispObject)((char *)r1 + TAG_CONS),
                                     "bytecoded list2", GC_CONS, 0);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                 }
@@ -1757,7 +1731,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #else
                 save_pc();
                 A_reg = list2(B_reg, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -1777,7 +1750,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 {   save_pc();
                     A_reg = reclaim((LispObject)((char *)r1 + TAG_CONS),
                                     "bytecoded acons", GC_CONS, 0);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                 }
@@ -1786,7 +1758,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 pop(r1);
                 save_pc();
                 A_reg = acons(r1, B_reg, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -1879,7 +1850,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 {   save_pc();
                     A_reg = reclaim((LispObject)((char *)r1 + TAG_CONS),
                                     "bytecoded list2*", GC_CONS, 0);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                 }
@@ -1888,7 +1858,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 pop(r1);
                 save_pc();
                 A_reg = list2star(r1, B_reg, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -1912,7 +1881,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 {   save_pc();
                     A_reg = reclaim((LispObject)((char *)r1 + TAG_CONS),
                                     "bytecoded list3", GC_CONS, 0);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                 }
@@ -1921,7 +1889,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 pop(r1);
                 save_pc();
                 A_reg = list3(r1, B_reg, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -1937,7 +1904,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 //
                 save_pc();
                 A_reg = plus2(A_reg, fixnum_of_int(1));
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 continue;
@@ -1952,7 +1918,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     else
                     {   save_pc();
                         A_reg = make_lisp_integerptr(nn);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
                         continue;
@@ -1963,7 +1928,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 //
                 save_pc();
                 A_reg = plus2(B_reg, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 continue;
@@ -1978,7 +1942,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 //
                 save_pc();
                 A_reg = plus2(A_reg, fixnum_of_int(-1));
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 continue;
@@ -1993,7 +1956,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     else
                     {   save_pc();
                         A_reg = make_lisp_integerptr(nn);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
                         continue;
@@ -2008,10 +1970,8 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 push(B_reg);
                 A_reg = negate(A_reg);
                 pop(B_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 A_reg = plus2(B_reg, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 continue;
@@ -2023,7 +1983,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 //
                 save_pc();
                 A_reg = times2(B_reg, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 continue;
@@ -2033,7 +1992,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 else
                 {   save_pc();
                     w = lessp2(B_reg, A_reg);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                 }
@@ -2045,7 +2003,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 else
                 {   save_pc();
                     w = lessp2(A_reg, B_reg);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                 }
@@ -2056,7 +2013,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef COMMON
                 save_pc();
                 A_reg = get(B_reg, A_reg, unset_var);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 if (A_reg == unset_var) A_reg = nil;
@@ -2069,7 +2025,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(A_reg, false);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -2084,7 +2039,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                         save_pc();
                         record_get(A_reg, false);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
 #endif
@@ -2096,7 +2050,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     push(r1);
                     save_pc();
                     record_get(A_reg, r1 != SPID_NOPROP);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                     pop(r1);
@@ -2111,7 +2064,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                         save_pc();
                         record_get(A_reg, false);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
 #endif
@@ -2124,7 +2076,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                         save_pc();
                         record_get(A_reg, true);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
 #endif
@@ -2137,7 +2088,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                         save_pc();
                         record_get(A_reg, false);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
 #endif
@@ -2150,7 +2100,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                         save_pc();
                         record_get(A_reg, true);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
 #endif
@@ -2164,7 +2113,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                         save_pc();
                         record_get(A_reg, false);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
 #endif
@@ -2180,7 +2128,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                             save_pc();
                             record_get(A_reg, false);
-                            nil = C_nil;
                             if (exception_pending()) goto error_exit;
                             restore_pc();
 #endif
@@ -2194,7 +2141,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                             save_pc();
                             record_get(A_reg, false);
-                            nil = C_nil;
                             if (exception_pending()) goto error_exit;
                             restore_pc();
 #endif
@@ -2206,7 +2152,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 continue;
 #else
                 A_reg = Lflagp(nil, B_reg, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 continue;
 #endif
@@ -2227,7 +2172,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #endif
                     push(B_reg);
                     A_reg = f1(qenv(B_reg), A_reg);
-                    nil = C_nil;
                     if (exception_pending()) goto stack_apply_error;
                     popv(1);
                     restore_pc();
@@ -2238,7 +2182,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 name_of_caller = (const char *)ffname;
 #endif
                 A_reg = apply(B_reg, 1, nil, B_reg, (1 & (int)(intptr_t)entry_stack));
-                nil = C_nil;
                 if (exception_pending()) goto apply_error;
                 restore_pc();
                 continue;
@@ -2258,7 +2201,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     name_of_caller = (const char *)ffname;
 #endif
                     A_reg = f2(qenv(r2), B_reg, A_reg);
-                    nil = C_nil;
                     if (exception_pending()) goto stack_apply_error;
                     popv(1);
                     restore_pc();
@@ -2270,7 +2212,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 name_of_caller = (const char *)ffname;
 #endif
                 A_reg = apply(r2, 2, nil, r2, (1 & (int)(intptr_t)entry_stack));
-                nil = C_nil;
                 if (exception_pending()) goto apply_error;
                 restore_pc();
                 continue;
@@ -2291,7 +2232,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     name_of_caller = (const char *)ffname;
 #endif
                     A_reg = f345(qenv(r2), 3, r1, B_reg, A_reg);
-                    nil = C_nil;
                     if (exception_pending()) goto stack_apply_error;
                     popv(1);
                     restore_pc();
@@ -2303,7 +2243,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 name_of_caller = (const char *)ffname;
 #endif
                 A_reg = apply(r2, 3, nil, r2, (1 & (int)(intptr_t)entry_stack));
-                nil = C_nil;
                 if (exception_pending()) goto apply_error;
                 restore_pc();
                 continue;
@@ -2315,7 +2254,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 //
                 err_printf("\nAPPLY4 not implemented yet\n");
                 aerror("unfinished work in bytes1.c");
-                nil = C_nil;
                 goto error_exit;
 
 #ifdef COMMON
@@ -2326,7 +2264,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 
             case OP_EQUAL:                                  // A = equal(B, A)
                 A_reg = EQUAL(B_reg, A_reg) ? lisp_true : nil;
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 continue;
 
@@ -2358,19 +2295,16 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 if (!(is_vector(B_reg)) ||
                     vector_holds_binary(k = vechdr(B_reg)))
                 {   aerror1("getv", B_reg);
-                    nil = C_nil;
                     goto error_exit;
                 }
                 else if (!is_fixnum(A_reg))
                 {   aerror1("getv offset not fixnum", A_reg);
-                    nil = C_nil;
                     goto error_exit;
                 }
                 k = (length_of_header(k) - CELL)/CELL;
                 n = int_of_fixnum(A_reg);
                 if (n < 0 || n >= k)
                 {   aerror1("getv index range", A_reg);
-                    nil = C_nil;
                     goto error_exit;
                 }
                 A_reg = *(LispObject *)(
@@ -2380,7 +2314,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #else
                 save_pc();
                 A_reg = Lgetv(nil, B_reg, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -2406,7 +2339,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
             case OP_LENGTH:
                 save_pc();
                 A_reg = Llength(nil, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 continue;
@@ -2871,7 +2803,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 f1 = one_arg_functions[next_byte];
                 save_pc();
                 A_reg = f1(nil, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto call_error_exit;
                 restore_pc();
                 xppc = ppc;
@@ -2883,7 +2814,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 f1 = one_arg_functions[next_byte];
                 save_pc();
                 A_reg = f1(nil, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto call_error_exit;
                 restore_pc();
                 xppc = ppc;
@@ -2895,7 +2825,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 f2 = two_arg_functions[next_byte];
                 save_pc();
                 A_reg = f2(nil, B_reg, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 xppc = ppc;
@@ -2907,7 +2836,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 f2 = two_arg_functions[next_byte];
                 save_pc();
                 A_reg = f2(nil, B_reg, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 xppc = ppc;
@@ -2940,7 +2868,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef COMMON
                 {   save_pc();
                     r1 = get(A_reg, elt(litvec, w), unset_var);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                     if (r1 != unset_var) ppc = ppc + *xppc;
@@ -2957,7 +2884,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                         save_pc();
                         record_get(B_reg, false);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
 #endif
@@ -2968,7 +2894,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     push(r1);
                     save_pc();
                     record_get(B_reg, r1 != SPID_NOPROP);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                     pop(r1);
@@ -2982,7 +2907,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(B_reg, false);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -2994,7 +2918,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(B_reg, true);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -3006,7 +2929,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(B_reg, false);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -3018,7 +2940,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(B_reg, true);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -3031,7 +2952,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(B_reg, false);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -3047,7 +2967,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                         save_pc();
                         record_get(B_reg, true);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
 #endif
@@ -3060,7 +2979,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                         save_pc();
                         record_get(B_reg, false);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
 #endif
@@ -3070,7 +2988,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 continue;
 #else
                     r1 = Lflagp(nil, A_reg, elt(litvec, w));
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 if (r1 != nil) ppc = ppc + *xppc;
                 continue;
@@ -3089,7 +3006,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef COMMON
                 {   save_pc();
                     r1 = get(A_reg, elt(litvec, w), unset_var);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                     if (r1 == unset_var) ppc = ppc + *xppc;
@@ -3106,7 +3022,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                         save_pc();
                         record_get(B_reg, false);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
 #endif
@@ -3118,7 +3033,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     push(r1);
                     save_pc();
                     record_get(B_reg, r1 != SPID_NOPROP);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                     pop(r1);
@@ -3132,7 +3046,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(B_reg, false);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -3144,7 +3057,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(B_reg, true);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -3156,7 +3068,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(B_reg, false);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -3168,7 +3079,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(B_reg, true);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -3181,7 +3091,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(B_reg, false);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -3196,7 +3105,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                         save_pc();
                         record_get(B_reg, true);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
 #endif
@@ -3209,7 +3117,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                         save_pc();
                         record_get(B_reg, false);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                         restore_pc();
 #endif
@@ -3219,7 +3126,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 continue;
 #else
                     r1 = Lflagp(nil, A_reg, elt(litvec, w));
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 if (r1 == nil) ppc = ppc + *xppc;
                 continue;
@@ -3247,7 +3153,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -3272,7 +3177,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -3297,7 +3201,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -3322,7 +3225,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -3347,7 +3249,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -3372,7 +3273,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -3392,7 +3292,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 if (--countdown < 0) deal_with_tick();
                 if (stack >= stacklimit)
                 {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                 }
 #else
@@ -3418,7 +3317,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -3445,7 +3343,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -3472,7 +3369,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -3499,7 +3395,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -3527,7 +3422,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -3555,7 +3449,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -3577,7 +3470,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 if (--countdown < 0) deal_with_tick();
                 if (stack >= stacklimit)
                 {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                 }
 #else
@@ -3630,7 +3522,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 qcar(r1) = r1; qcdr(r1) = nil;
 #ifdef COMMON
                 A_reg = Lmv_list(nil, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
 #endif
                 push3(nil, fixnum_of_int(UNWIND_NULL), A_reg);
@@ -3671,7 +3562,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (r1 == qcar(r2)) break;
                 if (r2==nil)
                 {   aerror1("throw: tag not found", r1);
-                    nil = C_nil;
                     goto error_exit;
                 }
                 catch_tags = qcdr(r2);
@@ -3775,7 +3665,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                         name_of_caller = (const char *)ffname;
 #endif
                         A_reg = apply(A_reg, (int)(*ppc), nil, A_reg, (1 & (int)(intptr_t)entry_stack));
-                        nil = C_nil;
                         if (exception_pending()) goto ncall_error_exit;
                         restore_pc();
                         ppc++;
@@ -3832,11 +3721,9 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 if (--countdown < 0) deal_with_tick();
                 if (stack >= stacklimit)
                 {   reclaim(nil, "stack", GC_STACK, 0);
-                    nil = C_nil;
                     if (exception_pending()) goto callself_error_exit;
                 }
                 A_reg = bytestream_interpret(data_of_bps(codevec), litvec, stack-1);
-                nil = C_nil;
                 if (exception_pending()) goto callself_error_exit;
                 pop2(litvec, codevec);
                 restore_pc();
@@ -3873,11 +3760,9 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 if (--countdown < 0) deal_with_tick();
                 if (stack >= stacklimit)
                 {   reclaim(nil, "stack", GC_STACK, 0);
-                    nil = C_nil;
                     if (exception_pending()) goto callself_error_exit;
                 }
                 A_reg = bytestream_interpret(data_of_bps(codevec), litvec, stack-2);
-                nil = C_nil;
                 if (exception_pending()) goto callself_error_exit;
                 pop2(litvec, codevec);
                 restore_pc();
@@ -3929,7 +3814,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 name_of_caller = (const char *)ffname;
 #endif
                 A_reg = apply(A_reg, (int)(*(ppc+1)), nil, A_reg, (1 & (int)(intptr_t)entry_stack));
-                nil = C_nil;
                 if (exception_pending()) goto ncall_error_exit;
                 restore_pc();
                 ppc = ppc + 2;
@@ -3946,7 +3830,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 save_pc();
                 A_reg = f345(nil, 0);
                 debug_assert(1);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 continue;
@@ -3959,7 +3842,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 save_pc();
                 A_reg = f2(nil, A_reg, B_reg);
                 debug_assert(1);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 continue;
@@ -3973,7 +3855,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 pop(r1);
                 A_reg = f345(nil, 3, r1, B_reg, A_reg);
                 debug_assert(1);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 continue;
@@ -4315,7 +4196,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -4340,7 +4220,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -4367,7 +4246,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -4394,7 +4272,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                     if (--countdown < 0) deal_with_tick();
                     if (stack >= stacklimit)
                     {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-                        nil = C_nil;
                         if (exception_pending()) goto error_exit;
                     }
 #else
@@ -4412,7 +4289,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 save_pc();
                 A_reg = f1(nil, A_reg);
                 debug_assert(1);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 continue;
@@ -4425,7 +4301,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 save_pc();
                 A_reg = f2(nil, B_reg, A_reg);
                 debug_assert(1);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 continue;
@@ -4490,7 +4365,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 {   save_pc();
                     A_reg = reclaim((LispObject)((char *)r1 + TAG_CONS),
                                     "bytecoded cons", GC_CONS, 0);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
                 }
@@ -4498,7 +4372,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #else
                 save_pc();
                 A_reg = cons(B_reg, A_reg);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -4545,7 +4418,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                 save_pc();
                 record_get(elt(fastget_names, w & 0x7f), n);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -4573,7 +4445,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 //
         save_pc();
         A_reg = get(B_reg, A_reg, nil);
-        nil = C_nil;
         if (exception_pending()) goto error_exit;
         restore_pc();
         continue;
@@ -4589,7 +4460,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
             save_pc();
             record_get(A_reg, false);
-            nil = C_nil;
             if (exception_pending()) goto error_exit;
             restore_pc();
 #endif
@@ -4604,7 +4474,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(A_reg, false);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -4615,7 +4484,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 push(r1);
                 save_pc();
                 record_get(A_reg, elt(r1, n-1) != nil);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
                 pop(r1);
@@ -4635,7 +4503,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                 save_pc();
                 record_get(A_reg, false);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -4648,7 +4515,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                 save_pc();
                 record_get(A_reg, true);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -4661,7 +4527,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                 save_pc();
                 record_get(A_reg, false);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -4674,7 +4539,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                 save_pc();
                 record_get(A_reg, true);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -4688,7 +4552,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                 save_pc();
                 record_get(A_reg, false);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
                 restore_pc();
 #endif
@@ -4704,7 +4567,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(A_reg, true);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -4718,7 +4580,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #ifdef RECORD_GET
                     save_pc();
                     record_get(A_reg, false);
-                    nil = C_nil;
                     if (exception_pending()) goto error_exit;
                     restore_pc();
 #endif
@@ -4731,7 +4592,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #else
         save_pc();
         A_reg = get(B_reg, A_reg);
-        nil = C_nil;
         if (exception_pending()) goto error_exit;
         restore_pc();
         continue;
@@ -4753,7 +4613,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 
     catcher:
         A_reg = cons(A_reg, catch_tags);
-        nil = C_nil;
         if (exception_pending()) goto error_exit;
         catch_tags = A_reg;
         push3(fixnum_of_int(w+1), catch_tags, SPID_CATCH);
@@ -4781,7 +4640,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
         save_pc();
         A_reg = f345(qenv(r1), 0);
         debug_assert(1);
-        nil = C_nil;
         if (exception_pending()) goto call_error_exit;
         restore_pc();
         continue;
@@ -4811,7 +4669,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
         if (--countdown < 0) deal_with_tick();
         if (stack >= stacklimit)
         {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-            nil = C_nil;
             if (exception_pending()) goto error_exit;
         }
 #else
@@ -4868,7 +4725,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
             stack = entry_stack;
             push(r2);
             trace_print_0(elt(litvec, 0));
-            nil = C_nil;
             if (exception_pending()) goto error_exit;
             popv(1);
             ppc = (unsigned char *)data_of_bps(codevec);
@@ -4905,7 +4761,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
         save_pc();
         A_reg = f1(qenv(r1), A_reg);
         debug_assert(1);
-        nil = C_nil;
         if (exception_pending()) goto call_error_exit;
         restore_pc();
         continue;
@@ -4935,7 +4790,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
         if (--countdown < 0) deal_with_tick();
         if (stack >= stacklimit)
         {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-            nil = C_nil;
             if (exception_pending()) goto error_exit;
         }
 #else
@@ -4978,7 +4832,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
             push(A_reg);
             push(r2);
             trace_print_1(elt(litvec, 0));
-            nil = C_nil;
             if (exception_pending()) goto error_exit;
             popv(1);
             ppc = (unsigned char *)data_of_bps(codevec);
@@ -5015,7 +4868,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
         save_pc();
         A_reg = f2(qenv(r1), B_reg, A_reg);
         debug_assert(1);
-        nil = C_nil;
         if (exception_pending()) goto call_error_exit;
         restore_pc();
         continue;
@@ -5037,7 +4889,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
         save_pc();
         A_reg = f2(qenv(r1), A_reg, B_reg);
         debug_assert(1);
-        nil = C_nil;
         if (exception_pending()) goto call_error_exit;
         restore_pc();
         continue;
@@ -5067,7 +4918,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
         if (--countdown < 0) deal_with_tick();
         if (stack >= stacklimit)
         {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-            nil = C_nil;
             if (exception_pending()) goto error_exit;
         }
 #else
@@ -5110,7 +4960,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
             push2(B_reg, A_reg);
             push(r2);
             trace_print_2(elt(litvec, 0));
-            nil = C_nil;
             if (exception_pending()) goto error_exit;
             popv(1);
             ppc = (unsigned char *)data_of_bps(codevec);
@@ -5148,7 +4997,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
         pop(r2);
         A_reg = f345(qenv(r1), 3, r2, B_reg, A_reg);
         debug_assert(1);
-        nil = C_nil;
         if (exception_pending()) goto call_error_exit;
         restore_pc();
         continue;
@@ -5179,7 +5027,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
         if (--countdown < 0) deal_with_tick();
         if (stack >= stacklimit)
         {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-            nil = C_nil;
             if (exception_pending()) goto error_exit;
         }
 #else
@@ -5222,7 +5069,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
             push3(r2, B_reg, A_reg);
             push(r3);
             trace_print_3(elt(litvec, 0));
-            nil = C_nil;
             if (exception_pending()) goto error_exit;
             popv(1);
             ppc = (unsigned char *)data_of_bps(codevec);
@@ -5255,7 +5101,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
         if (--countdown < 0) deal_with_tick();
         if (stack >= stacklimit)
         {   A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-            nil = C_nil;
             if (exception_pending()) goto error_exit;
         }
 #else
@@ -5284,7 +5129,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 #endif
         A_reg = apply(A_reg, (int)w, nil, A_reg, (1 & (int)(intptr_t)entry_stack));
         debug_assert(1);
-        nil = C_nil;
         if (exception_pending()) goto ncall_error_exit;
         stack = entry_stack;
 #ifndef NO_BYTECOUNT
@@ -5296,11 +5140,9 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
     create_closure:
         save_pc();
         A_reg = encapsulate_sp(&stack[-2-(int)w]);
-        nil = C_nil;
         if (exception_pending()) goto error_exit;
         pop(B_reg);
         A_reg = list2star(cfunarg, B_reg, A_reg);
-        nil = C_nil;
         if (exception_pending()) goto error_exit;
         restore_pc();
         pop(B_reg);
@@ -5331,7 +5173,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
             {   err_printf("apply: ");
                 loop_print_error(r1);
                 err_printf("\n");
-                nil = C_nil;
                 if (exception_pending()) flip_exception();
             }
         }
@@ -5347,7 +5188,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
         {   err_printf("apply: ");
             loop_print_error(A_reg);
             err_printf("\n");
-            nil = C_nil;
             if (exception_pending()) flip_exception();
         }
         goto pop_stack_and_exit;
@@ -5358,7 +5198,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
 
     error_1_A:
         error(1, CSLerrcode, A_reg);
-        nil = C_nil;
         flip_exception();
         goto pop_stack_and_exit;
 
@@ -5370,7 +5209,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
         {   err_printf("Inside: ");
             loop_print_error(elt(litvec, 0));
             err_printf("\n");
-            nil = C_nil;
             if (exception_pending()) flip_exception();
         }
 //
@@ -5395,7 +5233,6 @@ LispObject bytestream_interpret1(unsigned char *ppc, LispObject lit,
                 push2(exit_tag, fixnum_of_int(exit_reason));
 #ifdef COMMON
                 A_reg = Lmv_list(nil, exit_value);
-                nil = C_nil;
                 if (exception_pending()) goto error_exit;
 #endif
                 push(A_reg);

@@ -39,7 +39,7 @@
 #include "headers.h"
 
 
-static LispObject Lboole(LispObject nil, int nargs, ...)
+static LispObject Lboole(LispObject env, int nargs, ...)
 {   LispObject r, op, a, b;
     va_list aa;
     argcheck(nargs, 3, "boole");
@@ -221,7 +221,7 @@ static LispObject Lffloor(LispObject, LispObject, LispObject)
 }
 #endif
 
-LispObject Lgcd_n(LispObject nil, int nargs, ...)
+LispObject Lgcd_n(LispObject env, int nargs, ...)
 {   va_list a;
     int i;
     LispObject r;
@@ -249,7 +249,7 @@ LispObject Lgcd_n(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-LispObject Lgcd(LispObject nil, LispObject a, LispObject b)
+LispObject Lgcd(LispObject env, LispObject a, LispObject b)
 {   a = gcd(a, b);
     errexit();
     return onevalue(a);
@@ -277,7 +277,7 @@ static LispObject Lldb(LispObject, LispObject, LispObject)
 }
 #endif // COMMON
 
-LispObject Llcm_n(LispObject nil, int nargs, ...)
+LispObject Llcm_n(LispObject env, int nargs, ...)
 {   va_list a;
     int i;
     LispObject r;
@@ -295,7 +295,7 @@ LispObject Llcm_n(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-LispObject Llcm(LispObject nil, LispObject a, LispObject b)
+LispObject Llcm(LispObject env, LispObject a, LispObject b)
 {   a = lcm(a, b);
     errexit();
     return onevalue(a);
@@ -329,7 +329,7 @@ static LispObject Lrealpart(LispObject, LispObject a)
 }
 #endif // COMMON
 
-static LispObject Ldecode_float(LispObject nil, LispObject a)
+static LispObject Ldecode_float(LispObject env, LispObject a)
 {   double d, neg = 1.0;
     int x;
     LispObject sign;
@@ -388,7 +388,7 @@ static LispObject Ldecode_float(LispObject nil, LispObject a)
 // pain.
 //
 
-static LispObject Lfloat_denormalized_p(LispObject nil, LispObject a)
+static LispObject Lfloat_denormalized_p(LispObject env, LispObject a)
 {   switch ((int)a & TAG_BITS)
     {
         case XTAG_SFLOAT & TAG_BITS:
@@ -422,7 +422,7 @@ static LispObject Lfloat_denormalized_p(LispObject nil, LispObject a)
     return onevalue(nil);
 }
 
-static LispObject Lfloat_infinity_p(LispObject nil, LispObject a)
+static LispObject Lfloat_infinity_p(LispObject env, LispObject a)
 {   switch ((int)a & TAG_BITS)
     {
         case XTAG_SFLOAT & TAG_BITS:
@@ -463,7 +463,7 @@ static LispObject Lfloat_infinity_p(LispObject nil, LispObject a)
 // will come out as an infinity (not raising an exception) so all will be OK!
 //
 
-static LispObject Lfp_infinite(LispObject nil, LispObject a)
+static LispObject Lfp_infinite(LispObject env, LispObject a)
 {   switch ((int)a & TAG_BITS)
     {
         case XTAG_SFLOAT & TAG_BITS:
@@ -494,7 +494,7 @@ static LispObject Lfp_infinite(LispObject nil, LispObject a)
 // A NaN is not equal to even itself....
 //
 
-static LispObject Lfp_nan(LispObject nil, LispObject a)
+static LispObject Lfp_nan(LispObject env, LispObject a)
 {   switch ((int)a & TAG_BITS)
     {
         case XTAG_SFLOAT & TAG_BITS:
@@ -536,7 +536,7 @@ static LispObject Lfp_nan(LispObject nil, LispObject a)
 // otherwise x/x => 1.0
 //
 
-static LispObject Lfp_finite(LispObject nil, LispObject a)
+static LispObject Lfp_finite(LispObject env, LispObject a)
 {   switch ((int)a & TAG_BITS)
     {
         case XTAG_SFLOAT & TAG_BITS:
@@ -583,7 +583,7 @@ static LispObject Lfp_finite(LispObject nil, LispObject a)
 // state.
 //
 
-static LispObject Lfp_subnorm(LispObject nil, LispObject a)
+static LispObject Lfp_subnorm(LispObject env, LispObject a)
 {   int32_t x = 0;
     switch ((int)a & TAG_BITS)
     {
@@ -622,7 +622,7 @@ static LispObject Lfp_subnorm(LispObject nil, LispObject a)
 // NOT the same a test (x < 0) because this function returns T for -0.0.
 //
 
-static LispObject Lfp_signbit(LispObject nil, LispObject a)
+static LispObject Lfp_signbit(LispObject env, LispObject a)
 {
 #ifndef HAVE_SIGNBIT
     int32_t x = 0;
@@ -770,7 +770,7 @@ static LispObject Lftruncate(LispObject, LispObject, LispObject)
 // This may need to worry about NaNs and infinities.
 //
 
-static LispObject Linteger_decode_float(LispObject nil, LispObject a)
+static LispObject Linteger_decode_float(LispObject env, LispObject a)
 {   double d;
     int tag = (int)a & TAG_BITS;
     int x, neg = 0;
@@ -835,7 +835,7 @@ static LispObject Linteger_decode_float(LispObject nil, LispObject a)
 #endif
 }
 
-static LispObject Linteger_length(LispObject nil, LispObject a)
+static LispObject Linteger_length(LispObject env, LispObject a)
 {   a = Labsval(nil, a);
     errexit();
     return Lmsd(nil, a);
@@ -965,7 +965,7 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 // This converts from a ratio to a Lisp integer.  It has to apply
 // the specified rounding regime.
 //
-{   LispObject p, q, r, nil = C_nil;
+{   LispObject p, q, r;
     p = numerator(a);
     q = denominator(a);
     push2(q, p);
@@ -1008,7 +1008,7 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 }
 
 static LispObject lisp_fix(LispObject a, int roundmode)
-{   LispObject r, nil;
+{   LispObject r;
     push(a);
     r = lisp_fix_sub(a, roundmode);
     errexitn(1);
@@ -1022,7 +1022,7 @@ static LispObject lisp_fix(LispObject a, int roundmode)
 }
 
 static LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
-{   LispObject q, r, nil;
+{   LispObject q, r;
     if (is_float(a) || is_float(b))
     {   double p = float_of_number(a), q = float_of_number(b), d = p/q;
         a = make_boxfloat(d, TYPE_DOUBLE_FLOAT);

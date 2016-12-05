@@ -3392,12 +3392,12 @@ print!-csl!-headers) (cond (hdrnow (c!:print!-init))) (wrs O_file) (return
 nil)))
 
 (de c!:print!-init nil (progn (c!:printf "\n") (c!:printf 
-"LispObject *C_nilp;\n") (c!:printf "LispObject **C_stackp;\n") (c!:printf 
+"LispObject *nilp;\n") (c!:printf "LispObject **C_stackp;\n") (c!:printf 
 "LispObject * volatile * stacklimitp;\n") (c!:printf "\n") (c!:printf 
 "void init(LispObject *a, LispObject **b, LispObject * volatile *c)\n") (
-c!:printf "{\n") (c!:printf "    C_nilp = a;\n") (c!:printf 
+c!:printf "{\n") (c!:printf "    nilp = a;\n") (c!:printf 
 "    C_stackp = b;\n") (c!:printf "    stacklimitp = c;\n") (c!:printf "}\n")
-(c!:printf "\n") (c!:printf "#define C_nil (*C_nilp)\n") (c!:printf 
+(c!:printf "\n") (c!:printf "#define nil (*nilp)\n") (c!:printf 
 "#define C_stack  (*C_stackp)\n") (c!:printf 
 "#define stacklimit (*stacklimitp)\n") (c!:printf "\n")))
 
@@ -3815,7 +3815,7 @@ setq var1280 r2) lab1279 (cond ((null var1280) (return nil))) (prog (a) (setq
 a (car var1280)) (c!:printf ", %v" a)) (setq var1280 (cdr var1280)) (go 
 lab1279)) (c!:printf ");\n")))))))))) (cond ((not (flagp (car r3) (quote 
 c!:no_errors))) (progn (cond ((and (null (cadr r3)) (equal depth 0)) (
-c!:printf "    errexit();\n")) (t (progn (c!:printf "    nil = C_nil;\n") (
+c!:printf "    errexit();\n")) (t (progn (
 c!:printf "    if (exception_pending()) ") (c!:pgoto (c!:find_error_label nil
 (cadr r3) depth) depth))))))) (cond (boolfn (c!:printf 
 "    %v = %v ? lisp_true : nil;\n" r1 r1)))))
@@ -4127,9 +4127,8 @@ setq stacks (c!:allocate_registers c!:stacklocs)) (flag stacks (quote
 c!:live_across_call)) (c!:remove_nops c!:all_blocks) (setq c!:startpoint (
 c!:branch_chain c!:startpoint nil)) (remflag c!:all_blocks (quote c!:visited)
 ) (setq c!:startpoint (c!:branch_chain c!:startpoint t)) (remflag 
-c!:all_blocks (quote c!:visited)) (cond (does_call (setq nil_used t))) (cond 
-(nil_used (c!:printf "    LispObject nil = C_nil;\n")) (t (cond (nilbase_used
-(c!:printf "    nil_as_base\n"))))) (cond (locs (progn (c!:printf 
+c!:all_blocks (quote c!:visited)) (cond (does_call (setq nil_used t)))
+(cond (locs (progn (c!:printf 
 "    LispObject %s" (car locs)) (prog (var1340) (setq var1340 (cdr locs)) 
 lab1339 (cond ((null var1340) (return nil))) (prog (v) (setq v (car var1340))
 (c!:printf ", %s" v)) (setq var1340 (cdr var1340)) (go lab1339)) (c!:printf 
@@ -4152,7 +4151,7 @@ c!:printf "#endif\n") (c!:printf "#ifdef CHECK_STACK\n") (c!:printf
 c!:printf "    if (stack >= stacklimit)\n") (c!:printf "    {\n") (c!:pushpop
 (quote push) args) (c!:printf 
 "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n") (c!:pushpop (quote 
-pop) (reverse args)) (c!:printf "        nil = C_nil;\n") (c!:printf 
+pop) (reverse args))  (c!:printf 
 "        if (exception_pending()) return nil;\n") (c!:printf "    }\n")))) (
 cond (reloadenv (c!:printf "    push(env);\n"))) (setq n 0) (cond (stacks (
 progn (c!:printf "%<// space for vars preserved across procedure calls\n") (

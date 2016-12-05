@@ -244,7 +244,7 @@ char *trim_module_name(char *name, size_t *lenp)
     return name;
 }
 
-LispObject Lcopy_module(LispObject nil, LispObject file)
+LispObject Lcopy_module(LispObject env, LispObject file)
 //
 // copy-module will ensure that the output PDS contains a copy of
 // the module that is named. There is no provision for copying
@@ -272,7 +272,7 @@ LispObject Lcopy_module(LispObject nil, LispObject file)
     return onevalue(nil);
 }
 
-LispObject Lcopy_native(LispObject nil, LispObject src, LispObject dest)
+LispObject Lcopy_native(LispObject env, LispObject src, LispObject dest)
 //
 // (copy-native external-file internal-name)
 // copies (binary) data from the named external file to a module with
@@ -287,7 +287,6 @@ LispObject Lcopy_native(LispObject nil, LispObject src, LispObject dest)
     int c;
     memset(filename, 0, sizeof(filename));
     w = get_string_data(src, "copy-native", &len);
-    nil = C_nil;
     if (exception_pending()) return nil;
     if (len >= sizeof(filename)) len = sizeof(filename);
     srcfile = open_file(filename, w, len, "rb", NULL);
@@ -321,7 +320,7 @@ LispObject Lcopy_native(LispObject nil, LispObject src, LispObject dest)
     return onevalue(lisp_true);
 }
 
-LispObject Ldelete_module(LispObject nil, LispObject file)
+LispObject Ldelete_module(LispObject env, LispObject file)
 //
 // delete-module deletes the named module from the output PDS, supposing it
 // was there to begin with.  (delete-module nil) deletes any help data.
@@ -348,7 +347,7 @@ LispObject Ldelete_module(LispObject nil, LispObject file)
     return onevalue(nil);
 }
 
-LispObject Lbanner(LispObject nil, LispObject info)
+LispObject Lbanner(LispObject env, LispObject info)
 //
 // (startup!-banner nil)      returns the current banner info (nil if none)
 // (startup!-banner "string") sets new info
@@ -397,7 +396,7 @@ LispObject Lbanner(LispObject nil, LispObject info)
     return onevalue(lisp_true);
 }
 
-LispObject Llist_modules(LispObject nil, int nargs, ...)
+LispObject Llist_modules(LispObject env, int nargs, ...)
 //
 // display information about available modules
 //
@@ -406,7 +405,7 @@ LispObject Llist_modules(LispObject nil, int nargs, ...)
     return onevalue(nil);
 }
 
-LispObject Lwritable_libraryp(LispObject nil, LispObject file)
+LispObject Lwritable_libraryp(LispObject env, LispObject file)
 //
 // This tests if a library handle refers to a writable file.
 //
@@ -424,7 +423,7 @@ LispObject Lwritable_libraryp(LispObject nil, LispObject file)
 static void IputcDebug(int c, int line)
 {   Iputc(c);
     trace_printf("Iputc(%d/%x/%s: %d %.8x %.8x)\n", c, c, fasl_code(c),
-                 line, C_stack, C_nil);
+                 line, C_stack, nil);
 }
 
 #define Iputc(c) IputcDebug(c, __LINE__)
@@ -432,7 +431,7 @@ static void IputcDebug(int c, int line)
 #endif
 
 
-LispObject Lmodule_exists(LispObject nil, LispObject file)
+LispObject Lmodule_exists(LispObject env, LispObject file)
 {   char filename[LONGEST_LEGAL_FILENAME], tt[32];
     Header h;
     size_t len;
@@ -459,7 +458,7 @@ LispObject Lmodule_exists(LispObject nil, LispObject file)
     return onevalue(file);
 }
 
-LispObject Lstart_module(LispObject nil, LispObject name)
+LispObject Lstart_module(LispObject env, LispObject name)
 //
 // This must be called before write-module - it sets up everything
 // for writing a (compressed) FASL file.  Calling with a nil argument
@@ -581,7 +580,7 @@ LispObject Lstart_module(LispObject nil, LispObject name)
 // removed. If "key" is NIL then all user-inserted items are removed.
 //
 
-LispObject Lset_help_file(LispObject nil, LispObject a, LispObject b)
+LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
 {
 #ifdef HAVE_FWIN
     const char *w;
@@ -614,7 +613,7 @@ LispObject Lset_help_file(LispObject nil, LispObject a, LispObject b)
 
 char prompt_string[MAX_PROMPT_LENGTH];
 
-LispObject Lsetpchar(LispObject nil, LispObject a)
+LispObject Lsetpchar(LispObject env, LispObject a)
 {   LispObject old = prompt_thing;
     prompt_thing = a;
 #define escape_nolinebreak 0x80

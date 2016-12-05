@@ -1614,7 +1614,6 @@ symbolic procedure c!:pcall(op, r1, r2, r3, depth);
     if not flagp(car r3, 'c!:no_errors) then <<
        if null cadr r3 and depth = 0 then c!:printf("    errexit();\n")
        else <<
-           c!:printf("    nil = C_nil;\n");
            c!:printf("    if (exception_pending()) ");
            c!:pgoto(c!:find_error_label(nil, cadr r3, depth) , depth) >> >>;
     if boolfn then c!:printf("    %v = %v ? lisp_true : nil;\n", r1, r1);
@@ -1780,7 +1779,7 @@ flag('(ldrglob strglob nilglob movk call), 'c!:read_env);
 % special opcodes:
 %   call fluidbind
 
-fluid '(fn_used nil_used nilbase_used);
+fluid '(fn_used);
 
 symbolic procedure c!:live_variable_analysis c!:all_blocks;
   begin
@@ -1795,13 +1794,7 @@ symbolic procedure c!:live_variable_analysis c!:all_blocks;
              else live := union(live, x);
           w := get(b, 'c!:why);
           if not atom w then <<
-             if eqcar(w, 'ifnull) or eqcar(w, 'ifequal) then nil_used := t;
              live := union(live, cdr w);
-             if eqcar(car w, 'call) and
-                (flagp(cadar w, 'c!:direct_predicate) or
-                 (flagp(cadar w, 'c!:c_entrypoint) and
-                  not flagp(cadar w, 'c!:direct_entrypoint))) then
-                 nil_used := t;
              if eqcar(car w, 'call) and
                 not (cadar w = c!:current_procedure) and
                 not get(cadar w, 'c!:direct_entrypoint) and
@@ -1811,10 +1804,6 @@ symbolic procedure c!:live_variable_analysis c!:all_blocks;
             begin % backwards over contents
               scalar op, r1, r2, r3;
               op := car s; r1 := cadr s; r2 := caddr s; r3 := cadddr s;
-              if op = 'movk1 then <<
-                  if r3 = nil then nil_used := t
-                  else if r3 = 't then nilbase_used := t >>
-              else if atom op and flagp(op, 'c!:uses_nil) then nil_used := t;
               if flagp(op, 'c!:set_r1) then
 !#if common!-lisp!-mode
                  if memq(r1, live) then live := remove(r1, live)
@@ -1827,9 +1816,6 @@ symbolic procedure c!:live_variable_analysis c!:all_blocks;
               if flagp(op, 'c!:read_r2) then live := union(live, list r2);
               if flagp(op, 'c!:read_r3) then live := union(live, list r3);
               if op = 'call then <<
-                 if not flagp(car r3, 'c!:no_errors) or
-                    flagp(car r3, 'c!:c_entrypoint) or
-                    get(car r3, 'c!:direct_predicate) then nil_used := t;
                  does_call := t;
                  if not eqcar(r3, c!:current_procedure) and
                     not get(car r3, 'c!:direct_entrypoint) and
@@ -2017,7 +2003,6 @@ symbolic procedure c!:insert_tailcall b;
           put(b, 'c!:why, 'goto);
           put(b, 'c!:where_to, list restart_label) >>
        else <<
-          nil_used := t;
           put(b, 'c!:contents, contents);
           put(b, 'c!:why, list('call, car cadddr fcall) . caddr fcall);
           put(b, 'c!:where_to, nil) >>
@@ -2065,10 +2050,7 @@ symbolic procedure c!:pushpop(op, v);
 symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
                                           env, argch, args, varargs);
   begin
-    scalar w, n, locs, stacks, c!:error_labels, fn_used, nil_used, nilbase_used;
-!#if common!-lisp!-mode
-    nilbase_used := t;  % For onevalue(xxx) at least 
-!#endif
+    scalar w, n, locs, stacks, c!:error_labels, fn_used;
     for each b in c!:all_blocks do c!:insert_tailcall b;
     c!:startpoint := c!:branch_chain(c!:startpoint, nil);
     remflag(c!:all_blocks, 'c!:visited);
@@ -2085,9 +2067,6 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
     remflag(c!:all_blocks, 'c!:visited);
     c!:startpoint := c!:branch_chain(c!:startpoint, t); % ... AGAIN to tidy up
     remflag(c!:all_blocks, 'c!:visited);
-    if does_call then nil_used := t;
-    if nil_used then c!:printf "    LispObject nil = C_nil;\n"
-    else if nilbase_used then c!:printf "    nil_as_base\n";
     if locs then <<
       c!:printf("    LispObject %s", car locs);
       for each v in cdr locs do c!:printf(", %s", v);
@@ -2101,13 +2080,6 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
          w := ", " >>;
       c!:printf(";\n    va_list aa;\n");
       c!:printf("    va_start(aa, nargs);\n") >>;
-%   if nil_used then
-%      c!:printf("    CSL_IGNORE(nil);\n")
-%   else
-%   if nilbase_used then <<
-%      c!:printf("#ifndef NILSEG_EXTERNS\n");
-%      c!:printf("    CSL_IGNORE(nil);\n");
-%      c!:printf("#endif\n") >>;
     if car argch = 0 or car argch >= 3 then
        c!:printf("    argcheck(nargs, %s, \q%s\q);\n", car argch, cdr argch);
     if varargs and args then <<
@@ -2132,7 +2104,6 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
        c!:pushpop('push, args);
        c!:printf "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n";
        c!:pushpop('pop, reverse args);
-       c!:printf "        nil = C_nil;\n";
        c!:printf "        if (exception_pending()) return nil;\n";
        c!:printf "    }\n" >>;
     if reloadenv then c!:printf("    push(env);\n");

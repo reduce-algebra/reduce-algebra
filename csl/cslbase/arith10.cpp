@@ -388,7 +388,7 @@ static LispObject make_complex_float(Complex v, LispObject a)
 // I do the 'onevalue' here.
 //
 {   int32_t type;
-    LispObject a1, a2, nil;
+    LispObject a1, a2;
     a = real_part(a);
     if (is_sfloat(a))
     {   Float_union r, i;
@@ -1229,7 +1229,6 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 // of elementary functions.
 //
 {   double d;
-    LispObject nil = C_nil;
 #ifndef COMMON
     int32_t restype = TYPE_DOUBLE_FLOAT;
 #else
@@ -1306,7 +1305,6 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
         }
         else
         {   double c1r, c1i;
-            LispObject nil;
             LispObject rp, ip;
             double (*rl)(double) = trig_functions[which_one].real;
             if (rl == 0) return aerror("unimplemented trig function");
@@ -1364,7 +1362,6 @@ static LispObject makenum(LispObject a, int32_t n)
 #else
     int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
-    LispObject nil = C_nil;
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             if (is_sfloat(a))
@@ -1410,8 +1407,7 @@ static LispObject CSLpowi(LispObject a, uint32_t n)
 // external function called powi in <cmath> and then moan about the
 // name clash.
 //
-{   LispObject nil;
-    if (n == 0) return makenum(a, 1); // value 1 of appropriate type
+{   if (n == 0) return makenum(a, 1); // value 1 of appropriate type
     else if (n == 1) return a;
     else if ((n & 1) == 0)
     {   a = CSLpowi(a, n/2);
@@ -1422,7 +1418,6 @@ static LispObject CSLpowi(LispObject a, uint32_t n)
     {   LispObject b;
         push(a);
         b = CSLpowi(a, n/2);
-        nil = C_nil;
         if (!exception_pending()) b = times2(b, b);
         pop(a);
         errexit();
@@ -1443,7 +1438,7 @@ static Complex complex_of_number(LispObject a)
     return z;
 }
 
-static LispObject Lhypot(LispObject nil, LispObject a, LispObject b)
+static LispObject Lhypot(LispObject env, LispObject a, LispObject b)
 {   double u, v, r;
     u = float_of_number(a);
     v = float_of_number(b);
@@ -1474,7 +1469,7 @@ static LispObject Lhypot(LispObject nil, LispObject a, LispObject b)
     return onevalue(a);
 }
 
-LispObject Lexpt(LispObject nil, LispObject a, LispObject b)
+LispObject Lexpt(LispObject env, LispObject a, LispObject b)
 {   double d, e;
     int32_t restype, n;
     LispObject w;
@@ -1540,7 +1535,6 @@ LispObject Lexpt(LispObject nil, LispObject a, LispObject b)
     {   n = int_of_fixnum(b);
         if (n < 0)
         {   a = CSLpowi(a, (uint32_t)(-n));
-            nil = C_nil;
 #ifdef COMMON
             if (!exception_pending()) a = CLquot2(fixnum_of_int(1), a);
 #else
@@ -1600,7 +1594,7 @@ LispObject Lexpt(LispObject nil, LispObject a, LispObject b)
     return onevalue(a);
 }
 
-LispObject Llog_2(LispObject nil, LispObject a, LispObject b)
+LispObject Llog_2(LispObject env, LispObject a, LispObject b)
 //
 // Log with specified base.
 //
@@ -1648,7 +1642,7 @@ static LispObject Lisqrt(LispObject, LispObject a)
 }
 #endif
 
-LispObject Labsval(LispObject nil, LispObject a)
+LispObject Labsval(LispObject env, LispObject a)
 //
 // I call this Labsval not Labs because a non-case-sensitive linker
 // would confuse Labs with labs, and labs is defined in the C libraries...
@@ -1688,14 +1682,13 @@ LispObject Labsval(LispObject nil, LispObject a)
             return aerror1("bad arg for abs",  a);
     }
     if (minusp(a))
-    {   nil = C_nil;
-        if (!exception_pending()) a = negate(a);
+    {   if (!exception_pending()) a = negate(a);
     }
     errexit();
     return onevalue(a);
 }
 
-static LispObject Lphase(LispObject nil, LispObject a)
+static LispObject Lphase(LispObject env, LispObject a)
 {   bool s;
     double d;
     if (is_numbers(a) && is_complex(a))
@@ -1710,14 +1703,13 @@ static LispObject Lphase(LispObject nil, LispObject a)
 // /* Wrong precision, I guess
 }
 
-static LispObject Lsignum(LispObject nil, LispObject a)
+static LispObject Lsignum(LispObject env, LispObject a)
 {
 //
 //* This seems an expensive way of doing things - huh? Maybe complex values?
     bool z;
     LispObject w;
     z = zerop(a);
-    nil = C_nil;
     if (z || exception_pending()) return onevalue(a);
     push(a);
     w = Labsval(nil, a);
@@ -1733,7 +1725,7 @@ static LispObject Lcis(LispObject, LispObject a)
 // Implement as exp(i*a) - this permits complex args which goes
 // beyond the specification of Common Lisp.
 //
-{   LispObject ii, nil;
+{   LispObject ii;
     push(a);
     ii = make_complex(fixnum_of_int(0), fixnum_of_int(1));
     pop(a);
@@ -1756,7 +1748,7 @@ LispObject Latan_2(LispObject env, LispObject a, LispObject b)
 {   return Latan2(env, a, b);
 }
 
-LispObject Latan2(LispObject nil, LispObject y, LispObject x)
+LispObject Latan2(LispObject env, LispObject y, LispObject x)
 {   double u, v, r;
     u = float_of_number(x);
     v = float_of_number(y);
@@ -1782,7 +1774,7 @@ LispObject Latan2(LispObject nil, LispObject y, LispObject x)
     return onevalue(x);
 }
 
-LispObject Latan2d(LispObject nil, LispObject y, LispObject x)
+LispObject Latan2d(LispObject env, LispObject y, LispObject x)
 {   double u, v, r;
     u = float_of_number(x);
     v = float_of_number(y);

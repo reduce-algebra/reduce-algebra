@@ -288,7 +288,6 @@ LispObject make_one_word_bignum(int32_t n)
 // should never be needed on a 64-bit system!
 //
 {   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4);
-    LispObject nil;
     errexit();
     bignum_digits(w)[0] = n;
     if (SIXTY_FOUR_BIT) bignum_digits(w)[1] = 0;  // padding
@@ -302,7 +301,6 @@ LispObject make_two_word_bignum(int32_t a1, uint32_t a0)
 // normalized to put in the two words as indicated.
 //
 {   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8);
-    LispObject nil;
     errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
@@ -317,7 +315,6 @@ LispObject make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
 // normalized.
 //
 {   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+12);
-    LispObject nil;
     errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
@@ -334,7 +331,6 @@ LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
 // normalized.
 //
 {   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+16);
-    LispObject nil;
     errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
@@ -376,7 +372,7 @@ LispObject make_boxfloat(double a, int32_t type)
 // if type==0 this makes a short float.
 // 128-bit floats must be made using make_boxfloat128.
 //
-{   LispObject r, nil;
+{   LispObject r;
     switch (type)
     {   case 0:
         {
@@ -418,7 +414,7 @@ LispObject make_boxfloat(double a, int32_t type)
 }
 
 LispObject make_boxfloat128(float128_t a)
-{   LispObject r, nil;
+{   LispObject r;
     r = getvector(TAG_BOXFLOAT, TYPE_LONG_FLOAT, SIZEOF_LONG_FLOAT);
     errexit();
     if (!SIXTY_FOUR_BIT) long_float_pad(r) = 0;
@@ -770,7 +766,7 @@ int64_t sixty_four_bits(LispObject a)
 }
 
 LispObject make_complex(LispObject r, LispObject i)
-{   LispObject v, nil = C_nil;
+{   LispObject v;
 //
 // Here r and i are expected to be either both rational (which in this
 // context includes the case of integer values) or both of the same
@@ -798,7 +794,7 @@ LispObject make_ratio(LispObject p, LispObject q)
 //
 // By the time this is called (p/q) must be in its lowest terms, q>0
 //
-{   LispObject v, nil = C_nil;
+{   LispObject v;
     if (q == fixnum_of_int(1)) return p;
     stackcheck2(0, p, q);
     push2(p, q);
@@ -872,7 +868,7 @@ static LispObject plusib(LispObject a, LispObject b)
 //
 {   size_t len = bignum_length(b)-CELL, i;
     intptr_t s1 = int_of_fixnum(a); // BEWARE - may be bigger than a digit.
-    LispObject c, nil;
+    LispObject c;
     len = len/4;         // This is always 4 because even on a 64-bit
                          // machine where CELL=8 I use 4-byte B-digits
 // If you are on a 64-bit machine it should NEVER be possible to end up
@@ -1020,10 +1016,8 @@ static LispObject plusir(LispObject a, LispObject b)
 // Note that if the inputs were in lowest terms there is no need for
 // and GCD calculations here.
 //
-{   LispObject nil;
-    push(b);
+{   push(b);
     a = times2(a, denominator(b));
-    nil = C_nil;
     if (!exception_pending()) a = plus2(a, numerator(stack[0]));
     pop(b);
     errexit();
@@ -1034,8 +1028,7 @@ static LispObject plusic(LispObject a, LispObject b)
 //
 // real of any sort plus complex.
 //
-{   LispObject nil;
-    push(b);
+{   push(b);
     a = plus2(a, real_part(b));
     pop(b);
     errexit();
@@ -1103,7 +1096,7 @@ LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
 // Sometimes I need to allocate a new vector and copy data across into it
 //
     if ((len & 4) == 0)
-    {   LispObject b, nil;
+    {   LispObject b;
         int32_t i;
         push(a);
         b = getvector(TAG_NUMBERS, TYPE_BIGNUM, len+4);
@@ -1135,7 +1128,7 @@ static LispObject plusbb(LispObject a, LispObject b)
 {   int32_t la = bignum_length(a),
             lb = bignum_length(b),
             i, s, carry;
-    LispObject c, nil;
+    LispObject c;
     if (la < lb)    // maybe swap order of args
     {   LispObject t = a;
         int32_t t1;
@@ -1317,8 +1310,7 @@ static LispObject plusrr(LispObject a, LispObject b)
 // Adding two ratios involves some effort to keep the result in
 // lowest terms.
 //
-{   LispObject nil = C_nil;
-    LispObject na = numerator(a), nb = numerator(b);
+{   LispObject na = numerator(a), nb = numerator(b);
     LispObject da = denominator(a), db = denominator(b);
     LispObject w = nil;
     push5(na, nb, da, db, nil);
@@ -1328,38 +1320,28 @@ static LispObject plusrr(LispObject a, LispObject b)
 #define nb  stack[-3]
 #define na  stack[-4]
     g = gcd(da, db);
-    nil = C_nil;
     if (exception_pending()) goto fail;
 //
 // all the calls to quot2() in this procedure are expected - nay required -
 // to give exact integer quotients.
 //
     db = quot2(db, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     g = quot2(da, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     na = times2(na, db);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     nb = times2(nb, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     na = plus2(na, nb);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     da = times2(da, db);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     g = gcd(na, da);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     na = quot2(na, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     da = quot2(da, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     w = make_ratio(na, da);
 //
@@ -1394,7 +1376,7 @@ static LispObject pluscc(LispObject a, LispObject b)
 //
 // Add complex values.
 //
-{   LispObject c, nil;
+{   LispObject c;
     push2(a, b);
     c = plus2(imag_part(a), imag_part(b));
     pop2(b, a);
@@ -1640,8 +1622,7 @@ LispObject plus2(LispObject a, LispObject b)
 }
 
 LispObject difference2(LispObject a, LispObject b)
-{   LispObject nil;
-    switch ((int)b & TAG_BITS)
+{   switch ((int)b & TAG_BITS)
     {   case TAG_FIXNUM:
             if (is_fixnum(a))
             {   intptr_t r = int_of_fixnum(a) - int_of_fixnum(b);

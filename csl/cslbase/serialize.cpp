@@ -1339,7 +1339,6 @@ void write_function(void *p)
         validate_all("GC_PROTECT start", __LINE__, __FILE__); \
         ip = (LispObject)p - pbase;                  \
         stmt;                                        \
-        nil = C_nil;                                 \
         if (exception_pending()) return nil;         \
         pop4(b, pbase, s, r);                        \
         p = (LispObject *)(pbase + ip);              \
@@ -1361,7 +1360,6 @@ LispObject serial_read()
                s,     // a (linked) stack used with vectors (and symbols
                       // if the SER_RAWSYMBOL opcode is encountered).
                b;     // a back-pointer chain
-    LispObject nil = C_nil;
     int c;
     prev = pbase = r = s = b = fixnum_of_int(0);
     p = &r;
@@ -1711,7 +1709,7 @@ down:
 // Now to allow me to feel safe I will put NIL in all the other fields
 // on a provisional basis. They get their proper values later.
                     qvalue(w) = qenv(w) = qpname(w) = qplist(w) =
-                        qfastgets(w) = qpackage(w) = C_nil;
+                        qfastgets(w) = qpackage(w) = nil;
                     qvalue(w) = b; // the back-pointer.
                     b = w;
 #define PNAME_INDEX (&qpname(w) - &qvalue(w))
@@ -1752,7 +1750,7 @@ down:
                         }
                         if (c == SER_GENSYM || c == SER_DUPGENSYM)
                         {   GC_PROTECT(prev = copy_string(boffo, boffop));
-                            GC_PROTECT(prev = Lgensym1(C_nil, prev));
+                            GC_PROTECT(prev = Lgensym1(nil, prev));
                         }
                         else GC_PROTECT(prev = iintern(boffo, (int32_t)boffop, CP, 0));
                         *p = prev;
@@ -1839,7 +1837,7 @@ down:
                     opcode_repeats++;
                     c = SER_NIL;
                 case SER_NIL:
-                    prev = *p = C_nil;
+                    prev = *p = nil;
                     goto up;
 
                 case SER_END:
@@ -2346,7 +2344,7 @@ down:
         // if I detect it and do not crash.
         goto up;
     }
-    else if (p == C_nil) goto up;
+    else if (p == nil) goto up;
     switch (p & TAG_BITS)
 {       default:
         case TAG_CONS:
@@ -2559,12 +2557,12 @@ void write_data(LispObject p)
     uintptr_t len;
     int64_t w64;
     Header h;
-    LispObject nil = C_nil, tail1, tail2, tail3, tail4;
+    LispObject tail1, tail2, tail3, tail4;
     size_t i;
     size_t i2=-1, i3=-1, i4=-1;
 down:
     if (p == 0) p = SPID_NIL; // reload as a SPID.
-    else if (p == C_nil)
+    else if (p == nil)
     {   write_delayed(SER_NIL, "nil");
         goto up;
     }
@@ -3236,7 +3234,7 @@ up:
 
 bool setup_codepointers = false;
 
-LispObject Lwrite_module(LispObject nil, LispObject a, LispObject b)
+LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
 {
 #ifdef DEBUG_FASL
     push2(a, b);
@@ -3277,7 +3275,7 @@ LispObject Lwrite_module(LispObject nil, LispObject a, LispObject b)
     return onevalue(nil);
 }
 
-LispObject Lserialize(LispObject nil, LispObject a)
+LispObject Lserialize(LispObject env, LispObject a)
 {   if (!setup_codepointers)
     {   set_up_function_tables();
         setup_codepointers = true;
@@ -3298,7 +3296,7 @@ LispObject Lserialize(LispObject nil, LispObject a)
     return onevalue(nil);
 }
 
-LispObject Lserialize1(LispObject nil, LispObject a)
+LispObject Lserialize1(LispObject env, LispObject a)
 {   if (!setup_codepointers)
     {   set_up_function_tables();
         setup_codepointers = true;
@@ -3326,7 +3324,7 @@ LispObject Lserialize1(LispObject nil, LispObject a)
 #define F_LOAD_SOURCE     1
 #define F_SELECTED_SOURCE 2
 
-static LispObject load_module(LispObject nil, LispObject file,
+static LispObject load_module(LispObject env, LispObject file,
                               int option)
 //
 // load_module() rebinds *package* in COMMON mode, but also note that
@@ -3397,7 +3395,6 @@ static LispObject load_module(LispObject nil, LispObject file,
     push(CP);
     reader_setup_repeats(read_u64());
     LispObject r = serial_read();
-    nil = C_nil;
 #ifdef DEBUG_SERIALIZE
     fprintf(stderr, "Re-input: ");
     simple_print(r); // @@@
@@ -3472,14 +3469,12 @@ static LispObject load_module(LispObject nil, LispObject file,
             {   push3(name, file, r)
                 putprop(name, savedef, def);
                 pop3(r, file, name);
-                nil = C_nil;
                 if (exception_pending()) break;
 // Build up a list of the names of all functions whose !*savedef information
 // has been established.
                 push2(r, name);
                 file = cons(name, file);
                 pop2(name, r);
-                nil = C_nil;
                 if (exception_pending()) break;
             }
 // Now set up the load_source property on the function name to indicate the
@@ -3493,12 +3488,10 @@ static LispObject load_module(LispObject nil, LispObject file,
             push3(name, file, r)
             w = cons(current_module, w);
             pop3(r, file, name);
-            nil = C_nil;
             if (exception_pending()) break;
             push3(name, file, r)
             putprop(name, load_source_symbol, w);
             pop3(r, file, name);
-            nil = C_nil;
             if (exception_pending()) break;
         }
     }
@@ -3511,11 +3504,11 @@ static LispObject load_module(LispObject nil, LispObject file,
     else return onevalue(file);
 }
 
-LispObject Lload_module(LispObject nil, LispObject file)
+LispObject Lload_module(LispObject env, LispObject file)
 {   return load_module(nil, file, F_LOAD_MODULE);
 }
 
-LispObject Lload_source(LispObject nil, LispObject file)
+LispObject Lload_source(LispObject env, LispObject file)
 {   return load_module(nil, file, F_LOAD_SOURCE);
 }
 
@@ -3524,7 +3517,6 @@ LispObject load_source0(int option)
 // First I will scan all the input libraries collecting a list of the
 // names of modules present in them. I will discard any duplicates
 // names.
-    LispObject nil = C_nil;
     LispObject mods = nil;
     for (LispObject l = qvalue(input_libraries); is_cons(l); l = qcdr(l))
     {   push2(mods, l);
@@ -3573,21 +3565,21 @@ LispObject load_source0(int option)
     return onevalue(r);
 }
 
-LispObject Lload_selected_source(LispObject nil, LispObject file)
+LispObject Lload_selected_source(LispObject env, LispObject file)
 {   return load_module(nil, file, F_SELECTED_SOURCE);
 }
 
-LispObject Lload_source0(LispObject nil, int nargs, ...)
+LispObject Lload_source0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "load-source");
     return load_source0(F_LOAD_SOURCE);
 }
 
-LispObject Lload_selected_source0(LispObject nil, int nargs, ...)
+LispObject Lload_selected_source0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "load-selected-source");
     return load_source0(F_SELECTED_SOURCE);
 }
 
-LispObject Lunserialize(LispObject nil, int nargs, ...)
+LispObject Lunserialize(LispObject env, int nargs, ...)
 {   LispObject r;
     reader_setup_repeats(read_u64());
     r = serial_read();
@@ -3685,8 +3677,7 @@ LispObject Lunserialize(LispObject nil, int nargs, ...)
 // collapsed miserably. Hence this comment.
 
 void write_everything()
-{   LispObject nil = C_nil;
-    set_up_function_tables();
+{   set_up_function_tables();
 // These may have been messed with during the run. Reset them here to
 // be tidy.
     big_divisor = make_four_word_bignum(0, 0, 0, 0);
@@ -3769,7 +3760,6 @@ void warm_setup()
 // I must start by getting the heaps so that allocation etc is possible.
     void *p;
     size_t i;
-    LispObject nil = C_nil;
     p = vheap_pages[vheap_pages_count++] = allocate_page("vheap warm setup");
     vfringe = (LispObject)(8 + (char *)doubleword_align_up((intptr_t)p));
     vheaplimit = (LispObject)((char *)vfringe + (CSL_PAGE_SIZE - 16));

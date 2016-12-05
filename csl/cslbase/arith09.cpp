@@ -541,7 +541,7 @@ LispObject gcd(LispObject a, LispObject b)
             else a = rembi(a, b);
         }
         else if (is_numbers(b) && is_bignum(b))
-        {   LispObject nil;
+        {
 //
 // Now I have a case that maybe I hope is not too common, but which may
 // count as the interesting one - the GCD of two bignums.  First I ensure
@@ -757,7 +757,7 @@ gcd_using_machine_arithmetic:
 }
 
 LispObject lcm(LispObject a, LispObject b)
-{   LispObject g, nil = C_nil;
+{   LispObject g;
     if (a == fixnum_of_int(0) ||
         b == fixnum_of_int(0)) return fixnum_of_int(0);
     stackcheck2(0, a, b);
@@ -792,8 +792,7 @@ LispObject lognot(LispObject a)
         return (LispObject)(~(intptr_t)a ^
           (TAG_FIXNUM ^ (~TAG_FIXNUM & TAG_BITS)));
     else if (is_numbers(a) && is_bignum(a))
-    {   LispObject nil;
-        a = plus2(a, fixnum_of_int(1));
+    {   a = plus2(a, fixnum_of_int(1));
         errexit();
         return negate(a);
     }
@@ -884,7 +883,7 @@ LispObject ash(LispObject a, LispObject b)
         int32_t d1 = clear_top_bit(msd << bits);
         int32_t i, lenc = lena + words;
         bool longer = false;
-        LispObject c, nil;
+        LispObject c;
         if (!((d0 == 0 && (d1 & 0x40000000) == 0) ||
               (d0 == -1 && (d1 & 0x40000000) != 0)))
             lenc++, longer = true;
@@ -930,7 +929,7 @@ LispObject ash(LispObject a, LispObject b)
         int32_t d1 = clear_top_bit(msd << (31 - bits));
         int32_t i, lenc = lena - words;
         bool shorter = false;
-        LispObject c, nil;
+        LispObject c;
         if (bits != 0 &&
             ((d0 == 0 && (d1 & 0x40000000) == 0) ||
              (d0 == -1 && (d1 & 0x40000000) != 0)))
@@ -1024,8 +1023,7 @@ LispObject shrink_bignum(LispObject a, size_t lena)
 }
 
 static LispObject logiorbb(LispObject a, LispObject b)
-{   LispObject nil;
-    size_t lena, lenb, i;
+{   size_t lena, lenb, i;
     int32_t msd;
     errexit(); // failure in make_one_word_bignum()?
     lena = (bignum_length(a)-CELL)/4 - 1;
@@ -1085,8 +1083,7 @@ LispObject logior2(LispObject a, LispObject b)
 }
 
 static LispObject logxorbb(LispObject a, LispObject b)
-{   LispObject nil;
-    int32_t lena, lenb, i;
+{   int32_t lena, lenb, i;
     uint32_t w;
     errexit();          // failure in make_one_word_bignum()?
     lena = (bignum_length(a)-CELL)/4 - 1;
@@ -1148,8 +1145,7 @@ LispObject logeqv2(LispObject a, LispObject b)
     {   if (is_fixnum(b))
             return logxorbb(make_fake_bignum(~int_of_fixnum(b)), a);
         else if (is_numbers(b) && is_bignum(b))
-        {   LispObject nil;
-            push(a);
+        {   push(a);
             b = lognot(b);
             pop(a);
             errexit();
@@ -1161,8 +1157,7 @@ LispObject logeqv2(LispObject a, LispObject b)
 }
 
 static LispObject logandbb(LispObject a, LispObject b)
-{   LispObject nil;
-    size_t lena, lenb, i;
+{   size_t lena, lenb, i;
     int32_t msd;
     errexit();            // failure in make_one_word_bignum()?
     lena = (bignum_length(a)-CELL)/4 - 1;

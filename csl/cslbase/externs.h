@@ -216,12 +216,10 @@ extern LispObject multiplication_buffer;
 #define popv(n)           stack -= (n)
 #endif // MEMORY_TRACE
 
-#define errexit()    { nil = C_nil; if (exception_pending()) return nil; }
-#define errexitn(n)  { nil = C_nil;                                      \
-                       if (exception_pending()) { popv(n); return nil; } }
-#define errexitv()   { nil = C_nil; if (exception_pending()) return; }
-#define errexitvn(n) { nil = C_nil;                                      \
-                       if (exception_pending()) { popv(n); return; } }
+#define errexit()    { if (exception_pending()) return nil; }
+#define errexitn(n)  { if (exception_pending()) { popv(n); return nil; } }
+#define errexitv()   { if (exception_pending()) return; }
+#define errexitvn(n) { if (exception_pending()) { popv(n); return; } }
 
 #define GC_USER_SOFT 0
 #define GC_USER_HARD 1
@@ -309,7 +307,6 @@ extern int64_t blipcount, startblip;
     if ((--countdown < 0 && deal_with_tick()) ||            \
         stack >= stacklimit)                                \
     {   reclaim(nil, "stack", GC_STACK, 0);                 \
-        nil = C_nil;                                        \
         if (exception_pending()) { popv(k); return nil; }   \
     }
 
@@ -318,7 +315,6 @@ extern int64_t blipcount, startblip;
     if ((--countdown < 0 && deal_with_tick()) ||            \
         stack >= stacklimit)                                \
     {   a1 = reclaim(a1, "stack", GC_STACK, 0);             \
-        nil = C_nil;                                        \
         if (exception_pending()) { popv(k); return nil; }   \
     }
 
@@ -328,7 +324,6 @@ extern int64_t blipcount, startblip;
         stack >= stacklimit)                                \
     {   push(a2);                                           \
         a1 = reclaim(a1, "stack", GC_STACK, 0); pop(a2);    \
-        nil = C_nil;                                        \
         if (exception_pending()) { popv(k); return nil; }   \
     }
 
@@ -339,7 +334,6 @@ extern int64_t blipcount, startblip;
     {   push2(a2, a3);                                      \
         a1 = reclaim(a1, "stack", GC_STACK, 0);             \
         pop2(a3, a2);                                       \
-        nil = C_nil;                                        \
         if (exception_pending()) { popv(k); return nil; }   \
     }
 
@@ -350,7 +344,6 @@ extern int64_t blipcount, startblip;
     {   push3(a2, a3, a4);                                  \
         a1 = reclaim(a1, "stack", GC_STACK, 0);             \
         pop3(a4, a3, a2);                                   \
-        nil = C_nil;                                        \
         if (exception_pending()) { popv(k); return nil; }   \
     }
 
@@ -364,7 +357,7 @@ extern int64_t blipcount, startblip;
 // register variable will not be available!
 //
 
-extern LispObject C_nil;
+extern LispObject nil;
 
 //
 // In COMMON mode the symbol-head for NIL uses the first few offsets
@@ -389,7 +382,7 @@ extern LispObject C_nil;
 // NIL_SEGMENT_SIZE must be over-large by enough to allow for
 // space lost while rounding nil up to be a multiple of 8. Also in the
 // Common Lisp case I need to give myself a spare word BEFORE the place
-// where C_nil points.
+// where nil points.
 //
 #define NIL_SEGMENT_SIZE    (last_nil_offset*sizeof(LispObject) + 32)
 

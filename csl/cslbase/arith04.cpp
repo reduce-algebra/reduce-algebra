@@ -50,7 +50,7 @@ LispObject make_n_word_bignum(int32_t a1, uint32_t a2, uint32_t a3, size_t n)
 // words at the end!
 //
 {   size_t i;
-    LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+12), nil;
+    LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+12);
     errexit();
     for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
     bignum_digits(w)[n] = a3;
@@ -82,7 +82,6 @@ LispObject rationalf(double d)
     bool negative = false;
     int32_t a0, a1;
     uint32_t a2;
-    LispObject nil;
     if (d == 0.0) return fixnum_of_int(0);
     if (d < 0.0) d = -d, negative = true;
     d = frexp(d, &x);   // 0.5 <= abs(d) < 1.0, x = the (binary) exponent
@@ -138,7 +137,7 @@ LispObject rationalf(double d)
 //
         if (x < 27) return make_ratio(w, fixnum_of_int(((int32_t)1) << x));
         else
-        {   LispObject d, nil;
+        {   LispObject d;
             push(w);
             d = make_power_of_two(x);
             pop(w);
@@ -180,7 +179,7 @@ static LispObject rationalizef(double d)
 // floating point value d.
 //
 {   double dd;
-    LispObject p, q, nil;
+    LispObject p, q;
     if (d == 0.0) return fixnum_of_int(0);
     else if (d < 0.0) dd = -d; else dd = d;
     p = rationalf(dd);
@@ -482,7 +481,7 @@ bool lesspdr(double a, LispObject b)
 //
 // Compare float with ratio... painfully expensive.
 //
-{   LispObject a1 = rationalf(a), nil;
+{   LispObject a1 = rationalf(a);
     errexit();
     return lessprr(a1, b);
 }
@@ -491,7 +490,7 @@ bool lessprd(LispObject a, double b)
 //
 // Compare float with ratio.
 //
-{   LispObject b1 = rationalf(b), nil;
+{   LispObject b1 = rationalf(b);
     errexit();
     return lessprr(a, b1);
 }
@@ -645,8 +644,7 @@ bool lessp2(LispObject a, LispObject b)
 // be compared - their presence will lead to an exception being raised.
 // This shortens the code (marginally).
 //
-{   LispObject nil = C_nil;
-    if (exception_pending()) return false;
+{   if (exception_pending()) return false;
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             switch ((int)b & TAG_BITS)

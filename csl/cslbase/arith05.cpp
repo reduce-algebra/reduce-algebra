@@ -240,8 +240,7 @@ bool geq2(LispObject a, LispObject b)
 }
 
 bool lesseq2(LispObject a, LispObject b)
-{   LispObject nil = C_nil;
-    if (exception_pending()) return false;
+{   if (exception_pending()) return false;
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             switch ((int)b & TAG_BITS)
@@ -383,7 +382,7 @@ bool lesseq2(LispObject a, LispObject b)
 void print_bignum(LispObject u, bool blankp, int nobreak)
 {   int32_t len = length_of_header(numhdr(u))-CELL;
     int32_t i, len1;
-    LispObject w, nil = C_nil;
+    LispObject w;
     char my_buff[24];    // Big enough for 2-word bignum value
     int line_length = other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
                                          active_stream);
@@ -537,7 +536,6 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
     len1 = (intptr_t)doubleword_align_up(len1);
     w = getvector(TAG_NUMBERS, TYPE_BIGNUM, len1);
     pop(u);
-    nil = C_nil;
     if (!exception_pending())
     {   bool sign = false;
         int32_t len2;

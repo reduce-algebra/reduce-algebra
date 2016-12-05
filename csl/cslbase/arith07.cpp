@@ -45,7 +45,7 @@ LispObject copyb(LispObject a)
 //
 // copy a bignum.
 //
-{   LispObject b, nil;
+{   LispObject b;
     int32_t len = bignum_length(a), i;
     push(a);
     b = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
@@ -69,7 +69,7 @@ LispObject negateb(LispObject a)
 // Well on a 64-bit machine it is a 2-word bignum that can end up
 // negated to get a fixnum result.
 //
-{   LispObject b, nil;
+{   LispObject b;
     size_t len = bignum_length(a), i;
     int32_t carry;
 // There are two messy special cases here. The first is that there is a
@@ -175,8 +175,7 @@ LispObject negateb(LispObject a)
 //
 
 LispObject negate(LispObject a)
-{   LispObject nil;   // needed for errexit()
-    switch ((int)a & TAG_BITS)
+{   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             if (is_sfloat(a)) return a ^ (LispObject)0x80000000U;
             else return make_lisp_integer64(-int_of_fixnum(a));

@@ -110,7 +110,7 @@ static LispObject gvector(size_t n, LispObject initval)
 }
 
 static LispObject get_large_vector(size_t n, LispObject initval)
-{   LispObject v, nil = C_nil;
+{   LispObject v;
 //
 // A major ugliness here is that I need to support hash tables that are
 // larger than the largest simple vector I view as reasonable.  To achieve
@@ -804,7 +804,7 @@ size_t instrumented_insert_if_possible(LispObject key)
 
 
 static void newhash_rehash(LispObject tab, bool after_gc)
-{   LispObject nil = C_nil;
+{ 
 // The next line sets h_shift, h_table_size, h_table, v_table and h_multiplier
     set_hash_operations(tab);
     size_t old_table_size = h_table_size;
@@ -910,8 +910,7 @@ void simple_lineend(int n)
 }
 
 void simple_print1(LispObject x)
-{   LispObject nil = C_nil;
-    char buffer[40];
+{   char buffer[40];
     if (x == nil)
     {   simple_lineend(3);
         fprintf(stderr, "nil");
@@ -1034,13 +1033,13 @@ void simple_msg(const char *s, LispObject x)
 // A version of Lmkhash with just 2 arguments so you to not supply the
 // (unused and hence irrelevant) third argument.
 
-extern LispObject Lmknewhash(LispObject nil, int nargs, ...);
+extern LispObject Lmknewhash(LispObject env, int nargs, ...);
 
-LispObject Lmknewhash2(LispObject nil, LispObject a, LispObject b)
+LispObject Lmknewhash2(LispObject env, LispObject a, LispObject b)
 {   return Lmknewhash(nil, 3, a, b, nil);
 }
 
-LispObject Lmknewhash(LispObject nil, int nargs, ...)
+LispObject Lmknewhash(LispObject env, int nargs, ...)
 //
 // (mkhash size flavour growth)
 //
@@ -1164,7 +1163,7 @@ static void set_hash_operations(LispObject tab)
     h_table_size = ((size_t)(1<<(64-h_shift)));
     h_table = elt(tab, HASH_KEYS);
     v_table = elt(tab, HASH_VALUES);
-    if (elt(tab, HASH_MULTIPLIER) == C_nil)
+    if (elt(tab, HASH_MULTIPLIER) == nil)
         h_multiplier = HASH_DEFAULT_MULTIPLIER;
     else h_multiplier = (uint64_t)sixty_four_bits(elt(tab, HASH_MULTIPLIER));
 }
@@ -1437,8 +1436,7 @@ static bool float_if_exact(LispObject x)
 }
 
 static uint64_t newhash_generic_equal(LispObject key, int mode)
-{   LispObject nil = C_nil;
-    size_t len;
+{   size_t len;
     unsigned char *data;
     Header h;
     uint64_t r = 0;
@@ -1597,7 +1595,7 @@ static bool newhash_compare_symtab(LispObject key, LispObject hashentry)
 
 //==========================================================================
 
-LispObject Lget_newhash(LispObject nil, int nargs, ...)
+LispObject Lget_newhash(LispObject env, int nargs, ...)
 {   va_list a;
     LispObject key, tab, dflt;
     size_t pos;
@@ -1640,7 +1638,7 @@ printf("rehash from get_newhash in NEWHASHX case\n");
     return nvalues(getv_large_vector(elt(tab, HASH_VALUES), pos), 2);
 }
 
-LispObject Lmapnewhash(LispObject nil, LispObject fn, LispObject tab)
+LispObject Lmapnewhash(LispObject env, LispObject fn, LispObject tab)
 //
 // I should consider what happens if there is a garbage collection while
 // I am performing this scan of the hash table. Well the table contents are
@@ -1668,7 +1666,7 @@ LispObject Lmapnewhash(LispObject nil, LispObject fn, LispObject tab)
     return onevalue(nil);
 }
 
-LispObject Lnewhashcontents(LispObject nil, LispObject tab)
+LispObject Lnewhashcontents(LispObject env, LispObject tab)
 //
 // As for maphash I believe that garbage collection is pretty benign here.
 //
@@ -1696,7 +1694,7 @@ LispObject Lnewhashcontents(LispObject nil, LispObject tab)
     return onevalue(r);
 }
 
-LispObject Lget_newhash_1(LispObject nil, LispObject key)
+LispObject Lget_newhash_1(LispObject env, LispObject key)
 {
 #ifdef COMMON
     return Lget_newhash(nil, 3, key, sys_hash_table, nil);
@@ -1718,7 +1716,7 @@ LispObject Lget_newhash_1(LispObject nil, LispObject key)
 #endif
 }
 
-LispObject Lget_newhash_2(LispObject nil, LispObject key, LispObject tab)
+LispObject Lget_newhash_2(LispObject env, LispObject key, LispObject tab)
 {   return Lget_newhash(nil, 3, key, tab, nil);
 }
 
@@ -1726,7 +1724,7 @@ LispObject Lget_newhash_2(LispObject nil, LispObject key, LispObject tab)
 static int biggest_hash = 0;
 #endif
 
-LispObject Lput_newhash(LispObject nil, int nargs, ...)
+LispObject Lput_newhash(LispObject env, int nargs, ...)
 {   va_list a;
     LispObject key, tab, val, k1;
     size_t pos;
@@ -1783,11 +1781,11 @@ printf("HASHX found so setting after_gc\n");
     return onevalue(val);
 }
 
-LispObject Lput_newhash_2(LispObject nil, LispObject a, LispObject b)
+LispObject Lput_newhash_2(LispObject env, LispObject a, LispObject b)
 {   return Lput_hash(nil, 3, a, sys_hash_table, b);
 }
 
-LispObject Lrem_newhash(LispObject nil, LispObject key, LispObject tab)
+LispObject Lrem_newhash(LispObject env, LispObject key, LispObject tab)
 {   set_hash_operations(tab);
     size_t pos = hash_lookup(key);
     if (pos == NOT_PRESENT) return onevalue(nil);
@@ -1796,11 +1794,11 @@ LispObject Lrem_newhash(LispObject nil, LispObject key, LispObject tab)
     return onevalue(lisp_true);
 }
 
-LispObject Lrem_newhash_1(LispObject nil, LispObject a)
+LispObject Lrem_newhash_1(LispObject env, LispObject a)
 {   return Lrem_newhash(nil, a, sys_hash_table);
 }
 
-LispObject Lclr_newhash(LispObject nil, LispObject tab)
+LispObject Lclr_newhash(LispObject env, LispObject tab)
 {   LispObject v;
     size_t size, i;
     if (!is_vector(tab) ||
@@ -1820,7 +1818,7 @@ LispObject Lclr_newhash(LispObject nil, LispObject tab)
 // This function exists just for testing and development - it takes a
 // hash table and forces re-hashing.
 
-LispObject Lnewhash_rehash(LispObject nil, LispObject tab)
+LispObject Lnewhash_rehash(LispObject env, LispObject tab)
 {   if (!is_vector(tab) ||
         type_of_header(vechdr(tab)) != TYPE_NEWHASH)
         return aerror1("newhash-rehash", tab);
@@ -1828,7 +1826,7 @@ LispObject Lnewhash_rehash(LispObject nil, LispObject tab)
     return tab;
 }
 
-LispObject Lclr_newhash_0(LispObject nil, int nargs, ...)
+LispObject Lclr_newhash_0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "clrnewhash");
     return Lclr_newhash(nil, sys_hash_table);
 }
@@ -1848,7 +1846,7 @@ LispObject Lclr_newhash_0(LispObject nil, int nargs, ...)
 // rehashing when items move in memory. SO THIS VERSION IS WRONG BECAUSE
 // IT JUST USES INTERNAL HASHING METHODS AND THEY ARE NOT STABLE. @@@@ 
 
-LispObject Lsxnewhash(LispObject nil, LispObject key)
+LispObject Lsxnewhash(LispObject env, LispObject key)
 {   uint64_t h = newhash_generic_equal(key, EQUAL);
     errexit();
     h = h ^ (h >> 32);
@@ -1859,7 +1857,7 @@ LispObject Lsxnewhash(LispObject nil, LispObject key)
 // The values returned here will also become out of date when garbage
 // collection moves things around. Of hear.
 
-LispObject Leqlnewhash(LispObject nil, LispObject key)
+LispObject Leqlnewhash(LispObject env, LispObject key)
 {   uint64_t h = newhash_eql(key);
     errexit();
     h = h ^ (h >> 32);
@@ -1870,7 +1868,7 @@ LispObject Leqlnewhash(LispObject nil, LispObject key)
 // The values returned here will also become out of date when garbage
 // collection moves things around. Of hear.
 
-LispObject Lequalnewhash(LispObject nil, LispObject key)
+LispObject Lequalnewhash(LispObject env, LispObject key)
 {
 //
 // Descends vectors as the Standard Lisp EQUAL function does.
@@ -1882,7 +1880,7 @@ LispObject Lequalnewhash(LispObject nil, LispObject key)
     return onevalue(fixnum_of_int(h));
 }
 
-LispObject Lnewhash_flavour(LispObject nil, LispObject tab)
+LispObject Lnewhash_flavour(LispObject env, LispObject tab)
 {   LispObject v,flavour = fixnum_of_int(-1);
 
     if (!is_vector(tab) ||

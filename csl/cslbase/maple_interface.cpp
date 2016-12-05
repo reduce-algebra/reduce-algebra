@@ -104,16 +104,13 @@ void start_csl()
 
 int execute_lisp_function(char *fname,
                           character_reader *r, character_writer *w)
-{   LispObject nil;
-    LispObject ff = make_undefined_symbol(fname);
-    nil = C_nil;
+{   LispObject ff = make_undefined_symbol(fname);
     if (exception_pending()) return 1;  // Failed to make the symbol
     procedural_input = r;
     procedural_output = w;
     Lapply0(nil, ff);
     procedural_input = NULL;
     procedural_output = NULL;
-    nil = C_nil;
     if (exception_pending()) return 2;  // Failure during evaluation
     return 0;
 }
@@ -132,16 +129,13 @@ void use_csl(char *s)
 
 int execute_lisp_function1(char *fname, LispObject arg,
                            character_reader *r, character_writer *w)
-{   LispObject nil;
-    LispObject ff = make_undefined_symbol(fname);
-    nil = C_nil;
+{   LispObject ff = make_undefined_symbol(fname);
     if (exception_pending()) return 1;  // Failed to make the symbol
     procedural_input = r;
     procedural_output = w;
     Lapply1(nil, ff, arg);
     procedural_input = NULL;
     procedural_output = NULL;
-    nil = C_nil;
     if (exception_pending()) return 2;  // Failure during evaluation
     return 0;
 }

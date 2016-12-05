@@ -801,13 +801,13 @@ symbolic procedure i!:translate_memref(a);
 % with the translation of symbolic representations of CSL internal variables.
 %
 % ACN dislikes the use of the STRING "nil" here. Also resolution of the
-% addresses of C_nil, stack etc should be deferred to load time. But leave
+% addresses of nil, stack etc should be deferred to load time. But leave
 % it as it is for now since it works!
 %
   if (get(a, 'i!:locoffs)) then {'ebp, get(a, 'i!:locoffs)}
   else if a = "nil" then {'ebp,-4}
   else if a = 'env or a = '!.env then {'ebp,off_env}
-  else if a = 'C_nil then {'ds,OFS_NIL}
+  else if a = 'nil then {'ds,OFS_NIL}
   else if a = 'stack then {'ds,OFS_STACK}
   else if a = 'lisp_true then {'ds,OFS_LISP_TRUE}
   else if a = 'current_modulus then {'ds,OFS_CURRENT_MODULUS}
@@ -2593,13 +2593,13 @@ symbolic procedure c!:pcall(op, r1, r2, r3, depth);
        if null cadr r3 and depth = 0 then <<
 
          lab1 := c!:my_gensym();
-         i!:gopcode(mov,eax,'C_nil, mov,{ebp,-4},eax);
+         i!:gopcode(mov,eax,'nil, mov,{ebp,-4},eax);
          i!:gopcode(and,eax,1, je,lab1);
          i!:gopcode(mov,eax,{ebp,-4}, jmp,lab_end_proc);
          i!:gopcode('!:,lab1)
          >>
        else <<
-         i!:gopcode(mov,eax,'C_nil, mov,{ebp,-4},eax);
+         i!:gopcode(mov,eax,'nil, mov,{ebp,-4},eax);
 
          c!:pgoto(nil, c!:find_error_label(nil, cadr r3, depth), depth);
 
@@ -3168,7 +3168,7 @@ symbolic procedure c!:optimise_flowgraph(startpoint, all_blocks,
       >>;
 
     if nil_used then
-      i!:gopcode(mov,eax,'C_nil, mov,{ebp,-4},eax);
+      i!:gopcode(mov,eax,'nil, mov,{ebp,-4},eax);
     i!:gopcode(push,ebx, mov,ebx,'stack);
 
     %!! Has not been perfectly processed yet due to the string parameter
@@ -3195,7 +3195,7 @@ symbolic procedure c!:optimise_flowgraph(startpoint, all_blocks,
        c!:pgencall('reclaim, {'!.env,0,GC_STACK,0}, {'ebp,off_env});
 
        c!:pushpop('pop, reverse args);
-       i!:gopcode(mov,eax,'C_nil, mov,{ebp,-4},eax);
+       i!:gopcode(mov,eax,'nil, mov,{ebp,-4},eax);
 
        i!:gopcode(and,eax,1, je,lab1);
        i!:gopcode(mov,eax,{ebp,-4}, jmp,lab_end_proc);

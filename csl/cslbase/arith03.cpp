@@ -109,7 +109,7 @@ static LispObject quotib(LispObject a, LispObject b)
 }
 
 static LispObject CLquotib(LispObject a, LispObject b)
-{   LispObject g, nil = C_nil;
+{   LispObject g;
     bool w;
     push2(a, b);
     w = minusp(b);
@@ -144,10 +144,10 @@ static LispObject CLquotbb(LispObject a, LispObject b)
 }
 
 static LispObject quotir(LispObject a, LispObject b)
-{   LispObject w, nil;
+{   LispObject w;
     mv_2 = fixnum_of_int(0);
     if (a == fixnum_of_int(0)) return a;
-    push3(b, a, C_nil);
+    push3(b, a, nil);
 #define g   stack[0]
 #define a   stack[-1]
 #define b   stack[-2]
@@ -155,24 +155,18 @@ static LispObject quotir(LispObject a, LispObject b)
 //
 // the gcd() function guarantees to hand back a positive result.
 //
-    nil = C_nil;
     if (exception_pending()) goto fail;
     a = quot2(a, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     w = minusp(numerator(b));
-    nil = C_nil;
     if (exception_pending()) goto fail;
     if (w)
     {   g = negate(g);
-        nil = C_nil;
         if (exception_pending()) goto fail;
     }
     g = quot2(numerator(b), g);     // denominator of result will be +ve
-    nil = C_nil;
     if (exception_pending()) goto fail;
     a = times2(a, denominator(b));
-    nil = C_nil;
     if (exception_pending()) goto fail;
     w = make_ratio(a, g);
     popv(3);
@@ -193,7 +187,7 @@ static LispObject quotic(LispObject a, LispObject b)
 // arithmetic is used this can lead to grossly premature overflow.  For
 // the moment I will ignore that miserable fact
 //
-{   LispObject u, v, nil;
+{   LispObject u, v;
     mv_2 = fixnum_of_int(0);
     push2(a, b);
 #define b stack[0]
@@ -203,23 +197,18 @@ static LispObject quotic(LispObject a, LispObject b)
 //     (a * (p - iq)) / (p^2 + q^2)
 //
     u = negate(imag_part(b));
-    nil = C_nil;
     if (exception_pending()) goto fail;
     u = make_complex(real_part(b), u);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     a = times2(a, u);
     u = real_part(b);
     u = times2(u, u);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     v = imag_part(b);
     b = u;
     u = times2(v, v);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     u = plus2(u, b);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     v = a;
     popv(2);
@@ -295,8 +284,7 @@ LispObject quotbn(LispObject a, int32_t n)
 // NOTE NOTE NOTE that on a 64-bit system this is not good enough
 // for dividing by a general fixnum.
 //
-{   LispObject nil;
-    int sign;
+{   int sign;
     size_t lena = (bignum_length(a)-CELL)/4-1, i, lenc, lenx;
     uint32_t carry;
     if (!SIXTY_FOUR_BIT && lena == 0)   // one-word bignum as numerator
@@ -441,8 +429,7 @@ LispObject quotbn1(LispObject a, int32_t n)
 // the remainder is wanted. For consistency I leave that where quotbn() did.
 // The motivation for this is that I can avoid needing to allocate memory
 // for the quotient...
-{   LispObject nil = C_nil;
-    int sign;
+{   int sign;
     int32_t lena = (bignum_length(a)-CELL)/4-1, i;
     uint32_t carry;
     if (!SIXTY_FOUR_BIT && lena == 0)      // one-word bignum as numerator
@@ -500,7 +487,6 @@ LispObject quotbn1(LispObject a, int32_t n)
     for (i=lena-1; i>=0; i--)
         Ddivide(carry, bignum_digits(a)[i], carry, bignum_digits(a)[i], n);
     if ((sign & 2) != 0) carry = -(int32_t)carry;
-    nil = C_nil;
 // Beware and force carry to be treated as a signed value here!
     nwork = (int32_t)carry;          // leave remainder available to caller
     return nil;
@@ -730,7 +716,7 @@ static inline int make_positive_and_copy(LispObject &a, size_t &lena,
     {   size_t newlen = 2*bignum_length(big_dividend);
         push2(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
-        LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, newlen), nil;
+        LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
         pop2(b, a);
         errexit();
         big_dividend = w;
@@ -739,7 +725,7 @@ static inline int make_positive_and_copy(LispObject &a, size_t &lena,
     {   size_t newlen = 2*bignum_length(big_divisor);
         push2(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
-        LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, newlen), nil;
+        LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
         pop2(b, a);
         errexit();
         big_divisor = w;
@@ -748,7 +734,7 @@ static inline int make_positive_and_copy(LispObject &a, size_t &lena,
     {   size_t newlen = 2*bignum_length(big_quotient);
         push2(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
-        LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, newlen), nil;
+        LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
         pop2(b, a);
         errexit();
         big_quotient = w;
@@ -936,7 +922,6 @@ static inline LispObject pack_up_result(LispObject a, size_t lena)
     }
     LispObject r = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lena+4);
 //  trace_printf("lena = %d  r = %p\n", (int)lena, (void *)r);
-    LispObject nil;
     errexit();
     size_t i;
     for (i=0; i<=lena; i++)
@@ -961,8 +946,7 @@ static inline LispObject pack_up_result(LispObject a, size_t lena)
 // that arises will be small in the context of everything else.
 
 LispObject quotbb(LispObject a, LispObject b, int need)
-{   LispObject nil = C_nil;
-    size_t lena = (bignum_length(a)-CELL-4)/4,
+{   size_t lena = (bignum_length(a)-CELL-4)/4,
            lenb = (bignum_length(b)-CELL-4)/4;
 // On 32-bit machines I may have a denominator that still fits in 31-bits.
 // In that case I can optimise. The case lenb==0 ought not to arise on a
@@ -1064,34 +1048,28 @@ LispObject quotbb(LispObject a, LispObject b, int need)
 #define quotbf(a, b) quotsf(a, b)
 
 static LispObject quotri(LispObject a, LispObject b)
-{   LispObject w, nil;
+{   LispObject w;
     mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(1)) return a;
     else if (b == fixnum_of_int(0))
         return aerror2("bad arg for quotient", a, b);
-    push3(a, b, C_nil);
+    push3(a, b, nil);
 #define g   stack[0]
 #define b   stack[-1]
 #define a   stack[-2]
     g = gcd(b, numerator(a));
-    nil = C_nil;
     if (exception_pending()) goto fail;
     w = minusp(b);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     if (w)
     {   g = negate(g);      // ensure denominator is +ve
-        nil = C_nil;
         if (exception_pending()) goto fail;
     }
     b = quot2(b, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     g = quot2(numerator(a), g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     a = times2(b, denominator(a));
-    nil = C_nil;
     if (exception_pending()) goto fail;
     w = make_ratio(g, a);
     popv(3);
@@ -1109,46 +1087,37 @@ fail:
 #define quotrb(a, b) quotib(a, b)
 
 static LispObject quotrr(LispObject a, LispObject b)
-{   LispObject w, nil;
+{   LispObject w;
     mv_2 = fixnum_of_int(0);
     push5(numerator(a), denominator(a),
           denominator(b), numerator(b), // NB switched order
-          C_nil);
+          nil);
 #define g   stack[0]
 #define db  stack[-1]
 #define nb  stack[-2]
 #define da  stack[-3]
 #define na  stack[-4]
     g = gcd(na, db);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     w = minusp(db);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     if (w)
     {   g = negate(g);
-        nil = C_nil;
         if (exception_pending()) goto fail;
     }
     na = quot2(na, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     db = quot2(db, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     g = gcd(nb, da);
     if (exception_pending()) goto fail;
-    nil = C_nil;
     nb = quot2(nb, g);
     if (exception_pending()) goto fail;
     da = quot2(da, g);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     na = times2(na, nb);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     da = times2(da, db);
-    nil = C_nil;
     if (exception_pending()) goto fail;
     w = make_ratio(na, da);
     popv(5);
@@ -1168,7 +1137,7 @@ fail:
 #define quotrf(a, b) quotsf(a, b)
 
 static LispObject quotci(LispObject a, LispObject b)
-{   LispObject r = real_part(a), i = imag_part(a), nil;
+{   LispObject r = real_part(a), i = imag_part(a);
     mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(0)) return aerror2("bad arg for quotient", a, b);
     push2(b, r);

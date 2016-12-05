@@ -44,8 +44,7 @@
 #endif
 
 LispObject nreverse(LispObject a)
-{   LispObject nil = C_nil;
-    LispObject b = nil;
+{   LispObject b = nil;
     while (consp(a))
     {   LispObject c = a;
         a = qcdr(a);
@@ -81,7 +80,7 @@ LispObject nreverse(LispObject a)
 //
 
 LispObject Ceval(LispObject u, LispObject env)
-{   LispObject nil = C_nil;
+{
 #ifdef COMMON
     int t;
 #ifdef CHECK_STACK
@@ -176,18 +175,15 @@ restart:
 //
                     push2(u, env);
                     w = cons(lambda, w);
-                    nil = C_nil;
                     if (!exception_pending())
                         p = Lfuncalln(nil, 4, qvalue(macroexpand_hook),
                                       w, u, nil);
                     pop2(env, u);
-                    nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
                         if (SHOW_FNAME)
                         {   err_printf("\nMacroexpanding: ");
                             loop_print_error(u);
-                            nil = C_nil;
                             if (exception_pending()) flip_exception();
                         }
                         flip_exception();
@@ -231,13 +227,11 @@ restart:
                 fn = macroexpand(u, env);
                 debug_record("macro expanded");
                 pop2(env, u);
-                nil = C_nil;
                 if (exception_pending())
                 {   flip_exception();
                     if (SHOW_FNAME)
                     {   err_printf("\nMacroexpanding: ");
                         loop_print_error(u);
-                        nil = C_nil;
                         if (exception_pending()) flip_exception();
                     }
                     flip_exception();
@@ -268,14 +262,12 @@ restart:
 // nil having its mark bit set indicates that a special sort of exit
 // is in progress.  Multiple values can be ignored in this case.
 //
-                nil = C_nil;
                 if (exception_pending())
                 {   flip_exception();
                     stack = save_stack;
                     if (SHOW_ARGS)
                     {   err_printf("\nEvaluating: ");
                         loop_print_error(qcar(args));
-                        nil = C_nil;
                         if (exception_pending()) flip_exception();
                     }
                     flip_exception();
@@ -301,7 +293,7 @@ restart:
 }
 
 LispObject noisy_Ceval(LispObject u, LispObject env)
-{   LispObject nil = C_nil;
+{
 #ifdef COMMON
     int t;
 #ifdef CHECK_STACK
@@ -395,18 +387,15 @@ restart:
 //
                     push2(u, env);
                     w = cons(lambda, w);
-                    nil = C_nil;
                     if (!exception_pending())
                         p = Lfuncalln(nil, 4, qvalue(macroexpand_hook),
                                       w, u, nil);
                     pop2(env, u);
-                    nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
                         if (SHOW_FNAME)
                         {   err_printf("\nMacroexpanding: ");
                             loop_print_error(u);
-                            nil = C_nil;
                             if (exception_pending()) flip_exception();
                         }
                         flip_exception();
@@ -452,13 +441,11 @@ restart:
 //
                 fn = macroexpand(u, env);
                 pop2(env, u);
-                nil = C_nil;
                 if (exception_pending())
                 {   flip_exception();
                     if (SHOW_FNAME)
                     {   err_printf("\nMacroexpanding: ");
                         loop_print_error(u);
-                        nil = C_nil;
                         if (exception_pending()) flip_exception();
                     }
                     flip_exception();
@@ -489,14 +476,12 @@ restart:
 // nil having its mark bit set indicates that a special sort of exit
 // is in progress.  Multiple values can be ignored in this case.
 //
-                nil = C_nil;
                 if (exception_pending())
                 {   flip_exception();
                     stack = save_stack;
                     if (SHOW_ARGS)
                     {   err_printf("\nEvaluating: ");
                         loop_print_error(qcar(args));
-                        nil = C_nil;
                         if (exception_pending()) flip_exception();
                     }
                     flip_exception();
@@ -538,8 +523,7 @@ static bool check_no_unwanted_keys(LispObject restarg, LispObject ok_keys)
 //
 // verify that there were no unwanted keys in the actual arg list
 //
-{   LispObject nil = C_nil;
-    bool odd_key_found = false;
+{   bool odd_key_found = false;
     while (restarg!=nil)
     {   LispObject k = qcar(restarg);
         LispObject w;
@@ -560,8 +544,7 @@ static bool check_keyargs_even(LispObject restarg)
 // check that list is even length with alternate items symbols in
 // the keyword package. Return true in BAD case.
 //
-{   LispObject nil = C_nil;
-    while (restarg!=nil)
+{   while (restarg!=nil)
     {   LispObject q = qcar(restarg);
         if (!is_symbol(q) || qpackage(q) != qvalue(keyword_package))
             return true;
@@ -578,14 +561,13 @@ static LispObject keywordify(LispObject v)
 // arg is a non-nil symbol.  Should nil be permitted - I think not
 // since there seems too much chance of confusion.
 //
-    LispObject nil, name = get_pname(v);
+    LispObject name = get_pname(v);
     errexit();
     return Lintern_2(nil, name, qvalue(keyword_package));
 }
 
 static LispObject key_lookup(LispObject keyname, LispObject args)
-{   LispObject nil = C_nil;
-    while (args!=nil)
+{   while (args!=nil)
     {   LispObject next = qcdr(args);
         if (next==nil) return nil;
         if (qcar(args) == keyname) return next;
@@ -620,7 +602,6 @@ LispObject apply_lambda(LispObject def, int nargs,
 #define STATE_ALLOW    6        // &allow-other-keys
 #define STATE_AUX      7        // &aux
 
-    LispObject nil = C_nil;
     int opt_rest_state = STATE_NULL;
     LispObject *next_arg;
     int args_left = nargs;
@@ -680,7 +661,6 @@ LispObject apply_lambda(LispObject def, int nargs,
     for (;;)
     {   if (!consp(body)) break;
         p = macroexpand(qcar(body), env);
-        nil = C_nil;
         if (exception_pending())
         {   LispObject qname = name;
             popv(stack_used);
@@ -706,7 +686,6 @@ LispObject apply_lambda(LispObject def, int nargs,
             }
         }
     }
-    nil = C_nil;
     if (exception_pending())
     {   LispObject qname = name;
         popv(stack_used);
@@ -744,7 +723,6 @@ LispObject apply_lambda(LispObject def, int nargs,
     while (args_left-- != 0)                                \
     {   if (!exception_pending())                           \
             restarg = cons(next_arg[args_left], restarg);   \
-        nil = C_nil;                                        \
     }
 
                 if (v == rest_key)
@@ -806,7 +784,6 @@ LispObject apply_lambda(LispObject def, int nargs,
                     if (val1 == nil)        // use the init form
                     {   arg = qcar(w);
                         arg = eval(arg, env);
-                        nil = C_nil;
                         if (exception_pending()) goto unwind_special_bindings;
                     }
                     w = qcdr(w);
@@ -901,7 +878,6 @@ LispObject apply_lambda(LispObject def, int nargs,
                         {   if (!is_symbol(v) || v==nil || v==lisp_true)
                                 BAD2(err_bad_bvl, v);
                             keyname = keywordify(v);
-                            nil = C_nil;
                             if (exception_pending()) goto unwind_special_bindings;
                         }
                         else
@@ -909,7 +885,6 @@ LispObject apply_lambda(LispObject def, int nargs,
                             if (!is_symbol(keyname) || v==nil || v ==lisp_true)
                                 BAD2(err_bad_bvl, v);
                             keyname = keywordify(keyname);
-                            nil = C_nil;
                             if (exception_pending()) goto unwind_special_bindings;
                             v = qcdr(v);
                             if (consp(v)) v = qcar(v);
@@ -917,7 +892,6 @@ LispObject apply_lambda(LispObject def, int nargs,
                         }
                     }
                     ok_keys = cons(keyname, ok_keys);
-                    nil = C_nil;
                     if (exception_pending()) goto unwind_special_bindings;
                     arg = key_lookup(qcar(ok_keys), restarg);
                     if (arg == nil) val1 = nil;
@@ -930,7 +904,6 @@ LispObject apply_lambda(LispObject def, int nargs,
                     if (val1 == nil)        // use the init form
                     {   arg = qcar(w);
                         arg = eval(arg, env);
-                        nil = C_nil;
                         if (exception_pending()) goto unwind_special_bindings;
                     }
                     w = qcdr(w);
@@ -957,7 +930,6 @@ LispObject apply_lambda(LispObject def, int nargs,
                     if (consp(w))
                     {   arg = qcar(w);
                         arg = eval(arg, env);
-                        nil = C_nil;
                         if (exception_pending()) goto unwind_special_bindings;
                     }
                 }
@@ -976,10 +948,9 @@ LispObject apply_lambda(LispObject def, int nargs,
 // and so is MUCH shorter and neater. I always shallow bind
 //
 #define instate_binding(var, val, local_decs1, lab)                     \
-        {   if (!is_symbol(var) || var==nil || var==lisp_true)       \
+        {   if (!is_symbol(var) || var==nil || var==lisp_true)          \
                 BAD2(err_bad_bvl, var);                                 \
             w = acons(var, qvalue(var), specenv);                       \
-            nil = C_nil;                                                \
             if (exception_pending()) goto unwind_special_bindings;      \
             specenv = w;                                                \
             qvalue(var) = val;                                          \
@@ -992,7 +963,6 @@ LispObject apply_lambda(LispObject def, int nargs,
             h = qheader(var);                                           \
             if ((h & SYM_SPECIAL_VAR) != 0)                             \
             {   w = acons(var, qvalue(var), specenv);                   \
-                nil = C_nil;                                            \
                 if (exception_pending()) goto unwind_special_bindings;  \
                 specenv = w;                                            \
                 qvalue(var) = val;                                      \
@@ -1002,12 +972,10 @@ LispObject apply_lambda(LispObject def, int nargs,
                 {   if (qcar(w) == var)                                 \
                     {   qcar(w) = fixnum_of_int(0);/* decl is used up */\
                         w = acons(var, work_symbol, env);               \
-                        nil = C_nil;                                    \
                         if (exception_pending())                        \
                             goto unwind_special_bindings;               \
                         env = w;                                        \
                         w = acons(var, qvalue(var), specenv);           \
-                        nil = C_nil;                                    \
                         if (exception_pending())                        \
                             goto unwind_special_bindings;               \
                         specenv = w;                                    \
@@ -1016,7 +984,6 @@ LispObject apply_lambda(LispObject def, int nargs,
                     }                                                   \
                 }                                                       \
                 w = acons(var, val, env);                               \
-                nil = C_nil;                                            \
                 if (exception_pending()) goto unwind_special_bindings;  \
                 env = w;                                                \
         lab:    ;                                                       \
@@ -1044,7 +1011,6 @@ LispObject apply_lambda(LispObject def, int nargs,
         local_decs=qcdr(local_decs);
         if (!is_symbol(q)) continue;
         w = acons(q, work_symbol, env);
-        nil = C_nil;
         if (exception_pending()) goto unwind_special_bindings;
         env = w;
     }
@@ -1087,13 +1053,11 @@ LispObject apply_lambda(LispObject def, int nargs,
         push(qname);
         bodyx = noisy ? noisy_progn_fn(bodyx, envx) : progn_fn(bodyx, envx);
         pop(qname);
-        nil = C_nil;
         if (exception_pending()) return qname;
         return bodyx;
     }
     {   exit_count = 1;
         body = noisy ? noisy_progn_fn(body, env) : progn_fn(body, env);
-        nil = C_nil;
         if (exception_pending()) goto unwind_special_bindings;
         while (specenv != nil)
         {   LispObject bv = qcar(specenv);
@@ -1117,7 +1081,6 @@ unwind_special_bindings:
 // one reason or another) I am having to unwind the stack, restoring
 // special bindings as I go.
 //
-    nil = C_nil;
     flip_exception();
     while (specenv != nil)
     {   LispObject bv = qcar(specenv);
@@ -1146,11 +1109,11 @@ unwind_special_bindings:
 #undef stack_used
 }
 
-LispObject Leval(LispObject nil, LispObject a)
+LispObject Leval(LispObject env, LispObject a)
 {   return eval(a, nil);     // Multiple values may be returned
 }
 
-LispObject Levlis(LispObject nil, LispObject a)
+LispObject Levlis(LispObject env, LispObject a)
 {   LispObject r;
     stackcheck1(0, a);
     r = nil;
@@ -1167,7 +1130,7 @@ LispObject Levlis(LispObject nil, LispObject a)
     return onevalue(nreverse(r));
 }
 
-LispObject Lapply_n(LispObject nil, int nargs, ...)
+LispObject Lapply_n(LispObject env, int nargs, ...)
 {   va_list a;
     int i;
     LispObject *stack_save = stack, last, fn = nil;
@@ -1192,15 +1155,15 @@ LispObject Lapply_n(LispObject nil, int nargs, ...)
     return apply(fn, i, nil, fn, 0);
 }
 
-LispObject Lapply_1(LispObject nil, LispObject fn)
+LispObject Lapply_1(LispObject env, LispObject fn)
 {   return Lapply_n(nil, 1, fn);
 }
 
-LispObject Lapply_2(LispObject nil, LispObject fn, LispObject a1)
+LispObject Lapply_2(LispObject env, LispObject fn, LispObject a1)
 {   return Lapply_n(nil, 2, fn, a1);
 }
 
-LispObject Lapply0(LispObject nil, LispObject fn)
+LispObject Lapply0(LispObject env, LispObject fn)
 {
 #ifndef DEBUG
 // I avoid this optimisation if debugging...
@@ -1210,10 +1173,10 @@ LispObject Lapply0(LispObject nil, LispObject fn)
 #ifndef NO_BYTECOUNT
     name_of_caller = "apply";
 #endif
-    return apply(fn, 0, C_nil, fn, 0);
+    return apply(fn, 0, nil, fn, 0);
 }
 
-LispObject Lapply1(LispObject nil, LispObject fn, LispObject a)
+LispObject Lapply1(LispObject env, LispObject fn, LispObject a)
 {
 #ifndef DEBUG
     if (is_symbol(fn)) return (*qfn1(fn))(qenv(fn), a);
@@ -1223,10 +1186,10 @@ LispObject Lapply1(LispObject nil, LispObject fn, LispObject a)
 #ifndef NO_BYTECOUNT
     name_of_caller = "apply";
 #endif
-    return apply(fn, 1, C_nil, fn, 0);
+    return apply(fn, 1, nil, fn, 0);
 }
 
-LispObject Lapply2(LispObject nil, int nargs, ...)
+LispObject Lapply2(LispObject env, int nargs, ...)
 {   va_list aa;
     LispObject fn, a, b;
     argcheck(nargs, 3, "apply2");
@@ -1243,10 +1206,10 @@ LispObject Lapply2(LispObject nil, int nargs, ...)
 #ifndef NO_BYTECOUNT
     name_of_caller = "apply";
 #endif
-    return apply(fn, 2, C_nil, fn, 0);
+    return apply(fn, 2, nil, fn, 0);
 }
 
-LispObject Lapply3(LispObject nil, int nargs, ...)
+LispObject Lapply3(LispObject env, int nargs, ...)
 {   va_list aa;
     LispObject fn, a, b, c;
     argcheck(nargs, 4, "apply3");
@@ -1264,10 +1227,10 @@ LispObject Lapply3(LispObject nil, int nargs, ...)
 #ifndef NO_BYTECOUNT
     name_of_caller = "apply";
 #endif
-    return apply(fn, 3, C_nil, fn, 0);
+    return apply(fn, 3, nil, fn, 0);
 }
 
-LispObject Lfuncall1(LispObject nil, LispObject fn)
+LispObject Lfuncall1(LispObject env, LispObject fn)
 {
 #ifndef DEBUG
     if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 0);
@@ -1279,7 +1242,7 @@ LispObject Lfuncall1(LispObject nil, LispObject fn)
     return apply(fn, 0, nil, fn, 0);
 }
 
-LispObject Lfuncall2(LispObject nil, LispObject fn, LispObject a1)
+LispObject Lfuncall2(LispObject env, LispObject fn, LispObject a1)
 {
 #ifndef DEBUG
     if (is_symbol(fn)) return (*qfn1(fn))(qenv(fn), a1);
@@ -1292,7 +1255,7 @@ LispObject Lfuncall2(LispObject nil, LispObject fn, LispObject a1)
     return apply(fn, 1, nil, fn, 0);
 }
 
-static LispObject Lfuncalln_sub(LispObject nil, int nargs, va_list a)
+static LispObject Lfuncalln_sub(LispObject env, int nargs, va_list a)
 {   LispObject *stack_save = stack, fn;
     fn = va_arg(a, LispObject);
     push_args_1(a, nargs);
@@ -1303,7 +1266,7 @@ static LispObject Lfuncalln_sub(LispObject nil, int nargs, va_list a)
     return apply(fn, nargs-1, nil, fn, 0);
 }
 
-LispObject Lfuncalln(LispObject nil, int nargs, ...)
+LispObject Lfuncalln(LispObject env, int nargs, ...)
 {   va_list a;
     LispObject fn, a1, a2, a3, a4;
     va_start(a, nargs);
@@ -1354,7 +1317,7 @@ LispObject Lfuncalln(LispObject nil, int nargs, ...)
 
 #ifdef COMMON
 
-LispObject Lvalues(LispObject nil, int nargs, ...)
+LispObject Lvalues(LispObject env, int nargs, ...)
 {   va_list a;
     LispObject *p = &mv_2, w;
     int i;
@@ -1375,11 +1338,11 @@ LispObject Lvalues(LispObject nil, int nargs, ...)
     return nvalues(w, nargs);
 }
 
-LispObject Lvalues_2(LispObject nil, LispObject a, LispObject b)
+LispObject Lvalues_2(LispObject env, LispObject a, LispObject b)
 {   return Lvalues(nil, 2, a, b);
 }
 
-LispObject Lvalues_1(LispObject nil, LispObject a)
+LispObject Lvalues_1(LispObject env, LispObject a)
 {   return Lvalues(nil, 1, a);
 }
 
@@ -1387,8 +1350,7 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 //
 // here with the rest of the interpreter rather than in specforms.c
 //
-{   LispObject nil = C_nil;
-    LispObject fn, *stack_save = stack;
+{   LispObject fn, *stack_save = stack;
     int i=0, j=0;
     if (!consp(args)) return nil;       // (multiple-value-call) => nil
     stackcheck2(0, args, env);
@@ -1404,7 +1366,6 @@ LispObject mv_call_fn(LispObject args, LispObject env)
         r1 = qcar(args);
         exit_count = 1;
         r1  = eval(r1, env);
-        nil = C_nil;
         if (exception_pending())
         {   stack = stack_save;
             return nil;
@@ -1434,15 +1395,13 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 #endif
 
 LispObject interpreted1(LispObject def, LispObject a1)
-{   LispObject nil = C_nil;
-    push(a1);
+{   push(a1);
     stackcheck1(1, def);
     return apply_lambda(def, 1, nil, def, 0);
 }
 
 LispObject interpreted2(LispObject def, LispObject a1, LispObject a2)
-{   LispObject nil = C_nil;
-    push2(a1, a2);
+{   push2(a1, a2);
     stackcheck1(2, def);
     return apply_lambda(def, 2, nil, def, 0);
 }
@@ -1455,7 +1414,6 @@ LispObject interpretedn(LispObject def, int nargs, ...)
 // that the args were in consecutive locations on the stack I could
 // probably save a copying operation.
 //
-    LispObject nil = C_nil;
     LispObject *stack_save = stack;
     va_list a;
     if (nargs != 0)
@@ -1467,22 +1425,19 @@ LispObject interpretedn(LispObject def, int nargs, ...)
 }
 
 LispObject funarged1(LispObject def, LispObject a1)
-{   LispObject nil = C_nil;
-    push(a1);
+{   push(a1);
     stackcheck1(1, def);
     return apply_lambda(qcdr(def), 1, qcar(def), qcdr(def), 0);
 }
 
 LispObject funarged2(LispObject def, LispObject a1, LispObject a2)
-{   LispObject nil = C_nil;
-    push2(a1, a2);
+{   push2(a1, a2);
     stackcheck1(2, def);
     return apply_lambda(qcdr(def), 2, qcar(def), qcdr(def), 0);
 }
 
 LispObject funargedn(LispObject def, int nargs, ...)
-{   LispObject nil = C_nil;
-    LispObject *stack_save = stack;
+{   LispObject *stack_save = stack;
     va_list a;
     if (nargs != 0)
     {   va_start(a, nargs);
@@ -1497,15 +1452,13 @@ LispObject funargedn(LispObject def, int nargs, ...)
 //
 
 LispObject double_interpreted1(LispObject def, LispObject a1)
-{   LispObject nil = C_nil;
-    push(a1);
+{   push(a1);
     stackcheck1(1, def);
     return apply_lambda(def, 1, nil, def, 0);
 }
 
 LispObject double_interpreted2(LispObject def, LispObject a1, LispObject a2)
-{   LispObject nil = C_nil;
-    push2(a1, a2);
+{   push2(a1, a2);
     stackcheck1(2, def);
     return apply_lambda(def, 2, nil, def, 0);
 }
@@ -1518,7 +1471,6 @@ LispObject double_interpretedn(LispObject def, int nargs, ...)
 // that the args were in consecutive locations on the stack I could
 // probably save a copying operation.
 //
-    LispObject nil = C_nil;
     LispObject *stack_save = stack;
     va_list a;
     if (nargs != 0)
@@ -1530,22 +1482,19 @@ LispObject double_interpretedn(LispObject def, int nargs, ...)
 }
 
 LispObject double_funarged1(LispObject def, LispObject a1)
-{   LispObject nil = C_nil;
-    push(a1);
+{   push(a1);
     stackcheck1(1, def);
     return apply_lambda(qcdr(def), 1, qcar(def), qcdr(def), 0);
 }
 
 LispObject double_funarged2(LispObject def, LispObject a1, LispObject a2)
-{   LispObject nil = C_nil;
-    push2(a1, a2);
+{   push2(a1, a2);
     stackcheck1(2, def);
     return apply_lambda(qcdr(def), 2, qcar(def), qcdr(def), 0);
 }
 
 LispObject double_funargedn(LispObject def, int nargs, ...)
-{   LispObject nil = C_nil;
-    LispObject *stack_save = stack;
+{   LispObject *stack_save = stack;
     va_list a;
     if (nargs != 0)
     {   va_start(a, nargs);
@@ -1559,8 +1508,7 @@ LispObject traceinterpreted1(LispObject def, LispObject a1)
 //
 // Like interpreted() but the definition has the fn name consed on the front
 //
-{   LispObject nil = C_nil, r;
-    push(a1);
+{   push(a1);
     stackcheck1(1, def);
     freshline_trace();
     trace_printf("Entering ");
@@ -1572,7 +1520,7 @@ LispObject traceinterpreted1(LispObject def, LispObject a1)
     trace_printf("\nArg1: ");
     loop_print_trace(stack[0]);
     trace_printf("\n");
-    r = apply_lambda(qcdr(def), 1, nil, def, 0);
+    LispObject r = apply_lambda(qcdr(def), 1, nil, def, 0);
     errexit();
     push(r);
     trace_printf("Value = ");
@@ -1586,8 +1534,7 @@ LispObject traceinterpreted2(LispObject def, LispObject a1, LispObject a2)
 //
 // Like interpreted() but the definition has the fn name consed on the front
 //
-{   LispObject nil = C_nil, r;
-    int i;
+{   int i;
     push2(a1, a2);
     stackcheck1(2, def);
     freshline_trace();
@@ -1603,7 +1550,7 @@ LispObject traceinterpreted2(LispObject def, LispObject a1, LispObject a2)
         loop_print_trace(stack[i-2]);
         trace_printf("\n");
     }
-    r = apply_lambda(qcdr(def), 2, nil, def, 0);
+    LispObject r = apply_lambda(qcdr(def), 2, nil, def, 0);
     errexit();
     push(r);
     trace_printf("Value = ");
@@ -1618,7 +1565,7 @@ LispObject traceinterpretedn(LispObject def, int nargs, ...)
 // Like interpreted() but the definition has the fn name consed on the front
 //
 {   int i;
-    LispObject nil = C_nil, r;
+    LispObject r;
     LispObject *stack_save = stack;
     va_list a;
     if (nargs != 0)
@@ -1653,7 +1600,7 @@ LispObject tracefunarged1(LispObject def, LispObject a1)
 //
 // Like funarged() but with some printing
 //
-{   LispObject nil = C_nil, r;
+{   LispObject r;
     push(a1);
     stackcheck1(1, def);
     freshline_trace();
@@ -1679,7 +1626,7 @@ LispObject tracefunarged2(LispObject def, LispObject a1, LispObject a2)
 //
 // Like funarged() but with some printing
 //
-{   LispObject nil = C_nil, r;
+{   LispObject r;
     push2(a1, a2);
     stackcheck1(2, def);
     freshline_trace();
@@ -1705,7 +1652,7 @@ LispObject tracefunargedn(LispObject def, int nargs, ...)
 //
 // Like funarged() but with some printing
 //
-{   LispObject nil = C_nil, r;
+{   LispObject r;
     LispObject *stack_save = stack;
     va_list a;
     if (nargs != 0)
@@ -1736,7 +1683,7 @@ LispObject tracesetinterpreted1(LispObject def, LispObject a1)
 //
 // Like interpreted() but the definition has the fn name consed on the front
 //
-{   LispObject nil = C_nil, r;
+{   LispObject r;
     push(a1);
     stackcheck1(1, def);
     freshline_trace();
@@ -1763,7 +1710,7 @@ LispObject tracesetinterpreted2(LispObject def, LispObject a1, LispObject a2)
 //
 // Like interpreted() but the definition has the fn name consed on the front
 //
-{   LispObject nil = C_nil, r;
+{   LispObject r;
     int i;
     push2(a1, a2);
     stackcheck1(2, def);
@@ -1795,7 +1742,7 @@ LispObject tracesetinterpretedn(LispObject def, int nargs, ...)
 // Like interpreted() but the definition has the fn name consed on the front
 //
 {   int i;
-    LispObject nil = C_nil, r;
+    LispObject r;
     LispObject *stack_save = stack;
     va_list a;
     if (nargs != 0)
@@ -1830,7 +1777,7 @@ LispObject tracesetfunarged1(LispObject def, LispObject a1)
 //
 // Like funarged() but with some printing
 //
-{   LispObject nil = C_nil, r;
+{   LispObject r;
     push(a1);
     stackcheck1(1, def);
     freshline_trace();
@@ -1856,7 +1803,7 @@ LispObject tracesetfunarged2(LispObject def, LispObject a1, LispObject a2)
 //
 // Like funarged() but with some printing
 //
-{   LispObject nil = C_nil, r;
+{   LispObject r;
     push2(a1, a2);
     stackcheck1(2, def);
     freshline_trace();
@@ -1882,7 +1829,7 @@ LispObject tracesetfunargedn(LispObject def, int nargs, ...)
 //
 // Like funarged() but with some printing
 //
-{   LispObject nil = C_nil, r;
+{   LispObject r;
     LispObject *stack_save = stack;
     va_list a;
     if (nargs != 0)
@@ -1912,8 +1859,7 @@ LispObject tracesetfunargedn(LispObject def, int nargs, ...)
 static LispObject macroexpand_1(LispObject form, LispObject env)
 {   // The environment here seems only necessary for macrolet
     LispObject done;
-    LispObject f, nil;
-    nil = C_nil;
+    LispObject f;
     stackcheck2(0, form, env);
     done = nil;
     if (consp(form))
@@ -1937,13 +1883,11 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
                     p = Lfuncalln(nil, 4, qvalue(macroexpand_hook),
                                   w, stack[-1], nil);
                     pop2(done, form);
-                    nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
                         if (SHOW_FNAME)
                         {   err_printf("\nMacroexpanding: ");
                             loop_print_error(form);
-                            nil = C_nil;
                             if (exception_pending()) flip_exception();
                         }
                         flip_exception();
@@ -1965,7 +1909,6 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
             push3(form, env, done);
             f = cons(lambda, qenv(f));
             pop3(done, env, form);
-            nil = C_nil;
             if (!exception_pending())
             {
 #ifndef COMMON
@@ -1974,7 +1917,6 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
 #else
                 form = Lfuncalln(nil, 4, done, f, form, env);
 #endif
-                nil = C_nil;
             }
             if (exception_pending()) return nil;
             done = lisp_true;
@@ -1986,8 +1928,7 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
 
 LispObject macroexpand(LispObject form, LispObject env)
 {   // The environment here seems only necessary for macrolet
-    LispObject done, nil;
-    nil = C_nil;
+    LispObject done;
     stackcheck2(0, form, env);
     done = nil;
     for (;;)
@@ -2002,7 +1943,7 @@ LispObject macroexpand(LispObject form, LispObject env)
     return nvalues(form, 2);    // Multiple values handed back
 }
 
-LispObject Lmacroexpand(LispObject nil, LispObject a)
+LispObject Lmacroexpand(LispObject env, LispObject a)
 {   return macroexpand(a, nil);
 }
 
@@ -2012,7 +1953,7 @@ LispObject Lmacroexpand_2(LispObject, LispObject a, LispObject b)
 }
 #endif
 
-LispObject Lmacroexpand_1(LispObject nil, LispObject a)
+LispObject Lmacroexpand_1(LispObject env, LispObject a)
 {   return macroexpand_1(a, nil);
 }
 
@@ -2033,8 +1974,7 @@ LispObject Lmacroexpand_1_2(LispObject, LispObject a, LispObject b)
 //
 
 LispObject autoload1(LispObject fname, LispObject a1)
-{   LispObject nil = C_nil;
-    push2(a1, qcar(fname));
+{   push2(a1, qcar(fname));
 // worry about 0 and 3 args special cases...
     set_fns(qcar(fname), undefined1, undefined2, undefinedn);
     qenv(qcar(fname)) = qcar(fname);
@@ -2053,8 +1993,7 @@ LispObject autoload1(LispObject fname, LispObject a1)
 }
 
 LispObject autoload2(LispObject fname, LispObject a1, LispObject a2)
-{   LispObject nil = C_nil;
-    push3(a1, a2, qcar(fname));
+{   push3(a1, a2, qcar(fname));
 // 0 and 3 args special casess
     set_fns(qcar(fname), undefined1, undefined2, undefinedn);
     qenv(qcar(fname)) = qcar(fname);
@@ -2073,8 +2012,7 @@ LispObject autoload2(LispObject fname, LispObject a1, LispObject a2)
 }
 
 LispObject autoloadn(LispObject fname, int nargs, ...)
-{   LispObject nil = C_nil;
-    va_list a;
+{   va_list a;
     va_start(a, nargs);
     push_args(a, nargs);
     push(qcar(fname));
@@ -2282,7 +2220,7 @@ LispObject f3_as_3(LispObject env, int nargs, ...)
 
 #define PARSIZE 65536
 
-static void write_result(LispObject nil, LispObject r, char *shared)
+static void write_result(LispObject env, LispObject r, char *shared)
 {
 //
 // This converts an arbitrary result into a string so I can pass it back.
@@ -2319,7 +2257,7 @@ static void write_result(LispObject nil, LispObject r, char *shared)
     shared[len+1] = 0;
 }
 
-LispObject Lparallel(LispObject nil, LispObject a, LispObject b)
+LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 {   pid_t pid1, pid2, pidx, pidy;
 //
 // Create an identifier for a private shared segment of memory of size
@@ -2359,7 +2297,6 @@ LispObject Lparallel(LispObject nil, LispObject a, LispObject b)
     else if (pid1 == 0)
     {   // TASK 1 created OK
         LispObject r1 = Lapply2(nil, 3, a, b, nil);
-        nil = C_nil;
 //
 // If the evaluation failed I will exit indicating a failure.
 //
@@ -2395,7 +2332,6 @@ LispObject Lparallel(LispObject nil, LispObject a, LispObject b)
         else if (pid2 == 0)
         {   // TASK 2
             LispObject r2 = Lapply2(nil, 3, a, b, lisp_true);
-            nil = C_nil;
             if (exception_pending())
             {   strcpy(shared, "Failed");
                 exit(1);
@@ -2465,13 +2401,13 @@ LispObject Lparallel(LispObject nil, LispObject a, LispObject b)
 
 #else
 
-LispObject Lparallel(LispObject nil, LispObject a, LispObject b)
+LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 {   return aerror("parallel not supported on this platform");
 }
 
 #endif
 
-LispObject Lsleep(LispObject nil, LispObject a)
+LispObject Lsleep(LispObject env, LispObject a)
 {   int n;
     if (is_fixnum(a)) n = int_of_fixnum(a);
     else n = 1;

@@ -52,8 +52,7 @@ int trace_all = 0;
 // needs to worry about pushing and popping them.
 
 LispObject bytecoded0(LispObject def, int nargs, ...)
-{   LispObject nil=C_nil;
-    if (nargs != 0) return error(2, err_wrong_no_args, name_from(def),
+{   if (nargs != 0) return error(2, err_wrong_no_args, name_from(def),
                                      fixnum_of_int((int32_t)nargs));
     push2(litvec, codevec);
     stackcheck1(2, def);
@@ -84,7 +83,6 @@ LispObject bytecoded0(LispObject def, int nargs, ...)
 #endif
         trace_printf("\n");
         trace_all = 1;
-        nil = C_nil;
         if (exception_pending())
         {   popv(3);
             return nil;
@@ -93,7 +91,6 @@ LispObject bytecoded0(LispObject def, int nargs, ...)
     }
 #endif
     LispObject r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         pop2(codevec, litvec);
@@ -112,7 +109,6 @@ LispObject bytecoded0(LispObject def, int nargs, ...)
         loop_print_trace(r);
         trace_printf("\n");
         trace_all = 1;
-        nil = C_nil;
         if (exception_pending())
         {   popv(1);
             return nil;
@@ -125,7 +121,6 @@ LispObject bytecoded0(LispObject def, int nargs, ...)
 
 LispObject bytecoded1(LispObject def, LispObject a)
 {   LispObject r;
-    LispObject nil = C_nil;
     push3(litvec, codevec, a);
     stackcheck1(3, def);
 #ifdef DEBUG
@@ -146,7 +141,6 @@ LispObject bytecoded1(LispObject def, LispObject a)
         loop_print_trace(stack[-1]);
         trace_printf("\n");
         trace_all = 1;
-        nil = C_nil;
         if (exception_pending())
         {   popv(4);
             return nil;
@@ -155,7 +149,6 @@ LispObject bytecoded1(LispObject def, LispObject a)
     }
 #endif
     r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-1);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
 //
@@ -193,7 +186,6 @@ LispObject bytecoded1(LispObject def, LispObject a)
         loop_print_trace(r);
         trace_printf("\n");
         trace_all = 1;
-        nil = C_nil;
         if (exception_pending())
         {   popv(1);
             return nil;
@@ -206,7 +198,6 @@ LispObject bytecoded1(LispObject def, LispObject a)
 
 LispObject bytecoded2(LispObject def, LispObject a, LispObject b)
 {   LispObject r;
-    LispObject nil = C_nil;
     push4(litvec, codevec, a, b);
     stackcheck1(4, def);
 #ifdef DEBUG
@@ -230,7 +221,6 @@ LispObject bytecoded2(LispObject def, LispObject a, LispObject b)
         loop_print_trace(stack[-1]);
         trace_printf("\n");
         trace_all = 1;
-        nil = C_nil;
         if (exception_pending())
         {   popv(5);
             return nil;
@@ -239,7 +229,6 @@ LispObject bytecoded2(LispObject def, LispObject a, LispObject b)
     }
 #endif
     r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-2);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += 2;
@@ -267,7 +256,6 @@ LispObject bytecoded2(LispObject def, LispObject a, LispObject b)
         loop_print_trace(r);
         trace_printf("\n");
         trace_all = 1;
-        nil = C_nil;
         if (exception_pending())
         {   popv(1);
             return nil;
@@ -281,7 +269,6 @@ LispObject bytecoded2(LispObject def, LispObject a, LispObject b)
 LispObject bytecoded3(LispObject def, int nargs, ...)
 {   va_list aa;
     LispObject r, a, b, c;
-    LispObject nil = C_nil;
     if (nargs != 3) return error(2, err_wrong_no_args, name_from(def),
                                      fixnum_of_int((int32_t)nargs));
     va_start(aa, nargs);
@@ -315,7 +302,6 @@ LispObject bytecoded3(LispObject def, int nargs, ...)
         loop_print_trace(stack[-1]);
         trace_printf("\n");
         trace_all = 1;
-        nil = C_nil;
         if (exception_pending())
         {   popv(6);
             return nil;
@@ -324,7 +310,6 @@ LispObject bytecoded3(LispObject def, int nargs, ...)
     }
 #endif
     r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-3);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += 3;
@@ -355,7 +340,6 @@ LispObject bytecoded3(LispObject def, int nargs, ...)
         loop_print_trace(r);
         trace_printf("\n");
         trace_all = 1;
-        nil = C_nil;
         if (exception_pending())
         {   popv(1);
             return nil;
@@ -375,7 +359,6 @@ LispObject bytecodedn(LispObject def, int nargs, ...)
 // probably save a copying operation.
 //
     LispObject r;
-    LispObject nil = C_nil;
     int i;
     LispObject *stack_save = stack;
     va_list a;
@@ -392,7 +375,6 @@ LispObject bytecodedn(LispObject def, int nargs, ...)
                      fixnum_of_int((int32_t)nargs));
     }
     r = bytestream_interpret(data_of_bps(r)+1, qcdr(def), stack-nargs);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
@@ -422,7 +404,6 @@ LispObject bytecodedn(LispObject def, int nargs, ...)
         loop_print_trace(r);
         trace_printf("\n");
         trace_all = 1;
-        nil = C_nil;
         if (exception_pending())
         {   popv(1);
             return nil;
@@ -439,7 +420,7 @@ LispObject bytecodedn(LispObject def, int nargs, ...)
 // output.
 //
 
-LispObject unpack_mv(LispObject nil, LispObject r)
+LispObject unpack_mv(LispObject env, LispObject r)
 {   LispObject *p = &mv_1;
     exit_count = 0;
     *p = nil;
@@ -452,7 +433,7 @@ LispObject unpack_mv(LispObject nil, LispObject r)
 }
 
 LispObject tracebytecoded0(LispObject def, int nargs, ...)
-{   LispObject r, nil=C_nil;
+{   LispObject r;
     if (nargs != 0) return error(2, err_wrong_no_args, name_from(def),
                                      fixnum_of_int((int32_t)nargs));
     push3(litvec, codevec, def);
@@ -468,14 +449,12 @@ LispObject tracebytecoded0(LispObject def, int nargs, ...)
     else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
 #endif
     trace_printf("\n");
-    nil = C_nil;
     if (exception_pending())
     {   popv(3);
         return nil;
     }
     def = stack[0];
     r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(1); pop2(codevec, litvec);
@@ -495,7 +474,6 @@ LispObject tracebytecoded0(LispObject def, int nargs, ...)
     push(r);
     freshline_trace();
     loop_print_trace(name_from(def));
-    nil = C_nil;
     if (!exception_pending())
     {   trace_printf(" = ");
         loop_print_trace(r);
@@ -516,12 +494,10 @@ LispObject tracebytecoded0(LispObject def, int nargs, ...)
 
 LispObject tracebytecoded1(LispObject def, LispObject a)
 {   LispObject r;
-    LispObject nil = C_nil;
     push4(litvec, codevec, def, a);
     freshline_trace();
     trace_printf("Entering ");
     loop_print_trace(name_from(def));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(2); pop2(codevec, litvec);
@@ -539,7 +515,6 @@ LispObject tracebytecoded1(LispObject def, LispObject a)
     trace_printf("\nArg1: ");
     loop_print_trace(stack[0]);
     trace_printf("\n");
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(2); pop2(codevec, litvec);
@@ -549,7 +524,6 @@ LispObject tracebytecoded1(LispObject def, LispObject a)
     stackcheck0(4);
     def = stack[-1];
     r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-1);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack++;
@@ -588,12 +562,10 @@ LispObject tracebytecoded1(LispObject def, LispObject a)
 LispObject tracebytecoded2(LispObject def,
                            LispObject a, LispObject b)
 {   LispObject r;
-    LispObject nil = C_nil;
     push5(litvec, codevec, def, a, b);
     freshline_trace();
     trace_printf("Entering ");
     loop_print_trace(name_from(def));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(3); pop2(codevec, litvec);
@@ -610,7 +582,6 @@ LispObject tracebytecoded2(LispObject def,
 #endif
     trace_printf("\nArg1: ");
     loop_print_trace(stack[-1]);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(3); pop2(codevec, litvec);
@@ -620,7 +591,6 @@ LispObject tracebytecoded2(LispObject def,
     trace_printf("\nArg2: ");
     loop_print_trace(stack[0]);
     trace_printf("\n");
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(3); pop2(codevec, litvec);
@@ -630,7 +600,6 @@ LispObject tracebytecoded2(LispObject def,
     stackcheck0(5);
     def = stack[-2];
     r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-2);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += 2;
@@ -674,7 +643,6 @@ LispObject tracebytecoded2(LispObject def,
 LispObject tracesetbytecoded3(LispObject def, int nargs, ...)
 {   va_list aa;
     LispObject r, a, b, c;
-    LispObject nil = C_nil;
     if (nargs != 3) return error(2, err_wrong_no_args, name_from(def),
                                      fixnum_of_int((int32_t)nargs));
     va_start(aa, nargs);
@@ -687,7 +655,6 @@ LispObject tracesetbytecoded3(LispObject def, int nargs, ...)
     freshline_trace();
     trace_printf("Entering ");
     loop_print_trace(name_from(def));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(4); pop2(codevec, litvec);
@@ -704,7 +671,6 @@ LispObject tracesetbytecoded3(LispObject def, int nargs, ...)
 #endif
     trace_printf("\nArg1: ");
     loop_print_trace(stack[-2]);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(4); pop2(codevec, litvec);
@@ -713,7 +679,6 @@ LispObject tracesetbytecoded3(LispObject def, int nargs, ...)
     }
     trace_printf("\nArg2: ");
     loop_print_trace(stack[-1]);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(4); pop2(codevec, litvec);
@@ -723,7 +688,6 @@ LispObject tracesetbytecoded3(LispObject def, int nargs, ...)
     trace_printf("\nArg3: ");
     loop_print_trace(stack[0]);
     trace_printf("\n");
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(4); pop2(codevec, litvec);
@@ -733,7 +697,6 @@ LispObject tracesetbytecoded3(LispObject def, int nargs, ...)
     stackcheck0(6);
     def = stack[-3];
     r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), TRACESET(stack-3));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += 3;
@@ -784,7 +747,6 @@ LispObject tracebytecodedn(LispObject def, int nargs, ...)
 // probably save a copying operation.
 //
     LispObject r;
-    LispObject nil = C_nil;
     int i;
     LispObject *stack_save = stack;
     va_list a;
@@ -818,7 +780,6 @@ LispObject tracebytecodedn(LispObject def, int nargs, ...)
                      fixnum_of_int((int32_t)nargs));
     }
     r = bytestream_interpret(data_of_bps(r)+1, qcdr(def), stack-nargs);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
@@ -856,7 +817,7 @@ LispObject tracebytecodedn(LispObject def, int nargs, ...)
 }
 
 LispObject tracesetbytecoded0(LispObject def, int nargs, ...)
-{   LispObject r, nil=C_nil;
+{   LispObject r;
     if (nargs != 0) return error(2, err_wrong_no_args, name_from(def),
                                      fixnum_of_int((int32_t)nargs));
     push3(litvec, codevec, def);
@@ -872,14 +833,12 @@ LispObject tracesetbytecoded0(LispObject def, int nargs, ...)
     else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
 #endif
     trace_printf("\n");
-    nil = C_nil;
     if (exception_pending())
     {   popv(3);
         return nil;
     }
     def = stack[0];
     r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), TRACESET(stack));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(1); pop2(codevec, litvec);
@@ -899,7 +858,6 @@ LispObject tracesetbytecoded0(LispObject def, int nargs, ...)
     push(r);
     freshline_trace();
     loop_print_trace(name_from(def));
-    nil = C_nil;
     if (!exception_pending())
     {   trace_printf(" = ");
         loop_print_trace(r);
@@ -920,12 +878,10 @@ LispObject tracesetbytecoded0(LispObject def, int nargs, ...)
 
 LispObject tracesetbytecoded1(LispObject def, LispObject a)
 {   LispObject r;
-    LispObject nil = C_nil;
     push4(litvec, codevec, def, a);
     freshline_trace();
     trace_printf("Entering ");
     loop_print_trace(name_from(def));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(2); pop2(codevec, litvec);
@@ -943,7 +899,6 @@ LispObject tracesetbytecoded1(LispObject def, LispObject a)
     trace_printf("\nArg1: ");
     loop_print_trace(stack[0]);
     trace_printf("\n");
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(2); pop2(codevec, litvec);
@@ -953,7 +908,6 @@ LispObject tracesetbytecoded1(LispObject def, LispObject a)
     stackcheck0(4);
     def = stack[-1];
     r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), TRACESET(stack-1));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack++;
@@ -992,12 +946,10 @@ LispObject tracesetbytecoded1(LispObject def, LispObject a)
 LispObject tracesetbytecoded2(LispObject def,
                               LispObject a, LispObject b)
 {   LispObject r;
-    LispObject nil = C_nil;
     push5(litvec, codevec, def, a, b);
     freshline_trace();
     trace_printf("Entering ");
     loop_print_trace(name_from(def));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(3); pop2(codevec, litvec);
@@ -1014,7 +966,6 @@ LispObject tracesetbytecoded2(LispObject def,
 #endif
     trace_printf("\nArg1: ");
     loop_print_trace(stack[-1]);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(3); pop2(codevec, litvec);
@@ -1024,7 +975,6 @@ LispObject tracesetbytecoded2(LispObject def,
     trace_printf("\nArg2: ");
     loop_print_trace(stack[0]);
     trace_printf("\n");
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(3); pop2(codevec, litvec);
@@ -1034,7 +984,6 @@ LispObject tracesetbytecoded2(LispObject def,
     stackcheck0(5);
     def = stack[-2];
     r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), TRACESET(stack-2));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += 2;
@@ -1076,7 +1025,6 @@ LispObject tracesetbytecoded2(LispObject def,
 LispObject tracebytecoded3(LispObject def, int nargs, ...)
 {   va_list aa;
     LispObject r, a, b, c;
-    LispObject nil = C_nil;
     if (nargs != 3) return error(2, err_wrong_no_args, name_from(def),
                                      fixnum_of_int((int32_t)nargs));
     va_start(aa, nargs);
@@ -1089,7 +1037,6 @@ LispObject tracebytecoded3(LispObject def, int nargs, ...)
     freshline_trace();
     trace_printf("Entering ");
     loop_print_trace(name_from(def));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(4); pop2(codevec, litvec);
@@ -1106,7 +1053,6 @@ LispObject tracebytecoded3(LispObject def, int nargs, ...)
 #endif
     trace_printf("\nArg1: ");
     loop_print_trace(stack[-2]);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(4); pop2(codevec, litvec);
@@ -1115,7 +1061,6 @@ LispObject tracebytecoded3(LispObject def, int nargs, ...)
     }
     trace_printf("\nArg2: ");
     loop_print_trace(stack[-1]);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(4); pop2(codevec, litvec);
@@ -1125,7 +1070,6 @@ LispObject tracebytecoded3(LispObject def, int nargs, ...)
     trace_printf("\nArg3: ");
     loop_print_trace(stack[0]);
     trace_printf("\n");
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         popv(4); pop2(codevec, litvec);
@@ -1135,7 +1079,6 @@ LispObject tracebytecoded3(LispObject def, int nargs, ...)
     stackcheck0(6);
     def = stack[-3];
     r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-3);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += 3;
@@ -1186,7 +1129,6 @@ LispObject tracesetbytecodedn(LispObject def, int nargs, ...)
 // probably save a copying operation.
 //
     LispObject r;
-    LispObject nil = C_nil;
     int i;
     LispObject *stack_save = stack;
     va_list a;
@@ -1220,7 +1162,6 @@ LispObject tracesetbytecodedn(LispObject def, int nargs, ...)
                      fixnum_of_int((int32_t)nargs));
     }
     r = bytestream_interpret(data_of_bps(r)+1, qcdr(def), TRACESET(stack-nargs));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
@@ -1260,8 +1201,7 @@ LispObject tracesetbytecodedn(LispObject def, int nargs, ...)
 int doubled_execution = 0;
 
 LispObject double_bytecoded0(LispObject def, int nargs, ...)
-{   LispObject nil=C_nil;
-    if (nargs != 0) return error(2, err_wrong_no_args, name_from(def),
+{   if (nargs != 0) return error(2, err_wrong_no_args, name_from(def),
                                      fixnum_of_int((int32_t)nargs));
     push2(litvec, codevec);
     stackcheck1(2, def);
@@ -1269,14 +1209,12 @@ LispObject double_bytecoded0(LispObject def, int nargs, ...)
     {   push3(def, litvec, codevec);
         doubled_execution = 1;
         bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack);
-        nil = C_nil;
         pop3(codevec, litvec, def);
         if (!exception_pending())
             def = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack);
         doubled_execution = 0;
     }
     else def = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         pop2(codevec, litvec);
@@ -1289,21 +1227,18 @@ LispObject double_bytecoded0(LispObject def, int nargs, ...)
 
 LispObject double_bytecoded1(LispObject def, LispObject a)
 {   LispObject r;
-    LispObject nil = C_nil;
     push3(litvec, codevec, a);
     stackcheck1(3, def);
     if (!doubled_execution)
     {   push4(def, litvec, codevec, a);
         doubled_execution = 1;
         r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-1);
-        nil = C_nil;
         pop3(codevec, litvec, def);
         if (!exception_pending())
             r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-1);
         doubled_execution = 0;
     }
     else r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-1);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack++;
@@ -1322,21 +1257,18 @@ LispObject double_bytecoded1(LispObject def, LispObject a)
 
 LispObject double_bytecoded2(LispObject def, LispObject a, LispObject b)
 {   LispObject r;
-    LispObject nil = C_nil;
     push4(litvec, codevec, a, b);
     stackcheck1(4, def);
     if (!doubled_execution)
     {   push5(def, litvec, codevec, a, b);
         doubled_execution = 1;
         r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-2);
-        nil = C_nil;
         pop3(codevec, litvec, def);
         if (!exception_pending())
             r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-2);
         doubled_execution = 0;
     }
     else r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-2);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += 2;
@@ -1359,7 +1291,6 @@ LispObject double_bytecoded2(LispObject def, LispObject a, LispObject b)
 LispObject double_bytecoded3(LispObject def, int nargs, ...)
 {   va_list aa;
     LispObject r, a, b, c;
-    LispObject nil = C_nil;
     if (nargs != 3) return error(2, err_wrong_no_args, name_from(def),
                                      fixnum_of_int((int32_t)nargs));
     va_start(aa, nargs);
@@ -1373,14 +1304,12 @@ LispObject double_bytecoded3(LispObject def, int nargs, ...)
     {   push6(def, litvec, codevec, a, b, c);
         doubled_execution = 1;
         r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-3);
-        nil = C_nil;
         pop3(codevec, litvec, def);
         if (!exception_pending())
             r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-3);
         doubled_execution = 0;
     }
     else r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-3);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += 3;
@@ -1405,7 +1334,6 @@ LispObject double_bytecoded3(LispObject def, int nargs, ...)
 
 LispObject double_bytecodedn(LispObject def, int nargs, ...)
 {   LispObject r;
-    LispObject nil = C_nil;
     int i;
     LispObject *stack_save = stack;
     va_list a;
@@ -1423,7 +1351,6 @@ LispObject double_bytecodedn(LispObject def, int nargs, ...)
     }
     trace_printf("Function with > 3 args not doubled\n");
     r = bytestream_interpret(data_of_bps(r)+1, qcdr(def), stack-nargs);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
@@ -1458,7 +1385,6 @@ LispObject byteopt2(LispObject def, LispObject a, LispObject b)
 static LispObject vbyteoptn(LispObject def, int nargs,
                             va_list a, LispObject dflt)
 {   LispObject r;
-    LispObject nil = C_nil;
     int i, wantargs, wantopts;
     LispObject *stack_save = stack;
     push2(litvec, codevec);
@@ -1484,7 +1410,6 @@ static LispObject vbyteoptn(LispObject def, int nargs,
     stackcheck1(stack-stack_save, def);
     r = qcar(def);
     r = bytestream_interpret(data_of_bps(r)+2, qcdr(def), stack-nargs);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
@@ -1505,7 +1430,7 @@ static LispObject vbyteoptn(LispObject def, int nargs,
 LispObject byteoptn(LispObject def, int nargs, ...)
 {   va_list a;
     va_start(a, nargs);
-    return vbyteoptn(def, nargs, a, C_nil);
+    return vbyteoptn(def, nargs, a, nil);
 }
 
 LispObject hardopt1(LispObject def, LispObject a)
@@ -1533,7 +1458,6 @@ LispObject byteoptrest2(LispObject def, LispObject a, LispObject b)
 static LispObject vbyterestn(LispObject def, int nargs,
                              va_list a, LispObject dflt)
 {   LispObject r;
-    LispObject nil = C_nil;
     int i, wantargs, wantopts;
     LispObject *stack_save = stack;
     push2(litvec, codevec);
@@ -1567,7 +1491,6 @@ static LispObject vbyterestn(LispObject def, int nargs,
     stackcheck1(stack-stack_save, def);
     r = qcar(def);
     r = bytestream_interpret(data_of_bps(r)+2, qcdr(def), stack-nargs);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
@@ -1588,7 +1511,7 @@ static LispObject vbyterestn(LispObject def, int nargs,
 LispObject byteoptrestn(LispObject def, int nargs, ...)
 {   va_list a;
     va_start(a, nargs);
-    return vbyterestn(def, nargs, a, C_nil);
+    return vbyterestn(def, nargs, a, nil);
 }
 
 LispObject hardoptrest1(LispObject def, LispObject a)
@@ -1620,7 +1543,6 @@ LispObject double_byteopt2(LispObject def, LispObject a, LispObject b)
 static LispObject double_vbyteoptn(LispObject def, int nargs,
                                    va_list a, LispObject dflt)
 {   LispObject r;
-    LispObject nil = C_nil;
     int i, wantargs, wantopts;
     LispObject *stack_save = stack;
     push2(litvec, codevec);
@@ -1647,7 +1569,6 @@ static LispObject double_vbyteoptn(LispObject def, int nargs,
     trace_printf("Function with simple &opt arg not doubled\n");
     r = qcar(def);
     r = bytestream_interpret(data_of_bps(r)+2, qcdr(def), stack-nargs);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
@@ -1668,7 +1589,7 @@ static LispObject double_vbyteoptn(LispObject def, int nargs,
 LispObject double_byteoptn(LispObject def, int nargs, ...)
 {   va_list a;
     va_start(a, nargs);
-    return double_vbyteoptn(def, nargs, a, C_nil);
+    return double_vbyteoptn(def, nargs, a, nil);
 }
 
 LispObject double_hardopt1(LispObject def, LispObject a)
@@ -1696,7 +1617,6 @@ LispObject double_byteoptrest2(LispObject def, LispObject a, LispObject b)
 static LispObject double_vbyterestn(LispObject def, int nargs,
                                     va_list a, LispObject dflt)
 {   LispObject r;
-    LispObject nil = C_nil;
     int i, wantargs, wantopts;
     LispObject *stack_save = stack;
     push2(litvec, codevec);
@@ -1731,7 +1651,6 @@ static LispObject double_vbyterestn(LispObject def, int nargs,
     trace_printf("Function with simple &rest arg not doubled\n");
     r = qcar(def);
     r = bytestream_interpret(data_of_bps(r)+2, qcdr(def), stack-nargs);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
@@ -1752,7 +1671,7 @@ static LispObject double_vbyterestn(LispObject def, int nargs,
 LispObject double_byteoptrestn(LispObject def, int nargs, ...)
 {   va_list a;
     va_start(a, nargs);
-    return double_vbyterestn(def, nargs, a, C_nil);
+    return double_vbyterestn(def, nargs, a, nil);
 }
 
 LispObject double_hardoptrest1(LispObject def, LispObject a)
@@ -1780,7 +1699,6 @@ LispObject tracebyteopt2(LispObject def, LispObject a, LispObject b)
 static LispObject vtracebyteoptn(LispObject def, int nargs,
                                  va_list a, LispObject dflt)
 {   LispObject r;
-    LispObject nil = C_nil;
     int i, wantargs, wantopts;
     LispObject *stack_save = stack;
     push3(litvec, codevec, def);
@@ -1823,7 +1741,6 @@ static LispObject vtracebyteoptn(LispObject def, int nargs,
     def = stack[-nargs];
     r = qcar(def);
     r = bytestream_interpret(data_of_bps(r)+2, qcdr(def), stack-nargs);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
@@ -1850,7 +1767,6 @@ static LispObject vtracebyteoptn(LispObject def, int nargs,
     push(r);
     freshline_trace();
     loop_print_trace(name_from(def));
-    nil = C_nil;
     if (!exception_pending())
     {   trace_printf(" = ");
         loop_print_trace(r);
@@ -1872,7 +1788,7 @@ static LispObject vtracebyteoptn(LispObject def, int nargs,
 LispObject tracebyteoptn(LispObject def, int nargs, ...)
 {   va_list a;
     va_start(a, nargs);
-    return vtracebyteoptn(def, nargs, a, C_nil);
+    return vtracebyteoptn(def, nargs, a, nil);
 }
 
 LispObject tracesetbyteopt1(LispObject def, LispObject a)
@@ -1886,7 +1802,6 @@ LispObject tracesetbyteopt2(LispObject def, LispObject a, LispObject b)
 static LispObject vtracesetbyteoptn(LispObject def, int nargs,
                                     va_list a, LispObject dflt)
 {   LispObject r;
-    LispObject nil = C_nil;
     int i, wantargs, wantopts;
     LispObject *stack_save = stack;
     push3(litvec, codevec, def);
@@ -1929,7 +1844,6 @@ static LispObject vtracesetbyteoptn(LispObject def, int nargs,
     def = stack[-nargs];
     r = qcar(def);
     r = bytestream_interpret(data_of_bps(r)+2, qcdr(def), TRACESET(stack-nargs));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
@@ -1956,7 +1870,6 @@ static LispObject vtracesetbyteoptn(LispObject def, int nargs,
     push(r);
     freshline_trace();
     loop_print_trace(name_from(def));
-    nil = C_nil;
     if (!exception_pending())
     {   trace_printf(" = ");
         loop_print_trace(r);
@@ -1978,7 +1891,7 @@ static LispObject vtracesetbyteoptn(LispObject def, int nargs,
 LispObject tracesetbyteoptn(LispObject def, int nargs, ...)
 {   va_list a;
     va_start(a, nargs);
-    return vtracesetbyteoptn(def, nargs, a, C_nil);
+    return vtracesetbyteoptn(def, nargs, a, nil);
 }
 
 LispObject tracehardopt1(LispObject def, LispObject a)
@@ -2006,7 +1919,6 @@ LispObject tracebyteoptrest2(LispObject def, LispObject a, LispObject b)
 static LispObject vtracebyterestn(LispObject def, int nargs,
                                   va_list a, LispObject dflt)
 {   LispObject r;
-    LispObject nil = C_nil;
     int i, wantargs, wantopts;
     LispObject *stack_save = stack;
     push3(litvec, codevec, def);
@@ -2057,7 +1969,6 @@ static LispObject vtracebyterestn(LispObject def, int nargs,
     def = stack[-nargs];
     r = qcar(def);
     r = bytestream_interpret(data_of_bps(r)+2, qcdr(def), stack-nargs);
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
@@ -2084,7 +1995,6 @@ static LispObject vtracebyterestn(LispObject def, int nargs,
     push(r);
     freshline_trace();
     loop_print_trace(name_from(def));
-    nil = C_nil;
     if (!exception_pending())
     {   trace_printf(" = ");
         loop_print_trace(r);
@@ -2106,7 +2016,7 @@ static LispObject vtracebyterestn(LispObject def, int nargs,
 LispObject tracebyteoptrestn(LispObject def, int nargs, ...)
 {   va_list a;
     va_start(a, nargs);
-    return vtracebyterestn(def, nargs, a, C_nil);
+    return vtracebyterestn(def, nargs, a, nil);
 }
 
 LispObject tracehardoptrest1(LispObject def, LispObject a)
@@ -2148,7 +2058,6 @@ LispObject tracesetbyteoptrest2(LispObject def, LispObject a, LispObject b)
 static LispObject vtracesetbyterestn(LispObject def, int nargs,
                                      va_list a, LispObject dflt)
 {   LispObject r;
-    LispObject nil = C_nil;
     int i, wantargs, wantopts;
     LispObject *stack_save = stack;
     push3(litvec, codevec, def);
@@ -2199,7 +2108,6 @@ static LispObject vtracesetbyterestn(LispObject def, int nargs,
     def = stack[-nargs];
     r = qcar(def);
     r = bytestream_interpret(data_of_bps(r)+2, qcdr(def), TRACESET(stack-nargs));
-    nil = C_nil;
     if (exception_pending())
     {   flip_exception();
         stack += nargs;
@@ -2226,7 +2134,6 @@ static LispObject vtracesetbyterestn(LispObject def, int nargs,
     push(r);
     freshline_trace();
     loop_print_trace(name_from(def));
-    nil = C_nil;
     if (!exception_pending())
     {   trace_printf(" = ");
         loop_print_trace(r);
@@ -2248,7 +2155,7 @@ static LispObject vtracesetbyterestn(LispObject def, int nargs,
 LispObject tracesetbyteoptrestn(LispObject def, int nargs, ...)
 {   va_list a;
     va_start(a, nargs);
-    return vtracesetbyterestn(def, nargs, a, C_nil);
+    return vtracesetbyterestn(def, nargs, a, nil);
 }
 
 LispObject tracesethardoptrest1(LispObject def, LispObject a)
@@ -2265,12 +2172,12 @@ LispObject tracesethardoptrestn(LispObject def, int nargs, ...)
     return vtracesetbyterestn(def, nargs, a, SPID_NOARG);
 }
 
-LispObject Lis_spid(LispObject nil, LispObject a)
+LispObject Lis_spid(LispObject env, LispObject a)
 {   // Used in compilation for optional args
     return onevalue(Lispify_predicate(is_spid(a)));
 }
 
-LispObject Lspid_to_nil(LispObject nil, LispObject a)
+LispObject Lspid_to_nil(LispObject env, LispObject a)
 {   // Used in compilation for optional args
     if (is_spid(a)) a = nil;
     return onevalue(a);
@@ -2281,7 +2188,7 @@ LispObject Lload_spid(LispObject, int, ...)
     return onevalue(SPID_PROTECT);
 }
 
-LispObject Lmv_list(LispObject nil, LispObject a)
+LispObject Lmv_list(LispObject env, LispObject a)
 //
 // This does a (multiple-value-list A) on just one form.  It must be used
 // carefully so that the value-count information does not get lost between
@@ -2306,7 +2213,6 @@ LispObject Lmv_list(LispObject nil, LispObject a)
     {   LispObject w;
         pop(w);
         r = cons(w, r);
-        nil = C_nil;
         if (exception_pending())
         {   stack = save_stack;
             return nil;

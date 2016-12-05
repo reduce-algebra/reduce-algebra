@@ -47,7 +47,7 @@
 
 
 
-LispObject Ladd1(LispObject nil, LispObject a)
+LispObject Ladd1(LispObject env, LispObject a)
 {   if (is_fixnum(a))
     {   // fixnums have data shifted left 4 bits
         if (a == MOST_POSITIVE_FIXNUM) // ONLY possible overflow case here
@@ -59,7 +59,7 @@ LispObject Ladd1(LispObject nil, LispObject a)
     return onevalue(a);
 }
 
-LispObject Lsub1(LispObject nil, LispObject a)
+LispObject Lsub1(LispObject env, LispObject a)
 {   if (is_fixnum(a))
     {   if (a == MOST_NEGATIVE_FIXNUM)
             return make_lisp_integerptr_fn(MOST_NEGATIVE_FIXVAL - 1);
@@ -97,19 +97,19 @@ LispObject Lfloat(LispObject, LispObject a)
 #endif
 }
 
-LispObject Llognot(LispObject nil, LispObject a)
+LispObject Llognot(LispObject env, LispObject a)
 {   a = lognot(a);
     errexit();
     return onevalue(a);
 }
 
-LispObject Lash(LispObject nil, LispObject a, LispObject b)
+LispObject Lash(LispObject env, LispObject a, LispObject b)
 {   a = ash(a, b);
     errexit();
     return onevalue(a);
 }
 
-LispObject Lash1(LispObject nil, LispObject a, LispObject b)
+LispObject Lash1(LispObject env, LispObject a, LispObject b)
 //
 // This function multiplies or divides by a power of two. Note that
 // this corresponds to natural shifts on a sign-and-magnitude machine,
@@ -224,7 +224,7 @@ LispObject Llsd(LispObject, LispObject a)
     return onevalue(fixnum_of_int(r + lsd_table[top & 0xff]));
 }
 
-LispObject Linorm(LispObject nil, LispObject a, LispObject k)
+LispObject Linorm(LispObject env, LispObject a, LispObject k)
 //
 // This is a piece of magic especially designed to speed up the
 // REDUCE big-float code.  It adjusts the integer a until it has
@@ -409,7 +409,7 @@ LispObject Linorm(LispObject nil, LispObject a, LispObject k)
 // code and so I will not view them as at all important now.
 //
 
-static LispObject Lplus(LispObject nil, int nargs, ...)
+static LispObject Lplus(LispObject env, int nargs, ...)
 //
 // This adds up a whole bunch of numbers together.
 //    (+ a1 a2 a3 a4 a5)                     is computed as
@@ -429,7 +429,6 @@ static LispObject Lplus(LispObject nil, int nargs, ...)
 //
     stackcheck0(nargs);
     pop(r);
-    nil = C_nil;
     for (i = 1; i<nargs; i++)
     {   LispObject w;
         pop(w);
@@ -446,7 +445,7 @@ static LispObject Lplus(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-static LispObject Ldifference(LispObject nil, int nargs, ...)
+static LispObject Ldifference(LispObject env, int nargs, ...)
 {   va_list a;
     LispObject r;
     int i;
@@ -454,7 +453,6 @@ static LispObject Ldifference(LispObject nil, int nargs, ...)
     va_start(a, nargs);
     push_args(a, nargs);
     stackcheck0(nargs);
-    nil = C_nil;
     if (nargs == 1)
     {   pop(r);
         r = negate(r);
@@ -476,7 +474,7 @@ static LispObject Ldifference(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-static LispObject Ltimes(LispObject nil, int nargs, ...)
+static LispObject Ltimes(LispObject env, int nargs, ...)
 //
 // This multiplies a whole bunch of numbers together.
 //
@@ -488,7 +486,6 @@ static LispObject Ltimes(LispObject nil, int nargs, ...)
     push_args(a, nargs);
     stackcheck0(nargs);
     pop(r);
-    nil = C_nil;
     for (i=1; i<nargs; i++)
     {   LispObject w;
         pop(w);
@@ -498,7 +495,7 @@ static LispObject Ltimes(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-LispObject Lquotient_n(LispObject nil, int nargs, ...)
+LispObject Lquotient_n(LispObject env, int nargs, ...)
 {   va_list a;
     LispObject r;
     int i;
@@ -523,31 +520,31 @@ LispObject Lquotient_n(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-LispObject LCLquotient(LispObject nil, LispObject a, LispObject b)
+LispObject LCLquotient(LispObject env, LispObject a, LispObject b)
 {   a = CLquot2(a, b);
     errexit();
     return onevalue(a);
 }
 
-LispObject Lquotient(LispObject nil, LispObject a, LispObject b)
+LispObject Lquotient(LispObject env, LispObject a, LispObject b)
 {   a = quot2(a, b);
     errexit();
     return onevalue(a);
 }
 
-LispObject LCLquotient_1(LispObject nil, LispObject b)
+LispObject LCLquotient_1(LispObject env, LispObject b)
 {   b = CLquot2(fixnum_of_int(1), b);
     errexit();
     return onevalue(b);
 }
 
-LispObject Lquotient_1(LispObject nil, LispObject b)
+LispObject Lquotient_1(LispObject env, LispObject b)
 {   b = quot2(fixnum_of_int(1), b);
     errexit();
     return onevalue(b);
 }
 
-LispObject Ldivide(LispObject nil, LispObject a, LispObject b)
+LispObject Ldivide(LispObject env, LispObject a, LispObject b)
 {   LispObject q;
     stackcheck2(0, a, b);
     mv_2 = SPID_NIL;
@@ -559,25 +556,25 @@ LispObject Ldivide(LispObject nil, LispObject a, LispObject b)
     return onevalue(q);
 }
 
-LispObject Lrem(LispObject nil, LispObject p, LispObject q)
+LispObject Lrem(LispObject env, LispObject p, LispObject q)
 {   p = Cremainder(p, q);
     errexit();
     return onevalue(p);
 }
 
-LispObject Lmod(LispObject nil, LispObject p, LispObject q)
+LispObject Lmod(LispObject env, LispObject p, LispObject q)
 {   p = modulus(p, q);
     errexit();
     return onevalue(p);
 }
 
-LispObject Ltrap_floating_overflow(LispObject nil, LispObject a)
+LispObject Ltrap_floating_overflow(LispObject env, LispObject a)
 {   bool o = trap_floating_overflow;
     trap_floating_overflow = (a != nil);
     return onevalue(Lispify_predicate(o));
 }
 
-LispObject Lplus2(LispObject nil, LispObject p, LispObject q)
+LispObject Lplus2(LispObject env, LispObject p, LispObject q)
 {   if (is_fixnum(p) && is_fixnum(q))
     {   intptr_t c = int_of_fixnum(p) + int_of_fixnum(q);
         if (valid_as_fixnum(c)) return onevalue(fixnum_of_int(c));
@@ -587,21 +584,21 @@ LispObject Lplus2(LispObject nil, LispObject p, LispObject q)
     return onevalue(p);
 }
 
-LispObject Ltimes2(LispObject nil, LispObject p,
+LispObject Ltimes2(LispObject env, LispObject p,
                    LispObject q)
 {   p = times2(p, q);
     errexit();
     return onevalue(p);
 }
 
-LispObject Ldifference2(LispObject nil, LispObject a,
+LispObject Ldifference2(LispObject env, LispObject a,
                         LispObject b)
 {   a = difference2(a, b);
     errexit();
     return onevalue(a);
 }
 
-LispObject Lminus(LispObject nil, LispObject a)
+LispObject Lminus(LispObject env, LispObject a)
 {   a = negate(a);
     errexit();
     return onevalue(a);
@@ -634,7 +631,7 @@ static struct bfz
 
 static LispObject Lboolfn(LispObject env, int nargs, ...)
 {   va_list a;
-    LispObject nil = C_nil, r;
+    LispObject r;
     int i;
     int32_t what = int_of_fixnum(env);
     if (nargs == 0) return onevalue(boolop_array[what].base);
@@ -651,21 +648,21 @@ static LispObject Lboolfn(LispObject env, int nargs, ...)
     return onevalue(r);
 }
 
-LispObject Lzerop(LispObject nil, LispObject a)
+LispObject Lzerop(LispObject env, LispObject a)
 {   bool fg;
     fg = zerop(a);
     errexit();
     return onevalue(Lispify_predicate(fg));
 }
 
-LispObject Lonep(LispObject nil, LispObject a)
+LispObject Lonep(LispObject env, LispObject a)
 {   bool fg;
     fg = onep(a);
     errexit();
     return onevalue(Lispify_predicate(fg));
 }
 
-LispObject Levenp(LispObject nil, LispObject a)
+LispObject Levenp(LispObject env, LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return onevalue(((int32_t)a & 0x10) == 0 ? lisp_true : nil);
@@ -678,7 +675,7 @@ LispObject Levenp(LispObject nil, LispObject a)
     }
 }
 
-LispObject Loddp(LispObject nil, LispObject a)
+LispObject Loddp(LispObject env, LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             return onevalue(((int32_t)a & 0x10) != 0 ? lisp_true : nil);
@@ -691,7 +688,7 @@ LispObject Loddp(LispObject nil, LispObject a)
     }
 }
 
-LispObject Lminusp(LispObject nil, LispObject a)
+LispObject Lminusp(LispObject env, LispObject a)
 {
 //
 // For CSL I demand (minusp <non-number>) = nil.  Note that this ensures
@@ -700,7 +697,7 @@ LispObject Lminusp(LispObject nil, LispObject a)
     return onevalue(is_number(a) && minusp(a) ? lisp_true : nil);
 }
 
-LispObject Lplusp(LispObject nil, LispObject a)
+LispObject Lplusp(LispObject env, LispObject a)
 {   return onevalue(is_number(a) && plusp(a) ? lisp_true : nil);
 }
 
@@ -709,7 +706,7 @@ LispObject Lplusp(LispObject nil, LispObject a)
 // Lisp mode but just 2 args in CSL.
 //
 
-LispObject Leqn_n(LispObject nil, int nargs, ...)
+LispObject Leqn_n(LispObject env, int nargs, ...)
 {   va_list a;
     int i;
     LispObject r;
@@ -722,7 +719,6 @@ LispObject Leqn_n(LispObject nil, int nargs, ...)
     for (i = 1; i<nargs; i++)
     {   LispObject s = stack[1+i-nargs];
         bool w = numeq2(r, s);
-        nil = C_nil;
         if (exception_pending())
         {   popv(nargs);
             return nil;
@@ -737,7 +733,7 @@ LispObject Leqn_n(LispObject nil, int nargs, ...)
     return onevalue(lisp_true);
 }
 
-LispObject Leqn(LispObject nil, LispObject a, LispObject b)
+LispObject Leqn(LispObject env, LispObject a, LispObject b)
 {   bool w = numeq2(a, b);
     errexit();
     return onevalue(w ? lisp_true : nil);
@@ -747,7 +743,7 @@ LispObject Leqn_1(LispObject, LispObject)
 {   return onevalue(lisp_true);
 }
 
-LispObject Llessp_n(LispObject nil, int nargs, ...)
+LispObject Llessp_n(LispObject env, int nargs, ...)
 {   va_list a;
     int i;
     LispObject r;
@@ -760,7 +756,6 @@ LispObject Llessp_n(LispObject nil, int nargs, ...)
     for (i = 1; i<nargs; i++)
     {   LispObject s = stack[1+i-nargs];
         bool w = lessp2(r, s);
-        nil = C_nil;
         if (exception_pending())
         {   popv(nargs);
             return nil;
@@ -775,7 +770,7 @@ LispObject Llessp_n(LispObject nil, int nargs, ...)
     return onevalue(lisp_true);
 }
 
-LispObject Llessp(LispObject nil, LispObject a, LispObject b)
+LispObject Llessp(LispObject env, LispObject a, LispObject b)
 {   bool w = lessp2(a, b);
     errexit();
     return onevalue(w ? lisp_true : nil);
@@ -785,7 +780,7 @@ LispObject Llessp_1(LispObject, LispObject)
 {   return onevalue(lisp_true);
 }
 
-LispObject Lgreaterp_n(LispObject nil, int nargs, ...)
+LispObject Lgreaterp_n(LispObject env, int nargs, ...)
 {   va_list a;
     int i;
     LispObject r;
@@ -798,7 +793,6 @@ LispObject Lgreaterp_n(LispObject nil, int nargs, ...)
     for (i = 1; i<nargs; i++)
     {   LispObject s = stack[1+i-nargs];
         bool w = lessp2(s, r);
-        nil = C_nil;
         if (exception_pending())
         {   popv(nargs);
             return nil;
@@ -813,7 +807,7 @@ LispObject Lgreaterp_n(LispObject nil, int nargs, ...)
     return onevalue(lisp_true);
 }
 
-LispObject Lgreaterp(LispObject nil, LispObject a, LispObject b)
+LispObject Lgreaterp(LispObject env, LispObject a, LispObject b)
 {   bool w = lessp2(b, a);
     errexit();
     return onevalue(w ? lisp_true : nil);
@@ -824,7 +818,7 @@ LispObject Lgreaterp_1(LispObject, LispObject)
 }
 
 #ifdef COMMON
-static LispObject Lneqn(LispObject nil, int nargs, ...)
+static LispObject Lneqn(LispObject env, int nargs, ...)
 //
 // /= is supposed to check that false pair of args match.
 //
@@ -847,7 +841,6 @@ static LispObject Lneqn(LispObject nil, int nargs, ...)
         for (j=0; j<i; j++)
         {   LispObject n2 = r[j];
             bool w = numeq2(n1, n2);
-            nil = C_nil;
             if (exception_pending()) return nil;
             if (w) return onevalue(nil);
         }
@@ -856,7 +849,7 @@ static LispObject Lneqn(LispObject nil, int nargs, ...)
 }
 #endif // COMMON
 
-LispObject Lneq_2(LispObject nil, LispObject a, LispObject b)
+LispObject Lneq_2(LispObject env, LispObject a, LispObject b)
 {   bool w = numeq2(a, b);
     errexit();
     return onevalue(w ? nil : lisp_true);
@@ -866,7 +859,7 @@ LispObject Lneq_1(LispObject, LispObject)
 {   return onevalue(lisp_true);
 }
 
-LispObject Lgeq_n(LispObject nil, int nargs, ...)
+LispObject Lgeq_n(LispObject env, int nargs, ...)
 {   va_list a;
     int i;
     LispObject r;
@@ -879,7 +872,6 @@ LispObject Lgeq_n(LispObject nil, int nargs, ...)
     for (i = 1; i<nargs; i++)
     {   LispObject s = stack[1+i-nargs];
         bool w = lesseq2(s, r);
-        nil = C_nil;
         if (exception_pending())
         {   popv(nargs);
             return nil;
@@ -894,7 +886,7 @@ LispObject Lgeq_n(LispObject nil, int nargs, ...)
     return onevalue(lisp_true);
 }
 
-LispObject Lgeq(LispObject nil, LispObject a, LispObject b)
+LispObject Lgeq(LispObject env, LispObject a, LispObject b)
 {   bool w = lesseq2(b, a);
     errexit();
     return onevalue(w ? lisp_true : nil);
@@ -904,7 +896,7 @@ LispObject Lgeq_1(LispObject, LispObject)
 {   return onevalue(lisp_true);
 }
 
-LispObject Lleq_n(LispObject nil, int nargs, ...)
+LispObject Lleq_n(LispObject env, int nargs, ...)
 {   va_list a;
     int i;
     LispObject r;
@@ -917,7 +909,6 @@ LispObject Lleq_n(LispObject nil, int nargs, ...)
     for (i = 1; i<nargs; i++)
     {   LispObject s = stack[1+i-nargs];
         bool fg = lesseq2(r, s);
-        nil = C_nil;
         if (exception_pending())
         {   popv(nargs);
             return nil;
@@ -932,7 +923,7 @@ LispObject Lleq_n(LispObject nil, int nargs, ...)
     return onevalue(lisp_true);
 }
 
-LispObject Lleq(LispObject nil, LispObject a, LispObject b)
+LispObject Lleq(LispObject env, LispObject a, LispObject b)
 {   bool w = lesseq2(a, b);
     errexit();
     return onevalue(w ? lisp_true : nil);
@@ -942,7 +933,7 @@ LispObject Lleq_1(LispObject, LispObject)
 {   return onevalue(lisp_true);
 }
 
-LispObject Lmax2(LispObject nil, LispObject a, LispObject b)
+LispObject Lmax2(LispObject env, LispObject a, LispObject b)
 {   bool w;
     push2(a, b);
     w = lessp2(a, b);
@@ -952,7 +943,7 @@ LispObject Lmax2(LispObject nil, LispObject a, LispObject b)
     else return onevalue(a);
 }
 
-LispObject Lmin2(LispObject nil, LispObject a, LispObject b)
+LispObject Lmin2(LispObject env, LispObject a, LispObject b)
 {   bool w;
     push2(a, b);
     w = lessp2(b, a);
@@ -962,7 +953,7 @@ LispObject Lmin2(LispObject nil, LispObject a, LispObject b)
     else return onevalue(a);
 }
 
-LispObject Lmax(LispObject nil, int nargs, ...)
+LispObject Lmax(LispObject env, int nargs, ...)
 {   va_list a;
     int i;
     LispObject r;
@@ -978,7 +969,6 @@ LispObject Lmax(LispObject nil, int nargs, ...)
         push2(r, s);
         fg = lessp2(r, s);
         pop2(s, r);
-        nil = C_nil;
         if (exception_pending())
         {   popv(nargs);
             return nil;
@@ -989,7 +979,7 @@ LispObject Lmax(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-LispObject Lmin(LispObject nil, int nargs, ...)
+LispObject Lmin(LispObject env, int nargs, ...)
 {   va_list a;
     int i;
     LispObject r;
@@ -1005,7 +995,6 @@ LispObject Lmin(LispObject nil, int nargs, ...)
         push2(r, s);
         fg = lessp2(s, r);
         pop2(s, r);
-        nil = C_nil;
         if (exception_pending())
         {   popv(nargs);
             return nil;
@@ -1016,14 +1005,14 @@ LispObject Lmin(LispObject nil, int nargs, ...)
     return onevalue(r);
 }
 
-LispObject Lrational(LispObject nil, LispObject a)
+LispObject Lrational(LispObject env, LispObject a)
 {   a = rational(a);
     errexit();
     return onevalue(a);
 }
 
 #ifdef COMMON
-static LispObject Lmanexp(LispObject nil, LispObject a)
+static LispObject Lmanexp(LispObject env, LispObject a)
 {   int x;
     double f;
 // AT present I do not support 128-bit floats here @@@
@@ -1035,7 +1024,7 @@ static LispObject Lmanexp(LispObject nil, LispObject a)
                          fixnum_of_int(x)));
 }
 
-static LispObject Lrationalize(LispObject nil, LispObject a)
+static LispObject Lrationalize(LispObject env, LispObject a)
 {   a = rationalize(a);
     errexit();
     return onevalue(a);
@@ -1235,7 +1224,7 @@ void Csrand(uint32_t seed, uint32_t seed2)
 #endif
 }
 
-LispObject Lrandom_2(LispObject nil, LispObject a, LispObject bb)
+LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
 {
 #ifdef COMMON
     LispObject b;
@@ -1354,7 +1343,7 @@ LispObject Lrandom_2(LispObject nil, LispObject a, LispObject bb)
     return aerror1("random-number", a);
 }
 
-LispObject Lrandom(LispObject nil, LispObject a)
+LispObject Lrandom(LispObject env, LispObject a)
 {   if (is_fixnum(a))
     {   intptr_t v = int_of_fixnum(a), p, q;
         if (v <= 0) return aerror1("random-number -ve argument", a);
@@ -1473,7 +1462,7 @@ LispObject Lnext_random(LispObject, int nargs, ...)
     return onevalue((LispObject)((r & 0x7ffffff0) + TAG_FIXNUM));
 }
 
-LispObject Lmake_random_state(LispObject nil, LispObject a, LispObject b)
+LispObject Lmake_random_state(LispObject env, LispObject a, LispObject b)
 {
 //
 // Nasty temporary hack here to allow me to set the seed for the
@@ -1486,7 +1475,7 @@ LispObject Lmake_random_state(LispObject nil, LispObject a, LispObject b)
     return onevalue(nil);
 }
 
-LispObject Lmake_random_state1(LispObject nil, LispObject a)
+LispObject Lmake_random_state1(LispObject env, LispObject a)
 {   if (!is_fixnum(a)) return aerror1("make-random-state", a);
     Csrand(int_of_fixnum(a), 0);
     return onevalue(nil);
@@ -1502,7 +1491,7 @@ LispObject Lmake_random_state1(LispObject nil, LispObject a)
 // considered secure, so anybody worried by security needs at least sha2!
 //
 
-LispObject Lmd5(LispObject nil, LispObject a)
+LispObject Lmd5(LispObject env, LispObject a)
 {   LispObject r;
     unsigned char md[16];
     uint32_t v0, v1, v2, v3, v4;
@@ -1593,7 +1582,7 @@ LispObject Lmd5(LispObject nil, LispObject a)
 // For testing the MD5 code... processes a string "raw".
 //
 
-LispObject Lmd5string(LispObject nil, LispObject a)
+LispObject Lmd5string(LispObject env, LispObject a)
 {   LispObject r;
     unsigned char md[16];
     uint32_t v0, v1, v2, v3, v4;
@@ -1678,7 +1667,7 @@ LispObject Lmd5string(LispObject nil, LispObject a)
 // a fixnum half the time (ie when its most significant bit is zero).
 //
 
-LispObject Lmd60(LispObject nil, LispObject a)
+LispObject Lmd60(LispObject env, LispObject a)
 {   unsigned char md[16];
     uint32_t v0, v1;
     int32_t len, i;
@@ -1727,13 +1716,13 @@ static LispObject Llogor2(LispObject env, LispObject a1, LispObject a2)
 {   return Lboolfn(env, 2, a1, a2);
 }
 
-static LispObject Lvalidate(LispObject nil, LispObject a)
+static LispObject Lvalidate(LispObject env, LispObject a)
 {   validate_number("validate-number", a, fixnum_of_int(0), fixnum_of_int(0));
     errexit();
     return onevalue(a);
 }
 
-static LispObject Lvalidate2(LispObject nil, LispObject a, LispObject b)
+static LispObject Lvalidate2(LispObject env, LispObject a, LispObject b)
 {   validate_number("validate-number", a, b, fixnum_of_int(0));
     errexit();
     return onevalue(a);

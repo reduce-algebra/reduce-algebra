@@ -339,14 +339,13 @@ void my_pclose(FILE *stream)
 
 
 char *look_in_lisp_variable(char *o, int prefix)
-{   LispObject nil, var;
+{   LispObject var;
 //
 // I will start by tagging a '$' (or whatever) on in front of the
 // parameter name.
 //
     o[0] = (char)prefix;
     var = make_undefined_symbol(o);
-    nil = C_nil;
 //
 // make_undefined_symbol() could fail either if we had utterly run out
 // of memory or if somebody generated an interrupt (eg ^C) around now. Ugh.
@@ -369,7 +368,6 @@ char *look_in_lisp_variable(char *o, int prefix)
 #ifdef COMMON
         if (complex_stringp(var))
         {   var = simplify_string(var);
-            nil = C_nil;
             if (exception_pending())
             {   flip_exception();
                 return NULL;
@@ -378,7 +376,6 @@ char *look_in_lisp_variable(char *o, int prefix)
 #endif // COMMON
         if (symbolp(var))
         {   var = get_pname(var);
-            nil = C_nil;
             if (exception_pending())
             {   flip_exception();
                 return NULL;

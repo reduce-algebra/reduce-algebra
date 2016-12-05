@@ -45,8 +45,7 @@
 
 
 LispObject rembi(LispObject a, LispObject b)
-{   LispObject nil;
-    if (b == fixnum_of_int(0)) return aerror2("bad arg for remainder", a, b);
+{   if (b == fixnum_of_int(0)) return aerror2("bad arg for remainder", a, b);
     else if (b == fixnum_of_int(1) ||
              b == fixnum_of_int(-1)) return fixnum_of_int(0);
     intptr_t n = int_of_fixnum(b);
@@ -61,8 +60,7 @@ LispObject rembi(LispObject a, LispObject b)
 }
 
 LispObject rembb(LispObject a, LispObject b)
-{   LispObject nil;
-    quotbb(a, b, QUOTBB_REMAINDER_NEEDED);
+{   quotbb(a, b, QUOTBB_REMAINDER_NEEDED);
     errexit();
     return mv_2;
 }
@@ -365,8 +363,7 @@ LispObject Cremainder(LispObject a, LispObject b)
 //
 
 static LispObject mod_by_rem(LispObject a, LispObject b)
-{   LispObject nil;
-    bool sb = minusp(b);
+{   bool sb = minusp(b);
     errexit();
     a = Cremainder(a, b);   // Repeats dispatch on argument type. Sorry
     errexit();
@@ -388,8 +385,7 @@ static LispObject modib(LispObject a, LispObject b)
 }
 
 static LispObject modbi(LispObject a, LispObject b)
-{   LispObject nil = C_nil;
-    if (b == fixnum_of_int(0)) return aerror2("bad arg for mod", a, b);
+{   if (b == fixnum_of_int(0)) return aerror2("bad arg for mod", a, b);
     if (b == fixnum_of_int(1) || b == fixnum_of_int(-1))
         return fixnum_of_int(0);
     intptr_t n = int_of_fixnum(b);
