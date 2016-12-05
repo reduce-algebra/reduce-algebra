@@ -222,7 +222,8 @@ int main(int argc, char *argv[])
         return 1;
     }
     try
-    {   res = submain(argc, argv);
+    {   START_TRY_BLOCK;
+        res = submain(argc, argv);
     }
     catch (int r)
     {   res = r;

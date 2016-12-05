@@ -75,10 +75,12 @@
 // stdint.h get defined. They reflect an ugly gulf between C and C++.
 // Well this is a gulf that USED to exist and these should not longer be
 // required - but sometimes I may try building an somewhat ancient platforms
-// so I use them... if you haver an up to date C++ compiler an integer
+// so I use them... if you have an up to date C++ compiler an integer
 // literal written with very many digits will be treated as of some suitably
 // wide type. But if I go back to somewhat ancient verisions I NEED to write
-// UINT64_C(0x1234567812345678) to get what I need.
+// UINT64_C(0x1234567812345678) to get what I need. Also if you have a new
+// enough C++ compiler you should get limits without needing to ask for them
+// this way...
 
 #ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
@@ -100,6 +102,8 @@
 #include <wctype.h>
 #include <time.h>
 #include <stdarg.h>
+#include <setjmp.h>
+#include <exception>
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
@@ -143,6 +147,7 @@
 #include "cslread.h"
 #include "clsyms.h"
 #include "inthash.h"
+#include "lispthrow.h"
 
 #ifdef HAVE_FWIN
 #if HAVE_LIBWX

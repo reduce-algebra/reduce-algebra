@@ -1943,7 +1943,7 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 #endif
         return NULL;
     }
-    (*init)(&C_nil, &C_stack, &stacklimit);
+    (*init)(&C_nil, &stack, &stacklimit);
 //
 // Wheee - I have now loaded and initialised the module.
 //

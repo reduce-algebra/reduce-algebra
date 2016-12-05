@@ -68,7 +68,7 @@ static inline bool is_power_of_two(uint64_t n)
 // Various internal functions that work on hash tables return either an
 // index into a table or the marker value NOT_PRESENT.
 
-#define NOT_PRESENT ((size_t)(-1))
+#define NOT_PRESENT (SIZE_MAX)
 
 // I make hash tables out of chunks each of which are vectors with
 // (up to) 128K elements. This means that on a 64-bit machine each

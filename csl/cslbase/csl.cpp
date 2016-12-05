@@ -906,6 +906,8 @@ void debug_show_trail_raw(const char *msg, const char *file, int line)
 
 #endif
 
+jmp_buf *global_jb;
+
 static void lisp_main(void)
 {
     volatile LispObject nil;
@@ -949,7 +951,8 @@ static void lisp_main(void)
         nil = C_nil;
         errorset_msg = NULL;
         try
-        {   nil = C_nil;
+        {   START_TRY_BLOCK;
+            nil = C_nil;
             terminal_pushed = NOT_CHAR;
             if (supervisor != nil && !ignore_restart_fn)
             {   miscflags |= BACKTRACE_MSG_BITS;
@@ -985,7 +988,7 @@ static void lisp_main(void)
 //
             else read_eval_print(lisp_true);
         }
-        catch (const char *)
+        catch (LispSignal e)
         {   nil = C_nil;
             if (errorset_msg != NULL)
             {   term_printf("\n%s detected\n", errorset_msg);
@@ -1030,7 +1033,9 @@ static void lisp_main(void)
                     {   msg = &celt(exit_value, 0);
                         len = (int)(length_of_byteheader(vechdr(exit_value)) - CELL);
                     }
+                    push2(codevec, litvec);
                     preserve(msg, len);
+                    pop2(litvec, codevec);
                     nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
@@ -1049,7 +1054,9 @@ static void lisp_main(void)
                     {   msg = &celt(exit_value, 0);
                         len = (int)(length_of_byteheader(vechdr(exit_value)) - CELL);
                     }
+                    push2(litvec, codevec);
                     preserve(msg, len);
+                    pop2(codevec, litvec);
                     nil = C_nil;
                     if (exception_pending())
                     {   flip_exception();
@@ -1256,8 +1263,25 @@ void sigint_handler(int code)
 // like this involve setting variables of type sig_atomic_t, which can not
 // be viewed as much more than boolean.  The code actually used here is
 // somewhat more ambitious (== non-portable!) so must be viewed as delicate.
-// ANSI guarantee that throw-ing out of a non-nested signal handler
-// is valid.
+// Posix describe longjmp as a function that MAY be called from a signal
+// handler, but the Open Group explanation cleary does not really approve
+// and says:
+// "It is recommended that applications do not call longjmp() or
+//  siglongjmp() from signal handlers. To avoid undefined behavior
+/   when calling these functions from a signal handler, the application
+//  needs to ensure one of the following two things:
+//    After the call to longjmp() or siglongjmp() the process only
+//    calls async-signal-safe functions and does not return from the
+//    initial call to main().
+//
+//    Any signal whose handler calls longjmp() or siglongjmp() is
+//    blocked during every call to a non-async-signal-safe function,
+//    and no such calls are made after returning from the initial call
+//    to main()."
+// That seems pretty disabling for me. It also applies to siglongjmp.
+// Well the second sentence PERHAPS means that if the signal arose while my
+// own code was running (not a system function) that I am in the clear -
+// and maybe for general exceptions that covers at least a lot of cases.
 //
 // tick_pending etc allow a steady stream of clock events to
 // be handed to Lisp.
@@ -1266,7 +1290,8 @@ void sigint_handler(int code)
     signal(SIGINT, sigint_handler);
     if (sigint_must_throw)
     {   sigint_must_throw = false;
-        throw((int *)0);
+        errorset_msg = "sigint";
+        longjmp(*global_jb, 2);
     }
 //
 // If there is not a separate regular stream of ticks I will simulate
@@ -2875,6 +2900,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // "^C" trapping and handling happens within fwin if that is available.
 //
 #ifndef UNDER_CE
+// Observe that I onbly set up a SIGINT handler if I am NOT using fwin,
+// and that means I almost never do...
         sigint_must_throw = false;
         signal(SIGINT, sigint_handler);
 #endif
@@ -2919,7 +2946,7 @@ static void cslaction(void)
 #endif
     errorset_msg = NULL;
     try
-    {
+    {   START_TRY_BLOCK;
 #ifndef UNDER_CE
         signal(SIGFPE, low_level_signal_handler);
         if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
@@ -2967,7 +2994,7 @@ static void cslaction(void)
             }
         }
     }
-    catch (const char *)
+    catch (LispSignal)
     {   if (errorset_msg != NULL)
         {   term_printf("\n%s detected\n", errorset_msg);
             errorset_msg = NULL;
@@ -3168,7 +3195,8 @@ int ENTRYPOINT(int argc, const char *argv[])
     strcpy(about_box_description, "Codemist Standard Lisp");
 #endif
     try
-    {   res = submain(argc, argv);
+    {   START_TRY_BLOCK;
+        res = submain(argc, argv);
     }
     catch(int r)
     {   res = r;

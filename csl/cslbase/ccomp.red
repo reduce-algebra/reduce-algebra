@@ -967,7 +967,9 @@ princ "C file = "; print name;
 % particular build. So if I am generating C code that is JUST for use on the
 % current platform I can write-in the config header here and now, but if
 % there is any chance that I might save the generated C and compile it
-% elsewhere I should leave "#include "config.h"" in there. 
+% elsewhere I should leave "#include "config.h"" in there. These days I do
+% not think I ever call this with hdrnow set so this is sort of not very
+% relevant!
     if hdrnow then print!-config!-header()
     else c!:printf "#include \qconfig.h\q\n\n";
     print!-csl!-headers();
@@ -980,19 +982,19 @@ princ "C file = "; print name;
 symbolic procedure c!:print!-init();
   <<
    c!:printf "\n";
-   c!:printf "LispObject *C_nilp;\n";
-   c!:printf "LispObject **C_stackp;\n";
+   c!:printf "LispObject *nilp;\n";
+   c!:printf "LispObject **stackp;\n";
    c!:printf "LispObject * volatile * stacklimitp;\n";
    c!:printf "\n";
    c!:printf "void init(LispObject *a, LispObject **b, LispObject * volatile *c)\n";
    c!:printf "{\n";
-   c!:printf "    C_nilp = a;\n";
-   c!:printf "    C_stackp = b;\n";
+   c!:printf "    nilp = a;\n";
+   c!:printf "    stackp = b;\n";
    c!:printf "    stacklimitp = c;\n";
    c!:printf "}\n";
    c!:printf "\n";
-   c!:printf "#define C_nil (*C_nilp)\n";
-   c!:printf "#define C_stack  (*C_stackp)\n";
+   c!:printf "#define nil (*nilp)\n";
+   c!:printf "#define stack  (*stackp)\n";
    c!:printf "#define stacklimit (*stacklimitp)\n";
    c!:printf "\n"
   >>;

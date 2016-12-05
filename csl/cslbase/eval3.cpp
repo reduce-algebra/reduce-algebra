@@ -1814,24 +1814,53 @@ static LispObject noisy_unwind_protect_fn(LispObject args, LispObject env)
 // any Lisp system that I use notwithstanding that.
 //
 
-const char *errorset_msg;
-static char signal_msg[32];
+const volatile char *errorset_msg;
+static volatile char signal_msg[32];
+
+static volatile char *int2str(volatile char *s, int n)
+{   unsigned int n1;
+// Even though I really only expect this to be called with small positive
+// arguments I will code it so it should support ANY integer value, including
+// the most negative one.
+    if (n >= 0) n1 = (unsigned int)n;
+    {   *s++ = '-';
+        n1 = -(unsigned int)n;
+    }
+    if (n1 >= 10)
+    {   s = int2str(s, n1/10);
+        n1 = n1 % 10;
+    }
+    *s++ = '0' + n1;
+    return s;
+}
 
 void low_level_signal_handler(int code)
 {
 //
 // Observe, if you will, that in the case of a SIGSEGV this function does
 // not use a significant amount of stack end ends up just doing a
-// throw. Well the biggest stack use could be via sprintf if I had
-// an unknown signal code - it may be worth re-working that as in-line code
-// to be extra cautious.
+// longjmp. I avoid use of other library functions so I can feel very safe.
+// Well access to the buffer signal_msg and variable errorset_msg will count
+// as thread-unsafe and so are probably invalid!
+//
+// Also the full rules for longjmp out of a signal handler seem very very
+// restrictive. But I only trap SIGSEGV, SIGBUS and SIGILL and really I view
+// all of those as indicating system failure and if I can survive well enough
+// to gather some diagnostics I should be happy. So this being thoroughly
+// un-guaranteed is perhaps mnot too bad.
 //
     LispObject nil;
     ignore_exception();
     if (miscflags & HEADLINE_FLAG)
         switch (code)
     {       default:
-                sprintf(signal_msg, "Signal (code=%d)", code);
+                {   volatile char *p = signal_msg;
+                    const char *m1 = "Signal (code=";
+                    while (*m1) *p++ = *m1++;
+                    p = int2str(p, code);
+                    *p++ = ')';
+                    *p = 0;
+                }
                 errorset_msg = signal_msg;
                 break;
 #ifdef SIGFPE
@@ -1855,7 +1884,10 @@ void low_level_signal_handler(int code)
                 break;
 #endif
         }
-    throw "low_level_signal_handler";
+// I am NOT ALLOWED TO USE THROW to exit from a signal handler in C++. I
+// can only use longjmp. This has the malign consequence that destructors
+// associated with stack frames passed through dill not be activated.
+    longjmp(*global_jb, 1);
 }
 
 void unwind_stack(LispObject *entry_stack, bool findcatch)
@@ -1976,17 +2008,15 @@ static LispObject errorset3(volatile LispObject env,
         }
     }
 
-    push2(codevec, litvec);
     save = stack;
     stackcheck2(2, form, env);
     errorset_msg = NULL;
     try
-    {
+    {   START_TRY_BLOCK;
         r = eval(form, env);
         nil = C_nil;
         if (exception_pending())
         {   flip_exception();
-            pop2(litvec, codevec);
             miscflags = (flags & BACKTRACE_MSG_BITS) |
                         (miscflags & ~BACKTRACE_MSG_BITS);
 //
@@ -2022,7 +2052,6 @@ static LispObject errorset3(volatile LispObject env,
             if (consp(exit_value)) exit_value = nil;
             return onevalue(exit_value);
         }
-        pop2(litvec, codevec);
         miscflags = (flags & BACKTRACE_MSG_BITS) |
                     (miscflags & ~BACKTRACE_MSG_BITS);
         switch (errorset_min)
@@ -2047,7 +2076,7 @@ static LispObject errorset3(volatile LispObject env,
         errexit();
         return onevalue(r);
     }
-    catch (const char *)
+    catch (LispSignal e)
     {
 //
 // Note that this is where a throw might suddenly get me back to. The
@@ -2070,7 +2099,6 @@ static LispObject errorset3(volatile LispObject env,
 //
         stack = save;
         nil = C_nil;
-        pop2(litvec, codevec);
 #ifndef UNDER_CE
         signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
@@ -2194,7 +2222,6 @@ static LispObject resource_limit7(volatile LispObject env,
                      save_errors_limit= errors_limit;
     volatile int64_t r0=0, r1=0, r2=0, r3=0;
     LispObject * volatile save;
-    push2(codevec, litvec);
     save = stack;
     stackcheck2(2, form, env);
     errorset_msg = NULL;
@@ -2214,7 +2241,8 @@ static LispObject resource_limit7(volatile LispObject env,
 // (4) It fails by raising a resource-exhausted complaint.
 //
     try
-    {   time_base   = time_now;
+    {   START_TRY_BLOCK;
+        time_base   = time_now;
         space_base  = space_now;
         io_base     = io_now;
         errors_base = errors_now;
@@ -2278,7 +2306,6 @@ static LispObject resource_limit7(volatile LispObject env,
         nil = C_nil;
         if (exception_pending())
         {   flip_exception();
-            pop2(litvec, codevec);
 //
 // I suspect I want to process restart!-csl here and prevent that from being
 // able to circumvent resource limits.
@@ -2301,7 +2328,6 @@ static LispObject resource_limit7(volatile LispObject env,
 // Here I had a resource limit trap
             return onevalue(nil);
         }
-        pop2(litvec, codevec);
 //
 // I would like the result to show what resources had been used, but for now
 // I just use ncons to wrap the resuult up.
@@ -2318,7 +2344,7 @@ static LispObject resource_limit7(volatile LispObject env,
         qvalue(resources) = form;
         return onevalue(r);
     }
-    catch (const char *)
+    catch (LispSignal e)
     {   nil = C_nil;
         time_base  = save_time_base;  space_base   = save_space_base;
         io_base    = save_io_base;    errors_base  = save_errors_base;
@@ -2335,7 +2361,6 @@ static LispObject resource_limit7(volatile LispObject env,
         unwind_stack(save, false);
         stack = save;
         nil = C_nil;
-        pop2(litvec, codevec);
 #ifndef UNDER_CE
         signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK

@@ -126,9 +126,10 @@ bool do_not_kill_native_code = false;
 // that support 0, 1, 2, 3 and 4+ arguments.
 
 void set_fns(LispObject a, one_args *f1, two_args *f2, n_args *fn)
-{   LispObject nil = C_nil;
-    LispObject w1, w2, w3 = nil;
+{
 #ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
+    LispObject nil = C_nil;
+    LispObject w1, w2, w3 = nil;
 //
 // If I redefine a function for any reason (except to set trace options
 // on a bytecoded definition) I will discard any native-coded definitions
@@ -2234,6 +2235,10 @@ static LispObject Lpreserve_2(LispObject nil,
 // quitting lisp.
 //
 
+// ++++ With the new serialization-based scheme for preserve() this would
+//      all become almost trivial to reinstate if I thought it was useful!
+
+
 static LispObject Lcheckpoint(LispObject nil,
                               LispObject startup, LispObject banner)
 {   char filename[LONGEST_LEGAL_FILENAME];
@@ -2258,12 +2263,12 @@ static LispObject Lcheckpoint(LispObject nil,
 // image-writing. But the image writing will not actually move any data
 // around so all is still OK, I hope!
 //
-    push5(codevec, litvec, catch_tags, faslvec, faslgensyms);
+    push3(catch_tags, faslvec, faslgensyms);
     preserve(msg, len);
     nil = C_nil;
     if (exception_pending()) failed = 1, flip_exception();
     adjust_all();
-    pop5(faslgensyms, faslvec, catch_tags, litvec, codevec);
+    pop3(faslgensyms, faslvec, catch_tags);
     eq_hash_tables = eq_hash_table_list;
     equal_hash_tables = equal_hash_table_list;
     eq_hash_table_list = equal_hash_table_list = nil;

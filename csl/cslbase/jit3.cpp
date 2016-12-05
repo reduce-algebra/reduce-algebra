@@ -112,12 +112,12 @@ void breakpoint()
 
 //        printf("\nSTART OF JIT CODE\n");
 
-//        printf("C_stack: %x\tlitvec: %x\tC_nil: %x\t&C_nil: %x\n",(Lisp_Object)C_stack,(Lisp_Object)litvec,C_nil,(Lisp_Object)&C_nil);
-//        printf("stack: %x\tC_stack: %x\tC_stack[-1]: %x\tC_stack[0]: %x\tC_stack[1]: %x\n",(Lisp_Object)stack,(Lisp_Object)C_stack,C_stack[-1],C_stack[0],C_stack[1]);
-    printf("\nC_stack: %p\n",C_stack);
+//        printf("stack: %x\tlitvec: %x\tC_nil: %x\t&C_nil: %x\n",(Lisp_Object)stack,(Lisp_Object)litvec,C_nil,(Lisp_Object)&C_nil);
+//        printf("stack: %x\tstack: %x\tstack[-1]: %x\tstack[0]: %x\tstack[1]: %x\n",(Lisp_Object)stack,(Lisp_Object)stack,stack[-1],stack[0],stack[1]);
+    printf("\nstack: %p\n",stack);
     int i;
     for(i=0; i<6; i++)
-    {   printf("C_stack[%d]: %x ",i-5,C_stack[i-5]);
+    {   printf("stack[%d]: %x ",i-5,stack[i-5]);
     }
     printf("C_nil: %p",(void *)C_nil);
     return;
@@ -163,14 +163,14 @@ void Jprint()
 void push_litvec()
 {   LispObject nil = C_nil;
     //push(litvec);
-    *++C_stack = litvec;
+    *++stack = litvec;
     return;
 }
 
 void pop_litvec()
 {   LispObject nil = C_nil;
     //pop(litvec);
-    litvec = *C_stack--;
+    litvec = *stack--;
     return;
 }
 void Jexception_pending()
@@ -478,28 +478,28 @@ void Jcheck_nargs3()
 
     //push5
     //
-    //mov_addr_r32(stack,EDX); //movl    C_stack, %edx
+    //mov_addr_r32(stack,EDX); //movl    stack, %edx
     //add_imm32_rm32(0x4,EDX); //addl    $4, %edx
     //mov_rm32_rm32_disp(EBPM,EAX,-6); //movl    -24(%ebp), %eax
     //add_imm32_rm32(LITVEC,EAX); //addl    $220, %eax
     //mov_rm32_rm32(EAXM,EAX); //movl    (%eax), %eax
     //mov_rm32_rm32(EAX,EDXM); //movl    %eax, (%edx)
-    //mov_addr_r32(stack,EDX); //movl    C_stack, %edx
+    //mov_addr_r32(stack,EDX); //movl    stack, %edx
     //add_imm32_rm32(0x8,EDX); //addl    $8, %edx
     //mov_rm32_rm32_disp(EBPM,EAX,-6); //movl    -24(%ebp), %eax
     //add_imm32_rm32(CODEVEC,EAX); //addl    $216, %eax
     //mov_rm32_rm32(EAXM,EAX); //movl    (%eax), %eax
     //mov_rm32_rm32(EAX,EDXM);//movl    %eax, (%edx)
     //
-    mov_addr_r32(stack,EAX); //movl    C_stack, %edx
+    mov_addr_r32(stack,EAX); //movl    stack, %edx
     add_imm32_rm32(0x4,EAX); //addl    $12, %edx
     mov_rm32_rm32_disp(EBPM,EBX,-3); //movl    -12(%ebp), %eax
     mov_rm32_rm32(EBX,EAXM); //movl    %eax, (%edx)
-    mov_addr_r32(stack,EAX); //movl    C_stack, %edx
+    mov_addr_r32(stack,EAX); //movl    stack, %edx
     add_imm32_rm32(0x8,EAX); //addl        $16, %edx
     mov_rm32_rm32_disp(EBPM,EBX,-4); //movl    -16(%ebp), %eax
     mov_rm32_rm32(EBX,EAXM); //movl    %eax, (%edx)
-    mov_addr_r32(stack,EAX); //movl    C_stack, %edx
+    mov_addr_r32(stack,EAX); //movl    stack, %edx
     add_imm32_rm32(0xc,EAX); //addl        $20, %edx
     mov_rm32_rm32_disp(EBPM,EBX,-5); //movl    -20(%ebp), %eax
     mov_rm32_rm32(EBX,EAXM); //movl    %eax, (%edx)
@@ -572,9 +572,9 @@ void Jcheck_nargsn()
 }
 
 void Jpop_vecs()
-{   //mov_addr_r32(stack,EDX); //mov C_stack,%edx
+{   //mov_addr_r32(stack,EDX); //mov stack,%edx
     //sub_imm32_rm32(0x8, EDX);
-    //mov_r32_addr(EDX,stack); //mov %edx, C_stack
+    //mov_r32_addr(EDX,stack); //mov %edx, stack
     //Jcall_abs_fn(dec_stack);
     //Jcall_abs_fn(dec_stack);
     //
@@ -583,13 +583,13 @@ void Jpop_vecs()
     //
     //mov_rm32_rm32_disp(EBPM,EDX,-2); //mov -8(%ebp), %edx //C_nil
     //add_imm32_rm32(CODEVEC,EDX); //add 216, %edx
-    //mov_addr_r32(stack,EAX); //mov C_stack, %eax
+    //mov_addr_r32(stack,EAX); //mov stack, %eax
     //add_imm32_rm32(0x8, EAX); //addl $0x8,%eax
     //mov_rm32_rm32(EAXM,EAX); //mov (%eax),%eax
     //mov_rm32_rm32(EAX,EDXM); //mov %eax, (%edx)
     //mov_rm32_rm32_disp(EBPM,EDX,-2); //mov -8(%ebp), %edx //C_nil
     //add_imm32_rm32(LITVEC,EDX); //add 220, %edx
-    //mov_addr_r32(stack,EAX); //mov C_stack, %eax
+    //mov_addr_r32(stack,EAX); //mov stack, %eax
     //add_imm32_rm32(0x4, EAX); //addl $0x4,%eax
     //mov_rm32_rm32(EAXM,EAX); //mov (%eax),%eax
     //mov_rm32_rm32(EAX,EDXM); //mov %eax, (%edx)
@@ -607,13 +607,13 @@ void Jpush_stack(int nargs) //ifndef MEMORY_TRACE in externs.h
     add_label("L0");
     //Jnil_eq_C_nil();//nil=C_nil
     //
-    //mov_addr_r32(stack,EDX); //mov C_stack, %edx
+    //mov_addr_r32(stack,EDX); //mov stack, %edx
     //add_imm32_rm32(0x4, EDX); //add 04, %edx
     //mov_rm32_rm32_disp(EBPM,EAX,-2);//mov -8(%ebp), %eax //C_nil
     //add_imm32_rm32(LITVEC, EAX); //add 220, %eax
     //mov_rm32_rm32(EAXM,EAX); //mov (%eax),%eax
     //mov_rm32_rm32(EAX,EDXM); //mov %eax, (%edx)
-    //mov_addr_r32(stack,EDX); //mov C_stack, %edx
+    //mov_addr_r32(stack,EDX); //mov stack, %edx
     //add_imm32_rm32(0x8, EDX); //add 08, %edx
     //mov_rm32_rm32_disp(EBPM,EAX,-2);//mov -8(%ebp), %eax //C_nil
     //add_imm32_rm32(CODEVEC, EAX); //add 216 eax
@@ -627,7 +627,7 @@ void Jpush_stack(int nargs) //ifndef MEMORY_TRACE in externs.h
     }
 
     if (nargs==1)
-    {   mov_addr_r32(stack,EAX); //mov C_stack, %edx
+    {   mov_addr_r32(stack,EAX); //mov stack, %edx
         add_imm32_rm32(0x4, EAX); //addl 0xc,%edx
         mov_rm32_rm32_disp(EBPM,EBX,3); //mov 0xc(%ebp), %eax
         mov_rm32_rm32(EBX,EAXM); //mov %eax,(%edx)
@@ -640,11 +640,11 @@ void Jpush_stack(int nargs) //ifndef MEMORY_TRACE in externs.h
 
 
     if (nargs==2)
-    {   mov_addr_r32(stack,EAX); //mov C_stack, %edx
+    {   mov_addr_r32(stack,EAX); //mov stack, %edx
         add_imm32_rm32(0x4, EAX); //addl $0x0c,%edx
         mov_rm32_rm32_disp(EBPM,EBX,3); //mov 0xc(%ebp), %eax
         mov_rm32_rm32(EBX,EAXM); //mov %eax,(%edx)
-        mov_addr_r32(stack,EAX); //mov C_stack, %edx
+        mov_addr_r32(stack,EAX); //mov stack, %edx
         add_imm32_rm32(0x8, EAX); //addl $0x10,%edx
         mov_rm32_rm32_disp(EBPM,EBX,4); //mov 0x10(%ebp), %eax
         mov_rm32_rm32(EBX,EAXM); //mov %eax,(%edx)
@@ -719,7 +719,7 @@ void Jprepare_bytecode_compiler(int nargs)
         call_rel_fn("bytestream_interpret");
     }
     else
-    {   mov_addr_r32(stack,EAX); //mov C_stack, eax
+    {   mov_addr_r32(stack,EAX); //mov stack, eax
         if(nargs==1) sub_imm32_rm32(0x4, EAX); //sub 4, eax
         if(nargs==2) sub_imm32_rm32(0x8, EAX); //sub 8, eax
         if(nargs==3) sub_imm32_rm32(0xc, EAX); //sub c, eax
@@ -780,8 +780,8 @@ int Jbytecode_compile(LispObject def, int nargs)
     //Lisp_Object nil = C_nil
     mov_addr_r32(&C_nil,EAX); //nil=C_nil
     mov_rm32_rm32_disp(EAX,EBPM,-1); //mov %eax, -4(ebp)
-    //Lisp_Object *stack = C_stack
-    mov_addr_r32(stack,EAX); //mov C_stack, %eax
+    //Lisp_Object *stack = stack
+    mov_addr_r32(stack,EAX); //mov stack, %eax
     mov_rm32_rm32_disp(EAX,EBPM,-2); //mov %eax, -8(ebp)
     //
     ////litvec = lit = qcdr(def) passed as arg to this fn
@@ -847,7 +847,7 @@ int Jbytecode_compile(LispObject def, int nargs)
                 store_A_reg_from(ECX);
 #ifdef COMMON
 #endif
-                // C_stack = entry_stack;
+                // stack = entry_stack;
                 load_entry_stack_into(EAX);
                 mov_r32_addr(EAX,stack);
                 // return A_reg;
@@ -864,7 +864,7 @@ int Jbytecode_compile(LispObject def, int nargs)
 #ifdef COMMON
 #endif
                 load_entry_stack_into(EAX);
-                mov_r32_addr(EAX,stack); //C_stack = entry_stack
+                mov_r32_addr(EAX,stack); //stack = entry_stack
                 load_A_reg_into(EAX);
                 //store_result_from(ECX);
                 exit_bytecode();
@@ -878,7 +878,7 @@ int Jbytecode_compile(LispObject def, int nargs)
 #ifdef COMMON
 #endif
                 load_entry_stack_into(EAX);
-                mov_r32_addr(EAX,stack); //C_stack = entry_stack
+                mov_r32_addr(EAX,stack); //stack = entry_stack
                 load_A_reg_into(EAX);
                 //store_result_from(EAX);
                 exit_bytecode();
@@ -886,7 +886,7 @@ int Jbytecode_compile(LispObject def, int nargs)
 
             case OP_NILEXIT:
                 load_entry_stack_into(EAX);
-                mov_r32_addr(EAX,stack); //C_stack = entry_stack
+                mov_r32_addr(EAX,stack); //stack = entry_stack
                 load_nil_into(EAX);
                 store_result_from(EAX);
                 exit_bytecode();
@@ -3811,7 +3811,7 @@ char* Jcompile(LispObject def, int nargs)
 
     if(nargs==1 || nargs==2)
     {   //push(litvec, codevec, a) || push(litvec, codevec, a, b)
-        Jpush_stack(nargs); //push onto C_stack
+        Jpush_stack(nargs); //push onto stack
         //if (nargs==1) Jstackcheck1(3);
         //else Jstackcheck1(4);
     }

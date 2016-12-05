@@ -1144,9 +1144,12 @@ typedef struct Single_Float
 
 // Shifts by more than the word-length are invalid, and I should not perform
 // any, but the code may indicate some guarded by SIXTY_FOUR_BIT, so
-// I will fudge things here!
+// I will fudge things here! In MANY cases the extra tests here will be
+// ones where the compiler can remove them because the shift amount is
+// manifest. If that isnot the case they are still cheap and ensure that
+// my code behaves in a defined manner (even if that could be wrong!).
 
-#define MAXSHIFT(n, a)   ((n) >= (int)8*sizeof(a) || (n) < 0 ? 0 : (n))
+#define MAXSHIFT(n, a)   ((n) >= (int)(8*sizeof(a)) || (n) < 0 ? 0 : (n))
 
 #ifdef SIGNED_SHIFTS_ARE_ARITHMETIC
 
@@ -1191,6 +1194,8 @@ static inline T ASR(T a, int n)
 #define ASLptr(a,n) ((intptr_t)((uintptr_t)(a)<<MAXSHIFT((n),uintptr_t)))
 #define ASL64(a,n)  ((int64_t)((uint64_t)(a)<<MAXSHIFT((n),uint64_t)))
 #define ASL128(a,n) ((int128_t)((uint128_t)(a)<<MAXSHIFT((n),uint128_t)))
+
+
 
 #endif // header_tags_h
 

@@ -135,7 +135,7 @@ void validate_string_fn(LispObject s, const char *file, int line)
         return;
     }
     fprintf(stderr, "\n+++ Not even a string at %s %d\n", file, line);
-    fprintf(stderr, "Header = %" PRIx64 "\n", (int64_t)vechdr(s));
+    fprintf(stderr, "Header = %" PRIxMAX "\n", (intmax_t)vechdr(s));
     fflush(stderr);
     *(int *)(LispObject)(-1) = 0x55555555;  // I hope this aborts
 }
@@ -2432,7 +2432,8 @@ static int raw_char_from_terminal()
 //
                 errorset_msg = NULL;
                 try
-                {   while (tty_count<TTYBUF_SIZE && !interrupt_pending)
+                {   START_TRY_BLOCK;
+                    while (tty_count<TTYBUF_SIZE && !interrupt_pending)
                     {   int c;
                         sigint_must_throw = true;
                         c = getchar();
@@ -2473,7 +2474,7 @@ static int raw_char_from_terminal()
                     }
                     break;
                 }
-                catch (int *)
+                catch (LispSigint e)
                 {   if (errorset_msg != NULL)
                     {   term_printf("\n%s detected\n", errorset_msg);
                         errorset_msg = NULL;
@@ -4036,7 +4037,6 @@ LispObject Lstring2list(LispObject nil, LispObject a)
 void read_eval_print(int noisy)
 {   volatile LispObject nil = C_nil;
     LispObject * volatile save = stack;
-    push2(codevec, litvec);
     for (;;)        // Loop for each s-expression found
     {   volatile LispObject u;
 #ifdef COMMON
@@ -4045,10 +4045,10 @@ void read_eval_print(int noisy)
         miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
         errorset_msg = NULL;
         try
-        {
+        {   START_TRY_BLOCK;
             u = Lread(nil, 0);
         }
-        catch (const char *)
+        catch (LispSignal e)
         {   nil = u = C_nil;
             if (errorset_msg != NULL)
             {   err_printf("\n%s detected\n", errorset_msg);
@@ -4094,8 +4094,7 @@ void read_eval_print(int noisy)
 //
             if (exit_reason == UNWIND_RESTART ||
                 exit_reason == UNWIND_RESOURCE)
-            {   pop2(litvec, codevec);
-                flip_exception();
+            {   flip_exception();
                 return;
             }
             err_printf("\n... read failed\n");
@@ -4111,7 +4110,7 @@ void read_eval_print(int noisy)
 // I tend to reset a bit of EOF info...
 //
         if (u == eof_symbol)
-        {   pop2(litvec, codevec);
+        {
 //
 // If you had gone (rdf nil) and read from the terminal - and then used ctrl-D
 // to signal an "and of file" I want that to end merely the (rdf) section
@@ -4135,15 +4134,15 @@ void read_eval_print(int noisy)
         miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
         errorset_msg = NULL;
         try
-        {   exit_count = 1; // Because I care how many results are returned
+        {   START_TRY_BLOCK;
+            exit_count = 1; // Because I care how many results are returned
             u = eval(u, nil);
             nil = C_nil;
             if (exception_pending())
             {   flip_exception(); // safe again!
                 if (exit_reason == UNWIND_RESTART ||
                     exit_reason == UNWIND_RESOURCE)
-                {   pop2(litvec, codevec);
-                    flip_exception();
+                {   flip_exception();
                     return;
                 }
                 err_printf("\n... continuing after error\n");
@@ -4193,7 +4192,7 @@ void read_eval_print(int noisy)
 #endif
             }
         }
-        catch (const char *)
+        catch (LispSignal e)
         {   if (errorset_msg != NULL)
             {   err_printf("\n%s detected\n", errorset_msg);
                 errorset_msg = NULL;

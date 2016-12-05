@@ -46,6 +46,11 @@ int trace_all = 0;
 
 #define name_from(def) elt(qcdr(def), 0)
 
+// Each of these entrypoints to the bytecode interpreter preserves litvec
+// and codevec. Just about the only place these variable are set is within
+// the bytecode interpreter. Thus the interpreter can set them and never
+// needs to worry about pushing and popping them.
+
 LispObject bytecoded0(LispObject def, int nargs, ...)
 {   LispObject nil=C_nil;
     if (nargs != 0) return error(2, err_wrong_no_args, name_from(def),

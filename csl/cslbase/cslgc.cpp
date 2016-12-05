@@ -1132,6 +1132,9 @@ static void lose_dead_hashtables(void)
 
 static volatile int async_type = QUERY_INTERRUPT;
 
+// The following fnction can be called from a signal handler. It just looks
+// and and sets some volatile variables.
+
 int async_interrupt(int type)
 {   int prev = async_type;
     if (type != QUERY_INTERRUPT)

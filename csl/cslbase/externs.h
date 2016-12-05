@@ -121,8 +121,7 @@ extern int32_t native_fringe;
 extern LispObject *nilsegment, *stacksegment;
 extern LispObject *stackbase;
 extern int32_t stack_segsize;  // measured in units of one CSL page
-extern LispObject *C_stack;
-#define stack C_stack
+extern LispObject *stack;
 extern char *C_stack_base, *C_stack_limit;
 extern double max_store_size;
 
@@ -826,15 +825,19 @@ extern bool volatile already_in_gc, tick_on_gc_exit;
 extern bool volatile interrupt_pending, tick_pending;
 extern int deal_with_tick();
 extern bool trap_floating_overflow;
-extern const char *errorset_msg;
+extern const volatile char *errorset_msg;
 extern int errorset_code;
 extern void unwind_stack(LispObject *, bool findcatch);
 extern bool segvtrap;
 extern bool batch_flag;
 extern int escaped_printing;
-extern void low_level_signal_handler(int code);
-extern int async_interrupt(int a);
+// Handlers registered using signal() are expected to have C linkage, and
+// may not necessarily be supported otherwise. There are severe restrictions
+// on what may be done within one, but if our system adhers to Posix it is
+// legal to use longjmp.
+extern "C" void low_level_signal_handler(int code);
 extern "C" void sigint_handler(int code);
+extern "C" int async_interrupt(int a);
 
 extern "C" void record_get(LispObject tag, bool found);
 

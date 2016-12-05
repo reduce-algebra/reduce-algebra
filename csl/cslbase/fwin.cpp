@@ -871,7 +871,7 @@ int main(int argc, const char *argv[])
 }
 
 void sigint_handler(int code)
-{   FWIN_LOG("sigint_handler called %d %#x\n", code, code);
+{
     signal(SIGINT, sigint_handler);
     if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
     return;
@@ -883,8 +883,7 @@ void sigint_handler(int code)
 #ifdef SIGBREAK
 
 void sigbreak_handler(int code)
-{   FWIN_LOG("sigbreak_handler called %d %#x\n", code, code);
-    signal(SIGBREAK, sigbreak_handler);
+{   signal(SIGBREAK, sigbreak_handler);
     if (interrupt_callback != NULL) (*interrupt_callback)(NOISY_INTERRUPT);
     return;
 }

@@ -2544,7 +2544,7 @@ setup_type const funcs3_setup[] =
     {"list-subseq*",            wrong_no_3a, Llist_subseq1, Llist_subseq2},
     {"subseq",                  wrong_no_3a, Lvector_subseq1, Lvector_subseq2},
 // The "x" is temporary while I debug
-    {"xcopy-vector",             Lcopy_vector, too_many_1, wrong_no_1},
+    {"xcopy-vector",            Lcopy_vector, too_many_1, wrong_no_1},
 #endif
     {"list-to-vector",          Llist_to_vector, too_many_1, wrong_no_1},
     {"encapsulatedp",           Lencapsulatedp, too_many_1, wrong_no_1},

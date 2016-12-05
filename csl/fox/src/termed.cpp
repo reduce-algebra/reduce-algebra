@@ -1,7 +1,7 @@
-// termed.cpp                              Copyright (C) 2004-2015 Codemist
+// termed.cpp                          Copyright (C) 2004-2015 Codemist    
 
 /**************************************************************************
- * Copyright (C) 2015, Codemist.                         A C Norman       *
+ * Copyright (C) 2016, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -276,7 +276,7 @@ static int outputColour = -1;  // whatever user had been using
 
 static FILE *termed_logfile = NULL;
 
-static void write_log(char *s, ...)
+static void write_log(const char *s, ...)
 {   va_list x;
     if (termed_logfile == NULL) termed_logfile = fopen("termed.log", "w");
     if (termed_logfile == NULL) termed_logfile = fopen("/tmp/termed.log", "w");
@@ -432,7 +432,8 @@ static int input_line_size;
 static void term_putchar(int c);
 
 static wchar_t *term_wide_plain_getline(void)
-{   int n, ch;
+{   int n;
+    wint_t ch;
     int i;
 #ifdef TERMED_TEST
     fprintf(stderr, "plain_getline:");
@@ -495,13 +496,10 @@ void term_setprompt(const char *s)
 //
     if (prompt_length > MAX_PROMPT_LENGTH) prompt_length = MAX_PROMPT_LENGTH;
 //
-// Here I widen the characters in the prompt by merely using the passed
+// Here I winden the characters in the prompt by merely using the passsed
 // characters as the low 8-bits of each desired character. That is fine
 // for 7-bit ASCII characters but not if the 8-bit values depend on some
-// particular code page... I should probably (these days) allow the
-// passed prompt to be an utf8 string and decode/convert it here. Note that
-// dealing with characters beyond the basic multilingual plane will
-// involve unpacking to utf16!
+// particular code page...
 //
     for (i=0; i<prompt_length; i++)
     {   wint_t c = *s++ & 0xff;
@@ -1034,14 +1032,14 @@ int term_setup(int flag, const char *colour)
 #endif
 #else // WIN32
     int errval, errcode;
-    char *s;
+    const char *s;
     struct termios my_term;
 #ifdef TERMED_TEST
     fprintf(stderr, "term_setup in the non-Windows case\n");
 #endif
     term_enabled = 0;
     term_colour = (colour == NULL ? "-" : colour);
-    {   const char *s = term_colour;
+    {   s = term_colour;
         if (*s)
         {   int c = map_colour(*s++);
             if (c < 0) c = -1;
@@ -1077,11 +1075,18 @@ int term_setup(int flag, const char *colour)
 //
     s = getenv("TERM");
     if (s == NULL) s = "dumb";
-    errcode = setupterm(s,               // terminal type
-                        stdout_handle,   // ie to stdout
-                        &errval);
-    if (errcode != OK || errval != 1) return 1;
-
+// There is a bit of a misery here. The standard function setupterm takes
+// a "char *" argument not a "const char *", even though it is not liable
+// to change anything there. To be very proper I will cope my data
+// so as to survive that!
+    {   char s1[80];
+        strncpy(s1, s, sizeof(s1)); // Copy data
+        s1[sizeof(s1)-1] = 0;       // Make it terminated even if truncated
+        errcode = setupterm(s1,              // terminal type
+                            stdout_handle,   // ie to stdout
+                            &errval);
+        if (errcode != OK || errval != 1) return 1;
+    }
 //
 // I really want the very basic units of cursor movement to be available,
 // and if they are not I will just give up.
@@ -1507,7 +1512,31 @@ static int term_getchar(void)
 // should only actually be called in the "enabled" case.
 //
 
-static void term_move_down(int del)
+// term_move_down() is called in seven places. gcc-6 views it as short enough
+// that it can in-line it, and then in three of those calls it can see
+// max_cursory being set shortly before the call to it in such manners that
+// if there is no integer overlow this will have cursory+del<=max_cursory.
+// When it can deduce that it feels that C++ gives it permission to do
+// anything it likes if there is integer overflow, and in particular to
+// optimise code in ways that only preserve (naive) semantics if overflow
+// is not present. Here that allows it to optimise away the line
+//        if (cursory > max_cursory) max_cursory = cursory;
+// in the three inline expanded versions concerned. As a kindness to the
+// possibly confused developer it issues a warning along the lines of
+//    warning: assuming signed overflow does not occur when assuming
+//             that (X + c) < X is always false
+// for these cases. Generation of this message could be controlled using
+// "-Wstrict_overflow", but the consequences of an unexpected and unwanted
+// optimistaion of this style where integer overflow was predictable and
+// known to be benign, but where making assumptions about it could lead to
+// behaviour that was valid by the C++ standard but not as intended by the
+// coder could be SEVERE, so leaving the warnings in place makes sense. It
+// is also not clear to me how I could get rid of them by any sensible
+// re-write of the code!                              (ACN November 2016)
+// Well I am trying to get rid of the warning by giving an extra argument!
+
+
+static void term_move_down(int del, bool check)
 {
 #ifdef WIN32
 //
@@ -1526,10 +1555,10 @@ static void term_move_down(int del)
 // want a new line to appear for me to move onto.
 //
     cursory += del;
-    if (cursory > max_cursory) max_cursory = cursory;
+    if (check && cursory > max_cursory) max_cursory = cursory;
 #else
     cursory += del;
-    if (cursory > max_cursory) max_cursory = cursory;
+    if (check && cursory > max_cursory) max_cursory = cursory;
     fflush(stdout);
     while (del > 0)
     {   putp(cursor_down);
@@ -1731,16 +1760,16 @@ static int line_wrap(int ch, int tab_offset)
 // character. I very much hope that this time writing to the last position on
 // a row does not do anything special at all about the cursor or scrolling.
 //
-            term_move_down(-1);
+            term_move_down(-1, false);
             term_move_right(columns-1);
             term_putchar(ch);
             term_move_first_column();
-            term_move_down(1);
+            term_move_down(1, false);
         }
         else
         {   term_putchar(ch);
             term_move_first_column();
-            term_move_down(1);
+            term_move_down(1, false);
         }
     }
     else term_putchar(ch);
@@ -1800,7 +1829,7 @@ static void refresh_display(void)
     finx = finy = 0;
     i = 0;
     while ((ch = input_line[i]) != 0 &&
-           display_line[i] == ch &&
+           display_line[i] == (wchar_t)ch &&
            (!term_can_invert || i!=invert_start))
     {   if (i == insert_point)
         {   curx = finx;
@@ -1841,7 +1870,7 @@ static void refresh_display(void)
 // Start my moving to the beginning of the where I must write stuff...
 //
     term_move_right(finx - cursorx);
-    term_move_down(finy - cursory);
+    term_move_down(finy - cursory, true);
 //
 // Re-display all of the current input line. In may cases this
 // will do all the re-drawing needed, but beware if the existing displayed
@@ -1952,7 +1981,7 @@ static void refresh_display(void)
                 cursorx++;
             }
             term_move_first_column();
-            term_move_down(1);
+            term_move_down(1, true);
         }
         while (cursorx < final_cursorx)
         {   term_putchar(' ');
@@ -1967,7 +1996,7 @@ static void refresh_display(void)
 //
 // Move the cursor to where it needs to appear.
 //
-    if (cury != cursory) term_move_down(cury-cursory);
+    if (cury != cursory) term_move_down(cury-cursory, true);
     if (curx != cursorx) term_move_right(curx-cursorx);
     fflush(stdout);
 //
@@ -4905,7 +4934,7 @@ static int lookup_name(const char *s)
 
 static int lookup_wide_name(const wchar_t *s)
 {   char narrow[20];
-    int i;
+    size_t i;
     for (i=0; i<sizeof(narrow)-1; i++)
     {   if (s[i] == 0) break;
         if (s[i] >= 0x7f) return -1; // not a basic ASCII character
@@ -4916,7 +4945,7 @@ static int lookup_wide_name(const wchar_t *s)
 }
 
 const char *lookup_code(int c)
-{   int i;
+{   size_t i;
 //
 // I do a simple linear search here. It is cheap-enough given that it is
 // only needed when the user types a special command, ALT-x. It does not
@@ -5803,11 +5832,11 @@ static wchar_t *term_wide_fancy_getline(void)
 // Here I need to insert a character into the buffer. I may not be inserting
 // at the end, so I perhaps have to shuffle existing stuff upwards.
 //
-            {   int n = insert_point;
-                while (input_line[n] != 0) n++;
-                while (n >= insert_point)
-                {   input_line[n+1] = input_line[n];
-                    n--;
+            {   int n1 = insert_point;
+                while (input_line[n1] != 0) n1++;
+                while (n1 >= insert_point)
+                {   input_line[n1+1] = input_line[n1];
+                    n1--;
                 }
             }
             input_line[insert_point] = ch & (~(ALT_BIT|ARROW_BIT));
@@ -5822,7 +5851,7 @@ static wchar_t *term_wide_fancy_getline(void)
 // input before moving back to normal screen mode.
 //
     term_move_first_column();
-    term_move_down(final_cursory-cursory);
+    term_move_down(final_cursory-cursory, true);
     set_normal();
     term_putchar('\n');
     fflush(stdout);
@@ -5968,15 +5997,15 @@ char *term_getline(void)
             q--;
         }
         while ((c = *q++) != 0)
-        {   int i, n;
+        {   int i, n1;
 //
 // I assume that surrogate pairs are indeed properly paired: I consolidate
 // them into single characters here.
 //
             if (is_low_surrogate(c))
                 c = 0x10000 + ((c & 0x3ff)<<10) + (*q++ & 0x3ff);
-            n = utf_encode(buffer, c);
-            for (i=0; i<n; i++) *p++ = buffer[i];
+            n1 = utf_encode(buffer, c);
+            for (i=0; i<n1; i++) *p++ = buffer[i];
         }
     }
     *p = 0;

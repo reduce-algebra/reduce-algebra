@@ -5832,11 +5832,11 @@ static wchar_t *term_wide_fancy_getline(void)
 // Here I need to insert a character into the buffer. I may not be inserting
 // at the end, so I perhaps have to shuffle existing stuff upwards.
 //
-            {   int n = insert_point;
-                while (input_line[n] != 0) n++;
-                while (n >= insert_point)
-                {   input_line[n+1] = input_line[n];
-                    n--;
+            {   int n1 = insert_point;
+                while (input_line[n1] != 0) n1++;
+                while (n1 >= insert_point)
+                {   input_line[n1+1] = input_line[n1];
+                    n1--;
                 }
             }
             input_line[insert_point] = ch & (~(ALT_BIT|ARROW_BIT));
@@ -5997,15 +5997,15 @@ char *term_getline(void)
             q--;
         }
         while ((c = *q++) != 0)
-        {   int i, n;
+        {   int i, n1;
 //
 // I assume that surrogate pairs are indeed properly paired: I consolidate
 // them into single characters here.
 //
             if (is_low_surrogate(c))
                 c = 0x10000 + ((c & 0x3ff)<<10) + (*q++ & 0x3ff);
-            n = utf_encode(buffer, c);
-            for (i=0; i<n; i++) *p++ = buffer[i];
+            n1 = utf_encode(buffer, c);
+            for (i=0; i<n1; i++) *p++ = buffer[i];
         }
     }
     *p = 0;

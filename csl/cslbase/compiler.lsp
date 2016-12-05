@@ -3348,14 +3348,13 @@ print!-csl!-headers) (cond (hdrnow (c!:print!-init))) (wrs O_file) (return
 nil)))
 
 (de c!:print!-init nil (progn (c!:printf "\n") (c!:printf 
-"LispObject *C_nilp;\n") (c!:printf "LispObject **C_stackp;\n") (c!:printf 
+"LispObject *nilp;\n") (c!:printf "LispObject **stackp;\n") (c!:printf 
 "LispObject * volatile * stacklimitp;\n") (c!:printf "\n") (c!:printf 
 "void init(LispObject *a, LispObject **b, LispObject * volatile *c)\n") (
-c!:printf "{\n") (c!:printf "    C_nilp = a;\n") (c!:printf 
-"    C_stackp = b;\n") (c!:printf "    stacklimitp = c;\n") (c!:printf "}\n")
-(c!:printf "\n") (c!:printf "#define C_nil (*C_nilp)\n") (c!:printf 
-"#define C_stack  (*C_stackp)\n") (c!:printf 
-"#define stacklimit (*stacklimitp)\n") (c!:printf "\n")))
+c!:printf "{\n") (c!:printf "    nilp = a;\n") (c!:printf "    stackp = b;\n"
+) (c!:printf "    stacklimitp = c;\n") (c!:printf "}\n") (c!:printf "\n") (
+c!:printf "#define nil (*nilp)\n") (c!:printf "#define stack  (*stackp)\n") (
+c!:printf "#define stacklimit (*stacklimitp)\n") (c!:printf "\n")))
 
 (de C!-end nil (C!-end1 t))
 
