@@ -1,4 +1,7 @@
-\documentstyle[12pt,a4Camb,makeidx,times]{book}
+\documentclass[12pt,a4paper]{book}
+
+\usepackage{makeidx,times}
+\usepackage{hyperref}
 
 \newenvironment{Ventry}[1]%
 {\begin{list}{}{\renewcommand{\makelabel}[1]{##1}%
@@ -11,6 +14,7 @@
 
 \begin{document}
 
+\csname @mainmatterfalse\endcsname
 
 \input{MUSTER}
 \input{TITLEPAG.TEX}
