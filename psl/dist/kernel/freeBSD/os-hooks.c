@@ -41,6 +41,7 @@
 #endif
  
 jmp_buf mainenv;
+char *abs_execfilepath;
 
 main(argc,argv)
 int argc;
@@ -53,6 +54,9 @@ char *argv[];
   /* fpsetround(FP_RZ);  */
 /*  init_malloc_param();        /* reset malloc parameters.        */
     setvbuf(stdout,NULL,_IOLBF,BUFSIZ);
+    /* Record path to exec file */
+  if (argc > 0)
+    abs_execfilepath = realpath(argv[0],NULL);
 
   val=setjmp(mainenv);        /* set non-local return point for exit    */
  
@@ -78,6 +82,11 @@ int x;
     else  if(x==3)  longjmp(mainenv,3); else longjmp(mainenv,1);
 }
  
+char * get_execfilepath ()
+{
+  return abs_execfilepath;
+}
+
 clear_iob()
 {
 }

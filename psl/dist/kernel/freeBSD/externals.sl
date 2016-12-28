@@ -88,6 +88,7 @@
 %
 (external-function alterheapsize        (integer))
 (external-function allocatemorebps    (amount))
+(external-function get_imagefilepath    ())
  
 % Defined in file-status.c
 %
@@ -98,6 +99,7 @@
 %
 (external-function os_startup_hook      (pargc pargv))
 (external-function os_cleanup_hook      (x))
+(external-function get_execfilepath	())
  
  
 % Defined in pslextras.c
@@ -164,7 +166,8 @@
 (external-function unixcd               (dir))
 (external-function ctime                (buffer))
 (external-function external_system      (command))
- 
+(external-function external_fullpath	(relpath))
+
  
 % Defined In the C Library
 %

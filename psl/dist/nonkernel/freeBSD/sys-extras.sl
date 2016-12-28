@@ -270,6 +270,25 @@
 
 (loadtime (getunixargs))
 
+(de get-image-path ()
+  (prog (val)
+        (setq val (get_imagefilepath))
+	(cond ((eq val 0) (return nil))
+	      (t (return (importforeignstring val))))))
+
+(de get-exec-path ()
+  (prog (val)
+        (setq val (get_execfilepath))
+	(cond ((eq val 0) (return nil))
+	      (t (return (importforeignstring val))))))
+
+(de get-fullpath (relpath)
+  (prog (val)
+        (setq val (external_fullpath (strbase (strinf relpath))))
+	(cond ((eq val 0) (return nil))
+	      (t (return (importforeignstring val))))))
+
+
 % getStartupName - Figure out the filename that PSL was started from.      
 (de getstartupname ()
   (prog (arg0 path pathsz dirstart i dir filename)
@@ -324,10 +343,10 @@
 (de fcntl (a1 a2 a3)
     (ieee_flags 2 a1 a2 a3))
 
-(de Linux_open(a1 a2 a3); % uses open in Linux sense, returns an int fd
+(de Linux_open(a1 a2 a3) % uses open in Linux sense, returns an int fd
      (ieee_flags 3 (strbase (strinf a1)) a2 a3))
 
-(de Linux_close(a1);    % exptects an int fd
+(de Linux_close(a1)    % exptects an int fd
      (ieee_flags 4 a1))
 
 (define-constant O_ACCMODE         8#003 )

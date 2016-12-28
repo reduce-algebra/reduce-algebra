@@ -290,3 +290,11 @@ char *argv[];
  
   return((int)static_argv);
 }
+
+/* convert a pathname to canonical form */
+char *
+external_fullpath(relpath)
+     char * relpath;
+{
+  return realpath(relpath,NULL);
+}
