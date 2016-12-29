@@ -129,6 +129,8 @@
 
 (fi 16#61 popa  nil)
 
+(fi 16#68 push ((I v)))
+
 (fi 16#70 jo ((j b)))
 (fi 16#71 jno ((j b)))
 (fi 16#72 jb ((j b)))
@@ -179,6 +181,8 @@
 (fi 16#e8 call ((A v)))
 
 (fi 16#e9 jmp ((J v)) ((A p)) ((J b)))
+
+(fi 16#f6  Grp3 ((E b)) ((E v)))
 
 (fi 16#ff  Grp5 ((E v)))   % grp5
 
@@ -274,10 +278,10 @@
          (setq  lth* (add1 lth*))
 	 (setq w (pop bytes*))
 	 (when (greaterp w 127)(setq w (difference w 256)))
-         (plus addr* w))
+         (plus addr* w 2))
         ((equal p '(J v))
          (setq  lth* (plus 4 lth*))
-         (plus addr* (bytes2word)))
+         (plus addr* (bytes2word) 5))
            % mod R/M
         ((eqcar p 'E) (decode-modrm p))
         ((eqcar p 'R) (decode-modrm p))
@@ -382,23 +386,36 @@
      (when (stringp w) 
        (setq *comment (bldmsg """%w""" w))
        (return 'string))
-     (when (eq (wand w 16#ffffff) 0) (return 'CAR))
-     (when (eq (wand w 16#ffffff) 4) (return 'CDR))
+%     (when (eq (wand w 16#ffffff) 0) (return 'CAR))
+%     (when (eq (wand w 16#ffffff) 4) (return 'CDR))
      (return (sys2int w))))
 
 (de xgreaterp(a b)(and (numberp a)(numberp b)(greaterp a b)))
 
 (de namegrp1()
  (cond ((eq regnr* 000) 'add)
+       ((eq regnr* 2#001) 'or)
        ((eq regnr* 2#010) 'adc)
-       ((eq regnr* 2#101) 'sub)
        ((eq regnr* 2#011) 'sbb)
+       ((eq regnr* 2#100) 'and)
+       ((eq regnr* 2#101) 'sub)
+       ((eq regnr* 2#110) 'xor)
        ((eq regnr* 2#111) 'cmp)))
 
 (de namegrp5()
  (cond 
        ((eq regnr* 2#010) 'call)
        ((eq regnr* 2#100) 'jump)
+       ))
+
+(de namegrp3()
+ (cond ((eq regnr* 000) 'test)
+       ((eq regnr* 2#010) 'not)
+       ((eq regnr* 2#011) 'neg)
+       ((eq regnr* 2#100) 'mul)
+       ((eq regnr* 2#101) 'imul)
+       ((eq regnr* 2#110) 'div)
+       ((eq regnr* 2#111) 'idiv)
        ))
 
 (de nameshift()
@@ -425,7 +442,7 @@
                       (when (not (codep (cdr (getd fkt))))(return nil))
                       (setq base (getfunctionaddress fkt))
          )     )
-         (when (greaterp base nextbps) (return (error 99 "out of range")))
+         (when (wgreaterp base nextbps) (return (error 99 "out of range")))
          (setq argumentblockhigh (plus2 argumentblock (word2addr 15)))
          (setq symvalhigh (plus2 symval (word2addr maxsymbols)))
          (setq symfnchigh (plus2 symfnc (word2addr maxsymbols)))
@@ -498,7 +515,8 @@ loop
 
          (when (eq name 'grp1) (setq name (namegrp1)))
          (when (eq name 'grp5) (setq name (namegrp5)))
-         (when (eq name 'shift)(setq name ( nameshift)))
+         (when (eq name 'grp3) (setq name (namegrp3)))
+         (when (eq name 'shift)(setq name (nameshift)))
 
          (cond ((atsoc 'op2 instr)
                 (setq pat (list (cdr (atsoc 'op1 instr)) ","
