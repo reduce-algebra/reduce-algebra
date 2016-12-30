@@ -67,7 +67,7 @@ long unexec();
 
 #define NUMBEROFHEAPS 1
 
-#define MINSIZE        5000000  /* Default total in number of bytes. */
+#define MINSIZE        16000000 /* Default total in number of bytes. */
 #define MALLOCSIZE     500000   /* Default size for OS support functions. */
 #define EXTRABPSSIZE   300000   /* Minimum amount to increase bps by. */
 #define MINIMUMHEAPADD 20000    /* Minimum amount to increase heap by */
@@ -77,7 +77,8 @@ long unexec();
 #define BPSSIZE         1600000    /* Default bps size in number of bytes */
 #endif
 
-char *  imagefile ;
+char *  imagefile;
+char *  abs_imagefile = NULL; /* like imagefile, but as an absolute path */
 int     max_image_size;
 int     oldbreakvalue;
 
@@ -269,6 +270,7 @@ setupbpsandheap(argc,argv)
         oldheaplast = ohl; oldheaptrapbound = ohtb;
         heaplowerbound = hlb; heapupperbound = hub;
         heaptrapbound = htb;}
+       abs_imagefile = realpath(imagefile,NULL);
        return (4711);
      }
 return (0);
@@ -473,3 +475,7 @@ long unexec()
   return((long) bpscontrol);
 }
 
+char * get_imagefilepath ()
+{
+  return abs_imagefile;
+}
