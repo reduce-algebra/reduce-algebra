@@ -15,7 +15,7 @@
           (de getwrd(a)(getmem a))
 
           (de getfunctionaddress(fkt) 
-             (wshift(wshift (cdr (getd fkt)) 5) -5))
+             (wor 16#8000000 (wshift(wshift (cdr (getd fkt)) 5) -5)))
 
           (de idnumberp(x)
            (cond ((not (posintp x)) nil)
@@ -23,7 +23,10 @@
                  ((stringp (symnam x)) x)
                  (t nil)))
 
-          (de safe!-int2id(x) (if (idnumberp x) (mkid x) (mkid 32)))
+          (de safe!-int2id(x)
+	    (setq x (wand 16#f7ffffff x))
+	    (if (idnumberp x) (mkid x) (mkid 32)))
+
           (copyd 'ttab 'tab)
 
 
@@ -317,12 +320,12 @@
                           (xgreaterp symfnchigh w))
                      (setq *comment
                       (bldmsg " -> %w" 
-                       (safe-int2id (wshift (wdifference w symfnc) -2)))))
+                       (safe-int2id (wshift (wdifference (int2sys w) symfnc) -2)))))
                     ((and (xgreaterp w symval)
                           (xgreaterp symvalhigh w))
                      (setq *comment
                       (bldmsg " -> %w" 
-                       (safe-int2id (wshift (wdifference w symval) -2))))))
+                       (safe-int2id (wshift (wdifference (int2sys w) symval) -2))))))
               (bldmsg "*%w" w))
         ((eq mod 0) (bldmsg "[%w]" (reg-m rm)))
         ((eq mod 1) 
@@ -444,8 +447,8 @@
          )     )
          (when (wgreaterp base nextbps) (return (error 99 "out of range")))
          (setq argumentblockhigh (plus2 argumentblock (word2addr 15)))
-         (setq symvalhigh (plus2 symval (word2addr maxsymbols)))
-         (setq symfnchigh (plus2 symfnc (word2addr maxsymbols)))
+         (setq symvalhigh (plus2 (sys2int symval) (word2addr maxsymbols)))
+         (setq symfnchigh (plus2 (sys2int symfnc) (word2addr maxsymbols)))
          (terpri)
    %     (putmem nextbps 0)            % safe endcondition
          (setq bstart base)
@@ -462,11 +465,11 @@ loop1
          (when jmem (setq jmem (cdr jmem)))
          (cond ((not (assoc jmem labels))
                      (setq labels (cons (list jmem) labels)) ))
- next    (setq base (plus2 base lth))
-         (when (and !*hardjump fktend (greaterp base fktend))
+ next    (setq base (wplus2 base lth))
+         (when (and !*hardjump fktend (wgreaterp base fktend))
                (go continue1))
          (cond ((not bend ) (go loop1))
-               ((greaterp base bend) (go continue1))
+               ((wgreaterp base bend) (go continue1))
                (t (go loop1)))
  continue1
   % second pass: assign symbolic labels to jump targets
@@ -485,7 +488,7 @@ loop1
   % third pass: print instructions
 erstmal
          (setq base bstart)
-         (prinblx (list "function: " fkt " base: " base))
+         (prinblx (list "function: " fkt " base: " (sys2int base)))
          (terpri)
          (setq lc 0)
 loop
@@ -532,7 +535,7 @@ loop
                     (setq instr (cons (cons '!<effa!> jmem) instr)))
 
          (ttab 1)
-         (prinbnx base 8)
+         (prinbnx (sys2int base) 8)
          (prin2 " ")
          (prinbnx p1 2)   % binary first parcel
          (when (greaterp lth 1) (prin2 "  ") (prinbnx (pop pp) 2))
@@ -548,9 +551,9 @@ loop
 
          (when *comment (ttab 55) (prin2 *comment))
          (setq *comment nil)
-         (setq base (plus2 base lth))
+         (setq base (wplus2 base lth))
          (setq lc (add1 lc))
-         (when (or (not (numberp bend)) (leq base bend))(go loop))
+         (when (or (not (numberp bend)) (weq base bend))(go loop))
 )   )
 
 
@@ -590,15 +593,15 @@ loop
 (de prinbn (it n)                % print an octal number
      (cond ((and (eq it 0) (leq n 0)) nil)
            (t (progn
-                (prinbn (lshift it -3) (plus2 n -1))
-                (prindig (logand it 7))
+                (prinbn (wshift it -3) (plus2 n -1))
+                (prindig (wand it 7))
 )    )     )  )
 
 (de prinbnx (it n)                % print a hexa number
      (cond ((and (eq it 0) (leq n 0)) nil)
            (t (progn
-                (prinbnx (quotient it 16) (plus2 n -1))
-                (prindigx (logand it 15))
+                (prinbnx (wquotient it 16) (plus2 n -1))
+                (prindigx (wand it 15))
 )    )     )  )
 
 
