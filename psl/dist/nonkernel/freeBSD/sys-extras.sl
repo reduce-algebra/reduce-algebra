@@ -132,7 +132,7 @@
 
 (de delete-file (unixstring)
   (if (stringp unixstring)
-    (weq 0 (external_unlink (strbase (strinf unixstring))))
+    (weq 0 (external_unlink (unixstring unixstring)))
     (nonstringerror unixstring 'delete-file)))
 
 
@@ -284,7 +284,7 @@
 
 (de get-fullpath (relpath)
   (prog (val)
-        (setq val (external_fullpath (strbase (strinf relpath))))
+        (setq val (external_fullpath (unixstring relpath)))
 	(cond ((eq val 0) (return nil))
 	      (t (return (importforeignstring val))))))
 
