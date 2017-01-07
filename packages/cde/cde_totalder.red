@@ -1,4 +1,4 @@
-module cde_totalder; % CDIFF package, definition of total derivatives
+module cde_totalder; % CDE package, definition of total derivatives
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -206,11 +206,13 @@ symbolic procedure compute_td u; %(arg,indvar,ord);
     indvars:=cdr u;
     while not(null(indvars)) do
     <<
-      if not(null(temppos:=cde_position(tempivar:=car indvars,indep_var!*)))
+      if not(null(
+	temppos:=cde_position(tempivar:=!*a2k aeval car indvars,indep_var!*)
+	  ))
       then
-	<<
-          dd_name:=nth(tot_der!*,temppos);
-          if not(null(cdr indvars)) and fixp(tempindex:=cadr indvars) then
+      <<
+  	  dd_name:=nth(tot_der!*,temppos);
+	  if not(null(cdr indvars)) and fixp(tempindex:=aeval cadr indvars) then
 	  <<
 	    tdres:=aeval iter_dd(dd_name,tdres,tempindex);
 	    indvars:=cddr indvars

@@ -76,24 +76,22 @@ for i:=1:2 do write sym3(i) + aa3_star_sf(i);
 
 % Now I compute Schouten brackets
 
-biv1:=conv_genfun2biv(sym1)$
-biv2:=conv_genfun2biv(sym2)$
-biv3:=conv_genfun2biv(sym3)$
+conv_genfun2biv(sym1,biv1)$
+conv_genfun2biv(sym2,biv2)$
+conv_genfun2biv(sym3,biv3)$
 
-sb11:=schouten_bracket(biv1,biv1);
+iszero_schouten_bracket(biv1,biv1,sb11);
 
-sb12:=schouten_bracket(biv1,biv2);
+iszero_schouten_bracket(biv1,biv2,sb12);
 
-sb13:=schouten_bracket(biv1,biv3);
+iszero_schouten_bracket(biv1,biv3,sb13);
 
-% It should be sb11 and sb13 zero, sb12 nonzero.
+% It should be sb11 and sb13 zero (after variational derivative!), sb12 nonzero.
 
 off nat; off echo;
 out <<resfile>>;
 
-write "sb12:=",sb12;
-
-write "sb13:=",sb13;
+write "sb12(1):=",sb12(1);
 
 write ";end;";
 

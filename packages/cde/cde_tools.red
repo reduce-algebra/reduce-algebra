@@ -1,4 +1,4 @@
-module cde_tools; % CDIFF package, procedures of general utility
+module cde_tools; % CDE package, procedures of general utility
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:

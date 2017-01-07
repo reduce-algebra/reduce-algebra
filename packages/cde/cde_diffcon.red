@@ -1,4 +1,4 @@
-module cde_diffcon; % CDIFF package, computation of the
+module cde_diffcon; % CDE package, computation of the
                     % differential consequences of the initial system of PDEs.
 
 % Redistribution and use in source and binary forms, with or without

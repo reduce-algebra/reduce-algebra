@@ -1,4 +1,4 @@
-module cde; % CDIFF package main file
+module cde; % CDE package main file
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -48,9 +48,9 @@ module cde; % CDIFF package main file
 % NOTATION: identifiers which end with !* are symbolic mode lists,
 % for internal use only.
 % Identifiers with names both ending with !* and without are lists
-% which are the same and are usable in both modes, provided that the lists
-% that are declared in one mode are shared in order to make them accessible
-% under the other mode.
+% which are the same and are shared between symbolic and algebraic mode.
+% Identifiers whose name begins with n_ are integers and
+% are accessible in both modes.
 fluid '(indep_var dep_var odd_var total_order
  principal_der de principal_odd de_odd
  deg_indep_var deg_dep_var deg_odd_var % end of input variables

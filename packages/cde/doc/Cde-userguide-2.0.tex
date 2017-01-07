@@ -8,7 +8,7 @@
 \usepackage{upref}
 \usepackage{url}
 \usepackage{graphicx}
-\usepackage[dvips,%
+\usepackage[%dvips,%
 pdftitle={},%
 pdfauthor={R. Vitolo},%
 pdfkeywords={}%
@@ -671,7 +671,7 @@ variables and the even and odd dependent variables, up to the order
 \texttt{total\_order}. Total derivatives truncated at the order
 \texttt{total\_order} will also include odd derivatives:
 \begin{equation}
-  \label{eq:2}
+  \label{eq:201}
   D_\lambda=\pd{}{x^\lambda} +
   u^i_{\boldsymbol{\sigma}\lambda}\pd{}{u^i_{\boldsymbol{\sigma}}}
     + p^i_{\boldsymbol{\sigma}\lambda}\pd{}{p^i_{\boldsymbol{\sigma}}},
@@ -743,7 +743,7 @@ The function \texttt{cde} also defines total derivatives truncated at the order
 that total derivatives are tangent to the equation manifold. Their coordinate
 expressions are of the form
 \begin{equation}
-  \label{eq:2}
+  \label{eq:212}
   D_\lambda=\pd{}{x^\lambda}+\sum_{u^i_{\boldsymbol{\sigma}}\
     \text{parametric}}u^i_{\boldsymbol{\sigma}\lambda}\pd{}{u^i_{\boldsymbol{\sigma}}}
   + \sum_{p^i_{\boldsymbol{\sigma}}\
@@ -1072,11 +1072,12 @@ apply the Euler operator, and check that it is zero. This procedure is
 considerably simpler than the analogue formula with operators (see for example
 \cite{KKV}). All this is computed by \cde:
 \begin{verbatim}
-schouten_bracket(biv1,biv2),
+schouten_bracket(biv1,biv2,tv12);
 \end{verbatim}
 where \texttt{biv1} and \texttt{biv2} are bivectors, or \cdiffops with $2$
-arguments. Examples of this computation are given in
-Section~\ref{sec:scho-brack-local}.
+arguments, and \texttt{tv12} is the result of the computation, which is a
+three-vector (it is automatically declared to be a superfunction). Examples of
+this computation are given in Section~\ref{sec:scho-brack-local}.
 
 \section{Computing linearization and its adjoint}
 \label{sec:linadj}
@@ -1944,8 +1945,8 @@ and the result of the last two commands is zero.
 
 Then we shall convert the two superfunctions into bivectors:
 \begin{verbatim}
-biv1 := conv_genfun2biv(sym1_odd);
-biv2 := conv_genfun2biv(sym2_odd);
+conv_genfun2biv(sym1_odd,biv1);
+conv_genfun2biv(sym2_odd,biv2);
 \end{verbatim}
 The output is:
 \begin{verbatim}
@@ -1955,9 +1956,9 @@ biv2 := - (1/3)*( - 3*ext(p,p_3x) - 2*ext(p,p_x)*u);
 Finally, the three Schouten brackets $[\hat H_i,\hat H_j]$ are computed, with
 $i,j=1,2$:
 \begin{verbatim}
-sb11 := schouten_bracket(biv1,biv1);
-sb12 := schouten_bracket(biv1,biv2);
-sb22 := schouten_bracket(biv2,biv2);
+schouten_bracket(biv1,biv1,sb11);
+schouten_bracket(biv1,biv2,sb12);
+schouten_bracket(biv2,biv2,sb22);
 \end{verbatim}
 the result are well-known lists of zeros.
 
@@ -2155,15 +2156,15 @@ gu3(i,j)*td(psi,x,2)+c_hi_con(i,j)*td(psi,x)
 Now, we can test the Hamiltonian property of $A_1$, $A_2$ and their
 compatibility:
 \begin{verbatim}
-sym1:=conv_cdiff2genfun(aa1)$
-sym2:=conv_cdiff2genfun(aa2)$
+conv_cdiff2genfun(aa1,sym1)$
+conv_cdiff2genfun(aa2,sym2)$
 
-biv1:=conv_genfun2biv(sym1)$
-biv2:=conv_genfun2biv(sym2)$
+conv_genfun2biv(sym1,biv1)$
+conv_genfun2biv(sym2,biv2)$
 
-schouten_bracket(biv1,biv1);
-schouten_bracket(biv1,biv2);
-schouten_bracket(biv2,biv2);
+schouten_bracket(biv1,biv1,sb11);
+schouten_bracket(biv1,biv2,sb12);
+schouten_bracket(biv2,biv2,sb22);
 \end{verbatim}
 Needless to say, the result of the last three command is a list of zeroes.
 
@@ -2271,15 +2272,15 @@ conv_cdiff2superfun(aa1,sym1)$
 conv_cdiff2superfun(aa2,sym2)$
 conv_cdiff2superfun(aa3,sym3)$
 
-biv1:=conv_genfun2biv(sym1)$
-biv2:=conv_genfun2biv(sym2)$
-biv3:=conv_genfun2biv(sym3)$
+conv_genfun2biv(sym1,biv1)$
+conv_genfun2biv(sym2,biv2)$
+conv_genfun2biv(sym3,biv3)$
 
-sb11:=schouten_bracket(biv1,biv1);
+schouten_bracket(biv1,biv1,sb11);
 
-sb12:=schouten_bracket(biv1,biv2);
+schouten_bracket(biv1,biv2,sb12);
 
-sb13:=schouten_bracket(biv1,biv3);
+schouten_bracket(biv1,biv3,sb13);
 \end{verbatim}
 \texttt{sb11} is trivially a list of zeros, while \texttt{sb12} is nonzero and
 \texttt{sb13} is again zero.
@@ -2465,7 +2466,7 @@ always a solution; the other solution corresponds to the Lenard--Magri operator
 
 The Plebanski (or second Heavenly) equation
 \begin{equation}
-  \label{eq:4}
+  \label{eq:41}
   F=u_{tt}u_{xx}-u_{tx}^2+u_{xz}+u_{ty}=0
 \end{equation}
 is Lagrangian, hence it admits a trivial local Hamiltonian operator which is
@@ -2488,7 +2489,7 @@ guessing the generating function of the conservation law $\psi=(0,1)$ from the
 generating function $\phi=1$ of the $u$-translation symmetry , we deduce that
 the equation
 \begin{equation}
-  \label{eq:5}
+  \label{eq:52}
   \bar{d}\omega = \ell^*_F(p)
 \end{equation}
 should hold on the jet space. Here
@@ -2514,7 +2515,7 @@ equation
 \end{equation}
 in the cotangent covering. Such an equation cannot be solved in general, but it
 can be solved in this case. In order to solve it we perform dimensional
-analysis on~\eqref{eq:5} and we deduce the gradings of $ct$ and $cx$.  The
+analysis on~\eqref{eq:52} and we deduce the gradings of $ct$ and $cx$.  The
 result is determined up to trivial conservation laws, so that we have to remove
 them; at the end we remain with three $2$-component conservation law. It can be
 proved that they are equivalent, \emph{i.e.}, they differ each other by a

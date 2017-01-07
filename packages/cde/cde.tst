@@ -62,13 +62,19 @@ sym1_odd := {p_x};
 sym2_odd := {(1/3)*p*u_x + p_3x + (2/3)*p_x*u};
 
 % Converts the two operators to bivectors
-biv1 := conv_genfun2biv(sym1);
-biv2 := conv_genfun2biv(sym2);
+conv_genfun2biv(sym1,biv1);
+conv_genfun2biv(sym2,biv2);
 
 % Computes the Schouten bracket of the operators;
-sb11 := schouten_bracket(biv1,biv1);
-sb12 := schouten_bracket(biv1,biv2);
-sb22 := schouten_bracket(biv2,biv2);
+
+schouten_bracket(biv1,biv1,sb11);
+sb11(1);
+
+schouten_bracket(biv1,biv2,sb12);
+sb12(1);
+
+schouten_bracket(biv2,biv2,sb22);
+sb22(1);
 
 ;end;
 

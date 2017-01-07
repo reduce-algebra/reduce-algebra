@@ -2,7 +2,10 @@
 % 2015-10-09
 % Raffaele Vitolo
 
+on comp, echo, backtrace;
 load_package cde;
+in "cde_add.red";
+algebraic;
 
 % Initialization of the jet environment of the differential equation.
 indep_var:={t,x,y}$

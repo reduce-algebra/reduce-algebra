@@ -157,6 +157,18 @@ symbolic procedure check_superfun_onearg(superfun);
       rederr "Error: the length of image vectors must be an integer";
   end;
 
+symbolic procedure check_superfun_scalar(superfun);
+  % Checks if the superfunction of a CDiff operator has one-dimensional target.
+  begin
+    integer len_target;
+    if not superfunp(superfun) then
+      rederr "Error: the first argument must be a declared superfunction";
+    if not fixp(len_target:=get('sftarget,superfun)) then
+      rederr "Error: the dimension of the target space must be an integer";
+    if not eqn(len_target,1) then
+      rederr "Error: the dimension of the target space must be one";
+  end;
+
 symbolic procedure conv_cdiff2superfun(cdiff_op,superfun);
   % Convert a C-differential operator into the corresponding superfunction.
   % I assume that the operator has just ONE argument!
@@ -191,30 +203,51 @@ end;
 
 symbolic operator conv_cdiff2superfun;
 
-symbolic procedure conv_genfun2biv(genfun_odd);
+symbolic procedure conv_genfun2vform(genfun_odd,vform);
   % Convert a superfunction of a CDiff-operator in one argument, i.e.  a
-  % linear function on odd variables, into a bivector by odd multiplication by
-  % the vector of odd variables.
-begin scalar len_arg,len_target;
-  integer num_arg,n_arg;
+  % linear function on odd variables, into a variational 2-form
+  % by odd left multiplication by the vector of odd variables.
+begin scalar len_arg,len_target,num_arg;
   check_superfun_onearg(genfun_odd);
   num_arg:=get('sfnarg,genfun_odd);
   len_arg:=get('sflarg,genfun_odd);
-  n_arg:=cadr(len_arg);
   len_target:=get('sftarget,genfun_odd);
   if not eqn(len_target,length(odd_var!*)) then rederr
     "Error: The number of components is not equal to the number of odd vars";
-  return replace_extodd aeval cons('plus,
+  mk_superfun(vform,
+    1+num_arg,
+    reverse(cons(length(odd_var!*),reverse(len_arg))),
+    1);
+  vform(1):=replace_extodd aeval cons('plus,
     for i:=1:len_target collect
-      super_product(
-	replace_oddext(aeval list(genfun_odd,i)),
-	  replace_oddext0(nth(odd_var!*,i))
-       )
-     )
+      odd_product(nth(odd_var!*,i),aeval list(genfun_odd,i))
+     );
+end;
+
+symbolic operator conv_genfun2vform;
+
+symbolic procedure conv_genfun2biv(genfun_odd,biv);
+  % Convert a superfunction of a CDiff-operator in one argument, i.e.  a
+  % linear function on odd variables, into a bivector by odd multiplication by
+  % the vector of odd variables.
+begin scalar len_arg,len_target,num_arg;
+  check_superfun_onearg(genfun_odd);
+  num_arg:=get('sfnarg,genfun_odd);
+  len_arg:=get('sflarg,genfun_odd);
+  len_target:=get('sftarget,genfun_odd);
+  if not eqn(len_target,length(odd_var!*)) then rederr
+    "Error: The number of components is not equal to the number of odd vars";
+  mk_superfun(biv,
+    1+num_arg,
+    reverse(cons(length(odd_var!*),reverse(len_arg))),
+    1);
+  biv(1):=replace_extodd aeval cons('plus,
+    for i:=1:len_target collect
+      odd_product(aeval list(genfun_odd,i),nth(odd_var!*,i))
+     );
 end;
 
 symbolic operator conv_genfun2biv;
-
 
 symbolic procedure define_cdiffop(superfun_ij,cdiff_op_list);
   % cdiff_op_list must be of the type (cdiff_op ii jj);
@@ -293,7 +326,6 @@ begin
 end;
 
 symbolic operator conv_superfun2cdiff;
-
 
 symbolic procedure cde_cdiff();
 % Here initialization routines might be added if needed.

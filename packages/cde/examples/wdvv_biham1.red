@@ -204,12 +204,12 @@ td(
 conv_cdiff2superfun(aa1,sym1)$
 conv_cdiff2superfun(aa2,sym2)$
 
-biv1:=conv_genfun2biv(sym1)$
-biv2:=conv_genfun2biv(sym2)$
+conv_genfun2biv(sym1,biv1)$
+conv_genfun2biv(sym2,biv2)$
 
-schouten_bracket(biv1,biv1);
-schouten_bracket(biv1,biv2);
-schouten_bracket(biv2,biv2);
+iszero_schouten_bracket(biv1,biv1,sb11);
+iszero_schouten_bracket(biv1,biv2,sb12);
+iszero_schouten_bracket(biv2,biv2,sb22);
 
 ;end;
 

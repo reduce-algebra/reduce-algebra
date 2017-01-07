@@ -1,7 +1,5 @@
 module cde_ansatz;
-% CDE package, routines that generate ansatz of solutions of differential
-% and algebraic equations, and routines for solving algebraic equations
-% ("splitting" procedures).
+% CDE package, routines that generate ansatz of solutions of equations
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -41,7 +39,7 @@ module cde_ansatz;
 %-----------------------------------------------------------------------------%
 % Procedures for construction of ansatz to solve
 % determining equations. The aim is to generate monomials
-% with specified properties
+% of even or odd variables with specified properties
 %-----------------------------------------------------------------------------%
 
 symbolic procedure cde_grading(dindepvar,ddepvar,doddvar);

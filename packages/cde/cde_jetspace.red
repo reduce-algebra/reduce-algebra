@@ -1,4 +1,4 @@
-module cde_jetspace; % CDIFF package, routines for the definition of jetspace
+module cde_jetspace; % CDE package, routines for the definition of jetspace
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:

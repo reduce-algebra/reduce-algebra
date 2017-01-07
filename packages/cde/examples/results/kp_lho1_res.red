@@ -1,4 +1,4 @@
 
-phi_odd := c(13)*p_2x$
+phi := c(13)*p_2x$
 
 ;end;$

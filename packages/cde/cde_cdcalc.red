@@ -32,7 +32,9 @@ module cde_cdcalc; % CDE package, calculus with C-differential operators
 % Version and Date:  2.0, October 2015.
 %
 % ===============================================================
-% Procedures for linearization and its adjoint
+% Procedures for operations on C-Differential operators:
+% sum, multiplication by scalars, composition, linearization and its adjoint
+% many operations are still in development
 
 symbolic procedure ell_scalar_function_odd(fct);
 % Linearization of a scalar function in terms of superfunction of the

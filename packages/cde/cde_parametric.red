@@ -1,4 +1,4 @@
-module cde_parametric; % CDIFF package, routines for the computation
+module cde_parametric; % CDE package, routines for the computation
                      % of principal and parametric derivatives.
 
 % Redistribution and use in source and binary forms, with or without
@@ -252,6 +252,11 @@ symbolic procedure replace_oddext(listexpr);
   else replace_oddext0(listexpr);
 
 symbolic operator replace_oddext;
+
+symbolic procedure odd_product(arg1,arg2);
+  replace_extodd(super_product(replace_oddext(arg1),replace_oddext(arg2)));
+
+symbolic operator odd_product;
 
 endmodule;
 
