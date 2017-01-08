@@ -130,8 +130,8 @@ symbolic procedure schouten_bracket_expr(mve1,parity1,mve2,parity2);
     "Error: number of even and odd variables mismatch!";
   tempterm1:=for i:=1:n_dep_var collect
    super_product(
-     aeval cons('plus,pvar_df0(mve1,nth(dep_var!*,i))),
-     aeval cons('plus,pvar_df1(mve2,nth(odd_var!*,i)))
+     aeval cons('plus,pvar_df0(mve2,nth(dep_var!*,i))),
+     aeval cons('plus,pvar_df1(mve1,nth(odd_var!*,i)))
        );
   tempsign:=aeval list('times,-1,list('expt, - 1,
     list('times,parity1 + 1,parity2 + 1)
@@ -139,8 +139,8 @@ symbolic procedure schouten_bracket_expr(mve1,parity1,mve2,parity2);
 %  print tempsign;
   tempterm2:=for i:=1:n_dep_var collect
     aeval list('times,tempsign,super_product(
-    aeval cons('plus,pvar_df0(mve2,nth(dep_var!*,i))),
-    aeval cons('plus,pvar_df1(mve1,nth(odd_var!*,i)))
+    aeval cons('plus,pvar_df0(mve1,nth(dep_var!*,i))),
+    aeval cons('plus,pvar_df1(mve2,nth(odd_var!*,i)))
       ));
   if !*checkord then
   <<
@@ -148,24 +148,27 @@ symbolic procedure schouten_bracket_expr(mve1,parity1,mve2,parity2);
     check_letop(tempterm2)
   >>;
   return replace_extodd(aeval cons('plus,append(tempterm1,tempterm2)))
-end;
+  end;
 
 symbolic procedure schouten_bracket(mv1,mv2,mv3);
-  % Computes the Schouten bracket of two multivectors [mv1,mv2]=mv3;
-  % performs an initial check, then passes the arguments over
+  % Compute the Schouten bracket of two multivectors [mv1,mv2]=mv3.
+  % An initial check is performed, then the arguments are passed to
   % to schouten_bracket_expr for actual computation.
   % Multivectors must be input (and declared!)
   % as homogeneous superfunctions of odd degree k
-  % See Kersten, Krasilshchik and Verbovetsky for formulae
+  % See Kersten, Krasilshchik and Verbovetsky, J. Geom. Phys. 2003 for formulae
   begin
-    scalar parity1,parity2;
+    scalar parity1,parity2,n_odd_var;
+    n_odd_var:=length(odd_var!*);
     parity1:=get('sfnarg,mv1);
     parity2:=get('sfnarg,mv2);
     check_superfun_scalar(mv1);
+    check_superfun_args(mv1);
     check_superfun_scalar(mv2);
+    check_superfun_args(mv2);
     mk_superfun(mv3,
-      parity1 + parity2,
-      append(get('sflarg,mv1),cdr get('sflarg,mv2))
+      parity1 + parity2 - 1,
+      cons('list,for i:=1:(parity1+parity2-1) collect n_odd_var)
 	,1);
     mv3(1):=schouten_bracket_expr(aeval list(mv1,1),parity1,
       aeval list(mv2,1),parity2);

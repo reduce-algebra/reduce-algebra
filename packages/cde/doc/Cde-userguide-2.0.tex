@@ -1050,7 +1050,8 @@ It is known \cite{getz,KKV} that the Schouten bracket between two variational
 multivectors $A_1$, $A_2$ can be computed in terms of their corresponding
 superfunction by the formula
 \begin{equation}\label{eq:11}
-  [A_1,A_2] = \Big[\fd{A_1}{u^j}\fd{A_2}{p_j} + \fd{A_2}{u^j}\fd{A_1}{p_j}\Big]
+  [A_1,A_2] = \Big[\fd{A_2}{u^j}\fd{A_1}{p_j} - (-1)^{(A_1 + 1)(A_2 + 1)}
+ \fd{A_1}{u^j}\fd{A_2}{p_j}\Big]
 \end{equation}
 where $\fd{}{u^i}$, $\fd{}{p_j}$ are the variational derivatives and
 the square brackets at the right-hand side should be understood as the
@@ -1061,8 +1062,10 @@ expression~\eqref{eq:11} must be a total derivative. This means that:
 \begin{equation}
   \label{eq:14}
   [A_1,A_2] = 0 \quad\Leftrightarrow\quad
-  \mathcal{E}\left(\fd{A_1}{u^j}\fd{A_2}{p_j} +
-    \fd{A_2}{u^j}\fd{A_1}{p_j}\right)=0.
+  \mathcal{E}\left(
+\fd{A_2}{u^j}\fd{A_1}{p_j} - (-1)^{(A_1 + 1)(A_2 + 1)}
+ \fd{A_1}{u^j}\fd{A_2}{p_j}
+\right)=0.
 \end{equation}
 
 If $A_1$ is an $h$-vector and $A_2$ is a $k$-vector the formula~\eqref{eq:11}

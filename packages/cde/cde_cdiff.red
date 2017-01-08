@@ -169,6 +169,19 @@ symbolic procedure check_superfun_scalar(superfun);
       rederr "Error: the dimension of the target space must be one";
   end;
 
+symbolic procedure check_superfun_args(superfun);
+  % Checks if the superfunction of a CDiff operator has all arguments of length
+  % equal to the number of odd variables.
+  begin
+    scalar n_odd_var,len_arg;
+    n_odd_var:=length(odd_var!*);
+    if not superfunp(superfun) then
+      rederr "Error: the first argument must be a declared superfunction";
+    len_arg:=cdr get('sflarg,superfun);
+    for each el in len_arg do if not eqn(el,n_odd_var) then
+      rederr "Error: dimension of arguments non-conformant to odd variables";
+  end;
+
 symbolic procedure conv_cdiff2superfun(cdiff_op,superfun);
   % Convert a C-differential operator into the corresponding superfunction.
   % I assume that the operator has just ONE argument!
