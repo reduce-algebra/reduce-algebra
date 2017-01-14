@@ -211,10 +211,10 @@ symbolic procedure gifactor!: u;
    begin scalar x,y,norm,aftrs,ftrs,mvu,dmode!*,!*exp,w,z,l,bool;
          integer s;
      !*exp := t;
-     if realp u
-        then u := cdr factorf u
-      else u := list(u . 1);
      w := 1;
+     if realp u
+        then <<u := fctrf u; w := car u; u := cdr u>>
+      else u := list(u . 1);
      for each f in u do begin
      u := car f;
      dmode!* := '!:gi!:;
