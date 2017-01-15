@@ -40,10 +40,10 @@ operator indefint2, defint!:subtract, defint!:addx, defint!:multiplyx;
 let { defint!:subtract(~u, ~v) => u-v when freeof(u,unknown) and freeof(v,unknown),
       defint!:subtract(~u, ~v) => unknown }; 
 
-let { defint!:addx(~u, ~v) => u+v when freeof(u,unknwon) and freeof(v,unknown),
+let { defint!:addx(~u, ~v) => u+v when freeof(u,unknown) and freeof(v,unknown),
       defint!:addx(~u, ~v) => unknown }; 
 
-let { defint!:multiplyx(~u, ~v) => u*v when freeof(u,unknwon) and freeof(v,unknown),
+let { defint!:multiplyx(~u, ~v) => u*v when freeof(u,unknown) and freeof(v,unknown),
       defint!:multiplyx(~u, ~v) => unknown }; 
 
 indefint2_rules :=
