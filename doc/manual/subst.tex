@@ -568,6 +568,9 @@ cases to write more compact rule lists.  These features are:
 \item Double slash operator
 \item Double tilde variables.
 \end{itemize}
+\index{Free operators!in rules}
+\index{Rules!Free operators}
+\index{Operators!free, in rules}
 A \emph{free operator} in the left hand side of a pattern will match any
 operator with the same number of arguments.  The free operator is written
 in the same style as a variable.  For example, the implementation of the
@@ -585,6 +588,11 @@ diff(sin(z)*cos(z),z);
          cos(z)*diff(sin(z),z) + diff(cos(z),z)*sin(z)
 \end{verbatim}
 
+\hypertarget{reserved:doubleslashop}{}
+\ttindextype{//}{operator}
+\index{Double slash operator!in rules}
+\index{Rules!Double slash operators}
+\index{Operator!double slash}
 The \emph{double slash operator} may be used as an alternative to a single
 slash (quotient) in order to match quotients properly.  E.g., in the
 example of the Gamma function above, one can use:
@@ -604,6 +612,9 @@ gamma(z)/gamma(z+3);
   3      2
  z  + 6*z  + 11*z + 6
 \end{verbatim}
+\index{Double tilde variables!in rules}
+\index{Rules!Double tilde variables}
+\index{Variable!double tilde}
 The above example suffers from the fact that two rules had to be
 written in order to perform the required operation. This can be simplified
 by the use of \emph{double tilde variables}. E.g. the rule list

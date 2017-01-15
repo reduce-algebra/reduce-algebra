@@ -229,6 +229,17 @@ For a description of the EZGCD algorithm, see J. Moses and D.Y.Y. Yun,
 This package shares code with the factorizer, so a certain amount of trace
 information can be produced using the factorizer trace switches.
 
+\hypertarget{switch:HEUGCD}{}
+An implementation of the heuristic GCD algorithm, first introduced by B.W.
+Char, K.O.  Geddes and G.H.  Gonnet, as described in J.H.  Davenport and
+J.  Padget, ``HEUGCD:  How Elementary Upperbounds Generate Cheaper Data'',
+Proc. of EUROCAL '85, Vol 2, 18-28, published as Lecture Notes on Comp.
+Science, No. 204, Springer-Verlag, Berlin, 1985, is also available on an
+experimental basis.  To use this algorithm, the switch \sw{HEUGCD}\ttindexswitch{HEUGCD}
+should be on in addition to \sw{GCD}.  Note that
+if both \sw{EZGCD} and \sw{HEUGCD} are on, the former takes precedence.
+
+
 \subsection{Determining the GCD of Two Polynomials}
 \hypertarget{operator:GCD}{}
 This operator, used with the syntax
