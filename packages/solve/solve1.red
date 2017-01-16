@@ -952,7 +952,7 @@ symbolic procedure is_solution(sol,equ);
    end;
 
 symbolic procedure check!-condition u;
-   null !*precise or eval formbool(u,nil,'algebraic);
+   null !*precise or eval formbool(reval u,nil,'algebraic);
 
 endmodule;
 
