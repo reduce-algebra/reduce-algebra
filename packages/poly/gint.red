@@ -240,7 +240,7 @@ symbolic procedure gifactor!: u;
         norm := multf(u,conjgd u);
         if not sqfrp norm then <<s := s-1; go to a>>;
      dmode!* := nil;
-     ftrs := factorf norm;
+     ftrs := fctrf norm;
      dmode!* := '!:gi!:;
      if null cddr ftrs then <<y := normalize!-lcgi y;
                               w := multd(car y,w);

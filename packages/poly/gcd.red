@@ -50,7 +50,7 @@ symbolic procedure comfac p;
    begin scalar x,y;
         if flagp(dmode!*,'field) and ((x := lnc p) neq 1)
           then p := multd(!:recip x,p);
-        if null red p then return lt p;
+        if null red p then return lt p; % really lpow p . lc p (!)
         x := lc p;
         y := mvar p;
     a:  p := red p;

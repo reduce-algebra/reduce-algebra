@@ -158,6 +158,16 @@ flag('(factorize old_factorize factorize!-mod!-p),'opfn);
 symbolic procedure pairlist2list u;
    for each x in u conc nlist(car x,cdr x);
 
+% The name "factorf" is one that coders can naturally think is the
+% main entrypoint for them to use, so I will ensure that it is even
+% though historically one should call "fctrf".
+
+% The function that  used to be called factorf will now be called
+% internal!-factorf instead.
+
+symbolic procedure factorf u;
+  fctrf u;
+
 symbolic procedure fctrf u;
    % U is a standard form. Value is a factored form.
    % The function FACTORF is an assumed entry point to a more complete
@@ -256,10 +266,13 @@ symbolic procedure factor!-prim!-sqfree!-f u;
          <<if r then on rational;
            u := numr resimp !*f2q car u . cdr u>>;
       if null !*limitedfactors
-        then <<if null dmode!* then y := 'factorf
+        then <<if null dmode!* then y := 'internal!-factorf
                 else <<x := get(dmode!*,'sqfrfactorfn);
                        y := get(dmode!*,'factorfn);
-                       if x and not(x eq y) then y := 'factorf>>;
+                       if x and not(x eq y) then y := 'internal!-factorf
+% The "factorfn" property of something is permited to be factorf but that
+% is treated as meaning the internal function...
+                       else if y = 'factorf then y := 'internal!-factorf>>;
                if y
                  then <<y := apply1(y,car u);
                         u := (exptf(car y,cdr u) . for each j in cdr y
@@ -287,16 +300,17 @@ symbolic procedure distribute!.multiplicity(factorlist,n);
    %  ((f1 . n),(f2 . n),...) where fi are the factors.
    for each w in factorlist collect (w . n);
 
-symbolic procedure factorf u;
+symbolic procedure internal!-factorf u;
    % NOTE: This is not an entry point to be used by novice programmers.
-   % Please used FCTRF instead.
+   % Please used FCTRF instead. That is why its name is "internal!-factorf"
+   % and the plain name factorf is just a synonym for fctrf.
    % There is an inefficiency in this procedure relating to ordering.
    % There is a final reordering done at every recursive level in order
    % to make sure final result has the right order.  However, this only
    % need be done once at the top level, probably in fctrf.  Since some
    % programmers still use this function however, it's safer for it to
    % return results in the correct order.
-  (begin scalar m!-image!-variable,new!-korder,old!-korder,sign,v,w;
+  (begin scalar m!-image!-variable,new!-korder,old!-korder,sign,v,w,d;
       if domainp u then return list u;
       new!-korder:=kernord(u,nil);
       if !*kernreverse then new!-korder:=reverse new!-korder;
@@ -304,20 +318,52 @@ symbolic procedure factorf u;
       u := reorder u; % Make var of lowest degree the main one.
       if minusf u then <<sign := not sign; u := negf u>>;
       v := comfac u;   % Since new order may reveal more factors.
-      u := quotf1(u,cdr v);
-      if domainp u then errach list("Improper factors in factorf");
-      % The example on rounded; solve(df(e^x/(e^(2*x)+1)^1.5,x),{x});
-      % shows car v can be non-zero.
-      w := car v;
-      v := fctrf1 cdr v;
+      u := quotf1(u,comfac!-to!-poly v);
+      % The original u has now been split into possible 3 parts:
+      % car v is nil or a power of the main variable of the original u
+      % cdr v is the GCD of all the coefficients from the original u
+      % u is what is left when the above two have been divided out.
+      % In addition the variable sign is set if the there is a negation
+      % pending.
+      % Now take u and turn it into a list of factors each tagged with a
+      % multipliciy, as in ((u1 . m1) (u2 . m2) ...). The variable d is
+      % set to any multiplier that is just a domain element. I think that
+      % usually when comfac!-to!-poly comfac u is divided out this should
+      % only ever be 1, but perhaps in odd cases it may end up as some other
+      % unit?
+      if domainp u then <<
+        d := u;
+        u := nil >>
+      else <<
+        d := 1;
+        m!-image!-variable := mvar u;
+        u := distribute!.multiplicity(factorize!-primitive!-polynomial u,1) >>;
+      % In almost all cases where internal!-factorf is called via fctrf the
+      % earlier square free decomposition etc will ensure that there is
+      % no simple power of any variable present, and so car v will be nil.
+      % However it seems that that is not guaranteed, and that the example
+      % "on rounded; solve(df(e^x/(e^(2*x)+1)^1.5,x),{x});" shows car v
+      % can be non-nil.
+      w := car v;                   % nil or mvar^k
+      % factorize the content.
+      v := fctrf1 cdr v;            % returns (domain (poly . count) ...)
+      % put back a power of the main variable if needbe.
       if w then v := car v . (!*k2f car w . cdr w) . cdr v;
-      m!-image!-variable := mvar u;
-      u :=
-        distribute!.multiplicity(factorize!-primitive!-polynomial u,1);
+      % Put back any sign and merge all the parts of the result.
+      if sign then d := negf d;
+      u := fac!-merge(v, d . u);
+      % Now restore original variable ordering.
       setkorder old!-korder;
-      if sign then u := (negf caar u . cdar u) . cdr u;
-      u := fac!-merge(v,1 . u);
-      return car u . for each w in cdr u collect (reorder car w . cdr w)
+      % car u should be a domain element and so does not need to be re-ordered.
+      % But re-ordering a polynial can flip it between being "positive" and
+      % "negative"... So I adjust things here so that all the genuine factors
+      % are returned as positive and the sign ends up just in the domain
+      % element stuck on the front of the list.
+      v := for each p in cdr u collect
+         (if minusf (d := reorder car p) then <<
+            sign := not sign; negf d >>
+          else d) . cdr p;
+      return (if sign neq minusf car u then negf car u else car u) . v
    end) where current!-modulus = current!-modulus;
 
 symbolic procedure factor!-prim!-sqfree!-f!-1(u,n);

@@ -118,7 +118,7 @@ symbolic procedure rnfactor!: u;
      x := subf(u,nil);
      if not domainp denr x then return {1,(u . 1)};
         % Don't know what else to do.
-     y := factorf numr x;
+     y := internal!-factorf numr x;
      n := car y;
      dmode!* := '!:rn!:;
      y := for each j in cdr y collect

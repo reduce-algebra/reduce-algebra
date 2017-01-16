@@ -933,7 +933,9 @@ symbolic procedure minimal!-ker(f,l);
        if degree!-in!-form(f,car l) < degree!-in!-form(f,mink) then
          car l else mink)(minimal!-ker(f,cdr l));
 
-symbolic procedure my!-factorf f;
+% The function my!-factorfx appears not to be used anywhere... 
+
+symbolic procedure my!-factorfx f;
   % f a standard form, square-free;
   % returns ( sf sf ... ), a list of the factors of f;
   begin scalar fac!-list;

@@ -28,6 +28,14 @@ module dint;  % Definite integration support.
 
 fluid '(!*precise);
 
+% If you go "on acn;" then definite integration will use a small stanza of
+% experimental code (from A C Norman, hence the name of the switch) that
+% uses simple indefinite integration to make a first attempt at any
+% definite integration that has finite bounds.
+  
+switch acn;
+off acn;
+
 symbolic procedure simpdint u;
    begin scalar low,upp,fn,var,x,y,cflag,dmod,result;
       if length u neq 4
@@ -45,6 +53,18 @@ symbolic procedure simpdint u;
       upp := cadddr u;
       low := reval low;
       upp := reval upp;
+% Now I will have really simple code that tries to deal with cases that are
+% easily solve using indefinite integration. At this stage I am not going to
+% worry about branch cuts!
+      if low neq 'infinity and low neq '(minus infinity) and
+         upp neq 'infinity and upp neq '(minus infinity) and
+         idp var and !*acn then <<
+        result := simpint list(fn, var);
+        if not smemq('int, result) then << % Has the integration completed OK
+          x := subsq(result, list (var . low));
+          y := subsq(result, list (var . upp));
+          return addsq(negsq x, y) >> >>;
+% End of hack to try direct integration
       if low = upp then return nil ./ 1
        else if null getd 'new_defint then nil
        else if upp = 'infinity

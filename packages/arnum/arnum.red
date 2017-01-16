@@ -252,7 +252,7 @@ symbolic procedure arquotient!:(u,v);
 
 symbolic procedure arfactor!: v;
    if domainp v then list v
-    else if null curdefpol!* then factorf v
+    else if null curdefpol!* then internal!-factorf v
     else
    begin scalar w,x,y,z,aftrs,ifctr,ftrs,mva,mvu,
          dmode!*,!*exp;
@@ -436,7 +436,7 @@ symbolic procedure not!_in!_extension u;
      cld := ldeg u;
      ndp := u;
      x := if curdefpol!* then arfactor!: u
-           else factorf u;
+           else internal!-factorf u;
      for each j in cdr x do
          if ldeg car j < cld then
             <<ndp := car j;
@@ -487,7 +487,7 @@ symbolic procedure split!_field1(u,v);
                                          negf multd(cadr x,!*k2f a)));
               z := cddr x;
               dmode!* := nil;
-              ftrs := cdr factorf car x;
+              ftrs := cdr internal!-factorf car x;
               dmode!* := '!:ar!:;
               for each qq in ftrs do
                 <<y := gcdf!*(z,q:=car qq);
