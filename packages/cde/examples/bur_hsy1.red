@@ -42,11 +42,11 @@ ctel:=0;
 operator c,equ;
 
 % List of lists of variables ordered by gradings
-graadlijst:=der_deg_ordering(0,all_parametric_der)$
+l_grad_var:=der_deg_ordering(0,all_parametric_der)$
 % List of lists of graded monomials of scale degree <= 5
-graadmon:=for i:=1:5 collect mkvarlist1(i,i)$
-graadmon:={1} . graadmon$
-ansatz:=for each el in graadmon join el$
+gradmon:=graded_mon(1,5,l_grad_var)$
+gradmon:={1} . gradmon$
+ansatz:=for each el in gradmon join el$
 
 % we assume a generating function of degree <= 5
 sym:=(for each el in ansatz sum (c(ctel:=ctel+1)*el))$

@@ -46,15 +46,15 @@ ctel:=0;
 operator c,equ;
 
 % List of variables ordered by gradings
-graadlijst:=der_deg_ordering(0,all_parametric_der)$
-graadlijst_odd:={1} . der_deg_ordering(1,all_parametric_odd)$
+l_grad_var:=der_deg_ordering(0,all_parametric_der)$
+l_grad_odd:={1} . der_deg_ordering(1,all_parametric_odd)$
 % List of graded monomials of scale degree <= 10
-graadmon:=for i:=1:10 collect mkvarlist1(i,i)$
-graadmon:={1} . graadmon$
+gradmon:=graded_mon(1,10,l_grad_var)$
+gradmon:={1} . gradmon$
 % list of graded monomials which are linear in odd variables
 % and have total degree 6 and 8 respectively
-linodd6:=mkalllinodd(graadmon,graadlijst_odd,6,6)$
-linodd8:=mkalllinodd(graadmon,graadlijst_odd,8,8)$
+linodd6:=mkalllinodd(gradmon,l_grad_odd,6,6)$
+linodd8:=mkalllinodd(gradmon,l_grad_odd,8,8)$
 
 % We would like to find three conservation laws
 % on the cotangent covering of the KdV equation

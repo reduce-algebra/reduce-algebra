@@ -67,12 +67,12 @@ operator c,equ;
 
 % This is the ansatz for the nonlocal Hamiltonian operator.
 % Ansatz-generating functions:
-graadlijst:=der_deg_ordering(0,all_parametric_der)$
-graadlijst_odd:={1} . der_deg_ordering(1,all_parametric_odd)$
+l_grad_var:=der_deg_ordering(0,all_parametric_der)$
+l_grad_odd:={1} . der_deg_ordering(1,all_parametric_odd)$
 % List of graded monomials of scale degree <= 10
-graadmon:=for i:=1:10 collect mkvarlist1(i,i)$
-graadmon:={1} . graadmon$
-linodd:=mkalllinodd(graadmon,graadlijst_odd,1,4)$
+gradmon:=graded_mon(1,10,l_grad_var)$
+gradmon:={1} . gradmon$
+linodd:=mkalllinodd(gradmon,l_grad_odd,1,4)$
 
 phi:=(for each el in linodd sum (c(ctel:=ctel+1)*el))$
 

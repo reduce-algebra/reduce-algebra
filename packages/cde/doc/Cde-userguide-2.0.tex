@@ -307,15 +307,12 @@ We stress that \emph{most of the technical difficulties related to installation
 \subsection{Installation of Reduce}
 \label{sec:installation-reduce}
 
-In order to install \reduce one can download the experimental Windows installer
+In order to install \reduce one can download the Windows installer
 or download a precompiled binary distribution from here \cite{reduce}. However,
 please make sure that the version that you are downloading has been compiled
 \emph{later} than October 2015, or you will not get \cde in it. If you are
 ready to recompile \reduce, please consider the text \cite{inside} for
 instructions on how to do it in different operating systems.
-
-In Linux you can also download \texttt{.deb} packages at the GetDeb
-website~\cite{getdeb}.
 
 From now on we will assume that the binary executable of \reduce is in the path
 of the executables of your operating system. A typical location in Linux would
@@ -1308,7 +1305,7 @@ operator c,equ;
 \end{verbatim}
 We prepare a list of variables ordered by scale degree:
 \begin{verbatim}
-graadlijst:=der_deg_ordering(0,all_parametric_der)$
+l_grad_var:=der_deg_ordering(0,all_parametric_der)$
 \end{verbatim}
 The function \texttt{der\_deg\_ordering} is defined in \texttt{cde.red}. It
 produces the given list using the list \texttt{all\_parametric\_der} of all
@@ -1321,13 +1318,13 @@ Then, due to the fact that \emph{all parametric
   variables have positive scale degree} then we prepare the list
 \texttt{ansatz} of all graded monomials of scale degree from $0$ to $5$
 \begin{verbatim}
-graadmon:=for i:=1:5 collect mkvarlist1(i,i)$
-graadmon:={1} . graadmon$
-ansatz:=for each el in graadmon join el$
+gradmon:=graded_mon(1,5,l_grad_var)$
+gradmon:={1} . gradmon$
+ansatz:=for each el in gradmon join el$
 \end{verbatim}
-More precisely, the command \texttt{mkvarlist1(i,i)} produces a list of
-monomials of degree \texttt{i} from the list of graded variables
-\texttt{graadlijst}; the second command adds the zero-degree monomial; and the
+More precisely, the command \texttt{graded\_mon} produces a list of monomials of
+degrees from \texttt{i} to \texttt{j}, formed from the list of graded variables
+\texttt{l\_grad\_var}; the second command adds the zero-degree monomial; and the
 last command produces a single list of all monomials.
 
 Finally, we assume that the higher symmetry is a graded polynomial obtained
@@ -1625,10 +1622,10 @@ a linear function in odd variables) we produce two lists: the list
 \texttt{graadlijst} of all even variables collected by their gradings and a
 similar list \texttt{graadlijst\_odd} for odd variables:
 \begin{verbatim}
-graadlijst:=der_deg_ordering(0,all_parametric_der)$
-graadlijst_odd:={1} . der_deg_ordering(1,all_parametric_odd)$
-graadmon:=for i:=1:10 collect mkvarlist1(i,i)$
-graadmon:={1} . graadmon$
+l_grad_var:=der_deg_ordering(0,all_parametric_der)$
+l_grad_odd:={1} . der_deg_ordering(1,all_parametric_odd)$
+gradmon:=graded_mon(1,10,l_grad_var)$
+gradmon:={1} . gradmon$
 \end{verbatim}
 We need a list of graded monomials which are linear in odd variables. The
 function \texttt{mkalllinodd} produces all monomials which are linear with
@@ -1637,7 +1634,7 @@ coefficients from the variables in \texttt{graadlijst}, and have total scale
 degrees from $1$ to $6$. Such monomials are then converted to the internal
 representation of odd variables.
 \begin{verbatim}
-linodd:=mkalllinodd(graadmon,graadlijst_odd,1,6)$
+linodd:=mkalllinodd(gradmon,l_grad_odd,1,6)$
 \end{verbatim}
 Note that all odd variables have positive scale degrees thanks to our initial
 choice \texttt{deg\_odd\_var:={1};}.
@@ -1780,7 +1777,7 @@ de_odd:={v*p_x+q_x,u*p_x+sig*p_3x+v*q_x}$
 The ansatz for the components of the Hamiltonian operator, of scale degree
 between $1$ and $6$, is
 \begin{verbatim}
-linodd:=mkalllinodd(graadmon,graadlijst_odd,1,6)$
+linodd:=mkalllinodd(gradmon,l_grad_odd,1,6)$
 phi1:=(for each el in linodd sum (c(ctel:=ctel+1)*el))$
 phi2:=(for each el in linodd sum (c(ctel:=ctel+1)*el))$
 \end{verbatim}
@@ -1833,7 +1830,7 @@ de_odd:={p_tx-u*p_2x-(1/12)*p_4x}$
 \end{verbatim}
 and look for Hamiltonian operators of scale degree between $1$ and $5$:
 \begin{verbatim}
-linodd:=mkalllinodd(graadmon,graadlijst_odd,1,5)$
+linodd:=mkalllinodd(gradmon,l_grad_odd,1,5)$
 phi:=(for each el in linodd sum (c(ctel:=ctel+1)*el))$
 \end{verbatim}
 After solving the equation for shadows of symmetries in the cotangent covering
@@ -2484,45 +2481,58 @@ the concept of Hamiltonian, recursion, symplectic operators coincide.
 So, instead of trying to find a variety of operators we may focus on just one
 type of search.
 
-Then, by introducing a suitable nonlocal variable on the
-cotangent covering. Namely, we compute a linear conservation law (with respect
-to $p$'s) on the cotangent covering which corresponds with the $u$-translation
-symmetry (see \cite{KKV-SPT-2011} for a theoretical description).  After
-guessing the generating function of the conservation law $\psi=(0,1)$ from the
-generating function $\phi=1$ of the $u$-translation symmetry , we deduce that
-the equation
+Then, by introducing a suitable nonlocal variable on the cotangent
+covering. Namely, we compute a linear conservation law (with respect to $p$'s)
+on the cotangent covering which corresponds with the $u$-translation symmetry
+(see \cite{KKV-SPT-2011} for a theoretical description).  We can guess that the
+generating function of the conservation law is $\psi=(0,1)$. This comes from
+the generating function $\phi=1$ of the $u$-translation symmetry by the
+correspondence that is described in \cite{KKV-SPT-2011}. Then we should find
+the corresponding conservation law by solving a system of PDEs. Luckily
+it is not difficult to realize that the above equation can be written in
+explicit conservative form as
+\begin{multline*}
+    p_{xz}+p_{ty}+u_{tt}p_{xx}+u_{xx}p_{tt}-2u_{tx}p_{tx} \\
+    =D_x(p_z+u_{tt}p_x-u_{tx}p_t)+D_t(p_y+u_{xx}p_t-u_{tx}p_x)=0,
+\end{multline*}
+thus the corresponding conservation law is
 \begin{equation}
-  \label{eq:52}
-  \bar{d}\omega = \ell^*_F(p)
+  \label{eq:32}
+  \upsilon(1)= (p_y+u_{xx}p_t-u_{tx}p_x)\,dx\wedge dy\wedge dz+
+          (u_{tx}p_t-p_z-u_{tt}p_x)\,dt\wedge dy\wedge dz.
+        \end{equation}
+We can introduce a potential $r$ for the above $2$-component conservation
+law. Namely, we can assume that
+\begin{equation}\label{eq:101}
+  r_x = p_y+u_{xx}p_t-u_{tx}p_x,\quad r_t = u_{tx}p_t-p_z-u_{tt}p_x.
 \end{equation}
-should hold on the jet space. Here
-\begin{displaymath}
-  \omega= ct\, dx\wedge dy\wedge dz + cx\, dt\wedge
-  dy\wedge dz + cy\, dt\wedge dx\wedge dz + cz\, dt\wedge dx\wedge dy,
-\end{displaymath}
-where $ct$, $cx$, $cy$, $cz$ are linear functions of $p$'s and its
-derivatives, with coefficients in $u$'s\footnote{In general, coefficients can
-explicitly depend on independent variables.}, and
-\begin{displaymath}
-  \bar{d}\omega = (D_t ct-D_x cx+D_y cy-D_z cz)dt\wedge dx\wedge dy\wedge dz,
-\end{displaymath}
-where total derivatives are lifted on the jet space of even and odd
-coordinates.
-
-Then, we try to find representatives of the above conservation law which have
-not more than two non-vanishing components. In particular we will solve the
-equation
-\begin{equation}
-  \label{eq:6}
-  D_t ct-D_x cx=0
-\end{equation}
-in the cotangent covering. Such an equation cannot be solved in general, but it
-can be solved in this case. In order to solve it we perform dimensional
-analysis on~\eqref{eq:52} and we deduce the gradings of $ct$ and $cx$.  The
-result is determined up to trivial conservation laws, so that we have to remove
-them; at the end we remain with three $2$-component conservation law. It can be
-proved that they are equivalent, \emph{i.e.}, they differ each other by a
-trivial conservation law.
+This is a new nonlocal variable for the (co)tangent covering of the Plebanski
+equation. We can load the Plebanski equation together with its nonlocal
+variable $r$ as follows:
+\begin{verbatim}
+indep_var:={t,x,y,z}$
+dep_var:={u}$
+odd_var:={p,r}$
+deg_indep_var:={-1,-1,-4,-4}$
+deg_dep_var:={1}$
+deg_odd_var:={1,4}$
+total_order:=6$
+principal_der:={u_xz}$
+de:={-u_ty+u_tx**2-u_2t*u_2x}$
+% rhs of the equations that define the nonlocal variable
+rt:= - p_z - u_2t*p_x + u_tx*p_t$
+rx:= p_y + u_2x*p_t - u_tx*p_x$
+% We add conservation laws as new nonlocal odd variables;
+principal_odd:={p_xz,r_x,r_t}$
+%
+de_odd:={-p_ty+2*u_tx*p_tx-u_2x*p_2t-u_2t*p_2x,rx,rt}$
+\end{verbatim}
+We can easily verify that the integrability condition for the new nonlocal
+variable holds:
+\begin{verbatim}
+td(r,t,x) - td(r,x,t);
+\end{verbatim}
+the result is $0$.
 
 This allows us to introduce a new nonlocal \emph{odd} variable $r$ on the
 cotangent covering such that $r_x=ct$, $r_t=cx$. We obtain an Abelian covering
@@ -2534,6 +2544,7 @@ of the cotangent covering:
     \end{array}
   \right.
 \end{displaymath}
+
 A nonlocal Hamiltonian operator will be a shadow of symmetry of the above
 system with respect to the initial equation $F=0$ with the property of being
 linear with respect to all ($p$'s and $r$'s) odd variables. With the above
@@ -2543,156 +2554,7 @@ coordinates to the evolutionary presentation of
 Hamiltonian operators presented in that paper\footnote{We observe that in
   \cite{NeyziNutkuSheftel:JPA:2005} also the trivial Hamiltonian operator is
   recovered in the evolutionary presentation; of course it has an apparently
-  nontrivial expression.}.
-
-Let us describe the computation in detail. We start with the conservation law
-(see the file \texttt{ple\_nlcl1.red}):
-\begin{verbatim}
-indep_var:={t,x,y,z}$
-dep_var:={u}$
-odd_var:={p}$
-deg_indep_var:={-1,-1,-4,-4}$
-deg_dep_var:={1}$
-deg_odd_var:={4}$
-total_order:=6$
-principal_der:={u_xz}$
-de:={-u_ty+u_tx**2-u_2t*u_2x}$
-principal_odd:={p_xz}$
-de_odd:={-p_ty+2*u_tx*p_tx-u_2x*p_2t-u_2t*p_2x}$
-\end{verbatim}
-
-Now we limit the computation to variables of jetspace order not greater
-than 4; this is done through the function \texttt{selectvars}, which
-takes four arguments. The first can be $0$ for even variables or $1$ for odd
-variables, the second argument is the specified order, the third argument is
-the subset of dependent variables that we wish to select (all dependent
-variables in our case) and the fourth is the set of derivative coordinates from
-which we wish to extract the variables.
-\begin{verbatim}
-v0_4:=for i:=0:4 join selectvars(0,i,dep_var,all_parametric_der)$
-vo0_4:=for i:=0:4 join selectvars(1,i,odd_var,all_parametric_odd)$
-\end{verbatim}
-We rearrange all variables by their scale degree, starting from variables of
-degree $1$ (the degree is always chosen in such a way that grading of any even
-or odd derivative coordinates is positive):
-\begin{verbatim}
-graadlijst:=der_deg_ordering(0,v0_4)$
-graadlijst_odd:={1} . der_deg_ordering(1,vo0_4)$
-\end{verbatim}
-and we collect graded monomials of scale degree less than or equal $13$:
-\begin{verbatim}
-graadmon:=for i:=1:13 collect mkvarlist1(i,i)$
-graadmon:={1} . graadmon$
-\end{verbatim}
-Then we have to make an ansatz for the conservation law: since the summands of
-\texttt{ellstarfp} have degree $9$ we assume \texttt{[ct]=[cx]=8}
-\begin{verbatim}
-deg_cx:=8$
-deg_ct:=deg_cx$
-\end{verbatim}
-It would also be \texttt{[cy]=[cz]=5}, but in this computation we assume
-$cy=cz=0$. Note that no simplification can be assumed like in the case of $2$
-independent variables: it is not true, in general, that one component of such
-conservation laws can always be written as \texttt{sym*p}. The ansatz is
-constructed through the function \texttt{mklinodd}, which takes three
-arguments: the list of lists of graded monomials of degree $1$, $2$, \dots,
-the list of lists of graded odd variables of degree $1$, $2$, \dots, and the
-final degree of their products:
-\begin{verbatim}
-linoddt:=mklinodd(graadmon,graadlijst_odd,deg_ct)$
-linoddx:=linoddt$
-% Ansatz:
-ct:=(for each el in linoddt sum (c(ctel:=ctel+1)*el))$
-cx:=(for each el in linoddx sum (c(ctel:=ctel+1)*el))$
-\end{verbatim}
-Finally we define the equation
-\begin{verbatim}
-ct_t:=td(ct,t)$
-cx_x:=td(cx,x)$
-equ 1:=ct_t-cx_x$
-\end{verbatim}
-The equation admits a lot of solutions, almost all of which are trivial
-conservation laws (here they are expressed in odd variables):
-\begin{verbatim}
-ct_odd := (6*c(45)*p_4x + 6*c(44)*p_t3x + 6*c(43)*p_2t2x + 6*c(42)*p_3tx + 6*c(
-34)*p_2x*u_t + 6*c(34)*p_t2x*u + 6*c(34)*p_y + 6*c(33)*p_2x*u_x + 6*c(33)*p_3x*u
- + 6*c(30)*p_t2x*u + 6*c(30)*p_tx*u_x + 6*c(27)*p_2t*u_x + 6*c(27)*p_2tx*u - 6*c
-(24)*p_t2x*u + 6*c(24)*p_x*u_tx - 6*c(24)*p_y - 6*c(23)*p_3x*u + 6*c(23)*p_x*
-u_2x + 3*c(21)*p_2x*u**2 + 6*c(21)*p_x*u*u_x + 6*c(18)*p_t*u_tx + 6*c(18)*p_tx*
-u_t + 6*c(17)*p_t*u_2x - 6*c(17)*p_t2x*u + 6*c(15)*p_t*u*u_x + 3*c(15)*p_tx*u**2
- + 6*c(12)*p*u_2tx + 6*c(12)*p_x*u_2t + 6*c(11)*p*u_t2x + 6*c(11)*p_t2x*u + 6*c(
-11)*p_y + 6*c(10)*p*u_3x + 6*c(10)*p_3x*u + 6*c(5)*p*u*u_tx + 6*c(5)*p*u_t*u_x +
- 6*c(5)*p_x*u*u_t + 6*c(4)*p*u*u_2x + 6*c(4)*p*u_x**2 - 3*c(4)*p_2x*u**2 + 6*c(2
-)*p*u**2*u_x + 2*c(2)*p_x*u**3)/6$
-
-cx_odd := (6*c(45)*p_t3x + 6*c(44)*p_2t2x + 6*c(43)*p_3tx + 6*c(42)*p_4t - 6*c(
-34)*p_2t*u_x + 6*c(34)*p_2tx*u + 12*c(34)*p_tx*u_t - 6*c(34)*p_z + 6*c(33)*p_2x*
-u_t + 6*c(33)*p_t2x*u + 6*c(30)*p_2tx*u + 6*c(30)*p_tx*u_t + 6*c(27)*p_2t*u_t + 
-6*c(27)*p_3t*u + 6*c(24)*p_2t*u_x - 6*c(24)*p_2tx*u - 6*c(24)*p_tx*u_t + 6*c(24)
-*p_x*u_2t + 6*c(24)*p_z - 6*c(23)*p_2x*u_t - 6*c(23)*p_t2x*u + 6*c(23)*p_tx*u_x 
-+ 6*c(23)*p_x*u_tx + 3*c(21)*p_tx*u**2 + 6*c(21)*p_x*u*u_t + 6*c(18)*p_2t*u_t + 
-6*c(18)*p_t*u_2t + 6*c(17)*p_2t*u_x - 6*c(17)*p_2tx*u + 6*c(17)*p_t*u_tx - 6*c(
-17)*p_tx*u_t + 3*c(15)*p_2t*u**2 + 6*c(15)*p_t*u*u_t + 6*c(12)*p*u_3t + 6*c(12)*
-p_t*u_2t + 6*c(11)*p*u_2tx - 6*c(11)*p_2t*u_x + 6*c(11)*p_2tx*u + 6*c(11)*p_t*
-u_tx + 6*c(11)*p_tx*u_t - 6*c(11)*p_x*u_2t - 6*c(11)*p_z + 6*c(10)*p*u_t2x + 6*c
-(10)*p_2x*u_t + 6*c(10)*p_t*u_2x + 6*c(10)*p_t2x*u - 6*c(10)*p_tx*u_x - 6*c(10)*
-p_x*u_tx + 6*c(5)*p*u*u_2t + 6*c(5)*p*u_t**2 + 6*c(5)*p_t*u*u_t + 6*c(4)*p*u*
-u_tx + 6*c(4)*p*u_t*u_x + 6*c(4)*p_t*u*u_x - 3*c(4)*p_tx*u**2 - 6*c(4)*p_x*u*u_t
- + 6*c(2)*p*u**2*u_t + 2*c(2)*p_t*u**3)/6$
-\end{verbatim}
-We begin the removal of trivial conservation laws from the above solution. The
-idea is that a conservation law (\emph{i.e.} a horizontal $3$-form) is trivial
-if it is equal to the horizontal differential of a $2$-form. Such two form will
-be chosen according with dimensional analysis. We introduce an operator and a
-counter that will parametrize trivial conservation laws:
-\begin{verbatim}
-operator cc$
-cctel:=0$
-\end{verbatim}
-Then we assume that the trivial conservation law has the form
-\begin{equation*}
-tcl = tctx dt\wedge dx + tcty dt\wedge dy + tctz dt\wedge dz + tcxy dx\wedge dy
-+ tcxz dx\wedge dz + tcyz dy\wedge dz
-\end{equation*}
-so that a conservation law will be trivial if and only if
-\begin{align*}
-\bar d (tcl) = &(D_z(tcxy)-D_y(tcxz)+D_x(tcyz))dx\wedge dy\wedge dz +
-\\
-               &(D_z(tcty)-D_y(tctz)+D_t(tcyz))dt\wedge dy\wedge dz +
-\\
-               &(D_z(tctx)-D_x(tctz)+D_t(tcxz))dt\wedge dx\wedge dz +
-\\
-               &(D_y(tctx)-D_x(tcty)+D_t(tcxy))dt\wedge dx\wedge dy
-\\
-             = &ct dx\wedge dy\wedge dz + cx dt\wedge dy\wedge dz
-             + cy dt\wedge dx\wedge dz + cz dt\wedge dx\wedge dy
-\end{align*}
-Since in our case we are looking for a $2$-component conservation law, we will
-assume a single potential of the form: $tcyz dy\wedge dz$:
-\begin{verbatim}
-deg_tcyz:=7$
-linodd_tcyz:=mklinodd(graadmon,graadlijst_odd,deg_tcyz)$
-tcyz:=(for each el in linodd_tcyz sum (cc(cctel:=cctel+1)*el))$
-\end{verbatim}
-After clearing the previous equations, we set up the new equation
-\begin{verbatim}
-clear equ$
-operator equ$
-
-equ 1:=td(tcyz,x) - ct$
-equ 2:=td(tcyz,t) - cx$
-\end{verbatim}
-Note that in this case if the equation can be solved then the conservation law
-is trivial; only if the equation \emph{cannot} be solved we found at least one
-nontrivial conservation law. Results can be written as follows:
-\begin{verbatim}
-write ctnontriv:=equ 1$
-write cxnontriv:=equ 2$
-\end{verbatim}
-they will be nonzero if a nontrivial conservation law remains in $ct$ and $cx$.
-
-Now, we look for nonlocal Hamiltonian operators in the cotangent covering using
-a new nonlocal odd variable $r$ as follows (see \texttt{ple\_nlho1.red}):
+  nontrivial expression.}. Here follows the code.
 \begin{verbatim}
 indep_var:={t,x,y,z}$
 dep_var:={u}$
@@ -2714,7 +2576,7 @@ de_odd:={-p_ty+2*u_tx*p_tx-u_2x*p_2t-u_2t*p_2x,rx,rt}$
 We look for Hamiltonian operators which depend on $r$ (which has scale degree
 $4$); we produce the following ansatz for \texttt{phi}:
 \begin{verbatim}
-linodd:=mkalllinodd_e(graadmon,graadlijst_odd,1,4)$
+linodd:=mkalllinodd_e(gradmon,l_grad_odd,1,4)$
 phi:=(for each el in linodd sum (c(ctel:=ctel+1)*el))$
 \end{verbatim}
 then we solve the equation of shadows of symmetries:
@@ -2724,14 +2586,14 @@ equ 1:=td(phi,x,z)+td(phi,t,y)-2*u_tx*td(phi,t,x)
 \end{verbatim}
 The solution is
 \begin{verbatim}
-phi := c(20)*p_t*u_x - c(20)*p_tx*u - c(20)*p_x*u_t - c(20)*r + c(1)*p
+phi := c(28)*r + c(1)*p
 \end{verbatim}
 hence we obtain the Noether map (the identity operator $p$) and the new
-nonlocal operator $u_xp_t - p_{tx}u - p_xu_t - r$. It can be proved that
-changing coordinates to the evolutionary presentation yields the local operator
-(which has a much more complex expression than the identity operator) and one
-of the nonlocal operators of \cite{NeyziNutkuSheftel:JPA:2005}. More details on
-this computation can be found in \cite{KKV-SPT-2011}.
+nonlocal operator $r$. It can be proved that changing coordinates to the
+evolutionary presentation yields the local operator (which has a much more
+complex expression than the identity operator) and one of the nonlocal
+operators of \cite{NeyziNutkuSheftel:JPA:2005}. More details on this
+computation can be found in \cite{KKV-SPT-2011}.
 
 
 \section{Appendix: old versions of \cde}
@@ -2759,8 +2621,6 @@ still available at \cite{gdeq}.
 \bibitem{red} Obtaining \reduce: \url{http://reduce-algebra.sourceforge.net/}.
 \bibitem{gdeq} Geometry of Differential Equations web site:
   \url{http://gdeq.org}.
-\bibitem{getdeb} GetDeb website:
-  \url{http://archive.getdeb.net/getdeb/ubuntu/pool/apps/r/reduce-algebra/}.
 \bibitem{noteppp} \texttt{notepad++}:
   \url{http://notepad-plus.sourceforge.net/}
 \bibitem{ed} List of text editors:

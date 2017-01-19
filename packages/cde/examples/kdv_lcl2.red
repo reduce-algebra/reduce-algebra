@@ -40,12 +40,12 @@ operator c,cc,equ$
 cctel:=0;
 
 % List of variables ordered by gradings
-graadlijst:=der_deg_ordering(0,all_parametric_der)$
+l_grad_var:=der_deg_ordering(0,all_parametric_der)$
 % List of graded monomials of scale degree <= 3
-graadmon:=for i:=1:3 collect mkvarlist1(i,i)$
-graadmon:={1} . graadmon$
-graadmon:=indep_var . graadmon$
-ansatz:=for each el in graadmon join el$
+gradmon:=graded_mon(1,3,l_grad_var)$
+gradmon:={1} . gradmon$
+gradmon:=indep_var . gradmon$
+ansatz:=for each el in gradmon join el$
 
 % Loads the result of the computation in kdv_lcl1_res
 ax := c(3)*u_x + c(2)*u + c(1)$
