@@ -38,6 +38,11 @@ module cdiff;
 % web: http://poincare.unisalento.it/vitolo
 % ===============================================================
 
+% This variable must be defined as an algebraic list containing
+% algebraic lists of graded variables in increasing degree order.
+fluid '(all_graded_der);
+share all_graded_der;
+
 create!-package('(cdiff tools21 integrator supervf cdiffx), nil);
 
 endmodule;

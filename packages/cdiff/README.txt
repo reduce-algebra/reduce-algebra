@@ -42,4 +42,6 @@
 % the official Reduce distribution quite soon. At the moment it is distributed
 % in the website dedicated to the Geometry of Differential Equations
 % http://gdeq.org
-
+%
+% NOTE (19/01/2017) Changed the global undeclared variable 'graadlijst' into
+% a fluid (and declared) variable all_graded_mon; added a useful procedure.

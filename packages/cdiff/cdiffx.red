@@ -179,7 +179,7 @@ lisp procedure processpartitie(partitie,oldi,oldilist,var,varlist);
    else if car partitie=oldi then
       processcarpartitie(oldi,oldilist,cdr partitie,var,varlist)
    else processcarpartitie(car partitie,
-      cdr nth(cdadr get('graadlijst,'avalue),car partitie),
+      cdr nth(cdr aeval all_graded_der,car partitie),
       cdr partitie,var,varlist)$
 
 lisp procedure processcarpartitie(i,ilist,restpartitie,var,varlist);
@@ -225,7 +225,7 @@ lisp procedure processpartitie1(partitie,oldi,oldilist,var,varlist);
    else if car partitie=oldi then
       processcarpartitie1(oldi,oldilist,cdr partitie,var,varlist)
    else processcarpartitie1(car partitie,
-      cdr nth(cdadr get('graadlijst,'avalue),car partitie),
+      cdr nth(cdr aeval all_graded_der,car partitie),
       cdr partitie,var,varlist)$
 
 lisp procedure processcarpartitie1(i,ilist,restpartitie,var,varlist);
@@ -233,6 +233,17 @@ lisp procedure processcarpartitie1(i,ilist,restpartitie,var,varlist);
    else
       processcarpartitie1(i,cdr ilist,restpartitie,var,
    	 processpartitie1(restpartitie,i,ilist,car var . car ilist . cdr var,varlist))$
+
+% Added by RV, 10/01/2017
+algebraic procedure graded_mon(i,j,l_grad_var);
+  % Set the global variable all_graded_mon which is an algebraic list
+  % of algebraic lists of variables of the same scale degree,
+  % in increasing degree order. Then create all homogeneous graded
+  % monomials from degree i to degree j.
+  begin
+    all_graded_der:=l_grad_var;
+    return for iit:=i:j collect mkvarlist1(iit,iit)
+  end;
 
 endmodule;
 
