@@ -44,4 +44,4 @@
 % http://gdeq.org
 %
 % NOTE (19/01/2017) Changed the global undeclared variable 'graadlijst' into
-% a fluid (and declared) variable all_graded_mon; added a useful procedure.
+% a fluid (and declared) variable all_graded_der; added a useful procedure.
