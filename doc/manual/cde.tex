@@ -46,7 +46,9 @@ discussed here are shipped together with the \cde sources, inside the \REDUCE
 sources. The mathematical theory on which
 computations are based can be found in refs.~\cite{Many,KKV}. We invite the
 interested reader to have a look at the website \cite{gdeq} which contains
-useful reseources in the above mathematical area.
+useful reseources in the above mathematical area. A book on integrable systems
+and \cde is currently being written \cite{KVV-book} with more examples and
+more detailed explanations about the mathematical part.
 
 \subsection{Introduction: why \cde?}
 \label{cdesec:why-cde}
@@ -710,11 +712,12 @@ considerably simpler than the analogue formula with operators (see for example
 \cite{KKV}). All this is computed by \cde:\ttindextype{SCHOUTEN\_BRACKET}{operator (CDE)}
 
 \begin{verbatim}
-schouten_bracket(biv1,biv2),
+schouten_bracket(biv1,biv2,tv12),
 \end{verbatim}
 where \texttt{biv1} and \texttt{biv2} are bivectors, or \cdiffops with $2$
-arguments. Examples of this computation are given in
-Section~\ref{cdesec:scho-brack-local}.
+arguments, and \texttt{tv12} is the result of the computation, which is a
+three-vector (it is automatically declared to be a superfunction). Examples of
+this computation are given in Section~\ref{cdesec:scho-brack-local}.
 
 \subsection{Computing linearization and its adjoint}
 \label{cdesec:linadj}
@@ -950,7 +953,7 @@ operator c,equ;
 We prepare a list of variables ordered by scale degree:
 \ttindextype{DER\_DEG\_ORDERING}{operator (CDE)}
 \begin{verbatim}
-graadlijst:=der_deg_ordering(0,all_parametric_der)$
+l_grad_var:=der_deg_ordering(0,all_parametric_der)$
 \end{verbatim}
 The function \texttt{der\_deg\_ordering} is defined in \texttt{cde.red}. It
 produces the given list using the list \texttt{all\_parametric\_der} of all
@@ -963,14 +966,14 @@ Then, due to the fact that \emph{all parametric
   variables have positive scale degree} then we prepare the list
 \texttt{ansatz} of all graded monomials of scale degree from $0$ to $5$
 \begin{verbatim}
-graadmon:=for i:=1:5 collect mkvarlist1(i,i)$
-graadmon:={1} . graadmon$
-ansatz:=for each el in graadmon join el$
+gradmon:=graded_mon(1,5,l_grad_var)$
+gradmon:={1} . gradmon$
+ansatz:=for each el in gradmon join el$
 \end{verbatim}
-More precisely, the command \texttt{mkvarlist1(i,i)} produces a list of
-monomials of degree \texttt{i} from the list of graded variables
-\texttt{graadlijst}; the second command adds the zero-degree monomial; and the
-last command produces a single list of all monomials.
+More precisely, the command \texttt{graded\_mon} produces a list of monomials
+of degrees from \texttt{i} to \texttt{j}, formed from the list of graded
+variables \texttt{l\_grad\_var}; the second command adds the zero-degree
+monomial; and the last command produces a single list of all monomials.
 
 Finally, we assume that the higher symmetry is a graded polynomial obtained
 from the above monomials (so, it is independent of $x$ and $t$!)
@@ -1271,23 +1274,23 @@ operator \texttt{lkdv} as usual.
 
 In order to produce an ansatz which is a superfunction of one odd variable (or
 a linear function in odd variables) we produce two lists: the list
-\texttt{graadlijst} of all even variables collected by their gradings and a
-similar list \texttt{graadlijst\_odd} for odd variables:
+\texttt{l\_grad\_var} of all even variables collected by their gradings and a
+similar list \texttt{l\_grad\_odd} for odd variables:
 \begin{verbatim}
-graadlijst:=der_deg_ordering(0,all_parametric_der)$
-graadlijst_odd:={1} . der_deg_ordering(1,all_parametric_odd)$
-graadmon:=for i:=1:10 collect mkvarlist1(i,i)$
-graadmon:={1} . graadmon$
+l_grad_var:=der_deg_ordering(0,all_parametric_der)$
+l_grad_odd:={1} . der_deg_ordering(1,all_parametric_odd)$
+gradmon:=graded_mon(1,10,l_grad_var)$
+gradmon:={1} . gradmon$
 \end{verbatim}
 We need a list of graded monomials which are linear in odd variables. The
 function \texttt{mkalllinodd} produces all monomials which are linear with
-respect to the variables from \texttt{graadlijst\_odd}, have (monomial)
-coefficients from the variables in \texttt{graadlijst}, and have total scale
+respect to the variables from \texttt{l\_grad\_odd}, have (monomial)
+coefficients from the variables in \texttt{l\_grad\_var}, and have total scale
 degrees from $1$ to $6$. Such monomials are then converted to the internal
 representation of odd variables.
 \ttindextype{MKALLLINODD}{operator (CDE)}
 \begin{verbatim}
-linodd:=mkalllinodd(graadmon,graadlijst_odd,1,6)$
+linodd:=mkalllinodd(gradmon,l_grad_odd,1,6)$
 \end{verbatim}
 Note that all odd variables have positive scale degrees thanks to our initial
 choice \texttt{deg\_odd\_var:={1};}.
@@ -1435,7 +1438,7 @@ de_odd:={v*p_x+q_x,u*p_x+sig*p_3x+v*q_x}$
 The ansatz for the components of the Hamiltonian operator, of scale degree
 between $1$ and $6$, is
 \begin{verbatim}
-linodd:=mkalllinodd(graadmon,graadlijst_odd,1,6)$
+linodd:=mkalllinodd(gradmon,l_grad_odd,1,6)$
 phi1:=(for each el in linodd sum (c(ctel:=ctel+1)*el))$
 phi2:=(for each el in linodd sum (c(ctel:=ctel+1)*el))$
 \end{verbatim}
@@ -1495,7 +1498,7 @@ de_odd:={p_tx-u*p_2x-(1/12)*p_4x}$
 \end{verbatim}
 and look for Hamiltonian operators of scale degree between $1$ and $5$:
 \begin{verbatim}
-linodd:=mkalllinodd(graadmon,graadlijst_odd,1,5)$
+linodd:=mkalllinodd(gradmon,l_grad_odd,1,5)$
 phi:=(for each el in linodd sum (c(ctel:=ctel+1)*el))$
 \end{verbatim}
 After solving the equation for shadows of symmetries in the cotangent covering
@@ -1610,20 +1613,20 @@ and the result of the last two commands is zero.
 
 Then we shall convert the two superfunctions into bivectors:
 \begin{verbatim}
-biv1 := conv_genfun2biv(sym1_odd);
-biv2 := conv_genfun2biv(sym2_odd);
+conv_genfun2biv(sym1_odd,biv1);
+conv_genfun2biv(sym2_odd,biv2);
 \end{verbatim}
 The output is:
 \begin{verbatim}
-biv1 :=  - ext(p,p_x);
-biv2 := - (1/3)*( - 3*ext(p,p_3x) - 2*ext(p,p_x)*u);
+biv1(1) :=  - ext(p,p_x);
+biv2(1) := - (1/3)*( - 3*ext(p,p_3x) - 2*ext(p,p_x)*u);
 \end{verbatim}
 Finally, the three Schouten brackets $[\hat H_i,\hat H_j]$ are computed, with
 $i,j=1,2$:
 \begin{verbatim}
-sb11 := schouten_bracket(biv1,biv1);
-sb12 := schouten_bracket(biv1,biv2);
-sb22 := schouten_bracket(biv2,biv2);
+schouten_bracket(biv1,biv1,sb11);
+schouten_bracket(biv1,biv2,sb12);
+schouten_bracket(biv2,biv2,sb22);
 \end{verbatim}
 the result are well-known lists of zeros.
 
@@ -1822,15 +1825,15 @@ gu3(i,j)*td(psi,x,2)+c_hi_con(i,j)*td(psi,x)
 Now, we can test the Hamiltonian property of $A_1$, $A_2$ and their
 compatibility:
 \begin{verbatim}
-sym1:=conv_cdiff2genfun(aa1)$
-sym2:=conv_cdiff2genfun(aa2)$
+conv_cdiff2genfun(aa1,sym1)$
+conv_cdiff2genfun(aa2,sym2)$
 
-biv1:=conv_genfun2biv(sym1)$
-biv2:=conv_genfun2biv(sym2)$
+conv_genfun2biv(sym1,biv1)$
+conv_genfun2biv(sym2,biv2)$
 
-schouten_bracket(biv1,biv1);
-schouten_bracket(biv1,biv2);
-schouten_bracket(biv2,biv2);
+schouten_bracket(biv1,biv1,sb11);
+schouten_bracket(biv1,biv2,sb12);
+schouten_bracket(biv2,biv2,sb22);
 \end{verbatim}
 Needless to say, the result of the last three command is a list of zeroes.
 
@@ -1945,18 +1948,16 @@ conv_cdiff2superfun(aa1,sym1)$
 conv_cdiff2superfun(aa2,sym2)$
 conv_cdiff2superfun(aa3,sym3)$
 
-biv1:=conv_genfun2biv(sym1)$
-biv2:=conv_genfun2biv(sym2)$
-biv3:=conv_genfun2biv(sym3)$
+conv_genfun2biv(sym1,biv1)$
+conv_genfun2biv(sym2,biv2)$
+conv_genfun2biv(sym3,biv3)$
 
-sb11:=schouten_bracket(biv1,biv1);
-
-sb12:=schouten_bracket(biv1,biv2);
-
-sb13:=schouten_bracket(biv1,biv3);
+schouten_bracket(biv1,biv1,sb11);
+schouten_bracket(biv1,biv2,sb12);
+schouten_bracket(biv1,biv3,sb13);
 \end{verbatim}
-\texttt{sb11} is trivially a list of zeros, while \texttt{sb12} is nonzero and
-\texttt{sb13} is again zero.
+\texttt{sb11(1)} is trivially a list of zeros, while \texttt{sb12(1)} is
+nonzero and \texttt{sb13(1)} is again zero.
 
 \medskip
 
@@ -2203,7 +2204,7 @@ the new nonlocal odd variable $r$. We can load the equation exactly as before.
 We look for recursion operators which depend on $r$ (which has scale degree
 $4$); we produce the following ansatz for \texttt{phi}:
 \begin{verbatim}
-linodd:=mkalllinodd(graadmon,graadlijst_odd,1,4)$
+linodd:=mkalllinodd(gradmon,l_grad_odd,1,4)$
 phi:=(for each el in linodd sum (c(ctel:=ctel+1)*el))$
 \end{verbatim}
 then we solve the equation of shadows of symmetries:
@@ -2303,6 +2304,10 @@ operators in the formal calculus of variations, Duke J. Math. \textbf{111}
 \bibitem{KKV-SPT-2011} \textsc{I.~Krasil{\cprime}shchik, A.~Verbovetsky,
     R. Vitolo},  \emph{A unified approach to computation of integrable
     structures}, Acta Appl.\ Math.\ (2012).
+\bibitem{KVV-book} \textsc{I.~Krasil{\cprime}shchik, A.~Verbovetsky,
+    R. Vitolo},  \emph{The symbolic computation of integrability structures for
+    partial differential equations}, book, to appear in the Springer series
+``Texts and monographs in symbolic computations'' (2017).
 \bibitem{Kupershmidt:KP} \textsc{B. Kuperschmidt}:
   \emph{Geometric Hamiltonian forms for the
     Kadomtsev--Petviashvili and Zabolotskaya--Khokhlov equations}, in Geometry
