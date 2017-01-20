@@ -206,7 +206,9 @@ colorlinks,linkcolor={blue},citecolor={blue},urlcolor={red}%
   their Schouten bracket, recursion operators. All programs discussed here are
   shipped together with this manual and can be found in the \reduce sources or
   at the GDEQ website. The mathematical theory on which computations are based
-  can be found in refs.~\cite{Many,KKV}.
+  can be found in refs.~\cite{Many,KKV}. A book on integrable systems and \cde
+  is currently being written \cite{KVV-book} with more examples and more
+  detailed explanations about the mathematical part.
 \end{abstract}
 
 \maketitle
@@ -274,6 +276,9 @@ At the moment the papers
 \cite{fpv,fpv2,KerstenKrasilshchikVerbovetskyVitolo:HSGP,KKV-SPT-2011,pv,sv}
 have been written using \cde, and more research by \cde on integrable systems
 is in progress.
+A book on integrable systems and \cde is currently being written
+\cite{KVV-book} with more examples and more detailed explanations about the
+mathematical part.
 
 The readers are warmly invited to send questions, comments, etc., both on the
 computations and on the technical aspects of installation and configuration of
@@ -1619,8 +1624,8 @@ operator \texttt{lkdv} as usual.
 
 In order to produce an ansatz which is a superfunction of one odd variable (or
 a linear function in odd variables) we produce two lists: the list
-\texttt{graadlijst} of all even variables collected by their gradings and a
-similar list \texttt{graadlijst\_odd} for odd variables:
+\texttt{l\_grad\_var} of all even variables collected by their gradings and a
+similar list \texttt{l\_grad\_odd} for odd variables:
 \begin{verbatim}
 l_grad_var:=der_deg_ordering(0,all_parametric_der)$
 l_grad_odd:={1} . der_deg_ordering(1,all_parametric_odd)$
@@ -1950,8 +1955,8 @@ conv_genfun2biv(sym2_odd,biv2);
 \end{verbatim}
 The output is:
 \begin{verbatim}
-biv1 :=  - ext(p,p_x);
-biv2 := - (1/3)*( - 3*ext(p,p_3x) - 2*ext(p,p_x)*u);
+biv1(1) :=  - ext(p,p_x);
+biv2(1) := - (1/3)*( - 3*ext(p,p_3x) - 2*ext(p,p_x)*u);
 \end{verbatim}
 Finally, the three Schouten brackets $[\hat H_i,\hat H_j]$ are computed, with
 $i,j=1,2$:
@@ -2282,8 +2287,8 @@ schouten_bracket(biv1,biv2,sb12);
 
 schouten_bracket(biv1,biv3,sb13);
 \end{verbatim}
-\texttt{sb11} is trivially a list of zeros, while \texttt{sb12} is nonzero and
-\texttt{sb13} is again zero.
+\texttt{sb11(1)} is trivially a list of zeros, while \texttt{sb12(1)} is
+nonzero and \texttt{sb13(1)} is again zero.
 
 \medskip
 
@@ -2696,6 +2701,10 @@ operators in the formal calculus of variations, Duke J. Math. \textbf{111}
 \bibitem{KKV-SPT-2011} \textsc{I.~Krasil{\cprime}shchik, A.~Verbovetsky,
     R. Vitolo},  \emph{A unified approach to computation of integrable
     structures}, Acta Appl.\ Math.\ (2012).
+\bibitem{KVV-book} \textsc{I.~Krasil{\cprime}shchik, A.~Verbovetsky,
+    R. Vitolo},  \emph{The symbolic computation of integrability structures for
+    partial differential equations}, book, to appear in the Springer series
+``Texts and monographs in symbolic computations'' (2017).
 \bibitem{Kupershmidt:KP} \textsc{B. Kuperschmidt}:
   \emph{Geometric Hamiltonian forms for the
     Kadomtsev--Petviashvili and Zabolotskaya--Khokhlov equations}, in Geometry
