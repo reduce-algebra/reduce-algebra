@@ -32,16 +32,17 @@ fluid '(!*precise);
 
 global '(spec_cond);
 
-symbolic procedure mynumberp(n);
-  if numberp n then t
-  else if listp n and car n = 'quotient and
-          (numberp cadr n or mynumberp cadr n) and
-          (numberp caddr n or mynumberp caddr n) then t
-  else if listp n and car n = 'sqrt and (numberp cadr n or cadr n = 'pi)
-         then t
-  else nil;
-
-symbolic operator mynumberp;
+%% RmS: Commented out since unused
+%%symbolic procedure mynumberp(n);
+%%  if numberp n then t
+%%  else if listp n and car n = 'quotient and
+%%          (numberp cadr n or mynumberp cadr n) and
+%%          (numberp caddr n or mynumberp caddr n) then t
+%%  else if listp n and car n = 'sqrt and (numberp cadr n or cadr n = 'pi)
+%%         then t
+%%  else nil;
+%%
+%%symbolic operator mynumberp;
 
 
 put('intgggg,'simpfn,'simpintgggg);
@@ -121,7 +122,7 @@ else if temp = 'minus and caadar lst = 'times then
       ls := {{'minus,car cdadar lst},cadr cdadar lst,var}
    else if length cadar lst = 4 then
       ls := {{'minus,car cdadar lst},cadr cdadar lst,
-                                                                      caddr cdadar lst,var}>>
+	 caddr cdadar lst,var}>>
 else ls := lst;
 return ls;
 end;
@@ -146,14 +147,47 @@ operator defint2,defint_choose;
 
 share mellincoef$
 
+%%
+%% These rules for defint2 preprocess the integrand for the real Mellin transform
+%% machinery.  intgggg is the workhorse: it has 4 parameters f1,f2,alpha,x. They
+%% correspond to an integrand of the form x^a*f1*f2.
+%%
+%% If there is only one factor f2 is passed as zero;
+%%
+   
 defint2_rules:=
 
-{ defint2(~n,cos((~x*~~a)/~~c)-cos((~x*~~b)/~~d),~x) =>
-                defint2(-2,n,sin((a/c+b/d)*x/2),sin((a/c-b/d)*x/2),x),
+{
+
+%%
+%% Rules for defint2 with 2 arguments
+%%
+
   defint2(cos((~x*~~a)/~~c)-cos((~x*~~b)/~~d),~x) =>
                 defint2(-2,sin((a/c+b/d)*x/2),sin((a/c-b/d)*x/2),x),
 
-  defint2(~b,~f1,~f2,~x) => b*defint2(f1,f2,x) when freeof (b,x),
+  defint2(~b/~f1,~x) => b*defint2(1/f1,x)
+        when freeof (b,x) and not(b = 1),
+
+  defint2(~~b*~f1,~x) => b*defint2(f1,x)
+        when freeof (b,x) and not(b = 1),
+
+  defint2(~f1/~~b,~x) => 1/b*defint2(f1,x)
+        when freeof (b,x) and not(b = 1),
+
+  defint2((~f2+ ~~f1)/~~f3,~x) => defint2(f2/f3,x) + defint2(f1/f3,x)
+                        when not(f1=0),
+
+  defint2(-~f1,~x) =>  - defint2(f1,x),
+
+  defint2(~f1,~x) => intgggg(defint_choose(f1,x),0,0,x),
+
+%%
+%% Rules for defint2 with 3 arguments
+%%
+
+  defint2(~n,cos((~x*~~a)/~~c)-cos((~x*~~b)/~~d),~x) =>
+                -2*defint2(n,sin((a/c+b/d)*x/2),sin((a/c-b/d)*x/2),x),
 
   defint2(~~b*~f1,~~c*~f2,~x) => b*c*defint2(f1,f2,x)
          when freeof (b,x) and freeof (c,x) and not(b = 1 and c = 1),
@@ -170,34 +204,118 @@ defint2_rules:=
   defint2(~f1/~~b,~~c*~f2,~x) => c/b*defint2(f1,f2,x)
          when freeof (b,x) and freeof (c,x) and not(b = 1 and c = 1),
 
-  defint2(~b/~f1,~x) => b*defint2(1/f1,x)
-        when freeof (b,x) and not(b = 1),
-
-  defint2(~~b*~f1,~x) => b*defint2(f1,x)
-        when freeof (b,x) and not(b = 1),
-
-  defint2(~f1/~~b,~x) => 1/b*defint2(f1,x)
-        when freeof (b,x) and not(b = 1),
-
-  defint2((~f2+ ~~f1)/~~f3,~x) => defint2(f2/f3,x) + defint2(f1/f3,x)
-                        when not(f1=0),
-  defint2(-~f1,~x) =>  - defint2(f1,x),
   defint2((~f2+ ~~f1)/~~f3,~n,~x) =>
                  defint2(f2/f3,n,x) + defint2(f1/f3,n,x)
                 when not(f1=0),
+
   defint2(-~f1,~n,~x) =>  - defint2(f1,n,x),
+
   defint2(~n,(~f2+ ~~f1)/~~f3,~x) =>
                  defint2(n,f2/f3,x) + defint2(n,f1/f3,x)
                 when not(f1=0),
+
   defint2(~n,-~f1,~x) =>  - defint2(n,f1,x),
+
+  defint2(1/~x^(~~a),~f1,~x) => intgggg(defint_choose(f1,x),0,-a,x),
+
+  defint2(1/sqrt(~x),~f1,~x) => intgggg(defint_choose(f1,x),0,-1/2,x),
+
+  defint2(1/(sqrt(~x)*~x^~~a),~f1,~x) =>
+                             intgggg(defint_choose(f1,x),0,-1/2-a,x),
+
+  defint2(~x**(~~a),~f1,~x) => intgggg(defint_choose(f1,x),0,a,x),
+
+  defint2(sqrt(~x),~f1,~x) => intgggg(defint_choose(f1,x),0,1/2,x),
+
+  defint2(sqrt(~x)*~x^~~a,~f1,~x) =>
+                 intgggg(defint_choose(f1,x),0,1/2+a,x),
+
+  defint2(~b,~f1,~x) => b*defint2(f1,x) when freeof(b,x),
+
+  defint2(~f1,~f2,~x) =>
+        intgggg(defint_choose(f1,x),defint_choose(f2,x),0,x),
+
+  defint2(~n,~f1,~x) => n*intgggg(defint_choose(f1,x),0,0,x),
+
+  defint2((~f1-~f2)/~f3,~f4,~x) =>
+              defint2(f1/f3,f4,x) - defint2(f2/f3,f4,x),
+
+%%
+%% Rules for defint2 with 4 arguments
+%%
+
+  defint2(~b,~f1,~f2,~x) => b*defint2(f1,f2,x) when freeof (b,x),
+
   defint2(~n,(~f2+ ~~f1)/~~f3,~nn,~x) =>
                  defint2(n,f2/f3,nn,x) + defint2(n,f1/f3,nn,x)
                 when not(f1=0),
+
   defint2(~n,-~f1,~nn,~x) =>  - defint2(n,f1,nn,x),
+
   defint2(~n,~nn,(~f2+ ~~f1)/~~f3,~x) =>
                  defint2(n,nn,f2/f3,x) + defint2(n,nn,f1/f3,x)
                 when not(f1=0),
   defint2(~n,~nn,-~f1,~x) =>  - defint2(n,nn,f1,x),
+
+  defint2(~n,1/~x,~f1,~x) => n*intgggg(defint_choose(f1,x),0,-1,x)
+   when numberp n ,
+
+  defint2(~n,1/~x^(~a),~f1,~x) => n*intgggg(defint_choose(f1,x),0,-a,x)
+   when numberp n ,
+
+  defint2(~n,1/sqrt(~x),~f1,~x) =>
+                 n*intgggg(defint_choose(f1,x),0,-1/2,x) when numberp n,
+
+  defint2(~n,1/(sqrt(~x)*~x),~f1,~x) =>
+                            n*intgggg(defint_choose(f1,x),0,-3/2,x)
+   when numberp n ,
+
+  defint2(~n,1/(sqrt(~x)*~x^~a),~f1,~x) =>
+                            n*intgggg(defint_choose(f1,x),0,-1/2-a,x)
+   when numberp n ,
+
+  defint2(~n,~x**(~a),~f1,~x) => n*intgggg(defint_choose(f1,x),0,a,x)
+   when numberp n ,
+
+  defint2(~n,~x,~f1,~x) => n*intgggg(defint_choose(f1,x),0,1,x)
+   when numberp n ,
+
+  defint2(~n,sqrt(~x),~f1,~x) => n*intgggg(defint_choose(f1,x),0,1/2,x)
+    when numberp n ,
+
+  defint2(~n,sqrt(~x)*~x,~f1,~x) =>
+    n*intgggg(defint_choose(f1,x),0,3/2,x)
+   when numberp n ,
+
+  defint2(~n,sqrt(~x)*~x^~a,~f1,~x) =>
+                           n*intgggg(defint_choose(f1,x),0,1/2+a,x)
+   when numberp n ,
+
+  defint2(~~b*~x^~~a/~~c,~f1,~f2,~x) =>
+        b/c*intgggg(defint_choose(f1,x),defint_choose(f2,x),a,x)
+                        when freeof(b,x) and freeof (c,x),
+
+  defint2(~b/(~~c*~x^~~a),~f1,~f2,~x) =>
+        b/c*intgggg(defint_choose(f1,x),defint_choose(f2,x),-a,x)
+                        when freeof(b,x) and freeof(c,x),
+
+  defint2(sqrt(~x),~f1,~f2,~x) =>
+                     intgggg(defint_choose(f1,x),defint_choose(f2,x),1/2,x),
+
+  defint2(sqrt(~x)*~x^~~a,~f1,~f2,~x) =>
+               intgggg(defint_choose(f1,x),defint_choose(f2,x),1/2+a,x),
+
+  defint2(~b/(~~c*sqrt(~x)),~f1,~f2,~x) =>
+            b/c*intgggg(defint_choose(f1,x),defint_choose(f2,x),-1/2,x),
+
+  defint2(1/(sqrt(~x)*~x^~~a),~f1,~f2,~x) =>
+      intgggg(defint_choose(f1,x),defint_choose(f2,x),-1/2-a,x),
+
+  defint2(-~b,~f1,~f2,~x) => -b*defint2(f1,f2,x) when freeof(b,x),
+
+%%
+%% Rules for defint2 with 5 arguments
+%%
 
   defint2(~n,~x^~a,~f1,~f2,~x) =>
                             n*intgggg(defint_choose(f1,x),defint_choose(f2,x),a,x)
@@ -206,91 +324,38 @@ defint2_rules:=
   defint2(~n,~x,~f1,~f2,~x) =>
                  n*intgggg(defint_choose(f1,x),defint_choose(f2,x),1,x)
    when numberp n ,
+
   defint2(~n,1/~x^~~a,~f1,~f2,~x) =>
                             n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-a,x)
    when numberp n ,
+
   defint2(~n,1/~x,~f1,~f2,~x) =>
                            n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-1,x)
    when numberp n ,
+
   defint2(~n,sqrt(~x),~f1,~f2,~x) =>
                            n*intgggg(defint_choose(f1,x),defint_choose(f2,x),1/2,x)
    when numberp n ,
+
   defint2(~n,sqrt(~x)*~x,~f1,~f2,~x) =>
                            n*intgggg(defint_choose(f1,x),defint_choose(f2,x),3/2,x)
    when numberp n ,
+
   defint2(~n,sqrt(~x)*~x^~a,~f1,~f2,~x) =>
               n*intgggg(defint_choose(f1,x),defint_choose(f2,x),1/2+a,x)
    when numberp n ,
+
   defint2(~n,1/sqrt(~x),~f1,~f2,~x) =>
                n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-1/2,x)
    when numberp n ,
+
   defint2(~n,1/(sqrt(~x)*~x),~f1,~f2,~x) =>
                n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-3/2,x)
    when numberp n ,
+
   defint2(~n,1/(sqrt(~x)*~x^~a),~f1,~f2,~x) =>
              n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-1/2-a,x)
-   when numberp n ,
-
-  defint2(~n,1/~x,~f1,~x) => n*intgggg(defint_choose(f1,x),0,-1,x)
-   when numberp n ,
-  defint2(~n,1/~x^(~a),~f1,~x) => n*intgggg(defint_choose(f1,x),0,-a,x)
-   when numberp n ,
-  defint2(~n,1/sqrt(~x),~f1,~x) =>
-                 n*intgggg(defint_choose(f1,x),0,-1/2,x) when numberp n,
-  defint2(~n,1/(sqrt(~x)*~x),~f1,~x) =>
-                            n*intgggg(defint_choose(f1,x),0,-3/2,x)
-   when numberp n ,
-  defint2(~n,1/(sqrt(~x)*~x^~a),~f1,~x) =>
-                            n*intgggg(defint_choose(f1,x),0,-1/2-a,x)
-   when numberp n ,
-  defint2(~n,~x**(~a),~f1,~x) => n*intgggg(defint_choose(f1,x),0,a,x)
-   when numberp n ,
-  defint2(~n,~x,~f1,~x) => n*intgggg(defint_choose(f1,x),0,1,x)
-   when numberp n ,
-  defint2(~n,sqrt(~x),~f1,~x) => n*intgggg(defint_choose(f1,x),0,1/2,x)
-    when numberp n ,
- defint2(~n,sqrt(~x)*~x,~f1,~x) =>
-    n*intgggg(defint_choose(f1,x),0,3/2,x)
-   when numberp n ,
-  defint2(~n,sqrt(~x)*~x^~a,~f1,~x) =>
-                           n*intgggg(defint_choose(f1,x),0,1/2+a,x)
-   when numberp n ,
-
-  defint2(~~b*~x^~~a/~~c,~f1,~f2,~x) =>
-        b/c*intgggg(defint_choose(f1,x),defint_choose(f2,x),a,x)
-                        when freeof(b,x) and freeof (c,x),
-  defint2(~b/(~~c*~x^~~a),~f1,~f2,~x) =>
-        b/c*intgggg(defint_choose(f1,x),defint_choose(f2,x),-a,x)
-                        when freeof(b,x) and freeof(c,x),
-  defint2(sqrt(~x),~f1,~f2,~x) =>
-                     intgggg(defint_choose(f1,x),defint_choose(f2,x),1/2,x),
-  defint2(sqrt(~x)*~x^~~a,~f1,~f2,~x) =>
-               intgggg(defint_choose(f1,x),defint_choose(f2,x),1/2+a,x),
-  defint2(~b/(~~c*sqrt(~x)),~f1,~f2,~x) =>
-            b/c*intgggg(defint_choose(f1,x),defint_choose(f2,x),-1/2,x),
-  defint2(1/(sqrt(~x)*~x^~~a),~f1,~f2,~x) =>
-      intgggg(defint_choose(f1,x),defint_choose(f2,x),-1/2-a,x),
-
-  defint2(1/~x^(~~a),~f1,~x) => intgggg(defint_choose(f1,x),0,-a,x),
-  defint2(1/sqrt(~x),~f1,~x) => intgggg(defint_choose(f1,x),0,-1/2,x),
-  defint2(1/(sqrt(~x)*~x^~~a),~f1,~x) =>
-                             intgggg(defint_choose(f1,x),0,-1/2-a,x),
-  defint2(~x**(~~a),~f1,~x) => intgggg(defint_choose(f1,x),0,a,x),
-  defint2(sqrt(~x),~f1,~x) => intgggg(defint_choose(f1,x),0,1/2,x),
-  defint2(sqrt(~x)*~x^~~a,~f1,~x) =>
-                 intgggg(defint_choose(f1,x),0,1/2+a,x),
-
-  defint2(~b,~f1,~x) => b*defint2(f1,x) when freeof(b,x),
-  defint2(~f1,~f2,~x) =>
-        intgggg(defint_choose(f1,x),defint_choose(f2,x),0,x),
-
-  defint2(~n,~f1,~x) => n*intgggg(defint_choose(f1,x),0,0,x),
-
-  defint2(~f1,~x) => intgggg(defint_choose(f1,x),0,0,x),
-
-  defint2((~f1-~f2)/~f3,~f4,~x) =>
-                                               defint2(f1/f3,f4,x) - defint2(f2/f3,f4,x),
-  defint2(-~b,~f1,~f2,~x) => -b*defint2(f1,f2,x) when freeof(b,x)
+   when numberp n 
 
 };
 
