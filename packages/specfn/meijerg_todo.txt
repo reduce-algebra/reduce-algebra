@@ -1,3 +1,22 @@
+2017-01-20 RmS: A couple of useful links:
+
+1) Digital Library of Mathematical Funtions:
+   http://dlmf.nist.gov/16.17
+
+2) Richard Beals and Jacek Szmigielski: Meijer-G Functions: A Gentle Introduction 
+   http://www.ams.org/notices/201307/rnoti-p866.pdf
+
+3) Daniel Lichtblau: Symbolic Definite Integration
+   http://library.wolfram.com/infocenter/Conferences/5832/
+
+4) The Wolfram Functions Site
+   http://functions.wolfram.com/HypergeometricFunctions/MeijerG/
+
+5) SymPy documentation: Computing Integral using Meijer G-Functions
+   http://docs.sympy.org/dev/modules/integrals/g-functions.html
+
+----
+
 2017-01-20 RmS:
 
 I added a special case for MeijerG:
@@ -56,5 +75,5 @@ is simplified to
    ( - x + 1) *gamma(a - b)*(x - 1)
 
 
-Again, this should be heaviside(1-abs(x)). Besides, I doubt that this is correct for complex x.
+Again, this should be heaviside(1-abs(x)).
 
