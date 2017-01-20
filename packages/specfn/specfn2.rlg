@@ -278,13 +278,15 @@ MeijerG({{},1},{{0}},x);
  sign( - x + 1) + sign(x + 1)
 ------------------------------
               2
-
+  % should be 1/2(sign( - abs(x) + 1) - sign(abs(x) + 1))
 
 MeijerG({{1}},{{},0},x);
 
 
-heaviside(x - 1)
-  % should be heaviside(abs(x)-1))
+  - sign( - x + 1) - sign(x + 1) + 2
+-------------------------------------
+                  2
+  % should be 1-1/2(sign( - abs(x) + 1) - sign(abs(x) + 1))
 
 MeijerG({{}},{{0}},-x);
 
@@ -533,10 +535,3 @@ MeijerG({{}},{{b,b+1/2}},z);
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 16 ms
-
-End of Lisp run after 0.01+0.06 seconds
-real 0.22
-user 0.04
-sys 0.04

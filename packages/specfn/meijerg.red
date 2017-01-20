@@ -96,16 +96,20 @@ q1:if p=0 and n=0 and m=1 then return
       multsq(expdeg(z,car b),expdeg(simp!* 'e,negsq z)) else
 
    if p=1 and n=0 and m=1 and null caar b and car a = '(1 . 1)
-        then return gfmexit(aa,bb,z) else
+        then return gfmexit(aa,bb,z)
         % change in order to make defint(cos(x) *sin(x)/x) correct. WN
-
+   else
    if p=1 and n=0 and m=1 then return % WN
        multsq (heavisidesq subtrsq('(1 . 1),z),
                quotsq(multsq(expdeg(z,car b),
            expdeg(subtrsq('(1 . 1),z),
                   subtrsq(car a,addsq('(1 . 1),car b)))),
             gamsq(subtrsq(car a,car b))))
-      else
+   else
+   if p=1 and n=1 and m=0  and null caar b and car a = '(1 . 1)
+     then return gfmexit(aa,bb,z) 
+           % change in order to make defint(cos(x) *sin(x)/x) correct. RmS
+    else
    if p=1 and n=1 and m=0 then return  %WN
            multsq(heavisidesq subtrsq(z,'(1 . 1)),
             quotsq(multsq(expdeg(z,car b),expdeg(subtrsq
@@ -801,7 +805,9 @@ symbolic procedure gammatopsi(u,n);
 
 algebraic <<
   operator lst,gfm;
-  let gfm(lst(1,0,1,1),lst(1),lst(0),~z)=> (sign(1 + z) + sign(1 - z))/2
+  let
+     { gfm(lst(1,0,1,1),lst(1),lst(0),~z)=> (sign(1 + z) + sign(1 - z))/2,
+       gfm(lst(0,1,1,1),lst(1),lst(0),~z)=> 1- (sign(1 + z) + sign(1 - z))/2 }
 >>;
 
 algebraic

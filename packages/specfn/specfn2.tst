@@ -77,9 +77,9 @@ hypergeometric ({a,b},{2*b},z);
 
 COMMENT simple tests of MeijerG operator;
 
-MeijerG({{},1},{{0}},x);
+MeijerG({{},1},{{0}},x);  % should be 1/2(sign( - abs(x) + 1) - sign(abs(x) + 1))
 
-MeijerG({{1}},{{},0},x);  % should be heaviside(abs(x)-1))
+MeijerG({{1}},{{},0},x);  % should be 1-1/2(sign( - abs(x) + 1) - sign(abs(x) + 1))
 
 MeijerG({{}},{{0}},-x);   % exp(x)
 

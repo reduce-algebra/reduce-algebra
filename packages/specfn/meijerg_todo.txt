@@ -1,0 +1,60 @@
+2017-01-20 RmS:
+
+I added a special case for MeijerG:
+
+  MeijerG({{1}},{{},0} = 1 - MeijerG({{},1}, {{0}},x)
+
+Ie. for p=q=1, m=0,n=1 (left hand side), p=q=1,m=1,n=0 (right hand side).
+
+  MeijerG({{},1}, {{0}},x) = 1/2(sgn(1+x)+sgn(1-x))
+
+Ie. for real x it is 1 for |x| < 1, 0 for |x| > 1, and 1/2 for |x|=1.
+
+Looking at the defining integral one finds that the MeijerG function on the 
+left hand side is defined for complex |x|<>1, with values 1 for |x| < 1, 0 for |x| > 1.
+
+On the unit circle |x|=1 the defining integral (see for example http://dlmf.nist.gov/16.17) diverges.  
+
+So, we have two problems:
+ (a) For real x, the simplification is correct, except for |x|=1
+ (b) for complex x, it is incorrect.
+
+Problem (b) can be solved by writing 
+
+  MeijerG({{},1}, {{0}},x) = 1/2(sgn(1+abs(x)+sgn(1-abs(x)))
+
+but I don't know how to handle piecewise defined functions in Reduce.
+
+----
+
+The rather arbitrary value for (real) |x|=1 was chosen to give the correct result for the integral
+
+  int(1/x*cos(a*x)*sin(b*x),x,0,infinity) = pi/2 * MeijerG({{},1}, {{0}},a^2/b^2)
+
+which is pi/2 for b>a>0, 0 for a>b>0, and pi/4 for b=a>0.
+ 
+I believe this is wrong, since the MeijerG funcion is undefined for |x|=1, and any choice of value is arbitrary. 
+
+There is no need, as for a=b the integral can be rewritten as
+
+  int(1/x*sin(2*a*x),0,infinity) / 2
+
+which is easily computed with the rules for the sine integral.
+
+---
+
+Next problem:
+
+  MeijerG({{},a}, {{b}},x)
+
+is simplified to
+
+       b           a
+  - x *( - x + 1) *heaviside( - x + 1)
+---------------------------------------
+             b
+   ( - x + 1) *gamma(a - b)*(x - 1)
+
+
+Again, this should be heaviside(1-abs(x)). Besides, I doubt that this is correct for complex x.
+
