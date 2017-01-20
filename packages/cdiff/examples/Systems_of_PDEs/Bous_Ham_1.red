@@ -236,7 +236,7 @@ ddt(1,38):=letop$
 
 % remember: the list starts with 1 !!!!!!!!!
 
-graadlijst:={{v},{u,v1},{u1,v2},{u2,v3},{u3,v4},{u4,v5},
+all_graded_der:={{v},{u,v1},{u1,v2},{u2,v3},{u3,v4},{u4,v5},
 {u5,v6},{u6,v7},{u7,v8},{u8,v9},{u9,v10},{u10,v11},{u11,v12},{u12,v13},
 {u13,v14},{u14,v15},{u15,v16},{u16,v17},{u17}};
 

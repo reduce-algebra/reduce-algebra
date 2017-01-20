@@ -102,7 +102,7 @@ pause;
 
 %% In KdV u has degree two
 
-graadlijst:={{},{u},{u1},{u2},{u3},{u4},{u5},
+all_graded_der:={{},{u},{u1},{u2},{u3},{u4},{u5},
 {u6},{u7},{u8},{u9},{u10},{u11},{u12},{u13},{u14},{u15},{u16},{u17}};
 
 grd0:={1};

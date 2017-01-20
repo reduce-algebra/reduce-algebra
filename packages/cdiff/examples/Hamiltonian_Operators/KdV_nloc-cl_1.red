@@ -157,7 +157,7 @@ ddt(1,50):=f1*ext 3+f2*ext 4+f3*ext 5$
 ddt(1,51):=f4*ext 3+f5*ext 4+f6*ext 5$
 ddt(1,52):=f7*ext 3+f8*ext 4+f9*ext 5$
 
-graadlijst:={{},{u},{u1},{u2},{u3},{u4},{u5},
+all_graded_der:={{},{u},{u1},{u2},{u3},{u4},{u5},
 {u6},{u7},{u8},{u9},{u10},{u11},{u12},{u13},{u14},{u15},{u16},{u17}};
 
 grdm6:={0};

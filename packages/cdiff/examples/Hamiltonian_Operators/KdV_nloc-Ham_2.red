@@ -150,7 +150,7 @@ ddt(1,51) := ext(5)*u1 - ext(4)*u2 + ext(3)*u*u1 + ext(3)*u3$
 ddt(1,52) := ext(5)*u*u1 + ext(5)*u3 - ext(4)*u*u2 - ext(4)*u1**2 - ext(4)*u4 + 
 ext(3)*u**2*u1 + 2*ext(3)*u*u3 + 3*ext(3)*u1*u2 + ext(3)*u5$
 
-graadlijst:={{},{u},{u1},{u2},{u3},{u4},{u5},
+all_graded_der:={{},{u},{u1},{u2},{u3},{u4},{u5},
 {u6},{u7},{u8},{u9},{u10},{u11},{u12},{u13},{u14},{u15},{u16},{u17}};
 
 grdm6:={0};
