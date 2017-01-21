@@ -243,7 +243,21 @@ defautoload(simpint,int);
 
 put('int,'simpfn,'simpint);
 
+fluid '(!*tra);
+
+switch tra;
+
 put('algint,'simpfg,'((t (load!-package 'algint))));
+
+fluid '(!*trdefint);
+
+switch trdefint;
+
+defautoload(new_defint,defint);
+
+defautoload(new_indefint,defint);
+
+defautoload(defint0,defint,expr,4);
 
 
 % Matrix module entry points.
