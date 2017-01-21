@@ -28,9 +28,11 @@ global '(unknown_tst product_tst transform_tst transform_lst);
 
 transform_lst := '();
 
-fluid '(!*precise);
+fluid '(!*precise !*trdefint);
 
 global '(spec_cond);
+
+switch trdefint;
 
 %% RmS: Commented out since unused
 %%symbolic procedure mynumberp(n);
@@ -49,42 +51,154 @@ put('intgggg,'simpfn,'simpintgggg);
 
 % put('defint,'psopfn,'new_defint);
 
+%%%
+%%% new_defint is the entry point for the Mellin transform method for evaluating
+%%%  integrals with limits 0 ... infinity.
+%%%
+%%% The steps performed are these:
+%%%  1. Separate the integrand into independent factors n1,n2,...
+%%%  2. Rewrite the integral as defint2(n1,...,x) with the new operator defint2
+%%%  3. Use the pattern matcher to transform these into either
+%%%       x^alpha*f1    or x^alpha*f1*f2
+%%%     where f1 and f2 (if present) can be expressed in terms of a MeijerG function.
+%%%     The result is written as either
+%%%      intgggg(defint_choose(f1),0,alpha,x)
+%%%     or
+%%%      intgggg(defint_choose(f1),defint_choose(f2),alpha,x)
+%%%  4. intgggg is the workhorse: it performs some processing on its first two
+%%%     arguments and uses a table lookup to find the correct MeijerG function for
+%%%     f1 and f2.
+%%%  5. If these are found, the integral can be written as the (known) Mellin transform
+%%%     of either one MeijerG function or a product of two of them.
+%%%  6. If not, unknown is returned.
+%%%     
+
 symbolic procedure new_defint(lst);
-   begin scalar var,result,n1,n2,n3,n4,!*precise;
-      if eqcar(car lst,'times)
-        then return new_defint append(cdar lst,cdr lst);
+   begin scalar nn,dd,x,y,ncoef,dcoef,coeff,var,varpow,
+	 matchform,result,n1,n2,n3,n4,!*precise;
+      x := simp!* car lst;
+      var := cadr lst;
+      if !*trdefint then <<
+      	 prin2t "Entering new_defint with integrand";
+	 printsq x;
+	 prin2!* "w.r.t. variable >"; maprin var; prin2!* "<"; terpri!* t;
+	 >>;
+      nn := fctrf numr x;
+      dd := fctrf denr x;
+      ncoef := car nn;
+      dcoef := car dd;
+      if !*trdefint then <<
+      	 prin2t "After factorization, the numerator has factors";
+	 terpri!* t;
+	 if ncoef neq 1 then <<printsf ncoef; terpri!* t;>>;
+	 for each fctr in cdr nn do << printsf mksp!*(car fctr,cdr fctr); terpri!* t >>;
+	 prin2t "and the denominator has factors";
+	 terpri!* t;
+	 if dcoef neq 1 then <<printsf dcoef; terpri!* t;>>;
+	 for each fctr in cdr dd do << printsf mksp!*(car fctr,cdr fctr); terpri!* t >>;
+	 >>;
+      varpow := 1 ./ 1;
+      for each fff in cdr nn do <<
+        if not depends(car fff,var)
+	  then ncoef := multf(ncoef,
+	     if cdr fff=1 then car fff else mksp!*(car fff,cdr fff))
+	else if null red car fff and lc car fff =1 and ldeg car fff = 1 and 
+	     (mvar car fff=var or mvar car fff={'sqrt,var}
+	     	or eqcar(mvar car fff,'expt) and cadr mvar car fff = var
+		   and not depends(caddr mvar car fff,var))
+	  then varpow := multsq(varpow,mksq(car fff,cdr fff))
+	else y :=
+	   (if cdr fff=1 then prepf car fff else prepf mksp!*(car fff,cdr fff))
+      	       . y>>;
+
+      for each fff in cdr dd do
+        if not depends(car fff,var)
+	  then dcoef := multf(dcoef,
+	     if cdr fff=1 then car fff else mksp!*(car fff,cdr fff))
+	 else if null red car fff and lc car fff =1 and ldeg car fff = 1 and 
+	     (mvar car fff=var or mvar car fff={'sqrt,var}
+	     	or eqcar(mvar car fff,'expt) and cadr mvar car fff = var
+		   and not depends(caddr mvar car fff,var))
+	  then varpow := multsq(varpow,mksq(car fff,-cdr fff))
+         else y := prepsq (1 ./ mksp!*(car fff,cdr fff)) . y;
+
+      coeff := mk!*sq quotsq(!*f2q ncoef,!*f2q dcoef);
+
+      y := reversip y;
+
+      if !*trdefint then <<
+      	 prin2t "After separating the factors into classes, we have the following factors:";
+	 if coeff neq '(1 . 1) then <<
+	    terpri!* t;
+	    prin2t "Constant w.r.t. integration variable:";
+	    mathprint coeff;
+	    >>;
+	 if varpow neq '(1 . 1) then <<
+	    prin2t "Powers of integration variable:";
+	    printsq varpow;
+	    >>;
+	 for each fctr in y do mathprint fctr;
+	 >>;
+
+      if varpow neq '(1 . 1) then y := prepsq varpow . y;
+
+      lst := nconc(y,cdr lst);
+
       unknown_tst := nil;
-      var := nth(lst,length lst);
+
       if length lst = 2 and listp car lst then
               lst := test_prod(lst,var);
       transform_tst := reval algebraic(transform_tst);
-      if transform_tst neq t then lst := hyperbolic_test(lst);
+%      if transform_tst neq t then lst := hyperbolic_test(lst);
       for each i in lst do specfn_test(i);
+
       if length lst = 5 then
          <<n1 := car lst;
            n2 := cadr lst;
            n3 := caddr lst;
            n4 := cadddr lst;
-           result := reval algebraic defint2(n1,n2,n3,n4,var)>>
+	   matchform := {'defint2,n1,n2,n3,n4,var}>>
       else if length lst = 4 then
          <<n1 := car lst;
            n2 := cadr lst;
            n3 := caddr lst;
-           result := reval algebraic defint2(n1,n2,n3,var)>>
+	   matchform := {'defint2,n1,n2,n3,var}>>
       else if length lst = 3 then
          <<n1 := car lst;
            n2 := cadr lst;
-           result := reval algebraic defint2(n1,n2,var)>>
+	   matchform := {'defint2,n1,n2,var}>>
       else if length lst = 2 then
          <<n1 := car lst;
-           result := reval algebraic defint2(n1,var)>>;
+	   matchform := {'defint2,n1,var}>>
+      else if length lst = 1 then
+	 matchform := {'defint2,1,var}
+      else return 'unknown;
+      if !*trdefint then <<
+      	 prin2t "Expression to pass to algebraic simplifier is:";
+	 mathprint matchform;
+	 >>;
+      result := reval matchform;
+      if !*trdefint then <<
+      	 prin2t "Expression returned is:";
+	 mathprint result;
+	 >>;
       algebraic(transform_tst := nil);
-      if pairp result then <<for each i in result do test_unknown(i);
-             % Tidy up result by ensuring that just unknown is returned
-             % and not multiples of it.
-            if unknown_tst then return 'unknown else return result>>
-       else return result
+      if smemq('defint2,result) then <<
+      	 if !*trdefint then <<prin2!* "Pattern match failed!"; terpri!* t;>>;
+	 return 'unknown;
+	 >>
+       else if smemq('unknown,result) then <<
+         if !*trdefint then <<prin2!* "Method failed"; terpri!* t;>>;
+	 return 'unknown;
+	 >>;
+      result := reval {'times,coeff,result};
+      if !*trdefint then <<
+      	 prin2t "After multiplying with the coefficient we return:";
+	 mathprint result;
+	 >>;
+      return result
    end;
+
 
 symbolic procedure specfn_test(n);
 
@@ -127,13 +241,13 @@ else ls := lst;
 return ls;
 end;
 
-symbolic procedure test_unknown(n);
-
-% A procedure to test for unknown as the result of the integration
-% process
-
-if pairp n then << for each i in n do test_unknown(i)>>
-else if n = 'unknown then unknown_tst := 't;
+%%symbolic procedure test_unknown(n);
+%%
+%%% A procedure to test for unknown as the result of the integration
+%%% process
+%%
+%%if pairp n then << for each i in n do test_unknown(i)>>
+%%else if n = 'unknown then unknown_tst := 't;
 
 algebraic<<
 heaviside_rules :=

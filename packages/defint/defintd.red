@@ -97,8 +97,8 @@ end;
 
 algebraic <<
 
- for all z let sinh(z) = (exp (z) - exp(-z))/2;
- for all z let cosh(z) = (exp (z) + exp(-z))/2;
+% for all z let sinh(z) = (exp (z) - exp(-z))/2;
+% for all z let cosh(z) = (exp (z) + exp(-z))/2;
 
 operator laplace2,y_transform2,k_transform2,struveh_transform2,
                fourier_sin2,fourier_cos2;
