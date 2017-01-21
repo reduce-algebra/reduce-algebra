@@ -37,7 +37,7 @@ switch acn;
 off acn;
 
 symbolic procedure simpdint u;
-   begin scalar low,upp,fn,var,x,y,cflag,dmod,result;
+   begin scalar cflag,dmod,result;
       if length u neq 4
         then rerror(int,2,"Improper number of arguments to INT");
       if dmode!*
@@ -48,13 +48,22 @@ symbolic procedure simpdint u;
              >> where !*msg := nil;
 %%% Replaced by autoload mechanism
 %      load!-package 'defint;
+      result := simpdint1 u;
+      << if dmod then onoff(dmod,t);
+         if cflag then onoff('complex,t)>> where !*msg := nil;
+      	 return result;
+   end;
+
+
+symbolic procedure simpdint1 u;
+   begin scalar low,upp,fn,var,x,y,result;
       fn := car u;
       var := cadr u;
       low := caddr u;
       upp := cadddr u;
       low := reval low;
       upp := reval upp;
-% Now I will have really simple code that tries to deal with cases that are
+      % Now I will have really simple code that tries to deal with cases that are
 % easily solve using indefinite integration. At this stage I am not going to
 % worry about branch cuts!
       if low neq 'infinity and low neq '(minus infinity) and
@@ -100,8 +109,6 @@ symbolic procedure simpdint u;
                                y := indefint!* {fn,var,low})
         then return simp!* {'difference,x,y};
       result := mkdint(fn,var,low,upp);
-      << if dmod then onoff(dmod,t);
-         if cflag then onoff('complex,t)>> where !*msg := nil;
       return result;
    end;
 
