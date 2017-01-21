@@ -46,7 +46,8 @@ symbolic procedure simpdint u;
                 if (dmod := get(dmode!*,'dname))
                   then onoff(dmod,nil)
              >> where !*msg := nil;
-      load!-package 'defint;
+%%% Replaced by autoload mechanism
+%      load!-package 'defint;
       fn := car u;
       var := cadr u;
       low := caddr u;
@@ -109,7 +110,7 @@ symbolic procedure defint!* u;
     where x = errorset2 {'new_defint,mkquote u};
 
 symbolic procedure indefint!* u;
-   (if errorp x or eqcar(car x,'indefint2) then 'unknown else car x)
+   (if errorp x or smemq('indefint2,car x) then 'unknown else car x)
     where x = errorset2 {'new_indefint,mkquote u};
 
 symbolic procedure mkdint(fn,var,low,upp);
