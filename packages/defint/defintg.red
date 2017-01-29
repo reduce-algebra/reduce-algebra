@@ -283,12 +283,9 @@ denom := caddr n;
 
 % Check for constants
 
-if fixp num or atom num then << num_coef := num; num := nil>>
+if not depends(num,var) then << num_coef := num; num := nil>>
 
-else if num = 'e or fixp caddr num then
-        << num_coef := num; num := nil>>
-
-else if car num  = 'times then
+else if pairp num and car num  = 'times then
         << for each fctr in cdr num do
              if depends(fctr,var) then num1 := fctr . num1
               else num_coef := fctr . num_coef;
@@ -300,13 +297,10 @@ else if car num  = 'times then
 
 else num_coef := 1;
 
-if fixp denom or atom denom then
+if  not depends(denom,var) then
         << denom_coef := denom; denom := nil>>
 
-else if denom = 'e or fixp caddr denom then
-           << denom_coef := denom; denom := nil>>
-
-else if car denom  = 'times then 
+else if eqcar(denom,'times) then 
         << for each fctr in cdr denom do
              if depends(fctr,var) then denom1 := fctr . denom1
               else denom_coef := fctr . denom_coef; 
@@ -316,7 +310,7 @@ else if car denom  = 'times then
            if denom then
               denom := if cdr denom1 then 'times . reverse denom1 else car denom1>>;
    
-if denom and car denom = 'expt and (atom caddr denom or
+if eqcar(denom,'expt) and (atom caddr denom or
                         caaddr denom neq 'plus) then
      lst := {{'defint_choose,{'quotient,1,
                 {'expt,'e,caddr denom}},var}}
@@ -332,18 +326,20 @@ else if denom then
      lst := ({'defint_choose,{'quotient,1,
                 {'expt,'e,i}},var} . lst)>>;
 
-if not atom num and car num = 'expt and (atom caddr num or
+if eqcar(num, 'expt) and (atom caddr num or
                         caaddr num neq 'plus) then
 
     lst := {'defint_choose,{'expt,'e,caddr num},var} . lst
 
-else if not atom num then
+else if eqcar(num,'expt) and eqcar(caddr num,'times) then
 
 << num1 := cdaddr num;
    for each i in num1 do
    << lst := ({'defint_choose,{'expt,'e,car num1},var} . lst);
       num1 := cdr num1>>;
->>;
+>>
+
+else lst := {'defint_choose,num,var} . lst;
 
 if null denom_coef then lst := (num_coef . lst)
 
