@@ -56,8 +56,18 @@ put('intgggg,'simpfn,'simpintgggg);
 %%%  integrals with limits 0 ... infinity.
 %%%
 %%% The steps performed are these:
-%%%  1. Separate the integrand into independent factors n1,n2,...
-%%%  2. Rewrite the integral as defint2(n1,...,x) with the new operator defint2
+%%%  1. Separate the integrand into independent factors
+%%%       c (constant w.r.t. integration variable
+%%%       x^alpha (a power of the integration variable)
+%%%       all other factors f1,f2,...
+%%%  
+%%%  2. Since the Mellin transform algorithm can handle onyl up to two factors f1,f2,
+%%%     rewrite the integralinto one of these forms:
+%%%       c*defint(x^alpha,f1,x)
+%%%       c*defint(x^alpha,f1,f2,x)
+%%%       c*defint(x^alpha,f1*f2*...,x)
+%%%     with the new operator defint2
+%%%
 %%%  3. Use the pattern matcher to transform these into either
 %%%       x^alpha*f1    or x^alpha*f1*f2
 %%%     where f1 and f2 (if present) can be expressed in terms of a MeijerG function.
@@ -65,17 +75,20 @@ put('intgggg,'simpfn,'simpintgggg);
 %%%      intgggg(defint_choose(f1),0,alpha,x)
 %%%     or
 %%%      intgggg(defint_choose(f1),defint_choose(f2),alpha,x)
+%%%
 %%%  4. intgggg is the workhorse: it performs some processing on its first two
 %%%     arguments and uses a table lookup to find the correct MeijerG function for
 %%%     f1 and f2.
+%%%
 %%%  5. If these are found, the integral can be written as the (known) Mellin transform
 %%%     of either one MeijerG function or a product of two of them.
+%%%
 %%%  6. If not, unknown is returned.
 %%%     
 
 symbolic procedure new_defint(lst);
-   begin scalar nn,dd,x,y,ncoef,dcoef,coeff,var,varpow,
-	 matchform,result,n1,n2,n3,n4,!*precise;
+   begin scalar nn,dd,x,y,ncoef,dcoef,coeff,var,varpow,varexp,
+	 matchform,result,n1,n2,n3,!*precise;
       x := simp!* car lst;
       var := cadr lst;
       if !*trdefint then <<
@@ -98,6 +111,7 @@ symbolic procedure new_defint(lst);
 	 for each fctr in cdr dd do << printsf mksp!*(car fctr,cdr fctr); terpri!* t >>;
 	 >>;
       varpow := 1 ./ 1;
+      varexp := nil ./ 1;
       for each fff in cdr nn do <<
         if not depends(car fff,var)
 	  then ncoef := multf(ncoef,
@@ -106,7 +120,11 @@ symbolic procedure new_defint(lst);
 	     (mvar car fff=var or mvar car fff={'sqrt,var}
 	     	or eqcar(mvar car fff,'expt) and cadr mvar car fff = var
 		   and not depends(caddr mvar car fff,var))
-	  then varpow := multsq(varpow,mksq(car fff,cdr fff))
+	  then <<varpow := multsq(varpow,mksq(car fff,cdr fff));
+	         if mvar car fff=var then varexp := addsq(varexp,cdr fff ./ 1)
+		  else if car fff={'sqrt,var}
+		   then varexp := addsq(varexp,if evenp cdr fff then (cdr fff/2 ./ 1) else (cdr fff ./ 2))
+		  else varexp :=  addsq(varexp,simp!* {'times,caddr mvar car fff,cdr fff})>>
 	else y :=
 	   (if cdr fff=1 then prepf car fff else prepf mksp!*(car fff,cdr fff))
       	       . y>>;
@@ -119,10 +137,22 @@ symbolic procedure new_defint(lst);
 	     (mvar car fff=var or mvar car fff={'sqrt,var}
 	     	or eqcar(mvar car fff,'expt) and cadr mvar car fff = var
 		   and not depends(caddr mvar car fff,var))
-	  then varpow := multsq(varpow,mksq(car fff,-cdr fff))
+	  then <<varpow := multsq(varpow,mksq(car fff,-cdr fff));
+	         if mvar car fff=var then varexp := subtrsq(varexp,cdr fff ./ 1)
+		  else if mvar car fff={'sqrt,var}
+		   then varexp := subtrsq(varexp,if evenp cdr fff then (cdr fff/2 ./ 1) else (cdr fff ./ 2))
+		  else varexp :=  subtrsq(varexp,simp!* {'times,caddr mvar car fff,cdr fff})>>
          else y := prepsq (1 ./ mksp!*(car fff,cdr fff)) . y;
 
       coeff := mk!*sq quotsq(!*f2q ncoef,!*f2q dcoef);
+
+      %
+      % At this point, we have the following factors of the integrand
+      %
+      %  coeff  - intedependent of the integration variable
+      %  varpow - a power of the intergration variable
+      %  y      - a list of the remaining factors.
+      %  
 
       y := reversip y;
 
@@ -140,29 +170,46 @@ symbolic procedure new_defint(lst);
 	 for each fctr in y do mathprint fctr;
 	 >>;
 
+
+      %
+      % Now we distinguish:
+      %  (a) y is empty. The integrand is a power of x, hence the integral diverges. We return 'unkwnon
+      %  (b) y more than two elements, soe we multipyl them and let the pattern matcher try to handle them
+      %  (c) we have one or two elements, pass the result ot the pattern matcher
+      %
+
+      if null y then <<
+      	if !*trdefint then <<
+	  prin2t "The integrand is constant or a power of the integration variable:";
+	  prin2t "Integral is divergent!";
+	>>;
+	return 'unknown;
+      >>;
+
+      if length y > 2 then y := {reval retimes y};
+      
       if varpow neq '(1 . 1) then y := prepsq varpow . y;
 
       lst := nconc(y,cdr lst);
 
       unknown_tst := nil;
 
-      if length lst = 2 and listp car lst then
-              lst := test_prod(lst,var);
+%%      if length lst = 2 and listp car lst then
+%%              lst := test_prod(lst,var);
       transform_tst := reval algebraic(transform_tst);
 %      if transform_tst neq t then lst := hyperbolic_test(lst);
       for each i in lst do specfn_test(i);
 
-      if length lst = 5 then
+      if length lst = 4 then
          <<n1 := car lst;
            n2 := cadr lst;
            n3 := caddr lst;
-           n4 := cadddr lst;
-	   matchform := {'defint2,n1,n2,n3,n4,var}>>
-      else if length lst = 4 then
-         <<n1 := car lst;
-           n2 := cadr lst;
-           n3 := caddr lst;
-	   matchform := {'defint2,n1,n2,n3,var}>>
+	   matchform := {'defint2,n1,n2,n3,var};
+%%	   assgnpri("Calling defint2 with 3 factors and varexp (",nil,'first);
+%%	   assgnpri(prepsq varexp,nil,nil);
+%%	   assgnpri("): ",nil,nil);
+%%	   assgnpri(matchform,nil,'last)
+         >>
       else if length lst = 3 then
          <<n1 := car lst;
            n2 := cadr lst;
@@ -218,7 +265,7 @@ temp := caar lst;
 if temp = 'times then
    << if listp caddar lst then
 
-% test for special cases of Meijer G-functions of compoud functions
+% test for special cases of Meijer G-functions of compound functions
 
       << if car caddar lst neq 'm_chebyshevt and
                   car caddar lst neq 'm_chebyshevu and
@@ -421,51 +468,53 @@ defint2_rules:=
   defint2(1/(sqrt(~x)*~x^~~a),~f1,~f2,~x) =>
     intgggg(defint_choose(f1,x),defint_choose(f2,x),-1/2-a,x) when a freeof x,
 
-  defint2(-~b,~f1,~f2,~x) => -b*defint2(f1,f2,x) when freeof(b,x),
+  defint2(-~b,~f1,~f2,~x) => -b*defint2(f1,f2,x) when freeof(b,x)
 
 %%
 %% Rules for defint2 with 5 arguments
 %%
-
-  defint2(~n,~x^~a,~f1,~f2,~x) =>
-     n*intgggg(defint_choose(f1,x),defint_choose(f2,x),a,x)
-   	when n freeof x and a freeof x,
-
-  defint2(~n,~x,~f1,~f2,~x) =>
-                 n*intgggg(defint_choose(f1,x),defint_choose(f2,x),1,x)
-   when n freeof x,
-
-  defint2(~n,1/~x^~~a,~f1,~f2,~x) =>
-     n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-a,x)
-   	when n freeof x and a freeof x,
-
-  defint2(~n,1/~x,~f1,~f2,~x) =>
-                           n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-1,x)
-   when n freeof x,
-
-  defint2(~n,sqrt(~x),~f1,~f2,~x) =>
-                           n*intgggg(defint_choose(f1,x),defint_choose(f2,x),1/2,x)
-   when n freeof x,
-
-  defint2(~n,sqrt(~x)*~x,~f1,~f2,~x) =>
-                           n*intgggg(defint_choose(f1,x),defint_choose(f2,x),3/2,x)
-   when n freeof x,
-
-  defint2(~n,sqrt(~x)*~x^~a,~f1,~f2,~x) =>
-              n*intgggg(defint_choose(f1,x),defint_choose(f2,x),1/2+a,x)
-   when n freeof x,
-
-  defint2(~n,1/sqrt(~x),~f1,~f2,~x) =>
-               n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-1/2,x)
-   when n freeof x,
-
-  defint2(~n,1/(sqrt(~x)*~x),~f1,~f2,~x) =>
-               n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-3/2,x)
-   when n freeof x,
-
-  defint2(~n,1/(sqrt(~x)*~x^~a),~f1,~f2,~x) =>
-             n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-1/2-a,x)
-   when n freeof x
+%%% No longer needed, better preprocessing
+%%%
+%%%  defint2(~n,~x^~a,~f1,~f2,~x) =>
+%%%     n*intgggg(defint_choose(f1,x),defint_choose(f2,x),a,x)
+%%%        when n freeof x and a freeof x,
+%%%
+%%%
+%%%  defint2(~n,~x,~f1,~f2,~x) =>
+%%%                 n*intgggg(defint_choose(f1,x),defint_choose(f2,x),1,x)
+%%%   when n freeof x,
+%%%
+%%%  defint2(~n,1/~x^~~a,~f1,~f2,~x) =>
+%%%     n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-a,x)
+%%%        when n freeof x and a freeof x,
+%%%
+%%%  defint2(~n,1/~x,~f1,~f2,~x) =>
+%%%                           n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-1,x)
+%%%   when n freeof x,
+%%%
+%%%  defint2(~n,sqrt(~x),~f1,~f2,~x) =>
+%%%                           n*intgggg(defint_choose(f1,x),defint_choose(f2,x),1/2,x)
+%%%   when n freeof x,
+%%%
+%%%  defint2(~n,sqrt(~x)*~x,~f1,~f2,~x) =>
+%%%                           n*intgggg(defint_choose(f1,x),defint_choose(f2,x),3/2,x)
+%%%   when n freeof x,
+%%%
+%%%  defint2(~n,sqrt(~x)*~x^~a,~f1,~f2,~x) =>
+%%%              n*intgggg(defint_choose(f1,x),defint_choose(f2,x),1/2+a,x)
+%%%   when n freeof x,
+%%%
+%%%  defint2(~n,1/sqrt(~x),~f1,~f2,~x) =>
+%%%               n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-1/2,x)
+%%%   when n freeof x,
+%%%
+%%%  defint2(~n,1/(sqrt(~x)*~x),~f1,~f2,~x) =>
+%%%               n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-3/2,x)
+%%%   when n freeof x,
+%%%
+%%%  defint2(~n,1/(sqrt(~x)*~x^~a),~f1,~f2,~x) =>
+%%%             n*intgggg(defint_choose(f1,x),defint_choose(f2,x),-1/2-a,x)
+%%%   when n freeof x
 
 };
 
