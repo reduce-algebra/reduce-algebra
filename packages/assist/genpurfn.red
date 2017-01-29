@@ -324,10 +324,10 @@ while nth(l,le) < pivot do le:=le+1;
 end;
 
 symbolic procedure quicksort_i_to_j(l, i,j);
-begin integer k,pi;
-pi:=find_pivot_index(l,i,j);
-return if pi neq -1 then
-        <<pi:=nth(l,pi); k:=partition(l,i,j,pi);
+begin integer k,pi_;   % NB "pi" is a global variable (at least in CSL)
+pi_:=find_pivot_index(l,i,j);
+return if pi_ neq -1 then
+        <<pi_:=nth(l,pi_); k:=partition(l,i,j,pi_);
           quicksort_i_to_j(l,i,k-1);quicksort_i_to_j(l,k,j);l>>
         else l
 end;

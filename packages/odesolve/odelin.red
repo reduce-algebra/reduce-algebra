@@ -341,7 +341,10 @@ algebraic procedure odesolve!-lincomb2basis1
 
 algebraic procedure odesolve!-lcc(odecoeffs, driver, x, ode_order);
    % Returns a solution basis or nil (if it fails).
-   begin scalar auxvar, auxeqn, i, auxroots, solutions, pi;
+   begin scalar auxvar, auxeqn, i, auxroots, solutions, pi_;
+% This function used to use a variable called "pi". Elsewhere in Reduce
+% this is liable to be used as a variable with the value 3.14159..., and to
+% allow that version to be global the copy here has been renamed as "pi_"
       traceode "It has constant coefficients.";
       %% TEMPORARY HACK -- REBUILD AUXEQN:
       auxvar := symbolic gensym();  i := -1;
@@ -360,10 +363,10 @@ algebraic procedure odesolve!-lcc(odecoeffs, driver, x, ode_order);
       solutions := odesolve!-lcc!-compsoln(auxroots, x);
       % Next the particular integral:
       if driver = 0 then return { solutions };
-      if not (pi := odesolve!-lcc!-pi(auxroots, driver, x)) then
+      if not (pi_ := odesolve!-lcc!-pi(auxroots, driver, x)) then
          %% (Cannot use `or' as an algebraic operator!)
-         pi := odesolve!-pi(solutions, driver, x);
-      return { solutions, pi }
+         pi_ := odesolve!-pi(solutions, driver, x);
+      return { solutions, pi_ }
    end$
 
 algebraic procedure odesolve!-lcc!-compsoln(auxroots, x);
@@ -580,7 +583,7 @@ algebraic procedure odesolve!-euler(odecoeffs, driver, x, ode_order);
 algebraic procedure odelin!-exact(p_list, driver, y, x, n);
    %% Computes a (linear) first integral if ODE is an exact linear
    %% n'th order ODE P_n(x) df(y,x,n) + ... + P_0(x) y = R(x).
-   begin scalar p_0, c, q_list, q, const, soln, pi;
+   begin scalar p_0, c, q_list, q, const, soln, pi_;
       p_0 := first p_list;
       p_list := reverse rest p_list;         % P_n, ..., P_1
       %% ODE is exact if C = df(P_n,x,n) - df(P_{n-1},x,{n-1}) + ...
@@ -608,11 +611,11 @@ algebraic procedure odelin!-exact(p_list, driver, y, x, n);
       %% already order-reduced.
       soln := odesolve!-linear!-basis!-recursive
          (q_list, driver, y, x, n-1, 0);
-      pi := second soln;                % MUST exist since driver neq 0
-      pi := coeff(pi, const);           % { real PI, extra basis fn }
+      pi_ := second soln;                % MUST exist since driver neq 0
+      pi_ := coeff(pi_, const);           % { real PI, extra basis fn }
       return if high_pow = 1 then
-         if first pi then { second pi . first soln, first pi }
-         else { second pi . first soln }
+         if first pi_ then { second pi_ . first soln, first pi_ }
+         else { second pi_ . first soln }
       else <<
          %% This error should now be redundant!
          write "*** Internal error in ODELin!-Exact:",
@@ -628,7 +631,7 @@ algebraic procedure odelin!-reduce!-order
    %% derivatives) then simplify by reducing the effective order
    %% (unless there is only one) and try to solve the reduced ODE to
    %% give a first integral.  Applies only to ODEs of order > 1.
-   begin scalar solution, pi;
+   begin scalar solution, pi_;
       ode_order := ode_order - min_order;
       for ord := 1 : min_order do odecoeffs := rest odecoeffs;
       traceode "Performing trivial order reduction to give the order ",
@@ -646,14 +649,14 @@ algebraic procedure odelin!-reduce!-order
          " and re-solving ...";
       %% = lin comb of fns of x, so just integrate min_order times:
       if length solution > 1 then       % PI = particular integral
-         pi := second solution;
+         pi_ := second solution;
       solution := append(
          for each c in first solution collect
             odesolve!-multi!-int(c, x, min_order),
          %% and add min_order extra basis functions:
          for i := min_order-1 step -1 until 0 collect x^i );
-      return if pi then
-         { solution, odesolve!-multi!-int(pi, x, min_order) }
+      return if pi_ then
+         { solution, odesolve!-multi!-int(pi_, x, min_order) }
       else
          { solution }
    end$

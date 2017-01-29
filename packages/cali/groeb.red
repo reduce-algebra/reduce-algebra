@@ -491,12 +491,23 @@ symbolic procedure groeb_spol pp;
 %       where mi=lcm/lm(pi), mj=lcm/lm(pj)
 %       and  zi and zj are appropriate scalars.
 %
-    begin scalar pi,pj,ri,rj,zi,zj,lcm,mi,mj,a,b;
+%--------------------
+% There is a symbol called "pi" that is a global variable which
+% has a value 3.14...., and that woulkd clash with trting to use the name
+% "pi" as a local variable. Previous versions of Reduce resolved the attempt
+% to bind the global variable by changing it to be fluid, but that is really
+% not good for consistency across all the source files, so I have renamed
+% the local variable here to be "pi_". This is ugly, and you could argue that
+% with only local use here that the Lisp should allow local re-binding, but
+% declaring something global is intended to give it a chance to interact
+% across procedure calls and overriding it feels dangerout.
+%--------------------
+    begin scalar pi_,pj,ri,rj,zi,zj,lcm,mi,mj,a,b;
       a:=nth(pp,4); b:=nth(pp,5); lcm:=nth(pp,3);
-      pi:=bas_dpoly a; pj:=bas_dpoly b; ri:=bas_rep a; rj:=bas_rep b;
-      mi:=mo_diff(lcm,dp_lmon pi); mj:=mo_diff(lcm,dp_lmon pj);
-      zi:=dp_lc pj; zj:=cali_bc_neg dp_lc pi;
-      a:=dp_sum(dp_times_bcmo(zi,mi, cdr pi),
+      pi_:=bas_dpoly a; pj:=bas_dpoly b; ri:=bas_rep a; rj:=bas_rep b;
+      mi:=mo_diff(lcm,dp_lmon pi_); mj:=mo_diff(lcm,dp_lmon pj);
+      zi:=dp_lc pj; zj:=cali_bc_neg dp_lc pi_;
+      a:=dp_sum(dp_times_bcmo(zi,mi, cdr pi_),
                 dp_times_bcmo(zj,mj, cdr pj));
       b:=dp_sum(dp_times_bcmo(zi,mi, ri),
                 dp_times_bcmo(zj,mj, rj));

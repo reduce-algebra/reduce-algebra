@@ -1146,7 +1146,7 @@ pound2!* := int2id 0xa3; % Unicode
 
 % I will force blank and tab to be declared and set here since there
 % are signs that in PSL they might not be!
-fluid '(blank tab);
+global '(blank tab);
 blank := '! ;
 tab := '!	;
 

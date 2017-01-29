@@ -28,7 +28,8 @@ module remake; % Update the fasl loading version and cross-reference of
 %
 
 
-fluid '(!*break
+fluid '(!*argnochk
+        !*break
         !*cref
         !*crefchk
         !*faslp
@@ -39,7 +40,7 @@ fluid '(!*break
         !*writingfaslfile
         lispsystem!*);
 
-global '(!*argnochk nolist!* loaded!-modules!*);
+global '(nolist!* loaded!-modules!*);
 
 symbolic procedure psl!-file!-write!-date u;
    % Returns write date of file u as an integer.

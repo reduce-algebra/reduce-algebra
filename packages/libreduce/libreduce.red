@@ -38,7 +38,8 @@ module coloutput;
 
 fluid '(!*mode);
 
-global '(statcounter !*libreduce_active);
+fluid '(!*libreduce_active);
+global '(statcounter);
 
 % Having this variable set to true will cause the main function add2resultbuf
 % to do extra work that is as required here... And if you then set this

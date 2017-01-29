@@ -28,7 +28,7 @@ imports ash, ash1, logand, msd;
 
 exports msd!:;
 
-fluid '(!!nbfpd);
+global '(!!nbfpd);
 
 remflag ('(fl2bf msd!: fix2 rndpwr timbf),'lose);
 

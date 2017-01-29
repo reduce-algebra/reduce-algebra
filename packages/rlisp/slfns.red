@@ -26,7 +26,8 @@ module slfns;  % Complete list of Standard LISP functions.
 %
 
 
-global '(!*argnochk slfns!*);
+fluid '(!*argnochk);
+global '(slfns!*);
 
 slfns!* := '(
         (abs 1)

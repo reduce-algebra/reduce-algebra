@@ -40,7 +40,8 @@ fluid '(!*break
         !*keepsqrts
         outputhandler!*
         !*savedef
-        lispsystem!*);
+        lispsystem!*
+        !*backtrace);
 
 global '(!$eol!$
          !*extraecho
@@ -516,7 +517,8 @@ flag('(acos acosd acosh acot acotd acoth acsc acscd acsch asec asecd
 !#endif
 
 
-global '(loaded!-packages!* no!_init!_file personal!-dir!*);
+fluid '(no!_init!_file);
+global '(loaded!-packages!* personal!-dir!*);
 
 personal!-dir!* := "$HOME";
 

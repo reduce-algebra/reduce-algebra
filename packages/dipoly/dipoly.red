@@ -83,7 +83,7 @@ put('dipoly,'version,4.1);
 
 % define dipzero='nil;
 
-fluid'(dipzero pi);
+fluid '(dipzero);
 % Until we understand how to define something to nil .
 
 inline procedure dipzero!? u;null u;
