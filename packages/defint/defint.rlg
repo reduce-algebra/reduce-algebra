@@ -607,21 +607,18 @@ int(sinh(x),x,0,y);
 int(cosh(2*x),x,0,y);
 
 
-  4*y
- e    - 1
-----------
-     2*y
-  4*e
+ sinh(2*y)
+-----------
+     2
 
 
 int(x*shi(x),x,0,y);
 
 
-     2*y      2*y      y         2
-  - e   *y + e    + 2*e *shi(y)*y  - y - 1
--------------------------------------------
-                      y
-                   4*e
+                        2
+  - cosh(y)*y + shi(y)*y  + sinh(y)
+------------------------------------
+                 2
 
 
 int(x^2*e^(-x^2),x,0,y);
@@ -1001,10 +998,10 @@ fourier_cos(x^n,e^(-a*x),x);
 fourier_cos(1/x,sin(k*x),x);
 
 
-       2    2
- sign(k  - s )*pi + pi
------------------------
-           4
+             2    2
+  - sign( - k  + s )*pi + pi
+-----------------------------
+              4
 
 
 fourier_cos(1/sqrt(pi*x),cos(2*sqrt(k*x)),x);

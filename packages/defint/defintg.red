@@ -245,20 +245,21 @@ symbolic procedure reform_denom(n,var);
         then if depends(cadr temp, var)
                then lst := {{'defint_choose,{'quotient,1,temp}},var}
               else temp := {'expt,'e,{'times,{'log,cadr temp},caddr temp}};
+
       % test for a single occurrence of e.
-      if temp and eqcar(caddr temp ,'quotient)
+      if temp and pairp temp and pairp cdr temp and pairp cddr temp
+ 	 and eqcar(caddr temp ,'quotient)
         then if eqcar(cadr caddr temp,'plus) and not depends(caddr caddr temp,var)
               then temp := {'expt,cadr temp,
                             'plus . for each term in cdr cadr caddr temp collect
                                    {'quotient,term,caddr caddr temp}}
               else if listp car cdaddr temp and listp cadr cdaddr temp then
       << off mcd; temp:= {'expt,'e,quotient_case(reval temp)}; on mcd>>;
-      if temp and car temp eq 'expt and (atom caddr temp or
-                              caaddr temp neq 'plus) then
+      if eqcar(temp,'expt) and not eqcar(caddr temp,'plus) then
       <<lst := {{'defint_choose,
                    {'quotient,1,{'expt,'e,caddr temp}},var}}>>
       % else if there are multiple occurrences of e
-      else if pairp caddr temp then
+      else if eqcar(temp,'expt) and eqcar(caddr temp,'plus) then
 %      else if listp temp and length temp > 2 and pairp caddr temp then
       << temp1 := cdaddr temp;
          for each i in temp1 do
@@ -326,12 +327,11 @@ else if denom then
      lst := ({'defint_choose,{'quotient,1,
                 {'expt,'e,i}},var} . lst)>>;
 
-if eqcar(num, 'expt) and (atom caddr num or
-                        caaddr num neq 'plus) then
+if eqcar(num, 'expt) and not eqcar(caddr num,'plus) then
 
     lst := {'defint_choose,{'expt,'e,caddr num},var} . lst
 
-else if eqcar(num,'expt) and eqcar(caddr num,'times) then
+else if eqcar(num,'expt) and eqcar(caddr num,'plus) then
 
 << num1 := cdaddr num;
    for each i in num1 do
