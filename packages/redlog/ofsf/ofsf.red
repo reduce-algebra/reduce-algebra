@@ -212,6 +212,7 @@ put('ofsf,'rl_services,'(
    (rl_opt!* . ofsf_opt)
    (rl_ifacl!* . cl_ifacl)
    (rl_ifacml!* . cl_ifacml)
+   (rl_ifacdegl!* . cl_ifacdegl)
    (rl_matrix!* . cl_matrix)
    (rl_apnf!* . cl_apnf)
    (rl_atml!* . cl_atml)

@@ -288,6 +288,13 @@ rl_service {
    mode = both};
 
 rl_service {
+   name = ifacdegl,
+   doc = "maximal degrees of variables in irreducible factors",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   returns = {type = Pair(List(Pair(Variable, Integer)), List(Pair(Variable, Integer)))},
+   mode = both};
+
+rl_service {
    name = kapur,
    doc = "GB-based satisfiability",
    arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},

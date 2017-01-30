@@ -45,7 +45,7 @@ exports cl_atfp,cl_cxfp,cl_atflp,cl_ncflp,cl_dnfp,cl_cnfp,cl_bnfp,cl_simpl,
    cl_gqe,cl_gqea,cl_qe,cl_qea,cl_qeipo,cl_qews,cl_trygauss,cl_specelim,cl_tab,
    cl_atab,cl_itab,cl_gentheo,cl_apply2ats,cl_apply2ats1,cl_apply2ats2,cl_atnum,
    cl_f2ml,cl_atml,cl_atml1,cl_atl,cl_atl1,cl_identifyonoff,cl_ifacml,
-   cl_ifacml1,cl_ifacl,cl_ifacl1,cl_matrix,cl_closure,cl_all,cl_ex,cl_flip,
+   cl_ifacml1,cl_ifacl,cl_ifacl1,cl_ifacdegl,cl_matrix,cl_closure,cl_all,cl_ex,cl_flip,
    cl_cflip,cl_subfof,cl_termml,cl_termml1,cl_terml,cl_terml1,cl_struct,
    cl_ifstruct,cl_surep,cl_splt;
 
