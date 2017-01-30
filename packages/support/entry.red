@@ -257,7 +257,7 @@ defautoload(new_defint,defint);
 
 defautoload(new_indefint,defint);
 
-defautoload(defint0,defint,expr,4);
+defautoload(defint0,defint);
 
 
 % Matrix module entry points.
