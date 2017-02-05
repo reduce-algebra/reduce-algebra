@@ -414,7 +414,7 @@ extern "C" LispObject Lsublis(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lsymbol_protect(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lsymbol_set_definition(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lsymbol_set_env(LispObject env, LispObject a, LispObject b);
-extern "C" LispObject Lthrow_one_value(LispObject env, LispObject a, LispObject b);
+extern "C" NORETURN LispObject Lthrow_one_value(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Ltimes2(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lunion(LispObject nil, LispObject a, LispObject b);
 extern "C" LispObject Lunion_symlist(LispObject nil, LispObject a, LispObject b);

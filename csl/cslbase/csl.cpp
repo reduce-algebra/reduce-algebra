@@ -516,47 +516,47 @@ static LispObject wrong(int wanted, int given, LispObject env)
 }
 
 LispObject too_few_2(LispObject env, LispObject)
-{   return wrong(2, 1, env);
+{   wrong(2, 1, env);
 }
 
 LispObject too_many_1(LispObject env, LispObject, LispObject)
-{   return wrong(1, 2, env);
+{   wrong(1, 2, env);
 }
 
 LispObject wrong_no_0a(LispObject env, LispObject)
-{   return wrong(0, 1, env);
+{   wrong(0, 1, env);
 }
 
 LispObject wrong_no_0b(LispObject env, LispObject, LispObject)
-{   return wrong(0, 2, env);
+{   wrong(0, 2, env);
 }
 
 LispObject wrong_no_3a(LispObject env, LispObject)
-{   return wrong(3, 1, env);
+{   wrong(3, 1, env);
 }
 
 LispObject wrong_no_3b(LispObject env, LispObject, LispObject)
-{   return wrong(3, 2, env);
+{   wrong(3, 2, env);
 }
 
 LispObject wrong_no_na(LispObject env, LispObject)
 {   if (is_cons(env) && is_bps(qcar(env)))
-        return wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 1, env);
+        wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 1, env);
     else aerror("function called with 1 arg when 0 or >= 3 wanted");
 }
 
 LispObject wrong_no_nb(LispObject env, LispObject, LispObject)
 {   if (is_cons(env) && is_bps(qcar(env)))
-        return wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 2, env);
+        wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 2, env);
     else aerror("function called with 2 args when 0 or >= 3 wanted");
 }
 
 LispObject wrong_no_1(LispObject env, int nargs, ...)
-{   return wrong(1, nargs, env);
+{   wrong(1, nargs, env);
 }
 
 LispObject wrong_no_2(LispObject env, int nargs, ...)
-{   return wrong(2, nargs, env);
+{   wrong(2, nargs, env);
 }
 
 LispObject bad_specialn(LispObject, int, ...)

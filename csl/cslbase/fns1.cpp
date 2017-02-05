@@ -1509,7 +1509,6 @@ LispObject Lerror(LispObject env, int nargs, ...)
     exit_count = 0;
     exit_tag = nil;
     throw LispError();
-    return nil;
 }
 
 LispObject Lerror1(LispObject env, LispObject a1)
@@ -1546,7 +1545,6 @@ LispObject Lerror0(LispObject env, int nargs, ...)
     exit_value = exit_tag = nil;
     exit_count = 0;
     throw LispError();
-    return nil;
 }
 
 LispObject Lmake_special(LispObject, LispObject a)

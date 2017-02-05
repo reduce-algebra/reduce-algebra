@@ -3861,7 +3861,7 @@ LispObject Lprin(LispObject env, LispObject a)
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
     internal_prin(a, 0);
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -3869,7 +3869,7 @@ static LispObject Lprinraw(LispObject env, LispObject a)
 {   push(a);
     prinraw(a);
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -3877,7 +3877,7 @@ static LispObject Lprinhex(LispObject env, LispObject a)
 {   push(a);
     prinhex(a, 0);
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -3885,7 +3885,7 @@ static LispObject Lprinoctal(LispObject env, LispObject a)
 {   push(a);
     prinoctal(a, 0);
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -3893,7 +3893,7 @@ static LispObject Lprinbinary(LispObject env, LispObject a)
 {   push(a);
     prinbinary(a, 0);
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -3902,7 +3902,7 @@ static LispObject Lprinhex2(LispObject env, LispObject a, LispObject b)
     push(a);
     prinhex(a, int_of_fixnum(b));
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -3911,7 +3911,7 @@ static LispObject Lprinoctal2(LispObject env, LispObject a, LispObject b)
     push(a);
     prinoctal(a, int_of_fixnum(b));
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -3920,7 +3920,7 @@ static LispObject Lprinbinary2(LispObject env, LispObject a, LispObject b)
     push(a);
     prinbinary(a, int_of_fixnum(b));
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -3957,7 +3957,7 @@ LispObject Lprinc_upcase(LispObject env, LispObject a)
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
     internal_prin(a, 0);
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -3969,7 +3969,7 @@ LispObject Lprinc_downcase(LispObject env, LispObject a)
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
     internal_prin(a, 0);
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -3981,7 +3981,7 @@ LispObject Lprinc(LispObject env, LispObject a)
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
     internal_prin(a, 0);
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -3993,7 +3993,7 @@ LispObject Lprin2a(LispObject env, LispObject a)
     if (!is_stream(active_stream)) active_stream = lisp_terminal_io;
     internal_prin(a, 0);
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -4109,7 +4109,7 @@ LispObject Lprint(LispObject env, LispObject a)
     putc_stream('\n', active_stream);
 #endif
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -4130,7 +4130,7 @@ LispObject Lprintc(LispObject env, LispObject a)
     putc_stream('\n', active_stream);
 #endif
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -4140,7 +4140,7 @@ LispObject Lterpri(LispObject env, int nargs, ...)
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     putc_stream('\n', stream);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
@@ -4174,7 +4174,7 @@ LispObject Lttab(LispObject env, LispObject a)
     active_stream = stream;
     while (other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, stream) < n)
         putc_stream(' ', active_stream);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
@@ -4187,7 +4187,7 @@ LispObject Lxtab(LispObject env, LispObject a)
     if (!is_stream(stream)) stream = lisp_terminal_io;
     active_stream = stream;
     while (n-- > 0) putc_stream(' ', active_stream);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
@@ -4197,7 +4197,7 @@ LispObject Leject(LispObject env, int nargs, ...)
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     putc_stream('\f', stream);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
@@ -4289,7 +4289,7 @@ static LispObject Lbinary_open_output(LispObject env, LispObject name)
 int binary_outchar(int c, LispObject)
 {   if (binary_outfile == NULL) return 1;
     PUTC(c, binary_outfile);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return 0;   // indicate success
 }
 
@@ -4302,7 +4302,7 @@ static LispObject Lbinary_prin1(LispObject env, LispObject a)
     active_stream = lisp_work_stream;
     internal_prin(a, 0);
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -4315,7 +4315,7 @@ static LispObject Lbinary_princ(LispObject, LispObject a)
     active_stream = lisp_work_stream;
     internal_prin(a, 0);
     pop(a);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(a);
 }
 
@@ -4325,7 +4325,7 @@ static LispObject Lbinary_prinbyte(LispObject env, LispObject a)
     if (!is_fixnum(a)) aerror1("binary_prinbyte", a);
     x = (int)int_of_fixnum(a);
     PUTC(x, binary_outfile);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
@@ -4336,7 +4336,7 @@ static LispObject Lbinary_prin2(LispObject env, LispObject a)
     x = int_of_fixnum(a);
     PUTC((int)(x >> 8), binary_outfile);
     PUTC((int)x, binary_outfile);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
@@ -4348,7 +4348,7 @@ static LispObject Lbinary_prin3(LispObject env, LispObject a)
     PUTC((int)(x >> 16), binary_outfile);
     PUTC((int)(x >> 8), binary_outfile);
     PUTC((int)x, binary_outfile);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
@@ -4367,14 +4367,14 @@ static LispObject Lbinary_prinfloat(LispObject env, LispObject a)
     PUTC((int)(x >> 16), binary_outfile);
     PUTC((int)(x >> 8), binary_outfile);
     PUTC((int)x, binary_outfile);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
 static LispObject Lbinary_terpri(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "binary_terpri");
     if (binary_outfile != NULL) PUTC('\n', binary_outfile);
-    if (io_limit >= 0 && io_now > io_limit) return resource_exceeded();
+    if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 

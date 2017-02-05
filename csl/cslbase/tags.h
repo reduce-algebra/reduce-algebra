@@ -177,6 +177,14 @@ typedef intptr_t LispObject;
 #define TAG_FIXNUM      7   // 28/60-bit integers                        80
 #define XTAG_SFLOAT     15  // Short float, 28+ bits of immediate data   80
 
+// On a 32-bit machine I can pack a 28-bit float (implemented as a 32-bit
+// one with the low 4 bits crudely masked off) by putting XTAG_FLOAT as the
+// bottom 4 bits. On a 64-bit system I have 64=bit immediate data so if I
+// I have XTAG_FLOAT as the low 4 bits then bit 5 could select as between
+// a 28 or a 32-bit value and the high 28 or 32-bits could be that value.
+// Then single floats as well as short floats would have an immediate
+// representation. 
+
 #define is_forward(p)              ((((int)(p)) & TAG_BITS) == TAG_FORWARD)
 
 #define is_number(p)               ((((int)(p)) & TAG_BITS) >= TAG_NUMBERS)
@@ -399,29 +407,35 @@ typedef uintptr_t Header;
 #define  SYM_CODEPTR        (0x0000200<<Tw)  // just carries code pointer
 #define  SYM_ANY_GENSYM     (0x0000400<<Tw)  // gensym, printed or not
 #define  SYM_TRACED         (0x0000800<<Tw)  // function is traced.
-#define  SYM_TAGGED         (0x0001000<<Tw)  // used for special versions
+#define  SYM_TRACESET       (0x0001000<<Tw)  // traceset support
+#define  SYM_TAGGED         (0x0002000<<Tw)  // used for special versions
                                              // of UNION and INTERSECTION.
-#define  SYM_FASTGET_MASK   (0x007e000<<Tw)  // used to support "fast" gets
-#define  SYM_FASTGET_SHIFT  (13+Tw)
+#define  SYM_FASTGET_MASK   (0x00fc000<<Tw)  // used to support "fast" gets
+#define  SYM_FASTGET_SHIFT  (14+Tw)
 //
 //
 #ifdef COMMON
 // In Common Lisp mode I use the rest of the header to help speed up
 // test for the availability of a symbol in a package (while I am printing).
-// Note that on a 32-bit machine I have just 9 bits for that. I think that
-// will help with the first 9 packages I come across (or many more on a
+// Note that on a 32-bit machine I have just 8 bits for that. I think that
+// will help with the first 8 packages I come across (or many more on a
 // 64-bit machine). If I ever enable package support!
-#define  SYM_EXTERN_IN_HOME (0x0040000<<Tw)  // external in its home package
-#define  SYM_IN_PACKAGE     (((int)0xff800000)/(1<<(4-Tw)))
-                                            // availability in 10 packages
-#define  SYM_IN_PKG_SHIFT   (19+Tw)         // the constants here look ugly!
-#define  SYM_IN_PKG_COUNT   (13-Tw)
+// NOTE: The fields set out here are ARCHAIC and will need careful review
+// if I ever try to make them active again. They may at present clash with
+// other things. I may be better served if I only try to optimise package
+// availability information when I am on a 64-bit machine and hence when I
+// have plenty of spare bits that I can use.
+#define  SYM_EXTERN_IN_HOME (0x0080000<<Tw)  // external in its home package
+#define  SYM_IN_PACKAGE     (((int)0xff000000)/(1<<(4-Tw)))
+                                            // availability in 8 packages
+#define  SYM_IN_PKG_SHIFT   (20+Tw)         // the constants here look ugly!
+#define  SYM_IN_PKG_COUNT   (11-Tw)
 #else // COMMON
 // In Standard Lisp mode I only allocate a print-name to a gensym when I
 // first print it, so I have a bit that tells me when a gensym is still
 // not printed.
-#define  SYM_UNPRINTED_GENSYM (0x0080000<<Tw)// not-yet-printed gensym
-// Here in Standard Lisp mode I have 9 bits left in a symbol header even
+#define  SYM_UNPRINTED_GENSYM (0x0040000<<Tw)// not-yet-printed gensym
+// Here in Standard Lisp mode I have 8 bits left in a symbol header even
 // on a 32-bit system.
 #endif // COMMON
 

@@ -1004,7 +1004,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             time_now = (int)consolidated_time[0];
             if ((time_limit >= 0 && time_now > time_limit) ||
                 (io_limit >= 0 && io_now > io_limit))
-                return resource_exceeded();
+                resource_exceeded();
             return onevalue(p);
         }
 //
@@ -1026,7 +1026,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         {   already_in_gc = false;
             pop_clock();
             if (space_limit >= 0 && space_now > space_limit)
-                return resource_exceeded();
+                resource_exceeded();
 //
 // I have "soft" garbage collections - perhaps fairly frequently. I will
 // only call the GC hook function around once every 5 seconds to avoid undue
@@ -1114,7 +1114,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         time_now = (int)consolidated_time[0];
         if ((time_limit >= 0 && time_now > time_limit) ||
             (io_limit >= 0 && io_now > io_limit))
-            return resource_exceeded();
+            resource_exceeded();
         freshline_trace();
         trace_printf(
             "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
@@ -1435,7 +1435,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     if ((space_limit >= 0 && space_now > space_limit) ||
         (time_limit >= 0 && time_now > time_limit) ||
         (io_limit >= 0 && io_now > io_limit))
-        return resource_exceeded();
+        resource_exceeded();
     prev_consolidated = consolidated_time[0];
     return use_gchook(p, lisp_true);
 }

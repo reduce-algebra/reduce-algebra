@@ -282,6 +282,7 @@ LispObject Lobject_header(LispObject env, LispObject a)
         if ((h & SYM_CODEPTR) != 0) trace_printf(" codeptr");
         if ((h & SYM_ANY_GENSYM) != 0) trace_printf(" any-gensym");
         if ((h & SYM_TRACED) != 0) trace_printf(" traced");
+        if ((h & SYM_TRACESET) != 0) trace_printf(" traceset");
         if ((h & SYM_FASTGET_MASK) != 0) trace_printf(" fastget");
         trace_printf("\n");
     }
@@ -426,7 +427,6 @@ LispObject Lsymbol_argcode(LispObject env, LispObject a)
 #define BYTE_HARDOPT 0x010    // "hard" case of &optional
 #define BYTE_REST    0x020    // &rest present
 #define BYTE_TRACED  0x040
-#define BYTE_DOUBLED 0x080
 #define BYTE_CALLAS  0x100    // link to some other function
 //
 // I can not see any way much better than a grim sequence of explicit
@@ -1408,6 +1408,34 @@ LispObject Luntrace(LispObject env, LispObject a)
     return onevalue(a);
 }
 
+LispObject Ltraceset(LispObject env, LispObject a)
+{   LispObject w = a;
+    if (symbolp(a))
+    {   a = ncons(a);
+        w = a;
+    }
+    while (consp(w))
+    {   LispObject s = qcar(w);
+        w = qcdr(w);
+        if (symbolp(s)) qheader(s) |= SYM_TRACESET;
+    }
+    return onevalue(a);
+}
+
+LispObject Luntraceset(LispObject env, LispObject a)
+{   LispObject w = a;
+    if (symbolp(a))
+    {   a = ncons(a);
+        w = a;
+    }
+    while (consp(w))
+    {   LispObject s = qcar(w);
+        w = qcdr(w);
+        if (symbolp(s)) qheader(s) &= ~SYM_TRACESET;
+    }
+    return onevalue(a);
+}
+
 LispObject Lmacro_function(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
     else if ((qheader(a) & SYM_MACRO) == 0) return onevalue(nil);
@@ -1700,9 +1728,9 @@ static LispObject Lcheckpoint_1(LispObject env, LispObject startup)
 // been an overflow.
 //
 
-static LispObject Lresource_exceeded(LispObject env, int nargs, ...)
+NORETURN static LispObject Lresource_exceeded(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "resource-exceeded");
-    return resource_exceeded();
+    resource_exceeded();
 }
 
 static bool eql_numbers(LispObject a, LispObject b)
@@ -3795,6 +3823,8 @@ setup_type const funcs2_setup[] =
     {"remd",                    Lremd, too_many_1, wrong_no_1},
     {"trace",                   Ltrace, too_many_1, wrong_no_1},
     {"untrace",                 Luntrace, too_many_1, wrong_no_1},
+    {"traceset",                Ltraceset, too_many_1, wrong_no_1},
+    {"untraceset",              Luntraceset, too_many_1, wrong_no_1},
     {"macro-function",          Lmacro_function, too_many_1, wrong_no_1},
     {"symbol-name",             Lsymbol_name, too_many_1, wrong_no_1},
     {"id2string",               Lsymbol_name, too_many_1, wrong_no_1},

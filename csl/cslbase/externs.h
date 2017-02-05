@@ -1034,7 +1034,7 @@ extern LispObject tagbody_fn(LispObject args, LispObject env);
 // The variables here are always extern - they never survive in an image
 // file.
 //
-extern LispObject resource_exceeded();
+NORETURN extern LispObject resource_exceeded();
 extern int64_t time_base,  space_base,  io_base,  errors_base;
 extern int64_t time_now,   space_now,   io_now,   errors_now;
 extern int64_t time_limit, space_limit, io_limit, errors_limit;

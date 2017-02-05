@@ -716,7 +716,7 @@ fi
 
 AC_COMPILE_IFELSE([AC_LANG_SOURCE(
   [[#include <exception>
-    static [[noreturn]] void foo(void);
+    [[noreturn]] static void foo(void);
     static void foo(void)
     { throw std::exception();
     }]])],
