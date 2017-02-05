@@ -41,7 +41,7 @@ symbolic procedure deg!*farg u;
 symbolic procedure deg!*form u;
 %U is a prefix expression. Result is the degree of u;
    if atom u 
-      then if u memq frlis!*
+      then if memq(u,frlis!*)
               then 'free
             else get!*fdeg u
     else (if flagp(x,'indexvar) then get!*ifdeg u
@@ -69,7 +69,7 @@ put('exdegree,'simpfn,'simpexdegree);
 symbolic procedure exformp u;
    %test for exterior forms and vectors in prefix expressions;
    if null u or numberp u then nil
-    else if atom u and u memq   then t
+    else if atom u and memq(u,frlis!*) then t
     else if atom u then get(u,'fdegree)
     else if flagp(car u,'indexvar)
             then assoc(length(if newstyle_indsp cadr u

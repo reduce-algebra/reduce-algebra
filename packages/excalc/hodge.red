@@ -34,7 +34,7 @@ symbolic procedure formhodge(u,vars,mode);
    if mode eq 'symbolic then 'hash . formlis(cdr u,vars,mode)
     else 'list . mkquote 'hodge . formlis(cdr u,vars,mode);
 
-%put('hash,'formfn,'formhodge);
+put('hash,'formfn,'formhodge);
 
 put('hodge,'simpfn,'simphodge);
 
