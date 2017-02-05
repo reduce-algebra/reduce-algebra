@@ -28,17 +28,22 @@ module hodge;
 
 global '(dimex!* sgn!* detm!* basisforml!*);
 
+fluid '(frlis!*);
+
 symbolic procedure formhodge(u,vars,mode);
    if mode eq 'symbolic then 'hash . formlis(cdr u,vars,mode)
     else 'list . mkquote 'hodge . formlis(cdr u,vars,mode);
 
-put('hash,'formfn,'formhodge);
+%put('hash,'formfn,'formhodge);
 
 put('hodge,'simpfn,'simphodge);
 
 put('hodge,'rtypefn,'getrtypecar);
 
 put('hodge,'partitfn,'partithodge);
+
+put('!#22c6;,'scripted_op,
+    '(rsup . hodge) . get('!#22c6;,'scripted_op));
 
 symbolic procedure partithodge u;
    hodgepf partitop car u;
@@ -200,6 +205,15 @@ symbolic procedure hodgeprn u;
    <<prin2!* "#"; rembras cadr u>>;
 
 put('hodge,'prifn,'hodgeprn);
+
+symbolic procedure xhodgeprn u;
+   begin
+     fancy!-prin2!*("\!",1);
+     fancy!-print!-indexlist1('(!#22c6;),'!^,nil);
+     return fancy!-maprint(cadr u,0)
+   end;
+
+put('hodge,'fancy!-prifn,'xhodgeprn);
 
 endmodule;
 
