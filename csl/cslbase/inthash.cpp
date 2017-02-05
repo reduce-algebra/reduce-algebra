@@ -1,7 +1,7 @@
-// inthash.cpp                                    Copyright A C Norman 2016
+// inthash.cpp                                    Copyright A C Norman 2017
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -25,7 +25,7 @@
  * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
  * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE * POSSIBILITY OF SUCH *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
 
@@ -148,11 +148,6 @@ void hash_set_value(inthash *h, size_t hx, uintptr_t v)
 #endif
 }
 
-static void myabort()
-{   fflush(stdout);
-    abort();
-}
-
 #ifdef VALIDATE
 
 static int validate_count = 0;
@@ -178,19 +173,19 @@ void hash_validate(inthash *h)
         uintptr_t k4 = h->keys[hx2+1];
         if (hx != i && k1 == k)
         {   printf("key duplicated..\n");
-            myabort();
+            my_abort();
         }
         if (hx+1 != i && k2 == k)
         {   printf("key duplicated..\n");
-            myabort();
+            my_abort();
         }
         if (hx2 != i && k3 == k)
         {   printf("key duplicated..\n");
-            myabort();
+            my_abort();
         }
         if (hx2+1 != i && k4 == k)
         {   printf("key duplicated..\n");
-            myabort();
+            my_abort();
         }
     }
 #ifdef CHECK_INTHASH
@@ -199,7 +194,7 @@ void hash_validate(inthash *h)
         for (size_t i=0; i<h->size; i++)
             if (h->keys[i] == k) goto found;
         printf("Key that was in alist not in table\n");
-        myabort();
+        my_abort();
     found:
         continue;
     }

@@ -1,6 +1,6 @@
-// serialize.cpp                                Copyright (C) 2016 Codemist
+// serialize.cpp                                Copyright (C) 2017 Codemist
 
-// #define DEBUG_SERIALIZE 1 // Re-instate this when you neew detailed
+// #define DEBUG_SERIALIZE 1 // Re-instate this when you need detailed
 //                           // tracing of what happend in this file.
 // #define DEBUG_OPNEXT    1
 
@@ -9,7 +9,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -478,9 +478,11 @@ LispObject *repeat_heap = NULL;
 size_t repeat_heap_size = 0, repeat_count = 0;
 
 // This tiny function exists just so that I can set a breakpoint on it.
-void myabort()
+
+void my_abort()
 {   fflush(stdout);
     fflush(stderr);
+    ensure_screen();
     abort();
 }
 
@@ -488,7 +490,7 @@ void reader_setup_repeats(size_t n)
 {   if (repeat_heap_size != 0 ||
         repeat_heap != NULL)
     {   fprintf(stderr, "\n+++ repeat heap processing error\n");
-        myabort();
+        my_abort();
     }
     repeat_heap_size = n;
     repeat_count = 0;
@@ -496,7 +498,7 @@ void reader_setup_repeats(size_t n)
     repeat_heap = (LispObject *)malloc((n+1)*sizeof(LispObject));
     if (repeat_heap == NULL)
     {   fprintf(stderr, "\n+++ unable to allocate repeat heap\n");
-        myabort();
+        my_abort();
     }
 // I fill the vector with fixnum_of_int(0) so it is GC safe.
     for (size_t i=0; i<repeat_heap_size; i++)
@@ -510,7 +512,7 @@ void writer_setup_repeats()
         (LispObject *)malloc((repeat_heap_size+1)*sizeof(LispObject));
     if (repeat_heap == NULL)
     {   fprintf(stderr, "\n+++ unable to allocate repeat heap\n");
-        myabort();
+        my_abort();
     }
     for (size_t i=0; i<=repeat_heap_size; i++)
         repeat_heap[i] = fixnum_of_int(0);
@@ -610,7 +612,7 @@ int read_opcode_byte()
     fprintf(stderr, "Read %d = %.2x ", r, r);
     if (r != SER_OPNEXT)
     {   fprintf(stderr, "\nExpected OPNEXT but did not find it\n");
-        myabort();
+        my_abort();
     }
     else fprintf(stderr, "SER_OPNEXT\n");
 #endif
@@ -734,7 +736,7 @@ void write_opcode(int byte, const char *msg, ...)
             {   if (n == 1) write_opcode(SER_NIL, "NIL");
                 else if (n == 2) write_opcode(SER_NIL2, "NIL NIL");
                 else if (n == 3) write_opcode(SER_NIL3, "NIL NIL NIL");
-                else myabort();
+                else my_abort();
             }
             else for (uint64_t i=0; i<n; i++)
                 write_opcode(b, delayed_message);
@@ -1207,7 +1209,7 @@ bool insert_codepointer(uintptr_t x, const char *s)
     if (ncodepointers >= NCODEPOINTERS)
     {   fprintf(stderr, "Too many built-in functions. Please increase NCODEPOINTERS\n");
         fprintf(stderr, "in serialize.cpp. Current value is %u\n", NCODEPOINTERS);
-        myabort();
+        my_abort();
     }
     //fprintf(stderr, "function %s given code %d\n", s, (int)ncodepointers);
     codepointers[ncodepointers++] = x;
@@ -1288,7 +1290,7 @@ void *read_function()
     if (handle == 0 || handle >= ncodepointers)
     {   fprintf(stderr, "Invalid code handle read (%" PRIu64 " / %" PRIx64 ")\n",
                 handle, handle);
-        myabort();
+        my_abort();
     }
     return (void *)codepointers[handle];
 }
@@ -1297,13 +1299,13 @@ void write_function(void *p)
 {   size_t h = hash_lookup(&codehash, (intptr_t)p);
     if (h == (size_t)(-1))
     {   fprintf(stderr, "Unknown item used as code pointer (%p)\n", p);
-        myabort();
+        my_abort();
     }
     uint64_t handle = hash_get_value(&codehash, h);
     if (handle == 0 || handle >= ncodepointers)
     {   fprintf(stderr, "Invalid code handle recovered for writing codepointer\n");
         fprintf(stderr, "codehash hash-table presumed messed up!\n");
-        myabort();
+        my_abort();
     }
     write_u64(handle);
 }
@@ -1339,7 +1341,6 @@ void write_function(void *p)
         validate_all("GC_PROTECT start", __LINE__, __FILE__); \
         ip = (LispObject)p - pbase;                  \
         stmt;                                        \
-        if (exception_pending()) return nil;         \
         pop4(b, pbase, s, r);                        \
         p = (LispObject *)(pbase + ip);              \
         validate_all("GC_PROTECT end", __LINE__, __FILE__); \
@@ -1389,8 +1390,7 @@ down:
 // has the value -1. I am further assuming that my machine is a twos
 // complement one and hence (-1) & 0xff will be 0xff, which is SER_ILLEGAL.
 // If I see that I will abandon reading and return in an error state.
-                    flip_exception();
-                    return nil;
+                    aerror("Failure in serialization");
                 case SER_REPEAT:
                     assert(opcode_repeats == 0);
 // If you prefix something with "SER_REPEAT nn" then the opcode you next
@@ -1763,7 +1763,7 @@ down:
 // A 28-bit short float
                     assert(opcode_repeats == 0);
                     fprintf(stderr, "SER_FLOAT28 not coded yet\n");
-                    myabort();
+                    my_abort();
 
                 case SER_FLOAT32:
 // a 32-bit single float
@@ -1842,11 +1842,11 @@ down:
 
                 case SER_END:
                     fprintf(stderr, "End of dump marker found - this is an error situation\n");
-                    myabort();
+                    my_abort();
 
                 case SER_OPNEXT:
                     fprintf(stderr, "OPNEXT opcode out of place\n");
-                    myabort();
+                    my_abort();
 
                 case SER_spare_f6:
                 case SER_spare_f7:
@@ -1859,7 +1859,7 @@ down:
                 case SER_spare_fe:
                 default:
                     fprintf(stderr, "Unimplemented/unknown reader opcode (a) %.2x\n", c);
-                    myabort();
+                    my_abort();
             }
             break;
         case SER_LVECTOR:
@@ -2044,24 +2044,24 @@ down:
                 {   GC_PROTECT(prev = getvector(tag, type, CELL+16*w));
                     *p = prev;
                     fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
-                    myabort();
+                    my_abort();
                 }
                 else if (vector_i128(type))
                 {   GC_PROTECT(prev = getvector(tag, type, CELL+16*w));
                     *p = prev;
                     fprintf(stderr, "128-bit floats not supported (yet?)\n");
-                    myabort();
+                    my_abort();
                 }
                 else
                 {   fprintf(stderr, "Vector code is impossible\n");
-                    myabort();
+                    my_abort();
                 }
             }
             goto up;
 
         default:
             fprintf(stderr, "Unimplemented reader opcode (b) %.2x\n", c);
-            myabort();
+            my_abort();
     }
 
 // The above deals with arriving at the description of an object. What follows
@@ -2073,7 +2073,7 @@ up:
     if (b == fixnum_of_int(0))
     {   if (r == 0)
         {   fprintf(stderr, "serial reader about to return zero\n");
-            myabort();
+            my_abort();
         }
         return r;
     }
@@ -2091,12 +2091,12 @@ up:
     if (!is_cons(s))
     {   fprintf(stderr, "s bad at line %d in serialize.cpp\n", __LINE__);
         simple_print(s);
-        myabort();
+        my_abort();
     }
     if (!is_fixnum(qcar(s)))
     {   fprintf(stderr, "car s bad at line %d in serialize.cpp\n", __LINE__);
         simple_print(qcar(s));
-        myabort();
+        my_abort();
     }
     intptr_t n = int_of_fixnum(qcar(s)) - 1;
     if (n < 0)
@@ -2104,7 +2104,7 @@ up:
         fprintf(stderr, "qcar(s) = %" PRIx64 " in raw hex\n", (int64_t)qcar(s));
         fprintf(stderr, "value of qcar(s) as list: ");
         simple_print(qcar(s));
-        myabort();
+        my_abort();
     }
     if (n == 0)
     {   w = b;
@@ -3056,15 +3056,15 @@ down:
             }
             else if (vector_f128(h))
             {   fprintf(stderr, "128-bit float arrays not supported (yet?)\n");
-                myabort();
+                my_abort();
             }
             else if (vector_i128(h))
             {   fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
-                myabort();
+                my_abort();
             }
             else
             {   fprintf(stderr, "Vector code is impossible\n");
-                myabort();
+                my_abort();
             }
             if (i != (size_t)-1)
                 write_opcode(SER_DUP, "repeatedly ref. vector");
@@ -3106,7 +3106,7 @@ down:
                 break;
                 default:
                     fprintf(stderr, "floating point representation not recognized\n");
-                    myabort();
+                    my_abort();
             }
             if (i != (size_t)-1)
                 write_opcode(SER_DUP, "repeatedly referenced vector");
@@ -3240,10 +3240,8 @@ LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
     push2(a, b);
     trace_printf("FASLOUT: ");
     loop_print_trace(a);
-    errexit();
     trace_printf("\n");
     loop_print_trace(b);
-    errexit();
     trace_printf("\n");
     pop2(b, a);
 #endif
@@ -3334,31 +3332,29 @@ static LispObject load_module(LispObject env, LispObject file,
     Header h;
     size_t len;
     bool from_stream = false;
-    bool close_mode;
     char *modname;
     memset(filename, 0, sizeof(filename));
     if (is_stream(file)) h=0, from_stream = true;
     else if (symbolp(file))
     {   file = get_pname(file);
-        errexit();
         h = vechdr(file);
     }
     else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
     {   switch (option)
         {
         default:
-            return aerror("load-module");
+            aerror("load-module");
         case F_LOAD_SOURCE:
-            return aerror("load-source");
+            aerror("load-source");
         case F_SELECTED_SOURCE:
-            return aerror("load-selected-source");
+            aerror("load-selected-source");
         }
     }
     current_module = file;
     if (from_stream)
     {   if (Iopen_from_stdin())
         {   err_printf("Failed to load module from stream\n");
-            return error(1, err_no_fasl, file);
+            error(1, err_no_fasl, file);
         }
         push(qvalue(standard_input));
         qvalue(standard_input) = file;
@@ -3371,7 +3367,7 @@ static LispObject load_module(LispObject env, LispObject file,
         modname = trim_module_name(modname, &len);
         if (Iopen(modname, len, IOPEN_IN, filename))
         {   err_printf("Failed to find \"%s\"\n", filename);
-            return error(1, err_no_fasl, file);
+            error(1, err_no_fasl, file);
         }
     }
 //
@@ -3393,38 +3389,49 @@ static LispObject load_module(LispObject env, LispObject file,
     }
     inf_init(); // Ready for reading from compressed stream
     push(CP);
-    reader_setup_repeats(read_u64());
-    LispObject r = serial_read();
+    LispObject r = nil;
+    class serializer_tidy
+    {   LispObject *save;
+        bool from_stream;
+    public:
+        serializer_tidy(bool fg)
+        {   save = stack;
+            from_stream = fg;
+        }
+        ~serializer_tidy()
+        {   stack = save;
+// This is some tidy-up activity that I must always do at the end of
+// reading (or trying to read) something.
+            repeat_heap = NULL;
+            pop(CP);
+            inf_finish();
+            IcloseInput();
+            if (from_stream)
+            {   pop(qvalue(echo_symbol));
+                pop(qvalue(standard_input));
+            }
+            gc_time += pop_clock();
+        }
+    };
+    {   serializer_tidy raii(from_stream);
+        reader_setup_repeats(read_u64());
+        r = serial_read();
 #ifdef DEBUG_SERIALIZE
-    fprintf(stderr, "Re-input: ");
-    simple_print(r); // @@@
-    fprintf(stderr, "\n");
+        fprintf(stderr, "Re-input: ");
+        simple_print(r); // @@@
+        fprintf(stderr, "\n");
 #endif
-    if (!exception_pending() && r != eof_symbol &&
-        option != F_LOAD_MODULE) r = serial_read();
-    if (repeat_heap_size != 0)
-    {   repeat_heap_size = 0;
-        free(repeat_heap);
-    }
-    repeat_heap = NULL;
-    close_mode = true;
-    if (exception_pending()) flip_exception(), close_mode = false;
-    pop(CP);
-    inf_finish();
-    IcloseInput();
-    if (from_stream)
-    {   pop(qvalue(echo_symbol));
-        pop(qvalue(standard_input));
-    }
-    gc_time += pop_clock();
-    if (!close_mode)
-    {   flip_exception();
-        return nil;
+        if (r != eof_symbol &&
+            option != F_LOAD_MODULE) r = serial_read();
+        if (repeat_heap_size != 0)
+        {   repeat_heap_size = 0;
+            free(repeat_heap);
+        }
     }
 // I will process the stuff I just read AFTER I have closed the stream
 // etc. That will mean I never try using nested reading of fasl streams.
     if (option == F_LOAD_MODULE)
-    {   voideval(r, nil); // voideval is a macro and NEEDS the {} shown here!
+    {   (void)eval(r, nil);
     }
     else
     {
@@ -3449,17 +3456,12 @@ static LispObject load_module(LispObject env, LispObject file,
             bool getsavedef = true;
             if (option == F_SELECTED_SOURCE)
             {   LispObject w;
-#ifdef COMMON
                 w = get(name, load_selected_source_symbol, nil);
-#else
-                w = get(name, load_selected_source_symbol);
-#endif
                 if (w == nil) getsavedef = false;
                 else if (integerp(w) != nil && consp(def))
                 {   push4(name, file, r, def);
 // The md60 function is called on something like (fname (args...) body...)
                     def = cons(name, qcdr(def));
-                    errexitn(4);
                     LispObject w1 = Lmd60(nil, def);
                     if (!numeq2(w, w1)) getsavedef = false;
                     pop4(def, r, file, name);
@@ -3469,33 +3471,24 @@ static LispObject load_module(LispObject env, LispObject file,
             {   push3(name, file, r)
                 putprop(name, savedef, def);
                 pop3(r, file, name);
-                if (exception_pending()) break;
 // Build up a list of the names of all functions whose !*savedef information
 // has been established.
                 push2(r, name);
                 file = cons(name, file);
                 pop2(name, r);
-                if (exception_pending()) break;
             }
 // Now set up the load_source property on the function name to indicate the
 // module it was found in.
             LispObject w;
-#ifdef COMMON
             w = get(name, load_source_symbol, nil);
-#else
-            w = get(name, load_source_symbol);
-#endif
             push3(name, file, r)
             w = cons(current_module, w);
             pop3(r, file, name);
-            if (exception_pending()) break;
             push3(name, file, r)
             putprop(name, load_source_symbol, w);
             pop3(r, file, name);
-            if (exception_pending()) break;
         }
     }
-    errexit();
 #ifdef DEBUG_VALIDATE
     copy_into_nilseg(false);
     validate_all("end of fast-load", __LINE__, __FILE__);
@@ -3522,7 +3515,6 @@ LispObject load_source0(int option)
     {   push2(mods, l);
         LispObject m = Llibrary_members(nil, qcar(l));
         pop2(l, mods);
-        errexit();
         while (is_cons(m))
         {   LispObject m1 = qcar(m);
             m = qcdr(m);
@@ -3530,7 +3522,6 @@ LispObject load_source0(int option)
             push2(l, m);
             mods = cons(m1, mods);
             pop2(m, l);
-            errexit();
         }
     }
 //@ printf("list of modules = "); simple_print(mods); printf("\n");
@@ -3548,7 +3539,6 @@ LispObject load_source0(int option)
         pop2(mods, r);
 //@ printf("2 r = "); simple_print(r); printf("\n");
 //@ printf("2 w = "); simple_print(w); printf("\n");
-        errexit();
         push(mods);
 // The special version of UNION here always works in linear time, and that
 // is MUCH better than the more general version. Well with bootstrapreduce
@@ -3559,7 +3549,6 @@ LispObject load_source0(int option)
         r = Lunion_symlist(nil, r, w);
         pop(mods);
 //@ printf("3 r = "); simple_print(r); printf("\n");
-        errexit();
 //@ printf("result from union = "); simple_print(r); printf("\n");
     }
     return onevalue(r);
@@ -3771,7 +3760,7 @@ void warm_setup()
 
     set_up_function_tables();
 
-    qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_SPECIAL_VAR;
+    qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR;
     for (i=first_nil_offset; i<last_nil_offset; i++) BASE[i] = nil;
     *stack = nil;
     eq_hash_tables = equal_hash_tables = nil;
@@ -3851,7 +3840,7 @@ void warm_setup()
     if ((i = read_opcode_byte()) != SER_END)
     {   fprintf(stderr, "Did not find SER_END opcode where expected\n");
         fprintf(stderr, "Byte that was read was %.2x\n", (int)i);
-        myabort();
+        my_abort();
     }
 #ifdef DEBUG_VALIDATE
     validate_all("warm setup", __LINE__, __FILE__);

@@ -1,4 +1,4 @@
-// wxdvi.cpp
+// wxdvi.cpp                               Copyright (C) 2016-2017 Codemist
 
 // A sample wxWidgets application to display dvi files.
 // This will ONLY cope with a set of fonts that it itself
@@ -12,7 +12,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

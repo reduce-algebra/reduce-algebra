@@ -1,10 +1,10 @@
-// cm-to-unicode.h                             Copyright (C) 2016 Codemist
+// cm-to-unicode.h                              Copyright (C) 2017 Codemist
 
-// $Id: version.h 3740 2016-07-08 16:37:00Z arthurcnorman $
+// $Id$
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

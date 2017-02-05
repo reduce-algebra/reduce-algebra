@@ -1,4 +1,4 @@
-// sysipaq.cpp                      Copyright (C) 1989-2015 Codemist    
+// sysipaq.cpp                             Copyright (C) 1989-2017 Codemist    
 
 // *** THIS CODE IS NO LONGER MAINTAINED ***
 
@@ -27,7 +27,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -162,14 +162,6 @@ char *look_in_lisp_variable(char *o, int prefix)
     o[0] = (char)prefix;
     var = make_undefined_symbol(o);
 //
-// make_undefined_symbol() could fail either if we had utterly run out
-// of memory or if somebody generated an interrupt (eg ^C) around now. Ugh.
-//
-    if (exception_pending())
-    {   flip_exception();
-        return NULL;
-    }
-//
 // If the variable $name was undefined then I use an empty replacement
 // text for it. Otherwise I need to look harder at its value.
 //
@@ -182,20 +174,10 @@ char *look_in_lisp_variable(char *o, int prefix)
 // Mostly I expect that the value will be a string or symbol.
 //
 #ifdef COMMON
-        if (complex_stringp(var))
-        {   var = simplify_string(var);
-            if (exception_pending())
-            {   flip_exception();
-                return NULL;
-            }
-        }
+        if (complex_stringp(var)) var = simplify_string(var);
 #endif // COMMON
         if (symbolp(var))
         {   var = get_pname(var);
-            if (exception_pending())
-            {   flip_exception();
-                return NULL;
-            }
             h = vechdr(var);
         }
         else if (!is_vector(var) ||

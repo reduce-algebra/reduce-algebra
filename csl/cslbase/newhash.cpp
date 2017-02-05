@@ -1,7 +1,7 @@
-// newhash.cpp                                             A C Norman, 2016
+// newhash.cpp                                             A C Norman, 2017
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -25,11 +25,11 @@
  * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
  * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE * POSSIBILITY OF SUCH *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: 2d29de5cf9b767286a256dde20e277d6ab4d5016 $
+// $Id$
 
 #include "headers.h"
 
@@ -141,7 +141,6 @@ static LispObject get_large_vector(size_t n, LispObject initval)
         size_t last_size = n % VECTOR_CHUNK_WORDS;
         if (last_size == 0) last_size = VECTOR_CHUNK_WORDS;
         v = gvector(CELL*(chunks+1), nil);
-        errexit();
 // The next line re-tags the top level vector as an index.
         vechdr(v) ^= (TYPE_SIMPLE_VEC ^ TYPE_INDEXVEC);
         for (i=0; i<chunks; i++)
@@ -150,7 +149,6 @@ static LispObject get_large_vector(size_t n, LispObject initval)
             push(v);
             v1 = gvector(CELL*(k+1), initval);
             pop(v);
-            errexit();
             elt(v, i) = v1;
         }
     }
@@ -846,11 +844,9 @@ static void newhash_rehash(LispObject tab, bool after_gc)
         if (h_table == nil)
         {   push(tab);
             h_table = get_large_vector(h_table_size, SPID_HASHEMPTY);
-            errexitvn(1);
             push(h_table);
             v_table = get_large_vector(h_table_size, SPID_HASHEMPTY);
             pop2(h_table, tab);
-            errexitv();
             keyvec = elt(tab, HASH_KEYS);
             valvec = elt(tab, HASH_VALUES);
         }
@@ -880,7 +876,6 @@ static void newhash_rehash(LispObject tab, bool after_gc)
     push2(h_table, v_table);
     LispObject w = make_lisp_unsigned64(h_multiplier);
     pop2(v_table, h_table);
-    errexitv();
 // At this stage keyvec and valvec are no longer needed and so I can
 // recycle them.
     discard_large_vector(elt(tab, HASH_KEYS));
@@ -974,7 +969,7 @@ void simple_print1(LispObject x)
             return;
         }
         len = (int64_t)(length_of_header(vechdr(x))/CELL - 1);
-        int nn = sprintf(buffer, "[%" PRId64 ":", len);
+        int nn = sprintf(buffer, "[%" PRId64 ":", (int64_t)len);
         simple_lineend(nn);
         fprintf(stderr, "%s", buffer);
         for (i=0; i<len; i++)
@@ -1068,13 +1063,13 @@ LispObject Lmknewhash(LispObject env, int nargs, ...)
 // I allow fixnums or bignums as size spacifiers.
     if (is_fixnum(size)) size1 = int_of_fixnum(size);
     else if (is_numbers(size) && is_bignum(size)) size1 = 1000000;
-    else return aerror1("mkhash", size);
+    else aerror1("mkhash", size);
 // I treat clip the size range to [4 .. 1000000]. Table that end up larger
 // can grow on need.
     if (size1 > 1000000) size = 1000000;
     else if (size1 < 4) size1 = 4;
     if (!is_fixnum(flavour) && !consp(flavour))
-        return aerror1("mkhash", flavour);
+        aerror1("mkhash", flavour);
 // I will make the initial size a power of 2 such that wiith "size"
 // entries present the table will be about between 30% and 60% full.
     size1 = 5*((size1+1)/3);
@@ -1089,14 +1084,11 @@ LispObject Lmknewhash(LispObject env, int nargs, ...)
         shift--;
     }
     v1 = get_large_vector(size2, SPID_HASHEMPTY);
-    errexit();
     push(v1);
     v2 = get_large_vector(size2, nil);
-    errexitn(1);
     push(v2);
     v = getvector_init(7*CELL, nil);
     pop2(v2, v1);
-    errexit();
     elt(v, HASH_FLAVOUR) = flavour;         // comparison method1;5n
     elt(v, HASH_COUNT) = fixnum_of_int(0);  // current number of items stored.
     elt(v, HASH_SHIFT) = fixnum_of_int(shift);  // 64-log2(table size)
@@ -1359,22 +1351,22 @@ static uint64_t newhash_eql(LispObject key)
 // behaviour.
 
 
-#define CL_EQUAL  0
-#define EQUAL     1
-#define EQUALP    2
+#define HASH_AS_CL_EQUAL  0
+#define HASH_AS_EQUAL     1
+#define HASH_AS_EQUALP    2
 
 static uint64_t newhash_generic_equal(LispObject key, int mode);
 
 static uint64_t newhash_cl_equal(LispObject key)
-{   return newhash_generic_equal(key, CL_EQUAL);
+{   return newhash_generic_equal(key, HASH_AS_CL_EQUAL);
 }
 
 static uint64_t newhash_equal(LispObject key)
-{   return newhash_generic_equal(key, EQUAL);
+{   return newhash_generic_equal(key, HASH_AS_EQUAL);
 }
 
 static uint64_t newhash_equalp(LispObject key)
-{   return newhash_generic_equal(key, EQUALP);
+{   return newhash_generic_equal(key, HASH_AS_EQUALP);
 }
 
 static uint64_t newhash_nonsimple_string(LispObject key)
@@ -1466,14 +1458,14 @@ static uint64_t newhash_generic_equal(LispObject key, int mode)
 //
                 if (is_string_header(h))
                 {   switch (mode)
-                    {   case CL_EQUAL:
+                    {   case HASH_AS_CL_EQUAL:
                             // drop through. Note that for non-simple
                             // strings I am going to need to arrange to
                             // compute the value as used here. Ugh Ugh!
-                        case EQUAL:
+                        case HASH_AS_EQUAL:
                             r = (r + (uint64_t)h)*h_multiplier;
                             return r + newhash_binary_vector(key);
-                        case EQUALP:
+                        case HASH_AS_EQUALP:
 // Here I must compute a case-insensitive hash value. Ugh this means I work
 // character by character and so slow things down.
                             r = (r + (uint64_t)h)*h_multiplier;
@@ -1607,7 +1599,7 @@ LispObject Lget_newhash(LispObject env, int nargs, ...)
     va_end(a);
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_NEWHASH)
     {   if (type_of_header(vechdr(tab)) != TYPE_NEWHASHX)
-            return aerror1("getnewhash", tab);
+            aerror1("getnewhash", tab);
         vechdr(tab) ^= (TYPE_NEWHASH ^ TYPE_NEWHASHX);
         push3(key, tab, dflt);
 // Here I have a table that at some stage had all fitted into the table, and
@@ -1624,7 +1616,6 @@ LispObject Lget_newhash(LispObject env, int nargs, ...)
 printf("rehash from get_newhash in NEWHASHX case\n");
         newhash_rehash(tab, true);
         pop3(dflt, tab, key);
-        errexit();
     }
 // Extract details of the (possibly updated) hash table. This will leave
 // hash calculation and value checking set up nicely.
@@ -1650,7 +1641,7 @@ LispObject Lmapnewhash(LispObject env, LispObject fn, LispObject tab)
 {   int32_t size, i;
     LispObject v, v1;
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_NEWHASH)
-        return aerror1("maphash", tab);
+        aerror1("maphash", tab);
     v = elt(tab, HASH_KEYS);
     v1 = elt(tab, HASH_VALUES);
     size = words_in_large_vector(v);
@@ -1661,7 +1652,6 @@ LispObject Lmapnewhash(LispObject env, LispObject fn, LispObject tab)
         push3(v, v1, fn);
         Lapply2(nil, 3, fn, key, val);
         pop3(fn, v1, v);
-        errexit();
     }
     return onevalue(nil);
 }
@@ -1675,7 +1665,7 @@ LispObject Lnewhashcontents(LispObject env, LispObject tab)
     if (!is_vector(tab) ||
         (type_of_header(vechdr(tab)) != TYPE_NEWHASH &&
          type_of_header(vechdr(tab)) != TYPE_NEWHASHX))
-        return aerror1("hashcontents", tab);
+        aerror1("hashcontents", tab);
     v = elt(tab, HASH_KEYS);
     v1 = elt(tab, HASH_VALUES);
     size = words_in_large_vector(v);
@@ -1687,7 +1677,6 @@ LispObject Lnewhashcontents(LispObject env, LispObject tab)
         push2(v, v1);
         r = acons(key, val, r);
         pop2(v1, v);
-        errexit();
     }
 // The ordering of items in the result a-list is unpredictable.
 // That is probably quite reasonable.
@@ -1707,10 +1696,8 @@ LispObject Lget_newhash_1(LispObject env, LispObject key)
     push(key);
     r = Lget_newhash(nil, 3, key, sys_hash_table, nil);
     pop(key);
-    errexit();
     if (mv_2 != nil)
     {   r = cons(key, r);
-        errexit();
     }
     return onevalue(r);
 #endif
@@ -1735,14 +1722,14 @@ LispObject Lput_newhash(LispObject env, int nargs, ...)
     val = va_arg(a, LispObject);
     va_end(a);
     argcheck(nargs, 3, "putnewhash");
-    if (!is_vector(tab)) return aerror1("putnewhash", tab);
+    if (!is_vector(tab)) aerror1("putnewhash", tab);
     if (type_of_header(vechdr(tab)) != TYPE_NEWHASH)
     {   if (type_of_header(vechdr(tab)) == TYPE_NEWHASHX)
         {   after_gc = true;
 printf("HASHX found so setting after_gc\n");
             vechdr(tab) ^= (TYPE_NEWHASH ^ TYPE_NEWHASHX);
         }
-        else return aerror1("putnewhash", tab);
+        else aerror1("putnewhash", tab);
     }
 // after_gc indicates if the hash table needs rehashing before it is valid...
 // the FOR loop here is because it may be necessary to rehash or expand the
@@ -1755,12 +1742,10 @@ printf("HASHX found so setting after_gc\n");
         if (after_gc) pos = NOT_PRESENT;
         else pos = hash_insert_if_possible(key);
         pop3(val, tab, key);
-        errexit();
         if (pos != NOT_PRESENT) break;  // success!
         push3(key, tab, val);
         newhash_rehash(tab, after_gc);
         pop3(val, tab, key);
-        errexit();
         after_gc = false;
     }
     h_table = elt(tab, HASH_KEYS);
@@ -1804,7 +1789,7 @@ LispObject Lclr_newhash(LispObject env, LispObject tab)
     if (!is_vector(tab) ||
         (type_of_header(vechdr(tab)) != TYPE_NEWHASH &&
          type_of_header(vechdr(tab)) != TYPE_NEWHASHX))
-        return aerror1("clrnewhash", tab);
+        aerror1("clrnewhash", tab);
     elt(tab, 1) = fixnum_of_int(0);
     v = elt(tab, HASH_KEYS);
     size = words_in_large_vector(v);
@@ -1821,7 +1806,7 @@ LispObject Lclr_newhash(LispObject env, LispObject tab)
 LispObject Lnewhash_rehash(LispObject env, LispObject tab)
 {   if (!is_vector(tab) ||
         type_of_header(vechdr(tab)) != TYPE_NEWHASH)
-        return aerror1("newhash-rehash", tab);
+        aerror1("newhash-rehash", tab);
     vechdr(tab) ^= (TYPE_NEWHASH ^ TYPE_NEWHASHX);
     return tab;
 }
@@ -1847,8 +1832,7 @@ LispObject Lclr_newhash_0(LispObject env, int nargs, ...)
 // IT JUST USES INTERNAL HASHING METHODS AND THEY ARE NOT STABLE. @@@@ 
 
 LispObject Lsxnewhash(LispObject env, LispObject key)
-{   uint64_t h = newhash_generic_equal(key, EQUAL);
-    errexit();
+{   uint64_t h = newhash_generic_equal(key, HASH_AS_EQUAL);
     h = h ^ (h >> 32);
     h = (h ^ (h >> 16)) & 0x03ffffff; // ensure it will be a positive fixnum
     return onevalue(fixnum_of_int(h));
@@ -1859,7 +1843,6 @@ LispObject Lsxnewhash(LispObject env, LispObject key)
 
 LispObject Leqlnewhash(LispObject env, LispObject key)
 {   uint64_t h = newhash_eql(key);
-    errexit();
     h = h ^ (h >> 32);
     h = (h ^ (h >> 16)) & 0x03ffffff; // ensure it will be a positive fixnum
     return onevalue(fixnum_of_int(h));
@@ -1874,7 +1857,6 @@ LispObject Lequalnewhash(LispObject env, LispObject key)
 // Descends vectors as the Standard Lisp EQUAL function does.
 //
     uint64_t h = newhash_equal(key);
-    errexit();
     h = h ^ (h >> 32);
     h = (h ^ (h >> 16)) & 0x03ffffff; // ensure it will be a positive fixnum
     return onevalue(fixnum_of_int(h));
@@ -1886,7 +1868,7 @@ LispObject Lnewhash_flavour(LispObject env, LispObject tab)
     if (!is_vector(tab) ||
         (type_of_header(vechdr(tab)) != TYPE_NEWHASH &&
          type_of_header(vechdr(tab)) != TYPE_NEWHASHX))
-        return aerror1("hashtable-flavour", tab);
+        aerror1("hashtable-flavour", tab);
     v = elt(tab, 0);
 // The code here needs to allow for user-specified hash functions. Well the
 // word "needs" there depends on the level of enthusiasm you have for the

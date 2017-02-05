@@ -1,11 +1,11 @@
-//  fns2.cpp                          Copyright (C) 1989-2016 Codemist    
+// fns2.cpp                                Copyright (C) 1989-2017 Codemist    
 
 //
 // Basic functions part 2.
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -42,10 +42,9 @@ static int validate_count = 0;
 #endif
 
 LispObject Lget_bps(LispObject env, LispObject n)
-{   if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("get-bps", n);
+{   if (!is_fixnum(n) || (intptr_t)n<0) aerror1("get-bps", n);
     intptr_t n1 = int_of_fixnum(n);
     n = getvector(TAG_VECTOR, TYPE_BPS_4, n1+CELL);
-    errexit();
     return onevalue(n);
 }
 
@@ -87,7 +86,6 @@ LispObject get_native_code_vector(size_t size)
         {   char msg[40];
             sprintf(msg, "native code %ld", (long)size);
             reclaim(nil, msg, GC_NATIVE, alloc_size);
-            errexit();
             continue;
         }
         free = (intptr_t)native_pages[native_pages_count-1];
@@ -110,10 +108,9 @@ LispObject get_native_code_vector(size_t size)
 }
 
 LispObject Lget_native(LispObject env, LispObject n)
-{   if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("get-native", n);
+{   if (!is_fixnum(n) || (intptr_t)n<0) aerror1("get-native", n);
     intptr_t n1 = int_of_fixnum(n);
     n = get_native_code_vector(n1);
-    errexit();
     return onevalue(n);
 }
 
@@ -181,10 +178,8 @@ static bool interpreter_entry(LispObject a)
 {   return (
                qfn1(a) == interpreted1 ||
                qfn1(a) == traceinterpreted1 ||
-               qfn1(a) == double_interpreted1 ||
                qfn1(a) == funarged1 ||
                qfn1(a) == tracefunarged1 ||
-               qfn1(a) == double_funarged1 ||
                qfn1(a) == undefined1);
 }
 
@@ -277,8 +272,10 @@ LispObject Lobject_header(LispObject env, LispObject a)
 {   if (is_symbol(a))
     {   Header h = qheader(a);
         trace_printf("Symbol: (%" PRIxPTR ") ", h);
-        if ((h & SYM_SPECIAL_VAR) != 0) trace_printf(" fluid");
-        if ((h & SYM_GLOBAL_VAR) != 0) trace_printf(" global");
+        if ((h & SYM_SPECIAL_VAR) != 0)
+            if ((h & SYM_GLOBAL_VAR) != 0) trace_printf(" keyword");
+            else trace_printf(" fluid");
+        else if ((h & SYM_GLOBAL_VAR) != 0) trace_printf(" global");
         if ((h & SYM_SPECIAL_FORM) != 0) trace_printf(" special-form");
         if ((h & SYM_MACRO) != 0) trace_printf(" macro");
         if ((h & SYM_C_DEF) != 0) trace_printf(" C-def");
@@ -339,7 +336,7 @@ LispObject Lobject_header(LispObject env, LispObject a)
 
 LispObject Lsymbol_argcount(LispObject env, LispObject a)
 //
-// For debugging and JIT compiler use. Only valid if the function involved
+// For debugging use. Only valid if the function involved
 // is byte-coded. For simple functions taking a fixed number of args the
 // result is an integer. Otherwise it is a list of 3 items
 //   (fewest-legal-args most-args-before-&rest flags)
@@ -365,43 +362,28 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
     if (f1 == bytecoded1 ||
         f1 == tracebytecoded1 ||
         f1 == f1_as_0 ||
-        f1 == f1_as_1 ||
-#ifdef JIT
-        f1 == jitcompileme1 ||
-#endif
-        f1 == double_bytecoded1) return onevalue(fixnum_of_int(1));
+        f1 == f1_as_1
+        ) return onevalue(fixnum_of_int(1));
     if (f2 == bytecoded2 ||
         f2 == tracebytecoded2 ||
         f2 == f2_as_0 ||
         f2 == f2_as_1 ||
-        f2 == f2_as_2 ||
-#ifdef JIT
-        f2 == jitcompileme2 ||
-#endif
-        f2 == double_bytecoded2) return onevalue(fixnum_of_int(2));
+        f2 == f2_as_2
+        ) return onevalue(fixnum_of_int(2));
     if (fn == bytecoded0 ||
         fn == tracebytecoded0 ||
-        fn == f0_as_0 ||
-#ifdef JIT
-        fn == jitcompileme0 ||
-#endif
-        fn == double_bytecoded0) return onevalue(fixnum_of_int(0));
+        fn == f0_as_0
+        ) return onevalue(fixnum_of_int(0));
     if (fn == bytecoded3 ||
         fn == tracebytecoded3 ||
         fn == f3_as_0 ||
         fn == f3_as_1 ||
         fn == f3_as_2 ||
-        fn == f3_as_3 ||
-#ifdef JIT
-        fn == jitcompileme3 ||
-#endif
-        fn == double_bytecoded3) return onevalue(fixnum_of_int(3));
+        fn == f3_as_3
+        ) return onevalue(fixnum_of_int(3));
     if (fn == bytecodedn ||
-        fn == tracebytecodedn ||
-#ifdef JIT
-        fn == jitcompilemen ||
-#endif
-        fn == double_bytecodedn) return onevalue(fixnum_of_int(b[0]));
+        fn == tracebytecodedn
+        ) return onevalue(fixnum_of_int(b[0]));
     low = b[0];          // smallest number of valid args
     high = low + b[1];   // largest number before &rest is accounted for
     hardrest = 0;
@@ -429,7 +411,6 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
     else return onevalue(nil);
     r = list3(fixnum_of_int(low),
               fixnum_of_int(high), fixnum_of_int(hardrest));
-    errexit();
     return onevalue(r);
 }
 
@@ -465,35 +446,15 @@ LispObject Lsymbol_argcode(LispObject env, LispObject a)
     r = qcar(r);
     if (!is_bps(r)) return onevalue(nil);
     if (f1 == bytecoded1) val = 1;
-#ifdef JIT
-    else if (f1 == jitcompileme1) val = 1;
-#endif
     else if (f1 == tracebytecoded1) val = 1 + BYTE_TRACED;
-    else if (f1 == double_bytecoded1) val = 1 + BYTE_DOUBLED;
     else if (f2 == bytecoded2) val = 2;
-#ifdef JIT
-    else if (f2 == jitcompileme2) val = 2;
-#endif
     else if (f2 == tracebytecoded2) val = 2 + BYTE_TRACED;
-    else if (f2 == double_bytecoded2) val = 2 + BYTE_DOUBLED;
     else if (fn == bytecoded0) val = 0;
-#ifdef JIT
-    else if (fn == jitcompileme0) val = 0;
-#endif
     else if (fn == tracebytecoded0) val = 0 + BYTE_TRACED;
-    else if (fn == double_bytecoded0) val = 0 + BYTE_DOUBLED;
     else if (fn == bytecoded3) val = 3;
-#ifdef JIT
-    else if (fn == jitcompileme3) val = 3;
-#endif
     else if (fn == tracebytecoded3) val = 3 + BYTE_TRACED;
-    else if (fn == double_bytecoded3) val = 3 + BYTE_DOUBLED;
     else if (fn == bytecodedn) val = 4;
-#ifdef JIT
-    else if (fn == jitcompilemen) val = 4;
-#endif
     else if (fn == tracebytecodedn) val = 4 + BYTE_TRACED;
-    else if (fn == double_bytecodedn) val = 4 + BYTE_DOUBLED;
 //
 // I observe that I do not support double-execute for &optional and &rest
 // functions. I do not mind that too much!
@@ -524,9 +485,7 @@ LispObject Lsymbol_argcode(LispObject env, LispObject a)
 //
 // The job of this function is to put back information as retrieved by
 // symbol-argcode. It is used in part of the support for native compilation
-// via C code... Note that it does not interact with any JIT stuff since the
-// two compilation strategies are complementary and I do not expect that I
-// will every use both at once.
+// via C code...
 //
 
 LispObject Lsymbol_restore_fns(LispObject env, LispObject name)
@@ -536,7 +495,7 @@ LispObject Lsymbol_restore_fns(LispObject env, LispObject name)
 // This expects a property that has value <argcode> . <env>
 //
     if (!is_symbol(name)) return onevalue(nil);
-    n = get(name, bytecoded_symbol);
+    n = get(name, bytecoded_symbol, nil);
     if (!consp(n)) return onevalue(nil);
     env = qcdr(n);
     n = qcar(n);
@@ -561,17 +520,11 @@ LispObject Lsymbol_restore_fns(LispObject env, LispObject name)
         case 1 + BYTE_TRACED:
             set_fns(name, tracebytecoded1, too_many_1, wrong_no_1);
             break;
-        case 1 + BYTE_DOUBLED:
-            set_fns(name, double_bytecoded1, too_many_1, wrong_no_1);
-            break;
         case 2:
             set_fns(name, too_few_2, bytecoded2, wrong_no_2);
             break;
         case 2 + BYTE_TRACED:
             set_fns(name, too_few_2, tracebytecoded2, wrong_no_2);
-            break;
-        case 2 + BYTE_DOUBLED:
-            set_fns(name, too_few_2, double_bytecoded2, wrong_no_2);
             break;
         case 0:
             set_fns(name, wrong_no_0a, wrong_no_0b, bytecoded0);
@@ -579,26 +532,17 @@ LispObject Lsymbol_restore_fns(LispObject env, LispObject name)
         case 0 + BYTE_TRACED:
             set_fns(name, wrong_no_0a, wrong_no_0b, tracebytecoded0);
             break;
-        case 0 + BYTE_DOUBLED:
-            set_fns(name, wrong_no_0a, wrong_no_0b, double_bytecoded0);
-            break;
         case 3:
             set_fns(name, wrong_no_3a, wrong_no_3b, bytecoded3);
             break;
         case 3 + BYTE_TRACED:
             set_fns(name, wrong_no_3a, wrong_no_3b, tracebytecoded3);
             break;
-        case 3 + BYTE_DOUBLED:
-            set_fns(name, wrong_no_3a, wrong_no_3b, double_bytecoded3);
-            break;
         case 4:
             set_fns(name, wrong_no_na, wrong_no_nb, bytecodedn);
             break;
         case 4 + BYTE_TRACED:
             set_fns(name, wrong_no_na, wrong_no_nb, tracebytecodedn);
-            break;
-        case 4 + BYTE_DOUBLED:
-            set_fns(name, wrong_no_na, wrong_no_nb, double_bytecodedn);
             break;
         case BYTE_OPT:
             set_fns(name, byteopt1, byteopt2, byteoptn);
@@ -677,7 +621,7 @@ LispObject Lsymbol_env(LispObject env, LispObject a)
 }
 
 LispObject Lsymbol_set_env(LispObject env, LispObject a, LispObject b)
-{   if (!is_symbol(a)) return aerror1("symbol-set-env", a);
+{   if (!is_symbol(a)) aerror1("symbol-set-env", a);
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
     qenv(a) = b;
@@ -732,11 +676,10 @@ LispObject Lsymbol_make_fastget(LispObject env, LispObject a, LispObject n)
     if (is_fixnum(n))
     {   n1 = int_of_fixnum(n);
         if (n1 < -1 || n1 >= fastget_size)
-            return aerror1("symbol-make-fastget", n);
+            aerror1("symbol-make-fastget", n);
 //
 //      trace_printf("+++ Use fastget slot %d for ", n1);
 //      loop_print_trace(a);
-//      errexit();
 //      trace_printf("\n");
 //
         if (p != 0) elt(fastget_names, p-1) = SPID_NOPROP;
@@ -773,240 +716,14 @@ void lose_C_def(LispObject a)
 //
 // None of the code here can cause garbage collection.
 //
-#ifdef COMMON
     LispObject b = get(a, unset_var, nil), c;
-#else
-    LispObject b = get(a, unset_var), c;
-#endif
     Lremprop(nil, a, unset_var);
     qheader(a) &= ~SYM_C_DEF;
-#ifdef COMMON
     c = get(b, work_symbol, nil);
-#else
-    c = get(b, work_symbol);
-#endif
     c = deleqip(a, c);
     if (c == nil) Lremprop(nil, b, work_symbol);
     else putprop(b, work_symbol, c);
 }
-
-#ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
-
-//
-// (symbol-set-native fn args bpsbase offset env)
-// where bpsbase is as handed back by (make-native nnn) and offset is
-// the offset in this block to enter at.
-// If args has the actual arg count in its bottom byte. Usually the
-// rest of it will be zero, and then one function cell is set to point to the
-// given entrypoint and the other two are set to point at error handlers.
-// If any bits in args beyond that are set then this call only changes the
-// directly specified function cell, and the others are left in whatever state
-// they were. If several of the fuction cells are to be filled in (eg to cope
-// with &optional or &rest arguments) then a simple call with args<256 must
-// be made first, followed by the calls (args>=256) that fill in the other
-// two cells.
-// The first time that symbol-set-native is called on a function that
-// function MUST have a byte coded definition, and this definition is
-// picked up and stored away, so that if (preserve) is called the bytecoded
-// definition will be available for use on systems with different
-// architectures. To make things tolerably consistent with that any operation
-// that installs a new bytecoded (or for that matter other) definition
-// will clear away any native-compiled versions of the function.
-//
-// The native code that is installed will be expected to have relocation
-// records starting at the start of bpsbase, and these will be activated,
-// filling in references from the bps to other executable parts of Lisp.
-// Passing bad arguments to this function provide a quick and easy way to
-// cayse UTTER havoc. Therefore I disable its use in server applications.
-//
-
-LispObject Lsymbol_set_native(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject fn, args, bpsbase, offset, env, w1, w2, w3;
-    int32_t pagenumber, t_p, arginfo;
-    intptr_t address, page, bps;
-    argcheck(nargs, 5, "symbol-set-native");
-    va_start(a, nargs);
-    fn = va_arg(a, LispObject);
-    args = va_arg(a, LispObject);
-    bpsbase = va_arg(a, LispObject);
-    offset = va_arg(a, LispObject);
-    env = va_arg(a, LispObject);
-    va_end(a);
-    if (!is_symbol(fn) ||
-        (qheader(fn) & (SYM_SPECIAL_FORM | SYM_CODEPTR)) != 0)
-        return aerror1("symbol-set-native", fn);
-    if (!is_fixnum(args)) return aerror1("symbol-set-native", args);
-    if (!consp(bpsbase) ||
-        !is_fixnum(qcar(bpsbase)) ||
-        !is_fixnum(qcdr(bpsbase)))
-        return aerror1("symbol-set-native", bpsbase);
-    if (!is_fixnum(offset)) return aerror1("symbol-set-native", offset);
-    nargs = int_of_fixnum(args);
-    pagenumber = int_of_fixnum(qcar(bpsbase));
-    if (pagenumber<0 || pagenumber>=native_pages_count)
-        return aerror1("symbol-set-native", bpsbase);
-    bps = int_of_fixnum(qcdr(bpsbase));
-    address = bps+int_of_fixnum(offset);
-    if (address<8 || address>=(intptr_t)CSL_PAGE_SIZE)
-        return aerror1("symbol-set-native", offset);
-    page = (intptr_t)native_pages[pagenumber];
-    page = doubleword_align_up(page);
-    bps = page + bps;
-    relocate_native_function((unsigned char *)bps);
-//
-// Here I need to push the info I have just collected onto
-// the native_code list since otherwise things will not be re-loaded in
-// from a checkpoint image. Also if the function is at present byte-coded
-// I need to record that info about it in native_code.
-//
-    w1 = native_code;
-    w2 = nil;
-    while (w1!=nil)
-    {   w2 = qcar(w1);
-        if (qcar(w2) == fn) break;
-        w1 = qcdr(w1);
-    }
-    if (w1 == nil)
-    {
-//
-// Here the function has not been seen as native code ever before, so it has
-// not been entered into the list. Do something about that...
-//
-        push2(env, fn);
-        args = Lsymbol_argcount(nil, fn);
-        errexitn(2);
-        if (args == nil)
-            return aerror1("No bytecode definition found for", fn);
-//
-// Now I have to reverse the information that symbol_argcount gave me
-// to get the single numeric code as wanted by symbol_set_definition.
-// Oh what a mess.
-//
-        if (is_fixnum(args)) arginfo = int_of_fixnum(args);
-        else
-        {   arginfo = int_of_fixnum(qcar(args));
-            args = qcdr(args);
-            arginfo |= ((int_of_fixnum(qcar(args)) - arginfo) << 8);
-            args = qcdr(args);
-            arginfo |= int_of_fixnum(qcar(args)) << 16;
-        }
-        fn = stack[0];
-        w2 = list2(fn, fixnum_of_int(arginfo));
-        errexitn(2);
-        w2 = cons(w2, native_code);
-        errexitn(2);
-        native_code = w2;
-        w2 = qcar(w2);
-        pop2(fn, env);
-    }
-    w2 = qcdr(w2);  // {nargs,(type . offset . env),...}
-//
-// If I was defining this function in the simple way I should clear any
-// previous version (for this machine architecture) from the record.
-// Just at present this does not release the memory, but at some stage
-// in the future I may arrange to compact away old code when I do a
-// preserve operation (say).
-//
-    if (nargs <= 0xff)
-    {   w1 = w3 = w2;
-        for (w1=qcdr(w2); w1!=nil; w1=qcdr(w1))
-        {   w3 = qcar(w1);
-            if (qcar(w3) == fixnum_of_int(native_code_tag)) break;
-            w3 = w1;
-        }
-        if (w1 != nil) qcdr(w3) = qcdr(w1);
-    }
-//
-// w2 is still the entry for this function in the native code list. It
-// needs to have an entry of type 0 (ie for bytecoded) and so the next
-// thing to do is to check that such an entry exists and if not to create
-// it.
-//
-    w1 = w2;
-    while ((w1 = qcdr(w1)) != nil)
-    {   w3 = qcar(w1);
-        if (qcar(w3) == fixnum_of_int(0)) break;
-        w1 = qcdr(w1);
-    }
-    if (w1 == nil)
-    {
-//
-// This is where there was no bytecode entry on the native code list
-// for this function, so I had better create one for it. Note that only
-// one such entry will ever be stored so it does not matter much where on
-// the list it goes. I suspect that the list ought always to be empty
-// in this case anyway.
-//
-        push3(fn, env, w2);
-        w1 = list2star(fixnum_of_int(0), fixnum_of_int(0), qenv(fn));
-        errexitn(3);
-        w2 = stack[0];
-        w1 = cons(w1, qcdr(w2));
-        errexitn(3);
-        pop3(w2, env, fn);
-        qcdr(w2) = w1;
-    }
-//
-// Now the list of native code associated with this function certainly holds
-// a byte-coded definition (and for sanity that had better be consistent
-// with the native code I am installing now, but that is not something
-// that can be checked at this level). Put in an entry referring to the
-// current gubbins.
-//
-    push3(w2, fn, env);
-//
-// now I pack the code type, arg category and offset into the
-// single fixnum that that information has to end up in.
-//
-    t_p = (native_code_tag << 20);
-    if ((nargs & 0xffffff00) != 0)
-    {   switch (nargs & 0xff)
-        {   case 1: t_p |= (1<<18); break;
-            case 2: t_p |= (2<<18); break;
-            default:t_p |= (3<<18); break;
-        }
-    }
-    t_p |= (pagenumber & 0x3ffff);
-    w1 = list2star(fixnum_of_int(t_p), fixnum_of_int(address), env);
-    errexitn(3);
-    w1 = ncons(w1);
-    pop3(env, fn, w2);
-    errexit();
-    while ((w3 = qcdr(w2)) != nil) w2 = w3;  // Tag onto the END
-    qcdr(w2) = w1;
-    qheader(fn) &= ~SYM_TRACED;
-    address = page + address;
-//
-// The code here must do just about the equivalent to that in restart.c
-//
-    switch (nargs & 0xff)
-    {   case 0:  ifnn(fn) = address;
-            if (nargs<=0xff)
-                ifn1(fn) = (intptr_t)wrong_no_0a, ifn2(fn) = (intptr_t)wrong_no_0b;
-            break;
-        case 1:  ifn1(fn) = address;
-            if (nargs<=0xff)
-                ifn2(fn) = (intptr_t)too_many_1, ifnn(fn) = (intptr_t)wrong_no_1;
-            break;
-        case 2:  ifn2(fn) = address;
-            if (nargs<=0xff)
-                ifn1(fn) = (intptr_t)too_few_2, ifnn(fn) = (intptr_t)wrong_no_2;
-            break;
-        case 3:  ifnn(fn) = address;
-            if (nargs<=0xff)
-                ifn1(fn) = (intptr_t)wrong_no_3a, ifn2(fn) = (intptr_t)wrong_no_3b;
-            break;
-        default: ifnn(fn) = address;
-            if (nargs<=0xff)
-                ifn1(fn) = (intptr_t)wrong_no_na, ifn2(fn) = (intptr_t)wrong_no_nb;
-            break;
-    }
-    qenv(fn) = env;
-    return onevalue(fn);
-}
-
-#endif // REINSTATE_NATIVE_CODE_EXPERIMENT
 
 static bool restore_fn_cell(LispObject a, char *name,
                                size_t len, setup_type const s[])
@@ -1035,11 +752,10 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     size_t len;
     size_t i;
     LispObject pn;
-    if (!symbolp(a)) return aerror1("restore-c-code", a);
+    if (!symbolp(a)) aerror1("restore-c-code", a);
     push(a);
     pn = get_pname(a);
     pop(a);
-    errexit();
     name = (char *)&celt(pn, 0);
     len = length_of_byteheader(vechdr(pn)) - CELL;
 //
@@ -1050,13 +766,8 @@ static LispObject Lrestore_c_code(LispObject env, LispObject a)
     {   if (restore_fn_cell(a, name, len, setup_tables[i]))
         {   LispObject env;
             push(a);
-#ifdef COMMON
             env = get(a, funarg, nil);
-#else
-            env = get(a, funarg);
-#endif
             pop(a);
-            errexit();
             qenv(a) = env;
             return onevalue(a);
         }
@@ -1091,7 +802,7 @@ LispObject Lsymbol_set_definition(LispObject env,
 //
         (qheader(a) & (SYM_SPECIAL_FORM | SYM_CODEPTR)) != 0)
     {   if (qheader(a) & SYM_C_DEF) return onevalue(nil);
-        return aerror1("symbol-set-definition", a);
+        aerror1("symbol-set-definition", a);
     }
     qheader(a) &= ~SYM_TRACED;
     set_fns(a, undefined1, undefined2, undefinedn); // Tidy up first
@@ -1106,10 +817,10 @@ LispObject Lsymbol_set_definition(LispObject env,
 // of a function too.  However for the second arg to be a macro or a
 // special form would still be a calamity.
 //      if ((qheader(b) & SYM_CODEPTR) == 0)
-//          return aerror1("symbol-set-definition", b);
+//          aerror1("symbol-set-definition", b);
 //
         if ((qheader(b) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0)
-            return aerror1("symbol-set-definition", b);
+            aerror1("symbol-set-definition", b);
         qheader(a) = qheader(a) & ~SYM_MACRO;
         {   set_fns(a, qfn1(b), qfn2(b), qfnn(b));
             qenv(a) = qenv(b);
@@ -1120,29 +831,18 @@ LispObject Lsymbol_set_definition(LispObject env,
 //
             if ((qheader(b) & SYM_C_DEF) != 0)
             {
-#ifdef COMMON
                 LispObject c = get(b, unset_var, nil);
-#else
-                LispObject c = get(b, unset_var);
-#endif
                 if (c == nil) c = b;
                 push2(c, a);
                 putprop(a, unset_var, c);
-                errexitn(2);
                 pop(a);
-#ifdef COMMON
                 a = cons(a, get(stack[0], work_symbol, nil));
-#else
-                a = cons(a, get(stack[0], work_symbol));
-#endif
-                errexitn(1);
                 putprop(stack[0], work_symbol, a);
                 pop(b);
-                errexit();
             }
         }
     }
-    else if (!consp(b)) return aerror1("symbol-set-definition", b);
+    else if (!consp(b)) aerror1("symbol-set-definition", b);
     else if (is_fixnum(qcar(b)))
     {   int32_t nargs = (int32_t)int_of_fixnum(qcar(b)),
                 nopts, flagbits, ntail;
@@ -1235,10 +935,8 @@ LispObject Lsymbol_set_definition(LispObject env,
             qfn1(compiler_symbol) != undefined1)
         {   push(a);
             a = ncons(a);
-            errexitn(1);
             (qfn1(compiler_symbol))(qenv(compiler_symbol), a);
             pop(a);
-            errexit();
         }
     }
     else if (qcar(b) == funarg)
@@ -1251,7 +949,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         else set_fns(a, funarged1, funarged2, funargedn);
         qenv(a) = qcdr(b);
     }
-    else return aerror1("symbol-set-definition", b);
+    else aerror1("symbol-set-definition", b);
     return onevalue(b);
 }
 
@@ -1264,17 +962,14 @@ LispObject Lgetd(LispObject env, LispObject a)
     if ((h & SYM_SPECIAL_FORM) != 0) type = fexpr_symbol;
     else if ((h & SYM_MACRO) != 0)
     {   a = cons(lambda, qenv(a));
-        errexit();
         type = macro_symbol;
     }
     else
     {   a = Lsymbol_function(nil, a);
-        errexit();
         if (a == nil) return onevalue(nil);
         type = expr_symbol;
     }
     a = cons(type, a);
-    errexit();
     return onevalue(a);
 }
 
@@ -1282,11 +977,10 @@ LispObject Lremd(LispObject env, LispObject a)
 {   LispObject res;
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
-        return aerror1("remd", a);
+        aerror1("remd", a);
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
     res = Lgetd(nil, a);
-    errexit();
     if (res == nil) return onevalue(nil); // no definition to remove
 //
 // I treat an explicit use of remd as a redefinition, and ensure that
@@ -1317,7 +1011,7 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
 {   LispObject res;
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
-        return aerror1("set-autoload", a);
+        aerror1("set-autoload", a);
     if (!(qfn1(a) == undefined1 && qfn2(a) == undefined2 &&
           qfnn(a) == undefinedn)) return onevalue(nil);
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
@@ -1326,7 +1020,6 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
     if (consp(b)) res = cons(a, b);
     else res = list2(a, b);
     pop2(b, a);
-    errexit();
 //
 // I treat an explicit use of set-autoload as a redefinition, and ensure that
 // restarting a preserved image will not put the definition back.  Note that
@@ -1364,7 +1057,6 @@ static LispObject traced1_function(LispObject env, LispObject a)
     trace_printf("\n");
     r = (*displaced1)(env, a);
     pop(name);
-    errexit();
     push(r);
     freshline_trace();
     loop_print_trace(name);
@@ -1389,7 +1081,6 @@ static LispObject traced2_function(LispObject env,
     trace_printf("\n");
     r = (*displaced2)(env, a, b);
     pop(name);
-    errexit();
     push(r);
     freshline_trace();
     loop_print_trace(name);
@@ -1423,7 +1114,7 @@ static LispObject tracedn_function(LispObject env, int nargs, ...)
 // split off for separate treatment.
 //
                 popv(nargs+1);
-                return aerror("system error in trace mechanism");
+                aerror("system error in trace mechanism");
             case 0:
                 r = (*displacedn)(env, 0);
                 break;
@@ -1502,11 +1193,10 @@ static LispObject tracedn_function(LispObject env, int nargs, ...)
 // I can trace bytecoded things with more args I believe, so users are not
 // utterly lost I hope.
 //
-        return aerror("traced function with > 15 args: not supported");
+        aerror("traced function with > 15 args: not supported");
     }
     popv(nargs);
     pop(name);
-    errexit();
     push(r);
     freshline_trace();
     loop_print_trace(name);
@@ -1542,22 +1232,10 @@ static uint32_t find_built_in_function(one_args *f1,
     return pack_funtable(NOT_FOUND, NOT_FOUND);
 }
 
-LispObject Ltrace_all(LispObject, LispObject a)
-{
-#ifdef DEBUG
-    if (a == nil) trace_all = 0;
-    else trace_all = 1;
-    return onevalue(nil);
-#else
-    return aerror("trace-all only supported in DEBUG version");
-#endif
-}
-
 LispObject Ltrace(LispObject env, LispObject a)
 {   LispObject w = a;
     if (symbolp(a))
     {   a = ncons(a);
-        errexit();
         w = a;
     }
     while (consp(w))
@@ -1604,7 +1282,6 @@ LispObject Ltrace(LispObject env, LispObject a)
             if (fixenv)
             {   push2(a, s);
                 a = cons(s, qenv(s));
-                errexitn(2);
                 pop(s);
                 qenv(s) = a;
                 pop(a);
@@ -1664,15 +1341,10 @@ LispObject Ltrace(LispObject env, LispObject a)
     return onevalue(a);
 }
 
-//
-// The following will undo traceset as well as trace.
-//
-
 LispObject Luntrace(LispObject env, LispObject a)
 {   LispObject w = a;
     if (symbolp(a))
     {   a = ncons(a);
-        errexit();
         w = a;
     }
     while (consp(w))
@@ -1682,31 +1354,31 @@ LispObject Luntrace(LispObject env, LispObject a)
         {   one_args *f1 = qfn1(s);
             two_args *f2 = qfn2(s);
             n_args *fn = qfnn(s);
-            if (f1 == traceinterpreted1 || f1 == tracesetinterpreted1)
+            if (f1 == traceinterpreted1)
             {   set_fns(s, interpreted1, interpreted2, interpretedn);
                 qenv(s) = qcdr(qenv(s));
             }
-            else if (f1 == tracefunarged1 || f1 == tracesetfunarged1)
+            else if (f1 == tracefunarged1)
             {   set_fns(s, funarged1, funarged2, funargedn);
                 qenv(s) = qcdr(qenv(s));
             }
-            if (f1 == tracebytecoded1  || f1 == tracesetbytecoded1  ) ifn1(s) = (intptr_t)bytecoded1;
-            if (f2 == tracebytecoded2  || f2 == tracesetbytecoded2  ) ifn2(s) = (intptr_t)bytecoded2;
-            if (fn == tracebytecoded0  || fn == tracesetbytecoded0  ) ifnn(s) = (intptr_t)bytecoded0;
-            if (fn == tracebytecoded3  || fn == tracesetbytecoded3  ) ifnn(s) = (intptr_t)bytecoded3;
-            if (fn == tracebytecodedn  || fn == tracesetbytecodedn  ) ifnn(s) = (intptr_t)bytecodedn;
-            if (f1 == tracebyteopt1    || f1 == tracesetbyteopt1    ) ifn1(s) = (intptr_t)byteopt1;
-            if (f2 == tracebyteopt2    || f2 == tracesetbyteopt2    ) ifn2(s) = (intptr_t)byteopt2;
-            if (fn == tracebyteoptn    || fn == tracesetbyteoptn    ) ifnn(s) = (intptr_t)byteoptn;
-            if (f1 == tracebyteoptrest1|| f1 == tracesetbyteoptrest1) ifn1(s) = (intptr_t)byteoptrest1;
-            if (f2 == tracebyteoptrest2|| f2 == tracesetbyteoptrest2) ifn2(s) = (intptr_t)byteoptrest2;
-            if (fn == tracebyteoptrestn|| fn == tracesetbyteoptrestn) ifnn(s) = (intptr_t)byteoptrestn;
-            if (f1 == tracehardopt1    || f1 == tracesethardopt1    ) ifn1(s) = (intptr_t)hardopt1;
-            if (f2 == tracehardopt2    || f2 == tracesethardopt2    ) ifn2(s) = (intptr_t)hardopt2;
-            if (fn == tracehardoptn    || fn == tracesethardoptn    ) ifnn(s) = (intptr_t)hardoptn;
-            if (f1 == tracehardoptrest1|| f1 == tracesethardoptrest1) ifn1(s) = (intptr_t)hardoptrest1;
-            if (f2 == tracehardoptrest2|| f2 == tracesethardoptrest2) ifn2(s) = (intptr_t)hardoptrest2;
-            if (fn == tracehardoptrestn|| fn == tracesethardoptrestn) ifnn(s) = (intptr_t)hardoptrestn;
+            if (f1 == tracebytecoded1) ifn1(s) = (intptr_t)bytecoded1;
+            if (f2 == tracebytecoded2) ifn2(s) = (intptr_t)bytecoded2;
+            if (fn == tracebytecoded0) ifnn(s) = (intptr_t)bytecoded0;
+            if (fn == tracebytecoded3) ifnn(s) = (intptr_t)bytecoded3;
+            if (fn == tracebytecodedn) ifnn(s) = (intptr_t)bytecodedn;
+            if (f1 == tracebyteopt1  ) ifn1(s) = (intptr_t)byteopt1;
+            if (f2 == tracebyteopt2  ) ifn2(s) = (intptr_t)byteopt2;
+            if (fn == tracebyteoptn  ) ifnn(s) = (intptr_t)byteoptn;
+            if (f1 == tracebyteoptrest1) ifn1(s) = (intptr_t)byteoptrest1;
+            if (f2 == tracebyteoptrest2) ifn2(s) = (intptr_t)byteoptrest2;
+            if (fn == tracebyteoptrestn) ifnn(s) = (intptr_t)byteoptrestn;
+            if (f1 == tracehardopt1    ) ifn1(s) = (intptr_t)hardopt1;
+            if (f2 == tracehardopt2    ) ifn2(s) = (intptr_t)hardopt2;
+            if (fn == tracehardoptn    ) ifnn(s) = (intptr_t)hardoptn;
+            if (f1 == tracehardoptrest1) ifn1(s) = (intptr_t)hardoptrest1;
+            if (f2 == tracehardoptrest2) ifn2(s) = (intptr_t)hardoptrest2;
+            if (fn == tracehardoptrestn) ifnn(s) = (intptr_t)hardoptrestn;
             if (f1 == traced1_function)
             {   int nargs = funtable_nargs(table_entry);
                 set_fns(s, displaced1, displaced2, displacedn);
@@ -1735,261 +1407,6 @@ LispObject Luntrace(LispObject env, LispObject a)
     }
     return onevalue(a);
 }
-
-LispObject Ltraceset(LispObject env, LispObject a)
-{   LispObject w = a;
-    if (symbolp(a))
-    {   a = ncons(a);
-        errexit();
-        w = a;
-    }
-    while (consp(w))
-    {   LispObject s = qcar(w);
-        w = qcdr(w);
-        if (symbolp(s))
-        {   one_args *f1 = qfn1(s);
-            two_args *f2 = qfn2(s);
-            n_args *fn = qfnn(s);
-            int fixenv = 0, done = 0;
-            if (f1 == undefined1)
-            {   freshline_debug();
-                debug_printf("+++ ");
-                loop_print_debug(s);
-                debug_printf(" not yet defined\n");
-                continue;
-            }
-            qheader(s) |= SYM_TRACED;
-            if (f1 == interpreted1)
-            {   set_fns(s, tracesetinterpreted1, tracesetinterpreted2, tracesetinterpretedn);
-                fixenv = done = 1;
-            }
-            if (f1 == funarged1)
-            {   set_fns(s, tracesetfunarged1, tracesetfunarged2, tracesetfunargedn);
-                fixenv = done = 1;
-            }
-            if (fn == bytecoded0) ifnn(s) = (intptr_t)tracesetbytecoded0, done = 1;
-            if (f1 == bytecoded1) ifn1(s) = (intptr_t)tracesetbytecoded1, done = 1;
-            if (f2 == bytecoded2) ifn2(s) = (intptr_t)tracesetbytecoded2, done = 1;
-            if (fn == bytecoded3) ifnn(s) = (intptr_t)tracesetbytecoded3, done = 1;
-            if (fn == bytecodedn) ifnn(s) = (intptr_t)tracesetbytecodedn, done = 1;
-            if (f1 == byteopt1) ifn1(s) = (intptr_t)tracesetbyteopt1, done = 1;
-            if (f2 == byteopt2) ifn2(s) = (intptr_t)tracesetbyteopt2, done = 1;
-            if (fn == byteoptn) ifnn(s) = (intptr_t)tracesetbyteoptn, done = 1;
-            if (f1 == hardopt1) ifn1(s) = (intptr_t)tracesethardopt1, done = 1;
-            if (f2 == hardopt2) ifn2(s) = (intptr_t)tracesethardopt2, done = 1;
-            if (fn == hardoptn) ifnn(s) = (intptr_t)tracesethardoptn, done = 1;
-            if (f1 == byteoptrest1) ifn1(s) = (intptr_t)tracesetbyteoptrest1, done = 1;
-            if (f2 == byteoptrest2) ifn2(s) = (intptr_t)tracesetbyteoptrest2, done = 1;
-            if (fn == byteoptrestn) ifnn(s) = (intptr_t)tracesetbyteoptrestn, done = 1;
-            if (f1 == hardoptrest1) ifn1(s) = (intptr_t)tracesethardoptrest1, done = 1;
-            if (f2 == hardoptrest2) ifn2(s) = (intptr_t)tracesethardoptrest2, done = 1;
-            if (fn == hardoptrestn) ifnn(s) = (intptr_t)tracesethardoptrestn, done = 1;
-            if (fixenv)
-            {   push2(a, s);
-                a = cons(s, qenv(s));
-                errexitn(2);
-                pop(s);
-                qenv(s) = a;
-                pop(a);
-            }
-            if (done) continue;
-//
-// I permit the tracing of just one function from the kernel, and achieve
-// this by installing a wrapper function in place of the real definition.
-// Indeed this is just like Lisp-level embedding, except that I can get at the
-// entrypoint table used by the bytecode interpreter and so trap calls made
-// via there, and I can use that table to tell me how many arguments the
-// traced function needed.
-//
-            if (displaced1 == NULL)
-            {   int nargs = funtable_nargs(table_entry);
-//
-// Remember what function was being traced, so that it can eventually be
-// invoked, and its name printed.
-//
-                displaced1 = f1;
-                displaced2 = f2;
-                displacedn = fn;
-                tracedfn = s;
-//
-// This makes calls via the regular interpreter see the traced version...
-//
-                set_fns(s, traced1_function, traced2_function,
-                        tracedn_function);
-                table_entry = find_built_in_function(f1, f2, fn);
-                nargs = funtable_nargs(table_entry);
-                table_entry = funtable_index(table_entry);
-                if (nargs != NOT_FOUND)
-                {
-//
-// .. and now I make calls via short-form bytecodes do likewise.
-//
-                    switch (nargs)
-                {       default:
-                        case 0: no_arg_functions[funtable_index(table_entry)] =
-                                tracedn_function;
-                            break;
-                        case 1: one_arg_functions[funtable_index(table_entry)] =
-                                traced1_function;
-                            break;
-                        case 2: two_arg_functions[funtable_index(table_entry)] =
-                                traced2_function;
-                            break;
-                        case 3: three_arg_functions[funtable_index(table_entry)] =
-                                tracedn_function;
-                            break;
-                    }
-                }
-            }
-            continue;
-        }
-    }
-    return onevalue(a);
-}
-
-LispObject Ldouble(LispObject env, LispObject a)
-{   LispObject w = a;
-    if (symbolp(a))
-    {   a = ncons(a);
-        errexit();
-        w = a;
-    }
-    while (consp(w))
-    {   LispObject s = qcar(w);
-        w = qcdr(w);
-        if (symbolp(s))
-        {   one_args *f1 = qfn1(s);
-            two_args *f2 = qfn2(s);
-            n_args *fn = qfnn(s);
-            int fixenv = 0, done = 0;
-            if (f1 == undefined1) continue;
-            if (f1 == interpreted1)
-            {   set_fns(s, double_interpreted1, double_interpreted2, double_interpretedn);
-                fixenv = done = 1;
-            }
-            if (f1 == funarged1)
-            {   set_fns(s, double_funarged1, double_funarged2, double_funargedn);
-                fixenv = done = 1;
-            }
-            if (fn == bytecoded0) ifnn(s) = (intptr_t)double_bytecoded0, done = 1;
-            if (f1 == bytecoded1) ifn1(s) = (intptr_t)double_bytecoded1, done = 1;
-            if (f2 == bytecoded2) ifn2(s) = (intptr_t)double_bytecoded2, done = 1;
-            if (fn == bytecoded3) ifnn(s) = (intptr_t)double_bytecoded3, done = 1;
-            if (fn == bytecodedn) ifnn(s) = (intptr_t)double_bytecodedn, done = 1;
-            if (f1 == byteopt1) ifn1(s) = (intptr_t)double_byteopt1, done = 1;
-            if (f2 == byteopt2) ifn2(s) = (intptr_t)double_byteopt2, done = 1;
-            if (fn == byteoptn) ifnn(s) = (intptr_t)double_byteoptn, done = 1;
-            if (f1 == hardopt1) ifn1(s) = (intptr_t)double_hardopt1, done = 1;
-            if (f2 == hardopt2) ifn2(s) = (intptr_t)double_hardopt2, done = 1;
-            if (fn == hardoptn) ifnn(s) = (intptr_t)double_hardoptn, done = 1;
-            if (f1 == byteoptrest1) ifn1(s) = (intptr_t)double_byteoptrest1, done = 1;
-            if (f2 == byteoptrest2) ifn2(s) = (intptr_t)double_byteoptrest2, done = 1;
-            if (fn == byteoptrestn) ifnn(s) = (intptr_t)double_byteoptrestn, done = 1;
-            if (f1 == hardoptrest1) ifn1(s) = (intptr_t)double_hardoptrest1, done = 1;
-            if (f2 == hardoptrest2) ifn2(s) = (intptr_t)double_hardoptrest2, done = 1;
-            if (fn == hardoptrestn) ifnn(s) = (intptr_t)double_hardoptrestn, done = 1;
-            if (fixenv)
-            {   push2(a, s);
-                a = cons(s, qenv(s));
-                errexitn(2);
-                pop(s);
-                qenv(s) = a;
-                pop(a);
-            }
-            if (done) continue;
-            debug_printf("Unable to execution-double: "); loop_print_debug(s);
-            trace_printf("\n");
-            continue;
-        }
-    }
-    return onevalue(a);
-}
-
-LispObject Lundouble(LispObject env, LispObject a)
-{   LispObject w = a;
-    if (symbolp(a))
-    {   a = ncons(a);
-        errexit();
-        w = a;
-    }
-    while (consp(w))
-    {   LispObject s = qcar(w);
-        w = qcdr(w);
-        if (symbolp(s))
-        {   one_args *f1 = qfn1(s);
-            two_args *f2 = qfn2(s);
-            n_args *fn = qfnn(s);
-            if (f1 == double_interpreted1)
-            {   set_fns(a, interpreted1, interpreted2, interpretedn);
-                qenv(s) = qcdr(qenv(s));
-            }
-            else if (f1 == double_funarged1)
-            {   set_fns(s, funarged1, funarged2, funargedn);
-                qenv(s) = qcdr(qenv(s));
-            }
-            else if (f1 == double_bytecoded1) ifn1(s) = (intptr_t)bytecoded1;
-            else if (f2 == double_bytecoded2) ifn2(s) = (intptr_t)bytecoded2;
-            else if (fn == double_bytecoded0) ifnn(s) = (intptr_t)bytecoded0;
-            else if (fn == double_bytecoded3) ifnn(s) = (intptr_t)bytecoded3;
-            else if (fn == double_bytecodedn) ifnn(s) = (intptr_t)bytecodedn;
-            else if (f1 == double_byteopt1) ifn1(s) = (intptr_t)byteopt1;
-            else if (f2 == double_byteopt2) ifn2(s) = (intptr_t)byteopt2;
-            else if (fn == double_byteoptn) ifnn(s) = (intptr_t)byteoptn;
-            else if (f1 == double_byteoptrest1) ifn1(s) = (intptr_t)byteoptrest1;
-            else if (f2 == double_byteoptrest2) ifn2(s) = (intptr_t)byteoptrest2;
-            else if (fn == double_byteoptrestn) ifnn(s) = (intptr_t)byteoptrestn;
-            else if (f1 == double_hardopt1) ifn1(s) = (intptr_t)hardopt1;
-            else if (f2 == double_hardopt2) ifn2(s) = (intptr_t)hardopt2;
-            else if (fn == double_hardoptn) ifnn(s) = (intptr_t)hardoptn;
-            else if (f1 == double_hardoptrest1) ifn1(s) = (intptr_t)hardoptrest1;
-            else if (f2 == double_hardoptrest2) ifn2(s) = (intptr_t)hardoptrest2;
-            else if (fn == double_hardoptrestn) ifnn(s) = (intptr_t)hardoptrestn;
-        }
-    }
-    return onevalue(a);
-}
-
-#ifdef JIT
-
-//
-// This is at present EXPERIMENTAL and INCOMPLETE so do not try it
-// unless you are involved in debugging the code involved. It will NOT
-// work for general code!
-//
-
-LispObject Ljit(LispObject, LispObject a)
-{   LispObject w = a;
-    if (symbolp(a))
-    {   a = ncons(a);
-        errexit();
-        w = a;
-    }
-    while (consp(w))
-    {   LispObject s = qcar(w);
-        w = qcdr(w);
-        if (symbolp(s))
-        {   one_args *f1 = qfn1(s);
-            two_args *f2 = qfn2(s);
-            n_args *fn = qfnn(s);
-            int done = 0;
-            if (fn == bytecoded0) ifnn(s) = (intptr_t)jitcompileme0, done = 1;
-            if (f1 == bytecoded1) ifn1(s) = (intptr_t)jitcompileme1, done = 1;
-            if (f2 == bytecoded2) ifn2(s) = (intptr_t)jitcompileme2, done = 1;
-            if (fn == bytecoded3) ifnn(s) = (intptr_t)jitcompileme3, done = 1;
-            if (fn == bytecodedn) ifnn(s) = (intptr_t)jitcompilemen, done = 1;
-            if (!done)
-            {   freshline_debug();
-                debug_printf("+++ ");
-                loop_print_debug(s);
-                debug_printf(" not a candidate for JIT\n");
-            }
-            continue;
-        }
-    }
-    return onevalue(a);
-}
-
-#endif // JIT
 
 LispObject Lmacro_function(LispObject env, LispObject a)
 {   if (!symbolp(a)) return onevalue(nil);
@@ -2052,7 +1469,6 @@ LispObject get_pname(LispObject a)
         push(a);
         name = make_string(genname);
         pop(a);
-        errexit();
         qpname(a) = name;
         qheader(a) &= ~SYM_UNPRINTED_GENSYM;
     }
@@ -2061,14 +1477,13 @@ LispObject get_pname(LispObject a)
 }
 
 LispObject Lsymbol_name(LispObject env, LispObject a)
-{   if (!symbolp(a)) return aerror1("symbol-name", a);
+{   if (!symbolp(a)) aerror1("symbol-name", a);
     a = get_pname(a);
-    errexit();
     return onevalue(a);
 }
 
 LispObject Lsymbol_package(LispObject env, LispObject a)
-{   if (!symbolp(a)) return aerror1("symbol-package", a);
+{   if (!symbolp(a)) aerror1("symbol-package", a);
     a = qpackage(a);
     return onevalue(a);
 }
@@ -2123,7 +1538,6 @@ static LispObject Lrestart_lisp2(LispObject env,
 //
         b1 = b = Lexploden(nil, b);
         pop(a);
-        errexit();
         while (b1 != nil)
         {   int ch = int_of_fixnum(qcar(b1));
             n++;            // number of chars of arg
@@ -2133,7 +1547,7 @@ static LispObject Lrestart_lisp2(LispObject env,
             b1 = qcdr(b1);
         }
         v = (char *)malloc(n+1);
-        if (v == NULL) return aerror("space exhausted in restart-csl");
+        if (v == NULL) aerror("space exhausted in restart-csl");
         n = 0;
         while (b != nil)
         {   int ch = int_of_fixnum(qcar(b));
@@ -2163,8 +1577,7 @@ static LispObject Lrestart_lisp2(LispObject env,
     exit_tag = fixnum_of_int(2);   // Flag to say "restart"
     exit_reason = UNWIND_RESTART;
     exit_charvec = v;
-    flip_exception();
-    return nil;
+    throw LispRestart();
 }
 
 static LispObject Lrestart_lisp(LispObject env, LispObject a)
@@ -2188,15 +1601,14 @@ static LispObject Lpreserve_03(LispObject env, int nargs, ...)
     if (startup != nil) supervisor = startup;
     failed = Iwriterootp(filename);  // Can I open image file for writing?
     term_printf("\nThe system will be preserved on file \"%s\"\n", filename);
-    if (failed) return aerror("preserve");
+    if (failed) aerror("preserve");
     ensure_screen();
     exit_count = 0;  // no value at all returned
     exit_value = banner;
     exit_tag = resume == nil ? fixnum_of_int(1) : // Flag to say "preserve"
                fixnum_of_int(3);                  // preserve and restart
     exit_reason = UNWIND_RESTART;
-    flip_exception();
-    return nil;
+    throw LispRestart();
 }
 
 static LispObject Lpreserve_1(LispObject env, LispObject startup)
@@ -2235,15 +1647,14 @@ static LispObject Lpreserve_2(LispObject env,
 static LispObject Lcheckpoint(LispObject env,
                               LispObject startup, LispObject banner)
 {   char filename[LONGEST_LEGAL_FILENAME];
-    bool failed = false;
     char *msg = "";
     int len = 0;
     memset(filename, 0, sizeof(filename));
     ensure_screen();
     if (startup != nil) supervisor = startup;
-    failed = Iwriterootp(filename);  // Can I open image file for writing?
+    bool failed = Iwriterootp(filename);  // Can I open image file for writing?
     term_printf("\nThe system will be preserved on file \"%s\"\n", filename);
-    if (failed) return aerror("checkpoint");
+    if (failed) aerror("checkpoint");
     if (is_vector(banner) && is_string(banner))
     {   msg = &celt(banner, 0);
         len = length_of_byteheader(vechdr(banner)) - CELL;
@@ -2258,8 +1669,6 @@ static LispObject Lcheckpoint(LispObject env,
 //
     push3(catch_tags, faslvec, faslgensyms);
     preserve(msg, len);
-    if (exception_pending()) failed = 1, flip_exception();
-    adjust_all();
     pop3(faslgensyms, faslvec, catch_tags);
     eq_hash_tables = eq_hash_table_list;
     equal_hash_tables = equal_hash_table_list;
@@ -2271,7 +1680,6 @@ static LispObject Lcheckpoint(LispObject env,
             rehash_this_table(qcar(qq));
     }
     set_up_functions(true);
-    if (failed) return aerror("checkpoint");
     return onevalue(nil);
 }
 
@@ -2524,16 +1932,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
 #endif
     for (;;)
     {   int32_t ta = (int32_t)a & TAG_BITS;
-        if (ta == TAG_CONS
-#ifdef COMMON
-            && a != nil
-#endif
-           )
-        {   if (!consp(b)
-#ifdef COMMON
-                || b == nil
-#endif
-               ) return false;
+        if (ta == TAG_CONS && a != nil)
+        {   if (!consp(b) || b == nil) return false;
             else
             {   LispObject ca = qcar(a), cb = qcar(b);
                 if (ca == cb)
@@ -2549,16 +1949,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
 //
                 for (;;)
                 {   int32_t tca = (int32_t)ca & TAG_BITS;
-                    if (tca == TAG_CONS
-#ifdef COMMON
-                        && ca != nil
-#endif
-                       )
-                    {   if (!consp(cb)
-#ifdef COMMON
-                            || cb == nil
-#endif
-                           ) return false;
+                    if (tca == TAG_CONS && ca != nil)
+                    {   if (!consp(cb) || cb == nil) return false;
                         else
                         {   LispObject cca = qcar(ca), ccb = qcar(cb);
                             if (cca == ccb)
@@ -2776,16 +2168,8 @@ bool equal_fn(LispObject a, LispObject b)
 #endif
     for (;;)
     {   int32_t ta = (int32_t)a & TAG_BITS;
-        if (ta == TAG_CONS
-#ifdef COMMON
-            && a != nil
-#endif
-           )
-        {   if (!consp(b)
-#ifdef COMMON
-                || b == nil
-#endif
-               ) return false;
+        if (ta == TAG_CONS && a != nil)
+        {   if (!consp(b) || b == nil) return false;
             else
             {   LispObject ca = qcar(a), cb = qcar(b);
                 if (ca == cb)
@@ -2801,16 +2185,8 @@ bool equal_fn(LispObject a, LispObject b)
 //
                 for (;;)
                 {   int32_t tca = (int32_t)ca & TAG_BITS;
-                    if (tca == TAG_CONS
-#ifdef COMMON
-                        && ca != nil
-#endif
-                       )
-                    {   if (!consp(cb)
-#ifdef COMMON
-                            || cb == nil
-#endif
-                           ) return false;
+                    if (tca == TAG_CONS && ca != nil)
+                    {   if (!consp(cb) || cb == nil) return false;
                         else
                         {   LispObject cca = qcar(ca), ccb = qcar(cb);
                             if (cca == ccb)
@@ -2985,16 +2361,8 @@ bool equalp(LispObject a, LispObject b)
 #endif
     for (;;)
     {   int32_t ta = (int32_t)a & TAG_BITS;
-        if (ta == TAG_CONS
-#ifdef COMMON
-            && a != nil
-#endif
-           )
-        {   if (!consp(b)
-#ifdef COMMON
-                || b == nil
-#endif
-               ) return false;
+        if (ta == TAG_CONS && a != nil)
+        {   if (!consp(b) || b == nil) return false;
             else
             {   LispObject ca = qcar(a), cb = qcar(b);
                 if (ca == cb)
@@ -3010,16 +2378,8 @@ bool equalp(LispObject a, LispObject b)
 //
                 for (;;)
                 {   int32_t tca = (int32_t)ca & TAG_BITS;
-                    if (tca == TAG_CONS
-#ifdef COMMON
-                        && ca != nil
-#endif
-                       )
-                    {   if (!consp(cb)
-#ifdef COMMON
-                            || cb == nil
-#endif
-                           ) return false;
+                    if (tca == TAG_CONS && ca != nil)
+                    {   if (!consp(cb) || cb == nil) return false;
                         else
                         {   LispObject cca = qcar(ca), ccb = qcar(cb);
                             if (cca == ccb)
@@ -3195,12 +2555,11 @@ LispObject Lnull(LispObject env, LispObject a)
 LispObject Lendp(LispObject env, LispObject a)
 {   if (a == nil) return onevalue(lisp_true);
     else if (is_cons(a)) return onevalue(nil);
-    else return error(1, err_bad_endp, a);
+    else error(1, err_bad_endp, a);
 }
 
 LispObject Lnreverse(LispObject env, LispObject a)
 {   LispObject b = nil;
-#ifdef COMMON
     if (is_vector(a))
     {   intptr_t n = Llength(nil, a) - 0x10;
         intptr_t i = TAG_FIXNUM;
@@ -3213,7 +2572,6 @@ LispObject Lnreverse(LispObject env, LispObject a)
         }
         return onevalue(a);
     }
-#endif
     while (consp(a))
     {   LispObject c = a;
         a = qcdr(a);
@@ -3232,8 +2590,6 @@ LispObject Lnreverse2(LispObject env, LispObject a, LispObject b)
     }
     return onevalue(b);
 }
-
-#ifdef COMMON
 
 //
 // nreverse0 is like nreverse except that if its input is atomic it gets
@@ -3255,8 +2611,6 @@ LispObject Lnreverse0(LispObject env, LispObject a)
     return onevalue(b);
 }
 
-#endif
-
 LispObject Lreverse(LispObject env, LispObject a)
 {   LispObject r;
     stackcheck1(0, a);
@@ -3265,7 +2619,6 @@ LispObject Lreverse(LispObject env, LispObject a)
     {   push(a);
         r = cons(qcar(a), r);
         pop(a);
-        errexit();
         a = qcdr(a);
     }
     return onevalue(r);
@@ -3295,9 +2648,9 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
         {   LispObject c = qcar(b);
 #ifdef DEBUG_ASSOC
             assoc_length++;
-            if (assoc_length > 100*assoc_calls) return aerror("average search for assoc");
+            if (assoc_length > 100*assoc_calls) aerror("average search for assoc");
             if (++this_assoc > assoc_max) assoc_max = this_assoc;
-//!!        if (assoc_max > 1000) return aerror("length for assoc");
+//!!        if (assoc_max > 1000) aerror("length for assoc");
 #endif
             if (consp(c) && a == qcar(c)) return onevalue(c);
             b = qcdr(b);
@@ -3311,7 +2664,7 @@ LispObject Lassoc(LispObject env, LispObject a, LispObject b)
 #ifdef DEBUG_ASSOC
             assoc_length++;
             if (++this_assoc > assoc_max) assoc_max = this_assoc;
-//!!        if (assoc_max > 1000) return aerror("length for assoc");
+//!!        if (assoc_max > 1000) aerror("length for assoc");
 #endif
 #ifdef COMMON
             if (cl_equal(a, cc)) return onevalue(c);
@@ -3470,7 +2823,6 @@ static bool smemq(LispObject a, LispObject b)
 LispObject Lsmemq(LispObject env, LispObject a, LispObject b)
 {   bool r;
     r = smemq(a, b);
-    errexit();
     return onevalue(Lispify_predicate(r));
 }
 
@@ -3502,13 +2854,12 @@ static LispObject Lcontained(LispObject env, LispObject x, LispObject y)
 {   bool r;
     if (is_symbol(x) || is_fixnum(x)) r = containedeq(nil, x, y);
     else r = containedequal(nil, x, y);
-    errexit();
     return onevalue(Lispify_predicate(r));
 }
 
 LispObject Llast(LispObject env, LispObject a)
 {   LispObject b;
-    if (!consp(a)) return aerror1("last", a);
+    if (!consp(a)) aerror1("last", a);
     while (b = qcdr(a), consp(b)) a = b;
     return onevalue(qcar(a));
 }
@@ -3554,7 +2905,6 @@ LispObject Llength(LispObject env, LispObject a)
             n += 4;
         }
         a = make_lisp_unsigned64(n);
-        errexit();
         return onevalue(a);
     }
 //
@@ -3571,7 +2921,7 @@ LispObject Llength(LispObject env, LispObject a)
         {   LispObject dims = elt(a, 1);
             LispObject fillp = elt(a, 5);
             if (consp(dims) && !consp(qcdr(dims))) dims = qcar(dims);
-            else return aerror1("length", a);  // Not one-dimensional
+            else aerror1("length", a);  // Not one-dimensional
             if (is_fixnum(fillp)) dims = fillp;
             return onevalue(dims);
         }
@@ -3579,13 +2929,10 @@ LispObject Llength(LispObject env, LispObject a)
         else if (is_string_header(h)) n = length_of_byteheader(h) - CELL;
         else n = (length_of_header(h) - CELL)/CELL;
         a = make_lisp_unsigned64(n);
-        errexit();
         return onevalue(a);
     }
     else return onevalue(fixnum_of_int(0));
 }
-
-#ifdef COMMON
 
 LispObject Lappend_n(LispObject env, int nargs, ...)
 {   va_list a;
@@ -3618,20 +2965,17 @@ LispObject Lappend_n(LispObject env, int nargs, ...)
         pop(w);
         while (consp(w))
         {   push(w);
-            if (!exception_pending()) r = cons(qcar(w), r);
+            r = cons(qcar(w), r);
             pop(w);
             w = qcdr(w);
         }
     }
-    if (exception_pending()) return nil;
     return onevalue(nreverse(r));
 }
 
 LispObject Lappend_1(LispObject, LispObject a)
 {   return onevalue(a);
 }
-
-#endif // COMMON
 
 LispObject Lappend(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil;
@@ -3641,7 +2985,6 @@ LispObject Lappend(LispObject env, LispObject a, LispObject b)
     {   push(a);
         r = cons(qcar(a), r);
         pop(a);
-        errexitn(1);
         a = qcdr(a);
     }
     pop(b);
@@ -3667,7 +3010,6 @@ LispObject Ldelete(LispObject env, LispObject a, LispObject b)
             }
             stack[0] = qcdr(b);
             r = cons(qcar(b), r);
-            errexitn(2);
             b = stack[0];
         }
     }
@@ -3684,7 +3026,6 @@ LispObject Ldelete(LispObject env, LispObject a, LispObject b)
             }
             stack[0] = qcdr(b);
             r = cons(qcar(b), r);
-            errexitn(2);
             b = stack[0];
             a = stack[-1];
         }
@@ -3712,7 +3053,6 @@ LispObject Ldeleq(LispObject env, LispObject a, LispObject b)
         }
         stack[0] = qcdr(b);
         r = cons(qcar(b), r);
-        errexitn(2);
         b = stack[0];
     }
     popv(2);
@@ -3878,7 +3218,6 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
             r = cc;
             while (r != c)
             {   w = cons(qcar(r), rx);
-                errexitn(5);
                 rx = w;
                 r = qcdr(r);
             }
@@ -3888,23 +3227,20 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
         }
         if (!consp(c)) break;
 // Recurse in CAR direction
-        w = substq(a, b, qcar(c));
-// If the recursive call fails I need to unshare before exit - so I
-// put in a hand-crafted test that arranges that.
-        if (exception_pending())
-        {   while (r != TAG_FIXNUM)
+        on_backtrace(
+            w = substq(a, b, qcar(c)),
+// If the recursive call fails I need to unshare before exit.
+            while (r != TAG_FIXNUM)
             {   w = qcdr(r);
                 qcdr(r) = c;
                 c = r;
                 r = w;
-            }
-            return nil;
-        }
+            });
 //
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
 //
-        else if (w == qcar(c))
+        if (w == qcar(c))
         {   w = qcdr(c);
             qcdr(c) = r;
             r = c;
@@ -3926,13 +3262,11 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
             {   LispObject u = qcar(r), v = rx;
                 push(w);
                 ww = cons(u, v);
-                errexitn(6);
                 pop(w);
                 rx = ww;
                 r = qcdr(r);
             }
             w = cons(w, rx);
-            errexitn(5);
             rx = w;
             c = qcdr(c);
             r = TAG_FIXNUM;
@@ -3956,7 +3290,6 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
 // I have now restored the input list, so if I was taking an early exit
 // because EQUAL had failed on me I can give up now.
 //
-        if (exception_pending()) return nil;
         while (rx != TAG_FIXNUM)
         {   w = qcdr(rx);
             qcdr(rx) = c;
@@ -4004,7 +3337,6 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
             r = cc;
             while (r != c)
             {   w = cons(qcar(r), rx);
-                errexitn(5);
                 rx = w;
                 r = qcdr(r);
             }
@@ -4015,25 +3347,22 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
 // equal may fail with a stack overflow, and if it does it will return
 // false (and set the exception marker). In that case I must recover and
 // undo any damage I have done to input lists.
-        if (exception_pending() || !consp(c)) break;
+        if (!consp(c)) break;
 // Recurse in CAR direction
-        w = subst(a, b, qcar(c));
-// If the recursive call fails I need to unshare before exit - so I
-// put in a hand-crafted test that arranges that.
-        if (exception_pending())
-        {   while (r != TAG_FIXNUM)
+        on_backtrace(
+            w = subst(a, b, qcar(c)),
+// If the recursive call fails I need to unshare before exit.
+            while (r != TAG_FIXNUM)
             {   w = qcdr(r);
                 qcdr(r) = c;
                 c = r;
                 r = w;
-            }
-            return nil;
-        }
+            });
 //
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
 //
-        else if (w == qcar(c))
+        if (w == qcar(c))
         {   w = qcdr(c);
             qcdr(c) = r;
             r = c;
@@ -4055,13 +3384,11 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
             {   LispObject u = qcar(r), v = rx;
                 push(w);
                 ww = cons(u, v);
-                errexitn(6);
                 pop(w);
                 rx = ww;
                 r = qcdr(r);
             }
             w = cons(w, rx);
-            errexitn(5);
             rx = w;
             c = qcdr(c);
             r = TAG_FIXNUM;
@@ -4085,7 +3412,6 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
 // I have now restored the input list, so if I was taking an early exit
 // because EQUAL had failed on me I can give up now.
 //
-        if (exception_pending()) return nil;
         while (rx != TAG_FIXNUM)
         {   w = qcdr(rx);
             qcdr(rx) = c;
@@ -4136,7 +3462,6 @@ LispObject subla(LispObject a, LispObject c)
             r = cc;
             while (r != c)
             {   w = cons(qcar(r), rx);
-                errexitn(4);
                 rx = w;
                 r = qcdr(r);
             }
@@ -4146,23 +3471,20 @@ LispObject subla(LispObject a, LispObject c)
         }
         if (!consp(c)) break;
 // Recurse in CAR direction
-        w = subla(a, qcar(c));
-// If the recursive call fails I need to unshare before exit - so I
-// put in a hand-crafted test that arranges that.
-        if (exception_pending())
-        {   while (r != TAG_FIXNUM)
+        on_backtrace(
+            w = subla(a, qcar(c)),
+// If the recursive call fails I need to unshare before exit.
+            while (r != TAG_FIXNUM)
             {   w = qcdr(r);
                 qcdr(r) = c;
                 c = r;
                 r = w;
-            }
-            return nil;
-        }
+            });
 //
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
 //
-        else if (w == qcar(c))
+        if (w == qcar(c))
         {   w = qcdr(c);
             qcdr(c) = r;
             r = c;
@@ -4184,13 +3506,11 @@ LispObject subla(LispObject a, LispObject c)
             {   LispObject u = qcar(r), v = rx;
                 push(w);
                 ww = cons(u, v);
-                errexitn(5);
                 pop(w);
                 rx = ww;
                 r = qcdr(r);
             }
             w = cons(w, rx);
-            errexitn(4);
             rx = w;
             c = qcdr(c);
             r = TAG_FIXNUM;
@@ -4213,7 +3533,6 @@ LispObject subla(LispObject a, LispObject c)
 // I have now restored the input list, so if I was taking an early exit
 // because EQUAL had failed on me I can give up now.
 //
-        if (exception_pending()) return nil;
         while (rx != TAG_FIXNUM)
         {   w = qcdr(rx);
             qcdr(rx) = c;
@@ -4248,7 +3567,6 @@ LispObject sublis(LispObject a, LispObject c)
                 found = true;
                 break;
             }
-            if (exception_pending()) break;
             tt = qcdr(tt);
         }
         if (found)
@@ -4271,7 +3589,6 @@ LispObject sublis(LispObject a, LispObject c)
             r = cc;
             while (r != c)
             {   w = cons(qcar(r), rx);
-                errexitn(4);
                 rx = w;
                 r = qcdr(r);
             }
@@ -4282,25 +3599,22 @@ LispObject sublis(LispObject a, LispObject c)
 // equal may fail with a stack overflow, and if it does it will return
 // false (and set the exception marker). In that case I must recover and
 // undo any damage I have done to input lists.
-        if (exception_pending() || !consp(c)) break;
+        if (!consp(c)) break;
 // Recurse in CAR direction
-        w = sublis(a, qcar(c));
-// If the recursive call fails I need to unshare before exit - so I
-// put in a hand-crafted test that arranges that.
-        if (exception_pending())
-        {   while (r != TAG_FIXNUM)
+        on_backtrace(
+            w = sublis(a, qcar(c)),
+// If the recursive call fails I need to unshare before exit.
+            while (r != TAG_FIXNUM)
             {   w = qcdr(r);
                 qcdr(r) = c;
                 c = r;
                 r = w;
-            }
-            return nil;
-        }
+            });
 //
 // If the replacement is in fact identical to the original I will
 // need to pend any copy operations
 //
-        else if (w == qcar(c))
+        if (w == qcar(c))
         {   w = qcdr(c);
             qcdr(c) = r;
             r = c;
@@ -4322,13 +3636,11 @@ LispObject sublis(LispObject a, LispObject c)
             {   LispObject u = qcar(r), v = rx;
                 push(w);
                 ww = cons(u, v);
-                errexitn(5);
                 pop(w);
                 rx = ww;
                 r = qcdr(r);
             }
             w = cons(w, rx);
-            errexitn(4);
             rx = w;
             c = qcdr(c);
             r = TAG_FIXNUM;
@@ -4351,7 +3663,6 @@ LispObject sublis(LispObject a, LispObject c)
 // I have now restored the input list, so if I was taking an early exit
 // because EQUAL had failed on me I can give up now.
 //
-        if (exception_pending()) return nil;
         while (rx != TAG_FIXNUM)
         {   w = qcdr(rx);
             qcdr(rx) = c;
@@ -4371,7 +3682,7 @@ LispObject Lsubstq(LispObject env, int nargs, ...)
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
-        return aerror("subst");
+        aerror("subst");
     }
 #endif
     va_start(aa, nargs);
@@ -4389,7 +3700,7 @@ LispObject Lsubst(LispObject env, int nargs, ...)
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
-        return aerror("subst");
+        aerror("subst");
     }
 #endif
     va_start(aa, nargs);
@@ -4404,11 +3715,10 @@ LispObject Lsubst(LispObject env, int nargs, ...)
 
 LispObject Lsublis(LispObject env, LispObject al, LispObject x)
 {   stackcheck2(0, al, x);
-    errexit();
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
-        return aerror("sublis");
+        aerror("sublis");
     }
 #endif
     if (!consp(al)) return onevalue(x);
@@ -4421,11 +3731,10 @@ LispObject Lsubla(LispObject env, LispObject al, LispObject x)
 // as sublis, but uses eq test rather than equal
 //
 {   stackcheck2(0, al, x);
-    errexit();
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
-        return aerror("subla");
+        aerror("subla");
     }
 #endif
     if (!consp(al)) return onevalue(x);
@@ -4485,16 +3794,7 @@ setup_type const funcs2_setup[] =
     {"set-autoload",            too_few_2, Lset_autoload, wrong_no_2},
     {"remd",                    Lremd, too_many_1, wrong_no_1},
     {"trace",                   Ltrace, too_many_1, wrong_no_1},
-    {"traceset",                Ltraceset, too_many_1, wrong_no_1},
-#ifdef JIT
-    {"jit",                     Ljit, too_many_1, wrong_no_1},
-#endif
     {"untrace",                 Luntrace, too_many_1, wrong_no_1},
-// Note that untraceset is exactly the same as untrace
-    {"untraceset",              Luntrace, too_many_1, wrong_no_1},
-    {"trace-all",               Ltrace_all, too_many_1, wrong_no_1},
-    {"double-execute",          Ldouble, too_many_1, wrong_no_1},
-    {"undouble-execute",        Lundouble, too_many_1, wrong_no_1},
     {"macro-function",          Lmacro_function, too_many_1, wrong_no_1},
     {"symbol-name",             Lsymbol_name, too_many_1, wrong_no_1},
     {"id2string",               Lsymbol_name, too_many_1, wrong_no_1},
@@ -4521,24 +3821,20 @@ setup_type const funcs2_setup[] =
     {"subst",                   wrong_no_3a, wrong_no_3b, Lsubst},
     {"substq",                  wrong_no_3a, wrong_no_3b, Lsubstq},
     {"symbol-protect",          too_few_2, Lsymbol_protect, wrong_no_2},
-#ifdef COMMON
     {"symbol-plist",            Lplist, too_many_1, wrong_no_1},
     {"append",                  Lappend_1, Lappend, Lappend_n},
 //
 // In Common Lisp mode I make EQUAL do what Common Lisp says it should, but
 // also have EQUALS that is much the same but which also descends vectors.
 //
-    {"equal",                   too_few_2, Lcl_equal, wrong_no_2},
-    {"equals",                  too_few_2, Lequal, wrong_no_2},
-    {"nreverse0",               Lnreverse0, too_many_1, wrong_no_1},
-#else
-    {"append",                  too_few_2, Lappend, wrong_no_2},
+//  {"equal",                   too_few_2, Lcl_equal, wrong_no_2},
+//  {"equals",                  too_few_2, Lequal, wrong_no_2},
+//  {"nreverse0",               Lnreverse0, too_many_1, wrong_no_1},
 // In Standard Lisp mode EQUAL descends vectors (but does not case fold)
 // I provide cl-equal to do what Common Lisp does.
     {"cl-equal",                too_few_2, Lcl_equal, wrong_no_2},
     {"equal",                   too_few_2, Lequal, wrong_no_2},
     {"member",                  too_few_2, Lmember, wrong_no_2},
-#endif
     {"symbol-package",          Lsymbol_package, too_many_1, wrong_no_1},
     {"serialize",               Lserialize, too_many_1, wrong_no_1},
     {"full-serialize",          Lserialize1, too_many_1, wrong_no_1},

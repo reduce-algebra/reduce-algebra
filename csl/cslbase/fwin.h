@@ -1,5 +1,4 @@
-//
-// "fwin.h"                                       2003-2016, A C Norman
+// "fwin.h"                                           2003-2017, A C Norman
 //
 // This defines the public interface supported by the "fwin" window
 // interface.
@@ -8,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -473,7 +472,6 @@ extern "C" int fwin_plain_getchar();
 extern "C" int texmacs_mode;
 
 extern "C" void sigint_handler(int code);
-extern "C" void sigbreak_handler(int code);
 
 extern "C" int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main);
 extern "C" char fwin_prompt_string[MAX_PROMPT_LENGTH];

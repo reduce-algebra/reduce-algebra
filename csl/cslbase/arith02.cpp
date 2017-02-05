@@ -1,4 +1,4 @@
-//  arith02.cpp                       Copyright (C) 1990-2016 Codemist    
+//  arith02.cpp                            Copyright (C) 1990-2017 Codemist
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -235,7 +235,6 @@ static LispObject timesib(LispObject a, LispObject b)
     push(b);
     c = getvector(TAG_NUMBERS, TYPE_BIGNUM, lenb);
     pop(b);
-    errexit();
     lenb = (lenb-CELL)/4;
     if (aa < 0)
     {   aa = -aa;
@@ -326,7 +325,6 @@ extend_by_one_word:
     push(c);
     a = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*lenb);
     pop(c);
-    errexit();
     for (i=0; i<lenb; i++)
         bignum_digits(a)[i] = bignum_digits(c)[i];
     bignum_digits(a)[i] = aa;
@@ -346,18 +344,13 @@ static LispObject timesir(LispObject a, LispObject b)
 #define a   stack[-1]
 #define b   stack[-2]
     g = gcd(a, denominator(b));
-    if (exception_pending()) goto fail;
     a = quot2(a, g);
-    if (exception_pending()) goto fail;
     g = quot2(denominator(b), g);
-    if (exception_pending()) goto fail;
     a = times2(a, numerator(b));
-    if (exception_pending()) goto fail;
 //
 // make_ratio tidies things up if the denominator was exactly 1
 //
     w = make_ratio(a, g);
-fail:
     popv(3);
     return w;
 #undef a
@@ -373,11 +366,9 @@ static LispObject timesic(LispObject a, LispObject b)
     push2(a, r);
     i = times2(a, i);
     pop2(r, a);
-    errexit();
     push(i);
     r = times2(a, r);
     pop(i);
-    errexit();
     return make_complex(r, i);
 }
 
@@ -386,7 +377,7 @@ static LispObject timesif(LispObject a, LispObject b)
     if (trap_floating_overflow &&
         floating_edge_case(d))
     {   floating_clear_flags();
-        return aerror("floating point times");
+        aerror("floating point times");
     }
 // if b was a single or short float then there can be an overflow to infinity
 // within make_boxfloat... which will be detected there.
@@ -409,7 +400,7 @@ static LispObject timessf(LispObject a, LispObject b)
     if (trap_floating_overflow &&
         floating_edge_case(d))
     {   floating_clear_flags();
-        return aerror("floating point times");
+        aerror("floating point times");
     }
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
@@ -1378,7 +1369,6 @@ static LispObject timesbb(LispObject a, LispObject b)
 //
         a = negateb(a);
         pop(b);
-        errexit();
         lena = (bignum_length(a) - CELL)/4;
     }
     if (((int32_t)bignum_digits(b)[lenb-1]) < 0)
@@ -1387,7 +1377,6 @@ static LispObject timesbb(LispObject a, LispObject b)
         // see above comments about negateb
         b = negateb(b);
         pop(a);
-        errexit();
         lenb = (bignum_length(b) - CELL)/4;
     }
     if (lenb < lena)    // Commute so that b is at least as long as a
@@ -1424,7 +1413,6 @@ static LispObject timesbb(LispObject a, LispObject b)
         }
         lenc = 2*lenc;
         c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
-        errexitn(2);
 #if defined HAVE_LIBPTHREAD || defined WIN32
 //
 // If I run using threads then each of the three threads can need some
@@ -1448,7 +1436,6 @@ static LispObject timesbb(LispObject a, LispObject b)
             multiplication_buffer =
                 getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
             pop(c);
-            errexitn(2);
         }
         lenc = 2*lenc;
     }
@@ -1460,17 +1447,14 @@ static LispObject timesbb(LispObject a, LispObject b)
 //
         lenc = lena + lenb;
         c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lenc);
-        errexitn(2);
         if (multiplication_buffer == nil)
         {   push(c);
             multiplication_buffer =
                 getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
             pop(c);
-            errexitn(2);
         }
     }
     pop2(b, a);
-    errexit();
     d = multiplication_buffer;
     {   uint32_t *da = &bignum_digits(a)[0],
                  *db = &bignum_digits(b)[0],
@@ -1489,7 +1473,6 @@ static LispObject timesbb(LispObject a, LispObject b)
 // that was allocated, lena+lenb is a much better guess of how much data
 // is active in it.
 //
-    errexit();
     {   size_t newlenc = lena + lenb;
 //
 // I tidy up by putting a zero in any padding word above the top of the
@@ -1613,23 +1596,14 @@ static LispObject timesrr(LispObject a, LispObject b)
 #define da  stack[-3]
 #define na  stack[-4]
     g = gcd(na, db);
-    if (exception_pending()) goto fail;
     na = quot2(na, g);
-    if (exception_pending()) goto fail;
     db = quot2(db, g);
-    if (exception_pending()) goto fail;
     g = gcd(nb, da);
-    if (exception_pending()) goto fail;
     nb = quot2(nb, g);
-    if (exception_pending()) goto fail;
     da = quot2(da, g);
-    if (exception_pending()) goto fail;
     na = times2(na, nb);
-    if (exception_pending()) goto fail;
     da = times2(da, db);
-    if (exception_pending()) goto fail;
     w = make_ratio(na, da);
-fail:
     popv(5);
     return w;
 #undef g
@@ -1666,21 +1640,13 @@ static LispObject timescc(LispObject a, LispObject b)
 #define ia  stack[-4]
 #define ra  stack[-5]
     u = times2(ra, rb);
-    if (exception_pending()) goto fail;
     v = times2(ia, ib);
-    if (exception_pending()) goto fail;
     v = negate(v);
-    if (exception_pending()) goto fail;
     u = plus2(u, v);                    // real part of result
-    if (exception_pending()) goto fail;
     v = times2(ra, ib);
-    if (exception_pending()) goto fail;
     ib = times2(rb, ia);
-    if (exception_pending()) goto fail;
     v = plus2(v, ib);                   // imaginary part
-    if (exception_pending()) goto fail;
     w = make_complex(u, v);
-fail:
     popv(6);
     return w;
 #undef u
@@ -1717,7 +1683,7 @@ static LispObject timesff(LispObject a, LispObject b)
         f128M_mul(&x, &y, &z);
         if (trap_floating_overflow &&
             floating_edge_case128(&z))
-            return aerror("floating point times");
+            aerror("floating point times");
         return make_boxfloat128(z);
     }
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
@@ -1742,7 +1708,7 @@ static LispObject timesff(LispObject a, LispObject b)
     if (trap_floating_overflow &&
         floating_edge_case(r))
     {   floating_clear_flags();
-        return aerror("floating point times");
+        aerror("floating point times");
     }
     return make_boxfloat(r, hc);
 }
@@ -1767,30 +1733,22 @@ LispObject times2(LispObject a, LispObject b)
 {   LispObject ab1, aa, bb;
     push2(a, b);
     ab1 = plus2(a, b);               // a + b
-    errexitn(2);
     ab1 = genuine_times2(ab1, ab1);  // a^2 + 2*a*b + b^2
-    errexitn(2);
     pop2(b, a);
     push3(a, b, ab1);
     aa = genuine_times2(a, a);       // a^2
-    errexitn(3);
     pop3(ab1, b, a);
     push4(a, b, aa, ab1);
     bb = genuine_times2(b, b);       // b^2
-    errexitn(4);
     pop(ab1);
     ab1 = difference2(ab1, bb);      // now a^2 + 2*a*b
-    errexitn(3);
     pop(aa);
     ab1 = difference2(ab1, aa);      // 2*a*b
-    errexitn(2);
     ab1 = quot2(ab1, fixnum_of_int(2));
-    errexitn(2);
     pop2(b, a);
     push3(ab1, a, b);
     aa = genuine_times2(a, b);
     pop3(b, a, ab1);
-    errexit();
     if (!numeq2(aa, ab1))
     {   err_printf("multiply messed up\n");
         err_printf("a = "); prin_to_error(a);
@@ -1798,7 +1756,7 @@ LispObject times2(LispObject a, LispObject b)
         err_printf("\n((a+b)^-a^-b^)/2) = "); prin_to_error(ab1);
         err_printf("\na*b = "); prin_to_error(aa);
         err_printf("\n\n");
-        return aerror("bad times");
+        aerror("bad times");
     }
     return aa;
 }
@@ -1830,13 +1788,13 @@ LispObject times2(LispObject a, LispObject b)
                             case TYPE_COMPLEX_NUM:
                                 return timessc(a, b);
                             default:
-                                return aerror1("bad arg for times",  b);
+                                aerror1("bad arg for times",  b);
                         }
                     }
                     case TAG_BOXFLOAT:
                         return timessf(a, b);
                     default:
-                        return aerror1("bad arg for times",  b);
+                        aerror1("bad arg for times",  b);
                 }
             }
             else switch ((int)b & TAG_BITS)
@@ -1853,13 +1811,13 @@ LispObject times2(LispObject a, LispObject b)
                         case TYPE_COMPLEX_NUM:
                             return timesic(a, b);
                         default:
-                            return aerror1("bad arg for times",  b);
+                            aerror1("bad arg for times",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return timesif(a, b);
                 default:
-                    return aerror1("bad arg for times",  b);
+                    aerror1("bad arg for times",  b);
             }
         case TAG_NUMBERS:
         {   int ha = type_of_header(numhdr(a));
@@ -1882,13 +1840,13 @@ LispObject times2(LispObject a, LispObject b)
                                 case TYPE_COMPLEX_NUM:
                                     return timesbc(a, b);
                                 default:
-                                    return aerror1("bad arg for times",  b);
+                                    aerror1("bad arg for times",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return timesbf(a, b);
                         default:
-                            return aerror1("bad arg for times",  b);
+                            aerror1("bad arg for times",  b);
                     }
                 case TYPE_RATNUM:
                     switch (b & TAG_BITS)
@@ -1908,13 +1866,13 @@ LispObject times2(LispObject a, LispObject b)
                                 case TYPE_COMPLEX_NUM:
                                     return timesrc(a, b);
                                 default:
-                                    return aerror1("bad arg for times",  b);
+                                    aerror1("bad arg for times",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return timesrf(a, b);
                         default:
-                            return aerror1("bad arg for times",  b);
+                            aerror1("bad arg for times",  b);
                     }
                 case TYPE_COMPLEX_NUM:
                     switch (b & TAG_BITS)
@@ -1934,15 +1892,15 @@ LispObject times2(LispObject a, LispObject b)
                                 case TYPE_COMPLEX_NUM:
                                     return timescc(a, b);
                                 default:
-                                    return aerror1("bad arg for times",  b);
+                                    aerror1("bad arg for times",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return timescf(a, b);
                         default:
-                            return aerror1("bad arg for times",  b);
+                            aerror1("bad arg for times",  b);
                     }
-                default:    return aerror1("bad arg for times",  a);
+                default:    aerror1("bad arg for times",  a);
             }
         }
         case TAG_BOXFLOAT:
@@ -1963,16 +1921,16 @@ LispObject times2(LispObject a, LispObject b)
                         case TYPE_COMPLEX_NUM:
                             return timesfc(a, b);
                         default:
-                            return aerror1("bad arg for times",  b);
+                            aerror1("bad arg for times",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return timesff(a, b);
                 default:
-                    return aerror1("bad arg for times",  b);
+                    aerror1("bad arg for times",  b);
             }
         default:
-            return aerror1("bad arg for times",  a);
+            aerror1("bad arg for times",  a);
     }
 }
 

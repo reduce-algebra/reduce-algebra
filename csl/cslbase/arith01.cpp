@@ -1,4 +1,4 @@
-//  arith01.cpp                           Copyright (C) 1990-2016 Codemist
+//  arith01.cpp                           Copyright (C) 1990-2017 Codemist
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -69,7 +69,7 @@ LispObject validate_number(const char *s, LispObject a,
 #ifdef VALIDATE_STOPS
         Lstop(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-        return aerror1("validate-number", a);
+        aerror1("validate-number", a);
 #endif
     }
     if (la == 0)
@@ -81,7 +81,7 @@ LispObject validate_number(const char *s, LispObject a,
 #ifdef VALIDATE_STOPS
             Lstop(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-            return aerror1("validate-number", a);
+            aerror1("validate-number", a);
 #endif
         }
         else
@@ -93,7 +93,7 @@ LispObject validate_number(const char *s, LispObject a,
 #ifdef VALIDATE_STOPS
                 Lstop(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-                return aerror1("validate-number", a);
+                aerror1("validate-number", a);
 #endif
             }
             if (signed_overflow(msd))
@@ -103,7 +103,7 @@ LispObject validate_number(const char *s, LispObject a,
 #ifdef VALIDATE_STOPS
                 Lstop(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-                return aerror1("validate-number", a);
+                aerror1("validate-number", a);
 #endif
             }
             return a;
@@ -118,7 +118,7 @@ LispObject validate_number(const char *s, LispObject a,
 #ifdef VALIDATE_STOPS
             Lstop(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-            return aerror1("validate-number", a);
+            aerror1("validate-number", a);
 #endif
         }
     }
@@ -130,7 +130,7 @@ LispObject validate_number(const char *s, LispObject a,
 #ifdef VALIDATE_STOPS
         Lstop(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-        return aerror1("validate-number", a);
+        aerror1("validate-number", a);
 #endif
     }
     if (msd == 0 && ((nsd = bignum_digits(a)[la-1]) & 0x40000000) == 0)
@@ -140,7 +140,7 @@ LispObject validate_number(const char *s, LispObject a,
 #ifdef VALIDATE_STOPS
         Lstop(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-        return aerror1("validate-number", a);
+        aerror1("validate-number", a);
 #endif
     }
     else if (msd == -1 && ((nsd = bignum_digits(a)[la-1]) & 0x40000000) != 0)
@@ -150,7 +150,7 @@ LispObject validate_number(const char *s, LispObject a,
 #ifdef VALIDATE_STOPS
         Lstop(nil, fixnum_of_int(1)); // System error, so stop.
 #else
-        return aerror1("validate-number", a);
+        aerror1("validate-number", a);
 #endif
     }
     return a; // OK
@@ -179,6 +179,10 @@ LispObject make_lisp_integer32_fn(int32_t n)
 LispObject make_lisp_integer64_fn(int64_t n)
 {   if (!SIXTY_FOUR_BIT && (n < 0x40000000 && n >= -0x40000000))
         return make_one_word_bignum((int32_t)n);
+// With a RECENT C++ compiler I would not need the INT64_C macro here,
+// since the C++ standard would cause the large value to be treated as a
+// wide integer automatically. However if I go back and use an old version
+// of gcc this is required...
     if (n < INT64_C(0x2000000000000000) &&
         n >= -INT64_C(0x2000000000000000))
         return make_two_word_bignum((int32_t)ASR(n, 31),
@@ -209,8 +213,10 @@ LispObject make_lisp_integerptr_fn(intptr_t n)
          n >= -(intptr_t)INT64_C(0x2000000000000000)))
         return make_two_word_bignum((int32_t)ASR(n, 31),
                                     (uint32_t)(n & 0x7fffffff));
+// Noter that intptr_t may be a 32-bit type where trying to shift right be 62
+// bits would be a mistake. So I cast to 64-bits to be safe.
     return make_three_word_bignum(
-               (int32_t)ASR(n, 62),
+               (int32_t)ASR((int64_t)n, 62),
                (uint32_t)((n >> 31) & 0x7fffffff),
                (uint32_t)(n & 0x7fffffff));
 }
@@ -222,7 +228,7 @@ LispObject make_lisp_unsignedptr_fn(uintptr_t n)
         return make_two_word_bignum((int32_t)(n >> 31),
                                     (uint32_t)(n & 0x7fffffff));
     return make_three_word_bignum(
-               (int32_t)(n >> 62),
+               (int32_t)((uint64_t)n >> 62),
                (uint32_t)((n >> 31) & 0x7fffffff),
                (uint32_t)(n & 0x7fffffff));
 }
@@ -288,7 +294,20 @@ LispObject make_one_word_bignum(int32_t n)
 // should never be needed on a 64-bit system!
 //
 {   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4);
-    errexit();
+// This happens to be the (alphabetically by file-name) first place where
+// I am removing an "errexit()" test, so let me attach some commentary.
+// If anything goes wrong within the getvector() above (or indeed some things
+// could go right but potentially go a Lisp go, return-from, throw, quit
+// restart etc!) either a longjmp or a throw will cause me to exit abruptly
+// from the call to getvector. because I am not doing any setjmp or catch here
+// the rest of this function will be abandoned and control will go back to
+// or through whoever called me. When that happens things that might have
+// been pushed onto the stack can be left with in a way that is no longer
+// useful. But any CATCH block will arrange to reset the stack pointer
+// properly and so recovers from that. The overall effect is that the code
+// I have *HERE* just does not need to worry about exceptional exits, and
+// so it is way tidier than it used to be.
+// Some places where I do mind will pick up the strain.
     bignum_digits(w)[0] = n;
     if (SIXTY_FOUR_BIT) bignum_digits(w)[1] = 0;  // padding
     return w;
@@ -301,7 +320,6 @@ LispObject make_two_word_bignum(int32_t a1, uint32_t a0)
 // normalized to put in the two words as indicated.
 //
 {   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8);
-    errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     if (!SIXTY_FOUR_BIT) bignum_digits(w)[2] = 0;
@@ -315,7 +333,6 @@ LispObject make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
 // normalized.
 //
 {   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+12);
-    errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -331,7 +348,6 @@ LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
 // normalized.
 //
 {   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+16);
-    errexit();
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -360,7 +376,7 @@ LispObject make_sfloat(double d)
     if (trap_floating_overflow &&
         floating_edge_case(w.f))
     {   floating_clear_flags();
-        return aerror("exception with short float");
+        aerror("exception with short float");
     }
     return (w.i & ~(int32_t)0xf) + XTAG_SFLOAT;
 #endif
@@ -384,30 +400,28 @@ LispObject make_boxfloat(double a, int32_t type)
             if (trap_floating_overflow &&
                 floating_edge_case(aa.f))
             {   floating_clear_flags();
-                return aerror("exception with short float");
+                aerror("exception with short float");
             }
             return (aa.i & ~(intptr_t)0xf) + XTAG_SFLOAT;
 #endif
         }
         case TYPE_SINGLE_FLOAT:
             r = getvector(TAG_BOXFLOAT, TYPE_SINGLE_FLOAT, sizeof(Single_Float));
-            errexit();
             single_float_val(r) = (float)a;
             if (trap_floating_overflow &&
                 floating_edge_case(single_float_val(r)))
             {   floating_clear_flags();
-                return aerror("exception with single float");
+                aerror("exception with single float");
             }
             return r;
         default: // TYPE_DOUBLE_FLOAT I hope
             r = getvector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT, SIZEOF_DOUBLE_FLOAT);
-            errexit();
             if (!SIXTY_FOUR_BIT) double_float_pad(r) = 0;
             double_float_val(r) = a;
             if (trap_floating_overflow &&
                 floating_edge_case(double_float_val(r)))
             {   floating_clear_flags();
-                return aerror("exception with double float");
+                aerror("exception with double float");
             }
             return r;
     }
@@ -416,12 +430,11 @@ LispObject make_boxfloat(double a, int32_t type)
 LispObject make_boxfloat128(float128_t a)
 {   LispObject r;
     r = getvector(TAG_BOXFLOAT, TYPE_LONG_FLOAT, SIZEOF_LONG_FLOAT);
-    errexit();
     if (!SIXTY_FOUR_BIT) long_float_pad(r) = 0;
     long_float_val(r) = a;
     if (trap_floating_overflow &&
         floating_edge_case128(&long_float_val(r)))
-        return aerror("exception with long float");
+        aerror("exception with long float");
     return r;
 }
 
@@ -784,7 +797,6 @@ LispObject make_complex(LispObject r, LispObject i)
 // are OK.
 //
     pop2(i, r);
-    errexit();
     real_part(v) = r;
     imag_part(v) = i;
     return v;
@@ -800,7 +812,6 @@ LispObject make_ratio(LispObject p, LispObject q)
     push2(p, q);
     v = getvector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
     pop2(q, p);
-    errexit();
     numerator(v) = p;
     denominator(v) = q;
     return v;
@@ -913,7 +924,6 @@ static LispObject plusib(LispObject a, LispObject b)
     push(b);
     c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*len);
     pop(b);
-    errexit();
 // Add in the lowest bit by hand
     int32_t d0 = bignum_digits(b)[0] + clear_top_bit(s1);
     bignum_digits(c)[0] = clear_top_bit(d0);
@@ -990,7 +1000,6 @@ static LispObject plusib(LispObject a, LispObject b)
     push(c);
     b = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
     pop(c);
-    errexit();
     for (i=0; i<len-1; i++)
         bignum_digits(b)[i] = bignum_digits(c)[i];
 //
@@ -1018,9 +1027,8 @@ static LispObject plusir(LispObject a, LispObject b)
 //
 {   push(b);
     a = times2(a, denominator(b));
-    if (!exception_pending()) a = plus2(a, numerator(stack[0]));
+    a = plus2(a, numerator(stack[0]));
     pop(b);
-    errexit();
     return make_ratio(a, denominator(b));
 }
 
@@ -1031,7 +1039,6 @@ static LispObject plusic(LispObject a, LispObject b)
 {   push(b);
     a = plus2(a, real_part(b));
     pop(b);
-    errexit();
 //
 // make_complex() takes responsibility for mapping #C(n 0) onto n
 //
@@ -1050,7 +1057,7 @@ static LispObject plusif(LispObject a, LispObject b)
     if (trap_floating_overflow &&
         floating_edge_case(d))
     {   floating_clear_flags();
-        return aerror("floating point plus");
+        aerror("floating point plus");
     }
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
@@ -1072,7 +1079,7 @@ static LispObject plussf(LispObject a, LispObject b)
     if (trap_floating_overflow &&
         floating_edge_case(d))
     {   floating_clear_flags();
-        return aerror("floating point plus");
+        aerror("floating point plus");
     }
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
@@ -1101,7 +1108,6 @@ LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
         push(a);
         b = getvector(TAG_NUMBERS, TYPE_BIGNUM, len+4);
         pop(a);
-        errexit();
         len = (len-CELL)/4;
         for (i=0; i<len; i++)
             bignum_digits(b)[i] = clear_top_bit(bignum_digits(a)[i]);
@@ -1158,7 +1164,6 @@ static LispObject plusbb(LispObject a, LispObject b)
     push2(a, b);
     c = getvector(TAG_NUMBERS, TYPE_BIGNUM, la);
     pop2(b, a);
-    errexit();
     la = (la-CELL)/4 - 1;
     lb = (lb-CELL)/4 - 1;
     carry = 0;
@@ -1320,37 +1325,20 @@ static LispObject plusrr(LispObject a, LispObject b)
 #define nb  stack[-3]
 #define na  stack[-4]
     g = gcd(da, db);
-    if (exception_pending()) goto fail;
 //
 // all the calls to quot2() in this procedure are expected - nay required -
 // to give exact integer quotients.
 //
     db = quot2(db, g);
-    if (exception_pending()) goto fail;
     g = quot2(da, g);
-    if (exception_pending()) goto fail;
     na = times2(na, db);
-    if (exception_pending()) goto fail;
     nb = times2(nb, g);
-    if (exception_pending()) goto fail;
     na = plus2(na, nb);
-    if (exception_pending()) goto fail;
     da = times2(da, db);
-    if (exception_pending()) goto fail;
     g = gcd(na, da);
-    if (exception_pending()) goto fail;
     na = quot2(na, g);
-    if (exception_pending()) goto fail;
     da = quot2(da, g);
-    if (exception_pending()) goto fail;
     w = make_ratio(na, da);
-//
-// All the goto statements and the label seem a fair way of expressing
-// the common action that has to be taken if an error or interrupt is
-// detected during any of the intermediate steps here.  Anyone who
-// objects can change it if they really want...
-//
-fail:
     popv(5);
     return w;
 #undef na
@@ -1380,9 +1368,7 @@ static LispObject pluscc(LispObject a, LispObject b)
     push2(a, b);
     c = plus2(imag_part(a), imag_part(b));
     pop2(b, a);
-    errexit();
     a = plus2(real_part(a), real_part(b));
-    errexit();
     return make_complex(a, c);
 }
 
@@ -1415,7 +1401,7 @@ static LispObject plusff(LispObject a, LispObject b)
         f128M_add(&x, &y, &z);
         if (trap_floating_overflow &&
             floating_edge_case128(&z))
-            return aerror("floating point plus");
+            aerror("floating point plus");
         return make_boxfloat128(z);
     }
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
@@ -1424,7 +1410,7 @@ static LispObject plusff(LispObject a, LispObject b)
     if (trap_floating_overflow &&
         floating_edge_case(a))
     {   floating_clear_flags();
-        return aerror("floating point plus");
+        aerror("floating point plus");
     }
     return make_boxfloat(float_of_number(a) + float_of_number(b), hc);
 }
@@ -1467,13 +1453,13 @@ LispObject plus2(LispObject a, LispObject b)
                         case TYPE_COMPLEX_NUM:
                             return plusic(a, b);
                         default:
-                            return aerror1("bad arg for plus", b);
+                            aerror1("bad arg for plus", b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return plusif(a, b);
                 default:
-                    return aerror1("bad arg for plus",  b);
+                    aerror1("bad arg for plus",  b);
             }
 #ifdef SHORT_FLOAT
         case XTAG_SFLOAT:
@@ -1497,13 +1483,13 @@ LispObject plus2(LispObject a, LispObject b)
                         case TYPE_COMPLEX_NUM:
                             return plussc(a, b);
                         default:
-                            return aerror1("bad arg for plus",  b);
+                            aerror1("bad arg for plus",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return plussf(a, b);
                 default:
-                    return aerror1("bad arg for plus",  b);
+                    aerror1("bad arg for plus",  b);
             }
 #endif
         case TAG_NUMBERS:
@@ -1527,13 +1513,13 @@ LispObject plus2(LispObject a, LispObject b)
                                 case TYPE_COMPLEX_NUM:
                                     return plusbc(a, b);
                                 default:
-                                    return aerror1("bad arg for plus",  b);
+                                    aerror1("bad arg for plus",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return plusbf(a, b);
                         default:
-                            return aerror1("bad arg for plus",  b);
+                            aerror1("bad arg for plus",  b);
                     }
                 case TYPE_RATNUM:
                     switch (b & TAG_BITS)
@@ -1553,13 +1539,13 @@ LispObject plus2(LispObject a, LispObject b)
                                 case TYPE_COMPLEX_NUM:
                                     return plusrc(a, b);
                                 default:
-                                    return aerror1("bad arg for plus",  b);
+                                    aerror1("bad arg for plus",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return plusrf(a, b);
                         default:
-                            return aerror1("bad arg for plus",  b);
+                            aerror1("bad arg for plus",  b);
                     }
                 case TYPE_COMPLEX_NUM:
                     switch (b & TAG_BITS)
@@ -1579,15 +1565,15 @@ LispObject plus2(LispObject a, LispObject b)
                                 case TYPE_COMPLEX_NUM:
                                     return pluscc(a, b);
                                 default:
-                                    return aerror1("bad arg for plus",  b);
+                                    aerror1("bad arg for plus",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return pluscf(a, b);
                         default:
-                            return aerror1("bad arg for plus",  b);
+                            aerror1("bad arg for plus",  b);
                     }
-                default:    return aerror1("bad arg for plus",  a);
+                default:    aerror1("bad arg for plus",  a);
             }
         }
         case TAG_BOXFLOAT:
@@ -1608,16 +1594,16 @@ LispObject plus2(LispObject a, LispObject b)
                         case TYPE_COMPLEX_NUM:
                             return plusfc(a, b);
                         default:
-                            return aerror1("bad arg for plus",  b);
+                            aerror1("bad arg for plus",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return plusff(a, b);
                 default:
-                    return aerror1("bad arg for plus",  b);
+                    aerror1("bad arg for plus",  b);
             }
         default:
-            return aerror1("bad arg for plus",  a);
+            aerror1("bad arg for plus",  a);
     }
 }
 
@@ -1648,7 +1634,6 @@ LispObject difference2(LispObject a, LispObject b)
             break;
     }
     pop(a);
-    errexit();
     return plus2(a, b);
 }
 

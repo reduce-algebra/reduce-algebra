@@ -1,4 +1,4 @@
-// sysfwin.cpp                      Copyright (C) 1989-2016 Codemist    
+// sysfwin.cpp                             Copyright (C) 1989-2017 Codemist    
 
 //
 // System-specific code for use with the "fwin" window interface code.
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -350,11 +350,6 @@ char *look_in_lisp_variable(char *o, int prefix)
 // make_undefined_symbol() could fail either if we had utterly run out
 // of memory or if somebody generated an interrupt (eg ^C) around now. Ugh.
 //
-    if (exception_pending())
-    {   flip_exception();
-        return NULL;
-    }
-//
 // If the variable $name was undefined then I use an empty replacement
 // text for it. Otherwise I need to look harder at its value.
 //
@@ -366,21 +361,9 @@ char *look_in_lisp_variable(char *o, int prefix)
 // Mostly I expect that the value will be a string or symbol.
 //
 #ifdef COMMON
-        if (complex_stringp(var))
-        {   var = simplify_string(var);
-            if (exception_pending())
-            {   flip_exception();
-                return NULL;
-            }
-        }
+        if (complex_stringp(var)) var = simplify_string(var);
 #endif // COMMON
-        if (symbolp(var))
-        {   var = get_pname(var);
-            if (exception_pending())
-            {   flip_exception();
-                return NULL;
-            }
-        }
+        if (symbolp(var)) var = get_pname(var);
         else if (!is_vector(var) || !is_string(var)) return NULL;
         len = length_of_byteheader(vechdr(var)) - CELL;
 //

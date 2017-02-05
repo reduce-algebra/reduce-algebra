@@ -1,5 +1,4 @@
-//
-// "wxfwin.h"                                     2003-2016, A C Norman
+// "wxfwin.h"                           Copyright (C) 2003-2017, A C Norman
 //
 // This defines the public interface supported by the "wxfwin" window
 // interface. Note that this should be functionally very similar to
@@ -8,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

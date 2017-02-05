@@ -1,4 +1,4 @@
-// termdemo.cpp                       Copyright (C) 2004-2015 Codemist    
+// termdemo.cpp                            Copyright (C) 2004-2017 Codemist    
 
 
 //
@@ -9,7 +9,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

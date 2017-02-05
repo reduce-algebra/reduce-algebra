@@ -1,6 +1,5 @@
-//
-// get-computer-modern-metrics.cpp
-//
+// get-computer-modern-metrics.cpp         Copyright (C) 2015-2017 Codemist
+
 // This extracts just enough font information from a bunch of *.afm
 // files that I can render Postscript properly from FXDCPostscriptPrinter.cpp
 //
@@ -14,7 +13,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -177,7 +176,7 @@ int main(int argc, char *argv[])
     fprintf(out, " * Font metrics for Type1 Computer Modern Fonts\n *\n");
     fprintf(out, " * extracted from %s\n *\n", FONT_PATH);
     fprintf(out, " */\n");
-    fprintf(out, "\n\n/* Signature: 7d4bbc1c 25-Sep-2004 */\n\n\n");
+    fprintf(out, "\n\n\n");
     fprintf(out, "typedef struct font_info {\n");
     fprintf(out, "   char *name;\n");
     fprintf(out, "   short int isfixed, fontwidth, maxleftbearing, maxrightbearing;\n");

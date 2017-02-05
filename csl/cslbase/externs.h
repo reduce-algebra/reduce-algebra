@@ -1,4 +1,4 @@
-// externs.h                              Copyright (C) Codemist 1989-2016
+// externs.h                               Copyright (C) Codemist 1989-2017
 
 //
 //   Main batch of extern declarations.
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -135,59 +135,6 @@ extern LispObject *C_stackbase, *C_stacktop;
 
 extern LispObject multiplication_buffer;
 
-#ifdef MEMORY_TRACE
-
-#define push(a)         do { \
-                          *++stack = (a); \
-                          memory_reference((intptr_t)stack); } while (0)
-// push2 etc are just like push, but grouped together
-#define push2(a,b)      do { \
-                          *++stack = (a); \
-                          memory_reference((intptr_t)stack); \
-                          *++stack = (b); \
-                          memory_reference((intptr_t)stack); } while (0)
-#define push3(a,b,c)    do { \
-                          *++stack = (a); \
-                          memory_reference((intptr_t)stack); \
-                          *++stack = (b); \
-                          memory_reference((intptr_t)stack); \
-                          *++stack = (c); \
-                          memory_reference((intptr_t)stack); } while (0)
-#define push4(a,b,c,d)  do { \
-                          *++stack = (a); \
-                          memory_reference((intptr_t)stack); \
-                          *++stack = (b); \
-                          memory_reference((intptr_t)stack); \
-                          *++stack = (c); \
-                          memory_reference((intptr_t)stack); \
-                          *++stack = (d); \
-                          memory_reference((intptr_t)stack); } while (0)
-#define push5(a,b,c,d,e)do { \
-                          *++stack = (a); \
-                          memory_reference((intptr_t)stack); \
-                          *++stack = (b); \
-                          memory_reference((intptr_t)stack); \
-                          *++stack = (c); \
-                          memory_reference((intptr_t)stack); \
-                          *++stack = (d); \
-                          memory_reference((intptr_t)stack); \
-                          *++stack = (e); \
-                          memory_reference((intptr_t)stack); } while (0)
-#define push6(a,b,c,d,e,f) do {push3(a,b,c); push3(d,e,f); } while (0)
-
-#define my_pop()        (memory_reference((intptr_t)stack), (*stack--))
-#define pop(a)          { memory_reference((intptr_t)stack); (a) = *stack--; }
-#define pop2(a,b)       { memory_reference((intptr_t)stack); (a) = *stack--; memory_reference((intptr_t)stack); (b) = *stack--; }
-#define pop3(a,b,c)     { memory_reference((intptr_t)stack); (a) = *stack--; memory_reference((intptr_t)stack); (b) = *stack--; memory_reference((intptr_t)stack); (c) = *stack--; }
-#define pop4(a,b,c,d)   { memory_reference((intptr_t)stack); (a) = *stack--; memory_reference((intptr_t)stack); (b) = *stack--; memory_reference((intptr_t)stack); (c) = *stack--; \
-                          memory_reference((intptr_t)stack); (d) = *stack--; }
-#define pop5(a,b,c,d,e) { memory_reference((intptr_t)stack); (a) = *stack--; memory_reference((intptr_t)stack); (b) = *stack--; memory_reference((intptr_t)stack); (c) = *stack--; \
-                          memory_reference((intptr_t)stack); (d) = *stack--; memory_reference((intptr_t)stack); (e) = *stack--; }
-#define pop6(a,b,c,d,e,f) {pop3(a,b,c); pop3(d,e,f)}
-#define popv(n)           stack -= (n)
-
-#else // MEMORY_TRACE
-
 #define push(a)         { *++stack = (a); }
 // push2 etc are just like push, but grouped together
 #define push2(a,b)      { stack[1] = (a); stack[2] = (b); stack += 2; }
@@ -214,12 +161,6 @@ extern LispObject multiplication_buffer;
                           (a) = stack[6]; (b) = stack[5]; (c) = stack[4]; \
                           (d) = stack[3]; (e) = stack[2]; (f) = stack[1]; }
 #define popv(n)           stack -= (n)
-#endif // MEMORY_TRACE
-
-#define errexit()    { if (exception_pending()) return nil; }
-#define errexitn(n)  { if (exception_pending()) { popv(n); return nil; } }
-#define errexitv()   { if (exception_pending()) return; }
-#define errexitvn(n) { if (exception_pending()) { popv(n); return; } }
 
 #define GC_USER_SOFT 0
 #define GC_USER_HARD 1
@@ -237,11 +178,11 @@ extern int check_stack(const char *file, int line);
 extern void show_stack();
 #define if_check_stack \
    if (check_stack("@" __FILE__,__LINE__)) \
-   {   show_stack(); return aerror("stack overflow"); }
+   {   show_stack(); aerror("stack overflow"); }
 #else
 #define if_check_stack \
-   {   const char *p = (char *)&p; \
-       if (p < C_stack_limit) return aerror("stack overflow"); \
+   {   const char *_p_ = (char *)&_p_; \
+       if (_p_ < C_stack_limit) aerror("stack overflow"); \
    }
 #endif
 
@@ -307,7 +248,6 @@ extern int64_t blipcount, startblip;
     if ((--countdown < 0 && deal_with_tick()) ||            \
         stack >= stacklimit)                                \
     {   reclaim(nil, "stack", GC_STACK, 0);                 \
-        if (exception_pending()) { popv(k); return nil; }   \
     }
 
 #define stackcheck1(k, a1)                                  \
@@ -315,7 +255,6 @@ extern int64_t blipcount, startblip;
     if ((--countdown < 0 && deal_with_tick()) ||            \
         stack >= stacklimit)                                \
     {   a1 = reclaim(a1, "stack", GC_STACK, 0);             \
-        if (exception_pending()) { popv(k); return nil; }   \
     }
 
 #define stackcheck2(k, a1, a2)                              \
@@ -324,7 +263,6 @@ extern int64_t blipcount, startblip;
         stack >= stacklimit)                                \
     {   push(a2);                                           \
         a1 = reclaim(a1, "stack", GC_STACK, 0); pop(a2);    \
-        if (exception_pending()) { popv(k); return nil; }   \
     }
 
 #define stackcheck3(k, a1, a2, a3)                          \
@@ -334,7 +272,6 @@ extern int64_t blipcount, startblip;
     {   push2(a2, a3);                                      \
         a1 = reclaim(a1, "stack", GC_STACK, 0);             \
         pop2(a3, a2);                                       \
-        if (exception_pending()) { popv(k); return nil; }   \
     }
 
 #define stackcheck4(k, a1, a2, a3, a4)                      \
@@ -344,27 +281,9 @@ extern int64_t blipcount, startblip;
     {   push3(a2, a3, a4);                                  \
         a1 = reclaim(a1, "stack", GC_STACK, 0);             \
         pop3(a4, a3, a2);                                   \
-        if (exception_pending()) { popv(k); return nil; }   \
     }
 
-//
-// As well as being used to point directly to the major Lisp item NIL,
-// this register is used as a base for a table of other critically
-// important other Lisp values.  Offsets for at least some of these are
-// defined here.
-// I also need a proper C external variable holding the value of NIL since
-// when called from the C library (e.g. in a signal handler) the global
-// register variable will not be available!
-//
-
 extern LispObject nil;
-
-//
-// In COMMON mode the symbol-head for NIL uses the first few offsets
-// from NIL here, so I start storing system variables at offset 12 so
-// that even if at some stage I expand the size of all identifiers from the
-// present state I will be safe.
-//
 
 #define first_nil_offset         50     // GC collector marks from here up
 
@@ -373,10 +292,10 @@ extern LispObject nil;
 // for functions and when handling multiple values.
 //
 
-#define work_0_offset           200
+#define work_0_offset           250
 
 // Garbage collector marks up to but not including last_nil_offset
-#define last_nil_offset         251
+#define last_nil_offset         301
 
 //
 // NIL_SEGMENT_SIZE must be over-large by enough to allow for
@@ -432,7 +351,7 @@ extern LispObject vfringe;
 
 extern intptr_t nwork;
 
-extern intptr_t exit_count;
+extern unsigned int exit_count;
 extern uintptr_t gensym_ser;
 extern intptr_t print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
@@ -458,7 +377,7 @@ extern LispObject prinl_symbol, emsg_star, redef_msg;
 extern LispObject expr_symbol, fexpr_symbol, macro_symbol;
 extern LispObject big_divisor, big_dividend, big_quotient;
 extern LispObject big_fake1, big_fake2;
-extern LispObject cl_symbols, active_stream, current_module;
+extern LispObject active_stream, current_module;
 extern LispObject native_defs, features_symbol, lisp_package;
 extern LispObject sys_hash_table, help_index, cfunarg, lex_words;
 extern LispObject get_counts, fastget_names, input_libraries;
@@ -472,17 +391,21 @@ extern LispObject bytecoded_symbol, nativecoded_symbol;
 extern LispObject gchook, resources, callstack, procstack, procmem;
 extern LispObject trap_time;
 
-#ifdef COMMON
 extern LispObject keyword_package;
 extern LispObject all_packages, package_symbol, internal_symbol;
 extern LispObject external_symbol, inherited_symbol;
 extern LispObject key_key, allow_other_keys, aux_key;
 extern LispObject format_symbol;
 extern LispObject expand_def_symbol, allow_key_key;
-#endif
 
 extern LispObject declare_symbol, special_symbol, large_modulus;
 extern LispObject used_space, avail_space, eof_symbol, call_stack;
+
+extern LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol;
+extern LispObject not_symbol, reader_workspace, named_character;
+extern LispObject read_float_format, short_float, single_float, double_float;
+extern LispObject long_float, bit_symbol, pathname_symbol, print_array_sym;
+extern LispObject read_base, initial_element;
 
 #ifdef OPENMATH
 extern LispObject om_openFileDev(LispObject env, int nargs, ...);
@@ -597,9 +520,6 @@ extern intptr_t exit_reason;
 
 extern int procstackp;
 
-#ifdef DEBUG
-extern int trace_all;
-#endif
 #ifndef NO_BYTECOUNT
 extern const char *name_of_caller;
 #endif
@@ -632,12 +552,11 @@ extern FILE *binary_write_file;
 extern size_t boffop;
 extern void packcharacter(int c);
 extern void packbyte(int c);
+#define boffo_char(i) ucelt(boffo, i)
 
-#ifdef HAVE_FWIN
 extern char **loadable_packages;
 extern char **switches;
 extern void review_switch_settings();
-#endif
 
 #ifdef SOCKETS
 extern bool sockets_ready;
@@ -747,13 +666,6 @@ extern "C" LispObject Linstate_c_code(LispObject nil,
 extern LispObject characterify(LispObject a);
 extern LispObject char_to_id(int ch);
 
-#ifdef MEMORY_TRACE
-extern intptr_t memory_base, memory_size;
-extern unsigned char *memory_map;
-extern FILE *memory_file;
-extern void memory_comment(int n);
-#endif
-
 #define ARG_CUT_OFF 25
 extern void push_args(va_list a, int nargs);
 extern void push_args_1(va_list a, int nargs);
@@ -762,8 +674,14 @@ extern void Iinit();
 extern void IreInit();
 extern void Ilist();
 extern bool open_output(const char *s, size_t len);
+
+#define IMAGE_CODE  ((size_t)(-1000))
+#define HELP_CODE   ((size_t)(-1001))
+#define BANNER_CODE ((size_t)(-1002))
+
 #define IOPEN_OUT       0
 #define IOPEN_IN        1
+
 extern bool Iopen(const char *name, size_t len, int dirn, char *expanded_name);
 extern bool Iopen_from_stdin(), Iopen_to_stdout();
 extern bool IopenRoot(char *expanded_name, size_t hard, int sixtyfour);
@@ -806,7 +724,8 @@ extern void inject_randomness(int n);
 
 extern void ensure_screen();
 extern int window_heading;
-extern void my_exit(int n);
+extern void my_abort();
+extern "C" NORETURN void my_exit(int n);
 extern void *my_malloc(size_t n);
 
 extern clock_t base_time;
@@ -846,7 +765,6 @@ extern "C" void record_get(LispObject tag, bool found);
 // See impex.def for the list of names where this can happen.
 
 extern int         primep(int32_t);
-extern void        adjust_all();
 extern void        set_up_functions(int restartp);
 extern void        get_user_files_checksum(unsigned char *);
 extern "C" LispObject acons(LispObject a, LispObject b, LispObject c);
@@ -861,8 +779,7 @@ extern "C" LispObject cons(LispObject a, LispObject b);
 extern LispObject cons_no_gc(LispObject a, LispObject b);
 extern LispObject cons_gc_test(LispObject a);
 extern void       convert_fp_rep(void *p, int old_rep, int new_rep, int type);
-extern LispObject Ceval(LispObject u, LispObject env);
-extern LispObject noisy_Ceval(LispObject u, LispObject env);
+extern LispObject eval(LispObject u, LispObject env);
 extern uint32_t   Crand();
 extern "C" LispObject Cremainder(LispObject a, LispObject b);
 extern void        Csrand(uint32_t a, uint32_t b);
@@ -878,18 +795,14 @@ extern void dump_equals();
 #endif
 extern "C" bool equalp(LispObject a, LispObject b);
 extern LispObject apply(LispObject fn, int nargs,
-                        LispObject env, LispObject fname, int noisy);
+                        LispObject env, LispObject fname);
 extern LispObject apply_lambda(LispObject def, int nargs,
-                               LispObject env, LispObject name, int noisy);
+                               LispObject env, LispObject name);
 extern void        deallocate_pages();
 extern void        drop_heap_segments();
 extern LispObject gcd(LispObject a, LispObject b);
 extern LispObject get_pname(LispObject a);
-#ifdef COMMON
-extern "C" LispObject get(LispObject a, LispObject b, LispObject c);
-#else
-extern "C" LispObject get(LispObject a, LispObject b);
-#endif
+extern "C" LispObject get(LispObject a, LispObject b, LispObject c=nil);
 extern LispObject getvector(int tag, int type, size_t length);
 extern LispObject getvector_init(size_t n, LispObject v);
 extern uint32_t  hash_lisp_string(LispObject s);
@@ -930,7 +843,7 @@ extern void        preserve(const char *msg, size_t len);
 extern void        preserve_native_code();
 extern void        relocate_native_function(unsigned char *bps);
 extern LispObject prin(LispObject u);
-extern const char *get_string_data(LispObject a, const char *why, size_t *len);
+extern const char *get_string_data(LispObject a, const char *why, size_t &len);
 extern void prin_to_stdout(LispObject u);
 extern void prin_to_terminal(LispObject u);
 extern void prin_to_debug(LispObject u);
@@ -988,47 +901,21 @@ extern void validate_string_fn(LispObject a, const char *f, int l);
 #endif
 
 //
-// The next few provide support for multiple values.
+// The next few provide support for multiple values. In the past I had
+// these as #define macros, which had a hidden trap if one wrote
+// (say) "return onevalue(something_complicated);" and evaluation of the
+// complicated thing could set the multiple values variable. Here using
+// inline procedures the variable exit_count should always be set right
+// at the end, as required.
 //
-#ifdef COMMON
-#define onevalue(r)   (exit_count=1, (r))
-#define nvalues(r, n) (exit_count=(n), (r))
-#else
-#define onevalue(r)   (r)
-#define nvalues(r, n) (r)
-#endif
-
-#ifdef COMMON
-#define eval(a, b) Ceval(a, b)
-#define voideval(a, b) Ceval(a, b)
-#define noisy_eval(a, b) noisy_Ceval(a, b)
-#define noisy_voideval(a, b) noisy_Ceval(a, b)
-#else
-//
-// I lift the top test from eval out to be in-line so that I can
-// (rather often) avoid the overhead of a procedure call when return from
-// it will be almost immediate.  The effect is that in CSL mode Ceval is
-// only ever called on a list.  NB the first arg to eval gets evaluated
-// several times here - maybe I will just hope that CSE optimisation picks
-// up this sort of repetition...
-//
-#define eval(a, b) \
-    (is_cons(a) ? Ceval(a, b) : \
-     is_symbol(a) ? (qvalue(a) == unset_var ? error(1, err_unset_var, a) : \
-                     onevalue(qvalue(a))) : \
-     onevalue(a))
-// voideval(a, b) is like ()eval(a, b)
-#define voideval(a, b) \
-    if (is_cons(a)) Ceval(a, b) // Beware "else" after this
-#define noisy_eval(a, b) \
-    (is_cons(a) ? noisy_Ceval(a, b) : \
-     is_symbol(a) ? (qvalue(a) == unset_var ? error(1, err_unset_var, a) : \
-                     onevalue(qvalue(a))) : \
-     onevalue(a))
-// voideval(a, b) is like ()eval(a, b)
-#define noisy_voideval(a, b) \
-    if (is_cons(a)) noisy_Ceval(a, b) // Beware "else" after this
-#endif
+static inline LispObject onevalue(LispObject r)
+{   exit_count = 1;
+    return r;
+}
+static inline LispObject nvalues(LispObject r, int n)
+{   exit_count = n;
+    return r;
+}
 
 //
 // The function "equal" seems to be pretty critical (certainly for Standard
@@ -1070,7 +957,7 @@ extern uint32_t Idivide(uint32_t *qp, uint32_t a,
                         uint32_t b, uint32_t c);
 extern uint32_t Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
 
-#define argcheck(var, n, msg) if ((var)!=(n)) return aerror(msg);
+#define argcheck(var, n, msg) if ((var)!=(n)) aerror(msg);
 
 extern n_args      *no_arg_functions[];
 extern no_args     *new_no_arg_functions[];
@@ -1137,14 +1024,11 @@ extern char program_name[64];
 extern LispObject declare_fn(LispObject args, LispObject env);
 extern LispObject function_fn(LispObject args, LispObject env);
 extern LispObject let_fn_1(LispObject bvl, LispObject body,
-                           LispObject env, int compilerp, int noisy);
+                           LispObject env, int compilerp);
 extern LispObject mv_call_fn(LispObject args, LispObject env);
-extern LispObject noisy_mv_call_fn(LispObject args, LispObject env);
 extern LispObject progn_fn(LispObject args, LispObject env);
-extern LispObject noisy_progn_fn(LispObject args, LispObject env);
 extern LispObject quote_fn(LispObject args, LispObject env);
 extern LispObject tagbody_fn(LispObject args, LispObject env);
-extern LispObject noisy_tagbody_fn(LispObject args, LispObject env);
 
 //
 // The variables here are always extern - they never survive in an image
@@ -1160,12 +1044,6 @@ extern int64_t time_limit, space_limit, io_limit, errors_limit;
 // whether to warn about attempts to redefine them.
 //
 extern bool symbol_protect_flag, warn_about_protected_symbols;
-
-#ifdef JIT
-extern char *Jcompile(LispObject def, LispObject env);
-extern unsigned long jit_size;
-#define JIT_INIT_SIZE 8192
-#endif
 
 #ifdef HASH_STATISTICS
 extern uint64_t Nhget, Nhgetp, Nhput1, Nhputp1, Nhput2, Nhputp2, Nhputtmp;

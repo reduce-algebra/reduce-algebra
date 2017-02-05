@@ -9,7 +9,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -104,14 +104,20 @@ void start_csl()
 
 int execute_lisp_function(char *fname,
                           character_reader *r, character_writer *w)
-{   LispObject ff = make_undefined_symbol(fname);
-    if (exception_pending()) return 1;  // Failed to make the symbol
-    procedural_input = r;
-    procedural_output = w;
-    Lapply0(nil, ff);
+{   try
+    {   START)_TRY_BLOCK;
+        LispObject ff = make_undefined_symbol(fname);
+        procedural_input = r;
+        procedural_output = w;
+        Lapply0(nil, ff);
+    }
+    catch (LispException e)
+    {   procedural_input = NULL;
+        procedural_output = NULL;
+        return 1;
+    }
     procedural_input = NULL;
     procedural_output = NULL;
-    if (exception_pending()) return 2;  // Failure during evaluation
     return 0;
 }
 
@@ -129,14 +135,17 @@ void use_csl(char *s)
 
 int execute_lisp_function1(char *fname, LispObject arg,
                            character_reader *r, character_writer *w)
-{   LispObject ff = make_undefined_symbol(fname);
-    if (exception_pending()) return 1;  // Failed to make the symbol
+{   LispObject ff;
+    if_error(ff = make_undefined_symbol(fname),
+             return 1);  // Failed to make the symbol
     procedural_input = r;
     procedural_output = w;
-    Lapply1(nil, ff, arg);
+    if_error(Lapply1(nil, ff, arg),
+             procedural_input = NULL;
+             procedural_output = NULL;
+             return 2);
     procedural_input = NULL;
     procedural_output = NULL;
-    if (exception_pending()) return 2;  // Failure during evaluation
     return 0;
 }
 

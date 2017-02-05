@@ -1,4 +1,4 @@
-//  arith13.cpp                       Copyright (C) 2016-2016 Codemist    
+// arith13.cpp                             Copyright (C) 2016-2017 Codemist    
 
 //
 // Complex elementary functions using the C99 support for same, but with
@@ -15,7 +15,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -58,7 +58,6 @@ static LispObject Lcarg(LispObject nil, LispObject a, LispObject b)
 {   complex double c = float_of_number(a) + I*float_of_number(b);
     double r = carg(c);
     a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
-    errexit();
     return onevalue(a);
 }
 
@@ -66,7 +65,6 @@ static LispObject Lcabs(LispObject nil, LispObject a, LispObject b)
 {   complex double c = float_of_number(a) + I*float_of_number(b);
     double r = cabs(c);
     a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
-    errexit();
     return onevalue(a);
 }
 
@@ -76,13 +74,10 @@ static LispObject Lcexp(LispObject nil, LispObject a, LispObject b)
     double rr = creal(r);
     double ri = cimag(r);
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
@@ -92,13 +87,10 @@ static LispObject Lclog(LispObject nil, LispObject a, LispObject b)
     double rr = creal(r);
     double ri = cimag(r);
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
@@ -111,13 +103,10 @@ static LispObject Lcsqrt(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
@@ -130,13 +119,10 @@ static LispObject Lcsin(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
@@ -149,13 +135,10 @@ static LispObject Lccos(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
@@ -168,26 +151,23 @@ static LispObject Lctan(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
 static LispObject Lccsc(LispObject nil, LispObject a, LispObject b)
-{   return aerror("pending function ccsc");
+{   aerror("pending function ccsc");
 }
 
 static LispObject Lcsec(LispObject nil, LispObject a, LispObject b)
-{   return aerror("pending function csec");
+{   aerror("pending function csec");
 }
 
 static LispObject Lccot(LispObject nil, LispObject a, LispObject b)
-{   return aerror("pending function ccot");
+{   aerror("pending function ccot");
 }
 
 static LispObject Lcasin(LispObject nil, LispObject a, LispObject b)
@@ -199,13 +179,10 @@ static LispObject Lcasin(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
@@ -218,13 +195,10 @@ static LispObject Lcacos(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
@@ -237,26 +211,23 @@ static LispObject Lcatan(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
 static LispObject Lcacsc(LispObject nil, LispObject a, LispObject b)
-{   return aerror("pending function cacsc");
+{   aerror("pending function cacsc");
 }
 
 static LispObject Lcasec(LispObject nil, LispObject a, LispObject b)
-{   return aerror("pending function casec");
+{   aerror("pending function casec");
 }
 
 static LispObject Lcacot(LispObject nil, LispObject a, LispObject b)
-{   return aerror("pending function cacot");
+{   aerror("pending function cacot");
 }
 
 static LispObject Lcsinh(LispObject nil, LispObject a, LispObject b)
@@ -268,13 +239,10 @@ static LispObject Lcsinh(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
@@ -287,13 +255,10 @@ static LispObject Lccosh(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
@@ -306,26 +271,23 @@ static LispObject Lctanh(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
 static LispObject Lccsch(LispObject nil, LispObject a, LispObject b)
-{   return aerror("pending function ccsch");
+{   aerror("pending function ccsch");
 }
 
 static LispObject Lcsech(LispObject nil, LispObject a, LispObject b)
-{   return aerror("pending function csech");
+{   aerror("pending function csech");
 }
 
 static LispObject Lccoth(LispObject nil, LispObject a, LispObject b)
-{   return aerror("pending function ccoth");
+{   aerror("pending function ccoth");
 }
 
 static LispObject Lcasinh(LispObject nil, LispObject a, LispObject b)
@@ -337,13 +299,10 @@ static LispObject Lcasinh(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
@@ -356,13 +315,10 @@ static LispObject Lcacosh(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
@@ -375,26 +331,23 @@ static LispObject Lcatanh(LispObject nil, LispObject a, LispObject b)
     printf("B %.8f %.8f\r\n", creal(c), cimag(c));
     printf("C %.8f %.8f\r\n", creal(r), cimag(r));
     a = make_boxfloat(rr, TYPE_DOUBLE_FLOAT);
-    errexit();
     push(a);
     b = make_boxfloat(ri, TYPE_DOUBLE_FLOAT);
     pop(a);
-    errexit();
     a = cons(a, b);
-    errexit();
     return onevalue(a);
 }
 
 static LispObject Lcacsch(LispObject nil, LispObject a, LispObject b)
-{   return aerror("pending function cacsch");
+{   aerror("pending function cacsch");
 }
 
 static LispObject Lcasech(LispObject nil, LispObject a, LispObject b)
-{   return aerror("pending function casech");
+{   aerror("pending function casech");
 }
 
 static LispObject Lcacoth(LispObject nil, LispObject a, LispObject b)
-{   return aerror("pending function cacoth");
+{   aerror("pending function cacoth");
 }
 
 
@@ -402,119 +355,119 @@ static LispObject Lcacoth(LispObject nil, LispObject a, LispObject b)
 #else // HAVE_COMPLEX
 
 static LispObject Lcarg(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function carg");
+{   aerror("unimplemented function carg");
 }
 
 static LispObject Lcabs(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function cabs");
+{   aerror("unimplemented function cabs");
 }
 
 static LispObject Lcexp(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function cexp");
+{   aerror("unimplemented function cexp");
 }
 
 static LispObject Lclog(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function clog");
+{   aerror("unimplemented function clog");
 }
 
 static LispObject Lcsqrt(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function csqrt");
+{   aerror("unimplemented function csqrt");
 }
 
 static LispObject Lcsin(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function csin");
+{   aerror("unimplemented function csin");
 }
 
 static LispObject Lccos(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccos");
+{   aerror("unimplemented function ccos");
 }
 
 static LispObject Lctan(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function ctan");
+{   aerror("unimplemented function ctan");
 }
 
 static LispObject Lccsc(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccsc");
+{   aerror("unimplemented function ccsc");
 }
 
 static LispObject Lcsec(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function csec");
+{   aerror("unimplemented function csec");
 }
 
 static LispObject Lccot(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccot");
+{   aerror("unimplemented function ccot");
 }
 
 static LispObject Lcasin(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function casin");
+{   aerror("unimplemented function casin");
 }
 
 static LispObject Lcacos(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacos");
+{   aerror("unimplemented function cacos");
 }
 
 static LispObject Lcatan(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function catan");
+{   aerror("unimplemented function catan");
 }
 
 static LispObject Lcacsc(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacsc");
+{   aerror("unimplemented function cacsc");
 }
 
 static LispObject Lcasec(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function casec");
+{   aerror("unimplemented function casec");
 }
 
 static LispObject Lcacot(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacot");
+{   aerror("unimplemented function cacot");
 }
 
 static LispObject Lcsinh(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function csinh");
+{   aerror("unimplemented function csinh");
 }
 
 static LispObject Lccosh(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccosh");
+{   aerror("unimplemented function ccosh");
 }
 
 static LispObject Lctanh(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function ctanh");
+{   aerror("unimplemented function ctanh");
 }
 
 static LispObject Lccsch(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccsch");
+{   aerror("unimplemented function ccsch");
 }
 
 static LispObject Lcsech(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function csech");
+{   aerror("unimplemented function csech");
 }
 
 static LispObject Lccoth(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function ccoth");
+{   aerror("unimplemented function ccoth");
 }
 
 static LispObject Lcasinh(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function casinh");
+{   aerror("unimplemented function casinh");
 }
 
 static LispObject Lcacosh(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacosh");
+{   aerror("unimplemented function cacosh");
 }
 
 static LispObject Lcatanh(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function catanh");
+{   aerror("unimplemented function catanh");
 }
 
 static LispObject Lcacsch(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacsch");
+{   aerror("unimplemented function cacsch");
 }
 
 static LispObject Lcasech(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function casech");
+{   aerror("unimplemented function casech");
 }
 
 static LispObject Lcacoth(LispObject nil, LispObject a, LispObject b)
-{   return aerror("unimplemented function cacoth");
+{   aerror("unimplemented function cacoth");
 }
 
 #endif // HAVE_COMPLEX

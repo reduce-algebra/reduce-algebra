@@ -16,7 +16,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2010, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -426,7 +426,7 @@ int main(int argc,char *argv[])
 
 // I will add exactly and only the fonts that I will be using.
     char fff[256];
-    for (int i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
+    for (size_t i=0; i<sizeof(fontNames)/sizeof(fontNames[0]); i++)
     {   sprintf(fff,
             "%s/" toString(fontsdir) "/%s.pfb",
             programDir, fontNames[i].name);

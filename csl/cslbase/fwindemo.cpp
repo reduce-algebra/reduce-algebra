@@ -1,4 +1,4 @@
-// fwindemo.cpp                      Copyright (C) 2004-2015 Codemist    
+// fwindemo.cpp                            Copyright (C) 2004-2017 Codemist    
 
 
 //
@@ -40,7 +40,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -220,8 +220,8 @@ int fwin_main(int argc, const char **argv)
     fwin_printf("Type lines. Type \"quit\" to exit\n");
     fwin_ensure_screen();
     for (;;)
-    {   int c, j;
-        size_t i = 0;
+    {   int c;
+        size_t i = 0, j;
         while ((c = fwin_getchar()) != EOF && c != '\n')
         {   if (i < sizeof(line)-10) line[i++] = c;
         }

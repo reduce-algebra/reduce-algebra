@@ -1,6 +1,4 @@
-/*
- * softfloatdemo.cpp
- */
+// softfloatdemo.cpp                       Copyright (C) 2016-2017 Codemist
 
 
 // Thie file is a demonstration of the "SoftFloat-3a" package that I am
@@ -12,7 +10,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -40,7 +38,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-/* $Id: softfloatdemo.cpp 3297 2015-12-14 20:30:04Z arthurcnorman $ */
+/* $Id$ */
 
 
 // I am now using the SoftFloat-3a library by John R Hauser. This is

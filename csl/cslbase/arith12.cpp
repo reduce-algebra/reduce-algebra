@@ -1,4 +1,4 @@
-//  arith12.cpp                       Copyright (C) 1990-2016 Codemist    
+//  arith12.cpp                            Copyright (C) 1990-2017 Codemist    
 
 //
 // Arithmetic functions... specials for Reduce (esp. factoriser)
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -52,7 +52,6 @@ LispObject Lfrexp(LispObject env, LispObject a)
     d = frexp(d, &x);
     if (d == 1.0) d = 0.5, x++;
     a = make_boxfloat(d, TYPE_DOUBLE_FLOAT);
-    errexit();
     return Lcons(nil, fixnum_of_int((int32_t)x), a);
 }
 
@@ -62,20 +61,19 @@ LispObject Lfrexp(LispObject env, LispObject a)
 LispObject Lmodular_difference(LispObject env, LispObject a, LispObject b)
 {   intptr_t r;
     if (!modulus_is_large)
-    {   if (!is_fixnum(a)) return aerror1("modular-difference", a);
-        if (!is_fixnum(b)) return aerror1("modular-difference", b);
+    {   if (!is_fixnum(a)) aerror1("modular-difference", a);
+        if (!is_fixnum(b)) aerror1("modular-difference", b);
         r = int_of_fixnum(a) - int_of_fixnum(b);
         if (r < 0) r += current_modulus;
         return onevalue(fixnum_of_int(r));
     }
     a = difference2(a, b);
-    errexit();
     return modulus(a, large_modulus);
 }
 
 LispObject Lmodular_minus(LispObject env, LispObject a)
 {   if (!modulus_is_large)
-    {   if (!is_fixnum(a)) return aerror1("modular-minus", a);
+    {   if (!is_fixnum(a)) aerror1("modular-minus", a);
         if (a != fixnum_of_int(0))
         {   intptr_t r = current_modulus - int_of_fixnum(a);
             a = fixnum_of_int(r);
@@ -83,7 +81,6 @@ LispObject Lmodular_minus(LispObject env, LispObject a)
         return onevalue(a);
     }
     a = negate(a);
-    errexit();
     return modulus(a, large_modulus);
 }
 
@@ -91,7 +88,6 @@ LispObject Lmodular_number(LispObject env, LispObject a)
 {   intptr_t r;
     if (!modulus_is_large)
     {   a = Cremainder(a, fixnum_of_int(current_modulus));
-        errexit();
         r = int_of_fixnum(a);
         if (r < 0) r += current_modulus;
         return onevalue(fixnum_of_int(r));
@@ -102,14 +98,13 @@ LispObject Lmodular_number(LispObject env, LispObject a)
 LispObject Lmodular_plus(LispObject env, LispObject a, LispObject b)
 {   intptr_t r;
     if (!modulus_is_large)
-    {   if (!is_fixnum(a)) return aerror1("modular-plus", a);
-        if (!is_fixnum(b)) return aerror1("modular-plus", b);
+    {   if (!is_fixnum(a)) aerror1("modular-plus", a);
+        if (!is_fixnum(b)) aerror1("modular-plus", b);
         r = int_of_fixnum(a) + int_of_fixnum(b);
         if (r >= current_modulus) r -= current_modulus;
         return onevalue(fixnum_of_int(r));
     }
     a = plus2(a, b);
-    errexit();
     return modulus(a, large_modulus);
 }
 
@@ -120,27 +115,24 @@ LispObject large_modular_reciprocal(LispObject n, bool safe)
     y = fixnum_of_int(1);
     if (b == fixnum_of_int(0))
     {   if (safe) return onevalue(nil);
-        else return aerror1("modular-reciprocal", n);
+        else aerror1("modular-reciprocal", n);
     }
     b = modulus(b, large_modulus);
-    errexit();
     a = large_modulus;
     while (b != fixnum_of_int(1))
     {   LispObject w, t;
         if (b == fixnum_of_int(0))
         {   if (safe) return onevalue(nil);
-            else return aerror2("non-prime modulus in modular-reciprocal",
+            else aerror2("non-prime modulus in modular-reciprocal",
                                     large_modulus, n);
         }
         push2(x, y);
         w = quot2(a, b);
         pop2(y, x);
-        errexit();
         t = b;
         push5(a, x, y, w, t)
         b = times2(b, w);
         pop5(t, w, y, x, a);
-        errexit();
         push4(x, y, w, t)
         b = difference2(a, b);
         pop4(t, w, y, x);
@@ -149,7 +141,6 @@ LispObject large_modular_reciprocal(LispObject n, bool safe)
         push4(a, b, x, t);
         y = times2(y, w);
         pop4(t, x, b, a);
-        errexit();
         push3(a, b, t);
         y = difference2(x, y);
         pop3(t, b, a);
@@ -164,17 +155,17 @@ LispObject Lmodular_reciprocal(LispObject, LispObject n)
     if (modulus_is_large) return large_modular_reciprocal(n, false);
 // If the modulus is "small" I can do all this using native integer
 // arithmetic.
-    if (!is_fixnum(n)) return aerror1("modular-reciprocal", n);
+    if (!is_fixnum(n)) aerror1("modular-reciprocal", n);
     a = current_modulus;
     b = int_of_fixnum(n);
     x = 0;
     y = 1;
-    if (b == 0) return aerror1("modular-reciprocal", n);
+    if (b == 0) aerror1("modular-reciprocal", n);
     if (b < 0) b = current_modulus - ((-b)%current_modulus);
     while (b != 1)
     {   intptr_t w, t;
         if (b == 0)
-            return aerror2("non-prime modulus in modular-reciprocal",
+            aerror2("non-prime modulus in modular-reciprocal",
                            fixnum_of_int(current_modulus), n);
         w = a / b;
         t = b;
@@ -191,7 +182,7 @@ LispObject Lmodular_reciprocal(LispObject, LispObject n)
 LispObject Lsafe_modular_reciprocal(LispObject env, LispObject n)
 {   intptr_t a, b, x, y;
     if (modulus_is_large) return large_modular_reciprocal(n, true);
-    if (!is_fixnum(n)) return aerror1("modular-reciprocal", n);
+    if (!is_fixnum(n)) aerror1("modular-reciprocal", n);
     a = current_modulus;
     b = int_of_fixnum(n);
     x = 0;
@@ -218,8 +209,8 @@ LispObject Lmodular_times(LispObject env, LispObject a, LispObject b)
     uintptr_t cm;
     intptr_t aa, bb;
     if (!modulus_is_large)
-    {   if (!is_fixnum(a)) return aerror1("modular-times", a);
-        if (!is_fixnum(b)) return aerror1("modular-times", b);
+    {   if (!is_fixnum(a)) aerror1("modular-times", a);
+        if (!is_fixnum(b)) aerror1("modular-times", b);
         cm = (uintptr_t)current_modulus;
         aa = int_of_fixnum(a);
         bb = int_of_fixnum(b);
@@ -254,13 +245,11 @@ LispObject Lmodular_times(LispObject env, LispObject a, LispObject b)
 // support 128-bit integers.
         else
         {   a = times2(a, b);
-            errexit();
             return modulus(a, fixnum_of_int(cm));
         }
 #endif
     }
     a = times2(a, b);
-    errexit();
     return modulus(a, large_modulus);
 }
 
@@ -268,19 +257,15 @@ LispObject Lmodular_quotient(LispObject env, LispObject a, LispObject b)
 {   push(a);
     b = Lmodular_reciprocal(nil, b);
     pop(a);
-    errexit();
     return Lmodular_times(nil, a, b);
 }
 
 LispObject large_modular_expt(LispObject a, int x)
 {   LispObject r, p, w;
     p = modulus(a, large_modulus);
-    errexit();
     while ((x & 1) == 0)
     {   p = times2(p, p);
-        errexit();
         p = modulus(p, large_modulus);
-        errexit();
         x = x/2;
     }
     r = p;
@@ -288,21 +273,17 @@ LispObject large_modular_expt(LispObject a, int x)
     {   push(r);
         w = times2(p, p);
         pop(r);
-        errexit();
         push(r);
         p = modulus(w, large_modulus);
         pop(r);
-        errexit();
         x = x/2;
         if ((x & 1) != 0)
         {   push(p);
             w = times2(r, p);
             pop(p);
-            errexit();
             push(p);
             r = modulus(w, large_modulus);
             pop(p);
-            errexit();
         }
     }
     return onevalue(r);
@@ -316,7 +297,6 @@ static inline intptr_t muldivptr(uintptr_t a, uintptr_t b, uintptr_t c)
         return (intptr_t)(((uint128_t)a * (uint128_t)a) % (uintptr_t)c);
 #else
     {   LispObject w = times2(fixnum_of_int(a), fixnum_of_int(a)), nil;
-        errexit();
         return int_of_fixnum(modulus(w, fixnum_of_int(c)));
     }
 #endif
@@ -335,17 +315,14 @@ LispObject Lmodular_expt(LispObject env, LispObject a, LispObject b)
 // valid modulus and any valid modular number will be positive.
     while ((x & 1) == 0)
     {   p = muldivptr((uintptr_t)p, (uintptr_t)p, (uintptr_t)current_modulus);
-        errexit();
         x = x/2;
     }
     r = p;
     while (x != 1)
     {   p = muldivptr((uintptr_t)p, (uintptr_t)p, (uintptr_t)current_modulus);
-        errexit();
         x = x/2;
         if ((x & 1) != 0)
         {   r = muldivptr((uintptr_t)r, (uintptr_t)p, (uintptr_t)current_modulus);
-            errexit();
         }
     }
     return onevalue(fixnum_of_int(r));
@@ -362,14 +339,14 @@ LispObject Lset_small_modulus(LispObject env, LispObject a)
     {   if (!is_numbers(a) ||
             !is_bignum(a) ||
             minusp(a))
-            return aerror1("set-small-modulus", a);
+            aerror1("set-small-modulus", a);
         modulus_is_large = 1;
         current_modulus = 0;   // should not be referenced.
         large_modulus = a;
         return old;
     }
     if ((intptr_t)a < 0 || a == fixnum_of_int(0))
-        return aerror1("set!-small!-modulus", a);
+        aerror1("set!-small!-modulus", a);
     modulus_is_large = 0;
     large_modulus = nil; // Should not be referenced.
     current_modulus = int_of_fixnum(a);;
@@ -377,12 +354,12 @@ LispObject Lset_small_modulus(LispObject env, LispObject a)
 }
 
 LispObject Liadd1(LispObject, LispObject a)
-{   if (!is_fixnum(a)) return aerror1("iadd1", a);
+{   if (!is_fixnum(a)) aerror1("iadd1", a);
     return onevalue((LispObject)((intptr_t)a + 0x10));
 }
 
 LispObject Lidifference(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("idifference", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("idifference", a, b);
     return onevalue((LispObject)((intptr_t)a - (intptr_t)b + TAG_FIXNUM));
 }
 
@@ -402,22 +379,22 @@ LispObject Lxdifference(LispObject env, LispObject a, LispObject b)
 }
 
 LispObject Ligreaterp(LispObject env, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("igreaterp", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("igreaterp", a, b);
     return onevalue(Lispify_predicate(a > b));
 }
 
 LispObject Lilessp(LispObject env, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ilessp", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("ilessp", a, b);
     return onevalue(Lispify_predicate(a < b));
 }
 
 LispObject Ligeq(LispObject env, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("igeq", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("igeq", a, b);
     return onevalue(Lispify_predicate(a >= b));
 }
 
 LispObject Lileq(LispObject env, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ileq", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("ileq", a, b);
     return onevalue(Lispify_predicate(a <= b));
 }
 
@@ -425,15 +402,15 @@ static LispObject Lilogand(LispObject, int nargs, ...)
 {   va_list a;
     LispObject r;
     if (nargs == 0) return onevalue(fixnum_of_int(-1));
-    if (nargs > ARG_CUT_OFF) return aerror("too many args for ilogand");
+    if (nargs > ARG_CUT_OFF) aerror("too many args for ilogand");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
-    if (!is_fixnum(r)) return aerror1("ilogand", r);
+    if (!is_fixnum(r)) aerror1("ilogand", r);
     while (--nargs != 0)
     {   LispObject w = va_arg(a, LispObject);
         if (!is_fixnum(w))
         {   va_end(a);
-            return aerror1("ilogand", w);
+            aerror1("ilogand", w);
         }
         r = (LispObject)((intptr_t)r & (intptr_t)w);
     }
@@ -445,15 +422,15 @@ static LispObject Lilogor(LispObject, int nargs, ...)
 {   va_list a;
     LispObject r;
     if (nargs == 0) return onevalue(fixnum_of_int(0));
-    if (nargs > ARG_CUT_OFF) return aerror("too many args for ilogor");
+    if (nargs > ARG_CUT_OFF) aerror("too many args for ilogor");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
-    if (!is_fixnum(r)) return aerror1("ilogor", r);
+    if (!is_fixnum(r)) aerror1("ilogor", r);
     while (--nargs != 0)
     {   LispObject w = va_arg(a, LispObject);
         if (!is_fixnum(w))
         {   va_end(a);
-            return aerror1("ilogor", w);
+            aerror1("ilogor", w);
         }
         r = (LispObject)((intptr_t)r | (intptr_t)w);
     }
@@ -465,15 +442,15 @@ static LispObject Lilogxor(LispObject, int nargs, ...)
 {   va_list a;
     LispObject r;
     if (nargs == 0) return onevalue(fixnum_of_int(0));
-    if (nargs > ARG_CUT_OFF) return aerror("too many args for ilogxor");
+    if (nargs > ARG_CUT_OFF) aerror("too many args for ilogxor");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
-    if (!is_fixnum(r)) return aerror1("ilogxor", r);
+    if (!is_fixnum(r)) aerror1("ilogxor", r);
     while (--nargs != 0)
     {   LispObject w = va_arg(a, LispObject);
         if (!is_fixnum(w))
         {   va_end(a);
-            return aerror1("ilogxor", w);
+            aerror1("ilogxor", w);
         }
         r = (LispObject)(((intptr_t)r ^ (intptr_t)w) + TAG_FIXNUM);
     }
@@ -482,32 +459,32 @@ static LispObject Lilogxor(LispObject, int nargs, ...)
 }
 
 static LispObject Lilogand2(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ilogand", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("ilogand", a, b);
     return onevalue(a & b);
 }
 
 static LispObject Lilogor2(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ilogor", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("ilogor", a, b);
     return onevalue(a | b);
 }
 
 static LispObject Lilogxor2(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("ilogxor", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("ilogxor", a, b);
     return onevalue((a ^ b) + TAG_FIXNUM);
 }
 
 LispObject Limin(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("imin", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("imin", a, b);
     return onevalue(a < b ? a : b);
 }
 
 LispObject Limax(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("imax", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("imax", a, b);
     return onevalue(a > b ? a : b);
 }
 
 LispObject Liminus(LispObject, LispObject a)
-{   if (!is_fixnum(a)) return aerror1("iminus", a);
+{   if (!is_fixnum(a)) aerror1("iminus", a);
     return onevalue((LispObject)(2*TAG_FIXNUM - (intptr_t)a));
 }
 
@@ -519,15 +496,15 @@ static LispObject Liplus(LispObject, int nargs, ...)
 {   va_list a;
     LispObject r;
     if (nargs == 0) return onevalue(fixnum_of_int(0));
-    if (nargs > ARG_CUT_OFF) return aerror("too many args for iplus");
+    if (nargs > ARG_CUT_OFF) aerror("too many args for iplus");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
-    if (!is_fixnum(r)) return aerror1("iplus", r);
+    if (!is_fixnum(r)) aerror1("iplus", r);
     while (--nargs != 0)
     {   LispObject w = va_arg(a, LispObject);
         if (!is_fixnum(w))
         {   va_end(a);
-            return aerror1("iplus", w);
+            aerror1("iplus", w);
         }
         r = (LispObject)((intptr_t)r + (intptr_t)w - TAG_FIXNUM);
     }
@@ -536,14 +513,14 @@ static LispObject Liplus(LispObject, int nargs, ...)
 }
 
 LispObject Liplus2(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("iplus2", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("iplus2", a, b);
     return onevalue((LispObject)((intptr_t)a + (intptr_t)b - TAG_FIXNUM));
 }
 
 LispObject Liquotient(LispObject, LispObject a, LispObject b)
 {   intptr_t aa, bb, c;
     if (!is_fixnum(a) || !is_fixnum(b) ||
-        b == fixnum_of_int(0)) return aerror2("iquotient", a, b);
+        b == fixnum_of_int(0)) aerror2("iquotient", a, b);
 // C does not define the exact behaviour of /, % on -ve args
     aa = int_of_fixnum(a);
     bb = int_of_fixnum(b);
@@ -558,7 +535,7 @@ LispObject Liquotient(LispObject, LispObject a, LispObject b)
 LispObject Liremainder(LispObject, LispObject a, LispObject b)
 {   intptr_t aa, bb, c;
     if (!is_fixnum(a) || !is_fixnum(b) ||
-        b == fixnum_of_int(0)) return aerror2("iremainder", a, b);
+        b == fixnum_of_int(0)) aerror2("iremainder", a, b);
 // C does not define the exact behaviour of /, % on -ve args
     aa = int_of_fixnum(a);
     bb = int_of_fixnum(b);
@@ -571,12 +548,12 @@ LispObject Liremainder(LispObject, LispObject a, LispObject b)
 }
 
 LispObject Lirightshift(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("irightshift", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("irightshift", a, b);
     return onevalue(fixnum_of_int(int_of_fixnum(a) >> int_of_fixnum(b)));
 }
 
 LispObject Lisub1(LispObject, LispObject a)
-{   if (!is_fixnum(a)) return aerror1("isub1", a);
+{   if (!is_fixnum(a)) aerror1("isub1", a);
     return onevalue((LispObject)((intptr_t)a - 0x10));
 }
 
@@ -585,16 +562,16 @@ static LispObject Litimes(LispObject, int nargs, ...)
     LispObject rr;
     intptr_t r;
     if (nargs == 0) return onevalue(fixnum_of_int(1));
-    if (nargs > ARG_CUT_OFF) return aerror("too many args for itimes");
+    if (nargs > ARG_CUT_OFF) aerror("too many args for itimes");
     va_start(a, nargs);
     rr = va_arg(a, LispObject);
-    if (!is_fixnum(rr)) return aerror1("itimes", rr);
+    if (!is_fixnum(rr)) aerror1("itimes", rr);
     r = int_of_fixnum(rr);
     while (nargs-- != 0)
     {   LispObject w = va_arg(a, LispObject);
         if (!is_fixnum(w))
         {   va_end(a);
-            return aerror1("itimes", w);
+            aerror1("itimes", w);
         }
         r = r * int_of_fixnum(w);
     }
@@ -603,7 +580,7 @@ static LispObject Litimes(LispObject, int nargs, ...)
 }
 
 LispObject Litimes2(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) return aerror2("itimes2", a, b);
+{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("itimes2", a, b);
     return onevalue(fixnum_of_int(int_of_fixnum(a) * int_of_fixnum(b)));
 }
 
@@ -648,7 +625,7 @@ static LispObject Lfp_eval(LispObject env, LispObject code,
 {   int n = 0;
     double w;
     unsigned char *p;
-    if (!is_vector(code)) return aerror("fp-evaluate");
+    if (!is_vector(code)) aerror("fp-evaluate");
     while (consp(args))
     {   fp_args[n++] = float_of_number(qcar(args));
         args = qcdr(args);
@@ -666,10 +643,9 @@ static LispObject Lfp_eval(LispObject env, LispObject code,
         }
         switch (op)
     {       default:
-                return aerror("Bad op in fp-evaluate");
+                aerror("Bad op in fp-evaluate");
             case FP_RETURN:
                 args = make_boxfloat(fp_stack[0], TYPE_DOUBLE_FLOAT);
-                errexit();
                 return onevalue(args);
             case FP_PLUS:
                 n--;

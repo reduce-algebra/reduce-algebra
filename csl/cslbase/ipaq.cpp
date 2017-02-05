@@ -1,3 +1,5 @@
+// ipaq.cpp                                Copyright (C) 2005-2017 Codemist
+
 //
 // Framework for a Windows CE Application... This is being
 // built for CE version 420 to run on an IPAQ 4700 (which is a VGA
@@ -6,13 +8,13 @@
 //
 // This code has not been looked at for many years and so should be
 // assumed to be out of date and broken. It is left here in case it
-// forms a useful starting-point for soem future project.
+// forms a useful starting-point for some future project.
 //
 //                                 A C Norman, Codemist    , March 2005
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

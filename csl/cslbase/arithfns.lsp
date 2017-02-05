@@ -1,4 +1,4 @@
-% arithfns.lsp                                             A C Norman, 2016
+% arithfns.lsp                          Copyright (C) A C Norman, 2016-2017
 
 
 % The code here implements arbitrary precision arithmetic using lists
@@ -14,7 +14,7 @@
 % its implementation.
 
 % **************************************************************************
-% * Copyright (C) 2016, Codemist.                         A C Norman       *
+% * Copyright (C) 2017, Codemist.                         A C Norman       *
 % *                                                                        *
 % * Redistribution and use in source and binary forms, with or without     *
 % * modification, are permitted provided that the following conditions are *
@@ -38,7 +38,7 @@
 % * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
 % * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
 % * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
-% * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE * POSSIBILITY OF SUCH *
+% * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
 % * DAMAGE.                                                                *
 % *************************************************************************/
 

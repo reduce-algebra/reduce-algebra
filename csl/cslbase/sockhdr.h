@@ -1,4 +1,4 @@
-//  sockhdr.h                              Copyright (C) 1997-2016 Codemist
+// sockhdr.h                               Copyright (C) 1997-2017 Codemist
 
 //
 // pull in headers suitable for socket-related code.
@@ -6,7 +6,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,9 +37,7 @@
 
 // $Id$
 
-#ifndef UNDER_CE
 #include <errno.h>
-#endif
 
 #ifdef WIN32
 #include <winsock.h>

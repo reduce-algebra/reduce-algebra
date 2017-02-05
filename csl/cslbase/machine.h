@@ -1,4 +1,4 @@
-// machine.h                              Copyright (C) 1990-2016 Codemist
+// machine.h                               Copyright (C) 1990-2017 Codemist
 
 //
 // This was ONCE a place where all system-specific options were detected
@@ -14,7 +14,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -62,7 +62,7 @@ extern "C"
 // symbol SOCKETS if I can use sockets...
 //
 //
-#if !defined UNDER_CE && !defined EMBEDDED
+#if !defined EMBEDDED
 #if ((defined HAVE_SOCKET && defined HAVE_SYS_SOCKET_H) || defined WIN32)
 #define SOCKETS                  1
 #endif

@@ -1,4 +1,4 @@
-// cyg64.cpp                             Copyright (C) A C Norman  2014-15
+// other-cygwin.cpp                     Copyright (C) A C Norman  2014-2017
 
 //
 // This program is to be run from a DOS command prompt or any cygwin
@@ -12,7 +12,7 @@
 // relevant files appear in consistent places from both 32 and 64-bit
 // worlds. This may be easiest if paths are fully rooted and so always
 // start /cygdrive/x/...
-// In particular BEWARE of hom directories!
+// In particular BEWARE of home directories!
 //
 // You must compile this with i686-w64-mingw32-gc++. This now requires that
 // the 32 and 64-bit versions of cygwin have been installed in c:\cygwin and
@@ -21,7 +21,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

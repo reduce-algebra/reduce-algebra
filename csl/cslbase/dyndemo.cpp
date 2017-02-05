@@ -1,12 +1,11 @@
-//
-// dyndemo.cpp
+// dyndemo.cpp                            Copyright (C) 2016-2017, Codemist
 //
 // This is a test and demonstration of run-time loading of a module
 // of code.
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

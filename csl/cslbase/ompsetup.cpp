@@ -1,7 +1,7 @@
-// This file was contributed to CSL by NAG Ltd
+// This file was contributed to CSL by NAG Ltd.     Copyright (C) 2016-2017
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

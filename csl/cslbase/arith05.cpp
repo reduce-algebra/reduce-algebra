@@ -1,4 +1,4 @@
-//  arith05.cpp                       Copyright (C) 1990-2016 Codemist    
+//  arith05.cpp                            Copyright (C) 1990-2017 Codemist    
 
 //
 // Arithmetic functions.
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -240,8 +240,7 @@ bool geq2(LispObject a, LispObject b)
 }
 
 bool lesseq2(LispObject a, LispObject b)
-{   if (exception_pending()) return false;
-    switch ((int)a & TAG_BITS)
+{   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -536,83 +535,74 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
     len1 = (intptr_t)doubleword_align_up(len1);
     w = getvector(TAG_NUMBERS, TYPE_BIGNUM, len1);
     pop(u);
-    if (!exception_pending())
-    {   bool sign = false;
-        int32_t len2;
-        len = len/4;
-        len1 = (len1-CELL)/4;
-        if (((int32_t)bignum_digits(u)[len-1]) >= 0)
-            for (i=0; i<len; i++) bignum_digits(w)[i] = bignum_digits(u)[i];
-        else
-        {   int32_t carry = -1;
-            sign = true;
-            for (i=0; i<len; i++)
-                // negate the number so I am working with a +ve value
-            {   carry = clear_top_bit(~bignum_digits(u)[i]) + top_bit(carry);
-                bignum_digits(w)[i] = clear_top_bit(carry);
-            }
+    bool sign = false;
+    int32_t len2;
+    len = len/4;
+    len1 = (len1-CELL)/4;
+    if (((int32_t)bignum_digits(u)[len-1]) >= 0)
+        for (i=0; i<len; i++) bignum_digits(w)[i] = bignum_digits(u)[i];
+    else
+    {   int32_t carry = -1;
+        sign = true;
+        for (i=0; i<len; i++)
+        // negate the number so I am working with a +ve value
+        {   carry = clear_top_bit(~bignum_digits(u)[i]) + top_bit(carry);
+            bignum_digits(w)[i] = clear_top_bit(carry);
         }
-        len2 = len1;
-        while (len > 1)
-        {   int32_t k;
-            int32_t carry = 0;
+    }
+    len2 = len1;
+    while (len > 1)
+    {   int32_t k;
+        int32_t carry = 0;
 //
 // This stack-check is so that I can respond to interrupts
 //
-            if (stack >= stacklimit)
-            {   w = reclaim(w, "stack", GC_STACK, 0);
-                errexitv();
-            }
-            // divide by 10^9 to obtain remainder
-            for (k=len-1; k>=0; k--)
-                Ddiv10_9(carry, bignum_digits(w)[k],
-                         carry, bignum_digits(w)[k]);
-            if (bignum_digits(w)[len-1] == 0) len--;
-            bignum_digits(w)[--len2] = carry; // 9 digits in decimal format
+        if (stack >= stacklimit) w = reclaim(w, "stack", GC_STACK, 0);
+        // divide by 10^9 to obtain remainder
+        for (k=len-1; k>=0; k--)
+            Ddiv10_9(carry, bignum_digits(w)[k],
+                     carry, bignum_digits(w)[k]);
+        if (bignum_digits(w)[len-1] == 0) len--;
+        bignum_digits(w)[--len2] = carry; // 9 digits in decimal format
+    }
+    push(w);
+    {   uint32_t dig;
+        int i;
+        int32_t len;
+        if (bignum_digits(w)[0] == 0) dig = bignum_digits(w)[len2++];
+        else dig = bignum_digits(w)[0];
+        i = 0;
+        do
+        {   int32_t nxt = dig % 10;
+            dig = dig / 10;
+            my_buff[i++] = (char)(nxt + '0');
         }
+        while (dig != 0);
+        if (sign) my_buff[i++] = '-';
+        len = i + 9*(len1-len2);
+        if (blankp)
+        {   if (nobreak==0 && column+len >= line_length)
+            {   if (column != 0) putc_stream('\n', active_stream);
+            }
+            else putc_stream(' ', active_stream);
+        }
+        else if (nobreak==0 && column != 0 && column+len > line_length)
+            putc_stream('\n', active_stream);
+        while (--i >= 0) putc_stream(my_buff[i], active_stream);
+    }
+    pop(w);
+    while (len2 < len1)
+    {   uint32_t dig = bignum_digits(w)[len2++];
+        int i;
         push(w);
-        {   uint32_t dig;
-            int i;
-            int32_t len;
-            if (bignum_digits(w)[0] == 0) dig = bignum_digits(w)[len2++];
-            else dig = bignum_digits(w)[0];
-            i = 0;
-            do
-            {   int32_t nxt = dig % 10;
-                dig = dig / 10;
-                my_buff[i++] = (char)(nxt + '0');
-            }
-            while (dig != 0);
-            if (sign) my_buff[i++] = '-';
-            len = i + 9*(len1-len2);
-            if (blankp)
-            {   if (nobreak==0 && column+len >= line_length)
-                {   if (column != 0) putc_stream('\n', active_stream);
-                }
-                else putc_stream(' ', active_stream);
-            }
-            else if (nobreak==0 && column != 0 && column+len > line_length)
-                putc_stream('\n', active_stream);
-            while (--i >= 0) putc_stream(my_buff[i], active_stream);
+        for (i=8; i>=0; i--)
+        {   int32_t nxt = dig % 10;
+            dig = dig / 10;
+            my_buff[i] = (char)(nxt + '0');
         }
+        for (i=0; i<=8; i++) putc_stream(my_buff[i], active_stream);
         pop(w);
-        while (len2 < len1)
-        {   uint32_t dig = bignum_digits(w)[len2++];
-            int i;
-            push(w);
-            for (i=8; i>=0; i--)
-            {   int32_t nxt = dig % 10;
-                dig = dig / 10;
-                my_buff[i] = (char)(nxt + '0');
-            }
-            for (i=0; i<=8; i++) putc_stream(my_buff[i], active_stream);
-            pop(w);
-            errexitv();
-            if (stack >= stacklimit)
-            {   w = reclaim(w, "stack", GC_STACK, 0);
-                errexitv();
-            }
-        }
+        if (stack >= stacklimit) w = reclaim(w, "stack", GC_STACK, 0);
     }
 }
 

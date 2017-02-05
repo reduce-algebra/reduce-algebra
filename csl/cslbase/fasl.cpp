@@ -1,11 +1,11 @@
-//  fasl.cpp                               Copyright (C) 1990-2016 Codemist
+// fasl.cpp                                Copyright (C) 1990-2017 Codemist
 
 //
 // Binary file support for faster loading of precompiled code etc.
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -205,8 +205,6 @@
 
 bool fasl_output_file = false;  // An output file is open?
 
-#define boffo_char(i) celt(boffo, i)
-
 #ifdef COMMON
 static char package_name[256];
 #endif
@@ -257,11 +255,10 @@ LispObject Lcopy_module(LispObject env, LispObject file)
     else
     {   if (symbolp(file))
         {   file = get_pname(file);
-            errexit();
             h = vechdr(file);
         }
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
-            return aerror("copy-module");
+            aerror("copy-module");
         len = length_of_byteheader(h) - CELL;
         modname = (char *)file + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
@@ -280,14 +277,13 @@ LispObject Lcopy_native(LispObject env, LispObject src, LispObject dest)
 // not really expected to make sense to normal end-users.
 //
 {   Header h;
-    size_t len;
+    size_t len = 0;
     const char *modname, *w;
     char filename[LONGEST_LEGAL_FILENAME];
     FILE *srcfile;
     int c;
     memset(filename, 0, sizeof(filename));
-    w = get_string_data(src, "copy-native", &len);
-    if (exception_pending()) return nil;
+    w = get_string_data(src, "copy-native", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
     srcfile = open_file(filename, w, len, "rb", NULL);
     if (srcfile == NULL)
@@ -296,11 +292,10 @@ LispObject Lcopy_native(LispObject env, LispObject src, LispObject dest)
     }
     if (symbolp(dest))
     {   dest = get_pname(dest);
-        errexit();
         h = vechdr(dest);
     }
     else if (!is_vector(dest) || !is_string_header(h = vechdr(dest)))
-        return aerror("copy-module");
+        aerror("copy-module");
     len = length_of_byteheader(h) - CELL;
     modname = (char *)dest + CELL - TAG_VECTOR;
 //
@@ -332,11 +327,10 @@ LispObject Ldelete_module(LispObject env, LispObject file)
     else
     {   if (symbolp(file))
         {   file = get_pname(file);
-            errexit();
             h = vechdr(file);
         }
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
-            return aerror("delete-module");
+            aerror("delete-module");
         len = length_of_byteheader(h) - CELL;
         modname = (char *)file + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
@@ -365,16 +359,14 @@ LispObject Lbanner(LispObject env, LispObject info)
         IcloseInput();
         info = make_string(b);
         validate_string(info);
-        errexit();
         return onevalue(info);
     }
     if (symbolp(info))
     {   info = get_pname(info);
-        errexit();
         h = vechdr(info);
     }
     else if (!is_vector(info) || !is_string_header(h = vechdr(info)))
-        return aerror("banner");
+        aerror("banner");
     len = length_of_byteheader(h) - CELL;
     name = (char *)info + CELL - TAG_VECTOR;
     if (len == 0) Iopen_banner(-2); // delete banner info
@@ -440,11 +432,10 @@ LispObject Lmodule_exists(LispObject env, LispObject file)
     memset(filename, 0, sizeof(filename));
     if (symbolp(file))
     {   file = get_pname(file);
-        errexit();
         h = vechdr(file);
     }
     else if (!is_vector(file) ||!is_string_header(h = vechdr(file)))
-        return aerror("modulep");
+        aerror("modulep");
     len = length_of_byteheader(h) - CELL;
     modname = (char *)file + CELL - TAG_VECTOR;
 #ifdef TRIM_MODULE_NAMES
@@ -454,7 +445,6 @@ LispObject Lmodule_exists(LispObject env, LispObject file)
         return onevalue(nil);
     tt[24] = 0;
     file = make_string(tt);
-    errexit();
     return onevalue(file);
 }
 
@@ -533,19 +523,17 @@ LispObject Lstart_module(LispObject env, LispObject name)
 #ifdef COMMON
         if (complex_stringp(name))
         {   name = simplify_string(name);
-            errexit();
             h = vechdr(name);
         }
         else
 #endif
             if (symbolp(name))
             {   name = get_pname(name);
-                errexit();
                 h = vechdr(name);
             }
-            else if (!(is_vector(name))) return aerror("start-module");
+            else if (!(is_vector(name))) aerror("start-module");
             else if (!is_string_header(h = vechdr(name)))
-                return aerror("start-module");
+                aerror("start-module");
         len = length_of_byteheader(h) - CELL;
         modname = (char *)name + CELL - TAG_VECTOR;
 //
@@ -581,16 +569,13 @@ LispObject Lstart_module(LispObject env, LispObject name)
 //
 
 LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
-{
-#ifdef HAVE_FWIN
-    const char *w;
+{   const char *w;
     char *aa, *bb = NULL;
     size_t lena, lenb;
     if (a != nil)
-    {   w = get_string_data(a, "set-help-file", &lena);
-        errexit();
+    {   w = get_string_data(a, "set-help-file", lena);
         aa = (char *)malloc(lena+1);
-        if (aa == NULL) return aerror("set-help-file");
+        if (aa == NULL) aerror("set-help-file");
         memcpy(aa, w, lena);
         aa[lena] = 0;
     }
@@ -599,15 +584,13 @@ LispObject Lset_help_file(LispObject env, LispObject a, LispObject b)
         b = nil;
     }
     if (b != nil)
-    {   w = get_string_data(b, "set-help-file", &lenb);
-        errexit();
+    {   w = get_string_data(b, "set-help-file", lenb);
         bb = (char *)malloc(lenb+1);
-        if (bb == NULL) return aerror("set-help-file");
+        if (bb == NULL) aerror("set-help-file");
         memcpy(bb, w, lenb);
         bb[lenb] = 0;
     }
     fwin_set_help_file(aa, bb);
-#endif
     return onevalue(nil);
 }
 
@@ -616,7 +599,6 @@ char prompt_string[MAX_PROMPT_LENGTH];
 LispObject Lsetpchar(LispObject env, LispObject a)
 {   LispObject old = prompt_thing;
     prompt_thing = a;
-#define escape_nolinebreak 0x80
     escaped_printing = escape_nolinebreak;
     set_stream_write_fn(lisp_work_stream, count_character);
     memory_print_buffer[0] = 0;
@@ -627,12 +609,9 @@ LispObject Lsetpchar(LispObject env, LispObject a)
     push(old);
     internal_prin(a, 0);
     pop(old);
-    errexit();
     memcpy(prompt_string, memory_print_buffer, MAX_PROMPT_LENGTH);
     prompt_string[MAX_PROMPT_LENGTH-1] = 0;
-#ifdef HAVE_FWIN
     fwin_set_prompt(prompt_string);
-#endif
     return onevalue(old);
 }
 

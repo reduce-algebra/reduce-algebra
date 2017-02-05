@@ -1,4 +1,4 @@
-//  arith07.cpp                           Copyright (C) 1990-2016 Codemist    
+//  arith07.cpp                           Copyright (C) 1990-2017 Codemist    
 
 //
 // Arithmetic functions.  negation plus a load of Common Lisp things
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -50,7 +50,6 @@ LispObject copyb(LispObject a)
     push(a);
     b = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
     pop(a);
-    errexit();
     len = (len-CELL)/4;
     for (i=0; i<len; i++)
         bignum_digits(b)[i] = bignum_digits(a)[i];
@@ -102,7 +101,6 @@ LispObject negateb(LispObject a)
     push(a);
     b = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
     pop(a);
-    errexit();
     len = (len-CELL-4)/4;
     carry = -1;
     for (i=0; i<len; i++)
@@ -190,7 +188,6 @@ LispObject negate(LispObject a)
                     push(d);
                     n = negate(n);
                     pop(d);
-                    errexit();
                     return make_ratio(n, d);
                 }
                 case TYPE_COMPLEX_NUM:
@@ -199,15 +196,13 @@ LispObject negate(LispObject a)
                     push(i);
                     r = negate(r);
                     pop(i);
-                    errexit();
                     push(r);
                     i = negate(i);
                     pop(r);
-                    errexit();
                     return make_complex(r, i);
                 }
                 default:
-                    return aerror1("bad arg for minus",  a);
+                    aerror1("bad arg for minus",  a);
             }
         }
         case TAG_BOXFLOAT:
@@ -218,7 +213,7 @@ LispObject negate(LispObject a)
             return make_boxfloat(-d, type_of_header(flthdr(a)));
         }
         default:
-            return aerror1("bad arg for minus",  a);
+            aerror1("bad arg for minus",  a);
     }
 }
 

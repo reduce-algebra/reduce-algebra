@@ -20,7 +20,6 @@
 #   --enable-test     predefine a symbol EXPERIMENT used to protect
 #                     temporary or unfinished code developments.
 #   --enable-experiment  same effect as --enable-text
-#   --enable-jit      another experimental and incomplete extension.
 #   --enable-embedded well the EMBEDDED option is intended for use via
 #                     a heavily cleaned up minimalist build system, but
 #                     for testing purposes I allow a build here.
@@ -38,7 +37,7 @@
 # change that. These are the things I note above as "special flags"
 
 # Specify the name of this "application" and a version number
-AC_INIT([REDUCE],[7.00])
+AC_INIT([REDUCE],[9.00])
 
 AC_CONFIG_AUX_DIR([.])
 
@@ -162,7 +161,6 @@ AC_SUBST(DLL_CFLAGS)
 
 # The following are always to be defined when I go through this route
 
-AC_DEFINE(HAVE_FWIN,[1],[True if we will use the FWIN terminal code])
 AC_DEFINE(WINDOW_SYSTEM,[1],[True for a (potentially) Windowed system])
 
 AC_DEFINE_UNQUOTED(HOST_CPU,"$host_cpu",[Name of CPU])
@@ -669,8 +667,7 @@ then
      AC_MSG_NOTICE(--hash-style=both not available)])
 fi
 
-
-# The behaviour of signed shifts on negaive left operands is implementation
+# The behaviour of signed shifts on negative left operands is implementation
 # defined. In most cases the shift will be arithmetic, but one could
 # imagine it being logical or even something worse. I am going to assume that
 # if the test I do here succeeds for type "int" that the same sort of thing
@@ -713,6 +710,26 @@ then
   else
     AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
   fi
+fi
+
+# See if C++-11 attributes (specifically [[noreturn]]) will be accepted
+
+AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+  [[#include <exception>
+    static [[noreturn]] void foo(void);
+    static void foo(void)
+    { throw std::exception();
+    }]])],
+  has_noreturn="yes",
+  has_noreturn="no")
+
+AC_MSG_NOTICE([noreturn = $has_noreturn])
+
+if test "x$has_noreturn" = "xyes"
+then
+  AC_DEFINE([NORETURN], [[[[noreturn]]]], [C++-11 attributes available?])
+else
+  AC_DEFINE([NORETURN], [[/* noreturn */]], [C++-11 attributes available?])
 fi
 
 # I have alternative ways of doing things on Windows and Macintosh, but
@@ -971,20 +988,6 @@ fi
 
 # find command to do best approx to "ln -s" and set LN_S		
 AC_PROG_LN_S
-
-# Building (experimental) version that has a JIT?
-AC_MSG_CHECKING(for JIT support)
-AC_ARG_ENABLE(jit,
-  AC_HELP_STRING([--enable-jit],
-                 [build in experimental JIT]),
-  [],
-  [enable_jit="no"])
-AC_MSG_RESULT([$enable_jit])
-
-if test "x$enable_jit" = "xyes"
-then
-  AC_DEFINE(JIT, [1], [True if we are building with a JIT])
-fi
 
 # Static linking wanted?
 # NOTE that at present I only do anything about this if compiling with "gcc"
@@ -1581,7 +1584,6 @@ AM_CONDITIONAL(fox,test "x$fox_present" = "xyes")
 AM_CONDITIONAL(wx,test "x$with_wx" != "xno")
 AM_CONDITIONAL(gui,test "x$fox_present" = "xyes" || test "x$with_wx" != "xno")
 AM_CONDITIONAL(experiment,test "x$enable_test" = "xyes")
-AM_CONDITIONAL(jit,test "x$enable_jit" = "xyes")
 AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")

@@ -1,8 +1,8 @@
-//  driver.cpp                                  Copyright (C) 2016 Codemist
+//  driver.cpp                                  Copyright (C) 2017 Codemist
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist                          A C Norman       *
+ * Copyright (C) 2017, Codemist                          A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     try
-    {   START_TRY_BLOCK;
+    {   START_SETJMP_BLOCK;
         res = submain(argc, argv);
     }
     catch (int r)

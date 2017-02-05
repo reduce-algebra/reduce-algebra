@@ -1,4 +1,4 @@
-// version.h                              Copyright (C) 1990-2016 Codemist
+// version.h                              Copyright (C) 1990-2017 Codemist
 
 #ifndef header_version_h
 #define header_version_h 1
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -52,12 +52,12 @@
 
 #undef VERSION
 
-#define VERSION     "8.00"
+#define VERSION     "9.00"
 
 // As of February 2016 I am making the file scripts/commit.sh update the
 // revision number stored here...
 
-#define REVISION 3844
+#define REVISION 3884
 
 #endif // header_version_h
 

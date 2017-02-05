@@ -1,10 +1,12 @@
-// c2cpp.cpp                                               A C Norman. 2015
+// c2cpp.cpp                            Copyright (C) A C Norman. 2015-2017
 
 // This changes comments from C to C++ style.... with all sorts of odd
-// stylistic choices motivated by the CSL source code.
+// stylistic choices motivated by the CSL source code. The task that
+// this file was written for is now done, so it is at most of historical
+// interest.
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -28,7 +30,7 @@
  * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND *
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR  *
  * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF     *
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE * POSSIBILITY OF SUCH *
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
 

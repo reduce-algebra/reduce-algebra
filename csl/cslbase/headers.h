@@ -1,10 +1,10 @@
-// headers.h                               Copyright (C) 2005-2016 Codemist
+// headers.h                               Copyright (C) 2005-2017 Codemist
 
 #ifndef header_headers_h
 #define header_headers_h 1
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -103,6 +103,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <setjmp.h>
+#include <signal.h>
 #include <exception>
 
 #ifdef HAVE_STDINT_H
@@ -123,18 +124,6 @@
 #include <sys/time.h>
 #endif
 
-#ifndef UNDER_CE
-//
-// The test for UNDER_CE is a little odd here, but when I once compiled a
-// version of this to run under Windows CE on an Ipaq I could not have
-// signal handling there hence this. One mighht have expected me to say
-// #ifdef HAVE_SIGNAL_H but maybe the file existed in the world where I
-// cross-built for CE and that led to pain? I now forget.
-//
-#include <signal.h>
-#endif
-
-
 #include "machine.h"
 #include "tags.h"
 #include "cslerror.h"
@@ -145,16 +134,13 @@
 #include "proc.h"
 #include "stream.h"
 #include "cslread.h"
-#include "clsyms.h"
 #include "inthash.h"
 #include "lispthrow.h"
 
-#ifdef HAVE_FWIN
 #if HAVE_LIBWX
 #include "wxfwin.h"
 #else
 #include "fwin.h"
-#endif
 #endif
 
 #ifdef HAVE_CRLIBM

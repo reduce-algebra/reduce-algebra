@@ -1,7 +1,7 @@
-% make-c-code.red
+% make-c-code.red                          Copyright (C) Codemist 2016-2017
 
 %**************************************************************************
-%* Copyright (C) 2016, Codemist.                         A C Norman       *
+%* Copyright (C) 2017, Codemist.                         A C Norman       *
 %*                                                                        *
 %* Redistribution and use in source and binary forms, with or without     *
 %* modification, are permitted provided that the following conditions are *
@@ -53,6 +53,11 @@ on echo;
 
 symbolic;
 
+% If anything goes wrong here I want a backtrace so I can debug it, regardless
+% of any errorsets etc.
+
+enable!-errorset(3, 3);
+
 % Three major parameters are available:
 %
 %   fnames       a list of files to create. Making the list longer (or
@@ -86,11 +91,12 @@ symbolic;
 % compilation into C causes changes in behaviour... how_many can be used
 % with a binary-chop selection process to discover exactly which function
 % causes upset when compiled into C.  Of course in release quality code I
-% hope there are no such cases!
+% hope there are no such cases! I will also check an environment variable
+% "HOW_MANY".
 
-global '(fnames size_per_file force_count how_many everything);
+fluid '(fnames size_per_file force_count how_many everything cx);
 
-if boundp 'full_c_code then everything := t
+if boundp 'full_c_code and full_c_code then everything := t
 else everything := nil;
 
 fnames := '(      "u01" "u02" "u03" "u04"
@@ -136,6 +142,14 @@ force_count := 5;
 % current measurements suggest that 3500 gives reasonable trade off for
 % build of the executable vs. performance. However for use with an embedded
 % system with limited memort I might suggest say 500.
+
+begin
+  scalar e;
+  e := getenv "HOW_MANY";
+  if e then <<
+    fluid '(how_many);
+    how_many := compress explodec e >>
+end;
 
 if not boundp 'how_many then how_many := 3500
 else << how_many := compress explodec how_many;
@@ -204,12 +218,15 @@ omitted := '(
 % them as unsuitable for compilation.
 
 for each x in oblist() do
- if eqcar(d := getd(x), 'expr) and
-    consp cdr d and consp cddr d and consp cdddr d then <<
-   d := cadddr d;
-   if eqcar(d, 'do!-autoload) then <<
+  begin
+    scalar d;
+    if eqcar(d := getd(x), 'expr) and
+       consp cdr d and consp cddr d and consp cdddr d then <<
+    d := cadddr d;
+    if eqcar(d, 'do!-autoload) then <<
       princ "+++ "; prin x; printc " looks like an autoload stub. Omit here";
-      omitted := x . omitted >> >>;
+      omitted := x . omitted >> >>
+  end;
    
 at_start := '(
     );
@@ -341,12 +358,14 @@ symbolic procedure membercar(a, l);
   else if a = caar l then t
   else membercar(a, cdr l);
 
-fg := t;
-while fg do <<
-   fg := nil;
-   for each x on requests do
-     if car x then <<
-       if k := assoc(caaar x, w_reduce) then <<
+begin
+  scalar fg, k;
+  fg := t;
+  while fg do <<
+    fg := nil;
+    for each x on requests do
+      if car x then <<
+        if k := assoc(caaar x, w_reduce) then <<
           if not (cadr k = cadaar x) then <<
              prin caaar x; printc " has multiple definition";
              princ "   keep version with checksum: "; print cadr k;
@@ -355,10 +374,11 @@ while fg do <<
 % ORDP is a special case because I have put a version of it into the
 % CSL kernel by hand, and any redefinition here would be unfriendly and
 % might clash with that.
-       else if caaar x = 'ordp then printc "Ignoring ORDP (!)"	
-       else w_reduce := caar x . w_reduce;
-       fg := t;
-       rplaca(x, cdar x) >> >>;
+        else if caaar x = 'ordp then printc "Ignoring ORDP (!)"	
+        else w_reduce := caar x . w_reduce;
+        fg := t;
+        rplaca(x, cdar x) >> >>
+end;
 
 
 % Now I scan all pre-compiled modules to recover source versions of the
@@ -411,16 +431,18 @@ w_reduce := append(at_start, append(w_reduce, at_end));
 
 >>;
 
-<<
-printc "Top 20 things to compile are...";
-p := w_reduce;
-for i := 1:20 do if p then <<
-   print car p;
-   p := cdr p >>
->>;
+begin
+  scalar p;
+  terpri();
+  printc "Top 20 things to compile are...";
+  p := w_reduce;
+  for i := 1:20 do if p then <<
+    print car p;
+    p := cdr p >>
+end;
 
 verbos nil;
-global '(rprifn!*);
+fluid '(rprifn!*);
 
 on fastfor, fastvector, unsafecar;
 
@@ -431,58 +453,60 @@ symbolic procedure listsize(x, n);
 
 <<
 
-count := 0; 
+begin
+  scalar count;
+  count := 0; 
 
-while fnames do begin
-   scalar name, bulk;
-   name := car fnames;
-   princ "About to create "; printc name;
-   c!:ccompilestart(name, name, "$destdir", nil);
-   bulk := 0;
-   while bulk < size_per_file and w_reduce and how_many > 0 do begin
+  while fnames do begin
+    scalar name, bulk, total, defn;
+    name := car fnames;
+    princ "About to create "; printc name;
+    c!:ccompilestart(name, name, "$destdir", nil);
+    bulk := 0;
+    while bulk < size_per_file and w_reduce and how_many > 0 do begin
       scalar name, defn;
       name := car w_reduce;
       if null (defn := get(name, '!*savedef)) then <<
-         princ "+++ "; prin name;
-         printc ": no saved definition found";
-         w_reduce := cdr w_reduce >>
+        princ "+++ "; prin name;
+        printc ": no saved definition found";
+        w_reduce := cdr w_reduce >>
       else <<
-         bulk := listsize(defn, bulk);
-         if bulk < size_per_file then <<
-            count := count+1;
-            princ count;
-            princ ": ";
-            c!:ccmpout1 ('de . name . cdr defn);
-            how_many := how_many - 1;
-            w_reduce := cdr w_reduce >> >> end;
-   eval '(c!-end);
-   fnames := cdr fnames
-   end;
+        bulk := listsize(defn, bulk);
+        if bulk < size_per_file then <<
+          count := count+1;
+          princ count;
+          princ ": ";
+          c!:ccmpout1 ('de . name . cdr defn);
+          how_many := how_many - 1;
+          w_reduce := cdr w_reduce >> >> end;
+    eval '(c!-end);
+    fnames := cdr fnames
+  end;
 
-terpri();
-printc "*** End of compilation from REDUCE into C ***";
-terpri();
+  terpri();
+  printc "*** End of compilation from REDUCE into C ***";
+  terpri();
 
-total := count;
-
-bulk := 0;
+  total := count;
+  bulk := 0;
 % I list the next 50 functions that WOULD get selected - just for interest.
-if null w_reduce then printc "No more functions need compiling into C"
-else while bulk < 50 and w_reduce do
-  begin
-     name := car w_reduce;
-     if null (defn := get(name, '!*savedef)) then <<
+  if null w_reduce then printc "No more functions need compiling into C"
+  else while bulk < 50 and w_reduce do
+    begin
+      name := car w_reduce;
+      if null (defn := get(name, '!*savedef)) then <<
         princ "+++ "; prin name; printc ": no saved definition found";
         w_reduce := cdr w_reduce >>
-     else <<
+      else <<
         bulk := bulk+1;
         princ (count := count+1);
         princ ": ";
         print name;
         w_reduce := cdr w_reduce >> end;
 
-terpri();
-prin total; printc " functions compiled into C";
+  terpri();
+  prin total; printc " functions compiled into C"
+end;
 
 nil >>;
 

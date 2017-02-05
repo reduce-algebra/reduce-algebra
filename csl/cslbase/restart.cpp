@@ -1,4 +1,4 @@
-//  restart.cpp                           Copyright (C) 1989-2016 Codemist    
+// restart.cpp                             Copyright (C) 1989-2017 Codemist
 
 //
 // Code needed to start off Lisp when no initial heap image is available,
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -57,9 +57,7 @@
 
 #include "md5.h"
 
-#ifdef HAVE_FWIN
 extern int showmathInitialised;
-#endif
 
 #ifndef S_IRUSR
 #ifdef __S_IRUSR
@@ -76,15 +74,6 @@ extern int showmathInitialised;
 #ifndef S_IXUSR
 #ifdef __S_IXUSR
 #define S_IXUSR __S_IXUSR
-#endif
-#endif
-
-//
-// jit
-//
-#ifdef JIT
-#ifndef WIN32
-#include <sys/mman.h>
 #endif
 #endif
 
@@ -116,7 +105,7 @@ LispObject volatile heaplimit;
 LispObject volatile vheaplimit;
 LispObject vfringe;
 intptr_t nwork;
-intptr_t exit_count;
+unsigned int exit_count;
 uintptr_t gensym_ser;
 intptr_t print_precision, miscflags;
 intptr_t current_modulus, fastget_size, package_bits, modulus_is_large;
@@ -124,29 +113,14 @@ LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 LispObject quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
 LispObject cons_symbol, eval_symbol, work_symbol, evalhook, applyhook;
 LispObject macroexpand_hook, append_symbol, exit_tag;
-LispObject exit_value, catch_tags;
-#ifdef COMMON
-LispObject keyword_package;
-#endif
-LispObject current_package;
+LispObject exit_value, catch_tags, keyword_package, current_package;
 LispObject startfn;
-#ifdef COMMON
 LispObject all_packages, package_symbol, internal_symbol;
 LispObject external_symbol, inherited_symbol;
-#endif
 LispObject gensym_base, string_char_sym, boffo;
-#ifdef COMMON
 LispObject key_key, allow_other_keys, aux_key;
-#endif
-LispObject err_table;
-#ifdef COMMON
-LispObject format_symbol;
-#endif
-LispObject progn_symbol;
-#ifdef COMMON
-LispObject expand_def_symbol, allow_key_key;
-#endif
-LispObject declare_symbol, special_symbol, large_modulus;
+LispObject err_table, format_symbol, progn_symbol, expand_def_symbol;
+LispObject allow_key_key, declare_symbol, special_symbol, large_modulus;
 LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol, echo_symbol;
 LispObject codevec, litvec, supervisor, B_reg, savedef, comp_symbol;
 LispObject compiler_symbol, faslvec, tracedfn, lisp_terminal_io;
@@ -155,7 +129,7 @@ LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
 LispObject prompt_thing, faslgensyms, prinl_symbol, emsg_star, redef_msg;
 LispObject expr_symbol, fexpr_symbol, macro_symbol;
 LispObject big_divisor, big_dividend, big_quotient, big_fake1, big_fake2;
-LispObject cl_symbols, active_stream, current_module;
+LispObject active_stream, current_module;
 LispObject native_defs, features_symbol, lisp_package, sys_hash_table;
 LispObject help_index, cfunarg, lex_words, get_counts, fastget_names;
 LispObject input_libraries, output_library, current_file, break_function;
@@ -165,6 +139,11 @@ LispObject native_code, native_symbol, traceprint_symbol, load_source_symbol;
 LispObject load_selected_source_symbol, bytecoded_symbol, nativecoded_symbol;
 LispObject gchook, resources, callstack, procstack, procmem, trap_time;
 LispObject used_space, avail_space, eof_symbol, call_stack;
+LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol, not_symbol;
+LispObject reader_workspace, named_character, read_float_format, short_float;
+LispObject single_float, double_float, long_float, bit_symbol, pathname_symbol;
+LispObject print_array_sym, read_base, initial_element;
+
 LispObject workbase[51];
 
 LispObject user_base_0, user_base_1, user_base_2, user_base_3, user_base_4;
@@ -200,16 +179,6 @@ page_map_t *page_map;
 
 #endif
 
-//
-// Used for allocating jit functions executable space
-//
-
-#ifdef JIT
-void *jit_space,
-     *jit_space_p;
-unsigned long jit_size;
-#endif
-
 int32_t pages_count,
         heap_pages_count,
         vheap_pages_count,
@@ -220,8 +189,6 @@ int32_t new_heap_pages_count,
 
 char program_name[64] = {0};
 
-#ifdef HAVE_FWIN
-
 //
 // The tables here are slightly oddly formatted. Every other entry is
 // NULL (reserved for other uses...) and each string has a single character
@@ -229,7 +196,6 @@ char program_name[64] = {0};
 //
 
 char **loadable_packages = NULL, **switches = NULL;
-#endif
 
 int native_code_tag;
 int32_t native_pages_changed;
@@ -237,255 +203,6 @@ int32_t native_fringe;
 bool trap_floating_overflow = true;
 
 int procstackp;
-
-#if REINSTATE_NATIVE_CODE_EXPERIMENT
-
-// This was at one time part of a consideration about support for native
-// compilation, and I will (at least for now) leave it present in the
-// source in case I try going down that path again. For now it is not used.
-
-
-//
-// The next function is handed a page
-// of hard code that has just been loaded into memory and it must scan it
-// performing all relevant relocation. fringe give the offset within the
-// page that is the first byte not in use. The first 4 bytes of the page
-// are reserved for storing fringe from one run to the next. The exact
-// format of the rest must be sufficient to allow this code to scan
-// and correct the code, but thus far I have not defined it, and it will
-// anyway tend to need extension each time a new target architecture is
-// incorporated (to support the new and curious relocation modes tha the
-// new machine requires).
-//
-
-static void relocate_native_code(unsigned char *p, int32_t n)
-{
-//
-// One helpful observation here. In pretty well all other parts of CSL
-// there is a possibility that an image file created on one computer will
-// be reloaded on another and so all the code is ultra-careful to avoid
-// sensitivity to byte order etc etc issues. But here the native code that
-// is being loaded MUST have been created using the conventions of the
-// current computer (otherwise I should not be loading it and I will be
-// in huge trouble when I try to execute code from it). So direct and
-// simple access to data is legitimate.
-//
-    int32_t k = 8;
-    term_printf("Native code page type %d size %d to be relocated\n",
-                native_code_tag, n);
-    while (k <= n)
-    {   unsigned char *block = p + k;
-        int32_t len = car32(block);
-        term_printf("Block of %d bytes found\n", len);
-        if (len == 0)
-        {   term_printf("End of native page reached\n");
-            break;
-        }
-        relocate_native_function(block);
-        k += len;
-    }
-}
-
-void relocate_native_function(unsigned char *bps)
-{
-//
-// Just for now I will not support native code on 64-bit machines.
-// This is just to save me some hassle re-working this relocation mess!
-//
-    unsigned char *r, *next;
-    int32_t n;
-    int code;
-    if (SIXTY_FOUR_BIT) return; // No native for 64-bit architectures yet
-//
-// Each chunk of memory allocated by make-native will have its length (in
-// bytes) in its first 32-bit word. Next comes the offset of the
-// start of real code in the block. Just after that there will be a
-// hunk of relocation information. The code proper must not start until
-// after the relocation records. Relocation information is stored in the
-// following format as a sequence of bytes:
-//         0                 end of relocation information.
-//         1 to 170/xx       encode a value 0 to 169
-//         171 to 255/xx/yy  extra byte yy extends following offset xx, and
-//                           its top bit is used to extend opcode to range
-//                           0 to 169.
-// The opcode now in the range 0 to 169 is interpreted as
-//         169            no operation
-//         otherwise (0-12)*(0-12) as target*mode
-//
-    r = bps + 4;
-    n = *r++;          // code start offset in LSB format
-    n |= (*r++) << 8;
-    n |= (*r++) << 16;
-    n |= (*r++) << 24;
-    next = bps + n;
-#define RELOC_END           0
-    while ((code = *r++) != RELOC_END)
-    {   int32_t off = *r++;
-        unsigned char *target;
-//
-// A native compiler will have to generate a sequence of bytes that adhere to
-// the contorted format used here.
-//
-        if (code <= 170) code--;
-        else
-        {   int off1 = *r++;
-            code = 2*(code-171) + (off1 >> 7);
-            off = off | ((off1 & 0x7f) << 8);
-        }
-        next += off;   // address where next relocation is to be applied
-#define RELOC_NOP           169
-//
-// One might like to note that with a long offset the NOP opcode turns into
-// an opcode byte 0xff. And if it then has the longest possible offset one]
-// gets the 3-byte sequence 0xff/0xff/0xff.
-//
-        if (code == RELOC_NOP) continue;
-
-#define RELOC_0_ARGS        0
-#define RELOC_1_ARGS        1
-#define RELOC_2_ARGS        2
-#define RELOC_3_ARGS        3
-#define RELOC_DIRECT_ENTRY  4
-#define RELOC_VAR           5
-#define RELOC_SELF_1        6
-#define RELOC_SELF_2        7
-        switch (code % 13)
-    {       default:
-                term_printf("Illegal relocation byte %.2x\n", code);
-                my_exit(EXIT_FAILURE);
-            case RELOC_SELF_1:
-//
-// base of current native code block with an 8-bit offset.
-//
-                target = bps + *r++;
-                break;
-            case RELOC_SELF_2:
-//
-// base of current native code block with 15 or 23-bit offset. The first byte
-// is the low 8-bits of the offset. The next is the next 7 bits, with its
-// 0x80 bit selecting whether a third byte is needed (which it will hardly
-// ever be).
-//
-                off = *r++;
-                off = off + (*r++ << 8);
-                if (off & 0x8000) off = (off & 0x7fff) + (*r++ << 15);
-                target = bps + off;
-                break;
-            case RELOC_0_ARGS:
-//
-// The next few relocation modes provide access to the C entrypoints
-// associated with a medium number of Lisp functions. The tables and
-// offsets used are documented in file "eval4.c" and are as used with the
-// byte-code compiler.
-//
-                target = (unsigned char *)no_arg_functions[*r++];
-                break;
-            case RELOC_1_ARGS:
-                target = (unsigned char *)one_arg_functions[*r++];
-                break;
-            case RELOC_2_ARGS:
-                target = (unsigned char *)two_arg_functions[*r++];
-                break;
-            case RELOC_3_ARGS:
-                target = (unsigned char *)three_arg_functions[*r++];
-                break;
-            case RELOC_DIRECT_ENTRY:
-//
-// There are some entrypoints into the CSL kernel that are not
-// called using the usual Lisp conventions but are at a lower-level.
-// A selection of these are visible via the table "useful_functions"
-// in file fns3.c. This table can be extended if a native-mode compiler
-// needs access to any other speciality.
-//
-                target = (unsigned char *)useful_functions[*r++];
-                break;
-            case RELOC_VAR:
-//
-// The function address_f_var (in fns3.c) returns the address of a Lisp
-// internal variable. See there for the numeric encoding used and what can
-// be accessed.
-//
-                target = (unsigned char *)address_of_var(*r++);
-                break;
-        }
-
-#define RELMODE_ABSOLUTE     0
-#define RELMODE_RELATIVE     1
-#define RELMODE_REL_PLUS_4   2
-#define RELMODE_REL_MINUS_2  3
-#define RELMODE_REL_MINUS_4  4
-#define RELMODE_REL_OFFSET   5
-#define RELMODE_SPARE1       6
-#define RELMODE_SPARE2       7
-
-        switch (code/13)
-    {       default:
-                term_printf("Illegal relocation byte %.2x\n", code);
-                my_exit(EXIT_FAILURE);
-            case RELMODE_ABSOLUTE:
-//
-// relocate by pointing a 32-bit value directly at the absolute address
-// of the target.
-//
-//
-// In this general section of the code there are a bunch of cases where I
-// cast to intptr_t and after that to int32_t. Well at present this section
-// of code can only even possibly get executed if these two types are the
-// same width! But on a 64-bit machine I would need to take extra care
-// relocating references to 64-bit addresses.
-//
-                *(int32_t *)next = (int32_t)(intptr_t)target;
-                break;
-            case RELMODE_RELATIVE:
-//
-// relocate by setting a 32-bit value of the offset from its own first
-// byte to the target.
-//
-                *(int32_t *)next = (int32_t)((intptr_t)target - (intptr_t)next);
-                break;
-            case RELMODE_REL_PLUS_4:
-//
-// relocate by setting a 32-bit value of the offset from the start of the
-// word after it.
-//
-                *(int32_t *)next = (int32_t)((intptr_t)target - ((intptr_t)next + 4));
-                break;
-            case RELMODE_REL_MINUS_2:
-//
-// relocate by setting a 32-bit value of the offset from the address 2 bytes
-// before its start. This may be used on machines where the relative address
-// is computed based on the start of the instruction rather than the start of
-// the field within the instruction that contains the offset.
-//
-                *(int32_t *)next = (int32_t)((intptr_t)target - ((intptr_t)next - 2));
-                break;
-            case RELMODE_REL_MINUS_4:
-//
-// relocate by setting a 32-bit value of the offset from the address 4 bytes
-// before its start. This may be used on machines where the relative address
-// is computed based on the start of the instruction rather than the start of
-// the field within the instruction that contains the offset.
-//
-                *(int32_t *)next = (int32_t)((intptr_t)target - ((intptr_t)next - 4));
-                break;
-            case RELMODE_REL_OFFSET:
-//
-// relocate by setting a 32-bit value of the offset from some place
-// offset using an 8-bit signed value from the start of the address. The
-// offset represents the number of bytes after the start of the address
-// that is to be used in the calculation. Note that the special values
-// -4, -2, 0 and 4 need never be used here because there are special
-// relocation modes for those common cases.
-//
-                code = *r++;
-                if (code & 0x80) code |= ~0xff; // Sign extend
-                *(int32_t *)next = (int32_t)((intptr_t)target - ((intptr_t)next + code));
-                break;
-        }
-    }
-}
-
-#endif //NATIVE_CODE_SUPPORT
 
 entry_point0 entries_table0[] =
 {
@@ -515,32 +232,18 @@ entry_point1 entries_table1[] =
     {autoload1,                          "autoload1"},
     {interpreted1,                       "interpreted1"},
     {traceinterpreted1,                  "traceinterpreted1"},
-    {tracesetinterpreted1,               "tracesetinterpreted1"},
-    {double_interpreted1,                "double_interpreted1"},
     {funarged1,                          "funarged1"},
     {tracefunarged1,                     "tracefunarged1"},
-    {tracesetfunarged1,                  "tracesetfunarged1"},
-    {double_funarged1,                   "double_funarged1"},
     {bytecoded1,                         "bytecoded1"},
     {tracebytecoded1,                    "tracebytecoded1"},
-    {tracesetbytecoded1,                 "tracesetbytecoded1"},
-    {double_bytecoded1,                  "double_bytecoded1"},
     {byteopt1,                           "byteopt1"},
     {tracebyteopt1,                      "tracebyteopt1"},
-    {tracesetbyteopt1,                   "tracesetbyteopt1"},
-    {double_byteopt1,                    "double_byteopt1"},
     {hardopt1,                           "hardopt1"},
     {tracehardopt1,                      "tracehardopt1"},
-    {tracesethardopt1,                   "tracesethardopt1"},
-    {double_hardopt1,                    "double_hardopt1"},
     {byteoptrest1,                       "byteoptrest1"},
     {tracebyteoptrest1,                  "tracebyteoptrest1"},
-    {tracesetbyteoptrest1,               "tracesetbyteoptrest1"},
-    {double_byteoptrest1,                "double_byteoptrest1"},
     {hardoptrest1,                       "hardoptrest1"},
     {tracehardoptrest1,                  "tracehardoptrest1"},
-    {tracesethardoptrest1,               "tracesethardoptrest1"},
-    {double_hardoptrest1,                "double_hardoptrest1"},
     {too_few_2,                          "too_few_2"},
     {wrong_no_0a,                        "wrong_no_0a"},
     {wrong_no_3a,                        "wrong_no_3a"},
@@ -552,12 +255,6 @@ entry_point1 entries_table1[] =
 //
     {f1_as_0,                            "1->0"},
     {f1_as_1,                            "1->1"},
-#ifdef JIT
-    {jitcompileme1,                      "jitcompileme1"},
-#endif
-#ifdef CJAVA
-    {java1,                              "java1"},
-#endif
     {NULL,                               "dummy"}
 };
 
@@ -575,32 +272,18 @@ entry_point2 entries_table2[] =
     {autoload2,                          "autoload2"},
     {interpreted2,                       "interpreted2"},
     {traceinterpreted2,                  "traceinterpreted2"},
-    {tracesetinterpreted2,               "tracesetinterpreted2"},
-    {double_interpreted2,                "double_interpreted2"},
     {funarged2,                          "funarged2"},
     {tracefunarged2,                     "tracefunarged2"},
-    {tracesetfunarged2,                  "tracesetfunarged2"},
-    {double_funarged2,                   "double_funarged2"},
     {bytecoded2,                         "bytecoded2"},
     {tracebytecoded2,                    "tracebytecoded2"},
-    {tracesetbytecoded2,                 "tracesetbytecoded2"},
-    {double_bytecoded2,                  "double_bytecoded2"},
     {byteopt2,                           "byteopt2"},
     {tracebyteopt2,                      "tracebyteopt2"},
-    {tracesetbyteopt2,                   "tracesetbyteopt2"},
-    {double_byteopt2,                    "double_byteopt2"},
     {hardopt2,                           "hardopt2"},
     {tracehardopt2,                      "tracehardopt2"},
-    {tracesethardopt2,                   "tracesethardopt2"},
-    {double_hardopt2,                    "double_hardopt2"},
     {byteoptrest2,                       "byteoptrest2"},
     {tracebyteoptrest2,                  "tracebyteoptrest2"},
-    {tracesetbyteoptrest2,               "tracesetbyteoptrest2"},
-    {double_byteoptrest2,                "double_byteoptrest2"},
     {hardoptrest2,                       "hardoptrest2"},
     {tracehardoptrest2,                  "tracehardoptrest2"},
-    {tracesethardoptrest2,               "tracesethardoptrest2"},
-    {double_hardoptrest2,                "double_hardoptrest2"},
     {too_many_1,                         "too_many_1"},
     {wrong_no_0b,                        "wrong_no_0b"},
     {wrong_no_3b,                        "wrong_no_3b"},
@@ -612,12 +295,6 @@ entry_point2 entries_table2[] =
     {f2_as_0,                            "2->0"},
     {f2_as_1,                            "2->1"},
     {f2_as_2,                            "2->2"},
-#ifdef JIT
-    {jitcompileme2,                      "jitcompileme2"},
-#endif
-#ifdef CJAVA
-    {java2,                              "java2"},
-#endif
     {NULL,                               "dummy"}
 };
 
@@ -647,40 +324,22 @@ entry_pointn entries_tablen[] =
     {autoloadn,                          "autoloadn"},
     {interpretedn,                       "interpretedn"},
     {traceinterpretedn,                  "traceinterpretedn"},
-    {tracesetinterpretedn,               "tracesetinterpretedn"},
-    {double_interpretedn,                "double_interpretedn"},
     {funargedn,                          "funargedn"},
     {tracefunargedn,                     "tracefunargedn"},
-    {tracesetfunargedn,                  "tracesetfunargedn"},
-    {double_funargedn,                   "double_funargedn"},
     {bytecoded0,                         "bytecoded0"},
     {tracebytecoded0,                    "tracebytecoded0"},
-    {tracesetbytecoded0,                 "tracesetbytecoded0"},
-    {double_bytecoded0,                  "double_bytecoded0"},
     {bytecoded3,                         "bytecoded3"},
     {tracebytecoded3,                    "tracebytecoded3"},
-    {tracesetbytecoded3,                 "tracesetbytecoded3"},
-    {double_bytecoded3,                  "double_bytecoded3"},
     {bytecodedn,                         "bytecodedn"},
     {tracebytecodedn,                    "tracebytecodedn"},
-    {tracesetbytecodedn,                 "tracesetbytecodedn"},
-    {double_bytecodedn,                  "double_bytecodedn"},
     {byteoptn,                           "byteoptn"},
     {tracebyteoptn,                      "tracebyteoptn"},
-    {tracesetbyteoptn,                   "tracesetbyteoptn"},
-    {double_byteoptn,                    "double_byteoptn"},
     {hardoptn,                           "hardoptn"},
     {tracehardoptn,                      "tracehardoptn"},
-    {tracesethardoptn,                   "tracesethardoptn"},
-    {double_hardoptn,                    "double_hardoptn"},
     {byteoptrestn,                       "byteoptrestn"},
     {tracebyteoptrestn,                  "tracebyteoptrestn"},
-    {tracesetbyteoptrestn,               "tracesetbyteoptrestn"},
-    {double_byteoptrestn,                "double_byteoptrestn"},
     {hardoptrestn,                       "hardoptrestn"},
     {tracehardoptrestn,                  "tracehardoptrestn"},
-    {tracesethardoptrestn,               "tracesethardoptrestn"},
-    {double_hardoptrestn,                "double_hardoptrestn"},
     {wrong_no_1,                         "wrong_no_1"},
     {wrong_no_2,                         "wrong_no_2"},
 //
@@ -692,16 +351,6 @@ entry_pointn entries_tablen[] =
     {f3_as_1,                            "3->1"},
     {f3_as_2,                            "3->2"},
     {f3_as_3,                            "3->3"},
-#ifdef JIT
-    {jitcompileme0,                      "jitcompileme0"},
-    {jitcompileme3,                      "jitcompileme3"},
-    {jitcompilemen,                      "jitcompilemen"},
-#endif
-#ifdef CJAVA
-    {java0,                              "java0"},
-    {java3,                              "java3"},
-    {javan,                              "javan"},
-#endif
     {NULL,                               "dummy"}
 };
 
@@ -750,193 +399,10 @@ void *allocate_page(const char *why)
     return pages[--pages_count];
 }
 
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-intptr_t memory_base, memory_size, memory_count, memory_records = 0;
-unsigned char *memory_map = NULL;
-static intptr_t memory_lowest = 0x7fffffff, memory_highest = -1;
-FILE *memory_file = NULL;
-
-void memory_comment(int n)
-{   if (memory_map != NULL)
-    {   putc(0xc0 + (n & 0x3f), memory_file);
-        putc(0, memory_file);
-        putc(0, memory_file);
-    }
-}
-
-int kk = 0;
-
-static void identify_one(void *p, intptr_t size, int type)
-{   int32_t i, j;
-    intptr_t base = (intptr_t)p;
-    int32_t a = 0, b = 0;
-    intptr_t da = 1, db = 1;
-    intptr_t click = size/0x400;
-    switch (type)
-    {   case 0:  b = click; break;
-        case 1:  db = -1;   break;
-        case 2:  b = click; da = db = 2; break;
-        case 3:  da = 2; db = -2; break;
-        case 4:  db = 0; break;
-        case 5:  da = -1; db = 0; break;
-        default: b = click; da = db = 0; break;
-    }
-    if (size > 256)
-    {   da *= (size/256);
-        db *= (size/256);
-    }
-    memory_count |= 0x3ff;
-    cmemory_reference(base);
-    memory_comment(kk ? 3 : 5);
-    kk = !kk;
-    for (i=0; i<32; i++)
-    {   int x;
-        memory_count |= 0x3ff;
-        cmemory_reference(base);
-        for (j=0; j<0x400; j++)
-        {   x = a + j*(size/8);
-            while (x > size) x -= size;
-            while (x < 0) x += size;
-            cmemory_reference(base+x);
-            x = b + j*(size/8);
-            while (x > size) x -= size;
-            while (x < 0) x += size;
-            cmemory_reference(base+x);
-        }
-        a += da;
-        b += db;
-    }
-}
-
-static void identify_page(void *p[], int32_t n, int type)
-{   while (n != 0)
-    {   void *w = p[--n];
-        if (w != NULL) identify_one(w, CSL_PAGE_SIZE, type);
-    }
-}
-
-void identify_page_types()
-{   identify_page(pages,               pages_count,            0);
-    identify_page(heap_pages,          heap_pages_count,       1);
-    identify_page(vheap_pages,         vheap_pages_count,      2);
-    identify_page(native_pages,        native_pages_count,     4);
-    identify_one((void *)stacksegment, CSL_PAGE_SIZE,          5);
-    identify_one((void *)nilsegment,   NIL_SEGMENT_SIZE,       6);
-}
-
-#endif // CHECK_ONLY
-
-long int car_counter;
-unsigned long int car_low, car_high;
-
-Cons_Cell *memory_reference(intptr_t p)
-{   if (p & 0x7)
-    {   term_printf("Access to mis-aligned address %.8x\n", (int)p);
-        ensure_screen();
-        abort();
-    }
-    return (Cons_Cell *)cmemory_reference(p);
-}
-
-char *cmemory_reference(intptr_t p)
-{
-#ifdef CHECK_ONLY
-    return (char *)p;
-#else
-    intptr_t a = p - memory_base;
-    if (memory_map != NULL && a >= 0 && a < memory_size)
-    {   int bit;
-        a = a >> 2;                          // Get a word address
-        a = a >> 2;                          // reduce to 4-word resolution
-        if (memory_count >= car_counter &&
-            (unsigned long int)a >= car_low &&
-            (unsigned long int)a <= car_high)
-        {   if (exception_pending()) nil = (LispObject)((intptr_t)nil ^ 1);
-            interrupt_pending = 1;
-            miscflags |= HEADLINE_FLAG | MESSAGES_FLAG;
-            car_counter = 0x7fffffff; // Do not interrupt again
-        }
-        bit = 1 << (a & 7);
-        a = a >> 3;
-        if (a < memory_lowest) memory_lowest = a;
-        if (a > memory_highest) memory_highest = a;
-        memory_map[a] |= bit;
-        if ((++memory_count & 0x3ff) == 0)   // Every 1024 references...
-        {   unsigned char *pp;
-            int c;
-            int32_t run = 0, i;
-//
-// I use a run-length encoded representation for the file that I write out.
-// Each scan-line is stored as a collection of bytes each of which indicates
-// the number of '0' items before the next '1' in the bit-vector. The encoding
-// of individual lengths is as follows:
-//     0 - 127          1 byte
-//     128 - 16K        First byte has 0x80 plus 6 bits of data (+ 1 more)
-//     16K - 4M         First byte has 0xc0 plus 6 bits of data (+ 2 more)
-//     The byte pair (0x8n, 0x00) stands for n times 4M as a a prefix to
-//     one of the above. This gives up to 2^28 as the max span.
-//     The byte pair (0x80, 0x00) can be used to terminate a line.
-//     Codes (0xcn, 0x00, 0x00) give 64 special codes that can be used
-//     to interveave comments and annotations within the stream.
-//
-            pp = memory_map + memory_lowest;
-            run = 8*memory_lowest;
-            for (i=memory_lowest; i<=memory_highest; i++)
-            {   c = *pp++;
-                if (c != 0)
-                {   bit = 1;
-                    while ((c & bit) == 0) run++, bit = bit << 1;
-                    if (run >= 0x400000)
-                    {   putc(0x80 + ((run >> 22) & 0x3f), memory_file);
-                        putc(0x00, memory_file);
-                        run &= 0x3fffff;
-                    }
-                    if (run < 0x80) putc(run, memory_file);
-                    else if (run < 0x4000)
-                    {   putc(0x80 + (run & 0x3f), memory_file);
-                        putc((run >> 6) & 0xff, memory_file);
-                    }
-                    else
-                    {   putc(0xc0 + (run & 0x3f), memory_file);
-                        putc((run >> 6) & 0xff, memory_file);
-                        putc((run >> 14) & 0xff, memory_file);
-                    }
-                    c &= ~bit;
-                    run = 0;
-                    bit = bit << 1;
-                    while (c != 0)
-                    {   while ((c & bit) == 0) run++, bit = bit << 1;
-                        putc(run, memory_file);
-                        c &= ~bit;
-                        run = 0;
-                        bit = bit << 1;
-                    }
-                    while (bit != 0x100) run++, bit = bit << 1;
-                }
-                else run += 8;
-            }
-            putc(0x80, memory_file);
-            putc(0x00, memory_file);
-            memory_lowest = 0x7fffffff;
-            memory_highest = -1;
-            memset(memory_map, 0, memory_size/32+8);
-            memory_records++;
-        }
-    }
-    return (char *)p;
-#endif // CHECK_ONLY
-}
-
-#endif
-
 static char *global_handle;
 
 void *my_malloc(size_t n)
 {
-#ifdef NO_WORRY_ABOUT_MEMORY_PROBLEMS
-    return (*malloc_hook)(n);
-#else
 //
 // The idea here is INTENDED to provide a small amount of extra checking and
 // robustness about use of malloc and free. It is very probable these days
@@ -944,7 +410,6 @@ void *my_malloc(size_t n)
 // to help me out here - eg I understand that "valgrind" is useful for
 // detecting memory leaks...
 //
-#define EXPLICIT_FREE_AT_END_OF_RUN  1
     char *r = (char *)(*malloc_hook)(n+64);
     int32_t *p = (int32_t *)quadword_align_up(r);
 //
@@ -967,26 +432,12 @@ void *my_malloc(size_t n)
     car32(r+n)   = 0x87654321;
     car32(r+n+4) = 0xcba98765;
     return (void *)r;
-#endif
 }
 
 char *big_chunk_start, *big_chunk_end;
 
-#ifdef EXPLICIT_FREE_AT_END_OF_RUN
-
 static void my_free(void *r)
-{
-#ifdef NO_WORRY_ABOUT_MEMORY_PROBLEMS
-    char *rr = (char *)r;
-//
-// I will not free it if the pointer is strictly inside the single big
-// chunk that I grabbed at the start of the run.
-//
-    if (rr > big_chunk_start && rr <= big_chunk_end) return;
-    int32_t *p, *q, n;
-    *(free_hook)(r);
-#else // NO_WORRY...
-    int32_t *p, *q;
+{   int32_t *p, *q;
     size_t n;
     char *rr = (char *)r;
 //
@@ -1012,10 +463,7 @@ static void my_free(void *r)
         my_exit(0);
     }
     (*free_hook)((void *)((void **)p)[0]);
-#endif
 }
-
-#endif
 
 static void *my_malloc_1(size_t n)
 //
@@ -1079,7 +527,7 @@ static void *my_malloc_2(size_t n)
 
 static LispObject Lreclaim_trap(LispObject env, LispObject a)
 {   int32_t previous = reclaim_trap_count;
-    if (!is_fixnum(a)) return aerror1("reclaim-trap", a);
+    if (!is_fixnum(a)) aerror1("reclaim-trap", a);
     reclaim_trap_count = int_of_fixnum(a);
     term_printf("+++ Reclaim trap set at %d, previous = %d\n",
                 reclaim_trap_count, previous);
@@ -1088,7 +536,7 @@ static LispObject Lreclaim_trap(LispObject env, LispObject a)
 
 static LispObject Lreclaim_stack_limit(LispObject env, LispObject a)
 {   int32_t previous = reclaim_stack_limit;
-    if (!is_fixnum(a)) return aerror1("reclaim-stack-limit", a);
+    if (!is_fixnum(a)) aerror1("reclaim-stack-limit", a);
     reclaim_stack_limit = int_of_fixnum(a);
     term_printf("+++ Reclaim stack limit set at %d, previous = %d\n",
                 reclaim_stack_limit, previous);
@@ -1112,45 +560,6 @@ static void init_heap_segments(double store_size)
     new_heap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
     new_vheap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
     new_native_pages = (void **)my_malloc_2(MAX_NATIVE_PAGES*sizeof(void *));
-//
-// Sets up codebuffer for jit functions
-//
-#ifdef JIT
-    jit_size = JIT_INIT_SIZE;
-#ifdef WIN32
-    DWORD old_protection_status;
-    printf("About to VirtualAlloc\n");
-    fflush(stdout);
-    jit_space = VirtualAlloc(
-                    NULL,                    // system selects address
-                    jit_size,                    // size to allocate
-                    MEM_RESERVE | MEM_COMMIT,// allocate reserved pages
-                    PAGE_EXECUTE_READWRITE); // Execute, Read and Write access
-    printf("VirtualAlloc = %p\n", jit_space);
-    fflush(stdout);
-
-//
-// Now just to show that I know how to I will change the protection of
-// the dynamic page to "read-only" so that nobody else can clobber it by
-// accident (or in malice).
-//
-//
-//  VirtualProtect(
-//      shell,
-//      8192,
-//      PAGE_READONLY,
-//      &old_protection_status);
-//
-#else
-    jit_space = mmap(NULL, jit_size,
-                     PROT_WRITE|PROT_EXEC,MAP_PRIVATE|MAP_ANONYMOUS,
-                     0,0);
-    if (jit_space==(caddr_t)-1)
-    {   perror("mmap failed");
-    }
-#endif
-    jit_space_p = jit_space;
-#endif
     if (pages == NULL ||
 #ifdef CONSERVATIVE
         page_map == NULL ||
@@ -1195,33 +604,6 @@ static void init_heap_segments(double store_size)
             if (pool != NULL)
             {   big_chunk_start = (char *)pool;
                 big_chunk_end = big_chunk_start + (n-1);
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-                memory_base = (intptr_t)pool;
-                memory_size = n;
-                memory_count = 0;
-                memory_map = (unsigned char *)(*malloc_hook)(n/32 + 16);
-                if (memory_map != 0)
-                {   memset(memory_map, 0, n/32+8);
-                    memory_file = fopen(memfile, "wb");
-                    if (memory_file == NULL)
-                    {   (*free_hook)(memory_map);
-                        memory_map = 0;
-                    }
-                    else
-                    {   n = n/32 + 8;
-                        putc(0, memory_file);
-                        putc(0, memory_file);
-                        putc(0, memory_file); // 3 bytes to overwrite later on
-                        putc(n, memory_file);
-                        putc(n>>8, memory_file);
-                        putc(n>>16, memory_file);
-                        memory_comment(2);  // startup code
-                        init_flags &= ~INIT_EXPANDABLE;
-                    }
-                }
-#endif
-#endif
                 nilsegment = (LispObject *)pool;
                 pool = pool + NIL_SEGMENT_SIZE;
 #ifdef COMMON
@@ -1287,14 +669,6 @@ static void init_heap_segments(double store_size)
     stackbase = (LispObject *)doubleword_align_up((intptr_t)stacksegment);
 }
 
-#ifdef EXPLICIT_FREE_AT_END_OF_RUN
-//
-// In general I will let CSL exit without bothering to free up all the
-// memory that it allocated - that job can be left (to the extent that
-// it is needed at all) to the run-time system.  But if for some reason
-// you really mind about such things here is some code to do it for you...
-//
-
 static void abandon(void *p[], int32_t n)
 {   while (n != 0)
     {   void *w = p[--n];
@@ -1308,34 +682,13 @@ static void abandon(void *p[], int32_t n)
     }
 }
 
-#endif
-
 void drop_heap_segments(void)
-{
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-    identify_page_types();
-#endif
-#endif
-#ifdef EXPLICIT_FREE_AT_END_OF_RUN
-    abandon(pages,           pages_count);
+{   abandon(pages,           pages_count);
     abandon(heap_pages,      heap_pages_count);
     abandon(vheap_pages,     vheap_pages_count);
     abandon(native_pages,    native_pages_count);
     my_free(stacksegment);
     my_free(nilsegment);
-#endif
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-    fseek(memory_file, 0L, SEEK_SET);
-    putc(memory_records & 0xff, memory_file);
-    putc((memory_records>>8) & 0xff, memory_file);
-    putc((memory_records>>16) & 0xff, memory_file);
-    fclose(memory_file);
-    memory_file = NULL;
-    memory_map = NULL;
-#endif
-#endif
 }
 
 static char *find_checksum(const char *name, int32_t len, const setup_type *p)
@@ -1401,7 +754,7 @@ static LispObject Lcheck_c_code(LispObject env, int nargs, ...)
         !is_string_header(vechdr(name)) ||
         !is_fixnum(lc1) ||
         !is_fixnum(lc2) ||
-        !is_fixnum(lc3)) return aerror1("check-c-code", name);
+        !is_fixnum(lc3)) aerror1("check-c-code", name);
     c1 = int_of_fixnum(lc1);
     c2 = int_of_fixnum(lc2);
     c3 = int_of_fixnum(lc3);
@@ -1412,16 +765,16 @@ static LispObject Lcheck_c_code(LispObject env, int nargs, ...)
     for (i=0; setup_tables[i]!=NULL; i++)
     {   if ((p = find_checksum(sname, len, setup_tables[i])) != NULL) break;
     }
-    if (p == NULL) return aerror1("check-c-code", name);
+    if (p == NULL) aerror1("check-c-code", name);
 
     if (sscanf(p, "%ld %ld %ld", &x1, &x2, &x3) != 3)
-        return aerror1("check-c-code", name);
+        aerror1("check-c-code", name);
     if (c1 == x1 && c2 == x2 && c3 == x3) return onevalue(nil);
     err_printf("\n+++++ C code and environment files not compatible\n");
     err_printf("please check, re-compile and try again\n");
     err_printf("versions from %.*s.c %lx %lx %lx\n", len, sname, x1, x2, x3);
     err_printf("version passed here %lx %lx %lx\n", c1, c2, c3);
-    return aerror1("check-c-code", name);
+    aerror1("check-c-code", name);
 }
 
 setup_type const restart_setup[] =
@@ -1449,20 +802,11 @@ setup_type const restart_setup[] =
     {"library-members",         Llibrary_members, too_many_1, Llibrary_members0},
     {"startup-banner",          Lbanner, too_many_1, wrong_no_1},
     {"instate-c-code",          too_few_2, Linstate_c_code, wrong_no_2},
-// An embedded help system that used to exist has now been disabled
-#if 0
-    {"write-help-module",       too_few_2, Lwrite_help_module, wrong_no_2},
-    {"help",                    Lhelp, Lhelp_2, Lhelp_n},
-    {"?",                       Lhelp, too_many_1, wrong_no_1},
-#endif
     {"set-help-file",           too_few_2, Lset_help_file, wrong_no_2},
     {"mapstore",                Lmapstore, too_many_1, Lmapstore0},
     {"verbos",                  Lverbos, too_many_1, wrong_no_1},
-#ifdef COMMON
     {"gc",                      Lgc, too_many_1, Lgc0},
-#else
     {"reclaim",                 Lgc, too_many_1, Lgc0},
-#endif
     {"reclaim-trap",            Lreclaim_trap, too_many_1, wrong_no_1},
     {"reclaim-stack-limit",     Lreclaim_stack_limit, too_many_1, wrong_no_1},
     {"resource-limit",          too_few_2, Lresource_limit2, Lresource_limitn},
@@ -1726,7 +1070,7 @@ static void tidy_up_old_dlls(const char *name, int why, long int size)
 #ifndef EMBEDDED
 
 static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
-{   size_t len, checklen;
+{   size_t len = 0, checklen = 0;
     const char *sname, *checkname;
     char modname[80], xmodname[LONGEST_LEGAL_FILENAME];
     char sname1[LONGEST_LEGAL_FILENAME];
@@ -1752,10 +1096,8 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
     ensure_screen();
 #endif
 
-    sname = get_string_data(mod, "find_def_table", &len);
-    if (exception_pending()) return NULL;
-    checkname = get_string_data(checksum, "find_def_table", &checklen);
-    if (exception_pending()) return NULL;
+    sname = get_string_data(mod, "find_def_table", len);
+    checkname = get_string_data(checksum, "find_def_table", checklen);
 #ifdef TRACE_NATIVE
     trace_printf("Checksum given as \"%.*s\"\n", checklen, checkname);
 #endif
@@ -1977,7 +1319,7 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
                   LispObject name, LispObject fns)
 {   const char *p;
     setup_type_1 *b;
-    size_t len;
+    size_t len = 0;
     LispObject xchecksum;
 #ifdef TRACE_NATIVE
     trace_printf("setup_dynamic %s\n", modname);
@@ -2008,8 +1350,7 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
                      modname, (char *)b->one);
         return 0;
     }
-    p = get_string_data(qcar(fns), "instate_c_code", &len);
-    if (exception_pending()) return 0;
+    p = get_string_data(qcar(fns), "instate_c_code", len);
     if (strncmp(p, (char *)b->two, len) != 0)
     {   trace_printf("Module signature %.*s disagrees with %s\n",
                      (int)len, p, (char *)b->two);
@@ -2047,14 +1388,7 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
             {   LispObject chk = qcdr(env);
                 uint32_t *pp;
                 env = qcar(env);
-                p = get_string_data(fname, "instate_c_code", &len);
-                if (exception_pending())
-                {
-#ifdef TRACE_NATIVE
-                    trace_printf("Failed: get_string_data\n");
-#endif
-                    return 0;
-                }
+                p = get_string_data(fname, "instate_c_code", len);
 #ifdef TRACE_NATIVE
                 trace_printf("instate next function %.*s vs %s\n", len, p, b->name);
                 prin_to_trace(chk); trace_printf(" vs %u %u\n", b->c1, b->c2);
@@ -2148,11 +1482,9 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
                         goto next_def;
                     }
                 }
-                if (exception_pending()) return 0;
                 push2(name, fname);
                 env = Llist_to_vector(nil, env);
                 pop2(fname, name);
-                if (exception_pending()) return 0;
                 if (load_limit != 0x7fffffff)
                 {   if (load_count >= load_limit) goto next_def;
                     prin_to_trace(fname);
@@ -2182,7 +1514,6 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
                 push4(name, fname, env, xchecksum);
                 ww = cons(fname, native_defs);
                 pop4(xchecksum, env, fname, name);
-                if (exception_pending()) return 0;
                 native_defs = ww;
             already_native:
                 ww = Lsymbol_argcode(nil, fname);
@@ -2190,19 +1521,15 @@ int setup_dynamic(setup_type_1 *dll, const char *modname,
                 push4(name, fname, env, xchecksum);
                 ww = cons(ww, qenv(fname));
                 pop4(xchecksum, env, fname, name);
-                if (exception_pending()) return 0;
                 push4(name, fname, env, xchecksum);
                 putprop(fname, bytecoded_symbol, ww);
                 pop4(xchecksum, env, fname, name);
-                if (exception_pending()) return 0;
                 push4(name, fname, env, xchecksum);
                 ww = list3star(name, fname, xchecksum, env);
                 pop4(xchecksum, env, fname, name);
-                if (exception_pending()) return 0;
                 push4(name, fname, env, xchecksum);
                 putprop(fname, nativecoded_symbol, ww);
                 pop4(xchecksum, env, fname, name);
-                if (exception_pending()) return 0;
                 ifn1(fname) = (intptr_t)b->one;
                 ifn2(fname) = (intptr_t)b->two;
                 ifnn(fname) = (intptr_t)b->n;
@@ -2257,7 +1584,7 @@ LispObject Linstate_c_code(LispObject env, LispObject name, LispObject fns)
 // the start of "fns" will used in names for the .dll files and will be
 // recorded associated with the module name.
 //
-    size_t len;
+    size_t len = 0;
     const char *sname;
     char modname[80];
     int c;
@@ -2271,8 +1598,7 @@ LispObject Linstate_c_code(LispObject env, LispObject name, LispObject fns)
 
     if (!consp(fns)) return onevalue(nil);
 
-    sname = get_string_data(name, "instate-c-code", &len);
-    if (exception_pending()) return nil;
+    sname = get_string_data(name, "instate-c-code", len);
 
 #ifdef EMBEDDED
     return onevalue(nil);
@@ -2306,7 +1632,7 @@ static void cold_setup()
     ifn1(nil) = (intptr_t)undefined1;
     ifn2(nil) = (intptr_t)undefined2;
     ifnn(nil) = (intptr_t)undefinedn;
-    qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_SPECIAL_VAR;
+    qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR;
     qvalue(nil) = nil;
 //
 // When I am debugging CSL I can validate the heap, for instance whenever
@@ -2335,7 +1661,7 @@ static void cold_setup()
     current_package = nil;
 //
 // The code here is generally coded on the supposition that there will NEVER
-// be a garbage collection here, so all the "fun" about push/pop and errexit
+// be a garbage collection here, so all issues of error recovery related
 // tests can be omitted. That makes this code much cleaner! It means that
 // during a cold start that there is enough space (well for a COLD start that
 // hardly likely to be an issue!) and in a warm start that none of the
@@ -2418,14 +1744,14 @@ static void cold_setup()
 
     B_reg = nil;                             // safe for GC
     unset_var                = make_undefined_symbol("~indefinite-value~");
-    qheader(unset_var)      |= SYM_SPECIAL_VAR;
+    qheader(unset_var)      |= SYM_GLOBAL_VAR;
     qvalue(unset_var)        = unset_var;
     Lunintern(nil, unset_var);
 //
 // Now in some minor sense the world is in a self-consistent state
 //
     lisp_true           = make_undefined_symbol("t");
-    qheader(lisp_true) |= SYM_SPECIAL_VAR;
+    qheader(lisp_true) |= SYM_GLOBAL_VAR;
     qvalue(lisp_true)   = lisp_true;
     savedef             = make_undefined_symbol("*savedef");
     comma_symbol        = make_undefined_symbol("~comma");
@@ -2435,19 +1761,13 @@ static void cold_setup()
     cfunarg             = make_undefined_symbol("cfunarg");
     opt_key             = make_undefined_symbol("&optional");
     rest_key            = make_undefined_symbol("&rest");
-#ifdef COMMON
     key_key             = make_undefined_symbol("&key");
     allow_other_keys    = make_undefined_symbol("&allow-other-keys");
     aux_key             = make_undefined_symbol("&aux");
-#endif
     work_symbol         = make_undefined_symbol("~magic-internal-symbol~");
     Lunintern(nil, work_symbol);
-#ifndef COMMON
-    packid_(CP)         = make_undefined_symbol("package");
-#else
     package_symbol      = make_undefined_symbol("package");
     packid_(CP)         = package_symbol;
-#endif
 
     macroexpand_hook    = make_undefined_symbol("*macroexpand-hook*");
     qheader(macroexpand_hook) |= SYM_SPECIAL_VAR;
@@ -2459,13 +1779,13 @@ static void cold_setup()
     qvalue(applyhook)   = nil;
 #ifdef COMMON
     keyword_package     = make_undefined_symbol("*keyword-package*");
-    qheader(keyword_package) |= SYM_SPECIAL_VAR;
+    qheader(keyword_package) |= SYM_GLOBAL_VAR;
     qvalue(keyword_package) = make_package(make_string("KEYWORD"));
     err_table           = make_undefined_symbol("*ERROR-MESSAGE*");
 #else
     err_table           = make_undefined_symbol("*error-messages*");
 #endif
-    qheader(err_table) |= SYM_SPECIAL_VAR;
+    qheader(err_table) |= SYM_GLOBAL_VAR;
     qvalue(err_table)   = nil;
 #ifdef COMMON
 #define make_keyword(name) \
@@ -2478,25 +1798,33 @@ static void cold_setup()
 #define make_keyword(name) make_undefined_symbol(name)
 #endif
     gensym_base         = make_string("G");
-#if 0
-#ifdef COMMON
     expand_def_symbol   = make_undefined_symbol("expand-definer");
     format_symbol       = make_undefined_symbol("format");
     string_char_sym     = make_undefined_symbol("string-char");
-    cl_symbols          = make_undefined_symbol("*cl-symbols*");
-//
-// cl_symbols has to be at least a vector or else I can not
-// read in the Lisp file that sets its proper value...
-//
-    qvalue(cl_symbols)  = getvector_init(8*CELL, nil);
-    features_symbol     = make_undefined_symbol("*features*");
-    qheader(cl_symbols)      |= SYM_SPECIAL_VAR;
-    qheader(features_symbol) |= SYM_SPECIAL_VAR;
-#endif
-#endif
+// The following bunch of symbols relate to Common Lisp features and are
+// not necessarily fully used.
+    nicknames_symbol    = make_undefined_symbol(":nicknames");
+    use_symbol          = make_undefined_symbol(":use");
+    and_symbol          = make_undefined_symbol("and");
+    or_symbol           = make_undefined_symbol("or");
+    not_symbol          = make_undefined_symbol("not");
+    reader_workspace    = make_undefined_symbol("#:x");
+    named_character     = make_undefined_symbol(":named-character");
+    read_float_format   = make_undefined_symbol("*read-default-float-format*");
+    short_float         = make_undefined_symbol("short-float");
+    single_float        = make_undefined_symbol("single-float");
+    double_float        = make_undefined_symbol("double-float");
+    long_float          = make_undefined_symbol("long-float");
+    bit_symbol          = make_undefined_symbol("bit");
+    pathname_symbol     = make_undefined_symbol("pathname");
+    print_array_sym     = make_undefined_symbol("*print-array*");
+    read_base           = make_undefined_symbol("*read-base*");
+    initial_element     = make_undefined_symbol(":initial-element");
+
+
 #define make_constant(name, value)       \
         w = make_undefined_symbol(name); \
-        qheader(w) |= SYM_SPECIAL_VAR;   \
+        qheader(w) |= SYM_GLOBAL_VAR;   \
         qvalue(w) = value;
     make_constant("most-positive-fixnum", fixnum_of_int(0x07ffffff));
     make_constant("most-negative-fixnum", fixnum_of_int(0xf8000000));
@@ -2535,7 +1863,7 @@ static void cold_setup()
     qheader(lower_symbol) |= SYM_SPECIAL_VAR;
     qheader(echo_symbol)  |= SYM_SPECIAL_VAR;
     qheader(comp_symbol)  |= SYM_SPECIAL_VAR;
-    qheader(emsg_star)    |= SYM_SPECIAL_VAR;
+    qheader(emsg_star)    |= SYM_GLOBAL_VAR;
     qheader(redef_msg)    |= SYM_SPECIAL_VAR;
     qheader(break_function)    |= SYM_SPECIAL_VAR;
     qvalue(break_function)      = nil;
@@ -2630,7 +1958,7 @@ void set_up_functions(int restart_flag)
     qheader(function_symbol)|= SYM_SPECIAL_FORM;
     quote_symbol             = make_symbol("quote", restart_flag, quote_fn, (two_args *)quote_fn, bad_specialn);
     qheader(quote_symbol)   |= SYM_SPECIAL_FORM;
-    progn_symbol             = make_symbol("progn", restart_flag, progn_fn, (two_args *)noisy_progn_fn, bad_specialn);
+    progn_symbol             = make_symbol("progn", restart_flag, progn_fn, (two_args *)progn_fn, bad_specialn);
     qheader(progn_symbol)   |= SYM_SPECIAL_FORM;
     declare_symbol           = make_symbol("declare", restart_flag, declare_fn, (two_args *)declare_fn, bad_specialn);
     qheader(declare_symbol) |= SYM_SPECIAL_FORM;
@@ -2696,30 +2024,14 @@ void set_up_functions(int restart_flag)
     create_symbols(om_parse_setup, restart_flag);
 #endif
 
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-    memory_comment(13);  // tail end of setup
-#endif
-#endif
-
 #ifdef COMMON
     CP = saved_package;
 #endif
 }
 
-#ifdef HAVE_FWIN
-
 static int alpha1(const void *a, const void *b)
 {   return strcmp(1+*(const char **)a, 1+*(const char **)b);
 }
-
-#else
-
-static int alpha0(const void *a, const void *b)
-{   return strcmp(*(const char **)a, *(const char **)b);
-}
-
-#endif
 
 // This sets up:
 //   lispsystem!*
@@ -3035,9 +2347,7 @@ void set_up_variables(int restart_flag)
         w = acons(make_keyword("PLATFORM"),
                   make_undefined_symbol(BUILTFOR), w);
         if (SIXTY_FOUR_BIT) w = cons(make_keyword("SIXTY-FOUR"), w);
-#if defined HAVE_POPEN || defined HAVE_FWIN
         w = cons(make_keyword("PIPES"), w);
-#endif
 #if defined HAVE_UNISTD_H && \
     defined HAVE_SYS_TYPES_H && \
     defined HAVE_SYS_STAT_H && \
@@ -3061,14 +2371,8 @@ void set_up_variables(int restart_flag)
                  w = cons(make_keyword("EXPERIMENT"), w);
 #endif
                  w = cons(make_keyword("RECORD_GET"), w);
-#ifdef HAVE_FWIN
                  w = acons(make_keyword("EXECUTABLE"),
                            make_string(fullProgramName), w);
-#else
-                 if (program_name[0] != 0)
-                 w = acons(make_keyword("EXECUTABLE"),
-                           make_string(program_name), w);
-#endif
                  w = acons(make_keyword("NAME"), make_string(IMPNAME), w);
                  w = acons(make_keyword("VERSION"), make_string(VERSION), w);
                  w = cons(make_keyword("CCL"), w);
@@ -3086,14 +2390,10 @@ void set_up_variables(int restart_flag)
                   fixnum_of_int(defined_symbols), w);
         w = acons(make_keyword("platform"),
                   make_undefined_symbol(BUILTFOR), w);
-#ifdef HAVE_FWIN
         if (texmacs_mode)
             w = cons(make_keyword("texmacs"), w);
-#endif
         if (SIXTY_FOUR_BIT) w = cons(make_keyword("sixty-four"), w);
-#if defined HAVE_POPEN || defined HAVE_FWIN
         w = cons(make_keyword("pipes"), w);
-#endif
 #if defined HAVE_CRLIBM
         w = cons(make_keyword("crlibm"), w);
 #endif
@@ -3122,7 +2422,6 @@ void set_up_variables(int restart_flag)
 #ifdef EMBEDDED
         w = cons(make_keyword("embedded"), w);
 #endif
-#ifdef HAVE_FWIN
         if (fwin_windowmode() & FWIN_WITH_TERMED)
             w = cons(make_keyword("termed"), w);
 #ifdef HAVE_LIBFOX
@@ -3155,20 +2454,13 @@ void set_up_variables(int restart_flag)
             }
         }
 #endif
-#endif
 #ifdef RECORD_GET
         w = cons(make_keyword("record_get"), w);
 #endif
-#ifdef HAVE_FWIN
         w = acons(make_keyword("executable"),
                   make_string(fullProgramName), w);
         w = acons(make_keyword("shortname"),
                   make_string(programName), w);
-#else
-        if (program_name[0] != 0)
-            w = acons(make_keyword("executable"),
-                      make_string(program_name), w);
-#endif
         if (!restartp) w = cons(make_keyword("cold-start"), w);
         w = acons(make_keyword("name"), make_string(IMPNAME), w);
         w = acons(make_keyword("version"), make_string(VERSION), w);
@@ -3185,7 +2477,6 @@ void set_up_variables(int restart_flag)
             if (is_vector(w1) &&
                 is_string_header(vechdr(w1)))
             {
-#if defined HAVE_FWIN && !defined EMBEDDED
                 int n = length_of_byteheader(vechdr(w1))-CELL;
                 sprintf(about_box_title, "About %.*s",
                         (n > 31-(int)strlen("About ") ?
@@ -3217,21 +2508,17 @@ void set_up_variables(int restart_flag)
                             n > 31 ? 31 : n, &celt(w1, 0));
                 }
                 else strcpy(about_box_rights_2, "Codemist    ");
-#endif
             }
             else
-            {
-#ifdef HAVE_FWIN
-                strcpy(about_box_title, "About REDUCE");
+            {   strcpy(about_box_title, "About REDUCE");
                 strcpy(about_box_description, "REDUCE");
                 strcpy(about_box_rights_1, "A C Hearn/RAND");
                 strcpy(about_box_rights_2, "Codemist");
-#endif
             }
         }
-#endif
-                 qheader(n) |= SYM_SPECIAL_VAR;
-                 qvalue(n) = w;
+        qheader(n) |= SYM_SPECIAL_VAR;
+        qvalue(n) = w;
+#endif // COMMON
     }
 //
 // lispargs* and full-lispargs!* give access to command line args used at
@@ -3554,14 +2841,12 @@ void set_up_variables(int restart_flag)
 // parsing fails I (silently) treat the value as just NIL.
 //
 #endif
-                if (exception_pending()) v = flip_exception();
             }
             pop(n);
             qheader(n) |= SYM_SPECIAL_VAR;
             qvalue(n) = v;
         }
     }
-#ifdef HAVE_FWIN
 //
 // Now if I have the FWIN windowed system I look in the Lisp variables
 //    loadable-packages!*
@@ -3645,7 +2930,6 @@ void set_up_variables(int restart_flag)
         }
     }
 
-#endif // HAVE_FWIN
 #ifdef COMMON
     CP = saved_package;
 #endif
@@ -3676,10 +2960,6 @@ void review_switch_settings()
         }
         if ((v=*p) == NULL) continue;
         starsw = make_undefined_symbol(sname);
-        if (exception_pending())
-        {   flip_exception();
-            continue;
-        }
         if (qvalue(starsw) == nil) switch(*v)
             {   case 'y':  *v = 0x3f&'N'; break;
                 case 'n':                 break;
@@ -3785,18 +3065,6 @@ void setup(int restart_flag, double store_size)
     int32_t i;
     if ((restart_flag & 2) != 0) init_heap_segments(store_size);
     garbage_collection_permitted = false;
-#ifdef TIDY_UP_MEMORY_AT_START
-//
-// The following feature, which should not be neded, is liable to be
-// expensive on big machines because it touches all memory.
-// The code is left in case it helps with repeatability in the face
-// of accesses to uninitialised locations (ie BUGS).
-//
-    for (i=0; i<pages_count; i++)
-        memset(pages[i], 0, (size_t)CSL_PAGE_SIZE+16);
-    memset(stacksegment, 0, (size_t)stack_segsize*CSL_PAGE_SIZE+16);
-    memset(nilsegment, 0, (size_t)NIL_SEGMENT_SIZE);
-#endif
     stack = stackbase;
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
@@ -3840,7 +3108,6 @@ void setup(int restart_flag, double store_size)
 // The banner that I will display is one provided to be by PRESERVE.
 //
         {   char b[64];
-#define BANNER_CODE (-1002)
             if (IopenRoot(filename, BANNER_CODE, 0)) b[0] = 0;
             else
             {   for (i=0; i<64; i++) b[i] = (char)Igetc();
@@ -3853,9 +3120,7 @@ void setup(int restart_flag, double store_size)
 // But as a very special hack I detect if --texmacs was on the command
 // line and in that case I stay quiet...
 //
-#ifdef HAVE_FWIN
             if (!texmacs_mode)
-#endif
             {   if (b[0] != 0)
                 {   term_printf("%s\n", b);
                     ensure_screen();
@@ -3921,11 +3186,6 @@ void setup(int restart_flag, double store_size)
             else term_printf("Memory allocation: %lu Kbytes\n", m);
         }
     }
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-    memory_comment(15);
-#endif
-#endif
     if (init_flags & INIT_VERBOSE)
     {   int n = number_of_processors();
         if (n > 1)
@@ -3977,7 +3237,7 @@ uint32_t hash_for_checking(LispObject a, int depth)
     r = 1;
     for (i=0; i<length_of_byteheader(h)-CELL; i++)
         r = 314159*r + celt(a, i);
-    return r; 
+    return r;
 }
 
 #endif
@@ -4038,7 +3298,7 @@ void copy_into_nilseg(int fg)
     BASE[69]     = tracedfn;
     BASE[70]     = prompt_thing;
     BASE[71]     = faslgensyms;
-    BASE[72]     = cl_symbols;
+//  BASE[72]     = cl_symbols;
     BASE[73]     = active_stream;
     BASE[74]     = current_module;
     BASE[75]     = native_defs;
@@ -4120,7 +3380,6 @@ void copy_into_nilseg(int fg)
     BASE[158]    = trap_time;
 //  BASE[159]    = count_high;
 
-#ifdef COMMON
     BASE[170]    = keyword_package;
     BASE[171]    = all_packages;
     BASE[172]    = package_symbol;
@@ -4133,11 +3392,6 @@ void copy_into_nilseg(int fg)
     BASE[179]    = format_symbol;
     BASE[180]    = expand_def_symbol;
     BASE[181]    = allow_key_key;
-#endif
-//
-// I USED to support these only in Common Lisp mode but now I find I need
-// them even in Standard Lisp mode...
-//
     BASE[182]    = declare_symbol;
     BASE[183]    = special_symbol;
     BASE[184]    = large_modulus;
@@ -4145,6 +3399,23 @@ void copy_into_nilseg(int fg)
     BASE[186]    = avail_space;
     BASE[187]    = eof_symbol;
     BASE[188]    = call_stack;
+    BASE[189]    = nicknames_symbol;
+    BASE[190]    = use_symbol;
+    BASE[191]    = and_symbol;
+    BASE[192]    = or_symbol;
+    BASE[193]    = not_symbol;
+    BASE[194]    = reader_workspace;
+    BASE[195]    = named_character;
+    BASE[196]    = read_float_format;
+    BASE[197]    = short_float;
+    BASE[198]    = single_float;
+    BASE[199]    = double_float;
+    BASE[200]    = long_float;
+    BASE[201]    = bit_symbol;
+    BASE[202]    = pathname_symbol;
+    BASE[203]    = print_array_sym;
+    BASE[204]    = read_base;
+    BASE[205]    = initial_element;
 
     for (i=0; i<=50; i++)
         BASE[work_0_offset+i]   = workbase[i];
@@ -4218,7 +3489,7 @@ void copy_out_of_nilseg(int fg)
     tracedfn              = BASE[69];
     prompt_thing          = BASE[70];
     faslgensyms           = BASE[71];
-    cl_symbols            = BASE[72];
+//  cl_symbols            = BASE[72];
     active_stream         = BASE[73];
     current_module        = BASE[74];
     native_defs           = BASE[75];
@@ -4299,7 +3570,6 @@ void copy_out_of_nilseg(int fg)
     procmem               = BASE[157];
     trap_time             = BASE[158];
 //  count_high            = BASE[159];
-#ifdef COMMON
     keyword_package       = BASE[170];
     all_packages          = BASE[171];
     package_symbol        = BASE[172];
@@ -4312,7 +3582,6 @@ void copy_out_of_nilseg(int fg)
     format_symbol         = BASE[179];
     expand_def_symbol     = BASE[180];
     allow_key_key         = BASE[181];
-#endif
     declare_symbol        = BASE[182];
     special_symbol        = BASE[183];
     large_modulus         = BASE[184];
@@ -4320,6 +3589,23 @@ void copy_out_of_nilseg(int fg)
     avail_space           = BASE[186];
     eof_symbol            = BASE[187];
     call_stack            = BASE[188];
+    nicknames_symbol      = BASE[189];
+    use_symbol            = BASE[190];
+    and_symbol            = BASE[191];
+    or_symbol             = BASE[192];
+    not_symbol            = BASE[193];
+    reader_workspace      = BASE[194];
+    named_character       = BASE[195];
+    read_float_format     = BASE[196];
+    short_float           = BASE[197];
+    single_float          = BASE[198];
+    double_float          = BASE[199];
+    long_float            = BASE[200];
+    bit_symbol            = BASE[201];
+    pathname_symbol       = BASE[202];
+    print_array_sym       = BASE[203];
+    read_base             = BASE[204];
+    initial_element       = BASE[205];
 
     for (i = 0; i<=50; i++)
         workbase[i]  = BASE[work_0_offset+i];

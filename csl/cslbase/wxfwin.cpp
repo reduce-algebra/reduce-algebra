@@ -1,5 +1,4 @@
-//
-// "wxfwin.cpp                                   Copyright A C Norman 2016
+// "wxfwin.cpp                                   Copyright A C Norman 2017
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -8,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -862,7 +861,10 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 
 void sigint_handler(int code)
 {
-// For debugging I may want to see when signals get caught...
+// For debugging I may want to see when signals get caught... Note that
+// doing anything such as printing to a log file represents undefined
+// behaviour in a signal handler, so this may be useful for debugging but
+// i snot guaranteed safe in general.
     FWIN_LOG(("sigint_handler called %d %#x\n", code, code));
     signal(SIGINT, sigint_handler);
     if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
@@ -911,11 +913,6 @@ static int direct_to_terminal(int argc, const char *argv[])
 int plain_worker(int argc, const char *argv[], fwin_entrypoint *main)
 {   int r;
     signal(SIGINT, sigint_handler);
-//
-// At one time I trapped SIGBREAK. These days I just let it terminate
-// my program if I am on Linux, Unix or BSD (inc Mac), and under Windows
-// I sometimes trap it using alternative system-specific code,
-//
     if (!texmacs_mode && direct_to_terminal(argc, argv))
     {   input_history_init();
         term_setup(1, colour_spec);

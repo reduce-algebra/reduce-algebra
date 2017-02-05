@@ -43,9 +43,14 @@ xWindows_NT)
     ;;
   esac
   pre=""
-  suffix=".com"
+  if test "x$ap" = "xbootstrapreduce"
+  then
+    suffix=".exe"
+  else
+    suffix=".com"
+  fi
   xtra=""
-  if test "x$cygwin" = "xyes" || test "x$ap" = "xbootstrapreduce"
+  if test "x$cygwin" = "xyes"
   then
     suffix=".exe"
   else

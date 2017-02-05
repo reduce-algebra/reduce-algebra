@@ -1,9 +1,14 @@
-% "i86comp.red"                 Copyright 1991-2016,  Codemist
+% "i86comp.red"                          Copyright (C) 1991-2017,  Codemist
 %
 % Compiler that turns Lisp code into Intel 80x86 32-bit assembler in a way
 % that fits in with the conventions used with CSL/CCL
 %
-% It is hoped that parts of this compoiler will form a framework upon
+
+% This code is not being developed at present, in part because x86_64
+% has taken over in importance.
+
+
+% It is hoped that parts of this compiler will form a framework upon
 % which native compilers for other architectures can be built. Even with
 % just the Intel one there are three different sets of register and calling
 % conventions I would like to support (!), viz

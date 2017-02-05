@@ -1,10 +1,8 @@
-// unimaths.cpp                                 Copyright (C) 2015 Codemist    
-
-// $Id$
+// unimaths.cpp                            Copyright (C) 2015-2017 Codemist    
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -31,6 +29,9 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+
+// $Id$
+
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

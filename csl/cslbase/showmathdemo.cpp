@@ -1,11 +1,9 @@
-/*
- * showmathdemo.cpp                         Copyright (C) Codemist     2013
- *
- * Demonstrate display of mathematical formulae...
- */
+// showmathdemo.cpp                        Copyright (C) Codemist 2013-2017
+
+// Demonstrate display of mathematical formulae...
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -306,8 +304,6 @@ int main(int argc,char *argv[])
 
     return application.run();
 }
-
-
 
 #endif /* HAVE_LIBFOX */
 

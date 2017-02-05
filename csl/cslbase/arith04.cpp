@@ -1,4 +1,4 @@
-//  arith04.cpp                       Copyright (C) 1991-2016 Codemist    
+//  arith04.cpp                       Copyright (C) 1991-2017 Codemist    
 
 //
 // Arithmetic functions.
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -51,7 +51,6 @@ LispObject make_n_word_bignum(int32_t a1, uint32_t a2, uint32_t a3, size_t n)
 //
 {   size_t i;
     LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+12);
-    errexit();
     for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
     bignum_digits(w)[n] = a3;
     bignum_digits(w)[n+1] = a2;
@@ -130,7 +129,6 @@ LispObject rationalf(double d)
             }
         }
         w = make_fix_or_big2(a1, a2);
-        errexit();
         x = -x;
 //
 // Remember: in CSL mode make_ratio is just cons
@@ -141,7 +139,6 @@ LispObject rationalf(double d)
             push(w);
             d = make_power_of_two(x);
             pop(w);
-            errexit();
             return make_ratio(w, d);
         }
     }
@@ -183,7 +180,6 @@ static LispObject rationalizef(double d)
     if (d == 0.0) return fixnum_of_int(0);
     else if (d < 0.0) dd = -d; else dd = d;
     p = rationalf(dd);
-    errexit();
     q = denominator(p);
     p = numerator(p);
 // /* No cleaning up done, yet. Need to start to produce continued
@@ -193,10 +189,7 @@ static LispObject rationalizef(double d)
 // cobbling up the code (which I have done before and is basically OK,
 // save that the stopping criteria are pretty delicate).
 //
-    if (d < 0.0)
-    {   p = negate(p);
-        errexit();
-    }
+    if (d < 0.0) p = negate(p);
     return make_ratio(p, q);
 }
 
@@ -219,13 +212,13 @@ LispObject rational(LispObject a)
                 case TYPE_RATNUM:
                     return a;
                 default:
-                    return aerror1("bad arg for rational", a);
+                    aerror1("bad arg for rational", a);
             }
         }
         case TAG_BOXFLOAT:
             return rationalf(float_of_number(a));
         default:
-            return aerror1("bad arg for rational", a);
+            aerror1("bad arg for rational", a);
     }
 }
 
@@ -247,13 +240,13 @@ LispObject rationalize(LispObject a)
                 case TYPE_RATNUM:
                     return a;
                 default:
-                    return aerror1("bad arg for rationalize", a);
+                    aerror1("bad arg for rationalize", a);
             }
         }
         case TAG_BOXFLOAT:
             return rationalizef(float_of_number(a));
         default:
-            return aerror1("bad arg for rationalize", a);
+            aerror1("bad arg for rationalize", a);
     }
 }
 
@@ -482,7 +475,6 @@ bool lesspdr(double a, LispObject b)
 // Compare float with ratio... painfully expensive.
 //
 {   LispObject a1 = rationalf(a);
-    errexit();
     return lessprr(a1, b);
 }
 
@@ -491,7 +483,6 @@ bool lessprd(LispObject a, double b)
 // Compare float with ratio.
 //
 {   LispObject b1 = rationalf(b);
-    errexit();
     return lessprr(a, b1);
 }
 
@@ -644,8 +635,7 @@ bool lessp2(LispObject a, LispObject b)
 // be compared - their presence will lead to an exception being raised.
 // This shortens the code (marginally).
 //
-{   if (exception_pending()) return false;
-    switch ((int)a & TAG_BITS)
+{   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             switch ((int)b & TAG_BITS)
             {   case TAG_FIXNUM:

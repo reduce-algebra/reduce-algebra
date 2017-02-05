@@ -1,4 +1,4 @@
-//  cslerror.h                             Copyright (C) 1989-2016 Codemit
+// cslerror.h                               Copyright (C) 1989-2017 Codemit
 
 //
 // Error codes and functions.
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -41,25 +41,30 @@
 #define header_cslerror_h 1
 
 extern "C" LispObject interrupted(LispObject p);
-extern "C" LispObject error(int nargs, int code, ...);
-extern "C" LispObject cerror(int nargs, int code1, int code2, ...);
-extern "C" LispObject too_few_2(LispObject env, LispObject a1);
-extern "C" LispObject too_many_1(LispObject env, LispObject a1, LispObject a2);
-extern "C" LispObject wrong_no_0a(LispObject env, LispObject a1);
-extern "C" LispObject wrong_no_0b(LispObject env, LispObject a1, LispObject a2);
-extern "C" LispObject wrong_no_3a(LispObject env, LispObject a1);
-extern "C" LispObject wrong_no_3b(LispObject env, LispObject a1, LispObject a2);
-extern "C" LispObject wrong_no_na(LispObject env, LispObject a1);
-extern "C" LispObject wrong_no_nb(LispObject env, LispObject a1, LispObject a2);
-extern "C" LispObject wrong_no_1(LispObject env, int nargs, ...);
-extern "C" LispObject wrong_no_2(LispObject env, int nargs, ...);
-extern "C" LispObject bad_specialn(LispObject env, int nargs, ...);
+extern "C" NORETURN LispObject error(int nargs, int code, ...);
+extern "C" NORETURN LispObject cerror(int nargs, int code1, int code2, ...);
+extern "C" NORETURN LispObject too_few_2(LispObject env, LispObject a1);
+extern "C" NORETURN LispObject too_many_1(LispObject env, LispObject a1, LispObject a2);
+extern "C" NORETURN LispObject wrong_no_0a(LispObject env, LispObject a1);
+extern "C" NORETURN LispObject wrong_no_0b(LispObject env, LispObject a1, LispObject a2);
+extern "C" NORETURN LispObject wrong_no_3a(LispObject env, LispObject a1);
+extern "C" NORETURN LispObject wrong_no_3b(LispObject env, LispObject a1, LispObject a2);
+extern "C" NORETURN LispObject wrong_no_na(LispObject env, LispObject a1);
+extern "C" NORETURN LispObject wrong_no_nb(LispObject env, LispObject a1, LispObject a2);
+extern "C" NORETURN LispObject wrong_no_1(LispObject env, int nargs, ...);
+extern "C" NORETURN LispObject wrong_no_2(LispObject env, int nargs, ...);
+extern "C" NORETURN LispObject bad_specialn(LispObject env, int nargs, ...);
 
-extern "C" LispObject aerror(const char *s);         // Called from C not Lisp
-extern "C" LispObject aerror0(const char *s);
-extern "C" LispObject aerror1(const char *s, LispObject a);
-extern "C" LispObject aerror2(const char *s, LispObject a, LispObject b);
-extern "C" void fatal_error(int code, ...);
+extern "C" NORETURN LispObject aerror(const char *s);         // Called from C not Lisp
+extern "C" NORETURN LispObject aerror0(const char *s);
+extern "C" NORETURN LispObject aerror1(const char *s, LispObject a);
+extern "C" NORETURN LispObject aerror2(const char *s, LispObject a, LispObject b);
+extern "C" NORETURN void fatal_error(int code, ...);
+
+// For the sahe of Common Lisp style treatment of (car nil) and (cdr nil)
+// I have these.
+extern "C" LispObject carerror(LispObject a);
+extern "C" LispObject cdrerror(LispObject a);
 
 //
 // Since miscflags is treated as a set of bits the issue of whether it

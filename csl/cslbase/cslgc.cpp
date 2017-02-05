@@ -1,4 +1,4 @@
-// File cslgc.cpp                         Copyright (c) Codemist, 1990-2016
+// File cslgc.cpp                         Copyright (c) Codemist, 1990-2017
 
 //
 // Garbage collection.
@@ -12,7 +12,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -47,352 +47,6 @@
 #ifdef WIN32
 #include <conio.h>
 #endif
-
-char valcause[40] = "None";
-
-void validate_failed()
-{
-    fprintf(stderr, "valcause = %s\n", valcause);
-    ensure_screen();
-    fflush(stdout);
-    fflush(stderr);
-    abort();
-}
-
-#ifdef DEBUG_VALIDATE
-
-//
-// The purpose of this code is to traverse the active data in the heap
-// checking that the structure is correct. It is for use when hunting
-// bugs that have led to memory corruption. It is only built if DEBUG
-// is defined, and so is not present in a production version. Because of
-// that I feel entitles to make it a bit profligate in memory use and
-// stack use. It will use bitmaps to record which bits of data have been
-// visited, and simple recursion in its traverse.
-//
-
-
-//
-// The scheme here will FAIL if invoked early on when a 32-bit image
-// has been re-loaded on a 64-bit platform, because in that situation
-// there can be some double-sized pages used. This really needs to be
-// resolved, but since the code here is merely for debugging purposes
-// I will consider that case later on when I run into trouble with it.
-//
-
-
-static const char *validate_why, *validate_file;
-static int validate_line, validate_line1;
-
-//
-// p is a (reference to a) cons cell. Verify it is within a
-// cons heap-page, set a mark bit for it and return 1 if it had
-// already been marked.
-//
-
-#define MAP_SIZE (((size_t)MAX_PAGES)*((size_t)((CSL_PAGE_SIZE+255)/256)))
-
-static int32_t (*heap_map)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256];
-
-static int bitmap_mark_cons(LispObject p)
-{   int32_t i;
-    if (!consp(p))
-    {   term_printf("\n%p is not a cons pointer\n", (void *)p);
-        term_printf("Validation for %s at line %d of file %s (%d)\n",
-                    validate_why, validate_line, validate_file, validate_line1);
-        validate_failed();
-    }
-    for (i=0; i<heap_pages_count; i++)
-    {   void *page = heap_pages[i];
-        char *base = (char *)quadword_align_up((intptr_t)page);
-        if ((intptr_t)base <= (intptr_t)p &&
-            (intptr_t)p <= (intptr_t)(base+CSL_PAGE_SIZE))
-        {   unsigned int offset = ((unsigned int)((char *)p - base)) >> 3;
-            int b = offset%32, w = offset/32;
-            int32_t m = 1 << b;
-            int32_t r = (*heap_map)[i][w];
-            (*heap_map)[i][w] |= m;
-            return (r & m) != 0;
-        }
-    }
-    term_printf("\nCons address %p not found in heap\n", (void *)p);
-    term_printf("Validation for %s at line %d of file %s (%d)\n",
-                validate_why, validate_line, validate_file, validate_line1);
-    term_printf("nil = %p\n", (void *)nil);
-    term_printf("Heap: %d\n", heap_pages_count);
-    for (i=0; i<heap_pages_count; i++)
-        term_printf("%d:  %p\n", i, (void *)heap_pages[i]);
-    term_printf("VecHeap: %d\n", vheap_pages_count);
-    for (i=0; i<vheap_pages_count; i++)
-        term_printf("%d:  %p\n", i, (void *)vheap_pages[i]);
-    validate_failed();
-    return 1;
-}
-
-//
-// p is a reference to something in the vector heap. Verify it is within a
-// vector heap-page, set a mark bit for it and return 1 if it had
-// already been marked.
-//
-
-static int32_t (*vecheap_map)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256];
-
-static int bitmap_mark_vec(LispObject p)
-{   int32_t i;
-    const char *info = "unknown";
-//
-// Check that the object is corectly tagged. Note that NIL must be
-// handled specially since although it is (sort of) a symbol it does not
-// live in any of the vheap_pages.
-//
-    if (!is_symbol(p) &&
-        !is_numbers(p) &&
-        !is_vector(p) &&
-        !is_bfloat(p))
-    {   term_printf("\n%p is not a vector pointer\n", (void *)p);
-        term_printf("Validation for %s at line %d of file %s (%d)\n",
-                    validate_why, validate_line, validate_file, validate_line1);
-        validate_failed();
-    }
-// Now I will check if the header looks good...
-    if (is_vector(p))
-    {   Header h = vechdr(p);
-        if (!is_vector_header_full_test(h))
-        {   term_printf("header of vector is wrong\n");
-            term_printf("Validation for %s at line %d of file %s (%d)\n",
-                        validate_why, validate_line, validate_file, validate_line1);
-            validate_failed();
-        }
-    }
-    else if (is_symbol(p))
-    {   Header h = qheader(p);
-        if (!is_symbol_header_full_test(h))
-        {   term_printf("symbol header is wrong at %" PRIxPTR "\n", h);
-            term_printf("Validation for %s at line %d of file %s (%d)\n",
-                        validate_why, validate_line, validate_file, validate_line1);
-            validate_failed();
-        }
-    }
-    {   LispObject x = p;
-        if (is_symbol(x)) x = qpname(x);
-        if (is_vector(x) && is_string(x)) info = &celt(x, 0);
-        else if (is_symbol(p)) info = "unnamed symbol";
-        else if (is_vector(x)) info = "vector";
-        else if (is_numbers(x)) info = "numbers";
-        else if (is_bfloat(x)) info = "boxed float";
-        else info = "huh???";
-    }
-    for (i=0; i<vheap_pages_count; i++)
-    {   void *page = vheap_pages[i];
-        char *base = (char *)quadword_align_up((intptr_t)page);
-        if ((intptr_t)base <= (intptr_t)(p & ~TAG_BITS) &&
-            (intptr_t)p <= (intptr_t)(base+CSL_PAGE_SIZE))
-        {   unsigned int offset =
-                ((unsigned int)((char *)(p & ~TAG_BITS) - base)) >> 3;
-            int b = offset%32, w = offset/32;
-            int32_t m = 1 << b;
-            int32_t r = (*vecheap_map)[i][w];
-            (*vecheap_map)[i][w] |= m;
-            return (r & m) != 0;
-        }
-    }
-    term_printf("\nVector address %p not found in heap\n", (void *)p);
-    term_printf("Validation for %s at line %d of file %s (%d)\n",
-                validate_why, validate_line, validate_file, validate_line1);
-    term_printf("info = %s\n", info);
-    term_printf("nil = %p\n", (void *)nil);
-    term_printf("Heap: %d\n", heap_pages_count);
-    for (i=0; i<heap_pages_count; i++)
-        term_printf("%d:  %p\n", i, (void *)heap_pages[i]);
-    term_printf("VecHeap: %d\n", vheap_pages_count);
-    for (i=0; i<vheap_pages_count; i++)
-        term_printf("%d:  %p\n", i, (void *)vheap_pages[i]);
-    validate_failed();
-    return 1;
-}
-
-//
-// Note that BPS items are stored as a sort of handle that encodes the
-// page number and the offset, so I do not need to do elaborate searches
-// to validate them. If I was keen I would take a BPS handle and decode it
-// and check that what it referred to at least gave some impression of
-// being as expected - specifically I could check that there was a BPS
-// header just before it. But I do not do that yet!
-//
-
-
-//
-// The next procedure is given a Lisp_Object and it checks that it is
-// at least vaguely sensible, It similarly inspects all items reachable
-// from that object.
-//
-
-static void validate(LispObject p, int line1)
-{
-// This code is activate when there is a suspected bug in the garbage
-// collector. A consequence is that it may be called when the heap is in
-// a corrupt state. The variable "info" here is set to give a small amount
-// of information about what has been being scanned, but is not inspected
-// by the code. It is present so that a debugger can check it following any
-// crash.
-    volatile const char *info = "unknown";
-    Header h = 0;
-    validate_line1 = line1;
-    size_t i = 0;
-    (void)info;   // Tends to prevent gcc from moaning about definition
-                  // without use.
-    if (p == nil) return;
-    if (p == 0)
-    {   term_printf("NULL item found\n");
-        term_printf("Validation for %s at line %d of file %s (%d)\n",
-                    validate_why, validate_line, validate_file, validate_line1);
-        validate_failed();
-    }
-//
-// The code here is going to be simply recursive so that if any problem
-// is detected I have maximum information on the stack about where it
-// came from. But note that this could use a LOT of stack....
-//
-    if (is_immed_or_cons(p))
-    {   if (!is_cons(p)) return;
-        info = "cons cell";
-        if (bitmap_mark_cons(p)) return;
-        validate(qcar(p), __LINE__);
-        validate(qcdr(p), __LINE__);
-        return;
-    }
-// here we have a vector of some sort
-    switch ((int)p & TAG_BITS)
-{       default:            // The case-list is exhaustive!
-        case TAG_CONS:      // Already processed
-        case TAG_FIXNUM:    // Invalid here
-// Note that XTAG_SFLOAT is just TAG_FIXNUM with the 0x08 bit set too...
-//      case XTAG_SFLOAT:   // Invalid here
-        case TAG_HDR_IMMED: // Invalid here
-            term_printf("\nBad object in VALIDATE (%.8lx)\n", (long)p);
-            term_printf("Validation for %s at line %d of file %s (%d)\n",
-                        validate_why, validate_line, validate_file, validate_line1);
-            validate_failed();
-
-        case TAG_SYMBOL:
-            info = "symbol";
-            if (is_vector(qpname(p)) &&
-                is_string(qpname(p))) info = &celt(qpname(p), 0);
-            if (bitmap_mark_vec(p)) return;
-            validate(qvalue(p), __LINE__);
-            validate(qenv(p), __LINE__);
-            validate(qpname(p), __LINE__);
-            validate(qpackage(p), __LINE__);
-            validate(qplist(p), __LINE__);
-            return;
-
-        case TAG_NUMBERS:
-            info = "numbers";
-            if (bitmap_mark_vec(p)) return;
-            h = numhdr(p);
-            if (is_bignum_header(h)) return;
-            validate(real_part(p), __LINE__);
-            validate(imag_part(p), __LINE__);
-            return;
-
-        case TAG_BOXFLOAT:
-            info = "boxfloat";
-            if (bitmap_mark_vec(p)) return;
-            return;
-
-        case TAG_VECTOR:
-            info = "vector";
-            if (bitmap_mark_vec(p)) return;
-            h = vechdr(p);
-            if (vector_holds_binary(h)) return;  // strings & bitvecs
-            info = "lispvector";
-            i = (intptr_t)doubleword_align_up(length_of_header(h));
-            if (is_mixed_header(h))
-                i = 4*CELL;  // Only use first few pointers
-            while (i >= 2*CELL)
-            {   i -= CELL;
-                validate(*(LispObject *)((char *)p - TAG_VECTOR + i), __LINE__);
-            }
-            return;
-    }
-}
-
-void validate_all(const char *why, int line, const char *file)
-{   LispObject *sp = NULL;
-    size_t i;
-    validate_why = why;
-    validate_line = line;
-    validate_line1 = 0;
-    validate_file = file;   // In case a diagnostic is needed
-//  term_printf("Validate heap for %s at line %d of %s\n", why, line, file);
-    if (heap_map == NULL)
-    {   if ((heap_map =
-                (int32_t (*)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256])
-                calloc(MAP_SIZE, 1)) == NULL)
-        {   term_printf("Unable to allocate %dM (%x) space for heap map\n",
-                        (int)(MAP_SIZE/(1024*1024)), (int)(MAP_SIZE/(1024*1024)));
-            return;
-        }
-    }
-    if (vecheap_map == NULL)
-    {   if ((vecheap_map =
-                 (int32_t (*)[MAX_PAGES][(CSL_PAGE_SIZE+255)/256])
-                 calloc(MAP_SIZE, 1)) == NULL)
-        {   term_printf("Unable to allocate %dM (%x) space for vecheap map\n",
-                        (int)(MAP_SIZE/(1024*1024)), (int)(MAP_SIZE/(1024*1024)));
-            return;
-        }
-    }
-//
-// The list bases to check from are
-// (a) nil    [NB: validate(nil) would be ineffective],
-// (b) the special ones addressed relative to nil,
-// (c) everything on the Lisp stack,
-// (d) the package structure,
-//
-    sprintf(valcause, "plist nil\n");
-    validate(qplist(nil), __LINE__);
-    sprintf(valcause, "pname nil\n");
-    validate(qpname(nil), __LINE__);
-    sprintf(valcause, "fastgets nil\n");
-    validate(qfastgets(nil), __LINE__);
-    sprintf(valcause, "package nil\n");
-    validate(qpackage(nil), __LINE__);
-
-    for (i = first_nil_offset; i<last_nil_offset; i++)
-    {   sprintf(valcause, "BASE[%" PRIuPTR "]\n", (uintptr_t)i);
-        validate(BASE[i], __LINE__);
-    }
-    for (sp=stack; sp>(LispObject *)stackbase; sp--)
-    {   sprintf(valcause, "stack[%" PRIuPTR "]\n", (uintptr_t)(stack-sp));
-        validate(*sp, __LINE__);
-    }
-    if (repeat_heap != NULL)
-    {   for (i=1; i<=repeat_count; i++)
-            validate(repeat_heap[i], __LINE__);
-    }
-
-    sprintf(valcause, "eq_hash_tabled\n");
-    validate(eq_hash_tables, __LINE__);
-    sprintf(valcause, "equal_hash_tabled\n");
-    validate(equal_hash_tables, __LINE__);
-    sprintf(valcause, "validation complete\n");
-//  term_printf("Validation complete\n");
-}
-
-
-
-int check_env(LispObject env)
-{
-//
-// Return 1 if environment call of something compiled into C looks bad.
-//
-    if (env == 0 ||
-        !is_vector(env)) return 1;
-    return 0;
-}
-
-#endif // DEBUG_VALIDATE: the validate code
 
 int gc_number = 0;
 int reclaim_trap_count = -1;
@@ -526,7 +180,7 @@ static void copy(LispObject *p)
                         qcar(fr) = SPID_GCMARK;
                         if (pages_count == 0)
                         {   term_printf("pages_count = 0 in GC\n");
-                            validate_failed();
+                            my_abort();
                             return;
                         }
                         p = pages[--pages_count];
@@ -600,7 +254,7 @@ static void copy(LispObject *p)
                         qcar(vfr) = 0;          // sentinel value
                         if (pages_count == 0)
                         {   term_printf("pages_count = 0 in GC\n");
-                            validate_failed();
+                            my_abort();
                             return;
                         }
                         p1 = pages[--pages_count];
@@ -825,11 +479,10 @@ static int profile_cf(const void *a, const void *b)
 // The mapstore function is only interested in symbols. But here it works by
 // expecting there to be a separate "vector heap" that contains only items
 // that have header words, and that these header words will all be present and
-// correct with no gaps in the data. I *BELIEVE* this and validate() are the
+// correct with no gaps in the data. I *BELIEVE* this is the
 // only places where I still rely on keeping CONS and VECTOR heaps separate
 // and where I rely on the vector heap always having neat header words
-// immediately after every object... And validate() is "only" a debugging aid
-// and could be discarded.
+// immediately after every object...
 
 
 LispObject Lmapstore(LispObject env, LispObject a)
@@ -858,8 +511,8 @@ LispObject Lmapstore(LispObject env, LispObject a)
         buffn = 100;
     }
     if ((what & 2) != 0)
-    {   Lgc0(nil, 0); // Force GC at start to avoid one in the middle
-        if (exception_pending()) return nil;
+    {   if_error(Lgc0(nil, 0), // Force GC at start to avoid one in the middle
+                 return nil);
         gcn = gc_number;
     }
 
@@ -944,11 +597,9 @@ LispObject Lmapstore(LispObject env, LispObject a)
                                     w1 = list3((LispObject)(low + TAG_SYMBOL),
                                                fixnum_of_int(clen),
                                                make_lisp_integer64(n));
-                                    if (exception_pending() || gcn != gc_number)
-                                        return nil;
+                                    if (gcn != gc_number) return nil;
                                     res = cons(w1, res);
-                                    if (exception_pending() || gcn != gc_number)
-                                        return nil;
+                                    if (gcn != gc_number) return nil;
                                 }
                             }
 //
@@ -1101,8 +752,6 @@ static void lose_dead_hashtables(void)
     }
 }
 
-#ifdef HAVE_FWIN
-
 //
 // I need a way that a thread that is not synchronised with this one can
 // generate a Lisp-level interrupt. I achieve that by
@@ -1136,8 +785,6 @@ int async_interrupt(int type)
     }
     return prev;
 }
-
-#endif // HAVE_FWIN
 
 static void report_at_end()
 {   int n = heap_pages_count + vheap_pages_count;
@@ -1271,7 +918,6 @@ LispObject use_gchook(LispObject p, LispObject arg)
         if (symbolp(g) && g != unset_var && g != nil)
         {   push(p);
             Lapply1(nil, g, arg);  // Call the hook
-            errexitn(1);      // the hook function failed
             pop(p);
         }
     }
@@ -1296,9 +942,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 #ifdef DEBUG_GC
     term_printf("Start of a garbage collection %d\n", gc_number);
 #endif // DEBUG_GC
-#ifdef DEBUG_VALIDATE
-    validate_all("start of gc", __LINE__, __FILE__);
-#endif
 #ifdef CONSERVATIVE
 //
 // How do I know that all callee-save registers are on the stack by the
@@ -1318,8 +961,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 //    printf("(*)"); fflush(stdout);  // while I debug!
 #endif // WIN32
     push_clock(); t0 = base_time;
-
-#ifdef HAVE_FWIN
 //
 // Life is a bit horrid here. I can have two significantly different sorts of
 // thing that cause this soft-GC to happen under FWIN. One is when I am in
@@ -1352,7 +993,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // and there could be "genuine" need for garbage collection or stack overflow
 // processing at any stage.
 //
-        if (exception_pending()) nil = nil ^ 1;
         if (async_type == TICK_INTERRUPT)
         {   long int t = (long int)(100.0 * consolidated_time[0]);
             long int gct = (long int)(100.0 * gc_time);
@@ -1365,9 +1005,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             if ((time_limit >= 0 && time_now > time_limit) ||
                 (io_limit >= 0 && io_now > io_limit))
                 return resource_exceeded();
-#ifdef DEBUG_VALIDATE
-            validate_all("end of gc", __LINE__, __FILE__);
-#endif
             return onevalue(p);
         }
 //
@@ -1379,62 +1016,31 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             miscflags |= BACKTRACE_MSG_BITS;
         else miscflags &= ~BACKTRACE_MSG_BITS;
         async_type = QUERY_INTERRUPT;     // accepted!
-#ifdef DEBUG_VALIDATE
-        validate_all("end of gc", __LINE__, __FILE__);
-#endif
         return interrupted(p);
     }
     else
-#else // HAVE_FWIN
-    if (interrupt_pending)
-    {   if (tick_pending)
-        {   tick_pending = 0;
-            heaplimit = saveheaplimit;
-            vheaplimit = savevheaplimit;
-            stacklimit = savestacklimit;
-        }
-        tidy_fringes();
-        interrupt_pending = false;
-        pop_clock();
-#ifdef DEBUG_VALIDATE
-        validate_all("end of gc", __LINE__, __FILE__);
-#endif
-        time_now = (int)consolidated_time[0];
-        if ((time_limit >= 0 && time_now > time_limit) ||
-            (io_limit >= 0 && io_now > io_limit))
-            return resource_exceeded();
-        return interrupted(p);
-    }
-#endif // HAVE_FWIN
     {   tidy_fringes();
         if (stg_class != GC_PRESERVE &&
             stg_class != GC_USER_HARD &&
             reset_limit_registers(vheap_need, native_need, true))
         {   already_in_gc = false;
             pop_clock();
-#ifdef DEBUG_VALIDATE
-            validate_all("end of gc", __LINE__, __FILE__);
-#endif
             if (space_limit >= 0 && space_now > space_limit)
                 return resource_exceeded();
-#ifndef OLD_GCHOOK_CODE
 //
 // I have "soft" garbage collections - perhaps fairly frequently. I will
-// only call the GC hook function around once every 30 seconds to avoid undue
+// only call the GC hook function around once every 5 seconds to avoid undue
 // overhead in it.
 //
             if (!prev_consolidated_set)
             {   prev_consolidated = consolidated_time[0];
                 prev_consolidated_set = 1;
             }
-            if (consolidated_time[0] > prev_consolidated + 30.0)
+            if (consolidated_time[0] > prev_consolidated + 5.0)
             {   prev_consolidated = consolidated_time[0];
                 return use_gchook(p, nil); // Soft GC
             }
             return onevalue(p);
-#else
-            return use_gchook(p, nil);
-#endif
         }
     }
 
@@ -1442,16 +1048,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     {   if (stacklimit != stackbase)
         {   stacklimit = &stacklimit[50];  // Allow a bit of slack
             pop_clock();
-            return error(0, err_stack_overflow);
+            error(0, err_stack_overflow);
         }
     }
-
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-    identify_page_types();
-    memory_comment(4);
-#endif // CHECK_ONLY
-#endif // MEMORY_TRACE
 
 //
 // There are parts of the code in setup/restart where perhaps things are not
@@ -1469,9 +1068,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     push(p);
 
     gc_number++;
-#ifdef DEBUG_VALIDATE
-    validate_all("continuation of gc", __LINE__, __FILE__);
-#endif
 
 #ifdef WINDOW_SYSTEM
 //
@@ -1530,21 +1126,17 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // to date.
 //
     ensure_screen();
-    if (exception_pending())
-    {   stop_after_gc = 1;
-        flip_exception();
-    }
     if (spool_file != NULL) fflush(spool_file);
     if (gc_number == reclaim_trap_count)
     {   reclaim_trap_count = gc_number - 1;
         trace_printf("\nReclaim trap count reached...\n");
-        return aerror("reclaim-trap-count");
+        aerror("reclaim-trap-count");
     }
     if (reclaim_stack_limit != 0 &&
         (uintptr_t)&t0 + reclaim_stack_limit < (uintptr_t)C_stack_base)
     {   reclaim_stack_limit = 0;
         trace_printf("\nReclaim stack limit reached...\n");
-        return aerror("reclaim-stack-limit");
+        aerror("reclaim-stack-limit");
     }
 
     for (int i=0; i<LOG2_VECTOR_CHUNK_WORDS+1; i++)
@@ -1562,10 +1154,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 #endif // CONSERVATIVE
 
     copy_into_nilseg(false);
-#ifdef DEBUG_VALIDATE
-    printf("Validating at start of GC\n");
-    validate_all("gc start", __LINE__, __FILE__);
-#endif
 
     cons_cells = symbol_heads = strings = user_vectors =
             big_numbers = box_floats = bytestreams = other_mem =
@@ -1742,10 +1330,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     gc_time += pop_clock();
     t2 = base_time;
 
-#ifdef DEBUG_VALIDATE
-    validate_all("gc end", __LINE__, __FILE__);
-#endif
-
 #ifdef DEBUG_WITH_HASH
         for (sp=stack; sp>(LispObject *)stackbase; sp--)
         {   int n = sp - (LispObject *)stackbase;
@@ -1787,7 +1371,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 
     pop(p);
 
-#ifndef MEMORY_TRACE
 //
 // Here I grab more memory (if I am allowed to).
 // An initial version here, and one still suitable on machines that will
@@ -1800,11 +1383,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // available memory may cause a crash) I do not try this operation.  The
 // aim of keeping the heap less than half full is an heuristic and could be
 // adjusted on the basis of experience with this code.
-// The "+2" at the end of calculating the ideal heap size is intended
-// to keep us (mostly) in the copying GC domain.  If it is omitted the
-// heap tends to stay just 25% full and sliding GC is used. Overall this is
-// roughly as expensive as copying, but it is more disruptive since it comes
-// in larger gulps.
 // On systems where it is possible to measure the amount of available
 // real memory more sophisticated calculations may be possible.
 //
@@ -1838,7 +1416,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             else pages[pages_count++] = page;
         }
     }
-#endif // MEMORY_TRACE
     if (!reset_limit_registers(vheap_need, native_need, false))
     {   if (stack < stacklimit || stacklimit != stackbase)
         {   report_at_end();
@@ -1847,23 +1424,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         }
     }
     report_at_end();
-#ifdef DEBUG_VALIDATE
-    validate_all("end of gc", __LINE__, __FILE__);
-#endif
-    if (stop_after_gc)
-    {
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-        memory_comment(15);
-#endif // CHECK_ONLY
-#endif // MEMORY_TRACE
-        return Lstop(nil, fixnum_of_int(0));
-    }
-#ifdef MEMORY_TRACE
-#ifndef CHECK_ONLY
-    memory_comment(15);
-#endif // CHECK_ONLY
-#endif // MEMORY_TRACE
+    if (stop_after_gc) return Lstop(nil, fixnum_of_int(0));
     if (interrupt_pending)
     {   interrupt_pending = false;
         already_in_gc = false;
@@ -1875,9 +1436,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         (time_limit >= 0 && time_now > time_limit) ||
         (io_limit >= 0 && io_now > io_limit))
         return resource_exceeded();
-#ifndef OLD_GCHOOK_CODE
     prev_consolidated = consolidated_time[0];
-#endif
     return use_gchook(p, lisp_true);
 }
 

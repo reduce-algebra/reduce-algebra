@@ -1,4 +1,4 @@
-//  arith11.cpp                           Copyright (C) 1990-2016 Codemist
+//  arith11.cpp                           Copyright (C) 1990-2017 Codemist
 
 //
 // Arithmetic functions.
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -45,104 +45,101 @@
 
 
 LispObject rembi(LispObject a, LispObject b)
-{   if (b == fixnum_of_int(0)) return aerror2("bad arg for remainder", a, b);
+{   if (b == fixnum_of_int(0)) aerror2("bad arg for remainder", a, b);
     else if (b == fixnum_of_int(1) ||
              b == fixnum_of_int(-1)) return fixnum_of_int(0);
     intptr_t n = int_of_fixnum(b);
     if (signed31_in_ptr(n))
     {   quotbn1(a, n);
-        errexit();
         return fixnum_of_int(nwork);
     }
     quotbb(a, make_fake_bignum(n), QUOTBB_REMAINDER_NEEDED);
-    errexit();
     return mv_2;
 }
 
 LispObject rembb(LispObject a, LispObject b)
 {   quotbb(a, b, QUOTBB_REMAINDER_NEEDED);
-    errexit();
     return mv_2;
 }
 
 static LispObject remis(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remir(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remif(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remsi(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remsb(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remsr(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remsf(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject rembs(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject rembr(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject rembf(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remri(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remrs(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remrb(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remrr(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remrf(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remfi(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remfs(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remfb(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remfr(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 static LispObject remff(LispObject a, LispObject b)
-{   return aerror2("bad arg for remainder", a, b);
+{   aerror2("bad arg for remainder", a, b);
 }
 
 LispObject Cremainder(LispObject a, LispObject b)
@@ -156,7 +153,7 @@ LispObject Cremainder(LispObject a, LispObject b)
 // make efficient.
 //
                     if (b == fixnum_of_int(0))
-                        return aerror2("bad arg for remainder", a, b);
+                        aerror2("bad arg for remainder", a, b);
                     // No overflow is possible in a remaindering operation
                     {   intptr_t aa = int_of_fixnum(a);
                         intptr_t bb = int_of_fixnum(b);
@@ -207,7 +204,7 @@ LispObject Cremainder(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return remir(a, b);
                         default:
-                            return aerror1("Bad arg for remainder",  b);
+                            aerror1("Bad arg for remainder",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
@@ -221,7 +218,7 @@ LispObject Cremainder(LispObject a, LispObject b)
 //      }
 //
                 default:
-                    return aerror1("Bad arg for remainder",  b);
+                    aerror1("Bad arg for remainder",  b);
             }
 #ifdef SHORT_FLOAT
         case XTAG_SFLOAT:
@@ -243,13 +240,13 @@ LispObject Cremainder(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return remsr(a, b);
                         default:
-                            return aerror1("Bad arg for remainder",  b);
+                            aerror1("Bad arg for remainder",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return remsf(a, b);
                 default:
-                    return aerror1("Bad arg for remainder",  b);
+                    aerror1("Bad arg for remainder",  b);
             }
 #endif
         case TAG_NUMBERS:
@@ -271,13 +268,13 @@ LispObject Cremainder(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return rembr(a, b);
                                 default:
-                                    return aerror1("Bad arg for remainder",  b);
+                                    aerror1("Bad arg for remainder",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return rembf(a, b);
                         default:
-                            return aerror1("Bad arg for remainder",  b);
+                            aerror1("Bad arg for remainder",  b);
                     }
                 case TYPE_RATNUM:
                     switch ((int)b & TAG_BITS)
@@ -295,15 +292,15 @@ LispObject Cremainder(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return remrr(a, b);
                                 default:
-                                    return aerror1("Bad arg for remainder",  b);
+                                    aerror1("Bad arg for remainder",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return remrf(a, b);
                         default:
-                            return aerror1("Bad arg for remainder",  b);
+                            aerror1("Bad arg for remainder",  b);
                     }
-                default:    return aerror1("Bad arg for remainder",  a);
+                default:    aerror1("Bad arg for remainder",  a);
             }
         }
         case TAG_BOXFLOAT:
@@ -337,16 +334,16 @@ LispObject Cremainder(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return remfr(a, b);
                         default:
-                            return aerror1("Bad arg for remainder",  b);
+                            aerror1("Bad arg for remainder",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return remff(a, b);
                 default:
-                    return aerror1("Bad arg for remainder",  b);
+                    aerror1("Bad arg for remainder",  b);
             }
         default:
-            return aerror1("Bad arg for remainder",  a);
+            aerror1("Bad arg for remainder",  a);
     }
 }
 
@@ -364,19 +361,11 @@ LispObject Cremainder(LispObject a, LispObject b)
 
 static LispObject mod_by_rem(LispObject a, LispObject b)
 {   bool sb = minusp(b);
-    errexit();
     a = Cremainder(a, b);   // Repeats dispatch on argument type. Sorry
-    errexit();
     if (sb)
-    {   if (plusp(a))
-        {   errexit();
-            a = plus2(a, b);
-        }
+    {   if (plusp(a)) a = plus2(a, b);
     }
-    else if (minusp(a))
-    {   errexit();
-        a = plus2(a, b);
-    }
+    else if (minusp(a)) a = plus2(a, b);
     return a;
 }
 
@@ -385,13 +374,12 @@ static LispObject modib(LispObject a, LispObject b)
 }
 
 static LispObject modbi(LispObject a, LispObject b)
-{   if (b == fixnum_of_int(0)) return aerror2("bad arg for mod", a, b);
+{   if (b == fixnum_of_int(0)) aerror2("bad arg for mod", a, b);
     if (b == fixnum_of_int(1) || b == fixnum_of_int(-1))
         return fixnum_of_int(0);
     intptr_t n = int_of_fixnum(b);
     if (signed31_in_ptr(n))
     {   quotbn1(a, n);
-        errexit();
 // The modulus must have the same sign as b (ie as n).
         if (n < 0)
         {   if (nwork > 0) nwork += n;
@@ -400,7 +388,6 @@ static LispObject modbi(LispObject a, LispObject b)
         return fixnum_of_int(nwork);
     }
     quotbb(a, make_fake_bignum(n), QUOTBB_REMAINDER_NEEDED);
-    errexit();
 // here b had been a fixnum and the absolute value of the remainder in mv_2
 // must be strictly smaller than |b|. And if I need to do and adjustment to
 // turn remainder into modulus that will still leave a value that will be
@@ -508,7 +495,7 @@ LispObject modulus(LispObject a, LispObject b)
 //
                 {   intptr_t p = int_of_fixnum(a);
                     intptr_t q = int_of_fixnum(b);
-                    if (q == 0) return aerror2("bad arg for mod", a, b);
+                    if (q == 0) aerror2("bad arg for mod", a, b);
                     p = p % q;
                     if (q < 0)
                     {   if (p > 0) p += q;
@@ -535,13 +522,13 @@ LispObject modulus(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return modir(a, b);
                         default:
-                            return aerror1("Bad arg for mod",  b);
+                            aerror1("Bad arg for mod",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return modif(a, b);
                 default:
-                    return aerror1("Bad arg for mod",  b);
+                    aerror1("Bad arg for mod",  b);
             }
 #ifdef SHORT_FLOAT
         case XTAG_SFLOAT:
@@ -563,13 +550,13 @@ LispObject modulus(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return modsr(a, b);
                         default:
-                            return aerror1("Bad arg for mod",  b);
+                            aerror1("Bad arg for mod",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return modsf(a, b);
                 default:
-                    return aerror1("Bad arg for mod",  b);
+                    aerror1("Bad arg for mod",  b);
             }
 #endif
         case TAG_NUMBERS:
@@ -591,13 +578,13 @@ LispObject modulus(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return modbr(a, b);
                                 default:
-                                    return aerror1("Bad arg for mod",  b);
+                                    aerror1("Bad arg for mod",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return modbf(a, b);
                         default:
-                            return aerror1("Bad arg for mod",  b);
+                            aerror1("Bad arg for mod",  b);
                     }
                 case TYPE_RATNUM:
                     switch ((int)b & TAG_BITS)
@@ -615,15 +602,15 @@ LispObject modulus(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return modrr(a, b);
                                 default:
-                                    return aerror1("Bad arg for mod",  b);
+                                    aerror1("Bad arg for mod",  b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return modrf(a, b);
                         default:
-                            return aerror1("Bad arg for mod",  b);
+                            aerror1("Bad arg for mod",  b);
                     }
-                default:    return aerror1("Bad arg for mod",  a);
+                default:    aerror1("Bad arg for mod",  a);
             }
         }
         case TAG_BOXFLOAT:
@@ -642,16 +629,16 @@ LispObject modulus(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return modfr(a, b);
                         default:
-                            return aerror1("Bad arg for mod",  b);
+                            aerror1("Bad arg for mod",  b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return ccl_modff(a, b);
                 default:
-                    return aerror1("Bad arg for mod",  b);
+                    aerror1("Bad arg for mod",  b);
             }
         default:
-            return aerror1("Bad arg for mod",  a);
+            aerror1("Bad arg for mod",  a);
     }
 }
 

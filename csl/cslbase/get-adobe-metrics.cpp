@@ -1,6 +1,6 @@
-//
-// get-adobe-metrics.cpp
-//
+// get-adobe-metrics.cpp                   Copyright (C) 2003-2017 Codemist
+
+
 // This extracts just enough font information from a bunch of *.afm
 // files that I can render Postscript properly from FXDCPostscriptPrinter.cpp
 //
@@ -23,7 +23,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
     fprintf(out, " * ftp.adobe.com/pub/adobe/type/win/all/afmfiles/base35\n");
     fprintf(out, " * and www.tug.org/teTeX.\n");
     fprintf(out, " */\n");
-    fprintf(out, "\n\n/* Signature: 2b9130e7 22-Nov-2003 */\n\n\n");
+    fprintf(out, "\n\n\n\n");
     fprintf(out, "typedef struct font_info {\n");
     fprintf(out, "   char *name;\n");
     fprintf(out, "   short int isfixed, fontwidth, maxleftbearing, maxrightbearing;\n");

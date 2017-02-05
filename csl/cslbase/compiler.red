@@ -1,10 +1,10 @@
-%  
+%
 % Compiler from Lisp into byte-codes for use with CSL/CCL.
-%       Copyright (C) Codemist, 1990-2016
+%       Copyright (C) Codemist, 1990-2017
 %
 
 %%
-%% Copyright (C) 2016,              A C Norman, Codemist
+%% Copyright (C) 2017,                                 A C Norman, Codemist
 %%
 %% Redistribution and use in source and binary forms, with or without
 %% modification, are permitted provided that the following conditions are
@@ -33,22 +33,10 @@
 %%
 
 
-% At one stage I had an option here that compiled Lisp into C,
-% dynamically invoked a C compiler to turn that into a loadable
-% module (ie on Windows a DLL), and then loaded that module in. All that
-% was quite delicate (perhaps especially arranging that the DLL could be
-% loaded and that it had access to all the internal parts of CSL it
-% needed). The cost of writing out C code and invoking gcc to process it
-% was also bad. So I have removed all traces of that experiment apart from
-% this comment. Anybody who wants to try following that path again can recover
-% old versions of this file from the subversion repository to see exactly
-% what I used to do.
-
-
 % Pretty-well all internal functions defined here and all fluid and
 % global variables have been written with names of the form s!:xxx. This
 % might keep them away from most users.  In Common Lisp I may want to put
-% them all in a package called "s".
+% them all in a separate package.
 
 global '(s!:opcodelist);
 
@@ -432,12 +420,6 @@ if not boundp '!*carcheckflag then << % safety/speed control
 if not boundp '!*r2i then << % apply Recursion to Iteration conversions
    fluid '(!*r2i);
    !*r2i := t >>;
-
-% If this flag is set then I will generate C code for the functions that
-% I compile as well as the usual bytecoded stuff for the FASL file.
-% Making it all link up is a slight delicacy! Indeed this scheme worked,
-% but the overhead of calling the C compiler and the delicacy of then
-% creating DLLs and linking to them made it pretty unattractive. So
 
 fluid '(s!:current_function s!:current_label s!:current_block s!:current_size
         s!:current_procedure s!:other_defs s!:lexical_env s!:has_closure
@@ -1876,6 +1858,8 @@ put('ncons, 's!:helpeasy, function s!:easyifarg);
 
 put('car, 's!:helpeasy, function s!:easyifarg);
 put('cdr, 's!:helpeasy, function s!:easyifarg);
+put('qcar, 's!:helpeasy, function s!:easyifarg);
+put('qcdr, 's!:helpeasy, function s!:easyifarg);
 put('caar, 's!:helpeasy, function s!:easyifarg);
 put('cadr, 's!:helpeasy, function s!:easyifarg);
 put('cdar, 's!:helpeasy, function s!:easyifarg);
@@ -1963,7 +1947,7 @@ symbolic procedure s!:residual_local_decs(d, w);
   begin
     for each z in d do
       if eqcar(z, 'special) then for each v in cdr z do
-         if not fluidp v and not globalp v then <<
+         if not fluidp v and not globalp v and not keywordp v then <<
             make!-special v;
             w := v . w >>;
     return w
@@ -2023,7 +2007,9 @@ symbolic procedure s!:comlambda(bvl, body, args, env, context);
     w := nil;
     for each v in bvl do w := s!:instate_local_decs(v, local_decs, w);
     for each v in bvl do <<
-       if fluidp v or globalp v then begin
+       if globalp v or keywordp v then
+           error(0, list("attempt to bind global", v));
+       if fluidp v then begin
           scalar g;
           g := gensym();
           nbvl := g . nbvl;
@@ -2175,7 +2161,7 @@ symbolic procedure s!:comfunction(x, env, context);
 put('function, 's!:compfn, function s!:comfunction);
 
 symbolic procedure s!:should_be_fluid x;
-   if not (fluidp x or globalp x) then <<
+   if not (fluidp x or globalp x or keywordp x) then <<
        if !*pwrds then <<  % The !*pwrds flag controls this verbosity too
           if posn() neq 0 then terpri();
           princ "+++ ";
@@ -2351,7 +2337,7 @@ s!:caarlocs := s!:vecof '(CAARLOC0 CAARLOC1 CAARLOC2 CAARLOC3);
 
 flag('(plus2 times2 eq equal), 's!:symmetric);
 
-flag('(car cdr caar cadr cdar cddr
+flag('(qcar qcdr car cdr caar cadr cdar cddr
        ncons add1 sub1 numberp length), 's!:onearg);
 
 flag('(cons xcons list2 get flagp plus2 difference times2
@@ -2399,10 +2385,10 @@ symbolic procedure s!:comcall(x, env, context);
          s!:outopcode1lit('CALL0, fn, env);
          if fn neq s!:current_function then s!:maybe_values := t >>
     else if nargs = 1 then <<
-       if fn = 'car and
+       if (fn = 'car or fn = 'qcar) and
           (w2 := s!:islocal(car args, env)) < 12 then
           s!:outopcode0(getv(s!:carlocs, w2), list('carloc, car args))
-       else if fn = 'cdr and
+       else if (fn = 'cdr or fn = 'qcdr) and
           (w2 := s!:islocal(car args, env)) < 6 then
           s!:outopcode0(getv(s!:cdrlocs, w2), list('cdrloc, car args))
        else if fn = 'caar and
@@ -2936,16 +2922,8 @@ symbolic procedure s!:comprog(x, env, context);
     n := 0;
     for each v in cadr x do w := s!:instate_local_decs(v, local_decs, w);
     for each v in cadr x do <<
-       if globalp v then <<
-          if !*pwrds then <<
-             if posn() neq 0 then terpri();
-             princ "+++++ global ";
-             prin v;
-             princ " converted to fluid";
-             terpri() >>;
- % convert from global to fluid so that I can proceed
-          unglobal list v;
-          fluid list v >>;
+       if globalp v or keywordp v then
+          error(0, list("attempt to bind global or keyword", v));
        if fluidp v then fluids := v . fluids
        else << n := n + 1; bvl := v . bvl >> >>;
 % save the environment that existed outside the prog so I can restore it later
@@ -3100,10 +3078,12 @@ put('catch, 's!:compfn, 's!:comcatch);
 
 symbolic procedure s!:comthrow(x, env, context);
   begin
+    if null cdr x then error(0, "throw needs to provide a tag");
     s!:comval(cadr x, env, 1);          % The tag
     s!:outopcode0('PUSH, '(PUSH));
     rplacd(env, 0 . cdr env);
-    s!:comval(caddr x, env, 1);         % value to be returned
+    % value to be returned defaults to nil if not provided
+    s!:comval(if cddr x then caddr x else nil, env, 1);
     s!:outopcode0('THROW, '(THROW));    % tag is on the stack
     rplacd(env, cddr env)
   end;
@@ -4937,8 +4917,10 @@ symbolic procedure s!:r2i3(name, args, body, lab, v);
       list('setq, v2, Q),
       lab3,
       list('cond, list(list('null, v1), list('return, v2))),
-      list('setq, v2, list(g, list('car, v1), v2)),
-      list('setq, v1, list('cdr, v1)),
+% because I just made the list I am confident that the car and cdr calls
+% here will be valid, so I can avoid tests in them.
+      list('setq, v2, list(g, list('qcar, v1), v2)),
+      list('setq, v1, list('qcdr, v1)),
       list('go, lab3));
 %   prettyprint list('de, name, args, w);   % just print it for now
 %   printc "]]]]]]]";
@@ -5019,19 +5001,9 @@ symbolic procedure s!:compile1(name, args, body, s!:lexical_env);
 % presented to me on the stack.
     oargs := reverse oargs;   % Optional args, possibly with initforms
                               % oinit is true if there are initforms.
-% Now I will TRY to be kind.  If any variable mentioned in the argument list
-% is a GLOBAL I will convert it to FLUID, but tell the user that that
-% has happened.
-    for each v in append(svars, args) do <<
-       if globalp v then <<
-           if !*pwrds then <<
-              if posn() neq 0 then terpri();
-              princ "+++++ global ";
-              prin v;
-              princ " converted to fluid";
-              terpri() >>;
-           unglobal list v;
-           fluid list v >> >>;
+    for each v in append(svars, args) do
+       if globalp v or keywordp v then
+           error(0, list("attempt to bind global or keyword", v));
     if oinit then
        return s!:compile2(name, nargs, nopts,
                           args, oargs, restarg, body, local_decs,
@@ -5272,8 +5244,8 @@ symbolic procedure compile!-all;
 % The 'eval and 'ignore flags are to help the RLISP interface to the
 % fasl mechanism
 
-flag('(rds deflist flag fluid global
-       remprop remflag unfluid
+flag('(rds deflist flag fluid global keyword
+       remprop remflag unfluid unkeyword
        unglobal dm defmacro carcheck
        faslend c_end), 'eval);
 

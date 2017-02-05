@@ -9,8 +9,6 @@
 // see associated file FXDCNativePrinter.cpp for commentary etc. and a
 // more careful explanation of the licensing situation.
 
-/* Signature: 3c7a0fa4 17-May-2008 */
-
 
 #ifndef FXDCNATIVEPRINTER_H
 #define FXDCNATIVEPRINTER_H

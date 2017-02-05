@@ -1,4 +1,4 @@
-/* tags.h                               Copyright (C) Codemist 1990-2016 */
+// tags.h                                  Copyright (C) Codemist 1990-2017
 
 //
 //   Data-structure and tag bit definitions, also common C macros
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -231,19 +231,6 @@ typedef intptr_t LispObject;
 #define MOST_POSITIVE_FIXNUM fixnum_of_int(MOST_POSITIVE_FIXVAL)
 #define MOST_NEGATIVE_FIXNUM fixnum_of_int(MOST_NEGATIVE_FIXVAL)
 
-//
-// Exceptions are marked by setting a bit in NIL.  The following macros
-// provide an abstraction of this interface.  At one stage I used the
-// most significant bit in nil, but now for various reasons I have concluded
-// that it is nicer to use the least significant bit. Note that this scheme
-// means that TAG_SYMBOL must be even!
-//
-#define exception_pending() (((int)nil & 1) != 0)
-#define flip_exception()    (nil = (nil ^ 1))
-
-#define ignore_exception() \
-   do { if (exception_pending()) flip_exception(); } while (0)
-
 #define is_cons(p)   ((((int)(p)) & TAG_BITS) == TAG_CONS)
 #define is_fixnum(p) ((((int)(p)) & XTAG_BITS) == TAG_FIXNUM)
 #define is_odds(p)   ((((int)(p)) & TAG_BITS) == TAG_HDR_IMMED) // many subcases
@@ -265,33 +252,8 @@ typedef struct Cons_Cell
     LispObject cdr;
 } Cons_Cell;
 
-#ifdef MEMORY_TRACE
-
-//
-// The IDEAL here would be that every time I reference memory I would
-// call memory_reference() to record this fact. In fact I have changed
-// the most important Lisp data-structure access macros to do this, but
-// not all of them. For instance in a first pass I did not consider it
-// worth altering the code that inspects rational and complex numbers!
-// Any code that at the C level uses "*" directly will also not get
-// reported.
-//
-
-extern Cons_Cell *memory_reference(intptr_t p);
-extern char *cmemory_reference(intptr_t p);
-extern void identify_page_types();
-extern long int car_counter;
-extern unsigned long int car_low, car_high;
-
-#define qcar(p) (memory_reference((intptr_t)p)->car)
-#define qcdr(p) (memory_reference((intptr_t)p)->cdr)
-
-#else // MEMORY_TRACE
-
 #define qcar(p) (((Cons_Cell *) (p))->car)
 #define qcdr(p) (((Cons_Cell *) (p))->cdr)
-
-#endif // MEMORY_TRACE
 
 //
 // car32(p) refers to the 32-bit integer pointed at by p. It is
@@ -413,7 +375,7 @@ typedef uintptr_t Header;
 // Values for the type field in a header
 
 //
-// Symbols are so important that they have 25 bits used to sub-classify them.
+// Symbols are so important that they have 25+ bits used to sub-classify them.
 // These are used by the interpreter to identify special variables, special
 // forms, and those symbols which are defined as macros.  The bits live where
 // other items would store a length, but since all symbol headers are the
@@ -427,6 +389,10 @@ typedef uintptr_t Header;
 #define TYPE_SYMBOL         (0x0000000<<Tw)
 #define  SYM_SPECIAL_VAR    (0x0000010<<Tw)  // (fluid '(xxx))
 #define  SYM_GLOBAL_VAR     (0x0000020<<Tw)  // (global '(xxx))
+// I will set both SPECIAL and GLOBAL for "keywords" and those will be
+// initialised to have themselves as their value and then neither be
+// bindable or settable.
+#define  SYM_KEYWORD_VAR    (0x0000030<<Tw)  // (keyword '(xxx))
 #define  SYM_SPECIAL_FORM   (0x0000040<<Tw)  // eg. COND, QUOTE
 #define  SYM_MACRO          (0x0000080<<Tw)  // (putd 'xxx 'macro ...)
 #define  SYM_C_DEF          (0x0000100<<Tw)  // has definition from C kernel
@@ -566,15 +532,8 @@ typedef uintptr_t Header;
 #define TYPE_DOUBLE_FLOAT   ( 0x5f <<Tw)
 #define TYPE_LONG_FLOAT     ( 0x7f <<Tw)
 
-#ifdef MEMORY_TRACE
-#define numhdr(v) (*(Header *)memory_reference((intptr_t)((char *)(v) - \
-                                               TAG_NUMBERS)))
-#define flthdr(v) (*(Header *)memory_reference((intptr_t)((char *)(v) - \
-                                               TAG_BOXFLOAT)))
-#else
 #define numhdr(v) (*(Header *)((char *)(v) - TAG_NUMBERS))
 #define flthdr(v) (*(Header *)((char *)(v) - TAG_BOXFLOAT))
-#endif
 
 //
 // The following tests are valid provided that n is already known to
@@ -604,22 +563,6 @@ typedef uintptr_t Header;
 #define is_bitvec_header(h) ((type_of_header(h) & (0x03<<Tw)) == TYPE_BITVEC_1)
 #define is_bitvec(n) is_bitvec_header(vechdr(n))
 
-#ifdef MEMORY_TRACE
-#define vechdr(v)  (*(Header *)memory_reference((intptr_t)((char *)(v) - \
-                               TAG_VECTOR)))
-#define elt(v, n)  (*(LispObject *)memory_reference((intptr_t)((char *)(v) + \
-                               (CELL-TAG_VECTOR) + \
-                               (((intptr_t)(n))*sizeof(LispObject)))))
-#define celt(v, n) (*cmemory_reference((intptr_t)((char *)(v) + \
-                               (CELL-TAG_VECTOR)+((intptr_t)(n)))))
-#define ucelt(v, n) (*(unsigned char *)cmemory_reference( \
-                               (intptr_t)((char *)(v) + \
-                               (CELL-TAG_VECTOR)+((intptr_t)(n)))))
-#define scelt(v, n) (*(signed char *)cmemory_reference( \
-                               (intptr_t)((char *)(v) + \
-                               (CELL-TAG_VECTOR)+((intptr_t)(n)))))
-#else // MEMORY_TRACE
-
 #define vechdr(v)  (*(Header *)((char *)(v) - TAG_VECTOR))
 #define elt(v, n)  (*(LispObject *)((char *)(v) + \
                                (CELL-TAG_VECTOR) + \
@@ -628,9 +571,8 @@ typedef uintptr_t Header;
 #define ucelt(v, n) (*((unsigned char *)(v) + (CELL-TAG_VECTOR)+((intptr_t)(n))))
 #define scelt(v, n) (*((signed char *)(v) + (CELL-TAG_VECTOR)+((intptr_t)(n))))
 
-#endif // MEMORY_TRACE
-
 #define data_of_bps(v) ((unsigned char *)(v) + (CELL-TAG_VECTOR))
+#define BPS_DATA_OFFSET (CELL-TAG_VECTOR)
 
 // In the serialization code I want to access the fields in a symbol as
 // if that symbol was a vector and the fields were indexed as follows:
@@ -939,23 +881,13 @@ typedef struct Big_Number
 } Big_Number;
 
 #define bignum_length(b)  length_of_header(numhdr(b))
-#ifdef MEMORY_TRACE
-#define bignum_digits(b)  ((uint32_t *)memory_reference((intptr_t)((char *)(b) + \
-                                         (CELL-TAG_NUMBERS))))
-#else
-#define bignum_digits(b)  ((uint32_t *)((char *)(b)  + (CELL-TAG_NUMBERS)))
-#endif
+#define bignum_digits(b)  \
+   ((uint32_t *)((char *)(b)  + (CELL-TAG_NUMBERS)))
 
 // For work on bignums when I have a 64-bit machine I frequently need the
 // top word of a bignum as a 64-bit (signed) value...
-#ifdef MEMORY_TRACE
-#define bignum_digits64(b, n) ((int64_t)((int32_t *)                 \
-                             memory_reference((intptr_t)((char *)(b) + \
-                               (CELL-TAG_NUMBERS))))[n])
-#else
 #define bignum_digits64(b, n) \
    ((int64_t)((int32_t *)((char *)(b)+(CELL-TAG_NUMBERS)))[n])
-#endif
 
 
 // make_bighdr takes an argument measured in 32-bit units, including space
@@ -1102,7 +1034,7 @@ typedef struct Single_Float
 #define quadword_align_down(n) ((uintptr_t)((intptr_t)(n) & (-16)))
 
 //
-// values to go in exit_reason at times when exception_pending() is true.
+// values to go in exit_reason at times when exceptions are being thrown.
 //
 
 #define UNWIND_NULL       0x0         // no error or action at all
@@ -1111,6 +1043,8 @@ typedef struct Single_Float
 #define UNWIND_THROW      0x3         // THROW is obvious
 #define UNWIND_RESTART    0x4         // (restart!-csl ...)
 #define UNWIND_RESOURCE   0x5         // used with (resource!-limit ...)
+#define UNWIND_SIGNAL     0x6         // SIGSEGV or other random signal
+#define UNWIND_SIGINT     0x7         // SIGINT
 
 #define UNWIND_FNAME      0x100       // at least short backtrace is needed
 #define UNWIND_ARGS       0x200       // produce long form backtrace
@@ -1194,8 +1128,6 @@ static inline T ASR(T a, int n)
 #define ASLptr(a,n) ((intptr_t)((uintptr_t)(a)<<MAXSHIFT((n),uintptr_t)))
 #define ASL64(a,n)  ((int64_t)((uint64_t)(a)<<MAXSHIFT((n),uint64_t)))
 #define ASL128(a,n) ((int128_t)((uint128_t)(a)<<MAXSHIFT((n),uint128_t)))
-
-
 
 #endif // header_tags_h
 

@@ -1,7 +1,7 @@
 // This code was contributed to CSL by NAG Ltd
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -65,15 +65,12 @@ LispObject Ls01eaf(LispObject nil, int nargs, ...)
     push3(Lzr,Lzi,Lifail);
     z[0] = float_of_number(Lzr);
     pop3(Lifail,Lzi,Lzr);
-    errexit();
     push3(Lzr,Lzi,Lifail);
     z[1] = float_of_number(Lzi);
     pop3(Lifail,Lzi,Lzr);
-    errexit();
     push3(Lzr,Lzi,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop3(Lifail,Lzi,Lzr);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -105,11 +102,9 @@ LispObject Ls01eaf(LispObject nil, int nargs, ...)
     push(Lwr);
     Lwi = make_boxfloat(w[1],TYPE_DOUBLE_FLOAT);
     pop(Lwr);
-    errexit();
     push2(Lwr,Lwi);
     Lifail = int2ccl(ifail);
     pop2(Lwi,Lwr);
-    errexit();
 
     return Llist(nil,3,Lwr,Lwi,Lifail);
 }
@@ -131,11 +126,9 @@ LispObject Ls13aaf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -167,7 +160,6 @@ LispObject Ls13aaf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -190,11 +182,9 @@ LispObject Ls13acf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -226,7 +216,6 @@ LispObject Ls13acf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -248,11 +237,9 @@ LispObject Ls13adf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -284,7 +271,6 @@ LispObject Ls13adf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -306,11 +292,9 @@ LispObject Ls14aaf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -342,7 +326,6 @@ LispObject Ls14aaf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -364,11 +347,9 @@ LispObject Ls14abf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -400,7 +381,6 @@ LispObject Ls14abf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -434,19 +414,15 @@ LispObject Ls14baf(LispObject nil, int nargs, ...)
     push4(La,Lx,Ltol,Lifail);
     a = float_of_number(La);
     pop4(Lifail,Ltol,Lx,La);
-    errexit();
     push4(La,Lx,Ltol,Lifail);
     x = float_of_number(Lx);
     pop4(Lifail,Ltol,Lx,La);
-    errexit();
     push4(La,Lx,Ltol,Lifail);
     tol = float_of_number(Ltol);
     pop4(Lifail,Ltol,Lx,La);
-    errexit();
     push4(La,Lx,Ltol,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Ltol,Lx,La);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -478,11 +454,9 @@ LispObject Ls14baf(LispObject nil, int nargs, ...)
     push(Lp);
     Lq = make_boxfloat(q,TYPE_DOUBLE_FLOAT);
     pop(Lp);
-    errexit();
     push2(Lp,Lq);
     Lifail = int2ccl(ifail);
     pop2(Lq,Lp);
-    errexit();
 
     return Llist(nil,3,Lp,Lq,Lifail);
 }
@@ -504,11 +478,9 @@ LispObject Ls15adf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -540,7 +512,6 @@ LispObject Ls15adf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -562,11 +533,9 @@ LispObject Ls15aef(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -598,7 +567,6 @@ LispObject Ls15aef(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -620,11 +588,9 @@ LispObject Ls17acf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -656,7 +622,6 @@ LispObject Ls17acf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -678,11 +643,9 @@ LispObject Ls17adf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -714,7 +677,6 @@ LispObject Ls17adf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -736,11 +698,9 @@ LispObject Ls17aef(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -772,7 +732,6 @@ LispObject Ls17aef(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -794,11 +753,9 @@ LispObject Ls17aff(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -830,7 +787,6 @@ LispObject Ls17aff(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -852,11 +808,9 @@ LispObject Ls17agf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -888,7 +842,6 @@ LispObject Ls17agf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -910,11 +863,9 @@ LispObject Ls17ahf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -946,7 +897,6 @@ LispObject Ls17ahf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -968,11 +918,9 @@ LispObject Ls17ajf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1004,7 +952,6 @@ LispObject Ls17ajf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -1026,11 +973,9 @@ LispObject Ls17akf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1062,7 +1007,6 @@ LispObject Ls17akf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -1104,32 +1048,27 @@ LispObject Ls17dcf(LispObject nil, int nargs, ...)
     fnu = float_of_number(Lfnu);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     z[0] = float_of_number(Lzr);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     z[1] = float_of_number(Lzi);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     n = thirty_two_bits(Ln);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
 //  strncpy (sscale, &celt(Lscale,0), 1);
     sscale[0] = celt(Lscale,0);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     sscale[1] = '\0';
     scale.str = sscale;
     push3(Lfnu,Lzr,Lzi);
@@ -1137,7 +1076,6 @@ LispObject Ls17dcf(LispObject nil, int nargs, ...)
     ifail = thirty_two_bits(Lifail);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
 
@@ -1172,7 +1110,6 @@ LispObject Ls17dcf(LispObject nil, int nargs, ...)
 #endif
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
 
     // Translate return values to CCL
     // Copy result
@@ -1180,11 +1117,9 @@ LispObject Ls17dcf(LispObject nil, int nargs, ...)
     push(Lcy);
     Lifail = int2ccl(ifail);
     pop(Lcy);
-    errexit();
     push2(Lcy,Lifail);
     Lnz = int2ccl(nz);
     pop2(Lifail,Lcy);
-    errexit();
 
     free (cy);
     free (cwrk);
@@ -1233,32 +1168,27 @@ LispObject Ls17def(LispObject nil, int nargs, ...)
     fnu = float_of_number(Lfnu);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     z[0] = float_of_number(Lzr);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     z[1] = float_of_number(Lzi);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     n = thirty_two_bits(Ln);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
 //  strncpy (sscale, &celt(Lscale,0), 1);
     sscale[0] = celt(Lscale,0);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     sscale[1] = '\0';
     scale.str = sscale;
     push3(Lfnu,Lzr,Lzi);
@@ -1266,7 +1196,6 @@ LispObject Ls17def(LispObject nil, int nargs, ...)
     ifail = thirty_two_bits(Lifail);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
 
@@ -1300,7 +1229,6 @@ LispObject Ls17def(LispObject nil, int nargs, ...)
 #endif
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
 
     // Translate return values to CCL
     // Copy result
@@ -1308,11 +1236,9 @@ LispObject Ls17def(LispObject nil, int nargs, ...)
     push(Lcy);
     Lifail = int2ccl(ifail);
     pop(Lcy);
-    errexit();
     push2(Lcy,Lifail);
     Lnz = int2ccl(nz);
     pop2(Lifail,Lcy);
-    errexit();
 
     free (cy);
 
@@ -1357,28 +1283,23 @@ LispObject Ls17dgf(LispObject nil, int nargs, ...)
 //  strncpy (sderiv, &celt(Lderiv,0), 1);
     sderiv[0] = celt(Lderiv,0);
     pop5(Lifail,Lscale,Lzi,Lzr,Lderiv);
-    errexit();
     sderiv[1] = '\0';
     deriv.str = sderiv;
     push5(Lderiv,Lzr,Lzi,Lscale,Lifail);
     z[0] = float_of_number(Lzr);
     pop5(Lifail,Lscale,Lzi,Lzr,Lderiv);
-    errexit();
     push5(Lderiv,Lzr,Lzi,Lscale,Lifail);
     z[1] = float_of_number(Lzi);
     pop5(Lifail,Lscale,Lzi,Lzr,Lderiv);
-    errexit();
     push5(Lderiv,Lzr,Lzi,Lscale,Lifail);
 //  strncpy (sscale, &celt(Lscale,0), 1);
     sscale[0] = celt(Lscale,0);
     pop5(Lifail,Lscale,Lzi,Lzr,Lderiv);
-    errexit();
     sscale[1] = '\0';
     scale.str = sscale;
     push5(Lderiv,Lzr,Lzi,Lscale,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop5(Lifail,Lscale,Lzi,Lzr,Lderiv);
-    errexit();
 
     deriv.len = 1;
     scale.len = 1;
@@ -1413,15 +1334,12 @@ LispObject Ls17dgf(LispObject nil, int nargs, ...)
     push(Lair);
     Laii = make_boxfloat(ai[1],TYPE_DOUBLE_FLOAT);
     pop(Lair);
-    errexit();
     push2(Lair,Laii);
     Lifail = int2ccl(ifail);
     pop2(Laii,Lair);
-    errexit();
     push3(Lair,Laii,Lifail);
     Lnz = int2ccl(nz);
     pop3(Lifail,Laii,Lair);
-    errexit();
 
     return Llist(nil,4,Lair,Laii,Lifail,Lnz);
 }
@@ -1460,28 +1378,23 @@ LispObject Ls17dhf(LispObject nil, int nargs, ...)
 //  strncpy (sderiv, &celt(Lderiv,0), 1);
     sderiv[0] = celt(Lderiv,0);
     pop5(Lifail,Lscale,Lzi,Lzr,Lderiv);
-    errexit();
     sderiv[1] = '\0';
     deriv.str = sderiv;
     push5(Lderiv,Lzr,Lzi,Lscale,Lifail);
     z[0] = float_of_number(Lzr);
     pop5(Lifail,Lscale,Lzi,Lzr,Lderiv);
-    errexit();
     push5(Lderiv,Lzr,Lzi,Lscale,Lifail);
     z[1] = float_of_number(Lzi);
     pop5(Lifail,Lscale,Lzi,Lzr,Lderiv);
-    errexit();
     push5(Lderiv,Lzr,Lzi,Lscale,Lifail);
 //  strncpy (sscale, &celt(Lscale,0), 1);
     sscale[0] = celt(Lscale,0);
     pop5(Lifail,Lscale,Lzi,Lzr,Lderiv);
-    errexit();
     sscale[1] = '\0';
     scale.str = sscale;
     push5(Lderiv,Lzr,Lzi,Lscale,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop5(Lifail,Lscale,Lzi,Lzr,Lderiv);
-    errexit();
 
     deriv.len = 1;
     scale.len = 1;
@@ -1516,11 +1429,9 @@ LispObject Ls17dhf(LispObject nil, int nargs, ...)
     push(Lbir);
     Lbii = make_boxfloat(bi[1],TYPE_DOUBLE_FLOAT);
     pop(Lbir);
-    errexit();
     push2(Lbir,Lbii);
     Lifail = int2ccl(ifail);
     pop2(Lbii,Lbir);
-    errexit();
 
     return Llist(nil,3,Lbir,Lbii,Lifail);
 }
@@ -1563,38 +1474,32 @@ LispObject Ls17dlf(LispObject nil, int nargs, ...)
     m = thirty_two_bits(Lm);
     pop4(Lifail,Lscale,Ln,Lzi);
     pop3(Lzr,Lfnu,Lm);
-    errexit();
     push4(Lm,Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     fnu = float_of_number(Lfnu);
     pop4(Lifail,Lscale,Ln,Lzi);
     pop3(Lzr,Lfnu,Lm);
-    errexit();
     push4(Lm,Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     z[0] = float_of_number(Lzr);
     pop4(Lifail,Lscale,Ln,Lzi);
     pop3(Lzr,Lfnu,Lm);
-    errexit();
     push4(Lm,Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     z[1] = float_of_number(Lzi);
     pop4(Lifail,Lscale,Ln,Lzi);
     pop3(Lzr,Lfnu,Lm);
-    errexit();
     push4(Lm,Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     n = thirty_two_bits(Ln);
     pop4(Lifail,Lscale,Ln,Lzi);
     pop3(Lzr,Lfnu,Lm);
-    errexit();
     push4(Lm,Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
 //  strncpy (sscale, &celt(Lscale,0), 1);
     sscale[0] = celt(Lscale,0);
     pop4(Lifail,Lscale,Ln,Lzi);
     pop3(Lzr,Lfnu,Lm);
-    errexit();
     sscale[1] = '\0';
     scale.str = sscale;
     push4(Lm,Lfnu,Lzr,Lzi);
@@ -1602,7 +1507,6 @@ LispObject Ls17dlf(LispObject nil, int nargs, ...)
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Lscale,Ln,Lzi);
     pop3(Lzr,Lfnu,Lm);
-    errexit();
     push4(Lm,Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
 
@@ -1636,7 +1540,6 @@ LispObject Ls17dlf(LispObject nil, int nargs, ...)
 #endif
     pop4(Lifail,Lscale,Ln,Lzi);
     pop3(Lzr,Lfnu,Lm);
-    errexit();
 
     // Translate return values to CCL
     // Copy result
@@ -1644,11 +1547,9 @@ LispObject Ls17dlf(LispObject nil, int nargs, ...)
     push(Lcy);
     Lifail = int2ccl(ifail);
     pop(Lcy);
-    errexit();
     push2(Lcy,Lifail);
     Lnz = int2ccl(nz);
     pop2(Lifail,Lcy);
-    errexit();
 
     free (cy);
 
@@ -1676,11 +1577,9 @@ LispObject Ls18acf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1712,7 +1611,6 @@ LispObject Ls18acf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -1734,11 +1632,9 @@ LispObject Ls18adf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1770,7 +1666,6 @@ LispObject Ls18adf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -1792,11 +1687,9 @@ LispObject Ls18aef(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1828,7 +1721,6 @@ LispObject Ls18aef(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -1850,11 +1742,9 @@ LispObject Ls18aff(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -1886,7 +1776,6 @@ LispObject Ls18aff(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -1928,32 +1817,27 @@ LispObject Ls18dcf(LispObject nil, int nargs, ...)
     fnu = float_of_number(Lfnu);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     z[0] = float_of_number(Lzr);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     z[1] = float_of_number(Lzi);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     n = thirty_two_bits(Ln);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
 //  strncpy (sscale, &celt(Lscale,0), 1);
     sscale[0] = celt(Lscale,0);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     sscale[1] = '\0';
     scale.str = sscale;
     push3(Lfnu,Lzr,Lzi);
@@ -1961,7 +1845,6 @@ LispObject Ls18dcf(LispObject nil, int nargs, ...)
     ifail = thirty_two_bits(Lifail);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
 
@@ -1995,7 +1878,6 @@ LispObject Ls18dcf(LispObject nil, int nargs, ...)
 #endif
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
 
     // Translate return values to CCL
     // Copy result
@@ -2003,11 +1885,9 @@ LispObject Ls18dcf(LispObject nil, int nargs, ...)
     push(Lcy);
     Lifail = int2ccl(ifail);
     pop(Lcy);
-    errexit();
     push2(Lcy,Lifail);
     Lnz = int2ccl(nz);
     pop2(Lifail,Lcy);
-    errexit();
 
     free (cy);
 
@@ -2055,32 +1935,27 @@ LispObject Ls18def(LispObject nil, int nargs, ...)
     fnu = float_of_number(Lfnu);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     z[0] = float_of_number(Lzr);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     z[1] = float_of_number(Lzi);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
     n = thirty_two_bits(Ln);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
 //  strncpy (sscale, &celt(Lscale,0), 1);
     sscale[0] = celt(Lscale,0);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     sscale[1] = '\0';
     scale.str = sscale;
     push3(Lfnu,Lzr,Lzi);
@@ -2088,7 +1963,6 @@ LispObject Ls18def(LispObject nil, int nargs, ...)
     ifail = thirty_two_bits(Lifail);
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
     push3(Lfnu,Lzr,Lzi);
     push3(Ln,Lscale,Lifail);
 
@@ -2122,7 +1996,6 @@ LispObject Ls18def(LispObject nil, int nargs, ...)
 #endif
     pop3(Lifail,Lscale,Ln);
     pop3(Lzi,Lzr,Lfnu);
-    errexit();
 
     // Translate return values to CCL
     // Copy result
@@ -2130,11 +2003,9 @@ LispObject Ls18def(LispObject nil, int nargs, ...)
     push(Lcy);
     Lifail = int2ccl(ifail);
     pop(Lcy);
-    errexit();
     push2(Lcy,Lifail);
     Lnz = int2ccl(nz);
     pop2(Lifail,Lcy);
-    errexit();
 
     free (cy);
 
@@ -2162,11 +2033,9 @@ LispObject Ls19aaf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2198,7 +2067,6 @@ LispObject Ls19aaf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -2220,11 +2088,9 @@ LispObject Ls19abf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2256,7 +2122,6 @@ LispObject Ls19abf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -2278,11 +2143,9 @@ LispObject Ls19acf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2314,7 +2177,6 @@ LispObject Ls19acf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -2336,11 +2198,9 @@ LispObject Ls19adf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2372,7 +2232,6 @@ LispObject Ls19adf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -2394,11 +2253,9 @@ LispObject Ls20acf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2430,7 +2287,6 @@ LispObject Ls20acf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -2452,11 +2308,9 @@ LispObject Ls20adf(LispObject nil, LispObject Lx, LispObject Lifail)
     push2(Lx,Lifail);
     x = float_of_number(Lx);
     pop2(Lifail,Lx);
-    errexit();
     push2(Lx,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop2(Lifail,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2488,7 +2342,6 @@ LispObject Ls20adf(LispObject nil, LispObject Lx, LispObject Lifail)
     push(Ly);
     Lifail = int2ccl(ifail);
     pop(Ly);
-    errexit();
 
     return Llist(nil,2,Ly,Lifail);
 }
@@ -2520,15 +2373,12 @@ LispObject Ls21baf(LispObject nil, int nargs, ...)
     push3(Lx,Ly,Lifail);
     x = float_of_number(Lx);
     pop3(Lifail,Ly,Lx);
-    errexit();
     push3(Lx,Ly,Lifail);
     y = float_of_number(Ly);
     pop3(Lifail,Ly,Lx);
-    errexit();
     push3(Lx,Ly,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop3(Lifail,Ly,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2560,7 +2410,6 @@ LispObject Ls21baf(LispObject nil, int nargs, ...)
     push(Lrc);
     Lifail = int2ccl(ifail);
     pop(Lrc);
-    errexit();
 
     return Llist(nil,2,Lrc,Lifail);
 }
@@ -2592,19 +2441,15 @@ LispObject Ls21bbf(LispObject nil, int nargs, ...)
     push4(Lx,Ly,Lz,Lifail);
     x = float_of_number(Lx);
     pop4(Lifail,Lz,Ly,Lx);
-    errexit();
     push4(Lx,Ly,Lz,Lifail);
     y = float_of_number(Ly);
     pop4(Lifail,Lz,Ly,Lx);
-    errexit();
     push4(Lx,Ly,Lz,Lifail);
     z = float_of_number(Lz);
     pop4(Lifail,Lz,Ly,Lx);
-    errexit();
     push4(Lx,Ly,Lz,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Lz,Ly,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2636,7 +2481,6 @@ LispObject Ls21bbf(LispObject nil, int nargs, ...)
     push(Lrf);
     Lifail = int2ccl(ifail);
     pop(Lrf);
-    errexit();
 
     return Llist(nil,2,Lrf,Lifail);
 }
@@ -2668,19 +2512,15 @@ LispObject Ls21bcf(LispObject nil, int nargs, ...)
     push4(Lx,Ly,Lz,Lifail);
     x = float_of_number(Lx);
     pop4(Lifail,Lz,Ly,Lx);
-    errexit();
     push4(Lx,Ly,Lz,Lifail);
     y = float_of_number(Ly);
     pop4(Lifail,Lz,Ly,Lx);
-    errexit();
     push4(Lx,Ly,Lz,Lifail);
     z = float_of_number(Lz);
     pop4(Lifail,Lz,Ly,Lx);
-    errexit();
     push4(Lx,Ly,Lz,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Lz,Ly,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2712,7 +2552,6 @@ LispObject Ls21bcf(LispObject nil, int nargs, ...)
     push(Lrd);
     Lifail = int2ccl(ifail);
     pop(Lrd);
-    errexit();
 
     return Llist(nil,2,Lrd,Lifail);
 }
@@ -2747,23 +2586,18 @@ LispObject Ls21bdf(LispObject nil, int nargs, ...)
     push5(Lx,Ly,Lz,Lr,Lifail);
     x = float_of_number(Lx);
     pop5(Lifail,Lr,Lz,Ly,Lx);
-    errexit();
     push5(Lx,Ly,Lz,Lr,Lifail);
     y = float_of_number(Ly);
     pop5(Lifail,Lr,Lz,Ly,Lx);
-    errexit();
     push5(Lx,Ly,Lz,Lr,Lifail);
     z = float_of_number(Lz);
     pop5(Lifail,Lr,Lz,Ly,Lx);
-    errexit();
     push5(Lx,Ly,Lz,Lr,Lifail);
     r = float_of_number(Lr);
     pop5(Lifail,Lr,Lz,Ly,Lx);
-    errexit();
     push5(Lx,Ly,Lz,Lr,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop5(Lifail,Lr,Lz,Ly,Lx);
-    errexit();
 
     // Call NAG routine
 #ifdef LOADLIB
@@ -2795,7 +2629,6 @@ LispObject Ls21bdf(LispObject nil, int nargs, ...)
     push(Lrj);
     Lifail = int2ccl(ifail);
     pop(Lrj);
-    errexit();
 
     return Llist(nil,2,Lrj,Lifail);
 }

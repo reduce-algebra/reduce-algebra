@@ -1,11 +1,11 @@
-// cslread.cpp                        Copyright (C) 1990-2016 Codemist    
+// cslread.cpp                             Copyright (C) 1990-2017 Codemist    
 
 //
 // Reading and symbol-table support.
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -88,8 +88,6 @@ static int curchar = NOT_CHAR;
 FILE *non_terminal_input;
 
 size_t boffop;
-#define boffo_char(i) ucelt(boffo, i)
-
 
 LispObject make_string(const char *b)
 //
@@ -99,7 +97,6 @@ LispObject make_string(const char *b)
     LispObject r = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     char *s = (char *)r - TAG_VECTOR;
     int32_t k = doubleword_align_up(CELL+n);
-    errexit();
     memcpy(s + CELL, b, (size_t)n);
     while (n < k) s[CELL+n++] = 0;
     validate_string(r);
@@ -152,7 +149,6 @@ LispObject copy_string(LispObject str, size_t n)
     r = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     pop(str);
     s = (char *)r - TAG_VECTOR;
-    errexit();
     memcpy(s + CELL, (char *)str + (CELL-TAG_VECTOR), (size_t)n);
     k = doubleword_align_up(CELL+n)-CELL;
     while (n < k) s[CELL+n++] = 0;
@@ -162,17 +158,6 @@ LispObject copy_string(LispObject str, size_t n)
 
 LispObject Lbatchp(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "batchp");
-#if 0
-#ifdef SOCKETS
-//
-// If CSL is being run as a service (ie accessed via a socket) then I will
-// deem it to be in "interactive" mode. This leaves responsibility for stopping
-// after errors (if that is what is wanted) with the other end of the
-// communications link.
-//
-    if (socket_server != 0) return onevalue(nil);
-#endif
-#endif
 //
 // If the user had specified input files on the command line I will say that
 // we are in batch mode even if there is a terminal present somewhere. So
@@ -204,25 +189,20 @@ LispObject Lgetenv(LispObject env, LispObject a)
     const char *w;
     memset(parmname, 0, sizeof(parmname));
 #ifdef COMMON
-    if (complex_stringp(a)
-{   a = simplify_string(a);
-        errexit();
-    }
+    if (complex_stringp(a) a = simplify_string(a);
 #endif
     if (symbolp(a))
     {   a = get_pname(a);
-        errexit();
         h = vechdr(a);
     }
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
-        return aerror1("getenv", a);
+        aerror1("getenv", a);
     len = length_of_byteheader(h) - CELL;
     memcpy(parmname, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
     parmname[len] = 0;
     w = my_getenv(parmname);
     if (w == NULL) return onevalue(nil);    // not available
     r = make_string(w);
-    errexit();
     return onevalue(r);
 }
 
@@ -245,18 +225,14 @@ LispObject Lsystem(LispObject env, LispObject a)
         return onevalue(Lispify_predicate(w != 0));
     }
 #ifdef COMMON
-    if (complex_stringp(a))
-    {   a = simplify_string(a);
-        errexit();
-    }
+    if (complex_stringp(a)) a = simplify_string(a);
 #endif
     if (symbolp(a))
     {   a = get_pname(a);
-        errexit();
         h = vechdr(a);
     }
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
-        return aerror1("system", a);
+        aerror1("system", a);
     len = length_of_byteheader(h) - CELL;
     memcpy(parmname, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
     parmname[len] = 0;
@@ -296,18 +272,14 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
         return onevalue(lisp_true); // always is on Windows!
     ensure_screen();
 #ifdef COMMON
-    if (complex_stringp(a))
-    {   a = simplify_string(a);
-        errexit();
-    }
+    if (complex_stringp(a)) a = simplify_string(a);
 #endif
     if (symbolp(a))
     {   a = get_pname(a);
-        errexit();
         h = vechdr(a);
     }
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
-        return aerror1("system", a);
+        aerror1("system", a);
     ensure_screen();
     len = length_of_byteheader(h) - CELL;
     memcpy(cmd, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
@@ -319,7 +291,7 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
 // the command that was executed has completed. I will leave this code
 // here for now since I may find I want to re-use it (eg for opening
 // documents). But the code below that explicitly creates a process is
-// what I reaaly need here.
+// what I really need here.
 //
     i = 0;
     while (cmd[i]!=' ' && cmd[i]!=0) i++;
@@ -466,7 +438,7 @@ LispObject intern(size_t len, bool escaped)
 {   size_t i;
     int numberp = escaped ? -1 : 0;
     int fplength = 2;
-    int explicit_fp_format = 0;
+    bool explicit_fp_format = false;
     stackcheck0(0);
     for (i=0; i<len; i++)
     {   int c = boffo_char(i);
@@ -509,24 +481,24 @@ LispObject intern(size_t len, bool escaped)
                         continue;
                     case 's': case 'S':
                         boffo_char(i) = 'e';
-                        explicit_fp_format = 1;
+                        explicit_fp_format = true;
                         fplength = 0;
                         numberp = 9;
                         continue;
                     case 'f': case 'F':
                         boffo_char(i) = 'e';
-                        explicit_fp_format = 1;
+                        explicit_fp_format = true;
                         fplength = 1;
                         numberp = 9;
                         continue;
                     case 'd': case 'D':
                         boffo_char(i) = 'e';
-                        explicit_fp_format = 1;
+                        explicit_fp_format = true;
                         numberp = 9;
                         continue;
                     case 'l': case 'L':
                         boffo_char(i) = 'e';
-                        explicit_fp_format = 1;
+                        explicit_fp_format = true;
                         fplength = 3;
                         numberp = 9;
                         continue;
@@ -556,24 +528,24 @@ LispObject intern(size_t len, bool escaped)
                     case 's': case 'S':
 // Clobbering the string is a DISASTER if it is not in fact numeric
                         boffo_char(i) = 'e';
-                        explicit_fp_format = 1;
+                        explicit_fp_format = true;
                         fplength = 0;
                         numberp = 9;
                         continue;
                     case 'f': case 'F':
                         boffo_char(i) = 'e';
-                        explicit_fp_format = 1;
+                        explicit_fp_format = true;
                         fplength = 1;
                         numberp = 9;
                         continue;
                     case 'd': case 'D':
                         boffo_char(i) = 'e';
-                        explicit_fp_format = 1;
+                       explicit_fp_format = true;
                         numberp = 9;
                         continue;
                     case 'l': case 'L':
                         boffo_char(i) = 'e';
-                        explicit_fp_format = 1;
+                        explicit_fp_format = true;
                         fplength = 3;
                         numberp = 9;
                         continue;
@@ -643,11 +615,9 @@ LispObject intern(size_t len, bool escaped)
                     else if (d1 == 10000000 || i == boffop-1)
                     {   d = 10*d + (int32_t)value_in_radix(boffo_char(i), 10);
                         v = times2(v, fixnum_of_int(d1));
-                        errexit();
                         v = plus2(v, fixnum_of_int(d));
                         d = 0;
                         d1 = 10;
-                        errexit();
                     }
                     else
                     {   d = 10*d + (int32_t)value_in_radix(boffo_char(i), 10);
@@ -684,7 +654,6 @@ LispObject intern(size_t len, bool escaped)
                 q = -q;
             }
             r = getvector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
-            errexit();
             numerator(r) = fixnum_of_int((int32_t)p);
             denominator(r) = fixnum_of_int((int32_t)q);
             return r;
@@ -696,8 +665,6 @@ LispObject intern(size_t len, bool escaped)
 //
 // I want to enable this all the time, but if I am not in COMMON mode
 // then before I do I need to get read_float_format set up properly.
-// At the time of writing it is an entry in cl_symbols which must be a
-// vector, but is only set up as such in COMMON mode.
 //
             float f;
             float128_t ll;
@@ -709,6 +676,8 @@ LispObject intern(size_t len, bool escaped)
 //              else if (w == double_float) fplength = 2;
                 else if (w == long_float) fplength = 3;
             }
+#else
+            (void)explicit_fp_format;
 #endif
             boffo_char(boffop) = 0;
             switch (fplength)
@@ -719,7 +688,7 @@ LispObject intern(size_t len, bool escaped)
                     if (trap_floating_overflow &&
                         floating_edge_case(ff.f))
                     {   floating_clear_flags();
-                        return aerror("bad short float input");
+                        aerror("bad short float input");
                     }
                     return low32(XTAG_SFLOAT + (ff.i & ~0xfU));
                 }
@@ -727,12 +696,11 @@ LispObject intern(size_t len, bool escaped)
                     f = (float)atof((char *)&boffo_char(0));
                     r = getvector(TAG_BOXFLOAT, TYPE_SINGLE_FLOAT,
                                   sizeof(Single_Float));
-                    errexit();
                     single_float_val(r) = f;
                     if (trap_floating_overflow &&
                         floating_edge_case(single_float_val(r)))
                     {   floating_clear_flags();
-                        return aerror("bad single float input");
+                        aerror("bad single float input");
                     }
                     return r;
                 default:
@@ -740,22 +708,20 @@ LispObject intern(size_t len, bool escaped)
                     d = atof((char *)&boffo_char(0));
                     r = getvector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT,
                                   SIZEOF_DOUBLE_FLOAT);
-                    errexit();
                     double_float_val(r) = d;
                     if (trap_floating_overflow &&
                         floating_edge_case(d))
                     {   floating_clear_flags();
-                        return aerror("bad double float input");
+                        aerror("bad double float input");
                     }
                     return r;
                 case 3:
                     ll = atof128((char *)&boffo_char(0));
                     if (trap_floating_overflow &&
                         floating_edge_case128(&ll))
-                        return aerror("bad long float input");
+                        aerror("bad long float input");
                     r = getvector(TAG_BOXFLOAT, TYPE_LONG_FLOAT,
                                   SIZEOF_LONG_FLOAT);
-                    errexit();
                     long_float_val(r) = ll;
                     return r;
             }
@@ -801,7 +767,6 @@ LispObject make_symbol(char const *s, int restartp,
         strcpy((char *)&boffo_char(0), s);
 start_again:
     v = iintern(boffo, strlen((char *)&boffo_char(0)), CP, 0);
-    errexit();
     if (first_try) v0 = v;
 //
 // I instate the definition given if (a) the definition is a real
@@ -861,11 +826,7 @@ start_again:
 // Note that I want to scan based on the ORIGINAL name of the function
 // not on any version that has been renamed with a "~".
 //
-#ifdef COMMON
             LispObject v1 = get(v0, work_symbol, nil);
-#else
-            LispObject v1 = get(v0, work_symbol);
-#endif
             while (consp(v1))
             {   LispObject w = qcar(v1);
                 v1 = qcdr(v1);
@@ -1014,19 +975,15 @@ static LispObject rehash(LispObject v, LispObject chunks, int grow)
     push(v);
 try_again:
     if (number_of_chunks == 1)
-    {   new_obvec = getvector_init(h+CELL, fixnum_of_int(0));
-        errexitn(1);
-    }
+        new_obvec = getvector_init(h+CELL, fixnum_of_int(0));
     else
     {   new_obvec = nil;
         for (i=0; i<number_of_chunks; i++)
         {   LispObject w;
             push(new_obvec);
             w = getvector_init(h+CELL, fixnum_of_int(0));
-            errexitn(2);
             pop(new_obvec);
             new_obvec = cons(w, new_obvec);
-            errexitn(1);
         }
     }
     v = stack[0];
@@ -1109,11 +1066,10 @@ try_again:
         push2(s, p);
         v = rehash(v, packvext_(p), 1);
         pop2(p, s);
-        errexit();
         packext_(p) = v;
         packvext_(p) = fixnum_of_int(number_of_chunks);
     }
-    if (n == 0xfffffff1) return aerror("too many symbols"); // long stop
+    if (n == 0xfffffff1) aerror("too many symbols"); // long stop
     packnext_(p) = n + (1<<4);      // increment as a Lisp fixnum
     {   int32_t nv = int_of_fixnum(packvext_(p));
         if (nv == 1) add_to_hash(s, v, hash);
@@ -1164,11 +1120,10 @@ try_again:
         push2(s, p);
         v = rehash(v, packvint_(p), 1);
         pop2(p, s);
-        errexit();
         packint_(p) = v;
         packvint_(p) = fixnum_of_int(number_of_chunks);
     }
-    if (n == (LispObject)0xfffffff1) return aerror("too many symbols"); // long stop
+    if (n == (LispObject)0xfffffff1) aerror("too many symbols"); // long stop
     packnint_(p) = (LispObject)((int32_t)n + (1<<4));
     // increment as a Lisp fixnum
     {   int32_t nv = int_of_fixnum(packvint_(p));
@@ -1301,14 +1256,12 @@ static int ordersymbol(LispObject v1, LispObject v2)
     {   push(v2);
         pn1 = get_pname(v1);
         pop(v2);
-        if (exception_pending()) return 0;
         pn2 = qpname(v2);
     }
     if (qheader(v2) & SYM_UNPRINTED_GENSYM)
     {   push(pn1);
         pn2 = get_pname(v2);
         pop(pn1);
-        if (exception_pending()) return 0;
     }
 #endif
     validate_string(pn1);
@@ -1411,15 +1364,9 @@ static int ordpv(LispObject u, LispObject v)
             {   push(ev);
                 eu = reclaim(eu, "stack", GC_STACK, 0);
                 pop(ev);
-// stackcheck expanded by hand here to return an int, not nil, in bad case
-                if (exception_pending())
-                {   popv(2);
-                    return 0;
-                }
             }
             w = orderp(eu, ev);
             pop2(v, u);
-            if (exception_pending()) return 0;
             if (w != 0) return w;
             n += CELL;
         }
@@ -1489,15 +1436,9 @@ static int orderp(LispObject u, LispObject v)
             {   push(cv);
                 cu = reclaim(cu, "stack", GC_STACK, 0);
                 pop(cv);
-// stackcheck expanded by hand here to return an int, not nil, in bad case
-                if (exception_pending())
-                {   popv(2);
-                    return 0;
-                }
             }
             w = orderp(cu, cv);
             pop2(v, u);
-            if (exception_pending()) return 0;
             if (w != 0)
             {   cu = qcar(u);
                 if (is_symbol(cu) && flagged_noncom(cu))
@@ -1530,7 +1471,6 @@ static int orderp(LispObject u, LispObject v)
 LispObject Lorderp(LispObject env, LispObject a, LispObject b)
 {   int w;
     w = orderp(a, b);
-    errexit();
     return onevalue(Lispify_predicate(w <= 0));
 }
 
@@ -1584,8 +1524,6 @@ static bool remob(LispObject sym, LispObject v, LispObject nv)
     return false;
 }
 
-#ifdef COMMON
-
 static LispObject Lmake_symbol(LispObject env, LispObject str)
 //
 // Lisp function (make-symbol ..) creates an uninterned symbol.
@@ -1596,19 +1534,12 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
 // Common Lisp wants a STRING passed here, but as a matter of generosity and
 // for the benefit of some of my system code I support symbols too.
 //
-    if (symbolp(str))
-    {   str = get_pname(str);
-        errexit();
-    }
-    else if (!is_vector(str)) return aerror1("make-symbol", str);
-    else if (complex_stringp(str))
-    {   str = simplify_string(str);
-        errexit();
-    }
-    else if (!is_string_header(vechdr(str))) return aerror1("make-symbol", str);
+    if (symbolp(str)) str = get_pname(str);
+    else if (!is_vector(str)) aerror1("make-symbol", str);
+    else if (complex_stringp(str)) str = simplify_string(str);
+    else if (!is_string_header(vechdr(str))) aerror1("make-symbol", str);
     push(str);
     s = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
-    errexitn(1);
     pop(str);
     qheader(s) = TAG_HDR_IMMED+TYPE_SYMBOL;
     qvalue(s) = unset_var;
@@ -1627,8 +1558,6 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
     return onevalue(s);
 }
 
-#endif
-
 LispObject Lgensym(LispObject env, int nargs, ...)
 //
 // Lisp function (gensym) creates an uninterned symbol with odd name.
@@ -1643,14 +1572,12 @@ LispObject Lgensym(LispObject env, int nargs, ...)
 #ifdef COMMON
     sprintf(genname, "G%lu", (long unsigned)(uint32_t)gensym_ser++);
     pn = make_string(genname);
-    errexit();
     push(pn);
 #endif
     id = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
 #ifdef COMMON
     pop(pn);
 #endif
-    errexit();
 #ifdef COMMON
     qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
     qpname(id) = pn;
@@ -1678,14 +1605,11 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     uint32_t len, len1 = strlen(suffix);
     char genname[64];
 #ifdef COMMON
-    if (complex_stringp(a))
-    {   a = simplify_string(a);
-        errexit();
-    }
+    if (complex_stringp(a)) a = simplify_string(a);
 #endif
     if (is_vector(a) &&is_string_header(vechdr(a))) genbase = a;
     else if (symbolp(a)) genbase = qpname(a);  // copy gensym base
-    else return aerror1("gensym0", a);
+    else aerror1("gensym0", a);
     push(genbase);
     stackcheck0(0);
     len = length_of_byteheader(vechdr(genbase)) - CELL;
@@ -1693,9 +1617,7 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     sprintf(genname, "%.*s%s", (int)len,
             (char *)genbase + (CELL-TAG_VECTOR), suffix);
     stack[0] = make_string(genname);
-    errexitn(1);
     id = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
-    errexitn(1);
     pop(genbase);
 #ifdef COMMON
     qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
@@ -1727,14 +1649,11 @@ LispObject Lgensym1(LispObject env, LispObject a)
 #ifdef COMMON
     uint32_t len;
     char genname[64];
-    if (complex_stringp(a))
-    {   a = simplify_string(a);
-        errexit();
-    }
+    if (complex_stringp(a)) a = simplify_string(a);
 #endif
     if (is_vector(a) &&is_string_header(vechdr(a))) genbase = a;
     else if (symbolp(a)) genbase = qpname(a);  // copy gensym base
-    else return aerror1("gensym1", a);
+    else aerror1("gensym1", a);
     push(genbase);
     stackcheck0(0);
 #ifdef COMMON
@@ -1744,10 +1663,8 @@ LispObject Lgensym1(LispObject env, LispObject a)
             (char *)genbase + (CELL-TAG_VECTOR),
             (long unsigned)(uint32_t)gensym_ser++);
     stack[0] = make_string(genname);
-    errexitn(1);
 #endif
     id = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
-    errexitn(1);
     pop(genbase);
 #ifdef COMMON
     qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
@@ -1779,21 +1696,16 @@ LispObject Lgensym2(LispObject env, LispObject a)
 {   LispObject id, genbase;
     uint32_t len;
 #ifdef COMMON
-    if (complex_stringp(a))
-    {   a = simplify_string(a);
-        errexit();
-    }
+    if (complex_stringp(a)) a = simplify_string(a);
 #endif
     if (is_vector(a) &&is_string_header(vechdr(a))) genbase = a;
     else if (symbolp(a)) genbase = qpname(a);
-    else return aerror1("gensym2", a);
+    else aerror1("gensym2", a);
     push(genbase);
     stackcheck0(0);
     len = length_of_byteheader(vechdr(genbase)) - CELL;
     stack[0] = copy_string(genbase, len);
-    errexitn(1);
     id = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
-    errexitn(1);
     pop(genbase);
     qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
     qvalue(id) = unset_var;
@@ -1866,16 +1778,12 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
             push2(p, r);
             v = rehash(v, packvint_(p), 0);
             pop2(r, p);
-            errexit();
             packint_(p) = v;
             packvint_(p) = fixnum_of_int(number_of_chunks);
             rehash_pending = false;
         }
         if (r != fixnum_of_int(0))
-        {
-#ifdef COMMON
-            mv_2 = internal_symbol;
-#endif
+        {   mv_2 = internal_symbol;
             return nvalues(r, 2);
         }
     }
@@ -1886,7 +1794,6 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
         push2(p, r);
         v = rehash(v, packvext_(p), 0);
         pop2(r, p);
-        errexit();
         packext_(p) = v;
         packvext_(p) = fixnum_of_int(number_of_chunks);
         rehash_pending = false;
@@ -1907,7 +1814,6 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
             push2(p, r);
             v = rehash(v, packvext_(p), 0);
             pop2(r, p);
-            errexit();
             packext_(p) = v;
             packvext_(p) = fixnum_of_int(number_of_chunks);
             rehash_pending = false;
@@ -1919,10 +1825,7 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
     }
 #endif
     if (str_is_ok == 3)
-    {
-#ifdef COMMON
-        mv_2 = nil;
-#endif
+    {   mv_2 = nil;
         return nvalues(nil, 2);
     }
     {   LispObject s;
@@ -1935,12 +1838,11 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
 #endif
         s = (LispObject)getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
         pop(p);
-        errexit();
         qheader(s) = TAG_HDR_IMMED+TYPE_SYMBOL;
 #ifdef COMMON
         if (p == qvalue(keyword_package) && keyword_package != nil)
         {   qvalue(s) = (LispObject)s;
-            qheader(s) |= SYM_SPECIAL_VAR;
+            qheader(s) |= SYM_KEYWORD_VAR;
         }
         else
 #endif
@@ -1962,14 +1864,12 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
         if ((p == qvalue(keyword_package) && keyword_package != nil) ||
             str_is_ok == 2)
         {   add_to_externals(s, p, hash);
-            errexitn(2);
             qheader(s) |= SYM_EXTERN_IN_HOME;
         }
         else
 #endif
             add_to_internals(s, p, hash);
         pop(s); pop(str);
-        errexit();
 // Now the symbol-head is safe enough that I can let the GC look at it
         if (str_is_ok != 0) qpname(s) = str;
         else
@@ -1979,21 +1879,20 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
             pop(s);
             qpname(s) = pn;
         }
-        errexit();
-#ifdef COMMON
         mv_2 = nil;
-#endif
         return nvalues((LispObject)s, 2);
     }
 }
 
 #ifdef COMMON
 static LispObject Lfind_package(LispObject env, LispObject name);
+#endif
 
 LispObject Lintern_2(LispObject env, LispObject str, LispObject pp)
-#else
+{   return Lintern(env, str); // Ignores the package for now!
+}
+
 LispObject Lintern(LispObject env, LispObject str)
-#endif
 //
 // Lisp entrypoint for (intern ..)
 //
@@ -2003,7 +1902,6 @@ LispObject Lintern(LispObject env, LispObject str)
     push(str);
     p = Lfind_package(nil, pp);
     pop(str);
-    errexit();
 #else
     p = CP;
 #endif
@@ -2012,7 +1910,6 @@ LispObject Lintern(LispObject env, LispObject str)
     {   push(p);
         str = simplify_string(str);
         pop(p);
-        errexit();
     }
 #endif
 //
@@ -2023,10 +1920,9 @@ LispObject Lintern(LispObject env, LispObject str)
 //
     if (symbolp(str))
     {   str = get_pname(str);
-        errexit();
     }
     if (!is_vector(str) || !is_string_header(h = vechdr(str)))
-        return aerror1("intern (not a string)", str);
+        aerror1("intern (not a string)", str);
     return iintern(str, length_of_byteheader(h) - CELL, p, 1);
 }
 
@@ -2042,21 +1938,18 @@ static LispObject Lfind_symbol(LispObject env, LispObject str, LispObject pp)
     push(str);
     p = Lfind_package(nil, pp);
     pop(str);
-    errexit();
     if (symbolp(str))
     {   push(p);
         str = get_pname(str);
         pop(p);
-        errexit();
     }
     if (complex_stringp(str))
     {   push(p);
         str = simplify_string(str);
         pop(p);
-        errexit();
     }
     if (!is_vector(str) || !is_string_header(h = vechdr(str)))
-    {   return aerror1("find-symbol (not a string)", str);
+    {   aerror1("find-symbol (not a string)", str);
     }
     return iintern(str, length_of_byteheader(h) - CELL, p, 3);
 }
@@ -2095,7 +1988,6 @@ static LispObject Lextern(LispObject env, LispObject sym, LispObject package)
             push2(sym, package);
             v = rehash(v, packvint_(package), -1);
             pop2(package, sym);
-            errexit();
             packint_(package) = v;
             packvint_(package) = fixnum_of_int(number_of_chunks);
         }
@@ -2106,7 +1998,6 @@ static LispObject Lextern(LispObject env, LispObject sym, LispObject package)
 //
         if (qpackage(sym) == package) qheader(sym) |= SYM_EXTERN_IN_HOME;
         add_to_externals(sym, package, removed_hash);
-        errexit();
         return onevalue(lisp_true);
     }
     return onevalue(nil);// no action if it was not internal in this package
@@ -2128,11 +2019,9 @@ static LispObject Limport(LispObject env, LispObject sym, LispObject package)
     if (!is_symbol(sym)) return onevalue(nil);
     push2(sym, package);
     pn = get_pname(sym);
-    errexitn(2);
     hash = hash_lisp_string(pn);
     add_to_internals(stack[-1], stack[0], hash);
     pop2(package, sym);
-    errexit();
     if (qpackage(sym) == nil) qpackage(sym) = package;
     return onevalue(nil);
 }
@@ -2170,7 +2059,6 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
     push(sym);
     package = Lfind_package(nil, pp);
     pop(sym);
-    errexit();
 #else
     package = pp;
 #endif
@@ -2180,7 +2068,7 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
     packshade_(package) = ndelete(sym, packshade_(package));
 #endif
     if ((qheader(sym) & SYM_C_DEF) != 0)
-        return aerror1("remob on function with kernel definition", sym);
+        aerror1("remob on function with kernel definition", sym);
     if (remob(sym, packint_(package), packvint_(package)))
     {   LispObject n = packnint_(package);
         LispObject v = packint_(package);
@@ -2194,7 +2082,6 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
             push(package);
             v = rehash(v, packvint_(package), -1);
             pop(package);
-            errexit();
             packint_(package) = v;
             packvint_(package) = fixnum_of_int(number_of_chunks);
         }
@@ -2213,7 +2100,6 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
             push(package);
             v = rehash(v, packvext_(package), -1);
             pop(package);
-            errexit();
             packext_(package) = v;
             packvext_(package) = fixnum_of_int(number_of_chunks);
         }
@@ -2227,15 +2113,6 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
 LispObject Lunintern(LispObject env, LispObject str)
 {   return Lunintern_2(nil, str, CP);
 }
-
-#ifdef COMMON
-
-static LispObject Lkeywordp(LispObject env, LispObject a)
-{   if (!symbolp(a)) return onevalue(nil);
-    return onevalue(Lispify_predicate(qpackage(a) == qvalue(keyword_package)));
-}
-
-#endif
 
 //
 // If I have a window system then getting characters from the keyboard
@@ -2254,17 +2131,93 @@ int tty_count;
 static char tty_buffer[TTYBUF_SIZE];
 static char *tty_pointer;
 
-#if !defined HAVE_FWIN || defined EMBEDDED
-static bool int_nest = false;
-#endif
-
-#ifndef HAVE_FWIN
-static int prevchar = '\n';
-#endif
-
 int terminal_pushed = NOT_CHAR;
 
 static int kilo = 0;
+
+static void wait_for_char()
+{
+    ensure_screen();
+// I rather believe that EMBEDDE and WINDOW_SYSTEM should by mutually
+// exclusive
+#ifdef WINDOW_SYSTEM
+#ifdef EMBEDDED
+#error EMBEDDED and WINDOW_SYSTEM both set. This is a configuration error.
+#endif
+    {   on_backtrace(tty_count = wimpget(tty_buffer),
+            if (miscflags & HEADLINE_FLAG)
+                err_printf("+++ Interrupted\n");
+            exit_reason =
+                (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
+                UNWIND_UNWIND;
+            exit_value = exit_tag = nil;
+            exit_count = 0);
+        tty_pointer = tty_buffer;
+        return;
+    }
+#else // WINDOW_SYSTEM
+#ifdef EMBEDDED
+//
+// Here I either do not have a window system or I have elected not to use it.
+//
+    fflush(stdout);
+    fflush(stderr);
+    for (;;) // The while loop is so I can restart after ^C
+    {   errorset_msg = NULL;
+        try
+        {   START_SETJMP_BLOCK;
+            while (tty_count<TTYBUF_SIZE && !interrupt_pending)
+            {   int c;
+// I really need to understand what to do here so that ^C gets processed
+// properly even while I am suspended waiting for getchar() to return...
+                c = getchar();
+                if (c == EOF)
+                {   clearerr(stdin);    // Believed to be what is wanted
+                    c = CTRL_D;         // Use ASCII ^D as EOF marker
+// I should perhaps use the UTF8 sequence f7/bf/bf/bf rather than 04?
+                }
+//
+// If I fetched a wide character I would need to utf-8 encode it here...
+// unless getchar has already delivered in that way.
+//
+                tty_buffer[tty_count++] = (char)c;
+                if (c == '\n' || c == '\v' || c == CTRL_D) break;
+            }
+            if (interrupt_pending)
+            {   interrupt_pending = false;
+                interrupted(nil);
+                tty_count = 0;
+                continue;
+            }
+            break;
+        }
+        catch (LispSigint e)
+        {   if (errorset_msg != NULL)
+            {   term_printf("\n%s detected\n", errorset_msg);
+                errorset_msg = NULL;
+            }
+            interrupt_pending = true;
+            tty_count = 0;
+        }
+    }
+    tty_pointer = tty_buffer;
+#else
+#error Either EMBEDDED or WINDOW_SYSTREM should be defined
+#endif // EMBEDDED
+#endif // WINDOW_SYSTEM
+}
+
+class RAIIpushed_clock
+{
+public:
+    RAIIpushed_clock()
+    {   push_clock();
+    }
+    ~RAIIpushed_clock()
+    {   pop_clock();
+    }
+};
 
 static int raw_char_from_terminal()
 //
@@ -2289,16 +2242,12 @@ static int raw_char_from_terminal()
 //
 // If the user provokes an interrupt (^C, or ESC or whatever) while I am
 // in here I will try to return promptly with an empty buffer and
-// some indication of an exception.
+// some indication of an exception. Well actually ^C handling turns out to
+// be WAY harder to implement nicely than I had expected, and it is not
+// really under control at present.
 //
 //
 {
-//
-// I have a hook here for cases where I want to call CSL from other C
-// code.  In that case the variable used here points at a function that
-// reads a single character.  When I use this option I will NOT generate
-// prompts.
-//
     volatile int c;
     if (++kilo >= 1024)
     {   kilo = 0;
@@ -2309,151 +2258,20 @@ static int raw_char_from_terminal()
         terminal_pushed = NOT_CHAR;
         return c;
     }
+//
+// I have a hook here for cases where I want to call CSL from other C
+// code.  In that case the variable used here points at a function that
+// reads a single character.  When I use this option I will NOT generate
+// prompts.
+//
     if (procedural_input != NULL) c = (*procedural_input)();
     else if (non_terminal_input != NULL)
     {   c = GETC(non_terminal_input);
     }
     else
     {   if (tty_count == 0)
-        {
-//
-// Time spent waiting for keyboard input is not counted against the user.
-//
-            push_clock();
-#ifdef HAVE_FWIN
-// Under FWIN I will arrange prompts at a lower level.
-#else
-            if (prevchar == '\n')
-            {   escaped_printing = 0;
-                if (prompt_thing != nil)
-                {   push(active_stream);
-                    active_stream = qvalue(terminal_io);
-                    if (!is_stream(active_stream))
-                        active_stream = lisp_terminal_io;
-                    internal_prin(prompt_thing, false);
-                    if (exception_pending()) flip_exception();
-                    pop(active_stream);
-                }
-            }
-            ensure_screen();
-            if (exception_pending())
-            {   pop_clock();
-                return EOF;
-            }
-#endif
-#ifdef WINDOW_SYSTEM
-#ifndef HAVE_FWIN
-            if (use_wimp)
-#endif
-            {   tty_count = wimpget(tty_buffer);
-#ifdef HAVE_FWIN
-//
-// With FWIN, wimpget() always returns, but sometimes it will have set
-// a stack overflow condition to mark that the user has tried to
-// signal an exception via ^C or ^G. In which case I just want to
-// return promptly.
-//
-                if (stack >= stacklimit)
-                {   reclaim(nil, "stack", GC_STACK, 0);
-                    if (exception_pending())
-                    {   pop_clock();
-                        return (0x1f & 'C');
-                    }
-                }
-            }
-#else // HAVE_FWIN
-                if (exception_pending())
-                {   pop_clock();
-                    return EOF;
-                }
-                if (interrupt_pending)
-                {   interrupt_pending = 0;
-                    if (miscflags & HEADLINE_FLAG)
-                        err_printf("+++ Interrupted\n");
-                    exit_reason =
-                        (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
-                        (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
-                        UNWIND_UNWIND;
-                    exit_value = exit_tag = nil;
-//
-// In this case I return no values at all.
-//
-                    exit_count = 0;
-                    flip_exception();
-                }
-            }
-            else
-#endif // HAVE_FWIN
-#endif // WINDOW_SYSTEM
-#if !defined HAVE_FWIN || defined EMBEDDED
-//
-// Here I either do not have a window system or I have elected not to use it.
-// but note that with fwin I am simplifying things and always do the calls
-// as if windowing was going on even when it is not!
-//
-            fflush(stdout);
-            fflush(stderr);
-            for (;;) // The while loop is so I can restart after ^C
-            {
-//
-// The try block here can not mask any bindings of fluid variables...
-//
-                errorset_msg = NULL;
-                try
-                {   START_TRY_BLOCK;
-                    while (tty_count<TTYBUF_SIZE && !interrupt_pending)
-                    {   int c;
-                        sigint_must_throw = true;
-                        c = getchar();
-                        sigint_must_throw = false;
-                        if (c == EOF)
-                        {   clearerr(stdin);    // Believed to be what is wanted
-                            c = CTRL_D;         // Use ASCII ^D as EOF marker
-// I should perhaps use f7/bf/bf/bf rather than 04?
-                        }
-//
-// If I fetched a wide character I would need to utf-8 encode it here...
-// unless getchar has already delivered in that way.
-//
-                        tty_buffer[tty_count++] = (char)c;
-                        if (c == '\n' || c == '\v' || c == CTRL_D) break;
-                    }
-                    if (interrupt_pending)
-                    {   push_clock();
-//
-// Time spent in the interrupt handler here will not be counted as CPU
-// time used.
-//
-                        interrupt_pending = false;
-                        if (int_nest)
-                        {   err_printf("\n+++ Nested interrupt ignored\n");
-                            tty_count = 0;
-                            break;
-                        }
-                        else
-                        {   int_nest = true;
-                            interrupted(nil);
-                            int_nest = false;
-                        }
-                        pop_clock();
-                        tty_count = 0;
-                        if (!exception_pending()) continue;
-                    }
-                    break;
-                }
-                catch (LispSigint e)
-                {   if (errorset_msg != NULL)
-                    {   term_printf("\n%s detected\n", errorset_msg);
-                        errorset_msg = NULL;
-                    }
-                    sigint_must_throw = false;
-                    interrupt_pending = true;
-                    tty_count = 0;
-                }
-            }
-#endif // HAVE_FWIN
-            pop_clock();
-            tty_pointer = tty_buffer;
+        {   RAIIpushed_clock RAII_clock;
+            wait_for_char();
         }
         if (tty_count == 0) c = '\n'; // ^C odd case
         else
@@ -2467,8 +2285,7 @@ static int raw_char_from_terminal()
     {   LispObject stream = qvalue(standard_output);
         if (!is_stream(stream)) stream = qvalue(terminal_io);
         if (!is_stream(stream)) stream = lisp_terminal_io;
-        putc_stream(c, stream);
-        if (exception_pending()) flip_exception();
+        ignore_error(putc_stream(c, stream));
     }
     else if (spool_file != NULL &&
              non_terminal_input == NULL) PUTC(c, spool_file);
@@ -2499,9 +2316,9 @@ LispObject Lrds(LispObject env, LispObject a)
 {   LispObject old = qvalue(standard_input);
     if (a == nil) a = qvalue(terminal_io);
     if (a == old) return onevalue(old);
-    else if (!is_stream(a)) return aerror1("rds", a);
+    else if (!is_stream(a)) aerror1("rds", a);
     else if (stream_read_fn(a) == char_from_illegal)
-        return aerror("rds"); // closed stream or output stream
+        aerror("rds"); // closed stream or output stream
     qvalue(standard_input) = a;
     return onevalue(old);
 }
@@ -2542,7 +2359,7 @@ LispObject Lrseek_2(LispObject env, LispObject stream, LispObject a)
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     if (is_fixnum(a)) n = (int32_t)int_of_fixnum(a);
-    else return aerror("rseek");
+    else aerror("rseek");
     other_read_action(READ_FLUSH, stream);
     if (other_read_action(n | 0x80000000, stream) != 0) return onevalue(nil);
     else return onevalue(lisp_true);
@@ -2581,7 +2398,6 @@ static void skip_whitespace(LispObject stream)
             case ' ':  case '\t':   case '\n':
             case '\r': case CTRL_C:
                 curchar = getc_stream(stream);
-                errexitv();
                 continue;
 
 #ifndef COMMON
@@ -2593,7 +2409,6 @@ static void skip_whitespace(LispObject stream)
                        curchar != EOF &&
                        curchar != CTRL_D)
                 {   curchar = getc_stream(stream);
-                    errexitv();
                 }
                 continue;
 
@@ -2637,9 +2452,7 @@ static LispObject read_list(LispObject stream)
     else
 #endif
         l = read_s(stream);
-    errexitn(1);
     l = ncons(l);
-    errexitn(1);
     push(l);    // this will be the final result
     for (;;)
     {   skip_whitespace(stack[-1]);
@@ -2666,7 +2479,6 @@ static LispObject read_list(LispObject stream)
                 push(l);
                 w = read_s(stack[-2]);
                 pop(l);
-                errexitn(2);
                 qcdr(l) = w;
                 skip_whitespace(stack[-1]);
                 if (curchar == ')') curchar = NOT_CHAR;
@@ -2677,13 +2489,11 @@ static LispObject read_list(LispObject stream)
             case '#':
                 push(l);
                 w = read_hash(stack[-2]);
-                errexitn(3);
                 if (w == SPID_NOINPUT)
                 {   pop(l);
                     continue;
                 }
                 w = ncons(w);
-                errexitn(3);
                 pop(l);
                 qcdr(l) = w;
                 l = w;
@@ -2692,9 +2502,7 @@ static LispObject read_list(LispObject stream)
             default:
                 push(l);
                 w = read_s(stack[-2]);
-                errexitn(3);
                 w = ncons(w);
-                errexitn(3);
                 pop(l);
                 qcdr(l) = w;
                 l = w;
@@ -2710,7 +2518,6 @@ static LispObject list_to_vector(LispObject l)
     push(l);
     p = getvector_init(CELL*(len+1), nil);
     pop(l);
-    errexit();
     len = 0;
     while (consp(l))
     {   elt(p, len) = qcar(l);
@@ -2732,7 +2539,6 @@ static bool evalfeature(LispObject u)
         else if (fn == and_symbol)
         {   while (consp(u))
             {   if (!evalfeature(qcar(u))) return false;
-                if (exception_pending()) return false;
                 u = qcdr(u);
             }
             return true;
@@ -2740,7 +2546,6 @@ static bool evalfeature(LispObject u)
         else if (fn == or_symbol)
         {   while (consp(u))
             {   if (evalfeature(qcar(u))) return true;
-                if (exception_pending()) return false;
                 u = qcdr(u);
             }
             return false;
@@ -2765,7 +2570,6 @@ static LispObject read_hash(LispObject stream)
     int radix;
     LispObject p;
     curchar = getc_stream(stream);
-    errexit();
     if (curchar <= 0xff && isdigit(curchar))
     {   w = 0;
         do
@@ -2774,7 +2578,6 @@ static LispObject read_hash(LispObject stream)
 // Observe that I do not do long arithmetic here!
 //
             curchar = getc_stream(stream);
-            errexit();
         }
         while (curchar <= 0xff && isdigit(curchar));
     }
@@ -2791,7 +2594,7 @@ static LispObject read_hash(LispObject stream)
                 if (fixnum_of_int(w) == qcar(k)) return qcdr(k);
                 p = qcdr(p);
             }
-            return aerror1("Label not found with #n# syntax", fixnum_of_int(w));
+            aerror1("Label not found with #n# syntax", fixnum_of_int(w));
         case '=':
             curchar = NOT_CHAR;
             push(stream);
@@ -2801,10 +2604,8 @@ static LispObject read_hash(LispObject stream)
 //
             p = read_s(stream);
             pop(stream);
-            errexit();
             push(p);
             p = acons(fixnum_of_int(w), p, reader_workspace);
-            errexitn(1);
             reader_workspace = p;
             pop(p);
             return p;
@@ -2812,7 +2613,6 @@ static LispObject read_hash(LispObject stream)
         case ':':       // #:XXX reads in a gensym...
             curchar = NOT_CHAR;
             {   LispObject base = read_s(stream), al;   // The XXX bit unadorned
-                errexit();
 //
 // This keeps an association list of gensyms present in this call to READ.
 // Note that if you use #.(read) [or other clever things] you may get
@@ -2833,33 +2633,26 @@ static LispObject read_hash(LispObject stream)
 //
                 al = Lgensym2(nil, base);
                 pop(base);
-                errexit();
                 al = acons(base, al, reader_workspace);
-                errexit();
                 reader_workspace = al;
                 return qcdr(qcar(al));
             }
 
         case '(':       // Simple vector
             curchar = getc_stream(stream);
-            errexit();
             skip_whitespace(stream);
-            errexit();
             {   LispObject l = read_list(stream);
-                errexit();
                 return list_to_vector(l);
             }
         case '\'':
             curchar = NOT_CHAR;
             p = read_s(stream);
-            errexit();
             return list2(function_symbol, p);
         case '\\':
 //
 // The character just after "#\" is read without any case folding
 //
             curchar = getc_stream(stream);
-            errexit();
             w = curchar;
 #ifdef COMMON
 //
@@ -2872,27 +2665,21 @@ static LispObject read_hash(LispObject stream)
                 while (w <= 0x7f && isalpha(w) && bp < 30)
                 {   buffer[bp++] = toupper(w);  // Force word to upper case
                     curchar = getc_stream(stream);
-                    errexit();
                     w = curchar;
                 }
                 if (bp == 1) return pack_char(0, w0 & 0x001fffff);
                 buffer[bp] = 0;
                 p = make_string(buffer);
-                errexit();
                 p = Lintern_2(nil, p, qvalue(keyword_package));
-                errexit();
                 p = get(p, named_character, nil);
-                errexit();
                 return p;
             }
 #endif
             curchar = NOT_CHAR;
-            errexit();
             return pack_char(0, w & 0x001fffff);
         case '.':
             curchar = NOT_CHAR;
             p = read_s(stream);
-            errexit();
 //
 // The next is in case the expression evaluated involves reading from
 // this or another stream.
@@ -2902,7 +2689,6 @@ static LispObject read_hash(LispObject stream)
                 curchar = NOT_CHAR;
             }
             p = eval(p, nil);
-            errexit();
             return onevalue(p);
         case '+':
         case '-':
@@ -2918,14 +2704,9 @@ static LispObject read_hash(LispObject stream)
 //
             push(stream);
             p = read_s(stream);
-            errexitn(1);
             w = evalfeature(p);
             pop(stream);
-            errexit();
-            if (w == v)
-            {   read_s(stream);
-                errexit();
-            }
+            if (w == v) read_s(stream);
 //
 // The following flag-value shows that read_hash() has not actually read
 // anything - but it may have skipped over some unwanted stuff.
@@ -2948,14 +2729,10 @@ static LispObject read_hash(LispObject stream)
 // Here I have a number specified in some unusual radix
     w = fixnum_of_int(0);
     curchar = getc_stream(stream);
-    errexit();
     while ((v = value_in_radix(curchar, radix)) >= 0)
     {   w = times2(w, fixnum_of_int((int32_t)radix));
-        errexit();
         w = plus2(w, fixnum_of_int(v));
-        errexit();
         curchar = getc_stream(stream);
-        errexit();
     }
     return w;
 }
@@ -3006,10 +2783,8 @@ static LispObject backquote_expander(LispObject a)
     {   w1 = qcar(qcdr(f));
         push(w1);
         a = backquote_expander(qcdr(a));
-        errexit();
         pop(w1);
         w1 = list2(w1, a);
-        errexit();
         return cons(append_symbol, w1);
     }
 //
@@ -3021,13 +2796,10 @@ static LispObject backquote_expander(LispObject a)
     push(a);
     f = backquote_expander(f);
     pop(a);
-    errexit();
     push(f);
     a = backquote_expander(qcdr(a));
     pop(f);
-    errexit();
     a = list2(f, a);
-    errexit();
     return cons(cons_symbol, a);
 }
 
@@ -3046,16 +2818,6 @@ void packcharacter(int c)
     if (boffop >= (size_t)boffo_size-CELL-8)
     {   LispObject new_boffo =
             getvector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
-        if (exception_pending())
-        {   flip_exception();
-//
-// What should I do if I fail to expand boffo - for present I silently
-// truncate the object I am reading.  But I set a flag that will be checked
-// on the way out of read/compress, so the user will know.
-//
-            read_failure = true;
-            return;
-        }
         memcpy((void *)((char *)new_boffo + (CELL-TAG_VECTOR)),
                &boffo_char(0), boffop);
         boffo = new_boffo;
@@ -3087,11 +2849,6 @@ void packbyte(int c)
     if (boffop >= (size_t)boffo_size-CELL-8)
     {   LispObject new_boffo =
             getvector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
-        if (exception_pending())
-        {   flip_exception();
-            read_failure = true;
-            return;
-        }
         memcpy((void *)((char *)new_boffo + (CELL-TAG_VECTOR)),
                &boffo_char(0), boffop);
         boffo = new_boffo;
@@ -3107,7 +2864,6 @@ static LispObject read_s(LispObject stream)
 {   LispObject w;
     for (;;)
     {   skip_whitespace(stream);
-        errexit();
         switch (curchar)
         {   case EOF:
             case CTRL_D:
@@ -3116,16 +2872,13 @@ static LispObject read_s(LispObject stream)
             case '(':
                 curchar = NOT_CHAR;
                 skip_whitespace(stream);
-                errexit();
                 return read_list(stream);
 
 #ifndef COMMON
             case '[':
                 curchar = NOT_CHAR;
                 skip_whitespace(stream);
-                errexit();
                 w = read_list(stream);
-                errexit();
                 return list_to_vector(w);
 
             case ']':
@@ -3137,27 +2890,22 @@ static LispObject read_s(LispObject stream)
             case '\'':
                 curchar = NOT_CHAR;
                 w = read_s(stream);
-                errexit();
                 return list2(quote_symbol, w);
 
             case '`':
                 curchar = NOT_CHAR;
                 w = read_s(stream);
-                errexit();
                 return backquote_expander(w);
 
             case ',':
                 curchar = getc_stream(stream);
-                errexit();
                 if (curchar == '@')
                 {   curchar = NOT_CHAR;
                     w = read_s(stream);
-                    errexit();
                     return list2(comma_at_symbol, w);
                 }
                 else
                 {   w = read_s(stream);
-                    errexit();
                     return list2(comma_symbol, w);
                 }
 
@@ -3183,11 +2931,9 @@ static LispObject read_s(LispObject stream)
                 boffop = 0;
                 {   for (;;)    // Used to cope with "abc""def"
                     {   curchar = getc_stream(stream);
-                        errexit();
 #ifdef COMMON
                         if (curchar == ESCAPE_CHAR)
                         {   curchar = getc_stream(stream);
-                            errexit();
                             if (curchar!=EOF) curchar |= ESCAPED_CHAR;
                         }
 #endif
@@ -3200,18 +2946,15 @@ static LispObject read_s(LispObject stream)
                             packcharacter(curchar);
                             pop(stream);
                             curchar = getc_stream(stream);
-                            errexit();
 #ifdef COMMON
                             if (curchar == ESCAPE_CHAR)
                             {   curchar = getc_stream(stream);
-                                errexit();
                                 if (curchar!=EOF) curchar |= ESCAPED_CHAR;
                             }
 #endif
                         }
 #ifndef COMMON
                         curchar = getc_stream(stream);
-                        errexit();
                         if (curchar == '"')
                         {   push(stream);
                             packcharacter(curchar);
@@ -3241,7 +2984,6 @@ static LispObject read_s(LispObject stream)
                     packcharacter(curchar); // in fact char is Basic Latin
                     pop(stream);
                     curchar = getc_stream(stream);
-                    errexit();
 // + or - not followed by a digit will be read as a symbol
                     if (curchar > 0xff || !isdigit(curchar))
                         return intern(boffop, false);
@@ -3251,7 +2993,6 @@ static LispObject read_s(LispObject stream)
                     packcharacter(curchar);  // Should be '0 to '9' (only)
                     pop(stream);
                     curchar = getc_stream(stream);
-                    errexit();
                 }
 // accept possible decimal point
                 if (curchar == '.')
@@ -3259,13 +3000,11 @@ static LispObject read_s(LispObject stream)
                     packcharacter(curchar);
                     pop(stream);
                     curchar = getc_stream(stream);
-                    errexit();
                     while (curchar <= 0xff && isdigit(curchar))
                     {   push(stream);
                         packcharacter(curchar);
                         pop(stream);
                         curchar = getc_stream(stream);
-                        errexit();
                     }
                 }
 // accept possible exponent
@@ -3280,20 +3019,17 @@ static LispObject read_s(LispObject stream)
                     packcharacter(curchar);
                     pop(stream);
                     curchar = getc_stream(stream);
-                    errexit();
                     if (curchar == '+' || curchar == '-')
                     {   push(stream);
                         packcharacter(curchar);
                         pop(stream);
                         curchar = getc_stream(stream);
-                        errexit();
                     }
                     while (curchar <= 0xff && isdigit(curchar))
                     {   push(stream);
                         packcharacter(curchar);
                         pop(stream);
                         curchar = getc_stream(stream);
-                        errexit();
                     }
                 }
                 return intern(boffop, false);
@@ -3305,7 +3041,6 @@ static LispObject read_s(LispObject stream)
                 packcharacter(curchar);
                 pop(stream);
                 curchar = getc_stream(stream);
-                errexit();
                 return intern(boffop, false);
 #endif
 
@@ -3320,7 +3055,6 @@ static LispObject read_s(LispObject stream)
                 while (curchar == '|')
                 {   stackcheck0(0);
                     curchar = getc_stream(stream);
-                    errexit();
                     within_vbars = !within_vbars;
 //
 // A funny thought arises here - maybe the characters ||123 are a potential
@@ -3339,7 +3073,6 @@ static LispObject read_s(LispObject stream)
                 if (curchar == ESCAPE_CHAR)
                 {   stackcheck0(0);
                     curchar = getc_stream(stream);
-                    errexit();
 // However, any character escaped with '\' means we do not have a number
                     escaped = true;
                 }
@@ -3369,13 +3102,11 @@ static LispObject read_s(LispObject stream)
                     packcharacter(curchar);
                     pop(stream);
                     curchar = getc_stream(stream);
-                    errexit();
 #ifdef COMMON
                     if (within_vbars) escaped = true;
                     while (curchar == '|')
                     {   stackcheck0(0);
                         curchar = getc_stream(stream);
-                        errexit();
                         within_vbars = !within_vbars;
                     }
 #endif
@@ -3383,7 +3114,6 @@ static LispObject read_s(LispObject stream)
                     else if (curchar == ESCAPE_CHAR)
                     {   stackcheck0(0);
                         curchar = getc_stream(stream);
-                        errexit();
                         curchar |= ESCAPED_CHAR;
                         escaped = true;
                     }
@@ -3456,7 +3186,6 @@ static LispObject read_s(LispObject stream)
                     push(w);
                     wx = iintern(boffo, boffop, w, 4);
                     pop(w);
-                    errexit();
                     if (mv_2 == nil)
                     {   err_printf("+++ Symbol %.*s not external in %s\n",
                                    (int)boffop, &celt(boffo, 0), package_name);
@@ -3483,7 +3212,7 @@ static LispObject read_s(LispObject stream)
 
 int char_from_synonym(LispObject stream)
 {   stream = qvalue(stream_read_data(stream));
-    if (!is_stream(stream)) return aerror1("bad synonym stream", stream);
+    if (!is_stream(stream)) aerror1("bad synonym stream", stream);
     return getc_stream(stream);
 }
 
@@ -3506,7 +3235,6 @@ int char_from_concatenated(LispObject stream)
         push2(l, stream);
         c = getc_stream(s1);
         pop2(stream, l);
-        errexit();
         if (c == EOF)
         {   l = qcdr(l);
             stream_read_data(stream) = l;
@@ -3519,7 +3247,7 @@ int char_from_concatenated(LispObject stream)
 int char_from_echo(LispObject stream)
 {   int c;
     LispObject stream1 = qvalue(stream_read_data(stream));
-    if (!is_stream(stream1)) return aerror1("bad synonym stream", stream1);
+    if (!is_stream(stream1)) aerror1("bad synonym stream", stream1);
     c = getc_stream(stream1);
     char_to_synonym(c, stream);
     return c;
@@ -3539,8 +3267,7 @@ static int raw_char_from_file(LispObject stream)
     {   LispObject stream1 = qvalue(standard_output);
         if (!is_stream(stream1)) stream1 = qvalue(terminal_io);
         if (!is_stream(stream1)) stream1 = lisp_terminal_io;
-        putc_stream(ch, stream1);
-        if (exception_pending()) flip_exception();
+        ignore_error(putc_stream(ch, stream1));
     }
     return ch;
 }
@@ -3642,7 +3369,7 @@ int32_t read_action_synonym(int32_t c, LispObject f)
 {   int32_t r;
     LispObject f1;
     f1 = qvalue(stream_read_data(f));
-    if (!is_stream(f1)) return aerror1("bad synonym stream", f1);
+    if (!is_stream(f1)) aerror1("bad synonym stream", f1);
     r = other_read_action(c, f1);
     if (c == READ_CLOSE)
     {   set_stream_read_fn(f, char_from_illegal);
@@ -3721,43 +3448,61 @@ int32_t read_action_vector(int32_t op, LispObject f)
 
 static int most_recent_read_point = 0;
 
+static inline LispObject Lread_sub(LispObject stream, int cursave)
+{   if (!is_stream(stream)) stream = qvalue(terminal_io);
+    if (!is_stream(stream)) stream = lisp_terminal_io;
+    curchar = NOT_CHAR;
+    most_recent_read_point = other_read_action(READ_TELL, stream);
+    class save_stream
+    {   LispObject *save;
+        int cursave;
+    public:
+        save_stream(LispObject stream, int cs)
+        {   push(stream);
+            save = stack;
+            cursave = cs;
+        }
+        ~save_stream()
+        {   stack = save;
+            LispObject stream;
+            pop(stream);
+            if (curchar != NOT_CHAR) other_read_action(curchar, stream);
+            curchar = cursave;
+            current_file = stream_type(stream);
+        }
+    };
+    save_stream RAII(stream, cursave);
+    return read_s(stream);
+}
+
+class save_reader_workspace
+{   LispObject *save;
+public:
+    save_reader_workspace()
+    {   push(reader_workspace);
+        save = stack;
+    }
+    ~save_reader_workspace()
+    {   stack = save;
+        pop(reader_workspace);
+    }
+};
+
 LispObject Lread(LispObject env, int nargs, ...)
 //
 // The full version of read_s() has to support extra optional args
 // that deal with error and eof returns... and a recursive-p arg!
 //
-{   LispObject w, stream = qvalue(standard_input);
+{   LispObject stream = qvalue(standard_input);
     int cursave = curchar;
     argcheck(nargs, 0, "read");
 #ifdef COMMON
-    push(reader_workspace);
+    save_reader_workspace RAII;
     reader_workspace = nil;
-#endif
-    read_failure = false;
-    if (!is_stream(stream)) stream = qvalue(terminal_io);
-    if (!is_stream(stream)) stream = lisp_terminal_io;
-    curchar = NOT_CHAR;
-    most_recent_read_point = other_read_action(READ_TELL, stream);
-    push(stream);
-    w = read_s(stream);
-    pop(stream);
-    if (curchar != NOT_CHAR) other_read_action(curchar, stream);
-    curchar = cursave;
-    current_file = stream_type(stream);
-#ifdef COMMON
-    if (exception_pending())
-    {   flip_exception();
-        pop(reader_workspace);
-        flip_exception();
-        return nil;
-    }
-    pop(reader_workspace);
+    return Lread_sub(stream, curchar),
 #else
-    errexit();
+    return Lread_sub(stream, curchar);
 #endif
-    if (read_failure) return aerror("read");
-
-    return onevalue(w);
 }
 
 static LispObject Lwhere_was_that(LispObject env, int nargs, ...)
@@ -3769,45 +3514,42 @@ static LispObject Lwhere_was_that(LispObject env, int nargs, ...)
 #else
     w = list2(current_file, fixnum_of_int(most_recent_read_point));
 #endif
-    errexit();
     return onevalue(w);
 }
 
-#ifdef COMMON
+class save_stream
+{   LispObject *save;
+    int cursave;
+public:
+    save_stream(LispObject oldstream, int curchar)
+    {   push2(reader_workspace, oldstream);
+        save = stack;
+    }
+    ~save_stream()
+    {   stack = save;
+        LispObject stream;
+        curchar = cursave;
+        pop2(stream, reader_workspace);
+// For this to be valid it is important that Lrds can never both succeed
+// and lead to garbage collection (and hence potential relocation of the
+// return value from this function. By good fortune I seem to be safe! 
+        Lrds(nil, stream);
+    }
+};
 
 LispObject Lread_1(LispObject env, LispObject stream)
 {   int cursave = curchar;
-    LispObject w;
-    LispObject save = Lrds(nil, stream);
-    errexit();
-    push2(reader_workspace, save);
+    save_stream RAII(Lrds(stream, nil), cursave);
     reader_workspace = nil;
     read_failure = false;
     stream = qvalue(standard_input);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     curchar = NOT_CHAR;
-    w = read_s(stream);
+    LispObject w = read_s(stream);
     if (curchar != NOT_CHAR) other_read_action(curchar, stream);
-    curchar = cursave;
-    if (exception_pending())
-    {   flip_exception();
-        pop2(save, reader_workspace);
-        Lrds(nil, save);
-        errexit();
-        flip_exception();
-        return nil;
-    }
-    pop2(save, reader_workspace);
-    push(w);
-    Lrds(nil, save);
-    pop(w);
-    errexit();
-    if (read_failure) return aerror("read");
     return onevalue(w);
 }
-
-#endif
 
 //
 // compress is not a Common Lisp function, but it is another on those
@@ -3892,9 +3634,8 @@ LispObject read_from_vector(char *v)
     read_failure = false;
     curchar = NOT_CHAR;
     r = read_s(lisp_work_stream);
-    errexit();
     curchar = savecur;
-    if (read_failure) return aerror("read-from-vector");
+    if (read_failure) aerror("read-from-vector");
     return onevalue(r);
 }
 
@@ -3907,10 +3648,9 @@ LispObject Lcompress(LispObject env, LispObject stream)
     read_failure = false;
     curchar = NOT_CHAR;
     env = read_s(lisp_work_stream);
-    errexit();
     stream_read_data(lisp_work_stream) = nil;
     curchar = savecur;
-    if (read_failure) return aerror("compress");
+    if (read_failure) aerror("compress");
     return onevalue(env);
 }
 
@@ -3924,7 +3664,6 @@ LispObject Llist_to_string(LispObject env, LispObject stream)
     stream_pushed_char(lisp_work_stream) = NOT_CHAR;
     while (consp(stream)) n++, stream = qcdr(stream);
     str = getvector(TAG_VECTOR, TYPE_STRING_4, n);
-    errexit();
     s = (char *)str + CELL - TAG_VECTOR;
     for (k=CELL; k<n; k++) *s++ = (char)char_from_list(lisp_work_stream);
     for (; (k&7) != 0; k++) *s++ = 0; // zero-pad final doubleword
@@ -3933,10 +3672,8 @@ LispObject Llist_to_string(LispObject env, LispObject stream)
 
 LispObject Llist_to_symbol(LispObject env, LispObject stream)
 {   stream = Llist_to_string(nil, stream);
-    errexit();
 #ifdef COMMON
     stream = Lintern_2(nil, stream, CP);
-    errexit();
     return onevalue(stream);  // NB intern would have returned 2 values
 #else
     return Lintern(nil, stream);
@@ -3948,18 +3685,14 @@ LispObject Lstring2list(LispObject env, LispObject a)
     LispObject r;
     int32_t i, len;
 #ifdef COMMON
-    if (complex_stringp(a)
-{   a = simplify_string(a);
-        errexit();
-    }
+    if (complex_stringp(a) a = simplify_string(a);
 #endif
     if (symbolp(a))
-{   a = get_pname(a);
-        errexit();
+    {   a = get_pname(a);
         h = vechdr(a);
     }
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
-        return aerror1("string2list", a);
+        aerror1("string2list", a);
     len = length_of_byteheader(h) - CELL;
     r = nil;
     for (i=len-1; i>=0; i--)
@@ -3967,7 +3700,6 @@ LispObject Lstring2list(LispObject env, LispObject a)
         push(a);
         r = cons(fixnum_of_int(c), r);
         pop(a);
-        errexit();
     }
     return r;
 }
@@ -3982,7 +3714,7 @@ void read_eval_print(int noisy)
         miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
         errorset_msg = NULL;
         try
-        {   START_TRY_BLOCK;
+        {   START_SETJMP_BLOCK;
             u = Lread(nil, 0);
         }
         catch (LispSignal e)
@@ -3993,7 +3725,6 @@ void read_eval_print(int noisy)
             }
             unwind_stack(save, false);
             stack = save;
-#ifndef UNDER_CE
             signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
 // SIGSEGV will be handled on the alternative stack
@@ -4012,15 +3743,20 @@ void read_eval_print(int noisy)
 #ifdef SIGILL
             if (segvtrap) signal(SIGILL, low_level_signal_handler);
 #endif
-#endif
             err_printf("\n... read failed\n");
             errors_now++;
             if (errors_limit >= 0 && errors_now > errors_limit)
                 resource_exceeded();
             else continue;
         }
-        if (exception_pending())
-        {   flip_exception();
+        catch (LispResource e)
+        {   throw;
+        }
+        catch (LispRestart e)
+        {   throw;
+        }
+        catch (LispException e)
+        {
 //
 // Maybe (stop) or (preserve) was called from a read-macro?  Otherwise
 // errors reading are ignored and the system tries to read the next
@@ -4028,11 +3764,6 @@ void read_eval_print(int noisy)
 // perhaps unreasonably or unexpectedly, THROW will not be propagated
 // back past a read_eval_print loop.
 //
-            if (exit_reason == UNWIND_RESTART ||
-                exit_reason == UNWIND_RESOURCE)
-            {   flip_exception();
-                return;
-            }
             err_printf("\n... read failed\n");
             continue;
         }
@@ -4070,26 +3801,28 @@ void read_eval_print(int noisy)
         miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
         errorset_msg = NULL;
         try
-        {   START_TRY_BLOCK;
-            exit_count = 1; // Because I care how many results are returned
-            u = eval(u, nil);
-            if (exception_pending())
-            {   flip_exception(); // safe again!
-                if (exit_reason == UNWIND_RESTART ||
-                    exit_reason == UNWIND_RESOURCE)
-                {   flip_exception();
-                    return;
-                }
-                err_printf("\n... continuing after error\n");
+        {   START_SETJMP_BLOCK;
+            try
+            {   START_SETJMP_BLOCK;
+                exit_count = 1; // Because I care how many results are returned
+                u = eval(u, nil);
+            }
+            catch (LispResource e)
+            {   throw;
+            }
+            catch (LispRestart e)
+            {   throw;
+            }
+            catch (LispException e)
+            {   err_printf("\n... continuing after error\n");
                 if (spool_file != NULL) fflush(spool_file);
                 continue;
             }
             if (noisy)
             {
 #ifndef COMMON
-                print(u);
+                ignore_error(print(u));
                 stdout_printf("\n");
-                if (exception_pending()) flip_exception();
 #else
                 nvals = exit_count;
 //
@@ -4102,10 +3835,9 @@ void read_eval_print(int noisy)
 //
                 if (nvals > 0)
                 {   push(mv_2);
-                    print(u);
+                    ignore_error(print(u));
                     pop(u);
                 }
-                if (exception_pending()) flip_exception();
                 mv_2 = u;
                 miscflags |= (HEADLINE_FLAG | FNAME_FLAG | ARGS_FLAG);
 //
@@ -4114,11 +3846,7 @@ void read_eval_print(int noisy)
 // mv_2[] that is accessed here.
 //
                 for (i=2; i<=nvals; i++)
-                {   print((&mv_2)[i-2]);
-                    if (exception_pending())
-                    {   flip_exception();
-                        break;
-                    }
+                {   if_error(print((&mv_2)[i-2]), break);
                 }
                 stdout_printf("\n");
 #endif
@@ -4131,7 +3859,6 @@ void read_eval_print(int noisy)
             }
             unwind_stack(save, false);
             stack = save;
-#ifndef UNDER_CE
             signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
 // SIGSEGV will be handled on the alternative stack
@@ -4149,7 +3876,6 @@ void read_eval_print(int noisy)
 #endif
 #ifdef SIGILL
             if (segvtrap) signal(SIGILL, low_level_signal_handler);
-#endif
 #endif
             err_printf("\n... continuing after error\n");
             if (spool_file != NULL) fflush(spool_file);
@@ -4198,18 +3924,14 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
         char tail[8];
         int32_t i, len;
 #ifdef COMMON
-        if (complex_stringp(file))
-        {   file = simplify_string(file);
-            errexitn(3);
-        }
+        if (complex_stringp(file)) file = simplify_string(file);
 #endif
         if (symbolp(file))
         {   file = get_pname(file);
-            errexitn(3);
             h = vechdr(file);
         }
         else if (!is_vector(file) || !is_string_header(h = vechdr(file)))
-            return aerror1("load", file);
+            aerror1("load", file);
         len = length_of_byteheader(h) - CELL;
         filestring = (char *)file + CELL-TAG_VECTOR;
         for (i=0; i<6; i++)
@@ -4233,7 +3955,6 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
                 prin_to_trace(file); trace_printf("\n");
             }
             Lload_module(nil, stack[0]);
-            errexitn(3);
             if (verbose)
             {
 #ifdef COMMON
@@ -4256,7 +3977,6 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
 #else
         stack[-1] = r = Lopen(nil, file, fixnum_of_int(1+64));
 #endif
-        errexitn(3);
 #ifdef COMMON
 //
 // The test here is necessary since in Common Lisp mode an attempt to OPEN a
@@ -4266,12 +3986,11 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
         if (r == nil)
         {   pop(file);
             popv(2);
-            if (nofile) return error(1, err_open_failed, file);
+            if (nofile) error(1, err_open_failed, file);
             else return onevalue(nil);
         }
 #endif
         stack[-2] = r = Lrds(nil, r);
-        errexitn(3);
         if (verbose)
         {   file = stack[0];
 #ifdef COMMON
@@ -4280,11 +3999,13 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
             trace_printf("\nReading "); prin_to_trace(file); trace_printf("\n");
 #endif
         }
-        errexitn(3);
     }
-    read_eval_print(noisy);
-    if (exception_pending())
-    {   flip_exception();
+    try
+    {   START_SETJMP_BLOCK;
+        read_eval_print(noisy);
+    }
+    catch (LispException e)
+    {   int _reason = exit_reason;
         if (exit_reason == UNWIND_ERROR ||
             exit_reason == UNWIND_FNAME ||
             exit_reason == UNWIND_RESOURCE)
@@ -4298,14 +4019,12 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
             trace_printf(" (bad)\n");
         }
         if (stack[0] != nil)
-        {   Lclose(nil, stack[-1]);
-            if (exception_pending()) flip_exception();
+        {   ignore_error(Lclose(nil, stack[-1]));
             Lrds(nil, stack[-2]);
-            errexitn(3);
         }
-        flip_exception();
         popv(3);
-        return nil;
+        exit_reason = _reason;
+        throw;
     }
     if (verbose)
     {
@@ -4318,10 +4037,8 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
     prin_to_trace(stack[0]);
     trace_printf("\n");
     if (stack[0] != nil)
-    {   Lclose(nil, stack[-1]);
-        if (exception_pending()) flip_exception();
+    {   ignore_error(Lclose(nil, stack[-1]));
         Lrds(nil, stack[-2]);
-        errexitn(3);
     }
     popv(3);
 #ifdef COMMON
@@ -4344,7 +4061,7 @@ LispObject Lrdfn(LispObject env, int nargs, ...)
     LispObject file, noisy, verbose, nofile = lisp_true;
     if (nargs == 0)
         return Lrdf4(nil, nil, lisp_true, lisp_true, lisp_true);
-    if (nargs < 3 || nargs > 4) return aerror("load");
+    if (nargs < 3 || nargs > 4) aerror("load");
     va_start(a, nargs);
     file = va_arg(a, LispObject);
     noisy = va_arg(a, LispObject);
@@ -4365,14 +4082,6 @@ LispObject Lspool(LispObject env, LispObject file)
     Header h;
     int32_t len;
     memset(filename, 0, sizeof(filename));
-#if 0
-#ifdef SOCKETS
-//
-// Security measure - remote client can not do "spool"
-//
-    if (socket_server != 0) return onevalue(nil);
-#endif
-#endif
     if (spool_file != NULL)
     {
 #ifdef COMMON
@@ -4385,18 +4094,14 @@ LispObject Lspool(LispObject env, LispObject file)
     }
     if (file == nil) return onevalue(lisp_true);
 #ifdef COMMON
-    if (complex_stringp(file))
-    {   file = simplify_string(file);
-        errexit();
-    }
+    if (complex_stringp(file)) file = simplify_string(file);
 #endif
     if (symbolp(file))
     {   file = get_pname(file);
-        errexit();
         h = vechdr(file);
     }
     if (!is_vector(file) || !is_string_header(h = vechdr(file)))
-        return aerror1(spool_name, file);
+        aerror1(spool_name, file);
     len = length_of_byteheader(h) - CELL;
     spool_file = open_file(filename,
                            (char *)file + (CELL-TAG_VECTOR),
@@ -4438,19 +4143,16 @@ LispObject make_package(LispObject name)
     push(name);
     p = getvector_init(sizeof(Package), nil);
     pop(name);
-    errexit();
     packhdr_(p) = TYPE_STRUCTURE + (packhdr_(p) & ~header_mask);
     packid_(p) = package_symbol;
     packname_(p) = name;
     push(p);
     w = getvector_init(STARTING_SIZE_X+CELL, fixnum_of_int(0));
     pop(p);
-    errexit();
     packext_(p) = w;
     push(p);
     w = getvector_init(STARTING_SIZE_I+CELL, fixnum_of_int(0));
     pop(p);
-    errexit();
     packint_(p) = w;
     packflags_(p) = fixnum_of_int(++package_bits);
     packvext_(p) = fixnum_of_int(1);
@@ -4460,7 +4162,6 @@ LispObject make_package(LispObject name)
     push(p);
     w = cons(p, all_packages);
     pop(p);
-    errexit();
     all_packages = w;
     return onevalue(p);
 }
@@ -4473,7 +4174,7 @@ static LispObject want_a_string(LispObject name)
     if (symbolp(name)) return get_pname(name);
     else if (is_vector(name) &&
              is_string_header(vechdr(name))) return name;
-    else return aerror1("name or string needed", name);
+    else aerror1("name or string needed", name);
 }
 
 static LispObject Lfind_package(LispObject env, LispObject name)
@@ -4492,7 +4193,6 @@ static LispObject Lfind_package(LispObject env, LispObject name)
             packid_(name) == package_symbol) return onevalue(name);
     }
     name = want_a_string(name);
-    errexit();
     h = vechdr(name);
     len = length_of_byteheader(h) - CELL;
     for (w = all_packages; w!=nil; w=qcdr(w))
@@ -4542,13 +4242,11 @@ static LispObject Luse_package(LispObject env, LispObject uses, LispObject pkg)
 {   push(uses);
     pkg = Lfind_package(nil, pkg);
     pop(uses);
-    errexit();
     if (pkg == nil) return onevalue(nil);
     if (consp(uses))
     {   while (consp(uses))
         {   push2(uses, pkg);
             Luse_package(nil, qcar(uses), pkg);
-            errexitn(2);
             pop2(pkg, uses);
             uses = qcdr(uses);
         }
@@ -4558,7 +4256,6 @@ static LispObject Luse_package(LispObject env, LispObject uses, LispObject pkg)
         push(pkg);
         uses = Lfind_package(nil, uses);
         pop(pkg);
-        errexit();
         if (uses == nil || uses == pkg) return onevalue(nil);
         push2(pkg, uses);
 //
@@ -4567,12 +4264,10 @@ static LispObject Luse_package(LispObject env, LispObject uses, LispObject pkg)
 // worked linked.
 //
         w = cons(uses, packuses_(pkg));
-        errexitn(2);
         uses = stack[0];
         pkg = stack[-1];
         push(w);
         w1 = cons(pkg, packused_(uses));
-        errexitn(3);
         pop3(w, uses, pkg);
         packuses_(pkg) = w;
         packused_(uses) = w1;
@@ -4585,7 +4280,7 @@ static LispObject Lmake_package(LispObject env, int nargs, ...)
     bool has_use = false;
     va_list a;
     int i;
-    if (nargs == 0) return aerror("make-package");
+    if (nargs == 0) aerror("make-package");
 //
 // First I scan the arguments - there may be a lot of them - looking for
 // any relevant keyword parameters
@@ -4609,9 +4304,7 @@ static LispObject Lmake_package(LispObject env, int nargs, ...)
     if (!has_use)
     {   push2(name, nicknames);
         uses = make_string("LISP");
-        errexitn(2);
         uses = ncons(uses);
-        errexitn(2);
         pop2(nicknames, name);
     }
     push2(uses, nicknames);
@@ -4620,11 +4313,9 @@ static LispObject Lmake_package(LispObject env, int nargs, ...)
 // a string...
 //
     name = want_a_string(name);
-    errexitn(2);
     push(name);
     w = Lfind_package(nil, name);
     pop(name);
-    errexitn(2);
 //
 // It is SUPPOSED to be a continuable error if the package already exists.
 // For the present I will just display a message and keep going.
@@ -4640,7 +4331,6 @@ static LispObject Lmake_package(LispObject env, int nargs, ...)
 // The package does not exist yet - so I will make one...
 //
     name = make_package(name);
-    errexitn(2);
 //
 // ensure that NICKNAMES is a list of strings...
 //
@@ -4649,10 +4339,8 @@ static LispObject Lmake_package(LispObject env, int nargs, ...)
     {   w = stack[0];
         push(uses);
         w = want_a_string(qcar(w));
-        errexitn(3);
         pop(uses);
         uses = cons(w, uses);
-        errexitn(2);
         stack[0] = qcdr(stack[0]);
     }
     nicknames = nil;
@@ -4667,7 +4355,6 @@ static LispObject Lmake_package(LispObject env, int nargs, ...)
     uses = stack[0];
     stack[0] = name;
     Luse_package(nil, uses, name);
-    errexitn(1);
     pop(name);
     return onevalue(name);
 }
@@ -4694,7 +4381,6 @@ LispObject Ltyi(LispObject env, int nargs, ...)
         if (!is_stream(stream)) stream = qvalue(terminal_io);
         if (!is_stream(stream)) stream = lisp_terminal_io;
         ch = getc_stream(stream);
-        errexit();
     }
     else
     {   ch = curchar;
@@ -4718,7 +4404,6 @@ LispObject Lreadbyte(LispObject env, LispObject stream)
     ch = getc_stream(stream);
     raw_input = 0;
     qvalue(echo_symbol) = save;
-    errexit();
 //
 // At one stage this code treated ^D as an end-of file marker - that is
 // most nasty for binary files! The code should now be more transparent.
@@ -4733,7 +4418,6 @@ LispObject Lreadch1(LispObject env, LispObject stream)
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     ch = getc_stream(stream);  // may now be large value
-    errexit();
     if (ch == EOF || ch == CTRL_D) w = eof_symbol;
     else
     {   if (ch <= 0xffff || sizeof(wchar_t)==4)
@@ -4758,16 +4442,13 @@ LispObject Lpeekch2(LispObject env, LispObject type, LispObject stream)
     if (type != nil)
     {   do
         {   ch = getc_stream(stream);
-            errexit();
         }
         while ((ch<=0xffff || sizeof(wchar_t)==4) && iswspace(ch));
     }
     else
     {   ch = getc_stream(stream);
-        errexit();
     }
     other_read_action(ch, stream);
-    errexit();
     if (ch == EOF || ch == CTRL_D) w = eof_symbol;
     else
     {   if (ch <= 0xffff || sizeof(wchar_t)==4)
@@ -4813,16 +4494,13 @@ LispObject Lreadline1(LispObject env, LispObject stream)
     if (!is_stream(stream)) stream = lisp_terminal_io;
     boffop = 0;
     while ((ch = getc_stream(stream)) != EOF && ch != '\n')
-    {   errexit();
-        if (ch != '\r') packcharacter(ch);
+    {   if (ch != '\r') packcharacter(ch);
         n++;
     }
-    errexit();
     if (ch == EOF && n == 0) w = eof_symbol;
     else
     {
         w = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
-        errexit();
         s = (char *)w + CELL - TAG_VECTOR;
         memcpy(s, &boffo_char(0), n);
         while ((n&7) != 0) s[n++] = 0;
@@ -4860,6 +4538,7 @@ setup_type const read_setup[] =
     {"readline",                Lreadline1, wrong_no_nb, Lreadline},
     {"setpchar",                Lsetpchar, too_many_1, wrong_no_1},
     {"spool",                   Lspool, too_many_1, Lspool0},
+    {"dribble",                 Lspool, too_many_1, Lspool0},
     {"system",                  Lsystem, too_many_1, wrong_no_1},
     {"silent-system",           Lsilent_system, too_many_1, wrong_no_1},
     {"~tyi",                    wrong_no_na, wrong_no_nb, Ltyi},
@@ -4868,29 +4547,24 @@ setup_type const read_setup[] =
     {"list-to-symbol",          Llist_to_symbol, too_many_1, wrong_no_1},
     {"string2list",             Lstring2list, too_many_1, wrong_no_1},
     {"where-was-that",          wrong_no_na, wrong_no_nb, Lwhere_was_that},
-#ifdef COMMON
+    {"compress",                Lcompress, too_many_1, wrong_no_1},
     {"compress1",               Lcompress, too_many_1, wrong_no_1},
-    {"dribble",                 Lspool, too_many_1, Lspool0},
     {"read",                    Lread_1, wrong_no_nb, Lread},
     {"intern",                  Lintern, Lintern_2, wrong_no_1},
     {"gensym",                  Lgensym1, wrong_no_nb, Lgensym},
+    {"ordp",                    too_few_2, Lorderp, wrong_no_2},
+    {"unintern",                Lunintern, Lunintern_2, wrong_no_1},
+    {"remob",                   Lunintern, Lunintern_2, wrong_no_1},
+    {"make-symbol",             Lmake_symbol, too_many_1, wrong_no_1},
+#ifdef COMMON
+// The package system...
     {"extern",                  Lextern_1, Lextern, wrong_no_1},
     {"import*",                 Limport_1, Limport, wrong_no_1},
     {"find-symbol",             Lfind_symbol_1, Lfind_symbol, wrong_no_1},
-    {"keywordp",                Lkeywordp, too_many_1, wrong_no_1},
     {"find-package",            Lfind_package, too_many_1, wrong_no_1},
     {"make-package",            Lmake_package_1, Lmake_package_2, Lmake_package},
     {"use-package*",            too_few_2, Luse_package, wrong_no_2},
     {"list-all-packages",       wrong_no_na, wrong_no_nb, Llist_all_packages},
-    {"make-symbol",             Lmake_symbol, too_many_1, wrong_no_1},
-    {"unintern",                Lunintern, Lunintern_2, wrong_no_1},
-#else
-    {"compress",                Lcompress, too_many_1, wrong_no_1},
-    {"read",                    wrong_no_na, wrong_no_nb, Lread},
-    {"intern",                  Lintern, too_many_1, wrong_no_1},
-    {"gensym",                  Lgensym1, wrong_no_nb, Lgensym},
-    {"ordp",                    too_few_2, Lorderp, wrong_no_2},
-    {"remob",                   Lunintern, too_many_1, wrong_no_1},
 #endif
     {NULL,                      0, 0, 0}
 };

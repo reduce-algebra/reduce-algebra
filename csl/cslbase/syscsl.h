@@ -1,4 +1,4 @@
-//  syscsl.h                               Copyright (C) 1992-2016 Codemist
+//  syscsl.h                               Copyright (C) 1992-2017 Codemist
 
 //
 // This file should contain a list of all the functions in CSL that have
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -121,7 +121,7 @@ extern int delete_file(char *filename, const char *old, size_t n);
 extern int delete_wildcard(char *filename, const char *old, size_t n);
 
 extern "C" int rename_file(char *from_name, const char *from_old, size_t from_size,
-                       char *to_name,   const char *to_old,   size_t to_size);
+                           char *to_name, const char *to_old, size_t to_size);
 
 //
 // The interfaces to file_readable and file_writable are also similar
@@ -305,16 +305,13 @@ extern const char *my_getenv(const char *s);
 
 extern "C" int my_system(const char *s);
 
-#if defined HAVE_POPEN || defined HAVE_FWIN
 //
 // my_popen() and my_pclose() are intended to be just like the Unix
 // popen() and pclose functions.
 //
 extern FILE *my_popen(const char *command_name, const char *direction);
 extern void my_pclose(FILE *stream);
-#endif
 
-#ifdef HAVE_FWIN
 //
 // For some systems I send characters to a pipe (possibly
 // only used to support the gnuplot package) through a separate
@@ -322,11 +319,6 @@ extern void my_pclose(FILE *stream);
 //
 extern int my_pipe_putc(int c, FILE *f);
 extern int my_pipe_flush(FILE *f);
-
-#else
-#  define my_pipe_putc(c, f) putc(c, f)
-#  define my_pipe_flush(f)   fflush(f)
-#endif
 
 //
 // batchp() should return true if stdin is NOT from an interactive

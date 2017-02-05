@@ -1,4 +1,4 @@
-// fwin.cpp                                 Copyright A C Norman 2003-2015
+// fwin.cpp                                 Copyright A C Norman 2003-2017
 //
 //
 // Window interface for old-fashioned C/C++ applications. Intended to
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -840,9 +840,9 @@ int main(int argc, const char *argv[])
                  windowed != 0) windowed = -1;
     }
     if (texmacs_mode) windowed = 0;
-#ifdef WIN32
+#if defined PART_OF_FOX && defined WIN32
     sort_out_windows_console(windowed);
-#endif // WIN32
+#endif // PART_OF_FOX && WIN32
 
 // Windowed or not, if there is an argument "-b" or "-bxxxx" then the
 // string xxx will do something about screen colours. An empty string
@@ -858,14 +858,14 @@ int main(int argc, const char *argv[])
         }
     }
 
-#ifdef PART_OF_FOX
-    if (windowed==0) return plain_worker(argc, argv, fwin_main);
-
 #ifdef __APPLE__
     mac_deal_with_application_bundle(argc, argv);
 #endif // __APPLE__
-    return windowed_worker(argc, argv, fwin_main);
-#else
+
+#ifdef PART_OF_FOX
+    if (windowed==0) return plain_worker(argc, argv, fwin_main);
+    else return windowed_worker(argc, argv, fwin_main);
+#else // PART_OF_FOX
     return plain_worker(argc, argv, fwin_main);
 #endif // PART_OF_FOX
 }
@@ -878,16 +878,6 @@ void sigint_handler(int code)
 }
 
 #endif // EMBEDDED
-
-
-#ifdef SIGBREAK
-
-void sigbreak_handler(int code)
-{   signal(SIGBREAK, sigbreak_handler);
-    if (interrupt_callback != NULL) (*interrupt_callback)(NOISY_INTERRUPT);
-    return;
-}
-#endif // SIGBREAK
 
 //
 // I will only try to use my own local editing and history package
@@ -929,13 +919,6 @@ static int direct_to_terminal(int argc, const char *argv[])
 int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 {   int r;
     signal(SIGINT, sigint_handler);
-#ifdef SIGBREAK
-    signal(SIGBREAK, sigbreak_handler);
-#endif // SIGBREAK
-#ifdef TEST_SIGNAL_CATCHER
-    fprintf(stderr, "handlers for sigint and sigbreak set up\n");
-    fflush(stderr);
-#endif // TEST_SIGNAL_CATCHER
     if (!texmacs_mode && direct_to_terminal(argc, argv))
     {   input_history_init();
         term_setup(1, colour_spec);

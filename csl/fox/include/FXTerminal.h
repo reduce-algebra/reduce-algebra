@@ -45,8 +45,6 @@
 #ifndef FXTERMINAL_H
 #define FXTERMINAL_H
 
-/* Signature: 0c4a475b 07-Jul-2010 */
-
 #include "FXText.h"
 
 #include "FXDCNativePrinter.h"

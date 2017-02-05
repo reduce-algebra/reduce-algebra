@@ -1,8 +1,8 @@
-// entries.h                               Copyright (C) Codemist 1991-2016
+// entries.h                               Copyright (C) Codemist 1991-2017
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -47,8 +47,8 @@ extern "C" LispObject bytecounts(LispObject nil, int nargs, ...);
 extern "C" LispObject Ldate(LispObject env, int nargs, ...);
 extern "C" LispObject Ldatestamp(LispObject nil, int nargs, ...);
 extern "C" LispObject Leject(LispObject env, int nargs, ...);
-extern "C" LispObject Lerror(LispObject env, int nargs, ...);
-extern "C" LispObject Lerror0(LispObject env, int nargs, ...);
+extern "C" NORETURN LispObject Lerror(LispObject env, int nargs, ...);
+extern "C" NORETURN LispObject Lerror0(LispObject env, int nargs, ...);
 extern "C" LispObject Lflush(LispObject nil, int nargs, ...);
 extern "C" LispObject Lgc0(LispObject nil, int nargs, ...);
 extern "C" LispObject Lgctime(LispObject env, int nargs, ...);
@@ -83,40 +83,21 @@ extern "C" LispObject bytecoded1(LispObject env, LispObject a);
 extern "C" LispObject bytecounts1(LispObject env, LispObject a);
 extern "C" LispObject byteopt1(LispObject def, LispObject a);
 extern "C" LispObject byteoptrest1(LispObject def, LispObject a);
-extern "C" LispObject double_bytecoded1(LispObject env, LispObject a);
-extern "C" LispObject double_byteopt1(LispObject def, LispObject a);
-extern "C" LispObject double_byteoptrest1(LispObject def, LispObject a);
-extern "C" LispObject double_funarged1(LispObject env, LispObject a1);
-extern "C" LispObject double_hardopt1(LispObject def, LispObject a);
-extern "C" LispObject double_hardoptrest1(LispObject def, LispObject a);
-extern "C" LispObject double_interpreted1(LispObject env, LispObject a1);
 extern "C" LispObject funarged1(LispObject env, LispObject a1);
 extern "C" LispObject tracefunarged1(LispObject env, LispObject a1);
-extern "C" LispObject tracesetfunarged1(LispObject env, LispObject a1);
 extern "C" LispObject hardopt1(LispObject def, LispObject a);
 extern "C" LispObject hardoptrest1(LispObject def, LispObject a);
 extern "C" LispObject interpreted1(LispObject env, LispObject a1);
 extern "C" LispObject tracebytecoded1(LispObject env, LispObject a);
-extern "C" LispObject tracesetbytecoded1(LispObject env, LispObject a);
-extern "C" LispObject jitcompileme1(LispObject env, LispObject a);
 extern "C" LispObject tracebyteopt1(LispObject def, LispObject a);
-extern "C" LispObject tracesetbyteopt1(LispObject def, LispObject a);
 extern "C" LispObject tracebyteoptrest1(LispObject def, LispObject a);
-extern "C" LispObject tracesetbyteoptrest1(LispObject def, LispObject a);
 extern "C" LispObject tracebytecoded1(LispObject env, LispObject a);
-extern "C" LispObject tracesetbytecoded1(LispObject env, LispObject a);
 extern "C" LispObject traceinterpreted1(LispObject env, LispObject a1);
-extern "C" LispObject tracesetinterpreted1(LispObject env, LispObject a1);
 extern "C" LispObject tracehardopt1(LispObject def, LispObject a);
-extern "C" LispObject tracesethardopt1(LispObject def, LispObject a);
 extern "C" LispObject tracehardoptrest1(LispObject def, LispObject a);
-extern "C" LispObject tracesethardoptrest1(LispObject def, LispObject a);
 extern "C" LispObject undefined1(LispObject env, LispObject a1);
 extern "C" LispObject f1_as_0(LispObject env, LispObject a);
 extern "C" LispObject f1_as_1(LispObject env, LispObject a);
-#ifdef CJAVA
-extern "C" LispObject java1(LispObject env, LispObject a);
-#endif
 
 extern "C" LispObject Labsval(LispObject env, LispObject a);
 extern "C" LispObject Ladd1(LispObject env, LispObject a);
@@ -176,7 +157,7 @@ extern "C" LispObject Ldefine_in_module(LispObject env, LispObject a);
 extern "C" LispObject Ldelete_module(LispObject env, LispObject a);
 extern "C" LispObject Ldigitp(LispObject env, LispObject a);
 extern "C" LispObject Lendp(LispObject env, LispObject a);
-extern "C" LispObject Lerror1(LispObject nil, LispObject a1);
+extern "C" NORETURN LispObject Lerror1(LispObject nil, LispObject a1);
 extern "C" LispObject Lerrorset1(LispObject nil, LispObject form);
 extern "C" LispObject Leval(LispObject env, LispObject a);
 extern "C" LispObject Levenp(LispObject env, LispObject a);
@@ -277,7 +258,7 @@ extern "C" LispObject Lspecial_form_p(LispObject env, LispObject a);
 extern "C" LispObject Lspid_to_nil(LispObject nil, LispObject a);
 extern "C" LispObject Lspool(LispObject env, LispObject a);
 extern "C" LispObject Lstart_module(LispObject env, LispObject a);
-extern "C" LispObject Lstop(LispObject env, LispObject a);
+extern "C" NORETURN LispObject Lstop(LispObject env, LispObject a);
 extern "C" LispObject Lstringp(LispObject env, LispObject a);
 extern "C" LispObject Lsub1(LispObject env, LispObject a);
 extern "C" LispObject Lsymbolp(LispObject env, LispObject a);
@@ -294,7 +275,6 @@ extern "C" LispObject Lsystem(LispObject env, LispObject a);
 extern "C" LispObject Lthreevectorp(LispObject env, LispObject a);
 extern "C" LispObject Lthrow_nil(LispObject env, LispObject a);
 extern "C" LispObject Ltrace(LispObject env, LispObject a);
-extern "C" LispObject Ltraceset(LispObject env, LispObject a);
 extern "C" LispObject Ltruncate(LispObject env, LispObject a);
 extern "C" LispObject Lttab(LispObject env, LispObject a);
 extern "C" LispObject Ltyo(LispObject env, LispObject a);
@@ -312,11 +292,8 @@ extern "C" LispObject Lwrs(LispObject env, LispObject a);
 extern "C" LispObject Lxtab(LispObject env, LispObject a);
 extern "C" LispObject Lxtab(LispObject env, LispObject a);
 extern "C" LispObject Lzerop(LispObject env, LispObject a);
-
-#ifdef COMMON
 extern "C" LispObject Lfind_symbol_1(LispObject nil, LispObject str);
 extern "C" LispObject Llistp(LispObject env, LispObject a);
-#endif
 
 //
 // things with two args ...
@@ -326,39 +303,21 @@ extern "C" LispObject autoload2(LispObject env, LispObject a1, LispObject a2);
 extern "C" LispObject bytecoded2(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject byteopt2(LispObject def, LispObject a, LispObject b);
 extern "C" LispObject byteoptrest2(LispObject def, LispObject a, LispObject b);
-extern "C" LispObject double_bytecoded2(LispObject env, LispObject a, LispObject b);
-extern "C" LispObject double_byteopt2(LispObject def, LispObject a, LispObject b);
-extern "C" LispObject double_byteoptrest2(LispObject def, LispObject a, LispObject b);
-extern "C" LispObject double_funarged2(LispObject env, LispObject a1, LispObject a2);
-extern "C" LispObject double_hardopt2(LispObject def, LispObject a, LispObject b);
-extern "C" LispObject double_hardoptrest2(LispObject def, LispObject a, LispObject b);
-extern "C" LispObject double_interpreted2(LispObject env, LispObject a1, LispObject a2);
 extern "C" LispObject funarged2(LispObject env, LispObject a1, LispObject a2);
 extern "C" LispObject tracefunarged2(LispObject env, LispObject a1, LispObject a2);
-extern "C" LispObject tracesetfunarged2(LispObject env, LispObject a1, LispObject a2);
 extern "C" LispObject hardopt2(LispObject def, LispObject a, LispObject b);
 extern "C" LispObject hardoptrest2(LispObject def, LispObject a, LispObject b);
 extern "C" LispObject interpreted2(LispObject env, LispObject a1, LispObject a2);
 extern "C" LispObject tracebyteopt2(LispObject def, LispObject a, LispObject b);
-extern "C" LispObject tracesetbyteopt2(LispObject def, LispObject a, LispObject b);
 extern "C" LispObject tracebyteoptrest2(LispObject def, LispObject a, LispObject b);
-extern "C" LispObject tracesetbyteoptrest2(LispObject def, LispObject a, LispObject b);
 extern "C" LispObject tracebytecoded2(LispObject env, LispObject a, LispObject b);
-extern "C" LispObject tracesetbytecoded2(LispObject env, LispObject a, LispObject b);
-extern "C" LispObject jitcompileme2(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject traceinterpreted2(LispObject env, LispObject a1, LispObject a2);
-extern "C" LispObject tracesetinterpreted2(LispObject env, LispObject a1, LispObject a2);
 extern "C" LispObject tracehardopt2(LispObject def, LispObject a, LispObject b);
-extern "C" LispObject tracesethardopt2(LispObject def, LispObject a, LispObject b);
 extern "C" LispObject tracehardoptrest2(LispObject def, LispObject a, LispObject b);
-extern "C" LispObject tracesethardoptrest2(LispObject def, LispObject a, LispObject b);
 extern "C" LispObject undefined2(LispObject env, LispObject a1, LispObject a2);
 extern "C" LispObject f2_as_0(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject f2_as_1(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject f2_as_2(LispObject env, LispObject a, LispObject b);
-#ifdef CJAVA
-extern "C" LispObject java2(LispObject env, LispObject a, LispObject b);
-#endif
 
 extern "C" LispObject Lappend(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lapply_2(LispObject env, LispObject fn, LispObject a1);
@@ -384,7 +343,7 @@ extern "C" LispObject Leql(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Leqn(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lcl_equal(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lequal(LispObject env, LispObject a, LispObject b);
-extern "C" LispObject Lerror2(LispObject nil, LispObject a1, LispObject a2);
+extern "C" NORETURN LispObject Lerror2(LispObject nil, LispObject a1, LispObject a2);
 extern "C" LispObject Lerrorset2(LispObject nil, LispObject form, LispObject ffg1);
 extern "C" LispObject Lexpt(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lflag(LispObject env, LispObject a, LispObject b);
@@ -461,8 +420,6 @@ extern "C" LispObject Lunion(LispObject nil, LispObject a, LispObject b);
 extern "C" LispObject Lunion_symlist(LispObject nil, LispObject a, LispObject b);
 extern "C" LispObject Lwrite_module(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lxcons(LispObject env, LispObject a, LispObject b);
-
-#ifdef COMMON
 extern "C" LispObject Laref2(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Latan_2(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lelt(LispObject env, LispObject a, LispObject b);
@@ -473,7 +430,6 @@ extern "C" LispObject Lmacroexpand_2(LispObject env, LispObject a, LispObject b)
 extern "C" LispObject Lrandom_2(LispObject nil, LispObject a, LispObject b);
 extern "C" LispObject Ltruncate_2(LispObject env, LispObject a, LispObject b);
 extern "C" LispObject Lunintern_2(LispObject env, LispObject a, LispObject b);
-#endif
 
 // Things for the forthcoming "exactly 3 arguments" case
 
@@ -491,51 +447,25 @@ extern "C" LispObject bytecoded3(LispObject env, int nargs, ...);
 extern "C" LispObject bytecodedn(LispObject env, int nargs, ...);
 extern "C" LispObject byteoptn(LispObject def, int nargs, ...);
 extern "C" LispObject byteoptrestn(LispObject def, int nargs, ...);
-extern "C" LispObject double_bytecoded0(LispObject env, int nargs, ...);
-extern "C" LispObject double_bytecoded3(LispObject env, int nargs, ...);
-extern "C" LispObject double_bytecodedn(LispObject env, int nargs, ...);
-extern "C" LispObject double_byteoptn(LispObject def, int nargs, ...);
-extern "C" LispObject double_byteoptrestn(LispObject def, int nargs, ...);
-extern "C" LispObject double_funargedn(LispObject env, int nargs, ...);
-extern "C" LispObject double_hardoptn(LispObject def, int nargs, ...);
-extern "C" LispObject double_hardoptrestn(LispObject def, int nargs, ...);
-extern "C" LispObject double_interpretedn(LispObject env, int nargs, ...);
 extern "C" LispObject funargedn(LispObject env, int nargs, ...);
 extern "C" LispObject tracefunargedn(LispObject env, int nargs, ...);
-extern "C" LispObject tracesetfunargedn(LispObject env, int nargs, ...);
 extern "C" LispObject hardoptn(LispObject def, int nargs, ...);
 extern "C" LispObject hardoptrestn(LispObject def, int nargs, ...);
 extern "C" LispObject interpretedn(LispObject env, int nargs, ...);
 extern "C" LispObject tracebyteoptn(LispObject def, int nargs, ...);
-extern "C" LispObject tracesetbyteoptn(LispObject def, int nargs, ...);
 extern "C" LispObject tracebyteoptrestn(LispObject def, int nargs, ...);
-extern "C" LispObject tracesetbyteoptrestn(LispObject def, int nargs, ...);
 extern "C" LispObject tracebytecoded0(LispObject env, int nargs, ...);
-extern "C" LispObject tracesetbytecoded0(LispObject env, int nargs, ...);
 extern "C" LispObject tracebytecoded3(LispObject env, int nargs, ...);
-extern "C" LispObject tracesetbytecoded3(LispObject env, int nargs, ...);
 extern "C" LispObject tracebytecodedn(LispObject env, int nargs, ...);
-extern "C" LispObject tracesetbytecodedn(LispObject env, int nargs, ...);
-extern "C" LispObject jitcompileme0(LispObject env, int nargs, ...);
-extern "C" LispObject jitcompileme3(LispObject env, int nargs, ...);
-extern "C" LispObject jitcompilemen(LispObject env, int nargs, ...);
 extern "C" LispObject traceinterpretedn(LispObject env, int nargs, ...);
-extern "C" LispObject tracesetinterpretedn(LispObject env, int nargs, ...);
 extern "C" LispObject tracehardoptn(LispObject def, int nargs, ...);
-extern "C" LispObject tracesethardoptn(LispObject def, int nargs, ...);
 extern "C" LispObject tracehardoptrestn(LispObject def, int nargs, ...);
-extern "C" LispObject tracesethardoptrestn(LispObject def, int nargs, ...);
 extern "C" LispObject undefinedn(LispObject env, int nargs, ...);
 extern "C" LispObject f0_as_0(LispObject env, int nargs, ...);
 extern "C" LispObject f3_as_0(LispObject env, int nargs, ...);
 extern "C" LispObject f3_as_1(LispObject env, int nargs, ...);
 extern "C" LispObject f3_as_2(LispObject env, int nargs, ...);
 extern "C" LispObject f3_as_3(LispObject env, int nargs, ...);
-#ifdef CJAVA
-extern "C" LispObject java0(LispObject env, int nargs, ...);
-extern "C" LispObject java3(LispObject env, int nargs, ...);
-extern "C" LispObject javan(LispObject env, int nargs, ...);
-#endif
 
 extern "C" LispObject Lacons(LispObject env, int nargs, ...);
 extern "C" LispObject Lapply_n(LispObject env, int nargs, ...);
@@ -562,8 +492,6 @@ extern "C" LispObject Lresource_limitn(LispObject env, int nargs, ...);
 extern "C" LispObject Lsputv(LispObject env, int nargs, ...);
 extern "C" LispObject Lsubst(LispObject env, int nargs, ...);
 extern "C" LispObject Lvalues(LispObject env, int nargs, ...);
-
-#ifdef COMMON
 extern "C" LispObject Lappend_n(LispObject nil, int nargs, ...);
 extern "C" LispObject Laref(LispObject env, int nargs, ...);
 extern "C" LispObject Laset(LispObject env, int nargs, ...);
@@ -576,7 +504,6 @@ extern "C" LispObject Llcm_n(LispObject env, int nargs, ...);
 extern "C" LispObject Lleq_n(LispObject nil, int nargs, ...);
 extern "C" LispObject Llessp_n(LispObject nil, int nargs, ...);
 extern "C" LispObject Lquotient_n(LispObject nil, int nargs, ...);
-#endif
 
 #ifdef OPENMATH
 extern "C" LispObject om_openFileDev(LispObject env, int nargs, ...);

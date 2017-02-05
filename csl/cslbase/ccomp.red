@@ -1,13 +1,13 @@
-% "ccomp.red"                                Copyright 1991-2016,  Codemist
+% "ccomp.red"                                Copyright 1991-2017,  Codemist
 %
-% Compiler that turns Lisp code into C in a way that fits in
-% with the conventions used with CSL/CCL
+% Compiler that turns Lisp code into C++ in a way that fits in
+% with the conventions used with CSL.
 %
 %                                                        A C Norman
 
 
 %%
-%% Copyright (C) 2016, following the master REDUCE source files.          *
+%% Copyright (C) 2017, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *
@@ -39,7 +39,7 @@
 
 symbolic;
 
-global '(!*fastvector !*unsafecar);
+fluid '(!*fastvector !*unsafecar);
 flag('(fastvector unsafecar), 'switch);
 
 %
@@ -97,7 +97,7 @@ symbolic procedure c!:printf1(fmt, args);
          else if c = '!< then <<
             args := nil . args; % dummy so in effect no arg is used.
             if posn() > 70 then terpri() >>
-         else princ a;
+         else princ a;     % default is to use princ
          if args then args := cdr args;
          fmt := cdr fmt >>
       else princ c >>
@@ -173,17 +173,13 @@ symbolic procedure c!:valid_specform x;
    nil;
 
 << put('and,                    'c!:code, function c!:cspecform);
-!#if common!-lisp!-mode
    put('block,                  'c!:code, function c!:cspecform);
-!#endif
    put('catch,                  'c!:code, function c!:cspecform);
    put('compiler!-let,          'c!:code, function c!:cspecform);
    put('cond,                   'c!:code, function c!:cspecform);
    put('declare,                'c!:code, function c!:cspecform);
    put('de,                     'c!:code, function c!:cspecform);
-!#if common!-lisp!-mode
    put('defun,                  'c!:code, function c!:cspecform);
-!#endif
    put('eval!-when,             'c!:code, function c!:cspecform);
    put('flet,                   'c!:code, function c!:cspecform);
    put('function,               'c!:code, function c!:cspecform);
@@ -214,10 +210,15 @@ symbolic procedure c!:valid_specform x;
    put('setq,                   'c!:code, function c!:cspecform);
    put('tagbody,                'c!:code, function c!:cspecform);
    put('the,                    'c!:code, function c!:cspecform);
-!#if common!-lisp!-mode
+% Note that THROW used to be a function so I did not need to do anything
+% special about it, but these days it is a special form (that is because for
+% Common lisp compatibility it must be possible to throw multiple values!)
+% so I will have to compile it open. The good news is that this is not too
+% hard given that the key part goes just "throw LispThrow();" after setting
+% a few variables.
    put('throw,                  'c!:code, function c!:cspecform);
-!#endif
    put('unless,                 'c!:code, function c!:cspecform);
+% unwind-protect is a messy thing to render into C++. Yuk!
    put('unwind!-protect,        'c!:code, function c!:cspecform);
    put('when,                   'c!:code, function c!:cspecform) ;
 
@@ -233,17 +234,13 @@ symbolic procedure c!:valid_specform x;
 
 
 %  put('and,                    'c!:valid, function c!:valid_specform);
-!#if common!-lisp!-mode
 %  put('block,                  'c!:valid, function c!:valid_specform);
-!#endif
    put('catch,                  'c!:valid, function c!:valid_specform);
    put('compiler!-let,          'c!:valid, function c!:valid_specform);
    put('cond,                   'c!:valid, function c!:valid_specform);
    put('declare,                'c!:valid, function c!:valid_specform);
    put('de,                     'c!:valid, function c!:valid_specform);
-!#if common!-lisp!-mode
    put('defun,                  'c!:valid, function c!:valid_specform);
-!#endif
    put('eval!-when,             'c!:valid, function c!:valid_specform);
    put('flet,                   'c!:valid, function c!:valid_specform);
    put('function,               'c!:valid, function c!:valid_specform);
@@ -263,6 +260,7 @@ symbolic procedure c!:valid_specform x;
    put('multiple!-value!-prog1, 'c!:valid, function c!:valid_specform);
 %  put('or,                     'c!:valid, function c!:valid_specform);
    put('prog,                   'c!:valid, function c!:valid_specform);
+   put('!~prog,                 'c!:valid, function c!:valid_specform);
    put('prog!*,                 'c!:valid, function c!:valid_specform);
 %  put('prog1,                  'c!:valid, function c!:valid_specform);
 %  put('prog2,                  'c!:valid, function c!:valid_specform);
@@ -306,23 +304,21 @@ symbolic procedure c!:reset_gensyms();
       c!:available := car c!:used . c!:available;
       c!:used := cdr c!:used >> >>;
 
-!#if common!-lisp!-mode
-
 fluid '(my_gensym_counter);
 my_gensym_counter := 0;
-
-!#endif
 
 symbolic procedure c!:my_gensym();
   begin
     scalar w;
-    if c!:available then << w := car c!:available; c!:available := cdr c!:available >>
-!#if common!-lisp!-mode
+% I keep a list of the generated symbols I have used so far, and re-use them
+% when I cam.
+    if c!:available then <<
+       w := car c!:available; c!:available := cdr c!:available >>
+% When I need a new name I create an ordinary symbol with a name of the
+% form "v_NNN" where NNN is the next integer in sequence. It would be bad
+% that name clashed with any other one I found myself using!
     else w := compress1
-       ('!v . explodec (my_gensym_counter := my_gensym_counter + 1));
-!#else
-    else w := gensym1 "v";
-!#endif
+       ('!v . '!_ . explodec (my_gensym_counter := my_gensym_counter + 1));
     c!:used := w . c!:used;
     if plist w then << princ "????? "; prin w; princ " => "; prin plist w; terpri() >>;
     return w
@@ -358,6 +354,13 @@ symbolic procedure c!:endblock(why, where_to);
 %
 % Now for a general driver for compilation
 %
+
+% I have a collection of things that I will refer to as "registers",
+% and the compilation of an expression E invents a new register, say rr,
+% pushes code to load rr into the data structures that hold code and
+% returns rr. At a later stage I will analyse which registers need their
+% values saved across procedure calls, and those get mapped onto stack
+% locations while those that do not can be left as simple C++ variables.
 
 symbolic procedure c!:cval_inner(x, env);
   begin
@@ -395,6 +398,13 @@ symbolic procedure c!:cval(x, env);
      return r
   end;
 
+% This is used when there is a
+%    ((lambda (...) ...) ...)
+% and it has all the pain of dealing with local declarations and the
+% binding of fluids. Well while written-out lambdas may not be terribly
+% common they are used as an expansion of (LET (...) ...) forms and so
+% they can arise.
+
 symbolic procedure c!:clambda(bvl, body, args, env);
 % This is for ((lambda bvl body) args) and it will need to deal with
 % local declarations at the head of body. On this call body is a list of
@@ -411,33 +421,37 @@ symbolic procedure c!:clambda(bvl, body, args, env);
     else if null cdr w1 then body := car w1
     else body := 'progn . w1;
     for each x in bvl do
-       if not fluidp x and not globalp x and
+       if not fluidp x and not globalp x and not keywordp x and
           c!:local_fluidp(x, localdecs) then <<
           make!-special x;
           decs := x . decs >>;
     for each v in bvl do <<
-       if globalp v then begin scalar oo;
+       if globalp v or keywordp v then begin scalar oo;
+% I now believe that attempting to re-bind a global should be an error
+% rather than something that just generates a warning and a patch-up.
            oo := wrs nil;
            princ "+++++ "; prin v;
            princ " converted from GLOBAL to FLUID"; terpri();
            wrs oo;
            unglobal list v;
+           unkeyword list v;
            fluid list v end;
        if fluidp v then <<
           fluids := (v . c!:newreg()) . fluids;
           flag(list cdar fluids, 'c!:live_across_call); % silly if not
           env1 := ('c!:dummy!:name . cdar fluids) . env1;
-          c!:outop('ldrglob, cdar fluids, v, c!:find_literal v);
+          c!:outop('fluidbind, cdar fluids, v, c!:find_literal v);
           c!:outop('strglob, car w, v, c!:find_literal v) >>
        else <<
           env1 := (v . c!:newreg()) . env1;
           c!:outop('movr, cdar env1, nil, car w) >>;
        w := cdr w >>;
-    if fluids then c!:outop('fluidbind, nil, nil, fluids);
     env := env1 . append(fluids, cdr env);
     w := c!:cval(body, env);
+% because of the RAII magic the fluidunbind operation here only has to
+% print a "}".
     for each v in fluids do
-       c!:outop('strglob, cdr v, car v, c!:find_literal car v);
+       c!:outop('fluidunbind, cdr v, car v, c!:find_literal car v);
     unfluid decs;
     localdecs := cdr localdecs;
     return w
@@ -476,12 +490,12 @@ symbolic procedure c!:catom(x, env);
 % and related messes. So note that the outer binding means that a is
 % locally bound but the inner binding means that a fluid binding must
 % be used.
-    if idp x and (fluidp x or globalp x) then
+    if null x or x = 't or c!:small_number x then
+       c!:outop('movk1, v, nil, x)
+    else if idp x and (fluidp x or globalp x or keywordp x) then
         c!:outop('ldrglob, v, x, c!:find_literal x)
     else if idp x and (w := c!:locally_bound(x, env)) then
        c!:outop('movr, v, nil, cdr w)
-    else if null x or x = 't or c!:small_number x then
-       c!:outop('movk1, v, nil, x)
     else if not idp x or flagp(x, 'c!:constant) then
        c!:outop('movk, v, x, c!:find_literal x)
 % If a variable that is referenced is not locally bound then it is treated
@@ -545,7 +559,19 @@ symbolic procedure c!:any_can_reach(l, b);
   if null l then nil
   else if c!:can_reach(car l, b) then t
   else c!:any_can_reach(cdr l, b);
-    
+
+
+% c!:pareval related to an idea that if you have a call such as (f A B C)
+% the A, B and C could be evaluated in any order, thereby giving some scope
+% to avoid the need to save values on the stack when on eor more of the
+% expressions is easy. This seems a good plan, but too much of Reduce depends
+% on left to right evaluation of arguments, and my code here was never
+% clever enough to detect possible interactions between expressions and hence
+% only do safe rearrangement - so I have downgraded this code so that it
+% does everything simply and sequentially. But it remains some of the
+% structure of its earlier more elaborate form, and its name reminds me of
+% that.
+
 symbolic procedure c!:pareval(args, env);
   begin
     scalar tasks, tasks1, merge, split, r;
@@ -560,35 +586,9 @@ symbolic procedure c!:pareval(args, env);
       c!:startblock car s;
       r := c!:cval(a, env) . r;
       c!:endblock('goto, list cdr s);
-% If the task did no procedure calls (or only tail calls) then it can be
-% executed sequentially with the other args without need for stacking
-% anything.  Otherwise it more care will be needed.  Put the hard
-% cases onto tasks1.
-!#if common!-lisp!-mode
       tasks1 := s . tasks1
-!#else
-% The "t or" here is to try to FORCE left to right evaluation, even though
-% doing so may hurt performance. It at present looks as if some parts
-% of REDUCE have been coded making assumptions about this.
-      if t or c!:has_calls(car s, cdr s) then tasks1 := s . tasks1
-      else merge := s . merge
-!#endif
     end;
-%-- % if there are zero or one items in tasks1 then again it is easy -
-%-- % otherwise I flag the problem with a notionally parallel construction.
-%--     if tasks1 then <<
-%--        if null cdr tasks1 then merge := car tasks1 . merge
-%--        else <<
-%--           c!:startblock split;
-%--           printc "***** ParEval needed parallel block here...";
-%--           c!:endblock('par, for each v in tasks1 collect car v);
-%--           split := c!:my_gensym();
-%--           for each v in tasks1 do <<
-%--              c!:startblock cdr v;
-%--              c!:endblock('goto, list split) >> >> >>;
     for each z in tasks1 do merge := z . merge; % do sequentially
-%--
-%--
 % Finally string end-to-end all the bits of sequential code I have left over.
     for each v in merge do <<
       c!:startblock split;
@@ -669,20 +669,21 @@ symbolic procedure c!:cfndef(c!:current_procedure,
 % cope with fluid vars in an argument list by expanding the definition
 %    (de f (a B C d) body)     B and C fluid
 % into
-%    (de f (a x y c) (prog (B C) (setq B x) (setq C y) (return body)))
-% so that the fluids get bound by PROG.
+%    (de f (a x y c) (!~prog (B C) (setq B x) (setq C y) (return body)))
+% so that the fluids get bound by !~PROG.
 %
     c!:current_args := args;
     varargs := null args or length args >= 3;
     for each v in args do
        if v = '!&optional or v = '!&rest then
           error(0, "&optional and &rest not supported by this compiler (yet)")
-       else if globalp v then begin scalar oo;
+       else if globalp v or keywordp v then begin scalar oo;
           oo := wrs nil;
           princ "+++++ "; prin v;
           princ " converted from GLOBAL to FLUID"; terpri();
           wrs oo;
           unglobal list v;
+          unkeyword list v;
           fluid list v;
           n := (v . c!:my_gensym()) . n end
        else if fluidp v or c!:local_fluidp(v, localdecs) then
@@ -694,9 +695,11 @@ symbolic procedure c!:cfndef(c!:current_procedure,
     if n then <<
        body := list list('return, body);
        args := subla(n, args);
+% Note that the values I assign from here are gensyms, and so in particular
+% are never messy expressions that reference any fluid.
        for each v in n do
          body := list('setq, car v, cdr v) . body;
-       body := 'prog . (for each v in reverse n collect car v) . body >>;
+       body := '!~prog . (for each v in reverse n collect car v) . body >>;
     c!:printf("static LispObject %s(LispObject env", c!:current_c_name);
     env := nil;
     if varargs then c!:printf(", int nargs, ...")
@@ -724,10 +727,18 @@ symbolic procedure c!:cfndef(c!:current_procedure,
     exitpoint := c!:current_block;
     c!:endblock('goto, list list c!:cval(body, env . nil));
 
+% optimise_flowgraph is something I will need to review carefully, because
+% when I use RAII to arrange that fluids always get restored I will
+% require that code ends up so that textual nesting matches my
+% expectations. Furthermore I intend to take the view that even if I
+% generate quite seriously ugly C++ code that modern C++ compilers will
+% do the optimisations that are important.
+%
+% Note that (in an ugly manner) optimise_flowgraph prints out first the
+% procedure header and then the body of the function.
     c!:optimise_flowgraph(entrypoint, c!:all_blocks, env,
                         length args . c!:current_procedure, args1, varargs);
 
-    c!:printf("}\n\n");
     wrs O_file;
 
     L_contents := (c!:current_procedure . literal_vector . checksum) .
@@ -958,9 +969,8 @@ princ "C file = "; print name;
     c!:printf "#include <ctype.h>\n";
     c!:printf "#include <stdarg.h>\n";
     c!:printf "#include <time.h>\n";
-    c!:printf "#ifndef _cplusplus\n";
     c!:printf "#include <setjmp.h>\n";
-    c!:printf "#endif\n\n";
+    c!:printf "#include <exception>\n";
 % The stuff I put in the file here includes written-in copies of header
 % files. The main "csl_headers" should be the same for all systems built
 % based on the current sources, but the "config_header" is specific to a
@@ -1140,18 +1150,18 @@ put('C!-compile, 'stat, 'rlis);
 % Global treatment of a flow-graph...
 %
 
-symbolic procedure c!:print_opcode(s, depth);
+symbolic procedure c!:print_opcode s;
   begin
     scalar op, r1, r2, r3, helper;
     op := car s; r1 := cadr s; r2 := caddr s; r3 := cadddr s;
     helper := get(op, 'c!:opcode_printer);
-    if helper then funcall(helper, op, r1, r2, r3, depth)
+    if helper then funcall(helper, op, r1, r2, r3)
     else << prin s; terpri() >>
   end;
 
-symbolic procedure c!:print_exit_condition(why, where_to, depth);
+symbolic procedure c!:print_exit_condition1(why, where_to, next);
   begin
-    scalar helper, lab1, drop1, lab2, drop2, negate;
+    scalar helper;
 % An exit condition is one of
 %     goto          (lab)
 %     goto          ((return-register))
@@ -1162,10 +1172,9 @@ symbolic procedure c!:print_exit_condition(why, where_to, depth);
 %
     if why = 'goto then <<
        where_to := car where_to;
-       if atom where_to then <<
-          c!:printf("    goto %s;\n", where_to);
-          c!:display_flowgraph(where_to, depth, t) >>
-       else << c!:printf "    "; c!:pgoto(where_to, depth) >>;
+       if where_to = next then nil
+       else if atom where_to then c!:printf("    goto %s;\n", where_to)
+       else << c!:printf "    "; c!:pgoto where_to >>;
        return nil >>
     else if eqcar(car why, 'call) then return begin
        scalar args, locs, g, w;
@@ -1177,9 +1186,6 @@ symbolic procedure c!:print_exit_condition(why, where_to, depth);
                c!:printf("        LispObject %s = %v;\n", g, a);
                args := g . args >>
             else args := a . args;
-          if depth neq 0 then <<
-              if g then c!:printf "    ";
-              c!:printf("    popv(%s);\n", depth) >>;
           if g then c!:printf "    ";
 !#if common!-lisp!-mode
           c!:printf("    { LispObject retVal = %s(", cdr w);
@@ -1192,8 +1198,6 @@ symbolic procedure c!:print_exit_condition(why, where_to, depth);
              for each a in cdr args do c!:printf(", %v", a) >>;
           c!:printf(");\n");
 !#if common!-lisp!-mode
-          if g then c!:printf "    ";
-          c!:printf("    errexit();\n");
           if g then c!:printf "    ";
           c!:printf("    return onevalue(retVal); }\n");
 !#endif
@@ -1212,7 +1216,6 @@ symbolic procedure c!:print_exit_condition(why, where_to, depth);
                c!:printf("        LispObject %s = %v;\n", g, a);
                args := g . args >>
             else args := a . args;
-          if depth neq 0 then c!:printf("        popv(%s);\n", depth);
           c!:printf("        return %s(nil", w);
           if null args or length args >= 3 then c!:printf(", %s", length args);
           for each a in reversip args do c!:printf(", %v", a);
@@ -1228,7 +1231,6 @@ symbolic procedure c!:print_exit_condition(why, where_to, depth);
                c!:printf("        LispObject %s = %v;\n", g, a);
                args := g . args >>
             else args := a . args;
-          if depth neq 0 then c!:printf("        popv(%s);\n", depth);
           c!:printf("        fn = elt(env, %s); %<// %c\n",
                     c!:find_literal cadar why, cadar why);
           if nargs = 1 then c!:printf("        return (*qfn1(fn))(qenv(fn)")
@@ -1237,42 +1239,43 @@ symbolic procedure c!:print_exit_condition(why, where_to, depth);
           for each a in reversip args do c!:printf(", %s", a);
           c!:printf(");\n    }\n") end;
        return nil end;
-    lab1 := car where_to;
-    drop1 := atom lab1 and not flagp(lab1, 'c!:visited);
-    lab2 := cadr where_to;
-    drop2 := atom lab2 and not flagp(drop2, 'c!:visited);
-    if drop2 and get(lab2, 'c!:count) = 1 then <<
-       where_to := list(lab2, lab1);
-       drop1 := t >>
-    else if drop1 then negate := t;
     helper := get(car why, 'c!:exit_helper);
     if null helper then error(0, list("Bad exit condition", why));
     c!:printf("    if (");
-    if negate then <<
-       c!:printf("!(");
-       funcall(helper, cdr why, depth);
-       c!:printf(")") >>
-    else funcall(helper, cdr why, depth);
+    funcall(helper, cdr why);
     c!:printf(") ");
-    if not drop1 then <<
-       c!:pgoto(car where_to, depth);
-       c!:printf("    else ") >>;
-    c!:pgoto(cadr where_to, depth);
-    if atom car where_to then c!:display_flowgraph(car where_to, depth, drop1);
-    if atom cadr where_to then c!:display_flowgraph(cadr where_to, depth, nil)
+    c!:pgoto(car where_to);
+    if cadr where_to neq next then <<
+       c!:printf("    else ");
+       c!:pgoto(cadr where_to) >>
   end;
 
-symbolic procedure c!:pmovr(op, r1, r2, r3, depth);
+symbolic procedure c!:flag_exit_label(why, where_to, next);
+  begin
+    scalar helper;
+    if why = 'goto then <<
+       where_to := car where_to;
+       if where_to = next then nil
+       else if atom where_to then flag(list where_to, 'c!:visited);
+       return nil >>;
+    if atom where_to then return nil;
+    if atom car where_to then flag(list car where_to, 'c!:visited);
+    if null cdr where_to then return nil;
+    if cadr where_to neq next and atom cadr where_to then
+       flag(list cadr where_to, 'c!:visited)
+  end;
+
+symbolic procedure c!:pmovr(op, r1, r2, r3);
    c!:printf("    %v = %v;\n", r1, r3);
 
 put('movr, 'c!:opcode_printer, function c!:pmovr);
 
-symbolic procedure c!:pmovk(op, r1, r2, r3, depth);
+symbolic procedure c!:pmovk(op, r1, r2, r3);
    c!:printf("    %v = elt(env, %s); %<// %c\n", r1, r3, r2);
 
 put('movk, 'c!:opcode_printer, function c!:pmovk);
 
-symbolic procedure c!:pmovk1(op, r1, r2, r3, depth);
+symbolic procedure c!:pmovk1(op, r1, r2, r3);
    if null r3 then c!:printf("    %v = nil;\n", r1)
    else if r3 = 't then c!:printf("    %v = lisp_true;\n", r1)
    else c!:printf("    %v = (LispObject)%s+TAG_FIXNUM; %<// %c\n", r1, 16*r3, r3);
@@ -1280,36 +1283,36 @@ symbolic procedure c!:pmovk1(op, r1, r2, r3, depth);
 put('movk1, 'c!:opcode_printer, function c!:pmovk1);
 flag('(movk1), 'c!:uses_nil);  % Well it does SOMETIMES
 
-symbolic procedure c!:preloadenv(op, r1, r2, r3, depth);
+symbolic procedure c!:preloadenv(op, r1, r2, r3);
 % will not be encountered unless reloadenv variable has been set up.
    c!:printf("    env = stack[%s];\n", -reloadenv);
 
 put('reloadenv, 'c!:opcode_printer, function c!:preloadenv);
 
-symbolic procedure c!:pldrglob(op, r1, r2, r3, depth);
+symbolic procedure c!:pldrglob(op, r1, r2, r3);
    c!:printf("    %v = qvalue(elt(env, %s)); %<// %c\n", r1, r3, r2);
 
 put('ldrglob, 'c!:opcode_printer, function c!:pldrglob);
 
-symbolic procedure c!:pstrglob(op, r1, r2, r3, depth);
+symbolic procedure c!:pstrglob(op, r1, r2, r3);
    c!:printf("    qvalue(elt(env, %s)) = %v; %<// %c\n", r3, r1, r2);
 
 put('strglob, 'c!:opcode_printer, function c!:pstrglob);
 
-symbolic procedure c!:pnilglob(op, r1, r2, r3, depth);
+symbolic procedure c!:pnilglob(op, r1, r2, r3);
    c!:printf("    qvalue(elt(env, %s)) = nil; %<// %c\n", r3, r2);
 
 put('nilglob, 'c!:opcode_printer, function c!:pnilglob);
 flag('(nilglob), 'c!:uses_nil);
 
-symbolic procedure c!:pnull(op, r1, r2, r3, depth);
+symbolic procedure c!:pnull(op, r1, r2, r3);
    c!:printf("    %v = (%v == nil ? lisp_true : nil);\n", r1, r3);
 
 put('null, 'c!:opcode_printer, function c!:pnull);
 put('not,  'c!:opcode_printer, function c!:pnull);
 flag('(null not), 'c!:uses_nil);
 
-symbolic procedure c!:pfastget(op, r1, r2, r3, depth);
+symbolic procedure c!:pfastget(op, r1, r2, r3);
  <<
    c!:printf("    if (!symbolp(%v)) %v = nil;\n", r2, r1);
    c!:printf("    else { %v = qfastgets(%v);\n", r1, r2);
@@ -1329,7 +1332,7 @@ symbolic procedure c!:pfastget(op, r1, r2, r3, depth);
 put('fastget, 'c!:opcode_printer, function c!:pfastget);
 flag('(fastget), 'c!:uses_nil);
 
-symbolic procedure c!:pfastflag(op, r1, r2, r3, depth);
+symbolic procedure c!:pfastflag(op, r1, r2, r3);
  <<
    c!:printf("    if (!symbolp(%v)) %v = nil;\n", r2, r1);
    c!:printf("    else { %v = qfastgets(%v);\n", r1, r2);
@@ -1350,108 +1353,108 @@ symbolic procedure c!:pfastflag(op, r1, r2, r3, depth);
 put('fastflag, 'c!:opcode_printer, function c!:pfastflag);
 flag('(fastflag), 'c!:uses_nil);
 
-symbolic procedure c!:pcar(op, r1, r2, r3, depth);
+symbolic procedure c!:pcar(op, r1, r2, r3);
   begin
-    if not !*unsafecar then <<
-        c!:printf("    if (!car_legal(%v)) ", r3);
-        c!:pgoto(c!:find_error_label(list('car, r3), r2, depth), depth) >>;
+    if not !*unsafecar then
+        c!:printf("    if (!car_legal(%v)) error(1, err_bad_car, %v);\n",
+                  r3, r3);
     c!:printf("    %v = qcar(%v);\n", r1, r3)
   end;
 
 put('car, 'c!:opcode_printer, function c!:pcar);
 
-symbolic procedure c!:pcdr(op, r1, r2, r3, depth);
+symbolic procedure c!:pcdr(op, r1, r2, r3);
   begin
-    if not !*unsafecar then <<
-        c!:printf("    if (!car_legal(%v)) ", r3);
-        c!:pgoto(c!:find_error_label(list('cdr, r3), r2, depth), depth) >>;
+    if not !*unsafecar then
+        c!:printf("    if (!car_legal(%v)) error(1, err_bad_cdr, %v);\n",
+                  r3, r3);
     c!:printf("    %v = qcdr(%v);\n", r1, r3)
   end;
 
 put('cdr, 'c!:opcode_printer, function c!:pcdr);
 
-symbolic procedure c!:pqcar(op, r1, r2, r3, depth);
+symbolic procedure c!:pqcar(op, r1, r2, r3);
     c!:printf("    %v = qcar(%v);\n", r1, r3);
 
 put('qcar, 'c!:opcode_printer, function c!:pqcar);
 
-symbolic procedure c!:pqcdr(op, r1, r2, r3, depth);
+symbolic procedure c!:pqcdr(op, r1, r2, r3);
     c!:printf("    %v = qcdr(%v);\n", r1, r3);
 
 put('qcdr, 'c!:opcode_printer, function c!:pqcdr);
 
-symbolic procedure c!:patom(op, r1, r2, r3, depth);
+symbolic procedure c!:patom(op, r1, r2, r3);
    c!:printf("    %v = (consp(%v) ? nil : lisp_true);\n", r1, r3);
 
 put('atom, 'c!:opcode_printer, function c!:patom);
 flag('(atom), 'c!:uses_nil);
 
-symbolic procedure c!:pnumberp(op, r1, r2, r3, depth);
+symbolic procedure c!:pnumberp(op, r1, r2, r3);
    c!:printf("    %v = (is_number(%v) ? lisp_true : nil);\n", r1, r3);
 
 put('numberp, 'c!:opcode_printer, function c!:pnumberp);
 flag('(numberp), 'c!:uses_nil);
 
-symbolic procedure c!:pfixp(op, r1, r2, r3, depth);
+symbolic procedure c!:pfixp(op, r1, r2, r3);
    c!:printf("    %v = integerp(%v);\n", r1, r3);
 
 put('fixp, 'c!:opcode_printer, function c!:pfixp);
 flag('(fixp), 'c!:uses_nil);
 
-symbolic procedure c!:piminusp(op, r1, r2, r3, depth);
+symbolic procedure c!:piminusp(op, r1, r2, r3);
    c!:printf("    %v = ((intptr_t)(%v) < 0 ? lisp_true : nil);\n", r1, r3);
 
 put('iminusp, 'c!:opcode_printer, function c!:piminusp);
 flag('(iminusp), 'c!:uses_nil);
 
-symbolic procedure c!:pilessp(op, r1, r2, r3, depth);
+symbolic procedure c!:pilessp(op, r1, r2, r3);
    c!:printf("    %v = ((intptr_t)%v < (intptr_t)%v) ? lisp_true : nil;\n",
              r1, r2, r3);
 
 put('ilessp, 'c!:opcode_printer, function c!:pilessp);
 flag('(ilessp), 'c!:uses_nil);
 
-symbolic procedure c!:pigreaterp(op, r1, r2, r3, depth);
+symbolic procedure c!:pigreaterp(op, r1, r2, r3);
    c!:printf("    %v = ((intptr_t)%v > (intptr_t)%v) ? lisp_true : nil;\n",
              r1, r2, r3);
 
 put('igreaterp, 'c!:opcode_printer, function c!:pigreaterp);
 flag('(igreaterp), 'c!:uses_nil);
 
-symbolic procedure c!:piminus(op, r1, r2, r3, depth);
+symbolic procedure c!:piminus(op, r1, r2, r3);
    c!:printf("    %v = (LispObject)(2*TAG_FIXNUM-((intptr_t)(%v)));\n", r1, r3);
 
 put('iminus, 'c!:opcode_printer, function c!:piminus);
 
-symbolic procedure c!:piadd1(op, r1, r2, r3, depth);
+symbolic procedure c!:piadd1(op, r1, r2, r3);
    c!:printf("    %v = (LispObject)((intptr_t)(%v) + 0x10);\n", r1, r3);
 
 put('iadd1, 'c!:opcode_printer, function c!:piadd1);
 
-symbolic procedure c!:pisub1(op, r1, r2, r3, depth);
+symbolic procedure c!:pisub1(op, r1, r2, r3);
    c!:printf("    %v = (LispObject)((intptr_t)(%v) - 0x10);\n", r1, r3);
 
 put('isub1, 'c!:opcode_printer, function c!:pisub1);
 
-symbolic procedure c!:piplus2(op, r1, r2, r3, depth);
+symbolic procedure c!:piplus2(op, r1, r2, r3);
  << c!:printf("    %v = (LispObject)(intptr_t)((intptr_t)%v +", r1, r2);
     c!:printf(" (intptr_t)%v - TAG_FIXNUM);\n", r3) >>;
 
 put('iplus2, 'c!:opcode_printer, function c!:piplus2);
 
-symbolic procedure c!:pidifference(op, r1, r2, r3, depth);
+symbolic procedure c!:pidifference(op, r1, r2, r3);
  << c!:printf("    %v = (LispObject)(intptr_t)((intptr_t)%v - (intptr_t)%v", r1, r2, r3);
     c!:printf(" + TAG_FIXNUM);\n") >>;
 
 put('idifference, 'c!:opcode_printer, function c!:pidifference);
 
-symbolic procedure c!:pitimes2(op, r1, r2, r3, depth);
+symbolic procedure c!:pitimes2(op, r1, r2, r3);
  << c!:printf("    %v = fixnum_of_int((intptr_t)(int_of_fixnum(%v) *", r1, r2);
     c!:printf(" int_of_fixnum(%v)));\n", r3) >>;
 
 put('itimes2, 'c!:opcode_printer, function c!:pitimes2);
 
-symbolic procedure c!:pmodular_plus(op, r1, r2, r3, depth);
+symbolic procedure c!:pmodular_plus(op, r1, r2, r3);
  <<
     c!:printf("    {   intptr_t w = int_of_fixnum(%v) + int_of_fixnum(%v);\n",
                     r2, r3);
@@ -1462,7 +1465,7 @@ symbolic procedure c!:pmodular_plus(op, r1, r2, r3, depth);
 
 put('modular!-plus, 'c!:opcode_printer, function c!:pmodular_plus);
 
-symbolic procedure c!:pmodular_difference(op, r1, r2, r3, depth);
+symbolic procedure c!:pmodular_difference(op, r1, r2, r3);
  <<
     c!:printf("    {   intptr_t w = int_of_fixnum(%v) - int_of_fixnum(%v);\n",
                     r2, r3);
@@ -1473,7 +1476,7 @@ symbolic procedure c!:pmodular_difference(op, r1, r2, r3, depth);
 
 put('modular!-difference, 'c!:opcode_printer, function c!:pmodular_difference);
 
-symbolic procedure c!:pmodular_minus(op, r1, r2, r3, depth);
+symbolic procedure c!:pmodular_minus(op, r1, r2, r3);
  <<
     c!:printf("    {   intptr_t w = int_of_fixnum(%v);\n", r3);
     c!:printf("        if (w != 0) w = current_modulus - w;\n");
@@ -1485,7 +1488,7 @@ put('modular!-minus, 'c!:opcode_printer, function c!:pmodular_minus);
 
 !#if (not common!-lisp!-mode)
 
-symbolic procedure c!:passoc(op, r1, r2, r3, depth);
+symbolic procedure c!:passoc(op, r1, r2, r3);
    c!:printf("    %v = Lassoc(nil, %v, %v);\n", r1, r2, r3);
 
 put('assoc, 'c!:opcode_printer, function c!:passoc);
@@ -1493,7 +1496,7 @@ flag('(assoc), 'c!:uses_nil);
 
 !#endif
 
-symbolic procedure c!:patsoc(op, r1, r2, r3, depth);
+symbolic procedure c!:patsoc(op, r1, r2, r3);
    c!:printf("    %v = Latsoc(nil, %v, %v);\n", r1, r2, r3);
 
 put('atsoc, 'c!:opcode_printer, function c!:patsoc);
@@ -1501,7 +1504,7 @@ flag('(atsoc), 'c!:uses_nil);
 
 !#if (not common!-lisp!-mode)
 
-symbolic procedure c!:pmember(op, r1, r2, r3, depth);
+symbolic procedure c!:pmember(op, r1, r2, r3);
    c!:printf("    %v = Lmember(nil, %v, %v);\n", r1, r2, r3);
 
 put('member, 'c!:opcode_printer, function c!:pmember);
@@ -1509,53 +1512,45 @@ flag('(member), 'c!:uses_nil);
 
 !#endif
 
-symbolic procedure c!:pmemq(op, r1, r2, r3, depth);
+symbolic procedure c!:pmemq(op, r1, r2, r3);
    c!:printf("    %v = Lmemq(nil, %v, %v);\n", r1, r2, r3);
 
 put('memq, 'c!:opcode_printer, function c!:pmemq);
 flag('(memq), 'c!:uses_nil);
 
-!#if common!-lisp!-mode
-
-symbolic procedure c!:pget(op, r1, r2, r3, depth);
+symbolic procedure c!:pget(op, r1, r2, r3);
    c!:printf("    %v = get(%v, %v, nil);\n", r1, r2, r3);
 
 flag('(get), 'c!:uses_nil);
-!#else
-
-symbolic procedure c!:pget(op, r1, r2, r3, depth);
-   c!:printf("    %v = get(%v, %v);\n", r1, r2, r3);
-
-!#endif
 
 put('get, 'c!:opcode_printer, function c!:pget);
 
-symbolic procedure c!:pqgetv(op, r1, r2, r3, depth);
+symbolic procedure c!:pqgetv(op, r1, r2, r3);
  << c!:printf("    %v = *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +",
               r1, r2);
     c!:printf(" (((intptr_t)%v-TAG_FIXNUM)/(16/CELL)));\n", r3) >>;
 
 put('qgetv, 'c!:opcode_printer, function c!:pqgetv);
 
-symbolic procedure c!:pqputv(op, r1, r2, r3, depth);
+symbolic procedure c!:pqputv(op, r1, r2, r3);
  <<
   c!:printf("    *(LispObject *)((char *)%v + (CELL-TAG_VECTOR) +", r2);
   c!:printf(" (((intptr_t)%v-TAG_FIXNUM)/(16/CELL))) = %v;\n", r3, r1) >>;
 
 put('qputv, 'c!:opcode_printer, function c!:pqputv);
 
-symbolic procedure c!:peq(op, r1, r2, r3, depth);
+symbolic procedure c!:peq(op, r1, r2, r3);
    c!:printf("    %v = (%v == %v ? lisp_true : nil);\n", r1, r2, r3);
 
 put('eq, 'c!:opcode_printer, function c!:peq);
 flag('(eq), 'c!:uses_nil);
 
 !#if common!-lisp!-mode
-symbolic procedure c!:pequal(op, r1, r2, r3, depth);
+symbolic procedure c!:pequal(op, r1, r2, r3);
    c!:printf("    %v = (cl_equal(%v, %v) ? lisp_true : nil);\n",
       r1, r2, r3, r2, r3);
 !#else
-symbolic procedure c!:pequal(op, r1, r2, r3, depth);
+symbolic procedure c!:pequal(op, r1, r2, r3);
    c!:printf("    %v = (equal(%v, %v) ? lisp_true : nil);\n",
       r1, r2, r3, r2, r3);
 !#endif
@@ -1563,12 +1558,7 @@ symbolic procedure c!:pequal(op, r1, r2, r3, depth);
 put('equal, 'c!:opcode_printer, function c!:pequal);
 flag('(equal), 'c!:uses_nil);
 
-symbolic procedure c!:pfluidbind(op, r1, r2, r3, depth);
-   nil;
-
-put('fluidbind, 'c!:opcode_printer, function c!:pfluidbind);
-
-symbolic procedure c!:pcall(op, r1, r2, r3, depth);
+symbolic procedure c!:pcall(op, r1, r2, r3);
   begin
 % r3 is (name <fluids to unbind on error>)
     scalar w, boolfn;
@@ -1611,11 +1601,6 @@ symbolic procedure c!:pcall(op, r1, r2, r3, depth);
        else c!:printf("    %v = (*qfnn(fn))(qenv(fn), %s", r1, nargs);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n") end;
-    if not flagp(car r3, 'c!:no_errors) then <<
-       if null cadr r3 and depth = 0 then c!:printf("    errexit();\n")
-       else <<
-           c!:printf("    if (exception_pending()) ");
-           c!:pgoto(c!:find_error_label(nil, cadr r3, depth) , depth) >> >>;
     if boolfn then c!:printf("    %v = %v ? lisp_true : nil;\n", r1, r1);
   end;
 
@@ -1626,123 +1611,117 @@ symbolic procedure c!:fix_nargs(r2, act);
 
 put('call, 'c!:opcode_printer, function c!:pcall);
 
-symbolic procedure c!:pgoto(lab, depth);
+symbolic procedure c!:pfluidbind(op, r1, r2, r3);
+  begin
+    c!:printf("// Binding %a\n", r2);
+% -relooadenv gives the stack offset for env.
+% r3 is the offset in env of the name to bind
+% -get(get(r1, 'c!:chosen), 'c!:location) is the stack offset for the
+% save location
+    c!:printf("// FLUIDBIND: reloadenv=%a litvec-offset=%a saveloc=%a\n",
+       reloadenv, r3, get(r1, 'c!:location));
+    c!:printf("{   bind_fluid_stack bind_fluid_var(%a, %a, %a);\n",
+      -reloadenv, r3, -get(r1, 'c!:location))
+  end; 
+
+put('fluidbind, 'c!:opcode_printer, function c!:pfluidbind);
+
+symbolic procedure c!:pfluidunbind(op, r1, r2, r3);
+  begin
+% I put the ";" in here in case this line ends up with a label attached,
+% because "... lab: }" is not valid C++ since labels have to be used as
+% prefixes for commands. The ";" introduces a null command to serve
+% as needed.
+    c!:printf("    ;}  // end of a binding scope\n");
+  end; 
+
+put('fluidunbind, 'c!:opcode_printer, function c!:pfluidunbind);
+
+
+symbolic procedure c!:pgoto lab;
   begin
     if atom lab then return c!:printf("goto %s;\n", lab);
     lab := get(car lab, 'c!:chosen);
-    if zerop depth then c!:printf("return onevalue(%v);\n", lab)
-    else if flagp(lab, 'c!:live_across_call) then
-      c!:printf("{ LispObject res = %v; popv(%s); return onevalue(res); }\n", lab, depth)
-    else c!:printf("{ popv(%s); return onevalue(%v); }\n", depth, lab)
+    c!:printf("return onevalue(%v);\n", lab)
   end;
 
-symbolic procedure c!:pifnull(s, depth);
+symbolic procedure c!:pifnull s;
   c!:printf("%v == nil", car s);
 
 put('ifnull, 'c!:exit_helper, function c!:pifnull);
 
-symbolic procedure c!:pifatom(s, depth);
+symbolic procedure c!:pifatom s;
   c!:printf("!consp(%v)", car s);
 
 put('ifatom, 'c!:exit_helper, function c!:pifatom);
 
-symbolic procedure c!:pifsymbol(s, depth);
+symbolic procedure c!:pifsymbol s;
   c!:printf("symbolp(%v)", car s);
 
 put('ifsymbol, 'c!:exit_helper, function c!:pifsymbol);
 
-symbolic procedure c!:pifnumber(s, depth);
+symbolic procedure c!:pifnumber s;
   c!:printf("is_number(%v)", car s);
 
 put('ifnumber, 'c!:exit_helper, function c!:pifnumber);
 
-symbolic procedure c!:pifizerop(s, depth);
+symbolic procedure c!:pifizerop s;
   c!:printf("(%v) == 1", car s);
 
 put('ifizerop, 'c!:exit_helper, function c!:pifizerop);
 
-symbolic procedure c!:pifeq(s, depth);
+symbolic procedure c!:pifeq s;
   c!:printf("%v == %v", car s, cadr s);
 
 put('ifeq, 'c!:exit_helper, function c!:pifeq);
 
 !#if common!-lisp!-mode
-symbolic procedure c!:pifequal(s, depth);
+symbolic procedure c!:pifequal s;
   c!:printf("cl_equal(%v, %v)",
            car s, cadr s, car s, cadr s);
 !#else
-symbolic procedure c!:pifequal(s, depth);
+symbolic procedure c!:pifequal s;
   c!:printf("equal(%v, %v)",
            car s, cadr s, car s, cadr s);
 !#endif
 
 put('ifequal, 'c!:exit_helper, function c!:pifequal);
 
-symbolic procedure c!:pifilessp(s, depth);
+symbolic procedure c!:pifilessp s;
   c!:printf("((intptr_t)(%v)) < ((intptr_t)(%v))", car s, cadr s);
 
 put('ifilessp, 'c!:exit_helper, function c!:pifilessp);
 
-symbolic procedure c!:pifigreaterp(s, depth);
+symbolic procedure c!:pifigreaterp s;
   c!:printf("((intptr_t)(%v)) > ((intptr_t)(%v))", car s, cadr s);
 
 put('ifigreaterp, 'c!:exit_helper, function c!:pifigreaterp);
 
-symbolic procedure c!:display_flowgraph(s, depth, dropping_through);
-  if not atom s then <<
-    c!:printf "    ";
-    c!:pgoto(s, depth) >>
-  else if not flagp(s, 'c!:visited) then begin
-    scalar why, where_to;
-    flag(list s, 'c!:visited);
-    if not dropping_through or not (get(s, 'c!:count) = 1) then
-        c!:printf("\n%s:\n", s);
-    for each k in reverse get(s, 'c!:contents) do c!:print_opcode(k, depth);
-    why := get(s, 'c!:why);
-    where_to := get(s, 'c!:where_to);
-    if why = 'goto and (not atom car where_to or
-                        (not flagp(car where_to, 'c!:visited) and
-                         get(car where_to, 'c!:count) = 1)) then
-       c!:display_flowgraph(car where_to, depth, t)
-    else c!:print_exit_condition(why, where_to, depth);
+symbolic procedure c!:display_flowgraph1();
+  begin
+% here I will set the c!:visited flag on every label that gets used. That
+% will let me avoid settiing ones that are not used, and hence reduce the
+% number of warnings that the C++ compiler is liable to bother me with.
+    scalar why, where_to, s, s1;
+    for each b on reverse c!:all_blocks do <<
+      s := car b;
+      if cdr b then s1 := cadr b
+      else s1 := nil;
+      why := get(s, 'c!:why);
+      where_to := get(s, 'c!:where_to);
+      c!:flag_exit_label(why, where_to, s1) >>;
+    for each b on reverse c!:all_blocks do <<
+      s := car b;
+      if cdr b then s1 := cadr b
+      else s1 := nil;
+      if flagp(s, 'c!:visited) then c!:printf("%s:\n", s);
+      for each k in reverse get(s, 'c!:contents) do c!:print_opcode k;
+      why := get(s, 'c!:why);
+      where_to := get(s, 'c!:where_to);
+      c!:print_exit_condition1(why, where_to, s1) >>;
   end;
 
 fluid '(c!:startpoint);
-
-symbolic procedure c!:branch_chain(s, count);
-  begin
-    scalar contents, why, where_to, n;
-% do nothing to blocks already visted or return blocks.
-    if not atom s then return s
-    else if flagp(s, 'c!:visited) then <<
-       n := get(s, 'c!:count);
-       if null n then n := 1 else n := n + 1;
-       put(s, 'c!:count, n);
-       return s >>;
-    flag(list s, 'c!:visited);
-    contents := get(s, 'c!:contents);
-    why := get(s, 'c!:why);
-    where_to := for each z in get(s, 'c!:where_to) collect
-                    c!:branch_chain(z, count);
-% Turn movr a,b; return a; into return b;
-    while contents and eqcar(car contents, 'movr) and
-        why = 'goto and not atom car where_to and
-        caar where_to = cadr car contents do <<
-      where_to := list list cadddr car contents;
-      contents := cdr contents >>;
-    put(s, 'c!:contents, contents);
-    put(s, 'c!:where_to, where_to);
-% discard empty blocks
-    if null contents and why = 'goto then <<
-       remflag(list s, 'c!:visited);
-       return car where_to >>;
-    if count then <<
-      n := get(s, 'c!:count);
-      if null n then n := 1
-      else n := n + 1;
-      put(s, 'c!:count, n) >>;
-    return s
-  end;
 
 symbolic procedure c!:one_operand op;
  << flag(list op, 'c!:set_r1);
@@ -1771,13 +1750,14 @@ for each n in '(eq equal atsoc memq iplus2 idifference
 !#endif
 
 
-flag('(movr movk movk1 ldrglob call reloadenv fastget fastflag), 'c!:set_r1);
-flag('(strglob qputv), 'c!:read_r1);
+flag('(movr movk movk1 ldrglob call reloadenv
+       fluidbind fastget fastflag), 'c!:set_r1);
+flag('(strglob qputv fluidunbind), 'c!:read_r1);
 flag('(qputv fastget fastflag), 'c!:read_r2);
 flag('(movr qputv), 'c!:read_r3);
 flag('(ldrglob strglob nilglob movk call), 'c!:read_env);
 % special opcodes:
-%   call fluidbind
+%   call
 
 fluid '(fn_used);
 
@@ -1820,7 +1800,10 @@ symbolic procedure c!:live_variable_analysis c!:all_blocks;
                  if not eqcar(r3, c!:current_procedure) and
                     not get(car r3, 'c!:direct_entrypoint) and
                     not get(car r3, 'c!:c_entrypoint) then fn_used := t;
-                 if not flagp(car r3, 'c!:no_errors) then
+% c!:no_gc is used to indicate that the function concerned can never
+% trigger garbage collection and so lisp values are safe across the call.
+% These functions are however allowed to throw errors or exceptions.
+                 if not flagp(car r3, 'c!:no_gc) then
                      flag(live, 'c!:live_across_call);
                  live := union(live, r2) >>;
               if flagp(op, 'c!:read_env) then live := union(live, '(env))
@@ -1876,7 +1859,8 @@ symbolic procedure c!:build_clash_matrix c!:all_blocks;
 !#else
                   live := delete(r1, live);
 !#endif
-                  if op = 'reloadenv then reloadenv := t;
+                  if op = 'reloadenv or
+                     op = 'fluidbind then reloadenv := t;
                   for each v in live do c!:clash(r1, v) >>
                else if op = 'call then nil
                else <<
@@ -1958,19 +1942,6 @@ symbolic procedure c!:remove_nops c!:all_blocks;
                 car r . for each v in cdr r collect get(v, 'c!:chosen))
     end;
 
-fluid '(c!:error_labels);
-
-symbolic procedure c!:find_error_label(why, env, depth);
-  begin
-    scalar w, z;
-    z := list(why, env, depth);
-    w := assoc!*!*(z, c!:error_labels);
-    if null w then <<
-       w := z . c!:my_gensym();
-       c!:error_labels := w . c!:error_labels >>;
-    return cdr w
-  end;
-
 symbolic procedure c!:assign(u, v, c);
   if flagp(u, 'fluid) then list('strglob, v, u, c!:find_literal u) . c
   else list('movr, u, nil, v) . c;
@@ -1981,28 +1952,46 @@ symbolic procedure c!:insert_tailcall b;
     why := get(b, 'c!:why);
     dest := get(b, 'c!:where_to);
     contents := get(b, 'c!:contents);
+% Peel of the last instructions in the block up until there is a
+% CALL. Set w to the tail that is removed.
     while contents and not eqcar(car contents, 'call) do <<
       w := car contents . w;
       contents := cdr contents >>;
+% No CALL found, so no tailcall involved here.
     if null contents then return nil;
+% remember the function call.
     fcall := car contents;
     contents := cdr contents;
     res := cadr fcall;
+% Now check the tail of instructions that followed the call.
     while w do <<
+% allow RELOADENV
       if eqcar(car w, 'reloadenv) then w := cdr w
+% "CALL rx ...; MOVR ry, rx" is sort of like "CALL ry ..." where the
+% register in a CALL is where it put its result.
       else if eqcar(car w, 'movr) and cadddr car w = res then <<
         res := cadr car w;
         w := cdr w >>
       else res := w := nil >>;
+% Still not a tail-call if there is no result value set up this way.
     if null res then return nil;
+% Now check if the block exits with a transfer of control that is
+% either a direct return or is a jump to another block that at most moves
+% the return value around a bit and then eventually returns it.
     if c!:does_return(res, why, dest) then
        if car cadddr fcall = c!:current_procedure then <<
+% If a tail call to self then copy args for the call into the local
+% variables used at the head of the procedure.
           for each p in pair(c!:current_args, caddr fcall) do
              contents := c!:assign(car p, cdr p, contents);
+% Replace the block with a itself sans the call
           put(b, 'c!:contents, contents);
+% Change continuation from the block to jump back to the start.
           put(b, 'c!:why, 'goto);
           put(b, 'c!:where_to, list restart_label) >>
        else <<
+% Otherwise (tail call not to self) convert block exit to be visibly a tail
+% call.
           put(b, 'c!:contents, contents);
           put(b, 'c!:why, list('call, car cadddr fcall) . caddr fcall);
           put(b, 'c!:where_to, nil) >>
@@ -2050,28 +2039,59 @@ symbolic procedure c!:pushpop(op, v);
 symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
                                           env, argch, args, varargs);
   begin
-    scalar w, n, locs, stacks, c!:error_labels, fn_used;
+    scalar w, n, locs, stacks, fn_used;
+% I need to be somewhat careful with optimisation here so that scopes
+% set up by fluidbind and fluidunbind are not defeated.
+%
+% insert_tailcall can take the end of blocks and if they represent tail-calls
+% it maps thm either onto a sequence of assignments and a jump to the head
+% of the current procedure, or it leaves them as something that code-emitting
+% knows will be an exit. Note that if a fluidunbind was present after the
+% last function call then that would prevent this transformation.
     for each b in c!:all_blocks do c!:insert_tailcall b;
-    c!:startpoint := c!:branch_chain(c!:startpoint, nil);
-    remflag(c!:all_blocks, 'c!:visited);
+% A live variable analysis works out which "registers" are alive at each
+% location in the code. This includes noting which variables are
+% live across a function call that might trigger garbage collection.
     c!:live_variable_analysis c!:all_blocks;
+% Clash information sorts of whether registers have overlapping live
+% ranges. If a pair of registers have disjoing ranges they can be mapped
+% to a single C++ variable or a single stack location and that will lead to
+% better code - especially if it ends up reducing the amount of stack used.
     c!:build_clash_matrix c!:all_blocks;
-    if c!:error_labels and env then reloadenv := t;
+% As a special cases the variables that arguments were passed in must all
+% be kept disjoint.
     for each u in env do
       for each v in env do c!:clash(cdr u, cdr v); % keep all args distinct
+% I now invent a new set of names and used them as the names that will be
+% used for variables that implement each virtual register.
     locs := c!:allocate_registers c!:registers;
+% Ditto for things that will map onto stack locations.
     stacks := c!:allocate_registers c!:stacklocs;
+% Mark stack variables as live across calls since that is why they had to
+% end up as stack locations.
     flag(stacks, 'c!:live_across_call);
+% remove_nops mostly replaces the abstract instructions with ones that now
+% refer to the real variables (from allocate_registers) rather than to
+% virtual ones. While doing that it discards any lines of code that
+% end up as "rx = rx;" because the original two registers have collapsed
+% together during register allocation.
     c!:remove_nops c!:all_blocks;
-    c!:startpoint := c!:branch_chain(c!:startpoint, nil); % after tailcall insertion
-    remflag(c!:all_blocks, 'c!:visited);
-    c!:startpoint := c!:branch_chain(c!:startpoint, t); % ... AGAIN to tidy up
-    remflag(c!:all_blocks, 'c!:visited);
-    if locs then <<
+% Now I am ready to start emitting some code. First declare all the
+% local variables I will use.
+   if locs then <<
       c!:printf("    LispObject %s", car locs);
       for each v in cdr locs do c!:printf(", %s", v);
       c!:printf ";\n" >>;
+% If there is a general function call anywhere in the generated code I will
+% use a variable called "fn", so declare that here too.
     if fn_used then c!:printf "    LispObject fn;\n";
+% If I wanted the stack fully popped even in throw and error cases I could
+% activate this:
+%   if stacks or reloadenv then
+%      c!:printf("stack_restorer stack_restorer_var;\n");
+%
+% Functions with 3 or more arguments do not declare their argument variables
+% in the procedure head - they use va_arg stuff, si I emit that here.
     if varargs and args then <<
       w := " ";
       c!:printf("    LispObject");
@@ -2087,10 +2107,8 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
        for each v in reverse args do
           c!:printf("    %s = va_arg(aa, LispObject);\n", v);
        c!:printf("    va_end(aa);\n") >>;
-    c!:printf("#ifdef DEBUG_VALIDATE\n");
-    c!:printf("    if (check_env(env)) return aerror(\qenv for %s\q);\n",
-              cdr argch);
-    c!:printf("#endif\n");
+% There is some silly code enclosed in #ifdef stuff that is useful
+% while debugging, maybe.
     c!:printf("#ifdef CHECK_STACK\n");
     c!:printf("    if_check_stack;\n");
     c!:printf("#endif\n");
@@ -2104,10 +2122,11 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
        c!:pushpop('push, args);
        c!:printf "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n";
        c!:pushpop('pop, reverse args);
-       c!:printf "        if (exception_pending()) return nil;\n";
        c!:printf "    }\n" >>;
+% Now I will allocate space for everything that has to go on the stack.
+% and record in the c!:location property where on the stack the variable
+% will live.
     if reloadenv then c!:printf("    push(env);\n");
-%   else c!:printf("    CSL_IGNORE(env);\n");
     n := 0;
     if stacks then <<
        c!:printf "%<// space for vars preserved across procedure calls\n";
@@ -2115,6 +2134,7 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
           put(v, 'c!:location, n);
           n := n+1 >>;
        w := n;
+% I push multiple items 5 at a time as much as I can.
        while w >= 5 do <<
           c!:printf "    push5(nil, nil, nil, nil, nil);\n";
           w := w - 5 >>;
@@ -2127,6 +2147,17 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
     if reloadenv then <<
        reloadenv := n;
        n := n + 1 >>;
+% If I exit this function via a throw or error it will be acceptable that the
+% stack is not retored.
+    if n neq 0 then c!:printf("    stack_popper stack_popper_var(%d);\n", n);
+%
+% I now copy arguments from the variables they were passed in either
+% simple variables or stack locations where they need to be. Note that
+% if any actual arguments has been fluid that
+%     (de foo (a B c D)  ...) with B and D fluid had been expanded
+% to  (de foo (a b c d) (!~prog (B D) (setq B b) (setq D d) ...)) and
+% and so issues of fluid argument variables does not arise at just this
+% level.
     if env then c!:printf "%<// copy arguments values to proper place\n";
     for each v in env do
       if flagp(cdr v, 'c!:live_across_call) then
@@ -2134,48 +2165,17 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
                -get(get(cdr v, 'c!:chosen), 'c!:location), cdr v)
       else c!:printf("    %s = %s;\n", get(cdr v, 'c!:chosen), cdr v);
     c!:printf "%<// end of prologue\n";
-    c!:display_flowgraph(c!:startpoint, n, t);
-    if c!:error_labels then <<
-       c!:printf "%<// error exit handlers\n";
-       for each x in c!:error_labels do <<
-          c!:printf("%s:\n", cdr x);
-          c!:print_error_return(caar x, cadar x, caddar x) >> >>;
+% Now I can write out the full body of the function. If I use "PUSH" and
+% "POP" operations within it to cope with fluid bindings then I will
+% need to be rather careful to adapt stack offsets as I go. It may in
+% fact be better to make my binding and restoring scheme closer to the old
+% style arrangement somehow. Hmmm I can see how I might achieve that!
+%
+    c!:display_flowgraph1();
+% I had a "{" just after the header line of the function...
+    c!:printf("}\n\n");
     remflag(c!:all_blocks, 'c!:visited);
   end;
-
-symbolic procedure c!:print_error_return(why, env, depth);
-  begin
-    if reloadenv and env then
-       c!:printf("    env = stack[%s];\n", -reloadenv);
-    if null why then <<
-% One could imagine generating backtrace entries here...
-       for each v in env do
-          c!:printf("    qvalue(elt(env, %s)) = %v; %<// %c\n",
-                 c!:find_literal car v, get(cdr v, 'c!:chosen), car v);
-       if depth neq 0 then c!:printf("    popv(%s);\n", depth);
-       c!:printf "    return nil;\n" >>
-    else if flagp(cadr why, 'c!:live_across_call) then <<
-       c!:printf("    {   LispObject res = %v;\n", cadr why);
-       for each v in env do
-          c!:printf("        qvalue(elt(env, %s)) = %v;\n",
-                 c!:find_literal car v, get(cdr v, 'c!:chosen));
-       if depth neq 0 then c!:printf("        popv(%s);\n", depth);
-       c!:printf("        return error(1, %s, res); }\n",
-          if eqcar(why, 'car) then "err_bad_car"
-          else if eqcar(why, 'cdr) then "err_bad_cdr"
-          else error(0, list(why, "unknown_error"))) >>
-    else <<
-       for each v in env do
-          c!:printf("    qvalue(elt(env, %s)) = %v;\n",
-                 c!:find_literal car v, get(cdr v, 'c!:chosen));
-       if depth neq 0 then c!:printf("    popv(%s);\n", depth);
-       c!:printf("    return error(1, %s, %v);\n",
-          (if eqcar(why, 'car) then "err_bad_car"
-           else if eqcar(why, 'cdr) then "err_bad_cdr"
-           else error(0, list(why, "unknown_error"))),
-          cadr why) >>
-  end;
-
 
 %
 % Now I have a series of separable sections each of which gives a special
@@ -2375,7 +2375,6 @@ put('labels, 'c!:code, function c!:clabels);
 
 symbolic procedure c!:expand!-let(vl, b);
   if null vl then 'progn . b
-  else if null cdr vl then c!:expand!-let!*(vl, b)
   else begin scalar vars, vals;
     for each v in vl do
       if atom v then << vars := v . vars; vals := nil . vals >>
@@ -2411,9 +2410,8 @@ symbolic procedure c!:expand!-let!*(vl, b);
        val := cdr var;
        var := car var;
        if not atom val then val := car val >>;
-    b := list list('return, c!:expand!-let!*(cdr vl, b));
-    if val then b := list('setq, var, val) . b;
-    return 'prog . list var . b
+    b := c!:expand!-let!*(cdr vl, b);
+    return list(list('lambda, list var, b), val);
   end;
 
 symbolic procedure c!:clet!*(x, env);
@@ -2569,29 +2567,33 @@ symbolic procedure c!:cprog(u, env);
 % gets uprated now. decs ends up a list of things that had their status
 % changed.
     for each v in bvl do <<
-       if not globalp v and not fluidp v and
+       if not globalp v and not fluidp v and not keywordp v and
           c!:local_fluidp(v, localdecs) then <<
           make!-special v;
           decs := v . decs >> >>;
     for each v in bvl do <<
-       if globalp v then begin scalar oo;
+       if globalp v or keywordp v then begin scalar oo;
           oo := wrs nil;
           princ "+++++ "; prin v;
           princ " converted from GLOBAL to FLUID"; terpri();
           wrs oo;
           unglobal list v;
+          unkeyword list v;
           fluid list v end;
 % Note I need to update local_decs
        if fluidp v then <<
           fluids := (v . c!:newreg()) . fluids;
           flag(list cdar fluids, 'c!:live_across_call); % silly if not
           env1 := ('c!:dummy!:name . cdar fluids) . env1;
-          c!:outop('ldrglob, cdar fluids, v, c!:find_literal v);
-          c!:outop('nilglob, nil, v, c!:find_literal v) >>
+% see comments where LAMBDA binds fluids.
+          c!:outop('fluidbind, cdar fluids, v, c!:find_literal v);
+% !~prog does not update the values of the fluids that it binds, and is for
+% use when code within the block does that for it.
+          if eqcar(u, 'prog) then
+             c!:outop('nilglob, nil, v, c!:find_literal v) >>
        else <<
           env1 := (v . c!:newreg()) . env1;
           c!:outop('movk1, cdar env1, nil, nil) >> >>;
-    if fluids then c!:outop('fluidbind, nil, nil, fluids);
     env := env1 . append(fluids, cdr env);
     u := body;
     progret := c!:newreg();
@@ -2616,7 +2618,7 @@ symbolic procedure c!:cprog(u, env);
     c!:endblock('goto, list progexit);
     c!:startblock progexit;
     for each v in fluids do
-      c!:outop('strglob, cdr v, car v, c!:find_literal car v);
+      c!:outop('fluidunbind, cdr v, car v, c!:find_literal car v);
     blockstack := cdr blockstack;
     proglabs := cdr proglabs;
     unfluid decs;               % reset effect of DECLARE
@@ -2625,11 +2627,13 @@ symbolic procedure c!:cprog(u, env);
   end;
 
 put('prog, 'c!:code, function c!:cprog);
+put('!~prog, 'c!:code, function c!:cprog);
 
 symbolic procedure c!:valid_prog x;
   c!:valid_list cdr x;
 
 put('prog, 'c!:valid, function c!:valid_prog);
+put('!~prog, 'c!:valid, function c!:valid_prog);
 
 symbolic procedure c!:cprog!*(u, env);
    error(0, "prog*");
@@ -2794,18 +2798,12 @@ symbolic procedure c!:cthe(u, env);
 
 put('the, 'c!:code, function c!:cthe);
 
-!#if common!-lisp!-mode
-
 % For Common Lisp "throw" has to be able to throw multiple values...
-% Actually the in-line compilation will be fairly simple, but I am not
-% bothering to deal with it yet!
 
 symbolic procedure c!:cthrow(u, env);
    error(0, "throw");
 
 put('throw, 'c!:code, function c!:cthrow);
-
-!#endif
 
 symbolic procedure c!:cunless(u, env);
   begin
@@ -2856,8 +2854,6 @@ put('when, 'c!:code, function c!:cwhen);
 % End of code to handle special forms - what comes from here on is
 % more concerned with performance than with speed.
 %
-
-!#if (not common!-lisp!-mode)
 
 % mapcar etc are compiled specially as a fudge to achieve an effect as
 % if proper environment-capture was implemented for the functional
@@ -2938,8 +2934,6 @@ put('mapc,    'c!:compile_macro, function c!:expand_map);
 put('mapcar,  'c!:compile_macro, function c!:expand_map);
 put('mapcon,  'c!:compile_macro, function c!:expand_map);
 put('mapcan,  'c!:compile_macro, function c!:expand_map);
-
-!#endif
 
 % caaar to cddddr get expanded into compositions of
 % car, cdr which are compiled in-line
@@ -3157,7 +3151,14 @@ put('equal, 'c!:code, function c!:cequal);
 
 %
 % The next few cases are concerned with demoting functions that use
-% equal tests into ones that use eq instead
+% equal tests into ones that use eq instead. If I ONLY supported 64-bit
+% machined I could count a wider range of values as "certainly fixnums",
+% but so that I make C++ code that could be compiled on either 32 or 64-bit
+% machines I only optimise on numbers that fit within 28 bits. I think there
+% will be vanishingly few numbers in the range 2^27-2^59 present and used in
+% equality tests, so this limit will not be at all important for performance.
+% Indeed I rather expect that detecting just 0 and 1 (as in zerop and onep)
+% will be what matters most.
 
 symbolic procedure c!:is_fixnum x;
    fixp x and x >= -134217728 and x <= 134217727;
@@ -3203,8 +3204,6 @@ symbolic procedure c!:atomkeys x;
    c!:atomcar cadr x and
    c!:atomkeys caddr x);
 
-!#if (not common!-lisp!-mode)
-
 symbolic procedure c!:comsublis x;
    if c!:atomkeys cadr x then 'subla . cdr x
    else nil;
@@ -3229,8 +3228,6 @@ symbolic procedure c!:comdelete x;
    else nil;
 
 put('delete, 'c!:compile_macro, function c!:comdelete);
-
-!#endif
 
 symbolic procedure c!:ctestif(x, env, d1, d2);
   begin
@@ -3710,7 +3707,7 @@ flag(
    null numberp onep pairp plusp qcaar qcadr qcar qcdar qcddr
    qcdr remflag remprop reversip seprp special!-form!-p stringp
    symbol!-env symbol!-name symbol!-value threevectorp vectorp zerop),
- 'c!:no_errors);
+ 'c!:no_gc);
 
 end;
 

@@ -1,11 +1,11 @@
-//  char.cpp                         Copyright (C) 1989-2015 Codemist    
+//  char.cpp                               Copyright (C) 1989-2017 Codemist    
 
 //
 // Character handling.
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -132,7 +132,6 @@ LispObject char_to_id(int ch)
         n = 4;
     }
     w = iintern(boffo, n, lisp_package, 0);
-    errexit();
     if (ch <= 0xff) elt(charvec, ch) = w;
     return onevalue(w);
 }
@@ -148,7 +147,7 @@ LispObject char_to_id(int ch)
 static LispObject Lchar_downcase(LispObject, LispObject a)
 {   int cc;
     a = characterify(a);
-    if (!is_char(a)) return aerror("char-downcase");
+    if (!is_char(a)) aerror("char-downcase");
 #ifdef COMMON
     if (a == CHAR_EOF) return onevalue(a);
 #else
@@ -180,15 +179,14 @@ LispObject Lcharacter(LispObject env, LispObject a)
 //
         else if (stringp(a))
         {   LispObject w = Lelt(nil, a, fixnum_of_int(0));
-            errexit();
             return onevalue(w);
         }
-        else return aerror1("character", a);
+        else aerror1("character", a);
     }
     else if (is_fixnum(a))
         return onevalue(pack_char(0, int_of_fixnum(a) & 0x001fffff));
     else if (is_symbol(a)) return onevalue(characterify_string(qpname(a));
-    else return aerror1("character", a);
+    else aerror1("character", a);
 }
 
 static LispObject Lcharacterp(LispObject env, LispObject a)
@@ -199,13 +197,13 @@ static LispObject Lchar_bits(LispObject, LispObject a)
 {
 // "bits" are no longer supported (or needed).
     a = characterify(a);
-    if (!is_char(a)) return aerror("char-bits");
+    if (!is_char(a)) aerror("char-bits");
     return onevalue(fixnum_of_int(0));
 }
 
 static LispObject Lchar_font(LispObject, LispObject a)
 {   a = characterify(a);
-    if (!is_char(a)) return aerror("char-font");
+    if (!is_char(a)) aerror("char-font");
     return onevalue(fixnum_of_int(font_of_char(a)));
 }
 
@@ -214,7 +212,7 @@ static LispObject Lchar_font(LispObject, LispObject a)
 static LispObject Lchar_upcase(LispObject, LispObject a)
 {   int cc;
     a = characterify(a);
-    if (!is_char(a)) return aerror("char-upcase");
+    if (!is_char(a)) aerror("char-upcase");
 #ifdef COMMON
     if (a == CHAR_EOF) return onevalue(a);
 #else
@@ -300,7 +298,7 @@ LispObject Ldigit_char_p_2(LispObject env, LispObject a, LispObject radix)
 {   int cc;
     LispObject r = radix;
     if (!is_fixnum(r) || r < fixnum_of_int(2) ||
-        r >= fixnum_of_int(36)) return aerror("digit-char-p");
+        r >= fixnum_of_int(36)) aerror("digit-char-p");
     a = characterify(a);
     if (!is_char(a) || a == CHAR_EOF) return onevalue(nil);
     cc = code_of_char(a);
@@ -336,7 +334,7 @@ LispObject Ldigitp(LispObject env, LispObject a)
 static LispObject Ldigit_char_n(LispObject env, int nargs, ...)
 {   va_list aa;
     LispObject a, r, f;
-    if (nargs != 3) return aerror("digit-char");
+    if (nargs != 3) aerror("digit-char");
     va_start(aa, nargs);
     a = va_arg(aa, LispObject);
     r = va_arg(aa, LispObject);
@@ -365,7 +363,7 @@ static LispObject Ldigit_char_1(LispObject env, LispObject a)
 #endif
 
 LispObject Lspecial_char(LispObject, LispObject a)
-{   if (!is_fixnum(a)) return aerror("special-char");
+{   if (!is_fixnum(a)) aerror("special-char");
     switch (int_of_fixnum(a))
     {   case 0:   // space
             a = pack_char(0, ' ');
@@ -401,7 +399,7 @@ LispObject Lspecial_char(LispObject, LispObject a)
             a = pack_char(0, 0x1b);
             break;
         default:
-            return aerror("special-char");
+            aerror("special-char");
     }
 //
 // What about this and Standard Lisp mode???  Well it still hands back
@@ -420,7 +418,7 @@ LispObject Lspecial_char(LispObject, LispObject a)
 //
 LispObject Lutf8_encode(LispObject env, LispObject a)
 {   int c;
-    if (!is_fixnum(a)) return aerror1("utf8-encode", a);
+    if (!is_fixnum(a)) aerror1("utf8-encode", a);
     c = int_of_fixnum(a) & 0x001fffff;
     if (c <= 0x7f) return onevalue(ncons(fixnum_of_int(c)));
     else if (c <= 0x7ff) return onevalue(
@@ -444,26 +442,26 @@ static LispObject utf8_decode(int c1, int c2, int c3, int c4)
 {   int32_t n;
     switch (c1 & 0xf0)
 {       default:
-            if ((c2&0x80)==0) return aerror("utf8-decode");
+            if ((c2&0x80)==0) aerror("utf8-decode");
             return onevalue(fixnum_of_int(c1));
         case 0x80:
         case 0x90:
         case 0xa0:
         case 0xb0:
-            return aerror("utf8-decode");
+            aerror("utf8-decode");
         case 0xc0:
         case 0xd0:
-            if ((c2&0x80)==0) return aerror("utf8-decode");
+            if ((c2&0x80)==0) aerror("utf8-decode");
             return onevalue(fixnum_of_int(((c1 & 0x1f)<<6) |
                                           (c2 & 0x3f)));
         case 0xe0:
-            if ((c2&0x80)==0 || (c3&0x80)==0) return aerror("utf8-decode");
+            if ((c2&0x80)==0 || (c3&0x80)==0) aerror("utf8-decode");
             return onevalue(fixnum_of_int(((c1 & 0x0f)<<12) |
                                           ((c2 & 0x3f)<<6) |
                                           (c3 & 0x3f)));
         case 0xf0:
             if ((c1 & 0x08) != 0 || (c2&0x80)==0 || (c3&0x80)==0 || (c4&0x80)==0)
-                return aerror("utf8-decode");
+                aerror("utf8-decode");
             n = ((c1 & 0x07)<<18) |
                 ((c2 & 0x3f)<<12) |
                 ((c3 & 0x3f)<<6) |
@@ -476,7 +474,7 @@ static LispObject utf8_decode(int c1, int c2, int c3, int c4)
 LispObject Lutf8_decoden(LispObject env, int nargs, ...)
 {   LispObject a, b, c, d;
     va_list aa;
-    if (nargs != 3 && nargs != 4) return aerror("utf8-decode");
+    if (nargs != 3 && nargs != 4) aerror("utf8-decode");
     va_start(aa, nargs);
     a = va_arg(aa, LispObject);
     b = va_arg(aa, LispObject);
@@ -484,10 +482,10 @@ LispObject Lutf8_decoden(LispObject env, int nargs, ...)
     if (nargs == 4) d = va_arg(aa, LispObject);
     else d = fixnum_of_int(0);
     va_end(aa);
-    if (!is_fixnum(a)) return aerror1("utf8-decode", a);
-    if (!is_fixnum(b)) return aerror1("utf8-decode", b);
-    if (!is_fixnum(c)) return aerror1("utf8-decode", c);
-    if (!is_fixnum(d)) return aerror1("utf8-decode", d);
+    if (!is_fixnum(a)) aerror1("utf8-decode", a);
+    if (!is_fixnum(b)) aerror1("utf8-decode", b);
+    if (!is_fixnum(c)) aerror1("utf8-decode", c);
+    if (!is_fixnum(d)) aerror1("utf8-decode", d);
     return utf8_decode(int_of_fixnum(a) & 0xff,
                        int_of_fixnum(b) & 0xff,
                        int_of_fixnum(c) & 0xff,
@@ -495,8 +493,8 @@ LispObject Lutf8_decoden(LispObject env, int nargs, ...)
 }
 
 LispObject Lutf8_decode2(LispObject env, LispObject a, LispObject b)
-{   if (!is_fixnum(a)) return aerror1("utf8-decode", a);
-    if (!is_fixnum(b)) return aerror1("utf8-decode", b);
+{   if (!is_fixnum(a)) aerror1("utf8-decode", a);
+    if (!is_fixnum(b)) aerror1("utf8-decode", b);
     return utf8_decode(int_of_fixnum(a) & 0xff, int_of_fixnum(b) & 0xff,
                        -1, -1);
 }
@@ -513,7 +511,7 @@ LispObject Lutf8_decode1(LispObject env, LispObject a)
                 c = qcar(c);
                 if (car_legal(d))
                 {   if (car_legal(qcdr(d)))
-                        return aerror1("utf8-decode", qcdr(d));
+                        aerror1("utf8-decode", qcdr(d));
                     else return Lutf8_decoden(nil, 4, a, b, c, qcar(d));
                 }
                 else return Lutf8_decoden(nil, 3, a, b, c);
@@ -522,13 +520,13 @@ LispObject Lutf8_decode1(LispObject env, LispObject a)
         }
         else return Lutf8_decode1(nil, a);
     }
-    if (!is_fixnum(a)) return aerror1("utf8-decode", a);
+    if (!is_fixnum(a)) aerror1("utf8-decode", a);
     return utf8_decode(int_of_fixnum(a) & 0xff, -1, -1, -1);
 }
 
 LispObject Lchar_code(LispObject, LispObject a)
 {   a = characterify(a);
-    if (!is_char(a)) return aerror("char-code");
+    if (!is_char(a)) aerror("char-code");
 //
 // Note the special treatment of EOF here, and that characterify accepts
 // integers, symbols and strings and disentangled UTF-8 encoding to return
@@ -550,7 +548,7 @@ static LispObject Lcode_charn(LispObject, int nargs, ...)
     va_end(aa);
     if ((int32_t)font < 0 || (int32_t)font > (int32_t)fixnum_of_int(7) ||
         (int32_t)a < 0 || (int32_t)a > (int32_t)fixnum_of_int(0x001fffff))
-        return aerror("code-char");
+        aerror("code-char");
     av = int_of_fixnum(a) & 0x001fffff;
 #ifdef COMMON
     return onevalue(pack_char(int_of_fixnum(font) & 0x7, av));
@@ -571,7 +569,7 @@ static LispObject Lcode_char2(LispObject env, LispObject a, LispObject b)
 
 static LispObject Lchar_int(LispObject, LispObject a)
 {   a = characterify(a);
-    if (!is_char(a)) return aerror("char-int");
+    if (!is_char(a)) aerror("char-int");
     else if (a == CHAR_EOF) return onevalue(fixnum_of_int(-1));
     else return onevalue(fixnum_of_int(code_of_char(a)));
 }
@@ -587,7 +585,7 @@ static LispObject Lint_char(LispObject env, LispObject a)
 static LispObject Lmake_char(LispObject, int nargs, ...)
 {   va_list aa;
     LispObject a, bits, font;
-    if (nargs == 0 || nargs > 3) return aerror("make-char");
+    if (nargs == 0 || nargs > 3) aerror("make-char");
     va_start(aa, nargs);
     a = va_arg(aa, LispObject);
     if (nargs > 1) bits = va_arg(aa, LispObject);
@@ -597,7 +595,7 @@ static LispObject Lmake_char(LispObject, int nargs, ...)
     va_end(aa);
     a = characterify(a);
     if (font < 0 || font > fixnum_of_int(3L) ||
-        !is_char(a)) return aerror("make-char");
+        !is_char(a)) aerror("make-char");
     return onevalue(pack_char(int_of_fixnum(font) & 0x3,
                               code_of_char(a)));
 }
@@ -622,7 +620,7 @@ static LispObject Lchar_eqn(LispObject env, int nargs, ...)
     int i;
     if (nargs < 2) return onevalue(lisp_true);
     if (nargs > ARG_CUT_OFF)
-        return aerror("too many args for character comparison");
+        aerror("too many args for character comparison");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     if (chartest(r))
@@ -659,7 +657,7 @@ static LispObject Lchar_lessp(LispObject env, int nargs, ...)
     int i;
     if (nargs < 2) return onevalue(lisp_true);
     if (nargs > ARG_CUT_OFF)
-        return aerror("too many args for character comparison");
+        aerror("too many args for character comparison");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     if (chartest(r))
@@ -696,7 +694,7 @@ static LispObject Lchar_greaterp(LispObject env, int nargs, ...)
     int i;
     if (nargs < 2) return onevalue(lisp_true);
     if (nargs > ARG_CUT_OFF)
-        return aerror("too many args for character comparison");
+        aerror("too many args for character comparison");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     if (chartest(r))
@@ -739,7 +737,7 @@ static LispObject Lchar_neq_n(LispObject env, int nargs, ...)
     LispObject *r;
     if (nargs < 2) return onevalue(lisp_true);
     if (nargs > ARG_CUT_OFF)
-        return aerror("too many args for character comparison");
+        aerror("too many args for character comparison");
     r = (LispObject *)&work_1;
     va_start(a, nargs);
     for (i=0; i<nargs; i++) r[i] = va_arg(a, LispObject);
@@ -770,7 +768,7 @@ static LispObject Lchar_geq(LispObject env, int nargs, ...)
     int i;
     if (nargs < 2) return onevalue(lisp_true);
     if (nargs > ARG_CUT_OFF)
-        return aerror("too many args for character comparison");
+        aerror("too many args for character comparison");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     if (chartest(r))
@@ -807,7 +805,7 @@ static LispObject Lchar_leq(LispObject env, int nargs, ...)
     int i;
     if (nargs < 2) return onevalue(lisp_true);
     if (nargs > ARG_CUT_OFF)
-        return aerror("too many args for character comparison");
+        aerror("too many args for character comparison");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     if (chartest(r))
@@ -848,7 +846,7 @@ static LispObject Lchar_leq_1(LispObject env, LispObject a)
 
 static LispObject casefold(LispObject c)
 {   int cc;
-    if (!is_char(c)) return aerror("Character object expected");
+    if (!is_char(c)) aerror("Character object expected");
     if (c == CHAR_EOF) return onevalue(c);
 
     cc = code_of_char(c);   // Character in the C sense
@@ -862,21 +860,13 @@ static LispObject Lcharacter_eqn(LispObject env, int nargs, ...)
     int i;
     if (nargs < 2) return onevalue(lisp_true);
     if (nargs > ARG_CUT_OFF)
-        return aerror("too many args for character comparison");
+        aerror("too many args for character comparison");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     r = casefold(r);
-    if (exception_pending())
-    {   va_end(a);
-        return nil;
-    }
     for (i = 1; i<nargs; i++)
     {   LispObject s = va_arg(a, LispObject);
         s = casefold(s);
-        if (exception_pending())
-        {   va_end(a);
-            return nil;
-        }
         if (r != s)
         {   va_end(a);
             return onevalue(nil);
@@ -901,21 +891,13 @@ static LispObject Lcharacter_lessp(LispObject env, int nargs, ...)
     int i;
     if (nargs < 2) return onevalue(lisp_true);
     if (nargs > ARG_CUT_OFF)
-        return aerror("too many args for character comparison");
+        aerror("too many args for character comparison");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     r = casefold(r);
-    if (exception_pending())
-    {   va_end(a);
-        return nil;
-    }
     for (i = 1; i<nargs; i++)
     {   LispObject s = va_arg(a, LispObject);
         s = casefold(s);
-        if (exception_pending())
-        {   va_end(a);
-            return nil;
-        }
         if ((uint32_t)r >= (uint32_t)s)
         {   va_end(a);
             return onevalue(nil);
@@ -940,21 +922,13 @@ static LispObject Lcharacter_greaterp(LispObject env, int nargs, ...)
     int i;
     if (nargs < 2) return onevalue(lisp_true);
     if (nargs > ARG_CUT_OFF)
-        return aerror("too many args for character comparison");
+        aerror("too many args for character comparison");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     r = casefold(r);
-    if (exception_pending())
-    {   va_end(a);
-        return nil;
-    }
     for (i = 1; i<nargs; i++)
     {   LispObject s = va_arg(a, LispObject);
         s = casefold(s);
-        if (exception_pending())
-        {   va_end(a);
-            return nil;
-        }
         if ((uint32_t)r <= (uint32_t)s)
         {   va_end(a);
             return onevalue(nil);
@@ -985,7 +959,7 @@ static LispObject Lcharacter_neq_n(LispObject env, int nargs, ...)
     LispObject *r;
     if (nargs < 2) return onevalue(lisp_true);
     if (nargs > ARG_CUT_OFF)
-        return aerror("too many args for character comparison");
+        aerror("too many args for character comparison");
     r = (LispObject *)&work_1;
     va_start(a, nargs);
     for (i=0; i<nargs; i++) r[i] = va_arg(a, LispObject);
@@ -994,7 +968,6 @@ static LispObject Lcharacter_neq_n(LispObject env, int nargs, ...)
     for (i = 1; i<nargs; i++)
     {   LispObject n1 = r[i];
         n1 = casefold(n1);
-        errexit();
         for (j=0; j<i; j++)
         {   LispObject n2 = r[j];
             n2 = casefold(n2);  // can not fail - this arg tested earlier
@@ -1018,21 +991,13 @@ static LispObject Lcharacter_geq(LispObject env, int nargs, ...)
     int i;
     if (nargs < 2) return onevalue(lisp_true);
     if (nargs > ARG_CUT_OFF)
-        return aerror("too many args for character comparison");
+        aerror("too many args for character comparison");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     r = casefold(r);
-    if (exception_pending())
-    {   va_end(a);
-        return nil;
-    }
     for (i = 1; i<nargs; i++)
     {   LispObject s = va_arg(a, LispObject);
         s = casefold(s);
-        if (exception_pending())
-        {   va_end(a);
-            return nil;
-        }
         if ((uint32_t)r < (uint32_t)s)
         {   va_end(a);
             return onevalue(nil);
@@ -1057,21 +1022,13 @@ static LispObject Lcharacter_leq(LispObject env, int nargs, ...)
     int i;
     if (nargs < 2) return onevalue(lisp_true);
     if (nargs > ARG_CUT_OFF)
-        return aerror("too many args for character comparison");
+        aerror("too many args for character comparison");
     va_start(a, nargs);
     r = va_arg(a, LispObject);
     r = casefold(r);
-    if (exception_pending())
-    {   va_end(a);
-        return nil;
-    }
     for (i = 1; i<nargs; i++)
     {   LispObject s = va_arg(a, LispObject);
         s = casefold(s);
-        if (exception_pending())
-        {   va_end(a);
-            return nil;
-        }
         if ((uint32_t)r > (uint32_t)s)
         {   va_end(a);
             return onevalue(nil);
@@ -1137,10 +1094,10 @@ static LispObject Lstring_greaterp_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string>", a);
+    if (w == nil) aerror1("string>", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string>", b);
+    if (w == nil) aerror1("string>", b);
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
@@ -1171,10 +1128,10 @@ static LispObject Lstring_not_equal_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string/=", a);
+    if (w == nil) aerror1("string/=", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string/=", b);
+    if (w == nil) aerror1("string/=", b);
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
@@ -1195,10 +1152,10 @@ static LispObject Lstring_equal_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string=", a);
+    if (w == nil) aerror1("string=", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string=", b);
+    if (w == nil) aerror1("string=", b);
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
@@ -1219,10 +1176,10 @@ static LispObject Lstring_not_greaterp_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string<=", a);
+    if (w == nil) aerror1("string<=", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string<=", b);
+    if (w == nil) aerror1("string<=", b);
     b = w;
     for (i=0;; i++)
     {   if (i == la) return onevalue(fixnum_of_int(i));
@@ -1246,10 +1203,10 @@ static LispObject L_string_greaterp_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string>", a);
+    if (w == nil) aerror1("string>", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string>", b);
+    if (w == nil) aerror1("string>", b);
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
@@ -1276,10 +1233,10 @@ static LispObject L_string_not_equal_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string/=", a);
+    if (w == nil) aerror1("string/=", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string/=", b);
+    if (w == nil) aerror1("string/=", b);
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
@@ -1300,10 +1257,10 @@ static LispObject L_string_equal_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string=", a);
+    if (w == nil) aerror1("string=", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string=", b);
+    if (w == nil) aerror1("string=", b);
     b = w;
     for (i=0;; i++)
     {   if (i == lb)
@@ -1324,10 +1281,10 @@ static LispObject L_string_not_greaterp_2(LispObject env,
     int ca, cb;
     LispObject w;
     w = get_char_vec(a, &la, &oa);
-    if (w == nil) return aerror1("string<=", a);
+    if (w == nil) aerror1("string<=", a);
     a = w;
     w = get_char_vec(b, &lb, &ob);
-    if (w == nil) return aerror1("string<=", b);
+    if (w == nil) aerror1("string<=", b);
     b = w;
     for (i=0;; i++)
     {   if (i == la) return onevalue(fixnum_of_int(i));

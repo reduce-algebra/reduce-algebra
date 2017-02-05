@@ -1,8 +1,8 @@
-// tempdoc.cpp                             Copyright (C) 2016 Codemist    
+// tempdoc.cpp                             Copyright (C) 2016-2017 Codemist    
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -2092,10 +2092,6 @@
 // Not yet written
 //
 
-// fns [noisy!-setq fexpr] \item [{\ttfamily noisy!-setq} {\itshape  fexpr}] \index{{\ttfamily noisy"!-setq} {\itshape  fexpr}} ~\newline
-// Not yet written
-//
-
 // fns [not expr] \item [{\ttfamily not} {\itshape  expr}] \index{{\ttfamily not} {\itshape  expr}} ~\newline
 // Not yet written
 //
@@ -3011,14 +3007,6 @@
 // Not yet written
 //
 
-// fns [traceset expr] \item [{\ttfamily traceset} {\itshape  expr}] \index{{\ttfamily traceset} {\itshape  expr}} ~\newline
-// Not yet written
-//
-
-// fns [traceset1 expr] \item [{\ttfamily traceset1} {\itshape  expr}] \index{{\ttfamily traceset1} {\itshape  expr}} ~\newline
-// Not yet written
-//
-
 // fns [truename expr] \item [{\ttfamily truename} {\itshape  expr}] \index{{\ttfamily truename} {\itshape  expr}} ~\newline
 // Not yet written
 //
@@ -3068,14 +3056,6 @@
 //
 
 // fns [untrace expr] \item [{\ttfamily untrace} {\itshape  expr}] \index{{\ttfamily untrace} {\itshape  expr}} ~\newline
-// Not yet written
-//
-
-// fns [untraceset expr] \item [{\ttfamily untraceset} {\itshape  expr}] \index{{\ttfamily untraceset} {\itshape  expr}} ~\newline
-// Not yet written
-//
-
-// fns [untraceset1 expr] \item [{\ttfamily untraceset1} {\itshape  expr}] \index{{\ttfamily untraceset1} {\itshape  expr}} ~\newline
 // Not yet written
 //
 

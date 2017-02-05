@@ -4,7 +4,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -73,43 +73,36 @@ LispObject Ld01ajf(LispObject nil, int nargs, ...)
     a = float_of_number(La);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
     push4(La,Lb,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     b = float_of_number(Lb);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
     push4(La,Lb,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     epsabs = float_of_number(Lepsabs);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
     push4(La,Lb,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     epsrel = float_of_number(Lepsrel);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
     push4(La,Lb,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     lw = thirty_two_bits(Llw);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
     push4(La,Lb,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     liw = thirty_two_bits(Lliw);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
     push4(La,Lb,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
 
     // Setup workspace arrays etc.
     w = (double *)malloc(lw*sizeof(double));
@@ -144,7 +137,6 @@ LispObject Ld01ajf(LispObject nil, int nargs, ...)
 #endif
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
 
     // Translate return values to CCL
     // Copy result
@@ -152,19 +144,15 @@ LispObject Ld01ajf(LispObject nil, int nargs, ...)
     push(Lresult);
     Labserr = make_boxfloat(abserr,TYPE_DOUBLE_FLOAT);
     pop(Lresult);
-    errexit();
     push2(Lresult,Labserr);
     Lw = mkFloatVector(w,lw,1);
     pop2(Labserr,Lresult);
-    errexit();
     push3(Lresult,Labserr,Lw);
     Liw = mkIntVector(iw,liw,1);
     pop3(Lw,Labserr,Lresult);
-    errexit();
     push4(Lresult,Labserr,Lw,Liw);
     Lifail = int2ccl(ifail);
     pop4(Liw,Lw,Labserr,Lresult);
-    errexit();
 
     free (w);
     free (iw);
@@ -210,43 +198,36 @@ LispObject Ld01akf(LispObject nil, int nargs, ...)
     a = float_of_number(La);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
     push4(La,Lb,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     b = float_of_number(Lb);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
     push4(La,Lb,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     epsabs = float_of_number(Lepsabs);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
     push4(La,Lb,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     epsrel = float_of_number(Lepsrel);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
     push4(La,Lb,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     lw = thirty_two_bits(Llw);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
     push4(La,Lb,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     liw = thirty_two_bits(Lliw);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
     push4(La,Lb,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Lb,La);
-    errexit();
 
     // Setup workspace arrays etc.
     w = (double *)malloc(lw*sizeof(double));
@@ -284,19 +265,15 @@ LispObject Ld01akf(LispObject nil, int nargs, ...)
     push(Lresult);
     Labserr = make_boxfloat(abserr,TYPE_DOUBLE_FLOAT);
     pop(Lresult);
-    errexit();
     push2(Lresult,Labserr);
     Lw = mkFloatVector(w,lw,1);
     pop2(Labserr,Lresult);
-    errexit();
     push3(Lresult,Labserr,Lw);
     Liw = mkIntVector(iw,liw,1);
     pop3(Lw,Labserr,Lresult);
-    errexit();
     push4(Lresult,Labserr,Lw,Liw);
     Lifail = int2ccl(ifail);
     pop4(Liw,Lw,Labserr,Lresult);
-    errexit();
 
     free (w);
     free (iw);
@@ -345,19 +322,16 @@ LispObject Ld01alf(LispObject nil, int nargs, ...)
     a = float_of_number(La);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lpoints,Lnpts,Lb,La);
-    errexit();
     push5(La,Lb,Lnpts,Lpoints,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     b = float_of_number(Lb);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lpoints,Lnpts,Lb,La);
-    errexit();
     push5(La,Lb,Lnpts,Lpoints,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     npts = thirty_two_bits(Lnpts);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lpoints,Lnpts,Lb,La);
-    errexit();
     // ndim = (length_of_header(vechdr(Lpoints)) - 4)/4;
     points = (double *)malloc(npts*sizeof(double));
     push5(La,Lb,Lnpts,Lpoints,Lepsabs);
@@ -365,37 +339,31 @@ LispObject Ld01alf(LispObject nil, int nargs, ...)
     mkFortranVectorDouble(points, Lpoints, npts);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lpoints,Lnpts,Lb,La);
-    errexit();
     push5(La,Lb,Lnpts,Lpoints,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     epsabs = float_of_number(Lepsabs);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lpoints,Lnpts,Lb,La);
-    errexit();
     push5(La,Lb,Lnpts,Lpoints,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     epsrel = float_of_number(Lepsrel);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lpoints,Lnpts,Lb,La);
-    errexit();
     push5(La,Lb,Lnpts,Lpoints,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     lw = thirty_two_bits(Llw);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lpoints,Lnpts,Lb,La);
-    errexit();
     push5(La,Lb,Lnpts,Lpoints,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     liw = thirty_two_bits(Lliw);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lpoints,Lnpts,Lb,La);
-    errexit();
     push5(La,Lb,Lnpts,Lpoints,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lpoints,Lnpts,Lb,La);
-    errexit();
 
     // Setup workspace arrays etc.
     w = (double *)malloc(lw*sizeof(double));
@@ -433,19 +401,15 @@ LispObject Ld01alf(LispObject nil, int nargs, ...)
     push(Lresult);
     Labserr = make_boxfloat(abserr,TYPE_DOUBLE_FLOAT);
     pop(Lresult);
-    errexit();
     push2(Lresult,Labserr);
     Lw = mkFloatVector(w,lw,1);
     pop2(Labserr,Lresult);
-    errexit();
     push3(Lresult,Labserr,Lw);
     Liw = mkIntVector(iw,liw,1);
     pop3(Lw,Labserr,Lresult);
-    errexit();
     push4(Lresult,Labserr,Lw,Liw);
     Lifail = int2ccl(ifail);
     pop4(Liw,Lw,Labserr,Lresult);
-    errexit();
 
     free (points);
     free (w);
@@ -498,43 +462,36 @@ LispObject Ld01amf(LispObject nil, int nargs, ...)
     bound = float_of_number(Lbound);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Linf,Lbound);
-    errexit();
     push4(Lbound,Linf,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     inf = thirty_two_bits(Linf);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Linf,Lbound);
-    errexit();
     push4(Lbound,Linf,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     epsabs = float_of_number(Lepsabs);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Linf,Lbound);
-    errexit();
     push4(Lbound,Linf,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     epsrel = float_of_number(Lepsrel);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Linf,Lbound);
-    errexit();
     push4(Lbound,Linf,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     lw = thirty_two_bits(Llw);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Linf,Lbound);
-    errexit();
     push4(Lbound,Linf,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     liw = thirty_two_bits(Lliw);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Linf,Lbound);
-    errexit();
     push4(Lbound,Linf,Lepsabs,Lepsrel);
     push3(Llw,Lliw,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop3(Lepsabs,Linf,Lbound);
-    errexit();
 
     // Setup workspace arrays etc.
     w = (double *)malloc(lw*sizeof(double));
@@ -577,19 +534,15 @@ LispObject Ld01amf(LispObject nil, int nargs, ...)
     push(Lresult);
     Labserr = make_boxfloat(abserr,TYPE_DOUBLE_FLOAT);
     pop(Lresult);
-    errexit();
     push2(Lresult,Labserr);
     Lw = mkFloatVector(w,lw,1);
     pop2(Labserr,Lresult);
-    errexit();
     push3(Lresult,Labserr,Lw);
     Liw = mkIntVector(iw,liw,1);
     pop3(Lw,Labserr,Lresult);
-    errexit();
     push4(Lresult,Labserr,Lw,Liw);
     Lifail = int2ccl(ifail);
     pop4(Liw,Lw,Labserr,Lresult);
-    errexit();
 
     free (w);
     free (iw);
@@ -643,55 +596,46 @@ LispObject Ld01anf(LispObject nil, int nargs, ...)
     a = float_of_number(La);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lkey,Lomega,Lb,La);
-    errexit();
     push5(La,Lb,Lomega,Lkey,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     b = float_of_number(Lb);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lkey,Lomega,Lb,La);
-    errexit();
     push5(La,Lb,Lomega,Lkey,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     omega = float_of_number(Lomega);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lkey,Lomega,Lb,La);
-    errexit();
     push5(La,Lb,Lomega,Lkey,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     key = thirty_two_bits(Lkey);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lkey,Lomega,Lb,La);
-    errexit();
     push5(La,Lb,Lomega,Lkey,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     epsabs = float_of_number(Lepsabs);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lkey,Lomega,Lb,La);
-    errexit();
     push5(La,Lb,Lomega,Lkey,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     epsrel = float_of_number(Lepsrel);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lkey,Lomega,Lb,La);
-    errexit();
     push5(La,Lb,Lomega,Lkey,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     lw = thirty_two_bits(Llw);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lkey,Lomega,Lb,La);
-    errexit();
     push5(La,Lb,Lomega,Lkey,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     liw = thirty_two_bits(Lliw);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lkey,Lomega,Lb,La);
-    errexit();
     push5(La,Lb,Lomega,Lkey,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop4(Lkey,Lomega,Lb,La);
-    errexit();
 
     // Setup workspace arrays etc.
     w = (double *)malloc(lw*sizeof(double));
@@ -729,19 +673,15 @@ LispObject Ld01anf(LispObject nil, int nargs, ...)
     push(Lresult);
     Labserr = make_boxfloat(abserr,TYPE_DOUBLE_FLOAT);
     pop(Lresult);
-    errexit();
     push2(Lresult,Labserr);
     Lw = mkFloatVector(w,lw,1);
     pop2(Labserr,Lresult);
-    errexit();
     push3(Lresult,Labserr,Lw);
     Liw = mkIntVector(iw,liw,1);
     pop3(Lw,Labserr,Lresult);
-    errexit();
     push4(Lresult,Labserr,Lw,Liw);
     Lifail = int2ccl(ifail);
     pop4(Liw,Lw,Labserr,Lresult);
-    errexit();
 
     free (w);
     free (iw);
@@ -797,61 +737,51 @@ LispObject Ld01apf(LispObject nil, int nargs, ...)
     a = float_of_number(La);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop5(Lkey,Lbeta,Lalfa,Lb,La);
-    errexit();
     push5(La,Lb,Lalfa,Lbeta,Lkey);
     push5(Lepsabs,Lepsrel,Llw,Lliw,Lifail);
     b = float_of_number(Lb);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop5(Lkey,Lbeta,Lalfa,Lb,La);
-    errexit();
     push5(La,Lb,Lalfa,Lbeta,Lkey);
     push5(Lepsabs,Lepsrel,Llw,Lliw,Lifail);
     alfa = float_of_number(Lalfa);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop5(Lkey,Lbeta,Lalfa,Lb,La);
-    errexit();
     push5(La,Lb,Lalfa,Lbeta,Lkey);
     push5(Lepsabs,Lepsrel,Llw,Lliw,Lifail);
     beta = float_of_number(Lbeta);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop5(Lkey,Lbeta,Lalfa,Lb,La);
-    errexit();
     push5(La,Lb,Lalfa,Lbeta,Lkey);
     push5(Lepsabs,Lepsrel,Llw,Lliw,Lifail);
     key = thirty_two_bits(Lkey);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop5(Lkey,Lbeta,Lalfa,Lb,La);
-    errexit();
     push5(La,Lb,Lalfa,Lbeta,Lkey);
     push5(Lepsabs,Lepsrel,Llw,Lliw,Lifail);
     epsabs = float_of_number(Lepsabs);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop5(Lkey,Lbeta,Lalfa,Lb,La);
-    errexit();
     push5(La,Lb,Lalfa,Lbeta,Lkey);
     push5(Lepsabs,Lepsrel,Llw,Lliw,Lifail);
     epsrel = float_of_number(Lepsrel);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop5(Lkey,Lbeta,Lalfa,Lb,La);
-    errexit();
     push5(La,Lb,Lalfa,Lbeta,Lkey);
     push5(Lepsabs,Lepsrel,Llw,Lliw,Lifail);
     lw = thirty_two_bits(Llw);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop5(Lkey,Lbeta,Lalfa,Lb,La);
-    errexit();
     push5(La,Lb,Lalfa,Lbeta,Lkey);
     push5(Lepsabs,Lepsrel,Llw,Lliw,Lifail);
     liw = thirty_two_bits(Lliw);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop5(Lkey,Lbeta,Lalfa,Lb,La);
-    errexit();
     push5(La,Lb,Lalfa,Lbeta,Lkey);
     push5(Lepsabs,Lepsrel,Llw,Lliw,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop5(Lifail,Lliw,Llw,Lepsrel,Lepsabs);
     pop5(Lkey,Lbeta,Lalfa,Lb,La);
-    errexit();
 
     // Setup workspace arrays etc.
     w = (double *)malloc(lw*sizeof(double));
@@ -889,19 +819,15 @@ LispObject Ld01apf(LispObject nil, int nargs, ...)
     push(Lresult);
     Labserr = make_boxfloat(abserr,TYPE_DOUBLE_FLOAT);
     pop(Lresult);
-    errexit();
     push2(Lresult,Labserr);
     Lw = mkFloatVector(w,lw,1);
     pop2(Labserr,Lresult);
-    errexit();
     push3(Lresult,Labserr,Lw);
     Liw = mkIntVector(iw,liw,1);
     pop3(Lw,Labserr,Lresult);
-    errexit();
     push4(Lresult,Labserr,Lw,Liw);
     Lifail = int2ccl(ifail);
     pop4(Liw,Lw,Labserr,Lresult);
-    errexit();
 
     free (w);
     free (iw);
@@ -954,49 +880,41 @@ LispObject Ld01aqf(LispObject nil, int nargs, ...)
     a = float_of_number(La);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop4(Lepsabs,Lc,Lb,La);
-    errexit();
     push4(La,Lb,Lc,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     b = float_of_number(Lb);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop4(Lepsabs,Lc,Lb,La);
-    errexit();
     push4(La,Lb,Lc,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     c = float_of_number(Lc);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop4(Lepsabs,Lc,Lb,La);
-    errexit();
     push4(La,Lb,Lc,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     epsabs = float_of_number(Lepsabs);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop4(Lepsabs,Lc,Lb,La);
-    errexit();
     push4(La,Lb,Lc,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     epsrel = float_of_number(Lepsrel);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop4(Lepsabs,Lc,Lb,La);
-    errexit();
     push4(La,Lb,Lc,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     lw = thirty_two_bits(Llw);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop4(Lepsabs,Lc,Lb,La);
-    errexit();
     push4(La,Lb,Lc,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     liw = thirty_two_bits(Lliw);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop4(Lepsabs,Lc,Lb,La);
-    errexit();
     push4(La,Lb,Lc,Lepsabs);
     push4(Lepsrel,Llw,Lliw,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Lliw,Llw,Lepsrel);
     pop4(Lepsabs,Lc,Lb,La);
-    errexit();
 
     // Setup workspace arrays etc.
     w = (double *)malloc(lw*sizeof(double));
@@ -1034,19 +952,15 @@ LispObject Ld01aqf(LispObject nil, int nargs, ...)
     push(Lresult);
     Labserr = make_boxfloat(abserr,TYPE_DOUBLE_FLOAT);
     pop(Lresult);
-    errexit();
     push2(Lresult,Labserr);
     Lw = mkFloatVector(w,lw,1);
     pop2(Labserr,Lresult);
-    errexit();
     push3(Lresult,Labserr,Lw);
     Liw = mkIntVector(iw,liw,1);
     pop3(Lw,Labserr,Lresult);
-    errexit();
     push4(Lresult,Labserr,Lw,Liw);
     Lifail = int2ccl(ifail);
     pop4(Liw,Lw,Labserr,Lresult);
-    errexit();
 
     free (w);
     free (iw);
@@ -1101,49 +1015,41 @@ LispObject Ld01asf(LispObject nil, int nargs, ...)
     a = float_of_number(La);
     pop4(Lifail,Lliw,Llw,Llimlst);
     pop4(Lepsabs,Lkey,Lomega,La);
-    errexit();
     push4(La,Lomega,Lkey,Lepsabs);
     push4(Llimlst,Llw,Lliw,Lifail);
     omega = float_of_number(Lomega);
     pop4(Lifail,Lliw,Llw,Llimlst);
     pop4(Lepsabs,Lkey,Lomega,La);
-    errexit();
     push4(La,Lomega,Lkey,Lepsabs);
     push4(Llimlst,Llw,Lliw,Lifail);
     key = thirty_two_bits(Lkey);
     pop4(Lifail,Lliw,Llw,Llimlst);
     pop4(Lepsabs,Lkey,Lomega,La);
-    errexit();
     push4(La,Lomega,Lkey,Lepsabs);
     push4(Llimlst,Llw,Lliw,Lifail);
     epsabs = float_of_number(Lepsabs);
     pop4(Lifail,Lliw,Llw,Llimlst);
     pop4(Lepsabs,Lkey,Lomega,La);
-    errexit();
     push4(La,Lomega,Lkey,Lepsabs);
     push4(Llimlst,Llw,Lliw,Lifail);
     limlst = thirty_two_bits(Llw);
     pop4(Lifail,Lliw,Llw,Llimlst);
     pop4(Lepsabs,Lkey,Lomega,La);
-    errexit();
     push4(La,Lomega,Lkey,Lepsabs);
     push4(Llimlst,Llw,Lliw,Lifail);
     lw = thirty_two_bits(Llw);
     pop4(Lifail,Lliw,Llw,Llimlst);
     pop4(Lepsabs,Lkey,Lomega,La);
-    errexit();
     push4(La,Lomega,Lkey,Lepsabs);
     push4(Llimlst,Llw,Lliw,Lifail);
     liw = thirty_two_bits(Lliw);
     pop4(Lifail,Lliw,Llw,Llimlst);
     pop4(Lepsabs,Lkey,Lomega,La);
-    errexit();
     push4(La,Lomega,Lkey,Lepsabs);
     push4(Llimlst,Llw,Lliw,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Lliw,Llw,Llimlst);
     pop4(Lepsabs,Lkey,Lomega,La);
-    errexit();
 
     // Setup workspace arrays etc.
     erlst = (double *)malloc(limlst*sizeof(double));
@@ -1184,35 +1090,28 @@ LispObject Ld01asf(LispObject nil, int nargs, ...)
     push(Lierlst);
     Lresult = make_boxfloat(result,TYPE_DOUBLE_FLOAT);
     pop(Lierlst);
-    errexit();
     push2(Lierlst,Lresult);
     Labserr = make_boxfloat(abserr,TYPE_DOUBLE_FLOAT);
     pop2(Lresult,Lierlst);
-    errexit();
     push3(Lierlst,Lresult,Labserr);
     Lerlst = mkFloatVector(erlst,limlst,1);
     pop3(Labserr,Lresult,Lierlst);
-    errexit();
     push4(Lierlst,Lresult,Labserr,Lerlst);
     Lifail = int2ccl(ifail);
     pop4(Lerlst,Labserr,Lresult,Lierlst);
-    errexit();
     push5(Lierlst,Lresult,Labserr,Lerlst,Lifail);
     Liw = mkIntVector(iw,liw,1);
     pop5(Lifail,Lerlst,Labserr,Lresult,Lierlst);
-    errexit();
     push3(Lierlst,Lresult,Labserr);
     push3(Lerlst,Lifail,Liw);
     Llst = int2ccl(lst);
     pop3(Liw,Lifail,Lerlst);
     pop3(Labserr,Lresult,Lierlst);
-    errexit();
     push4(Lierlst,Lresult,Labserr,Lerlst);
     push3(Lifail,Liw,Llst);
     Lrslst = mkFloatVector(rslst,limlst,1);
     pop4(Llst,Liw,Lifail,Lerlst);
     pop3(Labserr,Lresult,Lierlst);
-    errexit();
 
     free (erlst);
     free (rslst);
@@ -1262,37 +1161,31 @@ LispObject Ld01bbf(LispObject nil, int nargs, ...)
     a = float_of_number(La);
     pop3(Lifail,Lgtype,Ln);
     pop3(Litype,Lb,La);
-    errexit();
     push3(La,Lb,Litype);
     push3(Ln,Lgtype,Lifail);
     b = float_of_number(Lb);
     pop3(Lifail,Lgtype,Ln);
     pop3(Litype,Lb,La);
-    errexit();
     push3(La,Lb,Litype);
     push3(Ln,Lgtype,Lifail);
     itype = thirty_two_bits(Litype);
     pop3(Lifail,Lgtype,Ln);
     pop3(Litype,Lb,La);
-    errexit();
     push3(La,Lb,Litype);
     push3(Ln,Lgtype,Lifail);
     n = thirty_two_bits(Ln);
     pop3(Lifail,Lgtype,Ln);
     pop3(Litype,Lb,La);
-    errexit();
     push3(La,Lb,Litype);
     push3(Ln,Lgtype,Lifail);
     gtype = thirty_two_bits(Lgtype);
     pop3(Lifail,Lgtype,Ln);
     pop3(Litype,Lb,La);
-    errexit();
     push3(La,Lb,Litype);
     push3(Ln,Lgtype,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop3(Lifail,Lgtype,Ln);
     pop3(Litype,Lb,La);
-    errexit();
     push3(La,Lb,Litype);
     push3(Ln,Lgtype,Lifail);
 
@@ -1325,7 +1218,6 @@ LispObject Ld01bbf(LispObject nil, int nargs, ...)
 #endif
     pop3(Lifail,Lgtype,Ln);
     pop3(Litype,Lb,La);
-    errexit();
 
     // Translate return values to CCL
     // Copy result
@@ -1333,11 +1225,9 @@ LispObject Ld01bbf(LispObject nil, int nargs, ...)
     push(Lweight);
     Labscis = mkFloatVector(abscis,n,1);
     pop(Lweight);
-    errexit();
     push2(Lweight,Labscis);
     Lifail = int2ccl(ifail);
     pop2(Labscis,Lweight);
-    errexit();
 
     free (weight);
     free (abscis);
@@ -1389,51 +1279,43 @@ LispObject Ld01fcf(LispObject nil, int nargs, ...)
     ndim = thirty_two_bits(Lndim);
     pop4(Lifail,Lminpts,Llenwrk,Leps);
     pop4(Lmaxpts,Lb,La,Lndim);
-    errexit();
     a = (double *) malloc (ndim * sizeof(double));
     push4(Lndim,La,Lb,Lmaxpts);
     push4(Leps,Llenwrk,Lminpts,Lifail);
     mkFortranVectorDouble(a, La, ndim);
     pop4(Lifail,Lminpts,Llenwrk,Leps);
     pop4(Lmaxpts,Lb,La,Lndim);
-    errexit();
     b = (double *) malloc (ndim * sizeof(double));
     push4(Lndim,La,Lb,Lmaxpts);
     push4(Leps,Llenwrk,Lminpts,Lifail);
     mkFortranVectorDouble(b, Lb, ndim);
     pop4(Lifail,Lminpts,Llenwrk,Leps);
     pop4(Lmaxpts,Lb,La,Lndim);
-    errexit();
     push4(Lndim,La,Lb,Lmaxpts);
     push4(Leps,Llenwrk,Lminpts,Lifail);
     maxpts = thirty_two_bits(Lmaxpts);
     pop4(Lifail,Lminpts,Llenwrk,Leps);
     pop4(Lmaxpts,Lb,La,Lndim);
-    errexit();
     push4(Lndim,La,Lb,Lmaxpts);
     push4(Leps,Llenwrk,Lminpts,Lifail);
     eps = float_of_number(Leps);
     pop4(Lifail,Lminpts,Llenwrk,Leps);
     pop4(Lmaxpts,Lb,La,Lndim);
-    errexit();
     push4(Lndim,La,Lb,Lmaxpts);
     push4(Leps,Llenwrk,Lminpts,Lifail);
     lenwrk = thirty_two_bits(Llenwrk);
     pop4(Lifail,Lminpts,Llenwrk,Leps);
     pop4(Lmaxpts,Lb,La,Lndim);
-    errexit();
     push4(Lndim,La,Lb,Lmaxpts);
     push4(Leps,Llenwrk,Lminpts,Lifail);
     minpts = thirty_two_bits(Lminpts);
     pop4(Lifail,Lminpts,Llenwrk,Leps);
     pop4(Lmaxpts,Lb,La,Lndim);
-    errexit();
     push4(Lndim,La,Lb,Lmaxpts);
     push4(Leps,Llenwrk,Lminpts,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Lminpts,Llenwrk,Leps);
     pop4(Lmaxpts,Lb,La,Lndim);
-    errexit();
 
     // Setup workspace arrays etc.
     wrkstr = (double *)malloc(lenwrk*sizeof(double));
@@ -1467,7 +1349,6 @@ LispObject Ld01fcf(LispObject nil, int nargs, ...)
 #endif
     pop4(Lifail,Lminpts,Llenwrk,Leps);
     pop4(Lmaxpts,Lb,La,Lndim);
-    errexit();
 
     // Translate return values to CCL
     // Copy result
@@ -1475,15 +1356,12 @@ LispObject Ld01fcf(LispObject nil, int nargs, ...)
     push(Lfinval);
     Lminpts = int2ccl(minpts);
     pop(Lfinval);
-    errexit();
     push2(Lfinval,Lminpts);
     Lifail = int2ccl(ifail);
     pop2(Lminpts,Lfinval);
-    errexit();
     push3(Lfinval,Lminpts,Lifail);
     Lacc = make_boxfloat(acc,TYPE_DOUBLE_FLOAT);
     pop3(Lifail,Lminpts,Lfinval);
-    errexit();
 
     free (a);
     free (b);
@@ -1526,21 +1404,17 @@ LispObject Ld01gaf(LispObject nil, int nargs, ...)
     push4(Lx,Ly,Ln,Lifail);
     n = thirty_two_bits(Ln);
     pop4(Lifail,Ln,Ly,Lx);
-    errexit();
     x = (double *) malloc (n * sizeof(double));
     push4(Lx,Ly,Ln,Lifail);
     mkFortranVectorDouble(x, Lx, n);
     pop4(Lifail,Ln,Ly,Lx);
-    errexit();
     y = (double *) malloc (n * sizeof(double));
     push4(Lx,Ly,Ln,Lifail);
     mkFortranVectorDouble(y, Ly, n);
     pop4(Lifail,Ln,Ly,Lx);
-    errexit();
     push4(Lx,Ly,Ln,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Ln,Ly,Lx);
-    errexit();
 
     push4(Lx,Ly,Ln,Lifail);
     // Call NAG routine
@@ -1567,7 +1441,6 @@ LispObject Ld01gaf(LispObject nil, int nargs, ...)
     D01GAF (x, y, &n, &ans, &er, &ifail);
 #endif
     pop4(Lifail,Ln,Ly,Lx);
-    errexit();
 
     // Translate return values to CCL
     // Copy result
@@ -1575,11 +1448,9 @@ LispObject Ld01gaf(LispObject nil, int nargs, ...)
     push(Lans);
     Ler = make_boxfloat(er,TYPE_DOUBLE_FLOAT);
     pop(Lans);
-    errexit();
     push2(Lans,Ler);
     Lifail = int2ccl(ifail);
     pop2(Ler,Lans);
-    errexit();
 
     free (x);
     free (y);
@@ -1632,58 +1503,49 @@ LispObject Ld01gbf(LispObject nil, int nargs, ...)
     ndim = thirty_two_bits(Lndim);
     pop5(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop4(Lmaxcls,Lb,La,Lndim);
-    errexit();
     a = (double *) malloc (ndim * sizeof(double));
     push5(Lndim,La,Lb,Lmaxcls,Leps);
     push4(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mkFortranVectorDouble(a, La, ndim);
     pop5(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop4(Lmaxcls,Lb,La,Lndim);
-    errexit();
     b = (double *) malloc (ndim * sizeof(double));
     push5(Lndim,La,Lb,Lmaxcls,Leps);
     push4(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mkFortranVectorDouble(b, Lb, ndim);
     pop5(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop4(Lmaxcls,Lb,La,Lndim);
-    errexit();
     push5(Lndim,La,Lb,Lmaxcls,Leps);
     push4(Llenwrk,Lmincls,Lwrkstr,Lifail);
     maxcls = thirty_two_bits(Lmaxcls);
     pop5(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop4(Lmaxcls,Lb,La,Lndim);
-    errexit();
     push5(Lndim,La,Lb,Lmaxcls,Leps);
     push4(Llenwrk,Lmincls,Lwrkstr,Lifail);
     eps = float_of_number(Leps);
     pop5(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop4(Lmaxcls,Lb,La,Lndim);
-    errexit();
     push5(Lndim,La,Lb,Lmaxcls,Leps);
     push4(Llenwrk,Lmincls,Lwrkstr,Lifail);
     lenwrk = thirty_two_bits(Llenwrk);
     pop5(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop4(Lmaxcls,Lb,La,Lndim);
-    errexit();
     push5(Lndim,La,Lb,Lmaxcls,Leps);
     push4(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mincls = thirty_two_bits(Lmincls);
     pop5(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop4(Lmaxcls,Lb,La,Lndim);
-    errexit();
     wrkstr = (double *) malloc (lenwrk * sizeof(double));
     push5(Lndim,La,Lb,Lmaxcls,Leps);
     push4(Llenwrk,Lmincls,Lwrkstr,Lifail);
     mkFortranVectorDouble(wrkstr, Lwrkstr, lenwrk);
     pop5(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop4(Lmaxcls,Lb,La,Lndim);
-    errexit();
     push5(Lndim,La,Lb,Lmaxcls,Leps);
     push4(Llenwrk,Lmincls,Lwrkstr,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop5(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop4(Lmaxcls,Lb,La,Lndim);
-    errexit();
     push5(Lndim,La,Lb,Lmaxcls,Leps);
     push4(Llenwrk,Lmincls,Lwrkstr,Lifail);
 
@@ -1714,7 +1576,6 @@ LispObject Ld01gbf(LispObject nil, int nargs, ...)
 #endif
     pop5(Lifail,Lwrkstr,Lmincls,Llenwrk,Leps);
     pop4(Lmaxcls,Lb,La,Lndim);
-    errexit();
 
     // Translate return values to CCL
     // Copy result
@@ -1722,18 +1583,15 @@ LispObject Ld01gbf(LispObject nil, int nargs, ...)
     push(Lfinval);
     Lmincls = int2ccl(mincls);
     pop(Lfinval);
-    errexit();
     push2(Lfinval,Lmincls);
     Lifail = int2ccl(ifail);
     pop2(Lmincls,Lfinval);
-    errexit();
     push3(Lfinval,Lmincls,Lifail);
     Lwrkstr = mkFloatVector(wrkstr,lenwrk,1);
     pop3(Lifail,Lmincls,Lfinval);
     push4(Lfinval,Lmincls,Lifail,Lwrkstr);
     Lacc = make_boxfloat(acc,TYPE_DOUBLE_FLOAT);
     pop4(Lwrkstr,Lifail,Lmincls,Lfinval);
-    errexit();
 
     free (a);
     free (b);
@@ -1788,50 +1646,42 @@ LispObject Ld02bbf(LispObject nil, int nargs, ...)
     xend = float_of_number(Lxend);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lirelab,Ln,Lm,Lxend);
-    errexit();
     push4(Lxend,Lm,Ln,Lirelab);
     push4(Lx,Ly,Ltol,Lifail);
     m = thirty_two_bits(Lm);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lirelab,Ln,Lm,Lxend);
-    errexit();
     push4(Lxend,Lm,Ln,Lirelab);
     push4(Lx,Ly,Ltol,Lifail);
     n = thirty_two_bits(Ln);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lirelab,Ln,Lm,Lxend);
-    errexit();
     push4(Lxend,Lm,Ln,Lirelab);
     push4(Lx,Ly,Ltol,Lifail);
     irelab = thirty_two_bits(Lirelab);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lirelab,Ln,Lm,Lxend);
-    errexit();
     push4(Lxend,Lm,Ln,Lirelab);
     push4(Lx,Ly,Ltol,Lifail);
     x = float_of_number(Lx);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lirelab,Ln,Lm,Lxend);
-    errexit();
     y = (double *) malloc (n * sizeof(double));
     push4(Lxend,Lm,Ln,Lirelab);
     push4(Lx,Ly,Ltol,Lifail);
     mkFortranVectorDouble(y, Ly, n);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lirelab,Ln,Lm,Lxend);
-    errexit();
     push4(Lxend,Lm,Ln,Lirelab);
     push4(Lx,Ly,Ltol,Lifail);
     tol = float_of_number(Ltol);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lirelab,Ln,Lm,Lxend);
-    errexit();
     push4(Lxend,Lm,Ln,Lirelab);
     push4(Lx,Ly,Ltol,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lirelab,Ln,Lm,Lxend);
-    errexit();
 
     // Setup workspace arrays etc.
     w = (double *)malloc(n*7*sizeof(double));
@@ -1869,19 +1719,15 @@ LispObject Ld02bbf(LispObject nil, int nargs, ...)
     push(Lx);
     Ly = mkFloatVector(y,n,1);
     pop(Lx);
-    errexit();
     push2(Lx,Ly);
     Lresult = mkFloatVector(result,m,n);  // FIXME: correct array ordering?
     pop2(Ly,Lx);
-    errexit();
     push3(Lx,Ly,Lresult);
     Lifail = int2ccl(ifail);
     pop3(Lresult,Ly,Lx);
-    errexit();
     push4(Lx,Ly,Lresult,Lifail);
     Ltol = make_boxfloat(tol,TYPE_DOUBLE_FLOAT);
     pop4(Lifail,Lresult,Ly,Lx);
-    errexit();
 
     free (y);
     free (w);
@@ -1936,50 +1782,42 @@ LispObject Ld02bhf(LispObject nil, int nargs, ...)
     xend = float_of_number(Lxend);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lhmax,Lirelab,Ln,Lxend);
-    errexit();
     push4(Lxend,Ln,Lirelab,Lhmax);
     push4(Lx,Ly,Ltol,Lifail);
     n = thirty_two_bits(Ln);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lhmax,Lirelab,Ln,Lxend);
-    errexit();
     push4(Lxend,Ln,Lirelab,Lhmax);
     push4(Lx,Ly,Ltol,Lifail);
     irelab = thirty_two_bits(Lirelab);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lhmax,Lirelab,Ln,Lxend);
-    errexit();
     push4(Lxend,Ln,Lirelab,Lhmax);
     push4(Lx,Ly,Ltol,Lifail);
     hmax = float_of_number(Lhmax);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lhmax,Lirelab,Ln,Lxend);
-    errexit();
     push4(Lxend,Ln,Lirelab,Lhmax);
     push4(Lx,Ly,Ltol,Lifail);
     x = float_of_number(Lx);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lhmax,Lirelab,Ln,Lxend);
-    errexit();
     y = (double *) malloc (n * sizeof(double));
     push4(Lxend,Ln,Lirelab,Lhmax);
     push4(Lx,Ly,Ltol,Lifail);
     mkFortranVectorDouble(y, Ly, n);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lhmax,Lirelab,Ln,Lxend);
-    errexit();
     push4(Lxend,Ln,Lirelab,Lhmax);
     push4(Lx,Ly,Ltol,Lifail);
     tol = float_of_number(Ltol);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lhmax,Lirelab,Ln,Lxend);
-    errexit();
     push4(Lxend,Ln,Lirelab,Lhmax);
     push4(Lx,Ly,Ltol,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Ltol,Ly,Lx);
     pop4(Lhmax,Lirelab,Ln,Lxend);
-    errexit();
     push4(Lxend,Ln,Lirelab,Lhmax);
     push4(Lx,Ly,Ltol,Lifail);
 
@@ -2017,15 +1855,12 @@ LispObject Ld02bhf(LispObject nil, int nargs, ...)
     push(Lx);
     Ly = mkFloatVector(y,n,1);
     pop(Lx);
-    errexit();
     push2(Lx,Ly);
     Lifail = int2ccl(ifail);
     pop2(Ly,Lx);
-    errexit();
     push3(Lx,Ly,Lifail);
     Ltol = make_boxfloat(tol,TYPE_DOUBLE_FLOAT);
     pop3(Lifail,Ly,Lx);
-    errexit();
 
     free (y);
     free (w);
@@ -2085,32 +1920,27 @@ LispObject Ld02cjf(LispObject nil, int nargs, ...)
     xend = float_of_number(Lxend);
     pop4(Lifail,Ly,Lx,Lrelabs);
     pop4(Ltol,Ln,Lm,Lxend);
-    errexit();
     push4(Lxend,Lm,Ln,Ltol);
     push4(Lrelabs,Lx,Ly,Lifail);
     m = thirty_two_bits(Lm);
     pop4(Lifail,Ly,Lx,Lrelabs);
     pop4(Ltol,Ln,Lm,Lxend);
-    errexit();
     push4(Lxend,Lm,Ln,Ltol);
     push4(Lrelabs,Lx,Ly,Lifail);
     n = thirty_two_bits(Ln);
     pop4(Lifail,Ly,Lx,Lrelabs);
     pop4(Ltol,Ln,Lm,Lxend);
-    errexit();
     push4(Lxend,Lm,Ln,Ltol);
     push4(Lrelabs,Lx,Ly,Lifail);
     tol = float_of_number(Ltol);
     pop4(Lifail,Ly,Lx,Lrelabs);
     pop4(Ltol,Ln,Lm,Lxend);
-    errexit();
     push4(Lxend,Lm,Ln,Ltol);
     push4(Lrelabs,Lx,Ly,Lifail);
 //  strncpy (srelabs, &celt(Lrelabs,0), 1);
     srelabs[0] = celt(Lrelabs,0);
     pop4(Lifail,Ly,Lx,Lrelabs);
     pop4(Ltol,Ln,Lm,Lxend);
-    errexit();
     srelabs[1] = '\0';
     relabs.str = srelabs;
     push4(Lxend,Lm,Ln,Ltol);
@@ -2118,20 +1948,17 @@ LispObject Ld02cjf(LispObject nil, int nargs, ...)
     x = float_of_number(Lx);
     pop4(Lifail,Ly,Lx,Lrelabs);
     pop4(Ltol,Ln,Lm,Lxend);
-    errexit();
     y = (double *) malloc (n * sizeof(double));
     push4(Lxend,Lm,Ln,Ltol);
     push4(Lrelabs,Lx,Ly,Lifail);
     mkFortranVectorDouble(y, Ly, n);
     pop4(Lifail,Ly,Lx,Lrelabs);
     pop4(Ltol,Ln,Lm,Lxend);
-    errexit();
     push4(Lxend,Lm,Ln,Ltol);
     push4(Lrelabs,Lx,Ly,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop4(Lifail,Ly,Lx,Lrelabs);
     pop4(Ltol,Ln,Lm,Lxend);
-    errexit();
 
     relabs.len = 1;
 
@@ -2171,15 +1998,12 @@ LispObject Ld02cjf(LispObject nil, int nargs, ...)
     push(Lx);
     Ly = mkFloatVector(y,n,1);
     pop(Lx);
-    errexit();
     push2(Lx,Ly);
     Lresult = mkFloatVector(result,m,n);  // FIXME: correct array ordering?
     pop2(Ly,Lx);
-    errexit();
     push3(Lx,Ly,Lresult);
     Lifail = int2ccl(ifail);
     pop3(Lresult,Ly,Lx);
-    errexit();
 
     free (y);
     free (w);
@@ -2245,26 +2069,22 @@ LispObject Ld02ejf(LispObject nil, int nargs, ...)
     xend = float_of_number(Lxend);
     pop5(Lifail,Ltol,Ly,Lx,Liw);
     pop4(Lrelabs,Ln,Lm,Lxend);
-    errexit();
     push5(Lxend,Lm,Ln,Lrelabs,Liw);
     push4(Lx,Ly,Ltol,Lifail);
     m = thirty_two_bits(Lm);
     pop5(Lifail,Ltol,Ly,Lx,Liw);
     pop4(Lrelabs,Ln,Lm,Lxend);
-    errexit();
     push5(Lxend,Lm,Ln,Lrelabs,Liw);
     push4(Lx,Ly,Ltol,Lifail);
     n = thirty_two_bits(Ln);
     pop5(Lifail,Ltol,Ly,Lx,Liw);
     pop4(Lrelabs,Ln,Lm,Lxend);
-    errexit();
     push5(Lxend,Lm,Ln,Lrelabs,Liw);
     push4(Lx,Ly,Ltol,Lifail);
 //  strncpy (srelabs, &celt(Lrelabs,0), 1);
     srelabs[0] = celt(Lrelabs,0);
     pop5(Lifail,Ltol,Ly,Lx,Liw);
     pop4(Lrelabs,Ln,Lm,Lxend);
-    errexit();
     srelabs[1] = '\0';
     relabs.str = srelabs;
     push5(Lxend,Lm,Ln,Lrelabs,Liw);
@@ -2272,32 +2092,27 @@ LispObject Ld02ejf(LispObject nil, int nargs, ...)
     iw = thirty_two_bits(Liw);
     pop5(Lifail,Ltol,Ly,Lx,Liw);
     pop4(Lrelabs,Ln,Lm,Lxend);
-    errexit();
     push5(Lxend,Lm,Ln,Lrelabs,Liw);
     push4(Lx,Ly,Ltol,Lifail);
     x = float_of_number(Lx);
     pop5(Lifail,Ltol,Ly,Lx,Liw);
     pop4(Lrelabs,Ln,Lm,Lxend);
-    errexit();
     y = (double *) malloc (n * sizeof(double));
     push5(Lxend,Lm,Ln,Lrelabs,Liw);
     push4(Lx,Ly,Ltol,Lifail);
     mkFortranVectorDouble(y, Ly, n);
     pop5(Lifail,Ltol,Ly,Lx,Liw);
     pop4(Lrelabs,Ln,Lm,Lxend);
-    errexit();
     push5(Lxend,Lm,Ln,Lrelabs,Liw);
     push4(Lx,Ly,Ltol,Lifail);
     tol = float_of_number(Ltol);
     pop5(Lifail,Ltol,Ly,Lx,Liw);
     pop4(Lrelabs,Ln,Lm,Lxend);
-    errexit();
     push5(Lxend,Lm,Ln,Lrelabs,Liw);
     push4(Lx,Ly,Ltol,Lifail);
     ifail = thirty_two_bits(Lifail);
     pop5(Lifail,Ltol,Ly,Lx,Liw);
     pop4(Lrelabs,Ln,Lm,Lxend);
-    errexit();
     push5(Lxend,Lm,Ln,Lrelabs,Liw);
     push4(Lx,Ly,Ltol,Lifail);
 
@@ -2339,19 +2154,15 @@ LispObject Ld02ejf(LispObject nil, int nargs, ...)
     push(Lx);
     Ly = mkFloatVector(y,n,1);
     pop(Lx);
-    errexit();
     push2(Lx,Ly);
     Lresult = mkFloatVector(result,m,n);  // FIXME: correct array ordering?
     pop2(Ly,Lx);
-    errexit();
     push3(Lx,Ly,Lresult);
     Lifail = int2ccl(ifail);
     pop3(Lresult,Ly,Lx);
-    errexit();
     push4(Lx,Ly,Lresult,Lifail);
     Ltol = make_boxfloat(tol,TYPE_DOUBLE_FLOAT);
     pop4(Lifail,Lresult,Ly,Lx);
-    errexit();
 
     free (y);
     free (w);

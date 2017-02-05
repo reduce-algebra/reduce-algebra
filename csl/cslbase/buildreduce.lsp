@@ -1,4 +1,4 @@
-% "buildreduce.lsp"
+% "buildreduce.lsp"                        Copyright (C) Codemist 2016-2017
 %
 % Build a CSL REDUCE.
 %
@@ -31,6 +31,9 @@
 (verbos 3)
 
 (window!-heading "basic CSL")
+
+(make!-special '!*savedef)
+(make!-special '!*backtrace)
 
 (setq !*savedef (and (not (memq 'embedded lispsystem!*))
                      (zerop (cdr (assoc 'c!-code lispsystem!*)))))

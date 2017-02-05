@@ -1,3 +1,5 @@
+% compat.lsp                               Copyright (C) Codemist 2016-2017
+
 % This file defines functions and variables needed to make REDUCE
 % and the underlying CSL system compatible. it should
 % be loaded as the first file whenever REDUCE services are required.
@@ -37,7 +39,7 @@
 % $Id$
 
 (cond
-  ((not (fluidp '!!fleps1)) (progn
+  ((not (globalp '!!fleps1)) (progn
 
 %%!!! csl
 
@@ -84,7 +86,7 @@
      (symbol!-set!-env 'leqv 9))
 )
 
-(make!-special '!!fleps1)
+(make!-global '!!fleps1)
 
 %%! predef [!fleps] \item [{\ttfamily !!fleps1}] \index{{\ttfamily "!fleps}} ~\newline
 %% There is a function safe!-fp!-plus that performs floating point
@@ -93,10 +95,10 @@
 %% but the current code does not use the Lisp variable at all and instead does
 %% things based on the bitwise representation of the numbers.
 
-(make!-special '!!plumax)
-(make!-special '!!plumin)
-(make!-special '!!timmax)
-(make!-special '!!timmin)
+(make!-global '!!plumax)
+(make!-global '!!plumin)
+(make!-global '!!timmax)
+(make!-global '!!timmin)
 % The following values for !!fleps etc appear to be what Reduce expects
 % when using IEEE double-precision arithmetic.
 (setq !!fleps1 5.6843418860808e-14)
@@ -104,11 +106,6 @@
 (setq !!plumin 4.4501477170144e-296)
 (setq !!timmax 4.74037595405459e+153)
 (setq !!timmin 2.1095373229726e-154)
-
-%(symbol!-set!-env 'safe!-fp!-plus '(!!fleps1 !!plumax . !!plumin))
-%(symbol!-set!-env 'safe!-fp!-pl '(!!plumax . !!plumin))
-%(symbol!-set!-env 'safe!-fp!-times '(!!timmax . !!timmin))
-%(symbol!-set!-env 'safe!-fp!-quot '(!!timmax . !!timmin))
 
 (cond ((null (flagp 'printprompt 'lose))
        (de printprompt (u) nil)))
@@ -119,11 +116,13 @@
 
 (make!-global 'crbuf!*)
 
-(make!-global 'blank)
-(make!-global '!$eol!$)
-(make!-global 'tab)
-(make!-global '!$eof!$)
-(make!-global 'esc!*)
+(make!-global 'blank)              % blank, space
+(make!-global '!$eol!$)            % end-of-line, linefeed
+(make!-global '!$ff!$)             % form-feed
+(make!-global 'tab)                % (horizontal) tab
+(make!-global 'carriage!-return)   % carriage return
+(make!-global '!$eof!$)            % end-of-file
+(make!-global 'esc!*)              % escape character
 
 (make!-special '!*notailcall)
 (make!-special '!*carcheckflag)
@@ -209,11 +208,11 @@
       ((null (cdr l)) (car l))
       (t (list fn (car l) (expand (cdr l) fn)))))
 
-% (dm plus (a)
+% (dm plus (a !&optional env)
 %    (cond ((null (cdr a)) 0)
 %          (t (expand (cdr a) 'plus2))))
 %
-% (dm times (a)
+% (dm times (a !&optional env)
 %    (cond ((null (cdr a)) 1)
 %          (t (expand (cdr a) 'times2))))
 
@@ -393,6 +392,14 @@ top (cond ((null a) (return (reversip r))))
       (setq l (cdr l))
       (go top)))
 
+(de keyword (l)
+   (prog nil
+ top  (cond ((null l) (return nil)))
+      (make!-keyword (car l))
+      (cond ((not (boundp (car l))) (set (car l) nil)))
+      (setq l (cdr l))
+      (go top)))
+
 (de unglobal (l)
    (prog ()
  top  (cond ((null l) (return nil)))
@@ -404,6 +411,13 @@ top (cond ((null a) (return (reversip r))))
    (prog ()
  top  (cond ((null l) (return nil)))
       (unmake!-special (car l))
+      (setq l (cdr l))
+      (go top)))
+
+(de unkeyword (l)
+   (prog ()
+ top  (cond ((null l) (return nil)))
+      (unmake!-keyword (car l))
       (setq l (cdr l))
       (go top)))
 
@@ -489,7 +503,7 @@ top   (cond ((minusp n) (return r)))
           (list 'setq (car u) (car vars))
           (s!:make!-psetq!-assignments (cdr vars) (cddr u)))))
 
-(dm psetq (x)
+(dm psetq (x !&optional env)
    (!~let ((vars (s!:make!-psetq!-vars (cdr x))))
       `(let!* ,(s!:make!-psetq!-bindings vars (cdr x))
          ,@(s!:make!-psetq!-assignments vars (cdr x)))))
@@ -557,9 +571,9 @@ top   (cond ((minusp n) (return r)))
                ,@upd
                (go ,g)))))
 
-(dm do (u) (s!:expand!-do (cdr u) '!~let 'psetq))
+(dm do (u !&optional env) (s!:expand!-do (cdr u) '!~let 'psetq))
 
-(dm do!* (u) (s!:expand!-do (cdr u) 'let!* 'setq))
+(dm do!* (u !&optional env) (s!:expand!-do (cdr u) 'let!* 'setq))
 
 (de s!:expand!-dolist (vir b)
    (prog (l v var init res)
@@ -576,7 +590,7 @@ top   (cond ((minusp n) (return r)))
                 (setq ,v (cdr ,v))
                 (go ,l)))))
 
-(dm dolist (u) (s!:expand!-dolist (cadr u) (cddr u)))
+(dm dolist (u !&optional env) (s!:expand!-dolist (cadr u) (cddr u)))
 
 (de s!:expand!-dotimes (vnr b)
    (prog (l v var count res)
@@ -593,7 +607,7 @@ top   (cond ((minusp n) (return r)))
                 (setq ,var (add1 ,var))
                 (go ,l)))))
 
-(dm dotimes (u) (s!:expand!-dotimes (cadr u) (cddr u)))
+(dm dotimes (u !&optional env) (s!:expand!-dotimes (cadr u) (cddr u)))
 
 (flag '(geq leq neq logand logor logxor leftshift princ printc
 	evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*

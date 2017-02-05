@@ -1,4 +1,4 @@
-// fns3.cpp                                Copyright (C) 1989-2016 Codemist
+// fns3.cpp                                Copyright (C) 1989-2017 Codemist
 
 //
 // Basic functions part 3.
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -51,26 +51,24 @@
 
 LispObject Lmkvect(LispObject env, LispObject n)
 {   int32_t n1;
-    if (!is_fixnum(n)) return aerror1("mkvect", n);
+    if (!is_fixnum(n)) aerror1("mkvect", n);
     n1 = int_of_fixnum(n)*CELL;
     n1 += CELL; // Oh! What an abomination! Standard Lisp allocated 0::n,
                 // Common allocates n items
 // Note that this allows the user to go (mkvect -1) to make a vector with
 // no elements at all. This is mildly odd! But it is a consequence of agreeing
 // that (mkvect 0) will make a vector of length 1.
-    if (n1 < 0) return aerror1("mkvect", n);
+    if (n1 < 0) aerror1("mkvect", n);
     return onevalue(getvector_init(n1+CELL, nil));
 }
 
-#ifdef COMMON
 LispObject Lmksimplevec(LispObject env, LispObject n)
 {   int32_t n1;
-    if (!is_fixnum(n)) return aerror1("make-simple-vector", n);
+    if (!is_fixnum(n)) aerror1("make-simple-vector", n);
     n1 = int_of_fixnum(n)*CELL;
-    if (n1 < 0) return aerror1("make-simple-vector", n);
+    if (n1 < 0) aerror1("make-simple-vector", n);
     return onevalue(getvector_init(n1+CELL, nil));
 }
-#endif
 
 //
 // This one creates a "structure" tagged vector.
@@ -78,15 +76,14 @@ LispObject Lmksimplevec(LispObject env, LispObject n)
 
 LispObject Lmkevect(LispObject env, LispObject n)
 {   int32_t n1;
-    if (!is_fixnum(n)) return aerror1("mkevect", n);
+    if (!is_fixnum(n)) aerror1("mkevect", n);
     n1 = int_of_fixnum(n)*CELL;
 #ifndef COMMON
     n1 += CELL; // Oh! What an abomination! Standard Lisp allocated 0::n,
     // Common allocates n items
 #endif
-    if (n1 < 0) return aerror1("mkevect", n);
+    if (n1 < 0) aerror1("mkevect", n);
     n = getvector_init(n1+CELL, nil);
-    errexit();
     vechdr(n) ^= (TYPE_SIMPLE_VEC ^ TYPE_STRUCTURE);
     return onevalue(n);
 }
@@ -100,15 +97,14 @@ LispObject Lmkevect(LispObject env, LispObject n)
 
 LispObject Lmkxvect(LispObject env, LispObject n)
 {   size_t n1;
-    if (!is_fixnum(n)) return aerror1("mkxvect", n);
+    if (!is_fixnum(n)) aerror1("mkxvect", n);
     n1 = int_of_fixnum(n)*CELL;
 #ifndef COMMON
     n1 += CELL; // Oh! What an abomination! Standard Lisp allocated 0::n,
     // Common allocates n items
 #endif
-    if (n1 < 3*CELL) return aerror1("mkxvect", n);
+    if (n1 < 3*CELL) aerror1("mkxvect", n);
     n = getvector_init(n1+CELL, nil);
-    errexit();
     vechdr(n) ^= (TYPE_SIMPLE_VEC ^ TYPE_MIXED1);
     return onevalue(n);
 }
@@ -118,7 +114,6 @@ LispObject encapsulate_pointer(void *data)
 // Creates a boxed up representation of a pointer.
 //
 {   LispObject w = getvector(TAG_VECTOR, TYPE_ENCAPSULATE, 2*CELL);
-    errexit();
     *(void **)&elt(w, 0) = data;
     return w;
 }
@@ -148,7 +143,7 @@ LispObject Lmaple_atomic_value(LispObject env, LispObject a)
 {   LispObject v;
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_MAPLEREF)
-        return aerror1("not an encapsulated pointer", a);
+        aerror1("not an encapsulated pointer", a);
     v = (LispObject)extract_pointer(a);
     if ((v & 1) != 0)
     {
@@ -166,7 +161,7 @@ LispObject Lmaple_tag(LispObject, LispObject a)
     LispObject *v1;
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_MAPLEREF)
-        return aerror1("not an encapsulated pointer", a);
+        aerror1("not an encapsulated pointer", a);
     v = (LispObject)extract_pointer(a);
     if ((v & 1) != 0) return onevalue(nil); // an atomic value
     v1 = (LispObject *)v;
@@ -180,7 +175,7 @@ LispObject Lmaple_length(LispObject, LispObject a)
     LispObject *v1;
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_MAPLEREF)
-        return aerror1("not an encapsulated pointer", a);
+        aerror1("not an encapsulated pointer", a);
     v = (LispObject)extract_pointer(a);
     if ((v & 1) != 0) return onevalue(nil); // an atomic value
     v1 = (LispObject *)v;
@@ -206,15 +201,12 @@ LispObject Lmaple_integer(LispObject env, LispObject a)
         push2(r, t);
         d = Ltimes2(nil, d, t);
         pop2(t, r);
-        errexit();
         push(t);
         r = Lplus2(nil, r, d);
         pop(t);
-        errexit();
         push(r);
         t = Ltimes2(nil, t, fixnum_of_int(10000));
         pop(r);
-        errexit();
     }
     return r;
 }
@@ -223,10 +215,10 @@ LispObject Lmaple_component(LispObject, LispObject a, LispObject nn)
 {   LispObject v;
     LispObject *v1;
     int32_t len, n;
-    if (!is_fixnum(nn)) return aerror1("integer needed as selector", nn);
+    if (!is_fixnum(nn)) aerror1("integer needed as selector", nn);
     if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_MAPLEREF)
-        return aerror1("not an encapsulated pointer", a);
+        aerror1("not an encapsulated pointer", a);
     v = (LispObject)extract_pointer(a);
     if ((v & 1) != 0) return onevalue(nil); // an atomic value
     v1 = (LispObject *)v;
@@ -234,7 +226,7 @@ LispObject Lmaple_component(LispObject, LispObject a, LispObject nn)
     n = int_of_fixnum(nn);
 // The following line will be incorrect on 64-bit machines
     len = v & 0x03ffffff;
-    if (n < 0 || n >= len) return aerror1("subscript out of range", nn);
+    if (n < 0 || n >= len) aerror1("subscript out of range", nn);
     return onevalue(encapsulate_pointer((void *)v1[n+1]));
 }
 
@@ -264,11 +256,11 @@ LispObject Lputv(LispObject, int nargs, ...)
     x = va_arg(a, LispObject);
     va_end(a);
     if (!is_vector(v) || vector_holds_binary(h = vechdr(v)))
-        return aerror1("putv", v);
-    else if (!is_fixnum(n)) return aerror1("putv offset not fixnum", n);
+        aerror1("putv", v);
+    else if (!is_fixnum(n)) aerror1("putv offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("putv index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("putv index range", n);
     elt(v, n1) = x;
     return onevalue(x);
 }
@@ -277,11 +269,11 @@ LispObject Lgetv(LispObject, LispObject v, LispObject n)
 {   Header h;
     size_t n1, hl;
     if (!is_vector(v) || vector_holds_binary(h = vechdr(v)))
-        return aerror1("getv", v);
-    else if (!is_fixnum(n)) return aerror1("getv offset not fixnum", n);
+        aerror1("getv", v);
+    else if (!is_fixnum(n)) aerror1("getv offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("getv index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("getv index range", n);
     else return onevalue(elt(v, n1));
 }
 
@@ -292,10 +284,9 @@ LispObject Lgetv(LispObject, LispObject v, LispObject n)
 LispObject Lsmkvect(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
-    if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("make-simple-string", n);
+    if (!is_fixnum(n) || (intptr_t)n<0) aerror1("make-simple-string", n);
     nn = int_of_fixnum(n);
     w = getvector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
-    errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
     while (nn > CELL)
     {   nn -= CELL;
@@ -311,10 +302,9 @@ LispObject Lsmkvect(LispObject env, LispObject n)
 LispObject Lmkvect8(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
-    if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect8", n);
+    if (!is_fixnum(n) || (intptr_t)n<0) aerror1("mkvect8", n);
     nn = 1 + int_of_fixnum(n);  // Note that in Standard Lisp style the +1
     w = getvector(TAG_VECTOR, TYPE_VEC8_4, nn+CELL);
-    errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
     while (nn > CELL)
     {   nn -= CELL;
@@ -330,10 +320,9 @@ LispObject Lmkvect8(LispObject env, LispObject n)
 LispObject Lmkvect16(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
-    if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect16", n);
+    if (!is_fixnum(n) || (intptr_t)n<0) aerror1("mkvect16", n);
     nn = 2*(1 + int_of_fixnum(n)); // Note 1+ for Standard Lisp style
     w = getvector(TAG_VECTOR, TYPE_VEC16_2, nn+CELL);
-    errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
     while (nn > CELL)
     {   nn -= CELL;
@@ -349,10 +338,9 @@ LispObject Lmkvect16(LispObject env, LispObject n)
 LispObject Lmkvect32(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
-    if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkvect32", n);
+    if (!is_fixnum(n) || (intptr_t)n<0) aerror1("mkvect32", n);
     nn = 4*(1 + int_of_fixnum(n));
     w = getvector(TAG_VECTOR, TYPE_VEC32, nn+CELL);
-    errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
     while (nn > CELL)
     {   nn -= 4;
@@ -368,10 +356,9 @@ LispObject Lmkvect32(LispObject env, LispObject n)
 LispObject Lmkfvect32(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
-    if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkfvect32", n);
+    if (!is_fixnum(n) || (intptr_t)n<0) aerror1("mkfvect32", n);
     nn = 4*(1 + int_of_fixnum(n));
     w = getvector(TAG_VECTOR, TYPE_VECFLOAT32, nn+CELL);
-    errexit();
     nn = (intptr_t)doubleword_align_up(nn+CELL);
     while (nn > CELL)
     {   nn -= 4;
@@ -387,11 +374,10 @@ LispObject Lmkfvect32(LispObject env, LispObject n)
 LispObject Lmkfvect64(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
-    if (!is_fixnum(n) || (intptr_t)n<0) return aerror1("mkfvect64", n);
+    if (!is_fixnum(n) || (intptr_t)n<0) aerror1("mkfvect64", n);
     nn = 8*(1 + int_of_fixnum(n));
     if (!SIXTY_FOUR_BIT) nn += 4; // get the doubles aligned
     w = getvector(TAG_VECTOR, TYPE_VECFLOAT64, nn+CELL);
-    errexit();
     nn = (intptr_t)(nn+CELL);
     while (nn > CELL)
     {   nn -= 8;
@@ -411,15 +397,15 @@ LispObject simplify_string(LispObject s)
 {   Header h;
     LispObject w, h1;
     size_t i, n = 0;
-    if (!is_vector(s)) return aerror("simplify-string");
+    if (!is_vector(s)) aerror("simplify-string");
     h = vechdr(s);
     if (is_string_header(h))
         return onevalue(s);                 // Already simple
-    if (type_of_header(h) != TYPE_ARRAY) return aerror("simplify-string");
+    if (type_of_header(h) != TYPE_ARRAY) aerror("simplify-string");
     h1 = elt(s, 0);
-    if (h1 != string_char_sym) return aerror("simplify-string");
+    if (h1 != string_char_sym) aerror("simplify-string");
     h1 = elt(s, 1);                         // Dimension list
-    if (!consp(h1)) return aerror("simplify-string");
+    if (!consp(h1)) aerror("simplify-string");
     n = int_of_fixnum(qcar(h1));            // Look at size involved
     h1 = elt(s, 5);                         // Fill pointer
     if (is_fixnum(h1)) n = int_of_fixnum(h1);
@@ -427,7 +413,6 @@ LispObject simplify_string(LispObject s)
     push(s);
     w = getvector(TAG_VECTOR, TYPE_STRING_4, n+CELL);
     pop(s);
-    errexit();
     i = (intptr_t)doubleword_align_up(n+CELL);
     while (i > CELL) // pre-fill target vector with zero
     {   i -= CELL;
@@ -453,14 +438,14 @@ LispObject Lsputv(LispObject, int nargs, ...)
     x = va_arg(a, LispObject);
     va_end(a);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
-        return aerror1("putv-char", v);
-    else if (!is_fixnum(n)) return aerror1("putv-char", n);
+        aerror1("putv-char", v);
+    else if (!is_fixnum(n)) aerror1("putv-char", n);
     else if (is_fixnum(x)) vx = int_of_fixnum(x);
     else if (is_char(x)) vx = code_of_char(x);
-    else return aerror1("putv-char contents", x);
+    else aerror1("putv-char contents", x);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("putv-char", n);
+    if (n1 < 0 || n1 >= hl) aerror1("putv-char", n);
     celt(v, n1) = (char)vx;
     return onevalue(x);
 }
@@ -489,17 +474,17 @@ LispObject Lsputv2(LispObject, int nargs, ...)
     x2 = va_arg(a, LispObject);
     va_end(a);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
-        return aerror1("putv-char2", v);
-    else if (!is_fixnum(n)) return aerror1("putv-char", n);
+        aerror1("putv-char2", v);
+    else if (!is_fixnum(n)) aerror1("putv-char", n);
     if (is_fixnum(x1)) vx1 = int_of_fixnum(x1);
     else if (is_char(x1)) vx1 = code_of_char(x1);
-    else return aerror1("putv-char2 contents", x1);
+    else aerror1("putv-char2 contents", x1);
     if (is_fixnum(x2)) vx2 = int_of_fixnum(x2);
     else if (is_char(x2)) vx2 = code_of_char(x2);
-    else return aerror1("putv-char2 contents", x2);
+    else aerror1("putv-char2 contents", x2);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1+1 >= hl) return aerror1("putv-char2", n);
+    if (n1 < 0 || n1+1 >= hl) aerror1("putv-char2", n);
     celt(v, n1) = (char)vx1;
     celt(v, n1+1) = (char)vx2;
     return onevalue(x2);
@@ -520,20 +505,20 @@ LispObject Lsputv3(LispObject, int nargs, ...)
     x3 = va_arg(a, LispObject);
     va_end(a);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
-        return aerror1("putv-char2", v);
-    else if (!is_fixnum(n)) return aerror1("putv-char", n);
+        aerror1("putv-char2", v);
+    else if (!is_fixnum(n)) aerror1("putv-char", n);
     if (is_fixnum(x1)) vx1 = int_of_fixnum(x1);
     else if (is_char(x1)) vx1 = code_of_char(x1);
-    else return aerror1("putv-char2 contents", x1);
+    else aerror1("putv-char2 contents", x1);
     if (is_fixnum(x2)) vx2 = int_of_fixnum(x2);
     else if (is_char(x2)) vx2 = code_of_char(x2);
-    else return aerror1("putv-cha2r contents", x2);
+    else aerror1("putv-cha2r contents", x2);
     if (is_fixnum(x3)) vx3 = int_of_fixnum(x3);
     else if (is_char(x3)) vx3 = code_of_char(x3);
-    else return aerror1("putv-char3 contents", x3);
+    else aerror1("putv-char3 contents", x3);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1+2 >= hl) return aerror1("putv-char3", n);
+    if (n1 < 0 || n1+2 >= hl) aerror1("putv-char3", n);
     celt(v, n1) = (char)vx1;
     celt(v, n1+1) = (char)vx2;
     celt(v, n1+2) = (char)vx3;
@@ -556,23 +541,23 @@ LispObject Lsputv4(LispObject, int nargs, ...)
     x4 = va_arg(a, LispObject);
     va_end(a);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
-        return aerror1("putv-char2", v);
-    else if (!is_fixnum(n)) return aerror1("putv-char", n);
+        aerror1("putv-char2", v);
+    else if (!is_fixnum(n)) aerror1("putv-char", n);
     if (is_fixnum(x1)) vx1 = int_of_fixnum(x1);
     else if (is_char(x1)) vx1 = code_of_char(x1);
-    else return aerror1("putv-char2 contents", x1);
+    else aerror1("putv-char2 contents", x1);
     if (is_fixnum(x2)) vx2 = int_of_fixnum(x2);
     else if (is_char(x2)) vx2 = code_of_char(x2);
-    else return aerror1("putv-cha2r contents", x2);
+    else aerror1("putv-cha2r contents", x2);
     if (is_fixnum(x3)) vx3 = int_of_fixnum(x3);
     else if (is_char(x3)) vx3 = code_of_char(x3);
-    else return aerror1("putv-char3 contents", x3);
+    else aerror1("putv-char3 contents", x3);
     if (is_fixnum(x4)) vx4 = int_of_fixnum(x4);
     else if (is_char(x4)) vx4 = code_of_char(x4);
-    else return aerror1("putv-char4 contents", x4);
+    else aerror1("putv-char4 contents", x4);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1+3 >= hl) return aerror1("putv-char3", n);
+    if (n1 < 0 || n1+3 >= hl) aerror1("putv-char3", n);
     celt(v, n1) = (char)vx1;
     celt(v, n1+1) = (char)vx2;
     celt(v, n1+2) = (char)vx3;
@@ -582,7 +567,7 @@ LispObject Lsputv4(LispObject, int nargs, ...)
 
 LispObject Lbpsupbv(LispObject, LispObject v)
 {   size_t n;
-    if (!is_bps(v)) return aerror1("bps-upbv", v);
+    if (!is_bps(v)) aerror1("bps-upbv", v);
     n = length_of_byteheader(vechdr(v)) - CELL;
     return onevalue(fixnum_of_int(n-1));
 }
@@ -597,12 +582,12 @@ LispObject Lbpsputv(LispObject, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
-    if (!is_bps(v)) return aerror1("bpsputv", v);
-    else if (!is_fixnum(n)) return aerror1("bps-putv", n);
-    else if (!is_fixnum(x)) return aerror1("bps-putv contents", x);
+    if (!is_bps(v)) aerror1("bpsputv", v);
+    else if (!is_fixnum(n)) aerror1("bps-putv", n);
+    else if (!is_fixnum(x)) aerror1("bps-putv contents", x);
     hl = length_of_byteheader(vechdr(v)) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("bps-putv", n);
+    if (n1 < 0 || n1 >= hl) aerror1("bps-putv", n);
     celt(v, n1) = (char)int_of_fixnum(x);
     return onevalue(x);
 }
@@ -622,11 +607,11 @@ LispObject Lsgetv(LispObject env, LispObject v, LispObject n)
     int w;
     int32_t n1, hl;
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
-        return aerror1("schar on non-string", v);
-    else if (!is_fixnum(n)) return aerror1("schar index type incorrect", n);
+        aerror1("schar on non-string", v);
+    else if (!is_fixnum(n)) aerror1("schar index type incorrect", n);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("schar index out of range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("schar index out of range", n);
     w = celt(v, n1) & 0xff;
 #ifdef COMMON
     return onevalue(pack_char(0, w));
@@ -642,7 +627,6 @@ LispObject Lsgetv(LispObject env, LispObject v, LispObject n)
             celt(boffo, 1) = 0x80 + (w & 0x3f);
             n = iintern(boffo, 2, lisp_package, 0);
         }
-        errexit();
         elt(charvec, w) = n;
     }
     return onevalue(n);
@@ -654,11 +638,11 @@ LispObject Lsgetvn(LispObject, LispObject v, LispObject n)
     int w;
     size_t n1, hl;
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
-        return aerror1("scharn", v);
-    else if (!is_fixnum(n)) return aerror1("scharn", n);
+        aerror1("scharn", v);
+    else if (!is_fixnum(n)) aerror1("scharn", n);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("scharn", n);
+    if (n1 < 0 || n1 >= hl) aerror1("scharn", n);
     w = celt(v, n1) & 0xff;
     return onevalue(fixnum_of_int(w));
 }
@@ -668,22 +652,22 @@ LispObject Lbytegetv(LispObject, LispObject v, LispObject n)
     int w;
     size_t n1, hl;
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
-        return aerror1("byte-getv", v);
-    else if (!is_fixnum(n)) return aerror1("byte-getv", n);
+        aerror1("byte-getv", v);
+    else if (!is_fixnum(n)) aerror1("byte-getv", n);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("byte-getv", n);
+    if (n1 < 0 || n1 >= hl) aerror1("byte-getv", n);
     w = ucelt(v, n1);
     return onevalue(fixnum_of_int(w));
 }
 
 LispObject Lbpsgetv(LispObject, LispObject v, LispObject n)
 {   size_t n1, hl;
-    if (!is_bps(v)) return aerror1("bps-getv", v);
-    else if (!is_fixnum(n)) return aerror1("bps-getv", n);
+    if (!is_bps(v)) aerror1("bps-getv", v);
+    else if (!is_fixnum(n)) aerror1("bps-getv", n);
     hl = length_of_byteheader(vechdr(v)) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("bps-getv", n);
+    if (n1 < 0 || n1 >= hl) aerror1("bps-getv", n);
     n1 = celt(v, n1);
     return onevalue(fixnum_of_int(n1 & 0xff));
 }
@@ -715,21 +699,21 @@ LispObject Lnativeputv(LispObject, int nargs, ...)
         !is_fixnum(qcar(v)) ||
         !is_fixnum(qcdr(v)) ||
         (p = int_of_fixnum(qcar(v))) < 0 ||
-        p > native_pages_count) return aerror1("native-putv", v);
-    else if (!is_fixnum(n)) return aerror1("native-putv", n);
+        p > native_pages_count) aerror1("native-putv", v);
+    else if (!is_fixnum(n)) aerror1("native-putv", n);
     else if (!is_fixnum(x) &&
              (!is_numbers(x) || !is_bignum(x)))
-        return aerror1("native-putv contents", x);
-    else if (!is_fixnum(w)) return aerror1("native-putv width", w);
+        aerror1("native-putv contents", x);
+    else if (!is_fixnum(w)) aerror1("native-putv width", w);
     width = int_of_fixnum(w);
     o = int_of_fixnum(qcdr(v)) + int_of_fixnum(n);
-    if (o < 0 || o >= CSL_PAGE_SIZE) return aerror1("native-putv", n);
+    if (o < 0 || o >= CSL_PAGE_SIZE) aerror1("native-putv", n);
     p = (intptr_t)native_pages[p];
     p = doubleword_align_up(p);
     v32 = thirty_two_bits(x);
     switch (width)
 {       default:
-            return aerror1("native-putv width", w);
+            aerror1("native-putv width", w);
         case 1:
             *((char *)p + o) = (char)v32;
             break;
@@ -770,10 +754,10 @@ LispObject Lnativegetv(LispObject, LispObject v, LispObject n)
         !is_fixnum(qcar(v)) ||
         !is_fixnum(qcdr(v)) ||
         (p = int_of_fixnum(qcar(v))) < 0 ||
-        p > native_pages_count) return aerror1("native-getv", v);
-    else if (!is_fixnum(n)) return aerror1("native-getv", n);
+        p > native_pages_count) aerror1("native-getv", v);
+    else if (!is_fixnum(n)) aerror1("native-getv", n);
     o = int_of_fixnum(qcdr(v)) + int_of_fixnum(n);
-    if (o < 0 || o >= CSL_PAGE_SIZE) return aerror1("native-getv", o);
+    if (o < 0 || o >= CSL_PAGE_SIZE) aerror1("native-getv", o);
     p = (intptr_t)native_pages[p];
     p = doubleword_align_up(p);
     o = *((char *)p + o);
@@ -795,16 +779,16 @@ LispObject Lnativegetvn(LispObject, int nargs, ...)
         !is_fixnum(qcar(v)) ||
         !is_fixnum(qcdr(v)) ||
         (p = int_of_fixnum(qcar(v))) < 0 ||
-        p > native_pages_count) return aerror1("native-getv", v);
-    else if (!is_fixnum(n)) return aerror1("native-getv", n);
-    else if (!is_fixnum(w)) return aerror1("native-getv width", w);
+        p > native_pages_count) aerror1("native-getv", v);
+    else if (!is_fixnum(n)) aerror1("native-getv", n);
+    else if (!is_fixnum(w)) aerror1("native-getv width", w);
     o = int_of_fixnum(qcdr(v)) + int_of_fixnum(n);
-    if (o < 0 || o >= CSL_PAGE_SIZE) return aerror1("native-getv", o);
+    if (o < 0 || o >= CSL_PAGE_SIZE) aerror1("native-getv", o);
     p = (intptr_t)native_pages[p];
     p = doubleword_align_up(p);
     switch (int_of_fixnum(w))
 {       default:
-            return aerror1("native-getv width", w);
+            aerror1("native-getv width", w);
         case 1:
             o = *((char *)p + o);
             return onevalue(fixnum_of_int(o & 0xff));
@@ -836,8 +820,8 @@ LispObject Lnative_type(LispObject, int, ...)
 
 LispObject Lnative_address(LispObject, LispObject fn, LispObject nargs)
 {   size_t n;
-    if (!symbolp(fn)) return aerror1("native-address", fn);
-    if (!is_fixnum(nargs)) return aerror1("native-address", nargs);
+    if (!symbolp(fn)) aerror1("native-address", fn);
+    if (!is_fixnum(nargs)) aerror1("native-address", nargs);
     n = int_of_fixnum(nargs);
     switch (n)
     {   case 1: n = ifn1(fn);
@@ -1034,20 +1018,20 @@ LispObject Lnative_address1(LispObject env, LispObject x)
     {   if (!is_fixnum(qcar(x)) ||
             !is_fixnum(qcdr(x)) ||
             (p = int_of_fixnum(qcar(x))) < 0 ||
-            p > native_pages_count) return aerror1("native-address", x);
+            p > native_pages_count) aerror1("native-address", x);
         n = int_of_fixnum(qcdr(x));
-        if (n < 0 || n >= CSL_PAGE_SIZE) return aerror1("native-address", x);
+        if (n < 0 || n >= CSL_PAGE_SIZE) aerror1("native-address", x);
         p = (intptr_t)native_pages[p];
         p = doubleword_align_up(p);
         p = (intptr_t)((char *)p + n);
     }
     else
-    {   if (!is_fixnum(x)) return aerror1("native-address", x);
+    {   if (!is_fixnum(x)) aerror1("native-address", x);
         n = int_of_fixnum(x);
         if (n < 0)
         {   n = (-n) - 1;
             if (n >= (intptr_t)(sizeof(useful_functions)/sizeof(void *)))
-                return aerror1("native-address", x);
+                aerror1("native-address", x);
             else p = (intptr_t)useful_functions[n];
         }
         else p = (intptr_t)address_of_var(n);
@@ -1077,11 +1061,11 @@ LispObject Lputv8(LispObject, int nargs, ...)
     x = va_arg(a, LispObject);
     va_end(a);
     if (!is_vector(v) || !is_vec8_header(h = vechdr(v)))
-        return aerror1("putv8", v);
-    else if (!is_fixnum(n)) return aerror1("putv8 offset not fixnum", n);
+        aerror1("putv8", v);
+    else if (!is_fixnum(n)) aerror1("putv8 offset not fixnum", n);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("putv8 index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("putv8 index range", n);
     scelt(v, n1) = (char)int_of_fixnum(x);
     return onevalue(x);
 }
@@ -1090,11 +1074,11 @@ LispObject Lgetv8(LispObject, LispObject v, LispObject n)
 {   Header h;
     size_t n1, hl;
     if (!is_vector(v) || !is_vec8_header(h = vechdr(v)))
-        return aerror1("getv8", v);
-    else if (!is_fixnum(n)) return aerror1("getv8 offset not fixnum", n);
+        aerror1("getv8", v);
+    else if (!is_fixnum(n)) aerror1("getv8 offset not fixnum", n);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("getv8 index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("getv8 index range", n);
     else return onevalue(fixnum_of_int(scelt(v, n1)));
 }
 
@@ -1110,11 +1094,11 @@ LispObject Lputv16(LispObject, int nargs, ...)
     x = va_arg(a, LispObject);
     va_end(a);
     if (!is_vector(v) || !is_vec16_header(h = vechdr(v)))
-        return aerror1("putv16", v);
-    else if (!is_fixnum(n)) return aerror1("putv16 offset not fixnum", n);
+        aerror1("putv16", v);
+    else if (!is_fixnum(n)) aerror1("putv16 offset not fixnum", n);
     hl = length_of_hwordheader(h) - CELL/2;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("putv16 index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("putv16 index range", n);
     sethelt(v, n1, int_of_fixnum(x));
     return onevalue(x);
 }
@@ -1123,11 +1107,11 @@ LispObject Lgetv16(LispObject, LispObject v, LispObject n)
 {   Header h;
     size_t n1, hl;
     if (!is_vector(v) || !is_vec16_header(h = vechdr(v)))
-        return aerror1("getv16", v);
-    else if (!is_fixnum(n)) return aerror1("getv16 offset not fixnum", n);
+        aerror1("getv16", v);
+    else if (!is_fixnum(n)) aerror1("getv16 offset not fixnum", n);
     hl = length_of_hwordheader(h) - CELL/2;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("getv16 index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("getv16 index range", n);
     n1 = helt(v, n1);
     return onevalue(fixnum_of_int(n1));
 }
@@ -1144,11 +1128,11 @@ LispObject Lputv32(LispObject, int nargs, ...)
     x = va_arg(a, LispObject);
     va_end(a);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC32)
-        return aerror1("putv32", v);
-    else if (!is_fixnum(n)) return aerror1("putv32 offset not fixnum", n);
+        aerror1("putv32", v);
+    else if (!is_fixnum(n)) aerror1("putv32 offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/4;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("putv32 index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("putv32 index range", n);
     ielt32(v, n1) = thirty_two_bits(x);
     return onevalue(x);
 }
@@ -1157,11 +1141,11 @@ LispObject Lgetv32(LispObject, LispObject v, LispObject n)
 {   Header h;
     size_t n1, hl;
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC32)
-        return aerror1("getv32", v);
-    else if (!is_fixnum(n)) return aerror1("getv32 offset not fixnum", n);
+        aerror1("getv32", v);
+    else if (!is_fixnum(n)) aerror1("getv32 offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/4;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("getv32 index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("getv32 index range", n);
     n1 = ielt32(v, n1);
     return make_lisp_integer32(n1);
 }
@@ -1180,11 +1164,11 @@ LispObject Lfputv32(LispObject, int nargs, ...)
     d = float_of_number(x);
     va_end(a);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VECFLOAT32)
-        return aerror1("fputv32", v);
-    else if (!is_fixnum(n)) return aerror1("fputv32 offset not fixnum", n);
+        aerror1("fputv32", v);
+    else if (!is_fixnum(n)) aerror1("fputv32 offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/4;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("fputv32 index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("fputv32 index range", n);
     felt(v, n1) = (float)d;
     return onevalue(x);
 }
@@ -1193,17 +1177,16 @@ LispObject Lfgetv32(LispObject env, LispObject v, LispObject n)
 {   Header h;
     size_t n1, hl;
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VECFLOAT32)
-        return aerror1("fgetv32", v);
-    else if (!is_fixnum(n)) return aerror1("fgetv32 offset not fixnum", n);
+        aerror1("fgetv32", v);
+    else if (!is_fixnum(n)) aerror1("fgetv32 offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/4;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("fgetv32 index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("fgetv32 index range", n);
 #ifdef COMMON
     v = make_boxfloat((double)felt(v, n1), TYPE_SINGLE_FLOAT);
 #else
     v = make_boxfloat((double)felt(v, n1), TYPE_DOUBLE_FLOAT);
 #endif
-    errexit();
     return onevalue(v);
 }
 
@@ -1221,14 +1204,14 @@ LispObject Lfputv64(LispObject, int nargs, ...)
     d = float_of_number(x);
     va_end(a);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VECFLOAT64)
-        return aerror1("fputv64", v);
-    else if (!is_fixnum(n)) return aerror1("fputv64 offset not fixnum", n);
+        aerror1("fputv64", v);
+    else if (!is_fixnum(n)) aerror1("fputv64 offset not fixnum", n);
 //
 // NB it is not a misprint - the first double ALWAYS starts 8 bytes in...
 //
     hl = (length_of_header(h) - 8)/8;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("fputv64 index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("fputv64 index range", n);
     delt(v, n1) = d;
     return onevalue(x);
 }
@@ -1237,13 +1220,12 @@ LispObject Lfgetv64(LispObject env, LispObject v, LispObject n)
 {   Header h;
     size_t n1, hl;
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VECFLOAT64)
-        return aerror1("fgetv64", v);
-    else if (!is_fixnum(n)) return aerror1("fgetv64 offset not fixnum", n);
+        aerror1("fgetv64", v);
+    else if (!is_fixnum(n)) aerror1("fgetv64 offset not fixnum", n);
     hl = (length_of_header(h) - 8)/8;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("fgetv64 index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("fgetv64 index range", n);
     v = make_boxfloat(delt(v, n1), TYPE_DOUBLE_FLOAT);
-    errexit();
     return onevalue(v);
 }
 
@@ -1268,14 +1250,12 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
     push(a);
     v = getvector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(a);
-    errexit();
     for(n=0; consp(a); a = qcdr(a), n++) elt(v, n) = qcar(a);
     if (!SIXTY_FOUR_BIT && ((n & 1) == 0)) elt(v, n) = nil;  // Padder word
     return onevalue(v);
 }
 
 
-#ifdef COMMON
 //
 // (defun putvec (v n x)
 //    (cond
@@ -1299,22 +1279,23 @@ static LispObject Lputvec(LispObject, int nargs, ...)
 //
 // Oh joy - here I have to dispatch based on what sort of vector I have.
 //
-    if (!is_vector(v)) return aerror1("putvec", v);
-    else if (!is_fixnum(n)) return aerror1("putvec", n);
+    if (!is_vector(v)) aerror1("putvec", v);
+    else if (!is_fixnum(n)) aerror1("putvec", n);
     h = vechdr(v);
     if (is_string_header(h))
     {   if (is_fixnum(x)) vx = int_of_fixnum(x);
         else if (is_char(x)) vx = code_of_char(x);
-        else return aerror1("putvec on string, contents", x);
+        else aerror1("putvec on string, contents", x);
         hl = length_of_byteheader(h) - CELL;
+        if (int_of_fixnum(n) < 0) aerror1("putvec", n);
         n1 = int_of_fixnum(n);
-        if (n1 < 0 || n1 >= hl) return aerror1("putvec", n);
+        if (n1 >= hl) aerror1("putvec", n);
         celt(v, n1) = (int)vx;
         return onevalue(x);
     }
     if (is_bitvec_header(h))
     {   int b;
-        if (!is_fixnum(x)) return aerror1("putvec on bitvec, contents", x);
+        if (!is_fixnum(x)) aerror1("putvec on bitvec, contents", x);
         x = int_of_fixnum(x) & 1;
 // This will all need review...
         h = length_of_header(h) - CELL;
@@ -1326,15 +1307,15 @@ static LispObject Lputvec(LispObject, int nargs, ...)
 // access beyond the last active byte of a bitvector - I do not
 // do bound checking accurate to bit positions.
 //
-        if (n1 < 0 || n1 >= (int32_t)h) return aerror1("putv-bit", n);
+        if (n1 < 0 || n1 >= (int32_t)h) aerror1("putv-bit", n);
         if (x == 0) celt(v, n1) &= ~b;
         else        celt(v, n1) |= b;
         return onevalue(fixnum_of_int(x));
     }
-    if (vector_holds_binary(h)) return aerror1("putvec", v);
+    if (vector_holds_binary(h)) aerror1("putvec", v);
     hl = (length_of_header(h) - CELL)/CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) return aerror1("putvec index range", n);
+    if (n1 < 0 || n1 >= hl) aerror1("putvec index range", n);
     elt(v, n1) = x;
     return onevalue(x);
 }
@@ -1365,12 +1346,12 @@ LispObject Laref(LispObject env, int nargs, ...)
     intptr_t hl, n1;
     int32_t b;
     va_list a;
-    if (nargs == 0) return aerror("aref");
+    if (nargs == 0) aerror("aref");
     va_start(a, nargs);
     v = va_arg(a, LispObject);
     if (!is_vector(v))
     {   va_end(a);
-        return aerror1("aref", v);
+        aerror1("aref", v);
     }
     h = vechdr(v);
     if (nargs == 1) n = 0;  // Funny case (aref v) legal if no dimensions!
@@ -1378,7 +1359,7 @@ LispObject Laref(LispObject env, int nargs, ...)
     {   n = va_arg(a, LispObject);   // First subscript
         if (!is_fixnum(n))
         {   va_end(a);
-            return aerror1("aref", n);
+            aerror1("aref", n);
         }
         if (nargs == 2)
         {   if (type_of_header(h) == TYPE_SIMPLE_VEC ||
@@ -1386,14 +1367,14 @@ LispObject Laref(LispObject env, int nargs, ...)
             {   va_end(a);
                 hl = (length_of_header(h) - CELL)/CELL;
                 n1 = int_of_fixnum(n);
-                if (n1 < 0 || n1 >= hl) return aerror1("aref index range", n);
+                if (n1 < 0 || n1 >= hl) aerror1("aref index range", n);
                 else return onevalue(elt(v, n1));
             }
             else if (is_string_header(h))
             {   va_end(a);
                 hl = length_of_byteheader(h) - CELL;
                 n1 = int_of_fixnum(n);
-                if (n1 < 0 || n1 >= hl) return aerror1("aref index range", n);
+                if (n1 < 0 || n1 >= hl) aerror1("aref index range", n);
                 return onevalue(pack_char(0, celt(v, n1)));
             }
             else if (is_bitvec_header(h))
@@ -1404,7 +1385,7 @@ LispObject Laref(LispObject env, int nargs, ...)
                 b = 1 << (n1 & 7);     // Bit selector
                 n1 = n1 >> 3;          // Byte selector
                 if (n1 < 0 || n1 >= (int32_t)h)
-                    return aerror1("aref index range", n);
+                    aerror1("aref index range", n);
                 if ((celt(v, n1) & b) == 0) return onevalue(fixnum_of_int(0));
                 else return onevalue(fixnum_of_int(1));
             }
@@ -1412,7 +1393,7 @@ LispObject Laref(LispObject env, int nargs, ...)
     }
     if (type_of_header(h) != TYPE_ARRAY)
     {   va_end(a);
-        return aerror1("aref", v);
+        aerror1("aref", v);
     }
 //
 // Here I had better have a general array, and I will need to calculate the
@@ -1429,7 +1410,7 @@ LispObject Laref(LispObject env, int nargs, ...)
     {   n = va_arg(a, LispObject);
         if (!is_fixnum(n))
         {   va_end(a);
-            return aerror1("aref", n);
+            aerror1("aref", n);
         }
         n1 = n1*int_of_fixnum(qcar(w)) + int_of_fixnum(n);
         nargs--;
@@ -1437,7 +1418,7 @@ LispObject Laref(LispObject env, int nargs, ...)
     }
     va_end(a);
     if (nargs > 2 || w != nil)
-        return aerror("aref, wrong number of subscripts");
+        aerror("aref, wrong number of subscripts");
     n1 += int_of_fixnum(elt(v, 3));  // displaced-index-offset
     v = elt(v, 2);
 //
@@ -1449,20 +1430,20 @@ LispObject Laref(LispObject env, int nargs, ...)
     h = vechdr(v);
     if (type_of_header(h) == TYPE_SIMPLE_VEC)
     {   hl = (length_of_header(h) - CELL)/CELL;
-        if (n1 < 0 || n1 >= hl) return aerror("aref index range");
+        if (n1 < 0 || n1 >= hl) aerror("aref index range");
         else return onevalue(elt(v, n1));
     }
     else if (type_of_header(h) == TYPE_STRUCTURE)
     {   int32_t n2;
         hl = int_of_fixnum(elt(v, 0));
-        if (n1 < 0 || n1 >= hl) return aerror("aref index range");
+        if (n1 < 0 || n1 >= hl) aerror("aref index range");
         n2 = n1 % 8192;
         n1 = n1 / 8192;
         return onevalue(elt(elt(v, n1+1), n2));
     }
     else if (is_string_header(h))
     {   hl = length_of_byteheader(h) - CELL;
-        if (n1 < 0 || n1 >= hl) return aerror("aref index range");
+        if (n1 < 0 || n1 >= hl) aerror("aref index range");
         return onevalue(pack_char(0, celt(v, n1)));
     }
     else if (is_bitvec_header(h))
@@ -1470,11 +1451,11 @@ LispObject Laref(LispObject env, int nargs, ...)
 // Will need review
         b = 1 << (n1 & 7);     // Bit selector
         n1 = n1 >> 3;          // Byte selector
-        if (n1 < 0 || n1 >= (int32_t)h) return aerror("aref index range");
+        if (n1 < 0 || n1 >= (int32_t)h) aerror("aref index range");
         if ((celt(v, n1) & b) == 0) return onevalue(fixnum_of_int(0));
         else return onevalue(fixnum_of_int(1));
     }
-    return aerror("aref unknown type for vector representation");
+    aerror("aref unknown type for vector representation");
 }
 
 static LispObject Laref1(LispObject env, LispObject a)
@@ -1489,7 +1470,7 @@ LispObject Lelt(LispObject env, LispObject v, LispObject n)
 {   Header h;
     LispObject w;
     int32_t hl, n1, b;
-    if (!is_fixnum(n) || ((int32_t)n) < 0) return aerror1("elt", n);
+    if (!is_fixnum(n) || ((int32_t)n) < 0) aerror1("elt", n);
     n1 = int_of_fixnum(n);
     if (!is_vector(v))
     {   w = v;
@@ -1497,19 +1478,19 @@ LispObject Lelt(LispObject env, LispObject v, LispObject n)
         {   n1--;
             w = qcdr(w);
         }
-        if (!consp(w)) return aerror1("elt", v);
+        if (!consp(w)) aerror1("elt", v);
         return onevalue(qcar(w));
     }
     h = vechdr(v);
     if (type_of_header(h) == TYPE_SIMPLE_VEC ||
         type_of_header(h) == TYPE_STRUCTURE)
     {   hl = (length_of_header(h) - CELL)/CELL;
-        if (n1 >= hl) return aerror1("elt index range", n);
+        if (n1 >= hl) aerror1("elt index range", n);
         else return onevalue(elt(v, n1));
     }
     else if (is_string_header(h))
     {   hl = length_of_byteheader(h) - CELL;
-        if (n1 >= hl) return aerror1("elt index range", n);
+        if (n1 >= hl) aerror1("elt index range", n);
         return onevalue(pack_char(0, celt(v, n1)));
     }
     else if (is_bitvec_header(h))
@@ -1518,44 +1499,44 @@ LispObject Lelt(LispObject env, LispObject v, LispObject n)
         b = 1 << (n1 & 7);     // Bit selector
         n1 = n1 >> 3;          // Byte selector
         if (n1 < 0 || n1 >= (int32_t)h)
-            return aerror1("elt index range", n);
+            aerror1("elt index range", n);
         if ((celt(v, n1) & b) == 0) return onevalue(fixnum_of_int(0));
         else return onevalue(fixnum_of_int(1));
     }
-    if (type_of_header(h) != TYPE_ARRAY) return aerror1("elt", v);
+    if (type_of_header(h) != TYPE_ARRAY) aerror1("elt", v);
     w = elt(v, 1);   // The list of dimensions - must be 1 dim here
     w = qcdr(w);
-    if (w != nil) return aerror1("elt", v);
+    if (w != nil) aerror1("elt", v);
     n1 += int_of_fixnum(elt(v, 3));  // displaced-index-offset
     v = elt(v, 2);
     h = vechdr(v);
     if (type_of_header(h) == TYPE_SIMPLE_VEC)
     {   hl = (length_of_header(h) - CELL)/CELL;
-        if (n1 >= hl) return aerror("elt index range");
+        if (n1 >= hl) aerror("elt index range");
         else return onevalue(elt(v, n1));
     }
     else if (type_of_header(h) == TYPE_STRUCTURE)
     {   int32_t n2;
         hl = int_of_fixnum(elt(v, 0));
-        if (n1 >= hl) return aerror("elt index range");
+        if (n1 >= hl) aerror("elt index range");
         n2 = n1 % 8192;
         n1 = n1 / 8192;
         return onevalue(elt(elt(v, n1+1), n2));
     }
     else if (is_string_header(h))
     {   hl = length_of_byteheader(h) - CELL;
-        if (n1 >= hl) return aerror("elt index range");
+        if (n1 >= hl) aerror("elt index range");
         return onevalue(pack_char(0, celt(v, n1)));
     }
     else if (is_bitvec_header(h))
     {   h = length_of_header(h) - CELL;
         b = 1 << (n1 & 7);     // Bit selector
         n1 = n1 >> 3;          // Byte selector
-        if (n1 >= (int32_t)h) return aerror("elt index range");
+        if (n1 >= (int32_t)h) aerror("elt index range");
         if ((celt(v, n1) & b) == 0) return onevalue(fixnum_of_int(0));
         else return onevalue(fixnum_of_int(1));
     }
-    return aerror("elt unknown type for vector representation");
+    aerror("elt unknown type for vector representation");
 }
 
 //
@@ -1590,12 +1571,12 @@ LispObject Laset(LispObject env, int nargs, ...)
     LispObject v, n, w, x;
     int32_t hl, n1, b;
     va_list a;
-    if (nargs < 2) return aerror("aset");
+    if (nargs < 2) aerror("aset");
     va_start(a, nargs);
     v = va_arg(a, LispObject);
     if (!is_vector(v))
     {   va_end(a);
-        return aerror1("aset", v);
+        aerror1("aset", v);
     }
     h = vechdr(v);
     if (nargs == 2) n = 0;  // Funny case (aset v w) legal if no dimensions!
@@ -1603,7 +1584,7 @@ LispObject Laset(LispObject env, int nargs, ...)
     {   n = va_arg(a, LispObject);   // First subscript
         if (!is_fixnum(n))
         {   va_end(a);
-            return aerror1("aset", n);
+            aerror1("aset", n);
         }
         if (nargs == 3)
         {   if (type_of_header(h) == TYPE_SIMPLE_VEC ||
@@ -1612,7 +1593,7 @@ LispObject Laset(LispObject env, int nargs, ...)
                 va_end(a);
                 hl = (length_of_header(h) - CELL)/CELL;
                 n1 = int_of_fixnum(n);
-                if (n1 < 0 || n1 >= hl) return aerror1("aset index range", n);
+                if (n1 < 0 || n1 >= hl) aerror1("aset index range", n);
                 elt(v, n1) = x;
                 return onevalue(x);
             }
@@ -1621,10 +1602,10 @@ LispObject Laset(LispObject env, int nargs, ...)
                 va_end(a);
                 hl = length_of_byteheader(h) - CELL;
                 n1 = int_of_fixnum(n);
-                if (n1 < 0 || n1 >= hl) return aerror1("aset index range", n);
+                if (n1 < 0 || n1 >= hl) aerror1("aset index range", n);
                 if (is_fixnum(x)) b = int_of_fixnum(x);
                 else if (is_char(x)) b = code_of_char(x);
-                else return aerror1("aset needs char", x);
+                else aerror1("aset needs char", x);
                 celt(v, n1) = b;
                 return onevalue(x);
             }
@@ -1636,8 +1617,8 @@ LispObject Laset(LispObject env, int nargs, ...)
                 b = 1 << (n1 & 7);     // Bit selector
                 n1 = n1 >> 3;          // Byte selector
                 if (n1 < 0 || n1 >= (int32_t)h)
-                    return aerror1("aset index range", n);
-                if (!is_fixnum(x)) return aerror1("aset needs bit", x);
+                    aerror1("aset index range", n);
+                if (!is_fixnum(x)) aerror1("aset needs bit", x);
                 if (int_of_fixnum(x) & 1) ucelt(v, n1) |= b;
                 else ucelt(v, n1) &= ~b;
                 return onevalue(x);
@@ -1646,7 +1627,7 @@ LispObject Laset(LispObject env, int nargs, ...)
     }
     if (type_of_header(h) != TYPE_ARRAY)
     {   va_end(a);
-        return aerror1("aset", v);
+        aerror1("aset", v);
     }
 //
 // Here I had better have a general array, and I will need to calculate the
@@ -1665,7 +1646,7 @@ LispObject Laset(LispObject env, int nargs, ...)
     {   n = va_arg(a, LispObject);
         if (!is_fixnum(n))
         {   va_end(a);
-            return aerror1("aset", n);
+            aerror1("aset", n);
         }
         n1 = n1*int_of_fixnum(qcar(w)) + int_of_fixnum(n);
         nargs--;
@@ -1674,20 +1655,20 @@ LispObject Laset(LispObject env, int nargs, ...)
     x = va_arg(a, LispObject);
     va_end(a);
     if (nargs > 3 || w != nil)
-        return aerror("aset, wrong number of subscripts");
+        aerror("aset, wrong number of subscripts");
     n1 += int_of_fixnum(elt(v, 3)); // displaced-index-offset
     v = elt(v, 2);
     h = vechdr(v);
     if (type_of_header(h) == TYPE_SIMPLE_VEC)
     {   hl = (length_of_header(h) - CELL)/CELL;
-        if (n1 < 0 || n1 >= hl) return aerror("aset index range");
+        if (n1 < 0 || n1 >= hl) aerror("aset index range");
         elt(v, n1) = x;
         return onevalue(x);
     }
     if (type_of_header(h) == TYPE_STRUCTURE)
     {   int32_t n2;
         hl = int_of_fixnum(elt(v, 0));
-        if (n1 < 0 || n1 >= hl) return aerror("aset index range");
+        if (n1 < 0 || n1 >= hl) aerror("aset index range");
         n2 = n1 % 8192;
         n1 = n1 / 8192;
         elt(elt(v, n1+1), n2) = x;
@@ -1695,10 +1676,10 @@ LispObject Laset(LispObject env, int nargs, ...)
     }
     else if (is_string_header(h))
     {   hl = length_of_byteheader(h) - CELL;
-        if (n1 < 0 || n1 >= hl) return aerror("aset index range");
+        if (n1 < 0 || n1 >= hl) aerror("aset index range");
         if (is_fixnum(x)) b = int_of_fixnum(x);
         else if (is_char(x)) b = code_of_char(x);
-        else return aerror1("aset needs char", x);
+        else aerror1("aset needs char", x);
         celt(v, n1) = b;
         return onevalue(x);
     }
@@ -1706,17 +1687,17 @@ LispObject Laset(LispObject env, int nargs, ...)
     {   h = length_of_header(h) - CELL;
         b = 1 << (n1 & 7);     // Bit selector
         n1 = n1 >> 3;          // Byte selector
-        if (n1 < 0 || n1 >= (int32_t)h) return aerror("aset index range");
-        if (!is_fixnum(x)) return aerror1("aset needs bit", x);
+        if (n1 < 0 || n1 >= (int32_t)h) aerror("aset index range");
+        if (!is_fixnum(x)) aerror1("aset needs bit", x);
         if (int_of_fixnum(x) & 1) ucelt(v, n1) |= b;
         else ucelt(v, n1) &= ~b;
         return onevalue(x);
     }
-    return aerror("aset unknown type for vector representation");
+    aerror("aset unknown type for vector representation");
 }
 
 static LispObject Laset1(LispObject env, LispObject a)
-{   return aerror("aset");
+{   aerror("aset");
 }
 
 static LispObject Laset2(LispObject env, LispObject a, LispObject b)
@@ -1735,7 +1716,7 @@ static LispObject Lsetelt(LispObject env, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
-    if (!is_fixnum(n) || ((int32_t)n) < 0) return aerror1("setelt", n);
+    if (!is_fixnum(n) || ((int32_t)n) < 0) aerror1("setelt", n);
     n1 = int_of_fixnum(n);
     if (!is_vector(v))
     {   w = v;
@@ -1743,7 +1724,7 @@ static LispObject Lsetelt(LispObject env, int nargs, ...)
         {   n1--;
             w = qcdr(w);
         }
-        if (!consp(w)) return aerror1("setelt", v);
+        if (!consp(w)) aerror1("setelt", v);
         qcar(w) = x;
         return onevalue(x);
     }
@@ -1751,49 +1732,49 @@ static LispObject Lsetelt(LispObject env, int nargs, ...)
     if (type_of_header(h) == TYPE_SIMPLE_VEC ||
         type_of_header(h) == TYPE_STRUCTURE)
     {   hl = (length_of_header(h) - CELL)/CELL;
-        if (n1 >= hl) return aerror1("setelt index range", n);
+        if (n1 >= hl) aerror1("setelt index range", n);
         elt(v, n1) = x;
         return onevalue(x);
     }
     else if (is_string_header(h))
     {   int vx;
         hl = length_of_byteheader(h) - CELL;
-        if (n1 >= hl) return aerror1("setelt index range", n);
+        if (n1 >= hl) aerror1("setelt index range", n);
         if (is_fixnum(x)) vx = int_of_fixnum(x);
         else if (is_char(x)) vx = code_of_char(x);
-        else return aerror1("setelt contents", x);
+        else aerror1("setelt contents", x);
         celt(v, n1) = vx;
         return onevalue(x);
     }
     else if (is_bitvec_header(h))
-    {   if (!is_fixnum(x)) return aerror1("setelt contents", x);
+    {   if (!is_fixnum(x)) aerror1("setelt contents", x);
         x = int_of_fixnum(x) & 1;
         h = length_of_header(h) - CELL;
         b = 1 << (n1 & 7);     // Bit selector
         n1 = n1 >> 3;          // Byte selector
         if (n1 >= (int32_t)h)
-            return aerror1("setelt index range", n);
+            aerror1("setelt index range", n);
         if (x == 0) celt(v, n1) &= ~b;
         else celt(v, n1) |= b;
         return onevalue(fixnum_of_int(x));
     }
-    if (type_of_header(h) != TYPE_ARRAY) return aerror1("setelt", v);
+    if (type_of_header(h) != TYPE_ARRAY) aerror1("setelt", v);
     w = elt(v, 1);   // The list of dimensions - must be 1 dim here
     w = qcdr(w);
-    if (w != nil) return aerror1("setelt", v);
+    if (w != nil) aerror1("setelt", v);
     n1 += int_of_fixnum(elt(v, 3));  // displaced-index-offset
     v = elt(v, 2);
     h = vechdr(v);
     if (type_of_header(h) == TYPE_SIMPLE_VEC)
     {   hl = (length_of_header(h) - CELL)/CELL;
-        if (n1 >= hl) return aerror("setelt index range");
+        if (n1 >= hl) aerror("setelt index range");
         elt(v, n1) = x;
         return onevalue(x);
     }
     else if (type_of_header(h) == TYPE_STRUCTURE)
     {   int32_t n2;
         hl = int_of_fixnum(elt(v, 0));
-        if (n1 >= hl) return aerror("setelt index range");
+        if (n1 >= hl) aerror("setelt index range");
         n2 = n1 % 8192;
         n1 = n1 / 8192;
         elt(elt(v, n1+1), n2) = x;
@@ -1804,23 +1785,23 @@ static LispObject Lsetelt(LispObject env, int nargs, ...)
         hl = length_of_byteheader(h) - CELL;
         if (is_fixnum(x)) vx = int_of_fixnum(x);
         else if (is_char(x)) vx = code_of_char(x);
-        else return aerror1("setelt contents", x);
-        if (n1 >= hl) return aerror("setelt index range");
+        else aerror1("setelt contents", x);
+        if (n1 >= hl) aerror("setelt index range");
         celt(v, n1) = vx;
         return onevalue(x);
     }
     else if (is_bitvec_header(h))
-    {   if (!is_fixnum(x)) return aerror1("setelt contents", x);
+    {   if (!is_fixnum(x)) aerror1("setelt contents", x);
         x = int_of_fixnum(x) & 1;
         h = length_of_header(h) - CELL;
         b = 1 << (n1 & 7);     // Bit selector
         n1 = n1 >> 3;          // Byte selector
-        if (n1 >= (int32_t)h) return aerror("setelt index range");
+        if (n1 >= (int32_t)h) aerror("setelt index range");
         if (x == 0) celt(v, n1) &= ~b;
         else celt(v, n1) |= b;
         return onevalue(fixnum_of_int(x));
     }
-    return aerror("setelt unknown type for vector representation");
+    aerror("setelt unknown type for vector representation");
 }
 
 //
@@ -1856,14 +1837,14 @@ LispObject Lvectorp(LispObject env, LispObject a)
 
 static LispObject Lchar(LispObject env, LispObject v, LispObject n)
 {   Header h;
-    if (!is_vector(v)) return aerror("char");
+    if (!is_vector(v)) aerror("char");
     h = vechdr(v);
     if (is_string_header(h))
     {   int32_t hl, n1;
-        if (!is_fixnum(n)) return aerror1("char", n);
+        if (!is_fixnum(n)) aerror1("char", n);
         hl = length_of_byteheader(h) - CELL;
         n1 = int_of_fixnum(n);
-        if (n1 < 0 || n1 >= hl) return aerror1("schar", n);
+        if (n1 < 0 || n1 >= hl) aerror1("schar", n);
         return onevalue(pack_char(0, celt(v, n1)));
     }
     return Laref(nil, 2, v, n);
@@ -1886,18 +1867,18 @@ static LispObject Lcharset(LispObject env, int nargs, ...)
     n = va_arg(a, LispObject);
     c = va_arg(a, LispObject);
     va_end(a);
-    if (!is_vector(v)) return aerror1("charset", v);
+    if (!is_vector(v)) aerror1("charset", v);
     h = vechdr(v);
-    if (!is_fixnum(n)) return aerror1("charset", n);
+    if (!is_fixnum(n)) aerror1("charset", n);
     if (is_string_header(h))
     {   int32_t hl, n1, vx;
-        if (!is_fixnum(n)) return aerror1("charset", n);
+        if (!is_fixnum(n)) aerror1("charset", n);
         hl = length_of_byteheader(h) - CELL;
         if (is_fixnum(c)) vx = int_of_fixnum(c);
         else if (is_char(c)) vx = code_of_char(c);
-        else return aerror1("charset contents", c);
+        else aerror1("charset contents", c);
         n1 = int_of_fixnum(n);
-        if (n1 < 0 || n1 >= hl) return aerror1("charset", n);
+        if (n1 < 0 || n1 >= hl) aerror1("charset", n);
         celt(v, n1) = (int)vx;
         return onevalue(c);
     }
@@ -1914,21 +1895,21 @@ static LispObject Lcharset(LispObject env, int nargs, ...)
 static LispObject Lmake_string(LispObject env, int nargs, ...)
 {   va_list a;
     LispObject w, n, key, init;
-    int32_t nn, z, blanks;
+    intptr_t nn, blanks;
+    size_t z;
     argcheck(nargs, 3, "make-string");
     va_start(a, nargs);
     n = va_arg(a, LispObject);
     key = va_arg(a, LispObject);
     init = va_arg(a, LispObject);
     va_end(a);
-    if (!is_fixnum(n) || (int32_t)n<0) return aerror1("make-string", n);
+    if (!is_fixnum(n) || (intptr_t)n<0) aerror1("make-string", n);
     if (!is_char(init) && !is_fixnum(init))
-        return aerror1("make-string", init);
-    if (key != initial_element) return aerror1("make-string", key);
+        aerror1("make-string", init);
+    if (key != initial_element) aerror1("make-string", key);
     nn = int_of_fixnum(n);
     w = getvector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
-    errexit();
-    z = (int32_t)doubleword_align_up(nn+CELL);
+    z = (size_t)doubleword_align_up(nn+CELL);
     if (is_char(init)) blanks = code_of_char(init);
     else blanks = int_of_fixnum(init);
     blanks = (blanks << 8) | blanks;
@@ -1947,12 +1928,12 @@ static LispObject Lmake_string(LispObject env, int nargs, ...)
 
 static LispObject Lmake_string1(LispObject env, LispObject n)
 {   LispObject w;
-    int32_t nn, z, blanks;
-    if (!is_fixnum(n) || (int32_t)n<0) return aerror1("make-string", n);
+    intptr_t nn, blanks;
+    size_t z;
+    if (!is_fixnum(n) || (intptr_t)n<0) aerror1("make-string", n);
     nn = int_of_fixnum(n);
     w = getvector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
-    errexit();
-    z = (int32_t)doubleword_align_up(nn+CELL);
+    z = (size_t)doubleword_align_up(nn+CELL);
     blanks = (' ' << 24) | (' ' << 16) | (' ' << 8) | ' ';
     while (z > CELL)
     {   z -= 4;
@@ -1985,23 +1966,22 @@ static LispObject Lstring(LispObject env, LispObject a)
     if (!is_vector(a))
     {   char dd[4];
         if (symbolp(a)) return onevalue(qpname(a));
-        if (!is_char(a)) return aerror1("string", a);
+        if (!is_char(a)) aerror1("string", a);
         dd[0] = 'x'; // Done this way in case character arg has code 0
         dd[1] = 0;
         w = make_string(dd);
-        errexit();
         celt(w, 0) = code_of_char(a);
         return onevalue(w);
     }
     h = vechdr(a);
     if (is_string_header(h)) return onevalue(a);
-    else if (type_of_header(h) != TYPE_ARRAY) return aerror1("string", a);
+    else if (type_of_header(h) != TYPE_ARRAY) aerror1("string", a);
 //
 // Beware abolition of 'string-char
 //
-    else if (elt(a, 0) != string_char_sym) return aerror1("string", a);
+    else if (elt(a, 0) != string_char_sym) aerror1("string", a);
     w = elt(a, 1);
-    if (!consp(w) || consp(qcdr(w))) return aerror1("string", a);
+    if (!consp(w) || consp(qcdr(w))) aerror1("string", a);
     else return onevalue(a);
 }
 
@@ -2035,7 +2015,6 @@ static LispObject Lvector(LispObject env, int nargs, ...)
     va_start(a, nargs);
     push_args(a, nargs);
     r = getvector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*nargs+CELL);
-    errexitn(nargs);
 //
 // The next line allows for the fact that vectors MUST pad to an even
 // number of words.
@@ -2060,8 +2039,8 @@ static LispObject Lvector2(LispObject env, LispObject a, LispObject b)
 static LispObject Lshrink_vector(LispObject env,
                                  LispObject v, LispObject n)
 {   int32_t n1, n2;
-    if (!is_vector(v)) return aerror1("shrink-vector", v);
-    if (!is_fixnum(n)) return aerror1("shrink-vector", n);
+    if (!is_vector(v)) aerror1("shrink-vector", v);
+    if (!is_fixnum(n)) aerror1("shrink-vector", n);
     n1 = length_of_header(vechdr(v));
     n2 = CELL*int_of_fixnum(n)+CELL;
     if (n2 >= n1) return onevalue(v);  // Not shrunk at all
@@ -2072,24 +2051,20 @@ static LispObject Lshrink_vector(LispObject env,
         n1 = doubleword_align_up(n1);
         *(LispObject *)((char *)v-TAG_VECTOR+n1) = make_padder(n1-n2a);
     }
-    vechdr(v) = TAG_HDR_IMMED+
-        type_of_header(vechdr(v))+
-        pack_headerlengthbytes(n2);
+    size_t adjustment = n1 - n2;  // number of bytes to shrink by    
+    vechdr(v) = vechdr(v) - pack_hdrlength(adjustment/4);
     return onevalue(v);
 }
-
-#endif // COMMON
 
 static LispObject Lmake_simple_bitvector(LispObject env, LispObject n)
 {   int32_t bytes;
     LispObject w;
     size_t n1;
     if (!is_fixnum(n) || (int32_t)n<0)
-        return aerror1("make-simple-bitvector", n);
+        aerror1("make-simple-bitvector", n);
     n1 = int_of_fixnum(n);
     bytes = CELL+(n1+7)/8;
     w = getvector(TAG_VECTOR, bitvechdr_(n1), bytes);
-    errexit();
     n1 = doubleword_align_up(bytes);
     while (n1 > CELL)
     {   n1 -= 4;
@@ -2115,9 +2090,9 @@ static LispObject Lbputv(LispObject, int nargs, ...)
 // support bit-arrays of arbitrary rank, and not just simple vectors.
 //
     if (!(is_vector(v)) || !is_bitvec_header(h = vechdr(v)))
-        return aerror1("putv-bit", v);
-    if (!is_fixnum(n)) return aerror1("putv-bit", n);
-    if (!is_fixnum(x)) return aerror1("putv-bit contents", x);
+        aerror1("putv-bit", v);
+    if (!is_fixnum(n)) aerror1("putv-bit", n);
+    if (!is_fixnum(x)) aerror1("putv-bit contents", x);
     x = int_of_fixnum(x) & 1;
     h = length_of_header(h) - CELL;
     n1 = int_of_fixnum(n);
@@ -2128,7 +2103,7 @@ static LispObject Lbputv(LispObject, int nargs, ...)
 // access beyond the last active byte of a bitvector - I do not
 // do bound checking accurate to bit positions.
 //
-    if (n1 < 0 || n1 >= (int32_t)h) return aerror1("putv-bit", n);
+    if (n1 < 0 || n1 >= (int32_t)h) aerror1("putv-bit", n);
     if (x == 0) ucelt(v, n1) &= ~b;
     else        ucelt(v, n1) |= b;
     return onevalue(fixnum_of_int(x));
@@ -2143,13 +2118,13 @@ static LispObject Lbgetv(LispObject, LispObject v, LispObject n)
 // support bit-arrays of arbitrary rank, and not just simple vectors.
 //
     if (!(is_vector(v)) || !is_bitvec_header(h = vechdr(v)))
-        return aerror1("getv-bit", v);
-    if (!is_fixnum(n)) return aerror1("getv-bit", n);
+        aerror1("getv-bit", v);
+    if (!is_fixnum(n)) aerror1("getv-bit", n);
     h = length_of_header(h) - CELL;
     n1 = int_of_fixnum(n);
     b = 1 << (n1 & 7);     // Bit selector
     n1 = n1 >> 3;          // Byte selector
-    if (n1 < 0 || n1 >= (int32_t)h) return aerror1("getv-bit", n);
+    if (n1 < 0 || n1 >= (int32_t)h) aerror1("getv-bit", n);
     if ((ucelt(v, n1) & b) == 0)
         return onevalue(fixnum_of_int(0));
     else return onevalue(fixnum_of_int(1));
@@ -2162,6 +2137,7 @@ LispObject Lupbv(LispObject env, LispObject v)
     h = vechdr(v);
     n = length_of_header(h) - CELL;
 #ifdef COMMON
+// The next bit is WRONG at present...
     if (is_bitvec_header(h))
     {   n = (n - 1)*8;
         n += ((h & 0x380) >> 7) + 1;
@@ -2205,22 +2181,17 @@ LispObject Lupbv(LispObject env, LispObject v)
 LispObject Lstring_length(LispObject, LispObject v)
 {   Header h;
     int32_t n;
-    if (!is_vector(v)) return aerror1("string-length", v);
+    if (!is_vector(v)) aerror1("string-length", v);
     h = vechdr(v);
-    if (!is_string_header(h)) return aerror1("string-length", v);
+    if (!is_string_header(h)) aerror1("string-length", v);
     n = length_of_byteheader(h) - CELL;
     return onevalue(fixnum_of_int(n));
 }
 
-#ifdef COMMON
 LispObject Lvecbnd(LispObject, LispObject v)
 {   Header h;
     int32_t n;
-//
-// in non segmented mode this will support BPS, but really
-// you ought not to rely on that.
-//
-    if (!(is_vector(v))) return aerror1("vector-bound", v);
+    if (!(is_vector(v))) aerror1("vector-bound", v);
     h = vechdr(v);
     n = length_of_header(h) - CELL;
 #ifdef EXPERIMENT
@@ -2228,16 +2199,20 @@ LispObject Lvecbnd(LispObject, LispObject v)
 // disabled by the "#ifdef COMMON" so is not a pressing issue.
 #error unreconstructed
 #endif
-    if (is_bitvec_header(h))
-    {   n = (n - 1)*8;
-        n += ((h & 0x380) >> 7) + 1;
-    }
+    if (is_bitvec_header(h)) n = length_of_bitheader(h) - 8*CELL;
     else switch (type_of_header(h))
-        {   case TYPE_STRING:
-            case TYPE_BPS:
+        {   case TYPE_STRING_1:
+            case TYPE_STRING_2:
+            case TYPE_STRING_3:
+            case TYPE_STRING_4:
+            case TYPE_BPS_1:
+            case TYPE_BPS_2:
+            case TYPE_BPS_3:
+            case TYPE_BPS_4:
                 n = length_of_byteheader(h) - CELL;
                 break;
-            case TYPE_VEC16:
+            case TYPE_VEC16_1:
+            case TYPE_VEC16_2:
                 n = length_of_hwordheader(h) - CELL/2;
                 break;
             case TYPE_VEC32:
@@ -2252,16 +2227,13 @@ LispObject Lvecbnd(LispObject, LispObject v)
         }
     return onevalue(fixnum_of_int(n));
 }
-#endif
-
-#ifdef COMMON
 
 //
 // The following were added for efficiency reasons, MCD 14/8/96
 //
 
 LispObject list_subseq(LispObject sequence, int32_t start, int32_t end)
-{   LispObject copy, last, new, seq=sequence;
+{   LispObject copy, last, newv, seq=sequence;
     int32_t seq_length, pntr = start;
 
     seq_length = end - start;
@@ -2271,7 +2243,7 @@ LispObject list_subseq(LispObject sequence, int32_t start, int32_t end)
     {   pntr--;
         seq = qcdr(seq);
     }
-    if (!consp(seq)) return aerror1("subseq",sequence);
+    if (!consp(seq)) aerror1("subseq",sequence);
 
     copy = nil;
 
@@ -2279,17 +2251,16 @@ LispObject list_subseq(LispObject sequence, int32_t start, int32_t end)
     push(sequence);
     while (consp(seq) && pntr < seq_length)
     {   push3(seq,copy,last);
-        new = Lcons(nil,qcar(seq),nil);
+        newv = Lcons(nil,qcar(seq),nil);
         pop3(last,copy,seq);
-        if (pntr == 0) copy = new;
-        else qcdr(last) = new;
-        last = new;
+        if (pntr == 0) copy = newv;
+        else qcdr(last) = newv;
+        last = newv;
         seq = qcdr(seq);
         pntr++;
     }
     pop(sequence);
-    errexit();
-    if (pntr != seq_length) return aerror1("subseq",sequence);
+    if (pntr != seq_length) aerror1("subseq",sequence);
 
     return onevalue(copy);
 }
@@ -2302,7 +2273,7 @@ LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
     if (is_cons(sequence))
         return list_subseq(sequence,start,end);
     else if (!is_vector(sequence))
-        return aerror1("vector-subseq*",sequence);
+        aerror1("vector-subseq*",sequence);
 
     seq_length = end - start;
 
@@ -2310,7 +2281,7 @@ LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
 
     if (type_of_header(h) == TYPE_SIMPLE_VEC )
     {   hl = (length_of_header(h) - CELL)/CELL;
-        if (hl < end) return aerror0("vector-subseq* out of range");
+        if (hl < end) aerror0("vector-subseq* out of range");
 
         //
         // Since we are dealing with a simple vector the following shift is
@@ -2326,7 +2297,7 @@ LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
         int32_t k;
 
         hl = length_of_byteheader(h) - CELL;
-        if (hl < end) return aerror0("vector-subseq* out of range");
+        if (hl < end) aerror0("vector-subseq* out of range");
 
         // Get a new string of the right size
         push(sequence);
@@ -2336,7 +2307,6 @@ LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
         // This code plagiarised from copy_string ...
         s = (char *)copy - TAG_VECTOR;
         k = (seq_length + 3) & ~(int32_t)7;
-        errexit();
         *(int32_t *)(s + k + CELL) = 0;
         if (k != 0) *(int32_t *)(s + k) = 0;
 
@@ -2346,13 +2316,12 @@ LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
     }
     else if (is_bitvec_header(h))
     {   hl = length_of_header(h) - CELL;
-        if (hl < end/8) return aerror0("vector-subseq* out of range");
+        if (hl < end/8) aerror0("vector-subseq* out of range");
 
         // Grab a bit-vector of the right size
         push(sequence);
         copy = Lmake_simple_bitvector(nil,fixnum_of_int(seq_length));
         pop(sequence);
-        errexit();
 
         //
         // This is not terribly efficient since the calls to Lbputv and Lbgetv
@@ -2364,7 +2333,6 @@ LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
             Lbputv(nil,3,copy,fixnum_of_int(i-start),
                    Lbgetv(nil,sequence,fixnum_of_int(i)));
             pop2(copy,sequence);
-            errexit();
         }
 
         return onevalue(copy);
@@ -2372,12 +2340,12 @@ LispObject vector_subseq(LispObject sequence, int32_t start, int32_t end)
     else if (type_of_header(h) == TYPE_ARRAY)
     {   // elt(sequence, 1) is the list of dimensions - only handle 1-d case
         if (qcdr(elt(sequence, 1)) != nil)
-            return aerror1("vector-subseq*",sequence);
+            aerror1("vector-subseq*",sequence);
         i = int_of_fixnum(elt(sequence, 3));  // displaced-index-offset
         return vector_subseq(elt(sequence,2),start+i,end+i);
     }
     else
-        return aerror1("vector-subseq*",sequence);
+        aerror1("vector-subseq*",sequence);
 }
 
 LispObject Llist_subseq1(LispObject env, LispObject seq, LispObject start)
@@ -2388,14 +2356,8 @@ LispObject Llist_subseq1(LispObject env, LispObject seq, LispObject start)
     push(seq);
     len = Llength(nil,seq);
     pop(seq);
-    errexit();
-//
-    /**// For super-long sequences the length may not be a fixnum!
-//
     last = int_of_fixnum(len);
-
-    if (first > last) return aerror1("list-subseq* out of range",seq);
-
+    if (first > last) aerror1("list-subseq* out of range",seq);
     return list_subseq(seq, first, last);
 }
 
@@ -2412,7 +2374,7 @@ LispObject Llist_subseq2(LispObject env, int32_t nargs, ...)
 
     first = int_of_fixnum(start);
     last  = int_of_fixnum(end);
-    if (first > last) return aerror1("list-subseq* out of range",seq);
+    if (first > last) aerror1("list-subseq* out of range",seq);
 
     return list_subseq(seq, first, last);
 }
@@ -2425,15 +2387,9 @@ LispObject Lvector_subseq1(LispObject env, LispObject seq, LispObject start)
     push(seq);
     len = Llength(nil,seq);
     pop(seq);
-    errexit();
-
-//
-// For super-long list sequences the length may not be a fixnum, but
-// for vectors I should be safe.
-//
     last = int_of_fixnum(len);
 
-    if (first > last) return aerror1("vector-subseq* out of range",seq);
+    if (first > last) aerror1("vector-subseq* out of range",seq);
 
     return vector_subseq(seq, first, last);
 }
@@ -2451,21 +2407,10 @@ LispObject Lvector_subseq2(LispObject env, int32_t nargs, ...)
 
     first = int_of_fixnum(start);
     last  = int_of_fixnum(end);
-    if (first > last) return aerror1("vector-subseq* out of range",seq);
+    if (first > last) aerror1("vector-subseq* out of range",seq);
 
     return vector_subseq(seq, first, last);
 }
-
-#else
-//
-// This definition is so that exports and imports can be the same in
-// both COMMON and regular cases.
-//
-LispObject Lvectorp(LispObject env, LispObject a)
-{   return Lsimple_vectorp(nil, a);
-}
-
-#endif
 
 setup_type const funcs3_setup[] =
 {   {"getv",                    too_few_2, Lgetv, wrong_no_2},
@@ -2495,12 +2440,6 @@ setup_type const funcs3_setup[] =
     {"bps-putv",                wrong_no_3a, wrong_no_3b, Lbpsputv},
     {"bps-getv",                too_few_2, Lbpsgetv, wrong_no_2},
     {"bps-upbv",                Lbpsupbv, too_many_1, wrong_no_1},
-#ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
-    {"native-type",             wrong_no_na, wrong_no_nb, Lnative_type},
-    {"native-putv",             wrong_no_3a, wrong_no_3b, Lnativeputv},
-    {"native-getv",             too_few_2, Lnativegetv, Lnativegetvn},
-    {"native-address",          Lnative_address1, Lnative_address, wrong_no_2},
-#endif
     {"eupbv",                   Lupbv, too_many_1, wrong_no_1},
     {"schar",                   too_few_2, Lsgetv, wrong_no_2},
     {"scharn",                  too_few_2, Lsgetvn, wrong_no_2},

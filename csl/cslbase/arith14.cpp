@@ -1,4 +1,4 @@
-//  arith14.cpp                                Copyright (C) 2016 Codemist
+//  arith14.cpp                                 Copyright (C) 2017 Codemist
 
 //
 // Support for 128-bit floats using the SoftFloat-3a package - this
@@ -9,7 +9,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -37,7 +37,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: arith01.cpp 3480 2016-02-25 18:10:02Z arthurcnorman $
+// $Id$
 
 #include "headers.h"
 

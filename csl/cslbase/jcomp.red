@@ -1,4 +1,4 @@
-% "jcomp.red"                 Copyright 1991-2016,  Codemist
+% "jcomp.red"                            Copyright (C) 1991-2017,  Codemist
 %
 % Compiler that turns Lisp code into Java in a way that fits in
 % with the conventions used with Jlisp
@@ -10,7 +10,7 @@
 % generate Java over time.
 
 %%
-%% Copyright (C) 2016, following the master REDUCE source files.          *
+%% Copyright (C) 2017, following the master REDUCE source files.          *
 %%                                                                        *
 %% Redistribution and use in source and binary forms, with or without     *
 %% modification, are permitted provided that the following conditions are *

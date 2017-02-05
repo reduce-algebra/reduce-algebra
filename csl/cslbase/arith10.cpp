@@ -1,11 +1,11 @@
-//  arith10.cpp                       Copyright (C) 1990-2016 Codemist    
+//  arith10.cpp                            Copyright (C) 1990-2017 Codemist
 
 //
 // Arithmetic functions.
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -396,7 +396,6 @@ static LispObject make_complex_float(Complex v, LispObject a)
         i.f = (float)v.imag;
         a1 = make_complex(low32((r.i & ~0xf) + XTAG_SFLOAT),
                           low32((i.i & ~0xf) + XTAG_SFLOAT));
-        errexit();
         return onevalue(a1);
     }
     if (is_bfloat(a)) type = type_of_header(flthdr(a));
@@ -404,11 +403,8 @@ static LispObject make_complex_float(Complex v, LispObject a)
 // There are MANY uses of make_boxfloat here. In pretty well all cases I let
 // make_boxfloat do any overflow checks, and I do not support 128-bit floats.
     a1 = make_boxfloat(v.real, type);
-    errexit();
     a2 = make_boxfloat(v.imag, type);
-    errexit();
     a1 = make_complex(a1, a2);
-    errexit();
     return onevalue(a1);
 }
 
@@ -1237,7 +1233,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 //
     int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
-    if (which_one > 46) return aerror("trigfn internal error");
+    if (which_one > 46) aerror("trigfn internal error");
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             if (is_sfloat(a))
@@ -1265,7 +1261,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
                     return make_complex_float(c2, a);
                 }
                 default:
-                    return aerror1("bad arg for trig function",  a);
+                    aerror1("bad arg for trig function",  a);
             }
             break;
         }
@@ -1274,7 +1270,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
             d = float_of_number(a);
             break;
         default:
-            return aerror1("bad arg for trig function",  a);
+            aerror1("bad arg for trig function",  a);
     }
     {       double (*im)(double) = trig_functions[which_one].imag;
         if (im == NULL)
@@ -1289,7 +1285,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 // Lisp if an elementary function leads to overflow.
 //
         {   double (*rl)(double) = trig_functions[which_one].real;
-            if (rl == NULL) return aerror("unimplemented trig function");
+            if (rl == NULL) aerror("unimplemented trig function");
             d = (*rl)(d);
             if (trap_floating_overflow &&
                 floating_edge_case(d))
@@ -1297,17 +1293,16 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
                 const char *name = trig_functions[which_one].name;
                 char errbuff[64];
                 sprintf(errbuff, "error in floating point %s", name);
-                return aerror(errbuff);
+                aerror(errbuff);
             }
             a = make_boxfloat(d, restype);
-            errexit();
             return onevalue(a);
         }
         else
         {   double c1r, c1i;
             LispObject rp, ip;
             double (*rl)(double) = trig_functions[which_one].real;
-            if (rl == 0) return aerror("unimplemented trig function");
+            if (rl == 0) aerror("unimplemented trig function");
             c1r = (*rl)(d);
             c1i = (*im)(d);
             if (trap_floating_overflow &&
@@ -1317,7 +1312,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
                 const char *name = trig_functions[which_one].name;
                 char errbuff[64];
                 sprintf(errbuff, "error in floating point %s", name);
-                return aerror(errbuff);
+                aerror(errbuff);
             }
             a = make_boxfloat(d, restype);
 //
@@ -1328,7 +1323,6 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 //
             if (c1i == 0.0)
             {   a = make_boxfloat(c1r, restype);
-                errexit();
                 return onevalue(a);
             }
 #ifndef COMMON
@@ -1338,14 +1332,11 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
             const char *name = trig_functions[which_one].name;
             char errbuff[64];
             sprintf(errbuff, "Arg for %s out of range", name);
-            return aerror1(errbuff, a);
+            aerror1(errbuff, a);
 #endif
             rp = make_boxfloat(c1r, restype);
-            errexit();
             ip = make_boxfloat(c1i, restype);
-            errexit();
             a = make_complex(rp, ip);
-            errexit();
             return onevalue(a);
         }
     }
@@ -1380,23 +1371,19 @@ static LispObject makenum(LispObject a, int32_t n)
                 {   LispObject rr, ii;
                     a = real_part(a);
                     rr = makenum(a, 1);
-                    errexit();
                     ii = makenum(a, 0);
-                    errexit();
                     a = make_complex(rr, ii);
-                    errexit();
                     return onevalue(a);
                 }
             }
-            return aerror1("bad arg for makenumber",  a);
+            aerror1("bad arg for makenumber",  a);
         }
         case TAG_BOXFLOAT:
             restype = type_of_header(flthdr(a));
             a = make_boxfloat((double)n, restype);
-            errexit();
             return onevalue(a);
         default:
-            return aerror1("bad arg for makenumber",  a);
+            aerror1("bad arg for makenumber",  a);
     }
 }
 
@@ -1411,16 +1398,14 @@ static LispObject CSLpowi(LispObject a, uint32_t n)
     else if (n == 1) return a;
     else if ((n & 1) == 0)
     {   a = CSLpowi(a, n/2);
-        errexit();
         return times2(a, a);
     }
     else
     {   LispObject b;
         push(a);
         b = CSLpowi(a, n/2);
-        if (!exception_pending()) b = times2(b, b);
+        b = times2(b, b);
         pop(a);
-        errexit();
         return times2(a, b);
     }
 }
@@ -1462,10 +1447,9 @@ static LispObject Lhypot(LispObject env, LispObject a, LispObject b)
     if (trap_floating_overflow &&
         floating_edge_case(r))
     {   floating_clear_flags();
-        return aerror("floating point hypotenuse");
+        aerror("floating point hypotenuse");
     }
     a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
-    errexit();
     return onevalue(a);
 }
 
@@ -1488,7 +1472,7 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         {   n = int_of_fixnum(b);
             switch (int_of_fixnum(a))
             {   case 1:  return onevalue(a);
-                case 0:  if (n < 0) return aerror2("expt", a, b);
+                case 0:  if (n < 0) aerror2("expt", a, b);
                     // In Common Lisp (expt 0 0) is defined to be 0
                     else if (n == 0) return onevalue(fixnum_of_int(1));
                     else return onevalue(a);
@@ -1500,7 +1484,7 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         {   switch (int_of_fixnum(a))
             {   case 1:  return onevalue(a);
                 case 0:  n = bignum_digits(b)[(bignum_length(b)-CELL-4)/4];
-                    if (n <= 0) return aerror2("expt", a, b);
+                    if (n <= 0) aerror2("expt", a, b);
                     else return onevalue(a);
                 case -1: n = bignum_digits(b)[0];
                     if (n & 1) return onevalue(a);
@@ -1526,7 +1510,6 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
             case 3:   if (int_of_fixnum(imag_part(a)) == 1) n ^= 2;
                 a = make_complex(fixnum_of_int(0),
                                  fixnum_of_int((n & 2) ? 1 : -1));
-                errexit();
                 return onevalue(a);
             default:  break;
         }
@@ -1536,9 +1519,9 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         if (n < 0)
         {   a = CSLpowi(a, (uint32_t)(-n));
 #ifdef COMMON
-            if (!exception_pending()) a = CLquot2(fixnum_of_int(1), a);
+            a = CLquot2(fixnum_of_int(1), a);
 #else
-            if (!exception_pending()) a = quot2(fixnum_of_int(1), a);
+            a = quot2(fixnum_of_int(1), a);
 #endif
         }
         else a = CSLpowi(a, (uint32_t)n);
@@ -1567,11 +1550,8 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         c2 = complex_of_number(b);
         c3 = Cpow(c1, c2);
         a = make_boxfloat(c3.real, restype);
-        errexit();
         b = make_boxfloat(c3.imag, restype);
-        errexit();
         a = make_complex(a, b);
-        errexit();
         return onevalue(a);
     }
     d = float_of_number(a);
@@ -1581,16 +1561,12 @@ LispObject Lexpt(LispObject env, LispObject a, LispObject b)
         c2.real = e; c2.imag = 0.0;
         c3 = Cpow(c1, c2);
         a = make_boxfloat(c3.real, restype);
-        errexit();
         b = make_boxfloat(c3.imag, restype);
-        errexit();
         a = make_complex(a, b);
-        errexit();
         return onevalue(a);
     }
     d = pow(d, e);
     a = make_boxfloat(d, restype);
-    errexit();
     return onevalue(a);
 }
 
@@ -1601,11 +1577,9 @@ LispObject Llog_2(LispObject env, LispObject a, LispObject b)
 {   push(b);
     a = Ltrigfn(33, a);
     pop(b);
-    errexit();
     push(a);
     b = Ltrigfn(33, b);
     pop(a);
-    errexit();
     return quot2(a, b);
 }
 
@@ -1629,12 +1603,12 @@ static LispObject Lisqrt(LispObject, LispObject a)
                     d = float_of_number(a);
                     break;
                 default:
-                    return aerror1("bad arg for isqrt",  a);
+                    aerror1("bad arg for isqrt",  a);
             }
             break;
         }
         default:
-            return aerror1("bad arg for isqrt",  a);
+            aerror1("bad arg for isqrt",  a);
     }
     d = sqrt(d);
 // /* This is not anything like good enough yet
@@ -1668,23 +1642,19 @@ LispObject Labsval(LispObject env, LispObject a)
 // /* I wonder if I am allowed to promote short or single values to
 //    double precision here?
                     a = make_boxfloat(d, TYPE_DOUBLE_FLOAT);
-                    errexit();
                     return onevalue(a);
                 }
                 default:
-                    return aerror1("bad arg for abs",  a);
+                    aerror1("bad arg for abs",  a);
             }
             break;
         }
         case TAG_BOXFLOAT:
             break;
         default:
-            return aerror1("bad arg for abs",  a);
+            aerror1("bad arg for abs",  a);
     }
-    if (minusp(a))
-    {   if (!exception_pending()) a = negate(a);
-    }
-    errexit();
+    if (minusp(a)) a = negate(a);
     return onevalue(a);
 }
 
@@ -1694,11 +1664,9 @@ static LispObject Lphase(LispObject env, LispObject a)
     if (is_numbers(a) && is_complex(a))
         return Latan2(nil, imag_part(a), real_part(a));
     s = minusp(a);
-    errexit();
     if (s) d = -_pi;
     else d = _pi;
     a = make_boxfloat(d, TYPE_DOUBLE_FLOAT);
-    errexit();
     return onevalue(a);
 // /* Wrong precision, I guess
 }
@@ -1710,13 +1678,11 @@ static LispObject Lsignum(LispObject env, LispObject a)
     bool z;
     LispObject w;
     z = zerop(a);
-    if (z || exception_pending()) return onevalue(a);
+    if (z) return onevalue(a);
     push(a);
     w = Labsval(nil, a);
     pop(a);
-    errexit();
     a = quot2(a, w);
-    errexit();
     return onevalue(a);
 }
 
@@ -1729,14 +1695,12 @@ static LispObject Lcis(LispObject, LispObject a)
     push(a);
     ii = make_complex(fixnum_of_int(0), fixnum_of_int(1));
     pop(a);
-    errexit();
 //
 // it seems a bit gross to multiply by i by calling times2(), but
 // doing so avoids loads of messy type dispatch code here and
 // I am not over-worried about performance at this level (yet).
 //
     a = times2(a, ii);
-    errexit();
     return Ltrigfn(30, a);     // exp()
 }
 
@@ -1770,7 +1734,6 @@ LispObject Latan2(LispObject env, LispObject y, LispObject x)
         r = _half_pi + atan(-u/v);
     else r = -_half_pi - atan(u/v);
     x = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
-    errexit();
     return onevalue(x);
 }
 
@@ -1784,7 +1747,6 @@ LispObject Latan2d(LispObject env, LispObject y, LispObject x)
         r = 90.0 + n180pi*atan(-u/v);
     else r = -90.0 - n180pi*atan(u/v);
     x = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
-    errexit();
     return onevalue(x);
 }
 

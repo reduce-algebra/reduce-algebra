@@ -1,4 +1,4 @@
-// proc.h                                       Copyright (C) 2016 Codemist
+// proc.h                                       Copyright (C) 2017 Codemist
 
 #ifndef header_proc_h
 #define header_proc_h 1
@@ -6,7 +6,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -46,7 +46,7 @@ extern "C" int find_program_directory(const char *argv0);
 
 // .. and this to exit
 
-extern void my_exit(int n);
+extern "C" NORETURN void my_exit(int n);
 
 //
 // These types are used for callback functions used to send and receive

@@ -1,11 +1,8 @@
-// uninames.cpppp                            Copyright (C) 2016 Codemist    
-
-
-// $Id$
+// uninames.cpp                            Copyright (C) 2016-2017 Codemist    
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -32,6 +29,8 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+
+// $Id$
 
 // This file is derived from one made available by the Unicode Formum.
 // The Unicode character name list is from the Unicode web site and
@@ -7159,8 +7158,8 @@ static const char *uniname1(int codepoint)
         case   0x2013: return "EN_DASH";
         case   0x2014: return "EM_DASH";
         case   0x2015: return "HORIZONTAL_BAR";
-        case   0x2016: return "DOUBLE_VERTICAL_LINE";
-        case   0x2017: return "DOUBLE_LOW_LINE";
+        case   0x2016-2017: return "DOUBLE_VERTICAL_LINE";
+        case   0x2016-2017: return "DOUBLE_LOW_LINE";
         case   0x2018: return "LEFT_SINGLE_QUOTATION_MARK";
         case   0x2019: return "RIGHT_SINGLE_QUOTATION_MARK";
         case   0x201A: return "SINGLE_LOW_9_QUOTATION_MARK";
@@ -19520,8 +19519,8 @@ static const char *uniname2(int codepoint)
         case  0x12013: return "CUNEIFORM_SIGN_AB_TIMES_SHESH";
         case  0x12014: return "CUNEIFORM_SIGN_AB_TIMES_U_PLUS_U_PLUS_U";
         case  0x12015: return "CUNEIFORM_SIGN_AB_GUNU";
-        case  0x12016: return "CUNEIFORM_SIGN_AB2";
-        case  0x12017: return "CUNEIFORM_SIGN_AB2_TIMES_BALAG";
+        case  0x12016-2017: return "CUNEIFORM_SIGN_AB2";
+        case  0x12016-2017: return "CUNEIFORM_SIGN_AB2_TIMES_BALAG";
         case  0x12018: return "CUNEIFORM_SIGN_AB2_TIMES_GAN2_TENU";
         case  0x12019: return "CUNEIFORM_SIGN_AB2_TIMES_ME_PLUS_EN";
         case  0x1201A: return "CUNEIFORM_SIGN_AB2_TIMES_SHA3";

@@ -1,4 +1,4 @@
-// stream.h                              Copyright (C) Codemist, 1995-2016
+// stream.h                              Copyright (C) Codemist, 1995-2017
 
 //
 // Header defining the structure of stream objects in CSL, and also
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -241,8 +241,26 @@ extern char memory_print_buffer[MAX_PROMPT_LENGTH];
 #define READ_IS_CONSOLE    0x40000003
 #define READ_END           0x40000004
 
+// Print options...
+
+#define escape_yes          0x0001    // make output re-readable
+
+#define escape_fold_down    0x0002    // force lower case output
+#define escape_fold_up      0x0004    // FORCE UPPER CASE OUTPUT
+#define escape_capitalize   0x0008    // Force Capitalisation (!)
+
+#define escape_binary       0x0010    // print format for numbers
+#define escape_octal        0x0020    // (including bignums)
+#define escape_hex          0x0040
+#define escape_nolinebreak  0x0080    // use infinite line-length
+#define escape_hexwidth     0x3f00    // 6 bits to specify width of hex/bin
+#define escape_width(n)     (((n) & escape_hexwidth) >> 8)
+#define escape_checksum     0x4000    // doing a checksum operation
+#define escape_exploding    0x8000    // in explode, exploden etc
+
+
 extern LispObject make_stream_handle(void);
-extern bool use_wimp, sigint_must_throw;
+extern bool use_wimp;
 
 extern character_reader *procedural_input;
 extern character_writer *procedural_output;

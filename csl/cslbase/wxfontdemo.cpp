@@ -1,4 +1,4 @@
-// wxfontdemo.cpp                                Copyright A C Norman 2015.
+// wxfontdemo.cpp                                Copyright A C Norman 2017.
 
 // A sample wxWidgets application to display fonts.
 //
@@ -16,7 +16,7 @@
 // wxWidgets.
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1061,7 +1061,6 @@ printf("OnPaint invoked\n");
     else printf("gc=NULL\n");
     return;
 }
-
 
 // end of wxfontdemo.cpp
 

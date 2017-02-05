@@ -1,3 +1,5 @@
+// forktest.cpp                            Copyright (C) 2016-2017 Codemist
+
 //
 // This file is NOT part of CSL. It is a test file used while testing
 // development of support for any hypothetical future concurrency schemes.

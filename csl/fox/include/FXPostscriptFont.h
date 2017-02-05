@@ -46,9 +46,6 @@
 // potential detriment of those whose choice differs).
 
 
-/* Signature: 3fa81b54 04-Jun-2008 */
-
-
 #ifndef FXPOSTSCRIPTFONT_H
 #define FXPOSTSCRIPTFONT_H
 

@@ -1,4 +1,4 @@
-// csl.cpp                                 Copyright (C) 1989-2016 Codemist
+// csl.cpp                                 Copyright (C) 1989-2017 Codemist
 
 //
 // This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -136,14 +136,6 @@
 #include <windows.h>
 #else
 #include <unistd.h>
-#endif
-
-#ifndef HAVE_FWIN
-//
-// During startup on a windowed system if I needed to report an error
-// but the window was minimised I need to restore it...
-//
-#define fwin_restore()
 #endif
 
 //
@@ -291,21 +283,14 @@ LispObject error(int nargs, int code, ...)
     if ((w1 = qvalue(break_function)) != nil &&
         symbolp(w1) &&
         qfn1(w1) != undefined1)
-    {   (*qfn1(w1))(qenv(w1), nil);
-        ignore_exception();
+    {   ignore_exception((*qfn1(w1))(qenv(w1), nil));
     }
-//
-// After doing this is is necessary to be VERY careful, since nil is
-// used as a base register for lots of things...  Still this is the
-// cheapest way I can see to mark the need for unwinding.
-//
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    flip_exception();
-    return nil;
+    throw LispError();
 }
 
 LispObject cerror(int nargs, int code1, int code2, ...)
@@ -334,21 +319,14 @@ LispObject cerror(int nargs, int code1, int code2, ...)
     if ((w1 = qvalue(break_function)) != nil &&
         symbolp(w1) &&
         qfn1(w1) != undefined1)
-    {   (*qfn1(w1))(qenv(w1), nil);
-        ignore_exception();
+    {   ignore_exception((*qfn1(w1))(qenv(w1), nil));
     }
-//
-// After doing this is is necessary to be VERY careful, since nil is
-// used as a base register for lots of things...  Still this is the
-// cheapest way I can see to mark the need for unwinding.
-//
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    flip_exception();
-    return nil;
+    throw LispError();
 }
 
 //
@@ -358,8 +336,7 @@ LispObject resource_exceeded()
 {   exit_reason = UNWIND_RESOURCE;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    flip_exception();
-    return nil;
+    throw LispResource();
 }
 
 LispObject interrupted(LispObject p)
@@ -374,13 +351,7 @@ LispObject interrupted(LispObject p)
 // is only needed if there is no window system active.  On some systems
 // this may be an active check.
 //
-#ifdef HAVE_FWIN
     if ((fwin_windowmode() & FWIN_IN_WINDOW) == 0)
-#else
-#if defined WINDOW_SYSTEM && !defined EMBEDDED
-    if (!use_wimp)
-#endif
-#endif
     {   if (clock_stack == &consolidated_time[0])
         {   clock_t t0 = read_clock();
 //
@@ -403,21 +374,11 @@ LispObject interrupted(LispObject p)
             base_time = t0;
             consolidated_time[0] += delta;
         }
-#ifndef NAG
-#ifdef HAVE_FWIN
         term_printf("\n");
-#else
-        term_printf(
-            "\n+++ [%.2f+%.2f] Type C to continue, A to abort, X to exit\n",
-            consolidated_time[0], gc_time);
-#endif
         ensure_screen();
-        if (exception_pending()) return nil;
         push(prompt_thing);
         prompt_thing = nil;  // switch off the regular prompts
-#ifdef HAVE_FWIN
         fwin_set_prompt("+++ Type C to continue, A to abort, X to exit: ");
-#endif
 
         other_read_action(READ_FLUSH, lisp_terminal_io);
         for (;;)
@@ -430,20 +391,14 @@ LispObject interrupted(LispObject p)
             switch (c)
             {   case 'c': case 'C':         // proceed as if no interrupt
                     pop(prompt_thing);
-#ifdef HAVE_FWIN
                     fwin_set_prompt(prompt_string);
-#endif
                     return onevalue(p);
                 case 'a': case 'A':         // raise an exception
                     break;
                 case 'x': case 'X':
                     my_exit(EXIT_FAILURE); // Rather abrupt
                 case '\n':
-#ifndef HAVE_FWIN
-                    term_printf("C to continue, A to abort, X to exit: ");
-#endif
                     ensure_screen();
-                    if (exception_pending()) return nil;
                     continue;
                 default:                    // wait for A or C
                     continue;
@@ -451,10 +406,7 @@ LispObject interrupted(LispObject p)
             break;
         }
         pop(prompt_thing);
-#ifdef HAVE_FWIN
         fwin_set_prompt(prompt_string);
-#endif
-#endif
     }
 //
 // now for the common code to be used in all cases.
@@ -464,16 +416,14 @@ LispObject interrupted(LispObject p)
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
         qfn1(w) != undefined1)
-    {   (*qfn1(w))(qenv(w), nil);
-        ignore_exception();
+    {   ignore_exception((*qfn1(w))(qenv(w), nil));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    flip_exception();
-    return nil;
+    throw LispError();
 }
 
 LispObject aerror(const char *s)
@@ -483,16 +433,14 @@ LispObject aerror(const char *s)
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
         qfn1(w) != undefined1)
-    {   (*qfn1(w))(qenv(w), nil);
-        ignore_exception();
+    {   ignore_exception((*qfn1(w))(qenv(w), nil));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    flip_exception();
-    return nil;
+    throw LispError();
 }
 
 LispObject aerror0(const char *s)
@@ -502,22 +450,14 @@ LispObject aerror0(const char *s)
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
         qfn1(w) != undefined1)
-    {   (*qfn1(w))(qenv(w), nil);
-        ignore_exception();
+    {   ignore_exception((*qfn1(w))(qenv(w), nil));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    flip_exception();
-#ifdef COMMON
-//
-// This is to help me debug in the face of low level system crashes
-//
-    if (spool_file) fflush(spool_file);
-#endif
-    return nil;
+    throw LispError();
 }
 
 LispObject aerror1(const char *s, LispObject a)
@@ -530,22 +470,14 @@ LispObject aerror1(const char *s, LispObject a)
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
         qfn1(w) != undefined1)
-    {   (*qfn1(w))(qenv(w), nil);
-        ignore_exception();
+    {   ignore_exception((*qfn1(w))(qenv(w), nil));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    flip_exception();
-#ifdef COMMON
-//
-// This is to help me debug in the face of low level system crashes
-//
-    if (spool_file) fflush(spool_file);
-#endif
-    return nil;
+    throw LispError();
 }
 
 LispObject aerror2(const char *s, LispObject a, LispObject b)
@@ -560,22 +492,14 @@ LispObject aerror2(const char *s, LispObject a, LispObject b)
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
         qfn1(w) != undefined1)
-    {   (*qfn1(w))(qenv(w), nil);
-        ignore_exception();
+    {   ignore_exception((*qfn1(w))(qenv(w), nil));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_value = exit_tag = nil;
     exit_count = 0;
-    flip_exception();
-#ifdef COMMON
-//
-// This is to help me debug in the face of low level system crashes
-//
-    if (spool_file) fflush(spool_file);
-#endif
-    return nil;
+    throw LispError();
 }
 
 static LispObject wrong(int wanted, int given, LispObject env)
@@ -588,7 +512,7 @@ static LispObject wrong(int wanted, int given, LispObject env)
         loop_print_error(fname);
         err_printf("\n");
     }
-    return aerror(msg);
+    aerror(msg);
 }
 
 LispObject too_few_2(LispObject env, LispObject)
@@ -618,13 +542,13 @@ LispObject wrong_no_3b(LispObject env, LispObject, LispObject)
 LispObject wrong_no_na(LispObject env, LispObject)
 {   if (is_cons(env) && is_bps(qcar(env)))
         return wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 1, env);
-    else return aerror("function called with 1 arg when 0 or >= 3 wanted");
+    else aerror("function called with 1 arg when 0 or >= 3 wanted");
 }
 
 LispObject wrong_no_nb(LispObject env, LispObject, LispObject)
 {   if (is_cons(env) && is_bps(qcar(env)))
         return wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 2, env);
-    else return aerror("function called with 2 args when 0 or >= 3 wanted");
+    else aerror("function called with 2 args when 0 or >= 3 wanted");
 }
 
 LispObject wrong_no_1(LispObject env, int nargs, ...)
@@ -636,7 +560,7 @@ LispObject wrong_no_2(LispObject env, int nargs, ...)
 }
 
 LispObject bad_specialn(LispObject, int, ...)
-{   return aerror("call to special form");
+{   aerror("call to special form");
 }
 
 void fatal_error(int code, ...)
@@ -786,17 +710,8 @@ void my_exit(int n)
 #ifdef WINDOW_SYSTEM
     pause_for_user();
 #endif
-#ifdef HAVE_FWIN
-    throw n;
-#else
-#if defined(WIN32) && defined(NAG)
-    {   extern void sys_abort(int);
-        sys_abort(n);
-    }
-#else
-    exit(n);
-#endif
-#endif
+    throw n;   // I use thrown on a simple integer to causse exit with that
+               // value as my return code.
 }
 
 static int return_code = 0;
@@ -817,23 +732,6 @@ static unsigned long long crlibstatus = 0;
 
 static void tidy_up_crlibm()
 {   crlibm_exit(crlibstatus);
-}
-#endif
-
-#if defined __linux__ && defined DEBUG
-//
-// This is an experiment as to a possible return to generating a
-// tick-stream using a system timer rather than "software ticks".
-//
-volatile int blipflag = 0;
-int64_t blipcount = 0, startblip = 0;
-
-#include <stdio.h>
-#include <signal.h>
-#include <sys/time.h>
-
-void alarm_handler(int signum)
-{   blipflag = 1;
 }
 #endif
 
@@ -909,17 +807,6 @@ jmp_buf *global_jb;
 static void lisp_main(void)
 {
     volatile int i;
-#if defined __linux__ && defined DEBUG
-    struct itimerval tv;
-    blipflag = 0;
-    blipcount = 0;
-    signal(SIGALRM, alarm_handler);
-    tv.it_interval.tv_usec = 900000;
-    tv.it_interval.tv_sec = 0;
-    tv.it_value.tv_usec = 900000;
-    tv.it_value.tv_sec = 0;
-    setitimer(ITIMER_REAL, &tv, NULL);
-#endif
 #ifdef USE_SIGALTSTACK
 //
 // If I get a SIGSEGV that is caused by a stack overflow then I am in
@@ -947,7 +834,7 @@ static void lisp_main(void)
     {   LispObject * volatile save = stack;
         errorset_msg = NULL;
         try
-        {   START_TRY_BLOCK;
+        {   START_SETJMP_BLOCK;
             terminal_pushed = NOT_CHAR;
             if (supervisor != nil && !ignore_restart_fn)
             {   miscflags |= BACKTRACE_MSG_BITS;
@@ -955,10 +842,13 @@ static void lisp_main(void)
 // Here I reconstruct the argument that I passed in (restart_csl f a).
 //
                 if (exit_charvec != NULL)
-                {   LispObject a = read_from_vector(exit_charvec);
-                    if (exception_pending())
-                    {   flip_exception();
-                        a = nil;
+                {   LispObject a;
+                    try
+                    {   START_TRY_BLOCK;
+                        a = read_from_vector(exit_charvec);
+                    }
+                    catch (LispException e) // all sorts of Lisp issues!
+                    {   a = nil;
                     }
                     free(exit_charvec);
                     exit_charvec = NULL;
@@ -966,14 +856,14 @@ static void lisp_main(void)
 #ifndef NO_BYTECOUNT
                     name_of_caller = "restart function";
 #endif
-                    apply(supervisor, 1, nil, supervisor, 0);
+                    apply(supervisor, 1, nil, supervisor);
                 }
                 else
                 {
 #ifndef NO_BYTECOUNT
                     name_of_caller = "restart function";
 #endif
-                    apply(supervisor, 0, nil, supervisor, 0);
+                    apply(supervisor, 0, nil, supervisor);
                 }
             }
 //
@@ -989,11 +879,12 @@ static void lisp_main(void)
             }
             unwind_stack(save, false);
             exit_reason = UNWIND_ERROR;
-            flip_exception();
-#ifndef UNDER_CE
             signal(SIGFPE, low_level_signal_handler);
 #ifdef USE_SIGALTSTACK
-// SIGSEGV will be handled on the alternative stack
+// SIGSEGV will be handled on the alternative stack. This is the only
+// exception I treat this way, and that is because it is the main one
+// liable to arise in case of a stack overflow disaster when the main
+// stack has no space even for a signal handler.
             {   struct sigaction sa;
                 sa.sa_handler = low_level_signal_handler;
                 sigemptyset(&sa.sa_mask);
@@ -1009,11 +900,9 @@ static void lisp_main(void)
 #ifdef SIGILL
             if (segvtrap) signal(SIGILL, low_level_signal_handler);
 #endif
-#endif
         }
-        if (exception_pending())
-        {   flip_exception();
-            if (exit_reason == UNWIND_RESTART)
+        catch (LispException e)
+        {   if (exit_reason == UNWIND_RESTART)
             {   if (exit_tag == fixnum_of_int(0))      // "stop"
                     return_code = (int)int_of_fixnum(exit_value);
                 else if (exit_tag == fixnum_of_int(1)) // "preserve"
@@ -1028,10 +917,6 @@ static void lisp_main(void)
                     push2(codevec, litvec);
                     preserve(msg, len);
                     pop2(litvec, codevec);
-                    if (exception_pending())
-                    {   flip_exception();
-                        return_code = EXIT_FAILURE;
-                    }
                 }
                 else if (exit_tag == fixnum_of_int(3)) // "preserve & restart"
                 {   const char *msg = "";
@@ -1048,10 +933,6 @@ static void lisp_main(void)
                     push2(litvec, codevec);
                     preserve(msg, len);
                     pop2(codevec, litvec);
-                    if (exception_pending())
-                    {   flip_exception();
-                        return_code = EXIT_FAILURE;
-                    }
                     for (i=0; i<pages_count; i++)
                     {   char *w = (char *)pages[i];
                         if (!(w > big_chunk_start && w <= big_chunk_end))
@@ -1099,8 +980,7 @@ static void lisp_main(void)
 // I will flush it out now just to clear the air.
 //
                     if (stack >= stacklimit)
-                    {   reclaim(nil, "stack", GC_STACK, 0);
-                        ignore_exception();
+                    {   ignore_error(reclaim(nil, "stack", GC_STACK, 0));
                     }
                     cold_start = (exit_value == nil);
                     Lrds(nil, nil);
@@ -1122,45 +1002,28 @@ static void lisp_main(void)
                             }
                             if (symbolp(modname) && modname != nil)
                             {   modname = get_pname(modname);
-                                if (exception_pending()) ignore_exception();
-                                else
-                                {   Header h = vechdr(modname);
-                                    int32_t len = length_of_byteheader(h) - CELL;
-                                    if (len > 63) len = 63;
-                                    memcpy(new_module,
-                                           (char *)modname + (CELL - TAG_VECTOR),
-                                           (size_t)len);
-                                    new_module[len] = 0;
-                                }
+                                Header h = vechdr(modname);
+                                int32_t len = length_of_byteheader(h) - CELL;
+                                if (len > 63) len = 63;
+                                memcpy(new_module,
+                                       (char *)modname + (CELL - TAG_VECTOR),
+                                       (size_t)len);
+                                new_module[len] = 0;
                             }
                             if (symbolp(exit_value) && exit_value != nil)
                             {   exit_value = get_pname(exit_value);
-                                if (exception_pending()) ignore_exception();
-                                else
-                                {   Header h = vechdr(exit_value);
-                                    int32_t len = length_of_byteheader(h) - CELL;
-                                    if (len > 63) len = 63;
-                                    memcpy(new_fn,
-                                           (char *)exit_value + (CELL - TAG_VECTOR),
-                                           (size_t)len);
-                                    new_fn[len] = 0;
-                                }
+                                Header h = vechdr(exit_value);
+                                int32_t len = length_of_byteheader(h) - CELL;
+                                if (len > 63) len = 63;
+                                memcpy(new_fn,
+                                       (char *)exit_value + (CELL - TAG_VECTOR),
+                                       (size_t)len);
+                                new_fn[len] = 0;
                             }
                         }
                     }
 //
-// This puts all recorded heap pages back in the main pool, but there is
-// as of March 2010 a concern in the case that an initial heap image came
-// from a 32-bit machine and I am now running on a 64-bit one. That concerns
-// both extra pages allocated at the first startup to give the effect of
-// temporarily double-sized pages (there is a space leak there that may
-// lose all those pages!) and the expectation there that pages in the map
-// are neatly contiguous in memory (and when returned to the pool here that
-// expectation usually fails). Oh dear!
-// As a rather grungy recovery what I will do is to recycle all of the
-// pages that are NOT in the contiguous chunk and then re-create a neat
-// map of contiguous space from the bits that are. So first I must remove
-// any contiguous pages from the list of ones marked as free...
+// This puts all recorded heap pages back in the main pool.
 //
                     for (i=0; i<pages_count; i++)
                     {   char *w = (char *)pages[i];
@@ -1218,11 +1081,8 @@ static void lisp_main(void)
                         if (new_module[0] != 0)
                         {   w = make_undefined_symbol(new_module);
                             Lload_module(nil, w);
-                            ignore_exception();
                         }
-                        w = make_undefined_symbol(new_fn);
-                        if (exception_pending()) ignore_exception();
-                        else supervisor = w;
+                        supervisor = make_undefined_symbol(new_fn);
                     }
                     continue;
                 }
@@ -1235,75 +1095,6 @@ static void lisp_main(void)
         break;
     }
 }
-
-#if !defined HAVE_FWIN || defined EMBEDDED
-#ifndef UNDER_CE
-
-bool sigint_must_throw = false;
-
-// Note that this version is only used if fwin is not in use (including the
-// case of the embedded medule) so there is no clash between this definition
-// of sigint_handler and one in fwin.cpp.
-
-void sigint_handler(int code)
-{
-//
-// Note that the only things that I am really allowed to do in a routine
-// like this involve setting variables of type sig_atomic_t, which can not
-// be viewed as much more than boolean.  The code actually used here is
-// somewhat more ambitious (== non-portable!) so must be viewed as delicate.
-// Posix describe longjmp as a function that MAY be called from a signal
-// handler, but the Open Group explanation cleary does not really approve
-// and says:
-// "It is recommended that applications do not call longjmp() or
-//  siglongjmp() from signal handlers. To avoid undefined behavior
-/   when calling these functions from a signal handler, the application
-//  needs to ensure one of the following two things:
-//    After the call to longjmp() or siglongjmp() the process only
-//    calls async-signal-safe functions and does not return from the
-//    initial call to main().
-//
-//    Any signal whose handler calls longjmp() or siglongjmp() is
-//    blocked during every call to a non-async-signal-safe function,
-//    and no such calls are made after returning from the initial call
-//    to main()."
-// That seems pretty disabling for me. It also applies to siglongjmp.
-// Well the second sentence PERHAPS means that if the signal arose while my
-// own code was running (not a system function) that I am in the clear -
-// and maybe for general exceptions that covers at least a lot of cases.
-//
-// tick_pending etc allow a steady stream of clock events to
-// be handed to Lisp.
-//
-    interrupt_pending = 1;
-    signal(SIGINT, sigint_handler);
-    if (sigint_must_throw)
-    {   sigint_must_throw = false;
-        errorset_msg = "sigint";
-        longjmp(*global_jb, 2);
-    }
-//
-// If there is not a separate regular stream of ticks I will simulate
-// the receipt of a tick here. Thus I need to be able to recognize "ticks"
-// even on systems where there are no "real" ones.
-//
-    if (!tick_pending)
-    {   if (already_in_gc) tick_on_gc_exit = true;
-        else
-        {   tick_pending = true;
-            saveheaplimit = heaplimit;
-            heaplimit = fringe;
-            savevheaplimit = vheaplimit;
-            vheaplimit = vfringe;
-            savestacklimit = stacklimit;
-            stacklimit = stackbase;
-        }
-    }
-    return;
-}
-
-#endif // UNDER_CE
-#endif // HAVE_FWIN
 
 //
 // OK, I need to write a short essay on "software ticks". A major issue
@@ -1617,7 +1408,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #if defined WINDOW_SYSTEM && !defined EMBEDDED
     use_wimp = true;
 #endif
-#ifdef HAVE_FWIN
 //
 // On fwin the "-w" flag should disable all attempts at use of the wimp.
 //
@@ -1633,7 +1423,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #endif
     }
     fwin_pause_at_end = 1;
-#endif
 //
 // Now that the window manager is active I can send output through
 // xx_printf() and get it on the screen neatly.
@@ -1660,11 +1449,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
     CSL_MD5_Init();
     CSL_MD5_Update((unsigned char *)"Initial State", 13);
-#ifdef MEMORY_TRACE
-    car_counter = 0x7fffffff;
-    car_low = 0;
-    car_high = 0xffffffff;
-#endif
 // I save the args so that setup can make a lisp variable out of them
     csl_argc = argc;
     csl_argv = argv;
@@ -2052,11 +1836,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                         if (f == NULL)
                         {   fprintf(stderr, "Unable to write to \"%s\"\n",
                                     filename);
-#ifdef HAVE_FWIN
                             throw EXIT_FAILURE;
-#else
-                            exit(EXIT_FAILURE);
-#endif
                         }
 #endif
                     }
@@ -2399,35 +2179,12 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     }
                     continue;
 
-#ifdef MEMORY_TRACE
-//
-// If MEMORY_TRACE is set up then I can cause an exception by providing
-// an option -M n:l:h
-// This interrupts after n memory records when a reference in the (inclusive)
-// range l..h is next made.
-//
 /*! options [-m] \item [{\ttfamily -m}] \index{{\ttfamily -m}}
- * Memory trace mode. An option that represents an experiment from the past,
- * and no longer reliably in use. It make it possible to force an
- * exception at stages whene reference to a specified part of memory was made
- * and that could be useful for some low level debugging. It is not supported
- * at present.
+ * Not used at present.
  */
 
-                case 'm':
-                    if (c2 != 0) w = &opt[2];
-                    else if (i != argc) w = argv[++i];
-                    else break; // Illegal at end of command-line
-                    switch(sscanf(w, "%ld:%lu:%lu",
-                                  &car_counter, &car_low, &car_high))
-                    {   case 0: car_counter = 0x7fffffff;
-                        case 1: car_low = 0;
-                        case 2: car_high = 0xffffffff;
-                        default:break;
-                    }
+                case 'm':  // "-m" not used at present.
                     continue;
-#endif
-
 
 /*! options [-n] \item [{\ttfamily -n}] \index{{\ttfamily -n}}
  * Normally when the system is started it will run a ``restart function'' as
@@ -2803,9 +2560,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         term_printf("%.24s   size=%" PRIuPTR " file=%s\n",
                     datestamp, (uintptr_t)size, fullname);
         init_flags &= ~INIT_VERBOSE;
-#ifdef HAVE_FWIN
         fwin_pause_at_end = 0;
-#endif
     }
     else
     {   base_time = read_clock();
@@ -2832,11 +2587,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #endif
                         VERSION, REVISION, IMPNAME, __DATE__);
         }
-#ifdef MEMORY_TRACE
-        if (car_counter != 0x7fffffff)
-            term_printf("Stop after %ld %lu..%lu\n",
-                        car_counter, car_low, car_high);
-#endif
 #ifdef WINDOW_SYSTEM
         ensure_screen();
 // If the user hits the close button here I may be in trouble
@@ -2864,9 +2614,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
             if (errorset_min == 3) miscflags |= GC_MESSAGES | FASL_MESSAGES;
         }
 
-#ifdef HAVE_FWIN
         fwin_menus(loadable_packages, switches, review_switch_settings);
-#endif
 
 //
 // Now that setup is complete (and I have done any authorisation I want to)
@@ -2882,41 +2630,24 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
         interrupt_pending = already_in_gc = false;
         tick_pending = tick_on_gc_exit  = false;
 
-#ifndef HAVE_FWIN
+// "^C" trapping and handling happens within fwin.
 //
-// "^C" trapping and handling happens within fwin if that is available.
-//
-#ifndef UNDER_CE
-// Observe that I onbly set up a SIGINT handler if I am NOT using fwin,
-// and that means I almost never do...
-        sigint_must_throw = false;
-        signal(SIGINT, sigint_handler);
-#endif
-#endif
         ensure_screen();
         procedural_output = NULL;
-#ifdef HAVE_FWIN
 //
 // OK, if I get this far I will suppose that any messages that report utter
 // disasters will have reached the user, so I can allow FWIN to terminate
 // rather more promptly.
 //
         fwin_pause_at_end = 0;
-#endif
     }
-#ifdef HAVE_FWIN
 #ifdef HAVE_LIBFOX
 //
 // Activate the BREAK and BACKTRACE menu items. Note not needed unless
-// FOX is used and so there is a prospect of theer actually being menus!
-//
-//
-// The next line causes a MOAN using Sun's compiler, ending up with
-// an undefined reference to fwin_callback_to_interrupt!
+// FOX is used and so there is a prospect of there actually being menus!
 //
     fwin_callback_to_interrupt(async_interrupt);
-#endif // HAVE_LIBFOX
-#endif // HAVE_FWIN
+#endif
 }
 
 static void cslaction(void)
@@ -2933,8 +2664,7 @@ static void cslaction(void)
 #endif
     errorset_msg = NULL;
     try
-    {   START_TRY_BLOCK;
-#ifndef UNDER_CE
+    {   START_SETJMP_BLOCK;
         signal(SIGFPE, low_level_signal_handler);
         if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
 #ifdef SIGBUS
@@ -2942,7 +2672,6 @@ static void cslaction(void)
 #endif
 #ifdef SIGILL
         if (segvtrap) signal(SIGILL, low_level_signal_handler);
-#endif
 #endif
         non_terminal_input = NULL;
 #ifdef WINDOW_SYSTEM
@@ -2987,6 +2716,9 @@ static void cslaction(void)
             errorset_msg = NULL;
         }
         return;
+    }
+    catch (LispException e)
+    {   return;
     }
 }
 
@@ -3059,21 +2791,18 @@ int execute_lisp_function(const char *fname,
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
-    ff = make_undefined_symbol(fname);
-    if (exception_pending())
-    {   flip_exception();
-        return 1;  // Failed to make the symbol
-    }
+    if_error(ff = make_undefined_symbol(fname),
+             return 1);  // Failed to make the symbol
     procedural_input = r;
     procedural_output = w;
-    Lapply0(nil, ff);
-    ensure_screen();
+    if_error(Lapply0(nil, ff);
+             ensure_screen(),
+             // Error handler
+             procedural_input = NULL;
+             procedural_output = NULL;
+             return 2);
     procedural_input = NULL;
     procedural_output = NULL;
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // Failure during evaluation
-    }
     return 0;
 }
 
@@ -3144,7 +2873,10 @@ static int submain(int argc, const char *argv[])
     return 0;
 }
 
-#if defined HAVE_FWIN && !defined EMBEDDED
+#ifdef EMBEDDED
+#define ENTRYPOINT main
+#else
+
 #define ENTRYPOINT fwin_main
 
 extern int ENTRYPOINT(int argc, const char *argv[]);
@@ -3154,8 +2886,6 @@ int main(int argc, const char *argv[])
     return fwin_startup(argc, argv, ENTRYPOINT);
 }
 
-#else
-#define ENTRYPOINT main
 #endif
 
 
@@ -3174,12 +2904,10 @@ int ENTRYPOINT(int argc, const char *argv[])
     printf("I am mpi instance %d of %d.\n", mpi_rank+1, mpi_size);
 #endif
 
-#ifdef HAVE_FWIN
     strcpy(about_box_title, "About CSL");
     strcpy(about_box_description, "Codemist Standard Lisp");
-#endif
     try
-    {   START_TRY_BLOCK;
+    {   START_SETJMP_BLOCK;
         res = submain(argc, argv);
     }
     catch(int r)
@@ -3221,23 +2949,13 @@ int PROC_load_package(const char *name)
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
-    w1 = make_undefined_symbol("load-package");
-    if (exception_pending())
-    {   flip_exception();
-        return 1;  // Failed to make the load-package
-    }
-    push(w1);
-    w = make_undefined_symbol(name);
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // Failed to make name
-    }
-    pop(w1);
-    Lapply1(nil, w1, w);
-    if (exception_pending())
-    {   flip_exception();
-        return 3;  // Failed to load the package
-    }
+    if_error(w1 = make_undefined_symbol("load-package");
+             push(w1);
+             w = make_undefined_symbol(name);
+             pop(w1);
+             Lapply1(nil, w1, w),
+             // Error handler
+             return 1);  // Failed one way or another
     return 0;
 }
 
@@ -3247,23 +2965,13 @@ int PROC_set_switch(const char *name, int val)
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
-    w1 = make_undefined_symbol("onoff");
-    if (exception_pending())
-    {   flip_exception();
-        return 1;  // Failed to make the onoff
-    }
-    push(w1);
-    w = make_undefined_symbol(name);
-    pop(w1);
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // Failed to make name
-    }
-    Lapply2(nil, 3, w1, w, val == 0 ? nil : lisp_true);
-    if (exception_pending())
-    {   flip_exception();
-        return 3;  // Failed to set the switch
-    }
+    if_error(w1 = make_undefined_symbol("onoff");
+             push(w1);
+             w = make_undefined_symbol(name);
+             pop(w1);
+             Lapply2(nil, 3, w1, w, val == 0 ? nil : lisp_true),
+             // Error handler
+             return 1);  // Failed to set the switch
     return 0;
 }
 
@@ -3294,16 +3002,9 @@ int PROC_push_symbol(const char *name)
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
-    w = make_undefined_symbol(name);
-    if (exception_pending())
-    {   flip_exception();
-        return 1;  // Failed to make the symbol
-    }
-    w = cons(w, procstack);
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // Failed to push onto stack
-    }
+    if_error(w = make_undefined_symbol(name);
+             w = cons(w, procstack),
+        return 1);
     procstack = w;
     return 0;
 }
@@ -3319,16 +3020,9 @@ int PROC_push_string(const char *data)
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
-    w = make_string(data);
-    if (exception_pending())
-    {   flip_exception();
-        return 1;  // Failed to make the string
-    }
-    w = cons(w, procstack);
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // Failed to push onto stack
-    }
+    if_error(w = make_string(data);
+             w = cons(w, procstack),
+        return 2);  // Failed to push onto stack
     procstack = w;
     return 0;
 }
@@ -3350,16 +3044,9 @@ int PROC_push_small_integer(int32_t n)
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
-    w = make_lisp_integer32(n);
-    if (exception_pending())
-    {   flip_exception();
-        return 1;  // Failed to create number
-    }
-    w = cons(w, procstack);
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // Failed to push onto stack
-    }
+    if_error(w = make_lisp_integer32(n);
+             w = cons(w, procstack),
+        return 1);
     procstack = w;
     return 0;
 }
@@ -3373,24 +3060,14 @@ int PROC_push_big_integer(const char *n)
 #endif
 // Here I need to parse a C string to obtain a Lisp number.
     boffop = 0;
-    while (*n != 0)
-    {   packbyte(*n++);
-        len++;
-        if (exception_pending())
-        {   flip_exception();
-            return 1;  // boffo trouble
+    if_error(
+        while (*n != 0)
+        {   packbyte(*n++);
+            len++;
         }
-    }
-    w = intern(len, 0);
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // conversion to number
-    }
-    w = cons(w, procstack);
-    if (exception_pending())
-    {   flip_exception();
-        return 3;  // Failed to push onto stack
-    }
+        w = intern(len, 0);
+        w = cons(w, procstack),
+        return 1);
     procstack = w;
     return 0;
 }
@@ -3402,16 +3079,9 @@ int PROC_push_floating(double n)
     C_stackbase = (LispObject *)&sp;
 #endif
 // Here I have to construct a Lisp (boxed) float
-    w = make_boxfloat(n, TYPE_DOUBLE_FLOAT);
-    if (exception_pending())
-    {   flip_exception();
-        return 1;  // Failed to create the float
-    }
-    w = cons(w, procstack);
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // Failed to push onto stack
-    }
+    if_error(w = make_boxfloat(n, TYPE_DOUBLE_FLOAT);
+             w = cons(w, procstack),
+        return 1);
     procstack = w;
     return 0;
 }
@@ -3432,33 +3102,19 @@ int PROC_make_function_call(const char *name, int n)
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
 #endif
-    while (n > 0)
-    {   if (procstack == nil) return 1; // Not enough args available
-        w = cons(qcar(procstack), w);
-        if (exception_pending())
-        {   flip_exception();
-            return 2;  // Failed to push onto stack
+    if_error(
+        while (n > 0)
+        {   if (procstack == nil) return 1; // Not enough args available
+            w = cons(qcar(procstack), w);
+            procstack = qcdr(procstack);
+            n--;
         }
-        procstack = qcdr(procstack);
-        n--;
-    }
-    push(w);
-    w1 = make_undefined_symbol(name);
-    pop(w);
-    if (exception_pending())
-    {   flip_exception();
-        return 3;  // Failed to create function name
-    }
-    w = cons(w1, w);
-    if (exception_pending())
-    {   flip_exception();
-        return 4;  // Failed to cons on function name
-    }
-    w = cons(w, procstack);
-    if (exception_pending())
-    {   flip_exception();
-        return 5;  // Failed to push onto stack
-    }
+        push(w);
+        w1 = make_undefined_symbol(name);
+        pop(w);
+        w = cons(w1, w);
+        w = cons(w, procstack),
+        return 1);
     procstack = w;
     return 0;
 }
@@ -3487,11 +3143,8 @@ int PROC_load(int n)
 #endif
     if (n < 0 || n > 99) return 1; // index out of range
     w = elt(procmem, n);
-    w = cons(w, procstack);
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // Failed to push onto stack
-    }
+    if_error(w = cons(w, procstack),
+        return 2);  // Failed to push onto stack
     procstack = w;
     return 0;
 }
@@ -3508,11 +3161,8 @@ int PROC_dup()
 #endif
     if (procstack == nil) return 1; // no item to duplicate
     w = qcar(procstack);
-    w = cons(w, procstack);
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // Failed to push onto stack
-    }
+    if_error(w = cons(w, procstack),
+        return 2)  // Failed to push onto stack
     procstack = w;
     return 0;
 }
@@ -3537,35 +3187,22 @@ int PROC_simplify()
     C_stackbase = (LispObject *)&sp;
 #endif
     if (procstack == nil) return 1; // stack is empty
-    w = make_undefined_symbol("simp");
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // Failed find "simp"
-    }
-    w = Lapply1(nil, w, qcar(procstack));
-    if (exception_pending())
-    {   flip_exception();
-        return 3;  // Call to simp failed
-    }
-    push(w);
-    w1 = make_undefined_symbol("mk*sq");
-    pop(w);
-    if (exception_pending())
-    {   flip_exception();
-        return 4;  // Failed to find "mk!*sq"
-    }
-    w = Lapply1(nil, w1, w);
-    if (exception_pending())
-    {   flip_exception();
-        return 5;  // Call to mk!*sq failed
-    }
-    qcar(procstack) = w;
+    if_error(
+        w = make_undefined_symbol("simp");
+        w = Lapply1(nil, w, qcar(procstack));
+        push(w);
+        w1 = make_undefined_symbol("mk*sq");
+        pop(w);
+        w = Lapply1(nil, w1, w);
+        qcar(procstack) = w,
+        // error exit case
+        return 1);
     return 0;
 }
 
 //
 // Replace the top item on the stack with whatever is obtained by using
-// the Lisp EVAL operatio on it. Note that this is not intended for
+// the Lisp EVAL operation on it. Note that this is not intended for
 // casual use - if there is any functionality that you need PLEASE ask
 // me to put in a cleaner abstraction to support it.
 //
@@ -3575,7 +3212,6 @@ static void PROC_standardise_gensyms(LispObject w)
     {   push(qcdr(w));
         PROC_standardise_gensyms(qcar(w));
         pop(w);
-        errexitv();
         PROC_standardise_gensyms(w);
         return;
     }
@@ -3592,18 +3228,12 @@ int PROC_lisp_eval()
     C_stackbase = (LispObject *)&sp;
 #endif
     if (procstack == nil) return 1; // stack is empty
-    w = Ceval(qcar(procstack), nil);
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // Evaluation failed
-    }
-    push(w);
-    PROC_standardise_gensyms(w);
-    pop(w);
-    if (exception_pending())
-    {   flip_exception();
-        return 3;  // gensym patchup failed
-    }
+    if_error(
+        w = eval(qcar(procstack), nil);
+        push(w);
+        PROC_standardise_gensyms(w);
+        pop(w),
+        return 1);
     qcar(procstack) = w;
     return 0;
 }
@@ -3613,11 +3243,9 @@ static LispObject PROC_standardise_printed_form(LispObject w)
     {   push(qcdr(w));
         LispObject w1 = PROC_standardise_printed_form(qcar(w));
         pop(w);
-        errexit();
         push(w1);
         w =  PROC_standardise_printed_form(w);
         pop(w1);
-        errexit();
         return cons(w1, w);
     }
 //
@@ -3628,14 +3256,11 @@ static LispObject PROC_standardise_printed_form(LispObject w)
     {   push(w);
         get_pname(w); // allocates gensym name if needed. Otherwise cheap!
         pop(w);
-        errexit();
         return w;
     }
     else if (is_numbers(w) && is_bignum(w))
     {   w = Lexplode(nil, w);        // Bignum to list of digits
-        errexit();
         w = Llist_to_string(nil, w); // list to string
-        errexit();
         return w;
     }
     else return w;
@@ -3657,38 +3282,20 @@ int PROC_make_printable()
 //
 // I want to use "simp" again so that I can then use prepsq!
 //
-    w = make_undefined_symbol("simp");
-    if (exception_pending())
-    {   flip_exception();
-        return 2;  // Failed find "simp"
-    }
-    w = Lapply1(nil, w, qcar(procstack));
-    if (exception_pending())
-    {   flip_exception();
-        return 3;  // Call to simp failed
-    }
-    push(w);
-    w1 = make_undefined_symbol("prepsq");
-    pop(w);
-    if (exception_pending())
-    {   flip_exception();
-        return 4;  // Failed to find "prepsq"
-    }
-    w = Lapply1(nil, w1, w);
-    if (exception_pending())
-    {   flip_exception();
-        return 5;  // Call to prepsq failed
-    }
+    if_error(
+        w = make_undefined_symbol("simp");
+        w = Lapply1(nil, w, qcar(procstack));
+        push(w);
+        w1 = make_undefined_symbol("prepsq");
+        pop(w);
+        w = Lapply1(nil, w1, w);
 //
 // There are going to be two things I do next. One is to ensure that
 // all gensyms have print-names, the other is to convert bignums into
 // strings. Both of these could be viewed as mildly obscure!
 //
-    w = PROC_standardise_printed_form(w);
-    if (exception_pending())
-    {   flip_exception();
-        return 6;  // standardise_printed_form failed
-    }
+        w = PROC_standardise_printed_form(w),
+        return 1);
     qcar(procstack) = w;
     return 0;
 }

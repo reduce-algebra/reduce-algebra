@@ -1,11 +1,11 @@
-// wxfontdemo1.cpp                               Copyright A C Norman 2016.
+// wxfontdemo1.cpp                           Copyright A C Norman 2016-2017
 
 // A sample wxWidgets application to display fonts.
 //
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -33,7 +33,7 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: wxfontdemo.cpp 3703 2016-05-27 08:08:54Z arthurcnorman $
+// $Id$
 
 // This version uses wxPaintDC and wxFont and doe snot try to use
 // wxGraphicsContext. The consquence is that unlike my previous

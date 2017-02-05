@@ -59,6 +59,16 @@ then
   buildpsl=yes
 fi
 
+# The following arranges that if you go "make csl.exe" or
+# "make bootstrapreduce.img" that the system does not try (in vain)
+# to build a PSL version.
+
+case $args in
+*csl* | *bootstrap* | *reduce.img* | *c-code*)
+  buildpsl="no"
+  ;;
+esac
+
 # config.guess fails on Solaris if SHELL is /bin/bash.
 if test -x /bin/sh
 then

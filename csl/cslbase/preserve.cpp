@@ -1,7 +1,7 @@
 #ifndef ZLIB_DEMO
-// preserve.cpp                           Copyright (c) Codemist, 1990-2016
+// preserve.cpp                           Copyright (C) Codemist, 1990-2017
 #else
-// zlibdemo.cpp                           Copyright (c) Codemist, 1990-2016
+// zlibdemo.cpp                           Copyright (C) Codemist, 1990-2017
 #endif
 
 // The file preserve.cpp can be preprocessed to generate zlibdemo.cpp,
@@ -9,7 +9,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -839,10 +839,6 @@ void Iinit(void)
     CSL_MD5_Update((unsigned char *)"Copyright 2016 Codemist    ", 24);
 }
 
-#define IMAGE_CODE  ((size_t)(-1000))
-#define HELP_CODE   ((size_t)(-1001))
-#define BANNER_CODE ((size_t)(-1002))
-
 //
 // The code here was originally written to support module names up to
 // 11 characters, but it has now been extended to support long names as
@@ -1376,7 +1372,6 @@ static void collect_modules(const char *name, int why, long int size)
     LispObject v;
     char *p = (char *)&celt(boffo, 0);
     if (why != SCAN_FILE) return;
-    if (exception_pending()) return;
     push(mods);
     while (*name != 0) name++;
     while (*name != '/' && *name != '\\') name--;
@@ -1388,9 +1383,7 @@ static void collect_modules(const char *name, int why, long int size)
     if (strcmp(name, ".fasl") != 0) return;
     v = iintern(boffo, k, lisp_package, 0);
     pop(mods);
-    errexitv();
     mods = cons(v, mods);
-    errexitv();
 }
 
 LispObject Llibrary_members(LispObject env, LispObject oo)
@@ -1401,7 +1394,6 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
     if (d->full_filename != NULL)
     {   mods = nil;
         scan_directory(d->full_filename, collect_modules);
-        errexit();
         return onevalue(mods);
     }
     for (j=0; j<get_dirused(d->h); j++)
@@ -1440,9 +1432,7 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
         push(r);
         v = iintern(boffo, k, lisp_package, 0);
         pop(r);
-        errexit();
         r = cons(v, r);
-        errexit();
     }
     return onevalue(r);
 }
@@ -2067,8 +2057,8 @@ int Igetc(void)
         else
         {   LispObject stream = qvalue(standard_input);
             if (!is_stream(stream)) return EOF;
-            c = getc_stream(stream);
-            if (exception_pending()) return EOF;
+            if_error(c = getc_stream(stream),
+                     return EOF);
         }
     }
     else
@@ -2131,7 +2121,6 @@ bool Iwrite(const void *buff, size_t size)
 
 void preserve(const char *banner, size_t len)
 {   int32_t i;
-    bool int_flag = false;
     if (Iopen(NULL, 0, IOPEN_OUT, NULL))
     {   err_printf("+++ PRESERVE failed to open image file\n");
         return;
@@ -2145,13 +2134,6 @@ void preserve(const char *banner, size_t len)
     exit_tag = exit_value = catch_tags =
         codevec = litvec = B_reg = faslvec = faslgensyms = nil;
     Lmapstore(nil, fixnum_of_int(4)); // Reset all counts to zero.
-//
-// if the user generated a SIGINT this is where it gets noticed...
-//
-    if (exception_pending())
-    {   flip_exception();
-        int_flag = true;
-    }
     {   char msg[128];
         time_t t0 = time(0);
         for (i=0; i<128; i++) msg[i] = ' ';
@@ -2193,7 +2175,6 @@ void preserve(const char *banner, size_t len)
 // I need to check for write errors here and moan if there were any...
 //
     if (IcloseOutput()) error(0, err_write_err);
-    if (int_flag) term_printf("\nInterrupt during (preserve) was ignored\n");
     return;
 }
 

@@ -1,13 +1,14 @@
-//  stubs.cpp                         Copyright (C) 1990-2015 Codemist    
+// stubs.cpp                               Copyright (C) 1990-2017 Codemist    
 
 //
-// Placeholder for compiler-generated C code.
+// Placeholder for compiler-generated C++ code.
 // This module is linked in in place of the machine-generated files
-// "u01.c" to "u60.c" to create a cold-start, unspecialised version of CSL
+// "u01.cpp" to "u60.cpp" to create a cold-start, unspecialised
+// version of CSL
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

@@ -1,4 +1,4 @@
-// wxpsl.cpp                                Copyright (C) Codemist     2011
+// wxpsl.cpp                               Copyright (C) Codemist 2011-2017
 
 //
 // This code borrows from the redfront package by Dolzmann and Sturm,
@@ -8,7 +8,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2011, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *      parts of the code Copyright Andreas Dolzmann and Thomas Sturm     *
  *      with earlier development by Chris Cannam and Winfried Neun.       *
  *                                                                        *
@@ -249,8 +249,6 @@ int fwin_main(int argc, const char **argv)
     else if (reduceProcessId == 0)      // Child process
     {   char **nargv = (char **)malloc(6*sizeof(char *));
         setsid();
-//      sig_removeHandlers();     // I will think about handlers later on.
-//      signal(SIGTSTP,SIG_IGN);
 // Re-plumb the pipes to link to stdin & stdout.
         close(MeToReduce[1]);
         close(ReduceToMe[0]);
@@ -429,7 +427,8 @@ void print_help(char name[])
     fprintf(stderr,"          %s -m 96m.\n\n",name);
 }
 
-
+// This code installs handlers for a whole pile of signals, most of which
+// should never arise!
 
 void sig_killChild(void)
 {
@@ -444,8 +443,7 @@ void sig_killChild(void)
 
 
 void sig_sigGen(int arg)
-{   FWIN_LOG(("sig_sigGen(%d)\n",arg));
-    sig_killChild();
+{   sig_killChild();
     switch (arg)
     {
 #ifdef SIGQUIT
@@ -457,16 +455,8 @@ void sig_sigGen(int arg)
 #ifdef SIGTERM
         case SIGTERM:
 #endif
-
-//    if (verbose) {
-//      printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
-//    }
             exit(0);
         default:
-//    if (verbose) {
-//      printf("***** REDFRONT exiting on unexpected signal %d (%s)\n",
-//       arg,sig_identify(arg));
-//    }
             exit(EXIT_FAILURE);
     }
 }

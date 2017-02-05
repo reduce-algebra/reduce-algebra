@@ -1,9 +1,9 @@
-// lispthrow.h                                      Copyright Codemist 2016
+// lispthrow.h                                      Copyright Codemist 2017
 
 // Some exception processing stuff for CSL
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -31,12 +31,83 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// $Id: $
+// $Id$
 
 #ifndef __lispthrow_h
 #define __lispthrow_h 1
 
 
+// If I know just how mant items will need removing from the stack I
+// can create an instance of this class and the stack will be popped when
+// that goes out of scope. I rather hope that good compilers will perform
+// constant propagation if the argument is a literal constant and so there
+// will be no need to store the field "n" that is shown in the class.
+
+class stack_popper
+{   int n;
+public:
+    stack_popper(int nn)
+    {   n = nn;
+    }
+    ~stack_popper()
+    {   popv(n);
+    }
+};
+
+// Sometimes it could be that calls within the scope of a block might
+// exit (eg via a throw) in a way that means that the exact state of the
+// stack is uncertain. This resets it at block exit. It is liable to involve
+// keeping the stackSave value around, and so stack_popper is to be
+// preferred where it can be used.
+
+class stack_restorer
+{   LispObject *stackSave;
+public:
+    stack_restorer()
+    {   stackSave = stack;
+    }
+    ~stack_restorer()
+    {   stack = stackSave;
+    }
+};
+
+// I am going to need to unbind fluids in the C++ code that I
+// sometimes traslate Lisp into. Here is a helper class that will
+// be useful for that.
+
+class bind_fluid_stack
+{   LispObject *savestack;
+    int env_loc;
+    int name_loc;
+    int val_loc;
+public:
+    bind_fluid_stack(int e, int name, int val)
+    {   savestack = stack;
+        env_loc = e;
+        name_loc = name;
+        val_loc = val;
+#ifdef TRACE_FLUID
+// While I was debugging things being able to enable some printing here
+// seemed a good idea!
+        debug_printf("bind_fluid_stack(%d, %d, %d) @ %p\n", e, name, val, stack);
+        debug_printf("name="); prin_to_debug(elt(savestack[e], name));
+        debug_printf(" old-val="); prin_to_debug(qvalue(elt(savestack[e], name)));
+        debug_printf("\n");
+#endif
+        savestack[val] = qvalue(elt(savestack[e], name));
+    }
+    ~bind_fluid_stack()
+    {
+#ifdef TRACE_FLUID
+        debug_printf("restore(%d, %d, %d) @ %p\n", env_loc, name_loc, val_loc, savestack);
+        debug_printf("name="); prin_to_debug(elt(savestack[env_loc], name_loc));
+        debug_printf(" local-val="); prin_to_debug(qvalue(elt(savestack[env_loc], name_loc)));
+        debug_printf(" restored-val="); prin_to_debug(savestack[val_loc]);
+        debug_printf("\n");
+#endif
+        qvalue(elt(savestack[env_loc], name_loc)) = savestack[val_loc];
+    }
+};
 
 
 // I will have a number of exception types. I will NOT make them carry
@@ -50,53 +121,146 @@
 // Throwing just an integer will be used as a way of stopping everything and
 // returning that integer as the return-code from the application.
 
+// LispException is rather abstract...
+
 struct LispException : public std::exception
-{   const char *what() const throw()
-    {   return "Unknown Lisp Exception";
+{   virtual const char *what() const throw()
+    {   return "Generic Lisp Exception";
     }
 };
 
-struct LispError : public LispException
-{   const char *what() const throw()
-    {   return "Lisp Error";
+// Exceptions that count as "Errors" are or inherit from LispError, and
+// unwinding from one of them should lead to a backtrace.
+
+    struct LispError : public LispException
+    {   virtual const char *what() const throw()
+        {   return "Lisp Error";
+        }
+    };
+
+        struct LispSignal : public LispError
+        {   virtual const char *what() const throw()
+            {   return "Lisp Signal";
+            }
+        };
+
+        struct LispResource : public LispError
+        {   virtual const char *what() const throw()
+            {   return "Lisp Resouce Limiter";
+            }
+        };
+
+        struct LispSigint : public LispError
+        {   virtual const char *what() const throw()
+            {   return "Lisp Sigint";
+            }
+        };
+
+
+// Things that are not LispErrors are exceptions used to the system to
+// support Lisp features - GO, RETURN, THROW and RESTART.
+
+    struct LispGo : public LispException
+    {   virtual const char *what() const throw()
+        {   return "Lisp Go";
+        }
+    };
+
+    struct LispReturnFrom : public LispException
+    {   virtual const char *what() const throw()
+        {   return "Lisp ReturnFrom";
+        }
+    };
+
+    struct LispThrow : public LispException
+    {   virtual const char *what() const throw()
+        {   return "Lisp Throw";
+        }
+    };
+
+    struct LispRestart : public LispException
+    {   virtual const char *what() const throw()
+        {   return "Lisp Restart";
+        }
+    };
+
+
+// If I build for debugging I will verify that the stack pointer is
+// properly unchanged across some scopes. This will help...
+
+class RAIIstack_sanity
+{   LispObject *saveStack;
+    const char *fname;
+    const char *file;
+    int line;
+    LispObject w;
+public:
+    RAIIstack_sanity(const char *fn, const char *fi, int li)
+    {   saveStack = stack;
+        fname = fn;
+        file = fi;
+        line = li;
+        w = nil;
+    }
+    RAIIstack_sanity(const char *fn, const char *fi, int li, LispObject ww)
+    {   saveStack = stack;
+        fname = fn;
+        file = fi;
+        line = li;
+        w = ww;
+    }
+// While I am unwinding the stack because of exception handling the stack
+// can remain un-restored. It is only once I have caught the exception
+// that it must end up correct. Hence the use of std::uncaught_exception()
+// here to avoid complaints when they are not justified.
+    ~RAIIstack_sanity()
+    {   if (saveStack != stack && !std::uncaught_exception())
+        {   printf("???SP %p => %p in %s : %s:%d\n",
+                   saveStack, stack, fname, file, line);
+            if (w != nil)
+            {   err_printf("Data: ");
+                prin_to_error(w);
+                err_printf("\n");
+            }
+        }
     }
 };
 
-struct LispGo : public LispException
-{   const char *what() const throw()
-    {   return "Lisp Go";
+static inline const char *tidy_filename(const char *a)
+{   const char *b = strrchr(a, '/');
+    return (b == NULL ? a : b+1);
+}
+
+#ifdef DEBUG
+#define STACK_SANITY                                  \
+    RAIIstack_sanity stack_sanity_object(__func__,    \
+        tidy_filename(__FILE__), __LINE__);
+#define STACK_SANITY1(w)                              \
+    RAIIstack_sanity stack_sanity_object(__func__,    \
+        tidy_filename(__FILE__), __LINE__, w);
+#else
+#define STACK_SANITY
+#define STACK_SANITY1(w)
+#endif
+
+// In parts of the interpreter I want to save litvec and codevec and be
+// certain that I will restore them at function exit. This macro will help
+// me.
+
+class RAIIsave_codevec
+{   LispObject *saveStack;
+public:
+    RAIIsave_codevec()
+    {   push2(litvec, codevec);
+        saveStack = stack;
+    }
+    ~RAIIsave_codevec()
+    {   stack = saveStack;
+        pop2(codevec, litvec);
     }
 };
 
-struct LispReturnFrom : public LispException
-{   const char *what() const throw()
-    {   return "Lisp ReturnFrom";
-    }
-};
-
-struct LispThrow : public LispException
-{   const char *what() const throw()
-    {   return "Lisp Throw";
-    }
-};
-
-struct LispRestart : public LispException
-{   const char *what() const throw()
-    {   return "Lisp Restart";
-    }
-};
-
-struct LispSignal : public LispException
-{   const char *what() const throw()
-    {   return "Lisp Signal";
-    }
-};
-
-struct LispSigint : public LispException
-{   const char *what() const throw()
-    {   return "Lisp Sigint";
-    }
-};
+#define SAVE_CODEVEC RAIIsave_codevec save_codevec_object;
 
 
 // First I will comment on protection for push/pop against exceptions that
@@ -107,7 +271,7 @@ struct LispSigint : public LispException
 // where at present I always take care to restore the stack pointer before
 // returning. In the newer model I observe that if the condition that causes
 // an abrupt is either a throw or a signal (ending in a longjmp) then the
-// caller of the current function is bot in general going to be relying on the
+// caller of the current function is not in general going to be relying on the
 // status of the stack -- because it too will be terminated. It will not be
 // until the stack frame of some function that needs to recover is reached
 // that the stack pointer is required. So I will arrange that the general
@@ -121,28 +285,77 @@ struct LispSigint : public LispException
 //     Eg this may include "rdf" for the stream being read and
 //     perhaps explode and compress for the same sort of reason.
 // (4) Use of system resources that require finalization.
+// (5) Places where data structures are temporarily corrupted and then
+//     mended later.
+// (6) Some places where backtrace-style reports are called for.
+//
+// Note that the setjmp/longjmp stuff is something I need to think about a
+// a lot harder. Including it represents a run-time cost. SIGINT is for
+// interrupts (i.e. ^C) and I need to handle that in my terminal handler code.
+// And poll for it! Other signals (SIGSEGC, SIGBUS, SIGILL, SIGFPE) all
+// represent system failures, so ANY recovery at all would be a bonus. Perhaps
+// the most common or plausible circumstance for them to arise is on stack
+// overflow, and typically some level of recovery or backtrace there is
+// really desirable, but continuation of the computation afterwards may well
+// not be possible. I believe that SIGFPE only arises on integer division
+// by zero, and my code is supposed to check for and avoid that.
+// I probably want to reduce my use of signal as much as I can!
+//
+// Let me try to comment a bit more on those.
+// (1) errorset need to trap all errors. It should convert GO, RETURN-FROM
+//     and THROW into errors, but be transparent to RESTART and QUIT.
+// (2) fluids are bound in the interpreter code for LET, LET*, PROG,
+//     PROGV and in the bytecode engine. There are implicit fluid
+//     re-bindings of PACKAGE and maybe other things in some IO functions
+//     such as RDF. And also the interpreter code for LAMBDA and function
+//     application.
+// (3) Things like the current input and output streams need to be
+//     preserved across functions that use the mechanisms they involve,
+//     fo EXPLODE, COMPRESS, ... need review.
+// (4) Most obviously OPEN/use/CLOSE on files needs protection.
+// (5) The current implementation of some binding code reverses the
+//     lists of things to bind and then restores later on.
+// (6) Much of the interpreter and where the bytecode execution system is
+//     called needs to generate backtraces at times.
+//
 //
 // My sketch of the protocol is as follows:
 //
 //
-// extern LispObject *stack;
-// extern jmp_buf *global_jb;
+
+extern LispObject *stack;
+extern jmp_buf *global_jb;
+
+class RAIIsave_stack_and_jb
+{   LispObject *saveStack;
+    jmp_buf *jbsave;
+public:
+    RAIIsave_stack_and_jb()
+    {   jbsave = global_jb;  // preserve the enclosing jmp_buff.
+        saveStack = stack;   // record stack value from entry here.
+    }
+    ~RAIIsave_stack_and_jb()
+    {   global_jb = jbsave;  // restore jmp_buf pointer
+        stack = saveStack;   // restore stack
+    }
+};
+
+class RAIIsave_stack
+{   LispObject *saveStack;
+public:
+    RAIIsave_stack()
+    {   saveStack = stack;   // record stack value from entry here.
+    }
+    ~RAIIsave_stack()
+    {   stack = saveStack;   // restore stack
+    }
+};
+
+
 //
 // try
 // {   jmp_buf jb;
-//     class RAII
-//     {   LispObject *saveStack;       // a field in the class.
-//         jmp_buf *jbsave;
-//         public:
-//             RAII(LispObject *ss)
-//             {   jbsave = global_jb;  // preserve the enclosing jmp_buff.
-//                 saveStack = ss;      // record stack value from entry here.
-//             }
-//             ~RAII()
-//             {   global_jb = jbsave;  // restore jmp_buf pointer
-//                 stack = saveStack;   // restore stack
-//             }
-//     } RAII_Object(stack);            // pass stack pointer to constructor.
+//     RAIIsave_stack_and_jb RAII2_Object; // Save SP and setjmp stuff.
 //     if (setjmp(jb) != 0) throw EEE;  // signals convert to exceptions!
 //     global_jb = &jb;                 // (*) only set new jmp_buf when ready.
 //     <ACTIVITY>
@@ -187,12 +400,11 @@ struct LispSigint : public LispException
 // cost.
 //
 
-extern jmp_buf *global_jb;
 
 // The full mess I seem to want is ugly and bulky. I will try hiding it
 // away in a number of macros... so the user writes
 //    try
-//    {   START_TRY_BLOCK
+//    {   START_TRY_BLOCK;
 //        <activity>
 //    }
 //    catch (LispException e)
@@ -200,28 +412,86 @@ extern jmp_buf *global_jb;
 // and I will make them write the catch clauses explictly since what will be
 // needed there is liable to vary from case to case.
 
-#define START_TRY_BLOCK                             \
+// I provide two variants. One JUST preserves the sstack pointer, the more
+// costly one converts longjmp activations into throws of LispSignal or
+// LispSigint.
+
+#define START_SETJMP_BLOCK                          \
     jmp_buf jb;                                     \
-    class RAII                                      \
-    {   LispObject *saveStack;                      \
-        jmp_buf *jbsave;                            \
-        public:                                     \
-            RAII(LispObject *ss)                    \
-            {   jbsave = global_jb;                 \
-                saveStack = ss;                     \
-            }                                       \
-            ~RAII()                                 \
-            {   global_jb = jbsave;                 \
-                stack = saveStack;                  \
-            }                                       \
-    } RAII_Object(stack);                           \
+    RAIIsave_stack_and_jb save_stack_Object;        \
     switch (setjmp(jb))                             \
     {   default:                                    \
-        case 1: throw LispSignal();                 \
-        case 2: throw LispSigint();                 \
+        case 1: exit_reason = UNWIND_SIGNAL;        \
+                throw LispSignal();                 \
+        case 2: exit_reason = UNWIND_SIGINT;        \
+                throw LispSigint();                 \
         case 0: break;                              \
     }                                               \
     global_jb = &jb;
+
+#define START_TRY_BLOCK                             \
+    RAIIsave_stack save_stack_Object;
+
+// There are places where I need to display part of a backtrace when
+// unwinding the stack because of an error.
+//
+//    on_backtrace(do_something(arg1, arg2, arg3); // commas between args OK
+//                 do_something_mode(),            // semicolon separators OK
+//                 // Now the error handler
+//                 printf("Error in %s\n", "something"));
+
+#define on_backtrace(a, b)                          \
+    try                                             \
+    {   START_TRY_BLOCK;                            \
+        a;                                          \
+    }                                               \
+    catch (LispError e)                             \
+    {   int _reason = exit_reason;                  \
+        b;                                          \
+        exit_reason = _reason;                      \
+        throw;                                      \
+    }
+
+// There are also places where I want to continue after error and
+// set a default value if some fragmement of computation fails, and
+// others where I wish to ignore errors entirely
+//
+//    if_error(a = construct_a_list(), a = nil);
+//    ignore_error(print_a_message());
+
+#define if_error(a, b)                              \
+    try                                             \
+    {   START_TRY_BLOCK;                            \
+        a;                                          \
+    }                                               \
+    catch (LispError e)                             \
+    {   b;                                          \
+    }
+
+#define ignore_error(a)                             \
+    try                                             \
+    {   START_TRY_BLOCK;                            \
+        a;                                          \
+    }                                               \
+    catch (LispError e)                             \
+    {                                               \
+    }
+
+// ignore_exception() also recovers after any exception (eg SIGSEGV) gets
+// raised. Well the state of non-volatile local variables may be undefined
+// after recovery via a signal handler and hence via longjmp. This ignores
+// all Lisp "errors" and caught signals are treated as just that. But it
+// does not catch Lisp "quit", "restart", "return-from", "throw" or
+// "resource-limit" exceptions.
+
+#define ignore_exception(a)                         \
+    try                                             \
+    {   START_SETJMP_BLOCK;                         \
+        a;                                          \
+    }                                               \
+    catch (LispError e)                             \
+    {                                               \
+    }
 
 
 #endif // __lispthrow_h

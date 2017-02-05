@@ -1,4 +1,4 @@
-//  cslmpi.cpp
+//  cslmpi.cpp                                      Copyright (C) 1997-2017
 
 //
 // Interfaces for mpi from CSL. The bulk of this code was written by
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -46,7 +46,7 @@
 
 #include "mpipack.c"
 
-#define check_fix(v) if (!is_fixnum(v)) return aerror1(fun_name, v)
+#define check_fix(v) if (!is_fixnum(v)) aerror1(fun_name, v)
 #define get_arg(v) v = va_arg(a,LispObject)
 #define get_fix_arg(v) get_arg(v); check_fix(v); v=int_of_fixnum(v)
 
@@ -259,7 +259,7 @@ static LispObject Lmpi_wait(LispObject nil, LispObject request)
     LispObject message, Lstatus;
     if ( !(is_vector(request) && type_of_header(vechdr(request)) == TYPE_VEC32 &&
            length_of_header(vechdr(request)) == 3*CELL) )
-        return aerror1("mpi_wait",request);
+        aerror1("mpi_wait",request);
     if ( elt(request,1))
     {   status.MPI_ERROR = MPI_UNDEFINED;
         mpi_pack_buffer = (void*)elt(request,1);
@@ -314,7 +314,7 @@ static LispObject Lmpi_test(LispObject nil, LispObject request)
     int flag;
     if ( !(is_vector(request) && type_of_header(vechdr(request)) == TYPE_VEC32 &&
            length_of_header(vechdr(request)) == 3*CELL) )
-        return aerror1("mpi_wait",request);
+        aerror1("mpi_wait",request);
     if (elt(request,1))
     {   status.MPI_ERROR = MPI_UNDEFINED;
         mpi_pack_buffer = (void*)elt(request,1);
@@ -685,76 +685,76 @@ static LispObject Lmpi_alltoall(LispObject,
 #else  // USE_MPI
 
 static LispObject Lmpi_comm_rank(LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_comm_size(LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_send(LispObject, int, ...)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_recv(LispObject, int, ...)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_sendrecv(LispObject, int, ...)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_isend(LispObject, int, ...)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_irecv(LispObject, int, ...)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_wait(LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 
 static LispObject Lmpi_test(LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_iprobe(LispObject, int, ...)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_probe(LispObject, int, ...)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_barrier(LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_bcast(LispObject, int, ...)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_gather(LispObject, int, ...)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_scatter(LispObject, int, ...)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 
 static LispObject Lmpi_allgather(LispObject,
                                  LispObject,
                                  LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 static LispObject Lmpi_alltoall(LispObject,
                                 LispObject, LispObject)
-{   return aerror0("mpi support not built into this version of CSL");
+{   aerror0("mpi support not built into this version of CSL");
 }
 
 #endif // USE_MPI

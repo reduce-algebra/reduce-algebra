@@ -1,4 +1,4 @@
-// charmetrics.cpp                              Copyright (C) 2016 Codemist
+// charmetrics.cpp                              Copyright (C) 2017 Codemist
 
 //=======================================================================//
 //                                                                       //
@@ -13,7 +13,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1484,11 +1484,11 @@ int main(int argc, char *argv[])
     {   FILE *dest = fopen("charmetrics.h", "w");
         FILE *rdest = fopen("charmetrics.red", "w");
         FILE *smldest = fopen("charmetrics.sml", "w");
-        fprintf(dest, "// charmetrics.h                               Copyright (C) 2016 Codemist\n");
+        fprintf(dest, "// charmetrics.h                               Copyright (C) 2017 Codemist\n");
         fprintf(dest, "\n");
         fprintf(dest, "\n");
         fprintf(dest, "/**************************************************************************\n");
-        fprintf(dest, " * Copyright (C) 2016, Codemist.                         A C Norman       *\n");
+        fprintf(dest, " * Copyright (C) 2017, Codemist.                         A C Norman       *\n");
         fprintf(dest, " *                                                                        *\n");
         fprintf(dest, " * Redistribution and use in source and binary forms, with or without     *\n");
         fprintf(dest, " * modification, are permitted provided that the following conditions are *\n");

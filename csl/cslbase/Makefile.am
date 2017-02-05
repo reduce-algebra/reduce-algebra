@@ -27,6 +27,11 @@ reduce_CPPFLAGS = $(TRACE) -DNO_BYTECOUNT=1
 #
 #csl_CPPFLAGS    = $(TRACE) -DNO_BYTECOUNT=1
 csl_CPPFLAGS    = $(TRACE)
+# For at least a while I will NOT warn about unused (static) functions, because
+# I have rather a lot of that that are to do with support for short floats.
+# This is just for flatcsl where the program is all compiled as a single
+# compilation unit, so "spurious" warnings are especially bulky.
+flatcsl_CPPFLAGS = $(TRACE) -Wno-unused-function
 
 # If I list all the phony targets here this may help document things you
 # can do via this Makefile
@@ -41,6 +46,7 @@ if exeext
 # so I introduce a load that have silly names in the case I do not
 # really need them.
 plain_csl = csl
+plain_flagcsl = flatcsl
 plain_reduce = reduce
 plain_bootstrapreduce = bootstrapreduce
 plain_fwindemo = fwindemo
@@ -61,6 +67,7 @@ plain_zlibdemo = zlibdemo
 plain_gctest = gctest
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
+plain_flatcsl = csl.unnecessary.except.on.windows
 plain_reduce = reduce.unnecessary.except.on.windows
 plain_bootstrapreduce = bootstrapreduce.unnecessary.except.on.windows
 plain_fwindemo = fwindemo.unnecessary.except.on.windows
@@ -82,6 +89,7 @@ plain_gctest = gctest.unnecessary.except.on.windows
 endif !exeext
 
 .PHONY: $(plain_csl)
+.PHONY: $(plain_flatcsl)
 .PHONY: $(plain_reduce)
 .PHONY: $(plain_bootstrapreduce)
 .PHONY: $(plain_fwindemo)
@@ -101,7 +109,6 @@ endif !exeext
 .PHONY: $(plain_zlibdemo)
 .PHONY: $(plain_gctest)
 
-.PHONY: report-dlls
 .PHONY:	bootstraprecompile
 .PHONY:	recompile
 .PHONY:	profile
@@ -154,6 +161,9 @@ MY_LIBS     := $(shell ../bin/wx-config --libs --static 2>/dev/null)
 AM_CPPFLAGS     += $(MY_CPPFLAGS)
 reduce_CPPFLAGS += $(MY_CPPFLAGS)
 csl_CPPFLAGS    += $(MY_CPPFLAGS)
+# For at least a while I will NOT warn about unused (static) functions, because
+# I have rather a lot of that that are to do with support for short floats.
+flatcsl_CPPFLAGS    += $(MY_CPPFLAGS)
 AM_CFLAGS        = $(MY_CFLAGS)
 AM_CXXFLAGS      = $(MY_CXXFLAGS)
 AM_LIBS          = $(MY_LIBS)
@@ -166,6 +176,7 @@ endif !wx
 AM_CPPFLAGS     += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
 reduce_CPPFLAGS += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
 csl_CPPFLAGS    += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
+flatcsl_CPPFLAGS    += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
 
 # On Windows if I have a GUI (wither based on Fox or wxWidgets) I will want
 # the main version of my code to be an .exe file but I will also want a
@@ -211,6 +222,10 @@ noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) softfloatdemo$(EXEEXT) $(foxdemotarget) \
 	zlibdemo$(EXEEXT) $(wxdemotarget)
 else !mac_framework
+# I want to be able to build flatcsl but do not want it built by default,
+# and putting it in check_PROGRAMS is the best way of achieving that that I
+# have found, even though it is not really part of a test suite.
+check_PROGRAMS = flatcsl$(EXEEXT)
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) softfloatdemo$(EXEEXT) $(foxdemotarget) \
 	dyndemo$(EXEEXT) zlibdemo$(EXEEXT) $(wxdemotarget)
@@ -226,12 +241,7 @@ else !mac_framework
 REDUCE_IMG=reduce.img
 endif !mac_framework
 
-if cygwin
-all-local:	report-dlls csl.img reduce.img
-else !cygwin
 all-local:	csl.img $(REDUCE_IMG)
-endif !cygwin
-
 
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
@@ -260,23 +270,6 @@ else !wx
 fwin_sources = fwin.cpp termed.cpp
 endif !wx
 endif !fox
-
-if x86
-# A BSD-licensed disassembler for x86 and x86_64
-distormsrc = x86defs.cpp wstring.cpp textdefs.cpp prefix.cpp operands.cpp \
-		insts.cpp instructions.cpp distorm.cpp decoder.cpp
-else !x86
-distormstrc =
-endif !x86
-
-if jit
-# the JIT is EXPERIMENTAL and not all working yet. It only pretends
-# to be available for the x86 (32-bit) platform. Mention of it is
-# present here to support the development activity.
-jit_sources = jit1.cpp jit2.cpp jit3.cpp jitx86.cpp $(distormsrc)
-else !jit
-jit_sources =
-endif !jit
 
 gensrc=$(srcdir)/../../cslbuild/generated-c
 
@@ -411,13 +404,15 @@ generated_lisp =                  $(gensrc)/u01.lsp \
 		$(gensrc)/u60.lsp
 
 csl_SOURCES = $(core_sources) $(undemo_sources) $(fwin_sources) \
-		$(jit_sources) stubs.cpp
+		stubs.cpp
+
+flatcsl_SOURCES = flatcsl.cpp
 
 bootstrapreduce_SOURCES = $(core_sources) $(undemo_sources) $(fwin_sources) \
-		$(jit_sources) stubs.cpp
+		stubs.cpp
 
 reduce_SOURCES = $(core_sources) $(demo_sources) $(fwin_sources) \
-		$(jit_sources) $(generated_sources)
+		$(generated_sources)
 
 if windows
 fwin_icon = fwin-icon.$(OBJEXT)
@@ -454,6 +449,7 @@ endif !mac_framework
 AM_CPPFLAGS     += -Dfontsdir=reduce.$(fontsdir)
 reduce_CPPFLAGS += -Dfontsdir=reduce.$(fontsdir)
 csl_CPPFLAGS    += -Dfontsdir=reduce.$(fontsdir)
+flatcsl_CPPFLAGS    += -Dfontsdir=reduce.$(fontsdir)
 
 foxdemo_SOURCES = foxdemo.cpp
 foxdemo_CPPFLAGS = $(FOX_INCLUDES) $(TRACE) $(MY_CPPFLAGS) -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir) -Dfontsdir=reduce.$(fontsdir) $(CRINC)
@@ -581,6 +577,7 @@ reduceres = fwin-reduce.$(OBJEXT)
 
 fwindemo_LDADD = $(fwin_icon) $(FOX_LIBS)
 csl_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
+flatcsl_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 bootstrapreduce_LDADD = fwin-csl.$(OBJEXT) $(FOX_LIBS)
 reduce_LDADD = $(reduceres) $(FOX_LIBS)
 
@@ -621,6 +618,8 @@ not-under-cygwin.exe:	$(srcdir)/not-under-cygwin.cpp
 	i686-w64-mingw32-strip not-under-cygwin.exe
 
 csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
+		$(FONTDEP) $(WXC)
+flatcsl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
 		$(FONTDEP) $(WXC)
 bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
 		fwin-csl.$(OBJEXT) $(FONTDEP) \
@@ -667,10 +666,12 @@ GP=
 
 fwindemo_LDADD = $(FOX_LIBS)
 csl_LDADD = $(FOX_LIBS)
+flatcsl_LDADD = $(FOX_LIBS)
 bootstrapreduce_LDADD = $(FOX_LIBS)
 reduce_LDADD = $(FOX_LIBS)
 
 csl_DEPENDENCIES = $(FONTDEP) $(WXC)
+flatcsl_DEPENDENCIES = $(FONTDEP) $(WXC)
 bootstrapreduce_DEPENDENCIES = $(FONTDEP) \
 		reduce.doc/index.html $(AWKFILES) $(GP) $(WXC)
 reduce_DEPENDENCIES = $(FONTDEP) reduce.doc/index.html \
@@ -729,6 +730,7 @@ CRINC = -I../include
 AM_CPPFLAGS     += $(CRINC)
 reduce_CPPFLAGS += $(CRINC)
 csl_CPPFLAGS    += $(CRINC)
+flatcsl_CPPFLAGS    += $(CRINC)
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and crlibm building will get
@@ -736,10 +738,12 @@ csl_CPPFLAGS    += $(CRINC)
 
 
 csl_LDADD += -L../lib -lcrlibm
+flatcsl_LDADD += -L../lib -lcrlibm
 bootstrapreduce_LDADD += -L../lib -lcrlibm
 reduce_LDADD += -L../lib -lcrlibm
 
 csl_DEPENDENCIES += $(CRLIBMDEPS)
+flatcsl_DEPENDENCIES += $(CRLIBMDEPS)
 bootstrapreduce_DEPENDENCIES += $(CRLIBMDEPS)
 reduce_DEPENDENCIES += $(CRLIBMDEPS)
 
@@ -766,16 +770,19 @@ BOEHMINC = -I../include
 AM_CPPFLAGS     += $(BOEHMINC)
 reduce_CPPFLAGS += $(BOEHMINC)
 csl_CPPFLAGS    += $(BOEHMINC)
+flatcsl_CPPFLAGS    += $(BOEHMINC)
 gctest_CPPFLAGS    += $(BOEHMINC)
 
 
 
 csl_LDADD += ../lib/libgc.a
+flatcsl_LDADD += ../lib/libgc.a
 bootstrapreduce_LDADD += ../lib/libgc.a
 reduce_LDADD += ../lib/libgc.a
 gctest_LDADD += ../lib/libgc.a
 
 csl_DEPENDENCIES += $(BOEHMDEPS)
+flatcsl_DEPENDENCIES += $(BOEHMDEPS)
 bootstrapreduce_DEPENDENCIES += $(BOEHMDEPS)
 reduce_DEPENDENCIES += $(BOEHMDEPS)
 gctest_DEPENDENCIES += $(BOEHMDEPS)
@@ -806,6 +813,7 @@ SOFTFLOATINC = -I../include
 AM_CPPFLAGS     += $(SOFTFLOATINC)
 reduce_CPPFLAGS += $(SOFTFLOATINC)
 csl_CPPFLAGS    += $(SOFTFLOATINC)
+flatcsl_CPPFLAGS    += $(SOFTFLOATINC)
 softfloatdemo_CPPFLAGS = $(SOFTFLOATINC)
 
 # The following ugly dependencies are here so that one can go, for
@@ -814,6 +822,7 @@ softfloatdemo_CPPFLAGS = $(SOFTFLOATINC)
 
 
 csl_LDADD += -L../lib -lsoftfloat
+flatcsl_LDADD += -L../lib -lsoftfloat
 bootstrapreduce_LDADD += -L../lib -lsoftfloat
 reduce_LDADD += -L../lib -lsoftfloat
 softfloatdemo_LDADD = -L../lib -lsoftfloat
@@ -860,10 +869,6 @@ fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 lisphash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 newhash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
@@ -904,10 +909,6 @@ csl-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-lisphash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-newhash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-csl-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-csl-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-csl-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-csl-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 csl-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
@@ -948,10 +949,6 @@ reduce-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-lisphash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-newhash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-reduce-jit1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-reduce-jit2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-reduce-jit3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-reduce-jitx86.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-preserve.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
@@ -1131,6 +1128,56 @@ else !wx
 if mac_framework
 	$(REZ) -t APPL -o csl $(srcdir)/mac.r
 	$(srcdir)/create_old_bundle.sh csl $(srcdir) csl
+endif mac_framework
+
+endif !wx
+
+flatcsl$(EXEEXT): $(flatcsl_OBJECTS) $(csl_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
+	-$(RM) -f csl$(EXEEXT)
+if windows
+if gui
+	$(CP) $(srcdir)/csl .
+else !gui
+	$(CP) $(srcdir)/csl-nogui .
+endif !gui
+if !cygwin
+if cyg32
+	if test x"$(with_cygbuild)" != "x"; then cd $(with_cygbuild)/csl && $(MAKE) flatcsl.exe; fi
+endif cyg32
+	if test -x $(with_cygbuild)/csl/flatcsl.exe; then $(CP) $(with_cygbuild)/csl/flatcsl.exe cygwin-flatcsl.exe; fi
+if cyg64
+	if test x"$(with_cygbuild64)" != "x"; then cd $(with_cygbuild64)/csl && $(MAKE) flatcsl.exe; fi
+endif cyg64
+	if test -x $(with_cygbuild64)/csl/flatcsl.exe; then $(CP) $(with_cygbuild64)/csl/flatcsl.exe cygwin64-flatcsl.exe; fi
+endif !cygwin
+endif windows
+	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)flatcsl$(EXEEXT) $(flatcsl_OBJECTS) $(flatcsl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
+if windows
+if gui
+	-$(RM) -f csl$(COM)
+	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)flatcsl$(COM) $(flatcsl_OBJECTS) $(flatcsl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+endif gui
+	$(DLLTOOL) --def $(CSLEXEDEF) --output-lib libcslexe.a
+	$(DLLTOOL) --def $(CSLCOMDEF) --output-lib libcslcom.a
+endif windows
+if !debug
+if !darwin
+	$(STRIP) flatcsl$(EXEEXT)
+if windows
+if gui
+	$(STRIP) flatcsl$(COM)
+endif gui
+endif windows
+endif !darwin
+endif !debug
+if wx
+if mac_framework
+	$(srcdir)/create_bundle.sh flatcsl $(srcdir) flatcsl
+endif mac_framework
+else !wx
+if mac_framework
+	$(REZ) -t APPL -o flatcsl $(srcdir)/mac.r
+	$(srcdir)/create_old_bundle.sh flatcsl $(srcdir) flatcsl
 endif mac_framework
 
 endif !wx
@@ -1345,6 +1392,13 @@ csl$(COM):	csl.exe
 	  $(MAKE) $(AM_MAKEFLAGS) csl.exe; \
 	fi
 
+flatcsl$(COM):	flatcsl.exe
+## Recover from the removal of flatcsl.com
+	if test -f flatcsl.com; then touch flatcsl.com; else \
+	  $(RM) -f flatcsl.exe; \
+	  $(MAKE) $(AM_MAKEFLAGS) flatcsl.exe; \
+	fi
+
 reduce$(COM):	reduce.exe
 ## Recover from the removal of reduce.com
 	if test -f reduce.com; then touch reduce.com; else \
@@ -1430,6 +1484,9 @@ if cygwin
 $(plain_csl):	csl.exe
 	echo "$(MAKE) csl.exe is preferred"
 
+$(plain_flatcsl):	flatcsl.exe
+	echo "$(MAKE) flatcsl.exe is preferred"
+
 $(plain_reduce):	reduce.exe
 	echo "$(MAKE) reduce.exe is preferred"
 
@@ -1449,6 +1506,9 @@ if gui
 $(plain_csl):	csl.exe csl$(COM)
 	echo "$(MAKE) csl.exe is preferred"
 
+$(plain_flatcsl):	flatcsl.exe flatcsl$(COM)
+	echo "$(MAKE) flatcsl.exe is preferred"
+
 $(plain_reduce):	reduce.exe reduce$(COM)
 	echo "$(MAKE) reduce.exe is preferred"
 
@@ -1466,6 +1526,9 @@ endif wx
 else !gui
 $(plain_csl):	csl.exe
 	echo "$(MAKE) csl.exe is preferred"
+
+$(plain_flatcsl):	flatcsl.exe
+	echo "$(MAKE) flatcsl.exe is preferred"
 
 $(plain_reduce):	reduce.exe
 	echo "$(MAKE) reduce.exe is preferred"
@@ -1534,17 +1597,6 @@ $(plain_gctest):	gctest.exe
 endif boehm
 
 endif exeext
-
-if cygwin
-# on cygwin I scan to verify which DLLs are referenced by my main
-# executables so that I can verify (eg) that they do not link to
-# cygwin1.dll or any other library that is liable to impose license
-# conditions that affect distribution rules.
-report-dlls:	csl.exe bootstrapreduce.exe reduce.exe
-	$(OBJDUMP) -p csl.exe | grep "DLL"
-	$(OBJDUMP) -p bootstrapreduce.exe | grep "DLL"
-	$(OBJDUMP) -p reduce.exe | grep "DLL"
-endif cygwin
 
 fwindemo_SOURCES=fwindemo.cpp $(fwin_sources)
 if wx
@@ -1779,13 +1831,15 @@ machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(E
 			makeheaders$(EXEEXT) Makefile $(srcdir)/impex.def \
 			$(srcdir)/machine.h $(srcdir)/tags.h \
 			$(srcdir)/cslerror.h $(srcdir)/externs.h \
-			$(srcdir)/arith.h $(srcdir)/entries.h
+			$(srcdir)/arith.h $(srcdir)/entries.h \
+			$(srcdir)/lispthrow.h
 	./objtype$(EXEEXT) reduce-cslread.$(OBJEXT) \
 		$(srcdir)/impex.def machineid-1.cpp $(COMPILE_DLL)
 	./makeheaders$(EXEEXT) config.h $(srcdir)/machine.h \
 		$(srcdir)/tags.h \
 		$(srcdir)/cslerror.h $(srcdir)/externs.h \
-		$(srcdir)/arith.h $(srcdir)/entries.h > machineid-2.cpp
+		$(srcdir)/arith.h $(srcdir)/entries.h \
+		$(srcdir)/lispthrow.h > machineid-2.cpp
 	cat machineid-1.cpp machineid-2.cpp > machineid.cpp
 
 -include reduce.dep
@@ -2309,6 +2363,16 @@ else !canrun
 	-$(RM) -rf csl.img
 	$(CP) -r $(gensrc)/csl.img .
 endif !canrun
+
+
+csli.img:	csl$(COM) $(csldep)
+	-$(TRACE)$(RM) -rf csli.img
+	mkdir -p buildlogs
+	echo Building in `pwd`
+	./csl$(COM) -w -v -z $(CSLFLAGS) "$(CYGSRC)/buildcsli.lsp" \
+		-D@cslbase="$(CYGSRC)" \
+		-o csli.img -L buildlogs/csli.img.log \
+		-j csl.dep
 
 
 csl.dir:	csl$(COM) $(csldep)

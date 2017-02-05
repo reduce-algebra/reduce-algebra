@@ -167,6 +167,8 @@ else
     if test -f /System/Library/CoreServices/SystemVersion.plist
     then
 # For MacOS I will detect the version number and report a code-name for it.
+# Actually the succession of changes that Apple make here is starting to
+# get tedious to track!
       if test "x$1" = "xshort"
       then
         os="mac"
@@ -201,6 +203,9 @@ else
           ;;
         *Mac*OS*X*ProductVersion*\<string\>10.11*)
           os="mac_10.11_elcapitan"
+          ;;
+        *Mac*OS*X*ProductVersion*\<string\>10.12*)
+          os="mac_10.12_sierra"
           ;;
         *Mac*OS*X*ProductVersion*\<string\>*)
           os="mac_unknown_version"
