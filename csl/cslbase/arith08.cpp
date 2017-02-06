@@ -1106,69 +1106,69 @@ LispObject Ltruncate(LispObject, LispObject a)
 }
 
 setup_type const arith08_setup[] =
-{   {"ceiling",                 Lceiling, Lceiling_2, wrong_no_1},
-    {"floor",                   Lfloor, Lfloor_2, wrong_no_1},
-    {"round",                   Lround, Lround_2, wrong_no_1},
-    {"fix",                     Ltruncate, Ltruncate_2, wrong_no_1},
-    {"truncate",                Ltruncate, Ltruncate_2, wrong_no_1},
-    {"decode-float",            Ldecode_float, too_many_1, wrong_no_1},
-    {"float-denormalized-p",    Lfloat_denormalized_p, too_many_1, wrong_no_1},
-    {"float-infinity-p",        Lfloat_infinity_p, too_many_1, wrong_no_1},
+{   {"ceiling",                 Lceiling, Lceiling_2, WRONG_NO_1},
+    {"floor",                   Lfloor, Lfloor_2, WRONG_NO_1},
+    {"round",                   Lround, Lround_2, WRONG_NO_1},
+    {"fix",                     Ltruncate, Ltruncate_2, WRONG_NO_1},
+    {"truncate",                Ltruncate, Ltruncate_2, WRONG_NO_1},
+    {"decode-float",            Ldecode_float, TOO_MANY_1, WRONG_NO_1},
+    {"float-denormalized-p",    Lfloat_denormalized_p, TOO_MANY_1, WRONG_NO_1},
+    {"float-infinity-p",        Lfloat_infinity_p, TOO_MANY_1, WRONG_NO_1},
 //
 // The next are four functions that are new as of March 2015 - introduced
 // as a start towards support for the special IEEE values. They replace the
 // two above, which I hereby deprecate (and I expect that nobody has ever
 // used anyway).
 //
-    {"fp-infinite",             Lfp_infinite, too_many_1, wrong_no_1},
-    {"fp-nan",                  Lfp_nan, too_many_1, wrong_no_1},
-    {"fp-finite",               Lfp_finite, too_many_1, wrong_no_1},
-    {"fp-subnorm",              Lfp_subnorm, too_many_1, wrong_no_1},
-    {"fp-signbit",              Lfp_signbit, too_many_1, wrong_no_1},
-    {"integer-decode-float",    Linteger_decode_float, too_many_1, wrong_no_1},
-    {"integer-length",          Linteger_length, too_many_1, wrong_no_1},
-    {"float-digits",            Lfloat_digits, too_many_1, wrong_no_1},
-    {"float-precision",         Lfloat_precision, too_many_1, wrong_no_1},
-    {"float-radix",             Lfloat_radix, too_many_1, wrong_no_1},
-    {"float-sign",              Lfloat_sign1, Lfloat_sign2, wrong_no_2},
+    {"fp-infinite",             Lfp_infinite, TOO_MANY_1, WRONG_NO_1},
+    {"fp-nan",                  Lfp_nan, TOO_MANY_1, WRONG_NO_1},
+    {"fp-finite",               Lfp_finite, TOO_MANY_1, WRONG_NO_1},
+    {"fp-subnorm",              Lfp_subnorm, TOO_MANY_1, WRONG_NO_1},
+    {"fp-signbit",              Lfp_signbit, TOO_MANY_1, WRONG_NO_1},
+    {"integer-decode-float",    Linteger_decode_float, TOO_MANY_1, WRONG_NO_1},
+    {"integer-length",          Linteger_length, TOO_MANY_1, WRONG_NO_1},
+    {"float-digits",            Lfloat_digits, TOO_MANY_1, WRONG_NO_1},
+    {"float-precision",         Lfloat_precision, TOO_MANY_1, WRONG_NO_1},
+    {"float-radix",             Lfloat_radix, TOO_MANY_1, WRONG_NO_1},
+    {"float-sign",              Lfloat_sign1, Lfloat_sign2, WRONG_NO_2},
 #ifdef ROUND_AND_TRUNCATE
-    {"fround",                  too_few_2, Lfround, wrong_no_2},
-    {"ftruncate",               too_few_2, Lftruncate, wrong_no_2},
+    {"fround",                  TOO_FEW_2, Lfround, WRONG_NO_2},
+    {"ftruncate",               TOO_FEW_2, Lftruncate, WRONG_NO_2},
 #endif
 #ifdef LOGFNS
-    {"logbitp",                 too_few_2, Llogbitp, wrong_no_2},
-    {"logcount",                Llogcount, too_many_1, wrong_no_1},
-    {"logtest",                 too_few_2, Llogtest, wrong_no_2},
-    {"mask-field",              too_few_2, Lmask_field, wrong_no_2},
+    {"logbitp",                 TOO_FEW_2, Llogbitp, WRONG_NO_2},
+    {"logcount",                Llogcount, TOO_MANY_1, WRONG_NO_1},
+    {"logtest",                 TOO_FEW_2, Llogtest, WRONG_NO_2},
+    {"mask-field",              TOO_FEW_2, Lmask_field, WRONG_NO_2},
 #endif
-    {"scale-float",             too_few_2, Lscale_float, wrong_no_2},
-    {"boole",                   wrong_no_na, wrong_no_nb, Lboole},
+    {"scale-float",             TOO_FEW_2, Lscale_float, WRONG_NO_2},
+    {"boole",                   WRONG_NO_NA, WRONG_NO_NB, Lboole},
 #ifdef COMMON
-    {"byte",                    too_few_2, Lbyte, wrong_no_2},
-    {"byte-position",           Lbyte_position, too_many_1, wrong_no_1},
-    {"byte-size",               Lbyte_size, too_many_1, wrong_no_1},
-    {"complex",                 Lcomplex_1, Lcomplex_2, wrong_no_2},
-    {"conjugate",               Lconjugate, too_many_1, wrong_no_1},
+    {"byte",                    TOO_FEW_2, Lbyte, WRONG_NO_2},
+    {"byte-position",           Lbyte_position, TOO_MANY_1, WRONG_NO_1},
+    {"byte-size",               Lbyte_size, TOO_MANY_1, WRONG_NO_1},
+    {"complex",                 Lcomplex_1, Lcomplex_2, WRONG_NO_2},
+    {"conjugate",               Lconjugate, TOO_MANY_1, WRONG_NO_1},
 #endif
-    {"decode-float",            Ldecode_float, too_many_1, wrong_no_1},
-    {"float-denormalized-p",    Lfloat_denormalized_p, too_many_1, wrong_no_1},
-    {"float-infinity-p",        Lfloat_infinity_p, too_many_1, wrong_no_1},
+    {"decode-float",            Ldecode_float, TOO_MANY_1, WRONG_NO_1},
+    {"float-denormalized-p",    Lfloat_denormalized_p, TOO_MANY_1, WRONG_NO_1},
+    {"float-infinity-p",        Lfloat_infinity_p, TOO_MANY_1, WRONG_NO_1},
 #ifdef COMMON
-    {"denominator",             Ldenominator, too_many_1, wrong_no_1},
+    {"denominator",             Ldenominator, TOO_MANY_1, WRONG_NO_1},
 #endif
 #ifdef DEPOSIT_FIELD_IMPLEMENTED
-    {"deposit-field",           wrong_no_na, wrong_no_nb, Ldeposit_field},
+    {"deposit-field",           WRONG_NO_NA, WRONG_NO_NB, Ldeposit_field},
 #endif
 #ifdef DPB_IMPLEMENTED
-    {"dpb",                     wrong_no_na, wrong_no_nb, Ldpb},
+    {"dpb",                     WRONG_NO_NA, WRONG_NO_NB, Ldpb},
 #endif
 #ifdef COMMON
-    {"ffloor",                  too_few_2, Lffloor, wrong_no_2},
-    {"imagpart",                Limagpart, too_many_1, wrong_no_1},
-    {"ldb",                     too_few_2, Lldb, wrong_no_2},
-    {"ldb-test",                too_few_2, Lldb_test, wrong_no_2},
-    {"numerator",               Lnumerator, too_many_1, wrong_no_1},
-    {"realpart",                Lrealpart, too_many_1, wrong_no_1},
+    {"ffloor",                  TOO_FEW_2, Lffloor, WRONG_NO_2},
+    {"imagpart",                Limagpart, TOO_MANY_1, WRONG_NO_1},
+    {"ldb",                     TOO_FEW_2, Lldb, WRONG_NO_2},
+    {"ldb-test",                TOO_FEW_2, Lldb_test, WRONG_NO_2},
+    {"numerator",               Lnumerator, TOO_MANY_1, WRONG_NO_1},
+    {"realpart",                Lrealpart, TOO_MANY_1, WRONG_NO_1},
 #endif
     {"gcd",                     Lgcd_1, Lgcd, Lgcd_n},
     {"gcdn",                    Lgcd_1, Lgcd, Lgcd_n},

@@ -1388,17 +1388,17 @@ LispObject Lhash_flavour(LispObject env, LispObject tab)
 }
 
 setup_type const lisphash_setup[] =
-{   {"mkhash",                  wrong_no_3a, wrong_no_3b, Lmkhash},
+{   {"mkhash",                  WRONG_NO_3A, WRONG_NO_3B, Lmkhash},
     {"gethash",                 Lget_hash_1, Lget_hash_2, Lget_hash},
-    {"puthash",                 wrong_no_3a, Lput_hash_2, Lput_hash},
-    {"remhash",                 Lrem_hash_1, Lrem_hash, wrong_no_2},
-    {"clrhash",                 Lclr_hash, too_many_1, Lclr_hash_0},
-    {"sxhash",                  Lsxhash, too_many_1, wrong_no_1},
-    {"eqlhash",                 Leqlhash, too_many_1, wrong_no_1},
-    {"equalhash",               Lequalhash, too_many_1, wrong_no_1},
-    {"maphash",                 too_few_2, Lmaphash, wrong_no_2},
-    {"hashcontents",            Lhashcontents, too_many_1, wrong_no_1},
-    {"hashtable-flavour",       Lhash_flavour, too_many_1, wrong_no_1},
+    {"puthash",                 WRONG_NO_3A, Lput_hash_2, Lput_hash},
+    {"remhash",                 Lrem_hash_1, Lrem_hash, WRONG_NO_2},
+    {"clrhash",                 Lclr_hash, TOO_MANY_1, Lclr_hash_0},
+    {"sxhash",                  Lsxhash, TOO_MANY_1, WRONG_NO_1},
+    {"eqlhash",                 Leqlhash, TOO_MANY_1, WRONG_NO_1},
+    {"equalhash",               Lequalhash, TOO_MANY_1, WRONG_NO_1},
+    {"maphash",                 TOO_FEW_2, Lmaphash, WRONG_NO_2},
+    {"hashcontents",            Lhashcontents, TOO_MANY_1, WRONG_NO_1},
+    {"hashtable-flavour",       Lhash_flavour, TOO_MANY_1, WRONG_NO_1},
     {NULL,                      0, 0, 0}
 };
 

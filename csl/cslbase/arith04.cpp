@@ -653,13 +653,13 @@ bool lessp2(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return lesspir(a, b);
                         default:
-                            return (bool)aerror2("bad arg for lessp", a, b);
+                            aerror2("bad arg for lessp", a, b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return lesspif(a, b);
                 default:
-                    return (bool)aerror2("bad arg for lessp", a, b);
+                    aerror2("bad arg for lessp", a, b);
             }
 #ifdef SHORT_FLOAT
         case XTAG_SFLOAT:
@@ -680,13 +680,13 @@ bool lessp2(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return lesspsr(a, b);
                         default:
-                            return (bool)aerror2("bad arg for lessp", a, b);
+                            aerror2("bad arg for lessp", a, b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return lesspsf(a, b);
                 default:
-                    return (bool)aerror2("bad arg for lessp", a, b);
+                    aerror2("bad arg for lessp", a, b);
             }
 #endif
         case TAG_NUMBERS:
@@ -708,13 +708,13 @@ bool lessp2(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return lesspbr(a, b);
                                 default:
-                                    return (bool)aerror2("bad arg for lessp", a, b);
+                                    aerror2("bad arg for lessp", a, b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return lesspbf(a, b);
                         default:
-                            return (bool)aerror2("bad arg for lessp", a, b);
+                            aerror2("bad arg for lessp", a, b);
                     }
                 case TYPE_RATNUM:
                     switch (b & TAG_BITS)
@@ -732,15 +732,15 @@ bool lessp2(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return lessprr(a, b);
                                 default:
-                                    return (bool)aerror2("bad arg for lessp", a, b);
+                                    aerror2("bad arg for lessp", a, b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return lessprf(a, b);
                         default:
-                            return (bool)aerror2("bad arg for lessp", a, b);
+                            aerror2("bad arg for lessp", a, b);
                     }
-                default:    return (bool)aerror2("bad arg for lessp", a, b);
+                default:    aerror2("bad arg for lessp", a, b);
             }
         }
         case TAG_BOXFLOAT:
@@ -759,16 +759,16 @@ bool lessp2(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return lesspfr(a, b);
                         default:
-                            return (bool)aerror2("bad arg for lessp", a, b);
+                            aerror2("bad arg for lessp", a, b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return lesspff(a, b);
                 default:
-                    return (bool)aerror2("bad arg for lessp", a, b);
+                    aerror2("bad arg for lessp", a, b);
             }
         default:
-            return (bool)aerror2("bad arg for lessp", a, b);
+            aerror2("bad arg for lessp", a, b);
     }
 }
 

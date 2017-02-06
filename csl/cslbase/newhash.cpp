@@ -1928,18 +1928,18 @@ void showstats(size_t n)
 }
 
 setup_type const newhash_setup[] =
-{   {"mknewhash",               wrong_no_3a, Lmknewhash2, Lmknewhash},
+{   {"mknewhash",               WRONG_NO_3A, Lmknewhash2, Lmknewhash},
     {"getnewhash",              Lget_newhash_1, Lget_newhash_2, Lget_newhash},
-    {"putnewhash",              wrong_no_3a, Lput_newhash_2, Lput_newhash},
-    {"remnewhash",              Lrem_newhash_1, Lrem_newhash, wrong_no_2},
-    {"clrnewhash",              Lclr_newhash, too_many_1, Lclr_newhash_0},
-    {"sxnewhash",               Lsxnewhash, too_many_1, wrong_no_1},
-    {"eqlnewhash",              Leqlnewhash, too_many_1, wrong_no_1},
-    {"equalnewhash",            Lequalnewhash, too_many_1, wrong_no_1},
-    {"mapnewhash",              too_few_2, Lmapnewhash, wrong_no_2},
-    {"newhashcontents",         Lnewhashcontents, too_many_1, wrong_no_1},
-    {"newhashtable-flavour",    Lnewhash_flavour, too_many_1, wrong_no_1},
-    {"newhashrehash",           Lnewhash_rehash, too_many_1, wrong_no_1},
+    {"putnewhash",              WRONG_NO_3A, Lput_newhash_2, Lput_newhash},
+    {"remnewhash",              Lrem_newhash_1, Lrem_newhash, WRONG_NO_2},
+    {"clrnewhash",              Lclr_newhash, TOO_MANY_1, Lclr_newhash_0},
+    {"sxnewhash",               Lsxnewhash, TOO_MANY_1, WRONG_NO_1},
+    {"eqlnewhash",              Leqlnewhash, TOO_MANY_1, WRONG_NO_1},
+    {"equalnewhash",            Lequalnewhash, TOO_MANY_1, WRONG_NO_1},
+    {"mapnewhash",              TOO_FEW_2, Lmapnewhash, WRONG_NO_2},
+    {"newhashcontents",         Lnewhashcontents, TOO_MANY_1, WRONG_NO_1},
+    {"newhashtable-flavour",    Lnewhash_flavour, TOO_MANY_1, WRONG_NO_1},
+    {"newhashrehash",           Lnewhash_rehash, TOO_MANY_1, WRONG_NO_1},
     {NULL,                      0, 0, 0}
 };
 

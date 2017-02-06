@@ -394,24 +394,24 @@ typedef uintptr_t Header;
 // 64-bit system there are an extra 32 (which at present I do not use).
 //
 
-#define TYPE_SYMBOL         (0x0000000<<Tw)
-#define  SYM_SPECIAL_VAR    (0x0000010<<Tw)  // (fluid '(xxx))
-#define  SYM_GLOBAL_VAR     (0x0000020<<Tw)  // (global '(xxx))
+#define TYPE_SYMBOL         0x00000000 
+#define  SYM_SPECIAL_VAR    0x00000080       // (fluid '(xxx))
+#define  SYM_FLUID_VAR      0x00000080       // (fluid '(xxx))
+#define  SYM_GLOBAL_VAR     0x00000100       // (global '(xxx))
 // I will set both SPECIAL and GLOBAL for "keywords" and those will be
 // initialised to have themselves as their value and then neither be
 // bindable or settable.
-#define  SYM_KEYWORD_VAR    (0x0000030<<Tw)  // (keyword '(xxx))
-#define  SYM_SPECIAL_FORM   (0x0000040<<Tw)  // eg. COND, QUOTE
-#define  SYM_MACRO          (0x0000080<<Tw)  // (putd 'xxx 'macro ...)
-#define  SYM_C_DEF          (0x0000100<<Tw)  // has definition from C kernel
-#define  SYM_CODEPTR        (0x0000200<<Tw)  // just carries code pointer
-#define  SYM_ANY_GENSYM     (0x0000400<<Tw)  // gensym, printed or not
-#define  SYM_TRACED         (0x0000800<<Tw)  // function is traced.
-#define  SYM_TRACESET       (0x0001000<<Tw)  // traceset support
-#define  SYM_TAGGED         (0x0002000<<Tw)  // used for special versions
-                                             // of UNION and INTERSECTION.
-#define  SYM_FASTGET_MASK   (0x00fc000<<Tw)  // used to support "fast" gets
-#define  SYM_FASTGET_SHIFT  (14+Tw)
+#define  SYM_KEYWORD_VAR    0x00000180       // (keyword '(xxx))
+#define  SYM_SPECIAL_FORM   0x00000200       // eg. COND, QUOTE
+#define  SYM_MACRO          0x00000400       // (putd 'xxx 'macro ...)
+#define  SYM_C_DEF          0x00000800       // has definition from C kernel
+#define  SYM_CODEPTR        0x00001000       // just carries code pointer
+#define  SYM_ANY_GENSYM     0x00002000       // gensym, printed or not
+#define  SYM_TRACED         0x00004000       // function is traced.
+#define  SYM_TRACESET       0x00008000       // traceset support
+#define  SYM_TAGGED         0x00010000       // used for special versions
+#define  SYM_FASTGET_MASK   0x007e0000       // used to support "fast" gets
+#define  SYM_FASTGET_SHIFT  17
 //
 //
 #ifdef COMMON
@@ -420,21 +420,15 @@ typedef uintptr_t Header;
 // Note that on a 32-bit machine I have just 8 bits for that. I think that
 // will help with the first 8 packages I come across (or many more on a
 // 64-bit machine). If I ever enable package support!
-// NOTE: The fields set out here are ARCHAIC and will need careful review
-// if I ever try to make them active again. They may at present clash with
-// other things. I may be better served if I only try to optimise package
-// availability information when I am on a 64-bit machine and hence when I
-// have plenty of spare bits that I can use.
-#define  SYM_EXTERN_IN_HOME (0x0080000<<Tw)  // external in its home package
-#define  SYM_IN_PACKAGE     (((int)0xff000000)/(1<<(4-Tw)))
-                                            // availability in 8 packages
-#define  SYM_IN_PKG_SHIFT   (20+Tw)         // the constants here look ugly!
-#define  SYM_IN_PKG_COUNT   (11-Tw)
+#define  SYM_EXTERN_IN_HOME 0x00800000      // external in its home package
+#define  SYM_IN_PACKAGE     0xff000000U     // availability in 8 packages
+#define  SYM_IN_PKG_SHIFT   24
+#define  SYM_IN_PKG_COUNT   8
 #else // COMMON
 // In Standard Lisp mode I only allocate a print-name to a gensym when I
 // first print it, so I have a bit that tells me when a gensym is still
 // not printed.
-#define  SYM_UNPRINTED_GENSYM (0x0040000<<Tw)// not-yet-printed gensym
+#define  SYM_UNPRINTED_GENSYM 0x00800000    // not-yet-printed gensym
 // Here in Standard Lisp mode I have 8 bits left in a symbol header even
 // on a 32-bit system.
 #endif // COMMON

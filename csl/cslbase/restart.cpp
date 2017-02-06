@@ -244,10 +244,10 @@ entry_point1 entries_table1[] =
     {tracebyteoptrest1,                  "tracebyteoptrest1"},
     {hardoptrest1,                       "hardoptrest1"},
     {tracehardoptrest1,                  "tracehardoptrest1"},
-    {too_few_2,                          "too_few_2"},
-    {wrong_no_0a,                        "wrong_no_0a"},
-    {wrong_no_3a,                        "wrong_no_3a"},
-    {wrong_no_na,                        "wrong_no_na"},
+    {TOO_FEW_2,                          "too_few_2"},
+    {WRONG_NO_0A,                        "wrong_no_0a"},
+    {WRONG_NO_3A,                        "wrong_no_3a"},
+    {WRONG_NO_NA,                        "wrong_no_na"},
 
 //
 // The batch here relate to function re-work that discards unwanted
@@ -284,10 +284,10 @@ entry_point2 entries_table2[] =
     {tracebyteoptrest2,                  "tracebyteoptrest2"},
     {hardoptrest2,                       "hardoptrest2"},
     {tracehardoptrest2,                  "tracehardoptrest2"},
-    {too_many_1,                         "too_many_1"},
-    {wrong_no_0b,                        "wrong_no_0b"},
-    {wrong_no_3b,                        "wrong_no_3b"},
-    {wrong_no_nb,                        "wrong_no_nb"},
+    {TOO_MANY_1,                         "too_many_1"},
+    {WRONG_NO_0B,                        "wrong_no_0b"},
+    {WRONG_NO_3B,                        "wrong_no_3b"},
+    {WRONG_NO_NB,                        "wrong_no_nb"},
 //
 // The batch here relate to function re-work that discards unwanted
 // extra arguments.
@@ -340,8 +340,8 @@ entry_pointn entries_tablen[] =
     {tracebyteoptrestn,                  "tracebyteoptrestn"},
     {hardoptrestn,                       "hardoptrestn"},
     {tracehardoptrestn,                  "tracehardoptrestn"},
-    {wrong_no_1,                         "wrong_no_1"},
-    {wrong_no_2,                         "wrong_no_2"},
+    {WRONG_NO_1,                         "wrong_no_1"},
+    {WRONG_NO_2,                         "wrong_no_2"},
 //
 // The batch here relate to function variants that discard unwanted
 // extra arguments and call something else.
@@ -783,33 +783,33 @@ setup_type const restart_setup[] =
 // to be worth giving separate entry-tables.
 //
 {
-    {"~load-spid",              wrong_no_na, wrong_no_nb, Lload_spid},
-    {"~is-spid",                Lis_spid, too_many_1, wrong_no_1},
-    {"~spid-to-nil",            Lspid_to_nil, too_many_1, wrong_no_1},
-    {"~mv-list",                Lmv_list, too_many_1, wrong_no_1},
-    {"check-c-code",            wrong_no_na, wrong_no_nb, Lcheck_c_code},
-    {"modulep",                 Lmodule_exists, too_many_1, wrong_no_1},
-    {"start-module",            Lstart_module, too_many_1, wrong_no_1},
-    {"write-module",            too_few_2, Lwrite_module, wrong_no_2},
-    {"copy-module",             Lcopy_module, too_many_1, wrong_no_1},
-    {"copy-native",             too_few_2, Lcopy_native, wrong_no_2},
-    {"delete-module",           Ldelete_module, too_many_1, wrong_no_1},
-    {"load-module",             Lload_module, too_many_1, wrong_no_1},
-    {"load-source",             Lload_source, too_many_1, Lload_source0},
-    {"load-selected-source",    Lload_selected_source, too_many_1, Lload_selected_source0},
-    {"list-modules",            wrong_no_na, wrong_no_nb, Llist_modules},
-    {"writable-libraryp",       Lwritable_libraryp, too_many_1, wrong_no_1},
-    {"library-members",         Llibrary_members, too_many_1, Llibrary_members0},
-    {"startup-banner",          Lbanner, too_many_1, wrong_no_1},
-    {"instate-c-code",          too_few_2, Linstate_c_code, wrong_no_2},
-    {"set-help-file",           too_few_2, Lset_help_file, wrong_no_2},
-    {"mapstore",                Lmapstore, too_many_1, Lmapstore0},
-    {"verbos",                  Lverbos, too_many_1, wrong_no_1},
-    {"gc",                      Lgc, too_many_1, Lgc0},
-    {"reclaim",                 Lgc, too_many_1, Lgc0},
-    {"reclaim-trap",            Lreclaim_trap, too_many_1, wrong_no_1},
-    {"reclaim-stack-limit",     Lreclaim_stack_limit, too_many_1, wrong_no_1},
-    {"resource-limit",          too_few_2, Lresource_limit2, Lresource_limitn},
+    {"~load-spid",              WRONG_NO_NA, WRONG_NO_NB, Lload_spid},
+    {"~is-spid",                Lis_spid, TOO_MANY_1, WRONG_NO_1},
+    {"~spid-to-nil",            Lspid_to_nil, TOO_MANY_1, WRONG_NO_1},
+    {"~mv-list",                Lmv_list, TOO_MANY_1, WRONG_NO_1},
+    {"check-c-code",            WRONG_NO_NA, WRONG_NO_NB, Lcheck_c_code},
+    {"modulep",                 Lmodule_exists, TOO_MANY_1, WRONG_NO_1},
+    {"start-module",            Lstart_module, TOO_MANY_1, WRONG_NO_1},
+    {"write-module",            TOO_FEW_2, Lwrite_module, WRONG_NO_2},
+    {"copy-module",             Lcopy_module, TOO_MANY_1, WRONG_NO_1},
+    {"copy-native",             TOO_FEW_2, Lcopy_native, WRONG_NO_2},
+    {"delete-module",           Ldelete_module, TOO_MANY_1, WRONG_NO_1},
+    {"load-module",             Lload_module, TOO_MANY_1, WRONG_NO_1},
+    {"load-source",             Lload_source, TOO_MANY_1, Lload_source0},
+    {"load-selected-source",    Lload_selected_source, TOO_MANY_1, Lload_selected_source0},
+    {"list-modules",            WRONG_NO_NA, WRONG_NO_NB, Llist_modules},
+    {"writable-libraryp",       Lwritable_libraryp, TOO_MANY_1, WRONG_NO_1},
+    {"library-members",         Llibrary_members, TOO_MANY_1, Llibrary_members0},
+    {"startup-banner",          Lbanner, TOO_MANY_1, WRONG_NO_1},
+    {"instate-c-code",          TOO_FEW_2, Linstate_c_code, WRONG_NO_2},
+    {"set-help-file",           TOO_FEW_2, Lset_help_file, WRONG_NO_2},
+    {"mapstore",                Lmapstore, TOO_MANY_1, Lmapstore0},
+    {"verbos",                  Lverbos, TOO_MANY_1, WRONG_NO_1},
+    {"gc",                      Lgc, TOO_MANY_1, Lgc0},
+    {"reclaim",                 Lgc, TOO_MANY_1, Lgc0},
+    {"reclaim-trap",            Lreclaim_trap, TOO_MANY_1, WRONG_NO_1},
+    {"reclaim-stack-limit",     Lreclaim_stack_limit, TOO_MANY_1, WRONG_NO_1},
+    {"resource-limit",          TOO_FEW_2, Lresource_limit2, Lresource_limitn},
     {"errorset",                Lerrorset1, Lerrorset2, Lerrorsetn},
     {NULL,                      0, 0, 0}
 };
@@ -1841,10 +1841,10 @@ static void cold_setup()
     bytecoded_symbol    = make_undefined_symbol("bytecoded-definition");
     nativecoded_symbol  = make_undefined_symbol("native-code-definition");
     traceprint_symbol   = make_undefined_symbol("trace-print");
-    load_source_symbol  = make_symbol("load-source", 0, Lload_source, too_many_1, Lload_source0);
+    load_source_symbol  = make_symbol("load-source", 0, Lload_source, TOO_MANY_1, Lload_source0);
     load_selected_source_symbol =
-                          make_symbol("load-selected-source", 0, Lload_selected_source, too_many_1, Lload_selected_source0);
-    prinl_symbol        = make_symbol("prinl", 0, Lprin, too_many_1, wrong_no_1);
+                          make_symbol("load-selected-source", 0, Lload_selected_source, TOO_MANY_1, Lload_selected_source0);
+    prinl_symbol        = make_symbol("prinl", 0, Lprin, TOO_MANY_1, WRONG_NO_1);
     emsg_star           = make_undefined_symbol("emsg*");
     redef_msg           = make_undefined_symbol("*redefmsg");
     expr_symbol         = make_undefined_symbol("expr");
@@ -1954,21 +1954,23 @@ void set_up_functions(int restart_flag)
     LispObject saved_package = CP;
     CP = find_package("LISP", 4);
 #endif
-    function_symbol          = make_symbol("function", restart_flag, function_fn, (two_args *)function_fn, bad_specialn);
+    function_symbol          = make_symbol("function", restart_flag, function_fn, (two_args *)function_fn, BAD_SPECIALN);
     qheader(function_symbol)|= SYM_SPECIAL_FORM;
-    quote_symbol             = make_symbol("quote", restart_flag, quote_fn, (two_args *)quote_fn, bad_specialn);
+    quote_symbol             = make_symbol("quote", restart_flag, quote_fn, (two_args *)quote_fn, BAD_SPECIALN);
     qheader(quote_symbol)   |= SYM_SPECIAL_FORM;
-    progn_symbol             = make_symbol("progn", restart_flag, progn_fn, (two_args *)progn_fn, bad_specialn);
+    progn_symbol             = make_symbol("progn", restart_flag, progn_fn, (two_args *)progn_fn, BAD_SPECIALN);
     qheader(progn_symbol)   |= SYM_SPECIAL_FORM;
-    declare_symbol           = make_symbol("declare", restart_flag, declare_fn, (two_args *)declare_fn, bad_specialn);
+    declare_symbol           = make_symbol("declare", restart_flag, declare_fn, (two_args *)declare_fn, BAD_SPECIALN);
     qheader(declare_symbol) |= SYM_SPECIAL_FORM;
     special_symbol           = make_undefined_symbol("special");
     large_modulus            = fixnum_of_int(1);
-    cons_symbol              = make_symbol("cons", restart_flag, too_few_2, Lcons, wrong_no_2);
-    eval_symbol              = make_symbol("eval", restart_flag, Leval, too_many_1, wrong_no_1);
-    load_source_symbol       = make_symbol("load-source", restart_flag, Lload_source, too_many_1, Lload_source0);
+    cons_symbol              = make_symbol("cons", restart_flag, TOO_FEW_2, Lcons, WRONG_NO_2);
+    eval_symbol              = make_symbol("eval", restart_flag, Leval, TOO_MANY_1, WRONG_NO_1);
+    load_source_symbol       = make_symbol("load-source", restart_flag, Lload_source, TOO_MANY_1, Lload_source0);
     load_selected_source_symbol =
-                                make_symbol("load-selected-source", restart_flag, Lload_selected_source, too_many_1, Lload_selected_source0);
+                                make_symbol("load-selected-source",
+                                    restart_flag, Lload_selected_source,
+                                    TOO_MANY_1, Lload_selected_source0);
 //
 // The main bunch of symbols can be handed using a table that
 // gives names and values.

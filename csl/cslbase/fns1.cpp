@@ -1438,7 +1438,7 @@ LispObject Lunwind(LispObject env, int nargs, ...)
 // the system will unwind in the usual manner.
 //
 
-LispObject Lerror(LispObject env, int nargs, ...)
+void Lerror(LispObject env, int nargs, ...)
 {   va_list a;
     LispObject w;
 #ifdef COMMON
@@ -1511,15 +1511,15 @@ LispObject Lerror(LispObject env, int nargs, ...)
     throw LispError();
 }
 
-LispObject Lerror1(LispObject env, LispObject a1)
+void Lerror1(LispObject env, LispObject a1)
 {   Lerror(nil, 1, a1);
 }
 
-LispObject Lerror2(LispObject env, LispObject a1, LispObject a2)
+void Lerror2(LispObject env, LispObject a1, LispObject a2)
 {   Lerror(nil, 2, a1, a2);
 }
 
-LispObject Lerror0(LispObject env, int nargs, ...)
+void Lerror0(LispObject env, int nargs, ...)
 {
 //
 // Silently provoked error - unwind to surrounding errorset level. Note that
@@ -1905,7 +1905,7 @@ LispObject getvector_init(size_t n, LispObject k)
     return p;
 }
 
-LispObject Lstop(LispObject, LispObject code)
+void Lstop(LispObject, LispObject code)
 {
 //
 // I ignore "env" and set up nil for myself here to make it easier to call
@@ -1919,11 +1919,11 @@ LispObject Lstop(LispObject, LispObject code)
     throw LispRestart();
 }
 
-LispObject Lstop2(LispObject env, LispObject code, LispObject)
-{   return Lstop(env, code);
+void Lstop2(LispObject env, LispObject code, LispObject)
+{   Lstop(env, code);
 }
 
-LispObject Lstop0(LispObject env, int nargs, ...)
+void Lstop0(LispObject env, int nargs, ...)
 {   va_list aa;
     LispObject code = fixnum_of_int(0);
     if (nargs != 0)
@@ -1931,7 +1931,7 @@ LispObject Lstop0(LispObject env, int nargs, ...)
         code = va_arg(aa, LispObject);
         va_end(aa);
     }
-    return Lstop(env, code);
+    Lstop(env, code);
 }
 
 clock_t base_time;
@@ -3478,156 +3478,156 @@ static LispObject Lget_callback(LispObject env, LispObject a)
 }
 
 setup_type const funcs1_setup[] =
-{   {"acons",                   wrong_no_na, wrong_no_nb, Lacons},
-    {"atom",                    Latom, too_many_1, wrong_no_1},
-    {"boundp",                  Lboundp, too_many_1, wrong_no_1},
+{   {"acons",                   WRONG_NO_NA, WRONG_NO_NB, Lacons},
+    {"atom",                    Latom, TOO_MANY_1, WRONG_NO_1},
+    {"boundp",                  Lboundp, TOO_MANY_1, WRONG_NO_1},
 
-    {"car",                     Lcar, too_many_1, wrong_no_1},
-    {"car*",                    Lcar_star, too_many_1, wrong_no_1},
-    {"cdr",                     Lcdr, too_many_1, wrong_no_1},
-    {"caar",                    Lcaar, too_many_1, wrong_no_1},
-    {"cadr",                    Lcadr, too_many_1, wrong_no_1},
-    {"cdar",                    Lcdar, too_many_1, wrong_no_1},
-    {"cddr",                    Lcddr, too_many_1, wrong_no_1},
-    {"caaar",                   Lcaaar, too_many_1, wrong_no_1},
-    {"caadr",                   Lcaadr, too_many_1, wrong_no_1},
-    {"cadar",                   Lcadar, too_many_1, wrong_no_1},
-    {"caddr",                   Lcaddr, too_many_1, wrong_no_1},
-    {"cdaar",                   Lcdaar, too_many_1, wrong_no_1},
-    {"cdadr",                   Lcdadr, too_many_1, wrong_no_1},
-    {"cddar",                   Lcddar, too_many_1, wrong_no_1},
-    {"cdddr",                   Lcdddr, too_many_1, wrong_no_1},
-    {"caaaar",                  Lcaaaar, too_many_1, wrong_no_1},
-    {"caaadr",                  Lcaaadr, too_many_1, wrong_no_1},
-    {"caadar",                  Lcaadar, too_many_1, wrong_no_1},
-    {"caaddr",                  Lcaaddr, too_many_1, wrong_no_1},
-    {"cadaar",                  Lcadaar, too_many_1, wrong_no_1},
-    {"cadadr",                  Lcadadr, too_many_1, wrong_no_1},
-    {"caddar",                  Lcaddar, too_many_1, wrong_no_1},
-    {"cadddr",                  Lcadddr, too_many_1, wrong_no_1},
-    {"cdaaar",                  Lcdaaar, too_many_1, wrong_no_1},
-    {"cdaadr",                  Lcdaadr, too_many_1, wrong_no_1},
-    {"cdadar",                  Lcdadar, too_many_1, wrong_no_1},
-    {"cdaddr",                  Lcdaddr, too_many_1, wrong_no_1},
-    {"cddaar",                  Lcddaar, too_many_1, wrong_no_1},
-    {"cddadr",                  Lcddadr, too_many_1, wrong_no_1},
-    {"cdddar",                  Lcdddar, too_many_1, wrong_no_1},
-    {"cddddr",                  Lcddddr, too_many_1, wrong_no_1},
+    {"car",                     Lcar, TOO_MANY_1, WRONG_NO_1},
+    {"car*",                    Lcar_star, TOO_MANY_1, WRONG_NO_1},
+    {"cdr",                     Lcdr, TOO_MANY_1, WRONG_NO_1},
+    {"caar",                    Lcaar, TOO_MANY_1, WRONG_NO_1},
+    {"cadr",                    Lcadr, TOO_MANY_1, WRONG_NO_1},
+    {"cdar",                    Lcdar, TOO_MANY_1, WRONG_NO_1},
+    {"cddr",                    Lcddr, TOO_MANY_1, WRONG_NO_1},
+    {"caaar",                   Lcaaar, TOO_MANY_1, WRONG_NO_1},
+    {"caadr",                   Lcaadr, TOO_MANY_1, WRONG_NO_1},
+    {"cadar",                   Lcadar, TOO_MANY_1, WRONG_NO_1},
+    {"caddr",                   Lcaddr, TOO_MANY_1, WRONG_NO_1},
+    {"cdaar",                   Lcdaar, TOO_MANY_1, WRONG_NO_1},
+    {"cdadr",                   Lcdadr, TOO_MANY_1, WRONG_NO_1},
+    {"cddar",                   Lcddar, TOO_MANY_1, WRONG_NO_1},
+    {"cdddr",                   Lcdddr, TOO_MANY_1, WRONG_NO_1},
+    {"caaaar",                  Lcaaaar, TOO_MANY_1, WRONG_NO_1},
+    {"caaadr",                  Lcaaadr, TOO_MANY_1, WRONG_NO_1},
+    {"caadar",                  Lcaadar, TOO_MANY_1, WRONG_NO_1},
+    {"caaddr",                  Lcaaddr, TOO_MANY_1, WRONG_NO_1},
+    {"cadaar",                  Lcadaar, TOO_MANY_1, WRONG_NO_1},
+    {"cadadr",                  Lcadadr, TOO_MANY_1, WRONG_NO_1},
+    {"caddar",                  Lcaddar, TOO_MANY_1, WRONG_NO_1},
+    {"cadddr",                  Lcadddr, TOO_MANY_1, WRONG_NO_1},
+    {"cdaaar",                  Lcdaaar, TOO_MANY_1, WRONG_NO_1},
+    {"cdaadr",                  Lcdaadr, TOO_MANY_1, WRONG_NO_1},
+    {"cdadar",                  Lcdadar, TOO_MANY_1, WRONG_NO_1},
+    {"cdaddr",                  Lcdaddr, TOO_MANY_1, WRONG_NO_1},
+    {"cddaar",                  Lcddaar, TOO_MANY_1, WRONG_NO_1},
+    {"cddadr",                  Lcddadr, TOO_MANY_1, WRONG_NO_1},
+    {"cdddar",                  Lcdddar, TOO_MANY_1, WRONG_NO_1},
+    {"cddddr",                  Lcddddr, TOO_MANY_1, WRONG_NO_1},
 
-    {"qcar",                    Lcar, too_many_1, wrong_no_1},
-    {"qcdr",                    Lcdr, too_many_1, wrong_no_1},
-    {"qcaar",                   Lcaar, too_many_1, wrong_no_1},
-    {"qcadr",                   Lcadr, too_many_1, wrong_no_1},
-    {"qcdar",                   Lcdar, too_many_1, wrong_no_1},
-    {"qcddr",                   Lcddr, too_many_1, wrong_no_1},
+    {"qcar",                    Lcar, TOO_MANY_1, WRONG_NO_1},
+    {"qcdr",                    Lcdr, TOO_MANY_1, WRONG_NO_1},
+    {"qcaar",                   Lcaar, TOO_MANY_1, WRONG_NO_1},
+    {"qcadr",                   Lcadr, TOO_MANY_1, WRONG_NO_1},
+    {"qcdar",                   Lcdar, TOO_MANY_1, WRONG_NO_1},
+    {"qcddr",                   Lcddr, TOO_MANY_1, WRONG_NO_1},
 
-    {"bpsp",                    Lbpsp, too_many_1, wrong_no_1},
-    {"codep",                   Lcodep, too_many_1, wrong_no_1},
-    {"cons",                    too_few_2, Lcons, wrong_no_2},
-    {"constantp",               Lconstantp, too_many_1, wrong_no_1},
-    {"date",                    Ldate1, wrong_no_nb, Ldate},
-    {"date-and-time",           Ldate_and_time1, wrong_no_nb, Ldate_and_time},
-    {"datestamp",               wrong_no_na, wrong_no_nb, Ldatestamp},
-    {"timeofday",               wrong_no_na, wrong_no_nb, Ltimeofday},
-    {"enable-errorset",         too_few_2, Lenable_errorset, wrong_no_2},
-    {"enable-backtrace",        Lenable_backtrace, too_many_1, wrong_no_1},
-    {"error",                   Lerror1, Lerror2, Lerror},
-    {"error1",                  wrong_no_na, wrong_no_nb, Lerror0},
+    {"bpsp",                    Lbpsp, TOO_MANY_1, WRONG_NO_1},
+    {"codep",                   Lcodep, TOO_MANY_1, WRONG_NO_1},
+    {"cons",                    TOO_FEW_2, Lcons, WRONG_NO_2},
+    {"constantp",               Lconstantp, TOO_MANY_1, WRONG_NO_1},
+    {"date",                    Ldate1, WRONG_NO_NB, Ldate},
+    {"date-and-time",           Ldate_and_time1, WRONG_NO_NB, Ldate_and_time},
+    {"datestamp",               WRONG_NO_NA, WRONG_NO_NB, Ldatestamp},
+    {"timeofday",               WRONG_NO_NA, WRONG_NO_NB, Ltimeofday},
+    {"enable-errorset",         TOO_FEW_2, Lenable_errorset, WRONG_NO_2},
+    {"enable-backtrace",        Lenable_backtrace, TOO_MANY_1, WRONG_NO_1},
+    {"error",                   (one_args *)Lerror1, (two_args *)Lerror2, (n_args *)Lerror},
+    {"error1",                  WRONG_NO_NA, WRONG_NO_NB, (n_args *)Lerror0},
 #ifdef NAG
-    {"unwind",                  wrong_no_na, wrong_no_nb, Lunwind},
+    {"unwind",                  WRONG_NO_NA, WRONG_NO_NB, Lunwind},
 #endif
-    {"eq-safe",                 Leq_safe, too_many_1, wrong_no_1},
-    {"fixp",                    Lfixp, too_many_1, wrong_no_1},
-    {"floatp",                  Lfloatp, too_many_1, wrong_no_1},
-    {"fluidp",                  Lsymbol_specialp, too_many_1, wrong_no_1},
-    {"gctime",                  wrong_no_na, wrong_no_nb, Lgctime},
-    {"globalp",                 Lsymbol_globalp, too_many_1, wrong_no_1},
-    {"hash-table-p",            Lhash_table_p, too_many_1, wrong_no_1},
-    {"indirect",                Lindirect, too_many_1, wrong_no_1},
-    {"integerp",                Lintegerp, too_many_1, wrong_no_1},
-    {"intersection",            too_few_2, Lintersect, wrong_no_2},
-    {"intersection_symlist",    too_few_2, Lintersect_symlist, wrong_no_2},
-    {"keywordp",                Lsymbol_keywordp, too_many_1, wrong_no_1},
-    {"list2",                   too_few_2, Llist2, wrong_no_2},
-    {"list2*",                  wrong_no_na, wrong_no_nb, Llist2star},
-    {"list3",                   wrong_no_na, wrong_no_nb, Llist3},
-    {"list3*",                  wrong_no_na, wrong_no_nb, Llist3star},
-    {"list4",                   wrong_no_na, wrong_no_nb, Llist4},
-    {"make-global",             Lmake_global, too_many_1, wrong_no_1},
-    {"make-keyword",            Lmake_keyword, too_many_1, wrong_no_1},
-    {"make-special",            Lmake_special, too_many_1, wrong_no_1},
-    {"mkquote",                 Lmkquote, too_many_1, wrong_no_1},
-    {"ncons",                   Lncons, too_many_1, wrong_no_1},
-    {"numberp",                 Lnumberp, too_many_1, wrong_no_1},
-    {"pair",                    too_few_2, Lpair, wrong_no_2},
-    {"protect-symbols",     Lprotect_symbols, too_many_1, wrong_no_1},
-    {"protected-symbol-warn",   Lwarn_about_protected_symbols, too_many_1, wrong_no_1},
-    {"put",                     wrong_no_na, wrong_no_nb, Lputprop},
-    {"remprop",                 too_few_2, Lremprop, wrong_no_2},
-    {"representation",          Lrepresentation1, Lrepresentation2, wrong_no_2},
-    {"rplaca",                  too_few_2, Lrplaca, wrong_no_2},
-    {"rplacd",                  too_few_2, Lrplacd, wrong_no_2},
-    {"set",                     too_few_2, Lset, wrong_no_2},
-    {"makeunbound",             Lmakeunbound, too_many_1, wrong_no_1},
-    {"special-form-p",          Lspecial_form_p, too_many_1, wrong_no_1},
-    {"stop",                    Lstop, Lstop2, Lstop0},
-    {"symbol-function",         Lsymbol_function, too_many_1, wrong_no_1},
-    {"symbol-value",            Lsymbol_value, too_many_1, wrong_no_1},
-    {"time",                    wrong_no_na, wrong_no_nb, Ltime},
-    {"datelessp",               too_few_2, Ldatelessp, wrong_no_2},
-    {"union",                   too_few_2, Lunion, wrong_no_2},
-    {"union-symlist",           too_few_2, Lunion_symlist, wrong_no_2},
-    {"unmake-global",           Lunmake_global, too_many_1, wrong_no_1},
-    {"unmake-keyword",          Lunmake_keyword, too_many_1, wrong_no_1},
-    {"unmake-special",          Lunmake_special, too_many_1, wrong_no_1},
-    {"xcons",                   too_few_2, Lxcons, wrong_no_2},
+    {"eq-safe",                 Leq_safe, TOO_MANY_1, WRONG_NO_1},
+    {"fixp",                    Lfixp, TOO_MANY_1, WRONG_NO_1},
+    {"floatp",                  Lfloatp, TOO_MANY_1, WRONG_NO_1},
+    {"fluidp",                  Lsymbol_specialp, TOO_MANY_1, WRONG_NO_1},
+    {"gctime",                  WRONG_NO_NA, WRONG_NO_NB, Lgctime},
+    {"globalp",                 Lsymbol_globalp, TOO_MANY_1, WRONG_NO_1},
+    {"hash-table-p",            Lhash_table_p, TOO_MANY_1, WRONG_NO_1},
+    {"indirect",                Lindirect, TOO_MANY_1, WRONG_NO_1},
+    {"integerp",                Lintegerp, TOO_MANY_1, WRONG_NO_1},
+    {"intersection",            TOO_FEW_2, Lintersect, WRONG_NO_2},
+    {"intersection_symlist",    TOO_FEW_2, Lintersect_symlist, WRONG_NO_2},
+    {"keywordp",                Lsymbol_keywordp, TOO_MANY_1, WRONG_NO_1},
+    {"list2",                   TOO_FEW_2, Llist2, WRONG_NO_2},
+    {"list2*",                  WRONG_NO_NA, WRONG_NO_NB, Llist2star},
+    {"list3",                   WRONG_NO_NA, WRONG_NO_NB, Llist3},
+    {"list3*",                  WRONG_NO_NA, WRONG_NO_NB, Llist3star},
+    {"list4",                   WRONG_NO_NA, WRONG_NO_NB, Llist4},
+    {"make-global",             Lmake_global, TOO_MANY_1, WRONG_NO_1},
+    {"make-keyword",            Lmake_keyword, TOO_MANY_1, WRONG_NO_1},
+    {"make-special",            Lmake_special, TOO_MANY_1, WRONG_NO_1},
+    {"mkquote",                 Lmkquote, TOO_MANY_1, WRONG_NO_1},
+    {"ncons",                   Lncons, TOO_MANY_1, WRONG_NO_1},
+    {"numberp",                 Lnumberp, TOO_MANY_1, WRONG_NO_1},
+    {"pair",                    TOO_FEW_2, Lpair, WRONG_NO_2},
+    {"protect-symbols",     Lprotect_symbols, TOO_MANY_1, WRONG_NO_1},
+    {"protected-symbol-warn",   Lwarn_about_protected_symbols, TOO_MANY_1, WRONG_NO_1},
+    {"put",                     WRONG_NO_NA, WRONG_NO_NB, Lputprop},
+    {"remprop",                 TOO_FEW_2, Lremprop, WRONG_NO_2},
+    {"representation",          Lrepresentation1, Lrepresentation2, WRONG_NO_2},
+    {"rplaca",                  TOO_FEW_2, Lrplaca, WRONG_NO_2},
+    {"rplacd",                  TOO_FEW_2, Lrplacd, WRONG_NO_2},
+    {"set",                     TOO_FEW_2, Lset, WRONG_NO_2},
+    {"makeunbound",             Lmakeunbound, TOO_MANY_1, WRONG_NO_1},
+    {"special-form-p",          Lspecial_form_p, TOO_MANY_1, WRONG_NO_1},
+    {"stop",                    (one_args *)Lstop, (two_args *)Lstop2, (n_args *)Lstop0},
+    {"symbol-function",         Lsymbol_function, TOO_MANY_1, WRONG_NO_1},
+    {"symbol-value",            Lsymbol_value, TOO_MANY_1, WRONG_NO_1},
+    {"time",                    WRONG_NO_NA, WRONG_NO_NB, Ltime},
+    {"datelessp",               TOO_FEW_2, Ldatelessp, WRONG_NO_2},
+    {"union",                   TOO_FEW_2, Lunion, WRONG_NO_2},
+    {"union-symlist",           TOO_FEW_2, Lunion_symlist, WRONG_NO_2},
+    {"unmake-global",           Lunmake_global, TOO_MANY_1, WRONG_NO_1},
+    {"unmake-keyword",          Lunmake_keyword, TOO_MANY_1, WRONG_NO_1},
+    {"unmake-special",          Lunmake_special, TOO_MANY_1, WRONG_NO_1},
+    {"xcons",                   TOO_FEW_2, Lxcons, WRONG_NO_2},
 // I provide both IDP and SYMBOLP in both modes...
-    {"symbolp",                 Lsymbolp, too_many_1, wrong_no_1},
-    {"idp",                     Lsymbolp, too_many_1, wrong_no_1},
+    {"symbolp",                 Lsymbolp, TOO_MANY_1, WRONG_NO_1},
+    {"idp",                     Lsymbolp, TOO_MANY_1, WRONG_NO_1},
 // I support the Common Lisp names here in both modes
-    {"simple-string-p",         Lstringp, too_many_1, wrong_no_1},
-    {"simple-vector-p",         Lsimple_vectorp, too_many_1, wrong_no_1},
-    {"get-decoded-time",        wrong_no_0a, wrong_no_0b, Ldecoded_time},
-    {"short-floatp",            Lshort_floatp, too_many_1, wrong_no_1},
-    {"single-floatp",           Lsingle_floatp, too_many_1, wrong_no_1},
-    {"double-floatp",           Ldouble_floatp, too_many_1, wrong_no_1},
-    {"long-floatp",             Llong_floatp, too_many_1, wrong_no_1},
-    {"rationalp",               Lrationalp, too_many_1, wrong_no_1},
-    {"complexp",                Lcomplexp, too_many_1, wrong_no_1},
-    {"bit-vector-p",            Lsimple_bit_vector_p, too_many_1, wrong_no_1},
-    {"simple-bit-vector-p",     Lsimple_bit_vector_p, too_many_1, wrong_no_1},
-    {"fill-vector",             wrong_no_na, wrong_no_nb, Lfill_vector},
-    {"get",                     too_few_2, Lget, Lget_3},
-    {"arrayp",                  Larrayp, too_many_1, wrong_no_1},
-    {"complex-arrayp",          Lcomplex_arrayp, too_many_1, wrong_no_1},
-    {"consp",                   Lconsp, too_many_1, wrong_no_1},
-    {"convert-to-array",        Lconvert_to_array, too_many_1, wrong_no_1},
-    {"convert-to-struct",       Lconvert_to_struct, too_many_1, wrong_no_1},
-    {"identity",                Lidentity, too_many_1, wrong_no_1},
+    {"simple-string-p",         Lstringp, TOO_MANY_1, WRONG_NO_1},
+    {"simple-vector-p",         Lsimple_vectorp, TOO_MANY_1, WRONG_NO_1},
+    {"get-decoded-time",        WRONG_NO_0A, WRONG_NO_0B, Ldecoded_time},
+    {"short-floatp",            Lshort_floatp, TOO_MANY_1, WRONG_NO_1},
+    {"single-floatp",           Lsingle_floatp, TOO_MANY_1, WRONG_NO_1},
+    {"double-floatp",           Ldouble_floatp, TOO_MANY_1, WRONG_NO_1},
+    {"long-floatp",             Llong_floatp, TOO_MANY_1, WRONG_NO_1},
+    {"rationalp",               Lrationalp, TOO_MANY_1, WRONG_NO_1},
+    {"complexp",                Lcomplexp, TOO_MANY_1, WRONG_NO_1},
+    {"bit-vector-p",            Lsimple_bit_vector_p, TOO_MANY_1, WRONG_NO_1},
+    {"simple-bit-vector-p",     Lsimple_bit_vector_p, TOO_MANY_1, WRONG_NO_1},
+    {"fill-vector",             WRONG_NO_NA, WRONG_NO_NB, Lfill_vector},
+    {"get",                     TOO_FEW_2, Lget, Lget_3},
+    {"arrayp",                  Larrayp, TOO_MANY_1, WRONG_NO_1},
+    {"complex-arrayp",          Lcomplex_arrayp, TOO_MANY_1, WRONG_NO_1},
+    {"consp",                   Lconsp, TOO_MANY_1, WRONG_NO_1},
+    {"convert-to-array",        Lconvert_to_array, TOO_MANY_1, WRONG_NO_1},
+    {"convert-to-struct",       Lconvert_to_struct, TOO_MANY_1, WRONG_NO_1},
+    {"identity",                Lidentity, TOO_MANY_1, WRONG_NO_1},
     {"list",                    Lncons, Llist2, Llist},
     {"list*",                   Lidentity, Lcons, Lliststar},
-    {"listp",                   Llistp, too_many_1, wrong_no_1},
-//  {"stringp",                 Lc_stringp, too_many_1, wrong_no_1},
-    {"structp",                 Lstructp, too_many_1, wrong_no_1},
-    {"flag",                    too_few_2, Lflag, wrong_no_2},
-    {"flagp",                   too_few_2, Lflagp, wrong_no_2},
-    {"flagpcar",                too_few_2, Lflagpcar, wrong_no_2},
-    {"remflag",                 too_few_2, Lremflag, wrong_no_2},
-    {"time*",                   wrong_no_na, wrong_no_nb, Ltime},
-    {"convert-to-evector",      Lconvert_to_struct, too_many_1, wrong_no_1},
-    {"evectorp",                Lstructp, too_many_1, wrong_no_1},
-    {"get*",                    too_few_2, Lget, wrong_no_2},
-    {"pairp",                   Lconsp, too_many_1, wrong_no_1},
-    {"consp",                   Lconsp, too_many_1, wrong_no_1},
-    {"flagp**",                 too_few_2, Lflagp, wrong_no_2},
-    {"stringp",                 Lstringp, too_many_1, wrong_no_1},
-    {"threevectorp",            Lthreevectorp, too_many_1, wrong_no_1},
-//  {"throw",                   Lthrow_nil, Lthrow_one_value, wrong_no_2},
-    {"vectorp",                 Lsimple_vectorp, too_many_1, wrong_no_1},
-    {"open-foreign-library",    Lopen_foreign_library, too_many_1, wrong_no_1},
-    {"find-foreign-function",   too_few_2, Lfind_foreign_function, wrong_no_2},
+    {"listp",                   Llistp, TOO_MANY_1, WRONG_NO_1},
+//  {"stringp",                 Lc_stringp, TOO_MANY_1, WRONG_NO_1},
+    {"structp",                 Lstructp, TOO_MANY_1, WRONG_NO_1},
+    {"flag",                    TOO_FEW_2, Lflag, WRONG_NO_2},
+    {"flagp",                   TOO_FEW_2, Lflagp, WRONG_NO_2},
+    {"flagpcar",                TOO_FEW_2, Lflagpcar, WRONG_NO_2},
+    {"remflag",                 TOO_FEW_2, Lremflag, WRONG_NO_2},
+    {"time*",                   WRONG_NO_NA, WRONG_NO_NB, Ltime},
+    {"convert-to-evector",      Lconvert_to_struct, TOO_MANY_1, WRONG_NO_1},
+    {"evectorp",                Lstructp, TOO_MANY_1, WRONG_NO_1},
+    {"get*",                    TOO_FEW_2, Lget, WRONG_NO_2},
+    {"pairp",                   Lconsp, TOO_MANY_1, WRONG_NO_1},
+    {"consp",                   Lconsp, TOO_MANY_1, WRONG_NO_1},
+    {"flagp**",                 TOO_FEW_2, Lflagp, WRONG_NO_2},
+    {"stringp",                 Lstringp, TOO_MANY_1, WRONG_NO_1},
+    {"threevectorp",            Lthreevectorp, TOO_MANY_1, WRONG_NO_1},
+//  {"throw",                   Lthrow_nil, Lthrow_one_value, WRONG_NO_2},
+    {"vectorp",                 Lsimple_vectorp, TOO_MANY_1, WRONG_NO_1},
+    {"open-foreign-library",    Lopen_foreign_library, TOO_MANY_1, WRONG_NO_1},
+    {"find-foreign-function",   TOO_FEW_2, Lfind_foreign_function, WRONG_NO_2},
     {"call-foreign-function",   Lcallf1, Lcallf2, Lcallfn},
-    {"get-callback",            Lget_callback, too_many_1, wrong_no_1},
+    {"get-callback",            Lget_callback, TOO_MANY_1, WRONG_NO_1},
     {NULL,                      0, 0, 0}
 };
 

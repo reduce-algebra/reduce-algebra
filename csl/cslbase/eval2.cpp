@@ -714,7 +714,7 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
             else z = nil;
             if (!is_symbol(q) || q==nil || q==lisp_true)
             {   LispObject qq = q;
-                Return(error(1, err_bad_bvl, qq));
+                error(1, err_bad_bvl, qq);
             }
             else
             {   Header h = qheader(q);
@@ -1246,29 +1246,29 @@ static LispObject bad_specialfn2(LispObject env, LispObject a, LispObject b)
 }
 
 setup_type const eval2_setup[] =
-{   {"and",                     and_fn, bad_specialfn2, bad_specialn},
-    {"catch",                   catch_fn, bad_specialfn2, bad_specialn},
-    {"cond",                    cond_fn, bad_specialfn2, bad_specialn},
-    {"eval-when",               eval_when_fn, bad_specialfn2, bad_specialn},
-    {"function",                function_fn, bad_specialfn2, bad_specialn},
-    {"go",                      go_fn, bad_specialfn2, bad_specialn},
-    {"if",                      if_fn, bad_specialfn2, bad_specialn},
-    {"let*",                    letstar_fn, bad_specialfn2, bad_specialn},
+{   {"and",                     and_fn, bad_specialfn2, BAD_SPECIALN},
+    {"catch",                   catch_fn, bad_specialfn2, BAD_SPECIALN},
+    {"cond",                    cond_fn, bad_specialfn2, BAD_SPECIALN},
+    {"eval-when",               eval_when_fn, bad_specialfn2, BAD_SPECIALN},
+    {"function",                function_fn, bad_specialfn2, BAD_SPECIALN},
+    {"go",                      go_fn, bad_specialfn2, BAD_SPECIALN},
+    {"if",                      if_fn, bad_specialfn2, BAD_SPECIALN},
+    {"let*",                    letstar_fn, bad_specialfn2, BAD_SPECIALN},
 // DE and DM are used as low level primitives in the Common Lisp bootstrap
-    {"de",                      defun_fn, bad_specialfn2, bad_specialn},
-    {"dm",                      defmacro_fn, bad_specialfn2, bad_specialn},
-    {"declare",                 declare_fn, bad_specialfn2, bad_specialn},
-    {"compiler-let",            compiler_let_fn, bad_specialfn2, bad_specialn},
-    {"flet",                    flet_fn, bad_specialfn2, bad_specialn},
-    {"labels",                  labels_fn, bad_specialfn2, bad_specialn},
+    {"de",                      defun_fn, bad_specialfn2, BAD_SPECIALN},
+    {"dm",                      defmacro_fn, bad_specialfn2, BAD_SPECIALN},
+    {"declare",                 declare_fn, bad_specialfn2, BAD_SPECIALN},
+    {"compiler-let",            compiler_let_fn, bad_specialfn2, BAD_SPECIALN},
+    {"flet",                    flet_fn, bad_specialfn2, BAD_SPECIALN},
+    {"labels",                  labels_fn, bad_specialfn2, BAD_SPECIALN},
 // For the purposes of Reduce there is a problem with the names LET anb BLOCK
 // because they are used in the system, and having them as Lisp-level special
 // forms would clash. I provide implementations but with names prefixed by
 // "~". This is perhaps an issue that ough to get resolved some time.
-//  {"block",                   block_fn, bad_specialfn2, bad_specialn},
-//  {"let",                     let_fn, bad_specialfn2, bad_specialn},
-    {"~block",                  block_fn, bad_specialfn2, bad_specialn},
-    {"~let",                    let_fn, bad_specialfn2, bad_specialn},
+//  {"block",                   block_fn, bad_specialfn2, BAD_SPECIALN},
+//  {"let",                     let_fn, bad_specialfn2, BAD_SPECIALN},
+    {"~block",                  block_fn, bad_specialfn2, BAD_SPECIALN},
+    {"~let",                    let_fn, bad_specialfn2, BAD_SPECIALN},
     {NULL,                      0, 0, 0}
 };
 

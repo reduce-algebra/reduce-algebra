@@ -1839,7 +1839,7 @@ LispObject Lsleep(LispObject env, LispObject a)
 }
 
 setup_type const eval1_setup[] =
-{   {"bytecounts",              bytecounts1, wrong_no_nb, bytecounts},
+{   {"bytecounts",              bytecounts1, WRONG_NO_NB, bytecounts},
 //
 // PSL has a function idapply that is, as best I understand, just the
 // same as apply apart from the fact that it expects an identifier as
@@ -1850,21 +1850,22 @@ setup_type const eval1_setup[] =
 // optimisation in this area...
 //
     {"idapply",                 Lapply_1, Lapply_2, Lapply_n},
-    {"eval",                    Leval, too_many_1, wrong_no_1},
+    {"eval",                    Leval, TOO_MANY_1, WRONG_NO_1},
     {"apply",                   Lapply_1, Lapply_2, Lapply_n},
-    {"apply0",                  Lapply0, too_many_1, wrong_no_1},
-    {"apply1",                  too_few_2, Lapply1, wrong_no_2},
-    {"apply2",                  wrong_no_na, wrong_no_nb, Lapply2},
-    {"apply3",                  wrong_no_na, wrong_no_nb, Lapply3},
-    {"evlis",                   Levlis, too_many_1, wrong_no_1},
+    {"apply0",                  Lapply0, TOO_MANY_1, WRONG_NO_1},
+    {"apply1",                  TOO_FEW_2, Lapply1, WRONG_NO_2},
+    {"apply2",                  WRONG_NO_NA, WRONG_NO_NB, Lapply2},
+    {"apply3",                  WRONG_NO_NA, WRONG_NO_NB, Lapply3},
+    {"evlis",                   Levlis, TOO_MANY_1, WRONG_NO_1},
     {"funcall",                 Lfuncall1, Lfuncall2, Lfuncalln},
     {"funcall*",                Lfuncall1, Lfuncall2, Lfuncalln},
-    {"parallel",                too_few_2, Lparallel, wrong_no_2},
-    {"sleep",                   Lsleep, too_many_1, wrong_no_1},
+    {"parallel",                TOO_FEW_2, Lparallel, WRONG_NO_2},
+    {"sleep",                   Lsleep, TOO_MANY_1, WRONG_NO_1},
     {"values",                  Lvalues_1, Lvalues_2, Lvalues},
-    {"macroexpand",             Lmacroexpand, Lmacroexpand_2, wrong_no_1},
-    {"macroexpand-1",           Lmacroexpand_1, Lmacroexpand_1_2, wrong_no_1},
+    {"macroexpand",             Lmacroexpand, Lmacroexpand_2, WRONG_NO_1},
+    {"macroexpand-1",           Lmacroexpand_1, Lmacroexpand_1_2, WRONG_NO_1},
     {NULL,                      0, 0, 0}
 };
 
 // end of eval1.cpp
+

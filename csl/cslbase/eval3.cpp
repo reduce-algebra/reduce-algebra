@@ -613,7 +613,7 @@ tag_found:
     throw LispThrow();
 }
 
-LispObject Lthrow_one_value(LispObject env, LispObject tag, LispObject val)
+void Lthrow_one_value(LispObject env, LispObject tag, LispObject val)
 {   LispObject p;
     STACK_SANITY;
     for (p = catch_tags; p!=nil; p=qcdr(p))
@@ -1272,25 +1272,25 @@ static LispObject bad_specialfn3(LispObject env, LispObject a, LispObject b)
 }
 
 setup_type const eval3_setup[] =
-{   {"or",                      or_fn, bad_specialfn3, bad_specialn},
-    {"prog",                    prog_fn, bad_specialfn3, bad_specialn},
-    {"prog1",                   prog1_fn, bad_specialfn3, bad_specialn},
-    {"prog2",                   prog2_fn, bad_specialfn3, bad_specialn},
-    {"progn",                   progn_fn, bad_specialfn3, bad_specialn},
-    {"quote",                   quote_fn, bad_specialfn3, bad_specialn},
-    {"return",                  return_fn, bad_specialfn3, bad_specialn},
-    {"setq",                    setq_fn, bad_specialfn3, bad_specialn},
-    {"tagbody",                 tagbody_fn, bad_specialfn3, bad_specialn},
-    {"unless",                  unless_fn, bad_specialfn3, bad_specialn},
-    {"unwind-protect",          unwind_protect_fn, bad_specialfn3, bad_specialn},
-    {"when",                    when_fn, bad_specialfn3, bad_specialn},
-    {"macrolet",                macrolet_fn, bad_specialfn3, bad_specialn},
-    {"multiple-value-call",     mv_call_fn, bad_specialfn3, bad_specialn},
-    {"multiple-value-prog1",    mv_prog1_fn, bad_specialfn3, bad_specialn},
-    {"progv",                   progv_fn, bad_specialfn3, bad_specialn},
-    {"return-from",             return_from_fn, bad_specialfn3, bad_specialn},
-    {"the",                     the_fn, bad_specialfn3, bad_specialn},
-    {"throw",                   throw_fn, bad_specialfn3, bad_specialn},
+{   {"or",                      or_fn, bad_specialfn3, BAD_SPECIALN},
+    {"prog",                    prog_fn, bad_specialfn3, BAD_SPECIALN},
+    {"prog1",                   prog1_fn, bad_specialfn3, BAD_SPECIALN},
+    {"prog2",                   prog2_fn, bad_specialfn3, BAD_SPECIALN},
+    {"progn",                   progn_fn, bad_specialfn3, BAD_SPECIALN},
+    {"quote",                   quote_fn, bad_specialfn3, BAD_SPECIALN},
+    {"return",                  return_fn, bad_specialfn3, BAD_SPECIALN},
+    {"setq",                    setq_fn, bad_specialfn3, BAD_SPECIALN},
+    {"tagbody",                 tagbody_fn, bad_specialfn3, BAD_SPECIALN},
+    {"unless",                  unless_fn, bad_specialfn3, BAD_SPECIALN},
+    {"unwind-protect",          unwind_protect_fn, bad_specialfn3, BAD_SPECIALN},
+    {"when",                    when_fn, bad_specialfn3, BAD_SPECIALN},
+    {"macrolet",                macrolet_fn, bad_specialfn3, BAD_SPECIALN},
+    {"multiple-value-call",     mv_call_fn, bad_specialfn3, BAD_SPECIALN},
+    {"multiple-value-prog1",    mv_prog1_fn, bad_specialfn3, BAD_SPECIALN},
+    {"progv",                   progv_fn, bad_specialfn3, BAD_SPECIALN},
+    {"return-from",             return_from_fn, bad_specialfn3, BAD_SPECIALN},
+    {"the",                     the_fn, bad_specialfn3, BAD_SPECIALN},
+    {"throw",                   throw_fn, bad_specialfn3, BAD_SPECIALN},
     {NULL,                      0, 0, 0}
 };
 

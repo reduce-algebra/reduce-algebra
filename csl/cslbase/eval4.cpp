@@ -888,7 +888,7 @@ n_args *no_arg_functions[] =
 {   Lbatchp,                // 0
     Ldate,                  // 1
     Leject,                 // 2
-    Lerror0,                // 3
+    (n_args *)Lerror0,      // 3
     Lgctime,                // 4
     Lgensym,                // 5
     Llposn,                 // 6
@@ -986,7 +986,7 @@ one_args *one_arg_functions[] =
     Lspecial_char,          // 75
     Lspecial_form_p,        // 76
     Lspool,                 // 77
-    Lstop,                  // 78
+    (one_args *)Lstop,      // 78
     Lstringp,               // 79
     Lsub1,                  // 80
     Lsymbol_env,            // 81

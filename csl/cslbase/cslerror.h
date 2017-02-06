@@ -41,24 +41,40 @@
 #define header_cslerror_h 1
 
 extern "C" LispObject interrupted(LispObject p);
-extern "C" NORETURN LispObject error(int nargs, int code, ...);
-extern "C" NORETURN LispObject cerror(int nargs, int code1, int code2, ...);
-extern "C" NORETURN LispObject too_few_2(LispObject env, LispObject a1);
-extern "C" NORETURN LispObject too_many_1(LispObject env, LispObject a1, LispObject a2);
-extern "C" NORETURN LispObject wrong_no_0a(LispObject env, LispObject a1);
-extern "C" NORETURN LispObject wrong_no_0b(LispObject env, LispObject a1, LispObject a2);
-extern "C" NORETURN LispObject wrong_no_3a(LispObject env, LispObject a1);
-extern "C" NORETURN LispObject wrong_no_3b(LispObject env, LispObject a1, LispObject a2);
-extern "C" NORETURN LispObject wrong_no_na(LispObject env, LispObject a1);
-extern "C" NORETURN LispObject wrong_no_nb(LispObject env, LispObject a1, LispObject a2);
-extern "C" NORETURN LispObject wrong_no_1(LispObject env, int nargs, ...);
-extern "C" NORETURN LispObject wrong_no_2(LispObject env, int nargs, ...);
-extern "C" NORETURN LispObject bad_specialn(LispObject env, int nargs, ...);
+extern "C" NORETURN void error(int nargs, int code, ...);
+extern "C" NORETURN void cerror(int nargs, int code1, int code2, ...);
+extern "C" NORETURN void too_few_2(LispObject env, LispObject a1);
+extern "C" NORETURN void too_many_1(LispObject env, LispObject a1, LispObject a2);
+extern "C" NORETURN void wrong_no_0a(LispObject env, LispObject a1);
+extern "C" NORETURN void wrong_no_0b(LispObject env, LispObject a1, LispObject a2);
+extern "C" NORETURN void wrong_no_3a(LispObject env, LispObject a1);
+extern "C" NORETURN void wrong_no_3b(LispObject env, LispObject a1, LispObject a2);
+extern "C" NORETURN void wrong_no_na(LispObject env, LispObject a1);
+extern "C" NORETURN void wrong_no_nb(LispObject env, LispObject a1, LispObject a2);
+extern "C" NORETURN void wrong_no_1(LispObject env, int nargs, ...);
+extern "C" NORETURN void wrong_no_2(LispObject env, int nargs, ...);
+extern "C" NORETURN void bad_specialn(LispObject env, int nargs, ...);
 
-extern "C" NORETURN LispObject aerror(const char *s);         // Called from C not Lisp
-extern "C" NORETURN LispObject aerror0(const char *s);
-extern "C" NORETURN LispObject aerror1(const char *s, LispObject a);
-extern "C" NORETURN LispObject aerror2(const char *s, LispObject a, LispObject b);
+// To go in a setup table the types need to look as if a value will be
+// returned.
+
+#define TOO_FEW_2           ((one_args *)too_few_2)
+#define TOO_MANY_1          ((two_args *)too_many_1)
+#define WRONG_NO_0A         ((one_args *)wrong_no_0a)
+#define WRONG_NO_0B         ((two_args *)wrong_no_0b)
+#define WRONG_NO_3A         ((one_args *)wrong_no_3a)
+#define WRONG_NO_3B         ((two_args *)wrong_no_3b)
+#define WRONG_NO_NA         ((one_args *)wrong_no_na)
+#define WRONG_NO_NB         ((two_args *)wrong_no_nb)
+#define WRONG_NO_1          ((n_args *)wrong_no_1)
+#define WRONG_NO_2          ((n_args *)wrong_no_2)
+#define BAD_SPECIALN        ((n_args *)bad_specialn)
+
+
+extern "C" NORETURN void aerror(const char *s);         // Called from C not Lisp
+extern "C" NORETURN void aerror0(const char *s);
+extern "C" NORETURN void aerror1(const char *s, LispObject a);
+extern "C" NORETURN void aerror2(const char *s, LispObject a, LispObject b);
 extern "C" NORETURN void fatal_error(int code, ...);
 
 // For the sahe of Common Lisp style treatment of (car nil) and (cdr nil)

@@ -515,34 +515,34 @@ LispObject Lsymbol_restore_fns(LispObject env, LispObject name)
     r = int_of_fixnum(n);
     switch (r)
     {   case 1:
-            set_fns(name, bytecoded1, too_many_1, wrong_no_1);
+            set_fns(name, bytecoded1, TOO_MANY_1, WRONG_NO_1);
             break;
         case 1 + BYTE_TRACED:
-            set_fns(name, tracebytecoded1, too_many_1, wrong_no_1);
+            set_fns(name, tracebytecoded1, TOO_MANY_1, WRONG_NO_1);
             break;
         case 2:
-            set_fns(name, too_few_2, bytecoded2, wrong_no_2);
+            set_fns(name, TOO_FEW_2, bytecoded2, WRONG_NO_2);
             break;
         case 2 + BYTE_TRACED:
-            set_fns(name, too_few_2, tracebytecoded2, wrong_no_2);
+            set_fns(name, TOO_FEW_2, tracebytecoded2, WRONG_NO_2);
             break;
         case 0:
-            set_fns(name, wrong_no_0a, wrong_no_0b, bytecoded0);
+            set_fns(name, WRONG_NO_0A, WRONG_NO_0B, bytecoded0);
             break;
         case 0 + BYTE_TRACED:
-            set_fns(name, wrong_no_0a, wrong_no_0b, tracebytecoded0);
+            set_fns(name, WRONG_NO_0A, WRONG_NO_0B, tracebytecoded0);
             break;
         case 3:
-            set_fns(name, wrong_no_3a, wrong_no_3b, bytecoded3);
+            set_fns(name, WRONG_NO_3A, WRONG_NO_3B, bytecoded3);
             break;
         case 3 + BYTE_TRACED:
-            set_fns(name, wrong_no_3a, wrong_no_3b, tracebytecoded3);
+            set_fns(name, WRONG_NO_3A, WRONG_NO_3B, tracebytecoded3);
             break;
         case 4:
-            set_fns(name, wrong_no_na, wrong_no_nb, bytecodedn);
+            set_fns(name, WRONG_NO_NA, WRONG_NO_NB, bytecodedn);
             break;
         case 4 + BYTE_TRACED:
-            set_fns(name, wrong_no_na, wrong_no_nb, tracebytecodedn);
+            set_fns(name, WRONG_NO_NA, WRONG_NO_NB, tracebytecodedn);
             break;
         case BYTE_OPT:
             set_fns(name, byteopt1, byteopt2, byteoptn);
@@ -569,34 +569,34 @@ LispObject Lsymbol_restore_fns(LispObject env, LispObject name)
             set_fns(name, tracehardoptrest1, tracehardoptrest2, tracehardoptrestn);
             break;
         case BYTE_CALLAS + 0:
-            set_fns(name, wrong_no_na, wrong_no_nb,  f3_as_0);
+            set_fns(name, WRONG_NO_NA, WRONG_NO_NB,  f3_as_0);
             break;
         case BYTE_CALLAS + 1:
-            set_fns(name, wrong_no_na, wrong_no_nb,  f3_as_1);
+            set_fns(name, WRONG_NO_NA, WRONG_NO_NB,  f3_as_1);
             break;
         case BYTE_CALLAS + 2:
-            set_fns(name, wrong_no_na, wrong_no_nb,  f3_as_2);
+            set_fns(name, WRONG_NO_NA, WRONG_NO_NB,  f3_as_2);
             break;
         case BYTE_CALLAS + 3:
-            set_fns(name, wrong_no_na, wrong_no_nb,  f3_as_3);
+            set_fns(name, WRONG_NO_NA, WRONG_NO_NB,  f3_as_3);
             break;
         case BYTE_CALLAS + 4:
-            set_fns(name, wrong_no_na, wrong_no_nb,  f0_as_0);
+            set_fns(name, WRONG_NO_NA, WRONG_NO_NB,  f0_as_0);
             break;
         case BYTE_CALLAS + 5:
-            set_fns(name, too_few_2,  f2_as_0, wrong_no_2);
+            set_fns(name, TOO_FEW_2,  f2_as_0, WRONG_NO_2);
             break;
         case BYTE_CALLAS + 6:
-            set_fns(name, too_few_2,  f2_as_1, wrong_no_2);
+            set_fns(name, TOO_FEW_2,  f2_as_1, WRONG_NO_2);
             break;
         case BYTE_CALLAS + 7:
-            set_fns(name, too_few_2,  f2_as_2, wrong_no_2);
+            set_fns(name, TOO_FEW_2,  f2_as_2, WRONG_NO_2);
             break;
         case BYTE_CALLAS + 8:
-            set_fns(name, f1_as_0, too_many_1, wrong_no_1);
+            set_fns(name, f1_as_0, TOO_MANY_1, WRONG_NO_1);
             break;
         case BYTE_CALLAS + 9:
-            set_fns(name, f1_as_1, too_many_1, wrong_no_1);
+            set_fns(name, f1_as_1, TOO_MANY_1, WRONG_NO_1);
             break;
 
         default:
@@ -854,16 +854,16 @@ LispObject Lsymbol_set_definition(LispObject env,
         flagbits &= 3;
         if (ntail != 0)
         {   switch (100*nargs + ntail-1)
-            {   case 300: set_fns(a, wrong_no_na, wrong_no_nb, f3_as_0); break;
-                case 301: set_fns(a, wrong_no_na, wrong_no_nb, f3_as_1); break;
-                case 302: set_fns(a, wrong_no_na, wrong_no_nb, f3_as_2); break;
-                case 303: set_fns(a, wrong_no_na, wrong_no_nb, f3_as_3); break;
-                case 200: set_fns(a, too_few_2, f2_as_0, wrong_no_2); break;
-                case 201: set_fns(a, too_few_2, f2_as_1, wrong_no_2); break;
-                case 202: set_fns(a, too_few_2, f2_as_2, wrong_no_2); break;
-                case 100: set_fns(a, f1_as_0, too_many_1, wrong_no_1); break;
-                case 101: set_fns(a, f1_as_1, too_many_1, wrong_no_1); break;
-                case 000: set_fns(a, wrong_no_na, wrong_no_nb, f0_as_0); break;
+            {   case 300: set_fns(a, WRONG_NO_NA, WRONG_NO_NB, f3_as_0); break;
+                case 301: set_fns(a, WRONG_NO_NA, WRONG_NO_NB, f3_as_1); break;
+                case 302: set_fns(a, WRONG_NO_NA, WRONG_NO_NB, f3_as_2); break;
+                case 303: set_fns(a, WRONG_NO_NA, WRONG_NO_NB, f3_as_3); break;
+                case 200: set_fns(a, TOO_FEW_2, f2_as_0, WRONG_NO_2); break;
+                case 201: set_fns(a, TOO_FEW_2, f2_as_1, WRONG_NO_2); break;
+                case 202: set_fns(a, TOO_FEW_2, f2_as_2, WRONG_NO_2); break;
+                case 100: set_fns(a, f1_as_0, TOO_MANY_1, WRONG_NO_1); break;
+                case 101: set_fns(a, f1_as_1, TOO_MANY_1, WRONG_NO_1); break;
+                case 000: set_fns(a, WRONG_NO_NA, WRONG_NO_NB, f0_as_0); break;
             }
             b = qcdr(b);
         }
@@ -896,27 +896,27 @@ LispObject Lsymbol_set_definition(LispObject env,
             if ((qheader(a) & SYM_TRACED) != 0) nargs += 5;
             qheader(a) = qheader(a) & ~SYM_MACRO;
             switch (nargs)
-            {   case 0:   set_fns(a, wrong_no_0a, wrong_no_0b, bytecoded0);
+            {   case 0:   set_fns(a, WRONG_NO_0A, WRONG_NO_0B, bytecoded0);
                     break;
-                case 1:   set_fns(a, bytecoded1,  too_many_1,  wrong_no_1);
+                case 1:   set_fns(a, bytecoded1,  TOO_MANY_1,  WRONG_NO_1);
                     break;
-                case 2:   set_fns(a, too_few_2,   bytecoded2,  wrong_no_2);
+                case 2:   set_fns(a, TOO_FEW_2,   bytecoded2,  WRONG_NO_2);
                     break;
-                case 3:   set_fns(a, wrong_no_3a, wrong_no_3b, bytecoded3);
+                case 3:   set_fns(a, WRONG_NO_3A, WRONG_NO_3B, bytecoded3);
                     break;
                 default:
-                case 4:   set_fns(a, wrong_no_na, wrong_no_nb, bytecodedn);
+                case 4:   set_fns(a, WRONG_NO_NA, WRONG_NO_NB, bytecodedn);
                     break;
 
-                case 5+0: set_fns(a, wrong_no_0a, wrong_no_0b, tracebytecoded0);
+                case 5+0: set_fns(a, WRONG_NO_0A, WRONG_NO_0B, tracebytecoded0);
                     break;
-                case 5+1: set_fns(a, tracebytecoded1, too_many_1,  wrong_no_1);
+                case 5+1: set_fns(a, tracebytecoded1, TOO_MANY_1,  WRONG_NO_1);
                     break;
-                case 5+2: set_fns(a, too_few_2,   tracebytecoded2, wrong_no_2);
+                case 5+2: set_fns(a, TOO_FEW_2,   tracebytecoded2, WRONG_NO_2);
                     break;
-                case 5+3: set_fns(a, wrong_no_3a, wrong_no_3b, tracebytecoded3);
+                case 5+3: set_fns(a, WRONG_NO_3A, WRONG_NO_3B, tracebytecoded3);
                     break;
-                case 5+4: set_fns(a, wrong_no_na, wrong_no_nb, tracebytecodedn);
+                case 5+4: set_fns(a, WRONG_NO_NA, WRONG_NO_NB, tracebytecodedn);
                     break;
             }
         }
@@ -3771,104 +3771,104 @@ LispObject Lsubla(LispObject env, LispObject al, LispObject x)
 
 
 setup_type const funcs2_setup[] =
-{   {"assoc",                   too_few_2, Lassoc, wrong_no_2},
+{   {"assoc",                   TOO_FEW_2, Lassoc, WRONG_NO_2},
 //
 // assoc** is expected to remain as the Standard Lisp version even if in
 // a Common Lisp world I redefine assoc to be something messier. xassoc was
 // an earlier name I used for the same purpose, and is being withdrawn.
 //
-    {"assoc**",                 too_few_2, Lassoc, wrong_no_2},
-    {"xassoc",                  too_few_2, Lassoc, wrong_no_2},
-    {"atsoc",                   too_few_2, Latsoc, wrong_no_2},
-    {"member",                  too_few_2, Lmember, wrong_no_2},
-    {"member**",                too_few_2, Lmember, wrong_no_2},
-    {"memq",                    too_few_2, Lmemq, wrong_no_2},
-    {"contained",               too_few_2, Lcontained, wrong_no_2},
+    {"assoc**",                 TOO_FEW_2, Lassoc, WRONG_NO_2},
+    {"xassoc",                  TOO_FEW_2, Lassoc, WRONG_NO_2},
+    {"atsoc",                   TOO_FEW_2, Latsoc, WRONG_NO_2},
+    {"member",                  TOO_FEW_2, Lmember, WRONG_NO_2},
+    {"member**",                TOO_FEW_2, Lmember, WRONG_NO_2},
+    {"memq",                    TOO_FEW_2, Lmemq, WRONG_NO_2},
+    {"contained",               TOO_FEW_2, Lcontained, WRONG_NO_2},
 //
 // I originally called this restart!-csl but I am now changing the name
 // to be restart!-lisp to be a little less specific about exactly which
 // implementation of Lisp is involved. IN the fullness of time I will
 // remove the name restart!-csl...
 //
-    {"restart-lisp",            Lrestart_lisp, Lrestart_lisp2, wrong_no_1},
-    {"restart-csl",             Lrestart_lisp, Lrestart_lisp2, wrong_no_1},
-    {"eq",                      too_few_2, Leq, wrong_no_2},
-    {"iequal",                  too_few_2, Leq, wrong_no_2},
-    {"eqcar",                   too_few_2, Leqcar, wrong_no_2},
-    {"equalcar",                too_few_2, Lequalcar, wrong_no_2},
-    {"eql",                     too_few_2, Leql, wrong_no_2},
-    {"equalp",                  too_few_2, Lequalp, wrong_no_2},
-    {"endp",                    Lendp, too_many_1, wrong_no_1},
-    {"getd",                    Lgetd, too_many_1, wrong_no_1},
-    {"last",                    Llast, too_many_1, wrong_no_1},
-    {"lastpair",                Llastpair, too_many_1, wrong_no_1},
-    {"length",                  Llength, too_many_1, wrong_no_1},
-    {"make-bps",                Lget_bps, too_many_1, wrong_no_1},
-    {"symbol-env",              Lsymbol_env, too_many_1, wrong_no_1},
-    {"symbol-make-fastget",     Lsymbol_make_fastget1, Lsymbol_make_fastget, wrong_no_2},
-    {"symbol-fastgets",         Lsymbol_fastgets, too_many_1, wrong_no_1},
-    {"object-header",           Lobject_header, too_many_1, wrong_no_1},
-    {"symbol-fn-cell",          Lsymbol_fn_cell, too_many_1, wrong_no_1},
-    {"symbol-argcode",          Lsymbol_argcount, too_many_1, wrong_no_1},
-    {"symbol-restore-fns",      Lsymbol_restore_fns, too_many_1, wrong_no_1},
-    {"symbol-argcount",         Lsymbol_argcount, too_many_1, wrong_no_1},
-    {"symbol-set-env",          too_few_2, Lsymbol_set_env, wrong_no_2},
+    {"restart-lisp",            Lrestart_lisp, Lrestart_lisp2, WRONG_NO_1},
+    {"restart-csl",             Lrestart_lisp, Lrestart_lisp2, WRONG_NO_1},
+    {"eq",                      TOO_FEW_2, Leq, WRONG_NO_2},
+    {"iequal",                  TOO_FEW_2, Leq, WRONG_NO_2},
+    {"eqcar",                   TOO_FEW_2, Leqcar, WRONG_NO_2},
+    {"equalcar",                TOO_FEW_2, Lequalcar, WRONG_NO_2},
+    {"eql",                     TOO_FEW_2, Leql, WRONG_NO_2},
+    {"equalp",                  TOO_FEW_2, Lequalp, WRONG_NO_2},
+    {"endp",                    Lendp, TOO_MANY_1, WRONG_NO_1},
+    {"getd",                    Lgetd, TOO_MANY_1, WRONG_NO_1},
+    {"last",                    Llast, TOO_MANY_1, WRONG_NO_1},
+    {"lastpair",                Llastpair, TOO_MANY_1, WRONG_NO_1},
+    {"length",                  Llength, TOO_MANY_1, WRONG_NO_1},
+    {"make-bps",                Lget_bps, TOO_MANY_1, WRONG_NO_1},
+    {"symbol-env",              Lsymbol_env, TOO_MANY_1, WRONG_NO_1},
+    {"symbol-make-fastget",     Lsymbol_make_fastget1, Lsymbol_make_fastget, WRONG_NO_2},
+    {"symbol-fastgets",         Lsymbol_fastgets, TOO_MANY_1, WRONG_NO_1},
+    {"object-header",           Lobject_header, TOO_MANY_1, WRONG_NO_1},
+    {"symbol-fn-cell",          Lsymbol_fn_cell, TOO_MANY_1, WRONG_NO_1},
+    {"symbol-argcode",          Lsymbol_argcount, TOO_MANY_1, WRONG_NO_1},
+    {"symbol-restore-fns",      Lsymbol_restore_fns, TOO_MANY_1, WRONG_NO_1},
+    {"symbol-argcount",         Lsymbol_argcount, TOO_MANY_1, WRONG_NO_1},
+    {"symbol-set-env",          TOO_FEW_2, Lsymbol_set_env, WRONG_NO_2},
 #ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
-    {"make-native",             Lget_native, too_many_1, wrong_no_1},
-    {"symbol-set-native",       wrong_no_na, wrong_no_nb, Lsymbol_set_native},
+    {"make-native",             Lget_native, TOO_MANY_1, WRONG_NO_1},
+    {"symbol-set-native",       WRONG_NO_NA, WRONG_NO_NB, Lsymbol_set_native},
 #endif
-    {"symbol-set-definition",   too_few_2, Lsymbol_set_definition, wrong_no_2},
-    {"restore-c-code",          Lrestore_c_code, too_many_1, wrong_no_1},
-    {"set-autoload",            too_few_2, Lset_autoload, wrong_no_2},
-    {"remd",                    Lremd, too_many_1, wrong_no_1},
-    {"trace",                   Ltrace, too_many_1, wrong_no_1},
-    {"untrace",                 Luntrace, too_many_1, wrong_no_1},
-    {"traceset",                Ltraceset, too_many_1, wrong_no_1},
-    {"untraceset",              Luntraceset, too_many_1, wrong_no_1},
-    {"macro-function",          Lmacro_function, too_many_1, wrong_no_1},
-    {"symbol-name",             Lsymbol_name, too_many_1, wrong_no_1},
-    {"id2string",               Lsymbol_name, too_many_1, wrong_no_1},
-    {"plist",                   Lplist, too_many_1, wrong_no_1},
-    {"prop",                    Lplist, too_many_1, wrong_no_1},
-    {"delete",                  too_few_2, Ldelete, wrong_no_2},
-    {"deleq",                   too_few_2, Ldeleq, wrong_no_2},
+    {"symbol-set-definition",   TOO_FEW_2, Lsymbol_set_definition, WRONG_NO_2},
+    {"restore-c-code",          Lrestore_c_code, TOO_MANY_1, WRONG_NO_1},
+    {"set-autoload",            TOO_FEW_2, Lset_autoload, WRONG_NO_2},
+    {"remd",                    Lremd, TOO_MANY_1, WRONG_NO_1},
+    {"trace",                   Ltrace, TOO_MANY_1, WRONG_NO_1},
+    {"untrace",                 Luntrace, TOO_MANY_1, WRONG_NO_1},
+    {"traceset",                Ltraceset, TOO_MANY_1, WRONG_NO_1},
+    {"untraceset",              Luntraceset, TOO_MANY_1, WRONG_NO_1},
+    {"macro-function",          Lmacro_function, TOO_MANY_1, WRONG_NO_1},
+    {"symbol-name",             Lsymbol_name, TOO_MANY_1, WRONG_NO_1},
+    {"id2string",               Lsymbol_name, TOO_MANY_1, WRONG_NO_1},
+    {"plist",                   Lplist, TOO_MANY_1, WRONG_NO_1},
+    {"prop",                    Lplist, TOO_MANY_1, WRONG_NO_1},
+    {"delete",                  TOO_FEW_2, Ldelete, WRONG_NO_2},
+    {"deleq",                   TOO_FEW_2, Ldeleq, WRONG_NO_2},
     {"preserve",                Lpreserve_1, Lpreserve_2, Lpreserve_03},
-    {"mkvect",                  Lmkvect, too_many_1, wrong_no_1},
-    {"nconc",                   too_few_2, Lnconc, wrong_no_2},
-    {"neq",                     too_few_2, Lneq, wrong_no_2},
-    {"not",                     Lnull, too_many_1, wrong_no_1},
-    {"null",                    Lnull, too_many_1, wrong_no_1},
-    {"resource-exceeded",       wrong_no_0a, wrong_no_0b, Lresource_exceeded},
-    {"reverse",                 Lreverse, too_many_1, wrong_no_1},
-    {"reversip",                Lnreverse, Lnreverse2, wrong_no_1},
+    {"mkvect",                  Lmkvect, TOO_MANY_1, WRONG_NO_1},
+    {"nconc",                   TOO_FEW_2, Lnconc, WRONG_NO_2},
+    {"neq",                     TOO_FEW_2, Lneq, WRONG_NO_2},
+    {"not",                     Lnull, TOO_MANY_1, WRONG_NO_1},
+    {"null",                    Lnull, TOO_MANY_1, WRONG_NO_1},
+    {"resource-exceeded",       WRONG_NO_0A, WRONG_NO_0B, Lresource_exceeded},
+    {"reverse",                 Lreverse, TOO_MANY_1, WRONG_NO_1},
+    {"reversip",                Lnreverse, Lnreverse2, WRONG_NO_1},
 // I make the name nreverse generally available as well as reversip
-    {"nreverse",                Lnreverse, Lnreverse2, wrong_no_1},
+    {"nreverse",                Lnreverse, Lnreverse2, WRONG_NO_1},
 // also reversip2 for the 2-arg varient
-    {"reversip2",               too_few_2, Lnreverse2, wrong_no_1},
-    {"smemq",                   too_few_2, Lsmemq, wrong_no_2},
-    {"subla",                   too_few_2, Lsubla, wrong_no_2},
-    {"sublis",                  too_few_2, Lsublis, wrong_no_2},
-    {"subst",                   wrong_no_3a, wrong_no_3b, Lsubst},
-    {"substq",                  wrong_no_3a, wrong_no_3b, Lsubstq},
-    {"symbol-protect",          too_few_2, Lsymbol_protect, wrong_no_2},
-    {"symbol-plist",            Lplist, too_many_1, wrong_no_1},
+    {"reversip2",               TOO_FEW_2, Lnreverse2, WRONG_NO_1},
+    {"smemq",                   TOO_FEW_2, Lsmemq, WRONG_NO_2},
+    {"subla",                   TOO_FEW_2, Lsubla, WRONG_NO_2},
+    {"sublis",                  TOO_FEW_2, Lsublis, WRONG_NO_2},
+    {"subst",                   WRONG_NO_3A, WRONG_NO_3B, Lsubst},
+    {"substq",                  WRONG_NO_3A, WRONG_NO_3B, Lsubstq},
+    {"symbol-protect",          TOO_FEW_2, Lsymbol_protect, WRONG_NO_2},
+    {"symbol-plist",            Lplist, TOO_MANY_1, WRONG_NO_1},
     {"append",                  Lappend_1, Lappend, Lappend_n},
 //
 // In Common Lisp mode I make EQUAL do what Common Lisp says it should, but
 // also have EQUALS that is much the same but which also descends vectors.
 //
-//  {"equal",                   too_few_2, Lcl_equal, wrong_no_2},
-//  {"equals",                  too_few_2, Lequal, wrong_no_2},
-//  {"nreverse0",               Lnreverse0, too_many_1, wrong_no_1},
+//  {"equal",                   TOO_FEW_2, Lcl_equal, WRONG_NO_2},
+//  {"equals",                  TOO_FEW_2, Lequal, WRONG_NO_2},
+//  {"nreverse0",               Lnreverse0, TOO_MANY_1, WRONG_NO_1},
 // In Standard Lisp mode EQUAL descends vectors (but does not case fold)
 // I provide cl-equal to do what Common Lisp does.
-    {"cl-equal",                too_few_2, Lcl_equal, wrong_no_2},
-    {"equal",                   too_few_2, Lequal, wrong_no_2},
-    {"member",                  too_few_2, Lmember, wrong_no_2},
-    {"symbol-package",          Lsymbol_package, too_many_1, wrong_no_1},
-    {"serialize",               Lserialize, too_many_1, wrong_no_1},
-    {"full-serialize",          Lserialize1, too_many_1, wrong_no_1},
-    {"unserialize",             wrong_no_0a, wrong_no_0b, Lunserialize},
+    {"cl-equal",                TOO_FEW_2, Lcl_equal, WRONG_NO_2},
+    {"equal",                   TOO_FEW_2, Lequal, WRONG_NO_2},
+    {"member",                  TOO_FEW_2, Lmember, WRONG_NO_2},
+    {"symbol-package",          Lsymbol_package, TOO_MANY_1, WRONG_NO_1},
+    {"serialize",               Lserialize, TOO_MANY_1, WRONG_NO_1},
+    {"full-serialize",          Lserialize1, TOO_MANY_1, WRONG_NO_1},
+    {"unserialize",             WRONG_NO_0A, WRONG_NO_0B, Lunserialize},
     {NULL,                      0, 0, 0}
 };
 

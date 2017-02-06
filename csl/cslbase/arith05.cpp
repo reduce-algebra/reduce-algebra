@@ -258,13 +258,13 @@ bool lesseq2(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return lesseqir(a, b);
                         default:
-                            return (bool)aerror2("bad arg for leq", a, b);
+                            aerror2("bad arg for leq", a, b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return lesseqif(a, b);
                 default:
-                    return (bool)aerror2("bad arg for leq", a, b);
+                    aerror2("bad arg for leq", a, b);
             }
 #ifdef SHORT_FLOAT
         case XTAG_SFLOAT:
@@ -285,13 +285,13 @@ bool lesseq2(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return lesseqsr(a, b);
                         default:
-                            return (bool)aerror2("bad arg for leq", a, b);
+                            aerror2("bad arg for leq", a, b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return lesseqsf(a, b);
                 default:
-                    return (bool)aerror2("bad arg for leq", a, b);
+                    aerror2("bad arg for leq", a, b);
             }
 #endif
         case TAG_NUMBERS:
@@ -313,13 +313,13 @@ bool lesseq2(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return lesseqbr(a, b);
                                 default:
-                                    return (bool)aerror2("bad arg for leq", a, b);
+                                    aerror2("bad arg for leq", a, b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return lesseqbf(a, b);
                         default:
-                            return (bool)aerror2("bad arg for leq", a, b);
+                            aerror2("bad arg for leq", a, b);
                     }
                 case TYPE_RATNUM:
                     switch (b & TAG_BITS)
@@ -337,15 +337,15 @@ bool lesseq2(LispObject a, LispObject b)
                                 case TYPE_RATNUM:
                                     return lesseqrr(a, b);
                                 default:
-                                    return (bool)aerror2("bad arg for leq", a, b);
+                                    aerror2("bad arg for leq", a, b);
                             }
                         }
                         case TAG_BOXFLOAT:
                             return lesseqrf(a, b);
                         default:
-                            return (bool)aerror2("bad arg for leq", a, b);
+                            aerror2("bad arg for leq", a, b);
                     }
-                default:    return (bool)aerror2("bad arg for leq", a, b);
+                default:    aerror2("bad arg for leq", a, b);
             }
         }
         case TAG_BOXFLOAT:
@@ -364,16 +364,16 @@ bool lesseq2(LispObject a, LispObject b)
                         case TYPE_RATNUM:
                             return lesseqfr(a, b);
                         default:
-                            return (bool)aerror2("bad arg for leq", a, b);
+                            aerror2("bad arg for leq", a, b);
                     }
                 }
                 case TAG_BOXFLOAT:
                     return lesseqff(a, b);
                 default:
-                    return (bool)aerror2("bad arg for leq", a, b);
+                    aerror2("bad arg for leq", a, b);
             }
         default:
-            return (bool)aerror2("bad arg for leq", a, b);
+            aerror2("bad arg for leq", a, b);
     }
 }
 

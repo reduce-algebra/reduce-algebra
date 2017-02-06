@@ -1424,7 +1424,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         }
     }
     report_at_end();
-    if (stop_after_gc) return Lstop(nil, fixnum_of_int(0));
+    if (stop_after_gc) Lstop(nil, fixnum_of_int(0));
     if (interrupt_pending)
     {   interrupt_pending = false;
         already_in_gc = false;

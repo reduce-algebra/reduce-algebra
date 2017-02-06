@@ -246,7 +246,7 @@ void show_stack()
 
 #define errcode(n) error_message_table[n]
 
-LispObject error(int nargs, int code, ...)
+void error(int nargs, int code, ...)
 //
 // nargs indicates how many values have been provided AFTER the
 // code.  Thus nargs==0 will just display a simple message, nargs==1
@@ -293,7 +293,7 @@ LispObject error(int nargs, int code, ...)
     throw LispError();
 }
 
-LispObject cerror(int nargs, int code1, int code2, ...)
+void cerror(int nargs, int code1, int code2, ...)
 //
 // nargs indicated the number of EXTRA args after code1 & code2.
 //
@@ -332,7 +332,7 @@ LispObject cerror(int nargs, int code1, int code2, ...)
 //
 // This can be used when a resource expires...
 //
-LispObject resource_exceeded()
+void resource_exceeded()
 {   exit_reason = UNWIND_RESOURCE;
     exit_value = exit_tag = nil;
     exit_count = 0;
@@ -426,7 +426,7 @@ LispObject interrupted(LispObject p)
     throw LispError();
 }
 
-LispObject aerror(const char *s)
+void aerror(const char *s)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error bad args for %s\n", s);
@@ -443,7 +443,7 @@ LispObject aerror(const char *s)
     throw LispError();
 }
 
-LispObject aerror0(const char *s)
+void aerror0(const char *s)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
         err_printf("+++ Error: %s\n", s);
@@ -460,7 +460,7 @@ LispObject aerror0(const char *s)
     throw LispError();
 }
 
-LispObject aerror1(const char *s, LispObject a)
+void aerror1(const char *s, LispObject a)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
@@ -480,7 +480,7 @@ LispObject aerror1(const char *s, LispObject a)
     throw LispError();
 }
 
-LispObject aerror2(const char *s, LispObject a, LispObject b)
+void aerror2(const char *s, LispObject a, LispObject b)
 {   LispObject w;
     if (miscflags & HEADLINE_FLAG)
     {   err_printf("+++ Error: %s ", s);
@@ -502,7 +502,7 @@ LispObject aerror2(const char *s, LispObject a, LispObject b)
     throw LispError();
 }
 
-static LispObject wrong(int wanted, int given, LispObject env)
+NORETURN static void wrong(int wanted, int given, LispObject env)
 {   char msg[64];
     sprintf(msg, "Function called with %d args where %d wanted", given, wanted);
     if (is_cons(env)) env = qcdr(env);
@@ -515,51 +515,51 @@ static LispObject wrong(int wanted, int given, LispObject env)
     aerror(msg);
 }
 
-LispObject too_few_2(LispObject env, LispObject)
+void too_few_2(LispObject env, LispObject)
 {   wrong(2, 1, env);
 }
 
-LispObject too_many_1(LispObject env, LispObject, LispObject)
+void too_many_1(LispObject env, LispObject, LispObject)
 {   wrong(1, 2, env);
 }
 
-LispObject wrong_no_0a(LispObject env, LispObject)
+void wrong_no_0a(LispObject env, LispObject)
 {   wrong(0, 1, env);
 }
 
-LispObject wrong_no_0b(LispObject env, LispObject, LispObject)
+void wrong_no_0b(LispObject env, LispObject, LispObject)
 {   wrong(0, 2, env);
 }
 
-LispObject wrong_no_3a(LispObject env, LispObject)
+void wrong_no_3a(LispObject env, LispObject)
 {   wrong(3, 1, env);
 }
 
-LispObject wrong_no_3b(LispObject env, LispObject, LispObject)
+void wrong_no_3b(LispObject env, LispObject, LispObject)
 {   wrong(3, 2, env);
 }
 
-LispObject wrong_no_na(LispObject env, LispObject)
+void wrong_no_na(LispObject env, LispObject)
 {   if (is_cons(env) && is_bps(qcar(env)))
         wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 1, env);
     else aerror("function called with 1 arg when 0 or >= 3 wanted");
 }
 
-LispObject wrong_no_nb(LispObject env, LispObject, LispObject)
+void wrong_no_nb(LispObject env, LispObject, LispObject)
 {   if (is_cons(env) && is_bps(qcar(env)))
         wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 2, env);
     else aerror("function called with 2 args when 0 or >= 3 wanted");
 }
 
-LispObject wrong_no_1(LispObject env, int nargs, ...)
+void wrong_no_1(LispObject env, int nargs, ...)
 {   wrong(1, nargs, env);
 }
 
-LispObject wrong_no_2(LispObject env, int nargs, ...)
+void wrong_no_2(LispObject env, int nargs, ...)
 {   wrong(2, nargs, env);
 }
 
-LispObject bad_specialn(LispObject, int, ...)
+void bad_specialn(LispObject, int, ...)
 {   aerror("call to special form");
 }
 
