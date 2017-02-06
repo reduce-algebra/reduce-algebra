@@ -283,6 +283,63 @@ int fwin_use_xft = 0;
 
 int fwin_pause_at_end = 0;
 
+#ifdef __APPLE__
+
+void mac_deal_with_application_bundle(int argc, const char *argv[])
+{
+//
+// If I will be wanting to use a GUI and if I have just loaded an
+// executable that is not within an application bundle then I will
+// use "open" to launch the corresponding application bundle. Doing this
+// makes resources (eg fonts) that are within the bundle available and
+// it also seems to cause things to terminate more neatly.
+//
+    if (!macApp)
+    {   char xname[LONGEST_LEGAL_FILENAME];
+//
+// Here the binary I launched was NOT being from an application bundle.
+// I will try to re-launch it so it is.
+//
+        struct stat buf;
+        memset(xname, 0, sizeof(xname));
+        sprintf(xname, "%s.app", fullProgramName);
+        if (stat(xname, &buf) == 0 &&
+            (buf.st_mode & S_IFDIR) != 0)
+        {
+// Well foo.app exists and is a directory, so I will try to use it
+            const char **nargs = (const char **)malloc(sizeof(char *)*(argc+3));
+            int i;
+#ifdef DEBUG
+//
+// Since I am about to restart the program I do not want the new version to
+// find that the log file is open and hence not accessible.
+//
+            if (fwin_logfile != NULL)
+            {   fclose(fwin_logfile);
+                fwin_logfile = NULL;
+            }
+#endif // DEBUG
+            nargs[0] = "/usr/bin/open";
+            nargs[1] = xname;
+            nargs[2] = "--args";
+            for (i=1; i<argc; i++)
+                nargs[i+2] = argv[i];
+            nargs[argc+2] = NULL;
+// /usr/bin/open foo.app --args [any original arguments]
+            execv("/usr/bin/open", const_cast<char * const *>(nargs));
+//
+// execv should NEVER return, but if it does I might like to at least
+// attempt to display a report including the error code.
+//
+            fprintf(stderr,
+                    "Returned from execv with error code %d\n", errno);
+            exit(1);
+        }
+    }
+}
+
+#endif // __APPLE__
+
 #ifdef PART_OF_FOX
 
 #ifdef WIN32
@@ -590,59 +647,6 @@ static int unix_and_osx_checks(int xwindowed)
         }
     }
     return xwindowed;
-}
-
-void mac_deal_with_application_bundle(int argc, const char *argv[])
-{
-//
-// If I will be wanting to use a GUI and if I have just loaded an
-// executable that is not within an application bundle then I will
-// use "open" to launch the corresponding application bundle. Doing this
-// makes resources (eg fonts) that are within the bundle available and
-// it also seems to cause things to terminate more neatly.
-//
-    if (!macApp)
-    {   char xname[LONGEST_LEGAL_FILENAME];
-//
-// Here the binary I launched was NOT being from an application bundle.
-// I will try to re-launch it so it is.
-//
-        struct stat buf;
-        memset(xname, 0, sizeof(xname));
-        sprintf(xname, "%s.app", fullProgramName);
-        if (stat(xname, &buf) == 0 &&
-            (buf.st_mode & S_IFDIR) != 0)
-        {
-// Well foo.app exists and is a directory, so I will try to use it
-            const char **nargs = (const char **)malloc(sizeof(char *)*(argc+3));
-            int i;
-#ifdef DEBUG
-//
-// Since I am about to restart the program I do not want the new version to
-// find that the log file is open and hence not accessible.
-//
-            if (fwin_logfile != NULL)
-            {   fclose(fwin_logfile);
-                fwin_logfile = NULL;
-            }
-#endif // DEBUG
-            nargs[0] = "/usr/bin/open";
-            nargs[1] = xname;
-            nargs[2] = "--args";
-            for (i=1; i<argc; i++)
-                nargs[i+2] = argv[i];
-            nargs[argc+2] = NULL;
-// /usr/bin/open foo.app --args [any original arguments]
-            execv("/usr/bin/open", const_cast<char * const *>(nargs));
-//
-// execv should NEVER return, but if it does I might like to at least
-// attempt to display a report including the error code.
-//
-            fprintf(stderr,
-                    "Returned from execv with error code %d\n", errno);
-            exit(1);
-        }
-    }
 }
 
 #else // __APPLE__

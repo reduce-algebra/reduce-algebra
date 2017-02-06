@@ -47,7 +47,7 @@ flag('(breduce_unset breduce_instance
 
 operator breduce_output;
 
-procedure breduce_output(item,tab);
+procedure breduce_output(item,tab_);
    <<
       item := if item eq 'breduce_unset then
 	 "\textsc{sigint}"
@@ -57,8 +57,8 @@ procedure breduce_output(item,tab);
  	 {item};
       breduce_tprin2t "<output>";
       breduce_prin2 item;
-      if eqn(tab,1) then breduce_prin2 " & ";
-      if eqn(tab,2) then breduce_prin2 "\\";
+      if eqn(tab_,1) then breduce_prin2 " & ";
+      if eqn(tab_,2) then breduce_prin2 "\\";
       breduce_tprin2t "</output>"
    >>;
 

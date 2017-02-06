@@ -1417,7 +1417,8 @@ symbolic procedure s!:plant_basic_block(vec, pc, b);
           if symbolp i then i := get(i, 's!:opcode);
           if not tagged and (!*plap or !*pgwd) then <<
              s!:prinhex4 pc; princ ":"; ttab 8; tagged := t >>;
-          if not fixp i or i < 0 or i > 255 then error("bad byte to put", i);
+          if not fixp i or i < 0 or i > 255 then
+             error(0, list("bad byte to put", i));
           bps!-putv(vec, pc, i);
           if !*plap or !*pgwd then << s!:prinhex2 i; princ " " >>;
           pc := pc + 1 >>
@@ -1434,7 +1435,8 @@ symbolic procedure s!:plant_bytes(vec, pc, bytelist, doc);
     if !*plap or !*pgwd then << s!:prinhex4 pc; princ ":"; ttab 8 >>;
     for each v in bytelist do <<
        if symbolp v then v := get(v, 's!:opcode);
-       if not fixp v or v < 0 or v > 255 then error("bad byte to put", v);
+       if not fixp v or v < 0 or v > 255 then
+       error(0, list("bad byte to put", v));
        bps!-putv(vec, pc, v);
        if !*plap or !*pgwd then <<
            if posn() > 50 then << terpri(); ttab 8 >>;

@@ -245,8 +245,8 @@ char *lookup_name(char *s)
     for (i=0; i<n_defined_names; i++)
     {   char *w = defined_names[i];  /* name or name=value */
         if (strncmp(s, w, n) == 0 &&
-            w[n] == 0 ||
-            w[n] == '=') return (w[n]==0 ? "" : &w[n+1]);
+            (w[n] == 0 ||
+             w[n] == '=')) return (w[n]==0 ? "" : &w[n+1]);
     }
     return NULL;
 }

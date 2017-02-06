@@ -1033,12 +1033,12 @@ procedure C!-end1 create_lfile;
        nargs := caddar c!:defnames;
        cast := "(n_args *)";
        if nargs = 1 then <<
-          f2 := '!t!o!o_!m!a!n!y_1; cast := ""; fn := '!w!r!o!n!g_!n!o_1 >>
+          f2 := '!T!O!O_!M!A!N!Y_1; cast := ""; fn := '!W!R!O!N!G_!N!O_1 >>
        else if nargs = 2 then <<
-          f2 := f1; f1 := '!t!o!o_!f!e!w_2; cast := "";
-          fn := '!w!r!o!n!g_!n!o_2 >>
-       else << fn := f1; f1 := '!w!r!o!n!g_!n!o_!n!a;
-               f2 := '!w!r!o!n!g_!n!o_!n!b >>;
+          f2 := f1; f1 := '!T!O!O_!F!E!W_2; cast := "";
+          fn := '!W!R!O!N!G_!N!O_2 >>
+       else << fn := f1; f1 := '!W!R!O!N!G_!N!O_!N!A;
+               f2 := '!W!R!O!N!G_!N!O_!N!B >>;
        if create_lfile then c!:printf("    {\q%s\q,%t%s,%t%s,%t%s%s},\n",
                                       name, 32, f1, 48, f2, 63, cast, fn)
        else
@@ -1216,7 +1216,9 @@ symbolic procedure c!:print_exit_condition1(why, where_to, next);
                c!:printf("        LispObject %s = %v;\n", g, a);
                args := g . args >>
             else args := a . args;
-          c!:printf("        return %s(nil", w);
+          if flagp(intern w, 'c!:noreturn) then
+             c!:printf("        %s(nil", w)
+          else c!:printf("        return %s(nil", w);
           if null args or length args >= 3 then c!:printf(", %s", length args);
           for each a in reversip args do c!:printf(", %v", a);
           c!:printf(");\n");
@@ -1558,12 +1560,23 @@ symbolic procedure c!:pequal(op, r1, r2, r3);
 put('equal, 'c!:opcode_printer, function c!:pequal);
 flag('(equal), 'c!:uses_nil);
 
+flag ('(
+    error           cerror          too_few_2       too_many_1
+    wrong_no_0a     wrong_no_0b     wrong_no_3a     wrong_no_3b
+    wrong_no_na     wrong_no_nb     wrong_no_1      wrong_no_2
+    bad_specialn    aerror          aerror0         aerror1
+    aerror2         fatal_error     !Lerror         !Lerror0
+    !Lerror1        !Lstop          !Lerror2        !Lthrow_one_value
+    my_exit         resource_exceeded), 'c!:noreturn);
+
 symbolic procedure c!:pcall(op, r1, r2, r3);
   begin
 % r3 is (name <fluids to unbind on error>)
     scalar w, boolfn;
     if w := get(car r3, 'c!:direct_entrypoint) then <<
-       c!:printf("    %v = %s(", r1, cdr w);
+       if flagp(intern cdr w, 'c!:noreturn) then
+          c!:printf("    %s(", cdr w)
+       else c!:printf("    %v = %s(", r1, cdr w);
        if r2 then <<
           c!:printf("%v", car r2);
           for each a in cdr r2 do c!:printf(", %v", a) >>;
@@ -1587,7 +1600,9 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n") >>
     else if w := get(car r3, 'c!:c_entrypoint) then <<
-       c!:printf("    %v = %s(nil", r1, w);
+       if flagp(intern w, 'c!:noreturn) then
+          c!:printf("    %s(nil", w)
+       else c!:printf("    %v = %s(nil", r1, w);
        if null r2 or length r2 >= 3 then c!:printf(", %s", length r2);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n") >>

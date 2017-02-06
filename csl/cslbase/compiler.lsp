@@ -727,20 +727,20 @@ var1047 b) lab1046 (cond ((null var1047) (return nil))) (prog (i) (setq i (
 car var1047)) (progn (cond ((atom i) (progn (cond ((symbolp i) (setq i (get i
 (quote s!:opcode))))) (cond ((and (not tagged) (or !*plap !*pgwd)) (progn (
 s!:prinhex4 pc) (princ ":") (ttab 8) (setq tagged t)))) (cond ((or (not (fixp
-i)) (lessp i 0) (greaterp i 255)) (error "bad byte to put" i))) (bps!-putv 
-vec pc i) (cond ((or !*plap !*pgwd) (progn (s!:prinhex2 i) (princ " ")))) (
-setq pc (plus pc 1)))) (t (cond ((or !*plap !*pgwd) (progn (ttab 23) (princ (
-car i)) (prog (var1045) (setq var1045 (cdr i)) lab1044 (cond ((null var1045) 
-(return nil))) (prog (w) (setq w (car var1045)) (progn (princ " ") (prin w)))
-(setq var1045 (cdr var1045)) (go lab1044)) (terpri) (setq tagged nil))))))))
-(setq var1047 (cdr var1047)) (go lab1046)) (return pc)))
+i)) (lessp i 0) (greaterp i 255)) (error 0 (list "bad byte to put" i)))) (
+bps!-putv vec pc i) (cond ((or !*plap !*pgwd) (progn (s!:prinhex2 i) (princ 
+" ")))) (setq pc (plus pc 1)))) (t (cond ((or !*plap !*pgwd) (progn (ttab 23)
+(princ (car i)) (prog (var1045) (setq var1045 (cdr i)) lab1044 (cond ((null 
+var1045) (return nil))) (prog (w) (setq w (car var1045)) (progn (princ " ") (
+prin w))) (setq var1045 (cdr var1045)) (go lab1044)) (terpri) (setq tagged 
+nil)))))))) (setq var1047 (cdr var1047)) (go lab1046)) (return pc)))
 
 (de s!:plant_bytes (vec pc bytelist doc) (prog nil (cond ((or !*plap !*pgwd) 
 (progn (s!:prinhex4 pc) (princ ":") (ttab 8)))) (prog (var1049) (setq var1049
 bytelist) lab1048 (cond ((null var1049) (return nil))) (prog (v) (setq v (
 car var1049)) (progn (cond ((symbolp v) (setq v (get v (quote s!:opcode))))) 
-(cond ((or (not (fixp v)) (lessp v 0) (greaterp v 255)) (error 
-"bad byte to put" v))) (bps!-putv vec pc v) (cond ((or !*plap !*pgwd) (progn 
+(cond ((or (not (fixp v)) (lessp v 0) (greaterp v 255)) (error 0 (list 
+"bad byte to put" v)))) (bps!-putv vec pc v) (cond ((or !*plap !*pgwd) (progn
 (cond ((greaterp (posn) 50) (progn (terpri) (ttab 8)))) (s!:prinhex2 v) (
 princ " ")))) (setq pc (plus pc 1)))) (setq var1049 (cdr var1049)) (go 
 lab1048)) (cond ((or !*plap !*pgwd) (progn (cond ((greaterp (posn) 23) (
@@ -3378,11 +3378,11 @@ c!:defnames (reverse c!:defnames)) (prog nil lab1250 (cond ((null
 c!:defnames) (return nil))) (prog (name nargs f1 f2 cast fn) (setq name (caar
 c!:defnames)) (setq checksum (cadddr (car c!:defnames))) (setq f1 (cadar 
 c!:defnames)) (setq nargs (caddar c!:defnames)) (setq cast "(n_args *)") (
-cond ((equal nargs 1) (progn (setq f2 (quote !t!o!o_!m!a!n!y_1)) (setq cast 
-"") (setq fn (quote !w!r!o!n!g_!n!o_1)))) (t (cond ((equal nargs 2) (progn (
-setq f2 f1) (setq f1 (quote !t!o!o_!f!e!w_2)) (setq cast "") (setq fn (quote 
-!w!r!o!n!g_!n!o_2)))) (t (progn (setq fn f1) (setq f1 (quote 
-!w!r!o!n!g_!n!o_!n!a)) (setq f2 (quote !w!r!o!n!g_!n!o_!n!b))))))) (cond (
+cond ((equal nargs 1) (progn (setq f2 (quote !T!O!O_!M!A!N!Y_1)) (setq cast 
+"") (setq fn (quote !W!R!O!N!G_!N!O_1)))) (t (cond ((equal nargs 2) (progn (
+setq f2 f1) (setq f1 (quote !T!O!O_!F!E!W_2)) (setq cast "") (setq fn (quote 
+!W!R!O!N!G_!N!O_2)))) (t (progn (setq fn f1) (setq f1 (quote 
+!W!R!O!N!G_!N!O_!N!A)) (setq f2 (quote !W!R!O!N!G_!N!O_!N!B))))))) (cond (
 create_lfile (c!:printf "    {\q%s\q,%t%s,%t%s,%t%s%s},\n" name 32 f1 48 f2 
 63 cast fn)) (t (prog (c1 c2) (setq c1 (divide checksum (expt 2 31))) (setq 
 c2 (cdr c1)) (setq c1 (car c1)) (c!:printf 
@@ -3446,14 +3446,15 @@ var1256)) (go lab1255))))) (c!:printf ");\n") (cond (g (c!:printf "    }\n"))
 c!:live_across_call)) (progn (cond ((null g) (c!:printf "    {\n"))) (setq g 
 (c!:my_gensym)) (c!:printf "        LispObject %s = %v;\n" g a) (setq args (
 cons g args)))) (t (setq args (cons a args))))) (setq var1258 (cdr var1258)) 
-(go lab1257)) (c!:printf "        return %s(nil" w) (cond ((or (null args) (
-geq (length args) 3)) (c!:printf ", %s" (length args)))) (prog (var1260) (
-setq var1260 (reversip args)) lab1259 (cond ((null var1260) (return nil))) (
-prog (a) (setq a (car var1260)) (c!:printf ", %v" a)) (setq var1260 (cdr 
-var1260)) (go lab1259)) (c!:printf ");\n") (cond (g (c!:printf "    }\n")))))
-(t (prog (nargs) (setq nargs (length (cdr why))) (c!:printf "    {\n") (prog
-(var1262) (setq var1262 (cdr why)) lab1261 (cond ((null var1262) (return nil
-))) (prog (a) (setq a (car var1262)) (cond ((flagp a (quote 
+(go lab1257)) (cond ((flagp (intern w) (quote c!:noreturn)) (c!:printf 
+"        %s(nil" w)) (t (c!:printf "        return %s(nil" w))) (cond ((or (
+null args) (geq (length args) 3)) (c!:printf ", %s" (length args)))) (prog (
+var1260) (setq var1260 (reversip args)) lab1259 (cond ((null var1260) (return
+nil))) (prog (a) (setq a (car var1260)) (c!:printf ", %v" a)) (setq var1260 
+(cdr var1260)) (go lab1259)) (c!:printf ");\n") (cond (g (c!:printf "    }\n"
+))))) (t (prog (nargs) (setq nargs (length (cdr why))) (c!:printf "    {\n") 
+(prog (var1262) (setq var1262 (cdr why)) lab1261 (cond ((null var1262) (
+return nil))) (prog (a) (setq a (car var1262)) (cond ((flagp a (quote 
 c!:live_across_call)) (progn (setq g (c!:my_gensym)) (c!:printf 
 "        LispObject %s = %v;\n" g a) (setq args (cons g args)))) (t (setq 
 args (cons a args))))) (setq var1262 (cdr var1262)) (go lab1261)) (c!:printf 
@@ -3744,12 +3745,19 @@ r3))
 
 (flag (quote (equal)) (quote c!:uses_nil))
 
+(flag (quote (error cerror too_few_2 too_many_1 wrong_no_0a wrong_no_0b 
+wrong_no_3a wrong_no_3b wrong_no_na wrong_no_nb wrong_no_1 wrong_no_2 
+bad_specialn aerror aerror0 aerror1 aerror2 fatal_error !Lerror !Lerror0 
+!Lerror1 !Lstop !Lerror2 !Lthrow_one_value my_exit resource_exceeded)) (quote
+c!:noreturn))
+
 (de c!:pcall (op r1 r2 r3) (prog (w boolfn) (cond ((setq w (get (car r3) (
-quote c!:direct_entrypoint))) (progn (c!:printf "    %v = %s(" r1 (cdr w)) (
-cond (r2 (progn (c!:printf "%v" (car r2)) (prog (var1266) (setq var1266 (cdr 
-r2)) lab1265 (cond ((null var1266) (return nil))) (prog (a) (setq a (car 
-var1266)) (c!:printf ", %v" a)) (setq var1266 (cdr var1266)) (go lab1265)))))
-(c!:printf ");\n"))) (t (cond ((setq w (get (car r3) (quote 
+quote c!:direct_entrypoint))) (progn (cond ((flagp (intern (cdr w)) (quote 
+c!:noreturn)) (c!:printf "    %s(" (cdr w))) (t (c!:printf "    %v = %s(" r1 
+(cdr w)))) (cond (r2 (progn (c!:printf "%v" (car r2)) (prog (var1266) (setq 
+var1266 (cdr r2)) lab1265 (cond ((null var1266) (return nil))) (prog (a) (
+setq a (car var1266)) (c!:printf ", %v" a)) (setq var1266 (cdr var1266)) (go 
+lab1265))))) (c!:printf ");\n"))) (t (cond ((setq w (get (car r3) (quote 
 c!:direct_predicate))) (progn (setq boolfn t) (c!:printf 
 "    %v = (LispObject)%s(" r1 (cdr w)) (cond (r2 (progn (c!:printf "%v" (car 
 r2)) (prog (var1268) (setq var1268 (cdr r2)) lab1267 (cond ((null var1268) (
@@ -3761,18 +3769,19 @@ or (null r2) (geq (length r2) 3)) (c!:printf ", %s" (length r2)))) (prog (
 var1270) (setq var1270 r2) lab1269 (cond ((null var1270) (return nil))) (prog
 (a) (setq a (car var1270)) (c!:printf ", %v" a)) (setq var1270 (cdr var1270)
 ) (go lab1269)) (c!:printf ");\n"))) (t (cond ((setq w (get (car r3) (quote 
-c!:c_entrypoint))) (progn (c!:printf "    %v = %s(nil" r1 w) (cond ((or (null
-r2) (geq (length r2) 3)) (c!:printf ", %s" (length r2)))) (prog (var1272) (
-setq var1272 r2) lab1271 (cond ((null var1272) (return nil))) (prog (a) (setq
-a (car var1272)) (c!:printf ", %v" a)) (setq var1272 (cdr var1272)) (go 
-lab1271)) (c!:printf ");\n"))) (t (prog (nargs) (setq nargs (length r2)) (
-c!:printf "    fn = elt(env, %s); %<// %c\n" (c!:find_literal (car r3)) (car 
-r3)) (cond ((equal nargs 1) (c!:printf "    %v = (*qfn1(fn))(qenv(fn)" r1)) (
-t (cond ((equal nargs 2) (c!:printf "    %v = (*qfn2(fn))(qenv(fn)" r1)) (t (
-c!:printf "    %v = (*qfnn(fn))(qenv(fn), %s" r1 nargs))))) (prog (var1274) (
-setq var1274 r2) lab1273 (cond ((null var1274) (return nil))) (prog (a) (setq
-a (car var1274)) (c!:printf ", %v" a)) (setq var1274 (cdr var1274)) (go 
-lab1273)) (c!:printf ");\n")))))))))) (cond (boolfn (c!:printf 
+c!:c_entrypoint))) (progn (cond ((flagp (intern w) (quote c!:noreturn)) (
+c!:printf "    %s(nil" w)) (t (c!:printf "    %v = %s(nil" r1 w))) (cond ((or
+(null r2) (geq (length r2) 3)) (c!:printf ", %s" (length r2)))) (prog (
+var1272) (setq var1272 r2) lab1271 (cond ((null var1272) (return nil))) (prog
+(a) (setq a (car var1272)) (c!:printf ", %v" a)) (setq var1272 (cdr var1272)
+) (go lab1271)) (c!:printf ");\n"))) (t (prog (nargs) (setq nargs (length r2)
+) (c!:printf "    fn = elt(env, %s); %<// %c\n" (c!:find_literal (car r3)) (
+car r3)) (cond ((equal nargs 1) (c!:printf "    %v = (*qfn1(fn))(qenv(fn)" r1
+)) (t (cond ((equal nargs 2) (c!:printf "    %v = (*qfn2(fn))(qenv(fn)" r1)) 
+(t (c!:printf "    %v = (*qfnn(fn))(qenv(fn), %s" r1 nargs))))) (prog (
+var1274) (setq var1274 r2) lab1273 (cond ((null var1274) (return nil))) (prog
+(a) (setq a (car var1274)) (c!:printf ", %v" a)) (setq var1274 (cdr var1274)
+) (go lab1273)) (c!:printf ");\n")))))))))) (cond (boolfn (c!:printf 
 "    %v = %v ? lisp_true : nil;\n" r1 r1)))))
 
 (de c!:fix_nargs (r2 act) (cond ((null act) nil) (t (cond ((null r2) (cons 
