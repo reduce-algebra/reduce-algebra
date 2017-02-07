@@ -83,6 +83,11 @@ symbolic procedure exformp u;
 symbolic procedure lexformp u;
    u and (exformp car u or lexformp cdr u);
 
+symbolic procedure newstyle_indsp u;
+   null atom u and null atom car u 
+        and memq(caar u,'(!*sub_!* !*_sub!* !*sup!^!* !*!^sup!* 
+                          !*_below_!* !*!^above!^!* !*!-wide!-!*));
+
 
 endmodule;
 
