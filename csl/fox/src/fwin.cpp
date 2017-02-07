@@ -863,11 +863,11 @@ int main(int argc, const char *argv[])
     }
 
 #ifdef __APPLE__
-    mac_deal_with_application_bundle(argc, argv);
+    if (windowed != 0) mac_deal_with_application_bundle(argc, argv);
 #endif // __APPLE__
 
 #ifdef PART_OF_FOX
-    if (windowed==0) return plain_worker(argc, argv, fwin_main);
+    if (windowed == 0) return plain_worker(argc, argv, fwin_main);
     else return windowed_worker(argc, argv, fwin_main);
 #else // PART_OF_FOX
     return plain_worker(argc, argv, fwin_main);
