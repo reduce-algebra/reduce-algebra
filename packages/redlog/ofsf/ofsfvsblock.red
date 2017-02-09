@@ -337,6 +337,8 @@ asserted procedure vsdb_tryExpandNO(db: VSdb, nd: VSnd): Boolean;
 	       vsnd_mk(nil, vsar_mk v, delq(v, vsnd_vl nd), vsnd_f nd, nd))
 	 >>
       >>;
+      if !*rlverbose and res then
+	 ioto_tprin2t {"+++++ succ: ", v, " (does not occur)", " (QE node depth: ", length vsdb_vl db - length vsnd_vl nd, ")"};
       return res
    end;
 
@@ -359,6 +361,8 @@ asserted procedure vsdb_tryExpandDG(db: VSdb, nd: VSnd): Boolean;
 	       vsdg_mk(v, g, sv), subst(sv, v, vsnd_vl nd), vsnd_f nd, nd))
 	 >>
       >>;
+      if !*rlverbose and res then
+	 ioto_tprin2t {"+++++ deg shift: ", v, " ^ ", g, " = ", sv, " (QE node depth: ", length vsdb_vl db - length vsnd_vl nd, ")"};
       return res
    end;
 
@@ -467,11 +471,18 @@ asserted procedure vsdb_expandNode4(db: VSdb, nd: VSnd);
 asserted procedure vsdb_insertaec(db: VSdb, nd: VSnd, de: VSde);
    % Insert node after elimination set computation.
    begin scalar tpl, f, v, nvl;
+      integer d;
       tpl := vsde_tpl de;
+      if !*rlverbose then  % Compute the depth [d] of the node in the QE tree.
+	 d := length vsdb_vl db - length vsnd_vl nd;
       if null vsde_tpl de then <<  % An elimination set has to be non-empty.
+      	 if !*rlverbose then
+	    ioto_tprin2t {"+++++ fail: ", vsde_v de, " (QE node depth: ", d, ")"};
 	 vsdb_fcinsert(db, nd);
 	 return
       >>;
+      if !*rlverbose then
+	 ioto_tprin2t {"+++++ succ: ", vsde_v de, " (QE node depth: ", d, ")"};
       f := vsde_f de;
       v := vsde_v de;
       nvl := delq(v, vsnd_vl nd);
