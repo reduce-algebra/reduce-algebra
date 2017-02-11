@@ -223,7 +223,7 @@ static void next_gcd_step(uint32_t a0, uint32_t a1,
     }
 }
 
-static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
+static size_t huge_gcd(uint32_t *a, size_t lena, uint32_t *b, size_t lenb)
 //
 // A and B are vectors of unsigned integers, representing numbers with
 // radix 2^31.  lena and lenb indicate how many digits are present. The
@@ -233,8 +233,11 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
 // bit) that indicates whether A and B were swopped.  The remaining bits
 // hold the length (remaining) of A.
 //
+// When this returns the bignums that A and B refer to will have been
+// reduced until B has a single 31-bit digit. 
+//
 {   uint32_t a0, a1, a2, b0, b1;
-    int flipped = 0;
+    bool flipped = false;
 //
 // The next two lines adjust for an oddity in my bignum representation - the
 // if the leading digit would have its 0x40000000 bit set then I stick on
@@ -243,7 +246,7 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
     if (a[lena] == 0) lena--;
     if (b[lenb] == 0) lenb--;
 #ifdef DEBUG_GCD_CODE
-    {   int i;
+    {   size_t i;
         term_printf("a:");
         for (i=0; i<=lena; i++) term_printf(" %.8x", a[i]);
         term_printf("\n");
@@ -254,7 +257,7 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
 #endif
     for (;;)
     {   uint32_t q;
-        int32_t lenr;
+        size_t lenr;
 //
 // I will perform reductions until the smaller of my two bignums has been
 // reduced to a single-precision value.  After that the tidying up to
@@ -266,14 +269,14 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
 //
         if (lena < lenb)
         {   uint32_t *c = a;
-            int32_t lenc = lena;
+            size_t lenc = lena;
             a = b; lena = lenb;
             b = c; lenb = lenc;
-            flipped ^= 1;
+            flipped = !flipped;
         }
-        if (lenb == 0) break;    // B (at least) is now single precision
+        if (lenb == 0) break;    // B is now single precision
         else if (lena == lenb)
-        {   while (lenb >= 0 && a[lenb] == b[lenb]) lenb--;
+        {   while (lenb != 0 && a[lenb] == b[lenb]) lenb--;
 //
 // Here I want to ensure that A is really at least as big as B.  While
 // so doing I may happen to discover that they are actually the same value.
@@ -281,19 +284,18 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
 // and exit from the loop.  The result will be that A gets returned as the
 // GCD.
 //
-            if (lenb < 0)
+            if (a[lenb] == b[lenb])  // must have lenb==0 in this case
             {   b[0] = 0;
-                lenb = 0;
-                break;
+                break;               // a and b were the same value
             }
             if (a[lenb] < b[lenb])
-            {   uint32_t *c = a;  // NB do not swop lena, lenb here
+            {   uint32_t *c = a;    // NB do not swop lena, lenb here
                 a = b;              // since lenb has been used as scratch
                 b = c;              // and both numbers are lena long
-                flipped ^= 1;
+                flipped = !flipped;
             }
 #ifdef DEBUG_GCD_CODE
-            {   int i;
+            {   size_t i;
                 term_printf("a:");
                 for (i=0; i<=lena; i++) term_printf(" %.8x", a[i]);
                 term_printf("\n");
@@ -322,7 +324,7 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
         }
 //
 // Here I need to do one step towards reduction by division.  A is
-// at leat as long as B, and B has at least two digits.
+// at least as long as B, and B has at least two digits.
 //
     reduce_by_division:
         a0 = a[lena];    a1 = a[lena-1];
@@ -403,7 +405,7 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
         term_printf("q = %.8x\n", q);
 #endif
         {   uint32_t carry = 0, carry1 = 1;
-            int32_t i, j;
+            size_t i, j;
             for (i=0, j=lenr-lenb; i<=lenb; i++, j++)
             {   uint32_t mlow, w;
                 Dmultiply(carry, mlow, b[i], q, carry);
@@ -417,18 +419,20 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
             }
             a[j] = a[j] + (~carry) + carry1;
         }
-        while (lena > 0 && a[lena]==0) lena--;
+        while (lena != 0 && a[lena]==0) lena--;
         continue;
 
     lehmer:
-        {   int32_t ax, ay, bx, by, i;
+        {   int32_t ax, ay, bx, by;
+            size_t i;
             {   int32_t axt, ayt, bxt, byt;
                 uint32_t b00 = b0;
 //
 // If the numbers have 3 digits available and if the leading digits are
 // small I do some (minor) normalisation by shifting up by 16 bits.  This
 // should increase the number of steps that can be taken at once (slightly).
-//
+// These days I could probably improve the code here using uint64_t, but
+// right now I do not want to disrupt it!
                 if (a0 < (int32_t)0x8000U && lena > 2)
                 {   a0 = (a0 << 16) | (a1 >> 15);
                     a1 = ((a1 << 16) | (a[lena-2] >> 15)) & 0x7fffffff;
@@ -462,9 +466,9 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
 // for the leading digit of b I can treat both as having length lena
 //
             {   uint32_t carryax = 0, carryay = 0,
-                             carrybx = 0, carryby = 0,
-                             borrowa = 1, borrowb = 1,
-                             aix, aiy, bix, biy, aa, bb;
+                         carrybx = 0, carryby = 0,
+                         borrowa = 1, borrowb = 1,
+                         aix, aiy, bix, biy, aa, bb;
                 for (i=0; i<lena; i++)
                 {   Dmultiply(carryax, aix, a[i], ax, carryax);
                     Dmultiply(carryay, aiy, b[i], ay, carryay);
@@ -495,13 +499,15 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
                 if (b0 != 0) b[lena] = bb;
                 lenb = lena;
                 if (b0 == 0) lenb--;
+#ifdef DEBUG
 //
 // The following test is here as a provisional measure - it caught a number of
 // bugs etc while I was developing this code.  My only worry is that maybe
 // the carries and borrows could (correctly) combine to leave zero
 // upper digits here without the exact equalities tested here happening.
 // I will remove this test after a decent interval.
-//
+// Well this "asert" style test has been around for ages now, so I will
+// have moved it so it is only performed in debug mode.
                 if (carryax - carryay + borrowa != 1 ||
                     carryby - carrybx + borrowb != 1)
                 {   err_printf("Carries %d \"%s\" %ld %ld %ld %ld %ld %ld\n",
@@ -510,13 +516,15 @@ static int32_t huge_gcd(uint32_t *a, int32_t lena, uint32_t *b, int32_t lenb)
                                (long)carryby, (long)borrowa, (long)borrowb);
                     my_exit(EXIT_FAILURE);
                 }
+#endif
                 while (lena > 0 && a[lena] == 0) lena--;
                 while (lenb > 0 && b[lenb] == 0) lenb--;
             }
         }
         continue;
     }
-    if (flipped) lena |= ~0x7fffffff;
+#define TOP_BIT_OF_SIZE (((size_t)1) << (8*sizeof(size_t)-1))
+    if (flipped) lena |= TOP_BIT_OF_SIZE;
     return lena;
 }
 
@@ -526,11 +534,9 @@ LispObject gcd(LispObject a, LispObject b)
     {   if (!is_fixnum(b))
         {   if (is_numbers(b) && is_bignum(b))
             {   if (a == fixnum_of_int(0)) return absb(b);
-                else b = rembi(b, a);
-//
 // a is a fixnum here, so did not need to be stacked over the
 // call to rembi()
-//
+                else b = rembi(b, a);
             }
             else aerror2("bad arg for gcd", a, b);
         }
@@ -573,7 +579,7 @@ LispObject gcd(LispObject a, LispObject b)
 // give a fixnum - but that can not occur here. Thus I know that I still
 // have two bignums to worry about!
 //
-            {   int32_t lena, lenb, new_lena;
+            {   size_t lena, lenb, new_lena;
                 uint32_t b0;
 //
 // I apply two ideas here.  The first is to perform all my arithmetic
@@ -597,11 +603,11 @@ LispObject gcd(LispObject a, LispObject b)
 #ifdef DEBUG_GCD_CODE
                 trace_printf("new_lena = %d = %.8x\n", new_lena, new_lena);
 #endif
-                if (new_lena < 0)
+                if ((new_lena & TOP_BIT_OF_SIZE) != 0)
                 {   LispObject c = a;
                     a = b;
                     b = c;
-                    new_lena = clear_top_bit(new_lena);
+                    new_lena &= ~TOP_BIT_OF_SIZE;
                 }
 //
 // By this stage I have reduced A and B so that B is a single-precision
@@ -614,8 +620,20 @@ LispObject gcd(LispObject a, LispObject b)
 #ifdef DEBUG_GCD_CODE
                 printf("b0 = %d = %x\n", b0, b0);
 #endif
+                int32_t a0 = bignum_digits(a)[new_lena];
                 if (b0 == 0)
-                {   int32_t a0 = bignum_digits(a)[new_lena];
+                {   int64_t a64;
+// It could be that A is now so short it ought to be returned as a fixnum.
+// So I need to check cases where A ends up with just 1 or 2 digits.
+                    if (new_lena == 0)
+                    {   if (SIXTY_FOUR_BIT || valid_as_fixnum(a0))
+                            return fixnum_of_int(a0);
+                    }
+                    else if (SIXTY_FOUR_BIT &&
+                        new_lena == 1 &&
+                        (a64 = ((bignum_digits64(a, 1)<<31) | a0),
+                         valid_as_fixnum(a64)))
+                        return fixnum_of_int(a64);
 //
 // The leading digit of a bignum is in effect one bit shorter than the
 // others (to allow for the fact that it is signed).  In huge_gcd I did
@@ -639,20 +657,22 @@ LispObject gcd(LispObject a, LispObject b)
                         new_lena |= 1;
                     }
                     else
-                    {   lena = (lena + 1) & 0xfffffffeU;
-                        new_lena = (new_lena + 1) & 0xfffffffeU;
+                    {   lena = (lena + 1) & ~(size_t)1;
+                        new_lena = (new_lena + 1) & ~(size_t)1;
                     }
                     if (new_lena != lena)
                         *(Header *)&bignum_digits(a)[new_lena+1] =
                             make_bighdr(lena - new_lena);
                     return a;
                 }
-//
 // Another special case is if we have just discovered that the numbers were
 // co-prime.
-//
                 else if (b0 == 1) return fixnum_of_int(1);
                 p = bignum_digits(b)[0];
+// Here since B has only one digit I can move that into a simple
+// variable p. I now wish to set q to be (a%p) - or if A had only one
+// digit it would siuffice to set q to the value of the bignum A. I will
+// the be able to complete the GCD calculation using just 32-bit arithmetic.
                 if (new_lena == 0) q = bignum_digits(a)[0];
                 else
                 {   q = bignum_digits(a)[new_lena] % p;
@@ -667,11 +687,6 @@ LispObject gcd(LispObject a, LispObject b)
                 }
                 goto gcd_using_machine_arithmetic;
             }
-//
-// The next 4 lines seem to be orphan code, no longer reachable.
-//          if (b == fixnum_of_int(0)) return a;
-//          a = rembi(a, b);
-//
         }
         else aerror2("bad arg for gcd", a, b);
     }
@@ -685,25 +700,12 @@ LispObject gcd(LispObject a, LispObject b)
     if (p < 0) p = -p;
     if (q < 0) q = -q;
 gcd_using_machine_arithmetic:
-//
-// If your computer has a slow implementation of the C remainder
-// operation (p % q) but fast shifts then it may be worthwhile
-// implementing integer GCD thusly...  On an ARM where division is
-// done in software my time tests showed the shift-and-subtract GCD
-// code over twice as fast as the version using the remainder operator.
-// Somewhat to my amazement, most other targets (at least when I use -O
-// to optimise this code) show this version faster than the more
-// obvious code.  See also the discussion in Knuth vol II.
-//
+// Here I perform the GCD using shifts and tests on the bottom bit of
+// numbers rather than division/remainder. On a reasonable range of machines
+// I found that faster and in all cases not a lot slower.
     if (p == 0) p = q;
     else if (q != 0)
     {   int twos = 0;
-//
-// I shift p and q right until both are odd numbers, counting the
-// power of two that was needed for the GCD.
-// The contorted code here tries to avoid redundant tests on the
-// bottom bits of p and q.
-//
         for (;;)
         {   if ((p & 1) == 0)
             {   if ((q & 1) == 0)
@@ -718,14 +720,6 @@ gcd_using_machine_arithmetic:
             while ((q & 1) == 0) q = q >> 1;
             break;
         }
-//
-// Now p and q are both odd, so if I subtract one from the other
-// I get an even number that can properly be shifted right (because
-// multiples of 2 have already all be taken care of).  On some RISC
-// architectures this test-and-subtract loop will run only a bit slower
-// than just one division operation, especially if the two numbers p and
-// q are small.
-//
         while (p != q)
         {   if (p > q)
             {   p = p - q;
@@ -736,10 +730,6 @@ gcd_using_machine_arithmetic:
                 do q = q >> 1; while ((q & 1) == 0);
             }
         }
-//
-// Finally I must re-instate the power of two that was taken out
-// earlier.
-//
         p = p << twos;
     }
 //
