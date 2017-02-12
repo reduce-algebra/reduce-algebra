@@ -46,10 +46,7 @@
 // Linux, Windows and MacOSX. It is closely based on an earlier
 // windowed framework that I had (fwin) that used the FOX Gui toolkit.
 // That in turn was (somewhat) modelled on an even earlier version that
-// I called "cwin". Cwin was built using the Microsoft Foundation Classes
-// and only ran on Windows. Fwin ran on Windows and X11. So one of the
-// enhancements here is extension of the platform to cover native (ie
-// Cocoa) support on a Macintosh.
+// I called "cwin".
 //
 
 // $Id$

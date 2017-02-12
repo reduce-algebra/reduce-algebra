@@ -85,12 +85,9 @@ extern int32_t mpi_rank,mpi_size;
           fflush(stderr); \
           } while (0)
 
-extern void **pages,
-       **heap_pages, **vheap_pages,
-       **native_pages;
+extern void **pages, **heap_pages, **vheap_pages;
 
-extern void **new_heap_pages, **new_vheap_pages,
-       **new_native_pages;
+extern void **new_heap_pages, **new_vheap_pages;
 
 extern void *allocate_page(const char *why);
 
@@ -98,7 +95,6 @@ extern void *allocate_page(const char *why);
 
 #define PAGE_TYPE_CONS   0
 #define PAGE_TYPE_VECTOR 1
-#define PAGE_TYPE_NATIVE 3
 
 typedef struct page_map_t
 {   void *start;
@@ -108,15 +104,9 @@ typedef struct page_map_t
 
 #endif
 
-extern int32_t pages_count,
-       heap_pages_count, vheap_pages_count,
-       native_pages_count;
+extern int32_t pages_count, heap_pages_count, vheap_pages_count;
 
-extern int32_t new_heap_pages_count, new_vheap_pages_count,
-       new_native_pages_count;
-
-extern int32_t native_pages_changed;
-extern int32_t native_fringe;
+extern int32_t new_heap_pages_count, new_vheap_pages_count;
 
 extern LispObject *nilsegment, *stacksegment;
 extern LispObject *stackbase;
@@ -169,7 +159,6 @@ extern LispObject multiplication_buffer;
 #define GC_VEC       4
 #define GC_BPS       5
 #define GC_PRESERVE  6
-#define GC_NATIVE    7
 
 extern volatile char stack_contents_temp;
 
@@ -359,7 +348,7 @@ extern intptr_t modulus_is_large;
 
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 extern LispObject quote_symbol, function_symbol, comma_symbol;
-extern LispObject comma_at_symbol, cons_symbol, eval_symbol;
+extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn;
@@ -378,34 +367,33 @@ extern LispObject expr_symbol, fexpr_symbol, macro_symbol;
 extern LispObject big_divisor, big_dividend, big_quotient;
 extern LispObject big_fake1, big_fake2;
 extern LispObject active_stream, current_module;
-extern LispObject native_defs, features_symbol, lisp_package;
+extern LispObject mv_call_symbol, features_symbol, lisp_package;
 extern LispObject sys_hash_table, help_index, cfunarg, lex_words;
 extern LispObject get_counts, fastget_names, input_libraries;
 extern LispObject output_library, current_file, break_function;
 extern LispObject standard_output, standard_input, debug_io;
 extern LispObject error_output, query_io, terminal_io;
 extern LispObject trace_output, fasl_stream;
-extern LispObject native_code, native_symbol, traceprint_symbol;
+extern LispObject startup_symbol, mv_call_symbol, traceprint_symbol;
 extern LispObject load_source_symbol, load_selected_source_symbol;
-extern LispObject bytecoded_symbol, nativecoded_symbol;
+extern LispObject bytecoded_symbol, funcall_symbol, autoload_symbol;
 extern LispObject gchook, resources, callstack, procstack, procmem;
 extern LispObject trap_time;
-
 extern LispObject keyword_package;
 extern LispObject all_packages, package_symbol, internal_symbol;
 extern LispObject external_symbol, inherited_symbol;
 extern LispObject key_key, allow_other_keys, aux_key;
 extern LispObject format_symbol;
 extern LispObject expand_def_symbol, allow_key_key;
-
 extern LispObject declare_symbol, special_symbol, large_modulus;
 extern LispObject used_space, avail_space, eof_symbol, call_stack;
-
 extern LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol;
 extern LispObject not_symbol, reader_workspace, named_character;
 extern LispObject read_float_format, short_float, single_float, double_float;
 extern LispObject long_float, bit_symbol, pathname_symbol, print_array_sym;
 extern LispObject read_base, initial_element;
+extern LispObject builtin0_symbol, builtin1_symbol, builtin2_symbol;
+extern LispObject builtin3_symbol, builtin4_symbol; 
 
 #ifdef OPENMATH
 extern LispObject om_openFileDev(LispObject env, int nargs, ...);
@@ -520,10 +508,6 @@ extern intptr_t exit_reason;
 
 extern int procstackp;
 
-#ifndef NO_BYTECOUNT
-extern const char *name_of_caller;
-#endif
-
 extern bool garbage_collection_permitted;
 
 #define MAX_INPUT_FILES         40  // limit on command-line length
@@ -572,8 +556,6 @@ extern size_t number_of_input_files,
        number_of_symbols_to_define,
        number_of_fasl_paths;
 extern int init_flags;
-
-extern int native_code_tag;
 
 extern const char *standard_directory;
 
@@ -658,10 +640,6 @@ extern LispObject encapsulate_pointer(void *);
 extern void *extract_pointer(LispObject a);
 extern LispObject Lencapsulatedp(LispObject nil, LispObject a);
 typedef void initfn(LispObject *, LispObject **, LispObject * volatile *);
-extern int load_dynamic(const char *objname, const char *modname,
-                        LispObject name, LispObject fns);
-extern "C" LispObject Linstate_c_code(LispObject nil,
-                                  LispObject name, LispObject fns);
 
 extern LispObject characterify(LispObject a);
 extern LispObject char_to_id(int ch);
@@ -794,8 +772,8 @@ extern bool traced_equal_fn(LispObject a, LispObject b,
 extern void dump_equals();
 #endif
 extern "C" bool equalp(LispObject a, LispObject b);
-extern LispObject apply(LispObject fn, int nargs,
-                        LispObject env, LispObject fname);
+extern LispObject apply(LispObject fn, int nargs, LispObject env,
+                        LispObject from);
 extern LispObject apply_lambda(LispObject def, int nargs,
                                LispObject env, LispObject name);
 extern void        deallocate_pages();
@@ -840,8 +818,6 @@ extern FILE        *open_file(char *filename, const char *original_name,
                               size_t n, const char *dirn, FILE *old_file);
 extern "C" LispObject plus2(LispObject a, LispObject b);
 extern void        preserve(const char *msg, size_t len);
-extern void        preserve_native_code();
-extern void        relocate_native_function(unsigned char *bps);
 extern LispObject prin(LispObject u);
 extern const char *get_string_data(LispObject a, const char *why, size_t &len);
 extern void prin_to_stdout(LispObject u);
@@ -876,7 +852,6 @@ extern "C" LispObject reclaim(LispObject value_to_return, const char *why,
 extern void validate_all(const char *why, int line, const char *file);
 extern int check_env(LispObject env);
 #endif
-extern bool do_not_kill_native_code;
 extern void        set_fns(LispObject sym, one_args *f1,
                            two_args *f2, n_args *fn);
 extern void        setup(int restartp, double storesize);
@@ -960,13 +935,23 @@ extern uint32_t Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
 #define argcheck(var, n, msg) if ((var)!=(n)) aerror(msg);
 
 extern n_args      *no_arg_functions[];
-extern no_args     *new_no_arg_functions[];
 extern one_args    *one_arg_functions[];
 extern two_args    *two_arg_functions[];
 extern four_args   *four_arg_functions[];
 extern n_args      *three_arg_functions[];
-extern void        *useful_functions[];
-extern char        *address_of_var(int n);
+
+extern bool no_arg_traceflags[];
+extern bool one_arg_traceflags[];
+extern bool two_arg_traceflags[];
+extern bool four_arg_traceflags[];
+extern bool three_arg_traceflags[];
+
+extern const char *no_arg_names[];
+extern const char *one_arg_names[];
+extern const char *two_arg_names[];
+extern const char *four_arg_names[];
+extern const char *three_arg_names[];
+
 
 typedef struct setup_type
 {   const char *name;

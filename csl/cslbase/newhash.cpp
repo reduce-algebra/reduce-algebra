@@ -399,10 +399,10 @@ void dumptable(LispObject tt, const char *s, bool checkdups)
                 if (ht(h2) == SPID_HASHEMPTY) s4 = " @@@";
             }
             if (h1 != i && h2 != i && h3 != i) s4 = "@@@";
-            printf("%3" PRIuMAX ": [%" PRIu64 "] %s%" PRIuMAX " %s%" PRIuMAX
-                   " %s%" PRIuMAX "%s (%" PRIu64 ")\n",
-                (uintmax_t)i, (uint64_t)k,
-                s1, (uintmax_t)h1, s2, (uintmax_t)h2, s3, (uintmax_t)h3, s4,
+            printf("%3" PRIu64 ": [%" PRIu64 "] %s%" PRIu64 " %s%" PRIu64
+                   " %s%" PRIu64 "%s (%" PRIu64 ")\n",
+                (uint64_t)i, (uint64_t)k,
+                s1, (uint64_t)h1, s2, (uint64_t)h2, s3, (uint64_t)h3, s4,
                 (uintmax_t)vv);
         }
     }
@@ -618,8 +618,8 @@ bool hash_remove(LispObject key)
 
 size_t hash_insert_if_possible(LispObject key)
 {
-    int Qn;
-    int Q[QSIZE];
+    size_t Qn;
+    size_t Q[QSIZE];
     uint64_t h = HASH(key);
     LispObject v1, v2, v3;
     size_t n, n1, n2, n3;
@@ -741,7 +741,7 @@ size_t hash_insert_if_possible(LispObject key)
            (uint64_t)key);
     printf("before unwind Qn=%d\n", Qn);
     dumptable(tt, "Before", false);
-    {   int j;
+    {   size_t j;
         for (j=0; j<Qn; j++) printf("%d: %d\n", j, Q[j]);
     }
 #endif
@@ -749,7 +749,7 @@ size_t hash_insert_if_possible(LispObject key)
 // as to leave a place available where the key I wish to insert can go.
     Qn = Qn/2;
     while (Qn > 3)
-    {  int j = Qn/2;   // parent
+    {  size_t j = Qn/2;   // parent
 #ifdef TRACE
        printf("move %" PRIx64 " from %d to %d\n", ht(Q[j]), Q[j], Q[Qout]);
 #endif
@@ -892,7 +892,15 @@ static void newhash_rehash(LispObject tab, bool after_gc)
 /////////////////////////////////////////////////////////////////////
 
 // This is simplified printing and sends its output to stderr. It is ONLY
-// intended for use while debugging.
+// intended for use while debugging. I will use if when printing trace
+// and backtrace output.. that gives up on having flexible control over
+// diagnostic output or redirecting it to somewhere other than stderr
+// (in non-windowed mode) or the screen (in windowed mode).
+// I want it to be able to cope with looped up structures so I will use
+// and EQ-keyed hash table to detect places where the structure is
+// reentrant.
+// I will also implement a scheme that lets me limit the output from each
+// printed expression to a certain number of lines of output...
 
 static int simple_column = 0;
 

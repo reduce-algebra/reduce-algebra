@@ -111,11 +111,10 @@ intptr_t print_precision, miscflags;
 intptr_t current_modulus, fastget_size, package_bits, modulus_is_large;
 LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 LispObject quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
-LispObject cons_symbol, eval_symbol, work_symbol, evalhook, applyhook;
-LispObject macroexpand_hook, append_symbol, exit_tag;
+LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol, evalhook;
+LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
 LispObject exit_value, catch_tags, keyword_package, current_package;
-LispObject startfn;
-LispObject all_packages, package_symbol, internal_symbol;
+LispObject startfn, all_packages, package_symbol, internal_symbol;
 LispObject external_symbol, inherited_symbol;
 LispObject gensym_base, string_char_sym, boffo;
 LispObject key_key, allow_other_keys, aux_key;
@@ -130,19 +129,21 @@ LispObject prompt_thing, faslgensyms, prinl_symbol, emsg_star, redef_msg;
 LispObject expr_symbol, fexpr_symbol, macro_symbol;
 LispObject big_divisor, big_dividend, big_quotient, big_fake1, big_fake2;
 LispObject active_stream, current_module;
-LispObject native_defs, features_symbol, lisp_package, sys_hash_table;
+LispObject autoload_symbol, features_symbol, lisp_package, sys_hash_table;
 LispObject help_index, cfunarg, lex_words, get_counts, fastget_names;
 LispObject input_libraries, output_library, current_file, break_function;
 LispObject standard_output, standard_input, debug_io;
 LispObject error_output, query_io, terminal_io, trace_output, fasl_stream;
-LispObject native_code, native_symbol, traceprint_symbol, load_source_symbol;
-LispObject load_selected_source_symbol, bytecoded_symbol, nativecoded_symbol;
+LispObject startup_symbol, mv_call_symbol, traceprint_symbol, load_source_symbol;
+LispObject load_selected_source_symbol, bytecoded_symbol, funcall_symbol;
 LispObject gchook, resources, callstack, procstack, procmem, trap_time;
 LispObject used_space, avail_space, eof_symbol, call_stack;
 LispObject nicknames_symbol, use_symbol, and_symbol, or_symbol, not_symbol;
 LispObject reader_workspace, named_character, read_float_format, short_float;
 LispObject single_float, double_float, long_float, bit_symbol, pathname_symbol;
 LispObject print_array_sym, read_base, initial_element;
+LispObject builtin0_symbol, builtin1_symbol, builtin2_symbol;
+LispObject builtin3_symbol, builtin4_symbol; 
 
 LispObject workbase[51];
 
@@ -167,11 +168,9 @@ LispObject eq_hash_tables, equal_hash_tables;
 
 void **pages,
      **heap_pages,
-     **vheap_pages,
-     **native_pages;
+     **vheap_pages;
 void **new_heap_pages,
-     **new_vheap_pages,
-     **new_native_pages;
+     **new_vheap_pages;
 
 #ifdef CONSERVATIVE
 
@@ -181,11 +180,9 @@ page_map_t *page_map;
 
 int32_t pages_count,
         heap_pages_count,
-        vheap_pages_count,
-        native_pages_count;
+        vheap_pages_count;
 int32_t new_heap_pages_count,
-        new_vheap_pages_count,
-        new_native_pages_count;
+        new_vheap_pages_count;
 
 char program_name[64] = {0};
 
@@ -197,9 +194,6 @@ char program_name[64] = {0};
 
 char **loadable_packages = NULL, **switches = NULL;
 
-int native_code_tag;
-int32_t native_pages_changed;
-int32_t native_fringe;
 bool trap_floating_overflow = true;
 
 int procstackp;
@@ -231,19 +225,12 @@ entry_point1 entries_table1[] =
     {undefined1,                         "undefined1"},
     {autoload1,                          "autoload1"},
     {interpreted1,                       "interpreted1"},
-    {traceinterpreted1,                  "traceinterpreted1"},
     {funarged1,                          "funarged1"},
-    {tracefunarged1,                     "tracefunarged1"},
     {bytecoded1,                         "bytecoded1"},
-    {tracebytecoded1,                    "tracebytecoded1"},
     {byteopt1,                           "byteopt1"},
-    {tracebyteopt1,                      "tracebyteopt1"},
     {hardopt1,                           "hardopt1"},
-    {tracehardopt1,                      "tracehardopt1"},
     {byteoptrest1,                       "byteoptrest1"},
-    {tracebyteoptrest1,                  "tracebyteoptrest1"},
     {hardoptrest1,                       "hardoptrest1"},
-    {tracehardoptrest1,                  "tracehardoptrest1"},
     {TOO_FEW_2,                          "too_few_2"},
     {WRONG_NO_0A,                        "wrong_no_0a"},
     {WRONG_NO_3A,                        "wrong_no_3a"},
@@ -271,19 +258,12 @@ entry_point2 entries_table2[] =
     {undefined2,                         "undefined2"},
     {autoload2,                          "autoload2"},
     {interpreted2,                       "interpreted2"},
-    {traceinterpreted2,                  "traceinterpreted2"},
     {funarged2,                          "funarged2"},
-    {tracefunarged2,                     "tracefunarged2"},
     {bytecoded2,                         "bytecoded2"},
-    {tracebytecoded2,                    "tracebytecoded2"},
     {byteopt2,                           "byteopt2"},
-    {tracebyteopt2,                      "tracebyteopt2"},
     {hardopt2,                           "hardopt2"},
-    {tracehardopt2,                      "tracehardopt2"},
     {byteoptrest2,                       "byteoptrest2"},
-    {tracebyteoptrest2,                  "tracebyteoptrest2"},
     {hardoptrest2,                       "hardoptrest2"},
-    {tracehardoptrest2,                  "tracehardoptrest2"},
     {TOO_MANY_1,                         "too_many_1"},
     {WRONG_NO_0B,                        "wrong_no_0b"},
     {WRONG_NO_3B,                        "wrong_no_3b"},
@@ -323,23 +303,14 @@ entry_pointn entries_tablen[] =
     {undefinedn,                         "undefinedn"},
     {autoloadn,                          "autoloadn"},
     {interpretedn,                       "interpretedn"},
-    {traceinterpretedn,                  "traceinterpretedn"},
     {funargedn,                          "funargedn"},
-    {tracefunargedn,                     "tracefunargedn"},
     {bytecoded0,                         "bytecoded0"},
-    {tracebytecoded0,                    "tracebytecoded0"},
     {bytecoded3,                         "bytecoded3"},
-    {tracebytecoded3,                    "tracebytecoded3"},
     {bytecodedn,                         "bytecodedn"},
-    {tracebytecodedn,                    "tracebytecodedn"},
     {byteoptn,                           "byteoptn"},
-    {tracebyteoptn,                      "tracebyteoptn"},
     {hardoptn,                           "hardoptn"},
-    {tracehardoptn,                      "tracehardoptn"},
     {byteoptrestn,                       "byteoptrestn"},
-    {tracebyteoptrestn,                  "tracebyteoptrestn"},
     {hardoptrestn,                       "hardoptrestn"},
-    {tracehardoptrestn,                  "tracehardoptrestn"},
     {WRONG_NO_1,                         "wrong_no_1"},
     {WRONG_NO_2,                         "wrong_no_2"},
 //
@@ -556,20 +527,16 @@ static void init_heap_segments(double store_size)
 #endif
     heap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
     vheap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
-    native_pages = (void **)my_malloc_2(MAX_NATIVE_PAGES*sizeof(void *));
     new_heap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
     new_vheap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
-    new_native_pages = (void **)my_malloc_2(MAX_NATIVE_PAGES*sizeof(void *));
     if (pages == NULL ||
 #ifdef CONSERVATIVE
         page_map == NULL ||
 #endif
         new_heap_pages == NULL ||
         new_vheap_pages == NULL ||
-        new_native_pages == NULL ||
         heap_pages == NULL ||
-        vheap_pages == NULL ||
-        native_pages == NULL)
+        vheap_pages == NULL)
     {   fatal_error(err_no_store);
     }
 
@@ -580,9 +547,7 @@ static void init_heap_segments(double store_size)
         if (request != 0) free_space = 1024*request;
         free_space = free_space/(CSL_PAGE_SIZE+4);
         if (free_space > MAX_PAGES) free_space = MAX_PAGES;
-        pages_count = heap_pages_count = vheap_pages_count =
-                      native_pages_count = 0;
-        native_fringe = 0;
+        pages_count = heap_pages_count = vheap_pages_count = 0;
 //
 // I grab memory using a function called my_malloc_1(), which verifies that
 // all addresses used in the heap have the same top bit.  The very first time
@@ -686,7 +651,6 @@ void drop_heap_segments(void)
 {   abandon(pages,           pages_count);
     abandon(heap_pages,      heap_pages_count);
     abandon(vheap_pages,     vheap_pages_count);
-    abandon(native_pages,    native_pages_count);
     my_free(stacksegment);
     my_free(nilsegment);
 }
@@ -792,7 +756,6 @@ setup_type const restart_setup[] =
     {"start-module",            Lstart_module, TOO_MANY_1, WRONG_NO_1},
     {"write-module",            TOO_FEW_2, Lwrite_module, WRONG_NO_2},
     {"copy-module",             Lcopy_module, TOO_MANY_1, WRONG_NO_1},
-    {"copy-native",             TOO_FEW_2, Lcopy_native, WRONG_NO_2},
     {"delete-module",           Ldelete_module, TOO_MANY_1, WRONG_NO_1},
     {"load-module",             Lload_module, TOO_MANY_1, WRONG_NO_1},
     {"load-source",             Lload_source, TOO_MANY_1, Lload_source0},
@@ -801,7 +764,6 @@ setup_type const restart_setup[] =
     {"writable-libraryp",       Lwritable_libraryp, TOO_MANY_1, WRONG_NO_1},
     {"library-members",         Llibrary_members, TOO_MANY_1, Llibrary_members0},
     {"startup-banner",          Lbanner, TOO_MANY_1, WRONG_NO_1},
-    {"instate-c-code",          TOO_FEW_2, Linstate_c_code, WRONG_NO_2},
     {"set-help-file",           TOO_FEW_2, Lset_help_file, WRONG_NO_2},
     {"mapstore",                Lmapstore, TOO_MANY_1, Lmapstore0},
     {"verbos",                  Lverbos, TOO_MANY_1, WRONG_NO_1},
@@ -1315,303 +1277,6 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 
 #endif // EMBEDDED
 
-int setup_dynamic(setup_type_1 *dll, const char *modname,
-                  LispObject name, LispObject fns)
-{   const char *p;
-    setup_type_1 *b;
-    size_t len = 0;
-    LispObject xchecksum;
-#ifdef TRACE_NATIVE
-    trace_printf("setup_dynamic %s\n", modname);
-    /*  prin_to_trace(fns); */ trace_printf("\n");
-#endif
-    if (!consp(fns)) return 0;
-#ifdef TRACE_NATIVE
-    b = dll;
-    while (b->name != NULL)
-    {   trace_printf("%s %p %p %p %u %u\n",
-                     b->name, b->one, b->two, b->n, b->c1, b->c2);
-        b++;
-    }
-    trace_printf("%s %s\n", (char *)(b->one), (char *)(b->two));
-#endif
-//
-// First I will check if the module loaded appears to match against the set
-// of functions I am expecting from it...
-//
-    b = dll;
-    while (b->name != NULL) b++;
-//
-// now b->one is expected to match modname, and b->two is expected
-// to match the string that is the first item in fns.
-//
-    if (strcmp(modname, (char *)b->one) != 0)
-    {   trace_printf("Module name %s disagrees with %s\n",
-                     modname, (char *)b->one);
-        return 0;
-    }
-    p = get_string_data(qcar(fns), "instate_c_code", len);
-    if (strncmp(p, (char *)b->two, len) != 0)
-    {   trace_printf("Module signature %.*s disagrees with %s\n",
-                     (int)len, p, (char *)b->two);
-        return 0;
-    }
-    xchecksum = qcar(fns);
-    fns = qcdr(fns);
-    b = dll;
-//
-// Now the table b and the list fns ought to match up. The list will have
-// entries
-//      (name (e1 e2 ... en) . check)
-// where the name is the name of a Lisp function and the list needs
-// turning into a vector to go into its environment cell.
-// The table has columns
-//      name f1 f2 n2 c1 c2
-// where the name ought to match what is seen in the list, and then the
-// three functions go in the f1, f2 and fn cells. I will stop if I get
-// any mismatch at all - just to be cautious!
-//
-    while (consp(fns))
-    {   LispObject fname, env, env1, ww;
-        if (b->name == NULL)
-        {
-#ifdef TRACE_NATIVE
-            trace_printf("Failed: setup table length problem\n");
-#endif
-            return 0;  // lengths of lists differ
-        }
-        env = qcar(fns);
-        if (consp(env))
-        {   fname = qcar(env);
-            env = qcdr(env);
-            if (consp(env))
-            {   LispObject chk = qcdr(env);
-                uint32_t *pp;
-                env = qcar(env);
-                p = get_string_data(fname, "instate_c_code", len);
-#ifdef TRACE_NATIVE
-                trace_printf("instate next function %.*s vs %s\n", len, p, b->name);
-                prin_to_trace(chk); trace_printf(" vs %u %u\n", b->c1, b->c2);
-#endif
-                if (strncmp(p, b->name, len) != 0)
-                {
-#ifdef TRACE_NATIVE
-                    trace_printf("Failed: name in setup table and env list differ\n");
-#endif
-                    return 0;
-                }
-//
-// There is a small chance of misery here. The checksum MIGHT happen to
-// be a 1-word bignum or even a fixnum. If that happens the tests here will
-// reject it and the native code will not get instated. If this happens
-// the result can be a performance loss but it ought not to lead to
-// incorrect results, and if the checksum scheme is good it is only
-// expected to hit for around 1 in 10^9 functions that are processed, so
-// I will (for now) accept it. If I ever feel twitchy I will respond by
-// ensuring that md60 always returns a 2-word bignum result. Hmm I AM twitchy
-// and I have now done just that!
-//
-                if (!is_numbers(chk) || !is_bignum(chk))
-                {
-#ifdef TRACE_NATIVE
-                    trace_printf("Failed: checksum not a number or not big\n");
-#endif
-                    return 0;
-                }
-                pp = bignum_digits(chk);
-#ifdef TRACE_NATIVE
-                trace_printf("%u %u vs %u %u\n", pp[0], pp[1], b->c2, b->c1);
-#endif
-                if (pp[0] != b->c2 || pp[1] != b->c1)
-                {   // function's definition has changed?
-#ifdef TRACE_NATIVE
-                    trace_printf("Failed on a function: checksum discrepancy\n");
-#endif
-                    goto next_def;
-                }
-//
-// I will ONLY install native code if I have a bytecoded version in place
-// already. I apply that rule to ensure that image files can be used across
-// different architectures. Well I will want to count tailcall magic as
-// OK.
-//
-                env1 = qenv(fname);
-#ifdef TRACE_NATIVE
-                prin_to_trace(env1);
-                trace_printf(" is the bytecoded version\n");
-#endif
-                if (qfn1(fname) == f1_as_0 ||
-                    qfn1(fname) == f1_as_1 ||
-                    qfn2(fname) == f2_as_0 ||
-                    qfn2(fname) == f2_as_1 ||
-                    qfn2(fname) == f2_as_2 ||
-                    qfnn(fname) == f0_as_0 ||
-                    qfnn(fname) == f3_as_0 ||
-                    qfnn(fname) == f3_as_1 ||
-                    qfnn(fname) == f3_as_2 ||
-                    qfnn(fname) == f3_as_3)
-                {   if (!is_symbol(env1))
-                    {   // malformed
-#ifdef TRACE_NATIVE
-                        prin_to_trace(fname);
-                        trace_printf(" Failed on a function: tailcall with env malformed\n");
-#endif
-                        goto next_def;
-                    }
-                }
-                else
-                {   if (!consp(env1) || !is_bps(qcar(env1)))
-                    {   // no bytecoded version available
-#ifdef TRACE_NATIVE
-                        prin_to_trace(fname);
-                        trace_printf(" Failed on a function: no bytecoded version\n");
-#endif
-                        goto next_def;
-                    }
-                    env1 = qcdr(env1);
-                    if (!is_vector(env1)) return nil;
-                    env1 = Lgetv(nil, env1, Lupbv(nil, env1));
-#ifdef TRACE_NATIVE
-                    prin_to_trace(env1); trace_printf(" should be checksum again\n");
-#endif
-                    if (!equal(env1, chk))
-                    {   // bytecoded definition differs
-#ifdef TRACE_NATIVE
-                        trace_printf("Failed: bytecoded version checksum differs\n");
-#endif
-                        goto next_def;
-                    }
-                }
-                push2(name, fname);
-                env = Llist_to_vector(nil, env);
-                pop2(fname, name);
-                if (load_limit != 0x7fffffff)
-                {   if (load_count >= load_limit) goto next_def;
-                    prin_to_trace(fname);
-                    trace_printf(" :: %d\n", load_count++);
-                }
-//
-// Gosh: now I can actually make the function available to users!
-//
-#ifdef TRACE_NATIVE
-                trace_printf("actually set up native function\n");
-#endif
-//
-// I want to do a few things in addition to filling in the function and
-// environment cells...
-// (a) ensure that this symbol is in the list "native_defs";
-// (b) give it a "bytecoded_symbol" property that captures all info about
-//     the bytecode definition that I am displacing;
-// (c) give it a "nativecoded_symbol" property that should let me
-//     re-instate this fast version of the code on subsequent runs when
-//     the module loading must be repeated following a preserve/restart.
-//
-                ww = native_defs;
-                while (consp(ww))
-                {   if (qcar(ww) == fname) goto already_native;
-                    ww = qcdr(ww);
-                }
-                push4(name, fname, env, xchecksum);
-                ww = cons(fname, native_defs);
-                pop4(xchecksum, env, fname, name);
-                native_defs = ww;
-            already_native:
-                ww = Lsymbol_argcode(nil, fname);
-                if (ww == nil) return 0;
-                push4(name, fname, env, xchecksum);
-                ww = cons(ww, qenv(fname));
-                pop4(xchecksum, env, fname, name);
-                push4(name, fname, env, xchecksum);
-                putprop(fname, bytecoded_symbol, ww);
-                pop4(xchecksum, env, fname, name);
-                push4(name, fname, env, xchecksum);
-                ww = list3star(name, fname, xchecksum, env);
-                pop4(xchecksum, env, fname, name);
-                push4(name, fname, env, xchecksum);
-                putprop(fname, nativecoded_symbol, ww);
-                pop4(xchecksum, env, fname, name);
-                ifn1(fname) = (intptr_t)b->one;
-                ifn2(fname) = (intptr_t)b->two;
-                ifnn(fname) = (intptr_t)b->n;
-                qenv(fname) = env;
-            }
-        }
-    next_def:
-        fns = qcdr(fns);
-        b++;
-    }
-//
-// At present I take the view that when a module has been loaded it will
-// be wanted for the rest of the Lisp run, and so I do not unload it...
-//
-    return 1;
-}
-
-//
-// The next function is to do with compiling modules into machine
-// code (via C) and tben dynamically loading them. The first argument is
-// the name given to the module, which is the same as the name of the
-// FASL file I believe I am loading now. Furthermore the module
-// should (when loaded) define an external symbol called
-//      <name>_setup
-// that is its table of functions that it defines.
-//
-// The second argument will be a
-// header string "int int int" followed by a list of triples
-//   (name env . checksum)
-// where each name should be in the setup table from the file, and the
-// corresponding env is a list that needs to be converted to a vector and
-// placed in the symbol's environment cell.
-//
-// Note that the final entry in the setup table is of the form
-//    NULL, "name", "int int int", 0
-// and the name and triple of integers are expected to match the
-// information passed to instate_c_code. If they do not then the
-// modules concerned have somehow got out of step...
-//
-
-LispObject Linstate_c_code(LispObject env, LispObject name, LispObject fns)
-{
-//
-// See if there is a module in the image file with the given name and
-// with its linker-tag matching the one for the current executable. If so
-// copy it to a temporary file called say t1.dll or t1.so. Dynamically load
-// it into memory. Keep the temporary file in a temporary directory but
-// where I might find it again next time I need it. Access a
-// symbol name_setup in it. The style of binary found should match the
-// information in the variable "linker_type". This version is to be called
-// by Lisp from a fasl-file as a module is loaded. The checksum information at
-// the start of "fns" will used in names for the .dll files and will be
-// recorded associated with the module name.
-//
-    size_t len = 0;
-    const char *sname;
-    char modname[80];
-    int c;
-    setup_type_1 *dll;
-
-#ifdef TRACE_NATIVE
-    trace_printf("instate_c_code ");
-    prin_to_trace(name);
-    trace_printf("\n");
-#endif
-
-    if (!consp(fns)) return onevalue(nil);
-
-    sname = get_string_data(name, "instate-c-code", len);
-
-#ifdef EMBEDDED
-    return onevalue(nil);
-#else
-    dll = find_def_table(name, qcar(fns));
-    if (dll == NULL) return onevalue(nil);
-
-    sprintf(modname, "%.*s", (int)len, sname);
-    c = setup_dynamic(dll, modname, name, fns);
-    return onevalue(c ? lisp_true : nil);
-#endif
-}
-
 static void cold_setup()
 {   LispObject w;
     void *p;
@@ -1837,9 +1502,10 @@ static void cold_setup()
     echo_symbol         = make_undefined_symbol("*echo");
     comp_symbol         = make_undefined_symbol("*comp");
     compiler_symbol     = make_undefined_symbol("compile");
-    native_symbol       = make_undefined_symbol("native-compile");
+    startup_symbol      = make_undefined_symbol("system-startup");
+    mv_call_symbol      = make_symbol("multiple-value-call", 0, mv_call_fn, NULL, BAD_SPECIALN);
+    autoload_symbol     = make_undefined_symbol("autoload");
     bytecoded_symbol    = make_undefined_symbol("bytecoded-definition");
-    nativecoded_symbol  = make_undefined_symbol("native-code-definition");
     traceprint_symbol   = make_undefined_symbol("trace-print");
     load_source_symbol  = make_symbol("load-source", 0, Lload_source, TOO_MANY_1, Lload_source0);
     load_selected_source_symbol =
@@ -1966,11 +1632,17 @@ void set_up_functions(int restart_flag)
     large_modulus            = fixnum_of_int(1);
     cons_symbol              = make_symbol("cons", restart_flag, TOO_FEW_2, Lcons, WRONG_NO_2);
     eval_symbol              = make_symbol("eval", restart_flag, Leval, TOO_MANY_1, WRONG_NO_1);
+    apply_symbol             = make_symbol("apply", restart_flag, Lapply_1, Lapply_2, Lapply_n);
     load_source_symbol       = make_symbol("load-source", restart_flag, Lload_source, TOO_MANY_1, Lload_source0);
+    builtin0_symbol          = make_undefined_symbol("s:builtin0");
+    builtin1_symbol          = make_undefined_symbol("s:builtin1");  
+    builtin2_symbol          = make_undefined_symbol("s:builtin2");  
+    builtin3_symbol          = make_undefined_symbol("s:builtin3");  
+    builtin4_symbol          = make_undefined_symbol("s:builtin4");  
     load_selected_source_symbol =
-                                make_symbol("load-selected-source",
-                                    restart_flag, Lload_selected_source,
-                                    TOO_MANY_1, Lload_selected_source0);
+                               make_symbol("load-selected-source",
+                                   restart_flag, Lload_selected_source,
+                                   TOO_MANY_1, Lload_selected_source0);
 //
 // The main bunch of symbols can be handed using a table that
 // gives names and values.
@@ -2070,7 +1742,8 @@ void set_up_variables(int restart_flag)
     big_divisor = make_four_word_bignum(0, 0, 0, 0);
     big_dividend = make_four_word_bignum(0, 0, 0, 0);
     big_quotient = make_four_word_bignum(0, 0, 0, 0);
-    qvalue(macroexpand_hook) = make_symbol("funcall", restart_flag, Lfuncall1, Lfuncall2, Lfuncalln);
+    qvalue(macroexpand_hook) = funcall_symbol =
+        make_symbol("funcall", restart_flag, Lfuncall1, Lfuncall2, Lfuncalln);
     input_libraries = make_undefined_symbol("input-libraries");
     qheader(input_libraries)  |= SYM_SPECIAL_VAR;
     qvalue(input_libraries) = nil;
@@ -2096,7 +1769,6 @@ void set_up_variables(int restart_flag)
 //       help                     help mechanism provided within Lisp
 //       debug                    Lisp built with debug options
 //       embedded                 if built using the EMBEDDED option
-//       (native . number)        native code tag
 //       (c-code . number)        u01.c through u60.c define n functions
 //       sixty-four               64-bit address version
 //       texmacs                  "--texmacs" option on command line
@@ -2235,15 +1907,6 @@ void set_up_variables(int restart_flag)
          * is {\ttfamily linux-gnu:x86\_64} and on anther it is just {\ttfamily win32}.
          */
 
-        /*! lispsys [native] \item[{\ttfamily  (native . tag)}] \index{{\ttfamily  (native . tag)}}
-         * One of the many experiments within CSL that were active at one stage but are
-         * not current involved compilation directly into machine code. The strong
-         * desire to ensure that image files coudl be used on a cross-platform basis
-         * led to saved compiled code being tagged with a numeric ``native code tag'',
-         * and this key/value pair identified the value to be used on the current
-         * machine.
-         */
-
         /*! lispsys [opsys] \item[{\ttfamily  (opsys . operating-system)}] \index{{\ttfamily  (opsys . operating-system)}}
          * Some crude indication of the host operating system.
          */
@@ -2342,8 +2005,6 @@ void set_up_variables(int restart_flag)
 //
         w = acons(make_keyword("OPSYS"),
                   make_undefined_symbol(OPSYS), w);
-        w = acons(make_keyword("NATIVE"),
-                  fixnum_of_int(native_code_tag), w);
         w = acons(make_keyword("C-CODE"),
                   fixnum_of_int(defined_symbols), w);
         w = acons(make_keyword("PLATFORM"),
@@ -2386,8 +2047,6 @@ void set_up_variables(int restart_flag)
 
         w = acons(make_keyword("opsys"),
                   make_undefined_symbol(OPSYS), w);
-        w = acons(make_keyword("native"),
-                  fixnum_of_int(native_code_tag), w);
         w = acons(make_keyword("c-code"),
                   fixnum_of_int(defined_symbols), w);
         w = acons(make_keyword("platform"),
@@ -3142,7 +2801,6 @@ void setup(int restart_flag, double store_size)
 
     savestacklimit = stacklimit = &stack[stack_segsize*CSL_PAGE_SIZE/4-200];
     // allow some slop at end
-    native_pages_changed = 0;
     if ((restart_flag & 1) != 0) warm_setup();
     else cold_setup();
 
@@ -3157,8 +2815,7 @@ void setup(int restart_flag, double store_size)
 // could be adjusted on the basis of experience with this code.
 //
     if (init_flags & INIT_EXPANDABLE)
-    {   int32_t more = heap_pages_count + vheap_pages_count +
-                       native_pages_count;
+    {   int32_t more = heap_pages_count + vheap_pages_count;
         more = 3 *more - pages_count;
         while (more-- > 0)
         {   void *page = (void *)my_malloc_1((size_t)(CSL_PAGE_SIZE + 16));
@@ -3303,7 +2960,7 @@ void copy_into_nilseg(int fg)
 //  BASE[72]     = cl_symbols;
     BASE[73]     = active_stream;
     BASE[74]     = current_module;
-    BASE[75]     = native_defs;
+    BASE[75]     = autoload_symbol;
     BASE[76]     = big_divisor;
     BASE[77]     = big_dividend;
     BASE[78]     = big_quotient;
@@ -3367,20 +3024,20 @@ void copy_into_nilseg(int fg)
     BASE[143]    = terminal_io;
     BASE[144]    = trace_output;
     BASE[145]    = fasl_stream;
-    BASE[146]    = native_code;
-    BASE[147]    = native_symbol;
+    BASE[146]    = mv_call_symbol;
+    BASE[147]    = startup_symbol;
     BASE[148]    = traceprint_symbol;
     BASE[149]    = load_source_symbol;
     BASE[150]    = load_selected_source_symbol;
     BASE[151]    = bytecoded_symbol;
-    BASE[152]    = nativecoded_symbol;
+    BASE[152]    = funcall_symbol;
     BASE[153]    = gchook;
     BASE[154]    = resources;
     BASE[155]    = callstack;
     BASE[156]    = procstack;
     BASE[157]    = procmem;
     BASE[158]    = trap_time;
-//  BASE[159]    = count_high;
+    BASE[159]    = apply_symbol;
 
     BASE[170]    = keyword_package;
     BASE[171]    = all_packages;
@@ -3418,6 +3075,11 @@ void copy_into_nilseg(int fg)
     BASE[203]    = print_array_sym;
     BASE[204]    = read_base;
     BASE[205]    = initial_element;
+    BASE[206]    = builtin0_symbol;
+    BASE[207]    = builtin1_symbol;
+    BASE[208]    = builtin2_symbol;
+    BASE[209]    = builtin3_symbol;
+    BASE[210]    = builtin4_symbol; 
 
     for (i=0; i<=50; i++)
         BASE[work_0_offset+i]   = workbase[i];
@@ -3494,7 +3156,7 @@ void copy_out_of_nilseg(int fg)
 //  cl_symbols            = BASE[72];
     active_stream         = BASE[73];
     current_module        = BASE[74];
-    native_defs           = BASE[75];
+    autoload_symbol       = BASE[75];
     big_divisor           = BASE[76];
     big_dividend          = BASE[77];
     big_quotient          = BASE[78];
@@ -3541,7 +3203,6 @@ void copy_out_of_nilseg(int fg)
     output_library        = BASE[127];
     current_file          = BASE[128];
     break_function        = BASE[129];
-
     lisp_work_stream      = BASE[130];
     lisp_standard_output  = BASE[131];
     lisp_standard_input   = BASE[132];
@@ -3558,20 +3219,20 @@ void copy_out_of_nilseg(int fg)
     terminal_io           = BASE[143];
     trace_output          = BASE[144];
     fasl_stream           = BASE[145];
-    native_code           = BASE[146];
-    native_symbol         = BASE[147];
+    mv_call_symbol        = BASE[146];
+    startup_symbol        = BASE[147];
     traceprint_symbol     = BASE[148];
     load_source_symbol    = BASE[149];
     load_selected_source_symbol = BASE[150];
     bytecoded_symbol      = BASE[151];
-    nativecoded_symbol    = BASE[152];
+    funcall_symbol        = BASE[152];
     gchook                = BASE[153];
     resources             = BASE[154];
     callstack             = BASE[155];
     procstack             = BASE[156];
     procmem               = BASE[157];
     trap_time             = BASE[158];
-//  count_high            = BASE[159];
+    apply_symbol          = BASE[159];
     keyword_package       = BASE[170];
     all_packages          = BASE[171];
     package_symbol        = BASE[172];
@@ -3608,6 +3269,11 @@ void copy_out_of_nilseg(int fg)
     print_array_sym       = BASE[203];
     read_base             = BASE[204];
     initial_element       = BASE[205];
+    builtin0_symbol       = BASE[206];
+    builtin1_symbol       = BASE[207];  
+    builtin2_symbol       = BASE[208];  
+    builtin3_symbol       = BASE[209];  
+    builtin4_symbol       = BASE[210];  
 
     for (i = 0; i<=50; i++)
         workbase[i]  = BASE[work_0_offset+i];

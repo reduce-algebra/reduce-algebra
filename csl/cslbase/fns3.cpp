@@ -260,7 +260,10 @@ LispObject Lputv(LispObject, int nargs, ...)
     else if (!is_fixnum(n)) aerror1("putv offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("putv index range", n);
+// Note that if the index was passed as a negative value the conversion
+// to type size_t will tend to make it end up large and positive, and
+// in particular larger then the size of the vector.
+    if (n1 >= hl) aerror1("putv index range", n);
     elt(v, n1) = x;
     return onevalue(x);
 }
@@ -273,7 +276,7 @@ LispObject Lgetv(LispObject, LispObject v, LispObject n)
     else if (!is_fixnum(n)) aerror1("getv offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("getv index range", n);
+    if (n1 >= hl) aerror1("getv index range", n);
     else return onevalue(elt(v, n1));
 }
 
@@ -445,7 +448,7 @@ LispObject Lsputv(LispObject, int nargs, ...)
     else aerror1("putv-char contents", x);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("putv-char", n);
+    if (n1 >= hl) aerror1("putv-char", n);
     celt(v, n1) = (char)vx;
     return onevalue(x);
 }
@@ -484,7 +487,7 @@ LispObject Lsputv2(LispObject, int nargs, ...)
     else aerror1("putv-char2 contents", x2);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1+1 >= hl) aerror1("putv-char2", n);
+    if (n1+1 >= hl) aerror1("putv-char2", n);
     celt(v, n1) = (char)vx1;
     celt(v, n1+1) = (char)vx2;
     return onevalue(x2);
@@ -518,7 +521,7 @@ LispObject Lsputv3(LispObject, int nargs, ...)
     else aerror1("putv-char3 contents", x3);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1+2 >= hl) aerror1("putv-char3", n);
+    if (n1+2 >= hl) aerror1("putv-char3", n);
     celt(v, n1) = (char)vx1;
     celt(v, n1+1) = (char)vx2;
     celt(v, n1+2) = (char)vx3;
@@ -557,7 +560,7 @@ LispObject Lsputv4(LispObject, int nargs, ...)
     else aerror1("putv-char4 contents", x4);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1+3 >= hl) aerror1("putv-char3", n);
+    if (n1+3 >= hl) aerror1("putv-char3", n);
     celt(v, n1) = (char)vx1;
     celt(v, n1+1) = (char)vx2;
     celt(v, n1+2) = (char)vx3;
@@ -587,7 +590,7 @@ LispObject Lbpsputv(LispObject, int nargs, ...)
     else if (!is_fixnum(x)) aerror1("bps-putv contents", x);
     hl = length_of_byteheader(vechdr(v)) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("bps-putv", n);
+    if (n1 >= hl) aerror1("bps-putv", n);
     celt(v, n1) = (char)int_of_fixnum(x);
     return onevalue(x);
 }
@@ -611,7 +614,7 @@ LispObject Lsgetv(LispObject env, LispObject v, LispObject n)
     else if (!is_fixnum(n)) aerror1("schar index type incorrect", n);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("schar index out of range", n);
+    if (n1 >= hl) aerror1("schar index out of range", n);
     w = celt(v, n1) & 0xff;
 #ifdef COMMON
     return onevalue(pack_char(0, w));
@@ -642,7 +645,7 @@ LispObject Lsgetvn(LispObject, LispObject v, LispObject n)
     else if (!is_fixnum(n)) aerror1("scharn", n);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("scharn", n);
+    if (n1 >= hl) aerror1("scharn", n);
     w = celt(v, n1) & 0xff;
     return onevalue(fixnum_of_int(w));
 }
@@ -656,7 +659,7 @@ LispObject Lbytegetv(LispObject, LispObject v, LispObject n)
     else if (!is_fixnum(n)) aerror1("byte-getv", n);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("byte-getv", n);
+    if (n1 >= hl) aerror1("byte-getv", n);
     w = ucelt(v, n1);
     return onevalue(fixnum_of_int(w));
 }
@@ -667,382 +670,10 @@ LispObject Lbpsgetv(LispObject, LispObject v, LispObject n)
     else if (!is_fixnum(n)) aerror1("bps-getv", n);
     hl = length_of_byteheader(vechdr(v)) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("bps-getv", n);
+    if (n1 >= hl) aerror1("bps-getv", n);
     n1 = celt(v, n1);
     return onevalue(fixnum_of_int(n1 & 0xff));
 }
-
-#ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
-
-//
-// native-putv and native-getv have an optional trailing argument that
-// should have the value 1, 2 or 4 to indicate the number of bytes to be
-// transferred.
-//
-
-LispObject Lnativeputv(LispObject, int nargs, ...)
-{   va_list a;
-    int32_t o, v32, width;
-    intptr_t p;
-    LispObject v, n, x, w;
-    if (nargs != 4)
-    {   argcheck(nargs, 3, "native-putv");
-    }
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x = va_arg(a, LispObject);
-    if (nargs == 4) w = va_arg(a, LispObject);
-    else w = fixnum_of_int(1);
-    va_end(a);
-    if (!consp(v) ||
-        !is_fixnum(qcar(v)) ||
-        !is_fixnum(qcdr(v)) ||
-        (p = int_of_fixnum(qcar(v))) < 0 ||
-        p > native_pages_count) aerror1("native-putv", v);
-    else if (!is_fixnum(n)) aerror1("native-putv", n);
-    else if (!is_fixnum(x) &&
-             (!is_numbers(x) || !is_bignum(x)))
-        aerror1("native-putv contents", x);
-    else if (!is_fixnum(w)) aerror1("native-putv width", w);
-    width = int_of_fixnum(w);
-    o = int_of_fixnum(qcdr(v)) + int_of_fixnum(n);
-    if (o < 0 || o >= CSL_PAGE_SIZE) aerror1("native-putv", n);
-    p = (intptr_t)native_pages[p];
-    p = doubleword_align_up(p);
-    v32 = thirty_two_bits(x);
-    switch (width)
-{       default:
-            aerror1("native-putv width", w);
-        case 1:
-            *((char *)p + o) = (char)v32;
-            break;
-        case 2:
-//
-// The code that I had first written here tried to use int16, but
-// there are some computers where that does not exist!  This could arise
-// if sizeof(int)==8 and sizeof(short)==4.
-// What I have here is probably not actually used yet and seems most
-// unlikely to be a performance bottleneck even if it ever is! However
-// the code I write here does impose a concrete byte-ordering...
-//
-            *((char *)p + o) = (char)v32;
-            *((char *)p + o + 1) = (char)(v32 >> 8);
-            break;
-        case 4:
-//
-// NOTE that I access the memory here as an array of 32-bit values and I
-// do not do anything to adjust for the order of bytes in the word, and I
-// do not concern myself with alignment. The effect of mixtures of 1, 2 and
-// 4 byte operations on native code space will be system dependent. But my
-// intent at present is that native code is always to be generated on the
-// machine on which it will run and that it will never be touched on other
-// machines so this lack of portability is not really an issue! What could
-// be a messier matter here is that the value x is
-//
-            *(int32_t *)((char *)p + o) = (int32_t)v32;
-            break;
-    }
-    native_pages_changed = 1;
-    return onevalue(x);
-}
-
-LispObject Lnativegetv(LispObject, LispObject v, LispObject n)
-{   int32_t o;
-    intptr_t p;
-    if (!consp(v) ||
-        !is_fixnum(qcar(v)) ||
-        !is_fixnum(qcdr(v)) ||
-        (p = int_of_fixnum(qcar(v))) < 0 ||
-        p > native_pages_count) aerror1("native-getv", v);
-    else if (!is_fixnum(n)) aerror1("native-getv", n);
-    o = int_of_fixnum(qcdr(v)) + int_of_fixnum(n);
-    if (o < 0 || o >= CSL_PAGE_SIZE) aerror1("native-getv", o);
-    p = (intptr_t)native_pages[p];
-    p = doubleword_align_up(p);
-    o = *((char *)p + o);
-    return onevalue(fixnum_of_int(o & 0xff));
-}
-
-LispObject Lnativegetvn(LispObject, int nargs, ...)
-{   LispObject v, n, w;
-    int32_t o;
-    intptr_t p;
-    va_list a;
-    argcheck(nargs, 3, "native-getv");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    w = va_arg(a, LispObject);
-    va_end(a);
-    if (!consp(v) ||
-        !is_fixnum(qcar(v)) ||
-        !is_fixnum(qcdr(v)) ||
-        (p = int_of_fixnum(qcar(v))) < 0 ||
-        p > native_pages_count) aerror1("native-getv", v);
-    else if (!is_fixnum(n)) aerror1("native-getv", n);
-    else if (!is_fixnum(w)) aerror1("native-getv width", w);
-    o = int_of_fixnum(qcdr(v)) + int_of_fixnum(n);
-    if (o < 0 || o >= CSL_PAGE_SIZE) aerror1("native-getv", o);
-    p = (intptr_t)native_pages[p];
-    p = doubleword_align_up(p);
-    switch (int_of_fixnum(w))
-{       default:
-            aerror1("native-getv width", w);
-        case 1:
-            o = *((char *)p + o);
-            return onevalue(fixnum_of_int(o & 0xff));
-        case 2:
-            o = ((*((char *)p + o + 1) & 0xff) << 8) +
-                (*((char *)p + o) & 0xff);
-            return onevalue(fixnum_of_int(o & 0xffff));
-        case 4:
-            o = *(int32_t *)((char *)p + o);
-            return make_lisp_integer32(o);
-    }
-}
-
-LispObject Lnative_type(LispObject, int, ...)
-{
-//
-// This mechanism is not being pursued at present...
-//
-#define NATIVE_CODE_TAG 0
-    return onevalue(fixnum_of_int(NATIVE_CODE_TAG));
-}
-
-//
-// (native-address fn nargs) fetches the value from the relevent function cell
-// of the function and returns it represented as an integer. This gives
-// the current real absolute address of the code involved and is intended
-// to be useful while testing a native-mode compiler.
-//
-
-LispObject Lnative_address(LispObject, LispObject fn, LispObject nargs)
-{   size_t n;
-    if (!symbolp(fn)) aerror1("native-address", fn);
-    if (!is_fixnum(nargs)) aerror1("native-address", nargs);
-    n = int_of_fixnum(nargs);
-    switch (n)
-    {   case 1: n = ifn1(fn);
-            break;
-        case 2: n = ifn2(fn);
-            break;
-        default:n = ifnn(fn);
-            break;
-    }
-    if (sizeof(intptr_t) == 4) return make_lisp_integer32((int32_t)n);
-    else return make_lisp_integer64((int64_t)n);
-}
-
-//
-// (native-address n) with one integer argument will return an integer that
-// is the current memory address of a CSL/CCL internal variable identified
-// by that integer. The association between integers and variables is as
-// per the file "externs.h" and the switch statement here. The case 0 gives
-// the address of NIL, while 1 gives the address of "stack".
-// An invalid or unrecognised integer leads to a result
-// of zero. This is intended solely for the use of a native-code compiler.
-// It may not then be necessary to provide access to ALL of these variables,
-// but at least to start with it seems easiest to be comprehensive.
-// Negative integers use values in the following table, which are functions
-// in CSL that might usefully be called directly. If the one argument is a
-// cons then it is expected to be a native code handle and the associated
-// real address is returned.
-//
-
-void *useful_functions[] =
-{   (void *)cons,           // -1, 0
-    (void *)ncons,          // -2, 1
-    (void *)list2,          // -3, 2
-    (void *)list2star,      // -4, 3
-    (void *)acons,          // -5, 4
-    (void *)list3,          // -6, 5
-    (void *)plus2,          // -7, 6
-    (void *)difference2,    // -8, 7
-    (void *)add1,           // -9, 8
-    (void *)sub1,           // -10, 9
-    (void *)get,            // -11, 10
-    (void *)lognot,         // -12, 11
-    (void *)ash,            // -13, 12
-    (void *)quot2,          // -14, 13
-    (void *)Cremainder,     // -15, 14
-    (void *)times2,         // -16, 15
-    (void *)negate,         // -17, 16
-    (void *)rational,       // -18, 17
-    (void *)lessp2,         // -19, 18
-    (void *)lesseq2,        // -20, 19
-    (void *)greaterp2,      // -21, 20
-    (void *)geq2,           // -22, 21
-    (void *)zerop,          // -23, 22
-    (void *)reclaim,        // -24, 23
-    (void *)error,          // -25, 24
-    (void *)equal_fn,       // -26, 25
-    (void *)cl_equal_fn,    // -27, 26
-    (void *)aerror,         // -28, 27
-    (void *)integerp,       // -29, 28
-    (void *)apply           // -30, 29
-};
-
-char *address_of_var(int n)
-{   char *p = NULL;
-    if (n == 0) p = (char *)nil;
-    else if (n == 1) p = (char *)&stack;
-    else
-        switch (n)
-    {       default:    p = 0;                              break;
-            case  12:   p = (char *)&byteflip;              break;
-
-#ifdef COMMON
-            case  16:   p = (char *)&stacklimit;            break;
-#else
-            case  15:   p = (char *)&stacklimit;            break;
-#endif
-            case  18:   p = (char *)&fringe;                break;
-            case  19:   p = (char *)&heaplimit;             break;
-            case  20:   p = (char *)&vheaplimit;            break;
-            case  21:   p = (char *)&vfringe;               break;
-            case  22:   p = (char *)&miscflags;             break;
-            case  24:   p = (char *)&nwork;                 break;
-            case  25:   p = (char *)&exit_reason;           break;
-            case  26:   p = (char *)&exit_count;            break;
-            case  27:   p = (char *)&gensym_ser;            break;
-            case  28:   p = (char *)&print_precision;       break;
-            case  29:   p = (char *)&current_modulus;       break;
-            case  30:   p = (char *)&fastget_size;          break;
-            case  31:   p = (char *)&package_bits;          break;
-            case  52:   p = (char *)&current_package;       break;
-            case  53:   p = (char *)&B_reg;                 break;
-            case  54:   p = (char *)&codevec;               break;
-            case  55:   p = (char *)&litvec;                break;
-            case  56:   p = (char *)&exit_tag;              break;
-            case  57:   p = (char *)&exit_value;            break;
-            case  58:   p = (char *)&catch_tags;            break;
-            case  59:   p = (char *)&lisp_package;          break;
-            case  60:   p = (char *)&boffo;                 break;
-            case  61:   p = (char *)&charvec;               break;
-            case  62:   p = (char *)&sys_hash_table;        break;
-            case  63:   p = (char *)&help_index;            break;
-            case  64:   p = (char *)&gensym_base;           break;
-            case  65:   p = (char *)&err_table;             break;
-            case  66:   p = (char *)&supervisor;            break;
-            case  67:   p = (char *)&startfn;               break;
-            case  68:   p = (char *)&faslvec;               break;
-            case  69:   p = (char *)&tracedfn;              break;
-            case  70:   p = (char *)&prompt_thing;          break;
-            case  71:   p = (char *)&faslgensyms;           break;
-            case  72:   p = (char *)&cl_symbols;            break;
-            case  73:   p = (char *)&active_stream;         break;
-            case  80:   p = (char *)&append_symbol;         break;
-            case  81:   p = (char *)&applyhook;             break;
-            case  82:   p = (char *)&cfunarg;               break;
-            case  83:   p = (char *)&comma_at_symbol;       break;
-            case  84:   p = (char *)&comma_symbol;          break;
-            case  85:   p = (char *)&compiler_symbol;       break;
-            case  86:   p = (char *)&comp_symbol;           break;
-            case  87:   p = (char *)&cons_symbol;           break;
-            case  88:   p = (char *)&echo_symbol;           break;
-            case  89:   p = (char *)&emsg_star;             break;
-            case  90:   p = (char *)&evalhook;              break;
-            case  91:   p = (char *)&eval_symbol;           break;
-            case  92:   p = (char *)&expr_symbol;           break;
-            case  93:   p = (char *)&features_symbol;       break;
-            case  94:   p = (char *)&fexpr_symbol;          break;
-            case  95:   p = (char *)&funarg;                break;
-            case  96:   p = (char *)&function_symbol;       break;
-            case  97:   p = (char *)&lambda;                break;
-            case  98:   p = (char *)&lisp_true;             break;
-            case  99:   p = (char *)&lower_symbol;          break;
-            case 100:   p = (char *)&macroexpand_hook;      break;
-            case 101:   p = (char *)&macro_symbol;          break;
-            case 102:   p = (char *)&opt_key;               break;
-            case 103:   p = (char *)&prinl_symbol;          break;
-            case 104:   p = (char *)&progn_symbol;          break;
-            case 105:   p = (char *)&quote_symbol;          break;
-            case 106:   p = (char *)&raise_symbol;          break;
-            case 107:   p = (char *)&redef_msg;             break;
-            case 108:   p = (char *)&rest_key;              break;
-            case 109:   p = (char *)&savedef;               break;
-            case 110:   p = (char *)&string_char_sym;       break;
-            case 111:   p = (char *)&unset_var;             break;
-            case 112:   p = (char *)&work_symbol;           break;
-            case 113:   p = (char *)&lex_words;             break;
-            case 114:   p = (char *)&get_counts;            break;
-            case 115:   p = (char *)&fastget_names;         break;
-            case 116:   p = (char *)&input_libraries;       break;
-            case 117:   p = (char *)&output_library;        break;
-            case 118:   p = (char *)&current_file;          break;
-            case 119:   p = (char *)&break_function;        break;
-            case 120:   p = (char *)&lisp_work_stream;      break;
-            case 121:   p = (char *)&lisp_standard_output;  break;
-            case 122:   p = (char *)&lisp_standard_input;   break;
-            case 123:   p = (char *)&lisp_debug_io;         break;
-            case 124:   p = (char *)&lisp_error_output;     break;
-            case 125:   p = (char *)&lisp_query_io;         break;
-            case 126:   p = (char *)&lisp_terminal_io;      break;
-            case 127:   p = (char *)&lisp_trace_output;     break;
-            case 128:   p = (char *)&standard_output;       break;
-            case 129:   p = (char *)&standard_input;        break;
-            case 130:   p = (char *)&debug_io;              break;
-            case 131:   p = (char *)&error_output;          break;
-            case 132:   p = (char *)&query_io;              break;
-            case 133:   p = (char *)&terminal_io;           break;
-            case 134:   p = (char *)&trace_output;          break;
-            case 135:   p = (char *)&fasl_stream;           break;
-            case 136:   p = (char *)&native_code;           break;
-#ifdef COMMON
-            case 140:   p = (char *)&keyword_package;       break;
-            case 141:   p = (char *)&all_packages;          break;
-            case 142:   p = (char *)&package_symbol;        break;
-            case 143:   p = (char *)&internal_symbol;       break;
-            case 144:   p = (char *)&external_symbol;       break;
-            case 145:   p = (char *)&inherited_symbol;      break;
-            case 146:   p = (char *)&key_key;               break;
-            case 147:   p = (char *)&allow_other_keys;      break;
-            case 148:   p = (char *)&aux_key;               break;
-            case 149:   p = (char *)&format_symbol;         break;
-            case 150:   p = (char *)&expand_def_symbol;     break;
-            case 151:   p = (char *)&allow_key_key;         break;
-#endif
-            case 152:   p = (char *)&declare_symbol;        break;
-            case 153:   p = (char *)&special_symbol;        break;
-        }
-    return p;
-}
-
-
-LispObject Lnative_address1(LispObject env, LispObject x)
-{   int32_t n;
-    intptr_t p;
-    if (consp(x))
-    {   if (!is_fixnum(qcar(x)) ||
-            !is_fixnum(qcdr(x)) ||
-            (p = int_of_fixnum(qcar(x))) < 0 ||
-            p > native_pages_count) aerror1("native-address", x);
-        n = int_of_fixnum(qcdr(x));
-        if (n < 0 || n >= CSL_PAGE_SIZE) aerror1("native-address", x);
-        p = (intptr_t)native_pages[p];
-        p = doubleword_align_up(p);
-        p = (intptr_t)((char *)p + n);
-    }
-    else
-    {   if (!is_fixnum(x)) aerror1("native-address", x);
-        n = int_of_fixnum(x);
-        if (n < 0)
-        {   n = (-n) - 1;
-            if (n >= (intptr_t)(sizeof(useful_functions)/sizeof(void *)))
-                aerror1("native-address", x);
-            else p = (intptr_t)useful_functions[n];
-        }
-        else p = (intptr_t)address_of_var(n);
-    }
-    if (sizeof(intptr_t) == 4) return make_lisp_integer32((int32_t)p);
-    else return make_lisp_integer64((int64_t)p);
-}
-
-#endif // REINSTATE_NATIVE_CODE_EXPERIMENT
-
-
 
 //
 // Access functions for specialised (binary-contents) vectors. NOT integrated
@@ -1065,7 +696,7 @@ LispObject Lputv8(LispObject, int nargs, ...)
     else if (!is_fixnum(n)) aerror1("putv8 offset not fixnum", n);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("putv8 index range", n);
+    if (n1 >= hl) aerror1("putv8 index range", n);
     scelt(v, n1) = (char)int_of_fixnum(x);
     return onevalue(x);
 }
@@ -1078,7 +709,7 @@ LispObject Lgetv8(LispObject, LispObject v, LispObject n)
     else if (!is_fixnum(n)) aerror1("getv8 offset not fixnum", n);
     hl = length_of_byteheader(h) - CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("getv8 index range", n);
+    if (n1 >= hl) aerror1("getv8 index range", n);
     else return onevalue(fixnum_of_int(scelt(v, n1)));
 }
 
@@ -1098,7 +729,7 @@ LispObject Lputv16(LispObject, int nargs, ...)
     else if (!is_fixnum(n)) aerror1("putv16 offset not fixnum", n);
     hl = length_of_hwordheader(h) - CELL/2;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("putv16 index range", n);
+    if (n1 >= hl) aerror1("putv16 index range", n);
     sethelt(v, n1, int_of_fixnum(x));
     return onevalue(x);
 }
@@ -1111,7 +742,7 @@ LispObject Lgetv16(LispObject, LispObject v, LispObject n)
     else if (!is_fixnum(n)) aerror1("getv16 offset not fixnum", n);
     hl = length_of_hwordheader(h) - CELL/2;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("getv16 index range", n);
+    if (n1 >= hl) aerror1("getv16 index range", n);
     n1 = helt(v, n1);
     return onevalue(fixnum_of_int(n1));
 }
@@ -1132,7 +763,7 @@ LispObject Lputv32(LispObject, int nargs, ...)
     else if (!is_fixnum(n)) aerror1("putv32 offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/4;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("putv32 index range", n);
+    if (n1 >= hl) aerror1("putv32 index range", n);
     ielt32(v, n1) = thirty_two_bits(x);
     return onevalue(x);
 }
@@ -1145,7 +776,7 @@ LispObject Lgetv32(LispObject, LispObject v, LispObject n)
     else if (!is_fixnum(n)) aerror1("getv32 offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/4;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("getv32 index range", n);
+    if (n1 >= hl) aerror1("getv32 index range", n);
     n1 = ielt32(v, n1);
     return make_lisp_integer32(n1);
 }
@@ -1168,7 +799,7 @@ LispObject Lfputv32(LispObject, int nargs, ...)
     else if (!is_fixnum(n)) aerror1("fputv32 offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/4;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("fputv32 index range", n);
+    if (n1 >= hl) aerror1("fputv32 index range", n);
     felt(v, n1) = (float)d;
     return onevalue(x);
 }
@@ -1181,7 +812,7 @@ LispObject Lfgetv32(LispObject env, LispObject v, LispObject n)
     else if (!is_fixnum(n)) aerror1("fgetv32 offset not fixnum", n);
     hl = (length_of_header(h) - CELL)/4;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("fgetv32 index range", n);
+    if (n1 >= hl) aerror1("fgetv32 index range", n);
 #ifdef COMMON
     v = make_boxfloat((double)felt(v, n1), TYPE_SINGLE_FLOAT);
 #else
@@ -1211,7 +842,7 @@ LispObject Lfputv64(LispObject, int nargs, ...)
 //
     hl = (length_of_header(h) - 8)/8;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("fputv64 index range", n);
+    if (n1 >= hl) aerror1("fputv64 index range", n);
     delt(v, n1) = d;
     return onevalue(x);
 }
@@ -1224,7 +855,7 @@ LispObject Lfgetv64(LispObject env, LispObject v, LispObject n)
     else if (!is_fixnum(n)) aerror1("fgetv64 offset not fixnum", n);
     hl = (length_of_header(h) - 8)/8;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("fgetv64 index range", n);
+    if (n1 >= hl) aerror1("fgetv64 index range", n);
     v = make_boxfloat(delt(v, n1), TYPE_DOUBLE_FLOAT);
     return onevalue(v);
 }
@@ -1297,17 +928,11 @@ static LispObject Lputvec(LispObject, int nargs, ...)
     {   int b;
         if (!is_fixnum(x)) aerror1("putvec on bitvec, contents", x);
         x = int_of_fixnum(x) & 1;
-// This will all need review...
-        h = length_of_header(h) - CELL;
         n1 = int_of_fixnum(n);
         b = 1 << (n1 & 7);     // Bit selector
         n1 = n1 >> 3;          // Byte selector
-//
-// I am just a bit shoddy here - I only complain if an attempt is made to
-// access beyond the last active byte of a bitvector - I do not
-// do bound checking accurate to bit positions.
-//
-        if (n1 < 0 || n1 >= (int32_t)h) aerror1("putv-bit", n);
+        if (n1 >= length_of_bitheader(h)-8*CELL) aerror1("putv-bit", n);
+        n1 = n1 >> 3;          // Byte selector
         if (x == 0) celt(v, n1) &= ~b;
         else        celt(v, n1) |= b;
         return onevalue(fixnum_of_int(x));
@@ -1315,7 +940,7 @@ static LispObject Lputvec(LispObject, int nargs, ...)
     if (vector_holds_binary(h)) aerror1("putvec", v);
     hl = (length_of_header(h) - CELL)/CELL;
     n1 = int_of_fixnum(n);
-    if (n1 < 0 || n1 >= hl) aerror1("putvec index range", n);
+    if (n1 >= hl) aerror1("putvec index range", n);
     elt(v, n1) = x;
     return onevalue(x);
 }
@@ -1367,25 +992,23 @@ LispObject Laref(LispObject env, int nargs, ...)
             {   va_end(a);
                 hl = (length_of_header(h) - CELL)/CELL;
                 n1 = int_of_fixnum(n);
-                if (n1 < 0 || n1 >= hl) aerror1("aref index range", n);
+                if (n1 >= hl) aerror1("aref index range", n);
                 else return onevalue(elt(v, n1));
             }
             else if (is_string_header(h))
             {   va_end(a);
                 hl = length_of_byteheader(h) - CELL;
                 n1 = int_of_fixnum(n);
-                if (n1 < 0 || n1 >= hl) aerror1("aref index range", n);
+                if (n1 >= hl) aerror1("aref index range", n);
                 return onevalue(pack_char(0, celt(v, n1)));
             }
             else if (is_bitvec_header(h))
             {   va_end(a);
-// Will need review
-                h = length_of_header(h) - CELL;
                 n1 = int_of_fixnum(n);
                 b = 1 << (n1 & 7);     // Bit selector
-                n1 = n1 >> 3;          // Byte selector
-                if (n1 < 0 || n1 >= (int32_t)h)
+                if (n1 >= length_of_bitheader(h)-8*CELL)
                     aerror1("aref index range", n);
+                n1 = n1 >> 3;          // Byte selector
                 if ((celt(v, n1) & b) == 0) return onevalue(fixnum_of_int(0));
                 else return onevalue(fixnum_of_int(1));
             }
@@ -1430,28 +1053,26 @@ LispObject Laref(LispObject env, int nargs, ...)
     h = vechdr(v);
     if (type_of_header(h) == TYPE_SIMPLE_VEC)
     {   hl = (length_of_header(h) - CELL)/CELL;
-        if (n1 < 0 || n1 >= hl) aerror("aref index range");
+        if (n1 >= hl) aerror("aref index range");
         else return onevalue(elt(v, n1));
     }
     else if (type_of_header(h) == TYPE_STRUCTURE)
     {   int32_t n2;
         hl = int_of_fixnum(elt(v, 0));
-        if (n1 < 0 || n1 >= hl) aerror("aref index range");
+        if (n1 >= hl) aerror("aref index range");
         n2 = n1 % 8192;
         n1 = n1 / 8192;
         return onevalue(elt(elt(v, n1+1), n2));
     }
     else if (is_string_header(h))
     {   hl = length_of_byteheader(h) - CELL;
-        if (n1 < 0 || n1 >= hl) aerror("aref index range");
+        if (n1 >= hl) aerror("aref index range");
         return onevalue(pack_char(0, celt(v, n1)));
     }
     else if (is_bitvec_header(h))
-    {   h = length_of_header(h) - CELL;
-// Will need review
-        b = 1 << (n1 & 7);     // Bit selector
+    {   b = 1 << (n1 & 7);     // Bit selector
+        if (n1 >= length_of_bitheader(h) - 8*CELL) aerror("aref index range");
         n1 = n1 >> 3;          // Byte selector
-        if (n1 < 0 || n1 >= (int32_t)h) aerror("aref index range");
         if ((celt(v, n1) & b) == 0) return onevalue(fixnum_of_int(0));
         else return onevalue(fixnum_of_int(1));
     }
@@ -1494,11 +1115,9 @@ LispObject Lelt(LispObject env, LispObject v, LispObject n)
         return onevalue(pack_char(0, celt(v, n1)));
     }
     else if (is_bitvec_header(h))
-    {   h = length_of_header(h) - CELL;
-// Will need review
-        b = 1 << (n1 & 7);     // Bit selector
+    {   b = 1 << (n1 & 7);     // Bit selector
         n1 = n1 >> 3;          // Byte selector
-        if (n1 < 0 || n1 >= (int32_t)h)
+        if (n1 >= length_of_bitheader(h) - 8*CELL)
             aerror1("elt index range", n);
         if ((celt(v, n1) & b) == 0) return onevalue(fixnum_of_int(0));
         else return onevalue(fixnum_of_int(1));
@@ -1593,7 +1212,7 @@ LispObject Laset(LispObject env, int nargs, ...)
                 va_end(a);
                 hl = (length_of_header(h) - CELL)/CELL;
                 n1 = int_of_fixnum(n);
-                if (n1 < 0 || n1 >= hl) aerror1("aset index range", n);
+                if (n1 >= hl) aerror1("aset index range", n);
                 elt(v, n1) = x;
                 return onevalue(x);
             }
@@ -1602,7 +1221,7 @@ LispObject Laset(LispObject env, int nargs, ...)
                 va_end(a);
                 hl = length_of_byteheader(h) - CELL;
                 n1 = int_of_fixnum(n);
-                if (n1 < 0 || n1 >= hl) aerror1("aset index range", n);
+                if (n1 >= hl) aerror1("aset index range", n);
                 if (is_fixnum(x)) b = int_of_fixnum(x);
                 else if (is_char(x)) b = code_of_char(x);
                 else aerror1("aset needs char", x);
@@ -1612,11 +1231,10 @@ LispObject Laset(LispObject env, int nargs, ...)
             else if (is_bitvec_header(h))
             {   x = va_arg(a, LispObject);
                 va_end(a);
-                h = length_of_header(h) - CELL;
                 n1 = int_of_fixnum(n);
                 b = 1 << (n1 & 7);     // Bit selector
                 n1 = n1 >> 3;          // Byte selector
-                if (n1 < 0 || n1 >= (int32_t)h)
+                if (n1 >= length_of_bitheader(h)-8*CELL)
                     aerror1("aset index range", n);
                 if (!is_fixnum(x)) aerror1("aset needs bit", x);
                 if (int_of_fixnum(x) & 1) ucelt(v, n1) |= b;
@@ -1661,14 +1279,14 @@ LispObject Laset(LispObject env, int nargs, ...)
     h = vechdr(v);
     if (type_of_header(h) == TYPE_SIMPLE_VEC)
     {   hl = (length_of_header(h) - CELL)/CELL;
-        if (n1 < 0 || n1 >= hl) aerror("aset index range");
+        if (n1 >= hl) aerror("aset index range");
         elt(v, n1) = x;
         return onevalue(x);
     }
     if (type_of_header(h) == TYPE_STRUCTURE)
     {   int32_t n2;
         hl = int_of_fixnum(elt(v, 0));
-        if (n1 < 0 || n1 >= hl) aerror("aset index range");
+        if (n1 >= hl) aerror("aset index range");
         n2 = n1 % 8192;
         n1 = n1 / 8192;
         elt(elt(v, n1+1), n2) = x;
@@ -1676,7 +1294,7 @@ LispObject Laset(LispObject env, int nargs, ...)
     }
     else if (is_string_header(h))
     {   hl = length_of_byteheader(h) - CELL;
-        if (n1 < 0 || n1 >= hl) aerror("aset index range");
+        if (n1 >= hl) aerror("aset index range");
         if (is_fixnum(x)) b = int_of_fixnum(x);
         else if (is_char(x)) b = code_of_char(x);
         else aerror1("aset needs char", x);
@@ -1684,10 +1302,10 @@ LispObject Laset(LispObject env, int nargs, ...)
         return onevalue(x);
     }
     else if (is_bitvec_header(h))
-    {   h = length_of_header(h) - CELL;
-        b = 1 << (n1 & 7);     // Bit selector
+    {   b = 1 << (n1 & 7);     // Bit selector
+        if (n1 >= length_of_bitheader(h) - 8*CELL)
+            aerror("aset index range");
         n1 = n1 >> 3;          // Byte selector
-        if (n1 < 0 || n1 >= (int32_t)h) aerror("aset index range");
         if (!is_fixnum(x)) aerror1("aset needs bit", x);
         if (int_of_fixnum(x) & 1) ucelt(v, n1) |= b;
         else ucelt(v, n1) &= ~b;
@@ -1844,7 +1462,7 @@ static LispObject Lchar(LispObject env, LispObject v, LispObject n)
         if (!is_fixnum(n)) aerror1("char", n);
         hl = length_of_byteheader(h) - CELL;
         n1 = int_of_fixnum(n);
-        if (n1 < 0 || n1 >= hl) aerror1("schar", n);
+        if (n1 >= hl) aerror1("schar", n);
         return onevalue(pack_char(0, celt(v, n1)));
     }
     return Laref(nil, 2, v, n);
@@ -1878,7 +1496,7 @@ static LispObject Lcharset(LispObject env, int nargs, ...)
         else if (is_char(c)) vx = code_of_char(c);
         else aerror1("charset contents", c);
         n1 = int_of_fixnum(n);
-        if (n1 < 0 || n1 >= hl) aerror1("charset", n);
+        if (n1 >= hl) aerror1("charset", n);
         celt(v, n1) = (int)vx;
         return onevalue(c);
     }
@@ -2094,16 +1712,10 @@ static LispObject Lbputv(LispObject, int nargs, ...)
     if (!is_fixnum(n)) aerror1("putv-bit", n);
     if (!is_fixnum(x)) aerror1("putv-bit contents", x);
     x = int_of_fixnum(x) & 1;
-    h = length_of_header(h) - CELL;
     n1 = int_of_fixnum(n);
     b = 1 << (n1 & 7);     // Bit selector
+    if (n1 >= length_of_bitheader(h) - 8*CELL) aerror1("putv-bit", n);
     n1 = n1 >> 3;          // Byte selector
-//
-// I am just a bit shoddy here - I only complain if an attempt is made to
-// access beyond the last active byte of a bitvector - I do not
-// do bound checking accurate to bit positions.
-//
-    if (n1 < 0 || n1 >= (int32_t)h) aerror1("putv-bit", n);
     if (x == 0) ucelt(v, n1) &= ~b;
     else        ucelt(v, n1) |= b;
     return onevalue(fixnum_of_int(x));
@@ -2120,11 +1732,10 @@ static LispObject Lbgetv(LispObject, LispObject v, LispObject n)
     if (!(is_vector(v)) || !is_bitvec_header(h = vechdr(v)))
         aerror1("getv-bit", v);
     if (!is_fixnum(n)) aerror1("getv-bit", n);
-    h = length_of_header(h) - CELL;
     n1 = int_of_fixnum(n);
     b = 1 << (n1 & 7);     // Bit selector
+    if (n1 >= length_of_bitheader(h) - 8*CELL) aerror1("getv-bit", n);
     n1 = n1 >> 3;          // Byte selector
-    if (n1 < 0 || n1 >= (int32_t)h) aerror1("getv-bit", n);
     if ((ucelt(v, n1) & b) == 0)
         return onevalue(fixnum_of_int(0));
     else return onevalue(fixnum_of_int(1));

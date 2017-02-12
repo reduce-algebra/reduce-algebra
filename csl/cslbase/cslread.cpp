@@ -740,7 +740,7 @@ LispObject make_symbol(char const *s, int restartp,
 // put something in its function cell.
 //
 {   LispObject v, v0 = nil;
-    int first_try = 1;
+    bool first_try = true;
 //
 // Here I blandly assume that boffo is long enough to hold the string
 // that I am about to copy into it.  All is guaranteed well for
@@ -812,7 +812,7 @@ start_again:
                     &boffo_char(0), &boffo_char(0));
             while (l >= 0) boffo_char(l+1) = boffo_char(l), l--;
             boffo_char(0) = '~';
-            first_try = 0;
+            first_try = false;
             goto start_again;
         }
 //
@@ -3494,7 +3494,6 @@ LispObject Lread(LispObject env, int nargs, ...)
 // that deal with error and eof returns... and a recursive-p arg!
 //
 {   LispObject stream = qvalue(standard_input);
-    int cursave = curchar;
     argcheck(nargs, 0, "read");
 #ifdef COMMON
     save_reader_workspace RAII;

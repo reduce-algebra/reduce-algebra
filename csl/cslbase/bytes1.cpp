@@ -951,55 +951,160 @@ static inline LispObject encapsulate_sp(LispObject *sp)
     return w;
 }
 
-#if !defined DEBUG || defined TAILCALL_EVEN_WHEN_DEBUGGING
+// To trace a function I can use one of thse. Eg for a 1-arg function
+// where I would normally go just
+//        (*f1)(env, a1)
+// I can instead go
+//        traced_call1(from, name, f1, env, a1)
+// where name is the symbol whose name needs to appear in the message. That
+// will print "Calling <name> from <wherever>", then "Arg1: <argument>.
+// When those have been printed it will call the function and before it
+// returns it will display "<name> => <value>". And similarly for 0, 2 and 3
+// argument cases. The interpreter goes via the "apply" function of the
+// interpreter for calls with larger numbers of arguments, and it will
+// print trace output in similar style.
+//
+// I rather want trace_printf and loop_print_trace to be such that they
+// NEVER call any Lisp functions in ways that could trigger tracing, since
+// otherwise there could be nasty recursions arising.
 
-static void trace_print_0(LispObject name)
-{   freshline_trace();
-    trace_printf("Tail calling ");
+LispObject traced_call0(LispObject from, LispObject name,
+                        n_args *f0, LispObject env)
+{   push2(env, name);
+    push(from);
+    freshline_trace();
+    trace_printf("Calling ");
     loop_print_trace(name);
-    trace_printf(" (no args) from ");
-    loop_print_trace(*stack);
+    trace_printf(" from ");
+    pop(from);
+    loop_print_trace(from);
     trace_printf("\n");
+    LispObject r = f0(stack[0], 0);
+// Well at some stage I may need to arrange to preserve multiple values
+// across the printing here...
+    name = stack[0];
+    stack[0] = r;
+    freshline_trace();
+    loop_print_trace(name);
+    trace_printf(" => ");
+    loop_print_trace(stack[0]);
+    trace_printf("\n");
+    pop(r);
+    popv(1);
+    return r;
 }
 
-static void trace_print_1(LispObject name)
-{   freshline_trace();
-    trace_printf("Tail calling ");
+LispObject traced_call1(LispObject from, LispObject name,
+                        one_args *f1, LispObject env, LispObject a1)
+{   push3(env, name, a1);
+    push(from);
+    freshline_trace();
+    trace_printf("Calling ");
     loop_print_trace(name);
-    trace_printf(" (1 arg) from ");
-    loop_print_trace(*stack);
+    trace_printf(" from ");
+    pop(from);
+    loop_print_trace(from);
     trace_printf("\n");
     trace_printf("Arg1: ");
-    loop_print_trace(stack[-3]);
+    loop_print_trace(stack[0]);
     trace_printf("\n");
-}
-
-static void trace_print_2(LispObject name)
-{   freshline_trace();
-    trace_printf("Tail calling ");
+    pop(a1);
+    LispObject r = f1(stack[-1], a1);
+// Well at some stage I may need to arrange to preserve multiple values
+// across the printing here...
+    name = stack[0];
+    stack[0] = r;
+    freshline_trace();
     loop_print_trace(name);
-    trace_printf(" (2 args) from ");
-    loop_print_trace(*stack);
+    trace_printf(" => ");
+    loop_print_trace(stack[0]);
     trace_printf("\n");
-    trace_printf("Arg1: ");   loop_print_trace(stack[-4]);
-    trace_printf("\nArg2: "); loop_print_trace(stack[-3]);
-    trace_printf("\n");
+    pop(r);
+    popv(1);
+    return r;
 }
 
-static void trace_print_3(LispObject name)
-{   freshline_trace();
-    trace_printf("Tail calling ");
+LispObject traced_call2(LispObject from, LispObject name, two_args *f2,
+                        LispObject env, LispObject a1, LispObject a2)
+{   push4(env, name, a1, a2);
+    push(from);
+    freshline_trace();
+    trace_printf("Calling ");
     loop_print_trace(name);
-    trace_printf(" (3 args) from ");
-    loop_print_trace(*stack);
+    trace_printf(" from ");
+    pop(from);
+    loop_print_trace(from);
     trace_printf("\n");
-    trace_printf("Arg1: ");   loop_print_trace(stack[-5]);
-    trace_printf("\nArg2: "); loop_print_trace(stack[-4]);
-    trace_printf("\nArg3: "); loop_print_trace(stack[-3]);
+    trace_printf("Arg1: ");
+    loop_print_trace(stack[-1]);
     trace_printf("\n");
+    trace_printf("Arg2: ");
+    loop_print_trace(stack[0]);
+    trace_printf("\n");
+    pop2(a2, a1);
+    LispObject r = f2(stack[-1], a1, a2);
+// Well at some stage I may need to arrange to preserve multiple values
+// across the printing here...
+    name = stack[0];
+    stack[0] = r;
+    freshline_trace();
+    loop_print_trace(name);
+    trace_printf(" => ");
+    loop_print_trace(stack[0]);
+    trace_printf("\n");
+    pop(r);
+    popv(1);
+    return r;
 }
 
-#endif // TAILCALL usage...
+LispObject traced_call3(LispObject from, LispObject name, n_args *f345,
+                        LispObject env,
+                        LispObject a1, LispObject a2, LispObject a3)
+{   push5(env, name, a1, a2, a3);
+    push(from);
+    freshline_trace();
+    trace_printf("Calling ");
+    loop_print_trace(name);
+    trace_printf(" from ");
+    pop(from);
+    loop_print_trace(from);
+    trace_printf("\n");
+    trace_printf("Arg1: ");
+    loop_print_trace(stack[-2]);
+    trace_printf("\n");
+    trace_printf("Arg2: ");
+    loop_print_trace(stack[-1]);
+    trace_printf("\n");
+    trace_printf("Arg3: ");
+    loop_print_trace(stack[0]);
+    trace_printf("\n");
+    pop3(a3, a2, a1);
+    LispObject r = f345(stack[0], 3, a1, a2, a3);
+// Well at some stage I may need to arrange to preserve multiple values
+// across the printing here...
+    name = stack[0];
+    stack[0] = r;
+    freshline_trace();
+    loop_print_trace(name);
+    trace_printf(" => ");
+    loop_print_trace(stack[0]);
+    trace_printf("\n");
+    pop(r);
+    popv(1);
+    return r;
+}
+
+void print_traceset(int varname, LispObject val)
+{   push(val);
+    freshline_trace();
+    loop_print_trace(elt(litvec, 0)); // Function this is within
+    trace_printf(":  ");
+    loop_print_trace(elt(litvec, varname));
+    trace_printf(" := ");
+    pop(val);
+    loop_print_trace(val);
+    trace_printf("\n");
+}
 
 LispObject carerror(LispObject a)
 {
@@ -1024,17 +1129,6 @@ LispObject cdrerror(LispObject a)
 #ifdef CHECK_STACK
 char *native_stack = NULL, *native_stack_base = NULL;
 #endif
-
-//
-// Before calling apply() or the function in the qfn1, qfn2 or qfnn cell
-// of anything I will set this variable to refer to a string (which may be
-// up to 30 characters long) naming the [bytecoded] function responsible for
-// the call. Sometimes the variable may end up NULL which should be taken
-// to indicate that I do not know who the caller was. For instance I set
-// it to NULL as bytestream_interpret exits (and the string that would be
-// used is popped from the stack).
-//
-const char *name_of_caller = NULL;
 
 extern LispObject bytestream_interpret1(unsigned char *ppc1, LispObject lit,
                                         LispObject *entry_stack);

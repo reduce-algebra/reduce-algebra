@@ -103,14 +103,6 @@
 #define MAX_PAGES               (MAX_HEAPSIZE << (20-PAGE_BITS))
 #endif
 
-// Right at present I am not supporting native compilation at all, so
-// the concept of "native pages" and a limit on how many there may be is
-// a bit odd. However the setting here should allow up to 64 Mbytes of
-// native code, which is more than enough for the zero bytes that I will
-// use!
-
-#define MAX_NATIVE_PAGES        16
-
 //
 // Windows seems to say it can use file names up to 260 chars, Unix and
 // the like may not even have that limit, but I will assume something here.
@@ -504,7 +496,7 @@ typedef uintptr_t Header;
 //   11:000 1:1 010  vec8-3                         8
 //   11:001 1:1 010  string-4                       8
 //   11:010 1:1 010  bytecode-4                     8
-//   11:011 1:1 010  nativecode                     8
+// [[11:011 1:1 010  nativecode                     8]] NOT USED
 //   11:100 1:1 010  (spare: 1 code)                X
 //   11:101 1:1 010  (spare: 1 code)                X
 //   11:110 1:1 010  (spare: 1 code)                X
@@ -685,7 +677,7 @@ typedef uintptr_t Header;
 #define TYPE_BPS_3       ( 0x4b <<Tw) //
 #define TYPE_BPS_4       ( 0x6b <<Tw) //
 
-#define TYPE_NATIVECODE  ( 0x6f <<Tw) // (not implemented (yet???))
+// #define TYPE_NATIVECODE  ( 0x6f <<Tw) // (not implemented)
 
 #define TYPE_VEC16_1     ( 0x0f <<Tw) // vector of 16 bit values
 #define TYPE_VEC16_2     ( 0x4f <<Tw) //

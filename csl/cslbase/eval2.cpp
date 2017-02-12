@@ -266,25 +266,40 @@ void push_args_1(va_list a, int nargs)
 // but does not need va_arg messing around so much. And in particular it
 // gets rid of apply_lots() which really is very ugly.
 
-LispObject apply(LispObject fn, int nargs, LispObject env, LispObject name)
+LispObject apply(LispObject fn, int nargs, LispObject env, LispObject from)
 //
 // There are (nargs) arguments on the Lisp stack, and apply() must use them
 // then pop them off.  They were pushed in the order push(arg1); push(arg2),
 // and so on, and the stack grows upwards.
-// If I built in DEBUG mode then name_of_caller names the function that
-// called me...
-// In previous versions following an error I returned with a value that might
-// have been useful for backtraces. Now I am using exceptions that is not
-// feasible... at least not in quite the same way.
+// from is a symbol that names the function that called me...
 //
 {   LispObject def;
     for (;;)
     {   if (symbolp(fn))
         {   debug_assert(1);
             debug_record_symbol(fn);
+// Heer I am calling a function named by the symbol "fn" and all the arguments
+// have been prepared and are on the stack.
+            bool tracing = (qheader(fn) & SYM_TRACED) != 0;
+            if (tracing)
+            {   push2(fn, from);
+                freshline_trace();
+                trace_printf("Calling ");
+                loop_print_trace(stack[-1]);
+                trace_printf(" from ");
+                loop_print_trace(stack[0]);
+                popv(1);
+                trace_printf("\n");
+                for (int i=1; i<=nargs; i++)
+                {   trace_printf("Arg%d: ", i);
+                    loop_print_trace(stack[-i]);
+                    trace_printf("\n");
+                }
+                pop(fn);
+            }
             def = qenv(fn); // this is passed as arg1 to the called code
 //
-// apply_lambda() will find arguments on the stack and is responsible for
+// apply will find arguments on the stack and is responsible for
 // popping them before it exits.
 //
             {
@@ -300,7 +315,7 @@ LispObject apply(LispObject fn, int nargs, LispObject env, LispObject name)
 // is otherwise a reasonably short function, so if this switch is needed
 // anywhere here is not too bad.
 //
-                push(name);
+                push(fn);
                 switch (nargs)
                 {
 //
@@ -312,134 +327,83 @@ LispObject apply(LispObject fn, int nargs, LispObject env, LispObject name)
 // function calls with over 25 args have an even more clumsy treatment.
 //
                     case 0:
-#ifdef DEBUG
-                        if (qfnn(fn) == NULL)
-                        {   term_printf("Illegal APPLY\n");
-                            my_exit(EXIT_FAILURE);
-                        }
-#endif
                         def = (*qfnn(fn))(def, 0);
                         break;
                     case 1:
-#ifdef DEBUG
-                        if (qfn1(fn) == NULL)
-                        {   term_printf("Illegal APPLY\n");
-                            my_exit(EXIT_FAILURE);
-                        }
-#endif
                         def = (*qfn1(fn))(def, stack[-1]);
                         break;
                     case 2:
-#ifdef DEBUG
-                        if (qfn2(fn) == NULL)
-                        {   term_printf("Illegal APPLY\n");
-                            my_exit(EXIT_FAILURE);
-                        }
-#endif
                         def = (*qfn2(fn))(def, stack[-2], stack[-1]);
                         break;
                     case 3:
-#ifdef DEBUG
-                        if (qfnn(fn) == NULL)
-                        {   term_printf("Illegal APPLY\n");
-                            my_exit(EXIT_FAILURE);
-                        }
-#endif
                         def = (*qfnn(fn))(def, 3, stack[-3], stack[-2], stack[-1]);
                         break;
                     case 4:
-#ifdef DEBUG
-                        if (qfnn(fn) == NULL)
-                        {   term_printf("Illegal APPLY\n");
-                            my_exit(EXIT_FAILURE);
-                        }
-#endif
                         def = (*qfnn(fn))(def, 4, stack[-4], stack[-3], stack[-2],
                                           stack[-1]);
                         break;
                     case 5:
-#ifdef DEBUG
-                        if (qfnn(fn) == NULL)
-                        {   term_printf("Illegal APPLY\n");
-                            my_exit(EXIT_FAILURE);
-                        }
-#endif
                         def = (*qfnn(fn))(def, 5, stack[-5], stack[-4], stack[-3],
                                           stack[-2], stack[-1]);
                         break;
                     case 6:
-#ifdef DEBUG
-                        if (qfnn(fn) == NULL)
-                        {   term_printf("Illegal APPLY\n");
-                            my_exit(EXIT_FAILURE);
-                        }
-#endif
                         def = (*qfnn(fn))(def, 6, stack[-6], stack[-5], stack[-4],
                                           stack[-3], stack[-2], stack[-1]);
                         break;
                     case 7:
-#ifdef DEBUG
-                        if (qfnn(fn) == NULL)
-                        {   term_printf("Illegal APPLY\n");
-                            my_exit(EXIT_FAILURE);
-                        }
-#endif
                         def = (*qfnn(fn))(def, 7, stack[-7], stack[-6], stack[-5],
                                           stack[-4], stack[-3], stack[-2], stack[-1]);
                         break;
                     case 8:
-#ifdef DEBUG
-                        if (qfnn(fn) == NULL)
-                        {   term_printf("Illegal APPLY\n");
-                            my_exit(EXIT_FAILURE);
-                        }
-#endif
                         def = (*qfnn(fn))(def, 8, stack[-8], stack[-7], stack[-6],
                                           stack[-5], stack[-4], stack[-3], stack[-2],
                                           stack[-1]);
                         break;
                     default:
-#ifdef DEBUG
-                        if (qfnn(fn) == NULL)
-                        {   term_printf("Illegal APPLY\n");
-                            my_exit(EXIT_FAILURE);
-                        }
-#endif
                         def = apply_lots(nargs, qfnn(fn), def);
                         break;
                 }
                 debug_assert(1);
+#ifdef DO_NOT_TRUST_ARITHMETIC
+                validate_number("apply", def, nil, nil);
+#endif
 //
 // here I have to pop the stack by hand - note that popv does not
 // corrupt exit_count, which tells me how many results were being handed
 // back.
 //
-                pop(name);
+                pop(fn);
                 popv(nargs);
+                if (tracing)
+                {   push(def);
+// In due course I will need to worry about multiple values here
+                    freshline_trace();
+                    loop_print_trace(fn);
+                    trace_printf(" => ");
+                    loop_print_trace(stack[0]);
+                    trace_printf("\n");
+                    pop(def);
+                }
                 return def;
             }
         }
         else if (!is_cons(fn))
-        {
-#ifndef NO_BYTECOUNT
-            char message[48];
-#endif
+        {   char message[64];
             popv(nargs);
-            push(name);
-#ifndef NO_BYTECOUNT
-            if (name_of_caller != NULL)
-            {   sprintf(message, "Bad function called from %s: ", name_of_caller);
-                aerror1(message, fn);
-            }
-            else
-#endif
-                error(1, err_bad_fn, fn);
-            pop(name);
-            return name;
+            push(fn);
+            char name_of_caller[32];
+            from = qpname(from);
+            size_t len = length_of_byteheader(vechdr(from)) - CELL;
+            if (len >= sizeof(name_of_caller)) len = sizeof(name_of_caller)-1;
+            memcpy(name_of_caller, &celt(from, 0), len);
+            name_of_caller[len] = 0;
+            sprintf(message, "Bad function called from %s: ",
+                    name_of_caller);
+            aerror1(message, fn);
         }
 // apply_lambda() will pop the args from the stack when it is done
         if ((def = qcar(fn)) == lambda)
-            return apply_lambda(qcdr(fn), nargs, env, name);
+            return apply_lambda(qcdr(fn), nargs, env, fn);
 //
 // A bytecoded funarg is stored as (cfunarg <actual fn> <env>) and any call
 // to it behaves as if the actual function was called with the environment
@@ -458,29 +422,24 @@ LispObject apply(LispObject fn, int nargs, LispObject env, LispObject name)
         else if (def == funarg)
         {   def = qcdr(fn);
             if (consp(def))
-                return apply_lambda(qcdr(def), nargs, qcar(def), name);
+                return apply_lambda(qcdr(def), nargs, qcar(def), fn);
         }
         break;
     }
-err_printf("\n@@@@ Error in apply(), fn = ");
-prin_to_error(fn);
-err_printf("\n");
 //
 // Other cases are all errors.
 //
     popv(nargs);
-    push(name);
-#ifndef NO_BYTECOUNT
-    if (name_of_caller != NULL)
-    {   char message[48];
-        sprintf(message, "Bad function application in %s: ", name_of_caller);
-        aerror1(message, fn);
-    }
-    else
-#endif
-        error(1, err_bad_apply, fn);
-    pop(name);
-    return name;
+    char message[64];
+    char name_of_caller[32];
+    from = qpname(from);
+    size_t len = length_of_byteheader(vechdr(from)) - CELL;
+    if (len >= sizeof(name_of_caller)) len = sizeof(name_of_caller)-1;
+    memcpy(name_of_caller, &celt(from, 0), len);
+    name_of_caller[len] = 0;
+    sprintf(message, "Bad function called from %s: ",
+            name_of_caller);
+    aerror1(message, fn);
 }
 
 //
@@ -488,23 +447,6 @@ err_printf("\n");
 //
 
 // activity.
-
-#ifndef NO_BYTECOUNT
-class RAII_name_of_caller
-{   const char *save_name_of_caller;
-public:
-    RAII_name_of_caller()
-    {   save_name_of_caller = name_of_caller;
-    }
-    ~RAII_name_of_caller()
-    {   name_of_caller = save_name_of_caller;
-    }
-};
-
-#define SAVE_NAME_OF_CALLER RAII_name_of_caller name_of_caller_object;
-#else
-#define SAVE_NAME_OF_CALLER
-#endif
 
 static LispObject and_fn(LispObject args, LispObject env)
 // also needs to be a macro for Common Lisp
@@ -516,9 +458,7 @@ static LispObject and_fn(LispObject args, LispObject env)
         args = qcdr(args);
         if (!consp(args)) return eval(v, env);
         push2(args, env);
-        {   SAVE_NAME_OF_CALLER;
-            v = eval(v, env);
-        }
+        v = eval(v, env);
         pop2(env, args);
         if (v == nil) return onevalue(nil);
     }
@@ -564,7 +504,6 @@ static LispObject block_fn(LispObject args, LispObject env)
     {   p = qcar(args);
         try
         {   START_TRY_BLOCK;
-            SAVE_NAME_OF_CALLER;
             p = eval(p, env);
         }
         catch (LispReturnFrom e)
@@ -598,9 +537,7 @@ static LispObject catch_fn(LispObject args, LispObject env)
     stackcheck2(0, args, env);
     push2(args, env);
     tag = qcar(args);
-    {   SAVE_NAME_OF_CALLER;
-        tag = eval(tag, env);
-    }
+    tag = eval(tag, env);
     tag = catch_tags = cons(tag, catch_tags);
     pop2(env, args);
     push(tag);
@@ -673,87 +610,82 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
 // the Compiler, but in the interpreter in non-Common mode every variable
 // is SPECIAL.
 //
-{   {   SAVE_NAME_OF_CALLER;
-        stackcheck3(0, bvlx, bodyx, envx);
-        push3(bvlx, bodyx, envx);
-        push5(nil, nil, envx, nil, nil);
+{   stackcheck3(0, bvlx, bodyx, envx);
+    push3(bvlx, bodyx, envx);
+    push5(nil, nil, envx, nil, nil);
 //
 // Find local declarations - it is necessary to macro-expand
 // items in the body to see if they turn into declarations.
 //
-        for (;;)
-        {   if (!consp(body)) break;
-            p = macroexpand(qcar(body), env);
-            body = qcdr(body);
-            if (!consp(p))
-            {   if (stringp(p) && consp(body)) continue;
-                body = cons(p, body);
-                break;
-            }
-            if (qcar(p) != declare_symbol)
-            {   body = cons(p, body);
-                break;
-            }
-            for (p = qcdr(p); consp(p); p = qcdr(p))
-            {   q = qcar(p);
-                if (!consp(q) || qcar(q) != special_symbol) continue;
-                // here q says (special ...)
-                for (q=qcdr(q); consp(q); q = qcdr(q))
-                    local_decs = cons(qcar(q), local_decs);
-            }
+    for (;;)
+    {   if (!consp(body)) break;
+        p = macroexpand(qcar(body), env);
+        body = qcdr(body);
+        if (!consp(p))
+        {   if (stringp(p) && consp(body)) continue;
+            body = cons(p, body);
+            break;
         }
+        if (qcar(p) != declare_symbol)
+        {   body = cons(p, body);
+            break;
+        }
+        for (p = qcdr(p); consp(p); p = qcdr(p))
+        {   q = qcar(p);
+            if (!consp(q) || qcar(q) != special_symbol) continue;
+            // here q says (special ...)
+            for (q=qcdr(q); consp(q); q = qcdr(q))
+                local_decs = cons(qcar(q), local_decs);
+        }
+    }
 
-        for (; consp(bvl); bvl=qcdr(bvl))
-        {   LispObject z;
-            q = qcar(bvl);
-            if (consp(q))
-            {   z = qcdr(q);
-                q = qcar(q);
-                if (consp(z)) z = qcar(z); else z = nil;
+    for (; consp(bvl); bvl=qcdr(bvl))
+    {   LispObject z;
+        q = qcar(bvl);
+        if (consp(q))
+        {   z = qcdr(q);
+            q = qcar(q);
+            if (consp(z)) z = qcar(z); else z = nil;
+        }
+        else z = nil;
+        if (!is_symbol(q) || q==nil || q==lisp_true)
+        {   LispObject qq = q;
+            error(1, err_bad_bvl, qq);
+        }
+        else
+        {   Header h = qheader(q);
+            if (z != nil) z = eval(z, env);
+            z = cons(q, z);
+            if (compilerp == BODY_COMPILER_LET)
+            {   specenv = cons(z, specenv);
+                q = acons(q, work_symbol, env1);
+                env1 = q; // Locally special
             }
-            else z = nil;
-            if (!is_symbol(q) || q==nil || q==lisp_true)
-            {   LispObject qq = q;
-                error(1, err_bad_bvl, qq);
-            }
+            else if (h & SYM_GLOBAL_VAR) aerror1("Attempt to bind", q);
+            else if (h & SYM_SPECIAL_VAR) specenv = cons(z, specenv);
             else
-            {   Header h = qheader(q);
-                if (z != nil)
-                {   z = eval(z, env);
-                }
-                z = cons(q, z);
-                if (compilerp == BODY_COMPILER_LET)
-                {   specenv = cons(z, specenv);
-                    q = acons(q, work_symbol, env1);
-                    env1 = q; // Locally special
-                }
-                else if (h & SYM_GLOBAL_VAR)
-                    aerror1("Attempt to bind", q);
-                else if (h & SYM_SPECIAL_VAR) specenv = cons(z, specenv);
-                else
-                {   LispObject w;
-                    for (w = local_decs; w!=nil; w = qcdr(w))
-                    {   if (q != qcar(w)) continue;
-                        qcar(w) = fixnum_of_int(0);
+            {   LispObject w;
+                for (w = local_decs; w!=nil; w = qcdr(w))
+                {   if (q != qcar(w)) continue;
+                    qcar(w) = fixnum_of_int(0);
 // The next few calls to cons() maybe lose w, but that is OK!
-                        specenv = cons(z, specenv);
-                        q = acons(q, work_symbol, env1);
-                        env1 = q;
-                        goto bound;
-                    }
-                    env1 = cons(z, env1);
-                bound:  ;
+                    specenv = cons(z, specenv);
+                    q = acons(q, work_symbol, env1);
+                    env1 = q;
+                    goto bound;
                 }
+                env1 = cons(z, env1);
+            bound:  ;
             }
         }
+    }
 
-        while (local_decs!=nil)         // Pervasive special declarations
-        {   LispObject q1 = qcar(local_decs);
-            local_decs=qcdr(local_decs);
-            if (!is_symbol(q1)) continue;
-            q1 = acons(q1, work_symbol, env1);
-            env1 = q1;
-        }
+    while (local_decs!=nil)         // Pervasive special declarations
+    {   LispObject q1 = qcar(local_decs);
+        local_decs=qcdr(local_decs);
+        if (!is_symbol(q1)) continue;
+        q1 = acons(q1, work_symbol, env1);
+        env1 = q1;
     }
 // I treat the case where there are no new (special) bindings specially
 // because in that case I can tail-call to the next stage of evaluation, and
@@ -817,9 +749,7 @@ static LispObject cond_fn(LispObject args, LispObject env)
         {   LispObject p1;
             push2(args, env);
             p1 = qcar(p);
-            {   SAVE_NAME_OF_CALLER;
-                p1 = eval(p1, env);
-            }
+            p1 = eval(p1, env);
             pop2(env, args);
             if (p1 != nil)
             {   args = qcdr(qcar(args));
@@ -1070,9 +1000,7 @@ static LispObject if_fn(LispObject args, LispObject env)
     }
     stackcheck4(0, p, env, tr, fs);
     push3(fs, tr, env);
-    {   SAVE_NAME_OF_CALLER;
-        p = eval(p, env);
-    }
+    p = eval(p, env);
     pop3(env, tr, fs);
     if (p == nil)
         return eval(fs, env);      // tail call on result
@@ -1137,9 +1065,7 @@ static LispObject letstar_fn(LispObject args, LispObject env)
 #define Return(v)  { popv(8); return (v); }
     for (;;)
     {   if (!consp(body)) break;
-        {   SAVE_NAME_OF_CALLER;
-            p = macroexpand(qcar(body), env);
-        }
+        p = macroexpand(qcar(body), env);
         body = qcdr(body);
         if (!consp(p))
         {   if (stringp(p) && consp(body)) continue;
@@ -1177,9 +1103,7 @@ static LispObject letstar_fn(LispObject args, LispObject env)
             {
                 Header h = qheader(q);
                 if (z != nil)
-                {   SAVE_NAME_OF_CALLER;
-                    z = eval(z, env);
-                }
+                z = eval(z, env);
                 if (h & SYM_GLOBAL_VAR)
                     aerror1("attempt to bind", q);
                 if (h & SYM_SPECIAL_VAR)

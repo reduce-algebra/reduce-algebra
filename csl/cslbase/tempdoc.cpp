@@ -151,15 +151,6 @@
  * material and collaborates with the mathematical display parts of CSL.
  */
 
-/*! predef [*native_code] \item [{\ttfamily !*native\_code}] \index{{\ttfamily "!*native\_code}} ~\newline
- * An experimental additional compiler for CSL that maps Lisp directly onto
- * native code for the current platform has been in development for some time,
- * but it is not in a state such as to make it useful for other than
- * people who wish to experiment, extend and debug it. This flag is to do
- * with enabling it. It is not supported but may possibly become so one day.
- */
-
-/*! predef [*notailcall] \item [{\ttfamily !*notailcall}] \index{{\ttfamily "!*notailcall}} ~\newline
  * The CSL compiler normally tries to detect patterns of recursion that it
  * can convert into iteration. This can dramatically reduce stack use and
  * so allow calculations to succeed when otherwise they would have failed.
@@ -186,10 +177,7 @@
  * When the CSL compiler runs to generate byte-codes if {\ttfamily !*plap} or
  * {\ttfamily !*pgwd} is set then the generated code is displayed. This may
  * be of interest when debugging or for anybody who wants to explore the
- * Lisp bytecode model that is used. If at some stage a full native compiler
- * is released then {\ttfamily !*plap} will control display of any intermediate
- * Lisp-specific material and {\ttfamily !*pgwd} will control display of the
- * final generated platform dependent machine code.
+ * Lisp bytecode model that is used.
  */
 
 /*! predef [*pretty-symmetric] \item [{\ttfamily !*pretty!-symmetric}] \index{{\ttfamily "!*pretty"!-symmetric}} ~\newline
@@ -925,10 +913,6 @@
 //
 
 /*! fns [copy-module]  \item [{\ttfamily copy!-module} {\itshape  expr}] \index{{\ttfamily copy"!-module} {\itshape  expr}} ~\newline
- * Not yet written
- */
-
-/*! fns [copy-native]  \item [{\ttfamily copy!-native} {\itshape  expr}] \index{{\ttfamily copy"!-native} {\itshape  expr}} ~\newline
  * Not yet written
  */
 
@@ -1787,10 +1771,6 @@
  * Not yet written
  */
 
-/*! fns [make-native]  \item [{\ttfamily make!-native} {\itshape  expr}] \index{{\ttfamily make"!-native} {\itshape  expr}} ~\newline
- * Not yet written
- */
-
 /*! fns [make-random-state]  \item [{\ttfamily make!-random!-state} {\itshape  expr}] \index{{\ttfamily make"!-random"!-state} {\itshape  expr}} ~\newline
  * Not yet written
  */
@@ -2061,22 +2041,6 @@
 //
 
 // fns [msd expr] \item [{\ttfamily msd} {\itshape  expr}] \index{{\ttfamily msd} {\itshape  expr}} ~\newline
-// Not yet written
-//
-
-// fns [native!-address expr] \item [{\ttfamily native!-address} {\itshape  expr}] \index{{\ttfamily native"!-address} {\itshape  expr}} ~\newline
-// Not yet written
-//
-
-// fns [native!-getv expr] \item [{\ttfamily native!-getv} {\itshape  expr}] \index{{\ttfamily native"!-getv} {\itshape  expr}} ~\newline
-// Not yet written
-//
-
-// fns [native!-putv expr] \item [{\ttfamily native!-putv} {\itshape  expr}] \index{{\ttfamily native"!-putv} {\itshape  expr}} ~\newline
-// Not yet written
-//
-
-// fns [native!-type expr] \item [{\ttfamily native!-type} {\itshape  expr}] \index{{\ttfamily native"!-type} {\itshape  expr}} ~\newline
 // Not yet written
 //
 
@@ -2936,10 +2900,6 @@
 //
 
 // fns [symbol!-set!-env expr] \item [{\ttfamily symbol!-set!-env} {\itshape  expr}] \index{{\ttfamily symbol"!-set"!-env} {\itshape  expr}} ~\newline
-// Not yet written
-//
-
-// fns [symbol!-set!-native expr] \item [{\ttfamily symbol!-set!-native} {\itshape  expr}] \index{{\ttfamily symbol"!-set"!-native} {\itshape  expr}} ~\newline
 // Not yet written
 //
 

@@ -48,102 +48,11 @@ LispObject Lget_bps(LispObject env, LispObject n)
     return onevalue(n);
 }
 
-#ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
-
-///*
-// WARNING. This code is intended to allocate space into which I will post
-// executable code. Under a really old-fashioned "spirit of C" even though
-// grabbing space with malloc and re-using it this way was officially not
-// guaranteed one could typically expect to get away with it. Well apart
-// on Harvard-architecture machines where code and data addresses are quite
-// distinct. But more recently - I have become aware of it hitting wide
-// distribution in Fedora Core in late 2003 - security concerns have prompted
-// some major vendors to move to a model where malloc space is explicitly
-// locked down as non-executable. In such cases, which may become increasingly
-// common, it will be VITAL to adjust what lies behind this to perform
-// system calls to arrange that pages that will be used for native code are
-// tagged as executable. Maybe it is just as well that at present this is
-// an experimental extension to CSL and is not ready for general use anyway!
-//
-
-LispObject get_native_code_vector(size_t size)
-{
-//
-// Create some space for native code and return a handle that identifies
-// its start point. size is measured in bytes.
-//
-    if (size == 0) size = 8;
-    for (;;)
-    {   size_t alloc_size = (size_t)doubleword_align_up(size);
-        intptr_t cf = native_fringe;
-        size_t free = CSL_PAGE_SIZE - cf - 0x100; // 256 bytes to be safe
-//
-// When I start up a cold CSL I will have native_fringe set to zero and
-// native_pages_count also zero, indicating that there is none of this stuff
-// active.
-//
-        if (native_fringe == 0 || alloc_size > free)
-        {   char msg[40];
-            sprintf(msg, "native code %ld", (long)size);
-            reclaim(nil, msg, GC_NATIVE, alloc_size);
-            continue;
-        }
-        free = (intptr_t)native_pages[native_pages_count-1];
-        free = doubleword_align_up(free);
-//
-// I put the number of bytes in this block as the first word of the chunk
-// of memory, and arrange that there is a zero in what would be the first
-// word of unused space. Provided the user does not clobber bytes 0 to 4
-// or the block this is enough to allow restart code to scan through all
-// native code segments.
-//
-        car32(free+native_fringe) = alloc_size;
-        car32(free+native_fringe+alloc_size) = 0;
-        native_fringe += alloc_size;
-        native_pages_changed = 1;
-        return Lcons(nil,
-                     fixnum_of_int(native_pages_count-1),
-                     fixnum_of_int(cf));
-    }
-}
-
-LispObject Lget_native(LispObject env, LispObject n)
-{   if (!is_fixnum(n) || (intptr_t)n<0) aerror1("get-native", n);
-    intptr_t n1 = int_of_fixnum(n);
-    n = get_native_code_vector(n1);
-    return onevalue(n);
-}
-
-bool do_not_kill_native_code = false;
-
-#endif // REINSTATE_NATIVE_CODE_EXPERIMENT
-
 // Soon this will need to take FIVE functions not THREE. Specifically ones
 // that support 0, 1, 2, 3 and 4+ arguments.
 
 void set_fns(LispObject a, one_args *f1, two_args *f2, n_args *fn)
 {
-#ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
-    LispObject w1, w2, w3 = nil;
-//
-// If I redefine a function for any reason (except to set trace options
-// on a bytecoded definition) I will discard any native-coded definitions
-// by splicing them out of the record. I provide a global variable to
-// defeat this behaviour (ugh).
-//
-    if (!do_not_kill_native_code)
-    {   for (w1 = native_code; w1!=nil; w1=qcdr(w1))
-        {   w2 = qcar(w1);
-            if (qcar(w2) == a) break;
-            w3 = w1;
-        }
-        if (w1 != nil)
-        {   w1 = qcdr(w1);
-            if (w3 == nil) native_code = w1;
-            else qcdr(w3) = w1;
-        }
-    }
-#endif // REINSTATE_NATIVE_CODE_EXPERIMENT
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR))
     {   if (symbol_protect_flag)
@@ -177,9 +86,7 @@ static bool interpreter_entry(LispObject a)
 //
 {   return (
                qfn1(a) == interpreted1 ||
-               qfn1(a) == traceinterpreted1 ||
                qfn1(a) == funarged1 ||
-               qfn1(a) == tracefunarged1 ||
                qfn1(a) == undefined1);
 }
 
@@ -361,54 +268,44 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
     if (!is_bps(r)) return onevalue(nil);
     b = (unsigned char *)data_of_bps(r);
     if (f1 == bytecoded1 ||
-        f1 == tracebytecoded1 ||
         f1 == f1_as_0 ||
         f1 == f1_as_1
         ) return onevalue(fixnum_of_int(1));
     if (f2 == bytecoded2 ||
-        f2 == tracebytecoded2 ||
         f2 == f2_as_0 ||
         f2 == f2_as_1 ||
         f2 == f2_as_2
         ) return onevalue(fixnum_of_int(2));
     if (fn == bytecoded0 ||
-        fn == tracebytecoded0 ||
         fn == f0_as_0
         ) return onevalue(fixnum_of_int(0));
     if (fn == bytecoded3 ||
-        fn == tracebytecoded3 ||
         fn == f3_as_0 ||
         fn == f3_as_1 ||
         fn == f3_as_2 ||
         fn == f3_as_3
         ) return onevalue(fixnum_of_int(3));
-    if (fn == bytecodedn ||
-        fn == tracebytecodedn
-        ) return onevalue(fixnum_of_int(b[0]));
+    if (fn == bytecodedn) return onevalue(fixnum_of_int(b[0]));
     low = b[0];          // smallest number of valid args
     high = low + b[1];   // largest number before &rest is accounted for
     hardrest = 0;
 //
 // byteopt - optional arguments, with default of NIL
 //
-    if (f1 == byteopt1 ||
-        f1 == tracebyteopt1) hardrest = 0;
+    if (f1 == byteopt1) hardrest = 0;
 //
 // hardopt - optional arguments but default is passed as a SPID so that
 // the user can follow up and apply cleverer default processing
 //
-    else if (f1 == hardopt1 ||
-             f1 == tracehardopt1) hardrest = 1;
+    else if (f1 == hardopt1) hardrest = 1;
 //
 // byteoptrest - anything with a &rest argument on the end.
 //
-    else if (f1 == byteoptrest1 ||
-             f1 == tracebyteoptrest1) hardrest = 1;
+    else if (f1 == byteoptrest1) hardrest = 1;
 //
 // hardoptrest - some &optional args with non-nil default value, plus &rest
 //
-    else if (f1 == hardoptrest1 ||
-             f1 == tracehardoptrest1) hardrest = 3;
+    else if (f1 == hardoptrest1) hardrest = 3;
     else return onevalue(nil);
     r = list3(fixnum_of_int(low),
               fixnum_of_int(high), fixnum_of_int(hardrest));
@@ -426,7 +323,7 @@ LispObject Lsymbol_argcode(LispObject env, LispObject a)
 #define BYTE_OPT     0x008    // &optional present
 #define BYTE_HARDOPT 0x010    // "hard" case of &optional
 #define BYTE_REST    0x020    // &rest present
-#define BYTE_TRACED  0x040
+//#define BYTE_TRACED  0x040
 #define BYTE_CALLAS  0x100    // link to some other function
 //
 // I can not see any way much better than a grim sequence of explicit
@@ -446,27 +343,18 @@ LispObject Lsymbol_argcode(LispObject env, LispObject a)
     r = qcar(r);
     if (!is_bps(r)) return onevalue(nil);
     if (f1 == bytecoded1) val = 1;
-    else if (f1 == tracebytecoded1) val = 1 + BYTE_TRACED;
     else if (f2 == bytecoded2) val = 2;
-    else if (f2 == tracebytecoded2) val = 2 + BYTE_TRACED;
     else if (fn == bytecoded0) val = 0;
-    else if (fn == tracebytecoded0) val = 0 + BYTE_TRACED;
     else if (fn == bytecoded3) val = 3;
-    else if (fn == tracebytecoded3) val = 3 + BYTE_TRACED;
     else if (fn == bytecodedn) val = 4;
-    else if (fn == tracebytecodedn) val = 4 + BYTE_TRACED;
 //
 // I observe that I do not support double-execute for &optional and &rest
 // functions. I do not mind that too much!
 //
     else if (f1 == byteopt1) val = BYTE_OPT;
-    else if (f1 == tracebyteopt1) val = BYTE_OPT + BYTE_TRACED;
     else if (f1 == hardopt1) val = BYTE_HARDOPT;
-    else if (f1 == tracehardopt1) val = BYTE_HARDOPT + BYTE_TRACED;
     else if (f1 == byteoptrest1) val = BYTE_OPT + BYTE_REST;
-    else if (f1 == tracebyteoptrest1) val = BYTE_OPT + BYTE_REST + BYTE_TRACED;
     else if (f1 == hardoptrest1) val = BYTE_HARDOPT + BYTE_REST;
-    else if (f1 == tracehardoptrest1) val = BYTE_HARDOPT + BYTE_REST + BYTE_TRACED;
     else if (fn == f3_as_0) val = BYTE_CALLAS + 0;
     else if (fn == f3_as_1) val = BYTE_CALLAS + 1;
     else if (fn == f3_as_2) val = BYTE_CALLAS + 2;
@@ -480,130 +368,6 @@ LispObject Lsymbol_argcode(LispObject env, LispObject a)
     else if (f1 == f1_as_1) val = BYTE_CALLAS + 9;
     else return onevalue(nil);
     return onevalue(fixnum_of_int(val));
-}
-
-//
-// The job of this function is to put back information as retrieved by
-// symbol-argcode. It is used in part of the support for native compilation
-// via C code...
-//
-
-LispObject Lsymbol_restore_fns(LispObject env, LispObject name)
-{   int r;
-    LispObject n;
-//
-// This expects a property that has value <argcode> . <env>
-//
-    if (!is_symbol(name)) return onevalue(nil);
-    n = get(name, bytecoded_symbol, nil);
-    if (!consp(n)) return onevalue(nil);
-    env = qcdr(n);
-    n = qcar(n);
-    if (!is_fixnum(n)) return onevalue(nil);
-//
-// When I first implemented this I thought I might remove the bytecode
-// definition from the property list. However I *hope* that soon I will be
-// re-instating the native defintion, which would lead to a need to put this
-// stuff back. So I think I will just leave it here and avoid the sweat
-// of re-instating it during system restart. This may lead to heap images
-// being a little larger but I propose not to fuss about that and further
-// I hope that structures will be shared and mean that any overhead is
-// small.
-//
-//  Lremprop(nil, name, bytecoded_symbol);
-//
-    r = int_of_fixnum(n);
-    switch (r)
-    {   case 1:
-            set_fns(name, bytecoded1, TOO_MANY_1, WRONG_NO_1);
-            break;
-        case 1 + BYTE_TRACED:
-            set_fns(name, tracebytecoded1, TOO_MANY_1, WRONG_NO_1);
-            break;
-        case 2:
-            set_fns(name, TOO_FEW_2, bytecoded2, WRONG_NO_2);
-            break;
-        case 2 + BYTE_TRACED:
-            set_fns(name, TOO_FEW_2, tracebytecoded2, WRONG_NO_2);
-            break;
-        case 0:
-            set_fns(name, WRONG_NO_0A, WRONG_NO_0B, bytecoded0);
-            break;
-        case 0 + BYTE_TRACED:
-            set_fns(name, WRONG_NO_0A, WRONG_NO_0B, tracebytecoded0);
-            break;
-        case 3:
-            set_fns(name, WRONG_NO_3A, WRONG_NO_3B, bytecoded3);
-            break;
-        case 3 + BYTE_TRACED:
-            set_fns(name, WRONG_NO_3A, WRONG_NO_3B, tracebytecoded3);
-            break;
-        case 4:
-            set_fns(name, WRONG_NO_NA, WRONG_NO_NB, bytecodedn);
-            break;
-        case 4 + BYTE_TRACED:
-            set_fns(name, WRONG_NO_NA, WRONG_NO_NB, tracebytecodedn);
-            break;
-        case BYTE_OPT:
-            set_fns(name, byteopt1, byteopt2, byteoptn);
-            break;
-        case BYTE_OPT + BYTE_TRACED:
-            set_fns(name, tracebyteopt1, tracebyteopt2, tracebyteoptn);
-            break;
-        case BYTE_HARDOPT:
-            set_fns(name, hardopt1, hardopt2, hardoptn);
-            break;
-        case BYTE_HARDOPT + BYTE_TRACED:
-            set_fns(name, tracehardopt1, tracehardopt2, tracehardoptn);
-            break;
-        case BYTE_OPT + BYTE_REST:
-            set_fns(name, byteoptrest1, byteoptrest2, byteoptrestn);
-            break;
-        case BYTE_OPT + BYTE_REST + BYTE_TRACED:
-            set_fns(name, tracebyteoptrest1, tracebyteoptrest2, tracebyteoptrestn);
-            break;
-        case BYTE_HARDOPT + BYTE_REST:
-            set_fns(name, hardoptrest1, hardoptrest2, hardoptrestn);
-            break;
-        case BYTE_HARDOPT + BYTE_REST + BYTE_TRACED:
-            set_fns(name, tracehardoptrest1, tracehardoptrest2, tracehardoptrestn);
-            break;
-        case BYTE_CALLAS + 0:
-            set_fns(name, WRONG_NO_NA, WRONG_NO_NB,  f3_as_0);
-            break;
-        case BYTE_CALLAS + 1:
-            set_fns(name, WRONG_NO_NA, WRONG_NO_NB,  f3_as_1);
-            break;
-        case BYTE_CALLAS + 2:
-            set_fns(name, WRONG_NO_NA, WRONG_NO_NB,  f3_as_2);
-            break;
-        case BYTE_CALLAS + 3:
-            set_fns(name, WRONG_NO_NA, WRONG_NO_NB,  f3_as_3);
-            break;
-        case BYTE_CALLAS + 4:
-            set_fns(name, WRONG_NO_NA, WRONG_NO_NB,  f0_as_0);
-            break;
-        case BYTE_CALLAS + 5:
-            set_fns(name, TOO_FEW_2,  f2_as_0, WRONG_NO_2);
-            break;
-        case BYTE_CALLAS + 6:
-            set_fns(name, TOO_FEW_2,  f2_as_1, WRONG_NO_2);
-            break;
-        case BYTE_CALLAS + 7:
-            set_fns(name, TOO_FEW_2,  f2_as_2, WRONG_NO_2);
-            break;
-        case BYTE_CALLAS + 8:
-            set_fns(name, f1_as_0, TOO_MANY_1, WRONG_NO_1);
-            break;
-        case BYTE_CALLAS + 9:
-            set_fns(name, f1_as_1, TOO_MANY_1, WRONG_NO_1);
-            break;
-
-        default:
-            return onevalue(nil);
-    }
-    qenv(name) = env;
-    return onevalue(lisp_true);
 }
 
 LispObject Lsymbol_env(LispObject env, LispObject a)
@@ -868,32 +632,20 @@ LispObject Lsymbol_set_definition(LispObject env,
             b = qcdr(b);
         }
         else if (flagbits != 0 || nopts != 0)
-        {   if ((qheader(a) & SYM_TRACED) == 0) switch(flagbits)
-            {       default:
-                    case 0:  // easy case optional arguments
-                        set_fns(a, byteopt1, byteopt2, byteoptn); break;
-                    case 1:  // optional args, but non-nil default, or supplied-p extra
-                        set_fns(a, hardopt1, hardopt2, hardoptn); break;
-                    case 2:  // easy opt args, but also a &rest arg
-                        set_fns(a, byteoptrest1, byteoptrest2, byteoptrestn); break;
-                    case 3:  // complicated &options and &rest
-                        set_fns(a, hardoptrest1, hardoptrest2, hardoptrestn); break;
-                }
-            else switch (flagbits)
-            {       default:
-                    case 0:  // easy case optional arguments
-                        set_fns(a, tracebyteopt1, tracebyteopt2, tracebyteoptn); break;
-                    case 1:  // optional args, but non-nil default, or supplied-p extra
-                        set_fns(a, tracehardopt1, tracehardopt2, tracehardoptn); break;
-                    case 2:  // easy opt args, but also a &rest arg
-                        set_fns(a, tracebyteoptrest1, tracebyteoptrest2, tracebyteoptrestn); break;
-                    case 3:  // complicated &options and &rest
-                        set_fns(a, tracehardoptrest1, tracehardoptrest2, tracehardoptrestn); break;
-                }
+        {   switch(flagbits)
+            {   default:
+                case 0:  // easy case optional arguments
+                    set_fns(a, byteopt1, byteopt2, byteoptn); break;
+                case 1:  // optional args, but non-nil default, or supplied-p extra
+                    set_fns(a, hardopt1, hardopt2, hardoptn); break;
+                case 2:  // easy opt args, but also a &rest arg
+                    set_fns(a, byteoptrest1, byteoptrest2, byteoptrestn); break;
+                case 3:  // complicated &options and &rest
+                    set_fns(a, hardoptrest1, hardoptrest2, hardoptrestn); break;
+            }
         }
         else
         {   if (nargs > 4) nargs = 4;
-            if ((qheader(a) & SYM_TRACED) != 0) nargs += 5;
             qheader(a) = qheader(a) & ~SYM_MACRO;
             switch (nargs)
             {   case 0:   set_fns(a, WRONG_NO_0A, WRONG_NO_0B, bytecoded0);
@@ -907,17 +659,6 @@ LispObject Lsymbol_set_definition(LispObject env,
                 default:
                 case 4:   set_fns(a, WRONG_NO_NA, WRONG_NO_NB, bytecodedn);
                     break;
-
-                case 5+0: set_fns(a, WRONG_NO_0A, WRONG_NO_0B, tracebytecoded0);
-                    break;
-                case 5+1: set_fns(a, tracebytecoded1, TOO_MANY_1,  WRONG_NO_1);
-                    break;
-                case 5+2: set_fns(a, TOO_FEW_2,   tracebytecoded2, WRONG_NO_2);
-                    break;
-                case 5+3: set_fns(a, WRONG_NO_3A, WRONG_NO_3B, tracebytecoded3);
-                    break;
-                case 5+4: set_fns(a, WRONG_NO_NA, WRONG_NO_NB, tracebytecodedn);
-                    break;
             }
         }
         qenv(a) = qcdr(b);
@@ -927,9 +668,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         int nargs = 0;
         while (consp(bvl)) nargs++, bvl = qcdr(bvl);
         qheader(a) = qheader(a) & ~SYM_MACRO;
-        if ((qheader(a) & SYM_TRACED) != 0)
-            set_fns(a, traceinterpreted1, traceinterpreted2, traceinterpretedn);
-        else set_fns(a, interpreted1, interpreted2, interpretedn);
+        set_fns(a, interpreted1, interpreted2, interpretedn);
         qenv(a) = qcdr(b);
         if (qvalue(comp_symbol) != nil &&
             qfn1(compiler_symbol) != undefined1)
@@ -944,9 +683,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         int nargs = 0;
         while (consp(bvl)) nargs++, bvl = qcdr(bvl);
         qheader(a) = qheader(a) & ~SYM_MACRO;
-        if ((qheader(a) & SYM_TRACED) != 0)
-            set_fns(a, tracefunarged1, tracefunarged2, tracefunargedn);
-        else set_fns(a, funarged1, funarged2, funargedn);
+        set_fns(a, funarged1, funarged2, funargedn);
         qenv(a) = qcdr(b);
     }
     else aerror1("symbol-set-definition", b);
@@ -1032,204 +769,20 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
     return onevalue(res);
 }
 
-#define pack_funtable(a, n) ((((int32_t)(a)) << 16) | (n))
-#define funtable_nargs(u)   ((u) >> 16)
-#define funtable_index(u)   ((u) & 0xffffU)
+// If the compiler will support the symbol s as a "built-in" function
+// set or clear an associated trace flag.
 
-static one_args *displaced1 = NULL;
-static two_args *displaced2;
-static n_args   *displacedn;
-static uint32_t table_entry;
-
-static LispObject traced1_function(LispObject env, LispObject a)
-{   LispObject name;
-    LispObject r = nil;
-//
-// Worry about errors & garbage collection in following calls to print fns
-// This MUST be fixed sometime fairly soon... but then it could only bite
-// people using the trace facility, and their code is already dead!
-//
-    freshline_trace();
-    loop_print_trace(tracedfn);
-    push(tracedfn);
-    trace_printf(" called (1 arg)\narg1: ");
-    loop_print_trace(a);
-    trace_printf("\n");
-    r = (*displaced1)(env, a);
-    pop(name);
-    push(r);
-    freshline_trace();
-    loop_print_trace(name);
-    trace_printf(" = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return onevalue(r);
-}
-
-static LispObject traced2_function(LispObject env,
-                                   LispObject a, LispObject b)
-{   LispObject name;
-    LispObject r = nil;
-    freshline_trace();
-    loop_print_trace(tracedfn);
-    push(tracedfn);
-    trace_printf(" called (2 args)\narg1:");
-    loop_print_trace(a);
-    trace_printf("\narg2: ");
-    loop_print_trace(b);
-    trace_printf("\n");
-    r = (*displaced2)(env, a, b);
-    pop(name);
-    push(r);
-    freshline_trace();
-    loop_print_trace(name);
-    trace_printf(" = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return onevalue(r);
-}
-
-static LispObject tracedn_function(LispObject env, int nargs, ...)
-{   LispObject name;
-    LispObject r = nil;
-    int i;
-    va_list a;
-    push(tracedfn);
-    va_start(a, nargs);
-    push_args(a, nargs);
-    freshline_trace();
-    loop_print_trace(tracedfn);
-    trace_printf(" called (%d args)\n", nargs);
-    for (i=1; i<=nargs; i++)
-    {   trace_printf("arg%d: ", i);
-        loop_print_trace(stack[i-nargs]);
-        trace_printf("\n");
-    }
-    if (nargs <= 15) switch (nargs)
-    {       default:
-//
-// Calls with 1 or 2 args can never arise, since those cases have been
-// split off for separate treatment.
-//
-                popv(nargs+1);
-                aerror("system error in trace mechanism");
-            case 0:
-                r = (*displacedn)(env, 0);
-                break;
-            case 3:
-                r = (*displacedn)(env, 3,    stack[-2], stack[-1], stack[0]);
-                break;
-            case 4:
-                r = (*displacedn)(env, 4,    stack[-3],  stack[-2],  stack[-1],
-                                  stack[0]);
-                break;
-            case 5:
-                r = (*displacedn)(env, 5,    stack[-4],  stack[-3],  stack[-2],
-                                  stack[-1],  stack[0]);
-                break;
-            case 6:
-                r = (*displacedn)(env, 6,    stack[-5],  stack[-4],  stack[-3],
-                                  stack[-2],  stack[-1],  stack[0]);
-                break;
-            case 7:
-                r = (*displacedn)(env, 7,    stack[-6],  stack[-5],  stack[-4],
-                                  stack[-3],  stack[-2],  stack[-1],  stack[0]);
-                break;
-            case 8:
-                r = (*displacedn)(env, 8,    stack[-7],  stack[-6],  stack[-5],
-                                  stack[-4],  stack[-3],  stack[-2],  stack[-1],
-                                  stack[0]);
-                break;
-            case 9:
-                r = (*displacedn)(env, 9,    stack[-8],  stack[-7],  stack[-6],
-                                  stack[-5],  stack[-4],  stack[-3],  stack[-2],
-                                  stack[-1],  stack[0]);
-                break;
-            case 10:
-                r = (*displacedn)(env, 10,   stack[-9], stack[-8],  stack[-7],
-                                  stack[-6],  stack[-5],  stack[-4],  stack[-3],
-                                  stack[-2],  stack[-1],  stack[0]);
-                break;
-            case 11:
-                r = (*displacedn)(env, 11,   stack[-10], stack[-9],
-                                  stack[-8],  stack[-7],  stack[-6],  stack[-5],
-                                  stack[-4],  stack[-3],  stack[-2],  stack[-1],
-                                  stack[0]);
-                break;
-            case 12:
-                r = (*displacedn)(env, 12,   stack[-11], stack[-10],
-                                  stack[-9], stack[-8],  stack[-7],  stack[-6],
-                                  stack[-5],  stack[-4],  stack[-3],  stack[-2],
-                                  stack[-1],  stack[0]);
-                break;
-            case 13:
-                r = (*displacedn)(env, 13,   stack[-12], stack[-11],
-                                  stack[-10], stack[-9], stack[-8],  stack[-7],
-                                  stack[-6],  stack[-5],  stack[-4],  stack[-3],
-                                  stack[-2],  stack[-1],  stack[0]);
-                break;
-            case 14:
-                r = (*displacedn)(env, 14,   stack[-13], stack[-12],
-                                  stack[-11], stack[-10], stack[-9], stack[-8],
-                                  stack[-7],  stack[-6],  stack[-5],  stack[-4],
-                                  stack[-3],  stack[-2],  stack[-1],  stack[0]);
-                break;
-            case 15:
-                r = (*displacedn)(env, 15,   stack[-14], stack[-13],
-                                  stack[-12], stack[-11], stack[-10], stack[-9],
-                                  stack[-8],  stack[-7],  stack[-6],  stack[-5],
-                                  stack[-4],  stack[-3],  stack[-2],  stack[-1],
-                                  stack[0]);
-                break;
-        }
-    else
-    {   trace_printf("Too many arguments to trace a function\n");
-//
-// Because the above is a horrid mess I will only support traced
-// calls with at most 15 args (more than I expect most people to
-// try). And this only applies to thigs that are NOT bytecoded -
-// I can trace bytecoded things with more args I believe, so users are not
-// utterly lost I hope.
-//
-        aerror("traced function with > 15 args: not supported");
-    }
-    popv(nargs);
-    pop(name);
-    push(r);
-    freshline_trace();
-    loop_print_trace(name);
-    trace_printf(" = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return onevalue(r);
-}
-
-#define NOT_FOUND 100
-
-static uint32_t find_built_in_function(one_args *f1,
-                                       two_args *f2,
-                                       n_args *fn)
-//
-// This take the entrypoint of a function and tries to identify it
-// by scanning the tables used by the bytecode interpreter.  If the
-// function is found a record is returned indicating how many args
-// it takes, and what its index is in the relevant table.  The code
-// <NOT_FOUND,NOT_FOUND> is returned to indicate failure if the function
-// is not found.
-//
-{   int32_t index;
-    for (index=0; no_arg_functions[index]!=NULL; index++)
-        if (fn == no_arg_functions[index]) return pack_funtable(0, index);
-    for (index=0; one_arg_functions[index]!=NULL; index++)
-        if (f1 == one_arg_functions[index]) return pack_funtable(1, index);
-    for (index=0; two_arg_functions[index]!=NULL; index++)
-        if (f2 == two_arg_functions[index]) return pack_funtable(2, index);
-    for (index=0; three_arg_functions[index]!=NULL; index++)
-        if (fn == three_arg_functions[index]) return pack_funtable(3, index);
-    return pack_funtable(NOT_FOUND, NOT_FOUND);
+static void trace_builtin(LispObject s, bool state)
+{   LispObject w = get(s, builtin0_symbol, nil);
+    if (is_fixnum(w)) no_arg_traceflags[int_of_fixnum(w)] = state;
+    w = get(s, builtin1_symbol, nil);
+    if (is_fixnum(w)) one_arg_traceflags[int_of_fixnum(w)] = state;
+    w = get(s, builtin2_symbol, nil);
+    if (is_fixnum(w)) two_arg_traceflags[int_of_fixnum(w)] = state;
+    w = get(s, builtin3_symbol, nil);
+    if (is_fixnum(w)) three_arg_traceflags[int_of_fixnum(w)] = state;
+    w = get(s, builtin4_symbol, nil);
+    if (is_fixnum(w)) four_arg_traceflags[int_of_fixnum(w)] = state;
 }
 
 LispObject Ltrace(LispObject env, LispObject a)
@@ -1243,99 +796,19 @@ LispObject Ltrace(LispObject env, LispObject a)
         w = qcdr(w);
         if (symbolp(s))
         {   one_args *f1 = qfn1(s);
-            two_args *f2 = qfn2(s);
-            n_args *fn = qfnn(s);
-            int fixenv = 0, done = 0;
             if (f1 == undefined1)
             {   freshline_debug();
+// If you trace a function that is not defined I will issue a warning, since
+// there is a chance that you made a mistake in the name of the function
+// concerned, but I will set the trace flag and with luck if it gets defined
+// later then tracing will occur.
                 debug_printf("+++ ");
                 loop_print_debug(s);
-                debug_printf(" not yet defined\n");
+                debug_printf(" not yet defined, was this a mistake?\n");
                 continue;
             }
             qheader(s) |= SYM_TRACED;
-            if (f1 == interpreted1)
-            {   set_fns(s, traceinterpreted1, traceinterpreted2, traceinterpretedn);
-                fixenv = done = 1;
-            }
-            if (f1 == funarged1)
-            {   set_fns(s, tracefunarged1, tracefunarged2, tracefunargedn);
-                fixenv = done = 1;
-            }
-            if (fn == bytecoded0) ifnn(s) = (intptr_t)tracebytecoded0, done = 1;
-            if (f1 == bytecoded1) ifn1(s) = (intptr_t)tracebytecoded1, done = 1;
-            if (f2 == bytecoded2) ifn2(s) = (intptr_t)tracebytecoded2, done = 1;
-            if (fn == bytecoded3) ifnn(s) = (intptr_t)tracebytecoded3, done = 1;
-            if (fn == bytecodedn) ifnn(s) = (intptr_t)tracebytecodedn, done = 1;
-            if (f1 == byteopt1) ifn1(s) = (intptr_t)tracebyteopt1, done = 1;
-            if (f2 == byteopt2) ifn2(s) = (intptr_t)tracebyteopt2, done = 1;
-            if (fn == byteoptn) ifnn(s) = (intptr_t)tracebyteoptn, done = 1;
-            if (f1 == hardopt1) ifn1(s) = (intptr_t)tracehardopt1, done = 1;
-            if (f2 == hardopt2) ifn2(s) = (intptr_t)tracehardopt2, done = 1;
-            if (fn == hardoptn) ifnn(s) = (intptr_t)tracehardoptn, done = 1;
-            if (f1 == byteoptrest1) ifn1(s) = (intptr_t)tracebyteoptrest1, done = 1;
-            if (f2 == byteoptrest2) ifn2(s) = (intptr_t)tracebyteoptrest2, done = 1;
-            if (fn == byteoptrestn) ifnn(s) = (intptr_t)tracebyteoptrestn, done = 1;
-            if (f1 == hardoptrest1) ifn1(s) = (intptr_t)tracehardoptrest1, done = 1;
-            if (f2 == hardoptrest2) ifn2(s) = (intptr_t)tracehardoptrest2, done = 1;
-            if (fn == hardoptrestn) ifnn(s) = (intptr_t)tracehardoptrestn, done = 1;
-            if (fixenv)
-            {   push2(a, s);
-                a = cons(s, qenv(s));
-                pop(s);
-                qenv(s) = a;
-                pop(a);
-            }
-            if (done) continue;
-//
-// I permit the tracing of just one function from the kernel, and achieve
-// this by installing a wrapper function in place of the real definition.
-// Indeed this is just like Lisp-level embedding, except that I can get at the
-// entrypoint table used by the bytecode interpreter and so trap calls made
-// via there, and I can use that table to tell me how many arguments the
-// traced function needed.
-//
-            if (displaced1 == NULL)
-            {   int nargs = funtable_nargs(table_entry);
-//
-// Remember what function was being traced, so that it can eventually be
-// invoked, and its name printed.
-//
-                displaced1 = f1;
-                displaced2 = f2;
-                displacedn = fn;
-                tracedfn = s;
-//
-// This makes calls via the regular interpreter see the traced version...
-//
-                set_fns(s, traced1_function, traced2_function,
-                        tracedn_function);
-                table_entry = find_built_in_function(f1, f2, fn);
-                nargs = funtable_nargs(table_entry);
-                table_entry = funtable_index(table_entry);
-                if (nargs != NOT_FOUND)
-                {
-//
-// .. and now I make calls via short-form bytecodes do likewise.
-//
-                    switch (nargs)
-                {       default:
-                        case 0: no_arg_functions[funtable_index(table_entry)] =
-                                tracedn_function;
-                            break;
-                        case 1: one_arg_functions[funtable_index(table_entry)] =
-                                traced1_function;
-                            break;
-                        case 2: two_arg_functions[funtable_index(table_entry)] =
-                                traced2_function;
-                            break;
-                        case 3: three_arg_functions[funtable_index(table_entry)] =
-                                tracedn_function;
-                            break;
-                    }
-                }
-            }
-            continue;
+            trace_builtin(s, true);
         }
     }
     return onevalue(a);
@@ -1351,58 +824,8 @@ LispObject Luntrace(LispObject env, LispObject a)
     {   LispObject s = qcar(w);
         w = qcdr(w);
         if (symbolp(s))
-        {   one_args *f1 = qfn1(s);
-            two_args *f2 = qfn2(s);
-            n_args *fn = qfnn(s);
-            if (f1 == traceinterpreted1)
-            {   set_fns(s, interpreted1, interpreted2, interpretedn);
-                qenv(s) = qcdr(qenv(s));
-            }
-            else if (f1 == tracefunarged1)
-            {   set_fns(s, funarged1, funarged2, funargedn);
-                qenv(s) = qcdr(qenv(s));
-            }
-            if (f1 == tracebytecoded1) ifn1(s) = (intptr_t)bytecoded1;
-            if (f2 == tracebytecoded2) ifn2(s) = (intptr_t)bytecoded2;
-            if (fn == tracebytecoded0) ifnn(s) = (intptr_t)bytecoded0;
-            if (fn == tracebytecoded3) ifnn(s) = (intptr_t)bytecoded3;
-            if (fn == tracebytecodedn) ifnn(s) = (intptr_t)bytecodedn;
-            if (f1 == tracebyteopt1  ) ifn1(s) = (intptr_t)byteopt1;
-            if (f2 == tracebyteopt2  ) ifn2(s) = (intptr_t)byteopt2;
-            if (fn == tracebyteoptn  ) ifnn(s) = (intptr_t)byteoptn;
-            if (f1 == tracebyteoptrest1) ifn1(s) = (intptr_t)byteoptrest1;
-            if (f2 == tracebyteoptrest2) ifn2(s) = (intptr_t)byteoptrest2;
-            if (fn == tracebyteoptrestn) ifnn(s) = (intptr_t)byteoptrestn;
-            if (f1 == tracehardopt1    ) ifn1(s) = (intptr_t)hardopt1;
-            if (f2 == tracehardopt2    ) ifn2(s) = (intptr_t)hardopt2;
-            if (fn == tracehardoptn    ) ifnn(s) = (intptr_t)hardoptn;
-            if (f1 == tracehardoptrest1) ifn1(s) = (intptr_t)hardoptrest1;
-            if (f2 == tracehardoptrest2) ifn2(s) = (intptr_t)hardoptrest2;
-            if (fn == tracehardoptrestn) ifnn(s) = (intptr_t)hardoptrestn;
-            if (f1 == traced1_function)
-            {   int nargs = funtable_nargs(table_entry);
-                set_fns(s, displaced1, displaced2, displacedn);
-                if (nargs != NOT_FOUND)
-                    switch (nargs)
-                {       default:
-                        case 0: no_arg_functions[funtable_index(table_entry)] =
-                                displacedn;
-                            break;
-                        case 1: one_arg_functions[funtable_index(table_entry)] =
-                                displaced1;
-                            break;
-                        case 2: two_arg_functions[funtable_index(table_entry)] =
-                                displaced2;
-                            break;
-                        case 3: three_arg_functions[funtable_index(table_entry)] =
-                                displacedn;
-                            break;
-                    }
-                displaced1 = NULL;
-                displaced2 = NULL;
-                displacedn = NULL;
-            }
-            qheader(s) &= ~SYM_TRACED;
+        {   qheader(s) &= ~SYM_TRACED;
+            trace_builtin(s, false);
         }
     }
     return onevalue(a);
@@ -3810,13 +3233,8 @@ setup_type const funcs2_setup[] =
     {"object-header",           Lobject_header, TOO_MANY_1, WRONG_NO_1},
     {"symbol-fn-cell",          Lsymbol_fn_cell, TOO_MANY_1, WRONG_NO_1},
     {"symbol-argcode",          Lsymbol_argcount, TOO_MANY_1, WRONG_NO_1},
-    {"symbol-restore-fns",      Lsymbol_restore_fns, TOO_MANY_1, WRONG_NO_1},
     {"symbol-argcount",         Lsymbol_argcount, TOO_MANY_1, WRONG_NO_1},
     {"symbol-set-env",          TOO_FEW_2, Lsymbol_set_env, WRONG_NO_2},
-#ifdef REINSTATE_NATIVE_CODE_EXPERIMENT
-    {"make-native",             Lget_native, TOO_MANY_1, WRONG_NO_1},
-    {"symbol-set-native",       WRONG_NO_NA, WRONG_NO_NB, Lsymbol_set_native},
-#endif
     {"symbol-set-definition",   TOO_FEW_2, Lsymbol_set_definition, WRONG_NO_2},
     {"restore-c-code",          Lrestore_c_code, TOO_MANY_1, WRONG_NO_1},
     {"set-autoload",            TOO_FEW_2, Lset_autoload, WRONG_NO_2},

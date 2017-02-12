@@ -1449,7 +1449,7 @@ void Lerror(LispObject env, int nargs, ...)
     if (nargs == 0) aerror("error");
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
-        return resource_exceeded();
+        resource_exceeded();
     va_start(a, nargs);
     push_args(a, nargs);
 #ifdef COMMON
@@ -1530,7 +1530,7 @@ void Lerror0(LispObject env, int nargs, ...)
     argcheck(nargs, 0, "error0");
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
-        return resource_exceeded();
+        resource_exceeded();
     switch (errorset_min)
     {   case 0: miscflags &= ~BACKTRACE_MSG_BITS;
             break;
@@ -1678,14 +1678,6 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
              f2 == funarged2 ||
              fn == funargedn)
         return onevalue(cons(funarg, qenv(a)));
-    else if (f1 == traceinterpreted1 ||
-             f2 == traceinterpreted2 ||
-             fn == traceinterpretedn)
-        return onevalue(cons(lambda, qcdr(qenv(a))));
-    else if (f1 == tracefunarged1 ||
-             f2 == tracefunarged2 ||
-             fn == tracefunargedn)
-        return onevalue(cons(funarg, qcdr(qenv(a))));
     else
     {   LispObject b = get(a, work_symbol, nil);
 //

@@ -853,18 +853,9 @@ static void lisp_main(void)
                     free(exit_charvec);
                     exit_charvec = NULL;
                     push(a);
-#ifndef NO_BYTECOUNT
-                    name_of_caller = "restart function";
-#endif
-                    apply(supervisor, 1, nil, supervisor);
+                    apply(supervisor, 1, nil, startup_symbol);
                 }
-                else
-                {
-#ifndef NO_BYTECOUNT
-                    name_of_caller = "restart function";
-#endif
-                    apply(supervisor, 0, nil, supervisor);
-                }
+                else apply(supervisor, 0, nil, startup_symbol);
             }
 //
 // Here the default read-eval-print loop used if the user has not provided
@@ -2531,8 +2522,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #else
         nil = doubleword_align_up(nilsegment) + TAG_SYMBOL;
 #endif
-        pages_count = heap_pages_count = vheap_pages_count =
-                      native_pages_count = 0;
+        pages_count = heap_pages_count = vheap_pages_count = 0;
         stacksegment = (LispObject *)my_malloc(CSL_PAGE_SIZE);
 //
 // I am lazy about protection against malloc failure here.

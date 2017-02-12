@@ -1,4 +1,4 @@
-// eval1.cpp                               Copyright (C) 1989-2017 Codemist    
+//eval1.cpp                               Copyright (C) 1989-2017 Codemist    
 
 //
 // Interpreter (part 1).
@@ -260,10 +260,7 @@ restart:
 // or a closure, env will be irrelevant.  The arguments are on the Lisp
 // stack, and it is the responsibility of apply() to pop them.
 //
-#ifndef NO_BYTECOUNT
-            name_of_caller = "eval";
-#endif
-            return apply(fn, nargs, env, fn);
+            return apply(fn, nargs, env, eval_symbol);
         }
     }
 }
@@ -825,10 +822,7 @@ LispObject Lapply_n(LispObject env, int nargs, ...)
         }
     }
     else i = 0;
-#ifndef NO_BYTECOUNT
-    name_of_caller = "apply";
-#endif
-    return apply(fn, i, nil, fn);
+    return apply(fn, i, nil, apply_symbol);
 }
 
 LispObject Lapply_1(LispObject env, LispObject fn)
@@ -846,10 +840,7 @@ LispObject Lapply0(LispObject env, LispObject fn)
     if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 0);
 #endif
     stackcheck1(0, fn);
-#ifndef NO_BYTECOUNT
-    name_of_caller = "apply";
-#endif
-    return apply(fn, 0, nil, fn);
+    return apply(fn, 0, nil, apply_symbol);
 }
 
 LispObject Lapply1(LispObject env, LispObject fn, LispObject a)
@@ -859,10 +850,7 @@ LispObject Lapply1(LispObject env, LispObject fn, LispObject a)
 #endif
     push(a);
     stackcheck1(1, fn);
-#ifndef NO_BYTECOUNT
-    name_of_caller = "apply";
-#endif
-    return apply(fn, 1, nil, fn);
+    return apply(fn, 1, nil, apply_symbol);
 }
 
 LispObject Lapply2(LispObject env, int nargs, ...)
@@ -880,10 +868,7 @@ LispObject Lapply2(LispObject env, int nargs, ...)
 #endif
     push2(a, b);
     stackcheck1(2, fn);
-#ifndef NO_BYTECOUNT
-    name_of_caller = "apply";
-#endif
-    return apply(fn, 2, nil, fn);
+    return apply(fn, 2, nil, apply_symbol);
 }
 
 LispObject Lapply3(LispObject env, int nargs, ...)
@@ -902,10 +887,7 @@ LispObject Lapply3(LispObject env, int nargs, ...)
 #endif
     push3(a, b, c);
     stackcheck1(3, fn);
-#ifndef NO_BYTECOUNT
-    name_of_caller = "apply";
-#endif
-    return apply(fn, 3, nil, fn);
+    return apply(fn, 3, nil, apply_symbol);
 }
 
 LispObject Lfuncall1(LispObject env, LispObject fn)
@@ -914,10 +896,7 @@ LispObject Lfuncall1(LispObject env, LispObject fn)
     if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 0);
 #endif
     stackcheck1(0, fn);
-#ifndef NO_BYTECOUNT
-    name_of_caller = "funcall";
-#endif
-    return apply(fn, 0, nil, fn);
+    return apply(fn, 0, nil, funcall_symbol);
 }
 
 LispObject Lfuncall2(LispObject env, LispObject fn, LispObject a1)
@@ -927,20 +906,14 @@ LispObject Lfuncall2(LispObject env, LispObject fn, LispObject a1)
 #endif
     push(a1);
     stackcheck1(1, fn);
-#ifndef NO_BYTECOUNT
-    name_of_caller = "funcall";
-#endif
-    return apply(fn, 1, nil, fn);
+    return apply(fn, 1, nil, funcall_symbol);
 }
 
 static LispObject Lfuncalln_sub(LispObject env, int nargs, va_list a)
 {   STACK_SANITY;
     LispObject fn = va_arg(a, LispObject);
     push_args_1(a, nargs);
-#ifndef NO_BYTECOUNT
-    name_of_caller = "funcall";
-#endif
-    return apply(fn, nargs-1, nil, fn);
+    return apply(fn, nargs-1, nil, funcall_symbol);
 }
 
 LispObject Lfuncalln(LispObject env, int nargs, ...)
@@ -959,10 +932,7 @@ LispObject Lfuncalln(LispObject env, int nargs, ...)
             if (is_symbol(fn)) return (*qfn2(fn))(qenv(fn), a1, a2);
 #endif
             push2(a1, a2);
-#ifndef NO_BYTECOUNT
-            name_of_caller = "funcall";
-#endif
-            return apply(fn, 2, nil, fn);
+            return apply(fn, 2, nil, funcall_symbol);
         case 4: fn = va_arg(a, LispObject);
             a1 = va_arg(a, LispObject);
             a2 = va_arg(a, LispObject);
@@ -971,10 +941,7 @@ LispObject Lfuncalln(LispObject env, int nargs, ...)
             if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 3, a1, a2, a3);
 #endif
             push3(a1, a2, a3);
-#ifndef NO_BYTECOUNT
-            name_of_caller = "funcall";
-#endif
-            return apply(fn, 3, nil, fn);
+            return apply(fn, 3, nil, funcall_symbol);
         case 5: fn = va_arg(a, LispObject);
             a1 = va_arg(a, LispObject);
             a2 = va_arg(a, LispObject);
@@ -984,10 +951,7 @@ LispObject Lfuncalln(LispObject env, int nargs, ...)
             if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 4, a1, a2, a3, a4);
 #endif
             push4(a1, a2, a3, a4);
-#ifndef NO_BYTECOUNT
-            name_of_caller = "funcall";
-#endif
-            return apply(fn, 4, nil, fn);
+            return apply(fn, 4, nil, funcall_symbol);
         default:
             return Lfuncalln_sub(nil, nargs, a);
     }
@@ -1068,10 +1032,7 @@ LispObject mv_call_fn(LispObject args, LispObject env)
         }
         args = qcdr(args);
     }
-#ifndef NO_BYTECOUNT
-    name_of_caller = "mv-call";
-#endif
-    return apply(fn, i, env, fn);
+    return apply(fn, i, env, mv_call_symbol);
 }
 
 LispObject interpreted1(LispObject def, LispObject a1)
@@ -1127,177 +1088,6 @@ LispObject funargedn(LispObject def, int nargs, ...)
         push_args(a, nargs);
     }
     return apply_lambda(qcdr(def), nargs, qcar(def), qcdr(def));
-}
-
-LispObject traceinterpreted1(LispObject def, LispObject a1)
-//
-// Like interpreted() but the definition has the fn name consed on the front
-//
-{   STACK_SANITY;
-    push(a1);
-    stackcheck1(1, def);
-    freshline_trace();
-    trace_printf("Entering ");
-    loop_print_trace(qcar(def));
-    trace_printf(" (1 arg)");
-#ifndef NO_BYTECOUNT
-    if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\nArg1: ");
-    loop_print_trace(stack[0]);
-    trace_printf("\n");
-    LispObject r = apply_lambda(qcdr(def), 1, nil, def);
-    push(r);
-    trace_printf("Value = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return r;
-}
-
-LispObject traceinterpreted2(LispObject def, LispObject a1, LispObject a2)
-//
-// Like interpreted() but the definition has the fn name consed on the front
-//
-{   STACK_SANITY;
-    int i;
-    push2(a1, a2);
-    stackcheck1(2, def);
-    freshline_trace();
-    trace_printf("Entering ");
-    loop_print_trace(qcar(def));
-    trace_printf(" (2 args)");
-#ifndef NO_BYTECOUNT
-    if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\n");
-    for (i=1; i<=2; i++)
-    {   trace_printf("Arg%d: ", i);
-        loop_print_trace(stack[i-2]);
-        trace_printf("\n");
-    }
-    LispObject r = apply_lambda(qcdr(def), 2, nil, def);
-    push(r);
-    trace_printf("Value = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return r;
-}
-
-LispObject traceinterpretedn(LispObject def, int nargs, ...)
-//
-// Like interpreted() but the definition has the fn name consed on the front
-//
-{   STACK_SANITY;
-    int i;
-    LispObject r;
-    va_list a;
-    if (nargs != 0)
-    {   va_start(a, nargs);
-        push_args(a, nargs);
-    }
-    freshline_trace();
-    trace_printf("Entering ");
-    loop_print_trace(qcar(def));
-    trace_printf(" (%d args)", nargs);
-#ifndef NO_BYTECOUNT
-    if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\n");
-    for (i=1; i<=nargs; i++)
-    {   trace_printf("Arg%d: ", i);
-        loop_print_trace(stack[i-nargs]);
-        trace_printf("\n");
-    }
-    r = apply_lambda(qcdr(def), nargs, nil, def);
-    push(r);
-    trace_printf("Value = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return r;
-}
-
-LispObject tracefunarged1(LispObject def, LispObject a1)
-//
-// Like funarged() but with some printing
-//
-{   STACK_SANITY;
-    LispObject r;
-    push(a1);
-    stackcheck1(1, def);
-    freshline_trace();
-    trace_printf("Entering funarg ");
-    loop_print_trace(qcar(def));
-    trace_printf(" (1 arg)");
-#ifndef NO_BYTECOUNT
-    if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\n");
-    def = qcdr(def);
-    r = apply_lambda(qcdr(def), 1, qcar(def), qcdr(def));
-    push(r);
-    trace_printf("Value = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return r;
-}
-
-LispObject tracefunarged2(LispObject def, LispObject a1, LispObject a2)
-//
-// Like funarged() but with some printing
-//
-{   STACK_SANITY;
-    LispObject r;
-    push2(a1, a2);
-    stackcheck1(2, def);
-    freshline_trace();
-    trace_printf("Entering funarg ");
-    loop_print_trace(qcar(def));
-    trace_printf(" (2 args)");
-#ifndef NO_BYTECOUNT
-    if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\n");
-    def = qcdr(def);
-    r = apply_lambda(qcdr(def), 2, qcar(def), qcdr(def));
-    push(r);
-    trace_printf("Value = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return r;
-}
-
-LispObject tracefunargedn(LispObject def, int nargs, ...)
-//
-// Like funarged() but with some printing
-//
-{   STACK_SANITY;
-    LispObject r;
-    va_list a;
-    if (nargs != 0)
-    {   va_start(a, nargs);
-        push_args(a, nargs);
-    }
-    freshline_trace();
-    trace_printf("Entering funarg ");
-    loop_print_trace(qcar(def));
-    trace_printf(" (%d args)", nargs);
-#ifndef NO_BYTECOUNT
-    if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\n");
-    def = qcdr(def);
-    r = apply_lambda(qcdr(def), nargs, qcar(def), qcdr(def));
-    push(r);
-    trace_printf("Value = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return r;
 }
 
 static LispObject macroexpand_1(LispObject form, LispObject env)
@@ -1411,10 +1201,7 @@ LispObject autoload1(LispObject fname, LispObject a1)
         pop(fname);
     }
     pop(fname);
-#ifndef NO_BYTECOUNT
-    name_of_caller = "autoload";
-#endif
-    return apply(fname, 1, nil, fname);
+    return apply(fname, 1, nil, autoload_symbol);
 }
 
 LispObject autoload2(LispObject fname, LispObject a1, LispObject a2)
@@ -1430,10 +1217,7 @@ LispObject autoload2(LispObject fname, LispObject a1, LispObject a2)
         pop(fname);
     }
     pop(fname);
-#ifndef NO_BYTECOUNT
-    name_of_caller = "autoload";
-#endif
-    return apply(fname, 2, nil, fname);
+    return apply(fname, 2, nil, autoload_symbol);
 }
 
 LispObject autoloadn(LispObject fname, int nargs, ...)
@@ -1452,10 +1236,7 @@ LispObject autoloadn(LispObject fname, int nargs, ...)
         pop(fname);
     }
     pop(fname);
-#ifndef NO_BYTECOUNT
-    name_of_caller = "autoload";
-#endif
-    return apply(fname, nargs, nil, fname);
+    return apply(fname, nargs, nil, autoload_symbol);
 }
 
 LispObject undefined0(LispObject fname)

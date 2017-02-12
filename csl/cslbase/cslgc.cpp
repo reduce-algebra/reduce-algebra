@@ -643,9 +643,7 @@ LispObject Lmapstore0(LispObject env, int nargs, ...)
     return Lmapstore(nil, nil);
 }
 
-static bool reset_limit_registers(intptr_t vheap_need,
-                                     intptr_t native_need,
-                                     bool stack_flag)
+static bool reset_limit_registers(intptr_t vheap_need, bool stack_flag)
 //
 // returns true if after resetting the limit registers there was
 // enough space left for me to proceed. Return false on failure, ie
@@ -665,8 +663,7 @@ static bool reset_limit_registers(intptr_t vheap_need,
 //
     full = (pages_count <=
             heap_pages_count +
-            (3*(vheap_pages_count +
-                native_pages_count) + 1)/2);
+            (3*vheap_pages_count + 1)/2);
     if (fringe <= heaplimit)
     {   if (full) return false;
         p = pages[--pages_count];
@@ -695,14 +692,6 @@ static bool reset_limit_registers(intptr_t vheap_need,
         vheaplimit = (LispObject)vh;
         len = (uintptr_t)(vf - (vh - (CSL_PAGE_SIZE - 8)));
         car32(vh - (CSL_PAGE_SIZE - 8)) = len;
-    }
-    if (native_need != 0)
-    {   if (full || native_pages_count >= MAX_NATIVE_PAGES - 1) return false;
-        p = pages[--pages_count];
-        space_now++;
-        zero_out(p);
-        native_pages[native_pages_count++] = p;
-        native_fringe = 8;
     }
     if (stack_flag) return (stack < stacklimit);
     else return true;
@@ -938,7 +927,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 {   size_t i;
     clock_t t0, t1, t2;
     LispObject *sp;
-    intptr_t vheap_need = 0, native_need = 0;
+    intptr_t vheap_need = 0;
 #ifdef DEBUG_GC
     term_printf("Start of a garbage collection %d\n", gc_number);
 #endif // DEBUG_GC
@@ -954,7 +943,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 #endif // CONSERVATIVE
     stop_after_gc = 0;
     if (stg_class == GC_VEC || stg_class == GC_BPS) vheap_need = size;
-    else if (stg_class == GC_NATIVE) native_need = size;
     already_in_gc = true;
 #if defined WIN32 && !defined __CYGWIN__
     _kbhit(); // Fairly harmless anyway, but is here to let ^c get noticed
@@ -1022,7 +1010,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     {   tidy_fringes();
         if (stg_class != GC_PRESERVE &&
             stg_class != GC_USER_HARD &&
-            reset_limit_registers(vheap_need, native_need, true))
+            reset_limit_registers(vheap_need, true))
         {   already_in_gc = false;
             pop_clock();
             if (space_limit >= 0 && space_now > space_limit)
@@ -1416,7 +1404,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             else pages[pages_count++] = page;
         }
     }
-    if (!reset_limit_registers(vheap_need, native_need, false))
+    if (!reset_limit_registers(vheap_need, false))
     {   if (stack < stacklimit || stacklimit != stackbase)
         {   report_at_end();
             term_printf("\n+++ No space left at all\n");

@@ -60,7 +60,11 @@
 LispObject validate_number(const char *s, LispObject a,
                            LispObject b, LispObject c)
 {   int32_t la, msd, nsd;
-    if (!is_numbers(a)) return a;
+// The only two bad things that I can think of are (a) for a number that
+// should be a fixnum to be stored as a bignum and (b) for a bignum
+// to have leading zero digits when it ought not to. So unless the
+// argument here looks like a bignum there is nothing much to do.
+    if (!is_numbers(a) || !is_bignum(a)) return a;
     la = (length_of_header(numhdr(a))-CELL-4)/4;
     if (la < 0)
     {   trace_printf("%s: number with no digits (%.8x)\n", s, numhdr(a));

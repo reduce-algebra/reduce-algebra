@@ -59,36 +59,21 @@
 // end up allocating three stack locations (one for each instance of x) and
 // hence makes this function overall have much to big a stack frame.
 //
-#if defined DEBUG || !defined NO_BYTECOUNT
 //
 // ffname will be the first 31 characters of the name of the function
-// that is being interpreted.
-// This is jolly useful if one is in a debugger trying to understand what
-// has been going on! Note that the executable code here does not use this
-// variable at all: it is JUST so that I have a simple string variable
-// that a symbolic debugger can inspect to find my function name without
-// me having to mess about too much. I make this "volatile" in the hope that
-// that will prevent any compiler from optimising it out of existence!
-// If your function names are very long this may not give you all the info
-// you would like.
-//
-    LispObject volatile ffsym = elt(lit, 0);
-    char volatile ffname[32];
-    memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), sizeof(ffname));
-    size_t fflength =
-        (size_t)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
+// that is being interpreted. This is used when you trace things so that
+// you get a report of where a function has been called from. At one stage
+// I only set this information up when in the slower bootstrap mode, but now
+// I have decided to accept the cost at all times so that full tracing
+// facilities are always available.
+    LispObject ffpname = qpname(elt(lit, 0));
+    size_t fflength = (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
+    char ffname[32];
     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+    memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
     ffname[fflength] = 0;
-    if (*ffname == 0)
-    {   fprintf(stderr, "\nffname empty - system corrupted?\n");
-        fflush(stderr);
-        ensure_screen();
-        *((int *)(-1)) = 0x55555555; // Collapse! A deliberate SIGSEGV I hope.
-        my_abort();
-    }
     debug_record((const char *)ffname);
-    (void)ffsym;   // Not used by the code but may be useful under a debugger
-#endif
+//
 #ifdef CHECK_STACK
     {   char *my_stack = (char *)&my_stack;
         if (native_stack == NULL) native_stack = native_stack_base = my_stack;
@@ -154,22 +139,19 @@
 
 #ifdef DEBUG
     if (check_stack((char *)&ffname[0],__LINE__))
-    {   name_of_caller = NULL;
-        err_printf("\n+++ stack overflow\n");
+    {   err_printf("\n+++ stack overflow\n");
         aerror("stack overflow");
     }
 #else
     if (check_stack("bytecode_interpreter",__LINE__))
-    {   name_of_caller = NULL;
-        err_printf("\n+++ stack overflow\n");
+    {   err_printf("\n+++ stack overflow\n");
         aerror("stack overflow");
     }
 #endif
 #else
     {   char *p = (char *)&p;
         if (p < C_stack_limit)
-        {   name_of_caller = NULL;
-            err_printf("\n+++ stack overflow\n");
+        {   err_printf("\n+++ stack overflow\n");
             aerror("stack_overflow");
         }
     }
@@ -196,9 +178,11 @@ next_opcode:   // This label is so that I can restart what I am doing
 // pops items one at a time looking for those to get back to the state I
 // need to be in.
 // If I call aerror or aerror1 (etc) inside this try block it merely jumps
-// to the end of it. I will also convert signals into exceptions, so that
-// utter disasters in things that I call can be at least partially recovered
-// from
+// to the end of it.
+
+#ifdef DEBUG
+// I will also convert signals into exceptions, so that utter disasters
+// in things that I call can be at least partially recovered from
     jbsave = global_jb;
     jmp_buf jb;
     switch (setjmp(jb))
@@ -217,7 +201,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // exit from this code region the stack will need unwindind, restoring any
 // fluids that have been bound and removing catch frames that are no longer
 // needed.
-
+#endif // DEBUG
 
     for (;;)
     {
@@ -257,9 +241,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
-                name_of_caller = NULL;
 #endif
+
+#ifdef DEBUG
                 global_jb = jbsave;
+#endif
                 return A_reg;
 
 
@@ -268,9 +254,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
-                name_of_caller = NULL;
 #endif
+#ifdef DEBUG
                 global_jb = jbsave;
+#endif
                 return A_reg;
 
 
@@ -279,18 +266,20 @@ next_opcode:   // This label is so that I can restart what I am doing
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
-                name_of_caller = NULL;
 #endif
+#ifdef DEBUG
                 global_jb = jbsave;
+#endif
                 return A_reg;
 
             case OP_NILEXIT:
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
-                name_of_caller = NULL;
 #endif
+#ifdef DEBUG
                 global_jb = jbsave;
+#endif
                 return onevalue(nil);
 
             case OP_FREEBIND:
@@ -310,18 +299,38 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_STOREFREE:
+                if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
+                {   push(A_reg);
+                    print_traceset(current_byte, A_reg);
+                    pop(A_reg);
+                }
                 qvalue(elt(litvec, next_byte)) = A_reg;  // store into special var
                 continue;
 
             case OP_STOREFREE1:
+                if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
+                {   push(A_reg);
+                    print_traceset(1, A_reg);
+                    pop(A_reg);
+                }
                 qvalue(elt(litvec, 1)) = A_reg;
                 continue;
 
             case OP_STOREFREE2:
+                if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
+                {   push(A_reg);
+                    print_traceset(2, A_reg);
+                    pop(A_reg);
+                }
                 qvalue(elt(litvec, 2)) = A_reg;
                 continue;
 
             case OP_STOREFREE3:
+                if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
+                {   push(A_reg);
+                    print_traceset(3, A_reg);
+                    pop(A_reg);
+                }
                 qvalue(elt(litvec, 3)) = A_reg;
                 continue;
 
@@ -555,50 +564,32 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_APPLY1:
                 if (is_symbol(B_reg))   // can optimise this case, I guess
                 {   f1 = qfn1(B_reg);
-#ifdef DEBUG
-                    if (f1 == NULL)
-                    {   term_printf("Illegal function\n");
-                        my_exit(EXIT_FAILURE);
-                    }
-#endif
-#ifndef NO_BYTECOUNT
-                    name_of_caller = (const char *)ffname;
-#endif
                     push(B_reg);
-                    A_reg = f1(qenv(B_reg), A_reg);
+                    if ((qheader(B_reg) & SYM_TRACED) != 0)
+                        A_reg = traced_call1(elt(litvec, 0), B_reg, f1, qenv(B_reg), A_reg);
+                    else A_reg = f1(qenv(B_reg), A_reg);
                     popv(1);
                     continue;
                 }
                 push(A_reg);
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
-                A_reg = apply(B_reg, 1, nil, B_reg);
+                A_reg = apply(B_reg, 1, nil, elt(litvec, 0));
                 continue;
 
             case OP_APPLY2:
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
                 {   f2 = qfn2(r2);
-#ifdef DEBUG
-                    if (f2 == NULL)
-                    {   term_printf("Illegal function\n");
-                        my_exit(EXIT_FAILURE);
-                    }
-#endif
-#ifndef NO_BYTECOUNT
-                    name_of_caller = (const char *)ffname;
-#endif
-                    A_reg = f2(qenv(r2), B_reg, A_reg);
                     popv(1);
+                    if ((qheader(r2) & SYM_TRACED) != 0)
+                        A_reg = traced_call2(elt(litvec, 0), r2, f2, qenv(r2), B_reg, A_reg);
+                    else A_reg = f2(qenv(r2), B_reg, A_reg);
                     continue;
                 }
+// Here the stack has fn on the top and the 2 args are in B_reg, A_reg
+// in effect go "pop(fn); push2(B_reg, A_reg);" so args are on the stack
                 *stack = B_reg;
                 push(A_reg);
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
-                A_reg = apply(r2, 2, nil, r2);
+                A_reg = apply(r2, 2, nil, elt(litvec, 0));
                 continue;
 
             case OP_APPLY3:
@@ -606,25 +597,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
                 {   f345 = qfnn(r2);
-#ifdef DEBUG
-                    if (f345 == NULL)
-                    {   term_printf("Illegal function\n");
-                        my_exit(EXIT_FAILURE);
-                    }
-#endif
-#ifndef NO_BYTECOUNT
-                    name_of_caller = (const char *)ffname;
-#endif
-                    A_reg = f345(qenv(r2), 3, r1, B_reg, A_reg);
+                    if ((qheader(r2) & SYM_TRACED) != 0)
+                        A_reg = traced_call3(elt(litvec, 0), r2, f345, qenv(r2), r1, B_reg, A_reg);
+                    else A_reg = f345(qenv(r2), 3, r1, B_reg, A_reg);
                     popv(1);
                     continue;
                 }
                 *stack = r1;
                 push2(B_reg, A_reg);
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
-                A_reg = apply(r2, 3, nil, r2);
+                A_reg = apply(r2, 3, nil, elt(litvec, 0));
                 continue;
 
             case OP_APPLY4:
@@ -1562,16 +1543,9 @@ next_opcode:   // This label is so that I can restart what I am doing
 //
                 f345 = qfnn(r1);
 // CALL0:  A=fn()
-#ifdef DEBUG
-                if (f345 == NULL)
-                {   term_printf("Illegal function\n");
-                    my_exit(EXIT_FAILURE);
-                }
-#endif
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
-                A_reg = f345(qenv(r1), 0);
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    A_reg = traced_call0(elt(litvec, 0), r1, f345, qenv(r1));
+                else A_reg = f345(qenv(r1), 0);
                 continue;
 
 
@@ -1596,15 +1570,6 @@ next_opcode:   // This label is so that I can restart what I am doing
             jcall0: r1 = elt(litvec, fname);
                 debug_record_symbol(r1);
                 f345 = qfnn(r1);
-#ifdef DEBUG
-                if (f345 == NULL)
-                {   term_printf("Illegal function\n");
-                    my_exit(EXIT_FAILURE);
-                }
-#endif
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
 //
 // The issue here is cases such as
 //    (de f1 (x) (f2 x))
@@ -1614,17 +1579,20 @@ next_opcode:   // This label is so that I can restart what I am doing
 // I need to perform a polling operation as part of the tail-call sequence.
 //
                 A_reg = poll_jump_back(A_reg);
-                if (f345 == bytecoded0)
+// If I have an (untraced) tailcall to a bytecoded function I can just reset
+// some pointers and go back to the top of the code of the bytecode
+// interpreter.
+                if (f345 == bytecoded0 &&
+                    (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
                     codevec = qcar(lit);
                     litvec = qcdr(lit);
-#if defined DEBUG || !defined NO_BYTECOUNT
-                    ffsym = elt(litvec, 0);
-                    memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-                    fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
+                    ffpname = qpname(elt(litvec, 0));
+                    fflength =
+                        (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+                    memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
-#endif
                     stack = entry_stack;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
@@ -1632,91 +1600,41 @@ next_opcode:   // This label is so that I can restart what I am doing
 #endif
                     continue;
                 }
-// In normal cases if I get a tail call to another function that is also
-// bytecoded I will transfer to it using this incantation of the byte-stream
-// interpreter. If the function concerned was one that was to be traced
-// I will display a message of the form "Tail call to..." as I transfer
-// to it. But in that case it seems hard to arrange that I then print the
-// result of the function when I finally return from it (which may be
-// via a further chain of tail calls). There are times when this is horrible
-// because I want to see what I am doing! My fixup here is that if the
-// system has been compiled fro debugging then I do not take the call as
-// a tail on e- and in consequence tracing will be nicer. But this could
-// lead to extreme stack use, so if you define another magic symbol at
-// compile time you lose the trace capability but regain compact stacks...
-#if !defined DEBUG || defined TAILCALL_EVEN_WHEN_DEBUGGING
-                else if (f345 == tracebytecoded0)
-                {   r2 = elt(litvec, 0);
-                    lit = qenv(r1);
-                    codevec = qcar(lit);
-                    litvec = qcdr(lit);
-#if defined DEBUG || !defined NO_BYTECOUNT
-                    ffsym = elt(litvec, 0);
-                    memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-                    fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
-                    if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    ffname[fflength] = 0;
-#endif
-//
-// I make TRACECODED a special case, in effect writing it out in-line
-// here, to avoid some ugly confusion with backtraces following tail calls.
-//
-                    stack = entry_stack;
-                    push(r2);
-                    trace_print_0(elt(litvec, 0));
-                    popv(1);
-                    ppc = BPS_DATA_OFFSET;
-#ifndef NO_BYTECOUNT
-                    qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
-#endif
-                    continue;
-                }
-#endif
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
-                A_reg = f345(qenv(r1), 0);
-                name_of_caller = NULL;
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    A_reg = traced_call0(elt(litvec, 0), r1, f345, qenv(r1));
+                else A_reg = f345(qenv(r1), 0);
+#ifdef DEBUG
                 global_jb = jbsave;
+#endif
                 return A_reg;
 #else
+#ifdef DEBUG
                 global_jb = jbsave;
-                return f345(qenv(r1), 0);
+#endif
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    return traced_call0(elt(litvec, 0), r1, f345, qenv(r1));
+                else return f345(qenv(r1), 0);
 #endif
 
             jcall1:
                 r1 = elt(litvec, fname);
                 debug_record_symbol(r1);
                 f1 = qfn1(r1);
-#ifdef DEBUG
-                if (f1 == NULL)
-                {   term_printf("Illegal function\n");
-                    my_exit(EXIT_FAILURE);
-                }
-#endif
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
-//
-// The issue here is cases such as
-//    (de f1 (x) (f2 x))
-//    (de f2 (x) (f1 x))
-// where the bodies of the functions so not do enough work that polling
-// for interrupts or for window-system updates will happen. Thus it seems
-// I need to perform a polling operation as part of the tail-call sequence.
-//
                 A_reg = poll_jump_back(A_reg);
-                if (f1 == bytecoded1)
+                if (f1 == bytecoded1 &&
+                    (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
                     codevec = qcar(lit);
                     litvec = qcdr(lit);
-#if defined DEBUG || !defined NO_BYTECOUNT
-                    ffsym = elt(litvec, 0);
-                    memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-                    fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
+                    ffpname = qpname(elt(litvec, 0));
+                    fflength =
+                        (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+                    memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
-#endif
                     stack = entry_stack;
                     push(A_reg);
                     ppc = BPS_DATA_OFFSET;
@@ -1725,41 +1643,23 @@ next_opcode:   // This label is so that I can restart what I am doing
 #endif
                     continue;
                 }
-#if !defined DEBUG || defined TAILCALL_EVEN_WHEN_DEBUGGING
-                else if (f1 == tracebytecoded1)
-                {   r2 = elt(litvec, 0);
-                    lit = qenv(r1);
-                    codevec = qcar(lit);
-                    litvec = qcdr(lit);
-#if defined DEBUG || !defined NO_BYTECOUNT
-                    ffsym = elt(litvec, 0);
-                    memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-                    fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
-                    if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    ffname[fflength] = 0;
-#endif
-                    stack = entry_stack;
-                    push(A_reg);
-                    push(r2);
-                    trace_print_1(elt(litvec, 0));
-                    popv(1);
-                    ppc = BPS_DATA_OFFSET;
-#ifndef NO_BYTECOUNT
-                    qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
-#endif
-                    continue;
-                }
-#endif
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
-                A_reg = f1(qenv(r1), A_reg);
-                name_of_caller = NULL;
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    A_reg = traced_call1(elt(litvec, 0), r1, f1, qenv(r1), A_reg);
+                else A_reg = f1(qenv(r1), A_reg);
+#ifdef DEBUG
                 global_jb = jbsave;
+#endif
                 return A_reg;
 #else
+#ifdef DEBUG
                 global_jb = jbsave;
-                return f1(qenv(r1), A_reg);
+#endif
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    return traced_call1(elt(litvec, 0), r1, f1, qenv(r1), A_reg);
+                else return f1(qenv(r1), A_reg);
 #endif
 
 
@@ -1767,35 +1667,18 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = elt(litvec, fname);
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
-#ifdef DEBUG
-                if (f2 == NULL)
-                {   term_printf("Illegal function\n");
-                    my_exit(EXIT_FAILURE);
-                }
-#endif
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
-//
-// The issue here is cases such as
-//    (de f1 (x) (f2 x))
-//    (de f2 (x) (f1 x))
-// where the bodies of the functions so not do enough work that polling
-// for interrupts or for window-system updates will happen. Thus it seems
-// I need to perform a polling operation as part of the tail-call sequence.
-//
                 A_reg = poll_jump_back(A_reg);
-                if (f2 == bytecoded2)
+                if (f2 == bytecoded2 &&
+                    (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
                     codevec = qcar(lit);
                     litvec = qcdr(lit);
-#if defined DEBUG || !defined NO_BYTECOUNT
-                    ffsym = elt(litvec, 0);
-                    memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-                    fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
+                    ffpname = qpname(elt(litvec, 0));
+                    fflength =
+                        (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+                    memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
-#endif
                     stack = entry_stack;
                     push2(B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
@@ -1804,77 +1687,42 @@ next_opcode:   // This label is so that I can restart what I am doing
 #endif
                     continue;
                 }
-#if !defined DEBUG || defined TAILCALL_EVEN_WHEN_DEBUGGING
-                else if (f2 == tracebytecoded2)
-                {   r2 = elt(litvec, 0);
-                    lit = qenv(r1);
-                    codevec = qcar(lit);
-                    litvec = qcdr(lit);
-#if defined DEBUG || !defined NO_BYTECOUNT
-                    ffsym = elt(litvec, 0);
-                    memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-                    fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
-                    if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    ffname[fflength] = 0;
-#endif
-                    stack = entry_stack;
-                    push2(B_reg, A_reg);
-                    push(r2);
-                    trace_print_2(elt(litvec, 0));
-                    popv(1);
-                    ppc = BPS_DATA_OFFSET;
-#ifndef NO_BYTECOUNT
-                    qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
-#endif
-                    continue;
-                }
-#endif
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
-                A_reg = f2(qenv(r1), B_reg, A_reg);
-                name_of_caller = NULL;
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    A_reg = traced_call2(elt(litvec, 0), r1, f2, qenv(r1), B_reg, A_reg);
+                else A_reg = f2(qenv(r1), B_reg, A_reg);
+#ifdef DEBUG
                 global_jb = jbsave;
+#endif
                 return A_reg;
 #else
+#ifdef DEBUG
                 global_jb = jbsave;
-                return f2(qenv(r1), B_reg, A_reg);
+#endif
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    return traced_call2(elt(litvec, 0), r1, f2, qenv(r1), B_reg, A_reg);
+                else return f2(qenv(r1), B_reg, A_reg);
 #endif
 
             jcall3:
                 r1 = elt(litvec, fname);
                 debug_record_symbol(r1);
                 f345 = qfnn(r1);
-#ifdef DEBUG
-                if (f345 == NULL)
-                {   term_printf("Illegal function\n");
-                    my_exit(EXIT_FAILURE);
-                }
-#endif
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
                 pop(r2);
-//
-// The issue here is cases such as
-//    (de f1 (x) (f2 x))
-//    (de f2 (x) (f1 x))
-// where the bodies of the functions so not do enough work that polling
-// for interrupts or for window-system updates will happen. Thus it seems
-// I need to perform a polling operation as part of the tail-call sequence.
-//
                 A_reg = poll_jump_back(A_reg);
-                if (f345 == bytecoded3)
+                if (f345 == bytecoded3 &&
+                    (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
                     codevec = qcar(lit);
                     litvec = qcdr(lit);
-#if defined DEBUG || !defined NO_BYTECOUNT
-                    ffsym = elt(litvec, 0);
-                    memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-                    fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
+                    ffpname = qpname(elt(litvec, 0));
+                    fflength =
+                        (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
+                    memcpy((void *)&ffname[0], &celt(ffpname, 0), fflength);
                     ffname[fflength] = 0;
-#endif
                     stack = entry_stack;
                     push3(r2, B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
@@ -1883,52 +1731,26 @@ next_opcode:   // This label is so that I can restart what I am doing
 #endif
                     continue;
                 }
-#if !defined DEBUG || defined TAILCALL_EVEN_WHEN_DEBUGGING
-                else if (f345 == tracebytecoded3)
-                {   r3 = elt(litvec, 0);
-                    lit = qenv(r1);
-                    codevec = qcar(lit);
-                    litvec = qcdr(lit);
-#if defined DEBUG || !defined NO_BYTECOUNT
-                    ffsym = elt(litvec, 0);
-                    memcpy((void *)&ffname[0], &celt(qpname(ffsym), 0), 16);
-                    fflength = (int)(length_of_byteheader(vechdr(qpname(ffsym))) - CELL);
-                    if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
-                    ffname[fflength] = 0;
-#endif
-                    stack = entry_stack;
-                    push3(r2, B_reg, A_reg);
-                    push(r3);
-                    trace_print_3(elt(litvec, 0));
-                    popv(1);
-                    ppc = BPS_DATA_OFFSET;
-#ifndef NO_BYTECOUNT
-                    qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
-#endif
-                    continue;
-                }
-#endif
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
-                A_reg = f345(qenv(r1), 3, r2, B_reg, A_reg);
-                name_of_caller = NULL;
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    A_reg = traced_call3(elt(litvec, 0), r1, f345, qenv(r1), r2, B_reg, A_reg);
+                else A_reg = f345(qenv(r1), 3, r2, B_reg, A_reg);
+#ifdef DEBUG
                 global_jb = jbsave;
+#endif
                 return A_reg;
 #else
+#ifdef DEBUG
                 global_jb = jbsave;
-                return f345(qenv(r1), 3, r2, B_reg, A_reg);
+#endif
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    return traced_call3(elt(litvec, 0), r1, f345, qenv(r1), r2, B_reg, A_reg);
+                else return f345(qenv(r1), 3, r2, B_reg, A_reg);
 #endif
 
             jcalln:
-//
-// The issue here is cases such as
-//    (de f1 (x) (f2 x))
-//    (de f2 (x) (f1 x))
-// where the bodies of the functions so not do enough work that polling
-// for interrupts or for window-system updates will happen. Thus it seems
-// I need to perform a polling operation as part of the tail-call sequence.
-//
                 A_reg = poll_jump_back(A_reg);
 //
 // here I could shuffle the stack down quite a lot...
@@ -1946,16 +1768,14 @@ next_opcode:   // This label is so that I can restart what I am doing
 // been mattering is the 4-arg general-reciprocal!-by!-gcd (which I have
 // just re-written so that what happens here is irrelevant in that case!).
 //
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
-                A_reg = apply(A_reg, (int)w, nil, A_reg);
+                A_reg = apply(A_reg, (int)w, nil, elt(litvec, 0));
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
-                name_of_caller = NULL;
 #endif
+#ifdef DEBUG
                 global_jb = jbsave;
+#endif
                 return A_reg;
 
             case OP_JCALLN:
@@ -1994,10 +1814,9 @@ next_opcode:   // This label is so that I can restart what I am doing
 //
                         push2(B_reg, A_reg);
                         A_reg = elt(litvec, fname);
-#ifndef NO_BYTECOUNT
-                        name_of_caller = (const char *)ffname;
-#endif
-                        A_reg = apply(A_reg, (int)(((unsigned char *)codevec)[ppc]), nil, A_reg);
+                        A_reg = apply(A_reg,
+                                      (int)(((unsigned char *)codevec)[ppc]),
+                                      nil, elt(litvec, 0));
                         ppc++;
                         continue;
 
@@ -2011,6 +1830,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                         A_reg = qvalue(elt(litvec, fname));
                         continue;
                     case 7:
+                        if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
+                        {   push(A_reg);
+                            print_traceset(fname, A_reg);
+                            pop(A_reg);
+                        }
                         qvalue(elt(litvec, fname)) = A_reg;  // store into special var
                         continue;
                     case 8: goto jcall0;
@@ -2048,6 +1872,10 @@ next_opcode:   // This label is so that I can restart what I am doing
 // might itself do a JCALL and corrupt them!  Also I know that the current
 // function is bytecoded, so I avoid the overhead of (re-)discovering that.
 //
+                if ((qheader(elt(litvec, 0)) & SYM_TRACED) != 0)
+                {   fname = 0;
+                    goto call1;
+                }
                 push3(codevec, litvec, A_reg); // the argument
                 if (--countdown < 0) deal_with_tick();
                 if (stack >= stacklimit) reclaim(nil, "stack", GC_STACK, 0);
@@ -2080,20 +1908,17 @@ next_opcode:   // This label is so that I can restart what I am doing
             call1:  r1 = elt(litvec, fname);
                 debug_record_symbol(r1);
                 f1 = qfn1(r1);
-#ifdef DEBUG
-                if (f1 == NULL)
-                {   term_printf("Illegal function\n");
-                    my_exit(EXIT_FAILURE);
-                }
-#endif
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
 // CALL1:   A=fn(A);
-                A_reg = f1(qenv(r1), A_reg);
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    A_reg = traced_call1(elt(litvec, 0), r1, f1, qenv(r1), A_reg);
+                else A_reg = f1(qenv(r1), A_reg);
                 continue;
 
             case OP_CALL2_0:
+                if ((qheader(elt(litvec, 0)) & SYM_TRACED) != 0)
+                {   fname = 0;
+                    goto call2;
+                }
                 push4(codevec, litvec, B_reg, A_reg);
                 if (--countdown < 0) deal_with_tick();
                 if (stack >= stacklimit) reclaim(nil, "stack", GC_STACK, 0);
@@ -2123,17 +1948,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = elt(litvec, fname);
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
-#ifdef DEBUG
-                if (f2 == NULL)
-                {   term_printf("Illegal function\n");
-                    my_exit(EXIT_FAILURE);
-                }
-#endif
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
 // CALL2:   A=fn(B,A);
-                A_reg = f2(qenv(r1), B_reg, A_reg);
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    A_reg = traced_call2(elt(litvec, 0), r1, f2, qenv(r1), B_reg, A_reg);
+                else A_reg = f2(qenv(r1), B_reg, A_reg);
                 continue;
 
             case OP_CALL2R:
@@ -2142,17 +1960,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = elt(litvec, fname);
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
-#ifdef DEBUG
-                if (f2 == NULL)
-                {   term_printf("Illegal function\n");
-                    my_exit(EXIT_FAILURE);
-                }
-#endif
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
 // CALL2R:   A=fn(A,B); NOTE arg order reversed
-                A_reg = f2(qenv(r1), A_reg, B_reg);
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    A_reg = traced_call2(elt(litvec, 0), r1, f2, qenv(r1), A_reg, B_reg);
+                else A_reg = f2(qenv(r1), A_reg, B_reg);
                 continue;
 
             case OP_CALL3:
@@ -2161,18 +1972,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = elt(litvec, fname);
                 debug_record_symbol(r1);
                 f345 = qfnn(r1);
-#ifdef DEBUG
-                if (f345 == NULL)
-                {   term_printf("Illegal function\n");
-                    my_exit(EXIT_FAILURE);
-                }
-#endif
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
 // CALL3:   A=fn(pop(),B,A);
                 pop(r2);
-                A_reg = f345(qenv(r1), 3, r2, B_reg, A_reg);
+                if ((qheader(r1) & SYM_TRACED) != 0)
+                    A_reg = traced_call3(elt(litvec, 0), r1, f345, qenv(r1), r2, B_reg, A_reg);
+                else A_reg = f345(qenv(r1), 3, r2, B_reg, A_reg);
                 continue;
 
             case OP_CALLN:
@@ -2187,10 +1991,9 @@ next_opcode:   // This label is so that I can restart what I am doing
 //
 // Note that I never need to call something with 0, 1, 2 or 3 args here.
 //
-#ifndef NO_BYTECOUNT
-                name_of_caller = (const char *)ffname;
-#endif
-                A_reg = apply(A_reg, (int)((unsigned char *)codevec)[ppc+1], nil, A_reg);
+                A_reg = apply(A_reg,
+                              (int)((unsigned char *)codevec)[ppc+1],
+                              nil, elt(litvec, 0));
                 ppc = ppc + 2;
                 continue;
 
@@ -2201,14 +2004,22 @@ next_opcode:   // This label is so that I can restart what I am doing
                 f345 = no_arg_functions[next_byte];
                 debug_record_int("BUILTIN0", previous_byte);
 // BUILTIN0:  A=fn()
-                A_reg = f345(nil, 0);
+                if (no_arg_traceflags[previous_byte])
+                    A_reg = traced_call0(elt(litvec, 0),
+                        make_undefined_symbol(no_arg_names[previous_byte]),
+                        f345, nil);
+                else A_reg = f345(nil, 0);
                 continue;
 
             case OP_BUILTIN2R:
                 f2 = two_arg_functions[next_byte];
                 debug_record_int("BUILTIN2R", previous_byte);
 // BUILTIN2R:   A=fn(A,B); NOTE arg order reversed
-                A_reg = f2(nil, A_reg, B_reg);
+                if (two_arg_traceflags[previous_byte])
+                    A_reg = traced_call2(elt(litvec, 0),
+                        make_undefined_symbol(two_arg_names[previous_byte]),
+                        f2, nil, A_reg, B_reg);
+                else A_reg = f2(nil, A_reg, B_reg);
                 continue;
 
             case OP_BUILTIN3:
@@ -2216,7 +2027,11 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_int("BUILTIN3", previous_byte);
 // CALL3:   A=fn(pop(),B,A);
                 pop(r1);
-                A_reg = f345(nil, 3, r1, B_reg, A_reg);
+                if (three_arg_traceflags[previous_byte])
+                    A_reg = traced_call3(elt(litvec, 0),
+                        make_undefined_symbol(three_arg_names[previous_byte]),
+                        f345, nil, r1, B_reg, A_reg);
+                else A_reg = f345(nil, 3, r1, B_reg, A_reg);
                 continue;
 
 //
@@ -2567,6 +2382,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 f1 = one_arg_functions[next_byte];
                 debug_record_int("BUILTIN1", previous_byte);
 // BUILTIN1:   A=fn(A);
+                if (one_arg_traceflags[previous_byte])
+                    A_reg = traced_call1(elt(litvec, 0),
+                        make_undefined_symbol(one_arg_names[previous_byte]),
+                        f1, nil, A_reg);
                 A_reg = f1(nil, A_reg);
                 continue;
 
@@ -2574,6 +2393,10 @@ next_opcode:   // This label is so that I can restart what I am doing
                 f2 = two_arg_functions[next_byte];
                 debug_record_int("BUILTIN2", previous_byte);
 // BUILTIN2:   A=fn(B,A);
+                if (two_arg_traceflags[previous_byte])
+                    A_reg = traced_call2(elt(litvec, 0),
+                        make_undefined_symbol(two_arg_names[previous_byte]),
+                        f2, nil, B_reg, A_reg);
                 A_reg = f2(nil, B_reg, A_reg);
                 continue;
 
@@ -2587,7 +2410,9 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
 #endif
+#ifdef DEBUG
                 global_jb = jbsave;
+#endif
                 return A_reg;
 
 

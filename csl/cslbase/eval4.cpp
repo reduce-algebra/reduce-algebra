@@ -1,4 +1,4 @@
-// eval4.cpp                              Copyright (C) 1991-2017, Codemist    
+// eval4.cpp                              Copyright (C) 1991-2017, Codemist
 
 //
 // Bytecode interpreter/main interpreter interfaces
@@ -190,12 +190,6 @@ LispObject bytecodedn(LispObject def, int nargs, ...)
     return r;
 }
 
-//
-// Now I have carbon copies of the above, but with some print statements
-// inserted.  These are installed when a function is marked for trace
-// output.
-//
-
 LispObject unpack_mv(LispObject env, LispObject r)
 {   LispObject *p = &mv_1;
     exit_count = 0;
@@ -206,263 +200,6 @@ LispObject unpack_mv(LispObject env, LispObject r)
         exit_count++;
     }
     return mv_1;
-}
-
-LispObject tracebytecoded0(LispObject def, int nargs, ...)
-{   LispObject r;
-    if (nargs != 0) error(2, err_wrong_no_args, name_from(def),
-                                     fixnum_of_int((int32_t)nargs));
-    SAVE_CODEVEC;
-    push(def);
-    freshline_trace();
-    trace_printf("Entering ");
-    loop_print_trace(name_from(def));
-    trace_printf(" (no args)");
-    if (callstack != nil)
-    {   trace_printf(" from ");
-        loop_print_trace(qcar(callstack));
-    }
-#ifndef NO_BYTECOUNT
-    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\n");
-    def = stack[0];
-    {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack);
-    }
-// This, or possibly I could EITHER
-//    (a) ensure that printing trace info never disrupts multiple value
-//        information
-// OR (b) stack all values, not just one of them.
-    r = Lmv_list(nil, r);
-    pop(def);
-    push(r);
-    freshline_trace();
-    loop_print_trace(name_from(def));
-    trace_printf(" = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop3(r, codevec, litvec);
-    return unpack_mv(nil, r);
-}
-
-LispObject tracebytecoded1(LispObject def, LispObject a)
-{   LispObject r;
-    SAVE_CODEVEC;
-    push2(def, a);
-    freshline_trace();
-    trace_printf("Entering ");
-    loop_print_trace(name_from(def));
-    trace_printf(" (1 arg)");
-    if (callstack != nil)
-    {   trace_printf(" from ");
-        loop_print_trace(qcar(callstack));
-    }
-#ifndef NO_BYTECOUNT
-    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\nArg1: ");
-    loop_print_trace(stack[0]);
-    trace_printf("\n");
-    def = stack[-1];
-    try
-    {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-1);
-    }
-    catch (LispError e)
-    {   int _reason = exit_reason;
-        if (SHOW_ARGS)
-        {   err_printf("Arg1: ");
-            pop(a);
-            loop_print_error(a); err_printf("\n");
-        }
-        exit_reason = _reason;
-        throw;
-    }
-    r = Lmv_list(nil, r);
-    pop(def);
-    push(r);
-    freshline_trace();
-    loop_print_trace(name_from(def));
-    trace_printf(" = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return unpack_mv(nil, r);
-}
-
-LispObject tracebytecoded2(LispObject def,
-                           LispObject a, LispObject b)
-{   LispObject r;
-    SAVE_CODEVEC;
-    push3(def, a, b);
-    freshline_trace();
-    trace_printf("Entering ");
-    loop_print_trace(name_from(def));
-    trace_printf(" (2 args)");
-    if (callstack != nil)
-    {   trace_printf(" from ");
-        loop_print_trace(qcar(callstack));
-    }
-#ifndef NO_BYTECOUNT
-    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\nArg1: ");
-    loop_print_trace(stack[-1]);
-    trace_printf("\nArg2: ");
-    loop_print_trace(stack[0]);
-    trace_printf("\n");
-    def = stack[-2];
-    try
-    {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-2);
-    }
-    catch (LispError e)
-    {   int _reason = exit_reason;
-        if (SHOW_ARGS)
-        {   err_printf("Arg1: ");
-            loop_print_error(stack[-1]); err_printf("\n");
-            err_printf("Arg2: ");
-            loop_print_error(stack[0]); err_printf("\n");
-        }
-        exit_reason = _reason;
-        throw;
-    }
-    r = Lmv_list(nil, r);
-    pop(def);
-    push(r);
-    freshline_trace();
-    loop_print_trace(name_from(def));
-    trace_printf(" = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return unpack_mv(nil, r);
-}
-
-LispObject tracebytecodedn(LispObject def, int nargs, ...)
-{
-//
-// The messing about here is to get the (unknown number of) args
-// into a nice neat vector so that they can be indexed into. If I knew
-// that the args were in consecutive locations on the stack I could
-// probably save a copying operation.
-//
-    LispObject r;
-    int i;
-    va_list a;
-    SAVE_CODEVEC;
-    push(def);
-    if (nargs != 0)
-    {   va_start(a, nargs);
-        push_args(a, nargs);
-    }
-    freshline_trace();
-    loop_print_trace(name_from(def));
-    trace_printf(" (%d args)", nargs);
-    if (callstack != nil)
-    {   trace_printf(" from ");
-        loop_print_trace(qcar(callstack));
-    }
-#ifndef NO_BYTECOUNT
-    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\n");
-    for (i=1; i<=nargs; i++)
-    {   trace_printf("Arg%d: ", i);
-        loop_print_trace(stack[i-nargs]);
-        trace_printf("\n");
-    }
-    def = stack[-nargs];
-    r = qcar(def);
-    if (nargs != ((unsigned char *)data_of_bps(r))[0])
-        error(2, err_wrong_no_args, name_from(def),
-                     fixnum_of_int((int32_t)nargs));
-    try
-    {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(r)+1, qcdr(def), stack-nargs);
-    }
-    catch (LispError e)
-    {   int _reason = exit_reason;
-        if (SHOW_ARGS)
-        {   for (i=1; i<=nargs; i++)
-            {   err_printf("Arg%d: ", i);
-                loop_print_error(stack[i-nargs]); err_printf("\n");
-            }
-        }
-        exit_reason = _reason;
-        throw;
-    }
-    r = Lmv_list(nil, r);
-    pop(def);
-    push(r);
-    freshline_trace();
-    loop_print_trace(name_from(def));
-    trace_printf(" = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return unpack_mv(nil, r);
-}
-
-LispObject tracebytecoded3(LispObject def, int nargs, ...)
-{   va_list aa;
-    LispObject r, a, b, c;
-    if (nargs != 3) error(2, err_wrong_no_args, name_from(def),
-                                     fixnum_of_int((int32_t)nargs));
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    va_end(aa);
-    SAVE_CODEVEC;
-    push4(def, a, b, c);
-    freshline_trace();
-    trace_printf("Entering ");
-    loop_print_trace(name_from(def));
-    trace_printf(" (3 args)");
-    if (callstack != nil)
-    {   trace_printf(" from ");
-        loop_print_trace(qcar(callstack));
-    }
-#ifndef NO_BYTECOUNT
-    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\nArg1: ");
-    loop_print_trace(stack[-2]);
-    trace_printf("\nArg2: ");
-    loop_print_trace(stack[-1]);
-    trace_printf("\nArg3: ");
-    loop_print_trace(stack[0]);
-    trace_printf("\n");
-    def = stack[-3];
-    try
-    {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-3);
-    }
-    catch (LispError e)
-    {   int _reason = exit_reason;
-        if (SHOW_ARGS)
-        {   err_printf("Arg1: ");
-            loop_print_error(stack[-2]); err_printf("\n");
-            err_printf("Arg2: ");
-            loop_print_error(stack[-1]); err_printf("\n");
-            err_printf("Arg3: ");
-            loop_print_error(stack[0]); err_printf("\n");
-        }
-        exit_reason = _reason;
-        throw;
-    }
-    r = Lmv_list(nil, r);
-    pop(def);
-    push(r);
-    freshline_trace();
-    loop_print_trace(name_from(def));
-    trace_printf(" = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return unpack_mv(nil, r);
 }
 
 //
@@ -617,207 +354,6 @@ LispObject hardoptrestn(LispObject def, int nargs, ...)
     return vbyterestn(def, nargs, a, SPID_NOARG);
 }
 
-LispObject tracebyteopt1(LispObject def, LispObject a)
-{   return tracebyteoptn(def, 1, a);
-}
-
-LispObject tracebyteopt2(LispObject def, LispObject a, LispObject b)
-{   return tracebyteoptn(def, 2, a, b);
-}
-
-static LispObject vtracebyteoptn(LispObject def, int nargs,
-                                 va_list a, LispObject dflt)
-{   LispObject r;
-    int i, wantargs, wantopts;
-    SAVE_CODEVEC;
-    push(def);
-//
-// Maybe I should raise an exception (continuable error) if too many args
-// are provided - for now I just silently ignore th excess.
-//
-    if (nargs != 0) push_args(a, nargs);
-    else va_end(a);
-    r = qcar(def);
-    wantargs = ((unsigned char *)data_of_bps(r))[0];
-    wantopts = ((unsigned char *)data_of_bps(r))[1];
-    if (nargs < wantargs || nargs > wantargs+wantopts)
-    {   popv(nargs+1); pop2(codevec, litvec)
-        error(2, err_wrong_no_args, name_from(def),
-                     fixnum_of_int((int32_t)nargs));
-    }
-    while (nargs < wantargs+wantopts)
-    {   push(dflt);   // Provide value for all optional args
-        nargs++;
-    }
-    freshline_trace();
-    loop_print_trace(name_from(def));
-    trace_printf(" (%d args)", nargs);
-    if (callstack != nil)
-    {   trace_printf(" from ");
-        loop_print_trace(qcar(callstack));
-    }
-#ifndef NO_BYTECOUNT
-    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\n");
-    for (i=1; i<=nargs; i++)
-    {   trace_printf("Arg%d: ", i);
-        loop_print_trace(stack[i-nargs]);
-        trace_printf("\n");
-    }
-    def = stack[-nargs];
-    r = qcar(def);
-    try
-    {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(r)+2, qcdr(def), stack-nargs);
-    }
-    catch (LispError e)
-    {   int _reason = exit_reason;
-        if (SHOW_ARGS)
-        {   for (i=1; i<=nargs; i++)
-            {   err_printf("Arg%d: ", i);
-                loop_print_error(stack[i-nargs]); err_printf("\n");
-            }
-        }
-        exit_reason = _reason;
-        throw;
-    }
-    r = Lmv_list(nil, r);
-    pop(def);
-    push(r);
-    freshline_trace();
-    loop_print_trace(name_from(def));
-    trace_printf(" = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return unpack_mv(nil, r);
-}
-
-LispObject tracebyteoptn(LispObject def, int nargs, ...)
-{   va_list a;
-    va_start(a, nargs);
-    return vtracebyteoptn(def, nargs, a, nil);
-}
-
-LispObject tracehardopt1(LispObject def, LispObject a)
-{   return tracehardoptn(def, 1, a);
-}
-
-LispObject tracehardopt2(LispObject def, LispObject a, LispObject b)
-{   return tracehardoptn(def, 2, a, b);
-}
-
-LispObject tracehardoptn(LispObject def, int nargs, ...)
-{   va_list a;
-    va_start(a, nargs);
-    return vtracebyteoptn(def, nargs, a, SPID_NOARG);
-}
-
-LispObject tracebyteoptrest1(LispObject def, LispObject a)
-{   return tracebyteoptrestn(def, 1, a);
-}
-
-LispObject tracebyteoptrest2(LispObject def, LispObject a, LispObject b)
-{   return tracebyteoptrestn(def, 2, a, b);
-}
-
-static LispObject vtracebyterestn(LispObject def, int nargs,
-                                  va_list a, LispObject dflt)
-{   LispObject r;
-    int i, wantargs, wantopts;
-    SAVE_CODEVEC;
-    push(def);
-    if (nargs != 0) push_args(a, nargs);
-    else va_end(a);
-    r = qcar(def);
-    wantargs = ((unsigned char *)data_of_bps(r))[0];
-    wantopts = ((unsigned char *)data_of_bps(r))[1];
-    if (nargs < wantargs)
-    {   popv(nargs+2);
-        error(2, err_wrong_no_args, name_from(def),
-                     fixnum_of_int((int32_t)nargs));
-    }
-    while (nargs < wantargs+wantopts)
-    {   push(dflt);   // Provide value for all optional args
-        nargs++;
-    }
-    {   LispObject rest = nil;
-        while (nargs > wantargs+wantopts)
-        {   LispObject w = stack[0];
-            stack[0] = def;
-            rest = cons(w, rest);
-            pop(def);
-            nargs--;
-        }
-        push(rest);
-        nargs++;
-    }
-    freshline_trace();
-    loop_print_trace(name_from(def));
-    trace_printf(" (%d args)", nargs);
-    if (callstack != nil)
-    {   trace_printf(" from ");
-        loop_print_trace(qcar(callstack));
-    }
-#ifndef NO_BYTECOUNT
-    else if (name_of_caller != NULL) trace_printf(" from %s", name_of_caller);
-#endif
-    trace_printf("\n");
-    for (i=1; i<=nargs; i++)
-    {   trace_printf("Arg%d: ", i);
-        loop_print_trace(stack[i-nargs]);
-        trace_printf("\n");
-    }
-    def = stack[-nargs];
-    r = qcar(def);
-    try
-    {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(r)+2, qcdr(def), stack-nargs);
-    }
-    catch (LispError e)
-    {   int _reason = exit_reason;
-        if (SHOW_ARGS)
-        {   for (i=1; i<=nargs; i++)
-            {   err_printf("Arg%d: ", i);
-                loop_print_error(stack[i-nargs]); err_printf("\n");
-            }
-        }
-        exit_reason = _reason;
-        throw;
-    }
-    r = Lmv_list(nil, r);
-    pop(def);
-    push(r);
-    freshline_trace();
-    loop_print_trace(name_from(def));
-    trace_printf(" = ");
-    loop_print_trace(r);
-    trace_printf("\n");
-    pop(r);
-    return unpack_mv(nil, r);
-}
-
-LispObject tracebyteoptrestn(LispObject def, int nargs, ...)
-{   va_list a;
-    va_start(a, nargs);
-    return vtracebyterestn(def, nargs, a, nil);
-}
-
-LispObject tracehardoptrest1(LispObject def, LispObject a)
-{   return tracehardoptrestn(def, 1, a);
-}
-
-LispObject tracehardoptrest2(LispObject def, LispObject a, LispObject b)
-{   return tracehardoptrestn(def, 2, a, b);
-}
-
-LispObject tracehardoptrestn(LispObject def, int nargs, ...)
-{   va_list a;
-    va_start(a, nargs);
-    return vtracebyterestn(def, nargs, a, SPID_NOARG);
-}
-
 LispObject Lis_spid(LispObject env, LispObject a)
 {   // Used in compilation for optional args
     return onevalue(Lispify_predicate(is_spid(a)));
@@ -884,250 +420,317 @@ LispObject Lmv_list(LispObject env, LispObject a)
 //
 
 
+#define NO_ARGS \
+    BI(Lbatchp,                "batchp",     0),  \
+    BI(Ldate,                  "date",       1),  \
+    BI(Leject,                 "eject",      2),  \
+    BI((n_args *)Lerror0,      "error0",     3),  \
+    BI(Lgctime,                "gctime",     4),  \
+    BI(Lgensym,                "gensym",     5),  \
+    BI(Llposn,                 "lposn",      6),  \
+    BI(Lnext_random,           "next-random-number", 7), \
+    BI(Lposn,                  "posn",       8),  \
+    BI(Lread,                  "read",       9),  \
+    BI(Lreadch,                "readch",     10), \
+    BI(Lterpri,                "terpri",     11), \
+    BI(Ltime,                  "time",       12), \
+    BI(Ltyi,                   "tyi",        13), \
+    BI(Lload_spid,             "load-spid",  14), \
+    BI(NULL,                   NULL,         0)
+
+#undef BI
+#define BI(a, b, c) a
 n_args *no_arg_functions[] =
-{   Lbatchp,                // 0
-    Ldate,                  // 1
-    Leject,                 // 2
-    (n_args *)Lerror0,      // 3
-    Lgctime,                // 4
-    Lgensym,                // 5
-    Llposn,                 // 6
-    Lnext_random,           // 7
-    Lposn,                  // 8
-    Lread,                  // 9
-    Lreadch,                // 10
-    Lterpri,                // 11
-    Ltime,                  // 12
-    Ltyi,                   // 13
-    Lload_spid,             /* 14 */  // ONLY used in compiled code
-    NULL
+{
+    NO_ARGS
 };
 
-no_args *new_no_arg_functions[] =
-{   NULL
+#undef BI
+#define BI(a, b, c) b
+const char *no_arg_names[] =
+{
+    NO_ARGS
 };
 
+bool no_arg_traceflags[sizeof(no_arg_functions)/sizeof(no_arg_functions[0])];
+
+#define ONE_ARGS    \
+   BI(Labsval,            "absval",                  0),   \
+   BI(Ladd1,              "add1",                    1),   \
+   BI(Latan,              "atan",                    2),   \
+   BI(Lapply0,            "apply0",                  3),   \
+   BI(Latom,              "atom",                    4),   \
+   BI(Lboundp,            "boundp",                  5),   \
+   BI(Lchar_code,         "char-code",               6),   \
+   BI(Lclose,             "close",                   7),   \
+   BI(Lcodep,             "codep",                   8),   \
+   BI(Lcompress,          "compress",                9),   \
+   BI(Lconstantp,         "constantp",               10),  \
+   BI(Ldigitp,            "digitp",                  11),  \
+   BI(Lendp,              "endp",                    12),  \
+   BI(Leval,              "eval",                    13),  \
+   BI(Levenp,             "evenp",                   14),  \
+   BI(Levlis,             "evlis",                   15),  \
+   BI(Lexplode,           "explode",                 16),  \
+   BI(Lexplode2lc,        "explode2lc",              17),  \
+   BI(Lexplodec,          "explodec",                18),  \
+   BI(Lfixp,              "fixp",                    19),  \
+   BI(Lfloat,             "float",                   20),  \
+   BI(Lfloatp,            "floatp",                  21),  \
+   BI(Lsymbol_specialp,   "fluidp",                  22),  \
+   BI(Lgc,                "reclaim",                 23),  \
+   BI(Lgensym1,           "gensym1",                 24),  \
+   BI(Lgetenv,            "getenv",                  25),  \
+   BI(Lsymbol_globalp,    "globalp",                 26),  \
+   BI(Liadd1,             "iadd1",                   27),  \
+   BI(Lsymbolp,           "symbolp",                 28),  \
+   BI(Liminus,            "iminus",                  29),  \
+   BI(Liminusp,           "iminusp",                 30),  \
+   BI(Lindirect,          "indirect",                31),  \
+   BI(Lintegerp,          "integerp",                32),  \
+   BI(Lintern,            "intern",                  33),  \
+   BI(Lisub1,             "isub1",                   34),  \
+   BI(Llength,            "length",                  35),  \
+   BI(Llengthc,           "lengthc",                 36),  \
+   BI(Llinelength,        "linelength",              37),  \
+   BI(Lalpha_char_p,      "liter",                   38),  \
+   BI(Lload_module,       "load-module",             39),  \
+   BI(Llognot,            "lognot",                  40),  \
+   BI(Lmacroexpand,       "macroexpand",             41),  \
+   BI(Lmacroexpand_1,     "macroexpand-1",           42),  \
+   BI(Lmacro_function,    "macro-function",          43),  \
+   BI(Lget_bps,           "get_bps",                 44),  \
+   BI(Lmake_global,       "make-global",             45),  \
+   BI(Lsmkvect,           "smkvect",                 46),  \
+   BI(Lmake_special,      "make-special",            47),  \
+   BI(Lminus,             "minus",                   48),  \
+   BI(Lminusp,            "minusp",                  49),  \
+   BI(Lmkvect,            "mkvect",                  50),  \
+   BI(Lmodular_minus,     "modular-minus",           51),  \
+   BI(Lmodular_number,    "modular-number",          52),  \
+   BI(Lmodular_reciprocal,"modular-reciprocal",      53),  \
+   BI(Lnull,              "null",                    54),  \
+   BI(Loddp,              "oddp",                    55),  \
+   BI(Lonep,              "onep",                    56),  \
+   BI(Lpagelength,        "pagelength",              57),  \
+   BI(Lconsp,             "consp",                   58),  \
+   BI(Lplist,             "plist",                   59),  \
+   BI(Lplusp,             "plusp",                   60),  \
+   BI(Lprin,              "prin",                    61),  \
+   BI(Lprinc,             "princ",                   62),  \
+   BI(Lprint,             "print",                   63),  \
+   BI(Lprintc,            "printc",                  64),  \
+   BI(Lrandom,            "random",                  65),  \
+   BI(Lrational,          "rational",                66),  \
+   BI(Lrdf1,              "rdf1",                    67),  \
+   BI(Lrds,               "rds",                     68),  \
+   BI(Lremd,              "remd",                    69),  \
+   BI(Lreverse,           "reverse",                 70),  \
+   BI(Lnreverse,          "nreverse",                71),  \
+   BI(Lwhitespace_char_p, "whitespace-char-p",       72),  \
+   BI(Lset_small_modulus, "set-small-modulus",       73),  \
+   BI(Lxtab,              "xtab",                    74),  \
+   BI(Lspecial_char,      "special-char",            75),  \
+   BI(Lspecial_form_p,    "special-form-p",          76),  \
+   BI(Lspool,             "spool",                   77),  \
+   BI((one_args *)Lstop,  "stop",                    78),  \
+   BI(Lstringp,           "stringp",                 79),  \
+   BI(Lsub1,              "sub1",                    80),  \
+   BI(Lsymbol_env,        "symbol-env",              81),  \
+   BI(Lsymbol_function,   "symbol-function",         82),  \
+   BI(Lsymbol_name,       "symbol-name",             83),  \
+   BI(Lsymbol_value,      "symbol-value",            84),  \
+   BI(Lsystem,            "system",                  85),  \
+   BI(Ltruncate,          "truncate",                86),  \
+   BI(Lttab,              "ttab",                    87),  \
+   BI(Ltyo,               "tyo",                     88),  \
+   BI(Lunintern,          "unintern",                89),  \
+   BI(Lunmake_global,     "unmake-global",           90),  \
+   BI(Lunmake_special,    "unmake-special",          91),  \
+   BI(Lupbv,              "upbv",                    92),  \
+   BI(Lsimple_vectorp,    "simple-vectorp",          93),  \
+   BI(Lverbos,            "verbos",                  94),  \
+   BI(Lwrs,               "wrs",                     95),  \
+   BI(Lzerop,             "zerop",                   96),  \
+   BI(Lcar,               "car",                     97),  \
+   BI(Lcdr,               "cdr",                     98),  \
+   BI(Lcaar,              "caar",                    99),  \
+   BI(Lcadr,              "cadr",                    100), \
+   BI(Lcdar,              "cdar",                    101), \
+   BI(Lcddr,              "cddr",                    102), \
+   BI(Lcar,               "car",                     103), \
+   BI(Lcdr,               "cdr",                     104), \
+   BI(Lcaar,              "caar",                    105), \
+   BI(Lcadr,              "cadr",                    106), \
+   BI(Lcdar,              "cdar",                    107), \
+   BI(Lcddr,              "cddr",                    108), \
+   BI(Lncons,             "ncons",                   109), \
+   BI(Lnumberp,           "numberp",                 110), \
+   BI(Lis_spid,           "is-spid",                 111), \
+   BI(Lspid_to_nil,       "spid-to-nil",             112), \
+   BI(Lmv_list,           "mv-list",                 113), \
+   BI(Lload_source,       "load-source",             114), \
+   BI(quote_fn,           "quote",                   115), \
+   BI(progn_fn,           "progn",                   116), \
+   BI(progn_fn,           "progn",                   117), \
+   BI(declare_fn,         "declare",                 118), \
+   BI(function_fn,        "function",                119), \
+   BI(NULL,               NULL,                      0)
+
+#undef BI
+#define BI(a, b, c) a
 one_args *one_arg_functions[] =
-{   Labsval,                // 0
-    Ladd1,                  // 1
-    Latan,                  // 2
-    Lapply0,                // 3
-    Latom,                  // 4
-    Lboundp,                // 5
-    Lchar_code,             // 6
-    Lclose,                 // 7
-    Lcodep,                 // 8
-    Lcompress,              // 9
-    Lconstantp,             // 10
-    Ldigitp,                // 11
-    Lendp,                  // 12
-    Leval,                  // 13
-    Levenp,                 // 14
-    Levlis,                 // 15
-    Lexplode,               // 16
-    Lexplode2lc,            // 17
-    Lexplodec,              // 18
-    Lfixp,                  // 19
-    Lfloat,                 // 20
-    Lfloatp,                // 21
-    Lsymbol_specialp,       // 22
-    Lgc,                    // 23
-    Lgensym1,               // 24
-    Lgetenv,                // 25
-    Lsymbol_globalp,        // 26
-    Liadd1,                 // 27
-    Lsymbolp,               // 28
-    Liminus,                // 29
-    Liminusp,               // 30
-    Lindirect,              // 31
-    Lintegerp,              // 32
-    Lintern,                // 33
-    Lisub1,                 // 34
-    Llength,                // 35
-    Llengthc,               // 36
-    Llinelength,            // 37
-    Lalpha_char_p,          // 38
-    Lload_module,           // 39
-    Llognot,                // 40
-    Lmacroexpand,           // 41
-    Lmacroexpand_1,         // 42
-    Lmacro_function,        // 43
-    Lget_bps,               // 44
-    Lmake_global,           // 45
-    Lsmkvect,               // 46
-    Lmake_special,          // 47
-    Lminus,                 // 48
-    Lminusp,                // 49
-    Lmkvect,                // 50
-    Lmodular_minus,         // 51
-    Lmodular_number,        // 52
-    Lmodular_reciprocal,    // 53
-    Lnull,                  // 54
-    Loddp,                  // 55
-    Lonep,                  // 56
-    Lpagelength,            // 57
-    Lconsp,                 // 58
-    Lplist,                 // 59
-    Lplusp,                 // 60
-    Lprin,                  // 61
-    Lprinc,                 // 62
-    Lprint,                 // 63
-    Lprintc,                // 64
-    Lrandom,                // 65
-    Lrational,              // 66
-    Lrdf1,                  // 67
-    Lrds,                   // 68
-    Lremd,                  // 69
-    Lreverse,               // 70
-    Lnreverse,              // 71
-    Lwhitespace_char_p,     // 72
-    Lset_small_modulus,     // 73
-    Lxtab,                  // 74
-    Lspecial_char,          // 75
-    Lspecial_form_p,        // 76
-    Lspool,                 // 77
-    (one_args *)Lstop,      // 78
-    Lstringp,               // 79
-    Lsub1,                  // 80
-    Lsymbol_env,            // 81
-    Lsymbol_function,       // 82
-    Lsymbol_name,           // 83
-    Lsymbol_value,          // 84
-    Lsystem,                // 85
-    Ltruncate,              // 86
-    Lttab,                  // 87
-    Ltyo,                   // 88
-    Lunintern,              // 89
-    Lunmake_global,         // 90
-    Lunmake_special,        // 91
-    Lupbv,                  // 92
-    Lsimple_vectorp,        // 93
-    Lverbos,                // 94
-    Lwrs,                   // 95
-    Lzerop,                 // 96
-    Lcar,                   // 97
-    Lcdr,                   // 98
-    Lcaar,                  // 99
-    Lcadr,                  // 100
-    Lcdar,                  // 101
-    Lcddr,                  // 102
-    Lcar,                   /* 103 */   // Really QCAR (unchecked)
-    Lcdr,                   // 104
-    Lcaar,                  // 105
-    Lcadr,                  // 106
-    Lcdar,                  // 107
-    Lcddr,                  // 108
-    Lncons,                 // 109
-    Lnumberp,               // 110
-    Lis_spid,               /* 111 */  // ONLY used in compiled code
-    Lspid_to_nil,           /* 112 */  // ONLY used in compiled code
-    Lmv_list,               /* 113 */  // ONLY used in compiled code
-    Lload_source,           // 114
-
-// I also need a FEW special forms where their setup is done by hand in
-// restart.cpp so there are not entries in the usual tables...
-    quote_fn,               // 115
-    progn_fn,               // 116
-    progn_fn,               // 117
-    declare_fn,             // 118
-    function_fn,            // 119
-    NULL
+{
+    ONE_ARGS
 };
 
+#undef BI
+#define BI(a, b, c) b
+const char *one_arg_names[] =
+{
+    ONE_ARGS
+};
+
+bool one_arg_traceflags[sizeof(one_arg_functions)/sizeof(one_arg_functions[0])];
+
+#define TWO_ARGS \
+    BI(Lappend,                    "append",                 0),   \
+    BI(Lash,                       "ash",                    1),   \
+    BI(Lassoc,                     "assoc",                  2),   \
+    BI(Latsoc,                     "atsoc",                  3),   \
+    BI(Ldeleq,                     "deleq",                  4),   \
+    BI(Ldelete,                    "delete",                 5),   \
+    BI(Ldivide,                    "divide",                 6),   \
+    BI(Leqcar,                     "eqcar",                  7),   \
+    BI(Leql,                       "eql",                    8),   \
+    BI(Leqn,                       "eqn",                    9),   \
+    BI(Lexpt,                      "expt",                   10),  \
+    BI(Lflag,                      "flag",                   11),  \
+    BI(Lflagpcar,                  "flagpcar",               12),  \
+    BI(Lgcd,                       "gcd",                    13),  \
+    BI(Lgeq,                       "geq",                    14),  \
+    BI(Lgetv,                      "getv",                   15),  \
+    BI(Lgreaterp,                  "greaterp",               16),  \
+    BI(Lidifference,               "idifference",            17),  \
+    BI(Ligreaterp,                 "igreaterp",              18),  \
+    BI(Lilessp,                    "ilessp",                 19),  \
+    BI(Limax,                      "imax",                   20),  \
+    BI(Limin,                      "imin",                   21),  \
+    BI(Liplus2,                    "iplus2",                 22),  \
+    BI(Liquotient,                 "iquotient",              23),  \
+    BI(Liremainder,                "iremainder",             24),  \
+    BI(Lirightshift,               "irightshift",            25),  \
+    BI(Litimes2,                   "itimes2",                26),  \
+    BI(Llcm,                       "lcm",                    27),  \
+    BI(Lleq,                       "leq",                    28),  \
+    BI(Llessp,                     "lessp",                  29),  \
+    BI(Lmake_random_state,         "make-random-state",      30),  \
+    BI(Lmax2,                      "max2",                   31),  \
+    BI(Lmember,                    "member",                 32),  \
+    BI(Lmemq,                      "memq",                   33),  \
+    BI(Lmin2,                      "min2",                   34),  \
+    BI(Lmod,                       "mod",                    35),  \
+    BI(Lmodular_difference,        "modular-difference",     36),  \
+    BI(Lmodular_expt,              "modular-expt",           37),  \
+    BI(Lmodular_plus,              "modular-plus",           38),  \
+    BI(Lmodular_quotient,          "modular-quotient",       39),  \
+    BI(Lmodular_times,             "modular-times",          40),  \
+    BI(Lnconc,                     "nconc",                  41),  \
+    BI(Lneq,                       "neq",                    42),  \
+    BI(Lorderp,                    "orderp",                 43),  \
+    BI(Lquotient,                  "quotient",               44),  \
+    BI(Lrem,                       "rem",                    45),  \
+    BI(Lremflag,                   "remflag",                46),  \
+    BI(Lremprop,                   "remprop",                47),  \
+    BI(Lrplaca,                    "rplaca",                 48),  \
+    BI(Lrplacd,                    "rplacd",                 49),  \
+    BI(Lsgetv,                     "sgetv",                  50),  \
+    BI(Lset,                       "set",                    51),  \
+    BI(Lsmemq,                     "smemq",                  52),  \
+    BI(Lsubla,                     "subla",                  53),  \
+    BI(Lsublis,                    "sublis",                 54),  \
+    BI(Lsymbol_set_definition,     "symbol-set-definition",  55),  \
+    BI(Lsymbol_set_env,            "symbol-set-env",         56),  \
+    BI(Ltimes2,                    "times2",                 57),  \
+    BI(Lxcons,                     "xcons",                  58),  \
+    BI(Lequal,                     "equal",                  59),  \
+    BI(Leq,                        "eq",                     60),  \
+    BI(Lcons,                      "cons",                   61),  \
+    BI(Llist2,                     "list2",                  62),  \
+    BI(Lget,                       "get",                    63),  \
+    BI(Lgetv,                      "getv",                   64),  \
+    BI(Lflagp,                     "flagp",                  65),  \
+    BI(Lapply1,                    "apply1",                 66),  \
+    BI(Ldifference2,               "difference2",            67),  \
+    BI(Lplus2,                     "plus2",                  68),  \
+    BI(Ltimes2,                    "times2",                 69),  \
+    BI(Lequalcar,                  "equalcar",               70),  \
+    BI(Leq,                        "eq",                     71),  \
+    BI(Lnreverse2,                 "nreverse2",              72),  \
+    BI(NULL,                       NULL,                     0)
+
+#undef BI
+#define BI(a, b, c) a
 two_args *two_arg_functions[] =
-{   Lappend,                // 0
-    Lash,                   // 1
-    Lassoc,                 // 2
-    Latsoc,                 // 3
-    Ldeleq,                 // 4
-    Ldelete,                // 5
-    Ldivide,                // 6
-    Leqcar,                 // 7
-    Leql,                   // 8
-    Leqn,                   // 9
-    Lexpt,                  // 10
-    Lflag,                  // 11
-    Lflagpcar,              // 12
-    Lgcd,                   // 13
-    Lgeq,                   // 14
-    Lgetv,                  // 15
-    Lgreaterp,              // 16
-    Lidifference,           // 17
-    Ligreaterp,             // 18
-    Lilessp,                // 19
-    Limax,                  // 20
-    Limin,                  // 21
-    Liplus2,                // 22
-    Liquotient,             // 23
-    Liremainder,            // 24
-    Lirightshift,           // 25
-    Litimes2,               // 26
-    Llcm,                   // 27
-    Lleq,                   // 28
-    Llessp,                 // 29
-    Lmake_random_state,     // 30
-    Lmax2,                  // 31
-    Lmember,                // 32
-    Lmemq,                  // 33
-    Lmin2,                  // 34
-    Lmod,                   // 35
-    Lmodular_difference,    // 36
-    Lmodular_expt,          // 37
-    Lmodular_plus,          // 38
-    Lmodular_quotient,      // 39
-    Lmodular_times,         // 40
-    Lnconc,                 // 41
-    Lneq,                   // 42
-    Lorderp,                // 43
-    Lquotient,              // 44
-    Lrem,                   // 45
-    Lremflag,               // 46
-    Lremprop,               // 47
-    Lrplaca,                // 48
-    Lrplacd,                // 49
-    Lsgetv,                 // 50
-    Lset,                   // 51
-    Lsmemq,                 // 52
-    Lsubla,                 // 53
-    Lsublis,                // 54
-    Lsymbol_set_definition, // 55
-    Lsymbol_set_env,        // 56
-    Ltimes2,                // 57
-    Lxcons,                 // 58
-    Lequal,                 // 59
-    Leq,                    // 60
-    Lcons,                  // 61
-    Llist2,                 // 62
-    Lget,                   // 63
-    Lgetv,                  /* 64 */   // QGETV
-    Lflagp,                 // 65
-    Lapply1,                // 66
-    Ldifference2,           // 67
-    Lplus2,                 // 68
-    Ltimes2,                // 69
-    Lequalcar,              // 70
-    Leq,                    /* 71 */   // IEQUAL
-    Lnreverse2,             // 72
-    NULL
+{
+    TWO_ARGS
 };
 
+#undef BI
+#define BI(a, b, c) b
+const char *two_arg_names[] =
+{
+    TWO_ARGS
+};
+
+bool two_arg_traceflags[sizeof(two_arg_functions)/sizeof(two_arg_functions[0])];
+
+#define THREE_ARGS \
+    BI(Lbpsputv,     "bpsputv",                0),  \
+    BI(Lerrorsetn,   "errorset",               1),  \
+    BI(Llist2star,   "list2*",                 2),  \
+    BI(Llist3,       "list3",                  3),  \
+    BI(Lputprop,     "putprop",                4),  \
+    BI(Lputv,        "putv",                   5),  \
+    BI(Lsputv,       "sputv",                  6),  \
+    BI(Lsubst,       "subst",                  7),  \
+    BI(Lapply2,      "apply2",                 8),  \
+    BI(Lacons,       "acons",                  9),  \
+    BI(NULL,         NULL,                     0)
+
+#undef BI
+#define BI(a, b, c) a
 n_args *three_arg_functions[] =
-{   Lbpsputv,               // 0
-    Lerrorsetn,             // 1
-    Llist2star,             // 2
-    Llist3,                 // 3
-    Lputprop,               // 4
-    Lputv,                  // 5
-    Lsputv,                 // 6
-    Lsubst,                 // 7
-    Lapply2,                // 8
-    Lacons,                 // 9
-    NULL
+{
+    THREE_ARGS
 };
 
+#undef BI
+#define BI(a, b, c) b
+const char *three_arg_names[] =
+{
+    THREE_ARGS
+};
+
+bool three_arg_traceflags[sizeof(three_arg_functions)/sizeof(three_arg_functions[0])];
+
+#define FOUR_ARGS \
+    BI(NULL,         NULL,                     0)
+
+#undef BI
+#define BI(a, b, c) a
 four_args *four_arg_functions[] =
-{   NULL
+{
+    FOUR_ARGS
 };
 
+#undef BI
+#define BI(a, b, c) b
+const char *four_arg_names[] =
+{
+    FOUR_ARGS
+};
+
+bool four_arg_traceflags[sizeof(four_arg_functions)/sizeof(four_arg_functions[0])];
 
 // end of eval4.cpp

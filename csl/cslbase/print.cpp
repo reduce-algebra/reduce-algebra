@@ -3319,9 +3319,6 @@ void prin_to_query(LispObject u)
 void loop_print_stdout(LispObject o)
 {   int32_t sx = exit_reason;
     one_args *f;
-#ifndef NO_BYTECOUNT
-    const char *name = name_of_caller;
-#endif
     LispObject lp = qvalue(traceprint_symbol);
     if (lp == nil || lp == unset_var) lp = prinl_symbol;
 //
@@ -3347,17 +3344,11 @@ void loop_print_stdout(LispObject o)
         pop2(env, lp);
         if (!bad) ifn1(lp) = (intptr_t)f, qenv(lp) = env; // Restore if OK
     }
-#ifndef NO_BYTECOUNT
-    name_of_caller = name;
-#endif
     exit_reason = sx;
 }
 
 void loop_print_error(LispObject o)
 {   LispObject w = qvalue(standard_output);
-#ifndef NO_BYTECOUNT
-    const char *name = name_of_caller;
-#endif
     push(w);
     if (is_stream(qvalue(error_output)))
         qvalue(standard_output) = qvalue(error_output);
@@ -3370,16 +3361,10 @@ void loop_print_error(LispObject o)
 //
     if (spool_file) fflush(spool_file);
 #endif
-#ifndef NO_BYTECOUNT
-    name_of_caller = name;
-#endif
 }
 
 void loop_print_trace(LispObject o)
 {   LispObject w = qvalue(standard_output);
-#ifndef NO_BYTECOUNT
-    const char *name = name_of_caller;
-#endif
     push(w);
     if (is_stream(qvalue(trace_output)))
         qvalue(standard_output) = qvalue(trace_output);
@@ -3392,57 +3377,36 @@ void loop_print_trace(LispObject o)
 //
     if (spool_file) fflush(spool_file);
 #endif
-#ifndef NO_BYTECOUNT
-    name_of_caller = name;
-#endif
 }
 
 void loop_print_debug(LispObject o)
 {   LispObject w = qvalue(standard_output);
-#ifndef NO_BYTECOUNT
-    const char *name = name_of_caller;
-#endif
     push(w);
     if (is_stream(qvalue(debug_io)))
         qvalue(standard_output) = qvalue(debug_io);
     loop_print_stdout(o);
     pop(w);
     qvalue(standard_output) = w;
-#ifndef NO_BYTECOUNT
-    name_of_caller = name;
-#endif
 }
 
 void loop_print_query(LispObject o)
 {   LispObject w = qvalue(standard_output);
-#ifndef NO_BYTECOUNT
-    const char *name = name_of_caller;
-#endif
     push(w);
     if (is_stream(qvalue(query_io)))
         qvalue(standard_output) = qvalue(query_io);
     loop_print_stdout(o);
     pop(w);
     qvalue(standard_output) = w;
-#ifndef NO_BYTECOUNT
-    name_of_caller = name;
-#endif
 }
 
 void loop_print_terminal(LispObject o)
 {   LispObject w = qvalue(standard_output);
-#ifndef NO_BYTECOUNT
-    const char *name = name_of_caller;
-#endif
     push(w);
     if (is_stream(qvalue(terminal_io)))
         qvalue(standard_output) = qvalue(terminal_io);
     loop_print_stdout(o);
     pop(w);
     qvalue(standard_output) = w;
-#ifndef NO_BYTECOUNT
-    name_of_caller = name;
-#endif
 }
 
 LispObject prinraw(LispObject u)
