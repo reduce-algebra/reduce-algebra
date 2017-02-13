@@ -219,9 +219,23 @@ asserted procedure vsds_applyvsts(ds: VSds);
       % TODO: Here we could replace the position(s) that produced the
       % test point [tp] with ['true]. WARNING: This replacement is NOT
       % correct when using clustering!
+      if !*rlverbose then <<
+	 ioto_tprin2 {"+++++ VSUB ", vsvs_v vs, " "};
+	 ioto_prin2 "[condense"
+      >>;
       f := qff_condense(f, vstp_p tp);
+      if !*rlverbose then <<
+	 ioto_prin2 "]";
+	 ioto_prin2 "[substitute"
+      >>;
       f := cl_apply2ats1(f, 'vsds_applyvsts!-at, {ds});
+      if !*rlverbose then <<
+	 ioto_prin2 "]";
+	 ioto_prin2 "[simplify"
+      >>;
       f := cl_simpl(rl_mk2('and, g, f), theo, -1);
+      if !*rlverbose then
+	 ioto_prin2t "]";
       vsds_putres(ds, f)
    end;
 
