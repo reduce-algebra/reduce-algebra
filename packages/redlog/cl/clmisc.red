@@ -244,10 +244,10 @@ procedure cl_ifacl1(f);
 
 procedure cl_ifacdegl(f);
    % Common logic irreducible factors degree list subroutine. [f] is a
-   % formula. Returns a list of pairs [(x . d)], where [x] is a
-   % variable and [d] is the maximal degree of [x] in the set of all
-   % irreducible non-unit factors of the terms occurring in [f]. The
-   % result is sorted wrt. [rl_tordp].
+   % formula. Returns a pair of Alists. Each Alist contains pairs [(x
+   % . d)], where [x] is a variable and [d] is the maximal degree of
+   % [x] in the set of all irreducible non-unit factors of the terms
+   % occurring in [f]. The result is sorted wrt. [rl_tordp].
    begin scalar fvarl, bvarl, facl, fal, bal;
       integer d;
       fvarl . bvarl := cl_varl1 f;
