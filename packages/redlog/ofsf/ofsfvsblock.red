@@ -40,6 +40,9 @@ module ofsfvsblock;
 fluid '(rlvarsellvl!*);
 rlvarsellvl!* := 3;
 
+switch ofsfvsblockbtr;
+off1 'ofsfvsblockbtr;
+
 switch ofsfvsqetree2gml;
 off1 'ofsfvsqetree2gml;
 
@@ -49,11 +52,13 @@ rlqetreegmlfile!* := "/tmp/qe-tree.gml";
 %%% QE tree node %%%
 % constructors and access functions
 
-asserted procedure vsnd_mk(flg: Boolean, vs: VSvs, vl: KernelL, f: QfFormula, p: VSnd): VSnd;
+asserted procedure vsnd_mk(flg: Boolean, vs: VSvs, vl: KernelL, f: QfFormula, p: VSnd, tvl: KernelL): VSnd;
    % QE tree node make. [flg] denotes whether VS [vs] needs to be
    % applied; [vl] is a list of variables to be eliminated; [f] is a
-   % quantifier-free formula; [p] is the parent QE tree node.
-   {'vsnd, flg, vs, vl, f, p};
+   % quantifier-free formula; [p] is the parent QE tree node; [tvl] is
+   % a list of already tried variables (used when [!*ofsfvsblockbtr]
+   % is on, otherwise it is always [nil]).
+   {'vsnd, flg, vs, vl, f, p, tvl};
 
 asserted procedure vsnd_flg(nd: VSnd): Boolean;
    % QE tree node flag.
@@ -74,6 +79,10 @@ asserted procedure vsnd_f(nd: VSnd): QfFormula;
 asserted procedure vsnd_parent(nd: VSnd): VSnd;
    % QE tree node parent QE tree node.
    nth(nd, 6);
+
+asserted procedure vsnd_tvl(nd: VSnd): KernelL;
+   % QE tree node forbidden variable list.
+   nth(nd, 7);
 
 %%% container of nodes %%%
 % constructors and access functions
@@ -118,6 +127,15 @@ asserted procedure vsht_member(ht: VSht, f: QfFormula): ExtraBoolean;
 asserted procedure vsht_hfn(f: QfFormula): List;
    % Hash table hashing function.
    {f};
+
+asserted procedure vsco_cdelete(co: VSco, nd: VSnd): VSco;
+   % Delete [nd] and all its children from [co].
+   if null co then
+      nil
+   else if (nd eq car co) or (nd eq vsnd_parent car co) then
+      vsco_cdelete(cdr co, nd)
+   else
+      car co . vsco_cdelete(cdr co, nd);
 
 %%% VS data for a block %%%
 % constructors and access functions
@@ -185,7 +203,7 @@ asserted procedure vsdb_mk(vl: KernelL, f: QfFormula, theo: Theory, bvl: KernelL
       vsdb_putfc(db, vsco_mk());
       vsdb_putht(db, vsht_mk());
       vsdb_putcurtheo(db, theo);
-      vsdb_wcinsert(db, vsnd_mk(nil, nil, vl, f, nil));
+      vsdb_wcinsert(db, vsnd_mk(nil, nil, vl, f, nil, nil));
       return db
    end;
 
@@ -231,6 +249,14 @@ asserted procedure vsdb_htinsert(db: VSdb, f: QfFormula);
    % Hash table insert.
    vsdb_putht(db, vsht_insert(vsdb_ht db, f));
 
+asserted procedure vsdb_cdelete(db: VSdb, nd: VSnd);
+   % Delete [nd] and all its children from containers.
+   <<
+      vsdb_putwc(db, vsco_cdelete(vsdb_wc db, nd));
+      vsdb_putsc(db, vsco_cdelete(vsdb_sc db, nd));
+      vsdb_putfc(db, vsco_cdelete(vsdb_fc db, nd))
+   >>;
+
 %%% "real" procedures %%%
 
 asserted procedure vs_block(f: QfFormula, vl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
@@ -242,7 +268,10 @@ asserted procedure vs_block(f: QfFormula, vl: KernelL, theo: Theory, ans: Boolea
    % JunctionL, and the new theory.
    begin scalar db, rf, rvl;
       db := vsdb_mk(vl, f, theo, bvl, ans);
-      vs_blockmainloop db;
+      if !*ofsfvsblockbtr then
+	 vs_blockmainloop!-btr db
+      else
+      	 vs_blockmainloop db;
       % ioto_prin2t nil;
       % vsdb_print db;
       rf . rvl := vsdb_collectResult db;
@@ -250,6 +279,109 @@ asserted procedure vs_block(f: QfFormula, vl: KernelL, theo: Theory, ans: Boolea
       	 vsdb_2gml(db, rlqetreegmlfile!*);
       return {rvl, {rf . nil}, theo}
    end;
+
+%%% on ofsfvsblockbtr:
+%%% The following procedures do backtracking through the QE tree.
+
+asserted procedure vs_blockmainloop!-btr(db: VSdb);
+   % Quantifier elimination for one block subroutine. This procedure
+   % realizes the main loop of QE for a single block of quantifiers.
+   % No meaningful return value. [db] is modified in-place.
+   begin scalar nd;
+      while vsdb_todop db do <<
+	 nd := vsdb_wcget db;
+	 if vsnd_flg nd then  % substitution has not been applied yet
+	    vsdb_applyvs(db, nd)
+	 else <<  % substitution was already applied
+	    if vsnd_f nd eq 'true then
+	       vsdb_dropall db;
+	    if null vsnd_vl nd then
+	       vsdb_scinsert(db, nd)
+	    else <<
+	       if !*rlverbose then
+		  vsnd_printinfo nd;
+	       vsdb_expandNode!-btr(db, nd)
+	    >>
+	 >>
+      >>
+   end;
+
+asserted procedure vsdb_expandNode!-btr(db: VSdb, nd: VSnd);
+   % Expand node. No meaningful return value; [db] is modified
+   % in-place so that [nd] is properly expanded at the end of the
+   % procedure: Either a list of children is added to the working
+   % container, or a backtrack is triggered, i.e., [nd] is replaced by
+   % its parent (with an adjusted tried variable list) in the working
+   % container.
+   begin scalar vl, pn, de, v, f, nvl;
+      assert(vsnd_vl nd);
+      assert(not vsnd_flg nd);
+      if vsdb_tryExpandNO(db, nd) then
+	 return;
+      if vsdb_tryExpandDG(db, nd) then
+	 return;
+      % Now each variable occurs, and no degree shift is possible.
+      vl := lto_setminus(vsnd_vl nd, vsnd_tvl nd);
+      if null vl then <<  % There is no variable to try.
+	 if !*rlverbose then
+	    ioto_tprin2t {"+++++ BACK"};
+	 pn := vsnd_parent nd;
+	 if null pn then <<  % The root is a failed node.
+	    vsdb_dropall db;
+	    vsdb_fcinsert(db, nd);
+	    return
+	 >>;
+	 vsdb_cdelete(db, pn);
+	 vsdb_wcinsert(db,
+	    vsnd_mk(vsnd_flg pn, vsnd_vs pn, vsnd_vl pn, vsnd_f pn, vsnd_parent pn, vsvs_v vsnd_vs nd . vsnd_tvl pn));
+	 return
+      >>;
+      % There is a variable to try. We select a variable.
+      de := vsdb_selectvar!-btr(db, nd);
+      v := vsde_v de;
+      if null vsde_tpl de then <<  % We have failed to compute an elimset for [v].
+	 if !*rlverbose then
+	    ioto_tprin2t {"+++++ FAIL ", v};
+	 vsdb_wcinsert(db,
+	    vsnd_mk(vsnd_flg nd, vsnd_vs nd, vsnd_vl nd, vsnd_f nd, vsnd_parent nd, v . vsnd_tvl nd));
+	 return
+      >>;
+      % We have successfully computed an elimset for [v].
+      if !*rlverbose then
+	 ioto_tprin2t {"+++++ SUCC ", vsde_v de, " (elimset size = ", length vsde_tpl de, ")"};
+      f := vsde_f de;
+      nvl := delq(v, vsnd_vl nd);
+      for each tp in vsde_tpl de do
+	 vsdb_wcinsert(db,
+	    vsnd_mk(t, vsts_mk(v, tp), nvl, f, nd, nil))
+   end;
+
+asserted procedure vsdb_selectvar!-btr(db: VSdb, nd: VSnd): VSde;
+   % Select a variable for elimination. This corresponds to variable
+   % selection strategy 3.
+   begin scalar vl, f, theo, bvl, sltd, v, oo, de, del;
+      vl := lto_setminus(vsnd_vl nd, vsnd_tvl nd);
+      f := vsnd_f nd;
+      theo := vsdb_curtheo db;
+      bvl := vsdb_bvl db;
+      % Try to select a variable with a linear elimset w.r.t. [bvl].
+      while vl and not sltd do <<
+	 v := pop vl;
+	 oo := updkorder v;
+	 de := vsde_mk(v, ofsf_reorder f, ofsf_reorderl theo, bvl);
+	 vsde_compute de;
+	 if vsde_tpllinp(de, bvl) then  % If there is a variable with a linear elimset, then take it.
+	    sltd := t;
+	 push(de, del);
+	 setkorder oo
+      >>;
+      if sltd then
+	 return de;
+      return vsdb_bestDE reversip del
+   end;
+
+%%% off ofsfvsblockbtr (default):
+%%% The following procedures do the standard search through the QE tree.
 
 asserted procedure vs_blockmainloop(db: VSdb);
    % Quantifier elimination for one block subroutine. This procedure
@@ -299,13 +431,13 @@ asserted procedure vsdb_applyvs(db: VSdb, nd: VSnd);
 	 ofsf_reorder vsnd_f nd, vsdb_bvl db, ofsf_reorderl vsdb_curtheo db);
       setkorder oo;
       for each ff in ffl do
-	 vsdb_wcinsert(db, vsnd_mk(nil, vs, vsnd_vl nd, ff, vsnd_parent nd))
+	 vsdb_wcinsert(db, vsnd_mk(nil, vs, vsnd_vl nd, ff, vsnd_parent nd, nil))
    end;
 
 asserted procedure vsdb_expandNode(db: VSdb, nd: VSnd);
    % Expand node. No meaningful return value; [db] is modified
    % in-place so that [nd] is properly expanded at the end of the
-   % procedure, i.e., either a list of children is added to the
+   % procedure, i.e., either a list of child nodes is added to the
    % working container, or [nd] is added to the failure container.
    begin
       assert(vsnd_vl nd);
@@ -330,18 +462,18 @@ asserted procedure vsdb_tryExpandNO(db: VSdb, nd: VSnd): Boolean;
    % this was successful. [nil] is returned iff every variable from
    % [vsnd_vl nd] occurs in [vsnd_f nd].
    begin scalar vl, rvl, res, v;
-      vl := vsnd_vl nd;
+      vl := lto_setminus(vsnd_vl nd, vsnd_tvl nd);
       rvl := cl_fvarl1 vsnd_f nd;
       while vl and not res do <<
 	 v := pop vl;
 	 if not (v memq rvl) then <<
 	    res := t;
 	    vsdb_wcinsert(db,
-	       vsnd_mk(nil, vsar_mk v, delq(v, vsnd_vl nd), vsnd_f nd, nd))
+	       vsnd_mk(nil, vsar_mk v, delq(v, vsnd_vl nd), vsnd_f nd, nd, vsnd_tvl nd))
 	 >>
       >>;
       if !*rlverbose and res then
-	 ioto_tprin2t {"+++++ ESET succ ", v, " (does not occur)"};
+	 ioto_tprin2t {"+++++ SUCC ", v, " (does not occur)"};
       return res
    end;
 
@@ -350,7 +482,7 @@ asserted procedure vsdb_tryExpandDG(db: VSdb, nd: VSnd): Boolean;
    % successful. [nil] is returned iff degree shift is not possible
    % w.r.t. no variable in [vsnd_vl nd].
    begin scalar vl, f, res, v, sv; integer g;
-      vl := vsnd_vl nd;
+      vl := lto_setminus(vsnd_vl nd, vsnd_tvl nd);
       f := vsnd_f nd;
       if vsvs_dgp vsnd_vs nd then
 	 vl := delq(vsdg_sv vsnd_vs nd, vl);  % We need not to try degree shift w.r.t. the most recent shadow variable.
@@ -360,17 +492,18 @@ asserted procedure vsdb_tryExpandDG(db: VSdb, nd: VSnd): Boolean;
 	 if g > 1 then <<
 	    res := t;
 	    sv := vs_shadow v;
-	    vsdb_wcinsert(db, vsnd_mk(t,
-	       vsdg_mk(v, g, sv), subst(sv, v, vsnd_vl nd), vsnd_f nd, nd))
+	    vsdb_wcinsert(db,
+	       vsnd_mk(t, vsdg_mk(v, g, sv), subst(sv, v, vsnd_vl nd), vsnd_f nd, nd, vsnd_tvl nd))
 	 >>
       >>;
       if !*rlverbose and res then
-	 ioto_tprin2t {"+++++ ESET succ ", v, " ^ ", g, " = ", sv, " (degree shift)"};
+	 ioto_tprin2t {"+++++ SUCC ", v, " ^ ", g, " = ", sv, " (degree shift)"};
       return res
    end;
 
 asserted procedure vsdb_expandNode1(db: VSdb, nd: VSnd);
-   % Expand node using strategy 1: Use the first variable.
+   % Expand node using variable selection strategy 1: Use the first
+   % variable. [db] is modified in-place.
    begin scalar v, oo, de;
       % TODO: more liberal kernel reordering policy
       v := car vsnd_vl nd;
@@ -382,7 +515,8 @@ asserted procedure vsdb_expandNode1(db: VSdb, nd: VSnd);
    end;
 
 asserted procedure vsdb_expandNode2(db: VSdb, nd: VSnd);
-   % Expand node using strategy 2: Use the first feasible variable.
+   % Expand node using variable selection strategy 2: Use the first
+   % feasible variable. [db] is modified in-place.
    begin scalar vl, f, theo, bvl, v, oo, de;
       % TODO: more liberal kernel reordering policy
       vl := vsnd_vl nd;
@@ -400,8 +534,8 @@ asserted procedure vsdb_expandNode2(db: VSdb, nd: VSnd);
    end;
 
 asserted procedure vsdb_expandNode3(db: VSdb, nd: VSnd);
-   % Expand node using strategy 3: Use the variable with the best
-   % elimination set.
+   % Expand node using variable selection strategy 3: Use the variable
+   % with the best elimination set. [db] is modified in-place.
    begin scalar vl, f, theo, bvl, sltd, v, oo, de, del;
       vl := vsnd_vl nd;
       f := vsnd_f nd;
@@ -419,14 +553,22 @@ asserted procedure vsdb_expandNode3(db: VSdb, nd: VSnd);
 	 setkorder oo
       >>;
       if sltd then <<
-      	 vsdb_insertaec(db, nd, de);
+	 vsdb_insertaec(db, nd, de);
 	 return
       >>;
-      de := vsdb_expandNode3!-selectBestDE reversip del;
+      de := vsdb_bestDE reversip del;
       vsdb_insertaec(db, nd, de)
    end;
 
-asserted procedure vsdb_expandNode3!-selectBestDE(del: List): VSde;
+asserted procedure vsdb_expandNode4(db: VSdb, nd: VSnd);
+   % Expand node using variable selection strategy 4: Use the variable
+   % with the best formula after elimination. [db] is modified
+   % in-place.
+   ;
+
+asserted procedure vsdb_bestDE(del: List): VSde;
+   % Select VSde with the best elimination set. [del] is a List of
+   % VSde.
    begin scalar tmpdel, sltd, de, oo;
       assert(del);
       % Try to select a variable with an elimset of degree 1.
@@ -466,28 +608,25 @@ asserted procedure vsdb_expandNode3!-selectBestDE(del: List): VSde;
       return car del
    end;
 
-asserted procedure vsdb_expandNode4(db: VSdb, nd: VSnd);
-   % Expand node using strategy 4: Use the variable with the best
-   % formula after elimination.
-   ;
-
 asserted procedure vsdb_insertaec(db: VSdb, nd: VSnd, de: VSde);
-   % Insert node after elimination set computation.
+   % Insert nodes after elimination set computation. Insert nodes to
+   % respective containers (working, success, or failure). [db] is
+   % modified in-place.
    begin scalar tpl, f, v, nvl;
       tpl := vsde_tpl de;
       if null vsde_tpl de then <<  % An elimination set has to be non-empty.
       	 if !*rlverbose then
-	    ioto_tprin2t {"+++++ ESET fail ", vsde_v de};
+	    ioto_tprin2t {"+++++ FAIL ", vsde_v de};
 	 vsdb_fcinsert(db, nd);
 	 return
       >>;
       if !*rlverbose then
-	 ioto_tprin2t {"+++++ ESET succ ", vsde_v de, " (eset size: ", length vsde_tpl de, ")"};
+	 ioto_tprin2t {"+++++ SUCC ", vsde_v de, " (elimset size = ", length vsde_tpl de, ")"};
       f := vsde_f de;
       v := vsde_v de;
       nvl := delq(v, vsnd_vl nd);
       for each tp in tpl do
-	 vsdb_wcinsert(db, vsnd_mk(t, vsts_mk(v, tp), nvl, f, nd))
+	 vsdb_wcinsert(db, vsnd_mk(t, vsts_mk(v, tp), nvl, f, nd, nil))
    end;
 
 asserted procedure vsdb_collectResult(db: VSdb): DottedPair;
