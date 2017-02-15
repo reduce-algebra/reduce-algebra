@@ -60,11 +60,11 @@ then
 fi
 
 # The following arranges that if you go "make csl.exe" or
-# "make bootstrapreduce.img" that the system does not try (in vain)
+# "make bootstrapreduce.img" (etc) that the system does not try (in vain)
 # to build a PSL version.
 
 case $args in
-*csl* | *bootstrap* | *reduce.img* | *c-code*)
+*csl* | *bootstrap* | *reduce.img* | *c-code* | *.com | *.exe)
   buildpsl="no"
   ;;
 esac
@@ -187,31 +187,53 @@ fi
 
 if test "x$parallel" = "xno"
 then
-
-  for l in $list
-  do
-     if test -f ${l}/Makefile
-     then
-       echo About to build in ${l}
-       cd ${l}
-       echo $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
-       $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
-       r=$?
+# I will - now - always try building all possible versions in parallel,
+# except that I will ensure that I re-create the generated C++ stuff first
+# if that needs doing.
+  if test "x" = "x"
+  then
+    first="yes"
+    for l in $list
+    do
+      if test -f ${l}/Makefile
+      then
+        h=`pwd`
+        cd ${l}
+        if test "$first" = "yes"
+        then
+          $MAKE c-code
+          first="no"
+        fi
+        $MAKE $flags $args MYFLAGS="$flags" --no-print-directory &
+        cd "$h"
+      fi
+    done
+    wait
+    exit
+  else
+    for l in $list
+    do
+      if test -f ${l}/Makefile
+      then
+        echo About to build in ${l}
+        cd ${l}
+        echo $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
+        $MAKE $flags $args MYFLAGS="$flags" --no-print-directory
+        r=$?
 # This version exits if any of the attempts to build fails
-       if test $r != 0
-       then
-         echo Building failed with return code $r for version ${l}
-         exit $r
-       fi
+        if test $r != 0
+        then
+          echo Building failed with return code $r for version ${l}
+          exit $r
+        fi
 # What I had before kept going if one build failed but recorded the
 # highest return code from all versions.
-       test $r -gt $rc && rc=$?
-       cd ../..
-     fi
-  done
-
-  exit $rc
-
+        test $r -gt $rc && rc=$?
+        cd ../..
+      fi
+    done
+    exit $rc
+  fi
 
 else
 # Now I have the parallel version. This works by dynamically creating a new

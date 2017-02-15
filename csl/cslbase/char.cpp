@@ -1146,8 +1146,7 @@ static LispObject Lstring_not_equal_2(LispObject env,
     }
 }
 
-static LispObject Lstring_equal_2(LispObject env,
-                                  LispObject a, LispObject b)
+static LispObject Lstring_equal_2(LispObject env, LispObject a, LispObject b)
 {   int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;
@@ -1171,7 +1170,7 @@ static LispObject Lstring_equal_2(LispObject env,
 }
 
 static LispObject Lstring_not_greaterp_2(LispObject env,
-        LispObject a, LispObject b)
+                                         LispObject a, LispObject b)
 {   int32_t la, oa, lb, ob, i;
     int ca, cb;
     LispObject w;

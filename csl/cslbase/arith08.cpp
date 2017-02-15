@@ -111,7 +111,6 @@ static LispObject Lboole(LispObject env, int nargs, ...)
     return onevalue(r);
 }
 
-#ifdef COMMON
 static LispObject Lbyte(LispObject, LispObject a, LispObject b)
 {   a = cons(a, b);
     return onevalue(a);
@@ -161,9 +160,7 @@ static LispObject Ldenominator(LispObject, LispObject a)
         return onevalue(denominator(a));
     else return onevalue(fixnum_of_int(1));
 }
-#endif
 
-#ifdef DEPOSIT_FIELD_IMPLEMENTED
 static LispObject Ldeposit_field(LispObject, int nargs, ...)
 {
 //
@@ -179,9 +176,7 @@ static LispObject Ldeposit_field(LispObject, int nargs, ...)
     va_end(aa);
     aerror("deposit-field");
 }
-#endif
 
-#ifdef DPB_IMPLEMENTED
 static LispObject Ldpb(LispObject, int nargs, ...)
 {
 //
@@ -197,9 +192,7 @@ static LispObject Ldpb(LispObject, int nargs, ...)
     va_end(aa);
     aerror("dpb");
 }
-#endif
 
-#ifdef COMMON
 static LispObject Lffloor(LispObject, LispObject, LispObject)
 {
 //
@@ -207,7 +200,6 @@ static LispObject Lffloor(LispObject, LispObject, LispObject)
 //
     aerror("ffloor");
 }
-#endif
 
 LispObject Lgcd_n(LispObject env, int nargs, ...)
 {   va_list a;
@@ -237,15 +229,13 @@ LispObject Lgcd_n(LispObject env, int nargs, ...)
 }
 
 LispObject Lgcd(LispObject env, LispObject a, LispObject b)
-{   a = gcd(a, b);
-    return onevalue(a);
+{   return onevalue(gcd(a, b));
 }
 
 LispObject Lgcd_1(LispObject, LispObject a)
 {   return onevalue(a);
 }
 
-#ifdef COMMON
 static LispObject Limagpart(LispObject, LispObject a)
 {   if (!is_number(a)) aerror1("imagpart", a);
     if (is_numbers(a) && is_complex(a))
@@ -261,7 +251,6 @@ static LispObject Lldb(LispObject, LispObject, LispObject)
 //
     aerror("ldb");
 }
-#endif // COMMON
 
 LispObject Llcm_n(LispObject env, int nargs, ...)
 {   va_list a;
@@ -281,15 +270,13 @@ LispObject Llcm_n(LispObject env, int nargs, ...)
 }
 
 LispObject Llcm(LispObject env, LispObject a, LispObject b)
-{   a = lcm(a, b);
-    return onevalue(a);
+{   return onevalue(lcm(a, b));
 }
 
 LispObject Llcm_1(LispObject, LispObject a)
 {   return onevalue(a);
 }
 
-#ifdef COMMON
 static LispObject Lldb_test(LispObject, LispObject, LispObject)
 {
 //
@@ -311,7 +298,6 @@ static LispObject Lrealpart(LispObject, LispObject a)
         return onevalue(real_part(a));
     else return onevalue(a);
 }
-#endif // COMMON
 
 static LispObject Ldecode_float(LispObject env, LispObject a)
 {   double d, neg = 1.0;
@@ -738,7 +724,6 @@ static LispObject Lfloat_sign1(LispObject, LispObject a)
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(a))));
 }
 
-#ifdef ROUND_AND_TRUNCATE
 static LispObject Lfround(LispObject, LispObject, LispObject)
 {   aerror("fround");
 }
@@ -746,7 +731,6 @@ static LispObject Lfround(LispObject, LispObject, LispObject)
 static LispObject Lftruncate(LispObject, LispObject, LispObject)
 {   aerror("ftruncate");
 }
-#endif
 
 //
 // This may need to worry about NaNs and infinities.
@@ -817,11 +801,9 @@ static LispObject Linteger_decode_float(LispObject env, LispObject a)
 }
 
 static LispObject Linteger_length(LispObject env, LispObject a)
-{   a = Labsval(nil, a);
-    return Lmsd(nil, a);
+{   return Lmsd(nil, Labsval(nil, a));
 }
 
-#if LOGFNS
 static LispObject Llogbitp(LispObject, LispObject, LispObject)
 {   aerror("logbitp");
 }
@@ -837,7 +819,6 @@ static LispObject Llogtest(LispObject, LispObject, LispObject)
 static LispObject Lmask_field(LispObject, LispObject, LispObject)
 {   aerror("mask-field");
 }
-#endif
 
 static LispObject Lscale_float(LispObject, LispObject a, LispObject b)
 {
@@ -1131,45 +1112,33 @@ setup_type const arith08_setup[] =
     {"float-precision",         Lfloat_precision, TOO_MANY_1, WRONG_NO_1},
     {"float-radix",             Lfloat_radix, TOO_MANY_1, WRONG_NO_1},
     {"float-sign",              Lfloat_sign1, Lfloat_sign2, WRONG_NO_2},
-#ifdef ROUND_AND_TRUNCATE
     {"fround",                  TOO_FEW_2, Lfround, WRONG_NO_2},
     {"ftruncate",               TOO_FEW_2, Lftruncate, WRONG_NO_2},
-#endif
-#ifdef LOGFNS
     {"logbitp",                 TOO_FEW_2, Llogbitp, WRONG_NO_2},
     {"logcount",                Llogcount, TOO_MANY_1, WRONG_NO_1},
     {"logtest",                 TOO_FEW_2, Llogtest, WRONG_NO_2},
     {"mask-field",              TOO_FEW_2, Lmask_field, WRONG_NO_2},
-#endif
     {"scale-float",             TOO_FEW_2, Lscale_float, WRONG_NO_2},
     {"boole",                   WRONG_NO_NA, WRONG_NO_NB, Lboole},
 #ifdef COMMON
     {"byte",                    TOO_FEW_2, Lbyte, WRONG_NO_2},
     {"byte-position",           Lbyte_position, TOO_MANY_1, WRONG_NO_1},
     {"byte-size",               Lbyte_size, TOO_MANY_1, WRONG_NO_1},
+#endif
     {"complex",                 Lcomplex_1, Lcomplex_2, WRONG_NO_2},
     {"conjugate",               Lconjugate, TOO_MANY_1, WRONG_NO_1},
-#endif
     {"decode-float",            Ldecode_float, TOO_MANY_1, WRONG_NO_1},
     {"float-denormalized-p",    Lfloat_denormalized_p, TOO_MANY_1, WRONG_NO_1},
     {"float-infinity-p",        Lfloat_infinity_p, TOO_MANY_1, WRONG_NO_1},
-#ifdef COMMON
     {"denominator",             Ldenominator, TOO_MANY_1, WRONG_NO_1},
-#endif
-#ifdef DEPOSIT_FIELD_IMPLEMENTED
     {"deposit-field",           WRONG_NO_NA, WRONG_NO_NB, Ldeposit_field},
-#endif
-#ifdef DPB_IMPLEMENTED
     {"dpb",                     WRONG_NO_NA, WRONG_NO_NB, Ldpb},
-#endif
-#ifdef COMMON
     {"ffloor",                  TOO_FEW_2, Lffloor, WRONG_NO_2},
     {"imagpart",                Limagpart, TOO_MANY_1, WRONG_NO_1},
     {"ldb",                     TOO_FEW_2, Lldb, WRONG_NO_2},
     {"ldb-test",                TOO_FEW_2, Lldb_test, WRONG_NO_2},
     {"numerator",               Lnumerator, TOO_MANY_1, WRONG_NO_1},
     {"realpart",                Lrealpart, TOO_MANY_1, WRONG_NO_1},
-#endif
     {"gcd",                     Lgcd_1, Lgcd, Lgcd_n},
     {"gcdn",                    Lgcd_1, Lgcd, Lgcd_n},
     {"lcmn",                    Llcm_1, Llcm, Llcm_n},

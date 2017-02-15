@@ -953,9 +953,9 @@ static inline LispObject encapsulate_sp(LispObject *sp)
 
 // To trace a function I can use one of thse. Eg for a 1-arg function
 // where I would normally go just
-//        (*f1)(env, a1)
+//        (*f1)(name, a1)
 // I can instead go
-//        traced_call1(from, name, f1, env, a1)
+//        traced_call1(from, f1, name, a1)
 // where name is the symbol whose name needs to appear in the message. That
 // will print "Calling <name> from <wherever>", then "Arg1: <argument>.
 // When those have been printed it will call the function and before it
@@ -968,9 +968,8 @@ static inline LispObject encapsulate_sp(LispObject *sp)
 // NEVER call any Lisp functions in ways that could trigger tracing, since
 // otherwise there could be nasty recursions arising.
 
-LispObject traced_call0(LispObject from, LispObject name,
-                        n_args *f0, LispObject env)
-{   push2(env, name);
+LispObject traced_call0(LispObject from, n_args *f0, LispObject name)
+{   push(name);
     push(from);
     freshline_trace();
     trace_printf("Calling ");
@@ -990,13 +989,12 @@ LispObject traced_call0(LispObject from, LispObject name,
     loop_print_trace(stack[0]);
     trace_printf("\n");
     pop(r);
-    popv(1);
     return r;
 }
 
-LispObject traced_call1(LispObject from, LispObject name,
-                        one_args *f1, LispObject env, LispObject a1)
-{   push3(env, name, a1);
+LispObject traced_call1(LispObject from, one_args *f1,
+                        LispObject name, LispObject a1)
+{   push2(name, a1);
     push(from);
     freshline_trace();
     trace_printf("Calling ");
@@ -1020,13 +1018,12 @@ LispObject traced_call1(LispObject from, LispObject name,
     loop_print_trace(stack[0]);
     trace_printf("\n");
     pop(r);
-    popv(1);
     return r;
 }
 
-LispObject traced_call2(LispObject from, LispObject name, two_args *f2,
-                        LispObject env, LispObject a1, LispObject a2)
-{   push4(env, name, a1, a2);
+LispObject traced_call2(LispObject from, two_args *f2,
+                        LispObject name, LispObject a1, LispObject a2)
+{   push3(name, a1, a2);
     push(from);
     freshline_trace();
     trace_printf("Calling ");
@@ -1053,14 +1050,13 @@ LispObject traced_call2(LispObject from, LispObject name, two_args *f2,
     loop_print_trace(stack[0]);
     trace_printf("\n");
     pop(r);
-    popv(1);
     return r;
 }
 
-LispObject traced_call3(LispObject from, LispObject name, n_args *f345,
-                        LispObject env,
+LispObject traced_call3(LispObject from, n_args *f345,
+                        LispObject name,
                         LispObject a1, LispObject a2, LispObject a3)
-{   push5(env, name, a1, a2, a3);
+{   push4(name, a1, a2, a3);
     push(from);
     freshline_trace();
     trace_printf("Calling ");
@@ -1090,7 +1086,6 @@ LispObject traced_call3(LispObject from, LispObject name, n_args *f345,
     loop_print_trace(stack[0]);
     trace_printf("\n");
     pop(r);
-    popv(1);
     return r;
 }
 
@@ -1130,7 +1125,7 @@ LispObject cdrerror(LispObject a)
 char *native_stack = NULL, *native_stack_base = NULL;
 #endif
 
-extern LispObject bytestream_interpret1(unsigned char *ppc1, LispObject lit,
+extern LispObject bytestream_interpret1(size_t ppc, LispObject lit,
                                         LispObject *entry_stack);
 #ifdef CHECK_STACK
 static int maxnest = 0;
@@ -1147,7 +1142,7 @@ public:
 
 #endif
 
-LispObject bytestream_interpret(unsigned char *ppc1, LispObject lit,
+LispObject bytestream_interpret(size_t ppc, LispObject lit,
                                 LispObject *entry_stack)
 #ifdef CHECK_STACK
 {
@@ -1161,7 +1156,7 @@ LispObject bytestream_interpret(unsigned char *ppc1, LispObject lit,
 //
     LispObject w;
     int len = 0;
-    call_stack = cons_no_gc(elt(lit, 0), call_stack);
+    call_stack = cons_no_gc(lit, call_stack);
     save_call_stack RAII;
     for (w = call_stack; w != nil; w = qcdr(w)) len++;
     if (len > maxnest+(maxnest/2)+1)
@@ -1177,11 +1172,11 @@ LispObject bytestream_interpret(unsigned char *ppc1, LispObject lit,
         }
     }
     if (len > 20000) aerror("Stack overflow");
-    else w = bytestream_interpret1(ppc1, lit, entry_stack);
+    else w = bytestream_interpret1(ppc, lit, entry_stack);
     return w;
 }
 
-LispObject bytestream_interpret1(unsigned char *ppc1, LispObject lit,
+LispObject bytestream_interpret1(size_t ppc, LispObject lit,
                                  LispObject *entry_stack)
 #endif // CHECK_STACK
 {

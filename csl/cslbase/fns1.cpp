@@ -1416,8 +1416,6 @@ LispObject Lenable_backtrace(LispObject env, LispObject a)
                                   0));
 }
 
-#ifdef NAG
-
 LispObject Lunwind(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "unwind");
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
@@ -1426,10 +1424,7 @@ LispObject Lunwind(LispObject env, int nargs, ...)
     exit_count = 0;
     exit_tag = nil;
     throw LispError();
-    return nil;
 }
-
-#endif
 
 //
 // If the variable *break-function* has as its value a symbol, and that
@@ -1512,11 +1507,11 @@ void Lerror(LispObject env, int nargs, ...)
 }
 
 void Lerror1(LispObject env, LispObject a1)
-{   Lerror(nil, 1, a1);
+{   Lerror(env, 1, a1);
 }
 
 void Lerror2(LispObject env, LispObject a1, LispObject a2)
-{   Lerror(nil, 2, a1, a2);
+{   Lerror(env, 2, a1, a2);
 }
 
 void Lerror0(LispObject env, int nargs, ...)
@@ -1897,13 +1892,8 @@ LispObject getvector_init(size_t n, LispObject k)
     return p;
 }
 
-void Lstop(LispObject, LispObject code)
-{
-//
-// I ignore "env" and set up nil for myself here to make it easier to call
-// this function from random places in my interface code...
-//
-    if (!is_fixnum(code)) aerror("stop");
+void Lstop(LispObject env, LispObject code)
+{   if (!is_fixnum(code)) aerror("stop");
     exit_value = code;
     exit_tag = fixnum_of_int(0);    // Flag to say "stop"
     exit_reason = UNWIND_RESTART;
@@ -3387,7 +3377,7 @@ LispObject Lcallfn(LispObject env, int nargs, ...)
 }
 
 LispObject Lcallf2(LispObject env, LispObject entry, LispObject arg)
-{   return Lcallfn(nil, 2, entry, arg);;
+{   return Lcallfn(env, 2, entry, arg);;
 }
 
 //

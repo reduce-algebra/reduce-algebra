@@ -48,8 +48,7 @@
     n_args *f345;
     unsigned int fname, w;
     int32_t n, k;
-    uintptr_t xppc;
-    uintptr_t ppc;
+    size_t xppc;
 //
 // I declare all the other variables I need here up at the top of the function
 // since at least on some C compilers putting the declarations more locally
@@ -66,7 +65,7 @@
 // I only set this information up when in the slower bootstrap mode, but now
 // I have decided to accept the cost at all times so that full tracing
 // facilities are always available.
-    LispObject ffpname = qpname(elt(lit, 0));
+    LispObject ffpname = qpname(lit);
     size_t fflength = (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
     char ffname[32];
     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
@@ -79,9 +78,8 @@
         if (native_stack == NULL) native_stack = native_stack_base = my_stack;
         else if (my_stack + 10000 < native_stack)
         {   native_stack = my_stack;
-            LispObject ffsym = elt(lit, 0);
             trace_printf("\nFunction %s stack depth %d\n",
-                         &celt(qpname(ffsym), 0),
+                         &celt(qpname(lit), 0),
                          native_stack_base - my_stack);
         }
     }
@@ -101,12 +99,13 @@
 //
 #ifdef ACN
 // ... except that I will only go the whole hog if one defines ACN
-    callstack = cons_no_gc(elt(lit, 0), callstack);
+    callstack = cons_no_gc(lit, callstack);
 #endif
 #endif
-    litvec = lit;
+    lit = qenv(lit);
+    codevec = qcar(lit);
+    litvec = qcdr(lit);
 #ifndef NO_BYTECOUNT
-    qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 // Attribute 30-bytecode overhead to entry sequence. This is a pretty
 // arbitrary number, but the idea is that when I am profiling I want to
 // end up ranking funtions as by their overall contribution to cost.
@@ -116,22 +115,8 @@
 // bytecode but was called just under 2 million times. The overheads of
 // starting up the bytecode interpreter nake that an invalid judgement,
 // and the "+30" here is intended to counterbalance it.
+    qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
-//
-// The next lines are used to allow for functions with > 3 args, and for
-// &optional and &rest cases. Some of these need one or two bytes at the
-// start of the code-vector to indicate just how many arguments are
-// expected. In such cases the byte pointer ppc1 points to the first
-// byte of genuine executable stuff just beyond those prelude bytes. Hence
-// (ppc1 & ~3) will point at a word-aligned starting point for bytes
-// and ((ppc1 & ~3) + (TAG_VECTOR-CELL)) will be a proper LispObject value
-// that stands for the BPS object. Well that bit of arithmetic will need
-// some casts to make it valid, but writing if plainly is perhaps clearest.
-// I could in fact cope with up to 7 prefix bytes, but at present I only
-// have use for 0, 1 or 2.
-//
-    codevec = (LispObject)((uintptr_t)ppc1 & ~(uintptr_t)3) + (TAG_VECTOR-CELL);
-    ppc = ppc1 - (unsigned char *)codevec;
 //
     A_reg = nil;
 #ifdef CHECK_STACK
@@ -566,8 +551,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   f1 = qfn1(B_reg);
                     push(B_reg);
                     if ((qheader(B_reg) & SYM_TRACED) != 0)
-                        A_reg = traced_call1(elt(litvec, 0), B_reg, f1, qenv(B_reg), A_reg);
-                    else A_reg = f1(qenv(B_reg), A_reg);
+                        A_reg = traced_call1(elt(litvec, 0), f1, B_reg, A_reg);
+                    else A_reg = f1(B_reg, A_reg);
                     popv(1);
                     continue;
                 }
@@ -581,8 +566,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   f2 = qfn2(r2);
                     popv(1);
                     if ((qheader(r2) & SYM_TRACED) != 0)
-                        A_reg = traced_call2(elt(litvec, 0), r2, f2, qenv(r2), B_reg, A_reg);
-                    else A_reg = f2(qenv(r2), B_reg, A_reg);
+                        A_reg = traced_call2(elt(litvec, 0), f2, r2, B_reg, A_reg);
+                    else A_reg = f2(r2, B_reg, A_reg);
                     continue;
                 }
 // Here the stack has fn on the top and the 2 args are in B_reg, A_reg
@@ -598,8 +583,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (is_symbol(r2))   // can optimise this case, I guess
                 {   f345 = qfnn(r2);
                     if ((qheader(r2) & SYM_TRACED) != 0)
-                        A_reg = traced_call3(elt(litvec, 0), r2, f345, qenv(r2), r1, B_reg, A_reg);
-                    else A_reg = f345(qenv(r2), 3, r1, B_reg, A_reg);
+                        A_reg = traced_call3(elt(litvec, 0), f345, r2, r1, B_reg, A_reg);
+                    else A_reg = f345(r2, 3, r1, B_reg, A_reg);
                     popv(1);
                     continue;
                 }
@@ -1544,8 +1529,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 f345 = qfnn(r1);
 // CALL0:  A=fn()
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call0(elt(litvec, 0), r1, f345, qenv(r1));
-                else A_reg = f345(qenv(r1), 0);
+                    A_reg = traced_call0(elt(litvec, 0), f345, r1);
+                else A_reg = f345(r1, 0);
                 continue;
 
 
@@ -1604,8 +1589,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call0(elt(litvec, 0), r1, f345, qenv(r1));
-                else A_reg = f345(qenv(r1), 0);
+                    A_reg = traced_call0(elt(litvec, 0), f345, r1);
+                else A_reg = f345(r1, 0);
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
@@ -1615,8 +1600,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 global_jb = jbsave;
 #endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    return traced_call0(elt(litvec, 0), r1, f345, qenv(r1));
-                else return f345(qenv(r1), 0);
+                    return traced_call0(elt(litvec, 0), f345, r1);
+                else return f345(r1, 0);
 #endif
 
             jcall1:
@@ -1647,8 +1632,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call1(elt(litvec, 0), r1, f1, qenv(r1), A_reg);
-                else A_reg = f1(qenv(r1), A_reg);
+                    A_reg = traced_call1(elt(litvec, 0), f1, r1, A_reg);
+                else A_reg = f1(r1, A_reg);
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
@@ -1658,8 +1643,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 global_jb = jbsave;
 #endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    return traced_call1(elt(litvec, 0), r1, f1, qenv(r1), A_reg);
-                else return f1(qenv(r1), A_reg);
+                    return traced_call1(elt(litvec, 0), f1, r1, A_reg);
+                else return f1(r1, A_reg);
 #endif
 
 
@@ -1691,8 +1676,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call2(elt(litvec, 0), r1, f2, qenv(r1), B_reg, A_reg);
-                else A_reg = f2(qenv(r1), B_reg, A_reg);
+                    A_reg = traced_call2(elt(litvec, 0), f2, r1, B_reg, A_reg);
+                else A_reg = f2(r1, B_reg, A_reg);
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
@@ -1702,8 +1687,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 global_jb = jbsave;
 #endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    return traced_call2(elt(litvec, 0), r1, f2, qenv(r1), B_reg, A_reg);
-                else return f2(qenv(r1), B_reg, A_reg);
+                    return traced_call2(elt(litvec, 0), f2, r1, B_reg, A_reg);
+                else return f2(r1, B_reg, A_reg);
 #endif
 
             jcall3:
@@ -1735,8 +1720,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call3(elt(litvec, 0), r1, f345, qenv(r1), r2, B_reg, A_reg);
-                else A_reg = f345(qenv(r1), 3, r2, B_reg, A_reg);
+                    A_reg = traced_call3(elt(litvec, 0), f345, r1, r2, B_reg, A_reg);
+                else A_reg = f345(r1, 3, r2, B_reg, A_reg);
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
@@ -1746,8 +1731,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 global_jb = jbsave;
 #endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    return traced_call3(elt(litvec, 0), r1, f345, qenv(r1), r2, B_reg, A_reg);
-                else return f345(qenv(r1), 3, r2, B_reg, A_reg);
+                    return traced_call3(elt(litvec, 0), f345, r1, r2, B_reg, A_reg);
+                else return f345(r1, 3, r2, B_reg, A_reg);
 #endif
 
             jcalln:
@@ -1879,7 +1864,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 push3(codevec, litvec, A_reg); // the argument
                 if (--countdown < 0) deal_with_tick();
                 if (stack >= stacklimit) reclaim(nil, "stack", GC_STACK, 0);
-                A_reg = bytestream_interpret(data_of_bps(codevec), litvec, stack-1);
+                A_reg = bytestream_interpret(CELL-TAG_VECTOR, elt(litvec, 0), stack-1);
                 pop2(litvec, codevec);
                 continue;
 
@@ -1910,8 +1895,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 f1 = qfn1(r1);
 // CALL1:   A=fn(A);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call1(elt(litvec, 0), r1, f1, qenv(r1), A_reg);
-                else A_reg = f1(qenv(r1), A_reg);
+                    A_reg = traced_call1(elt(litvec, 0), f1, r1, A_reg);
+                else A_reg = f1(r1, A_reg);
                 continue;
 
             case OP_CALL2_0:
@@ -1922,7 +1907,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 push4(codevec, litvec, B_reg, A_reg);
                 if (--countdown < 0) deal_with_tick();
                 if (stack >= stacklimit) reclaim(nil, "stack", GC_STACK, 0);
-                A_reg = bytestream_interpret(data_of_bps(codevec), litvec, stack-2);
+                A_reg = bytestream_interpret(CELL-TAG_VECTOR, elt(litvec, 0), stack-2);
                 pop2(litvec, codevec);
                 continue;
 
@@ -1950,8 +1935,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 f2 = qfn2(r1);
 // CALL2:   A=fn(B,A);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call2(elt(litvec, 0), r1, f2, qenv(r1), B_reg, A_reg);
-                else A_reg = f2(qenv(r1), B_reg, A_reg);
+                    A_reg = traced_call2(elt(litvec, 0), f2, r1, B_reg, A_reg);
+                else A_reg = f2(r1, B_reg, A_reg);
                 continue;
 
             case OP_CALL2R:
@@ -1962,8 +1947,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 f2 = qfn2(r1);
 // CALL2R:   A=fn(A,B); NOTE arg order reversed
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call2(elt(litvec, 0), r1, f2, qenv(r1), A_reg, B_reg);
-                else A_reg = f2(qenv(r1), A_reg, B_reg);
+                    A_reg = traced_call2(elt(litvec, 0), f2, r1, A_reg, B_reg);
+                else A_reg = f2(r1, A_reg, B_reg);
                 continue;
 
             case OP_CALL3:
@@ -1975,8 +1960,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // CALL3:   A=fn(pop(),B,A);
                 pop(r2);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call3(elt(litvec, 0), r1, f345, qenv(r1), r2, B_reg, A_reg);
-                else A_reg = f345(qenv(r1), 3, r2, B_reg, A_reg);
+                    A_reg = traced_call3(elt(litvec, 0), f345, r1, r2, B_reg, A_reg);
+                else A_reg = f345(r1, 3, r2, B_reg, A_reg);
                 continue;
 
             case OP_CALLN:
@@ -2005,9 +1990,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_int("BUILTIN0", previous_byte);
 // BUILTIN0:  A=fn()
                 if (no_arg_traceflags[previous_byte])
-                    A_reg = traced_call0(elt(litvec, 0),
-                        make_undefined_symbol(no_arg_names[previous_byte]),
-                        f345, nil);
+                    A_reg = traced_call0(elt(litvec, 0), f345,
+                        make_undefined_symbol(no_arg_names[previous_byte]));
                 else A_reg = f345(nil, 0);
                 continue;
 
@@ -2016,9 +2000,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_int("BUILTIN2R", previous_byte);
 // BUILTIN2R:   A=fn(A,B); NOTE arg order reversed
                 if (two_arg_traceflags[previous_byte])
-                    A_reg = traced_call2(elt(litvec, 0),
+                    A_reg = traced_call2(elt(litvec, 0), f2,
                         make_undefined_symbol(two_arg_names[previous_byte]),
-                        f2, nil, A_reg, B_reg);
+                        A_reg, B_reg);
                 else A_reg = f2(nil, A_reg, B_reg);
                 continue;
 
@@ -2028,9 +2012,9 @@ next_opcode:   // This label is so that I can restart what I am doing
 // CALL3:   A=fn(pop(),B,A);
                 pop(r1);
                 if (three_arg_traceflags[previous_byte])
-                    A_reg = traced_call3(elt(litvec, 0),
+                    A_reg = traced_call3(elt(litvec, 0), f345,
                         make_undefined_symbol(three_arg_names[previous_byte]),
-                        f345, nil, r1, B_reg, A_reg);
+                        r1, B_reg, A_reg);
                 else A_reg = f345(nil, 3, r1, B_reg, A_reg);
                 continue;
 
@@ -2383,9 +2367,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_int("BUILTIN1", previous_byte);
 // BUILTIN1:   A=fn(A);
                 if (one_arg_traceflags[previous_byte])
-                    A_reg = traced_call1(elt(litvec, 0),
+                    A_reg = traced_call1(elt(litvec, 0), f1,
                         make_undefined_symbol(one_arg_names[previous_byte]),
-                        f1, nil, A_reg);
+                        A_reg);
                 A_reg = f1(nil, A_reg);
                 continue;
 
@@ -2394,9 +2378,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_int("BUILTIN2", previous_byte);
 // BUILTIN2:   A=fn(B,A);
                 if (two_arg_traceflags[previous_byte])
-                    A_reg = traced_call2(elt(litvec, 0),
+                    A_reg = traced_call2(elt(litvec, 0), f2,
                         make_undefined_symbol(two_arg_names[previous_byte]),
-                        f2, nil, B_reg, A_reg);
+                        B_reg, A_reg);
                 A_reg = f2(nil, B_reg, A_reg);
                 continue;
 

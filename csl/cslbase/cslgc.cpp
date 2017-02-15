@@ -58,7 +58,7 @@ static intptr_t cons_cells, symbol_heads, strings, user_vectors,
 
 LispObject Lgc0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "reclaim");
-    return Lgc(nil, lisp_true);
+    return Lgc(env, lisp_true);
 }
 
 LispObject Lgc(LispObject env, LispObject a)
@@ -640,7 +640,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
 
 LispObject Lmapstore0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "mapstore");
-    return Lmapstore(nil, nil);
+    return Lmapstore(env, nil);
 }
 
 static bool reset_limit_registers(intptr_t vheap_need, bool stack_flag)

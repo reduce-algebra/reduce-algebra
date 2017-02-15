@@ -87,7 +87,7 @@ static LispObject Lmpi_comm_size(LispObject, LispObject comm)
 // returns nil.
 //
 //  Same assumption about comm.
-static LispObject Lmpi_send(LispObject nil, int nargs, ...)
+static LispObject Lmpi_send(LispObject env, int nargs, ...)
 {   static char fun_name[] = "mpi_send";
 
     LispObject message;
@@ -254,7 +254,7 @@ static LispObject Lmpi_irecv(LispObject, int nargs, ...)
 // for send, returns nil
 // for recv, returns (message (source tag error))
 //
-static LispObject Lmpi_wait(LispObject nil, LispObject request)
+static LispObject Lmpi_wait(LispObject env, LispObject request)
 {   MPI_Status status;
     LispObject message, Lstatus;
     if ( !(is_vector(request) && type_of_header(vechdr(request)) == TYPE_VEC32 &&
@@ -308,7 +308,7 @@ static LispObject Lmpi_wait(LispObject nil, LispObject request)
 // for send, returns flag
 // for recv, returns nil or (message (source tag error))
 //
-static LispObject Lmpi_test(LispObject nil, LispObject request)
+static LispObject Lmpi_test(LispObject env, LispObject request)
 {   MPI_Status status;
     LispObject message, Lstatus;
     int flag;
@@ -415,7 +415,7 @@ static LispObject Lmpi_probe(LispObject, int nargs, ...)
 // (mpi_barrier comm)
 // returns nil
 //
-static LispObject Lmpi_barrier(LispObject nil, LispObject comm)
+static LispObject Lmpi_barrier(LispObject env, LispObject comm)
 {   int rank;
     static char fun_name[] = "mpi_barrier";
     check_fix(comm);

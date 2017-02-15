@@ -777,9 +777,7 @@ start_again:
 //
     if (f1 != undefined1)
     {   if ((restartp & 1)==0 || (qheader(v) & SYM_C_DEF) != 0 || !first_try)
-        {   if (qenv(v) == v) qenv(v) = nil;
-// only set env field to nil if it was otherwise not in use
-            ifn0(v) = (intptr_t)undefined0;
+        {   ifn0(v) = (intptr_t)undefined0;
             ifn1(v) = (intptr_t)f1;
             ifn2(v) = (intptr_t)f2;
             ifn3(v) = (intptr_t)undefined3;
@@ -1469,8 +1467,7 @@ static int orderp(LispObject u, LispObject v)
 }
 
 LispObject Lorderp(LispObject env, LispObject a, LispObject b)
-{   int w;
-    w = orderp(a, b);
+{   int w = orderp(a, b);
     return onevalue(Lispify_predicate(w <= 0));
 }
 
@@ -1929,7 +1926,7 @@ LispObject Lintern(LispObject env, LispObject str)
 #ifdef COMMON
 
 LispObject Lintern(LispObject env, LispObject a)
-{   return Lintern_2(nil, a, CP);
+{   return Lintern_2(env, a, CP);
 }
 
 static LispObject Lfind_symbol(LispObject env, LispObject str, LispObject pp)
@@ -1955,7 +1952,7 @@ static LispObject Lfind_symbol(LispObject env, LispObject str, LispObject pp)
 }
 
 LispObject Lfind_symbol_1(LispObject env, LispObject str)
-{   return Lfind_symbol(nil, str, CP);
+{   return Lfind_symbol(env, str, CP);
 }
 
 static LispObject Lextern(LispObject env, LispObject sym, LispObject package)
@@ -2004,7 +2001,7 @@ static LispObject Lextern(LispObject env, LispObject sym, LispObject package)
 }
 
 static LispObject Lextern_1(LispObject env, LispObject str)
-{   return Lextern(nil, str, CP);
+{   return Lextern(env, str, CP);
 }
 
 static LispObject Limport(LispObject env, LispObject sym, LispObject package)
@@ -2027,7 +2024,7 @@ static LispObject Limport(LispObject env, LispObject sym, LispObject package)
 }
 
 static LispObject Limport_1(LispObject env, LispObject str)
-{   return Limport(nil, str, CP);
+{   return Limport(env, str, CP);
 }
 
 #endif
@@ -2111,7 +2108,7 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
 }
 
 LispObject Lunintern(LispObject env, LispObject str)
-{   return Lunintern_2(nil, str, CP);
+{   return Lunintern_2(env, str, CP);
 }
 
 //
@@ -4048,11 +4045,11 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
 }
 
 LispObject Lrdf1(LispObject env, LispObject file)
-{   return Lrdf4(nil, file, lisp_true, lisp_true, lisp_true);
+{   return Lrdf4(env, file, lisp_true, lisp_true, lisp_true);
 }
 
 LispObject Lrdf2(LispObject env, LispObject file, LispObject noisy)
-{   return Lrdf4(nil, file, noisy, lisp_true, lisp_true);
+{   return Lrdf4(env, file, noisy, lisp_true, lisp_true);
 }
 
 LispObject Lrdfn(LispObject env, int nargs, ...)
@@ -4067,7 +4064,7 @@ LispObject Lrdfn(LispObject env, int nargs, ...)
     verbose = va_arg(a, LispObject);
     if (nargs > 3) nofile = va_arg(a, LispObject);
     va_end(a);
-    return Lrdf4(nil, file, noisy, verbose, nofile);
+    return Lrdf4(env, file, noisy, verbose, nofile);
 }
 
 #ifdef COMMON
@@ -4123,7 +4120,7 @@ LispObject Lspool(LispObject env, LispObject file)
 
 static LispObject Lspool0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, spool_name);
-    return Lspool(nil, nil);
+    return Lspool(env, nil);
 }
 
 #ifdef COMMON
@@ -4359,11 +4356,11 @@ static LispObject Lmake_package(LispObject env, int nargs, ...)
 }
 
 static LispObject Lmake_package_2(LispObject env, LispObject a, LispObject b)
-{   return Lmake_package(nil, 2, a, b);
+{   return Lmake_package(env, 2, a, b);
 }
 
 static LispObject Lmake_package_1(LispObject env, LispObject a)
-{   return Lmake_package(nil, 1, a);
+{   return Lmake_package(env, 1, a);
 }
 
 static LispObject Llist_all_packages(LispObject, int, ...)
@@ -4430,7 +4427,7 @@ LispObject Lreadch1(LispObject env, LispObject stream)
 
 LispObject Lreadch(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "readch");
-    return Lreadch1(nil, qvalue(standard_input));
+    return Lreadch1(env, qvalue(standard_input));
 }
 
 LispObject Lpeekch2(LispObject env, LispObject type, LispObject stream)
@@ -4460,12 +4457,12 @@ LispObject Lpeekch2(LispObject env, LispObject type, LispObject stream)
 }
 
 LispObject Lpeekch1(LispObject env, LispObject type)
-{   return Lpeekch2(nil, type, qvalue(standard_input));
+{   return Lpeekch2(env, type, qvalue(standard_input));
 }
 
 LispObject Lpeekch(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "peekch");
-    return Lpeekch2(nil, nil, qvalue(standard_input));
+    return Lpeekch2(env, nil, qvalue(standard_input));
 }
 
 LispObject Lunreadch2(LispObject, LispObject a, LispObject stream)
@@ -4482,7 +4479,7 @@ LispObject Lunreadch2(LispObject, LispObject a, LispObject stream)
 }
 
 LispObject Lunreadch(LispObject env, LispObject a)
-{   return Lunreadch2(nil, a, qvalue(standard_input));
+{   return Lunreadch2(env, a, qvalue(standard_input));
 }
 
 LispObject Lreadline1(LispObject env, LispObject stream)
@@ -4512,7 +4509,7 @@ LispObject Lreadline1(LispObject env, LispObject stream)
 
 LispObject Lreadline(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "readline");
-    return Lreadline1(nil, qvalue(standard_input));
+    return Lreadline1(env, qvalue(standard_input));
 }
 
 setup_type const read_setup[] =

@@ -934,7 +934,7 @@ static LispObject errorset3(volatile LispObject env,
     errorset_msg = NULL;
     try
     {   START_TRY_BLOCK;
-        r = eval(form, env);
+        r = eval(form, nil);
     }
     catch (LispError e)
     {
@@ -1014,12 +1014,12 @@ LispObject Lerrorsetn(LispObject env, int nargs, ...)
 }
 
 LispObject Lerrorset1(LispObject env, LispObject form)
-{   return errorset3(nil, form, nil, nil);
+{   return errorset3(env, form, nil, nil);
 }
 
 
 LispObject Lerrorset2(LispObject env, LispObject form, LispObject ffg1)
-{   return errorset3(nil, form, ffg1, nil);
+{   return errorset3(env, form, ffg1, nil);
 }
 
 //
@@ -1182,7 +1182,7 @@ static LispObject resource_limit7(LispObject env,
             if (errors_limit >= 0 && errors_limit < w) w = errors_limit;
             errors_limit = w;
         }
-        r = eval(form, env);
+        r = eval(form, nil);
         r0 = time_now - time_base;
         r1 = (space_now - space_base)/
              ((2*sizeof(LispObject)*1024*1024)/PAGE_POWER_OF_TWO);
@@ -1245,7 +1245,7 @@ LispObject Lresource_limitn(LispObject env, int nargs, ...)
 
 
 LispObject Lresource_limit2(LispObject env, LispObject form, LispObject ltime)
-{   return resource_limit7(nil, form, ltime,
+{   return resource_limit7(env, form, ltime,
                            fixnum_of_int(-1),
                            fixnum_of_int(-1),
                            fixnum_of_int(-1),
@@ -1268,7 +1268,7 @@ static LispObject when_fn(LispObject args, LispObject env)
 }
 
 static LispObject bad_specialfn3(LispObject env, LispObject a, LispObject b)
-{   aerror("bad special function");
+{   aerror1("bad special function", env);
 }
 
 setup_type const eval3_setup[] =

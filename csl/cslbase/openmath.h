@@ -111,18 +111,18 @@ extern LispObject om_closeDev(LispObject env, LispObject dev);
 // OpenMath Connection manipulation functions.
 //
 
-extern LispObject om_makeConn(LispObject nil, LispObject ltimeout);
-extern LispObject om_closeConn(LispObject nil, LispObject lconn);
-extern LispObject om_getConnInDev(LispObject nil, LispObject lconn);
-extern LispObject om_getConnOutDev(LispObject nil, LispObject lconn);
+extern LispObject om_makeConn(LispObject env, LispObject ltimeout);
+extern LispObject om_closeConn(LispObject env, LispObject lconn);
+extern LispObject om_getConnInDev(LispObject env, LispObject lconn);
+extern LispObject om_getConnOutDev(LispObject env, LispObject lconn);
 
 
 //
 // OpenMath client/server functions.
 //
 
-extern LispObject om_connectTCP(LispObject nil, int nargs, ...);
-extern LispObject om_bindTCP(LispObject nil, LispObject lconn, LispObject lport);
+extern LispObject om_connectTCP(LispObject env, int nargs, ...);
+extern LispObject om_bindTCP(LispObject env, LispObject lconn, LispObject lport);
 // TODO: prototypes for the other functions from OMconn.h
 
 
@@ -130,56 +130,56 @@ extern LispObject om_bindTCP(LispObject nil, LispObject lconn, LispObject lport)
 // OpenMath Device input / output functions.
 //
 
-extern LispObject om_putApp(LispObject nil, LispObject ldev);
-extern LispObject om_putEndApp(LispObject nil, LispObject ldev);
-extern LispObject om_putAtp(LispObject nil, LispObject ldev);
-extern LispObject om_putEndAtp(LispObject nil, LispObject ldev);
-extern LispObject om_putAttr(LispObject nil, LispObject ldev);
-extern LispObject om_putEndAttr(LispObject nil, LispObject ldev);
-extern LispObject om_putBind(LispObject nil, LispObject ldev);
-extern LispObject om_putEndBind(LispObject nil, LispObject ldev);
-extern LispObject om_putBVar(LispObject nil, LispObject ldev);
-extern LispObject om_putEndBVar(LispObject nil, LispObject ldev);
-extern LispObject om_putError(LispObject nil, LispObject ldev);
-extern LispObject om_putEndError(LispObject nil, LispObject ldev);
-extern LispObject om_putObject(LispObject nil, LispObject ldev);
-extern LispObject om_putEndObject(LispObject nil, LispObject ldev);
+extern LispObject om_putApp(LispObject env, LispObject ldev);
+extern LispObject om_putEndApp(LispObject env, LispObject ldev);
+extern LispObject om_putAtp(LispObject env, LispObject ldev);
+extern LispObject om_putEndAtp(LispObject env, LispObject ldev);
+extern LispObject om_putAttr(LispObject env, LispObject ldev);
+extern LispObject om_putEndAttr(LispObject env, LispObject ldev);
+extern LispObject om_putBind(LispObject env, LispObject ldev);
+extern LispObject om_putEndBind(LispObject env, LispObject ldev);
+extern LispObject om_putBVar(LispObject env, LispObject ldev);
+extern LispObject om_putEndBVar(LispObject env, LispObject ldev);
+extern LispObject om_putError(LispObject env, LispObject ldev);
+extern LispObject om_putEndError(LispObject env, LispObject ldev);
+extern LispObject om_putObject(LispObject env, LispObject ldev);
+extern LispObject om_putEndObject(LispObject env, LispObject ldev);
 
-extern LispObject om_putInt(LispObject nil, LispObject ldev, LispObject val);
-extern LispObject om_putFloat(LispObject nil, LispObject ldev, LispObject val);
-extern LispObject om_putByteArray(LispObject nil, LispObject ldev, LispObject val);
-extern LispObject om_putVar(LispObject nil, LispObject ldev, LispObject val);
-extern LispObject om_putString(LispObject nil, LispObject ldev, LispObject val);
-extern LispObject om_putSymbol(LispObject nil, LispObject ldev, LispObject val);
-extern LispObject om_putSymbol2(LispObject nil, int nargs, ...);
+extern LispObject om_putInt(LispObject env, LispObject ldev, LispObject val);
+extern LispObject om_putFloat(LispObject env, LispObject ldev, LispObject val);
+extern LispObject om_putByteArray(LispObject env, LispObject ldev, LispObject val);
+extern LispObject om_putVar(LispObject env, LispObject ldev, LispObject val);
+extern LispObject om_putString(LispObject env, LispObject ldev, LispObject val);
+extern LispObject om_putSymbol(LispObject env, LispObject ldev, LispObject val);
+extern LispObject om_putSymbol2(LispObject env, int nargs, ...);
 
-extern LispObject om_getApp(LispObject nil, LispObject ldev);
-extern LispObject om_getEndApp(LispObject nil, LispObject ldev);
-extern LispObject om_getAtp(LispObject nil, LispObject ldev);
-extern LispObject om_getEndAtp(LispObject nil, LispObject ldev);
-extern LispObject om_getAttr(LispObject nil, LispObject ldev);
-extern LispObject om_getEndAttr(LispObject nil, LispObject ldev);
-extern LispObject om_getBind(LispObject nil, LispObject ldev);
-extern LispObject om_getEndBind(LispObject nil, LispObject ldev);
-extern LispObject om_getBVar(LispObject nil, LispObject ldev);
-extern LispObject om_getEndBVar(LispObject nil, LispObject ldev);
-extern LispObject om_getError(LispObject nil, LispObject ldev);
-extern LispObject om_getEndError(LispObject nil, LispObject ldev);
-extern LispObject om_getObject(LispObject nil, LispObject ldev);
-extern LispObject om_getEndObject(LispObject nil, LispObject ldev);
+extern LispObject om_getApp(LispObject env, LispObject ldev);
+extern LispObject om_getEndApp(LispObject env, LispObject ldev);
+extern LispObject om_getAtp(LispObject env, LispObject ldev);
+extern LispObject om_getEndAtp(LispObject env, LispObject ldev);
+extern LispObject om_getAttr(LispObject env, LispObject ldev);
+extern LispObject om_getEndAttr(LispObject env, LispObject ldev);
+extern LispObject om_getBind(LispObject env, LispObject ldev);
+extern LispObject om_getEndBind(LispObject env, LispObject ldev);
+extern LispObject om_getBVar(LispObject env, LispObject ldev);
+extern LispObject om_getEndBVar(LispObject env, LispObject ldev);
+extern LispObject om_getError(LispObject env, LispObject ldev);
+extern LispObject om_getEndError(LispObject env, LispObject ldev);
+extern LispObject om_getObject(LispObject env, LispObject ldev);
+extern LispObject om_getEndObject(LispObject env, LispObject ldev);
 
-extern LispObject om_getInt(LispObject nil, LispObject ldev);
-extern LispObject om_getFloat(LispObject nil, LispObject ldev);
-extern LispObject om_getByteArray(LispObject nil, LispObject ldev);
-extern LispObject om_getVar(LispObject nil, LispObject ldev);
-extern LispObject om_getString(LispObject nil, LispObject ldev);
-extern LispObject om_getSymbol(LispObject nil, LispObject ldev);
+extern LispObject om_getInt(LispObject env, LispObject ldev);
+extern LispObject om_getFloat(LispObject env, LispObject ldev);
+extern LispObject om_getByteArray(LispObject env, LispObject ldev);
+extern LispObject om_getVar(LispObject env, LispObject ldev);
+extern LispObject om_getString(LispObject env, LispObject ldev);
+extern LispObject om_getSymbol(LispObject env, LispObject ldev);
 
-extern LispObject om_getType(LispObject nil, LispObject ldev);
+extern LispObject om_getType(LispObject env, LispObject ldev);
 
 
-extern LispObject om_stringToStringPtr(LispObject nil, LispObject lstr);
-extern LispObject om_stringPtrToString(LispObject nil, LispObject lpstr);
+extern LispObject om_stringToStringPtr(LispObject env, LispObject lstr);
+extern LispObject om_stringPtrToString(LispObject env, LispObject lpstr);
 
 #endif // header_openmath_h
 

@@ -126,7 +126,7 @@ LispObject compiler_symbol, faslvec, tracedfn, lisp_terminal_io;
 LispObject lisp_standard_output, lisp_standard_input, lisp_error_output;
 LispObject lisp_trace_output, lisp_debug_io, lisp_query_io;
 LispObject prompt_thing, faslgensyms, prinl_symbol, emsg_star, redef_msg;
-LispObject expr_symbol, fexpr_symbol, macro_symbol;
+LispObject current_function, expr_symbol, fexpr_symbol, macro_symbol;
 LispObject big_divisor, big_dividend, big_quotient, big_fake1, big_fake2;
 LispObject active_stream, current_module;
 LispObject autoload_symbol, features_symbol, lisp_package, sys_hash_table;
@@ -694,7 +694,7 @@ setup_type const *setup_tables[] =
 // If C code is to be instated (via c!:install calls in u01.lsp etc) there
 // needs to be a verification that the file u01.c and the file u01.lsp (etc)
 // are in step. So once for each such file this does the check. It should
-// only happen when the system is being built and ought not to be a bit
+// only happen when the system is being built and ought not to be a big
 // performance issue.
 //
 
@@ -2957,7 +2957,7 @@ void copy_into_nilseg(int fg)
     BASE[69]     = tracedfn;
     BASE[70]     = prompt_thing;
     BASE[71]     = faslgensyms;
-//  BASE[72]     = cl_symbols;
+    BASE[72]     = current_function;
     BASE[73]     = active_stream;
     BASE[74]     = current_module;
     BASE[75]     = autoload_symbol;
@@ -3153,7 +3153,7 @@ void copy_out_of_nilseg(int fg)
     tracedfn              = BASE[69];
     prompt_thing          = BASE[70];
     faslgensyms           = BASE[71];
-//  cl_symbols            = BASE[72];
+    current_function      = BASE[72];
     active_stream         = BASE[73];
     current_module        = BASE[74];
     autoload_symbol       = BASE[75];

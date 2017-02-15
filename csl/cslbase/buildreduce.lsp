@@ -595,10 +595,9 @@ symbolic procedure c!:install(name, env, c!-version, !&optional, c1);
       n := n + 1;
       env := cdr env >>;
 % I only instate the environment if there is nothing useful there at
-% present. Actually this is even stronger. When a built-in function is
-% set up it gets NIL in its environment cell by default. Things that are
-% not defined at all have themselves there.
-    if symbol!-env name = nil then symbol!-set!-env(name, v);
+% present. This is a rather dubious test!
+    if symbol!-env name = nil or
+       symbol!-env name = name then symbol!-set!-env(name, v);
     put(name, 'funarg, v);
     return name;
   end;

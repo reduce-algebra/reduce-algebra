@@ -77,6 +77,7 @@ LispObject nreverse(LispObject a)
 
 LispObject eval(LispObject u, LispObject env)
 {   STACK_SANITY;
+    if (env != nil && !consp(env)) *((int *)(-1)) = 0; // Haha!
     int t;
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__)) aerror("deep stack in eval");
@@ -826,18 +827,18 @@ LispObject Lapply_n(LispObject env, int nargs, ...)
 }
 
 LispObject Lapply_1(LispObject env, LispObject fn)
-{   return Lapply_n(nil, 1, fn);
+{   return Lapply_n(env, 1, fn);
 }
 
 LispObject Lapply_2(LispObject env, LispObject fn, LispObject a1)
-{   return Lapply_n(nil, 2, fn, a1);
+{   return Lapply_n(env, 2, fn, a1);
 }
 
 LispObject Lapply0(LispObject env, LispObject fn)
 {   STACK_SANITY;
 #ifndef DEBUG
 // I avoid this optimisation if debugging...
-    if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 0);
+    if (is_symbol(fn)) return (*qfnn(fn))(fn, 0);
 #endif
     stackcheck1(0, fn);
     return apply(fn, 0, nil, apply_symbol);
@@ -846,7 +847,7 @@ LispObject Lapply0(LispObject env, LispObject fn)
 LispObject Lapply1(LispObject env, LispObject fn, LispObject a)
 {   STACK_SANITY;
 #ifndef DEBUG
-    if (is_symbol(fn)) return (*qfn1(fn))(qenv(fn), a);
+    if (is_symbol(fn)) return (*qfn1(fn))(fn, a);
 #endif
     push(a);
     stackcheck1(1, fn);
@@ -864,7 +865,7 @@ LispObject Lapply2(LispObject env, int nargs, ...)
     b = va_arg(aa, LispObject);
     va_end(aa);
 #ifndef DEBUG
-    if (is_symbol(fn)) return (*qfn2(fn))(qenv(fn), a, b);
+    if (is_symbol(fn)) return (*qfn2(fn))(fn, a, b);
 #endif
     push2(a, b);
     stackcheck1(2, fn);
@@ -883,7 +884,7 @@ LispObject Lapply3(LispObject env, int nargs, ...)
     c = va_arg(aa, LispObject);
     va_end(aa);
 #ifndef DEBUG
-    if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 3, a, b, c);
+    if (is_symbol(fn)) return (*qfnn(fn))(fn, 3, a, b, c);
 #endif
     push3(a, b, c);
     stackcheck1(3, fn);
@@ -893,7 +894,7 @@ LispObject Lapply3(LispObject env, int nargs, ...)
 LispObject Lfuncall1(LispObject env, LispObject fn)
 {   STACK_SANITY;
 #ifndef DEBUG
-    if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 0);
+    if (is_symbol(fn)) return (*qfnn(fn))(fn, 0);
 #endif
     stackcheck1(0, fn);
     return apply(fn, 0, nil, funcall_symbol);
@@ -902,7 +903,7 @@ LispObject Lfuncall1(LispObject env, LispObject fn)
 LispObject Lfuncall2(LispObject env, LispObject fn, LispObject a1)
 {   STACK_SANITY;
 #ifndef DEBUG
-    if (is_symbol(fn)) return (*qfn1(fn))(qenv(fn), a1);
+    if (is_symbol(fn)) return (*qfn1(fn))(fn, a1);
 #endif
     push(a1);
     stackcheck1(1, fn);
@@ -929,7 +930,7 @@ LispObject Lfuncalln(LispObject env, int nargs, ...)
             a1 = va_arg(a, LispObject);
             a2 = va_arg(a, LispObject);
 #ifndef DEBUG
-            if (is_symbol(fn)) return (*qfn2(fn))(qenv(fn), a1, a2);
+            if (is_symbol(fn)) return (*qfn2(fn))(fn, a1, a2);
 #endif
             push2(a1, a2);
             return apply(fn, 2, nil, funcall_symbol);
@@ -938,7 +939,7 @@ LispObject Lfuncalln(LispObject env, int nargs, ...)
             a2 = va_arg(a, LispObject);
             a3 = va_arg(a, LispObject);
 #ifndef DEBUG
-            if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 3, a1, a2, a3);
+            if (is_symbol(fn)) return (*qfnn(fn))(fn, 3, a1, a2, a3);
 #endif
             push3(a1, a2, a3);
             return apply(fn, 3, nil, funcall_symbol);
@@ -948,7 +949,7 @@ LispObject Lfuncalln(LispObject env, int nargs, ...)
             a3 = va_arg(a, LispObject);
             a4 = va_arg(a, LispObject);
 #ifndef DEBUG
-            if (is_symbol(fn)) return (*qfnn(fn))(qenv(fn), 4, a1, a2, a3, a4);
+            if (is_symbol(fn)) return (*qfnn(fn))(fn, 4, a1, a2, a3, a4);
 #endif
             push4(a1, a2, a3, a4);
             return apply(fn, 4, nil, funcall_symbol);
@@ -991,11 +992,11 @@ LispObject Lvalues(LispObject env, int nargs, ...)
 }
 
 LispObject Lvalues_2(LispObject env, LispObject a, LispObject b)
-{   return Lvalues(nil, 2, a, b);
+{   return Lvalues(env, 2, a, b);
 }
 
 LispObject Lvalues_1(LispObject env, LispObject a)
-{   return Lvalues(nil, 1, a);
+{   return Lvalues(env, 1, a);
 }
 
 LispObject mv_call_fn(LispObject args, LispObject env)
@@ -1039,14 +1040,14 @@ LispObject interpreted1(LispObject def, LispObject a1)
 {   STACK_SANITY;
     push(a1);
     stackcheck1(1, def);
-    return apply_lambda(def, 1, nil, def);
+    return apply_lambda(qenv(def), 1, nil, def);
 }
 
 LispObject interpreted2(LispObject def, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     push2(a1, a2);
     stackcheck1(2, def);
-    return apply_lambda(def, 2, nil, def);
+    return apply_lambda(qenv(def), 2, nil, def);
 }
 
 LispObject interpretedn(LispObject def, int nargs, ...)
@@ -1063,13 +1064,14 @@ LispObject interpretedn(LispObject def, int nargs, ...)
     {   va_start(a, nargs);
         push_args(a, nargs);
     }
-    return apply_lambda(def, nargs, nil, def);
+    return apply_lambda(qenv(def), nargs, nil, def);
 }
 
 LispObject funarged1(LispObject def, LispObject a1)
 {   STACK_SANITY;
     push(a1);
     stackcheck1(1, def);
+    def = qenv(def);
     return apply_lambda(qcdr(def), 1, qcar(def), qcdr(def));
 }
 
@@ -1077,6 +1079,7 @@ LispObject funarged2(LispObject def, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     push2(a1, a2);
     stackcheck1(2, def);
+    def = qenv(def);
     return apply_lambda(qcdr(def), 2, qcar(def), qcdr(def));
 }
 
@@ -1087,6 +1090,7 @@ LispObject funargedn(LispObject def, int nargs, ...)
     {   va_start(a, nargs);
         push_args(a, nargs);
     }
+    def = qenv(def);
     return apply_lambda(qcdr(def), nargs, qcar(def), qcdr(def));
 }
 
@@ -1190,6 +1194,7 @@ LispObject Lmacroexpand_1_2(LispObject, LispObject a, LispObject b)
 
 LispObject autoload1(LispObject fname, LispObject a1)
 {   STACK_SANITY;
+    fname = qenv(fname);
     push2(a1, qcar(fname));
 // worry about 0 and 3 args special cases...
     set_fns(qcar(fname), undefined1, undefined2, undefinedn);
@@ -1206,6 +1211,7 @@ LispObject autoload1(LispObject fname, LispObject a1)
 
 LispObject autoload2(LispObject fname, LispObject a1, LispObject a2)
 {   STACK_SANITY;
+    fname = qenv(fname);
     push3(a1, a2, qcar(fname));
 // 0 and 3 args special casess
     set_fns(qcar(fname), undefined1, undefined2, undefinedn);
@@ -1222,6 +1228,7 @@ LispObject autoload2(LispObject fname, LispObject a1, LispObject a2)
 
 LispObject autoloadn(LispObject fname, int nargs, ...)
 {   STACK_SANITY;
+    fname = qenv(fname);
     va_list a;
     va_start(a, nargs);
     push_args(a, nargs);
@@ -1284,54 +1291,63 @@ LispObject undefinedn(LispObject fname, int, ...)
 
 LispObject f0_as_0(LispObject env, int nargs, ...)
 {   if (nargs != 0) aerror1("wrong number of args (0->0)", env);
+    env = qenv(env);
     debug_record_symbol(env);
-    return (*qfnn(env))(qenv(env), 0);
+    return (*qfnn(env))(env, 0);
 }
 
 LispObject f1_as_0(LispObject env, LispObject)
-{   debug_record_symbol(env);
-    return (*qfnn(env))(qenv(env), 0);
+{   env = qenv(env);
+    debug_record_symbol(env);
+    return (*qfnn(env))(env, 0);
 }
 
 LispObject f2_as_0(LispObject env, LispObject, LispObject)
-{   debug_record_symbol(env);
-    return (*qfnn(env))(qenv(env), 0);
+{   env = qenv(env);
+    debug_record_symbol(env);
+    return (*qfnn(env))(env, 0);
 }
 
 LispObject f3_as_0(LispObject env, int nargs, ...)
-{   if (nargs != 3) aerror1("wrong number of args (3->0)", env);
+{   env = qenv(env);
+    if (nargs != 3) aerror1("wrong number of args (3->0)", env);
     debug_record_symbol(env);
-    return (*qfnn(env))(qenv(env), 0);
+    return (*qfnn(env))(env, 0);
 }
 
 LispObject f1_as_1(LispObject env, LispObject a)
-{   debug_record_symbol(env);
-    return (*qfn1(env))(qenv(env), a);
+{   env = qenv(env);
+    debug_record_symbol(env);
+    return (*qfn1(env))(env, a);
 }
 
 LispObject f2_as_1(LispObject env, LispObject a, LispObject)
-{   debug_record_symbol(env);
-    return (*qfn1(env))(qenv(env), a);
+{   env = qenv(env);
+    debug_record_symbol(env);
+    return (*qfn1(env))(env, a);
 }
 
 LispObject f3_as_1(LispObject env, int nargs, ...)
-{   va_list a;
+{   env = qenv(env);
+    va_list a;
     LispObject a1;
     if (nargs != 3) aerror1("wrong number of args (3->1)", env);
     va_start(a, nargs);
     a1 = va_arg(a, LispObject);
     va_end(a);
     debug_record_symbol(env);
-    return (*qfn1(env))(qenv(env), a1);
+    return (*qfn1(env))(env, a1);
 }
 
 LispObject f2_as_2(LispObject env, LispObject a, LispObject b)
-{   debug_record_symbol(env);
-    return (*qfn2(env))(qenv(env), a, b);
+{   env = qenv(env);
+    debug_record_symbol(env);
+    return (*qfn2(env))(env, a, b);
 }
 
 LispObject f3_as_2(LispObject env, int nargs, ...)
-{   va_list a;
+{   env = qenv(env);
+    va_list a;
     LispObject a1, a2;
     if (nargs != 3) aerror1("wrong number of args (3->2)", env);
     va_start(a, nargs);
@@ -1339,11 +1355,12 @@ LispObject f3_as_2(LispObject env, int nargs, ...)
     a2 = va_arg(a, LispObject);
     va_end(a);
     debug_record_symbol(env);
-    return (*qfn2(env))(qenv(env), a1, a2);
+    return (*qfn2(env))(env, a1, a2);
 }
 
 LispObject f3_as_3(LispObject env, int nargs, ...)
-{   va_list a;
+{   env = qenv(env);
+    va_list a;
     LispObject a1, a2, a3;
     if (nargs != 3) aerror1("wrong number of args (3->3)", env);
     va_start(a, nargs);
@@ -1352,7 +1369,7 @@ LispObject f3_as_3(LispObject env, int nargs, ...)
     a3 = va_arg(a, LispObject);
     va_end(a);
     debug_record_symbol(env);
-    return (*qfnn(env))(qenv(env), 3, a1, a2, a3);
+    return (*qfnn(env))(env, 3, a1, a2, a3);
 }
 
 //

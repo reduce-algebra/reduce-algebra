@@ -3257,16 +3257,17 @@ cond (n (progn (c!:printf "\n                        ") (setq n nil))) (t (
 setq n t))) (setq aa (c!:my_gensym)) (setq env (cons (cons x aa) env)) (setq 
 c!:registers (cons aa c!:registers)) (setq args1 (cons aa args1)) (c!:printf 
 " LispObject %s" aa))) (setq var1241 (cdr var1241)) (go lab1240))))) (
-c!:printf ")\n{\n") (cond ((and varargs args) (prog (var1243) (setq var1243 
-args) lab1242 (cond ((null var1243) (return nil))) (prog (x) (setq x (car 
-var1243)) (prog (aa) (setq aa (c!:my_gensym)) (setq env (cons (cons x aa) env
-)) (setq c!:registers (cons aa c!:registers)) (setq args1 (cons aa args1)))) 
-(setq var1243 (cdr var1243)) (go lab1242)))) (c!:startblock (setq entrypoint 
-(c!:my_gensym))) (setq exitpoint c!:current_block) (c!:endblock (quote goto) 
-(list (list (c!:cval body (cons env nil))))) (c!:optimise_flowgraph 
-entrypoint c!:all_blocks env (cons (length args) c!:current_procedure) args1 
-varargs) (wrs O_file) (setq L_contents (cons (cons c!:current_procedure (cons
-literal_vector checksum)) L_contents)) (return nil)))
+c!:printf ")\n{\n") (c!:printf "    env = qenv(env);\n") (cond ((and varargs 
+args) (prog (var1243) (setq var1243 args) lab1242 (cond ((null var1243) (
+return nil))) (prog (x) (setq x (car var1243)) (prog (aa) (setq aa (
+c!:my_gensym)) (setq env (cons (cons x aa) env)) (setq c!:registers (cons aa 
+c!:registers)) (setq args1 (cons aa args1)))) (setq var1243 (cdr var1243)) (
+go lab1242)))) (c!:startblock (setq entrypoint (c!:my_gensym))) (setq 
+exitpoint c!:current_block) (c!:endblock (quote goto) (list (list (c!:cval 
+body (cons env nil))))) (c!:optimise_flowgraph entrypoint c!:all_blocks env (
+cons (length args) c!:current_procedure) args1 varargs) (wrs O_file) (setq 
+L_contents (cons (cons c!:current_procedure (cons literal_vector checksum)) 
+L_contents)) (return nil)))
 
 (flag (quote (rds deflist flag fluid global remprop remflag unfluid unglobal 
 dm carcheck C!-end)) (quote eval))
@@ -3459,13 +3460,13 @@ c!:live_across_call)) (progn (setq g (c!:my_gensym)) (c!:printf
 "        LispObject %s = %v;\n" g a) (setq args (cons g args)))) (t (setq 
 args (cons a args))))) (setq var1262 (cdr var1262)) (go lab1261)) (c!:printf 
 "        fn = elt(env, %s); %<// %c\n" (c!:find_literal (cadar why)) (cadar 
-why)) (cond ((equal nargs 1) (c!:printf "        return (*qfn1(fn))(qenv(fn)"
-)) (t (cond ((equal nargs 2) (c!:printf "        return (*qfn2(fn))(qenv(fn)"
-)) (t (c!:printf "        return (*qfnn(fn))(qenv(fn), %s" nargs))))) (prog (
-var1264) (setq var1264 (reversip args)) lab1263 (cond ((null var1264) (return
-nil))) (prog (a) (setq a (car var1264)) (c!:printf ", %s" a)) (setq var1264 
-(cdr var1264)) (go lab1263)) (c!:printf ");\n    }\n")))))) (return nil))))))
-) (setq helper (get (car why) (quote c!:exit_helper))) (cond ((null helper) (
+why)) (cond ((equal nargs 1) (c!:printf "        return (*qfn1(fn))(fn")) (t 
+(cond ((equal nargs 2) (c!:printf "        return (*qfn2(fn))(fn")) (t (
+c!:printf "        return (*qfnn(fn))(fn, %s" nargs))))) (prog (var1264) (
+setq var1264 (reversip args)) lab1263 (cond ((null var1264) (return nil))) (
+prog (a) (setq a (car var1264)) (c!:printf ", %s" a)) (setq var1264 (cdr 
+var1264)) (go lab1263)) (c!:printf ");\n    }\n")))))) (return nil))))))) (
+setq helper (get (car why) (quote c!:exit_helper))) (cond ((null helper) (
 error 0 (list "Bad exit condition" why)))) (c!:printf "    if (") (funcall 
 helper (cdr why)) (c!:printf ") ") (c!:pgoto (car where_to)) (cond ((neq (
 cadr where_to) next) (progn (c!:printf "    else ") (c!:pgoto (cadr where_to)
@@ -3764,24 +3765,24 @@ r2)) (prog (var1268) (setq var1268 (cdr r2)) lab1267 (cond ((null var1268) (
 return nil))) (prog (a) (setq a (car var1268)) (c!:printf ", %v" a)) (setq 
 var1268 (cdr var1268)) (go lab1267))))) (c!:printf ");\n"))) (t (cond ((equal
 (car r3) c!:current_procedure) (progn (setq r2 (c!:fix_nargs r2 
-c!:current_args)) (c!:printf "    %v = %s(env" r1 c!:current_c_name) (cond ((
-or (null r2) (geq (length r2) 3)) (c!:printf ", %s" (length r2)))) (prog (
-var1270) (setq var1270 r2) lab1269 (cond ((null var1270) (return nil))) (prog
-(a) (setq a (car var1270)) (c!:printf ", %v" a)) (setq var1270 (cdr var1270)
-) (go lab1269)) (c!:printf ");\n"))) (t (cond ((setq w (get (car r3) (quote 
-c!:c_entrypoint))) (progn (cond ((flagp (intern w) (quote c!:noreturn)) (
-c!:printf "    %s(nil" w)) (t (c!:printf "    %v = %s(nil" r1 w))) (cond ((or
-(null r2) (geq (length r2) 3)) (c!:printf ", %s" (length r2)))) (prog (
+c!:current_args)) (c!:printf "    %v = %s(elt(env, 0)" r1 c!:current_c_name) 
+(cond ((or (null r2) (geq (length r2) 3)) (c!:printf ", %s" (length r2)))) (
+prog (var1270) (setq var1270 r2) lab1269 (cond ((null var1270) (return nil)))
+(prog (a) (setq a (car var1270)) (c!:printf ", %v" a)) (setq var1270 (cdr 
+var1270)) (go lab1269)) (c!:printf ");\n"))) (t (cond ((setq w (get (car r3) 
+(quote c!:c_entrypoint))) (progn (cond ((flagp (intern w) (quote c!:noreturn)
+) (c!:printf "    %s(nil" w)) (t (c!:printf "    %v = %s(nil" r1 w))) (cond (
+(or (null r2) (geq (length r2) 3)) (c!:printf ", %s" (length r2)))) (prog (
 var1272) (setq var1272 r2) lab1271 (cond ((null var1272) (return nil))) (prog
 (a) (setq a (car var1272)) (c!:printf ", %v" a)) (setq var1272 (cdr var1272)
 ) (go lab1271)) (c!:printf ");\n"))) (t (prog (nargs) (setq nargs (length r2)
 ) (c!:printf "    fn = elt(env, %s); %<// %c\n" (c!:find_literal (car r3)) (
-car r3)) (cond ((equal nargs 1) (c!:printf "    %v = (*qfn1(fn))(qenv(fn)" r1
-)) (t (cond ((equal nargs 2) (c!:printf "    %v = (*qfn2(fn))(qenv(fn)" r1)) 
-(t (c!:printf "    %v = (*qfnn(fn))(qenv(fn), %s" r1 nargs))))) (prog (
-var1274) (setq var1274 r2) lab1273 (cond ((null var1274) (return nil))) (prog
-(a) (setq a (car var1274)) (c!:printf ", %v" a)) (setq var1274 (cdr var1274)
-) (go lab1273)) (c!:printf ");\n")))))))))) (cond (boolfn (c!:printf 
+car r3)) (cond ((equal nargs 1) (c!:printf "    %v = (*qfn1(fn))(fn" r1)) (t 
+(cond ((equal nargs 2) (c!:printf "    %v = (*qfn2(fn))(fn" r1)) (t (
+c!:printf "    %v = (*qfnn(fn))(fn, %s" r1 nargs))))) (prog (var1274) (setq 
+var1274 r2) lab1273 (cond ((null var1274) (return nil))) (prog (a) (setq a (
+car var1274)) (c!:printf ", %v" a)) (setq var1274 (cdr var1274)) (go lab1273)
+) (c!:printf ");\n")))))))))) (cond (boolfn (c!:printf 
 "    %v = %v ? lisp_true : nil;\n" r1 r1)))))
 
 (de c!:fix_nargs (r2 act) (cond ((null act) nil) (t (cond ((null r2) (cons 

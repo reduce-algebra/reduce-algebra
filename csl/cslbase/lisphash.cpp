@@ -1161,7 +1161,7 @@ restart:
 LispObject Lget_hash_1(LispObject env, LispObject key)
 {
 #ifdef COMMON
-    return Lget_hash(nil, 3, key, sys_hash_table, nil);
+    return Lget_hash(env, 3, key, sys_hash_table, nil);
 #else
 //
 // The definition implemented here is as required by Reduce in
@@ -1179,7 +1179,7 @@ LispObject Lget_hash_1(LispObject env, LispObject key)
 }
 
 LispObject Lget_hash_2(LispObject env, LispObject key, LispObject tab)
-{   return Lget_hash(nil, 3, key, tab, nil);
+{   return Lget_hash(env, 3, key, tab, nil);
 }
 
 #ifdef DEBUG
@@ -1290,7 +1290,7 @@ LispObject Lput_hash(LispObject env, int nargs, ...)
 
 
 LispObject Lput_hash_2(LispObject env, LispObject a, LispObject b)
-{   return Lput_hash(nil, 3, a, sys_hash_table, b);
+{   return Lput_hash(env, 3, a, sys_hash_table, b);
 }
 
 LispObject Lrem_hash(LispObject env, LispObject key, LispObject tab)
@@ -1311,7 +1311,7 @@ LispObject Lrem_hash(LispObject env, LispObject key, LispObject tab)
 }
 
 LispObject Lrem_hash_1(LispObject env, LispObject a)
-{   return Lrem_hash(nil, a, sys_hash_table);
+{   return Lrem_hash(env, a, sys_hash_table);
 }
 
 LispObject Lclr_hash(LispObject, LispObject tab)
@@ -1330,7 +1330,7 @@ LispObject Lclr_hash(LispObject, LispObject tab)
 
 LispObject Lclr_hash_0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "clrhash");
-    return Lclr_hash(nil, sys_hash_table);
+    return Lclr_hash(env, sys_hash_table);
 }
 
 // sxhash is a function that I am coming to believe that I do not like.

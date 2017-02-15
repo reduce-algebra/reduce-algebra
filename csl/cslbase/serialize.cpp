@@ -3498,11 +3498,11 @@ static LispObject load_module(LispObject env, LispObject file,
 }
 
 LispObject Lload_module(LispObject env, LispObject file)
-{   return load_module(nil, file, F_LOAD_MODULE);
+{   return load_module(env, file, F_LOAD_MODULE);
 }
 
 LispObject Lload_source(LispObject env, LispObject file)
-{   return load_module(nil, file, F_LOAD_SOURCE);
+{   return load_module(env, file, F_LOAD_SOURCE);
 }
 
 LispObject load_source0(int option)
@@ -3555,7 +3555,7 @@ LispObject load_source0(int option)
 }
 
 LispObject Lload_selected_source(LispObject env, LispObject file)
-{   return load_module(nil, file, F_SELECTED_SOURCE);
+{   return load_module(env, file, F_SELECTED_SOURCE);
 }
 
 LispObject Lload_source0(LispObject env, int nargs, ...)

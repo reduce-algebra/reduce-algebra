@@ -39,21 +39,19 @@
 #include "headers.h"
 
 
-#define name_from(def) elt(qcdr(def), 0)
-
 // Each of these entrypoints to the bytecode interpreter preserves litvec
 // and codevec. Just about the only place these variable are set is within
 // the bytecode interpreter.
 
 LispObject bytecoded0(LispObject def, int nargs, ...)
-{   if (nargs != 0) error(2, err_wrong_no_args, name_from(def),
+{   if (nargs != 0) error(2, err_wrong_no_args, def,
                                      fixnum_of_int((int32_t)nargs));
     SAVE_CODEVEC;
     LispObject r;
 // I can use START_TRY_BLOCK without "try" if there are not going to be any
 // "catch" clauses at this level!
     {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack);
+        r = bytestream_interpret(CELL-TAG_VECTOR, def, stack);
     }
     return r;
 }
@@ -64,7 +62,7 @@ LispObject bytecoded1(LispObject def, LispObject a)
     LispObject r;
     try
     {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-1);
+        r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-1);
     }
     catch (LispError e)
     {   int _reason = exit_reason;
@@ -97,7 +95,7 @@ LispObject bytecoded2(LispObject def, LispObject a, LispObject b)
     push3(def, a, b);
     try
     {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-2);
+        r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-2);
     }
     catch (LispError e)
     {   int _reason = exit_reason;
@@ -116,7 +114,7 @@ LispObject bytecoded2(LispObject def, LispObject a, LispObject b)
 LispObject bytecoded3(LispObject def, int nargs, ...)
 {   va_list aa;
     LispObject r, a, b, c;
-    if (nargs != 3) error(2, err_wrong_no_args, name_from(def),
+    if (nargs != 3) error(2, err_wrong_no_args, def,
                                      fixnum_of_int((int32_t)nargs));
     va_start(aa, nargs);
     a = va_arg(aa, LispObject);
@@ -127,7 +125,7 @@ LispObject bytecoded3(LispObject def, int nargs, ...)
     push4(def, a, b, c);
     try
     {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(qcar(def)), qcdr(def), stack-3);
+        r = bytestream_interpret(CELL-TAG_VECTOR, def, stack-3);
     }
     catch (LispError e)
     {   int _reason = exit_reason;
@@ -162,15 +160,15 @@ LispObject bytecodedn(LispObject def, int nargs, ...)
     {   va_start(a, nargs);
         push_args(a, nargs);
     }
-    r = qcar(def);
+    r = qcar(qenv(def));
     if (nargs != ((unsigned char *)data_of_bps(r))[0])
     {   popv(nargs+2);
-        error(2, err_wrong_no_args, name_from(def),
+        error(2,err_wrong_no_args, def,
                      fixnum_of_int((int32_t)nargs));
     }
     try
     {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(r)+1, qcdr(def), stack-nargs);
+        r = bytestream_interpret(CELL-TAG_VECTOR+1, def, stack-nargs);
     }
     catch (LispError e)
     {   int _reason = exit_reason;
@@ -220,28 +218,24 @@ static LispObject vbyteoptn(LispObject def, int nargs,
 {   LispObject r;
     int i, wantargs, wantopts;
     SAVE_CODEVEC;
-//
-// Maybe I should raise an exception (continuable error) if too many args
-// are provided - for now I just silently ignore the excess.
-//
     if (nargs != 0) push_args(a, nargs);
     else va_end(a);
-    r = qcar(def);
+    r = qcar(qenv(def));
     wantargs = ((unsigned char *)data_of_bps(r))[0];
     wantopts = ((unsigned char *)data_of_bps(r))[1];
     if (nargs < wantargs || nargs > wantargs+wantopts)
     {   popv(nargs); pop2(codevec, litvec)
-        error(2, err_wrong_no_args, name_from(def),
+        error(2, err_wrong_no_args, def,
                      fixnum_of_int((int32_t)nargs));
     }
     while (nargs < wantargs+wantopts)
     {   push(dflt);   // Provide value for all optional args
         nargs++;
     }
-    r = qcar(def);
+    r = qcar(qenv(def));
     try
     {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(r)+2, qcdr(def), stack-nargs);
+        r = bytestream_interpret(CELL-TAG_VECTOR+2, def, stack-nargs);
     }
     catch (LispError e)
     {   int _reason = exit_reason;
@@ -292,12 +286,12 @@ static LispObject vbyterestn(LispObject def, int nargs,
     SAVE_CODEVEC;
     if (nargs != 0) push_args(a, nargs);
     else va_end(a);
-    r = qcar(def);
+    r = qcar(qenv(def));
     wantargs = ((unsigned char *)data_of_bps(r))[0];
     wantopts = ((unsigned char *)data_of_bps(r))[1];
     if (nargs < wantargs)
     {   popv(nargs+2);
-        error(2, err_wrong_no_args, name_from(def),
+        error(2, err_wrong_no_args, def,
                      fixnum_of_int((int32_t)nargs));
     }
     while (nargs < wantargs+wantopts)
@@ -315,10 +309,10 @@ static LispObject vbyterestn(LispObject def, int nargs,
         push(rest);
         nargs++;
     }
-    r = qcar(def);
+    r = qcar(qenv(def));
     try
     {   START_TRY_BLOCK;
-        r = bytestream_interpret(data_of_bps(r)+2, qcdr(def), stack-nargs);
+        r = bytestream_interpret(CELL-TAG_VECTOR+2, def, stack-nargs);
     }
     catch (LispError e)
     {   int _reason = exit_reason;

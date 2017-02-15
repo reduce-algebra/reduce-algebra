@@ -71,6 +71,22 @@ public:
     }
 };
 
+// I the interpreter need to save the variable current_function at times
+
+class save_current_function
+{   LispObject *savestack;
+public:
+    save_current_function(LispObject newfn)
+    {   push(current_function);
+        savestack = stack;
+        current_function = newfn;
+    }
+    ~save_current_function()
+    {   stack = savestack;
+        pop(current_function);
+    }
+};
+
 // I am going to need to unbind fluids in the C++ code that I
 // sometimes traslate Lisp into. Here is a helper class that will
 // be useful for that.

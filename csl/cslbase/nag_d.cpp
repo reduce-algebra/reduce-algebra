@@ -35,7 +35,7 @@
 /* $Id$ */
 
 
-LispObject Ld01ajf(LispObject nil, int nargs, ...)
+LispObject Ld01ajf(LispObject env, int nargs, ...)
 {   va_list args;
     LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
                Lw, Liw;
@@ -160,7 +160,7 @@ LispObject Ld01ajf(LispObject nil, int nargs, ...)
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 
-LispObject Ld01akf(LispObject nil, int nargs, ...)
+LispObject Ld01akf(LispObject env, int nargs, ...)
 {   va_list args;
     LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
                Lw, Liw;
@@ -282,7 +282,7 @@ LispObject Ld01akf(LispObject nil, int nargs, ...)
 }
 
 #if 1
-LispObject Ld01alf(LispObject nil, int nargs, ...)
+LispObject Ld01alf(LispObject env, int nargs, ...)
 {   va_list args;
     LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
                Lw, Liw, Lnpts, Lpoints;
@@ -418,13 +418,13 @@ LispObject Ld01alf(LispObject nil, int nargs, ...)
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 #else
-LispObject Ld01alf(LispObject nil, int nargs, ...)
+LispObject Ld01alf(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 #endif
 
 #if 1
-LispObject Ld01amf(LispObject nil, int nargs, ...)
+LispObject Ld01amf(LispObject env, int nargs, ...)
 {   va_list args;
     LispObject Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr, Lw, Liw,
                Lbound, Linf;
@@ -550,13 +550,13 @@ LispObject Ld01amf(LispObject nil, int nargs, ...)
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 #else
-LispObject Ld01amf(LispObject nil, int nargs, ...)
+LispObject Ld01amf(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 #endif
 
 #if 1
-LispObject Ld01anf(LispObject nil, int nargs, ...)
+LispObject Ld01anf(LispObject env, int nargs, ...)
 {   va_list args;
     LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
                Lw, Liw, Lomega, Lkey;
@@ -689,13 +689,13 @@ LispObject Ld01anf(LispObject nil, int nargs, ...)
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 #else
-LispObject Ld01anf(LispObject nil, int nargs, ...)
+LispObject Ld01anf(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 #endif
 
 #if 1
-LispObject Ld01apf(LispObject nil, int nargs, ...)
+LispObject Ld01apf(LispObject env, int nargs, ...)
 {   va_list args;
     LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
                Lw, Liw, Lalfa, Lbeta, Lkey;
@@ -835,13 +835,13 @@ LispObject Ld01apf(LispObject nil, int nargs, ...)
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 #else
-LispObject Ld01apf(LispObject nil, int nargs, ...)
+LispObject Ld01apf(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 #endif
 
 #if 1
-LispObject Ld01aqf(LispObject nil, int nargs, ...)
+LispObject Ld01aqf(LispObject env, int nargs, ...)
 {   va_list args;
     LispObject La, Lb, Lepsabs, Lepsrel, Llw, Lliw, Lifail, Lresult, Labserr,
                Lw, Liw, Lc;
@@ -968,13 +968,13 @@ LispObject Ld01aqf(LispObject nil, int nargs, ...)
     return Llist(nil,5,Lresult,Labserr,Lw,Liw,Lifail);
 }
 #else
-LispObject Ld01aqf(LispObject nil, int nargs, ...)
+LispObject Ld01aqf(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 #endif
 
 #if 1
-LispObject Ld01asf(LispObject nil, int nargs, ...)
+LispObject Ld01asf(LispObject env, int nargs, ...)
 {   va_list args;
     LispObject La, Lepsabs, Llw, Lliw, Lifail, Lresult, Labserr, Liw, Lomega,
                Lkey, Llimlst, Llst, Lerlst, Lrslst, Lierlst;
@@ -1122,13 +1122,13 @@ LispObject Ld01asf(LispObject nil, int nargs, ...)
     return Llist(nil,8,Lierlst,Lresult,Labserr,Lerlst,Lifail,Liw,Llst,Lrslst);
 }
 #else
-LispObject Ld01asf(LispObject nil, int nargs, ...)
+LispObject Ld01asf(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 #endif
 
 #if 1
-LispObject Ld01bbf(LispObject nil, int nargs, ...)
+LispObject Ld01bbf(LispObject env, int nargs, ...)
 {   va_list args;
     LispObject La, Lb, Litype, Ln, Lgtype, Lifail, Lweight, Labscis;
     double a, b, *weight, *abscis;
@@ -1240,7 +1240,7 @@ LispObject Ld01bbf(LispObject nil, int nargs, ...)
 #endif
 
 #if 1
-LispObject Ld01fcf(LispObject nil, int nargs, ...)
+LispObject Ld01fcf(LispObject env, int nargs, ...)
 {   va_list args;
     LispObject La, Lb, Lndim, Leps, Lminpts, Lmaxpts, Lifail, Lfinval, Lacc,
                Llenwrk;
@@ -1375,7 +1375,7 @@ LispObject Ld01fcf(LispObject nil, int nargs, ...)
 #endif
 
 #if 1
-LispObject Ld01gaf(LispObject nil, int nargs, ...)
+LispObject Ld01gaf(LispObject env, int nargs, ...)
 {   va_list args;
     LispObject Lx, Ly, Ln, Lans, Ler, Lifail;
     double *x, *y, ans, er;
@@ -1463,7 +1463,7 @@ LispObject Ld01gaf(LispObject nil, int nargs, ...)
 #endif
 
 #if 1
-LispObject Ld01gbf(LispObject nil, int nargs, ...)
+LispObject Ld01gbf(LispObject env, int nargs, ...)
 {   va_list args;
     LispObject La, Lb, Lndim, Leps, Lmincls, Lmaxcls, Lifail, Lfinval, Lacc,
                Llenwrk, Lwrkstr;
@@ -1604,7 +1604,7 @@ LispObject Ld01gbf(LispObject nil, int nargs, ...)
 }
 #endif
 
-LispObject Ld02bbf(LispObject nil, int nargs, ...)
+LispObject Ld02bbf(LispObject env, int nargs, ...)
 #if 0
 {   va_list args;
     LispObject Lx, Lxend, Lm, Ln, Ly, Ltol, Lirelab, Lresult, Lifail;
@@ -1740,7 +1740,7 @@ LispObject Ld02bbf(LispObject nil, int nargs, ...)
 }
 #endif
 
-LispObject Ld02bhf(LispObject nil, int nargs, ...)
+LispObject Ld02bhf(LispObject env, int nargs, ...)
 #if 0
 {   va_list args;
     LispObject Lx, Lxend, Ln, Ly, Ltol, Lirelab, Lhmax, Lifail;
@@ -1872,7 +1872,7 @@ LispObject Ld02bhf(LispObject nil, int nargs, ...)
 }
 #endif
 
-LispObject Ld02cjf(LispObject nil, int nargs, ...)
+LispObject Ld02cjf(LispObject env, int nargs, ...)
 #if 0
 {   // FIXME: strings
     va_list args;
@@ -2016,7 +2016,7 @@ LispObject Ld02cjf(LispObject nil, int nargs, ...)
 }
 #endif
 
-LispObject Ld02ejf(LispObject nil, int nargs, ...)
+LispObject Ld02ejf(LispObject env, int nargs, ...)
 #if 0
 {   // FIXME: strings
     va_list args;
@@ -2177,31 +2177,31 @@ LispObject Ld02ejf(LispObject nil, int nargs, ...)
 
 // ******************* GOT TO HERE *********************
 
-LispObject Ld02gaf(LispObject nil, int nargs, ...)
+LispObject Ld02gaf(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 
-LispObject Ld02gbf(LispObject nil, int nargs, ...)
+LispObject Ld02gbf(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 
-LispObject Ld02kef(LispObject nil, int nargs, ...)
+LispObject Ld02kef(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 
-LispObject Ld02raf(LispObject nil, int nargs, ...)
+LispObject Ld02raf(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 
-LispObject Ld03edf(LispObject nil, int nargs, ...)
+LispObject Ld03edf(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 
-LispObject Ld03eef(LispObject nil, int nargs, ...)
+LispObject Ld03eef(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 
-LispObject Ld03faf(LispObject nil, int nargs, ...)
+LispObject Ld03faf(LispObject env, int nargs, ...)
 {   return Llist(nil, 0);
 }
 

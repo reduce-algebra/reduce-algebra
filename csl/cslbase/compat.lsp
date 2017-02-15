@@ -75,7 +75,8 @@
 % only do this once
 
 (cond
-   ((null (symbol!-env 'logand))
+   ((or (null (symbol!-env 'logand))
+        (eq (symbol!-env 'logand) 'logand))
      (symbol!-set!-env 'logand 1)
      (symbol!-set!-env 'logxor 6)
      (symbol!-set!-env 'logor 7)

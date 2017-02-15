@@ -716,6 +716,7 @@ symbolic procedure c!:cfndef(c!:current_procedure,
          args1 := aa . args1;
          c!:printf(" LispObject %s", aa) end >>;
     c!:printf(")\n{\n");
+    c!:printf("    env = qenv(env);\n");
     if varargs and args then
       for each x in args do begin
         scalar aa;
@@ -1235,9 +1236,9 @@ symbolic procedure c!:print_exit_condition1(why, where_to, next);
             else args := a . args;
           c!:printf("        fn = elt(env, %s); %<// %c\n",
                     c!:find_literal cadar why, cadar why);
-          if nargs = 1 then c!:printf("        return (*qfn1(fn))(qenv(fn)")
-          else if nargs = 2 then c!:printf("        return (*qfn2(fn))(qenv(fn)")
-          else c!:printf("        return (*qfnn(fn))(qenv(fn), %s", nargs);
+          if nargs = 1 then c!:printf("        return (*qfn1(fn))(fn")
+          else if nargs = 2 then c!:printf("        return (*qfn2(fn))(fn")
+          else c!:printf("        return (*qfnn(fn))(fn, %s", nargs);
           for each a in reversip args do c!:printf(", %s", a);
           c!:printf(");\n    }\n") end;
        return nil end;
@@ -1595,11 +1596,16 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
 % discarding any excess args or padding with NIL if not enough had been
 % written.
        r2 := c!:fix_nargs(r2, c!:current_args);
-       c!:printf("    %v = %s(env", r1, c!:current_c_name);
+       c!:printf("    %v = %s(elt(env, 0)", r1, c!:current_c_name);
        if null r2 or length r2 >= 3 then c!:printf(", %s", length r2);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n") >>
     else if w := get(car r3, 'c!:c_entrypoint) then <<
+% For things that have a C entrypoint I will rather improperly pass NIL where
+% the codce really expects its own name. This should only have a bad
+% effect if the C code tries to pick something up from the environment cell
+% of that name. That is the case with LOGAND aned friends at present, but
+% does not arise for any other (current) C code... So I think I am safe.
        if flagp(intern w, 'c!:noreturn) then
           c!:printf("    %s(nil", w)
        else c!:printf("    %v = %s(nil", r1, w);
@@ -1611,9 +1617,9 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
        nargs := length r2;
        c!:printf("    fn = elt(env, %s); %<// %c\n",
               c!:find_literal car r3, car r3);
-       if nargs = 1 then c!:printf("    %v = (*qfn1(fn))(qenv(fn)", r1)
-       else if nargs = 2 then c!:printf("    %v = (*qfn2(fn))(qenv(fn)", r1)
-       else c!:printf("    %v = (*qfnn(fn))(qenv(fn), %s", r1, nargs);
+       if nargs = 1 then c!:printf("    %v = (*qfn1(fn))(fn", r1)
+       else if nargs = 2 then c!:printf("    %v = (*qfn2(fn))(fn", r1)
+       else c!:printf("    %v = (*qfnn(fn))(fn, %s", r1, nargs);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n") end;
     if boolfn then c!:printf("    %v = %v ? lisp_true : nil;\n", r1, r1);
@@ -3727,4 +3733,3 @@ flag(
 end;
 
 % End of ccomp.red
-

@@ -48,7 +48,7 @@ typedef int character_stream_reader(LispObject);
 typedef int character_stream_writer(int, LispObject);
 typedef int32_t other_stream_op(int32_t, LispObject);
 
-extern LispObject Lopen(LispObject nil, LispObject name, LispObject dir);
+extern LispObject Lopen(LispObject env, LispObject name, LispObject dir);
 
 //
 // The values used here are placed where characters might be, or possibly

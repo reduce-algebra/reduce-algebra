@@ -674,7 +674,7 @@ LispObject Lsymbol_set_definition(LispObject env,
             qfn1(compiler_symbol) != undefined1)
         {   push(a);
             a = ncons(a);
-            (qfn1(compiler_symbol))(qenv(compiler_symbol), a);
+            (qfn1(compiler_symbol))(compiler_symbol, a);
             pop(a);
         }
     }
@@ -1032,7 +1032,7 @@ static LispObject Lrestart_lisp2(LispObject env,
 }
 
 static LispObject Lrestart_lisp(LispObject env, LispObject a)
-{   return Lrestart_lisp2(nil, a, SPID_NOARG);
+{   return Lrestart_lisp2(env, a, SPID_NOARG);
 }
 
 static LispObject Lpreserve_03(LispObject env, int nargs, ...)
@@ -1063,7 +1063,7 @@ static LispObject Lpreserve_03(LispObject env, int nargs, ...)
 }
 
 static LispObject Lpreserve_1(LispObject env, LispObject startup)
-{   return Lpreserve_03(nil, 3, startup, nil, nil);
+{   return Lpreserve_03(env, 3, startup, nil, nil);
 }
 
 static LispObject Lpreserve_2(LispObject env,
@@ -1078,7 +1078,7 @@ static LispObject Lpreserve_2(LispObject env,
 // I want a string) is is a message of up to 40 characters to display
 // when the system restart.
 //
-{   return Lpreserve_03(nil, 3, startup, banner, nil);
+{   return Lpreserve_03(env, 3, startup, banner, nil);
 }
 
 
@@ -1136,11 +1136,11 @@ static LispObject Lcheckpoint(LispObject env,
 
 static LispObject Lcheckpoint_0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "checkpoint");
-    return Lcheckpoint(nil, nil, nil);
+    return Lcheckpoint(env, nil, nil);
 }
 
 static LispObject Lcheckpoint_1(LispObject env, LispObject startup)
-{   return Lcheckpoint(nil, startup, nil);
+{   return Lcheckpoint(env, startup, nil);
 }
 
 #endif
@@ -1952,15 +1952,13 @@ LispObject Leql(LispObject env,
 {   return onevalue(Lispify_predicate(eql(a, b)));
 }
 
-LispObject Leqcar(LispObject env,
-                  LispObject a, LispObject b)
+LispObject Leqcar(LispObject env, LispObject a, LispObject b)
 {   if (!consp(a)) return onevalue(nil);
     a = qcar(a);
     return onevalue(Lispify_predicate(eqcheck(a, b)));
 }
 
-LispObject Lequalcar(LispObject env,
-                     LispObject a, LispObject b)
+LispObject Lequalcar(LispObject env, LispObject a, LispObject b)
 {   if (!consp(a)) return onevalue(nil);
     a = qcar(a);
     if (a == b) return lisp_true;
@@ -1982,8 +1980,7 @@ LispObject Lequalp(LispObject env, LispObject a, LispObject b)
     else return onevalue(Lispify_predicate(equalp(a, b)));
 }
 
-LispObject Lneq(LispObject env,
-                LispObject a, LispObject b)
+LispObject Lneq(LispObject env, LispObject a, LispObject b)
 {   bool r;
 #ifdef COMMON
     r = cl_equal(a, b);

@@ -96,13 +96,11 @@ LispObject Lfloat(LispObject, LispObject a)
 }
 
 LispObject Llognot(LispObject env, LispObject a)
-{   a = lognot(a);
-    return onevalue(a);
+{   return onevalue(lognot(a));
 }
 
 LispObject Lash(LispObject env, LispObject a, LispObject b)
-{   a = ash(a, b);
-    return onevalue(a);
+{   return onevalue(ash(a, b));
 }
 
 LispObject Lash1(LispObject env, LispObject a, LispObject b)
@@ -503,23 +501,19 @@ LispObject Lquotient_n(LispObject env, int nargs, ...)
 }
 
 LispObject LCLquotient(LispObject env, LispObject a, LispObject b)
-{   a = CLquot2(a, b);
-    return onevalue(a);
+{   return onevalue(CLquot2(a, b));
 }
 
 LispObject Lquotient(LispObject env, LispObject a, LispObject b)
-{   a = quot2(a, b);
-    return onevalue(a);
+{   return onevalue(quot2(a, b));
 }
 
 LispObject LCLquotient_1(LispObject env, LispObject b)
-{   b = CLquot2(fixnum_of_int(1), b);
-    return onevalue(b);
+{   return onevalue(CLquot2(fixnum_of_int(1), b));
 }
 
 LispObject Lquotient_1(LispObject env, LispObject b)
-{   b = quot2(fixnum_of_int(1), b);
-    return onevalue(b);
+{   return onevalue(quot2(fixnum_of_int(1), b));
 }
 
 LispObject Ldivide(LispObject env, LispObject a, LispObject b)
@@ -533,13 +527,11 @@ LispObject Ldivide(LispObject env, LispObject a, LispObject b)
 }
 
 LispObject Lrem(LispObject env, LispObject p, LispObject q)
-{   p = Cremainder(p, q);
-    return onevalue(p);
+{   return onevalue(Cremainder(p, q));
 }
 
 LispObject Lmod(LispObject env, LispObject p, LispObject q)
-{   p = modulus(p, q);
-    return onevalue(p);
+{   return onevalue(modulus(p, q));
 }
 
 LispObject Ltrap_floating_overflow(LispObject env, LispObject a)
@@ -557,21 +549,16 @@ LispObject Lplus2(LispObject env, LispObject p, LispObject q)
     return onevalue(p);
 }
 
-LispObject Ltimes2(LispObject env, LispObject p,
-                   LispObject q)
-{   p = times2(p, q);
-    return onevalue(p);
+LispObject Ltimes2(LispObject env, LispObject p, LispObject q)
+{   return onevalue(times2(p, q));
 }
 
-LispObject Ldifference2(LispObject env, LispObject a,
-                        LispObject b)
-{   a = difference2(a, b);
-    return onevalue(a);
+LispObject Ldifference2(LispObject env, LispObject a, LispObject b)
+{   return onevalue(difference2(a, b));
 }
 
 LispObject Lminus(LispObject env, LispObject a)
-{   a = negate(a);
-    return onevalue(a);
+{   return onevalue(negate(a));
 }
 
 typedef LispObject boolopfn(LispObject, LispObject);
@@ -603,7 +590,7 @@ static LispObject Lboolfn(LispObject env, int nargs, ...)
 {   va_list a;
     LispObject r;
     int i;
-    int32_t what = int_of_fixnum(env);
+    int32_t what = int_of_fixnum(qenv(env));
     if (nargs == 0) return onevalue(boolop_array[what].base);
     va_start(a, nargs);
     push_args(a, nargs);
@@ -624,9 +611,7 @@ LispObject Lzerop(LispObject env, LispObject a)
 }
 
 LispObject Lonep(LispObject env, LispObject a)
-{   bool fg;
-    fg = onep(a);
-    return onevalue(Lispify_predicate(fg));
+{   return onevalue(Lispify_predicate(onep(a)));
 }
 
 LispObject Levenp(LispObject env, LispObject a)
@@ -697,8 +682,7 @@ LispObject Leqn_n(LispObject env, int nargs, ...)
 }
 
 LispObject Leqn(LispObject env, LispObject a, LispObject b)
-{   bool w = numeq2(a, b);
-    return onevalue(w ? lisp_true : nil);
+{   return onevalue(numeq2(a, b) ? lisp_true : nil);
 }
 
 LispObject Leqn_1(LispObject, LispObject)
@@ -729,8 +713,7 @@ LispObject Llessp_n(LispObject env, int nargs, ...)
 }
 
 LispObject Llessp(LispObject env, LispObject a, LispObject b)
-{   bool w = lessp2(a, b);
-    return onevalue(w ? lisp_true : nil);
+{   return onevalue(lessp2(a, b) ? lisp_true : nil);
 }
 
 LispObject Llessp_1(LispObject, LispObject)
@@ -761,15 +744,13 @@ LispObject Lgreaterp_n(LispObject env, int nargs, ...)
 }
 
 LispObject Lgreaterp(LispObject env, LispObject a, LispObject b)
-{   bool w = lessp2(b, a);
-    return onevalue(w ? lisp_true : nil);
+{   return onevalue(lessp2(b, a) ? lisp_true : nil);
 }
 
 LispObject Lgreaterp_1(LispObject, LispObject)
 {   return onevalue(lisp_true);
 }
 
-#ifdef COMMON
 static LispObject Lneqn(LispObject env, int nargs, ...)
 //
 // /= is supposed to check that false pair of args match.
@@ -797,7 +778,6 @@ static LispObject Lneqn(LispObject env, int nargs, ...)
     }
     return onevalue(lisp_true);
 }
-#endif // COMMON
 
 LispObject Lneq_2(LispObject env, LispObject a, LispObject b)
 {   bool w = numeq2(a, b);
@@ -935,11 +915,9 @@ LispObject Lmin(LispObject env, int nargs, ...)
 }
 
 LispObject Lrational(LispObject env, LispObject a)
-{   a = rational(a);
-    return onevalue(a);
+{   return onevalue(rational(a));
 }
 
-#ifdef COMMON
 static LispObject Lmanexp(LispObject env, LispObject a)
 {   int x;
     double f;
@@ -955,7 +933,6 @@ static LispObject Lrationalize(LispObject env, LispObject a)
 {   a = rationalize(a);
     return onevalue(a);
 }
-#endif
 
 //
 // The following random number generator is taken from the Norcroft

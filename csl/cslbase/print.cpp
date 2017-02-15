@@ -475,11 +475,11 @@ LispObject Lmake_broadcast_stream_n(LispObject env, int nargs, ...)
 }
 
 LispObject Lmake_broadcast_stream_1(LispObject env, LispObject a)
-{   return Lmake_broadcast_stream_n(nil, 1, a);
+{   return Lmake_broadcast_stream_n(env, 1, a);
 }
 
 LispObject Lmake_broadcast_stream_2(LispObject env, LispObject a, LispObject b)
-{   return Lmake_broadcast_stream_n(nil, 2, a, b);
+{   return Lmake_broadcast_stream_n(env, 2, a, b);
 }
 
 LispObject Lmake_concatenated_stream_n(LispObject env, int nargs, ...)
@@ -507,11 +507,11 @@ LispObject Lmake_concatenated_stream_n(LispObject env, int nargs, ...)
 }
 
 LispObject Lmake_concatenated_stream_1(LispObject env, LispObject a)
-{   return Lmake_concatenated_stream_n(nil, 1, a);
+{   return Lmake_concatenated_stream_n(env, 1, a);
 }
 
 LispObject Lmake_concatenated_stream_2(LispObject env, LispObject a, LispObject b)
-{   return Lmake_concatenated_stream_n(nil, 2, a, b);
+{   return Lmake_concatenated_stream_n(env, 2, a, b);
 }
 
 LispObject Lmake_synonym_stream(LispObject env, LispObject a)
@@ -571,11 +571,11 @@ LispObject Lmake_string_input_stream_n(LispObject, int, ...)
 }
 
 LispObject Lmake_string_input_stream_1(LispObject env, LispObject a)
-{   return Lmake_string_input_stream_n(nil, 1, a);
+{   return Lmake_string_input_stream_n(env, 1, a);
 }
 
 LispObject Lmake_string_input_stream_2(LispObject env, LispObject a, LispObject b)
-{   return Lmake_string_input_stream_n(nil, 2, a, b);
+{   return Lmake_string_input_stream_n(env, 2, a, b);
 }
 
 LispObject Lmake_string_output_stream(LispObject env, int nargs, ...)
@@ -882,7 +882,7 @@ static LispObject Lfiledate(LispObject env, LispObject name)
 }
 
 static LispObject Lfilep(LispObject env, LispObject name)
-{   name = Lfiledate(nil, name);
+{   name = Lfiledate(env, name);
     if (name != nil) name = lisp_true;
     return onevalue(name);
 }
@@ -1408,7 +1408,7 @@ LispObject Lfile_writeable(LispObject env, LispObject name)
     memset(filename, 0, sizeof(filename));
 
     // First check whether file exists
-    if (Lfilep(nil,name) == nil) return nil;
+    if (Lfilep(env,name) == nil) return nil;
 
     w = get_string_data(name, "file-writable", len);
     if (len >= sizeof(filename)) len = sizeof(filename);
@@ -2714,7 +2714,7 @@ restart:
                         else k = 0;
                         if (pkgid != 0)
                         {   push(w);
-                            w = Lfind_symbol_1(nil, w);
+                            w = Lfind_symbol_1(env, w);
                             u = stack[-1];
                             if (mv_2 != nil && w == u)
                             {   pkgid = 0;
@@ -3333,17 +3333,7 @@ void loop_print_stdout(LispObject o)
     if (!is_symbol(lp) ||
         (f = qfn1(lp)) == undefined1 ||
         (f != bytecoded1 && !is_vector(qenv(lp)))) prin_to_stdout(o);
-    else
-    {   bool bad = false;
-        LispObject env = qenv(lp);
-        push2(lp, env);
-        ifn1(lp) = (intptr_t)undefined1;  // To avoid recursion if it fails
-        qenv(lp) = lp;                    // make it an undefined function
-        if_error((*f)(env, o),
-                 bad = true);
-        pop2(env, lp);
-        if (!bad) ifn1(lp) = (intptr_t)f, qenv(lp) = env; // Restore if OK
-    }
+    else (*f)(lp, o);
     exit_reason = sx;
 }
 
@@ -3740,7 +3730,7 @@ LispObject Llinelength(LispObject env, LispObject a)
 
 static LispObject Llinelength0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "linelength");
-    return Llinelength(nil, nil);
+    return Llinelength(env, nil);
 }
 
 LispObject Lprint_imports(LispObject env, int nargs, ...)
@@ -4022,9 +4012,9 @@ LispObject Ldebug_print(LispObject env, LispObject a)
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     if (symbolp(a)) a = get_pname(a);
-    if (!is_vector(a)) return Lprint(nil, a);
+    if (!is_vector(a)) return Lprint(env, a);
     h = vechdr(a);
-    if (!is_string_header(h)) return Lprint(nil, a);
+    if (!is_string_header(h)) return Lprint(env, a);
     len = length_of_byteheader(h) - CELL;
     p = &celt(a, 0);
     for (i=0; i<len; i++)
@@ -4246,7 +4236,7 @@ static FILE *binary_open(LispObject env, LispObject name, const char *dir, const
 }
 
 static LispObject Lbinary_open_output(LispObject env, LispObject name)
-{   binary_outfile = binary_open(nil, name, "wb", "binary_open_output");
+{   binary_outfile = binary_open(env, name, "wb", "binary_open_output");
     return onevalue(nil);
 }
 
@@ -4353,7 +4343,7 @@ static LispObject Lbinary_close_output(LispObject env, int nargs, ...)
 
 static LispObject Lbinary_open_input(LispObject env, LispObject name)
 {   LispObject r;
-    FILE *fh = binary_open(nil, name, "rb", "binary_open_input");
+    FILE *fh = binary_open(env, name, "rb", "binary_open_input");
     r = make_stream_handle();
     set_stream_read_fn(r, char_from_file);
     set_stream_read_other(r, read_action_file);
@@ -4506,7 +4496,7 @@ found:
 }
 
 static LispObject Lopen_library_1(LispObject env, LispObject file)
-{   return Lopen_library(nil, file, nil);
+{   return Lopen_library(env, file, nil);
 }
 
 static LispObject Lclose_library(LispObject env, LispObject lib)
@@ -5029,7 +5019,7 @@ start_again:
 //
     if (fetch_response(filename1, r))
     {   err_printf("Error fetching status line from the server\n");
-        Lclose(nil,r);
+        Lclose(env,r);
         return onevalue(nil);
     }
 
@@ -5050,7 +5040,7 @@ start_again:
             retcode < 0 || retcode > 999)
         {   err_printf("Bad protocol specification returned\n");
             err_printf(filename1); // So I can see what did come back
-            Lclose(nil,r);
+            Lclose(env,r);
             return onevalue(nil);
         }
     }
@@ -5110,7 +5100,7 @@ start_again:
     }
 
     if (retcode == 0)
-    {   Lclose(nil,r);
+    {   Lclose(env,r);
         return onevalue(nil);
     }
 
@@ -5123,7 +5113,7 @@ start_again:
         {   int ch = char_from_socket(r);
             if (ch == EOF)
             {   err_printf("Error fetching additional info from the server\n");
-                Lclose(nil,r);
+                Lclose(env,r);
                 return onevalue(nil);
             }
             if (ch == 0x0a) break;
@@ -5179,7 +5169,7 @@ LispObject Lwindow_heading2(LispObject env, LispObject a, LispObject b)
 }
 
 LispObject Lwindow_heading1(LispObject env, LispObject a)
-{   return Lwindow_heading2(nil, a, nil);
+{   return Lwindow_heading2(env, a, nil);
 }
 
 setup_type const print_setup[] =

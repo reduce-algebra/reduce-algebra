@@ -1080,11 +1080,11 @@ LispObject Laref(LispObject env, int nargs, ...)
 }
 
 static LispObject Laref1(LispObject env, LispObject a)
-{   return Laref(nil, 1, a);
+{   return Laref(env, 1, a);
 }
 
 LispObject Laref2(LispObject env, LispObject a, LispObject b)
-{   return Laref(nil, 2, a, b);
+{   return Laref(env, 2, a, b);
 }
 
 LispObject Lelt(LispObject env, LispObject v, LispObject n)
@@ -1319,7 +1319,7 @@ static LispObject Laset1(LispObject env, LispObject a)
 }
 
 static LispObject Laset2(LispObject env, LispObject a, LispObject b)
-{   return Laset(nil, 2, a, b);
+{   return Laset(env, 2, a, b);
 }
 
 static LispObject Lsetelt(LispObject env, int nargs, ...)
@@ -1566,7 +1566,7 @@ static LispObject Lmake_string1(LispObject env, LispObject n)
 }
 
 static LispObject Lmake_string2(LispObject env, LispObject a, LispObject b)
-{   return Lmake_string(nil, 2, a, b);
+{   return Lmake_string(env, 2, a, b);
 }
 
 //
@@ -1646,11 +1646,11 @@ static LispObject Lvector(LispObject env, int nargs, ...)
 }
 
 static LispObject Lvector1(LispObject env, LispObject a)
-{   return Lvector(nil, 1, a);
+{   return Lvector(env, 1, a);
 }
 
 static LispObject Lvector2(LispObject env, LispObject a, LispObject b)
-{   return Lvector(nil, 2, a, b);
+{   return Lvector(env, 2, a, b);
 }
 
 

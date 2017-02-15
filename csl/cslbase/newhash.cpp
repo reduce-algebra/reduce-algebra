@@ -1039,7 +1039,7 @@ void simple_msg(const char *s, LispObject x)
 extern LispObject Lmknewhash(LispObject env, int nargs, ...);
 
 LispObject Lmknewhash2(LispObject env, LispObject a, LispObject b)
-{   return Lmknewhash(nil, 3, a, b, nil);
+{   return Lmknewhash(env, 3, a, b, nil);
 }
 
 LispObject Lmknewhash(LispObject env, int nargs, ...)
@@ -1712,7 +1712,7 @@ LispObject Lget_newhash_1(LispObject env, LispObject key)
 }
 
 LispObject Lget_newhash_2(LispObject env, LispObject key, LispObject tab)
-{   return Lget_newhash(nil, 3, key, tab, nil);
+{   return Lget_newhash(env, 3, key, tab, nil);
 }
 
 #ifdef DEBUG
@@ -1775,7 +1775,7 @@ printf("HASHX found so setting after_gc\n");
 }
 
 LispObject Lput_newhash_2(LispObject env, LispObject a, LispObject b)
-{   return Lput_hash(nil, 3, a, sys_hash_table, b);
+{   return Lput_hash(env, 3, a, sys_hash_table, b);
 }
 
 LispObject Lrem_newhash(LispObject env, LispObject key, LispObject tab)
@@ -1788,7 +1788,7 @@ LispObject Lrem_newhash(LispObject env, LispObject key, LispObject tab)
 }
 
 LispObject Lrem_newhash_1(LispObject env, LispObject a)
-{   return Lrem_newhash(nil, a, sys_hash_table);
+{   return Lrem_newhash(env, a, sys_hash_table);
 }
 
 LispObject Lclr_newhash(LispObject env, LispObject tab)
@@ -1821,7 +1821,7 @@ LispObject Lnewhash_rehash(LispObject env, LispObject tab)
 
 LispObject Lclr_newhash_0(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "clrnewhash");
-    return Lclr_newhash(nil, sys_hash_table);
+    return Lclr_newhash(env, sys_hash_table);
 }
 
 // (sxhash key) is supposed to return a positive fixnum such that any

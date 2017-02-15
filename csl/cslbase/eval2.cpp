@@ -292,12 +292,12 @@ LispObject apply(LispObject fn, int nargs, LispObject env, LispObject from)
                 trace_printf("\n");
                 for (int i=1; i<=nargs; i++)
                 {   trace_printf("Arg%d: ", i);
-                    loop_print_trace(stack[-i]);
+                    loop_print_trace(stack[i-nargs-1]);
                     trace_printf("\n");
                 }
                 pop(fn);
             }
-            def = qenv(fn); // this is passed as arg1 to the called code
+            def = fn; // this is passed as arg1 to the called code
 //
 // apply will find arguments on the stack and is responsible for
 // popping them before it exits.
@@ -364,9 +364,6 @@ LispObject apply(LispObject fn, int nargs, LispObject env, LispObject from)
                         break;
                 }
                 debug_assert(1);
-#ifdef DO_NOT_TRUST_ARITHMETIC
-                validate_number("apply", def, nil, nil);
-#endif
 //
 // here I have to pop the stack by hand - note that popv does not
 // corrupt exit_count, which tells me how many results were being handed
@@ -829,7 +826,7 @@ static LispObject defun_fn(LispObject args, LispObject)
                 qfn1(compiler_symbol) != undefined1)
             {   push(fname);
                 args = ncons(fname);
-                (qfn1(compiler_symbol))(qenv(compiler_symbol), args);
+                (qfn1(compiler_symbol))(compiler_symbol, args);
                 pop(fname);
             }
             return onevalue(fname);
@@ -893,7 +890,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
                        equal(t1, t2))))
                 {   fname = stack[0];
                     args = ncons(fname);
-                    (qfn1(compiler_symbol))(qenv(compiler_symbol), args);
+                    (qfn1(compiler_symbol))(compiler_symbol, args);
                 }
                 pop(fname);
             }
@@ -1166,7 +1163,7 @@ static LispObject letstar_fn(LispObject args, LispObject env)
 }
 
 static LispObject bad_specialfn2(LispObject env, LispObject a, LispObject b)
-{   aerror("bad special function");
+{   aerror1("bad special function", env);
 }
 
 setup_type const eval2_setup[] =

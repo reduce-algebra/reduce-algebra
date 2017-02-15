@@ -505,11 +505,9 @@ void aerror2(const char *s, LispObject a, LispObject b)
 NORETURN static void wrong(int wanted, int given, LispObject env)
 {   char msg[64];
     sprintf(msg, "Function called with %d args where %d wanted", given, wanted);
-    if (is_cons(env)) env = qcdr(env);
-    if ((miscflags & HEADLINE_FLAG) && is_vector(env))
-    {   LispObject fname = elt(env, 0);
-        err_printf("\nCalling ");
-        loop_print_error(fname);
+    if ((miscflags & HEADLINE_FLAG))
+    {   err_printf("\nCalling ");
+        loop_print_error(env);
         err_printf("\n");
     }
     aerror(msg);
@@ -542,13 +540,13 @@ void wrong_no_3b(LispObject env, LispObject, LispObject)
 void wrong_no_na(LispObject env, LispObject)
 {   if (is_cons(env) && is_bps(qcar(env)))
         wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 1, env);
-    else aerror("function called with 1 arg when 0 or >= 3 wanted");
+    else aerror1("function called with 1 arg when 0 or >= 3 wanted", env);
 }
 
 void wrong_no_nb(LispObject env, LispObject, LispObject)
 {   if (is_cons(env) && is_bps(qcar(env)))
         wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 2, env);
-    else aerror("function called with 2 args when 0 or >= 3 wanted");
+    else aerror1("function called with 2 args when 0 or >= 3 wanted", env);
 }
 
 void wrong_no_1(LispObject env, int nargs, ...)
