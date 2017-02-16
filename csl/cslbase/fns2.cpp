@@ -784,6 +784,8 @@ static void trace_builtin(LispObject s, bool state)
     if (is_fixnum(w)) four_arg_traceflags[int_of_fixnum(w)] = state;
 }
 
+// The arrangements here are such that traceset always includes trace.
+
 LispObject Ltrace(LispObject env, LispObject a)
 {   LispObject w = a;
     if (symbolp(a))
@@ -813,6 +815,8 @@ LispObject Ltrace(LispObject env, LispObject a)
     return onevalue(a);
 }
 
+// untrace switches off trace and also any traceset.
+
 LispObject Luntrace(LispObject env, LispObject a)
 {   LispObject w = a;
     if (symbolp(a))
@@ -823,12 +827,14 @@ LispObject Luntrace(LispObject env, LispObject a)
     {   LispObject s = qcar(w);
         w = qcdr(w);
         if (symbolp(s))
-        {   qheader(s) &= ~SYM_TRACED;
+        {   qheader(s) &= ~SYM_TRACED & ~SYM_TRACESET;
             trace_builtin(s, false);
         }
     }
     return onevalue(a);
 }
+
+// traceset forces on trace as well as traceset.
 
 LispObject Ltraceset(LispObject env, LispObject a)
 {   LispObject w = a;
@@ -839,7 +845,7 @@ LispObject Ltraceset(LispObject env, LispObject a)
     while (consp(w))
     {   LispObject s = qcar(w);
         w = qcdr(w);
-        if (symbolp(s)) qheader(s) |= SYM_TRACESET;
+        if (symbolp(s)) qheader(s) |= SYM_TRACESET | SYM_TRACED;
     }
     return onevalue(a);
 }
