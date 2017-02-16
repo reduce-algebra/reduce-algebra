@@ -269,52 +269,6 @@ LispObject Lcopy_module(LispObject env, LispObject file)
     return onevalue(nil);
 }
 
-LispObject Lcopy_native(LispObject env, LispObject src, LispObject dest)
-//
-// (copy-native external-file internal-name)
-// copies (binary) data from the named external file to a module with
-// the specified name. This will mostly be used for native code and is
-// not really expected to make sense to normal end-users.
-//
-{   Header h;
-    size_t len = 0;
-    const char *modname, *w;
-    char filename[LONGEST_LEGAL_FILENAME];
-    FILE *srcfile;
-    int c;
-    memset(filename, 0, sizeof(filename));
-    w = get_string_data(src, "copy-native", len);
-    if (len >= sizeof(filename)) len = sizeof(filename);
-    srcfile = open_file(filename, w, len, "rb", NULL);
-    if (srcfile == NULL)
-    {   error(1, err_open_failed, src);
-        return onevalue(nil);
-    }
-    if (symbolp(dest))
-    {   dest = get_pname(dest);
-        h = vechdr(dest);
-    }
-    else if (!is_vector(dest) || !is_string_header(h = vechdr(dest)))
-        aerror("copy-module");
-    len = length_of_byteheader(h) - CELL;
-    modname = (char *)dest + CELL - TAG_VECTOR;
-//
-// Unlike the case of copy_module I will demand that the module name
-// here be handed down in exactly the form required...
-//
-    if (open_output(modname, len)) return onevalue(nil);
-//
-// OK, now the output module is open for writing... now Iputc(int) can
-// plant bytes, returning true if trouble, or Iwrite(char *, int) can write
-// a block of bytes. I write stuff raw, not via the compression layer.
-//
-    while ((c = getc(srcfile)) != -1) Iputc(c);
-    fclose(srcfile);
-    if (IcloseOutput()) return onevalue(nil);
-// return T on success
-    return onevalue(lisp_true);
-}
-
 LispObject Ldelete_module(LispObject env, LispObject file)
 //
 // delete-module deletes the named module from the output PDS, supposing it

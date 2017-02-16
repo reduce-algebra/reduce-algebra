@@ -3328,7 +3328,8 @@ static LispObject load_module(LispObject env, LispObject file,
 // load_module() rebinds *package* in COMMON mode, but also note that
 // it also rebinds *echo to nil in case we are reading from a stream.
 //
-{   char filename[LONGEST_LEGAL_FILENAME];
+{   save_current_function saver(env);
+    char filename[LONGEST_LEGAL_FILENAME];
     Header h;
     size_t len;
     bool from_stream = false;

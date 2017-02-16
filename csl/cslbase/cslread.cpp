@@ -3701,7 +3701,7 @@ LispObject Lstring2list(LispObject env, LispObject a)
 }
 
 void read_eval_print(int noisy)
-{   LispObject * volatile save = stack;
+{   LispObject *save = stack;
     for (;;)        // Loop for each s-expression found
     {   volatile LispObject u;
 #ifdef COMMON
@@ -3896,7 +3896,8 @@ void read_eval_print(int noisy)
 
 LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
                  LispObject verbosep, LispObject nofilep)
-{   LispObject r = nil;
+{   save_current_function saver(env);
+    LispObject r = nil;
     int noisy = (noisyp != nil);
     int verbose = (verbosep != nil);
 #ifdef COMMON

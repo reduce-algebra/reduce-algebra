@@ -285,7 +285,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_STOREFREE:
                 if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   push(A_reg);
+                {   STACK_SANITY;
+                    push(A_reg);
                     print_traceset(current_byte, A_reg);
                     pop(A_reg);
                 }
@@ -294,7 +295,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_STOREFREE1:
                 if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   push(A_reg);
+                {   STACK_SANITY;
+                    push(A_reg);
                     print_traceset(1, A_reg);
                     pop(A_reg);
                 }
@@ -303,7 +305,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_STOREFREE2:
                 if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   push(A_reg);
+                {   STACK_SANITY;
+                    push(A_reg);
                     print_traceset(2, A_reg);
                     pop(A_reg);
                 }
@@ -312,7 +315,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_STOREFREE3:
                 if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
-                {   push(A_reg);
+                {   STACK_SANITY;
+                    push(A_reg);
                     print_traceset(3, A_reg);
                     pop(A_reg);
                 }

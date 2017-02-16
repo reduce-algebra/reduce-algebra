@@ -851,9 +851,9 @@ static void lisp_main(void)
                     free(exit_charvec);
                     exit_charvec = NULL;
                     push(a);
-                    apply(supervisor, 1, nil, startup_symbol);
+                    apply(supervisor, 1, nil, current_function = startup_symbol);
                 }
-                else apply(supervisor, 0, nil, startup_symbol);
+                else apply(supervisor, 0, nil, current_function = startup_symbol);
             }
 //
 // Here the default read-eval-print loop used if the user has not provided
@@ -3210,7 +3210,8 @@ static void PROC_standardise_gensyms(LispObject w)
 }
 
 int PROC_lisp_eval()
-{   LispObject w = nil;
+{   save_current_function saver(eval_symbol);
+    LispObject w = nil;
 #ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;

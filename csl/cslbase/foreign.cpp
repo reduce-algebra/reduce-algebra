@@ -184,4 +184,3 @@ int32_t two_way(int32_t x)
 }
 
 // End of test loadable module, foreign.cpp
-

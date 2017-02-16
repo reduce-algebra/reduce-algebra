@@ -433,6 +433,17 @@ static LispObject setq_fn(LispObject args, LispObject env)
             args = qcdr(args);
         }
         else val = nil;
+        if ((qheader(current_function) & SYM_TRACESET) != 0)
+        {   push4(args, env, var, val);
+            freshline_trace();
+            loop_print_trace(current_function);
+            trace_printf(":  ");
+            loop_print_trace(stack[-1]);
+            trace_printf(" := ");
+            loop_print_trace(stack[0]);
+            trace_printf("\n");
+            pop4(val, var, env, args);
+        }
         if ((qheader(var) & SYM_KEYWORD_VAR) == SYM_SPECIAL_VAR ||
             (qheader(var) & SYM_KEYWORD_VAR) == SYM_GLOBAL_VAR)
             qvalue(var) = val;

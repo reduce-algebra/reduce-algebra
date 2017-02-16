@@ -261,7 +261,7 @@ restart:
 // or a closure, env will be irrelevant.  The arguments are on the Lisp
 // stack, and it is the responsibility of apply() to pop them.
 //
-            return apply(fn, nargs, env, eval_symbol);
+            return apply(fn, nargs, env, current_function);
         }
     }
 }
@@ -785,11 +785,13 @@ error(0, msg);    }
 }
 
 LispObject Leval(LispObject env, LispObject a)
-{   return eval(a, nil);     // Multiple values may be returned
+{   save_current_function saver(eval_symbol);
+    return eval(a, nil);     // Multiple values may be returned
 }
 
 LispObject Levlis(LispObject env, LispObject a)
 {   STACK_SANITY;
+    save_current_function saver(eval_symbol);
     LispObject r;
     stackcheck1(0, a);
     r = nil;
@@ -806,6 +808,7 @@ LispObject Levlis(LispObject env, LispObject a)
 
 LispObject Lapply_n(LispObject env, int nargs, ...)
 {   STACK_SANITY;
+    save_current_function saver(apply_symbol);
     va_list a;
     int i;
     LispObject last, fn = nil;
@@ -836,6 +839,7 @@ LispObject Lapply_2(LispObject env, LispObject fn, LispObject a1)
 
 LispObject Lapply0(LispObject env, LispObject fn)
 {   STACK_SANITY;
+    save_current_function saver(apply_symbol);
 #ifndef DEBUG
 // I avoid this optimisation if debugging...
     if (is_symbol(fn)) return (*qfnn(fn))(fn, 0);
@@ -846,6 +850,7 @@ LispObject Lapply0(LispObject env, LispObject fn)
 
 LispObject Lapply1(LispObject env, LispObject fn, LispObject a)
 {   STACK_SANITY;
+    save_current_function saver(apply_symbol);
 #ifndef DEBUG
     if (is_symbol(fn)) return (*qfn1(fn))(fn, a);
 #endif
@@ -856,6 +861,7 @@ LispObject Lapply1(LispObject env, LispObject fn, LispObject a)
 
 LispObject Lapply2(LispObject env, int nargs, ...)
 {   STACK_SANITY;
+    save_current_function saver(apply_symbol);
     va_list aa;
     LispObject fn, a, b;
     argcheck(nargs, 3, "apply2");
@@ -874,6 +880,7 @@ LispObject Lapply2(LispObject env, int nargs, ...)
 
 LispObject Lapply3(LispObject env, int nargs, ...)
 {   STACK_SANITY;
+    save_current_function saver(apply_symbol);
     va_list aa;
     LispObject fn, a, b, c;
     argcheck(nargs, 4, "apply3");
@@ -893,6 +900,7 @@ LispObject Lapply3(LispObject env, int nargs, ...)
 
 LispObject Lfuncall1(LispObject env, LispObject fn)
 {   STACK_SANITY;
+    save_current_function saver(funcall_symbol);
 #ifndef DEBUG
     if (is_symbol(fn)) return (*qfnn(fn))(fn, 0);
 #endif
@@ -902,6 +910,7 @@ LispObject Lfuncall1(LispObject env, LispObject fn)
 
 LispObject Lfuncall2(LispObject env, LispObject fn, LispObject a1)
 {   STACK_SANITY;
+    save_current_function saver(funcall_symbol);
 #ifndef DEBUG
     if (is_symbol(fn)) return (*qfn1(fn))(fn, a1);
 #endif
@@ -910,7 +919,7 @@ LispObject Lfuncall2(LispObject env, LispObject fn, LispObject a1)
     return apply(fn, 1, nil, funcall_symbol);
 }
 
-static LispObject Lfuncalln_sub(LispObject env, int nargs, va_list a)
+static LispObject funcalln_sub(LispObject env, int nargs, va_list a)
 {   STACK_SANITY;
     LispObject fn = va_arg(a, LispObject);
     push_args_1(a, nargs);
@@ -919,6 +928,7 @@ static LispObject Lfuncalln_sub(LispObject env, int nargs, va_list a)
 
 LispObject Lfuncalln(LispObject env, int nargs, ...)
 {   STACK_SANITY;
+    save_current_function saver(funcall_symbol);
     va_list a;
     LispObject fn, a1, a2, a3, a4;
     va_start(a, nargs);
@@ -954,7 +964,7 @@ LispObject Lfuncalln(LispObject env, int nargs, ...)
             push4(a1, a2, a3, a4);
             return apply(fn, 4, nil, funcall_symbol);
         default:
-            return Lfuncalln_sub(nil, nargs, a);
+            return funcalln_sub(nil, nargs, a);
     }
 }
 
@@ -1004,6 +1014,7 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 // here with the rest of the interpreter rather than in specforms.c
 //
 {   STACK_SANITY;
+    save_current_function saver(mv_call_symbol);
     int i=0;
     if (!consp(args)) return nil;       // (multiple-value-call) => nil
     stackcheck2(0, args, env);
@@ -1038,6 +1049,7 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 
 LispObject interpreted1(LispObject def, LispObject a1)
 {   STACK_SANITY;
+    save_current_function saver(def);
     push(a1);
     stackcheck1(1, def);
     return apply_lambda(qenv(def), 1, nil, def);
@@ -1045,6 +1057,7 @@ LispObject interpreted1(LispObject def, LispObject a1)
 
 LispObject interpreted2(LispObject def, LispObject a1, LispObject a2)
 {   STACK_SANITY;
+    save_current_function saver(def);
     push2(a1, a2);
     stackcheck1(2, def);
     return apply_lambda(qenv(def), 2, nil, def);
@@ -1059,6 +1072,7 @@ LispObject interpretedn(LispObject def, int nargs, ...)
 // probably save a copying operation.
 //
     STACK_SANITY;
+    save_current_function saver(def);
     va_list a;
     if (nargs != 0)
     {   va_start(a, nargs);
@@ -1069,6 +1083,7 @@ LispObject interpretedn(LispObject def, int nargs, ...)
 
 LispObject funarged1(LispObject def, LispObject a1)
 {   STACK_SANITY;
+    save_current_function saver(def);
     push(a1);
     stackcheck1(1, def);
     def = qenv(def);
@@ -1077,6 +1092,7 @@ LispObject funarged1(LispObject def, LispObject a1)
 
 LispObject funarged2(LispObject def, LispObject a1, LispObject a2)
 {   STACK_SANITY;
+    save_current_function saver(def);
     push2(a1, a2);
     stackcheck1(2, def);
     def = qenv(def);
@@ -1085,6 +1101,7 @@ LispObject funarged2(LispObject def, LispObject a1, LispObject a2)
 
 LispObject funargedn(LispObject def, int nargs, ...)
 {   STACK_SANITY;
+    save_current_function saver(def);
     va_list a;
     if (nargs != 0)
     {   va_start(a, nargs);

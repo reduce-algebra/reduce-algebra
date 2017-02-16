@@ -968,6 +968,19 @@ static inline LispObject encapsulate_sp(LispObject *sp)
 // NEVER call any Lisp functions in ways that could trigger tracing, since
 // otherwise there could be nasty recursions arising.
 
+// Well at some stage I may need to arrange to preserve multiple values
+// across the printing here...
+static LispObject show_result(LispObject r)
+{   LispObject name = stack[0];
+    stack[0] = r;
+    freshline_trace();
+    loop_print_trace(name);
+    trace_printf(" => ");
+    loop_print_trace(stack[0]);
+    trace_printf("\n");
+    pop(r);
+    return r;
+}
 LispObject traced_call0(LispObject from, n_args *f0, LispObject name)
 {   push(name);
     push(from);
@@ -979,17 +992,7 @@ LispObject traced_call0(LispObject from, n_args *f0, LispObject name)
     loop_print_trace(from);
     trace_printf("\n");
     LispObject r = f0(stack[0], 0);
-// Well at some stage I may need to arrange to preserve multiple values
-// across the printing here...
-    name = stack[0];
-    stack[0] = r;
-    freshline_trace();
-    loop_print_trace(name);
-    trace_printf(" => ");
-    loop_print_trace(stack[0]);
-    trace_printf("\n");
-    pop(r);
-    return r;
+    return show_result(r);
 }
 
 LispObject traced_call1(LispObject from, one_args *f1,
@@ -1007,18 +1010,8 @@ LispObject traced_call1(LispObject from, one_args *f1,
     loop_print_trace(stack[0]);
     trace_printf("\n");
     pop(a1);
-    LispObject r = f1(stack[-1], a1);
-// Well at some stage I may need to arrange to preserve multiple values
-// across the printing here...
-    name = stack[0];
-    stack[0] = r;
-    freshline_trace();
-    loop_print_trace(name);
-    trace_printf(" => ");
-    loop_print_trace(stack[0]);
-    trace_printf("\n");
-    pop(r);
-    return r;
+    LispObject r = f1(stack[0], a1);
+    return show_result(r);
 }
 
 LispObject traced_call2(LispObject from, two_args *f2,
@@ -1039,18 +1032,8 @@ LispObject traced_call2(LispObject from, two_args *f2,
     loop_print_trace(stack[0]);
     trace_printf("\n");
     pop2(a2, a1);
-    LispObject r = f2(stack[-1], a1, a2);
-// Well at some stage I may need to arrange to preserve multiple values
-// across the printing here...
-    name = stack[0];
-    stack[0] = r;
-    freshline_trace();
-    loop_print_trace(name);
-    trace_printf(" => ");
-    loop_print_trace(stack[0]);
-    trace_printf("\n");
-    pop(r);
-    return r;
+    LispObject r = f2(stack[0], a1, a2);
+    return show_result(r);
 }
 
 LispObject traced_call3(LispObject from, n_args *f345,
@@ -1076,17 +1059,7 @@ LispObject traced_call3(LispObject from, n_args *f345,
     trace_printf("\n");
     pop3(a3, a2, a1);
     LispObject r = f345(stack[0], 3, a1, a2, a3);
-// Well at some stage I may need to arrange to preserve multiple values
-// across the printing here...
-    name = stack[0];
-    stack[0] = r;
-    freshline_trace();
-    loop_print_trace(name);
-    trace_printf(" => ");
-    loop_print_trace(stack[0]);
-    trace_printf("\n");
-    pop(r);
-    return r;
+    return show_result(r);
 }
 
 void print_traceset(int varname, LispObject val)

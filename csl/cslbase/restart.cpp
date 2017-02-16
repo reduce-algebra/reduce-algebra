@@ -1502,6 +1502,7 @@ static void cold_setup()
     echo_symbol         = make_undefined_symbol("*echo");
     comp_symbol         = make_undefined_symbol("*comp");
     compiler_symbol     = make_undefined_symbol("compile");
+    current_function    = // system-startup
     startup_symbol      = make_undefined_symbol("system-startup");
     mv_call_symbol      = make_symbol("multiple-value-call", 0, mv_call_fn, NULL, BAD_SPECIALN);
     autoload_symbol     = make_undefined_symbol("autoload");

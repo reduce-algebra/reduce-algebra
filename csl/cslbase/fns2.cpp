@@ -568,7 +568,6 @@ LispObject Lsymbol_set_definition(LispObject env,
     {   if (qheader(a) & SYM_C_DEF) return onevalue(nil);
         aerror1("symbol-set-definition", a);
     }
-    qheader(a) &= ~SYM_TRACED;
     set_fns(a, undefined1, undefined2, undefinedn); // Tidy up first
     qenv(a) = a;
     if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
