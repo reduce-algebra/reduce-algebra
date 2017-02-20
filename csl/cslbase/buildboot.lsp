@@ -709,8 +709,6 @@ symbolic procedure test_a_package names;
        erfg!* := nil;
        putd('quit, car quitfn, cdr quitfn);
        if atom rr then printc "+++++ Error: Resource limit exceeded";
-%      princ "@@@@@ Resources used: "; print !*resources!*;
-%      if !*savedef then mapstore t;
        linelength oll
     end;
     close logfile;
@@ -773,8 +771,7 @@ symbolic procedure profile_a_package names;
        quitfn := getd 'quit;
        remd 'quit;
        putd('quit, 'expr, 'posn);
-       if boundp 'tracefluid then print mapstore 2
-       else mapstore 4;  % reset counts;
+       mapstore 4;  % reset counts;
        !*errcont := t;
 % I try hard to arrange that even if the test fails I can continue and that
 % input & output file selection is not messed up for me.

@@ -126,9 +126,6 @@ static void copy(LispObject *p)
 #define DONE_FASTGETS -6
     int next = CONT;
     char *tr=NULL;
-#ifdef DEBUG_GC
-    term_printf("Copy [%p] %p\n", (void *)p, (void *)*p);
-#endif // DEBUG_GC
 //
 // The code here is a simulation of multiple procedure calls to the
 // code that copies a single object.  What might otherwise have been
@@ -146,13 +143,6 @@ static void copy(LispObject *p)
 // one.
 //
         LispObject a = *p;
-#ifdef DEBUG_GC
-        term_printf("Next copy [%p] %p\n", (void *)p, (void *)a);
-        if (a == 0)
-        {   term_printf("Shambles\n");
-            *(int *)(-1) = 0;
-        }
-#endif // DEBUG_GC
         for (;;)
         {   if (a == nil) break;    // common and cheap enough to test here
             else if (is_immed_or_cons(a))
@@ -194,9 +184,6 @@ static void copy(LispObject *p)
                     }
                     qcar(fr) = w;
                     qcdr(fr) = qcdr(a);
-#ifdef DEBUG_GC
-                    term_printf("new data for cons %p %p\n", (void *)w, (void *)qcdr(a));
-#endif // DEBUG_GC
                     *p = w = (LispObject)(fr + TAG_CONS);
                     qcar(a) = w + TAG_FORWARD;
                     break;
@@ -210,9 +197,6 @@ static void copy(LispObject *p)
                 tag = ((int)a) & TAG_BITS;
                 a = (LispObject)((char *)a - tag);
                 h = *(Header *)a;
-#ifdef DEBUG_GC
-                term_printf("Header is %p\n", (void *)h);
-#endif // DEBUG_GC
 // If the symbol/number/vector has already been copied then its header
 // word contains a forwarding address. Re-tag it.
                 if (is_forward(h))
@@ -283,36 +267,7 @@ static void copy(LispObject *p)
 // their offspring.
 //
         for (;;)
-        {
-#ifdef DEBUG_GC
-            switch (next)
-            {   case CONT:
-                    term_printf("next is CONT\n");
-                    break;
-                case DONE_CAR:
-                    term_printf("next is DONE_CAR\n");
-                    break;
-                case DONE_VALUE:
-                    term_printf("next is DONE_VALUE\n");
-                    break;
-                case DONE_ENV:
-                    term_printf("next is DONE_ENV\n");
-                    break;
-                case DONE_PNAME:
-                    term_printf("next is DONE_PNAME\n");
-                    break;
-                case DONE_PLIST:
-                    term_printf("next is DONE_PLIST\n");
-                    break;
-                case DONE_FASTGETS:
-                    term_printf("next is DONE_FASTGETS\n");
-                    break;
-                default:
-                    term_printf("next is array offset %d = %x\n", next, next);
-                    break;
-            }
-#endif // DEBUG_GC
-            switch (next)
+        {   switch (next)
             {   case CONT:
                     if (tr_fr != fr)
                     {   tr_fr = tr_fr - sizeof(Cons_Cell);
@@ -355,16 +310,8 @@ static void copy(LispObject *p)
 // written on the assumption that every vector that contains pointers at
 // all contains at least one.
 //
-#ifdef DEBUG_GC
-                                term_printf("zero length vector in 64-bit world\n");
-#endif // DEBUG_GC
                                 continue;
                             }
-#ifdef DEBUG_GC
-                            term_printf("header = %llx, type = %d/%x len = %d\n",
-                                        (long long)h, type_of_header(h), type_of_header(h), len);
-#endif // DEBUG_GC
-
                             switch (type_of_header(h))
                             {   case TYPE_SINGLE_FLOAT:
                                 case TYPE_LONG_FLOAT:
@@ -391,14 +338,6 @@ static void copy(LispObject *p)
                                 case TYPE_RATNUM:
                                 case TYPE_COMPLEX_NUM:
                                     next = len - 2*CELL;
-#ifdef DEBUG_GC
-                                    term_printf("line %d next now %d\n", __LINE__, next);
-                                    if (next < 0)
-                                    {   term_printf("unexpectedly negative\n");
-                                        // Just a vector with no elements on a 64-bit system?
-                                        continue;
-                                    }
-#endif // DEBUG_GC
                                     break;
                             }
                             p = (LispObject *)(tr + next + CELL);
@@ -438,209 +377,11 @@ static void copy(LispObject *p)
                 default:
                     p = (LispObject *)(tr + next);
                     next -= CELL;
-#ifdef DEBUG_GC
-                    term_printf("line %d next now %d\n", __LINE__, next);
-                    if (next < 0)
-                    {   term_printf("unexpectedly negative\n");
-                        *(int *)(-1) = 0;
-                    }
-#endif // DEBUG_GC
                     break;
             }
             break;
         }
     }
-}
-
-
-typedef struct mapstore_item
-{   double w;
-    double n;
-    uint64_t n1;
-    LispObject p;
-} mapstore_item;
-
-int profile_count_mode = 0;
-
-static int profile_cf(const void *a, const void *b)
-{   mapstore_item *aa = (mapstore_item *)a,
-                       *bb = (mapstore_item *)b;
-
-    if (profile_count_mode)
-    {   if (aa->n1 == bb->n1) return 0;
-        if (aa->n1 < bb->n1) return 1;
-        else return -1;
-    }
-    if (aa->w == bb->w) return 0;
-    else if (aa->w < bb->w) return 1;
-    else return -1;
-}
-
-// The mapstore function is only interested in symbols. But here it works by
-// expecting there to be a separate "vector heap" that contains only items
-// that have header words, and that these header words will all be present and
-// correct with no gaps in the data. I *BELIEVE* this is the
-// only places where I still rely on keeping CONS and VECTOR heaps separate
-// and where I rely on the vector heap always having neat header words
-// immediately after every object...
-
-
-LispObject Lmapstore(LispObject env, LispObject a)
-//
-// Argument controls what happens:
-//    nil or 0      print statistics and reset to zero
-//           1      print, but do not reset
-//           2      return list of stats, reset to zero
-//           3      return list, do not reset
-//           4      reset to zero, do not print, return nil
-//       8      Toggle call count mode
-//
-{   int pass, what;
-    int j, gcn = 0;
-    double itotal = 0.0, total = 0.0;
-    LispObject res = nil;
-    mapstore_item *buff=NULL;
-    int buffp=0, buffn=0;
-    if (a == nil) a = fixnum_of_int(0);
-    if (is_fixnum(a)) what = int_of_fixnum(a);
-    else what = 0;
-    if ((what & 6) == 0)
-    {   buff = (mapstore_item *)(*malloc_hook)(100*sizeof(mapstore_item));
-        if (buff == NULL) return onevalue(nil); // fail
-        buffp = 0;
-        buffn = 100;
-    }
-    if ((what & 2) != 0)
-    {   if_error(Lgc0(nil, 0), // Force GC at start to avoid one in the middle
-                 return nil);
-        gcn = gc_number;
-    }
-
-    if ((what & 8) != 0)
-        profile_count_mode = !profile_count_mode;
-#ifdef PROFILED
-//
-// PROFILED is intended to be defined if we were compiled with a -p option,
-// and we take system dependent action to dump out results (e.g. on some systems
-// it may be useful to invoke monitor() or moncontrol() here.
-//
-
-#ifdef SHOW_COUNTS_AVAILABLE
-    show_counts();
-    write_profile("counts");   // Useful if -px option to compiler
-#endif // SHOW_COUNTS_AVAILABLE
-
-#endif // PROFILED
-    {   char *vf = (char *)vfringe,
-                  *vl = (char *)vheaplimit;
-        int32_t len = (int32_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
-//
-// Set up the current page so I can tell where the active data is.
-//
-        car32(vl - (CSL_PAGE_SIZE - 8)) = len;
-    }
-    for (pass=0; pass<2; pass++)
-    {   for (j=0; j<vheap_pages_count; j++)
-        {   void *page = vheap_pages[j];
-            char *low = (char *)doubleword_align_up((intptr_t)page);
-            char *high = low + car32(low);
-            low += 8;
-            while (low<high)
-            {   Header h = *(Header *)low;
-                if (is_symbol_header(h))
-                {   LispObject e = qenv(low + TAG_SYMBOL);
-                    intptr_t clen = 0;
-                    uint64_t n;
-                    if (is_cons(e))
-                    {   e = qcar(e);
-                        if (is_bps(e))
-                            clen = length_of_byteheader(vechdr(e)) - CELL;
-                    }
-                    n = qcount(low + TAG_SYMBOL);
-                    if (n != 0 && clen != 0)
-                    {   double w = (double)n/(double)clen;
-//
-// Here I want a measure that will give a good idea of how worthwhile it
-// would be to compile the given function into C - what I have chosen is
-// a count of bytecodes executed scaled by the length
-// of the bytestream code defining the function.  This will cause "good value"
-// cases to show up best.  I scale this relative to the total across all
-// functions recorded to make the numbers less sensitive to details of
-// how I generate test cases.  For interest I also display the proportion
-// of actual bytecodes interpreted.  In each case I record these out of
-// a total of 100.0 (percent) to give comfortable ranges of numbers to admire.
-//
-                        if (pass == 0) itotal += (double)n, total += w;
-                        else
-                        {   if (w/total > 0.00001 ||
-                                (double)n/itotal > 0.0001)
-                            {   if ((what & 6) == 0)
-                                {   if (buffp == buffn)
-                                    {   buffn += 100;
-                                        buff = (mapstore_item *)
-                                               (*realloc_hook)((void *)buff,
-                                                               sizeof(mapstore_item)*buffn);
-                                        if (buff == NULL) return onevalue(nil);
-                                    }
-                                    buff[buffp].w = 100.0*w/total;
-                                    buff[buffp].n = 100.0*(double)n/itotal;
-                                    buff[buffp].n1 = n;
-                                    buff[buffp].p = (LispObject)(low + TAG_SYMBOL);
-                                    buffp++;
-                                }
-                                if ((what & 2) != 0)
-                                {   LispObject w1;
-// Result is a list of items ((name size bytes-executed) ...).
-// You might think that I needed to push res here - but I abort if there
-// is a GC, so it is not necessary after all.
-//
-                                    w1 = list3((LispObject)(low + TAG_SYMBOL),
-                                               fixnum_of_int(clen),
-                                               make_lisp_integer64(n));
-                                    if (gcn != gc_number) return nil;
-                                    res = cons(w1, res);
-                                    if (gcn != gc_number) return nil;
-                                }
-                            }
-//
-// Reset count unless 1 bit of arg is set
-//
-                            if ((what & 1) == 0)
-                            {   qcount(low + TAG_SYMBOL) = 0;
-//                              if (CELL==4)
-//                                  putprop((LispObject)(low+TAG_SYMBOL),
-//                                          count_high,
-//                                          fixnum_of_int(0));
-                            }
-                        }
-                    }
-                    low += symhdr_length;
-                }
-                else low += (intptr_t)doubleword_align_up(length_of_header(h));
-            }
-        }
-    }
-    if ((what & 6) == 0)
-    {   double running = 0.0;
-        qsort((void *)buff, buffp, sizeof(buff[0]), profile_cf);
-        trace_printf("\n  Value  %%bytes (So far) MBytecodes Function name\n");
-        for (j=0; j<buffp; j++)
-        {   running += buff[j].n;
-            trace_printf("%7.2f %7.2f (%6.2f) %9lu: ",
-                         buff[j].w, buff[j].n, running,
-                         (long unsigned)(buff[j].n1/10000u));
-            prin_to_trace(buff[j].p);
-            trace_printf("\n");
-        }
-        trace_printf("\n");
-        (*free_hook)((void *)buff);
-    }
-    return onevalue(res);
-}
-
-LispObject Lmapstore0(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "mapstore");
-    return Lmapstore(env, nil);
 }
 
 static bool reset_limit_registers(intptr_t vheap_need, bool stack_flag)
@@ -918,19 +659,11 @@ static int prev_consolidated_set = 1;
 
 bool garbage_collection_permitted = false;
 
-#ifdef DEBUG_WITH_HASH
-#define GCHASH 10000
-uint32_t stackhash[GCHASH];
-#endif
-
 LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 {   size_t i;
     clock_t t0, t1, t2;
     LispObject *sp;
     intptr_t vheap_need = 0;
-#ifdef DEBUG_GC
-    term_printf("Start of a garbage collection %d\n", gc_number);
-#endif // DEBUG_GC
 #ifdef CONSERVATIVE
 //
 // How do I know that all callee-save registers are on the stack by the
@@ -1081,10 +814,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             trace_printf(
                 "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
                 (long)gc_number, why, t/100, t%100, gct/100, gct%100);
-#ifdef DEBUG
-            if (reclaim_trap_count >= 0)
-                trace_printf("Will trap at GC %d. ", reclaim_trap_count);
-#endif
         }
     }
 #else // WINDOW_SYSTEM
@@ -1141,8 +870,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     }
 #endif // CONSERVATIVE
 
-    copy_into_nilseg(false);
-
     cons_cells = symbol_heads = strings = user_vectors =
             big_numbers = box_floats = bytestreams = other_mem =
                                            litvecs = getvecs = 0;
@@ -1177,9 +904,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             vl = (char *)heaplimit;
             fringe = (LispObject)(vl + CSL_PAGE_SIZE);
             heaplimit = (LispObject)(vl + SPARE);
-#ifdef DEBUG_GC
-            term_printf("fr = %p, hl = %p\n", (void *)fringe, (void *)heaplimit);
-#endif // DEBUG_GC
 //
 // A first page of vector heap.
 //
@@ -1193,32 +917,12 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
             car32(vl - (CSL_PAGE_SIZE - 8)) = (LispObject)len;
         }
-
-//
-// The very first thing that I will copy will be the main object-vector,
-// this is done early to ensure that it gets a full empty page of vector
-// heap to fit into.
-//
-#ifdef DEBUG_GC
-        term_printf("About to copy the object vector\n");
-#endif // DEBUG_GC
-        copy(&BASE[current_package_offset]);
-//
-// The above line is "really"
-//          copy(&current_package);
-// but I use an offset into the nilseg in explicit form because otherwise
-// there is confusion between the real and copied location of the pointer
-// to the package.
-//
-
 //
 // I should remind you, gentle reader, that the value cell
 // and env cells of nil will always contain nil, which does not move,
-// and so I do not need to copy them here.
+// and so I do not need to copy them here provided that NIL itself
+// never moves.
 //
-#ifdef DEBUG_GC
-        term_printf("About to copy NIL\n");
-#endif // DEBUG_GC
         copy(&(qplist(nil)));
         copy(&(qpname(nil)));
         copy(&(qfastgets(nil)));
@@ -1229,23 +933,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // I should arrange something totally different for copying the package
 // structure...
 //
-        for (i = first_nil_offset; i<last_nil_offset; i++)
-        {   if (i != current_package_offset)
-            {   // current-package - already copied by hand
-#ifdef DEBUG_GC
-                term_printf("About to copy list-base %d\n", i);
-#endif // DEBUG_GC
-                copy(&BASE[i]);
-            }
-        }
+        for (LispObject **p = list_bases; *p!=NULL; p++) copy(*p);
 
-#ifdef DEBUG_GC
-        term_printf("About to copy the stack\n");
-#endif // DEBUG_GC
         for (sp=stack; sp>(LispObject *)stackbase; sp--) copy(sp);
-#ifdef DEBUG_GC
-        term_printf("Stack processed\n");
-#endif // DEBUG_GC
 // When running the deserialization code I keep references to multiply-
 // used items in repeat_heap, and if garbage collection occurs they must be
 // updated.
@@ -1260,18 +950,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // When I have transitions to the new hash table scheme the two lists
 // processed specially here become redundant and this fragment of code can
 // go, I think.
-#ifdef DEBUG_GC
-        term_printf("About to copy eq hash tables\n");
-#endif // DEBUG_GC
         copy(&eq_hash_tables);
-#ifdef DEBUG_GC
-        term_printf("About to copy equal hash tables\n");
-#endif // DEBUG_GC
         copy(&equal_hash_tables);
 
-#ifdef DEBUG_GC
-        term_printf("About to tidy fringes and finish up\n");
-#endif // DEBUG_GC
         tidy_fringes();
 
 //
@@ -1317,21 +998,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 
     gc_time += pop_clock();
     t2 = base_time;
-
-#ifdef DEBUG_WITH_HASH
-        for (sp=stack; sp>(LispObject *)stackbase; sp--)
-        {   int n = sp - (LispObject *)stackbase;
-            uint32_t hh;
-            if (n < GCHASH)
-            {   if (stackhash[n] != (hh = hash_for_checking(*sp, 0)))
-                {   printf("@@@Stack offset %d was %x now %x\n",
-                        n, stackhash[n], hh);
-                }
-            }
-        }
-#endif
-
-    copy_out_of_nilseg(false);
 
     if ((verbos_flag & 5) == 5)
 //

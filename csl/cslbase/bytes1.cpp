@@ -751,7 +751,7 @@ LispObject Lplist(LispObject env, LispObject a)
 // byte opcodes are most heavily used.  This information is displayed
 // when you call BYTECOUNTS.
 //
-extern int profile_count_mode;
+extern bool profile_count_mode;
 
 #include "opnames.cpp"
 

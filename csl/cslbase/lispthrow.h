@@ -247,6 +247,15 @@ static inline const char *tidy_filename(const char *a)
     return (b == NULL ? a : b+1);
 }
 
+// If the (Lisp) stack were to get out of step with expectations the
+// consequences could be dire. To help me check against that I can use one
+// of these two macros. The second takes a LispObject that would then
+// appear in any diagnostics about stack confusion. If you are compiling
+// production code all that is generated is a null statement. But in debug
+// mode an object is created that recorsd the current stack pointer, and
+// when it goes out of scope at the end of the block it checks if things
+// have been put back as expected.
+
 #ifdef DEBUG
 #define STACK_SANITY                                  \
     RAIIstack_sanity stack_sanity_object(__func__,    \
@@ -255,8 +264,8 @@ static inline const char *tidy_filename(const char *a)
     RAIIstack_sanity stack_sanity_object(__func__,    \
         tidy_filename(__FILE__), __LINE__, w);
 #else
-#define STACK_SANITY
-#define STACK_SANITY1(w)
+#define STACK_SANITY            ;
+#define STACK_SANITY1(w)        ;
 #endif
 
 // In parts of the interpreter I want to save litvec and codevec and be

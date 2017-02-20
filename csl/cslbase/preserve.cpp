@@ -2151,9 +2151,8 @@ void preserve(const char *banner, size_t len)
         Iwrite(msg, 112); // Exactly 112 bytes in the header records
     }
     def_init();  // I should check the return code...
-    write_everything(); // neede sreturn code...
+    write_everything(); // needs a return code to report any failure?
 
-    copy_into_nilseg(true);
 #ifndef COMMON
     Zwrite("\n\nEnd of CSL dump file\n\n", 24);  // return code
 #else

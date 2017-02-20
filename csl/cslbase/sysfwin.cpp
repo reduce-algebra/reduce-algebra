@@ -950,4 +950,66 @@ const char *CSLtmpnam(const char *suffix, int32_t suffixlen)
     return tempname;
 }
 
+// The following functions are best described as delicate, and they are only
+// present for debugging purposes. It is not clear to me how much performance
+// penalty they introduce, and certainly in a multi-threaded context the
+// state of availabaility of memory to one thraed can be changed by a
+// different thread, leaving any result found here out of date. The Windows
+// code also hints at issues where pages are marked in a special manner to
+// let them act as guard pages - and potential consequences of that (eg
+// wrt stack extension) are not handled carefully here.
+
+#if defined __CYGWIN__ || defined __unix__ || defined MACINTOSH
+
+// This code is intended to discover whether the pointer that is passed
+// is a valid address.
+// Writing to /dev/rand is certainly harmless. Any bytes written merely
+// get merged in with other entropy that influences future random numbers.
+// The write() function never causes an exception, but instead returns
+// -1 if it fails, and sets errno to EFAULT if the buffer address that it
+// is passed offends it.
+
+#include <unistd.h>
+#include <fcntl.h>
+
+static int devrand = 0;
+static bool devrand_set = false;
+
+bool valid_address(void *pointer)
+{   if (!devrand_set)
+    {   devrand = open("/dev/random", O_WRONLY);
+        devrand_set = true;   // I will open the fd just once.
+    }
+// I will not bother to check errno, and just take any failure as
+// indicating a bad memory address in the pointer.
+    return (write(devrand, pointer, 1) >= 0);
+}
+
+#elif defined WIN32
+
+// On Windows I can query the page that the address is within, and accept
+// it if there is read/write access and if it is not a guard page.
+
+bool valid_address(void *pointer)
+{   MEMORY_BASIC_INFORMATION mbi = {0};
+    if (::VirtualQuery(pointer, &mbi, sizeof(mbi)))
+    {   // check the page is not a guard page
+        if (mbi.Protect & (PAGE_GUARD|PAGE_NOACCESS)) return false;
+        return ((mbi.Protect & (PAGE_READWRITE|PAGE_EXECUTE_READWRITE)) != 0);
+    }
+    return false;  // ::VirtualQuery failed.
+}
+
+#else
+
+bool valid_address(void *pointer)
+{   return true;
+}
+
+#endif
+
+bool valid_address(uintptr_t pointer)  // an overload to accept integer types
+{   return valid_address((void *)pointer);
+}
+
 // end of sysfwin.cpp

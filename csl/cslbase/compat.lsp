@@ -31,6 +31,8 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
 
+% $ Id: $
+
 % Some of my trickery when bootstrap-building Reduce can load this
 % file multiple times. But it has calls to setpchar and assignments to
 % variables (the one to !!fleps1 bit me!) that ought not to be done
@@ -181,13 +183,6 @@
 
 (setq crbuf!* (list !$eol!$))    % may not be necessary
 
-% Since this should never get called I will just not define it here!
-
-%(de symerr (u v)
-%  (progn (terpri)
-%     (print (list 'symerr u v))
-%     (error 'failure)))
-
 (make!-global '!*full!-oblist)
 
 (setq !*full!-oblist nil)
@@ -198,9 +193,9 @@
 
 
 (remflag '(geq leq neq logand logor logxor leftshift princ printc
-	evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*
-	prin1 prin2 apply0 apply1 apply2 apply3 smemq spaces
-	subla gcdn lcmn printprompt pair putc) 'lose)
+   evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*
+   prin1 prin2 apply0 apply1 apply2 apply3 smemq spaces
+   subla gcdn lcmn printprompt pair putc) 'lose)
 
 (de rplacw (a b) (progn (rplaca a (car b)) (rplacd a (cdr b))))
 
@@ -233,11 +228,11 @@
 
 (de mapcan (l fn)
   (cond ((null l) nil)
-	(t (nconc (funcall fn (car l)) (mapcan (cdr l) fn)))))
+        (t (nconc (funcall fn (car l)) (mapcan (cdr l) fn)))))
 
 (de mapcon (l fn)
   (cond ((null l) nil)
-	(t (nconc (funcall fn l) (mapcon (cdr l) fn)))))
+        (t (nconc (funcall fn l) (mapcon (cdr l) fn)))))
 
 (de mapc (l fn)
   (prog ()
@@ -267,8 +262,8 @@
 (de rassoc (x l)        % Not in Standard Lisp
    (prog ()
 loop  (cond ((atom l) (return nil))
-	    ((equal x (cdar l)) (return (car l)))
-	    (t (setq l (cdr l)) (go loop))) ))
+            ((equal x (cdar l)) (return (car l)))
+            (t (setq l (cdr l)) (go loop))) ))
 
 (de lastcar (x)         % Not in Standard Lisp
    (cond
@@ -308,7 +303,7 @@ loop  (cond ((atom l) (return nil))
 (de putd (a type b)
   (progn
      (cond
-	((eqcar b 'funarg) (setq b (cons 'lambda (cddr b)))))
+        ((eqcar b 'funarg) (setq b (cons 'lambda (cddr b)))))
      (cond
         ((flagp a 'lose) (progn
            (terpri) (princ "+++ ") (prin a)
@@ -320,7 +315,7 @@ loop  (cond ((atom l) (return nil))
                    (terpri) (princ "+++ ") (prin a) (printc " redefined"))))
              (cond
                 ((eq type 'expr) (symbol!-set!-definition a b))
-		((eq type 'subr) (symbol!-set!-definition a b))
+                ((eq type 'subr) (symbol!-set!-definition a b))
                 ((and (eq type 'macro) (eqcar b 'lambda))
                    (eval (list!* 'dm a (cdr b))))
 % CSL does not really support user-defined special forms and so at some
@@ -431,13 +426,6 @@ top (cond ((null a) (return (reversip r))))
       (setq !*carcheckflag n)
       (return old)))
 
-(de s!:oblist (v r)
-   (prog (n a)
-      (setq n (upbv v))
-top   (cond ((minusp n) (return r)))
-      (setq a (getv v n))
-      (cond
-	 ((and (idp a)
 % I list things that have a function value of some sort or that have
 % a non-empty property-list.  Symbols that have been mentioned but which do
 % not have properties or values are missed out since they are dull and
@@ -448,37 +436,63 @@ top   (cond ((minusp n) (return r)))
 %
 % Well, the flag !*full!-oblist can be set to force inclusion of
 % everything!
-	       (or !*full!-oblist
-                   (symbol!-function a)
-		   (macro!-function a)
-		   (special!-form!-p a)
-		   (fluidp a)
-		   (globalp a)
-		   (not (null (plist a)))))
-	  (setq r (cons a r))))
-      (setq n (sub1 n))
-      (go top)))
 
-(de s!:oblist1 (v r)
-   (cond
-      ((null v) r)
-      ((vectorp v) (s!:oblist v r))
+(cond
+   ((getd 'all!-symbols)
+
+    (de oblist ()
+       (sort
+          (cond
+             (!*full!-oblist (all!-symbols t))
+             (t (all!-symbols)))
+          (function orderp)))
+
+    (de mapobl (fn)
+       (prog (u)
+          (setq u (all!-symbols))
+       top(cond
+             ((null u) (return nil)))
+          (funcall fn (car u))
+          (setq u (cdr u))
+          (go top)))  )
+   (t
+    (de s!:oblist (v r)
+       (prog (n a)
+          (setq n (upbv v))
+    top   (cond ((minusp n) (return r)))
+          (setq a (getv v n))
+          (cond
+             ((and (idp a)
+                (or !*full!-oblist
+                       (symbol!-function a)
+                   (macro!-function a)
+    	           (special!-form!-p a)
+    	           (fluidp a)
+    	           (globalp a)
+    	           (not (null (plist a)))))
+          (setq r (cons a r))))
+          (setq n (sub1 n))
+          (go top)))
+
+    (de s!:oblist1 (v r)
+       (cond
+          ((null v) r)
+          ((vectorp v) (s!:oblist v r))
 % This allows for segmented object-vectors
-      (t (s!:oblist (car v) (s!:oblist1 (cdr v) r)))))
+          (t (s!:oblist (car v) (s!:oblist1 (cdr v) r)))))
 
-(de oblist ()
-   (sort (s!:oblist1 (getv !*package!* 1) nil)
-	 (function orderp)))
+    (de oblist ()
+       (sort (s!:oblist1 (getv !*package!* 1) nil)
+             (function orderp)))
 
-
-(de mapobl (fn)
-   (prog (u)
-      (setq u (s!:oblist1 (getv !*package!* 1) nil))
-   top(cond
-         ((null u) (return nil)))
-      (funcall fn (car u))
-      (setq u (cdr u))
-      (go top)))
+    (de mapobl (fn)
+       (prog (u)
+          (setq u (s!:oblist1 (getv !*package!* 1) nil))
+       top(cond
+             ((null u) (return nil)))
+          (funcall fn (car u))
+          (setq u (cdr u))
+          (go top)))   ))
 
 % Now a few things not needed by Standard Lisp but maybe helpful
 % when using Lisp directly.
@@ -611,9 +625,9 @@ top   (cond ((minusp n) (return r)))
 (dm dotimes (u !&optional env) (s!:expand!-dotimes (cadr u) (cddr u)))
 
 (flag '(geq leq neq logand logor logxor leftshift princ printc
-	evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*
-	prin1 prin2 apply0 apply1 apply2 apply3 smemq spaces
-	subla gcdn lcmn printprompt pair putc) 'lose)
+        evenp reversip seprp atsoc eqcar flagp!*!* flagpcar get!*
+        prin1 prin2 apply0 apply1 apply2 apply3 smemq spaces
+        subla gcdn lcmn printprompt pair putc) 'lose)
 
 
 % end of compat.lsp

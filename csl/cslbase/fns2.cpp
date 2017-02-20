@@ -37,10 +37,6 @@
 
 #include "headers.h"
 
-#ifdef DEBUG_VALIDATE
-static int validate_count = 0;
-#endif
-
 LispObject Lget_bps(LispObject env, LispObject n)
 {   if (!is_fixnum(n) || (intptr_t)n<0) aerror1("get-bps", n);
     intptr_t n1 = int_of_fixnum(n);
@@ -896,7 +892,7 @@ LispObject get_pname(LispObject a)
 // I will make the first 10K names g0000 to g9999 with exactly 4 digits
 // at the end. After that I will use
 // g9999_999, g9999_999_999, g9999_999_999_999 with underscores separating
-// off ech trailing group of 3 digits. THis scheme has two separate
+// off each trailing group of 3 digits. This scheme has two separate
 // motivations. The first is that putting digits in blocks of 3 might
 // make the names easier to read. The second is that this arrangement
 // will let me look at the full name of a printed gensym and separate off
@@ -1126,15 +1122,6 @@ static LispObject Lcheckpoint(LispObject env,
     push3(catch_tags, faslvec, faslgensyms);
     preserve(msg, len);
     pop3(faslgensyms, faslvec, catch_tags);
-    eq_hash_tables = eq_hash_table_list;
-    equal_hash_tables = equal_hash_table_list;
-    eq_hash_table_list = equal_hash_table_list = nil;
-    {   LispObject qq;
-        for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
-            rehash_this_table(qcar(qq));
-        for (qq = equal_hash_tables; qq!=nil; qq=qcdr(qq))
-            rehash_this_table(qcar(qq));
-    }
     set_up_functions(true);
     return onevalue(nil);
 }
@@ -1188,24 +1175,37 @@ bool eql_fn(LispObject a, LispObject b)
 //
 // Actually in Common Lisp mode where I have short floats as immediate data
 // I have further pain here with (eql 0.0s -0.0s), and (eql NaN NaN) might
-// improperly return true because of the early EQ test. 
+// improperly return true because of the early EQ test. For Standard Lisp
+// I am going to make +0.0 and -0.0 equal.
 //
-    if ((a == XTAG_SFLOAT && b == (XTAG_SFLOAT|(intptr_t)0x80000000U)) ||
+    if (SIXTY_FOUR_BIT)
+    {   if (a == XTAG_SFLOAT &&
+            b == (LispObject)(XTAG_SFLOAT|((uint64_t)1<<63))) return true;
+        if (b == XTAG_SFLOAT &&
+            a == (LispObject)(XTAG_SFLOAT|((uint64_t)1<<63))) return true;
+// Here I need to deal with single as well as short floats.
+        if (a == (XTAG_SFLOAT|XTAG_FLOAT32) &&
+            b == (LispObject)(XTAG_SFLOAT|XTAG_FLOAT32|((uint64_t)1<<63)))
+            return true;
+        if (b == (XTAG_SFLOAT|XTAG_FLOAT32) &&
+            a == (LispObject)(XTAG_SFLOAT|XTAG_FLOAT32|((uint64_t)1<<63)))
+            return true;
+    }
+    else if ((a == XTAG_SFLOAT && b == (XTAG_SFLOAT|(intptr_t)0x80000000U)) ||
         (a == (XTAG_SFLOAT|(intptr_t)0x80000000U) && b == XTAG_SFLOAT))
         return true;
     if (!is_number(a) || is_immed_or_cons(a)) return false;
     if (is_bfloat(a))
     {   Header h = flthdr(a);
         if (h != flthdr(b)) return false;
-        if (type_of_header(h) == TYPE_SINGLE_FLOAT)
+// Boxed single floats should not arise on a 64-bit system, so I will
+// avoid checking for them there.
+        if (!SIXTY_FOUR_BIT && type_of_header(h) == TYPE_SINGLE_FLOAT)
             return (single_float_val(a) == single_float_val(b));
-        else
-//
-// For the moment I view all non-single floats as double floats. Extra
-// stuff will be needed here if I ever implement long floats as 3-word
-// objects.
-//
+        else if (type_of_header(h) == TYPE_DOUBLE_FLOAT)
             return (double_float_val(a) == double_float_val(b));
+// Here I must have a long float.
+        return f128_eq(float128_of_number(a), float128_of_number(b));
     }
     else    // ratio, complex or bignum
     {   Header h = numhdr(a);
@@ -1373,7 +1373,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
 //
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code.
-//
+// I will only view short and possibly single floats as EQUAL here if they
+// has been EQ. IN particular that has implications for +0.0 vs. -0.0.
 {
 //
 // The for loop at the top here is so that cl_equal can iterate along the
@@ -1452,16 +1453,21 @@ bool cl_equal_fn(LispObject a, LispObject b)
                             case TAG_BOXFLOAT:
                             {   Header h = flthdr(ca);
                                 if (h != flthdr(cb)) return false;
-                                if (type_of_header(h) == TYPE_SINGLE_FLOAT)
+                                if (!SIXTY_FOUR_BIT &&
+                                    type_of_header(h) == TYPE_SINGLE_FLOAT)
                                 {   if (single_float_val(ca) !=
                                         single_float_val(cb)) return false;
                                     else break;
                                 }
-                                else
+                                else if (type_of_header(ca) == TYPE_DOUBLE_FLOAT)
                                 {   if (double_float_val(ca) !=
                                         double_float_val(cb)) return false;
                                     else break;
                                 }
+                                else if (!f128_eq(
+                                    float128_of_number(ca),
+                                    float128_of_number(cb))) return false;
+                                else break;
                             }
                         }
                     break;  // out of the for (;;) loop
@@ -1501,21 +1507,20 @@ bool cl_equal_fn(LispObject a, LispObject b)
                 case TAG_BOXFLOAT:
                 {   Header h = flthdr(a);
                     if (h != flthdr(b)) return false;
-                    if (type_of_header(h) == TYPE_SINGLE_FLOAT)
+                    if (!SIXTY_FOUR_BIT &&
+                        type_of_header(h) == TYPE_SINGLE_FLOAT)
                     {   if (single_float_val(a) != single_float_val(b))
                             return false;
                         else return true;
                     }
-                    else
-//
-// For the moment I view all non-single floats as double floats. Extra
-// stuff will be needed here if I ever implement long floats as 3-word
-// objects.
-//
+                    else if(type_of_header(h) == TYPE_DOUBLE_FLOAT)
                     {   if (double_float_val(a) != double_float_val(b))
                             return false;
                         else return true;
                     }
+                    else return f128_eq(
+                        float128_of_number(a),
+                        float128_of_number(b));
                 }
             }
     }
@@ -1688,16 +1693,21 @@ bool equal_fn(LispObject a, LispObject b)
                             case TAG_BOXFLOAT:
                             {   Header h = flthdr(ca);
                                 if (h != flthdr(cb)) return false;
-                                if (type_of_header(h) == TYPE_SINGLE_FLOAT)
+                                if (!SIXTY_FOUR_BIT &&
+                                    type_of_header(h) == TYPE_SINGLE_FLOAT)                                    
                                 {   if (single_float_val(ca) !=
                                         single_float_val(cb)) return false;
                                     else break;
                                 }
-                                else
+                                else if (type_of_header(h) == TYPE_DOUBLE_FLOAT)
                                 {   if (double_float_val(ca) !=
                                         double_float_val(cb)) return false;
                                     else break;
                                 }
+                                else if (!f128_eq(
+                                    float128_of_number(ca),
+                                    float128_of_number(cb))) return false;
+                                else break;
                             }
                         }
                     break;  // out of the for (;;) loop
@@ -1732,21 +1742,20 @@ bool equal_fn(LispObject a, LispObject b)
                 case TAG_BOXFLOAT:
                 {   Header h = flthdr(a);
                     if (h != flthdr(b)) return false;
-                    if (type_of_header(h) == TYPE_SINGLE_FLOAT)
+                    if (!SIXTY_FOUR_BIT &&
+                        type_of_header(h) == TYPE_SINGLE_FLOAT)
                     {   if (single_float_val(a) != single_float_val(b))
                             return false;
                         else return true;
                     }
-                    else
-//
-// For the moment I view all non-single floats as double floats. Extra
-// stuff will be needed here if I ever implement long floats as 3-word
-// objects.
-//
+                    else if (type_of_header(h) == TYPE_DOUBLE_FLOAT)
                     {   if (double_float_val(a) != double_float_val(b))
                             return false;
                         else return true;
                     }
+                    else return f128_eq(
+                        float128_of_number(a),
+                        float128_of_number(b));
                 }
             }
     }
@@ -1882,16 +1891,21 @@ bool equalp(LispObject a, LispObject b)
                             case TAG_BOXFLOAT:
                             {   Header h = flthdr(ca);
                                 if (h != flthdr(cb)) return false;
-                                if (type_of_header(h) == TYPE_SINGLE_FLOAT)
+                                if (!SIXTY_FOUR_BIT &&
+                                    type_of_header(h) == TYPE_SINGLE_FLOAT)
                                 {   if (single_float_val(ca) !=
                                         single_float_val(cb)) return false;
                                     else break;
                                 }
-                                else
+                                else if (type_of_header(h) == TYPE_DOUBLE_FLOAT)
                                 {   if (double_float_val(ca) !=
                                         double_float_val(cb)) return false;
                                     else break;
                                 }
+                                else if (!f128_eq(
+                                    float128_of_number(ca),
+                                    float128_of_number(cb))) return false;
+                                else break;
                             }
                         }
                     break;  // out of the for (;;) loop
@@ -1928,21 +1942,20 @@ bool equalp(LispObject a, LispObject b)
                 case TAG_BOXFLOAT:
                 {   Header h = flthdr(a);
                     if (h != flthdr(b)) return false;
-                    if (type_of_header(h) == TYPE_SINGLE_FLOAT)
+                    if (!SIXTY_FOUR_BIT &&
+                        type_of_header(h) == TYPE_SINGLE_FLOAT)
                     {   if (single_float_val(a) != single_float_val(b))
                             return false;
                         else return true;
                     }
-                    else
-//
-// For the moment I view all non-single floats as double floats. Extra
-// stuff will be needed here if I ever implement long floats as 3-word
-// objects.
-//
+                    else if (type_of_header(h) == TYPE_DOUBLE_FLOAT)
                     {   if (double_float_val(a) != double_float_val(b))
                             return false;
                         else return true;
                     }
+                    else return f128_eq(
+                        float128_of_number(a),
+                        float128_of_number(b));
                 }
             }
     }
@@ -3196,7 +3209,8 @@ LispObject Lsubla(LispObject env, LispObject al, LispObject x)
 
 
 setup_type const funcs2_setup[] =
-{   {"assoc",                   TOO_FEW_2, Lassoc, WRONG_NO_2},
+{   {"all-symbols",             Lall_symbols, TOO_MANY_1, Lall_symbols0},
+    {"assoc",                   TOO_FEW_2, Lassoc, WRONG_NO_2},
 //
 // assoc** is expected to remain as the Standard Lisp version even if in
 // a Common Lisp world I redefine assoc to be something messier. xassoc was

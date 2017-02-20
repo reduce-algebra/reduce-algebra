@@ -405,6 +405,12 @@ extern void report_space(int gccount, double percent);
 extern void pause_for_user(void);
 #endif
 
+// These can be used (without 100% reliability") to check if memory
+// addresses are proper.
+
+extern bool valid_address(void *p);
+extern bool valid_address(uintptr_t p);
+
 #endif // header_syscsl_h
 
 // end of syscsl.h

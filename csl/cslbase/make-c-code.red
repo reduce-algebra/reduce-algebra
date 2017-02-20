@@ -444,6 +444,11 @@ end;
 verbos nil;
 fluid '(rprifn!*);
 
+% The following line will speed things up but lead to C++ code that
+% does less checking and that can therefore crash in bad ways if there
+% are bugs somewhere in the system. By which I mean worse ways than if
+% these switches were not set.
+
 on fastfor, fastvector, unsafecar;
 
 symbolic procedure listsize(x, n);

@@ -190,7 +190,6 @@ next_opcode:   // This label is so that I can restart what I am doing
 
     for (;;)
     {
-//      HANDLE_BLIP;
 #ifndef NO_BYTECOUNT
         if (!profile_count_mode) qcount(elt(litvec, 0)) += 1;
         total++;

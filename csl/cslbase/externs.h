@@ -108,6 +108,7 @@ extern int32_t pages_count, heap_pages_count, vheap_pages_count;
 
 extern int32_t new_heap_pages_count, new_vheap_pages_count;
 
+extern LispObject *list_bases[];
 extern LispObject *nilsegment, *stacksegment;
 extern LispObject *stackbase;
 extern int32_t stack_segsize;  // measured in units of one CSL page
@@ -212,26 +213,6 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 
 #endif
 
-//
-// The next bit is JUST used under Linux for tracking stubborn bugs where
-// I want to check where I am executing code.
-//
-extern volatile int blipflag;
-extern int64_t blipcount, startblip;
-
-#if defined __linux__ && defined DEBUG
-#define HANDLE_BLIP                                                       \
-    if (blipflag)                                                         \
-    {   blipflag = 0;                                                     \
-        if (startblip >= 0 && ++blipcount > startblip)                    \
-        {   fprintf(stderr, "Line %d of file %s\n", __LINE__, __FILE__);  \
-            fflush(stderr);                                               \
-        }                                                                 \
-    }
-#else
-#define HANDLE_BLIP
-#endif
-
 #define stackcheck0(k)                                      \
     if_check_stack                                          \
     if ((--countdown < 0 && deal_with_tick()) ||            \
@@ -322,12 +303,6 @@ extern LispObject nil;
 //   64-bit    nil+4     nil
 //
 
-#ifdef COMMON
-#define BASE ((LispObject *)nil)
-#else
-#define BASE (SIXTY_FOUR_BIT ? ((LispObject *)(nil+4)): ((LispObject *)nil))
-#endif
-
 extern intptr_t byteflip;
 
 extern LispObject * volatile stacklimit;
@@ -341,7 +316,7 @@ extern LispObject vfringe;
 extern intptr_t nwork;
 
 extern unsigned int exit_count;
-extern uintptr_t gensym_ser;
+extern uint64_t gensym_ser;
 extern intptr_t print_precision, miscflags;
 extern intptr_t current_modulus, fastget_size, package_bits;
 extern intptr_t modulus_is_large;
@@ -470,23 +445,18 @@ extern LispObject user_base_9;
 #define mv_3                workbase[3]
 #define work_50             workbase[50]
 
-extern void copy_into_nilseg(int fg);
-extern void copy_out_of_nilseg(int fg);
+extern void copy_into_nilseg();
+extern void copy_out_of_nilseg();
 
 #define LOG2_VECTOR_CHUNK_WORDS 17
 #define VECTOR_CHUNK_WORDS  ((size_t)(1<<LOG2_VECTOR_CHUNK_WORDS)) // 0x20000
 extern LispObject free_vectors[LOG2_VECTOR_CHUNK_WORDS+1];
-
-#define eq_hash_table_list     BASE[50] // In heap image
-#define equal_hash_table_list  BASE[51] // In heap image
-#define current_package_offset 52
 
 extern void rehash_this_table(LispObject v);
 extern void simple_print(LispObject x);
 extern void simple_msg(const char *s, LispObject x);
 extern LispObject eq_hash_tables, equal_hash_tables;
 extern uint32_t hash_equal(LispObject key);
-extern uint32_t hash_for_checking(LispObject key, int depth);
 
 //
 // The following are used to help <escape> processing.
@@ -844,10 +814,6 @@ extern "C" LispObject rational(LispObject a);
 extern void        read_eval_print(int noisy);
 extern "C" LispObject reclaim(LispObject value_to_return, const char *why,
                           int stg_class, intptr_t size);
-#ifdef DEBUG
-extern void validate_all(const char *why, int line, const char *file);
-extern int check_env(LispObject env);
-#endif
 extern void        set_fns(LispObject sym, one_args *f1,
                            two_args *f2, n_args *fn);
 extern void        setup(int restartp, double storesize);

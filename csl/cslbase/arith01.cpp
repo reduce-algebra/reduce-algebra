@@ -1,4 +1,4 @@
-//  arith01.cpp                           Copyright (C) 1990-2017 Codemist
+// arith01.cpp                             Copyright (C) 1990-2017 Codemist
 
 //
 // Arithmetic functions.
@@ -367,23 +367,39 @@ LispObject make_sfloat(double d)
 // word as tag, and the rest as just whatever would stand for a regular
 // single precision value.  In doing the conversion here I ignore
 // rounding etc - short floats are to save heap turn-over, but will
-// not give robust numeric results.
+// not give robust numeric results. On a 64-bit machine I put the floating
+// data in the top half of the 64-bit value.
 //
-{
-#ifndef SHORT_FLOAT
-// SFLOAT is (perhaps temporarily?) not supported in the experimental branch.
-// This can be reinstated soon...
-    return fixnum_of_int(0);
-#else
-    Float_union w;
+{   Float_union w;
     w.f = (float)d;
     if (trap_floating_overflow &&
         floating_edge_case(w.f))
     {   floating_clear_flags();
         aerror("exception with short float");
     }
-    return (w.i & ~(int32_t)0xf) + XTAG_SFLOAT;
-#endif
+    if (!SIXTY_FOUR_BIT) return (w.i & ~(int32_t)0xf) + XTAG_SFLOAT;
+    else return (LispObject)
+        ((uint64_t)((uint64_t)(w.i & ~(int32_t)0xf)<<32) + XTAG_SFLOAT);
+}
+
+LispObject make_single_float(double d)
+//
+// Turn a regular floating point value into a Lisp "ingle float". The
+// complication here is that on a 32-bit machine this ends up boxed,
+// while on a 64-bit system it is immediate data.
+//
+{   if (SIXTY_FOUR_BIT)
+    {   Float_union w;
+        w.f = (float)d;
+        if (trap_floating_overflow &&
+            floating_edge_case(w.f))
+        {   floating_clear_flags();
+            aerror("exception with single float");
+        }
+        return (LispObject)
+            (((uint64_t)w.i<<32) + XTAG_SFLOAT + XTAG_FLOAT32);
+    }
+    else make_boxfloat(d, TYPE_SINGLE_FLOAT);
 }
 
 LispObject make_boxfloat(double a, int32_t type)
@@ -395,21 +411,9 @@ LispObject make_boxfloat(double a, int32_t type)
 {   LispObject r;
     switch (type)
     {   case 0:
-        {
-#ifndef SHORT_FLOAT
-            return fixnum_of_int(0);
-#else
-            Float_union aa;
-            aa.f = (float)a;
-            if (trap_floating_overflow &&
-                floating_edge_case(aa.f))
-            {   floating_clear_flags();
-                aerror("exception with short float");
-            }
-            return (aa.i & ~(intptr_t)0xf) + XTAG_SFLOAT;
-#endif
-        }
+            return make_sfloat(a);
         case TYPE_SINGLE_FLOAT:
+            if (SIXTY_FOUR_BIT) return make_single_float(a);
             r = getvector(TAG_BOXFLOAT, TYPE_SINGLE_FLOAT, sizeof(Single_Float));
             single_float_val(r) = (float)a;
             if (trap_floating_overflow &&
@@ -591,17 +595,24 @@ double float_of_number(LispObject a)
 // different!
 //
 {   if (is_fixnum(a)) return (double)int_of_fixnum(a);
-#ifdef SHORT_FLOAT
     else if (is_sfloat(a))
     {   Float_union w;
-        w.i = a - XTAG_SFLOAT;
+// On a 64-bit system both short and single floats live in the top of
+// a 64-bit LispObject, and there is no difference at all in how they are
+// extracted. 
+        if (SIXTY_FOUR_BIT) w.i = (int32_t)((uint64_t)a>>32);
+        else w.i = a - XTAG_SFLOAT;
         return (double)w.f;
     }
-#endif
     else if (is_bfloat(a))
     {   int32_t h = type_of_header(flthdr(a));
         switch (h)
         {   case TYPE_SINGLE_FLOAT:
+// On a 64-bit system one should NEVER encounter a boxed single precision
+// float, and so to improve reliability I will raise an error if one is
+// seen.
+                if (SIXTY_FOUR_BIT)
+                    aerror("boxed single float on 64-bit system");
                 return (double)single_float_val(a);
             case TYPE_DOUBLE_FLOAT:
                 return double_float_val(a);
@@ -659,18 +670,19 @@ float128_t float128_of_number(LispObject a)
     {   i64_to_f128M((int64_t)int_of_fixnum(a), &r);
         return r;
     }
-#ifdef SHORT_FLOAT
     else if (is_sfloat(a))
     {   Float_union w;
-        w.i = a - XTAG_SFLOAT;
+        if (SIXTY_FOUR_BIT) w.i = (int32_t)((uint64_t)a>>32);
+        else w.i = a - XTAG_SFLOAT;
         f32_to_f128M(w.f32, &r);
         return r;
     }
-#endif
     else if (is_bfloat(a))
     {   int32_t h = type_of_header(flthdr(a));
         switch (h)
         {   case TYPE_SINGLE_FLOAT:
+                if (SIXTY_FOUR_BIT)
+                    aerror("boxed single float on 64-bit system");
                 r32 = float32_t_val(a);
                 f32_to_f128M(r32, &r);
                 return r;
@@ -728,10 +740,11 @@ int32_t thirty_two_bits(LispObject a)
 // links between C-specific code (that might really want 32-bit values)
 // and Lisp are being coded.
 //
-{   switch ((int)a & TAG_BITS)
+{   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
             return (int32_t)int_of_fixnum(a);
         case TAG_NUMBERS:
+        case TAG_NUMBERS+TAG_XBIT:
             if (is_bignum(a))
             {   size_t len = bignum_length(a);
 //
@@ -743,7 +756,6 @@ int32_t thirty_two_bits(LispObject a)
                 return bignum_digits(a)[0] | (bignum_digits(a)[1] << 31);
             }
         // else drop through
-        case TAG_BOXFLOAT:
         default:
 //
 // return 0 for all non-fixnums
@@ -753,10 +765,11 @@ int32_t thirty_two_bits(LispObject a)
 }
 
 int64_t sixty_four_bits(LispObject a)
-{   switch ((int)a & TAG_BITS)
+{   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
             return (int64_t)int_of_fixnum(a);
         case TAG_NUMBERS:
+        case TAG_NUMBERS+TAG_XBIT:
             if (is_bignum(a))
             {   int len = bignum_length(a);
                 switch (len)
@@ -773,7 +786,6 @@ int64_t sixty_four_bits(LispObject a)
                 }
             }
         // else drop through
-        case TAG_BOXFLOAT:
         default:
 //
 // return 0 for all non-fixnums
@@ -857,14 +869,11 @@ LispObject make_ratio(LispObject p, LispObject q)
 
 static LispObject plusis(LispObject a, LispObject b)
 {
-#ifndef SHORT_FLOAT
-    return fixnum_of_int(0);
-#else
     Float_union bb;
     bb.i = b - XTAG_SFLOAT;
     bb.f = (float)((double)int_of_fixnum(a) + bb.f);
+//@@@
     return (bb.i & ~(int32_t)0xf) + XTAG_SFLOAT;
-#endif
 }
 
 //
@@ -975,12 +984,9 @@ static LispObject plusib(LispObject a, LispObject b)
 // make_bighdr(2L) makes a header for a number that fills 2 32-bit words
 // in all.
 // AHAHA. With the "Late 2016" model garbage collector and preserve/restart
-// scheme I believe there will never be any linear scanning of active
-// heap apart from the code that dumps out profile counts - and I may be able
-// to rework those so that they identify the symbols that contain counts in
-// some other way. So once I have reworked "mapstore" I can drop the
-// messing around here that fills in little gaps left over when big numbers
-// shrink. That will feel good.
+// plus the "Early 2017" rework of mapstore() I believe there will never be
+// any linear scanning of active heap, and so this (minor) extra cost could
+// be avoided. I will leave it in here as a matter of being tidy.
 //
             *(Header *)&bignum_digits(c)[i] = make_bighdr(2L);
             return c;
@@ -1092,6 +1098,7 @@ static LispObject plussf(LispObject a, LispObject b)
 
 static LispObject plusbs(LispObject a, LispObject b)
 {   double d = float_of_number(a) + float_of_number(b);
+//@@@
     return make_sfloat(d);
 }
 
@@ -1410,7 +1417,7 @@ static LispObject plusff(LispObject a, LispObject b)
     }
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
         hc = TYPE_DOUBLE_FLOAT;
-    else hc = TYPE_SINGLE_FLOAT;
+    else hc = TYPE_SINGLE_FLOAT;  // SINGLE case not on 64-bit machined
     if (trap_floating_overflow &&
         floating_edge_case(a))
     {   floating_clear_flags();
@@ -1430,9 +1437,9 @@ LispObject plus2(LispObject a, LispObject b)
 // is entered.  Well maybe even if I do that it then costs very little to
 // include the fixnum code here as well, so I will not delete it.
 //
-{   switch ((int)a & TAG_BITS)
+{   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            switch ((int)b & TAG_BITS)
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
 //
 // This is where fixnum + fixnum arithmetic happens - the case I most want to
@@ -1443,11 +1450,10 @@ LispObject plus2(LispObject a, LispObject b)
                     if (valid_as_fixnum(r)) return fixnum_of_int(r);
                     else return make_lisp_integer64(r);
                 }
-#ifdef SHORT_FLOAT
                 case XTAG_SFLOAT:
-                    return plusis(a, b);
-#endif
+                    return plusis(a, b); // may be short or single float
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1461,11 +1467,11 @@ LispObject plus2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return plusif(a, b);
                 default:
                     aerror1("bad arg for plus",  b);
             }
-#ifdef SHORT_FLOAT
         case XTAG_SFLOAT:
             switch (b & TAG_BITS)
             {   case TAG_FIXNUM:
@@ -1475,9 +1481,11 @@ LispObject plus2(LispObject a, LispObject b)
                     aa.i = a - XTAG_SFLOAT;
                     bb.i = b - XTAG_SFLOAT;
                     aa.f = (float)(aa.f + bb.f);
+//@@@@
                     return (aa.i & ~(int32_t)0xf) + XTAG_SFLOAT;
                 }
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1491,23 +1499,23 @@ LispObject plus2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return plussf(a, b);
                 default:
                     aerror1("bad arg for plus",  b);
             }
-#endif
         case TAG_NUMBERS:
+        case TAG_NUMBERS+TAG_XBIT:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                    switch ((int)b & TAG_BITS)
+                    switch ((int)b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return plusbi(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return plusbs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1521,19 +1529,19 @@ LispObject plus2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return plusbf(a, b);
                         default:
                             aerror1("bad arg for plus",  b);
                     }
                 case TYPE_RATNUM:
-                    switch (b & TAG_BITS)
+                    switch (b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return plusri(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return plusrs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1547,19 +1555,19 @@ LispObject plus2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return plusrf(a, b);
                         default:
                             aerror1("bad arg for plus",  b);
                     }
                 case TYPE_COMPLEX_NUM:
-                    switch (b & TAG_BITS)
+                    switch (b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return plusci(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return pluscs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1573,6 +1581,7 @@ LispObject plus2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return pluscf(a, b);
                         default:
                             aerror1("bad arg for plus",  b);
@@ -1581,14 +1590,14 @@ LispObject plus2(LispObject a, LispObject b)
             }
         }
         case TAG_BOXFLOAT:
-            switch ((int)b & TAG_BITS)
+        case TAG_BOXFLOAT+TAG_XBIT:
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return plusfi(a, b);
-#ifdef SHORT_FLOAT
                 case XTAG_SFLOAT:
                     return plusfs(a, b);
-#endif
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1602,6 +1611,7 @@ LispObject plus2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return plusff(a, b);
                 default:
                     aerror1("bad arg for plus",  b);
@@ -1612,7 +1622,7 @@ LispObject plus2(LispObject a, LispObject b)
 }
 
 LispObject difference2(LispObject a, LispObject b)
-{   switch ((int)b & TAG_BITS)
+{   switch ((int)b & XTAG_BITS)
     {   case TAG_FIXNUM:
             if (is_fixnum(a))
             {   intptr_t r = int_of_fixnum(a) - int_of_fixnum(b);
@@ -1624,20 +1634,15 @@ LispObject difference2(LispObject a, LispObject b)
             else
             {   push(a);
                 b = make_lisp_integerptr(-MOST_NEGATIVE_FIXVAL);
+                pop(a);
                 break;
             }
-        case TAG_NUMBERS:
-            push(a);
-            if (type_of_header(numhdr(b)) == TYPE_BIGNUM) b = negateb(b);
-            else b = negate(b);
-            break;
-        case TAG_BOXFLOAT:
         default:
             push(a);
-            b = negate(b);
+            b = negate(b);   // short floats get negated here
+            pop(a);
             break;
     }
-    pop(a);
     return plus2(a, b);
 }
 

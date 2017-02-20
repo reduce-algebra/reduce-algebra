@@ -1,13 +1,5 @@
 // serialize.cpp                                Copyright (C) 2017 Codemist
 
-// #define DEBUG_SERIALIZE 1 // Re-instate this when you need detailed
-//                           // tracing of what happend in this file.
-// #define DEBUG_OPNEXT    1
-
-
-// $Id$
-
-
 /**************************************************************************
  * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
@@ -36,6 +28,9 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
  * DAMAGE.                                                                *
  *************************************************************************/
+
+// $Id$
+
 
 //=========================================================================
 //=========================================================================
@@ -165,7 +160,7 @@
 #include "headers.h"
 
 // Here is a bit of raw information. I looked at the length of the names
-// of symbols in a Reduce image, and I find
+// of symbols in a Reduce image in mid 2016, and I find
 //  length  count
 //   1 -  5: 2028
 //   6 - 10: 2928
@@ -434,10 +429,10 @@ static void ser_print_opname(int n)
     else fprintf(stderr, "%s %d", ser_opnames[top], n & 0x1f);
 }
 
-#endif
+#endif // DEBUG_SERIALIZE
 
 // For a full Reduce image there are around 7000 items that have multiple
-// references to the, but my code makes the tables that I use expand as
+// references to them, but my code makes the tables that I use expand as
 // necessary.
 //
 // I ought to think about garbage collection safety here. Well I will set
@@ -455,9 +450,6 @@ static void ser_print_opname(int n)
 // on disc. Indeed this may end up replacing the previous "fasl" format
 // that I had.
 //
-// WARNING. I have not put in the extra lines of code needed to make
-// everything garbage collector safe - sometime I need to review this
-// code and do that.
 
 // I will need a hash table that records information about items in the
 // heap that are visited several times. I use the one from inthash.cpp.
@@ -615,13 +607,13 @@ int read_opcode_byte()
         my_abort();
     }
     else fprintf(stderr, "SER_OPNEXT\n");
-#endif
+#endif // DEBUG_SERIALIZE & DEBUG_OPNEXT
     r = Zgetc() & 0xff;
 #ifdef DEBUG_SERIALIZE
     fprintf(stderr, "Read %d = %.2x ", r, r);
     ser_print_opname(r);
     fprintf(stderr, "\n");
-#endif
+#endif // DEBUG_SERIALIZE
     return r;
 }
 
@@ -630,7 +622,7 @@ int read_data_byte()
     r = Zgetc() & 0xff;
 #ifdef DEBUG_SERIALIZE
     fprintf(stderr, "Read %d = %.2x\n", r, r);
-#endif
+#endif // DEBUG_SERIALIZE
     return r;
 }
 
@@ -641,12 +633,12 @@ int read_string_byte()
     fprintf(stderr, "Read %d = %.2x ", r, r);
     if (0x20 <= r && r <= 0x7f) fprintf(stderr, " = '%c'", r);
     fprintf(stderr, "\n");
-#endif
+#endif // DEBUG_SERIALIZE
     return r;
 }
 
 
-// If DEBUG_SERIALIZE is set I will arrange that the dumping code prints
+// If DEBUG_SERIALIZE is set I will arrange that the dumping code can print
 // out a human-readable transcript of what there is.
 // Arranging to set up and pass down the strings that form parts of this
 // will have costs, so I will try to pass dummy data in the production
@@ -669,7 +661,7 @@ void write_delayed(int byte, const char *msg, ...)
         va_start(a, msg);
         vsprintf(delayed_message, msg, a);
         va_end(a);
-#endif
+#endif // DEBUG_SERIALIZE
         delayed_byte = byte;
         delayed_has_arg = false;
         delayed_count = 1;
@@ -687,7 +679,7 @@ void write_delayed_with_arg(int byte, uint64_t arg, const char *msg, ...)
         va_start(a, msg);
         vsprintf(delayed_message, msg, a);
         va_end(a);
-#endif
+#endif // DEBUG_SERIALIZE
         delayed_byte = byte;
         delayed_arg = arg;
         delayed_has_arg = true;
@@ -750,9 +742,16 @@ void write_opcode(int byte, const char *msg, ...)
     if (byte == -1) return;
 #ifdef DEBUG_SERIALIZE
 #ifdef DEBUG_OPNEXT
+// In cases of extreme debugging I could be worried that the byte-stream
+// gets out of sync. To detect such cases I can define DEBUG_OPNEXT and that
+// puts an extra SER_OPNEXT byte just before every opcode byte (but not
+// before data bytes). So if you are reading a stream and are expecting
+// an opcode then you should see this particular prefix byte first. Inserting
+// these extra bytes adds to the bulk of the stream (quite badly) so it is
+// not done in a production system.
     fprintf(stderr, "<opcode prefix> %.2x\n", SER_OPNEXT);
     Zputc(SER_OPNEXT);
-#endif
+#endif // DEBUG_OPNEXT
     fprintf(stderr, "%.2x: ", byte & 0xff);
     va_list a;
     va_start(a, msg);
@@ -761,7 +760,7 @@ void write_opcode(int byte, const char *msg, ...)
     ser_print_opname(byte);
     fprintf(stderr, "\n");
     va_end(a);
-#endif
+#endif // DEBUG_SERIALIZE
     Zputc(byte);
 }
 
@@ -774,7 +773,7 @@ void write_byte(int byte, const char *msg, ...)
     vfprintf(stderr, msg, a);
     printf("\n");
     va_end(a);
-#endif
+#endif // DEBUG_SERIALIZE
     Zputc(byte);
 }
 
@@ -804,7 +803,7 @@ void write_u64(uint64_t n)
     {
 #ifdef DEBUG_SERIALIZE
         sprintf(msg, "small int %#.2x = %d", (int)n, (int)n);
-#endif
+#endif // DEBUG_SERIALIZE
         write_byte(n | 0x80, msg);
         return;
     }
@@ -826,7 +825,7 @@ void write_u64(uint64_t n)
         {   any = true;
 #ifdef DEBUG_SERIALIZE
             sprintf(msg, "%#" PRIx64, ((uint64_t)b) << (7*(7-i)+final));
-#endif
+#endif // DEBUG_SERIALIZE
             write_byte(b, msg);
         }
     }
@@ -834,15 +833,14 @@ void write_u64(uint64_t n)
     {
 #ifdef DEBUG_SERIALIZE
         sprintf(msg, "%#.2x = %" PRIu64, (int)n & 0x7f, n);
-
-#endif
+#endif // DEBUG_SERIALIZE
         write_byte(0x80 | (n & 0x7f), msg);
     }
     else
     {
 #ifdef DEBUG_SERIALIZE
         sprintf(msg, "%#.2x = %" PRIu64, (int)n & 0xff, n);
-#endif
+#endif // DEBUG_SERIALIZE
         write_byte(n & 0xff, msg);
     }
 }
@@ -859,7 +857,7 @@ typedef union _float32u
 } float32u;
 
 // softfloat.h will have defined LITTLEENDIAN in the case that applies
-// for (eg) INtel, and not for teh case of Sun/Sparc.
+// for (eg) Intel, and not for the case of Sun/Sparc.
 
 float read_f32()
 {   float32u u;
@@ -1185,7 +1183,9 @@ int main(void)
 // somewhat under 4000 entrypoints. At present I am using fixed size
 // tables here and fixed hash functions. This is in principle unsatisfactory
 // because somebody could expand the number of entrypoints. I propose
-// not to worry about that now.
+// not to worry about that now. But please note that "entrypoints" refers
+// to things present in the C++ code and so it is not noticably influenced
+// but changes in the rlisp sourec code making up Reduce.
 //
 
 #define NCODEPOINTERS 5000U
@@ -1199,10 +1199,7 @@ bool insert_codepointer(uintptr_t x, const char *s)
 {
 // If this codepointer is one I have seen before then do nothing and return
 // false.
-    if (hash_lookup(&codehash, x) != (size_t)(-1))
-    {   //fprintf(stderr, "function %s seen before\n", s);
-        return false;
-    }
+    if (hash_lookup(&codehash, x) != (size_t)(-1)) return false;
 // Add to the table of code-pointers, recording where it goes.
     size_t pos = hash_insert(&codehash, x);
     hash_set_value(&codehash, pos, ncodepointers);
@@ -1211,15 +1208,13 @@ bool insert_codepointer(uintptr_t x, const char *s)
         fprintf(stderr, "in serialize.cpp. Current value is %u\n", NCODEPOINTERS);
         my_abort();
     }
-    //fprintf(stderr, "function %s given code %d\n", s, (int)ncodepointers);
     codepointers[ncodepointers++] = x;
     return true;
 }
 
 uint64_t use_setup(uint64_t crc, const setup_type *p)
 {   while (p->name != NULL)
-    {   // fprintf(stderr, "[%d] Name: %s\n", ncodepointers, p->name);
-        unsigned char n = 0;
+    {   unsigned char n = 0;
         if (insert_codepointer((uintptr_t)(p->one), p->name)) n += 1;
         if (insert_codepointer((uintptr_t)(p->two), p->name)) n += 2;
         if (insert_codepointer((uintptr_t)(p->n), p->name)) n += 4;
@@ -1331,19 +1326,13 @@ void write_function(void *p)
 // not assign to any of the variables that are stacked here! It will
 // usually be a good idea to go "GC_PROTECT(prev = ...);".
 
-#ifndef DEBUG_VALIDATE
-#define validate_all(why, line, file) /* Nothing */
-#endif
-
 #define GC_PROTECT(stmt)                             \
     do                                               \
     {   push4(r, s, pbase, b);                       \
-        validate_all("GC_PROTECT start", __LINE__, __FILE__); \
         ip = (LispObject)p - pbase;                  \
         stmt;                                        \
         pop4(b, pbase, s, r);                        \
         p = (LispObject *)(pbase + ip);              \
-        validate_all("GC_PROTECT end", __LINE__, __FILE__); \
     } while (0)
 
 
@@ -1559,48 +1548,6 @@ down:
                     b = pbase;
                     p = &qcdr(pbase);
                     goto down;
-// I was considering the following, however SER_REPEAT along with the
-// existing code SER_L_aaaa_S (otherwise LIST4!*) achieves pretty well
-// what I need in what may count as a simpler way that does not use up
-// extra opcode space.
-//@@ // The next two cover a general case of lists where there are no second
-//@@ // references to any of the top-level CONS cells and where the length is
-//@@ // greater than 4. Well in fact it makes sense to arrange that I only
-//@@ // use these if the list is longer than 8 cons cells, because at length 8
-//@@ // for (list 1 2 3 4 5 6 7 8) I can go
-//@@ //     SER_L_aaaa_S SER_L_aaaa 8 7 6 5  4 3 2 1
-//@@ // or  SER_LIST_n 8   8 7 6 5 4 3 2 1
-//@@ // and the use of a length code with the LIST_n case means it ends up using
-//@@ // just the same number of bytes. So see, it only starts to pay back at all
-//@@ // for even longer lists, which is why I offset its argument-byte by 9.
-//@@                 case SER_LIST_n:
-//@@                 case SER_LIST_n_S:
-//@@                     assert(opcode_repeats == 0);
-//@@                     {   uint64_t n = 9 + read_u64();
-//@@                         prev = nil;
-//@@ // I make a list of the right length and point to it.
-//@@                         for (uint64_t i=0; i<n; i++)
-//@@                             GC_PROTECT(prev = cons(nil, prev));
-//@@                         *p = prev;
-//@@ // Now put in the back-pointer chains.
-//@@                         while (qcdr(prev) != nil)
-//@@                         {   qcar(prev) = b;
-//@@                             b = prev;
-//@@                             prev = qcdr(prev);
-//@@                         }
-//@@ // Set up the very last CONS cell.
-//@@                         if (c == SER_LIST_n)
-//@@                         {   pbase = prev;
-//@@                             p = &qcar(prev);
-//@@                         }
-//@@                         else
-//@@                         {   qcdr(prev) = b;
-//@@                             b = prev;
-//@@                             pbase = prev;
-//@@                             p = &qcdr(prev);
-//@@                         }
-//@@                         goto down;
-//@@                     }
 
                 case SER_BIGBACKREF:
 // I expect there to be a great many uses of back-references and that
@@ -2137,9 +2084,10 @@ up:
 // is to be dumped. When I first visit a location I want to mark it in a
 // "used" table. If I then find I visit it again I need to create an entry
 // for it in a "shared" table.
-// The used table can be a spare bitmap with (at the lowest level) one
+// The used table can be a sparse bitmap with (at the lowest level) one
 // bit for every 8-byte address. For a heap with M bytes in use this
-// consumes M/64 bytes.
+// consumes M/64 bytes. I will re-use this technology for the mapstore
+// function and for the basis of the oblist function.
 //
 // I will use a multi-layer table based on 4096-byte chunks of memory. The
 // lowest level such block will hold 32768 bits each referring to an 8-byte
@@ -2242,7 +2190,6 @@ static uint8_t *new_final_map_block()
 
 static void mark_address_as_used(uint64_t addr)
 {
-//  fprintf(stderr, "mark_address_as_used %" PRIxPTR "\n", (intptr_t)addr);
     unsigned int i = (unsigned int)(addr >> 54);
     uint8_t *****m1 = used_map[i];
     if (m1 == NULL) used_map[i] = m1 = (uint8_t *****)new_map_block();
@@ -2309,6 +2256,13 @@ void release_map()
     }
 }
 
+class map_releaser
+{
+public:
+    ~map_releaser()
+    {   release_map();
+    }
+};
 
 // I need to comment on the backpointer tagging here. In a tidy world I would
 // use TAG_CONS, TAG_SYMBOL and TAG_VECTOR to identify what I was descending
@@ -2334,19 +2288,21 @@ void release_map()
 // at present that seems the easiest way to cope with the different behaviour
 // needed during each of the two passes.
 
+char trigger[40] = "unknown";
+
 void scan_data(LispObject p)
 {   LispObject b = 0 + BACKPOINTER_CAR, w;
     uintptr_t len;
     Header h;
 down:
     if (p == 0)
-    {   fprintf(stderr, "Zero pointer found\n"); // An error - but I feel safest
-        // if I detect it and do not crash.
+    {   fprintf(stderr, "Zero pointer found from %s\n", trigger);
+        // An error - but I feel safest if I detect it and do not crash.
         goto up;
     }
     else if (p == nil) goto up;
     switch (p & TAG_BITS)
-{       default:
+    {   default:
         case TAG_CONS:
             if (address_used(p - TAG_CONS))
             {   hash_insert(&repeat_hash, p);
@@ -2401,6 +2357,7 @@ down:
             if (vector_holds_binary(h)) goto up;
             if (is_mixed_header(h)) len = 4*CELL;
             else len = length_of_header(h);
+            if (len == CELL) goto up;
 // len in the length in bytes including the size of the header. For "mixed"
 // vectors (most notably stream objects) it represents one cell of header and
 // three of lisp data, which are thought of as having indexes 0, 1 and 2.
@@ -2419,6 +2376,7 @@ down:
             h = numhdr(p);
             if (vector_holds_binary(h)) goto up;
             len = length_of_header(h);
+            if (len == CELL) goto up;  // should never happen
             w = p + len - CELL - TAG_NUMBERS;
             p = *(LispObject *)w;
             *(LispObject *)w = b;
@@ -2444,13 +2402,15 @@ down:
 // Forwarding addresses should only be present while the garbage collector
 // is active, and so ought not to be found. I will print a message and
 // basically ignore them.
-            fprintf(stderr, "\n+++ Forwarding address detected in heap scan\n");
+            fprintf(stderr,
+                "\n+++ Forwarding address detected in heap scan from %s\n",
+                trigger);
             goto up;
     }
 
 up:
     switch (b & BACKPOINTER_MASK)
-{       default:
+    {   default:
         case BACKPOINTER_CDR:
 // This is where I had just finished scanning the CAR of a cell and now
 // need to deal with the CDR.
@@ -2572,7 +2532,7 @@ down:
             char msg[40];
 #ifdef DEBUG_SERIALIZE
             sprintf(msg, "back %" PRIuPTR, (uintptr_t)n);
-#endif
+#endif // DEBUG_SERIALIZE
             if (n <= 32) write_delayed(SER_BACKREF0 + n - 1, msg);
             else if (n <= 64) write_delayed(SER_BACKREF1 + n - 33, msg);
             else
@@ -2790,14 +2750,14 @@ down:
                     {
 #ifdef DEBUG_SERIALIZE
                         sprintf(msg, "dup-gensym, length=%" PRIuPTR, (uintptr_t)n);
-#endif
+#endif // DEBUG_SERIALIZE
                         write_opcode(SER_DUPGENSYM, msg);
                     }
                     else
                     {
 #ifdef DEBUG_SERIALIZE
                         sprintf(msg, "gensym, length=%" PRIuPTR, (uintptr_t)n);
-#endif
+#endif // DEBUG_SERIALIZE
                         write_opcode(SER_GENSYM, msg);
                     }
                 }
@@ -2806,14 +2766,14 @@ down:
                     {
 #ifdef DEBUG_SERIALIZE
                         sprintf(msg, "dup-symbol, length=%" PRIuPTR, (uintptr_t)n);
-#endif
+#endif // DEBUG_SERIALIZE
                         write_opcode(SER_DUPSYMBOL, msg);
                     }
                     else
                     {
 #ifdef DEBUG_SERIALIZE
                         sprintf(msg, "symbol, length=%" PRIuPTR, (uintptr_t)n);
-#endif
+#endif // DEBUG_SERIALIZE
                         write_opcode(SER_SYMBOL, msg);
                     }
                 }
@@ -2824,7 +2784,7 @@ down:
 #ifdef DEBUG_SERIALIZE
                     if (0x20 < c && c <= 0x7e) sprintf(msg, "'%c'", c);
                     else sprintf(msg, "%#.2x", c);
-#endif
+#endif // DEBUG_SERIALIZE
                     write_byte(c, msg);
                 }
                 goto up;
@@ -2836,14 +2796,6 @@ down:
 // the count field... Each of these uses a variable length coding scheme that
 // will be 1 byte long in easy cases but can cope with 2^64 possibilities in
 // all if necessary.
-//@         {   LispObject name = qpname(p);
-//@             if (is_vector(name) && is_string(name))
-//@             {   fprintf(stderr, "Symbol (%p : %p) name: \"%.*s\"\n",
-//@                     (void *)p, (void *)name,
-//@                     (int)(length_of_byteheader(vechdr(name))-CELL),
-//@                     &celt(name, 0));
-//@             }
-//@         }
             write_u64(((uint64_t)qheader(p))>>(Tw+4));
             write_function((void *)(qfn0(p)));
             write_function((void *)(qfn1(p)));
@@ -2880,6 +2832,7 @@ down:
 // vectors (most notably stream objects) it represents one cell of header and
 // three of lisp data. The "-1" on the next line is because elements run from
 // 0 to len-1 rather than from 1 to len.
+            if (len == 0) goto up; // NB special case
             w = (LispObject)&elt(p, len-1);
             p = *(LispObject *)w;
             *(LispObject *)w = b;
@@ -2895,14 +2848,14 @@ down:
             {   char msg[40];
 #ifdef DEBUG_SERIALIZE
                 sprintf(msg, "string, length=%" PRIuPTR, (intptr_t)len);
-#endif
+#endif // DEBUG_SERIALIZE
                 write_opcode(SER_STRING+len-1, msg);
                 for (size_t j=0; j<len; j++)
                 {   int c = ucelt(p, j);
 #ifdef DEBUG_SERIALIZE
                     if (0x20 < c && c <= 0x7e) sprintf(msg, "'%c'", c);
                     else sprintf(msg, "%#.2x", c);
-#endif
+#endif // DEBUG_SERIALIZE
                     write_byte(c, msg);
                 }
                 if (i != (size_t)-1) write_opcode(SER_DUP, "dup string");
@@ -2913,7 +2866,7 @@ down:
                 len = length_of_bitheader(h);
 #ifdef DEBUG_SERIALIZE
                 sprintf(msg, "bitvec, length=%" PRIuPTR, (intptr_t)len);
-#endif
+#endif // DEBUG_SERIALIZE
                 write_opcode(SER_BITVEC, msg);
                 write_u64(len);
                 len = (len + 7)/8;
@@ -2923,7 +2876,7 @@ down:
                     for (int k=0; k<8; k++)
                         msg[k] = (c & (1<<k)) != 0 ? '1' : '0';
                     msg[8] = 0;
-#endif
+#endif // DEBUG_SERIALIZE
                     write_byte(c, msg);
                 }
                 if (i != (size_t)-1) write_opcode(SER_DUP, "dup bitvector");
@@ -2945,7 +2898,7 @@ down:
                     char msg[40];
 #ifdef DEBUG_SERIALIZE
                     sprintf(msg, "int value=%" PRId64, n);
-#endif
+#endif // DEBUG_SERIALIZE
                     if (n < 0)
                         write_delayed_with_arg(SER_NEGFIXNUM, -n-1, msg);
                     else write_delayed_with_arg(SER_POSFIXNUM, n, msg);
@@ -2958,7 +2911,7 @@ down:
                     char msg[40];
 #ifdef DEBUG_SERIALIZE
                     sprintf(msg, "int value=%" PRId64, n);
-#endif
+#endif // DEBUG_SERIALIZE
 // The value I have here fitted within two bignum digits and so is really at
 // most 62 bits. A consequence of that is that negating it can not lead to
 // arithmetic overflow within a signed 64-bit word. Whew!
@@ -3003,7 +2956,7 @@ down:
 // I *could* detect strings etc here to display the comments more tidily,
 // but since they are just for debugging that seems like too much work
 // for today. I also transmit as unsigned bytes regardless of whether the
-// final use will be signe dor unsigned.
+// final use will be signed or unsigned.
                 for (size_t i=0; i<len; i++) write_byte(*x++, "part of vec8/string");
             }
             else if (vector_i32(h))
@@ -3080,7 +3033,7 @@ down:
                 {   char msg[40];
 #ifdef DEBUG_SERIALIZE
                     sprintf(msg, "float %.7g", (double)single_float_val(p));
-#endif
+#endif // DEBUG_SERIALIZE
                     write_opcode(SER_FLOAT32, msg);
                     write_f32(single_float_val(p));
                 }
@@ -3089,7 +3042,7 @@ down:
                 {   char msg[40];
 #ifdef DEBUG_SERIALIZE
                     sprintf(msg, "double %.16g", double_float_val(p));
-#endif
+#endif // DEBUG_SERIALIZE
                     write_opcode(SER_FLOAT64, msg);
                     write_f64(double_float_val(p));
                 }
@@ -3099,7 +3052,7 @@ down:
 // At present I do not have a good scheme to display the 128-bit float value.
 #ifdef DEBUG_SERIALIZE
                     sprintf(msg, "long double");
-#endif
+#endif // DEBUG_SERIALIZE
                     write_opcode(SER_FLOAT128, msg);
                     write_f128(long_float_val(p));
                 }
@@ -3120,14 +3073,14 @@ down:
             {   char msg[40];
 #ifdef DEBUG_SERIALIZE
                 sprintf(msg, "int, value=%d", (int)w64);
-#endif
+#endif // DEBUG_SERIALIZE
                 write_delayed(SER_FIXNUM | ((int)w64 & 0x1f), msg);
             }
             else
             {   char msg[40];
 #ifdef DEBUG_SERIALIZE
                 sprintf(msg, "int value=%" PRId64, w64);
-#endif
+#endif // DEBUG_SERIALIZE
                 if (w64 < 0)
                     write_delayed_with_arg(SER_NEGFIXNUM, -w64-1, msg);
                 else
@@ -3141,7 +3094,7 @@ down:
             uint64_t nn = ((uint64_t)p) >> (Tw+2);
 #ifdef DEBUG_SERIALIZE
             sprintf(msg, "char/spid, value=%#" PRIx64, (uint64_t)p);
-#endif
+#endif // DEBUG_SERIALIZE
             write_delayed_with_arg(SER_CHARSPID, nn, msg);
         }
         goto up;
@@ -3150,7 +3103,9 @@ down:
 // Forwarding addresses should only be present while the garbage collector
 // is active, and so ought not to be found. I will print a message and
 // basically ignore them.
-            fprintf(stderr, "\n+++ Forwarding address detected in heap scan\n");
+            fprintf(stderr,
+                "\n+++ Forwarding address detected in heap scan from %s\n",
+                trigger);
             goto up;
     }
 
@@ -3232,6 +3187,19 @@ up:
     }
 }
 
+class hash_releaser
+{
+public:
+    ~hash_releaser()
+    {   hash_finalize(&repeat_hash);
+        if (repeat_heap_size != 0)
+        {   repeat_heap_size = 0;
+            free(repeat_heap);
+        }
+        repeat_heap = NULL;
+    }
+};
+
 bool setup_codepointers = false;
 
 LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
@@ -3244,17 +3212,21 @@ LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
     loop_print_trace(b);
     trace_printf("\n");
     pop2(b, a);
-#endif
+#endif // DEBUG_FASL
     if (!setup_codepointers)
     {   set_up_function_tables();
         setup_codepointers = true;
     }
     descend_symbols = false;
     hash_init(&repeat_hash, 13); // allow 8K entries to start with.
-    scan_data(a);
-    scan_data(b);
-    release_map();
+    {   map_releaser RAII;
+        strcpy(trigger, "write-module scan a");
+        scan_data(a);
+        strcpy(trigger, "write-module scan B");
+        scan_data(b);
+    }
     writer_setup_repeats();
+    hash_releaser RAII;
     write_u64(repeat_heap_size);
 // Note that the serialization code ought not to allocate store or
 // do anything that could provoke garbage collection, and so I do not
@@ -3262,14 +3234,10 @@ LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
 // would be liable to be fatal since the implementation traverses data using
 // pointer reversal, so in general much of the heap can be in a corrupted
 // state while that is going on.
+    strcpy(trigger, "write-module write a");
     write_data(a);
+    strcpy(trigger, "write-module write b");
     write_data(b);
-    hash_finalize(&repeat_hash);
-    if (repeat_heap_size != 0)
-    {   repeat_heap_size = 0;
-        free(repeat_heap);
-    }
-    repeat_heap = NULL;
     return onevalue(nil);
 }
 
@@ -3280,17 +3248,15 @@ LispObject Lserialize(LispObject env, LispObject a)
     }
     descend_symbols = false;
     hash_init(&repeat_hash, 13); // allow 8K entries to start with.
-    scan_data(a);
-    release_map();
-    writer_setup_repeats();
-    write_u64(repeat_heap_size);
-    write_data(a);
-    hash_finalize(&repeat_hash);
-    if (repeat_heap_size != 0)
-    {   repeat_heap_size = 0;
-        free(repeat_heap);
+    {   map_releaser RAII;
+        strcpy(trigger, "serialize scan");
+        scan_data(a);
     }
-    repeat_heap = NULL;
+    writer_setup_repeats();
+    hash_releaser RAII;
+    write_u64(repeat_heap_size);
+    strcpy(trigger, "serialize write");
+    write_data(a);
     return onevalue(nil);
 }
 
@@ -3301,17 +3267,15 @@ LispObject Lserialize1(LispObject env, LispObject a)
     }
     descend_symbols = true;
     hash_init(&repeat_hash, 13); // allow 8K entries to start with.
-    scan_data(a);
-    release_map();
+    {   map_releaser RAII;
+        strcpy(trigger, "serialize1 scan");
+        scan_data(a);
+    };
     writer_setup_repeats();
+    hash_releaser RAII;
     write_u64(repeat_heap_size);
+    strcpy(trigger, "serialize1 write");
     write_data(a);
-    hash_finalize(&repeat_hash);
-    if (repeat_heap_size != 0)
-    {   repeat_heap_size = 0;
-        free(repeat_heap);
-    }
-    repeat_heap = NULL;
     return onevalue(nil);
 }
 
@@ -3419,9 +3383,9 @@ static LispObject load_module(LispObject env, LispObject file,
         r = serial_read();
 #ifdef DEBUG_SERIALIZE
         fprintf(stderr, "Re-input: ");
-        simple_print(r); // @@@
+        simple_print(r);
         fprintf(stderr, "\n");
-#endif
+#endif // DEBUG_SERIALIZE
         if (r != eof_symbol &&
             option != F_LOAD_MODULE) r = serial_read();
         if (repeat_heap_size != 0)
@@ -3441,7 +3405,7 @@ static LispObject load_module(LispObject env, LispObject file,
         trace_printf("SAVEDEF info: ");
         loop_print_trace(r);
         trace_printf("\n");
-#endif
+#endif // DEBUG_FASL
         file = nil;
         while (is_cons(r))
         {   LispObject p = qcar(r);
@@ -3490,10 +3454,6 @@ static LispObject load_module(LispObject env, LispObject file,
             pop3(r, file, name);
         }
     }
-#ifdef DEBUG_VALIDATE
-    copy_into_nilseg(false);
-    validate_all("end of fast-load", __LINE__, __FILE__);
-#endif
     if (option == F_LOAD_MODULE) return onevalue(nil);
     else return onevalue(file);
 }
@@ -3525,7 +3485,6 @@ LispObject load_source0(int option)
             pop2(m, l);
         }
     }
-//@ printf("list of modules = "); simple_print(mods); printf("\n");
 // Now I will do load-source or load-selected-source on each module, and
 // form the union of the results, which should give me a consolidated
 // list of the names of functions seen.
@@ -3534,12 +3493,8 @@ LispObject load_source0(int option)
     {   LispObject m = qcar(mods);
         mods = qcdr(mods);
         push2(r, mods);
-//@ printf("Call load_module on "); simple_print(m); printf("\n");
-//@ printf("1 r = "); simple_print(r); printf("\n");
         LispObject w = load_module(nil, m, option);
         pop2(mods, r);
-//@ printf("2 r = "); simple_print(r); printf("\n");
-//@ printf("2 w = "); simple_print(w); printf("\n");
         push(mods);
 // The special version of UNION here always works in linear time, and that
 // is MUCH better than the more general version. Well with bootstrapreduce
@@ -3549,8 +3504,6 @@ LispObject load_source0(int option)
 // slows things down.
         r = Lunion_symlist(nil, r, w);
         pop(mods);
-//@ printf("3 r = "); simple_print(r); printf("\n");
-//@ printf("result from union = "); simple_print(r); printf("\n");
     }
     return onevalue(r);
 }
@@ -3672,7 +3625,6 @@ void write_everything()
 // be tidy.
     big_divisor = make_four_word_bignum(0, 0, 0, 0);
     big_dividend = make_four_word_bignum(0, 0, 0, 0);
-    copy_into_nilseg(false);
     if (!setup_codepointers)
     {   set_up_function_tables();
         setup_codepointers = true;
@@ -3683,24 +3635,37 @@ void write_everything()
 // descend_symbols set to true the scanning code views NIL as such a special
 // case that it does not descend through it or view multiple references to
 // it as worth noting.
-    scan_data(qvalue(nil));
-    scan_data(qenv(nil));
-    scan_data(qpname(nil));
-    scan_data(qplist(nil));
-    scan_data(qfastgets(nil));
-    scan_data(qpackage(nil));
+    {   map_releaser RAII;
+        strcpy(trigger, "value nil scan");
+        scan_data(qvalue(nil));
+        strcpy(trigger, "env nil scan");
+        scan_data(qenv(nil));
+        strcpy(trigger, "pname nil scan");
+        scan_data(qpname(nil));
+        strcpy(trigger, "plist nil scan");
+        scan_data(qplist(nil));
+        strcpy(trigger, "fastgets nil scan");
+        scan_data(qfastgets(nil));
+        strcpy(trigger, "package nil scan");
+        scan_data(qpackage(nil));
 // Next the major list-bases.
-   for (int i = first_nil_offset; i<last_nil_offset; i++) scan_data(BASE[i]);
+        for (LispObject **p = list_bases; *p!=NULL; p++)
+        {   sprintf(trigger, "list base %p scan", (void *)**p);
+            scan_data(**p);
+        }
 // The following two are not full list bases - they are weak pointers. I hope
 // that in a while I will re-work how I get hash tables rehashed following
 // garbage collection and preserve/restart do I will not end up needing these
 // lists at all.
-    scan_data(eq_hash_tables);
-    scan_data(equal_hash_tables);
+        strcpy(trigger, "EQ hash tables scan");
+        scan_data(eq_hash_tables);
+        strcpy(trigger, "EQUAL hash tables scan");
+        scan_data(equal_hash_tables);
+    }
 // Now I should have identified all cyclic and shared data - including
 // eveything in the object list/package structures.
-    release_map();
     writer_setup_repeats();
+    hash_releaser RAII;
 // Before I get to messy things I will write out some integer values.
 
     write_u64(miscflags);
@@ -3719,30 +3684,34 @@ void write_everything()
 // Now inspect all structures again, this time writing a serialized form
 // for everything.
 
+    strcpy(trigger, "value of nil write");
     write_data(qvalue(nil));
+    strcpy(trigger, "env of nil write");
     write_data(qenv(nil));
+    strcpy(trigger, "pname of nil write");
     write_data(qpname(nil));
+    strcpy(trigger, "plist of nil write");
     write_data(qplist(nil));
+    strcpy(trigger, "fastgets of nil write");
     write_data(qfastgets(nil));
+    strcpy(trigger, "package of nil write");
     write_data(qpackage(nil));
-// Next the major list-bases.
-    for (int i = first_nil_offset; i<last_nil_offset; i++) write_data(BASE[i]);
+    for (LispObject **p = list_bases; *p!=NULL; p++)
+    {   sprintf(trigger, "list base %p write", (void *)**p);
+        write_data(**p);
+    }
 // The following two are not full list bases - they are weak pointers. I hope
 // that in a while I will re-work how I get hash tables rehashed following
 // garbage collection and preserve/restart do I will not end up needing these
 // lists at all.
+    strcpy(trigger, "EQ hash tables write");
     write_data(eq_hash_tables);
+    strcpy(trigger, "EQUAL hash tables write");
     write_data(equal_hash_tables);
 // Tidy up at the end. I do not logically need an explicit end of data marker
 // in the serialized form, but putting one there seems lile a way to make
 // me feel more robust against corrupred image files.
     write_opcode(SER_END, "end of data");
-    hash_finalize(&repeat_hash);
-    if (repeat_heap_size != 0)
-    {   repeat_heap_size = 0;
-        free(repeat_heap);
-    }
-    repeat_heap = NULL;
 }
 
 void warm_setup()
@@ -3762,7 +3731,7 @@ void warm_setup()
     set_up_function_tables();
 
     qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR;
-    for (i=first_nil_offset; i<last_nil_offset; i++) BASE[i] = nil;
+    for (LispObject **p = list_bases; *p!=NULL; p++) **p = nil;
     *stack = nil;
     eq_hash_tables = equal_hash_tables = nil;
     qcount(nil) = 0;
@@ -3773,11 +3742,9 @@ void warm_setup()
     qplist(nil) = nil;
     qfastgets(nil) = nil;
     qpackage(nil) = nil;
-    copy_out_of_nilseg(false);
 #define boffo_size 256
     boffo = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
     memset((void *)((char *)boffo + (CELL - TAG_VECTOR)), '@', boffo_size);
-    BASE[60] = boffo;
 
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
@@ -3800,7 +3767,7 @@ void warm_setup()
 // for at least a while.
         fprintf(stderr, "Checksums %" PRIx64 "  vs %" PRIx64 "\n",
                         entrypt_checksum, function_crc);
-        fprintf(stderr, "o not match. Image made by incompatible version\n");
+        fprintf(stderr, "do not match. Image made by incompatible version\n");
         exit(1);
     }
     size_t repeatsize = read_u64();
@@ -3818,35 +3785,16 @@ void warm_setup()
 // include all other symbols, and through them basically everything!
     qpackage(nil) = serial_read();
 
-// I want to be able to call validate_all() while I am doing this
-// reading - and that may copy stuff into the BASE locations from elsewhere,
-// so I need to be a bit indirect about loading values into there. Apologies!
-    for (i=first_nil_offset; i<last_nil_offset; i++)
-    {   // fprintf(stderr, "About to read value for BASE[%d]\n", i);
-        // for (int j=0; j<5; j++)
-        //     fprintf(stderr, "%" PRIxPTR " ", stackbase[j]);
-        // fprintf(stderr, " [%d]\n", (int)(stack-stackbase));
-        // fflush(stderr);
-        // validate_all("serial reading", __LINE__, __FILE__);
-        LispObject v = serial_read();
-        // fprintf(stderr, " = "); simple_print(v); fprintf(stderr, "\n");
-        push(v);
-    }
+    for (LispObject **p = list_bases; *p!=NULL; p++) **p = serial_read();
+
     eq_hash_tables = serial_read();
     equal_hash_tables = serial_read();
-    for (i=last_nil_offset-1; i>=first_nil_offset; i--)
-        pop(BASE[i])
-    copy_out_of_nilseg(false);
 
     if ((i = read_opcode_byte()) != SER_END)
     {   fprintf(stderr, "Did not find SER_END opcode where expected\n");
         fprintf(stderr, "Byte that was read was %.2x\n", (int)i);
         my_abort();
     }
-#ifdef DEBUG_VALIDATE
-    validate_all("warm setup", __LINE__, __FILE__);
-#endif
-
     {   char endmsg[32];
         Zread(endmsg, 24);  // the termination record
 //
@@ -3878,21 +3826,6 @@ void warm_setup()
 
     inject_randomness((int)clock());
 
-//
-// An explanation is needed here. Hash tables can be really odd things in
-// that if they are keyed on the EQ test they are based on memory addresses
-// that objects lie at. So the garbage collector has to do magic things with
-// them! I therefore keep a list of all hash tables, but it must not be
-// processed in a naive way. I keep it in a variable that is NOT in the range
-// of places where the garbage collector normally looks. But when it comes
-// to preserve and restart I need to save the information, so I have the two
-// lists I need saved in the nilseg under the alias eq_hash_table_list and
-// equal_hash_table_list. As soon as I can I extract them and put them
-// back in the magic special places they need to live.
-//
-    eq_hash_tables = eq_hash_table_list;
-    equal_hash_tables = equal_hash_table_list;
-    eq_hash_table_list = equal_hash_table_list = nil;
     {   LispObject qq;
         for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
         {   if (!is_vector(qcar(qq)))
@@ -3913,13 +3846,448 @@ void warm_setup()
 // output streams that may depend on the particular system I am loading on
 // and so have to be set up as if from cold...
     set_up_variables(true);
+}
 
-// NOTE:
-// I used to have an elaborate scheme for saving and re-loading native code,
-// but now if I ever wish to re-instate that I will want to implement it
-// afresh.  I can look in old subversion revisions to see what I did before
-// if that will help.
+// It is now convenient to put "mapstore" here, because it uses yet another
+// variant on the code that traverses my entire heap.
 
+// This code uses the same bitmap technology (with the temporary bitmap
+// allocated using malloc) that serialization (and hence both fasl output
+// and preserve) does. I provide a generic function that visits every
+// symbol in the system. This function must not trigger garbage collection!
+// So I give it a predicate that filters the symbols found, and it pushes
+// onto the Lisp stack every one that the predicate tells it to. If there
+// is not enough stack space it return true.
+
+// In a full Reduce as of 1Q 2017 with every Reduce package loaded there
+// are about 40,000 symbols present. Around half of those name functions.
+// So mapstore has at worst 20,000 symbols of note to process at this stage.
+// Of course that number will expand as Reduce does. However also of course
+// one could only have ALL the packages that make up Reduce loaded in
+// rather artificial circumstances...
+//
+// Well the Lisp stack is a segment of size CSL_PAGE_SIZE which is (at the
+// time of writing) by default 4 Mbytes. If I do not have a lot on the stack
+// already I can therefore push up to 500,000 items onto it without overflow,
+// and those will be protected against garbage collection. So what I will do
+// is arrange that I can traverse the entire heap and push every symbol that
+// I find onto the stack... My function returns true if it fails because
+// of stack overflow, and in that case the stack will be (almost) full but
+// not all symbols will be on it.
+
+typedef bool symbol_processor_predicate(LispObject);
+
+bool push_symbols(symbol_processor_predicate *pp, LispObject p)
+{   LispObject b = 0 + BACKPOINTER_CAR, w;
+    uintptr_t len;
+    Header h;
+    bool fail = false;
+    debug_record("push_symbols start");
+down:
+    debug_record("push_symbols down");
+    if (p == 0)
+    {   fprintf(stderr, "Zero pointer found from %s\n", trigger);
+        // An error - but I feel safest if I detect it and do not crash.
+        goto up;
+    }
+    else if (p == nil) goto up;
+    switch (p & TAG_BITS)
+    {   default:
+        case TAG_CONS:
+            debug_record("push_symbols CONS");
+            if (address_used(p - TAG_CONS)) goto up;
+            mark_address_as_used(p - TAG_CONS);
+            w = p;
+            p = qcdr(p);
+            qcdr(w) = b;
+            b = w - TAG_CONS + BACKPOINTER_CDR;
+            goto down;
+
+        case TAG_SYMBOL:
+            debug_record("push_symbols SYMBOL");
+            if (address_used(p - TAG_SYMBOL)) goto up;
+            if (stack+100 < stacklimit)
+            {   if ((*pp)(p)) push(p);
+            }
+            else fail = true; // I must keep traversing to restore things.
+            mark_address_as_used(p - TAG_SYMBOL);
+            w = p;
+            p = qpname(p);
+            qpname(w) = b;
+            b = (LispObject)&qpname(w) + BACKPOINTER_SYMBOL;
+            goto down;
+
+        case TAG_VECTOR:
+            debug_record("push_symbols VECTOR");
+            if (address_used(p - TAG_VECTOR)) goto up;
+            mark_address_as_used(p - TAG_VECTOR);
+            h = vechdr(p);
+            if (vector_holds_binary(h)) goto up;
+            if (is_mixed_header(h)) len = 4*CELL;
+            else len = length_of_header(h);
+            if (len == CELL) goto up;
+            w = p + len - CELL - TAG_VECTOR;
+            p = *(LispObject *)w;
+            *(LispObject *)w = b;
+            b = w + BACKPOINTER_VECTOR;
+            goto down;
+
+        case TAG_NUMBERS:
+            debug_record("push_symbols NUMBERS");
+            if (address_used(p - TAG_NUMBERS)) goto up;
+            mark_address_as_used(p - TAG_NUMBERS);
+            h = numhdr(p);
+            if (vector_holds_binary(h)) goto up;
+            len = length_of_header(h);
+            if (len == CELL) goto up;
+            w = p + len - CELL - TAG_NUMBERS;
+            p = *(LispObject *)w;
+            *(LispObject *)w = b;
+            b = w + BACKPOINTER_VECTOR;
+            goto down;
+
+        case TAG_BOXFLOAT:
+            debug_record("push_symbols BOXFLOAT");
+            if (address_used(p - TAG_BOXFLOAT)) goto up;
+            mark_address_as_used(p - TAG_BOXFLOAT);
+            goto up;
+
+        case TAG_FIXNUM:
+        case TAG_HDR_IMMED:
+            debug_record("push_symbols FIXNUM etc");
+// Immediate data (eg small integers, characters) ought not to need any more.
+            goto up;
+
+        case TAG_FORWARD:
+            debug_record("push_symbols FORWARD");
+// Forwarding addresses should only be present while the garbage collector
+// is active, and so ought not to be found. I will print a message and
+// basically ignore them.
+            fprintf(stderr,
+                "\n+++ Forwarding address detected in heap scan from %s\n",
+                trigger);
+            debug_show_trail("forwarding addr");
+            goto up;
+    }
+
+up:
+    debug_record("push_symbols up");
+    switch (b & BACKPOINTER_MASK)
+    {   default:
+        case BACKPOINTER_CDR:
+            debug_record("push_symbols BACKPOINTER_CDR");
+            w = qcdr(b - BACKPOINTER_CDR + TAG_CONS);
+            qcdr(b - BACKPOINTER_CDR + TAG_CONS) = p;
+            p = qcar(b - BACKPOINTER_CDR + TAG_CONS);
+            qcar(b - BACKPOINTER_CDR + TAG_CONS) = w;
+            b = b + BACKPOINTER_CAR - BACKPOINTER_CDR;
+            goto down;
+
+        case BACKPOINTER_CAR:
+            debug_record("push_symbols BACKPOINTER_CAR");
+            if (b == 0 + BACKPOINTER_CAR) return fail; // finished!
+            w = b - BACKPOINTER_CAR + TAG_CONS;
+            b = qcar(w);
+            qcar(w) = p;
+            p = w;
+            goto up;
+
+        case BACKPOINTER_SYMBOL:
+            debug_record("push_symbols BACKPOINTER_SYMBOL");
+            w = *(LispObject *)(b - BACKPOINTER_SYMBOL);
+            *(LispObject *)(b - BACKPOINTER_SYMBOL) = p;
+            b = b - CELL;
+            p = *(LispObject *)(b - BACKPOINTER_SYMBOL);
+            if (is_symbol_header_full_test(p))
+            {   p = b - BACKPOINTER_SYMBOL + TAG_SYMBOL;
+                b = w;
+                goto up;
+            }
+            *(LispObject *)(b - BACKPOINTER_SYMBOL) = w;
+            goto down;
+
+        case BACKPOINTER_VECTOR:
+            debug_record("push_symbols BACKPOINTER_VECTOR");
+            w = *(LispObject *)(b - BACKPOINTER_VECTOR);
+            *(LispObject *)(b - BACKPOINTER_VECTOR) = p;
+            b = b - CELL;
+            p = *(LispObject *)(b - BACKPOINTER_VECTOR);
+            if (is_number_header_full_test(p))
+            {   p = b - BACKPOINTER_VECTOR + TAG_NUMBERS;
+                b = w;
+                goto up;
+            }
+            if (is_vector_header_full_test(p))
+            {   p = b - BACKPOINTER_VECTOR + TAG_VECTOR;
+                b = w;
+                goto up;
+            }
+            *(LispObject *)(b - BACKPOINTER_VECTOR) = w;
+            goto down;
+    }
+}
+
+// The following returns true if it fails.
+
+static bool push_all_symbols(symbol_processor_predicate *pp)
+{   map_releaser RAII;
+    for (LispObject *s=stackbase+1; s<=stack; s++)
+    {   sprintf(trigger, "Stack@%p", s);
+        if (push_symbols(pp, *s)) return true;
+    }
+    strcpy(trigger, "value nil push");
+    if (push_symbols(pp, qvalue(nil))) return true;
+    strcpy(trigger, "env nil push");
+    if (push_symbols(pp, qenv(nil))) return true;
+    strcpy(trigger, "pname nil push");
+    if (push_symbols(pp, qpname(nil))) return true;
+    strcpy(trigger, "plist nil push");
+    if (push_symbols(pp, qplist(nil))) return true;
+    strcpy(trigger, "fastgets nil push");
+    if (push_symbols(pp, qfastgets(nil))) return true;
+    strcpy(trigger, "package nil push");
+    if (push_symbols(pp, qpackage(nil))) return true;
+    for (LispObject **p = list_bases; *p!=NULL; p++)
+    {   sprintf(trigger, "list base %p push", (void *)**p);
+        if (push_symbols(pp, **p)) return true;
+    }
+    strcpy(trigger, "EQ hash tables push");
+    if (push_symbols(pp, eq_hash_tables)) return true;
+    strcpy(trigger, "EQUAL hash tables push");
+    if (push_symbols(pp, equal_hash_tables)) return true;
+    return false;
+}
+
+static bool always(LispObject x)
+{   return true;
+}
+
+// true if a symbol has a value, a property list or a definition as
+// a function.
+
+static bool interesting(LispObject x)
+{   return (qfn1(x) != undefined1 ||
+            qplist(x) != nil ||
+            qvalue(x) != unset_var);
+}
+
+static bool not_gensym(LispObject x)
+{   return ((qheader(x) & (SYM_CODEPTR | SYM_ANY_GENSYM))== 0);
+}
+
+// Return an unsorted list of all symbols present in the current world.
+// (all!-symbols)     everything that has a value, definition or property
+// (all!-symbols nil) everything (even if dull) except gensyms. Note that
+//                    gensyms are excluded even if they have properties.
+// (all!-symbols t)   everything including gensyms.
+// There is a limit (at around 500,000) on the number of symbols that can
+// be returned, so if the user creates hundreds of thousands of gensyms (or
+// indeed hundreds of thousands of interned symbols) this could report
+// failure.
+
+
+LispObject Lall_symbols(LispObject env, LispObject include_gensyms)
+{   LispObject *stacksave = stack;
+    if (push_all_symbols(include_gensyms==nil ? not_gensym : always))
+    {   stack = stacksave;
+        aerror("all_symbols");
+    }
+    LispObject r = nil;
+    while (stack != stacksave)
+    {   LispObject w;
+        pop(w);
+        r = cons(w, r);
+    }
+    return onevalue(r);
+}
+
+LispObject Lall_symbols0(LispObject env, int nargs, ...)
+{   LispObject *stacksave = stack;
+    if (push_all_symbols(interesting))
+    {   stack = stacksave;
+        aerror("all_symbols");
+    }
+    LispObject r = nil;
+    while (stack != stacksave)
+    {   LispObject w;
+        pop(w);
+        r = cons(w, r);
+    }
+    return onevalue(r);
+}
+
+typedef struct mapstore_item
+{   double w;
+    double n;
+    uint64_t n1;
+    char name[40]; // I will truncate names to 39 chars
+} mapstore_item;
+
+bool profile_count_mode = false;
+
+static int profile_cf(const void *a, const void *b)
+{   mapstore_item *aa = (mapstore_item *)a,
+                  *bb = (mapstore_item *)b;
+// profile_count_mode selects whether I sort on the w field or the
+// n1 field here.
+    if (profile_count_mode)
+    {   if (aa->n1 == bb->n1) return 0;
+        if (aa->n1 < bb->n1) return 1;
+        else return -1;
+    }
+    if (aa->w == bb->w) return 0;
+    else if (aa->w < bb->w) return 1;
+    else return -1;
+}
+
+static double itotal = 0.0, total = 0.0;
+
+static bool count_totals(LispObject x)
+{   uint64_t n = qcount(x);
+    if (n == 0) return false; // Ignore items with zero count
+    LispObject e = qenv(x);
+    if (is_cons(e))
+    {   e = qcar(e);
+        if (is_bps(e))
+        {   size_t clen = length_of_byteheader(vechdr(e)) - CELL;
+            double w = (double)n/(double)clen;
+//
+// Here I want a measure that will give a good idea of how worthwhile it
+// would be to compile the given function into C - what I have chosen is
+// a count of bytecodes executed scaled by the length
+// of the bytestream code defining the function.  This will cause "good value"
+// cases to show up best.  I scale this relative to the total across all
+// functions recorded to make the numbers less sensitive to details of
+// how I generate test cases.  For interest I also display the proportion
+// of actual bytecodes interpreted.  In each case I record these out of
+// a total of 100.0 (percent) to give comfortable ranges of numbers to admire.
+// To get the scaling correct I need to count the total "costs" of all
+// functions in a first pass.
+            itotal += (double)n;
+            total += w;
+        }
+    }
+    return false;
+}
+
+static bool clear_counts(LispObject x)
+{   qcount(x) = 0;
+    return false;
+}
+
+static bool non_zero_count(LispObject x)
+{   return (qcount(x) != 0);
+}
+
+LispObject Lmapstore(LispObject env, LispObject a)
+// Argument controls what happens:
+//    nil or 0      print statistics and reset to zero
+//           1      print, but do not reset
+//           2      return list of stats, reset to zero
+//           3      return list, do not reset
+//           4      reset to zero, do not print, return nil
+//           8      Toggle call count mode
+//
+// The cases I seem to use while building Reduce are
+//     2  return a list (and reset counts)
+//     4  reset counts to zero
+// 
+{   int what;
+    mapstore_item *buff=NULL;
+    size_t buffp=0, buffn=0;
+    if (a == nil) a = fixnum_of_int(0);
+    if (is_fixnum(a)) what = int_of_fixnum(a);
+    else what = 0;
+    profile_count_mode = false;
+    if (what & 8) profile_count_mode = true;
+    what &= 7;
+    if (what == 4)
+    {   stack_restorer RAII;
+        push_all_symbols(clear_counts);
+        return onevalue(nil);
+    }
+    if (what == 0 || what == 1)   // needed if I am printing
+    {   buff = (mapstore_item *)(*malloc_hook)(100*sizeof(mapstore_item));
+        if (buff == NULL) return onevalue(nil); // fail
+        buffp = 0;
+        buffn = 100;
+    }
+    {   stack_restorer RAII;
+        itotal = total = 0.0;
+        push_all_symbols(count_totals);
+    }
+    LispObject r;
+    {   stack_restorer RAII;
+        LispObject *savestack = stack;
+        push_all_symbols(non_zero_count);
+        r = nil;
+        while (stack != savestack)
+        {   LispObject x;
+            x = stack[0];
+            uint64_t n = qcount(x);
+            if (n == 0) continue;
+            LispObject e = qenv(x);
+            if (is_cons(e))
+            {   e = qcar(e);
+                if (is_bps(e))
+                {   size_t clen = length_of_byteheader(vechdr(e)) - CELL;
+                    double w = (double)n/(double)clen;
+                    if (w/total > 0.00001 ||
+                        (double)n/itotal > 0.0001)
+                    {   if (what == 0 || what == 1)
+                        {   if (buffp == buffn)
+                            {   buffn += 100;
+                                buff = (mapstore_item *)
+                                       (*realloc_hook)((void *)buff,
+                                           sizeof(mapstore_item)*buffn);
+                                if (buff == NULL) return onevalue(nil);
+                            }
+                            buff[buffp].w = 100.0*w/total;
+                            buff[buffp].n = 100.0*(double)n/itotal;
+                            buff[buffp].n1 = n;
+                            LispObject pn = qpname(x);
+                            size_t npn = length_of_byteheader(vechdr(pn)) - CELL;
+                            if (npn >= 40) npn = 39;
+                            strncpy(buff[buffp].name, &celt(pn, 0), npn);
+                            buff[buffp].name[npn] = 0; 
+                            buffp++;
+                        }
+                        if (what == 2 || what == 3)
+                        {   LispObject w1;
+// Result is a list of items ((name size bytes-executed) ...).
+                            push(r);
+                            w1 = make_lisp_integer64(n);
+                            w1 = list3(x, fixnum_of_int(clen), w1);
+                            pop(r);
+                            r = cons(w1, r);
+                        }
+                    }
+                }
+            }
+            pop(x);
+            if ((what & 1) == 0) qcount(x) = 0;
+        }
+    }
+    if (what == 0 || what == 1)
+    {   double running = 0.0;
+        qsort((void *)buff, buffp, sizeof(buff[0]), profile_cf);
+        trace_printf("\n  Value  %%bytes (So far) MBytecodes Function name\n");
+        for (size_t j=0; j<buffp; j++)
+        {   running += buff[j].n;
+            trace_printf("%7.2f %7.2f (%6.2f) %9lu: ",
+                         buff[j].w, buff[j].n, running,
+                         (long unsigned)(buff[j].n1/10000u));
+            trace_printf("%s\n", buff[j].name);
+        }
+        trace_printf("\n");
+        (*free_hook)((void *)buff);
+    }
+    return onevalue(r);
+}
+
+LispObject Lmapstore0(LispObject env, int nargs, ...)
+{   argcheck(nargs, 0, "mapstore");
+    return Lmapstore(env, nil);
 }
 
 // end of serialize.cpp

@@ -802,9 +802,29 @@ void debug_show_trail_raw(const char *msg, const char *file, int line)
 
 jmp_buf *global_jb;
 
+#ifdef DEBUG
+// For a while as I introduce the valid_address function I will demonstrate
+// it on entry to the code here so I build confidence that it at least
+// sometimes works.
+
+void check_valid(void *p, bool expect)
+{   if (valid_address(p) != expect)
+    {   fprintf(stderr, "Address %p validity issue\n", p);
+    }
+}
+#endif
+
 static void lisp_main(void)
-{
-    volatile int i;
+{   volatile int i;
+#ifdef DEBUG
+    check_valid((void *)(-1), false);
+    check_valid((void *)0, false);
+    check_valid((void *)&nil, true);
+    check_valid((void *)&i, true);
+    check_valid((void *)nil, true);
+    check_valid((void *)stack, true);
+#endif
+
 #ifdef USE_SIGALTSTACK
 //
 // If I get a SIGSEGV that is caused by a stack overflow then I am in
@@ -2749,10 +2769,6 @@ int cslfinish(character_writer *w)
         term_printf("\n\nEnd of Lisp run after %ld.%.2ld+%ld.%.2ld seconds\n",
                     t/100, t%100, gct/100, gct%100);
     }
-#ifdef DEBUG_SOFTWARE_TICKS
-    term_printf("%d ticks processed (%d)\n",
-                number_of_ticks, SOFTWARE_TICKS);
-#endif
     drop_heap_segments();
     if (spool_file != NULL)
     {

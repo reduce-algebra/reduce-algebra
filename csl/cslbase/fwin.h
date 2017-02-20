@@ -61,8 +61,7 @@
 #include <stdlib.h>
 
 //
-// Logging support. This will give a no-op unless the preprocessor symbol
-// DEBUG is defined at compile time.
+// Logging support, only enabled in debug mode.
 //
 // Usage (eg):  FWIN_LOG("I reached %d of %s\n", __LINE__, __FILE__);
 //

@@ -69,10 +69,6 @@
 // 32 bit systems can support vectors that are longer than will fit into
 // a 64-bit system.
 //
-// Once upon a time I used 16-bit pages. For small hardware (such as a PDA)
-// I sometimes make my Makefile downgrade this to use 18-bit (256Kbyte)
-// pages to save some waste.
-//
 
 #ifndef PAGE_BITS
 #  define PAGE_BITS             22
@@ -167,15 +163,17 @@ typedef intptr_t LispObject;
 #define TAG_NUMBERS     5   // Bignum, Rational, Complex                 20
 #define TAG_BOXFLOAT    6   // Boxed floats                              40
 #define TAG_FIXNUM      7   // 28/60-bit integers                        80
+#define TAG_XBIT        8   // extra bit!
 #define XTAG_SFLOAT     15  // Short float, 28+ bits of immediate data   80
 
 // On a 32-bit machine I can pack a 28-bit float (implemented as a 32-bit
 // one with the low 4 bits crudely masked off) by putting XTAG_FLOAT as the
-// bottom 4 bits. On a 64-bit system I have 64=bit immediate data so if I
+// bottom 4 bits. On a 64-bit system I have 64-bit immediate data so if I
 // I have XTAG_FLOAT as the low 4 bits then bit 5 could select as between
 // a 28 or a 32-bit value and the high 28 or 32-bits could be that value.
 // Then single floats as well as short floats would have an immediate
 // representation. 
+#define XTAG_FLOAT32    16
 
 #define is_forward(p)              ((((int)(p)) & TAG_BITS) == TAG_FORWARD)
 
@@ -231,14 +229,14 @@ typedef intptr_t LispObject;
 #define MOST_POSITIVE_FIXNUM fixnum_of_int(MOST_POSITIVE_FIXVAL)
 #define MOST_NEGATIVE_FIXNUM fixnum_of_int(MOST_NEGATIVE_FIXVAL)
 
-#define is_cons(p)   ((((int)(p)) & TAG_BITS) == TAG_CONS)
+#define is_cons(p)   ((((int)(p)) & TAG_BITS)  == TAG_CONS)
 #define is_fixnum(p) ((((int)(p)) & XTAG_BITS) == TAG_FIXNUM)
-#define is_odds(p)   ((((int)(p)) & TAG_BITS) == TAG_HDR_IMMED) // many subcases
+#define is_odds(p)   ((((int)(p)) & TAG_BITS)  == TAG_HDR_IMMED) // many subcases
 #define is_sfloat(p) ((((int)(p)) & XTAG_BITS) == XTAG_SFLOAT)
-#define is_symbol(p) ((((int)(p)) & TAG_BITS) == TAG_SYMBOL)
-#define is_numbers(p)((((int)(p)) & TAG_BITS) == TAG_NUMBERS)
-#define is_vector(p) ((((int)(p)) & TAG_BITS) == TAG_VECTOR)
-#define is_bfloat(p) ((((int)(p)) & TAG_BITS) == TAG_BOXFLOAT)
+#define is_symbol(p) ((((int)(p)) & TAG_BITS)  == TAG_SYMBOL)
+#define is_numbers(p)((((int)(p)) & TAG_BITS)  == TAG_NUMBERS)
+#define is_vector(p) ((((int)(p)) & TAG_BITS)  == TAG_VECTOR)
+#define is_bfloat(p) ((((int)(p)) & TAG_BITS)  == TAG_BOXFLOAT)
 
 #define consp(p)     is_cons(p)
 #define symbolp(p)   is_symbol(p)
@@ -859,6 +857,7 @@ typedef union Float_union
 // integer type that I alias with here an unsigned one to try to avoid
 // unwanted sign propagation.
     uint32_t i;
+    float32_t f32;
 } Float_union;
 
 // The following macro clears any bits in a LispObject above the
@@ -1051,22 +1050,8 @@ typedef struct Single_Float
 #define UNWIND_ERROR      (UNWIND_FNAME|UNWIND_ARGS)
 #define UNWIND_UNWIND     0x400       // no backtrace, still an error
 
-#if 0 && defined DEBUG
-//
-// When I have built the system with debugging options enabled I will display
-// a backtrace when performing THROW as well as after errors. This is so
-// I can really see what is going on! Well that now feels like a nuisance so I
-// will back off from it, but leave this here so it would be easy to
-// reinstate if needed later on.
-//
-#define SHOW_FNAME  (exit_reason == UNWIND_THROW || \
-                     (exit_reason & UNWIND_FNAME) != 0)
-#define SHOW_ARGS   (exit_reason == UNWIND_THROW || \
-                     (exit_reason & UNWIND_ARGS) != 0)
-#else
 #define SHOW_FNAME  ((exit_reason & UNWIND_FNAME) != 0)
 #define SHOW_ARGS   ((exit_reason & UNWIND_ARGS) != 0)
-#endif
 
 // The C and C++ refuse to define the behaviour of right shifts
 // on signed types. The underlying reason may relate to the possibility that

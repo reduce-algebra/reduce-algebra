@@ -106,7 +106,7 @@ LispObject volatile vheaplimit;
 LispObject vfringe;
 intptr_t nwork;
 unsigned int exit_count;
-uintptr_t gensym_ser;
+uint64_t gensym_ser;
 intptr_t print_precision, miscflags;
 intptr_t current_modulus, fastget_size, package_bits, modulus_is_large;
 LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
@@ -606,13 +606,12 @@ static void init_heap_segments(double store_size)
 //
 // I allocate a stack segment first because I will use it as buffer space for
 // decompressing the contents of an image file. It will come out of the
-// initial contiguous block in general, however to give myself the best
-// chance when converting a 32-bit image to 64-bits I allocate it afresh
-// when I am on a 64-bit machine. If the user had asked for an oversize stack
-// it has to be allocated independently here anyway.
+// initial contiguous block.
+// If the user had asked for an oversize stack it has to be allocated
+// independently here anyway.
 //
     if (nilsegment != NULL && pages_count > 0)
-    {   if (stack_segsize != 1 || SIXTY_FOUR_BIT)
+    {   if (stack_segsize != 1)
         {   stacksegment =
                 (LispObject *)my_malloc(stack_segsize*CSL_PAGE_SIZE + 16);
             if (stacksegment == NULL)
@@ -1305,8 +1304,7 @@ static void cold_setup()
 // have a tidy world in place here.
 //
     qpname(nil) = nil;
-    for (i=first_nil_offset; i<last_nil_offset; i++)
-        BASE[i] = nil;
+    for (LispObject **p=list_bases; *p!=NULL; p++) **p = nil;
     eq_hash_tables = equal_hash_tables = nil;
 #ifdef COMMON
     qpackage(nil) = nil;
@@ -2728,6 +2726,7 @@ void setup(int restart_flag, double store_size)
     if ((restart_flag & 2) != 0) init_heap_segments(store_size);
     garbage_collection_permitted = false;
     stack = stackbase;
+    stack[0] = nil;
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
 
@@ -2794,11 +2793,7 @@ void setup(int restart_flag, double store_size)
             }
         }
     }
-    else
-    {   for (i=first_nil_offset; i<last_nil_offset; i++)
-            BASE[i] = nil;
-        copy_out_of_nilseg(false);
-    }
+    else for (LispObject **p = list_bases; *p!=NULL; p++) **p = nil;
 
     savestacklimit = stacklimit = &stack[stack_segsize*CSL_PAGE_SIZE/4-200];
     // allow some slop at end
@@ -2851,464 +2846,220 @@ void setup(int restart_flag, double store_size)
         if (n > 1)
             term_printf("There are %d processors available\n", n);
     }
-#ifdef DEBUG_VALIDATE
-    copy_into_nilseg(false);
-    validate_all("restarting", __LINE__, __FILE__);
-#endif
     garbage_collection_permitted = true;
     return;
 }
 
 LispObject multiplication_buffer;
 
-#ifdef DEBUG_WITH_HASH
-uint32_t basehash[200];
+// Here is a table of all the list-bases that CSL marks from, and that
+// must have their values captured in checkpoint files.
 
-#define HASHDEPTH 60
-
-int hash_sequence_number = 1;
-
-uint32_t hash_for_checking(LispObject a, int depth)
-{
-    Header h;
-    size_t i;
-    uint32_t r;
-    if (depth > HASHDEPTH) return 12345;
-    if (is_fixnum(a)) return (uint32_t)a;
-    if (a == 0)
-    {   printf("@@@ a==0 in hash_for_checking\n");
-        return 11*hash_sequence_number++;
-    }
-    if (is_cons(a))
-    {   uint32_t c = hash_for_checking(qcar(a), depth+3);
-        uint32_t d = hash_for_checking(qcdr(a), depth+1);
-        return 169*c + d + 77777;
-    }
-    if (is_symbol(a))
-    {   uint32_t r = hash_for_checking(qplist(a), depth+2);
-        r = 11213*2 + hash_for_checking(qenv(a), depth+10);
-        return 19963*r + 17*hash_for_checking(qpname(a), depth+1);
-    }
-    if (!is_vector(a) || !is_string_header(h = vechdr(a)))
-    {   if (is_vector(a)) return vechdr(a);
-        else if (is_numbers(a)) return numhdr(a);
-        return 987654321;
-    }
-    r = 1;
-    for (i=0; i<length_of_byteheader(h)-CELL; i++)
-        r = 314159*r + celt(a, i);
-    return r;
-}
-
-#endif
-
-void copy_into_nilseg(int fg)
-{   multiplication_buffer = nil;
-
-    size_t i;
-    if (fg)     // move non list bases too
-    {   BASE[12]                                = byteflip;
-//
-// The messing around here is to ensure that on 64-bit architectures
-// stacklimit is kept properly aligned.
-//
-#ifdef COMMON
-        *(LispObject * volatile *)&BASE[16] = stacklimit;
-#else
-        *(LispObject * volatile *)&BASE[15]  = stacklimit;
-#endif
-        BASE[18]                             = fringe;
-        *(LispObject volatile *)&BASE[19]    = heaplimit;
-        *(LispObject volatile *)&BASE[20]    = vheaplimit;
-        BASE[21]                             = vfringe;
-        BASE[22]                             = miscflags;
-
-        BASE[24]                             = nwork;
-//      BASE[25]                             = exit_reason;
-        BASE[26]                             = exit_count;
-        BASE[27]                             = gensym_ser;
-        BASE[28]                             = print_precision;
-        BASE[29]                             = current_modulus;
-        BASE[30]                             = fastget_size;
-        BASE[31]                             = package_bits;
-        BASE[32]                             = modulus_is_large;
-        BASE[33]                             = (int)trap_floating_overflow;
-    }
-//
-// Entries 50 and 51 are used for chains of hash tables, and so get
-// very special individual treatment. See comments elsewhere.
-//
-    BASE[52]     = current_package;
-    BASE[53]     = B_reg;
-    BASE[54]     = codevec;
-    BASE[55]     = litvec;
-    BASE[56]     = exit_tag;
-    BASE[57]     = exit_value;
-    BASE[58]     = catch_tags;
-    BASE[59]     = lisp_package;
-    BASE[60]     = boffo;
-    BASE[61]     = charvec;
-    BASE[62]     = sys_hash_table;
-    BASE[63]     = help_index;
-    BASE[64]     = gensym_base;
-    BASE[65]     = err_table;
-    BASE[66]     = supervisor;
-    BASE[67]     = startfn;
-    BASE[68]     = faslvec;
-    BASE[69]     = tracedfn;
-    BASE[70]     = prompt_thing;
-    BASE[71]     = faslgensyms;
-    BASE[72]     = current_function;
-    BASE[73]     = active_stream;
-    BASE[74]     = current_module;
-    BASE[75]     = autoload_symbol;
-    BASE[76]     = big_divisor;
-    BASE[77]     = big_dividend;
-    BASE[78]     = big_quotient;
-    BASE[79]     = big_fake1;
-    BASE[80]     = big_fake2;
-
-    BASE[90]     = append_symbol;
-    BASE[91]     = applyhook;
-    BASE[92]     = cfunarg;
-    BASE[93]     = comma_at_symbol;
-    BASE[94]     = comma_symbol;
-    BASE[95]     = compiler_symbol;
-    BASE[96]     = comp_symbol;
-    BASE[97]     = cons_symbol;
-    BASE[98]     = echo_symbol;
-    BASE[99]     = emsg_star;
-    BASE[100]    = evalhook;
-    BASE[101]    = eval_symbol;
-    BASE[102]    = expr_symbol;
-    BASE[103]    = features_symbol;
-    BASE[104]    = fexpr_symbol;
-    BASE[105]    = funarg;
-    BASE[106]    = function_symbol;
-    BASE[107]    = lambda;
-    BASE[108]    = lisp_true;
-    BASE[109]    = lower_symbol;
-    BASE[110]    = macroexpand_hook;
-    BASE[111]    = macro_symbol;
-    BASE[112]    = opt_key;
-    BASE[113]    = prinl_symbol;
-    BASE[114]    = progn_symbol;
-    BASE[115]    = quote_symbol;
-    BASE[116]    = raise_symbol;
-    BASE[117]    = redef_msg;
-    BASE[118]    = rest_key;
-    BASE[119]    = savedef;
-    BASE[120]    = string_char_sym;
-    BASE[121]    = unset_var;
-    BASE[122]    = work_symbol;
-    BASE[123]    = lex_words;
-    BASE[124]    = get_counts;
-    BASE[125]    = fastget_names;
-    BASE[126]    = input_libraries;
-    BASE[127]    = output_library;
-    BASE[128]    = current_file;
-    BASE[129]    = break_function;
-
-    BASE[130]    = lisp_work_stream;
-    BASE[131]    = lisp_standard_output;
-    BASE[132]    = lisp_standard_input;
-    BASE[133]    = lisp_debug_io;
-    BASE[134]    = lisp_error_output;
-    BASE[135]    = lisp_query_io;
-    BASE[136]    = lisp_terminal_io;
-    BASE[137]    = lisp_trace_output;
-    BASE[138]    = standard_output;
-    BASE[139]    = standard_input;
-    BASE[140]    = debug_io;
-    BASE[141]    = error_output;
-    BASE[142]    = query_io;
-    BASE[143]    = terminal_io;
-    BASE[144]    = trace_output;
-    BASE[145]    = fasl_stream;
-    BASE[146]    = mv_call_symbol;
-    BASE[147]    = startup_symbol;
-    BASE[148]    = traceprint_symbol;
-    BASE[149]    = load_source_symbol;
-    BASE[150]    = load_selected_source_symbol;
-    BASE[151]    = bytecoded_symbol;
-    BASE[152]    = funcall_symbol;
-    BASE[153]    = gchook;
-    BASE[154]    = resources;
-    BASE[155]    = callstack;
-    BASE[156]    = procstack;
-    BASE[157]    = procmem;
-    BASE[158]    = trap_time;
-    BASE[159]    = apply_symbol;
-
-    BASE[170]    = keyword_package;
-    BASE[171]    = all_packages;
-    BASE[172]    = package_symbol;
-    BASE[173]    = internal_symbol;
-    BASE[174]    = external_symbol;
-    BASE[175]    = inherited_symbol;
-    BASE[176]    = key_key;
-    BASE[177]    = allow_other_keys;
-    BASE[178]    = aux_key;
-    BASE[179]    = format_symbol;
-    BASE[180]    = expand_def_symbol;
-    BASE[181]    = allow_key_key;
-    BASE[182]    = declare_symbol;
-    BASE[183]    = special_symbol;
-    BASE[184]    = large_modulus;
-    BASE[185]    = used_space;
-    BASE[186]    = avail_space;
-    BASE[187]    = eof_symbol;
-    BASE[188]    = call_stack;
-    BASE[189]    = nicknames_symbol;
-    BASE[190]    = use_symbol;
-    BASE[191]    = and_symbol;
-    BASE[192]    = or_symbol;
-    BASE[193]    = not_symbol;
-    BASE[194]    = reader_workspace;
-    BASE[195]    = named_character;
-    BASE[196]    = read_float_format;
-    BASE[197]    = short_float;
-    BASE[198]    = single_float;
-    BASE[199]    = double_float;
-    BASE[200]    = long_float;
-    BASE[201]    = bit_symbol;
-    BASE[202]    = pathname_symbol;
-    BASE[203]    = print_array_sym;
-    BASE[204]    = read_base;
-    BASE[205]    = initial_element;
-    BASE[206]    = builtin0_symbol;
-    BASE[207]    = builtin1_symbol;
-    BASE[208]    = builtin2_symbol;
-    BASE[209]    = builtin3_symbol;
-    BASE[210]    = builtin4_symbol; 
-
-    for (i=0; i<=50; i++)
-        BASE[work_0_offset+i]   = workbase[i];
-
-    if (fg)
-    {
-#ifdef COMMON
-        *(LispObject * volatile *)&BASE[16] = stacklimit;
-#else
-        *(LispObject * volatile *)&BASE[15] = stacklimit;
-#endif
-    }
-    BASE[190]    = user_base_0;
-    BASE[191]    = user_base_1;
-    BASE[192]    = user_base_2;
-    BASE[193]    = user_base_3;
-    BASE[194]    = user_base_4;
-    BASE[195]    = user_base_5;
-    BASE[196]    = user_base_6;
-    BASE[197]    = user_base_7;
-    BASE[198]    = user_base_8;
-    BASE[199]    = user_base_9;
-
-#ifdef DEBUG_WITH_HASH
-    for (i=first_nil_offset; i<last_nil_offset; i++)
-    {   basehash[i] = hash_for_checking(BASE[i], 0);
-    }
-#endif
-
-}
-
-void copy_out_of_nilseg(int fg)
-{   size_t i;
-    if (fg)
-    {   byteflip         = BASE[12];
-        fringe           = BASE[18];
-        heaplimit        = *(LispObject volatile *)&BASE[19];
-        vheaplimit       = *(LispObject volatile *)&BASE[20];
-        vfringe          = BASE[21];
-        miscflags        = BASE[22];
-
-        nwork            = BASE[24];
-//      exit_reason      = BASE[25];
-        exit_count       = BASE[26];
-        gensym_ser       = BASE[27];
-        print_precision  = BASE[28];
-        current_modulus  = BASE[29];
-        fastget_size     = BASE[30];
-        package_bits     = BASE[31];
-        modulus_is_large = BASE[32];
-        trap_floating_overflow = (bool)BASE[33];
-    }
-
-    current_package       = BASE[52];
-    B_reg                 = BASE[53];
-    codevec               = BASE[54];
-    litvec                = BASE[55];
-    exit_tag              = BASE[56];
-    exit_value            = BASE[57];
-    catch_tags            = BASE[58];
-    lisp_package          = BASE[59];
-    boffo                 = BASE[60];
-    charvec               = BASE[61];
-    sys_hash_table        = BASE[62];
-    help_index            = BASE[63];
-    gensym_base           = BASE[64];
-    err_table             = BASE[65];
-    supervisor            = BASE[66];
-    startfn               = BASE[67];
-    faslvec               = BASE[68];
-    tracedfn              = BASE[69];
-    prompt_thing          = BASE[70];
-    faslgensyms           = BASE[71];
-    current_function      = BASE[72];
-    active_stream         = BASE[73];
-    current_module        = BASE[74];
-    autoload_symbol       = BASE[75];
-    big_divisor           = BASE[76];
-    big_dividend          = BASE[77];
-    big_quotient          = BASE[78];
-    big_fake1             = BASE[79];
-    big_fake2             = BASE[80];
-
-    append_symbol         = BASE[90];
-    applyhook             = BASE[91];
-    cfunarg               = BASE[92];
-    comma_at_symbol       = BASE[93];
-    comma_symbol          = BASE[94];
-    compiler_symbol       = BASE[95];
-    comp_symbol           = BASE[96];
-    cons_symbol           = BASE[97];
-    echo_symbol           = BASE[98];
-    emsg_star             = BASE[99];
-    evalhook              = BASE[100];
-    eval_symbol           = BASE[101];
-    expr_symbol           = BASE[102];
-    features_symbol       = BASE[103];
-    fexpr_symbol          = BASE[104];
-    funarg                = BASE[105];
-    function_symbol       = BASE[106];
-    lambda                = BASE[107];
-    lisp_true             = BASE[108];
-    lower_symbol          = BASE[109];
-    macroexpand_hook      = BASE[110];
-    macro_symbol          = BASE[111];
-    opt_key               = BASE[112];
-    prinl_symbol          = BASE[113];
-    progn_symbol          = BASE[114];
-    quote_symbol          = BASE[115];
-    raise_symbol          = BASE[116];
-    redef_msg             = BASE[117];
-    rest_key              = BASE[118];
-    savedef               = BASE[119];
-    string_char_sym       = BASE[120];
-    unset_var             = BASE[121];
-    work_symbol           = BASE[122];
-    lex_words             = BASE[123];
-    get_counts            = BASE[124];
-    fastget_names         = BASE[125];
-    input_libraries       = BASE[126];
-    output_library        = BASE[127];
-    current_file          = BASE[128];
-    break_function        = BASE[129];
-    lisp_work_stream      = BASE[130];
-    lisp_standard_output  = BASE[131];
-    lisp_standard_input   = BASE[132];
-    lisp_debug_io         = BASE[133];
-    lisp_error_output     = BASE[134];
-    lisp_query_io         = BASE[135];
-    lisp_terminal_io      = BASE[136];
-    lisp_trace_output     = BASE[137];
-    standard_output       = BASE[138];
-    standard_input        = BASE[139];
-    debug_io              = BASE[140];
-    error_output          = BASE[141];
-    query_io              = BASE[142];
-    terminal_io           = BASE[143];
-    trace_output          = BASE[144];
-    fasl_stream           = BASE[145];
-    mv_call_symbol        = BASE[146];
-    startup_symbol        = BASE[147];
-    traceprint_symbol     = BASE[148];
-    load_source_symbol    = BASE[149];
-    load_selected_source_symbol = BASE[150];
-    bytecoded_symbol      = BASE[151];
-    funcall_symbol        = BASE[152];
-    gchook                = BASE[153];
-    resources             = BASE[154];
-    callstack             = BASE[155];
-    procstack             = BASE[156];
-    procmem               = BASE[157];
-    trap_time             = BASE[158];
-    apply_symbol          = BASE[159];
-    keyword_package       = BASE[170];
-    all_packages          = BASE[171];
-    package_symbol        = BASE[172];
-    internal_symbol       = BASE[173];
-    external_symbol       = BASE[174];
-    inherited_symbol      = BASE[175];
-    key_key               = BASE[176];
-    allow_other_keys      = BASE[177];
-    aux_key               = BASE[178];
-    format_symbol         = BASE[179];
-    expand_def_symbol     = BASE[180];
-    allow_key_key         = BASE[181];
-    declare_symbol        = BASE[182];
-    special_symbol        = BASE[183];
-    large_modulus         = BASE[184];
-    used_space            = BASE[185];
-    avail_space           = BASE[186];
-    eof_symbol            = BASE[187];
-    call_stack            = BASE[188];
-    nicknames_symbol      = BASE[189];
-    use_symbol            = BASE[190];
-    and_symbol            = BASE[191];
-    or_symbol             = BASE[192];
-    not_symbol            = BASE[193];
-    reader_workspace      = BASE[194];
-    named_character       = BASE[195];
-    read_float_format     = BASE[196];
-    short_float           = BASE[197];
-    single_float          = BASE[198];
-    double_float          = BASE[199];
-    long_float            = BASE[200];
-    bit_symbol            = BASE[201];
-    pathname_symbol       = BASE[202];
-    print_array_sym       = BASE[203];
-    read_base             = BASE[204];
-    initial_element       = BASE[205];
-    builtin0_symbol       = BASE[206];
-    builtin1_symbol       = BASE[207];  
-    builtin2_symbol       = BASE[208];  
-    builtin3_symbol       = BASE[209];  
-    builtin4_symbol       = BASE[210];  
-
-    for (i = 0; i<=50; i++)
-        workbase[i]  = BASE[work_0_offset+i];
-
-    if (fg)
-    {
-#ifdef COMMON
-        stacklimit       = *(LispObject *volatile *)&BASE[16];
-#else
-        stacklimit       = *(LispObject *volatile *)&BASE[15];
-#endif
-    }
-
-    user_base_0           = BASE[190];
-    user_base_1           = BASE[191];
-    user_base_2           = BASE[192];
-    user_base_3           = BASE[193];
-    user_base_4           = BASE[194];
-    user_base_5           = BASE[195];
-    user_base_6           = BASE[196];
-    user_base_7           = BASE[197];
-    user_base_8           = BASE[198];
-    user_base_9           = BASE[199];
-
-#ifdef DEBUG_WITH_HASH
-    for (i=first_nil_offset; i<last_nil_offset; i++)
-    {   uint32_t hh;
-        if (basehash[i] != (hh = hash_for_checking(BASE[i], 0)))
-        {   printf("@@@Hash code for BASE[%d] was %x is now %x\n", i, basehash[i], hh);
-        }
-    }
-#endif
-}
-
+LispObject *list_bases[] =
+{   &current_package,
+    &B_reg,
+    &codevec,
+    &litvec,
+    &exit_tag,
+    &exit_value,
+    &catch_tags,
+    &lisp_package,
+    &boffo,
+    &charvec,
+    &sys_hash_table,
+    &help_index,
+    &gensym_base,
+    &err_table,
+    &supervisor,
+    &startfn,
+    &faslvec,
+    &tracedfn,
+    &prompt_thing,
+    &faslgensyms,
+    &current_function,
+    &active_stream,
+    &current_module,
+    &autoload_symbol,
+    &big_divisor,
+    &big_dividend,
+    &big_quotient,
+    &big_fake1,
+    &big_fake2,
+    &append_symbol,
+    &applyhook,
+    &cfunarg,
+    &comma_at_symbol,
+    &comma_symbol,
+    &compiler_symbol,
+    &comp_symbol,
+    &cons_symbol,
+    &echo_symbol,
+    &emsg_star,
+    &evalhook,
+    &eval_symbol,
+    &expr_symbol,
+    &features_symbol,
+    &fexpr_symbol,
+    &funarg,
+    &function_symbol,
+    &lambda,
+    &lisp_true,
+    &lower_symbol,
+    &macroexpand_hook,
+    &macro_symbol,
+    &opt_key,
+    &prinl_symbol,
+    &progn_symbol,
+    &quote_symbol,
+    &raise_symbol,
+    &redef_msg,
+    &rest_key,
+    &savedef,
+    &string_char_sym,
+    &unset_var,
+    &work_symbol,
+    &lex_words,
+    &get_counts,
+    &fastget_names,
+    &input_libraries,
+    &output_library,
+    &current_file,
+    &break_function,
+    &lisp_work_stream,
+    &lisp_standard_output,
+    &lisp_standard_input,
+    &lisp_debug_io,
+    &lisp_error_output,
+    &lisp_query_io,
+    &lisp_terminal_io,
+    &lisp_trace_output,
+    &standard_output,
+    &standard_input,
+    &debug_io,
+    &error_output,
+    &query_io,
+    &terminal_io,
+    &trace_output,
+    &fasl_stream,
+    &mv_call_symbol,
+    &startup_symbol,
+    &traceprint_symbol,
+    &load_source_symbol,
+    &load_selected_source_symbol,
+    &bytecoded_symbol,
+    &funcall_symbol,
+    &gchook,
+    &resources,
+    &callstack,
+    &procstack,
+    &procmem,
+    &multiplication_buffer,
+    &trap_time,
+    &apply_symbol,
+    &keyword_package,
+    &all_packages,
+    &package_symbol,
+    &internal_symbol,
+    &external_symbol,
+    &inherited_symbol,
+    &key_key,
+    &allow_other_keys,
+    &aux_key,
+    &format_symbol,
+    &expand_def_symbol,
+    &allow_key_key,
+    &declare_symbol,
+    &special_symbol,
+    &large_modulus,
+    &used_space,
+    &avail_space,
+    &eof_symbol,
+    &call_stack,
+    &nicknames_symbol,
+    &use_symbol,
+    &and_symbol,
+    &or_symbol,
+    &not_symbol,
+    &reader_workspace,
+    &named_character,
+    &read_float_format,
+    &short_float,
+    &single_float,
+    &double_float,
+    &long_float,
+    &bit_symbol,
+    &pathname_symbol,
+    &print_array_sym,
+    &read_base,
+    &initial_element,
+    &builtin0_symbol,
+    &builtin1_symbol,
+    &builtin2_symbol,
+    &builtin3_symbol,
+    &builtin4_symbol, 
+    &user_base_0,
+    &user_base_1,
+    &user_base_2,
+    &user_base_3,
+    &user_base_4,
+    &user_base_5,
+    &user_base_6,
+    &user_base_7,
+    &user_base_8,
+    &user_base_9,
+    &workbase[0],
+    &workbase[1],
+    &workbase[2],
+    &workbase[3],
+    &workbase[4],
+    &workbase[5],
+    &workbase[6],
+    &workbase[7],
+    &workbase[8],
+    &workbase[9],
+    &workbase[10],
+    &workbase[11],
+    &workbase[12],
+    &workbase[13],
+    &workbase[14],
+    &workbase[15],
+    &workbase[16],
+    &workbase[17],
+    &workbase[18],
+    &workbase[19],
+    &workbase[20],
+    &workbase[21],
+    &workbase[22],
+    &workbase[23],
+    &workbase[24],
+    &workbase[25],
+    &workbase[26],
+    &workbase[27],
+    &workbase[28],
+    &workbase[29],
+    &workbase[30],
+    &workbase[31],
+    &workbase[32],
+    &workbase[33],
+    &workbase[34],
+    &workbase[35],
+    &workbase[36],
+    &workbase[37],
+    &workbase[38],
+    &workbase[39],
+    &workbase[40],
+    &workbase[41],
+    &workbase[42],
+    &workbase[43],
+    &workbase[44],
+    &workbase[45],
+    &workbase[46],
+    &workbase[47],
+    &workbase[48],
+    &workbase[49],
+    &workbase[50],
+    NULL              // Used to mark the end of the table.
+};
 
 //
 // June 2015: I am now going to try MD5 code from Alexander Peslyak

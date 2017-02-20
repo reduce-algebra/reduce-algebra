@@ -42,6 +42,10 @@
 #include "config.h"
 #endif
 
+#ifndef DEBUG
+#define NDEBUG 1
+#endif
+
 //
 // If the header "complex.h" is available, the type "complex double" is
 // accepted and the function "csqrt" is present I will assume I can use the

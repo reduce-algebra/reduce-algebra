@@ -2055,22 +2055,6 @@ else !canrun
 	echo Can not profile on this platform
 endif !canrun
 
-specialprofile:	bootstrapreduce.img
-if canrun
-	$(TRACE)mkdir -p buildlogs
-	chmod 664 $(gensrc)/*
-	./bootstrapreduce$(EXEEXT) -w (CSLFLAGS) -Dno_init_file -Dtracefluid \
-		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
-		-- buildlogs/profile.log
-# I preserve the previous profile.dat as profile.dat.old
-	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
-	mv profile.dat $(gensrc)
-	chmod 664 $(gensrc)/*
-else !canrun
-	echo Can not profile on this platform
-endif !canrun
-
 prof-inst:	profile.dat
 	$(CP) profile.dat $(gensrc)
 	chmod 664 $(gensrc)/*

@@ -1757,10 +1757,6 @@ LispObject Lcodep(LispObject env, LispObject a)
     else return onevalue(nil);
 }
 
-#ifdef DEBUG_VALIDATE
-static int validate_count = 0;
-#endif
-
 LispObject getvector(int tag, int type, size_t size)
 {
 //
@@ -1774,17 +1770,6 @@ LispObject getvector(int tag, int type, size_t size)
 // 32-bit or 64-bit representation. However it would be hard to unwind
 // that now!]
 //
-#ifdef DEBUG_VALIDATE
-//
-// If I do a full validation every time I allocate a vector that REALLY
-// hits performance, so I will do it occasionally. The 1 in 500 indicated
-// at present is a pretty random choice of frequency!
-//
-    if ((++validate_count) % 500 == 0)
-    {   copy_into_nilseg(false);
-        validate_all("getvector", __LINE__, __FILE__);
-    }
-#endif
     for (;;)
     {   char *r = (char *)vfringe;
         size_t free = (size_t)((char *)vheaplimit - r);

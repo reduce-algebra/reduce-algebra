@@ -1916,7 +1916,9 @@ restart:
 // at the low 3 bits. Yuk - that means I need an extra test here.
             if (is_sfloat(u))
             {   Float_union uu;
-                uu.i = u - XTAG_SFLOAT;
+// The following passes the correct value for either 28 or 32-bit floats.
+                if (SIXTY_FOUR_BIT) uu.i = (int32_t)((int64_t)u>>32);
+                else uu.i = u - XTAG_SFLOAT;
                 fp_sprint(my_buff, (double)uu.f, print_precision);
                 goto float_print_tidyup;
             }
@@ -3079,7 +3081,8 @@ restart:
                         sprintf(my_buff, "{%.11" PRIo32 ":%#.8g}",
                                 p[0], single_float_val(u));
                     }
-                    else fp_sprint(my_buff, (double)single_float_val(u), print_precision);
+                    else fp_sprint(my_buff,
+                        (double)single_float_val(u), print_precision);
                     break;
                 case TYPE_DOUBLE_FLOAT:
 //
@@ -3093,7 +3096,8 @@ restart:
                     }
                     else if (escaped_printing & escape_hex)
                     {   uint32_t *p = (uint32_t *)&double_float_val(u);
-                        sprintf(my_buff, "{%.8" PRIx32 "/%.8" PRIx32 ":%#.15g}",
+                        sprintf(my_buff,
+                            "{%.8" PRIx32 "/%.8" PRIx32 ":%#.15g}",
 #ifdef LITTLEENDIAN
                             p[1], p[0], double_float_val(u));
 #else

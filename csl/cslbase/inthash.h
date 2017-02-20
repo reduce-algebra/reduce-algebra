@@ -78,11 +78,6 @@
 #define __STDC_CONSTANT_MACROS 1
 #endif
 #include <stdint.h>
-
-#ifndef DEBUG
-#define NDEBUG 1
-#endif
-
 #include <assert.h>
 
 
