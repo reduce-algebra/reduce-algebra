@@ -1009,6 +1009,7 @@ symbolic procedure profile_a_package names;
           bytecounts t;
           close wrs oo;
        end;
+       load!-source(); % Need source versions of all code here
        w1 := nil;
        while w do <<
            w2 := get(caar w, '!*savedef);
