@@ -2933,6 +2933,96 @@ asserted procedure ofsf_qeg(f: Formula): Formula;
 	 rl_mkn('and, cdr case . car case)), nil, -1)
    end;
 
+asserted procedure ofsf_preqe(f: Formula): Formula;
+   begin
+      scalar ql, varll, bvl, evl, eql, g;
+      f := rl_simpl(rl_pnf f, nil, -1);
+      if not rl_quap rl_op f then
+	 return f;
+      {ql, varll, g, bvl} := cl_split f;
+      if ql neq '(ex) then  % improve soon!
+ 	 return f;
+      if rl_op g neq 'and then
+	 return f;
+      evl . eql := ofsf_preqeGoodEql(g, car varll);
+      if null evl then
+	 return f;
+      evl := sort(evl, 'ordp);
+      % When there are too few equations we have to give up some good variables:
+      for i := 1 : length evl - length eql do
+	 evl := cdr evl;
+      for each v in reverse evl do
+	 g := rl_mkq('ex, v, g);
+      if !*rlverbose then
+	 ioto_tprin2t "+++ starting qe, which should do only Gauss steps";
+      g := cl_qe(g, nil);
+      for each v in reverse sort(lto_setminus(car varll, evl), 'ordp) do
+	 g := rl_mkq('ex, v, g);
+      return g
+   end;
+
+asserted procedure ofsf_preqeGoodEql(f: Formula, qvl: List): List;
+   % We have a primitive formula, [vl] are the ex-quantified variables, [f] is
+   % the matrix.
+   begin scalar eql, vll, svl, vl, el, vcl, evl;
+      for each s in rl_argn f do
+	 if rl_op s eq 'equal then <<
+	    vll := ofsf_preqeGoodPoly(ofsf_arg2l s, qvl);
+	    if vll then <<
+	       svl := nil;
+	       for each vl1 in vll do <<
+ 		  for each v in vl1 do <<
+		     vl := lto_insertq(v, vl);
+		     svl := lto_insertq(v, svl)
+		  >>;
+		  for each rvl1 on vl1 do
+		     for each v in cdr rvl1 do
+		     	el := lto_insert(car rvl1 . v, el)
+	       >>;
+	       push(s . svl, eql)
+	    >>
+	 >>;
+      if !*rlverbose then
+	 ioto_tprin2 {"+++ computing minimum vertex cover of ", el, " ... "};
+      vcl := lto_vertexCover el where !*rlverbose=nil;
+      if !*rlverbose then
+	 ioto_prin2t {vcl};
+      evl := lto_setminus(vl, vcl);
+      return evl . eql
+   end;
+
+asserted procedure ofsf_preqeGoodPoly(p: SF, qvl: List): ExtraBoolean;
+   % Check if [p] has total degree at most 2 in [vl]. In the positive case
+   % return the occurring terms wrt. Z[...][vl] as a list of list of variables.
+   % Else return [nil].
+   begin
+      scalar avl, ml, c, ev, scvl, v, vl, vll;
+      integer n, d, e;
+      avl . ml := sfto_sf2monl(sfto_reorder(p, qvl));
+      n := length lto_setminus(avl, qvl);
+      for i := 1:n do
+ 	 avl := cdr avl;
+      c := t; while c and ml do <<
+	 ev := car pop ml;
+	 for i := 1:n do
+ 	    ev := cdr ev;
+	 scvl := avl;
+	 d := 0;
+	 vl := nil;
+	 while c and scvl do <<
+	    v := pop scvl;
+	    e := pop ev;
+	    d := d + e;
+	    if e > 1 or d > 2 then
+	       c := nil
+	    else if eqn(e,1) then
+	       push(v, vl)
+	 >>;
+	 if vl then push(vl, vll)
+      >>;
+      return c and vll
+   end;
+
 endmodule;  % [ofsfqe]
 
 end;  % of file

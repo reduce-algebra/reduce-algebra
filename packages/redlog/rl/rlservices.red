@@ -418,6 +418,13 @@ rl_service {
    mode = both};
 
 rl_service {
+   name = preqe,
+   doc = "pre-quantifier elimination (domain R only)",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   returns = {type = Formula},
+   mode = both};
+
+rl_service {
    name = psat2pol,
    doc = "encode satisfiability into polynomial assuming all variables are positive",
    arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},

@@ -612,7 +612,7 @@ asserted procedure lto_gensym1(base: Id): Id;
    end;
 
 procedure lto_maxkl(kl);
-   % Maximum of a kernel list. [kl] is a list of kernels. Returns the greastest
+   % Maximum of a kernel list. [kl] is a list of kernels. Returns the greatest
    % kernel w.r.t. kord!* or nil if [kl] is nil.
    begin scalar m, w;
       if null kl then
@@ -760,6 +760,45 @@ asserted procedure lto_stringFormat(sl: List, indent: Integer, len: Integer): Li
 asserted procedure lto_strlen(s: String): Integer;
    % Number of characters in [s] excluding the double quotes.
    length explodec s;
+
+asserted procedure lto_vertexCover(el: List): List;
+   % [el] is a list of pairs of interned identifiers representing edges. Returns
+   % a list of identifiers representing vertices. The result is a minimum vertex
+   % cover of [el].
+   begin scalar oc, seenl, fl, obj, z, zz, w, best;
+      oc := rl_set '(r);
+      for each e in el do <<
+	 for each v in {car e, cdr e} do
+	    if not (v memq seenl) then <<
+	       push(v, seenl);
+	       push(lto_vcZeroOrOne !*k2f v, fl);
+	       obj := addf(obj, !*k2f v)
+	    >>;
+	 push(lto_vcEdgeGeqOne(!*k2f car e, !*k2f cdr e), fl)
+      >>;
+      zz := intern gensym();
+      z := !*k2f zz;
+      w := ofsf_xopt!-ansl!-ansl ofsf_xopt!-xopt
+ 	 cl_ex(rl_smkn('and, ofsf_0mk2('geq, addf(z, negf obj)) . fl), {zz});
+      best := pop w;
+      for each ans in w do
+	 if lto_vcBetterp(ans, best, z) then
+ 	    best := ans;
+      w := for each pr in ofsf_xopt!-ans!-pt best join
+	 if eqn(cdr pr, 1) then
+ 	    {car pr};
+      rl_set oc;
+      return w
+   end;
+
+asserted procedure lto_vcZeroOrOne(v: SF): Formula;
+   rl_mkn('or, {ofsf_0mk2('equal, v), ofsf_0mk2('equal, addf(v, negf 1))});
+
+asserted procedure lto_vcEdgeGeqOne(v1: SF, v2: SF): Formula;
+   ofsf_0mk2('geq, addf(addf(v1, v2), negf 1));
+
+asserted procedure lto_vcBetterp(a1: Pair, a2: Pair, z: SF): Boolean;
+   addf(negf ofsf_arg2l ofsf_xopt!-ans!-gd a1, z) < addf(negf ofsf_arg2l ofsf_xopt!-ans!-gd a2, z);
 
 asserted procedure lto_loremIpsumAl(): Alist;
    '(("Lorem" .  "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
