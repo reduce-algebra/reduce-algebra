@@ -193,11 +193,8 @@ static LispObject timesii(LispObject a, LispObject b)
 }
 
 static LispObject timesis(LispObject a, LispObject b)
-{
-    Float_union bb;
-    bb.i = b - XTAG_SFLOAT;
-    bb.f = (float)((float)int_of_fixnum(a) * bb.f);
-    return low32((bb.i & ~0xf) + XTAG_SFLOAT);
+{   double d = (double)int_of_fixnum(a)*value_of_immediate_float(b);
+    return pack_immediate_float(d, b);
 }
 
 //
@@ -1765,43 +1762,15 @@ LispObject times2(LispObject a, LispObject b)
 #endif
 
 LispObject times2(LispObject a, LispObject b)
-{   switch ((int)a & TAG_BITS)
+{   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            if (is_sfloat(a))
-            {   switch (b & TAG_BITS)
-                {   case TAG_FIXNUM:
-                        return timessi(a, b);
-                    case XTAG_SFLOAT:
-                    {   Float_union aa, bb; // timesss() coded in-line
-                        aa.i = a - XTAG_SFLOAT;
-                        bb.i = b - XTAG_SFLOAT;
-                        aa.f = (float) (aa.f * bb.f);
-                        return low32((aa.i & ~0xf) + XTAG_SFLOAT);
-                    }
-                    case TAG_NUMBERS:
-                    {   int hb = type_of_header(numhdr(b));
-                        switch (hb)
-                        {   case TYPE_BIGNUM:
-                                return timessb(a, b);
-                            case TYPE_RATNUM:
-                                return timessr(a, b);
-                            case TYPE_COMPLEX_NUM:
-                                return timessc(a, b);
-                            default:
-                                aerror1("bad arg for times",  b);
-                        }
-                    }
-                    case TAG_BOXFLOAT:
-                        return timessf(a, b);
-                    default:
-                        aerror1("bad arg for times",  b);
-                }
-            }
-            else switch ((int)b & TAG_BITS)
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
-                    if (is_sfloat(b)) return timesis(a, b);
-                    else return timesii(a, b);
+                    return timesii(a, b);
+                case XTAG_SFLOAT:
+                    return timesis(a, b);
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1815,22 +1784,52 @@ LispObject times2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return timesif(a, b);
                 default:
                     aerror1("bad arg for times",  b);
             }
+        case XTAG_SFLOAT:
+            switch (b & XTAG_BITS)
+            {   case TAG_FIXNUM:
+                    return timessi(a, b);
+                case XTAG_SFLOAT:
+                {   double d = value_of_immediate_float(a) *
+                               value_of_immediate_float(b);
+                    return pack_immediate_float(d, a, b);
+                }
+                case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
+                {   int hb = type_of_header(numhdr(b));
+                    switch (hb)
+                    {   case TYPE_BIGNUM:
+                            return timessb(a, b);
+                        case TYPE_RATNUM:
+                            return timessr(a, b);
+                        case TYPE_COMPLEX_NUM:
+                            return timessc(a, b);
+                        default:
+                            aerror1("bad arg for times",  b);
+                    }
+                }
+                case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
+                    return timessf(a, b);
+                default:
+                    aerror1("bad arg for times",  b);
+            }
         case TAG_NUMBERS:
+        case TAG_NUMBERS+TAG_XBIT:
         {   int ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                    switch ((int)b & TAG_BITS)
+                    switch ((int)b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return timesbi(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return timesbs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1844,19 +1843,19 @@ LispObject times2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return timesbf(a, b);
                         default:
                             aerror1("bad arg for times",  b);
                     }
                 case TYPE_RATNUM:
-                    switch (b & TAG_BITS)
+                    switch (b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return timesri(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return timesrs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1870,19 +1869,19 @@ LispObject times2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return timesrf(a, b);
                         default:
                             aerror1("bad arg for times",  b);
                     }
                 case TYPE_COMPLEX_NUM:
-                    switch (b & TAG_BITS)
+                    switch (b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return timesci(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return timescs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1896,6 +1895,7 @@ LispObject times2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return timescf(a, b);
                         default:
                             aerror1("bad arg for times",  b);
@@ -1904,14 +1904,14 @@ LispObject times2(LispObject a, LispObject b)
             }
         }
         case TAG_BOXFLOAT:
-            switch ((int)b & TAG_BITS)
+        case TAG_BOXFLOAT+TAG_XBIT:
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return timesfi(a, b);
-#ifdef SHORT_FLOAT
                 case XTAG_SFLOAT:
                     return timesfs(a, b);
-#endif
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1925,6 +1925,7 @@ LispObject times2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return timesff(a, b);
                 default:
                     aerror1("bad arg for times",  b);

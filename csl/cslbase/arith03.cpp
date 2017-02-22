@@ -72,15 +72,12 @@ uint32_t Idivide(uint32_t *qp, uint32_t a, uint32_t b, uint32_t c)
 static LispObject quotis(LispObject a, LispObject b)
 {
     mv_2 = fixnum_of_int(0);
-#ifndef SHORT_FLOAT
-    return fixnum_of_int(0);
-#else
-    Float_union bb;
-    bb.i = b - XTAG_SFLOAT;
-    if (bb.f == 0.0) aerror2("bad arg for quotient", a, b);
-    bb.f = (float) ((float)int_of_fixnum(a) / bb.f);
-    return (bb.i & ~(int32_t)0xf) + XTAG_SFLOAT;
-#endif
+    double d = value_of_immediate_float(b);
+// Here and at least at present I explicitly fail if I try to divide by 0.0s0
+// whilke I could wish to return an infinity.
+    if (d == 0.0) aerror2("bad arg for quotient", a, b);
+    d = (double)int_of_fixnum(a)/d;
+    return pack_immediate_float(b, b);
 }
 
 static LispObject quotib(LispObject a, LispObject b)
@@ -209,24 +206,18 @@ static LispObject quotif(LispObject a, LispObject b)
 
 static LispObject quotsi(LispObject a, LispObject b)
 {
-    mv_2 = fixnum_of_int(0);
-#ifndef SHORT_FLOAT
-    return fixnum_of_int(0);
-#else
-    Float_union aa;
     if (b == fixnum_of_int(0)) aerror2("bad arg for quotient", a, b);
-    aa.i = a - XTAG_SFLOAT;
-    aa.f = (float) (aa.f / (float)int_of_fixnum(b));
-    return (aa.i & ~(int32_t)0xf) + XTAG_SFLOAT;
-#endif
+    mv_2 = fixnum_of_int(0);
+    double d = value_of_immediate_float(a)/(double)int_of_fixnum(b);
+    return pack_immediate_float(d, a);
 }
 
 static LispObject quotsb(LispObject a, LispObject b)
 {   double d = float_of_number(b);
-    mv_2 = fixnum_of_int(0);
     if (d == 0.0) aerror2("bad arg for quotient", a, b);
-    d = float_of_number(a) / d;
-    return make_short_float(d);
+    mv_2 = fixnum_of_int(0);
+    d = value_of_immediate_float(a) / d;
+    return pack_immediate_float(d, a);
 }
 
 #define quotsr(a, b) quotsb(a, b)
@@ -235,14 +226,9 @@ static LispObject quotsb(LispObject a, LispObject b)
 
 static LispObject quotsf(LispObject a, LispObject b)
 {   double d = float_of_number(b);
-    mv_2 = fixnum_of_int(0);
     if (d == 0.0) aerror2("bad arg for quotient", a, b);
-    d = float_of_number(a) / d;
-    if (trap_floating_overflow &&
-        floating_edge_case(d))
-    {   floating_clear_flags();
-        aerror("floating point quotient");
-    }
+    mv_2 = fixnum_of_int(0);
+    d = value_of_immediate_float(a) / d;
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
@@ -574,33 +560,33 @@ static LispObject quotrembi(LispObject a, LispObject b)
 
 #define quotbs(a, b) quotsb(a, b)
 
-// show() and show1() are not actually called by live code but where used in
-// trace code currently commented out. I will leave them here just for now.
-
-static void show(const char *msg, LispObject a, size_t lena)
-{   trace_printf("%s", msg);
-    if (is_fixnum(a)) trace_printf("#FIX% " PRIx64, int_of_fixnum(a));
-    else
-    {   size_t i = lena;
-        for (;;)
-        {   trace_printf(" %.8x", bignum_digits(a)[i]);
-            if (i == 0) break;
-            i--;
-        }
-    }
-    trace_printf("\n");
-}
-
-static void show1(const char *msg, uint32_t atop, LispObject a, size_t lena)
-{   trace_printf("%s %.8x : ", msg, atop);
-    size_t i = lena;
-    for (;;)
-    {   trace_printf(" %.8x", bignum_digits(a)[i]);
-        if (i == 0) break;
-        i--;
-    }
-    trace_printf("\n");
-}
+// // show() and show1() are not actually called by live code but were used in
+// // trace code currently commented out. I will leave them here just for now.
+//
+// static void show(const char *msg, LispObject a, size_t lena)
+// {   trace_printf("%s", msg);
+//     if (is_fixnum(a)) trace_printf("#FIX% " PRIx64, int_of_fixnum(a));
+//     else
+//     {   size_t i = lena;
+//         for (;;)
+//         {   trace_printf(" %.8x", bignum_digits(a)[i]);
+//             if (i == 0) break;
+//             i--;
+//         }
+//     }
+//     trace_printf("\n");
+// }
+//
+// static void show1(const char *msg, uint32_t atop, LispObject a, size_t lena)
+// {   trace_printf("%s %.8x : ", msg, atop);
+//     size_t i = lena;
+//     for (;;)
+//     {   trace_printf(" %.8x", bignum_digits(a)[i]);
+//         if (i == 0) break;
+//         i--;
+//     }
+//     trace_printf("\n");
+// }
 
 //
 // It is probably way over the top to make all the sub-functions for
@@ -1162,9 +1148,9 @@ static LispObject quotff(LispObject a, LispObject b)
 }
 
 LispObject quot2(LispObject a, LispObject b)
-{   switch ((int)a & TAG_BITS)
+{   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            switch ((int)b & TAG_BITS)
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
 //
 // This is where fixnum / fixnum arithmetic happens - the case I most want to
@@ -1194,11 +1180,10 @@ LispObject quot2(LispObject a, LispObject b)
                             return make_lisp_integer64(r);
                         else return fixnum_of_int(r);
                     }
-#ifdef SHORT_FLOAT
                 case XTAG_SFLOAT:
                     return quotis(a, b);
-#endif
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1212,23 +1197,22 @@ LispObject quot2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return quotif(a, b);
                 default:
                     aerror1("bad arg for quotient",  b);
             }
-#ifdef SHORT_FLOAT
         case XTAG_SFLOAT:
-            switch ((int)b & TAG_BITS)
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return quotsi(a, b);
                 case XTAG_SFLOAT:
-                {   Float_union aa, bb;
-                    aa.i = a - XTAG_SFLOAT;
-                    bb.i = b - XTAG_SFLOAT;
-                    aa.f = (float) (aa.f / bb.f);
-                    return (aa.i & ~(int32_t)0xf) + XTAG_SFLOAT;
+                {   double d = value_of_immediate_float(a) /
+                               value_of_immediate_float(b);
+                    return pack_immediate_float(d, a, b);
                 }
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1242,23 +1226,23 @@ LispObject quot2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return quotsf(a, b);
                 default:
                     aerror1("bad arg for quotient",  b);
             }
-#endif
         case TAG_NUMBERS:
+        case TAG_NUMBERS+TAG_XBIT:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                    switch ((int)b & TAG_BITS)
+                    switch ((int)b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotbi(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return quotbs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1272,19 +1256,19 @@ LispObject quot2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return quotbf(a, b);
                         default:
                             aerror1("bad arg for quotient",  b);
                     }
                 case TYPE_RATNUM:
-                    switch ((int)b & TAG_BITS)
+                    switch ((int)b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotri(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return quotrs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1298,19 +1282,19 @@ LispObject quot2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return quotrf(a, b);
                         default:
                             aerror1("bad arg for quotient",  b);
                     }
                 case TYPE_COMPLEX_NUM:
-                    switch ((int)b & TAG_BITS)
+                    switch ((int)b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotci(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return quotcs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1324,6 +1308,7 @@ LispObject quot2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return quotcf(a, b);
                         default:
                             aerror1("bad arg for quotient",  b);
@@ -1332,14 +1317,14 @@ LispObject quot2(LispObject a, LispObject b)
             }
         }
         case TAG_BOXFLOAT:
-            switch ((int)b & TAG_BITS)
+        case TAG_BOXFLOAT+TAG_XBIT:
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return quotfi(a, b);
-#ifdef SHORT_FLOAT
                 case XTAG_SFLOAT:
                     return quotfs(a, b);
-#endif
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1353,6 +1338,7 @@ LispObject quot2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return quotff(a, b);
                 default:
                     aerror1("bad arg for quotient",  b);
@@ -1363,9 +1349,9 @@ LispObject quot2(LispObject a, LispObject b)
 }
 
 LispObject quotrem2(LispObject a, LispObject b)
-{   switch ((int)a & TAG_BITS)
+{   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            switch ((int)b & TAG_BITS)
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
 //
 // This is where fixnum / fixnum arithmetic happens - the case I most want to
@@ -1394,11 +1380,10 @@ LispObject quotrem2(LispObject a, LispObject b)
                             return make_lisp_integerptr(r);
                         else return fixnum_of_int(r);
                     }
-#ifdef SHORT_FLOAT
                 case XTAG_SFLOAT:
                     return quotis(a, b);
-#endif
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1412,23 +1397,22 @@ LispObject quotrem2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return quotif(a, b);
                 default:
                     aerror1("bad arg for quotient",  b);
             }
-#ifdef SHORT_FLOAT
         case XTAG_SFLOAT:
-            switch ((int)b & TAG_BITS)
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return quotsi(a, b);
                 case XTAG_SFLOAT:
-                {   Float_union aa, bb;
-                    aa.i = a - XTAG_SFLOAT;
-                    bb.i = b - XTAG_SFLOAT;
-                    aa.f = (float) (aa.f / bb.f);
-                    return (aa.i & ~(int32_t)0xf) + XTAG_SFLOAT;
+                {   double d = value_of_immediate_float(a) /
+                               value_of_immediate_float(b);
+                    return pack_immediate_float(d, a, b);
                 }
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1442,23 +1426,23 @@ LispObject quotrem2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return quotsf(a, b);
                 default:
                     aerror1("bad arg for quotient",  b);
             }
-#endif
         case TAG_NUMBERS:
+        case TAG_NUMBERS+TAG_XBIT:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                    switch ((int)b & TAG_BITS)
+                    switch ((int)b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotrembi(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return quotbs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1474,19 +1458,19 @@ LispObject quotrem2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return quotbf(a, b);
                         default:
                             aerror1("bad arg for quotient",  b);
                     }
                 case TYPE_RATNUM:
-                    switch ((int)b & TAG_BITS)
+                    switch ((int)b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotri(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return quotrs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1500,19 +1484,19 @@ LispObject quotrem2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return quotrf(a, b);
                         default:
                             aerror1("bad arg for quotient",  b);
                     }
                 case TYPE_COMPLEX_NUM:
-                    switch ((int)b & TAG_BITS)
+                    switch ((int)b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotci(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return quotcs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1526,6 +1510,7 @@ LispObject quotrem2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return quotcf(a, b);
                         default:
                             aerror1("bad arg for quotient",  b);
@@ -1534,14 +1519,14 @@ LispObject quotrem2(LispObject a, LispObject b)
             }
         }
         case TAG_BOXFLOAT:
-            switch ((int)b & TAG_BITS)
+        case TAG_BOXFLOAT+TAG_XBIT:
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return quotfi(a, b);
-#ifdef SHORT_FLOAT
                 case XTAG_SFLOAT:
                     return quotfs(a, b);
-#endif
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1555,6 +1540,7 @@ LispObject quotrem2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return quotff(a, b);
                 default:
                     aerror1("bad arg for quotient",  b);
@@ -1577,9 +1563,9 @@ LispObject quotrem2(LispObject a, LispObject b)
  */
 
 LispObject CLquot2(LispObject a, LispObject b)
-{   switch ((int)a & TAG_BITS)
+{   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            switch ((int)b & TAG_BITS)
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
 //
 // This is where fixnum / fixnum arithmetic happens - the case I most want to
@@ -1617,11 +1603,10 @@ LispObject CLquot2(LispObject a, LispObject b)
                         bb = bb / w;
                         return make_ratio(fixnum_of_int(aa), fixnum_of_int(bb));
                     }
-#ifdef SHORT_FLOAT
                 case XTAG_SFLOAT:
                     return quotis(a, b);
-#endif
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1635,23 +1620,22 @@ LispObject CLquot2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return quotif(a, b);
                 default:
                     aerror1("bad arg for /",  b);
             }
-#ifdef SHORT_FLOAT
         case XTAG_SFLOAT:
-            switch ((int)b & TAG_BITS)
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return quotsi(a, b);
                 case XTAG_SFLOAT:
-                {   Float_union aa, bb;
-                    aa.i = a - XTAG_SFLOAT;
-                    bb.i = b - XTAG_SFLOAT;
-                    aa.f = (float) (aa.f / bb.f);
-                    return (aa.i & ~(int32_t)0xf) + XTAG_SFLOAT;
+                {   double d = value_of_immediate_float(a) /
+                               value_of_immediate_float(b);
+                    return pack_immediate_float(d, a, b);
                 }
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1665,23 +1649,23 @@ LispObject CLquot2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return quotsf(a, b);
                 default:
                     aerror1("bad arg for /",  b);
             }
-#endif
         case TAG_NUMBERS:
+        case TAG_NUMBERS+TAG_XBIT:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                    switch ((int)b & TAG_BITS)
+                    switch ((int)b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return CLquotbi(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return quotbs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1695,19 +1679,19 @@ LispObject CLquot2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return quotbf(a, b);
                         default:
                             aerror1("bad arg for /",  b);
                     }
                 case TYPE_RATNUM:
-                    switch ((int)b & TAG_BITS)
+                    switch ((int)b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotri(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return quotrs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1721,19 +1705,19 @@ LispObject CLquot2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return quotrf(a, b);
                         default:
                             aerror1("bad arg for /",  b);
                     }
                 case TYPE_COMPLEX_NUM:
-                    switch ((int)b & TAG_BITS)
+                    switch ((int)b & XTAG_BITS)
                     {   case TAG_FIXNUM:
                             return quotci(a, b);
-#ifdef SHORT_FLOAT
                         case XTAG_SFLOAT:
                             return quotcs(a, b);
-#endif
                         case TAG_NUMBERS:
+                        case TAG_NUMBERS+TAG_XBIT:
                         {   int32_t hb = type_of_header(numhdr(b));
                             switch (hb)
                             {   case TYPE_BIGNUM:
@@ -1747,6 +1731,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                             }
                         }
                         case TAG_BOXFLOAT:
+                        case TAG_BOXFLOAT+TAG_XBIT:
                             return quotcf(a, b);
                         default:
                             aerror1("bad arg for /",  b);
@@ -1755,14 +1740,14 @@ LispObject CLquot2(LispObject a, LispObject b)
             }
         }
         case TAG_BOXFLOAT:
-            switch ((int)b & TAG_BITS)
+        case TAG_BOXFLOAT+TAG_XBIT:
+            switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return quotfi(a, b);
-#ifdef SHORT_FLOAT
                 case XTAG_SFLOAT:
                     return quotfs(a, b);
-#endif
                 case TAG_NUMBERS:
+                case TAG_NUMBERS+TAG_XBIT:
                 {   int32_t hb = type_of_header(numhdr(b));
                     switch (hb)
                     {   case TYPE_BIGNUM:
@@ -1776,6 +1761,7 @@ LispObject CLquot2(LispObject a, LispObject b)
                     }
                 }
                 case TAG_BOXFLOAT:
+                case TAG_BOXFLOAT+TAG_XBIT:
                     return quotff(a, b);
                 default:
                     aerror1("bad arg for /",  b);
