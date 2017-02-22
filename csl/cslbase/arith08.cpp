@@ -320,10 +320,10 @@ static LispObject Ldecode_float(LispObject env, LispObject a)
     {   d = frexp(d, &x);
         if (d == 1.0) d = 0.5, x++;
     }
-    if (is_sfloat(a)) sign = make_sfloat(neg);
+    if (is_sfloat(a)) sign = make_short_float(neg);
     else sign = make_boxfloat(neg, type_of_header(flthdr(a)));
     push(sign);
-    if (is_sfloat(a)) a = make_sfloat(d);
+    if (is_sfloat(a)) a = make_short_float(d);
     else a = make_boxfloat(d, type_of_header(flthdr(a)));
     pop(sign);
 #ifdef COMMON
@@ -702,7 +702,7 @@ static LispObject Lfloat_sign2(LispObject, LispObject a, LispObject b)
     double d = float_of_number(b);
 // Worry a bit about -0.0 here
     if (float_of_number(a) < 0.0) d = -d;
-    if (is_sfloat(b)) return onevalue(make_sfloat(d));
+    if (is_sfloat(b)) return onevalue(make_short_float(d));
     else if (!is_bfloat(b)) aerror1("bad arg for float-sign",  b);
 // make_boxfloat may detect infinity or NaN.
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(b))));
@@ -719,7 +719,7 @@ static LispObject Lfloat_sign1(LispObject, LispObject a)
     double d = float_of_number(a);
 // worry a bit about -0.0 here
     if (d < 0.0) d = -1.0; else d = 1.0;
-    if (is_sfloat(a)) return onevalue(make_sfloat(d));
+    if (is_sfloat(a)) return onevalue(make_short_float(d));
     else if (!is_bfloat(a)) aerror1("bad arg for float-sign",  a);
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(a))));
 }
@@ -827,7 +827,7 @@ static LispObject Lscale_float(LispObject, LispObject a, LispObject b)
     if (!is_fixnum(b)) aerror("scale-float");
     d = ldexp(d, int_of_fixnum(b));
 // Overflows etc handled by make_boxfloat. 128-bit floats not supported.
-    if (is_sfloat(a)) return onevalue(make_sfloat(d));
+    if (is_sfloat(a)) return onevalue(make_short_float(d));
     else if (!is_bfloat(a)) aerror1("bad arg for scale-float",  a);
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(a))));
 }

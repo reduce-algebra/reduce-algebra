@@ -1674,29 +1674,27 @@ static void char_ins(char *s, int c)
 //  printf("After char_ins \"%s\"\n", s);
 }
 
-static void fp_sprint(char *buff, double x, int prec)
+static void fp_sprint(char *buff, double x, int prec, int xmark)
 {
-#ifdef DEBUG
-    volatile char *fullbuff = buff; // Useful for when running under a debugger
-    (void)fullbuff;
-#endif
-//
 // Note that I am assuming IEEE arithmetic here so the tricks that I use
 // to detect -0.0, NaN and infinities ought to be OK. Just remember that
 // -0.0 is equal to 0.0 and not less than it, so the simple test
-//& "x < 0.0" will not pick up the case of -0.0.
-//
+// "x < 0.0" will not pick up the case of -0.0.
     if (x == 0.0)
-    {   if (1.0/x < 0.0) strcpy(buff, "-0.0");
+    {   if (xmark != 'e')
+        {   if (1.0/x < 0.0) sprintf(buff, "-0.0%c+00", xmark);
+            else sprintf(buff, "0.0%c+00", xmark);
+        }
+        else if (1.0/x < 0.0) strcpy(buff, "-0.0");
         else strcpy(buff, "0.0");
         return;
     }
     if (x != x)
-    {   strcpy(buff, "NaN");
+    {   strcpy(buff, "NaN"); // The length of the NaN will not be visible
         return;
     }
     if (x == 2.0*x)
-    {   if (x < 0.0) strcpy(buff, "minusinf");
+    {   if (x < 0.0) strcpy(buff, "minusinf"); // Length of infinity not shown.
         else strcpy(buff, "inf");
         return;
     }
@@ -1716,7 +1714,8 @@ static void fp_sprint(char *buff, double x, int prec)
     }
 // I now have at lesst one digit before any "." or "E"
     while (*buff != 0 && *buff != '.' && *buff != 'e') buff++;
-    if (*buff == 0 || *buff == 'e')     // ddd to ddd.0
+    if (*buff == 'e') *buff = xmark;    // force style of exponent mark
+    if (*buff == 0 || *buff == xmark)   // ddd to ddd.0
     {   char_ins(buff, '0');            // and dddEnnn to ddd.0Ennn
         char_ins(buff, '.');
     }
@@ -1725,12 +1724,22 @@ static void fp_sprint(char *buff, double x, int prec)
     if (*(buff-1) == '.') char_ins(buff++, '0');// ddd. to ddd.0
     while (*(buff-1) == '0' &&                  // ddd.nnn0 to ddd.nnn
            *(buff-2) != '.') char_del(--buff);
-    if (*buff == 0) return; // no E present
+    if (*buff == 0)
+    {   if (xmark != 'e')
+        {   *buff++ = xmark;
+            *buff++ = '+';
+            *buff++ = '0';
+            *buff++ = '0';
+            *buff = 0;
+        }
+        return; // no E present. Add exponent mark if not default type
+    }
+    if (xmark != 'e') *buff = xmark; 
     buff++;
 // At this stage I am looking at the exponent part
-    if (*buff == 0) strcpy(buff, "+e00");
+    if (*buff == 0) strcpy(buff, "+00");
     else if (isdigit((unsigned char)*buff)) char_ins(buff, '+');
-// Exponent should now start with expicit + or - sign
+// Exponent should now start with explicit + or - sign
     buff++;
 // Force exponent to have at least 2 digits
     if (*(buff+1) == 0) char_ins(buff, '0');
@@ -1739,15 +1748,11 @@ static void fp_sprint(char *buff, double x, int prec)
 }
 
 
-static void fp_sprint128(char *buff, float128_t x, int prec)
+static void fp_sprint128(char *buff, float128_t x, int prec, int xchar)
 {
-#ifdef DEBUG
-    volatile char *fullbuff = buff; // Useful for when running under a debugger
-    (void)fullbuff;
-#endif
     if (f128M_eq(&x, &f128_0))
-    {   if (f128M_negative(&x)) strcpy(buff, "-0.0");
-        else strcpy(buff, "0.0");
+    {   if (f128M_negative(&x)) strcpy(buff, "-0.0L+00");
+        else strcpy(buff, "0.0L+00");
         return;
     }
     if (f128M_nan(&x))
@@ -1776,7 +1781,8 @@ static void fp_sprint128(char *buff, float128_t x, int prec)
 // stage I move to adopting that as a print convention.
 #define exponent_mark(c) ((c)=='e' || (c)=='l')
     else if (exponent_mark(*buff))                 // turn Ennn to 0.0Ennn
-    {   char_ins(buff, '0');
+    {   *buff = 'L';
+        char_ins(buff, '0');
         char_ins(buff, '.');
         char_ins(buff, '0');
     }
@@ -1790,8 +1796,9 @@ static void fp_sprint128(char *buff, float128_t x, int prec)
     while (*(buff-1) == '0' &&                  // ddd.nnn0 to ddd.nnn
            *(buff-2) != '.') char_del(--buff);
     if (*buff == 0) return; // no exponent mark present
+    *buff = 'L';
     buff++;
-    if (*buff == 0) strcpy(buff, "+e00");
+    if (*buff == 0) strcpy(buff, "+00");
     else if (isdigit((unsigned char)*buff)) char_ins(buff, '+');
     buff++;
     if (*(buff+1) == 0) char_ins(buff, '0');
@@ -1917,9 +1924,30 @@ restart:
             if (is_sfloat(u))
             {   Float_union uu;
 // The following passes the correct value for either 28 or 32-bit floats.
-                if (SIXTY_FOUR_BIT) uu.i = (int32_t)((int64_t)u>>32);
+                int xmark = 's';
+                if (SIXTY_FOUR_BIT)
+                {   uu.i = (int32_t)((int64_t)u>>32);
+                    if ((u & XTAG_FLOAT32) != 0) xmark = 'f';
+                }
                 else uu.i = u - XTAG_SFLOAT;
-                fp_sprint(my_buff, (double)uu.f, print_precision);
+                if (escaped_printing & escape_hex)
+                {   sprintf(my_buff, "%.8x%c", uu.i, xmark);
+                    goto float_print_tidyup;
+                }
+                else if (escaped_printing & escape_octal)
+                {   sprintf(my_buff, "%.11o%c", uu.i, xmark);
+                    goto float_print_tidyup;
+                }
+                else if (escaped_printing & escape_binary)
+                {   char *cp = my_buff;
+                    for (int b=31; b>=0; b--)
+                        *cp++ = '0' + ((uu.i >> b) & 1);
+                    *cp++ = xmark;
+                    *cp = 0;
+                    goto float_print_tidyup;
+                }
+
+                fp_sprint(my_buff, (double)uu.f, print_precision, xmark);
                 goto float_print_tidyup;
             }
             if (escaped_printing & escape_hex)
@@ -2602,7 +2630,8 @@ restart:
                     putc_stream('S', active_stream); putc_stream('(', active_stream);
                     len = len >> 2;
                     for (k=0; k<len; k++)
-                    {   fp_sprint(my_buff, (double)felt(stack[0], k), print_precision);
+                    {   fp_sprint(my_buff, (double)felt(stack[0], k),
+                                  print_precision, 'f');
                         prin_buf(my_buff, k != 0);
                     }
                     outprefix(false, 1);
@@ -2615,7 +2644,8 @@ restart:
                     putc_stream('D', active_stream); putc_stream('(', active_stream);
                     len = (len-CELL)/8;
                     for (k=0; k<len; k++)
-                    {   fp_sprint(my_buff, delt(stack[0], k), print_precision);
+                    {   fp_sprint(my_buff, delt(stack[0], k),
+                                  print_precision, 'e');
                         prin_buf(my_buff, k != 0);
                     }
                     outprefix(false, 1);
@@ -3082,7 +3112,7 @@ restart:
                                 p[0], single_float_val(u));
                     }
                     else fp_sprint(my_buff,
-                        (double)single_float_val(u), print_precision);
+                        (double)single_float_val(u), print_precision, 'f');
                     break;
                 case TYPE_DOUBLE_FLOAT:
 //
@@ -3113,7 +3143,8 @@ restart:
                             p[0], p[1], double_float_val(u));
 #endif
                     }
-                    else fp_sprint(my_buff, double_float_val(u), print_precision);
+                    else fp_sprint(my_buff, double_float_val(u),
+                                   print_precision, 'e');
                     break;
                 case TYPE_LONG_FLOAT:
                     if (escaped_printing & escape_checksum)
@@ -3163,7 +3194,10 @@ restart:
                         *o++ = '}';
                         *o = 0;
                     }
-                    else fp_sprint128(my_buff, long_float_val(u), print_precision);
+// I use an upper case "L" as an exponent marker in "long floats" because
+// a lower case "l" looks too much like a "1" (ell vs one).
+                    else fp_sprint128(my_buff, long_float_val(u),
+                                      print_precision, 'L');
                     break;
                 default:
                     sprintf(my_buff, "?%.8lx?", (long)(uint32_t)u);

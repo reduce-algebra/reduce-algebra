@@ -2211,7 +2211,7 @@ void set_up_variables(int restart_flag)
 // IEEE arithmetic is ALMOST universal and I am being too cautious here?
 //
     make_constant("short-float-epsilon",
-                  make_sfloat(16.0*FLT_EPSILON));
+                  make_short_float(16.0*FLT_EPSILON));
     make_constant("single-float-epsilon",
                   make_boxfloat(FLT_EPSILON, TYPE_SINGLE_FLOAT));
     make_constant("double-float-epsilon",
@@ -2225,7 +2225,7 @@ void set_up_variables(int restart_flag)
 // is just half float-epsilon. Correct me if I am wrong...
 //
     make_constant("short-float-negative-epsilon",
-                  make_sfloat(16.0*FLT_EPSILON/2.0));
+                  make_short_float(16.0*FLT_EPSILON/2.0));
     make_constant("single-float-negative-epsilon",
                   make_boxfloat(FLT_EPSILON/2.0, TYPE_SINGLE_FLOAT));
     make_constant("double-float-negative-epsilon",
@@ -2235,11 +2235,11 @@ void set_up_variables(int restart_flag)
                   make_boxfloat(DBL_EPSILON/2.0, TYPE_LONG_FLOAT));
 //
 // I hope that the C header file gets extremal values correct. Note that
-// because make_sfloat() truncates (rather than rounding) it should give
+// because make_short_float() truncates (rather than rounding) it should give
 // correct values for most-positive-short-float etc
 //
     make_constant("most-positive-short-float",
-                  make_sfloat(FLT_MAX));
+                  make_short_float(FLT_MAX));
     make_constant("most-positive-single-float",
                   make_boxfloat(FLT_MAX, TYPE_SINGLE_FLOAT));
     make_constant("most-positive-double-float",
@@ -2251,7 +2251,7 @@ void set_up_variables(int restart_flag)
 // and hence symmetric about zero.
 //
     make_constant("most-negative-short-float",
-                  make_sfloat(-FLT_MAX));
+                  make_short_float(-FLT_MAX));
     make_constant("most-negative-single-float",
                   make_boxfloat(-FLT_MAX, TYPE_SINGLE_FLOAT));
     make_constant("most-negative-double-float",
@@ -2267,7 +2267,7 @@ void set_up_variables(int restart_flag)
 // un-normalised). But I will ignore that worry just for now.
 //
     make_constant("least-positive-short-float",
-                  make_sfloat(FLT_MIN));
+                  make_short_float(FLT_MIN));
     make_constant("least-positive-single-float",
                   make_boxfloat(FLT_MIN, TYPE_SINGLE_FLOAT));
     make_constant("least-positive-double-float",
@@ -2275,7 +2275,7 @@ void set_up_variables(int restart_flag)
     make_constant("least-positive-long-float",
                   make_boxfloat(DBL_MIN, TYPE_LONG_FLOAT));
     make_constant("least-negative-short-float",
-                  make_sfloat(-FLT_MIN));
+                  make_short_float(-FLT_MIN));
     make_constant("least-negative-single-float",
                   make_boxfloat(-FLT_MIN, TYPE_SINGLE_FLOAT));
     make_constant("least-negative-double-float",
@@ -2287,7 +2287,7 @@ void set_up_variables(int restart_flag)
 // ones above may not be.
 //
     make_constant("least-positive-normalized-short-float",
-                  make_sfloat(FLT_MIN));
+                  make_short_float(FLT_MIN));
     make_constant("least-positive-normalized-single-float",
                   make_boxfloat(FLT_MIN, TYPE_SINGLE_FLOAT));
     make_constant("least-positive-normalized-double-float",
@@ -2295,7 +2295,7 @@ void set_up_variables(int restart_flag)
     make_constant("least-positive-normalized-long-float",
                   make_boxfloat(DBL_MIN, TYPE_LONG_FLOAT));
     make_constant("least-negative-normalized-short-float",
-                  make_sfloat(-FLT_MIN));
+                  make_short_float(-FLT_MIN));
     make_constant("least-negative-normalized-single-float",
                   make_boxfloat(-FLT_MIN, TYPE_SINGLE_FLOAT));
     make_constant("least-negative-normalized-double-float",

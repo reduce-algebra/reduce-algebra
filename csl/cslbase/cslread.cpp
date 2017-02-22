@@ -681,49 +681,16 @@ LispObject intern(size_t len, bool escaped)
 #endif
             boffo_char(boffop) = 0;
             switch (fplength)
-            {
-                case 0:
-                {   Float_union ff;
-                    ff.f = (float)atof((char *)&boffo_char(0));
-                    if (trap_floating_overflow &&
-                        floating_edge_case(ff.f))
-                    {   floating_clear_flags();
-                        aerror("bad short float input");
-                    }
-                    return low32(XTAG_SFLOAT + (ff.i & ~0xfU));
-                }
+            {   case 0:
+                    return make_short_float(atof((char *)&boffo_char(0)));
                 case 1:
-                    f = (float)atof((char *)&boffo_char(0));
-                    r = getvector(TAG_BOXFLOAT, TYPE_SINGLE_FLOAT,
-                                  sizeof(Single_Float));
-                    single_float_val(r) = f;
-                    if (trap_floating_overflow &&
-                        floating_edge_case(single_float_val(r)))
-                    {   floating_clear_flags();
-                        aerror("bad single float input");
-                    }
-                    return r;
+                    return make_single_float(atof((char *)&boffo_char(0)));
                 default:
                 case 2:
-                    d = atof((char *)&boffo_char(0));
-                    r = getvector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT,
-                                  SIZEOF_DOUBLE_FLOAT);
-                    double_float_val(r) = d;
-                    if (trap_floating_overflow &&
-                        floating_edge_case(d))
-                    {   floating_clear_flags();
-                        aerror("bad double float input");
-                    }
-                    return r;
+                    return make_boxfloat(atof((char *)&boffo_char(0)),
+                                         TYPE_DOUBLE_FLOAT);
                 case 3:
-                    ll = atof128((char *)&boffo_char(0));
-                    if (trap_floating_overflow &&
-                        floating_edge_case128(&ll))
-                        aerror("bad long float input");
-                    r = getvector(TAG_BOXFLOAT, TYPE_LONG_FLOAT,
-                                  SIZEOF_LONG_FLOAT);
-                    long_float_val(r) = ll;
-                    return r;
+                    return make_boxfloat128(atof128((char *)&boffo_char(0)));
             }
         }
     }

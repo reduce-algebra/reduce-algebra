@@ -388,7 +388,7 @@ static LispObject timesif(LispObject a, LispObject b)
 
 static LispObject timessb(LispObject a, LispObject b)
 {   double d = float_of_number(a) * float_of_number(b);
-    return make_sfloat(d);
+    return make_short_float(d);
 }
 
 #define timessr(a, b) timessb(a, b)

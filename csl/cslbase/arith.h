@@ -150,8 +150,13 @@ typedef unsigned __int128 uint128_t;
 // point and hance could cause trouble. I hope that all modern compilers
 // for that architecture will use SSE instructions that behave in a more
 // obvious IEEE manner.
-#define floating_edge_case(r) (1.0/(r) == 0.0 || (r) != (r))
-#define floating_clear_flags() ((void)0)
+
+static inline bool floating_edge_case(double r)
+{   return (1.0/r == 0.0 || r != r);
+}
+
+static inline void floating_clear_flags()
+{}
 
 // An alternative possible implementation could go
 //    #include <fenv.h>
@@ -163,9 +168,10 @@ typedef unsigned __int128 uint128_t;
 //            ..
 //        }
 //    }
-// The pragma came in with C99 and C++11, but at the time of writing gcc
-// and g++ do not support it. When and if they do I may move to the
-// second implementation!
+// The STDC_FENV_ACCESS pragma came in with C99 and C++11, but at the time
+// of writing gcc and g++ do not support it on quite enought platforms.
+// When and if they do I may move to exploit it. Meanwhile I will use the
+// version that is probably more portable.
 
 #define floating_edge_case128(r) \
     (f128M_infinite(r) || f128M_nan(r))
@@ -210,6 +216,74 @@ typedef unsigned __int128 uint128_t;
 
 #define bignum_minusp(a) \
     ((int32_t)bignum_digits(a)[((bignum_length(a)-CELL)/4)-1]<0)
+
+static inline double value_of_immediate_float(LispObject a)
+{   Float_union aa;
+    if (SIXTY_FOUR_BIT) aa.i = (int32_t)((uint64_t)a>>32);
+    else aa.i = (int32_t)(a - XTAG_SFLOAT);
+    return aa.f;
+}
+
+extern LispObject make_short_float(double d);
+extern LispObject make_single_float(double d);
+extern LispObject make_boxfloat(double a, int type);
+extern LispObject make_boxfloat128(float128_t a);
+
+// Pack something as a short (28-bit) float
+
+static inline LispObject pack_short_float(double d)
+{   Float_union aa;
+    aa.f = d;
+    if (trap_floating_overflow &&
+        floating_edge_case(aa.f))
+    {   floating_clear_flags();
+        aerror("exception with short float");
+    }
+    aa.i &= ~0xf;
+    if (SIXTY_FOUR_BIT)
+        return (LispObject)(((uint64_t)aa.i) << 32) + XTAG_SFLOAT;
+    else return aa.i + XTAG_SFLOAT;
+}
+
+// Create a single (32-bit) float. Just like make_single_float but inlined
+// in the 64-bit case
+
+static inline LispObject pack_single_float(double d)
+{   if (SIXTY_FOUR_BIT)
+    {   Float_union aa;
+        aa.f = d;
+        if (trap_floating_overflow &&
+            floating_edge_case(aa.f))
+        {   floating_clear_flags();
+            aerror("exception with short float");
+        }
+        return (LispObject)((uint64_t)aa.i << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
+    }
+    else return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+}
+
+// Pack either a 28 or 32-bit float with type Lisp value "l1" indicating
+// whether 28 or 32 bits are relevant. On a 32-bit machine like will always
+// be a 28-bit value. If a second argument l2 is provided the width of the
+// result will match the wider of the two.
+
+static inline LispObject pack_immediate_float(double d,
+                                              LispObject l1, LispObject l2=0)
+{   Float_union aa;
+    aa.f = d;
+    if (trap_floating_overflow &&
+        floating_edge_case(aa.f))
+    {   floating_clear_flags();
+        aerror("exception with short float");
+    }
+    if (SIXTY_FOUR_BIT)
+    {   if (((l1 | l2) & XTAG_FLOAT32) == 0) aa.i &= ~0xf;
+        return (LispObject)(((uint64_t)aa.i) << 32) + XTAG_SFLOAT +
+            ((l1 | l2) & XTAG_FLOAT32);
+    }
+    aa.i &= ~0xf;
+    return aa.i + XTAG_SFLOAT;
+}
 
 extern "C" LispObject negateb(LispObject);
 extern "C" LispObject copyb(LispObject);
@@ -297,15 +371,12 @@ static inline LispObject make_lisp_integer128(int128_t n)
 
 #endif
 
-extern LispObject make_sfloat(double d);
 extern double float_of_integer(LispObject a);
 extern "C" LispObject add1(LispObject p);
 extern "C" LispObject sub1(LispObject p);
 extern "C" LispObject integerp(LispObject p);
 extern double float_of_number(LispObject a);
 extern float128_t float128_of_number(LispObject a);
-extern LispObject make_boxfloat(double a, int32_t type);
-extern LispObject make_boxfloat128(float128_t a);
 extern LispObject make_complex(LispObject r, LispObject i);
 extern LispObject make_ratio(LispObject p, LispObject q);
 extern "C" LispObject ash(LispObject a, LispObject b);

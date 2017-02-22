@@ -139,8 +139,8 @@ LispObject validate_number(const char *s, LispObject a,
     }
     if (msd == 0 && ((nsd = bignum_digits(a)[la-1]) & 0x40000000) == 0)
     {   trace_printf("%s: 0: %.8x should be shorter\n", s, nsd);
-        prin_to_trace(b), trace_printf("\n");
-        prin_to_trace(c), trace_printf("\n");
+        prin_to_trace(b); trace_printf("\n");
+        prin_to_trace(c); trace_printf("\n");
 #ifdef VALIDATE_STOPS
         Lstop(nil, fixnum_of_int(1)); // System error, so stop.
 #else
@@ -149,8 +149,8 @@ LispObject validate_number(const char *s, LispObject a,
     }
     else if (msd == -1 && ((nsd = bignum_digits(a)[la-1]) & 0x40000000) != 0)
     {   trace_printf("%s: -1: %.8x should be shorter\n", s, nsd);
-        prin_to_trace(b), trace_printf("\n");
-        prin_to_trace(c), trace_printf("\n");
+        prin_to_trace(b); trace_printf("\n");
+        prin_to_trace(c); trace_printf("\n");
 #ifdef VALIDATE_STOPS
         Lstop(nil, fixnum_of_int(1)); // System error, so stop.
 #else
@@ -360,7 +360,7 @@ LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
     return w;
 }
 
-LispObject make_sfloat(double d)
+LispObject make_short_float(double d)
 //
 // Turn a regular floating point value into a Lisp "short float", which
 // is an immediate object obtained by using the bottom 4 bits of a 32-bit
@@ -370,39 +370,19 @@ LispObject make_sfloat(double d)
 // not give robust numeric results. On a 64-bit machine I put the floating
 // data in the top half of the 64-bit value.
 //
-{   Float_union w;
-    w.f = (float)d;
-    if (trap_floating_overflow &&
-        floating_edge_case(w.f))
-    {   floating_clear_flags();
-        aerror("exception with short float");
-    }
-    if (!SIXTY_FOUR_BIT) return (w.i & ~(int32_t)0xf) + XTAG_SFLOAT;
-    else return (LispObject)
-        ((uint64_t)((uint64_t)(w.i & ~(int32_t)0xf)<<32) + XTAG_SFLOAT);
+{   return pack_short_float(d);
 }
 
 LispObject make_single_float(double d)
 //
-// Turn a regular floating point value into a Lisp "ingle float". The
+// Turn a regular floating point value into a Lisp "single float". The
 // complication here is that on a 32-bit machine this ends up boxed,
 // while on a 64-bit system it is immediate data.
 //
-{   if (SIXTY_FOUR_BIT)
-    {   Float_union w;
-        w.f = (float)d;
-        if (trap_floating_overflow &&
-            floating_edge_case(w.f))
-        {   floating_clear_flags();
-            aerror("exception with single float");
-        }
-        return (LispObject)
-            (((uint64_t)w.i<<32) + XTAG_SFLOAT + XTAG_FLOAT32);
-    }
-    else make_boxfloat(d, TYPE_SINGLE_FLOAT);
+{   return pack_single_float(d);
 }
 
-LispObject make_boxfloat(double a, int32_t type)
+LispObject make_boxfloat(double a, int type)
 //
 // Make a boxed float (single, double according to the type specifier)
 // if type==0 this makes a short float.
@@ -411,7 +391,7 @@ LispObject make_boxfloat(double a, int32_t type)
 {   LispObject r;
     switch (type)
     {   case 0:
-            return make_sfloat(a);
+            return make_short_float(a);
         case TYPE_SINGLE_FLOAT:
             if (SIXTY_FOUR_BIT) return make_single_float(a);
             r = getvector(TAG_BOXFLOAT, TYPE_SINGLE_FLOAT, sizeof(Single_Float));
@@ -596,14 +576,7 @@ double float_of_number(LispObject a)
 //
 {   if (is_fixnum(a)) return (double)int_of_fixnum(a);
     else if (is_sfloat(a))
-    {   Float_union w;
-// On a 64-bit system both short and single floats live in the top of
-// a 64-bit LispObject, and there is no difference at all in how they are
-// extracted. 
-        if (SIXTY_FOUR_BIT) w.i = (int32_t)((uint64_t)a>>32);
-        else w.i = a - XTAG_SFLOAT;
-        return (double)w.f;
-    }
+        return value_of_immediate_float(a);
     else if (is_bfloat(a))
     {   int32_t h = type_of_header(flthdr(a));
         switch (h)
@@ -868,12 +841,8 @@ LispObject make_ratio(LispObject p, LispObject q)
 //
 
 static LispObject plusis(LispObject a, LispObject b)
-{
-    Float_union bb;
-    bb.i = b - XTAG_SFLOAT;
-    bb.f = (float)((double)int_of_fixnum(a) + bb.f);
-//@@@
-    return (bb.i & ~(int32_t)0xf) + XTAG_SFLOAT;
+{   double d = (double)int_of_fixnum(a) + value_of_immediate_float(b);
+    return pack_immediate_float(d, b);
 }
 
 //
@@ -1082,7 +1051,7 @@ static LispObject plusif(LispObject a, LispObject b)
 
 static LispObject plussf(LispObject a, LispObject b)
 //
-// This can be used for any rational value plus a boxed-float. plusif()
+// This can be used for any numeric value plus a boxed-float. plusif()
 // is separated just for (minor) efficiency reasons.
 //
 {   double d = float_of_number(a) + float_of_number(b);
@@ -1098,8 +1067,7 @@ static LispObject plussf(LispObject a, LispObject b)
 
 static LispObject plusbs(LispObject a, LispObject b)
 {   double d = float_of_number(a) + float_of_number(b);
-//@@@
-    return make_sfloat(d);
+    return pack_immediate_float(d, b);
 }
 
 LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
@@ -1473,16 +1441,13 @@ LispObject plus2(LispObject a, LispObject b)
                     aerror1("bad arg for plus",  b);
             }
         case XTAG_SFLOAT:
-            switch (b & TAG_BITS)
+            switch (b & XTAG_BITS)
             {   case TAG_FIXNUM:
                     return plussi(a, b);
                 case XTAG_SFLOAT:
-                {   Float_union aa, bb;
-                    aa.i = a - XTAG_SFLOAT;
-                    bb.i = b - XTAG_SFLOAT;
-                    aa.f = (float)(aa.f + bb.f);
-//@@@@
-                    return (aa.i & ~(int32_t)0xf) + XTAG_SFLOAT;
+                {   double d = value_of_immediate_float(a) +
+                               value_of_immediate_float(b);
+                    return pack_immediate_float(d, a, b);
                 }
                 case TAG_NUMBERS:
                 case TAG_NUMBERS+TAG_XBIT:

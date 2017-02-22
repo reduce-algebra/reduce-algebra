@@ -226,7 +226,7 @@ static LispObject quotsb(LispObject a, LispObject b)
     mv_2 = fixnum_of_int(0);
     if (d == 0.0) aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / d;
-    return make_sfloat(d);
+    return make_short_float(d);
 }
 
 #define quotsr(a, b) quotsb(a, b)

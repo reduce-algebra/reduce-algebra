@@ -759,12 +759,17 @@ LispObject Lfloatp(LispObject env, LispObject p)
 }
 
 static LispObject Lshort_floatp(LispObject env, LispObject p)
-{   if (is_sfloat(p)) return onevalue(lisp_true);
+{   if (is_sfloat(p) &&
+        (!SIXTY_FOUR_BIT ||
+         ((p & XTAG_FLOAT32) == 0))) return onevalue(lisp_true);
     else return onevalue(nil);
 }
 
 static LispObject Lsingle_floatp(LispObject env, LispObject p)
 {   int tag = TAG_BITS & (int)p;
+    if (SIXTY_FOUR_BIT &&
+        is_sfloat(p) &&
+        (p & XTAG_FLOAT32) != 0) return onevalue(lisp_true); 
     if (tag == TAG_BOXFLOAT &&
         type_of_header(flthdr(p)) == TYPE_SINGLE_FLOAT)
         return onevalue(lisp_true);
@@ -785,6 +790,14 @@ static LispObject Llong_floatp(LispObject env, LispObject p)
         type_of_header(flthdr(p)) == TYPE_LONG_FLOAT)
         return onevalue(lisp_true);
     else return onevalue(nil);
+}
+
+static LispObject Lmantissa_bits(LispObject env, LispObject p)
+{   if (Ldouble_floatp(env, p) != nil) return onevalue(fixnum_of_int(53));
+    if (Lsingle_floatp(env, p) != nil) return onevalue(fixnum_of_int(24));
+    if (Lshort_floatp(env, p) != nil) return onevalue(fixnum_of_int(20));
+    if (Llong_floatp(env, p) != nil) return onevalue(fixnum_of_int(113));
+    return onevalue(nil);
 }
 
 LispObject Lrationalp(LispObject env, LispObject a)
@@ -3559,6 +3572,7 @@ setup_type const funcs1_setup[] =
     {"single-floatp",           Lsingle_floatp, TOO_MANY_1, WRONG_NO_1},
     {"double-floatp",           Ldouble_floatp, TOO_MANY_1, WRONG_NO_1},
     {"long-floatp",             Llong_floatp, TOO_MANY_1, WRONG_NO_1},
+    {"mantissa-bits",           Lmantissa_bits, TOO_MANY_1, WRONG_NO_1},
     {"rationalp",               Lrationalp, TOO_MANY_1, WRONG_NO_1},
     {"complexp",                Lcomplexp, TOO_MANY_1, WRONG_NO_1},
     {"bit-vector-p",            Lsimple_bit_vector_p, TOO_MANY_1, WRONG_NO_1},

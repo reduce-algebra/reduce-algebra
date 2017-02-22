@@ -71,7 +71,7 @@ LispObject Lsub1(LispObject env, LispObject a)
 LispObject Lfloat_2(LispObject, LispObject a, LispObject b)
 {   if (is_sfloat(b))
     {   double d = float_of_number(a);
-        return onevalue(make_sfloat(d));
+        return onevalue(make_short_float(d));
     }
     else if (!is_bfloat(b)) aerror1("bad arg for float",  b);
     else
