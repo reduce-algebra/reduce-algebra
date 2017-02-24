@@ -74,7 +74,6 @@ fluid '(!*rlqeinfcore!-defal);
      (cl_esetsubst . ofsfic!*cl_esetsubst)
      (cl_qeatal1 . ofsfic!*cl_qeatal1)
      (cl_simpl . ofsfic!*cl_simpl)
-     (ofsf_solutionformula . ofsfic!*ofsf_solutionformula)
      (ofsf_exploitKnowl . ofsfic!*ofsf_exploitKnowl)
      (ofsf_qemkans . ofsfic!*ofsf_qemkans)
      (ofsf_qebacksub . ofsfic!*ofsf_qebacksub)
@@ -232,8 +231,8 @@ asserted procedure ic_varlist(icdata: InfCoreData): List;
    getv(icdata, 9);
 
 asserted procedure ic_cadcellList(icdata: InfCoreData): List;
-   % Infeasible Core CAD Cell List. Contains all the leafs of the CAD tree
-   % after a CAD call.
+   % Infeasible Core CAD Cell List. Contains all the leaves of the CAD
+   % tree after a CAD call.
    getv(icdata, 10);
 
 asserted procedure ic_taglist(icdata: InfCoreData): List;
@@ -284,8 +283,8 @@ asserted procedure ic_resetcadcellList(icdata: InfCoreData): Any;
    putv(icdata, 10, nil);
 
 asserted procedure ic_appendcadcellList(icdata: InfCoreData, cell: Any): List;
-   % Infeasible Core CAD Cell List. Contains all the leafs of the CAD tree
-   % after a CAD call.
+   % Infeasible Core CAD Cell List. Contains all the leafs of the CAD
+   % tree after a CAD call.
    putv(icdata, 10, cell . getv(icdata, 10));
 
 asserted procedure ic_settaglist(icdata: InfCoreData, l: List): List;
@@ -413,12 +412,16 @@ asserted procedure ofsfic!*cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
       !*rlsipw := !*rlsipo := !*rlqeans := t;
       % Initialize an infeasible core data structure.
       if !*rlqeinfcore then << %%%%%%%MAX
+	 % ENTRY POINT
+	 % TODO: Store previous switch settings and restore them
+	 % afterwards.
 	 !*rlqesr := t;
 	 !*rlataltheo := nil;
 	 !*rlqestdans := t;
-	 rlqeicdata!* := ic_init f;
-	 % TODO: REENABLE
-	 !*rlqedyn := nil
+	 !*rlcadtrimtree := nil;
+	 !*rlqedyn := nil;
+	 !*rlcadans := nil;
+	 rlqeicdata!* := ic_init f
       >>;
       er := ofsfic!*cl_qe1(f,theo,nil);
       if rl_exceptionp er then
@@ -546,7 +549,7 @@ asserted procedure ofsfic!*cl_qe1(f: Formula, theo: Theory, xbvl: KernelL): Elim
 asserted procedure ofsfic!*cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL, dpth: Integer, vlv: Integer): List3;
    % Quantifier elimination for one block soubroutine. Arguments are as in
    % [cl_qeblock], where [q] has been dropped. Return value as well.
-   begin scalar w,co,remvl,newj,cvl,coe,ww,cadf,cadres,celleval,fvect,sf,!*rlcadans,falseFound;
+   begin scalar w,co,remvl,newj,cvl,coe,ww,cadf,cadres,celleval,fvect,sf,falseFound;
       integer c,count,delc,oldcol,comax,comaxn,vl,vl2,subst;
       if !*rlqegsd then
 	 f := rl_gsd(f,theo);
@@ -615,16 +618,12 @@ asserted procedure ofsfic!*cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory
 	    % its variables for later requantification.
 	    if !*rlqeinfcore then << %%%%%%%MAX
 	       cadf := rl_ex(rl_smkn('and, vector2list ce_fvect coe), nil);
-	       !*rlcadtrimtree := nil;
 	       ic_resetcadcelllist rlqeicdata!*;
-	       % BUG:
-	       % cadres := ofsf_cad1(cadf, ofsf_cadporder cadf, theo);
-	       % TEMPORARY BUGFIX:
-	       cadres := ofsf_cad1(cadf, cdr cl_varl cadf, theo);
-	       % TODO: Use optimized order [ofsf_cadporder cadf]. One
-	       % has to be cautious with kernel orderings to avoid
-	       % buggy behavior.
-	       if cdr cadres eq 'false then <<
+	       % cadres := ofsfic_cad(cadf, ofsf_cadporder cadf, nil);
+	       cadres := ofsfic_cad(cadf, cdr cl_varl cadf, nil);
+	       % TODO: Use optimized order. One has to be cautious
+	       % with kernel orderings to avoid buggy behavior.
+	       if cadres eq 'false then <<
 		  fvect := ce_fvect coe;
 		  for each cell in ic_cadcelllist rlqeicdata!* do <<
 		     falseFound := nil;
@@ -668,9 +667,9 @@ asserted procedure ofsfic!*cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory
 			!*rlqeicsimpl := nil
 		     >>
 		  >>
-	       >> else if cdr cadres eq 'true then <<
+	       >> else if cadres eq 'true then <<
 		  co := co_new();
-		  newJ := {'true . nil}
+		  newj := {'true . nil}
 	       >>
 	    >> else <<
 	       if !*rlverbose then ioto_prin2 append("[Failed:" . cdr w,{"] "});
@@ -1232,70 +1231,20 @@ procedure cl_smsimpl!-junct2!-tagged(op,sicol,knowl,newknowl,n,break,tagl);
       return {{cl_flip break}, tagl}
    end;
 
-asserted procedure atree_getleaves(tt: Atree): List;
-   if null atree_childl tt then
-      {atree_rootcell tt}
-   else
-      for each c in atree_childl tt join atree_getleaves c;
-
-asserted procedure ofsfic!*ofsf_solutionformula(cd: CadData): Any;
-   % Solution formula construction. [cd] is changed in place.
-   begin scalar dd, yy, w, yyi, ffl, k, fflk, phiprime;
-      if !*rlverbose then
-	 ioto_tprin2t "+++ Simple Solution Formula Construction Phase";
+asserted procedure ofsfic_cad(phi: Formula, prjordl: List, aaplus: List): Formula;
+   % Interface to CAD; therefore the same signature as [ofsf_cad].
+   % [phi] is a closed formula.
+   begin scalar cd, dd, tv;
+      cd := ofsf_cadpreparation(phi, prjordl, aaplus);
+      ofsf_cadprojection cd;
+      ofsf_cadextension cd;
       dd := caddata_dd cd;
-      if memq(acell_gettv atree_rootcell dd, '(true false)) then <<
-	 if !*rlverbose and !*rlcadans then
-	    ioto_prin2t {"+ ANSWERS (for decision problem): ",
-	       cdr atsoc('answers, acell_gettl atree_rootcell dd)};
-	 if !*rlqeinfcore then %%%%%MAX
-	    for each cell in atree_getleaves dd do
-	       ic_appendcadcellList(rlqeicdata!*, cell);
-	 caddata_putphiprime(cd, acell_gettv atree_rootcell dd);
-	 return nil
-      >>;
-      yy := atree_celltvl dd;
-      if !*rlverbose and !*rlcadans then <<  % verbose output for QE with answers
-	 % ioto_prin2t "+ Cells with defined truth value:";
-	 % for each cell in yy do
-	 %    ioto_prin2t {cell};
-	 w := for each cell in yy join
-	    if acell_gettv cell eq 'true then
-	       {atsoc('answers, acell_gettl cell)};
-	 for each c in list2set w do
-	    ioto_prin2t {"+ ANSWERS: ", c}
-      >>;
-      yyi := list2set for each cell in yy collect
-	 length acell_getsp cell;
-      if !*rlverbose then
-	 ioto_prin2t {"+ levels to be considered: ", yyi};
-      ffl := caddata_ffl cd;
-      fflk := for each i in yyi join
-	 append(nth(ffl, i), nil);
-      k := caddata_k cd;
-      phiprime := ofsf_solutionformula1(dd, fflk, yy, k);
-      if phiprime eq 'ssfcfailed then <<
-	 if !*rlverbose then
-	    ioto_tprin2t "+ SSFC failed, trying all possible projection factors.";
-	 yyi := for i := 1 : k collect i;
-	 if !*rlverbose then
-	    ioto_prin2t {"+ Levels to be considered: ", yyi};
-	 fflk := for each i in yyi join
-	    append(nth(ffl, i), nil);
-	 phiprime := ofsf_solutionformula1(dd, fflk, yy, k)
-      >>;
-      if phiprime eq 'ssfcfailed then <<
-	 if !*rlverbose then
-	    ioto_tprin2t "+ SSFC failed.";
-	 return nil
-      >>;
-      if !*rlverbose then
-	 ioto_tprin2t "+ SSFC succeded.";
-      if !*rlcadrawformula then
-	 caddata_putphiprime(cd, phiprime)
-      else
-	 caddata_putphiprime(cd, rl_dnf phiprime);
-      return nil
+      tv := acell_gettv atree_rootcell dd;
+      assert(memq(tv, '(true false)));
+      for each cell in atree_getleaves dd do
+	 ic_appendcadcellList(rlqeicdata!*, cell);
+      caddata_putphiprime(cd, tv);
+      return cdr ofsf_cadfinish cd
    end;
 
 %%%%%%%MAX

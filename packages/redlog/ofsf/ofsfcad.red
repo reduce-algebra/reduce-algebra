@@ -352,7 +352,7 @@ asserted procedure ofsf_restorekord(cd: CadData): Any;
       if oldorder neq 'undefined then
 	 setkorder oldorder;
       if !*rlverbose then
-	 ioto_tprin2 {"+ Kernel order was restored."};
+	 ioto_tprin2t "+ Kernel order was restored.";
       return nil
    end;
 
@@ -1146,6 +1146,14 @@ asserted procedure atree_childrenatlevel(tt: Atree, n: Integer): List;
       for each child in atree_childl tt join
       	 atree_childrenatlevel(child, n-1);
 
+asserted procedure atree_getleaves(tt: Atree): List;
+   % Returns the list of all Acells that are leaves of [tt].
+   if null atree_childl tt then
+      {atree_rootcell tt}
+   else
+      for each c in atree_childl tt join
+ 	 atree_getleaves c;
+
 asserted procedure atree_setchildl(tt: Atree, cl: List): Any;
    nth(tt, 3) := cl;
 
@@ -1525,7 +1533,7 @@ asserted procedure ofsf_solutionformula_old(cd: CadData): Any;
       phiprime := ofsf_sfchong(ffk, ddk);
       if phiprime eq 'ssfcfailed then <<
 	 if !*rlverbose then
-	    ioto_tprin2t "+ Solution formula construction ssfc failed. ";
+	    ioto_tprin2t "+ Solution formula construction ssfc failed.";
 	 return nil
       >> else <<
 	 if !*rlverbose then
