@@ -1795,7 +1795,14 @@ static void fp_sprint128(char *buff, float128_t x, int prec, int xchar)
     if (*(buff-1) == '.') char_ins(buff++, '0');// ddd. to ddd.0
     while (*(buff-1) == '0' &&                  // ddd.nnn0 to ddd.nnn
            *(buff-2) != '.') char_del(--buff);
-    if (*buff == 0) return; // no exponent mark present
+    if (*buff == 0)
+    {   *buff++ = 'L';
+        *buff++ = '+';
+        *buff++ = '0';
+        *buff++ = '0';
+        *buff = 0;
+        return; // no exponent mark present
+    }
     *buff = 'L';
     buff++;
     if (*buff == 0) strcpy(buff, "+00");

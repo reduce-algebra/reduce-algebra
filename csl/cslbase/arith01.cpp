@@ -360,28 +360,6 @@ LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
     return w;
 }
 
-LispObject make_short_float(double d)
-//
-// Turn a regular floating point value into a Lisp "short float", which
-// is an immediate object obtained by using the bottom 4 bits of a 32-bit
-// word as tag, and the rest as just whatever would stand for a regular
-// single precision value.  In doing the conversion here I ignore
-// rounding etc - short floats are to save heap turn-over, but will
-// not give robust numeric results. On a 64-bit machine I put the floating
-// data in the top half of the 64-bit value.
-//
-{   return pack_short_float(d);
-}
-
-LispObject make_single_float(double d)
-//
-// Turn a regular floating point value into a Lisp "single float". The
-// complication here is that on a 32-bit machine this ends up boxed,
-// while on a 64-bit system it is immediate data.
-//
-{   return pack_single_float(d);
-}
-
 LispObject make_boxfloat(double a, int type)
 //
 // Make a boxed float (single, double according to the type specifier)
@@ -391,16 +369,9 @@ LispObject make_boxfloat(double a, int type)
 {   LispObject r;
     switch (type)
     {   case 0:
-            return make_short_float(a);
+            return pack_short_float(a);
         case TYPE_SINGLE_FLOAT:
-            if (SIXTY_FOUR_BIT) return make_single_float(a);
-            r = getvector(TAG_BOXFLOAT, TYPE_SINGLE_FLOAT, sizeof(Single_Float));
-            single_float_val(r) = (float)a;
-            if (trap_floating_overflow &&
-                floating_edge_case(single_float_val(r)))
-            {   floating_clear_flags();
-                aerror("exception with single float");
-            }
+            return pack_single_float(a);
             return r;
         default: // TYPE_DOUBLE_FLOAT I hope
             r = getvector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT, SIZEOF_DOUBLE_FLOAT);
@@ -1028,16 +999,17 @@ static LispObject plusif(LispObject a, LispObject b)
 //
 // Fixnum plus boxed-float.
 //
-{   double d = (double)int_of_fixnum(a) + float_of_number(b);
-// The test here is redundant because make_boxfloat would also check for
-// infinity and NaN. However I test here because in the common case of
-// double floats (ie the default) it lets the diagnostic tell me that I
-// was doing PLUS rather than any other operation.
-    if (trap_floating_overflow &&
-        floating_edge_case(d))
-    {   floating_clear_flags();
-        aerror("floating point plus");
+{   if (type_of_header(flthdr(b)) == TYPE_LONG_FLOAT)
+    {   float128_t x, y, z;
+        x = float128_of_number(a);
+        y = float128_of_number(b);
+        f128M_add(&x, &y, &z);
+        if (trap_floating_overflow &&
+            floating_edge_case128(&z))
+            aerror("floating point plus");
+        return make_boxfloat128(z);
     }
+    double d = (double)int_of_fixnum(a) + float_of_number(b);
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
@@ -1054,7 +1026,17 @@ static LispObject plussf(LispObject a, LispObject b)
 // This can be used for any numeric value plus a boxed-float. plusif()
 // is separated just for (minor) efficiency reasons.
 //
-{   double d = float_of_number(a) + float_of_number(b);
+{   if (type_of_header(flthdr(b)) == TYPE_LONG_FLOAT)
+    {   float128_t x, y, z;
+        x = float128_of_number(a);
+        y = float128_of_number(b);
+        f128M_add(&x, &y, &z);
+        if (trap_floating_overflow &&
+            floating_edge_case128(&z))
+            aerror("floating point plus");
+        return make_boxfloat128(z);
+    }
+    double d = float_of_number(a) + float_of_number(b);
     if (trap_floating_overflow &&
         floating_edge_case(d))
     {   floating_clear_flags();
@@ -1066,7 +1048,7 @@ static LispObject plussf(LispObject a, LispObject b)
 #define plusbi(a, b) plusib(b, a)
 
 static LispObject plusbs(LispObject a, LispObject b)
-{   double d = float_of_number(a) + float_of_number(b);
+{   double d = float_of_number(a) + value_of_immediate_float(b);
     return pack_immediate_float(d, b);
 }
 

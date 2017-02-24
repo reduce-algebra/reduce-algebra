@@ -2,7 +2,6 @@
 
 //
 // Arithmetic functions... lots of Lisp entrypoints.
-// note that for CSL I want plus and times to be special forms.
 //
 
 /**************************************************************************
@@ -68,28 +67,31 @@ LispObject Lsub1(LispObject env, LispObject a)
     return onevalue(a);
 }
 
-LispObject Lfloat_2(LispObject, LispObject a, LispObject b)
+LispObject Lfloat_2(LispObject env, LispObject a, LispObject b)
 {   if (is_sfloat(b))
     {   double d = float_of_number(a);
-        return onevalue(make_short_float(d));
+        return onevalue(pack_immediate_float(d, b));
     }
     else if (!is_bfloat(b)) aerror1("bad arg for float",  b);
+    else if (type_of_header(flthdr(b)) == TYPE_LONG_FLOAT)
+    {   float128_t dd = float128_of_number(a);
+        return onevalue(make_boxfloat128(dd));
+    }
     else
     {   double d = float_of_number(a);
-// I will allow overflows and NaNs to be detected within make_boxfloat
         return onevalue(make_boxfloat(d, type_of_header(flthdr(b))));
     }
 }
 
-LispObject Lfloat(LispObject, LispObject a)
+LispObject Lfloat(LispObject env, LispObject a)
 {   double d;
     if (!is_number(a)) aerror1("bad arg for float", a);
+    else if (is_bfloat(a) || is_sfloat(a)) return onevalue(a);
     d = float_of_number(a);
 #ifdef COMMON
 // Do we REALLY want single precision by default here?
 // I count that as a stupid decision!
-//
-    return onevalue(make_boxfloat(d, TYPE_SINGLE_FLOAT));
+    return onevalue(pack_single_float(d));
 #else
     return onevalue(make_boxfloat(d, TYPE_DOUBLE_FLOAT));
 #endif

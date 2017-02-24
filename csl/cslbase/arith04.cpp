@@ -195,17 +195,13 @@ static LispObject rationalizef(double d)
 
 
 LispObject rational(LispObject a)
-{   switch ((int)a & TAG_BITS)
+{   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
             return a;
-#ifdef SHORT_FLOAT
         case XTAG_SFLOAT:
-        {   Float_union aa;
-            aa.i = a - XTAG_SFLOAT;
-            return rationalf((double)aa.f);
-        }
-#endif
+            return rationalf(value_of_immediate_float(a));
         case TAG_NUMBERS:
+        case TAG_NUMBERS+TAG_XBIT:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
@@ -216,6 +212,7 @@ LispObject rational(LispObject a)
             }
         }
         case TAG_BOXFLOAT:
+        case TAG_BOXFLOAT+TAG_XBIT:
             return rationalf(float_of_number(a));
         default:
             aerror1("bad arg for rational", a);
@@ -223,17 +220,13 @@ LispObject rational(LispObject a)
 }
 
 LispObject rationalize(LispObject a)
-{   switch (a & TAG_BITS)
+{   switch (a & XTAG_BITS)
     {   case TAG_FIXNUM:
             return a;
-#ifdef SHORT_FLOAT
         case XTAG_SFLOAT:
-        {   Float_union aa;
-            aa.i = a - XTAG_SFLOAT;
-            return rationalizef((double)aa.f);
-        }
-#endif
+            return rationalizef(value_of_immediate_float(a));
         case TAG_NUMBERS:
+        case TAG_NUMBERS+TAG_XBIT:
         {   int32_t ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
@@ -244,6 +237,7 @@ LispObject rationalize(LispObject a)
             }
         }
         case TAG_BOXFLOAT:
+        case TAG_BOXFLOAT+TAG_XBIT:
             return rationalizef(float_of_number(a));
         default:
             aerror1("bad arg for rationalize", a);
@@ -256,17 +250,17 @@ LispObject rationalize(LispObject a)
 
 static bool lesspis(LispObject a, LispObject b)
 {
-#ifndef SHORT_FLOAT
-    return 0;
-#else
-    Float_union bb;
-    bb.i = b - XTAG_SFLOAT;
-//
-// Any fixnum can be converted to a float without introducing any
-// error at all...
-//
-    return (double)int_of_fixnum(a) < (double)bb.f;
-#endif
+// On a 32-bit machine any fixnum can be converted to a float without
+// introducing any error at all... but now on a 64-bit system one can
+// have a fixnum with value over 2^52 that gers rounded to create a
+// double precision float. Consider say the value 2^59-1 which will end
+// up as a double precision value that is exactly 2^59 and it may thus
+// show as being equal to rather than less than the floating point input.
+// This issue can arise for comparison against doubles as well as single
+// and short floats.
+    if (!SIXTY_FOUR_BIT)
+        return (double)int_of_fixnum(a) < value_of_immediate_float(b);
+    return lessp_i64d(int_of_fixnum(a), value_of_immediate_float(b));
 }
 
 bool lesspib(LispObject, LispObject b)
@@ -282,9 +276,7 @@ bool lesspib(LispObject, LispObject b)
 
 static bool lesspir(LispObject a, LispObject b)
 {
-//
 // compute a < p/q  as a*q < p
-//
     push(numerator(b));
     a = times2(a, denominator(b));
     pop(b);

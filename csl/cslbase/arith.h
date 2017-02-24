@@ -224,8 +224,6 @@ static inline double value_of_immediate_float(LispObject a)
     return aa.f;
 }
 
-extern LispObject make_short_float(double d);
-extern LispObject make_single_float(double d);
 extern LispObject make_boxfloat(double a, int type);
 extern LispObject make_boxfloat128(float128_t a);
 
@@ -259,7 +257,17 @@ static inline LispObject pack_single_float(double d)
         }
         return (LispObject)((uint64_t)aa.i << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
     }
-    else return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+    else
+    {   LispObject r = getvector(TAG_BOXFLOAT,
+            TYPE_SINGLE_FLOAT, sizeof(Single_Float));
+        single_float_val(r) = (float)d;
+        if (trap_floating_overflow &&
+            floating_edge_case(single_float_val(r)))
+        {   floating_clear_flags();
+            aerror("exception with single float");
+        }
+        return r;
+    }
 }
 
 // Pack either a 28 or 32-bit float with type Lisp value "l1" indicating
@@ -283,6 +291,73 @@ static inline LispObject pack_immediate_float(double d,
     }
     aa.i &= ~0xf;
     return aa.i + XTAG_SFLOAT;
+}
+
+// comparing 64-bit integers against (double precision) is perhaps
+// unexpectedly delicate. Here is some code to help. You can find two
+// sources of extra commentary about this. One is by Andrew Koenig in
+// a Dr Doobs article in 2013, the other is in (MIT Licensed) Julia and
+// a discussion at https://github.com/JuliaLang/julia/issues/257.
+
+static inline bool eq_i64d(int64_t a, double b)
+{
+// The integer can always be converted to a double, but of course
+// sometimes there will be rounding involved. But if the value does not
+// match the double even after rounding then the two values are certainly
+// different. Also if the double happens to be a NaN this will lead to
+// a returned value of false (as required).
+    if (b != (double)a) return false;
+// Now the two values differ by at most the rounding that happened when
+// the integer was converted to a double. This ALMOST means that the double
+// has a value that fits in the range of integers. However if a has a value
+// just less than 2^63 and b is (double)(2^63) then b can not be cast to
+// an integer safely. In C++ the consequence of trying to cast a double to
+// and int where the result would not fit is undefined, and so could
+// include arbitrary bad behaviour. So I have to filter that case out.
+    if (b == (double)((uint64_t)1<<63)) return false;
+// With the special case out of the way I can afford to case from double to
+// int64_t. The negative end of the range is safe!
+    return a == (int64_t)b;
+}
+
+static inline bool lessp_i64d(int64_t a, double b)
+{
+// If the integer is <= 2^53 then converting it to a double does not
+// introduce any error at all, so I can perform the comparison reliably
+// on doubles. If d ia a NaN this is still OK.
+    if (a <= ((int64_t)1<<53) &&
+        a >= -((int64_t)1<<53)) return (double)a < b;
+// If the float is outside the range of int64_t I can tell how the
+// comparison must play out. Note that near the value 2^63 the next
+// double value lower than 2^63 is in integer, as we can not have any
+// floating point value larger than the largest positive int64_t value
+// and less then 2^63. I make these tests of the form "if (!xxx)" because
+// then if b is a NaN the comparison returns false and I end up exiting.
+    if (!(b >= -(double)((uint64_t)1<<63))) return false;
+    if (!(b < (double)((uint64_t)1<<63))) return true;
+// Now we know that a is large and b is not huge. I will just discuss the
+// case of two positive numbers here, but mixed signs and negative values
+// follow the same.
+// I am going to convert b to an integer and then compare. Because I have
+// ensures that b is not too big (including knowing it is not an infinity
+// or a NaN) I will not get overflow or failure in that conversion. So the
+// only concern is the effect of rounding in the conversion.
+// Well if b >= 2^52 it has an exact integer as its value so the conversion
+// will be exact and the comparison reliable.
+// if b < 2^52 but a > 2^53 then rounding of b that leaves a fractional part
+// less than 1 does not matter and again the comparison is reliable.
+    return a < (int64_t)b;
+}
+
+static inline bool lessp_di64(double a, int64_t b)
+{
+// The logic here is much as above - by omitting all the commentary
+// you can see much more clearly just how long the code is.
+    if (b <= ((int64_t)1<<53) &&
+        b >= -((int64_t)1<<53)) return a < (double)b;
+    if (!(a < (double)((uint64_t)1<<63))) return false;
+    if (!(a >= -(double)((uint64_t)1<<63))) return true;
+    return (int64_t)a < b;
 }
 
 extern "C" LispObject negateb(LispObject);
@@ -482,6 +557,7 @@ extern "C" int f128M_exponent(const float128_t *p);
 extern "C" void f128M_set_exponent(float128_t *p, int n);
 extern "C" void f128M_ldexp(float128_t *p, int n);
 extern "C" bool f128M_infinite(const float128_t *p);
+extern "C" bool f128M_finite(const float128_t *p);
 extern "C" bool f128M_nan(const float128_t *x);
 extern "C" bool f128M_subnorm(const float128_t *x);
 extern "C" bool f128M_negative(const float128_t *x);

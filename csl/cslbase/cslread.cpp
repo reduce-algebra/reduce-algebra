@@ -660,20 +660,17 @@ LispObject intern(size_t len, bool escaped)
         }
         case 8:
         case 11:
-        {   double d;
-            LispObject r;
+        {
 //
 // I want to enable this all the time, but if I am not in COMMON mode
 // then before I do I need to get read_float_format set up properly.
 //
-            float f;
-            float128_t ll;
 #ifdef COMMON
             if (!explicit_fp_format && is_symbol(read_float_format))
             {   LispObject w = qvalue(read_float_format);
                 if (w == short_float) fplength = 0;
                 else if (w == single_float) fplength = 1;
-//              else if (w == double_float) fplength = 2;
+                else if (w == double_float) fplength = 2;
                 else if (w == long_float) fplength = 3;
             }
 #else
@@ -682,9 +679,9 @@ LispObject intern(size_t len, bool escaped)
             boffo_char(boffop) = 0;
             switch (fplength)
             {   case 0:
-                    return make_short_float(atof((char *)&boffo_char(0)));
+                    return pack_short_float(atof((char *)&boffo_char(0)));
                 case 1:
-                    return make_single_float(atof((char *)&boffo_char(0)));
+                    return pack_single_float(atof((char *)&boffo_char(0)));
                 default:
                 case 2:
                     return make_boxfloat(atof((char *)&boffo_char(0)),

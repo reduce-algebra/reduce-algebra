@@ -850,12 +850,8 @@ typedef struct Symbol_Head
 
 #define qcount(p)      (*(uint64_t    *)((char *)(p) + (12*CELL-TAG_SYMBOL)))
 
-typedef union Float_union
+typedef union _Float_union
 {   float f;
-// When I store a short float on a 64-bit system I want to keep the numeric
-// value within the low 32-bits with zero bits at the top, so I make the
-// integer type that I alias with here an unsigned one to try to avoid
-// unwanted sign propagation.
     uint32_t i;
     float32_t f32;
 } Float_union;
@@ -962,6 +958,14 @@ typedef struct Single_Float
 //      } f;
 //  } Double_Float;
 //
+
+typedef union _Double_union
+{   double f;
+    uint32_t i[2];
+    uint64_t i64;
+    float64_t f64;
+
+} Double_union;
 
 #define SIZEOF_DOUBLE_FLOAT     16
 #define double_float_addr(v)    ((double *)((char *)(v) + \

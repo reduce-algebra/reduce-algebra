@@ -384,8 +384,8 @@ static LispObject timesif(LispObject a, LispObject b)
 #define timessi(a, b) timesis(b, a)
 
 static LispObject timessb(LispObject a, LispObject b)
-{   double d = float_of_number(a) * float_of_number(b);
-    return make_short_float(d);
+{   double d = value_of_immediate_float(a) * float_of_number(b);
+    return pack_immediate_float(d, a);
 }
 
 #define timessr(a, b) timessb(a, b)
@@ -393,12 +393,14 @@ static LispObject timessb(LispObject a, LispObject b)
 #define timessc(a, b) timesic(a, b)
 
 static LispObject timessf(LispObject a, LispObject b)
-{   double d = float_of_number(a) * float_of_number(b);
-    if (trap_floating_overflow &&
-        floating_edge_case(d))
-    {   floating_clear_flags();
-        aerror("floating point times");
+{   if (type_of_header(flthdr(b)) == TYPE_LONG_FLOAT)
+    {   float128_t x, y, z;
+        x = float128_of_number(a);
+        y = float128_of_number(b);
+        f128M_mul(&x, &y, &z);
+        return make_boxfloat128(z);
     }
+    double d = float_of_number(a) * float_of_number(b);
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
@@ -1678,35 +1680,12 @@ static LispObject timesff(LispObject a, LispObject b)
         x = float128_of_number(a);
         y = float128_of_number(b);
         f128M_mul(&x, &y, &z);
-        if (trap_floating_overflow &&
-            floating_edge_case128(&z))
-            aerror("floating point times");
         return make_boxfloat128(z);
     }
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
         hc = TYPE_DOUBLE_FLOAT;
     else hc = TYPE_SINGLE_FLOAT;
     double r = float_of_number(a) * float_of_number(b);
-// I am going to assume that I have IEEE arithmetic set if a mode where
-// edge-case calculations return an infinity or a NaN. Both these cases
-// can arise here.  huge*huge can yield an infinity, while if somehow
-// one already had an infinity then multiplying it by 0.0 will give a NaN.
-// I use the arithmetic tests here since the stand a chance of working
-// "almost everywhere". There are two serious alternatives. One is to
-// use fetestexcept() [and variations on that on platforms where it is
-// not available] to test after performing an operation. That is perhaps
-// standardized in C++11, but support may still be patchy across the compilers
-// that people are still using. The other would be to arrange that overflow
-// etc raised traps/exceptions that then get reconised and handled.
-// Portability there is also delicate and the trap handling is messy. So the
-// somewhat odd tests here at present seems safest to me. Note that
-// 1.0/MAX_DOUBLE is non-zero on a proper IEEE system because sub-normalised
-// numbers provide significant footroom (headroom would be room at the top!).
-    if (trap_floating_overflow &&
-        floating_edge_case(r))
-    {   floating_clear_flags();
-        aerror("floating point times");
-    }
     return make_boxfloat(r, hc);
 }
 
