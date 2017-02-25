@@ -192,7 +192,16 @@ then
 # if that needs doing.
   if test "x" = "x"
   then
-    first="yes"
+    case $args in
+# If I am making bootstrapreduce or bootstrapreduce.img or csl or csl.img or
+# one of the demo programs I do not need the generated C code...
+    *bootstrap* | *csl* | *demo*)
+      first="no"
+      ;;
+    *)
+      first="yes"
+      ;;
+    esac
     for l in $list
     do
       if test -f ${l}/Makefile

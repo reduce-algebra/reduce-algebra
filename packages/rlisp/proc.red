@@ -221,7 +221,9 @@ symbolic procedure pairxvars(u,v,vars,mode);
 % Another function with quite a few labels and gotos...
 
 symbolic procedure procstat1 mode;
-   begin scalar bool,u,type,x,y,z;
+   begin scalar bool,u,type,x,y,z, file, line;
+      if ifl!* then file := car ifl!* else file = "-";
+      line := curline!*;
       bool := erfg!*;
       if fname!* then << bool := t; go to a5 >>
        else if cursym!* eq 'procedure then type := 'expr
@@ -232,12 +234,14 @@ symbolic procedure procstat1 mode;
       if errorp x then go to a3
        else if atom (x := car x) then x := list x;   % No arguments.
       fname!* := car x;   % Function name.
-      if idp fname!* % and null(type memq ftypes!*)
+      if idp fname!*
         then if null fname!* or fname!* eq 't
                then << rsverr fname!*; go to a3 >>
               else if (z := gettype fname!*)
                        and null(z memq '(procedure operator))
                then << typerr(list(z,fname!*),"procedure"); go to a3 >>;
+      put(fname!*, 'defined!-in!-file, file);
+      put(fname!*, 'defined!-on!-line, line);
       u := cdr x;
       y := u;   % Variable list.
       if idlistp y then x := car x . y
@@ -246,6 +250,8 @@ symbolic procedure procstat1 mode;
   a1: fname!* := scan();
       if not idp fname!*
         then << typerr(fname!*,"procedure name"); go to a3 >>;
+      put(fname!*, 'defined!-in!-file, file);
+      put(fname!*, 'defined!-on!-line, line);
       scan();
       y := errorset!*(list('read_param_list,mkquote mode),nil);
       if errorp y then go to a3;

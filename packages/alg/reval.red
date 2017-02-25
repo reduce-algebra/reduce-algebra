@@ -167,22 +167,63 @@ symbolic procedure recursiveerror u;
 
 put('quote,'psopfn,'car);    % Since we don't want this evaluated.
 
+symbolic procedure opfneval1(fname, interm);
+  begin
+    scalar resul, x;
+    if flagp(fname, 'tracealg) then <<
+      if posn() neq 0 then terpri();
+      printf("+++ Calling %p (%w:%w)%n",
+        fname, get(fname, 'defined!-in!-file),
+               get(fname, 'defined!-on!-line));
+      x := 0;
+      for each arg in interm do
+        printf("Arg%w = %@p%n", x:=x+1,
+          (if eqcar(arg, 'quote) then cadr arg else arg)) >>;
+    resul := errorset!*(fname . interm, !*backtrace);
+    if errorp resul then <<
+      if !*backtrace then <<
+        if posn() neq 0 then terpri();
+        printf("+++ Error in call to %p (%w:%w)%n",
+          fname, get(fname, 'defined!-in!-file),
+                 get(fname, 'defined!-on!-line));
+        x := 0;
+        for each arg in interm do
+          printf("Arg%w = %@p%n", x:=x+1,
+            (if eqcar(arg, 'quote) then cadr arg else arg)) >>;
+      error1() >>
+    else <<
+      resul := car resul;
+      if flagp(fname, 'tracealg) then <<
+        if posn() neq 0 then terpri();
+        printf("%p => %p%n", fname, resul);  % TEMP
+        printf("%p => %@p%n", fname, resul) >>;
+      return resul >>;
+  end;
+
+symbolic macro procedure tralg x;
+   list('flag, list('quote, cdr x), ''tracealg);
+
+symbolic macro procedure untralg x;
+   list('remflag, list('quote, cdr x), ''tracealg);
+
+flag('(tralg untralg),'noform);
+
+deflist('((tralg rlis) (tralgst rlis)),'stat);
+
 symbolic procedure opfneval u;
-   if flagp(car u ,'remember) then
+  if flagp(car u ,'remember) then
     begin scalar interm,resul,x;
-             interm := for each j in
-                  (if flagp(car u,'noval) then cdr u else revlis cdr u)
-                  collect if fixp j then j else mkquote j;
-              if (x:=assoc(car u . interm ,get(car u,'kvalue)))
-                         then return cadr x;
-              resul := lispeval(car u . interm);
-              put!-kvalue(car u,get(car u,'kvalue), car u . interm, resul);
-              return resul;
-     end
-       else
-   lispeval(car u . for each j in
-                  (if flagp(car u,'noval) then cdr u else revlis cdr u)
-                  collect mkquote j);
+      interm := for each j in
+           (if flagp(car u,'noval) then cdr u else revlis cdr u)
+        collect if fixp j then j else mkquote j;
+      if (x:=assoc(car u . interm ,get(car u,'kvalue))) then return cadr x;
+      resul := opfneval1(car u, interm);
+      put!-kvalue(car u,get(car u,'kvalue), car u . interm, resul);
+      return resul;
+    end
+  else opfneval1(car u,
+    for each j in (if flagp(car u,'noval) then cdr u else revlis cdr u)
+    collect mkquote j);
 
 flag('(reval),'opfn);   % to make it a symbolic operator.
 
