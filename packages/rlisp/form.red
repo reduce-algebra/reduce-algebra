@@ -738,6 +738,8 @@ symbolic procedure mkarg(u,vars);
    if null u or constantp u then u
     else if atom u then if atsoc(u,vars) then u else mkquote u
     else if car u memq '(quote !:dn!: !:int!:) then mkquote u
+    else if car u memq '(!:dn!-s!: !:dn!-f!: !:dn!-l!:) then
+       mkquote '!:dn!: . cdr u 
     else begin scalar x;
             while u do <<
                x := mkarg(car u,vars) . x;
@@ -748,13 +750,28 @@ symbolic procedure mkarg(u,vars);
 % Form functions needed for number input.
 
 put('!:dn!:,'formfn,'dnform);
+put('!:dn!-s!:,'formfn,'dnform!-s);
+put('!:dn!-f!:,'formfn,'dnform!-f);
+put('!:dn!-l!:,'formfn,'dnform!-l);
 
-symbolic procedure dnform(u,vars,mode);
+symbolic procedure dnform1(u,vars,mode,xmark);
    if mode eq 'symbolic then  % Format as nnn.Emmm then is in FP format
-      compress nconc!*(explode cadr u,'!. . 'e . explode cddr u)
+      compress nconc!*(explode cadr u,'!. . xmark . explode cddr u)
    else << if !*adjprec then precmsg length explode abs cadr u;
            mkquote (if cddr u >= 0 then decimal2internal(cadr u,cddr u)
-                    else u) >>;
+                    else ('!:dn!: . cdr u)) >>;
+
+symbolic procedure dnform(u,vars,mode);
+  dnform1(u,vars,mode,'e);
+
+symbolic procedure dnform!-s(u,vars,mode);
+  dnform1(u,vars,mode,'s);
+
+symbolic procedure dnform!-f(u,vars,mode);
+  dnform1(u,vars,mode,'f);
+
+symbolic procedure dnform!-l(u,vars,mode);
+  dnform1(u,vars,mode,'l);
 
 put('!:int!:,'formfn,'intform);
 

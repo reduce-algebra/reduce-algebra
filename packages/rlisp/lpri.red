@@ -108,6 +108,9 @@ symbolic procedure symerr(u,v);
          prin2 car outl!*;
          outl!* := cdr outl!* >>;
       terpri();
+      prin2 "at line "; prin2 curline!*;
+      if ifl!* then << prin2 " of file "; prin2 car ifl!* >>;
+      terpri();
       if null v then rerror('rlisp,5,u)
       else rerror('rlisp, 6,
          if u then list(x, "invalid", "in", u, "statement")

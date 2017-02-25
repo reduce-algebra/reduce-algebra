@@ -564,11 +564,30 @@ put('!','tokprop,'tokquote);
 
 % Check GOTO here
 
+if !*csl then <<
+% I will accept input such as 1.23S0. I preserve the fact that it named
+% a short float by using ":dn!-s!:" to tag it rather than just ":dn:", but
+% then in algebraic mode form() will map that back onto just !:dn!: so that
+% the short nature of the float is only used in symbolic mode.
+  put('!s, 'exponent!-mark, '!:dn!-s!:);
+  put('!S, 'exponent!-mark, '!:dn!-s!:);
+  put('!f, 'exponent!-mark, '!:dn!-f!:);
+  put('!F, 'exponent!-mark, '!:dn!-f!:);
+  put('!e, 'exponent!-mark, '!:dn!:);
+  put('!E, 'exponent!-mark, '!:dn!:);
+  put('!d, 'exponent!-mark, '!:dn!:);
+  put('!D, 'exponent!-mark, '!:dn!:);
+  put('!l, 'exponent!-mark, '!:dn!-l!:);
+  put('!L, 'exponent!-mark, '!:dn!-l!:) >>
+else <<
+  put('!e, 'exponent!-mark, '!:dn!:);
+  put('!E, 'exponent!-mark, '!:dn!:) >>;
+
 symbolic procedure token!-number x;
    % Read and return a valid number from input.
    % Adjusted by A.C. Norman to be less sensitive to input case and to
    % support hex numbers.
-   begin scalar dotp,power,sign,y,z;
+   begin scalar dotp,power,sign,y,z,xmark;
       power := 0;
       ttype!* := 2;
     num1:
@@ -591,7 +610,28 @@ symbolic procedure token!-number x;
 % I guess lets one write 12\34567\89000 and group digits in fives if you like.
 % I can not see this mentioned in the manual and wonder if anybody uses it.
        else if x eq '!\ then << readch1(); go to num2 >>
-       else if null(x eq '!e or x eq '!E) then go to ret;
+       else if null(xmark := get(x, 'exponent!-mark)) then go to ret;
+% I want to let exponent markers S, F, E, D and L be available for
+% writing floating point literals with some specified width. However there
+% is a problem of backwards compatibility. Old-style Reduce lets a number end
+% when there is a character other than "E". And it does not require spaces
+% between tokens. A concrete example of how this hurts is that there are
+% places that read "... 2sqrt x ..." where I might have liked it better if
+% the code read "2*sqrt x" or at a minimum "2 sqrt x" with a space. But I
+% should not break TOO much existing code. So I will allow letters other than
+% "e" to instroduce exponents only when there has been an explicit "." before.
+% That means that the input "... 2.0sqrt x ..." will now parse with a short
+% float 2.0s0 and then "qrt x" and that is a change. But that case "2sqrt x"
+% will behave the way it used to. Similarly for cases with other letters at the
+% end of of numbers.
+%
+% To show part of why U believe that the status quo was wrong, note the
+% different behaviour of
+%    2sqrt x;       (times 2 (list 'sqrt 'x))
+%    2exp x;        (times '(!:rd!: 2 . 0) (list 'xp 'x))
+% !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+% I rather view that as broken behaviour.
+      if not dotp and (x neq '!e and x neq '!E) then go to ret;
       % Case of number with embedded or trailing E.
       dotp := t;
       if (x := readch1()) eq '!- then sign := t
@@ -627,7 +667,8 @@ symbolic procedure token!-number x;
 % This use of compress is for a number...
       y := compress reversip!* y;
    ret1:
-      nxtsym!* := if dotp then '!:dn!: . (y . power)
+      nxtsym!* := if dotp then (if null xmark then '!:dn!: else xmark) .
+                               (y . power)
                    else if !*adjprec then '!:int!: . (y . nil)
                    else y;
       crchar!* := x;
