@@ -28,9 +28,9 @@ module io; % Functions for handling input and output of files.
 %
 
 
-fluid '(!*echo !*int !*reduce4 semic!*);
+fluid '(!*echo !*int !*reduce4 semic!* ifl!* curline!*);
 
-global '(contl!* curline!* ifl!* ipl!* linelist!* ofl!* opl!* techo!*);
+global '(contl!* ipl!* linelist!* ofl!* opl!* techo!*);
 
 symbolic procedure file!-transform(u,v);
    % Performs a transformation on the file u.  V is name of function
@@ -49,8 +49,10 @@ symbolic procedure file!-transform(u,v);
 
 symbolic procedure infile u;
    % Loads the single file u into REDUCE without echoing.
-   begin scalar !*int;
-   return file!-transform(u,function begin1)
+   begin scalar !*int, ifl!*, curline!*;
+     ifl!* := list u;
+     curline!* := 1;
+     return file!-transform(u,function begin1)
    end;
 
 symbolic procedure in u; in_non_empty_list u;  % REDUCE 3 hook.

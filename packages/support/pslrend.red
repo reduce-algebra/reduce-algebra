@@ -48,6 +48,7 @@ fluid '(!*break
         !*verboseload
         currentreadmacroindicator!*
         currentscantable!*
+        ifl!*
 %       current!-modulus
         errout!*
 	imagefilename!*
@@ -64,7 +65,6 @@ global '(!$eol!$
          crchar!*
          date!*
          esc!*
-         ifl!*
          ipl!*
          largest!-small!-modulus
          ofl!*
@@ -679,6 +679,61 @@ symbolic procedure subst(a, b, c);
     if sa eq car c and sd eq cdr c then return c
     else return sa . sd
   end;
+
+% Here are some CSLisms that I will find it convenient to have in the
+% PSL world too
+
+symbolic procedure mod(a, b);
+  begin
+    scalar r;
+    r := remainder(a, b);
+    if r >= 0 then return r
+    else return r + b
+  end;
+
+symbolic procedure gensymp u;
+  idp u and not internp u;
+
+symbolic procedure ttab n;
+  tab n;
+
+load gsort; % Not loaded by default and not autoloaded on demand.
+
+symbolic procedure sort(ll, ff);
+  gsort(ll, ff);
+
+% CSL has special vectors that hold just 8-bit integers (it also has ones
+% for 16-bit integers) and use of those will decrease the amount of
+% memory consumed by the parser tables. However if PSL does not have these
+% it does not matter much since I can just use ordinary Lisp vectors...
+% I set initial contents as all 0 rather than all nil since these are
+% supposed to contain (small) integer values. I am putting this here in
+% a spirit of keeping as much as possible of the rest of the Reduce code
+% independent of CSL vs PSL issues.
+
+symbolic procedure mkvect8 n;
+  begin
+    scalar r;
+    r := mkvect n;
+    for i := 0:n do putv(r, i, 0);
+    return r
+  end;
+
+inline procedure putv8(v, n, x); putv(v, n, x);
+
+inline procedure getv8(v, n); getv(v, n);
+
+procedure mkvect16 n;
+  begin
+    scalar r;
+    r := mkvect n;
+    for i := 0:n do putv(r, i, 0);
+    return r
+  end;
+
+inline procedure putv16(v, n, x); putv(v, n, x);
+
+inline procedure getv16(v, n); getv(v, n);
 
 global '(!*psl !*csl);
 

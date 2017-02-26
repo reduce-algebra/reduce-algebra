@@ -96,6 +96,12 @@
 #define __STDC_FORMAT_MACROS 1
 #endif
 
+#ifdef WIN32
+// The aim here is to avoid use of the Microsoft versions of printf and
+// friends and (hence) allow g++ to parse and check format strings reliably.
+#define __USE_MINGW_ANSI_STDIO 1
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>

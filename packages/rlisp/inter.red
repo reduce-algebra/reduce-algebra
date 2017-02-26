@@ -28,7 +28,7 @@ module inter; % Functions for interactive support.
 %
 
 
-fluid '(!*echo !*int trap!-time!*);
+fluid '(!*echo !*int trap!-time!* ifl!* curline!*);
 
 global '(!$eof!$
          !$eol!$
@@ -37,12 +37,10 @@ global '(!$eof!$
          curescaped!*
          cloc!*
          contl!*
-         curline!*
          edit!*
          eof!*
          erfg!*
          flg!*
-         ifl!*
          ipl!*
          key!*
          ofl!*

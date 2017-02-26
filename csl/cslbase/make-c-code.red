@@ -53,8 +53,8 @@ on echo;
 
 symbolic;
 
-% If anything goes wrong here I want a backtrace so I can debug it, regardless
-% of any errorsets etc.
+% If anything goes wrong here I want a backtrace so I can debug it,
+% regardless of any errorsets etc.
 
 enable!-errorset(3, 3);
 
@@ -161,8 +161,11 @@ global '(omitted at_start at_end);
 
 % At any stage there may be some things that I must not even try to compile
 % into C because of bugs or limitations. I can list them here. This is very
-% UGLY and delicate, and so ideally I will upgrade the compilation into C
+% UGLY and delicate, and so ideally I will upgrade the compilation into C++
 % to remove most of these limitations eventually.
+
+% It is now some while since I checked all of these - I should review
+% them soon!!!
 
 omitted := '(
     s!:prinl0               % uses unwind-protect
@@ -240,56 +243,6 @@ on comp;
 
 load!-module 'remake;
 
-% Here I need to consider the issue of patches.  First consider patches that
-% had been in force when "profile.red" was run. In such cases a patched
-% function f1 has an associated replacement f1_123456789 (the numeric suffix
-% is a checksum on the new definition) and when the profile job was run
-% this replacement will have had its definition copied to f1. The way in
-% which CSL's mapstore function extracts counts will mean that the
-% thing in profile.dat relate to f1_123456789.
-% Usually things in profile.dat are in the form
-%    (function_name . checksum_of_definition)
-% but for these patched things I will instead record
-%    (original_function_name package_involved)
-% This can be distinguished because it has a symbol not a number as
-% the second component. To make this possible each patch function
-% f1_123456789 would have to have this information attached to it
-% when the profiling job was run.
-%
-% But I suppose have now obtained a newer version of the patches file. So
-% now the correct patch for f1 will be f1_abcdef. If f1 was in one of the
-% REDUCE core packages (eg "alg") then both the functions f1_123456789 and
-% f1_abcdef will be in memory now, but it will be the latter that will
-% have been copied to plain old f1.  In other cases f1_123456789 will now
-% have been totally lost and the definition of f1_abcdef will be in the
-% patches module.  Furthermore the new patches file may patch another
-% function f2 that had not previously been subject to patching, but
-% that had been selected for compilation into C. And in a truly bad
-% case the complete REDUCE sources will contain several functions named
-% f2 and of course the patches file identifies which one it is interested
-% in by the name of the package it is in.
-%
-% The response to all this I will use here is intended to make life
-% reasonably SIMPLE for me in a complicated situation. So I first
-% collect the set of names that I think need compiling into C. Then I
-% grab a list of the names of things defined in the current patches file.
-% If a function in the paches file has a name similar enough (!) to one that
-% I have already decided to compile into C then I will schedule it for
-% compilation into C too.  Because of the hash suffix added to names in the
-% patches file defining a C version having those things present in the Lisp
-% kernel should never be a problem - after all the patches file itself is
-% intended to be loaded all the time.  So the main down-side of this is
-% that I will sometimes find that I have compiled into C either patch
-% versions of a function when it was another version of that code that was
-% time-critical or that I have compiled into C two generations of
-% patch function. These waste opportunity and space by having some
-% things compiled into C that might not really justify that, but this
-% seems a modest cost.
-
-% Note that parts of the above may apply if the sources of REDUCE are
-% changed in ANY manner (not just a special patches file) but the C code
-% is not re-created.
-
 fluid '(w_reduce requests);
 
 w_reduce := requests := nil;
@@ -324,24 +277,9 @@ on echo;
 
 if not everything then <<
 
-% As a fairly shameless hack I am going to insist on compiling ALL the
-% things that the "alg" test uses. That is because this one test
-% file has been used for many years to give a single performance
-% figure for REDUCE.  In fact it is not too bad to pay lots of
-% attention to it since it exercises the basic core algebra and so what is
-% good for it is good for quite a lot of everybody else. However by
-% tuning this selection process you can adjust the way REDUCE balances
-% its speed in different application areas.
+requests := for each x in requests collect cdr x$
 
-w_reduce := assoc('alg, requests)$
-requests := for each x in delete(w_reduce, requests) collect cdr x$
-w_reduce := reverse cdr w_reduce$
-d := length w_reduce - force_count;
-if d > 0 then for i := 1:d do w_reduce := cdr w_reduce;
-
-length w_reduce;
-
-% Now I will merge in suggestions from all other modules in
+% Now I will merge in suggestions from all modules in
 % breadth-first order of priority
 % Ie if I have modules A, B, C and D (with A=alg) and each has in it
 % functions a1, a2, a3 ... (in priority odder) then I will make up a list
@@ -386,7 +324,7 @@ end;
 % properties are checksums of the recovered definitions that I would be
 % prepared to accept.
 
-for each n in w_reduce do put(car n, 'load!-selected!-source, cdr n);
+for each n in w_reduce do put(car n, 'load!-selected!-source, cadr n);
 
 w_reduce := for each n in w_reduce collect car n$
 

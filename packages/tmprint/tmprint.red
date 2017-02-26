@@ -207,6 +207,7 @@ fluid  '(
          !*nosplit
          !*ratpri
          !*revpri
+         curline!*
          overflowed!*
          p!*!*
          testing!-width!*

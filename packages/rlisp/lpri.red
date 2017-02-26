@@ -28,7 +28,7 @@ module lpri; % Functions for printing diagnostic and error messages.
 %
 
 
-fluid '(!*defn !*echo !*fort !*int !*msg !*nat !*protfg errmsg!*);
+fluid '(!*defn !*echo !*fort !*int !*msg !*nat !*protfg errmsg!* curline!*);
 
 global '(cursym!* erfg!* ofl!* outl!*);
 

@@ -39,6 +39,7 @@ fluid '(!*break
         !*lower
         !*keepsqrts
         outputhandler!*
+        ifl!*
         !*savedef
         lispsystem!*
         !*backtrace);
@@ -50,7 +51,6 @@ global '(!$eol!$
          date!*
          esc!*
          ff!*
-         ifl!*
          ipl!*
          largest!-small!-modulus
          ofl!*

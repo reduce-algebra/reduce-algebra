@@ -52,13 +52,7 @@
 /*****************************************************************************/
 
 LispObject integerp(LispObject p)
-{   int tag = ((int)p) & TAG_BITS;
-    if (tag == TAG_FIXNUM) return lisp_true;
-    else if (tag == TAG_NUMBERS)
-    {   Header h = *(Header *)((char *)p - TAG_NUMBERS);
-        if (type_of_header(h) == TYPE_BIGNUM) return lisp_true;
-        else return nil;
-    }
+{   if (is_fixnum(p) || (is_numbers(p) && is_bignum(p))) return lisp_true;
     else return nil;
 }
 

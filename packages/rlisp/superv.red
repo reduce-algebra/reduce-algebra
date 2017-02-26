@@ -44,6 +44,8 @@ fluid '(!*debug
         !*slin
         !*time
         !*rlisp88
+        ifl!*
+        curline!*
         dfprint!*
         peekchar!*
         errmsg!*
@@ -68,13 +70,11 @@ global '(!$eof!$
          crbuf!*
          crbuflis!*
          crbuf1!*
-         curline!*
          cursym!*
          curescaped!*
          eof!*
          erfg!*
          forkeywords!*
-         ifl!*
          ipl!*
          initl!*
          inputbuflis!*

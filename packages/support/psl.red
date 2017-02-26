@@ -32,9 +32,9 @@ imports big2sys, bigp, floatloworder, floathighorder, gtneg, gtpos,
 
 exports ashift, msd!:, fl2bf, integerp!:, normbf, oddintp, preci!:;
 
-fluid '(bbits!*);
+fluid '(bbits!* dirchar!*);
 
-global '(bfz!* bitsperword dirchar!* tempdir!*);
+global '(bfz!* bitsperword tempdir!*);
 
 !#if (intersection '(dos os2 winnt alphant win32 win64 cygwin) lispsystem!*)
    dirchar!* := "\";

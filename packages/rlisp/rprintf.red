@@ -30,57 +30,6 @@ module rprintf; % formatted printing
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-
-#if !*psl
-
-% I need to simulate hash tables, which PSL does not appear to provide.
-
-% The type is 0 for EQ hashes and all other cases are treated as EQUAL
-% ones here. Since I am simulating "hash" tables in PSL using just simple
-% association lists I do not have any use for a concept of initial size or
-% the factor by which tables expand once they become full.
-
-symbolic procedure mkhash(size, type, expansion);
-  type . nil;
-
-symbolic procedure clrhash u;
-  rplacd(u, nil);
-
-symbolic procedure gethash(key, tab);
-  begin
-% Of course use of assoc/atsoc here is not goof for performance if you
-% end up with many items stored...
-    tab := (if car tab = 0 then atsoc(key, cdr tab)
-            else assoc(key, cdr tab));
-    if null tab then return nil
-    else return cdr tab
-  end;
-
-symbolic procedure puthash(key, tab, val);
-  begin
-    scalar w;
-    w := (if car tab = 0 then atsoc(key, cdr tab)
-          else assoc(key, cdr tab));
-    if w then <<
-      rplacd(w, val);
-      return val >>;
-    rplacd(tab, (key . val) . cdr tab);
-    return val
-  end;
-
-symbolic procedure mod(a, b);
-  begin
-    scalar r;
-    r := remainder(a, b);
-    if r >= 0 then return r
-    else return r + b
-  end;
-
-symbolic procedure gensymp u;
-  idp u and not internp u;
-
-#endif
-
 % I will support bldmsg by having versions of the print primitives that
 % dump characters in a list...
 

@@ -483,11 +483,11 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 (de endstat nil (prog (x) (setq x cursym!*) (scan) (return (list x))))
 
 % It is only a rather small number of lines of code to support
-% both << >> blocks and WHILE statements here, and doing sop makes
+% both << >> blocks and WHILE statements here, and doing so makes
 % it possible to write the full implementation of RLISP in a much
 % more civilised way. What I put in here is a little more than is used
 % to start with, but matches the eventual implementation. Eg the 'go
-% and 'nodel are not relevant until the read parser has been loaded.
+% and 'nodel flags are not relevant until the read parser has been loaded.
 
 (de readprogn nil
    (prog (lst)
@@ -527,6 +527,8 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 
 (put 'while 'stat 'whilstat)
 (flag '(while) 'nochange)
+
+(de make!-string!-unique (x) x) % placeholder while bootstrapping
 
 % Now we have just enough to be able to start to express ourselves in
 % (a subset of) rlisp.

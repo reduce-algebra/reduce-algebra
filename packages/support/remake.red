@@ -40,6 +40,9 @@ fluid '(!*argnochk
         !*writingfaslfile
         lispsystem!*);
 
+if not getd 'make!-string!-unique then
+   putd('make!-string!-unique, 'expr, '(lambda (x) x));
+
 global '(nolist!* loaded!-modules!*);
 
 symbolic procedure psl!-file!-write!-date u;

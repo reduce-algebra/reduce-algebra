@@ -29,7 +29,7 @@ module proc;   % Procedure statement.
 
 
 fluid '(!*argnochk !*noinlines !*loginlines !*redeflg!* fname!* ftype!*
-        !*strict_argcount !*comp);
+        !*strict_argcount !*comp ifl!* curline!*);
 
 % !*loginlines will cause a compile-time report of patterns of inline usage.
 !*loginlines := t;
@@ -218,6 +218,114 @@ symbolic procedure pairxvars(u,v,vars,mode);
       return append(reversip!* x,vars) . v
    end;
 
+symbolic procedure starts!-with(a, b);
+  if null b then t
+  else if null a then nil
+  else if eqcar(a, car b) or
+     (eqcar(a,'!\) and eqcar(b, '!/)) then starts!-with(cdr a, cdr b)
+  else nil;
+
+symbolic procedure simplify!-filename s;
+  begin
+    scalar a, b;
+% The issue that I am concerned with here is that the full version of
+% a file-name may be very long, and including all of it in messages can be
+% unhelpful. To cope with files-names that are within the Reduce source
+% tree I will apply what is perhaps a hack, and I will remove any initial
+% part of a path that ends in "/packages/". Thus (for instance) one of the
+% more basic test files will end up just names as "alg/alg.tst" rather than
+% anything longer.
+    a := explode2 s;
+    b := explode2 "/packages/";
+    while a and not starts!-with(a, b) do a := cdr a;
+    if null a then return s;
+    a := cddddr cddddr cddr a;
+    return list2string a;
+  end;
+
+!#if !*psl
+
+% I need to simulate hash tables, which PSL does not appear to provide.
+
+% The type is 0 for EQ hashes and all other cases are treated as EQUAL
+% ones here. Since I am simulating "hash" tables in PSL using just simple
+% association lists I do not have any use for a concept of initial size or
+% the factor by which tables expand once they become full.
+
+% I think a nicer implementation would be to use genuine hashed tables with
+% PSL providing a function that hashed items. For EQ hashing that could be
+% based on the machine representation of the (reference to) an item, while
+% for equal it could traverse lists but use the address for symbols. The key
+% issue there is that garbage collection moves things around! The neatest idea
+% I have about that is to have each hash table record in its header the
+% sequence number of garbage collection with respect to which it is valid.
+% puthash and gethash would then check that on entry and perform a rehash
+% operation if out of date. If one can be confident that garbage collection
+% will not be triggered while performing gethash, and if puthash and rehash
+% record the garbage collection number when they start and check if items are
+% already present first using gethash (and if rehash re0runs itself if it
+% finds that a GC happened while it was active). I think all is not too
+% messy. But because hash tables are not very heavily used this is not a high
+% priority!
+
+symbolic procedure mkhash(size, type, expansion);
+  type . nil;
+
+symbolic procedure clrhash u;
+  rplacd(u, nil);
+
+symbolic procedure gethash(key, table);
+  begin
+% Of course use of assoc/atsoc here is not good for performance if you
+% end up with many items stored...
+    table := (if car table = 0 then atsoc(key, cdr table)
+            else assoc(key, cdr table));
+    if null table then return nil
+    else return cdr table
+  end;
+
+symbolic procedure puthash(key, table, val);
+  begin
+    scalar w;
+    w := (if car table = 0 then atsoc(key, cdr table)
+          else assoc(key, cdr table));
+    if w then <<
+      rplacd(w, val);
+      return val >>;
+    rplacd(table, (key . val) . cdr table);
+    return val
+  end;
+
+symbolic procedure hashcontents table;
+  cdr table;
+
+!#endif
+
+% Now stuff that I will use when recording the names of files associated
+% with procedure definitions...
+
+global '(string!-table!*);
+
+% I want a hash tables where keys are compared using EQUAL, or at
+% least something that treats string that have the same letters in them as
+% the same. The numeric code "3" here is a messy CSL oddity on that
+% respect.
+
+string!-table!* := mkhash(10, 3, 2.0);
+
+% Note that I will have installed a placeholder version of
+% make!-string!-unique that is just the identity function (ie that
+% does not impose uniquene4ss at all!) to hold the fort during
+% bootstrapping. The version here will replace it when it can.
+
+symbolic procedure make!-string!-unique s;
+  begin
+    scalar w;
+    if w := gethash(s, string!-table!*) then return w;
+    puthash(s, string!-table!*, s);
+    return s
+  end;    
+
 % Another function with quite a few labels and gotos...
 
 symbolic procedure procstat1 mode;
@@ -240,8 +348,6 @@ symbolic procedure procstat1 mode;
               else if (z := gettype fname!*)
                        and null(z memq '(procedure operator))
                then << typerr(list(z,fname!*),"procedure"); go to a3 >>;
-      put(fname!*, 'defined!-in!-file, file);
-      put(fname!*, 'defined!-on!-line, line);
       u := cdr x;
       y := u;   % Variable list.
       if idlistp y then x := car x . y
@@ -250,8 +356,6 @@ symbolic procedure procstat1 mode;
   a1: fname!* := scan();
       if not idp fname!*
         then << typerr(fname!*,"procedure name"); go to a3 >>;
-      put(fname!*, 'defined!-in!-file, file);
-      put(fname!*, 'defined!-on!-line, line);
       scan();
       y := errorset!*(list('read_param_list,mkquote mode),nil);
       if errorp y then go to a3;
@@ -271,6 +375,13 @@ symbolic procedure procstat1 mode;
   a4: remflag(list fname!*,'fnc);
       fname!* := nil;
       if erfg!* then << z := nil; if not bool then error1() >>;
+      if ifl!* and not atom z and not atom cdr z and idp cadr z then
+        z := list('progn,
+          list('put, mkquote cadr z,
+            ''defined!-in!-file,
+            list('make!-string!-unique, simplify!-filename file)),
+          list('put, mkquote cadr z, ''defined!-on!-line, line),
+          z);
       return z;
   a5: errorset!*('(symerr (quote procedure) t),nil);
       go to a3

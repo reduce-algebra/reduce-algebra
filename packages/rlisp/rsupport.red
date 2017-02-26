@@ -154,13 +154,14 @@ symbolic procedure intersection(u,v);
       car u . intersection(cdr u,delete(car u,v))
    else intersection(cdr u,v);
 
-% The following definition would be INCORRECT in the face of NaN values!
+% The following definition have been coded to be NaN-safe even though that
+% may hurt speed.
 % I rather hope that these definitions are ones where Lisp-provided
 % versions are used instead.
 
-symbolic procedure u>=v; null(u<v);
+symbolic procedure u>=v; u>v or u=v;
 
-symbolic procedure u<=v; null(u>v);
+symbolic procedure u<=v; u<v or u=v;
 
 symbolic procedure u neq v; null(u=v);
 

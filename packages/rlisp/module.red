@@ -46,6 +46,9 @@ remprop('imports,'stat);
 
 remprop('module,'stat);
 
+if not getd 'make!-string!-unique then
+  putd('make!-string!-unique, 'expr, '(lambda (x) x));
+
 symbolic procedure exports u;
    begin exportslist!* := union(u,exportslist!*) end;
 

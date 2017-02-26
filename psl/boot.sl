@@ -348,4 +348,7 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 (put 'while 'stat 'whilstat)
 (flag '(while) 'nochange)
 
+% It is useful to have a temporary version of this in place until the
+% real one gets compiled...
+(de make!-string!-unique (x) x)
 

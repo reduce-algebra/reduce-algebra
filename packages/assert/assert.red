@@ -41,9 +41,9 @@ create!-package('(assert assertcheckfn assertproc),nil);
 global '(assert_functionl!* exlist);
 
 global '(outl!*);
-global '(curline!*);
-global '(ifl!*);
+fluid '(curline!*);
 
+fluid '(ifl!*);
 fluid '(!*backtrace);
 fluid '(!*comp);
 fluid '(!*msg);
