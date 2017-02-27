@@ -36,14 +36,14 @@ returns the information necessary to retrieve the names of all the available
 functions.
 \item[ii.] If the argument is an integer equal to one of the section numbers
 of the present documentation. The names of the functions described
-in that section are obtained.\linebreak
+in that section are obtained.\\
 There is, presently, no possibility to retrieve the number and the type of 
 the arguments of a given function.
 \end{itemize}
 The package contains several modules. Their content reflects closely
 the various categories of facilities listed below. Some functions do
-already exist inside the KERNEL of \REDUCE\ . However, their range
-of applicability is {\em extended}.\linebreak
+already exist inside the KERNEL of \REDUCE. However, their range
+of applicability is \emph{extended}.
 
 \begin{itemize}
 \item{Control of Switches:}
@@ -54,16 +54,16 @@ of applicability is {\em extended}.\linebreak
 \item{Operations on Lists and Bags:}
 \begin{quotation}
 \noindent
-\f{MKLIST KERNLIST ALGNLIST LENGTH \linebreak
-POSITION FREQUENCY SEQUENCES SPLIT \linebreak
-INSERT INSERT\_KEEP\_ORDER MERGE\_LIST \linebreak
-FIRST SECOND THIRD REST REVERSE LAST \linebreak
-BELAST CONS ( . ) APPEND APPENDN \linebreak
-REMOVE DELETE DELETE\_ALL DELPAIR \linebreak
-MEMBER ELMULT PAIR DEPTH MKDEPTH\_ONE \linebreak
-REPFIRST REPREST ASFIRST ASLAST ASREST \linebreak
-ASFLIST ASSLIST RESTASLIST SUBSTITUTE \linebreak
-BAGPROP PUTBAG CLEARBAG BAGP BAGLISTP \linebreak
+\f{MKLIST KERNLIST ALGNLIST LENGTH \\
+POSITION FREQUENCY SEQUENCES SPLIT \\
+INSERT INSERT\_KEEP\_ORDER MERGE\_LIST \\
+FIRST SECOND THIRD REST REVERSE LAST \\
+BELAST CONS ( . ) APPEND APPENDN \\
+REMOVE DELETE DELETE\_ALL DELPAIR \\
+MEMBER ELMULT PAIR DEPTH MKDEPTH\_ONE \\
+REPFIRST REPREST ASFIRST ASLAST ASREST \\
+ASFLIST ASSLIST RESTASLIST SUBSTITUTE \\
+BAGPROP PUTBAG CLEARBAG BAGP BAGLISTP \\
 ALISTP ABAGLISTP LISTBAG }
 \end{quotation}
 \item{Operations on Sets:}
@@ -1193,9 +1193,9 @@ multiple arguments to elementary arguments. Here is a simple example:
 When a trigonometric or hyperbolic expression is symmetric with
 respect to the interchange of {\tt SIN (SINH)} and {\tt COS (COSH)},
 the application of\linebreak \f{TRIG(HYP)-REDUCE} may often lead to great
-simplifications. However, if it is highly assymetric, the repeated
+simplifications. However, if it is highly asymmetric, the repeated
 application of \f{TRIG(HYP)-REDUCE} followed by the use of
-\f{TRIG(HYP)-EXPAND} will lead to {\em more} complicated
+\f{TRIG(HYP)-EXPAND} will lead to \emph{more} complicated
 but more symmetric expressions:
 \begin{verbatim}
 

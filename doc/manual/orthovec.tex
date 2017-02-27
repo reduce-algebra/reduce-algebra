@@ -175,8 +175,8 @@ If we let $\mathbf{v}$ be a vector and $s$ be a scalar, then
 valid combinations of arguments of the 
 procedures and operators and the type of the result 
 are as summarised below.  The notation used is\\
-{\em result :=procedure(left argument, right argument) } or\\
-{\em result :=(left operand) operator (right operand) } . \\
+\emph{result :=procedure(left argument, right argument) } or\\
+\emph{result :=(left operand) operator (right operand) } . 
 
 \newpage
 \underline{Vector Addition} \\
@@ -187,7 +187,7 @@ are as summarised below.  The notation used is\\
 {\bf v} &:=& VECTORADD({\bf v},{\bf v})  &{\rm or }& {\bf v} &:=&  
 {\bf v} +  {\bf v} \\
      s  &:=& VECTORADD(s,s)  &{\rm or }&      s  &:=&  s + s \\
-\end{tabular} \\
+\end{tabular}
 
 \underline{Vector Subtraction} \\
 \ttindex{VECTORMINUS} \ttindex{VECTORDIFFERENCE} \index{Vector!subtraction}
@@ -198,7 +198,7 @@ are as summarised below.  The notation used is\\
 {\bf v} &:=& VECTORDIFFERENCE({\bf v},{\bf v})  &{\rm or }& {\bf v} &:=&
   {\bf v} -  {\bf v} \\
  s  &:=& VECTORDIFFERENCE(s,s)  &{\rm or }&      s  &:=&  s - s \\
-\end{tabular} \\
+\end{tabular}
 
 \underline{Vector Division}\\
 \ttindex{VECTORRECIP} \ttindex{VECTORQUOTIENT} \index{Vector!division}
@@ -214,7 +214,7 @@ are as summarised below.  The notation used is\\
    s    /  {\bf v} \\
      s  &:=& VECTORQUOTIENT(s,s)  &{\rm or }&      s  &:=&  s / s       
        \\
-\end{tabular} \\
+\end{tabular}
 
 \underline{Vector Multiplication}\\ 
 \ttindex{VECTORTIMES} \index{Vector!multiplication}
@@ -227,14 +227,14 @@ s    *  {\bf v} \\
  v}  *  {\bf v} \\
    s    &:=& VECTORTIMES(   s   ,   s   )  &{\rm or }&    s    &:=&     
 s    *     s    \\
-\end{tabular} \\
+\end{tabular}
  
 \underline{Vector Cross Product} \\
 \ttindex{VECTORCROSS} \index{Cross product} \index{Vector!cross product}
 \begin{tabular}{rclcrcl}
 {\bf v} &:=& VECTORCROSS({\bf v},{\bf v})  &{\rm or }& {\bf v} &:=& {\bf
  v} $\times$   {\bf v} \\
-\end{tabular} \\
+\end{tabular}
  
 \underline{Vector Exponentiation}\\
 \ttindex{VECTOREXPT} \index{Vector!exponentiation}
@@ -243,14 +243,14 @@ s    *     s    \\
  v}  \^{} s   \\
    s    &:=& VECTOREXPT (   s   ,   s   )  &{\rm or }&    s    &:=&    s
      \^{} s   \\
-\end{tabular} \\
+\end{tabular}
 
 \underline{Vector Modulus}\\
 \ttindex{VMOD} \index{Vector!modulus}
 \begin{tabular}{rcl}
    s    &:=& VMOD (s)\\
    s    &:=& VMOD ({\bf v}) \\
-\end{tabular} \\
+\end{tabular}
 
 All other combinations of operands for these operators lead to error 
 messages being issued.  The first two instances of vector
@@ -327,7 +327,7 @@ differentiation of a vector (scalar) with respect to a scalar to be
 performed.  Allowed forms are \ttindex{VDF}
 VDF({\bf v}, s)  $\rightarrow$  {\bf v}   and
 VDF(s, s)  $\rightarrow$   s , 
-where, for example\\
+where, for example
 \begin{eqnarray*}
 {\tt vdf( B,x)} \equiv \frac{\partial {\bf B}}{\partial x}
 \end{eqnarray*}
@@ -354,7 +354,7 @@ vtaylor(vex,vx,vpt,vorder);
 returns the series expansion of the expression 
 VEX  with respect to variable VX \ttindex{VORDER}
 about point VPT  to order VORDER.  Valid
-combinations of argument types are shown in table~\ref{ORTHOVEC:validexp}. \\
+combinations of argument types are shown in table~\ref{ORTHOVEC:validexp}.
 
 \begin{table}
 \begin{center}
@@ -546,7 +546,7 @@ Evaluate the line integral
 \int^{{\bf r}_2}_{{\bf r}_1} {\bf A} \cdot d{\bf r}
 \end{eqnarray*}
 from point ${\bf r}_1 = (1,1,1)$ to point
-${\bf r}_2 = (2,4,8)$ along the path $(x,y,z) = (s, s^2, s^3)$ where\\
+${\bf r}_2 = (2,4,8)$ along the path $(x,y,z) = (s, s^2, s^3)$ where
 \begin{eqnarray*}
 {\bf A} = (3x^2 + 5y) {\bf i} - 12xy{\bf j} + 2xyz^2{\bf k}
 \end{eqnarray*}

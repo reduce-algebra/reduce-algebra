@@ -6,44 +6,43 @@ Eurocal '87, Lecture Notes in Comp. Sci., Springer-Verlag
 (1987) 132-133.
 \end{tabular} 
 \end{center}
-\ \\
-\ \\
-Some hints on how to use to use this package: \\
-\ \\
-Syntax: \\
-\ \\
-{\tt LAPLACE($<exp>,<var-s>,<var-t>$ }) \\
-\ \\
-{\tt INVLAP($<exp>,<var-s>,<var-t>$)} \\
-\ \\
+
+Some hints on how to use to use this package: \\[\baselineskip]
+%
+Syntax: \\[\baselineskip]
+%
+\texttt{LAPLACE($<exp>,<var-s>,<var-t>$ }) \\[\baselineskip]
+%
+\texttt{INVLAP($<exp>,<var-s>,<var-t>$)} \\[\baselineskip]
+%
 where $<exp>$ is the expression to be transformed, $<var-s>$ is the source
 variable (in most cases $<exp>$ depends explicitly of this variable) and
 $<var-t>$ is the target variable. If $<var-t>$ is omitted, the package uses
-an internal variable lp!\& or il!\&, respectively. \\
-\ \\
+an internal variable lp!\& or il!\&, respectively. \\[\baselineskip]
+%
 The following switches can be used to control the transformations: \\
 \ttindexswitch[LAPLACE]{LMON}
 \ttindexswitch[LAPLACE]{LHYP}
 \ttindexswitch[LAPLACE]{LTRIG}
 \begin{center}
 \begin{tabular}{lp{10cm}}
-{\tt lmon}: & If on, sin, cos, sinh and cosh are converted by {\tt LAPLACE} into
+\sw{lmon}: & If on, sin, cos, sinh and cosh are converted by \f{LAPLACE} into
 exponentials, \\
-{\tt lhyp}: & If on, expressions $e^{\tilde{}x}$ are converted by {\tt INVLAP} into 
+\sw{lhyp}: & If on, expressions $e^{\tilde{}x}$ are converted by \f{INVLAP} into 
 hyperbolic functions sinh and cosh, \\
-{\tt ltrig}: & If on, expressions $e^{\tilde{}x}$ are converted by {\tt INVLAP} into
+\sw{ltrig}: & If on, expressions $e^{\tilde{}x}$ are converted by \f{INVLAP} into
 trigonometric functions sin and cos. \\
 \end{tabular} 
 \end{center}
 \ \\
 The system can be extended by adding Laplace transformation rules for
 single functions by rules or rule sets.~ In such a rule the source
-variable MUST be free, the target variable MUST be il!\& for {\tt LAPLACE} and
-lp!\& for {\tt INVLAP} and the third parameter should be omitted.~ Also rules for
+variable MUST be free, the target variable MUST be il!\& for \f{LAPLACE} and
+lp!\& for \f{INVLAP} and the third parameter should be omitted.~ Also rules for
 transforming derivatives are entered in such a form. \\
 
 \pagebreak
-{\bf Examples:}
+\textbf{Examples:}
 \begin{verbatim}
 
     let {laplace(log(~x),x) => -log(gam * il!&)/il!&,
@@ -72,16 +71,13 @@ transforming derivatives are entered in such a form. \\
 \end{verbatim}
 
 
-Remarks about some functions: \\
-\ \\
+Remarks about some functions: \\[\baselineskip]
 The DELTA and GAMMA functions are known. \\
 ONE is the name of the unit step function. \\
 INTL is a parametrized integral function 
 \begin{center}
-{\tt intl($<expr>,<var>,0,<obj.var>$)}
+\texttt{intl($<expr>,<var>,0,<obj.var>$)}
 \end{center}
 which means \char`\"{}Integral of $<expr>$ wrt.~ $<var>$ taken from 0 to $<obj.var>$\char`\"{},
-e.g. {\tt intl($2{*}y^2,y,0,x$)} which is formally a function in $x$.
-\ \\
-\ \\
+e.g. {\tt intl($2{*}y^2,y,0,x$)} which is formally a function in $x$.\\
 We recommend reading the file LAPLACE.TST for a further introduction.

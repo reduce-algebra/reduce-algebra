@@ -301,7 +301,7 @@ square\_size &:-& a positive integer.
                 left of this fill the required number of sub-diagonals and the
                 expressions to the right the super-diagonals.
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{band\_matrix}(\{x,y,z\},6) = 
@@ -365,7 +365,7 @@ $\lambda$  &:-& a symbol or algebraic expression.
 \texttt{char\_matrix} creates the characteristic matrix $\mathcal{C}$ of 
 $\mathcal{A}$.  This is $\mathcal{C} = \lambda \mathcal{I} - \mathcal{A}$. 
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{char\_matrix}(\mathcal{A},x) = 
@@ -422,7 +422,7 @@ It returns \{$\mathcal{L},\mathcal{U}$\} where $\mathcal{L}$
 is a lower matrix, $\mathcal{U}$ is an upper matrix, \\ $\mathcal{A} = 
 \mathcal{LU}$, and $\mathcal{U} = \mathcal{L}^T$.
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flalign*}  
 &\mathcal{F} = \begin{pmatrix} 1 & 1 & 0 \\ 1 & 3 & 1 \\ 0 & 1 & 1 \end{pmatrix} &&\\[2mm]
 &\f{cholesky}(\mathcal{F})  = 
@@ -508,7 +508,7 @@ of \texttt{poly} w.r.t. $x$. The entries of $\mathcal{C}$ are: $\mathcal{C}(i,n)
 = -\texttt{coeffn}(\texttt{poly},x,i-1)$ for $i = 1,\ldots, n$,
 $\mathcal{C}(i,i-1) = 1$ for $i=2,\ldots,n$ and the rest are $0$.
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{companion}(x^4+17*x^3-9*x^2+11,x) = 
@@ -538,7 +538,7 @@ $r,c$          &:-& positive integers.
 \texttt{copy\_into} copies matrix $\mathcal{A}$ into 
                 $\mathcal{B}$ with $\mathcal{A}(1,1)$ at $\mathcal{B}(r,c)$.
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flalign*}
 &\mathcal{G} = \begin{pmatrix} 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\
 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{pmatrix} && \\[2mm]
@@ -569,7 +569,7 @@ $r,c$          &:-& positive integers.
 \texttt{diagonal} creates a matrix that contains the 
 input on the diagonal.
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flalign*}  
 & \mathcal{H} = \begin{pmatrix} 66 & 77 \\ 88 & 99 \end{pmatrix} && \\[2mm]
 & \texttt{diagonal}(\{\mathcal{A},x,\mathcal{H}\}) = 
@@ -602,7 +602,7 @@ $r,c$              &:-& positive integers. \\
                 extended by $r$ rows and $c$ columns. The new entries are
                 made equal to \texttt{expr}.
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{extend}(\mathcal{A},1,2,x) =
@@ -733,7 +733,7 @@ $\mathcal{A}$ &:-& a matrix.
 This is a matrix in which the $(i,j)$th entry is the conjugate of the $(j,i)$th
 entry of $\mathcal{A}$.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}  
 &\mathcal{J} = \begin{pmatrix} i+1 & i+2 & i+3 \\ 4 & 5 & 2 \\ 1 & i & 0 \end{pmatrix}&&\\[2mm]
 &\texttt{hermitian\_tp}(\mathcal{J})  = 
@@ -765,7 +765,7 @@ variable\_list &:-& either a single variable or a list of variables.
 This is an $n\times n$ matrix where $n$ is the number of variables and the
 $(i,j)$th entry is \texttt{df(expr,variable\_list(i),variable\_list(j))}.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}        
 \texttt{hessian}(x*y*z+x^2,\{w,x,y,z\}) =
@@ -799,7 +799,7 @@ expr         &:-& an algebraic expression.
 This is the symmetric matrix in which the $(i,j)$th entry is
 $1/(i+j-\texttt{expr})$.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}
 \texttt{hilbert}(3,y+x)  =
@@ -871,7 +871,7 @@ The entries of $\mathcal{J}$ are: $\mathcal{J}(i,i) = \texttt{expr}$ for
                 $i=1,\ldots,n$, $\mathcal{J}(i,i+1) = 1$ for $i=1,\ldots,n-1$,
                 and all other entries are 0.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]\nopagebreak
 \begin{flushleft}  
 \begin{math}        
 \texttt{jordan\_block(x,5)}  = 
@@ -910,7 +910,7 @@ numeric entries or imaginary entries with numeric coefficients.}
   convert($\mathcal{A}$,vec)} will return the matrix that has been decomposed, ie:
   $\mathcal{LU} = $ \texttt{convert($\mathcal{A}$,vec)}.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}
 \begin{math}  
 \mathcal{K} = \begin{pmatrix} 1 & 3 & 5 \\ -4 & 3 & 7 \\ 8 & 6 & 4 \end{pmatrix}
@@ -977,7 +977,7 @@ square\_size &:-& a positive integer.
 \texttt{make\_identity} creates the identity matrix of 
                 dimension square\_size.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{make\_identity}(4)  =  
@@ -1077,7 +1077,7 @@ $r,c$        &:-& positive integers.
                 This is created by removing the $r$th row and the $c$th 
                 column from $\mathcal{A}$.
                 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{minor}(\mathcal{A},1,3)  = 
@@ -1150,7 +1150,7 @@ To do this, multiples of the r'th row are added to every
 This means that the c'th column
                 will be 0 except for the (r,c)'th entry. 
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{pivot}(\mathcal{A},2,3) = 
@@ -1326,7 +1326,7 @@ row\_list  &:-& positive integer or a list of positive integers.
 \texttt{rows\_pivot} performs the same task as \texttt{pivot} but applies 
 the pivot only to the rows specified in row\_list.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}
  &\mathcal{N} = \begin{pmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 
                  9 \\1 & 2 & 3 \\ 4 & 5 & 6 \end{pmatrix} && \\[2mm]
@@ -1377,7 +1377,7 @@ The \texttt{\{bounds\}} argument is optional and admissible only when the switch
 Without a \texttt{\{bounds\}} argument, the algorithm implies that all the
 variables are non-negative.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{verbatim}
 simplex(max,x+y,{x>=10,y>=20,x+y<=25});
 
@@ -1443,7 +1443,7 @@ positive integer or a list of positive integers.
               intersection of the rows specified in row\_list and the 
 columns specified in column\_list. 
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{sub\_matrix}(\mathcal{A},\{1,3\},\{2,3\}) =
@@ -1487,7 +1487,7 @@ $\mathcal{U}$ and $\mathcal{V}$ are such that $\mathcal{UU}^T = \mathcal{VV}^T =
 literature, in some of which $\Sigma$ is square and $U$ and $V$ rectangular, as
 here, but in others $U$ and $V$ are square, and $\Sigma$ is rectangular.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}
  & \mathcal{Q} = \begin{pmatrix} 1 & 3 \\ -4 & 3 \\ 3 & 6 \end{pmatrix} && \\[2mm]
  & \begin{aligned}
@@ -1527,7 +1527,7 @@ c1,c1      &:-& positive integers.
 
 \texttt{swap\_rows} performs the same task on 2 rows of $\mathcal{A}$.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{swap\_columns}(\mathcal{A},2,3) = 
@@ -1556,7 +1556,7 @@ r1,c1,r2,c2 &:-& positive integers.
 \texttt{swap\_entries} swaps $\mathcal{A}$(r1,c1) with 
                 $\mathcal{A}$(r2,c2).
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{swap\_entries}(\mathcal{A},\{1,1\},\{3,3\}) =
@@ -1625,7 +1625,7 @@ This is a square symmetric matrix in
 It has dimension n where n is the 
                 number of expressions.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{toeplitz}(\{w,x,y,z\}) =
@@ -1647,7 +1647,7 @@ It has dimension n where n is the
 $\mathcal{A}$  &:-& a matrix.
 \end{tabular}
 
-\item[Synopsis:]\mbox{}\\*
+\item[Synopsis:]
 
 \texttt{triang\_adjoint} computes the triangularizing adjoint $\mathcal{F}$ of
 matrix $\mathcal{A}$ due to the algorithm of Arne Storjohann. $\mathcal{F}$ is
@@ -1683,7 +1683,7 @@ $i$-th submatrix of the matrix $\mathcal{A}$.
   This is the square matrix in which the $(i,j)$th entry is $\text{expr}_i^{(j-1)}$.
   It has dimension $n$, where $n$ is the number of expressions.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
   \texttt{vandermonde}(\{x,2*y,3*z\}) =
@@ -1706,7 +1706,7 @@ $M_1,M_2$ &:-& Matrices
 \texttt{kronecker\_product} creates a matrix containing the Kronecker product 
 (also called \texttt{direct product} or \texttt{tensor product}) of its arguments.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{verbatim}
 a1 := mat((1,2),(3,4),(5,6))$
 a2 := mat((1,1,1),(2,z,2),(3,3,3))$

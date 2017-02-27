@@ -74,20 +74,17 @@ after the decimal point that the period occurs. Note also that if the answer
 is negative then this will be indicated by the sign of \texttt{a} (unless
 \texttt{a} is zero in which case it is indicated by the sign of \texttt{b}).
 \\[\baselineskip]
-
-
+%
+%
 \textbf{ERROR MESSAGE}\\
-
+%
 \texttt{***** operator to be used in off rounded mode}\\
-
+%
 The periodicity of a function can only be recognised in
 the \texttt{off rounded} mode. This is also true for the inverse
 procedure.\\[\baselineskip]
-
-
-
-
-
+%
+%
 {\large\bf EXAMPLES}\\
 \begin{verbatim}
 4: rational2periodic(1/3);
@@ -156,11 +153,11 @@ A continued fraction (see ~\cite{PA} \S 4.2) has the general form
 A more compact way of writing this is as
 \[b_0 + \frac{a_1|}{|b_1} + \frac{a_2|}{|b_2} + \frac{a_3|}{|b_3} + \ldots\,.\]
 \\
-
+%
 \ttindextype{CONTFRAC}{operator}
 This is represented in {\small REDUCE} as
 \[{\tt
-   contfrac({\sl Rational\hspace{2mm} approximant},
+   contfrac(\text{\sl Rational\hspace{2mm} approximant},
                 \{b0, \{a1,b1\}, \{a2,b2\},.....\})
 }\]
 

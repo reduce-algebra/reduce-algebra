@@ -361,7 +361,7 @@ square\_size &:-& a positive integer.
                 \texttt{spband\_matrix} creates a sparse square matrix of 
                 dimension square\_size. 
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{spband\_matrix}(\{x,y,z\},6) = 
@@ -423,7 +423,7 @@ $\mathcal{A}$.
 
 This is $\mathcal{C} = \lambda * \mathcal{I} - \mathcal{A}$. 
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{spchar\_matrix}(\mathcal{A},x) = 
@@ -478,7 +478,7 @@ It returns \{$\mathcal{L,U}$\} where $\mathcal{L}$
 is a lower matrix, $\mathcal{U}$ is an upper matrix, \\ $\mathcal{A} = 
 \mathcal{LU}$, and $\mathcal{U} = \mathcal{L}^T$.
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flalign*}  
 &\mathcal{F} = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9 \end{pmatrix}&&\\[2mm]
 &\f{cholesky}(\mathcal{F})  =  
@@ -565,7 +565,7 @@ The entries of $\mathcal{C}$ are:
                 \ldots n$, $\mathcal{C}(i,i-1) = 1$ for $i = 2 \ldots n$ and 
                 the rest are $0$.
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{spcompanion}(x^4+17*x^3-9*x^2+11,x) = 
@@ -595,7 +595,7 @@ r,c          &:-& positive integers.
  \texttt{spcopy\_into} copies matrix $\mathcal{A}$ into 
                 $\mathcal{B}$ with $\mathcal{A}$(1,1) at $\mathcal{B}$(r,c).
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flalign*}
 &\mathcal{G} = \begin{pmatrix} 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\
 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0
@@ -628,7 +628,7 @@ expr or a square matrix of sparse or matrix type.
  \texttt{spdiagonal} creates a sparse matrix that contains the 
 input on the diagonal.
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flalign*}  
 &\mathcal{H} = \begin{pmatrix} 66 & 77 \\ 88 & 99 \end{pmatrix} &&\\[2mm]
 &\texttt{spdiagonal}(\{\mathcal{A},x,\mathcal{H}\}) = 
@@ -660,7 +660,7 @@ expr      &:-& algebraic expression or symbol.
                 extended by r rows and c columns. The new entries are
                 made equal to expr.
 
-\item[Examples:]\mbox{}\\
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{spextend}(\mathcal{A},1,2,0) =
@@ -794,7 +794,7 @@ $\mathcal{A}$ &:-& a sparse matrix.
                 \texttt{sphermitian\_tp} computes the hermitian transpose of 
                 $\mathcal{A}$. 
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}  
 &\mathcal{J} = \begin{pmatrix} i+1 & i+2 & i+3 \\ 0 & 0 & 0 \\ 0 & i & 0 \end{pmatrix}&&\\[2mm]
 &\texttt{sphermitian\_tp}(\mathcal{J}) = 
@@ -822,7 +822,7 @@ variable\_list &:-& either a single variable or a list of variables.
                 \texttt{sphessian} computes the hessian matrix of expr w.r.t.
                 the variables in variable\_list. 
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \hspace*{0.1in}
 \begin{math}        
@@ -851,7 +851,7 @@ variable\_list &:-& either a single variable or a list of variables.
 \texttt{spjacobian} computes the jacobian matrix of expr\_list w.r.t. 
 variable\_list. 
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}
 &\texttt{spjacobian(\{$x^4,x*y^2,x*y*z^3$\},\{$w,x,y,z$\})} = &&\\[2mm]
 &\begin{pmatrix} 0 & 4*x^3 & 0 & 0 \\ 0 & y^2 & 2*x*y & 0 \\ 
@@ -880,7 +880,7 @@ square\_size &:-& a positive integer.
 \texttt{spjordan\_block} computes the square jordan block matrix $\mathcal{J}$
                 of dimension square\_size. 
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}        
 \texttt{spjordan\_block(x,5)} = 
@@ -921,7 +921,7 @@ The algorithm used can swap the rows of $\mathcal{A}$
                 sparse matrix that has been decomposed, ie: $\mathcal{LU} = $
                 \texttt{spconvert($\mathcal{A}$,vec)}.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}
 \begin{math}  
 \mathcal{K} = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9 \end{pmatrix}
@@ -963,7 +963,7 @@ square\_size &:-& a positive integer.
  \texttt{spmake\_identity} creates the identity matrix of 
                 dimension square\_size.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{spmake\_identity}(4) = 
@@ -995,7 +995,7 @@ square\_size &:-& a positive integer.
 \texttt{spmatrix\_stack} joins the matrices in matrix\_list 
                 together vertically.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}  
 &\texttt{spmatrix\_augment}(\{\mathcal{A,A}\}) =
         \begin{pmatrix} 1 & 0 & 0 & 1 & 0 & 0 \\ 0 & 5 & 0 
@@ -1057,7 +1057,7 @@ r,c        &:-& positive integers.
 \item[Synopsis:]\mbox{}\\*
                 \texttt{spminor} computes the (r,c)'th minor of $\mathcal{A}$.
  
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{spminor}(\mathcal{A},1,3) =
@@ -1089,7 +1089,7 @@ multiplied by expr.
 
 \texttt{spmult\_rows} performs the same task on the rows of $\mathcal{A}$.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}
 &\texttt{spmult\_columns}(\mathcal{A},\{1,3\},x) =
         \begin{pmatrix} x & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 9*x \end{pmatrix} && \\[2mm]
@@ -1168,7 +1168,7 @@ $x$ minimizing $\|\mathcal{A}x - b\|_2$,
 and which, in addition, has minimum $\ell_{2}$ (euclidean) Norm, $\|x\|_2$.  
 This $x$ is $\mathcal{A}^{\dagger} b$.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}
 &\mathcal{R} = \begin{pmatrix} 0 & 0 & 3 & 0 \\ 9 & 0 & 7 & 0 \end{pmatrix} &&\\[2mm]
 &\texttt{sppseudo\_inverse}(\mathcal{R}) =
@@ -1199,7 +1199,7 @@ column\_list &:-& either a positive integer or a list of
 \texttt{spremove\_rows} performs the same task on the rows 
                 of $\mathcal{A}$.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}  
 &\texttt{spremove\_columns}(\mathcal{A},2) =
         \begin{pmatrix} 1 & 0 \\ 0 & 0 \\ 0 & 9  \end{pmatrix} && \\[2mm]
@@ -1262,7 +1262,7 @@ $\mathcal{A}$ &:-& a matrix.
 \texttt{sparsematp} is a boolean function that returns t if 
                 the matrix is declared sparse and nil otherwise.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}
 &\mathcal{L} := \texttt{mat((1,2,3),(4,5,6),(7,8,9));}&&\\[2mm]
 &\texttt{sparsematp}(\mathcal{A}) = \texttt{t}  &&\\[2mm]
@@ -1288,7 +1288,7 @@ $\mathcal{A}$ &:-& a matrix.
 \texttt{squarep} is a boolean function that returns t if 
                 the matrix is square and nil otherwise.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}
 &\mathcal{L} = \begin{pmatrix} 1 & 3 & 5 \end{pmatrix} && \\[2mm]
 & \texttt{squarep}(\mathcal{A}) = \texttt{t}&&\\[2mm]
@@ -1325,7 +1325,7 @@ positive integer or a list of positive integers.}
               intersection of the rows specified in row\_list and the 
 columns specified in column\_list. 
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \hspace*{0.1in}
 \begin{math}  
@@ -1370,7 +1370,7 @@ $\mathcal{U}$ and $\mathcal{V}$ are such that $\mathcal{UU}^T = \mathcal{VV}^T =
 literature, in some of which $\Sigma$ is square and $U$ and $V$ rectangular, as
 here, but in others $U$ and $V$ are square, and $\Sigma$ is rectangular.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}
  & \mathcal{Q} = \begin{pmatrix} 1 & 0 \\ 0 & 3 \end{pmatrix} && \\[2mm]
  & \begin{aligned}
@@ -1403,7 +1403,7 @@ c1,c1      &:-& positive integers.
 \texttt{spswap\_rows} performs the same task on 2 rows of 
                 $\mathcal{A}$.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{spswap\_columns}(\mathcal{A},2,3) =
@@ -1431,7 +1431,7 @@ r1,c1,r2,c2 &:-& positive integers.
 \texttt{spswap\_entries} swaps $\mathcal{A}$(r1,c1) with 
                 $\mathcal{A}$(r2,c2).
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flushleft}  
 \begin{math}  
 \texttt{spswap\_entries}(\mathcal{A},\{1,1\},\{3,3\}) =
@@ -1464,7 +1464,7 @@ $\mathcal{A}$ &:-& a matrix.
 \texttt{symmetricp} is a boolean function that returns t if the 
                 matrix is symmetric and nil otherwise.
 
-\item[Examples:]\mbox{}\\*
+\item[Examples:]
 \begin{flalign*}
 &\mathcal{M} = \begin{pmatrix} 1 & 2 \\ 2 & 1 \end{pmatrix} && \\[2mm]
 & \texttt{symmetricp}(\mathcal{A}) = \texttt{nil} && \\[2mm] 

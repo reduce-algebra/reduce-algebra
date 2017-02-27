@@ -72,7 +72,7 @@ $x$ is the variable name.
 Calculations are performed in $\mathbf{Q}$. To extend this field the 
 {\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
-\item[Synopsis:]\mbox{}\\*
+\item[Synopsis:]
 \begin{itemize}
 \item The Smith normal form $\mathcal{S}$ of an n by m matrix $\mathcal{A}$ 
 with univariate polynomial entries in $x$ over a field $\mathbf{F}$ is 
@@ -127,7 +127,6 @@ computed. That is, the polynomials are then regarded as elements of the
 
 \begin{description}
 \item[Function]\mbox{}\\*
-
 Given an $n$ by $m$ rectangular matrix $\mathcal{A}$ that contains 
 \emph{only} integer entries, \f{smithex\_int}($\mathcal{A}$) computes the
 Smith normal form $\mathcal{S}$ of $\mathcal{A}$.
@@ -137,7 +136,7 @@ $\mathcal{P}$, and $\mathcal{ P}^{-1}$ are such that $\mathcal{P S P}^{-1} =
 \mathcal{A}$.
 
 
-\item[Synopsis]\mbox{}\\*
+\item[Synopsis]
 
 \begin{itemize}
 \item The Smith normal form $\mathcal{ S}$ of an $n$ by $m$ matrix 
@@ -167,7 +166,6 @@ $\mathcal{ A}$ with integer entries is computed.
 \end{itemize}
 
 \item[Example]\mbox{}\\*
-
 \texttt{load\_package normform;}
 \begin{gather*}
  \mathcal{A} =
@@ -184,7 +182,6 @@ $\mathcal{ A}$ with integer entries is computed.
 
 \begin{description}
 \item[Function]\mbox{}\\*
-
 $\mathtt{frobenius}(\mathcal{A})$ computes the Frobenius normal form 
 $\mathcal{F}$ of the matrix $\mathcal{A}$.
 
@@ -195,16 +192,15 @@ $\mathcal{P}$, and $\mathcal{P}^{-1}$ are such that $\mathcal{P F P}^{-1} =
 $\mathcal{A}$ is a square matrix.
 
 \item[Field extensions]\mbox{}\\*
-
 Calculations are performed in $\mathcal{Q}$. To extend this field the 
 {\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}
 
 \item[Modular arithmetic]\mbox{}\\*
-
+%
 \f{frobenius} can be calculated in a modular base. For details see 
 subsection \ref{sec:normform-modular}.
 
-\item[Synopsis]\mbox{}\\*
+\item[Synopsis]
 
 \begin{itemize}
 \item $\mathcal{F}$ has the following structure:
@@ -224,7 +220,6 @@ subsection \ref{sec:normform-modular}.
 \end{itemize}
  
 \item[Example]\mbox{}\\*
-
 \texttt{load\_package normform;}
 \begin{gather*}
 \mathcal{A} = \begin{pmatrix} \frac{-x^2+y^2+y}{y} & 
@@ -250,7 +245,6 @@ subsection \ref{sec:normform-modular}.
 
 \begin{description}
 \item[Function]\mbox{}\\*
-
 \f{ratjordan}($\mathcal{A}$) computes the rational Jordan normal form 
 $\mathcal{R}$ of the matrix $\mathcal{A}$.
 
@@ -261,16 +255,14 @@ $\mathcal{P}$, and $\mathcal{P}^{-1}$ are such that $\mathcal{P R P}^{-1} =
 $\mathcal{A}$ is a square matrix.
 
 \item[Field extensions]\mbox{}\\*
-
 Calculations are performed in $\mathcal{Q}$. To extend this field the 
 {\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
 \item[Modular arithmetic]\mbox{}\\*
-
 \f{ratjordan} can be calculated in a modular base. For details see 
 subsection \ref{sec:normform-modular}.
 
-\item[Synopsis]\mbox{}\\*
+\item[Synopsis]
 
 \begin{itemize}
 \item $\mathcal{R}$ has the following structure:
@@ -295,7 +287,6 @@ subsection \ref{sec:normform-modular}.
 \end{itemize}
 
 \item[Example]\mbox{}\\*
-
 \texttt{load\_package normform;}
 \begin{gather*}
 \mathcal{A} = \begin{pmatrix} x+y & 5 \\ y & x^2  \end{pmatrix} \\[2mm]
@@ -315,7 +306,6 @@ subsection \ref{sec:normform-modular}.
 
 \begin{description}
 \item[Function]\mbox{}\\*
-
 \f{jordansymbolic}$(\mathcal{A})$ computes the Jordan 
 normal form $\mathcal{J}$ of the matrix $\mathcal{A}$.
 
@@ -327,17 +317,14 @@ a name and $ll$ is a list of irreducible factors of $p(\xi)$.
 $\mathcal{A}$ is a square matrix.
 
 \item[Field extensions]\mbox{}\\*
-
 Calculations are performed in $\mathcal{Q}$. To extend this field the 
 {\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
 \item[Modular arithmetic]\mbox{}\\*
-
 {\tt jordansymbolic} can be calculated in a modular base. For details 
 see subsection \ref{sec:normform-modular}.
 
 \item[Extras]\mbox{}\\*
-
 \ttindexswitch[NORMFORM]{LOOKING\_GOOD}
 If using \texttt{xr}, the X interface for \REDUCE, the appearance of the 
 output can be improved by setting the switch \sw{looking\_good} to on. This 
@@ -345,7 +332,7 @@ converts all lambda to $\xi$ and improves the indexing, e.g., \texttt{lambda12}
 $\Rightarrow \xi_{12}$. The example below shows the 
 output when this switch is on.
 
-\item[Synopsis]\mbox{}\\*
+\item[Synopsis]
 
 \begin{itemize}
 \item A \emph{Jordan block} ${\jmath}_{k}(\lambda)$ is a $k$ by $k$ 
@@ -390,7 +377,7 @@ output when this switch is on.
 \end{itemize}      
 
 \item[Example]\mbox{}\\*
-
+%
 \texttt{load\_package normform;}\\
 \texttt{on looking\_good;} 
 \begin{gather*}
@@ -426,7 +413,7 @@ For a similar example ot this in standard {\REDUCE} (ie: not using
 
 \begin{description}
 \item[Function]\mbox{}\\*
-
+%
 \f{jordan}($\mathcal{A}$) computes the Jordan normal form 
 $\mathcal{J}$ of the matrix $\mathcal{A}$.
 
@@ -437,7 +424,7 @@ $\mathcal{J}$, $\mathcal{P}$, and $\mathcal{P}^{-1}$ are such that $\mathcal{P J
 $\mathcal{A}$ is a square matrix.
 
 \item[Field extensions]\mbox{}\\*
-
+%
 Calculations are performed in $\mathcal{Q}$. To extend this field the 
 {\small ARNUM} package can be used. For details see subsection \ref{sec:normform-arnum}.
 
@@ -450,7 +437,7 @@ the output being very large. In this case a message \\
 will be printed. It may be 
 better to kill the calculation and compute \f{jordansymbolic} instead.
 
-\item[Synopsis]\mbox{}\\*
+\item[Synopsis]
 
 \begin{itemize}
 \item The Jordan normal form $\mathcal{J}$ with entries in an algebraic 
@@ -490,7 +477,7 @@ better to kill the calculation and compute \f{jordansymbolic} instead.
 \end{itemize}      
 
 \item[Example]\mbox{}\\*
-
+%
 \texttt{load\_package normform;}
 \begin{gather*}
 \mathcal{A} = \begin{pmatrix} -9 & -21 & -15 & 4 & 2 & 0 \\

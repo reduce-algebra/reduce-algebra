@@ -16,7 +16,7 @@ until [ ${SUCCESS} = 1 ] ; do
    rm -f ${JOBNAME}.log
    pdflatex ${JOBNAME}
    grep -q "^No file ${JOBNAME}\.bbl" ${JOBNAME}.log && NEED_BIBTEX=1
-   if [ ${NEED_BIBTEX} = 1 ] ; then
+   if [ "${NEED_BIBTEX}" = 1 ] ; then
       bibtex ${JOBNAME}
       rm -f ${JOBNAME}.log
       pdflatex ${JOBNAME}
