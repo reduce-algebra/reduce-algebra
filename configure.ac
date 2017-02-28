@@ -1330,7 +1330,7 @@ doconfig="$SHELL \"$abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure\" \
       $nohost \
       CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
       CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-      --enable-widec=yes --prefix=\"$builddir\"--libdir=\"$builddir/lib\" \
+      --enable-widec=yes --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
       --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
 eval "$doconfig"
@@ -1346,7 +1346,7 @@ cd redfront
 doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $nohost \
       CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
       CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-      --prefix=\"$builddir\"--libdir=\"$builddir/lib\" \
+      --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
       --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
 eval "$doconfig"

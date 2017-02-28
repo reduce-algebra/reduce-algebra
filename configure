@@ -685,7 +685,6 @@ with_pslbuild
 with_cygbuild
 with_cygbuild64
 with_force
-with_crlibm
 with_boehm
 with_mingw64
 with_lto
@@ -701,6 +700,7 @@ with_xim
 enable_debug
 enable_conservative
 enable_test
+enable_experiment
 enable_jit
 enable_static
 with_smallpage
@@ -1330,6 +1330,7 @@ Optional Features:
   --enable-debug          compile for debugging (CSL only)
   --enable-conservative   garbage collect option: not available yet (CSL only)
   --enable-test           testing-mode version (CSL only)
+  --enable-experiment     testing-mode version (CSL only)
   --enable-jit            build in experimental JIT (CSL only)
   --enable-static         link it all statically (CSL only)
   --enable-silent-rules   less verbose build output (undo: "make V=1")
@@ -1346,7 +1347,6 @@ Optional Packages:
   --with-cygbuild         Used internally to control build directory
   --with-cygbuild64       Used internally to control build directory
   --with-force            Forces refresh of windows varients
-  --with-crlibm           Can be used to disable use of crlibm library
   --with-boehm            Can be used to disable use of boehm collector
   --with-mingw64          Use "with" or "without" to force windows-64 build
                           status (CSL only)
@@ -1951,7 +1951,7 @@ $as_echo "$as_me: detected autoconf: $acmaj.$acmin automake: $ammaj.$ammin" >&6;
   fi
 
   here=`pwd`
-  cd $srcdir
+  cd $abssrcdir
   printf "Regenerate autoconf-related files\n"
   if ! ./autogen.sh $ac_configure_args
   then
@@ -1964,8 +1964,8 @@ $as_echo "$as_me: detected autoconf: $acmaj.$acmin automake: $ammaj.$ammin" >&6;
 # the first argument in the re-try. This is because otherwise some malformed
 # input olater on (eg "--") could cause it not to be recognised, leading
 # to an infinite cycle of attempted re-generation!
-  printf "Restart: $srcdir/configure --without-autogen $ac_configure_args\n"
-  exec /bin/sh -c "$srcdir/configure --without-autogen $ac_configure_args"
+  printf "Restart: $abssrcdir/configure --without-autogen $ac_configure_args\n"
+  exec /bin/sh -c "$abssrcdir/configure --without-autogen $ac_configure_args"
 fi
 
 ac_aux_dir=
@@ -2133,18 +2133,6 @@ fi
 
 
 
-# Check whether --with-crlibm was given.
-if test "${with_crlibm+set}" = set; then :
-  withval=$with_crlibm;
-else
-  with_crlibm="yes"
-fi
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: with_crlibm = $with_crlibm" >&5
-$as_echo "$as_me: with_crlibm = $with_crlibm" >&6;}
-
-
 # Check whether --with-boehm was given.
 if test "${with_boehm+set}" = set; then :
   withval=$with_boehm;
@@ -2153,9 +2141,14 @@ else
 fi
 
 
-# For now I will insist on an explicit request for this...
-{ $as_echo "$as_me:${as_lineno-$LINENO}: with_boehm = $with_boehm" >&5
-$as_echo "$as_me: with_boehm = $with_boehm" >&6;}
+# I could provide a --with-libedit=... option but the plan here is that
+# the version used will only change during transitions made by the developers
+# and so I limit myself to a fixed setting here. No ordinary person should
+# ever need to alter this.
+
+# This is set here so that if I need to experiment with or chance to a
+# different version that will be reasonably tidy.
+LIBEDIT_VERSION=20140620-3.1
 
 # Ensure that at least one Lisp system is selected
 if test "x$with_psl" = "xno" && test "x$with_csl" = "xno"
@@ -2329,6 +2322,21 @@ else
 fi
 
 
+# Check whether --enable-experiment was given.
+if test "${enable_experiment+set}" = set; then :
+  enableval=$enable_experiment;
+else
+  enable_experiment="no"
+fi
+
+
+if test "x$enable_experiment" = "xyes"
+then
+  enable_test="yes"
+fi
+
+
+
 # Check whether --enable-jit was given.
 if test "${enable_jit+set}" = set; then :
   enableval=$enable_jit;
@@ -2442,8 +2450,8 @@ esac
 # detected. But the reconfig step messes that up and anyway it is a delicate
 # cheat. So here is a different delicate cheat!
 
-rm -f ./testfile.tst "$srcdir/testfile.tst"
-touch "$srcdir/testfile.tst"
+rm -f ./testfile.tst "$abssrcdir/testfile.tst"
+touch "$abssrcdir/testfile.tst"
 if test -f ./testfile.tst
 then
   rm -f ./testfile.tst
@@ -2488,15 +2496,19 @@ then
       build="i686-pc-windows"
     fi
   else
-    build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host"`
+    build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $host"`
   fi
 else
-  build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $host $ac_configure_args"`
+  build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $host $ac_configure_args"`
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: Will build in the $build subdirectory" >&5
 $as_echo "$as_me: Will build in the $build subdirectory" >&6;}
 
+# There are many configure options that are valid or relevant at the
+# top level but are not needed for sub-configure calls
+filtered=`$abssrcdir/scripts/filter.sh "$ac_configure_args"`
+nohost=`$abssrcdir/scripts/nohost.sh "$ac_configure_args"`
 
 case $inplace in
   yes)
@@ -2521,7 +2533,15 @@ case $inplace in
 # Now I am configuring for CSL and am doing so from the top directory. If
 # I am on Windows I will configure for variants:
 #   i686-pc-cygwin
-#   x86_64-pc-cygwin
+##### As of March 2016 cygwin have withdrawn support for building 64-bit
+##### cygwin code from a 32-bit cygwin shell. I therefore need to remove
+##### attempts to use that capability. The result is that if you are in a
+##### cygwin32 shell you can only build 32-bit cywgin executables and
+##### equivalently with 64-bit cygwin. For now I will not guarantee what
+##### will happen here if you run configure/make from a 64-big cygwin shell,
+##### and I will only support 32-bit cygwin until I have more time to work
+##### out some way around this inconvenience.
+#####   x86_64-pc-cygwin
 #   i686-w64-mingw
 #   x86_64-w64-mingw
 # I will run the configure script for one of those if I have the relevant
@@ -2545,12 +2565,18 @@ case $inplace in
       else
         have_cyg32="no"
       fi
+#### Even if the compiler is present the various libraries that I need
+#### will not be these days!
+      have_cyg32="no"
       if test -x /usr/bin/x86_64-pc-cygwin-gcc
       then
         have_cyg64="yes"
       else
         have_cyg64="no"
       fi
+#### Even if the compiler is present the various libraries that I need
+#### will not be these days!
+      have_cyg64="no"
       if test -x /usr/bin/i686-w64-mingw32-gcc
       then
         have_mingw32="yes"
@@ -2577,6 +2603,10 @@ $as_echo "$as_me: Compilers: cygwin32:$have_cyg32 cygwin64:$have_cyg64 win32:$ha
 # running on cyg32 but only the 64-bit if I am on cyg64. Well as of February
 # 2015 I can not cross-build the wxWidgets version for cyg64 using cyg32...
 #
+# As of March 2016 cygwin has rather abruptly withdraw many of the libraries
+# use to buyild 64-bit cygwin code on a 32-bit cywgin host, so the hope I
+# expressed above is dashed not just now but in a thorough and permenent way.
+#
 # Note that I will need to coordinte what I do here with the scripts in
 # winbuild that arrange to create all possible versions... and I probably
 # want an option that will cause this configure scrrip to fall back and make
@@ -2587,7 +2617,8 @@ $as_echo "$as_me: Compilers: cygwin32:$have_cyg32 cygwin64:$have_cyg64 win32:$ha
         then
           cygplatforms="i686-pc-cygwin"
         else
-          cygplatforms="i686-pc-cygwin x86_64-pc-cygwin"
+####      cygplatforms="i686-pc-cygwin x86_64-pc-cygwin"
+          cygplatforms="i686-pc-cygwin"
         fi
       fi
       if test "x$cyg64" = "xyes"
@@ -2598,7 +2629,7 @@ $as_echo "$as_me: Compilers: cygwin32:$have_cyg32 cygwin64:$have_cyg64 win32:$ha
 $as_echo "$as_me: cygplatfroms = $cygplatforms" >&6;}
       for buildmc in $cygplatforms
       do
-        build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args" --with-cygwin`
+        build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $buildmc $ac_configure_args" --with-cygwin`
         { $as_echo "$as_me:${as_lineno-$LINENO}: buildmc=$buildmc => build=$build" >&5
 $as_echo "$as_me: buildmc=$buildmc => build=$build" >&6;}
         pass_host=""
@@ -2639,6 +2670,8 @@ $as_echo "$as_me: host=$host buildmc=$buildmc pass_host=$pass_host" >&6;}
             if test "x$CC$CPP$CXX$CXXCPP" != "x"
             then
               passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+            else
+              passcc=""
             fi
             { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
@@ -2689,7 +2722,7 @@ $as_echo "$as_me: cygextra = $cygextra" >&6;}
       then
         for buildmc in "i686-w64-mingw32" "x86_64-w64-mingw32"
         do
-          build=`eval "$SHELL \"$srcdir/scripts/findhost.sh\" $buildmc $ac_configure_args"`
+          build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $buildmc $ac_configure_args"`
           if test -x /usr/bin/$buildmc-gcc && test "x$with_cygwin" = "xno"
           then
             if test "x$with_force" != "xno" ||
@@ -2701,6 +2734,8 @@ $as_echo "$as_me: cygextra = $cygextra" >&6;}
               if test "x$CC$CPP$CXX$CXXCPP" != "x"
               then
                 passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+              else
+                passcc=""
               fi
               { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
@@ -2730,6 +2765,8 @@ $as_echo "$as_me: Compiler for $buildmc not available" >&6;}
       if test "x$CC$CPP$CXX$CXXCPP" != "x"
       then
         passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+      else
+        passcc=""
       fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
@@ -2761,87 +2798,77 @@ $as_echo "$as_me: +++ Will build in $abssrcdir/pslbuild/$build" >&6;}
 # I have the configuration for crlibm here as a repeat copy of the code
 # used to configure it for use with CSL. This is UGLY but is like this
 # because of messy details of how the PSL version is configured here.
-# Right now I do not want to write out an explanatio of all the horrid
+# Right now I do not want to write out an explanation of all the horrid
 # details.
-    if test "x$with_crlibm" == "xno"
-    then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: crlibm will not be used here" >&5
-$as_echo "$as_me: crlibm will not be used here" >&6;}
-    else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure crlibm" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure crlibm" >&5
 $as_echo "$as_me: About to configure crlibm" >&6;}
-      builddir=`pwd`
-      mkdir -p crlibm
-      cd crlibm
+    builddir=`pwd`
+    mkdir -p crlibm
+    cd crlibm
 
-      if test "x$CC$CPP$CXX$CXXCPP" != "x"
-      then
-        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-      fi
-      case $host in
-      i386* | i486* | i586* | i686*)
-        passcc="$passcc --enable-sse2"
-        ;;
-      esac
-      filter=""
-      for x in $ac_configure_args
-      do
-# The processing here is so that I do not pass CSL or REDUCE-specific
-# configuration flags down when configuring crlibm. This then has to have
-# a catalogue of all the options I need to ignore. Messy!
-        case $x in
-        \'--with-force*\' | \
-        \'--with*-autogen*\' | \
-        \'--with-mingw*\' | \
-        \'--with-lto*\' | \
-        \'--with-m32*\' | \
-        \'--with-m64*\' | \
-        \'--with*-gui*\' | \
-        \'--with*-xft*\' | \
-        \'--with*-xim*\' | \
-        \'--with-smallpage*\' | \
-        \'--with*-fox*\' | \
-        \'--with*-wx*\' | \
-        \'--with-cyg*\' | \
-        \'--with-csl*\' | \
-        \'--with-psl*\' | \
-        \'--with-build*\' | \
-        \'--with-pslbuild*\' | \
-        \'--with*-crlibm*\' | \
-        \'--with*-boehm*\' | \
-        \'--enable-debug*\' | \
-        \'--enable-conservative*\' | \
-        \'--enable-test*\' | \
-        \'--enable-jit*\' | \
-        \'--enable-static*\' | \
-        \'--enable-silent*\' | \
-        \'--disable-silent*\' )
-          ;;
-        *)
-          filter="$filter $x"
-          ;;
-        esac
-      done
-      { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+    if test "x$CC$CPP$CXX$CXXCPP" != "x"
+    then
+      passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+    else
+      passcc=""
+    fi
+    case $host in
+    i386* | i486* | i586* | i686*)
+      passcc="$passcc --enable-sse2"
+      ;;
+    esac
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
-      doconfig="$SHELL \"$abssrcdir/csl/cslbase/crlibm/configure\" $filter \
-            $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-            --prefix=\"$builddir\""
-      { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+    doconfig="$SHELL \"$abssrcdir/libraries/crlibm/configure\" $filtered \
+          $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+          CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+          --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+          --includedir=\"$builddir/include\""
+    { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
 $as_echo "$as_me: doconfig = $doconfig" >&6;}
-      eval "$doconfig"
-      cd "$builddir"
-fi
+    eval "$doconfig"
+    cd "$builddir"
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure libedit" >&5
+$as_echo "$as_me: About to configure libedit" >&6;}
+    mkdir -p libedit
+    cd libedit
+    doconfig="$SHELL \"$abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure\" \
+          $nohost \
+          CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+          CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+          --enable-widec=yes --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+          --includedir=\"$builddir/include\""
+    { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
+    eval "$doconfig"
 
-    cd "$abssrcdir"
+    cd "$builddir"
+
+    ln -f -s $abssrcdir/libraries/wineditline .
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure redfront" >&5
+$as_echo "$as_me: About to configure redfront" >&6;}
+    mkdir -p redfront
+    cd redfront
+
+    doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $nohost \
+          CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+          CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+          --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+          --includedir=\"$builddir/include\""
+    { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
+    eval "$doconfig"
+
+    cd "$builddir"
   fi
   exit 0
   ;;
   *)
-  { $as_echo "$as_me:${as_lineno-$LINENO}: +++ standard build case, srcdir = $srcdir = \"$abssrcdir\"" >&5
-$as_echo "$as_me: +++ standard build case, srcdir = $srcdir = \"$abssrcdir\"" >&6;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: +++ standard build case, abssrcdir = $abssrcdir = \"$abssrcdir\"" >&5
+$as_echo "$as_me: +++ standard build case, abssrcdir = $abssrcdir = \"$abssrcdir\"" >&6;}
   ;;
 esac
 
@@ -3580,30 +3607,28 @@ $as_echo "$as_me: with_cygwin=$with_cygwin pass_host=$pass_host" >&6;}
 # be "no".
   if test "x$with_wx" != "xno"
   then
-# At one stage I only unpacked a fresh wxWidgets if either one was not
-# already unpacked or if the "--with-force" option was set. That may have
-# saved some time but it meant that it was necessary to take special
-# action when a new revision of wxWidgets got installed upstream. So now
-# I will always unpack here. This is still not perfect in that the
-# unpacking only happens when somebody does a top level
-#   ./configure --with-csl --with-wx
-# and generally lower level reconfigurations are not triggered automatically,
-# so I will do yet further work to work around that and make things appear
-# almost neat. These extra tricks require a file "wxWidgets_revision"
-# to be stored in various places...
-#   if test ! -d $abssrcdir/csl/wxWidgets || test "x$with_force" != "xno"
-#   then
-      d=`pwd`
-      cd $abssrcdir/csl/support-packages
-      a=`echo wxWidgets-v*.tar.bz2`
-      a=${a##* }
-      b=${a%.tar.bz2}
-      cd ..
+    d=`pwd`
+    cd $abssrcdir/csl/support-packages
+# The next line should collect the names of all versions of wxWidgets that
+# I have .tar.bz2 files for, and they should end up in alphabetic order.
+    a=`echo wxWidgets-*-*-*.tar.bz2`
+# Here I keep the last item in the list, which shoudl be the latest version
+# present.
+    a=${a##* }
+# Remove the ".tar.bz2" suffix
+    b=${a%.tar.bz2}
+    cd ..
+# Now I need to check if the version of wxWidgets I have unpacked matches the
+# most recent one available.
+    if test $abssrcdir/csl/support-packages/wxWidgets_revision -nt \
+            wxWidgets/wxWidgets_revision
+    then
       printf "will unpack a fresh copy of wxWidgets\n"
       rm -rf wxWidgets
       tar xfj support-packages/$a
-      chmod -R +rw wxWidgets-*
-      mv wxWidgets-* wxWidgets
+# At one stage I had trouble with the unpacked archive not being all
+# readable, so here I forcibly reset permssions
+      chmod -R +rw wxWidgets
 # Now I will force all autoconf-related files to be in the correct order.
 # This is because I really want to use the versions from the archive, and
 # I have seen cases where the default unpacked version triggers an attempt
@@ -3639,7 +3664,7 @@ $as_echo "$as_me: with_cygwin=$with_cygwin pass_host=$pass_host" >&6;}
       find wxWidgets -name Makefile.in -print | xargs touch
       printf "wxWidgets unpacked from archive $a\n"
       cd $d
-#   fi
+    fi
 #
 # A short essay to explain why I pass down "--host=$host" here. There are
 # two points. The first is that I cope with 64-bit windows by use of
@@ -3736,6 +3761,8 @@ $as_echo "$as_me: Using raw cygwin" >&6;}
     if test "x$CC$CPP$CXX$CXXCPP" != "x"
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+    else
+      passcc=""
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc pass_host=$pass_host" >&5
 $as_echo "$as_me: passcc = $passcc pass_host=$pass_host" >&6;}
@@ -3745,18 +3772,20 @@ $as_echo "$as_me: passcc = $passcc pass_host=$pass_host" >&6;}
             LDFLAGS=\"$LDFLAGS\" $passcc \
             --disable-shared --enable-unicode \
             --disable-compat28 --enable-compat30 \
-            --with-png=builtin --without-libjpeg \
-            --without-libtiff --with-libsvg=no \
-            --with-sdl=no --with-zlib=builtin \
-            --without-expat --with-regex=builtin \
-            --without-libiconv --with-libz=builtin \
-            --with-libpng=builtin --disable-richtext \
-            --disable-gif --disable-pcx --enable-graphics_ctx \
+            --enable-monolithic --disable-sys-libs \
+            --without-libjpeg --without-libtiff \
+            --without-libsvg --without-sdl \
+            --without-expat --without-libiconv \
+            --without-regex --disable-richtext --disable-gif \
+            --disable-pcx --enable-graphics_ctx \
             --disable-tga --disable-pnm \
-            --disable-svg --prefix=\"$builddir\""
+            --disable-svg --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+            --includedir=\"$builddir/include\""
     if test "x$enable_debug" != "xno"
     then
       doconfig="$doconfig --enable-debug"
+    else
+      doconfig="$doconfig --disable-debug"
     fi
     if test "x$with_cygwin" != "xno"
     then
@@ -3772,6 +3801,8 @@ $as_echo "$as_me: doconfig = $doconfig" >&6;}
     if test "x$CC$CPP$CXX$CXXCPP" != "x"
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+    else
+      passcc=""
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
@@ -3780,40 +3811,18 @@ $as_echo "$as_me: passcc = $passcc" >&6;}
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             $pass_host --enable-release --with-opengl=no \
             --disable-jpeg --disable-zlib --disable-bz2lib \
-            --disable-png --disable-tiff --prefix=\"$builddir\" $extras"
+            --disable-png --disable-tiff --prefix=\"$builddir\" \
+            --libdir=\"$builddir/lib\" \
+            --includedir=\"$builddir/include\" $extras"
     { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
 $as_echo "$as_me: doconfig = $doconfig" >&6;}
     eval "$doconfig"
-    cd "$builddir"
-
-    if test -d "$abssrcdir/csl/foxtests"
-    then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: About to configure FOX tests" >&5
-$as_echo "$as_me: About to configure FOX tests" >&6;}
-      mkdir -p foxtests
-      cd foxtests
-
-      if test "x$CC$CPP$CXX$CXXCPP" != "x"
-      then
-        passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-      fi
-      { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
-$as_echo "$as_me: passcc = $passcc" >&6;}
-      doconfig="$SHELL \"$abssrcdir/csl/foxtests/configure\" $ac_configure_args \
-            $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-            --with-fox=\"$builddir\" --with-fox-pending=yes $extras"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
-$as_echo "$as_me: doconfig = $doconfig" >&6;}
-      eval "$doconfig"
-    fi
-
     cd "$builddir"
   fi
 
 fi
 
-if test "x$with_crlibm" == "xno"
+if test "x$with_crlibm" = "xno"
 then
   { $as_echo "$as_me:${as_lineno-$LINENO}: crlibm will not be used here" >&5
 $as_echo "$as_me: crlibm will not be used here" >&6;}
@@ -3826,57 +3835,21 @@ $as_echo "$as_me: About to configure crlibm" >&6;}
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+  else
+    passcc=""
   fi
   case $host in
   i386* | i486* | i586* | i686*)
     passcc="$passcc --enable-sse2"
     ;;
   esac
-  filter=""
-  for x in $ac_configure_args
-  do
-# The processing here is so that I do not pass CSL or REDUCE-specific
-# configuration flags down when configuring crlibm. This then has to have
-# a catalogue of all the options I need to ignore. Messy!
-    case $x in
-    \'--with-force*\' | \
-    \'--with*-autogen*\' | \
-    \'--with-mingw*\' | \
-    \'--with-lto*\' | \
-    \'--with-m32*\' | \
-    \'--with-m64*\' | \
-    \'--with*-gui*\' | \
-    \'--with*-xft*\' | \
-    \'--with*-xim*\' | \
-    \'--with-smallpage*\' | \
-    \'--with*-fox*\' | \
-    \'--with*-wx*\' | \
-    \'--with-cyg*\' | \
-    \'--with-csl*\' | \
-    \'--with-psl*\' | \
-    \'--with-build*\' | \
-    \'--with-pslbuild*\' | \
-    \'--with*-crlibm*\' | \
-    \'--with*-boehm*\' | \
-    \'--enable-debug*\' | \
-    \'--enable-conservative*\' | \
-    \'--enable-test*\' | \
-    \'--enable-jit*\' | \
-    \'--enable-static*\' | \
-    \'--enable-silent*\' | \
-    \'--disable-silent*\' )
-      ;;
-    *)
-      filter="$filter $x"
-      ;;
-    esac
-  done
   { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
-  doconfig="$SHELL \"$abssrcdir/csl/cslbase/crlibm/configure\" $filter \
+  doconfig="$SHELL \"$abssrcdir/libraries/crlibm/configure\" $filtered \
         $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-        --prefix=\"$builddir\""
+        --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+            --includedir=\"$builddir/include\""
   { $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
 $as_echo "$as_me: doconfig = $doconfig" >&6;}
   eval "$doconfig"
@@ -3884,7 +3857,18 @@ $as_echo "$as_me: doconfig = $doconfig" >&6;}
   cd "$builddir"
 fi
 
-if test "x$with_boehm" == "xno"
+# If I am building the "test" (aka "experiment") version I will need to
+# have the Boehm conservative garbage collector...
+if test "x$enable_test" = "xyes"
+then
+  with_boehm="yes"
+fi
+
+# For now I will insist on an explicit request for this...
+{ $as_echo "$as_me:${as_lineno-$LINENO}: with_boehm = $with_boehm" >&5
+$as_echo "$as_me: with_boehm = $with_boehm" >&6;}
+
+if test "x$with_boehm" = "xno"
 then
   { $as_echo "$as_me:${as_lineno-$LINENO}: boehm will not be used here" >&5
 $as_echo "$as_me: boehm will not be used here" >&6;}
@@ -3897,45 +3881,9 @@ $as_echo "$as_me: About to configure boehm" >&6;}
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+  else
+    passcc=""
   fi
-  filter=""
-  for x in $ac_configure_args
-  do
-# The processing here is so that I do not pass CSL or REDUCE-specific
-# configuration flags down when configuring crlibm. This then has to have
-# a catalogue of all the options I need to ignore. Messy!
-    case $x in
-    \'--with-force*\' | \
-    \'--with-mingw*\' | \
-    \'--with-lto*\' | \
-    \'--with-m32*\' | \
-    \'--with-m64*\' | \
-    \'--with*-gui*\' | \
-    \'--with*-xft*\' | \
-    \'--with*-xim*\' | \
-    \'--with-smallpage*\' | \
-    \'--with*-fox*\' | \
-    \'--with*-wx*\' | \
-    \'--with-cyg*\' | \
-    \'--with-csl*\' | \
-    \'--with-psl*\' | \
-    \'--with-build*\' | \
-    \'--with-pslbuild*\' | \
-    \'--with*-crlibm*\' | \
-    \'--with*-boehm*\' | \
-    \'--enable-debug*\' | \
-    \'--enable-conservative*\' | \
-    \'--enable-test*\' | \
-    \'--enable-jit*\' | \
-    \'--enable-static*\' | \
-    \'--enable-silent*\' | \
-    \'--disable-silent*\' )
-      ;;
-    *)
-      filter="$filter $x"
-      ;;
-    esac
-  done
   case $build in
   *windows* | *win32* | *mingw*)
     thr="win32"
@@ -3946,13 +3894,15 @@ $as_echo "$as_me: About to configure boehm" >&6;}
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
 $as_echo "$as_me: passcc = $passcc" >&6;}
-  doconfig="$SHELL \"$abssrcdir/csl/cslbase/gc-7/configure\" $filter \
+  doconfig="$SHELL \"$abssrcdir/csl/cslbase/gc-7/configure\" $filtered \
         $pass_host \
         CPPFLAGS=\"$CPPFLAGS -DDONT_ADD_BYTE_AT_END=1\" \
         CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" \
         LDFLAGS=\"$LDFLAGS\" $passcc \
         --prefix=\"$builddir\" \
+        --libdir=\"$builddir/lib\" \
+        --includedir=\"$builddir/include\" \
         --enable-threads=$thr \
         --enable-thread-local-alloc \
         --enable-parallel-mark \
@@ -3963,6 +3913,66 @@ $as_echo "$as_me: doconfig = $doconfig" >&6;}
 
   cd "$builddir"
 fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: About to configure libsoftfloat" >&5
+$as_echo "$as_me: About to configure libsoftfloat" >&6;}
+mkdir -p softfloat
+cd softfloat
+
+if test "x$CC$CPP$CXX$CXXCPP" != "x"
+then
+  passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+else
+  passcc=""
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: passcc = $passcc" >&5
+$as_echo "$as_me: passcc = $passcc" >&6;}
+doconfig="$SHELL \"$abssrcdir/libraries/SoftFloat-3a/source/configure\" \
+      $filtered \
+      $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+      CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+      --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+      --includedir=\"$builddir/include\""
+{ $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
+eval "$doconfig"
+
+cd "$builddir"
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: About to configure libedit" >&5
+$as_echo "$as_me: About to configure libedit" >&6;}
+mkdir -p libedit
+cd libedit
+
+doconfig="$SHELL \"$abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure\" \
+      $nohost \
+      CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+      CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+      --enable-widec=yes --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+      --includedir=\"$builddir/include\""
+{ $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
+eval "$doconfig"
+
+cd "$builddir"
+
+ln -f -s $abssrcdir/libraries/wineditline .
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: About to configure redfront" >&5
+$as_echo "$as_me: About to configure redfront" >&6;}
+mkdir -p redfront
+cd redfront
+
+doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $nohost \
+      CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+      CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
+      --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+      --includedir=\"$builddir/include\""
+{ $as_echo "$as_me:${as_lineno-$LINENO}: doconfig = $doconfig" >&5
+$as_echo "$as_me: doconfig = $doconfig" >&6;}
+eval "$doconfig"
+
+cd "$builddir"
 
 ###############################################################################
 
