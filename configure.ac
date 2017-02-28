@@ -816,7 +816,8 @@ case $inplace in
     doconfig="$SHELL \"$abssrcdir/libraries/crlibm/configure\" $filtered \
           $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-          --prefix=\"$builddir\""
+          --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+          --includedir=\"$builddir/include\""
     AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
     cd "$builddir"
@@ -828,7 +829,8 @@ case $inplace in
           $nohost \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-          --enable-widec=yes --prefix=\"$builddir\""
+          --enable-widec=yes --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+          --includedir=\"$builddir/include\""
     AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
 
@@ -843,7 +845,8 @@ case $inplace in
     doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $nohost \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-          --prefix=\"$builddir\""
+          --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+          --includedir=\"$builddir/include\""
     AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
 
@@ -1174,7 +1177,8 @@ then
             --without-regex --disable-richtext --disable-gif \
             --disable-pcx --enable-graphics_ctx \
             --disable-tga --disable-pnm \
-            --disable-svg --prefix=\"$builddir\""
+            --disable-svg --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+            --includedir=\"$builddir/include\""
     if test "x$enable_debug" != "xno"
     then
       doconfig="$doconfig --enable-debug"
@@ -1203,7 +1207,9 @@ then
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
             $pass_host --enable-release --with-opengl=no \
             --disable-jpeg --disable-zlib --disable-bz2lib \
-            --disable-png --disable-tiff --prefix=\"$builddir\" $extras"
+            --disable-png --disable-tiff --prefix=\"$builddir\" \
+            --libdir=\"$builddir/lib\" \
+            --includedir=\"$builddir/include\" $extras"
     AC_MSG_NOTICE([doconfig = $doconfig])
     eval "$doconfig"
     cd "$builddir"
@@ -1234,7 +1240,8 @@ else
   doconfig="$SHELL \"$abssrcdir/libraries/crlibm/configure\" $filtered \
         $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-        --prefix=\"$builddir\""
+        --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+            --includedir=\"$builddir/include\""
   AC_MSG_NOTICE([doconfig = $doconfig])
   eval "$doconfig"
 
@@ -1281,6 +1288,8 @@ else
         CXXFLAGS=\"$CXXFLAGS\" \
         LDFLAGS=\"$LDFLAGS\" $passcc \
         --prefix=\"$builddir\" \
+        --libdir=\"$builddir/lib\" \
+        --includedir=\"$builddir/include\" \
         --enable-threads=$thr \
         --enable-thread-local-alloc \
         --enable-parallel-mark \
@@ -1306,7 +1315,8 @@ doconfig="$SHELL \"$abssrcdir/libraries/SoftFloat-3a/source/configure\" \
       $filtered \
       $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
       CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-      --prefix=\"$builddir\""
+      --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+      --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
 eval "$doconfig"
 
@@ -1320,7 +1330,8 @@ doconfig="$SHELL \"$abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure\" \
       $nohost \
       CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
       CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-      --enable-widec=yes --prefix=\"$builddir\""
+      --enable-widec=yes --prefix=\"$builddir\"--libdir=\"$builddir/lib\" \
+      --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
 eval "$doconfig"
 
@@ -1335,7 +1346,8 @@ cd redfront
 doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $nohost \
       CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
       CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-      --prefix=\"$builddir\""
+      --prefix=\"$builddir\"--libdir=\"$builddir/lib\" \
+      --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
 eval "$doconfig"
 

@@ -1,6 +1,6 @@
 ## Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                         2008-2016
+# A C Norman.                                         2008-2017
 
 #
 # Special flags that can be used here:
