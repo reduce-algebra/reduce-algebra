@@ -830,12 +830,11 @@ _3 F_2\left.
 
 With the operator {\tt sumtohyper}, sums given in 
 factorial-$\Gamma$-binomial-Poch\-hammer notation
-are converted into hypergeometric notation.
-\begin{itemize}
-\item
-{\tt sumtohyper(f,k)} determines the hypergeometric representation
-of\linebreak
-$\sum\limits_{k=-\infty}^\infty f_k$, i.\ e.\ 
+are converted into hypergeometric notation.\\
+\texttt{sumtohyper(f,k)} determines the hypergeometric representation
+of
+$\sum\limits_{k=-\infty}^\infty f_k$,
+i.\ e.\ 
 its output is {\tt c*hypergeometric(upper,lower,x)}, corresponding to
 the representation
 \[
@@ -849,7 +848,7 @@ b_{1},&b_{2},&\cdots,&b_{q}\\
 where {\tt upper}$=\{a_{1}, a_{2}, \ldots, a_{p}\}$
 and {\tt lower}$=\{b_{1}, b_{2}, \ldots, b_{q}\}$
 are the lists of upper and lower parameters.
-\end{itemize}
+\\
 Examples:
 
 {\small
