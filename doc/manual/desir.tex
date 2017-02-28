@@ -216,7 +216,7 @@ This procedure has no meaning for \char`\"{}conditional\char`\"{} solutions.
 In case, a value has to be given to~ the parameters, that can be done either by 
 calling the procedure SORPARAM that displays and returns these solutions in the
 standard form, either by calling the procedure SOLPARAM which returns
-these solutions in general form.\\ 
+these solutions in general form.
 
 \textbf{procedure sorsol(sol);} 
 
@@ -231,12 +231,12 @@ It can be used independently.
 
 This is an interactive procedure which displays the solutions evaluated :
 the value of parameters is requested. \\
-
+%
 \begin{tabular}{lcl}
 $solutions$ & : & \{$lcoeff$,\{....,\{$general\_solution$\},....\}\} \\
 $param$ & : & list of parameters.
 \end{tabular} \\
-
+%
 It returns the list formed of 2 elements :
 \begin{itemize}
 \item list of evaluated coefficients of the equation
@@ -244,10 +244,10 @@ It returns the list formed of 2 elements :
 \end{itemize}
 
 \textbf{procedure solparam($solutions,param,valparam$);} \\
-
+%
 This procedure evaluates the general solutions for the value of parameters
 given by valparam and returns these solutions in general form. \\
-
+%
 \begin{tabular}{lcl}
 $solutions$ & : & \{$lcoeff$,\{....,\{$general\_solution$\},....\}\} \\
 $param$ & : & list of parameters \\
@@ -262,7 +262,7 @@ It returns the list formed of 2 elements :
 \subsubsection{Transformations}
 
 \textbf{procedure changehom($lcoeff,x,secmember,id$);} \\
-
+%
 Differentiation of an equation with right-hand side. \\
 \begin{tabular}{lcl}
 $lcoeff$ & : & list of coefficients of the equation \\
@@ -270,14 +270,14 @@ $x$ & : & variable \\
 $secmember$ & : & right-hand side \\
 $id$ & : & order of the differentiation.
 \end{tabular} \\
-
+%
 It returns the list of coefficients of the differentiated equation.
 It enables an equation with polynomial right-hand side to be transformed
 into a homogeneous equation by differentiating id times,
 $id$ = degre($secmember$) + 1. \\
-
+%
 \textbf{procedure changevar($lcoeff,x,v,fct$);} \\
-
+%
 Changing of variable in the homogeneous equation defined by the list,lcoeff
 of its coefficients : the old variable $x$ and the new variable $v$ are linked
 by the relation $x = fct(v)$. \par
@@ -293,17 +293,17 @@ examples of use :
 \end{itemize}
 
 \textbf{procedure changefonc($lcoeff,x,q,fct$);} \\
-
+%
 Changing of unknown function in the homogeneous equation defined by the
 list lcoeff of its coefficients : \\
-
+%
 \begin{tabular}{lcl}
 $lcoeff$ & : & list of coefficients of the initial equation \\
 $x$      & : & variable \\
 $q$ & : & new unknown function \\
 $fct$ & : & $y$ being the unknown function~ $y = fct(q)$ 
 \end{tabular} \\
-
+%
 It returns the list of coefficients of the new equation. 
 
 Example of use :

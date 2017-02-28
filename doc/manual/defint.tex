@@ -1,4 +1,4 @@
-
+\newcommand{\MeijerGparams}[2]{\genfrac{}{}{0pt}{}{#1}{#2}}
 \subsection{Introduction}
 This documentation describes part of \REDUCE's definite
 integration package that is able to calculate the definite integrals of
@@ -13,10 +13,10 @@ the following Meijer G integration formula.
 
 \begin{equation}
 \int_{0}^{\infty} x^{\alpha-1} G^{s t}_{u v} 
-\left( \sigma x \  \Bigg\vert \  {( c_u) \atop (d_v)} \right) 
-G^{m n}_{p q} \left( \omega x^{l/k} \  \Bigg\vert \ {(a_p) \atop (b_q)}
+\left( \sigma x \  \Bigg\vert \  \MeijerGparams{( c_u)}{(d_v)} \right) 
+G^{m n}_{p q} \left( \omega x^{l/k} \  \Bigg\vert \ \MeijerGparams{(a_p)}{(b_q)}
 \right) dx = k G^{i j}_{k l} \left( \xi \ \Bigg\vert \ 
-{(g_k) \atop (h_l)} \right)  \hspace{5mm} \label{defint:eq1}
+\MeijerGparams{(g_k)}{(h_l)} \right)  \hspace{5mm} \label{defint:eq1}
 \end{equation}
 
 The resulting Meijer G-function is then retransformed, either directly
@@ -39,8 +39,8 @@ process, and are substituted into eq.~\ref{defint:eq1} to give
 \begin{displaymath}
 \sqrt{\pi} \int_{0}^{\infty} x^{-1} G^{1 0}_{0 1} \left(x 
 \ \Bigg\vert \ 
-{. \atop 0}\right) G^{1 0}_{0 2}\left(\frac{x^{2}}{4} 
-\ \Bigg\vert \ {. \; .  \atop \frac{1}{2} \; 0} \right) dx
+\MeijerGparams{.}{0}\right) G^{1 0}_{0 2}\left(\frac{x^{2}}{4} 
+\ \Bigg\vert \ \MeijerGparams{. \; . }{\frac{1}{2} \; 0} \right) dx
 \end{displaymath}
 
 The cases for validity of the integral are then checked. If these 
@@ -48,8 +48,7 @@ are found to be satisfactory then the formula is calculated and we
 obtain the following Meijer G-function 
 
 \begin{displaymath}  
-G^{1 2}_{2 2} \left(1 \ \Bigg\vert \ {\frac{1}{2} \; 1 \atop 
-\frac{1}{2} \; 0} \right)
+G^{1 2}_{2 2} \left(1 \ \Bigg\vert \ \MeijerGparams{\frac{1}{2} \; 1}{\frac{1}{2} \; 0} \right)
 \end{displaymath} 
 
 This is reduced to the following hypergeometric function
@@ -89,10 +88,9 @@ following formula
 
 \begin{equation}
 \int_{0}^{y} x^{\alpha-1} G^{m n}_{p q} 
-\left( \sigma x \  \Bigg\vert \  {( a_u) \atop (b_v)} \right) dx=%
+\left( \sigma x \  \Bigg\vert \ \MeijerGparams{(a_u)}{(b_v)} \right) dx=%
 y^{\alpha}\,G^{m \; n+1}_{p+1 \; q+1} \left( \sigma y \  \Bigg\vert \
-{( a_1..a_n,1-\alpha,a_{n+1}..a_p) 
-\atop (b_1..b_m,-\alpha,b_{m+1}..b_q)} \right) \label{defint:eq2}
+\MeijerGparams{( a_1..a_n,1-\alpha,a_{n+1}..a_p)}{(b_1..b_m,-\alpha,b_{m+1}..b_q)} \right) \label{defint:eq2}
 \end{equation}
 
 For a more detailed look at the theory behind this see 
@@ -110,14 +108,13 @@ into eq.~\ref{defint:eq2} to give
 
 \begin{displaymath}
 \int_{0}^{y} G^{1 0}_{0 2}\left(x 
-\ \Bigg\vert \ {. \; .  \atop \frac{1}{2} \; 0} \right) dx
+\ \Bigg\vert \ \MeijerGparams{. \; .}{\frac{1}{2} \; 0} \right) dx
 \end{displaymath}
 
 which then in turn gives
 
 \begin{displaymath}
-y \; G^{1 1}_{1 3}\left(y \ \Bigg\vert \ {0 \atop 
-\frac{1}{2} -\!1 \; 0} \right) dx
+y \; G^{1 1}_{1 3}\left(y \ \Bigg\vert \ \MeijerGparams{0}{\frac{1}{2} -\!1 \; 0} \right) dx
 \end{displaymath}
 
 and returns the result
@@ -379,7 +376,7 @@ For example when considering $cos (x)$ we have
 \it Meijer G representation  -  
 \begin{displaymath}
 \sqrt{\pi} \,G^{1 0}_{0 2}\left(\frac{x^{2}}{4} \ \Bigg\vert 
-\ { . \; . \atop 0 \; \frac{1}{2}} \right) dx 
+\ \MeijerGparams{ . \; . }{ 0 \; \frac{1}{2}} \right) dx 
 \end{displaymath}
 
 \it Internal definite integration package representation  - 
@@ -401,7 +398,7 @@ or the more interesting example of $J_{n}(x)$:
 \it Meijer G representation  -  
 \begin{displaymath}
 G^{1 0}_{0 2} \left(\frac{x^{2}}{4} \ \Bigg\vert 
-\ {. \; .  \atop \frac{n}{2} \; {\frac{-n}{2}}} \right) dx 
+\ \MeijerGparams{. \; .}{\frac{n}{2} \; {\frac{-n}{2}}} \right) dx 
 \end{displaymath}
 
 \it Internal definite integration package representation  - 

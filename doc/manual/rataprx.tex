@@ -85,7 +85,7 @@ the \texttt{off rounded} mode. This is also true for the inverse
 procedure.\\[\baselineskip]
 %
 %
-{\large\bf EXAMPLES}\\
+{\large\bf EXAMPLES}
 \begin{verbatim}
 4: rational2periodic(1/3);
 
@@ -181,7 +181,7 @@ This is represented in {\small REDUCE} as
 \end{tabbing}
 
 \textbf{Optional Argument: \texttt{length}}\\
-
+%
 The \texttt{length} argument is optional. 
 For an NON-RATIONAL function input the \texttt{length} argument specifies
 the number of ordered pairs, $\{a_i,b_i\}$, to be 
@@ -195,11 +195,11 @@ dependent on the precision of the session, and the
 \texttt{length} argument will only take effect if it has a smaller
 value than that of the number of ordered pairs which the default
 value would return.\\[\baselineskip]
-
-
-
+%
+%
+%
 %\newpage
-\large{\textbf{EXAMPLES}}\\[\baselineskip]
+\large{\textbf{EXAMPLES}}
 \begin{verbatim}
 13: cfrac(23.696);
 
@@ -295,7 +295,7 @@ the \texttt{pade} function finds the unique coefficients
 $a_i,\, b_i$ in the Pad\'{e} approximant 
 \[ \frac{a_0+a_1 x+ \cdots + a_n x^n}{b_0+b_1 x+ \cdots + b_d x^d} \; .\]
 \\[\baselineskip]
-
+%
 \hypertarget{PADE:operator}{}
 \ttindextype{PADE}{operator}
 \begin{tabbing}
@@ -316,25 +316,25 @@ $a_i,\, b_i$ in the Pad\'{e} approximant
 
 
 \textbf{ERROR MESSAGES}\\
-
+%
 \texttt{***** not yet implemented}\\
-
+%
 The Taylor series expansion for the function, f, has not yet
 been implemented in the {\small REDUCE} Taylor Package.\\[\baselineskip]
-
-
+%
+%
 \texttt{***** no Pade Approximation exists}\\
-
+%
 A Pad\'{e} Approximant of this function does not exist.\\[\baselineskip]
-
-\newpage
+%
+%\newpage
 \texttt{***** Pade Approximation of this order does not exist}\\
-
+%
 A Pad\'{e} Approximant of this order (ie. the specified
 numerator and denominator orders) does not exist but one
 of a different order may exist.\\[\baselineskip]
-
-
+%
+%
 \large{\textbf{EXAMPLES}}
 
 \begin{verbatim}

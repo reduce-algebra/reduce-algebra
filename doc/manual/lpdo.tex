@@ -341,8 +341,8 @@ variable, which is \texttt{y} by default.
 \subsubsubsection{\texttt{lpdos}}
 Given LPDOs $p$, $q$ and $m\in\mathbb{N}$ the function
 \texttt{lpdos($p$,$q$,$m$)} computes the commutative polynomial $$S_m
-= \sum_{|j| = m\atop |j| < k} \biggl(\sum_{i = 1}^n
-p_i \partial_i(q_j) + p_0 q_j\biggr)y^{j}.$$ This is useful for the
+= \sum_{\substack{|j| = m\\ |j| < k}} \left(\sum_{i = 1}^n
+p_i \partial_i(q_j) + p_0 q_j\right)y^{j}.$$ This is useful for the
 factorization of LPDOs. % \cite{LasarukSturm:08b}.
 \begin{footnotesize}
 \begin{verbatim}

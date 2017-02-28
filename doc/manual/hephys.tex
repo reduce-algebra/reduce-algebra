@@ -263,15 +263,15 @@ We give here as an example of a simple calculation in high energy physics
 the computation of the Compton scattering cross-section as given in
 Bjorken and Drell Eqs. (7.72) through (7.74). We wish to compute the trace of
 \begin{displaymath}
-\left. \alpha^2\over2 \right. \left({k^\prime\over k}\right)^2
- \left({\gamma\cdot p_f+m\over2m}\right)\left({\gamma\cdot e^\prime \gamma\cdot e
- \gamma\cdot k_i\over2k.p_i} + {\gamma\cdot e\gamma\cdot e^\prime
- \gamma\cdot k_f\over2k^\prime\cdot p_i}\right)
+\frac{\alpha^2}{2} \left(\frac{k^\prime}{k}\right)^2
+ \left(\frac{\gamma\cdot p_f+m}{2m}\right)\left(\frac{\gamma\cdot e^\prime \gamma\cdot e
+ \gamma\cdot k_i}{2k.p_i} + \frac{\gamma\cdot e\gamma\cdot e^\prime
+ \gamma\cdot k_f}{2k^\prime\cdot p_i}\right)
 \end{displaymath}
 \begin{displaymath}
- \left({\gamma\cdot p_i+m\over2m}\right)
- \left({\gamma\cdot k_i\gamma\cdot e\gamma\cdot e^\prime\over2k.p_i} +
- {\gamma\cdot k_f\gamma\cdot e^\prime\gamma\cdot e\over2k^\prime\cdot p_i}
+ \left(\frac{\gamma\cdot p_i+m}{2m}\right)
+ \left(\frac{\gamma\cdot k_i\gamma\cdot e\gamma\cdot e^\prime}{2k.p_i} +
+ \frac{\gamma\cdot k_f\gamma\cdot e^\prime\gamma\cdot e}{2k^\prime\cdot p_i}
  \right)
 \end{displaymath}
 where $k_i$ and $k_f$ are the four-momenta of incoming and outgoing photons
@@ -280,17 +280,17 @@ $k$ and $k^\prime$
 respectively) and $p_i$, $p_f$ are incident and final electron four-momenta.
 
 Omitting therefore an overall factor
-$\displaystyle\frac{\alpha^2}{2m^2}\left({k^\prime\over k}\right)^2$ we need to find one quarter of the trace of
+$\displaystyle\frac{\alpha^2}{2m^2}\left(\frac{k^\prime}{k}\right)^2$ we need to find one quarter of the trace of
 \begin{displaymath}
  \left( \gamma\cdot p_f + m\right)
- \left({\gamma\cdot e^\prime \gamma\cdot e\gamma\cdot k_i\over2k.p_i} +
-  {\gamma\cdot e\gamma\cdot e^\prime \gamma\cdot k_f\over 2k^\prime.p_i}\right)\times
+ \left(\frac{\gamma\cdot e^\prime \gamma\cdot e\gamma\cdot k_i}{2k.p_i} +
+  \frac{\gamma\cdot e\gamma\cdot e^\prime \gamma\cdot k_f}{2k^\prime.p_i}\right)\times
 \end{displaymath}
 \begin{displaymath}
  \qquad\left(
   \gamma\cdot p_i + m\right)
- \left({\gamma\cdot k_i\gamma\cdot e\gamma\cdot e^\prime\over 2k.p_i} +
-  {\gamma\cdot k_f\gamma\cdot e^\prime \gamma\cdot e\over2k^\prime.p_i}\right) 
+ \left(\frac{\gamma\cdot k_i\gamma\cdot e\gamma\cdot e^\prime}{2k.p_i} +
+  \frac{\gamma\cdot k_f\gamma\cdot e^\prime \gamma\cdot e}{2k^\prime.p_i}\right) 
 \end{displaymath}
 A straightforward REDUCE program for this, with appropriate substitutions
 (using \texttt{P1} for $p_i$, \texttt{PF} for $p_f$, \texttt{KI}

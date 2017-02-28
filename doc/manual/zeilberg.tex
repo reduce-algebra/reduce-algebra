@@ -58,11 +58,11 @@ In case, an antidifference $g_k$ of $a_k$ is known, any sum
 can be easily calculated by an evaluation of $g$ at the boundary points
 like in the integration case. Note, however, that the sum
 \begin{equation}
-\sum_{k=0}^n {{n}\choose{k}}
+\sum_{k=0}^n \binom{n}{k}
 \label{eq:nchoosek}
 \end{equation}
 e.\ g.\
-is not of this type since the summand ${{n}\choose{k}}$ depends on the upper
+is not of this type since the summand $\binom{n}{k}$ depends on the upper
 boundary point $n$ explicitly. This is an example of a definite sum
 that we consider in the next section.
 
@@ -434,10 +434,10 @@ Other applications of the Zeilberger algorithm are connected with
 the verification of identities. To prove the identity
 \[
 \sum_{k=0}^n
-{{n}\choose{k}}^3
+\binom{n}{k}^3
 =
 \sum_{k=0}^n
-{{n}\choose{k}}^2 {{2k}\choose{n}}
+\binom{n}{k}^2 \binom{2k}{n}
 \;,
 \]
 e.\ g., we may prove that both sums satisfy the same recurrence equation
@@ -648,7 +648,7 @@ with the aid of known hypergeometric representations. By
 have the hypergeometric representation
 \[
 k_n^{(p)}(x,N)=
-(-1)^n\,p^n\,{{N}\choose{n}}\;
+(-1)^n\,p^n\,\binom{N}{n}\;
 _2 F_1\left.
 \!\!
 \left(

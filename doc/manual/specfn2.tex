@@ -1,11 +1,11 @@
 
 The (generalised) hypergeometric functions  
 \begin{displaymath}
-_pF_q \left( {{a_1, \ldots , a_p} \atop {b_1, \ldots ,b_q}} \Bigg\vert z \right)
+_pF_q \left( \genfrac{}{}{0pt}{}{a_1, \ldots , a_p}{b_1, \ldots ,b_q} \Bigg\vert z \right)
 \end{displaymath}
 are defined in textbooks on special functions as
 \begin{displaymath}
-_pF_q \left( {{a_1, \ldots , a_p} \atop {b_1, \ldots ,b_q}} \Bigg\vert z \right)
+_pF_q \left( \genfrac{}{}{0pt}{}{a_1, \ldots , a_p}{b_1, \ldots ,b_q} \Bigg\vert z \right)
   = \sum_{n=0}^{\infty}\frac{(a_{1})_{n}\dots(a_{p})_{n}}{(b_{1})_{n}\dots(b_{q})_{n}}\frac{z^{n}}{n!}
 \end{displaymath}w
 where $(a)_{n}$ is the Pochhammer symbol
@@ -15,7 +15,7 @@ where $(a)_{n}$ is the Pochhammer symbol
 
 The function 
 \begin{displaymath}
-G_{p q}^{m n} \left( z \  \Bigg\vert \  {(a_p) \atop (b_q)} \right)
+G_{p q}^{m n} \left( z \  \Bigg\vert \  \genfrac{}{}{0pt}{}{(a_p)}{(b_q)} \right)
 \end{displaymath}
 has been studied by C.~S.~Meijer beginning in 1936 and has been
 called Meijer's G function later on. The complete definition of Meijer's
@@ -75,7 +75,7 @@ parameters (which may be empty too), and the argument.
 The first element of the lists has to be the list of the
 first n or m respective parameters, e.g. to describe 
 \begin{displaymath}
-G_{1 1}^{1 0} \left( x \  \Bigg\vert \  {1 \atop 0} \right)
+G_{1 1}^{1 0} \left( x \  \Bigg\vert \  \genfrac{}{}{0pt}{}{1}{0} \right)
 \end{displaymath}
 one has to write 
 \begin{verbatim}
@@ -89,7 +89,7 @@ MeijerG({{},1},{{0}},x); % and the result is:
 \end{verbatim}
 and for
 \begin{displaymath}
-G_{0 2}^{1 0} \left( \frac{x^2}{4} \  \Bigg\vert \ {\atop  {1+ \frac{1}{4} },
+G_{0 2}^{1 0} \left( \frac{x^2}{4} \  \Bigg\vert \ \genfrac{}{}{0pt}{}{}{{1+ \frac{1}{4} },
 {1-\frac{1}{4}}} \right)
 \end{displaymath}
 \begin{verbatim}
