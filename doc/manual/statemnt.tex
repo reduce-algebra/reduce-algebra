@@ -279,15 +279,16 @@ case, \meta{exprn} is not evaluated at all.
 stores $5^{2}$ through $10^{2}$ in \texttt{A(5)} through \texttt{A(10)}, and at
 the same time stores the cubes in the \var{B} array:
 \begin{verbatim}
-   for i := 5 step 1 until 10 do <<a(i):=i^2; b(i):=i^3>>
+    for i := 5 step 1 until 10 do 
+        <<a(i):=i^2; b(i):=i^3>>
 \end{verbatim}
 \item As a convenience, the common construction
 \begin{verbatim}
-        STEP 1 UNTIL
+        step 1 until
 \end{verbatim}
 may be abbreviated to a colon. Thus, instead of the above we could write:
 \begin{verbatim}
-        for i := 5:10 do <<a(i):=i^2; b(i):=i^3>>
+    for i := 5:10 do <<a(i):=i^2; b(i):=i^3>>
 \end{verbatim}
 \item The following sets \texttt{C} to the sum of the squares of 1,3,5,7,9;
 and \var{D} to the expression \texttt{x*(x+1)*(x+2)*(x+3)*(x+4):}
@@ -358,10 +359,10 @@ example, let us suppose the first term equals 1 and each term is obtained
 from the one before by taking one third of it and adding one third its
 square. We would write:
 \begin{verbatim}
-        ex:=0; term:=1;
-        while num(term - 1/1000) >= 0  do
-                <<ex := ex+term; term:=(term + term^2)/3>>;
-        ex;
+    ex:=0; term:=1;
+    while num(term - 1/1000) >= 0  do
+            <<ex := ex+term; term:=(term + term^2)/3>>;
+    ex;
 \end{verbatim}
 As long as \var{TERM} is greater than or equal to (\texttt{>=}) 1/1000 it will
 be added to \var{EX} and the next \var{TERM} calculated.  As soon as
@@ -395,10 +396,10 @@ least once.
 As an example, we rewrite the example from the \texttt{WHILE \ldots DO} section:
 \begin{samepage}
 \begin{verbatim}
-        ex:=0; term:=1;
-        repeat <<ex := ex+term; term := (term + term^2)/3>>
-           until num(term - 1/1000) < 0;
-        ex;
+    ex:=0; term:=1;
+    repeat <<ex := ex+term; term := (term + term^2)/3>>
+       until num(term - 1/1000) < 0;
+    ex;
 \end{verbatim}
 \end{samepage}
 In this case, the answer will be the same as before, because in neither
@@ -601,9 +602,9 @@ termination of a \texttt{FOR}\ttindex{FOR}, \texttt{WHILE}\ttindex{WHILE},
 or \texttt{REPEAT}\ttindex{REPEAT} statement.  In particular, the use of
 \texttt{RETURN} in such cases results in a syntax error.  For example,
 \begin{verbatim}
-        begin scalar y;
-           y := for i:=0:99 do if a(i)=x then return b(i);
-           ...
+    begin scalar y;
+       y := for i:=0:99 do if a(i)=x then return b(i);
+       ...
 \end{verbatim}
 will lead to an error.
 

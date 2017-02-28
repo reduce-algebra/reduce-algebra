@@ -326,33 +326,27 @@ view these, the SHOWRULES operator can be used, e.g.
 \begin{verbatim}
       SHOWRULES tan;
 
-{tan(~n*arbint(~i)*pi + ~(~ x)) => tan(x) when fixp(n),
+{tan(~n*arbint(~i)*pi + ~~x) => tan(x) when fixp(n),
 
- tan(~x)
+ tan(~x) => trigquot(sin(x),cos(x)) when knowledge_about(sin,x,tan),
 
-  => trigquot(sin(x),cos(x)) when knowledge_about(sin,x,tan),
+      ~x + ~~k*pi              x                 k                     k     1
+ tan(-------------) =>  - cot(--- + i*pi*impart(---)) when abs(repart(---))=---,
+          ~~d                  d                 d                     d     2
 
-      ~x + ~(~ k)*pi
- tan(----------------)
-            ~d
+      ~~w + ~~k*pi           w      k                k
+ tan(--------------) => tan(--- + (--- - fix(repart(---)))*pi)
+          ~~d                d      d                d
 
-             x                  k                     k     1
-  =>  - cot(---) + i*pi*impart(---)) when abs(repart(---))=---,
-             d                  d                     d     2
-
-      ~(~ w) + ~(~ k)*pi           w      k                k
- tan(--------------------) => tan(--- + (--- - fix(repart(---)))*pi)
-            ~(~ d)                 d      d                d
-
-                              k
- when whereexp({rp => repart(---)},bool-eval(ratnump(rp) and abs(rp)>=1)),
-                              d
+                                                         k
+  when ((ratnump(rp) and abs(rp)>=1) where rp => repart(---)),
+                                                         d
 
  tan(atan(~x)) => x,
 
                              2
  df(tan(~x),~x) => 1 + tan(x) }
-
+			      
 \end{verbatim}
 
 For further simplification, especially of expressions involving

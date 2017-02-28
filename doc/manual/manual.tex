@@ -156,7 +156,8 @@
 
 \endgroup
 \newenvironment{syntax}{%
-    \list{}\item\relax\math\displaystyle
+    \list{}{\setlength{\leftmargin}{1em}\setlength{\listparindent}{0em}}%
+    \item\relax\math\displaystyle
     \catcode`\|=\active
 }{\endmath\endlist}
 
