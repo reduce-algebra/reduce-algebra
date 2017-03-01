@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% (c) 2013 Thomas Sturm
-% ----------------------------------------------------------------------
+module smt;  % An SMTLIB 2.0 REPL
+
+revision('smt, "$Id$");
+
+copyright('smt, "(c) 2013-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,13 +29,9 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-module smtsupp;
-
 % trunk/psl/dist/nonkernel/token-decls.sl
 
 create!-package('(smt smtread), nil);
-
-load!-package 'rltools;
 
 global '(nxtsym!*);
 global '(!$eof!$);
@@ -43,9 +40,9 @@ global '(emsg!*);
 fluid '(!*raise);
 fluid '(!*lower);
 fluid '(!*backtrace);
-fluid '(smts_assertionl!*);
-fluid '(smts_oassertionl!*);
-fluid '(smts_model!*);
+fluid '(smt_assertionl!*);
+fluid '(smt_oassertionl!*);
+fluid '(smt_model!*);
 fluid '(!*smtsplain);
 
 switch smtslog;
@@ -60,61 +57,70 @@ procedure smt();
       	 terpri();
       	 ioto_tprin2t {"Reduce SMT-LIB 2.0 REPL ..."}
       >>;
-      smts_mainloop()
+      smt_mainloop()
    end;
 
-operator smts_mainloop;
+operator smt_mainloop;
 
-procedure smts_mainloop();
+procedure smt_mainloop();
+   begin scalar oc;
+      oc := rl_set '(ofsf);
+      on1 'rlqeinfcore;
+      errorset({'smt_mainloop1}, t, !*backtrace);
+      off1 'rlqeinfcore;
+      rl_set oc
+   end;
+
+procedure smt_mainloop1();
    begin scalar raise, !*lower, form, w, pchar; integer pno;
       raise := !*raise;
       !*raise := !*lower := nil;
-      smts_processReset();
+      smt_processReset();
       pno := 1;
-      pchar := smts_setPrompt pno;
-      smts_prin2t "";
-      form := smts_rread();
+      pchar := smt_setPrompt pno;
+      smt_prin2t "";
+      form := smt_rread();
       while form neq '(exit) and form neq !$eof!$ do <<
-	 w := errorset({'smts_processForm, mkquote form}, t, t);
+	 w := errorset({'smt_processForm, mkquote form}, t, t);
       	 if errorp w then
-	    smts_error();
+	    smt_error();
 	 pno := pno + 1;
-	 smts_setPrompt pno;
-	 form := smts_rread()
+	 smt_setPrompt pno;
+	 form := smt_rread()
       >>;
       setpchar pchar;
       !*raise := raise
    end;
 
-procedure smts_setPrompt(pno);
+procedure smt_setPrompt(pno);
    if !*smtsilent then
       setpchar ""
    else
       setpchar lto_sconcat {lto_at2str pno, "% "};
 
-procedure smts_processForm(form);
+procedure smt_processForm(form);
    if eqcar(form, 'assert) then
-      smts_processAssert cadr form
+      smt_processAssert cadr form
    else if eqcar(form, 'check!-sat) then
-      smts_processCheckSat()
+      smt_processCheckSat()
    else if eqcar(form, 'get!-model) then
-      smts_processGetModel()
+      smt_processGetModel()
    else if eqcar(form, 'print!-assertions) then
-      smts_processPrintAssertions()
+      smt_processPrintAssertions()
    else if eqcar(form, 'reset) then
-      smts_processReset()
+      smt_processReset()
    else if eqcar(form, 'set!-logic) then
-      smts_processSetLogic cadr form
+      smt_processSetLogic cadr form
    else if eqcar(form, 'read) then
-      smts_processRead cadr form
+      smt_processRead cadr form
    else if eqcar(form, 'reduce!-eval) then
-      smts_processReduceEval cadr form
+      smt_processReduceEval cadr form
    else if eqcar(form, 'reduce!-dump!-assertions) then
-      smts_processReduceDumpAssertions cadr form
+      smt_processReduceDumpAssertions cadr form
    else if eqcar(form, 'quit) then
       quit
    else if eqcar(form, 'help) then
-      smts_processHelp()
+      smt_processHelp()
    else if eqcar(form, 'set!-info) then
       nil
    else if eqcar(form, 'declare!-const) then
@@ -122,44 +128,45 @@ procedure smts_processForm(form);
    else if eqcar(form, 'declare!-fun) then
       nil
    else
-      smts_error();
+      smt_error();
 
-procedure smts_processAssert(constraint);
+procedure smt_processAssert(constraint);
    <<
-      smts_assertionl!* := cl_smt2ReadForm constraint . smts_assertionl!*;
-      smts_oassertionl!* := constraint . smts_oassertionl!*;
-      smts_model!* := 'unset;
-      smts_prin2t ""
+      smt_assertionl!* := cl_smt2ReadForm constraint . smt_assertionl!*;
+      smt_oassertionl!* := constraint . smt_oassertionl!*;
+      smt_model!* := 'unset;
+      smt_prin2t ""
    >>;
 
-procedure smts_processCheckSat();
+procedure smt_processCheckSat();
    begin scalar w, tval, assl;
-      assl := for each ass in smts_assertionl!* collect
+      assl := for each ass in smt_assertionl!* collect
 	 cl_simpl(ass, nil, -1);
-      w := smts_processCheckSatAllPosP(assl);
+      w := smt_processCheckSatAllPosP assl;
       if w then <<
 	 on1 'rlsifaco;
 	 w := rl_posqe(rl_ex(rl_smkn('and, assl), nil), nil);
 	 off1 'rlsifaco;
-	 {tval, smts_model!*} := {w, nil}
+	 {tval, smt_model!*} := {w, nil}
       >> else <<
-      	 w := rl_qea(rl_ex(rl_smkn('and, assl), nil), nil);
+      	 w := cl_qea(rl_ex(rl_smkn('and, assl), nil), nil);
       	 if null w then <<
-	    smts_prin2t 'unsat;
+	    smt_prin2t 'unsat;
 	    return
       	 >>;
-      	 {tval, smts_model!*} := car w
+      	 tval . smt_model!* := car w
       >>;
       if tval eq 'true then
-	 smts_prin2t 'sat
+	 smt_prin2t 'sat
       else if tval eq 'false then
-	 smts_prin2t 'unsat
+	 smt_prin2t 'unsat
       else
-	 smts_prin2t 'unknown
+	 smt_prin2t 'unknown
    end;
 
-procedure smts_processCheckSatAllPosP(assl);
+procedure smt_processCheckSatAllPosP(assl);
    begin scalar vl, pvl;
+      return nil;  % for now
       for each ass in assl do <<
 	 vl := union(vl, rl_fvarl ass);
 	 if rl_op ass eq 'greaterp and sfto_varp ofsf_arg2l ass then
@@ -168,14 +175,14 @@ procedure smts_processCheckSatAllPosP(assl);
       return length vl = length pvl
    end;
 
-procedure smts_processGetModel();
+procedure smt_processGetModel();
    begin scalar varl, model, mal, v, val, w;
-      model := smts_model!*;
+      model := smt_model!*;
       if model eq 'unset then <<
-	 smts_error();
+	 smt_error();
 	 return
       >>;
-      varl := cl_fvarl1 rl_smkn('and, smts_assertionl!*);
+      varl := cl_fvarl1 rl_smkn('and, smt_assertionl!*);
       for each e in model do
 	 varl := delqip(cadr e, varl);
       for each v in varl do
@@ -188,82 +195,82 @@ procedure smts_processGetModel();
 	 else
 	    mal := (val . {v}) . mal;
       >>;
-      smts_prin2t for each pr in mal collect {cdr pr, smts_rl2smtAns car pr}
+      smt_prin2t for each pr in mal collect {cdr pr, smt_rl2smtAns car pr}
    end;
 
-procedure smts_rl2smtAns(smtform);
+procedure smt_rl2smtAns(smtform);
    if atom smtform then
-      smts_rl2smtSym smtform
+      smt_rl2smtSym smtform
    else
-      smts_rl2smtSym car smtform . for each arg in cdr smtform collect
-	 smts_rl2smtSym arg;
+      smt_rl2smtSym car smtform . for each arg in cdr smtform collect
+	 smt_rl2smtSym arg;
 
-procedure smts_rl2smtSym(sym);
+procedure smt_rl2smtSym(sym);
    begin scalar tal, w;
       tal := '((quotient . !/));
       w := atsoc(sym, tal);
       return if w then cdr w else sym
    end;
 
-procedure smts_processPrintAssertions();
+procedure smt_processPrintAssertions();
    if !*smtsplain then
-      smts_processPrintAssertions1()
+      smt_processPrintAssertions1()
    else <<
       lr_result();
-      smts_processPrintAssertions1();
+      smt_processPrintAssertions1();
       lr_statcounter();
       prin2 0;
       lr_mode();
       prin2 2
    >>;
 
-procedure smts_processPrintAssertions1();
+procedure smt_processPrintAssertions1();
    <<
-      smts_checkAlConsistency();
-      for each a in smts_oassertionl!* do
+      smt_checkAlConsistency();
+      for each a in smt_oassertionl!* do
       	 prin2t a
    >>;
 
-procedure smts_checkAlConsistency();
+procedure smt_checkAlConsistency();
    begin scalar al, oal;
-      al := smts_assertionl!*;
-      oal := smts_oassertionl!*;
+      al := smt_assertionl!*;
+      oal := smt_oassertionl!*;
       while al and oal and car al = cl_smt2ReadForm car oal do <<
 	 al := cdr al;
 	 oal := cdr oal
       >>;
       if al or oal then
-	 smts_error()
+	 smt_error()
    end;
 
-procedure smts_processReset();
+procedure smt_processReset();
    <<
-      smts_assertionl!* := smts_oassertionl!* := nil;
-      smts_model!* := 'unset;
-      smts_prin2t ""
+      smt_assertionl!* := smt_oassertionl!* := nil;
+      smt_model!* := 'unset;
+      smt_prin2t ""
    >>;
 
-procedure smts_processReduceEval(form);
+procedure smt_processReduceEval(form);
    prin2t eval form;
 
-procedure smts_processReduceDumpAssertions(phi);
+procedure smt_processReduceDumpAssertions(phi);
    <<
-      assgnpri(setk(phi, rl_mk!*fof rl_smkn('and, smts_assertionl!*)), {phi}, 'only);
+      assgnpri(setk(phi, rl_mk!*fof rl_smkn('and, smt_assertionl!*)), {phi}, 'only);
       terpri();
-      smts_prin2t ""
+      smt_prin2t ""
    >>;
 
-procedure smts_processSetLogic(id);
+procedure smt_processSetLogic(id);
    if id eq '!Q!F_!N!R!A then <<
       rl_set '(ofsf);
-      smts_prin2t ""
+      smt_prin2t ""
    >> else if id eq '!Q!F_!N!I!A or id eq '!Q!F_!L!I!A then <<
       rl_set '(pasf);
-      smts_prin2t ""
+      smt_prin2t ""
    >> else
-      smts_error();
+      smt_error();
 
-procedure smts_prin2t(item);
+procedure smt_prin2t(item);
    if !*smtsplain then
       (if item neq "" then prin2t if item then item else "()")
    else <<
@@ -275,16 +282,16 @@ procedure smts_prin2t(item);
       prin2 2
    >>;
 
-procedure smts_processRead(file);
+procedure smt_processRead(file);
    begin scalar ch;
       ch := open(file, 'input);
       rds ch;
-      smts_mainloop();
+      smt_mainloop();
       rds nil;
       close(ch)
    end;
 
-procedure smts_error();
+procedure smt_error();
    if !*smtsplain then
       prin2t "error - there is help avilable via ""(help)"""
    else <<
@@ -296,7 +303,7 @@ procedure smts_error();
       prin2 2
    >>;
 
-procedure smts_processHelp();
+procedure smt_processHelp();
    <<
       ioto_tprin2t "(exit)                 leave the SMT-LIB REPL and return to Reduce";
       ioto_tprin2t "(set-logic <symbol>)   <symbol> must be QF_NRA";

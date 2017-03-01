@@ -565,6 +565,12 @@ defautoload(meminfo, rltools, expr, 0);
 
 defautoload(rltools_trunk, rltools, expr, 0);
 
+defautoload(ioto_prin2t, rltools, expr, 1);
+
+defautoload(ioto_tprin2, rltools, expr, 1);
+
+defautoload(ioto_tprin2t, rltools, expr, 1);
+
 defautoload(lto_at2str, rltools, expr, 1);
 
 defautoload(lto_sconcat, rltools, expr, 1);
@@ -574,6 +580,8 @@ defautoload(lto_catsoc, rltools, expr, 2);
 defautoload(lto_eatsoc, rltools, expr, 3);
 
 defautoload(lto_alphap, rltools, expr, 1);
+
+defautoload(lto_insertq, rltools, expr, 2);
 
 symbolic operator fastresultant;
 defautoload(fastresultant, rltools, expr, 3);
@@ -681,8 +689,8 @@ defautoload(ra_y, ranum, expr, 0);
 operator smt;
 defautoload(smt, smt, expr, 0);
 
-operator smts_mainloop;
-defautoload(smts_mainloop, smt, expr, 0);
+operator smt_mainloop;
+defautoload(smt_mainloop, smt, expr, 0);
 
 endmodule;
 

@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% (c) 2014 T. Sturm
-% ----------------------------------------------------------------------
+module smtread;
+
+revision('smtread, "$Id$");
+
+copyright('smtread, "(c) 2014-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,8 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-module smtread;
 
 global '(!$eof!$);
 global '(!$eol!$);
@@ -64,15 +63,15 @@ fluid '(!*raise);
 
 algebraic operator _;
 
-procedure smts_prin2x(u);
+procedure smt_prin2x(u);
   outl!* := u . outl!*;
 
-procedure smts_mkstrng(u);
+procedure smt_mkstrng(u);
    % Converts the uninterned id U into a string. If strings are not constants,
    % this should be replaced by list('string,u).
    u;
 
-procedure smts_readch1();
+procedure smt_readch1();
    begin scalar x;
       if null terminalp() then <<
 	 x := readch();
@@ -87,24 +86,24 @@ procedure smts_readch1();
       return x
    end;
 
-procedure smts_token1();
+procedure smt_token1();
    begin scalar x, y, z, raise, w; integer n, d, g;
       x := crchar!*;
    a:
       if seprp x then <<  % space, tab, newline, or carriage return
-	 x := smts_readch1();
+	 x := smt_readch1();
  	 go to a
       >> else if digit x then
-      	 return smts_token!-number x
-      else if smts_liter x then
+      	 return smt_token!-number x
+      else if smt_liter x then
       	 go to letter
       else if x eq '!; then
       	 go to coment
       else if x eq '!! then
       	 go to escape
       else if x eq '!' then <<
-      	 crchar!* := smts_readch1();
-      	 nxtsym!* := mkquote smts_rread();
+      	 crchar!* := smt_readch1();
+      	 nxtsym!* := mkquote smt_rread();
       	 ttype!* := 4;
       	 return nxtsym!*
       >> else if x eq '!" then
@@ -112,26 +111,26 @@ procedure smts_token1();
       ttype!* := 3;
       if x eq !$eof!$ then <<
  	 crchar!* := '! ;
-	 smts_filenderr()
+	 smt_filenderr()
       >>;
       nxtsym!* := x;
    a1:
       if delcp x then
  	 crchar!*:= '!
       else
-	 crchar!*:= smts_readch1();
+	 crchar!*:= smt_readch1();
       go to c;
    escape:
       raise := !*raise;
       !*raise := nil;
       y := x . y;
-      x := smts_readch1();
+      x := smt_readch1();
       !*raise := raise;
    letter:
       ttype!* := 0;
    let1:
       y := x . y;
-      if digit (x := smts_readch1()) or smts_liter x then
+      if digit (x := smt_readch1()) or smt_liter x then
  	 go to let1
       else if x eq '!! then
  	 go to escape;
@@ -146,7 +145,7 @@ procedure smts_token1();
    num1:
       y := x . y;
       z := x;
-      x := smts_readch1();
+      x := smt_readch1();
       if digit x or x eq '!. or x eq 'e or z eq 'e then
  	 go to num1;
       y := reversip!* y;
@@ -164,22 +163,22 @@ procedure smts_token1();
       !*raise := nil;
    strinx:
       y := x . y;
-      x := smts_readch1();
+      x := smt_readch1();
       if x neq '!" then
  	 go to strinx;
       y := x . y;
-      nxtsym!* := smts_mkstrng compress reversip!* y;
+      nxtsym!* := smt_mkstrng compress reversip!* y;
       !*raise := raise;
       ttype!* := 1;
       go to a1;
    coment:
-      if smts_readch1() neq !$eol!$ then
+      if smt_readch1() neq !$eol!$ then
  	 go to coment;
-      x := smts_readch1();
+      x := smt_readch1();
       go to a
    end;
 
-procedure smts_token!-number(x);
+procedure smt_token!-number(x);
    % Read and return a valid number from input. Adjusted by A.C. Norman to be
    % less sensitive to input case and to support hex numbers.
    begin scalar dotp, power, sign, y, z;
@@ -246,14 +245,14 @@ procedure smts_token!-number(x);
       return nxtsym!*
    end;
 
-procedure smts_liter(x);
+procedure smt_liter(x);
   liter x or x memq '(!~ !! !@ !$ !% !^ !& !* !_ !- !+ != !< !> !. !? !/);
 
-procedure smts_token();
+procedure smt_token();
    % This provides a hook for a faster TOKEN.
-   smts_token1();
+   smt_token1();
 
-procedure smts_filenderr();
+procedure smt_filenderr();
    begin scalar m;
       eof!* := eof!* + 1;
       if terminalp() then
@@ -267,21 +266,21 @@ procedure smts_filenderr();
       >>
    end;
 
-procedure smts_ptoken();
+procedure smt_ptoken();
    % An explicit reference to OUTL!* is used here.
    begin scalar x;
-      x := smts_token();
+      x := smt_token();
       if x eq '!) and eqcar(outl!*,'! ) then
  	 outl!* := cdr outl!*;
-      smts_prin2x x;
+      smt_prin2x x;
       if not (x eq '!( or x eq '!)) then
- 	 smts_prin2x '! ;
+ 	 smt_prin2x '! ;
       return x
    end;
 
-procedure smts_rread1();
+procedure smt_rread1();
    begin scalar x,y;
-      x := smts_ptoken();
+      x := smt_ptoken();
       if not eqn(ttype!*, 3) then
  	 return if null idp x or null !*quotenewnam
  	    or null(y := get(x,'quotenewnam))
@@ -290,10 +289,10 @@ procedure smts_rread1();
 	 else
  	    y
       else if x eq '!( then
- 	 return smts_rrdls()
+ 	 return smt_rrdls()
       else if null (x eq '!+ or x eq '!-) then
  	 return x;
-      y := smts_ptoken();
+      y := smt_ptoken();
       if null numberp y then <<
  	 nxtsym!* := " ";
 	 symerr("Syntax error: improper number", nil)
@@ -303,18 +302,18 @@ procedure smts_rread1();
       return y
    end;
 
-procedure smts_rrdls();
+procedure smt_rrdls();
    begin scalar x,y,z;
    a:
-      x := smts_rread1();
+      x := smt_rread1();
       if not eqn(ttype!*, 3) then
  	 go to b
       else if x eq '!) then
  	 return z
       else if null (x eq '!.) then
  	 go to b;
-      x := smts_rread1();
-      y := smts_ptoken();
+      x := smt_rread1();
+      y := smt_ptoken();
       if not eqn(ttype!*, 3) or y neq '!) then <<
 	 nxtsym!* := " ";
 	 symerr("Invalid S-expression", nil)
@@ -325,24 +324,24 @@ procedure smts_rrdls();
       go to a
    end;
 
-procedure smts_rread();
+procedure smt_rread();
    <<
-      smts_prin2x " '";
-      smts_rread1()
+      smt_prin2x " '";
+      smt_rread1()
    >>;
 
-procedure smts_scan();
+procedure smt_scan();
    begin scalar x,y;
       if null (cursym!* eq '!*semicol!*) then
  	 go to b;
    a:
-      nxtsym!* := smts_token();
+      nxtsym!* := smt_token();
    b:
       if null atom nxtsym!* then
  	 go to q1
       else if nxtsym!* eq 'else or cursym!* eq '!*semicol!* then
  	 outl!* := nil;
-      smts_prin2x nxtsym!*;
+      smt_prin2x nxtsym!*;
    c:
       if null idp nxtsym!* then
  	 go to l
@@ -353,7 +352,7 @@ procedure smts_scan();
       else if null(ttype!* = 3) then
          go to l
       else if nxtsym!* eq !$eof!$ then
-         return smts_filenderr()
+         return smt_filenderr()
       else if nxtsym!* eq '!' then
          go to quote
       else if not (x := get(nxtsym!*,'switch!*)) then
@@ -361,11 +360,11 @@ procedure smts_scan();
       else if eqcar(cdr x,'!*semicol!*) then
          go to delim;
    sw1:
-      nxtsym!* := smts_token();
+      nxtsym!* := smt_token();
       if not eqn(ttype!*, 3) then
  	 go to sw2
       else if nxtsym!* eq !$eof!$ then
- 	 return smts_filenderr()
+ 	 return smt_filenderr()
       else if car x then
  	 go to sw3;
    sw2:
@@ -378,7 +377,7 @@ procedure smts_scan();
       y := atsoc(nxtsym!*,car x);
       if not y then
  	 go to sw2;
-      smts_prin2x nxtsym!*;
+      smt_prin2x nxtsym!*;
       x := cdr y;
       go to sw1;
    comm:
@@ -402,22 +401,22 @@ procedure smts_scan();
       else
  	 go to l;
   quote:
-     nxtsym!* := mkquote smts_rread1();
+     nxtsym!* := mkquote smt_rread1();
      go to l;
    q1:
       if null (car nxtsym!* eq 'string) then
  	 go to l;
-      smts_prin2x " ";
-      smts_prin2x cadr(nxtsym!* := mkquote cadr nxtsym!*);
+      smt_prin2x " ";
+      smt_prin2x cadr(nxtsym!* := mkquote cadr nxtsym!*);
    l:
       cursym!*:=nxtsym!*;
    l1:
-      nxtsym!* := smts_token();
+      nxtsym!* := smt_token();
       if nxtsym!* eq !$eof!$ and ttype!* = 3 then
- 	 return smts_filenderr();
+ 	 return smt_filenderr();
    l2:
       if numberp nxtsym!* or (atom nxtsym!* and null get(nxtsym!*,'switch!*)) then
- 	 smts_prin2x " ";
+ 	 smt_prin2x " ";
       return cursym!*
    end;
 
