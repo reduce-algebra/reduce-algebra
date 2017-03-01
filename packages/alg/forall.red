@@ -459,7 +459,7 @@ mkop '!~;               % Declare as algebraic operator.
 put('!~,'prifn,'tildepri);
 
 symbolic procedure tildepri u;
-  <<prin2!* "~"; if eqcar (cadr u,'!~) then tildepri cadr u else prin2!*  cadr u>>
+  <<prin2!* "~"; if eqcar (cadr u,'!~) then tildepri cadr u else prin2!*  cadr u>>;
 
 newtok '((!= !>) replaceby);
 
