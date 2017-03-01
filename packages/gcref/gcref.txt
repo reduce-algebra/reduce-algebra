@@ -1,6 +1,8 @@
 GCREF - A Graph Cross Referencer
 
 Author: A. Dolzmann, T. Sturm
+
+Date: December 2012
 ================================
 
 This package reuses the code of the RCREF package to create a graph displaying
