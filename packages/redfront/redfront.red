@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% (c) 1999-2009 A. Dolzmann and T. Sturm, 2010-2014 T. Sturm
-% ----------------------------------------------------------------------
+module redfront;
+
+revision('redfront, "$Id$");
+
+copyright('redfront, "(c) 1999-2009 A. Dolzmannm, T. Sturm, 2010-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(redfront_rcsid!* redfront_copyright!*);
-   redfront_rcsid!* := "$Id$";
-   redfront_copyright!* := "(c) 1999-2009 A. Dolzmann and T. Sturm, 2010-2011 T. Sturm"
->>;
-
-
-module coloutput;
 
 global '(statcounter);
 
@@ -87,10 +79,6 @@ procedure redfront_formwrite(u,vars,mode);
 put('write,'formfn,'redfront_formwrite);
 
 outputhandler!*:='redfront_oh;
-
-endmodule;  % coloutput;
-
-module redfront;
 
 fluid '(promptstring!* redfront_switches!* redfront_switches!-this!-sl!*
    lispsystem!* breaklevel!* input!-libraries output!-library);
@@ -272,11 +260,10 @@ procedure redfront_send!-modules();
 % is complete. During a PSL build a shell variable called "reduce" should
 % be set and so I make a path by concatenating based on that.
 
-% An issue I found awkward when codeing this is that in PSL a function that
-% is defined here is not made available immediatly, and so if expanding a
-% macro depends on it you are out of luck. I had to work around that my
-% implemetinting the macro as one big function rather than as several
-% several smaller and neater ones.
+% An issue I found awkward when coding this is that in PSL a function that is
+% defined here is not made available immediatly, and so if expanding a macro
+% depends on it you are out of luck. I had to work around that by implementing
+% the macro as one big function rather than several several smaller ones.
 
 symbolic macro procedure redfront_package_names u;
   begin
