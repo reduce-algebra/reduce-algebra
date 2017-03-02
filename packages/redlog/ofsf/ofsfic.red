@@ -824,6 +824,7 @@ asserted procedure cl_esetvectsubst(form, fvect: Vector, v: Kernel, eset: List, 
 	       u2 := 'true . cdr u
 	    >> else
  	       u2 := u;
+	    falseFound := nil;
 	    resvect := mkvect upbv fvect;
 	    for i := 0 : upbv fvect do <<
 	       sf := getv(fvect, i);
