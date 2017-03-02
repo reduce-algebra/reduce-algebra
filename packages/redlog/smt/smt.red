@@ -138,24 +138,40 @@ procedure smt_processAssert(constraint);
       smt_prin2t ""
    >>;
 
+%% procedure smt_processCheckSat();
+%%    begin scalar w, tval, assl;
+%%       assl := for each ass in smt_assertionl!* collect
+%% 	 cl_simpl(ass, nil, -1);
+%%       w := smt_processCheckSatAllPosP assl;
+%%       if w then <<
+%% 	 on1 'rlsifaco;
+%% 	 w := rl_posqe(rl_ex(rl_smkn('and, assl), nil), nil);
+%% 	 off1 'rlsifaco;
+%% 	 {tval, smt_model!*} := {w, nil}
+%%       >> else <<
+%%       	 w := cl_qea(rl_ex(rl_smkn('and, assl), nil), nil);
+%%       	 if null w then <<
+%% 	    smt_prin2t 'unsat;
+%% 	    return
+%%       	 >>;
+%%       	 tval . smt_model!* := car w
+%%       >>;
+%%       if tval eq 'true then
+%% 	 smt_prin2t 'sat
+%%       else if tval eq 'false then
+%% 	 smt_prin2t 'unsat
+%%       else
+%% 	 smt_prin2t 'unknown
+%%    end;
+
 procedure smt_processCheckSat();
-   begin scalar w, tval, assl;
-      assl := for each ass in smt_assertionl!* collect
-	 cl_simpl(ass, nil, -1);
-      w := smt_processCheckSatAllPosP assl;
-      if w then <<
-	 on1 'rlsifaco;
-	 w := rl_posqe(rl_ex(rl_smkn('and, assl), nil), nil);
-	 off1 'rlsifaco;
-	 {tval, smt_model!*} := {w, nil}
-      >> else <<
-      	 w := cl_qea(rl_ex(rl_smkn('and, assl), nil), nil);
-      	 if null w then <<
-	    smt_prin2t 'unsat;
-	    return
-      	 >>;
-      	 tval . smt_model!* := car w
+   begin scalar w, tval;
+      w := cl_qea(rl_ex(rl_smkn('and, smt_assertionl!*), nil), nil);
+      if null w then <<
+	 smt_prin2t 'unsat;
+	 return
       >>;
+      tval . smt_model!* := car w;
       if tval eq 'true then
 	 smt_prin2t 'sat
       else if tval eq 'false then
@@ -166,7 +182,6 @@ procedure smt_processCheckSat();
 
 procedure smt_processCheckSatAllPosP(assl);
    begin scalar vl, pvl;
-      return nil;  % for now
       for each ass in assl do <<
 	 vl := union(vl, rl_fvarl ass);
 	 if rl_op ass eq 'greaterp and sfto_varp ofsf_arg2l ass then
