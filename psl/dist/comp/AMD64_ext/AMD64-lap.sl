@@ -1369,7 +1369,9 @@
          ((eqcar x 'addq) (wplus2 1 (InstructionLength1 
 				 (cons 'add (cdr x)))))
          ((eqcar x 'subq) (wplus2 1 (InstructionLength1 
-				 (cons 'sub (cdr x)))))
+				     (cons 'sub (cdr x)))))
+         ((and (pairp x) (flagp (car x) 'norexprefix))
+	  (InstructionLength1 x))
          ((reg64bitp x) (wplus2 1 (InstructionLength1 x)))
          (t (InstructionLength1 x))))
 
