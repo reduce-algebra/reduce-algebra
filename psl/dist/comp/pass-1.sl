@@ -927,6 +927,9 @@
   `(ne ,a ,b)
   )
 
+(def-pass-1-reform   wnot u
+  (groupop (cons 'wnot u)))
+
 (def-pass-1-reform   wor u
   (assocop (cons 'wor u))
   )
