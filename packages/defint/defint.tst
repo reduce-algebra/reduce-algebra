@@ -270,5 +270,15 @@ fourier_cos(x^n*e^(-a*x),x);
 
 fourier_cos(1/(k*sqrt(pi))*e^(-x^2/(4*k^2)),x);
 
+%% some cases that do not work
+
+int(e^(-(x-mu)^2/(2*sigma^2)),x,0,infinity);
+int(e^(-(x+mu)^2/(2*sigma^2)),x,0,infinity);
+
+int(e^(-(x-mu)^2/(2*sigma^2)),x,-infinity,0);
+int(e^(-(x+mu)^2/(2*sigma^2)),x,-infinity,0);
+
+int(e^(-(x-mu)^2/(2*sigma^2)),x,-infinity,infinity);
+
 end;
 

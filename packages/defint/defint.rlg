@@ -1113,5 +1113,65 @@ fourier_cos(1/(k*sqrt(pi))*e^(-x^2/(4*k^2)),x);
  e
 
 
+%% some cases that do not work
+
+int(e^(-(x-mu)^2/(2*sigma^2)),x,0,infinity);
+
+
+                2         2
+      - (x - mu) /(2*sigma )
+int(e                       ,x,0,infinity)
+
+int(e^(-(x+mu)^2/(2*sigma^2)),x,0,infinity);
+
+
+                        mu
+ pi*sigma*( - erf(---------------) + 1)
+                   sqrt(2)*sigma
+----------------------------------------
+            sqrt(pi)*sqrt(2)
+
+
+int(e^(-(x-mu)^2/(2*sigma^2)),x,-infinity,0);
+
+
+                        mu
+ pi*sigma*( - erf(---------------) + 1)
+                   sqrt(2)*sigma
+----------------------------------------
+            sqrt(pi)*sqrt(2)
+
+int(e^(-(x+mu)^2/(2*sigma^2)),x,-infinity,0);
+
+
+                      2
+          (mu*x)/sigma
+         e
+int(------------------------,x,0,infinity)
+         2    2          2
+      (mu  + x )/(2*sigma )
+     e
+
+
+int(e^(-(x-mu)^2/(2*sigma^2)),x,-infinity,infinity);
+
+
+              mu
+( - erf(---------------)*pi*sigma
+         sqrt(2)*sigma
+
+                                     2         2
+                           - (x - mu) /(2*sigma )
+  + sqrt(pi)*sqrt(2)*int(e                       ,x,0,infinity) + pi*sigma)/(
+
+   sqrt(pi)*sqrt(2))
+
+
 end;
 
+Tested on x86_64-unknown-ubuntu16.04 PSL
+Time (counter 1): 15390 ms  plus GC time: 10 ms
+Quitting
+real 16.69
+user 15.58
+sys 0.88
