@@ -323,6 +323,11 @@ SED1='/^Total time taken:/d;
       /^max_gc_int :/d;
       /^max_gc_fac :/d'
 
+# To be able to replace full pathnames I generate a version of the path with 
+# directory separators / and \ escaped:
+
+ESCAPED_DIR=`echo $dd | sed -e 's/[\/\\\\]/\\\\&/g'`
+
 #######################################################################
 # CSL testing
 #######################################################################
@@ -395,6 +400,7 @@ sed -e "/^Tested on /,//d" <$rlgfile |
 sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
     -e "/OMIT/,/TIMO/d" <$name-times/$p.rlg.tmp | \
   sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
+  sed -e "s/${ESCAPED_DIR}.//" | \
   sed -e "$SED1" >$name-times/$p.rlg
 diff -B -w $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
 if test -s $name-times/$p.rlg.diff
@@ -466,6 +472,7 @@ sed -e "/^Tested on /,//d" <$rlgfile | \
 sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
     -e "/OMIT/,/TIMO/d" <psl-times/$p.rlg.tmp | \
   sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
+  sed -e "s/${ESCAPED_DIR}.//" | \
   sed -e "$SED1" >psl-times/$p.rlg
 diff -B -w psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
 if test -s psl-times/$p.rlg.diff
