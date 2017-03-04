@@ -27,6 +27,8 @@ on defn;
 a ^ - b * c ;
 
 a^-b*$$$c;
+at line 15 of file 
+2014-06-23-prefix-operator-precendence.tst
 
 ***** Please use parentheses around use of the unary operator 
 
@@ -34,6 +36,8 @@ a^-b*$$$c;
 a / - b / c ;
 
 a/-b/$$$c;
+at line 17 of file 
+2014-06-23-prefix-operator-precendence.tst
 
 ***** Please use parentheses around use of the unary operator 
 
@@ -53,6 +57,8 @@ a ^ (- b) * c ;(aeval (list 'times (list 'expt 'a (list 'minus 'b)) 'c))
 a * b^-2 * c^3
 
  ;a*b^-2*$$$c^3;
+at line 27 of file 
+2014-06-23-prefix-operator-precendence.tst
 
 ***** Please use parentheses around use of the unary operator 
 
@@ -60,6 +66,8 @@ a * b^-2 * c^3
 a intersection union b intersection c;
 
 a intersection union b intersection $$$c;
+at line 29 of file 
+2014-06-23-prefix-operator-precendence.tst
 
 ***** Please use parentheses around use of the unary operator 
 
@@ -96,6 +104,8 @@ $$$v*(u4(m+1,k+1)+u4(m-1,k+1)-u4(m+1,k-1)-u4(m-1,k-1)+u4(k+2)-u4(k-2)))/hx+ht*(2
 (k+2)+2*u3(k)-u3(k-2))+2*c**2*(-u4(k+2)+2*u4(k)-u4(k-2))+2*v**2*(-u4(k+2)+2*u4(k)-u4(k-2))+4*p*v*c**
 2*(-u2(m+1,k+1)+u2(m+1,k-1)+u2(m-1,k+1)-u2(m-1,k-1))+4*w*p*c**2*(-u3(m+1,k+1)+u3(m+1,k-1)+u3(m-1,k+1
 )-u3(m-1,k-1))+4*w*v*(-u4(m+1,k+1)+u4(m+1,k-1)+u4(m-1,k+1)-u4(m-1,k-1)))/hx/hx$
+at line 50 of file 
+2014-06-23-prefix-operator-precendence.tst
 
 ***** Please use parentheses around use of the unary operator 
 
@@ -105,10 +115,9 @@ off defn;
 
 end;
 
-Tested on x86_64-pc-windows CSL
+Tested on x86_64-unknown-ubuntu16.04 PSL
 Time (counter 1): 0 ms
-
-End of Lisp run after 0.01+0.04 seconds
-real 0.19
-user 0.03
-sys 0.04
+Quitting
+real 0.16
+user 0.09
+sys 0.01
