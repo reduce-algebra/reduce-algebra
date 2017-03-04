@@ -328,45 +328,45 @@ ev(0,17) := letop - 2*u*u16 - 32*u1*u15 - 16016*u10*u6 - 8736*u11*u5
 %% This is the list of variables with respect to their grading,
 %% starting from degree ONE.
 
-graadlijst:={{u},{u1},{u2},{u3},{u4},{u5},
+all_graded_der:={{u},{u1},{u2},{u3},{u4},{u5},
 {u6},{u7},{u8},{u9},{u10},{u11},{u12},{u13},{u14},{u15},{u16},{u17}};
 
 
-graadlijst := {{u},
+all_graded_der := {{u},
 
-               {u1},
+   {u1},
 
-               {u2},
+   {u2},
 
-               {u3},
+   {u3},
 
-               {u4},
+   {u4},
 
-               {u5},
+   {u5},
 
-               {u6},
+   {u6},
 
-               {u7},
+   {u7},
 
-               {u8},
+   {u8},
 
-               {u9},
+   {u9},
 
-               {u10},
+   {u10},
 
-               {u11},
+   {u11},
 
-               {u12},
+   {u12},
 
-               {u13},
+   {u13},
 
-               {u14},
+   {u14},
 
-               {u15},
+   {u15},
 
-               {u16},
+   {u16},
 
-               {u17}}
+   {u17}}
 
 
 % This is the list of all monomials of degree 0, 1, 2, ... 
@@ -701,10 +701,3 @@ sym:=(12*c(14)*u *u1 + 18*c(14)*u *u2 + 36*c(14)*u*u1  + 12*c(14)*u*u3
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 16 ms
-
-End of Lisp run after 0.01+0.06 seconds
-real 0.21
-user 0.00
-sys 0.07
