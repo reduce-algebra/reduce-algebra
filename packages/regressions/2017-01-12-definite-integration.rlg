@@ -1,0 +1,93 @@
+on div;
+
+
+r1:=a*int(exp(-a*t)-exp(-a*(r+y)),y,t-r,t);
+
+
+        - a*t    - a*r
+r1 := e      *(e       + a*r - 1)
+
+r2:=a*int(exp(-a*t),y,t-r,t)-a*int(exp(-a*(r+y)),y,t-r,t);
+
+
+        - a*t    - a*r
+r2 := e      *(e       + a*r - 1)
+
+if r1 neq r2 then write "failed";
+
+
+
+r1:=a*int(exp(-a*z),z,t,y+x);
+
+
+        - a*t     - a*x - a*y
+r1 := e       - e
+
+r2:=a*int(r1,y,t-x,t);
+
+
+        - a*t    - a*x
+r2 := e      *(e       + a*x - 1)
+
+r3:=a*exp(-a*t)*int(1,y,t-x,t)-a*exp(-a*x)*int(exp(-a*y),y,t-x,t);
+
+
+        - a*t    - a*x
+r3 := e      *(e       + a*x - 1)
+
+if r2 neq r3 then write "failed";
+
+
+
+r1:=a*int(exp(-a*x),x,0,s-y);
+
+
+           - a*s + a*y
+r1 :=  - e             + 1
+
+r2:=a*int(r1*exp(-a*y),y,0,s);
+
+
+           - a*s         - a*s
+r2 :=  - e      *a*s - e       + 1
+
+r3:=1-(1+a*s)*exp(-a*s);
+
+
+           - a*s         - a*s
+r3 :=  - e      *a*s - e       + 1
+
+if r2 neq r3 then write "failed";
+
+
+
+r1:=a*int(exp(-a*x),x,0,s-y);
+
+
+           - a*s + a*y
+r1 :=  - e             + 1
+
+r2:= a*int(r1*exp(-a*y),y,0,s);
+
+
+           - a*s         - a*s
+r2 :=  - e      *a*s - e       + 1
+
+r1*exp(-a*y);
+
+
+     - a*s     - a*y
+ - e       + e
+
+r3:= a*int(ws,y,0,s);
+
+
+           - a*s         - a*s
+r3 :=  - e      *a*s - e       + 1
+
+if r2 neq r3 then write "failed";
+
+
+
+end;
+
