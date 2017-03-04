@@ -369,7 +369,7 @@ lst := cdaddr n;
 new_lst := {caaddr n};
 
 for each i in lst do
-<< if caddr i < 0 then
+<< if pairp i and pairp cdr i and pairp cddr i and numberp caddr i and caddr i < 0 then
    << caddr i := minus caddr i;
       i := {car i,cadr i, {'minus,caddr i}}>>;
   new_lst := append(new_lst,{i});
