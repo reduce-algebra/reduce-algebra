@@ -125,7 +125,7 @@
             *fgreaterp *flessp)
         (function(lambda(x)(remprop x 'opencode)))))
 
-(fluid '(arithargloc staticfloatloc))
+(fluid '(arithargloc staticfloatloc fpstatusloc* fp-except-mode))
 
 (loadtime
   (progn % Allocate Physical Space                                         
@@ -133,6 +133,8 @@
          (wputv arithargloc 0 0)
          (wputv arithargloc 1 0)
          (setq staticfloatloc (gtwarray 3))
+         (setq fpstatusloc* (gtwarray 1))
+         (setq fp-except-mode* 1)
          nil))
 
 (de betap (x)
@@ -488,4 +490,19 @@
 (de returnnil (u)
   nil)
 
+(de sqrt (x)
+ (case (tag x)
+   ((posint-tag negint-tag) (setq x (intfloat x))) 
+   ((fixnum-tag) (setq x (intfloat (fixval (fixinf x)))))
+   ((bignum-tag) (setq x (floatfrombignum x)))
+   ((floatnum-tag) nil)
+   (nil (nonnumber1error x 'sqrt)))
+ (when (and (not (eq fp-except-mode* 0)) (lessp x 0.0))
+       (stderror (list "Negative argument to SQRT:" x)))
+ (let ((y (gtfltn)))
+   (*fsqrt (floatbase y) (floatbase (fltinf x)))
+   (mkfltn y))
+)
+
+	 
 % End of file.

@@ -23,7 +23,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(fluid '(**neg-zero** **neg-one**))
+(fluid '(**neg-zero** **neg-one** fp-except-mode*))
 
 (off echo)
 
@@ -31,20 +31,24 @@
   (uxfloat  (inf x) y))
 
 (de *fplus2 (x y z)
- (when (eq (uxplus2 (inf x) (inf y) (inf z)) 0)
+ (when (and (eq (uxplus2 (inf x) (inf y) (inf z)) 0) (not (eq fp-except-mode* 0)))
       (stderror "Floating point error in fplus2")))
 
 (de *fdifference (x y z)
- (when (eq (uxdifference (inf x) (inf y) (inf z)) 0)
+ (when (and (eq (uxdifference (inf x) (inf y) (inf z)) 0) (not (eq fp-except-mode* 0)))
       (stderror "Floating point error in fdifference")))
 
 (de *ftimes2 (x y z)
-  (when (eq (uxtimes2 (inf x) (inf y) (inf z)) 0)
+  (when (and (eq (uxtimes2 (inf x) (inf y) (inf z)) 0) (not (eq fp-except-mode* 0)))
      (stderror "Floating point error in ftimes2")))
 
 (de *fquotient (x y z)
-  (when (eq (uxquotient (inf x) (inf y) (inf z)) 0)
+  (when (and (eq (uxquotient (inf x) (inf y) (inf z)) 0) (not (eq fp-except-mode* 0)))
      (stderror "Floating point error in fquotient")))
+
+(de *fsqrt (x y)
+  (when (and (eq (uxsqrt (inf x) (inf y)) 0) (not (eq fp-except-mode* 0)))
+     (stderror "Floating point error in fsqrt")))
 
 (de *fgreaterp (x y)
   (uxgreaterp (inf x) (inf y) 't 'nil))
