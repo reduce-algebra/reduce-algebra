@@ -190,8 +190,17 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
 % Test for validity of the integral
 
-      test := reval list('test_cases,m,n,p,q,delta,xi,eta,test_1,
-                                                test_1a,test_2);
+      test := list('test_cases,m,n,p,q,delta,xi,eta,test_1,test_1a,test_2);
+      if !*trdefint then <<
+	 prin2t "Checking test cases:";
+	 mathprint test;
+      >>;
+      test := reval test;
+      if !*trdefint then <<
+	 prin2t "Result returned is:";
+	 mathprint test;
+      >>;
+      
 
       if transform_tst = 't then
           test := 't;
@@ -257,9 +266,15 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
       test := list('test_cases,m,n,p,q,delta,xi,eta,test_1,test_1a,
                                                         test_2);
-
-      test := reval list('test_cases,m,n,p,q,delta,xi,eta,test_1,
-                                                test_1a,test_2);
+      if !*trdefint then <<
+	 prin2t "Checking test cases:";
+	 mathprint test;
+      >>;
+      test := reval test;
+      if !*trdefint then <<
+	 prin2t "Result returned is:";
+	 mathprint test;
+      >>;
 
       if transform_tst = 't then
           test := 't;
@@ -535,9 +550,10 @@ symbolic procedure test_1(aa,u,v);
 %  Y.L.Luke. Chapter 5.6 page 157 (3) & (3*)
 
 begin scalar s,m,n,a,b,ai,bj,a_max,b_min,temp,temp1,
-                !*rounded,dmode!*;
+                rnd,dmode!*;
 
-off rounded;
+rnd := !*rounded;
+if rnd then off rounded;
 
 transform_tst := reval algebraic(transform_tst);
 
@@ -563,7 +579,7 @@ if transform_tst neq 't then
 
       if ai neq 'nil then
       << a_max := simpmax list('list . ai);
-         a_max := simprepart list(list('!*sq,a_max,t))>>;
+         a_max := simprepart list(mk!*sq a_max)>>;
 
    >>
 
@@ -571,7 +587,7 @@ if transform_tst neq 't then
 
    << if a neq 'nil then
       << a_max := simpmax list('list . a);
-         a_max := simprepart list(list('!*sq,a_max,t))>>;
+         a_max := simprepart list(mk!*sq a_max)>>;
    >>;
 
 
@@ -584,7 +600,7 @@ if transform_tst neq 't then
 
    if bj neq 'nil then
    << b_min := simpmin list('list . bj);
-      b_min := simprepart list(list('!*sq,negsq(b_min),t))>>;
+      b_min := simprepart list(mk!*sq negsq(b_min))>>;
 
 
    if a_max neq nil and b_min neq nil then
@@ -592,35 +608,33 @@ if transform_tst neq 't then
    << temp := subtrsq(s,diffsq(a_max,1));
       temp1 := subtrsq(b_min,s);
 
-      if car temp = 'nil or car temp1 = 'nil
-       or car temp > 0 or car temp1> 0 then
-          return 'fail
+      if sign!-of mk!*sq temp = -1 and sign!-of mk!*sq temp1 = -1
+        then << if rnd then on rounded; return test2(s,cadr v,caddr v)>>
+       else  << if rnd then on rounded; return 'fail>>
 
-      else
-          return test2(s,cadr v,caddr v)>>
+   >>
 
-   else if a_max = nil then
+   else if null a_max then
 
    << temp := subtrsq(b_min,s);
 
-      if car temp = 'nil or car temp > 0 then
-          return 'fail
+      if sign!-of mk!*sq temp = -1
+        then << if rnd then on rounded; return 't >>
+       else << if rnd then on rounded; return 'fail >>
 
-       else
-          return 't>>
+   >>
 
-   else if b_min = nil then
+   else if null b_min then
 
    << temp :=  subtrsq(s,diffsq(a_max,1));
 
-      if car temp = 'nil or car temp > 0 then
-          return 'fail
+      if sign!-of mk!*sq temp = -1
+      then << if rnd then on rounded; return 't >>
+       else << if rnd then on rounded; return 'fail >>;
 
-      else
-          return 't>>;
-
+   >>
 >>
-
+   
 else
 << transform_lst := cons (('tst1 . '(list 'lessp (list 'lessp
         (list 'minus
@@ -628,6 +642,7 @@ else
         (list 'difference 1
                 (list 'max(list 'repart 'ai))))),transform_lst);
 
+   if rnd then off rounded;
    return 't>>;
 
 end;
@@ -664,9 +679,7 @@ if transform_tst neq 't then
    temp2 := reval algebraic((q-p)*s);
    diff := simp!* reval algebraic(temp1 - temp2);
 
-   if car diff ='nil then return 'fail
-
-   else if car diff < 0 then return 'fail else return t>>
+   if sign!-of mk!*sq diff = 1 then return t else return 'fail>>
 
 else
 << transform_lst := cons (('tst2 . '(list 'greaterp (list 'plus
@@ -771,8 +784,15 @@ test := {'test_cases2,m,n,p,q,k,l,u,v,delta,epsilon,sigma,omega,rho,
    eta,mu,r1,r2,phi,test_1a,test_1b,test_2,test_3,test_4,test_5,test_6,
    test_7,test_8,test_9,test_10,test_11,test_12,test_13,test_14,
    test_15};
-
+if !*trdefint then <<
+   prin2t "Checking test cases:";
+   mathprint test;
+>>;
 test := reval test;
+if !*trdefint then <<
+	 prin2t "Result returned is:";
+	 mathprint test;
+>>;
 
 if transform_tst = t and spec_cond neq nil then test := t;
 return test;
@@ -1172,7 +1192,7 @@ begin scalar arg_sigma,pro,temp,fail_test,!*rounded,dmode!*;
 if transform_tst neq 't then
 
 << on rounded;
-   arg_sigma := abs(atan(impart sigma/repart sigma));
+   arg_sigma := abs(atan2(impart sigma,repart sigma));
    pro :=  delta*pi;
    temp :=  pro - arg_sigma;
    if  numberp temp and temp <= 0 then fail_test := t;
@@ -1205,7 +1225,7 @@ begin scalar arg_sigma,pro,fail_test;
 
 if transform_tst neq 't then
 
-<< arg_sigma := abs(atan(impart sigma/repart sigma));
+<< arg_sigma := abs(atan2(impart sigma,repart sigma));
    pro := delta*pi;
    if arg_sigma neq pro then fail_test := 't;
    if fail_test = 't then return reval 'fail else return reval 't>>
@@ -1235,7 +1255,7 @@ if transform_tst neq 't then
 
 << on rounded;
 
-   arg_omega := abs(atan(impart omega/repart omega));
+   arg_omega := abs(atan2(impart omega,repart omega));
    pro := epsilon*pi;
    temp := pro - arg_omega;
    if numberp temp and temp <= 0 then fail_test := 't;
@@ -1269,7 +1289,7 @@ begin scalar arg_omega,pro,fail_test;
 
 if transform_tst neq 't then
 
-<< arg_omega := abs(atan(impart omega/repart omega));
+<< arg_omega := abs(atan2(impart omega,repart omega));
    pro := epsilon*pi;
    if arg_omega neq pro then fail_test := 't;
    if fail_test = t then return reval 'fail else return reval 't>>
@@ -1317,7 +1337,7 @@ if transform_tst neq 't then
    arg := 1 - z*sigma^(-r2)*omega^r1;
 
    if arg = 0 then arg_test := 0
-   else     arg_test := abs(atan(impart arg/repart arg));
+   else     arg_test := abs(atan2(impart arg,repart arg));
 
    if numberp arg_test and arg_test < pi then
                 << off rounded; return reval 't>>
@@ -1362,8 +1382,8 @@ begin scalar lc,ls,temp_ls,psi,theta,arg_omega,arg_sigma,
 
 if transform_tst neq 't then
 
-<< arg_omega := atan(impart omega/repart omega);
-   arg_sigma := atan(impart sigma/repart sigma);
+<< arg_omega := atan2(impart omega,repart omega);
+   arg_sigma := atan2(impart sigma,repart sigma);
 
    psi := (abs arg_omega + (q - m - n)*pi)/(q - p);
    theta := (abs arg_sigma + (v - k - l)*pi)/(v - u);

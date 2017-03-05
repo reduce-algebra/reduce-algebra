@@ -115,7 +115,7 @@ case24_rules :=
         and k > 0
         and delta > 0
         and epsilon < 0
-        and mylessp(abs(atan(impart omega/repart omega)),m + n - p + 1)
+        and mylessp(abs(atan2(impart omega,repart omega)),m + n - p + 1)
         and test_1a = 't and test_1b = 't and test_2 = 't
         and test_10 = 't and test_14 = 't and test_15 ='t
         and transform_test('test2,'test10,'test14,'test15,nil,nil,nil,
@@ -137,7 +137,7 @@ case25_rules :=
         and l > 0
         and delta > 0
         and epsilon < 0
-        and mylessp(abs(atan(impart omega/repart omega)),m + n - q + 1)
+        and mylessp(abs(atan2(impart omega,repart omega)),m + n - q + 1)
         and test_1a = 't and test_1b = 't and test_3 = 't
         and test_10 = 't and test_14 = 't and test_15 ='t
         and transform_test('test3,'test10,'test14,'test15,nil,nil,nil,
@@ -159,7 +159,7 @@ case26_rules :=
         and k > 0
         and delta > 0
         and epsilon >= 0
-        and test_arg(abs(atan(impart omega/repart omega)),
+        and test_arg(abs(atan2(impart omega,repart omega)),
                                                 epsilon,epsilon + 1)
         and test_1a = 't and test_1b = 't and test_2 = 't
         and test_10 = 't and test_14 = 't and test_15 = 't
@@ -182,7 +182,7 @@ case27_rules :=
         and l > 0
         and delta > 0
         and epsilon >= 0
-        and test_arg(abs(atan(impart omega/repart omega)),
+        and test_arg(abs(atan2(impart omega,repart omega)),
                                                 epsilon,epsilon + 1)
         and test_1a = 't and test_1b = 't and test_3 = 't
         and test_10 = 't and test_14 = 't and test_15 = 't
@@ -205,7 +205,7 @@ case28_rules :=
         and k > 0
         and delta > 0
         and epsilon >= 0
-        and test_arg(abs(atan(impart omega/repart omega)),
+        and test_arg(abs(atan2(impart omega,repart omega)),
                                                 epsilon,m + n - p + 1)
         and test_1a = 't and test_1b = 't and test_2 = 't
         and test_10 = 't and test_14 = 't and test_15 = 't
@@ -229,7 +229,7 @@ case29_rules :=
         and l > 0
         and delta > 0
         and epsilon >= 0
-        and test_arg(abs(atan(impart omega/repart omega)),
+        and test_arg(abs(atan2(impart omega,repart omega)),
                                                 epsilon,m + n - q + 1)
         and test_1a = 't and test_1b = 't and test_3 = 't
         and test_10 = 't and test_14 = 't and test_15 = 't
@@ -252,7 +252,7 @@ case30_rules :=
         and m > 0
         and epsilon > 0
         and delta < 0
-        and mylessp(abs(atan(impart sigma/repart sigma)),k + l - u + 1)
+        and mylessp(abs(atan2(impart sigma,repart sigma)),k + l - u + 1)
         and test_1a = 't and test_1b = 't and test_2 = 't
         and test_12 = 't and test_14 = 't and test_15 = 't
         and transform_test('test2,'test12,'test14,'test15,nil,nil,nil,
@@ -274,7 +274,7 @@ case31_rules :=
         and n > 0
         and epsilon > 0
         and delta < 0
-        and mylessp(abs(atan(impart sigma/repart sigma)),k + l - v + 1)
+        and mylessp(abs(atan2(impart sigma,repart sigma)),k + l - v + 1)
         and test_1a = 't and test_1b = 't and test_3 = 't
         and test_12 = 't and test_14 = 't and test_15 = 't
         and transform_test('test3,'test12,'test14,'test15,nil,nil,nil,
@@ -296,7 +296,7 @@ case32_rules :=
         and m > 0
         and epsilon > 0
         and delta >= 0
-        and test_arg(abs(atan(impart sigma/repart sigma)),
+        and test_arg(abs(atan2(impart sigma,repart sigma)),
                                                 delta,delta + 1)
         and test_1a = 't and test_1b = 't and test_2 = 't
         and test_12 = 't and test_14 = 't and test_15 = 't
@@ -319,7 +319,7 @@ case33_rules :=
         and n > 0
         and epsilon > 0
         and delta >= 0
-        and test_arg(abs(atan(impart sigma/repart sigma)),
+        and test_arg(abs(atan2(impart sigma,repart sigma)),
                                                 delta,delta + 1)
         and test_1a = 't and test_1b = 't and test_3 = 't
         and test_12 = 't and test_14 = 't and test_15 = 't
@@ -342,7 +342,7 @@ case34_rules :=
         and m > 0
         and epsilon > 0
         and delta >= 0
-        and test_arg(abs(atan(impart sigma/repart sigma)),
+        and test_arg(abs(atan2(impart sigma,repart sigma)),
                                                 delta,k + l - u + 1)
         and test_1a = 't and test_1b = 't and test_2 = 't
         and test_12 = 't and test_14 = 't and test_15 = 't
@@ -365,7 +365,7 @@ case35_rules :=
         and n > 0
         and epsilon > 0
         and delta >= 0
-        and test_arg(abs(atan(impart sigma/repart sigma)),
+        and test_arg(abs(atan2(impart sigma,repart sigma)),
                                                 delta,k + l - v + 1)
         and test_1a = t and test_1b = t and test_3 = t
         and test_12 = t and test_14 = t and test_15 = t

@@ -34,16 +34,16 @@ algebraic procedure mylessp(a,b);
 %      a < b*pi
 %
 
-begin scalar !*rounded,mydiff;
+begin scalar rnd,mydiff,result;
 
 if transform_tst neq 't then
 
-<< on rounded;
-%   if a < b*pi then << off rounded; return t>>
-   mydiff := a - b*pi;
-   if numberp mydiff and mydiff < 0  then << off rounded; return t>>
-   else << off rounded; return nil>>;
->>
+   if sign(a - b*pi) = -1 then return 't else return nil
+%%<< on rounded;
+%%%   if a < b*pi then << off rounded; return t>>
+%%   mydiff := a - b*pi;
+%%   if numberp mydiff and mydiff < 0  then << off rounded; return t>>
+%%>>
 else << transform_mylessp(); return t>>;
 end;
 
