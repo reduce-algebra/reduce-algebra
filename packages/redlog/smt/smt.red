@@ -191,7 +191,7 @@ procedure smt_processCheckSatAllPosP(assl);
    end;
 
 procedure smt_processGetModel();
-   begin scalar varl, model, mal, v, val, w;
+   begin scalar varl, model, mal, w;
       model := smt_model!*;
       if model eq 'unset then <<
 	 smt_error();
@@ -199,16 +199,15 @@ procedure smt_processGetModel();
       >>;
       varl := cl_fvarl1 rl_smkn('and, smt_assertionl!*);
       for each e in model do
-	 varl := delqip(cadr e, varl);
+	 varl := delqip(car e, varl);
       for each v in varl do
 	 model := {'equal, v, v} . model;
       for each e in model do <<
-	 {v, val} := cdr e;
-	 w := assoc(val, mal);
+	 w := assoc(cdr e, mal);
 	 if w then
-	    cdr w := v . cdr w
+	    cdr w := car e . cdr w
 	 else
-	    mal := (val . {v}) . mal;
+	    mal := (cdr e . {car e}) . mal;
       >>;
       smt_prin2t for each pr in mal collect {cdr pr, smt_rl2smtAns car pr}
    end;
