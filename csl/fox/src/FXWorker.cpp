@@ -754,9 +754,6 @@ void *FXTerminal::worker_thread(void *arg)
 #endif
 {
     signal(SIGINT, sigint_handler);
-#ifdef SIGBREAK
-    signal(SIGBREAK, sigbreak_handler);
-#endif
     term = (FXTerminal *)arg;
 
 // set proper initial state for all the locks.
