@@ -253,8 +253,8 @@ asserted procedure ic_setinfcore(icdata: InfCoreData, l: List): List;
 asserted procedure ic_appendinfcore(icdata: InfCoreData, k: Integer);
    putv(icdata, 0, k . getv(icdata, 0));
 
-asserted procedure ic_appendevtplist(icdata: InfcoreData, tpl: List): Any;
-   putv(icdata, 2, tpl . getv(icdata, 2));
+asserted procedure ic_appendevtplist(icdata: InfcoreData, vec: Vector): Any;
+   putv(icdata, 2, vec . getv(icdata, 2));
 
 asserted procedure ic_addcoverage(icdata: InfCoreData, k: Integer): Any;
    putv(icdata, 4, getv(icdata, 4) + k);
@@ -852,7 +852,7 @@ asserted procedure cl_esetvectsubst(form, fvect: Vector, v: Kernel, eset: List, 
 	    !*rlqeicsimpl := nil;
 	    if car res eq 'false then <<
 	       if not falseFound then
- 		  ofsfic_filterlocalcore(resvect,cadr res);
+ 		  ofsfic_filterlocalcore(resvect, cadr res);
 	    >> else <<
 	       res := car res;
 	       if res eq 'true then <<
@@ -1518,12 +1518,13 @@ procedure ofsfic_subformulap(sf, f);
 
 %%%%%%%MAX
 % Reduce local core by repeated simplification. Unoptimized.
-procedure ofsfic_filterlocalcore(fl, core);
+asserted procedure ofsfic_filterlocalcore(fvect: Vector, core: List): Any;
+   % No meaningful return value.
    begin scalar f, l, ww, evect;
       evect := ic_essentialvect rlqeicdata!*;
       for i := 0 : upbv evect do
 	 if getv(evect, i) then
-	    f := getv(fl, i) . f;
+	    f := getv(fvect, i) . f;
       if f then
 	 f := ofsfic!*cl_simpl(rl_smkn('and, f), nil, -1);
       if f neq 'false then <<
@@ -1533,7 +1534,7 @@ procedure ofsfic_filterlocalcore(fl, core);
 	    l := length core;
 	    f := nil;
 	    while core do <<
-	       f := getv(fl, car core) . f;
+	       f := getv(fvect, car core) . f;
 	       core := cdr core
 	    >>;
 	    f := rl_smkn('and, reverse f);
