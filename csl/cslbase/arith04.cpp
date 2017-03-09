@@ -1,4 +1,4 @@
-//  arith04.cpp                       Copyright (C) 1991-2017 Codemist    
+// arith04.cpp                             Copyright (C) 1991-2017 Codemist
 
 //
 // Arithmetic functions.
@@ -41,7 +41,7 @@
 #include "headers.h"
 
 
-LispObject make_n_word_bignum(int32_t a1, uint32_t a2, uint32_t a3, size_t n)
+LispObject make_n_word_bignum(int32_t a2, uint32_t a1, uint32_t a0, size_t n)
 //
 // This make a bignum with n words of data and digits a1, a2, a3 and
 // then n zeros.  Will only be called with n>=0 and a1, a2, a3 already
@@ -52,10 +52,39 @@ LispObject make_n_word_bignum(int32_t a1, uint32_t a2, uint32_t a3, size_t n)
 {   size_t i;
     LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+12);
     for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
-    bignum_digits(w)[n] = a3;
-    bignum_digits(w)[n+1] = a2;
-    bignum_digits(w)[n+2] = a1;
+    bignum_digits(w)[n] = a0;
+    bignum_digits(w)[n+1] = a1;
+    bignum_digits(w)[n+2] = a2;
     if ((n & 1) != (SIXTY_FOUR_BIT ? 1 : 0)) bignum_digits(w)[n+3] = 0;
+    return w;
+}
+
+// Now the same sort of idea but with yet more digits being passed.
+
+LispObject make_n4_word_bignum(int32_t a3, uint32_t a2, uint32_t a1,
+                               uint32_t a0, size_t n)
+{   size_t i;
+    LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+16);
+    for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
+    bignum_digits(w)[n] = a0;
+    bignum_digits(w)[n+1] = a1;
+    bignum_digits(w)[n+2] = a2;
+    bignum_digits(w)[n+3] = a3;
+    if ((n & 1) != (SIXTY_FOUR_BIT ? 0 : 1)) bignum_digits(w)[n+4] = 0;
+    return w;
+}
+
+LispObject make_n5_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
+                               uint32_t a1, uint32_t a0, size_t n)
+{   size_t i;
+    LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+20);
+    for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
+    bignum_digits(w)[n] = a0;
+    bignum_digits(w)[n+1] = a1;
+    bignum_digits(w)[n+2] = a2;
+    bignum_digits(w)[n+3] = a3;
+    bignum_digits(w)[n+4] = a4;
+    if ((n & 1) != (SIXTY_FOUR_BIT ? 1 : 0)) bignum_digits(w)[n+5] = 0;
     return w;
 }
 
@@ -213,6 +242,7 @@ LispObject rational(LispObject a)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
+// LONG FLOAT @@@
             return rationalf(float_of_number(a));
         default:
             aerror1("bad arg for rational", a);
@@ -238,6 +268,7 @@ LispObject rationalize(LispObject a)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
+// LONG FLOAT @@@
             return rationalizef(float_of_number(a));
         default:
             aerror1("bad arg for rationalize", a);
@@ -248,7 +279,83 @@ LispObject rationalize(LispObject a)
 // Arithmetic comparison: lessp
 //
 
-static bool lesspis(LispObject a, LispObject b)
+static bool lessp_i_i(LispObject a1, LispObject a2);
+static bool lessp_i_b(LispObject a1, LispObject a2);
+static bool lessp_i_r(LispObject a1, LispObject a2);
+static bool lessp_i_c(LispObject a1, LispObject a2);
+static bool lessp_i_s(LispObject a1, LispObject a2);
+static bool lessp_i_f(LispObject a1, LispObject a2);
+static bool lessp_i_d(LispObject a1, LispObject a2);
+static bool lessp_i_l(LispObject a1, LispObject a2);
+
+static bool lessp_b_i(LispObject a1, LispObject a2);
+static bool lessp_b_b(LispObject a1, LispObject a2);
+static bool lessp_b_r(LispObject a1, LispObject a2);
+static bool lessp_b_c(LispObject a1, LispObject a2);
+static bool lessp_b_s(LispObject a1, LispObject a2);
+static bool lessp_b_f(LispObject a1, LispObject a2);
+static bool lessp_b_d(LispObject a1, LispObject a2);
+static bool lessp_b_l(LispObject a1, LispObject a2);
+
+static bool lessp_r_i(LispObject a1, LispObject a2);
+static bool lessp_r_b(LispObject a1, LispObject a2);
+static bool lessp_r_r(LispObject a1, LispObject a2);
+static bool lessp_r_c(LispObject a1, LispObject a2);
+static bool lessp_r_s(LispObject a1, LispObject a2);
+static bool lessp_r_f(LispObject a1, LispObject a2);
+static bool lessp_r_d(LispObject a1, LispObject a2);
+static bool lessp_r_l(LispObject a1, LispObject a2);
+
+static bool lessp_c_i(LispObject a1, LispObject a2);
+static bool lessp_c_b(LispObject a1, LispObject a2);
+static bool lessp_c_r(LispObject a1, LispObject a2);
+static bool lessp_c_c(LispObject a1, LispObject a2);
+static bool lessp_c_s(LispObject a1, LispObject a2);
+static bool lessp_c_f(LispObject a1, LispObject a2);
+static bool lessp_c_d(LispObject a1, LispObject a2);
+static bool lessp_c_l(LispObject a1, LispObject a2);
+
+static bool lessp_s_i(LispObject a1, LispObject a2);
+static bool lessp_s_b(LispObject a1, LispObject a2);
+static bool lessp_s_r(LispObject a1, LispObject a2);
+static bool lessp_s_c(LispObject a1, LispObject a2);
+static bool lessp_s_s(LispObject a1, LispObject a2);
+static bool lessp_s_f(LispObject a1, LispObject a2);
+static bool lessp_s_d(LispObject a1, LispObject a2);
+static bool lessp_s_l(LispObject a1, LispObject a2);
+
+static bool lessp_f_i(LispObject a1, LispObject a2);
+static bool lessp_f_b(LispObject a1, LispObject a2);
+static bool lessp_f_r(LispObject a1, LispObject a2);
+static bool lessp_f_c(LispObject a1, LispObject a2);
+static bool lessp_f_s(LispObject a1, LispObject a2);
+static bool lessp_f_f(LispObject a1, LispObject a2);
+static bool lessp_f_d(LispObject a1, LispObject a2);
+static bool lessp_f_l(LispObject a1, LispObject a2);
+
+static bool lessp_d_i(LispObject a1, LispObject a2);
+static bool lessp_d_b(LispObject a1, LispObject a2);
+static bool lessp_d_r(LispObject a1, LispObject a2);
+static bool lessp_d_c(LispObject a1, LispObject a2);
+static bool lessp_d_s(LispObject a1, LispObject a2);
+static bool lessp_d_f(LispObject a1, LispObject a2);
+static bool lessp_d_d(LispObject a1, LispObject a2);
+static bool lessp_d_l(LispObject a1, LispObject a2);
+
+static bool lessp_l_i(LispObject a1, LispObject a2);
+static bool lessp_l_b(LispObject a1, LispObject a2);
+static bool lessp_l_r(LispObject a1, LispObject a2);
+static bool lessp_l_c(LispObject a1, LispObject a2);
+static bool lessp_l_s(LispObject a1, LispObject a2);
+static bool lessp_l_f(LispObject a1, LispObject a2);
+static bool lessp_l_d(LispObject a1, LispObject a2);
+static bool lessp_l_l(LispObject a1, LispObject a2);
+
+static inline bool lessp_i_i(LispObject a, LispObject b)
+{   return (intptr_t)a < (intptr_t)b;
+}
+
+static inline bool lessp_i_s(LispObject a, LispObject b)
 {
 // On a 32-bit machine any fixnum can be converted to a float without
 // introducing any error at all... but now on a 64-bit system one can
@@ -263,7 +370,7 @@ static bool lesspis(LispObject a, LispObject b)
     return lessp_i64d(int_of_fixnum(a), value_of_immediate_float(b));
 }
 
-bool lesspib(LispObject, LispObject b)
+static inline bool lessp_i_b(LispObject, LispObject b)
 //
 // a fixnum and a bignum can never be equal, and the magnitude of
 // the bignum must be at least as great as that of the fixnum, hence
@@ -274,30 +381,63 @@ bool lesspib(LispObject, LispObject b)
     return (msd >= 0);
 }
 
-static bool lesspir(LispObject a, LispObject b)
-{
-// compute a < p/q  as a*q < p
-    push(numerator(b));
+static inline bool lessp_i_r(LispObject a, LispObject b)
+{   push(numerator(b));  // compute a < p/q  as a*q < p
     a = times2(a, denominator(b));
     pop(b);
-    return lessp2(a, b);
+    return lessp2(a, b);  // lessp2 is NOT an inline function!
 }
 
-#define lesspif(a, b) ((double)int_of_fixnum(a) < float_of_number(b))
+static inline bool lessp_i_f(LispObject a, LispObject b)
+{   if (!SIXTY_FOUR_BIT)
+        return (double)int_of_fixnum(a) < single_float_val(b);
+    return lessp_i64d(int_of_fixnum(a), single_float_val(b));
+}
 
-bool lesspdb(double a, LispObject b)
-//
+static inline bool lessp_i_d(LispObject a, LispObject b)
+{   if (!SIXTY_FOUR_BIT)
+        return (double)int_of_fixnum(a) < double_float_val(b);
+    return lessp_i64d(int_of_fixnum(a), double_float_val(b));
+}
+
+static inline bool lessp_i_l(LispObject a, LispObject b)
+{   float128_t aa;
+    i64_to_f128M((int64_t)int_of_fixnum(a), &aa);
+    return f128M_lt(&aa, long_float_addr(b));
+}
+
+static inline bool lessp_f_i(LispObject a, LispObject b)
+{   if (!SIXTY_FOUR_BIT)
+        return single_float_val(a) < (double)int_of_fixnum(b);
+    return lessp_di64(single_float_val(a), int_of_fixnum(b));
+}
+
+static inline bool lessp_d_i(LispObject a, LispObject b)
+{   if (!SIXTY_FOUR_BIT)
+        return double_float_val(a) < (double)int_of_fixnum(b);
+    return lessp_di64(double_float_val(a), int_of_fixnum(b));
+}
+
+static inline bool lessp_l_i(LispObject a, LispObject b)
+{   float128_t bb;
+    i64_to_f128M((int64_t)int_of_fixnum(b), &bb);
+    return f128M_lt(long_float_addr(a), &bb);
+}
+
+static inline bool lessp_rawd_b(double a, LispObject b)
 // a is a floating point number and b a bignum.  Compare them.
-//
 {   size_t n = (bignum_length(b)-CELL-4)/4;
     int32_t bn = (int32_t)bignum_digits(b)[n];
-//
 // The value represented by b can not be in the range that fixnums
 // cover, so if a is in that range I need only inspect the sign of b.
+// However I need to note that the range of fixnums is differs based on
+// whether I am on a 32 or 64 bit system!
 //
-    if ((double)(-0x08000000) <= a &&
-        a <= (double)(0x7fffffff))
-        return (bn >= 0);
+// I test "< -MOST_NEGATIVE_FIXVAL" rather than "<= MOST_POSITIVE_FIXVAL"
+// because the largest positive fixnum will not convert to a double in a
+// loss-free manner on a 64-bit machine, while the most negative one will.
+    if ((double)MOST_NEGATIVE_FIXVAL <= a &&
+        a < -(double)MOST_NEGATIVE_FIXVAL) return (bn >= 0);
 //
 // If b is a one-word bignum I can convert it to floating point
 // with no loss of accuracy at all.
@@ -312,8 +452,8 @@ bool lesspdb(double a, LispObject b)
 // with a guard bit..)
 //
     if (n == 1)
-    {   if (1.0e19 < a) return false;
-        else if (a < -1.0e19) return true;
+    {   if (a >= (double)INT64_C(0x4000000000000000)) return false;
+        else if (a < -(double)INT64_C(0x4000000000000000)) return true;
         a -= TWO_31*(int32_t)bn;
         return a < (double)bignum_digits(b)[0];
     }
@@ -327,131 +467,232 @@ bool lesspdb(double a, LispObject b)
 // convert the float to a bignum and then perform the comparison.. that
 // does the best I can to avoid error.  I do not actually have to create
 // a datastructure for the bignum provided I can collect up the data that
-// would have to be stored in it.  See lisp_fix (arith8.c) for related code.
+// would have to be stored in it.  See lisp_fix (arith08.c) for related code.
 //
-    {   int32_t a0, a1, a2;
-        int x, x1;
-        a = frexp(a, &x); // 0.5 <= abs(a) < 1.0, x = (binary) exponent
-        if (a == 1.0) a = 0.5, x++;    // For Zortech, which once needed this!
-        a *= TWO_31;
-        a1 = (int32_t)a;               // 2^31 > |a| >= 2^30
-        if (a < 0.0) a1--;             // now maybe a1 is -2^31
-        a -= (double)a1;
-        a2 = (uint32_t)(a * TWO_31);   // This conversion should be exact
-        x -= 62;
-//
-// If the float is smaller in absolute value than the bignum life is easy
-//
-        if (x < 0) return (bn >= 0);
-        x1 = x/31 + 2;   // number of words of bignum it would need
-        if (n != (size_t)x1)
-        {   if (n < (size_t)x1) return a < 0.0;
-            else return (bn >= 0);
-        }
-//
-// Now the most jolly bit - the two numbers have the same sign and involve
-// the same number of digits.
-//
-        if (a1 < 0)
-        {   a0 = -1;
-            a1 = clear_top_bit(a1);
-        }
-        else a0 = 0;
-        x = x % 31;
-        a0 = (a0 << x) | (a1 >> (31-x));
-        a1 = clear_top_bit(a1 << x) | (a2 >> (31-x));
-        a2 = clear_top_bit(a2 << x);
-        if (a0 != bn) return a0 < bn;
-        bn = bignum_digits(b)[n-1];
-        if (a1 != bn) return a1 < bn;
-        return a2 < (int32_t)bignum_digits(b)[n-2];
+    int32_t a2;
+    uint32_t a1, a0; 
+    int x = double_to_3_digits(a, a2, a1, a0);
+// If the float would turn into a bignum with either fewer or more digits
+// than the value it is to be compared with the result is based on just the
+// sign bit of whichever is larger.
+    if (n != 2+(size_t)x)
+    {   if (n < 2+(size_t)x) return (a < 0);
+        else return (bn >= 0);
     }
+// Now the two numbers are rather similar in magnitude. Compare the
+// first 3 digits of the bignum forms.
+    if (a2 < bn) return true;
+    else if (a2 > bn) return false;
+    else if (a1 < bignum_digits(b)[n-1]) return true;
+    else if (a1 > bignum_digits(b)[n-1]) return false;
+    else if (a0 < bignum_digits(b)[n-2]) return true;
+    else if (a0 > bignum_digits(b)[n-2]) return false;
+    for (size_t i=0; i<n-2; i++)
+        if (bignum_digits(b)[i] != 0) return true;
+    return false;
 }
 
-bool lesspbd(LispObject b, double a)
-//
-// Code as for lesspdb, but use '>' test instead of '<'
-//
+static inline bool greaterp_rawd_b(double a, LispObject b)
+// logic here is much as for the lessp test. By leavinbg the commentary
+// out of this version you can get a clearer idea of how much code is
+// involved.
 {   size_t n = (bignum_length(b)-CELL-4)/4;
     int32_t bn = (int32_t)bignum_digits(b)[n];
-//
-// The value represented by b can not be in the range that fixnums
-// cover, so if a is in that range I need only inspect the sign of b.
-//
-    if ((double)(-0x08000000) <= a &&
-        a <= (double)(0x7fffffff))
-        return (bn < 0);
-//
-// If b is a one-word bignum I can convert it to floating point
-// with no loss of accuracy at all.
-//
-    if (n == 0) return (double)bn < a;
-//
-// For two-digit bignums I first check if the float is so big that I can
-// tell that it dominates the bignum, and if not I subtract the top digit
-// of the bignum from both sides... in the critical case where the two
-// values are almost the same that subtraction will not lead to loss of
-// accuracy (at least provided that my floating point was implemented
-// with a guard bit..)
-//
+    if ((double)MOST_NEGATIVE_FIXVAL <= a &&
+        a < -(double)MOST_NEGATIVE_FIXVAL) return (bn < 0);
+    if (n == 0) return a > (double)bn;
     if (n == 1)
-    {   if (1.0e19 < a) return true;
-        else if (a < -1.0e19) return false;
-        a -= TWO_31 * (double)bn;
-        return (double)bignum_digits(b)[0] < a;
+    {   if (a >= (double)INT64_C(0x4000000000000000)) return true;
+        else if (a < -(double)INT64_C(0x4000000000000000)) return false;
+        a -= TWO_31*(int32_t)bn;
+        return a > (double)bignum_digits(b)[0];
     }
-//
-// If the two operands differ in their signs then all is easy.
-//
     if (bn >= 0 && a < 0.0) return false;
     if (bn < 0 && a >= 0.0) return true;
-//
-// Now I have a 3 or more digit bignum, so here I will (in effect)
-// convert the float to a bignum and then perform the comparison.. that
-// does the best I can to avoid error.  I do not actually have to create
-// a datastructure for the bignum provided I can collect up the data that
-// would have to be stored in it.  See lisp_fix (arith8.c) for related code.
-//
-    {   int32_t a0, a1, a2;
-        int x, x1;
-        a = frexp(a, &x); // 0.5 <= abs(a) < 1.0, x = (binary) exponent
-        if (a == 1.0) a = 0.5, x++;
-        a *= TWO_31;
-        a1 = (int32_t)a;        // 2^31 > |a| >= 2^30
-        if (a < 0.0) a1--;   // now maybe a1 is -2^31
-        a -= (double)a1;
-        a2 = (uint32_t)(a * TWO_31); // This conversion should be exact
-        x -= 62;
-//
-// If the float is smaller in absolute value than the bignum life is easy
-//
-        if (x < 0) return (bn < 0);
-        x1 = x/31 + 2;
-        if (n != (size_t)x1)
-        {   if (n < (size_t)x1) return a >= 0.0;
-            else return (bn < 0);
-        }
-//
-// Now the most jolly bit - the two numbers have the same sign and involve
-// the same number of digits.
-//
-        if (a1 < 0)
-        {   a0 = -1;
-            a1 = clear_top_bit(a1);
-        }
-        else a0 = 0;
-        x = x % 31;
-        a0 = (a0 << x) | (a1 >> (31-x));
-        a1 = clear_top_bit(a1 << x) | (a2 >> (31-x));
-        a2 = clear_top_bit(a2 << x);
-        if (a0 != bn) return a0 > bn;
-        bn = bignum_digits(b)[n-1];
-        if (a1 != bn) return a1 > bn;
-        return a2 > (int32_t)bignum_digits(b)[n-2];
+    int32_t a2;
+    uint32_t a1, a0; 
+    int x = double_to_3_digits(a, a2, a1, a0);
+    if (n != 2+(size_t)x)
+    {   if (n < 2+(size_t)x) return (a > 0);
+        else return (bn < 0);
     }
+    if (a2 > bn) return true;
+    else if (a2 < bn) return false;
+    else if (a1 > bignum_digits(b)[n-1]) return true;
+    else if (a1 < bignum_digits(b)[n-1]) return false;
+    else if (a0 > bignum_digits(b)[n-2]) return true;
+    else if (a0 < bignum_digits(b)[n-2]) return false;
+// Any nonzero trailing digits in b only render its value larger and so
+// if I have got here I already know that a is NOT strictly bigger than b.
+    return false;
 }
 
-static bool lessprr(LispObject a, LispObject b)
+static inline bool lessp_b_rawd(LispObject a, double b)
+{   return greaterp_rawd_b(b, a);
+}
+
+static inline bool lessp_rawl_b(float128_t *a, LispObject b)
+{
+// I am not going to worry too much about performance here - code
+// simplicity will trump that. The strategy to be used will be as follows:
+//    If b uses at no more than 113 bits then I can convert b to
+//    a float128_t without any loss and then do the comparison.
+// [I rather hope that will in fact be a common case.]
+//    Looking at the exponent of the float128_t one can work out how it
+//    would align againt the bignum. It then becomes easy to see if the
+//    top bit of the mantissa aligns nicely againt the top word of the
+//    bignum. It will only be necessary to check 4 words of the bignum.
+// [Actually this does not look too bad either.]
+    size_t n = (length_of_header(numhdr(b))-CELL)/4;
+    float128_t bb, w0, w1;
+    int32_t k;
+    switch (n)
+    {
+    case 1: // Only happens on 32-bit systems
+        i32_to_f128M((int32_t)bignum_digits(b)[0], &bb);
+        return f128M_lt(a, &bb);
+    case 2:
+        i64_to_f128M(bignum_digits64(b, 1)<<31 | bignum_digits(b)[0], &bb);
+        return f128M_lt(a, &bb);
+    case 3:
+        i64_to_f128M(bignum_digits64(b, 2)<<31 | bignum_digits(b)[1], &w1);
+#ifdef LITTLEENDIAN
+        w1.v[1] += UINT64_C(31) << 48;
+#else
+        w1.v[0] += UINT64_C(31) << 48;
+#endif
+        ui32_to_f128M((int32_t)bignum_digits(b)[0], &w0);
+        f128M_add(&w0, &w1, &bb);
+        return f128M_lt(a, &bb);
+    case 4:
+        k = (int32_t)bignum_digits(b)[3];
+        if (k > 0x80000 ||
+            k < -0x80000) break;
+// I am now confident that b will turn into a number that will convert to
+// a 128-bit float without rounding.
+        i64_to_f128M(bignum_digits64(b,3)<<31 | bignum_digits(b)[2], &w1);
+#ifdef LITTLEENDIAN
+        w1.v[1] += UINT64_C(62) << 48;  // multiply by 2^62
+#else
+        w1.v[0] += UINT64_C(62) << 48;
+#endif
+        ui64_to_f128M(bignum_digits64(b,1)<<31 | bignum_digits(b)[0], &w0);
+        f128M_add(&w0, &w1, &bb);
+        return f128M_lt(a, &bb);
+    default:
+        break;
+    }
+// Here the integer uses at least 113 bits to represent its absolute value.
+    aerror("comparison between log float and large bignum - not implemented yet");
+}
+
+
+static inline bool lessp_b_rawl(LispObject a, float128_t *b)
+{
+    size_t n = (length_of_header(numhdr(a))-CELL)/4;
+    float128_t aa, w0, w1;
+    int32_t k;
+    switch (n)
+    {
+    case 1: // Only happens on 32-bit systems
+        i32_to_f128M((int32_t)bignum_digits(a)[0], &aa);
+        return f128M_lt(&aa, b);
+    case 2:
+        i64_to_f128M(bignum_digits64(a, 1)<<31 | bignum_digits(a)[0], &aa);
+        return f128M_lt(&aa, b);
+    case 3:
+        i64_to_f128M(bignum_digits64(a, 2)<<31 | bignum_digits(a)[1], &w1);
+#ifdef LITTLEENDIAN
+        w1.v[1] += UINT64_C(31) << 48;
+#else
+        w1.v[0] += UINT64_C(31) << 48;
+#endif
+        ui32_to_f128M((int32_t)bignum_digits(a)[0], &w0);
+        f128M_add(&w0, &w1, &aa);
+        return f128M_lt(&aa, b);
+    case 4:
+        k = (int32_t)bignum_digits(a)[3];
+        if (k > 0x80000 ||
+            k < -0x80000) break;
+// I am now confident that a will turn into a number that will convert to
+// a 128-bit float without rounding.
+        i64_to_f128M(bignum_digits64(a,3)<<31 | bignum_digits(a)[2], &w1);
+#ifdef LITTLEENDIAN
+        w1.v[1] += UINT64_C(62) << 48;  // multiply by 2^62
+#else
+        w1.v[0] += UINT64_C(62) << 48;
+#endif
+        ui64_to_f128M(bignum_digits64(a,1)<<31 | bignum_digits(a)[0], &w0);
+        f128M_add(&w0, &w1, &aa);
+        return f128M_lt(&aa, b);
+    default:
+        break;
+    }
+// Here the integer uses at least 113 bits to represent its absolute value.
+    aerror("comparison between log float and large bignum - not implemented yet");
+}
+
+static inline bool lessp_rawl_r(float128_t *a, LispObject b)
+{   aerror("comparison between long float and raion not coded yet");
+}
+
+static inline bool lessp_r_rawl(LispObject a, float128_t *b)
+{   aerror("comparison between long float and raion not coded yet");
+}
+
+static inline bool lessp_s_s(LispObject a, LispObject b)
+{   return value_of_immediate_float(a) < value_of_immediate_float(b);
+}
+
+static inline bool lessp_s_f(LispObject a, LispObject b)
+{   return value_of_immediate_float(a) < single_float_val(b);
+}
+
+static inline bool lessp_s_d(LispObject a, LispObject b)
+{   return value_of_immediate_float(a) < double_float_val(b);
+}
+
+static inline bool lessp_f_f(LispObject a, LispObject b)
+{   return single_float_val(a) < single_float_val(b);
+}
+
+static inline bool lessp_f_d(LispObject a, LispObject b)
+{   return single_float_val(a) < double_float_val(b);
+}
+
+static inline bool lessp_d_d(LispObject a, LispObject b)
+{   return double_float_val(a) < double_float_val(b);
+}
+
+static inline bool lessp_f_s(LispObject a, LispObject b)
+{   return single_float_val(a) < value_of_immediate_float(b);
+}
+
+static inline bool lessp_d_s(LispObject a, LispObject b)
+{   return double_float_val(a) < value_of_immediate_float(b);
+}
+
+static inline bool lessp_d_f(LispObject a, LispObject b)
+{   return double_float_val(a) < single_float_val(b);
+}
+
+static inline bool lessp_b_f(LispObject a, LispObject b)
+{   return lessp_b_rawd(a, single_float_val(b));
+}
+
+static inline bool lessp_b_d(LispObject a, LispObject b)
+{   return lessp_b_rawd(a, double_float_val(b));
+}
+
+static inline bool lessp_d_b(LispObject a, LispObject b)
+{   return lessp_rawd_b(double_float_val(a), b);
+}
+
+static inline bool lessp_b_l(LispObject a, LispObject b)
+{   return lessp_b_rawl(a, long_float_addr(b));
+}
+
+static inline bool lessp_r_r(LispObject a, LispObject b)
 {   LispObject c;
     push2(a, b);
     c = times2(numerator(a), denominator(b));
@@ -462,84 +703,52 @@ static bool lessprr(LispObject a, LispObject b)
     return lessp2(c, b);
 }
 
-bool lesspdr(double a, LispObject b)
-//
+static inline bool lessp_rawd_r(double a, LispObject b)
 // Compare float with ratio... painfully expensive.
-//
 {   LispObject a1 = rationalf(a);
-    return lessprr(a1, b);
+    return lessp2(a1, b);
 }
 
-bool lessprd(LispObject a, double b)
-//
-// Compare float with ratio.
-//
+static inline bool lessp_r_rawd(LispObject a, double b)
 {   LispObject b1 = rationalf(b);
-    return lessprr(a, b1);
+    return lessp2(a, b1);
 }
 
-static bool lesspsi(LispObject a, LispObject b)
-{
-#ifndef SHORT_FLOAT
-    return 0;
-#else
-    Float_union aa;
-    aa.i = a - XTAG_SFLOAT;
-    return (double)aa.f < (double)int_of_fixnum(b);
-#endif
+static inline bool lessp_d_r(LispObject a, LispObject b)
+{   return lessp_rawd_r(double_float_val(a), b);
 }
 
-static bool lesspsb(LispObject a, LispObject b)
-{
-#ifndef SHORT_FLOAT
-    return 0;
-#else
-    Float_union aa;
-    aa.i = a - XTAG_SFLOAT;
-    return lesspdb((double)aa.f, b);
-#endif
+static inline bool lessp_r_d(LispObject a, LispObject b)
+{   return lessp_r_rawd(a, double_float_val(b));
 }
 
-static bool lesspsr(LispObject a, LispObject b)
-{
-#ifndef SHORT_FLOAT
-    return 0;
-#else
-    Float_union aa;
-    aa.i = a - XTAG_SFLOAT;
-    return lesspdr((double)aa.f, b);
-#endif
+static inline bool lessp_s_i(LispObject a, LispObject b)
+{   if (!SIXTY_FOUR_BIT)
+        return value_of_immediate_float(a) < (double)int_of_fixnum(b);
+// Again beware fixnums that are over 2^53 and can not be converted to a
+// double precision float losslessly.
+    return lessp_di64(value_of_immediate_float(a), int_of_fixnum(b));
 }
 
-static bool lesspsf(LispObject a, LispObject b)
-{
-#ifndef SHORT_FLOAT
-    return 0;
-#else
-    Float_union aa;
-    aa.i = a - XTAG_SFLOAT;
-    return (double)aa.f < float_of_number(b);
-#endif
+static inline bool lessp_s_b(LispObject a, LispObject b)
+{   return lessp_rawd_b(value_of_immediate_float(a), b);
 }
 
-bool lesspbi(LispObject a, LispObject)
+static inline bool lessp_s_r(LispObject a, LispObject b)
+{   return lessp_rawd_r(value_of_immediate_float(a), b);
+}
+
+static inline bool lessp_b_i(LispObject a, LispObject)
 {   size_t len = bignum_length(a);
     int32_t msd = bignum_digits(a)[(len-CELL-4)/4];
     return (msd < 0);
 }
 
-static bool lesspbs(LispObject a, LispObject b)
-{
-#ifndef SHORT_FLOAT
-    return 0;
-#else
-    Float_union bb;
-    bb.i = b - XTAG_SFLOAT;
-    return lesspbd(a, (double)bb.f);
-#endif
+static inline bool lessp_b_s(LispObject a, LispObject b)
+{   return lessp_b_rawd(a, value_of_immediate_float(b));
 }
 
-static bool lesspbb(LispObject a, LispObject b)
+static inline bool lessp_b_b(LispObject a, LispObject b)
 {   size_t lena = bignum_length(a),
            lenb = bignum_length(b);
     if (lena > lenb)
@@ -571,197 +780,517 @@ static bool lesspbb(LispObject a, LispObject b)
     }
 }
 
-#define lesspbr(a, b) lesspir(a, b)
+static inline bool lessp_b_r(LispObject a, LispObject b)
+{   return lessp_i_r(a, b);
+}
 
-#define lesspbf(a, b) lesspbd(a, float_of_number(b))
-
-static bool lesspri(LispObject a, LispObject b)
+static inline bool lessp_r_i(LispObject a, LispObject b)
 {   push(numerator(a));
     b = times2(b, denominator(a));
     pop(a);
     return lessp2(a, b);
 }
 
-static bool lessprs(LispObject a, LispObject b)
-{
-#ifndef SHORT_FLOAT
-    return 0;
-#else
-    Float_union bb;
-    bb.i = b - XTAG_SFLOAT;
-    return lessprd(a, (double)bb.f);
-#endif
+static inline bool lessp_r_s(LispObject a, LispObject b)
+{   return lessp_r_rawd(a, value_of_immediate_float(b));
 }
 
-#define lessprb(a, b) lesspri(a, b)
-
-#define lessprf(a, b) lessprd(a, float_of_number(b))
-
-#define lesspfi(a, b) (float_of_number(a) < (double)int_of_fixnum(b))
-
-static bool lesspfs(LispObject a, LispObject b)
-{
-#ifndef SHORT_FLOAT
-    return 0;
-#else
-    Float_union bb;
-    bb.i = b - XTAG_SFLOAT;
-    return float_of_number(a) < (double)bb.f;
-#endif
+static inline bool lessp_r_b(LispObject a, LispObject b)
+{   return lessp_r_i(a, b);
 }
 
-#define lesspfb(a, b) lesspdb(float_of_number(a), b)
 
-#define lesspfr(a, b) lesspfb(a, b)
+static inline bool lessp_r_f(LispObject a, LispObject b)
+{   return lessp_r_rawd(a, single_float_val(b));
+}
 
-#define lesspff(a, b) (float_of_number(a) < float_of_number(b))
+static inline bool lessp_f_b(LispObject a, LispObject b)
+{   return lessp_rawd_b(single_float_val(a), b);
+}
 
+static inline bool lessp_f_r(LispObject a, LispObject b)
+{   return lessp_rawd_r(single_float_val(a), b);
+}
+
+static inline bool lessp_c_i(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_c_b(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_c_r(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_c_c(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_c_s(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_c_f(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_c_d(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_c_l(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_i_c(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_b_c(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_r_c(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_s_c(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_f_c(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_d_c(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_l_c(LispObject a, LispObject b)
+{   aerror2("ordered comparison on complex values", a, b);
+}
+
+static inline bool lessp_l_b(LispObject a, LispObject b)
+{   return lessp_rawl_b(long_float_addr(a), b);
+}
+
+static inline bool lessp_l_r(LispObject a, LispObject b)
+{   return lessp_rawl_r(long_float_addr(a), b);
+}
+
+static inline bool lessp_l_s(LispObject a, LispObject b)
+{   Double_union d;
+    d.f = value_of_immediate_float(b);
+    float128_t bb;
+    f64_to_f128M(d.f64, &bb);
+    return f128M_lt(long_float_addr(a), &bb);
+}
+
+static inline bool lessp_l_f(LispObject a, LispObject b)
+{   Double_union d;
+    d.f = single_float_val(b);
+    float128_t bb;
+    f64_to_f128M(d.f64, &bb);
+    return f128M_lt(long_float_addr(a), &bb);
+}
+
+static inline bool lessp_l_d(LispObject a, LispObject b)
+{   Double_union d;
+    d.f = double_float_val(b);
+    float128_t bb;
+    f64_to_f128M(d.f64, &bb);
+    return f128M_lt(long_float_addr(a), &bb);
+}
+
+static inline bool lessp_l_l(LispObject a, LispObject b)
+{   return f128M_lt(long_float_addr(a), long_float_addr(b));
+}
+
+static inline bool lessp_r_l(LispObject a, LispObject b)
+{   return lessp_r_rawl(a, long_float_addr(b));
+}
+
+static inline bool lessp_s_l(LispObject a, LispObject b)
+{   Double_union d;
+    d.f = value_of_immediate_float(a);
+    float128_t aa;
+    f64_to_f128M(d.f64, &aa);
+    return f128M_lt(&aa, long_float_addr(b));
+}
+
+static inline bool lessp_f_l(LispObject a, LispObject b)
+{   Double_union d;
+    d.f = single_float_val(a);
+    float128_t aa;
+    f64_to_f128M(d.f64, &aa);
+    return f128M_lt(&aa, long_float_addr(b));
+}
+
+static inline bool lessp_d_l(LispObject a, LispObject b)
+{   Double_union d;
+    d.f = double_float_val(a);
+    float128_t aa;
+    f64_to_f128M(d.f64, &aa);
+    return f128M_lt(&aa, long_float_addr(b));
+}
+
+// Now I have given all the helper type-specific rules - do the
+// big dispatch.
+
+arith_dispatch_2(static inline, bool, lessp)
 
 bool greaterp2(LispObject a, LispObject b)
-{   return lessp2(b, a);
+{   return lessp(b, a);
 }
 
 bool lessp2(LispObject a, LispObject b)
-//
-// Note that this type-dispatch does not permit complex numbers to
-// be compared - their presence will lead to an exception being raised.
-// This shortens the code (marginally).
-//
-{   switch ((int)a & TAG_BITS)
-    {   case TAG_FIXNUM:
-            switch ((int)b & TAG_BITS)
-            {   case TAG_FIXNUM:
-// For fixnums the comparison happens directly
-                    return ((intptr_t)a < (intptr_t)b);
-#ifdef SHORT_FLOAT
-                case XTAG_SFLOAT:
-                    return lesspis(a, b);
-#endif
-                case TAG_NUMBERS:
-                {   int32_t hb = type_of_header(numhdr(b));
-                    switch (hb)
-                    {   case TYPE_BIGNUM:
-                            return lesspib(a, b);
-                        case TYPE_RATNUM:
-                            return lesspir(a, b);
-                        default:
-                            aerror2("bad arg for lessp", a, b);
-                    }
-                }
-                case TAG_BOXFLOAT:
-                    return lesspif(a, b);
-                default:
-                    aerror2("bad arg for lessp", a, b);
-            }
-#ifdef SHORT_FLOAT
-        case XTAG_SFLOAT:
-            switch (b & TAG_BITS)
-            {   case TAG_FIXNUM:
-                    return lesspsi(a, b);
-                case XTAG_SFLOAT:
-                {   Float_union aa, bb;
-                    aa.i = a - XTAG_SFLOAT;
-                    bb.i = b - XTAG_SFLOAT;
-                    return (aa.f < bb.f);
-                }
-                case TAG_NUMBERS:
-                {   int32_t hb = type_of_header(numhdr(b));
-                    switch (hb)
-                    {   case TYPE_BIGNUM:
-                            return lesspsb(a, b);
-                        case TYPE_RATNUM:
-                            return lesspsr(a, b);
-                        default:
-                            aerror2("bad arg for lessp", a, b);
-                    }
-                }
-                case TAG_BOXFLOAT:
-                    return lesspsf(a, b);
-                default:
-                    aerror2("bad arg for lessp", a, b);
-            }
-#endif
-        case TAG_NUMBERS:
-        {   int32_t ha = type_of_header(numhdr(a));
-            switch (ha)
-            {   case TYPE_BIGNUM:
-                    switch ((int)b & TAG_BITS)
-                    {   case TAG_FIXNUM:
-                            return lesspbi(a, b);
-#ifdef SHORT_FLOAT
-                        case XTAG_SFLOAT:
-                            return lesspbs(a, b);
-#endif
-                        case TAG_NUMBERS:
-                        {   int32_t hb = type_of_header(numhdr(b));
-                            switch (hb)
-                            {   case TYPE_BIGNUM:
-                                    return lesspbb(a, b);
-                                case TYPE_RATNUM:
-                                    return lesspbr(a, b);
-                                default:
-                                    aerror2("bad arg for lessp", a, b);
-                            }
-                        }
-                        case TAG_BOXFLOAT:
-                            return lesspbf(a, b);
-                        default:
-                            aerror2("bad arg for lessp", a, b);
-                    }
-                case TYPE_RATNUM:
-                    switch (b & TAG_BITS)
-                    {   case TAG_FIXNUM:
-                            return lesspri(a, b);
-#ifdef SHORT_FLOAT
-                        case XTAG_SFLOAT:
-                            return lessprs(a, b);
-#endif
-                        case TAG_NUMBERS:
-                        {   int32_t hb = type_of_header(numhdr(b));
-                            switch (hb)
-                            {   case TYPE_BIGNUM:
-                                    return lessprb(a, b);
-                                case TYPE_RATNUM:
-                                    return lessprr(a, b);
-                                default:
-                                    aerror2("bad arg for lessp", a, b);
-                            }
-                        }
-                        case TAG_BOXFLOAT:
-                            return lessprf(a, b);
-                        default:
-                            aerror2("bad arg for lessp", a, b);
-                    }
-                default:    aerror2("bad arg for lessp", a, b);
-            }
-        }
-        case TAG_BOXFLOAT:
-            switch ((int)b & TAG_BITS)
-            {   case TAG_FIXNUM:
-                    return lesspfi(a, b);
-#ifdef SHORT_FLOAT
-                case XTAG_SFLOAT:
-                    return lesspfs(a, b);
-#endif
-                case TAG_NUMBERS:
-                {   int32_t hb = type_of_header(numhdr(b));
-                    switch (hb)
-                    {   case TYPE_BIGNUM:
-                            return lesspfb(a, b);
-                        case TYPE_RATNUM:
-                            return lesspfr(a, b);
-                        default:
-                            aerror2("bad arg for lessp", a, b);
-                    }
-                }
-                case TAG_BOXFLOAT:
-                    return lesspff(a, b);
-                default:
-                    aerror2("bad arg for lessp", a, b);
-            }
-        default:
-            aerror2("bad arg for lessp", a, b);
-    }
+{   return lessp(a, b);
+}
+
+static inline bool geq_i_i(LispObject a1, LispObject a2)
+{   return (intptr_t)a1 >= (intptr_t)a2;
+}
+
+// A bignum can not be equal to a fixnum, so I>=B is the same as B<I
+static inline bool geq_i_b(LispObject a1, LispObject a2)
+{   return lessp_b_i(a2, a1);
+}
+
+static inline bool geq_i_r(LispObject a1, LispObject a2)
+{   return !lessp_i_r(a1, a2);
+}
+
+static inline bool geq_i_c(LispObject a1, LispObject a2)
+{   return !lessp_i_c(a1, a2);
+}
+
+static inline bool geq_i_s(LispObject a1, LispObject a2)
+{   double a2d = value_of_immediate_float(a2);
+    if (a2d != a2d) return false;
+    return !lessp_i_s(a1, a2);
+}
+
+static inline bool geq_i_f(LispObject a1, LispObject a2)
+{   double a2d = single_float_val(a2);
+    if (a2d != a2d) return false;
+    return !lessp_i_f(a1, a2);
+}
+
+static inline bool geq_i_d(LispObject a1, LispObject a2)
+{   double a2d = double_float_val(a2);
+    if (a2d != a2d) return false;
+    return !lessp_i_d(a1, a2);
+}
+
+static inline bool geq_i_l(LispObject a1, LispObject a2)
+{   if (f128M_nan(long_float_addr(a2))) return false;
+    return !lessp_i_l(a1, a2);
+}
+
+static inline bool geq_b_i(LispObject a1, LispObject a2)
+{   return lessp_i_b(a2, a1);
+}
+
+static inline bool geq_b_b(LispObject a1, LispObject a2)
+{   return !lessp_b_b(a1, a2);
+}
+
+static inline bool geq_b_r(LispObject a1, LispObject a2)
+{   return !lessp_b_r(a1, a2);
+}
+
+static inline bool geq_b_c(LispObject a1, LispObject a2)
+{   return !lessp_b_c(a1, a2);
+}
+
+static inline bool geq_b_s(LispObject a1, LispObject a2)
+{   double a2d = value_of_immediate_float(a2);
+    if (a2d != a2d) return false;
+    return !lessp_b_s(a1, a2);
+}
+
+static inline bool geq_b_f(LispObject a1, LispObject a2)
+{   double a2d = single_float_val(a2);
+    if (a2d != a2d) return false;
+    return !lessp_b_f(a1, a2);
+}
+
+static inline bool geq_b_d(LispObject a1, LispObject a2)
+{   double a2d = double_float_val(a2);
+    if (a2d != a2d) return false;
+    return !lessp_b_d(a1, a2);
+}
+
+static inline bool geq_b_l(LispObject a1, LispObject a2)
+{   if (f128M_nan(long_float_addr(a2))) return false;
+    return !lessp_b_l(a1, a2);
+}
+
+static inline bool geq_r_i(LispObject a1, LispObject a2)
+{   return !lessp_r_i(a1, a2);
+}
+
+static inline bool geq_r_b(LispObject a1, LispObject a2)
+{   return !lessp_r_b(a1, a2);
+}
+
+static inline bool geq_r_r(LispObject a1, LispObject a2)
+{   return !lessp_r_r(a1, a2);
+}
+
+static inline bool geq_r_c(LispObject a1, LispObject a2)
+{   return !lessp_r_c(a1, a2);
+}
+
+static inline bool geq_r_s(LispObject a1, LispObject a2)
+{   double a2d = value_of_immediate_float(a2);
+    if (a2d != a2d) return false;
+    return !lessp_r_s(a1, a2);
+}
+
+static inline bool geq_r_f(LispObject a1, LispObject a2)
+{   double a2d = single_float_val(a2);
+    if (a2d != a2d) return false;
+    return !lessp_r_f(a1, a2);
+}
+
+static inline bool geq_r_d(LispObject a1, LispObject a2)
+{   double a2d = double_float_val(a2);
+    if (a2d != a2d) return false;
+    return !lessp_r_d(a1, a2);
+}
+
+static inline bool geq_r_l(LispObject a1, LispObject a2)
+{   if (f128M_nan(long_float_addr(a2))) return false;
+    return !lessp_r_l(a1, a2);
+}
+
+static inline bool geq_c_i(LispObject a1, LispObject a2)
+{   return !lessp_c_i(a1, a2);
+}
+
+static inline bool geq_c_b(LispObject a1, LispObject a2)
+{   return !lessp_c_b(a1, a2);
+}
+
+static inline bool geq_c_r(LispObject a1, LispObject a2)
+{   return !lessp_c_r(a1, a2);
+}
+
+static inline bool geq_c_c(LispObject a1, LispObject a2)
+{   return !lessp_c_c(a1, a2);
+}
+
+static inline bool geq_c_s(LispObject a1, LispObject a2)
+{   double a2d = value_of_immediate_float(a2);
+    if (a2d != a2d) return false;
+    return !lessp_c_s(a1, a2);
+}
+
+static inline bool geq_c_f(LispObject a1, LispObject a2)
+{   double a2d = single_float_val(a2);
+    if (a2d != a2d) return false;
+    return !lessp_c_f(a1, a2);
+}
+
+static inline bool geq_c_d(LispObject a1, LispObject a2)
+{   double a2d = double_float_val(a2);
+    if (a2d != a2d) return false;
+    return !lessp_c_d(a1, a2);
+}
+
+static inline bool geq_c_l(LispObject a1, LispObject a2)
+{   if (f128M_nan(long_float_addr(a2))) return false;
+    return !lessp_c_l(a1, a2);
+}
+
+static inline bool geq_s_i(LispObject a1, LispObject a2)
+{   double a1d = value_of_immediate_float(a1);
+    if (a1d != a1d) return false;
+    return !lessp_s_i(a1, a2);
+}
+
+static inline bool geq_s_b(LispObject a1, LispObject a2)
+{   double a1d = value_of_immediate_float(a1);
+    if (a1d != a1d) return false;
+    return !lessp_s_b(a1, a2);
+}
+
+static inline bool geq_s_r(LispObject a1, LispObject a2)
+{   double a1d = value_of_immediate_float(a1);
+    if (a1d != a1d) return false;
+    return !lessp_s_r(a1, a2);
+}
+
+static inline bool geq_s_c(LispObject a1, LispObject a2)
+{   double a1d = value_of_immediate_float(a1);
+    if (a1d != a1d) return false;
+    return !lessp_s_c(a1, a2);
+}
+
+static inline bool geq_s_s(LispObject a1, LispObject a2)
+{   return value_of_immediate_float(a1) >= value_of_immediate_float(a2);
+}
+
+static inline bool geq_s_f(LispObject a1, LispObject a2)
+{   return value_of_immediate_float(a1) >= single_float_val(a2);
+}
+
+static inline bool geq_s_d(LispObject a1, LispObject a2)
+{   return value_of_immediate_float(a1) >= double_float_val(a2);
+}
+
+static inline bool geq_s_l(LispObject a1, LispObject a2)
+{   double a1d = value_of_immediate_float(a1);
+    if (a1d != a1d) return false;
+    if (f128M_nan(long_float_addr(a2))) return false;
+    return !lessp_s_l(a1, a2);
+}
+
+static inline bool geq_f_i(LispObject a1, LispObject a2)
+{   double a1d = single_float_val(a1);
+    if (a1d != a1d) return false;
+    return !lessp_f_i(a1, a2);
+}
+
+static inline bool geq_f_b(LispObject a1, LispObject a2)
+{   double a1d = single_float_val(a1);
+    if (a1d != a1d) return false;
+    return !lessp_f_b(a1, a2);
+}
+
+static inline bool geq_f_r(LispObject a1, LispObject a2)
+{   double a1d = single_float_val(a1);
+    if (a1d != a1d) return false;
+    return !lessp_f_r(a1, a2);
+}
+
+static inline bool geq_f_c(LispObject a1, LispObject a2)
+{   double a1d = single_float_val(a1);
+    if (a1d != a1d) return false;
+    return !lessp_f_c(a1, a2);
+}
+
+static inline bool geq_f_s(LispObject a1, LispObject a2)
+{   return single_float_val(a1) >= value_of_immediate_float(a2);
+}
+
+static inline bool geq_f_f(LispObject a1, LispObject a2)
+{   return single_float_val(a1) >= single_float_val(a2);
+}
+
+static inline bool geq_f_d(LispObject a1, LispObject a2)
+{   return single_float_val(a1) >= double_float_val(a2);
+}
+
+static inline bool geq_f_l(LispObject a1, LispObject a2)
+{   double a1d = single_float_val(a1);
+    if (a1d != a1d) return false;
+    if (f128M_nan(long_float_addr(a2))) return false;
+    return !lessp_f_l(a1, a2);
+}
+
+static inline bool geq_d_i(LispObject a1, LispObject a2)
+{   double a1d = double_float_val(a1);
+    if (a1d != a1d) return false;
+    return !lessp_d_i(a1, a2);
+}
+
+static inline bool geq_d_b(LispObject a1, LispObject a2)
+{   double a1d = double_float_val(a1);
+    if (a1d != a1d) return false;
+    return !lessp_d_b(a1, a2);
+}
+
+static inline bool geq_d_r(LispObject a1, LispObject a2)
+{   double a1d = double_float_val(a1);
+    if (a1d != a1d) return false;
+    return !lessp_d_r(a1, a2);
+}
+
+static inline bool geq_d_c(LispObject a1, LispObject a2)
+{   double a1d = double_float_val(a1);
+    if (a1d != a1d) return false;
+    return !lessp_d_c(a1, a2);
+}
+
+static inline bool geq_d_s(LispObject a1, LispObject a2)
+{   return double_float_val(a1) >= value_of_immediate_float(a2);
+}
+
+static inline bool geq_d_f(LispObject a1, LispObject a2)
+{   return double_float_val(a1) >= single_float_val(a2);
+}
+
+static inline bool geq_d_d(LispObject a1, LispObject a2)
+{   return double_float_val(a1) >= double_float_val(a2);
+}
+
+static inline bool geq_d_l(LispObject a1, LispObject a2)
+{   double a1d = double_float_val(a1);
+    if (a1d != a1d) return false;
+    if (f128M_nan(long_float_addr(a2))) return false;
+    return !lessp_d_l(a1, a2);
+}
+
+static inline bool geq_l_i(LispObject a1, LispObject a2)
+{   if (f128M_nan(long_float_addr(a1))) return false;
+    return !lessp_l_i(a1, a2);
+}
+
+static inline bool geq_l_b(LispObject a1, LispObject a2)
+{   if (f128M_nan(long_float_addr(a1))) return false;
+    return !lessp_l_b(a1, a2);
+}
+
+static inline bool geq_l_r(LispObject a1, LispObject a2)
+{   if (f128M_nan(long_float_addr(a1))) return false;
+    return !lessp_l_r(a1, a2);
+}
+
+static inline bool geq_l_c(LispObject a1, LispObject a2)
+{   if (f128M_nan(long_float_addr(a1))) return false;
+    return !lessp_l_c(a1, a2);
+}
+
+static inline bool geq_l_s(LispObject a1, LispObject a2)
+{   if (f128M_nan(long_float_addr(a1))) return false;
+    double a2d = value_of_immediate_float(a2);
+    if (a2d != a2d) return false;
+    return !lessp_l_s(a1, a2);
+}
+
+static inline bool geq_l_f(LispObject a1, LispObject a2)
+{   if (f128M_nan(long_float_addr(a1))) return false;
+    double a2d = single_float_val(a2);
+    if (a2d != a2d) return false;
+    return !lessp_l_f(a1, a2);
+}
+
+static inline bool geq_l_d(LispObject a1, LispObject a2)
+{   if (f128M_nan(long_float_addr(a1))) return false;
+    double a2d = double_float_val(a2);
+    if (a2d != a2d) return false;
+    return !lessp_l_d(a1, a2);
+}
+
+static inline bool geq_l_l(LispObject a1, LispObject a2)
+{   if (f128M_nan(long_float_addr(a1))) return false;
+    if (f128M_nan(long_float_addr(a2))) return false;
+    return !lessp_l_l(a1, a2);
+}
+
+arith_dispatch_2(static inline, bool, geq)
+
+bool lesseq2(LispObject a, LispObject b)
+{   return geq(b, a);
+}
+
+bool geq2(LispObject a, LispObject b)
+{   return geq(a, b);
 }
 
 // end of arith04.cpp
+

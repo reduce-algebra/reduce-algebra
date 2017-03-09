@@ -115,7 +115,7 @@ LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol, evalhook;
 LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
 LispObject exit_value, catch_tags, keyword_package, current_package;
 LispObject startfn, all_packages, package_symbol, internal_symbol;
-LispObject external_symbol, inherited_symbol;
+LispObject gcknt_symbol, external_symbol, inherited_symbol;
 LispObject gensym_base, string_char_sym, boffo;
 LispObject key_key, allow_other_keys, aux_key;
 LispObject err_table, format_symbol, progn_symbol, expand_def_symbol;
@@ -497,7 +497,7 @@ static void *my_malloc_2(size_t n)
 }
 
 static LispObject Lreclaim_trap(LispObject env, LispObject a)
-{   int32_t previous = reclaim_trap_count;
+{   int64_t previous = reclaim_trap_count;
     if (!is_fixnum(a)) aerror1("reclaim-trap", a);
     reclaim_trap_count = int_of_fixnum(a);
     term_printf("+++ Reclaim trap set at %d, previous = %d\n",
@@ -506,7 +506,7 @@ static LispObject Lreclaim_trap(LispObject env, LispObject a)
 }
 
 static LispObject Lreclaim_stack_limit(LispObject env, LispObject a)
-{   int32_t previous = reclaim_stack_limit;
+{   intptr_t previous = reclaim_stack_limit;
     if (!is_fixnum(a)) aerror1("reclaim-stack-limit", a);
     reclaim_stack_limit = int_of_fixnum(a);
     term_printf("+++ Reclaim stack limit set at %d, previous = %d\n",
@@ -1278,9 +1278,8 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 
 static void cold_setup()
 {   LispObject w;
-    void *p;
-    size_t i;
-    p = vheap_pages[vheap_pages_count++] = allocate_page("vheap cold setup");
+    void *p = allocate_page("vheap cold setup");
+    vheap_pages[vheap_pages_count++] = p;
     vfringe = (LispObject)(8 + (char *)doubleword_align_up((intptr_t)p));
     vheaplimit = (LispObject)((char *)vfringe + (CSL_PAGE_SIZE - 16));
 
@@ -1484,16 +1483,18 @@ static void cold_setup()
     read_base           = make_undefined_symbol("*read-base*");
     initial_element     = make_undefined_symbol(":initial-element");
 
-
 #define make_constant(name, value)       \
         w = make_undefined_symbol(name); \
         qheader(w) |= SYM_GLOBAL_VAR;   \
         qvalue(w) = value;
-    make_constant("most-positive-fixnum", fixnum_of_int(0x07ffffff));
-    make_constant("most-negative-fixnum", fixnum_of_int(0xf8000000));
-// TYPE_LONG_FLOAT is a worry here.
+#define make_variable(name, value)       \
+        w = make_undefined_symbol(name); \
+        qheader(w) |= SYM_SPECIAL_VAR;   \
+        qvalue(w) = value;
+    make_constant("most-positive-fixnum", MOST_POSITIVE_FIXNUM);
+    make_constant("most-negative-fixnum", MOST_NEGATIVE_FIXNUM);
     make_constant("pi",
-                  make_boxfloat(3.141592653589793238, TYPE_LONG_FLOAT));
+                  make_boxfloat(3.141592653589793238, TYPE_DOUBLE_FLOAT));
     append_symbol       = make_undefined_symbol("append");
     raise_symbol        = make_undefined_symbol("*raise");
     lower_symbol        = make_undefined_symbol("*lower");
@@ -1520,6 +1521,7 @@ static void cold_setup()
     resources           = make_undefined_symbol("*resources*");
     used_space          = make_undefined_symbol("*used-space*");
     avail_space         = make_undefined_symbol("*avail-space*");
+    gcknt_symbol        = make_variable("gcknt*", fixnum_of_int(0));
 // Note that end-of-file is represented by an odd Unicode value (in UTF-8)
     eof_symbol          = make_undefined_symbol("\xf4\x8f\xbf\xbf");
     call_stack          = nil;
@@ -2955,6 +2957,7 @@ LispObject *list_bases[] =
     &procmem,
     &multiplication_buffer,
     &trap_time,
+    &gcknt_symbol,
     &apply_symbol,
     &keyword_package,
     &all_packages,

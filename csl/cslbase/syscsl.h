@@ -397,7 +397,7 @@ extern int terminal_eof_seen;
 // been spent and how many garbage collections have been done.
 //
 extern void report_time(int32_t t, int32_t gct);
-extern void report_space(int gccount, double percent);
+extern void report_space(uint64_t gccount, double percent);
 //
 // pause_for_user() gets called right at the end to give a chance for the
 // system to delay before closing the main output window.

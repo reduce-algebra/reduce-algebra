@@ -145,9 +145,26 @@
   ((memq 'jlisp lispsystem!*) "$srcdir/compiler-for-jlisp.lsp")
   (t "$srcdir/compiler.lsp")))
 
+(global '(do!-not!-compile))
+(setq do!-not!-compile nil)
+
+(cond
+  ((and (boundp 'interpreted) interpreted)
+   (setq do!-not!-compile t)))
+
+% Compile some important things first to improve bootstrapping speed.
+
+(compile '(
+    s!:improve s!:literal_order s!:comval s!:outopcode0
+    s!:plant_basic_block s!:remlose s!:islocal
+    s!:is_lose_and_exit s!:comatom s!:destination_label
+    s!:record_literal s!:resolve_labels s!:expand_jump
+    s!:outopcode1lit stable!-sortip s!:iseasy s!:outjump
+    s!:add_pending s!:comcall s!:resolve_literals))
+
 (compile!-all)
 
-(setq !*comp t)               % It's faster if we compile the boot file.
+(setq !*comp (null do!-not!-compile))
 
 % Tidy up be deleting any modules that are left over in this image
 
@@ -168,7 +185,7 @@
   (t "$srcdir/compiler.lsp")))
 (faslend)
 
-(setq !*comp t)
+(setq !*comp (null do!-not!-compile))
 
 (de concat (u v)
     (compress (cons '!" (append (explode2 u)

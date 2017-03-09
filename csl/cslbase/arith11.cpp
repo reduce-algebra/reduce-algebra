@@ -767,7 +767,13 @@ static bool numeqsb(LispObject a, LispObject b)
     int32_t w;
     size_t len;
     uint32_t u;
-    if (-1.0e8 < d && d < 1.0e8) return false; // fixnum range (approx)
+// MOST_NEGATIVE_FIXVAL will be a power of 2, and so even if is bigger
+// then 2^53 it can convert exactly to a double, or indeed to any floating
+// point type. My reasoning here is that b is a BIGNUM and hence its
+// value is outside the range of fixnums. So if the value of a is within
+// the range of fixnums we can not have equality.
+    if (d >= (double)MOST_NEGATIVE_FIXVAL &&
+        d < -(double)MOST_NEGATIVE_FIXVAL) return false;
     len = (bignum_length(b)-CELL-4)/4;
     if (len == 0)   // One word bignums can be treated specially
     {   int32_t v = bignum_digits(b)[0];
@@ -793,8 +799,8 @@ static bool numeqsb(LispObject a, LispObject b)
         d1 = d1 - (double)u;
     }
     if (d1 != 0.0) return false;
-    while (--len >= 0)
-        if (bignum_digits(b)[len] != 0) return false;
+    while (len != 0)
+        if (bignum_digits(b)[--len] != 0) return false;
     return true;
 }
 
@@ -835,8 +841,8 @@ static bool numeqsr(LispObject a, LispObject b)
         w = bit;
         if (w != (w & (-w))) return false;   // not a power of 2
         dx = 31*lenb;
-        while (--lenb >= 0)     // check that the rest of db is zero
-            if (bignum_digits(db)[lenb] != 0) return false;
+        while (--lenb != 0)     // check that the rest of db is zero
+            if (bignum_digits(db)[--lenb] != 0) return false;
     }
     else return false; // Odd - what type IS db here?  Maybe error.
     if ((bit & 0xffffU) == 0) dx += 16, bit = bit >> 16;
@@ -885,9 +891,9 @@ static bool numeqsr(LispObject a, LispObject b)
         d1 = d1 - (double)u;
     }
     if (d1 != 0.0) return false;
-    while (--len >= 0)
-        if (bignum_digits(nb)[len] != 0) return false;
-    return true;
+    while (len != 0)
+        if (bignum_digits(nb)[--len] != 0) return false;
+    return bignum_digits(nb)[0] == 0;
 }
 
 #define numeqsc(a, b) numeqic(a, b)
@@ -903,11 +909,10 @@ static bool numeqbb(LispObject a, LispObject b)
 {   int32_t la = bignum_length(a);
     if (la != (int32_t)bignum_length(b)) return false;
     la = (la-CELL-4)/4;
-    while (la >= 0)
-    {   if (bignum_digits(a)[la] != bignum_digits(b)[la]) return false;
+    while (la != 0)
+        if (bignum_digits(a)[la] != bignum_digits(b)[la]) return false;
         else la--;
-    }
-    return true;
+    return bignum_digits(a)[0] == bignum_digits(b)[0];
 }
 
 #define numeqbc(a, b) numeqic(a, b)

@@ -250,6 +250,20 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
 		restart.cpp lisphash.cpp newhash.cpp serialize.cpp sysfwin.cpp
 
+# Thie little rule is because from time to time I really want to see the
+# expanded version of a C++ file (ie after C++ macroexpansion has taken place).
+# This gives a target filename.cxx for that. The reason I want to do this
+# is that sometimes I wish to use single stepping in a debugger wihin code
+# that is expanded from a messy C macro. I use astyle to fix up the layout
+# of the expanded code and then (gnu) sed [for its "inplace edit" option] to
+# comment out the lines that could cause the debugger to refer back to the
+# original version of the source.
+
+%.cxx:	%.cpp
+	$(AM_V_CXX)$(CXXCOMPILE) -E -o $@ $<
+	astyle $@
+	sed -i '' -e '/^#/ s:#:// #:' $@
+
 demo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
 
 undemo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp

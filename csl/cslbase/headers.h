@@ -130,6 +130,8 @@
 #error inttypes.h is now required for building CSL
 #endif
 
+#include <limits.h>
+
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif

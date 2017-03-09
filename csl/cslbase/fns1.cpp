@@ -1886,6 +1886,7 @@ LispObject getvector_init(size_t n, LispObject k)
 
 void Lstop(LispObject env, LispObject code)
 {   if (!is_fixnum(code)) aerror("stop");
+    if (Lposn(nil, 0) != fixnum_of_int(0)) Lterpri(nil, 0);
     exit_value = code;
     exit_tag = fixnum_of_int(0);    // Flag to say "stop"
     exit_reason = UNWIND_RESTART;

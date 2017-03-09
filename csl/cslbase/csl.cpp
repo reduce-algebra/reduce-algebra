@@ -2718,7 +2718,7 @@ static void cslaction(void)
             }
         }
     }
-    catch (LispSignal)
+    catch (LispSignal e)
     {   if (errorset_msg != NULL)
         {   term_printf("\n%s detected\n", errorset_msg);
             errorset_msg = NULL;

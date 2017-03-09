@@ -361,11 +361,9 @@ LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
 }
 
 LispObject make_boxfloat(double a, int type)
-//
 // Make a boxed float (single, double according to the type specifier)
 // if type==0 this makes a short float.
 // 128-bit floats must be made using make_boxfloat128.
-//
 {   LispObject r;
     switch (type)
     {   case 0:
@@ -534,6 +532,141 @@ static float128_t bignum_to_float128(LispObject v, int32_t h, int *xp)
     }
     *xp = x;
     return r;
+}
+
+// Now two functions that will help me to turn floats into (potentially big)
+// integers or rationals, or to compare floats with bignums.
+
+// double_to_binary returns and integer exponent and sets m such that the
+// original float is equal to m*2^x. It returns special values for x in the
+// case of infinities and NaNs.
+
+int double_to_binary(double d, int64_t &m)
+{   Double_union u;
+    u.f = d;
+    int x = (int)(u.i64 >> 52) & 0x7ff;
+    int64_t f = u.i64 & UINT64_C(0x000fffffffffffff);
+    if (x != 0) f |= INT64_C(0x0010000000000000);
+    if ((int64_t)u.i64 < 0) f = -f;
+    m = f;
+// for Infinity I will return INT_MAX and for a NaN INT_MIN as otherwise
+// invalid exponent values.
+    if (x == 0x7ff) return f==0 ? INT_MAX : INT_MIN;
+    return x - 0x3ff - 52;
+}
+
+// This does much the same for 128-bit floats.
+
+int float128_to_binary(const float128_t *d, int64_t &mhi, uint64_t &mlo)
+{   uint64_t hi = d->v[HIPART];
+    uint64_t lo = d->v[LOPART];
+    int x = (int)(hi >> 48) & 0x7fff;
+    uint64_t fhi = hi & UINT64_C(0x0000ffffffffffff);
+    if (x != 0) fhi |= UINT64_C(0x0001000000000000);
+    if ((int64_t)hi < 0)  // Now negate the mantissa
+    {   fhi = ~fhi;
+        lo = ~lo;
+        if (lo == UINT64_C(0xffffffffffffffff))
+        {   lo = 0;
+            fhi++;
+        }
+        else lo++;
+    }
+    mhi = fhi;
+    mlo = lo;
+    if (x == 0x7fff) return fhi==0 && lo == 0 ? INT_MAX : INT_MIN;
+    return x - 0x3fff - 112;
+}
+
+// The following can be used in lisp_fix and in comparisons between
+// floats and bignums. It return 3 31-bit digits that would be the top
+// 3 words of a bignum representation of the value, and size_t value that
+// indicates the total number of words that the bignum would need to use.
+// If this value is 2 then the 3 word-sized digits are all that the
+// bignum will use. If it is 1 then either you have a 2-word bignum or
+// a fixnum, and if a0 is non-zero a remainder. If it is 0 then the
+// integer value is all in a2 and you either need a fixnum or a 1-word
+// bignum (on 32-bit machines) and a1, a0 mark a fractional part. Values
+// less than zero correspond to fractional floating point values.
+// If the argument is infinite or a NaN the result will be SIZE_MAX.
+
+size_t double_to_3_digits(double d, int32_t &a2, uint32_t &a1, uint32_t &a0)
+{   int64_t m;
+    int x = double_to_binary(d, m);
+    a0 = (uint32_t)m & 0x7fffffffU;
+    a1 = (uint32_t)((uint64_t)m >> 31) & 0x7fffffff;
+    a2 = (int32_t)ASR(m, 62);   // In fact value should be either 0 or -1
+                                // because m is only a 53 bit + sign value.
+    if (x == 0x7ff) return SIZE_MAX;
+// Now I need to adjust in effect so that the exponent is treated as
+// a multiple of 31.
+    int q = x/31, r = x%31;
+    if (r < 0)
+    {   q--;
+        r += 31;
+    }
+// I now shift the 3-digit value left by r bits. It will not overflow.
+    if (r != 0)
+    {   a2 = (int32_t)(((uint32_t)a2<<r) | a1>>(31-r));
+        a1 = ((a1<<r) & 0x7fffffffU) | a0>>(31-r);
+        a0 = (a0<<r) & 0x7fffffffU;
+    }
+// At this stage it is possible that a2 is 0 or -1 and a1 does not
+// intrude into its most significant place, in which case the bignum
+// could have afforded to use one fewer digits.
+    if ((a2 == 0 && (a1 & 0x40000000U) == 0) ||
+        (a2 == -1 && (a1 & 0x40000000U) != 0))
+    {   a2 = a1 | ((a1 & 0x40000000U)<<1);
+        a1 = a0;
+        a0 = 0;
+        q--;
+// Further to the above, a number that was originally sub-normalized can
+// still suffer in the same manner. So I will do the same again!
+        if ((a2 == 0 && (a1 & 0x40000000U) == 0) ||
+            (a2 == -1 && (a1 & 0x40000000U) != 0))
+        {   a2 = a1 | ((a1 & 0x40000000U)<<1);
+            a1 = a0;
+            a0 = 0;
+            q--;
+        }
+    }
+    return q;
+}
+
+size_t float128_to_5_digits(float128_t *d,
+    int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0)
+{   int64_t mhi;
+    uint64_t mlo;
+    int x = float128_to_binary(d, mhi, mlo);
+    a0 = (uint32_t)mlo & 0x7fffffffU;
+    a1 = (uint32_t)((uint64_t)mlo >> 31) & 0x7fffffff;
+    a2 = (((uint32_t)mhi << 2) & 0x7fffffff) | (uint32_t)(mlo>>62);
+    a3 = (uint32_t)(mhi>>29);
+    a4 = (int32_t)ASR(mhi, 60);   // again either 0 or -1
+    if (x == 0x7fff) return SIZE_MAX;
+    int q = x/31, r = x%31;
+    if (r < 0)
+    {   q--;
+        r += 31;
+    }
+    if (a4 == 0 && a3 == 0 && a2 == 0 && a1 == 0 && a0 == 0) return q;
+    if (r != 0)
+    {   a4 = (int32_t)(((uint32_t)a4<<r) | a3>>(31-r));
+        a3 = ((a3<<r) & 0x7fffffffU) | a2>>(31-r);
+        a2 = ((a2<<r) & 0x7fffffffU) | a1>>(31-r); 
+        a1 = ((a1<<r) & 0x7fffffffU) | a0>>(31-r);
+        a0 = (a0<<r) & 0x7fffffffU;
+    }
+    while ((a4 == 0 && (a3 & 0x40000000U) == 0) ||
+        (a4 == -1 && (a3 & 0x40000000U) != 0))
+    {   a4 = a3 | ((a3 & 0x40000000U)<<1);
+        a3 = a2;
+        a2 = a1;
+        a1 = a0;
+        a0 = 0;
+        q--;
+    }
+    return q;
 }
 
 double float_of_number(LispObject a)

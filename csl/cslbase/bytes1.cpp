@@ -131,7 +131,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
 #endif
             return onevalue(c);
         }
-        w = elt(w, n-1);
+        w = elt(w, n-1); // use the fastget scheme
         if (w == SPID_NOPROP) w = c;
 #ifdef RECORD_GET
         push(w);
@@ -149,7 +149,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         return onevalue(c);
     }
     w = qcar(pl);
-    if (qcar(w) == b)
+    if (qcar(w) == b)    // found at first position on the list
     {
 #ifdef RECORD_GET
         push(w);
@@ -167,7 +167,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
         return onevalue(c);
     }
     w = qcar(pl);
-    if (qcar(w) == b)
+    if (qcar(w) == b)    // found at second position on the list
     {
 #ifdef RECORD_GET
         push(w);
@@ -192,7 +192,7 @@ LispObject get(LispObject a, LispObject b, LispObject c)
 // If I find the item anywhere beyond the first two places in the plist I
 // migrate it up to the front so that next time will be faster
 //
-        if (qcar(w) == b)
+        if (qcar(w) == b)   // found - do move to top operation.
         {   qcdr(prev) = qcdr(pl);
             qcdr(pl) = qplist(a);
             qplist(a) = pl;

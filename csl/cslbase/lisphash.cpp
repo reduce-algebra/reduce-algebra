@@ -1134,7 +1134,8 @@ LispObject Lhashcontents(LispObject env, LispObject tab)
 // am unfolding the hash table. And fail if that happens twice
 // in a row.
 //
-{   int32_t size, i, ogcnum;
+{   int32_t size, i;
+    uint64_t ogcnum;
     int n_gc = 0;
     LispObject v, r;
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)

@@ -136,10 +136,10 @@ void report_time(int32_t t, int32_t gct)
 #endif
 }
 
-void report_space(int n, double percent)
+void report_space(uint64_t n, double percent)
 {
 #ifndef EMBEDDED
-    sprintf(space_string, "[GC %d]:%.2f%%", n, percent);
+    sprintf(space_string, "[GC %" PRIu64 "]:%.2f%%", n, percent);
     if ((window_heading & 4) == 0) fwin_report_right(space_string);
 #endif
 }

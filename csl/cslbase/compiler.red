@@ -5219,7 +5219,10 @@ symbolic procedure compile!-all;
   for each p in list!-all!-packages() do begin
     scalar !*package!*;
     !*package!* := find!-package p;
-    for each x in oblist() do
+% There are a lof of functions with names that start "c!:..." that are
+% part of the compiler that turns Lisp into C++. I will complete the bootstrap
+% compilation faster if I process names "s!:.." before them.
+    for each x in reverse oblist() do
       begin scalar w;
         w := getd x;
         if (eqcar(w, 'expr) or eqcar(w, 'macro)) and
@@ -5229,8 +5232,10 @@ symbolic procedure compile!-all;
 
 !#else
 
+% Compiling in reverse alphabetic order reduced time that bootstrap building
+% of the compiler took by almost a factor of two!
 symbolic procedure compile!-all;
-   for each x in oblist() do begin
+   for each x in reverse oblist() do begin
       scalar w;
       w := getd x;
       if (eqcar(w, 'expr) or eqcar(w, 'macro)) and

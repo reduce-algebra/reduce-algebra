@@ -328,7 +328,7 @@ extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn;
 extern LispObject gensym_base, string_char_sym, boffo;
-extern LispObject err_table, progn_symbol;
+extern LispObject err_table, progn_symbol, gcknt_symbol;
 extern LispObject lisp_work_stream, charvec, raise_symbol, lower_symbol;
 extern LispObject echo_symbol, codevec, litvec, supervisor, B_reg;
 extern LispObject savedef, comp_symbol, compiler_symbol, faslvec;
@@ -525,8 +525,9 @@ extern int init_flags;
 
 extern const char *standard_directory;
 
-extern int gc_number;
-extern int force_reclaim_method, reclaim_trap_count, reclaim_stack_limit;
+extern int64_t gc_number;
+extern int64_t reclaim_trap_count;
+extern uintptr_t reclaim_stack_limit;
 
 #define INIT_QUIET      1
 #define INIT_VERBOSE    2

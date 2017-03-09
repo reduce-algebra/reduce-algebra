@@ -48,9 +48,9 @@
 #include <conio.h>
 #endif
 
-int gc_number = 0;
-int reclaim_trap_count = -1;
-int reclaim_stack_limit = 0;
+int64_t gc_number = 0;
+int64_t reclaim_trap_count = -1;
+uintptr_t reclaim_stack_limit = 0;
 
 static intptr_t cons_cells, symbol_heads, strings, user_vectors,
        big_numbers, box_floats, bytestreams, other_mem,
@@ -106,7 +106,7 @@ static void zero_out(void *p)
 
 
 static int trailing_heap_pages_count,
-       trailing_vheap_pages_count;
+           trailing_vheap_pages_count;
 
 static void copy(LispObject *p)
 //
@@ -789,6 +789,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     push(p);
 
     gc_number++;
+    if (!valid_as_fixnum(gc_number)) gc_number = 0; // wrap round on 32-bit
+                                                    // machines if too big.
+    qvalue(gcknt_symbol) = fixnum_of_int(gc_number);
 
 #ifdef WINDOW_SYSTEM
 //
@@ -812,8 +815,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         if (verbos_flag & 1)
         {   freshline_trace();
             trace_printf(
-                "+++ Garbage collection %ld (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
-                (long)gc_number, why, t/100, t%100, gct/100, gct%100);
+                "+++ Garbage collection %" PRId64
+                " (%s) after %ld.%.2ld+%ld.%.2ld seconds\n",
+                gc_number, why, t/100, t%100, gct/100, gct%100);
         }
     }
 #else // WINDOW_SYSTEM

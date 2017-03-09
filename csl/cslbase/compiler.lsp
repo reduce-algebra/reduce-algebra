@@ -2574,12 +2574,12 @@ nopts (plus nopts 512)))) (setq nargs (plus nargs (times 256 nopts))) (return
 (cons (cons name (cons nargs (s!:endprocedure name env checksum))) 
 s!:other_defs))))
 
-(de compile!-all nil (prog (var1172) (setq var1172 (oblist)) lab1171 (cond ((
-null var1172) (return nil))) (prog (x) (setq x (car var1172)) (prog (w) (setq
-w (getd x)) (cond ((and (or (eqcar w (quote expr)) (eqcar w (quote macro))) 
-(eqcar (cdr w) (quote lambda))) (progn (princ "Compile: ") (prin x) (terpri) 
-(errorset (list (quote compile) (mkquote (list x))) t t)))))) (setq var1172 (
-cdr var1172)) (go lab1171)))
+(de compile!-all nil (prog (var1172) (setq var1172 (reverse (oblist))) 
+lab1171 (cond ((null var1172) (return nil))) (prog (x) (setq x (car var1172))
+(prog (w) (setq w (getd x)) (cond ((and (or (eqcar w (quote expr)) (eqcar w 
+(quote macro))) (eqcar (cdr w) (quote lambda))) (progn (princ "Compile: ") (
+prin x) (terpri) (errorset (list (quote compile) (mkquote (list x))) t t)))))
+) (setq var1172 (cdr var1172)) (go lab1171)))
 
 (flag (quote (rds deflist flag fluid global keyword remprop remflag unfluid 
 unkeyword unglobal dm defmacro carcheck faslend c_end)) (quote eval))

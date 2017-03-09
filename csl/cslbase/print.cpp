@@ -1626,8 +1626,8 @@ static LispObject Lprint_precision(LispObject env, LispObject a)
     if (a == nil) return onevalue(fixnum_of_int(old));
     if (!is_fixnum(a)) aerror1("print-precision", a);
     print_precision = int_of_fixnum(a);
-    if (print_precision > 36 || print_precision < 1)
-        print_precision = 15;
+    if (print_precision > 36) print_precision = 36;
+    else if (print_precision < 1) print_precision = 15;
     return onevalue(fixnum_of_int(old));
 }
 
@@ -1698,6 +1698,17 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
         else strcpy(buff, "inf");
         return;
     }
+// Limit the precision used for printing based on the type of float involved.
+    switch (xmark)
+    {   case 's': case 'S':
+            if (prec > 7) prec = 7;
+            break;
+        case 'f': case 'F':
+            if (prec > 8) prec = 8;
+            break;
+        default:
+            if (prec > 17) prec = 17;
+    }
     if (x < 0.0)
     {   *buff++ = '-';
         x = -x;
@@ -1749,8 +1760,7 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
 
 
 static void fp_sprint128(char *buff, float128_t x, int prec, int xchar)
-{
-    if (f128M_eq(&x, &f128_0))
+{   if (f128M_eq(&x, &f128_0))
     {   if (f128M_negative(&x)) strcpy(buff, "-0.0L+00");
         else strcpy(buff, "0.0L+00");
         return;
@@ -1768,6 +1778,7 @@ static void fp_sprint128(char *buff, float128_t x, int prec, int xchar)
     {   *buff++ = '-';
         f128M_negate(&x);
     }
+    if (prec > 36) prec = 36;
     f128M_sprint_G(buff, 0, prec, &x);
 //  printf("Raw printing gives \"%s\"\n", buff);
 //
