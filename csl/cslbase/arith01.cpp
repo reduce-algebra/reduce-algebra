@@ -579,7 +579,7 @@ int float128_to_binary(const float128_t *d, int64_t &mhi, uint64_t &mlo)
 }
 
 // The following can be used in lisp_fix and in comparisons between
-// floats and bignums. It return 3 31-bit digits that would be the top
+// floats and bignums. It return three 31-bit digits that would be the top
 // 3 words of a bignum representation of the value, and size_t value that
 // indicates the total number of words that the bignum would need to use.
 // If this value is 2 then the 3 word-sized digits are all that the
@@ -588,16 +588,16 @@ int float128_to_binary(const float128_t *d, int64_t &mhi, uint64_t &mlo)
 // integer value is all in a2 and you either need a fixnum or a 1-word
 // bignum (on 32-bit machines) and a1, a0 mark a fractional part. Values
 // less than zero correspond to fractional floating point values.
-// If the argument is infinite or a NaN the result will be SIZE_MAX.
+// If the argument is infinite or a NaN the result will be INTPTR_MAX.
 
-size_t double_to_3_digits(double d, int32_t &a2, uint32_t &a1, uint32_t &a0)
+intptr_t double_to_3_digits(double d, int32_t &a2, uint32_t &a1, uint32_t &a0)
 {   int64_t m;
     int x = double_to_binary(d, m);
     a0 = (uint32_t)m & 0x7fffffffU;
     a1 = (uint32_t)((uint64_t)m >> 31) & 0x7fffffff;
     a2 = (int32_t)ASR(m, 62);   // In fact value should be either 0 or -1
                                 // because m is only a 53 bit + sign value.
-    if (x == 0x7ff) return SIZE_MAX;
+    if (x == 0x7ff) return INTPTR_MAX;
 // Now I need to adjust in effect so that the exponent is treated as
 // a multiple of 31.
     int q = x/31, r = x%31;
@@ -633,7 +633,7 @@ size_t double_to_3_digits(double d, int32_t &a2, uint32_t &a1, uint32_t &a0)
     return q;
 }
 
-size_t float128_to_5_digits(float128_t *d,
+intptr_t float128_to_5_digits(float128_t *d,
     int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0)
 {   int64_t mhi;
     uint64_t mlo;
@@ -643,7 +643,7 @@ size_t float128_to_5_digits(float128_t *d,
     a2 = (((uint32_t)mhi << 2) & 0x7fffffff) | (uint32_t)(mlo>>62);
     a3 = (uint32_t)(mhi>>29);
     a4 = (int32_t)ASR(mhi, 60);   // again either 0 or -1
-    if (x == 0x7fff) return SIZE_MAX;
+    if (x == 0x7fff) return INTPTR_MAX;
     int q = x/31, r = x%31;
     if (r < 0)
     {   q--;

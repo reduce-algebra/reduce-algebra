@@ -755,7 +755,7 @@ LispObject Lgreaterp_1(LispObject, LispObject)
 
 static LispObject Lneqn(LispObject env, int nargs, ...)
 //
-// /= is supposed to check that false pair of args match.
+// /= is supposed to check that no pair of args match.
 //
 {   int i, j;
     LispObject *r;
@@ -1641,6 +1641,7 @@ setup_type const arith06_setup[] =
     {"lnot",                    Llognot, TOO_MANY_1, WRONG_NO_1},
     {"lsd",                     Llsd, TOO_MANY_1, WRONG_NO_1},
     {"make-random-state",       Lmake_random_state1, Lmake_random_state, WRONG_NO_2},
+    {"manexp",                  Lmanexp, TOO_MANY_1, WRONG_NO_1},
     {"max",                     Lidentity, Lmax2, Lmax},
     {"max2",                    TOO_FEW_2, Lmax2, WRONG_NO_2},
     {"min",                     Lidentity, Lmin2, Lmin},
@@ -1653,16 +1654,16 @@ setup_type const arith06_setup[] =
     {"onep",                    Lonep, TOO_MANY_1, WRONG_NO_1},
     {"plusp",                   Lplusp, TOO_MANY_1, WRONG_NO_1},
     {"rational",                Lrational, TOO_MANY_1, WRONG_NO_1},
+    {"rationalize",             Lrationalize, TOO_MANY_1, WRONG_NO_1},
     {"zerop",                   Lzerop, TOO_MANY_1, WRONG_NO_1},
     {"md5",                     Lmd5, TOO_MANY_1, WRONG_NO_1},
     {"md5string",               Lmd5string, TOO_MANY_1, WRONG_NO_1},
     {"md60",                    Lmd60, TOO_MANY_1, WRONG_NO_1},
     {"trap-floating-overflow",  Ltrap_floating_overflow, TOO_MANY_1, WRONG_NO_1},
-#ifdef COMMON
     {"*",                       Lidentity, Ltimes2, Ltimes},
     {"+",                       Lidentity, Lplus2, Lplus},
     {"-",                       Lminus, Ldifference2, Ldifference},
-    {"/",                       LCLquotient_1, LCLquotient, LCLquotient_n},
+    {"/",                       LCLquotient_1, LCLquotient, WRONG_NO_2}, //LCLquotient_n},
     {"/=",                      Lneq_1, Lneq_2, Lneqn},
     {"1+",                      Ladd1, TOO_MANY_1, WRONG_NO_1},
     {"1-",                      Lsub1, TOO_MANY_1, WRONG_NO_1},
@@ -1672,15 +1673,11 @@ setup_type const arith06_setup[] =
     {">",                       Lgreaterp_1, Lgreaterp, Lgreaterp_n},
     {">=",                      Lgeq_1, Lgeq, Lgeq_n},
     {"logior",                  Lidentity, Llogor2, Lboolfn},
-    {"random",                  Lrandom, Lrandom_2, WRONG_NO_1},
-    {"rationalize",             Lrationalize, TOO_MANY_1, WRONG_NO_1},
-    {"manexp",                  Lmanexp, TOO_MANY_1, WRONG_NO_1},
-    {"next-random-number",      WRONG_NO_0A, WRONG_NO_0B, Lnext_random},
     {"rem",                     TOO_FEW_2, Lrem, WRONG_NO_2},
-#else
+    {"random",                  Lrandom, Lrandom_2, WRONG_NO_1},
+    {"next-random-number",      WRONG_NO_0A, WRONG_NO_0B, Lnext_random},
     {"random-number",           Lrandom, TOO_MANY_1, WRONG_NO_1},
     {"random-fixnum",           WRONG_NO_0A, WRONG_NO_0B, Lnext_random},
-#endif
 //
 // I always provide the old style names to make porting code easier for me
 //

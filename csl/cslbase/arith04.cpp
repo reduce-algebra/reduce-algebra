@@ -106,103 +106,88 @@ static inline LispObject make_fix_or_big2(int32_t a1, uint32_t a2)
 }
 
 LispObject rationalf(double d)
-{   int x;
+{
+// If the value of the double is >= 2^52 then it must be an exact integer.
+// In that case rationalf will just return the integer value using fix,
+// and in this case it is immaterial what rounding mode I indicate there
+// since no rounding should apply!
+#define FP_INT_LIMIT ((double)((int64_t)1<<52))
+    if (d <= -(double)FP_INT_LIMIT || d >= (double)FP_INT_LIMIT)
+        return lisp_fix(make_boxfloat(d, TYPE_DOUBLE_FLOAT), FIX_ROUND);
+// Now the magnitude if d is modest, so it is safe to cast it to
+// an int64_t. When I cast the result back to a float there will not be
+// any need for rounding, so I can detect cases where the floating point
+// input has a value that is exactly an integer.
+    int64_t i = (int64_t)d;
+    if (d == (double)i) return make_lisp_integer64(i);
+// Now the value is smallish but is known not be to an integer. It may
+// be that it is VERY small.
     bool negative = false;
-    int32_t a0, a1;
-    uint32_t a2;
-    if (d == 0.0) return fixnum_of_int(0);
-    if (d < 0.0) d = -d, negative = true;
-    d = frexp(d, &x);   // 0.5 <= abs(d) < 1.0, x = the (binary) exponent
-//
-// The next line is not logically needed, provided frexp() is implemented to
-// the relevant standard. However Zortech C release 3.0 used to get the output
-// range for frexp() marginally out and the following line works around the
-// resulting problem.  I leave the code in (always) since its cost
-// implications are minor and other libraries may suffer the same way, and it
-// will be easier not to have to track the bug down from cold again!
-//
-    if (d == 1.0) d = 0.5, x++;
-    d *= TWO_31;
-    a1 = (int32_t)d;
-    if (d < 0.0) a1--;
-    d -= (double)a1;
-    a2 = (uint32_t)(d * TWO_31);
-// Now I have the mantissa of the floating value packed into a1 and a2
-    x -= 62;
-    if (x < 0)
-    {   LispObject w;
-//
-// Here the value may have a denominator, or it may be that it will turn
-// out to be representable as an integer.
-//
-        while ((a2 & 1) == 0 && x < 0)
-        {   a2 = (a2 >> 1) | ((a1 & 1) << 30);
-            a1 = (a1 & ~1)/2;  // shifts right one place (arithmetically)
-            x++;
-            if (x == 0)
-            {   if (negative)
-                {   if (a2 == 0) a1 = -a1;
-                    else
-                    {   a2 = clear_top_bit(-(int32_t)a2);
-                        a1 = ~a1;
-                    }
-                }
-                return make_fix_or_big2(a1, a2);
-            }
-        }
-        if (negative)
-        {   if (a2 == 0) a1 = -a1;
-            else
-            {   a2 = clear_top_bit(-(int32_t)a2);
-                a1 = ~a1;
-            }
-        }
-        w = make_fix_or_big2(a1, a2);
-        x = -x;
-//
-// Remember: in CSL mode make_ratio is just cons
-//
-        if (x < 27) return make_ratio(w, fixnum_of_int(((int32_t)1) << x));
+    if (d < 0.0)
+    {   d = -d;
+        negative = true;
+    }
+    int32_t a2;
+    uint32_t a1, a0;
+    intptr_t x = 31*double_to_3_digits(d, a2, a1, a0);
+// The representation extracted above is carefully aligned at a 32-bit
+// boundary. I want to shift it right so that the least significant bit is
+// a 1. I do the shifting in stages - by 31, by 6 and by 1 bit movements.
+    while (a0 == 0)
+    {   a0 = a1;
+        a1 = a2;
+        a2 = 0;
+        x += 31;
+    }
+    while ((a0 & 0x3f) == 0)
+    {   a0 = (a0 >> 6) | ((a1 & 0x3f) << 25);
+        a1 = (a1 >> 6) | ((a2 & 0x3f) << 25);
+        a2 = (uint32_t)a2 >> 6;
+        x += 6;
+    }
+// Because d started as a floating point value it can involve at most 53 bits,
+// and hence when I am within 6 bits of being normalised I have at worst
+// 59 bits. But the bottom two words of the integer representation use
+// 62 bits, so by now I must have a2 == 0
+    assert(a2 == 0);
+    while ((a0 & 1) == 0)
+    {   a0 = (a0 >> 1) | ((a1 & 1) << 30);
+        a1 = (a1 >> 1);
+        x += 1;
+    }
+// Now the numerator will be just (d1,d0): re-attach the sign.
+    if (negative)
+    {   if (a0 == 0) a1 = -a1;
         else
-        {   LispObject d;
-            push(w);
-            d = make_power_of_two(x);
-            pop(w);
-            return make_ratio(w, d);
+        {   a0 = clear_top_bit(-a0);
+            a1 = ~a1;
         }
     }
-    else
-    {
-//
-// here the floating point value is quite large, and I need to create
-// a multi-word bignum for it.
-//
-        int x1;
-        if (negative)
-        {   if (a2 == 0) a1 = -a1;
-            else
-            {   a2 = clear_top_bit(-(int32_t)a2);
-                a1 = ~a1;
-            }
-        }
-        if (a1 < 0)
-        {   a0 = -1;
-            a1 = clear_top_bit(a1);
-        }
-        else a0 = 0;
-        x1 = x / 31;
-        x = x % 31;
-        a0 = (a0 << x) | (a1 >> (31-x));
-        a1 = clear_top_bit(a1 << x) | (a2 >> (31-x));
-        a2 = clear_top_bit(a2 << x);
-        return make_n_word_bignum(a0, a1, a2, x1);
-    }
+// x should still be strictly negative because the number was not an
+// integer.
+    assert(x < 0);
+    LispObject w = make_fix_or_big2(a1, a0);
+    push(w);
+    LispObject den = make_power_of_two(-x);
+    pop(w);
+    return make_ratio(w, den);
 }
 
-static LispObject rationalizef(double d)
+LispObject make_approx_ratio(LispObject p, LispObject q, int bits)
+{
+// Adjust p and q so that the length (in bits) of p + the length of q is
+// just bigger than bits. Use a conversion to a continued fraction to
+// achieve this. Bits will be 20, 24, 62 or 112.
+// @@ Does not do anything yet @@
+    return make_ratio(p, q);
+}
+
+static LispObject rationalizef(double d, int bits)
 //
 // This is expected to give a 'nice' rational approximation to the
-// floating point value d.
+// floating point value d, specifically one where the size of the
+// numerator and denominator are only just sufficient to capture the
+// precision that the floating point representation provides.
 //
 {   double dd;
     LispObject p, q;
@@ -219,7 +204,139 @@ static LispObject rationalizef(double d)
 // save that the stopping criteria are pretty delicate).
 //
     if (d < 0.0) p = negate(p);
-    return make_ratio(p, q);
+    return make_approx_ratio(p, q, bits);
+}
+
+// The following constants ars 2^112 and -2^112
+static float128_t FP128_INT_LIMIT =
+{
+#ifdef LITTLEENDIAN
+    {0, INT64_C(0x406f0000)}
+#else
+    {INT64_C(0x406f0000) , 0}
+#endif
+};
+static float128_t FP128_MINUS_INT_LIMIT =
+{
+#ifdef LITTLEENDIAN
+    {0, INT64_C(0xC06f0000)}
+#else
+    {INT64_C(0xC06f0000) , 0}
+#endif
+};
+
+LispObject rationalf128(float128_t *d)
+{
+// If the value of the double is > 2^112 then it must be an exact integer.
+// In that case rationalf will just return the integer value using fix,
+// and in this case it is immaterial what rounding mode I indicate there
+// since no rounding should apply!
+    if (f128M_le(d, &FP128_MINUS_INT_LIMIT) ||
+        f128M_le(&FP128_INT_LIMIT, d))
+        return lisp_fix(make_boxfloat128(*d), FIX_ROUND);
+// Now the magnitude if d at most 2^112. I want to check whether it is
+// exactly an integer or not. Well that is not as easy as it was in the
+// 64-bit case so I will go straight to the general method... Well I will
+// filter out the case of zero first.
+    if (f128M_zero(d)) return fixnum_of_int(0);
+    bool negative = false;
+    float128_t dd = *d;
+    if (f128M_negative(d))
+    {   f128M_negate(&dd);
+        negative = true;
+    }
+// Remember that |d| < 2^112. That means it will use at most 4 digits
+// of bignum. Well the calculations I do here split it into 5 digits,
+// but by the time I end only the low 4 should be relevant.
+    int32_t a4;
+    uint32_t a3, a2, a1, a0;
+    intptr_t x = 31*float128_to_5_digits(&dd, a4, a3, a2, a1, a0);
+    while (a0 == 0 && x <= -31)
+    {   a0 = a1;
+        a1 = a2;
+        a2 = a3;
+        a3 = a4;
+        a4 = 0;
+        x += 31;
+    }
+    while ((a0 & 0x3f) == 0 && x <= -6)
+    {   a0 = (a0 >> 6) | ((a1 & 0x3f) << 25);
+        a1 = (a1 >> 6) | ((a2 & 0x3f) << 25);
+        a2 = (a2 >> 6) | ((a3 & 0x3f) << 25);
+        a3 = (a3 >> 6) | ((a4 & 0x3f) << 25);
+        a4 = (uint32_t)a4 >> 6;
+        x += 6;
+    }
+    while ((a0 & 1) == 0 && x <= -1)
+    {   a0 = (a0 >> 1) | ((a1 & 1) << 30);
+        a1 = (a1 >> 1) | ((a2 & 1) << 30);
+        a2 = (a2 >> 1) | ((a3 & 1) << 30);
+        a3 = (a3 >> 1) | ((a4 & 1) << 30);
+        a4 = ((uint32_t)a4 >> 1);
+        x += 1;
+    }
+    assert(a4 == 0);
+    LispObject w;
+    if (negative)
+    {   uint32_t carry = 1;
+        a0 = ~a0 + carry;
+        carry = a0 >> 31;
+        a0 &= 0x7fffffffU;
+        a1 = ~a1 + carry;
+        carry = a1 >> 31;
+        a1 &= 0x7fffffffU;
+        a2 = ~a2 + carry;
+        carry = a2 >> 31;
+        a2 &= 0x7fffffffU;
+        a3 = ~a3 + carry;    // leave sign bit set in a3.
+    }
+    int len = 4;
+// Allow for the fact that the number may not need fully 4 digits.
+    if ((a3 == 0 && ((a2 & 0x40000000) == 0)) ||
+        (a3 == 0xffffffff && ((a2 & 0x40000000) != 0)))
+    {   len = 3;
+        if (a3 == 0xffffffff) a2 |= 0x80000000U;
+        if ((a2 == 0 && ((a1 & 0x40000000) == 0)) ||
+            (a2 == 0xffffffff && ((a1 & 0x40000000) != 0)))
+        {   len = 2;
+            if (a2 == 0xffffffff) a1 |= 0x80000000U;
+        }
+    }
+    switch (len)
+    {   // case 4:
+        default:
+            w = make_four_word_bignum(a3, a2, a1, a0);
+            break;
+        case 3:
+            w = make_three_word_bignum(a2, a1, a0);
+            break;
+        case 2:
+            int64_t n = ((int64_t)a1 << 31) + a0;
+            if (negative) n = -n;
+            w = make_lisp_integer64(n);
+            break;
+    }
+    if (x == 0) return w;
+    push(w);
+    LispObject den = make_power_of_two(-x);
+    pop(w);
+    return make_ratio(w, den);
+}
+
+// This is expected to adjust the ration returned to support 112 bits
+// of precision.
+
+static LispObject rationalizef128(float128_t *d)
+{   float128_t dd;
+    LispObject p, q;
+    if (f128M_zero(d)) return fixnum_of_int(0);
+    dd = *d;
+    if (f128M_negative(d)) f128M_negate(&dd);
+    p = rationalf128(&dd);
+    q = denominator(p);
+    p = numerator(p);
+    if (f128M_negative(d)) p = negate(p);
+    return make_approx_ratio(p, q, 112);
 }
 
 
@@ -242,8 +359,9 @@ LispObject rational(LispObject a)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-// LONG FLOAT @@@
-            return rationalf(float_of_number(a));
+            if (type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
+                return rationalf128(long_float_addr(a));
+            else return rationalf(float_of_number(a));
         default:
             aerror1("bad arg for rational", a);
     }
@@ -254,7 +372,9 @@ LispObject rationalize(LispObject a)
     {   case TAG_FIXNUM:
             return a;
         case XTAG_SFLOAT:
-            return rationalizef(value_of_immediate_float(a));
+            if (SIXTY_FOUR_BIT && ((a & XTAG_FLOAT32) != 0))
+                return rationalizef(value_of_immediate_float(a), 24);
+            else return rationalizef(value_of_immediate_float(a), 20);
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
         {   int32_t ha = type_of_header(numhdr(a));
@@ -268,8 +388,14 @@ LispObject rationalize(LispObject a)
         }
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
-// LONG FLOAT @@@
-            return rationalizef(float_of_number(a));
+            switch (type_of_header(flthdr(a)))
+            {   case TYPE_SINGLE_FLOAT:
+                    return rationalizef(value_of_immediate_float(a), 24);
+                case TYPE_DOUBLE_FLOAT:
+                    return rationalizef(value_of_immediate_float(a), 52);
+                case TYPE_LONG_FLOAT:
+                    return rationalizef128(long_float_addr(a));
+            }
         default:
             aerror1("bad arg for rationalize", a);
     }
@@ -471,7 +597,7 @@ static inline bool lessp_rawd_b(double a, LispObject b)
 //
     int32_t a2;
     uint32_t a1, a0; 
-    int x = double_to_3_digits(a, a2, a1, a0);
+    intptr_t x = double_to_3_digits(a, a2, a1, a0);
 // If the float would turn into a bignum with either fewer or more digits
 // than the value it is to be compared with the result is based on just the
 // sign bit of whichever is larger.
@@ -511,7 +637,7 @@ static inline bool greaterp_rawd_b(double a, LispObject b)
     if (bn < 0 && a >= 0.0) return true;
     int32_t a2;
     uint32_t a1, a0; 
-    int x = double_to_3_digits(a, a2, a1, a0);
+    intptr_t x = double_to_3_digits(a, a2, a1, a0);
     if (n != 2+(size_t)x)
     {   if (n < 2+(size_t)x) return (a > 0);
         else return (bn < 0);

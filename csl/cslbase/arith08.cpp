@@ -671,7 +671,7 @@ static LispObject integer_decode_long_float(LispObject a)
     }
     int32_t d4;
     uint32_t d3, d2, d1, d0;
-    int x = 31*float128_to_5_digits(&d, d4, d3, d2, d1, d0);
+    intptr_t x = 31*float128_to_5_digits(&d, d4, d3, d2, d1, d0);
     a = make_n5_word_bignum(d4, d3, d2, d1, d0, 0);
 #ifdef COMMON
     {   mv_2 = fixnum_of_int(x);
@@ -687,8 +687,6 @@ static LispObject integer_decode_long_float(LispObject a)
 
 static LispObject Linteger_decode_float(LispObject env, LispObject a)
 {   double d;
-    int x, neg = 0;
-    int32_t a1, a2;
     if (!is_float(a)) aerror("integer-decode-float");
     if (is_bfloat(a) && type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
         return integer_decode_long_float(a);
@@ -707,25 +705,15 @@ static LispObject Linteger_decode_float(LispObject env, LispObject a)
         return list3(fixnum_of_int(0), fixnum_of_int(0),
                      fixnum_of_int(1.0/d < 0.0 ? -1 : 1));
 #endif
-    if (d < 0.0) d = -d, neg = 1;
-    else
-    {   d = frexp(d, &x);
-        if (is_sfloat(a) ||
-            (type_of_header(flthdr(a)) == TYPE_SINGLE_FLOAT))
-        {   d *= TWO_24;
-            x -= 24;
-            a1 = (int32_t)d;
-            a = fixnum_of_int(a1);
-        }
-        else
-        {   d *= TWO_22;
-            a1 = (int32_t)d;
-            d -= (double)a1;
-            a2 = (int32_t)(d*TWO_31);  // This conversion should be exact
-            x -= 53;
-            a = make_two_word_bignum(a1, a2);
-        }
+    bool neg = 0;
+    if (d < 0.0)
+    {   d = -d;
+        neg = true;
     }
+    int32_t d2;
+    uint32_t d1, d0;
+    intptr_t x = 31*double_to_3_digits(d, d2, d1, d0);
+    a = make_three_word_bignum(d2, d1, d0);
 #ifdef COMMON
     {   mv_2 = fixnum_of_int(x);
         mv_3 = neg ? fixnum_of_int(-1) : fixnum_of_int(1);
@@ -797,11 +785,6 @@ static LispObject Lscale_float(LispObject env, LispObject a, LispObject b)
     else return onevalue(make_boxfloat(d, type_of_header(flthdr(a))));
 }
 
-#define FIX_TRUNCATE softfloat_round_minMag
-#define FIX_ROUND    softfloat_round_near_even
-#define FIX_FLOOR    softfloat_round_min
-#define FIX_CEILING  softfloat_round_max
-
 // long float version of the following function. Commentary is in the
 // double precisoin version.
 
@@ -823,7 +806,7 @@ static LispObject lisp_fix_sub_long(LispObject a, int roundmode)
 // I may sometimes still need to worry about rounding.
     int32_t d4;
     uint32_t d3, d2, d1, d0;
-    size_t x1 = float128_to_5_digits(d, d4, d3, d2, d1, d0);
+    intptr_t x1 = float128_to_5_digits(d, d4, d3, d2, d1, d0);
     switch (x1)
     {
     case -2:
@@ -964,7 +947,7 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
 // and so all the complication regarding the rounding mode does not apply.
     int32_t d2;
     uint32_t d1, d0;
-    int x = double_to_3_digits(d, d2, d1, d0);
+    intptr_t x = double_to_3_digits(d, d2, d1, d0);
     return make_n_word_bignum(d2, d1, d0, x);
 }
 
@@ -1033,9 +1016,9 @@ static LispObject lisp_fix_ratio(LispObject a, int roundmode)
 }
 
 // This fixes a value a and returns (a - fix(a)) as a second result. This is
-// only ever carred with a floating point argument.
+// only ever called with a floating point argument.
 
-static LispObject lisp_fix(LispObject a, int roundmode)
+LispObject lisp_fix(LispObject a, int roundmode)
 {   LispObject r;
     push(a);
     r = lisp_fix_sub(a, roundmode);

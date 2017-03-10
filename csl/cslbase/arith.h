@@ -143,6 +143,13 @@ typedef unsigned __int128 uint128_t;
   (((intptr_t)(((uintptr_t)(n)&0x7fffffffU) << (8*sizeof(intptr_t) - 31)) / \
     ((intptr_t)1 << (8*sizeof(intptr_t) - 31))) == (intptr_t)(n))
 
+#define FIX_TRUNCATE softfloat_round_minMag
+#define FIX_ROUND    softfloat_round_near_even
+#define FIX_FLOOR    softfloat_round_min
+#define FIX_CEILING  softfloat_round_max
+
+extern LispObject lisp_fix(LispObject a, int roundmode);
+
 
 // The following tests for IEEE infinities and NaNs depends on arithmetic
 // being regular double-precision rounded to a 64-bit double at each stage.
@@ -452,6 +459,7 @@ extern double float_of_number(LispObject a);
 extern float128_t float128_of_number(LispObject a);
 extern LispObject make_complex(LispObject r, LispObject i);
 extern LispObject make_ratio(LispObject p, LispObject q);
+extern LispObject make_approx_ratio(LispObject p, LispObject q, int bits);
 extern "C" LispObject ash(LispObject a, LispObject b);
 extern "C" LispObject lognot(LispObject a);
 extern LispObject logior2(LispObject a, LispObject b);
@@ -549,6 +557,7 @@ extern size_t karatsuba_parallel;
 
 #endif
 
+
 // Now some stuff relating to the float128_t type
 
 static int f128M_exponent(const float128_t *p);
@@ -637,9 +646,9 @@ extern int double_to_binary(double d, int64_t &m);
 extern int float128_to_binary(const float128_t *d,
                               int64_t &mhi, uint64_t &mlo);
 
-extern size_t double_to_3_digits(double d,
+extern intptr_t double_to_3_digits(double d,
     int32_t &a2, uint32_t &a1, uint32_t &a0);
-extern size_t float128_to_5_digits(float128_t *d,
+extern intptr_t float128_to_5_digits(float128_t *d,
     int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0);
 
 
