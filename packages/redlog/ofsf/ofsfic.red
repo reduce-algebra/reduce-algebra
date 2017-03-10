@@ -549,8 +549,8 @@ asserted procedure ofsfic!*cl_qe1(f: Formula, theo: Theory, xbvl: KernelL): Elim
 asserted procedure ofsfic!*cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL, dpth: Integer, vlv: Integer): List3;
    % Quantifier elimination for one block soubroutine. Arguments are as in
    % [cl_qeblock], where [q] has been dropped. Return value as well.
-   begin scalar w,co,remvl,newj,cvl,coe,ww,cadf,cadres,celleval,fvect,sf,falseFound;
-      integer c,count,delc,oldcol,comax,comaxn,vl,vl2,subst;
+   begin scalar w,co,remvl,newj,cvl,coe,ww;
+      integer c,count,delc,oldcol,comax,comaxn;
       if !*rlqegsd then
 	 f := rl_gsd(f,theo);
       cvl := varl;
@@ -617,57 +617,7 @@ asserted procedure ofsfic!*cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory
 	    % There is no eliminable variable. Invalidate this entry, and save
 	    % its variables for later requantification.
 	    if !*rlqeinfcore then << %%%%%%%MAX
-	       cadf := rl_ex(rl_smkn('and, vector2list ce_fvect coe), nil);
-	       ic_resetcadcelllist rlqeicdata!*;
-	       % cadres := ofsfic_cad(cadf, ofsf_cadporder cadf, nil);
-	       cadres := ofsfic_cad(cadf, cdr cl_varl cadf, nil);
-	       % TODO: Use optimized order. One has to be cautious
-	       % with kernel orderings to avoid buggy behavior.
-	       if cadres eq 'false then <<
-		  fvect := ce_fvect coe;
-		  for each cell in ic_cadcelllist rlqeicdata!* do <<
-		     falseFound := nil;
-		     celleval := mkvect upbv fvect;
-		     for i := 0 : upbv fvect do <<
-			sf := getv(fvect, i);
-			vl := cl_fvarl sf;
-			subst := t;
-			vl2 := nil;
-			for each sp in acell_getsp cell do
-			   for each vari in aex_fvarl cadr sp do
-			      vl2 := vari . vl2;
-			for each vari in vl do
-			   if not (vari memq vl2) then
- 			      subst := nil;
-			for each vari in vl2 do
-			   if not (vari memq vl) then <<
-			      vl := vari . vl;
-			      sf := rl_smkn('and, {sf, {'geq,((((vari . 1) . 1)) . 1), nil}})
-			   >>;
-			if subst then
-			   cadres := ofsf_trialeval(sf, acell_getsp cell)
-			else
-			   cadres := 'true;
-			putv(celleval, i, cadres);
-			if cadres eq 'false then <<
-			   falseFound := t;
-			   ic_addtofalsevect(rlqeicdata!*, i, 1)
-			>>
-		     >>;
-		     if falseFound then <<
-			for i := 0 : upbv celleval do
-			   if not (getv(celleval, i) eq 'false) then
- 			      putv(celleval, i, 'true);
-			ic_addcoverage(rlqeicdata!*, 1);
-			ic_appendevtplist(rlqeicdata!*, celleval)
-		     >> else <<
-			!*rlqeicsimpl := t;
-			ofsfic_filterlocalcore(fvect, cadr
-			   rl_simpl(rl_smkn('and, vector2list celleval), nil, -1));
-			!*rlqeicsimpl := nil
-		     >>
-		  >>
-	       >> else if cadres eq 'true then <<
+	       if ofsfic_process!-coe coe then <<  % [coe] is equivalent to ['true]
 		  co := co_new();
 		  newj := {'true . nil}
 	       >>
@@ -688,6 +638,62 @@ asserted procedure ofsfic!*cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory
       % to do some incremental simplification at some point.
       return {remvl,
 	 {cl_mkJ(rl_smkn('or,for each x in newj collect car x),nil)}, theo}
+   end;
+
+asserted procedure ofsfic_process!-coe(coe: ContainerElement): Boolean;
+   % Returns [t] or [nil] depending on whether [coe] is equivalent to
+   % ['true] or ['false].
+   begin scalar fvect, cadinput, cd, cadres, rfvect, falseFound, celleval, sf, vl, vlsp, tmpres;
+      fvect := ce_fvect coe;
+      cadinput := rl_ex(rl_smkn('and, vector2list fvect), nil);
+      cd := ofsf_cadpreparation(cadinput, ofsf_cadporder cadinput, nil);
+      ofsf_cadprojection cd;
+      ofsf_cadextension cd;
+      % From now on we work in a (possibly) modified kord!*.
+      cadres := acell_gettv atree_rootcell caddata_dd cd;
+      assert(cadres memq '(true false));
+      if cadres eq 'true then <<
+	 ofsf_cadfinish cd;
+	 return t
+      >>;
+      % [cadres] is ['false]
+      % We make a reorder copy of [fvect].
+      rfvect := mkvect upbv fvect;
+      for i := 0 : upbv fvect do
+	 putv(rfvect, i, ofsf_reorder getv(fvect, i));
+      for each cell in atree_getleaves caddata_dd cd do <<
+	 falseFound := nil;
+	 celleval := mkvect upbv rfvect;
+	 for i := 0 : upbv rfvect do <<
+	    sf := getv(rfvect, i);
+	    vl := cl_fvarl sf;
+	    vlsp := for each anu in acell_getsp cell collect
+	       aex_mvar anu_dp anu;
+	    tmpres := 'true;
+	    if lto_subsetq(vl, vlsp) then <<
+	       for each v in lto_setminus(vlsp, vl) do
+		  sf := rl_smkn('and, {sf, ofsf_0mk2('geq, addf(!*k2f v, 1))});
+	       tmpres := ofsf_trialeval(sf, acell_getsp cell)
+	    >>;
+	    assert(tmpres memq '(true false));
+	    putv(celleval, i, tmpres);
+	    if tmpres eq 'false then <<
+	       falseFound := t;
+	       ic_addtofalsevect(rlqeicdata!*, i, 1)
+	    >>
+	 >>;
+	 if falseFound then <<
+	    ic_addcoverage(rlqeicdata!*, 1);
+	    ic_appendevtplist(rlqeicdata!*, celleval)
+	 >> else <<
+	    !*rlqeicsimpl := t;
+	    ofsfic_filterlocalcore(rfvect, cadr
+	       rl_simpl(rl_smkn('and, vector2list celleval), nil, -1));
+	    !*rlqeicsimpl := nil
+	 >>
+      >>;
+      ofsf_cadfinish cd;
+      return nil
    end;
 
 asserted procedure ofsfic!*cl_qevar(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL): DottedPair;
@@ -1230,22 +1236,6 @@ procedure cl_smsimpl!-junct2!-tagged(op,sicol,knowl,newknowl,n,break,tagl);
       if w then return
  	 {w, tagl};
       return {{cl_flip break}, tagl}
-   end;
-
-asserted procedure ofsfic_cad(phi: Formula, prjordl: List, aaplus: List): Formula;
-   % Interface to CAD; therefore the same signature as [ofsf_cad].
-   % [phi] is a closed formula.
-   begin scalar cd, dd, tv;
-      cd := ofsf_cadpreparation(phi, prjordl, aaplus);
-      ofsf_cadprojection cd;
-      ofsf_cadextension cd;
-      dd := caddata_dd cd;
-      tv := acell_gettv atree_rootcell dd;
-      assert(memq(tv, '(true false)));
-      for each cell in atree_getleaves dd do
-	 ic_appendcadcellList(rlqeicdata!*, cell);
-      caddata_putphiprime(cd, tv);
-      return cdr ofsf_cadfinish cd
    end;
 
 %%%%%%%MAX
