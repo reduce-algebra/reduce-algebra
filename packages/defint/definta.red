@@ -2,7 +2,7 @@
 %*                             INTEGRATION                             *
 %***********************************************************************
 
-module definta$
+module definta;
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -35,40 +35,50 @@ algebraic operator f2$
 
 fluid '(mellincoef);
 
-fluid '(plotsynerr!*);
+%%fluid '(plotsynerr!*);
 
 %***********************************************************************
 %*                          MAIN PROCEDURES                            *
 %***********************************************************************
 
 symbolic inline procedure defint_gw u;
+  % coefficient of integration variable in argument of MeijerG
   caar u$
 
 symbolic inline procedure defint_gl u;
+  % numerator of power of integration variable in argument of MeijerG
   caadar u$
 
 symbolic inline procedure defint_gk u;
+  % denominator of power of integration variable in argument of MeijerG
   cdadar u$
 
 symbolic inline procedure defint_gr u;
+  % power of integration variable in argument of MeijerG
   cadar u$
 
 symbolic inline procedure defint_gm u;
+  % upper left index of MeijerG
   caadr u$
 
 symbolic inline procedure defint_gn u;
+  % upper right index of MeijerG
   cadadr u$
 
 symbolic inline procedure defint_gp u;
+  % lower left index of MeijerG
   caddr cadr u$
 
 symbolic inline procedure defint_gq u;
+  % lower right index of MeijerG
   cadddr cadr u$
 
 symbolic inline procedure defint_ga u;
+  % list of upper parameters of MeijerG
   caddr u$
 
 symbolic inline procedure defint_gb u;
+  % list of lower parameters of MeijerG
   cadddr u$
 
 %*******
@@ -78,46 +88,46 @@ symbolic inline procedure defint_gb u;
 % were applie din just one place. So really they all need review and
 % consolidation.
 %*******
-symbolic procedure defint_rdwrap f;
-if numberp f then float f
-  else if f='pi then 3.141592653589793238462643
-  else if f='e then 2.7182818284590452353602987
-  else if atom f then f
-  else if eqcar(f, '!:rd!:) then
-          if atom cdr f then cdr f else bf2flr f
-  else if eqcar(f, '!:dn!:) then defint_rdwrap2 cdr f
-  else if eqcar(f, 'minus) then
-    begin scalar x;
-       x := defint_rdwrap cadr f;
-       return if numberp x then minus float x else {'minus, x}
-    end
-  else if get(car f, 'dname) then
-    << plotsynerr!*:=t;
-       rerror(plotpackage, 32, {get(car f, 'dname),
-                                "illegal domain for PLOT"})
-    >>
-  else if eqcar(f,'expt) then defint_rdwrap!-expt f
-  else defint_rdwrap car f . defint_rdwrap cdr f;
-
-symbolic procedure defint_rdwrap!-expt f;
-% preserve integer second argument.
-  if fixp caddr f then {'expt!-int,defint_rdwrap cadr f,caddr f}
-    else {'expt,defint_rdwrap cadr f, defint_rdwrap caddr f};
-
-symbolic procedure defint_rdwrap2 f;
-% Convert from domain to LISP evaluable value.
-  if atom f then f else float car f * 10^cdr f;
-
-symbolic procedure defint_rdwrap!* f;
-% convert a domain element to float.
-  if null f then 0.0 else defint_rdwrap f;
-
-% Also in plotnum.red
-symbolic procedure rdunwrap f;
-  if f=0.0 then 0 else if f=1.0 then 1 else '!:rd!: . f;
-
+% symbolic procedure defint_rdwrap f;
+% if numberp f then float f
+%   else if f='pi then 3.141592653589793238462643
+%   else if f='e then 2.7182818284590452353602987
+%   else if atom f then f
+%   else if eqcar(f, '!:rd!:) then
+%           if atom cdr f then cdr f else bf2flr f
+%   else if eqcar(f, '!:dn!:) then defint_rdwrap2 cdr f
+%   else if eqcar(f, 'minus) then
+%     begin scalar x;
+%        x := defint_rdwrap cadr f;
+%        return if numberp x then minus float x else {'minus, x}
+%     end
+%   else if get(car f, 'dname) then
+%     << plotsynerr!*:=t;
+%        rerror(plotpackage, 32, {get(car f, 'dname),
+%                                 "illegal domain for PLOT"})
+%     >>
+%   else if eqcar(f,'expt) then defint_rdwrap!-expt f
+%   else defint_rdwrap car f . defint_rdwrap cdr f;
+%
+% symbolic procedure defint_rdwrap!-expt f;
+% % preserve integer second argument.
+%   if fixp caddr f then {'expt!-int,defint_rdwrap cadr f,caddr f}
+%     else {'expt,defint_rdwrap cadr f, defint_rdwrap caddr f};
+%
+% symbolic procedure defint_rdwrap2 f;
+% % Convert from domain to LISP evaluable value.
+%   if atom f then f else float car f * 10^cdr f;
+%
+% symbolic procedure defint_rdwrap!* f;
+% % convert a domain element to float.
+%   if null f then 0.0 else defint_rdwrap f;
+%
+% % Also in plotnum.red
+% symbolic procedure rdunwrap f;
+%   if f=0.0 then 0 else if f=1.0 then 1 else '!:rd!: . f;
+%
 % also in ludecom.red and plotnum.red with same definition
-symbolic procedure expt!-int(a,b); expt(a,fix b);
+% symbolic procedure expt!-int(a,b); expt(a,fix b);
 
 put('intgg,'simpfn,'simpintgg)$
 
@@ -127,10 +137,17 @@ symbolic procedure simpintgg(u);
 
 symbolic procedure intggg(u1,u2,u3,u4);
 begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
-        q,delta,xi,eta,test,temp,temp1,temp2,var,var1,var2;
+      q,delta,xi,eta,test,temp,temp1,temp2,var,var1,var2,
+   !*allfac;
 
-
- off allfac;
+   if !*trdefint then <<
+      prin2t "Entering main procedure intggg with parameters";
+      mathprint {'setq,'u1,u1};
+      mathprint {'setq,'u2,u2};
+      mathprint {'setq,'u3,u3};
+      mathprint {'setq,'u4,u4};
+   >>;
+   
  uu1:= cadr u1; uu1:= prepsq cadr(algebraic uu1);
  uu2:= cadr u2; uu2:= prepsq cadr(algebraic uu2);
  u1:=if null cddr u1 then list('f1, uu1) else 'f1 . uu1 . cddr u1;
@@ -138,19 +155,17 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
 
 % Cases for the integration of a single Meijer G-function
- if equal(get('f1,'g),'(1 . 1)) and
-                 equal(get('f2,'g),'(1 . 1)) then
+ if get('f1,'g)='(1 . 1) and get('f2,'g) = '(1 . 1) then
 
          return simp 'unknown
 
- else if equal(get('f1,'g),'(1 . 1)) then
+ else if get('f1,'g)='(1 . 1) then
 
 % Obtain the appropriate Meijer G-function
 
     <<s1:=bastab(car u2,cddr u2);
 
       v:= trpar(car cddddr s1, cadr u2, u4);
-      on allfac;
       if v='fail then return simp 'fail;
 
 % Substitute in the correct variable value
@@ -217,14 +232,13 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
     >>
 
- else if equal(get('f2,'g),'(1 . 1)) then
+ else if get('f2,'g)='(1 . 1) then
 
 % Obtain the appropriate Meijer G-function
 
     <<s1:=bastab(car u1,cddr u1);
 
       v:= trpar(car cddddr s1, cadr u1, u4);
-      on allfac;
       if v='fail then return simp 'fail;
 
 % Substitute in the correct variable value
@@ -298,33 +312,64 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
   s2:=bastab(car u2,cddr u2);
 
+  if !*trdefint then <<
+     prin2t "MeijerG representations of the first factor is:";
+     prin2!* "MeijerG<";prin2!* car car s1;prin2!* ",";prin2!* cadr car s1;prin2!* ",";
+     prin2!* caddr car s1;prin2!* ",";prin2!* cadddr car s1;prin2!* ">";
+     maprin ('list . cadr s1); prin2!* "|";
+     maprin ('list . caddr s1); prin2!* "|";
+     maprin car cddddr s1; terpri!* t;
+     if cadddr s1 neq 1 then <<prin2!* "times a factor of"; mathprint cadddr s1>>;
+     prin2t "MeijerG representations of the second factor is:";
+     prin2!* "MeijerG<";prin2!* car car s2;prin2!* ",";prin2!* cadr car s2;prin2!* ",";
+     prin2!* caddr car s2;prin2!* ",";prin2!* cadddr car s2;prin2!* ">";
+     maprin ('list . cadr s2); prin2!* "|";
+     maprin ('list . caddr s2); prin2!* "|";
+     maprin car cddddr s2; terpri!* t;
+     if cadddr s2 neq 1 then <<prin2!* "times a coefficient of"; mathprint cadddr s2>>;
+  >>;
+
   coef:=multsq(simp!* cadddr s1,simp!* cadddr s2);
 
-  v1:= trpar(car cddddr s1, cadr u1, u4);
-  if v1='fail then
-  << on allfac;
-     return simp 'fail >>;
+  if !*trdefint then <<
+     prin2t "Product of coefficients is";
+     printsq coef;
+  >>;
 
+  v1:= trpar(car cddddr s1, cadr u1, u4);
+  if v1='fail then return simp 'fail;
+  if !*trdefint then <<
+     prin2t "Argument of first MeijerG function is";
+     mathprint {'times,prepsq car v1,{'expt,u4,prepsq cadr v1}};
+  >>;
 
   v2:= trpar(car cddddr s2, cadr u2, u4);
-  if v2='fail then
-  << on allfac;
-     return simp 'fail >>;
+  if v2='fail then return simp 'fail;
+  if !*trdefint then <<
+     prin2t "Argument of second MeijerG function is";
+     mathprint {'times,prepsq car v2,{'expt,u4,prepsq cadr v2}};
+  >>;
 
-  on allfac;
+  !*allfac := t;
 
 % Substitute in the correct variable value
 
   temp1 := car cddddr s1;
   var1 := cadr u1;
   temp1 := reval algebraic(sub(x=var1,temp1));
-
+  if !*trdefint then <<
+     prin2t "After substituting the current expression the argument to the first MeijerG function is";
+     mathprint temp1;
+  >>;
   s1 := {car s1,cadr s1,caddr s1,cadddr s1,temp1};
 
   temp2 := car cddddr s2;
   var2 := cadr u2;
   temp2 := reval algebraic(sub(x=var2,temp2));
-
+  if !*trdefint then <<
+     prin2t "After substituting the current expression the argument to the second MeijerG function is";
+     mathprint temp2;
+  >>;
   s2 := {car s2,cadr s2,caddr s2,cadddr s2,temp2};
 
   s1:=list(v1,car s1,listsq cadr s1,
@@ -332,32 +377,49 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
 
   s2:=list(v2,car s2,listsq cadr s2,
-         listsq caddr s2,simp!*(subpref(cadr u2,1,u4)));
+     listsq caddr s2,simp!*(subpref(cadr u2,1,u4)));
+
+  %% RmS: The integral contains a factor var^u3
+  %%  The Formula calls for a factor of var^(alpha-1). Compute s3=alpha
   s3:=addsq(simp!* u3,'(1 . 1));
 
+  % Ensure that the arguments of both MeijerG functions are rational powers
+  % of the integration variable
   if not numberp(defint_gl s1) or not numberp(defint_gl s2) then
         return simp 'fail
   else
   if defint_gl s1<0 then s1:=cong s1 else
   if defint_gl s2<0 then s2:=cong s2 else
 
-
+  %% RmS: This is just not very good way of checking that the exponent of the
+  %% integration variable in the first MeijerG function is 1.  
   if defint_gl s1=defint_gk s1 then goto a  else      % No reduction is necessary if
-                                                                     % it is not a meijer G-function
-                                                                     % of a power of x
-  if defint_gl s2=defint_gk s2 then
-                  <<v:=s1;s1:=s2;s2:=v;go to a>>;
-                                                                 % No reduction necessary but
-                                        % the Meijer G-functions must
-                                        % be inverted
+                                                      % it is not a meijer G-function
+                                                      % of a power of x
+  %% RmS: If the 2nd MeijerG's argument is linear in the integration variable, but
+  %%  the first isn't, exchange the two factors.
+  if defint_gl s2=defint_gk s2 then <<
+     v:=s1;s1:=s2;s2:=v;
+     if !*trdefint then prin2t "Exchanging the two MeijerG functions";
+     go to a>>;
+                                                      % No reduction necessary but
+                                                      % the Meijer G-functions must
+                                                      % be exchanged
+
+  %% RmS: At this point, both of the MeijerG-function's arguments are nonlinear in the 
+  %%  integration variable.
+  %%  Substitute the latter so that the first is linear, i.e. t -> t'^A
+  %%  defint_gr s1 is the exponent A of the power in the argument
   coef:=multsq(coef,invsq defint_gr s1);
-                                                          %premultiply by inverse of power
+                                                      % premultiply by inverse of power
   v:=modintgg(s3,s1,s2);
   s3:=car v;    s1:=cadr v;   s2:=caddr v;
+
   a:
 
-% Test for validity of the integral
+  %% RmS At this point the first MeijerG function is linear in the integration variable
 
+% Test for validity of the integral
 
   test := validity_check(s1,s2,u3);
 
@@ -368,11 +430,29 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
                                      else cadr mellincoef,
               multsq(coef,coefintg(s1,s2,s3)));
 
+  if !*trdefint then <<
+     prin2t "Overall coefficient is";
+     printsq coef;
+  >>;
+  %% Compute new list of MeijerG parameters
   v := deltagg(s1,s2,s3);
+  if !*trdefint then <<
+     prin2t "Parameter list of resulting single MeijerG function is";
+     mathprint ('list . for each sq in car v collect prepsq sq);
+     mathprint ('list . for each sq in cadr v collect prepsq sq);
+  >>;
   v := redpargf(list(arggf(s1,s2),indgf(s1,s2),car v,cadr v));
   v := ('MeijerG . mgretro (cadr v,caddr v,car v));
+  if !*trdefint then <<
+     prin2t "Resulting single MeijerG function is";
+     mathprint v;
+  >>;
   v := aeval v;
 
+  if !*trdefint then <<
+     prin2t "Simplification of the resulting single MeijerG function yields";
+     mathprint v;
+  >>;
   if eqcar(v,'!*sq) then
       v := cadr v
   else if fixp v then
@@ -383,7 +463,7 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
   else
       return multsq(coef,v);
 
-end$
+end;
 
 
 
@@ -761,6 +841,7 @@ eta := reval algebraic(1 - alpha*(v - u) - mu - rho);
 if listp r then << r1 := symbolic(cadr r); r2 := symbolic(caddr r)>>
 else            << r1 := r; r2 := 1>>;
 
+if !*trdefint then prin2t "Checking test cases:";
 test_1a := tst1a(m,n,a,b);
 test_1b := tst1b(k,l,c,d);
 test_2 := tst2(m,k,b,d,alpha,r);
@@ -775,8 +856,12 @@ test_10 := tst10(sigma,delta);
 test_11 := tst11(sigma,delta);
 test_12 := tst12(omega,epsilon);
 test_13 := tst13(omega,epsilon);
-test_14 := tst14(u,v,alpha,mu,rho,delta,epsilon,sigma,omega,r,phi,r1,
-                               r2);
+test_14 := tst14(u,v,alpha,mu,rho,delta,epsilon,sigma,omega,r,phi,r1,r2);
+%%
+%% If test 14 fails, we try it again after exchanging the two MeijerG factors
+if test_14 = 'fail then
+   test_14 := tst14(p,q,alpha,mu,rho,epsilon,delta,omega,sigma,r,phi,r2,r1);
+
 if p = q or u = v then test_15 := 'fail
         else test_15 := tst15(m,n,p,q,k,l,u,v,sigma,omega,eta);
 
@@ -785,6 +870,7 @@ test := {'test_cases2,m,n,p,q,k,l,u,v,delta,epsilon,sigma,omega,rho,
    test_7,test_8,test_9,test_10,test_11,test_12,test_13,test_14,
    test_15};
 if !*trdefint then <<
+   terpri!* t;
    prin2t "Checking test cases:";
    mathprint test;
 >>;
@@ -811,6 +897,14 @@ symbolic procedure tst1a(m,n,a,b);
 
 begin scalar a_new,b_new,temp,fail_test;
 
+   if !*trdefint then <<
+      prin2t "Checking tst1a: any difference between an upper and a lower parameter must not be a positive integer";
+      prin2!* n; prin2!* " upper parameters: ";
+      mathprint {'equal,'a,'list . for each sq in a collect prepsq sq};
+      prin2!* m; prin2!* " lower parameters: ";
+      mathprint {'equal,'b,'list . for each sq in b collect prepsq sq};
+   >>;
+   
 for i := 1 :n do << a_new := append(a_new,{car a}); a := cdr a>>;
 
 for j := 1 :m do << b_new := append(b_new,{car b}); b := cdr b>>;
@@ -822,6 +916,10 @@ for each i in a_new do
           and cdr temp = 1 then
           fail_test := t>>;
 >>;
+
+if !*trdefint then <<
+   prin2!* "Result of tst1a is "; prin2!* if fail_test then 'fail else t; terpri!* t>>;
+
 if fail_test = t then return 'fail else return t;
 end;
 
@@ -837,6 +935,14 @@ symbolic procedure tst1b(k,l,c,d);
 
 begin scalar c_new,d_new,temp,fail_test;
 
+   if !*trdefint then <<
+      prin2t "Checking tst1b: any difference between an upper and a lower parameter must not be a positive integer";
+      prin2!* l; prin2!* " upper parameters: ";
+      mathprint {'equal,'c,'list . for each sq in c collect prepsq sq};
+      prin2!* k; prin2!* " lower parameters: ";
+      mathprint {'equal,'d,'list . for each sq in d collect prepsq sq};
+   >>;
+
 for i := 1 :l do << c_new := append(c_new,{car c}); c := cdr c>>;
 
 for j := 1 :k do << d_new := append(d_new,{car d}); d := cdr d>>;
@@ -848,6 +954,9 @@ for each i in c_new do
           and cdr temp = 1 then
           fail_test := t>>;
 >>;
+if !*trdefint then <<
+   prin2!* "Result of tst1b is "; prin2!* if fail_test then 'fail else t; terpri!* t>>;
+
 if fail_test = t then return 'fail else return t;
 end;
 
@@ -883,7 +992,11 @@ if transform_tst neq t then
          if car temp = 'nil or car temp < 0 then
              fail_test := 't>>;
    >>;
-   if fail_test = t then return 'fail else return t>>
+
+if !*trdefint then <<
+   prin2t "Result of tst2 is "; prin2!* if fail_test then 'fail else t; terpri!* t>>;
+
+if fail_test = t then return 'fail else return t>>
 else
 << transform_lst := cons (('test2 . '(list 'greaterp
   (list 'repart (list 'plus 'alpha (list 'times 'r 'bi) 'dj))
@@ -905,6 +1018,16 @@ begin scalar a_new,c_new,temp,temp1,temp2,fail_test;
 
 transform_tst := reval algebraic(transform_tst);
 
+   if !*trdefint then <<
+      prin2t "Checking tst3: Re{alpha + r*ai + cj} < r + 1,          i=1..n, j=1..l";
+      prin2!* n; prin2!* " first upper parameters: ";
+      mathprint {'equal,'a,'list . for each sq in a collect prepsq sq};
+      prin2!* l; prin2!* " second upper parameters: ";
+      mathprint {'equal,'c,'list . for each sq in c collect prepsq sq};
+      mathprint {'equal,'alpha,alpha};
+      mathprint {'equal,'r,r};
+   >>;
+   
 if transform_tst neq 't then
 
 << for i := 1 :n do
@@ -923,6 +1046,9 @@ if transform_tst neq 't then
          if car temp = 'nil or car temp > 0 then
              fail_test := 't>>;
    >>;
+if !*trdefint then <<
+   prin2t "Result of tst3 is "; prin2!* if fail_test then 'fail else t; terpri!* t>>;
+
    if fail_test = 't then return 'fail else return t>>
 else
 
@@ -947,7 +1073,17 @@ begin scalar c_new,temp1,temp,fail_test;
 transform_tst := reval algebraic(transform_tst);
 
 if transform_tst neq 't then
-<< for j := 1 :l do
+<< if !*trdefint then <<
+      prin2t "Checking tst4: (p - q)*Re{alpha + cj - 1} - r*Re{mu} > -3*r/2,   j=1..l";
+      terpri!* t; prin2!* "p="; prin2!* p; prin2!* ",q=" ; prin2!* q; terpri!* t;
+      prin2!* l; prin2!* " second upper parameters: ";
+      mathprint {'equal,'c,'list . for each sq in c collect prepsq sq};
+      mathprint {'equal,'alpha,alpha};
+      mathprint {'equal,'r,r};
+      mathprint {'equal,'mu,mu};
+   >>;
+
+   for j := 1 :l do
    << temp1 := prepsq car c;
       c_new := append(c_new,{temp1});
       c := cdr c>>;
@@ -957,6 +1093,9 @@ if transform_tst neq 't then
                                                                 - r*repart(mu) + 3/2*r);
       if car temp = 'nil or car temp < 0 then fail_test := t;
    >>;
+
+if !*trdefint then <<
+   prin2t "Result of tst4 is "; prin2!* if fail_test then 'fail else t; terpri!* t>>;
 
    if fail_test = t then return 'fail else return t>>
 else
@@ -986,7 +1125,17 @@ transform_tst := reval algebraic(transform_tst);
 
 if transform_tst neq t then
 
-<< for j := 1 :k do
+<< if !*trdefint then <<
+      prin2t "Checking tst5: (p - q)*Re{alpha + dj} - r*Re{mu} > -3*r/2,  j=1..k";
+      terpri!* t; prin2!* "p="; prin2!* p; prin2!* ",q=" ; prin2!* q; terpri!* t;
+      prin2!* k; prin2!* " second lower parameters: ";
+      mathprint {'equal,'d,'list . for each sq in d collect prepsq sq};
+      mathprint {'equal,'alpha,alpha};
+      mathprint {'equal,'r,r};
+      mathprint {'equal,'mu,mu};
+   >>;
+
+   for j := 1 :k do
    << temp1 := prepsq car d;
       d_new := append(d_new,{temp1});
       d := cdr d>>;
@@ -997,6 +1146,9 @@ if transform_tst neq t then
                                                                 - r*repart(mu) + 3/2*r);
       if car temp = 'nil or car temp < 0 then fail_test := 't;
    >>;
+
+   if !*trdefint then <<
+      prin2t "Result of tst5 is "; prin2!* if fail_test then 'fail else t; terpri!* t>>;
 
    if fail_test = t then return 'fail else return t>>
 else
@@ -1026,7 +1178,17 @@ begin scalar a_new,temp1,temp,fail_test;
 transform_tst := reval algebraic(transform_tst);
 
 if transform_tst neq 't then
-<< for j := 1 :n do
+<< if !*trdefint then <<
+      prin2t "Checking tst6: (u - v)*Re{alpha + r*ai - r} - Re{rho} > -3/2 ,  i=1..n";
+      terpri!* t; prin2!* "u="; prin2!* u; prin2!* ",v="; prin2!* v; terpri!* t;
+      prin2!* n; prin2!* " first upper parameters: ";
+      mathprint {'equal,'a,'list . for each sq in a collect prepsq sq};
+      mathprint {'equal,'alpha,alpha};
+      mathprint {'equal,'r,r};
+      mathprint {'equal,'r,rho};
+   >>;
+
+   for j := 1 :n do
 
    << temp1 := prepsq car a;
       a_new := append(a_new,{temp1});
@@ -1039,7 +1201,10 @@ if transform_tst neq 't then
       if car temp = 'nil or car temp < 0 then fail_test := 't;
    >>;
 
-  if fail_test = 't then return 'fail else return 't>>
+  if !*trdefint then <<
+      prin2t "Result of tst6 is "; prin2!* if fail_test then 'fail else t; terpri!* t>>;
+
+   if fail_test = 't then return 'fail else return 't>>
 else
 << transform_lst := cons (('test6 . '(list 'greaterp (list 'difference
   (list 'times (list 'difference 'u 'v) (list 'repart
@@ -1067,7 +1232,17 @@ transform_tst := reval algebraic(transform_tst);
 
 if transform_tst neq 't then
 
-<< for j := 1 :m do
+<< if !*trdefint then <<
+      prin2t "Checking tst7: (u - v)*Re{alpha + r*bi} - Re{rho} > -3/2,     i=1..m";
+      terpri!* t; prin2!* "u="; prin2!* u; prin2!* ",v="; prin2!* v; terpri!* t;
+      prin2!* m; prin2!* " first lower parameters: ";
+      mathprint {'equal,'b,'list . for each sq in b collect prepsq sq};
+      mathprint {'equal,'alpha,alpha};
+      mathprint {'equal,'r,r};
+      mathprint {'equal,'r,rho};
+   >>;
+
+   for j := 1 :m do
    << temp1 := prepsq car b;
       b_new := append(b_new,{temp1});
       b := cdr b>>;
@@ -1079,6 +1254,9 @@ if transform_tst neq 't then
 
       if car temp = 'nil or car temp < 0 then fail_test := 't;
    >>;
+
+   if !*trdefint then <<
+      prin2t "Result of tst7 is "; prin2!* if fail_test then 'fail else t; terpri!* t>>;
 
    if fail_test = t then return 'fail else return t>>
 else
@@ -1109,11 +1287,24 @@ transform_tst := reval algebraic(transform_tst);
 
 if transform_tst neq 't then
 
-<< sum := reval algebraic(2*repart((q - p)*(v - u)*alpha
+<< if !*trdefint then <<
+      prin2t "Checking tst8: abs(phi) + 2*Re{(q - p)*(v - u)*alpha + r*(v - u)*(mu - 1) + (q - p)*(rho - 1)} > 0";
+      terpri!* t; prin2!* "p="; prin2!* p; prin2!* ",q=" ; prin2!* q; 
+      prin2!* ",u="; prin2!* u; prin2!* ",v="; prin2!* v; terpri!* t;
+      mathprint {'equal,'alpha,alpha};
+      mathprint {'equal,'r,r};
+      mathprint {'equal,'mu,mu};
+      mathprint {'equal,'rho,rho};
+   >>;
+
+   sum := reval algebraic(2*repart((q - p)*(v - u)*alpha
                                   + r*(v - u)*(mu - 1) + (q - p)*(rho - 1)));
 
    temp := simp!* reval algebraic(abs phi + sum);
    if car temp = 'nil or car temp < 0 then fail_test := 't;
+   if !*trdefint then <<
+      prin2t "Result of tst8 is "; prin2!* if fail_test then 'fail else t; terpri!* t>>;
+
    if fail_test = t then return 'fail else return t>>
 
 else
@@ -1151,12 +1342,24 @@ transform_tst := reval algebraic(transform_tst);
 
 if transform_tst neq 't then
 
-<< sum := reval algebraic(2*repart((q - p)*(v - u)*alpha
+<< if !*trdefint then <<
+      prin2t "Checking tst9: abs(phi) - 2*Re{(q - p)*(v - u)*alpha + r*(v - u)*(mu - 1) + (q - p)*(rho - 1)} > 0";
+      terpri!* t; prin2!* "p="; prin2!* p; prin2!* ",q=" ; prin2!* q; 
+      prin2!* ",u="; prin2!* u; prin2!* ",v="; prin2!* v; terpri!* t;
+      mathprint {'equal,'alpha,alpha};
+      mathprint {'equal,'r,r};
+      mathprint {'equal,'mu,mu};
+      mathprint {'equal,'rho,rho};
+   >>;
+   sum := reval algebraic(2*repart((q - p)*(v - u)*alpha
                                   + r*(v - u)*(mu - 1) + (q - p)*(rho - 1)));
 
    temp := simp!* reval algebraic(abs phi - sum);
 
    if car temp = 'nil or car temp < 0 then fail_test := 't;
+
+   if !*trdefint then <<
+      prin2t "Result of tst9 is "; prin2!* if fail_test then 'fail else t; terpri!* t>>;
 
    if fail_test = t then return 'fail else return t>>
 else
@@ -1188,16 +1391,34 @@ algebraic procedure tst10(sigma,delta);
 %  page 345  (10)
 
 begin scalar arg_sigma,pro,temp,fail_test,!*rounded,dmode!*;
+%%
+%%   if !*trdefint then <<
+%%      prin2t "Checking tst10: abs(arg sigma) < delta*pi";
+%%      mathprint {'equal,'sigma,sigma};
+%%      mathprint {'equal,'delta,delta};
+%%   >>;
 
 if transform_tst neq 't then
 
-<< on rounded;
+<< if symbolic(!*trdefint) then <<
+     write "Checking tst10: abs(arg sigma) < delta*pi";
+     write "sigma=",sigma;
+     write "delta=",delta;
+   >>;
+   on rounded;
    arg_sigma := abs(atan2(impart sigma,repart sigma));
    pro :=  delta*pi;
    temp :=  pro - arg_sigma;
    if  numberp temp and temp <= 0 then fail_test := t;
 
    off rounded;
+
+   if symbolic(!*trdefint) then <<
+      write "Result of tst10 is ",
+	 if symbolic(fail_test) then fail else t;
+   >>;
+%%if !*trdefint then <<
+%%   prin2t "Result of tst10 is "; prin2!* if fail_test then 'fail else t; terpri!* t>>;
 
    if fail_test = t then return reval 'fail else return reval t>>
 
@@ -1225,9 +1446,18 @@ begin scalar arg_sigma,pro,fail_test;
 
 if transform_tst neq 't then
 
-<< arg_sigma := abs(atan2(impart sigma,repart sigma));
+<< if symbolic(!*trdefint) then <<
+     write "Checking tst11: abs(arg sigma) = delta*pi";
+     write "sigma=",sigma;
+     write "delta=",delta;
+   >>;
+   arg_sigma := abs(atan2(impart sigma,repart sigma));
    pro := delta*pi;
    if arg_sigma neq pro then fail_test := 't;
+   if symbolic(!*trdefint) then <<
+      write "Result of tst11 is ",
+	 if symbolic(fail_test) then fail else t;
+   >>;
    if fail_test = 't then return reval 'fail else return reval 't>>
 else
 
@@ -1255,6 +1485,11 @@ if transform_tst neq 't then
 
 << on rounded;
 
+   if symbolic(!*trdefint) then <<
+     write "Checking tst12: abs(arg omega) < epsilon*pi";
+     write "omega=",omega;
+     write "epsilon=",epsilon;
+   >>;
    arg_omega := abs(atan2(impart omega,repart omega));
    pro := epsilon*pi;
    temp := pro - arg_omega;
@@ -1262,6 +1497,10 @@ if transform_tst neq 't then
 
    off rounded;
 
+   if symbolic(!*trdefint) then <<
+      write "Result of tst12 is ",
+	 if symbolic(fail_test) then fail else t;
+   >>;
    if fail_test = 't then return reval 'fail else return reval 't>>
 
 else
@@ -1289,9 +1528,18 @@ begin scalar arg_omega,pro,fail_test;
 
 if transform_tst neq 't then
 
-<< arg_omega := abs(atan2(impart omega,repart omega));
+<< if symbolic(!*trdefint) then <<
+     write "Checking tst13: abs(arg omega) = epsilon*pi";
+     write "omega=",omega;
+     write "epsilon=",epsilon;
+   >>;
+   arg_omega := abs(atan2(impart omega,repart omega));
    pro := epsilon*pi;
    if arg_omega neq pro then fail_test := 't;
+   if symbolic(!*trdefint) then <<
+      write "Result of tst13 is ",
+	 if symbolic(fail_test) then fail else t;
+   >>;
    if fail_test = t then return reval 'fail else return reval 't>>
 else
 
@@ -1326,22 +1574,43 @@ if transform_tst neq 't then
 
 << on rounded;
 
+   if symbolic(!*trdefint) then <<
+     write "Checking tst14: Compute z = r^[r1*(v - u)]*exp[-(r1*delta + r2*epsilon)*pi*i]";
+     write "                  abs(arg(1 - z*sigma^(-r1)*omega^r2)) < pi when phi = 0 and epsilon + r*(delta - 1) <= 0";
+     write "                 or";
+     write "                   z = sigma^r1*omega^(-r2) when Re{mu + rho + alpha*(v - u)}<1";
+     write "u=",u,",v=",v;
+     write "alpha=",alpha;
+     write "mu=",mu;
+     write "rho=",rho;
+     write "sigma=",sigma;
+     write "delta=",delta;
+     write "omega=",omega;
+     write "epsilon=",epsilon;
+   >>;
+
    temp := epsilon + r *(delta - 1);
    if phi = 0 and temp <= 0 then
-       z := r^(r2*(v - u))*e^(-(r2*delta+r1*epsilon)*pi*i)
-
+       << z := r^(r2*(v - u))*e^(-(r2*delta+r1*epsilon)*pi*i);
+          if symbolic(!*trdefint) then write "Case 1: z=",z;
+       >>
    else if numberp (mu + rho + alpha*(v - u)) and
                         repart(mu + rho + alpha*(v - u)) < 1 then
-       z := sigma^r2*omega^(-r1)
-   else return reval 'fail; % Wn
+       << z := sigma^r2*omega^(-r1);
+          if symbolic(!*trdefint) then write "Case 2: z=",z >>
+   else << if symbolic(!*trdefint) then write "Result of tst14 is fail"; return reval 'fail>>; % Wn
    arg := 1 - z*sigma^(-r2)*omega^r1;
 
    if arg = 0 then arg_test := 0
    else     arg_test := abs(atan2(impart arg,repart arg));
 
    if numberp arg_test and arg_test < pi then
-                << off rounded; return reval 't>>
-   else     << off rounded; return reval 'fail>>;
+                << off rounded; 
+		   if symbolic(!*trdefint) then write "Result of tst14 is t";
+                   return reval 't>>
+   else     << off rounded;
+  	       if symbolic(!*trdefint) then write "Result of tst14 is fail";
+	       return reval 'fail>>;
 >>
 
 else
@@ -1382,7 +1651,15 @@ begin scalar lc,ls,temp_ls,psi,theta,arg_omega,arg_sigma,
 
 if transform_tst neq 't then
 
-<< arg_omega := atan2(impart omega,repart omega);
+<< if symbolic(!*trdefint) then <<
+     write "Checking tst15:";
+     write "m=",m,",n=",n,",p=",p,",q=",q,",k=",k,",l=",l,",u=",u,",v=",v;
+     write "sigma=",sigma;
+     write "omega=",omega;
+     write "eta=",eta;
+   >>;
+
+   arg_omega := atan2(impart omega,repart omega);
    arg_sigma := atan2(impart sigma,repart sigma);
 
    psi := (abs arg_omega + (q - m - n)*pi)/(q - p);
@@ -1402,9 +1679,13 @@ if transform_tst neq 't then
    on rounded;
    if (numberp lc and lc > 0) or lc = 0 and ls = 0 and repart eta > -1
                   or lc = 0 and ls = 0 and repart eta > 0 then
-   << off rounded; return reval 't>>
+   << off rounded; 
+      if symbolic(!*trdefint) then write "Result of tst14 is t";
+      return reval 't>>
 
-   else         << off rounded; return reval 'fail>>
+   else << off rounded;
+           if symbolic(!*trdefint) then write "Result of tst15 is fail";
+      	   return reval 'fail>>
 >>
 
 else
@@ -1454,23 +1735,29 @@ if null u then nil else
      subpref(car u,v,z) . defint_sublist(cdr u,v,z)$
 
 symbolic procedure trpar(u1,u2,u3);
-  if not numberp u2 and not atom u2 and car(u2)='plus then 'fail else
+  % computes the argument c*var^p of the MeijerG function in terms of the
+  % integration variable var.
+  % parameters:
+  %   u1 - variable pattern from MeijerG pattern
+  %   u2 - actual argument for replacement
+  %   u3 - integration variable
+  % returns: a list {c,p}
+  if eqcar(u2,'plus) then 'fail else
   begin scalar a!3,l!1,v1,v2,v3,v4;
-   if (v1:=dubdeg(car simp u1,'x))='fail or
-           (v2:=dubdeg(cdr simp u1,'x))='fail or
-           (v3:=dubdeg(car simp u2,u3))='fail or
-           (v4:=dubdeg(cdr simp u2,u3))='fail then return 'fail;
+   if (v1:=dubdeg(numr simp u1,'x))='fail or
+           (v2:=dubdeg(denr simp u1,'x))='fail or
+           (v3:=dubdeg(numr simp u2,u3))='fail or
+           (v4:=dubdeg(denr simp u2,u3))='fail then return 'fail;
    a!3:=multsq(subtrsq(v1,v2), subtrsq(v3,v4));
    l!1:=subpref(u1,u2,'x);
    l!1:=subpref(l!1,1,u3);
    return list(simp!*(l!1),a!3);
-  end$
+  end;
 
 symbolic procedure modintgg(u1,u2,u3);
- list(
-    multsq(u1,invsq defint_gr u2),
-    defint_change(u2,list(cons(defint_gw u2,list '(1 . 1))),'(1)),
-    defint_change(u3,list(cons(defint_gw u3,list(quotsq(defint_gr u3,defint_gr u2)))),'(1)))$
+ {multsq(u1,invsq defint_gr u2),
+  defint_change(u2,{cons(defint_gw u2,{'(1 . 1)})},'(1)),
+  defint_change(u3,{cons(defint_gw u3,{quotsq(defint_gr u3,defint_gr u2)})},'(1))};
 
 % Name adjusted to avoid clash with desir.red
 symbolic procedure defint_change(u1,u2,u3);
@@ -1543,14 +1830,13 @@ symbolic procedure coefintg(u1,u2,u3);
 % clashed with the cantens package.
 
 symbolic procedure deltagg(u1,u2,u3);
-  list(
-     append( defint_delta(car redpar1(defint_ga u2,defint_gn u2), defint_gk u2),
+  {append( defint_delta(car redpar1(defint_ga u2,defint_gn u2), defint_gk u2),
       append(
         defint_delta( difflist( listmin defint_gb u1, addsq(u3,'(-1 . 1))), defint_gl u2),
         defint_delta( cdr redpar1(defint_ga u2,defint_gn u2), defint_gk u2))),
      append( defint_delta(car redpar1(defint_gb u2,defint_gm u2), defint_gk u2),
       append(defint_delta( difflist(listmin defint_ga u1,addsq(u3,'(-1 . 1))),defint_gl u2),
-        defint_delta( cdr redpar1(defint_gb u2,defint_gm u2), defint_gk u2))))$
+        defint_delta( cdr redpar1(defint_gb u2,defint_gm u2), defint_gk u2)))};
 
 symbolic procedure redpargf(u);
  begin scalar v1,v2;
@@ -1587,28 +1873,30 @@ symbolic procedure dubdeg(x,y);
 % y -- atom.
 begin scalar c,b,a1,a3;
 if numberp x or null x then return '(nil . 1);
-if not null cdr(x) then return 'fail;
-lb1: a1:=caar x;a3:=car a1;
-  if atom a3 and a3=y then b:=cdr a1 . 1 ;
+if not null red x then return 'fail;
+lb1: a1:=lpow x;a3:=!_pvar!_ a1;
+  if atom a3 and a3=y then b:=pdeg a1 . 1 ;
   if not atom a3 then
     if cadr a3=y then
      if null cddr(a3) then return 'fail else
        if not nump(simp caddr a3) then return simp(caddr a3)
                                 else
-          c:=times(cdr a1,cadr caddr a3).caddr caddr a3;
-  if atom cdar x then
+          c:=times(pdeg a1,cadr caddr a3).caddr caddr a3;
+  if atom lc x then
     if null b then
       if null c then return '(nil . 1)
       else return c
     else
     if null c then return b
     else return plus(times(car b,cdr c),car c).cdr c;
-  x:=cdar x;go to lb1;
+  x:=lc x;go to lb1;
 end$
 
 symbolic procedure defint_delta(u,n);
   % u -- list of sq.
   % n -- number.
+  % returns the concatenated list
+  %   for each parm in u conc delta0(parm,n,n)
   if null u then nil else
     append(if n=1 then list car u else
              delta0(quotsq(car u,simp!* n),n,n)
@@ -1617,11 +1905,12 @@ symbolic procedure defint_delta(u,n);
 symbolic procedure delta0(u,n,k);
   % u -- SQ.
   % n,k -- numbers.
+  % returns a list of {u,u+1/n,u+2/n,...,u+(k-1)/n}
    if k=0 then nil else
        u . delta0(addsq(u,invsq(simp!* n)),n,k-1)$
 
 symbolic procedure nump(x);
- or(null car x,and(numberp car x,numberp cdr x))$
+ null car x or numberp car x and numberp cdr x;
 
 
 endmodule;
