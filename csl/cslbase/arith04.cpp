@@ -211,17 +211,17 @@ static LispObject rationalizef(double d, int bits)
 static float128_t FP128_INT_LIMIT =
 {
 #ifdef LITTLEENDIAN
-    {0, INT64_C(0x406f0000)}
+    {0, INT64_C(0x406f000000000000)}
 #else
-    {INT64_C(0x406f0000) , 0}
+    {INT64_C(0x406f000000000000), 0}
 #endif
 };
 static float128_t FP128_MINUS_INT_LIMIT =
 {
 #ifdef LITTLEENDIAN
-    {0, INT64_C(0xC06f0000)}
+    {0, INT64_C(0xC06f000000000000)}
 #else
-    {INT64_C(0xC06f0000) , 0}
+    {INT64_C(0xC06f000000000000), 0}
 #endif
 };
 
@@ -333,6 +333,8 @@ static LispObject rationalizef128(float128_t *d)
     dd = *d;
     if (f128M_negative(d)) f128M_negate(&dd);
     p = rationalf128(&dd);
+// If the result is an integer just return it.
+    if (!is_numbers(p) || !is_ratio(p)) return p;
     q = denominator(p);
     p = numerator(p);
     if (f128M_negative(d)) p = negate(p);
@@ -390,9 +392,9 @@ LispObject rationalize(LispObject a)
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))
             {   case TYPE_SINGLE_FLOAT:
-                    return rationalizef(value_of_immediate_float(a), 24);
+                    return rationalizef(single_float_val(a), 24);
                 case TYPE_DOUBLE_FLOAT:
-                    return rationalizef(value_of_immediate_float(a), 52);
+                    return rationalizef(double_float_val(a), 52);
                 case TYPE_LONG_FLOAT:
                     return rationalizef128(long_float_addr(a));
             }
