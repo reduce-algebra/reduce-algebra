@@ -60,12 +60,12 @@ module ofsfanuex;
 % polynomial defining this algebraic number is x.
 
 fluid '(bigvarpref!* bigvarcount!* smallvarpref!* smallvarcount!*);
-bigvarpref!* := 'zzzzz;
+bigvarpref!* := '!~var;
 bigvarcount!* := 0;
-smallvarpref!* := '!_!_x;
-smallvarcount!* := 10000;
+smallvarpref!* := '!&var;
+smallvarcount!* := 99999;
 
-procedure mksmallid();
+procedure ofsf_mksmallid();
    begin scalar w; integer d;
       smallvarcount!* := smallvarcount!* - 1;
       w := explode smallvarcount!*;
@@ -77,7 +77,7 @@ procedure mksmallid();
       return compress append(explode smallvarpref!*, w)
    end;
 
-procedure mkbigid();
+procedure ofsf_mkbigid();
    begin scalar w; integer d;
       bigvarcount!* := bigvarcount!* + 1;
       w := explode bigvarcount!*;
@@ -529,7 +529,7 @@ asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
 	 nctx := ctx_add(aex_ctx ae, x . anu_rename(a, x));
 	 return aex_mk(aex_ex ae, nctx)
       >>;
-      nx := mkbigid();
+      nx := ofsf_mkbigid();
       nctx := ctx_add(aex_ctx ae, nx . anu_rename(a, nx));
       rp := aex_ex ae;
       return aex_mk(quotsq(!*f2q sfto_renamef(numr rp, x, nx), !*f2q denr rp), nctx)
@@ -1565,7 +1565,7 @@ asserted procedure anu_compare1(a1: Anu, a2: Anu): Integer;
       v1 := aex_mvar anu_dp a1;
       v2 := aex_mvar anu_dp a2;
       if v1 eq v2 then <<
-      	 v2 := mksmallid();
+      	 v2 := ofsf_mksmallid();
       	 a2 := anu_rename(a2, v2);
       >>;
       ctx := ctx_fromial {v1 . a1, v2. a2};
@@ -1670,20 +1670,21 @@ asserted procedure anu_approxEqualEnoughR(lb: Floating, ub: Floating): Boolean;
       return eqn(l, u)
    end;
 
-asserted procedure anu_rename(a: Anu, xnew: Kernel);
+asserted procedure anu_rename(a: Anu, xnew: Kernel): Anu;
+   % Rename the main variable of [a] to [xnew].
    begin scalar aex, rp, varl, x, varal, rpnew, ialnew, w;
+      if x eq xnew then
+	 return a;
       aex := anu_dp a;
       rp := aex_ex aex;
       varl := kernels numr rp;
       x := car varl;
-      if x eq xnew then
-	 return a;
       rpnew := quotsq(!*f2q sfto_renamealf(numr rp, {x . xnew}), !*f2q denr rp);
       if ordop(xnew, x) then
 	 return anu_mk(aex_mk(rpnew, aex_ctx aex), anu_iv a);
       varal := for each var in cdr varl collect
-	 var . mkbigid();
-      rpnew := quotsq(!*f2q sfto_renamealf(numr rpnew, {x . xnew}), !*f2q denr rpnew);
+	 var . ofsf_mkbigid();
+      rpnew := quotsq(!*f2q sfto_renamealf(numr rpnew, varal), !*f2q denr rpnew);
       ialnew := for each pr in ctx_ial aex_ctx aex collect <<
 	 w := cdr atsoc(car pr, varal);
 	 w . anu_rename(cdr pr, w)
