@@ -677,7 +677,7 @@ bool onep(LispObject a)
 bool minusp(LispObject a)
 {   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            return (intptr_t)a < 0;
+            return fixnum_minusp(a);
         case XTAG_SFLOAT:
             return value_of_immediate_float(a) < 0.0;
         case TAG_NUMBERS:
@@ -685,9 +685,7 @@ bool minusp(LispObject a)
         {   int ha = type_of_header(numhdr(a));
             switch (ha)
             {   case TYPE_BIGNUM:
-                {   size_t l = (bignum_length(a)-CELL-4)/4;
-                    return ((int32_t)bignum_digits(a)[l] < 0);
-                }
+                    return bignum_minusp(a);
                 case TYPE_RATNUM:
                     return minusp(numerator(a));
                 default:

@@ -303,7 +303,7 @@ static LispObject Lrealpart(LispObject env, LispObject a)
     else return onevalue(a);
 }
 
-static LispObject decode_long_float(LispObject a)
+LispObject decode_long_float(LispObject a)
 {   float128_t d = long_float_val(a);
     if (f128M_infinite(&d) || f128M_nan(&d))
     {   if (trap_floating_overflow) aerror("decode-float");
@@ -339,7 +339,7 @@ static LispObject decode_long_float(LispObject a)
 #endif
 }
 
-static LispObject Ldecode_float(LispObject env, LispObject a)
+LispObject Ldecode_float(LispObject env, LispObject a)
 {   double d, neg = 1.0;
     int x;
     LispObject sign;
@@ -648,7 +648,7 @@ static LispObject Lftruncate(LispObject env, LispObject a1, LispObject a2)
 {   aerror("ftruncate");
 }
 
-static LispObject integer_decode_long_float(LispObject a)
+LispObject integer_decode_long_float(LispObject a)
 {   float128_t d = long_float_val(a);
     if (f128M_infinite(&d) || f128M_nan(&d))
     {   if (trap_floating_overflow) aerror("integer-decode-float");
@@ -685,7 +685,7 @@ static LispObject integer_decode_long_float(LispObject a)
 }
 
 
-static LispObject Linteger_decode_float(LispObject env, LispObject a)
+LispObject Linteger_decode_float(LispObject env, LispObject a)
 {   double d;
     if (!is_float(a)) aerror("integer-decode-float");
     if (is_bfloat(a) && type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
@@ -786,9 +786,9 @@ static LispObject Lscale_float(LispObject env, LispObject a, LispObject b)
 }
 
 // long float version of the following function. Commentary is in the
-// double precisoin version.
+// double precision version.
 
-static LispObject lisp_fix_sub_long(LispObject a, int roundmode)
+static LispObject lisp_fix_sub128(LispObject a, int roundmode)
 {   float128_t *d = long_float_addr(a);
     if (f128M_nan(d)) aerror("NaN in fix");
     if (f128M_infinite(d)) aerror("infinity in fix");
@@ -883,7 +883,7 @@ static LispObject lisp_fix_sub_long(LispObject a, int roundmode)
         }
         return make_four_word_bignum(d4, d3, d2, d1);
     default:
-        return make_n5_word_bignum(d4, d3, d2, d1, d0, x);
+        return make_n5_word_bignum(d4, d3, d2, d1, d0, x1);
     }
 }
 
@@ -892,7 +892,7 @@ static LispObject lisp_fix_sub(LispObject a, int roundmode)
 // quite often have to be a bignum.  No overflow is permitted - the
 // result can always be accurate.
 {   if (is_bfloat(a) && type_of_header(flthdr(a)) == TYPE_LONG_FLOAT)
-        return lisp_fix_sub_long(a, roundmode);
+        return lisp_fix_sub128(a, roundmode);
     double d = float_of_number(a);
     if (!(d == d)) aerror("NaN in fix");
     if (1.0/d == 0.0) aerror("infinity in fix");

@@ -216,7 +216,7 @@ static inline void floating_clear_flags()
 
 #define Ddiv10_9r(r, q, a, b) Ddivider(r, a, b, 1000000000u)
 
-//#define fixnum_minusp(a) ((intptr_t)(a) < 0)
+#define fixnum_minusp(a) ((intptr_t)(a) < 0)
 
 #define bignum_minusp(a) \
     ((int32_t)bignum_digits(a)[((bignum_length(a)-CELL)/4)-1]<0)
@@ -392,6 +392,9 @@ extern "C" bool onep(LispObject a);
 extern "C" bool minusp(LispObject a);
 extern "C" bool plusp(LispObject a);
 
+extern "C" LispObject integer_decode_long_float(LispObject a);
+extern "C" LispObject Linteger_decode_float(LispObject env, LispObject a);
+
 extern LispObject validate_number(const char *s, LispObject a,
                                   LispObject b, LispObject c);
 
@@ -408,6 +411,8 @@ extern LispObject make_n4_word_bignum(int32_t a3, uint32_t a2,
 extern LispObject make_n5_word_bignum(int32_t a4, uint32_t a3,
                                       uint32_t a2, uint32_t a1,
                                       uint32_t a0, size_t n);
+
+extern LispObject make_power_of_two(size_t n);
 
 extern LispObject make_lisp_integer32_fn(int32_t n);
 static inline LispObject make_lisp_integer32(int32_t n)
@@ -467,6 +472,7 @@ extern LispObject logxor2(LispObject a, LispObject b);
 extern LispObject logand2(LispObject a, LispObject b);
 extern LispObject logeqv2(LispObject a, LispObject b);
 extern LispObject rationalf(double d);
+extern LispObject rationalf128(float128_t *d);
 
 extern int _reduced_exp(double, double *);
 extern bool lesspbi(LispObject a, LispObject b);

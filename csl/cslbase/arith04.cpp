@@ -88,7 +88,7 @@ LispObject make_n5_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
     return w;
 }
 
-static LispObject make_power_of_two(size_t n)
+LispObject make_power_of_two(size_t n)
 //
 // Create the number 2^n where n is positive.  Used to make the
 // denominator of a rational representation of a float.  Some fun
