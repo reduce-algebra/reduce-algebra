@@ -1927,13 +1927,12 @@ procedure ofsf_qemkans(an,svf);
       return res
    end;
 
-procedure ofsf_qemkstdans(an,svf);
-   % [svf] is a relic from a former approach to reconstruct the intermediate
-   % results from the quantifier-free starting formula for the outermost
-   % quantifier block. These were computed using ofsf_qemkansfl.
+procedure ofsf_qemkstdans(an, svf);
+   % [svf] is a relic from a former approach to reconstruct the
+   % intermediate results from the quantifier-free starting formula
+   % for the outermost quantifier block. These were computed using
+   % ofsf_qemkansfl.
    begin scalar y, yy, f, v, sub, xargl, nan, anunan, a, b, c, d;
-      integer ofsf_anuc!*;
-      ofsf_anuc!* := 10000;
       if !*rlverbose then
 	 ioto_tprin2t {"++++ Determining standard real numbers for the answers ",
 	    for each y in an collect car y, "..."};
@@ -2084,7 +2083,7 @@ procedure ofsf_mirrorat(atf, v);
    ofsf_0mk2(ofsf_op atf, numr ofsf_subf(ofsf_arg2l atf, v, negsq !*k2q v));
 
 procedure ofsf_arbitrary2anu();
-   anu_mk(aex_fromsf !*k2f ofsf_genavar(), iv_mk(-1 ./ 1, 1 ./ 1));
+   anu_mk(aex_fromsf !*k2f ofsf_mksmallid(), iv_mk(-1 ./ 1, 1 ./ 1));
 
 procedure ofsf_shift2anu(v, base, dgcd, anunan);
    begin scalar w, basevar, avar, sgn, aex, cb;
@@ -2092,7 +2091,7 @@ procedure ofsf_shift2anu(v, base, dgcd, anunan);
       assert(w);
       base := cdr w;
       basevar := aex_mvar anu_dp base;
-      avar := ofsf_genavar();
+      avar := ofsf_mksmallid();
       sgn := aex_sgn aex_fromsfial(!*k2f basevar, {basevar . base});
       if eqn(sgn, 0) then
 	 return anu_mk(aex_fromsf !*k2f basevar, iv_mk(-1 ./ 1, 1 ./ 1));
@@ -2119,7 +2118,7 @@ procedure ofsf_q2anu(q, anunan);
       >>;
       n := sfto_renamealf(n, subal);
       d := sfto_renamealf(d, subal);
-      avar := ofsf_genavar();
+      avar := ofsf_mksmallid();
       aex := aex_prpart aex_fromsfial(addf(multf(d, !*k2f avar), negf n), ial);
       assert(not aex_badp(aex, 1));
       cb := aex_cauchybound(aex, avar);
@@ -2149,7 +2148,7 @@ procedure ofsf_r2anu(r, anunan);
 	 return ofsf_q2anu(quotsq(!*f2q a, !*f2q d), anunan);
       a := sfto_renamealf(a, subal);
       d := sfto_renamealf(d, subal);
-      avar := ofsf_genavar();
+      avar := ofsf_mksmallid();
       avarf := !*k2f avar;
       % p = d^2*x^2 - 2*a*d*x + a^2 - b^2*c
       p := addf(multf(exptf(d, 2), exptf(avarf, 2)),
@@ -2166,15 +2165,12 @@ procedure ofsf_r2anu(r, anunan);
 
 procedure aex_fromsfial(f, ial);
    begin scalar rial, aex;
-      rial := sort(ial, function ordopcar);
+      rial := reverse sort(ial, function ordopcar);
       aex := aex_fromsf f;
       for each pr in rial do
 	 aex := aex_bind(aex, car pr, cdr pr);
       return aex
    end;
-
-procedure anu_mkprimitive(anu);
-   anu_mk(aex_prpart anu_dp anu, anu_iv anu);
 
 procedure aex_prpart(aex);
    aex_mk(!*f2q sfto_dprpartf numr aex_ex aex, aex_ctx aex);
@@ -2182,32 +2178,13 @@ procedure aex_prpart(aex);
 procedure anu_fromAex(aex);
    begin scalar avar, cb;
       assert(not aex_badp(aex, 0));
-      avar := ofsf_genavar();
+      avar := ofsf_mksmallid();
       aex := aex_mk(subtrsq(!*k2q avar, aex_ex aex), aex_ctx aex);
       assert(not aex_badp(aex, 1));
       cb := aex_cauchybound(aex, aex_mvar aex);
       cb := addsq(cb, 1 ./ 1);
       return anu_mk(aex, iv_mk(negsq cb, cb))
    end;
-
-procedure anu_simpl(anu);
-   begin scalar rp;
-      rp := aex_ex anu_dp anu;
-   end;
-
-procedure anu_sgn(a);
-   begin scalar v, aex;
-      v := aex_mvar anu_dp a;
-      aex := aex_fromrp !*k2q v;
-      return aex_sgn aex_bind(aex, v, a)
-   end;
-
-procedure ofsf_genavar();
-   <<
-      ofsf_anuc!* := ofsf_anuc!* - 1;
-      mkid('!_anuvar, ofsf_anuc!*)
-      % mkid('anuvar, ofsf_anuc!*)
-   >>;
 
 procedure ofsf_qemkansfl(svf, an);
    % See the comment in ofsf_qemkstdans.
@@ -2364,8 +2341,8 @@ procedure ofsf_qemkstdansaexpe_old(f, v, anu);
    begin scalar anuv, canuv, manuv, qca, qmc, q, aex, manu, op, lhs, canu, c, rootl, flag;
       assert(cl_fvarl1 f = {v});
       anuv := aex_mvar anu_dp anu;
-      canuv := ofsf_genavar();
-      manuv := ofsf_genavar();
+      canuv := ofsf_mksmallid();
+      manuv := ofsf_mksmallid();
       qca := subtrsq(!*k2q canuv, !*k2q anuv);
       qmc := subtrsq(!*k2q manuv, !*k2q canuv);
       q := iv_rb anu_iv anu;
