@@ -1827,7 +1827,7 @@ procedure ofsf_gelimset_orig(alp);
       eset := car alp;
       if eset = 'failed then return 'failed;
       if null cdr eset and caar eset = 'anypoint then
- 	 return {'ofsf_qesubcq . {'(true (nil . nil))}};
+ 	 return {'ofsf_qesubcq . {'(true (nil . 1))}};
       for each x in eset do
 	 if car x memq '(equal1 equal21q) then
  	    car x := 'ofsf_qesubcq
