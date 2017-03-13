@@ -1398,7 +1398,7 @@ procedure ofsf_elimset_orig(v,alp);
       if !*rlqelog then rlqelog!* := {v,0,0,0,0} . rlqelog!*;
       atfal := car alp;
       if null cdr atfal and caar atfal = 'anypoint then
- 	 return '((ofsf_qesubcq . ((true (nil . nil)))));
+ 	 return '((ofsf_qesubcq . ((true (nil . 1)))));
       if !*rlqeans and !*rlqeaprecise or not !*rlqeans and !*rlqeprecise then
 	 return ofsf_elimset!-precise(v,alp);
       % Treat some special cases.
