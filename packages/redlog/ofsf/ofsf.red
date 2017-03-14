@@ -1,8 +1,12 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm
-% ----------------------------------------------------------------------
+module ofsf;
+% Ordered field standard form. Main module. Algorithms on first-order formulas
+% over ordered fields. The language contains binary relations ['equal], ['neq],
+% ['greaterp], ['lessp], ['geq], ['leq].
+
+revision('ofsf, "$Id$");
+
+copyright('ofsf, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,18 +32,6 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(ofsf_rcsid!* ofsf_copyright!*);
-   ofsf_rcsid!* :=
-      "$Id$";
-   ofsf_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
->>;
-
-module ofsf;
-% Ordered field standard form. Main module. Algorithms on first-order
-% formulas over ordered fields. The language contains binary relations
-% ['equal], ['neq], ['greaterp], ['lessp], ['geq], ['leq].
-
 create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
    ofsfmisc ofsfcad ofsfcadproj ofsfanuex ofsfxopt ofsfdet ofsftfc ofsfhqe
    ofsfdecdeg ofsfexfr ofsftrop ofsflp ofsfdpep ofsfvsl ofsfic
@@ -48,7 +40,6 @@ create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
 
 load!-package 'redlog;
 loadtime load!-package 'cl;
-loadtime load!-package 'rltools;
 loadtime load!-package 'linalg;
 loadtime load!-package 'matrix;
 loadtime load!-package 'factor;
@@ -73,8 +64,6 @@ exports ofsf_simpterm,ofsf_prepat,ofsf_resimpat,ofsf_lengthat,ofsf_chsimpat,
    ofsf_a2cdl,ofsf_t2cdl,ofsf_subat,ofsf_subalchk,ofsf_eqnrhskernels,
    ofsf_getineq,ofsf_structat,ofsf_ifstructat,ofsf_termmlat,ofsf_multsurep,
    ofsf_cad,ofsf_cadswitches;
-
-imports cl,rltools;
 
 fluid '(!*rlsiatadv !*rlsipd !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlqesr
    !*rlgsrad !*rlgsred !*rlgsprod !*rlgserf !*rlverbose !*rlqedfs !*rlsipw

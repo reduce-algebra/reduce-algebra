@@ -4,7 +4,7 @@ module redlog;
 
 revision('redlog, "$Id$");
 
-copyright('redlog, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2016 T. Sturm");
+copyright('redlog, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions

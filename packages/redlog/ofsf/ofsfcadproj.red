@@ -2,7 +2,7 @@ module ofsfcadproj;  % CAD projection
 
 revision('ofsfcadproj, "$Id$");
 
-copyright('ofsfcadproj, "(c) 2000-2009 A. Dolzmann, L. Gilch, A. Seidl, T. Sturm, 2016 T. Sturm");
+copyright('ofsfcadproj, "(c) 2000-2009 A. Dolzmann, L. Gilch, A. Seidl, T. Sturm, 2016-2017 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -411,36 +411,6 @@ asserted procedure sf_diff(f: SF, x: Kernel): SF;
    numr difff(f, x);
 
 % end sfto procedures
-
-% begin lto procedures
-
-asserted procedure lto_remove(fn: Any, l: List): List;
-   % Remove elements from a list. [fn] is a function of type ALPHA->BOOL, [l] is
-   % a list of ALPHA. Returns a list of ALPHA.
-   lto_remove1(fn, l, nil);
-
-asserted procedure lto_remove1(fn: Any, l: List, xarl: List): List;
-   % Remove elements from a list. [fn] is a function with length([xarl])+1
-   % arguments , [l] and [xarl] are LIST.
-   for each a in l join
-      if not apply(fn, a . xarl) then
-	 {a};
-
-asserted procedure lto_rmpos(lst: List, posl: List): List;
-   % Remove positions. [lst] is a List. [posl] is a List of Integers.
-   begin scalar pos;
-      pos := 0;
-      return for each a in lst join <<
-	 pos := pos + 1;
-	 if not memq(pos, posl) then {a}
-      >>
-   end;
-
-asserted procedure lto_drop(l: List, n: Integer): List;
-   % Drop the first n elements of l.
-   if l and n > 0 then lto_drop(cdr l, n-1) else l;
-
-% end lto procedures
 
 %%% --- Datatype MTX (matrices) --- %%%
 % a matrix is represented as a list of lines.

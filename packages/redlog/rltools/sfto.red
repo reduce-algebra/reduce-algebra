@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm
-% ----------------------------------------------------------------------
+module sfto;  % Standard form tools.
+
+revision('sfto, "$Id$");
+
+copyright('sfto, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(sfto_rcsid!* sfto_copyright!*);
-   sfto_rcsid!* := "$Id$";
-   sfto_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
->>;
-
-module sfto;
-% Standard form tools.
 
 fluid '(!*ezgcd !*gcd !*rldavgcd !*rational);
 

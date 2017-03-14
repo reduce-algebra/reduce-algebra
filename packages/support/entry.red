@@ -563,34 +563,102 @@ defautoload(pg_gauss!-sym, pgauss, expr, 2);
 symbolic operator meminfo;
 defautoload(meminfo, rltools, expr, 0);
 
+defautoload(rltools_lpvarl, rltools, expr, 1);
 defautoload(rltools_trunk, rltools, expr, 0);
 
+defautoload(ioto_cplu, rltools, expr, 2);
+defautoload(ioto_cterpri, rltools, expr, 0);
+defautoload(ioto_form2str, rltools, expr, 1);
+defautoload(ioto_nterpri, rltools, expr, 1);
+defautoload(ioto_prin2, rltools, expr, 1);
 defautoload(ioto_prin2t, rltools, expr, 1);
-
+defautoload(ioto_smaprin, rltools, expr, 1);
 defautoload(ioto_tprin2, rltools, expr, 1);
-
 defautoload(ioto_tprin2t, rltools, expr, 1);
 
-defautoload(lto_at2str, rltools, expr, 1);
-
-defautoload(lto_sconcat, rltools, expr, 1);
-
-defautoload(lto_catsoc, rltools, expr, 2);
-
-defautoload(lto_eatsoc, rltools, expr, 3);
-
+defautoload(lto_0listp, rltools, expr, 1);
+defautoload(lto_almerge, rltools, expr, 2);
 defautoload(lto_alphap, rltools, expr, 1);
-
+defautoload(lto_alunion, rltools, expr, 1);
+defautoload(lto_appendn, rltools, expr, 1);
+defautoload(lto_apply2nthip, rltools, expr, 4);
+defautoload(lto_at2str, rltools, expr, 1);
+defautoload(lto_cartprod, rltools, expr, 1);
+defautoload(lto_cassoc, rltools, expr, 2);
+defautoload(lto_catsoc, rltools, expr, 2);
+defautoload(lto_delnthip, rltools, expr, 2);
+defautoload(lto_drop, rltools, expr, 2);
+defautoload(lto_eatsoc, rltools, expr, 3);
+defautoload(lto_hinsert, rltools, expr, 3);
+defautoload(lto_hmember, rltools, expr, 3);
+defautoload(lto_init, rltools, expr, 1);
+defautoload(lto_insert, rltools, expr, 2);
 defautoload(lto_insertq, rltools, expr, 2);
+defautoload(lto_last, rltools, expr, 1);
+defautoload(lto_max, rltools, expr, 1);
+defautoload(lto_maxkl, rltools, expr, 1);
+defautoload(lto_mergesort, rltools, expr, 2);
+defautoload(lto_min, rltools, expr, 1);
+defautoload(lto_nconcn, rltools, expr, 1);
+defautoload(lto_powerset, rltools, expr, 1);
+defautoload(lto_remove, rltools, expr, 2);
+defautoload(lto_rmpos, rltools, expr, 2);
+defautoload(lto_sconcat, rltools, expr, 1);
+defautoload(lto_setminus, rltools, expr, 2);
+defautoload(lto_sgnchg, rltools, expr, 1);
+defautoload(lto_subset, rltools, expr, 2);
+defautoload(lto_subsetq, rltools, expr, 2);
+defautoload(lto_unionn, rltools, expr, 1);
+defautoload(lto_vertexCover, rltools, expr, 1);
+defautoload(lto_zip, rltools, expr, 3);
+
+defautoload(sfto_ceilq, rltools, expr, 1);
+defautoload(sfto_dcontentf, rltools, expr, 1);
+defautoload(sfto_decdegf, rltools, expr, 3);
+defautoload(sfto_dgcdf, rltools, expr, 2);
+defautoload(sfto_dprpartf, rltools, expr, 1);
+defautoload(sfto_dprpartksf, rltools, expr, 1);
+defautoload(sfto_floatsub, rltools, expr, 2);
+defautoload(sfto_fsub, rltools, expr, 2);
+defautoload(sfto_gcdf!*, rltools, expr, 2);
+defautoload(sfto_groebnerf, rltools, expr, 1);
+defautoload(sfto_kernelp, rltools, expr, 1);
+defautoload(sfto_kmemberf, rltools, expr, 2);
+defautoload(sfto_lcx, rltools, expr, 1);
+defautoload(sfto_lessq, rltools, expr, 2);
+defautoload(sfto_linwpp, rltools, expr, 2);
+defautoload(sfto_lmq, rltools, expr, 1);
+defautoload(sfto_lmultf, rltools, expr, 1);
+defautoload(sfto_lreorder, rltools, expr, 2);
+defautoload(sfto_mkpowq, rltools, expr, 2);
+defautoload(sfto_monfp, rltools, expr, 1);
+defautoload(sfto_mvartest, rltools, expr, 2);
+defautoload(sfto_mvarx, rltools, expr, 1);
+defautoload(sfto_pdecf, rltools, expr, 1);
+defautoload(sfto_qsub, rltools, expr, 2);
+defautoload(sfto_qsub1, rltools, expr, 2);
+defautoload(sfto_qsubhor, rltools, expr, 3);
+defautoload(sfto_qsubhor1, rltools, expr, 3);
+defautoload(sfto_redx, rltools, expr, 1);
+defautoload(sfto_renamealf, rltools, expr, 2);
+defautoload(sfto_renamef, rltools, expr, 3);
+defautoload(sfto_reorder, rltools, expr, 2);
+defautoload(sfto_resf, rltools, expr, 3);
+defautoload(sfto_sf2int, rltools, expr, 1);
+defautoload(sfto_sf2monl, rltools, expr, 1);
+defautoload(sfto_sf2monlip, rltools, expr, 1);
+defautoload(sfto_sqfdecf, rltools, expr, 1);
+defautoload(sfto_sqfpartf, rltools, expr, 1);
+defautoload(sfto_sqrtf, rltools, expr, 1);
+defautoload(sfto_tsqsumf, rltools, expr, 1);
+defautoload(sfto_ucontentf, rltools, expr, 1);
+defautoload(sfto_varIsNumP, rltools, expr, 1);
+defautoload(sfto_vardeg, rltools, expr, 2);
+defautoload(sfto_varf, rltools, expr, 1);
+defautoload(sfto_varp, rltools, expr, 1);
 
 symbolic operator fastresultant;
 defautoload(fastresultant, rltools, expr, 3);
-
-defautoload(sfto_res, rltools, expr, 3);
-
-defautoload(sfto_res2, rltools, expr, 3);
-
-defautoload(sfto_kernelp, rltools, expr, 1);
 
 % Rlsupport entry points
 
