@@ -1225,7 +1225,7 @@ procedure cl_smsimpl!-junct2!-tagged(op,sicol,knowl,newknowl,n,break,tagl);
       if !*rlsiso then <<
 	 atl := sort(atl, 'rl_ordatp);
 	 if !*rlsisocx then
-	    sicol := sort(sicol, 'cl_sordp)
+	    sicol := sort(sicol, function(lambda(x, y); cl_sordp(car x, car y)))
       >>;
       w := nconc(atl, for each i in sicol collect car i);
       for each i in sicol do <<
