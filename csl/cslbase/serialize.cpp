@@ -4063,10 +4063,15 @@ static bool always(LispObject x)
 }
 
 // true if a symbol has a value, a property list or a definition as
-// a function.
+// a function. Note checking for fastgets.
 
 static bool interesting(LispObject x)
-{   return (qfn1(x) != undefined1 ||
+{   LispObject ff;
+    if ((ff = qfastgets(x)) != nil)
+    {   for (int i=0; i<fastget_size; i++)
+            if (elt(ff, i) != SPID_NOPROP) return true;
+    }
+    return (qfn1(x) != undefined1 ||
             qplist(x) != nil ||
             qvalue(x) != unset_var);
 }
