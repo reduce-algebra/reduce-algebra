@@ -68,6 +68,8 @@
 (setq startat -1)
 % (setq startat 58)
 
+(fluid '(mode))
+
 (progn
   (dolist (mode '(plus times quotient))
      (terpri)

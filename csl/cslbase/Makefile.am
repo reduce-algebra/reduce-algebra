@@ -255,14 +255,23 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 # This gives a target filename.cxx for that. The reason I want to do this
 # is that sometimes I wish to use single stepping in a debugger wihin code
 # that is expanded from a messy C macro. I use astyle to fix up the layout
-# of the expanded code and then (gnu) sed [for its "inplace edit" option] to
-# comment out the lines that could cause the debugger to refer back to the
-# original version of the source.
+# of the expanded code and then sed to comment out the lines that could
+# cause the debugger to refer back to the original version of the source.
+# This letter so that if I then copy foo.cxx to foo.cpp in my build directory
+# and recompile using the expanded version I can use a debugger and see
+# line numbers that relate to the expanded version...
 
 %.cxx:	%.cpp
 	$(AM_V_CXX)$(CXXCOMPILE) -E -o $@ $<
-	astyle $@
-	sed -i '' -e '/^#/ s:#:// #:' $@
+	astyle -n $@
+	sed -e '/^#/ s:#:// #:' < $@ > $@.tmp
+	mv $@.tmp $@
+
+# You can go "make foo.s" to get an assembly-code version of the compiled
+# form of foo.
+
+%.s:	%.cpp
+	$(AM_V_CXX)$(CXXCOMPILE) -S -o $@ $<
 
 demo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
 

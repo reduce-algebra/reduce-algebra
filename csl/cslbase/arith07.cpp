@@ -59,10 +59,11 @@ LispObject copyb(LispObject a)
 LispObject negateb(LispObject a)
 //
 // Negate a bignum.  Note that negating the 1-word bignum
-// value of 0x08000000 will produce a fixnum as a result,
+// value of 0x08000000 will produce a fixnum as a result (for 32 bits),
 // which might confuse the caller... in a similar way negating
 // the value -0x40000000 will need to promote from a one-word
 // bignum to a 2-word bignum.  How messy just for negation!
+// And on 64 bit systems the same effect applies but with larger values!
 // In an analogous manner negating the positive number of the style
 // 0x40000000 can lead to a negative result that uses one less digit.
 // Well on a 64-bit machine it is a 2-word bignum that can end up
@@ -132,18 +133,14 @@ LispObject negateb(LispObject a)
                       top_bit(carry));
         bignum_digits(b)[i] = clear_top_bit(carry);
     }
-//
 // Handle the top digit separately since it is signed.
-//
     carry = ADD32(~bignum_digits(a)[i], top_bit(carry));
     if (!signed_overflow(carry))
     {
-//
 // If the most significant word ends up as -1 then I just might
 // have 0x40000000 in the next word down and so I may need to shrink
 // the number.  Since I handled 1-word bignums specially I have at
 // least two words to deal with here.
-//
         if (carry == -1 && (bignum_digits(b)[i-1] & 0x40000000) != 0)
         {   bignum_digits(b)[i-1] |= ~0x7fffffff;
             numhdr(b) -= pack_hdrlength(1);
@@ -159,11 +156,9 @@ LispObject negateb(LispObject a)
         else bignum_digits(b)[i] = carry;   // no shrinking needed
         return b;
     }
-//
 // Here I have overflow: this can only happen when I negate a number
 // that started off with 0xc0000000 in the most significant digit,
 // and I have to pad a zero word onto the front.
-//
     bignum_digits(b)[i] = clear_top_bit(carry);
     return lengthen_by_one_bit(b, carry);
 }
@@ -175,7 +170,10 @@ LispObject negateb(LispObject a)
 LispObject negate(LispObject a)
 {   switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
-            if (is_sfloat(a)) return a ^ (LispObject)0x80000000U;
+            if (!SIXTY_FOUR_BIT && is_sfloat(a))
+                return a ^ 0x80000000U;
+            if (SIXTY_FOUR_BIT && is_sfloat(a))
+                return a ^ UINT64_C(0x8000000000000000);
             else return make_lisp_integer64(-int_of_fixnum(a));
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));

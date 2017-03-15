@@ -138,23 +138,19 @@ top (cond
       ((and (null a) (null b) (zerop c)) (return r)))
     (cond
       ((null a) (setq d c))
-      (t (setq d (plus (car a) c))
-         (setq a (cdr a))))
+      (t (progn (setq d (plus (car a) c))
+         (setq a (cdr a)))))
     (cond
-      (b (setq d (plus d (car b)))
-         (setq b (cdr b))))
+      (b (progn (setq d (plus d (car b)))
+         (setq b (cdr b)))))
 % d is now the next digit
     (cond
-      ((greaterp d 9)
+      ((greaterp d 9) (progn 
         (setq d (difference d 10))
-        (setq c 1))
+        (setq c 1)))
       (t (setq c 0)))
     (setq r (cons d r))
     (go top)))
-done(cond
-      ((or (null r) (not (zerop (car r)))) (return r)))
-    (setq r (cdr r))
-    (go done)))
 
 (de mysubtract (a b c)  % Here a >= b, and the "carry" is either 0 or -1
   (prog (d r)
@@ -162,16 +158,16 @@ top (cond
       ((and (null a) (zerop c)) (go done)))
     (cond
       ((null a) (setq d c))
-      (t (setq d (plus (car a) c))
-         (setq a (cdr a))))
+      (t (progn (setq d (plus (car a) c))
+         (setq a (cdr a)))))
     (cond
-      (b (setq d (difference d (car b)))
-         (setq b (cdr b))))
+      (b (progn (setq d (difference d (car b)))
+         (setq b (cdr b)))))
 % d is now the next digit
     (cond
-      ((minusp d)
+      ((minusp d) (progn
         (setq d (plus d 10))
-        (setq c -1))
+        (setq c -1)))
       (t (setq c 0)))
     (setq r (cons d r))
     (go top)
@@ -279,12 +275,12 @@ done(cond
     (setq w1 (myplus (mytimes q b) r))
 %(princ "w1=") (print w1)
     (cond
-       ((not (equal w1 a))
+       ((not (equal w1 a)) (progn
         (princ "Divide  ") (print a)
         (princ "by ") (print b)
         (princ "giving ") (print w)
         (princ "q*b+r = ") (print w1)
-        (error 1 "Problem with division")))
+        (error 1 "Problem with division"))))
     (cond
        ((not (null r))
           (cond
@@ -419,7 +415,7 @@ done(cond
 (de myprinhex (n)
   (cond
     ((null n) (princ "0"))
-    ((eqcar n '!-) (princ "~f") (myprinneg (myplus (myminus n) '(!- 1))))
+    ((eqcar n '!-) (progn (princ "~f") (myprinneg (myplus (myminus n) '(!- 1)))))
     (t (myprinpos n))))
 
 (de myvalof (n)
@@ -436,14 +432,14 @@ top (cond
 (de myprinpos (n)
   (cond
     ((mylessp n '(1 6)) (prinhex (myvalof n)))
-    (t (myprinpos (myquotient n '(1 6)))
-       (prinhex (myvalof (myremainder n '(1 6)))))))
+    (t (progn (myprinpos (myquotient n '(1 6)))
+       (prinhex (myvalof (myremainder n '(1 6))))))))
 
 (de myprinneg (n)
   (cond
     ((mylessp n '(1 6)) (prinhex (logxor 15 (myvalof n))))
-    (t (myprinneg (mylshift n -4))
-       (prinhex (logxor 15 (myvalof (mymod n '(1 6))))))))
+    (t (progn (myprinneg (mylshift n -4))
+       (prinhex (logxor 15 (myvalof (mymod n '(1 6)))))))))
 
 
 %+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -568,34 +564,37 @@ top (cond
 
 (de checkall (a b mode)
   (cond
-    ((and (eq mode 'quotient) (not (zerop b)))
+    ((and (eq mode 'quotient) (not (zerop b))) (progn
       (check!-quotient a b)
       (check!-mod a b)
-      (check!-remainder a b))
-    ((eq mode 'plus)
+      (check!-remainder a b)))
+    ((eq mode 'plus) (progn
       (check!-plus a b)
       (check!-difference a b)
-      (check!-greaterp a b))
+      (check!-greaterp a b)))
     (t
 % Well CSL switches to a separate algorithm for integer multiplication
 % when numbers get bigger that somewhere around 400 bits - specifically it
 % uses Karatsuba's method and uses three threads to do some of the work
 % in parallel. The code here does not check huge cases like that! It probably
 % ought to.
+      (progn
       (check!-times a b)
       (check!-logand a b)
       (check!-logor a b)
       (check!-logxor a b)
-      (check!-logeqv a b)))
+      (check!-logeqv a b))))
   nil)
 
 (de checksigns (a b mode)
+(prog nil
   (checkall a b mode)
   (checkall (validate!-number (minus a) "minus") b mode)
   (checkall a (validate!-number (minus b) "minus") mode)
-  (checkall (minus a) (minus b) mode))
+  (checkall (minus a) (minus b) mode)))
 
 (de checknear (a b mode)
+  (prog nil
   (checksigns a b mode)
   (checksigns (validate!-number (plus a 1) "add1")  b mode) 
   (checksigns (validate!-number (plus a -1) "sub1") b mode) 
@@ -616,6 +615,7 @@ top (cond
           (not (onep b))
           (not (onep (minus b))))
 % I arrange that the second arg can never be zero here...
+      (progn
       (checksigns a (validate!-number (add1 (random!-number b)) "random") mode)
       (checksigns (plus a 1) (validate!-number (add1 (random!-number b)) "random") mode)
       (checksigns (plus a -1) (validate!-number (add1 (random!-number b)) "random") mode)
@@ -624,22 +624,26 @@ top (cond
       (checksigns (validate!-number (random!-number a) "random") (plus b -1) mode)
       (checksigns (validate!-number (random!-number a) "random") (validate!-number (add1 (random!-number b)) "random") mode)
       (checksigns (validate!-number (random!-number a) "random") (validate!-number (add1 (random!-number b)) "random") mode)
-      (checksigns (validate!-number (random!-number a) "random") (validate!-number (add1 (random!-number b)) "random") mode))))
+      (checksigns (validate!-number (random!-number a) "random") (validate!-number (add1 (random!-number b)) "random") mode)))))
+   )
 
 (de checkall1 (a)
+   (prog nil
   (check!-minus a)
   (dotimes (i 140)
      (check!-lshift a (difference i 70)))
-  nil)
+  ))
 
 (de checksigns1 (a)
+  (prog nil
   (checkall1 a)
-  (checkall1 (validate!-number (minus a) "minus")))
+  (checkall1 (validate!-number (minus a) "minus"))))
 
 (de checknear1 (a)
+  (prog nil
   (checksigns1 a)
   (checksigns1 (validate!-number (plus a 1) "add1")) 
-  (checksigns1 (validate!-number (plus a -1) "sub1"))) 
+  (checksigns1 (validate!-number (plus a -1) "sub1"))))
 
 % end of arithfns.lsp
 

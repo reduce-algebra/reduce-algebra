@@ -944,106 +944,236 @@ LispObject make_ratio(LispObject p, LispObject q)
 // perhaps C++ templates will take the strain in a neat manner?
 //
 
-static LispObject plusis(LispObject a, LispObject b)
-{   double d = (double)int_of_fixnum(a) + value_of_immediate_float(b);
-    return pack_immediate_float(d, b);
+static LispObject plus_i_i(LispObject a1, LispObject a2);
+static LispObject plus_i_b(LispObject a1, LispObject a2);
+static LispObject plus_i_r(LispObject a1, LispObject a2);
+static LispObject plus_i_c(LispObject a1, LispObject a2);
+static LispObject plus_i_s(LispObject a1, LispObject a2);
+static LispObject plus_i_f(LispObject a1, LispObject a2);
+static LispObject plus_i_d(LispObject a1, LispObject a2);
+static LispObject plus_i_l(LispObject a1, LispObject a2);
+
+static LispObject plus_b_i(LispObject a1, LispObject a2);
+static LispObject plus_b_b(LispObject a1, LispObject a2);
+static LispObject plus_b_r(LispObject a1, LispObject a2);
+static LispObject plus_b_c(LispObject a1, LispObject a2);
+static LispObject plus_b_s(LispObject a1, LispObject a2);
+static LispObject plus_b_f(LispObject a1, LispObject a2);
+static LispObject plus_b_d(LispObject a1, LispObject a2);
+static LispObject plus_b_l(LispObject a1, LispObject a2);
+
+static LispObject plus_r_i(LispObject a1, LispObject a2);
+static LispObject plus_r_b(LispObject a1, LispObject a2);
+static LispObject plus_r_r(LispObject a1, LispObject a2);
+static LispObject plus_r_c(LispObject a1, LispObject a2);
+static LispObject plus_r_s(LispObject a1, LispObject a2);
+static LispObject plus_r_f(LispObject a1, LispObject a2);
+static LispObject plus_r_d(LispObject a1, LispObject a2);
+static LispObject plus_r_l(LispObject a1, LispObject a2);
+
+static LispObject plus_c_i(LispObject a1, LispObject a2);
+static LispObject plus_c_b(LispObject a1, LispObject a2);
+static LispObject plus_c_r(LispObject a1, LispObject a2);
+static LispObject plus_c_c(LispObject a1, LispObject a2);
+static LispObject plus_c_s(LispObject a1, LispObject a2);
+static LispObject plus_c_f(LispObject a1, LispObject a2);
+static LispObject plus_c_d(LispObject a1, LispObject a2);
+static LispObject plus_c_l(LispObject a1, LispObject a2);
+
+static LispObject plus_s_i(LispObject a1, LispObject a2);
+static LispObject plus_s_b(LispObject a1, LispObject a2);
+static LispObject plus_s_r(LispObject a1, LispObject a2);
+static LispObject plus_s_c(LispObject a1, LispObject a2);
+static LispObject plus_s_s(LispObject a1, LispObject a2);
+static LispObject plus_s_f(LispObject a1, LispObject a2);
+static LispObject plus_s_d(LispObject a1, LispObject a2);
+static LispObject plus_s_l(LispObject a1, LispObject a2);
+
+static LispObject plus_f_i(LispObject a1, LispObject a2);
+static LispObject plus_f_b(LispObject a1, LispObject a2);
+static LispObject plus_f_r(LispObject a1, LispObject a2);
+static LispObject plus_f_c(LispObject a1, LispObject a2);
+static LispObject plus_f_s(LispObject a1, LispObject a2);
+static LispObject plus_f_f(LispObject a1, LispObject a2);
+static LispObject plus_f_d(LispObject a1, LispObject a2);
+static LispObject plus_f_l(LispObject a1, LispObject a2);
+
+static LispObject plus_d_i(LispObject a1, LispObject a2);
+static LispObject plus_d_b(LispObject a1, LispObject a2);
+static LispObject plus_d_r(LispObject a1, LispObject a2);
+static LispObject plus_d_c(LispObject a1, LispObject a2);
+static LispObject plus_d_s(LispObject a1, LispObject a2);
+static LispObject plus_d_f(LispObject a1, LispObject a2);
+static LispObject plus_d_d(LispObject a1, LispObject a2);
+static LispObject plus_d_l(LispObject a1, LispObject a2);
+
+static LispObject plus_l_i(LispObject a1, LispObject a2);
+static LispObject plus_l_b(LispObject a1, LispObject a2);
+static LispObject plus_l_r(LispObject a1, LispObject a2);
+static LispObject plus_l_c(LispObject a1, LispObject a2);
+static LispObject plus_l_s(LispObject a1, LispObject a2);
+static LispObject plus_l_f(LispObject a1, LispObject a2);
+static LispObject plus_l_d(LispObject a1, LispObject a2);
+static LispObject plus_l_l(LispObject a1, LispObject a2);
+
+static LispObject difference_i_i(LispObject a1, LispObject a2);
+static LispObject difference_i_b(LispObject a1, LispObject a2);
+static LispObject difference_i_r(LispObject a1, LispObject a2);
+static LispObject difference_i_c(LispObject a1, LispObject a2);
+static LispObject difference_i_s(LispObject a1, LispObject a2);
+static LispObject difference_i_f(LispObject a1, LispObject a2);
+static LispObject difference_i_d(LispObject a1, LispObject a2);
+static LispObject difference_i_l(LispObject a1, LispObject a2);
+
+static LispObject difference_b_i(LispObject a1, LispObject a2);
+static LispObject difference_b_b(LispObject a1, LispObject a2);
+static LispObject difference_b_r(LispObject a1, LispObject a2);
+static LispObject difference_b_c(LispObject a1, LispObject a2);
+static LispObject difference_b_s(LispObject a1, LispObject a2);
+static LispObject difference_b_f(LispObject a1, LispObject a2);
+static LispObject difference_b_d(LispObject a1, LispObject a2);
+static LispObject difference_b_l(LispObject a1, LispObject a2);
+
+static LispObject difference_r_i(LispObject a1, LispObject a2);
+static LispObject difference_r_b(LispObject a1, LispObject a2);
+static LispObject difference_r_r(LispObject a1, LispObject a2);
+static LispObject difference_r_c(LispObject a1, LispObject a2);
+static LispObject difference_r_s(LispObject a1, LispObject a2);
+static LispObject difference_r_f(LispObject a1, LispObject a2);
+static LispObject difference_r_d(LispObject a1, LispObject a2);
+static LispObject difference_r_l(LispObject a1, LispObject a2);
+
+static LispObject difference_c_i(LispObject a1, LispObject a2);
+static LispObject difference_c_b(LispObject a1, LispObject a2);
+static LispObject difference_c_r(LispObject a1, LispObject a2);
+static LispObject difference_c_c(LispObject a1, LispObject a2);
+static LispObject difference_c_s(LispObject a1, LispObject a2);
+static LispObject difference_c_f(LispObject a1, LispObject a2);
+static LispObject difference_c_d(LispObject a1, LispObject a2);
+static LispObject difference_c_l(LispObject a1, LispObject a2);
+
+static LispObject difference_s_i(LispObject a1, LispObject a2);
+static LispObject difference_s_b(LispObject a1, LispObject a2);
+static LispObject difference_s_r(LispObject a1, LispObject a2);
+static LispObject difference_s_c(LispObject a1, LispObject a2);
+static LispObject difference_s_s(LispObject a1, LispObject a2);
+static LispObject difference_s_f(LispObject a1, LispObject a2);
+static LispObject difference_s_d(LispObject a1, LispObject a2);
+static LispObject difference_s_l(LispObject a1, LispObject a2);
+
+static LispObject difference_f_i(LispObject a1, LispObject a2);
+static LispObject difference_f_b(LispObject a1, LispObject a2);
+static LispObject difference_f_r(LispObject a1, LispObject a2);
+static LispObject difference_f_c(LispObject a1, LispObject a2);
+static LispObject difference_f_s(LispObject a1, LispObject a2);
+static LispObject difference_f_f(LispObject a1, LispObject a2);
+static LispObject difference_f_d(LispObject a1, LispObject a2);
+static LispObject difference_f_l(LispObject a1, LispObject a2);
+
+static LispObject difference_d_i(LispObject a1, LispObject a2);
+static LispObject difference_d_b(LispObject a1, LispObject a2);
+static LispObject difference_d_r(LispObject a1, LispObject a2);
+static LispObject difference_d_c(LispObject a1, LispObject a2);
+static LispObject difference_d_s(LispObject a1, LispObject a2);
+static LispObject difference_d_f(LispObject a1, LispObject a2);
+static LispObject difference_d_d(LispObject a1, LispObject a2);
+static LispObject difference_d_l(LispObject a1, LispObject a2);
+
+static LispObject difference_l_i(LispObject a1, LispObject a2);
+static LispObject difference_l_b(LispObject a1, LispObject a2);
+static LispObject difference_l_r(LispObject a1, LispObject a2);
+static LispObject difference_l_c(LispObject a1, LispObject a2);
+static LispObject difference_l_s(LispObject a1, LispObject a2);
+static LispObject difference_l_f(LispObject a1, LispObject a2);
+static LispObject difference_l_d(LispObject a1, LispObject a2);
+static LispObject difference_l_l(LispObject a1, LispObject a2);
+
+// I rather expect plus_i_i to be the case that arises most frequently.
+
+static inline LispObject plus_i_i(LispObject a1, LispObject a2)
+{   return make_lisp_integer64(int_of_fixnum(a1) + int_of_fixnum(a2));
 }
 
-//
-// Bignums are represented as vectors where the most significant 32-bit
-// digit is treated as signed, and the remaining ones are unsigned.
-//
-
-static LispObject plusib(LispObject a, LispObject b)
-//
 // Add a fixnum to a bignum, returning a result as a fixnum or bignum
 // depending on its size.  This seems much nastier than one would have
 // hoped. Well all in all a LOT of the arithmetic ends up being way messier
 // that an idealist would have expected. This is perhaps related to there
-// being potential transition cases when input or output values are around
+// being potential boundary cases when input or output values are around
 // 27, 30, 59, 61, 92, ... bits wide.
-//
-{   size_t len = bignum_length(b)-CELL, i;
-    intptr_t s1 = int_of_fixnum(a); // BEWARE - may be bigger than a digit.
-    LispObject c;
-    len = len/4;         // This is always 4 because even on a 64-bit
-                         // machine where CELL=8 I use 4-byte B-digits
+
+// Through much of trhise code I am going to be close to neurotic about
+// casting to unsigned types before I do arithmetic. This is because
+// integer overflow (eg a carry that goes into the sign bit and flips it)
+// is deemed an undefined behaviour by C++, abd clever compilers may
+// exploit this so that the compiled code assumes that overflow will
+// never arise. So code such as
+//     int32_t w = a + b;   // a and b are 31-bit values here
+//     int carry = (w >> 31) & 1;
+//     int32_t sum = w & 0x7fffffff;
+// is not proper. If a and b start off positive and the initial addition
+// would leave to a value over 0x7fffffff that is overflow so the
+// consequences are undefined. That means that any value left in carry
+// or sum are undefined, so a compiler could be entitled to simplify the
+// generated code in any way it could think of to exploit that. A natural
+// possibility would be to assume that carry was always going to be zero
+// and the top bit of w was always zero so the mask operation could be
+// omitted. If I use unsigned arithmetic I will be somewhat safer.
+
+static inline LispObject plus_i_b(LispObject a1, LispObject a2)
+{   size_t len = (bignum_length(a2)-CELL)/4, i;
+    intptr_t s1 = int_of_fixnum(a1);
 // If you are on a 64-bit machine it should NEVER be possible to end up
 // with a 1-word bignum, because the relevant range always fits within
 // a fixnum. The test on SIXTY_FOUR_BIT here should end up letting a reasonably
 // clever compiler omit the code that covers this case.
     if (!SIXTY_FOUR_BIT && len == 1)
-    {   int32_t s;
-//
-// Partly because it will be a common case and partly because it has
-// various special cases I have special purpose code to cope with
-// adding a fixnum to a one-word bignum. This only happens if we are
-// on a 32-bit machine and hence the fixnum is at worst 28-bits wide.
-//
-        s = (int32_t)bignum_digits(b)[0] + (int32_t)s1;
-// top_bit_set looks at 32-bit values...
-        if (signed_overflow(s))  // needs to turn into two-word bignum
-        {   if (s < 0) return make_two_word_bignum(-1, clear_top_bit(s));
-            else return make_two_word_bignum(0, s);
-        }
-        if (valid_as_fixnum(s)) return fixnum_of_int(s);
-        // here the result is a one-word bignum
-        else return make_one_word_bignum(s);
-    }
-//
-// Now, after all the silly cases have been handled, I have a calculation
-// which seems set to give a multi-word result. On a 64-bit machine one can
-// have (say) a positive two-word bignum and add a negative fixnum
-// yielding a fixnum result. On a 32-bit machine that behaviour is not
-// possible - the smallest value result will still be at least a 1-word
-// bignum.
-//
-// So let me write out the 2-word case longhand in the 64-bit case...
+        return make_lisp_integerptr((int32_t)bignum_digits(a2)[0] + s1);
+// I write out the 2-word case longhand because in the 64-bit case
+// it can yield a fixnum.
     if (len == 2)
-    {   int64_t s = (ASL64(bignum_digits64(b,1),31) | bignum_digits(b)[0]) +
+    {   int64_t s = (ASL64(bignum_digits64(a2,1),31) | bignum_digits(a2)[0]) +
                     (int64_t)s1;
 // a 2-word bignum has at worst 62 bits and a fixnum 28 or 60, so their
 // sum can not overflow a 64-bit word.
         return make_lisp_integer64(s);
     }
-// b now has at least 3 digits.
-    push(b);
-    c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*len);
-    pop(b);
-// Add in the lowest bit by hand
-    int32_t d0 = bignum_digits(b)[0] + clear_top_bit(s1);
+// The bignum a2 now has at least 3 digits. I will view this as now a case
+// where I do not need to optimise edge cases so carefully, and where the
+// length (as a bignum) of the result is rather likely to match that of a2.
+    push(a2);
+    LispObject c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*len);
+    pop(a2);
+// Add in the lowest digit by hand because at this stage s1 can have
+// more than 31 bits and so intrudes beyond there.
+    uint32_t d0 = bignum_digits(a2)[0] + clear_top_bit(s1);
     bignum_digits(c)[0] = clear_top_bit(d0);
-    s1 = s1>>31;
+    s1 = ASR(s1, 31);
     if (top_bit_set(d0)) s1 = s1 + 1;
 // Now s1 is at most 29 bits... I can treat it as a carry from the
 // previous digit. Note that it may be either positive or negative
     for (i=1; i<len-1; i++)
-    {   int32_t s = bignum_digits(b)[i] + (s1 & 0x7fffffff);
-        s1 = s1 >> 31; // Note that s1 was signed so this is -1, 0 or 1
+    {   uint32_t s = bignum_digits(a2)[i] + (s1 & 0x7fffffff);
+        s1 = ASR(s1, 31); // Note that s1 was signed so this is -1, 0 or 1
         bignum_digits(c)[i] = s & 0x7fffffff;
         s1 += top_bit(s);
     }
-    s1 = s1 + (int32_t)bignum_digits(b)[i];
+    s1 = s1 + (int32_t)bignum_digits(a2)[i];
     if (!signed_overflow(s1))         // did it overflow?
     {
-//
 // Here the most significant digit did not produce an overflow, but maybe
 // what we actually had was some cancellation and the MSD is now zero
 // or -1, so that the number should shrink...
-//
         if ((s1 == 0 && (bignum_digits(c)[i-1] & 0x40000000) == 0) ||
             (s1 == -1 && (bignum_digits(c)[i-1] & 0x40000000) != 0))
         {   // shrink the number
             numhdr(c) -= pack_hdrlength(1L);
             if (s1 == -1) bignum_digits(c)[i-1] |= 0x80000000;
-//
 // Now sometimes the shrinkage will leave a padding word, sometimes it
 // will really allow me to save space. As a jolly joke with a 64-bit
 // system I need padding if there have been an odd number of (32-bit)
 // words of bignum data while with a 32-bit system the header word is
 // 32-bits wide and I need padding if there are ar even number of additional
 // data words.
-//
             if ((SIXTY_FOUR_BIT && ((i & 1) != 0)) ||
                 (!SIXTY_FOUR_BIT && ((i & 1) == 0)))
             {   bignum_digits(c)[i] = 0;   // leave the unused word tidy
@@ -1081,121 +1211,86 @@ static LispObject plusib(LispObject a, LispObject b)
         return c;
     }
     push(c);
-    b = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
+    a2 = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
     pop(c);
-    for (i=0; i<len-1; i++)
-        bignum_digits(b)[i] = bignum_digits(c)[i];
+    for (size_t i=0; i<len-1; i++)
+        bignum_digits(a2)[i] = bignum_digits(c)[i];
 //
 // I move the top digit across by hand since if the number is negative
 // I must lose its top bit
 //
-    bignum_digits(b)[i++] = clear_top_bit(s1);
+    bignum_digits(a2)[i++] = clear_top_bit(s1);
 // Now the one-word extension to the number
-    bignum_digits(b)[i++] = top_bit_set(s1) ? -1 : 0;
+    bignum_digits(a2)[i++] = top_bit_set(s1) ? -1 : 0;
 //
 // Finally because I know that I expanded into a new doubleword I should
 // tidy up the second word of the newly allocated pair. I know I added two
 // extra words because if I was just filling in the second of two existing
 // words I did not do not do the fresh getvector() here...
 //
-    bignum_digits(b)[i] = 0;
-    return b;
+    bignum_digits(a2)[i] = 0;
+    return a2;
 }
 
-static LispObject plusir(LispObject a, LispObject b)
-//
-// fixnum and ratio, but also valid for bignum and ratio.
+
+// Add a fixnum to a ratio, but also valid for bignum and ratio.
 // Note that if the inputs were in lowest terms there is no need for
 // and GCD calculations here.
-//
-{   push(b);
-    a = times2(a, denominator(b));
-    a = plus2(a, numerator(stack[0]));
-    pop(b);
-    return make_ratio(a, denominator(b));
+
+static inline LispObject plus_i_r(LispObject a1, LispObject a2)
+{   push(a2);
+    a1 = times2(a1, denominator(a2));
+    a1 = plus2(a1, numerator(stack[0]));
+    pop(a2);
+    return make_ratio(a1, denominator(a2));
 }
 
-static LispObject plusic(LispObject a, LispObject b)
-//
-// real of any sort plus complex.
-//
-{   push(b);
-    a = plus2(a, real_part(b));
-    pop(b);
-//
+
+// real value of any sort plus complex.
+
+static inline LispObject plus_i_c(LispObject a1, LispObject a2)
+{   push(a2);
+    a1 = plus2(a1, real_part(a2));
+    pop(a2);
 // make_complex() takes responsibility for mapping #C(n 0) onto n
-//
-    return make_complex(a, imag_part(b));
+    return make_complex(a1, imag_part(a2));
 }
 
-static LispObject plusif(LispObject a, LispObject b)
-//
-// Fixnum plus boxed-float.
-//
-{   if (type_of_header(flthdr(b)) == TYPE_LONG_FLOAT)
-    {   float128_t x, y, z;
-        x = float128_of_number(a);
-        y = float128_of_number(b);
-        f128M_add(&x, &y, &z);
-        if (trap_floating_overflow &&
-            floating_edge_case128(&z))
-            aerror("floating point plus");
-        return make_boxfloat128(z);
-    }
-    double d = (double)int_of_fixnum(a) + float_of_number(b);
-    return make_boxfloat(d, type_of_header(flthdr(b)));
+static inline LispObject plus_i_s(LispObject a1, LispObject a2)
+{   double d = (double)int_of_fixnum(a1) + value_of_immediate_float(a2);
+    return pack_immediate_float(d, a2);
 }
 
-#define plussi(a, b) plusis(b, a)
-
-#define plussb(a, b) plusbs(b, a)
-
-#define plussr(a, b) plusrs(b, a)
-
-#define plussc(a, b) plusic(a, b)
-
-static LispObject plussf(LispObject a, LispObject b)
-//
-// This can be used for any numeric value plus a boxed-float. plusif()
-// is separated just for (minor) efficiency reasons.
-//
-{   if (type_of_header(flthdr(b)) == TYPE_LONG_FLOAT)
-    {   float128_t x, y, z;
-        x = float128_of_number(a);
-        y = float128_of_number(b);
-        f128M_add(&x, &y, &z);
-        if (trap_floating_overflow &&
-            floating_edge_case128(&z))
-            aerror("floating point plus");
-        return make_boxfloat128(z);
-    }
-    double d = float_of_number(a) + float_of_number(b);
-    if (trap_floating_overflow &&
-        floating_edge_case(d))
-    {   floating_clear_flags();
-        aerror("floating point plus");
-    }
-    return make_boxfloat(d, type_of_header(flthdr(b)));
+static inline LispObject plus_i_f(LispObject a1, LispObject a2)
+{   double d = (double)int_of_fixnum(a1) + single_float_val(a2);
+    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
 }
 
-#define plusbi(a, b) plusib(b, a)
-
-static LispObject plusbs(LispObject a, LispObject b)
-{   double d = float_of_number(a) + value_of_immediate_float(b);
-    return pack_immediate_float(d, b);
+static inline LispObject plus_i_d(LispObject a1, LispObject a2)
+{   double d = (double)int_of_fixnum(a1) + double_float_val(a2);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
 }
+
+static inline LispObject plus_i_l(LispObject a1, LispObject a2)
+{   float128_t x, z;
+    i64_to_f128M((int64_t)int_of_fixnum(a1), &x);
+    f128M_add(&x, long_float_addr(a2), &z);
+    return make_boxfloat128(z);
+}
+
+static inline LispObject plus_b_i(LispObject a1, LispObject a2)
+{   return plus_i_b(a2, a1);
+}
+
+// Add two bignums.
 
 LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
-//
 // (a) is a bignum, and arithmetic on it has (just) caused overflow
 // in its top word - I just need to stick on another word. (msd) is the
 // current top word, and its sign will be used to decide on the value
 // that must be appended.
-//
 {   int32_t len = bignum_length(a);
-//
 // Sometimes I need to allocate a new vector and copy data across into it
-//
     if ((len & 4) == 0)
     {   LispObject b;
         int32_t i;
@@ -1210,9 +1305,7 @@ LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
         return b;
     }
     else
-//
 // .. whereas sometimes I have a spare word already available.
-//
     {   numhdr(a) += pack_hdrlength(1L);
         len = (len-CELL)/4;
         bignum_digits(a)[len-1] = clear_top_bit(bignum_digits(a)[len-1]);
@@ -1221,32 +1314,21 @@ LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
     }
 }
 
-static LispObject plusbb(LispObject a, LispObject b)
-//
-// add two bignums.
-//
-{   int32_t la = bignum_length(a),
-            lb = bignum_length(b),
-            i, s, carry;
-    LispObject c;
+static inline LispObject plus_b_b(LispObject a, LispObject b)
+{   size_t la = (bignum_length(a)-CELL)/4,
+           lb = (bignum_length(b)-CELL)/4;
     if (la < lb)    // maybe swap order of args
-    {   LispObject t = a;
-        int32_t t1;
-        a = b; b = t;
-        t1 = la; la = lb; lb = t1;
+    {   LispObject t = a; a = b; b = t;
+        size_t t1 = la; la = lb; lb = t1;
     }
-//
-// now (a) is AT LEAST as long as b.  I have special case code for
+// now (a) is AT LEAST as long as (b).  I have special case code for
 // when both args are single-word bignums, since I expect that to be
 // an especially common case on 32-bit machines.
-//
-    if (!SIXTY_FOUR_BIT && la == CELL+4) // and hence b also has only 1 digit
-    {   int32_t vc = bignum_digits(a)[0] + bignum_digits(b)[0];
-// Because the digits are only 31-bits wide I do not get overflow when I add
-// them in a 32-bit integer.
-        return make_lisp_integer32(vc);
-    }
-    if (la == CELL+8)
+    if (!SIXTY_FOUR_BIT && la == 1) // and hence b also has only 1 digit
+        return make_lisp_integer32(
+            (int32_t)bignum_digits(a)[0] + (int32_t)bignum_digits(b)[0]);
+// If the longer number is just 2 words I can convert both to int64_t.
+    if (la == 2)
     {   int64_t va = ASL64(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
         int64_t vb = (!SIXTY_FOUR_BIT && lb == CELL+4) ?
                      bignum_digits64(b, 0) :
@@ -1256,38 +1338,39 @@ static LispObject plusbb(LispObject a, LispObject b)
 // Now at least one operand uses 3 words... I will do a general bignum add
 // which may sometimes be overkill, but ought to be safe.
     push2(a, b);
-    c = getvector(TAG_NUMBERS, TYPE_BIGNUM, la);
+    LispObject c = getvector(TAG_NUMBERS, TYPE_BIGNUM, 4*la+CELL);
     pop2(b, a);
-    la = (la-CELL)/4 - 1;
-    lb = (lb-CELL)/4 - 1;
-    carry = 0;
-//
+    uint32_t carry = 0;
 // Add all but the top digit of b
-//
+    la--;
+    lb--;
+    size_t i;
     for (i=0; i<lb; i++)
-    {   carry = bignum_digits(a)[i] + bignum_digits(b)[i] + top_bit(carry);
+    {   carry = bignum_digits(a)[i] + bignum_digits(b)[i] +
+                (uint32_t)top_bit(carry);
         bignum_digits(c)[i] = clear_top_bit(carry);
     }
+    int32_t s;
     if (la == lb) s = bignum_digits(b)[i];
     else
-//
 // If a is strictly longer than b I sign extend b here and add in as many
 // copies of 0 or -1 as needbe to get up to the length of a.
-//
-    {   s = bignum_digits(b)[i];
-        carry =  bignum_digits(a)[i] + clear_top_bit(s) + top_bit(carry);
+// Note that the index "i" is left over from the previous loop...
+    {   s = (int32_t)bignum_digits(b)[i];
+        carry =  bignum_digits(a)[i] + clear_top_bit(s) +
+                 (uint32_t)top_bit(carry);
         bignum_digits(c)[i] = clear_top_bit(carry);
-        if (s < 0) s = -1; else s = 0;
+        if (s < 0) s = -1;
+        else s = 0;
         for (i++; i<la; i++)
-        {   carry = bignum_digits(a)[i] + clear_top_bit(s) + top_bit(carry);
+        {   carry = bignum_digits(a)[i] + clear_top_bit(s) +
+                    (uint32_t)top_bit(carry);
             bignum_digits(c)[i] = clear_top_bit(carry);
         }
     }
-//
-// the most significant digit is added using signed arithmetic so that I
-// can tell if it overflowed.
-//
-    carry = bignum_digits(a)[i] + s + top_bit(carry);
+    carry = (int32_t)bignum_digits(a)[i] + s +
+            (uint32_t)top_bit(carry);
+// I need to know if the top digit leads to 31-bit signed overflow.
     if (!signed_overflow(carry))
     {
 //
@@ -1298,7 +1381,7 @@ static LispObject plusbb(LispObject a, LispObject b)
         int32_t msd;
         bignum_digits(c)[i] = carry;
         if (carry == 0)
-        {   int32_t j = i-1;
+        {   size_t j = i-1;
             while ((msd = bignum_digits(c)[j]) == 0 && j > 0) j--;
             if (SIXTY_FOUR_BIT && j == 1)
             {   int64_t s = ASL64(bignum_digits64(c,1), 31) |
@@ -1309,23 +1392,20 @@ static LispObject plusbb(LispObject a, LispObject b)
             {   int32_t s = bignum_digits(c)[0];
                 if (valid_as_fixnum(s)) return fixnum_of_int(s);
             }
-//
 // ... but I may need a zero word on the front if the next word down
 // has its top bit set... (top of 31 bits, that is)
-//
             if ((msd & 0x40000000) != 0)
             {   j++;
                 if (i == j) return c;
             }
-//
-// If I am shrinking by one word and had an even length to start with
-// I do not have to mess about so much.
-//
+// I am shrinking the vector. In some cases all I need to do is to
+// fix up its header-word.
             if ((SIXTY_FOUR_BIT && (j == i-1) && ((i & 1) != 0)) ||
                 (!SIXTY_FOUR_BIT && (j == i-1) && ((i & 1) == 0)))
             {   numhdr(c) -= pack_hdrlength(1L);
                 return c;
             }
+// A more complicated truncation case.
             numhdr(c) -= pack_hdrlength(i - j);
             if (SIXTY_FOUR_BIT)
             {   i = (i+2) & ~1;
@@ -1335,18 +1415,14 @@ static LispObject plusbb(LispObject a, LispObject b)
             {   i = (i+1) | 1;
                 j = (j+1) | 1;     // Round up to odd index
             }
-//
-// I forge a header word to allow the garbage collector to skip over
-// (and in due course reclaim) the space that turned out not to be needed.
-//
+// I forge a header word to fill in the discarded space. This is no longer
+// vital, but it still feels the tidy thing to do.
             if (i != j) *(Header *)&bignum_digits(c)[j] = make_bighdr(i - j);
             return c;
         }
-//
 // Now do all the same sorts of things but this time for negative numbers.
-//
-        else if (carry == -1)
-        {   int32_t j = i-1;
+        else if (carry == 0xffffffff)
+        {   size_t j = i-1;
             msd = carry;    // in case j = 0
             while ((msd = bignum_digits(c)[j]) == 0x7fffffff && j > 0) j--;
             if (SIXTY_FOUR_BIT && j == 1)
@@ -1392,26 +1468,52 @@ static LispObject plusbb(LispObject a, LispObject b)
     }
 }
 
-#define plusbr(a, b) plusir(a, b)
+static inline LispObject plus_b_r(LispObject a1, LispObject a2)
+{   return plus_i_r(a1, a2);
+}
 
-#define plusbc(a, b) plusic(a, b)
+static inline LispObject plus_b_c(LispObject a1, LispObject a2)
+{   return plus_i_c(a1, a2);
+}
 
-#define plusbf(a, b) plussf(a, b)
+static inline LispObject plus_b_s(LispObject a1, LispObject a2)
+{   double d = float_of_number(a1) + value_of_immediate_float(a2);
+    return pack_immediate_float(d, a2);
+}
 
-#define plusri(a, b) plusir(b, a)
+static inline LispObject plus_b_f(LispObject a1, LispObject a2)
+{   double d = float_of_number(a1) + single_float_val(a2);
+    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+}
 
-#define plusrs(a, b) plusbs(a, b)
+static inline LispObject plus_b_d(LispObject a1, LispObject a2)
+{   double d = float_of_number(a1) + double_float_val(a2);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
 
-#define plusrb(a, b) plusri(a, b)
+static inline LispObject plus_b_l(LispObject a1, LispObject a2)
+{   float128_t x, z;
+    x = float128_of_number(a1);
+    f128M_add(&x, long_float_addr(a2), &z);
+    return make_boxfloat128(z);
+}
 
-static LispObject plusrr(LispObject a, LispObject b)
-//
+static inline LispObject plus_r_i(LispObject a1, LispObject a2)
+{   return plus_i_r(a2, a1);
+}
+
+static inline LispObject plus_r_b(LispObject a1, LispObject a2)
+{   return plus_b_r(a2, a1);
+}
+
 // Adding two ratios involves some effort to keep the result in
 // lowest terms.
-//
-{   LispObject na = numerator(a), nb = numerator(b);
-    LispObject da = denominator(a), db = denominator(b);
+
+static inline LispObject plus_r_r(LispObject a1, LispObject a2)
+{   LispObject na = numerator(a1), nb = numerator(a2);
+    LispObject da = denominator(a1), db = denominator(a2);
     LispObject w = nil;
+    stack_restorer RAII_save_stack;
     push5(na, nb, da, db, nil);
 #define g   stack[0]
 #define db  stack[-1]
@@ -1419,10 +1521,8 @@ static LispObject plusrr(LispObject a, LispObject b)
 #define nb  stack[-3]
 #define na  stack[-4]
     g = gcd(da, db);
-//
-// all the calls to quot2() in this procedure are expected - nay required -
+// All the calls to quot2() in this procedure are expected - nay required -
 // to give exact integer quotients.
-//
     db = quot2(db, g);
     g = quot2(da, g);
     na = times2(na, db);
@@ -1433,7 +1533,6 @@ static LispObject plusrr(LispObject a, LispObject b)
     na = quot2(na, g);
     da = quot2(da, g);
     w = make_ratio(na, da);
-    popv(5);
     return w;
 #undef na
 #undef nb
@@ -1442,295 +1541,533 @@ static LispObject plusrr(LispObject a, LispObject b)
 #undef g
 }
 
-#define plusrc(a, b) plusic(a, b)
-
-#define plusrf(a, b) plussf(a, b)
-
-#define plusci(a, b) plusic(b, a)
-
-#define pluscs(a, b) plussc(b, a)
-
-#define pluscb(a, b) plusbc(b, a)
-
-#define pluscr(a, b) plusrc(b, a)
-
-static LispObject pluscc(LispObject a, LispObject b)
-//
-// Add complex values.
-//
-{   LispObject c;
-    push2(a, b);
-    c = plus2(imag_part(a), imag_part(b));
-    pop2(b, a);
-    a = plus2(real_part(a), real_part(b));
-    return make_complex(a, c);
+static inline LispObject plus_r_c(LispObject a1, LispObject a2)
+{   return plus_i_c(a1, a2);
 }
 
-#define pluscf(a, b) plusfc(b, a)
+static inline LispObject plus_r_s(LispObject a1, LispObject a2)
+{   return plus_b_s(a1, a2);
+}
 
-#define plusfi(a, b) plusif(b, a)
+static inline LispObject plus_r_f(LispObject a1, LispObject a2)
+{   return plus_b_f(a1, a2);
+}
 
-#define plusfs(a, b) plussf(b, a)
+static inline LispObject plus_r_d(LispObject a1, LispObject a2)
+{   return plus_b_d(a1, a2);
+}
 
-#define plusfb(a, b) plusbf(b, a)
+static inline LispObject plus_r_l(LispObject a1, LispObject a2)
+{   return plus_b_l(a1, a2);
+}
 
-#define plusfr(a, b) plusrf(b, a)
+// The code that performs arithmetic on complex values will tend to
+// work by going (x + iy) + q => (x+q) + iy. It will then use generic
+// arithmetic to from x+q, and this will repeat a dispatch on the type
+// of q. If I was really worried about the last tiny fraction of performance
+// I might unfold so that the type-information I have already collected
+// was preserved, but that seems excessive at present. 
 
-#define plusfc(a, b) plusic(a, b)
+static inline LispObject plus_c_i(LispObject a1, LispObject a2)
+{   return plus_i_c(a2, a1);
+}
 
-static LispObject plusff(LispObject a, LispObject b)
-//
-// Add two boxed floats - the type of the result must match the
-// longer of the types of the arguments, hence the extra
-// messing about.
-//
-{   int32_t ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
-    int32_t hc = ha;
-// If EITHER argument is a long float I will need to do things differently,
-// bacause I can not use machine-native arithmetic on float128_t.
-    if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
-    {   float128_t x, y, z;
-        x = float128_of_number(a);
-        y = float128_of_number(b);
-        f128M_add(&x, &y, &z);
-        if (trap_floating_overflow &&
-            floating_edge_case128(&z))
-            aerror("floating point plus");
-        return make_boxfloat128(z);
-    }
-    else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
-        hc = TYPE_DOUBLE_FLOAT;
-    else hc = TYPE_SINGLE_FLOAT;  // SINGLE case not on 64-bit machined
-    if (trap_floating_overflow &&
-        floating_edge_case(a))
-    {   floating_clear_flags();
-        aerror("floating point plus");
-    }
-    return make_boxfloat(float_of_number(a) + float_of_number(b), hc);
+static inline LispObject plus_c_b(LispObject a1, LispObject a2)
+{   return plus_i_c(a2, a1);
+}
+
+static inline LispObject plus_c_r(LispObject a1, LispObject a2)
+{   return plus_i_c(a2, a1);
+}
+
+// Add complex values.
+
+static inline LispObject plus_c_c(LispObject a1, LispObject a2)
+{   LispObject c;
+    push2(a1, a2);
+    c = plus2(imag_part(a1), imag_part(a2));
+    pop2(a2, a1);
+    a1 = plus2(real_part(a1), real_part(a2));
+    return make_complex(a1, c);
+}
+
+static inline LispObject plus_c_s(LispObject a1, LispObject a2)
+{   return plus_i_c(a2, a1);
+}
+
+static inline LispObject plus_c_f(LispObject a1, LispObject a2)
+{   return plus_i_c(a2, a1);
+}
+
+static inline LispObject plus_c_d(LispObject a1, LispObject a2)
+{   return plus_i_c(a2, a1);
+}
+
+static inline LispObject plus_c_l(LispObject a1, LispObject a2)
+{   return plus_i_c(a2, a1);
+}
+
+static inline LispObject plus_s_i(LispObject a1, LispObject a2)
+{   return plus_i_s(a2, a1);
+}
+
+static inline LispObject plus_s_b(LispObject a1, LispObject a2)
+{   return plus_b_s(a2, a1);
+}
+
+static inline LispObject plus_s_r(LispObject a1, LispObject a2)
+{   return plus_r_s(a2, a1);
+}
+
+static inline LispObject plus_s_c(LispObject a1, LispObject a2)
+{   return plus_c_s(a2, a1);
+}
+
+static inline LispObject plus_s_s(LispObject a1, LispObject a2)
+{   double d = value_of_immediate_float(a1) + value_of_immediate_float(a2);
+    return pack_immediate_float(d, a1, a2);
+}
+
+static inline LispObject plus_s_f(LispObject a1, LispObject a2)
+{   double d = value_of_immediate_float(a1) + single_float_val(a2);
+    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+}
+
+static inline LispObject plus_s_d(LispObject a1, LispObject a2)
+{   double d = value_of_immediate_float(a1) + single_float_val(a2);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+static inline LispObject plus_s_l(LispObject a1, LispObject a2)
+{   float128_t x, z;
+    Double_union xf;
+    xf.f = value_of_immediate_float(a1);
+    f64_to_f128M(xf.f64, &x);
+    f128M_add(&x, long_float_addr(a2), &z);
+    return make_boxfloat128(z);
+}
+
+static inline LispObject plus_f_i(LispObject a1, LispObject a2)
+{   return plus_i_f(a2, a1);
+}
+
+static inline LispObject plus_f_b(LispObject a1, LispObject a2)
+{   return plus_b_f(a2, a1);
+}
+
+static inline LispObject plus_f_r(LispObject a1, LispObject a2)
+{   return plus_r_f(a2, a1);
+}
+
+static inline LispObject plus_f_c(LispObject a1, LispObject a2)
+{   return plus_c_f(a2, a1);
+}
+
+static inline LispObject plus_f_s(LispObject a1, LispObject a2)
+{   return plus_s_f(a2, a1);
+}
+
+static inline LispObject plus_f_f(LispObject a1, LispObject a2)
+{   return make_boxfloat(single_float_val(a1) + single_float_val(a2),
+                         TYPE_SINGLE_FLOAT);
+}
+
+static inline LispObject plus_f_d(LispObject a1, LispObject a2)
+{   return make_boxfloat(single_float_val(a1) + double_float_val(a2),
+                         TYPE_DOUBLE_FLOAT);
+}
+
+static inline LispObject plus_f_l(LispObject a1, LispObject a2)
+{   float128_t x, z;
+    Double_union xf;
+    xf.f = single_float_val(a1);
+    f64_to_f128M(xf.f64, &x);
+    f128M_add(&x, long_float_addr(a2), &z);
+    return make_boxfloat128(z);
+}
+
+static inline LispObject plus_d_i(LispObject a1, LispObject a2)
+{   return plus_i_d(a2, a1);
+}
+
+static inline LispObject plus_d_b(LispObject a1, LispObject a2)
+{   return plus_b_d(a1, a1);
+}
+
+static inline LispObject plus_d_r(LispObject a1, LispObject a2)
+{   return plus_r_d(a2, a1);
+}
+
+static inline LispObject plus_d_c(LispObject a1, LispObject a2)
+{   return plus_c_d(a2, a1);
+}
+
+static inline LispObject plus_d_s(LispObject a1, LispObject a2)
+{   return plus_s_d(a2, a1);
+}
+
+static inline LispObject plus_d_f(LispObject a1, LispObject a2)
+{   return plus_f_d(a2, a1);
+}
+
+static inline LispObject plus_d_d(LispObject a1, LispObject a2)
+{   return make_boxfloat(double_float_val(a1) + double_float_val(a2),
+                         TYPE_DOUBLE_FLOAT);
+}
+
+static inline LispObject plus_d_l(LispObject a1, LispObject a2)
+{   float128_t x, z;
+    Double_union xf;
+    xf.f = double_float_val(a1);
+    f64_to_f128M(xf.f64, &x);
+    f128M_add(&x, long_float_addr(a2), &z);
+    return make_boxfloat128(z);
+}
+
+static inline LispObject plus_l_i(LispObject a1, LispObject a2)
+{   return plus_i_l(a2, a1);
+}
+
+static inline LispObject plus_l_b(LispObject a1, LispObject a2)
+{   return plus_b_l(a2, a1);
+}
+
+static inline LispObject plus_l_r(LispObject a1, LispObject a2)
+{   return plus_r_l(a2, a1);
+}
+
+static inline LispObject plus_l_c(LispObject a1, LispObject a2)
+{   return plus_c_l(a2, a1);
+}
+
+static inline LispObject plus_l_s(LispObject a1, LispObject a2)
+{   return plus_s_l(a2, a1);
+}
+
+static inline LispObject plus_l_f(LispObject a1, LispObject a2)
+{   return plus_f_l(a2, a1);
+}
+
+static inline LispObject plus_l_d(LispObject a1, LispObject a2)
+{   return plus_d_l(a2, a1);
+}
+
+static inline LispObject plus_l_l(LispObject a1, LispObject a2)
+{   float128_t z;
+    f128M_add(long_float_addr(a1), long_float_addr(a2), &z);
+    return make_boxfloat128(z);
+}
+
+arith_dispatch_2(static inline, LispObject, plus)
+
+LispObject plus2(LispObject a, LispObject b)
+{   return plus(a, b);
+}
+
+static inline LispObject difference_i_i(LispObject a1, LispObject a2)
+{   return make_lisp_integer64(int_of_fixnum(a1) - int_of_fixnum(a2));
+}
+
+static inline LispObject difference_i_b(LispObject a1, LispObject a2)
+{   return plus_i(a1, negate(a2));
+//@@@ beware - negating a bignum could give a fixnum!
+}
+
+static inline LispObject difference_i_r(LispObject a1, LispObject a2)
+{   return plus_i_r(a1, negate(a2));
+}
+
+static inline LispObject difference_i_c(LispObject a1, LispObject a2)
+{   return plus_i_c(a1, negate(a2));
+}
+
+static inline LispObject difference_i_s(LispObject a1, LispObject a2)
+{   return plus_i_s(a1, negate(a2));
+}
+
+static inline LispObject difference_i_f(LispObject a1, LispObject a2)
+{   return plus_i_f(a1, negate(a2));
+}
+
+static inline LispObject difference_i_d(LispObject a1, LispObject a2)
+{   return plus_i_d(a1, negate(a2));
+}
+
+static inline LispObject difference_i_l(LispObject a1, LispObject a2)
+{   return plus_i_l(a1, negate(a2));
+}
+
+static inline LispObject difference_b_i(LispObject a1, LispObject a2)
+{   return plus_b(a1, negate(a2));
+ //@@@ beware - negating a fixnum could give a bignum!
+}
+
+static inline LispObject difference_b_b(LispObject a1, LispObject a2)
+{   return plus_b(a1, negate(a2));
+ //@@@ beware - negating a bignum could give a fixnum!
+}
+
+static inline LispObject difference_b_r(LispObject a1, LispObject a2)
+{   return plus_b_r(a1, negate(a2));
+}
+
+static inline LispObject difference_b_c(LispObject a1, LispObject a2)
+{   return plus_b_c(a1, negate(a2));
+}
+
+static inline LispObject difference_b_s(LispObject a1, LispObject a2)
+{   return plus_b_s(a1, negate(a2));
+}
+
+static inline LispObject difference_b_f(LispObject a1, LispObject a2)
+{   return plus_b_f(a1, negate(a2));
+}
+
+static inline LispObject difference_b_d(LispObject a1, LispObject a2)
+{   return plus_b_d(a1, negate(a2));
+}
+
+static inline LispObject difference_b_l(LispObject a1, LispObject a2)
+{   return plus_b_l(a1, negate(a2));
+}
+
+static inline LispObject difference_r_i(LispObject a1, LispObject a2)
+{   push(a1);
+    a2 = times2(a2, denominator(a1));
+    a2 = difference2(numerator(stack[0]), a2);
+    pop(a1);
+    return make_ratio(a2, denominator(a1));
+}
+
+static inline LispObject difference_r_b(LispObject a1, LispObject a2)
+{   return difference_r_i(a1, a2);
+}
+
+static inline LispObject difference_r_r(LispObject a1, LispObject a2)
+{   return plus_r_r(a1, negate(a2));
+}
+
+static inline LispObject difference_r_c(LispObject a1, LispObject a2)
+{   return plus_r_c(a1, negate(a2));
+}
+
+static inline LispObject difference_r_s(LispObject a1, LispObject a2)
+{   return plus_r_s(a1, negate(a2));
+}
+
+static inline LispObject difference_r_f(LispObject a1, LispObject a2)
+{   return plus_r_f(a1, negate(a2));
+}
+
+static inline LispObject difference_r_d(LispObject a1, LispObject a2)
+{   return plus_r_d(a1, negate(a2));
+}
+
+static inline LispObject difference_r_l(LispObject a1, LispObject a2)
+{   return plus_r_l(a1, negate(a2));
+}
+
+static inline LispObject difference_c_i(LispObject a1, LispObject a2)
+{   return plus_c_i(a1, make_lisp_integer64(-int_of_fixnum(a2)));
+}
+
+static inline LispObject difference_c_b(LispObject a1, LispObject a2)
+{   return plus_c_b(a1, negateb(a2));
+}
+
+static inline LispObject difference_c_r(LispObject a1, LispObject a2)
+{   return plus_c_r(a1, negate(a2));
+}
+
+static inline LispObject difference_c_c(LispObject a1, LispObject a2)
+{   return plus_c_c(a1, negate(a2));
+}
+
+static inline LispObject difference_c_s(LispObject a1, LispObject a2)
+{   return plus_c_s(a1, negate(a2));
+}
+
+static inline LispObject difference_c_f(LispObject a1, LispObject a2)
+{   return plus_c_f(a1, negate(a2));
+}
+
+static inline LispObject difference_c_d(LispObject a1, LispObject a2)
+{   return plus_c_d(a1, negate(a2));
+}
+
+static inline LispObject difference_c_l(LispObject a1, LispObject a2)
+{   return plus_c_l(a1, negate(a2));
+}
+
+static inline LispObject difference_s_i(LispObject a1, LispObject a2)
+{   double d = value_of_immediate_float(a1) - (double)int_of_fixnum(a2);
+    return pack_immediate_float(d, a1);
+}
+
+static inline LispObject difference_s_b(LispObject a1, LispObject a2)
+{   int x;
+    double a2d = bignum_to_float(a2, length_of_header(numhdr(a2)), &x);
+    double d = value_of_immediate_float(a1) - ldexp(a2d, x);
+    return pack_immediate_float(d, a1);
+}
+
+static inline LispObject difference_s_r(LispObject a1, LispObject a2)
+{   return plus_s_r(a1, negate(a2));
+}
+
+static inline LispObject difference_s_c(LispObject a1, LispObject a2)
+{   return plus_s_c(a1, negate(a2));
+}
+
+static inline LispObject difference_s_s(LispObject a1, LispObject a2)
+{   return plus_s_s(a1, negate(a2));
+}
+
+static inline LispObject difference_s_f(LispObject a1, LispObject a2)
+{   return plus_s_f(a1, negate(a2));
+}
+
+static inline LispObject difference_s_d(LispObject a1, LispObject a2)
+{   return plus_s_d(a1, negate(a2));
+}
+
+static inline LispObject difference_s_l(LispObject a1, LispObject a2)
+{   return plus_s_l(a1, negate(a2));
+}
+
+static inline LispObject difference_f_i(LispObject a1, LispObject a2)
+{   double d = single_float_val(a1) - (double)int_of_fixnum(a2);
+    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+}
+
+static inline LispObject difference_f_b(LispObject a1, LispObject a2)
+{   int x;
+    double a2d = bignum_to_float(a2, length_of_header(numhdr(a2)), &x);
+    double d = single_float_val(a1) - ldexp(a2d, x);
+    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+}
+
+static inline LispObject difference_f_r(LispObject a1, LispObject a2)
+{   return plus_f_r(a1, negate(a2));
+}
+
+static inline LispObject difference_f_c(LispObject a1, LispObject a2)
+{   return plus_f_c(a1, negate(a2));
+}
+
+static inline LispObject difference_f_s(LispObject a1, LispObject a2)
+{   double d = single_float_val(a1) - value_of_immediate_float(a2);
+    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+}
+
+static inline LispObject difference_f_f(LispObject a1, LispObject a2)
+{   double d = single_float_val(a1) - single_float_val(a2);
+    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+}
+
+static inline LispObject difference_f_d(LispObject a1, LispObject a2)
+{   double d = single_float_val(a1) - single_float_val(a2);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+static inline LispObject difference_f_l(LispObject a1, LispObject a2)
+{   return plus_f_l(a1, negate(a2));
+}
+
+static inline LispObject difference_d_i(LispObject a1, LispObject a2)
+{   double d = double_float_val(a1) - (double)int_of_fixnum(a2);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+static inline LispObject difference_d_b(LispObject a1, LispObject a2)
+{   int x;
+    double a2d = bignum_to_float(a2, length_of_header(numhdr(a2)), &x);
+    double d = double_float_val(a1) - ldexp(a2d, x);
+    return make_boxfloat(d, TYPE_SINGLE_FLOAT);
+}
+
+static inline LispObject difference_d_r(LispObject a1, LispObject a2)
+{   return plus_d_r(a1, negate(a2));
+}
+
+static inline LispObject difference_d_c(LispObject a1, LispObject a2)
+{   return plus_d_c(a1, negate(a2));
+}
+
+static inline LispObject difference_d_s(LispObject a1, LispObject a2)
+{   double d = double_float_val(a1) - value_of_immediate_float(a2);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+static inline LispObject difference_d_f(LispObject a1, LispObject a2)
+{   double d = double_float_val(a1) - single_float_val(a2);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+static inline LispObject difference_d_d(LispObject a1, LispObject a2)
+{   double d = double_float_val(a1) - double_float_val(a2);
+    return make_boxfloat(d, TYPE_DOUBLE_FLOAT);
+}
+
+static inline LispObject difference_d_l(LispObject a1, LispObject a2)
+{   return plus_d_l(a1, negate(a2));
+}
+
+static inline LispObject difference_l_i(LispObject a1, LispObject a2)
+{   float128_t x, z;
+    i64_to_f128M((int64_t)int_of_fixnum(a2), &x);
+    f128M_sub(long_float_addr(a1), &x, &z);
+    return make_boxfloat128(z);
+}
+
+static inline LispObject difference_l_b(LispObject a1, LispObject a2)
+{   float128_t x, z;
+    x = float128_of_number(a2);
+    f128M_sub(long_float_addr(a2), &x, &z);
+    return make_boxfloat128(z);
+}
+
+static inline LispObject difference_l_r(LispObject a1, LispObject a2)
+{   return plus_l_r(a1, negate(a2));
+}
+
+static inline LispObject difference_l_c(LispObject a1, LispObject a2)
+{   return plus_l_c(a1, negate(a2));
+}
+
+static inline LispObject difference_l_s(LispObject a1, LispObject a2)
+{   return plus_l_s(a1, negate(a2));
+}
+
+static inline LispObject difference_l_f(LispObject a1, LispObject a2)
+{   return plus_l_f(a1, negate(a2));
+}
+
+static inline LispObject difference_l_d(LispObject a1, LispObject a2)
+{   return plus_l_d(a1, negate(a2));
+}
+
+static inline LispObject difference_l_l(LispObject a1, LispObject a2)
+{   return plus_l_l(a1, negate(a2));
 }
 
 //
 // and now for the dispatch code...
 //
 
-LispObject plus2(LispObject a, LispObject b)
-//
-// I probably want to change the specification of plus2 so that the fixnum +
-// fixnum case is always expected to be done before the main body of the code
-// is entered.  Well maybe even if I do that it then costs very little to
-// include the fixnum code here as well, so I will not delete it.
-//
-{   switch ((int)a & XTAG_BITS)
-    {   case TAG_FIXNUM:
-            switch ((int)b & XTAG_BITS)
-            {   case TAG_FIXNUM:
-//
-// This is where fixnum + fixnum arithmetic happens - the case I most want to
-// make efficient. Note that even if this becomes a bignum it can only be a
-// rather short one.
-//
-                {   intptr_t r = int_of_fixnum(a) + int_of_fixnum(b);
-                    if (valid_as_fixnum(r)) return fixnum_of_int(r);
-                    else return make_lisp_integer64(r);
-                }
-                case XTAG_SFLOAT:
-                    return plusis(a, b); // may be short or single float
-                case TAG_NUMBERS:
-                case TAG_NUMBERS+TAG_XBIT:
-                {   int32_t hb = type_of_header(numhdr(b));
-                    switch (hb)
-                    {   case TYPE_BIGNUM:
-                            return plusib(a, b);
-                        case TYPE_RATNUM:
-                            return plusir(a, b);
-                        case TYPE_COMPLEX_NUM:
-                            return plusic(a, b);
-                        default:
-                            aerror1("bad arg for plus", b);
-                    }
-                }
-                case TAG_BOXFLOAT:
-                case TAG_BOXFLOAT+TAG_XBIT:
-                    return plusif(a, b);
-                default:
-                    aerror1("bad arg for plus",  b);
-            }
-        case XTAG_SFLOAT:
-            switch (b & XTAG_BITS)
-            {   case TAG_FIXNUM:
-                    return plussi(a, b);
-                case XTAG_SFLOAT:
-                {   double d = value_of_immediate_float(a) +
-                               value_of_immediate_float(b);
-                    return pack_immediate_float(d, a, b);
-                }
-                case TAG_NUMBERS:
-                case TAG_NUMBERS+TAG_XBIT:
-                {   int32_t hb = type_of_header(numhdr(b));
-                    switch (hb)
-                    {   case TYPE_BIGNUM:
-                            return plussb(a, b);
-                        case TYPE_RATNUM:
-                            return plussr(a, b);
-                        case TYPE_COMPLEX_NUM:
-                            return plussc(a, b);
-                        default:
-                            aerror1("bad arg for plus",  b);
-                    }
-                }
-                case TAG_BOXFLOAT:
-                case TAG_BOXFLOAT+TAG_XBIT:
-                    return plussf(a, b);
-                default:
-                    aerror1("bad arg for plus",  b);
-            }
-        case TAG_NUMBERS:
-        case TAG_NUMBERS+TAG_XBIT:
-        {   int32_t ha = type_of_header(numhdr(a));
-            switch (ha)
-            {   case TYPE_BIGNUM:
-                    switch ((int)b & XTAG_BITS)
-                    {   case TAG_FIXNUM:
-                            return plusbi(a, b);
-                        case XTAG_SFLOAT:
-                            return plusbs(a, b);
-                        case TAG_NUMBERS:
-                        case TAG_NUMBERS+TAG_XBIT:
-                        {   int32_t hb = type_of_header(numhdr(b));
-                            switch (hb)
-                            {   case TYPE_BIGNUM:
-                                    return plusbb(a, b);
-                                case TYPE_RATNUM:
-                                    return plusbr(a, b);
-                                case TYPE_COMPLEX_NUM:
-                                    return plusbc(a, b);
-                                default:
-                                    aerror1("bad arg for plus",  b);
-                            }
-                        }
-                        case TAG_BOXFLOAT:
-                        case TAG_BOXFLOAT+TAG_XBIT:
-                            return plusbf(a, b);
-                        default:
-                            aerror1("bad arg for plus",  b);
-                    }
-                case TYPE_RATNUM:
-                    switch (b & XTAG_BITS)
-                    {   case TAG_FIXNUM:
-                            return plusri(a, b);
-                        case XTAG_SFLOAT:
-                            return plusrs(a, b);
-                        case TAG_NUMBERS:
-                        case TAG_NUMBERS+TAG_XBIT:
-                        {   int32_t hb = type_of_header(numhdr(b));
-                            switch (hb)
-                            {   case TYPE_BIGNUM:
-                                    return plusrb(a, b);
-                                case TYPE_RATNUM:
-                                    return plusrr(a, b);
-                                case TYPE_COMPLEX_NUM:
-                                    return plusrc(a, b);
-                                default:
-                                    aerror1("bad arg for plus",  b);
-                            }
-                        }
-                        case TAG_BOXFLOAT:
-                        case TAG_BOXFLOAT+TAG_XBIT:
-                            return plusrf(a, b);
-                        default:
-                            aerror1("bad arg for plus",  b);
-                    }
-                case TYPE_COMPLEX_NUM:
-                    switch (b & XTAG_BITS)
-                    {   case TAG_FIXNUM:
-                            return plusci(a, b);
-                        case XTAG_SFLOAT:
-                            return pluscs(a, b);
-                        case TAG_NUMBERS:
-                        case TAG_NUMBERS+TAG_XBIT:
-                        {   int32_t hb = type_of_header(numhdr(b));
-                            switch (hb)
-                            {   case TYPE_BIGNUM:
-                                    return pluscb(a, b);
-                                case TYPE_RATNUM:
-                                    return pluscr(a, b);
-                                case TYPE_COMPLEX_NUM:
-                                    return pluscc(a, b);
-                                default:
-                                    aerror1("bad arg for plus",  b);
-                            }
-                        }
-                        case TAG_BOXFLOAT:
-                        case TAG_BOXFLOAT+TAG_XBIT:
-                            return pluscf(a, b);
-                        default:
-                            aerror1("bad arg for plus",  b);
-                    }
-                default:    aerror1("bad arg for plus",  a);
-            }
-        }
-        case TAG_BOXFLOAT:
-        case TAG_BOXFLOAT+TAG_XBIT:
-            switch ((int)b & XTAG_BITS)
-            {   case TAG_FIXNUM:
-                    return plusfi(a, b);
-                case XTAG_SFLOAT:
-                    return plusfs(a, b);
-                case TAG_NUMBERS:
-                case TAG_NUMBERS+TAG_XBIT:
-                {   int32_t hb = type_of_header(numhdr(b));
-                    switch (hb)
-                    {   case TYPE_BIGNUM:
-                            return plusfb(a, b);
-                        case TYPE_RATNUM:
-                            return plusfr(a, b);
-                        case TYPE_COMPLEX_NUM:
-                            return plusfc(a, b);
-                        default:
-                            aerror1("bad arg for plus",  b);
-                    }
-                }
-                case TAG_BOXFLOAT:
-                case TAG_BOXFLOAT+TAG_XBIT:
-                    return plusff(a, b);
-                default:
-                    aerror1("bad arg for plus",  b);
-            }
-        default:
-            aerror1("bad arg for plus",  a);
-    }
-}
+arith_dispatch_2(static inline, LispObject, difference)
 
 LispObject difference2(LispObject a, LispObject b)
-{   switch ((int)b & XTAG_BITS)
-    {   case TAG_FIXNUM:
-            if (is_fixnum(a))
-            {   intptr_t r = int_of_fixnum(a) - int_of_fixnum(b);
-                if (valid_as_fixnum(r)) return fixnum_of_int(r);
-                else return make_lisp_integer64(r);
-            }
-            else if (b != MOST_NEGATIVE_FIXNUM)
-                return plus2(a, 2*TAG_FIXNUM-b);
-            else
-            {   push(a);
-                b = make_lisp_integerptr(-MOST_NEGATIVE_FIXVAL);
-                pop(a);
-                break;
-            }
-        default:
-            push(a);
-            b = negate(b);   // short floats get negated here
-            pop(a);
-            break;
-    }
-    return plus2(a, b);
+{   return difference(a, b);
 }
 
-LispObject add1(LispObject p)
-//
+
+
+
 // Increment a number.  Short cut when the number is a fixnum, otherwise
 // just hand over to the general addition code.
-//
+
+LispObject add1(LispObject p)
 {   if (is_fixnum(p))
     {   if (p == MOST_POSITIVE_FIXNUM) // ONLY possible overflow case here
             return make_lisp_integerptr(1+MOST_POSITIVE_FIXVAL);
@@ -1739,11 +2076,10 @@ LispObject add1(LispObject p)
     else return plus2(p, fixnum_of_int(1));
 }
 
-LispObject sub1(LispObject p)
-//
 // Decrement a number.  Short cut when the number is a fixnum, otherwise
 // just hand over to the general addition code.
-//
+
+LispObject sub1(LispObject p)
 {   if (is_fixnum(p))
     {   if (p == MOST_NEGATIVE_FIXNUM)
             return make_lisp_integerptr(MOST_NEGATIVE_FIXVAL - 1);

@@ -97,8 +97,6 @@ symbolic procedure mprino1(u,v);
          end
        else if x := get(car u,pretop)
         then return if car x then inprinox(u,car x,v)
-% Next line commented out since not all user infix operators are binary.
-%                    else if cddr u then rederr "Syntax error"
                      else if null cadr x then inprinox(u,list(100,1),v)
                      else inprinox(u,list(100,cadr x),v)
        else if flagp(car u,'modefn) and eqcar(cadr u,'procedure)
@@ -237,6 +235,7 @@ symbolic procedure condox u;
       while u do
         <<prin2ox "if "; mprino caar u; omark list(curmark,1);
           prin2ox " then ";
+          if cddar u then u := list(caar u, 'progn . cdar u) . cdr u;  
           if cdr u and eqcar(cadar u,'cond)
                  and not eqcar(car reverse cadar u,'t)
            then <<x := t; prin2ox "(">>;
@@ -245,7 +244,8 @@ symbolic procedure condox u;
           u := cdr u;
           if u then <<omarko(curmark - 1); prin2ox " else ">>;
           if u and null cdr u and caar u eq 't
-            then <<mprino cadar u; u := nil>>>>;
+            then <<mprino (if cddar u then 'progn . cdar u else cadar u);
+                   u := nil>>>>;
       curmark := curmark - 2;
       omark '(m d)
    end;
@@ -498,7 +498,8 @@ symbolic procedure proceox0(u,v,w,x);
    proceox list(u,'symbolic,v,for each j in w collect j . 'symbolic,x);
 
 symbolic procedure deox u;
-   proceox0(car u,'expr,cadr u,caddr u);
+   proceox0(car u,'expr,cadr u,
+      (if cdddr u then 'progn . cddr u else caddr u));
 
 put('de,pretoprinf,'deox);
 
