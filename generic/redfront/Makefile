@@ -68,7 +68,15 @@ $(BUILD)/libedit/include/editline/readline.h: $(LIBEDIT)
 	../../$(LIBEDIT)/configure --prefix=$$(pwd) --disable-dependency-tracking; \
 	$(MAKE) install
 
-install-home-bin: install-home-bin-csl install-home-bin-psl
+install-home-bin: install-home-bin-bcsl install-home-bin-csl install-home-bin-psl
+
+install-home-bin-bcsl:
+	@if test ! -e ~/bin/rfbcsl -a ! -h ~/bin/rfbcsl; then \
+	   echo "Copying to ~/bin/rfbcsl"; \
+	   cp $(BUILD)/redfront/redfront ~/bin/rfbcsl; \
+	else \
+	   echo "File ~/bin/rfbcsl already exists"; \
+	fi
 
 install-home-bin-csl:
 	@if test ! -e ~/bin/rfcsl -a ! -h ~/bin/rfcsl; then \
@@ -86,7 +94,16 @@ install-home-bin-psl:
 	   echo "File ~/bin/rfpsl already exists"; \
 	fi
 
-install: install-csl install-psl
+install: install-bcsl install-csl install-psl
+
+install-bcsl: $(BUILD)/redfront/redfront
+	@cd ../../bin && \
+	if test ! -e rfbcsl -a ! -h rfbcsl; then \
+	   echo "Creating symbolic link ../../bin/rfbcsl"; \
+	   ln -s ../generic/redfront/$(BUILD)/redfront/redfront rfbcsl; \
+	else \
+	   echo "File ../../bin/rfbcsl already exists"; \
+	fi
 
 install-csl: $(BUILD)/redfront/redfront
 	@cd ../../bin && \
@@ -106,7 +123,16 @@ install-psl: $(BUILD)/redfront/redfront
 	   echo "File ../../bin/rfpsl already exists"; \
 	fi
 
-uninstall: uninstall-csl uninstall-psl
+uninstall: uninstall-bcsl uninstall-csl uninstall-psl
+
+uninstall-bcsl:
+	@cd ../../bin && \
+	if test ! -h rfbcsl; then \
+	   echo "No symbolic link ../../bin/rfbcsl found"; \
+	else \
+	   echo "Deleting symbolic link ../../bin/rfbcsl"; \
+	   rm -f rfbcsl; \
+	fi
 
 uninstall-csl:
 	@cd ../../bin && \
@@ -132,7 +158,7 @@ clean:
 
 distclean: uninstall
 	/bin/rm -rf $(BUILD) csl psl libedit*
-	cd ../../bin && rm -f rfcsl rfpsl
+	cd ../../bin && rm -f rfbcsl rfcsl rfpsl
 
 maintainer-clean: distclean
 	cd src && $(MAKE) -f Makefile.in maintainer-clean

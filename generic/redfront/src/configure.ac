@@ -136,6 +136,14 @@ AC_ARG_WITH(csl-reduce,[  --with-csl-reduce=FILE  location of the executable CSL
 AC_DEFINE_UNQUOTED(REDUCE,"$cslreduce",
 	[Define your executable REDUCE (with CSL)])
 
+AC_ARG_WITH(csl-bootstrapreduce,[  --with-csl-bootstrapreduce=FILE  location of the executable CSL bootstrap REDUCE],
+        cslbootstrapreduce="$withval",cslbootstrapreduce="$abssrcdir/cslbuild/$RBUILD/csl/bootstrapreduce$COMEXT")
+AC_DEFINE_UNQUOTED(BOOTSTRAPREDUCE,"$cslbootstrapreduce",
+	[Define your executable bootstrap REDUCE (with CSL)])
+
+AC_DEFINE_UNQUOTED(REDUCE,"$cslreduce",
+	[Define your executable REDUCE (with CSL)])
+
 AC_ARG_WITH(bpsl,[  --with-bpsl=FILE        location of executable bpsl (with PSL)],
         bpsl="$withval",bpsl="$abssrcdir/pslbuild/$RBUILD/psl/bpsl$EXEEXT")
 AC_DEFINE_UNQUOTED(BPSL,"$bpsl",
