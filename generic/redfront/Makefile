@@ -68,14 +68,14 @@ $(BUILD)/libedit/include/editline/readline.h: $(LIBEDIT)
 	../../$(LIBEDIT)/configure --prefix=$$(pwd) --disable-dependency-tracking; \
 	$(MAKE) install
 
-install-home-bin: install-home-bin-bcsl install-home-bin-csl install-home-bin-psl
+install-home-bin: install-home-bin-cslb install-home-bin-csl install-home-bin-psl
 
-install-home-bin-bcsl:
-	@if test ! -e ~/bin/rfbcsl -a ! -h ~/bin/rfbcsl; then \
-	   echo "Copying to ~/bin/rfbcsl"; \
-	   cp $(BUILD)/redfront/redfront ~/bin/rfbcsl; \
+install-home-bin-cslb:
+	@if test ! -e ~/bin/rfcslb -a ! -h ~/bin/rfcslb; then \
+	   echo "Copying to ~/bin/rfcslb"; \
+	   cp $(BUILD)/redfront/redfront ~/bin/rfcslb; \
 	else \
-	   echo "File ~/bin/rfbcsl already exists"; \
+	   echo "File ~/bin/rfcslb already exists"; \
 	fi
 
 install-home-bin-csl:
@@ -94,15 +94,15 @@ install-home-bin-psl:
 	   echo "File ~/bin/rfpsl already exists"; \
 	fi
 
-install: install-bcsl install-csl install-psl
+install: install-cslb install-csl install-psl
 
-install-bcsl: $(BUILD)/redfront/redfront
+install-cslb: $(BUILD)/redfront/redfront
 	@cd ../../bin && \
-	if test ! -e rfbcsl -a ! -h rfbcsl; then \
-	   echo "Creating symbolic link ../../bin/rfbcsl"; \
-	   ln -s ../generic/redfront/$(BUILD)/redfront/redfront rfbcsl; \
+	if test ! -e rfcslb -a ! -h rfcslb; then \
+	   echo "Creating symbolic link ../../bin/rfcslb"; \
+	   ln -s ../generic/redfront/$(BUILD)/redfront/redfront rfcslb; \
 	else \
-	   echo "File ../../bin/rfbcsl already exists"; \
+	   echo "File ../../bin/rfcslb already exists"; \
 	fi
 
 install-csl: $(BUILD)/redfront/redfront
@@ -123,15 +123,15 @@ install-psl: $(BUILD)/redfront/redfront
 	   echo "File ../../bin/rfpsl already exists"; \
 	fi
 
-uninstall: uninstall-bcsl uninstall-csl uninstall-psl
+uninstall: uninstall-cslb uninstall-csl uninstall-psl
 
-uninstall-bcsl:
+uninstall-cslb:
 	@cd ../../bin && \
-	if test ! -h rfbcsl; then \
-	   echo "No symbolic link ../../bin/rfbcsl found"; \
+	if test ! -h rfcslb; then \
+	   echo "No symbolic link ../../bin/rfcslb found"; \
 	else \
-	   echo "Deleting symbolic link ../../bin/rfbcsl"; \
-	   rm -f rfbcsl; \
+	   echo "Deleting symbolic link ../../bin/rfcslb"; \
+	   rm -f rfcslb; \
 	fi
 
 uninstall-csl:
@@ -158,7 +158,7 @@ clean:
 
 distclean: uninstall
 	/bin/rm -rf $(BUILD) csl psl libedit*
-	cd ../../bin && rm -f rfbcsl rfcsl rfpsl
+	cd ../../bin && rm -f rfcslb rfcsl rfpsl
 
 maintainer-clean: distclean
 	cd src && $(MAKE) -f Makefile.in maintainer-clean

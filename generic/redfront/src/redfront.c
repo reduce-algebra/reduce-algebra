@@ -132,13 +132,13 @@ int det_dist(char *argv0) {
     dist = PSL;
   else if (strcmp(bn,"rfcsl") == 0)
     dist = CSL;
-  else if (strcmp(bn,"rfbcsl") == 0)
-    dist = BCSL;
+  else if (strcmp(bn,"rfcslb") == 0)
+    dist = CSLB;
   else {
-    printf("Select distribution [bcsl/csl/psl] ");
+    printf("Select distribution [csl/cslb/psl] ");
     scanf("%s",d);
-    if (strcmp(d,"bcsl") == 0)
-      dist = BCSL;
+    if (strcmp(d,"cslb") == 0)
+      dist = CSLB;
     else if (strcmp(d,"csl") == 0)
       dist = CSL;
     else if (strcmp(d,"psl") == 0)
@@ -531,16 +531,17 @@ char **create_call(int argc,char *argv[]) {
     for (i = xargstart; i < argc; i++)
       nargv[i - xargstart + 5] = argv[i];
     nargv[argc - xargstart + 5] = (char *)0;
-  } else {  // dist == BCSL || dist == BCSL
-    if ((tempfd = open(dist == BCSL ? BOOTSTRAPREDUCE : REDUCE,O_RDONLY)) == -1) {  /* Does not check x */
+  } else {  // dist == CSL || dist == CSLB
+    nargv[0] = dist == CSLB ? BOOTSTRAPREDUCE : REDUCE;
+
+    if ((tempfd = open(nargv[0], O_RDONLY)) == -1) {  /* Does not check x */
       char errstr[1024];
-      sprintf(errstr,"cannot open %s",dist == BCSL ? BOOTSTRAPREDUCE : REDUCE);
+      sprintf(errstr, "cannot open %s", nargv[0]);
       perror(errstr);
       rf_exit(-1);
     } else
       close(tempfd);
 
-    nargv[0] = dist == BCSL ? BOOTSTRAPREDUCE : REDUCE;
     nargv[1] = "-w";
     nargv[2] = "-b";
     if (verbose) {

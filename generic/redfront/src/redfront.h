@@ -89,7 +89,7 @@ int line_pre_input(const char *,int);
 
 #endif
 
-#define BCSL 0
+#define CSLB 0
 #define CSL 1
 #define PSL 2
 

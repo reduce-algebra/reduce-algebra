@@ -44,7 +44,7 @@ vpath %.c $(srcdir)
 vpath %.h .:$(srcdir)
 
 all: redfront
-	ln -s redfront rfbcsl
+	ln -s redfront rfcslb
 	ln -s redfront rfcsl
 	ln -s redfront rfpsl
 
