@@ -127,7 +127,7 @@ procedure systo_meminfo();
 #else
 
 procedure systo_meminfo();
-   if boundp lispsystem!* then
+   if boundp 'lispsystem!* then
       prettyprint lispsystem!*
    else
       lprim "unknown Lisp";
