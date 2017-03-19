@@ -33,7 +33,6 @@ create!-package('(qepcad),nil);
 
 load!-package 'redlog;
 load!-package 'ofsf;
-loadtime load!-package 'rltools;
 
 fluid '(qepcad_n!* qepcad_l!* !*rlqepnf !*rlverbose !*echo !*time !*backtrace
    !*utf8 !*nat qepcad_qepcad!* qepcad_slfq!* qepcad_wd!* qepcad_awk!* !*fancy);
@@ -43,7 +42,7 @@ qepcad_slfq!* := "slfq";
 % Both the temporary directory and the reliance on awk may give problems
 % under Windows.
 qepcad_wd!* := "/tmp/";
-qepcad_awk!* := lto_sconcat {get_resource_directory(),"/qepcad.awk"};
+qepcad_awk!* := lto_sconcat {systo_get!-resource!-directory(),"/qepcad.awk"};
 
 switch rlqefbqepcad;
 switch rlqefbslfq;

@@ -1,8 +1,10 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% (c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm, 2011 T.Sturm
-% ----------------------------------------------------------------------
+module ibalp;
+% Initial Boolean Algebra Lisp Prefix including  propositional logic
+
+revision('ibalp, "$Id$");
+
+copyright('ibalp, "(c) 2003-2009 A. Dolzmann, A. Seidl, T. Sturm, 2011-2017 T.Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,24 +30,10 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(ibalp_rcsid!* ibalp_copyright!*);
-   ibalp_rcsid!* := "$Id$";
-   ibalp_copyright!* :=
-      "(c) 2003-2009 A. Dolzmann, A. Seidl, T. Sturm, 2011 T. Sturm"
->>;
-
-module ibalp;
-% Initial Boolean Algebra Lisp Prefix Form. Provides for
-% Propositional Logic as well.
-
 create!-package('(ibalp ibalpkapur ibalpqsat),nil);
 
 load!-package 'redlog;
 loadtime load!-package 'cl;
-loadtime load!-package 'rltools;
-
-imports rltools,cl;
 
 fluid '(rl_cid!* !*rlverbose !*rlbnfsac !*rlpcprint !*rlsiso !*msg);
 

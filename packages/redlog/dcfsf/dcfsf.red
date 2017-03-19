@@ -1,8 +1,13 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2004-2009 A. Dolzmann, 2004-2010 T. Sturm
-% ----------------------------------------------------------------------
+module dcfsf;
+% Diferentially closed field standard form. Main module. Algorithms on
+% first-order formulas over diferentially closed fields. The language
+% contains binary relations ['equal], ['neq], ring operations and a
+% binary derivative operator ['d].
+
+revision('dcfsf, "$Id$");
+
+copyright('dcfsf, "(c) 2004-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,22 +33,9 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(dcfsf_rcsid!* dcfsf_copyright!*);
-   dcfsf_rcsid!* := "$Id$";
-   dcfsf_copyright!* := "(c) 2004-2009 A. Dolzmann, 2004-2010 T. Sturm"
->>;
-
-module dcfsf;
-% Diferentially closed field standard form. Main module. Algorithms on
-% first-order formulas over diferentially closed fields. The language
-% contains binary relations ['equal], ['neq], ring operations and a
-% binary derivative operator ['d].
-
 create!-package('(dcfsf dcfsfmisc dcfsfqe dcfsfsism dcfsfkacem),nil);
 
 load!-package 'redlog;
-loadtime load!-package 'rltools;
 loadtime load!-package 'cl;
 loadtime load!-package 'cgb;
 loadtime load!-package 'acfsf;
@@ -51,8 +43,6 @@ loadtime load!-package 'acfsf;
 exports dcfsf_simpterm,dcfsf_prepat,dcfsf_resimpat,dcfsf_lengthat,
    dcfsf_chsimpat,dcfsf_simpat,dcfsf_op,dcfsf_arg2l,dcfsf_arg2r,dcfsf_argn,
    dcfsf_mk2,dcfsf_0mk2,dcfsf_mkn,dcfsf_opp;
-
-imports rltools,cl,cgb;
 
 fluid '(!*rlsiatadv !*rlsiexpl !*rlsiexpla !*rlgssub !*rlsiso !*rlgsrad
    !*rlgsred !*rlgsprod !*rlgserf !*rlverbose !*rlsifac !*rlbnfsac !*rlgsvb

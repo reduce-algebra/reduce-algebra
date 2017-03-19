@@ -1,8 +1,13 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module dvfsf;
+% Discretely valued field standard form. Main module. Algorithms on
+% first-order formulas over the language of fields together with a
+% constant [p] and binary relations [equal], [neq], [div], [sdiv],
+% [assoc], and [nassoc]. The terms are SF's.
+
+revision('dvfsf, "$Id$");
+
+copyright('dvfsf, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,22 +33,9 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
 
-lisp <<
-   fluid '(dvfsf_rcsid!* dvfsf_copyright!*);
-   dvfsf_rcsid!* := "$Id$";
-   dvfsf_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module dvfsf;
-% Discretely valued field standard form. Main module. Algorithms on
-% first-order formulas over the language of fields together with a
-% constant [p] and binary relations [equal], [neq], [div], [sdiv],
-% [assoc], and [nassoc]. The terms are SF's.
-
 create!-package('(dvfsf dvfsfsiat dvfsfsism dvfsfqe dvfsfmisc),nil);
 
 load!-package 'cl;
-load!-package 'rltools;
 
 exports dvfsf_enter,dvfsf_exit,dvfsf_simpterm,dvfsf_prepat,dvfsf_resimpat,
    dvfsf_lengthat,dvfsf_chsimpat,dvfsf_simpat,dvfsf_op,dvfsf_arg2l,dvfsf_arg2r,
@@ -55,8 +47,6 @@ exports dvfsf_enter,dvfsf_exit,dvfsf_simpterm,dvfsf_prepat,dvfsf_resimpat,
    dvfsf_dnf,dvfsf_cnf,dvfsf_subsumption,dvfsf_a2cdl,dvfsf_subat,dvfsf_subalchk,
    dvfsf_eqnrhskernels,dvfsf_structat,dvfsf_ifstructat,dvfsf_termmlat,
    dvfsf_explats,dvfsf_mkcanonic;
-
-imports rltools,cl;
 
 fluid '(!*rlverbose dvfsf_p!* !*rlsiexpl !*rlsiexpla !*rlsifac !*rlsusi);
 

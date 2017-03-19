@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% (c) 2008-2011 Thomas Sturm
-% ----------------------------------------------------------------------
+module mri;  % Mixed real-integer quantifier elimination.
+
+revision('mri, "$Id$");
+
+copyright('mri, "(c) 2008-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,18 +29,8 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(mri_rcsid!* mri_copyright!*);
-   mri_rcsid!* := "$Id$";
-   mri_copyright!* := "(c) 2008-2011 T. Sturm"
->>;
-
-module mri;
-% Mixed real-integer quantifier elimination.
-
 create!-package('(mri mriqe),nil);
 
-loadtime load!-package 'rltools;
 loadtime load!-package 'cl;
 load!-package 'pasf;
 load!-package 'ofsf;

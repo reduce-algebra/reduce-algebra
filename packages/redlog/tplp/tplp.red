@@ -1,8 +1,12 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2007-2009 Thomas Sturm
-% ----------------------------------------------------------------------
+module tplp;
+% Theorem proving lisp prefix. Main module. Algorithms on first-order
+% formulas over a finite language. The terms are represented in lisp
+% prefix.
+
+revision('tplp, "$Id$");
+
+copyright('tplp, "(c) 2007-2009 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,24 +32,10 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(tplp_rcsid!* tplp_copyright!*);
-   tplp_rcsid!* := "$Id$";
-   tplp_copyright!* := "Copyright (c) 2007-2009 T. Sturm"
->>;
-
-module tplp;
-% Theorem proving lisp prefix. Main module. Algorithms on first-order
-% formulas over a finite language. The terms are represented in lisp
-% prefix.
-
 create!-package('(tplp tplpkapur),nil);
 
 load!-package 'redlog;  % for rl_texmacsp()
 loadtime load!-package 'cl;
-loadtime load!-package 'rltools;
-
-imports rltools,cl;
 
 global '(tplp_fsyml!* tplp_rsyml!*);
 

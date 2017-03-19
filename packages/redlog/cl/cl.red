@@ -31,7 +31,6 @@ copyright('cl, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 
 create!-package('(cl clsimpl clbnf clnf clqe cltab clmisc clresolv clsl), nil);
 
-loadtime load!-package 'rltools;
 load!-package 'redlog;
 
 exports cl_atfp,cl_cxfp,cl_atflp,cl_ncflp,cl_dnfp,cl_cnfp,cl_bnfp,cl_simpl,

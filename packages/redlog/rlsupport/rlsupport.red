@@ -1,7 +1,7 @@
 module rlsupport;
 
 put('rlsupport, 'revision, "$Id$");
-put('rlsupport, 'copyright, "(c) 2016 T. Sturm");
+put('rlsupport, 'copyright, "(c) 2016-2017 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -41,9 +41,6 @@ put('rlsupport, 'copyright, "(c) 2016 T. Sturm");
 % compilation.
 
 create!-package('(rlsupport rltype rlservice rlhelp),nil);
-
-imports assert;
-imports rltools;
 
 exports rl_type;
 exports rl_service;

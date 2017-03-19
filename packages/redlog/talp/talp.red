@@ -1,8 +1,13 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2004-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module talp;
+% Term algebra lisp prefix. Main module. Algorithms on first-order
+% formulas over a finite language with at least one constant [c], at
+% least one function symbol of positive arity and binary relations
+% [equal], [neq]. The terms are represented in lisp prefix.
+
+revision('talp, "$Id$");
+
+copyright('talp, "(c) 2004-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,30 +33,15 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(talp_rcsid!* talp_copyright!*);
-   talp_rcsid!* := "$Id$";
-   talp_copyright!* := "Copyright (c) 2004-2009 A. Dolzmann and T. Sturm"
->>;
-
-module talp;
-% Term algebra lisp prefix. Main module. Algorithms on first-order
-% formulas over a finite language with at least one constant [c], at
-% least one function symbol of positive arity and binary relations
-% [equal], [neq]. The terms are represented in lisp prefix.
-
 create!-package('(talp talpsiat talpmisc talpbnf talpsism talpqe),nil);
 
 loadtime load!-package 'cl;
-loadtime load!-package 'rltools;
 
 exports talp_enter,talp_exit,talp_mkalop,talp_unmkalop,talp_get!-invs,
    talp_mkinvop,talp_getl,talp_getextl,talp_prepat,talp_lengthat,
    talp_simpterm,talp_resimpterm,talp_prepterm,talp_simpat,talp_resimpat,
    talp_op,talp_fop,talp_arg2l,talp_arg2r,talp_argl,talp_invp,talp_invf,
    talp_invn,talp_invarg,talp_mkinv,talp_mk2,talp_mkn,talp_mktn,talp_fargl;
-
-imports cl,rltools;
 
 global '(talp_lang!* talp_extlang!*);
 

@@ -33,7 +33,6 @@ create!-package('(mma),nil);
 
 load!-package 'redlog;
 load!-package 'ofsf;
-loadtime load!-package 'rltools;
 
 fluid '(!*redefmsg !*rlqepnf !*rlverbose !*echo !*time !*backtrace mma_call!*
    mma_wd!* mma_awk!* !*fancy);
@@ -47,7 +46,7 @@ switch rlqefbmma;
 
 mma_call!* := "/Applications/Mathematica.app/Contents/MacOS/MathKernel";
 mma_wd!* := "/tmp/";
-mma_awk!* := lto_sconcat {get_resource_directory(),"/mma.awk"};
+mma_awk!* := lto_sconcat {systo_get!-resource!-directory(),"/mma.awk"};
 
 put('ofsf,'rl_services,
    '(rl_mma!* . mma_mma) . get('ofsf,'rl_services));

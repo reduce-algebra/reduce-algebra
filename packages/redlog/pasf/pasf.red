@@ -1,8 +1,13 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010 T. Sturm
-% ----------------------------------------------------------------------
+module pasf;
+% Presburger arithmetic standard form main module. Algorithms on first-order
+% formulas over the language of rings together with congruences. Binary
+% relations (operators) are [equal], [neq], [leq], [geq], [lessp], [greaterp].
+% Ternary relations are [cong] and [ncong].
+
+revision('pasf, "$Id$");
+
+copyright('pasf, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,19 +33,6 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(pasf_rcsid!* pasf_copyright!*);
-   pasf_rcsid!* := "$Id$";
-   pasf_copyright!* :=
-      "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010 T. Sturm"
->>;
-
-module pasf;
-% Presburger arithmetic standard form main module. Algorithms on first-order
-% formulas over the language of rings together with congruences. Binary
-% relations (operators) are [equal], [neq], [leq], [geq], [lessp],
-% [greaterp]. Ternary relations are [cong] and [ncong].
-
 create!-package('(pasf pasfbnf pasfmisc pasfnf pasfsiat
    pasfqe pasfsism pasfresolve),nil);
 
@@ -48,9 +40,6 @@ fluid '(!*rlnzden !*rlposden !*rladdcond !*rlqeasri !*rlsusi !*rlsifac !*rlbrkcx
 
 load!-package 'redlog;
 loadtime load!-package 'cl;
-loadtime load!-package 'rltools;
-
-imports rltools,cl;
 
 fluid '(!*rlverbose secondvalue!*);
 flag('(pasf),'rl_package);

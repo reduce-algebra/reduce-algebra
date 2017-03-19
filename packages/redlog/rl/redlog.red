@@ -33,7 +33,6 @@ copyright('redlog, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 
 create!-package('(redlog rlami rltypes rlservices rlsched rlcont rlsl rlslv),nil);
 
-load!-package 'rltools;  % rlhelp needs ioto.
 load!-package 'rlsupport;
 
 exports quotelog,rl_mkbb,rl_mkserv,rl_op,rl_arg1,rl_arg2l,rl_arg2r,rl_argn,

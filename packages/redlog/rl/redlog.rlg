@@ -636,7 +636,6 @@ part(rlatl walter,1,1);
 y
 
 
-
 % QE by partial CAD:
 cox6 := ex({u,v},x=u*v and y=u**2 and z=v**2)$
 
@@ -797,7 +796,6 @@ sub(x=a,x=0 and a=0 and ex(x,x=y) and ex(a,x~a));
 a = 0 and a = 0 and ex x (x - y = 0) and ex a0 (a ~ a0)
 
 
-
 % P-adic Balls, taken from Andreas Dolzmann, Thomas Sturm. P-adic
 % Constraint Solving, Proceedings of the ISSAC '99.
 rlset dvfsf;
@@ -901,7 +899,80 @@ rldnf ws;
 3 ~ 1 and 2 ~ 1
 
 
+% Differentially closed fields standard form:
+rlset dcfsf;
+
+
+*** turned on switch rlqeheu 
+
+*** turned on switch rlqedfs 
+
+
+{dvfsf}
+
+sub(x=a,x=0 and a=0 and ex(x,x=y) and ex(a,d(x, 4) <> a));
+
+
+a = 0 and a = 0 and ex x (x - y = 0) and ex a0 (a'''' - a0 <> 0)
+
+
+% An Example on Differential Algebras by E. Pankratiev taken from A. Dolzmann,
+% T. Sturm. Generalized Constraint Solving over Differential Algebras.
+% Proceedings of the CASC 2004.
+pankratiev := all(x,d(x, 1)**2 + x = 0 impl (d(x, 1) = a or d(x, 2) = b));
+
+
+                       2
+pankratiev := all x (x'  + x = 0 impl (x' - a = 0 or x'' - b = 0))
+
+rlqe pankratiev;
+
+
+a = 0 and 2*b + 1 = 0
+
+
 % Selecting contexts:
+
+rlset acfsf;
+
+
+{dcfsf}
+
+f:= ex(x,m*x+b=0);
+
+
+f := ex x (b + m*x = 0)
+
+rlqe f;
+
+
+b = 0 or m <> 0
+
+rlset dcfsf;
+
+
+{acfsf}
+
+rlqe f;
+
+
+m <> 0
+
+rlset dvfsf;
+
+
+*** p is being cleared 
+
+
+
+*** turned on switch rlsusi 
+
+{dcfsf}
+
+rlqe f;
+
+
+b + m = 0 or m <> 0
 
 rlset ofsf;
 
@@ -913,53 +984,11 @@ rlset ofsf;
 
 {dvfsf}
 
-f:= ex(x,m*x+b=0);
-
-
-f := ex x (b + m*x = 0)
-
 rlqe f;
 
 
 m <> 0 or b = 0
 
-rlset dvfsf;
-
-
-*** p is being cleared 
-
-
-
-*** turned on switch rlsusi 
-
-{ofsf}
-
-rlqe f;
-
-
-b + m = 0 or m <> 0
-
-rlset acfsf;
-
-
-*** turned on switch rlqeheu 
-
-*** turned on switch rlqedfs 
-
-
-{dvfsf}
-
-rlqe f;
-
-
-b = 0 or m <> 0
-
 
 end;
 
-Tested on x86_64-mac_10.11_elcapitan-darwin15.5.0 PSL
-Time (counter 1): 440 ms
-Quitting
-real         0.79
-user         0.53
-sys          0.17

@@ -163,11 +163,11 @@ asserted procedure rl_formService(argl: List, vars: List, m: Id): List;
 asserted procedure rl_formServiceBoth(spec: Alist): List;
    begin
       scalar b, doc, names, types, defaults, docs, rtype, rl_args, rl_!*args;
-      scalar rl_b, rl_!*b, rl_b!$, rlb;
+      scalar rl_b!*, rl_b, rl_!*b, rl_b!$, rlb;
       scalar p, docal, fluids;
       {b, doc, names, types, defaults, docs, rtype, rl_args, rl_!*args} :=
  	 rl_formServiceAnalyzeSpec spec;
-      {rl_b, rl_!*b, rl_b!$, rlb} := rl_formServiceFunctionNames('rl_, b);
+      {rl_b!*, rl_b, rl_!*b, rl_b!$, rlb} := rl_formServiceFunctionNames('rl_, b);
       % We are going construct a progn in [p], which is going to be the
       % result of this macro.
       %
@@ -194,11 +194,14 @@ asserted procedure rl_formServiceBoth(spec: Alist): List;
       push(
 	 {'de, rl_b!$, '(u),
  	    {'rl_servicewrapper,
-	       mkquote rl_!*b, 'u,
+	       mkquote rl_!*b,
+ 	       'u,
 	       mkquote names,
  	       mkquote for each x in types collect rl_typeString2TypeForm x,
  	       mkquote defaults,
- 	       mkquote rl_typeString2TypeForm rtype}},
+ 	       mkquote rl_typeString2TypeForm rtype,
+	       mkquote rl_b!*,
+	       mkquote rlb}},
  	 p);
       % All switches corresponding to switch arguments are made fluid:
       if fluids then push({'fluid, mkquote fluids}, p);
@@ -206,7 +209,7 @@ asserted procedure rl_formServiceBoth(spec: Alist): List;
       % switches:
       push({'put, mkquote rl_!*b, ''number!-of!-args, length rl_!*args}, p);
       push({'de, rl_!*b, rl_!*args, {'apply, mkquote rl_b, 'list . rl_args}}, p);
-      p := rl_formServiceSm1(rl_b, rl_args, p);
+      p := rl_formServiceSm1(rl_b, rl_b!*, rl_args, p);
       p := rl_formServiceBlackBoxes(spec, p);
       return 'progn . reversip p
    end;
@@ -301,7 +304,7 @@ asserted procedure rl_formServiceAnalyzeSpec(spec: Alist): List;
    end;
 
 asserted procedure rl_formServiceFunctionNames(rl_: Id, b: Id): List;
-   begin scalar rl, rl_b, rl_!*b, rlb, rl_b!$;
+   begin scalar rl, rl_b, rl_!*b, rlb, rl_b!$, rl_b!*;
       rl_ := reversip explode rl_;
       % The AM prefix has no underscore:
       rl := reverse cdr rl_;
@@ -310,7 +313,9 @@ asserted procedure rl_formServiceFunctionNames(rl_: Id, b: Id): List;
       rl_!*b := intern compress append(rl_, append(explode '!*, explode b));
       rlb := intern compress append(rl, explode b);
       rl_b!$ := intern compress nconc(explode rl_b, '(!! !$));
-      return {rl_b, rl_!*b, rl_b!$, rlb}
+      % rl_b!* will actually be a fluid, not a function:
+      rl_b!* := intern compress nconc(explode rl_b, '(!! !*));
+      return {rl_b!*, rl_b, rl_!*b, rl_b!$, rlb}
    end;
 
 asserted procedure rl_typeString2TypeForm(s: String): Any;
@@ -341,21 +346,21 @@ asserted procedure rl_formServiceSm(spec: Alist): List;
    begin scalar b, rl_b, argl; integer n;
       b := lto_eatsoc('name, spec, {"missing service name in", spec});
       rl_b := intern compress nconc(explode 'rl_, explode b);
+      rl_b!* := intern compress nconc(explode rl_b, '(!! !*));
       n := lto_eatsoc('argnum, spec, {"missing argnum in", spec});
       argl := for i := 1:n collect mkid('a, i);
-      return 'progn . reversip rl_formServiceSm1(rl_b, argl, nil)
+      return 'progn . reversip rl_formServiceSm1(rl_b, rl_b!*, argl, nil)
    end;
 
-asserted procedure rl_formServiceSm1(rl_b: Id, argl: List, p: List): List;
+asserted procedure rl_formServiceSm1(rl_b: Id, rl_b!*: Id, argl: List, p: List): List;
    % Build the SM interface: rl_<b> is the SM entry point. It applies the
    % function stored in a fluid rl_<b>!*. That function depends on the current
    % context. All those fluids are collected in in fluid list rl_servl!*, where
    % they are found and rebound with context swithes via rl_set. Prog statements
    % are aadd to p, all in reverse order.
    begin scalar rl_b!*;
-      % Construct the rl_<b>!* identifier, make it fluid, and add it to
-      % rl_servl!*, which is used by rl_set:
-      rl_b!* := intern compress nconc(explode rl_b, explode '!*);
+      % Make the rl_<b>!* identifier fluid, and add it to rl_servl!*, which is
+      % used by rl_set:
       push({'fluid, mkquote {rl_b!*}}, p);
       push({'setq, 'rl_servl!*, {'cons, mkquote rl_b!*, 'rl_servl!*}}, p);
       % Create the actual SM entry point function:
@@ -437,12 +442,14 @@ asserted procedure rl_docSwitches(names: List, types: List, docs: List): Alist;
       return sl
    end;
 
-asserted procedure rl_servicewrapper(rl_!*b: Applicable, u: List, names: List, types: List, defaults: Alist, rtype: Id): Any;
+asserted procedure rl_servicewrapper(rl_!*b: Applicable, u: List, names: List, types: List, defaults: Alist, rtype: Id, rl_b!*: Id, rlb: Id): Any;
    % [rl_bname] is the SM entry point of the service called. [args] are the
    % passed arguments; [names] are the names of the specified arguments, [types]
    % are their types, and defaults are their default values. [rtype] is the type
    % of the return value of [rl_bname].
    begin scalar g, rargs, nargs, w, name, type, f; integer argc, pos;
+      if null eval rl_b!* then
+	 rederr {"service", rlb, "not available in current context", rl_cid!*};
       % Construct a list [rlist] to be filled in-place with the parameters
       % determined throughout this procedure. Switches are inintialized with
       % themselves, because the default is to use the global switch setting. All

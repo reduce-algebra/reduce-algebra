@@ -1,8 +1,14 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module qqe;
+% Quantifier elimination for queues. Main module. Algorithms on formulas
+% in the two-sorted logic consisting of basic and queue sort.
+% The language contains additional binary functions ['ladd], ['radd],
+% as well as unary functions ['lhead], ['rhead], ['ltail], ['rtail].
+% Additional binary logic operators are ['qequal] and ['qneq].
+
+revision('qqe, "$Id$");
+
+copyright('qqe, "(c) 2005-2009 A. Dolzmann and T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,28 +34,12 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(qqe_rcsid!* qqe_copyright!*);
-   qqe_rcsid!* := "$Id$";
-   qqe_copyright!* := "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
->>;
-
-module qqe;
-% Quantorelimination for queues. Main module. Algorithms on formulas
-% in the two-sorted logic consisting of basic and queue sort.
-% The language contains additional binary functions ['ladd], ['radd],
-% as well as unary functions ['lhead], ['rhead], ['ltail], ['rtail].
-% Additional binary logic operators are ['qequal] and ['qneq].
-
 create!-package('(qqe qqetrans qqemisc qqesism qqeqe qqesiat qqeqemisc),nil);
 
 load!-package 'redlog;
-loadtime load!-package 'rltools;
 % load!-package 'qqe_ofsf;
 
 exports qqe_chsimpat;
-
-imports cl,rltools;
 
 fluid '(qqe_marked!-ids!-rollback!* qqe_qadd!-location!*
    qqe_elimb!* qqe_debug!* !*rlsism);

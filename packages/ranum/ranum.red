@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2014 T. Sturm
-% ----------------------------------------------------------------------
+module ranum;  % Real algebraic numbers.
+
+revision('ranum, "$Id$");
+
+copyright('ranum, "(c) 2014 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
 %
@@ -26,9 +27,6 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-module ranum;
-% Real algebraic numbers.
-%
 % Real algebraic numbers are represented as x = (:ra: f (iv l u)), where f is a
 % univariate squarefree SF in ra_v() and l and u are SQ representations of
 % numbers.
@@ -57,8 +55,7 @@ module ranum;
 % the recommended way to do so is (:ra: q*x-p (iv -infinity 0)) or (:ra: q*x-p
 % (iv 0 infinity)) or any other suitable interval in the sense of (2) and (3).
 
-load!-package 'assert;
-load!-package 'rltools;
+create!-package('(ranum raarith rarcount raiv), nil);
 
 struct RA asserted by rap;
 
@@ -69,8 +66,6 @@ struct IV checked by ivp;
 
 procedure ivp(s);
    eqcar(s, 'iv);
-
-create!-package('(ranum raarith rarcount raiv), nil);
 
 global '(domainlist!*);
 

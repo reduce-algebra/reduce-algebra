@@ -2,7 +2,7 @@ module rlhelp;
 
 revision('rlhelp, "$Id$");
 
-copyright('rlhelp, "(c) 2016 T. Sturm");
+copyright('rlhelp, "(c) 2016-2017 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -28,8 +28,6 @@ copyright('rlhelp, "(c) 2016 T. Sturm");
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-imports rltools;
 
 global '(rlhelp_leftMargin!*);
 global '(rlhelp_rightMargin!*);

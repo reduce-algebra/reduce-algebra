@@ -564,6 +564,7 @@ symbolic operator meminfo;
 defautoload(meminfo, rltools, expr, 0);
 
 defautoload(systo_datestamp, rltools, expr, 0);
+defautoload(systo_get!-resource!-directory, rltools, expr, 0);
 defautoload(systo_trunk, rltools, expr, 0);
 
 defautoload(ioto_cplu, rltools, expr, 2);
