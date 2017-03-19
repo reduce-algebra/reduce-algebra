@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, A. Seidl, and T. Sturm
-% ----------------------------------------------------------------------
+module clbnf;  % Common logic boolean normal forms
+
+revision('clbnf, "$Id$");
+
+copyright('clbnf, "(c) 1995-2009 A. Dolzmann, A. Seidl, T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(cl_bnf_rcsid!* cl_bnf_copyright!*);
-   cl_bnf_rcsid!* := "$Id$";
-   cl_bnf_copyright!* := "(c) 1995-2009 by A. Dolzmann, A. Seidl, and T. Sturm"
->>;
-
-module clbnf;
-% Common logic boolean normal forms. Submodule of [cl]. This module
-% provides CNF and DNF computation.
 
 %DS
 % <SG-DNF> ::= <GOR> . <SGCL>
@@ -600,11 +591,11 @@ procedure cl_bnf2set2(fl,op);
 	    {f}
 	 else if rl_op f eq xop then <<
 	    flg := t;
-	    sort(list2set rl_argn f,'rl_ordatp)
+	    sort(lto_list2set rl_argn f,'rl_ordatp)
 	 >> else
 	    rederr {"cl_bnf2set1: not in bnf: ",f}
       >>;
-      return flg . list2set w
+      return flg . lto_list2set w
    end;
 
 procedure cl_set2bnf(ll,op);
@@ -672,7 +663,7 @@ procedure cl_qssisu(l,op);
    % Simplify by subsumtion. [l] is a list of clauses. Returns a list
    % of clauses.
    for each x in l join
-      if not(cl_qssubsumelp(x,delq(x,l),op)) then
+      if not(cl_qssubsumelp(x,lto_delq(x,l),op)) then
 	 {x};
 
 procedure cl_qssisutwo(l1,l2,op);
@@ -758,7 +749,7 @@ procedure cl_qsselect2(core,dcs,op);
 procedure cl_qsspltcore(s,op);
    begin scalar core,dcs;
       for each x in s do
-	 if rl_qsimpltestccl(x,delq(x,s),op) then
+	 if rl_qsimpltestccl(x,lto_delq(x,s),op) then
       	    dcs := x . dcs
 	 else
 	    core := x . core;
@@ -1065,7 +1056,7 @@ procedure cl_qstrycons(a,c1,c2,op);
    % [c1] and [c2] are clauses, op is one of ['and], ['or]. Returns
    % [T], [nil] or [break].
    begin scalar na,sc1,r,cc1;
-      cc1 := delete(a,c1);  % Copy... % TODO: delq or delete?
+      cc1 := delete(a,c1);  % Copy... % TODO: lto_delq or delete?
       na := rl_negateat a;
       if not(na member c2) then
 	 return nil;
@@ -1078,7 +1069,7 @@ procedure cl_qstrycons(a,c1,c2,op);
       >>;
       if not r then
 	 return nil;
-      r := sort(list2set append(cc1,delete(na,c2)),'rl_ordatp); %TODO: nconc
+      r := sort(lto_list2set append(cc1,delete(na,c2)),'rl_ordatp); %TODO: nconc
       if null r then
 	 return 'break;
       return r

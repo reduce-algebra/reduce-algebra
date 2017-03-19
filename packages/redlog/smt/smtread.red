@@ -152,7 +152,7 @@ procedure smt_token1();
       w := memq('!., y);
       nxtsym!* := if w then <<
 	 d := 10 ^ length cdr w;
-	 n := compress delqip('!., y);
+	 n := compress lto_delqip('!., y);
 	 g := gcdn(n, d);
 	 {'!/, n/g, d/g}
       >> else

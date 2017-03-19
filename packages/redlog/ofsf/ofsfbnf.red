@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, A. Seidl, and T. Sturm
-% ----------------------------------------------------------------------
+module ofsfbnf;  % Ordered field standard form Boolean normal forms
+
+revision('ofsfbnf, "$Id$");
+
+copyright('ofsfbnf, "(c) 1995-2009 A. Dolzmann, A. Seidl, T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,17 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(ofsf_bnf_rcsid!* ofsf_bnf_copyright!*);
-   ofsf_bnf_rcsid!* :=
-      "$Id$";
-   ofsf_bnf_copyright!* :=
-      "Copyright (c) 1995-2009 A. Dolzmann, A. Seidl, T. Sturm"
->>;
-
-module ofsfbnf;
-% Ordered field standard form boolean normal forms. Submodule of [ofsf].
 
 procedure ofsf_dnf(f);
    % Ordered field standard form conjunctive normal form. [f] is a
@@ -250,8 +240,8 @@ procedure ofsf_qstrycons(a,c1,c2,op);
       r := ofsf_qstrycons!-or(ofsf_op a,ofsf_op w);
       if null r or r eq 'false then
 	 return nil;
-      cc1 := delete(a,c1);  % Copy... % TODO: delq or delete?
-      cc2 := delete(w,c2);  % Copy... % TODO: delq or delete?
+      cc1 := delete(a,c1);  % Copy... % TODO: lto_delq or delete?
+      cc2 := delete(w,c2);  % Copy... % TODO: lto_delq or delete?
       w := append(cc1,cc2);  % TODO: nconc
       if r neq 'true then
       	 w := ofsf_0mk2(r,ofsf_arg2l a) . w;	    
@@ -326,7 +316,7 @@ procedure ofsf_qssiadd(a,c,theo);
       w := ofsf_qssifind(a,c);
       if null w then
 	 return a . c;
-      c := delq(w,c);
+      c := lto_delq(w,c);
       w := ofsf_qssibin(a,w);
       return if rl_tvalp w then
 	 w

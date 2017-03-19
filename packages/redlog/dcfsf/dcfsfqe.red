@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2004-2009 A. Dolzmann, 2004-2010 T. Sturm
-% ----------------------------------------------------------------------
+module dcfsfqe;  % Diferentially closed field standard form quantifier elimination.
+
+revision('dcfsfqe, "$Id$");
+
+copyright('dcfsfqe, "(c) 2004-2009 A. Dolzmann, 2004-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(dcfsf_qe_rcsid!* dcfsf_qe_copyright!*);
-   dcfsf_qe_rcsid!* :=
-      "$Id$";
-   dcfsf_qe_copyright!* := "(c) 2004-2009 A. Dolzmann, 2004-2010 T. Sturm"
->>;
-
-module dcfsfqe;
-% Diferentially closed field standard form quantifier elimination.
 
 procedure dcfsf_orddegf(f,v);
    % Diferentially closed field standard form order and degree. [f] is
@@ -869,7 +860,7 @@ procedure pl_factorize(pl);
 	    car pr;
       apll := pll_new();
       for each pveql in lto_cartprod fveql do
-	 apll := pll_cons(pl_new(list2set pveql,vnel,oeql,onel),apll);
+	 apll := pll_cons(pl_new(lto_list2set pveql,vnel,oeql,onel),apll);
       return apll
    end;
 

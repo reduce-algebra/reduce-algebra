@@ -2,7 +2,7 @@ module clmisc;  % Common logic miscellaneous algorithms.
 
 revision('clmisc, "$Id$");
 
-copyright('clmisc, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2016 T. Sturm");
+copyright('clmisc, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -284,7 +284,7 @@ procedure cl_closure(q,f,nl);
       freevarl := reversip car cl_varl f;
       % Remove the variables of the negative list.
       for each v in nl do
- 	 freevarl := delqip(v,freevarl);
+ 	 freevarl := lto_delqip(v,freevarl);
       % [q]-quantify with the remaining variables.
       result := f;
       for each x in freevarl do

@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2004-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module dcfsfkacem;  % Diferentially closed field standard form.
+
+revision('dcfsfkacem, "$Id$");
+
+copyright('dcfsfkacem, "(c) 2004-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,17 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(dcfsfkacem_rcsid!* dcfsfkacem_copyright!*);
-   dcfsf_kacem_rcsid!* :=
-      "$Id$";
-   dcfsf_kacem_copyright!* :=
-      "Copyright (c) 2004-2009 A. Dolzmann andn T. Sturm"
->>;
-
-module dcfsfkacem;
-% diferentially closed field standard form.
 
 % part 1
 
@@ -199,7 +189,7 @@ procedure dqe_helpelim!-and(phi);
       while phi do <<
 	 a := car phi;
 	 if car a eq 'equal then
-	    eqs := adjoin(reval cadr dqe_modatomar a,eqs)
+	    eqs := lto_insert(reval cadr dqe_modatomar a,eqs)
 	 else
 	    g := reval {'times,g,reval cadr dqe_modatomar a};
 	 phi := cdr phi

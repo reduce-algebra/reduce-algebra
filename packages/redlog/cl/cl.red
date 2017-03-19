@@ -34,8 +34,6 @@ create!-package('(cl clsimpl clbnf clnf clqe cltab clmisc clresolv clsl), nil);
 loadtime load!-package 'rltools;
 load!-package 'redlog;
 
-off1 'assert;
-
 exports cl_atfp,cl_cxfp,cl_atflp,cl_ncflp,cl_dnfp,cl_cnfp,cl_bnfp,cl_simpl,
    cl_sitheo,cl_ordp,cl_smcpknowl,cl_smrmknowl,cl_smupdknowl,cl_smmkatl,
    cl_smsimpl!-impl,cl_smsimpl!-equiv1,cl_siaddatl,cl_susimkatl,cl_susicpknowl,

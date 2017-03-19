@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm
-% ----------------------------------------------------------------------
+module clsimpl;  % Common logic simplification
+
+revision('clsimpl, "$Id$");
+
+copyright('clsimpl, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,17 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(cl_simpl_rcsid!* cl_simpl_copyright!*);
-   cl_simpl_rcsid!* :=
-      "$Id$";
-   cl_simpl_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
->>;
-
-module clsimpl;
-% Common logic simplification routines. Submodule of [cl]. Here the
-% standard simplifier is implemented.
 
 %DS
 % <theory> ::= (<atomic_formula>,...)
@@ -810,7 +800,7 @@ procedure cl_susiinter(prg,knowl,a);
 	    if cdr p then
 	       delflg := t
 	    else
-	       knowl := delqip(a,knowl)
+	       knowl := lto_delqip(a,knowl)
       	 else if car p eq 'add then
 	    addl := cdr p . addl;
      return {knowl,addl,ignflg,delflg}

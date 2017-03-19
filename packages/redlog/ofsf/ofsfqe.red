@@ -2,7 +2,7 @@ module ofsfqe;  % Ordered field standard form quantifier elimination.
 
 revision('ofsfqe, "$Id$");
 
-copyright('ofsfqe, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm");
+copyright('ofsfqe, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2016 T. Sturm, 2017 M. Kosta, T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -102,7 +102,7 @@ procedure ofsf_varsel!-try(f,vl,theo);
 	 terml;
       atl := cl_atl1 f;
       candvl := for each a in vl join
-	 if ofsf_linp(atl,a,delq(a,vl)) then {a};
+	 if ofsf_linp(atl,a,lto_delq(a,vl)) then {a};
       if candvl then return candvl;
       candvl := for each a in vl join
 	 if ofsf_qscp(atl,a) then {a};
@@ -139,7 +139,7 @@ procedure ofsf_varsel!-classic(f,vl,theo);
       while scvl and not v do <<
 	 a := car scvl;
 	 scvl := cdr scvl;
-	 if ofsf_linp(atl,a,delq(a,vl)) then v := a
+	 if ofsf_linp(atl,a,lto_delq(a,vl)) then v := a
       >>;
       if v then return v;
       scvl := vl;
@@ -1051,7 +1051,7 @@ procedure ofsf_translat1(atf,v,theo);
 	 kl := ofsf_varlat atf where !*rlbrkcxk=nil;
 	 c := t; while c and kl do <<
 	    k := pop kl;
-	    if pairp k and v memq rltools_lpvarl k then
+	    if pairp k and v memq lto_lpvarl k then
 	       c := nil
 	 >>;
 	 if not c then <<
@@ -1482,9 +1482,9 @@ procedure ofsf_elimsetlinbs(atfal);
       scalar equal1,leq1,geq1,greaterp1,lessp1,wo1,so1,qesubcql,
 	 qesubcqmel,qesubcqpel;
       ofsf_setvlin();
-      qesubcql := 'ofsf_qesubcq . lto_nconcn{equal1,leq1,geq1,wo1};
-      qesubcqmel := 'ofsf_qesubcqme . lto_nconcn{so1,lessp1};
-      qesubcqpel := 'ofsf_qesubcqpe . lto_nconcn{so1,greaterp1};
+      qesubcql := 'ofsf_qesubcq . lto_nconcn {equal1,leq1,geq1,wo1};
+      qesubcqmel := 'ofsf_qesubcqme . lto_nconcn {so1,lessp1};
+      qesubcqpel := 'ofsf_qesubcqpe . lto_nconcn {so1,greaterp1};
       return {qesubcql,qesubcqmel,qesubcqpel}
    end;
 
@@ -1572,14 +1572,14 @@ procedure ofsf_elimsetlin1s(atfal);
 	 caddr car rlqelog!* := length lessp1 + length so1;
       >>;
       if l1n <= g1n then <<
-      	 qesubcql := 'ofsf_qesubcq . lto_nconcn{equal1,leq1,wo1};
+      	 qesubcql := 'ofsf_qesubcq . lto_nconcn {equal1,leq1,wo1};
 	 esubl := 'ofsf_qesubcqme . nconc(so1,lessp1);
 	 if !*rlqelog then
 	    cadddr car rlqelog!* := caddr car rlqelog!*;
 	 qesubil := '(ofsf_qesubi . ((pinf)));
 	 return nil . {qesubcql,esubl,qesubil}
       >>;
-      qesubcql := 'ofsf_qesubcq . lto_nconcn{equal1,geq1,wo1};
+      qesubcql := 'ofsf_qesubcq . lto_nconcn {equal1,geq1,wo1};
       esubl := 'ofsf_qesubcqpe . nconc(so1,greaterp1);
       if !*rlqelog then
 	 cadddr car rlqelog!* := cadr car rlqelog!*;
@@ -1675,7 +1675,7 @@ procedure ofsf_elimsetneq(atfal,ple);
  	    nconc(neq1,neq21q),esubcr1 . neq21r,esubcr2 . neq22r};
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
  	 ioto_prin2 {"(ANEQ:",neqn,"|",wbn,")"};
-      return {esubcq . lto_nconcn{wb1,wo1,wo21q},esubcr1 . wo21r,
+      return {esubcq . lto_nconcn {wb1,wo1,wo21q},esubcr1 . wo21r,
 	 esubcr2 . wo22r}
    end;
 
@@ -1738,7 +1738,7 @@ procedure ofsf_qefsolset(a,v,theo,ans,bvl);
 	 w := ofsf_varlat a where !*rlbrkcxk=nil;
 	 c := t; while w and c do <<
 	    k := pop w;
-	    if pairp k and v memq rltools_lpvarl k then
+	    if pairp k and v memq lto_lpvarl k then
 	       c := nil
 	 >>;
 	 if not c then
@@ -2641,7 +2641,7 @@ procedure ofsf_sqsc(f,vl,theo,ans,bvl);
       while scvl and not lin do <<
 	 a := car scvl;
 	 scvl := cdr scvl;
-	 lin := ofsf_linp(atl,a,delq(a,vl))
+	 lin := ofsf_linp(atl,a,lto_delq(a,vl))
       >>;
       if lin then
 	 return 'failed;
@@ -2655,7 +2655,7 @@ procedure ofsf_sqsc(f,vl,theo,ans,bvl);
  	 return 'failed;
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
 	 ioto_prin2 "#Q";
-      vl := delq(a,vl);
+      vl := lto_delq(a,vl);
       f := cl_simpl(ofsf_sqsc1(f,at,a,theo),theo,-1);
       return (t . {cl_mkCE(vl,f,nil,nil)}) . theo
    end;
@@ -2848,7 +2848,7 @@ procedure ofsf_elimsetq!-precise(atfal);
       neq21q := lto_catsoc('neq21q,atfal);
       wo21q := lto_catsoc('wo21q,atfal);
       so21q := lto_catsoc('so21q,atfal);
-      qesubcql := lto_nconcn{equal1,leq1,geq1,wo1,equal21q,wo21q};  % weak
+      qesubcql := lto_nconcn {equal1,leq1,geq1,wo1,equal21q,wo21q};  % weak
       so := lto_nconcn {so1,neq1,so21q,neq21q};  % strict unspecified
       pslb1 := nconc(greaterp1,so);  % potential strict lower bounds
       psub1 := nconc(lessp1,so);  % potential strict upper bounds
@@ -2903,7 +2903,7 @@ asserted procedure ofsf_qeg(f: Formula): Formula;
 	 ass := nth(car gres,i);
 	 w := for each fac in cdr fctrf ofsf_arg2l ass collect car fac;
 	 if cdr w then rederr "ofsf_qeg: uexpected nonvariable assumption";
- 	 (ofsf_0mk2('equal, ofsf_arg2l ass) . delq(ass, car gres)) .
+ 	 (ofsf_0mk2('equal, ofsf_arg2l ass) . lto_delq(ass, car gres)) .
 	    cl_qe(cl_subfof({prepf car w . 0}, f), nil)
       >>;
       return cl_simpl(rl_smkn('or, for each case in res collect

@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2001, 2011 Thomas Sturm
-% ----------------------------------------------------------------------
+module clprl;
+
+revision('clprl, "$Id$");
+
+copyright('clprl, "(c) 2001-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,13 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-lisp <<
-   fluid '(clprl_rcsid!* clprl_copyright!*);
-   clprl_rcsid!* := "$Id$";
-   clprl_copyright!* :=  "Copyright (c) 2001, 2011 T. Sturm"
->>;
-
-module clprl;
 
 load!-package 'redlog;
 load!-package 'dvfsf;
@@ -419,7 +413,7 @@ procedure clprl_stapart(hc,varal);
       subal := for each v in clprl_hcvarl hc collect <<
 	 a := atsoc(v,varal);
 	 n := cdr a + 1;
-      	 nvaral := (car a . n) . delq(a,nvaral);
+      	 nvaral := (car a . n) . lto_delq(a,nvaral);
       	 v . intern compress lto_nconcn {{'!!,'!_},explode v,{'!_},explode n}
       >>;
       if null subal then

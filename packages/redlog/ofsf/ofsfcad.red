@@ -2,7 +2,7 @@ module ofsfcad;  % Cylindcrical algebraic decomposition.
 
 revision('ofsfcad, "$Id$");
 
-copyright('ofsfcad, "(c) 2000-2009 A. Dolzmann, A. Seidl, T. Sturm, 2016 T. Sturm");
+copyright('ofsfcad, "(c) 2000-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2017 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -293,11 +293,11 @@ asserted procedure ofsf_cadextension(cd: CadData): Any;
 	 ioto_prin2t length atree_childrenatlevel(dd, r)
       >>;
       if !*rlcadtree2dot then
-	 atree_2dot(dd, lto_sconcat{ofsf_wd!*, "cadtree.dot"});
+	 atree_2dot(dd, lto_sconcat {ofsf_wd!*, "cadtree.dot"});
       if !*rlcadtree2tgf then
-	 atree_2dot(dd, lto_sconcat{ofsf_wd!*, "cadtree.tgf"});
+	 atree_2dot(dd, lto_sconcat {ofsf_wd!*, "cadtree.tgf"});
       if !*rlcadtree2gml then
-	 atree_2gml(dd, lto_sconcat{ofsf_wd!*, "cadtree.gml"});
+	 atree_2gml(dd, lto_sconcat {ofsf_wd!*, "cadtree.gml"});
       caddata_putdd(cd, dd);
       % if !*rlverbose then <<
       % 	 ioto_tprin2t {"+ CAD tree:"};
@@ -463,7 +463,7 @@ asserted procedure ofsf_cadfnum1(ff: List, varl: List): List;
       hh := for each ffj in ff collect
 	 for each f in ffj collect
 	    'dummytag . f;
-      w := ofsf_fulltree(list2vector(nil . hh), varl);
+      w := ofsf_fulltree(lto_list2vector(nil . hh), varl);
       return for i := 0 : length varl collect
 	 length atree_childrenatlevel(w, i)
    end;
@@ -1580,10 +1580,10 @@ asserted procedure ofsf_solutionformula(cd: CadData): Any;
 	 w := for each cell in yy join
 	    if acell_gettv cell eq 'true then
 	       {atsoc('answers, acell_gettl cell)};
-	 for each c in list2set w do
+	 for each c in lto_list2set w do
 	    ioto_prin2t {"+ ANSWERS: ", c}
       >>;
-      yyi := list2set for each cell in yy collect
+      yyi := lto_list2set for each cell in yy collect
       	 length acell_getsp cell;
       if !*rlverbose then
 	 ioto_prin2t {"+ levels to be considered: ", yyi};

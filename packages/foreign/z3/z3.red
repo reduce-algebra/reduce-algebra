@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% (c) 2013 M. Kosta, T. Sturm
-% ----------------------------------------------------------------------
+module z3;
+
+revision('z3, "$Id$");
+
+copyright('z3, "(c) 2013-2017 M. Kosta, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,7 +29,6 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-module z3;
 
 #if (memq 'csl lispsystem!*)
 
@@ -73,7 +73,7 @@ int64_max!* := 0x7fffffffffffffff;
 fluid '(z3_libredz3!*);
 fluid '(z3_redz3!*);
 
-z3_libredz3!* := lto_sconcat {rltools_trunk(), "packages/foreign/z3/libredz3.so"};
+z3_libredz3!* := lto_sconcat {systo_trunk(), "packages/foreign/z3/libredz3.so"};
 
 errorset('(setq z3_redz3!* (open!-foreign!-library z3_libredz3!*)), nil, nil);
 

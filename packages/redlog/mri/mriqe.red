@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2008-2009 Thomas Sturm
-% ----------------------------------------------------------------------
+module mriqe;
+
+revision('mriqe, "$Id$");
+
+copyright('mriqe, "(c) 2008-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(mri_qe_rcsid!* mri_qe_copyright!*);
-   mri_qe_rcsid!* :=
-      "$Id$";
-   mri_qe_copyright!* := "Copyright (c) 2008-2009 T. Sturm"
->>;
-
-module mriqe;
 
 procedure mri_qe(f,theo);
    begin scalar w,q,ql,varl,varll;
@@ -89,7 +81,7 @@ procedure mri_qeblock1(f,varl);
    begin scalar v,w;
       while varl do <<
 	 v := mri_varsel varl;
-	 varl := delq(v,varl);
+	 varl := lto_delq(v,varl);
 	 if mri_realvarp v then <<
 	    mri_vbin("+++ MRI expanding bounded quantifiers for real qe",f);
 	    w := mri_expand f;

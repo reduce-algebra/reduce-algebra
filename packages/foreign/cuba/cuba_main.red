@@ -37,16 +37,16 @@ module cuba_main;
 % it will FAIL when Reduce has been distributed as a binary archive and
 % installed on a fresh computer. Furthermore if native Windows is ever to
 % be supported one would need a ".dll" suffix not ".so".
-libredcuba_loc!* := lto_sconcat {rltools_trunk(),
+libredcuba_loc!* := lto_sconcat {systo_trunk(),
    "packages/foreign/cuba/libredcuba.so"};
 
 if filep libredcuba_loc!* then
    libredcuba!* := open!-foreign!-library(libredcuba_loc!*)
 else <<
-   if filep lto_sconcat {rltools_trunk(), "packages/foreign/cuba/Makefile"} then
+   if filep lto_sconcat {systo_trunk(), "packages/foreign/cuba/Makefile"} then
    begin
       scalar w;
-      w := lto_sconcat {rltools_trunk(), "packages/foreign/cuba"};
+      w := lto_sconcat {systo_trunk(), "packages/foreign/cuba"};
       % One bad thing here is that lto_sconcat is coded so it fails if some of
       % the strings passed contain double-quote marks, and I would have liked to
       % use some here!

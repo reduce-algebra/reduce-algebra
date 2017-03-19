@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2010 Thomas Sturm
-% ----------------------------------------------------------------------
+module dcfsfsism;  % Differentially closed field standard form smart simplification
+
+revision('dcfsfsism, "$Id$");
+
+copyright('dcfsfsism, "(c) 2010-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,17 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(dcfsf_sism_rcsid!* dcfsf_sism_copyright!*);
-   dcfsf_sism_rcsid!* :=
-      "$Id$";
-   dcfsf_sism_copyright!* := "Copyright (c) 2010 T. Sturm"
->>;
-
-module dcfsfsism;
-% Differentially closed field standard form smart simplification.
-% Submodule of [dcfsf].
 
 %DS
 % <IRL> ::= (<IR>,...)
@@ -101,7 +91,7 @@ procedure dcfsf_smupdknowl(op,atl,knowl,n);
 	    >> else if h neq 'true and knowl neq 'false then <<
 	       knowl := ir . knowl;
 	       for each ir in h do
- 		  knowl := delqip(ir,knowl)
+ 		  knowl := lto_delqip(ir,knowl)
 	    >>
 	 >> else
 	    knowl := ir . knowl
@@ -331,9 +321,9 @@ procedure dcfsf_sminsert1(r1,a,r2,b,n);
    end;
 
 procedure dcfsf_sminsertd(newir,oldirl);
-   % Returns [true], [false], [nil] or an IRL to be delqip-ed from
-   % knowl, which is a superset of [oldirl]. Posssibly updates an IR in
-   % [oldirl] in place.
+   % Returns [true], [false], [nil] or an IRL to be lto_delqip-ed from knowl,
+   % which is a superset of [oldirl]. Posssibly updates an IR in [oldirl] in
+   % place.
    begin scalar db,entry; integer derlev;
       derlev := cdr dcfsf_sderlev car newir;
       db := cdr newir;

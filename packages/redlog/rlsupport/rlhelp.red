@@ -221,11 +221,11 @@ asserted procedure rl_helpTypeArity(s: String): String;
    end;
 
 asserted procedure rl_typeStrings(services: List): List;
-   list2set for each s in services join
+   lto_list2set for each s in services join
       copy(get(s, 'outtype) . get(s, 'intypes));
 
 asserted procedure rl_typeIdentifiers(services: List): List;
-   list2set for each s in services join
+   lto_list2set for each s in services join
       for each tp in get(s, 'outtype) . get(s, 'intypes) collect
 	 lto_string2id tp;
 

@@ -32,6 +32,6 @@ algebraic;
 
 assert_analyze();
 
-assert_uninstall_all;
+assert_uninstall_all();
 
 end;

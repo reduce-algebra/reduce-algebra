@@ -31,17 +31,17 @@ copyright('lto, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 
 operator setminus;
 
-procedure lto_insert(x,l);
+asserted procedure lto_insert(x: Any, l: List): List;
    % List tools insert. [x] is any S-expression, [l] is a list. Conses
    % [x] to [l] if [x] is not already member of [l].
    if x member l then l else x . l;
 
-procedure lto_insertq(x,l);
+asserted procedure lto_insertq(x: Any, l: List): List;
    % List tools insert testing with memq. [x] is any S-expression, [l]
    % is a list. Conses [x] to [l] if [x] is not already [memq].
    if x memq l then l else x . l;
 
-procedure lto_quicksort(l,sortp);
+asserted procedure lto_quicksort(l: List, sortp: Applicable): List;
    % List tools quick sort. [l] is a list; [sortp] is a function that
    % implements an ordering. Returns a list. [l] is sorted such that
    % [sortp] holds between each two adjacent elements.
@@ -59,7 +59,7 @@ procedure lto_quicksort(l,sortp);
       return nconc(lto_quicksort(s1,sortp),crit . lto_quicksort(s2,sortp))
    end;
 
-procedure lto_mergesort(l,sortp);
+asserted procedure lto_mergesort(l: List, sortp: Applicable): List;
    % List tools merge sort. [l] is a list; [sortp] is a function that
    % implements an ordering. Returns a list. [l] is sorted such that
    % [sortp] holds between each two adjacent elements.
@@ -88,12 +88,12 @@ procedure lto_mergesort(l,sortp);
       return cdr rslt
    end;
 
-procedure lto_listend(l);
+asserted procedure lto_listend(l: List): Any;
    % List tools list end. [l] is a non-empty list. Returns the last pair
    % of [l].
    if cdr l then lto_listend cdr l else l;
 
-procedure lto_sublistp(l1,l2);
+asserted procedure lto_sublistp(l1: List, l2: List): ExtraBoolean;
    % List tools sublist predicate. [l1] and [l2] are lists. Returns non-nil if
    % all elements of [l2] are in [l1] and in the same order.
    if l1 and l2 then
@@ -104,18 +104,19 @@ procedure lto_sublistp(l1,l2);
    else
       null l2;
 
-procedure lto_alinsert(key,val,al);
+asserted procedure lto_alinsert(key: Any, val: Any, al: Alist): Alist;
    % List tools alist insert. [key] is non-nil, [val] is any and [al] is
    % an alist having lists as values. Returns an alist where [val] is inserted
    % into the list belonging to [key].
    begin scalar w;
+      assert not null key;
       w := assoc(key,al);
       if null w then return ((key . {val}) . al);
       cdr w := val . cdr w;
       return al
    end;
 
-procedure lto_lengthp(l,n,compp);
+asserted procedure lto_lengthp(l: List, n: Integer, compp: Applicable): ExtraBoolean;
    % List tools length predicate. [l] is a list, [n] is a number and [compp]
    % is a function comparing two numbers. Returns [compp](length [l],[n]).
    if null l then
@@ -125,19 +126,19 @@ procedure lto_lengthp(l,n,compp);
    else
       lto_lengthp(cdr l,n-1,compp);
 
-procedure lto_catsoc(key,al);
+asserted procedure lto_catsoc(key: Id, al: Alist): Any;
    % List tools conditional atsoc. [key] is an identifier; [al] is an
    % alist $((k_1 . e_1),...,(k_n . e_n))$. Returns $e_i$ if [key] is
    % [eq] to $k_i$, [nil] else.
    (if x then cdr x) where x=atsoc(key,al);
 
-procedure lto_natsoc(key,al);
+asserted procedure lto_natsoc(key: Id, al: Alist): Any;
    % List tools conditional number atsoc. [key] is an identifier; [al]
    % is an alist $((k_1 . e_1),...,(k_n . e_n))$. Returns $e_i$ if
    % $[key]=k_i$, 0 else.
    (if w then cdr w else 0) where w=atsoc(key,al);
 
-procedure lto_cassoc(key,al);
+asserted procedure lto_cassoc(key: Id, al: Alist): Any;
    % List tools conditional assoc. [key] is an identifier; [al] is an
    % alist $((k_1 . e_1),...,(k_n . e_n))$. Returns $e_i$ if
    % $[key]=k_i$, [nil] else.
@@ -146,16 +147,17 @@ procedure lto_cassoc(key,al);
 asserted procedure lto_eatsoc(key: Id, al: Alist, emsg: List);
    (if x then cdr x else rederr emsg) where x=assoc(key,al);
 
-procedure lto_appendn(l);
-   for each x in l join append(x,nil);
+asserted procedure lto_appendn(l: List): List;
+   % Constructively join a list of lists.
+   for each l1 in l join append(l1,nil);
 
-procedure lto_nconcn(l);
+asserted procedure lto_nconcn(l: List): List;
    % List tools non-constructive concatenate n-ary. [l] is a list of
    % lists. Returns a list. The returned list is the concatenation of
    % all lists in [l]. The lists in [l] are possibly modyfied.
-   if cdr l then nconc(car l,lto_nconcn cdr l) else car l;
-
-procedure lto_alunion(all);
+   for each l1 in l join l1;
+   
+asserted procedure lto_alunion(all: List): Alist;
    % List tools assoc list union. [all] is a list of alists $((k1 .
    % e1) ... (kn . en))$, where all ki are unique and all ei are
    % lists. Merges all alists in [all] into one alist, where the keys
@@ -163,9 +165,9 @@ procedure lto_alunion(all);
    % the entry to each key is the union of the lists that are entries
    % to the key within the members of [all]. All members of [all] are
    % modified by this function.
-   lto_almerge(all,'union);
+   lto_almerge(all, 'union);
 
-procedure lto_almerge(all,merge);
+asserted procedure lto_almerge(all: List, merge: Applicable): Alist;
    % List tools assoc list merge. [all] is a list of alists $((k1 . e1)
    % ... (kn . en))$, where all ki are unique and all ei are entries,
    % which are any; [merge] is a function that maps two entries to
@@ -248,23 +250,23 @@ asserted procedure lto_substr(s: String, n: Integer, m: Integer): ExtraBoolean;
 asserted procedure lto_string2id(s: String): Id;
    intern compress explodec s;
 
-procedure lto_max(l);
+asserted procedure lto_max(l: List): Any;
    if null l then '(minus infinity) else lto_max1 l;
 
-procedure lto_max1(l);
+asserted procedure lto_max1(l: List): Integer;
    % List tools maximum of a list. [l] is a list of integers. Returns
    % the maximum of [l].
    if null cdr l then car l else max(car l,lto_max1 cdr l);
 
-procedure lto_min(l);
+asserted procedure lto_min(l: List): Atom;
    if null l then 'infinity else lto_min1 l;
 
-procedure lto_min1(l);
+asserted procedure lto_min1(l: List): Integer;
    % List tools minimum of a list. [l] is a list of integers. Returns
    % the maximum of [l].
    if null cdr l then car l else min(car l,lto_min1 cdr l);
 
-procedure lto_ravg(l);
+asserted procedure lto_ravg(l: List): Floating;
    % Rounded arithmetic mean of a list. [l] is a list of integers. Returns a
    % float.
    begin integer s, n;
@@ -277,7 +279,7 @@ procedure lto_ravg(l);
       return float s / float n
    end;
 
-procedure lto_rmedian(l);
+asserted procedure lto_rmedian(l: List): Floating;
    % Rounded median of a list. [l] is a list of integers. Returns a float.
    begin integer n, n2;
       if null l then
@@ -290,12 +292,12 @@ procedure lto_rmedian(l);
       return float nth(l, n2+1)
    end;
 
-procedure lto_sgnchg(l);
+asserted procedure lto_sgnchg(l: List): Integer;
    % List tools number of sign changes of a list. [l] is a list of integers.
    % Returns the number of sign changes when all zeroes are left out.
    lto_sgnchg1(for each n in l join if sgn n = 0 then nil else {n});
 
-procedure lto_sgnchg1(l);
+asserted procedure lto_sgnchg1(l: List): Integer;
    % List tools number of sign changes of a list 1. [l] is a list of non-zero
    % integers. Returns the number of sign changes.
    if null l or null cdr l then
@@ -305,19 +307,16 @@ procedure lto_sgnchg1(l);
    else
       lto_sgnchg1 cdr l + 1;
 
-procedure setminus(l1,l2);
-   'list . lto_setminus(cdr l1,cdr l2);
-
-procedure lto_setminus(l1,l2);
+asserted procedure lto_setminus(l1: List, l2: List): List;
    for each x in l1 join if not member(x,l2) then {x};
 
-procedure lto_unionn(l);
+asserted procedure lto_unionn(l: List): List;
    if null l then nil else union(car l, lto_unionn cdr l);
 
 switch rlsetequalqhash;  % keep it local because it is temporary --TS
 on1 'rlsetequalqhash;
 
-procedure lto_setequalq(s1,s2);
+asserted procedure lto_setequalq(s1: List, s2: List): Boolean;
    % s1 and s2 are lists of identifiers not containing any duplicates.
    begin scalar c,a1,a2,svs1,svs2,w; integer n1,n2;
       w := if !*rlsetequalqhash then
@@ -336,7 +335,7 @@ procedure lto_setequalq(s1,s2);
       return c
    end;
 
-procedure lto_hashequalq(s1,s2);
+asserted procedure lto_hashequalq(s1: List, s2: List): Boolean;
    % s1 and s2 are lists of identifiers.
    begin scalar a1,a2; integer n1,n2;
       while s1 and s2 do <<
@@ -350,7 +349,7 @@ procedure lto_hashequalq(s1,s2);
       return null s1 and null s2 and (n1 #= n2)
    end;
 
-procedure lto_equallengthp(s1,s2);
+asserted procedure lto_equallengthp(s1: List, s2: List): Boolean;
    <<
       while s1 and s2 do <<
 	 s1 := cdr s1;
@@ -359,18 +358,18 @@ procedure lto_equallengthp(s1,s2);
       null s1 and null s2
    >>;
 
-procedure lto_lengthgeq(l,n);
+asserted procedure lto_lengthgeq(l: List, n: Integer): Boolean;
    % Length greater than or equal. [l] is a list; [n] is a non-negative
    % number. Returns bool.
    eqn(n,0) or (l and lto_lengthgeq(cdr l,n-1));
 
-procedure lto_cartprod(s);
+asserted procedure lto_cartprod(s: List): List;
    % Cartesian product. [s] is a list $(s_1,...,s_n)$ of lists. Returns
    % $s_1 \times ... \times s_n$ as a list of $n$-element lists. The
    % empty set and singletons are their own cartesian product.
    if null s or null cdr s then s else lto_cartprod1 s;
 
-procedure lto_cartprod1(s);
+asserted procedure lto_cartprod1(s: List): List;
    % Cartesian product. [s] is a list $(s_1,...,s_n)$ of lists with $n
    % \geq 2$. Returns $s_1 \times ... \times s_n$ as a list of
    % $n$-element lists.
@@ -430,17 +429,17 @@ procedure lto_hdelete1(item,hl,keyl);
       return hl
    end;
 
-procedure lto_subset(s1, s2);
+asserted procedure lto_subset(s1: List, s2: List): ExtraBoolean;
    null s1 or car s1 member s2 and lto_subset(cdr s1, s2);
 
-procedure lto_subsetq(s1, s2);
+asserted procedure lto_subsetq(s1: List, s2: List): ExtraBoolean;
    null s1 or car s1 memq s2 and lto_subsetq(cdr s1, s2);
 
-procedure lto_zip(l1, l2, f);
+asserted procedure lto_zip(l1: List, l2: List, f: Applicable): List;
    if l1 and l2 then
       apply(f, {car l1, car l2}) . lto_zip(cdr l1, cdr l2, f);
 
-procedure lto_partition(l, f);
+asserted procedure lto_partition(l: List, f: Applicable): DottedPair;
    begin scalar goodl, badl;
       for each x in l do if apply(f, {x}) then
 	 goodl := x . goodl
@@ -449,7 +448,7 @@ procedure lto_partition(l, f);
       return reversip goodl . reversip badl
    end;
 
-procedure lto_delnthip(l, n);
+asserted procedure lto_delnthip(l: List, n: Integer): List;
    % Delete the nth member of l in place.
    begin scalar scl;
       if null l then
@@ -471,110 +470,77 @@ procedure lto_delnthip(l, n);
       return l
    end;
 
-procedure lto_apply2nthip(l, n, fun, xargl);
+asserted procedure lto_apply2nthip(l: List, n: Integer, fun: Applicable, xargl: List): List;
    begin scalar scl;
-      if n < 1 then
-	 rederr {"index", n, "out of range in lto_apply2nthip"};
+      assert(1 leq n and n leq length l);
       scl := l;
       for i := 1 : n-1 do
-	 if cdr scl then
-	    scl := cdr scl
-	 else
-	    rederr {"index", n, "out of range in lto_apply2nthip"};
+      	 scl := cdr scl;
       car scl := apply(fun, car scl . xargl);
       return l
    end;
 
-#if (memq 'csl lispsystem!*)
-   procedure lto_hashid(id);
-      sxhash id;
-#endif
+asserted procedure lto_hashid(id: Id): Integer;
+   % id2int is not Standard Lisp.
+   id2int id;
 
-#if (memq 'psl lispsystem!*)
-   procedure lto_hashid(id);
-      id2int id;
-#endif
+asserted procedure lto_delq(x: Any, l: List): List;
+   % Delete with memq. [x] is ANY; [l] is a list. Returns a list.
+   % The first occurence of an element identical to [x] in [l] is
+   % deleted.
+   if atom l then l else if car l eq x then cdr l else car l . lto_delq(x, cdr l);
 
-#if (not (memq 'psl lispsystem!*))
-   procedure delq(x,l);
-      % Delete with memq. [x] is ANY; [l] is a list. Returns a list.
-      % The first occurence of an element identical to [x] in [l] is
-      % deleted.
-      if l then if car l eq x then cdr l else car l . delq(x,cdr l);
-#endif
+asserted procedure lto_delqip(u: Any, v: List): List;
+   % Delete with memq in place. [u] is ANY; [v] is a list. Returns
+   % a list. The first occurence of an element identical to [u] in
+   % [v] is deleted [v] is possibly modified.
+   if not pairp v then
+      v
+   else if u eq car v then
+      cdr v
+   else <<
+      lto_delqip1(u,v);
+      v
+   >>;
+   
+asserted procedure lto_delqip1(u: Any, v: List): List;
+   % Delete with memq in place subroutine. [u] is ANY; [v] is a
+   % list, such that [not(car v eq u)]. Returns a list. The first
+   % occurence of an element identical to [u] in [v] is deleted [v]
+   % is possibly modified.
+   if not pairp cdr v then
+      nil
+   else if u eq cadr v then
+      rplacd(v,cddr v)
+   else
+      lto_delqip1(u,cdr v);
 
-#if (not (memq 'psl lispsystem!*))
-   procedure delqip(u,v);
-      % Delete with memq in place. [u] is ANY; [v] is a list. Returns
-      % a list. The first occurence of an element identical to [u] in
-      % [v] is deleted [v] is possibly modified.
-      if not pairp v then
-	 v
-      else if u eq car v then
-	 cdr v
-      else <<
-	 delqip1(u,v);
-	 v
+asserted procedure lto_list2set(l: List): List;
+   % Remove redundant elements from L.
+   if null l then
+      nil
+   else if car l member cdr l then
+      lto_list2set cdr l
+   else
+      car l . lto_list2set cdr l;
+
+asserted procedure lto_list2vector(l: List): Vector;
+   % Create a vector and store the list l into it.
+   begin integer i; scalar v;
+      v := mkvect sub1 length l;
+      i := 0;
+      for each vl in l do <<
+	 putv(v,i,vl);
+	 i := i+1
       >>;
-#endif
+      return v
+   end;
 
-#if (not (memq 'psl lispsystem!*))
-   procedure delqip1(u,v);
-      % Delete with memq in place subroutine. [u] is ANY; [v] is a
-      % list, such that [not(car v eq u)]. Returns a list. The first
-      % occurence of an element identical to [u] in [v] is deleted [v]
-      % is possibly modified.
-      if not pairp cdr v then
-	 nil
-      else if u eq cadr v then
-	 rplacd(v,cddr v)
-      else
-	 delqip1(u,cdr v);
-#endif
-
-#if (not (memq 'psl lispsystem!*))
-   procedure adjoin(x,l);
-      % Adjoin. [x] is any S-expression, [l] is a list. Conses [x] to
-      % [l] if [x] is not already member of [l].
-      if x member l then l else x . l;
-#endif
-
-#if (not (memq 'psl lispsystem!*))
-   procedure list2set(l);
-      % Remove redundant elements from L.
-     if not pairp l then
- 	 nil
-      else if car l member cdr l then
- 	 list2set cdr l
-      else
- 	 car l . list2set cdr l;
-#endif
-
-#if (not (memq 'psl lispsystem!*))
-   procedure list2vector(l);
-      % Create a vector and store the list l into it.
-      begin integer i; scalar v;
-      	 v := mkvect sub1 length l;
-      	 i := 0;
-      	 for each vl in l do <<
-	    putv(v,i,vl);
- 	    i := i+1
-	 >>;
-      	 return v
-      end;
-#endif
-
-#if (not (memq 'csl lispsystem!*))
-   procedure symbol!-name(s);
-      % List tools atom to string. [s] is an atom. Returns the print name
-      % of the atom [s] as a string. This is not quite correct: e.g. lto_at2str
-      % '!" would fail.
-      compress('!" . reversip('!" . reversip explode s));
-#endif
-
-procedure lto_at2str(s);
+asserted procedure lto_at2str(s: Atom): String;
+   % Convert atom to string. id2string is not Standard Lisp exists in both CSL
+   % and PSL. In the else-case e.g. lto_at2str('!") would fail.
    if idp s then
-      symbol!-name s
+      id2string s
    else
       compress('!" . reversip('!" . reversip explode s));
 
@@ -603,7 +569,7 @@ asserted procedure lto_gensym1(base: Id): Id;
       return w
    end;
 
-procedure lto_maxkl(kl);
+asserted procedure lto_maxkl(kl: List): Kernel;
    % Maximum of a kernel list. [kl] is a list of kernels. Returns the greatest
    % kernel w.r.t. kord!* or nil if [kl] is nil.
    begin scalar m, w;
@@ -640,8 +606,8 @@ asserted procedure lto_charUpcase(c: Id): Id;
    begin scalar table;
       table := '((!a . !A) (!b . !B) (!c . !C) (!d . !D) (!e .  !E) (!f . !F)
        	 (!g . !G) (!h . !H) (!i . !I) (!j . !J) (!k . !K) (!l . !L) (!m . !M)
-         (!n . !N) (!o . !O) (!p . !P) (!q . !Q) (!r . !R) (!s . !S) (!t . !T)
-         (!u . !U) (!v . !V) (!w . !W) (!x . !X) (!y . !Y) (!z. !Z));
+            (!n . !N) (!o . !O) (!p . !P) (!q . !Q) (!r . !R) (!s . !S) (!t . !T)
+               (!u . !U) (!v . !V) (!w . !W) (!x . !X) (!y . !Y) (!z. !Z));
       return lto_catsoc(c, table) or c
    end;
 
@@ -652,8 +618,8 @@ asserted procedure lto_charDowncase(c: Id): Id;
    begin scalar table;
       table := '((!A . !a) (!B . !b) (!C . !c) (!D . !d) (!E .  !e) (!F . !f)
        	 (!G . !g) (!H . !h) (!I . !i) (!J . !j) (!K . !k) (!L . !l) (!M . !m)
-         (!N . !n) (!O . !o) (!P . !p) (!Q . !q) (!R . !r) (!S . !s) (!T . !t)
-         (!U . !u) (!V . !v) (!W . !w) (!X . !x) (!Y . !y) (!Z. !z));
+            (!N . !n) (!O . !o) (!P . !p) (!Q . !q) (!R . !r) (!S . !s) (!T . !t)
+               (!U . !u) (!V . !v) (!W . !w) (!X . !x) (!Y . !y) (!Z. !z));
       return lto_catsoc(c, table) or c
    end;
 
@@ -783,23 +749,33 @@ asserted procedure lto_vertexCover(el: List): List;
       return w
    end;
 
-asserted procedure lto_vcZeroOrOne(v: SF): Formula;
+asserted procedure lto_vcZeroOrOne(v: SF);
+   % Returns a Formula, which is not known here as a type.
    rl_mkn('or, {ofsf_0mk2('equal, v), ofsf_0mk2('equal, addf(v, negf 1))});
 
-asserted procedure lto_vcEdgeGeqOne(v1: SF, v2: SF): Formula;
+asserted procedure lto_vcEdgeGeqOne(v1: SF, v2: SF);
+   % Returns a Formula, which is not known here as a type.
    ofsf_0mk2('geq, addf(addf(v1, v2), negf 1));
 
-asserted procedure lto_vcBetterp(a1: Pair, a2: Pair, z: SF): Boolean;
+asserted procedure lto_vcBetterp(a1: DottedPair, a2: DottedPair, z: SF): Boolean;
    addf(negf ofsf_arg2l ofsf_xopt!-ans!-gd a1, z) < addf(negf ofsf_arg2l ofsf_xopt!-ans!-gd a2, z);
+
+asserted procedure lto_lpvarl(u: Any): List;
+   % [u] is Lisp prefix. Return the list of variables occurring in [u].
+   if idp u then
+      {u}
+   else if pairp u then
+      for each v in cdr u join
+ 	 lto_lpvarl v;
 
 asserted procedure lto_loremIpsumAl(): Alist;
    '(("Lorem" .  "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
-     ("Duis" .  "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.")
-     ("Ut" . "Ut  wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.")
-     ("Nam" . "Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.")
-     ("Duis" . "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis.")
-     ("At" . "At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata ut vero voluptua. est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.")
-     ("Consetetur" . "Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."));
+      ("Duis" .  "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.")
+     	 ("Ut" . "Ut  wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.")
+     	    ("Nam" . "Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.")
+     	       ("Duis" . "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis.")
+     		  ("At" . "At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata ut vero voluptua. est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.")
+     		     ("Consetetur" . "Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."));
 
 asserted procedure lto_loremIpsum(): String;
    lto_sconcat(for each rpr on lto_loremIpsumAl() join

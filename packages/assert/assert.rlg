@@ -120,10 +120,12 @@ sum                    4                       3                       4
 ------------------------------------------------------------------------
 
 
-assert_uninstall_all;
+assert_uninstall_all();
 
 
-*** assert not installed for hugo 
+*** assert_uninstall addsq 
+
+*** assert_uninstall addf 
 
 
 end;

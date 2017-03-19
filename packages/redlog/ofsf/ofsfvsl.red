@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2014 M. Kosta, T. Sturm
-% ----------------------------------------------------------------------
+module vsl;  % Virtual substitution with learning, linear case
+
+revision('vsl, "$Id$");
+
+copyright('vsl, "(c) 2014-2017 M. Kosta, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,9 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-module vsl;
-% Virtual substitution with learning, linear case.
 
 % VslState ::= ('vslstate, list of input constraints, VslStackElemL, list of negative lemmas, property list)
 % VslStackElem ::= ('vslstackelem, Kernel, SQ | 'pinf | 'minf | 'bottom | nil, OfsfAtf | nil, OfsfAtfL, OfsfQfFormulaL)
@@ -610,7 +608,7 @@ asserted procedure vsl_varsel(varl: List, ils: List): DottedPair;
 	 ubn := 0;
 	 lbn := 0
       >>;
-      return bestv . delq(bestv, varl)
+      return bestv . lto_delq(bestv, varl)
    end;
 
 asserted procedure vsl_boundtype(atf: OfsfAtf, x: Kernel): Id;

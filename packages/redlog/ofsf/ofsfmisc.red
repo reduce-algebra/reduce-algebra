@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module ofsfmisc;  % Ordered field standard form miscellaneous
+
+revision('ofsfmisc, "$Id$");
+
+copyright('ofsfmisc, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ofsf_misc_rcsid!* ofsf_misc_copyright!*);
-   ofsf_misc_rcsid!* :=
-      "$Id$";
-   ofsf_misc_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module ofsfmisc;
-% Ordered field standard form miscellaneous. Submodule of [ofsf].
 
 procedure ofsf_termprint(u);
    % Ordered field standard form term print term. [u] is a SF. The
@@ -104,7 +95,7 @@ procedure ofsf_varlat(atform);
       vl := kernels ofsf_arg2l atform;
       if !*rlbrkcxk then
 	 vl := for each v in vl join
-	    rltools_lpvarl v;
+	    lto_lpvarl v;
       return vl
    end;
 
@@ -344,7 +335,7 @@ procedure ofsf_posprep(f,resfnchkp);
 procedure ofsf_posconds(l,resfnchkp);
    for each v in l join
       if resfnchkp and pairp v and ofsf_rxffn car v then
-	 for each w in list2set ofsf_lpvarl v collect
+	 for each w in lto_list2set ofsf_lpvarl v collect
 	    ofsf_0mk2('greaterp,!*k2f w)
       else
 	 {ofsf_0mk2('greaterp,!*k2f v)};
@@ -788,7 +779,7 @@ procedure ofsf_dima!-pgauss(eql, vl);
 
 procedure ofsf!-dima!-sol2formulas(ptt, sl0, yl);
    begin scalar phi, xl, vl, sl, w;
-%%       xl := list2set for each s in sl0 join
+%%       xl := lto_list2set for each s in sl0 join
 %% 	 for each pr in cdr s join
 %%  	    nconc(kernels numr cdr pr, kernels denr cdr pr);
 %%       vl := reversip append(yl, xl);

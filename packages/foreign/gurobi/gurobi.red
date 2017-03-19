@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% (c) 2013 T. Sturm
-% ----------------------------------------------------------------------
+module gurobi;
+
+revision('gurobi, "$Id$");
+
+copyright('gurobi, "(c) 2013-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,8 +29,6 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-module gurobi;
-
 #if (memq 'csl lispsystem!*)
 
 fluid '(gurobi_libredgurobi!*);
@@ -52,7 +51,7 @@ fluid '(gurobi_optimize!*);
 fluid '(gurobi_getsol!*);
 fluid '(gurobi_freemodel!*);
 
-gurobi_libredgurobi!* := lto_sconcat {rltools_trunk(), "packages/foreign/gurobi/libredgurobi.so"};
+gurobi_libredgurobi!* := lto_sconcat {systo_trunk(), "packages/foreign/gurobi/libredgurobi.so"};
 
 if filep gurobi_libredgurobi!* then <<
    gurobi_redgurobi!* := open!-foreign!-library gurobi_libredgurobi!*;

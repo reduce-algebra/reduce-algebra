@@ -66,6 +66,9 @@ struct List5 checked by list5p;
 struct List6 checked by list6p;
 struct List7 checked by list7p;
 
+% Classes not specified by the SL Report
+struct Applicable checked by applicablep;
+
 % Standard Forms and Standard Quotients etc.
 struct SF checked by sfpx;
 struct SF!* checked by sfpx!*;  % non-zero SF
@@ -117,6 +120,10 @@ procedure list6p(x);
 
 procedure list7p(x);
    pairp x and list6p cdr x;
+
+procedure applicablep(x);
+   % Applicables can be first argument of apply().
+   functionp x or (idp x and getd x);
 
 procedure sfpx(u);
    sfpx1(u,nil,nil,0,t);

@@ -45,8 +45,6 @@ loadtime load!-package 'matrix;
 loadtime load!-package 'factor;
 loadtime load!-package 'cgb;
 
-off1 'assert;
-
 exports ofsf_simpterm,ofsf_prepat,ofsf_resimpat,ofsf_lengthat,ofsf_chsimpat,
    ofsf_simpat,ofsf_op,ofsf_arg2l,ofsf_arg2r,ofsf_argn,ofsf_mk2,ofsf_0mk2,
    ofsf_mkn,ofsf_opp,ofsf_mkstrict,ofsf_simplat1,ofsf_smrmknowl,ofsf_smcpknowl,

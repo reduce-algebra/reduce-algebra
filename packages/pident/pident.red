@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2010-2013 T. Sturm
-% ----------------------------------------------------------------------
+module pident;  % Parameter identifiability (experimental)
+
+revision('pident, "$Id$");
+
+copyright('pident, "(c) 2010-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,7 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-module pident;
 
 switch pidentmore;
 
@@ -49,7 +49,7 @@ procedure pident(sys,ivl,ovl,pvl);
       res := if !*pidentmore then
       	 'list . for each case in res collect <<
 	    i := i + 1;
-	    {'list, lto_id2string mkid('case, i),
+	    {'list, id2string mkid('case, i),
 	       'list . for each eqn in car case collect rl_mk!*fof eqn,
 	       'list . for each ne in cadr case collect rl_mk!*fof ne,
 	       'list . for each pinfo in caddr case collect 'list . pinfo,
@@ -58,7 +58,7 @@ procedure pident(sys,ivl,ovl,pvl);
       else
       	 'list . for each case in res collect <<
 	    i := i + 1;
-	    {'list, lto_id2string mkid('case, i),
+	    {'list, id2string mkid('case, i),
 	       'list . for each eqn in car case collect rl_mk!*fof eqn,
 	       'list . for each ne in cadr case collect rl_mk!*fof ne,
 	       'list . for each pinfo in caddr case collect 'list . pinfo}
@@ -174,9 +174,6 @@ procedure lto_partition(l, p);
 	    l2 := x . l2;
       return reversip l1 . reversip l2
    end;
-
-procedure lto_id2string(id);
-   compress('!" . reversip('!" . reversip explode id));
 
 endmodule;
 

@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2015 M. Kosta, T. Sturm
-% ----------------------------------------------------------------------
+module ofsfvsblock;
+
+revision('ofsfvsblock, "$Id$");
+
+copyright('ofsfvsblock, "(c) 2015-2017 M. Kosta, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ofsfvsblock_rcsid!* ofsfvsblock_copyright!*);
-   ofsfvsblock_rcsid!* :=
-      "$Id$";
-   ofsfvsblock_copyright!* := "(c) 2015 M. Kosta, T. Sturm"
->>;
-
-module ofsfvsblock;
 
 fluid '(rlvarsellvl!*);
 rlvarsellvl!* := 3;
@@ -350,7 +342,7 @@ asserted procedure vsdb_expandNode!-btr(db: VSdb, nd: VSnd);
       if !*rlverbose then
 	 ioto_tprin2t {"+++++ SUCC ", vsde_v de, " (elimset size = ", length vsde_tpl de, ")"};
       f := vsde_f de;
-      nvl := delq(v, vsnd_vl nd);
+      nvl := lto_delq(v, vsnd_vl nd);
       for each tp in vsde_tpl de do
 	 vsdb_wcinsert(db,
 	    vsnd_mk(t, vsts_mk(v, tp), nvl, f, nd, nil))
@@ -469,7 +461,7 @@ asserted procedure vsdb_tryExpandNO(db: VSdb, nd: VSnd): Boolean;
 	 if not (v memq rvl) then <<
 	    res := t;
 	    vsdb_wcinsert(db,
-	       vsnd_mk(nil, vsar_mk v, delq(v, vsnd_vl nd), vsnd_f nd, nd, vsnd_tvl nd))
+	       vsnd_mk(nil, vsar_mk v, lto_delq(v, vsnd_vl nd), vsnd_f nd, nd, vsnd_tvl nd))
 	 >>
       >>;
       if !*rlverbose and res then
@@ -485,7 +477,7 @@ asserted procedure vsdb_tryExpandDG(db: VSdb, nd: VSnd): Boolean;
       vl := lto_setminus(vsnd_vl nd, vsnd_tvl nd);
       f := vsnd_f nd;
       if vsvs_dgp vsnd_vs nd then
-	 vl := delq(vsdg_sv vsnd_vs nd, vl);  % We need not to try degree shift w.r.t. the most recent shadow variable.
+	 vl := lto_delq(vsdg_sv vsnd_vs nd, vl);  % We need not to try degree shift w.r.t. the most recent shadow variable.
       while vl and not res do <<
 	 v := pop vl;
 	 g := vs_dgcd(f, v);
@@ -624,7 +616,7 @@ asserted procedure vsdb_insertaec(db: VSdb, nd: VSnd, de: VSde);
 	 ioto_tprin2t {"+++++ SUCC ", vsde_v de, " (elimset size = ", length vsde_tpl de, ")"};
       f := vsde_f de;
       v := vsde_v de;
-      nvl := delq(v, vsnd_vl nd);
+      nvl := lto_delq(v, vsnd_vl nd);
       for each tp in tpl do
 	 vsdb_wcinsert(db, vsnd_mk(t, vsts_mk(v, tp), nvl, f, nd, nil))
    end;

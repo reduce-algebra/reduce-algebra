@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann and T. Sturm, 2010-2011 T. Sturm
-% ----------------------------------------------------------------------
+module clqe;  % Common logic quantifier elimination by virtual substitution
+
+revision('clqe, "$Id$");
+
+copyright('clqe, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(cl_qe_rcsid!* cl_qe_copyright!*);
-   cl_qe_rcsid!* := "$Id$";
-   cl_qe_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2012 T. Sturm"
->>;
-
-module clqe;
-% Common logic quantifier elimination by elimination sets. Submodule of [cl].
-% Currently limited to quadratic formulas.
 
 %DS
 % TaggedContainerElementL ::= Status . ContainerElementL
@@ -743,7 +734,7 @@ asserted procedure cl_gauss(f: QfFormula, vl: KernelL, an: Answer, theo: Theory,
 	 theo := cdr w;
 	 w := car w;
       	 if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then ioto_prin2 "g";
-	 vl := delq(car w,vl);
+	 vl := lto_delq(car w,vl);
 	 ww := cl_esetsubst(f,car w,cdr w,vl,an,theo,ans,bvl);
 	 if !*rlqelocal then
 	    return (t . car ww) . cl_theo!*
@@ -771,7 +762,7 @@ asserted procedure cl_process!-candvl(f: QfFormula, vl: KernelL, an: Answer, the
       	 if alp = '(nil . nil) then <<  % [v] does not occur in [f].
       	    if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then
  	       ioto_prin2 "*";
-      	    w := {ce_mk(delq(v,vl),f,nil,nil,ans and cl_updans(v,'arbitrary,nil,nil,an,ans))};
+      	    w := {ce_mk(lto_delq(v,vl),f,nil,nil,ans and cl_updans(v,'arbitrary,nil,nil,an,ans))};
 	    status := 'nonocc;
 	    candvl := nil
       	 >> else if car alp = 'failed then
@@ -782,7 +773,7 @@ asserted procedure cl_process!-candvl(f: QfFormula, vl: KernelL, an: Answer, the
 	 else <<
       	    if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then
  	       ioto_prin2 "e";
-      	    ww := cl_esetsubst(f,v,rl_elimset(v,alp),delq(v,vl),an,
+      	    ww := cl_esetsubst(f,v,rl_elimset(v,alp),lto_delq(v,vl),an,
 	       theo,ans,bvl);
 	    if !*rlqelocal then <<
 	       candvl := nil;

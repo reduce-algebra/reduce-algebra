@@ -50,9 +50,31 @@ operator coefficients;
 struct AmList asserted by am_listp;
 struct AmPoly asserted by am_polyp;
 
+procedure am_listp(x);
+   t;
+
+procedure am_polyp(x);
+   t;
+
 declare addf: (SF,SF) -> SF;
 declare multf: (SF,SF) -> SF;
 declare negf: (NoOrdSF) -> NoOrdSF;
+
+#if (memq 'csl lispsystem!*)
+
+copyd('sfto_lcmn, 'lcmn);
+
+#else
+
+asserted procedure sfto_lcmn(a: Integer, b: Integer): Integer;
+   if eqn(a,1) then
+      b
+   else if eqn(b,1) then
+      a
+   else
+      a * (b / gcdn(a,b));
+
+#endif
 
 asserted procedure sfto_dcontentf(u: SF): Domain;
    % Domain content standard form. Returns the (non-negative) content of [u]
@@ -798,7 +820,7 @@ asserted procedure sfto_renamealf(f: SF, al: Alist): SF;
       mv := mvar f;
       if (w := atsoc(mv, al)) then <<
 	 mv := cdr w;
-	 al1 := delq(w, al)
+	 al1 := lto_delq(w, al)
       >> else
 	 al1 := al;
       return addf(multf(exptf(!*k2f mv, ldeg f), sfto_renamealf(lc f, al1)),

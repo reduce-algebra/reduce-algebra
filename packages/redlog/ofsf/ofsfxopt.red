@@ -2,7 +2,7 @@ module ofsfxopt;  % Ordered field standard form extended optimization.
 
 revision('ofsfxopt, "$Id$");
 
-copyright('ofsfxopt, "(c) 1998-2009 A. Dolzmann, 2016 T. Sturm");
+copyright('ofsfxopt, "(c) 1998-2009 A. Dolzmann, 2016-2017 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -343,7 +343,7 @@ procedure ofsf_xopt!-qevar(ce,theo);
       v := ofsf_xopt!-varsel ce;
       cs := ofsf_xopt!-cset(ofsf_xopt!-ce!-f ce,v);
       if ofsf_xopt!-cs!-null cs then
-      	 return {ofsf_xopt!-ce!-mk(delq(v,ofsf_xopt!-ce!-vl ce),
+      	 return {ofsf_xopt!-ce!-mk(lto_delq(v,ofsf_xopt!-ce!-vl ce),
 	    ofsf_xopt!-ce!-f ce,
 	    ofsf_xopt!-pt!-mk(ofsf_xopt!-ct!-mk(v,'arbitrary) .
 	       ofsf_xopt!-pt!-ctl ofsf_xopt!-ce!-pt ce),
@@ -568,7 +568,7 @@ procedure ofsf_xopt!-succs1(ce,cp,v,npl,theo);
       return if w then
 	 ofsf_xopt!-ce!-mk(nil,'false,nil,nil)
       else
-      	 ofsf_xopt!-ce!-mk(delq(v,ofsf_xopt!-ce!-vl ce),
+      	 ofsf_xopt!-ce!-mk(lto_delq(v,ofsf_xopt!-ce!-vl ce),
 	    f,
 	    ofsf_xopt!-pt!-mk(ofsf_xopt!-ct!-mk(
 	       v,ofsf_xopt!-solv(p,v)) .
@@ -832,7 +832,7 @@ procedure ofsf_xopt!-ccoput(co,ce);
 	 >>
       >>;
       if flg then <<
-      	 co := delq(w,co);
+      	 co := lto_delq(w,co);
       	 pl := intersection(ofsf_xopt!-ce!-pl ce,ofsf_xopt!-ce!-pl w);
       	 ce := ofsf_xopt!-ce!-mk(
 	    ofsf_xopt!-ce!-vl ce,f,ofsf_xopt!-ce!-pt ce,pl);

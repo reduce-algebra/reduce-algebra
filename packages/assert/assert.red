@@ -1,7 +1,9 @@
+module assert;
+
 % ----------------------------------------------------------------------
 % $Id$
 % ----------------------------------------------------------------------
-% Copyright (c) 2010-2013 Thomas Sturm
+% Copyright (c) 2010-2017 T. Sturm
 % ----------------------------------------------------------------------
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -28,18 +30,11 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(assert_rcsid!* assert_copyright!*);
-   assert_rcsid!* := "$Id$";
-   assert_copyright!* := "(c) 2010-2013 T. Sturm"
->>;
-
-module assert;
-
 create!-package('(assert assertcheckfn assertproc),nil);
 
-global '(assert_functionl!* exlist);
+fluid '(assert_functionl!*);
 
+global '(exlist!*);
 global '(outl!*);
 fluid '(curline!*);
 
@@ -68,7 +63,7 @@ procedure assert_onoff();
    % This is for autoloading;
    ;
 
-off1 'assert;
+if getenv("REDUCE_ASSERT") then on1 'assert else off1 'assert;
 
 switch evalassert, assertbreak, assertstatistics;
 
@@ -342,23 +337,31 @@ procedure assert_uninstall1(fn);
       put(fn,'assert_installed,nil)
    >>;
 
+operator assert_install_all;
+
 procedure assert_install_all();
    % This is parsed as stat endstat, i.e., it takes no arguments but
    % also no empty pair of parenthesis. Installs assertions for the
    % functions in the global list assert_functionl!* of all functions
    % for which there are assertions defined.
-   assert_install assert_functionl!*;
+   for each fn in assert_functionl!* do
+      if not get(fn,'assert_installed) then <<
+	 lprim {"assert_install", fn};
+	 assert_install1 fn
+      >>;
 
-put('assert_install_all,'stat,'endstat);
+operator assert_uninstall_all;
 
 procedure assert_uninstall_all();
    % This is parsed as stat endstat, i.e., it takes no arguments but
    % also no empty pair of parenthesis. Uninstalls assertions for the
    % functions in the global list assert_functionl!* of all functions
    % for which ther are assertions defined.
-   assert_uninstall assert_functionl!*;
-
-put('assert_uninstall_all,'stat,'endstat);
+   for each fn in assert_functionl!* do
+      if get(fn,'assert_installed) then <<
+	 lprim {"assert_uninstall", fn};
+      	 assert_uninstall1 fn
+      >>;
 
 procedure formassert(u,vars,mode);
    if mode eq 'symbolic and !*assert then
@@ -412,7 +415,7 @@ procedure assert_sconcat(l);
    % strings in [l].
    if l then
       if cdr l then
- 	 lto_sconcat2(car l,lto_sconcat cdr l)
+ 	 assert_sconcat2(car l, assert_sconcat cdr l)
       else
 	 car l;
 

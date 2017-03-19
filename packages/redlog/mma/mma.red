@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2008-2010 Thomas Sturm
-% ----------------------------------------------------------------------
+module mma;  % Support for using Mathematica's QE as an external program
+
+revision('mma, "$Id$");
+
+copyright('mma, "(c) 2008-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,14 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(mma_rcsid!* mma_copyright!*);
-   mma_rcsid!* := "$Id$";
-   mma_copyright!* := "(c) 2008-2010 T. Sturm"
->>;
-
-module mma;
 
 create!-package('(mma),nil);
 
@@ -99,9 +92,9 @@ procedure mma_mma1(f,fn);
 	 call,mma,rnd;
       scsemic := semic!*;
       rnd := lto_at2str random(10^5);
-      fn1 := fn or lto_sconcat{mma_wd!*,getenv "USER",rnd,".mma"};
+      fn1 := fn or lto_sconcat {mma_wd!*,getenv "USER",rnd,".mma"};
       if null fn then
-      	 fn2 := lto_sconcat{mma_wd!*,getenv "USER",rnd,".red"};
+      	 fn2 := lto_sconcat {mma_wd!*,getenv "USER",rnd,".red"};
       if !*rlverbose then ioto_prin2 {"+++ creating ",fn1," ... "};
       oldpprifn := get('times,'pprifn);
       oldprtch := get('expt,'prtch);
@@ -131,7 +124,7 @@ procedure mma_mma1(f,fn);
 	 result := xread t;
 	 close rds fh;
 	 !*echo := oldecho;
-	 system lto_sconcat{"rm -f ",fn1," ",fn2};
+	 system lto_sconcat {"rm -f ",fn1," ",fn2};
 	 if null result then
 	    lprim "Mathematica failed"
 	 else

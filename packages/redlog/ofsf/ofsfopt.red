@@ -248,7 +248,7 @@ procedure ofsf_qevar(cvl,al,pl,an,z,theo);
 	 if !*rlverbose and not !*rlparallel then ioto_prin2 "!";
 	 return nil  % Maybe wrong!
       >>;
-      return {ofsf_mkentry(delq(v,cvl),al,pl,an)}
+      return {ofsf_mkentry(lto_delq(v,cvl),al,pl,an)}
    end;
 
 procedure ofsf_optgauss(cvl,al,pl,an,theo);
@@ -282,7 +282,7 @@ procedure ofsf_optfindeqsol(al,v);
 
 procedure ofsf_esetsubst(cvl,al,pl,an,v,eset,theo);
    begin scalar w,scpl,zonly,nal,npl,junct,x;
-      cvl := delq(v,cvl);
+      cvl := lto_delq(v,cvl);
       while eset do <<
 	 x := car eset;
 	 eset := cdr eset;
@@ -296,7 +296,7 @@ procedure ofsf_esetsubst(cvl,al,pl,an,v,eset,theo);
  	       ofsf_optsubstat(y,cdr x,v),theo);
 	    npl := ofsf_simpl(for each y in pl collect
  	       ofsf_optsubstat(y,cdr x,v),theo);
-	    al := delq(car x,al);
+	    al := lto_delq(car x,al);
 	    pl := car x . pl
 	 >>;
 	 if null nal and null npl then <<
@@ -333,7 +333,7 @@ procedure ofsf_zesetsubst(cvl,al,pl,an,zeset,theo);
 	    ofsf_optsubstat(y,cddr x,v),theo);
 	 npl := ofsf_simpl(for each y in pl collect
 	    ofsf_optsubstat(y,cddr x,v),theo);
-	 al := delq(car x,al);
+	 al := lto_delq(car x,al);
 	 pl := car x . pl;
 	 if null nal and null npl then <<
 	    junct := 'break;
@@ -349,7 +349,7 @@ procedure ofsf_zesetsubst(cvl,al,pl,an,zeset,theo);
 	    if zonly then rederr "BUG IN OFSF_ZESETSUBST";
 	    if !*rlverbose and not !*rlparallel then ioto_prin2 "!"
 	 >> else if nal neq 'false and npl neq 'false then
-	    junct := ofsf_mkentry(delq(v,cvl),nal,npl,cdr x . an) . junct
+	    junct := ofsf_mkentry(lto_delq(v,cvl),nal,npl,cdr x . an) . junct
       >>;
       return junct
    end;

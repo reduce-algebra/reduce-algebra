@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann and T. Sturm, 2010 T. Sturm
-% ----------------------------------------------------------------------
+module qepcad;
+
+revision('qepcad, "$Id$");
+
+copyright('qepcad, "(c) 1995-2009 A. Dolzmann and T. Sturm, 2010-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(qepcad_rcsid!* qepcad_copyright!*);
-   qepcad_rcsid!* :=
-      "$Id$";
-   qepcad_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010 T. Sturm"
->>;
-
-module qepcad;
 
 create!-package('(qepcad),nil);
 
@@ -110,9 +102,9 @@ procedure qepcad_qepcad1(f,fn);
       scsemic := semic!*;
       % rnd := lto_at2str random(10^5);
       rnd := lto_at2str getpid();
-      fn1 := fn or lto_sconcat{qepcad_wd!*,user,rnd,".qepcad"};
+      fn1 := fn or lto_sconcat {qepcad_wd!*,user,rnd,".qepcad"};
       if null fn then
-      	 fn2 := lto_sconcat{qepcad_wd!*,user,rnd,".red"};
+      	 fn2 := lto_sconcat {qepcad_wd!*,user,rnd,".red"};
       if !*rlverbose then ioto_prin2 {"+++ creating ",fn1," ... "};
       oldpprifn := get('times,'pprifn);
       put('times,'pprifn,'qepcad_ppricadtimes);
@@ -150,7 +142,7 @@ procedure qepcad_qepcad1(f,fn);
  	    lto_sconcat {"+L",lto_at2str qepcad_l!*," "}
 	 else
 	    "";
-      	 call := lto_sconcat{qepcad_qepcad!*," ",narg,larg,
+      	 call := lto_sconcat {qepcad_qepcad!*," ",narg,larg,
 	    "< ",fn1," | awk -v rf=",fn2,
 	    " -v verb=",lto_at2str !*rlverbose," -v time=",lto_at2str !*time,
 	    " -v slfqvb=nil -v name=QEPCAD -f ",qepcad_awk!*};
@@ -164,7 +156,7 @@ procedure qepcad_qepcad1(f,fn);
 	 close rds fh;
 	 !*echo := oldecho;
 % This call is not suitable for use on Windows.
-	 system lto_sconcat{"rm -f ",fn1," ",fn2};
+	 system lto_sconcat {"rm -f ",fn1," ",fn2};
 	 if null result then
 	    lprim "qepcad failed"
 	 else
@@ -289,9 +281,9 @@ procedure qepcad_slfq1(f,fn);
    begin scalar rnd,w,fn1,fn2,fh,result,oldecho,narg,larg,call;
       % rnd := lto_at2str random(10^5);
       rnd := lto_at2str getpid();
-      fn1 := fn or lto_sconcat{qepcad_wd!*,getenv "USER",rnd,".slfq"};
+      fn1 := fn or lto_sconcat {qepcad_wd!*,getenv "USER",rnd,".slfq"};
       if null fn then
-      	 fn2 := lto_sconcat{qepcad_wd!*,getenv "USER",rnd,".red"};
+      	 fn2 := lto_sconcat {qepcad_wd!*,getenv "USER",rnd,".red"};
       if !*rlverbose then ioto_prin2 {"+++ creating ",fn1," ... "};
       out fn1;
       mathprint rl_prepfof f where !*nat=nil;
@@ -306,7 +298,7 @@ procedure qepcad_slfq1(f,fn);
  	    lto_sconcat {"-P ",lto_at2str qepcad_l!*," "}
 	 else
 	    "";
-      	 call := lto_sconcat{qepcad_slfq!*," ",narg,larg,"< ",fn1,
+      	 call := lto_sconcat {qepcad_slfq!*," ",narg,larg,"< ",fn1,
 	    " 2> /dev/null | awk -v rf=",fn2,
 	    " -v verb=",lto_at2str !*rlverbose," -v time=",lto_at2str !*time,
 	    " -v slfqvb=",lto_at2str !*rlslfqvb,
@@ -321,7 +313,7 @@ procedure qepcad_slfq1(f,fn);
 	 close rds fh;
 	 !*echo := oldecho;
 % This system call is not suitable for use on Windows.
-	 system lto_sconcat{"rm -f ",fn1," ",fn2};
+	 system lto_sconcat {"rm -f ",fn1," ",fn2};
 	 if null result then
 	    lprim "slfq failed"
 	 else

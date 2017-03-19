@@ -528,7 +528,7 @@ asserted procedure ofsf_polyoflevel(aa: SFList, x: Kernel): SFList;
 
 asserted procedure ofsf_transfac(pp: SFList): SFList;
    % Factorization transformation.
-   list2set for each p in pp join sf_factors p;
+   lto_list2set for each p in pp join sf_factors p;
 
 %%% --- Combined projection operators --- %%%
 
@@ -561,7 +561,7 @@ asserted procedure ofsf_projco2v(aa: SFList, x: Kernel): SFList;
       rr := for each a1 on aa join
 	 for each a2 in cdr aa collect
 	    sfto_resf(car a1, a2, x);
-      resl := list2set lto_remove('domainp, union(union(ll, dd), rr));
+      resl := lto_list2set lto_remove('domainp, union(union(ll, dd), rr));
       if ofsf_cadverbosep() then
 	 ioto_prin2 {"(projco2v ", length resl, ")"};
       return resl
@@ -576,7 +576,7 @@ asserted procedure ofsf_projmc(aa: SFList, x: Kernel): SFList;
       rr := for each a1 on aa join
 	 for each a2 in cdr aa collect
 	    sfto_resf(car a1, a2, x);
-      resl := list2set lto_remove('domainp, union(union(ll, dd), rr));
+      resl := lto_list2set lto_remove('domainp, union(union(ll, dd), rr));
       if ofsf_cadverbosep() then
 	 ioto_prin2 {"(projmc ", length resl, ")"};
       return resl
@@ -591,7 +591,7 @@ asserted procedure ofsf_projmcgen(aa: SFList, x: Kernel, theo: List): List;
       rr := for each a1 on aa join
 	 for each a2 in cdr aa collect
 	    sfto_resf(car a1, a2, x);
-      resl := list2set lto_remove('domainp, union(union(ll, dd), rr));
+      resl := lto_list2set lto_remove('domainp, union(union(ll, dd), rr));
       if ofsf_cadverbosep() then
 	 ioto_prin2 {"(projmcgen ", length resl, ")"};
       return resl . theo
@@ -603,11 +603,11 @@ asserted procedure ofsf_projcoho(aa: SFList, x: Kernel): SFList;
       if ofsf_cadverbosep() then
 	 ioto_prin2 "(projcoho ";
       bll := ofsf_projcored(aa, x);
-      % TODO: Understand when is a call to list2set really needed. Originally it
+      % TODO: Understand when is a call to lto_list2set really needed. Originally it
       % was used only for [ss2] here and in ofsf_projcohogen, as well.
-      ll := list2set ofsf_projlcsll(bll, x);
-      ss1 := list2set ofsf_projcoss1(bll, x);
-      ss2 := list2set ofsf_projhoss2(bll, x);
+      ll := lto_list2set ofsf_projlcsll(bll, x);
+      ss1 := lto_list2set ofsf_projcoss1(bll, x);
+      ss2 := lto_list2set ofsf_projhoss2(bll, x);
       resl := union(union(ll, ss1), ss2);
       if ofsf_cadverbosep() then
 	 ioto_prin2 {" ", length resl, ")"};
@@ -621,11 +621,11 @@ asserted procedure ofsf_projcohogen(aa: SFList, x: Kernel, theo: List): DottedPa
       if ofsf_cadverbosep() then
 	 ioto_prin2 "(projcohogen ";
       bll . theo := ofsf_projcoredgen(aa, x, theo);
-      ll := list2set ofsf_projlcsll(bll, x);
+      ll := lto_list2set ofsf_projlcsll(bll, x);
       ss1 . theo := ofsf_projcoss1gen(bll, x, theo);
-      ss1 := list2set ss1;
+      ss1 := lto_list2set ss1;
       ss2 . theo := ofsf_projhoss2gen(bll, x, theo);
-      ss2 := list2set ss2;
+      ss2 := lto_list2set ss2;
       resl := union(union(ll, ss1), ss2);
       if ofsf_cadverbosep() then
 	 ioto_prin2 {" ", length resl, ")"};

@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2015 M. Jaroschek, 2017 M. Kosta
-% ----------------------------------------------------------------------
+module ofsfic;  % Computation of infeasible cores
+
+revision('ofsfic, "$Id$");
+
+copyright('ofsfic, "(c) 2015 M. Jaroschek, 2017 M. Kosta, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,9 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-module ofsfic;
-% Computation of infeasible cores.
 
 % WARNING: To compute infeasible cores one should go [on rlqeinfcore;]
 % and carry out EXCLUSIVELY infeasible core computations. When the
@@ -156,7 +154,7 @@ fluid '(rlqeicdata!*);
 % VarList ::= KernelL
 % CADCellList ::= (ACell, ...)
 
-struct InfCoreData asserted by vectorp;
+struct InfCoreData checked by vectorp;
 
 asserted procedure ic_init(f: Formula): InfCoreData;
    % Infeasible Core Initialize. Create, initialize and return
@@ -166,12 +164,12 @@ asserted procedure ic_init(f: Formula): InfCoreData;
       icdata := mkvect 14;
       flist := ofsfic_ftol f;
       k := length flist - 1;
-      putv(icdata, 1, list2vector for i := 0 : k collect 0);
+      putv(icdata, 1, lto_list2vector for i := 0 : k collect 0);
       putv(icdata, 4, 0);
-      putv(icdata, 5, list2vector flist);
+      putv(icdata, 5, lto_list2vector flist);
       % putv(icdata, 6, mkvect k);
       putv(icdata, 8, mkvect k);
-      putv(icdata, 12, list2vector flist);
+      putv(icdata, 12, lto_list2vector flist);
       return icdata
    end;
 
@@ -348,7 +346,7 @@ asserted procedure ic_updateevtplist(icdata: InfCoreData, k: Integer): Any;
 
 asserted procedure ic_updatefalsevect(icdata: InfCoreData): Any;
    begin
-      putv(icdata, 1, list2vector for i := 0 : upbv ic_falsevect icdata collect 0);
+      putv(icdata, 1, lto_list2vector for i := 0 : upbv ic_falsevect icdata collect 0);
       for each tp in ic_evtplist icdata do
 	 for i := 0 : upbv tp do
 	    if getv(tp, i) eq 'false then
@@ -488,7 +486,7 @@ asserted procedure ofsfic!*cl_qe1(f: Formula, theo: Theory, xbvl: KernelL): Elim
 	 !*icinitsimpl := nil;
 	 if car f eq 'false and cdr f then <<
 	    rlqeicdata!* := ic_init car f2;
-	    ofsfic_filterlocalcore(list2vector ofsfic_ftol car f2, cadr f);
+	    ofsfic_filterlocalcore(lto_list2vector ofsfic_ftol car f2, cadr f);
 	    ic_setoffsetlist(rlqeicdata!*, offset);
 	    f := car f
 	 >> else <<
@@ -742,9 +740,9 @@ asserted procedure ofsfic!*cl_process!-candvl(f: QfFormula, vl: KernelL, an: Ans
 	    if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then
 	       ioto_prin2 "*";
 	    if !*rlqeinfcore then %%%%%%%MAX
-	       w := {ofsfic!*ce_mk(delq(v, vl), f, nil, nil, ans and cl_updans(v, 'arbitrary, nil, nil, an, ans), ic_currentfvect rlqeicdata!*)}
+	       w := {ofsfic!*ce_mk(lto_delq(v, vl), f, nil, nil, ans and cl_updans(v, 'arbitrary, nil, nil, an, ans), ic_currentfvect rlqeicdata!*)}
 	    else
-	       w := {ofsfic!*ce_mk(delq(v,vl),f,nil,nil,ans and cl_updans(v,'arbitrary,nil,nil,an,ans),nil)};
+	       w := {ofsfic!*ce_mk(lto_delq(v,vl),f,nil,nil,ans and cl_updans(v,'arbitrary,nil,nil,an,ans),nil)};
 	    status := 'nonocc;
 	    candvl := nil
 	 >> else if car alp = 'failed then
@@ -764,7 +762,7 @@ asserted procedure ofsfic!*cl_process!-candvl(f: QfFormula, vl: KernelL, an: Ans
 		     alp := nil
 		  >> else
 		     alp := cdr alp;
-	       ww := cl_esetvectsubst(f, ic_currentfvect rlqeicdata!*, v, elimset, delq(v, vl), an, ans, bvl);
+	       ww := cl_esetvectsubst(f, ic_currentfvect rlqeicdata!*, v, elimset, lto_delq(v, vl), an, ans, bvl);
 	       ic_clearguardList rlqeicdata!*;
 	       if car ww then <<
 		  if cadaar ww eq 'true then <<
@@ -791,7 +789,7 @@ asserted procedure ofsfic!*cl_process!-candvl(f: QfFormula, vl: KernelL, an: Ans
 	    >> else <<
 	       if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then
 		  ioto_prin2 "e";
-	       ww := ofsfic!*cl_esetsubst(f,v,rl_elimset(v,alp),delq(v,vl),an,
+	       ww := ofsfic!*cl_esetsubst(f,v,rl_elimset(v,alp),lto_delq(v,vl),an,
 		  theo,ans,bvl)
 	    >>;
 	    if !*rlqelocal then <<
@@ -1531,7 +1529,7 @@ asserted procedure ofsfic_filterlocalcore(fvect: Vector, core: List): Any;
 	    !*rlqeicsimpl := t;
 	    f := ofsfic!*cl_simpl(f, nil, -1);
 	    !*rlqeicsimpl := nil;
-	    core := list2vector ww;
+	    core := lto_list2vector ww;
 	    ww := nil;
 	    for each i in cadr f do
 	       ww := getv(core, i) . ww;

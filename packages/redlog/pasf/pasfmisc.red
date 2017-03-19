@@ -4,7 +4,7 @@ module pasfmisc;
 
 revision('pasfmisc, "$Id$");
 
-copyright('pasfmisc, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2016 T. Sturm");
+copyright('pasfmisc, "(c) 2002-2009 A. Dolzmann, A. Seidl, T. Sturm, 2010-2017 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -311,7 +311,7 @@ procedure pasf_varlat(atf);
       vl := append(kernels pasf_arg2l atf, if pasf_congp atf then kernels pasf_m atf else nil);
       if !*rlbrkcxk then
 	 vl := for each v in vl join
-	    rltools_lpvarl v;
+	    lto_lpvarl v;
       return vl
    end;
 

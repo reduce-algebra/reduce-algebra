@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2012 T. Sturm
-% ----------------------------------------------------------------------
+module profile;
+
+revision('profile, "$Id$");
+
+copyright('profile, "(c) 2012-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,10 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-module profile;
-
-loadtime load!-package 'rltools;
 
 fluid '(!*comp);
 
@@ -129,7 +126,7 @@ procedure profile_unprofile(fn);
 	 lprim {fn,"is not profiled"}
       else <<
       	 putd(fn,'expr,remprop(fn,'profile_origfn));
-      	 profile_list!* := delqip(fn,profile_list!*);
+      	 profile_list!* := lto_delqip(fn,profile_list!*);
       	 profile_reset()
       >>
    >>;

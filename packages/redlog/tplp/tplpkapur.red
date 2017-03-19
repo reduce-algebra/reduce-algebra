@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2007-2009 Thomas Sturm
-% ----------------------------------------------------------------------
+module tplpkapur;  % Author Stefan Kaeser
+
+revision('tplpkapur, "$Id$");
+
+copyright('tplpkapur, "(c) 2007-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(tplp_kapur_rcsid!* tplp_kapur_copyright!*);
-   tplp_kapur_rcsid!* :=
-      "$Id$";
-   tplp_kapur_copyright!* := "Copyright (c) 2007-2009 T. Sturm"
->>;
-
-module tplpkapur;
-% Author Stefan Kaeser
 
 % global vars
 fluid '(tplp_kapuroptions!* tplp_kapuratf0!* tplp_kapuratf1!*);
@@ -830,14 +821,14 @@ procedure tplp_gbgenspolyl(rule,rules);
          lastpoly := lastpair lastpoly;
          olaprules := cdr olaprules
       >>;
-      return list2set spolyl
+      return lto_list2set spolyl
    end;
 
 procedure tplp_gbspolylidemp(rule);
    % Groebner Basis generate s-poly list idempotentials. [rule] is a rule.
    % Returns a list of polynomials, beeing the s-polynomials overlapping
    % [rule] with idempotential rules.
-   list2set for each y in kpoly_monlist krule_head rule join
+   lto_list2set for each y in kpoly_monlist krule_head rule join
       for each x in kpoly_atfl y join tplp_gbspolyl(rule,krule_idemprule x);
 
 procedure tplp_gbspolylself(rule);
@@ -851,7 +842,7 @@ procedure tplp_gbspolylself(rule);
          plist := cdr plist
       >>;
       if null ovp then return nil;
-      return list2set tplp_gbspolyl(rule,rule)
+      return lto_list2set tplp_gbspolyl(rule,rule)
    end;
 
 procedure tplp_gbspolyl(rule1,rule2);
@@ -893,7 +884,7 @@ procedure tplp_gbspolylmult(rule1,rule2);
             if not eqn(spoly,0) then spolyl := spoly . spolyl
          >>
       >>;
-      return list2set spolyl
+      return lto_list2set spolyl
    end;
 
 procedure tplp_gbgetunifierlist(mon1,mon2);
@@ -922,7 +913,7 @@ procedure tplp_gbspolylmm(rule1,rule2);
       sublist := tplp_gbgetunifierlist(krule_head rule1,krule_head rule2);
       spolyl := for each mgu in sublist collect
          tplp_gbspolyl1(krule_subst(mgu,rule1),krule_subst(mgu,rule2));
-      return list2set spolyl
+      return lto_list2set spolyl
    end;
 
 procedure tplp_gbspolyl1(rule1,rule2);
@@ -1463,7 +1454,7 @@ procedure krule_applymulthead1full2(mlist,headml,monfac,subal);
       curheadmon := car headml;
       curmon := kpoly_divmon(car mlist,monfac);
       nsubal := 'failed;
-      suball := list2set(krule_appgetsuball(curmon,curheadmon,subal));
+      suball := lto_list2set(krule_appgetsuball(curmon,curheadmon,subal));
       while suball and nsubal eq 'failed do <<
          cursub := car suball;
          curmonfac := kpoly_times {monfac,kpoly_divmon(curmon,

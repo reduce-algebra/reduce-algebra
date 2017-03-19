@@ -199,7 +199,7 @@ procedure smt_processGetModel();
       >>;
       varl := cl_fvarl1 rl_smkn('and, smt_assertionl!*);
       for each e in model do
-	 varl := delqip(car e, varl);
+	 varl := lto_delqip(car e, varl);
       for each v in varl do
 	 model := {'equal, v, v} . model;
       for each e in model do <<

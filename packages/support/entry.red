@@ -563,20 +563,23 @@ defautoload(pg_gauss!-sym, pgauss, expr, 2);
 symbolic operator meminfo;
 defautoload(meminfo, rltools, expr, 0);
 
-defautoload(rltools_lpvarl, rltools, expr, 1);
-defautoload(rltools_trunk, rltools, expr, 0);
+defautoload(systo_datestamp, rltools, expr, 0);
+defautoload(systo_trunk, rltools, expr, 0);
 
 defautoload(ioto_cplu, rltools, expr, 2);
 defautoload(ioto_cterpri, rltools, expr, 0);
 defautoload(ioto_form2str, rltools, expr, 1);
-defautoload(ioto_nterpri, rltools, expr, 1);
 defautoload(ioto_prin2, rltools, expr, 1);
 defautoload(ioto_prin2t, rltools, expr, 1);
+defautoload(ioto_realtime, rltools, expr, 0);
 defautoload(ioto_smaprin, rltools, expr, 1);
+defautoload(ioto_sxread, rltools, expr, 1);
 defautoload(ioto_tprin2, rltools, expr, 1);
 defautoload(ioto_tprin2t, rltools, expr, 1);
 
 defautoload(lto_0listp, rltools, expr, 1);
+defautoload(lto_upcase, rltools, expr, 1);
+defautoload(lto_alinsert, rltools, expr, 3);
 defautoload(lto_almerge, rltools, expr, 2);
 defautoload(lto_alphap, rltools, expr, 1);
 defautoload(lto_alunion, rltools, expr, 1);
@@ -587,43 +590,65 @@ defautoload(lto_cartprod, rltools, expr, 1);
 defautoload(lto_cassoc, rltools, expr, 2);
 defautoload(lto_catsoc, rltools, expr, 2);
 defautoload(lto_delnthip, rltools, expr, 2);
+defautoload(lto_delq, rltools, expr, 2);
+defautoload(lto_delqip, rltools, expr, 2);
+defautoload(lto_downcase, rltools, expr, 1);
 defautoload(lto_drop, rltools, expr, 2);
 defautoload(lto_eatsoc, rltools, expr, 3);
+defautoload(lto_fastgensym, rltools, expr, 0);
 defautoload(lto_hinsert, rltools, expr, 3);
 defautoload(lto_hmember, rltools, expr, 3);
+defautoload(lto_idconcat, rltools, expr, 1);
+defautoload(lto_idconcat2, rltools, expr, 2);
 defautoload(lto_init, rltools, expr, 1);
 defautoload(lto_insert, rltools, expr, 2);
 defautoload(lto_insertq, rltools, expr, 2);
 defautoload(lto_last, rltools, expr, 1);
+defautoload(lto_lengthp, rltools, expr, 3);
+defautoload(lto_list2set, rltools, expr, 1);
+defautoload(lto_list2vector, rltools, expr, 1);
+defautoload(lto_lpvarl, rltools, expr, 1);
 defautoload(lto_max, rltools, expr, 1);
 defautoload(lto_maxkl, rltools, expr, 1);
 defautoload(lto_mergesort, rltools, expr, 2);
 defautoload(lto_min, rltools, expr, 1);
 defautoload(lto_nconcn, rltools, expr, 1);
+defautoload(lto_partition, rltools, expr, 2);
 defautoload(lto_powerset, rltools, expr, 1);
 defautoload(lto_remove, rltools, expr, 2);
 defautoload(lto_rmpos, rltools, expr, 2);
 defautoload(lto_sconcat, rltools, expr, 1);
+defautoload(lto_sconcat2, rltools, expr, 2);
+defautoload(lto_setequalq, rltools, expr, 2);
 defautoload(lto_setminus, rltools, expr, 2);
 defautoload(lto_sgnchg, rltools, expr, 1);
+defautoload(lto_string2id, rltools, expr, 1);
+defautoload(lto_stringdescriptionlist, rltools, expr, 5);
+defautoload(lto_stringparagraph, rltools, expr, 3);
+defautoload(lto_sublistp, rltools, expr, 2);
 defautoload(lto_subset, rltools, expr, 2);
 defautoload(lto_subsetq, rltools, expr, 2);
 defautoload(lto_unionn, rltools, expr, 1);
-defautoload(lto_vertexCover, rltools, expr, 1);
 defautoload(lto_zip, rltools, expr, 3);
 
-defautoload(sfto_ceilq, rltools, expr, 1);
+defautoload(sfto_allcoeffs, rltools, expr, 2);
+defautoload(sfto_avgq, rltools, expr, 2);
 defautoload(sfto_dcontentf, rltools, expr, 1);
 defautoload(sfto_decdegf, rltools, expr, 3);
 defautoload(sfto_dgcdf, rltools, expr, 2);
 defautoload(sfto_dprpartf, rltools, expr, 1);
 defautoload(sfto_dprpartksf, rltools, expr, 1);
+defautoload(sfto_exteucd, rltools, expr, 2);
 defautoload(sfto_floatsub, rltools, expr, 2);
 defautoload(sfto_fsub, rltools, expr, 2);
+defautoload(sfto_fsub1, rltools, expr, 2);
 defautoload(sfto_gcdf!*, rltools, expr, 2);
-defautoload(sfto_groebnerf, rltools, expr, 1);
+defautoload(sfto_greaterq, rltools, expr, 2);
+defautoload(sfto_idvarf, rltools, expr, 1);
+defautoload(sfto_int2sf, rltools, expr, 1);
 defautoload(sfto_kernelp, rltools, expr, 1);
 defautoload(sfto_kmemberf, rltools, expr, 2);
+defautoload(sfto_lcmn, rltools, expr, 2);
 defautoload(sfto_lcx, rltools, expr, 1);
 defautoload(sfto_lessq, rltools, expr, 2);
 defautoload(sfto_linwpp, rltools, expr, 2);
@@ -649,13 +674,16 @@ defautoload(sfto_sf2monl, rltools, expr, 1);
 defautoload(sfto_sf2monlip, rltools, expr, 1);
 defautoload(sfto_sqfdecf, rltools, expr, 1);
 defautoload(sfto_sqfpartf, rltools, expr, 1);
+defautoload(sfto_sqfpartz, rltools, expr, 1);
 defautoload(sfto_sqrtf, rltools, expr, 1);
+defautoload(sfto_truncq, rltools, expr, 2);
 defautoload(sfto_tsqsumf, rltools, expr, 1);
 defautoload(sfto_ucontentf, rltools, expr, 1);
-defautoload(sfto_varIsNumP, rltools, expr, 1);
+defautoload(sfto_varisnump, rltools, expr, 1);
 defautoload(sfto_vardeg, rltools, expr, 2);
 defautoload(sfto_varf, rltools, expr, 1);
 defautoload(sfto_varp, rltools, expr, 1);
+defautoload(sfto_zdeqn, rltools, expr, 2);
 
 symbolic operator fastresultant;
 defautoload(fastresultant, rltools, expr, 3);
@@ -724,21 +752,33 @@ defautoload(einfachst, applysym, expr, 2);
 
 % Assert
 
-fluid '(!*assert);
+fluid '(!*assert assert_functionl!*);
 
 switch assert;
 
 put('assert, 'simpfg, '((t (assert_onoff)) (nil (assert_onoff))));
 defautoload(assert_onoff, assert, expr, 0);
 
+defautoload(assert_declarestat, assert, expr, 0);
 put('declare, 'stat, 'assert_declarestat);
-defautoload(assert_declarestat, assert, expr, 1);
 
-put('asserted, 'stat, 'assert_procstat);
+defautoload(assert_structstat, assert, expr, 0);
+put('struct,'stat,'assert_structstat);
+
 defautoload(assert_procstat, assert, expr, 0);
+put('asserted, 'stat, 'assert_procstat);
 
-put('assert_procedure, 'formfn, 'assert_formproc);
-defautoload(assert_formproc, assert, expr, 3);
+defautoload(assert_install, assert, expr, 1);
+put('assert_install, 'stat, 'rlis);
+
+defautoload(assert_uninstall, assert, expr, 1);
+put('assert_uninstall, 'stat, 'rlis);
+
+operator assert_install_all;
+defautoload(assert_install_all, assert, expr, 0);
+
+operator assert_uninstall_all;
+defautoload(assert_uninstall_all, assert, expr, 0);
 
 % LALR
 

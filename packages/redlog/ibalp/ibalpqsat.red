@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2007-2009 Andreas Dolzmann and Thomas Sturm
-% ---------------------------------------------------------------------
+module ibalpqsat;  % Quantified SAT solving
+
+revision('ibalpqsat, "$Id$");
+
+copyright('ibalpqsat, "(c) 2007-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ibalp_qsat_rcsid!* ibalp_qsat_copyright!*);
-   ibalp_qsat_rcsid!* :=
-      "$Id$";
-   ibalp_qsat_copyright!* := "Copyright (c) 2007-2009 A. Dolzmann and T. Sturm"
->>;
-
-module ibalpqsat;
 
 fluid '(ibalp_qsatoptions!* !*rlverbose);
 
@@ -293,7 +285,7 @@ inline procedure ibalp_var!-getwc(var);
 inline procedure ibalp_var!-delwc(var,wc);
    % Delete a single watched-clauses of this variable . [var] is a
    % variable; [wc] is a clause.
-   caddr cddddr cddddr var := delq(wc,caddr cddddr cddddr var);
+   caddr cddddr cddddr var := lto_delq(wc,caddr cddddr cddddr var);
 
 inline procedure ibalp_var!-delallwc(var);
    % Delete all watched-clauses of this variable . [var] is a
@@ -403,7 +395,7 @@ inline procedure ibalp_clause!-delallwl(clause);
 inline procedure ibalp_clause!-delwl(clause,wl);
    % Delete a single watched literal from this clause. [clause] is a
    % clause; [wl] is a variable.
-   caddr cddddr clause := delq(wl,caddr cddddr clause);
+   caddr cddddr clause := lto_delq(wl,caddr cddddr clause);
 
 inline procedure ibalp_clause!-getposlit(clause);
    % Get a list of all positive literals of a clause. [clause] is a
@@ -435,7 +427,7 @@ inline procedure ibalp_clause!-getsat(clause);
 inline procedure ibalp_clause!-delsat(clause,sat);
    % Delete a variable turning a clause to true. [clause] is a clause;
    % [sat] is a variable.
-   car cddddr clause := delq(sat,car cddddr clause);
+   car cddddr clause := lto_delq(sat,car cddddr clause);
 
 inline procedure ibalp_clause!-getcount(clause);
    % Get the current count for new-added clauses. [clause] is a
@@ -627,7 +619,7 @@ inline procedure ibalp_var!-getwc(var);
 inline procedure ibalp_var!-delwc(var,wc);
    % Delete a single watched-clauses of this variable . [var] is a
    % variable; [wc] is a clause.
-   putv(var,10,delq(wc,getv(var,10)));
+   putv(var,10,lto_delq(wc,getv(var,10)));
 
 inline procedure ibalp_var!-delallwc(var);
    % Delete all watched-clauses of this variable . [var] is a
@@ -742,7 +734,7 @@ inline procedure ibalp_clause!-delallwl(clause);
 inline procedure ibalp_clause!-delwl(clause,wl);
    % Delete a single watched literal from this clause. [clause] is a
    % clause; [wl] is a variable.
-   putv(clause,6,delq(wl,getv(clause,6)));
+   putv(clause,6,lto_delq(wl,getv(clause,6)));
 
 inline procedure ibalp_clause!-getposlit(clause);
    % Get a list of all positive literals of a clause. [clause] is a
@@ -774,7 +766,7 @@ inline procedure ibalp_clause!-getsat(clause);
 inline procedure ibalp_clause!-delsat(clause,sat);
    % Delete a variable turning a clause to true. [clause] is a clause;
    % [sat] is a variable.
-   putv(clause,4,delq(sat,getv(clause,4)));
+   putv(clause,4,lto_delq(sat,getv(clause,4)));
 
 inline procedure ibalp_clause!-getcount(clause);
    % Get the current count for new-added clauses. [clause] is a
@@ -1102,7 +1094,7 @@ procedure ibalp_simplify(dvar,dval,clause,clausel,varal);
 	 for each clause in ibalp_var!-getposocc var do
 	    ibalp_dellit(var,clause,t);
       >>;
-      varal := delq(atsoc(ibalp_var!-getid var,varal),varal);
+      varal := lto_delq(atsoc(ibalp_var!-getid var,varal),varal);
       return (clausel . varal)
    end;
 
@@ -1342,13 +1334,13 @@ procedure ibalp_dellit(lit,clause,posneg);
    % [clause] is the clause; [posneg] is [t] if it is a true literal,
    % [nil] else;
    if posneg then <<
-      ibalp_var!-setposoccabs(lit,delq(clause,ibalp_var!-getposocc lit));
+      ibalp_var!-setposoccabs(lit,lto_delq(clause,ibalp_var!-getposocc lit));
       ibalp_clause!-setposlitabs(
-	 clause,delq(lit,ibalp_clause!-getposlit clause))
+	 clause,lto_delq(lit,ibalp_clause!-getposlit clause))
    >> else <<
-      ibalp_var!-setnegoccabs(lit,delq(clause,ibalp_var!-getnegocc lit));
+      ibalp_var!-setnegoccabs(lit,lto_delq(clause,ibalp_var!-getnegocc lit));
       ibalp_clause!-setneglitabs(
-	 clause,delq(lit,ibalp_clause!-getneglit clause))
+	 clause,lto_delq(lit,ibalp_clause!-getneglit clause))
    >>;
 
 procedure ibalp_dimcount(clausel);
@@ -1389,7 +1381,7 @@ procedure ibalp_delclause(c,clausel);
    % list of clauses.
    <<
       for each v in ibalp_clause!-getposlit c do <<
-	 ibalp_var!-setposoccabs(v,delq(c,ibalp_var!-getposocc v));
+	 ibalp_var!-setposoccabs(v,lto_delq(c,ibalp_var!-getposocc v));
 	 if ibalp_clause!-getcount c then
 	    ibalp_var!-setposcc(v,ibalp_var!-getposcc v - 1);
 	 if null ibalp_clause!-getsat c then
@@ -1397,7 +1389,7 @@ procedure ibalp_delclause(c,clausel);
 	 ibalp_var!-setmom(v,ibalp_calcmom v)
       >>;
       for each v in ibalp_clause!-getneglit c do <<
-	 ibalp_var!-setnegoccabs(v,delq(c,ibalp_var!-getnegocc v));
+	 ibalp_var!-setnegoccabs(v,lto_delq(c,ibalp_var!-getnegocc v));
 	 if ibalp_clause!-getcount c then
 	    ibalp_var!-setnegcc(v,ibalp_var!-getnegcc v - 1);
 	 if null ibalp_clause!-getsat c then
@@ -1407,7 +1399,7 @@ procedure ibalp_delclause(c,clausel);
       for each v in ibalp_clause!-getwl c do <<
 	 ibalp_var!-delwc(v,c);
       >>;
-      clausel := delq(c,clausel);
+      clausel := lto_delq(c,clausel);
       clausel
    >>;
 
@@ -1944,12 +1936,12 @@ procedure ibalp_undoclause(clause);
    % Undo a clause if it redundant. [clause] is a clause.
    <<
       for each v in ibalp_clause!-getposlit clause do <<
-	 ibalp_var!-setposoccabs(v,delq(clause,ibalp_var!-getposocc v));
+	 ibalp_var!-setposoccabs(v,lto_delq(clause,ibalp_var!-getposocc v));
 	 ibalp_var!-setnumpos(v,ibalp_var!-getnumpos v - 1);
 	 ibalp_var!-setposcc(v,ibalp_var!-getposcc v - 1)
       >>;
       for each v in ibalp_clause!-getneglit clause do <<
-	 ibalp_var!-setnegoccabs(v,delq(clause,ibalp_var!-getnegocc v));
+	 ibalp_var!-setnegoccabs(v,lto_delq(clause,ibalp_var!-getnegocc v));
 	 ibalp_var!-setnumneg(v,ibalp_var!-getnumneg v - 1);
 	 ibalp_var!-setnegcc(v,ibalp_var!-getnegcc v - 1)
       >>

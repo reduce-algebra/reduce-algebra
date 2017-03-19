@@ -816,7 +816,7 @@ procedure ofsf_projco(aa, x);
       ll := ofsf_projlcs(bb, x);
       ss1 := ofsf_projcoss1(bb, x);
       ss2 := ofsf_projcoss2(bb, x);
-      return list2set lto_select('notdomainp, union(union(ll, ss1), ss2))
+      return lto_list2set lto_select('notdomainp, union(union(ll, ss1), ss2))
    end;
 
 procedure ofsf_projcov22(aa, x);
@@ -826,7 +826,7 @@ procedure ofsf_projcov22(aa, x);
       ll := ofsf_projlcs(bb, x);
       ss1 := ofsf_projcoss1(bb, x);
       ss2 := ofsf_projcoss2v2(bb, x);
-      return list2set lto_select('notdomainp, union(union(ll, ss1), ss2))
+      return lto_list2set lto_select('notdomainp, union(union(ll, ss1), ss2))
    end;
 
 procedure ofsf_projcov23(aa, x);
@@ -836,7 +836,7 @@ procedure ofsf_projcov23(aa, x);
       bb := ofsf_projcobbv2(aa, x);
       ll := ofsf_projlcs(bb, x);
       ss1 := ofsf_projcoss1(bb, x);
-      ss2 := list2set ofsf_projcoss2v3(bb, x);
+      ss2 := lto_list2set ofsf_projcoss2v3(bb, x);
       return lto_select('notdomainp, union(union(ll, ss1), ss2))
    end;
 
@@ -848,7 +848,7 @@ procedure ofsf_projcov33(aa, l);
       x := lto_last l;
       ll := ofsf_projlcs(bb, x);
       ss1 := ofsf_projcoss1(bb, x);
-      ss2 := list2set ofsf_projcoss2v3(bb, x);
+      ss2 := lto_list2set ofsf_projcoss2v3(bb, x);
       return lto_select('notdomainp, union(union(ll, ss1), ss2))
    end;
 
@@ -880,7 +880,7 @@ procedure ofsf_projmcbr(aa,x);
       dd := for each a in bb collect sf_discriminant(a,x);
       rr := for each a1 on bb join for each a2 in cdr bb collect
 	 sfto_resf(car a1,a2,x);
-      return list2set lto_remove('domainp,union(union(ll,dd),rr))
+      return lto_list2set lto_remove('domainp,union(union(ll,dd),rr))
    end;
 
 procedure ofsf_tgprojmcbr(tgaa,x);

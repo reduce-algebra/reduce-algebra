@@ -625,7 +625,7 @@ asserted procedure ofsf_zerop3r(ff: SF, fone: Integer, d: Integer, vl: List, ev:
       l := 1;
       dirp := car dirp . for each pr in cdr dirp collect <<
 	 w := simp cdr pr;
-	 l := lcmn(l, denr w);
+	 l := sfto_lcmn(l, denr w);
  	 car pr . w
       >>;
       l := !*f2q l;

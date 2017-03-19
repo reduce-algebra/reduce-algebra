@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2007-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module ibalpkapur;  % Author Stefan Kaeser
+
+revision('ibalpkapur, "$Id$");
+
+copyright('ibalpkapur, "(c) 2007-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(ibalp_kapur_rcsid!* ibalp_kapur_copyright!*);
-   ibalp_kapur_rcsid!* :=
-      "$Id$";
-   ibalp_kapur_copyright!* := "Copyright (c) 2007-2009 A. Dolzmann and T. Sturm"
->>;
-
-module ibalpkapur;
-% Author Stefan Kaeser
 
 % own switches and global vars
 fluid '(ibalp_kapuroptions!* !*ibalp_kapurgb !*rlkapurchktaut !*rlkapurchkcont);
@@ -496,11 +487,11 @@ procedure ibalp_gbapplyrulem(m,rule);
       if eqcar(rule,m) then krule_tail rule else m
    else if atom krule_head rule then
       if krule_head rule memq m then
-         kpoly_times {delq(krule_head rule,m),krule_tail rule}
+         kpoly_times {lto_delq(krule_head rule,m),krule_tail rule}
       else
          m
    else if kpoly_mondivp(m,krule_head rule) then <<
-      for each j in cdr krule_head rule do m := delq(j,m);
+      for each j in cdr krule_head rule do m := lto_delq(j,m);
       kpoly_times {m,krule_tail rule}
    >> else
       m;

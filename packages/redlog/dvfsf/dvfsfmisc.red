@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module dvfsfmisc;  % Discretely valued field standard form miscellaneous
+
+revision('dvfsfmisc, "$Id$");
+
+copyright('dvfsfmisc, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(dvfsf_misc_rcsid!* dvfsf_misc_copyright!*);
-   dvfsf_misc_rcsid!* :=
-      "$Id$";
-   dvfsf_misc_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module dvfsfmisc;
-% Discretely valued field standard form miscellaneous. Submodule of [dvfsf].
 
 procedure dvfsf_ordatp(a1,a2);
    % Discretely valued field standard form ordering of atomic formulas
@@ -63,7 +54,7 @@ procedure dvfsf_varlat(atf);
    % variables. [atf] is an atomic formula. Returns the variables
    % contained in [atf] as a list. The constant ['p] of our language
    % is not considered as an variable.
-   delqip('p,union(kernels dvfsf_arg2l atf,kernels dvfsf_arg2r atf));
+   lto_delqip('p,union(kernels dvfsf_arg2l atf,kernels dvfsf_arg2r atf));
 
 procedure dvfsf_varsubstat(atf,new,old);
    % Discretely valued field standard form substitute variable for
