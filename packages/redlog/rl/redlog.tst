@@ -38,6 +38,7 @@ rlqe ex({x,y},(for i:=1:5 product mkid(a,i)*x**10-mkid(b,i)*y**2)<=0);
 
 sol := rlqe ex(x,a1*a2*x**2+b*x+c>0);
 rlatnum sol;
+rldepth sol;
 
 rlatl sol;
 rlatml sol;

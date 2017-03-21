@@ -236,6 +236,11 @@ rlatnum sol;
 
 16
 
+rldepth sol;
+
+
+4
+
 
 rlatl sol;
 
@@ -992,3 +997,10 @@ m <> 0 or b = 0
 
 end;
 
+Tested on x86_64-mac_10.12_sierra-darwin16.4.0 CSL
+Time (counter 1): 370 ms  plus GC time: 80 ms
+
+End of Lisp run after 0.37+0.13 seconds
+real         0.67
+user         0.57
+sys          0.07
