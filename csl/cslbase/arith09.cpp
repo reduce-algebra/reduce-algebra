@@ -780,8 +780,7 @@ LispObject lognot(LispObject a)
 // a bignum.  For bignums I implement ~a as -(a+1).
 //
     if (is_fixnum(a))
-        return (LispObject)(~(intptr_t)a ^
-          (TAG_FIXNUM ^ (~TAG_FIXNUM & TAG_BITS)));
+        return (LispObject)((uintptr_t)a ^ ~(uintptr_t)XTAG_BITS);
     else if (is_numbers(a) && is_bignum(a))
     {   a = plus2(a, fixnum_of_int(1));
         return negate(a);
@@ -1103,7 +1102,7 @@ static LispObject logxorib(LispObject a, LispObject b)
 LispObject logxor2(LispObject a, LispObject b)
 {   if (is_fixnum(a))
     {   if (is_fixnum(b))
-            return (LispObject)(((intptr_t)a ^ (intptr_t)b) + TAG_FIXNUM);
+            return (LispObject)(((uintptr_t)a ^ (uintptr_t)b) + TAG_FIXNUM);
         else if (is_numbers(b) && is_bignum(b)) return logxorib(a, b);
         else aerror2("bad arg for logxor", a, b);
     }
