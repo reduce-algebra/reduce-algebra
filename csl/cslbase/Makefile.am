@@ -52,7 +52,6 @@ plain_bootstrapreduce = bootstrapreduce
 plain_fwindemo = fwindemo
 plain_wxpsl = wxpsl
 plain_termdemo = termdemo
-plain_softfloatdemo = softfloatdemo
 plain_foxdemo  = foxdemo
 plain_fontdemo = fontdemo
 plain_showmathdemo = showmathdemo
@@ -73,7 +72,6 @@ plain_bootstrapreduce = bootstrapreduce.unnecessary.except.on.windows
 plain_fwindemo = fwindemo.unnecessary.except.on.windows
 plain_wxpsl = wxpsl.unnecessary.except.on.windows
 plain_termdemo = termdemo.unnecessary.except.on.windows
-plain_softfloatdemo = softfloatdemo.unnecessary.except.on.windows
 plain_foxdemo  = foxdemo.unnecessary.except.on.windows
 plain_fontdemo = fontdemo.unnecessary.except.on.windows
 plain_showmathdemo = showmathdemo.unnecessary.except.on.windows
@@ -104,7 +102,6 @@ endif !exeext
 .PHONY: $(plain_wxshowmath)
 .PHONY: $(plain_wxshowmathdemo)
 .PHONY: $(plain_termdemo)
-.PHONY: $(plain_softfloatdemo)
 .PHONY: $(plain_dyndemo)
 .PHONY: $(plain_zlibdemo)
 .PHONY: $(plain_gctest)
@@ -219,7 +216,7 @@ bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 endif !wx
 if mac_framework
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
-	termdemo$(EXEEXT) softfloatdemo$(EXEEXT) $(foxdemotarget) \
+	termdemo$(EXEEXT) $(foxdemotarget) \
 	zlibdemo$(EXEEXT) $(wxdemotarget)
 else !mac_framework
 # I want to be able to build flatcsl but do not want it built by default,
@@ -227,7 +224,7 @@ else !mac_framework
 # have found, even though it is not really part of a test suite.
 check_PROGRAMS = flatcsl$(EXEEXT)
 noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
-	termdemo$(EXEEXT) softfloatdemo$(EXEEXT) $(foxdemotarget) \
+	termdemo$(EXEEXT) $(foxdemotarget) \
 	dyndemo$(EXEEXT) zlibdemo$(EXEEXT) $(wxdemotarget)
 endif !mac_framework
 
@@ -837,7 +834,6 @@ AM_CPPFLAGS     += $(SOFTFLOATINC)
 reduce_CPPFLAGS += $(SOFTFLOATINC)
 csl_CPPFLAGS    += $(SOFTFLOATINC)
 flatcsl_CPPFLAGS    += $(SOFTFLOATINC)
-softfloatdemo_CPPFLAGS = $(SOFTFLOATINC)
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and softfloat building will get
@@ -848,12 +844,10 @@ csl_LDADD += -L../lib -lsoftfloat
 flatcsl_LDADD += -L../lib -lsoftfloat
 bootstrapreduce_LDADD += -L../lib -lsoftfloat
 reduce_LDADD += -L../lib -lsoftfloat
-softfloatdemo_LDADD = -L../lib -lsoftfloat
 
 csl_DEPENDENCIES += $(SOFTFLOATDEPS)
 bootstrapreduce_DEPENDENCIES += $(SOFTFLOATDEPS)
 reduce_DEPENDENCIES += $(SOFTFLOATDEPS)
-softfloatdemo_DEPENDENCIES = $(SOFTFLOATDEPS)
 
 $(SOFTFLOATDEPS):
 	$(TRACE)@cd ../softfloat && $(MAKE) install
@@ -981,8 +975,6 @@ reduce-restart.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) machineid.cpp
 reduce-stubs.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
 reduce-sysipaq.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP)
-
-softfloatdemo-softfloatdemo.$(OBJEXT):	$(SOFTFLOATDEP)
 
 # If one of the major foundations of this Makefile have a date later than that
 # on fxver.h then make does a futile recursion to try to fix it and in the
@@ -1603,9 +1595,6 @@ endif wx
 $(plain_termdemo):	termdemo.exe
 	echo "$(MAKE) termdemo.exe is preferred"
 
-$(plain_softfloatdemo):	softfloatdemo.exe
-	echo "$(MAKE) softfloatdemo.exe is preferred"
-
 $(plain_dyndemo):	dyndemo.exe
 	echo "$(MAKE) dyndemo.exe is preferred"
 
@@ -1635,18 +1624,6 @@ termdemo$(EXEEXT): $(termdemo_OBJECTS) $(termdemo_DEPENDENCIES)
 if !debug
 if !darwin
 	$(STRIP) termdemo$(EXEEXT)
-endif !darwin
-endif !debug
-
-softfloatdemo_SOURCES=softfloatdemo.cpp arith14.cpp
-softfloatdemo_LIBS=
-
-softfloatdemo$(EXEEXT): $(softfloatdemo_OBJECTS) $(softfloatdemo_DEPENDENCIES)
-	-$(RM) -f softfloatdemo$(EXEEXT)
-	$(CXXLINKTO) $(DEST)softfloatdemo$(EXEEXT) $(softfloatdemo_OBJECTS) $(softfloatdemo_LDADD) $(LIBS)
-if !debug
-if !darwin
-	$(STRIP) softfloatdemo$(EXEEXT)
 endif !darwin
 endif !debug
 
@@ -2411,9 +2388,9 @@ guisrc=
 endif !wx
 endif !fox
 if wx
-mainsrc=$(guisrc) $(fwindemo_SOURCES) $(wxpsl_SOURCES) $(termdemo_SOURCES) $(softfloatdemo_SOURCES) $(reduce_SOURCES)
+mainsrc=$(guisrc) $(fwindemo_SOURCES) $(wxpsl_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
 else !wx
-mainsrc=$(guisrc) $(fwindemo_SOURCES) $(termdemo_SOURCES) $(softfloatdemo_SOURCES) $(reduce_SOURCES)
+mainsrc=$(guisrc) $(fwindemo_SOURCES) $(termdemo_SOURCES) $(reduce_SOURCES)
 endif !wx
 srcfiles=$(mainsrc) $(csl_SOURCES)
 
@@ -2427,9 +2404,9 @@ guibin=
 endif !wx
 endif !fox
 if wx
-mainbin=$(guibin) fwindemo$(EXEEXT) wxpsl$(EXEEXT) termdemo$(EXEEXT) softfloatdemo$(EXEEXT) reduce$(EXEEXT)
+mainbin=$(guibin) fwindemo$(EXEEXT) wxpsl$(EXEEXT) termdemo$(EXEEXT) reduce$(EXEEXT)
 else !wx
-mainbin=$(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) softfloatdemo$(EXEEXT) reduce$(EXEEXT)
+mainbin=$(guibin) fwindemo$(EXEEXT) termdemo$(EXEEXT) reduce$(EXEEXT)
 endif !wx
 if windows
 if wx
