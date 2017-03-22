@@ -131,11 +131,11 @@ procedure systo_meminfo();
       prettyprint lispsystem!*
    else
       lprim "unknown Lisp";
-
+   
 #endif
-
+   
 procedure systo_meminfoscale(n);
-   if n >= 10^9 then
+   if n geq 10^9 then
       (float(n)/10^9) . "GB"
    else if n >= 10^6 then
       (float(n)/10^6) . "MB"
@@ -143,16 +143,16 @@ procedure systo_meminfoscale(n);
       (float(n)/10^3) . "kB"
    else
       n . "B";
-
-   procedure systo_meminfoiscale(n);
-      if n >= 2^30 then
+   
+procedure systo_meminfoiscale(n);
+   if n geq 2^30 then
       	 (float(n)/2^30) . "GiB"
-      else if n >= 2^20 then
-      	 (float(n)/2^20) . "MiB"
-      else if n >= 2^10 then
-      	 (float(n)/2^10) . "kiB"
-      else
-      	 n . "B";
+   else if n >= 2^20 then
+      (float(n)/2^20) . "MiB"
+   else if n >= 2^10 then
+      (float(n)/2^10) . "kiB"
+   else
+      n . "B";
 
 procedure systo_meminfocomma(n,comma);
    begin scalar l; integer c;
