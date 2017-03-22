@@ -1504,42 +1504,38 @@ procedure ofsfic_subformulap(sf, f);
       return nil
    end;
 
-%%%%%%%MAX
+%%%%%%%MAX (Fixed by MK.)
 % Reduce local core by repeated simplification. Unoptimized.
 asserted procedure ofsfic_filterlocalcore(fvect: Vector, core: List): Any;
    % No meaningful return value.
-   begin scalar f, l, ww, evect;
+   begin scalar w, evect;
+      integer l;
       evect := ic_essentialvect rlqeicdata!*;
-      for i := 0 : upbv evect do
+      w := for i := 0 : upbv evect collect
 	 if getv(evect, i) then
-	    f := getv(fvect, i) . f;
-      if f then
-	 f := ofsfic!*cl_simpl(rl_smkn('and, f), nil, -1);
-      if f neq 'false then <<
-	 l := length core + 1;
-	 ww := copy core;
-	 while length core < l do <<
-	    l := length core;
-	    f := nil;
-	    while core do <<
-	       f := getv(fvect, car core) . f;
-	       core := cdr core
-	    >>;
-	    f := rl_smkn('and, reverse f);
-	    !*rlqeicsimpl := t;
-	    f := ofsfic!*cl_simpl(f, nil, -1);
-	    !*rlqeicsimpl := nil;
-	    core := lto_list2vector ww;
-	    ww := nil;
-	    for each i in cadr f do
-	       ww := getv(core, i) . ww;
-	    core := ww
-	 >>;
-	 while core do <<
-	    putv(evect, car core, t);
-	    core := cdr core
-	 >>
-      >>
+	    getv(fvect, i)
+	 else
+	    'true;
+      w := ofsfic!*cl_simpl(rl_smkn('and, w), nil, -1);
+      if w eq 'false then
+	 return;
+      l := length core + 1;
+      while length core < l do <<
+	 w := for i := 0 : upbv fvect collect
+	    if i memq core then
+	       getv(fvect, i)
+	    else
+	       'true;
+	 !*rlqeicsimpl := t;
+	 w := ofsfic!*cl_simpl(rl_smkn('and, w), nil, -1);
+	 !*rlqeicsimpl := nil;
+	 l := length core;
+	 core := for each i in cadr w join
+	    if i memq core then  % The new core is a subset of the old core.
+	       {i}
+      >>;
+      for each i in core do
+	 putv(evect, i, t)
    end;
 
 %%%%%%%MAX
