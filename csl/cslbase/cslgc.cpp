@@ -741,7 +741,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     }
     else
     {   tidy_fringes();
-        if (stg_class != GC_PRESERVE &&
+        if ((!next_gc_is_hard || stg_class == GC_STACK) &&
             stg_class != GC_USER_HARD &&
             reset_limit_registers(vheap_need, true))
         {   already_in_gc = false;
@@ -789,6 +789,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     push(p);
 
     gc_number++;
+    next_gc_is_hard = false;
     if (!valid_as_fixnum(gc_number)) gc_number = 0; // wrap round on 32-bit
                                                     // machines if too big.
     qvalue(gcknt_symbol) = fixnum_of_int(gc_number);
@@ -864,14 +865,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         free_vectors[i] = 0;
 
 #ifdef CONSERVATIVE
-//
-// if stg_class==GC_PRESERVE I will not need to process the C stack and
-// the Lisp stack ought to be empty. Otherwise here is where I start to
-// capture the set of ambiguous pointers that are in play.
-//
-    if (stg_class != GC_PRESERVE)
-    {   cache_ambiguous();
-    }
+    cache_ambiguous();
 #endif // CONSERVATIVE
 
     cons_cells = symbol_heads = strings = user_vectors =

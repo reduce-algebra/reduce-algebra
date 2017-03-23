@@ -3012,7 +3012,7 @@ LispObject *list_bases[] =
     &user_base_9,
     &workbase[0],
     &workbase[1],
-    &workbase[2],
+    &workbase[2],   // a.k.a mv_2
     &workbase[3],
     &workbase[4],
     &workbase[5],

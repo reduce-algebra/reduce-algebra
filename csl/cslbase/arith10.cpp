@@ -387,6 +387,8 @@ static LispObject make_complex_float(Complex v, LispObject a)
 // components of a will have the same type so only one needs testing.
 // I do the 'onevalue' here.
 //
+// Note that regardless of their input type the elementary functions deliver
+// at most double precision results.
 {   int32_t type;
     LispObject a1, a2;
     a = real_part(a);
@@ -394,12 +396,13 @@ static LispObject make_complex_float(Complex v, LispObject a)
     {   Float_union r, i;
         r.f = (float)v.real;
         i.f = (float)v.imag;
-        a1 = make_complex(low32((r.i & ~0xf) + XTAG_SFLOAT),
-                          low32((i.i & ~0xf) + XTAG_SFLOAT));
+        a1 = make_complex(pack_immediate_float(v.real, a),
+                          pack_immediate_float(v.imag, a));
         return onevalue(a1);
     }
     if (is_bfloat(a)) type = type_of_header(flthdr(a));
     else type = TYPE_SINGLE_FLOAT;
+    if (type == TYPE_LONG_FLOAT) type = TYPE_DOUBLE_FLOAT;
 // There are MANY uses of make_boxfloat here. In pretty well all cases I let
 // make_boxfloat do any overflow checks, and I do not support 128-bit floats.
     a1 = make_boxfloat(v.real, type);
@@ -1228,18 +1231,15 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 #ifndef COMMON
     int32_t restype = TYPE_DOUBLE_FLOAT;
 #else
-//
-// single floats seem to me to be a bad idea!
-//
+// single floats seem to me to be a bad idea! But they are the default
+// for Common Lisp. Boo Hiss.
     int32_t restype = TYPE_SINGLE_FLOAT;
 #endif
     if (which_one > 46) aerror("trigfn internal error");
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
             if (is_sfloat(a))
-            {   Float_union aa;
-                aa.i = a - XTAG_SFLOAT;
-                d = (double)aa.f;
+            {   d = value_of_immediate_float(a);
                 restype = 0;
                 break;
             }
@@ -1286,17 +1286,7 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 //
         {   double (*rl)(double) = trig_functions[which_one].real;
             if (rl == NULL) aerror("unimplemented trig function");
-            d = (*rl)(d);
-            if (trap_floating_overflow &&
-                floating_edge_case(d))
-            {   floating_clear_flags();
-                const char *name = trig_functions[which_one].name;
-                char errbuff[64];
-                sprintf(errbuff, "error in floating point %s", name);
-                aerror(errbuff);
-            }
-            a = make_boxfloat(d, restype);
-            return onevalue(a);
+            return onevalue(make_boxfloat((*rl)(d), restype));
         }
         else
         {   double c1r, c1i;
@@ -1305,26 +1295,11 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
             if (rl == 0) aerror("unimplemented trig function");
             c1r = (*rl)(d);
             c1i = (*im)(d);
-            if (trap_floating_overflow &&
-                (floating_edge_case(c1r) ||
-                 floating_edge_case(c1i)))
-            {   floating_clear_flags();
-                const char *name = trig_functions[which_one].name;
-                char errbuff[64];
-                sprintf(errbuff, "error in floating point %s", name);
-                aerror(errbuff);
-            }
-            a = make_boxfloat(d, restype);
-//
 // if the imaginary part of the value is zero then I will return a real
 // answer - this is correct since the original argument was real, but
 // it has to be done by hand here because normally complex values with
 // zero imaginary part remain complex.
-//
-            if (c1i == 0.0)
-            {   a = make_boxfloat(c1r, restype);
-                return onevalue(a);
-            }
+            if (c1i == 0.0) return onevalue(make_boxfloat(c1r, restype));
 #ifndef COMMON
 // For now at least I will keep raising an error in cases where the
 // result would not be real
@@ -1336,17 +1311,14 @@ static LispObject Ltrigfn(unsigned int which_one, LispObject a)
 #endif
             rp = make_boxfloat(c1r, restype);
             ip = make_boxfloat(c1i, restype);
-            a = make_complex(rp, ip);
-            return onevalue(a);
+            return onevalue(make_complex(rp, ip));
         }
     }
 }
 
 static LispObject makenum(LispObject a, int32_t n)
-//
 // Make the value n, but type-consistent with the object a.  Usually
 // used with n=0 or n=1
-//
 {
 #ifndef COMMON
     int32_t restype = TYPE_DOUBLE_FLOAT;
@@ -1355,11 +1327,7 @@ static LispObject makenum(LispObject a, int32_t n)
 #endif
     switch ((int)a & TAG_BITS)
     {   case TAG_FIXNUM:
-            if (is_sfloat(a))
-            {   Float_union aa;
-                aa.f = (float)n;
-                return low32((aa.i & ~0xf) + XTAG_SFLOAT);
-            }
+            if (is_sfloat(a)) return pack_immediate_float((double)n, a);
             else return fixnum_of_int(n);
         case TAG_NUMBERS:
         {   int32_t ha = type_of_header(numhdr(a));
@@ -1380,8 +1348,10 @@ static LispObject makenum(LispObject a, int32_t n)
         }
         case TAG_BOXFLOAT:
             restype = type_of_header(flthdr(a));
-            a = make_boxfloat((double)n, restype);
-            return onevalue(a);
+            if (restype == TYPE_LONG_FLOAT)
+                return onevalue(make_boxfloat128(
+                    float128_of_number(fixnum_of_int(n))));
+            return onevalue(make_boxfloat((double)n, restype));
         default:
             aerror1("bad arg for makenumber",  a);
     }
@@ -1443,11 +1413,6 @@ static LispObject Lhypot(LispObject env, LispObject a, LispObject b)
 // overflow, blowing me out of the water.
 //
         r = v * sqrt(1.0 + r*r);
-    }
-    if (trap_floating_overflow &&
-        floating_edge_case(r))
-    {   floating_clear_flags();
-        aerror("floating point hypotenuse");
     }
     a = make_boxfloat(r, TYPE_DOUBLE_FLOAT);
     return onevalue(a);

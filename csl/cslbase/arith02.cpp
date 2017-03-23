@@ -74,7 +74,7 @@
 // convenient documentation of what the function needs to do.
 //
 
-uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b, uint32_t c)
+inline uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b, uint32_t c)
 //
 //          (result, *rlow) = a*b + c     as 62-bit product
 //
@@ -94,7 +94,7 @@ uint32_t Imultiply(uint32_t *rlow, uint32_t a, uint32_t b, uint32_t c)
     return (uint32_t)(r >> 31);
 }
 
-static LispObject timesii(LispObject a, LispObject b)
+static inline LispObject timesii(LispObject a, LispObject b)
 //
 // multiplying two fixnums together is much messier than adding them,
 // mainly because the result can easily be a bignum
@@ -370,15 +370,23 @@ static LispObject timesic(LispObject a, LispObject b)
 }
 
 static LispObject timesif(LispObject a, LispObject b)
-{   double d = (double)int_of_fixnum(a) * float_of_number(b);
-    if (trap_floating_overflow &&
-        floating_edge_case(d))
-    {   floating_clear_flags();
-        aerror("floating point times");
+{   switch (type_of_header(flthdr(b)))
+    {   case TYPE_LONG_FLOAT:
+        {   float128_t x, z;
+            i64_to_f128M(int_of_fixnum(a), &x);
+            f128M_mul(&x, long_float_addr(b), &z);
+            return make_boxfloat128(z);
+        }
+        case TYPE_SINGLE_FLOAT:
+            return make_boxfloat(
+                (double)int_of_fixnum(a) * single_float_val(b),
+                TYPE_SINGLE_FLOAT);
+        case TYPE_DOUBLE_FLOAT:
+        default:
+            return make_boxfloat(
+                (double)int_of_fixnum(a) * double_float_val(b),
+                TYPE_DOUBLE_FLOAT);
     }
-// if b was a single or short float then there can be an overflow to infinity
-// within make_boxfloat... which will be detected there.
-    return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
 #define timessi(a, b) timesis(b, a)
@@ -392,16 +400,26 @@ static LispObject timessb(LispObject a, LispObject b)
 
 #define timessc(a, b) timesic(a, b)
 
+// This function is re-used with its first argument bignums and rationals
+// as well as short floats, hence the use of the general conversion
+// used on arg1.
+
 static LispObject timessf(LispObject a, LispObject b)
-{   if (type_of_header(flthdr(b)) == TYPE_LONG_FLOAT)
-    {   float128_t x, y, z;
-        x = float128_of_number(a);
-        y = float128_of_number(b);
-        f128M_mul(&x, &y, &z);
-        return make_boxfloat128(z);
+{   switch (type_of_header(flthdr(b)))
+    {   case TYPE_LONG_FLOAT:
+            {   float128_t x, z;
+                x = float128_of_number(a);
+                f128M_mul(&x, long_float_addr(b), &z);
+                return make_boxfloat128(z);
+            }
+        case TYPE_SINGLE_FLOAT:
+            return make_boxfloat(
+                float_of_number(a) * single_float_val(b), TYPE_SINGLE_FLOAT);
+        case TYPE_DOUBLE_FLOAT:
+        default:
+            return make_boxfloat(
+                float_of_number(a) * double_float_val(b), TYPE_DOUBLE_FLOAT);
     }
-    double d = float_of_number(a) * float_of_number(b);
-    return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
 #define timesbi(a, b) timesib(b, a)
@@ -1440,10 +1458,8 @@ static LispObject timesbb(LispObject a, LispObject b)
     }
     else
     {
-//
 // In cases where I will use classical long multiplication there is no
 // need to waste space with extra padding or with the workspace vector d.
-//
         lenc = lena + lenb;
         c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lenc);
         if (multiplication_buffer == nil)
@@ -1668,12 +1684,8 @@ static LispObject timescc(LispObject a, LispObject b)
 
 #define timesfc(a, b) timescf(b, a)
 
-static LispObject timesff(LispObject a, LispObject b)
-//
-// multiply boxed floats - see commentary on plusff()
-//
-{
-    int ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
+static inline LispObject timesff(LispObject a, LispObject b)
+{   int ha = type_of_header(flthdr(a)), hb = type_of_header(flthdr(b));
     int hc;
     if (ha == TYPE_LONG_FLOAT || hb == TYPE_LONG_FLOAT)
     {   float128_t x, y, z;
@@ -1703,7 +1715,6 @@ static LispObject timesff(LispObject a, LispObject b)
 //
 
 extern LispObject genuine_times2(LispObject a, LispObject b);
-
 
 LispObject times2(LispObject a, LispObject b)
 {   LispObject ab1, aa, bb;
@@ -1738,6 +1749,7 @@ LispObject times2(LispObject a, LispObject b)
 }
 
 #define times2(a,b) genuine_times2(a,b)
+
 #endif
 
 LispObject times2(LispObject a, LispObject b)

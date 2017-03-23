@@ -561,7 +561,9 @@ static LispObject Lfloat_digits(LispObject env, LispObject a)
 {   int tag = (int)a & XTAG_BITS;
     switch (tag)
     {   case XTAG_SFLOAT:
-            return onevalue(fixnum_of_int(20));
+            if (SIXTY_FOUR_BIT && ((a & XTAG_FLOAT32) != 0))
+                return onevalue(fixnum_of_int(24));
+            else return onevalue(fixnum_of_int(20));
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))
@@ -583,7 +585,9 @@ static LispObject Lfloat_precision(LispObject env, LispObject a)
     if (d == 0.0) return onevalue(fixnum_of_int(0));
     switch (tag)
     {   case XTAG_SFLOAT:
-            return onevalue(fixnum_of_int(20));
+            if (SIXTY_FOUR_BIT && ((a & XTAG_FLOAT32) != 0))
+                return onevalue(fixnum_of_int(24));
+            else return onevalue(fixnum_of_int(20));
         case TAG_BOXFLOAT:
         case TAG_BOXFLOAT+TAG_XBIT:
             switch (type_of_header(flthdr(a)))

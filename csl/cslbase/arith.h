@@ -257,7 +257,7 @@ static inline LispObject pack_single_float(double d)
         if (trap_floating_overflow &&
             floating_edge_case(aa.f))
         {   floating_clear_flags();
-            aerror("exception with short float");
+            aerror("exception with single float");
         }
         return (LispObject)((uint64_t)aa.i << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
     }
@@ -286,7 +286,9 @@ static inline LispObject pack_immediate_float(double d,
     if (trap_floating_overflow &&
         floating_edge_case(aa.f))
     {   floating_clear_flags();
-        aerror("exception with short float");
+        if (((l1 | l2) & XTAG_FLOAT32) != 0)
+            aerror("exception with single float");
+        else aerror("exception with short float");
     }
     if (SIXTY_FOUR_BIT)
     {   if (((l1 | l2) & XTAG_FLOAT32) == 0) aa.i &= ~0xf;

@@ -1234,14 +1234,14 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
     if (is_sfloat(a))
     {   Float_union d;
         Float_union v;
-        d.i = a - XTAG_SFLOAT;
+        d.f = value_of_immediate_float(a);
         do
         {   v.f = (float)(int32_t)(Crand() & 0x7fffffff)/(float)TWO_31;
             v.f = v.f*d.f;
         }
         while ((v.i & ~0xf) == (d.i & ~0xf));
         d.f = v.f;
-        return onevalue(low32((d.i & ~0xf) + XTAG_SFLOAT));
+        return onevalue(pack_immediate_float(v.f, a));
     }
     aerror1("random-number", a);
 }

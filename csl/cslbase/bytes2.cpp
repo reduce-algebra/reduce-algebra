@@ -465,14 +465,8 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_PLUS2:
                 if (is_fixnum(A_reg) && is_fixnum(B_reg))
                 {   intptr_t nn = int_of_fixnum(A_reg) + int_of_fixnum(B_reg);
-                    if (valid_as_fixnum(nn))
-                    {   A_reg = fixnum_of_int(nn);
-                        continue;
-                    }
-                    else
-                    {   A_reg = make_lisp_integerptr(nn);
-                        continue;
-                    }
+                    A_reg = make_lisp_integerptr(nn);
+                    continue;
                 }
 //
 // I drop through in the case of floating, bignum or error arithmetic.
@@ -494,24 +488,10 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_DIFFERENCE:
                 if (is_fixnum(A_reg) && is_fixnum(B_reg))
                 {   intptr_t nn = int_of_fixnum(B_reg) - int_of_fixnum(A_reg);
-                    if (valid_as_fixnum(nn))
-                    {   A_reg = fixnum_of_int(nn);
-                        continue;
-                    }
-                    else
-                    {   A_reg = make_lisp_integerptr(nn);
-                        continue;
-                    }
+                    A_reg = make_lisp_integerptr(nn);
+                    continue;
                 }
-//
-// Although computing A-B as A+(-B) is a bit clumsy here, it is only
-// done when there is a bignum or float involved - the important case
-// where everything is a small integer is handled directly in-line.
-//
-                push(B_reg);
-                A_reg = negate(A_reg);
-                pop(B_reg);
-                A_reg = plus2(B_reg, A_reg);
+                A_reg = difference2(B_reg, A_reg);
                 continue;
 
             case OP_TIMES2:
@@ -1394,7 +1374,6 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_CATCH:
                 w = (unsigned int)(ppc + ((unsigned char *)codevec)[ppc]);
-//@@ beware - there used to be a data_of_bps offset here...
                 ppc++;
                 goto catcher;
 
@@ -2526,12 +2505,12 @@ next_opcode:   // This label is so that I can restart what I am doing
                 push2(exit_tag, fixnum_of_int(exit_reason));
                 A_reg = Lmv_list(nil, exit_value);
                 push(A_reg);
-                ppc = w;  //@@ + BPS_DATA_OFFSET????
+                ppc = w;
                 A_reg = exit_value;
                 goto next_opcode;
             }
             else if (exit_reason == UNWIND_THROW && r1 == exit_tag)
-            {   ppc = w;  //@@ + BPS_DATA_OFFSET??
+            {   ppc = w;
                 A_reg = exit_value;
                 goto next_opcode;
             }

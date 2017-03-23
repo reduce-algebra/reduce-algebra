@@ -60,6 +60,47 @@ LispObject integerp(LispObject p)
 //      Storage allocation.
 /*****************************************************************************/
 
+// gc-forcer(a, b) should arrange that a garbage collection is triggered
+// when at most a cons-sized units of consing happens or when at most
+// b units of space is used for vectors (where vectors include bignums and
+// boxed floats). This is intended to be used to trigger garbage collection
+// with rather fine control over when it happens to help with debugging
+// storage management issues.
+
+// This prints the amount of space than can be used before the next (often
+// soft) garbagte collection will be invoked. By using "gc!-forcer nil"
+// before and after small calculations the amount of space they use can be
+// deduced. Sometimes! Because note that memory is allocated in pages and
+// the sizes shown here are in 8-byte units within a single page.
+
+bool next_gc_is_hard = false;
+
+LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
+{   size_t forcer;
+    size_t left = (char *)fringe - (char *)heaplimit;
+    size_t vleft = (char *)vheaplimit - (char *)vfringe;
+    if (is_fixnum(a)) forcer = 8*(size_t)sixty_four_bits(a);
+    else forcer = 0;
+    if (forcer != 0)
+    {   if (left < forcer) forcer = left;
+        fringe = (LispObject)((char *)heaplimit + forcer);
+        next_gc_is_hard = true;
+    }
+    if (is_fixnum(b)) forcer = 8*(size_t)sixty_four_bits(b);
+    else forcer = 0;
+    if (forcer != 0)
+    {   if (vleft < forcer) forcer = vleft;
+        vfringe = (LispObject)((char *)vheaplimit - forcer);
+        next_gc_is_hard = true;
+    }
+    trace_printf("\n+++ Space available before next GC = %" PRIu64
+        " : %" PRIu64 "\n", (uint64_t)left/8, (uint64_t)vleft/8);
+    return onevalue(nil);
+}
+
+LispObject Lgc_forcer1(LispObject env, LispObject a)
+{   return Lgc_forcer(env, a,  a);
+}
 
 LispObject cons(LispObject a, LispObject b)
 {   LispObject r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
@@ -865,6 +906,10 @@ LispObject Lstringp(LispObject env, LispObject a)
 {   if (!(is_vector(a)) || !is_string(a)) return onevalue(nil);
     else return onevalue(lisp_true);
 }
+
+// Common Lisp has "complicated strings" which may have fill pointers,
+// indirection to their contents and basically be unnecessary generalisations
+// of what one really uses.
 
 static LispObject Lc_stringp(LispObject env, LispObject a)
 {   return onevalue(Lispify_predicate(stringp(a)));
@@ -3583,7 +3628,6 @@ setup_type const funcs1_setup[] =
     {"list",                    Lncons, Llist2, Llist},
     {"list*",                   Lidentity, Lcons, Lliststar},
     {"listp",                   Llistp, TOO_MANY_1, WRONG_NO_1},
-//  {"stringp",                 Lc_stringp, TOO_MANY_1, WRONG_NO_1},
     {"structp",                 Lstructp, TOO_MANY_1, WRONG_NO_1},
     {"flag",                    TOO_FEW_2, Lflag, WRONG_NO_2},
     {"flagp",                   TOO_FEW_2, Lflagp, WRONG_NO_2},
@@ -3596,6 +3640,7 @@ setup_type const funcs1_setup[] =
     {"pairp",                   Lconsp, TOO_MANY_1, WRONG_NO_1},
     {"consp",                   Lconsp, TOO_MANY_1, WRONG_NO_1},
     {"flagp**",                 TOO_FEW_2, Lflagp, WRONG_NO_2},
+    {"cl-stringp",              Lc_stringp, TOO_MANY_1, WRONG_NO_1},
     {"stringp",                 Lstringp, TOO_MANY_1, WRONG_NO_1},
     {"threevectorp",            Lthreevectorp, TOO_MANY_1, WRONG_NO_1},
 //  {"throw",                   Lthrow_nil, Lthrow_one_value, WRONG_NO_2},
@@ -3604,6 +3649,7 @@ setup_type const funcs1_setup[] =
     {"find-foreign-function",   TOO_FEW_2, Lfind_foreign_function, WRONG_NO_2},
     {"call-foreign-function",   Lcallf1, Lcallf2, Lcallfn},
     {"get-callback",            Lget_callback, TOO_MANY_1, WRONG_NO_1},
+    {"gc-forcer",               Lgc_forcer1, Lgc_forcer, WRONG_NO_1},
     {NULL,                      0, 0, 0}
 };
 

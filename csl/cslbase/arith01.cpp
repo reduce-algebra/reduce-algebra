@@ -1769,66 +1769,108 @@ static inline LispObject difference_i_i(LispObject a1, LispObject a2)
 }
 
 static inline LispObject difference_i_b(LispObject a1, LispObject a2)
-{   return plus_i(a1, negate(a2));
-//@@@ beware - negating a bignum could give a fixnum!
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_i(a1, a2);
 }
 
 static inline LispObject difference_i_r(LispObject a1, LispObject a2)
-{   return plus_i_r(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_i_r(a1, a2);
 }
 
 static inline LispObject difference_i_c(LispObject a1, LispObject a2)
-{   return plus_i_c(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_i_c(a1, a2);
 }
 
 static inline LispObject difference_i_s(LispObject a1, LispObject a2)
-{   return plus_i_s(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_i_s(a1, a2);
 }
 
 static inline LispObject difference_i_f(LispObject a1, LispObject a2)
-{   return plus_i_f(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_i_f(a1, a2);
 }
 
 static inline LispObject difference_i_d(LispObject a1, LispObject a2)
-{   return plus_i_d(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_i_d(a1, a2);
 }
 
 static inline LispObject difference_i_l(LispObject a1, LispObject a2)
-{   return plus_i_l(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_i_l(a1, a2);
 }
 
 static inline LispObject difference_b_i(LispObject a1, LispObject a2)
-{   return plus_b(a1, negate(a2));
- //@@@ beware - negating a fixnum could give a bignum!
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_b(a1, a2);
 }
 
 static inline LispObject difference_b_b(LispObject a1, LispObject a2)
-{   return plus_b(a1, negate(a2));
- //@@@ beware - negating a bignum could give a fixnum!
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_b(a1, a2);
 }
 
 static inline LispObject difference_b_r(LispObject a1, LispObject a2)
-{   return plus_b_r(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_b_r(a1, a2);
 }
 
 static inline LispObject difference_b_c(LispObject a1, LispObject a2)
-{   return plus_b_c(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_b_c(a1, a2);
 }
 
 static inline LispObject difference_b_s(LispObject a1, LispObject a2)
-{   return plus_b_s(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_b_s(a1, a2);
 }
 
 static inline LispObject difference_b_f(LispObject a1, LispObject a2)
-{   return plus_b_f(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_b_f(a1, a2);
 }
 
 static inline LispObject difference_b_d(LispObject a1, LispObject a2)
-{   return plus_b_d(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_b_d(a1, a2);
 }
 
 static inline LispObject difference_b_l(LispObject a1, LispObject a2)
-{   return plus_b_l(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_b_l(a1, a2);
 }
 
 static inline LispObject difference_r_i(LispObject a1, LispObject a2)
@@ -1844,59 +1886,101 @@ static inline LispObject difference_r_b(LispObject a1, LispObject a2)
 }
 
 static inline LispObject difference_r_r(LispObject a1, LispObject a2)
-{   return plus_r_r(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_r_r(a1, a2);
 }
 
 static inline LispObject difference_r_c(LispObject a1, LispObject a2)
-{   return plus_r_c(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_r_c(a1, a2);
 }
 
 static inline LispObject difference_r_s(LispObject a1, LispObject a2)
-{   return plus_r_s(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_r_s(a1, a2);
 }
 
 static inline LispObject difference_r_f(LispObject a1, LispObject a2)
-{   return plus_r_f(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_r_f(a1, a2);
 }
 
 static inline LispObject difference_r_d(LispObject a1, LispObject a2)
-{   return plus_r_d(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_r_d(a1, a2);
 }
 
 static inline LispObject difference_r_l(LispObject a1, LispObject a2)
-{   return plus_r_l(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_r_l(a1, a2);
 }
 
 static inline LispObject difference_c_i(LispObject a1, LispObject a2)
-{   return plus_c_i(a1, make_lisp_integer64(-int_of_fixnum(a2)));
+{   push(a1);
+    a2 = make_lisp_integer64(-int_of_fixnum(a2));
+    pop(a1);
+    return plus_c_i(a1, a2);
 }
 
 static inline LispObject difference_c_b(LispObject a1, LispObject a2)
-{   return plus_c_b(a1, negateb(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_c_b(a1, negateb(a2));
 }
 
 static inline LispObject difference_c_r(LispObject a1, LispObject a2)
-{   return plus_c_r(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_c_r(a1, a2);
 }
 
 static inline LispObject difference_c_c(LispObject a1, LispObject a2)
-{   return plus_c_c(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_c_c(a1, a2);
 }
 
 static inline LispObject difference_c_s(LispObject a1, LispObject a2)
-{   return plus_c_s(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_c_s(a1, a2);
 }
 
 static inline LispObject difference_c_f(LispObject a1, LispObject a2)
-{   return plus_c_f(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_c_f(a1, a2);
 }
 
 static inline LispObject difference_c_d(LispObject a1, LispObject a2)
-{   return plus_c_d(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_c_d(a1, a2);
 }
 
 static inline LispObject difference_c_l(LispObject a1, LispObject a2)
-{   return plus_c_l(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_c_l(a1, a2);
 }
 
 static inline LispObject difference_s_i(LispObject a1, LispObject a2)
@@ -1912,27 +1996,45 @@ static inline LispObject difference_s_b(LispObject a1, LispObject a2)
 }
 
 static inline LispObject difference_s_r(LispObject a1, LispObject a2)
-{   return plus_s_r(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_s_r(a1, a2);
 }
 
 static inline LispObject difference_s_c(LispObject a1, LispObject a2)
-{   return plus_s_c(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_s_c(a1, a2);
 }
 
 static inline LispObject difference_s_s(LispObject a1, LispObject a2)
-{   return plus_s_s(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_s_s(a1, a2);
 }
 
 static inline LispObject difference_s_f(LispObject a1, LispObject a2)
-{   return plus_s_f(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_s_f(a1, a2);
 }
 
 static inline LispObject difference_s_d(LispObject a1, LispObject a2)
-{   return plus_s_d(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_s_d(a1, a2);
 }
 
 static inline LispObject difference_s_l(LispObject a1, LispObject a2)
-{   return plus_s_l(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_s_l(a1, a2);
 }
 
 static inline LispObject difference_f_i(LispObject a1, LispObject a2)
@@ -1948,11 +2050,17 @@ static inline LispObject difference_f_b(LispObject a1, LispObject a2)
 }
 
 static inline LispObject difference_f_r(LispObject a1, LispObject a2)
-{   return plus_f_r(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_f_r(a1, a2);
 }
 
 static inline LispObject difference_f_c(LispObject a1, LispObject a2)
-{   return plus_f_c(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_f_c(a1, a2);
 }
 
 static inline LispObject difference_f_s(LispObject a1, LispObject a2)
@@ -1971,7 +2079,10 @@ static inline LispObject difference_f_d(LispObject a1, LispObject a2)
 }
 
 static inline LispObject difference_f_l(LispObject a1, LispObject a2)
-{   return plus_f_l(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_f_l(a1, a2);
 }
 
 static inline LispObject difference_d_i(LispObject a1, LispObject a2)
@@ -1987,11 +2098,17 @@ static inline LispObject difference_d_b(LispObject a1, LispObject a2)
 }
 
 static inline LispObject difference_d_r(LispObject a1, LispObject a2)
-{   return plus_d_r(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_d_r(a1, a2);
 }
 
 static inline LispObject difference_d_c(LispObject a1, LispObject a2)
-{   return plus_d_c(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_d_c(a1, a2);
 }
 
 static inline LispObject difference_d_s(LispObject a1, LispObject a2)
@@ -2010,7 +2127,10 @@ static inline LispObject difference_d_d(LispObject a1, LispObject a2)
 }
 
 static inline LispObject difference_d_l(LispObject a1, LispObject a2)
-{   return plus_d_l(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_d_l(a1, a2);
 }
 
 static inline LispObject difference_l_i(LispObject a1, LispObject a2)
@@ -2028,27 +2148,45 @@ static inline LispObject difference_l_b(LispObject a1, LispObject a2)
 }
 
 static inline LispObject difference_l_r(LispObject a1, LispObject a2)
-{   return plus_l_r(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_l_r(a1, a2);
 }
 
 static inline LispObject difference_l_c(LispObject a1, LispObject a2)
-{   return plus_l_c(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_l_c(a1, a2);
 }
 
 static inline LispObject difference_l_s(LispObject a1, LispObject a2)
-{   return plus_l_s(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_l_s(a1, a2);
 }
 
 static inline LispObject difference_l_f(LispObject a1, LispObject a2)
-{   return plus_l_f(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_l_f(a1, a2);
 }
 
 static inline LispObject difference_l_d(LispObject a1, LispObject a2)
-{   return plus_l_d(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_l_d(a1, a2);
 }
 
 static inline LispObject difference_l_l(LispObject a1, LispObject a2)
-{   return plus_l_l(a1, negate(a2));
+{   push(a1);
+    a2 = negate(a2);
+    pop(a1);
+    return plus_l_l(a1, a2);
 }
 
 //

@@ -822,8 +822,29 @@ flag('(test_package), 'opfn);
 
 flag('(call!-foreign!-function), 'variadic);
 
-% These two can take either 0 or 1 args...
-flag('(load!-source load!-selected!-source), 'variadic);
+% These functions (in CSL) have optional arguments args or default
+% values for final arguments, and so it is unhelpful to generate
+% warning messages about excess or missing arguments.
+
+flag('(load!-source load!-selected!-source gcd gcdn lcmn complex
+       float!-sign logand land logor logior lor logxor lxor leqv
+       make!-random!-state max min plus !+ times !* difference !-
+       !/ !/!= !< !<!= != !> !>!= random quotient lessp greaterp
+       leq geq validate!-number atan iplus itimes rseek rdf peekch
+       readch readline spool dribble intern unintern remob extern
+       import make!-package idapply apply funcall funcall!* values
+       macroexpand macroexpand!-1 date!-and!-time error throw
+       all!-symbols restart!-lisp restart!-csl symbol!-make!-fastget
+       preserve nreverse append aref aset vector!-subseq!* list!-subseq!*
+       char!-equal char!-not!-equal char!-lessp char!-greaterp
+       char!-not!-lessp char!-not!-greaterp char!/!= char!< char!<!=
+       char!> char!>!= char!= digit!-char digit!-char!-p windows!-heading
+       open!-library prinhex prinoctal prinbinary make!-broadcast!-stream
+       make!-concatenated!-stream make!-string!-input!-stream
+       mkhash gethash puthash remhash clrhash mknewhash
+       getnewhash putnewhash remnewhash clrnewhash library!-members
+       resource!-limit errorset
+       representation stop float round floor ceiling truncate), 'variadic);
 
 % Arrange (for PSL compatibility) that "on gc;" and "off gc;" switch
 % garbage collector messages on or off.

@@ -159,7 +159,6 @@ extern LispObject multiplication_buffer;
 #define GC_CONS      3
 #define GC_VEC       4
 #define GC_BPS       5
-#define GC_PRESERVE  6
 
 extern volatile char stack_contents_temp;
 
@@ -528,6 +527,7 @@ extern const char *standard_directory;
 extern int64_t gc_number;
 extern int64_t reclaim_trap_count;
 extern uintptr_t reclaim_stack_limit;
+extern bool next_gc_is_hard;
 
 #define INIT_QUIET      1
 #define INIT_VERBOSE    2

@@ -49,13 +49,11 @@
 
 
 lisp;
-on echo, comp;
+on comp;
 
-if !*csl then <<
+if !*csl then
    enable!-errorset(3, 3);   % Always generate backtraces even if
                              % errorset tries to prevent that.
-   verbos nil;               % no garbage collection messages.
-   make!-random!-state 0 >>; % Different sequence on each run!
 
 #if !*psl
 
@@ -696,6 +694,11 @@ symbolic procedure checknear1 a;
      checksigns1 validate!-number(a + 1,"add1"); 
      checksigns1 validate!-number(a + -1,"sub1")>>;
 
+% If the variable !*nocheck is set when this file is read in it
+% will define all the functions but not actually run any tests!
+
+if not boundp '!*nocheck or not !*nocheck then <<
+
 % This will check near 2^0 to 2^100.
 
 % While testing it is sometimes useful to be able to resume testing some
@@ -747,6 +750,8 @@ symbolic procedure checksome1();
 if atom errorset('(checksome1), t, t) then <<
   terpri();
   printc "+++ Stopping";
-  stop 1 >>;
+  stop 1 >>
+
+>>;   % End of the !*nocheck scope
 
 % End of bigarith.red

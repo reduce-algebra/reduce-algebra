@@ -74,7 +74,7 @@ static LispObject quotis(LispObject a, LispObject b)
     mv_2 = fixnum_of_int(0);
     double d = value_of_immediate_float(b);
 // Here and at least at present I explicitly fail if I try to divide by 0.0s0
-// whilke I could wish to return an infinity.
+// while I could wish to return an infinity.
     if (d == 0.0) aerror2("bad arg for quotient", a, b);
     d = (double)int_of_fixnum(a)/d;
     return pack_immediate_float(b, b);
@@ -196,11 +196,6 @@ static LispObject quotif(LispObject a, LispObject b)
     mv_2 = fixnum_of_int(0);
     if (d == 0.0) aerror2("bad arg for quotient", a, b);
     d = (double)int_of_fixnum(a) / d;
-    if (trap_floating_overflow &&
-        floating_edge_case(d))
-    {   floating_clear_flags();
-        aerror("floating point quotient");
-    }
     return make_boxfloat(d, type_of_header(flthdr(b)));
 }
 
@@ -875,13 +870,14 @@ static inline LispObject pack_up_result(LispObject a, size_t lena)
     {   int64_t r = bignum_digits64(a, 1)<<31 | bignum_digits(a)[0];
         if (valid_as_fixnum(r)) return fixnum_of_int(r);
     }
+    push(a);
     LispObject r = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lena+4);
+    pop(a);
 //  trace_printf("lena = %d  r = %p\n", (int)lena, (void *)r);
-    size_t i;
-    for (i=0; i<=lena; i++)
+    for (size_t i=0; i<=lena; i++)
         bignum_digits(r)[i] = bignum_digits(a)[i];
-    if ((SIXTY_FOUR_BIT && (i & 1) != 0) ||
-        (!SIXTY_FOUR_BIT && (i & 1) == 0)) bignum_digits(a)[i] = 0;
+    if ((SIXTY_FOUR_BIT && (lena & 1) == 0) ||
+        (!SIXTY_FOUR_BIT && (lena & 1) != 0)) bignum_digits(r)[lena+1] = 0;
     return r;    
 }
 
@@ -982,12 +978,10 @@ LispObject quotbb(LispObject a, LispObject b, int need)
         if (sign & SIGN_QUOTIENT_NEGATIVE)
             lenq = negate_in_place(big_quotient, lenq);
     }
-    if ((need && QUOTBB_REMAINDER_NEEDED) != 0)
 // Now I need to pack the results so that they are suitable for use
 // elsewhere in the system. 
-    {   a = pack_up_result(a, lena);
-        mv_2 = a;
-    }
+    if ((need && QUOTBB_REMAINDER_NEEDED) != 0)
+        mv_2 = pack_up_result(a, lena);
     if ((need & QUOTBB_QUOTIENT_NEEDED) != 0)
         return pack_up_result(big_quotient, lenq);
     else return nil;
@@ -1090,11 +1084,6 @@ static LispObject quotfi(LispObject a, LispObject b)
     mv_2 = fixnum_of_int(0);
     if (b == fixnum_of_int(0)) aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / (double)int_of_fixnum(b);
-    if (trap_floating_overflow &&
-        floating_edge_case(d))
-    {   floating_clear_flags();
-        aerror("floating point quotient");
-    }
     return make_boxfloat(d, type_of_header(flthdr(a)));
 }
 
@@ -1103,11 +1092,6 @@ static LispObject quotfs(LispObject a, LispObject b)
     mv_2 = fixnum_of_int(0);
     if (d == 0.0) aerror2("bad arg for quotient", a, b);
     d = float_of_number(a) / d;
-    if (trap_floating_overflow &&
-        floating_edge_case(d))
-    {   floating_clear_flags();
-        aerror("floating point quotient");
-    }
     return make_boxfloat(d, type_of_header(flthdr(a)));
 }
 
@@ -1128,9 +1112,6 @@ static LispObject quotff(LispObject a, LispObject b)
         x = float128_of_number(a);
         y = float128_of_number(b);
         f128M_div(&x, &y, &z);
-        if (trap_floating_overflow &&
-            floating_edge_case128(&z))
-            aerror("floating point quotient");
         return make_boxfloat128(z);
     }
     else if (ha == TYPE_DOUBLE_FLOAT || hb == TYPE_DOUBLE_FLOAT)
@@ -1139,11 +1120,6 @@ static LispObject quotff(LispObject a, LispObject b)
     double d;
     if ((d = float_of_number(b)) == 0.0)
         aerror2("bad arg for quotient", a, b);
-    if (trap_floating_overflow &&
-        floating_edge_case(d))
-    {   floating_clear_flags();
-        aerror("floating point quotient");
-    }
     else return make_boxfloat(float_of_number(a) / d, hc);
 }
 
