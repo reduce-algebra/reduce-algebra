@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2013 M. Kosta, T. Sturm
-% ----------------------------------------------------------------------
+module sftoresultant;  % Standard form resultant.
+
+revision('sftoresultant, "$Id$");
+
+copyright('sftoresultant, "(c) 2013-2017 M. Kosta, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(sftoresultant_rcsid!* sftoresultant_copyright!*);
-   sftoresultant_rcsid!* := "$Id$";
-   sftoresultant_copyright!* := "(c) 2013 M. Kosta, T. Sturm"
->>;
-
-module sftoresultant;
-% Standard form resultant.
 
 % WARNING: Polynomials in lists returned by the following functions are NOT
 % necessarily irreducible. Factorization is therefore needed afterwards!
@@ -299,7 +291,7 @@ asserted procedure sfto_bezout_resultant_fac(u: SF, v: SF, w: Kernel): List;
 	    write "Found factor from headpolys with ",termsf cx," terms.";
 	    terpri();
 	 >>;
-	 cxf := fctrf cx
+	 cxf := sfto_fctrf cx
       >>;
       ap := addf(multf(quotf1(uh,cx),vt),negf multf(quotf1(vh,cx),ut));
       x := sfto_!*sf2exb(ap,w);
@@ -307,7 +299,7 @@ asserted procedure sfto_bezout_resultant_fac(u: SF, v: SF, w: Kernel): List;
 	 x := sfto_b!:try_previous_factors(x,cdr cxf);
       cx := sfto_b!:comfac x;
       if cx neq 1 then <<
-	 cxf := sfto_bfac!-merge(fctrf cx,cxf);
+	 cxf := sfto_bfac!-merge(sfto_fctrf cx,cxf);
 	 if !*fastresvb then <<
 	    write "commom factor cx found. ",tmsf cx," terms.";
 	    terpri()
@@ -343,7 +335,7 @@ asserted procedure sfto_bezout_resultant_fac(u: SF, v: SF, w: Kernel): List;
 	       write "Found factor from headpolys with ",termsf cx," terms.";
 	       terpri()
 	    >>;
-	    cxf := sfto_bfac!-merge(fctrf cx,cxf)
+	    cxf := sfto_bfac!-merge(sfto_fctrf cx,cxf)
 	 >>;
 	 x := sfto_!*sf2exb(addf(multf(quotf1(uh,cx),vt),
 	    negf multf(quotf1(vh,cx),ut)),w);
@@ -354,7 +346,7 @@ asserted procedure sfto_bezout_resultant_fac(u: SF, v: SF, w: Kernel): List;
 	       write "commom factor cx found. ",tmsf cx," terms.";
 	       terpri()
 	    >>;
-	    cxf := sfto_bfac!-merge(fctrf cx,cxf)
+	    cxf := sfto_bfac!-merge(sfto_fctrf cx,cxf)
 	 >>;
 	 x := sfto_b!:cquot(x,cx);
 	 ep := sfto_b!:extmult(x,ep);
@@ -362,7 +354,7 @@ asserted procedure sfto_bezout_resultant_fac(u: SF, v: SF, w: Kernel): List;
 	 if j neq 1 then <<
 	    cep := sfto_b!:comfac ep;
 	    if cep neq 1 then <<
-	       cxf := sfto_bfac!-merge(fctrf cep,cxf);
+	       cxf := sfto_bfac!-merge(sfto_fctrf cep,cxf);
 	       if !*fastresvb then <<
 	       	  write "commom factor cep found. ",tmsf cep," terms.";
 	       	  terpri()
@@ -379,7 +371,7 @@ asserted procedure sfto_bezout_resultant_fac(u: SF, v: SF, w: Kernel): List;
 	       write "commom factor cx found.",tmsf cx," terms";
 	       terpri()
 	    >>;
-	    cxf := sfto_bfac!-merge(fctrf cx,cxf)
+	    cxf := sfto_bfac!-merge(sfto_fctrf cx,cxf)
 	 >>;
 	 x := sfto_b!:cquot(x,cx);
 	 ep := sfto_b!:extmult(x,ep);
@@ -389,7 +381,7 @@ asserted procedure sfto_bezout_resultant_fac(u: SF, v: SF, w: Kernel): List;
 	       write "commom factor cep found. ",tmsf cep," terms.";
 	       terpri()
 	    >>;
-	    cxf := sfto_bfac!-merge(fctrf cep,cxf)
+	    cxf := sfto_bfac!-merge(sfto_fctrf cep,cxf)
 	 >>;
 	 ep := sfto_b!:cquot(ep,cep);
 	 for j := 1:(n-1) do <<
@@ -400,13 +392,13 @@ asserted procedure sfto_bezout_resultant_fac(u: SF, v: SF, w: Kernel): List;
 		  write "commom factor cx found. ",tmsf cx," terms.";
 	       	  terpri()
 	       >>;
-	       cxf := sfto_bfac!-merge(fctrf cx,cxf)
+	       cxf := sfto_bfac!-merge(sfto_fctrf cx,cxf)
 	    >>;
 	    x := sfto_b!:cquot(x,cx);
 	    ep := sfto_b!:extmult(x,ep);
 	    cep := sfto_b!:comfac ep;
 	    if cep neq 1 then <<
-	       cxf := sfto_bfac!-merge(fctrf cep,cxf);
+	       cxf := sfto_bfac!-merge(sfto_fctrf cep,cxf);
 	       if !*fastresvb then <<
 	       	  write "commom factor cep found. ",tmsf cep," terms.";
 	       	  terpri()

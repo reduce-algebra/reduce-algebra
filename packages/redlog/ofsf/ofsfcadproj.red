@@ -363,7 +363,7 @@ asserted procedure sf_psc(f: SF, g: SF, x: Kernel, j: Integer): SF;
 asserted procedure sf_factorize(f: SF): DottedPair;
    % Factorize. Returns a pair [Integer . List of Pairs (SF . Integer)]: content
    % and factors with multiplicities.
-   fctrf f;
+   sfto_fctrf f;
 
 asserted procedure sf_factors(f: SF): SFList;
    for each a in cdr sf_factorize f collect car a;

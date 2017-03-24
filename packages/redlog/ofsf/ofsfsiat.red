@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module ofsfsiat;  % Ordered field standard form simplification
+
+revision('ofsfsiat, "$Id$");
+
+copyright('ofsfsiat, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ofsf_siat_rcsid!* ofsf_siat_copyright!*);
-   ofsf_siat_rcsid!* :=
-      "$Id$";
-   ofsf_siat_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module ofsfsiat;
-% Ordered field standard form simplification. Submodule of [ofsf].
 
 procedure ofsf_simplat1(f,sop);
    % Ordered field standard form simplify atomic formula. [f] is an
@@ -100,7 +91,7 @@ procedure ofsf_facequal!*(f,sop);
 
 procedure ofsf_facequal(f);
    % Left hand side factorization [equal] case.
-   rl_smkn('or,for each x in cdr fctrf f collect ofsf_0mk2('equal,car x));
+   rl_smkn('or,for each x in cdr sfto_fctrf f collect ofsf_0mk2('equal,car x));
 
 procedure ofsf_simplneq(lhs,sop);
    % Ordered field standard form simplify [neq]-atomic formula.
@@ -137,7 +128,7 @@ procedure ofsf_facneq!*(f,sop);
 
 procedure ofsf_facneq(f);
    % Left hand side factorization [neq] case.
-   rl_smkn('and,for each x in cdr fctrf f collect ofsf_0mk2('neq,car x));
+   rl_smkn('and,for each x in cdr sfto_fctrf f collect ofsf_0mk2('neq,car x));
 
 procedure ofsf_getsqsummons(f);
    % Ordered field standard form get squaresum monomials. [f] is an
@@ -200,7 +191,7 @@ procedure ofsf_simplleq(lhs,sop);
    end;
 
 procedure ofsf_facsimpl(u);
-   for each x in cdr fctrf u join
+   for each x in cdr sfto_fctrf u join
       if not (ofsf_posdefp car x eq 'stsq) then
       	 {car x};
 

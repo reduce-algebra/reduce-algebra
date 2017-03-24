@@ -117,7 +117,7 @@ procedure ofsf_varsel!-try(f,vl,theo);
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
  	 ioto_prin2 "(SVF";
       ifacl := for each x in atl join
-	 for each p in cdr fctrf ofsf_arg2l x collect car p;
+	 for each p in cdr sfto_fctrf ofsf_arg2l x collect car p;
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
  	 ioto_prin2 ")";
       candvl := for each a in vl join
@@ -167,7 +167,7 @@ procedure ofsf_varsel!-classic(f,vl,theo);
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
  	 ioto_prin2 "(SVF";
       ifacl := for each x in atl join
-	 for each p in cdr fctrf ofsf_arg2l x collect car p;
+	 for each p in cdr sfto_fctrf ofsf_arg2l x collect car p;
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
  	 ioto_prin2 ")";
       scvl := vl;
@@ -1207,7 +1207,7 @@ procedure ofsf_mktriplel(u,v);
       % Try to factorize.
       if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold) then
  	 ioto_prin2{"."};
-      fl := cdr fctrf u;
+      fl := cdr sfto_fctrf u;
       while fl do <<
 	 a := car fl;
 	 fl := cdr fl;
@@ -2901,7 +2901,7 @@ asserted procedure ofsf_qeg(f: Formula): Formula;
       gres := cl_gqe(f, nil, nil);
       res := gres . for i := 1:length car gres collect <<
 	 ass := nth(car gres,i);
-	 w := for each fac in cdr fctrf ofsf_arg2l ass collect car fac;
+	 w := for each fac in cdr sfto_fctrf ofsf_arg2l ass collect car fac;
 	 if cdr w then rederr "ofsf_qeg: uexpected nonvariable assumption";
  	 (ofsf_0mk2('equal, ofsf_arg2l ass) . lto_delq(ass, car gres)) .
 	    cl_qe(cl_subfof({prepf car w . 0}, f), nil)

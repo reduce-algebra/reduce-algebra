@@ -79,7 +79,7 @@ procedure ofsf_fctrat(atf);
    % . d_i),...)$, where $f$ is an irreducible SF and $d$ is a
    % positive integer. We have $l=c \prod_i g_i^{d_i}$ for an integer
    % $c$.
-   cdr fctrf ofsf_arg2l atf;
+   cdr sfto_fctrf ofsf_arg2l atf;
 
 procedure ofsf_negateat(f);
    % Ordered field standard form negate atomic formula. [f] is an
@@ -238,7 +238,7 @@ procedure ofsf_structat(at,al);
 
 procedure ofsf_ifstructat(at,al);
    begin scalar w,r;
-      w := fctrf ofsf_arg2l at;
+      w := sfto_fctrf ofsf_arg2l at;
       r := car w;
       for each x in cdr w do
 	 r := multf(r,expf(numr simp cdr assoc(car x,al),cdr x));

@@ -640,6 +640,7 @@ defautoload(sfto_dgcdf, rltools, expr, 2);
 defautoload(sfto_dprpartf, rltools, expr, 1);
 defautoload(sfto_dprpartksf, rltools, expr, 1);
 defautoload(sfto_exteucd, rltools, expr, 2);
+defautoload(sfto_fctrf, rltools, expr, 1);
 defautoload(sfto_floatsub, rltools, expr, 2);
 defautoload(sfto_fsub, rltools, expr, 2);
 defautoload(sfto_fsub1, rltools, expr, 2);

@@ -31,6 +31,10 @@ copyright('sfto, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 
 fluid '(!*ezgcd !*gcd !*rldavgcd !*rational);
 
+fluid '(sfto_fctrflimit!*);
+
+sfto_fctrflimit!* := 3;
+
 switch sfto_yun,sfto_tobey,sfto_musser;
 !*sfto_yun := t;
 
@@ -692,11 +696,35 @@ asserted procedure sfto_varIsNumP(f: SF): ExtraBoolean;
    if not domainp f and domainp lc f and domainp red f and eqn(ldeg f,1) then
       mvar f;
 
+operator rlfaclimit;
+
+asserted procedure rlfaclimit(n: Integer): Integer;
+   begin scalar old;
+      if not fixp n or n leq 0 then
+      	 rederr {"rlfaclimit", n, "is not a non-negative integer"};
+      old := sfto_fctrflimit!*;
+      if not eqn(n, 0) then
+      	 sfto_fctrflimit!* := n;
+      return old
+   end;
+
 asserted procedure sfto_fctrf(f: SF): List;
-   begin scalar w;
-      w := errorset({'fctrf, mkquote f}, t, !*backtrace);
-      if errorp w then
-	 return {1, f . 1};
+   begin
+      scalar w, e;
+      integer n;
+      repeat <<
+	 random_new_seed(n + 1);
+      	 w := errorset({'fctrf, mkquote f}, t, !*backtrace);
+	 if errorp w then
+	    e := t;
+	 n := n + 1
+      >> until not errorp w or eqn(n, sfto_fctrflimit!*);
+      if errorp w then <<
+	 lprim {"sfto_fctrf: factorization failed after", sfto_fctrflimit!*, "attempts"};
+      	 return {1, f . 1}
+      >>;
+      if !*rlverbose and e then
+	 ioto_tprin2t {"+++ sfto_fctrf: factorization successful after", n, "attempts"};
       return car w
    end;
 
