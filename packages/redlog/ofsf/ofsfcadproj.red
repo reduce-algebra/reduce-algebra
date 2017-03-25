@@ -63,10 +63,10 @@ procedure MtxSFP(s);
    listp s;
 
 procedure SFListP(s);
-   listp s and (null s or sfpx car s and SFListP cdr s);
-
+   null s or (pairp s and sfpx car s and SFListP cdr s);
+   
 procedure KernelListP(s);
-   listp s and (null s or assert_kernelp car s and KernelListP cdr s);
+   null s or (pairp s and assert_kernelp car s and KernelListP cdr s);
 
 %%% --- projection order optimization code --- %%%
 
