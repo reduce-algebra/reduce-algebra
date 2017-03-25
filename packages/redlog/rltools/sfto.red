@@ -709,6 +709,7 @@ asserted procedure rlfaclimit(n: Integer): Integer;
    end;
 
 asserted procedure sfto_fctrf(f: SF): List;
+   % A wrapper for fctrf catching errors and recomputing with a different random seed.
    begin
       scalar w, e;
       integer n;
@@ -721,12 +722,16 @@ asserted procedure sfto_fctrf(f: SF): List;
       >> until not errorp w or eqn(n, sfto_fctrflimit!*);
       if errorp w then <<
 	 lprim {"sfto_fctrf: factorization failed after", sfto_fctrflimit!*, "attempts"};
-      	 return {1, f . 1}
+      	 return 1 . {f . 1}
       >>;
       if !*rlverbose and e then
 	 ioto_tprin2t {"+++ sfto_fctrf: factorization successful after", n, "attempts"};
       return car w
    end;
+
+asserted procedure sfto_fctrfProperP(u: DottedPair): Boolean;
+   % [nil] if content is 1, and there is exactly one factor with multiplicity 1.
+   not(eqn(car u, 1) and cdr u and null cddr u and eqn(cdadr u, 1));
 
 asserted procedure sfto_int2sf(n: Integer): SF;
    if n neq 0 then n;

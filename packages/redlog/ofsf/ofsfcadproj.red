@@ -360,13 +360,14 @@ asserted procedure sf_psc(f: SF, g: SF, x: Kernel, j: Integer): SF;
    % The [j]-th principal subresultant coefficient of [f] and [g].
    mtx_det mtx_mmji(f, g, x, j, j);
 
-asserted procedure sf_factorize(f: SF): DottedPair;
-   % Factorize. Returns a pair [Integer . List of Pairs (SF . Integer)]: content
-   % and factors with multiplicities.
-   sfto_fctrf f;
-
 asserted procedure sf_factors(f: SF): SFList;
-   for each a in cdr sf_factorize f collect car a;
+   % A possibly incomplete factorization of the squarefree part of [f].
+   begin scalar w;
+      w := sfto_fctrf f;
+      if sfto_fctrfProperP w then
+	 return for each pr in cdr w collect car pr;
+      return {sfto_sqfpartf f}
+   end;
 
 asserted procedure sf_pscs(f: SF, g: SF, x: Kernel): SFList;
    % All principal subresultant coefficients of [f] and [g].
