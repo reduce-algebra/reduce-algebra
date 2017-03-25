@@ -2224,6 +2224,46 @@
     (&comperror (list "Number expected for CASE label" x))
     ))
 
+%%
+%% RmS:
+%% RmS: go and return inside a lambada with a local variable binding inside a prog
+%% RmS:
+%% RmS: Here are cases that must be compiled correctly:
+%% RmS:
+%% RmS: 1. (de otto () (prog (*echo y) (return y)))
+%% RmS:
+%% RmS: 2. (de hugo nil (prog (y) ((lambda (*echo) (return y)) y)))
+%% RmS:
+%% RmS  3. (de egon nil 
+%% RmS:      (prog (*echo) 
+%% RmS:        (plus 1 1)
+%% RmS:        (prog (y)
+%% RmS:          ((lambda (*echo) (return y)) y)
+%% RmS:        )
+%% RmS:      )
+%% RmS:    )
+%% RmS:
+%% RmS: 4. (de foobar nil
+%% RmS:      (prog(y)
+%% RmS:        (plus 1 1)
+%% RmS:        (prog (*echo)
+%% RmS:          ((lambda (*echo) (return y)) y)
+%% RmS:        )
+%% RmS:      )
+%% RmS:     )
+%% RmS: 5. (de foobar nil
+%% RmS:      (prog(y)
+%% RmS:        (plus 1 1)
+%% RmS:        (prog (*echo)
+%% RmS:          ((lambda (*echo) (go lbl)) y)
+%% RmS:        )
+%% RmS:        lbl
+%% RmS:        (return nil)
+%% RmS:      ))
+%% RmS:
+%% RmS: 6. (de bla (*echo) (return nil))
+%% RmS: 
+
 (de &comgo (exp status&)
   % COMPFN: Compile GO inside PROG.
   %/ Should SLST& be cleared like this?
@@ -2305,13 +2345,25 @@
   % COMPFN: Compile RETURN inside PROG
   %/ Should be better SLSTS handling, last return
   %/ Cf LAMBDA case
-  (setq exp (cdr exp))
-  %  test for 1,2?   scs
-  (when (or (lessp status& 4) (not (&nosideeffectp (car exp))))
-    (&comload exp))
-  (setq slst& nil)
-  (setq exitregs& (cons regs& exitregs&))
-  (&attjmp exitt&))
+  %
+  % RmS: don't forget to unbind variables on exit from lambda, e.g., in
+  % RmS: (de x () (prog (y) ((lambda (*echo) (return y)) y)))
+  % RmS: *echo must be unbound on exit from prog clause
+  % RmS: add appropriate calls to &freestr like in &comgo
+  %
+%%  (let ((gl golist&))
+    (setq exp (cdr exp))
+    %  test for 1,2?   scs
+    (when (or (lessp status& 4) (not (&nosideeffectp (car exp))))
+      (&comload exp))
+    (setq slst& nil)
+%% RmS: doesn't work
+%%  (while gl
+%%           (cond ((eq (caar gl) '&freerstr) (&freerstr (cdar gl))))
+%%           (setq gl (cdr gl)))
+    (setq exitregs& (cons regs& exitregs&))
+    (&attjmp exitt&))
+%%)
 
 (de &delmac (x)
   % Delete macro CAR X from CODELIST!&
