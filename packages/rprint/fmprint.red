@@ -1091,10 +1091,10 @@ symbolic procedure fancy!-intpri(u,p);
        else
          fancy!-prin2!*("\int ",0);
      if lo then  << fancy!-prin2!*('!_,0);
-                  fancy!-maprint!-tex!-bkt(lo,0,nil) where !*list=nil;
+                  fancy!-maprint!-tex!-bkt(lo,0,t) where !*list=nil;
                  >>;
      if hi then << fancy!-prin2!*('!^,0);
-                  fancy!-maprint!-tex!-bkt(hi,0,nil) where !*list=nil;
+                  fancy!-maprint!-tex!-bkt(hi,0,t) where !*list=nil;
                  >>;
      w1:=fancy!-maprint(cadr u,0);
      fancy!-prin2!*("\,d\,",2);

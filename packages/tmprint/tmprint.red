@@ -1831,7 +1831,7 @@ symbolic procedure fancy!-intpri(u,p);
             >>;
             if hi then <<
                fancy!-prin2!*('!^,0);
-               fancy!-maprint!-tex!-bkt(hi,0,nil) where !*list=nil;
+               fancy!-maprint!-tex!-bkt(hi,0,t) where !*list=nil;
             >>;
             w1:=fancy!-maprint(cadr u,0);
             fancy!-prin2!*("\,d\,",2);
