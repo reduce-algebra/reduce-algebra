@@ -131,12 +131,13 @@ LispObject Lencapsulatedp(LispObject env, LispObject a)
     else return nil;
 }
 
+#if 0
 //
-// The next few functions are an experiment and apply when a reference to
+// The next few functions were an experiment and apply when a reference to
 // a native Maple object has somehow been imported into CSL and packed
 // up as an "encapsulated pointer" as per above. It was used at a time
 // when I was playing by building all of Reduce as a dynamically loadable
-// library and loading it into Maple...
+// library and loading it into Maple... It is not supported any more.
 //
 
 LispObject Lmaple_atomic_value(LispObject env, LispObject a)
@@ -229,6 +230,8 @@ LispObject Lmaple_component(LispObject, LispObject a, LispObject nn)
     if (n < 0 || n >= len) aerror1("subscript out of range", nn);
     return onevalue(encapsulate_pointer((void *)v1[n+1]));
 }
+
+#endif
 
 int primep(int32_t n)
 //
@@ -1805,11 +1808,6 @@ LispObject Lvecbnd(LispObject, LispObject v)
     if (!(is_vector(v))) aerror1("vector-bound", v);
     h = vechdr(v);
     n = length_of_header(h) - CELL;
-#ifdef EXPERIMENT
-// UNRECONSTRUCTED here -- see code in upbv for hints. But at present this is
-// disabled by the "#ifdef COMMON" so is not a pressing issue.
-#error unreconstructed
-#endif
     if (is_bitvec_header(h)) n = length_of_bitheader(h) - 8*CELL;
     else switch (type_of_header(h))
         {   case TYPE_STRING_1:
@@ -2095,12 +2093,14 @@ setup_type const funcs3_setup[] =
 #endif
     {"list-to-vector",          Llist_to_vector, TOO_MANY_1, WRONG_NO_1},
     {"encapsulatedp",           Lencapsulatedp, TOO_MANY_1, WRONG_NO_1},
+#if 0
     {"maple_atomic_value",      Lmaple_atomic_value, TOO_MANY_1, WRONG_NO_1},
     {"maple_tag",               Lmaple_tag, TOO_MANY_1, WRONG_NO_1},
     {"maple_length",            Lmaple_length, TOO_MANY_1, WRONG_NO_1},
     {"maple_string_data",       Lmaple_string_data, TOO_MANY_1, WRONG_NO_1},
     {"maple_integer",           Lmaple_integer, TOO_MANY_1, WRONG_NO_1},
     {"maple_component",         TOO_FEW_2, Lmaple_component, WRONG_NO_2},
+#endif
     {NULL,                      0, 0, 0}
 };
 

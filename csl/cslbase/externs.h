@@ -529,6 +529,36 @@ extern int64_t reclaim_trap_count;
 extern uintptr_t reclaim_stack_limit;
 extern bool next_gc_is_hard;
 
+extern uint64_t force_cons, force_vec;
+
+static inline bool cons_forced(size_t n)
+{
+#ifdef DEBUG
+    if (force_cons == 0) return false;
+    if (force_cons <= n)
+    {   force_cons = 0;
+        next_gc_is_hard = true;
+        return true;
+    }
+    force_cons -= n;
+#endif
+    return false;
+}
+
+static inline bool vec_forced(size_t n)
+{
+#ifdef DEBUG
+    if (force_vec == 0) return false;
+    if (force_vec <= n)
+    {   force_vec = 0;
+        next_gc_is_hard = true;
+        return true;
+    }
+    force_vec -= n;
+#endif
+    return false;
+}
+
 #define INIT_QUIET      1
 #define INIT_VERBOSE    2
 #define INIT_EXPANDABLE 4

@@ -1761,7 +1761,16 @@ static inline LispObject plus_l_l(LispObject a1, LispObject a2)
 arith_dispatch_2(static inline, LispObject, plus)
 
 LispObject plus2(LispObject a, LispObject b)
-{   return plus(a, b);
+{
+#ifdef EXPERIMENT
+    validate_number("Arg1 for plus", a, a, b);
+    validate_number("Arg2 for plus", b, a, b);
+    LispObject r = plus(a, b);
+    validate_number("result for plus", r, a, b);
+    return r;
+#else
+    return plus(a, b);
+#endif
 }
 
 static inline LispObject difference_i_i(LispObject a1, LispObject a2)
@@ -1936,9 +1945,9 @@ static inline LispObject difference_c_i(LispObject a1, LispObject a2)
 
 static inline LispObject difference_c_b(LispObject a1, LispObject a2)
 {   push(a1);
-    a2 = negate(a2);
+    a2 = negateb(a2);
     pop(a1);
-    return plus_c_b(a1, negateb(a2));
+    return plus_c_b(a1, a2);
 }
 
 static inline LispObject difference_c_r(LispObject a1, LispObject a2)
@@ -2196,7 +2205,16 @@ static inline LispObject difference_l_l(LispObject a1, LispObject a2)
 arith_dispatch_2(static inline, LispObject, difference)
 
 LispObject difference2(LispObject a, LispObject b)
-{   return difference(a, b);
+{
+#ifdef EXPERIMENT
+    validate_number("Arg1 for difference", a, a, b);
+    validate_number("Arg2 for difference", b, a, b);
+    LispObject r = difference(a, b);
+    validate_number("result for difference", r, a, b);
+    return r;
+#else
+    return difference(a, b);
+#endif
 }
 
 

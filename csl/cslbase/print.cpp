@@ -2419,7 +2419,9 @@ restart:
                             (void *)elt(u, 0));
                     goto print_my_buff;
 
+#if 0
                 case TYPE_MAPLEREF:
+#endif
                 case TYPE_FOREIGN:
                 case TYPE_ENCAPSULATE:
                     pop(u);

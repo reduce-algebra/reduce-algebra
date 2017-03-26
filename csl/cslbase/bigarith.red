@@ -3,6 +3,12 @@
 % Big-number arithmetic done digit by digit for use testing the
 % native arithmetic package.
 
+% Load this file with the variable nocheck set and it just defines functions
+% without runnning the test. If you doi run the test then setting
+% seed to a string that looks like an integer uses that as a random seed
+% to influence the exact test sequence.
+
+
 % Please note that that this is GROTTY code not intended for general re-use.
 % It is JUST to provide a regression test on CSL arithmetic. It calls upon a
 % number of CSL specials (eg validate!-number, which checks if the internal
@@ -51,10 +57,6 @@
 lisp;
 on comp;
 
-if !*csl then
-   enable!-errorset(3, 3);   % Always generate backtraces even if
-                             % errorset tries to prevent that.
-
 #if !*psl
 
 % validate!-number is intended to check that the internal representation
@@ -65,9 +67,11 @@ if !*csl then
 % with the correct number of digits and (for instance) no spurious
 % leading zeros.
 
+% The PSL sketch here is not intended as just a place-holder or a start!
+
 % If one believes that "lessp" is working properly and if one knows the
 % number of bits being used then sys2int etc can police the fixnum
-% ve bignum issue, where I will try a sketch here. Noting bignums
+% vs bignum issue, where I will try a sketch here. Noting bignums
 % with unwanted leading zeros needs more expertise than I have!
 
 fluid '(largest!-fixnum smallest!-fixnum);
@@ -129,10 +133,7 @@ symbolic procedure stop n;
    exitlisp();
 
 symbolic procedure logxor(a, b);
-   lxor(a, b);
-
-symbolic procedure random!-number n;
-   random n;
+   lxor(a, b);   % CSL and PSL use different names!
 
 symbolic procedure last l;
   if null l then nil
@@ -660,34 +661,37 @@ symbolic procedure checknear(a,b,mode);
      checksigns(a + -1,b + -1,mode); 
      if not zerop a and not zerop b and not onep b and not onep ( - b)
        then <<checksigns(a,
-                         validate!-number(add1 random!-number b,"random"),
+                         validate!-number(add1 random b,"random"),
                          mode); 
               checksigns(a + 1,
-                         validate!-number(add1 random!-number b,"random"),
+                         validate!-number(add1 random b,"random"),
                          mode); 
               checksigns(a + -1,
-                         validate!-number(add1 random!-number b,"random"),
+                         validate!-number(add1 random b,"random"),
                          mode); 
-              checksigns(validate!-number(random!-number a,"random"),b,mode); 
-              checksigns(validate!-number(random!-number a,"random"),
+              checksigns(validate!-number(random a,"random"),b,mode); 
+              checksigns(validate!-number(random a,"random"),
                          b + 1,mode); 
-              checksigns(validate!-number(random!-number a,"random"),
+              checksigns(validate!-number(random a,"random"),
                          b + -1,mode); 
-              checksigns(validate!-number(random!-number a,"random"),
-                         validate!-number(add1 random!-number b,"random"),
+              checksigns(validate!-number(random a,"random"),
+                         validate!-number(add1 random b,"random"),
                          mode); 
-              checksigns(validate!-number(random!-number a,"random"),
-                         validate!-number(add1 random!-number b,"random"),
+              checksigns(validate!-number(random a,"random"),
+                         validate!-number(add1 random b,"random"),
                          mode); 
-              checksigns(validate!-number(random!-number a,"random"),
-                         validate!-number(add1 random!-number b,"random"),
+              checksigns(validate!-number(random a,"random"),
+                         validate!-number(add1 random b,"random"),
                          mode)>>>>;
 
 symbolic procedure checkall1 a;
-   <<check!-minus a; for i := 0:140 do check!-lshift(a,i - 70); nil>>;
+   <<check!-minus a;
+     for i := 0:140 do check!-lshift(a,i - 70);
+     nil>>;
 
 symbolic procedure checksigns1 a;
-   <<checkall1 a; checkall1 validate!-number( - a,"minus")>>;
+   <<checkall1 a;
+     checkall1 validate!-number( - a,"minus")>>;
 
 symbolic procedure checknear1 a;
    <<checksigns1 a; 
@@ -697,8 +701,6 @@ symbolic procedure checknear1 a;
 % If the variable !*nocheck is set when this file is read in it
 % will define all the functions but not actually run any tests!
 
-if not boundp '!*nocheck or not !*nocheck then <<
-
 % This will check near 2^0 to 2^100.
 
 % While testing it is sometimes useful to be able to resume testing some
@@ -707,11 +709,7 @@ if not boundp '!*nocheck or not !*nocheck then <<
 % begin where the first argument to functions is about to be a bignum not
 % a fixnum on 64-bit platforms.
 
-fluid '(startat);
-startat := -1;
-% startat := 58;
-
-fluid '(mode limit a b);
+fluid '(mode startat limit a b);
 
 symbolic procedure checksome limit;
   for i := 0:limit do
@@ -726,19 +724,6 @@ symbolic procedure checksome limit;
          validate!-number(b, list("power of 2", j));
          checknear(a, b, mode) >> >>;
 
-% tr validate!-number, mynum1, check!-plus, check!-two!-args, myplus;
-
-for each mode in '(plus times quotient) do <<
-     terpri();
-     princ "Start testing in mode "; printc mode;
-     if mode = 'quotient then limit := 200
-     else limit := 100;
-     if atom errorset(list('checksome, limit), t, t) then <<
-       terpri();
-       printc "+++ Stopping";
-       stop(1) >> >>;
-
-checknear1 0;
 
 symbolic procedure checksome1();
   for i := 0:100 do <<
@@ -747,11 +732,34 @@ symbolic procedure checksome1();
     validate!-number(a, list("power of 2", i));
     checknear1 a >>;
 
-if atom errorset('(checksome1), t, t) then <<
-  terpri();
-  printc "+++ Stopping";
-  stop 1 >>
+fluid '(tests endat cc vv);
+tests := '(plus times quotient);
 
->>;   % End of the !*nocheck scope
+if not boundp 'nocheck or not nocheck then <<
+  if boundp 'seed then random_new_seed compress explodec seed;
+  startat := -1;
+  if boundp 'start then startat := compress explodec eval 'start;
+  endat := 100;
+  if boundp 'end then endat := compress explodec eval 'end;
+  cc := 0;
+  if boundp 'cons then cc := compress explodec eval 'cons;
+  vv := 0;
+  if boundp 'vec then vv := compress explodec eval 'vec;
+  if not zerop cc or not zerop vv then verbos t;
+  gc!-forcer(cc, vv);
+  checknear1 0;
+  if boundp 'test then tests := list compress explodec test;
+  for each mode in tests do <<
+    terpri();
+    princ "Start testing in mode "; printc mode;
+    if mode = 'quotient and not boundp 'test then limit := 2*endat
+    else limit := endat;
+    gc!-forcer(cc, vv);
+    checksome limit >>;
+  gc!-forcer(cc, vv);
+  if not boundp 'test then checksome1();
+  if not zerop cc or not zerop vv then gc!-forcer nil;
+  nil;
+ >>;
 
 % End of bigarith.red

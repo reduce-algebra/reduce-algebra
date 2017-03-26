@@ -642,6 +642,8 @@ int f128M_print_G(int width, int prec, float128_t *p)
 
 // I also want to be able to read float128_t values...
 
+#ifdef UNUSED_IDFPLUS
+
 static LispObject idfplus(LispObject a, LispObject b)
 {   LispObject ai = qcar(a), ax = qcar(qcdr(a)), asgn = qcar(qcdr(qcdr(a)));
     LispObject bi = qcar(b), bx = qcar(qcdr(b)), bsgn = qcar(qcdr(qcdr(b)));
@@ -653,7 +655,7 @@ static LispObject idfplus(LispObject a, LispObject b)
     {   ai = times2(ai, make_power_of_two(int_of_fixnum(ax) - int_of_fixnum(bx)));
         ax = bx;
     }
-    if (asgn == fixnum_of_int(-1)) ai = negate(ai);
+    if (asgn == fixnum_of_int(-1)) ai = negate(ai); // GC safe?
     if (bsgn == fixnum_of_int(-1)) bi = negate(bi);
     ai = plus2(ai, bi);
     if (minusp(ai))
@@ -663,6 +665,8 @@ static LispObject idfplus(LispObject a, LispObject b)
     else asgn = fixnum_of_int(1);
     return list3(ai, ax, asgn);
 }
+
+#endif
 
 float128_t atof128(const char *s)
 {   int x = 0;

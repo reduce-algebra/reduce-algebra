@@ -1124,14 +1124,23 @@ static LispObject quotff(LispObject a, LispObject b)
 }
 
 LispObject quot2(LispObject a, LispObject b)
+#ifdef EXPERIMENT
+{   validate_number("Arg1 for quot", a, a, b);
+    validate_number("Arg2 for quot", b, a, b);
+    extern LispObject quot2a(LispObject a, LispObject b);    
+    LispObject r = quot2a(a, b);
+    validate_number("result for quot", r, a, b);
+    return r;
+}
+
+LispObject quot2a(LispObject a, LispObject b)
+#endif
 {   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
             switch ((int)b & XTAG_BITS)
             {   case TAG_FIXNUM:
-//
 // This is where fixnum / fixnum arithmetic happens - the case I most want to
 // make efficient.
-//
                     if (b == fixnum_of_int(0))
                         aerror2("bad arg for quotient", a, b);
                     else
@@ -1325,6 +1334,17 @@ LispObject quot2(LispObject a, LispObject b)
 }
 
 LispObject quotrem2(LispObject a, LispObject b)
+#ifdef EXPERIMENT
+{   validate_number("Arg1 for quotrem", a, a, b);
+    validate_number("Arg2 for quotrem", b, a, b);
+    extern LispObject quotrem2a(LispObject a, LispObject b);    
+    LispObject r = quotrem2a(a, b);
+    validate_number("result for quotrem", r, a, b);
+    return r;
+}
+
+LispObject quotrem2a(LispObject a, LispObject b)
+#endif
 {   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
             switch ((int)b & XTAG_BITS)
@@ -1539,6 +1559,17 @@ LispObject quotrem2(LispObject a, LispObject b)
  */
 
 LispObject CLquot2(LispObject a, LispObject b)
+#ifdef EXPERIMENT
+{   validate_number("Arg1 for CLquot", a, a, b);
+    validate_number("Arg2 for CLquot", b, a, b);
+    extern LispObject CLquot2a(LispObject a, LispObject b);    
+    LispObject r = CLquot2a(a, b);
+    validate_number("result for CLquot", r, a, b);
+    return r;
+}
+
+LispObject CLquot2a(LispObject a, LispObject b)
+#endif
 {   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
             switch ((int)b & XTAG_BITS)

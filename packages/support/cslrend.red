@@ -843,7 +843,7 @@ flag('(load!-source load!-selected!-source gcd gcdn lcmn complex
        make!-concatenated!-stream make!-string!-input!-stream
        mkhash gethash puthash remhash clrhash mknewhash
        getnewhash putnewhash remnewhash clrnewhash library!-members
-       resource!-limit errorset
+       resource!-limit errorset gc!-forcer
        representation stop float round floor ceiling truncate), 'variadic);
 
 % Arrange (for PSL compatibility) that "on gc;" and "off gc;" switch

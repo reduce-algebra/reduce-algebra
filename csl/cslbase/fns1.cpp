@@ -61,45 +61,27 @@ LispObject integerp(LispObject p)
 /*****************************************************************************/
 
 // gc-forcer(a, b) should arrange that a garbage collection is triggered
-// when at most a cons-sized units of consing happens or when at most
-// b units of space is used for vectors (where vectors include bignums and
+// when at most A cons-sized units of consing happens or when at most
+// B units of space is used for vectors (where vectors include bignums and
 // boxed floats). This is intended to be used to trigger garbage collection
 // with rather fine control over when it happens to help with debugging
 // storage management issues.
 
-// This prints the amount of space than can be used before the next (often
-// soft) garbagte collection will be invoked. By using "gc!-forcer nil"
-// before and after small calculations the amount of space they use can be
-// deduced. Sometimes! Because note that memory is allocated in pages and
-// the sizes shown here are in 8-byte units within a single page.
-
 bool next_gc_is_hard = false;
+uint64_t force_cons=0, force_vec = 0;
 
 LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b)
-{   size_t forcer;
-    size_t left = (char *)fringe - (char *)heaplimit;
-    size_t vleft = (char *)vheaplimit - (char *)vfringe;
-    if (is_fixnum(a)) forcer = 8*(size_t)sixty_four_bits(a);
-    else forcer = 0;
-    if (forcer != 0)
-    {   if (left < forcer) forcer = left;
-        fringe = (LispObject)((char *)heaplimit + forcer);
-        next_gc_is_hard = true;
-    }
-    if (is_fixnum(b)) forcer = 8*(size_t)sixty_four_bits(b);
-    else forcer = 0;
-    if (forcer != 0)
-    {   if (vleft < forcer) forcer = vleft;
-        vfringe = (LispObject)((char *)vheaplimit - forcer);
-        next_gc_is_hard = true;
-    }
-    trace_printf("\n+++ Space available before next GC = %" PRIu64
-        " : %" PRIu64 "\n", (uint64_t)left/8, (uint64_t)vleft/8);
+{   if (force_cons != 0 || force_vec != 0)
+        trace_printf("Remaining CONS : %" PRIu64 " VEC : %" PRIu64 "\n",
+            force_cons, force_vec);
+// If you pass a non-fixnum then that leaves the trigger-point unchanged.
+    if (is_fixnum(a)) force_cons = (uint64_t)sixty_four_bits(a);
+    if (is_fixnum(b)) force_vec = (uint64_t)sixty_four_bits(b);
     return onevalue(nil);
 }
 
 LispObject Lgc_forcer1(LispObject env, LispObject a)
-{   return Lgc_forcer(env, a,  a);
+{   return Lgc_forcer(env, a, a);
 }
 
 LispObject cons(LispObject a, LispObject b)
@@ -107,7 +89,7 @@ LispObject cons(LispObject a, LispObject b)
     qcar(r) = a;
     qcdr(r) = b;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit)
+    if ((char *)r <= (char *)heaplimit || cons_forced(1))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal cons", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -136,7 +118,7 @@ LispObject ncons(LispObject a)
     qcar(r) = a;
     qcdr(r) = nil;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit)
+    if ((char *)r <= (char *)heaplimit || cons_forced(1))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal ncons", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -151,7 +133,7 @@ LispObject list2(LispObject a, LispObject b)
     qcar((char *)r+sizeof(Cons_Cell)) = b;
     qcdr((char *)r+sizeof(Cons_Cell)) = nil;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit)
+    if ((char *)r <= (char *)heaplimit || cons_forced(2))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal list2", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -164,7 +146,7 @@ LispObject list2star(LispObject a, LispObject b, LispObject c)
     qcar((char *)r+sizeof(Cons_Cell)) = b;
     qcdr((char *)r+sizeof(Cons_Cell)) = c;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit)
+    if ((char *)r <= (char *)heaplimit || cons_forced(2))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal list2*", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -180,7 +162,7 @@ LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
     qcar((char *)r+2*sizeof(Cons_Cell)) = c;
     qcdr((char *)r+2*sizeof(Cons_Cell)) = d;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit)
+    if ((char *)r <= (char *)heaplimit || cons_forced(3))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal list3*", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -199,7 +181,7 @@ LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
     qcar((char *)r +3*sizeof(Cons_Cell)) = d;
     qcdr((char *)r + 3*sizeof(Cons_Cell)) = nil;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit)
+    if ((char *)r <= (char *)heaplimit || cons_forced(4))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal list4", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -214,7 +196,7 @@ LispObject acons(LispObject a, LispObject b, LispObject c)
     qcar((char *)r+sizeof(Cons_Cell)) = a;
     qcdr((char *)r+sizeof(Cons_Cell)) = b;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit)
+    if ((char *)r <= (char *)heaplimit || cons_forced(2))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal acons", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -230,7 +212,7 @@ LispObject list3(LispObject a, LispObject b, LispObject c)
     qcar((char *)r+2*sizeof(Cons_Cell)) = c;
     qcdr((char *)r+2*sizeof(Cons_Cell)) = nil;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit)
+    if ((char *)r <= (char *)heaplimit || cons_forced(3))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal list3", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -1011,7 +993,7 @@ LispObject Lcons(LispObject, LispObject a, LispObject b)
     qcar(r) = a;
     qcdr(r) = b;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit)
+    if ((char *)r <= (char *)heaplimit || cons_forced(1))
         return onevalue(reclaim((LispObject)((char *)r + TAG_CONS),
                                 "cons", GC_CONS, 0));
     else return onevalue((LispObject)((char *)r + TAG_CONS));
@@ -1023,7 +1005,7 @@ LispObject Lxcons(LispObject, LispObject a, LispObject b)
     qcar(r) = b;
     qcdr(r) = a;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit)
+    if ((char *)r <= (char *)heaplimit || cons_forced(1))
         return onevalue(reclaim((LispObject)((char *)r + TAG_CONS),
                                 "xcons", GC_CONS, 0));
     else return onevalue((LispObject)((char *)r + TAG_CONS));
@@ -1035,7 +1017,7 @@ LispObject Lncons(LispObject env, LispObject a)
     qcar(r) = a;
     qcdr(r) = nil;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit)
+    if ((char *)r <= (char *)heaplimit || cons_forced(1))
         return onevalue(reclaim((LispObject)((char *)r + TAG_CONS),
                                 "ncons", GC_CONS, 0));
     else return onevalue((LispObject)((char *)r + TAG_CONS));
@@ -1842,7 +1824,7 @@ LispObject getvector(int tag, int type, size_t size)
         if (alloc_size > (CSL_PAGE_SIZE - 32))
             aerror1("vector request too big",
                            fixnum_of_int(alloc_size/CELL-1));
-        if (alloc_size > free)
+        if (alloc_size > free || vec_forced(alloc_size/CELL))
         {   char msg[40];
 //
 // I go to a whole load of trouble here to tell the user what sort of

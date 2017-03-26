@@ -131,6 +131,28 @@ static inline LispObject timesii(LispObject a, LispObject b)
 // Here I am on a 64-bit machine... First I will see if the two inputs
 // would have fitted nicely in 32-bit words because if they would have then I
 // can just multiply them to get a 64-bit result.
+//===========================================================================
+// Oh BOTHER. The cast "(int32_t)aa" here is at best implementation defined.
+// I may even need to write it as (int32_t)(uint32_t)aa to reach even that
+// state! I think that it is likely that ALL the casts I have between signed
+// and unsigned values represent reliance on implementation defined behaviour,
+// or as I know it "the Spirit of C". But the reason I am writing this
+// comment now is that if a direct cast to a signed arithmetic type that
+// reduces width were to be undefined or if the "implementation definition"
+// was that it could behave in an arbitrary manner then the casts here
+// could be optimised out and the tests compiled as if tautologies. The g++
+// documentation explains that its implelmentation defined behaviour in C++
+// follows what gcc did in C, and the gcc documentation is explicit that
+// conversion to (and bitwise operations on) signed integer types just keep
+// the low bits and do not report exceptions or do anything that I would find
+// unexpected. So I feel a little bit safe. But note that in the past I have
+// been aware of CPUs (designed for embedded use) where arithmetic overflow
+// saturates or raises exceptions rather than wrapping modulo 2^N, so there
+// have been and potentiall still may be stabndards-conforming C++ compilers
+// that would cause this code to do very much not what I want. To be 100%
+// safe I believe I would probably need to eschew all use of signed integer
+// types. Wow!  
+//===========================================================================
     if (aa == (int32_t)aa)
     {   if (bb == (int32_t)bb) return make_lisp_integer64(aa*bb);
         int32_t blo = (int32_t)bb & 0x7fffffff;
@@ -1342,7 +1364,7 @@ static LispObject timesbb(LispObject a, LispObject b)
 // ended up as a fixnum.
 //
     {   int32_t va = (int32_t)bignum_digits(a)[0],
-                    vb = (int32_t)bignum_digits(b)[0], vc;
+                vb = (int32_t)bignum_digits(b)[0], vc;
         uint32_t vclow;
         if (va < 0)
         {   if (vb < 0) Dmultiply(vc, vclow, -va, -vb, 0);
@@ -1753,6 +1775,17 @@ LispObject times2(LispObject a, LispObject b)
 #endif
 
 LispObject times2(LispObject a, LispObject b)
+#ifdef EXPERIMENT
+{   validate_number("Arg1 for times", a, a, b);
+    validate_number("Arg2 for times", b, a, b);
+    extern LispObject times2a(LispObject a, LispObject b);    
+    LispObject r = times2a(a, b);
+    validate_number("result for times", r, a, b);
+    return r;
+}
+
+LispObject times2a(LispObject a, LispObject b)
+#endif
 {   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
             switch ((int)b & XTAG_BITS)

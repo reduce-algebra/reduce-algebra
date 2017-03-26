@@ -203,7 +203,11 @@ static LispObject rationalizef(double d, int bits)
 // cobbling up the code (which I have done before and is basically OK,
 // save that the stopping criteria are pretty delicate).
 //
-    if (d < 0.0) p = negate(p);
+    if (d < 0.0){
+        push(q);
+        p = negate(p);
+        pop(q);
+    }
     return make_approx_ratio(p, q, bits);
 }
 
@@ -337,7 +341,11 @@ static LispObject rationalizef128(float128_t *d)
     if (!is_numbers(p) || !is_ratio(p)) return p;
     q = denominator(p);
     p = numerator(p);
-    if (f128M_negative(d)) p = negate(p);
+    if (f128M_negative(d))
+    {   push(q);
+        p = negate(p);
+        pop(q);
+    }
     return make_approx_ratio(p, q, 112);
 }
 

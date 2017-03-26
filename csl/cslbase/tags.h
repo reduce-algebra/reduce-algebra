@@ -680,8 +680,10 @@ typedef uintptr_t Header;
 #define TYPE_VEC16_1     ( 0x0f <<Tw) // vector of 16 bit values
 #define TYPE_VEC16_2     ( 0x4f <<Tw) //
 
+#if 0
 #define TYPE_MAPLEREF    ( 0x2f <<Tw) // hook for interface to Maple ...
                                       // ... note this was an EXPERIMENT
+#endif
 #define TYPE_FOREIGN     ( 0x33 <<Tw) // entrypoint to foreign function
 #define TYPE_SP          ( 0x37 <<Tw) // Encapsulated stack ptr
 #define TYPE_ENCAPSULATE ( 0x3b <<Tw) // SAME TAG AS SP AT PRESENT@@@
