@@ -522,13 +522,6 @@ symbolic procedure quotf!*(u,v);
           where x=quotf(u,v);
 
 symbolic procedure quotf(u,v);
-%  begin scalar xexp;
-%       xexp := !*exp;
-%       !*exp := t;
-%       u := quotf1(u,v);
-%       !*exp := xexp;
-%       return u
-%  end;
    quotf1(u,v) where !*exp = t;
 
 symbolic procedure quotf1(p,q);

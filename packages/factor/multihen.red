@@ -123,7 +123,18 @@ symbolic procedure find!-multivariate!-factors!-mod!-p(poly,
       if w=1 and not one!-prediction!-failed then <<
         putv(best!-factors,cdar unknowns!-count!-list,poly!-remaining);
         go to exit >>
-      else if w=0 and one!-prediction!-failed then <<
+% The following case has been effectively commented out by adding the
+% annotaion "nil and" to it. This is in March 2017 when following through
+% with the code that was here seemed to cause errors at times. By commenting
+% it out I believe I am removing a special-case optimisation, and so some
+% factorizations that will have been made to run faster by this will not
+% go slower. But with the age of the code I fiund it hard to remember or
+% reconstruct the exact logic! I SUSPECT that the next line needs one
+% more condition in the conjunction to guarantee its full validity, and
+% in an idea world I would hope that some kind person would check all the
+% old papers about EZGCD and factorization etc and propose a principled
+% fixup rather than my crude response. ACN, Match 2017.
+      else if nil and w=0 and one!-prediction!-failed then <<
         putv(best!-factors,one!-prediction!-failed,poly!-remaining);
         go to exit >>;
       solve!-count:=1;
