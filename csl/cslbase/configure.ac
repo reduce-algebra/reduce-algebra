@@ -1262,7 +1262,7 @@ AC_CHECK_TYPES([__int128, unsigned __int128])
 # I would view the following as better names for 128-bit integer types and
 # will map __int128 etc onto them. But if they exist already I will expect
 # them to do what they should.
-AC_CHECK_TYPES([int128_t, unsigned uint128_t])
+AC_CHECK_TYPES([int128_t, uint128_t])
 
 # With luck the above types from newer C standards will be available. If
 # they are I can rely on them an I then do not need to worry about

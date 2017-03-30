@@ -204,12 +204,19 @@ LispObject negate(LispObject a)
             }
         }
         case TAG_BOXFLOAT:
-        {   double d = float_of_number(a);
-// Trying to negate an infinity or a NaN could yield another edge case,
-// however it does not seem proper to test for that here since if I
-// am trapping overflows (ect) that will already have happened.
-            return make_boxfloat(-d, type_of_header(flthdr(a)));
-        }
+            switch (type_of_header(flthdr(a)))
+            {   case TYPE_SINGLE_FLOAT:
+                    return make_boxfloat(-single_float_val(a),
+                                         TYPE_SINGLE_FLOAT);
+                case TYPE_DOUBLE_FLOAT:
+                    return make_boxfloat(-double_float_val(a),
+                                         TYPE_DOUBLE_FLOAT);
+                case TYPE_LONG_FLOAT:
+                    {   float128_t aa = long_float_val(a);
+                        f128M_negate(&aa);
+                        return make_boxfloat128(aa);
+                    }
+            }
         default:
             aerror1("bad arg for minus",  a);
     }

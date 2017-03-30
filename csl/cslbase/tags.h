@@ -175,17 +175,29 @@ typedef intptr_t LispObject;
 // representation. 
 #define XTAG_FLOAT32    16
 
-#define is_forward(p)              ((((int)(p)) & TAG_BITS) == TAG_FORWARD)
+static inline bool is_forward(LispObject p)
+{   return (p & TAG_BITS) == TAG_FORWARD;
+}
 
-#define is_number(p)               ((((int)(p)) & TAG_BITS) >= TAG_NUMBERS)
+static inline bool is_number(LispObject p)
+{   return (p & TAG_BITS) >= TAG_NUMBERS;
+}
 
-#define is_float(p)       (((0xc040 >> (((int)(p)) & XTAG_BITS)) & 1) != 0)
+static inline bool is_float(LispObject p)
+{   return ((0xc040 >> (p & XTAG_BITS)) & 1) != 0;
+}
 
-#define is_immed_or_cons(p)  (((0x85 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
+static inline bool is_immed_or_cons(LispObject p)
+{   return ((0x85 >> (p & TAG_BITS)) & 1) != 0;
+}
 
-#define is_immed_cons_sym(p) (((0x95 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
+static inline bool is_immed_cons_sym(LispObject p)
+{   return ((0x95 >> (p & TAG_BITS)) & 1) != 0;
+}
 
-#define need_more_than_eq(p) (((0x63 >> (((int)(p)) & TAG_BITS)) & 1) != 0)
+static inline bool need_more_than_eq(LispObject p)
+{   return ((0x63 >> (p & TAG_BITS)) & 1) != 0;
+}
 
 //
 // For each of the above tag classes I have a bunch of low-level
@@ -194,11 +206,14 @@ typedef intptr_t LispObject;
 //
 
 // fixnums now use the whole of an intptr_t, so they have 28 useful bits on
-// a 32-bit machine and 60-bits on a 64-bit machine. I believe that the
-// left-shift here will do what I want provided that ULONG_MAX+1 (or whatever)
-// is a power of 2 the way it will be on a 2s complement machine.
+// a 32-bit machine and 60-bits on a 64-bit machine. By doing the left shift
+// on an unsigned value I steer clear of C++ undefined behaviour, but then
+// when I cast back to a signed value I am in "implementation defined"
+// territory.
 
-#define fixnum_of_int(x) ((LispObject)((((uintptr_t)(x))<<4)+TAG_FIXNUM))
+static inline LispObject fixnum_of_int(intptr_t x)
+{   return  (LispObject)((((uintptr_t)x)<<4) + TAG_FIXNUM);
+}
 
 // The code here manages to get compiled as a simple arithmetic right shift
 // on enough architectures that I will not worry about writing it as a 
@@ -207,7 +222,9 @@ typedef intptr_t LispObject;
 // low bits and then doing a signed division should achieve this affect in a
 // portable manner. 
 
-#define int_of_fixnum(x) (((intptr_t)(x) & ~(intptr_t)15)/16)
+static inline intptr_t int_of_fixnum(LispObject x)
+{   return ((intptr_t)x & ~(intptr_t)15)/16;
+}
 
 // The following test will see if an intptr_t value can be reduced to
 // a Lisp fixnum without loss. I think that the logic is pretty clearly
@@ -215,13 +232,27 @@ typedef intptr_t LispObject;
 // using g++ on the computers that most matter to me this compiles
 // rather as if it has been ((x<<4)>>4 == x), i.e. as two shifts followed
 // by a comparison. This probably does well compared with some previous
-// code I had that read thinge like (x < 0x08000000 && x >= -0x08000000)
+// code I had that things like (x < 0x08000000 && x >= -0x08000000)
 // which involves referring to two literal values and performing two
 // comparisons. Of perhaps { t = (x & fix_mask); if (t==0 | t == fix_mask) ..}
-// which is comparable. Ifyou had a compiler that was less clever the resulting
-// code here could be horrible!
+// which is comparable. If you had a compiler that was less clever the
+// resulting code here could be horrible!
 
-#define valid_as_fixnum(x) (int_of_fixnum(fixnum_of_int(x)) == (x))
+// I need to overload these to cover various integer widths.
+
+static inline bool valid_as_fixnum(int32_t x)
+{   return int_of_fixnum(fixnum_of_int(x)) == x;
+}
+
+static inline bool valid_as_fixnum(int64_t x)
+{   return int_of_fixnum(fixnum_of_int(x)) == x;
+}
+
+#ifdef HAVE_INT128_T
+static inline bool valid_as_fixnum(int128_t x)
+{   return int_of_fixnum(fixnum_of_int(x)) == x;
+}
+#endif // HAVE_INT128_T
 
 #define MOST_POSITIVE_FIXVAL (((intptr_t)1 << (8*sizeof(LispObject)-5)) - 1)
 #define MOST_NEGATIVE_FIXVAL (-((intptr_t)1 << (8*sizeof(LispObject)-5)))

@@ -198,10 +198,23 @@ typedef uint64_t uintptr_t;
 #endif
 
 #endif // HAVE_STDINT_H
-//
+
+// Tidy up re possible 128-bit arithemetic support.
+
+#if defined HAVE___INT128 && !defined HAVE_INT128_T
+typedef __int128 int128_t;
+#define HAVE_INT128_T
+#endif
+
+#if defined HAVE_UNSIGNED___INT128 && !defined HAVE_UINT128_T
+typedef unsigned __int128 uint128_t;
+#define HAVE_UINT128_T
+#endif
+
+
+
 // With luck that will have regularised the situation with regard to
 // integer types!
-//
 
 #endif // header_machine_h
 

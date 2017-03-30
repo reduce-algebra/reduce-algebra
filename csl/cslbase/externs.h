@@ -872,7 +872,7 @@ extern void validate_string_fn(LispObject a, const char *f, int l);
 // The next few provide support for multiple values. In the past I had
 // these as #define macros, which had a hidden trap if one wrote
 // (say) "return onevalue(something_complicated);" and evaluation of the
-// complicated thing could set the multiple values variable. Here using
+// complicated thing could set the exit_count variable. Here using
 // inline procedures the variable exit_count should always be set right
 // at the end, as required.
 //
@@ -880,6 +880,7 @@ static inline LispObject onevalue(LispObject r)
 {   exit_count = 1;
     return r;
 }
+
 static inline LispObject nvalues(LispObject r, int n)
 {   exit_count = n;
     return r;
@@ -897,23 +898,26 @@ static inline LispObject nvalues(LispObject r, int n)
 //            then they are not EQUAL (those types need to be EQ to be EQUAL)
 //   otherwise call equal_fn(a, b) to decide the issue.
 //
-#define equal(a, b)                                \
-    ((a) == (b) ||                                 \
-     (((((a) ^ (b)) & TAG_BITS) == 0) &&           \
-      need_more_than_eq(a) &&                      \
-      equal_fn(a, b)))
+static inline equal(LispObject a, LispObject b)
+{   if (a == b) return true;  // This may be bad for (equal NaN NaN) ???
+    else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
+    else if (need_more_than_eq(a)) return equal_fn(a, b);
+    else return false;
+}
 
-#define cl_equal(a, b)                             \
-    ((a) == (b) ||                                 \
-     (((((a) ^ (b)) & TAG_BITS) == 0) &&           \
-      need_more_than_eq(a) &&                      \
-      cl_equal_fn(a, b)))
+static inline cl_equal(LispObject a, LispObject b)
+{   if (a == b) return true;  // This may be bad for (equal NaN NaN) ???
+    else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
+    else if (need_more_than_eq(a)) return cl_equal_fn(a, b);
+    else return false;
+}
 
-#define eql(a, b)                                  \
-    ((a) == (b) ||                                 \
-     (((((a) ^ (b)) & TAG_BITS) == 0) &&           \
-      need_more_than_eq(a) &&                      \
-      eql_fn(a, b)))
+static inline eql(LispObject a, LispObject b)
+{   if (a == b) return true;  // This may be bad for (equal NaN NaN) ???
+    else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
+    else if (need_more_than_eq(a)) return eql_fn(a, b);
+    else return false;
+}
 
 //
 // Helpers for the bignum arithmetic code...

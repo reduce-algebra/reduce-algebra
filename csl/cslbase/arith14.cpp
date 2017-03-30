@@ -118,6 +118,28 @@ void f128M_ldexp(float128_t *p, int x)
         ((uint64_t)x << 48);
 }
 
+void f128M_frexp(float128_t *p, float128_t *r, int *x)
+{   if (f128M_zero(p) ||
+        f128M_infinite(p) ||
+        f128M_nan(p))
+    {   *r = *p;
+        *x = 0;
+        return;
+    }
+    int px = ((p->v[HIPART] >> 48) & 0x7fff);
+// If I had a sub-normalized number I will multiply if by 2^4096 before
+// forcing its exponent. Doing that will have turned any non-zero sub-norm
+// into a legitimate normalized number.
+    if (px == 0)
+    {   f128M_mul(p, &f128_N1, r);
+        px = ((r->v[HIPART] >> 48) & 0x7fff) - 4096;
+    }
+    else *r = *p;
+    r->v[HIPART] = (r->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
+        ((uint64_t)0x7ffe << 48);
+    *x = px - 0x7ffe;
+}    
+
 // I will want working precision even higher than 128-bits. I will
 // arrange that using pairs of 128-bit floats such that the value
 // I am representing is their sum. The code I have here will not be

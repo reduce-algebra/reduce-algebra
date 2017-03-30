@@ -149,6 +149,7 @@ typedef unsigned __int128 uint128_t;
 #define FIX_CEILING  softfloat_round_max
 
 extern LispObject lisp_fix(LispObject a, int roundmode);
+extern LispObject lisp_ifix(LispObject a, LispObject b, int roundmode);
 
 
 // The following tests for IEEE infinities and NaNs depends on arithmetic
@@ -571,6 +572,7 @@ extern size_t karatsuba_parallel;
 static int f128M_exponent(const float128_t *p);
 static void f128M_set_exponent(float128_t *p, int n);
 extern "C" void f128M_ldexp(float128_t *p, int n);
+extern "C" void f128M_frexp(float128_t *p, float128_t *r, int *x);
 static bool f128M_infinite(const float128_t *p);
 static bool f128M_finite(const float128_t *p);
 static bool f128M_nan(const float128_t *x);

@@ -48,62 +48,62 @@ static LispObject Lboole(LispObject env, int nargs, ...)
     a = va_arg(aa, LispObject);
     b = va_arg(aa, LispObject);
     va_end(aa);
-    switch (op)
-    {   case fixnum_of_int(boole_clr):
+    switch (is_fixnum(op) ? int_of_fixnum(op) : -1)
+    {   case boole_clr:
             return onevalue(fixnum_of_int(0));
-        case fixnum_of_int(boole_and):
+        case boole_and:
             r = logand2(a, b);
             break;
-        case fixnum_of_int(boole_andc2):
+        case boole_andc2:
             push(a);
             b = lognot(b);
             pop(a);
             r = logand2(a, b);
             break;
-        case fixnum_of_int(boole_1):
+        case boole_1:
             return onevalue(a);
-        case fixnum_of_int(boole_andc1):
+        case boole_andc1:
             push(b);
             a = lognot(a);
             pop(b);
             r = logand2(a, b);
             break;
-        case fixnum_of_int(boole_2):
+        case boole_2:
             return onevalue(b);
-        case fixnum_of_int(boole_xor):
+        case boole_xor:
             r = logxor2(a, b);
             break;
-        case fixnum_of_int(boole_ior):
+        case boole_ior:
             r = logior2(a, b);
             break;
-        case fixnum_of_int(boole_nor):
+        case boole_nor:
             a = logior2(a, b);
             r = lognot(a);
             break;
-        case fixnum_of_int(boole_eqv):
+        case boole_eqv:
             r = logeqv2(a, b);
             break;
-        case fixnum_of_int(boole_c2):
+        case boole_c2:
             r = lognot(b);
             break;
-        case fixnum_of_int(boole_orc2):
+        case boole_orc2:
             b = lognot(b);
             r = logior2(a, b);
             break;
-        case fixnum_of_int(boole_c1):
+        case boole_c1:
             r = lognot(a);
             break;
-        case fixnum_of_int(boole_orc1):
+        case boole_orc1:
             push(b);
             a = lognot(a);
             pop(b);
             r = logior2(a, b);
             break;
-        case fixnum_of_int(boole_nand):
+        case boole_nand:
             a = logand2(a, b);
             r = lognot(a);
             break;
-        case fixnum_of_int(boole_set):
+        case boole_set:
             return onevalue(fixnum_of_int(-1));
         default:
             aerror1("bad arg for boole",  op);
@@ -1036,10 +1036,10 @@ LispObject lisp_fix(LispObject a, int roundmode)
 
 // ifix is for the 2-arg variants of floor, truncate, round etc. For
 // floating point values a and b it computes fix(a/b) and the residue
-// retuened as a second value is b times the residue in that fix operation.
+// returned as a second value is b times the residue in that fix operation.
 
-static LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
-{   LispObject q, r;
+LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
+{   LispObject q, r, r2, negb;
     if (is_float(a) || is_float(b))
     {   push(b);
         a = quot2(a, b);
@@ -1061,9 +1061,22 @@ static LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
     {   case FIX_TRUNCATE:
             break;
         case FIX_ROUND:
-            popv(3); aerror("two-arg ROUND");
+// I will apply a round-to-nearest, with round-to-even to break ties.
+            push(r);
+            negb = negate(stack[-2]);
+            push(negb);
+            r2 = times2(r, fixnum_of_int(2));
+            pop2(negb, r);
+            q = stack[0];
+            b = stack[-1];
+            if (lessp2(b, r2) ||
+                (numeq2(b, r2) && Loddp(nil, q)!=nil)) goto increase_q;
+            if (lessp2(r2, negb) ||
+                (numeq2(r2, negb) && Loddp(nil, q)!=nil)) goto decrease_q;
+            break;
         case FIX_FLOOR:
             if (!minusp(r)) break;
+        decrease_q:
             r = plus2(r, stack[-1]);
             q = stack[0];
             push(r);
@@ -1073,6 +1086,7 @@ static LispObject lisp_ifix(LispObject a, LispObject b, int roundmode)
             break;
         case FIX_CEILING:
             if (!plusp(r)) break;
+        increase_q:
             r = difference2(r, stack[-1]);
             q = stack[0];
             push(r);

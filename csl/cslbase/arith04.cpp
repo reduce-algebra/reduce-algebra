@@ -173,61 +173,172 @@ LispObject rationalf(double d)
     return make_ratio(w, den);
 }
 
-LispObject make_approx_ratio(LispObject p, LispObject q, int bits)
-{
-// Adjust p and q so that the length (in bits) of p + the length of q is
-// just bigger than bits. Use a conversion to a continued fraction to
-// achieve this. Bits will be 20, 24, 62 or 112.
-// @@ Does not do anything yet @@
-    return make_ratio(p, q);
+// The intent here is to take a single precision floating point value and
+// mask off its low 4 bits. The code here is a fine example of the sort
+// of thing that runs up against strict aliasing rules. Here I believe that
+// the use of memcpy ought to sort that out!
+
+double truncate20(double d)
+{   Float_union aa, bb;
+    aa.f = d;
+    memcpy(&bb, &aa, sizeof(bb));
+    bb.i &= ~0xf;
+    memcpy(&aa, &bb, sizeof(aa));
+    return aa.f;
 }
 
-static LispObject rationalizef(double d, int bits)
+static LispObject rationalizef(double dd, int bits)
 //
 // This is expected to give a 'nice' rational approximation to the
 // floating point value d, specifically one where the size of the
 // numerator and denominator are only just sufficient to capture the
 // precision that the floating point representation provides.
 //
-{   double dd;
-    LispObject p, q;
-    if (d == 0.0) return fixnum_of_int(0);
-    else if (d < 0.0) dd = -d; else dd = d;
-    p = rationalf(dd);
-    q = denominator(p);
-    p = numerator(p);
-// /* No cleaning up done, yet. Need to start to produce continued
-// fraction for p/q and truncate it at some suitable point to get
-// a sensible approximation.  Since this is only needed in Common Lisp
-// mode, and seems a bit specialist even then I am not going to rush into
-// cobbling up the code (which I have done before and is basically OK,
-// save that the stopping criteria are pretty delicate).
-//
-    if (d < 0.0){
-        push(q);
-        p = negate(p);
-        pop(q);
+{   double d;
+    if (dd == 0.0) return fixnum_of_int(0);
+    else if (dd < 0.0) d = -dd; else d = dd;
+// Now d is the absolute value of the float that I need to deal with.
+// If the absolute value of the input is large just convert it to an
+// integer.
+    if (d >= (double)((uint64_t)1<<bits))
+        return lisp_fix(make_boxfloat(dd, TYPE_DOUBLE_FLOAT), FIX_ROUND);
+// If the value is small first convert it to a rational number p/q, then
+// find the integer value r of q/p and return (1/r).
+    if (d <= 1.0/(double)((uint64_t)1<<bits))
+    {   LispObject r = rationalf(dd);
+        r = lisp_ifix(denominator(r), numerator(r), FIX_ROUND);
+        return make_ratio(fixnum_of_int(1), r);
     }
-    return make_approx_ratio(p, q, bits);
+// Here I have a case where the result will be a non-trivial fraction. Because
+// the true value is in the range 2^-K to 2^K with only K bits of precision
+// both numerator and denominator will ens up with no more than (about?) K
+// bits, and so they fit very happily in 64-bit integers.
+    uint64_t p, q;
+    uint64_t a;
+    uint64_t u0, u1;
+    uint64_t v0, v1;
+    if (d >= 1.0)
+    {
+// if the input was at least 1.0 but under 2^53 I can multiply it by a
+// power of 2 until it is between 2^52 and 2^53 and that should give me
+// an exact integer which is within the range of int64_t. That then just
+// needs a denominator that is the power of 2 that I scaled by. I will use
+// 2^53 here even if I am working with single or short floats as input.
+        int x;
+        volatile double d1 = frexp(d, &x);
+        p = (uint64_t)(d1*(double)((uint64_t)1<<53));
+// The above conversion to an integer does little beyond keep the low 52
+// bits of the floating point value and force bit 53 to be set!
+        q = (uint64_t)1<<(53-x);
+// The fraction (p/q) will now be an exact representation of the floating
+// point input.
+        a = p / q;       // partial quotient, which is at least 1.
+        u0 = 1; u1 = a;  // the two "previous" approximations will be
+        a = p % q;       // u0/v0 and u1/v1
+        p = q;
+        q = a;
+        v0 = 0; v1 = 1;  // now u1/v1 is my initial approximation, and
+                         // it will be just the integer floor(d).
+    }
+    else
+    {
+// Now the input d is less than 1.0, so the first step of the continued
+// fraction algorithm would use a partial quotient of zero, and just take
+// the reciprocal of my value for d.
+        int x;
+        double d1 = frexp(d, &x);
+        p = (uint64_t)(d1*(double)((uint64_t)1<<53));
+// The next 3 lines express what I want to achieve, but because the exponent
+// x is negative the initial value of the denominator q for the exact
+// representation of d can be up to about 106 bits and in particular it
+// will not fit in the type uint64_t.
+//#     __int128 qq = (__int128)1<<(53-x);
+//#     a = qq / p;
+//#     q = qq % p;
+// I can get a good approximation to the partial quotient (a) using
+// floating point, but rounding when I calculate the reciprocal may mean
+// it is not quite exact, or even quite in the integer range I had in mind.
+        double d2 = 1.0/d;
+        a = (uint64_t)d2;
+// Given a quotient I can compute a remainder as q = 1<<(53-x) - a*p.
+//      __int128_t w1 = (__int128_t)1<<(53-x);
+//      __int128_t w2 = (__int128_t)a*(__int128_t)p;
+// but if the quotient (a) was correct then the remainder will be less
+// than p, and p is known to be a 53-bit integer. Even if the computed
+// quotient was a little bit out the value of q that I get here will not
+// be far outside the range 0<=q<p, but it could err in either direction.
+// But whatever else its value will fit within a 64-bit (signed) integer.
+// I do the arithmetic as unsigned because I am deliberately expecting
+// to truncate bits above the low 64. 
+        uint64_t w1 = 0;
+        if (53-x < 64) w1 = (uint64_t)1<<(53-x);
+        q = w1 - a*p;
+// Now the value of a that I had computed in floating point might have
+// been just slightly different from the exact value. This can now be
+// observed by checking the remainder, so I will correct if necessary.
+// I think I should probably only ever be out by +1 or -1 but I will write
+// a loop "to be safe".
+        while ((int64_t)q < 0)
+        {   q = q + p;
+            a--;
+        }
+        while (q >= p)
+        {   q = q - p;
+            a++;
+        }
+        u0 = 0; u1 = 1;
+        v0 = 1; v1 = a;
+    }
+// I have now done the very first step towards generating a fractional
+// representation of the input, and (u1/v1) is the best guess I have so
+// far. The simple presentation of generating approximations always
+// starts with (0/1) and then (1/0), but I do not want to have to test
+// (1/0) to see if it is good, since my move to (floor(d)/1) for larger
+// inputs.
+// The next loop is the key one that derives a rational approximation to
+// the original floating point value. In the situation here the ratios
+// being worked with should not lead to NaNs, infinities or sub-normalised
+// numbers...
+    while (bits==53 ? d != (double)u1/(double)v1 :
+           bits==24 ? d != (float)((double)u1/(double)v1) :
+           d != truncate20((double)u1/(double)v1))
+    {   a = p/q;
+        uint64_t u2 = u0 + a*u1;
+        uint64_t v2 = v0 + a*v1;
+        a = p % q;
+        p = q;   q = a;
+        u0 = u1; u1 = u2;
+        v0 = v1; v1 = v2;
+    }
+    if (dd < 0.0) u1 = -u1;
+    LispObject p1 = make_lisp_integer64(u1);
+    if (v1 == 1) return p1;
+    push(p1);
+    LispObject q1 = make_lisp_integer64(v1);
+    pop(p1);
+    return make_ratio(p1, q1);
 }
 
-// The following constants ars 2^112 and -2^112
-static float128_t FP128_INT_LIMIT =
-{
+// The following constants are 2^112 and -2^112 and their reciprocals, which
+// are used in rationalf128 because any 128-bit floating point value that
+// is that large is necessarily an exact integer.
+//
+// FP128_SMALL_LIMIT is 2^-113 and is used in rationalizef128.
+
 #ifdef LITTLEENDIAN
-    {0, INT64_C(0x406f000000000000)}
+
+static float128_t FP128_INT_LIMIT = {{0, INT64_C(0x406f000000000000)}};
+static float128_t FP128_MINUS_INT_LIMIT = {{0, INT64_C(0xc06f000000000000)}};
+static float128_t FP128_SMALL_LIMIT = {{0, INT64_C(0x3f8e000000000000)}};
+
 #else
-    {INT64_C(0x406f000000000000), 0}
+
+static float128_t FP128_INT_LIMIT = {{INT64_C(0x406f000000000000), 0}};
+static float128_t FP128_MINUS_INT_LIMIT = {{INT64_C(0xc06f000000000000), 0}};
+static float128_t FP128_LARGE_LIMIT = {{INT64_C(0x4070000000000000), 0}};
+static float128_t FP128_SMALL_LIMIT = {{INT64_C(0x3f8e000000000000), 0}};
+
 #endif
-};
-static float128_t FP128_MINUS_INT_LIMIT =
-{
-#ifdef LITTLEENDIAN
-    {0, INT64_C(0xC06f000000000000)}
-#else
-    {INT64_C(0xC06f000000000000), 0}
-#endif
-};
 
 LispObject rationalf128(float128_t *d)
 {
@@ -327,26 +438,395 @@ LispObject rationalf128(float128_t *d)
     return make_ratio(w, den);
 }
 
-// This is expected to adjust the ration returned to support 112 bits
+// This is expected to adjust the ratio returned to support 113 bits
 // of precision.
+// I have taken the code from rationalize (as above) and removed the
+// comments to make it shorter, and then the task is just to re-work
+// it to cope with 128-bit wide values rather than 64-bit wide ones!
 
-static LispObject rationalizef128(float128_t *d)
-{   float128_t dd;
-    LispObject p, q;
-    if (f128M_zero(d)) return fixnum_of_int(0);
-    dd = *d;
-    if (f128M_negative(d)) f128M_negate(&dd);
-    p = rationalf128(&dd);
-// If the result is an integer just return it.
-    if (!is_numbers(p) || !is_ratio(p)) return p;
-    q = denominator(p);
-    p = numerator(p);
-    if (f128M_negative(d))
-    {   push(q);
-        p = negate(p);
-        pop(q);
+// First I need a little library to support 124-bit unsigned integers,
+// I am not going to worry about performance at all here! Well I could
+// have just delegated all this to the existing general bignum code, but
+// that would have meant I needed to worry more about garbage collection
+// and it would have carried a rather large amount of overhead in dispatch
+// as between all the different arithmetic types. Given then I know I
+// am working with a fixed (albeit mildly long) precision I end up with
+// the mess I have here!
+//
+// Once I have debugged the version that uses nothin beyond uint64_t I
+// will consider an alternative version that uses a 128-bit integer type
+// that is provided by the platform. But given that I will want to support
+// systems where that will not be available I need to get the portable
+// version working first.
+
+
+#ifdef USE_128_BIT_ARITHMETIC
+
+// This is to remind me of future plans!
+
+typedef struct __u124_t
+{   uint128_t n;
+} u124_t;
+
+#else
+
+typedef struct __u124_t
+{   uint32_t d[4];
+} u124_t;
+
+#endif
+
+// For debugging purposes I will arrange to be able to print values in
+// hex notation.
+
+void u124_prinhex(const char *msg, u124_t *a)
+{   printf("%s%.8x %.8x %.8x %.8x\n", msg, a->d[3], a->d[2], a->d[1], a->d[0]);
+}
+
+// Set a to the value 2^n (n positive and in range).
+
+void u124_two_to_n(u124_t *a, int n)
+{   a->d[0] = a->d[1] = a->d[2] = a->d[3] = 0;
+    a->d[n/31] = 1<<(n^31);
+}
+
+// Test for zero.
+
+bool u124_zerop(u124_t *a)
+{   return a->d[0] == 0 &&
+           a->d[1] == 0 &&
+           a->d[2] == 0 &&
+           a->d[3] == 0;
+}
+
+// The numbers are unsigned, but I will describe them as "negative"
+// if the top bit is set.
+
+bool u124_negative(u124_t *a)
+{   return ((a->d[3] & 0x40000000) != 0);
+}
+
+// Comparisons.
+
+bool u124_lessp(u124_t *a, u124_t *b)
+{   return a->d[3] < b->d[3] ||
+           (a->d[3] == b->d[3] &&
+            (a->d[2] < b->d[2] ||
+             (a->d[2] == b->d[2] &&
+              (a->d[1] < b->d[1] ||
+               (a->d[1] == b->d[1] &&
+                (a->d[0] < b->d[0]))))));
+}
+
+bool u124_leq(u124_t *a, u124_t *b)
+{   return a->d[3] < b->d[3] ||
+           (a->d[3] == b->d[3] &&
+            (a->d[2] < b->d[2] ||
+             (a->d[2] == b->d[2] &&
+              (a->d[1] < b->d[1] ||
+               (a->d[1] == b->d[1] &&
+                (a->d[0] <= b->d[0]))))));
+}
+
+// "Negating" does it work modulo 2^124.
+
+void u124_negate(u124_t *a, u124_t *b)
+{   uint32_t c = -a->d[0];
+    b->d[0] = c & 0x7fffffff;
+    c = ~a->d[1] + (c>>31);
+    b->d[1] = c & 0x7fffffff;
+    c = ~a->d[2] + (c>>31);
+    b->d[2] = c & 0x7fffffff;
+    c = ~a->d[3] + (c>>31);
+    b->d[3] = c & 0x7fffffff;
+}
+
+// Addition and subtraction.
+
+void u124_add(u124_t *a, u124_t *b, u124_t *c)
+{   uint32_t w = a->d[0] + b->d[0];
+    c->d[0] = w & 0x7fffffff;
+    w = (w >> 31) + a->d[1] + b->d[1];
+    c->d[1] = w & 0x7fffffff;
+    w = (w >> 31) + a->d[2] + b->d[2];
+    c->d[2] = w & 0x7fffffff;
+    w = (w >> 31) + a->d[3] + b->d[3];
+    c->d[3] = w & 0x7fffffff;
+}
+
+void u124_sub(u124_t *a, u124_t *b, u124_t *c)
+{   uint32_t w = a->d[0] - b->d[0];
+    c->d[0] = w & 0x7fffffff;
+    w = (w >> 31) + a->d[1] - b->d[1];
+    c->d[1] = w & 0x7fffffff;
+    w = (w >> 31) + a->d[2] - b->d[2];
+    c->d[2] = w & 0x7fffffff;
+    w = (w >> 31) + a->d[3] - b->d[3];
+    c->d[3] = w & 0x7fffffff;
+}
+
+// Multiplication only keep the low 124 bits of the product.
+
+void u124_mul(u124_t *a, u124_t *b, u124_t *c)
+{   for (int i=0; i<4; i++) c->d[i] = 0;
+    for (int i=0; i<4; i++)
+    {   int k;
+        for (int j=0; (k=i+j)<4; j++)
+        {   uint64_t w = a->d[i]*b->d[j];
+            while (k < 4)
+            {   w = w + c->d[k];
+                c->d[k] = w & 0x7fffffff;
+                w = w >> 31;
+                k++;
+            }
+        }
     }
-    return make_approx_ratio(p, q, 112);
+}
+
+void u124_leftshift(u124_t *a)
+{   a->d[3] = (a->d[3]<<1) | (a->d[2]>>30);
+    a->d[2] = ((a->d[2]<<1) & 0x7fffffff) | (a->d[1]>>30);
+    a->d[1] = ((a->d[1]<<1) & 0x7fffffff) | (a->d[0]>>30);
+    a->d[0] = (a->d[0]<<1) & 0x7fffffff;
+}
+
+void u124_rightshift(u124_t *a)
+{   a->d[0] = (a->d[0]>>1) | (((a->d[1]) & 1U) << 30);
+    a->d[1] = (a->d[1]>>1) | (((a->d[2]) & 1U) << 30);
+    a->d[2] = (a->d[2]>>1) | (((a->d[3]) & 1U) << 30);
+    a->d[3] = (a->d[3]>>1);
+}
+
+// To perform variable shifts I take a path that was quickest and easiest
+// for me to code. I shift successivly in units of 31, 6 and 1. With more
+// care I could do everythin in close to a single sequence of (variable)
+// shifts. but I do not view this as liable to be worth the coding effort,
+// even though that would not be vary great..
+
+void u124_leftshiftn(u124_t *a, int n)
+{   while (n >= 31)
+    {   a->d[3] = a->d[2];
+        a->d[3] = a->d[1];
+        a->d[1] = a->d[0];
+        a->d[0] = 0;
+        n = n - 31;
+    }
+    while (n >= 6)
+    {   a->d[3] = (a->d[3]<<6) | ((a->d[2]>>25) & 0x3f);
+        a->d[2] = (a->d[2]<<6) | ((a->d[1]>>25) & 0x3f);
+        a->d[1] = (a->d[1]<<6) | ((a->d[0]>>25) & 0x3f);
+        a->d[0] = (a->d[0]<<6);
+        n = n - 6;
+    }
+    for (int i=0; i<n; i++)
+        u124_leftshift(a);
+}
+
+void u124_rightshiftn(u124_t *a, int n)
+{   while (n >= 31)
+    {   a->d[0] = a->d[1];
+        a->d[1] = a->d[2];
+        a->d[2] = a->d[3];
+        a->d[3] = 0;
+        n = n - 31;
+    }
+    while (n >= 6)
+    {   a->d[0] = (a->d[0]>>6) | ((a->d[1]<<25) & 0x7fffffff);
+        a->d[1] = (a->d[1]>>6) | ((a->d[2]<<25) & 0x7fffffff);
+        a->d[2] = (a->d[2]>>6) | ((a->d[3]<<25) & 0x7fffffff);
+        a->d[3] = (a->d[3]>>6);
+        n = n - 6;
+    }
+    for (int i=0; i<n; i++)
+        u124_rightshift(a);
+}
+
+// Division (and remainder) are done bit by bit, which is seriously
+// inefficient but is straightforward to code. If I needed more speed I
+// could follow the treaditional long division route and after a bit
+// of normalization ger 31 bits at a time not 1. Or in the case that
+// the platform supported a 128-bit integer type I could use that and
+// so this directly!
+
+void u124_divrem(u124_t *a, u124_t *b, u124_t *q, u124_t *r)
+{   u124_t ww = *b;
+    int n = 0;
+    while (u124_leq(&ww, a))
+    {   u124_leftshift(&ww);
+        n++;
+    }
+    q->d[0] = q->d[1] = q->d[2] = q->d[3] = 0;
+    *r = *a;
+    while (n > 0)
+    {   u124_rightshift(&ww);
+        n--;
+        u124_leftshift(q);
+        if (u124_leq(&ww, r))
+        {   u124_sub(r, &ww, r);
+            q->d[0] |= 1;
+        }
+    }
+}
+
+// Now I need to be able to convert between float128_t and u124_t with
+// "fix" and "float" operations. I will only concern myself with positive
+// numbers, and my expected use will be that I only attempt to fix
+// values that will fit within 113 bits (ie well within 124), and
+// I will only float values that are in around the same range.
+
+void u124_fix(float128_t *a, u124_t *b)
+{   if (f128M_eq(a, &f128_0))
+    {   b->d[0] = b->d[1] = b->d[2] = b->d[3] = 0;
+        return;
+    }
+// I am not going to do anything clever with NaN or infinity here - they
+// are just not permitted and would lead to chaos.
+    float128_t aa;
+    int x;
+    f128M_frexp(a, &aa, &x);
+// Now I take the 113 bits of mantissa (including an implicit bit) and
+// shuffle to be in the form of the u124_t multiple precision integer.
+    b->d[0] = aa.v[LOPART] & 0x7fffffff;
+    b->d[1] = (aa.v[LOPART] >> 31) & 0x7fffffff;
+    b->d[2] = ((aa.v[LOPART] >> 62) & 0x3) |
+              ((aa.v[HIPART] << 2) & 0x7ffffffc);
+// Remember to OR in the hidden bit on the next line.
+    b->d[3] = ((aa.v[HIPART] >> 29) & 0x0007ffff) | 0x00080000;
+// Now I may need to shift b by an amount determined by x.
+    x = x - 112;
+    if (x > 0) u124_leftshiftn(b, x);
+    else if (x < 0) u124_rightshiftn(b, -x); 
+}
+
+void u124_float(u124_t *a, float128_t *b)
+{   if (u124_zerop(a))
+    {   *b = f128_0;
+        return;
+    }
+// Turn the u124_t object into a pair of 64-bit integers, which will make
+// packing to look like a float easier.
+    uint64_t alo = (uint64_t)a->d[0] |
+                   ((uint64_t)a->d[1]<<31) |
+                   ((uint64_t)a->d[2]<<62),
+             ahi = ((uint64_t)a->d[2]>>2) |
+                   ((uint64_t)a->d[3]<<29);
+    int x = 0;
+// Now I want to normalize the integer so that the bit at position
+// 00010000:00000000:00000000:00000000 is set, ie the one that will be
+// the "hidden bit". This could involve either shifting left or right, but
+// I expect the right shift case to be uncommon so I will do it rather
+// crudely.
+    if ((ahi & UINT64_C(0xfffe000000000000)) != 0)
+    {   while ((ahi & UINT64_C(0xfffe000000000000)) != 0)
+        {   alo = (alo>>1) | (ahi<<63);
+            ahi = ahi>>1;
+            x++;
+        }
+    }
+    else
+// Shifting left could involve shifts from the very bottom bit (eg when
+// converting 1 to a float128_t) so deserves more care.
+    {   while ((ahi & UINT64_C(0xfffffffffe000000)) == 0)
+        {   ahi = (ahi<<24) | (alo>>40);
+            alo = alo<<24;
+            x = x - 24;
+        }
+        while ((ahi & UINT64_C(0x0001000000000000)) == 0)
+        {   ahi = (ahi<<1) | (alo>>63);
+            alo = alo<<1;
+            x--;
+        }
+    }
+    ahi = ahi ^ UINT64_C(0x0000ffffffffffff);
+    ahi = ahi | ((uint64_t)(x + 0x7ffe)<<(112-64));
+    b->v[HIPART] = ahi;
+    b->v[LOPART] = alo; 
+}
+
+
+static LispObject rationalizef128(float128_t *dd)
+{   float128_t d;
+    if (f128M_zero(dd)) return fixnum_of_int(0);
+    bool was_negative = false;
+    d = *dd;
+    if (f128M_negative(&d))
+    {   f128M_negate(&d);
+        was_negative = true;
+    }
+// Maybe the float is in fact exactly an integer.
+    if (f128M_le(&FP128_INT_LIMIT, dd))
+        return lisp_fix(make_boxfloat128(*dd), FIX_ROUND);
+// I am slightly more conservative as to when I decide that the
+// result I return will be just the reciprocal of an integer.
+    if (f128M_le(dd, &FP128_SMALL_LIMIT))
+    {   LispObject r = rationalf128(dd);
+        r = lisp_ifix(denominator(r), numerator(r), FIX_ROUND);
+        return make_ratio(fixnum_of_int(1), r);
+    }
+    printf("Incomplete code here\n");
+    return nil;
+#if 0
+
+#ifdef HAVE_UINT128_T
+    uint128_t p, q;
+    uint128_t a;
+    uint128_t u0, u1;
+    uint128_t v0, v1;
+    if (d >= 1.0)
+    {   int x;
+        volatile double d1 = frexp(d, &x);
+        p = (uint128_t)(d1*(double)((uint128_t)1<<113));
+        q = (uint128_t)1<<(113-x);
+        a = p / q;
+        u0 = 1; u1 = a;
+        a = p % q;
+        p = q;
+        q = a;
+        v0 = 0; v1 = 1;
+    }
+    else
+    {   int x;
+        double d1 = frexp(d, &x);
+        p = (uint128_t)(d1*(double)((uint128_t)1<<113));
+        double d2 = 1.0/d;
+        a = (uint128_t)d2;
+        uint128_t w1 = 0;
+        if (113-x < 128) w1 = (uint128_t)1<<(113-x);
+        q = w1 - a*p;
+        while ((int128_t)q < 0)
+        {   q = q + p;
+            a--;
+        }
+        while (q >= p)
+        {   q = q - p;
+            a++;
+        }
+        u0 = 0; u1 = 1;
+        v0 = 1; v1 = a;
+    }
+    while (d != (double)u1/(double)v1)
+    {   a = p/q;
+        uint128_t u2 = u0 + a*u1;
+        uint128_t v2 = v0 + a*v1;
+        a = p % q;
+        p = q;   q = a;
+        u0 = u1; u1 = u2;
+        v0 = v1; v1 = v2;
+    }
+    if (dd < 0.0) u1 = -u1;
+    LispObject p1 = make_lisp_integer128(u1);
+    if (v1 == 1) return p1;
+    push(p1);
+    LispObject q1 = make_lisp_integer128(v1);
+    pop(p1);
+    return make_ratio(p1, q1);
+#else
+// I will be able to implement this - I just have not done so yet.
+    aerror("rationalize on long floats not available without int128_t");
+#endif
+
+
+#endif
 }
 
 
@@ -402,7 +882,7 @@ LispObject rationalize(LispObject a)
             {   case TYPE_SINGLE_FLOAT:
                     return rationalizef(single_float_val(a), 24);
                 case TYPE_DOUBLE_FLOAT:
-                    return rationalizef(double_float_val(a), 52);
+                    return rationalizef(double_float_val(a), 53);
                 case TYPE_LONG_FLOAT:
                     return rationalizef128(long_float_addr(a));
             }
@@ -1429,4 +1909,3 @@ bool geq2(LispObject a, LispObject b)
 }
 
 // end of arith04.cpp
-

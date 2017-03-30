@@ -489,6 +489,29 @@ LispObject Lquotient_n(LispObject env, int nargs, ...)
     stackcheck0(nargs);
     if (nargs == 1)
     {   pop(r);
+        r = quot2(fixnum_of_int(1), r);
+        return onevalue(r);
+    }
+    r = stack[1-nargs];
+    for (i=1; i<nargs; i++)
+    {   LispObject w;
+        pop(w);
+        r = CLquot2(r, w);
+    }
+    popv(1);
+    return onevalue(r);
+}
+
+LispObject LCLquotient_n(LispObject env, int nargs, ...)
+{   va_list a;
+    LispObject r;
+    int i;
+    if (nargs == 0) return onevalue(fixnum_of_int(1));
+    va_start(a, nargs);
+    push_args(a, nargs);
+    stackcheck0(nargs);
+    if (nargs == 1)
+    {   pop(r);
         r = CLquot2(fixnum_of_int(1), r);
         return onevalue(r);
     }
@@ -617,29 +640,19 @@ LispObject Lonep(LispObject env, LispObject a)
 }
 
 LispObject Levenp(LispObject env, LispObject a)
-{   switch ((int)a & TAG_BITS)
-    {   case TAG_FIXNUM:
-            return onevalue(((int32_t)a & 0x10) == 0 ? lisp_true : nil);
-        case TAG_NUMBERS:
-            if (is_bignum(a))
-                return onevalue((bignum_digits(a)[0] & 1) == 0 ? lisp_true : nil);
-        // else drop through
-        default:
-            aerror1("bad arg for evenp", a);
-    }
+{   if (is_fixnum(a))
+        return onevalue(((int32_t)a & 0x10) == 0 ? lisp_true : nil);
+    else if (is_numbers(a) && is_bignum(a))
+        return onevalue((bignum_digits(a)[0] & 1) == 0 ? lisp_true : nil);
+    aerror1("bad arg for evenp", a);
 }
 
 LispObject Loddp(LispObject env, LispObject a)
-{   switch ((int)a & TAG_BITS)
-    {   case TAG_FIXNUM:
-            return onevalue(((int32_t)a & 0x10) != 0 ? lisp_true : nil);
-        case TAG_NUMBERS:
-            if (is_bignum(a))
-                return onevalue((bignum_digits(a)[0] & 1) != 0 ? lisp_true : nil);
-        // else drop through
-        default:
-            aerror1("oddp", a);
-    }
+{   if (is_fixnum(a))
+        return onevalue(((int32_t)a & 0x10) != 0 ? lisp_true : nil);
+    else if (is_numbers(a) && is_bignum(a))
+        return onevalue((bignum_digits(a)[0] & 1) != 0 ? lisp_true : nil);
+    aerror1("bad arg for oddp", a);
 }
 
 LispObject Lminusp(LispObject env, LispObject a)

@@ -1374,7 +1374,8 @@ bool cl_equal_fn(LispObject a, LispObject b)
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code.
 // I will only view short and possibly single floats as EQUAL here if they
-// has been EQ. IN particular that has implications for +0.0 vs. -0.0.
+// has been EQ. In particular that has implications for +0.0 vs. -0.0 and
+// also NaN values...
 {
 //
 // The for loop at the top here is so that cl_equal can iterate along the
@@ -1607,7 +1608,7 @@ bool equal_fn(LispObject a, LispObject b)
 // a and b are not EQ at this stage.. I guarantee to have checked that
 // before entering this general purpose code. I will also have checked that
 // the types of the two args agree, and that they are not both immediate
-// date.
+// data.
 //
 {
 #endif
@@ -1617,7 +1618,7 @@ bool equal_fn(LispObject a, LispObject b)
 // structures will be long but not so terribly deep and so one hopes that
 // stack requirements here will not be excessive. Hahaha - if I had a
 // non-recursive version of the code too but it proved generally slower
-// I could trigger a transfer into it at the stage that stck use became
+// I could trigger a transfer into it at the stage that stack use became
 // excessive...
 //
 #ifdef CHECK_STACK
