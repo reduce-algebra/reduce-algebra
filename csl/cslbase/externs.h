@@ -898,21 +898,21 @@ static inline LispObject nvalues(LispObject r, int n)
 //            then they are not EQUAL (those types need to be EQ to be EQUAL)
 //   otherwise call equal_fn(a, b) to decide the issue.
 //
-static inline equal(LispObject a, LispObject b)
+static inline bool equal(LispObject a, LispObject b)
 {   if (a == b) return true;  // This may be bad for (equal NaN NaN) ???
     else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
     else if (need_more_than_eq(a)) return equal_fn(a, b);
     else return false;
 }
 
-static inline cl_equal(LispObject a, LispObject b)
+static inline bool cl_equal(LispObject a, LispObject b)
 {   if (a == b) return true;  // This may be bad for (equal NaN NaN) ???
     else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
     else if (need_more_than_eq(a)) return cl_equal_fn(a, b);
     else return false;
 }
 
-static inline eql(LispObject a, LispObject b)
+static inline bool eql(LispObject a, LispObject b)
 {   if (a == b) return true;  // This may be bad for (equal NaN NaN) ???
     else if ((a & TAG_BITS) != (b & TAG_BITS)) return false;
     else if (need_more_than_eq(a)) return eql_fn(a, b);
