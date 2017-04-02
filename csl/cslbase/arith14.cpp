@@ -136,8 +136,8 @@ void f128M_frexp(float128_t *p, float128_t *r, int *x)
     }
     else *r = *p;
     r->v[HIPART] = (r->v[HIPART] & INT64_C(0x8000ffffffffffff)) |
-        ((uint64_t)0x7ffe << 48);
-    *x = px - 0x7ffe;
+        ((uint64_t)0x3ffe << 48);
+    *x = px - 0x3ffe;
 }    
 
 // I will want working precision even higher than 128-bits. I will
