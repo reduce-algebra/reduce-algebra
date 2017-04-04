@@ -1,11 +1,13 @@
-Time-stamp: "2015-10-10 10:42:18 vitolo"
+Time-stamp: "2017-04-04 12:43:26 vitolo"
 
 This folder contains software for the CDE package, written by Raffaele
 Vitolo. It is devoted to computations for general differential equations (i.e.,
 not necessarily in evolution form) with an arbitrary number of independent
 variables. It can compute symmetries, conservation laws, Hamiltonian,
 symplectic and recursion operators, in local and nonlocal coordinates. It is
-distributed under the same free license of REDUCE.
+distributed under the same free license of REDUCE. A complete user guide is
+included as a chapter in the main Reduce manual. The Reduce manual can be found
+in the /doc subfolder of the main folder of Reduce source code.
 
 CDE version: 2.0.
 
@@ -30,9 +32,6 @@ derivatives. cde.red will load the files:
  - A test file cde.tst, with the computation of the two local Hamiltonian
  structures for the KdV equation.
  - The file global.txt with a list of global variables used in cdi.red.
- - The folder doc containing the file Cde-userguide-2.0.pdf, a CDIFF user guide
- for computations of symmetries, conservation laws, Hamiltonian, symplectic and
- recursion operators, in local and nonlocal coordinates.
  - The folder examples, which contains all examples described in the user guide
  with results and state files.
  - The folders examples/results and examples/state contain all result and state
