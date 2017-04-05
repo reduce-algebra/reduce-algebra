@@ -708,7 +708,7 @@ asserted procedure rlfaclimit(n: Integer): Integer;
       return old
    end;
 
-asserted procedure sfto_fctrf(f: SF): List;
+asserted procedure sfto_fctrf(f: SF): DottedPair;
    % A wrapper for fctrf catching errors and recomputing with a different random seed.
    begin
       scalar w, e;

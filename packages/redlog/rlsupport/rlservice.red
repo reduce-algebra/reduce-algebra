@@ -442,7 +442,7 @@ asserted procedure rl_docSwitches(names: List, types: List, docs: List): Alist;
       return sl
    end;
 
-asserted procedure rl_servicewrapper(rl_!*b: Applicable, u: List, names: List, types: List, defaults: Alist, rtype: Id, rl_b!*: Id, rlb: Id): Any;
+asserted procedure rl_servicewrapper(rl_!*b: Applicable, u: List, names: List, types: List, defaults: Alist, rtype: Any, rl_b!*: Id, rlb: Id): Any;
    % [rl_bname] is the SM entry point of the service called. [args] are the
    % passed arguments; [names] are the names of the specified arguments, [types]
    % are their types, and defaults are their default values. [rtype] is the type

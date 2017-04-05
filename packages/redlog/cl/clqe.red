@@ -59,10 +59,12 @@ procedure substTripletP(x);
 
 
 %DS
-% Container ::= (ContainerElementL . QfFormulaL)
+% Container ::= (ContainerElementL . QfFormulaL) | nil
 
-struct Container asserted by pairp;
+struct Container asserted by containerP;
 
+procedure containerP(x);
+   null x or pairp x;
 
 %DS
 % Point ::= (Coordinate, ...)
@@ -157,8 +159,10 @@ asserted procedure co_dynPush1(co: Container, ce: ContainerElement): Container;
       return co
    end;
 
-asserted procedure co_hfn(item: ContainerElement): List2;
-   % Container hash function.
+asserted procedure co_hfn(item: DottedPair): List2;
+   % Container hash function. The argument is a pair with a variable list and a
+   % quantifier-free formula both taken from a Container Element in co_dynPush1
+   % above.
    {cl_fvarl1 cdr item,rl_atnum cdr item};
 
 asserted procedure co_push(co: ContainerElementL, dol: ContainerElementL): Container;
@@ -484,7 +488,7 @@ asserted procedure cl_unsplit(ql: List, varll: List, f: Formula): Formula;
       return res
    end;
 
-asserted procedure cl_qe1!-iterate(ql: List, varll: List, f: Theory, theo: Theory, bvl: KernelL): List6;
+asserted procedure cl_qe1!-iterate(ql: List, varll: List, f: Theory, theo: Theory, bvl: KernelL): List7;
    % Iteratively apply [cl_qeblock] to the quantifier blocks.
    begin scalar svrlidentify,svrlqeprecise,svrlqeaprecise,q,varl,svf,rvl,jl;
       svrlidentify := !*rlidentify;
@@ -727,7 +731,7 @@ asserted procedure cl_transform(f: QfFormula, vl: KernelL, an: Answer, theo: The
       return {f, vl, an, theo, ans, bvl}
    end;
 
-asserted procedure cl_gauss(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL): DottedPair;
+asserted procedure cl_gauss(f: QfFormula, vl: KernelL, an: Answer, theo: Theory, ans: Boolean, bvl: KernelL): ExtraBoolean;
    begin scalar w,ww;
       w := rl_trygauss(f,vl,theo,ans,bvl);
       if w neq 'failed then <<

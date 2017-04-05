@@ -108,7 +108,7 @@ rl_type {
    doc = {
       syntax = "A REDUCE Variable."}};
 
-asserted procedure rl_a2sVariable(x: Any): List;
+asserted procedure rl_a2sVariable(x: Any): Kernel;
    if sfto_kernelp x then x else typerr(x, "Variable");
 
 
@@ -308,7 +308,7 @@ asserted procedure rl_a2sAssignment(x: Any, a2sLhs: Any): List;
       return cadr w .  apply(a2sLhs, {caddr w})
    end;
 
-asserted procedure rl_s2aAssignment(x: List, s2aLhs: Any): List;
+asserted procedure rl_s2aAssignment(x: DottedPair, s2aLhs: Any): List;
    {'equal, car x, apply(s2aLhs, {cdr x})};
 
 % Temporary, used with the old scheduler:
