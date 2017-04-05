@@ -72,7 +72,8 @@ procedure KernelListP(s);
 
 switch dolzmann;
 
-asserted procedure ofsf_cadporder!-betterp(rating: Integer, optrating: Integer, theo: List, theoopt: List): Boolean;
+asserted procedure ofsf_cadporder!-betterp(rating: Integer, optrating: Any, theo: List, theoopt: List): Boolean;
+   % Optrating is Integer or nil.
    if not !*dolzmann then
       not optrating or rating < optrating or
       (!*rlqegen and rating = optrating and length theo < length theoopt)

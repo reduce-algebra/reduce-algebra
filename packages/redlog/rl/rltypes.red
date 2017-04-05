@@ -2,7 +2,7 @@ module rltypes;
 
 revision('rltypes, "$Id$");
 
-copyright('rltypes, "(c) 2016 T. Sturm");
+copyright('rltypes, "(c) 2016, 2017 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -300,7 +300,7 @@ rl_type {
       syntax = "An equation v = x, where v is a Variable.",
       example = "v_1 = x^4*y^2 + y^2*x^4 - 3*x^2*y^2 + 1 >= 0"}};
 
-asserted procedure rl_a2sAssignment(x: Any, a2sLhs: Any): List;
+asserted procedure rl_a2sAssignment(x: Any, a2sLhs: Any): DottedPair;
    begin scalar w;
       w := reval x;
       if not (listp w and eqn(length w, 3) and eqcar(w, 'equal)) and kernelp cadr w then
