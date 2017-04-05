@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% (c) 2013-2014 T. Sturm
-% ----------------------------------------------------------------------
+module ofsftrop;
+
+revision('ofsftrop, "$Id$");
+
+copyright('ofsftrop, "(c) 2013-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,8 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-module ofsftrop;
 
 fluid '(ofsf_lpsolprec!*);
 ofsf_lpsolprec!* := 8;
@@ -212,7 +211,7 @@ asserted procedure ofsf_zeropeval1(argl: List, posp: Boolean): List;
       return {'list, flag, one, other, zero}
    end;
 
-asserted procedure ofsf_s2aPointPair(pp: List2): List2;
+asserted procedure ofsf_s2aPointPair(pp: List2): List3;
    {'list, ofsf_al2eql car pp, cadr pp};
 
 asserted procedure ofsf_al2eql(al: Alist): List;
