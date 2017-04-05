@@ -221,7 +221,7 @@ rl_type {
    doc = {
       syntax = "A homogeneous List."}};
 
-asserted procedure rl_a2sList(l: List, a2sElement: Any): List;
+asserted procedure rl_a2sList(l: Any, a2sElement: Any): List;
    begin scalar w, !*rlsimpl;
       l := reval l;
       if not eqcar(l, 'list) then
