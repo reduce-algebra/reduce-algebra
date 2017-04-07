@@ -967,7 +967,7 @@ LispObject quotbb(LispObject a, LispObject b, int need)
         m--;
     }
 // Unscale and correct the signs.
-    if ((need && QUOTBB_REMAINDER_NEEDED) != 0)
+    if ((need & QUOTBB_REMAINDER_NEEDED) != 0)
     {   lena = unscale(a, lena+1, scale);
         if (sign & SIGN_REMAINDER_NEGATIVE)
             lena = negate_in_place(a, lena);
@@ -980,7 +980,7 @@ LispObject quotbb(LispObject a, LispObject b, int need)
     }
 // Now I need to pack the results so that they are suitable for use
 // elsewhere in the system. 
-    if ((need && QUOTBB_REMAINDER_NEEDED) != 0)
+    if ((need & QUOTBB_REMAINDER_NEEDED) != 0)
         mv_2 = pack_up_result(a, lena);
     if ((need & QUOTBB_QUOTIENT_NEEDED) != 0)
         return pack_up_result(big_quotient, lenq);

@@ -244,6 +244,10 @@ static inline bool valid_as_fixnum(int32_t x)
 {   return int_of_fixnum(fixnum_of_int(x)) == x;
 }
 
+static inline bool valid_as_fixnum(intptr_t x)
+{   return int_of_fixnum(fixnum_of_int(x)) == x;
+}
+
 static inline bool valid_as_fixnum(int64_t x)
 {   return int_of_fixnum(fixnum_of_int(x)) == x;
 }
