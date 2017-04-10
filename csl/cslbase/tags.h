@@ -244,10 +244,6 @@ static inline bool valid_as_fixnum(int32_t x)
 {   return int_of_fixnum(fixnum_of_int(x)) == x;
 }
 
-static inline bool valid_as_fixnum(intptr_t x)
-{   return int_of_fixnum(fixnum_of_int(x)) == x;
-}
-
 static inline bool valid_as_fixnum(int64_t x)
 {   return int_of_fixnum(fixnum_of_int(x)) == x;
 }
@@ -257,6 +253,14 @@ static inline bool valid_as_fixnum(int128_t x)
 {   return int_of_fixnum(fixnum_of_int(x)) == x;
 }
 #endif // HAVE_INT128_T
+
+// The foillowing has given me some pain wrt the overloading where gcc and
+// clang disagree about validity. Until I have read the C++ standard carefully
+// enough I use this non-overloaded version in a few places.
+
+static inline bool intptr_valid_as_fixnum(intptr_t x)
+{   return int_of_fixnum(fixnum_of_int(x)) == x;
+}
 
 #define MOST_POSITIVE_FIXVAL (((intptr_t)1 << (8*sizeof(LispObject)-5)) - 1)
 #define MOST_NEGATIVE_FIXVAL (-((intptr_t)1 << (8*sizeof(LispObject)-5)))

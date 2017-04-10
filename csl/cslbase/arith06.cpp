@@ -422,7 +422,7 @@ static LispObject Lplus(LispObject env, int nargs, ...)
         pop(w);
         if (is_fixnum(r) && is_fixnum(w))
         {   intptr_t c = int_of_fixnum(r) + int_of_fixnum(w);
-            if (valid_as_fixnum(c))
+            if (intptr_valid_as_fixnum(c))
             {   r = fixnum_of_int(c);
                 continue;
             }
@@ -568,7 +568,7 @@ LispObject Ltrap_floating_overflow(LispObject env, LispObject a)
 LispObject Lplus2(LispObject env, LispObject p, LispObject q)
 {   if (is_fixnum(p) && is_fixnum(q))
     {   intptr_t c = int_of_fixnum(p) + int_of_fixnum(q);
-        if (valid_as_fixnum(c)) return onevalue(fixnum_of_int(c));
+        if (intptr_valid_as_fixnum(c)) return onevalue(fixnum_of_int(c));
     }
     p = plus2(p, q);
     return onevalue(p);

@@ -437,8 +437,23 @@ static inline LispObject make_lisp_unsigned64(uint64_t n)
 }
 
 extern LispObject make_lisp_integerptr_fn(intptr_t n);
+
+// There is a little C++ joke here. I had originally used valid_as_fixnum()
+// to test if the intptr_t value was suitably in range. That function provides
+// overloads for int32_t and int64_t. And for int128_t if I have a 128-bit
+// integer type available. It does not provide a direct overload for intptr_t
+// because that is liable to be one of the previous types and so would clash
+// and be rejected. Anyway on clang (on a Macintosh) is deemed ambiguous and
+// the code failed to compile. clang would allow me to add an extra overload
+// to valid_as_integer so there it is treating intptr_t as a new integer type
+// not exactly the same as int32_t or int64_t, rather as if it only has
+// preprocessor levels of understanding so it does not yet know which it is.
+// All this means that I need to go and read the C++ standard carefully, but
+// in the meanwhile having conservative code feels safer... so this comment is
+// the main cost.
+
 static inline LispObject make_lisp_integerptr(intptr_t n)
-{   if (valid_as_fixnum(n)) return fixnum_of_int(n);
+{   if (intptr_valid_as_fixnum(n)) return fixnum_of_int(n);
     else return make_lisp_integerptr_fn(n);
 }
 
