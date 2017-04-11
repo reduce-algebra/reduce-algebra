@@ -71,6 +71,10 @@
 #define __STDC_CONSTANT_MACROS 1
 #endif
 
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS 1
+#endif
+
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS 1
 #endif
@@ -126,6 +130,8 @@ extern "C"
 
 #if !defined HAVE_INTPTR_T && (SIZEOF_VOID_P == 4)
 typedef int32_t intptr_t;
+#define INTPTR_MAX INT32_MAX
+#define INTPTR_MIN INT32_MIN
 #define HAVE_INTPTR_T 1
 #endif
 
@@ -144,7 +150,19 @@ typedef uint64_t uintptr_t;
 #define HAVE_UINTPTR_T 1
 #endif
 
-// Tidy up re possible 128-bit arithemetic support.
+#ifndef UINTPTR_MAX
+#define UINTPTR_MAX ((uintptr_t)(-1))
+#endif
+
+#ifndef INTPTR_MAX
+#define INTPTR_MAX ((intptr_t)((UINTPTR_MAX-1)/2))
+#endif
+
+#ifndef INTPTR_MIN
+#define INTPTR_MIN (-1-INTPTR_MAX)
+#endif
+
+// Tidy up re possible 128-bit arithmetic support.
 
 #if defined HAVE___INT128 && !defined HAVE_INT128_T
 typedef __int128 int128_t;

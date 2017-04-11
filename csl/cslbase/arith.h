@@ -746,6 +746,12 @@ extern "C" float128_t atof128(const char *s);
 // got be suffixing the top-level name with one of the above letters.
 // arith_dispatch_2 ends up with 64 sub-functions to call.
 
+// NOTE: If you have an old C compiler that does not deal with the
+// option that indicates that aerror() never returns then the dispatch
+// code here will appear to exit without a proper return value, and this
+// will lead to rather a lot of warning messages. With a more modern C++
+// compiler that issue should not arise.
+
 // First for 1-arg functions
 
 #define arith_dispatch_1(stgclass, type, name)                      \
