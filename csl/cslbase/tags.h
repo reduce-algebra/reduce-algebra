@@ -41,17 +41,6 @@
 #ifndef header_tags_h
 #define header_tags_h 1
 
-//
-// These days I have make autoconf stuff check to see if the standard
-// header that defines known-size integer types is available. And then
-// in "headers.h" I patch things up for old systems where it is not present,
-// at least as best I can manage.
-//
-
-#if !defined HAVE_STDINT_H || !defined HAVE_INT32_T
-#error This system needs a 32-bit integer type.
-#endif
-
 #define SIXTY_FOUR_BIT (sizeof(intptr_t) == 8)
 
 #define CSL_IGNORE(x)       ((void)(x))
@@ -67,7 +56,9 @@
 // My default at present is to use PAGE_BITS=22, which leads to 4 Mbyte pages.
 // I use that size on both 32 and 64-bit machines, which will mean that
 // 32 bit systems can support vectors that are longer than will fit into
-// a 64-bit system.
+// a 64-bit system. With the latest revision of the garnage collector and
+// checkpoint scheme this arrangement is no longer vital. But I may wish to
+// use a variant of it when and if I introduce a multi-threading model!
 //
 
 #ifndef PAGE_BITS
@@ -124,27 +115,18 @@
 // the code where I am sloppy about putting such an object into an int32_t
 // I will have trouble, and anywhere that I use absolute numeric offsets
 // instead of multiples of sizeof(LispObject) there can be pain.
-// Coping with this means I have to be careful about integer constants that
-// could fit into 64 but not 32-bits. Note the C/C++ construction like
-// INTPTR_C(nnn) where you need __STDC_CONSTANT_MACROS defined before including
-// stdint.h and inttypes.c to get that defined.
-//
 
 typedef intptr_t LispObject;
 
 
-//
 // The macro CELL had better have either the value 4 or 8. It is the
 // size of the basic unit of memory within which CSL works.
-//
 
 #define CELL ((size_t)sizeof(LispObject))
 
-//
 // LispObject is a datatype where the low 3 bits are used as tags -
 // this idea works provided all memory addresses needed can be kept
 // doubleword aligned.  The main tag allocation is documented here.
-//
 
 #define TAG_BITS        7
 #define XTAG_BITS       15

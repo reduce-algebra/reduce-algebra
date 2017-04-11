@@ -75,27 +75,6 @@
 // that would put things in the std: namespace, and the killer for me is
 // that with g++ I can then not find putc_unlocked and getc_unlocked.
 
-// The following need to be defined so that the useful C macros in
-// stdint.h get defined. They reflect an ugly gulf between C and C++.
-// Well this is a gulf that USED to exist and these should not longer be
-// required - but sometimes I may try building an somewhat ancient platforms
-// so I use them... if you have an up to date C++ compiler an integer
-// literal written with very many digits will be treated as of some suitably
-// wide type. But if I go back to somewhat ancient verisions I NEED to write
-// UINT64_C(0x1234567812345678) to get what I need. Also if you have a new
-// enough C++ compiler you should get limits without needing to ask for them
-// this way...
-
-#ifndef __STDC_CONSTANT_MACROS
-#define __STDC_CONSTANT_MACROS 1
-#endif
-#ifndef __STDC_LIMIT_MACROS
-#define __STDC_LIMIT_MACROS 1
-#endif
-#ifndef __STDC_FORMAT_MACROS
-#define __STDC_FORMAT_MACROS 1
-#endif
-
 #ifdef WIN32
 // The aim here is to avoid use of the Microsoft versions of printf and
 // friends and (hence) allow g++ to parse and check format strings reliably.
@@ -115,28 +94,14 @@
 #include <setjmp.h>
 #include <signal.h>
 #include <exception>
-
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
-#endif
-
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#else
-// I am also going to rely on correctness including on the 64-bit mingw
-// compilers where at one stage I had to do special things here to work
-// around a temporary issue that related to their use of the Microsoft
-// C libraries rather than the GNU ones.
-#error inttypes.h is now required for building CSL
-#endif
-
+#include <assert.h>
 #include <limits.h>
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
 
-#include "machine.h"
+#include "machine.h"    // N.B. includes <stdint.h> and <inttypes.h>
 #include "tags.h"
 #include "cslerror.h"
 #include "externs.h"
@@ -156,11 +121,9 @@
 #endif
 
 #ifdef HAVE_CRLIBM
-//
 // crlibm aims to produce correctly rounded results in all cases.
 // The functions from it selected here are the ones that round to
 // nearest. I think I will now ALWAYS use it.
-//
 
 #include "crlibm.h"
 

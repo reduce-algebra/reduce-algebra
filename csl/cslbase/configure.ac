@@ -1195,16 +1195,12 @@ AC_HEADER_DIRENT
 AC_HEADER_SYS_WAIT
 
 AC_CHECK_HEADER([stdint.h],
-                [stdint_header=y
-                 AC_DEFINE(HAVE_STDINT_H, 1)],
-                [stdint_header=n])
-AC_MSG_NOTICE([stdint_header=$stdint_header])
+                [],
+                [AC_MSG_ERROR([header file <stdint.h> needed])])
 
 AC_CHECK_HEADER([inttypes.h],
-                [inttypes_header=y
-                 AC_DEFINE(HAVE_INTTYPES_H, 1)],
-                [inttypes_header=n])
-AC_MSG_NOTICE([inttypes_header=$inttypes_header])
+                [],
+                [AC_MSG_ERROR([header file <inttypes.h> needed])])
 
 AC_CHECK_HEADERS([complex.h])
 
@@ -1236,18 +1232,8 @@ AC_C_CONST
 AC_STRUCT_TM
 AC_C_VOLATILE
 
-AC_CHECK_TYPES([int8_t,int16_t,int32_t,int64_t,intptr_t], [], [],
-   [#ifdef HAVE_STDINT_H
-    #include <stdint.h>
-    #endif])
-AC_CHECK_TYPES([uint8_t,uint16_t,uint32_t,uint64_t,uintptr_t], [], [],
-   [#ifdef HAVE_STDINT_H
-    #include <stdint.h>
-    #endif])
-AC_CHECK_TYPES([u_int8_t,u_int16_t,u_int32_t,u_int64_t,u_intptr_t], [], [],
-   [#ifdef HAVE_STDINT_H
-    #include <stdint.h>
-    #endif])
+AC_CHECK_TYPES([intptr_t,unitptr_t], [], [have_intptr=no],
+   [#include <stdint.h>])
 AC_CHECK_TYPES([complex double], [], [],
    [#ifdef HAVE_COMPLEX_H
     #include <complex.h>
@@ -1259,28 +1245,16 @@ AC_CHECK_TYPES([complex double], [], [],
 # for multiplication and division here can be good.
 #
 AC_CHECK_TYPES([__int128, unsigned __int128])
+
 # I would view the following as better names for 128-bit integer types and
 # will map __int128 etc onto them. But if they exist already I will expect
 # them to do what they should.
 AC_CHECK_TYPES([int128_t, uint128_t])
 
-# With luck the above types from newer C standards will be available. If
-# they are I can rely on them an I then do not need to worry about
-# the sized of the older-style native types such as "long". And for
-# cross compilation and multi-architecture builds it can be delicate to
-# work out the size of types at configure time! But I will do so now and
-# use what I find as a fall-back for the unusual case when intptr_t is not
-# available. In that case I use these measurements just once to
-# define my own versions of int32_t etc etc.
-#
-# Note that if <stdint.h> is available, which should really almost always
-# be the case now, I do NOT do anything here.
-
-if test "x$stdint_header" != "xy"
+if test "x$have_intptr" = "xno"
 then
   AC_MSG_NOTICE([Falling back to finding datatype sizes at configure time.])
   AC_CHECK_SIZEOF(void *)
-  AC_CHECK_SIZEOF(short int)
   AC_CHECK_SIZEOF(int)
   AC_CHECK_SIZEOF(long)
   AC_CHECK_SIZEOF(long long)

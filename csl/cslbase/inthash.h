@@ -69,18 +69,6 @@
 #ifndef __inthash_h
 #define __inthash_h 1
 
-#include <stdlib.h>
-
-#ifndef __STDC_FORMAT_MACROS
-#define __STDC_FORMAT_MACROS 1
-#endif
-#ifndef __STDC_CONSTANT_MACROS
-#define __STDC_CONSTANT_MACROS 1
-#endif
-#include <stdint.h>
-#include <assert.h>
-
-
 // The structure "inthash" is used to encapsulate a table. In almost
 // all cases I hope that people will neither need nor want to inspect the
 // fields within it. However such operations as iterating over keys or

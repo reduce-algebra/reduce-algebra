@@ -48,10 +48,38 @@
 #ifndef header_machine_h
 #define header_machine_h 1
 
+// WIth really old versions of C++ you may not be able to write
+// large literal integers without some decoration. So e.g.
+// 0x7fffffffffffffff might count as an overflow. In those old days you
+// could either add a suffix (typically L or LL, but different platforms
+// might not agree about how wide L made things) or use the C macros
+// such as INT64_C().
+//
+// A bit later C++ compilers started interpreting long strings of digits
+// as items with integer type wide enough to represent them. And then
+// INT64_C and friends only got defined if you had defined a symbol
+// __STDC_CONSTANT_MACROS before including <stdint.h>.
+//
+// Yet later the stance seems to have softened and INT64_C etc get
+// defined by <stdint.h> regardless, so use is not required but is
+// permitted. To cope with all these situations I will define the
+// magic symbols __STDC_CONSTANT_MACROS and __STDC_FORMAT_MACROS (which
+// helps for printf etc) and always wrire large-value literals in the
+// way that ancient systems and C required.
+
+#ifndef __STDC_CONSTANT_MACROS
+#define __STDC_CONSTANT_MACROS 1
+#endif
+
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS 1
+#endif
+
 extern "C"
 {
-// At present softfloat.h needs includion in C mode not C++ mode.
-// This must be included before tags.h.
+// At present softfloat.h needs inclusion in C mode not C++ mode.
+// This must be included before tags.h, but after __STDC_CONSTANT_MACROS
+// has been defined.
 
 #include "softfloat.h"
 }
@@ -90,114 +118,31 @@ extern "C"
 #  endif
 #endif
 
-#ifdef HAVE_STDINT_H
-
-#ifndef __STDC_CONSTANT_MACROS
-#define __STDC_CONSTANT_MACROS 1
-#endif
-
-#ifndef __STDC_FORMAT_MACROS
-#define __STDC_FORMAT_MACROS 1
-#endif
-
 #include <stdint.h>
+#include <inttypes.h>
 
-#else // HAVE_STDINT_H
-//
-// Now it appears that some systems provide types with names like
-// u_int32_t where I count uint32_t as more standard. I will adapt
-// around that here. As C compilers become more standardised this
-// will become increasingly irrelevant.
-//
+// C++ does not guarantee that intptr_t is provided, so I patch around
+// that if necessary.
 
-#ifndef HAVE_UINT32_T
-#ifdef  HAVE_U_INT32_T
-typedef u_int32_t uint32_t;
-#define HAVE_UINT32_T 1
-#endif
-#endif
-
-#ifndef HAVE_UINT64_T
-#ifdef  HAVE_U_INT64_T
-typedef u_int64_t uint64_t;
-#define HAVE_UINT64_T 1
-#endif
-#endif
-
-#ifndef HAVE_UINTPTR_T
-#ifdef  HAVE_U_INTPTR_T
-typedef u_intptr_t uintptr_t;
-#define HAVE_UINTPTR_T 1
-#endif
-#endif
-
-//
-// Finally if those abstract widths have not been provided I will fall
-// back on information worked out at configure-time. Note that that could
-// be delicate in the context of cross-compilation and other odd cases.
-//
-
-#if !defined HAVE_INT32_T && defined SIZEOF_INT && (SIZEOF_INT == 4)
-typedef int int32_t;
-#define HAVE_INT32_T 1
-#endif
-
-#if !defined HAVE_UINT32_T && defined SIZEOF_INT && (SIZEOF_INT == 4)
-typedef unsigned int uint32_t;
-#define HAVE_UINT32_T 1
-#endif
-
-#if !defined HAVE_INT32_T && defined SIZEOF_SHORT_INT && (SIZEOF_SHORT_INT == 4)
-typedef short int int32_t;
-#define HAVE_INT32_T 1
-#endif
-
-#if !defined HAVE_UINT32_T && defined SIZEOF_SHORT_INT && (SIZEOF_SHORT_INT == 4)
-typedef unsigned short int uint32_t;
-#define HAVE_UINT32_T 1
-#endif
-
-#if !defined HAVE_INT64_T && defined SIZEOF_LONG && (SIZEOF_LONG == 8)
-typedef long int64_t;
-#define HAVE_INT64_T 1
-#endif
-
-#if !defined HAVE_UINT64_T && defined SIZEOF_LONG && (SIZEOF_LONG == 8)
-typedef unsigned long uint64_t;
-#define HAVE_UINT64_T 1
-#endif
-
-#if !defined HAVE_INT64_T && defined SIZEOF_LONG_LONG && (SIZEOF_LONG_LONG == 8)
-typedef long long int64_t;
-#define HAVE_INT64_T 1
-#endif
-
-#if !defined HAVE_UINT64_T && defined SIZEOF_LONG_LONG && (SIZEOF_LONG_LONG == 8)
-typedef unsigned long long uint64_t;
-#define HAVE_UINT64_T 1
-#endif
-
-#if !defined HAVE_INTPTR_T && defined SIZEOF_VOID_P && (SIZEOF_VOID_P == 4) && defined HAVE_INT32_T
+#if !defined HAVE_INTPTR_T && (SIZEOF_VOID_P == 4)
 typedef int32_t intptr_t;
 #define HAVE_INTPTR_T 1
 #endif
 
-#if !defined HAVE_INTPTR_T && defined SIZEOF_VOID_P && (SIZEOF_VOID_P == 8) && defined HAVE_INT64_T
+#if !defined HAVE_INTPTR_T && (SIZEOF_VOID_P == 8)
 typedef int64_t intptr_t;
 #define HAVE_INTPTR_T 1
 #endif
 
-#if !defined HAVE_UINTPTR_T && defined SIZEOF_VOID_P && (SIZEOF_VOID_P == 4) && defined HAVE_UINT32_T
+#if !defined HAVE_UINTPTR_T && (SIZEOF_VOID_P == 4)
 typedef uint32_t uintptr_t;
 #define HAVE_UINTPTR_T 1
 #endif
 
-#if !defined HAVE_UINTPTR_T && defined SIZEOF_VOID_P && (SIZEOF_VOID_P == 8) && defined HAVE_UINT64_T
+#if !defined HAVE_UINTPTR_T && (SIZEOF_VOID_P == 8)
 typedef uint64_t uintptr_t;
 #define HAVE_UINTPTR_T 1
 #endif
-
-#endif // HAVE_STDINT_H
 
 // Tidy up re possible 128-bit arithemetic support.
 
