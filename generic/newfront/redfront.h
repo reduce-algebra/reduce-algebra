@@ -45,15 +45,16 @@
 #define NATIVE_WINDOWS 1
 #endif
 
-#ifdef CSL
-#ifdef PSL
-#error Both CSL and PSL defined. This is a configuration error
+#if defined CSL && defined BOOT
+#error Both CSL and BOOT defined when only one should be.
+#elif defined CSL && defined PSL
+#error Both CSL and PSL defined when only one should be.
+#elif defined BOOT && defined PSL
+#error Both BOOT and PSL defined when only one should be.
+#elif !defined CSL && !defined BOOT && !defined PSL
+#error One of CSL, BOOT or PSL must be defined.
 #endif
-#else
-#ifndef PSL
-#error One of CSL or PSL must be defined at compile time
-#endif
-#endif
+
 
 /*
  * I will expect the copy of linbedit that I link to to have been configured
@@ -114,6 +115,7 @@ typedef void (*sig_t)(int);
  */
 #ifndef NATIVE_WINDOWS
 #include "sys.h"
+extern int wcwidth(wchar_t c);
 #include "chartype.h"
 #endif
 

@@ -215,21 +215,19 @@ else !wx
 bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 endif !wx
 if mac_framework
-noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
+noinst_PROGRAMS = bootstrapreduce$(EXEEXT)
+check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
 	zlibdemo$(EXEEXT) $(wxdemotarget)
 else !mac_framework
-# I want to be able to build flatcsl but do not want it built by default,
-# and putting it in check_PROGRAMS is the best way of achieving that that I
-# have found, even though it is not really part of a test suite.
-check_PROGRAMS = flatcsl$(EXEEXT)
-noinst_PROGRAMS = bootstrapreduce$(EXEEXT) fwindemo$(EXEEXT) \
+noinst_PROGRAMS = bootstrapreduce$(EXEEXT)
+check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
 	dyndemo$(EXEEXT) zlibdemo$(EXEEXT) $(wxdemotarget)
 endif !mac_framework
 
 if boehm
-noinst_PROGRAMS += gctest$(EXEEXT)
+check_PROGRAMS += gctest$(EXEEXT)
 endif boehm
 
 if mac_framework

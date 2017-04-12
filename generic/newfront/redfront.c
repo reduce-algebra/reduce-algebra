@@ -408,7 +408,11 @@ void print_banner(int vb) {
     printf("%s %s/%d, built %s ...\n",
 	   PACKAGE_NAME,
 	   PACKAGE_VERSION,
+#ifdef USE_PIPES
 	   2*USE_PIPES,
+#else
+           0,
+#endif
 	   BUILDTIME);
     //    if (unicode) printf("%c%c",0xC2,0xA9); else printf("(C)");
     printf("(C)");
@@ -422,7 +426,7 @@ void print_banner(int vb) {
 }
 
 void init_channels(void) {
-  if (USE_PIPES) {
+#ifdef USE_PIPES
     if (pipe(MeToReduce) < 0) {
       perror("failed to create pipe MeToReduce\n");
       sig_killChild();
@@ -433,7 +437,7 @@ void init_channels(void) {
       sig_killChild();
       rf_exit(-1);
     }
-  } else {
+#else // USE_PIPES
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, MeToReduce) < 0) {
       perror("cannot open socket MeToReduce");
       sig_killChild();
@@ -444,7 +448,7 @@ void init_channels(void) {
       sig_killChild();
       rf_exit(-1);
     }
-  }
+#endif // USE_PIPES
 }
 
 int textcolor(int fg) {
@@ -547,10 +551,14 @@ char **create_call(int argc,char *argv[]) {
   nargv[j] = (char *)0;
 
 
-#else  /* Now the CSL version */
+#else  /* Now the CSL version, including the bootstrapreduce case */
 
    reducename = (char *)malloc(strlen(programDir) + 16);
+#ifdef BOOT
+   sprintf(reducename, "%s/bootstrapreduce", programDir);
+#else
    sprintf(reducename, "%s/redcsl", programDir);
+#endif
 #ifdef NATIVE_WINDOWS
    strcat(reducename, ".bat");
 #endif
