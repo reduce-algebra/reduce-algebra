@@ -393,13 +393,8 @@ static LispObject make_complex_float(Complex v, LispObject a)
     LispObject a1, a2;
     a = real_part(a);
     if (is_sfloat(a))
-    {   Float_union r, i;
-        r.f = (float)v.real;
-        i.f = (float)v.imag;
-        a1 = make_complex(pack_immediate_float(v.real, a),
-                          pack_immediate_float(v.imag, a));
-        return onevalue(a1);
-    }
+        return onevalue(make_complex(pack_immediate_float(v.real, a),
+                                     pack_immediate_float(v.imag, a)));
     if (is_bfloat(a)) type = type_of_header(flthdr(a));
     else type = TYPE_SINGLE_FLOAT;
     if (type == TYPE_LONG_FLOAT) type = TYPE_DOUBLE_FLOAT;

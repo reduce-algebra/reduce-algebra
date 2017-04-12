@@ -687,7 +687,7 @@ char *get_truename(char *filename, const char *old, size_t n)
     return w;
 }
 
-extern bool file_exists(char *filename, char *old, size_t n, char *tt)
+extern bool file_exists(char *filename, const char *old, size_t n, char *tt)
 {   FILE *ff;
     process_file_name(filename, old, n);
     ff = fopen(filename, "r");

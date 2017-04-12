@@ -1716,7 +1716,7 @@ LispObject Lget_newhash_2(LispObject env, LispObject key, LispObject tab)
 }
 
 #ifdef DEBUG
-static int new_biggest_hash = 0;
+//static int new_biggest_hash = 0;
 #endif
 
 LispObject Lput_newhash(LispObject env, int nargs, ...)

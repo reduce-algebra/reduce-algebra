@@ -4145,7 +4145,7 @@ static int profile_cf(const void *a, const void *b)
     else return -1;
 }
 
-static double itotal = 0.0, total = 0.0;
+static double itotal_count = 0.0, total_count = 0.0;
 
 static bool count_totals(LispObject x)
 {   uint64_t n = qcount(x);
@@ -4168,8 +4168,8 @@ static bool count_totals(LispObject x)
 // a total of 100.0 (percent) to give comfortable ranges of numbers to admire.
 // To get the scaling correct I need to count the total "costs" of all
 // functions in a first pass.
-            itotal += (double)n;
-            total += w;
+            itotal_count += (double)n;
+            total_count += w;
         }
     }
     return false;
@@ -4218,7 +4218,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
         buffn = 100;
     }
     {   stack_restorer RAII;
-        itotal = total = 0.0;
+        itotal_count = total_count = 0.0;
         push_all_symbols(count_totals);
     }
     LispObject r;
@@ -4237,8 +4237,8 @@ LispObject Lmapstore(LispObject env, LispObject a)
                 if (is_bps(e))
                 {   size_t clen = length_of_byteheader(vechdr(e)) - CELL;
                     double w = (double)n/(double)clen;
-                    if (w/total > 0.00001 ||
-                        (double)n/itotal > 0.0001)
+                    if (w/total_count > 0.00001 ||
+                        (double)n/itotal_count > 0.0001)
                     {   if (what == 0 || what == 1)
                         {   if (buffp == buffn)
                             {   buffn += 100;
@@ -4247,8 +4247,8 @@ LispObject Lmapstore(LispObject env, LispObject a)
                                            sizeof(mapstore_item)*buffn);
                                 if (buff == NULL) return onevalue(nil);
                             }
-                            buff[buffp].w = 100.0*w/total;
-                            buff[buffp].n = 100.0*(double)n/itotal;
+                            buff[buffp].w = 100.0*w/total_count;
+                            buff[buffp].n = 100.0*(double)n/itotal_count;
                             buff[buffp].n1 = n;
                             LispObject pn = qpname(x);
                             size_t npn = length_of_byteheader(vechdr(pn)) - CELL;

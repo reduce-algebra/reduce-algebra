@@ -30,6 +30,8 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
+#ifndef header_termed_h
+#define header_termed_h 1
 
 //
 // Note that when the code associated with this file forms part of a
@@ -152,5 +154,6 @@ extern "C" uniname unicode_names[];
 #define is_high_surrogate(x) (sizeof(wchar_t)==2 && ((x)&0xfc00)==0xf800)
 #define is_low_surrogate(x)  (sizeof(wchar_t)==2 && ((x)&0xfc00)==0xfc00)
 
+#endif // header_termed_h
 
 // end of file termed.h

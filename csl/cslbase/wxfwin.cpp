@@ -1618,12 +1618,6 @@ unsigned long int pack_date(int year, int mon, int day,
     return r*60 + sec;
 }
 
-typedef struct date_and_type_
-{   unsigned long int date;
-    unsigned long int type;
-} date_and_type;
-
-
 #ifdef WIN32
 
 #include "windows.h"

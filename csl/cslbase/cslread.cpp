@@ -3484,6 +3484,7 @@ public:
     save_stream(LispObject oldstream, int curchar)
     {   push2(reader_workspace, oldstream);
         save = stack;
+        cursave = curchar;
     }
     ~save_stream()
     {   stack = save;

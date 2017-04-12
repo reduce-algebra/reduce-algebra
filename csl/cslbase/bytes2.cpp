@@ -40,9 +40,6 @@
 
     LispObject A_reg;
     LispObject r1, r2;
-#if !defined DEBUG || defined TAILCALL_EVEN_WHEN_DEBUGGING
-    LispObject r3;
-#endif
     one_args *f1;
     two_args *f2;
     n_args *f345;
@@ -133,15 +130,17 @@
         aerror("stack overflow");
     }
 #endif
-#else
+#else // CHECK_STACK
     {   char *p = (char *)&p;
         if (p < C_stack_limit)
         {   err_printf("\n+++ stack overflow\n");
             aerror("stack_overflow");
         }
     }
-#endif
+#endif // CHECK_STACK
+#ifdef DEBUG
     jmp_buf *jbsave;
+#endif
 
 next_opcode:   // This label is so that I can restart what I am doing
                // following a CATCH or to handle UNWIND-PROTECT.

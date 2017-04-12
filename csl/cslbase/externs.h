@@ -739,7 +739,7 @@ extern "C" void record_get(LispObject tag, bool found);
 // might arrange to build CSL/Reduce as a DLL and hook into it from outside.
 // See impex.def for the list of names where this can happen.
 
-extern int         primep(int32_t);
+extern int         primep(uint32_t);
 extern void        set_up_functions(int restartp);
 extern void        get_user_files_checksum(unsigned char *);
 extern "C" LispObject acons(LispObject a, LispObject b, LispObject c);

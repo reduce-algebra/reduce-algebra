@@ -1135,7 +1135,7 @@ LispObject Lhashcontents(LispObject env, LispObject tab)
 // in a row.
 //
 {   int32_t size, i;
-    uint64_t ogcnum;
+    int64_t ogcnum;
     int n_gc = 0;
     LispObject v, r;
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_HASH)
@@ -1184,7 +1184,7 @@ LispObject Lget_hash_2(LispObject env, LispObject key, LispObject tab)
 }
 
 #ifdef DEBUG
-static int biggest_hash = 0;
+//static int biggest_hash = 0;
 #endif
 
 LispObject Lput_hash(LispObject env, int nargs, ...)

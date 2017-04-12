@@ -567,7 +567,7 @@ void u124_rightshiftn(u124_t *a, int n)
 
 void u124_divrem(u124_t *a, u124_t *b, u124_t *q, u124_t *r)
 {   q->n = a->n / b->n;
-    b->n = a->n % b->n;
+    r->n = a->n % b->n;
 }
 
 // Now I need to be able to convert between float128_t and u124_t with
@@ -592,42 +592,59 @@ void u124_fix(float128_t *a, u124_t *b)
                   UINT64_C(0x0001000000000000);
     uint128_t w = aa.v[LOPART] | ((uint128_t)hi<<64);
 // Now I may need to shift b by an amount determined by x.
-    x = x - 112;
+    x = x - 113;
     if (x > 0) w = w<<x;
     else if (x < 0) w = w>>(-x);
     b->n = w;
 }
 
 void u124_float(u124_t *a, float128_t *b)
-{   if (a->n == 0)
+{   uint128_t aa = a->n;
+    if (aa == 0)
     {   *b = f128_0;
         return;
     }
-    uint128_t aa = a->n;
-    int x = 0;
+printf("Float %" PRIx64 " : %" PRIx64 "\n",
+   (uint64_t)(aa>>64), (uint64_t)aa);
+    int x = 113;
 // Now I want to normalize the integer so that the bit at position
 // 00010000:00000000:00000000:00000000 is set, ie the one that will be
 // the "hidden bit".
+printf("with x=%d %" PRIx64 " : %" PRIx64 "\n",
+   x, (uint64_t)(aa>>64), (uint64_t)aa);
     while (aa >= ((uint128_t)1<<113))
     {   aa = aa>>1;
         x++;
     }
+printf("with x=%d %" PRIx64 " : %" PRIx64 "\n",
+   x, (uint64_t)(aa>>64), (uint64_t)aa);
     while (aa < ((uint128_t)1<<(96-24+1)))
     {   aa = aa<<24;
         x = x - 24;
     }
+printf("with x=%d %" PRIx64 " : %" PRIx64 "\n",
+   x, (uint64_t)(aa>>64), (uint64_t)aa);
     while (aa < ((uint128_t)1<<(96-5+1)))
     {   aa = aa<<5;
         x = x - 5;
     }
+printf("with x=%d %" PRIx64 " : %" PRIx64 "\n",
+   x, (uint64_t)(aa>>64), (uint64_t)aa);
     while (aa < ((uint128_t)1<<112))
     {   aa = aa<<1;
         x--;
     }
-    uint64_t ahi = (uint64_t)(aa>>64) ^ UINT64_C(0x0000ffffffffffff);
+printf("with x=%d %" PRIx64 " : %" PRIx64 "\n",
+   x, (uint64_t)(aa>>64), (uint64_t)aa);
+    uint64_t ahi = (uint64_t)(aa>>64) & UINT64_C(0x0000ffffffffffff);
     ahi = ahi | ((uint64_t)(x + 0x3ffe)<<(112-64));
     b->v[HIPART] = ahi;
     b->v[LOPART] = (uint64_t)aa; 
+printf("value of float = ");
+printf("%.16" PRIx64 " : %.16" PRIx64 " = ",
+   b->v[HIPART], b->v[LOPART]);
+f128M_print_G(0,35,b);
+printf("\n");
 }
 
 #else // HAVE_UINT128_T
@@ -975,7 +992,7 @@ printf("x = %d\n", x);
         u124_fix(&d1, &p);
 u124_prinhex("fixed = ", &p); printf("\n");
         u124_two_to_n(&q, 113-x);
-u124_prinhex("denominator = ", &p); printf("\n");
+u124_prinhex("denominator = ", &q); printf("\n");
         u124_divrem(&p, &q, &u1, &a);
 u124_prinhex("q = ", &u1); printf("\n");
 u124_prinhex("r = ", &a); printf("\n");

@@ -132,13 +132,13 @@ extern "C" int rename_file(char *from_name, const char *from_old, size_t from_si
 // directoryp tests whether its argument is a directory.
 //
 
-extern "C" int file_readable(char *filename, const char *old, size_t n);
+extern "C" bool file_readable(char *filename, const char *old, size_t n);
 
-extern "C" int file_writeable(char *filename, const char *old, size_t n);
+extern "C" bool file_writeable(char *filename, const char *old, size_t n);
 
-extern "C" int file_executable(char *filename, const char *old, size_t n);
+extern "C" bool file_executable(char *filename, const char *old, size_t n);
 
-extern "C" int directoryp(char *filename, const char *old, size_t n);
+extern "C" bool directoryp(char *filename, const char *old, size_t n);
 
 //
 // file_length returns the length of its argument (a file) in bytes.
@@ -277,18 +277,6 @@ extern void unpack_date(unsigned long int r,
 
 extern unsigned long int pack_date(int year, int mon, int day,
                                    int hour, int min, int sec);
-
-typedef struct date_and_type_
-{   unsigned long int date;
-    unsigned long int type;
-} date_and_type;
-
-// Reinstate date and filetype...
-
-extern void set_filedate(const char *name, unsigned long int datestamp,
-                         unsigned long int ftype);
-
-extern void put_fileinfo(date_and_type *p, const char *name);
 
 //
 // my_getenv() is much like the ANSI getenv(), but exists because

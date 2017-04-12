@@ -46,7 +46,7 @@ if exeext
 # so I introduce a load that have silly names in the case I do not
 # really need them.
 plain_csl = csl
-plain_flagcsl = flatcsl
+plain_flatcsl = flatcsl
 plain_reduce = reduce
 plain_bootstrapreduce = bootstrapreduce
 plain_fwindemo = fwindemo
