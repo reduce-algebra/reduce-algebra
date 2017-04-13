@@ -1,4 +1,3 @@
-#define USE_128_BIT_ARITHMETIC 1
 // arith04.cpp                             Copyright (C) 1991-2017 Codemist
 
 //
@@ -461,7 +460,7 @@ LispObject rationalf128(float128_t *d)
 // version working first.
 
 
-#if defined HAVE_UINT128_T && defined USE_128_BIT_ARITHMETIC
+#if defined HAVE_UINT128_T && defined EXPERIMENT
 
 // This is to remind me of future plans!
 
@@ -604,47 +603,30 @@ void u124_float(u124_t *a, float128_t *b)
     {   *b = f128_0;
         return;
     }
-printf("Float %" PRIx64 " : %" PRIx64 "\n",
-   (uint64_t)(aa>>64), (uint64_t)aa);
     int x = 113;
 // Now I want to normalize the integer so that the bit at position
 // 00010000:00000000:00000000:00000000 is set, ie the one that will be
 // the "hidden bit".
-printf("with x=%d %" PRIx64 " : %" PRIx64 "\n",
-   x, (uint64_t)(aa>>64), (uint64_t)aa);
     while (aa >= ((uint128_t)1<<113))
     {   aa = aa>>1;
         x++;
     }
-printf("with x=%d %" PRIx64 " : %" PRIx64 "\n",
-   x, (uint64_t)(aa>>64), (uint64_t)aa);
     while (aa < ((uint128_t)1<<(96-24+1)))
     {   aa = aa<<24;
         x = x - 24;
     }
-printf("with x=%d %" PRIx64 " : %" PRIx64 "\n",
-   x, (uint64_t)(aa>>64), (uint64_t)aa);
     while (aa < ((uint128_t)1<<(96-5+1)))
     {   aa = aa<<5;
         x = x - 5;
     }
-printf("with x=%d %" PRIx64 " : %" PRIx64 "\n",
-   x, (uint64_t)(aa>>64), (uint64_t)aa);
     while (aa < ((uint128_t)1<<112))
     {   aa = aa<<1;
         x--;
     }
-printf("with x=%d %" PRIx64 " : %" PRIx64 "\n",
-   x, (uint64_t)(aa>>64), (uint64_t)aa);
     uint64_t ahi = (uint64_t)(aa>>64) & UINT64_C(0x0000ffffffffffff);
-    ahi = ahi | ((uint64_t)(x + 0x3ffe)<<(112-64));
+    ahi = ahi | ((uint64_t)(x + 0x3ffe)<<48);
     b->v[HIPART] = ahi;
     b->v[LOPART] = (uint64_t)aa; 
-printf("value of float = ");
-printf("%.16" PRIx64 " : %.16" PRIx64 " = ",
-   b->v[HIPART], b->v[LOPART]);
-f128M_print_G(0,35,b);
-printf("\n");
 }
 
 #else // HAVE_UINT128_T
@@ -659,7 +641,13 @@ u124_t u124_1 = {{1, 0, 0, 0}};
 // hex notation.
 
 void u124_prinhex(const char *msg, u124_t *a)
-{   printf("%s%.8x %.8x %.8x %.8x\n", msg, a->d[3], a->d[2], a->d[1], a->d[0]);
+{   uint32_t d0 = a->d[0], d1 = a->d[1], d2 = a->d[2], d3 = a->d[3];
+// Now adjust for the fact that I only have 31 bits stored in each digit
+    d0 |= (d1<<31);
+    d1 = (d1>>1) | (d2<<30);
+    d2 = (d2>>2) | (d3<<29);
+    d3 = (d3>>3);
+    printf("%s%.8x %.8x %.8x %.8x\n", msg, d3, d2, d1, d0);
 }
 
 // For conversion to a bignum the fact that my number is represented in
@@ -696,7 +684,7 @@ void u124_zero(u124_t *a)
 
 void u124_two_to_n(u124_t *a, int n)
 {   a->d[0] = a->d[1] = a->d[2] = a->d[3] = 0;
-    a->d[n/31] = 1<<(n^31);
+    a->d[n/31] = 1<<(n%31);
 }
 
 // Test for zero.
@@ -909,7 +897,7 @@ void u124_fix(float128_t *a, u124_t *b)
 // Remember to OR in the hidden bit on the next line.
     b->d[3] = ((aa.v[HIPART] >> 29) & 0x0007ffff) | 0x00080000;
 // Now I may need to shift b by an amount determined by x.
-    x = x - 112;
+    x = x - 113;
     if (x > 0) u124_leftshiftn(b, x);
     else if (x < 0) u124_rightshiftn(b, -x); 
 }
@@ -926,7 +914,7 @@ void u124_float(u124_t *a, float128_t *b)
                    ((uint64_t)a->d[2]<<62),
              ahi = ((uint64_t)a->d[2]>>2) |
                    ((uint64_t)a->d[3]<<29);
-    int x = 0;
+    int x = 113;
 // Now I want to normalize the integer so that the bit at position
 // 00010000:00000000:00000000:00000000 is set, ie the one that will be
 // the "hidden bit". This could involve either shifting left or right, but
@@ -940,8 +928,6 @@ void u124_float(u124_t *a, float128_t *b)
         }
     }
     else
-// Shifting left could involve shifts from the very bottom bit (eg when
-// converting 1 to a float128_t) so deserves more care.
     {   while ((ahi & UINT64_C(0xfffffffffe000000)) == 0)
         {   ahi = (ahi<<24) | (alo>>40);
             alo = alo<<24;
@@ -953,10 +939,10 @@ void u124_float(u124_t *a, float128_t *b)
             x--;
         }
     }
-    ahi = ahi ^ UINT64_C(0x0000ffffffffffff);
-    ahi = ahi | ((uint64_t)(x + 0x3ffe)<<(112-64));
+    ahi = ahi & UINT64_C(0x0000ffffffffffff);
+    ahi = ahi | ((uint64_t)(x + 0x3ffe)<<48);
     b->v[HIPART] = ahi;
-    b->v[LOPART] = alo; 
+    b->v[LOPART] = alo;
 }
 
 // end of implementation of 124-bit integers using reasonably
@@ -982,20 +968,14 @@ static LispObject rationalizef128(float128_t *dd)
     u124_t a;
     u124_t u0, u1;
     u124_t v0, v1;
-printf("starting rationalizef128\n");
     if (f128M_le(&f128_1, &d))
     {   int x;
         float128_t d1;
         f128M_frexp(&d, &d1, &x);
-printf("x = %d\n", x);
         f128M_ldexp(&d1, 113);
         u124_fix(&d1, &p);
-u124_prinhex("fixed = ", &p); printf("\n");
         u124_two_to_n(&q, 113-x);
-u124_prinhex("denominator = ", &q); printf("\n");
         u124_divrem(&p, &q, &u1, &a);
-u124_prinhex("q = ", &u1); printf("\n");
-u124_prinhex("r = ", &a); printf("\n");
         u124_two_to_n(&u0, 0);
         p = q;
         q = a;
@@ -1008,7 +988,7 @@ u124_prinhex("r = ", &a); printf("\n");
         f128M_frexp(&d, &d1, &x);
         f128M_ldexp(&d1, 113);
         u124_fix(&d1, &p);
-        f128M_div(&f128_1, &d, &d2); 
+        f128M_div(&f128_1, &d, &d2);
         u124_fix(&d2, &a);
         u124_t w1, w2;
         if (113-x < 128) u124_two_to_n(&w1, 113-x);
@@ -1023,18 +1003,21 @@ u124_prinhex("r = ", &a); printf("\n");
         {   u124_sub(&q, &p, &q);
             u124_add(&a, &u124_1, &a);
         }
-        u124_zero(&u1);
+        u124_zero(&u0);
         u124_two_to_n(&u1, 0);
         u124_two_to_n(&v0, 0);
         v1 = a;
     }
-printf("ready for loop\n");
     float128_t du1, dv1, q2;
     while (u124_float(&u1, &du1),
            u124_float(&v1, &dv1),
            f128M_div(&du1, &dv1, &q2),
            !f128M_eq(&d, &q2))
     {   u124_t a1, a2;
+        if (u124_zerop(&q))
+        {   printf("\n+++ Trouble in rationalizef128. q = 0\n");
+            break;
+        }
         u124_divrem(&p, &q, &a1, &a2);
         u124_t u2;
         u124_mul(&a1, &u1, &u2);
