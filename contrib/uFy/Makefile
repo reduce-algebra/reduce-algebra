@@ -8,7 +8,7 @@
 # TeX origin of this code but that should never cause confusion with the
 # original. 
 
-# $Id: $
+# $Id$
 
 all:	ufy.log
 

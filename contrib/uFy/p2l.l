@@ -11,7 +11,7 @@
  * which was reached via a link saying it had a range of free
  * grammars.
  *
- * $Id: $
+ * $Id$
  */
 
 #include <stdio.h>

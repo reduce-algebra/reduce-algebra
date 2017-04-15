@@ -30,7 +30,7 @@
  *************************************************************************/
 
 
-// $Id: $
+// $Id$
 
 // I suspect that a "proper" version of this would use a class
 // hierarachy here. I will use what amount of old fashioned C style
