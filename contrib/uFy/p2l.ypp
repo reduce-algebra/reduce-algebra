@@ -1,0 +1,765 @@
+%{
+/*
+ * grammar.y
+ *
+ * Pascal grammar in Yacc format, based originally on BNF given
+ * in "Standard Pascal -- User Reference Manual", by Doug Cooper.
+ * This in turn is the BNF given by the ANSI and ISO Pascal standards,
+ * and so, is PUBLIC DOMAIN. The grammar is for ISO Level 0 Pascal.
+ * The grammar has been massaged somewhat to make it LALR, and added
+ * the following extensions.
+ *
+ * constant expressions
+ * otherwise statement in a case
+ * productions to correctly match else's with if's
+ * beginnings of a separate compilation facility
+ *
+ * Retrieved from a web page by samiam@moorecad.com,
+ * http://www.moorecad.com/standardpascal/yacclex.html
+ * which was reached via a link saying it had a range of free
+ * grammars.
+ *
+ * $Id: $
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "p2l.h"
+
+int yylex();
+int yyparse();
+void yyerror(const char *message);
+
+void yyerror(const char *message)
+{   printf("\nParse error '%s'\n", message);
+    exit(1);
+}
+
+#define YYSTYPE node *
+
+%}
+
+%token AND ARRAY ASSIGNMENT CASE CHARACTER_STRING COLON COMMA CONST DIGSEQ
+%token DIV DO DOT DOTDOT DOWNTO ELSE END EQUAL EXTERNAL FOR FORWARD FUNCTION
+%token GE GOTO GT IDENTIFIER IF IN LABEL LBRAC LE LPAREN LT MINUS MOD NIL NOT
+%token NOTEQUAL OF OR OTHERWISE PACKED PBEGIN PFILE PLUS PROCEDURE PROGRAM RBRAC
+%token REALNUMBER RECORD REPEAT RPAREN SEMICOLON SET SLASH STAR STARSTAR THEN
+%token TO TYPE UNTIL UPARROW VAR WHILE WITH
+
+%%
+file : program    { prnode($1); printf("\n"); }
+ | module         { prnode($1); printf("\n"); }
+ ;
+
+program : program_heading semicolon block DOT
+                  { $$ = item("program", $1, $3); }
+ ;
+
+program_heading : PROGRAM identifier
+                  { $$ = item("heading", $2, NULL); }
+ | PROGRAM identifier LPAREN identifier_list RPAREN
+                  { $$ = item("heading", $2, $4); }
+ ;
+
+identifier_list : identifier_list comma identifier
+                  { $$ = item("idlist_append", $1, $3); }
+ | identifier     { $$ = item("idlist", $1); }
+ ;
+
+block : label_declaration_part
+ constant_definition_part
+ type_definition_part
+ variable_declaration_part
+ procedure_and_function_declaration_part
+ statement_part
+                  { $$ = item("block", $1, $2, $3, $4, $5, $6); }
+ ;
+
+module : constant_definition_part
+ type_definition_part
+ variable_declaration_part
+ procedure_and_function_declaration_part
+                  { $$ = item("module", $1, $2, $3, $4); }
+ ;
+
+label_declaration_part : LABEL label_list semicolon
+                   { $$ = item("labeldec", $2); }
+ |
+                   { $$ = NULL; }
+ ;
+
+label_list : label_list comma label
+                   { $$ = item("lablistappend", $1, $3); }
+ | label           { $$ = $1; }
+ ;
+
+label : DIGSEQ     { $$ = symbol("label", yytext); }
+ ;
+
+constant_definition_part : CONST constant_list
+                   { $$ = item("constlist", $2); }
+ |                 { $$ = NULL; }
+ ;
+
+constant_list : constant_list constant_definition
+                   { $$ = item("constlist_append", $1, $2); }
+ | constant_definition
+                   { $$ = $1; }
+ ;
+
+constant_definition : identifier EQUAL cexpression semicolon
+                   { $$ = item("constdef", $1, $3); }
+ ;
+
+/*constant : cexpression ;  /* good stuff! */
+
+cexpression : csimple_expression
+                   { $$ = $1; }
+ | csimple_expression relop csimple_expression
+                   { $$ = item("csimple", $2, $1, $3); }
+ ;
+
+csimple_expression : cterm
+                   { $$ = $1; }
+ | csimple_expression addop cterm
+                   { $$ = item("cterm", $2, $1, $3); }
+ ;
+
+cterm : cfactor
+                   { $$ = $1; }
+ | cterm mulop cfactor
+                   { $$ = item("cfactor", $2, $1, $3); }
+ ;
+
+cfactor : sign cfactor
+                   { $$ = item("signedcfactor", $1, $2); }
+ | cexponentiation
+                   { $$ = $1; }
+ ;
+
+cexponentiation : cprimary
+                   { $$ = $1; }
+ | cprimary STARSTAR cexponentiation
+                   { $$ = item("cexpon", $1, $3); }
+ ;
+
+cprimary : identifier
+                   { $$ = $1; }
+ | LPAREN cexpression RPAREN
+                   { $$ = $2; }
+ | unsigned_constant
+                   { $$ = $1; }
+ | NOT cprimary
+                   { $$ = item("not", $2); }
+ ;
+
+constant : non_string
+                   { $$ = $1; }
+ | sign non_string
+                   { $$ = item("signedconstant", $1, $2); }
+ | CHARACTER_STRING
+                   { $$ = string(yytext); }
+ ;
+
+sign : PLUS        { $$ = symbol("+"); }
+ | MINUS           { $$ = symbol("-"); }
+ ;
+
+non_string : DIGSEQ
+                   { $$ = symbol("sdigseq", yytext); }
+ | identifier
+                   { $$ = $1; }
+ | REALNUMBER
+ ;
+
+type_definition_part : TYPE type_definition_list
+                   { $$ = $2; }
+ |                 {$$ = NULL; }
+ ;
+
+type_definition_list : type_definition_list type_definition
+                   { $$ = item("typedeflist", $1, $2); }
+ | type_definition { $$ = $1; }
+ ;
+
+type_definition : identifier EQUAL type_denoter semicolon
+                   { $$ = item("typedef", $1, $3); }
+ ;
+
+type_denoter : identifier
+                   { $$ = $1; }
+ | new_type        { $$ = $1; }
+ ;
+
+new_type : new_ordinal_type
+                   { $$ = $1; }
+ | new_structured_type
+                   { $$ = $1; }
+ | new_pointer_type
+                   { $$ = $1; }
+ ;
+
+new_ordinal_type : enumerated_type
+                   { $$ = $1; }
+ | subrange_type
+                   { $$ = $1; }
+ ;
+
+enumerated_type : LPAREN identifier_list RPAREN
+                   { $$ = item("emumeratedtype", $2); }
+ ;
+
+subrange_type : constant DOTDOT constant
+                   { $$ = item("subrangetype", $1, $3); }
+ ;
+
+new_structured_type : structured_type
+                   { $$ = $1; }
+ | PACKED structured_type
+                   { $$ = item("packedtype", $2); }
+ ;
+
+structured_type : array_type
+ | record_type
+ | set_type
+ | file_type
+ ;
+
+array_type : ARRAY LBRAC index_list RBRAC OF component_type
+ ;
+
+index_list : index_list comma index_type
+ | index_type
+ ;
+
+index_type : ordinal_type ;
+
+ordinal_type : new_ordinal_type
+ | identifier
+ ;
+
+component_type : type_denoter ;
+
+record_type : RECORD record_section_list END
+ | RECORD record_section_list semicolon variant_part END
+ | RECORD variant_part END
+ ;
+
+record_section_list : record_section_list semicolon record_section
+ | record_section
+ ;
+
+record_section : identifier_list COLON type_denoter
+ ;
+
+variant_part : CASE variant_selector OF variant_list semicolon
+ | CASE variant_selector OF variant_list
+ |
+ ;
+
+variant_selector : tag_field COLON tag_type
+ | tag_type
+ ;
+
+variant_list : variant_list semicolon variant
+ | variant
+ ;
+
+variant : case_constant_list COLON LPAREN record_section_list RPAREN
+ | case_constant_list COLON LPAREN record_section_list semicolon
+  variant_part RPAREN
+ | case_constant_list COLON LPAREN variant_part RPAREN
+ ;
+
+case_constant_list : case_constant_list comma case_constant
+ | case_constant
+ ;
+
+case_constant : constant
+ | constant DOTDOT constant
+ ;
+
+tag_field : identifier ;
+
+tag_type : identifier ;
+
+set_type : SET OF base_type
+ ;
+
+base_type : ordinal_type ;
+
+file_type : PFILE OF component_type
+ ;
+
+new_pointer_type : UPARROW domain_type
+ ;
+
+domain_type : identifier ;
+
+variable_declaration_part : VAR variable_declaration_list semicolon
+ |
+ ;
+
+variable_declaration_list :
+   variable_declaration_list semicolon variable_declaration
+ | variable_declaration
+ ;
+
+variable_declaration : identifier_list COLON type_denoter
+ ;
+
+procedure_and_function_declaration_part :
+  proc_or_func_declaration_list semicolon
+               { $$ = $1; }
+ |             { $$ = NULL; }
+ ;
+
+proc_or_func_declaration_list :
+   proc_or_func_declaration_list semicolon proc_or_func_declaration
+               { $$ = item("procdeflist", $1, $3); }
+ | proc_or_func_declaration
+               { $$ = $1; }
+ ;
+
+proc_or_func_declaration : procedure_declaration
+               { $$ = $1; }
+ | function_declaration
+               { $$ = $1; }
+ ;
+
+procedure_declaration : procedure_heading semicolon directive
+               { $$ = item("procdecdir", $1, $3); }
+ | procedure_heading semicolon procedure_block
+               { $$ = item("procdecblock", $1, $3); }
+ ;
+
+procedure_heading : procedure_identification
+               { $$ = item("prochead", $1, NULL); }
+ | procedure_identification formal_parameter_list
+               { $$ = item("prochead", $1, $2); }
+ ;
+
+directive : FORWARD { $$ = symbol("forward"); }
+ | EXTERNAL         { $$ = symbol("external"); }
+ ;
+
+formal_parameter_list : LPAREN formal_parameter_section_list RPAREN
+               { $$ = $2; }
+ ;
+
+formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section
+               { $$ = item("formallist", $1, $3); }
+ | formal_parameter_section
+               { $$ = $1; }
+ ;
+
+formal_parameter_section : value_parameter_specification
+               { $$ = $1; }
+ | variable_parameter_specification
+               { $$ = $1; }
+ | procedural_parameter_specification
+               { $$ = $1; }
+ | functional_parameter_specification
+               { $$ = $1; }
+ ;
+
+value_parameter_specification : identifier_list COLON identifier
+               { $$ = item("valparam", $1, $3); }
+ ;
+
+variable_parameter_specification : VAR identifier_list COLON identifier
+               { $$ = item("varparam", $2, $4); }
+ ;
+
+procedural_parameter_specification : procedure_heading
+               { $$ = $1; }
+ ;
+
+functional_parameter_specification : function_heading
+               { $$ = $1; }
+ ;
+
+procedure_identification : PROCEDURE identifier
+               { $$ = item("procid", $2); }
+ ;
+
+procedure_block : block
+               { $$ = $1; }
+ ;
+
+function_declaration : function_heading semicolon directive
+               { $$ = item("fiunheaddir", $1, $3); }
+ | function_identification semicolon function_block
+               { $$ = item("funidblock", $1, $3); }
+ | function_heading semicolon function_block
+               { $$ = item("funheadblock", $1, $3); }
+ ;
+
+function_heading : FUNCTION identifier COLON result_type
+               { $$ = item("funhead", $2, NULL, $4); }
+ | FUNCTION identifier formal_parameter_list COLON result_type
+               { $$ = item("funhead", $2, $3, $5); }
+ ;
+
+result_type : identifier
+               { $$ = $1; }
+ ;
+
+function_identification : FUNCTION identifier
+               { $$ = $2; }
+ ;
+
+function_block : block
+               { $$ = $1; }
+ ;
+
+statement_part : compound_statement
+               { $$ = $1; }
+ ;
+
+compound_statement : PBEGIN statement_sequence END
+               { $$ = $2; }
+ ;
+
+statement_sequence : statement_sequence semicolon statement
+               { $$ = item("statementsequence", $1, $3); }
+ | statement
+               { $$ = $1; }
+ ;
+
+statement : open_statement
+               { $$ = $1; }
+ | closed_statement
+               { $$ = $1; }
+ ;
+
+open_statement : label COLON non_labeled_open_statement
+               { $$ = item("labelled", $1, $3); }
+ | non_labeled_open_statement
+               { $$ = $1; }
+ ;
+
+closed_statement : label COLON non_labeled_closed_statement
+               { $$ = item("labelled", $1, $3); }
+ | non_labeled_closed_statement
+               { $$ = $1; }
+ ;
+
+non_labeled_closed_statement : assignment_statement
+               { $$ = $1; }
+ | procedure_statement
+               { $$ = $1; }
+ | goto_statement
+               { $$ = $1; }
+ | compound_statement
+               { $$ = $1; }
+ | case_statement
+               { $$ = $1; }
+ | repeat_statement
+               { $$ = $1; }
+ | closed_with_statement
+               { $$ = $1; }
+ | closed_if_statement
+               { $$ = $1; }
+ | closed_while_statement
+               { $$ = $1; }
+ | closed_for_statement
+               { $$ = $1; }
+ |
+               { $$ = NULL; }
+ ;
+
+non_labeled_open_statement : open_with_statement
+               { $$ = $1; }
+ | open_if_statement
+               { $$ = $1; }
+ | open_while_statement
+               { $$ = $1; }
+ | open_for_statement
+               { $$ = $1; }
+ ;
+
+repeat_statement : REPEAT statement_sequence UNTIL boolean_expression
+               { $$ = item("repeat", $2, $4); }
+ ;
+
+open_while_statement : WHILE boolean_expression DO open_statement
+               { $$ = item("while", $2, $4); }
+ ;
+
+closed_while_statement : WHILE boolean_expression DO closed_statement
+               { $$ = item("while", $2, $4); }
+ ;
+
+open_for_statement : FOR control_variable ASSIGNMENT initial_value direction
+   final_value DO open_statement
+               { $$ = item("for", $2, $4, $5, $6, $8); }
+ ;
+
+closed_for_statement : FOR control_variable ASSIGNMENT initial_value direction
+   final_value DO closed_statement
+               { $$ = item("for", $2, $4, $5, $6, $8); }
+ ;
+
+open_with_statement : WITH record_variable_list DO open_statement
+               { $$ = item("with", $2, $4); }
+ ;
+
+closed_with_statement : WITH record_variable_list DO closed_statement
+               { $$ = item("with", $2, $4); }
+ ;
+
+open_if_statement : IF boolean_expression THEN statement
+            { $$ = item("if", $2, $4, NULL); }
+ | IF boolean_expression THEN closed_statement ELSE open_statement
+            { $$ = item("if", $2, $4, $6); } ;
+
+closed_if_statement : IF boolean_expression THEN closed_statement
+   ELSE closed_statement
+            { $$ = item("if", $2, $4, $6); }
+ ;
+
+assignment_statement : variable_access ASSIGNMENT expression
+            { $$ = item("setq", $1, $3); }
+
+ ;
+
+variable_access : identifier
+            { $$ = $1; }
+ | indexed_variable
+            { $$ = $1; }
+ | field_designator
+            { $$ = $1; }
+ | variable_access UPARROW
+            { $$ = item("uparrow", $1); }
+ ;
+
+// @@
+indexed_variable : variable_access LBRAC index_expression_list RBRAC
+            { $$ = item("indexed", $1, $3); }
+ ;
+
+index_expression_list : index_expression_list comma index_expression
+            { $$ = item("indexlist", $1, $3); }
+ | index_expression
+            { $$ = $1; }
+ ;
+
+index_expression : expression
+            { $$ = $1; }
+ ;
+
+field_designator : variable_access DOT identifier
+            { $$ = item("fileddesignator", $1, $3); }
+ ;
+
+procedure_statement : identifier params
+            { $$ = item("procstat", $1, $2); }
+ | identifier
+            { $$ = item("procstat", $1, NULL); }
+ ;
+
+params : LPAREN actual_parameter_list RPAREN
+            { $$ = item("params", $2); }
+ ;
+
+actual_parameter_list : actual_parameter_list comma actual_parameter
+            { $$ = item("paramlist", $1, $3); }
+ | actual_parameter
+            { $$ = $1; }
+ ;
+
+/*
+ * this forces you to check all this to be sure that only write and
+ * writeln use the 2nd and 3rd forms, you really can't do it easily in
+ * the grammar, especially since write and writeln aren't reserved
+ */
+actual_parameter : expression
+            { $$ = $1; }
+ | expression COLON expression
+            { $$ = item("xcolon", $1, $3, NULL); }
+ | expression COLON expression COLON expression
+            { $$ = item("xcolon", $1, $3, $5); }
+ ;
+
+goto_statement : GOTO label
+            { $$ = item("goto", $2); }
+ ;
+
+case_statement : CASE case_index OF case_list_element_list END
+ | CASE case_index OF case_list_element_list SEMICOLON END
+ | CASE case_index OF case_list_element_list semicolon
+   otherwisepart statement END
+ | CASE case_index OF case_list_element_list semicolon
+   otherwisepart statement SEMICOLON END
+ ;
+
+case_index : expression ;
+
+case_list_element_list : case_list_element_list semicolon case_list_element
+ | case_list_element
+ ;
+
+case_list_element : case_constant_list COLON statement
+ ;
+
+otherwisepart : OTHERWISE
+               { $$ = symbol("otherwise"); }
+ | OTHERWISE COLON
+               { $$ = symbol("otherwisecolon"); }
+ ;
+
+control_variable : identifier
+               { $$ = $1; }
+ ;
+
+initial_value : expression
+               { $$ = $1; }
+ ;
+
+direction : TO
+               { $$ = symbol("to"); }
+ | DOWNTO
+               { $$ = symbol("downto"); }
+ ;
+
+final_value : expression
+               { $$ = $1; }
+ ;
+
+record_variable_list : record_variable_list comma variable_access
+               { $$ = item("recordvarlist", $1, $3); }
+ | variable_access
+               { $$ = $1; }
+ ;
+
+boolean_expression : expression
+               { $$ = $1; }
+ ;
+
+expression : simple_expression
+               { $$ = $1; }
+ | simple_expression relop simple_expression
+               { $$ = item("relop", $2, $1, $3); }
+ ;
+
+simple_expression : term
+               { $$ = $1; }
+ | simple_expression addop term
+               { $$ = item("addop", $2, $1, $3); }
+ ;
+
+term : factor
+               { $$ = $1; }
+ | term mulop factor
+               { $$ = item("term", $2, $1, $3); }
+ ;
+
+factor : sign factor
+               { $$ = item("factor", $1, $2); } 
+ | exponentiation
+               { $$ = $1; }
+ ;
+
+exponentiation : primary
+               { $$ = $1; }
+ | primary STARSTAR exponentiation
+               { $$ = item("power", $1, $3); }
+ ;
+
+primary : variable_access
+               { $$ = $1; }
+ | unsigned_constant
+               { $$ = $1; }
+ | function_designator
+               { $$ = $1; }
+ | set_constructor
+               { $$ = $1; }
+ | LPAREN expression RPAREN
+               { $$ = $2; }
+ | NOT primary
+               { $$ = item("not", $2); }
+ ;
+
+unsigned_constant : unsigned_number
+                 { $$ = $1; }
+ | CHARACTER_STRING
+                 { $$ = string(yytext); }
+ | NIL           { $$ = item("nil"); }
+ ;
+
+unsigned_number : unsigned_integer
+                  { $$ = $1; }
+ | unsigned_real  { $$ = $1; }
+ ;
+
+unsigned_integer : DIGSEQ
+                  { $$ = symbol("unsignedinteger",yytext); }
+ ;
+
+unsigned_real : REALNUMBER
+                  { $$ = symbol("realnumber", yytext); }
+ ;
+
+/* functions with no params will be handled by plain identifier */
+function_designator : identifier params
+                  { $$ = item("function_designator", $1, $2); }
+ ;
+
+set_constructor : LBRAC member_designator_list RBRAC
+                  { $$ = item("set", $2); }
+ | LBRAC RBRAC    { $$ = item("emptyset"); }
+ ;
+
+member_designator_list : member_designator_list comma member_designator
+                  { $$ = item("member_append", $1, $3); }
+ | member_designator
+                  { $$ = $1; }
+ ;
+
+member_designator : member_designator DOTDOT expression
+                  { $$ = item("range", $1, $3); }
+ | expression     { $$ = $1; }
+ ;
+
+addop: PLUS       { $$ = symbol("plus"); }
+ | MINUS          { $$ = symbol("difference"); }
+ | OR             { $$ = symbol("logor"); }
+ ;
+
+mulop : STAR      { $$ = symbol("times"); }  
+ | SLASH          { $$ = symbol("quotient"); }
+ | DIV            { $$ = symbol("quot"); }
+ | MOD            { $$ = symbol("mod"); }
+ | AND            { $$ = symbol("logand"); }
+ ;
+
+relop : EQUAL    { $$ = symbol("equal"); }
+ | NOTEQUAL      { $$ = symbol("neq"); }
+ | LT            { $$ = symbol("lessp"); }
+ | GT            { $$ = symbol("greaterp"); }
+ | LE            { $$ = symbol("leq"); }
+ | GE            { $$ = symbol("geq"); }
+ | IN            { $$ = symbol("in"); }
+ ;
+
+identifier : IDENTIFIER
+                 { $$ = symbol(yytext); }
+ ;
+
+semicolon : SEMICOLON
+                 { $$ = NULL; }
+ ;
+
+comma : COMMA
+                 { $$ = NULL; }
+ ;
+
+%%
+
+int main(int argc, char *argv[])
+{
+    yyparse();
+    return 0;
+}

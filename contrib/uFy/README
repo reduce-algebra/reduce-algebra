@@ -1,0 +1,185 @@
+           Comments re rights to use and re-distribute changed
+                     versions of TeX-based material.
+
+
+Let's start with a remark that I will call the programs that I derive
+here "uFy". Specifically I will NOT call then TeX or anything that sounds
+like that or that could cause potential confusion between them and their
+origin. For those who have not already spotted it, uFy is to TeX much what
+HAL was to IBM (consider a Caesar cifer: just replace each letter by the next
+one along in the alphabet!). And the stylized mixing of upper case puts the
+upper case letter in the middle. The "proper" vesrion of it that "\uFy" will
+generate will of course shift and kern the three letters in a suitably
+extreme manner so as to continue the respect and reference for TeX but still
+to make it clear that this is not what my code is purporting to be. 
+
+ftp://ftp.cs.stanford.edu/pub/tex/README.KNUTH contains the text
+"The files in subdirectories "dist" and "local" of this directory are
+master files for TeX and METAFONT, maintained personally by Donald E. Knuth.
+Nobody else is authorized to make any changes whatever to them!
+If you modify the files for any purpose, you must give your
+files a different name, so that installations of TeX throughout the world
+will be 100% compatible when they use the official source files.
+
+Please help preserve the integrity of TeX by reporting any violations of
+these rules to the TeX User Group.
+
+The dist/ directory contains the latest official sources for TeX,
+METAFONT, Computer Modern, and accompanying TeXware/MFware.
+
+The local/ directory contains the files Knuth uses at home to
+customize the systems to his personal computer. It also contains special
+macro files and semi-official fonts and software that you and others
+may find useful, although this local collection is not maintained
+as carefully as the officially distributed files are.
+
+The CTAN archives put the dist/* files into directories systems/knuth/*
+(except that font files go into fonts/cm/mf/*);
+the local/* files are placed in in systems/knuth/local/*."
+
+and in http://www.ctan.org/license/knuth you will find
+"This software is copyright and you are explicitly granted a license which
+gives you, the user of the software, legal permission to copy, distribute
+and/or modify the software, so long as if you modify the software then it
+carry a different name from the original software."
+
+These two statements indicate that material derived from tex.web
+may be re-used with very great freedom, and in particular that incorporating
+parts of it within an otherwise BSD-licensed corpus of code should not
+raise problems.
+
+If, associated with this, some macro packages, fonts or other TeX-related
+material is used then that will very often fall under the LaTeX Project
+Public License (eg the GUST Fonts used the GUST Font License bu that is
+based on the LPPL). Clause 10 of the LPPL reads
+"10. a. A Derived Work may be distributed under a different license
+       provided that license itself honors the conditions listed in
+       Clause 6 above, in regard to the Work, though it does not have
+       to honor the rest of the conditions in this license.
+
+    b. If a Derived Work is distributed under a different license, that
+       Derived Work must provide sufficient documentation as part of
+       itself to allow each recipient of that Derived Work to honor the
+       restrictions in Clause 6 above, concerning changes from the Work."
+and my concern here regards distribution under terms as close to the BSD
+ones as feasible so that the complete composite Work incorporating some
+of this material is available with as close to simple and consistent
+license terms as possible. 
+Also note Clause 7 which reads
+"7.  If you are not the Current Maintainer of the Work, you may
+distribute a Compiled Work generated from a Derived Work, as long as
+the Derived Work is distributed to all recipients of the Compiled
+Work, and as long as the conditions of Clause 6, above, are met with
+regard to the Derived Work."
+
+I expect that maintaining the Derived Work (ie the source code) in the
+same publically available place as any Compiled Work (ie binary versions)
+will satisfy this requirement.
+
+So here is a recitation of clause 6 of the LPPL here to see how it can
+be "honored":
+
+6.  If you are not the Current Maintainer of the Work, you may
+distribute a Derived Work provided the following conditions are met
+for every component of the Work unless that component clearly states
+in the copyright notice that it is exempt from that condition.  Only
+the Current Maintainer is allowed to add such statements of exemption
+to a component of the Work.
+
+  a. If a component of this Derived Work can be a direct replacement
+     for a component of the Work when that component is used with the
+     Base Interpreter, then, wherever this component of the Work
+     identifies itself to the user when used interactively with that
+     Base Interpreter, the replacement component of this Derived Work
+     clearly and unambiguously identifies itself as a modified version
+     of this component to the user when used interactively with that
+     Base Interpreter.
+
+Since my (current) intent is to derive an embedded layout engine it
+seeme improbable that I will end up with things that could be direct
+replacement for part of a regular TeX installation. However just to be
+careful I should arrange that it I make use of class files or other macro
+packages that the changed versions always contain annotation that would
+print a change-message if they ever got loaded into a native TeX. I should
+do that even if I have not changed the individual file in any way at all,
+bacase the LPPL considers distributing a subset of a full system to be
+a modification. I do not see this as a problematic limitation.
+
+  b. Every component of the Derived Work contains prominent notices
+     detailing the nature of the changes to that component, or a
+     prominent reference to another file that is distributed as part
+     of the Derived Work and that contains a complete and accurate log
+     of the changes.
+
+A "prominent reference to another file" seems best here! For small changes
+(eg if I were to find a need to patch a macro file) this is not a big
+issue. For code that has been transformed from one language to another and
+then further re-purposed, modified and optimised the "complete and accurate
+log of the changes" starts to look onerous. However scanning down I see that
+I am relieved of this responsibility of the Derived Work is not a replacement!
+So all seems comfortable, but as a matter of politeness it will still be
+proper to include information about changes that have been made.
+
+  c. No information in the Derived Work implies that any persons,
+     including (but not limited to) the authors of the original version
+     of the Work, provide any support, including (but not limited to)
+     the reporting and handling of errors, to recipients of the
+     Derived Work unless those persons have stated explicitly that
+     they do provide such support for the Derived Work.
+
+The BSD license has as one of its clauses an explicit disclaimer relating
+to liability, and it will be easy to avoid suggesting that anybody
+provides support when they have not explicitly offered to. I think that the
+main sort of statement that this prohibits in the Derived Work would be
+one that said "Since this Derived Work is just a modified version of the
+Original one you can expect the Original Authors to respond to any bug
+reports you wish to raise". Ha ha ha. Easy to avoid saying that!
+
+  d. You distribute at least one of the following with the Derived Work:
+
+       1. A complete, unmodified copy of the Work;
+          if your distribution of a modified component is made by
+          offering access to copy the modified component from a
+          designated place, then offering equivalent access to copy
+          the Work from the same or some similar place meets this
+          condition, even though third parties are not compelled to
+          copy the Work along with the modified component;
+
+       2. Information that is sufficient to obtain a complete,
+          unmodified copy of the Work.
+
+A reference to the Comprehensive TeX Archive would satisfy d.2 easily,
+and the wording of d.1 about "similar place" backs up my reading of the
+reqirement that the (source version of a) Derived Work be distributed
+to those who receive a Compiled Work can be satisfied in a similar manner.
+But again the next paragraph of the LPPL tends to render this clause
+inapplicable.
+
+
+
+
+
+Later on the LPPL qualifies itself with a statement:
+
+"Derived Works That Are Not Replacements
+---------------------------------------
+
+Several clauses of the LPPL specify means to provide reliability and
+stability for the user community. They therefore concern themselves
+with the case that a Derived Work is intended to be used as a
+(compatible or incompatible) replacement of the original Work. If
+this is not the case (e.g., if a few lines of code are reused for a
+completely different task), then clauses 6b and 6d shall not apply."
+
+So as a reminder of how simple the remaining conditions are:
+6.a:  If used with an original Base Interpreter changed components must
+announce themselves when used interactively.
+6.c:  Must not give impression that anybody who has not explicitly
+agreed to will provide support.
+
+There is one more section in the LPPL that matters. This is the strong
+recommendation that all files subject to LPPL be listed in a file
+called manifest.txt so that it is clear just what is covered. Transcribing
+any such file from the original source of any Work that is to be relied on
+will satisfy this.
+
