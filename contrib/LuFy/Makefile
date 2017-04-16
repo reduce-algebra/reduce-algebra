@@ -1,16 +1,16 @@
-# Makefile for uFy project
+# Makefile for LuFy project
 
-# uFy is the start of an adaptation of TeX to provide a Lisp/Reduce
+# LuFy is the start of an adaptation of TeX to provide a Lisp/Reduce
 # screen driver. It takes the original Knuth TeX source (tex.web) and
 # as a first step it converts it into Pascal and then into a Lisp-readable
-# parse tree. Then name "uFy" is obtained from "TeX" by moving from
-# T to u, e to F and X to y. It is intended to be a name that reflects the
-# TeX origin of this code but that should never cause confusion with the
-# original. 
+# parse tree. Then name "LuFy" is obtained from "TeX" by moving from
+# T to u, e to F and X to y with an L for Lisp on the front.
+# It is intended to be a name that reflects the TeX origin of this code
+# but that should never cause confusion with the original. 
 
 # $Id$
 
-all:	ufy.log
+all:	lufy.red
 
 # Use "tangle" to map the original literate tex source into
 # Pascal.
@@ -42,18 +42,23 @@ p2l:	p2l.cpp p2l-generated.cpp p2l.tag.hpp plex.cpp
 
 # Run p2l to convert tex.p.
 
-.PHONY:	ufy.log
-ufy.log:	tex.p p2l
-	./p2l < tex.p | tee ufy.log
+lufy.tmp:	tex.p p2l
+	./p2l < tex.p > lufy.tmp
+
+# Run some rlisp code that reads in lufy.tmp and creates lufy.red
+
+lufy.red:	lufy.tmp
+	redcsl -w p2l.red -- p2l.log
 
 # Discard all files that can be re-generated.
 
 .PHONY:	clean
 clean:
 	rm -f *.o *.log *~ *.bak *.old\
-		tex.p tex.pool \
+		tex.p tex.pool *.tmp \
 		p2l-generated.hpp p2l-generated.cpp plex.cpp \
-		p2l p2l.exe
+		p2l p2l.exe \
+	lufy.red
 		
 
 # end of Makefile

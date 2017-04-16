@@ -1,0 +1,49 @@
+              License-related comments about the files here.
+
+The file "lufy.red" is made by applying a series of mechanical
+transformations starting from tex.web, which is the Original Knuth
+literate form of the TeX program source. The exact details of these
+transformations are documented precisely by the code here, but clearly
+many people will consider lightly commented code not to be as clear
+an explanation as would be desirable even if it is (by definition)
+pretty complete.
+
+p2l.l is the flex input that defines a Pascal-compatible lexical analyser.
+p2l.ypp is a bison input file describing a Pascal parser. I added semantic
+    actions to an existing grammar so that some form of parse tree gets
+    created. Each individual semantic action should be simple enough to
+    understand.
+p2l.cpp contains two segments of code. One lot is a set of constructors
+    for parse tree nodes, which are built in a really naive manner. The
+    second is code that traverses a parse tree printing it in a fully
+    parenthesised notation that will be acceptible to a Lisp system.
+
+The code in all the above is supposed to preserve all information present
+in Pascal source (which is itself obtained by using "tangle" in tex.web).
+
+p2l.red is Reduce code that reads in the parenthesised parse tree and
+   rearranges it so that it ends up as something rather like executable
+   Lisp code. In doing this it discards Pascal type information, but in
+   general it is mostly just performing fairly direct re-writes of the
+   structure of the tree. For instance in the bison parser most lists are
+   accumulated in a left-associated form, as in (((a b) c) d), and p2l.red
+   will typically change that to be (a b c d). It also normalises the names
+   at the head of segments of the parse tree to match function names in
+   the Standards Lisp that Reduce uses. The output from p2l.red is lufy.red.
+
+A number of Pascal features do not translate into Lisp very easily, and so
+the code in lufy.red is not directly usable. To make it possible to run it
+a prolog file is provided that defines some of the functions present in
+in in a way that is compatible with native Lisp, and then flags the names
+of those functions as 'LOSE. That is a Reduce feature which permits the
+definition from the prolog to take the place on the one in lufy.red.
+
+As regards the rights associated with the TeX source, lufy.red is clearly
+derived from tex.web, but its name is not anything that can be readily
+confused with TeX and that should satisfy the requirements of the Knuth
+License. The detailed documentation of how it is derived available by
+inspecting the code used to make it, and the fact that a prolog file of
+overrides is used rather than hand editing of the transformed file are
+schemes intended to fit in with the spirit as well as the letter of TeXs
+requirements.
+

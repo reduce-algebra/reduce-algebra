@@ -64,7 +64,7 @@ program_heading : PROGRAM identifier
 
 identifier_list : identifier_list comma identifier
                   { $$ = item("idlist_append", $1, $3); }
- | identifier     { $$ = item("idlist", $1); }
+ | identifier     { $$ = item("idlist_append", NULL, $1); }
  ;
 
 block : label_declaration_part
@@ -91,21 +91,21 @@ label_declaration_part : LABEL label_list semicolon
 
 label_list : label_list comma label
                    { $$ = item("lablistappend", $1, $3); }
- | label           { $$ = $1; }
+ | label           { $$ = item("lablistappend", NULL, $1); }
  ;
 
 label : DIGSEQ     { $$ = symbol("label", yytext); }
  ;
 
 constant_definition_part : CONST constant_list
-                   { $$ = item("constlist", $2); }
+                   { $$ = $2; }
  |                 { $$ = NULL; }
  ;
 
 constant_list : constant_list constant_definition
                    { $$ = item("constlist_append", $1, $2); }
  | constant_definition
-                   { $$ = $1; }
+                   { $$ = item("constlist_append", NULL, $1); }
  ;
 
 constant_definition : identifier EQUAL cexpression semicolon
@@ -221,49 +221,74 @@ new_structured_type : structured_type
  ;
 
 structured_type : array_type
+                   { $$ = $1; }
  | record_type
+                   { $$ = $1; }
  | set_type
+                   { $$ = $1; }
  | file_type
+                   { $$ = $1; }
  ;
 
 array_type : ARRAY LBRAC index_list RBRAC OF component_type
+                   { $$ = item("arraytype", $3, $6); }
  ;
 
 index_list : index_list comma index_type
+                   { $$ = item("indexlist", $1, $3); }
  | index_type
+                   { $$ = $1; }
  ;
 
-index_type : ordinal_type ;
+index_type : ordinal_type
+                   { $$ = $1; }
+ ;
 
 ordinal_type : new_ordinal_type
+                   { $$ = $1; }
  | identifier
+                   { $$ = $1; }
  ;
 
-component_type : type_denoter ;
+component_type : type_denoter
+                   { $$ = $1; }
+ ;
 
 record_type : RECORD record_section_list END
+                   { $$ = item("recordtype", $2, NULL); }
  | RECORD record_section_list semicolon variant_part END
+                   { $$ = item("recordtype", $2, $3); }
  | RECORD variant_part END
+                   { $$ = item("recordtype", NULL, $2); }
  ;
 
 record_section_list : record_section_list semicolon record_section
+                   { $$ = item("recseclist", $1, $3); }
  | record_section
+                   { $$ = $1; }
  ;
 
 record_section : identifier_list COLON type_denoter
+                   { $$ = item("recsec", $1, $3); }
  ;
 
 variant_part : CASE variant_selector OF variant_list semicolon
+                   { $$ = item("varpart", $2, $4); }
  | CASE variant_selector OF variant_list
- |
+                   { $$ = item("varpart", $2, $4); }
+ |                 { $$ = NULL; }
  ;
 
 variant_selector : tag_field COLON tag_type
+                   { $$ = item("varsel", $1, $3); }
  | tag_type
+                   { $$ = $1; }
  ;
 
 variant_list : variant_list semicolon variant
+                   { $$ = item("varlist", $1, $3); }
  | variant
+                   { $$ = $1; }
  ;
 
 variant : case_constant_list COLON LPAREN record_section_list RPAREN
@@ -280,33 +305,48 @@ case_constant : constant
  | constant DOTDOT constant
  ;
 
-tag_field : identifier ;
-
-tag_type : identifier ;
-
-set_type : SET OF base_type
+tag_field : identifier
+                   { $$ = $1; }
  ;
 
-base_type : ordinal_type ;
+tag_type : identifier
+                   { $$ = $1; }
+ ;
+
+set_type : SET OF base_type
+                   { $$ = item("setof", $3); }
+ ;
+
+base_type : ordinal_type
+                   { $$ = $1; }
+ ;
 
 file_type : PFILE OF component_type
+                   { $$ = item("filetype", $3); }
  ;
 
 new_pointer_type : UPARROW domain_type
+                   { $$ = item("newpointertype", $2); }
  ;
 
-domain_type : identifier ;
+domain_type : identifier
+                   { $$ = $1; }
+ ;
 
 variable_declaration_part : VAR variable_declaration_list semicolon
- |
+                   { $$ = item("vardecpart", $2); }
+ |                 { $$ = NULL; }
  ;
 
 variable_declaration_list :
    variable_declaration_list semicolon variable_declaration
+                   { $$ = item("vardeclist", $1, $3); }
  | variable_declaration
+                   { $$ = NULL; }
  ;
 
 variable_declaration : identifier_list COLON type_denoter
+                   { $$ = item("vardec", $1, $3); }
  ;
 
 procedure_and_function_declaration_part :
@@ -319,7 +359,7 @@ proc_or_func_declaration_list :
    proc_or_func_declaration_list semicolon proc_or_func_declaration
                { $$ = item("procdeflist", $1, $3); }
  | proc_or_func_declaration
-               { $$ = $1; }
+               { $$ = item("procdeflist", NULL, $1); }
  ;
 
 proc_or_func_declaration : procedure_declaration
@@ -351,7 +391,7 @@ formal_parameter_list : LPAREN formal_parameter_section_list RPAREN
 formal_parameter_section_list : formal_parameter_section_list semicolon formal_parameter_section
                { $$ = item("formallist", $1, $3); }
  | formal_parameter_section
-               { $$ = $1; }
+               { $$ = item("formallist", NULL, $1); }
  ;
 
 formal_parameter_section : value_parameter_specification
@@ -373,11 +413,11 @@ variable_parameter_specification : VAR identifier_list COLON identifier
  ;
 
 procedural_parameter_specification : procedure_heading
-               { $$ = $1; }
+               { $$ = item("procparam", $1); }
  ;
 
 functional_parameter_specification : function_heading
-               { $$ = $1; }
+               { $$ = item("funcparam", $1); }
  ;
 
 procedure_identification : PROCEDURE identifier
@@ -425,7 +465,7 @@ compound_statement : PBEGIN statement_sequence END
 statement_sequence : statement_sequence semicolon statement
                { $$ = item("statementsequence", $1, $3); }
  | statement
-               { $$ = $1; }
+               { $$ = item("statementsequence", NULL, $1); }
  ;
 
 statement : open_statement
@@ -535,7 +575,6 @@ variable_access : identifier
             { $$ = item("uparrow", $1); }
  ;
 
-// @@
 indexed_variable : variable_access LBRAC index_expression_list RBRAC
             { $$ = item("indexed", $1, $3); }
  ;
@@ -551,7 +590,7 @@ index_expression : expression
  ;
 
 field_designator : variable_access DOT identifier
-            { $$ = item("fileddesignator", $1, $3); }
+            { $$ = item("fielddesignator", $1, $3); }
  ;
 
 procedure_statement : identifier params
@@ -588,20 +627,29 @@ goto_statement : GOTO label
  ;
 
 case_statement : CASE case_index OF case_list_element_list END
+            { $$ = item("case", $2, $4, NULL); }
  | CASE case_index OF case_list_element_list SEMICOLON END
+            { $$ = item("case", $2, $4, NULL); }
  | CASE case_index OF case_list_element_list semicolon
    otherwisepart statement END
+            { $$ = item("case", $2, $4, $7); }
  | CASE case_index OF case_list_element_list semicolon
    otherwisepart statement SEMICOLON END
+            { $$ = item("case", $2, $4, $7); }
  ;
 
-case_index : expression ;
+case_index : expression
+            { $$ = $1; }
+ ;
 
 case_list_element_list : case_list_element_list semicolon case_list_element
+            { $$ = item("caseeltlist", $1, $3); }
  | case_list_element
+            { $$ = $1; }
  ;
 
 case_list_element : case_constant_list COLON statement
+            { $$ = item("caseelt", $1, $3); }
  ;
 
 otherwisepart : OTHERWISE
@@ -759,7 +807,6 @@ comma : COMMA
 %%
 
 int main(int argc, char *argv[])
-{
-    yyparse();
+{   yyparse();
     return 0;
 }

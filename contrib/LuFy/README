@@ -3,17 +3,18 @@
 
 
 Let's start with a remark that I will call the programs that I derive
-here "uFy". Specifically I will NOT call then TeX or anything that sounds
+here "LuFy". Specifically I will NOT call then TeX or anything that sounds
 like that or that could cause potential confusion between them and their
-origin. For those who have not already spotted it, uFy is to TeX much what
+origin. For those who have not already spotted it, LuFy is to TeX much what
 HAL was to IBM (consider a Caesar cifer: just replace each letter by the next
 one along in the alphabet!). And the stylized mixing of upper case puts the
-upper case letter in the middle. The "proper" vesrion of it that "\uFy" will
-generate will of course shift and kern the three letters in a suitably
+upper case letter in the middle. The "proper" version of it that "\LuFy" will
+generate will of course shift and kern the letters in a suitably
 extreme manner so as to continue the respect and reference for TeX but still
 to make it clear that this is not what my code is purporting to be. 
 
 ftp://ftp.cs.stanford.edu/pub/tex/README.KNUTH contains the text
+
 "The files in subdirectories "dist" and "local" of this directory are
 master files for TeX and METAFONT, maintained personally by Donald E. Knuth.
 Nobody else is authorized to make any changes whatever to them!
