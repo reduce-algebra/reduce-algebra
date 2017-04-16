@@ -1,0 +1,48 @@
+This is to note issues that come to mind wrt converting from
+Pascal to other languages.
+
+
+(1) VAR arguments (ie call by reference rather than by value). This only
+arises in the TeX source in support of file access, and that is an area
+liable to require radical overheal in any event.
+
+(2) EXIT returns from the current procedure. This is an issue in that in
+Lisp RETURN just exists from the current block. I may use the Common Lisp
+style RETURN-FROM to cope with this. An alternative approach that is beyond
+vanilla Standard Lisp but which would work with both CSL and PSL would
+be to use CATCH and THROW. In that case it would seem desitable to optimise
+out cases where there were not any nested PROG blocks and so a simple
+RETURN could be used. My best bet is to generate block/return-from code and
+then have a further pass that in the PSL case maps that onto catch/throw.
+Ahahah - when I scan tex.p I observe that there are no instances of EXIT and
+so the concern here does not arise! Whew.
+
+(3) A Pascal function specifies its return value by assigning to a pseudo
+variable named as the function is. Such assignments can be performed anywhere
+within the function. So any function will need to map onto
+   (de foo (args)
+      (block foo (prog (foo)
+         ...
+         (setq foo RETURNVALUE)
+         ...
+         (return!-from foo foo) % exit!
+         ...
+Common Lisp would have made the block with tag FOO implicit in the
+definition of the function. But note that because in tex.p there are no
+early exist from procedures I can use a simpler form:
+   (de foo (args)
+      (prog (foo)
+         ...
+         (setq foo RETURNVALUE)
+         ...
+         % End of main procedure body here
+         (return foo)))
+
+(4) The TeX source has (a very few) labels that are jumped to in a non-local
+manner. For instance the procedure JUMPOUT has as its body just "GOTO 9998"
+where the label is set in the set of statements at the end of the code. I
+think that the GOTO statements and label settings involved will need to
+be detected and mapped onto CATCH/THROW for Lisp (or setjmp/longjmp for C!).
+This can be helped because there is a top-level declaration of the
+labels involved at the head of the program.
+
