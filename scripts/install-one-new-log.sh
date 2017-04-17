@@ -37,6 +37,3 @@ then
 fi
 
 # end of test
-
-
-

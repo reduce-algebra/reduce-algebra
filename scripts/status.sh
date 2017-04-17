@@ -19,11 +19,12 @@ case ${1:-nothing} in
   for x in $gen
   do
 #   printf "Getting rid of %s\n" "$x"
-    grep -v ^$x\$\\\|/$x\$ < /tmp/svnfiles > /tmp/work
+    grep -v "/$x\$" < /tmp/svnfiles | \
+      grep -v "^$x\$" > /tmp/work
     mv /tmp/work /tmp/svnfiles
   done
   printf "Added or modified files:\n"
   cat /tmp/svnfiles
-  rm -f /tmp/work /tmp/svnfiles
+###  rm -f /tmp/work /tmp/svnfiles
   ;;
 esac

@@ -1232,7 +1232,7 @@ AC_C_CONST
 AC_STRUCT_TM
 AC_C_VOLATILE
 
-AC_CHECK_TYPES([intptr_t,unitptr_t], [], [have_intptr=no],
+AC_CHECK_TYPES([intptr_t,uintptr_t], [], [have_intptr=no],
    [#include <stdint.h>])
 AC_CHECK_TYPES([complex double], [], [],
    [#ifdef HAVE_COMPLEX_H

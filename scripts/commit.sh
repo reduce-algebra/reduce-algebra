@@ -69,7 +69,8 @@ gen="aclocal.m4 compile config.guess config.sub configure depcomp Makefile.in \
 for x in $gen
 do
 # printf "Getting rid of %s\n" "$x"
-  grep -v ^$x\$\\\|/$x\$ < /tmp/svnfiles > /tmp/work
+  grep -v "/$x\$" < /tmp/svnfiles | \
+    grep -v "^$x\$" > /tmp/work
   mv /tmp/work /tmp/svnfiles
 done
 
