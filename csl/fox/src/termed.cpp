@@ -407,7 +407,7 @@ static int searchFlags;
 
 #define MAX_PROMPT_LENGTH 80
 
-static wchar_t prompt_string[MAX_PROMPT_LENGTH+1] = L">";
+static wchar_t termed_prompt_string[MAX_PROMPT_LENGTH+1] = L">";
 
 wchar_t *input_line;
 static wchar_t *display_line;
@@ -437,7 +437,7 @@ static wchar_t *term_wide_plain_getline(void)
     fprintf(stderr, "plain_getline:");
     fflush(stderr);
 #endif
-    for (i=0; i<prompt_length; i++) term_putchar(prompt_string[i]);
+    for (i=0; i<prompt_length; i++) term_putchar(termed_prompt_string[i]);
     fflush(stdout);
     if (input_line_size == 0) return NULL;
     input_line[0] = 0;
@@ -501,9 +501,9 @@ void term_setprompt(const char *s)
 //
     for (i=0; i<prompt_length; i++)
     {   wint_t c = *s++ & 0xff;
-        prompt_string[i] = c;
+        termed_prompt_string[i] = c;
     }
-    prompt_string[i] = 0;
+    termed_prompt_string[i] = 0;
 //
 // Now when I set a prompt I need to add the previous bunch of lines
 // to the history.
@@ -540,16 +540,16 @@ void term_wide_setprompt(const wchar_t *s)
 // both parts of the pair.
 //
     if (prompt_length > 0 &&
-        is_high_surrogate(prompt_string[prompt_length-1])) prompt_length--;
-    wcsncpy(prompt_string, s, prompt_length);
-    prompt_string[prompt_length] = 0;
+        is_high_surrogate(termed_prompt_string[prompt_length-1])) prompt_length--;
+    wcsncpy(termed_prompt_string, s, prompt_length);
+    termed_prompt_string[prompt_length] = 0;
 //
 // Now in the face of possible surrogate pairs the width in columns of the
 // prompt may not be the same as the number of wchar_t items that make it
 // up, so I will sort that out by counting units ignoring any high surrogates.
 //
     prompt_width = 0;
-    for (s=prompt_string; *s!=0; s++)
+    for (s=termed_prompt_string; *s!=0; s++)
         if (!is_high_surrogate(*s)) prompt_width++;
 }
 
@@ -5512,15 +5512,15 @@ static wchar_t *term_wide_fancy_getline(void)
 //
     term_move_first_column();
     set_fg(promptColour);
-    for (i=0; i<prompt_length; i++) term_putchar(prompt_string[i]);
+    for (i=0; i<prompt_length; i++) term_putchar(termed_prompt_string[i]);
     fflush(stdout);
     if (input_line_size == 0)
     {   set_normal();
         return NULL;
     }
     set_fg(inputColour);
-    wcsncpy(input_line, prompt_string, prompt_length);
-    wcsncpy(display_line, prompt_string, prompt_length);
+    wcsncpy(input_line, termed_prompt_string, prompt_length);
+    wcsncpy(display_line, termed_prompt_string, prompt_length);
     input_line[prompt_length] = 0;
     display_line[prompt_length] = 0;
     insert_point = final_cursorx = cursorx = prompt_length;

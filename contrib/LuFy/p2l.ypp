@@ -600,13 +600,13 @@ procedure_statement : identifier params
  ;
 
 params : LPAREN actual_parameter_list RPAREN
-            { $$ = item("params", $2); }
+            { $$ = $2; }
  ;
 
 actual_parameter_list : actual_parameter_list comma actual_parameter
             { $$ = item("paramlist", $1, $3); }
  | actual_parameter
-            { $$ = $1; }
+            { $$ = item("paramlist", NULL, $1); }
  ;
 
 /*

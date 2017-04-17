@@ -32,6 +32,11 @@ create!-package('(rprint),'(util));
 fluid '(!*lower !*raise !*n buffp combuff!* curmark curpos orig pretop
         pretoprinf rmar rprifn!* rterfn!*);
 
+% After "on rprint_lower;" identifiers printed here will be converted to
+% lower case.
+switch rprint_lower;
+!*rprint_lower := t;
+
 COMMENT RPRIFN!* allows output from RPRINT to be handled differently,
         RTERFN!* allows end of lines to be handled differently;
 
@@ -177,8 +182,8 @@ symbolic procedure explodey u;
    begin scalar v;
       v := explode u;
 % This will map all identifiers into lower case. I arrange that this
-% is not done if the user has disabled case conversion of input.
-      if idp u and (!*raise or !*lower) then
+% is not done if the user has reset !*rprint_lower to nil.
+      if idp u and !*rprint_lower then
          v := for each x in v collect check!-downcase x;
       return v
    end;

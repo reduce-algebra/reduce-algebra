@@ -448,6 +448,20 @@ extern "C" const wchar_t *input_history_get(int n);
 //
 extern "C" int find_program_directory(const char *argv0);
 
+// Support for file date manipulation
+
+typedef struct date_and_type_
+{   unsigned long int date;
+    unsigned long int type;
+} date_and_type;
+
+// Reinstate date and filetype...
+
+extern void set_filedate(const char *name, unsigned long int datestamp,
+                         unsigned long int ftype);
+
+extern void put_fileinfo(date_and_type *p, const char *name);
+
 //
 // Some things that are really intended to be private to the implementation
 // but at present it seems easiest to mention them in this header rather
@@ -460,9 +474,7 @@ extern "C" int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fw
 
 extern "C" int fwin_use_xft;
 
-extern "C" int directoryp(char *f, const char *o, size_t n);
-
-extern "C" int file_readable(char *f, const char *o, size_t n);
+extern "C" bool directoryp(char *f, const char *o, size_t n);
 
 extern "C" int using_termed;
 
@@ -476,9 +488,9 @@ extern "C" int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_
 extern "C" char fwin_prompt_string[MAX_PROMPT_LENGTH];
 
 extern "C" int get_current_directory(char *s, size_t n);
-extern "C" int file_readable(char *filename, const char *old, size_t n);
-extern "C" int file_writeable(char *filename, const char *old, size_t n);
-extern "C" int file_executable(char *filename, const char *old, size_t n);
+extern "C" bool file_readable(char *filename, const char *old, size_t n);
+extern "C" bool file_writeable(char *filename, const char *old, size_t n);
+extern "C" bool file_executable(char *filename, const char *old, size_t n);
 extern "C" int rename_file(char *from_name, const char *from_old, size_t from_size,
                 char *to_name, const char *to_old, size_t to_size);
 extern "C" int get_home_directory(char *b, size_t len);

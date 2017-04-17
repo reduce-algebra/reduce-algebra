@@ -2099,12 +2099,9 @@ static int kilo = 0;
 static void wait_for_char()
 {
     ensure_screen();
-// I rather believe that EMBEDDE and WINDOW_SYSTEM should by mutually
+// I rather believe that EMBEDDED and WINDOW_SYSTEM should by mutually
 // exclusive
 #ifdef WINDOW_SYSTEM
-#ifdef EMBEDDED
-#error EMBEDDED and WINDOW_SYSTEM both set. This is a configuration error.
-#endif
     {   on_backtrace(tty_count = wimpget(tty_buffer),
             if (miscflags & HEADLINE_FLAG)
                 err_printf("+++ Interrupted\n");
@@ -2118,7 +2115,6 @@ static void wait_for_char()
         return;
     }
 #else // WINDOW_SYSTEM
-#ifdef EMBEDDED
 //
 // Here I either do not have a window system or I have elected not to use it.
 //
@@ -2163,9 +2159,6 @@ static void wait_for_char()
         }
     }
     tty_pointer = tty_buffer;
-#else
-#error Either EMBEDDED or WINDOW_SYSTREM should be defined
-#endif // EMBEDDED
 #endif // WINDOW_SYSTEM
 }
 

@@ -1801,12 +1801,6 @@ unsigned long int pack_date(int year, int mon, int day,
     return r*60 + sec;
 }
 
-typedef struct date_and_type_
-{   unsigned long int date;
-    unsigned long int type;
-} date_and_type;
-
-
 #ifdef WIN32
 
 #include "windows.h"
@@ -2473,24 +2467,24 @@ void list_directory_members(char *filename, const char *old,
 #endif // NAG_VERSION
 
 
-int file_exists(char *filename, const char *old, size_t n, char *tt)
+bool file_exists(char *filename, const char *old, size_t n, char *tt)
 //
 // This returns YES if the file exists, and as a side-effect copies a
 // textual form of the last-changed-time of the file into the buffer tt.
 //
 {   struct stat statbuff;
     process_file_name(filename, old, n);
-    if (*filename == 0) return 0;
-    if (stat(filename, &statbuff) != 0) return 0;
+    if (*filename == 0) return false;
+    if (stat(filename, &statbuff) != 0) return false;
     strcpy(tt, ctime(&(statbuff.st_mtime)));
-    return 1;
+    return true;
 }
 
-int directoryp(char *filename, const char *old, size_t n)
+bool directoryp(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
-    if (*filename == 0) return 0;
-    if (stat(filename,&buf) == -1) return 0;
+    if (*filename == 0) return false;
+    if (stat(filename,&buf) == -1) return false;
     return ((buf.st_mode & S_IFMT) == S_IFDIR);
 }
 
@@ -2603,42 +2597,42 @@ char *get_truename(char *filename, const char *old, size_t n)
 // I do here will hold the fort for now.
 //
 
-int file_readable(char *filename, const char *old, size_t n)
+bool file_readable(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
-    if (*filename == 0) return 0;
+    if (*filename == 0) return false;
     if (stat(filename,&buf) == -1)
-        return 0; // File probably does not exist
+        return false; // File probably does not exist
 #ifndef S_IRUSR
-    return 1;
+    return true;
 #else // S_IRUSR
     return (buf.st_mode & S_IRUSR);
 #endif // S_IRUSR
 }
 
 
-int file_writeable(char *filename, const char *old, size_t n)
+bool file_writeable(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
-    if (*filename == 0) return 0;
+    if (*filename == 0) return false;
     if (stat(filename,&buf) == -1)
-        return 0; // Should we check to see if the directory is writeable?
+        return false; // Should we check to see if the directory is writeable?
 #ifndef S_IWUSR
-    return 1;
+    return true;
 #else // S_IWUSR
     return (buf.st_mode & S_IWUSR);
 #endif // S_IWUSR
 }
 
 
-int file_executable(char *filename, const char *old, size_t n)
+bool file_executable(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
-    if (*filename == 0) return 0;
+    if (*filename == 0) return false;
     if (stat(filename,&buf) == -1)
-        return 0; // Should we check to see if the directory is writeable?
+        return false; // Should we check to see if the directory is writeable?
 #ifndef S_IXUSR
-    return 1;
+    return true;
 #else // S_IXUSR
     return (buf.st_mode & S_IXUSR);
 #endif // S_IXUSR

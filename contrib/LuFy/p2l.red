@@ -35,6 +35,9 @@ on echo;
 on backtrace;
 on comp;
 
+load_module rprint;
+off rprint_lower;
+
 % Start by reading in the source file
 
 global '(input_data);
@@ -83,7 +86,7 @@ symbolic procedure tidy x;
       long := 400 >>;
     princ "%?: ";  % Unknown leading operator.
     mediumprint(x, long);
-    return nil
+    return '!?
   end;
 
 % Ignore the name that is given for the program
@@ -244,6 +247,23 @@ symbolic procedure tidyif u;
   else list('cond, list(tidy car u, tidy cadr u));
   
 put('if, 'tidyfn, 'tidyif);
+
+symbolic procedure tidyprocstat u;
+  tidy car u . tidy cadr u;
+  
+put('procstat, 'tidyfn, 'tidyprocstat);
+
+symbolic procedure tidyparamlist u;
+  if null car u then list tidy cadr u
+  else append(tidy car u, list tidy cadr u);
+  
+put('paramlist, 'tidyfn, 'tidyparamlist);
+
+symbolic procedure tidyindexed u;
+  if null car u then list tidy cadr u
+  else append(tidy car u, list tidy cadr u);
+  
+put('indexed, 'tidyfn, 'tidyindexed);
 
 
 
