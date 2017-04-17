@@ -29,7 +29,7 @@ module rprint;  % The Standard LISP to REDUCE pretty-printer.
 
 create!-package('(rprint),'(util));
 
-fluid '(!*lower !*n buffp combuff!* curmark curpos orig pretop
+fluid '(!*lower !*raise !*n buffp combuff!* curmark curpos orig pretop
         pretoprinf rmar rprifn!* rterfn!*);
 
 COMMENT RPRIFN!* allows output from RPRINT to be handled differently,
@@ -176,7 +176,10 @@ symbolic procedure explodex1 u;
 symbolic procedure explodey u;
    begin scalar v;
       v := explode u;
-      if idp u then v := for each x in v collect check!-downcase x;
+% This will map all identifiers into lower case. I arrange that this
+% is not done if the user has disabled case conversion of input.
+      if idp u and (!*raise or !*lower) then
+         v := for each x in v collect check!-downcase x;
       return v
    end;
 
