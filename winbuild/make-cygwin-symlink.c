@@ -195,6 +195,12 @@ int processVolume(const char *volumeName)
 int main(int argc, char *argv[])
 {
     char volumeName[100];
+// When I am ready to abandom support for systeme prior to Windows 7
+// I ccan use SetThreadErrorMode.
+//     SetThreadErrorMode(SEM_FAILCRITICALERRORS, NULL);
+// This call is necessary so that (eg) having an SD card reader without an SD
+// card in it does not stall the installation and lead to failure.
+    SetErrorMode(SEM_FAILCRITICALERRORS);
     HANDLE v;
 #if 0
     {   int i;
