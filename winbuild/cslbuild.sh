@@ -107,7 +107,7 @@ case $buildcase in
   ./cslbuild1.sh cyg32
   ;;
 3)
-  ../cslbuild1.sh cyg32 cygalt
+  ./cslbuild1.sh cyg32 cygalt
   ;;
 esac
 

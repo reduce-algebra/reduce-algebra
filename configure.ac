@@ -508,8 +508,16 @@ then
     then
       build="x86_64-pc-windows"
     else
-      build="i686-pc-windows"
+      build="$host"
     fi
+    case $build in
+    *i686*)
+       build=i686-pc-windows
+       ;;
+    *)
+       build="x86_64-pc-windows"
+       ;;
+    esac
     ;;
   *)
     build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $host"`

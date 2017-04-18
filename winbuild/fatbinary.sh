@@ -43,7 +43,7 @@ i686)
   x86_64-pc-cygwin-strip cygwin64-isatty.exe
   ;;
 x86_64)
-  i686-pc-cygwin32-gcc -O2 cygwin-isatty.c -o cygwin32-isatty.exe
+  i686-pc-cygwin-gcc -O2 cygwin-isatty.c -o cygwin32-isatty.exe
   i686-pc-cygwin-strip cygwin32-isatty.exe
 
   gcc -O2 cygwin-isatty.c -o cygwin64-isatty.exe
