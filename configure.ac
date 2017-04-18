@@ -498,8 +498,8 @@ AC_MSG_NOTICE([host=$host args=$ac_configure_args])
 
 if test "x$with_psl" != "xno"
 then
-  if test "x$host" = "xi686-pc-cygwin"
-  then
+  case $host in
+  *windows | *cygwin)
 # building PSL on Windows - need to decide whether to build for 32 or 64bit
     if test "x$with_m32" = "xyes"
     then 
@@ -510,9 +510,11 @@ then
     else
       build="i686-pc-windows"
     fi
-  else
+    ;;
+  *)
     build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $host"`
-  fi
+    ;;
+  esac
 else
   build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $host $ac_configure_args"`
 fi
