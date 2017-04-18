@@ -776,6 +776,7 @@ with_xinput
 with_xim
 with_opengl
 with_csl
+with_autogen
 with_force
 with_cygwin
 with_cygbuild
@@ -783,6 +784,7 @@ with_cygbuild64
 with_build
 with_pslbuild
 with_boehm
+enable_test
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1433,6 +1435,7 @@ Optional Features:
   --disable-tiff          compile without TIFF image support
   --disable-zlib          compile without zlib support
   --disable-bz2lib        compile without bz2lib support
+  --enable-test           stray option from the Reduce build setup
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1450,6 +1453,7 @@ Optional Packages:
   --with-xim              compile with XIM support
   --with-opengl           choices are yes, no
   --with-csl              stray option from the Reduce build setup
+  --with-autogen          stray option from the Reduce build setup
   --with-force            stray option from the Reduce build setup
   --with-cygwin           stray option from the Reduce build setup
   --with-cygbuild         stray option from the Reduce build setup
@@ -3104,54 +3108,6 @@ to "yes", and re-run configure.
 END
     as_fn_error $? "Your 'rm' program is bad, sorry." "$LINENO" 5
   fi
-fi
-
-# aclocal.m4:	configure.ac
-# 	aclocal
-# config.h.in:	configure.ac
-# 	autoheader
-# helpers = COPYING INSTALL install-sh missing mkinstalldirs config.sub \
-# 		ltmain.sh ltconfig
-# Makefile.in $(helpers):	configure.ac Makefile.am aclocal.m4
-# 	automake
-# Note: automake calls libtool for you when necessary.
-
-need="no"
-
-if ! test $srcdir/Makefile.in -nt $srcdir/configure.ac
-then
-  printf "Makefile.in depends on configure.ac\n"
-  need="yes"
-fi
-if ! test $srcdir/Makefile.in -nt $srcdir/Makefile.am
-then
-  printf "Makefile.in depends on Makefile.am\n"
-  need="yes"
-fi
-if ! test $srcdir/configure -nt $srcdir/configure.ac
-then
-  printf "configure depends on configure.ac\n"
-  need="yes"
-fi
-
-if test "x$need" = "xyes\n"
-then
-  printf "autoreconf necessary (args: $ac_configure_args)\n"
-
-  here=`pwd`
-  cd $srcdir
-  printf "autoreconf in the FOX directory\n"
-  autoreconf -f -i -v
-
-  cd $here
-# Because autoconf might not be available or might fail and because I
-# believe I have observed cases where it has not reset timestamps in the
-# way I expected I will reset timestamps explicitly here...
-
-  touch $srcdir/Makefile.am $srcdir/configure
-
-  printf "Restart: $srcdir/configure $ac_configure_args\n"
-  exec /bin/sh -c "$srcdir/configure $ac_configure_args"
 fi
 
 # Set version
@@ -8381,6 +8337,12 @@ if test "${with_csl+set}" = set; then :
 fi
 
 
+# Check whether --with-autogen was given.
+if test "${with_autogen+set}" = set; then :
+  withval=$with_autogen;
+fi
+
+
 # Check whether --with-force was given.
 if test "${with_force+set}" = set; then :
   withval=$with_force;
@@ -8420,6 +8382,17 @@ fi
 # Check whether --with-boehm was given.
 if test "${with_boehm+set}" = set; then :
   withval=$with_boehm;
+fi
+
+# Check whether --enable-test was given.
+if test "${enable_test+set}" = set; then :
+  enableval=$enable_test;
+fi
+
+
+# Check whether --with-autogen was given.
+if test "${with_autogen+set}" = set; then :
+  withval=$with_autogen;
 fi
 
 
@@ -8684,15 +8657,6 @@ else
   canrun_FALSE=
 fi
 
-
-# The following lines are a (further) attempt to arrange that the
-# rebuilding of Makefile (and before that Makefile.in and the like)
-# is less sensitive to exactly which version of automake happens to
-# be installed...
-
-AUTOMAKE="automake -f -a -v"
-
-ACLOCAL="aclocal --force"
 
 # Done.
 ac_config_files="$ac_config_files Makefile utils/Makefile include/Makefile include/fxver.h src/Makefile src/version.rc fox.spec fox-config fox.pc"

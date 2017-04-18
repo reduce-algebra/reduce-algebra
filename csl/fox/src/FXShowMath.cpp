@@ -80,8 +80,8 @@
 
 #include <stdlib.h>
 
-extern int directoryp(char *a, const char *b, size_t n);
-extern int file_readable(char *a, const char *b, size_t n);
+extern bool directoryp(char *a, const char *b, size_t n);
+extern bool file_readable(char *a, const char *b, size_t n);
 
 #include <string.h>
 #include <ctype.h>
