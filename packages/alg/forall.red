@@ -33,7 +33,7 @@ fluid '(!*resimp !*sub2 alglist!* arbl!* asymplis!* frasc!* wtl!*);
 
 fluid '(!*!*noremove!*!* frlis!* newrule!* oldrules!* props!* subfg!*);
 
-fluid '(!*reduce4 !*sqrtrulep powlis!* powlis1!*);
+fluid '(!*reduce4 !*sqrtrulep powlis!* powlis1!* varstack!*);
 
 global '(!*match cursym!* erfg!* letl!* mcond!*);
 
@@ -305,7 +305,8 @@ symbolic procedure letscalar(u,v,w,x,b,flgg);
           then <<!*sqrtrulep := t;
                  let2({'expt,cadr x,'(quotient 1 2)},v,w,b)>>;
            % Since SQRTs can be converted into EXPTs.
-        x := simp0 x where !*precise = t;  % We don't want to break
+	varstack!* := delete(x,varstack!*);
+	x := simp0 x where !*precise = t;  % We don't want to break
                                            % up exponents.
         return if not domainp numr x then letexprn(u,v,w,x,b,flgg)
                 else errpri1 u
