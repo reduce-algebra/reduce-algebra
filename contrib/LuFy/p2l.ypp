@@ -162,8 +162,8 @@ constant : non_string
                    { $$ = string(yytext); }
  ;
 
-sign : PLUS        { $$ = symbol("+"); }
- | MINUS           { $$ = symbol("-"); }
+sign : PLUS        { $$ = symbol("plus"); }
+ | MINUS           { $$ = symbol("minus"); }
  ;
 
 non_string : DIGSEQ

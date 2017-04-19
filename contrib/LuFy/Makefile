@@ -10,6 +10,8 @@
 
 # $Id$
 
+# I will need "tangle", "flex" and "bison" installed.
+
 all:	lufy.red
 
 # Use "tangle" to map the original literate tex source into
@@ -26,19 +28,26 @@ plex.cpp:	p2l.l
 
 # The second is a bison parser...
 
-p2l.tag.hpp p2l-generated.cpp:	p2l.ypp
+p2l-generated.hpp:	p2l-generated.cpp
+
+p2l-generated.cpp:	p2l.ypp
 	bison -d p2l.ypp -o p2l-generated.cpp
+	touch p2l-generated.hpp
 
 # The final one is some hand-written glue in p2l.cpp that builds and then
 # dumps a parse tree. This code has been written clumsily and without
 # concern for error checking or recovery. It is only intended for use in
 # the single context of the translation performed here. Furthermore the
 # "parse tree" generated is ugly in many respects. The expectation is that
-# tidying it up will be best done using Lisp code rather that au this
+# tidying it up will be best done using Lisp code rather that at this
 # C++ stage.
 
-p2l:	p2l.cpp p2l-generated.cpp p2l.tag.hpp plex.cpp
-	g++ p2l.cpp p2l-generated.cpp plex.cpp -lfl -o p2l
+# On the Mac when flex has been installed using macports I need to
+# scan /opt/local/lib to be able to find its support module.
+
+p2l:	p2l.cpp p2l-generated.cpp p2l-generated.hpp plex.cpp
+	if test -d /opt/local/lib; then L="-L/opt/local/lib"; fi; \
+	g++ p2l.cpp p2l-generated.cpp plex.cpp $$L -lfl -o p2l
 
 # Run p2l to convert tex.p.
 
@@ -47,8 +56,21 @@ lufy.tmp:	tex.p p2l
 
 # Run some rlisp code that reads in lufy.tmp and creates lufy.red
 
-lufy.red:	lufy.tmp
-	redcsl -w p2l.red -- p2l.log
+# There is a misery here about how to invoke Reduce. I look in turn for
+#     redcsl             (ie installed on your PATH)
+#     $reduce/bin/redcsl (if "$reduce" is your Reduce build tree)
+#     $O/bin/redcsl      (I use "$O" for the root of my build tree)
+#     reduce             (a fall-back)
+#
+# Eventually I should work to make the code support either PSL or CSL,
+# but for now it will be being developed as a CSL-only system.
+
+lufy.red:	lufy.tmp p2l.red
+	if which redcsl; then R="redcsl -w"; \
+	elif test -x "$$reduce/bin/redcsl"; then R="$$reduce/bin/redcsl -w"; \
+	elif test -x "$$O/bin/redcsl"; then R="$$O/bin/redcsl -w"; \
+	else R=reduce; fi; \
+	$$R < p2l.red > p2l.log
 
 # Discard all files that can be re-generated.
 

@@ -35,7 +35,7 @@ on echo;
 on backtrace;
 on comp;
 
-load_module rprint;
+load_package rprint;
 off rprint_lower;
 
 % Start by reading in the source file
@@ -127,12 +127,12 @@ symbolic procedure tidyblock u;
     procs := car u; u := cdr u;
     stmts := car u;
     return mkprogn6(
-      tidy shortprint labs,
-      tidy shortprint consts,
-      tidy shortprint types,
-      tidy shortprint vars,
-      tidy shortprint procs,
-      tidy shortprint stmts)
+      tidy labs,
+      tidy consts,
+      tidy types,
+      tidy vars,
+      tidy procs,
+      list('de, 'texmain, nil, tidy stmts))
   end;
 
 put('block, 'tidyfn, 'tidyblock);
@@ -160,6 +160,12 @@ symbolic procedure tidylablist_append u;
   else append(tidy car u, list tidy cadr u);
 
 put('lablist_append, 'tidyfn, 'tidylablist_append);
+
+symbolic procedure tidyidlist_append u;
+  if null car u then list tidy cadr u
+  else append(tidy car u, list tidy cadr u);
+
+put('idlist_append, 'tidyfn, 'tidyidlist_append);
 
 symbolic procedure tidylabeldec u;
   list('declarelabels, mkquote tidy car u);
@@ -191,7 +197,6 @@ symbolic procedure tidyprocdecblock u;
     n := cadr h;
     if not eqcar(n, 'procid) then rederr "procid expected";
     a := caddr h;
-    shortprint list('de, cadr n, tidy a);
     return list('de, cadr n, tidy a, tidy b)
   end;
 
@@ -265,6 +270,32 @@ symbolic procedure tidyindexed u;
   
 put('indexed, 'tidyfn, 'tidyindexed);
 
+symbolic procedure tidyrelop u;
+  car u . for each a in cdr u collect tidy a;
+  
+put('relop, 'tidyfn, 'tidyrelop);
+
+symbolic procedure tidyaddop u;
+  car u . for each a in cdr u collect tidy a;
+  
+put('addop, 'tidyfn, 'tidyaddop);
+
+symbolic procedure tidyterm u;
+  car u . for each a in cdr u collect tidy a;
+  
+put('term, 'tidyfn, 'tidyterm);
+
+symbolic procedure tidyfactor u;
+  if eqcar(u, 'plus) then tidy cadr u
+  else list(car u, tidy cadr u);
+  
+put('factor, 'tidyfn, 'tidyfactor);
+
+symbolic procedure tidyvalparam u;
+  tidy car u;
+  
+put('valparam, 'tidyfn, 'tidyvalparam);
+
 
 
 symbolic procedure seqprint u;
@@ -273,8 +304,10 @@ symbolic procedure seqprint u;
      for each x in cdr u do seqprint x
   else <<
     terpri();
-    princ "% ";
-    shortprint u;
+% During initial debugging I wanted to see some of the generated code
+% in raw Lisp form, but now I will just look at the rlisp version.
+%   princ "% ";
+%   shortprint u;
     rprint u >>;
 
 begin
