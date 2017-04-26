@@ -72,6 +72,27 @@ symbolic procedure shortprint u;
 global '(pending);
 pending := nil;
 
+% I need to propagate type information through my translation.
+% Whenever I see the declaration of a new record type I must put
+% details onto typedecs. Any variable whose type is a record type has to
+% go in vardecs. That means that both parameter lists as well as local
+% and global variable declarations will need to be scanned and recorded.
+% To cope with scope issue, typedecs and vardecs must be rebound as I
+% start to process any BEGIN..END block or equivalent region of code
+% that defines a local scope.
+
+% I might - while I am about it - track when a variable name refers to a
+% procedure, integer or read typed value. I might not use that to start with
+% if I am translating into Lisp, but if I ever translated into some other
+% stricter language I could use that information.
+
+% When I see a reference to a field selection "V.f" I need to look up the
+% record type associated with V and identify the selector f based on that. I
+% think this will mean I want to record the return types from functions
+% so that "F(x).f" can be interpreted properly.
+
+fluid '(typedecs vardecs);
+
 symbolic procedure tidy x;
   begin
     scalar w, long;

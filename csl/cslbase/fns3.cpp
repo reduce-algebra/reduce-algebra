@@ -224,17 +224,132 @@ LispObject Lmaple_component(LispObject, LispObject a, LispObject nn)
 
 #endif
 
-int primep(uint32_t n)
-//
-// Used to ensure that the body of a hash-table has a size that is prime.
-// Assumes that the value to be checked is not especially large.
-// Since the argument here is a uint32_t the cost of a crude test is not
-// a total disaster, but I could do a lot better!
-{   uint32_t i;
-    if ((n & 1) == 0) return 0;   // even
-    for (i=3; i*i<=n; i+=2)
-        if (n%i == 0) return 0;
-    return 1;
+// For the following small section see the directory cslbase/mr ...
+
+// The function mulmod(a, b, n) computes a*b mod n where a, b and n are
+// all unsigned 32-bit integers. As coded here it does the multiplication
+// and remainder steps using 64-bit arithmetic so as to avoid overflow.
+// With a good compiler this is expected to generate code that would be
+// hard to improve on. The function is "inline" to avoid call overhead
+// while preserving a tidy abstract presentation.
+
+static inline uint32_t mulmod(uint32_t a, uint32_t b, uint32_t n)
+{   return (uint32_t)(((uint64_t)a*(uint64_t)b) % n);
+}
+
+// Compute x^n mod p
+
+static inline uint32_t exptmod(uint32_t x, uint32_t n, uint32_t p)
+{   uint32_t y = 1;
+    while (n > 1)
+    {   if (n%2 != 0) y = mulmod(x, y, p);
+        x = mulmod(x, x, p);
+        n = n / 2;
+    }
+    return mulmod(x, y, p);
+}
+
+// Use Miller-Rabin with base a to check whether n is a (pseudo-)prime. The
+// way this is used here should ensure that it is in fact 100% reliable in
+// identifying primes. If this was used in a probabilistic context then this
+// function would be called repeatedly with random first arguments. In my
+// use if is called with carefully selected first arguments so as to avoid
+// strong pseudo-primes.
+
+static inline bool miller_rabin_isprime(uint32_t a, uint32_t n)
+{   uint32_t d = n-1;
+    int s = 0;
+    while ((d % 2) == 0)  // Find largest power of 2 dividing n-1
+    {   d = d/2;
+        ++s;
+    }
+    uint32_t x = exptmod(a, d, n);
+    if (x == 1 || x == n-1) return true;
+    while (s > 1)
+    {   x = mulmod(x, x, n);
+        if (x == 1) return false;
+        else if (x == n-1) return true;
+        --s;
+    }
+    return false;
+}
+
+// The next section is pasted in from the output from hash4.cpp
+
+static const uint64_t hash_multiplier = UINT64_C(0x10de02a34872b32e);
+
+static uint16_t witness[226] =
+{    7554,  5447,   740,  1249,  1770,  1312,  4950, 24980, 50174,  6749,
+      618,  5904,  5542, 22177,  7643,  3944, 18515,  9640,   840, 60367,
+     5117,  9116,  3442,  8196,  6936,  5633,  8395,  5717, 11123,  3596,
+    11830, 62535, 23712,  7696,   352, 33187,  2024, 11306,  1852,  3490,
+     4265,  2351,  6934,  8483,   299, 18155, 28286, 22824, 40212, 11374,
+       13,  5277, 62060,   354, 23944, 13840,  4839,  3031,  6022,  1539,
+    27551, 34449, 15291, 32415,   220,  4454,  6987, 29572,  5650,   246,
+     3579,  4496,  3932,  5684,  4440,  1167,  2249,  1963,  3903, 36334,
+     2049,  2495, 14324, 17753, 18656, 26754, 13974, 18385, 44269, 14395,
+    14906, 31913, 28063,  5065, 25948,  1431, 14688, 12742,  9095,   752,
+     2964,   883,   463, 19325,   702,  7533,  4477,  3496,   989, 15660,
+    43093,  2066, 33126,  8157,  7324,    95,  6764,  2510,   204,   581,
+    15247, 51889,  2591, 27444, 33423,  5073,  6713, 26693,  7721,  3873,
+    63492,  6342,  5126, 17376, 13512,  3605, 56296,   517,  6399, 28640,
+    44827,   734,   283, 11441,  1665,   817,  2301, 55043, 13499, 57575,
+     4156,  2264,  1258,   199, 10245, 23342, 21561,   164,  8169, 12986,
+    11132,  1497, 15491,  3422,   143,  1923, 27031,  2233, 11999,   909,
+     8468, 27655,  8449, 60094, 18673, 18099,  2483,  5270, 14646,  7690,
+     4701,  2587,  2921,   130,    67, 16010,   924, 20183,  7000,  2463,
+     8136,  7196,  1754,  8970,  1694,  4305, 48635,   989, 15989,  2030,
+     6570,  2338, 11811,  7774, 13865,   603,  3625,  2074, 12046, 20254,
+    11018, 30719, 37142,   983,  3368,  5650, 11173,  7756,  2531,  2238,
+     1105, 18428, 13354, 12289,    58, 54022
+};
+
+// end of copied material.
+
+// My hash function maps a 32-bit unsigned integer onto an index into the
+// above table such that the table will give a witness that allows for
+// reliable prime-checking of the integer. The basic idea is that
+//       hash(b) = (multiplier*p) % tablesize
+// where the multiplication is computed modulo 2^64. This should be cheap to
+// compute and I have 2^64 possible multipliers to choose between to find
+// a scheme that distributes values well. The extra shift right discard the
+// low bits of the product, which are liable to only depend on low bits of the
+// input and the multiplier. It is not clear that I need it, but I introduced
+// it at a time I was concerned about even table sizes and the effect that
+/// has on hashing - and because it is really rather cheap.
+
+static inline unsigned int hash_function(uint32_t p)
+{   return (unsigned int)
+        ((hash_multiplier*(uint64_t)p)>>31) %
+        (sizeof(witness)/sizeof(witness[0]));
+}
+// This is the function that a user might call to test for primality.
+
+bool isprime(uint32_t n)
+{
+// I will start by filtering out potential very small factors. This
+// detects a significant fraction of composites cheaply, and is expected to
+// be overall good for average efficiency.
+    if ((n % 2) == 0) return n == 2;
+    if ((n % 3) == 0) return n == 3;
+    if ((n % 5) == 0) return n == 5;
+    if ((n % 7) == 0) return n == 7;
+// If there are no factors of 2,3,5 or 7 then any number left (apart from
+// the special case 1) will be a prime.
+    if (n < 121) return n != 1;
+// Now I use hashing and my table to select a witness that will cause
+// Miller-Rabin to deliver a fully reliable result.
+    return miller_rabin_isprime(witness[hash_function(n)], n);
+}
+
+// Test an integer uip to 2^32 to see if it is prime.
+
+LispObject Lprimep32(LispObject, LispObject a)
+{   uint64_t n;
+    if (!is_number(a) ||
+        (n = sixty_four_bits(a)) <= 0 ||
+        n > 0xffffffffU) aerror1("primep32", a);
+    return Lispify_predicate(isprime((uint32_t)n));
 }
 
 LispObject Lputv(LispObject, int nargs, ...)
@@ -2061,6 +2176,7 @@ setup_type const funcs3_setup[] =
     {"make-simple-bitvector",   Lmake_simple_bitvector, TOO_MANY_1, WRONG_NO_1},
     {"putv-bit",                WRONG_NO_3A, WRONG_NO_3B, Lbputv},
     {"sbitset",                 WRONG_NO_3A, WRONG_NO_3B, Lbputv},
+    {"primep32",                Lprimep32, TOO_MANY_1, WRONG_NO_1},
 #ifdef COMMON
     {"hashtable-flavour",       Lhash_flavour, TOO_MANY_1, WRONG_NO_1},
     {"make-simple-vector",      Lmksimplevec, TOO_MANY_1, WRONG_NO_1},

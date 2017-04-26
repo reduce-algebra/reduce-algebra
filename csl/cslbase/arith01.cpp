@@ -864,9 +864,7 @@ int64_t sixty_four_bits(LispObject a)
             }
         // else drop through
         default:
-//
 // return 0 for all non-fixnums
-//
             return 0;
     }
 }

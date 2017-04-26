@@ -46,3 +46,17 @@ be detected and mapped onto CATCH/THROW for Lisp (or setjmp/longjmp for C!).
 This can be helped because there is a top-level declaration of the
 labels involved at the head of the program.
 
+(5) Records are an issue. I will need to capture the record declarations
+so if I have one that declares a record of type A with fields B and C I
+should create
+   symbolic inline procedure A_get_B x
+      getv(x, 0);
+   symbolic inline procedure A_set_B(x, v)
+      putv(x, 0, v);
+Then when I am processing code I will need to track which variables have
+types that are records, and sometimes map "a.B" onto A_GET_B(a) etc.
+The treatment of record declarations is liable to be rather easy. The
+processing of field acccess will depend on autgemting my translation
+step to carry some amount of type information, and once that is done
+it also becomes straightforard.
+ 

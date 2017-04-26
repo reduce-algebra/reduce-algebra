@@ -512,7 +512,8 @@ flag('(acos acosd acosh acot acotd acoth acsc acscd acsch asec asecd
        asech asin asind asinh atan atand atan2 atan2d atanh cbrt cos
        cosd cosh cot cotd coth csc cscd csch exp expt hypot ln log
        logb log10 sec secd sech sin sind sinh sqrt tan tand tanh fix
-       ceiling floor round clrhash puthash gethash remhash), 'lose);
+       ceiling floor round clrhash puthash gethash remhash
+       primep32), 'lose);
 
 !#endif
 

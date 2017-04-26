@@ -737,9 +737,11 @@ extern "C" void record_get(LispObject tag, bool found);
 // Note that some things here are declared to use C rather than C++ linkage.
 // These are things that will be exported for use by other applications that
 // might arrange to build CSL/Reduce as a DLL and hook into it from outside.
-// See impex.def for the list of names where this can happen.
+// See impex.def for the list of names where this can happen. I have not tried
+// building CSL as a DLL for some while and so I expect that any attempt to
+// do so would call for careful review of linkage styles etc!
 
-extern int         primep(uint32_t);
+extern bool        isprime(uint32_t);
 extern void        set_up_functions(int restartp);
 extern void        get_user_files_checksum(unsigned char *);
 extern "C" LispObject acons(LispObject a, LispObject b, LispObject c);

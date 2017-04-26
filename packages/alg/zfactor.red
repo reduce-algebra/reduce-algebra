@@ -194,6 +194,9 @@ symbolic procedure primep n;
    if not fixp n then typerr(n,"integer")
 %    then <<lprim list("No primep function defined for",n); nil>>
     else if n<0 then primep(-n)
+% This new test will often take fewer operations that the search through
+% !*primelist!* using the member function, so I will use it in preference.
+    else if n <= 0xffffffff then primep32 n
     else if n=1 then nil
     else if n<=!*last!-prime!-in!-list!* then n member !*primelist!*
     else if n<=!*last!-prime!-squared!*
@@ -208,8 +211,73 @@ symbolic procedure primep n;
 flag('(primep),'boolean);
 
 symbolic procedure internal!-primep n;
-   if n>largest!-small!-modulus then general!-primep n
-    else small!-primep n;
+   if n <= 0xffffffff then primep32 n
+   else if n>largest!-small!-modulus then general!-primep n
+   else small!-primep n;
+
+global '(witness!-table);
+
+% All the values in this table are in fact 16-bit unsigned integers. See
+% the directory csl/cslbase/mr in the Reduce source tree for further
+% commentary and explanation.
+
+witness!-table := list!-to!-vector
+   '(3008  49948  12233   7093  21445   6147  15325   3129    771   2096 
+    18117   6730  16995   7540   2334  23126   1970   5749   3479   7483 
+    30586  10811   6697  31219  26128   6443  13750   1134  11739  54532 
+    27495  16604   4740  20360  25521  64660  22625   4178   7472  31392 
+     5062   1065  41070   8828   1070   5487  20346   4877    701   3957 
+    11745   8527   6505   1063  33187  17507    898   9284   8799  10352 
+    35076  31159   4154   5744  45476  24208  20475   1387  24960  15656 
+      819  19405  28585  19771   2935   3851   1894  13684    789   4773 
+    15648   8910  14241    527  28724   1447    713  25916  18772   1098 
+     4239   4664  24185  12239  42085   2246  10599   4921   7199  38090 
+    32014   4425  18294  12131   6095    406   4921  10379  44820  21344 
+    10267  14960  14269   8689   2903  36047  10749    810   3695  31858 
+    26793   2941  16636   3743   1909   9434    690  53301   7839  15600 
+     5695   4700  18672  60846   9164   6614   3398    570   1567   7232 
+      566   6509  17270  10927  11537   2033  25472  30378   3827   1074 
+      357  26202   4064   3287   1964    679   1573   6957  20907  25658 
+     1677  27929  58745  14757  54584    539    152   4899   6981  17360 
+     6450   7204   4099   3853   1839    328  14266   1413  21492   3980 
+    59251   6530  26818   1505  20926   1593  41688  23148  13297   1431 
+    12811   4935   1635  38016   7996  40096  18137  14919   3521  32804 
+      711   6311   6884  10778   1045   4105  25928  41963   3145   2919 
+     2354  29087   6895   2199   6515  33793    629    603  30873   4937 
+    20963   2222  20900   6620  37036);
+
+symbolic procedure primep32 n;
+  begin integer i,l,m,x,y,w,save; scalar result;
+% Filter out some easy cases first
+    if evenp n then return n = 2
+    else if remainder(n, 3) = 0 then return n = 3
+    else if remainder(n, 5) = 0 then return n = 5
+    else if remainder(n, 7) = 0 then return n = 7
+    else if n < 121 then return n neq 1;
+    m := n-1;
+    save := set!-small!-modulus n;
+% Express n-1 = (2^l)*m
+    l:=0;
+    while evenp m do <<m := m/2; l := l+1>>;
+    i:=1;
+% The next 3 lines compute a hash function and use it to extract a
+% witness from a carefully pre-computed table so that the Miller Rabin test
+% will be reliable on all integers up to 2^32 that have not already been
+% sorted out by the trial divisions by 2, 3, 5 and 7.
+    w := remainder(0x868b01cd82a78e5f*n, 0x10000000000000000);
+    w := ashift(w, -31);
+    w := remainder(w, 226);
+    x := modular!-expt(w, m);
+    result:=t;
+    if x neq 1 then <<
+      for k:=1:l do <<
+        y := modular!-times(x,x);
+        if y=1 and x neq (n-1) and x neq 1 then result := nil
+        else x := y >>;
+      if x neq 1 then result := nil >>;
+    set!-small!-modulus save;
+    return result
+  end;
 
 % This is a version of primep written by FEB for inclusion in zfactor.
 % It provides small-primep and general-primep with the following

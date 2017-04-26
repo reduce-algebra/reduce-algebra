@@ -136,7 +136,8 @@ LispObject Lmkhash(LispObject env, int nargs, ...)
 // items. [this facility may not be implemented at first]
 //
 {   va_list a;
-    int32_t size1, size2;
+// I limit the size of my tables by using 32-bit numbers here.
+    uint32_t size1, size2;
     LispObject v, v1, size, flavour, growth;
     argcheck(nargs, 3, "mkhash");
     va_start(a, nargs);
@@ -156,7 +157,7 @@ LispObject Lmkhash(LispObject env, int nargs, ...)
 // given ones that are not mindlessly tiny.
 //
     size2 = (size1 + (size1/2) + 4) | 1;
-    while (!primep(size2)) size2 += 2;
+    while (!isprime(size2)) size2 += 2;
     size2 = size2*CELL;
     push(growth);
 //

@@ -46,7 +46,8 @@ p2l-generated.cpp:	p2l.ypp
 # scan /opt/local/lib to be able to find its support module.
 
 p2l:	p2l.cpp p2l-generated.cpp p2l-generated.hpp plex.cpp
-	if test -d /opt/local/lib; then L="-L/opt/local/lib"; fi; \
+	if test -d /opt/local/lib; then L="-L/opt/local/lib"; \
+	else L=""; fi; \
 	g++ p2l.cpp p2l-generated.cpp plex.cpp $$L -lfl -o p2l
 
 # Run p2l to convert tex.p.

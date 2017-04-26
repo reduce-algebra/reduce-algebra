@@ -837,13 +837,13 @@ static void record_dynamic_module(char *name, setup_type_1 *entries)
     loaded_dynamic_count++;
     if (3*loaded_dynamic_count >= 2*loaded_dynamic_size)
     {   dynamic_modules *newtable;
-        size_t newsize;
+        uint32_t newsize; // so I can use isprime()
         size_t i;
         if (loaded_dynamic_size == 0)
             newsize = INITIAL_DYNAMIC_MODULE_HASH_SIZE;
         else
         {   newsize = 2*loaded_dynamic_size-1;
-            while (!primep(newsize)) newsize+=2;
+            while (!isprime(newsize)) newsize+=2;
         }
 #ifdef TRACE_NATIVE
         trace_printf("Hash needs to grow from %d to %d\n", loaded_dynamic_size, newsize);
