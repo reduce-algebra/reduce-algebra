@@ -81,7 +81,7 @@ static inline bool miller_rabin_isprime(uint32_t a, uint32_t n)
     return false;
 }
 
-// The next section is pasted in from the output from hash4.c
+// The next section is pasted in from the output from hash.cpp
 
 static const uint64_t hash_multiplier = UINT64_C(0x868b01cd82a78e5f);
 

@@ -53,10 +53,18 @@ should create
       getv(x, 0);
    symbolic inline procedure A_set_B(x, v)
       putv(x, 0, v);
+Or perhaps since I am translating into Lisp the record should map onto
+a list, using car, cadr etc as accessors.
 Then when I am processing code I will need to track which variables have
 types that are records, and sometimes map "a.B" onto A_GET_B(a) etc.
 The treatment of record declarations is liable to be rather easy. The
 processing of field acccess will depend on autgemting my translation
 step to carry some amount of type information, and once that is done
-it also becomes straightforard.
+it also becomes straightforward.
+Well variant records will need further care. As far as I can see the Pascal
+for TeX does not use variant types (only variant records). It also does not
+seem to use the "with" construction, so all access to components of records
+will be directly and clearly visible.
+
+
  

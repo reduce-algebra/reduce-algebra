@@ -154,7 +154,7 @@ symbolic procedure tidyblock u;
       tidy vars,
       tidy procs,
       list('de, 'texmain, nil, tidy stmts))
-  end;
+  end where typedefs=typedecs, vardecs = vardecs;
 
 put('block, 'tidyfn, 'tidyblock);
 

@@ -207,6 +207,14 @@ static LispObject quotsi(LispObject a, LispObject b)
     return pack_immediate_float(d, a);
 }
 
+// For dividing a float by a bignum (here and in a whole bunch of other
+// places, and also for similar multiplications) the naive code here is not
+// really good enough. Consider a bignum that is larger than the largest
+// finite float, and a multiplication or division that would yield a result
+// within floating point range. Hey that could even happen with addition!
+// At present I ignore that issue and convert both args to floating point
+// first.
+
 static LispObject quotsb(LispObject a, LispObject b)
 {   double d = float_of_number(b);
     if (d == 0.0) aerror2("bad arg for quotient", a, b);
@@ -215,7 +223,14 @@ static LispObject quotsb(LispObject a, LispObject b)
     return pack_immediate_float(d, a);
 }
 
-#define quotsr(a, b) quotsb(a, b)
+static LispObject quotsr(LispObject a, LispObject b)
+{   double d = float_of_number(b);
+    if (d == 0.0) aerror2("bad arg for quotient", a, b);
+    mv_2 = fixnum_of_int(0);
+    d = value_of_immediate_float(a) / d;
+    return pack_immediate_float(d, a);
+}
+
 
 #define quotsc(a, b) quotic(a, b)
 
@@ -553,7 +568,14 @@ static LispObject quotrembi(LispObject a, LispObject b)
 #endif
 }
 
-#define quotbs(a, b) quotsb(a, b)
+static LispObject quotbs(LispObject a, LispObject b)
+{   double d = value_of_immediate_float(b);
+    if (d == 0.0) aerror2("bad arg for quotient", a, b);
+    mv_2 = fixnum_of_int(0);
+    d = float_of_number(a) / d;
+    return pack_immediate_float(d, a);
+}
+
 
 // // show() and show1() are not actually called by live code but were used in
 // // trace code currently commented out. I will leave them here just for now.
@@ -991,7 +1013,13 @@ LispObject quotbb(LispObject a, LispObject b, int need)
 
 #define quotbc(a, b) quotic(a, b)
 
-#define quotbf(a, b) quotsf(a, b)
+static LispObject quotbf(LispObject a, LispObject b)
+{   double d = float_of_number(b);
+    if (d == 0.0) aerror2("bad arg for quotient", a, b);
+    mv_2 = fixnum_of_int(0);
+    d = float_of_number(a) / d;
+    return make_boxfloat(d, type_of_header(flthdr(b)));
+}
 
 static LispObject quotri(LispObject a, LispObject b)
 {   LispObject w;
@@ -1017,9 +1045,14 @@ static LispObject quotri(LispObject a, LispObject b)
 #undef g
 }
 
-#define quotrs(a, b) quotsb(a, b)
+static LispObject quotrs(LispObject a, LispObject b)
+{   double d = value_of_immediate_float(b);
+    if (d == 0.0) aerror2("bad arg for quotient", a, b);
+    mv_2 = fixnum_of_int(0);
+    d = float_of_number(a) / d;
+    return pack_immediate_float(d, a);
+}
 
-#define quotrb(a, b) quotib(a, b)
 
 static LispObject quotrr(LispObject a, LispObject b)
 {   LispObject w;
@@ -1052,9 +1085,19 @@ static LispObject quotrr(LispObject a, LispObject b)
 #undef na
 }
 
+static LispObject quotrb(LispObject a, LispObject b)
+{   return quotrr(a, make_ratio(a, fixnum_of_int(1)));
+}
+
 #define quotrc(a, b) quotic(a, b)
 
-#define quotrf(a, b) quotsf(a, b)
+static LispObject quotrf(LispObject a, LispObject b)
+{   double d = float_of_number(b);
+    if (d == 0.0) aerror2("bad arg for quotient", a, b);
+    mv_2 = fixnum_of_int(0);
+    d = float_of_number(a) / d;
+    return make_boxfloat(d, type_of_header(flthdr(b)));
+}
 
 static LispObject quotci(LispObject a, LispObject b)
 {   LispObject r = real_part(a), i = imag_part(a);
@@ -1095,9 +1138,21 @@ static LispObject quotfs(LispObject a, LispObject b)
     return make_boxfloat(d, type_of_header(flthdr(a)));
 }
 
-#define quotfb(a, b) quotfs(a, b)
+static LispObject quotfb(LispObject a, LispObject b)
+{   double d = float_of_number(b);
+    mv_2 = fixnum_of_int(0);
+    if (d == 0.0) aerror2("bad arg for quotient", a, b);
+    d = float_of_number(a) / d;
+    return make_boxfloat(d, type_of_header(flthdr(a)));
+}
 
-#define quotfr(a, b) quotfs(a, b)
+static LispObject quotfr(LispObject a, LispObject b)
+{   double d = float_of_number(b);
+    mv_2 = fixnum_of_int(0);
+    if (d == 0.0) aerror2("bad arg for quotient", a, b);
+    d = float_of_number(a) / d;
+    return make_boxfloat(d, type_of_header(flthdr(a)));
+}
 
 #define quotfc(a, b) quotic(a, b)
 

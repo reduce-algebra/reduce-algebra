@@ -1328,7 +1328,7 @@ static inline LispObject plus_b_b(LispObject a, LispObject b)
 // If the longer number is just 2 words I can convert both to int64_t.
     if (la == 2)
     {   int64_t va = ASL64(bignum_digits64(a, 1), 31) | bignum_digits(a)[0];
-        int64_t vb = (!SIXTY_FOUR_BIT && lb == CELL+4) ?
+        int64_t vb = (!SIXTY_FOUR_BIT && lb == 1) ?
                      bignum_digits64(b, 0) :
                      ASL64(bignum_digits64(b, 1), 31) | bignum_digits(b)[0];
         return make_lisp_integer64(va + vb);

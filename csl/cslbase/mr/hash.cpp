@@ -200,29 +200,24 @@ static inline bool miller_rabin_isprime(uint32_t a, uint32_t n)
 unsigned int number_of_buckets;
 
 // The value hash_multiplier will be used as part of the hashing.
-uint64_t hash_multiplier;
-
-// If my number of buckets is a power of 2 I will take the top few
-// bits of the 64-bit product of n and the hash multiplier. If it is not
-// a power of 2 I will take a remainder, but I do a shift so that
-// I am using middle-bits of the product in the expectation that doing
-// so will distribute values more evenly.
-// Note that when the code here has found a configuration the hash
-// process will not need to involve a run-time test.
+static __thread uint64_t local_hash_multiplier;
+static uint64_t hash_multiplier;
 
 static inline unsigned int hash_function(uint32_t p)
-{   if (number_of_buckets == (number_of_buckets & -number_of_buckets))
-    {   uint64_t w = hash_multiplier*(uint64_t)p;
-        return w / (UINT64_C(0x8000000000000000)/(number_of_buckets/2));
-    }
-    else return (unsigned int)
+{   return (unsigned int)
         ((hash_multiplier*(uint64_t)p)>>31) % number_of_buckets;
+}
+
+static inline unsigned int local_hash_function(uint32_t p)
+{   return (unsigned int)
+        ((local_hash_multiplier*(uint64_t)p)>>31) % number_of_buckets;
 }
 
 // This table of witnesses needs to be filled in before the isprime
 // function will behave. Its size can be number_of_buckets.
 
-uint16_t witness[MAX_NUMBER_OF_BUCKETS];
+static __thread uint16_t local_witness[MAX_NUMBER_OF_BUCKETS];
+static uint16_t witness[MAX_NUMBER_OF_BUCKETS];
 
 // This is the function that a user might call to test for primality.
 
@@ -246,16 +241,42 @@ bool isprime(uint32_t n)
 static void report_time(const char *msg); 
 static void initialize_everything(int argc, char *argv[]);
 static void read_pseudoprime_data();
-static bool search_for_good_parameters();
+static THREADRESULT_T search_for_good_parameters(void *arg);
 static void display_results();
 static void verify_results();
+
+unsigned int cpu_count;
+static bool good_parameters_found = false;
 
 int main(int argc, char *argv[])
 {   initialize_everything(argc, argv);
     report_time("About to read in pseudoprime data");
     read_pseudoprime_data();
-    report_time("Data read in");    
-    if (!search_for_good_parameters())
+    report_time("Data read in");
+// Now I will start a parallel search...
+    cpu_count = number_of_processors();
+    printf("I seem to have %d processors\n", cpu_count);
+    fflush(stdout);
+    if (cpu_count > MAX_CPU_COUNT) cpu_count = MAX_CPU_COUNT;
+    if (cpu_count > 3) --cpu_count; // leave a CPU free for other tasks!
+
+    if (CREATEMUTEX_FAILED)
+    {   fprintf(stderr, "Unable to create mutex\n");
+        exit(1);
+    }
+    good_parameters_found = false;
+    for (int k=0; k<cpu_count; k++)
+        if (CREATETHREAD_FAILED(k, search_for_good_parameters))
+        {   printf("Failed to create at %d\n", k);
+            exit(1);
+        }
+    for (int k=0; k<cpu_count; k++)
+        if (JOINTHREAD_FAILED(k))
+        {   printf("Failed to join at %d\n", k);
+            exit(1);
+        }
+    DESTROYMUTEX;
+    if (!good_parameters_found)
     {   report_time("Failed to find solution");
         exit(1);
     }
@@ -399,7 +420,7 @@ static void read_pseudoprime_data()
         }
         if (count == 0) break;
         if (witness%5000 == 0)
-        {   printf("%5d : %-5d : %d\n", witness, witnessx, count);
+        {   printf("%5d : %5d : %d\n", witness, witnessx, count);
             fflush(stdout);
         }
         if (witness >= WITNESS_COUNT || witness <= 1) continue;
@@ -417,8 +438,8 @@ static void read_pseudoprime_data()
     qsort(hashtable, hashsize, sizeof(hash_entry), compare_function);
 }
 
-static bool *validwitness[WITNESS_COUNT];
-static int validcount[MAX_NUMBER_OF_BUCKETS];
+static __thread bool *validwitness[WITNESS_COUNT];
+static __thread int validcount[MAX_NUMBER_OF_BUCKETS];
 
 // Here is a generated table showing prime factors of small integers.
 // The table is "int16_t *small_factors[65536];" where each entry points
@@ -428,18 +449,33 @@ static int validcount[MAX_NUMBER_OF_BUCKETS];
 
 #include "smallfac.cpp"
 
-static bool search_for_good_parameters()
-{   unsigned int trial;
-    double sum_of_fails = 0.0;
-    double sum_of_fails_squared = 0.0;
-    double best = 0.0;
-    unsigned int bestat = 0;
-    for (int i=0; i<WITNESS_COUNT; i++)
+unsigned int trial = 1;
+double s0 = 0.0;
+double s1 = 0.0;
+double s2 = 0.0;
+double best = 0.0;
+unsigned int bestat = 0;
+
+bool mode_found = false;
+#define NSAMPLES 1000
+#define HISTSIZE 75
+int histogram[HISTSIZE];
+int nsamples = 0;
+double samples[NSAMPLES];
+double mode = 0.0;
+
+
+static THREADRESULT_T search_for_good_parameters(void *arg)
+{   for (int i=0; i<WITNESS_COUNT; i++)
     {   validwitness[i] = (bool *)malloc(number_of_buckets*sizeof(bool));
         check_malloc(validwitness[i]);
     }
-    for (trial=1; trial<max_tries; trial++)
-    {
+    for (;;)
+    {   LOCKMUTEX;
+        if (good_parameters_found || trial++ >= max_tries)
+        {   UNLOCKMUTEX;
+            break;
+        }
 // Get a random multiplier to use, /dev/urandom should yield different
 // values on every run.
         FILE *f = fopen("/dev/urandom", "rb");
@@ -447,14 +483,17 @@ static bool search_for_good_parameters()
         {   printf("Unable to access /dev/urandom\n");
             exit(1);
         }
-        if (fread(&hash_multiplier, sizeof(hash_multiplier), 1, f) != 1)
+        if (fread(&local_hash_multiplier, sizeof(local_hash_multiplier), 1, f) != 1)
         {   printf("Reading from /dev/urandom failed\n");
             exit(1);
         }
         fclose(f);
-        printf("Buckets = %d: Start of try #%d with m = %.16" PRIx64 "\n",
-               number_of_buckets, trial, hash_multiplier);
-        fflush(stdout);
+        if (trial%20 == 0)
+        {   printf("Try %d for %d buckets: m = %.16" PRIx64 "\n",
+                   trial, number_of_buckets, local_hash_multiplier);
+            fflush(stdout);
+        }
+        UNLOCKMUTEX;
 // In this count of the number of remaining valid witnesses I subtract 2
 // because the values 0 and 1 are never valid.
         for (int i=0; i<number_of_buckets; i++)
@@ -469,7 +508,7 @@ static bool search_for_good_parameters()
         for (int wit=2; wit<WITNESS_COUNT; wit++)
         {   uint16_t *p = small_factors[wit];
             while (*p != 0)
-            {   unsigned int h = hash_function(*p++);
+            {   unsigned int h = local_hash_function(*p++);
                 if (validwitness[wit][h]) validcount[h]--;
                 validwitness[wit][h] = false;
             }
@@ -486,7 +525,7 @@ static bool search_for_good_parameters()
         for (int i=0; i<hashsize; i++)
         {   uint32_t p = hashtable[i].key;
             if (p == 0) continue;
-            int h = hash_function(p);
+            int h = local_hash_function(p);
             uint16_t *w = hashtable[i].val;
             for (int j=2; j<=w[1]+1; j++)
             {   probes_this_time++;
@@ -506,46 +545,109 @@ static bool search_for_good_parameters()
             {   printf("Unexpected failure (%d)\n", validcount[b]);
                 break; // Should never happen, I think
             }
-            witness[b] = i;
+            local_witness[b] = i;
         }
         if (b>=number_of_buckets) break;
     failing:
-        ;
+        LOCKMUTEX;
         double ratio = probes_this_time/(double)witness_pseudo_pairs;
-// I perform a transformation designed to make the probabilty distribution
-// at leadst a bit more like a Normal one. This transformation was
-// invented empirically!
-        ratio = ratio*ratio;
-        char msg[40];
-        sprintf(msg, "Failed at %.1f%%", 100.0*ratio);
-        report_time(msg);
-        sum_of_fails += ratio;
-        sum_of_fails_squared += ratio*ratio;
         if (ratio > best)
         {   best = ratio;
             bestat = trial;
         }
-// Here I am going to assume that each try fails after managing to process
-// the value called "ratio" comes from a Normal distribution.
-// This will not be exactly the case, but it at least gives me SOME basis
-// for guessing how much more searching might be needed.
-        double mean = sum_of_fails/(double)trial;
-        double sd = sqrt(sum_of_fails_squared/(double)trial - mean*mean);
-//printf("@@@ mean = %.2f, SD = %.2f\n", mean, sd);
-        double deviation = (1.0-mean)/sd;
-//printf("@@@ amount to go = %.2f SD units\n", deviation);
-        double prob = 1.0 - erf(deviation);
-//printf("@@@ 1 - erf = %.4g\n", prob);
+        char msg[40];
+        sprintf(msg, "   Failed at %.1f%%", 100.0*ratio);
+        if (trial%20 == 0) report_time(msg);
         double guess = 9999999.0;
+// For the first NSAMPLES I will just store the information about how I
+// got on. Just when I reach there I will first use the stored samples
+// to estimate the mode of my distribution and retrospectivly process the
+// data as if I had known that in advance. Beyond that I will only collect
+// information about values above my mode, and I will treat them as if
+// they come from a Normal distribution.
+        if (nsamples < NSAMPLES) samples[nsamples++] = ratio;
+        else if (nsamples == NSAMPLES)
+        {   nsamples++;
+            printf("Have taken %d samples\n",  NSAMPLES);
+            for (int i=0; i<HISTSIZE; i++) histogram[i] = 0;
+            for (int i=0; i<nsamples; i++)
+            {   ratio = samples[i];
+                int j = (int)(HISTSIZE*ratio);
+                histogram[j]++;
+            }
+            int peak = 0, peakat = 0;
+            for (int i=0; i<HISTSIZE; i++)
+            {   //printf("histogram[%2d] = %d", i, histogram[i]);
+                if (histogram[i] > peak)
+                {   peak = histogram[i];
+                    //printf(" <");
+                    peakat = i;
+                }
+                //else printf(" >");
+                //printf("\n");
+            }
+            for (int i=peakat-3; i<=peakat+3 && i<HISTSIZE; i++)
+                printf("%s%d:  %d   (%.2f)\n",
+                    (i==peakat ? "!" : " "), i,
+                    histogram[i], i/(double)HISTSIZE);
+            for (int y=0; y<20; y++)
+            {   int yy = peak-5*y;
+                for (int i=0; i<HISTSIZE; i++)
+                {   bool b = histogram[i] >= yy;
+                    putchar(b ? '*' : y==19 ? '_' : ' ') ;
+                }
+                putchar('\n');
+            }
+            if (peakat == HISTSIZE) peakat = HISTSIZE-1;
+            mode = ((1/150.0)*(histogram[peakat+1]-histogram[peakat-1])) /
+                (2*histogram[peakat]-histogram[peakat-1]-histogram[peakat+1]);
+            mode *= HISTSIZE;
+            printf("within range peak offset = %.2f\n", mode);
+            mode = (mode + 0.5 + peakat)/(double)HISTSIZE;
+            printf("Estimated mode = %.2f\n", mode);
+            fflush(stdout);
+            for (int i=0; i<nsamples; i++)
+            {   ratio = samples[i];   
+                if (ratio > mode)
+                {   s0 += 1.0;
+                    s1 += ratio;
+                    s2 += ratio*ratio;
+                }
+            }
+        }
+        else
+        {   if (ratio > mode)
+            {   s0 += 1.0;
+                s1 += ratio;
+                s2 += ratio*ratio;
+            }
+// Here I am modelling the probability distribution to the right of the
+// (estimated) mode as the right half of a Normal distribution.
+            double mean = mode;
+            double sd = sqrt(s2/s0 - 2.0*mode*s1/s0 + mode*mode);
+            double deviation = (1.0-mode)/sd;
+            double prob = 1.0 - erf(deviation);
 // In degenerate cases the above will yield a NaN, in which case the
 // test here causes me to discard the bad guess.
-        if (prob > 1.0/guess) guess = 1.0/prob;
-        printf("   best so far was %.1f%%"
-               " at try %u (guess %u tries needed)\n",
-               100.0*best, bestat, (unsigned int)guess);
-        fflush(stdout);
+            if (prob > 1.0/guess) guess = 1.0/prob;
+        }
+        if (trial%20 == 0)
+        {   printf("   best so far was %.1f%%"
+                   " at try %u (mode=%.1f%% guess %u tries needed)\n",
+                   100.0*best, bestat, mode, (unsigned int)guess);
+            fflush(stdout);
+        }
+        UNLOCKMUTEX;
     }
-    return (trial<max_tries);
+    if (trial<max_tries && !good_parameters_found)
+    {   LOCKMUTEX;
+        good_parameters_found = true;
+        hash_multiplier = local_hash_multiplier;
+        for (int i=0; i<number_of_buckets; i++)
+            witness[i] = local_witness[i];
+        UNLOCKMUTEX;
+    }
+    return THREADRESULT;
 }
 
 static void display_results()

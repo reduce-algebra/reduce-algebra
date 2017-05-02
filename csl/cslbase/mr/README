@@ -36,7 +36,7 @@ considerating witnesses up to 16 bits in that they pack neatly in an array of
 uint16_t. The next easy size up would be 32-bits, but mapping the pseudo-
 primes for all witnesses up to 2^32 is a long way from realistic for me.
 
-The program hash4.cpp takes a succession on randomly selected hash functions
+The program hash.cpp takes a succession on randomly selected hash functions
 from a rather simple family, and in each case checks if it is possible to
 use that function to set up a table that will support fast prime checking.
 Forisek and Jancina note that finding a table of size 256 is fairly easy, and
