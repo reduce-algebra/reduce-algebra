@@ -47,10 +47,13 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-extern bool isprime(uint32_t n);
+#include "isprime.cpp"
 
 int main(int argc, char *argv[])
 {
+    printf("Table size = %d, multiplier = %#.16" PRIx64 "\n",
+        sizeof(witness)/sizeof(witness[0]), hash_multiplier);
+    fflush(stdout);
 // Set up a table of primes.
     clock_t c0 = clock();
     char *primes = (char *)malloc(UINT64_C(0x80000000));

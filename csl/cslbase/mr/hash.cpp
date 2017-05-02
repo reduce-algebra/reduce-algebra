@@ -1,4 +1,4 @@
-// hash4.cpp                                  Copyright (C) A C Norman 2017
+// hash.cpp                                   Copyright (C) A C Norman 2017
 
 // This code anaylses the output from mr2a.c, which is table showing for
 // each potential witness what the pseudoprimes up to 2^32 are using that
@@ -226,13 +226,15 @@ bool isprime(uint32_t n)
 // I will start by filtering out potential very small factors. This
 // detects a significant fraction of composites cheaply, and is expected to
 // be overall good for average efficiency.
-    if ((n % 2) == 0) return n == 2;
-    if ((n % 3) == 0) return n == 3;
-    if ((n % 5) == 0) return n == 5;
-    if ((n % 7) == 0) return n == 7;
-// If there are no factors of 2,3,5 or 7 then any number left (apart from
-// the special case 1) will be a prime.
-    if (n < 121) return n != 1;
+// The next line checks for divisibility by 2, 3 and 7...
+    if ((UINT64_C(0x000001df5d75d7dd) & (UINT64_C(1)<<(n%42U))) != 0)
+        return (n==2) || (n==3) || (n==7);
+// ... and this one copes with 5 and 11.
+    if ((UINT64_C(0x0004310a42508c21) & (UINT64_C(1)<<(n%55U))) != 0)
+        return (n==5) || (n==11);
+// If there are no factors of 2,3,5,7 or 11 then any number left (apart from
+// the special case 1) up to 13*13 must be a prime.
+    if (n < 169) return (n!=1);
 // Now I use hashing and my table to select a witness that will cause
 // Miller-Rabin to deliver a fully reliable result.
     return miller_rabin_isprime(witness[hash_function(n)], n);
@@ -286,8 +288,6 @@ int main(int argc, char *argv[])
     report_time("Finished");
     return 0;
 }
-
-
 
 clock_t c0, c1;
 
@@ -360,6 +360,11 @@ static void insertpseudo(uint32_t pseudoprime, int witness)
 {
 // I have a hash table for all the pseudoprimes (to any base). I use
 // rather a simple hash function.
+    if (pseudoprime % 2 == 0 ||
+        pseudoprime % 3 == 0 ||
+        pseudoprime % 5 == 0 ||
+        pseudoprime % 7 == 0 ||
+        pseudoprime % 11 == 0) return;
     int h = (0x12345678*pseudoprime) % hashsize;
     while (hashtable[h].key != 0 &&
            hashtable[h].key != pseudoprime)
@@ -408,6 +413,7 @@ static void read_pseudoprime_data()
     witness_pseudo_pairs = 0;
     FILE *data = fopen("mr2a.log", "r");
     setvbuf(data, NULL, _IOFBF, 8*1024*1024);
+    int c2=0, c3=0, c5=0, c7=0, c11=0, c13=0, c17=0, c19=0;
     for (;;)
     {   int witness, witnessx, count;
         while (fscanf(data, "Pseudoprimes using witness %d (%x)  count=%d",
@@ -430,12 +436,22 @@ static void read_pseudoprime_data()
             {   printf("Malformed data file\n");
                 exit(1);
             }
+            if (pseudoprime%2 == 0) c2++;
+            if (pseudoprime%3 == 0) c3++;
+            if (pseudoprime%5 == 0) c5++;
+            if (pseudoprime%7 == 0) c7++;
+            if (pseudoprime%11 == 0) c11++;
+            if (pseudoprime%13 == 0) c13++;
+            if (pseudoprime%17 == 0) c17++;
+            if (pseudoprime%19 == 0) c19++;
             insertpseudo(pseudoprime, witness);
             witness_pseudo_pairs++;
         }
     }
     fclose(data);
     qsort(hashtable, hashsize, sizeof(hash_entry), compare_function);
+    printf("c2=%d c3=%d c5=%d c7=%d c11=%d c13=%d c17=%d c19=%d\n",
+        c2, c3, c5, c7, c11, c13, c17, c19);
 }
 
 static __thread bool *validwitness[WITNESS_COUNT];
@@ -444,7 +460,7 @@ static __thread int validcount[MAX_NUMBER_OF_BUCKETS];
 // Here is a generated table showing prime factors of small integers.
 // The table is "int16_t *small_factors[65536];" where each entry points
 // to a zero-terminated vector holding primes that divide into a potential
-// witness. Primes 2, 3, 5 and 7 are not included in the list since they
+// witness. Primes 2, 3, 5, 7 and 11 are not included in the list since they
 // have been sorted out otherwise.
 
 #include "smallfac.cpp"
@@ -499,7 +515,10 @@ static THREADRESULT_T search_for_good_parameters(void *arg)
         for (int i=0; i<number_of_buckets; i++)
             validcount[i] = WITNESS_COUNT-2;
         for (int b=0; b<number_of_buckets; b++)
-            for (int i=0; i<WITNESS_COUNT; i++) validwitness[i][b] = true;
+        {   for (int i=0; i<WITNESS_COUNT; i++) validwitness[i][b] = true;
+            validwitness[0][b] = false;
+            validwitness[1][b] = false;
+        }
 // Here I can build a list of witness values that avoid any issues with
 // strong pseudoprimes. There remains a further potential pain. If a
 // witness has a prime factor that hashes to trigger its use then that
@@ -531,8 +550,8 @@ static THREADRESULT_T search_for_good_parameters(void *arg)
             {   probes_this_time++;
                 int wit = w[j];
                 if (validwitness[wit][h])
-                {   if (--validcount[h] <= 0) goto failing;
-                    validwitness[wit][h] = false;
+                {   validwitness[wit][h] = false;
+                    if (--validcount[h] <= 0) goto failing;
                 }
             }
         }
@@ -591,7 +610,7 @@ static THREADRESULT_T search_for_good_parameters(void *arg)
                     (i==peakat ? "!" : " "), i,
                     histogram[i], i/(double)HISTSIZE);
             for (int y=0; y<20; y++)
-            {   int yy = peak-5*y;
+            {   int yy = peak-peak*y/19.0;
                 for (int i=0; i<HISTSIZE; i++)
                 {   bool b = histogram[i] >= yy;
                     putchar(b ? '*' : y==19 ? '_' : ' ') ;
@@ -602,7 +621,6 @@ static THREADRESULT_T search_for_good_parameters(void *arg)
             mode = ((1/150.0)*(histogram[peakat+1]-histogram[peakat-1])) /
                 (2*histogram[peakat]-histogram[peakat-1]-histogram[peakat+1]);
             mode *= HISTSIZE;
-            printf("within range peak offset = %.2f\n", mode);
             mode = (mode + 0.5 + peakat)/(double)HISTSIZE;
             printf("Estimated mode = %.2f\n", mode);
             fflush(stdout);
@@ -626,6 +644,10 @@ static THREADRESULT_T search_for_good_parameters(void *arg)
             double mean = mode;
             double sd = sqrt(s2/s0 - 2.0*mode*s1/s0 + mode*mode);
             double deviation = (1.0-mode)/sd;
+            if (trial%20 == 0)
+            {   printf("s0=%.1f s1=%.3f s2=%.3f\n", s0, s1, s2);
+                printf("mode=%.3f, sd=%.4f, excursion=%.2f\n", mode, sd, deviation);
+            }
             double prob = 1.0 - erf(deviation);
 // In degenerate cases the above will yield a NaN, in which case the
 // test here causes me to discard the bad guess.
@@ -633,7 +655,7 @@ static THREADRESULT_T search_for_good_parameters(void *arg)
         }
         if (trial%20 == 0)
         {   printf("   best so far was %.1f%%"
-                   " at try %u (mode=%.1f%% guess %u tries needed)\n",
+                   " at try %u (mode=%.3f%% guess %u tries needed)\n",
                    100.0*best, bestat, mode, (unsigned int)guess);
             fflush(stdout);
         }
@@ -727,4 +749,4 @@ static void verify_results()
     printf("Everything seems to be OK\n");
 }
 
-// end of hash4.cpp
+// end of hash.cpp

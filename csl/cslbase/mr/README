@@ -44,13 +44,9 @@ that the smallest table they were able to create had 224 entries, but that
 one had larger witness values stored in it and so the table had to be one
 made of 32-bit integers rather than 16 bit ones.
 
-At the time of writing this note I have found a table of size 225 16-bit
-integers, and I will do a bit more experimenting using long test runs to see
-if I can shrink that slightly, but at present it looks as if is close to
-the limit. This provides a slightly more compact table than the one used
-by F-J, and a very simple hash function. The improvement will not be
-significant in any real context, but it has been good to reproduce their
-work and find even a tiny enhancement.
+At the time of writing this note I have found a table of size 220 16-bit
+integers, which is more compact than the ones reported by F&J. In practical
+terms this is not a significant improvement, but I still like it!
 
 Arthur Norman
 
