@@ -101,6 +101,10 @@ asserted procedure vsco_get(co: VSco): DottedPair;
       co
    >>;
 
+asserted procedure vsco_length(co: VSco): Integer;
+   % Container length.
+   length co;
+
 %%% hash table of quantifier-free formulas %%%
 % constructors and access functions
 
@@ -206,9 +210,18 @@ asserted procedure vsdb_todop(db: VSdb): ExtraBoolean;
 asserted procedure vsdb_wcget(db: VSdb): VSnd;
    % Get a node from the working container.
    begin scalar c;
-      assert(vsdb_todop db);
+      assert(vsco_nonemptyp vsdb_wc db);
       c := vsco_get vsdb_wc db;
       vsdb_putwc(db, cdr c);
+      return car c
+   end;
+
+asserted procedure vsdb_scget(db: VSdb): VSnd;
+   % Get a node from the success container.
+   begin scalar c;
+      assert(vsco_nonemptyp vsdb_sc db);
+      c := vsco_get vsdb_sc db;
+      vsdb_putsc(db, cdr c);
       return car c
    end;
 
@@ -267,8 +280,12 @@ asserted procedure vs_block(f: QfFormula, vl: KernelL, theo: Theory, ans: Boolea
       % ioto_prin2t nil;
       % vsdb_print db;
       rf . rvl := vsdb_collectResult db;
-      if !*ofsfvsqetree2gml then
+      if !*ofsfvsqetree2gml then <<
       	 vsdb_2gml(db, rlqetreegmlfile!*);
+	 % TODO: RELOCATE THIS TEMPORARY ENTRY POINT!!!!
+	 vsdb_putans(db, t);
+	 vsdb_ans!-compute db
+      >>;
       return {rvl, {rf . nil}, theo}
    end;
 
@@ -787,9 +804,9 @@ asserted procedure vsdb_prints(db: VSdb);
    % VSdb print summary.
    <<
       ioto_prin2 "VSdb: ";
-      	 ioto_prin2t {"#W: ", length vsdb_wc db,
-      	    " #S: ", length vsdb_sc db,
-      	    " #F: ", length vsdb_fc db,
+      	 ioto_prin2t {"#W: ", vsco_length vsdb_wc db,
+      	    " #S: ", vsco_length vsdb_sc db,
+      	    " #F: ", vsco_length vsdb_fc db,
       	    " #H: ", length cadr vsdb_ht db}
    >>;
 

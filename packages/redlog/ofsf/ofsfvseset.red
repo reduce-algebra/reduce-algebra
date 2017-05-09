@@ -46,11 +46,11 @@ rlbndswithilp!* := nil;
 asserted procedure vspr_mk(f: SF, x: Kernel, rsl: List, rc: QfFormula): VSpr;
    % Parametric root description make. If [f] is [nil], then [x] is
    % [nil]. Otherwise [x] is [mvar f]; [rsl] is a list of root
-   % specifications, whereas a root specification is a pair [(type .
-   % index)], where [type] is a real type and [index] is a root index;
-   % [rc] is a relevance condition (not containing [x]) under which it
-   % is needed to substitute this parametric root description. It will
-   % be conjuncted with the guard.
+   % specifications, whereas a root specification is a pair [(real
+   % type code . index)], where [type] is a real type and [index] is a
+   % root index; [rc] is a relevance condition (not containing [x])
+   % under which it is needed to substitute this parametric root
+   % description. It will be conjuncted with the guard.
    {'vspr, f, x, rsl, rc};
 
 asserted procedure vspr_f(pr: VSpr): SF;
@@ -61,7 +61,7 @@ asserted procedure vspr_v(pr: VSpr): SF;
    % Parametric root description variable.
    nth(pr, 3);
 
-asserted procedure vspr_rsl(pr: VSpr): List;
+asserted procedure vspr_rsl(pr: VSpr): AList;
    % Parametric root description root specification list.
    nth(pr, 4);
 
