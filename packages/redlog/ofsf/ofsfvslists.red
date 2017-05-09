@@ -37,11 +37,35 @@ lisp <<
 
 module ofsfvslists;
 
-fluid '(rlclustering!* rlmaxdeg!*);
+fluid '(rlclustering!*);
+fluid '(rlmaxdeg!*);
 rlclustering!* := t;
 rlmaxdeg!* := 3;
 
-fluid '(rsl!-alist!* rsl!-alist!-clustering!* guard!-fnalist!* vsub!-fnalist!*);
+fluid '(deg!-type!-code!-alist!*);
+fluid '(rsl!-alist!*);
+fluid '(rsl!-alist!-clustering!*);
+fluid '(guard!-fnalist!*);
+fluid '(vsub!-fnalist!*);
+
+%%% deg-type-code-alist
+
+deg!-type!-code!-alist!* := '(
+   ((1 -1 0 1) . 1)
+   ((1 1 0 -1) . -1)
+   ((2 1 0 -1 0 1) . 1)
+   ((2 1 0 1) . 2)
+   ((2 -1 0 1 0 -1) . -1)
+   ((2 -1 0 -1) . -2)
+   ((3 -1 0 1) . 1)
+   ((3 -1 0 -1 0 1) . 2)
+   ((3 -1 0 1 0 1) . 3)
+   ((3 -1 0 1 0 -1 0 1) . 4)
+   ((3 1 0 -1) . -1)
+   ((3 1 0 1 0 -1) . -2)
+   ((3 1 0 -1 0 -1) . -3)
+   ((3 1 0 -1 0 1 0 -1) . -4)
+      );
 
 %%% rsl-alist %%%
 

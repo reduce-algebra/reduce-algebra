@@ -4,6 +4,27 @@
 % of these ALists into the file ofsfvslists.red and keep the originals
 % here for reference.
 
+%%% deg-type-code-alist
+
+deg!-type!-code!-alist!* := {
+   % key: degree . real type
+   % value: real type code
+   (1 . {-1, 0, 1}) . 1,
+   (1 . {1, 0, -1}) . -1,
+   (2 . {1, 0, -1, 0, 1}) . 1,
+   (2 . {1, 0, 1}) . 2,
+   (2 . {-1, 0, 1, 0, -1}) . -1,
+   (2 . {-1, 0, -1}) . -2,
+   (3 . {-1, 0, 1}) . 1,
+   (3 . {-1, 0, -1, 0, 1}) . 2,
+   (3 . {-1, 0, 1, 0, 1}) . 3,
+   (3 . {-1, 0, 1, 0, -1, 0, 1}) . 4,
+   (3 . {1, 0, -1}) . -1,
+   (3 . {1, 0, 1, 0, -1}) . -2,
+   (3 . {1, 0, -1, 0, -1}) . -3,
+   (3 . {1, 0, -1, 0, 1, 0, -1}) . -4
+      };
+
 %%% rsl-alist %%%
 
 rsl!-alist!* := {
