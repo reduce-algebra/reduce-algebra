@@ -256,26 +256,26 @@ asserted procedure iv_mapadd(ivl: RatIntervalList): RatInterval;
 
 asserted procedure iv_mult(iv1: RatInterval, iv2: RatInterval): RatInterval;
    % Interval multiplication.
-   iv_mk(rat_min4(rr,rl,lr,ll),rat_max4(rr,rl,lr,ll)) where
-      rr = multsq(iv_rb iv1,iv_rb iv2),
-      rl = multsq(iv_rb iv1,iv_lb iv2),
-      lr = multsq(iv_lb iv1,iv_rb iv2),
-      ll = multsq(iv_lb iv1,iv_lb iv2);
+   iv_mk(rat_min4(rr, rl, lr, ll), rat_max4(rr, rl, lr, ll)) where
+      rr = multsq(iv_rb iv1, iv_rb iv2),
+      rl = multsq(iv_rb iv1, iv_lb iv2),
+      lr = multsq(iv_lb iv1, iv_rb iv2),
+      ll = multsq(iv_lb iv1, iv_lb iv2);
 
 asserted procedure iv_med(iv: RatInterval): Rational;
    % Point in the middle of an interval.
-   rat_mult(rat_add(iv_lb iv,iv_rb iv),rat_mk(1,2));
+   rat_mult(rat_add(iv_lb iv, iv_rb iv), rat_mk(1, 2));
 
 asserted procedure iv_tothen(iv: RatInterval, n: Integer): RatInterval;
    % Interval to the n.
-   if n=0 then
-      iv_mk(rat_mk(1,1),rat_mk(1,1))
+   if eqn(n, 0) then
+      iv_mk(rat_mk(1, 1), rat_mk(1, 1))
    else
-      iv_mult(iv,iv_tothen(iv,n-1));
+      iv_mult(iv, iv_tothen(iv, n-1));
 
 asserted procedure iv_containszero(iv: RatInterval): Boolean;
    % Interval contains zero.
-   if rat_leq(iv_lb iv,rat_0()) and rat_leq(rat_0(),iv_rb iv) then
+   if rat_leq(iv_lb iv, rat_0()) and rat_leq(rat_0(), iv_rb iv) then
       t
    else
       nil;
@@ -284,30 +284,31 @@ asserted procedure iv_comp(iv1: RatInterval, iv2: RatInterval): Integer;
    % Compare intervals. Returns -1, if [iv1] is below [iv2], 1, if [iv2] is
    % above [iv1] and 0, if the intersection of [iv1] and [iv2] is non- empty.
    % [iv1], [iv2] are regarded as open intervals.
-   if rat_leq(iv_rb iv1,iv_lb iv2) then
+   if rat_leq(iv_rb iv1, iv_lb iv2) then
       -1
-   else if rat_leq(iv_rb iv2,iv_lb iv1) then
+   else if rat_leq(iv_rb iv2, iv_lb iv1) then
       1
-   else 0;
+   else
+      0;
 
 asserted procedure iv_maxabs(iv: RatInterval): Rational;
    % Interval maximal absolute value.
-   rat_max(rat_abs iv_lb iv,rat_abs iv_rb iv);
+   rat_max(rat_abs iv_lb iv, rat_abs iv_rb iv);
 
 asserted procedure iv_minabs(iv: RatInterval): Rational;
    % Interval minimal absolute value.
    if iv_containszero iv then
       rat_0()
    else
-      rat_min(rat_abs iv_lb iv,rat_abs iv_rb iv);
+      rat_min(rat_abs iv_lb iv, rat_abs iv_rb iv);
 
 asserted procedure iv_minus(iv1: RatInterval, iv2: RatInterval): RatIntervalList;
    % Returns a list of IV, resulting from subtracting [iv2] from [iv1].
    nconc(
-      if rat_less(iv_lb iv1,iv_lb iv2) then
-	 {iv_mk(iv_lb iv1,rat_min(iv_lb iv2,iv_rb iv1))},
+      if rat_less(iv_lb iv1, iv_lb iv2) then
+	 {iv_mk(iv_lb iv1, rat_min(iv_lb iv2, iv_rb iv1))},
       if rat_less(iv_rb iv2,iv_rb iv1) then
-	 {iv_mk(rat_max(iv_rb iv2,iv_lb iv1),iv_rb iv1)});
+	 {iv_mk(rat_max(iv_rb iv2, iv_lb iv1), iv_rb iv1)});
 
 asserted procedure iv_minuslist(iv: RatInterval, ivl: RatIntervalList): RatIntervalList;
    % Interval minus list of intervals. [ivl] is a list of distinct
@@ -315,13 +316,13 @@ asserted procedure iv_minuslist(iv: RatInterval, ivl: RatIntervalList): RatInter
    if null ivl then
       {iv}
    else
-      iv_listminuslist(iv_minus(iv,car ivl),cdr ivl);
+      iv_listminuslist(iv_minus(iv, car ivl), cdr ivl);
 
 asserted procedure iv_listminuslist(ivl1: RatIntervalList, ivl2: RatIntervalList): RatIntervalList;
    % Interval list minus interval list. [ivl1] and [ivl2] are each lists of
    % distinct intervals.
    for each iv1 in ivl1 join
-      iv_minuslist(iv1,ivl2);
+      iv_minuslist(iv1, ivl2);
 
 % TODO: Rename and move these procedures to sfto module.
 
@@ -928,6 +929,37 @@ asserted procedure aex_evalop(ae: Aex, op: Id): Boolean;
       return ofsf_evalatp(op, sgn)
    end;
 
+asserted procedure aex_realtype(ae: Aex): List;
+   % Compute real type (i.e., the sequence of different signs assumed
+   % by [ae] from -infty to +infty) of the univariate polynomial [ae].
+   % Returns a list containing -1, 0, 1.
+   begin scalar x, rootl, sgnl, r1, r2, w;
+      % TODO: Multiplicity of the roots!!!
+      assert(aex_fvarl ae and null cdr aex_fvarl ae);  % one free variable
+      x := aex_mvar ae;
+      rootl := aex_findroots(ae, x);
+      sgnl := {aex_sgnatminfty(ae, x)};
+      if null rootl then  % [ae] has no real roots
+	 return sgnl;
+      if null cdr rootl then <<  % [ae] has exactly on real root
+	 push(0, sgnl);
+	 push(aex_sgnatinfty(ae, x), sgnl);
+	 return reversip sgnl
+      >>;
+      % [ae] has at least two different real roots
+      r1 := pop rootl;
+      while rootl do <<
+	 r2 := pop rootl;
+	 w := iv_med iv_mk(iv_rb anu_iv r1, iv_lb anu_iv r2);
+	 push(0, sgnl);
+	 push(aex_sgn aex_bind(ae, x, anu_fromrat(x, w)), sgnl);
+	 r1 := r2
+      >>;
+      push(0, sgnl);
+      push(aex_sgnatinfty(ae, x), sgnl);
+      return reversip sgnl
+   end;
+
 % Exact arithmetic with multiplicative inverses.
 
 asserted procedure aex_quotrem(f: Aex, g: Aex, x: Kernel): DottedPair;
@@ -1192,7 +1224,7 @@ asserted procedure aex_findroots(ae: Aex, x: Kernel): AnuList;
    % Aex find roots. [ae] is a univariate Aex. If [ae]'s ldeg is not positive,
    % the empty list will be returned.
    begin scalar cb, rootlist;
-      if aex_deg(ae,x) < 1 then
+      if aex_deg(ae, x) < 1 then
 	 return nil;
       cb := aex_cauchybound(ae, x);
       rootlist := aex_findrootsiniv1(ae, x, iv_mk(rat_neg cb, cb),
@@ -1206,9 +1238,9 @@ asserted procedure aex_findrootsiniv(ae: Aex, x: Kernel, iv: RatInterval): AnuLi
    aex_findrootsiniv1(ae, x, iv, aex_stdsturmchain(ae, x));
 
 asserted procedure aex_findrootsiniv1(ae: Aex, x: Kernel, iv: RatInterval, sc: AexList): AnuList;
-   % Aex find roots in interval. [ae] is a univariate Aex with positive ldeg,
-   % [sc] is [ae]'s Sturm chain. Returns an ordered list of Anu: all roots of
-   % [ae] in open interval [iv].
+   % Aex find roots in interval. [ae] is a univariate Aex with
+   % positive ldeg, [sc] is [ae]'s Sturm chain. Returns a sorted list
+   % of Anu: all roots of [ae] in open interval [iv].
    begin scalar lb, rb, sclb, scrb, m, ml, mr, r, retl;
       lb := iv_lb iv;
       rb := iv_rb iv;
