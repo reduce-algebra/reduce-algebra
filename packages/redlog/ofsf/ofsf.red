@@ -35,7 +35,7 @@ copyright('ofsf, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
    ofsfmisc ofsfcad ofsfcadproj ofsfanuex ofsfxopt ofsfdet ofsftfc ofsfhqe
    ofsfdecdeg ofsfexfr ofsftrop ofsflp ofsfdpep ofsfvsl ofsfic
-   ofsfvsblock ofsfvseset ofsfvssub ofsfvslists),
+   ofsfvsblock ofsfvseset ofsfvssub ofsfvslists ofsfsmtqe),
    nil);
 
 load!-package 'redlog;
@@ -245,6 +245,7 @@ put('ofsf,'rl_services,'(
    (rl_dfgprint!* . cl_dfgPrint)
    (rl_smt2Print!* . cl_smt2Print)
    (rl_smt2Read!* . cl_smt2Read)
+   (rl_smtqe!* . ofsf_smtqe)
    (rl_dima!* . ofsf_dima)
    (rl_sat2pol!* . ofsf_sat2pol)
    (rl_psat2pol!* . ofsf_psat2pol)

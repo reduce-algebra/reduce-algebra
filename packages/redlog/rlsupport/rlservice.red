@@ -539,6 +539,8 @@ asserted procedure rl_conversionFunction(type: Any, x2y: Id): Any;
 	 kwl := for each h in cdr type collect intern h;
       	 return {'lambda, '(x), {'apply, {'function, 'rl_a2sKeyword}, {'list, 'x, mkquote kwl}}};
       >>;
+      if intern car type eq 'enum and x2y eq 's2a then
+	 return {'lambda, '(x), 'x};
       % Now type is something like Pair(List(Atom), Formula), where Pair, List,
       % Atom, Formula have conversion functions of arity 1+2, 1+1, 1+0, 1+0,
       % resp., counting "data + parameter functions."

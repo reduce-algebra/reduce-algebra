@@ -44,7 +44,7 @@ asserted procedure rl_provideServiceStat(): List4;
       ps := cursym!*;
       scan();
       if cursym!* eq '!*semicol!* then
-	 return {'rl_provideService, {rls, ps, nil}};
+	 return {'rl_provideService, mkquote rls, mkquote ps, nil};
       if cursym!* neq 'using then
 	 rederr {"expecting 'using' or delimiter in rl_provideService", rls, "=", ps, "but found", cursym!*};
       repeat <<

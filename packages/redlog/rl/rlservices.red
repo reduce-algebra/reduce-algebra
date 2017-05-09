@@ -575,6 +575,13 @@ rl_service {
    mode = both};
 
 rl_service {
+   name = smtqe,
+   doc = "quantifier elimination as SMT theory solver",
+   arg = {pos = 1, name = assertions, type = List(Formula), doc = "assertions to be satisfied simultaneously"},
+   returns = {type = Triplet(Enum(sat, unsat, unknown), List(Any), List(Integer))},
+   mode = both};
+
+rl_service {
    name = stex,
    doc = "stochastic experiment (domain Z only)",
    arg = {pos = 1, name = formula, type = Formula, doc = "input formula"},

@@ -429,7 +429,7 @@ asserted procedure ofsfic!*cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
       if !*rlqeinfcore then %%%%%%%MAX
 	 if er = {nil} or caadr er eq 'false then <<
 	    ic_computeinfcore rlqeicdata!*;
-	    ic := ic_infcore rlqeicdata!*;
+	    ic := reverse ic_infcore rlqeicdata!*;
 	    if !*rlverbose then <<
 	       ioto_tprin2t {"infcore: ", ic};
 	       ioto_tprin2t {"infcore length: ", length ic}
