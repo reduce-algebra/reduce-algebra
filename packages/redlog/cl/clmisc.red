@@ -181,6 +181,8 @@ procedure cl_f2ml(f,client);
       return apply(client,{f})
    end;
 
+rl_provideService rl_atml = cl_atml using rl_ordatp;
+
 procedure cl_atml(f);
    % Common logic atomic formula multiplicity list. [f] is a formula.
    % Returns a MULTYPLICITY LIST of the atomic formulas occurring in
@@ -195,6 +197,8 @@ procedure cl_atml1(f);
 
 procedure cl_atmlc(atf);
    {atf . 1};
+
+rl_provideService rl_atl = cl_atl using rl_ordatp;
 
 procedure cl_atl(f);
    % Common logic atomic formula list. Returns the set of atomic
@@ -370,6 +374,8 @@ asserted procedure cl_vsubfof1(v: Kernel, u: List, f: Formula): Formula;
       return rl_vsubat(v, u, f)
    end;
 
+rl_provideService rl_subfof = cl_subfof using rl_varsubstat;
+
 procedure cl_subfof(al,f);
    % Common logic substitute into first-order formula. [al] is an
    % ALIST $(..., (v_i . p_i), ...)$, where $v_i$ are variables and
@@ -510,6 +516,7 @@ procedure cl_terml1(f);
    % set of all non-zero terms occurring in [f] as a list.
    for each x in cl_termml1 f collect car x;
 
+rl_provideService rl_struct = cl_struct using rl_structat, rl_ifstructat;
 
 asserted procedure cl_struct(f: Formula, fac: Boolean, v: Id): DottedPair;
    if fac then cl_ifstruct(f, v) else cl_struct0(f, v);

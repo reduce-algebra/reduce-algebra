@@ -29,21 +29,25 @@ put('rlsupport, 'copyright, "(c) 2016-2017 T. Sturm");
 %
 
 % This package collects code which for technical reasons must be compiled before
-% the compilation of the redlog main package in redlog/rl. Otherwise, I would
-% love to have all the modules here a modules of the package redlog. A
+% the compilation of the Redlog main package in redlog/rl. Otherwise, I would
+% love to have all the modules here as modules of the package redlog. A
 % technically feasible alternative solution would be to place (relevant parts)
 % of that code into the main module redlog/rl/redlog.red. However, from my point
 % of view this breaks modularization and would make the entire architecture
 % harder to understand for others.
 %
 % In fact, I believe that there is a problem in Reduce that modules are
-% essentially sections of packages but units that are independent w.r.t.
+% essentially sections of packages but not units that are independent w.r.t.
 % compilation.
 
-create!-package('(rlsupport rltype rlservice rlhelp),nil);
+create!-package('(rlsupport rltype rlservice rlblackbox rlprovide rlhelp), nil);
 
+exports revision;
+exports copyright;
+exports rl_provideService;
 exports rl_type;
 exports rl_service;
+exports rl_blackbox;
 % We do not expect explicit code outside this package to directly call
 % rl_servicewrapper. However, such code is generated via compiletime calls to
 % rl_service in rl/rlservices.red. As a consequence, rl_servicewrapper has to
@@ -54,6 +58,7 @@ exports rl_servicewrapper;
 exports rl_exc;
 exports rl_excP;
 exports rl_excErr;
+exports rl_help;
 
 asserted procedure revision(m: Id, rev: String): String;
    put(m, 'revision, rev);
@@ -67,26 +72,6 @@ inline procedure rl_skipequal(proc);
       if cursym!* neq 'equal then
 	 rederr {"expecting '=' in", proc, "but found", cursym!*}
    >>;
-
-% Temporary
-
-fluid '(rl_bbl!*);
-
-put('rl_blackBox, 'formfn, 'rl_formBlackBox);
-
-asserted procedure rl_formBlackBox(argl: List, vars: List, mode: Id): List;
-   % Make black box.
-   begin scalar args, vn, name, n, p;
-      name := eval cadr argl;
-      n := eval caddr argl;
-      args := for i := 1:n collect mkid('a, i);
-      vn := intern compress nconc(explode name, '(!! !*));
-      push({'fluid, mkquote {vn}}, p);
-      push({'setq, 'rl_bbl!*, {'cons, mkquote vn, 'rl_bbl!*}}, p);
-      push({'put, mkquote name, ''number!-of!-args, n}, p);
-      push({'de, name, args, {'apply, vn, 'list . args}}, p);
-      return 'progn . reversip p
-   end;
 
 endmodule;
 

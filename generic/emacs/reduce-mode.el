@@ -418,7 +418,7 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
   (set (make-local-variable 'font-lock-defaults)
        ;; reduce-font-lock-keywords evaluates to a list of symbols!
        (list reduce-font-lock-keywords	; KEYWORDS
-	     nil			; KEYWORDS-ONLY
+	     nil   			; KEYWORDS-ONLY
 	     t				; CASE-FOLD
 	     nil			; SYNTAX-ALIST
 	     nil			; SYNTAX-BEGIN
@@ -760,7 +760,10 @@ of the construct; otherwise return nil."
       (reduce-backward-block) (current-indentation))
      ((looking-at ">>")
       (reduce-backward-group) (current-indentation))
-     ) ))
+     ;; ((looking-at "#\\<endif\\>")
+     ;;  (reduce-backward-group) 0)
+     ((looking-at "#\\(\\<define\\>\\|\\<if\\>\\|\\<\\elif\\>\\|\\<\\else\\>\\|\\<endif\\>\\)")
+      0))))
 
 (defun reduce-find-matching-if ()
   "Find the `if' matching a `then' or `else'."
@@ -805,7 +808,7 @@ of the construct; otherwise return nil."
 	(let ((previous-indentation (current-column))
 	      extra-indentation)
 	  ;; Skip any label:
-	  (when (looking-at "\\(\\w+[ \t]*:\\)[^=]") ; label
+	  (when (looking-at "^\\(\\w+[ \t]*:\\)[^=]") ; label
 	    (goto-char (match-end 1))
 	    (skip-chars-forward "[ \t]")
 	    (if (eolp)		; label alone on line
@@ -836,6 +839,10 @@ of the construct; otherwise return nil."
 		     ;; Otherwise, extra indentation undefined
 		     )))
 	  (cond
+	   ((looking-at "#\\<endif\\>")
+	    (current-indentation))
+	   ((looking-at "#\\(\\<define\\>\\|\\<if\\>\\|\\<\\elif\\>\\|\\<\\else\\>\\)")
+	    (current-indentation))
 	   ;; If extra indentation determined then use it ...
 	   (extra-indentation (+ previous-indentation extra-indentation))
 	   ;; If beginning new statement or comma-separated element
@@ -2119,13 +2126,15 @@ passing on any prefix argument (in raw form)."
 (defconst reduce-asserted-arg-types-rule ;; TS
      (list (concat "[(,]\\s-*"
 		 "\\("
-		 "[^: ]+";  should be reduce-identifier-regexp but this did not work
+		 "[^: \"]+";  should be reduce-identifier-regexp but this did not work
+;;		 reduce-identifier-regexp
 		 "\\)"
 		 "\\s-*:\\s-*"
 		 "\\("
-		 "[^), ]+";  should be reduce-identifier-regexp but this did not work
+		 "[^), \"]+";  should be reduce-identifier-regexp but this did not work
+;;		 reduce-identifier-regexp
 		 "\\)")
-	 '(2 font-lock-type-face t)))
+	   '(2 font-lock-type-face t)))
 
 (defconst reduce-asserted-return-type-rule ;; TS
      (list (concat ")\\s-*:\\s-*"
@@ -2156,18 +2165,41 @@ passing on any prefix argument (in raw form)."
 	      '(1 font-lock-keyword-face t)
 	      '(2 font-lock-function-name-face))))
 
+(defconst reduce-preprocessor-rules  ;; TS
+  (list
+   (list (concat "\\(#\\<define\\>\\)\\s +\\("
+   		 reduce-identifier-regexp
+   		 "\\)\\s +\\("
+   		 reduce-identifier-regexp
+   		 "\\)")
+   	 '(1 font-lock-preprocessor-face)
+   	 '(2 font-lock-function-name-face)
+   	 '(3 font-function-name-face))
+   (list "\\(#\\<if\\>\\)\\s +\\(.*$\\)"
+	 '(1 font-lock-preprocessor-face)
+	 '(2 font-lock-default-face))
+   (list "\\(#\\<elif\\>\\)\\s +\\(.*$\\)"
+	 '(1 font-lock-preprocessor-face)
+	 '(2 font-lock-default-face))
+   (list "\\(#\\<else\\>\\)"
+	 '(1 font-lock-preprocessor-face))
+   (list "\\(#\\<endif\\>\\)"
+	 '(1 font-lock-preprocessor-face))))
+
 (defconst reduce-font-lock-keywords-0
   (append (list
 	   ;; Main keywords:
 	   (list (concat
 		  ;; Ignore quoted keywords and composite identifiers:
-		  "\\(^[^!_']?\\|[^!][^!_']\\)"
+		  ;; "\\(^[^!_']?\\|[^!][^!_']\\)"
+		  "\\(^[^!_'#]?\\|[^!#][^!_'#]\\)"
 		  "\\<\\(\\(" reduce-keyword-regexp "\\)"
 		  ;; Handle consecutive keywords:
 		  "\\(\\s +\\(" reduce-keyword-regexp "\\)\\)*"
 		  "\\)\\>"
 		  ;; Ignore composite identifiers:
-		  "[^!_]"
+		  ;; "[^!_]"
+		  "[^!_#]"
 		  ) '(2 font-lock-keyword-face))
 	   ;; Group delimiters and references:
 	   '("<<\\|>>\\|\\<\\(module\\|go\\(\\s *to\\)?\\)\\>"
@@ -2191,7 +2223,8 @@ passing on any prefix argument (in raw form)."
 	   reduce-asserted-arg-types-rule
 	   reduce-asserted-return-type-rule)
 	  reduce-assert-declare-rules
-	  reduce-assert-struct-rules)
+	  reduce-assert-struct-rules
+	  reduce-preprocessor-rules)
   "Default minimal REDUCE fontification rules.")
 
 (defconst reduce-font-lock-keywords-basic
@@ -2199,13 +2232,15 @@ passing on any prefix argument (in raw form)."
    ;; Main keywords:
    (list (concat
 	  ;; Ignore quoted keywords and composite identifiers:
-	  "\\(^[^!_']?\\|[^!][^!_']\\)"
+	  ;; "\\(^[^!_']?\\|[^!][^!_']\\)"
+	  "\\(^[^!_'#]?\\|[^!#][^!_'#]\\)"
 	  "\\<\\(\\(" reduce-keyword-regexp "\\)"
 	  ;; Handle consecutive keywords:
 	  "\\(\\s +\\(" reduce-keyword-regexp "\\)\\)*"
 	  "\\)\\>"
 	  ;; Ignore composite identifiers:
-	  "[^!_]"
+	  ;; "[^!_]"
+	  "[^!_#]"
 	  ) '(2 font-lock-keyword-face))
    ;; Group delimiters:  OK
    '("<<\\|>>" . font-lock-keyword-face)
@@ -2251,20 +2286,21 @@ passing on any prefix argument (in raw form)."
   )
 
 (defconst reduce-font-lock-keywords-algebraic
-  (list
-   ;; More type declarations:
-   (list "\\<\\(array\\|matrix\\)\\s "
-	 '(1 font-lock-type-face)
-	 ;; Anchored matches (single line only!):
-	 (list (concat "\\s *"
-		       "\\(" reduce-identifier-regexp "\\)"
-		       "\\s *\\(([^\)]*)\\s *\\)?\\s."
-		       )
-	       nil nil
-	       '(1 font-lock-variable-name-face))
-	 )
-   reduce-asserted-arg-types-rule
-   reduce-asserted-return-type-rule)
+  (append (list
+	   ;; More type declarations:
+	   (list "\\<\\(array\\|matrix\\)\\s "
+		 '(1 font-lock-type-face)
+		 ;; Anchored matches (single line only!):
+		 (list (concat "\\s *"
+			       "\\(" reduce-identifier-regexp "\\)"
+			       "\\s *\\(([^\)]*)\\s *\\)?\\s."
+			       )
+		       nil nil
+		       '(1 font-lock-variable-name-face))
+		 )
+	   reduce-asserted-arg-types-rule
+	   reduce-asserted-return-type-rule)
+	  reduce-preprocessor-rules)
   "More algebraic-mode REDUCE fontification sub-rules.")
 
 (defconst reduce-font-lock-keywords-symbolic
@@ -2290,7 +2326,8 @@ passing on any prefix argument (in raw form)."
 	   reduce-asserted-arg-types-rule
 	   reduce-asserted-return-type-rule)
 	  reduce-assert-declare-rules
-	  reduce-assert-struct-rules)
+	  reduce-assert-struct-rules
+	  reduce-preprocessor-rules)
   "More symbolic-mode REDUCE fontification sub-rules.")
 
 (defconst reduce-font-lock-keywords-full

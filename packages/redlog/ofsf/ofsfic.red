@@ -57,6 +57,7 @@ put('rlqeinfcore, 'simpfg, '((t . ((rlqeinfcore_switch))) (nil . ((rlqeinfcore_s
 
 fluid '(!*rlqeinfcore!-owal);
 fluid '(!*rlqeinfcore!-defal);
+fluid '(smt_unsatcore!*);
 
 % existing Redlog procedures that have to be overwritten for this
 % module to work:
@@ -429,10 +430,14 @@ asserted procedure ofsfic!*cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
 	 if er = {nil} or caadr er eq 'false then <<
 	    ic_computeinfcore rlqeicdata!*;
 	    ic := ic_infcore rlqeicdata!*;
-	    ioto_tprin2t {"infcore: ", ic_infcore rlqeicdata!*};
-	    ioto_tprin2t {"infcore length: ", length ic_infcore rlqeicdata!*};
+	    if !*rlverbose then <<
+	       ioto_tprin2t {"infcore: ", ic};
+	       ioto_tprin2t {"infcore length: ", length ic}
+	    >>;
+	    smt_unsatcore!* := ic;
 	    rlqeicdata!* := ic_init f;
-	    ioto_tprin2t {"input length: ", upbv ic_currentfvect rlqeicdata!* + 1};
+	    if !*rlverbose then
+	       ioto_tprin2t {"input length: ", upbv ic_currentfvect rlqeicdata!* + 1};
 	    er := nil . '((false))
 	    %
       	    % newF := nil;
@@ -442,8 +447,9 @@ asserted procedure ofsfic!*cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
 	    % !*rlqeinfcore := nil;
 	    % ioto_tprin2t {"test: ", ofsfic!*cl_qea(newF, nil)}
       	 >> else
-	    ioto_tprin2t {"model: ",
-	       for each pr in cdar cl_erEQR er collect {'equal, car pr, cdr pr}};
+ 	    if !*rlverbose then
+	       ioto_tprin2t {"model: ",
+	       	  for each pr in cdar cl_erEQR er collect {'equal, car pr, cdr pr}};
       return cl_erEQR er
    end;
 

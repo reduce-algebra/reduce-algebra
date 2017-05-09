@@ -36,8 +36,9 @@ rlthsimpl ({a*b*c=0,b<>0});
 
 rlqe ex({x,y},(for i:=1:5 product mkid(a,i)*x**10-mkid(b,i)*y**2)<=0);
 
-sol := rlqe ex(x,a*x**2+b*x+c>0);
+sol := rlqe ex(x,a1*a2*x**2+b*x+c>0);
 rlatnum sol;
+rldepth sol;
 
 rlatl sol;
 rlatml sol;
@@ -46,10 +47,10 @@ rltermml sol;
 rlifacl sol;
 rlifacml sol;
 
-rlstruct(sol,v);
-rlifstruct(sol,v);
+rlstruct(sol, fac=no, w);
+rlstruct(sol);
 
-rlitab sol;
+rltab sol;
 rlatnum ws;
 rlgsn sol;
 rlatnum ws;
@@ -99,10 +100,12 @@ walter := (x>0 and y>0);
 rlsimpl(true,rlatl walter);
 part(rlatl walter,1,1);
 
-
 % QE by partial CAD:
 cox6 := ex({u,v},x=u*v and y=u**2 and z=v**2)$
 rlcad cox6;
+
+% Generate Theory
+rlgentheo({a=0}, a*x+b<>0);
 
 % Algebraically closed fields standard form:
 sub(x=a,x=0 and a=0 and ex(x,x=y) and ex(a,x<>a));
@@ -123,7 +126,6 @@ clear h;
 rlset dvfsf;
 sub(x=a,x=0 and a=0 and ex(x,x=y) and ex(a,x~a));
 
-
 % P-adic Balls, taken from Andreas Dolzmann, Thomas Sturm. P-adic
 % Constraint Solving, Proceedings of the ISSAC '99.
 rlset dvfsf;
@@ -143,14 +145,26 @@ rlqe ex(x,x~1 and x-1~1 and x-2~1 and x-3~1 and 2~1 and 3~1);
 rlexplats ws;
 rldnf ws;
 
+% Differentially closed fields standard form:
+rlset dcfsf;
+sub(x=a,x=0 and a=0 and ex(x,x=y) and ex(a,d(x, 4) <> a));
+
+% An Example on Differential Algebras by E. Pankratiev taken from A. Dolzmann,
+% T. Sturm. Generalized Constraint Solving over Differential Algebras.
+% Proceedings of the CASC 2004.
+pankratiev := all(x,d(x, 1)**2 + x = 0 impl (d(x, 1) = a or d(x, 2) = b));
+rlqe pankratiev;
+
 % Selecting contexts:
 
-rlset ofsf;
+rlset acfsf;
 f:= ex(x,m*x+b=0);
+rlqe f;
+rlset dcfsf;
 rlqe f;
 rlset dvfsf;
 rlqe f;
-rlset acfsf;
+rlset ofsf;
 rlqe f;
 
 end;  % of file

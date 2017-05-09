@@ -29,15 +29,30 @@ copyright('rlservice, "(c) 2016 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
+% This module generates an AM-SM interface on the basis of formal
+% specifications. The AM interface supports combinations of positional arguments
+% and named arguments and optional arguments with default values given in the
+% specification. Possible conflicts between positional and named arguments are
+% resolved according to Python rules. In the AM->SM direction types of passed
+% arguments are checked at runtime. It furthermore supports a dynamic online
+% help system implemented in the submodule rlhelp.
 %
-%   AM   |   SM
-%        |
+%  AM            |   SM
+%                |
 %  rl<service> --+-> rl_<service>!$
 %                |   ---> rl_servicewrapper
 %                |        ---> rl_!*<service>
 %                |             ---> rl_<service>
 %                |                  ---> apply(rl_<service>!*)
 %
+%
+%
+% rl<service> is the AM entry point. It has a property (psopfn .
+% rl_<service>!$). It has a property (intypes . <list of possibly composite
+% types>), which is exclusively used with the dynamic help module. Those types
+% are given as strings to preserve case. Similarly, there is (outtype .
+% <string>).
+
 
 fluid '(!*lower);
 fluid '(!*raise);
@@ -169,12 +184,17 @@ asserted procedure rl_formServiceBoth(spec: Alist): List;
  	 rl_formServiceAnalyzeSpec spec;
       {rl_b!*, rl_b, rl_!*b, rl_b!$, rlb} := rl_formServiceFunctionNames('rl_, b);
       % We are going construct a progn in [p], which is going to be the
-      % result of this macro.
+      % result of rl_formService.
       %
       % rtypepart is the rtype of the part function. TS does not exactly
       % understand anymore why this is used here. It might again have to do
       % with rl vs. sl.
       push({'put, mkquote rlb, ''rtypefn, ''rtypepart}, p);
+      push({'put, mkquote rlb, ''rl_smService, mkquote rl_b}, p);
+      push({'put, mkquote rlb, ''intypes, mkquote types}, p);
+      push({'put, mkquote rlb, ''outtype, rtype}, p);
+      % Flag rl_b as a service:
+      push({'flag, mkquote {rl_b}, ''rl_service}, p);
       % An Alist for documentation with the rlhelp submodule:
       docal := {
 	 'synopsis . rl_docSynopsis(rlb, names, types, defaults),
@@ -182,10 +202,8 @@ asserted procedure rl_formServiceBoth(spec: Alist): List;
 	 'description . doc,
 	 'arguments . rl_docArguments(names, types, docs),
 	 'switches . rl_docSwitches(names, types, docs)};
-      push({'put, mkquote rlb, ''docal, mkquote docal}, p);
-      push({'put, mkquote rlb, ''intypes, mkquote types}, p);
-      push({'put, mkquote rlb, ''outtype, rtype}, p);
-      push({'setq, 'rl_services!*, {'cons, mkquote rlb, 'rl_services!*}}, p);
+      push({'put, mkquote rl_b, ''docal, mkquote docal}, p);
+      push({'put, mkquote rl_b, ''rl_amService, mkquote rlb}, p);
       % A psopfn as the AM entry point:
       push({'put, mkquote rlb, ''psopfn, mkquote rl_b!$}, p);
       % The function bound to the psopfn:
@@ -210,7 +228,6 @@ asserted procedure rl_formServiceBoth(spec: Alist): List;
       push({'put, mkquote rl_!*b, ''number!-of!-args, length rl_!*args}, p);
       push({'de, rl_!*b, rl_!*args, {'apply, mkquote rl_b, 'list . rl_args}}, p);
       p := rl_formServiceSm1(rl_b, rl_b!*, rl_args, p);
-      p := rl_formServiceBlackBoxes(spec, p);
       return 'progn . reversip p
    end;
 
@@ -363,29 +380,13 @@ asserted procedure rl_formServiceSm1(rl_b: Id, rl_b!*: Id, argl: List, p: List):
       % used by rl_set:
       push({'fluid, mkquote {rl_b!*}}, p);
       push({'setq, 'rl_servl!*, {'cons, mkquote rl_b!*, 'rl_servl!*}}, p);
+      % Flag rl_b as a service:
+      push({'flag, mkquote {rl_b}, ''rl_service}, p);
+      % and add it to the list
+      push({'setq, 'rl_services!*, {'cons, mkquote rl_b, 'rl_services!*}}, p);
       % Create the actual SM entry point function:
       push({'put, mkquote rl_b, ''number!-of!-args, length argl}, p);
       push({'de, rl_b, argl, {'apply, rl_b!*, 'list . argl}}, p);
-      return p
-   end;
-
-asserted procedure rl_formServiceBlackBoxes(spec: Alist, p: List): List;
-   begin
-      scalar d, name, args, vn;
-      integer n;
-      for each pr in spec do
-	 if eqcar(pr, 'blackbox) then <<
-	    d := cdr pr;
-	    name := lto_eatsoc('name, d, {"missing name in black box"});
-	    n := lto_eatsoc('argnum, d, {"missing argnum in black box", n});
-	    name := intern compress nconc(explode 'rl_, explode name);
-	    args := for i := 1:n collect mkid('a, i);
-	    vn := intern compress nconc(explode name, explode '!*);
-      	    push({'fluid, mkquote {vn}}, p);
-      	    push({'setq, 'rl_bbl!*, {'cons, mkquote vn, 'rl_bbl!*}}, p);
-      	    push({'put, mkquote name, ''number!-of!-args, n}, p);
-      	    push({'de, name, args, {'apply, vn, 'list . args}}, p)
-	 >>;
       return p
    end;
 
@@ -568,6 +569,15 @@ put('enum, 'docal, {'syntax . "Admissible REDLOG KEYWORDS"});
 %    >>;
 %
 % put('!Enum, 'prifn, 'rl_priEnum);
+
+asserted procedure rl_serviceP(x: Any): ExtraBoolean;
+   idp x and flagp(x, 'rl_service);
+
+asserted procedure rl_amServiceP(x: Any): ExtraBoolean;
+   rl_serviceP x and get(x, 'docal);
+
+asserted procedure rl_knownImplementations(x: Id): List;
+   get(x, 'rl_knownImplementations);
 
 asserted procedure rl_exc(x: Any): DottedPair;
    % Create an "exception" as a return value in case of unexpected situations,

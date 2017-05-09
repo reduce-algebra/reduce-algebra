@@ -43,6 +43,7 @@ fluid '(!*backtrace);
 fluid '(smt_assertionl!*);
 fluid '(smt_oassertionl!*);
 fluid '(smt_model!*);
+fluid '(smt_unsatcore!*);
 fluid '(!*smtsplain);
 
 switch smtslog;
@@ -105,6 +106,8 @@ procedure smt_processForm(form);
       smt_processCheckSat()
    else if eqcar(form, 'get!-model) then
       smt_processGetModel()
+   else if eqcar(form, 'get!-unsat!-core) then
+      smt_processGetUnsatCore()
    else if eqcar(form, 'print!-assertions) then
       smt_processPrintAssertions()
    else if eqcar(form, 'reset) then
@@ -130,11 +133,30 @@ procedure smt_processForm(form);
    else
       smt_error();
 
+procedure smt_processHelp();
+   <<
+      ioto_tprin2t "(set-logic <symbol>)      <symbol> must be QF_NRA";
+      ioto_tprin2t "(declare-const)           ingored";
+      ioto_tprin2t "(declare-fun)             ingored";
+      ioto_tprin2t "(assert <form>)           add assertions";
+      ioto_tprin2t "(print-assertions)        print existing assertions";
+      ioto_tprin2t "(check-sat)               return sat, unsat, or unknown";
+      ioto_tprin2t "(get-model)               get model after sat (deleted with next assert)";
+      ioto_tprin2t "(get-unsat-core)          get minimal unsat core after unsat (deleted with next assert)";
+      ioto_tprin2t "(reset)                   clear all assertions";
+      ioto_tprin2t "(read <string>)           read an SMT-LIB2 file";
+      ioto_tprin2t "(reduce-dump-assertions>) print existing assertions as Reduce input";
+      ioto_tprin2t "(reduce-eval <form>)      evaluate <form> in Reduce Standard Lisp";
+      ioto_tprin2t "(help)                    this help";
+      ioto_tprin2t "(exit)                    leave the SMT-LIB REPL and return to Reduce"
+   >>;
+  
 procedure smt_processAssert(constraint);
    <<
       smt_assertionl!* := cl_smt2ReadForm constraint . smt_assertionl!*;
       smt_oassertionl!* := constraint . smt_oassertionl!*;
       smt_model!* := 'unset;
+      smt_unsatcore!* := 'unset;
       smt_prin2t ""
    >>;
 
@@ -165,16 +187,17 @@ procedure smt_processAssert(constraint);
 %%    end;
 
 procedure smt_processCheckSat();
-   begin scalar w, tval;
+   begin scalar w, tval, model;
       w := cl_qea(rl_ex(rl_smkn('and, smt_assertionl!*), nil), nil);
       if null w then <<
 	 smt_prin2t 'unsat;
 	 return
       >>;
-      tval . smt_model!* := car w;
-      if tval eq 'true then
+      tval . model := car w;
+      if tval eq 'true then <<
+	 smt_model!* := model;
 	 smt_prin2t 'sat
-      else if tval eq 'false then
+      >> else if tval eq 'false then
 	 smt_prin2t 'unsat
       else
 	 smt_prin2t 'unknown
@@ -224,6 +247,16 @@ procedure smt_rl2smtSym(sym);
       tal := '((quotient . !/));
       w := atsoc(sym, tal);
       return if w then cdr w else sym
+   end;
+
+procedure smt_processGetUnsatCore();
+   begin scalar core;
+      core := smt_unsatcore!*;
+      if core eq 'unset then <<
+	 smt_error();
+	 return
+      >>;
+      smt_prin2t core
    end;
 
 procedure smt_processPrintAssertions();
@@ -315,13 +348,6 @@ procedure smt_error();
       prin2(-1);
       lr_mode();
       prin2 2
-   >>;
-
-procedure smt_processHelp();
-   <<
-      ioto_tprin2t "(exit)                 leave the SMT-LIB REPL and return to Reduce";
-      ioto_tprin2t "(set-logic <symbol>)   <symbol> must be QF_NRA";
-      ioto_tprin2t "(reduce-eval <form>)   evaluate <form> in the Standard Lisp underlying Reduce"
    >>;
 
 endmodule;

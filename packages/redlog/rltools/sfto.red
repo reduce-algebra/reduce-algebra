@@ -1209,6 +1209,33 @@ asserted procedure sfto_qsubq(x: SQ, al: Alist): SQ;
    % Substitute SQs into SQ to obtain SQ.
    quotsq(sfto_qsub(numr x, al), sfto_qsub(denr x, al));
 
+asserted procedure sfto_symbolify(x: SF): DottedPair;
+   sfto_symbolify1(x, 'i, 0, nil);
+
+asserted procedure sfto_symbolify1(x: SF, b: Id, c: Integer, subl: Alist): List3;
+   begin scalar l, r, res, sym, w;
+      if null x or x = 1 then
+	 return {x, c, subl};
+      if domainp x then <<
+	 res := 1;
+	 for each f in zfactor x do <<
+	    w := lto_cdrassoc(car f, subl);
+	    if w then <<
+	       sym := car w
+	    >> else <<
+	       c := c + 1;
+	       sym := intern mkid(b, c);
+	       push(sym . car f, subl)
+	    >>;
+	    res := multf(res, exptf(!*k2f !*a2k sym, cdr f))
+	 >>;
+	 return {res, c, subl}
+      >>;
+      {l, c, subl} := sfto_symbolify1(lc x, b, c, subl);
+      {r, c, subl} := sfto_symbolify1(red x, b, c, subl);
+      return {addf(multf(l, exptf(!*k2f mvar x, ldeg x)), r), c, subl}
+   end;
+   
 endmodule;  % [sfto]
 
 end;  % of file

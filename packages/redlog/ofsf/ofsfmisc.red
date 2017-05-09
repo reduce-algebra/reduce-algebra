@@ -793,6 +793,33 @@ procedure ofsf!-dima!-sol2formulas(ptt, sl0, yl);
       return sl
    end;
 
+asserted procedure ofsf_symbolify(f: Formula): List2;
+   begin scalar w;
+      w := ofsf_symbolify1(f, 0, nil);
+      return car w . reversip caddr w
+   end;
+
+asserted procedure ofsf_symbolify1(f: Formula, c: Integer, subl: Alist): List3;
+   begin scalar op, w, nargl; integer c;
+      op := rl_op f;
+      if rl_tvalp op then
+ 	 return {f, c, subl};
+      if rl_quap op then <<
+	 {w, c, subl} := ofsf_symbolify1(rl_mat f, c, subl);
+    	 return {rl_mkq(op, rl_var f, w), c, subl}
+      >>;
+      if rl_boolp op then <<
+	 nargl := for each arg in rl_argn f collect <<
+	    {w, c, subl} := ofsf_symbolify1(arg, c, subl);
+	    w
+	 >>;
+	 return {rl_mkn(op, nargl), c, subl}
+      >>;
+      % [f] is an atomic formula.
+      {w, c, subl} := sfto_symbolify1(ofsf_arg2l f, 'i, c, subl);
+      return {ofsf_0mk2(op, w), c, subl}
+   end;
+
 endmodule;  % [ofsfmisc]
 
 end;  % of file

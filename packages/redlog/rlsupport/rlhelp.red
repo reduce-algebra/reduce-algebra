@@ -37,22 +37,57 @@ rlhelp_leftMargin!* := 4;
 rlhelp_rightMargin!* := 1;
 rlhelp_colSep!* := 2;
 
-put('?, 'stat, 'rlis);
-flag('(?), 'go);
+% The identifier '?' is also used with the fide package (module expres). This
+% breaks autoloading for me currently, which is not vital. Fide hijacks also
+% other symbols including '#' (also used with the preprocessor) and '&'. In the
+% great unified system some decision would have to be made. I think there are
+% arguments for using '?' for a Maple-style help possible beyond Redlog instead
+% of a tensor operator in a very specialized context.
+put('?, 'stat, 'rl_helpstat);
 
-asserted procedure !?(l: List);
-   rl_help car l;
+flag('(!?), 'go);
 
-asserted procedure rl_help(x: Id);
-   begin scalar docal, pr, sl, xdtl, brk;
-      if null x then
-	 return rl_helpOverview();
-      if x eq 'services then
-	 return rl_helpOverviewServices();
-      if x eq 'types then
-	 return rl_helpOverviewTypes();
+flag('(rl_help), 'noform);
+
+asserted procedure rl_helpstat(): List;
+   begin scalar devp, query;
+      scan();
+      if cursym!* eq '!? then <<  % another one indicates extended help for developers
+	 devp := t;
+	 scan()
+      >>;
+      while cursym!* eq '!? do  % skip further ? from hyper-enthusiastic typers
+	 scan();
+      if flagp(cursym!*, 'delim) then  % ? or ?? w/o further argument
+      	 return {'rl_help, nil, devp};
+      query := cursym!*;
+      % Expecting delimiter now:
+      if not flagp(scan(),'delim) then
+	 rederr {"expecting delimiter but found", cursym!*};
+      return {'rl_help, mkquote query, devp}
+   end;
+
+asserted procedure rl_help(x: Id, devp: Boolean);
+   if null x then
+      rl_helpOverview devp
+   else if x eq 'services then
+      rl_helpOverviewServices devp
+   else if x eq 'blackboxes then
+      rl_helpOverviewBlackboxes devp
+   else if x eq 'types then
+      rl_helpOverviewTypes()
+   else <<
       if eqcar(x, 'quotient) and eqn(caddr x, rl_helpTypeArity cadr x) then
 	 x := cadr x;
+      rl_helpDocal(x, devp);
+      if rl_serviceP x then
+	 rl_helpService(x, devp)
+      else if rl_blackboxP x then
+	 rl_helpBlackbox(x, devp)
+   >>;
+
+asserted procedure rl_helpDocal(x: Id, devp: Boolean);
+   begin scalar pr, sl, brk, docal, xdtl;
       docal := get(x, 'docal);
       if not docal then
 	 return;
@@ -76,6 +111,22 @@ asserted procedure rl_help(x: Id);
       >>
    end;
 
+asserted procedure rl_helpService(x: Id, devp: Boolean);
+   ;
+
+asserted procedure rl_helpBlackbox(x: Id, devp: Boolean);
+   begin scalar l;
+      for each y in rl_services!* do
+	 for each z in rl_knownImplementations y do
+	    if x memq rl_registeredBlackboxes z then
+	       l := lto_insertq(lto_at2str z, l);
+      if null l then
+ 	 return;
+      terpri();
+      ioto_tprin2t "DYNAMICALLY KNOWN TO BE REGISTERED FOR";
+      rl_helpOverviewCSL l
+   end;
+
 asserted procedure rl_printParagraph(s: String);
    <<
       for each l in rl_stringParagraphWrapper s do prin2t l;
@@ -95,11 +146,28 @@ asserted procedure rl_printDescriptionList(al: AList, xdtl: List);
 asserted procedure rl_stringDescriptionListWrapper(al: AList, xdtl: List): List;
    lto_stringDescriptionList(al, rlhelp_leftMargin!*, rlhelp_colSep!*, linelength nil - rlhelp_rightMargin!*, xdtl);
 
-asserted procedure rl_helpOverview();
-   begin scalar bl, cl, kwl, types, keywords;
+asserted procedure rl_helpOverview(devp: Boolean);
+   begin scalar sl, w, asl, ssl, bl, cl, kwl, types, keywords;
       ioto_tprin2t "REDLOG SERVICES";
-      rl_helpOverviewCSL for each s in rl_services!* collect id2string s;
+      for each s in rl_services!* do <<
+	 w := get(s, 'rl_amservice);
+	 if w then
+ 	    push(lto_at2str w, asl)
+	 else
+	    push(lto_at2str s, ssl)
+      >>;
+      rl_helpOverviewCSL asl;
       terpri();
+      if devp and ssl then <<
+      	 ioto_tprin2t "REDLOG SM-ONLY SERVICES";
+      	 rl_helpOverviewCSL ssl;
+      	 terpri()
+      >>;
+      if devp then <<
+      	 ioto_tprin2t "REDLOG BLACKBOXES";
+      	 rl_helpOverviewCSL for each s in rl_blackboxes!* collect lto_at2str s;;
+      	 terpri()
+      >>;
       for each s in rl_typeStrings rl_services!* do <<
 	 {bl, cl, kwl} := rl_helpOverviewTypesDecompose s;
 	 for each x in bl do
@@ -122,10 +190,18 @@ asserted procedure rl_helpOverview();
       terpri();
       ioto_tprin2t "SEE ALSO";
       rl_printDescriptionList(
-	 '(("?services" . "more information on services")
-           ("?types" . "more information on types")
-           ("?switches" . "more information on switches")
-	   ("?X" . "for a specific service, type, or switch X")), nil)
+	 if devp then
+	    '(("??services" . "more information on services")
+              ("??blackboxes" . "more information on blackboxes")
+              ("??types" . "more information on types")
+              ("??switches" . "more information on switches")
+              ("??X" . "for a specific service, blackbox, type, or switch X"))
+	 else
+	    '(("?services" . "more information on services")
+              ("?types" . "more information on types")
+              ("?switches" . "more information on switches")
+              ("?X" . "for a specific service, type, or switch X")),
+ 	 nil)
    end;
 
 asserted procedure rl_helpOverviewCSL(l: List): List;
@@ -144,15 +220,43 @@ asserted procedure rl_stringLeq(s1: String, s2: String): Boolean;
 asserted procedure rl_stringGreaterP(s1: String, s2: String): Boolean;
    not rl_stringLeq(s1, s2);
 
-asserted procedure rl_helpOverviewServices();
-   begin scalar al;
-      al  := for each s in sort(rl_services!*, 'ordp) collect
-	 id2string s . cdr atsoc('description, get(s, 'docal));
+asserted procedure rl_helpOverviewServices(devp: Boolean);
+   begin scalar sl, w, al;
+      sl := sort(rl_services!*, 'ordp);
+      al := for each s in sl join <<
+	 w := get(s, 'rl_amservice);
+	 if w then
+	    {lto_at2str w . cdr atsoc('description, get(s, 'docal))}
+      >>;
       ioto_tprin2t "REDLOG SERVICES";
       rl_printDescriptionList(al, nil);
       terpri();
+      if devp then <<
+      	 al := for each s in sl join
+	    if not get(s, 'rl_amservice) then
+	       {lto_at2str s . cdr atsoc('description, get(s, 'docal))};
+	 if al then <<
+      	    ioto_tprin2t "REDLOG SM-ONLY SERVICES";
+      	    rl_printDescriptionList(al, nil);
+      	    terpri()
+	 >>
+      >>;
       ioto_tprin2t "SEE ALSO";
       rl_printDescriptionList('(("?X" . "for a specific service X")),
+ 	 for each pr in al collect car pr)
+   end;
+
+asserted procedure rl_helpOverviewBlackboxes(devp: Boolean);
+   begin scalar al;
+      if not devp then
+	 return;
+      al  := for each s in sort(rl_blackboxes!*, 'ordp) collect
+	 id2string s . cdr atsoc('description, get(s, 'docal));
+      ioto_tprin2t "REDLOG BLACKBOXES";
+      rl_printDescriptionList(al, nil);
+      terpri();
+      ioto_tprin2t "SEE ALSO";
+      rl_printDescriptionList('(("?X" . "for a specific blackbox X")),
  	 for each pr in al collect car pr)
    end;
 
@@ -219,8 +323,13 @@ asserted procedure rl_helpTypeArity(s: String): String;
    end;
 
 asserted procedure rl_typeStrings(services: List): List;
-   lto_list2set for each s in services join
-      copy(get(s, 'outtype) . get(s, 'intypes));
+   begin scalar w;
+      return lto_list2set for each s in services join <<
+      	 w := get(s, 'rl_amservice);
+	 if w then
+      	    copy(get(w, 'outtype) . get(w, 'intypes))
+      >>
+   end; 
 
 asserted procedure rl_typeIdentifiers(services: List): List;
    lto_list2set for each s in services join

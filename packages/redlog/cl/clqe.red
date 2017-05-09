@@ -310,6 +310,9 @@ inline procedure cl_mk1EQR(f,eql);
    % Make singleton extended qe result.
    {f . eql};
 
+rl_provideService rl_gqe = cl_gqe
+   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel, rl_betterp, rl_qemkans;
+
 asserted procedure cl_gqe(f: Formula, theo: Theory, xbvl: KernelL): TheoryFormulaPair;
    % Generic quantifier elimination. Returns a pair $\Theta . \phi$. $\Theta$ is
    % a THEORY extending [theo] by assumptions on free variables of [f] that are
@@ -325,6 +328,9 @@ asserted procedure cl_gqe(f: Formula, theo: Theory, xbvl: KernelL): TheoryFormul
       theo := rl_thsimpl cl_erTh er;
       return theo . rl_simpl(caar cl_erEQR er,theo,-1)
    end;
+
+rl_provideService rl_gqea = cl_gqea
+   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel, rl_betterp, rl_qemkans;
 
 asserted procedure cl_gqea(f: Formula, theo: Theory, xbvl: KernelL): EliminationResult;
    % Generic quantifier elimination with answer. Returns a pair $\Theta . \Phi$.
@@ -342,6 +348,9 @@ asserted procedure cl_gqea(f: Formula, theo: Theory, xbvl: KernelL): Elimination
 	 return er;
       return cl_mkER(rl_thsimpl cl_erTh er,cl_erEQR er)
    end;
+
+rl_provideService rl_lqe = cl_lqe
+   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel, rl_betterp, rl_qemkans;
 
 asserted procedure cl_lqe(f: Formula, theo: Theory, pt: Point): TheoryFormulaPair;
    % Local quantifier elimination. [pt] is the suggested value for the local
@@ -371,6 +380,9 @@ asserted procedure cl_lqe(f: Formula, theo: Theory, pt: Point): TheoryFormulaPai
       return rl_lthsimpl(theo) . rl_simpl(caar cl_erEQR er,theo,-1)
    end;
 
+rl_provideService rl_qe = cl_qe
+   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel, rl_betterp, rl_qemkans;
+
 asserted procedure cl_qe(f: Formula, theo: Theory): Formula;
    % Quantifier elimination. Returns a formula $\phi$ such that $[theo] \models
    % [f] \longleftrightarrow \phi$. $\phi$ is obtained from [f] by eliminating
@@ -383,6 +395,9 @@ asserted procedure cl_qe(f: Formula, theo: Theory): Formula;
 	 return er;
       return caar cl_erEQR er
    end;
+
+rl_provideService rl_qea = cl_qea
+   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel, rl_betterp, rl_qemkans;
 
 asserted procedure cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
    % Quantifier elimination with answer. Returns a list of pairs $(..., (c_i,
@@ -655,15 +670,15 @@ asserted procedure cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: B
 	 if car w then <<  % We have found a suitable variable.
 	    w := cdr w;
 	    if w then
-	       if ce_vl car w eq 'break then <<
+	       if ce_vl car w eq 'break then <<  % we have found true
 	       	  co := co_new();
 	       	  newj := {cl_co2J car w}
-	       >> else if cdr cvl then <<
+	       >> else if cdr cvl then <<  % there are variables left
 		  if !*rlverbose then oldcol := co_length co;
 	       	  co := co_save(co,w);
  		  if !*rlverbose then
 		     delc := delc + oldcol + length w - co_length(co)
-	       >> else
+	       >> else  % there is no variable left
    		  for each x in w do newj := lto_insert(cl_co2J x,newj)
 	 >> else <<
 	    % There is no eliminable variable. Invalidate this entry, and save

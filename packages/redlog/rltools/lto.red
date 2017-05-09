@@ -760,6 +760,46 @@ asserted procedure lto_vcEdgeGeqOne(v1: SF, v2: SF);
 asserted procedure lto_vcBetterp(a1: DottedPair, a2: DottedPair, z: SF): Boolean;
    addf(negf ofsf_arg2l ofsf_xopt!-ans!-gd a1, z) < addf(negf ofsf_arg2l ofsf_xopt!-ans!-gd a2, z);
 
+asserted procedure lto_setCover(l: List): List;
+   % [l] is a list of pairs [id . v], where [v] are lists of fixed length [n]
+   % containing 0 or 1, which correspond to characterictic functions of the set
+   % {1, ..., n}. Returns list of identifiers, which is a subset of the [id] in
+   % the input. The result is a minimum set cover of {1, ..., n}.
+   lto_setCover1 for each pr in l collect car pr . append(cdr pr, nil);
+
+asserted procedure lto_setCover1(l: List): List;
+   % WARNING: [l] will be destroyed.
+   begin scalar oc, f1, xf, lhs, l2, f2, obj, f3, zz, z, w, best;
+      oc := rl_set '(r);
+      f1 := rl_smkn('and, for each pr in l collect <<
+	 xf := !*k2f car pr;
+ 	 rl_mkn('or, {ofsf_0mk2('equal, xf), ofsf_0mk2('equal, addf(xf, negf 1))})
+      >>);
+      while cdr car l do <<
+	 lhs := nil;
+	 for each pr in l do <<
+	    if eqn(car cdr pr, 1) then
+	       lhs := addf(lhs, !*k2f car pr);
+	    cdr pr := cdr cdr pr
+	 >>;
+	 push(ofsf_0mk2('geq, addf(lhs, negf 1)), l2)
+      >>;
+      f2 := rl_smkn('and, l2);
+      for each pr in l do
+	 obj := addf(obj, !*k2f car pr);
+      zz := intern gensym();
+      z := !*k2f zz;
+      f3 := ofsf_0mk2('geq, addf(z, negf obj));
+      w := ofsf_xopt!-ansl!-ansl ofsf_xopt!-xopt
+ 	 rl_ex(rl_mkn('and, {f1, f2, f3}), {zz});
+      best := pop w;
+      w := for each pr in ofsf_xopt!-ans!-pt best join
+	 if eqn(cdr pr, 1) then
+ 	    {car pr};
+      rl_set oc;
+      return w
+   end;
+
 asserted procedure lto_lpvarl(u: Any): List;
    % [u] is Lisp prefix. Return the list of variables occurring in [u].
    if idp u then
@@ -781,6 +821,14 @@ asserted procedure lto_loremIpsum(): String;
    lto_sconcat(for each rpr on lto_loremIpsumAl() join
       {cdar rpr, if cdr rpr then " " else ""});
 
+asserted procedure lto_cdrassoc(entry: Any, al: Alist): ExtraBoolean;
+   if null al then
+      nil
+   else if cdar al = entry then
+      car al
+   else
+      lto_cdrassoc(entry, cdr al);
+   
 % begin lto procedures from ofsfcadproj.red
 
 asserted procedure lto_remove(fn: Any, l: List): List;
@@ -808,6 +856,7 @@ asserted procedure lto_rmpos(lst: List, posl: List): List;
 asserted procedure lto_drop(l: List, n: Integer): List;
    % Drop the first n elements of l.
    if l and n > 0 then lto_drop(cdr l, n-1) else l;
+
 
 % end lto procedures
 

@@ -2483,8 +2483,8 @@ $as_echo "$as_me: host=$host args=$ac_configure_args" >&6;}
 
 if test "x$with_psl" != "xno"
 then
-  if test "x$host" = "xi686-pc-cygwin"
-  then
+  case $host in
+  *windows | *cygwin)
 # building PSL on Windows - need to decide whether to build for 32 or 64bit
     if test "x$with_m32" = "xyes"
     then
@@ -2493,11 +2493,21 @@ then
     then
       build="x86_64-pc-windows"
     else
-      build="i686-pc-windows"
+      build="$host"
     fi
-  else
+    case $build in
+    *i686*)
+       build=i686-pc-windows
+       ;;
+    *)
+       build="x86_64-pc-windows"
+       ;;
+    esac
+    ;;
+  *)
     build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $host"`
-  fi
+    ;;
+  esac
 else
   build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $host $ac_configure_args"`
 fi

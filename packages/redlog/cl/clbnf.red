@@ -524,6 +524,10 @@ procedure cl_sacat(a1,a2,gor);
 % TODO: rl_simpl beschraenken oder eigenes.
 % TODO: Substituierende Simplifikation
 
+rl_provideService rl_quine = cl_quine using
+   rl_negateat, rl_qscsaat, rl_qssubat, rl_qsconsens, rl_qstrycons, rl_qssiadd,
+   rl_qsimpltestccl, rl_qssubsumepd, rl_qstautp, rl_qssusua, rl_qssimpl;
+
 procedure cl_quine(f);
    % Common logic Quine simplification. [f] is a a formula in a BNF. Returns a
    % formula in BNF.

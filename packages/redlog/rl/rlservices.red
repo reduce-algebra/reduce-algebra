@@ -2,7 +2,7 @@ module rlservices;
 
 revision('rlservices, "$Id$");
 
-copyright('rlservices, "(c) 2016 T. Sturm");
+copyright('rlservices, "(c) 2016-2017 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -227,7 +227,6 @@ rl_service {
    arg = {pos = 2, name = formula, type = Formula, doc = "input formula"},
    arg = {pos = 3, name = exclude, type = List(Variable), default = {}, doc = "variables not to make assumptions on"},
    returns = {type = Pair(List(Atom), Formula)},
-   blackbox = {name = getineq, argnum = 2},
    mode = both};
 
 rl_service {
@@ -244,7 +243,6 @@ rl_service {
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions on the parameters"},
    arg = {pos = 3, name = except, type = List(Variable), default = {}, doc = "parameters to exclude from assumptions"},
    returns = {type = Pair(List(Atom), Formula)},
-   blackbox = {name = negateat, argnum = 1},
    mode = both};
 
 rl_service {
@@ -254,7 +252,6 @@ rl_service {
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
    arg = {pos = 3, name = except, type = List(Variable), default = {}, doc = "parameters to exclude from assumptions"},
    returns = {type = Pair(List(Atom),List(Pair(Formula, List(Assignment(Any)))))},
-   blackbox = {name = negateat, argnum = 1},
    mode = both};
 
 rl_service {
@@ -308,7 +305,6 @@ rl_service {
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions on the parameters"},
    arg = {pos = 3, name = point, type = List(Assignment(Rational)), default = {}, doc = "point where generated theory will be consistent"},
    returns = {type = Pair(List(Atom), Formula)},
-   blackbox = {name = negateat, argnum = 1},
    mode = both};
 
 rl_service {
@@ -361,7 +357,6 @@ rl_service {
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions on the parameters"},
    arg = {pos = 3, name = except, type = List(Variable), default = {}, doc = "parameters to exclude from assumptions"},
    returns = {type = Pair(List(Atom), Formula)},
-   blackbox = {name = negateat, argnum = 1},
    mode = both};
 
 rl_service {
@@ -371,7 +366,6 @@ rl_service {
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
    arg = {pos = 3, name = except, type = List(Variable), default = {}, doc = "parameters to exclude from assumptions"},
    returns = {type = Pair(List(Atom),List(Pair(Formula, List(Assignment(Any)))))},
-   blackbox = {name = negateat, argnum = 1},
    mode = both};
 
 rl_service {
@@ -380,7 +374,6 @@ rl_service {
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
    returns = {type = List(Pair(Formula, List(Assignment(Any))))},
-   blackbox = {name = negateat, argnum = 1},
    mode = both};
 
 rl_service {
@@ -398,7 +391,6 @@ rl_service {
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
    returns = {type = Formula},
-   blackbox = {name = negateat, argnum = 1},
    mode = both};
 
 rl_service {
@@ -437,7 +429,6 @@ rl_service {
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
    returns = {type = Formula},
-   blackbox = {name = negateat, argnum = 1},
    mode = both};
 
 rl_service {
@@ -446,7 +437,6 @@ rl_service {
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
    returns = {type = List(Pair(Formula, List(Assignment(Any))))},
-   blackbox = {name = negateat, argnum = 1},
    mode = both};
 
 rl_service {
@@ -454,7 +444,6 @@ rl_service {
    doc = "regular quantifier elimination via multiple genric quantifier elimination",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    returns = {type = Formula},
-   blackbox = {name = negateat, argnum = 1},
    mode = both};
 
 rl_service {
@@ -499,17 +488,6 @@ rl_service {
    doc = "Boolean normal form simplification following Quine",
    arg = {pos = 1, name = formula, type = Formula, doc = "input formula in CNF or DNF"},
    returns = {type = Formula},
-   blackbox = {name = negateat, argnum = 1},
-   blackbox = {name = rl_qscsaat, argnum =1},
-   blackbox = {name = rl_qssubat, argnum =2},
-   blackbox = {name = rl_qsconsens, argnum =3},
-   blackbox = {name = rl_qstrycons, argnum =4},
-   blackbox = {name = rl_qsimpltestccl, argnum =3},
-   blackbox = {name = rl_qssubsumep, argnum =3},
-   blackbox = {name = rl_qstautp, argnum =1},
-   blackbox = {name = rl_qssusuat, argnum =3},
-   blackbox = {name = rl_qssiadd, argnum =4},
-   blackbox = {name = rl_qssimpl, argnum =3},
    mode = both};
 
 rl_service {
@@ -578,14 +556,6 @@ rl_service {
    xarg = {pos = 18, name = siso, type = Switch},
    xarg = {pos = 19, name = sism, type = Switch},
    returns = {type = Formula},
-   blackbox = {name = simplat1, argnum = 2},
-   blackbox = {name = smupdknowl, argnum = 4},
-   blackbox = {name = smrmknowl, argnum = 2},
-   blackbox = {name = smcpknowl, argnum = 1},
-   blackbox = {name = smmkatl, argnum = 4},
-   blackbox = {name = smsimpl!-impl, argnum = 5},
-   blackbox = {name = smsimpl!-equiv1, argnum = 5},
-   blackbox = {name = negateat, argnum = 1},
    mode = both};
 
 rl_service {
@@ -618,8 +588,13 @@ rl_service {
    arg = {pos = 2, name = fac, type = Flag, default = yes, doc = "factorize terms"},
    arg = {pos = 3, name = basename, type = Variable, default = v, doc = "basename of newly introduced variables "},
    returns = {type = Pair(Formula, List(Assignment(Term)))},
-   blackbox = {name = structat, argnum = 2},
-   blackbox = {name = ifstructat, argnum = 2},
+   mode = both};
+
+rl_service {
+   name = symbolify,
+   doc = "replace integer factors with symbolic names",
+   arg = {pos = 1, name = formula, type = Formula, doc = "input formula"},
+   returns = {type = Pair(Formula, List(Assignment(Integer)))},
    mode = both};
 
 rl_service {
@@ -729,8 +704,7 @@ rl_service {
 
 rl_service {
    name = identifyonoff,
-   doc = "fo
-      r rlidentify - should become obsolete at some point",
+   doc = "for rlidentify - should become obsolete at some point",
    argnum = 1,
    mode = sm
 };

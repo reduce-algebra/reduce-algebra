@@ -271,143 +271,143 @@ endmodule;  % [rlsched]
 
 module rlbboxes;  % Black box scheduler.
 
-%% rl_blackBox('rl_simplat1, 2);
+%% rl_mkbb('rl_simplat1, 2);
 %%
-%% rl_blackBox('rl_smupdknowl, 4);
+%% rl_mkbb('rl_smupdknowl, 4);
 
-%% rl_blackBox('rl_smrmknowl, 2);
+%% rl_mkbb('rl_smrmknowl, 2);
 %%
-%% rl_blackBox('rl_smcpknowl, 1);
+%% rl_mkbb('rl_smcpknowl, 1);
 %%
-%% rl_blackBox('rl_smmkatl, 4);
+%% rl_mkbb('rl_smmkatl, 4);
 %%
-%% rl_blackBox('rl_smsimpl!-impl, 5);
+%% rl_mkbb('rl_smsimpl!-impl, 5);
 %%
-%% rl_blackBox('rl_smsimpl!-equiv1, 5);
+%% rl_mkbb('rl_smsimpl!-equiv1, 5);
 
-%% rl_blackBox('rl_negateat, 1);
+%% rl_mkbb('rl_negateat, 1);
 
-rl_blackBox('rl_varlat, 1);
+%% rl_mkbb('rl_varlat, 1);
 
-rl_blackBox('rl_varsubstat, 3);
+%% rl_mkbb('rl_varsubstat, 3);
 
-rl_blackBox('rl_translat, 5);
+%% rl_mkbb('rl_translat, 5);
 
-rl_blackBox('rl_elimset, 2);
+%% rl_mkbb('rl_elimset, 2);
 
-rl_blackBox('rl_trygauss, 5);
+%% rl_mkbb('rl_trygauss, 5);
+%% 
+%% rl_mkbb('rl_varsel, 3);
+%% 
+%% rl_mkbb('rl_betterp, 2);
+%% 
+%% rl_mkbb('rl_qemkans, 2);
 
-rl_blackBox('rl_varsel, 3);
+%% rl_mkbb('rl_ordatp, 2);
 
-rl_blackBox('rl_betterp, 2);
+rl_mkbb('rl_subsumption, 3);
 
-rl_blackBox('rl_qemkans, 2);
+rl_mkbb('rl_transform, 7);
 
-rl_blackBox('rl_ordatp, 2);
+rl_mkbb('rl_sacat, 3);
 
-rl_blackBox('rl_subsumption, 3);
+rl_mkbb('rl_sacatlp, 2);
 
-rl_blackBox('rl_transform, 7);
+rl_mkbb('rl_bnfsimpl, 2);
 
-rl_blackBox('rl_sacat, 3);
+rl_mkbb('rl_fctrat, 1);
 
-rl_blackBox('rl_sacatlp, 2);
+rl_mkbb('rl_tordp, 2);
 
-rl_blackBox('rl_bnfsimpl, 2);
+rl_mkbb('rl_a2cdl, 1);
 
-rl_blackBox('rl_fctrat, 1);
+rl_mkbb('rl_t2cdl, 1);
 
-rl_blackBox('rl_tordp, 2);
+rl_mkbb('rl_subat, 2);
 
-rl_blackBox('rl_a2cdl, 1);
+rl_mkbb('rl_subalchk, 1);
 
-rl_blackBox('rl_t2cdl, 1);
+rl_mkbb('rl_eqnrhskernels, 1);
 
-rl_blackBox('rl_subat, 2);
+%% rl_mkbb('rl_getineq, 2);
 
-rl_blackBox('rl_subalchk, 1);
+rl_mkbb('rl_qefsolset, 5);
 
-rl_blackBox('rl_eqnrhskernels, 1);
+rl_mkbb('rl_bettergaussp, 2);
 
-%% rl_blackBox('rl_getineq, 2);
+rl_mkbb('rl_bestgaussp, 1);
 
-rl_blackBox('rl_qefsolset, 5);
+rl_mkbb('rl_esetunion, 2);
 
-rl_blackBox('rl_bettergaussp, 2);
-
-rl_blackBox('rl_bestgaussp, 1);
-
-rl_blackBox('rl_esetunion, 2);
-
-%% rl_blackBox('rl_structat, 2);
+%% rl_mkbb('rl_structat, 2);
 %%
-%% rl_blackBox('rl_ifstructat, 2);
+%% rl_mkbb('rl_ifstructat, 2);
 
-rl_blackBox('rl_termmlat, 1);
+rl_mkbb('rl_termmlat, 1);
 
-rl_blackBox('rl_multsurep, 2);
+rl_mkbb('rl_multsurep, 2);
 
-rl_blackBox('rl_specelim, 5);
+rl_mkbb('rl_specelim, 5);
 
-rl_blackBox('rl_susipost, 2);
+rl_mkbb('rl_susipost, 2);
 
-rl_blackBox('rl_susitf, 2);
+rl_mkbb('rl_susitf, 2);
 
-rl_blackBox('rl_susibin, 2);
+rl_mkbb('rl_susibin, 2);
 
-rl_blackBox('rl_fbqe, 2);
+rl_mkbb('rl_fbqe, 2);
 
-%% rl_blackBox('rl_qscsaat, 1);
+%% rl_mkbb('rl_qscsaat, 1);
 %%
-%% rl_blackBox('rl_qssubat, 2);
+%% rl_mkbb('rl_qssubat, 2);
 %%
-%% rl_blackBox('rl_qsconsens, 3);
+%% rl_mkbb('rl_qsconsens, 3);
 %%
-%% rl_blackBox('rl_qstrycons, 4);
+%% rl_mkbb('rl_qstrycons, 4);
 %%
-%% rl_blackBox('rl_qsimpltestccl, 3);
+%% rl_mkbb('rl_qsimpltestccl, 3);
 %%
-%% rl_blackBox('rl_qssubsumep, 3);
+%% rl_mkbb('rl_qssubsumep, 3);
 %%
-%% rl_blackBox('rl_qstautp, 1);
+%% rl_mkbb('rl_qstautp, 1);
 %%
-%% rl_blackBox('rl_qssusuat, 3);
+%% rl_mkbb('rl_qssusuat, 3);
 %%
-%% rl_blackBox('rl_qssiadd, 4);
+%% rl_mkbb('rl_qssiadd, 4);
 %%
-%% rl_blackBox('rl_qssimpl, 3);
+%% rl_mkbb('rl_qssimpl, 3);
 
-rl_blackBox('rl_b2terml, 2);
+rl_mkbb('rl_b2terml, 2);
 
-rl_blackBox('rl_simplb, 2);
+rl_mkbb('rl_simplb, 2);
 
-rl_blackBox('rl_b2atl, 2);
+rl_mkbb('rl_b2atl, 2);
 
-rl_blackBox('rl_bsatp, 2);
+rl_mkbb('rl_bsatp, 2);
 
-rl_blackBox('rl_prepat, 1);
+rl_mkbb('rl_prepat, 1);
 
-rl_blackBox('rl_simpat, 1);
+rl_mkbb('rl_simpat, 1);
 
-rl_blackBox('rl_rxffn, 1);
+rl_mkbb('rl_rxffn, 1);
 
-rl_blackBox('rl_mkequation, 2);
+rl_mkbb('rl_mkequation, 2);
 
-rl_blackBox('rl_dfgPrintV, 1);
+rl_mkbb('rl_dfgPrintV, 1);
 
-rl_blackBox('rl_dfgPrintAt, 1);
+rl_mkbb('rl_dfgPrintAt, 1);
 
-rl_blackBox('rl_smt2PrintLogic, 0);
+rl_mkbb('rl_smt2PrintLogic, 0);
 
-rl_blackBox('rl_smt2PrintAt, 1);
+rl_mkbb('rl_smt2PrintAt, 1);
 
-rl_blackBox('rl_smt2ReadAt, 1);
+rl_mkbb('rl_smt2ReadAt, 1);
 
-rl_blackBox('rl_vsubalchk, 1);
+rl_mkbb('rl_vsubalchk, 1);
 
-rl_blackBox('rl_vsubat, 3);
+rl_mkbb('rl_vsubat, 3);
 
-rl_blackBox('rl_signat, 1);
+rl_mkbb('rl_signat, 1);
 
 endmodule;
 

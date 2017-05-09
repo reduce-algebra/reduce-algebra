@@ -32,7 +32,11 @@ copyright('clsimpl, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 %DS
 % <theory> ::= (<atomic_formula>,...)
 
-procedure cl_simpl(f,atl,n);
+rl_provideService rl_simpl = cl_simpl using
+   rl_negateat, rl_simplat1, rl_smupdknowl, rl_smrmknowl, rl_smcpknowl,
+   rl_smmkatl, rl_smsimpl!-impl, rl_smsimpl!-equiv1, rl_ordatp;
+
+asserted procedure cl_simpl(f: Formula, atl: List, n: Integer): Formula;
    % Common logic simplify. [f] is a formula; [atl] is a list of
    % atomic formulas, which are considered to describe a theory; [n]
    % is an integer. Depends on switches [!*rlsism], [!*rlsichk],

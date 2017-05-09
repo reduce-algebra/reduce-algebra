@@ -162,6 +162,8 @@ asserted procedure cl_itab2(f: Formula): Formula;
 	 f
    end;
 
+rl_provideService rl_gentheo = cl_gentheo using rl_getineq;
+
 asserted procedure cl_gentheo(theo: List, f: Formula, bvl: List);
    % Common logic generate theory. [theo] is THEORY; [f] is a
    % quantifier-free formula; [bvl] is a list of variables. Returns a

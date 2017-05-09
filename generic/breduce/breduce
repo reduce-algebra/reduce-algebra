@@ -241,7 +241,7 @@ done
 
 REDUCE=${REDUCE:-"reduce"}
 
-seriesprintname=$(echo ${seriesprintname} | sed 's/\([^a-z]\)/!\1/g')
+seriesprintname=$(echo ${seriesprintname} | sed 's/\([^a-z]\)/\1/g')
 
 killtime=${killtime:-"0"}
 

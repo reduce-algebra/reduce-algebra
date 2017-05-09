@@ -696,6 +696,8 @@ defautoload(revision, rlsupport, expr, 2);
 
 defautoload(copyright, rlsupport, expr, 2);
 
+defautoload(rl_provideService, rlsupport, expr, 2);
+
 put('rl_type, 'stat, 'rl_typeStat);
 defautoload(rl_typeStat, rlsupport, expr, 0);
 
@@ -707,18 +709,9 @@ defautoload(rl_formBlackBox, rlsupport, expr, 3);
 
 defautoload(rl_servicewrapper, rlsupport, expr, 6);
 
-% The following is for the Redlog online help. TS would like to have those
-% autoloads, but they appear to break compilation at least in PSL. There is now
-% a [load!-package 'rlsupport;] in redlog/rl/redlog.red, which otherwise could
-% be removed.
-%
-%% put('?, 'stat, 'rlis);
-%% flag('(?), 'go);
-%% defautoload(!?, rlsupport, expr, 1);
+defautoload(rl_exception, rlsupport, expr, 1);
 
-defautoload(rl_exception, rlsupport, expr, 1);  % temporary
-
-defautoload(rl_exceptionp, rlsupport, expr, 1);  % temporary
+defautoload(rl_exceptionp, rlsupport, expr, 1);
 
 defautoload(rl_exc, rlsupport, expr, 1);
 
