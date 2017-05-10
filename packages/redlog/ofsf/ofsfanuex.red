@@ -516,16 +516,24 @@ asserted procedure aex_bvarl(ae: Aex): List;
    ctx_idl aex_ctx ae;
 
 asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
-   begin scalar ctx, fvarl, r, nctx, nx, rp;
+   % Bind variable [x] to [a]. NOTE: [x] does not have to be the
+   % smallest variable w.r.t. the current kernel order.
+   begin scalar ctx, fvarl, r, oo, res, nctx, nx, rp;
       ctx := aex_ctx ae;
       if ctx_get(ctx, x) then
 	 return ae;
       fvarl := aex_fvarl ae;
       if not (x memq fvarl) then
 	 return ae;
-      r := anu_ratp a;  % Test whether [a] is rational. If yes, use aex_subrp.
-      if r then
-	 return aex_subrp(ae, x, r);
+      r := anu_ratp a;
+      if r then <<  % [a] is rational and equals [r]
+	 if aex_mvartest(ae, x) then
+      	    return aex_subrat(ae, x, r);
+	 oo := setkorder {x};
+	 res := aex_subrat(aex_reorder ae, x, r);
+	 setkorder oo;
+      	 return res
+      >>;
       if x eq lto_maxkl fvarl then <<  % [x] is the biggest free variable in [ae]
 	 nctx := ctx_add(aex_ctx ae, x . anu_rename(a, x));
 	 return aex_mk(aex_ex ae, nctx)
@@ -539,6 +547,12 @@ asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
 asserted procedure aex_unbind(ae: Aex, x: Kernel): Aex;
    % Delete assignment to [x].
    aex_mk(aex_ex ae, ctx_remove(aex_ctx ae, x));
+
+asserted procedure aex_reorder(ae: Aex): Aex;
+   begin scalar rp;
+      rp := aex_ex ae;
+      return aex_mk(reorder numr rp ./ denr rp, ctx_fromial ctx_ial aex_ctx ae)
+   end;
 
 asserted procedure aex_print(ae: Aex): Any;
    <<
