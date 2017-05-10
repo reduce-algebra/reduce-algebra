@@ -29,6 +29,8 @@ copyright('ofsfvsblock, "(c) 2015-2017 M. Kosta, T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
+% TODO: Move switches and fluids to a central file.
+
 fluid '(rlvarsellvl!*);
 rlvarsellvl!* := 3;
 
@@ -143,7 +145,7 @@ asserted procedure vsdb_new(): VSdb;
       putv(db, 0, 'vsdb);
       % The following fields are constant, i.e., assigned exactly once
       % after the creation of VSdb:
-      putv(db, 1, 'undefined);        % [vl]: variables to be eliminated
+      putv(db, 1, 'undefined);        % [vl]: existentially quantified variables to be eliminated
       putv(db, 2, 'undefined);        % [f]: matrix formula of the current block
       putv(db, 3, 'undefined);        % [theo]: global background theory
       putv(db, 4, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
@@ -262,29 +264,28 @@ asserted procedure vsdb_cdelete(db: VSdb, nd: VSnd);
       vsdb_putfc(db, vsco_cdelete(vsdb_fc db, nd))
    >>;
 
-%%% "real" procedures %%%
+%%% procedures doing "real work" %%%
 
 asserted procedure vs_block(f: QfFormula, vl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
-   % This is the usual entry point.
+   % This is the usual entry point of module [ofsfvsblock].
    % TODO: Update this old procedure description.
    % Quantifier elimination for one block subroutine. The result
    % contains the list of variables for which elimination failed, the
    % (possibly partial) possibly negated elimination result as a
    % JunctionL, and the new theory.
-   begin scalar db, rf, rvl;
+   begin scalar db, rf, rvl, ansal;
       db := vsdb_mk(vl, f, theo, bvl, ans);
       if !*ofsfvsblockbtr then
 	 vs_blockmainloop!-btr db
       else
       	 vs_blockmainloop db;
-      % ioto_prin2t nil;
-      % vsdb_print db;
       rf . rvl := vsdb_collectResult db;
-      if !*ofsfvsqetree2gml then <<
+      if !*ofsfvsqetree2gml then
       	 vsdb_2gml(db, rlqetreegmlfile!*);
-	 % TODO: RELOCATE THIS TEMPORARY ENTRY POINT!!!!
-	 vsdb_putans(db, t);
-	 vsdb_ans!-compute db
+      if vsdb_ans db then <<
+      	 ansal := vsdb_computeAns db;
+      	 for each pr in ansal do
+      	    ioto_prin2t {car pr, " = ", anu_evalf cdr pr}
       >>;
       return {rvl, {rf . nil}, theo}
    end;
@@ -669,7 +670,7 @@ asserted procedure vs_shadow(x: Kernel): Kernel;
 
 % TODO: Move the following procedure to cl.
 asserted procedure vs_dgcd(f: QfFormula, x: Kernel): Integer;
-   % Degree gcd. Returns the gcd of the exponents of [x] in [f]. If
+   % Degree GCD. Returns the GCD of the exponents of [x] in [f]. If
    % [x] does not occur in [f], then [0] is returned.
    begin scalar atl, at; integer g;
       atl := cl_atl1 f;
@@ -677,23 +678,6 @@ asserted procedure vs_dgcd(f: QfFormula, x: Kernel): Integer;
 	 at := pop atl;
 	 g := gcdn(g, sfto_dgcdf(ofsf_arg2l at, x))
       >>;
-      return g
-   end;
-
-% TODO: Move the following procedure to sfto.
-asserted procedure sfto_dgcdf(f: SF, x: Kernel): Integer;
-   % Degree gcd. Returns the gcd of the exponents of [x] in [f]. If
-   % [x] does not occur in [f], then [0] is returned.
-   begin scalar oo; integer g;
-      if domainp f then
-	 return 0;
-      oo := setkorder {x};
-      f := reorder f;
-      while sfto_mvartest(f, x) and not eqn(g, 1) do <<
-	 g := gcdn(g, ldeg f);
-	 f := red f
-      >>;
-      setkorder oo;
       return g
    end;
 
@@ -798,7 +782,7 @@ asserted procedure vsdb_2gmln!-printe(nd: VSnd, ss: Integer, tt: Integer);
       ioto_prin2t "]"
    end;
 
-% functions mainly for debugging purposes
+%%% functions mainly for printing and debugging purposes
 
 asserted procedure vsdb_prints(db: VSdb);
    % VSdb print summary.

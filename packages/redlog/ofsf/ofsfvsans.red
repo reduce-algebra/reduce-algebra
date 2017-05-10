@@ -1,6 +1,6 @@
 module ofsfvsans;
 
-revision('ofsfvsans, "$Id");
+revision('ofsfvsans, "$Id$");
 
 copyright('ofsfvsans, "(c) 2017 M. Kosta, T. Sturm");
 
@@ -29,35 +29,33 @@ copyright('ofsfvsans, "(c) 2017 M. Kosta, T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-% TODO: Write comments!!!
-
-asserted procedure vsdb_ans!-compute(db: VSdb): AList;
-   % Compute answers to existential sentences. Entry point, which
-   % assumes that there is exactly one success node in [db].
-   begin scalar nd, resal;
-      if !*rlverbose then <<
-	 ioto_prin2t "++++ Computing answers";
-      	 % vsdb_prints db;
-      	 % vsdb_print db
-      >>;
-      assert(eqn(vsco_length vsdb_sc db, 1));
+asserted procedure vsdb_computeAns(db: VSdb): AList;
+   % Compute answers to existential sentences: entry point.
+   begin scalar nd;
+      if not eqn(vsco_length vsdb_sc db, 1) then  % there are at least two success nodes
+	 return nil;
       nd := vsdb_scget db;
-      resal := vsdb_ans!-main(db, nd, nil);
-      for each pr in resal do <<
-      	 ioto_prin2t {car pr, " = ", anu_evalf cdr pr}
- 	 % anu_print cdr pr;
-	 % terpri()
-      >>;
-      return resal
+      if vsnd_f nd neq 'true then  % result is other than [true]
+	 return nil;
+      if !*rlverbose then
+	 ioto_prin2t "++++ Computing answers";
+      return vsdb_ans!-main(db, nd, nil)
    end;
 
 asserted procedure vsdb_ans!-main(db: VSdb, nd: VSnd, ctx: AList): AList;
-   % Core of the answer computing procedure.
+   % Core of the answers computing procedure. [nd] is a node in the
+   % tree of nodes contained in [db]; [ctx] is the current context,
+   % i.e., list of pairs (Kernel . Anu) containing assignments to
+   % variables in [vsnd_vs nd] except of [vsvs_v vsnd_vs nd]. Starting
+   % in node [nd] we compute the answers w.r.t. the current context
+   % [ctx].
    begin scalar vs, v, anu;
       vs := vsnd_vs nd;
       if null vs then  % [nd] is the root of the QE tree
 	 return ctx;
       v := vsvs_v vs;
+      % Next we distinguish how [nd] was obtained from its parent
+      % node:
       if vsvs_arp vs then  % arbitrary
 	 anu := vsnd_ans!-arb(nd, ctx);
       if vsvs_dgp vs then  % degree shift
@@ -68,7 +66,8 @@ asserted procedure vsdb_ans!-main(db: VSdb, nd: VSnd, ctx: AList): AList;
    end;
 
 asserted procedure vsnd_ans!-arb(nd: VSnd, ctx: AList): Anu;
-   % arbitrary
+   % Compute answer for [nd], assuming that [nd] was obtained by
+   % "arbitrary" VS from its parent.
    begin scalar v;
       assert(vsvs_arp vsnd_vs nd);
       v := vsvs_v vsnd_vs nd;
@@ -76,7 +75,8 @@ asserted procedure vsnd_ans!-arb(nd: VSnd, ctx: AList): Anu;
    end;
 
 asserted procedure vsnd_ans!-dgs(nd: VSnd, ctx: AList): Anu;
-   % degree shift
+   % Compute answer for [nd], assuming that [nd] was obtained by
+   % "degree shift" VS from its parent.
    begin scalar v, sv, svanu, aex;
       integer g;
       assert(vsvs_dgp vsnd_vs nd);
@@ -93,7 +93,8 @@ asserted procedure vsnd_ans!-dgs(nd: VSnd, ctx: AList): Anu;
    end;
 
 asserted procedure vsnd_ans!-tp(nd: VSnd, ctx: AList): Anu;
-   % test point
+   % Compute answer for [nd], assuming that [nd] was obtained by "test
+   % point" VS from its parent.
    begin scalar vs, v, tp;
       vs := vsnd_vs nd;
       assert(vsvs_tsp vs);
@@ -102,13 +103,14 @@ asserted procedure vsnd_ans!-tp(nd: VSnd, ctx: AList): Anu;
       if vstp_np tp memq '(minf pinf) then  % + - infinity
 	 return vsnd_ans!-infinity(nd, ctx);
       if vstp_np tp memq '(meps peps) then  % root + - epsilon
-	 return vsnd_ans!-tp!-epsilon(nd, ctx);
+	 return vsnd_ans!-epsilon(nd, ctx);
       assert(null vstp_np tp);
-      return vsnd_ans!-tp!-root(nd, ctx)
+      return vsnd_ans!-root(nd, ctx)  % root
    end;
 
 asserted procedure vsnd_ans!-infinity(nd: VSnd, ctx: AList): Anu;
-   % + - infinity
+   % Compute answer for [nd], assuming that [nd] was obtained by
+   % "+-infinity" VS from its parent.
    begin scalar v, f, inf, tval;
       integer vval;
       v := vsvs_v vsnd_vs nd;
@@ -127,12 +129,13 @@ asserted procedure vsnd_ans!-infinity(nd: VSnd, ctx: AList): Anu;
       return anu_fromrat(v, vval ./ 1)
    end;
 
-asserted procedure vsnd_ans!-tp!-epsilon(nd: VSnd, ctx: AList): Anu;
-   % + - epsilon
+asserted procedure vsnd_ans!-epsilon(nd: VSnd, ctx: AList): Anu;
+   % Compute answer for [nd], assuming that [nd] was obtained by
+   % "root+-epsilon" VS from its parent.
    begin scalar v, f, root, sc, eps, vval, tval;
       v := vsvs_v vsnd_vs nd;
       f := vsnd_f vsnd_parent nd;
-      root := vsnd_ans!-tp!-root(nd, ctx);
+      root := vsnd_ans!-root(nd, ctx);
       sc := aex_stdsturmchain(anu_dp root, v);
       eps := vstp_np vsts_tp vsnd_vs nd;
       repeat <<
@@ -147,7 +150,9 @@ asserted procedure vsnd_ans!-tp!-epsilon(nd: VSnd, ctx: AList): Anu;
       return anu_fromrat(v, vval)
    end;
 
-asserted procedure vsnd_ans!-tp!-root(nd: VSnd, ctx: AList): Anu;
+asserted procedure vsnd_ans!-root(nd: VSnd, ctx: AList): Anu;
+   % Compute answer for [nd], assuming that [nd] was obtained by
+   % "root" VS from its parent.
    begin scalar v, tp, pr, aex;
       integer rtcode, rindex;
       assert(vsvs_tsp vsnd_vs nd);
@@ -166,6 +171,7 @@ asserted procedure vsnd_ans!-tp!-root(nd: VSnd, ctx: AList): Anu;
    end;
 
 asserted procedure vsnd_evalqff(f: QfFormula, ctx: AList): Id;
+   % a wrapper for [ofsf_evalqff]
    begin scalar sp, varl;
       sp := for each pr in ctx collect cdr pr;
       varl := for each pr in ctx collect car pr;

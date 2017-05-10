@@ -417,7 +417,7 @@ asserted procedure vsdc_add2ttheo(dc: VSdc, fl: QfFormulaL, neg: Boolean);
       not (vsdc_v dc memq cl_fvarl f) then
 	 vsdc_ttheoinsert(dc, if neg then rl_negateat f else f);
 
-%%% "real" procedures %%%
+%%% procedures doing "real work" %%%
 
 asserted procedure vsde_compute(de: VSde);
    % This is the usual entry point. Compute an elimination set.

@@ -342,9 +342,25 @@ asserted procedure sfto_pdec!$(argl: List): AmList;
    {'list,prepf car w,prepf cdr w}
       where w=sfto_pdecf numr simp car argl;
 
+asserted procedure sfto_dgcdf(f: SF, x: Kernel): Integer;
+   % Degree GCD. Returns the GCD of the exponents of [x] in [f]. If
+   % [x] does not occur in [f], then [0] is returned.
+   begin scalar oo; integer g;
+      if domainp f then
+	 return 0;
+      oo := setkorder {x};
+      f := reorder f;
+      while sfto_mvartest(f, x) and not eqn(g, 1) do <<
+	 g := gcdn(g, ldeg f);
+	 f := red f
+      >>;
+      setkorder oo;
+      return g
+   end;
+
 asserted procedure sfto_decdegf(u: SF, k: Kernel, n: Integer): SF;
-   % Decrement degree standard form. Replace each occurence of $[k]^d$ by
-   % $k^(d/n)$.
+   % Decrement degree standard form. Replace each occurence of $k^d$
+   % in [u] by $k^(d/n)$.
    begin scalar sal,hit,newkk;
       if !*rlbrkcxk then <<
 	 for each kk in kernels u do

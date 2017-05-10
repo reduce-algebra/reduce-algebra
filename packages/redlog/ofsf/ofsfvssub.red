@@ -142,7 +142,7 @@ asserted procedure vsds_mkfrom(ds: VSds): VSds;
       return nds
    end;
 
-%%% "real" procedures %%%
+%%% procedures doing "real work" %%%
 
 asserted procedure qff_applyvs(vs: VSvs, f: QfFormula, bvl: KernelL, theo: Theory): QfFormulaL;
    % This is the usual entry point.
