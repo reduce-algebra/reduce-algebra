@@ -54,6 +54,8 @@ asserted procedure vsdb_ans!-main(db: VSdb, nd: VSnd, ctx: AList): AList;
       if null vs then  % [nd] is the root of the QE tree
 	 return ctx;
       v := vsvs_v vs;
+      if !*rlverbose then
+	 ioto_prin2t {"++++ Computing answer for ", v};
       % Next we distinguish how [nd] was obtained from its parent
       % node:
       if vsvs_arp vs then  % arbitrary
@@ -132,19 +134,29 @@ asserted procedure vsnd_ans!-infinity(nd: VSnd, ctx: AList): Anu;
 asserted procedure vsnd_ans!-epsilon(nd: VSnd, ctx: AList): Anu;
    % Compute answer for [nd], assuming that [nd] was obtained by
    % "root+-epsilon" VS from its parent.
-   begin scalar v, f, root, sc, eps, vval, tval;
+   begin scalar v, f, root, sc, eps, stp, lb, rb, vval, tval;
       v := vsvs_v vsnd_vs nd;
       f := vsnd_f vsnd_parent nd;
       root := vsnd_ans!-root(nd, ctx);
       sc := aex_stdsturmchain(anu_dp root, v);
       eps := vstp_np vsts_tp vsnd_vs nd;
+      stp := rat_1();
       repeat <<
 	 anu_refineip(root, sc);
-	 vval :=
-	    if eps eq 'meps then
-	       iv_lb anu_iv root
+	 lb := iv_lb anu_iv root;
+	 rb := iv_rb anu_iv root;
+	 if rat_eq(lb, rb) then <<  % [root] is a rational and we have hit it
+	    vval := if eps eq 'meps then
+	       rat_minus(lb, stp)
 	    else
-	       iv_rb anu_iv root;
+	       rat_add(lb, stp);
+	    stp := rat_quot(stp, rat_fromnum 2)
+	 >> else <<  % we take either the right or left bound of an isolating interval
+	    vval := if eps eq 'meps then
+	       lb
+	    else
+	       rb
+	 >>;
 	 tval := vsnd_evalqff(f, (v . anu_fromrat(v, vval)) . ctx)
       >> until tval eq 'true;
       return anu_fromrat(v, vval)
