@@ -64,6 +64,7 @@ asserted procedure vsdb_ans!-main(db: VSdb, nd: VSnd, ctx: AList): AList;
 	 anu := vsnd_ans!-dgs(nd, ctx);
       if vsvs_tsp vs then  % test point
 	 anu := vsnd_ans!-tp(nd, ctx);
+      % anu_print anu;
       return vsdb_ans!-main(db, vsnd_parent nd, (v . anu) . ctx)
    end;
 
@@ -79,7 +80,7 @@ asserted procedure vsnd_ans!-arb(nd: VSnd, ctx: AList): Anu;
 asserted procedure vsnd_ans!-dgs(nd: VSnd, ctx: AList): Anu;
    % Compute answer for [nd], assuming that [nd] was obtained by
    % "degree shift" VS from its parent.
-   begin scalar v, sv, svanu, aex;
+   begin scalar v, sv, svanu, aex, bnd;
       integer g;
       assert(vsvs_dgp vsnd_vs nd);
       v := vsvs_v vsnd_vs nd;
@@ -89,9 +90,10 @@ asserted procedure vsnd_ans!-dgs(nd: VSnd, ctx: AList): Anu;
       svanu := cdr atsoc(sv, ctx);
       aex := aex_fromsf addf(exptf(!*k2f v, g), negf !*k2f sv);  % v^g - sv
       aex := aex_bind(aex, sv, svanu);
+      bnd := rat_max(rat_abs iv_lb anu_iv svanu, rat_abs iv_rb anu_iv svanu);
       if evenp g then
-	 return anu_mk(aex, iv_mk(rat_0(), iv_rb anu_iv svanu));
-      return anu_mk(aex, anu_iv svanu)
+	 return anu_mk(aex, iv_mk(rat_0(), bnd));
+      return anu_mk(aex, iv_mk(rat_neg bnd, bnd))
    end;
 
 asserted procedure vsnd_ans!-tp(nd: VSnd, ctx: AList): Anu;
