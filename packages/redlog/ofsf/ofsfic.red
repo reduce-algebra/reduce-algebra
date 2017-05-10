@@ -59,6 +59,8 @@ fluid '(!*rlqeinfcore!-owal);
 fluid '(!*rlqeinfcore!-defal);
 fluid '(smt_unsatcore!*);
 
+fluid '(!*rlqeicfallback);  %TS
+
 % existing Redlog procedures that have to be overwritten for this
 % module to work:
 !*rlqeinfcore!-owal :=
@@ -407,7 +409,7 @@ asserted procedure ofsfic!*cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
    % of the parameters, [f] holds, and $A_i$ describes a satisfying sample
    % point. Accesses the switch [rlqepnf]; if [rlqepnf] is on, then [f] has to
    % be prenex.
-   begin scalar er,!*rlsipw,!*rlsipo,!*rlqeans,ic;
+   begin scalar er,!*rlsipw,!*rlsipo,!*rlqeans,ic, !*rlqeicfallback;
       !*rlsipw := !*rlsipo := !*rlqeans := t;
       % Initialize an infeasible core data structure.
       if !*rlqeinfcore then << %%%%%%%MAX
@@ -428,8 +430,12 @@ asserted procedure ofsfic!*cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
       % Infeasible core computation
       if !*rlqeinfcore then %%%%%%%MAX
 	 if er = {nil} or caadr er eq 'false then <<
-	    ic_computeinfcore rlqeicdata!*;
-	    ic := reverse ic_infcore rlqeicdata!*;
+	    if !*rlqeicfallback then <<
+	       ic := for i := 0:length ofsfic_ftol f - 1 collect i
+	    >> else <<
+	       ic_computeinfcore rlqeicdata!*;
+	       ic := reverse ic_infcore rlqeicdata!*
+	    >>;
 	    if !*rlverbose then <<
 	       ioto_tprin2t {"infcore: ", ic};
 	       ioto_tprin2t {"infcore length: ", length ic}
@@ -534,6 +540,7 @@ asserted procedure ofsfic!*cl_qe1(f: Formula, theo: Theory, xbvl: KernelL): Elim
 	 if !*rlverbose then
 	    ioto_prin2t cl_atnum f;
 	 if !*rlqefb and rvl then <<
+	    rederr "Something wrong! Tell Thomas!";
 	    if not rl_quap rl_op f then <<
 	       if !*rlverbose then
 		  ioto_tprin2t "++++ No more quantifiers after simplification";
@@ -660,6 +667,7 @@ asserted procedure ofsfic_process!-coe(coe: ContainerElement): Boolean;
 	 ofsf_cadfinish cd;
 	 return t
       >>;
+      !*rlqeicfallback := t; return nil;  % TS
       % [cadres] is ['false]
       % We make a reorder copy of [fvect].
       rfvect := mkvect upbv fvect;
