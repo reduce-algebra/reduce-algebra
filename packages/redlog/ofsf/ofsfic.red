@@ -434,7 +434,7 @@ asserted procedure ofsfic!*cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
 	       ic := for i := 0:length ofsfic_ftol f - 1 collect i
 	    >> else <<
 	       ic_computeinfcore rlqeicdata!*;
-	       ic := reverse ic_infcore rlqeicdata!*
+	       ic := ic_infcore rlqeicdata!*
 	    >>;
 	    if !*rlverbose then <<
 	       ioto_tprin2t {"infcore: ", ic};

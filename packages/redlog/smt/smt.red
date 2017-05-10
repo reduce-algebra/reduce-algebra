@@ -153,8 +153,8 @@ procedure smt_processHelp();
   
 procedure smt_processAssert(constraint);
    <<
-      smt_assertionl!* := cl_smt2ReadForm constraint . smt_assertionl!*;
-      smt_oassertionl!* := constraint . smt_oassertionl!*;
+      smt_assertionl!* := nconc(smt_assertionl!*, {cl_smt2ReadForm constraint});
+      smt_oassertionl!* := nconc(smt_oassertionl!*, {constraint}};
       smt_model!* := 'unset;
       smt_unsatcore!* := 'unset;
       smt_prin2t ""
