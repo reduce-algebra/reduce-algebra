@@ -91,6 +91,7 @@ asserted procedure vsnd_ans!-dgs(nd: VSnd, ctx: AList): Anu;
       aex := aex_fromsf addf(exptf(!*k2f v, g), negf !*k2f sv);  % v^g - sv
       aex := aex_bind(aex, sv, svanu);
       bnd := rat_max(rat_abs iv_lb anu_iv svanu, rat_abs iv_rb anu_iv svanu);
+      bnd := rat_add(bnd, rat_1());
       if evenp g then
 	 return anu_mk(aex, iv_mk(rat_0(), bnd));
       return anu_mk(aex, iv_mk(rat_neg bnd, bnd))
