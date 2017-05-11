@@ -195,8 +195,11 @@ procedure smt_processCheckSat();
       >>;
       tval . model := car w;
       if tval eq 'true then <<
-	 smt_model!* := model;
-	 smt_prin2t 'sat
+	 if model then <<
+	    smt_model!* := model;
+	    smt_prin2t 'sat
+	 >> else
+	    smt_prin2t 'unknown
       >> else if tval eq 'false then
 	 smt_prin2t 'unsat
       else
