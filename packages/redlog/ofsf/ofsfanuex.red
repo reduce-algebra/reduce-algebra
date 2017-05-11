@@ -516,8 +516,8 @@ asserted procedure aex_bvarl(ae: Aex): List;
    ctx_idl aex_ctx ae;
 
 asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
-   % Bind variable [x] to [a]. NOTE: [x] does not have to be the
-   % smallest variable w.r.t. the current kernel order.
+   % Bind variable [x] to [a]. NOTE: There are no restrictions on [x]
+   % w.r.t. the current kernel order.
    begin scalar ctx, fvarl, r, oo, res, nctx, nx, rp;
       ctx := aex_ctx ae;
       if ctx_get(ctx, x) then
@@ -527,9 +527,7 @@ asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
 	 return ae;
       r := anu_ratp a;
       if r then <<  % [a] is rational and equals [r]
-	 if aex_mvartest(ae, x) then
-      	    return aex_subrat(ae, x, r);
-	 oo := setkorder {x};
+      	 oo := updkorder x;
 	 res := aex_subrat(aex_reorder ae, x, r);
 	 setkorder oo;
       	 return res

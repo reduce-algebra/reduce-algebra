@@ -92,6 +92,10 @@ asserted procedure vsnd_ans!-dgs(nd: VSnd, ctx: AList): Anu;
       aex := aex_bind(aex, sv, svanu);
       bnd := rat_max(rat_abs iv_lb anu_iv svanu, rat_abs iv_rb anu_iv svanu);
       bnd := rat_add(bnd, rat_1());
+      % TODO: Here we have a subtle bug! What if the value of [svanu]
+      % is zero with isolating interval (0,0) and [g] is even? We
+      % construct an anu with a root 0 and isolating interval (0,1),
+      % which is NOT correct!!!
       if evenp g then
 	 return anu_mk(aex, iv_mk(rat_0(), bnd));
       return anu_mk(aex, iv_mk(rat_neg bnd, bnd))

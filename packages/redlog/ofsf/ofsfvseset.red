@@ -527,7 +527,7 @@ asserted procedure qff_atposl(var: Kernel, f: QfFormula, bvl: KernelL, theo: The
 
 asserted procedure qff_replacel(f: QfFormula, pl: PositionL, rf: QfFormula): QfFormula;
    % Quantifier-free formula replace positions with formula. The
-   % positions in [pl] have to be independent, i.e, each pair of
+   % positions in [pl] have to be independent, i.e., each pair of
    % positions is a pair of formulas that are not subformulas of each
    % other. Returns the formula [f] with all positions in [pl]
    % replaced with [rf].
