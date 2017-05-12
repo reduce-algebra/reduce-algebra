@@ -35,7 +35,11 @@ symbolic procedure formwhere(u,vars,mode);
      expn := cadr u;
      equivs := remcomma caddr u;
      if not(mode eq 'symbolic)
-       then return formc(list('whereexp,'list . equivs,expn),vars,mode);
+% The following line used to call formc instead of form1
+%  It failed with nested rules, e.g.,
+%   let { f(~x,~x) => (rp where rp => x*x) };
+%       then return formc(list('whereexp,'list . equivs,expn),vars,mode);
+       then return form1(list('whereexp,'list . equivs,expn),vars,mode);
      for each j in equivs do
         if not atom j and car j memq '(equal setq)
           then <<y := caddr j . y; z := cadr j . z>>
