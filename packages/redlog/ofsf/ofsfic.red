@@ -78,8 +78,7 @@ fluid '(!*rlqeicfallback);  %TS
      (ofsf_exploitKnowl . ofsfic!*ofsf_exploitKnowl)
      (ofsf_qemkans . ofsfic!*ofsf_qemkans)
      (ofsf_qebacksub . ofsfic!*ofsf_qebacksub)
-     (ofsf_qenobacksub . ofsfic!*ofsf_qenobacksub)
-    )$
+     (ofsf_qenobacksub . ofsfic!*ofsf_qenobacksub))$
 
 procedure rlqeinfcore_storedefs();
    % Store current procedure definitions into [!*rlqeinfcore!-defal].
@@ -130,8 +129,8 @@ procedure rlqeinfcore_switch();
 	 tmp := atsoc(s, !*rlqeinfcore!-defal);
 	 if null tmp then
 	    rederr {"Missing procedure definition ", s};
-	 tmp := cdr tmp;
-	 putd(car pr, car tmp, cdr tmp)
+	       tmp := cdr tmp;
+	       putd(car pr, car tmp, cdr tmp)
       >>
    end;
 
@@ -141,7 +140,6 @@ fluid '(rlqeicdata!*);
 
 % ContainerElement ::= ('ce, VarList, QfFormula, Kernel, SubstTriplet, Answer, Vector)
 
-%%%%%%%MAX
 %DS
 % InfCoreData ::= [InfCore, FalseVect, EvTPList, MaxFalse, Coverage, CurrentFVect, GuardList, Knowl, EssentialVect, VarList, CADCellList]
 % InfCore ::= (QFFormula, ...)
@@ -310,7 +308,6 @@ asserted procedure ic_taglistremfalse(icdata: InfCoreData): List;
       return nil
    end;
 
-%%%%%%%MAX
 asserted procedure ic_computeinfcore(icdata: InfCoreData): Any;
    begin scalar essential, l;
       integer k, chosen;
@@ -345,7 +342,7 @@ asserted procedure ic_updateevtplist(icdata: InfCoreData, k: Integer): Any;
 	 if not (getv(tp, k) eq 'false) then
 	    evtplist := tp . evtplist;
       putv(icdata, 2, evtplist)
-    end;
+   end;
 
 asserted procedure ic_updatefalsevect(icdata: InfCoreData): Any;
    begin
@@ -371,19 +368,16 @@ asserted procedure ic_maxfalse(icdata: InfCoreData): List;
    end;
 
 
-%%%%%%%MAX
 declare ofsfic!*ce_mk: (VarList, QfFormula, Kernel, List, Answer, List) -> ContainerElement;
 inline procedure ofsfic!*ce_mk(vl, f, v, eterm, an, fvect);
    % Container element make.
    {'ce, vl, f, v, eterm, an, fvect};
 
-%%%%%%%MAX
 declare ce_fvect: (ContainerElement) -> Vector;
 inline procedure ce_fvect(x);
    % Container element formula vector. Only used for infeasible core computation.
    nth(cdr x, 6);
 
-%%%%%%%MAX
 declare ofsfic!*co_push2: (Container, ContainerElement) -> Container;
 inline procedure ofsfic!*co_push2(co, ce);
    %TODO: REENABLE %%%%%%%MAX
@@ -395,7 +389,6 @@ inline procedure ofsfic!*co_push2(co, ce);
    % >> else
    ce . co;
 
-%%%%%%%MAX
 declare ofsfic!*cl_mk1EQR: (Formula,EquationL) -> ExtendedQeResult;
 inline procedure ofsfic!*cl_mk1EQR(f, eql);
    % Make singleton extended QE result.
@@ -411,40 +404,40 @@ asserted procedure ofsfic!*cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
    % be prenex.
    begin scalar er,!*rlsipw,!*rlsipo,!*rlqeans,ic, !*rlqeicfallback;
       !*rlsipw := !*rlsipo := !*rlqeans := t;
+      !*rlqegen := nil;
+      % <max>
       % Initialize an infeasible core data structure.
-      if !*rlqeinfcore then << %%%%%%%MAX
-	 % ENTRY POINT
-	 % TODO: Store previous switch settings and restore them
-	 % afterwards.
-	 !*rlqesr := t;
-	 !*rlataltheo := nil;
-	 !*rlqestdans := t;
-	 !*rlcadtrimtree := nil;
-	 !*rlqedyn := nil;
-	 !*rlcadans := nil;
-	 rlqeicdata!* := ic_init f
-      >>;
-      er := ofsfic!*cl_qe1(f,theo,nil);
+      % ENTRY POINT
+      % TODO: Store previous switch settings and restore them
+      % afterwards.
+      !*rlqesr := t;
+      !*rlataltheo := nil;
+      !*rlqestdans := t;
+      !*rlcadtrimtree := nil;
+      !*rlqedyn := nil;
+      !*rlcadans := nil;
+      rlqeicdata!* := ic_init f;
+      % </max>
+      er := ofsfic!*cl_qe1(f,nil,nil);  % theory is ignored here
       if rl_exceptionp er then
 	 return er;
+      % <max>
       % Infeasible core computation
-      if !*rlqeinfcore then %%%%%%%MAX
-	 if er = {nil} or caadr er eq 'false then <<
-	    if !*rlqeicfallback then <<
-	       ic := for i := 0:length ofsfic_ftol f - 1 collect i
-	    >> else <<
-	       ic_computeinfcore rlqeicdata!*;
-	       ic := ic_infcore rlqeicdata!*
-	    >>;
-	    if !*rlverbose then <<
-	       ioto_tprin2t {"infcore: ", ic};
-	       ioto_tprin2t {"infcore length: ", length ic}
-	    >>;
-	    smt_unsatcore!* := ic;
-	    rlqeicdata!* := ic_init f;
-	    if !*rlverbose then
-	       ioto_tprin2t {"input length: ", upbv ic_currentfvect rlqeicdata!* + 1};
-	    er := nil . '((false))
+      if er = {nil} or caadr er eq 'false then <<
+	 ic := if !*rlqeicfallback then
+	    for i := 0:length ofsfic_ftol f - 1 collect i
+	 else <<
+	    ic_computeinfcore rlqeicdata!*;
+	    ic_infcore rlqeicdata!*
+	 >>;
+	 smt_unsatcore!* := ic;
+	 rlqeicdata!* := ic_init f;
+	 if !*rlverbose then <<
+	    ioto_tprin2t {"infcore: ", ic};
+	    ioto_tprin2t {"infcore length: ", length ic};
+	    ioto_tprin2t {"input length: ", upbv ic_currentfvect rlqeicdata!* + 1}
+      	 >>;
+	 er := nil . '((false))
 	    %
       	    % newF := nil;
 	    % for each n in ic do
@@ -452,107 +445,93 @@ asserted procedure ofsfic!*cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
 	    % newF := rl_ex(rl_smkn('and, newF), nil);
 	    % !*rlqeinfcore := nil;
 	    % ioto_tprin2t {"test: ", ofsfic!*cl_qea(newF, nil)}
-      	 >> else
- 	    if !*rlverbose then
-	       ioto_tprin2t {"model: ",
-	       	  for each pr in cdar cl_erEQR er collect {'equal, car pr, cdr pr}};
+      >> else
+	 if !*rlverbose then
+	    ioto_tprin2t {"model: ",
+	       for each pr in cdar cl_erEQR er collect ioto_smaprin {'equal, car pr, cdr pr}};
+      % </max>
       return cl_erEQR er
    end;
 
 asserted procedure ofsfic!*cl_qe1(f: Formula, theo: Theory, xbvl: KernelL): EliminationResult;
    % Quantifier elimination. [f] must be prenex if the switch [rlqepnf] is off;
    % [theo] serves as background theory.
-   begin scalar q,ql,varll,bvl,svf,result,w,ww,k,rvl,jl,f2,offset,offset2;
+   begin
+      scalar q,ql,varll,bvl,svf,result,w,ww,k,rvl,jl,f2,offset,offset2;
       integer n;
+      if not !*rlqeans or !*rlqegen or !*rlqelocal then
+	 rederr {"turn off rlqeinfcore for this"};
       if !*rlqepnf then
 	 f := rl_pnf f;
-      f2:=f;
-      if !*rlqeinfcore then << %%%%%%%MAX
-	 !*rlqeicsimpl := t;
-	 !*icinitsimpl := t;
-	 f := {f};
-	 f2 := {{}};
-	 while not (car f2 = car f or car f eq 'false) do <<
-	    f2 := f;
-	    f := ofsfic!*cl_simpl(car f2, theo, -1);
-	    if offset then <<
-	       if not (car f2 = car f) and not (car f = 'false) then <<
-		  if not (car f2 = car f or car f eq 'false) then <<
-		     offset2 := ic_offsetlist rlqeicdata!*;
-		     for each i in offset2 do <<
-			w := cadr i;
-			ww := nil;
-			for each j in w do
-			   for each k in cadr assoc(j, offset) do
- 			      ww := k . ww;
-			cadr i := ww
-		     >>
-		  >>;
-		  offset := offset2
-	       >>
-	    >> else
-	       offset := ic_offsetlist rlqeicdata!*;
-	    ic_setoffsetlist(rlqeicdata!*, nil)
-	 >>;
-	 !*rlqeicsimpl := nil;
-	 !*icinitsimpl := nil;
-	 if car f eq 'false and cdr f then <<
-	    rlqeicdata!* := ic_init car f2;
-	    ofsfic_filterlocalcore(lto_list2vector ofsfic_ftol car f2, cadr f);
-	    ic_setoffsetlist(rlqeicdata!*, offset);
-	    f := car f
-	 >> else <<
-	    rlqeicdata!* := ic_init car f;
-	    ic_setoffsetlist(rlqeicdata!*, offset);
-	    f := car f;
-	    if f eq 'false then
- 	       putv(ic_essentialvect rlqeicdata!*, 0, t)
-	 >>
-      >> else
-	 f:=rl_simpl(f,theo,-1);
-      if f eq 'inctheo then
-	 return rl_exception 'inctheo;
       if not rl_quap rl_op f then
 	 return cl_mkER(theo,ofsfic!*cl_mk1EQR(f,nil));
-      {ql,varll,f,bvl} := cl_split f;
-      % Remove from the theory atomic formulas containing quantified variables:
-      theo := for each atf in theo join
-	 if null intersection(rl_varlat atf,bvl) then {atf};
-      bvl := union(bvl,xbvl);
-      {ql,varll,q,rvl,jl,theo,svf} := cl_qe1!-iterate(ql,varll,f,theo,bvl);
-      jl := cl_qe1!-requantify(ql,varll,q,rvl,jl);
-      if !*rlqeans and null ql then <<
+      f2 := f;
+      % <max>
+      !*rlqeicsimpl := t;
+      !*icinitsimpl := t;
+      f := {f};
+      f2 := {{}};
+      while not (car f2 = car f or car f eq 'false) do <<
+	 f2 := f;
+	 f := ofsfic!*cl_simpl(car f2, theo, -1);
+	 if offset then <<
+	    if not (car f2 = car f) and not (car f = 'false) then <<
+	       offset2 := ic_offsetlist rlqeicdata!*;
+	       for each i in offset2 do <<
+		  w := cadr i;
+		  ww := nil;
+		  for each j in w do
+		     for each k in cadr assoc(j, offset) do
+			ww := k . ww;
+		  cadr i := ww
+	       >>;
+	       offset := offset2
+	    >>
+	 >> else
+	    offset := ic_offsetlist rlqeicdata!*;
+	 ic_setoffsetlist(rlqeicdata!*, nil)
+      >>;
+      !*rlqeicsimpl := nil;
+      !*icinitsimpl := nil;
+      if car f eq 'false and cdr f then <<
+	 rlqeicdata!* := ic_init car f2;
+	 ofsfic_filterlocalcore(lto_list2vector ofsfic_ftol car f2, cadr f);
+	 ic_setoffsetlist(rlqeicdata!*, offset);
+	 f := car f
+      >> else <<
+	 rlqeicdata!* := ic_init car f;
+	 ic_setoffsetlist(rlqeicdata!*, offset);
+	 f := car f;
+	 if f eq 'false then
+	    putv(ic_essentialvect rlqeicdata!*, 0, t)
+      >>;
+      % </max>
+      {ql, varll, f, bvl} := cl_split f;
+      {ql, varll, q, rvl, jl, theo, svf} := cl_qe1!-iterate(ql, varll, f, nil, bvl);
+      jl := cl_qe1!-requantify(ql, varll, q, rvl, jl);
+      if null ql then <<
 	 if !*rlverbose then <<
 	    ioto_tprin2 "+++ Postprocessing answer:";
 	    n := length jl
 	 >>;
 	 result := for each j in jl join <<
-	    if !*rlverbose then ioto_prin2 {" [",n:=n-1};
+	    if !*rlverbose then
+ 	       ioto_prin2 {" [", n := n-1};
 	    w := {cl_jF j . rl_qemkans(cl_jA j, svf)};
-	    if !*rlverbose then ioto_prin2 {"]"};
+	    if !*rlverbose then
+ 	       ioto_prin2 {"]"};
 	    w
-	 >>;
+	 >>
       >> else <<
 	 f := cl_jF car jl;
 	 if !*rlverbose then
 	    ioto_tprin2 {"+++ Final simplification ... ",cl_atnum f," -> "};
-	 f := rl_simpl(f,theo,-1);
+	 f := rl_simpl(f, nil, -1);
 	 if !*rlverbose then
 	    ioto_prin2t cl_atnum f;
-	 if !*rlqefb and rvl then <<
-	    rederr "Something wrong! Tell Thomas!";
-	    if not rl_quap rl_op f then <<
-	       if !*rlverbose then
-		  ioto_tprin2t "++++ No more quantifiers after simplification";
-	       result := f
-	    >> else <<
-	       if !*rlverbose then
-		  ioto_tprin2 {"++++ Entering fallback QE: "};
-	       theo . result := rl_fbqe(f, theo)
-	    >>
-	 >> else
-	    result := f;
-	 result := ofsfic!*cl_mk1EQR(result,nil);
+	 if rvl then  % fallback case has already been handled for single nodes
+	    rederr "unexpected fallback - tell sturm@redlog.eu!";
+	 result := ofsfic!*cl_mk1EQR(f, nil)
       >>;
       return cl_mkER(theo,result)
    end;
@@ -562,21 +541,17 @@ asserted procedure ofsfic!*cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory
    % [cl_qeblock], where [q] has been dropped. Return value as well.
    begin scalar w,co,remvl,newj,cvl,coe,ww;
       integer c,count,delc,oldcol,comax,comaxn;
-      if !*rlqegsd then
-	 f := rl_gsd(f,theo);
       cvl := varl;
       co := co_new();
       if rl_op f eq 'or then
-	 for each x in rl_argn f do
-	    co := co_save(co,{ofsfic!*ce_mk(cvl,x,nil,nil,nil,ic_currentfvect rlqeicdata!*)})
-      else if !*rlqeinfcore then %%%%%%%MAX
-	 % If we compute an infeasible core, the list of input
-	 % constraints is added to the container.
-	 co := co_save(co, {ofsfic!*ce_mk(cvl, f, nil, nil, nil, ic_currentfvect rlqeicdata!*)})
-      else
-	 co := co_save(co, {ofsfic!*ce_mk(cvl, f, nil, nil, nil, nil)});
+	 rederr "unexpected input disjunction - tell sturm@redlog.eu!";
+      if not ans then
+	 rederr "unexpected ans = nil - tell sturm@redlog.eu!";
+      % <max>
+      co := co_save(co, {ofsfic!*ce_mk(cvl, f, nil, nil, nil, ic_currentfvect rlqeicdata!*)});
+      % </max>
       while co_data co do <<
-	 if !*rlverbose and !*rlqedfs and not !*rlqevbold then <<
+	 if !*rlverbose then <<
 	    ww := car co_stat co;
 	    if comax = 0 or car ww < comax or
 	       (car ww = comax and cdr ww < comaxn)
@@ -586,31 +561,13 @@ asserted procedure ofsfic!*cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory
 	       ioto_prin2 {"[",comax,":",comaxn,"] "}
 	    >>
 	 >>;
-	 if !*rlqeidentify then on1 'rlidentify;
 	 coe . co := co_get co;
-	 % If we compute an infeasible core, then get the current
-	 % formula vector from the container element.
-	 if !*rlqeinfcore then %%%%%%%MAX
-	    ic_setcurrentfvect(rlqeicdata!*, ce_fvect coe);
+	 % <max>
+	 ic_setcurrentfvect(rlqeicdata!*, ce_fvect coe);  % get current formula vector from ce
+	 % </max>
 	 cvl := ce_vl coe;
 	 count := count + 1;
-	 if !*rlverbose then
-	    if !*rlqedfs then
-	       (if !*rlqevbold then <<
-		  if vlv = length cvl then
-		     ioto_tprin2t {"-- crossing: ",dpth - vlv};
-		  ioto_prin2 {"[",dpth - length cvl}
-	       >>)
-	    else <<
-	       if c=0 then <<
-		  ioto_tprin2t {"-- left: ",length cvl};
-		  c := co_length(co) + 1
-	       >>;
-	       ioto_nterpri(length explode c + 4);
-	       ioto_prin2 {"[",c};
-	       c := c - 1
-	    >>;
-	 w . theo := ofsfic!*cl_qevar(ce_f coe,ce_vl coe,ce_ans coe,theo,ans,bvl);
+	 w . theo := ofsfic!*cl_qevar(ce_f coe, ce_vl coe, ce_ans coe, theo, ans, bvl);
 	 if car w then <<  % We have found a suitable variable.
 	    w := cdr w;
 	    if w then
@@ -618,43 +575,30 @@ asserted procedure ofsfic!*cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory
 		  co := co_new();
 		  newj := {cl_co2J car w}
 	       >> else if cdr cvl then <<
-		  if !*rlverbose then oldcol := co_length co;
+		  if !*rlverbose then
+ 		     oldcol := co_length co;
 		  co := co_save(co,w);
 		  if !*rlverbose then
 		     delc := delc + oldcol + length w - co_length(co)
 	       >> else
-		  for each x in w do newj := lto_insert(cl_co2J x,newj)
-	 >> else <<
-	    % There is no eliminable variable. Invalidate this entry, and save
-	    % its variables for later requantification.
-	    if !*rlqeinfcore then << %%%%%%%MAX
-	       if ofsfic_process!-coe coe then <<  % [coe] is equivalent to ['true]
-		  co := co_new();
-		  newj := {'true . nil}
-	       >>
-	    >> else <<
-	       if !*rlverbose then ioto_prin2 append("[Failed:" . cdr w,{"] "});
-	       remvl := union(cvl,remvl);
-	       newj := lto_insert(cl_co2J coe,newj);
-	       if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then <<
-		  ioto_prin2 "] ";
-		  if !*rlqedfs and null cvl then ioto_prin2 ". "
-	       >>
-	    >>
-	 >>
+		  for each x in w do newj := lto_insert(cl_co2J x, newj)
+	 >> else  % There is no eliminable variable.
+	    % <max>
+	    if ofsfic_process!-coe coe then <<  % [coe] is equivalent to ['true]
+	       co := co_new();
+	       newj := {'true . nil}
+	    >> % </max>
       >>;
-      if !*rlverbose then ioto_prin2{"[DEL:",delc,"/",count,"]"};
-      if ans then return {remvl, newj, theo};
-      % I am building the formula here rather than later because one might want
-      % to do some incremental simplification at some point.
-      return {remvl,
-	 {cl_mkJ(rl_smkn('or,for each x in newj collect car x),nil)}, theo}
+      if !*rlverbose then
+ 	 ioto_prin2{"[DEL:",delc,"/",count,"]"};
+      return {remvl, newj, theo}
    end;
 
 asserted procedure ofsfic_process!-coe(coe: ContainerElement): Boolean;
    % Returns [t] or [nil] depending on whether [coe] is equivalent to
    % ['true] or ['false].
    begin scalar fvect, cadinput, cd, cadres, rfvect, falseFound, celleval, sf, vl, vlsp, tmpres;
+      !*rlqeicfallback := t;
       fvect := ce_fvect coe;
       cadinput := rl_ex(rl_smkn('and, vector2list fvect), nil);
       cd := ofsf_cadpreparation(cadinput, ofsf_cadporder cadinput, nil);
@@ -667,7 +611,7 @@ asserted procedure ofsfic_process!-coe(coe: ContainerElement): Boolean;
 	 ofsf_cadfinish cd;
 	 return t
       >>;
-      !*rlqeicfallback := t; return nil;  % TS
+      return nil;  % TS
       % [cadres] is ['false]
       % We make a reorder copy of [fvect].
       rfvect := mkvect upbv fvect;
@@ -716,30 +660,13 @@ asserted procedure ofsfic!*cl_qevar(f: QfFormula, vl: KernelL, an: Answer, theo:
    % and $p$ is an error message. If there is a container element with ['break]
    % as varlist, this is the only one.
    begin scalar w,candvl,status; integer len;
-      % Infeasible core computation is not yet implemented for the methods. %%%%%%%MAX
-      if not !*rlqeinfcore and (w := cl_transform(f,vl,an,theo,ans,bvl)) then
-	 {f,vl,an,theo,ans,bvl} := w;
-      if not !*rlqeinfcore and (w := cl_gauss(f,vl,an,theo,ans,bvl)) then
-	 return w;
-      if not !*rlqeinfcore and (w := rl_specelim(f,vl,theo,ans,bvl)) neq 'failed then
-	 return w;
       % Elimination set method
       candvl := cl_varsel(f,vl,theo);
-      if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold)
-	 and (len := length candvl) > 1
-      then
-	 ioto_prin2 {"{",len,":"};
       status . w := ofsfic!*cl_process!-candvl(f,vl,an,theo,ans,bvl,candvl);
-      if !*rlverbose and !*rlqevb and (not !*rlqedfs or !*rlqevbold)
-	 and len>1
-      then
-	 ioto_prin2 {"}"};
       if status eq 'nonocc then
 	 return (t . w) . theo;
       if status eq 'failed then
 	 return (nil . w) . theo;
-      if status eq 'local then
-	 return (t . car w) . cl_theo!*;
       if status eq 'elim then
 	 return (t . car w) . cdr w;
       rederr {"cl_qevar: bad status",status}
@@ -751,12 +678,9 @@ asserted procedure ofsfic!*cl_process!-candvl(f: QfFormula, vl: KernelL, an: Ans
 	 v := pop candvl;
 	 alp := cl_qeatal(f,v,theo,ans);
 	 if alp = '(nil . nil) then <<  % [v] does not occur in [f].
-	    if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then
-	       ioto_prin2 "*";
-	    if !*rlqeinfcore then %%%%%%%MAX
-	       w := {ofsfic!*ce_mk(lto_delq(v, vl), f, nil, nil, ans and cl_updans(v, 'arbitrary, nil, nil, an, ans), ic_currentfvect rlqeicdata!*)}
-	    else
-	       w := {ofsfic!*ce_mk(lto_delq(v,vl),f,nil,nil,ans and cl_updans(v,'arbitrary,nil,nil,an,ans),nil)};
+	    % <max>
+	    w := {ofsfic!*ce_mk(lto_delq(v, vl), f, nil, nil, ans and cl_updans(v, 'arbitrary, nil, nil, an, ans), ic_currentfvect rlqeicdata!*)};
+	    % </max>
 	    status := 'nonocc;
 	    candvl := nil
 	 >> else if car alp = 'failed then
@@ -765,56 +689,47 @@ asserted procedure ofsfic!*cl_process!-candvl(f: QfFormula, vl: KernelL, an: Ans
 	       status := 'failed
 	    >>)
 	 else <<
-	    if !*rlqeinfcore then << %%%%%%%MAX
-	       elimset := rl_elimset(v, alp);
-	       while alp do
-		  if caar alp eq 'equal1 then <<
-		     if not ('(ofsf_qesubi (pinf)) member elimset) then
-			elimset := '(ofsf_qesubi (pinf)) . elimset;
-		     if not ('(ofsf_qesubi (minf)) member elimset) then
-			elimset := '(ofsf_qesubi (minf)) . elimset;
-		     alp := nil
-		  >> else
-		     alp := cdr alp;
-	       ww := cl_esetvectsubst(f, ic_currentfvect rlqeicdata!*, v, elimset, lto_delq(v, vl), an, ans, bvl);
-	       ic_clearguardList rlqeicdata!*;
-	       if car ww then <<
-		  if cadaar ww eq 'true then <<
-		     candvl := nil;
-		     ww := {{ofsfic!*ce_mk('break, 'true, nil, nil, car cddaar ww, nil)}}
-		  >> else <<
-		     vl := cadr ww;
-		     ww := car ww;
-		     for each triple in ww do <<
-			tpl := car triple;
-			newForm := cadr triple;
-			an := caddr triple;
-			ic_setcurrentfvect(rlqeicdata!*, tpl);
-			if rl_op newForm eq 'or then
-			   for each subf in rl_argn newForm do
-			      ww2 := ofsfic!*ce_mk(vl, subf, nil, nil, an, tpl) . ww2
-			else if newForm neq 'false then
-			   ww2 := ofsfic!*ce_mk(vl, newForm, nil, nil, an, tpl) . ww2
-		     >>;
-		     ww := {ww2}
-		  >>
+	    % <max>
+	    elimset := rl_elimset(v, alp);
+	    while alp do
+	       if caar alp eq 'equal1 then <<
+		  if not ('(ofsf_qesubi (pinf)) member elimset) then
+		     elimset := '(ofsf_qesubi (pinf)) . elimset;
+		  if not ('(ofsf_qesubi (minf)) member elimset) then
+		     elimset := '(ofsf_qesubi (minf)) . elimset;
+		  alp := nil
 	       >> else
-		  ww := {nil}
-	    >> else <<
-	       if !*rlverbose and (not !*rlqedfs or !*rlqevbold) then
-		  ioto_prin2 "e";
-	       ww := ofsfic!*cl_esetsubst(f,v,rl_elimset(v,alp),lto_delq(v,vl),an,
-		  theo,ans,bvl)
-	    >>;
-	    if !*rlqelocal then <<
-	       candvl := nil;
-	       w := ww;
-	       status := 'local
-	    >> else if rl_betterp(ww,w) then <<
+		  alp := cdr alp;
+	    ww := cl_esetvectsubst(f, ic_currentfvect rlqeicdata!*, v, elimset, lto_delq(v, vl), an, ans, bvl);
+	    ic_clearguardList rlqeicdata!*;
+	    if car ww then <<
+	       if cadaar ww eq 'true then <<
+		  candvl := nil;
+		  ww := {{ofsfic!*ce_mk('break, 'true, nil, nil, car cddaar ww, nil)}}
+	       >> else <<
+		  vl := cadr ww;
+		  ww := car ww;
+		  for each triple in ww do <<
+		     tpl := car triple;
+		     newForm := cadr triple;
+		     an := caddr triple;
+		     ic_setcurrentfvect(rlqeicdata!*, tpl);
+		     if rl_op newForm eq 'or then
+			for each subf in rl_argn newForm do
+			   ww2 := ofsfic!*ce_mk(vl, subf, nil, nil, an, tpl) . ww2
+		     else if newForm neq 'false then
+			ww2 := ofsfic!*ce_mk(vl, newForm, nil, nil, an, tpl) . ww2
+		  >>;
+		  ww := {ww2}
+	       >>
+	    >> else
+	       ww := {nil};
+  	    % </max>
+	    if rl_betterp(ww,w) then <<
 	       w := ww;
 	       status := 'elim
 	    >>
-	 >>
+      	 >>
       >>;
       return status . w
    end;
@@ -960,18 +875,18 @@ procedure ofsfic!*cl_qeatal1(f,v,theo,flg,ans);
 	    ofsfic!*cl_qeatal1(rl_arg2r f,v,theo,not flg,ans)}
       else if rl_quap op then
 	 rederr "argument formula not prenex"
-      else  % [f] is an atomic formula.
-	 if !*rlqeinfcore then << %%%%%%%MAX
-	    ww := rl_translat(f, v, theo, flg, ans);
-	    if car ww neq 'failed then <<
-	       for each a in car ww do
-		  for each g in cdr a do
-		     ic_appendguardList(rlqeicdata!*, g . {f});
-	    >>;
-	    {ww}
-	 >> else
-	    {rl_translat(f,v,theo,flg,ans)};
-      if (ww := atsoc('failed,w)) then return ww;
+      else <<  % [f] is an atomic formula.
+	 % <max>
+	 ww := rl_translat(f, v, theo, flg, ans);
+	 if car ww neq 'failed then <<
+	    for each a in car ww do
+	       for each g in cdr a do
+		  ic_appendguardList(rlqeicdata!*, g . {f});
+	 >>;
+	 {ww}  % </max>
+      >>;
+      if (ww := atsoc('failed,w)) then
+ 	 return ww;
       return cl_alpunion w
    end;
 
@@ -990,15 +905,16 @@ procedure ofsfic!*cl_simpl(f,atl,n);
       if atl eq 'inctheo then
 	 return 'inctheo;
       w := rl_smupdknowl('and,atl,nil,n+1);
-      if w eq 'false then return 'inctheo;
-      if !*rlqeicsimpl then << %%%%%%%MAX
+      if w eq 'false then
+ 	 return 'inctheo;
+      if !*rlqeicsimpl then <<
 	 w := cl_simpl1!-tagged(f, w, n, nil);
 	 ic_settaglist(rlqeicdata!*, nil)
-      >> else w:=cl_simpl1(f,w,n,nil);
+      >> else
+ 	 w := cl_simpl1(f,w,n,nil);
       return w;
    end;
 
-%%%%%%%MAX
 procedure cl_simpl1!-tagged(f,knowl,n,sop);
    % Common logic simplify. [f] is a formula; [knowl] is an IRL; [n]
    % is an integer; [sop] is a CL operator. Depends on switches
@@ -1069,7 +985,6 @@ procedure cl_simpl1!-tagged(f,knowl,n,sop);
       rederr {"cl_simpl1(): unknown operator",op}
    end;
 
-%%%%%%%MAX
 procedure cl_smsimpl!-junct!-tagged(op,junct,knowl,n);
    % Common logic smart simplify. [op] is one of [and], [or]; [junct]
    % is a list of formulas; [knowl] is an IRL; [n] is an integer.
@@ -1077,7 +992,6 @@ procedure cl_smsimpl!-junct!-tagged(op,junct,knowl,n);
    % [!*rlsism] on sophisticated simplifications are applied to
    % [junct].
    begin scalar break,w,atl,col,newknowl,k,atflist,l,l2,l3,rel,at;
-      %if not !*rlsism then return cl_gand!-col(junct,n,op,nil);
       newknowl := rl_smcpknowl knowl;
       break := cl_cflip('false, op eq 'and);
       k := 0;
@@ -1152,7 +1066,6 @@ procedure cl_smsimpl!-junct!-tagged(op,junct,knowl,n);
       return w
    end;
 
-%%%%%%%MAX
 procedure cl_smsimpl!-junct1!-tagged(op,atl,col,knowl,newknowl,n,break);
    % Common logic smart simplify. [op] is one of [and], [or]; [atl] is
    % a list of atomic formulas; [col] is a list of complex formulas;
@@ -1215,7 +1128,6 @@ procedure cl_smsimpl!-junct1!-tagged(op,atl,col,knowl,newknowl,n,break);
       return cl_smsimpl!-junct2!-tagged(op,sicol,knowl,newknowl,n,break,append(ttagl,tagl))
    end;
 
-%%%%%%%MAX
 procedure cl_smsimpl!-junct2!-tagged(op,sicol,knowl,newknowl,n,break,tagl);
    % Common logic smart simplify. [op] is one of [and], [or]; [sicol] is a list
    % of complex formulas; [knowl] and [newknowl] are IRL's; [n] is an integer;
@@ -1250,7 +1162,6 @@ procedure cl_smsimpl!-junct2!-tagged(op,sicol,knowl,newknowl,n,break,tagl);
       return {{cl_flip break}, tagl}
    end;
 
-%%%%%%%MAX
 asserted procedure ofsfic_ftol(f: Formula): FormulaL;
    begin scalar flist;
       flist := caddr cl_split f;
@@ -1259,20 +1170,12 @@ asserted procedure ofsfic_ftol(f: Formula): FormulaL;
       return {flist}
    end;
 
-%%%%%%%MAX
 procedure ofsfic_carinsert(x, l);
    if assoc(car x, l) then l else x . l;
 
-%%%%%%%MAX
 procedure ofsfic_insertqcar(x, l);
-   if null l then
-      x . nil
-   else if car x = caar l then
-      l
-   else
-      car l . ofsfic_insertqcar(x, cdr l);
+   if assoc(car x, l) then l else append(l, {x});
 
-%%%%%%%MAX
 procedure ofsfic_tagflat(tag);
    if listp caar tag then
       {for each j in car tag join
@@ -1283,7 +1186,6 @@ procedure ofsfic_tagflat(tag);
    else
       tag;
 
-%%%%%%%MAX
 procedure ofsfic_threepointsearch(v);
    begin scalar u, l, e, n, lb, ub, eb, eberror, nb, val;
       for each i in v do <<
@@ -1372,7 +1274,6 @@ procedure ofsfic_threepointsearch(v);
       rederr "Error in ofsfic_threepointsearch"
    end;
 
-%%%%%%%MAX
 procedure ofsfic_inittps(v, value);
    begin scalar u, l, e, n, lb, ub, eb, eberror, val;
       for each i in v do <<
@@ -1427,7 +1328,6 @@ procedure ofsfic_inittps(v, value);
       return {u, l, e, n}
    end;
 
-%%%%%%%MAX
 procedure ofsfic_tagnumbers(tag);
    begin
       if listp tag then <<
@@ -1443,10 +1343,9 @@ procedure ofsfic_tagnumbers(tag);
       return {tag}
    end;
 
-%%%%%%%MAX
-% Replace each entry in tagl with depth <= n with the entries in tags.
-% If there is no entry with depth <= n, then just add tags to tagl.
 procedure ofsfic_tagrepl(tagl, tags, n);
+   % Replace each entry in tagl with depth <= n with the entries in tags. If
+   % there is no entry with depth <= n, then just add tags to tagl.
    begin scalar tagl2, found;
       for each i in tagl do
        	 if caddr i <= n then <<
@@ -1463,33 +1362,17 @@ procedure ofsfic_tagrepl(tagl, tags, n);
       return tagl2
    end;
 
-%%%%%%%MAX
-% Probably exists already. Checks if an entry e is in a list l with =.
-procedure ofsfic_containsp(l, e);
-   begin scalar found;
-      while l do
-       	 if e = car l then <<
-	    found := t;
-	    l := nil
-       	 >> else
- 	    l := cdr l;
-      return found
-   end;
-
-%%%%%%%MAX
-% Extract only the tags in the taglist.
 procedure ofsfic_extracttags(tagl);
+   % Extract only the tags in the taglist.
    begin scalar l;
       for each i in tagl do
        	 for each j in car i do
-	    if not ofsfic_containsp(l, j) then
- 	       l := j . l;
+	    lto_insert(j, l);
       return l
    end;
 
-%%%%%%%MAX
-% Remove duplicates from the taglist.
 procedure ofsfic_prunetag(tagl);
+   % Remove duplicates from the taglist.
    begin scalar found, tagl2;
       for each i in tagl do <<
        	 found := nil;
@@ -1502,7 +1385,6 @@ procedure ofsfic_prunetag(tagl);
       return tagl2
    end;
 
-%%%%%%%MAX
 procedure ofsfic_subformulap(sf, f);
    begin scalar w;
       if sf neq 'true then <<
@@ -1518,9 +1400,8 @@ procedure ofsfic_subformulap(sf, f);
       return nil
    end;
 
-%%%%%%%MAX (Fixed by MK.)
-% Reduce local core by repeated simplification. Unoptimized.
 asserted procedure ofsfic_filterlocalcore(fvect: Vector, core: List): Any;
+   % (Fixed by MK.) Reduce local core by repeated simplification. Unoptimized.
    % No meaningful return value.
    begin scalar w, evect;
       integer l;
@@ -1552,7 +1433,6 @@ asserted procedure ofsfic_filterlocalcore(fvect: Vector, core: List): Any;
 	 putv(evect, i, t)
    end;
 
-%%%%%%%MAX
 procedure ofsf_smupdknowl!-tagged(op,a,tag,knowl,n);
    % Ordered field standard form update knowledge. [op] is one of
    % [and], [or]; [atl] is a list of (simplified) atomic formulas;
@@ -1582,14 +1462,12 @@ procedure ofsf_smupdknowl!-tagged(op,a,tag,knowl,n);
       return knowl
    end;
 
-%%%%%%%MAX
 procedure ofsf_smmkatl!-tagged(op, oldknowl, newknowl, n);
    if !*rlsippatl then
       ofsf_sippatl!-tagged(op, ofsf_smmkatl1!-tagged(op, oldknowl, newknowl, n), newknowl, n)
    else
       ofsf_smmkatl1!-tagged(op, oldknowl, newknowl, n);
 
-%%%%%%%MAX
 procedure ofsf_sippatl!-tagged(op, atl, newknowl, n);
    begin scalar gtrue, gfalse, gequal, subal, zvl, posvl, negvl, geqvl, leqvl,
 	 neqvl, at, natl, atl2, at2, ir, vl, m, tagl, w, loctag, asc, newt, found, tmp;
@@ -1617,7 +1495,7 @@ procedure ofsf_sippatl!-tagged(op, atl, newknowl, n);
 	       if !*rlsippsubst and not ofsf_vareqnp(gequal, at) then <<
 		  vl := rl_varlat at;
 		  for each v in (for each i in subal collect car i) do <<
-		     if ofsfic_containsp(vl, v) then <<
+		     if member(v, vl) then <<
 			m := assoc(v, ic_varList rlqeicdata!*);
 			w := cdr assoc(cadr m, ic_taglist rlqeicdata!*);
 			for each i in w do
@@ -1707,7 +1585,6 @@ procedure ofsf_sippatl!-tagged(op, atl, newknowl, n);
       return {natl, tagl}
    end;
 
-%%%%%%%MAX
 procedure ofsf_smmkatl1!-tagged(op, oldknowl, newknowl, n);
    % Ordered field standard form make atomic formula list. [op] is one
    % of [and], [or]; [oldknowl] and [newknowl] are IRL's; [n] is an
@@ -1718,7 +1595,6 @@ procedure ofsf_smmkatl1!-tagged(op, oldknowl, newknowl, n);
    else  % [op eq 'or]
       ofsf_smmkatl!-or!-tagged(oldknowl, newknowl, n);
 
-%%%%%%%MAX
 procedure ofsf_smmkatl!-and!-tagged(oldknowl, newknowl, n);
    begin scalar w, tag;
       if not !*rlsipw and !*rlsipo then
@@ -1734,7 +1610,6 @@ procedure ofsf_smmkatl!-and!-tagged(oldknowl, newknowl, n);
       >>
    end;
 
-%%%%%%%MAX
 procedure ofsf_smmkatl!-or!-tagged(oldknowl, newknowl, n);
    begin scalar w, tag;
       return for each ir in newknowl collect <<
@@ -1747,7 +1622,6 @@ procedure ofsf_smmkatl!-or!-tagged(oldknowl, newknowl, n);
       >>
    end;
 
-%%%%%%%MAX
 procedure ofsfic!*ofsf_exploitKnowl(knowl);
    begin
       scalar subal, zvl, posvl, negvl, geqvl, leqvl, neqvl, v, rel, a;
@@ -1819,8 +1693,7 @@ procedure ofsfic!*ofsf_qemkans(an,svf);
 	 time := time();
 	 gctime := gctime()
       >>;
-      if !*rlqestdans and not !*rlqegen then
-	 an := ofsf_qemkstdans(an, svf);
+      an := ofsf_qemkstdans(an, svf);
       res := ofsf_qemkans1 an;
       res := if !*rlqebacksub then
 	 ofsfic!*ofsf_qebacksub res
