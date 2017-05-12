@@ -74,11 +74,12 @@ asserted procedure smtqe_collectResult(db: VSdb): DottedPair;
 	 assert(not vsnd_flg nd);
 	 push(vsnd_f nd, fl)
       >>;
-      n := length rl_argn vsdb_f db;
-      w := for i := 0 : n - 1 collect
-	 mkid('x, i) . for each f in fl collect
-	    if nth(f, i + 2) eq 'false then 1 else 0;
-      uc := lto_setCover w;
+%%       n := length rl_argn vsdb_f db;
+%%       w := for i := 0 : n - 1 collect
+%% 	 mkid('x, i) . for each f in fl collect
+%% 	    if nth(f, i + 2) eq 'false then 1 else 0;
+%%       uc := lto_setCover w;
+      uc := smtqe_fl2uc fl;
       return {rl_mkn('or, fl), nil, uc}
       % TODO: Take care of failure nodes.
       % for each nd in vsdb_fc db do <<
@@ -86,6 +87,33 @@ asserted procedure smtqe_collectResult(db: VSdb): DottedPair;
       % 	 push(vsnd_f nd, fl);
       % 	 vl := union(vl, vsnd_vl nd)
       % >>;
+   end;
+
+asserted procedure smtqe_fl2uc(fl: List): List;
+   % [fl] is a list of conjunctions [a_0, ..., a_n] with [a_i in {true, false},
+   % which all contain at least one [false]. Returns a subset of [{0, ..., n}]
+   % such that all conjunctions contain at least one [false] already on that
+   % subset.
+   begin scalar mtx, row, c, scmtx, uc; integer n;
+      if null fl then return nil;
+      n := length rl_argn car fl;
+      for each f in fl do <<
+	 row := for each tv in rl_argn f collect
+	    if tv eq 'false then 1 else 0;
+	 scmtx := mtx;
+	 c := t; while c and scmtx do <<
+	    if lto_ordprod(row, car scmtx, 'geq) then <<
+	       car mtx := row;
+	       c := nil
+	    >> else
+	       pop scmtx
+	 >>;
+	 if c then push(row, mtx)
+      >>;
+      push(for i := 1:n collect lto_int2id i, mtx);
+      uc := lto_setCover lto_transposip mtx;
+      uc := for each x in uc collect lto_idint x;
+      return uc
    end;
 
 endmodule;
