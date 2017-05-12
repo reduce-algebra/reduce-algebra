@@ -233,7 +233,8 @@ asserted procedure vsds_applyvsts(ds: VSds);
 	 ioto_prin2 "]";
 	 ioto_prin2 "[simplify"
       >>;
-      f := cl_simpl(rl_mk2('and, g, f), theo, -1);
+      f := vs_applyfn('tladdguard, {f, g});
+      f := vs_applyfn('tlsimpl, {f, theo});
       if !*rlverbose then
 	 ioto_prin2t "]";
       vsds_putres(ds, f)

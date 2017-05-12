@@ -36,7 +36,7 @@ asserted procedure smtqe_smtqe(l: List): List3;
       smtqe_setfnal();
       formula := rl_smkn('and, l);
       formula := smtqe_tlsimpl(formula, nil);
-      db := vsdb_mk(cl_fvarl formula, formula, nil, nil, t, t);
+      db := vsdb_mk(cl_fvarl formula, formula, nil, nil, t);
       vs_blockmainloop db;
       if !*ofsfvsqetree2gml then
       	 vsdb_2gml(db, rlqetreegmlfile!*);
@@ -112,7 +112,7 @@ asserted procedure smtqe_fl2uc(fl: List): List;
       >>;
       push(for i := 1:n collect lto_int2id i, mtx);
       uc := lto_setCover lto_transposip mtx;
-      uc := for each x in uc collect lto_idint x;
+      uc := for each x in uc collect lto_id2int x;
       return uc
    end;
 

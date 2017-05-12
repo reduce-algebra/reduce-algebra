@@ -578,7 +578,8 @@ rl_service {
    name = smtqe,
    doc = "quantifier elimination as SMT theory solver",
    arg = {pos = 1, name = assertions, type = List(Formula), doc = "assertions to be satisfied simultaneously"},
-   returns = {type = Triplet(Enum(sat, unsat, unknown), List(Any), List(Integer))},
+   % returns = {type = Triplet(Enum(sat, unsat, unknown), List(Any), List(Integer))},
+   returns = {type = Triplet(Formula, List(Any), List(Integer))},
    mode = both};
 
 rl_service {

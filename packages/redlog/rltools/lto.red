@@ -122,11 +122,24 @@ asserted procedure lto_transposip(l: List): List;
       return reversip res
    end;
 
-asserted procedure lto_intid(n: Integer): Id;
+asserted procedure lto_int2id(n: Integer): Id;
    intern compress('!! . explode n);
 
 asserted procedure lto_id2int(a: Id): Integer;
    compress cdr explode a;
+
+asserted procedure lto_alpatch(key: Id, val: Any, al: Alist): Alist;
+   % List tools alist patch. [key] is an interned identifier, [val] is
+   % any and [al] is an alist. Returns an alist where [val] is the
+   % value belonging to [key] by patching or adding.
+   begin scalar w;
+      w := atsoc(key, al);
+      if w then <<
+	 cdr w := val;
+	 return al
+      >>;
+      return (key . val) . al
+   end;
 
 asserted procedure lto_alinsert(key: Any, val: Any, al: Alist): Alist;
    % List tools alist insert. [key] is non-nil, [val] is any and [al] is

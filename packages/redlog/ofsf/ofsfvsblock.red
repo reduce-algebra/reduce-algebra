@@ -43,6 +43,33 @@ off1 'ofsfvsqetree2gml;
 fluid '(rlqetreegmlfile!*);
 rlqetreegmlfile!* := "/tmp/qe-tree.gml";
 
+%%% parameterizing procedures
+
+fluid '(vs_fnal!*);
+
+asserted procedure vs_setfnal();
+   <<
+      vs_patchfnal('tlsimpl, 'vs_tlsimpl);
+      vs_patchfnal('tladdguard, 'vs_tladdguard)
+   >>;
+
+asserted procedure vs_patchfnal(key: Id, value: Applicable);
+   vs_fnal!* := lto_alpatch(key, value, vs_fnal!*);
+
+asserted procedure vs_applyfn(fn: Id, argl: List): Any;
+   <<
+      ioto_tprin2t vs_fnal!*;
+      apply(cdr atsoc(fn, vs_fnal!*), argl)
+   >>;
+
+%%% implementation of parameterizing procedures
+
+asserted procedure vs_tlsimpl(f: QfFormula, assume: Theory): QfFormula;
+   cl_simpl(f, assume, -1);
+
+asserted procedure vs_tladdguard(f: QfFormula, g: QfFormula): QfFormula;
+   rl_mkn('and, {g, f});
+
 %%% QE tree node %%%
 % constructors and access functions
 
@@ -143,6 +170,7 @@ asserted procedure vsdb_new(): VSdb;
    begin scalar db;
       db := mkvect(10);
       putv(db, 0, 'vsdb);
+
       % The following fields are constant, i.e., assigned exactly once
       % after the creation of VSdb:
       putv(db, 1, 'undefined);        % [vl]: existentially quantified variables to be eliminated
@@ -150,12 +178,14 @@ asserted procedure vsdb_new(): VSdb;
       putv(db, 3, 'undefined);        % [theo]: global background theory
       putv(db, 4, 'undefined);        % [bvl]: do not make assumptions on variables in [bvl]
       putv(db, 5, 'undefined);        % [ans]: whether we should compute answers
+
       % putv(db, x, 'undefined);        % QEA flag; quantifier elimination with answers
       % putv(db, x, 'undefined);        % QEASTD flag; quantifier elimination with standard answers
       % putv(db, x, 'undefined);        % QEGEN flag; generic quantifier elimination
       % putv(db, x, 'undefined);        % QELOCAL flag; local quantifier elimination
       % putv(db, x, 'undefined);        % QEDEBUG flag; debugging
       % putv(db, x, 'undefined);        % QESTAT flag; statistics
+
       % The following fields change during execution:
       putv(db, 6, 'undefined);        % [wc]: container of QE tree working nodes
       putv(db, 7, 'undefined);        % [sc]: container of QE tree success nodes
@@ -191,11 +221,13 @@ asserted procedure vsdb_mk(vl: KernelL, f: QfFormula, theo: Theory, bvl: KernelL
    % VS data for a block make initial VSdb.
    begin scalar db;
       db := vsdb_new();
+
       vsdb_putvl(db, vl);
       vsdb_putf(db, f);
       vsdb_puttheo(db, theo);
       vsdb_putbvl(db, bvl);
       vsdb_putans(db, ans);
+
       vsdb_putwc(db, vsco_mk());
       vsdb_putsc(db, vsco_mk());
       vsdb_putfc(db, vsco_mk());
@@ -268,12 +300,9 @@ asserted procedure vsdb_cdelete(db: VSdb, nd: VSnd);
 
 asserted procedure vs_block(f: QfFormula, vl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL): List3;
    % This is the usual entry point of module [ofsfvsblock].
-   % TODO: Update this old procedure description.
-   % Quantifier elimination for one block subroutine. The result
-   % contains the list of variables for which elimination failed, the
-   % (possibly partial) possibly negated elimination result as a
-   % JunctionL, and the new theory.
+   % TODO: Write a reasonable procedure description.
    begin scalar db, rf, rvl, ansal;
+      vs_setfnal();
       db := vsdb_mk(vl, f, theo, bvl, ans);
       if !*ofsfvsblockbtr then
 	 vs_blockmainloop!-btr db
