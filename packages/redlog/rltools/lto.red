@@ -104,6 +104,30 @@ asserted procedure lto_sublistp(l1: List, l2: List): ExtraBoolean;
    else
       null l2;
 
+asserted procedure lto_ordprod(l1: List, l2: List, ord: Applicable): Boolean;
+   % The (partial) product order of [ord].
+   null l1 or (apply(ord, {car l1, car l2}) and lto_ordprod(cdr l1, cdr l2, ord));
+
+asserted procedure lto_transposip(l: List): List;
+   % [l] is a list of list encoding a quadratic matrix. Returns the transpose of [l].
+   begin integer row, res, w;
+      while l and car l do <<
+	 row := for each rl on l collect <<
+ 	    w := caar rl;
+	    car rl := cdar rl;
+	    w
+	 >>;
+	 push(row, res)
+      >>;
+      return reversip res
+   end;
+
+asserted procedure lto_intid(n: Integer): Id;
+   intern compress('!! . explode n);
+
+asserted procedure lto_id2int(a: Id): Integer;
+   compress cdr explode a;
+
 asserted procedure lto_alinsert(key: Any, val: Any, al: Alist): Alist;
    % List tools alist insert. [key] is non-nil, [val] is any and [al] is
    % an alist having lists as values. Returns an alist where [val] is inserted
