@@ -806,7 +806,7 @@ asserted procedure lto_setCover(l: List): List;
 
 asserted procedure lto_setCover1(l: List): List;
    % WARNING: [l] will be destroyed.
-   begin scalar oc, f1, xf, lhs, l2, f2, obj, f3, zz, z, w, best;
+   begin scalar oc, f1, xf, lhs, l2, f2, obj, f3, zz, z, w;
       oc := rl_set '(r);
       f1 := rl_smkn('and, for each pr in l collect <<
 	 xf := !*k2f car pr;
@@ -829,12 +829,24 @@ asserted procedure lto_setCover1(l: List): List;
       f3 := ofsf_0mk2('geq, addf(z, negf obj));
       w := ofsf_xopt!-ansl!-ansl ofsf_xopt!-xopt
  	 rl_ex(rl_mkn('and, {f1, f2, f3}), {zz});
-      best := pop w;
-      w := for each pr in ofsf_xopt!-ans!-pt best join
+      w := for each pr in lto_setCoverBestRes w join
 	 if eqn(cdr pr, 1) then
  	    {car pr};
       rl_set oc;
       return w
+   end;
+
+asserted procedure lto_setCoverBestRes(l: List): DottedPair;
+   begin scalar cur, best, res;
+      for each ans in l do <<
+	 cur := negf red ofsf_arg2l ofsf_xopt!-ans!-gd ans;;
+	 assert(fixp cur);
+	 if not best or cur < best then <<
+	    best := cur;
+	    res := ofsf_xopt!-ans!-pt ans
+	 >>
+      >>;
+      return res
    end;
 
 asserted procedure lto_lpvarl(u: Any): List;
