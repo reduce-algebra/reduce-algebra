@@ -245,7 +245,7 @@ put('ofsf,'rl_services,'(
    (rl_dfgprint!* . cl_dfgPrint)
    (rl_smt2Print!* . cl_smt2Print)
    (rl_smt2Read!* . cl_smt2Read)
-   (rl_smtqe!* . ofsf_smtqe)
+   (rl_smtqe!* . smtqe_smtqe)
    (rl_dima!* . ofsf_dima)
    (rl_sat2pol!* . ofsf_sat2pol)
    (rl_psat2pol!* . ofsf_psat2pol)
