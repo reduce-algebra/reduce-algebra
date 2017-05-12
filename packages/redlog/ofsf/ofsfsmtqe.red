@@ -90,31 +90,38 @@ asserted procedure smtqe_collectResult(db: VSdb): DottedPair;
    end;
 
 asserted procedure smtqe_fl2uc(fl: List): List;
-   % [fl] is a list of conjunctions [a_0, ..., a_n] with [a_i in {true, false},
-   % which all contain at least one [false]. Returns a subset of [{0, ..., n}]
-   % such that all conjunctions contain at least one [false] already on that
-   % subset.
-   begin scalar mtx, row, c, scmtx, uc; integer n;
-      if null fl then return nil;
-      n := length rl_argn car fl;
-      for each f in fl do <<
-	 row := for each tv in rl_argn f collect
+  % [fl] is a list of conjunctions [a_0, ..., a_n] with [a_i in {true, false},
+  % which all contain at least one [false]. Returns a subset of [{0, ..., n}]
+  % such that all conjunctions contain at least one [false] already on that
+  % subset.
+  begin scalar mtx1, mtx, row, c, scmtx, uc, inp, otime; integer n;
+     if !*rlverbose then ioto_tprin2 "+++++ unsat core: ";
+     if null fl then return nil;
+     mtx1 := for each f in fl collect
+	 for each tv in rl_argn f collect
 	    if tv eq 'false then 1 else 0;
+     n := length car mtx1;
+     if !*rlverbose then ioto_prin2 {n, ", order preprocessing: "};
+     mtx1 := (for i := 0 : n-1 collect lto_int2id i) . mtx1;
+     mtx1 := lto_transposip mtx1;
+     for each row in mtx1 do <<
 	 scmtx := mtx;
 	 c := t; while c and scmtx do <<
-	    if lto_ordprod(row, car scmtx, 'geq) then <<
+	    if lto_ordprod(cdr row, cdr car scmtx, 'geq) then <<
 	       car mtx := row;
 	       c := nil
-	    >> else
+	    >> else if lto_ordprod(cdr row, cdr car scmtx, 'leq) then
+	       c := nil
+	    else
 	       pop scmtx
 	 >>;
 	 if c then push(row, mtx)
-      >>;
-      push(for i := 1:n collect lto_int2id i, mtx);
-      uc := lto_setCover lto_transposip mtx;
-      uc := for each x in uc collect lto_id2int x;
-      return uc
-   end;
+     >>;
+     if !*rlverbose then ioto_prin2 {length mtx, ", set cover: "};
+     uc := lto_setCover mtx where !*rlverbose = nil;
+     if !*rlverbose then ioto_prin2t length uc;
+     return for each x in uc collect lto_id2int x
+  end;
 
 endmodule;
 
