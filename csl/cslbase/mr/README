@@ -9,7 +9,10 @@ provide a one-M-R check for 32-bit values, the second has a much larger
 table and uses 3 M-R checks to test 64-bit inputs.
 They have an alternative version of the 64-bit code that can get away with
 just two Miller Rabin calculations, but that uses a much larger table.
-I have not investigated the 64-bit case in my investigations.
+I have not investigated the 64-bit case in my investigations, but the
+list that gives all the base 2 strong pseudoprimes up to 2^64 is at
+http://www.cecm.sfu.ca/Pseudoprimes/index-2-to-64.html, and the calculation
+of them was done by Jan Feitsma.
 
 To test 32-bit integers what F&J suggest is to start by filtering using
 test division by 2, 3, 5 and 7. It the input passes those tests then a
@@ -44,7 +47,7 @@ that the smallest table they were able to create had 224 entries, but that
 one had larger witness values stored in it and so the table had to be one
 made of 32-bit integers rather than 16 bit ones.
 
-At the time of writing this note I have found a table of size 220 16-bit
+At the time of writing this note I have found a table of size 218 16-bit
 integers, which is more compact than the ones reported by F&J. In practical
 terms this is not a significant improvement, but I still like it!
 

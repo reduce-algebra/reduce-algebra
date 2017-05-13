@@ -360,6 +360,7 @@ static void insertpseudo(uint32_t pseudoprime, int witness)
 {
 // I have a hash table for all the pseudoprimes (to any base). I use
 // rather a simple hash function.
+     if (pseudoprime < 4096) return; // I will handle small numbers specially.
     if (pseudoprime % 2 == 0 ||
         pseudoprime % 3 == 0 ||
         pseudoprime % 5 == 0 ||
@@ -396,7 +397,7 @@ static int compare_function(const void *va, const void *vb)
     if (a->key == b->key) return 0;
     else if (a->key == 0) return 1;
     else if (b->key == 0) return -1;
-// That will have arranged that all entries with zxero keys (ie empty hash
+// That will have arranged that all entries with zero keys (ie empty hash
 // slots) end up at one end of the table. In what follows I have a non-
 // empty slot and hence the val field will contain genuine data.
 // I will sort such that numbers that are pseudo-primes to many bases
@@ -406,6 +407,12 @@ static int compare_function(const void *va, const void *vb)
 }
 
 static int witness_pseudo_pairs = 0;
+
+static void printcounts(int i)
+{   if (i < hashsize && hashtable[i].val != NULL)
+        printf("%d:  %.8x fails for %d bases\n",
+            i, hashtable[i].key, hashtable[i].val[1]);
+}
 
 static void read_pseudoprime_data()
 {
@@ -452,6 +459,12 @@ static void read_pseudoprime_data()
     qsort(hashtable, hashsize, sizeof(hash_entry), compare_function);
     printf("c2=%d c3=%d c5=%d c7=%d c11=%d c13=%d c17=%d c19=%d\n",
         c2, c3, c5, c7, c11, c13, c17, c19);
+    for (int i=0; i<10; i++) printcounts(i);
+    for (int i=10; i<100; i+=5) printcounts(i);
+    for (int i=100; i<1000; i+=50) printcounts(i);
+    for (int i=1000; i<10000; i+=500) printcounts(i);
+    for (int i=10000; i<100000; i+=5000) printcounts(i);
+    for (int i=100000; i<1000000; i+=50000) printcounts(i);
 }
 
 static __thread bool *validwitness[WITNESS_COUNT];
