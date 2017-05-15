@@ -667,6 +667,8 @@ procedure ofsf_float2dn(x);
       return '!:dn!: . compress(for each d in w join if not (d eq '!.) then {d}) . -dotpos
    end;
 
+rl_provideService rl_dima = ofsf_dima;
+
 procedure ofsf_dima(ql, p);
    % [ql] is a list of SF, [p] is an SF.
    begin scalar w, xl, yl, pt, qtl, ptt, sys, sl0, sl; integer k, n;

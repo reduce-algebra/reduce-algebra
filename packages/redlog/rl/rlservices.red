@@ -146,6 +146,14 @@ rl_service {
    mode = both};
 
 rl_service {
+   name = dima,
+   doc = "experimental implementation of Grigoriev & Pasechnik, doi:10.1007/s00037-005-0189-7",
+   arg = {pos = 1, name = inner, type = List(Term), doc = "Q_1(X), ..., Q_k(X)"},
+   arg = {pos = 2, name = outer, type = Term, doc = "P(y_1, ..., y_k)"},
+   returns = {type = List(Formula)},
+   mode = both};
+
+rl_service {
    name = dnf,
    doc = "disjunctive normal form",
    arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
@@ -185,6 +193,21 @@ rl_service {
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = except, type = List(Variable), default = {}, doc = "variables not to be quantified"},
    returns = {type = Formula},
+   mode = both};
+
+rl_service {
+   name = expand,
+   doc = "expand  bounded quantifiers (INTEGERS only)",
+   arg = {pos = 1, name = formula, type = Formula, doc = "weakly quantified formula"},
+   returns = {type = Formula},
+   mode = both};
+
+rl_service {
+   name = expanda,
+   doc = "expand rlwqea result (INTEGERS only)",
+   arg = {pos = 1, name = result, type = List(Triplet(Formula, List(Formula), List(Assignment(Any)))), doc = "rlwqea result"},
+   arg = {pos = 2, name = formula, type = Formula, default = false, doc = "unused"},
+   returns = {type = List(Pair(Formula, List(Assignment(Any))))},
    mode = both};
 
 rl_service {
@@ -455,6 +478,14 @@ rl_service {
    mode = both};
 
 rl_service {
+   name = qesil,
+   doc = "recognized via QE and remove redundant formulas",
+   arg = {pos = 1, name = formulas, type = List(Formula), doc = "list of first-order input formulas"},
+   arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
+   returns = {type = List(Formula)},
+   mode = both};
+
+rl_service {
    name = qews,
    doc = "quantifier elimination with selection",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
@@ -481,6 +512,13 @@ rl_service {
    doc = "apply parametric quantified SAT to DIMACS file",
    arg = {pos = 1, name = file, type = String, doc = "file in DIMACS format"},
    returns = {type = Formula},
+   mode = both};
+
+rl_service {
+   name = qsatoptions,
+   doc = "parametric quantified SAT set options",
+   arg = {pos = 1, name = options, type = List5(Enum(zmom, activity, dlcs), Integer, Integer, Integer, Integer), doc = "list of options: branching heuristc, restart value, first value to be set, increase factor for restarts, bound for clause deletion"},
+   returns = {type = List5(Enum(zmom, activity, dlcs), Integer, Integer, Integer, Integer)},
    mode = both};
 
 rl_service {
@@ -662,6 +700,20 @@ rl_service {
    arg = {pos = 2, name = terms, type = List(Term), doc = "terms for case distinction"},
    arg = {pos = 3, name = tnft, type = Switch, doc = "tree TNF in contrast to flat TNF"},
    returns = {type = Formula},
+   mode = both};
+
+rl_service {
+   name = tropsat,
+   doc = "tropical satisfiability checking (experimental)",
+   arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
+   returns = {type = Enum(sat, unsat, unknown)},
+   mode = both};
+
+rl_service {
+   name = ptropsat,
+   doc = "positive tropical satisfiability checking (experimental)",
+   arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
+   returns = {type = Enum(sat, unsat, unknown)},
    mode = both};
 
 rl_service {

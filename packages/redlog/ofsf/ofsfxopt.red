@@ -565,7 +565,7 @@ procedure ofsf_xopt!-succs1(ce,cp,v,npl,theo);
    begin scalar p,f,w;
       p := ofsf_xopt!-cp!-p cp;
       f := ofsf_xopt!-sub(ofsf_xopt!-ce!-f ce,v,p,theo);
-      return if w then
+      return if w then  % This never happens. TS
 	 ofsf_xopt!-ce!-mk(nil,'false,nil,nil)
       else
       	 ofsf_xopt!-ce!-mk(lto_delq(v,ofsf_xopt!-ce!-vl ce),

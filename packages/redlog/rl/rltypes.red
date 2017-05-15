@@ -264,7 +264,7 @@ rl_type {
    doc = {
       syntax = "A not necessarily homogeneous List with three elements."}};
 
-asserted procedure rl_a2sTriplet(x: Any, a2sElem1: Any, a2sElem2: Any, a2sElem3: Any): List;
+asserted procedure rl_a2sTriplet(x: Any, a2sElem1: Appplicable, a2sElem2: Appplicable, a2sElem3: Appplicable): List;
    begin scalar w, !*rlsimpl;
       x := reval x;
       if not eqcar(x, 'list) then
@@ -272,11 +272,44 @@ asserted procedure rl_a2sTriplet(x: Any, a2sElem1: Any, a2sElem2: Any, a2sElem3:
       x := cdr x;
       if not eqn(length x, 3) then
  	 typerr(x, "Triplet");
-      return {apply(a2sElem1, {cadr x}), apply(a2sElem2, {caddr x}), apply(a2sElem2, {cadddr x})}
+      return {apply(a2sElem1, {car x}), apply(a2sElem2, {cadr x}), apply(a2sElem3, {caddr x})}
    end;
 
-asserted procedure rl_s2aTriplet(x: Any, a2sElem1: Any, a2sElem2: Any, a2sElem3: Any): List;
+asserted procedure rl_s2aTriplet(x: Any, a2sElem1: Appplicable, a2sElem2: Appplicable, a2sElem3: Appplicable): List;
    'list . {apply(a2sElem1, {car x}), apply(a2sElem2, {cadr x}), apply(a2sElem3, {caddr x})};
+
+% Longer fixed length lists
+
+rl_type {
+   name = List5,
+   a2s = rl_a2sList5,
+   s2a = rl_s2aList5,
+   doc = {
+      syntax = "A not necessarily homogeneous List with five elements."}};
+
+asserted procedure rl_a2sList5(x: Any, a2sElem1: Appplicable, a2sElem2: Appplicable, a2sElem3: Appplicable, a2sElem4: Appplicable, a2sElem5: Appplicable): List;
+   begin scalar w, !*rlsimpl;
+      x := reval x;
+      if not eqcar(x, 'list) then
+ 	 typerr(x, "List5");
+      x := cdr x;
+      if not eqn(length x, 5) then
+ 	 typerr(x, "List5");
+      return {
+	 apply(a2sElem1, {car x}),
+ 	 apply(a2sElem2, {cadr x}),
+ 	 apply(a2sElem3, {caddr x}),
+ 	 apply(a2sElem4, {cadddr x}),
+ 	 apply(a2sElem5, {caddddr x})}
+   end;
+
+asserted procedure rl_s2aList5(x: Any, a2sElem1: Appplicable, a2sElem2: Appplicable, a2sElem3: Appplicable, a2sElem4: Appplicable, a2sElem5: Appplicable): List;
+   'list . {
+      apply(a2sElem1, {car x}),
+      apply(a2sElem2, {cadr x}),
+      apply(a2sElem3, {caddr x}),
+      apply(a2sElem4, {cadddr x}),
+      apply(a2sElem5, {caddddr x})};
 
 % Multiplicity lists
 

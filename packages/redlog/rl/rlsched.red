@@ -211,24 +211,24 @@ module rlsched;
 
 %% rl_mkserv('enf,'(rl_simp rl_a2s!-var),'(rl_a2s!-atl),'((list)),'rl_mk!*fof,t);  % DCFSF
 
-rl_mkserv('qsatoptions,'(rl_a2s!-qsatoptions),nil,nil,'rl_s2a!-qsatoptions,t);
+%%rl_mkserv('qsatoptions,'(rl_a2s!-qsatoptions),nil,nil,'rl_s2a!-qsatoptions,t);
 
 % Does not work, because ofsf_cadswitches is missing.
 rl_mkserv('cadswitches,nil,nil,nil,function(lambda x; x),t);
 
-rl_mkserv('expand,'(rl_simp),nil,nil,'rl_mk!*fof,t);
+%% rl_mkserv('expand,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
 % Optional argument is not yet used:
-rl_mkserv('expanda,'(rl_simpa),'(rl_simp),'(false),'rl_s2a!-qea,t);
+%% rl_mkserv('expanda,'(rl_simpa),'(rl_simp),'(false),'rl_s2a!-qea,t);
 
-rl_mkserv('qesil,'(rl_a2s!-fl),'(rl_a2s!-atl),'((list)),'rl_s2a!-fl,t);
+%% rl_mkserv('qesil,'(rl_a2s!-fl),'(rl_a2s!-atl),'((list)),'rl_s2a!-fl,t);
 
-rl_mkserv('dima, '(rl_a2s!-sflist rl_a2s!-sf), nil, nil, 'rl_s2a!-formulal, t);
+%% rl_mkserv('dima, '(rl_a2s!-sflist rl_a2s!-sf), nil, nil, 'rl_s2a!-formulal, t);
 
-rl_mkserv('tropsat, '(rl_simp), nil, nil, 'aeval, t);
-
-rl_mkserv('ptropsat, '(rl_simp), nil, nil, 'aeval, t);
-
+%% rl_mkserv('tropsat, '(rl_simp), nil, nil, 'aeval, t);
+%% 
+%% rl_mkserv('ptropsat, '(rl_simp), nil, nil, 'aeval, t);
+%% 
 % tplp, undocumented
 rl_mkserv('miniscope,'(rl_simp),'(nil),'(nil),'rl_mk!*fof,t);
 

@@ -755,34 +755,34 @@ procedure rl_a2s!-aqepoints(u);
       >>
    end;
 
-procedure rl_s2a!-qsatoptions(l);
-   'list . l;
-
-procedure rl_a2s!-qsatoptions(u);
-   begin scalar w,temp;
-      w := reval u;
-      if not eqcar(w,'list) then
-         typerr(w,"list");
-      w := cdr w;
-      if w then <<
-      	 temp := car w;
-      	 if not (temp = 'zmom or temp = 'activity or temp = 'dlcs) then
- 	    typerr(temp,"allowed heuristics (zmom, activity, dlcs)");
-      	 temp := cadr w;
-      	 if not numberp temp then
-	    typerr(temp,"number");
-      	 temp := caddr w;
-      	 if not (eqn(temp,0) or eqn(temp,1)) then
-	    typerr(temp,"0 or 1");
-      	 temp := cadddr w;
-      	 if not numberp temp then
-	    typerr(temp,"number");
-      	 temp := car cddddr w;
-      	 if not numberp temp then
-	    typerr(temp,"number");
-      >>;
-      return w
-   end;
+%% procedure rl_s2a!-qsatoptions(l);
+%%    'list . l;
+%% 
+%% procedure rl_a2s!-qsatoptions(u);
+%%    begin scalar w,temp;
+%%       w := reval u;
+%%       if not eqcar(w,'list) then
+%%          typerr(w,"list");
+%%       w := cdr w;
+%%       if w then <<
+%%       	 temp := car w;
+%%       	 if not (temp = 'zmom or temp = 'activity or temp = 'dlcs) then
+%%  	    typerr(temp,"allowed heuristics (zmom, activity, dlcs)");
+%%       	 temp := cadr w;
+%%       	 if not numberp temp then
+%% 	    typerr(temp,"number");
+%%       	 temp := caddr w;
+%%       	 if not (eqn(temp,0) or eqn(temp,1)) then
+%% 	    typerr(temp,"0 or 1");
+%%       	 temp := cadddr w;
+%%       	 if not numberp temp then
+%% 	    typerr(temp,"number");
+%%       	 temp := car cddddr w;
+%%       	 if not numberp temp then
+%% 	    typerr(temp,"number");
+%%       >>;
+%%       return w
+%%    end;
 
 procedure rl_s2a!-ghqe(l);
    % Generic elimination result for algebraic mode. [l] is a lis of

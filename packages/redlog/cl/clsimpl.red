@@ -813,7 +813,11 @@ procedure cl_susiinter(prg,knowl,a);
 procedure cl_susiminlevel(l1,l2);
    if l1 eq 'ignore then l2 else if l2 eq 'ignore then l1 else min(l1,l2);
 
-procedure cl_qesil(fl,theo);
+rl_provideService rl_qesil = cl_qesil;
+
+asserted procedure cl_qesil(fl: List, theo: List);
+   % QE-based simplification of a list of formulas. Eliminated formulas that are
+   % implied by the conjunction of all others.
    begin scalar prem,test,sol,res; integer n;
       if !*rlverbose then <<
       	 n := length fl + 1;
