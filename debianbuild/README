@@ -21,7 +21,7 @@ Install the package with
 
   dpkg --install reduce-common_20120514_i386.deb
 
-Rpm packagies can be built from this by running (You need Ubuntu packages 
+Rpm packages can be built from this by running (You need Ubuntu packages 
 fakeroot and alien)
 
  fakeroot alien -r -k reduce-*.deb
@@ -33,5 +33,6 @@ The CSL and PSL versions of REDUCE are run with
 and 
   
   /usr/bin/redcsl
+  [/usr/bin/bootstrapreduce, /usr/bin/csl]
 
 respectively.

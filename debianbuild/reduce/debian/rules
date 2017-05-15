@@ -108,7 +108,7 @@ build:	configure-stamp build-stamp
 build-stamp:
 	dh_testdir
 #	cd $(TOPDIR) ; make
-	cd $(CSLBUILDDIR) ; make
+	cd $(CSLBUILDDIR) ; make bootstrapreduce.img ; make csl.img ; make
 ifneq ($(BUILDPSL),)
 	cd $(PSLBUILDDIR) ; make
 endif
@@ -140,7 +140,14 @@ install-stamp: build-stamp
 	ln -s redfront.1 $(MANDIR)/man1/rfpsl.1
 	cp $(GENERICTOPDIR)/breduce/breduce.1 $(MANDIR)/man1
 # copy CSL files
-	cp -r $(CSLBUILDDIR)/csl/reduce.img $(CSLBUILDDIR)/csl/reduce $(CSLBUILDDIR)/csl/reduce.resources $(LIBDIR)/cslbuild/csl
+	cp -r $(CSLBUILDDIR)/csl/reduce.img \
+		$(CSLBUILDDIR)/csl/reduce \
+		$(CSLBUILDDIR)/csl/reduce.resources \
+		$(CSLBUILDDIR)/csl/bootstrapreduce.img \
+		$(CSLBUILDDIR)/csl/bootstrapreduce \
+		$(CSLBUILDDIR)/csl/csl.img \
+		$(CSLBUILDDIR)/csl/csl \
+			$(LIBDIR)/cslbuild/csl
 #	$(RSYNC_CMD) --no-perms $(CSLBUILDDIR)/csl/reduce.doc/ $(DOCDIR)/
 	mkdir -p $(FONTDIR)
 	$(RSYNC_CMD) --chmod=Fa-x --exclude "/src/***" $(CSLBUILDDIR)/csl/reduce.fonts/ $(FONTDIR)
@@ -167,6 +174,8 @@ endif
 # copy shell scripts for running REDUCE
 	cp -a debian/runpsl.sh $(BINDIR)/redpsl
 	cp -a debian/runcsl.sh $(BINDIR)/redcsl
+	cp -a debian/runbootstrapreduce.sh $(BINDIR)/bootstrapreduce
+	cp -a debian/runcsllisp.sh $(BINDIR)/csl
 # copy rest
 	cp $(REDFRONTBUILDDIR)/rfcsl $(BINDIR)
 	cp $(REDFRONTBUILDDIR)/rfpsl $(BINDIR)
