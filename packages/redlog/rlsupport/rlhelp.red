@@ -229,7 +229,7 @@ asserted procedure rl_helpOverviewServices(devp: Boolean);
       al := for each s in sl join <<
 	 w := get(s, 'rl_amservice);
 	 if w then
-	    {lto_at2str w . cdr atsoc('description, get(s, 'docal))}
+	    {lto_at2str w . cdr atsoc('description, get(w, 'docal))}
       >>;
       ioto_tprin2t "REDLOG SERVICES";
       rl_printDescriptionList(al, nil);

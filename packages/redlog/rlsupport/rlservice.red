@@ -360,13 +360,21 @@ asserted procedure rl_typeString2TypeForm(s: String): Any;
    end;
 
 asserted procedure rl_formServiceSm(spec: Alist): List;
-   begin scalar b, rl_b, argl; integer n;
+   begin scalar b, rl_b, argl, sl, docal, p; integer n;
       b := lto_eatsoc('name, spec, {"missing service name in", spec});
       rl_b := intern compress nconc(explode 'rl_, explode b);
       rl_b!* := intern compress nconc(explode rl_b, '(!! !*));
       n := lto_eatsoc('argnum, spec, {"missing argnum in", spec});
+      push(lto_at2str rl_b, sl);
+      push("/", sl);
+      push(lto_at2str lto_int2id n, sl);
+      docal := {
+	 'synopsis . lto_sconcat reversip sl,
+	 'description . lto_catsoc('doc, spec) or ""};
+      push({'put, mkquote rl_b, ''docal, mkquote docal}, p);
       argl := for i := 1:n collect mkid('a, i);
-      return 'progn . reversip rl_formServiceSm1(rl_b, rl_b!*, argl, nil)
+      p := rl_formServiceSm1(rl_b, rl_b!*, argl, p);
+      return 'progn . reversip p
    end;
 
 asserted procedure rl_formServiceSm1(rl_b: Id, rl_b!*: Id, argl: List, p: List): List;
