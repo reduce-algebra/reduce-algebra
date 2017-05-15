@@ -1367,7 +1367,7 @@ procedure ofsfic_extracttags(tagl);
    begin scalar l;
       for each i in tagl do
        	 for each j in car i do
-	    lto_insert(j, l);
+	    l := lto_insert(j, l);
       return l
    end;
 
