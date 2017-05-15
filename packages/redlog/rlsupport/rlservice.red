@@ -193,8 +193,6 @@ asserted procedure rl_formServiceBoth(spec: Alist): List;
       push({'put, mkquote rlb, ''rl_smService, mkquote rl_b}, p);
       push({'put, mkquote rlb, ''intypes, mkquote types}, p);
       push({'put, mkquote rlb, ''outtype, rtype}, p);
-      % Flag rl_b as a service:
-      push({'flag, mkquote {rl_b}, ''rl_service}, p);
       % An Alist for documentation with the rlhelp submodule:
       docal := {
 	 'synopsis . rl_docSynopsis(rlb, names, types, defaults),
@@ -202,7 +200,9 @@ asserted procedure rl_formServiceBoth(spec: Alist): List;
 	 'description . doc,
 	 'arguments . rl_docArguments(names, types, docs),
 	 'switches . rl_docSwitches(names, types, docs)};
-      push({'put, mkquote rl_b, ''docal, mkquote docal}, p);
+      push({'put, mkquote rlb, ''docal, mkquote docal}, p);
+      % Flag rl_b as a service:
+      push({'flag, mkquote {rl_b}, ''rl_service}, p);
       push({'put, mkquote rl_b, ''rl_amService, mkquote rlb}, p);
       % A psopfn as the AM entry point:
       push({'put, mkquote rlb, ''psopfn, mkquote rl_b!$}, p);

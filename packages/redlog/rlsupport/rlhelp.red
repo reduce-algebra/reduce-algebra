@@ -184,9 +184,12 @@ asserted procedure rl_helpOverview(devp: Boolean);
       rl_helpOverviewCSL keywords;
       terpri();
       ioto_tprin2t "REDLOG SWITCHES";
-      rl_helpOverviewCSL for each s in rl_services!* join
-	 for each sw in cdr atsoc('switches, get(s, 'docal)) collect
- 	    lto_sconcat2("rl", car sw);
+      rl_helpOverviewCSL for each s in rl_services!* join <<
+	 w := get(s, 'rl_amservice);
+	 if w then
+	    for each sw in cdr atsoc('switches, get(w, 'docal)) collect
+ 	       lto_sconcat2("rl", car sw)
+      >>;
       terpri();
       ioto_tprin2t "SEE ALSO";
       rl_printDescriptionList(
