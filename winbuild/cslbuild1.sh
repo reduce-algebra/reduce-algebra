@@ -104,7 +104,10 @@ $cygalt $reduce/csl/cslbase/configure $host --prefix=$here/csl$1 \
     $cygopt --with-fox=$here/csl$1 --with-fox-pending \
     --without-wx
 $cygalt make
-ls -lh reduce.exe reduce.img csl.exe csl.img
+$cygalt make bootstrapreduce.img
+ls -lh reduce.exe reduce.img \
+       bootstrapreduce.exe bootstrapreduce.img \
+       csl.exe csl.img
 popd
 
 popd

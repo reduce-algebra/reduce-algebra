@@ -133,6 +133,7 @@ esac
 
 ls -lh csl*/csl/csl.exe csl*/csl/csl.com csl*/csl/csl.img
 ls -lh csl*/csl/reduce.exe csl*/csl/reduce.com csl*/csl/reduce.img
+ls -lh csl*/csl/bootstrapreduce.exe csl*/csl/bootstrapreduce.img
 
 # Now assemble the various executables that I made in the cslwin32, cslwin64,
 # cslcyg32 and cslcyg64 directories, together with two small helper programs
