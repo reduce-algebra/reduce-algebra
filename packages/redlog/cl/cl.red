@@ -29,7 +29,7 @@ copyright('cl, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(cl clsimpl clbnf clnf clqe cltab clmisc clresolv clsl), nil);
+create!-package('(cl clsimpl clbnf clnf clqe cltab clmisc clresolv), nil);
 
 load!-package 'redlog;
 
