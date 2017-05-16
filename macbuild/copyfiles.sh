@@ -14,6 +14,10 @@ cp runcsl.sh distrib/csl/redcsl
 chmod +x distrib/csl/redcsl
 cp $1/cslbuild/*/redfront/rfcsl distrib/csl/rfcsl
 chmod +x distrib/csl/rfcsl
+cp runcsllisp.sh distrib/csl/csl
+chmod +x distrib/csl/cs;
+cp runbootstrapreduce.sh distrib/csl/bootstrapreduce
+chmod +x distrib/csl/bootstrapreduce
 
 cp -r $1/pslbuild/*/psl distrib/psl
 cp -r $1/pslbuild/*/red distrib/psl

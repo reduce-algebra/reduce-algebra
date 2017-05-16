@@ -84,6 +84,6 @@ package-mac:	$(BUILDTOPDIR).stamp csl.stamp psl.stamp docs.stamp
 # directory "Output"
 
 clean:
-	rm -rf *.img *.dmg distrib $(BUILDTOPDIR) log *.stamp
+	rm -rf *.img *.dmg distrib $(BUILDTOPDIR) *.log *.stamp
 
 # end of Makefile
