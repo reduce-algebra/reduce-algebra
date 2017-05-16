@@ -252,20 +252,20 @@ module rlsched;
 %%    (list)),'rl_s2a!-gqe,t);
 
 % experimental straight-line code, undocumented on the web:
-rl_mkserv('straightify,'(rl_simp),nil,nil,'sl_mk!*slp,t);
-rl_alias('sfy,'straightify);
-
-sl_mkserv('atnum,'(sl_simp),nil,nil,'aeval,t);
-
-sl_mkserv('simpl,'(sl_simp),nil,nil,'sl_mk!*slp,t);
-
-sl_mkserv('straightify,'(sl_simp),nil,nil,'sl_mk!*slp,t);
-sl_alias('sfy,'straightify);
-
-sl_mkserv('pnf,'(sl_simp),nil,nil,'sl_mk!*slp,t);
-
-sl_mkserv('unstraightify,'(sl_simp),nil,nil,'rl_mk!*fof,t);
-sl_alias('unsfy,'unstraightify);
+%% rl_mkserv('straightify,'(rl_simp),nil,nil,'sl_mk!*slp,t);
+%% rl_alias('sfy,'straightify);
+%% 
+%% sl_mkserv('atnum,'(sl_simp),nil,nil,'aeval,t);
+%% 
+%% sl_mkserv('simpl,'(sl_simp),nil,nil,'sl_mk!*slp,t);
+%% 
+%% sl_mkserv('straightify,'(sl_simp),nil,nil,'sl_mk!*slp,t);
+%% sl_alias('sfy,'straightify);
+%% 
+%% sl_mkserv('pnf,'(sl_simp),nil,nil,'sl_mk!*slp,t);
+%% 
+%% sl_mkserv('unstraightify,'(sl_simp),nil,nil,'rl_mk!*fof,t);
+%% sl_alias('unsfy,'unstraightify);
 
 endmodule;  % [rlsched]
 

@@ -31,7 +31,7 @@ copyright('redlog, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(redlog rlami rltypes rlservices rlblackboxes rlsched rlcont rlsl rlslv),nil);
+create!-package('(redlog rlami rltypes rlservices rlblackboxes rlsched rlcont),nil);
 
 load!-package 'rlsupport;
 
@@ -455,17 +455,10 @@ macro procedure rl_mkserv(argl);
       return 'progn . prgn
    end;
 
-copyd('sl_mkserv,'rl_mkserv);
-
 procedure rl_alias(new,old);
    put(intern compress append('(!r !l),explode new),
       'psopfn,
       get(intern compress append('(!r !l),explode old),'psopfn));
-
-procedure sl_alias(new,old);
-   put(intern compress append('(!s !l),explode new),
-      'psopfn,
-      get(intern compress append('(!s !l),explode old),'psopfn));
 
 inline procedure rl_op(f);
    % Reduce logic operator. [f] is a formula. Returns the top-level
