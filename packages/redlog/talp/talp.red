@@ -103,7 +103,7 @@ put('talp,'rl_services,'(
    (rl_cnf!* . cl_cnf)
    (rl_dnf!* . cl_dnf)
    (rl_pnf!* . cl_pnf)
-   (rl_apnf!* . cl_apnf)
+   (rl_miniscope!* . cl_miniscope)
    (rl_nnf!* . cl_nnf)
    (rl_rnf!* . talp_rnf)
    (rl_nnfnot!* . cl_nnfnot)

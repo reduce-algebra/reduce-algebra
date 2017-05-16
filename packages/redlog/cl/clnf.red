@@ -380,6 +380,8 @@ asserted procedure cl_qvarl1(f: Formula): KernelL;
       return nil
    end;
 
+rl_provideService rl_miniscope = cl_apnf using rl_varlat;
+
 asserted procedure cl_apnf(phi: Formula): Formula;
    % Common logic anti-prenex normal form. [phi] is a formula. Returns a
    % positive formula equivalent to [phi], where all quantifiers are moved to

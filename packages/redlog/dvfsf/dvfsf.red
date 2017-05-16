@@ -115,7 +115,7 @@ put('dvfsf,'rl_services,'(
    (rl_ifacl!* . cl_ifacl)
    (rl_ifacml!* . cl_ifacml)
    (rl_matrix!* . cl_matrix)
-   (rl_apnf!* . cl_apnf)
+   (rl_miniscope!* . cl_miniscope)
    (rl_atml!* . cl_atml)
    (rl_atl!* . cl_atl)
    (rl_qe!* . cl_qe)

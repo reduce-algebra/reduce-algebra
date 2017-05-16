@@ -214,7 +214,7 @@ module rlsched;
 %%rl_mkserv('qsatoptions,'(rl_a2s!-qsatoptions),nil,nil,'rl_s2a!-qsatoptions,t);
 
 % Does not work, because ofsf_cadswitches is missing.
-rl_mkserv('cadswitches,nil,nil,nil,function(lambda x; x),t);
+%% rl_mkserv('cadswitches,nil,nil,nil,function(lambda x; x),t);
 
 %% rl_mkserv('expand,'(rl_simp),nil,nil,'rl_mk!*fof,t);
 
@@ -230,10 +230,10 @@ rl_mkserv('cadswitches,nil,nil,nil,function(lambda x; x),t);
 %% rl_mkserv('ptropsat, '(rl_simp), nil, nil, 'aeval, t);
 %% 
 % tplp, undocumented
-rl_mkserv('miniscope,'(rl_simp),'(nil),'(nil),'rl_mk!*fof,t);
+%%rl_mkserv('miniscope,'(rl_simp),'(nil),'(nil),'rl_mk!*fof,t);
 
 % tplp, undocumented
-rl_mkserv('skolemize,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
+%% rl_mkserv('skolemize,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
 
 % Symbolic only:
 %% rl_mkserv('surep,'(dummy dummy),nil,nil,nil,nil);

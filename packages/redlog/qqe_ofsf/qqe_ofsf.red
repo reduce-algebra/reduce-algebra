@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2005-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module qqe_ofsf;
+
+revision('qqe_ofsf, "$Id$");
+
+copyright('qqe_ofsf, "(c) 2005-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(qqe_ofsf_rcsid!* qqe_ofsf_copyright!*);
-   qqe_ofsf_rcsid!* :=
-      "$Id$";
-   qqe_ofsf_copyright!* := "Copyright (c) 2005-2009 A. Dolzmann and T. Sturm"
->>;
-
-module qqe_ofsf;
 
 create!-package('(qqe_ofsf),nil);
 
@@ -139,7 +131,7 @@ put('qqe_ofsf,'rl_services,'(
    (rl_ifacl!* . cl_ifacl)
    (rl_ifacml!* . cl_ifacml)
    (rl_matrix!* . cl_matrix)
-   (rl_apnf!* . cl_apnf)
+   (rl_miniscope!* . cl_miniscope)
    (rl_atml!* . cl_atml)
    (rl_tnf!* . cl_tnf)
    (rl_atl!* . cl_atl)

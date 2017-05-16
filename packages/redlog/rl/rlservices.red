@@ -47,13 +47,6 @@ rl_service {
    mode = both};
 
 rl_service {
-   name = apnf,
-   doc = "anti-prenex normal form, aka miniscoping",
-   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
-   returns = {type = Formula},
-   mode = both};
-
-rl_service {
    name = atl,
    doc = "set of contained atomic formulas",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
@@ -333,6 +326,13 @@ rl_service {
 rl_service {
    name = matrix,
    doc = "matrix, i.e., argument formula of leading quantifier",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   returns = {type = Formula},
+   mode = both};
+
+rl_service {
+   name = miniscope,
+   doc = "miniscoping, aka anti-prenex normal form",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    returns = {type = Formula},
    mode = both};

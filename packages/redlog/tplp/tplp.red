@@ -5,7 +5,7 @@ module tplp;
 
 revision('tplp, "$Id$");
 
-copyright('tplp, "(c) 2007-2009 T. Sturm");
+copyright('tplp, "(c) 2007-2017 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -31,6 +31,9 @@ copyright('tplp, "(c) 2007-2009 T. Sturm");
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
+
+% The following is from the old rlsched.red:
+%% rl_mkserv('skolemize,'(rl_simp),{function(lambda x; x)},'(nil),'rl_mk!*fof,t);
 
 create!-package('(tplp tplpkapur),nil);
 
@@ -62,7 +65,6 @@ put('tplp,'rl_services,'(
    (rl_cnf!* . tplp_cnf)
    (rl_dnf!* . tplp_dnf)
    (rl_pnf!* . cl_pnf)
-   (rl_apnf!* . cl_apnf)
    (rl_nnf!* . cl_nnf)
    (rl_nnfnot!* . cl_nnfnot)
    (rl_bnfsimpl!* . cl_bnfsimpl)

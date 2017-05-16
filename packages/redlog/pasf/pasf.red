@@ -147,7 +147,7 @@ put('pasf,'rl_params,'(
 % Services
 put('pasf,'rl_services,'(
    (rl_subfof!* . cl_subfof)
-   (rl_apnf!* . cl_apnf)
+   (rl_miniscope!* . cl_miniscope)
    (rl_atml!* . cl_atml)
    (rl_terml!* . cl_terml)
    (rl_termml!* . cl_termml)
