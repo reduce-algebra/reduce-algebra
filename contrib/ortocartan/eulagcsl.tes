@@ -1,0 +1,76 @@
+(setq !*lower nil)
+(eulagr '(
+   (The lagrangian for the Newtonian equations of motion
+    in 3 dimensions)
+   (constants m)
+   (parameter t)
+   (functions x(t) y(t) z(t) V(r) r(x y z) )
+   (variables x y z)
+   (lagrangian ((1 2) * m * ((der t x) ^ 2 + (der t y) ^ 2
+      + (der t z) ^ 2) - V))
+   (substitutions
+      (der x r) = (x / r)
+      (der y r) = (y / r)
+      (der z r) = (z / r)
+            )
+        ))
+(setq !*lower t)
+
+(setq !*lower nil)
+(eulagr '(
+   (a rotating generalization of the open FLRW model - Euler-Lagrange equations
+    for the Landau-Lifshitz lagrangian)
+   (constants y K33)
+   (functions K22(t)  F(t) h(t) )
+   (variables K22 F h)
+   (parameter t)
+
+(lagrangian ((-1 * y * K22 * K33 * h * ((cosh F) ^ -2) * (sinh F) * (der t
+
+
+        F)) + (2 * y * K22 * K33 * h * ((sinh F) ^ -1) * (der t F)) + (-2 * y
+
+
+        * K22 * K33 * (h ^ 2) * ((cosh F) ^ -1)) + ((-1 2) * y * K22 * K33 *
+
+
+        (h ^ 2) * ((cosh F) ^ -1) * ((sinh F) ^ -2)) + (-2 * y * K22 * K33
+
+
+        * (cosh F) * ((der t F) ^ 2)) + (-2 * y * K33 * h * ((cosh F) ^ -1) 
+
+
+        * (der t K22)) + (4 * y * K33 * (sinh F) * (der t K22) * (der t F)) + (
+
+
+        (-1 2) * y * (K22 ^ -1) * K33 * ((cosh F) ^ -1)) + (4 * y * (K22 ^
+
+
+        -1) * K33 * ((cosh F) ^ -1) * ((sinh F) ^ 2) * ((der t K22) ^ 2)) +
+
+
+        (-2 * y * (K22 ^ -1) * K33 * (cosh F)) + (-3 * y * (K22 ^ 2) * K33 *
+
+
+        h * ((cosh F) ^ -1) * (der t K22) * (der t h)) + (-3 * y * (K22 ^ 3) 
+
+
+        * K33 * h * ((sinh F) ^ -1) * (der t F) * (der t h)) + ((3 2) * y * (
+
+
+        K22 ^ 3) * K33 * (h ^ 2) * ((cosh F) ^ -1) * ((sinh F) ^ -2) * (
+
+
+        der t h)) + ((-1 2) * y * (K22 ^ 3) * K33 * ((cosh F) ^ -1) * ((der
+
+
+        t h) ^ 2))) )
+
+   (substitutions
+                  )
+   (dont print messages)
+%   (rmargin 120)
+%   (output for input)
+          ))
+
+(setq !*lower t)

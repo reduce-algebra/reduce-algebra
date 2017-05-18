@@ -1,0 +1,107 @@
+(setq !*lower nil)
+(squint'(
+   (a first integral of the Newtonian equations of motion)
+   (constants m)
+   (parameter t)
+   (functions x(t) y(t) z(t) V(x y z) Q11(x y z) Q12(x y z) Q13(x y z) Q22(x y z)
+   Q23(x y z) Q33(x y z) L1(x y z) L2(x y z) L3(x y z) E(x y z) )
+   (variables x y z)
+(integral (Q11 * (der t x) ^ 2 + 2 * Q12 * (der t x) * (der t y)
+    + 2 * Q13 * (der t x) * (der t z) + Q22 * (der t y) ^ 2
+    + 2 * Q23 * (der t y) * (der t z) + Q33 * (der t z) ^ 2
+    + L1 * (der t x) + L2 * (der t y) + L3 * (der t z) + E) )
+(markers M)
+   (substitutions
+    maineq
+(der t t M) = (- (der M V) / m)
+     )
+(dont print maineq equation (17) (18) (19))
+          ))
+(setq !*lower t)
+
+
+(setq !*lower nil)
+(squint'(
+   (a test of the existing first integral of the equations for a Bianchi V
+    model (this is in fact a test of the program squint))
+   (constants C D L)
+   (parameter t)
+   (functions K22(t) F(t) h(t) F1(t) F2(t))
+   (variables h F K22)
+   (dont print messages)
+(integral (((3 2) * K22 * h * ((cosh F) ^ -2) * (der t K22) * (der t h))
+ + ((-5 2) * h * ((cosh F) ^ -1) * ((sinh F) ^ -1) * (der t F)) 
+ + (-3 * h * ((cosh F) ^ -1) * (sinh F) * (der t F)) + ((1 4) *(K22 ^ -2)
+           * ((cosh F) ^ -2)) 
+ + (-2 *(K22 ^ -2)*((cosh F)^ -2) * ((sinh F) ^ 2) * ((der t K22) ^ 2)) 
+ + ((5 2) * (K22 ^ -1) * h * ((cosh F) ^ -2) * (der t K22)) 
+ + (3 * (K22 ^ -1) * h * (der t K22)) 
+ + (-2 *(K22 ^ -1) * ((cosh F) ^ -1) * (sinh F) * (der t K22) * (der t F))
+ + ((3 2) * (K22 ^ 2) * h * ((cosh F) ^ -1) * ((sinh F) ^ -1) * (der t F)
+          * (der t h)) 
+ + ((3 2) * (K22 ^ 2) * (h ^ 2) * ((cosh F) ^ -2) * (der t h)) 
+ + (-3 * (K22 ^ 2) * (h ^ 2) * ((sinh F) ^ -2) * (der t h))
+ + ((1 4) * (K22 ^ 2) * ((cosh F) ^ -2) * ((der t h) ^ 2)) 
+ + ((1 2) * (h ^ 2) * ((cosh F) ^ -2)) + ((h ^ 2) * ((sinh F) ^ -2)) 
+ + ((-1 2) * ((cosh F) ^ -2) * (der t h)) + ((3 2) * (K22 ^ -2)) 
+ + ((der t F) ^ 2) + ((3 2) * (der t h)))           )
+
+   (substitutions
+    maineq
+(der t t h) = (h * (der t h) / (sinh F) ^ 2
+               - (der t h) * (der t F) / ((cosh F) * (sinh F))
+               + 2 * (cosh F) * (der t h) * (der t F) / (sinh F)
+               + (der t K22) / K22 ^ 3 - h / 2 * (K22 * (sinh F)) ^ 2
+               + (der t F) / K22 ^ 2 * (cosh F) * (sinh F)
+               + (3 2) * h * (K22 * (der t h) / (sinh F)) ^ 2
+               - 5 * (der t h) * (der t K22) / K22)
+
+   maineq
+(der t t F) = (((-3 2) * K22 * h * ((cosh F) ^ -1) * ((sinh F) ^ -1) 
+                * (der t K22) * (der t h)) 
+  + (3 * h * ((cosh F) ^ -2) * (der t F)) 
+  + ((-7 2) * h * ((sinh F) ^ -2) * (der t F)) 
+  + (-3 * h * (der t F)) 
+  + ((1 2) * (K22 ^ -2) * (sinh F) * ((cosh F) ^ -1)) 
+  + (2 * (K22 ^ -2) * (sinh F) * ((cosh F) ^ -1) * ((der t K22)^ 2))
+  + ((1 2)*(K22 ^ -1)* h *((cosh F)^ -1)*((sinh F)^ -1)*(der t K22))
+  + (3 * (K22 ^ -1) * h * (sinh F) * ((cosh F) ^ -1) * (der t K22)) 
+  + (3 * (K22 ^ -1) * ((cosh F) ^ -2) * (der t K22) * (der t F))
+  + (3 * (K22 ^ -1) * (sinh F) * ((cosh F) ^ -1) * (der t t K22)) 
+  + (-7 * (K22 ^ -1) * (der t K22) * (der t F)) 
+  + ((9 2) * (K22 ^ 2) * h * ((sinh F) ^ -2) * (der t F) * (der t h)) 
+  + (-3 * (K22 ^ 2) * (h ^ 2) * ((cosh F) ^ -1) * ((sinh F) ^ -3) *
+                (der t h)) 
+  + ((-3 2) * (K22 ^ 2) * (h ^ 2) * ((cosh F) ^ -1) * ((sinh F) ^ -1) 
+        * (der t h)) 
+  + ((-3 2) * (K22 ^ 2) * ((cosh F) ^ -1) * ((sinh F) ^ -1) 
+        * ((der t h) ^ 2)) 
+  + ((h ^ 2) * ((cosh F) ^ -1) * ((sinh F) ^ -3)) 
+  + ((1 2) * (h ^ 2) * ((cosh F) ^ -1) * ((sinh F) ^ -1)) 
+  + (2 * ((cosh F) ^ -1) * ((sinh F) ^ -1) * ((der t F) ^ 2)) 
+  + ((1 2) * ((cosh F) ^ -1) * ((sinh F) ^ -1) * (der t h)) 
+  + (2 * (sinh F) * ((cosh F) ^ -1) * ((der t F) ^ 2)) 
+  + ((3 2) * (sinh F) * ((cosh F) ^ -1) * (der t h)) )
+
+   maineq
+(der t t K22) = ((1 2) * K22 * ((cosh F) / (sinh F)) ^ 2 *
+  (- L + ((3 2) * K22 * h * ((cosh F) ^ -2) * (der t K22) * (der t h)) 
++ (2 * h * ((cosh F) ^ -3) * ((sinh F) ^ -1) * (der t F)) 
++ ((-3 2) * h * ((cosh F) ^ -1) * ((sinh F) ^ -1) * (der t F)) 
++ ((1 4) * (K22 ^ -2) * ((cosh F) ^ -2)) 
++ (-2 * (K22 ^ -2) * ((cosh F) ^ -2) * ((sinh F) ^ 2) * ((der t K22) ^ 2)) 
++ ((7 2) * (K22 ^ -1) * h * ((cosh F) ^ -2) * (der t K22)) 
++ (2 * (K22 ^ -1) * ((cosh F) ^ -3) * ((sinh F) ^ -1) * (der t K22) 
+     * (der t F)) 
++ (-2 * (K22 ^ -1) * ((cosh F) ^ -1) * ((sinh F) ^ -1) * (der t K22) 
+      * (der t F)) 
++ (2 * (K22 ^ -1) * ((cosh F) ^ -1) * (sinh F) * (der t K22) * (der t F))
++ ((-3 2) * (K22 ^ 2) * h * ((cosh F) ^ -1) * ((sinh F) ^ -1) 
+          * (der t F) * (der t h)) 
++ ((3 4) * (K22 ^ 2) * ((cosh F) ^ -2) * ((der t h) ^ 2)) 
++ ((h ^ 2) * ((cosh F) ^ -2)) + (((cosh F) ^ -2) * (der t h)) 
++ (K22 ^ -2) + (- (expt (der t F) 2))) )
+    )
+
+          ))
+(setq !*lower t)

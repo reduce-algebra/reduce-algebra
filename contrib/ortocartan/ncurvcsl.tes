@@ -1,0 +1,130 @@
+(setq !*lower nil)
+(curvature 3 '(
+   (the curvature of flat christoffels)
+   (coordinates r th ph)
+   (connection 0 0 0 (- r) 0 (- r * (sin th) ^ 2)
+               0 (1 / r) 0 0 0 (- (cos th) * (sin th))
+               0 0 (1 / r) 0 ((cos th) / (sin th)) 0
+                       )
+            ))
+
+ (setq !*lower t)
+
+(setq !*lower nil)
+(curvature 3 '(
+   (the curvature of christoffels of hyperbolic space)
+   (coordinates r th ph)
+   (connection 0 0 0 (- (sinh r) * (cosh r)) 0
+                                   (- (sinh r) * (cosh r) * (sin th) ^ 2)
+               0 ((cosh r) / (sinh r)) 0 0 0 (- (cos th) * (sin th))
+               0 0 ((cosh r) / (sinh r)) 0 ((cos th) / (sin th)) 0
+                       )
+            ))
+
+ (setq !*lower t)
+
+
+(setq !*lower nil)
+(curvature 3 '(
+   (the curvature of christoffels of spherical space)
+   (coordinates r th ph)
+   (connection 0 0 0 (- (sin r) * (cos r)) 0 (- (sin r)*(cos r)*(sin th) ^ 2)
+               0 ((cos r) / (sin r)) 0 0 0 (- (cos th) * (sin th))
+               0 0 ((cos r) / (sin r)) 0 ((cos th) / (sin th)) 0
+                       )
+            ))
+
+ (setq !*lower t)
+
+(setq !*lower nil)
+(curvature 3 '(
+   (the curvature of coefficients of square terms in the symmetry eqs)
+   (coordinates h K F)
+   (connection (- (3 2) * K ^ 2 * h / (sinh F) ^ 2)   (5 / 2 * K)
+      ((- (cosh F) + (1 2) / (cosh F)) / (sinh F))  0  0  0
+      (- K ^ 3 / 4 * (sinh F) ^ 2)   0
+      (3 * K ^ 3 * h * (cosh F) / 4 * (sinh F) ^ 3)   0
+      ((1 / 2 * (cosh F) - (cosh F)) / (sinh F))
+      (K * ((cosh F) / (sinh F)) ^ 2)
+      (3 * K ^ 2 / 4 * (cosh F) * (sinh F))
+      (3 * K * h / 4 * (cosh F) * (sinh F))   0
+      (-2 * (sinh F) / K ^ 2 * (cosh F))
+      (1 / 2 * K)   ((cosh F) / (sinh F))
+                       )
+   (substitutions
+ ncurvature
+ ((cosh F) ^ 3) = ((cosh F) * ((sinh F) ^ 2 + 1))
+ ncurvature
+ ((cosh F) ^ 2) = ((sinh F) ^ 2 + 1)
+ ncurvature
+(((cosh F) * (sinh F)) ^ -2) = (((cosh F) ^ 2 - (sinh F) ^ 2)
+            / ((cosh F) * (sinh F)) ^ 2)
+          )
+   (dont print messages)
+%   (rmargin 120)
+%   (output for input)
+            ))
+
+ (setq !*lower t)
+
+(setq !*lower nil)
+(curvature 3 '(
+   (the curvature of coefficients of square terms in the symmetry eqs)
+   (coordinates h K F)
+   (connection (- (3 2) * K ^ 2 * h / (sinh F) ^ 2)   (5 / 2 * K)
+      ((- (cosh F) + (1 2) / (cosh F)) / (sinh F))  0  0  0
+      (- K ^ 3 / 4 * (sinh F) ^ 2)   0
+      (3 * K ^ 3 * h * (cosh F) / 4 * (sinh F) ^ 3)   0
+      ((1 / 2 * (cosh F) - (cosh F)) / (sinh F))
+      (K * ((cosh F) / (sinh F)) ^ 2)
+      (3 * K ^ 2 / 4 * (cosh F) * (sinh F))
+      (3 * K * h / 4 * (cosh F) * (sinh F))   0
+      (-2 * (sinh F) / K ^ 2 * (cosh F))
+      (1 / 2 * K)   ((cosh F) / (sinh F))
+                       )
+   (substitutions
+ ncurvature
+ ((cosh F) ^ 3) = ((cosh F) * ((sinh F) ^ 2 + 1))
+ ncurvature
+ ((cosh F) ^ 2) = ((sinh F) ^ 2 + 1)
+ ncurvature
+(((cosh F) * (sinh F)) ^ -2) = (((cosh F) ^ 2 - (sinh F) ^ 2)
+            / ((cosh F) * (sinh F)) ^ 2)
+          )
+   (dont print messages)
+%   (rmargin 120)
+   (output for input)
+            ))
+
+ (setq !*lower t)
+
+(setq !*lower nil)
+(curvature 3 '(
+   (the curvature of coefficients of square terms in the symmetry eqs)
+   (coordinates h K F)
+   (connection (- (3 2) * K ^ 2 * h / (sinh F) ^ 2)   (5 / 2 * K)
+      ((- (cosh F) + (1 2) / (cosh F)) / (sinh F))  0  0  0
+      (- K ^ 3 / 4 * (sinh F) ^ 2)   0
+      (3 * K ^ 3 * h * (cosh F) / 4 * (sinh F) ^ 3)   0
+      ((1 / 2 * (cosh F) - (cosh F)) / (sinh F))
+      (K * ((cosh F) / (sinh F)) ^ 2)
+      (3 * K ^ 2 / 4 * (cosh F) * (sinh F))
+      (3 * K * h / 4 * (cosh F) * (sinh F))   0
+      (-2 * (sinh F) / K ^ 2 * (cosh F))
+      (1 / 2 * K)   ((cosh F) / (sinh F))
+                       )
+   (substitutions
+ ncurvature
+ ((cosh F) ^ 3) = ((cosh F) * ((sinh F) ^ 2 + 1))
+ ncurvature
+ ((cosh F) ^ 2) = ((sinh F) ^ 2 + 1)
+ ncurvature
+(((cosh F) * (sinh F)) ^ -2) = (((cosh F) ^ 2 - (sinh F) ^ 2)
+            / ((cosh F) * (sinh F)) ^ 2)
+          )
+   (dont print messages)
+%   (rmargin 120)
+   (output for latex)
+            ))
+
+ (setq !*lower t)

@@ -1,0 +1,227 @@
+(setq !*lower nil)
+(ellisevol '(
+    (TYPE C EMPTY KRASINSKI)
+    (coordinates X0 X1 X2 X3)
+    (constants J S P0 P Q)
+    (velocity 1 0 0 0)
+    (ematrix (F ^ -1) (X2 / F)      0 0
+             0  (V ^ (1 2) / F )  0  0
+             0  0  ((J / S ^ (1 2) * F ^ 3) * (exp (- (1 2) *
+                                       (int X2 (X2 / V)))))  0
+             0  0  0  (V ^ (1 2) / S ^ (1 2) * F     * (exp
+                               ((1 2) * (int X2 (X2 / V)))))   )
+    (symbols F = ((X2 - P0) ^ (1 2) *
+                   (P + Q * (exp (P0 / (X2 - P0)))) ^ (1 3))
+                          V = ((X2 - P0) ^ 2) )
+    (substitutions
+  agamma christoffel vtida atida riemann shearevol magcons rotcons
+  shearcons rotevol rotdd rotdu sheardd sheardu raychaudhuri
+    (P + Q * (exp (P0 / (X2 - P0)))) = (F ^ 3 / V ^ (3 4))
+  agamma christoffel vtida atida riemann shearevol magcons rotcons
+  shearcons rotevol rotdd rotdu sheardd sheardu raychaudhuri
+     X2 = (P0 + V ^ (1 2))
+  ematrix
+    (int X2 (X2 / V)) = ((1 2) * (log V) - P0 / V ^ (1 2))
+  einstein
+  (exp (P0 / V ^ (1 2))) = ((F ^ 3 / V ^ (3 4) - P) / Q)
+            )
+    (tensors einstein)
+    (dont print messages)
+%    (output for latex)
+     ))
+ (setq !*lower t)
+
+(setq !*lower nil)
+(ellisevol '(
+    (TYPE D EMPTY KRASINSKI)
+    (velocity 1 0 0 0)
+    (coordinates X0 X1 X2 X3)
+    (constants J S P Q)
+    (ematrix (F ^ -1) (X2 / F)     0 0
+             0  (X2 / F)  0  0
+             0  0  (J / S ^ (1 2) * F ^ 3 * X2 ^ (1 2))  0
+             0  0  0  (X2 ^ (1 2) / S ^ (1 2) * F) )
+    (symbols F = ((P * X2 ^ (3 2) + Q * X2 ^ (1 2)) ^
+                                                           (1 3)) )
+    (substitutions P = (F ^ 3 / X2 ^ (3 2) - Q / X2))
+    (tensors einstein)
+    (dont print messages)
+%    (output for latex)
+     ))
+(setq !*lower t)
+
+(setq !*lower nil)
+(ellisevol'(
+    (LANCZOS METRIC)
+    (coordinates T PHI R Z)
+    (velocity 1 0 0 0)
+    (constants C LAMBDA)
+    (symbols FAC = (C ^ 2 * R + LAMBDA - LAMBDA * (exp (-  R))) )
+    (ematrix  1  (C * R)  0  0
+             0  ((C ^ 2 * R + LAMBDA - LAMBDA * (exp (-  R)))^ (1 2 ))
+         0 0 0 0 ((1 2) * (exp ((-1 2) * R)) * (C ^ 2 * R + LAMBDA
+                   - LAMBDA * (exp (- R))) ^ (-1 2))  0
+             0  0  0  (exp (- (1 2) * R)))
+ (substitutions (C ^ 2 * R + LAMBDA - LAMBDA * (exp (-  R))) = FAC )
+   (dont print messages)
+   (tensors einstein)
+%   (rmargin 120)
+%   (output for latex)
+          ))
+(setq !*lower t)
+
+(setq !*lower nil)
+(ellisevol'(
+   (connection coefficients for a space of constant negative cuvature)
+   (velocity 1 0 0 0)
+   (coordinates t r th ph)
+   (ematrix 1  0  0  0
+            0  1  0  0
+            0  0  (sinh r)  0
+            0  0  0  ((sinh r) * (sin th))  )
+%   (substitutions
+%        )
+   (dont print messages agamma gamma curvature ricci ie
+        metric invmetric sheardd sheardu shear expansion
+        rotdd rotdu rotation rotcons shearcons rotevol shearevol
+        raychaudhuri vtida projdd projdu timemessages)
+   (stop after riemann)
+   (tensors riemann (+ - - -))
+%   (rmargin 120)
+%   (output for input)
+          ))
+(setq !*lower t)
+(setq !*lower nil)
+(ellisevol'(
+   (a rotating generalization of the open FLRW model - calculating the
+    invariants of the velocity field)
+   (constants C D)
+   (velocity 1 0 0 0)
+   (coordinates t x y z)
+   (functions K(t)  K33(t) F(t) h(t))
+   (ematrix 1  y  0  0
+            0  (y * (cosh F))  0  0
+            0  (y * h * K)  (K / y)  0
+            0  0  0  (y * K33)  )
+   (substitutions
+   riemann shear expansion
+(der t t K33) = (deriv t (K33 *
+     (- 3 * h * (der t h) * K ^ 2 / 2 * (sinh F) ^ 2
+      + h / 2 * (sinh F) ^ 2 + 2 * (der t K) / K
+      - (cosh F) * (der t F) / (sinh F) ) ))
+   riemann shear expansion
+(der t K33) = (K33 * (- 3 * h * (der t h) * K ^ 2 / 2 * (sinh F) ^ 2
+      + h / 2 * (sinh F) ^ 2 + 2 * (der t K) / K
+      - (cosh F) * (der t F) / (sinh F) ) )
+   riemann
+(h / ((sinh F) * (cosh F)) ^ 2) =
+  (h * ((cosh F) ^ 2 - (sinh F) ^ 2) / ((sinh F) * (cosh F)) ^ 2)
+   riemann
+((cosh F) / (sinh F)) = (((sinh F) ^ 2 + 1) / (cosh F) * (sinh F))
+   riemann
+((sinh F) / (cosh F) ^ 3) = (((cosh F) ^ 2 - 1) / (cosh F) ^ 3 * (sinh F))
+   riemann
+((sinh F) / (cosh F) ^ 2) = (((cosh F) ^ 2 - 1) / (cosh F) ^ 2 * (sinh F))
+   riemann
+((der t t K) / (cosh F) ^ 2) =
+  ((der t t K) * ((cosh F) ^ 2 - (sinh F) ^ 2) / (cosh F) ^ 2)
+   riemann
+((der t K) ^ 2 / (cosh F) ^ 2) =
+  ((der t K) ^ 2 * ((cosh F) ^ 2 - (sinh F) ^ 2) / (cosh F) ^ 2)
+   riemann
+((cosh F) ^ 2) = ((sinh F) ^ 2 + 1)
+   riemann
+((cosh F) / (sinh F) ^ 3) = (((sinh F) ^ 2 + 1) / (sinh F) ^ 3 * (cosh F))
+   riemann
+((cosh F) / (sinh F) ^ 2) = (((sinh F) ^ 2 + 1) / (sinh F) ^ 2 * (cosh F))
+   riemann
+(der t t h) = (h * (der t h) / (sinh F) ^ 2
+               - (der t h) * (der t F) / ((cosh F) * (sinh F))
+               + 2 * (cosh F) * (der t h) * (der t F) / (sinh F)
+               + (der t K) / K ^ 3 - h / 2 * (K * (sinh F)) ^ 2
+               + (der t F) / K ^ 2 * (cosh F) * (sinh F)
+               + (3 2) * h * (K * (der t h) / (sinh F)) ^ 2
+               - 5 * (der t h) * (der t K) / K)
+   riemann
+(h / ((sinh F) * (cosh F)) ^ 2) =
+  (h * ((cosh F) ^ 2 - (sinh F) ^ 2) / ((sinh F) * (cosh F)) ^ 2)
+   riemann
+(h / (sinh F) ^ 3 * (cosh F) ^ 2) =
+  (h * ((cosh F) ^ 2 - (sinh F) ^ 2) / (sinh F) ^ 3 * (cosh F) ^ 2)
+   riemann
+((sinh F) / (cosh F)) = (((cosh F) ^ 2 - 1) / (sinh F) * (cosh F))
+   riemann
+(der t t F) = (((-3 2) * K * h * ((cosh F) ^ -1) * ((sinh F) ^ -1)
+                * (der t K) * (der t h))
+  + (3 * h * ((cosh F) ^ -2) * (der t F))
+  + ((-7 2) * h * ((sinh F) ^ -2) * (der t F))
+  + (-3 * h * (der t F))
+  + ((1 2) * (K ^ -2) * (sinh F) * ((cosh F) ^ -1))
+  + (2 * (K ^ -2) * (sinh F) * ((cosh F) ^ -1) * ((der t K)^ 2))
+  + ((1 2)*(K ^ -1)* h *((cosh F)^ -1)*((sinh F)^ -1)*(der t K))
+  + (3 * (K ^ -1) * h * (sinh F) * ((cosh F) ^ -1) * (der t K))
+  + (3 * (K ^ -1) * ((cosh F) ^ -2) * (der t K) * (der t F))
+  + (3 * (K ^ -1) * (sinh F) * ((cosh F) ^ -1) * (der t t K))
+  + (-7 * (K ^ -1) * (der t K) * (der t F))
+  + ((9 2) * (K ^ 2) * h * ((sinh F) ^ -2) * (der t F) * (der t h))
+  + (-3 * (K ^ 2) * (h ^ 2) * ((cosh F) ^ -1) * ((sinh F) ^ -3) *
+                (der t h))
+  + ((-3 2) * (K ^ 2) * (h ^ 2) * ((cosh F) ^ -1) * ((sinh F) ^ -1)
+        * (der t h))
+  + ((-3 2) * (K ^ 2) * ((cosh F) ^ -1) * ((sinh F) ^ -1)
+        * ((der t h) ^ 2))
+  + ((h ^ 2) * ((cosh F) ^ -1) * ((sinh F) ^ -3))
+  + ((1 2) * (h ^ 2) * ((cosh F) ^ -1) * ((sinh F) ^ -1))
+  + (2 * ((cosh F) ^ -1) * ((sinh F) ^ -1) * ((der t F) ^ 2))
+  + ((1 2) * ((cosh F) ^ -1) * ((sinh F) ^ -1) * (der t h))
+  + (2 * (sinh F) * ((cosh F) ^ -1) * ((der t F) ^ 2))
+  + ((3 2) * (sinh F) * ((cosh F) ^ -1) * (der t h)) )
+   riemann
+(1 / (sinh F) ^ 4 * (cosh F) ^ 2) =
+  (((cosh F) ^ 2 - (sinh F) ^ 2) / (sinh F) ^ 4 * (cosh F) ^ 2)
+   riemann
+(1 / (sinh F) ^ 2 * (cosh F) ^ 3) =
+  (((cosh F) ^ 2 - (sinh F) ^ 2) / (sinh F) ^ 2 * (cosh F) ^ 3)
+   riemann
+(1 / (sinh F) ^ 2 * (cosh F) ^ 2) =
+  (((cosh F) ^ 2 - (sinh F) ^ 2) / (sinh F) ^ 2 * (cosh F) ^ 2)
+   riemann
+(1 / (sinh F) * (cosh F) ^ 3) =
+  (((cosh F) ^ 2 - (sinh F) ^ 2) / (sinh F) * (cosh F) ^ 3)
+   riemann
+((cosh F) / (sinh F) ^ 3) = (((sinh F) ^ 2 + 1) / (cosh F) * (sinh F) ^ 3)
+   riemann
+((cosh F) / (sinh F)) = (((sinh F) ^ 2 + 1) / (cosh F) * (sinh F))
+   riemann
+((sinh F) ^ 2) = ((cosh F) ^ 2 - 1)
+   riemann
+((der t t K) / (cosh F) ^ 2) =
+  ((der t t K) * ((cosh F) ^ 2 - (sinh F) ^ 2) / (cosh F) ^ 2)
+   riemann
+((der t K) ^ 2 / (cosh F) ^ 2) =
+  ((der t K) ^ 2 * ((cosh F) ^ 2 - (sinh F) ^ 2) / (cosh F) ^ 2)
+
+   riemann
+(der t t K)= ((-1 * K * h * ((cosh F) ^ -1) * ((sinh F) ^ -1) * (der t F))
++ ((3 2) * K * h * (cosh F) * ((sinh F) ^ -3) * (der t F)) + ((3 2) * K *
+h * (cosh F) * ((sinh F) ^ -1) * (der t F)) + ((-1 2) * K * (h ^ 2) * ((
+cosh F) ^ 2) * ((sinh F) ^ -4)) + ((1 4) * K * (h ^ 2) * ((sinh F) ^ -2))
++ (-1 * K * ((cosh F) ^ 2) * ((sinh F) ^ -2) * ((der t F) ^ 2)) + ((-3 4)
+* K * ((cosh F) ^ 2) * ((sinh F) ^ -2) * (der t h)) + ((3 4) * K * ((sinh
+F) ^ -2) * (der t h)) + ((-3 2) * h * ((cosh F) ^ 2) * ((sinh F) ^ -2) * (
+der t K)) + ((1 2) * h * ((sinh F) ^ -2) * (der t K)) + ((-1 4) * (K ^
+-1) * ((cosh F) ^ 2) * ((sinh F) ^ -2)) + ((-3 2) * (K ^ 3) * h * (cosh F)
+* ((sinh F) ^ -3) * (der t F) * (der t h)) + ((3 2) * (K ^ 3) * (h ^ 2) * (
+(cosh F) ^ 2) * ((sinh F) ^ -4) * (der t h)) + ((-3 4) * (K ^ 3) * (h ^ 2)
+ * ((sinh F) ^ -2) * (der t h)) + ((1 4) * (K ^ 3) * ((sinh F) ^ -2) * ((
+der t h) ^ 2)) + (-1 * ((cosh F) ^ -1) * ((sinh F) ^ -1) * (der t K) * (
+der t F)) + (2 * (cosh F) * ((sinh F) ^ -1) * (der t K) * (der t F)))
+
+        )
+   (dont print messages)
+   (tensors einstein)
+   (stop after shear)
+%   (rmargin 120)
+%   (output for input)
+          ))
+(setq !*lower t)

@@ -1,0 +1,1944 @@
+
+(QUOTE (THIS IS A COLLECTION OF TEST EXAMPLES ON WHICH EVERY
+CORRECTION OF ORTOCARTAN SHOULD BE TESTED BEFORE RELEASE AND
+A FEW EXAMPLES FROM RESEARCH USES OF ORTOCARTAN))
+(ORTOCARTAN '(
+    (SHORT METRIC)
+    (COORDINATES T X Y Z)
+    (EMATRIX 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0)
+     ))
+(ORTOCARTAN '(
+    (LONG  METRIC)
+    (COORDINATES T X Y Z)
+    (EMATRIX 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1 0)
+     ))
+(ORTOCARTAN '(
+    (ILLEGAL METRIC)
+    (COORDINATES T R THETA PHI)
+    (HOW DO YOU LIKE IT BOY)
+   ))
+(ORTOCARTAN '(
+    (DE SITTER WITH SYNTAX ERROR)
+    (COORDINATES T R THETA PHI)
+    (CONSTANTS LAMBDA)
+    (EMATRIX ((1 - LAMBDA *R ^ 2) ^ (1 2)) 0 0 0
+             0 (1 / (1 -LAMBDA * R ^ 2) ^ (1 2)) 0 0
+             0 0 R 0
+             0 0 0 (R * (SIN THETA))    )
+     ))
+(ORTOCARTAN '(
+    (SCHWARZSCHILD WITH FAULT)
+    (EMATRIX  ((1 - 2 * M / R) ^ (1 2))   0   0   0
+              0   (1 / ((1 - 2 * M / R) ^ (1 2)))   0   0
+              0   0   R   0
+              0   0   0   (R * (SIN THETA))   )
+     ))
+(ORTOCARTAN '(
+    (GODEL WITH FAULT)
+    (COORDINATES X0 X1 X2 X3)
+    (EMATRIX (H ^ -1)  (X2 * H ^ -1)  0  0
+             0  (2 ^ (-1 2) * X2 * H ^ -1)  0  0
+             0  0  ((KAPPA * RHO * H) ^ (-1 2)  * X2 ^ -1)
+       0     0  0  0  (2 ^ (1 2) * KAPPA ^ (1 2) * RHO ^ (-1 2)
+                                                * H ^ (3 2))    )
+     ))
+(ORTOCARTAN '(
+    (SINGULAR METRIC)
+    (COORDINATES T X Y Z)
+    (EMATRIX 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1)
+   ))
+(ORTOCARTAN '(
+    (FLAT METRIC)
+    (COORDINATES T X Y Z)
+    (EMATRIX 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1)
+           ))
+(ORTOCARTAN '(
+    (FLAT SPHERICAL METRIC)
+    (COORDINATES T R THETA PHI)
+    (EMATRIX 1 0 0 0 0 1 0 0 0 0 R 0 0 0 0 (R * (SIN THETA))   )
+                                            ))
+(ORTOCARTAN '(
+    (SCHWARZSCHILD METRIC)
+    (DONT PRINT IE RIEMANN)
+    (EMATRIX  ((1 - 2 * M / R) ^ (1 2))  0  0  0
+              0   (1 / ((1 - 2 * M / R) ^ (1 2)))   0   0
+              0   0   R   0
+              0   0   0   (R *  (SIN THETA))   )
+    (COORDINATES TI R THETA PHI)
+    (STOP AFTER RICCI)
+    (CONSTANTS M)
+                                            ))
+(ORTOCARTAN '(
+    (SCHWARZSCHILD METRIC)
+    (COORDINATES T R THETA PHI)
+    (CONSTANTS M)
+    (EMATRIX (TERM ^ (1 2))   0   0   0
+              0   (1 / TERM ^ (1 2))   0   0
+              0   0   R   0
+              0   0   0   (R * (SIN THETA))   )
+    (SYMBOLS TERM = (1 - 2 * M / R)  )
+    (SUBSTITUTIONS EMATRIX TERM = (1 - 2 * M / R))
+     ))
+(ORTOCARTAN '(
+    (DE SITTER METRIC)
+    (COORDINATES T R THETA PHI)
+    (CONSTANTS LAMBDA)
+    (EMATRIX ((1 - LAMBDA * R ^ 2) ^ (1 2)) 0 0 0
+             0 (1 / (1 - LAMBDA * R ^ 2) ^ (1 2)) 0 0
+             0 0 R 0
+             0 0 0 (R * (SIN THETA))    )
+     ))
+(ORTOCARTAN '(
+    (GODEL METRIC)
+    (COORDINATES X0 X1 X2 X3)
+    (CONSTANTS KAPPA RHO H)
+    (EMATRIX (H ^ -1)  (X2 * H ^ -1)  0  0
+             0  (2 ^ (-1 2) * X2 * H ^ -1)  0  0
+             0  0  ((KAPPA * RHO * H) ^ (-1 2)  * X2 ^ -1)
+       0     0  0  0  (2 ^ (1 2) * KAPPA ^ (1 2) * RHO ^ (-1 2)
+                                                * H ^ (3 2))    )
+     ))
+(ORTOCARTAN '(
+    (ROBERTSON WALKER METRIC)
+    (COORDINATES T R THETA PHI)
+    (FUNCTIONS CAPR (T) )
+    (CONSTANTS K)
+    (EMATRIX 1 0 0 0 0 (CAPR / (1 - K * R ^ 2) ^ (1 2)) 0 0 0 0
+             (CAPR * R) 0 0 0 0 (CAPR * R * (SIN THETA))  )
+     ))
+(ORTOCARTAN '(
+    (SCHWARZSCHILD WITH LAMBDA)
+    (COORDINATES T R THETA PHI)
+    (CONSTANTS M LAMBDA)
+    (EMATRIX ((1 - 2 * M / R + LAMBDA * R ^ 2)^ (1  2)) 0 0 0 0
+            (1  / (1 - 2 * M / R + LAMBDA * R ^ 2) ^ (1 2)) 0 0 0 0
+            R 0 0 0 0 (R * (SIN THETA))  )
+    (RMARGIN 73)
+                         ))
+(ORTOCARTAN '(
+    (LANCZOS METRIC)
+    (COORDINATES T PHI R Z)
+    (CONSTANTS C LAMBDA)
+    (EMATRIX  1  (C * R)  0  0
+             0  ((C ^ 2 * R + LAMBDA - LAMBDA * (EXP (-  R)))^ (1 2 ))
+         0 0 0 0 ((1 2) * (EXP ((-1 2) * R)) * (C ^ 2 * R + LAMBDA
+                   - LAMBDA * (EXP (- R))) ^ (-1 2))  0
+             0  0  0  (EXP (- (1 2) * R)))
+              ))
+(ORTOCARTAN '(
+    (FLAT ELLIPSOIDAL METRIC)
+    (COORDINATES T PHI R THETA)
+    (CONSTANTS A)
+    (EMATRIX  1  A  0  0
+              0  (SIG ^ (1 2) * (SIN THETA))  0  0
+              0  0  (DEL ^ (1 2) / SIG ^ (1 2))  0
+              0  0  0  (DEL ^ (1 2))   )
+    (SYMBOLS DEL = (R ^ 2 + A ^ 2 * (COS THETA) ^ 2)
+                          SIG = (R ^ 2 + A ^ 2)  )
+    (SUBSTITUTIONS RIEMANN
+    (1 / DEL) = ((R ^ 2 + A ^ 2 * (COS THETA) ^ 2) / DEL ^ 2)
+    RIEMANN SIG = (R ^ 2 + A ^ 2)
+ RIEMANN (1 2 1 3) ((A ^ 2 + R ^ 2) ^ (1 2)) =
+ (A ^ 2 / (A ^ 2 + R ^ 2) ^ (1 2) + R ^ 2 / (A ^ 2 + R ^ 2) ^
+                                                                (1 2))
+ RIEMANN (2 3 2 3) (DEL ^ -2) = (A ^ 2 * (COS THETA) ^ 2 / DEL ^ 3
+                                                   + R ^ 2 / DEL ^ 3))
+    (TENSORS METRIC (- -) (+ +) (+ -) CHRISTOFFEL RIEMANN (+ - - -)
+            RICCI (- -) (0 2) )
+     ))
+(ORTOCARTAN '(
+    (SCHWARZSCHILD METRIC)
+    (COORDINATES T R THETA PHI)
+    (CONSTANTS M)
+    (EMATRIX  ((1 - 2 * M / R) ^ (1 2))   0   0   0
+              0   (1 / ((1 - 2 * M / R) ^ (1 2)))   0   0
+              0   0   R   0
+              0   0   0   (R * (SIN THETA))   )
+    (TENSORS METRIC (- -) (+ +) (+ -) CHRISTOFFEL RIEMANN (+ + + +)
+         (+ + + -) (+ - + -) (+ - - -) RICCI (+ +) (0 1 )(2 3) (1 2)
+         (+ -) (0 2) (- -) (3 3) WEYL (+ - - -) (1 2 1 2))
+     ))
+(ORTOCARTAN '(
+    (TYPE D EMPTY KRASINSKI)
+    (COORDINATES X0 X1 X2 X3)
+    (CONSTANTS J S P Q)
+    (EMATRIX (F ^ -1) (X2 / F)     0 0
+             0  (X2 / F)  0  0
+             0  0  (J / S ^ (1 2) * F ^ 3 * X2 ^ (1 2))  0
+             0  0  0  (X2 ^ (1 2) / S ^ (1 2) * F) )
+    (SYMBOLS F = ((P * X2 ^ (3 2) + Q * X2 ^ (1 2)) ^
+                                                           (1 3)) )
+    (SUBSTITUTIONS AGAMMA RIEMANN
+                        P = (F ^ 3 / X2 ^ (3 2) - Q / X2))
+     ))
+(ORTOCARTAN '(
+    (JUST A DETERMINANT)
+    (COORDINATES T X Y Z)
+    (CONSTANTS A B C D E F G H I J K L M N O P)
+    (EMATRIX A B C D E F G H I J K L M N O P)
+    (STOP AFTER DETERMINANT)
+    ))
+(ORTOCARTAN '(
+     (SPHERICALLY SYMMETRIC STANDARD)
+    (COORDINATES T R THETA PHI)
+    (FUNCTIONS MU (T R) NU (T R))
+ (EMATRIX (EXP NU) 0 0 0 0 (EXP MU) 0 0 0 0 R 0 0 0 0 (R * (SIN THETA)))
+     ))
+(ORTOCARTAN '(
+     (SPHERICAL WITH ARGUMENTS)
+    (COORDINATES T R THETA PHI)
+    (FUNCTIONS MU (T R) NU (T R))
+     (EMATRIX (EXP (NU T R))  0  0  0  0  (EXP (MU T R))  0  0  0  0
+              R  0  0  0  0  (R * (SIN THETA))  )
+   ))
+(ORTOCARTAN '(
+    (SCHWARZSCHILD METRIC)
+    (COORDINATES T R THETA PHI)
+    (CONSTANTS M)
+    (EMATRIX  ((1 - 2 * M / R) ^ (1 2))   0   0   0
+              0   (1 / ((1 - 2 * M / R) ^ (1 2)))   0   0
+              0   0   R   0
+              0   0   0   (R * (SIN THETA))   )
+    (TENSORS METRIC (- -) (+ +) (+ -) CHRISTOFFEL RIEMANN (+ + + +)
+         (+ + + -) (+ + - +) (+ - + +) (- + + + ) (+ + - - ) (+ - + -)
+         (- + + -) (+ - - +) (- + - +) (- - + +) (+ - - -) (- + - -)
+         (- - + -) (- - - +) RICCI (+ +) (0 1 ) (2 3) (1 2) (+ -) (0 2)
+         (- -) (3 3) WEYL (+ - - -) (1 2 1 2))
+     ))
+(ORTOCARTAN '(
+    (TYPE C EMPTY KRASINSKI)
+    (COORDINATES X0 X1 X2 X3)
+    (CONSTANTS J S P0 P Q)
+    (EMATRIX (F ^ -1) (X2 / F)      0 0
+             0  (V ^ (1 2) / F )  0  0
+             0  0  ((J / S ^ (1 2) * F ^ 3) * (EXP (- (1 2) *
+                                       (INT X2 (X2 / V)))))  0
+             0  0  0  (V ^ (1 2) / S ^ (1 2) * F     * (EXP
+                               ((1 2) * (INT X2 (X2 / V)))))   )
+    (SYMBOLS F = ((X2 - P0) ^ (1 2) *
+                   (P + Q * ( EXP (P0 / (X2 - P0)))) ^ (1 3))
+                          V = ((X2 - P0) ^ 2) )
+    (SUBSTITUTIONS AGAMMA RIEMANN
+    (P + Q * (EXP (P0 / (X2 - P0)))) = (F ^ 3 / V ^ (3 4))
+    AGAMMA RIEMANN X2 = (P0 + V ^ (1 2))
+    RICCI F = (V ^ (1 4) * (P + Q * (EXP (P0 / V ^ (1 2)))) ^ (1 3))
+        EMATRIX (INT X2 (X2 / V)) = ((1 2) * (LOG V) - P0 / V ^ (1 2)))
+     ))
+(ORTOCARTAN '(
+     (SPHERICALLY SYMMETRIC ISOTROPIC FORM)
+    (COORDINATES T X Y Z)
+    (FUNCTIONS PHI (T R) PSI (T R) R (X Y Z) )
+    (EMATRIX (PHI ^ -1 * PSI) 0 0 0 0 (PHI ^ -1) 0 0 0 0
+             (PHI ^ -1) 0 0 0 0 (PHI ^ -1)   )
+    (SUBSTITUTIONS (DER X R) = (X / R)
+                            (DER Y R) = (Y / R)
+                            (DER Z R)  =(Z / R)
+                             (Z ^ 2) = (R ^ 2 - X ^ 2 - Y ^ 2)   )
+     ))
+(ORTOCARTAN '(
+    (NARIAI SOLUTION NONSTATIC FORM)
+    (COORDINATES T X Y Z)
+    (CONSTANTS L)
+    (EMATRIX  PSI   0   0   0
+              0  (L / R)  0  0
+              0  0  (L / R)  0
+              0  0  0  (L / R)   )
+    (SYMBOLS
+       PSI =  (A * (COS (LOG (R / L))) + B * (SIN (LOG (R / L))))   )
+    (SUBSTITUTIONS (DER X R) = (X / R)
+                            (DER Y R) = (Y / R)
+                            (DER Z R) = (Z / R)
+    (COS (LOG (R / L))) = (PSI / A - B * (SIN (LOG (R / L))) / A)
+                            (Z ^ 2) = (R ^ 2 - X ^ 2 - Y ^ 2)   )
+    (FUNCTIONS A (T) B (T) R (X Y Z) )
+      ))
+(ORTOCARTAN '(
+    (STATIC SPHERICALLY SYMMETRIC)
+    (COORDINATES T R THETA PHI)
+    (FUNCTIONS NU (R) MU (R))
+    (EMATRIX (EXP NU)  0  0  0  0 (EXP MU)  0  0  0  0 R  0  0  0  0
+                                 (R * (SIN THETA))   )
+    (TENSORS EINSTEIN)
+    (STOP AFTER EINSTEIN)
+    ))
+(ORTOCARTAN '(
+    (GENERALIZED DE SITTER)
+    (COORDINATES T R THETA PHI)
+    (CONSTANTS LAMBDA EPS)
+    (FUNCTIONS A (T)  B (T)  C (T) )
+    (SYMBOLS
+        D = (A * R * (SIN THETA) * (COS PHI) + B * R * (SIN THETA) *
+                (SIN PHI) - C * R * (COS THETA) + EPS * (1 + (1 3) *
+                          LAMBDA * R ^ 2) ^ (1 2)) )
+    (SUBSTITUTIONS   RIEMANN
+        (A / D) =  (1 / R * (SIN THETA) * (COS PHI) - B * (SIN PHI) /
+           (COS PHI) * D + C * (COS THETA) / D * (SIN THETA) *
+                  (COS PHI) - EPS * (1 + (1 3) * LAMBDA * R ^ 2) ^
+                          (1 2) / D * R * (SIN THETA) * (COS PHI))  )
+    (EMATRIX  D  0  0  0  0  ((1 + (1 3) * LAMBDA * R ^ 2) ^ (-1 2))
+              0  0  0  0  R  0  0  0  0  (R * (SIN THETA))  )
+    ))
+(ORTOCARTAN '(
+    (EMPTY SPACE METRIC WITH SPHERICAL THREE-SPACE)
+    (COORDINATES T R THETA PHI)
+    (FUNCTIONS  D (T R THETA PHI) MU (T R) )
+    (EMATRIX  D  0  0  0  0  (EXP MU)  0  0  0  0 R  0  0  0  0
+                                     (R * (SIN THETA)) )
+    ))
+(ORTOCARTAN '(
+    (GENERALIZED NARIAI WITH SPHERICAL THREE-SPACE)
+    (COORDINATES T R THETA PHI)
+    (FUNCTIONS  D (T R THETA PHI) MU (T R) )
+    (CONSTANTS L)
+    (EMATRIX  D  0  0  0  0  (EXP MU)  0  0  0  0 L  0  0  0  0
+                                     (L * (SIN THETA)) )
+    ))
+(ORTOCARTAN '(
+    (BONDI METRIC)
+    (COORDINATES T R THETA PHI)
+    (FUNCTIONS  V (T R THETA)  U (T R THETA)  BET (T R THETA)
+                        GAM (T R THETA) )
+    (EMATRIX  (V ^ (1 2) * (EXP BET) / R ^ (1 2))
+              (R ^ (1 2) * (EXP BET) / V ^ (1 2))   0   0   0
+              (R ^ (1 2) * (EXP BET) / V ^ (1 2))   0  0
+              (- R * U * (EXP GAM))   0   (R * (EXP GAM))   0  0  0  0
+              (R * (SIN THETA) * (EXP (- GAM)))   )
+    (TENSORS EINSTEIN)
+    (STOP AFTER EINSTEIN)
+   ))
+(ORTOCARTAN '(
+    (ROBINSON-TRAUTMAN METRIC / NOTE - S STANDS FOR SIGMA / R STANDS
+         FOR RHO / N STANDS FOR ETA / X STANDS FOR KSI / THE METRIC
+         IS TRANSFORMED TO AN ORTHONORMAL TETRAD / REFERENCE -
+        ROBINSON AND TRAUTMAN * PROC ROY SOC A265 * 463 * 1962)
+    (COORDINATES S R N X)
+    (FUNCTIONS M (S)  P (S N X) K (S N X) H (S N X)  Q (S N X)   )
+    (SYMBOLS           C = (- 2 * M / R + K - 2 * H * R) )
+    (EMATRIX (C ^ (1 2))   (C ^ (-1 2))   0   0
+             0   (C ^ (-1 2))   0   0
+             (- (DER X Q) * R / P)   0   (R / P)   0
+             (- (DER N Q) * R / P)   0   0   (R / P)   )
+    (TENSORS METRIC (- -) RICCI (+ +))
+    (SUBSTITUTIONS  RIC (2 2) (3 3)
+           C = (-2 * M / R + K - 2 * H * R)
+       RIC (2 2) (3 3)
+     K = (P ^ 2 * ((DERIV X X (LOG P)) + (DERIV N N (LOG P))))     )
+     (STOP AFTER RICCI)
+      ))
+(ORTOCARTAN '(
+    (LEVY METRIC UP TO EPSILON LINEAR)
+    (CONSTANTS EPS)
+    (COORDINATES X0 R Z PHI)
+    (FUNCTIONS  U (T R Z)  K (T R Z)  H00 (T R Z)  H11 (T R Z)
+                H12 (T R Z)  H13 (T R Z)  H22 (T R Z)  H23 (T R Z)
+                H33 (T R Z) )
+    (SYMBOLS T = (EPS * X0))
+    (EMATRIX  ((EXP U) + (1 2) * EPS * (EXP (- U)) * H00)  0  0  0  0
+              ((EXP (K - U)) - (1 2) * EPS * (EXP (U - K)) * H11)
+              (- EPS * (EXP (U - K)) * H12)
+              (- EPS * (EXP (U - K)) * H13)     0   0
+              ((EXP (K - U)) - (1 2) * EPS * (EXP (U - K)) * H22)
+              (- EPS * (EXP (U - K)) * H23)   0   0   0
+              (R * (EXP (- U)) - (1 2) * EPS * (EXP U) * H33 / R)    )
+    (TENSORS EINSTEIN)
+    (SUBSTITUTIONS
+         DETERMINANT IE AGAMMA RIEMANN   (EPS ^ 2) = 0
+         DETERMINANT IE AGAMMA RIEMANN   (EPS ^ 3) = 0
+         DETERMINANT IE AGAMMA   (EPS ^ 4) = 0
+         DETERMINANT   ACTUAL = (((EXP (2 * U - 2 * K)) / R
+               - (1 2) * EPS * (EXP (- 2 * K)) * H00 / R
+               + (1 2) * EPS * (EXP (4 * U - 4 * K)) * H11 / R
+               + (1 2) * EPS * (EXP (4 * U - 4 * K)) * H22 / R
+            + (1 2) * EPS * (EXP (4 * U - 2 * K)) * H33 / R ^ 3) ^ -1)
+    )
+    (STOP AFTER EINSTEIN)
+         ))
+(ORTOCARTAN '(
+    (KOWALCZYNSKI SOLUTION SHORT VERSION)
+    (COORDINATES T F R Z)
+    (CONSTANTS A B C H M)
+    (FUNCTIONS S (T F R Z))
+    (SYMBOLS P = ((T ^ 2 - R ^ 2) ^ (1 2)) )
+    (SUBSTITUTIONS (A ^ 2) = 1 (A ^ 3) = A (A ^ 4) = 1
+              IE (A ^ -1) = A
+                     (T ^ 2) =  (P ^ 2  +  R ^ 2)
+          AGAMMA (T ^ 3) = (T * (P ^ 2 + R ^ 2))
+         AGAMMA (T ^ 4) = (P ^ 4 + 2 * P ^ 2 * R ^ 2 + R ^ 4) )
+    (EMATRIX (- 2 ^ (-3 2) * A * P ^ -1 * (3 - S) * T)  0
+             (2 ^ (-3 2) * A * P ^ -1 * (3 - S) * R)
+             (2 ^ (-3 2) * (1 - S))   (P ^ -1 * R * (COS F))
+             (R * (SIN F))   (- P ^ -1 * T * (COS F))   0
+             (- P ^ -1 * R * (SIN F))   (R * (COS F))
+             (P ^ -1 * T * (SIN F))   0
+             (- 2 ^ (-3 2) * A * P ^ -1 * (1 + S) * T)   0
+             (2 ^ (-3 2) * A * P ^ -1 * (1 + S) * R)
+             (2 ^ (-3 2) * (3 + S))         )
+    (TENSORS  METRIC (- -) (+ +) CHRISTOFFEL)
+    (STOP AFTER RICCI)
+   ))
+(ORTOCARTAN '(
+    (TURKISH METRIC)
+    (COORDINATES U V X Y)
+    (FUNCTIONS A (U V X) B (U V X) P (U V X) L (U V X))
+    (EMATRIX ((1 2) * 2 ^ (1 2) * (EXP (P - A / 2 - B / 2)))
+             ((1 2) * 2 ^ (1 2) * (EXP (P - A / 2 + B / 2))) 0 0
+             ((1 2) * 2 ^ (1 2) * (EXP (P - A / 2 - B / 2)))
+             (- (1 2) * 2 ^ (1 2) * (EXP (P - A / 2 + B / 2))) 0 0
+             0 0 (EXP (P - L)) 0 0 0 0 (EXP (- P)) )
+    ))
+(ORTOCARTAN '(
+    (ELLIPSOIDAL COLLINEATION)
+    (COORDINATES T R THETA PHI)
+    (FUNCTIONS U(R THETA) N(R THETA) A(R THETA) K (R THETA) L (R THETA))
+    (EMATRIX (EXP U) 0 0 (A * (EXP U)) 0 (EXP (N - U)) 0 0
+             0 0 (EXP (L - U)) 0 0 0 0 (EXP (K - U)) )
+    (STOP AFTER RICCI)
+    (TENSORS RIEMANN (+ + - -) METRIC (- -) )
+    ))
+(ORTOCARTAN '(
+    (GENERAL STEPHANI SOLUTION)
+    (COORDINATES T X Y Z)
+    (FUNCTIONS C(T)K(T)R(T)X0(T) Y0(T) Z0 (T) F (T) CAPR (T) V (T X Y Z)
+               D (T X Y Z) )
+    (EMATRIX D 0 0 0 0 (CAPR / V) 0 0 0 0 (CAPR / V) 0 0 0 0
+             (CAPR / V) )
+    (TENSORS EINSTEIN)
+    (SUBSTITUTIONS
+    AGAMMA (0 0 1) RIEMANN (0 1 0 1) (0 2 1 2) (0 3 1 3)
+ (DER X D) = (F * (DERIV X ((DER T V) / V)))
+    AGAMMA (0 0 2) RIEMANN (0 1 0 2) (0 1 1 2) (0 2 0 2) (0 3 2 3)
+ (DER Y D) = (F * (DERIV Y ((DER T V) / V)))
+    AGAMMA(0 0 3)RIEMANN(0 1 0 3)(0 1 1 3)(0 2 0 3)(0 2 2 3)(0 3 0 3)
+ (DER Z D) = (F * (DERIV Z ((DER T V) / V)))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3)
+((DER T D)*(DER T V)) = ((DER T D) * V * (D / F + (DER T CAPR)/ CAPR))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3)
+ (DER T D) = (DERIV T (F * ((DER T V) / V - (DER T CAPR) / CAPR)))
+    RIEMANN (0 1 0 1) (0 1 1 2) (0 1 1 3) (0 2 0 2) (0 2 1 2) (0 2 2 3)
+            (0 3 0 3) (0 3 1 3) (0 3 2 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+(DER T CAPR) = (CAPR * ((DER T V) / V - D / F))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+((DER Z V) ^ 2) = ((V - 1) * K - (DER X V) ^ 2 - (DER Y V) ^ 2)
+     RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3)
+((DER T V) / V) = (D / F + (DER T CAPR) / CAPR)
+    RIEMANN
+V = (1 + (1 4) * K * ((X - X0) ^ 2 + (Y - Y0) ^ 2 + (Z - Z0) ^ 2))
+    RIEMANN
+ K = ((C ^ 2 - 1 / F ^ 2) * CAPR ^ 2)
+    )
+   ))
+(ORTOCARTAN '(
+    (KOWALCZYNSKI SOLUTION)
+    (COORDINATES T F R Z)
+    (CONSTANTS A B C H M)
+    (FUNCTIONS S (T F R Z))
+    (SYMBOLS P = ((T ^ 2 - R ^ 2) ^ (1 2))
+         ZC = (Z + C)
+         Q = (P ^ 8 * (T - R * (COS F)) ^ -8)         )
+    (TENSORS  METRIC (- -) (+ +) CHRISTOFFEL RIEMANN (- - - -)
+         RICCI (- -))
+    (SUBSTITUTIONS
+    AGAMMA (0 0 1) (0 0 2) (0 0 3) (0 1 3) (0 2 3) (3 0 1) (3 0 2)
+           (3 0 3) (3 1 3) (3 2 3)
+    CHRISTOFFEL (0 0 0) (2 0 0) (3 0 0)
+    RIEMANN (0 1 0 1) (0 1 1 2) (0 1 1 3) (0 2 0 2) (0 2 1 2) (0 2 2 3)
+            (0 3 0 3) (0 3 1 3) (0 3 2 3) (1 3 1 3) (2 3 2 3)
+                                     (DER T S) = (DERIV T
+       ((2 * M + 2 * B * (LOG (ZC - A * P)) + B * (LOG Q)) * A * P ^ -1
+               - 4 * B * ZC * P ^ -2 - (1 3) * H * P ^ 2) )
+    AGAMMA (0 0 1) (0 0 2) (0 1 3) (0 2 3) (3 0 1) (3 0 2) (3 1 3)
+           (3 2 3)
+    CHRISTOFFEL (0 0 1) (2 0 1) (3 0 1)
+    RIEMANN (0 1 1 2) (0 2 1 2) (0 3 1 3) (0 3 2 3)
+                                     (DER F S) = (DERIV F
+       ((2 * M + 2 * B * (LOG (ZC - A * P)) + B * (LOG Q)) * A * P ^ -1
+               - 4 * B * ZC * P ^ -2 - (1 3) * H * P ^ 2) )
+    AGAMMA (0 0 1) (0 0 2) (0 0 3) (0 1 3) (0 2 3) (3 0 1) (3 0 2)
+           (3 0 3) (3 1 3) (3 2 3)
+    CHRISTOFFEL (0 0 2) (0 2 2) (2 0 2) (2 2 2) (3 0 2) (3 2 2)
+    RIEMANN (0 1 0 1) (0 1 1 2) (0 1 1 3) (0 2 0 2) (0 2 1 2) (0 2 2 3)
+            (0 3 0 3) (0 3 1 3) (0 3 2 3) (1 3 1 3) (2 3 2 3)
+                                     (DER R S) = (DERIV R
+       ((2 * M + 2 * B * (LOG (ZC - A * P)) + B * (LOG Q)) * A * P ^ -1
+               - 4 * B * ZC * P ^ -2 - (1 3) * H * P ^ 2) )
+     AGAMMA (0 0 3) (3 0 3)
+    CHRISTOFFEL (0 0 3) (0 2 3) (0 3 3) (2 0 3) (2 2 3) (2 3 3) (3 0 3)
+                (3 2 3) (3 3 3)
+    RIEMANN (0 1 0 1) (0 1 1 3) (0 2 0 2) (0 2 2 3) (0 3 0 3) (1 3 1 3)
+            (2 3 2 3)
+                                     (DER Z S) = (DERIV Z
+       ((2 * M + 2 * B * (LOG (ZC - A * P)) + B * (LOG Q)) * A * P ^ -1
+               - 4 * B * ZC * P ^ -2 - (1 3) * H * P ^ 2) )
+    CHRISTOFFEL (0 2 2) (2 0 0) (2 0 2) (3 0 0) (3 0 2) (3 2 2)
+    ((SIN F) ^ 2 / (T - R * (COS F))) = (1 / (T - R * (COS F))
+        + (COS F) / R - T * (COS F) * R ^ -1 * (T - R * (COS F)) ^ -1)
+   RIEMANN (0 1 0 1) (0 1 0 3) (0 1 1 3) (0 2 0 2) (0 2 1 3) ( 0 2 2 3)
+           (1 3 1 3) (2 3 2 3)
+    ((COS F) * (T - R * (COS F)) ^ -2) = (- R ^ -1 / (T - R * (COS F))
+                     + T * R ^ -1 * (T - R * (COS F)) ^ -2)
+    RIE (0 1 0 1) (0 1 1 2) (0 1 1 3) (0 2 0 2) (0 2 0 3) (0 2 2 3)
+        (0 3 0 3) (0 3 2 3) (1 2 1 2) (1 2 1 3) (1 3 1 3) (2 3 2 3)
+ ((COS F) * (SIN F) ^ 4 * (T - R * (COS F)) ^ -2) = ((SIN F) ^ 4 *
+     R ^ -1 * (T * (T - R * (COS F)) ^ -2 - 1 / (T - R * (COS F))))
+    RIE (0 1 0 2) (0 1 0 3) (0 1 2 3) (0 2 1 2) (0 2 1 3) (0 3 1 2)
+        (0 3 1 3) (1 2 2 3) (1 3 2 3)
+ ((SIN F) ^ 5 * (T - R * (COS F)) ^ -2) = ((SIN F) ^ 3 *
+       ((T - R * (COS F)) ^ -2 + ((COS F) / R) * (1 / (T - R * (COS F))
+                   - T * (T - R * (COS F)) ^ -2)))
+    RIE (0 1 0 1) (0 1 1 3) (0 1 2 3) (0 3 0 3) (1 3 1 3) (1 3 2 3)
+ (R ^ 3 * (COS F) / (T - R * (COS F))) = (R ^ 2 *
+          (T / (T - R * (COS F)) - 1))
+    RIC (0 0) (0 2) (0 3) (2 2) (2 3) (3 3)
+ ((COS F) * (SIN F) ^ 2 / (T - R * (COS F))) = ((SIN F) ^ 2 * R ^ -1
+              * (T / (T - R * (COS F)) - 1))
+    DETERMINANT IE (1 1) (1 2) (3 0) (3 3) G (0 0) (2 2)
+    AGAMMA (0 0 1) (0 0 2) (0 0 3) (0 1 3) (0 2 3) (1 0 1) (1 0 2)
+           (1 1 2) (1 1 3) (1 2 3) (2 0 1) (2 0 2) (2 1 2) (2 1 3)
+           (2 2 3) (3 0 1) (3 0 2) (3 0 3) (3 1 3) (3 2 3)
+    CHRISTOFFEL (0 2 2) (0 2 3) (2 0 2) (2 0 3) (2 1 1) (2 2 2) (3 2 2)
+    RIEMANN (0 1 0 1) (0 1 0 2) (0 1 0 3) (0 1 1 3) (0 1 2 3) (0 2 0 2)
+            (0 2 0 3) (0 2 1 3) (0 2 2 3) (0 3 0 3) (1 2 1 3) (1 2 2 3)
+            (1 3 1 3) (1 3 2 3) (2 3 2 3)
+    RIE (0 1 0 2) (0 2 0 2) (0 2 0 3) (0 2 1 2) (0 2 1 3) (0 2 2 3)
+ RIC (0 2) (0 3) (2 2)
+    (T ^ 2) = (R ^ 2 + P ^ 2)
+    AGAMMA (0 0 1) (0 0 2) (0 1 3) (0 2 3) (3 0 1) (3 0 2) (3 1 3)
+           (3 2 3) CHRISTOFFEL (0 2 2) (2 0 2)
+    RIEMANN (0 1 0 3) (0 2 0 3) (0 2 1 3)(1 2 1 3) (1 2 2 3)
+    RIE (0 1 0 2) (0 2 0 2) (0 2 0 3) (0 2 1 2) (0 2 1 3) (0 2 2 3)
+    (T ^ 3) = (T * (R ^ 2 + P ^ 2))
+    AGAMMA (1 0 1) (1 0 2) (1 1 3) (1 2 3) (2 0 1) (2 0 2) (2 1 3)
+           (2 2 3)
+    RIE (0 1 0 2) (0 2 0 2) (0 2 1 2) (0 2 2 3)
+    (T ^ 4) = ((R ^ 2 + P ^ 2) ^ 2)
+    RIE (0 2 0 2)
+ (T ^ 5) = (T * (R ^ 2 + P ^ 2) ^ 2)
+    AGAMMA (0 0 1) (0 0 3) (0 1 3) (3 0 1) (3 0 3) (3 1 3)
+    CHRISTOFFEL (0 1 2) (0 1 3) (1 0 0) (1 0 2) (1 0 3) (1 2 2) (1 2 3)
+                (1 3 3) (2 1 2) (2 1 3) (3 0 0) (3 1 2) (3 1 3) (3 2 2)
+    RIEMANN (0 1 0 1) (0 1 1 3) (0 2 1 2) (0 3 1 3) (1 3 1 3)
+    RIE (0 1 0 3) (0 3 1 2) (0 3 1 3) (1 2 2 3)
+ RIC (0 1) (1 2) (1 3)
+   ((COS F) / (T - R * (COS F))) =(T * R ^ -1 * (T - R * (COS F)) ^ -1
+            - 1 / R)
+    RIEMANN (0 2 0 3) (0 2 1 3)
+ (R * (SIN F) ^ 3 * (T - R * (COS F)) ^ -2) =
+      ((SIN F) * ((COS F) / (T - R * (COS F))
+             + R * T ^ -1 * (T - R * (COS F)) ^ -1
+          - T ^ -1 * P ^ 2 * (COS F) * (T - R * (COS F)) ^ -2))
+   CHRISTOFFEL (0 0 0) (0 0 2) (2 0 0) (3 0 0) (3 0 2)
+ RIC (0 0)
+     (R ^ 2) = (T ^ 2 - P ^ 2)
+    CHRISTOFFEL (0 0 2) (2 0 0)
+ (R ^ 3) = (R *(T ^ 2 - P ^ 2))
+ G (0 0) (0 2) (2 2)
+    AGAMMA (0 0 3) (3 0 3)
+    CHRISTOFFEL (0 0 0) (0 0 2) (0 0 3) (0 1 1) (0 1 3) (0 2 2) (0 2 3)
+                (0 3 3) (1 0 1) (1 0 3) (1 2 3) (2 0 0) (2 0 2) (2 0 3)
+                (2 1 1) (2 1 3) (2 2 2) (2 2 3) (2 3 3) (3 0 0) (3 0 1)
+                (3 0 2) (3 0 3) (3 1 2) (3 2 2) (3 2 3)
+    RIEMANN (0 1 0 1) (0 1 0 3) (0 1 1 2) (0 1 1 3) (0 2 0 2)  (0 2 0 3)
+             (0 2 1 2) (0 2 2 3) (0 3 0 3) (0 3 1 3) (0 3 2 3) (1 2 1 2)
+            (1 2 1 3) (1 2 2 3) (1 3 1 3) (2 3 2 3)
+    RIE (0 1 0 1) (0 1 0 3) (0 1 1 2) (0 1 1 3) (0 1 2 3) (0 2 0 2)
+        (0 2 0 3) (0 2 1 3) (0 2 2 3) (0 3 0 3) (0 3 1 2) (0 3 2 3)
+        (1 2 1 2) (1 2 1 3) (1 2 2 3) (2 3 2 3)
+ RIC (0 0) (0 2) (0 3) (2 2) (2 3)
+    (A ^ 2) = 1
+    IE (0 0) (0 3) (2 0) (2 3)
+    (A ^ -1) = A
+    AGAMMA (0 0 1) (0 0 2) (0 0 3) (0 1 3) (0 2 3) (3 0 1) (3 0 2)
+           (3 0 3) (3 1 3) (3 2 3)
+    CHRISTOFFEL (0 0 0) (0 0 1) (0 0 2) (0 0 3) (0 1 2) (0 2 2) (0 2 3)
+                (1 0 0) (1 0 2) (1 2 2) (2 0 0) (2 0 1) (2 0 2) (2 0 3)
+                (2 1 2) (2 2 2) (2 2 3) (3 0 0) (3 0 2) (3 2 2)
+ RIEMANN (0 2 0 2) (0 2 2 3) (0 3 0 3) (2 3 2 3)
+    RIE (0 1 0 1) (0 1 0 2) (0 1 1 2) (0 2 0 2) (0 2 1 2) (0 3 0 3)
+        (0 3 2 3) (1 2 1 2) (2 3 2 3)
+ RIC (0 0) (0 2) (2 2)
+    (A ^ 3) = A
+    CHRISTOFFEL (0 0 0) (0 0 2) (0 2 2) (2 0 0) (2 0 2) (2 2 2)
+    (A ^ 4) = 1
+  RIEMANN (0 1 0 1) (0 1 1 3) (0 2 0 2) (0 2 2 3) (1 3 1 3) (2 3 2 3)
+ (R ^ 2 * (SIN F) ^ 4 * (T - R * (COS F)) ^ -2) =
+         ((SIN F) ^ 2 * (2 * T / (T - R * (COS F)) - 1
+                   - P ^ 2 * (T - R * (COS F)) ^ -2))
+    RIEMANN (0 1 0 2) (0 1 2 3) (0 2 0 3) (1 3 2 3)
+ (R ^ 2 * (COS F) * (T - R * (COS F)) ^ -2) =
+         (T * R * (T - R * (COS F)) ^ -2 - R / (T - R * (COS F)))
+    RIEMANN (0 1 0 2) (0 1 2 3)
+ (R * (SIN F) ^ 3 / (T - R * (COS F))) = ((SIN F) * ((COS F) +
+            R / (T - R * (COS F)) - T * (COS F) / (T - R * (COS F))))
+    RIEMANN (0 2 0 2) (0 2 2 3) (0 3 0 3) (1 3 2 3) (2 3 2 3)
+    (T / (T - R * (COS F))) = (1 + R * (COS F) / (T - R * (COS F)))
+    RIEMANN (0 2 0 3)
+   (T ^ -1 * (COS F) * (T - R * (COS F)) ^ -2) =
+      (P ^ -2 * ((T * (COS F) - R) * (T - R * (COS F)) ^ -2
+               + T ^ -1 * R * (T - R * (COS F)) ^ -1))
+    RIEMANN (0 2 1 3)
+ (T * P ^ -2 * (T - R * (COS F)) ^ -1) =
+        ((R ^ 2 + P ^ 2 - T * R * (COS F)) * P ^ -2
+               * (T - R * (COS F)) ^ -2)
+    RIEMANN (0 2 1 3)
+ (1 / R * P ^ 2) = (R ^ -1 * P ^ -2 * (P ^ 2 *
+         (T - R * (COS F)) ^ -2 - 2 * R * (COS F) / (T - R * (COS F))
+           + R ^ 2 * (SIN F) ^ 2 * (T - R * (COS F)) ^ -2))
+    RIEMANN (0 2 1 3)
+ ((COS F) * P ^ -1 * (T - R * (COS F)) ^ -2) =
+     (P ^ -1 * R ^ -1 * (T * (T - R * (COS F)) ^ -2
+     - 1 / (T - R * (COS F))))
+    RIEMANN (0 2 1 3)
+       (T * P ^ -1 * (T - R * (COS F)) ^ -2) =
+       (P ^ -1 * (1 / (T - R * (COS F))
+          + R * (COS F) * (T - R * (COS F)) ^ -2))
+      )
+    (EMATRIX (- 2 ^ (-3 2) * A * P ^ -1 * (3 - S) * T)  0
+             (2 ^ (-3 2) * A * P ^ -1 * (3 - S) * R)
+             (2 ^ (-3 2) * (1 - S))   (P ^ -1 * R * (COS F))
+             (R * (SIN F))   (- P ^ -1 * T * (COS F))   0
+             (- P ^ -1 * R * (SIN F))   (R * (COS F))
+             (P ^ -1 * T * (SIN F))   0
+             (- 2 ^ (-3 2) * A * P ^ -1 * (1 + S) * T)   0
+             (2 ^ (-3 2) * A * P ^ -1 * (1 + S) * R)
+             (2 ^ (-3 2) * (3 + S))       )
+    (DATA SUBSTITUTIONS
+        (DER T S) (DER R S)
+                     (T ^ 2) =  (P ^ 2  +  R ^ 2)
+     (DER T S) (DER F S) (DER R S)
+    (Q ^ -1) = ((T - R * (COS F)) ^ 8 / P ^ 8)
+    (DER T S) (DER R S)
+     (LOG Q) = (P * S * A / B - 2 * M / B - 2 * (LOG (ZC - A * P))
+                   + 4 * ZC * A / P + (1 3) * H * P ^ 3 * A / B)
+    (DER T S) (DER R S)
+        (A ^ 2) = 1
+     )
+   ))
+(ORTOCARTAN '(
+    (FICTITIOUS METRIC)
+    (CONSTANTS A B C D E)
+    (COORDINATES T X Y Z)
+    (EMATRIX ((A + B + C) ^ 4) 0 0 0 0 ((A + B + C) ^ -4) 0 0 0 0
+             ((D + E) ^ 5) 0 0 0 0 ((D + E) ^ -5))
+    (STOP AFTER IE)
+    (SUBSTITUTIONS IE (1 1)
+         ((A + B + C) ^ 4) = EXPAND
+       IE (3 3)
+         ((D + E) ^ 5) = EXPAND
+           )
+    ))
+ (ORTOCARTAN '(
+    (KERR AFTER CHANDRASEKHAR)
+    (CONSTANTS A M)
+    (COORDINATES T R THETA PHI)
+    (FUNCTIONS RA (R) RH (R THETA) D (R) SI (R THETA) )
+    (SUBSTITUTIONS
+    RIEMANN(0 1 0 1)(0 1 1 3)(1 3 1 3)
+    (DER R RA) = (2 * R)
+    AGAMMA(0 0 1)(2 1 2)(3 1 3)RIEMANN(0 1 0 1)(0 1 1 3)(0 2 1 3)
+           (0 3 1 2)(1 2 1 2)(1 3 1 3)
+ (DER R RH) = (R / RH)
+    AGAMMA (0 0 2) (1 1 2)(3 2 3)
+    RIEMANN (0 1 0 2) (0 1 2 3) (0 2 0 2) (0 2 2 3) (0 3 1 2) (1 2 1 2)
+            (1 3 2 3) (2 3 2 3)
+ (DER THETA RH) = (- A ^ 2 * (COS THETA) * (SIN THETA) / RH)
+    AGAMMA(0 0 1)RIEMANN (0 1 0 1)(0 2 1 3)(0 3 1 2) (1 2 1 2)(1 3 1 3)
+ (DER R D) = (2 * R - 2 * M)
+    AGAMMA (0 0 1) (3 0 1) (3 1 3)
+    RIEMANN (0 1 0 1) (0 1 1 3) (0 2 1 3) (0 3 1 2) (1 3 1 3)
+ (DER R SI) = ((2 * R * RA - A ^ 2 * (SIN THETA) ^ 2 * (R - M)) / SI)
+    AGAMMA (0 0 2) (3 0 2) (3 2 3)
+  RIEMANN(0 1 0 2)(0 1 2 3)(0 2 0 2)(0 2 2 3)(0 3 1 2)(1 3 2 3)(2 3 2 3)
+ (DER THETA SI) = (- A ^ 2 * D * (COS THETA) * (SIN THETA) / SI)
+    RIEMANN (0 2 0 2) (0 3 0 3) (2 3 2 3)
+ (D ^ 2 * (SIN THETA) ^ 4) = (D * (SIN THETA) ^ 4 * (R ^ 2
+          - 2 * M * R + A ^ 2))
+    RIEMANN (0 2 0 2) (0 3 0 3) (2 3 2 3)
+ (D * (SIN THETA) ^ 6) = ((SIN THETA) ^ 6 * (R ^ 2 - 2 * M * R
+           + A ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+   (D / SI ^ 2) = ((R ^ 2 - 2 * M * R + A ^ 2) / SI ^ 2)
+    RIEMANN (0 1 0 1) (0 3 0 3) (1 3 1 3)
+(RA ^ 2 * D) = (RA ^ 2 * (RA - 2 * M * R))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(D / SI ^ 4) = ((RA ^ 2 - SI ^ 2) / A ^ 2 * (SIN THETA) ^ 2
+                    * SI ^ 4)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(M ^ 3 * R ^ 3) = ((1 2) * M ^ 2 * R ^ 2 *
+    (RA - (RA ^ 2 - SI ^ 2) / A ^ 2 * (SIN THETA) ^ 2))
+    RIEMANN (0 1 0 1) (0 3 0 3) (1 3 1 3)
+(M ^ 4 * R ^ 2) = ((1 2) * M ^ 3 * R *
+    (RA - (RA ^ 2 - SI ^ 2) / A ^ 2 * (SIN THETA) ^ 2))
+    RIEMANN (0 1 1 3) (0 2 2 3)
+(A ^ 5 * (SIN THETA) ^ 5) = (A ^ 3 * (SIN THETA) ^ 3 *
+    (A ^ 2 - RH ^ 2 + R ^ 2))
+    RIEMANN (0 1 1 3) (0 2 2 3)
+(A * R / RH ^ 6) = (A * R * (RA ^ 2 - A ^ 2 * (SIN THETA) ^ 2 *
+    (RA - 2 * M * R)) / RH ^ 6 * SI ^ 2)
+    RIEMANN (0 1 0 1) (0 3 0 3) (1 3 1 3)
+(RA ^ 3) = (RA ^ 2 * (A ^ 2 + R ^ 2))
+    RIEMANN (0 1 1 3) (0 2 2 3)
+RA = (A ^ 2 + R ^ 2)
+    RIEMANN (0 1 1 3) (0 2 2 3)
+(R ^ 5) = (R ^ 3 * (RH ^ 2 - A ^ 2 * (COS THETA) ^ 2))
+    RIEMANN (0 1 1 3) (0 2 2 3)
+(R ^ 3) = (R * (RH ^ 2 - A ^ 2 * (COS THETA) ^ 2))
+    RIEMANN (0 1 0 2) (1 3 2 3)
+(M ^ 3) = ((1 2) * M ^ 2 * (RA - (RA * (A ^ 2 + R ^ 2) - SI ^ 2)
+          / A ^ 2 * (SIN THETA) ^ 2) / R)
+    RIEMANN (0 1 0 2) (1 3 2 3)
+(R * D ^ (3 2) / SI ^ 4) = (R * D ^ (1 2) * (RA ^ 2 - SI ^ 2)
+          / SI ^ 4 * A ^ 2 * (SIN THETA) ^ 2)
+    RIEMANN (1 3 2 3)
+(D ^ (3 2) / SI ^ 2) = (D ^ (1 2) * (RH ^ 2 - 2 * M * R
+          + A ^ 2 * (SIN THETA) ^ 2) / SI ^ 2)
+    RIEMANN (0 1 0 2) (1 3 2 3)
+(A ^ 6 * R * (SIN THETA) ^ 5) = (A ^ 4 * R * (SIN THETA) ^ 3
+         * (A ^ 2 - RH ^ 2 + R ^ 2))
+    RIEMANN (1 3 2 3)
+(R / RH ^ 4 * (SIN THETA)) = (R * (RA * RH ^ 2 + 2 * M * R * A ^ 2
+         * (SIN THETA) ^ 2) / SI ^ 2 * RH ^ 4 * (SIN THETA))
+    RIEMANN (0 1 0 2) (1 3 2 3)
+(A ^ 2 * R / RH ^ 6) = (A ^ 2 * R * (RA * RH ^ 2 + 2 * M * R * A ^
+       2 * (SIN THETA) ^ 2) / SI ^ 2 * RH ^ 6)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(A ^ 4 * M ^ 2 * RA ^ 2 * (SIN THETA) ^ 4) = (A ^ 2 * M ^ 2 *
+    RA ^ 2 * (SIN THETA) ^ 2 * (A ^ 2 - RH ^ 2 + R ^ 2))
+    RIEMANN (0 1 0 1) (0 3 0 3) (1 3 1 3)
+(A ^ 4 * M ^ 3 * RA ^ 2) = (A ^ 4 * M ^ 3 * RA *
+             (RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(M ^ 2 * R ^ 2 * RA ^ 2) = (M ^ 2 * R ^ 2
+           * (RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2) ^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(A ^ 6 * (SIN THETA) ^ 6) = (A ^ 4 * (SIN THETA) ^ 4
+         * (A ^ 2 - RH ^ 2 + R ^ 2))
+    RIEMANN (0 1 0 1) (0 3 0 3) (1 3 1 3)
+(M ^ 3) = (M ^ 2 * (SI ^ 2 - RA * RH ^ 2)
+       / 2 * A ^ 2 * R * (SIN THETA) ^ 2)
+    RIEMANN (0 2 0 2) (0 3 0 3) (2 3 2 3)
+(D ^ 2) = (D * (RA ^ 2 - SI ^ 2) / A ^ 2 * (SIN THETA) ^ 2)
+    RIEMANN (0 1 0 1) (1 2 1 2) (1 3 1 3)
+(D / RH ^ 4) = ((R ^ 2 - 2 * M * R + A ^ 2) / RH ^ 4)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(RA ^ 2 / RH ^ 6) = (RA * (RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2)
+            / RH ^ 6)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+(A ^ 4 * (SIN THETA) ^ 4) = (A ^ 2 * (SIN THETA) ^ 2
+         * (A ^ 2 - RH ^ 2 + R ^ 2))
+    RIEMANN (0 1 0 2) (1 3 2 3)
+(D ^ (3 2)) = (D ^ (1 2) * (RA - 2 * M * R))
+    RIEMANN (0 1 0 2) (1 3 2 3)
+(M ^ 2)=(M *(SI ^ 2 - RA * RH ^ 2)/ 2 * R * A ^ 2 *(SIN THETA)^ 2)
+    RIEMANN (0 2 0 2) (0 3 0 3) (2 3 2 3)
+(D / SI ^ 4) = ((RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2 - 2 * M * R)
+                         / SI ^ 4)
+    RIEMANN (0 1 0 2) (1 3 2 3)
+(RA ^ 3)=(RA *(SI ^ 2 + A ^ 2 *(RA - 2 * M * R)*(SIN THETA)^ 2))
+    RIEMANN (0 1 0 2) (1 3 2 3)
+(A ^ 4 * (SIN THETA) ^ 3) = (A ^ 2 * (SIN THETA) * (RA - RH ^ 2))
+    RIEMANN (0 1 0 2) (1 3 2 3)
+(RA ^ 2 / RH ^ 4)=(RA *(RH ^ 2 + A ^ 2 *(SIN THETA)^ 2)/ RH ^ 4)
+    RIEMANN (0 1 0 2) (1 3 2 3)
+(SI ^ -2) = ((RA * RH ^ 2 + 2 * M * R * A ^ 2 * (SIN THETA) ^ 2) /
+                    SI ^ 4)
+    RIEMANN (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(R ^ 8) = (R ^ 6 * (RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2 - A ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(A ^ 6 * RA) = (A ^ 6 * (RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(R ^ 6) = (R ^ 4 * (RA - A ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+D = (RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2 - 2 * M * R)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(M ^ 2)=(M *(SI ^ 2 - RA * RH ^ 2)/ 2 * R * A ^ 2 *(SIN THETA)^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(RA ^ 2 / SI ^ 4) = (RA * (RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2)
+                       / SI ^ 4)
+    RIEMANN (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(A ^ 4 * R * (SIN THETA) ^ 4) = (A ^ 2 * R * (SIN THETA) ^ 2 *
+             (A ^ 2 - RH ^ 2 + R ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(RH ^ 2 / SI ^ 4) = ((RA - A ^ 2 * (SIN THETA) ^ 2) / SI ^ 4)
+    RIEMANN (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(M * (SIN THETA) ^ 4) = ((SIN THETA) ^ 2 * (SI ^ 2 - RA * RH ^ 2)
+            / 2 * R * A ^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(M * (SIN THETA) ^ 2) = ((SI ^ 2 - RA * RH ^ 2)
+            / 2 * R * A ^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(RA ^ 2 / RH ^ 2)=(RA *(RH ^ 2 + A ^ 2 * (SIN THETA)^ 2)/ RH ^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(RA ^ 2) = (RA * (R ^ 2 + A ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(R ^ 4) = (R ^ 2 * (RH ^ 2 - A ^ 2 + A ^ 2 * (SIN THETA) ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(RA / RH ^ 4) = ((RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2) / RH ^ 4)
+    RIEMANN (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(M * R * (SIN THETA) ^ 2) = ((SI ^ 2 - RA * RH ^ 2) / 2 * A ^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(A ^ 6 * (SIN THETA) ^ 4) = (A ^ 4 * (SIN THETA) ^ 2 *
+           (A ^ 2 - RH ^ 2 + R ^ 2))
+    RIEMANN (0 2 0 2) (0 3 0 3) (2 3 2 3)
+(A ^ 4 * (SIN THETA) ^ 2) = (A ^ 2 *
+           (A ^ 2 - RH ^ 2 + R ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+(R ^ 3) = (R * (RA - A ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(RA / RH ^ 4) = ((A ^ 2 + R ^ 2) / RH ^ 4)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+RA = (A ^ 2 + R ^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(A ^ 2 * (SIN THETA) ^ 2) = (A ^ 2 - RH ^ 2 + R ^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+ (R ^ 5) = (R ^ 3 * (RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2 - A ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+ (M * (SIN THETA) ^ 2) = ((SI ^ 2 - RA * RH ^ 2) / 2 * R * A ^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+RA = (A ^ 2 + R ^ 2)
+    RIEMANN (0 1 2 3) (0 2 1 3) (0 3 1 2)
+(RA / RH ^ 6) = ((RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2) / RH ^ 6)
+    RIEMANN (0 1 2 3) (0 2 1 3) (0 3 1 2)
+(D / RH ^ 6)=((RH ^ 2 + A ^ 2 *(SIN THETA)^ 2 - 2 * M * R)/ RH ^ 6)
+    RIEMANN (0 1 2 3) (0 2 1 3) (0 3 1 2)
+(D / RH ^ 4) = ((RA - 2 * M * R) / RH ^ 4)
+    RIEMANN (0 1 0 2) (1 3 2 3) G (0 0)
+(M ^ 2) = (M * (SI ^ 2 - RA * RH ^ 2) / 2 * A ^ 2 * R * (SIN THETA)
+                    ^ 2)
+    RIEMANN (0 1 1 3) (0 2 2 3)
+(A ^ 5 * (SIN THETA) ^ 5) = (A ^ 3 * (SIN THETA) ^ 3 *
+             (A ^ 2 - RH ^ 2 + R ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(R ^ 4) = (R ^ 2 * (RH ^ 2 - A ^ 2 + A ^ 2 * (SIN THETA) ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(A ^ 2 * R ^ 2 / RH ^ 2) = (A ^ 2 * (RH ^ 2 + A ^ 2 * (SIN THETA)
+             ^ 2 - R ^ 2) / RH ^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(A ^ 4 * (SIN THETA) ^ 4) = (A ^ 2 * (SIN THETA) ^ 2 *
+            (A ^ 2 - RH ^ 2 + R ^ 2))
+    G (0 0)
+D = (RA - 2 * M * R)
+    G (0 0)
+(RA * RH ^ 2) = (SI ^ 2 - 2 * M * R * (RA - RH ^ 2))
+    RIEMANN (0 1 0 1) (2 3 2 3)
+((9 2) * A ^ 4 / RH ^ 2 * SI ^ 2) = ((9 2) * A ^ 2 *
+     (RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2 - R ^ 2) / RH ^ 2 * SI ^ 2)
+    RIEMANN (0 2 0 2) (1 3 1 3)
+(- (9 2) * A ^ 4 / RH ^ 2 * SI ^ 2) = (- (9 2) * A ^ 2 *
+     (RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2 - R ^ 2) / RH ^ 2 * SI ^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(A ^ 4 / RH ^ 4) = (A ^ 2 *
+     (RH ^ 2 + A ^ 2 * (SIN THETA) ^ 2 - R ^ 2) / RH ^ 4)
+    RIEMANN (0 1 1 3) (0 2 2 3)
+(A ^ 3 * (SIN THETA) ^ 3 / RH ^ 4) = (A * (SIN THETA) *
+       (A ^ 2 - RH ^ 2 + R ^ 2) / RH ^ 4)
+    RIEMANN (0 1 0 1) (1 3 1 3) (0 2 0 2) (2 3 2 3)
+(R ^ 2 / RH ^ 2 * SI ^ 2) =
+ ((1 - (A * (COS THETA)) ^ 2 / RH ^ 2) / SI ^ 2)
+           )
+    (EMATRIX (RH * D ^ (1 2) / SI) 0 0 0 0 (RH / D ^ (1 2)) 0 0
+       0 0 RH 0 (- 2 * A * M * R * (SIN THETA) / RH * SI) 0 0
+           (SI * (SIN THETA) / RH)  )
+    (TENSORS METRIC (- -) )
+    (STOP AFTER RICCI)
+         ))
+ (ORTOCARTAN '(
+    (STATIONARY AXISYMMETRIC AFTER CHANDRASEKHAR)
+    (RMARGIN 72)
+    (COORDINATES T R THETA PHI)
+    (FUNCTIONS F0101 (R) F0202 (R) F1212 (R) F2323 (R)
+               NU (R THETA) P (R THETA) OM (R THETA) MU1 (R THETA)
+               MU2 (R THETA))
+    (EMATRIX (EXP NU) 0 0 0 0 (EXP MU1) 0 0
+       0 0 (EXP MU2) 0 (- OM * (EXP (P + NU))) 0 0 (EXP (P + NU)))
+    (TENSORS METRIC (- -) RIEMANN (+ + - -) )
+    (STOP AFTER RICCI)
+    (SUBSTITUTIONS
+    RIEMANN (0 1 0 1) (0 1 0 2) (0 1 1 3) (0 1 2 3) (0 2 1 3) (0 2 2 3)
+            (0 3 0 3) (0 3 1 2) (1 3 1 3) (1 3 2 3)
+(DER R OM) = ((DER R P) * (DER THETA OM) / (DER THETA P))
+    RIEMANN (0 1 1 3)
+(DER R R OM) = (DERIV R ((DER R P) * (DER THETA OM) / (DER THETA P)))
+    RIEMANN (0 1 1 3) (0 1 2 3) (0 2 1 3)
+(DER R THETA OM)=(DERIV THETA((DER R P)*(DER THETA OM)/(DER THETA P)))
+    RIEMANN (0 1 1 3) (0 1 2 3) (0 2 1 3) (0 2 2 3)
+(DER THETA THETA OM) = ((DER THETA OM) * ((DER THETA MU2) -
+   (EXP (2 * MU2 - 2 * MU1)) * (DER R P) * (DER R MU2) / (DER THETA P)
+   - 2 * (DER THETA NU) - 3 * (DER THETA P)))
+    RIEMANN (0 1 1 3) (0 1 2 3) (0 2 1 3) (2 3 2 3)
+(DER THETA THETA P) = (- (EXP (2 * P)) * (DER THETA OM) ^ 2
+   - (EXP (2 * MU2 - 2 * MU1)) * (DER R P) * (DER R MU2)
+   + (DER THETA P)*((DER THETA MU2)-(DER THETA P)- 2 *(DER THETA NU)) )
+    RIEMANN (0 1 1 3) (1 3 1 3)
+(DER R R P) = ((DER R P) * ((DER R MU1) - 2 * (DER R NU))
+   - (DER R P) ^ 2 * (1 + (EXP (2 * P)) * (DER THETA OM) ^ 2
+        / (DER THETA P) ^ 2)
+   - (EXP (2 * MU1 - 2 * MU2)) * (DER THETA P) * (DER THETA MU1))
+    RIEMANN (0 1 2 3) (0 2 1 3) (1 3 2 3)
+(DER R THETA P) = ((DER THETA P) * ((DER R MU2)-(DER R NU)-(DER R P))
+   + (DER R P) * ((DER THETA MU1) - (DER THETA NU)
+         - (EXP (2 * P)) * (DER THETA OM) ^ 2 / (DER THETA P)))
+    RIEMANN (0 1 0 2) (1 3 2 3)
+(DER R THETA NU) = ((3 4) * (EXP (2 * P)) * (DER R P) * (DER THETA OM)
+                    ^ 2 / (DER THETA P) - (DER R NU) * (DER THETA NU)
+    + (DER R NU) * (DER THETA MU1) + (DER THETA NU) * (DER R MU2))
+    RIEMANN (0 1 0 1) (1 3 1 3)
+(DER R R NU) = (- (DER R NU) ^ 2 + (DER R NU) * (DER R MU1)
+               + F0101 * (EXP (2 * MU1))
+ - (EXP (2 * MU1 - 2 * MU2)) * (DER THETA NU) * (DER THETA MU1)
+ + (3 4) * (EXP (2 * P)) * (DER R P) ^ 2 * (DER THETA OM) ^ 2
+             / (DER THETA P) ^ 2)
+    RIEMANN (0 2 0 2) (2 3 2 3)
+(DER THETA THETA NU) = (- (DER THETA NU) ^ 2 + (DER THETA NU) *
+ (DER THETA MU2) - (EXP (2 * MU2 - 2 * MU1)) * (DER R NU) * (DER R MU2)
+ + (3 4)* (EXP (2 * P)) * (DER THETA OM) ^ 2 + F0202 * (EXP (2 * MU2)))
+          )
+         ))
+ (ORTOCARTAN '(
+    (STATIONARY AXISYMMETRIC AFTER CHANDRASEKHAR - CASE III)
+    (RMARGIN 72)
+    (COORDINATES T R THETA PHI)
+    (CONSTANTS EPS C1 C2 C3)
+    (FUNCTIONS F0101 (R) F0202 (R) F1212 (R) F2323 (R) R1 (R) R2 (R)
+               T2 (THETA) NU (R THETA) P (THETA) OM (THETA)
+               MU2 (R THETA))
+    (EMATRIX (EXP NU) 0 0 0 0 R1 0 0
+       0 0 (EXP MU2) 0 (- OM * (EXP (P + NU))) 0 0 (EXP (P + NU)))
+    (TENSORS METRIC (- -) RIEMANN (+ + - -) )
+    (STOP AFTER RICCI)
+    (SUBSTITUTIONS
+    EMATRIX
+NU = (T2 + R2 - 3 * P - (LOG (DER THETA OM)))
+    EMATRIX
+MU2 = (2 * T2 + R2 - 3 * P - (LOG (DER THETA OM)))
+    RIEMANN (0 2 0 2) (2 3 2 3)
+((DER R R2) ^ 2) = ((F0202 - C3 * (EXP (-2 * R2))) * R1 ^ 2)
+    RIEMANN (0 2 0 2) (2 3 2 3)
+(DER THETA THETA T2) = ((DERIV THETA (3 * (DER THETA P) +
+     (DER THETA THETA OM) / (DER THETA OM)))
+    + (DER THETA T2) * ((DER THETA T2) - 3 * (DER THETA P)
+       - (DER THETA THETA OM) / (DER THETA OM))
+    + (3 4) * (EXP (2 * P)) * (DER THETA OM) ^ 2
+    + C3 * (EXP (4 * T2 - 6 * P - 2 * (LOG (DER THETA OM)))) )
+    RIEMANN (0 3 0 3)
+(DER THETA T2) = ((5 2) * (DER THETA P) +
+     (DER THETA THETA OM) / (DER THETA OM) + (1 2) * EPS *
+   * ((DER THETA P) ^ 2 - (EXP (2 * P)) * (DER THETA OM) ^ 2
+ + 4 * C3 *(EXP(4 * T2 - 6 * P - 2 *(LOG(DER THETA OM)))) ) ^ (1 2))
+    RIEMANN (0 3 0 3)
+(EPS ^ 2) = 1
+    RIEMANN (0 3 0 3) (2 3 2 3)
+   (DER THETA P) = (DERIV THETA ((-1 2) * (LOG (OM ^ 2
+             - 2 * C1 * OM - C2))))
+    RIEMANN (2 3 2 3)
+   (DER THETA THETA P) = (DERIV THETA THETA ((-1 2) * (LOG (OM ^ 2
+             - 2 * C1 * OM - C2))))
+    RIEMANN (0 3 0 3) (2 3 2 3)
+   (OM ^ 2 - 2 * C1 * OM - C2) = (EXP (-2 * P))
+    )
+         ))
+ (ORTOCARTAN '(
+    (STATIONARY AXISYMMETRIC AFTER CHANDRASEKHAR - CASE IIIA)
+    (RMARGIN 72)
+    (COORDINATES T R THETA PHI)
+    (CONSTANTS EPS C1 C2 C3 OM)
+    (FUNCTIONS F0101 (R) F0202 (R) F1212 (R) F2323 (R) R1 (R) R2 (R)
+               T1 (THETA) T2 (THETA) NU (R THETA) P (THETA)
+               MU2 (R THETA))
+    (EMATRIX (EXP NU) 0 0 0 0 R1 0 0
+       0 0 (EXP MU2) 0 (- OM * (EXP (P + NU))) 0 0 (EXP (P + NU)))
+    (TENSORS METRIC (- -) RIEMANN (+ + - -) )
+    (STOP AFTER RICCI)
+    (SUBSTITUTIONS
+    EMATRIX (0 0) (3 0) (3 3)
+NU = (T1 + R2)
+    EMATRIX (2 2)
+MU2 = (T1 + T2 + R2)
+    RIEMANN (0 2 0 2) (2 3 2 3)
+(DER THETA THETA T1) = (C3 * (EXP (2 * (T1 + T2))) +
+     (DER THETA T1) * (DER THETA T2))
+    RIEMANN (2 3 2 3)
+(DER THETA THETA P) = (DERIV THETA (C2 * (EXP (T2 - T1 - P))) )
+    RIEMANN (0 3 0 3) (2 3 2 3)
+(DER THETA P) = (C2 * (EXP (T2 - T1 - P)))
+    RIEMANN (0 1 0 1) (1 2 1 2) (1 3 1 3)
+(DER R R R2) = (F1212 * R1 ^ 2 - (DER R R2) ^ 2
+   + (DER R R1) * (DER R R2) / R1)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+((DER R R2) ^ 2) = ((F0202 - C3 * (EXP (-2 * R2))) * R1 ^ 2)
+    )
+         ))
+ (ORTOCARTAN '(
+    (STATIONARY AXISYMMETRIC AFTER CHANDRASEKHAR - CASE IIB)
+    (RMARGIN 72)
+    (COORDINATES T R THETA PHI)
+    (CONSTANTS EPS C1 C2 C3)
+    (FUNCTIONS F0101 (R) F0202 (R) F1212 (R) F2323 (R) R1 (R) R2 (R)
+               T1 (THETA) T2 (THETA) NU (R THETA) P (R) OM (R)
+               MU1 (R THETA) MU2 (THETA) )
+    (EMATRIX (EXP NU) 0 0 0 0 (EXP MU1) 0 0
+       0 0 (EXP MU2) 0 (- OM * (EXP (P + NU))) 0 0 (EXP (P + NU)))
+    (TENSORS METRIC (- -) RIEMANN (+ + - -) )
+    (STOP AFTER RICCI)
+    (SUBSTITUTIONS
+    RIEMANN
+NU = (R1 - T1 - 3 * P - (LOG (DER R OM)))
+    RIEMANN
+MU1 = (2 * R1 - T1 - 3 * P - (LOG (DER R OM)))
+    RIEMANN
+(EXP (2 * T1 + 6 * P - 4 * R1))=(EXP(- 2 *(MU1 +(LOG (DER R OM)))))
+    RIEMANN (0 1 0 1) (0 3 0 3) (1 3 1 3)
+(EXP(2 * T1 + 8 * P - 4 * R1))=(EXP(- 2 *(MU1 +(LOG(DER R OM))- P)))
+    RIEMANN
+P = ( - (LOG (OM ^ 2 - 2 * C1 * OM - C2)) / 2)
+    RIEMANN
+(OM ^ 2 - 2 * C1 * OM - C2) = (EXP (-2 * P))
+    RIEMANN (0 2 0 2) (2 3 2 3)
+   (DER THETA THETA T1) = (C3 * (EXP (2 * (T1 + T2))) +
+     (DER THETA T1) * (DER THETA T2))
+    )
+         ))
+ (ORTOCARTAN '(
+    (STATIONARY AXISYMMETRIC AFTER CHANDRASEKHAR - CASE IIA)
+    (RMARGIN 72)
+    (COORDINATES T R THETA PHI)
+    (CONSTANTS EPS C1 C2 C3 P OM)
+    (FUNCTIONS F0101 (R) F0202 (R) F1212 (R) F2323 (R) R1 (R) R2 (R)
+               T1 (THETA) T2 (THETA) NU (R THETA)
+               MU1 (R THETA) MU2 (R THETA) )
+    (EMATRIX (EXP NU) 0 0 0 0 (EXP MU1) 0 0
+       0 0 (EXP MU2) 0 (- OM * (EXP (P + NU))) 0 0 (EXP (P + NU)))
+    (TENSORS METRIC (- -) RIEMANN (+ + - -) )
+    (STOP AFTER RICCI)
+    (SUBSTITUTIONS
+    RIEMANN
+(DER R R NU) = ((DER R NU) * (DERIV R (MU1 - NU))
+    - (EXP (2 * (MU1 - MU2))) * (DER THETA NU) * (DER THETA MU1)
+    + F0101 * (EXP (2 * MU1)) )
+    RIEMANN
+(DER R THETA NU) = ((DER R NU) * (DERIV THETA (MU1 - NU))
+        + (DER R MU2) * (DER THETA NU) )
+    RIEMANN
+(DER THETA THETA NU) = ((DER THETA NU) * (DERIV THETA (MU2 - NU))
+    - (EXP (2 * (MU2 - MU1))) * (DER R NU) * (DER R MU2)
+    + F0202 * (EXP (2 * MU2))  )
+    RIEMANN
+(DER R R MU2) = ((DER R MU2) * (DERIV R (MU1 - MU2))
+    - (EXP (2 * (MU1 - MU2))) * ((DER THETA THETA MU1)
+         + (DER THETA MU1) * (DERIV THETA (MU1 - MU2)))
+    + F1212 * (EXP (2 * MU1))  )
+    )
+         ))
+(ORTOCARTAN '(
+    (STEPHANI SOLUTION WITH ROTATED SLICES)
+    (RMARGIN 73)
+    (COORDINATES T X Y Z)
+    (FUNCTIONS C(T)K(T)R(T)X0(T) Y0(T) Z0 (T) F (T) CAPR (T) V (T X Y Z)
+               D (T X Y Z) AL (T) BE (T) GA (T) )
+    (EMATRIX D 0 0 0 0 (CAPR / V) 0 0 0 0 (CAPR / V) 0 0 0 0
+             (CAPR / V) )
+    (TENSORS EINSTEIN)
+    (SUBSTITUTIONS
+   AGAMMA (0 0 1) RIEMANN (0 1 0 1) (0 2 1 2) (0 3 1 3)
+  (DER X D) = (F * (DERIV X ((DER T V) / V)))
+    AGAMMA (0 0 2) RIEMANN (0 1 0 2) (0 1 1 2) (0 2 0 2) (0 3 2 3)
+  (DER Y D) = (F * (DERIV Y ((DER T V) / V)))
+    AGAMMA(0 0 3)RIEMANN(0 1 0 3)(0 1 1 3)(0 2 0 3)(0 2 2 3)(0 3 0 3)
+  (DER Z D) = (F * (DERIV Z ((DER T V) / V)))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3)
+ ((DER T D)*(DER T V)) = ((DER T D) * V * (D / F + (DER T CAPR)/ CAPR))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3)
+  (DER T D) = (DERIV T (F * ((DER T V) / V - (DER T CAPR) / CAPR)))
+    RIEMANN (0 1 0 1) (0 1 1 2) (0 1 1 3) (0 2 0 2) (0 2 1 2) (0 2 2 3)
+            (0 3 0 3) (0 3 1 3) (0 3 2 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+(DER T V) = (((DER T CAPR) / CAPR + D / F) * V)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+   ((DER Z V) ^ 2) = ((V - 1) * K - (DER X V) ^ 2 - (DER Y V) ^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3)
+((DER Z V) * (DER T Z V)) = ((1 2)*(DERIV T ((V - 1)* K -(DER X V)^ 2
+           - (DER Y V) ^ 2)))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3)
+(DER T V) = (((DER T CAPR) / CAPR + D / F) * V)
+    RIEMANN
+   V = (1 + (1 4) * K * (((X * (COS AL) + Y * (SIN AL)) * (COS GA)
+    + ((- X * (SIN AL) + Y * (COS AL)) * (COS BE) + Z * (SIN BE))
+          * (SIN GA) - X0) ^ 2
+    + (- (X * (COS AL) + Y * (SIN AL)) * (SIN GA)
+    + ((- X * (SIN AL) + Y * (COS AL)) * (COS BE) + Z * (SIN BE))
+          * (COS GA) - Y0) ^ 2
+   + (- (- X * (SIN AL) + Y * (COS AL)) * (SIN BE) + Z * (COS BE) - Z0)
+          ^ 2) + Z0 ^ 2)
+    RIEMANN
+    K = ((C ^ 2 - 1 / F ^ 2) * CAPR ^ 2)
+    )
+   ))
+(ORTOCARTAN '(
+    (STEPHANI SOLUTION WITH ROTATION)
+    (RMARGIN 73)
+    (COORDINATES T R PHI Z)
+    (CONSTANTS C)
+    (FUNCTIONS F (T R) H (R Z) K (T) CAPR (T) V (T R Z) D(T R Z)
+               OM (T R Z) Z0 (T) )
+    (EMATRIX D 0 0 0 0(CAPR / V)0 0(R * CAPR * OM / V)0 (R * CAPR / V) 0
+             0 0 0 (CAPR / V ))
+(SUBSTITUTIONS
+    RIEMANN (0 1 0 3) (0 1 1 2) (0 1 2 3) (0 2 0 2) (0 2 0 3) (0 2 1 3)
+            (0 3 0 3) (0 3 1 2) (0 3 2 3) (1 2 1 3) (1 2 2 3) (2 3 2 3)
+(DER Z OM) = (H * D * V ^ 3 / CAPR ^ 3)
+    RIEMANN (0 2 0 3)
+(DER T Z OM) = (DERIV T (H * D * V ^ 3 / CAPR ^ 3))
+    RIEMANN (0 3 2 3)
+(DER Z Z OM) = (DERIV Z (H * D * V ^ 3 / CAPR ^ 3))
+    RIEMANN (0 1 2 3) (0 3 1 2)
+(DER R Z OM) = (DERIV R (H * D * V ^ 3 / CAPR ^ 3))
+    RIEMANN (0 1 0 1) (0 1 0 3) (0 1 1 2) (0 1 2 3) (0 2 0 2) (0 2 1 2)
+            (0 2 1 3) (0 3 0 3) (0 3 1 3)
+(DER R D) = (DERIV R (F * ((DER T V) / V - (DER T CAPR) / CAPR)))
+    RIEMANN (0 1 0 1) (0 1 0 3) (0 1 1 3) (0 1 2 3) (0 2 0 2) (0 2 1 3)
+            (0 2 2 3) (0 3 0 3)
+(DER Z D) = (DERIV Z (F * ((DER T V) / V - (DER T CAPR) / CAPR)))
+    RIEMANN (0 1 0 1)
+(DER R R D) = (DERIV R R (F * ((DER T V) / V - (DER T CAPR) / CAPR)))
+    RIEMANN (0 1 0 3)
+(DER R Z D) = (DERIV R Z (F * ((DER T V) / V - (DER T CAPR) / CAPR)))
+    RIEMANN (0 3 0 3)
+(DER Z Z D) = (DERIV Z Z (F * ((DER T V) / V - (DER T CAPR) / CAPR)))
+    RIEMANN (0 1 0 1) (0 1 0 2) (0 2 0 2) (0 3 0 3)
+(DER T D) = (DERIV T (F * ((DER T V) / V - (DER T CAPR) / CAPR)))
+    RIEMANN (0 1 0 1) (0 1 0 2) (0 1 0 3) (0 1 1 2) (0 1 1 3) (0 1 2 3)
+            (0 2 0 2) (0 2 0 3) (0 2 1 2) (0 2 1 3) (0 2 2 3) (0 3 0 3)
+            (0 3 1 3) (1 2 1 2) (1 2 1 3) (1 3 1 3) (1 3 2 3) (2 3 2 3)
+(DER T V) = (V * (D / F + (DER T CAPR) / CAPR))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+((DER Z V) ^ 2) = (K * (V - 1) - (DER R V) ^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3)
+((DER Z V) * (DER T Z V))=((1 2)*(DERIV T(K *(V - 1)-(DER R V)^ 2)))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3)
+(DER T V) = (V * (D / F + (DER T CAPR) / CAPR))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+   V = (1 + (1 4) * K * (R ^ 2 + (Z - Z0) ^ 2))
+    RIEMANN (0 1 0 1) (0 2 0 2)
+(Z0 ^ 4)=((4 *(V - 1)/ K -(R ^ 2 +(Z - Z0)^ 2 - Z0 ^ 2))^ 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (2 3 2 3)
+(Z0 ^ 2) = (4 * (V - 1) / K - (R ^ 2 + (Z - Z0) ^ 2 - Z0 ^ 2))
+             )
+    (TENSORS METRIC EINSTEIN)
+   ))
+ (ORTOCARTAN '(
+    (DEBEVER WITH 13 PARAMETERS)
+    (RMARGIN 80)
+    (CONSTANTS E1 E2 F A B C K L !/B0!/ N P0 P1 Q LAM GAM F2!-1 F2!+1 F4
+               G4 F1 G1 F0 G0)
+    (FUNCTIONS U (W) V (X) FB (W X) )
+    (COORDINATES CU CV W X)
+    (SYMBOLS
+ E1P!-E2M = (E1 * P - E2 * M)
+ P = (PW ^ 2 * B ^ 4 / E1 + E1 * (L / B) ^ 2
+                            - (K * E2 * B) ^ 2 / E1)
+ M = (- PX ^ 2 / E2 - (B * K) ^ 2 * E2 + (L * E1 / B) ^ 2 / E2)
+ S = (A * PW * PX + 1)
+ PW = (C * E1 * W / B ^ 2 + K)
+ PX = (C * E2 * X + L)
+            )
+    (TENSORS METRIC)
+    (EMATRIX
+ ((F * U / E1P!-E2M) ^ (1 2) * E1 / S)
+    ((F * U / E1P!-E2M) ^ (1 2) * M / S)
+       (- F2!-1 * E1P!-E2M ^ (1 2) / F2!+1 * S * (F * U) ^ (1 2))   0
+ ((V / E1P!-E2M) ^ (1 2) * E2 / S)
+    ((V / E1P!-E2M) ^ (1 2) * P / S)   0   0
+  0   0   ((E1P!-E2M / F * U) ^ (1 2) / S)   0
+  0   0   0   ((E1P!-E2M / V) ^ (1 2) / S)
+            )
+    (SUBSTITUTIONS
+   AGAMMA (0 0 2) (1 1 2)
+ (E1 ^ 2 * P) = (E1 * (E1P!-E2M + E2 * M))
+   DETERMINANT IE (2 2) (3 3)
+   AGAMMA (0 0 2) (0 0 3) (0 2 3) (1 1 3)
+ (E1 * P) = (E1P!-E2M + E2 * M)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 2 1 2) (0 3 0 3) (0 3 1 3) (1 2 1 2)
+           (1 3 1 3) (2 3 2 3)
+ (B ^ 4 * PW ^ 2) = (E1P!-E2M - PX ^ 2)
+   RIEMANN (0 2 0 3) (1 2 1 3)
+ (B ^ 2 * PW ^ 2) = ((E1P!-E2M - PX ^ 2) / B ^ 2)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ (S / E1P!-E2M) = ((A * PW * PX + 1) / E1P!-E2M)
+   RIEMANN (0 2 0 2) (1 3 1 3)
+ (S / E1P!-E2M ^ 2) = ((A * PW * PX + 1) / E1P!-E2M ^ 2)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ (S ^ 2 / E1P!-E2M ^ 2) = ((A * PW * PX + 1) ^ 2 / E1P!-E2M ^ 2)
+   RIEMANN (0 2 0 2) (1 3 1 3)
+ (S ^ 2 / E1P!-E2M) = ((A * PW * PX + 1) ^ 2 / E1P!-E2M)
+   RIEMANN (0 2 0 2)
+ (DER W W U) = (DERIV W W ((B ^ 4 / (C * E1) ^ 2 * F)
+  * (F4 * PW ^ 4 + A * P1 * PW ^ 3 + N * PW ^ 2 + P0 * PW + Q)))
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (2 3 2 3)
+ ((DER W U) / E1P!-E2M) = ((DERIV W ((B ^ 4 / (C * E1) ^ 2 * F)
+  * (F4 * PW ^ 4 + A * P1 * PW ^ 3 + N * PW ^ 2 + P0 * PW + Q)))
+                     / E1P!-E2M)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ (U / E1P!-E2M) = ((B ^ 4 / (C * E1) ^ 2 * F)
+  * (F4 * PW ^ 4 + A * P1 * PW ^ 3 + N * PW ^ 2 + P0 * PW + Q)
+                     / E1P!-E2M)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ (U / E1P!-E2M ^ 2) = ((B ^ 4 / (C * E1) ^ 2 * F)
+  * (F4 * PW ^ 4 + A * P1 * PW ^ 3 + N * PW ^ 2 + P0 * PW + Q)
+                     / E1P!-E2M ^ 2)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (2 3 2 3)
+ ((DER W U) / E1P!-E2M ^ 2) = ((DERIV W ((B ^ 4 / (C * E1) ^ 2 * F)
+  * (F4 * PW ^ 4 + A * P1 * PW ^ 3 + N * PW ^ 2 + P0 * PW + Q)))
+                     / E1P!-E2M ^ 2)
+   RIEMANN (1 3 1 3)
+ (DER X X V) = (DERIV X X ((C * E2) ^ -2 *
+  (G4 * PX ^ 4 + A * P0 * PX ^ 3 - N * PX ^ 2 + P1 * PX
+                + B ^ 4 * Q - 2 * !/B0!/ ^ 2)))
+   RIEMANN (0 1 0 1) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ ((DER X V) / E1P!-E2M) = ((DERIV X ((C * E2) ^ -2 *
+  (G4 * PX ^ 4 + A * P0 * PX ^ 3 - N * PX ^ 2 + P1 * PX
+                + B ^ 4 * Q - 2 * !/B0!/ ^ 2))) / E1P!-E2M)
+   RIEMANN (0 1 0 1) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ ((DER X V) / E1P!-E2M ^ 2) = ((DERIV X ((C * E2) ^ -2 *
+  (G4 * PX ^ 4 + A * P0 * PX ^ 3 - N * PX ^ 2 + P1 * PX
+                + B ^ 4 * Q - 2 * !/B0!/ ^ 2))) / E1P!-E2M ^ 2)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ (V / E1P!-E2M) = ((C * E2) ^ -2 *
+  (G4 * PX ^ 4 + A * P0 * PX ^ 3 - N * PX ^ 2 + P1 * PX
+                + B ^ 4 * Q - 2 * !/B0!/ ^ 2) / E1P!-E2M)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ (V / E1P!-E2M ^ 2) = ((C * E2) ^ -2 *
+  (G4 * PX ^ 4 + A * P0 * PX ^ 3 - N * PX ^ 2 + P1 * PX
+                + B ^ 4 * Q - 2 * !/B0!/ ^ 2) / E1P!-E2M ^ 2)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ F4 = (- A ^ 2 * B ^ 4 * Q + 2 * A ^ 2 * !/B0!/ ^ 2
+                   - B ^ 4 * LAM / 3)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ G4 = (- (A ^ 2 * Q + LAM / 3))
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ (B ^ 8) = (B ^ 4 * (E1P!-E2M - PX ^ 2) / PW ^ 2)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ (B ^ 4) = ((E1P!-E2M - PX ^ 2) / PW ^ 2)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ ((PW * PX ) ^ 4) = (((S - 1) / A) ^ 4)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ ((PW * PX ) ^ 3) = (((S - 1) / A) ^ 3)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ ((PW * PX ) ^ 2) = (((S - 1) / A) ^ 2)
+   RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+ (PW * PX) = ((S - 1) / A)
+             )
+   (EXPAND POWERS FROM 0 TO 4)
+            ))
+ (ORTOCARTAN '(
+    (CLEVER SHORT KOWALCZYNSKI)
+   (COORDINATES T F R Z)
+    (CONSTANTS A B C H M)
+    (FUNCTIONS S (T F R Z))
+    (SYMBOLS P = ((T ^ 2 - R ^ 2) ^ (1 2)) )
+    (MARKERS M1 M2)
+    (SUBSTITUTIONS
+  IE (A ^ -1) = A
+ IE AGAMMA RIEMANN
+ (A ^ M1) = (A ^ (REMAINDER M1 2))
+ DETERMINANT IE AGAMMA RIEMANN
+    (T ^ M1) = (T ^ (REMAINDER M1 2) * (P ^ 2 + R ^ 2) ^
+                       (QUOTIENT M1 2))
+              )
+    (EMATRIX (- 2 ^ (-3 2) * A * P ^ -1 * (3 - S) * T)  0
+               (2 ^ (-3 2) * A * P ^ -1 * (3 - S) * R)
+               (2 ^ (-3 2) * (1 - S))   (P ^ -1 * R * (COS F))
+             (R * (SIN F))   (- P ^ -1 * T * (COS F))   0
+             (- P ^ -1 * R * (SIN F))   (R * (COS F))
+               (P ^ -1 * T * (SIN F))   0
+             (- 2 ^ (-3 2) * A * P ^ -1 * (1 + S) * T)   0
+               (2 ^ (-3 2) * A * P ^ -1 * (1 + S) * R)
+               (2 ^ (-3 2) * (3 + S))             )
+    (DONT PRINT MESSAGES)
+    (STOP AFTER RICCI)
+      ))
+ (ORTOCARTAN '(
+    (CLEVER NARIAI)
+    (COORDINATES T X Y Z)
+    (CONSTANTS L)
+    (MARKERS M)
+    (EMATRIX  PSI   0   0   0
+              0   (L / R)   0   0
+              0   0   (L / R)   0
+              0   0   0   (L / R)   )
+    (SYMBOLS
+       PSI = (A * (COS (LOG (R / L))) + B * (SIN (LOG (R / L))))   )
+    (SUBSTITUTIONS
+    AGAMMA RIEMANN
+       (DER M R) = (M / R)
+    AGAMMA RIEMANN
+       (COS (LOG (R / L))) = (PSI / A - B * (SIN (LOG (R / L))) / A)
+    AGAMMA RIEMANN
+       (Z ^ 2) = (R ^ 2 - X ^ 2 - Y ^ 2)   )
+    (FUNCTIONS A (T) B (T) R (X Y Z)  )
+   (DONT PRINT MESSAGES)
+        ))
+ (ORTOCARTAN '(
+  (CLEVER STEPHANI)
+    (COORDINATES T X Y Z)
+    (FUNCTIONS C (T) K (T) R (T) X0(T) Y0(T) Z0(T) F (T) CAPR (T)
+           V (T X Y Z)  D (T X Y Z)  )
+    (EMATRIX D  0  0  0  0  (CAPR / V)  0  0  0  0  (CAPR / V)
+         0  0  0  0  (CAPR / V)  )
+    (TENSORS EINSTEIN)
+    (MARKERS M)
+    (SUBSTITUTIONS
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3)
+ ((DER T D)*(DER T V)) = ((DER T D) * V * (D / F + (DER T CAPR) / CAPR))
+    AGAMMA RIEMANN
+ (DER M D) = (DERIV M (F * ((DER T V) / V - (DER T CAPR)/ CAPR)))
+    RIEMANN
+  (DER T CAPR) = (CAPR * ((DER T V) / V - D / F))
+  RIEMANN
+   ((DER Z V) ^ 2) = ((V - 1) * K - (DER X V) ^ 2 - (DER Y V) ^ 2)
+    RIEMANN
+  ((DER T V) / V) = (D / F + (DER T CAPR) / CAPR)
+    RIEMANN
+V = (1 + (1 4) * K * ((X - X0) ^ 2 + (Y - Y0) ^ 2 + (Z - Z0) ^ 2))
+    RIEMANN
+ K = ((C ^ 2 - 1 / F ^ 2) * CAPR ^ 2)
+               )
+     ))
+ (ORTOCARTAN '(
+    (A VERY CLEVER TEST)
+    (CONSTANTS A B C D E)
+    (COORDINATES T X Y Z)
+    (FUNCTIONS F (T X Y Z)  G (T X Y Z))
+    (MARKERS M1 M2 M3)
+    (EMATRIX  ((A + B) ^ -4)  0  0  0
+              0  ((B + C) ^ -8)  0  0
+             0  0  ((A + C + D) ^ -3)  0
+        0  0  0  ((A + B + C    ) ^ -3)
+       )
+    (STOP AFTER IE)
+    (SUBSTITUTIONS
+  IE ((A + B) ^ M1) = EXPAND
+  IE ((B + C) ^ M1) = ((B + C) ^ 2 * (B + C) ^ (M1 - 2))
+  IE (2 2)
+  ((M1 + M2) ^ M3) = EXPAND
+   IE ((A + B + M1) ^ M2) = EXPAND
+               )
+    (DONT PRINT MESSAGES)
+    (EXPAND POWERS FROM 0 TO 2)
+     ))
+
+(ORTOCARTAN '(
+   (HARTLE-THORNE METRIC WITH J = 0 TO BE USED WITH THE CLEVER VERSION
+    OF ORTOCARTAN)
+   (RMARGIN 80)
+   (CONSTANTS Q M)
+   (FUNCTIONS F (R THETA) G (R THETA))
+   (COORDINATES T R THETA PHI)
+   (EMATRIX ((1 - 2 * M / R) ^ (1 2) * (1 + Q * F)) 0 0 0
+            0 ((1 - Q * F) / (1 - 2 * M / R) ^ (1 2)) 0 0
+            0 0 (R * (1 + Q * G)) 0
+            0 0 0 (R * (SIN THETA) * (1 + Q * G)) )
+   (SYMBOLS
+     S = (1 - 2 * M / R)
+     LE = (((-3 4) * R ^ 2 / M ^ 2 + (3 2) * R / M - (1 2)) * (LOG S)
+           - (3 2) * (R / M - 1))
+          )
+   (SUBSTITUTIONS
+    IE AGAMMA RIEMANN (Q ^ 2) = 0
+    IE AGAMMA (Q ^ 3) = 0
+    IE (Q ^ 4) = 0
+    DETERMINANT ACTUAL = (R ^ 2 * (SIN THETA) * (1 - 2 * Q * G) ^ -1)
+    RIEMANN (0 1 0 1) (0 1 0 2) (1 2 1 2) (1 3 1 3)  (1 3 2 3)
+  (M / R) = ((1 - S) / 2)
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+  (M / R ^ 2) = ((1 - S) / 2 * R)
+    RIEMANN
+  F = ((1 2) * (3 * (COS THETA) ^ 2 - 1) * R ^ 2 * S *
+                         (DERIV R R LE))
+    RIEMANN (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (1 3 2 3) (2 3 2 3)
+  G = ((- 2 * M * (DERIV R LE) - R ^ 2 * S * (DERIV R R LE))
+                * (1 2) * (3 * (COS THETA) ^ 2 - 1))
+    RIEMANN
+  (S ^ 2) = (S * (1 - 2 * M / R))
+    RIEMANN
+  (S * (LOG S)) = ((1 - 2 * M / R) * (LOG S))
+    RIEMANN
+  (Q * S) = (Q * (1 - 2 * M / R))
+    RIEMANN
+  (M ^ 4 / R ^ 6) = (M ^ 3 * (1 - S) / 2 * R ^ 5)
+    RIEMANN
+  (M ^ 3 / R ^ 5) = (M ^ 2 * (1 - S) / 2 * R ^ 4)
+    RIEMANN
+  (M ^ 2 / R ^ 4) = (M * (1 - S) / 2 * R ^ 3)
+    RIEMANN (0 1 0 2) (1 3 2 3)
+  (S ^ (3 2)) = (S ^ (1 2) * (1 - 2 * M / R))
+    RIEMANN (0 1 0 2) (1 3 2 3)
+  (S ^ (1 2)) = ((1 - 2 * M / R) / S ^ (1 2))
+    RIEMANN
+  (M / R ^ 3) = ((1 - S) / 2 * R ^ 2)
+    RIEMANN
+  (1 / R * S) = ((1 + 2 * M / R * S) / R)
+           )
+   (DATA SUBSTITUTIONS
+  F (M / R * S) = ((1 - S) / 2 * S)
+  G (S * (LOG S)) = ((1 - 2 * M / R) * (LOG S))
+          )
+   (STOP AFTER RICCI)
+   (DONT PRINT MESSAGES MODIFICATIONS SUBSTITUTIONS)
+      ))
+(ORTOCARTAN '(
+   (HARTLE-THORNE METRIC WITH Q = 0 TO BE USED WITH THE CLEVER
+    VERSION OF ORTOCARTAN)
+   (RMARGIN 80)
+   (CONSTANTS Q M A)
+   (FUNCTIONS F (R THETA) G (R THETA) KP (R THETA) KM (R THETA)
+              LP (R THETA) LM (R THETA) H (R THETA) )
+   (COORDINATES T R THETA PHI)
+   (EMATRIX (S ^ (1 2) * (1 + A ^ 2 * KP)) 0 0 0
+            0 ((1 - A ^ 2 * LP) / S ^ (1 2))  0 0
+            0 0 (R * (1 - A ^ 2 * H)) 0
+    (-2 * A * M ^ 2 * R ^ -2 * (SIN THETA))
+                            0 0 (R * (SIN THETA) * (1 - A ^ 2 * H))
+            )
+   (SYMBOLS
+     S = (1 - 2 * M / R)
+     LE = (((-3 4) * R ^ 2 / M ^ 2 + (3 2) * R / M - (1 2)) * (LOG S)
+           - (3 2) * (R / M - 1))
+          )
+   (SUBSTITUTIONS
+    IE AGAMMA RIEMANN (A ^ 3) = 0
+    IE AGAMMA RIEMANN (A ^ 4) = 0
+    IE AGAMMA (A ^ 5) = 0
+    IE AGAMMA (A ^ 6) = 0
+    IE (A ^ 7) = 0
+    IE (A ^ 8) = 0
+    DETERMINANT
+      ACTUAL = (R ^ 2 * (SIN THETA)/(1 - A ^ 2 *(KP - LP - 2 * H)))
+    RIEMANN
+KP = (M ^ 4 / R ^ 4 * S + M ^ 3 * R ^ -3 * (1 + M / R) *
+      (1 2) * (3 * (COS THETA) ^ 2 - 1) - (5 8) * F)
+    RIEMANN
+LP = (M ^ 4 / R ^ 4 * S + M ^ 3 * R ^ -3 * (1 - 5 * M / R) *
+      (1 2) * (3 * (COS THETA) ^ 2 - 1) - (5 8) * F)
+    RIEMANN
+H = (M ^ 3 * R ^ -3 * (1 + 2 * M / R) * (1 2) * (3 * (COS THETA) ^ 2
+        - 1) + (5 8) * G)
+    RIEMANN
+  (A ^ 2 * S) = (A ^ 2 * (1 - 2 * M / R))
+    RIEMANN (0 1 0 2) (1 3 2 3)
+  (M ^ 4 * S ^ (1 2)) = (M ^ 4 * (1 - 2 * M / R) / S ^ (1 2))
+    RIEMANN (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+  M = (R * (1 - S) / 2)
+    RIEMANN
+  F = ((1 2) * (3 * (COS THETA) ^ 2 - 1) * R ^ 2 * S *
+                         (DERIV R R LE))
+    RIEMANN (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (1 3 2 3) (2 3 2 3)
+  G = ((- 2 * M * (DERIV R LE) - R ^ 2 * S * (DERIV R R LE))
+                * (1 2) * (3 * (COS THETA) ^ 2 - 1))
+    RIEMANN
+  (S ^ 2) = (S * (1 - 2 * M / R))
+    RIEMANN
+  (S * (LOG S)) = ((1 - 2 * M / R) * (LOG S))
+    RIEMANN
+  (M ^ 4 / R ^ 6) = (M ^ 3 * (1 - S) / 2 * R ^ 5)
+    RIEMANN
+  (M ^ 3 / R ^ 5) = (M ^ 2 * (1 - S) / 2 * R ^ 4)
+    RIEMANN
+  (M ^ 2 / R ^ 4) = (M * (1 - S) / 2 * R ^ 3)
+    RIEMANN (0 1 0 2) (1 3 2 3)
+  (S ^ (3 2)) = (S ^ (1 2) * (1 - 2 * M / R))
+    RIEMANN (0 1 0 2) (1 3 2 3)
+  (S ^ (1 2)) = ((1 - 2 * M / R) / S ^ (1 2))
+    RIEMANN
+  (A ^ 2 * S) = (A ^ 2 * (1 - 2 * M / R))
+    RIEMANN
+  (A ^ 2 * M) = (A ^ 2 * R * (1 - S) / 2)
+    RIEMANN
+  (1 / R ^ 2) = ((1 - S) / 2 * M * R)
+           )
+   (DATA SUBSTITUTIONS
+  F (M / R * S) = ((1 - S) / 2 * S)
+  G (S * (LOG S)) = ((1 - 2 * M / R) * (LOG S))
+          )
+   (STOP AFTER RICCI)
+      ))
+(setq !*'(lower t)
+(setq !*lower nil)
+ (ortocartan '(
+    (FLRW limit of Martin - Senovilla 1986)
+    (coordinates t u x y)
+    (constants a b c)
+    (functions g (x) h (y) M (t) )
+    (substitutions
+ agamma riemann
+ (der x x g) = (- a ^ 2 * g)
+ agamma riemann
+ (der y y h) = (- b ^ 2 * h)
+ riemann
+ (M ^ (1 2)) = (2 * t ^ (1 2) * (a ^ 2 + b ^ 2 * t) / M ^ (1 2))
+ riemann
+ M = (2 * t ^ (1 2) * (a ^ 2 + b ^ 2 * t))
+ riemann
+ (b ^ 4) = (b ^ 2 * (M / 2 * t ^ (3 2) - a ^ 2 / t))
+ riemann
+ (b ^ 2) = ((M / 2 * t ^ (1 2) - a ^ 2) / t)
+                    )
+    (ematrix ((2 * M) ^ (-1 2))  0  0  0
+             (- (2 * M) ^ (-1 2))  ((2 * M) ^ (1 2) * g * h)  0  0
+             0  (-2 * t ^ (1 4) * (der x g) * h)  (t ^ (3 4))  0
+             0  (2 * t ^ (3 4) * g * (der y h))  0  (t ^ (1 4))   )
+    (tensors metric einstein)
+    (dont print messages)
+                   ))
+(setq !*lower t)
+ (setq !*lower nil)
+ (ortocartan '(
+    (The limit a = 0 of Vaidya 1977)
+    (constants m R)
+    (coordinates u r a b)
+    (functions T (t) G (u r))
+    (symbols t = (u + r))
+    (markers m1 m2)
+    (ematrix (G ^ (1 2) / T)  (G ^ (-1 2) / T)  0  0
+             0  (G ^ (-1 2) / T)  0  0
+             0  0  (R * (sin (r / R)) / T)  0
+             0  0  0  (R * (sin (r / R)) * (sin a) / T)  )
+    (substitutions
+ agamma (0 0 1)
+ (G ^ (1 2)) = ((1 - 2 * (m / R) * (cot (r / R)) * T ^ 2) / G ^ (1 2))
+ agamma riemann
+ G = (1 - 2 * (m / R) * (cot (r / R)) * T ^ 2)
+ agamma riemann
+ (1 - 2 * (m / R) * (cot (r / R)) * T ^ 2) = G
+ riemann
+ (cos m1) = ((sin m1) / (tan m1))
+ riemann
+ (m ^ 2 / G ^ 2) = (m * ((1 2) * R * T ^ -2 * (tan (r / R)) / G ^ 2
+                   - (1 2) * R * T ^ -2 * (tan (r / R)) / G))
+ riemann
+ (m ^ 2 / G) = ((1 2) * m * R * T ^ -2 * (tan (r / R)) / G
+                 - (1 2) * m * R * T ^ -2 * (tan (r / R)))
+ riemann
+ (m / G) = ((1 2) * R * T ^ -2 * (tan (r / R)) / G
+            - (1 2) * R * T ^ -2 * (tan (r / R)))
+ riemann
+ (1 / G) = ((G + 2 * (m / R) * (cot (r / R)) * T ^ 2) / G)
+                 )
+    (dont print messages)
+    (tensors metric einstein)
+                 ))
+  (setq !*lower t)
+ (setq !*lower nil)
+ (ortocartan '(
+    (The Vaidya - Shah 1960 metric)
+    (coordinates t r h p)
+    (functions F (t) m (t r) P (m) )
+    (symbols G = (1 + P * r)
+             R = (F * r * (exp (- (int m P) / 2)))
+                 )
+    (ematrix (r / R * G ^ (1 2))  0  0  0
+             0  (R / r * G ^ (1 2))  0  0
+             0  0  R  0
+             0  0  0  (R * (sin h)) )
+    (tensors metric einstein)
+    (substitutions
+ agamma riemann
+ (der r m) = (1 / G)
+ agamma riemann
+ (der t m) = ((exp (int m P)) / F ^ 2 * G)
+ agamma riemann
+ R = (F * r * (exp (- (int m P) / 2)))
+ riemann
+ (G * (exp (int m P))) = ((exp (int m P)) * (1 + P * r))
+               )
+    (dont print messages)
+         ))
+ (setq !*lower t)
+ (setq !*lower nil)
+ (ortocartan '(
+    (The Vaidya - Shah 1960 metric II)
+    (coordinates t r h p)
+    (functions F (t) m (t r) P (m) Q (m) S (m) A (m) )
+    (symbols G = (1 + P * r + Q * r ^ 2)
+             T = (A * Q * r + (der m A))
+             R = (F * Q * r * (exp (S / 2)) / T)
+                      )
+    (ematrix (r / R * G ^ (1 2))  0  0  0
+             0  (R / r * G ^ (1 2))  0  0
+             0  0  R  0
+             0  0  0  (R * (sin h))      )
+    (substitutions
+ agamma riemann
+ (der m S) = P
+ agamma riemann
+ (der r m) = (1 / G)
+ agamma riemann
+ (der t m) = (T ^ 2 / G * Q ^ 2 * (exp S) * F ^ 2)
+ agamma riemann
+ (der m m A) = ((der m A) * (P + (der m Q) / Q) - A * Q)
+ agamma riemann
+ R = (F * Q * r * (exp (S / 2)) / T)
+ agamma riemann
+ (der m A) = (T - A * Q * r)
+ agamma
+ (G ^ (1 2)) = ((1 + P * r + Q * r ^ 2) / G ^ (1 2))
+ agamma
+ (r ^ 2 / G ^ (1 2)) = ((G - 1 - P * r) / Q * G ^ (1 2))
+ riemann
+ (r ^ 3) = (r * (G - 1 - P * r) / Q)
+ riemann
+ (r ^ 2) = ((G - 1 - P * r) / Q)
+ riemann
+ (1 / G * r ^ 2) = ((G - P * r - Q * r ^ 2) / G * r ^ 2)
+ riemann
+ (1 / G * r) = ((G - P * r - Q * r ^ 2) / G * r)
+               )
+    (dont print messages)
+    (tensors metric einstein)
+              ))
+ (setq !*lower t)
+
+(setq !*lower nil)
+(ortocartan '(
+   (The Lemaitre - Tolman metric)
+   (constants L)
+   (coordinates t r theta phi)
+   (functions M (r) E(r) R (t r))
+   (dont print messages)
+   (symbols V = (1 + 2 * E)
+ W = (2 * E + 2 * M / R + (1 3) * L * R ^ 2)
+           )
+   (ematrix 1  0  0  0
+            0  ((der r R) / V ^ (1 2))  0  0
+            0  0  R  0
+            0  0  0  (R * (sin theta))  )
+   (substitutions
+   riemann
+ (der t t r R) = (((1 2) * (deriv t r W)
+                                  - (der t t R) * (der t r R)) / (der t R))
+   riemann
+ (der t r R) = ((1 2) * (deriv r W) / (der t R))
+   riemann
+ (der t t R) = ((1 2) * (deriv t W) / (der t R))
+   riemann
+((der t R) ^ 2) = (2 * E + 2 * M / R + (1 3) * L * R ^ 2)
+   riemann
+ V = (1 + 2 * E)
+      )
+%    (rmargin 120)
+   (tensors einstein)
+     ))
+ (setq !*lower t)
+
+(setq !*lower nil)
+ (ortocartan '(
+    (KERR AFTER CHANDRASEKHAR)
+    (constants a m)
+    (coordinates t r theta phi)
+    (functions S (r) rho (r theta) Delta (r) Sigma (r theta) )
+    (substitutions
+    riemann(0 1 0 1)(0 1 1 3)(1 3 1 3)
+    (der r S) = (2 * r)
+    agamma(0 0 1)(2 1 2)(3 1 3)riemann(0 1 0 1)(0 1 1 3)(0 2 1 3)
+           (0 3 1 2)(1 2 1 2)(1 3 1 3)
+ (der r rho) = (r / rho)
+    agamma (0 0 2) (1 1 2)(3 2 3)
+    riemann (0 1 0 2) (0 1 2 3) (0 2 0 2) (0 2 2 3) (0 3 1 2) (1 2 1 2)
+            (1 3 2 3) (2 3 2 3)
+ (der theta rho) = (- a ^ 2 * (cos theta) * (sin theta) / rho)
+    agamma(0 0 1)riemann (0 1 0 1)(0 2 1 3)(0 3 1 2) (1 2 1 2)(1 3 1 3)
+ (der r Delta) = (2 * r - 2 * m)
+    agamma (0 0 1) (3 0 1) (3 1 3)
+    riemann (0 1 0 1) (0 1 1 3) (0 2 1 3) (0 3 1 2) (1 3 1 3)
+ (der r Sigma) = ((2 * r * S - a ^ 2 * (sin theta) ^ 2 * (r - m)) / Sigma)
+    agamma (0 0 2) (3 0 2) (3 2 3)
+  riemann(0 1 0 2)(0 1 2 3)(0 2 0 2)(0 2 2 3)(0 3 1 2)(1 3 2 3)(2 3 2 3)
+ (der theta Sigma) = (- a ^ 2 * Delta * (cos theta) * (sin theta) / Sigma)
+    riemann (0 2 0 2) (0 3 0 3) (2 3 2 3)
+ (Delta ^ 2 * (sin theta) ^ 4) = (Delta * (sin theta) ^ 4 * (r ^ 2
+          - 2 * m * r + a ^ 2))
+    riemann (0 2 0 2) (0 3 0 3) (2 3 2 3)
+ (Delta * (sin theta) ^ 6) = ((sin theta) ^ 6 * (r ^ 2 - 2 * m * r
+           + a ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+   (Delta / Sigma ^ 2) = ((r ^ 2 - 2 * m * r + a ^ 2) / Sigma ^ 2)
+    riemann (0 1 0 1) (0 3 0 3) (1 3 1 3)
+(S ^ 2 * Delta) = (S ^ 2 * (S - 2 * m * r))
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(Delta / Sigma ^ 4) = ((S ^ 2 - Sigma ^ 2) / a ^ 2 * (sin theta) ^ 2
+                    * Sigma ^ 4)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(m ^ 3 * r ^ 3) = ((1 2) * m ^ 2 * r ^ 2 *
+    (S - (S ^ 2 - Sigma ^ 2) / a ^ 2 * (sin theta) ^ 2))
+    riemann (0 1 0 1) (0 3 0 3) (1 3 1 3)
+(m ^ 4 * r ^ 2) = ((1 2) * m ^ 3 * r *
+    (S - (S ^ 2 - Sigma ^ 2) / a ^ 2 * (sin theta) ^ 2))
+    riemann (0 1 1 3) (0 2 2 3)
+(a ^ 5 * (sin theta) ^ 5) = (a ^ 3 * (sin theta) ^ 3 *
+    (a ^ 2 - rho ^ 2 + r ^ 2))
+    riemann (0 1 1 3) (0 2 2 3)
+(a * r / rho ^ 6) = (a * r * (S ^ 2 - a ^ 2 * (sin theta) ^ 2 *
+    (S - 2 * m * r)) / rho ^ 6 * Sigma ^ 2)
+    riemann (0 1 0 1) (0 3 0 3) (1 3 1 3)
+(S ^ 3) = (S ^ 2 * (a ^ 2 + r ^ 2))
+    riemann (0 1 1 3) (0 2 2 3)
+S = (a ^ 2 + r ^ 2)
+    riemann (0 1 1 3) (0 2 2 3)
+(r ^ 5) = (r ^ 3 * (rho ^ 2 - a ^ 2 * (cos theta) ^ 2))
+    riemann (0 1 1 3) (0 2 2 3)
+(r ^ 3) = (r * (rho ^ 2 - a ^ 2 * (cos theta) ^ 2))
+    riemann (0 1 0 2) (1 3 2 3)
+(m ^ 3) = ((1 2) * m ^ 2 * (S - (S * (a ^ 2 + r ^ 2) - Sigma ^ 2)
+          / a ^ 2 * (sin theta) ^ 2) / r)
+    riemann (0 1 0 2) (1 3 2 3)
+(r * Delta ^ (3 2) / Sigma ^ 4) = (r * Delta ^ (1 2) * (S ^ 2 - Sigma ^ 2)
+          / Sigma ^ 4 * a ^ 2 * (sin theta) ^ 2)
+    riemann (1 3 2 3)
+(Delta ^ (3 2) / Sigma ^ 2) = (Delta ^ (1 2) * (rho ^ 2 - 2 * m * r
+          + a ^ 2 * (sin theta) ^ 2) / Sigma ^ 2)
+    riemann (0 1 0 2) (1 3 2 3)
+(a ^ 6 * r * (sin theta) ^ 5) = (a ^ 4 * r * (sin theta) ^ 3
+         * (a ^ 2 - rho ^ 2 + r ^ 2))
+    riemann (1 3 2 3)
+(r / rho ^ 4 * (sin theta)) = (r * (S * rho ^ 2 + 2 * m * r * a ^ 2
+         * (sin theta) ^ 2) / Sigma ^ 2 * rho ^ 4 * (sin theta))
+    riemann (0 1 0 2) (1 3 2 3)
+(a ^ 2 * r / rho ^ 6) = (a ^ 2 * r * (S * rho ^ 2 + 2 * m * r * a ^
+       2 * (sin theta) ^ 2) / Sigma ^ 2 * rho ^ 6)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(a ^ 4 * m ^ 2 * S ^ 2 * (sin theta) ^ 4) = (a ^ 2 * m ^ 2 *
+    S ^ 2 * (sin theta) ^ 2 * (a ^ 2 - rho ^ 2 + r ^ 2))
+    riemann (0 1 0 1) (0 3 0 3) (1 3 1 3)
+(a ^ 4 * m ^ 3 * S ^ 2) = (a ^ 4 * m ^ 3 * S *
+             (rho ^ 2 + a ^ 2 * (sin theta) ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(m ^ 2 * r ^ 2 * S ^ 2) = (m ^ 2 * r ^ 2
+           * (rho ^ 2 + a ^ 2 * (sin theta) ^ 2) ^ 2)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(a ^ 6 * (sin theta) ^ 6) = (a ^ 4 * (sin theta) ^ 4
+         * (a ^ 2 - rho ^ 2 + r ^ 2))
+    riemann (0 1 0 1) (0 3 0 3) (1 3 1 3)
+(m ^ 3) = (m ^ 2 * (Sigma ^ 2 - S * rho ^ 2)
+       / 2 * a ^ 2 * r * (sin theta) ^ 2)
+    riemann (0 2 0 2) (0 3 0 3) (2 3 2 3)
+(Delta ^ 2) = (Delta * (S ^ 2 - Sigma ^ 2) / a ^ 2 * (sin theta) ^ 2)
+    riemann (0 1 0 1) (1 2 1 2) (1 3 1 3)
+(Delta / rho ^ 4) = ((r ^ 2 - 2 * m * r + a ^ 2) / rho ^ 4)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(S ^ 2 / rho ^ 6) = (S * (rho ^ 2 + a ^ 2 * (sin theta) ^ 2)
+            / rho ^ 6)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+(a ^ 4 * (sin theta) ^ 4) = (a ^ 2 * (sin theta) ^ 2
+         * (a ^ 2 - rho ^ 2 + r ^ 2))
+    riemann (0 1 0 2) (1 3 2 3)
+(Delta ^ (3 2)) = (Delta ^ (1 2) * (S - 2 * m * r))
+    riemann (0 1 0 2) (1 3 2 3)
+(m ^ 2)=(m *(Sigma ^ 2 - S * rho ^ 2)/ 2 * r * a ^ 2 *(sin theta)^ 2)
+    riemann (0 2 0 2) (0 3 0 3) (2 3 2 3)
+(Delta / Sigma ^ 4) = ((rho ^ 2 + a ^ 2 * (sin theta) ^ 2 - 2 * m * r)
+                         / Sigma ^ 4)
+    riemann (0 1 0 2) (1 3 2 3)
+(S ^ 3)=(S *(Sigma ^ 2 + a ^ 2 *(S - 2 * m * r)*(sin theta)^ 2))
+    riemann (0 1 0 2) (1 3 2 3)
+(a ^ 4 * (sin theta) ^ 3) = (a ^ 2 * (sin theta) * (S - rho ^ 2))
+    riemann (0 1 0 2) (1 3 2 3)
+(S ^ 2 / rho ^ 4)=(S *(rho ^ 2 + a ^ 2 *(sin theta)^ 2)/ rho ^ 4)
+    riemann (0 1 0 2) (1 3 2 3)
+(Sigma ^ -2) = ((S * rho ^ 2 + 2 * m * r * a ^ 2 * (sin theta) ^ 2) /
+                    Sigma ^ 4)
+    riemann (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(r ^ 8) = (r ^ 6 * (rho ^ 2 + a ^ 2 * (sin theta) ^ 2 - a ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(a ^ 6 * S) = (a ^ 6 * (rho ^ 2 + a ^ 2 * (sin theta) ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(r ^ 6) = (r ^ 4 * (S - a ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+Delta = (rho ^ 2 + a ^ 2 * (sin theta) ^ 2 - 2 * m * r)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(m ^ 2)=(m *(Sigma ^ 2 - S * rho ^ 2)/ 2 * r * a ^ 2 *(sin theta)^ 2)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(S ^ 2 / Sigma ^ 4) = (S * (rho ^ 2 + a ^ 2 * (sin theta) ^ 2)
+                       / Sigma ^ 4)
+    riemann (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(a ^ 4 * r * (sin theta) ^ 4) = (a ^ 2 * r * (sin theta) ^ 2 *
+             (a ^ 2 - rho ^ 2 + r ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(rho ^ 2 / Sigma ^ 4) = ((S - a ^ 2 * (sin theta) ^ 2) / Sigma ^ 4)
+    riemann (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(m * (sin theta) ^ 4) = ((sin theta) ^ 2 * (Sigma ^ 2 - S * rho ^ 2)
+            / 2 * r * a ^ 2)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(m * (sin theta) ^ 2) = ((Sigma ^ 2 - S * rho ^ 2)
+            / 2 * r * a ^ 2)
+    riemann (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(S ^ 2 / rho ^ 2)=(S *(rho ^ 2 + a ^ 2 * (sin theta)^ 2)/ rho ^ 2)
+    riemann (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(S ^ 2) = (S * (r ^ 2 + a ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(r ^ 4) = (r ^ 2 * (rho ^ 2 - a ^ 2 + a ^ 2 * (sin theta) ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(S / rho ^ 4) = ((rho ^ 2 + a ^ 2 * (sin theta) ^ 2) / rho ^ 4)
+    riemann (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(m * r * (sin theta) ^ 2) = ((Sigma ^ 2 - S * rho ^ 2) / 2 * a ^ 2)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(a ^ 6 * (sin theta) ^ 4) = (a ^ 4 * (sin theta) ^ 2 *
+           (a ^ 2 - rho ^ 2 + r ^ 2))
+    riemann (0 2 0 2) (0 3 0 3) (2 3 2 3)
+(a ^ 4 * (sin theta) ^ 2) = (a ^ 2 *
+           (a ^ 2 - rho ^ 2 + r ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+(r ^ 3) = (r * (S - a ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(S / rho ^ 4) = ((a ^ 2 + r ^ 2) / rho ^ 4)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 2 1 2) (1 3 1 3) (2 3 2 3)
+S = (a ^ 2 + r ^ 2)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+(a ^ 2 * (sin theta) ^ 2) = (a ^ 2 - rho ^ 2 + r ^ 2)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+ (r ^ 5) = (r ^ 3 * (rho ^ 2 + a ^ 2 * (sin theta) ^ 2 - a ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+ (m * (sin theta) ^ 2) = ((Sigma ^ 2 - S * rho ^ 2) / 2 * r * a ^ 2)
+    riemann (0 1 0 1) (0 2 0 2) (0 3 0 3) (1 3 1 3) (2 3 2 3)
+S = (a ^ 2 + r ^ 2)
+    riemann (0 1 2 3) (0 2 1 3) (0 3 1 2)
+(S / rho ^ 6) = ((rho ^ 2 + a ^ 2 * (sin theta) ^ 2) / rho ^ 6)
+    riemann (0 1 2 3) (0 2 1 3) (0 3 1 2)
+(Delta / rho ^ 6)=((rho ^ 2 + a ^ 2 *(sin theta)^ 2 - 2 * m * r)/ rho ^ 6)
+    riemann (0 1 2 3) (0 2 1 3) (0 3 1 2)
+(Delta / rho ^ 4) = ((S - 2 * m * r) / rho ^ 4)
+    riemann (0 1 0 2) (1 3 2 3) G (0 0)
+(m ^ 2) = (m * (Sigma ^ 2 - S * rho ^ 2) / 2 * a ^ 2 * r * (sin theta)
+                    ^ 2)
+    riemann (0 1 1 3) (0 2 2 3)
+(a ^ 5 * (sin theta) ^ 5) = (a ^ 3 * (sin theta) ^ 3 *
+             (a ^ 2 - rho ^ 2 + r ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(r ^ 4) = (r ^ 2 * (rho ^ 2 - a ^ 2 + a ^ 2 * (sin theta) ^ 2))
+    riemann (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(a ^ 2 * r ^ 2 / rho ^ 2) = (a ^ 2 * (rho ^ 2 + a ^ 2 * (sin theta)
+             ^ 2 - r ^ 2) / rho ^ 2)
+    riemann (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(a ^ 4 * (sin theta) ^ 4) = (a ^ 2 * (sin theta) ^ 2 *
+            (a ^ 2 - rho ^ 2 + r ^ 2))
+    G (0 0)
+Delta = (S - 2 * m * r)
+    G (0 0)
+(S * rho ^ 2) = (Sigma ^ 2 - 2 * m * r * (S - rho ^ 2))
+    riemann (0 1 0 1) (2 3 2 3)
+((9 2) * a ^ 4 / rho ^ 2 * Sigma ^ 2) = ((9 2) * a ^ 2 *
+     (rho ^ 2 + a ^ 2 * (sin theta) ^ 2 - r ^ 2) / rho ^ 2 * Sigma ^ 2)
+    riemann (0 2 0 2) (1 3 1 3)
+(- (9 2) * a ^ 4 / rho ^ 2 * Sigma ^ 2) = (- (9 2) * a ^ 2 *
+     (rho ^ 2 + a ^ 2 * (sin theta) ^ 2 - r ^ 2) / rho ^ 2 * Sigma ^ 2)
+    riemann (0 1 0 1) (0 2 0 2) (1 3 1 3) (2 3 2 3)
+(a ^ 4 / rho ^ 4) = (a ^ 2 *
+     (rho ^ 2 + a ^ 2 * (sin theta) ^ 2 - r ^ 2) / rho ^ 4)
+    riemann (0 1 1 3) (0 2 2 3)
+(a ^ 3 * (sin theta) ^ 3 / rho ^ 4) = (a * (sin theta) *
+       (a ^ 2 - rho ^ 2 + r ^ 2) / rho ^ 4)
+    riemann (0 1 0 1) (1 3 1 3) (0 2 0 2) (2 3 2 3)
+(r ^ 2 / rho ^ 2 * Sigma ^ 2) =
+ ((1 - (a * (cos theta)) ^ 2 / rho ^ 2) / Sigma ^ 2)
+           )
+    (ematrix (rho * Delta ^ (1 2) / Sigma) 0 0 0 0 (rho / Delta ^ (1 2)) 0 0
+       0 0 rho 0 (- 2 * a * m * r * (sin theta) / rho * Sigma) 0 0
+           (Sigma * (sin theta) / rho)  )
+    (tensors metric (- -) )
+    (stop after ricci)
+(output for latex)
+         ))
+(setq !*lower t)
+
+(ortocartan '(
+    (Einstein equations for a diagonal Bianchi I metric)
+    (coordinates t x y z)
+    (functions F1(t) F2(t) F3(t))
+    (ematrix 1 0 0 0 0 F1 0 0 0 0
+             F2 0 0 0 0 F3)
+    (rmargin 61)
+    (tensors einstein)
+    (stop after einstein)
+    (substitutions
+einstein
+(der t t f3) = (- (f3 * (der t t f2) + (der t f2) * (der t f3)) / f2)
+einstein
+(der t t f1) = ((f1 / f2 * f3) * (f3 * (der t t f2) + (der t f2) * (der t f3))
+    - (der t f1) * (der t f3) /f3)
+         )
+    (dont print messages)
+            ))
+
+(ortocartan '(
+    (Einstein equations for a diagonal Bianchi I metric)
+    (coordinates t x y z)
+    (functions f1(t) f2(t) f3(t))
+    (ematrix 1 0 0 0 0 f1 0 0 0 0
+             f2 0 0 0 0 f3)
+    (rmargin 61)
+    (tensors einstein)
+    (stop after einstein)
+    (substitutions
+einstein
+(der t t f1) = ((-1 / 2 * f2) * (der t f1) * (der t f2)
+     + (f1 / 2 * f2 * f3) * (der t f2) * (der t f3)
+     - (1 / 2 * f3) * (der t f1) * (der t f3))
+ einstein
+(der t t f2) = ((-1 / 2 * f3) * (der t f3) * (der t f2)
+     + (f2 / 2 * f1 * f3) * (der t f1) * (der t f3)
+     - (1 / 2 * f1) * (der t f1) * (der t f2))
+ einstein
+(der t t f3) = ((-1 / 2 * f1) * (der t f1) * (der t f3)
+     + (f3 / 2 * f1 * f2) * (der t f2) * (der t f1)
+     - (1 / 2 * f2) * (der t f2) * (der t f3))
+         )
+    (dont print messages)
+            ))
+(setq !*lower nil)
+(ortocartan '(
+    (derivation of the Kerr solution a la Carter)
+    (coordinates t r mu phi)
+    (constants M a)
+    (functions D(r) S(r mu) )
+    (ematrix (D ^ (1 2) / S ^ (1 2))  0  0  (- a * D ^ (1 2) * (1 - mu ^ 2)
+                                                  / S ^ (1 2))
+              0  ((S / D) ^ (1 2))  0  0
+              0  0  (S ^ (1 2) / (1 - mu ^ 2) ^ (1 2))  0
+              (a * (1 - mu ^ 2) ^ (1 2) / S ^ (1 2))  0  0
+                        (- (r ^ 2 + a ^ 2) * (1 - mu ^ 2) ^ (1 2) / S ^ (1 2))  )
+    (substitutions
+    determinant ie agamma riemann
+((a * mu) ^ 2) = (S - r ^ 2)
+    ie agamma
+(mu ^ 2 / (1 - mu ^ 2) ^ (1 2)) =
+                     (1 / (1 - mu ^ 2) ^ (1 2) - (1 - mu ^ 2) ^ (1 2))
+    agamma
+(mu ^ 3 / (1 - mu ^ 2) ^ (1 2)) =
+                     (mu * (1 / (1 - mu ^ 2) ^ (1 2) - (1 - mu ^ 2) ^ (1 2)))
+    agamma riemann
+(der r S) = (2 * r)
+    agamma riemann
+(der mu S) = (2 * a ^ 2 * mu)
+    agamma riemann
+(der r D) = (2 * r - 2 * M)
+    riemann
+((a * mu) ^ 4) = ((S - r ^ 2) ^ 2)
+    riemann
+(a ^ 4 * mu ^ 2) = ((S - r ^ 2) * a ^ 2)
+    riemann
+((a * mu) ^ 3) = (a * mu * (S - r ^ 2))
+    riemann
+(a ^ 3 * mu ^ 2) = (a * (S - r ^ 2))
+    riemann
+((a * mu) ^ 2) = (S - r ^ 2)
+    riemann
+D = (r ^ 2 - 2 * M * r + a ^ 2)
+    riemann (2 3 2 3)
+(mu ^ 2 / (1 - mu ^ 2)) = (1 / (1 - mu ^ 2) - 1)
+    riemann (2 3 2 3)
+(r ^ 4) = (r ^ 2 * (S - (a * mu) ^ 2))
+    riemann (2 3 2 3)
+(r ^ 2) = (S - (a * mu) ^ 2)
+    riemann (2 3 2 3)
+(mu ^ 4 / (1 - mu ^ 2)) = (mu ^ 2 * (1 / (1 - mu ^ 2) - 1))
+            )
+    (dont print messages)
+    (stop after ricci)
+    ))
+(setq !*lower t)

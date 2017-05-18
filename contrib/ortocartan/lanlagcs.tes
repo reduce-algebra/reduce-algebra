@@ -1,0 +1,62 @@
+(eulagr '(
+    (Einstein equations for a diagonal Bianchi I metric
+    calculated from the L-L lagrangian)
+    (parameter t)
+    (variables f1 f2 f3)
+    (functions f1(t) f2(t) f3(t))
+    (lagrangian (2 * f1 * (der t f2) * (der t f3)
+           + 2 * f2 * (der t f1) * (der t f3)
+           + 2 * f3 * (der t f1) * (der t f2) )
+    (rmargin 61)
+            ))
+
+(eulagr '(
+    (Einstein equations for a diagonal Bianchi I metric
+    calculated from the L-L lagrangian with later simplifications)
+    (parameter t)
+    (variables f1 f2 f3)
+    (functions f1(t) f2(t) f3(t))
+    (lagrangian (2 * f1 * (der t f2) * (der t f3)
+           + 2 * f2 * (der t f1) * (der t f3)
+           + 2 * f3 * (der t f1) * (der t f2) )
+                )
+    (substitutions
+(der t t f3) = (- (f3 * (der t t f2) + (der t f2) * (der t f3)) / f2)
+(der t t f1) = ((f1 / f2 * f3) * (f3 * (der t t f2) + (der t f2) * (der t f3))
+    - (der t f1) * (der t f3) / f3)
+         )
+    (stop after (eulagr 1))
+    (rmargin 61)
+            ))
+
+(setq !*lower nil)
+(landlagr '(
+   (a rotating generalization of the open FLRW model - the Landau-Lifshitz
+   lagrangian)
+   (constants C D)
+   (velocity 1 0 0 0)
+   (coordinates t x y z)
+   (functions K22(t)  K33(t) F(t) h(t))
+   (ematrix 1  y  0  0
+            0  (y * (cosh F))  0  0
+            0  (y * h * K22)  (K22 / y)  0
+            0  0  0  (y * K33)  )
+   (substitutions
+   landlagr
+(der t K33) = (K33 * (- 3 * h * (der t h) * K22 ^ 2 / 2 * (sinh F) ^ 2
+      + h / 2 * (sinh F) ^ 2 + 2 * (der t K22) / K22
+      - (cosh F) * (der t F) / (sinh F) ) )
+   landlagr
+((der t K22) ^ 2 * (cosh F)) =
+                 ((der t K22) ^ 2 * (1 + (sinh F) ^ 2) / (cosh F))
+   landlagr
+((cosh F) ^ 2) = ((sinh F) ^ 2 + 1)
+   landlagr
+((cosh F) / (sinh F) ^ 2) = (((sinh F) ^ 2 + 1) / (sinh F) ^ 2 * (cosh F))
+                  )
+   (dont print messages ematrix agamma gamma ie metric invmetric christoffel
+        timemessages substitutions determinant)
+%   (rmargin 120)
+%   (output for input)
+          ))
+(setq !*lower t)
