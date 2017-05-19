@@ -611,7 +611,8 @@ asserted procedure ofsfic_process!-coe(coe: ContainerElement): Boolean;
 	 ofsf_cadfinish cd;
 	 return t
       >>;
-      return nil;  % TS
+      ofsf_cadfinish cd;
+      return nil;  % TS: We disable infcore computation when ['false] was found by CAD.
       % [cadres] is ['false]
       % We make a reorder copy of [fvect].
       rfvect := mkvect upbv fvect;
