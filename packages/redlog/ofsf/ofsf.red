@@ -34,8 +34,8 @@ copyright('ofsf, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 
 create!-package('(ofsf ofsfsiat ofsfsism ofsfbnf ofsfqe ofsfopt ofsfgs
    ofsfmisc ofsfcad ofsfcadproj ofsfanuex ofsfxopt ofsfdet ofsftfc ofsfhqe
-   ofsfdecdeg ofsfexfr ofsftrop ofsflp ofsfdpep ofsfvsl ofsfic
-   ofsfvsblock ofsfvsans ofsfvseset ofsfvssub ofsfvslists ofsfsmtqe),
+   ofsfdecdeg ofsfexfr ofsftrop ofsflp ofsfdpep ofsfvsl ofsfic ofsfvsblock
+   ofsfvsans ofsfvseset ofsfvssub ofsfvslists ofsfsmtqe qepcad mma),
    nil);
 
 load!-package 'redlog;
@@ -169,6 +169,7 @@ put('ofsf,'rl_services,'(
    (rl_identifyonoff!* . cl_identifyonoff)
    (rl_simpl!* . cl_simpl)
    (rl_thsimpl!* . ofsf_thsimpl)
+   (rl_dump!* . ofsf_dump)
    (rl_nnf!* . cl_nnf)
    (rl_nnfnot!* . cl_nnfnot)
    (rl_pnf!* . cl_pnf)
@@ -255,7 +256,8 @@ put('ofsf,'rl_services,'(
    (rl_vsl!* . vsl_vsl)
    (rl_sign!* . cl_sign)
    (rl_preqe!* . ofsf_preqe)
-   (sl_unstraightify!* . sl_unstraightify)));
+   (rl_qepcad!* . qepcad_qepcad)
+   (rl_slfq!* . qepcad_slfq)));
 
 % Admin
 put('ofsf,'simpfnname,'ofsf_simpfn);

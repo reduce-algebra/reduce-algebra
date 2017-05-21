@@ -29,11 +29,6 @@ copyright('mma, "(c) 2008-2017 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(mma),nil);
-
-load!-package 'redlog;
-load!-package 'ofsf;
-
 fluid '(!*redefmsg !*rlqepnf !*rlverbose !*echo !*time !*backtrace mma_call!*
    mma_wd!* mma_awk!* !*fancy);
 
@@ -48,13 +43,11 @@ mma_call!* := "/Applications/Mathematica.app/Contents/MacOS/MathKernel";
 mma_wd!* := "/tmp/";
 mma_awk!* := lto_sconcat {systo_get!-resource!-directory(),"/mma.awk"};
 
-put('ofsf,'rl_services,
-   '(rl_mma!* . mma_mma) . get('ofsf,'rl_services));
-
-rl_mkserv('mma,'(rl_simp),'(reval),'(nil),
-   function(lambda x; if x then rl_mk!*fof x),t);
-
-rl_set '(ofsf);
+%% put('ofsf,'rl_services,
+%%    '(rl_mma!* . mma_mma) . get('ofsf,'rl_services));
+%% 
+%% rl_mkserv('mma,'(rl_simp),'(reval),'(nil),
+%%    function(lambda x; if x then rl_mk!*fof x),t);
 
 procedure mma_mma(f,fn);
    begin scalar w,oldpprifn,oldprtch,scsemic,oldecho,origoh,ll,isfancy;

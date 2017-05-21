@@ -37,10 +37,16 @@ copyright('clbnf, "(c) 1995-2009 A. Dolzmann, A. Seidl, T. Sturm, 2017 T. Sturm"
 % <GAND> ::= ['and] | ['or] "opposite to <GOR>"
 % <SATOTVL> ::= (<TRUTH VALUE>) | (<ATOMIC FORMULA>, ...)
 
+rl_provideService rl_dnf = cl_dnf
+   using rl_subsumption, rl_bnfsimpl, rl_sacat, rl_sacatlp;
+
 procedure cl_dnf(f);
    % Common logic disjunctive normal form. [f] is a formula. Returns a
    % DNF of [f].
    rl_simpl(cl_gdnf0(f,'or),nil,-1);
+
+rl_provideService rl_cnf = cl_cnf
+   using rl_subsumption, rl_bnfsimpl, rl_sacat, rl_sacatlp;
 
 procedure cl_cnf(f);
    % Common logic conjunctive normal form. [f] is a formula. Returns a

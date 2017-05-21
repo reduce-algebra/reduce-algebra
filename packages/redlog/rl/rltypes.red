@@ -45,6 +45,17 @@ asserted procedure rl_identity1(x: Any): Any;
    % Unary identity function.
    x;
 
+% For services without return value
+
+rl_type {
+   name = Void,
+   s2a = rl_s2aVoid,
+   doc = {
+      syntax = "Indicates empty return value."}};
+
+asserted procedure rl_s2aVoid(x: Any);
+   nil;
+
 % Atomic types:
 
 % Formulas

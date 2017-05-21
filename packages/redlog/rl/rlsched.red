@@ -305,57 +305,57 @@ module rlbboxes;  % Black box scheduler.
 
 %% rl_mkbb('rl_ordatp, 2);
 
-rl_mkbb('rl_subsumption, 3);
+%% rl_mkbb('rl_subsumption, 3);
 
-rl_mkbb('rl_transform, 7);
+%% rl_mkbb('rl_transform, 7);
 
-rl_mkbb('rl_sacat, 3);
+%% rl_mkbb('rl_sacat, 3);
+%% 
+%% rl_mkbb('rl_sacatlp, 2);
 
-rl_mkbb('rl_sacatlp, 2);
+%% rl_mkbb('rl_bnfsimpl, 2);
 
-rl_mkbb('rl_bnfsimpl, 2);
+%% rl_mkbb('rl_fctrat, 1);
 
-rl_mkbb('rl_fctrat, 1);
+%% rl_mkbb('rl_tordp, 2);
 
-rl_mkbb('rl_tordp, 2);
+%% rl_mkbb('rl_a2cdl, 1);
+%% 
+%% rl_mkbb('rl_t2cdl, 1);
 
-rl_mkbb('rl_a2cdl, 1);
+%% rl_mkbb('rl_subat, 2);
 
-rl_mkbb('rl_t2cdl, 1);
+%% rl_mkbb('rl_subalchk, 1);
 
-rl_mkbb('rl_subat, 2);
-
-rl_mkbb('rl_subalchk, 1);
-
-rl_mkbb('rl_eqnrhskernels, 1);
+%% rl_mkbb('rl_eqnrhskernels, 1);
 
 %% rl_mkbb('rl_getineq, 2);
 
-rl_mkbb('rl_qefsolset, 5);
+%% rl_mkbb('rl_qefsolset, 5);
 
-rl_mkbb('rl_bettergaussp, 2);
+%% rl_mkbb('rl_bettergaussp, 2);
+%% 
+%% rl_mkbb('rl_bestgaussp, 1);
 
-rl_mkbb('rl_bestgaussp, 1);
-
-rl_mkbb('rl_esetunion, 2);
+%% rl_mkbb('rl_esetunion, 2);
 
 %% rl_mkbb('rl_structat, 2);
 %%
 %% rl_mkbb('rl_ifstructat, 2);
 
-rl_mkbb('rl_termmlat, 1);
+%% rl_mkbb('rl_termmlat, 1);
 
-rl_mkbb('rl_multsurep, 2);
+%% rl_mkbb('rl_multsurep, 2);
 
-rl_mkbb('rl_specelim, 5);
+%% rl_mkbb('rl_specelim, 5);
 
-rl_mkbb('rl_susipost, 2);
+%% rl_mkbb('rl_susipost, 2);
+%% 
+%% rl_mkbb('rl_susitf, 2);
+%% 
+%% rl_mkbb('rl_susibin, 2);
 
-rl_mkbb('rl_susitf, 2);
-
-rl_mkbb('rl_susibin, 2);
-
-rl_mkbb('rl_fbqe, 2);
+%% rl_mkbb('rl_fbqe, 2);
 
 %% rl_mkbb('rl_qscsaat, 1);
 %%
@@ -377,37 +377,42 @@ rl_mkbb('rl_fbqe, 2);
 %%
 %% rl_mkbb('rl_qssimpl, 3);
 
-rl_mkbb('rl_b2terml, 2);
+%% rl_mkbb('rl_b2terml, 2);
 
-rl_mkbb('rl_simplb, 2);
+%% rl_mkbb('rl_simplb, 2);
+%% 
+%% rl_mkbb('rl_b2atl, 2);
+%% 
+%% rl_mkbb('rl_bsatp, 2);
 
-rl_mkbb('rl_b2atl, 2);
+%% rl_mkbb('rl_rxffn, 1);
 
-rl_mkbb('rl_bsatp, 2);
+%% rl_mkbb('rl_mkequation, 2);
 
-rl_mkbb('rl_prepat, 1);
+%% rl_mkbb('rl_dfgPrintV, 1);
+%% 
+%% rl_mkbb('rl_dfgPrintAt, 1);
 
-rl_mkbb('rl_simpat, 1);
+%% rl_mkbb('rl_smt2PrintLogic, 0);
+%% 
+%% rl_mkbb('rl_smt2PrintAt, 1);
 
-rl_mkbb('rl_rxffn, 1);
+%% rl_mkbb('rl_smt2ReadAt, 1);
 
-rl_mkbb('rl_mkequation, 2);
+%% rl_mkbb('rl_vsubalchk, 1);
+%% 
+%% rl_mkbb('rl_vsubat, 3);
 
-rl_mkbb('rl_dfgPrintV, 1);
+%% rl_mkbb('rl_signat, 1);
 
-rl_mkbb('rl_dfgPrintAt, 1);
+% The following are technically not blackboxes. They would become blackboxes
+% when moving rl_prepfof and rl_simp to cl and calling them via the scheduler
+% (instead of a the context tag). With the current design, they should not be
+% called directly. Instead rl_prepfof and rl_simp should be used.
 
-rl_mkbb('rl_smt2PrintLogic, 0);
-
-rl_mkbb('rl_smt2PrintAt, 1);
-
-rl_mkbb('rl_smt2ReadAt, 1);
-
-rl_mkbb('rl_vsubalchk, 1);
-
-rl_mkbb('rl_vsubat, 3);
-
-rl_mkbb('rl_signat, 1);
+%% rl_mkbb('rl_prepat, 1);
+%% 
+%% rl_mkbb('rl_simpat, 1);
 
 endmodule;
 

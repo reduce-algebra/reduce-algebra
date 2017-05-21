@@ -31,7 +31,7 @@ copyright('redlog, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(redlog rlami rltypes rlservices rlblackboxes rlsched rlcont),nil);
+create!-package('(redlog rlami rltypes rlservices rlblackboxes rlcont),nil);
 
 load!-package 'rlsupport;
 

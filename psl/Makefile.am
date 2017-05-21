@@ -54,11 +54,11 @@ red/bootstrap.img:	psl/* \
 # the "red" directory will mean that Reduce can find them even if the
 # full set of source files are not available.
 
-red/mma.awk:	$(reducec)/packages/redlog/mma/mma.awk
-	cp $(reducec)/packages/redlog/mma/mma.awk red/mma.awk
+red/mma.awk:	$(reducec)/packages/redlog/ofsf/mma.awk
+	cp $(reducec)/packages/redlog/ofsf/mma.awk red/mma.awk
 
-red/qepcad.awk:	$(reducec)/packages/redlog/qepcad/qepcad.awk
-	cp $(reducec)/packages/redlog/qepcad/qepcad.awk red/qepcad.awk
+red/qepcad.awk:	$(reducec)/packages/redlog/ofsf/qepcad.awk
+	cp $(reducec)/packages/redlog/ofsf/qepcad.awk red/qepcad.awk
 
 tryboot:
 	psl/bpsl -td $(STORE2) -f red/bootstrap.img

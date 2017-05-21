@@ -253,6 +253,7 @@ procedure ofsf_termmlat(at);
       {(ofsf_arg2l at . 1)};
 
 procedure ofsf_multsurep(at,atl);
+   % Multiplicative sure predicate.
    if ofsf_op at eq 'equal then
       ofsf_multsurep!-equal(at,atl)
    else
@@ -821,6 +822,20 @@ asserted procedure ofsf_symbolify1(f: Formula, c: Integer, subl: Alist): List3;
       {w, c, subl} := sfto_symbolify1(ofsf_arg2l f, 'i, c, subl);
       return {ofsf_0mk2(op, w), c, subl}
    end;
+
+rl_provideService rl_dump = ofsf_dump;
+
+asserted procedure ofsf_dump(f: Formula, format: Id, fn: String);
+   if format eq 'qepcad then
+      qepcad_printQepcad(f, fn)
+   else if format eq 'slfq then
+      qepcad_PrintSlfq(f, fn)
+   else if format eq 'dfg then
+      cl_dfgPrint(f, fn)
+   else if format eq 'smt2 then
+      cl_smt2Print(f, fn, nil)
+   else
+      rederr {"rl_dump: format", format, "not known for domain real"};
 
 endmodule;  % [ofsfmisc]
 

@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2006-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module clresolve;  % Resolve extended functions in Lisp prefix.
+
+revision('clresolv, "$Id$");
+
+copyright('clresolv, "(c) 2006-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,16 +29,8 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
 
-lisp <<
-   fluid '(cl_resolv_rcsid!* cl_resolv_copyright!*);
-   cl_resolv_rcsid!* :=
-      "$Id$";
-   cl_resolv_copyright!* := "(c) 2006-2009 A. Dolzmann and T. Sturm"
->>;
-
-module clresolve;
-% Resolve extended functions in Lisp prefix.
-
+rl_provideService rl_resolve = cl_resolve using rl_rxffn;
+   
 %DS
 % <RRV> ::= (...,<RCASE>,...)
 % <RCASE> ::= (<TERM>,<GUARD>,<QL>)

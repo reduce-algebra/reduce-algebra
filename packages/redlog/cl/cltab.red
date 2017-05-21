@@ -2,7 +2,7 @@ module cltab;  % Common logic tableau method.
 
 revision('cltab, "$Id$");
 
-copyright('cltab, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2016 T. Sturm");
+copyright('cltab, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2016-2017 T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -28,6 +28,8 @@ copyright('cltab, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2016 T. Sturm");
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
+
+rl_provideService rl_tab = cl_tab using rl_a2cdl;
 
 asserted procedure cl_tab(f: Formula, cdl: List, iterate: Boolean, iterateb: Boolean): Formula;
    if cdl then  % ignore iterate

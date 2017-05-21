@@ -44,8 +44,8 @@ cp $srcdir/fireflysung-1.3.0/license/english/ARPHICPL.TXT $F/license.fireflysung
 cp $srcdir/fireflysung-1.3.0/license/gb/ARPHICPL.TXT      $F/license.fireflysung/gb
 mkdir -p $1.app/Contents/Resources/reduce.resources
 AA="$1.app/Contents/Resources/reduce.resources"
-cp $srcdir/../../packages/redlog/mma/mma.awk          $AA
-cp $srcdir/../../packages/redlog/qepcad/qepcad.awk    $AA
+cp $srcdir/../../packages/redlog/ofsf/mma.awk          $AA
+cp $srcdir/../../packages/redlog/ofsf/qepcad.awk    $AA
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > $P
 echo "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">" >> $P
 echo "<plist version=\"0.9\">" >> $P

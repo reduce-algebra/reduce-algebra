@@ -131,14 +131,6 @@ rl_service {
    mode = both};
 
 rl_service {
-   name = dfgprint,
-   doc = "dump a formula as DFG input",
-   arg = {pos = 1, name = formula, type = Formula, doc = "first-order formula"},
-   arg = {pos = 2, name = file, type = String, default = "", doc = "file name to dump into, where """" uses stdout"},
-   returns = {type = Any},
-   mode = both};
-
-rl_service {
    name = dima,
    doc = "experimental implementation of Grigoriev & Pasechnik, doi:10.1007/s00037-005-0189-7",
    arg = {pos = 1, name = inner, type = List(Term), doc = "Q_1(X), ..., Q_k(X)"},
@@ -164,11 +156,20 @@ rl_service {
    mode = both};
 
 rl_service {
+   name = dump,
+   doc = "dump formula into input file for external software",
+   arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
+   arg = {pos = 2, name = format, type = Enum(qepcad, dfg, smt2, slfq), doc = "target software"},
+   arg = {pos = 3, name = filename, type = String, default = "", doc = """"" dumps to screen"},
+   returns = {type = Void},
+   mode = both};
+
+rl_service {
    name = enf,
    doc = "elimination normal form (DCFSF)",
-   arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = variable, type = Variable, doc = "variable to be eliminated next"},
-   arg = {pos = 3, name = assume, type = List(Atom), default = {}, doc = "atiomic input assumptions"},
+   arg = {pos = 3, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
    returns = {type = Formula},
    mode = both};
 
@@ -325,7 +326,7 @@ rl_service {
 
 rl_service {
    name = matrix,
-   doc = "matrix, i.e., argument formula of leading quantifier",
+   doc = "matrix - remove all leading quantifiers",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    returns = {type = Formula},
    mode = both};
@@ -388,7 +389,7 @@ rl_service {
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
    arg = {pos = 3, name = except, type = List(Variable), default = {}, doc = "parameters to exclude from assumptions"},
-   returns = {type = Pair(List(Atom),List(Pair(Formula, List(Assignment(Any)))))},
+   returns = {type = Pair(List(Atom), List(Pair(Formula, List(Assignment(Any)))))},
    mode = both};
 
 rl_service {
@@ -474,6 +475,16 @@ rl_service {
    doc = "quantifier elimination in position",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = assume, type = List(Atom), default = {}, doc = "atomic input assumptions"},
+   returns = {type = Formula},
+   mode = both};
+
+rl_service {
+   name = qepcad,
+   doc = "interface to external Qepcad B",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   arg = {pos = 2, name = N, type = Integer, default = 100, doc = "allocate N * 10^6 cells"},
+   arg = {pos = 3, name = L, type = Integer, default = 200, doc = "use prime list of size L * 10^3"},
+   arg = {pos = 4, name = verbose, type = Switch, doc = "print information on progress of computation"},
    returns = {type = Formula},
    mode = both};
 
@@ -597,12 +608,13 @@ rl_service {
    mode = both};
 
 rl_service {
-   name = smt2Print,
-   doc = "dump a formula as SMTLIB 2 input",
-   arg = {pos = 1, name = formula, type = Formula, doc = "first-order formula"},
-   arg = {pos = 2, name = file, type = String, default = "", doc = "file name to dump into, where """" uses stdout"},
-   arg = {pos = 3, name = header, type = List(String), default = {}, doc = "typically a comment"},
-   returns = {type = Any},
+   name = slfq,
+   doc = "interface to external Qepcad-based simplifier slfq",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
+   arg = {pos = 2, name = N, type = Integer, default = 100, doc = "allocate N * 10^6 cells"},
+   arg = {pos = 3, name = L, type = Integer, default = 200, doc = "use prime list of size L * 10^3"},
+   arg = {pos = 4, name = verbose, type = Switch, doc = "print information on progress of computation"},
+   returns = {type = Formula},
    mode = both};
 
 rl_service {
@@ -695,7 +707,7 @@ rl_service {
 
 rl_service {
    name = tnf,
-   doc = "term normal form",
+   doc = "tree normal form",
    arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    arg = {pos = 2, name = terms, type = List(Term), doc = "terms for case distinction"},
    arg = {pos = 3, name = tnft, type = Switch, doc = "tree TNF in contrast to flat TNF"},
@@ -763,6 +775,12 @@ rl_service {
 % SM-only services:
 
 rl_service {
+   name = dfgPrint,
+   doc = "dump a formula as DFG input",
+   argnum = 2,
+   mode = sm};
+
+rl_service {
    name = identifyonoff,
    doc = "for rlidentify - should become obsolete at some point",
    argnum = 1,
@@ -789,6 +807,12 @@ rl_service {
    argnum = 2,
    mode = sm
 };
+
+rl_service {
+   name = smt2Print,
+   doc = "dump a formula as SMTLIB 2 input",
+   argnum = 3,
+   mode = sm};
 
 rl_service {
    name = subfof,

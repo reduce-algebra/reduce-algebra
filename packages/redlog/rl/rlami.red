@@ -1,8 +1,10 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module rlami;
+% Reduce logic component algebraic mode interface. Submodule of [redlog].
+
+revision('rlami, "$Id$");
+
+copyright('rlami, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +29,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(rl_ami_rcsid!* rl_ami_copyright!*);
-   rl_ami_rcsid!* :=
-      "$Id$";
-   rl_ami_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module rlami;
-% Reduce logic component algebraic mode interface. Submodule of [redlog].
 
 procedure rl_mk!*fof(u);
    % Reduce logic make tagged form of first-order formula. [u] is a

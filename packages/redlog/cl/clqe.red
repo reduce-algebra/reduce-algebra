@@ -311,7 +311,9 @@ inline procedure cl_mk1EQR(f,eql);
    {f . eql};
 
 rl_provideService rl_gqe = cl_gqe
-   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel, rl_betterp, rl_qemkans;
+   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel,
+   rl_betterp, rl_qemkans, rl_transform, rl_qefsolset, rl_bettergaussp, rl_bestgaussp,
+   rl_esetunion, rl_specelim, rl_fbqe;
 
 asserted procedure cl_gqe(f: Formula, theo: Theory, xbvl: KernelL): TheoryFormulaPair;
    % Generic quantifier elimination. Returns a pair $\Theta . \phi$. $\Theta$ is
@@ -330,7 +332,9 @@ asserted procedure cl_gqe(f: Formula, theo: Theory, xbvl: KernelL): TheoryFormul
    end;
 
 rl_provideService rl_gqea = cl_gqea
-   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel, rl_betterp, rl_qemkans;
+   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel,
+   rl_betterp, rl_qemkans, rl_transform, rl_qefsolset, rl_bettergaussp, rl_bestgaussp,
+   rl_esetunion, rl_specelim;
 
 asserted procedure cl_gqea(f: Formula, theo: Theory, xbvl: KernelL): EliminationResult;
    % Generic quantifier elimination with answer. Returns a pair $\Theta . \Phi$.
@@ -350,7 +354,9 @@ asserted procedure cl_gqea(f: Formula, theo: Theory, xbvl: KernelL): Elimination
    end;
 
 rl_provideService rl_lqe = cl_lqe
-   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel, rl_betterp, rl_qemkans;
+   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel,
+   rl_betterp, rl_qemkans, rl_transform, rl_subat, rl_qefsolset, rl_bettergaussp,
+   rl_esetunion, rl_bestgaussp, rl_specelim, rl_fbqe;
 
 asserted procedure cl_lqe(f: Formula, theo: Theory, pt: Point): TheoryFormulaPair;
    % Local quantifier elimination. [pt] is the suggested value for the local
@@ -381,7 +387,9 @@ asserted procedure cl_lqe(f: Formula, theo: Theory, pt: Point): TheoryFormulaPai
    end;
 
 rl_provideService rl_qe = cl_qe
-   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel, rl_betterp, rl_qemkans;
+   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel,
+   rl_betterp, rl_qemkans, rl_transform, rl_qefsolset, rl_bettergaussp, rl_bestgaussp,
+   rl_esetunion, rl_specelim, rl_fbqe;
 
 asserted procedure cl_qe(f: Formula, theo: Theory): Formula;
    % Quantifier elimination. Returns a formula $\phi$ such that $[theo] \models
@@ -397,7 +405,9 @@ asserted procedure cl_qe(f: Formula, theo: Theory): Formula;
    end;
 
 rl_provideService rl_qea = cl_qea
-   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel, rl_betterp, rl_qemkans;
+   using rl_negateat, rl_translat, rl_elimset, rl_elimset, rl_trygauss, rl_varsel,
+   rl_betterp, rl_qemkans, rl_transform, rl_qefsolset, rl_bettergaussp, rl_bestgaussp,
+   rl_esetunion, rl_specelim;
 
 asserted procedure cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
    % Quantifier elimination with answer. Returns a list of pairs $(..., (c_i,

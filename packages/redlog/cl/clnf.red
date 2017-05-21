@@ -462,6 +462,8 @@ procedure cl_freevp(var,phi);
       return flag
    end;
 
+rl_provideService rl_tnf = cl_tnf using rl_t2cdl;
+
 procedure cl_tnf(f,terml);
    % Common logic tree normal form. [f] is a formula, [terml] is a
    % list of terms. Returns a big formula. Depends on the switch

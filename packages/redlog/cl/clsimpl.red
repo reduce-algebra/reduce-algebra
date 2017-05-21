@@ -34,7 +34,8 @@ copyright('clsimpl, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 
 rl_provideService rl_simpl = cl_simpl using
    rl_negateat, rl_simplat1, rl_smupdknowl, rl_smrmknowl, rl_smcpknowl,
-   rl_smmkatl, rl_smsimpl!-impl, rl_smsimpl!-equiv1, rl_ordatp;
+   rl_smmkatl, rl_smsimpl!-impl, rl_smsimpl!-equiv1, rl_ordatp, rl_susipost,
+   rl_susitf, rl_susibin, rl_b2terml, rl_simplb, rl_b2atl, rl_bsatp;
 
 asserted procedure cl_simpl(f: Formula, atl: List, n: Integer): Formula;
    % Common logic simplify. [f] is a formula; [atl] is a list of
@@ -838,9 +839,6 @@ asserted procedure cl_qesil(fl: List, theo: List);
 	 ioto_cterpri();
       return res
    end;
-
-procedure cl_sign(f);
-   cl_apply2ats(f, 'rl_signat);
 
 endmodule;  % [clsimpl]
 

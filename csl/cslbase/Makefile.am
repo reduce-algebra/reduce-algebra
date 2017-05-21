@@ -1979,13 +1979,13 @@ reduce.doc/index.html:
 	$(CP) -r $(srcdir)/../reduce.doc/*.gif reduce.doc
 	$(CP) -r $(srcdir)/../reduce.doc/*.txt reduce.doc
 
-reduce.resources/mma.awk:	$(srcdir)/../../packages/redlog/mma/mma.awk
+reduce.resources/mma.awk:	$(srcdir)/../../packages/redlog/ofsf/mma.awk
 	-mkdir -p reduce.resources
-	$(CP) $(srcdir)/../../packages/redlog/mma/mma.awk reduce.resources
+	$(CP) $(srcdir)/../../packages/redlog/ofsf/mma.awk reduce.resources
 
-reduce.resources/qepcad.awk:	$(srcdir)/../../packages/redlog/qepcad/qepcad.awk
+reduce.resources/qepcad.awk:	$(srcdir)/../../packages/redlog/ofsf/qepcad.awk
 	-mkdir -p reduce.resources
-	$(CP) $(srcdir)/../../packages/redlog/qepcad/qepcad.awk reduce.resources
+	$(CP) $(srcdir)/../../packages/redlog/ofsf/qepcad.awk reduce.resources
 
 -include bootstrapreduce.dep
 

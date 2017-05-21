@@ -51,6 +51,12 @@
 /* Define to 1 if you have the <curses.h> header file. */
 #undef HAVE_CURSES_H
 
+/* define if the compiler supports basic C++11 syntax */
+#undef HAVE_CXX11
+
+/* define if the compiler supports basic C++14 syntax */
+#undef HAVE_CXX14
+
 /* Define to 1 if you have the declaration of `RLIM_SAVED_CUR', and to 0 if
    you don't. */
 #undef HAVE_DECL_RLIM_SAVED_CUR
@@ -81,9 +87,6 @@
 /* Define to 1 if you have the `ftruncate' function. */
 #undef HAVE_FTRUNCATE
 
-/* True if we will use the FWIN terminal code */
-#undef HAVE_FWIN
-
 /* Define to 1 if you have the `getcwd' function. */
 #undef HAVE_GETCWD
 
@@ -105,17 +108,8 @@
 /* Define to 1 if you have the `inet_ntoa' function. */
 #undef HAVE_INET_NTOA
 
-/* Define to 1 if the system has the type `int16_t'. */
-#undef HAVE_INT16_T
-
-/* Define to 1 if the system has the type `int32_t'. */
-#undef HAVE_INT32_T
-
-/* Define to 1 if the system has the type `int64_t'. */
-#undef HAVE_INT64_T
-
-/* Define to 1 if the system has the type `int8_t'. */
-#undef HAVE_INT8_T
+/* Define to 1 if the system has the type `int128_t'. */
+#undef HAVE_INT128_T
 
 /* Define to 1 if the system has the type `intptr_t'. */
 #undef HAVE_INTPTR_T
@@ -352,23 +346,17 @@
 /* Define to 1 if you have the `tputs' function. */
 #undef HAVE_TPUTS
 
-/* Define to 1 if the system has the type `uint16_t'. */
-#undef HAVE_UINT16_T
-
-/* Define to 1 if the system has the type `uint32_t'. */
-#undef HAVE_UINT32_T
-
-/* Define to 1 if the system has the type `uint64_t'. */
-#undef HAVE_UINT64_T
-
-/* Define to 1 if the system has the type `uint8_t'. */
-#undef HAVE_UINT8_T
+/* Define to 1 if the system has the type `uint128_t'. */
+#undef HAVE_UINT128_T
 
 /* Define to 1 if the system has the type `uintptr_t'. */
 #undef HAVE_UINTPTR_T
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if the system has the type `unsigned __int128'. */
+#undef HAVE_UNSIGNED___INT128
 
 /* Define to 1 if you have the `utime' function. */
 #undef HAVE_UTIME
@@ -378,21 +366,6 @@
 
 /* Define to 1 if `utime(file, NULL)' sets file's timestamp to the present. */
 #undef HAVE_UTIME_NULL
-
-/* Define to 1 if the system has the type `u_int16_t'. */
-#undef HAVE_U_INT16_T
-
-/* Define to 1 if the system has the type `u_int32_t'. */
-#undef HAVE_U_INT32_T
-
-/* Define to 1 if the system has the type `u_int64_t'. */
-#undef HAVE_U_INT64_T
-
-/* Define to 1 if the system has the type `u_int8_t'. */
-#undef HAVE_U_INT8_T
-
-/* Define to 1 if the system has the type `u_intptr_t'. */
-#undef HAVE_U_INTPTR_T
 
 /* Define to 1 if you have the `vprintf' function. */
 #undef HAVE_VPRINTF
@@ -406,11 +379,17 @@
 /* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID
 
+/* Define to 1 if you have the <zlib.h> header file. */
+#undef HAVE_ZLIB_H
+
 /* Define to 1 if you have the `_getc_nolock' function. */
 #undef HAVE__GETC_NOLOCK
 
 /* Define to 1 if you have the `_putc_nolock' function. */
 #undef HAVE__PUTC_NOLOCK
+
+/* Define to 1 if the system has the type `__int128'. */
+#undef HAVE___INT128
 
 /* Name of CPU */
 #undef HOST_CPU
@@ -420,9 +399,6 @@
 
 /* Name of vendor */
 #undef HOST_VENDOR
-
-/* True if we are building with a JIT */
-#undef JIT
 
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
    slash. */
@@ -439,6 +415,9 @@
 
 /* Makes use of a debugger easier, I hope. */
 #undef NILSEG_EXTERNS
+
+/* C++-11 attributes available? */
+#undef NORETURN
 
 /* Name of package */
 #undef PACKAGE
@@ -470,6 +449,9 @@
 /* Define as the return type of signal handlers (`int' or `void'). */
 #undef RETSIGTYPE
 
+/* Not guaranteed by ANSI spec */
+#undef SIGNED_SHIFTS_ARE_ARITHMETIC
+
 /* The size of `int', as computed by sizeof. */
 #undef SIZEOF_INT
 
@@ -478,9 +460,6 @@
 
 /* The size of `long long', as computed by sizeof. */
 #undef SIZEOF_LONG_LONG
-
-/* The size of `short int', as computed by sizeof. */
-#undef SIZEOF_SHORT_INT
 
 /* The size of `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P
