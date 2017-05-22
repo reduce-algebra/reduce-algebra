@@ -159,7 +159,7 @@ rl_service {
    name = dump,
    doc = "dump formula into input file for external software",
    arg = {pos = 1, name = formula, type = Formula, doc = "quantifier-free input formula"},
-   arg = {pos = 2, name = format, type = Enum(qepcad, dfg, smt2, slfq), doc = "target software"},
+   arg = {pos = 2, name = format, type = Enum(qepcad, dfg, smt2, slfq, mathematica), doc = "target software"},
    arg = {pos = 3, name = filename, type = String, default = "", doc = """"" dumps to screen"},
    returns = {type = Void},
    mode = both};
@@ -342,6 +342,13 @@ rl_service {
    name = mkcanonic,
    doc = "a canonical form for variable-free formulas (PADICS only)",
    arg = {pos = 1, name = formula, type = Formula, doc = "variable-free input formula"},
+   returns = {type = Formula},
+   mode = both};
+
+rl_service {
+   name = mathematica,
+   doc = "interface to external mathematica using Resolve[]",
+   arg = {pos = 1, name = formula, type = Formula, doc = "first-order input formula"},
    returns = {type = Formula},
    mode = both};
 

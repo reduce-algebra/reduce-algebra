@@ -41,16 +41,17 @@ fluid '(!*time);
 fluid '(!*backtrace);
 fluid '(!*nat);
 fluid '(!*fancy);
+fluid '(!*outputhandler);
 
 global '(qepcad_qepcad!*);
 global '(qepcad_slfq!*);
-global '(qepcad_wd!*);
+global '(qepcad_tmpdir!*);
 global '(qepcad_awk!*);
 
 qepcad_qepcad!* := "qepcad";
 qepcad_slfq!* := "slfq";
-qepcad_wd!* := "/tmp/";
-qepcad_awk!* := lto_sconcat {systo_get!-resource!-directory(), "/qepcad.awk"};
+qepcad_tmpdir!* := "/tmp/";
+qepcad_awk!* := lto_sconcat {systo_get!-resource!-directory(), "/", "qepcad.awk"};
 
 switch rlqefbqepcad;
 switch rlqefbslfq;
@@ -61,36 +62,48 @@ on1 'rlqefbslfq;
 rl_provideService rl_qepcad = qepcad_qepcad;
 
 asserted procedure qepcad_qepcad(f: Formula, N: Integer, L: Integer): Formula;
-   begin scalar fn1, fn2, result, bname;
-      bname := lto_sconcat {qepcad_wd!*,
- 	 "rlqepcad-", getenv "USER" or "unknown", "-", lto_at2str getpid()};
-      fn1 := lto_sconcat {bname, ".qepcad"};
-      fn2 := lto_sconcat {bname, ".red"};
-      qepcad_printQepcad(f, fn1);
-      qepcad_run(qepcad_qepcad!*, N, L, fn1, qepcad_awk!*, fn2);
+   qepcad_generic(f, {N, L}, "qepcad", 'qepcad_printer, 'qepcad_run);
+
+rl_provideService rl_slfq = qepcad_slfq;
+
+asserted procedure qepcad_slfq(f: Formula, N: Integer, L: Integer): Formula;
+   qepcad_generic(f, {N, L}, "slfq", function(lambda x; mathprint rl_prepfof x), 'qepcad_runSlfq);
+
+asserted procedure qepcad_generic(f: Formula, argl: List, stem: String, printer: Applicable, runner: Applicable);
+   begin scalar fn1, fn2, result;
+      fn1 . fn2 := qepcad_fn stem;
+      qepcad_dump(f, fn1, printer);
+      apply(runner, append(argl, {fn1, fn2}));
       result := qepcad_readResult fn2;
       system lto_sconcat {"rm -f ", fn1, " ", fn2};
       if null result then
-	 lprim "qepcad failed";
+	 lprim "external computation failed";
       return rl_simp result or f
    end;
 
-asserted procedure qepcad_printQepcad(f: Formula, fn: String);
+asserted procedure qepcad_fn(stem: String): String;
+   begin scalar bname;
+      bname := lto_sconcat {qepcad_tmpdir!*, "rl", stem,
+      	 "-", getenv "USER" or "unknown", "-", lto_at2str getpid()};
+      return lto_sconcat {bname, ".", stem} . lto_sconcat {bname, ".red"}
+   end;
+
+asserted procedure qepcad_dump(f: Formula, fn: String, printer: Applicable);
    begin scalar w;
       if fn = "" then <<
-	 qepcad_dump f;
+	 apply(printer, {f});
 	 return
       >>;
       if !*rlverbose then ioto_tprin2 {"+++ creating ", fn, " ... "};
       out fn;
-      w := errorset({'qepcad_dump, mkquote f}, t, !*backtrace);
+      w := errorset({printer, mkquote f}, t, !*backtrace);
       shut fn;
       if errorp w then
- 	 rederr {"qepcad_printQepcad: problem dumping", f};
+ 	 rederr {"qepcad_dump: problem dumping", f, "using", printer};
       if !*rlverbose then ioto_prin2t "done"
    end;
 
-asserted procedure qepcad_dump(f: Formula);
+asserted procedure qepcad_printer(f: Formula);
    begin scalar fl, bl, l;
       f := cl_pnf f;
       fl . bl := cl_varl f;
@@ -110,7 +123,7 @@ asserted procedure qepcad_dump(f: Formula);
    end;
 
 asserted procedure qepcad_print(f: Formula);
-   begin scalar w, svfancy, svprifn, svprtch;
+   begin scalar w, svfancy, svpprifn, svprtch;
       % Save relevant global values.
       svfancy := !*fancy;
       svpprifn := get('times, 'pprifn);
@@ -130,7 +143,7 @@ asserted procedure qepcad_print(f: Formula);
    end;
 
 asserted procedure qepcad_cadprint1(f: Formula);
-   begin scalar op, !*nat;
+   begin scalar !*nat;
       terpri!* nil;
       while rl_op f memq '(ex all) do <<
 	 prin2!* "(";
@@ -146,7 +159,7 @@ asserted procedure qepcad_cadprint1(f: Formula);
    end;
 
 asserted procedure qepcad_cadprint2(f: Formula);
-   begin scalar op,argl;
+   begin scalar op, argl, outputhandler!*;
       op := rl_op f;
       if rl_cxp op then <<
 	 if rl_tvalp op then <<
@@ -207,7 +220,7 @@ asserted procedure qepcad_cadPrintRel(op: Id);
    >>;
 
 asserted procedure qepcad_ppricadtimes(f: Id, n: Integer);
-   begin scalar w;
+   begin scalar w, outputhandler!*;
       w := (get(car f,'infix) < n);
       if w then prin2!* "(";
       maprin cadr f;
@@ -215,21 +228,39 @@ asserted procedure qepcad_ppricadtimes(f: Id, n: Integer);
       if w then prin2!* ")"
    end;
 
-asserted procedure qepcad_run(qepcad: String, N: Integer, L: Integer, fn1: String, awk: String, fn2: String);
+asserted procedure qepcad_run(N: Integer, L: Integer, fn1: String, fn2: String);
    begin scalar narg, larg, call, vb, tm;
       narg := lto_sconcat {"+N",lto_at2str(N * 10^6)," "};
       larg := lto_sconcat {"+L",lto_at2str(L * 10^3)," "};
       vb := lto_at2str !*rlverbose;
       tm := lto_at2str !*time;
-      	 call := lto_sconcat {
-	    qepcad, " ", narg, larg, "< ", fn1,
- 	    " | awk -v rf=", fn2,
- 	    " -v verb=", vb,
- 	    " -v time=", tm,
-	    " -v slfqvb=nil -v name=QEPCAD -f ", awk};
-	 if !*rlverbose then
-	    ioto_tprin2t lto_sconcat {"+++ calling ",call};
-	 system call
+      call := lto_sconcat {
+	 qepcad_qepcad!*, " ", narg, larg, "< ", fn1,
+	 " | awk -v rf=", fn2,
+	 " -v verb=", vb,
+	 " -v time=", tm,
+	 " -v slfqvb=nil -v name=QEPCAD -f ", qepcad_awk!*};
+      if !*rlverbose then
+	 ioto_tprin2t lto_sconcat {"+++ calling ",call};
+      system call
+   end;
+
+asserted procedure qepcad_runSlfq(N: Integer, L: Integer, fn1: String, fn2: String);
+   begin scalar narg, larg, call, vb, tm, svb;
+      % In contrast to Qepcad, slfq multiplies N by 10^6 itself.
+      narg := lto_sconcat {"-N ",lto_at2str(N), " "};
+      larg := lto_sconcat {"-P ",lto_at2str(L * 10^3), " "};
+      vb := lto_at2str !*rlverbose;
+      tm := lto_at2str !*time;
+      svb := lto_at2str !*rlslfqvb;
+      call := lto_sconcat {
+	 qepcad_slfq!*, " ", narg, larg, "< ", fn1,
+	 " 2> /dev/null | awk -v rf=", fn2,
+	 " -v verb=", vb, " -v time=", tm, " -v slfqvb=", svb,
+	 " -v name=SLFQ -f ", qepcad_awk!*};
+      if !*rlverbose then
+	 ioto_tprin2t lto_sconcat {"+++ calling ",call};
+      system call
    end;
 
 asserted procedure qepcad_readResult(fn: String): Formula;
@@ -244,56 +275,6 @@ asserted procedure qepcad_readResult(fn: String): Formula;
       !*echo := svecho;
       if errorp w then rederr {"qepcad_readResult: bad formula in file", fn};
       return car w
-   end;
-
-rl_provideService rl_slfq = qepcad_slfq;
-
-asserted procedure qepcad_slfq(f: Formula, N: Integer, L: Integer): Formula;
-   begin scalar fn1, fn2, result, bname;
-      bname := lto_sconcat {qepcad_wd!*,
- 	 "rlslfq-", getenv "USER" or "unknown", "-", lto_at2str getpid()};
-      fn1 := lto_sconcat {bname, ".slfq"};
-      fn2 := lto_sconcat {bname, ".red"};
-      qepcad_printSlfq(f, fn1);
-      qepcad_runSlfq(qepcad_slfq!*, N, L, fn1, qepcad_awk!*, fn2);
-      result := qepcad_readResult fn2;
-      system lto_sconcat {"rm -f ", fn1, " ", fn2};
-      if null result then
-	 lprim "slfq failed";
-      return rl_simp result or f
-   end;
-
-asserted procedure qepcad_printSlfq(f: Formula, fn: String);
-   begin scalar w, !*nat;
-      if fn = "" then <<
-      	 mathprint rl_prepfof f;
-	 return
-      >>;
-      if !*rlverbose then ioto_tprin2 {"+++ creating ", fn, " ... "};
-      out fn;
-      w := errorset({'mathprint, mkquote rl_prepfof f}, t, !*backtrace);
-      shut fn;
-      if errorp w then
- 	 rederr {"qepcad_printSlfq: problem dumping", f};
-      if !*rlverbose then ioto_prin2t "done"
-   end;
-
-asserted procedure qepcad_runSlfq(slfq: String, N: Integer, L: Integer, fn1: String, awk: String, fn2: String);
-   begin scalar narg, larg, call, vb, tm, svb;
-      % In contrast to Qepcad, slfq multiplies N by 10^6 itself.
-      narg := lto_sconcat {"-N ",lto_at2str(N), " "};
-      larg := lto_sconcat {"-P ",lto_at2str(L * 10^3), " "};
-      vb := lto_at2str !*rlverbose;
-      tm := lto_at2str !*time;
-      svb := lto_at2str !*rlslfqvb;
-      call := lto_sconcat {
-	 slfq, " ", narg, larg, "< ", fn1,
-	 " 2> /dev/null | awk -v rf=", fn2,
-	 " -v verb=", vb, " -v time=", tm, " -v slfqvb=", svb,
-	 " -v name=SLFQ -f ", awk};
-      if !*rlverbose then
-	 ioto_tprin2t lto_sconcat {"+++ calling ",call};
-      system call
    end;
 
 endmodule;

@@ -2757,16 +2757,16 @@ procedure ofsf_fbqe(f, theo);
    % quantifier-free formula. If the switch [rlqefb] is on, then this is
    % called when [cl_qe] fails.
    if !*rlqefbqepcad then
-      theo . ofsf_fbexternal(f,function qepcad_qepcad,"QEPCAD B")
+      theo . ofsf_fbexternal(f, function qepcad_qepcad, {100, 200}, "Qepcad B")
    else if !*rlqefbmma then
-      theo . ofsf_fbexternal(f,function mma_mma,"MATHEMATICA")
+      theo . ofsf_fbexternal(f, function mma_mathematica, nil, "Mathematica")
    else <<
       if !*rlverbose then
 	 ioto_prin2t "ofsf_cad with optimization of projection order";
       ofsf_cad1(f, ofsf_cadporder f, theo)
    >>;
 
-procedure ofsf_fbexternal(f,call,name);
+procedure ofsf_fbexternal(f, call, argl, name);
    % Fallback quantifier elimination using Qepcad. [f] is a formula.
    % Returns a quantifier-free formula. If the switches [rlqefb] and
    % [rlqefbqepcad] are on, then this is called when [cl_qe] fails.
@@ -2775,7 +2775,7 @@ procedure ofsf_fbexternal(f,call,name);
 	 {ql,varll,mtx} := cl_split f;
       	 if !*rlverbose then
 	    ioto_tprin2t {"+++ SLFQ ..."};
-	 mtx1 := qepcad_slfq(mtx,nil);
+	 mtx1 := qepcad_slfq(mtx, 100, 200);
       	 if !*rlverbose then <<
 	    ioto_tprin2 {"+++ SLFQ simplification: ",cl_atnum mtx," -> "};
 	    ioto_prin2t if mtx1 then cl_atnum mtx1 else "failed"
@@ -2802,7 +2802,7 @@ procedure ofsf_fbexternal(f,call,name);
 	       vn,ioto_cplu(" variable",not eqn(vn,1)),", ",
 	       an,ioto_cplu(" atomic formula",not eqn(an,1))}
 	 >>;
-	 w := apply(call,{s,nil});
+	 w := apply(call, s . argl);
 	 if w then
 	    succl := w . succl
 	 else

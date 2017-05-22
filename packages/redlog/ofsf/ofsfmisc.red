@@ -827,9 +827,11 @@ rl_provideService rl_dump = ofsf_dump;
 
 asserted procedure ofsf_dump(f: Formula, format: Id, fn: String);
    if format eq 'qepcad then
-      qepcad_printQepcad(f, fn)
+      qepcad_dump(f, fn, function qepcad_printer)
    else if format eq 'slfq then
-      qepcad_PrintSlfq(f, fn)
+      qepcad_dump(f, fn, function(lambda(x); mathprint rl_prepfof x))
+   else if format eq 'mathematica then
+      qepcad_dump(f, fn, function mma_printer)
    else if format eq 'dfg then
       cl_dfgPrint(f, fn)
    else if format eq 'smt2 then

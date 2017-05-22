@@ -29,105 +29,63 @@ copyright('mma, "(c) 2008-2017 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-fluid '(!*redefmsg !*rlqepnf !*rlverbose !*echo !*time !*backtrace mma_call!*
-   mma_wd!* mma_awk!* !*fancy);
+fluid '(!*redefmsg);
+fluid '(!*rlverbose);
+fluid '(!*echo);
+fluid '(!*time);
+fluid '(!*backtrace);
+fluid '(!*fancy);
+fluid '(!*outputhandler);
+
+global '(mma_call!*);
+global '(mma_awk!*);
+
+% This module automatically checks for executable
+% /Applications/Mathematica.app/Contents/MacOS/MathKernel or
+% /usr/local/bin/math, which are the common names for text-based Mathematica on
+% OSX and Linux, repectively. This can be overridden with an environment
+% variable MATHEMATICA. Note that at least on OSX, MathKernel must be called
+% with its absolute path. Windows is not supported.
+
+mma_awk!* := lto_sconcat {systo_get!-resource!-directory(), "/mma.awk"};
 
 switch rlqefbmma;
 
-% Beware that the value set in mma_call!* here can only possibly
-% apply on a Macintosh - there is not even a pretence of portability!
-% Similarly the temporary directory in mma_wd!* would not be suitable
-% on a typical Windows system.
+rl_provideService rl_mathematica = mma_mathematica;
 
-mma_call!* := "/Applications/Mathematica.app/Contents/MacOS/MathKernel";
-mma_wd!* := "/tmp/";
-mma_awk!* := lto_sconcat {systo_get!-resource!-directory(),"/mma.awk"};
+asserted procedure mma_mathematica(f: Formula): Formula;
+   qepcad_generic(f, nil, "mma", 'mma_printer, 'mma_run);
 
-%% put('ofsf,'rl_services,
-%%    '(rl_mma!* . mma_mma) . get('ofsf,'rl_services));
-%% 
-%% rl_mkserv('mma,'(rl_simp),'(reval),'(nil),
-%%    function(lambda x; if x then rl_mk!*fof x),t);
+asserted procedure mma_printer(f: Formula);
+   mma_cadprint rl_pnf f;
 
-procedure mma_mma(f,fn);
-   begin scalar w,oldpprifn,oldprtch,scsemic,oldecho,origoh,ll,isfancy;
+asserted procedure mma_print(f: Formula);
+   begin scalar w, svfancy, svpprifn, svprtch; integer ll;
+      % Save relevant global values.
+      svfancy := !*fancy;
+      svpprifn := get('times, 'pprifn);
+      svprtch := get('expt, 'prtch);
       ll := linelength(2^(32-5)-1);
-      oldpprifn := get('times,'pprifn);
-      oldprtch := get('expt,'prtch);
-      scsemic := semic!*;
-      oldecho := !*echo;
-      origoh := outputhandler!*;
-      isfancy := !*fancy;
-      if isfancy then
-      	 off1 'fancy;
-      w := errorset({'mma_mma1,mkquote f,mkquote fn},t,!*backtrace);
-      if isfancy then
-      	 on1 'fancy;
-      if errorp w then <<
-      	 put('times,'pprifn,oldpprifn);
-      	 put('expt,'prtch,oldprtch);
-      	 semic!* := scsemic;
-	 !*echo := oldecho;
-      	 outputhandler!* := origoh;
-	 mma_myscprint nil;
-      	 if w neq 99 then
-	    rederr w;
-	 % CTRL-C
-	 return nil
-      >>;
+      % Adapt to Mathematica-style printing.
+      if svfancy then off1 'fancy;
+      put('times, 'pprifn, 'qepcad_ppricadtimes);
+      put('expt, 'prtch, '!^);
+      mma_myscprint t;
+      % Print formula.
+      w := errorset({'mma_cadprint, mkquote f}, t, !*backtrace);
+      % Restore global values.
+      if svfancy then on1 'fancy;
+      put('times, 'pprifn, svpprifn);
+      put('expt, 'prtch, svprtch);
+      mma_myscprint nil;
       linelength ll;
+      if errorp w then rederr {"mma_print: could not print", f};
       return car w
    end;
 
-procedure mma_mma1(f,fn);
-   begin scalar w,free,oldprtch,oldpprifn,fn1,fn2,fh,result,oldecho,scsemic,
-	 call,mma,rnd;
-      scsemic := semic!*;
-      rnd := lto_at2str random(10^5);
-      fn1 := fn or lto_sconcat {mma_wd!*,getenv "USER",rnd,".mma"};
-      if null fn then
-      	 fn2 := lto_sconcat {mma_wd!*,getenv "USER",rnd,".red"};
-      if !*rlverbose then ioto_prin2 {"+++ creating ",fn1," ... "};
-      oldpprifn := get('times,'pprifn);
-      oldprtch := get('expt,'prtch);
-      put('expt,'prtch,'!^);
-      if !*rlqepnf then f := cl_pnf f;
-      out(fn1);
+asserted procedure mma_cadprint(f: Formula);
+   begin scalar w, !*nat, outputhandler!*;
       terpri!* nil;
-      mma_myscprint t;
-      mma_cadprint f;
-      terpri!* t;
-      mma_myscprint nil;
-      prin2t "TimeUsed[]";
-      shut(fn1);
-      put('expt,'prtch,oldprtch);
-      if !*rlverbose then ioto_prin2t "done";
-      mma := getenv("RLMMA") or mma_call!*;
-      if null fn then <<
-      	 call := lto_sconcat {mma," < ",fn1," | awk -v rf=",fn2,
-	    " -v verb=",lto_at2str !*rlverbose," -v time=",lto_at2str !*time,
-	    " -f ",mma_awk!*};
-	 if !*rlverbose then
-	    ioto_prin2t lto_sconcat {"+++ calling ",call};
-	 system call;
-	 oldecho := !*echo;
-	 !*echo := nil;
-	 fh := rds open(fn2,'input);
-	 result := xread t;
-	 close rds fh;
-	 !*echo := oldecho;
-	 system lto_sconcat {"rm -f ",fn1," ",fn2};
-	 if null result then
-	    lprim "Mathematica failed"
-	 else
-	    result := rl_simp result
-      >>;
-      semic!* := scsemic:
-      return result
-   end;
-
-procedure mma_cadprint(f);
-   begin scalar w,!*nat;
       prin2!* "InputForm[Resolve[";
       mma_cadprint1 f;
       prin2!* ",";
@@ -135,10 +93,12 @@ procedure mma_cadprint(f);
       maprin('list . nconc(car w,cdr w));
       prin2!* ",";
       prin2!* "Reals]]";
-      return nil
+      terpri!* t;
+      prin2!* "TimeUsed[]";
+      terpri!* nil
    end;
 
-procedure mma_cadprint1(f);
+asserted procedure mma_cadprint1(f: Formula);
    begin scalar op,!*nat;
       op := rl_op f;
       if op eq 'ex then <<
@@ -157,11 +117,11 @@ procedure mma_cadprint1(f);
 	 prin2!* "]";
 	 return nil
       >>;
-      mma_cadprint2(f)
+      mma_cadprint2 f
    end;
 
-procedure mma_cadprint2(f);
-   begin scalar op,argl;
+asserted procedure mma_cadprint2(f: Formula);
+   begin scalar op, argl, outputhandler!*;
       op := rl_op f;
       if rl_cxp op then <<
 	 if rl_tvalp op then <<
@@ -180,17 +140,18 @@ procedure mma_cadprint2(f);
       >>;
       maprin prepf ofsf_arg2l f;
       mma_cadprintop op;
-      prin2!* "0";
-      return nil
+      prin2!* "0"
    end;
 
-procedure mma_cadprinttval(tv);
+asserted procedure mma_cadprinttval(tv: Id);
    if tv eq 'true then
       prin2!* "True"
-   else  % [tv eq 'false]
-      prin2!* "False";
+   else <<
+      assert(tv eq 'false);
+      prin2!* "False"
+   >>;
 
-procedure mma_cadprintop(op);
+asserted procedure mma_cadprintop(op: Id);
    <<
       prin2!* " ";
       prin2!*(cdr atsoc(op,'((equal . "==") (neq . "!=") (lessp . "<")
@@ -200,17 +161,38 @@ procedure mma_cadprintop(op);
       prin2!* " "
    >>;
 
-copyd('mma_scprint!-orig,'scprint);
+% This should be done with an outputhandler
+copyd('mma_scprint!-orig, 'scprint);
 
-procedure mma_scprint(u,n);
+asserted procedure mma_scprint(u: List, n: Integer);
    <<
-      mma_scprint!-orig(u,n);
+      mma_scprint!-orig(u, n);
       prin2 "\"
    >>;
 
-procedure mma_myscprint(flg);
-   copyd('scprint,if flg then 'mma_scprint else 'mma_scprint!-orig)
+asserted procedure mma_myscprint(flg: Boolean);
+   copyd('scprint, if flg then 'mma_scprint else 'mma_scprint!-orig)
       where !*redefmsg=nil;
+
+asserted procedure mma_run(fn1: String, fn2: String);
+   begin scalar vb, tm, call, mma;
+      mma := getenv("MATHEMATICA");
+      if not mma then
+	 if system "test -x /Applications/Mathematica.app/Contents/MacOS/MathKernel" = 0 then
+	    mma := "/Applications/Mathematica.app/Contents/MacOS/MathKernel"  % Mac OSX
+	 else if system "test -x /usr/local/bin/math" = 0 then
+	    mma := "/usr/local/bin/math"  % Linux
+	 else
+	    rederr "no executable Mathematica found";
+      vb := lto_at2str !*rlverbose;
+      tm := lto_at2str !*time;
+      call := lto_sconcat {mma, " < ",fn1,
+	 " | awk -v rf=", fn2, " -v verb=", vb, " -v time=", tm,
+	 " -f ",mma_awk!*};
+      if !*rlverbose then
+	 ioto_tprin2t lto_sconcat {"+++ calling ",call};
+      system call
+   end;
 
 endmodule;
 
