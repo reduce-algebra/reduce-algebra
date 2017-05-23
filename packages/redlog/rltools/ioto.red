@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module ioto;  % Input/Output tools
+
+revision('ioto, "$Id$");
+
+copyright('ioto, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2009-2017 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ioto_rcsid!* ioto_copyright!*);
-   ioto_rcsid!* := "$Id$";
-   ioto_copyright!* := "Copyright (c) 1995-2009 by A. Dolzmann and T. Sturm"
->>;
-
-module ioto;
-% Input/Output tools.
 
 fluid '(ioto_realtime!* datebuffer);
 

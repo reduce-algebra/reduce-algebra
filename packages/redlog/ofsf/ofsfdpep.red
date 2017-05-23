@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2013 A. Dolzmann, T. Sturm
-% ----------------------------------------------------------------------
+module ofsfdpep;
+
+revision('ofsfdpep, "$Id$");
+
+copyright('ofsfdpep, "(c) 1995-2013 A. Dolzmann, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ofsf_dpep_rcsid!* ofsf_dpep_copyright!*);
-   ofsf_dpep_rcsid!* :=
-      "$Id$";
-   ofsf_dpep_copyright!* := "(c) 1995-2013 A. Dolzmann T. Sturm"
->>;
-
-module ofsfdpep;
 
 switch rldpepverbose,rldpepiverbose;
 

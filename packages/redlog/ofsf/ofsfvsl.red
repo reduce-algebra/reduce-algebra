@@ -1,8 +1,8 @@
-module vsl;  % Virtual substitution with learning, linear case
+module ofsfvsl;  % Virtual substitution with learning, linear case
 
-revision('vsl, "$Id$");
+revision('ofsfvsl, "$Id$");
 
-copyright('vsl, "(c) 2014-2017 M. Kosta, T. Sturm");
+copyright('ofsfvsl, "(c) 2014-2017 M. Kosta, T. Sturm");
 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
@@ -823,6 +823,6 @@ algebraic procedure isub(eql, form);
    else
       isub(rest eql, sub(first eql, form));
 
-endmodule;  % vsl
+endmodule;
 
 end;  % of file

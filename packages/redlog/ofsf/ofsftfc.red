@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2003-2009 Andreas Dolzmann and Lorenz Gilch
-% ----------------------------------------------------------------------
+module ofsftfc;  % Type Formula Construction.
+
+revision('ofsftfc, "$Id$");
+
+copyright('ofsftfc, "(c) 2003-2009 A. Dolzmann and L. Gilch");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(ofsf_tfc_rcsid!* ofsf_tfc_copyright!*);
-   ofsf_tfc_rcsid!* :=
-      "$Id$";
-   ofsf_tfc_copyright!* := "Copyright (c) 2003-2009 A. Dolzmann and L. Gilch"
->>;
-
-module ofsftfc;
-% Type Formula Construction.
 
 procedure ofsf_tfcmain(l,y);
    % Type formula construction. [l] is a list of SQ's, [y] is an

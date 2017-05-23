@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2001-2009 A. Dolzmann, A. Seidl, and T. Sturm
-% ----------------------------------------------------------------------
+module ofsfanuex;  % Expresions with real  algebraic numbers.
+
+revision('ofsfanuex, "$Id$");
+
+copyright('ofsfanuex, "(c) 2001-2009 A. Dolzmann, A. Seidl, T. Sturm, 2012-2017 M. Kosta, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -28,14 +29,6 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-lisp <<
-   fluid '(ofsf_anuex_rcsid!* ofsf_anuex_copyright!*);
-   ofsf_anuex_rcsid!* :=
-      "$Id$";
-   ofsf_anuex_copyright!* := "(c) 2001-2009 A. Dolzmann, A. Seidl, T. Sturm"
->>;
-
-module ofsfanuex;
 % ANUEX: a package for primitive or hierarchical representation of algebraic
 % numbers and expressions in algebraic numbers (algebraic polynomials). The
 % features include incremental real root isolation and factorization.

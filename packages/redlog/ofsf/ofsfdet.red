@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm
-% ----------------------------------------------------------------------
+module ofsfdet;
+
+revision('ofsfdet, "$Id$");
+
+copyright('ofsfdet, "(c) 2003-2009 A. Dolzmann, A. Seidl, and T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
-
-lisp <<
-   fluid '(ofsf_det_rcsid!* ofsf_det_copyright!*);
-   ofsf_det_rcsid!* :=
-      "$Id$";
-   ofsf_det_copyright!* := "(c) 2003-2009 A. Dolzmann, A. Seidl, T. Sturm"
->>;
-
-module ofsfdet;
 
 procedure ofsf_det(m);
    % Determinant. [m] is a list of lists of standard forms, where

@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 Andreas Dolzmann and Thomas Sturm
-% ----------------------------------------------------------------------
+module ofsfsism;  % Ordered field standard form smart simplification.
+
+revision('ofsfsism, "$Id$");
+
+copyright('ofsfsism, "(c) 1995-2009 A. Dolzmann, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,16 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ofsf_sism_rcsid!* ofsf_sism_copyright!*);
-   ofsf_sism_rcsid!* :=
-      "$Id$";
-   ofsf_sism_copyright!* := "Copyright (c) 1995-2009 A. Dolzmann and T. Sturm"
->>;
-
-module ofsfsism;
-% Ordered field standard form smart simplification. Submodule of [ofsf].
 
 procedure ofsf_smwupdknowl(op,atl,knowl,n);
    % Ordered field standard form smart simplification wrapper update

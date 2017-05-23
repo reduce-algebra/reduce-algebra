@@ -31,9 +31,12 @@ copyright('redlog, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2017 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-create!-package('(redlog rlami rltypes rlservices rlblackboxes rlcont),nil);
+create!-package('(redlog rlprint rlami rltypes rlservices rlblackboxes rlcont),nil);
 
 load!-package 'rlsupport;
+
+put('redlog, 'known!-packages,
+   '(acfsf cl dcfsf dvfsf ibalp mri ofsf pasf qqe qqe_ofsf redlog rlsupport rltools smt talp tplp));
 
 exports quotelog,rl_mkbb,rl_mkserv,rl_op,rl_arg1,rl_arg2l,rl_arg2r,rl_argn,
    rl_var,rl_mat,rl_mk1,rl_mk2,rl_mkn,rl_smkn,rl_mkq,rl_quap,rl_junctp,rl_basbp,
@@ -263,9 +266,6 @@ procedure rl_getrtypecadr1(x);
    else
       (if w eq 'equation then 'logical else w) where w=getrtype cadr x;
 
-procedure rl_texmacsp();
-   get('tmprint,'package);
-
 put('logical,'tag,'!*fof);
 put('logical,'evfn,'rl_reval);
 put('logical,'subfn,'rl_sub!*fof);
@@ -274,28 +274,16 @@ put('logical,'lengthfn,'rl_lengthlogical);
 put('true,'rtype,'logical);
 put('false,'rtype,'logical);
 
-put('!*fof,'prifn,'rl_print!*fof);
-put('!*fof,'fancy!-prifn,'rl_print!*fof);
-put('!*fof,'fancy!-setprifn,'rl_setprint!*fof);
-%put('!*fof,'prifn,'prin2!*);
 put('!*fof,'rtypefn,'quotelog);
 put('!*fof,'rl_simpfn,'rl_simp!*fof);
 
 put('and,'rtypefn,'rl_getrtypecar);
 put('and,'rl_simpfn,'rl_simpbop);
 put('and,'rl_prepfn,'rl_prepbop);
-put('and,'pprifn,'rl_ppriop);
-put('and,'fancy!-pprifn,'rl_fancy!-ppriop);
-if rl_texmacsp() then
-   put('and,'fancy!-infix!-symbol,"\,\wedge\, ");
 
 put('or,'rtypefn,'rl_getrtypecar);
 put('or,'rl_simpfn,'rl_simpbop);
 put('or,'rl_prepfn,'rl_prepbop);
-put('or,'pprifn,'rl_ppriop);
-put('or,'fancy!-pprifn,'rl_fancy!-ppriop);
-if rl_texmacsp() then
-   put('or,'fancy!-infix!-symbol,"\,\vee\, ");
 
 put('not,'rtypefn,'rl_getrtypecar);
 put('not,'rl_simpfn,'rl_simpbop);
@@ -306,33 +294,18 @@ put('impl,'rtypefn,'rl_getrtypecar);
 put('impl,'rl_simpfn,'rl_simpbop);
 put('impl,'rl_prepfn,'rl_prepbop);
 put('impl,'number!-of!-args,2);
-put('impl,'pprifn,'rl_ppriop);
-if rl_texmacsp() then
-   put('impl,'fancy!-infix!-symbol,"\,\longrightarrow\, ")
-else
-   put('impl,'fancy!-infix!-symbol,222);
 
 algebraic infix repl;
 put('repl,'rtypefn,'rl_getrtypecar);
 put('repl,'rl_simpfn,'rl_simpbop);
 put('repl,'rl_prepfn,'rl_prepbop);
 put('repl,'number!-of!-args,2);
-put('repl,'pprifn,'rl_ppriop);
-if rl_texmacsp() then
-   put('repl,'fancy!-infix!-symbol,"\,\longleftarrow\, ")
-else
-   put('repl,'fancy!-infix!-symbol,220);
 
 algebraic infix equiv;
 put('equiv,'rtypefn,'rl_getrtypecar);
 put('equiv,'rl_simpfn,'rl_simpbop);
 put('equiv,'rl_prepfn,'rl_prepbop);
 put('equiv,'number!-of!-args,2);
-put('equiv,'pprifn,'rl_ppriop);
-if rl_texmacsp() then
-   put('equiv,'fancy!-infix!-symbol,"\,\longleftrightarrow\, ")
-else
-   put('equiv,'fancy!-infix!-symbol,219);
 
 flag('(impl repl equiv and or),'spaced);
 
@@ -344,121 +317,52 @@ flag('(true false),'reserved);
 put('ex,'rtypefn,'rl_getrtypecadr);
 put('ex,'rl_simpfn,'rl_simpq);
 put('ex,'number!-of!-args,2);
-put('ex,'prifn,'rl_priq);
 put('ex,'rl_prepfn,'rl_prepq);
-put('ex,'fancy!-prifn,'rl_fancy!-priq);
-if rl_texmacsp() then
-   put('ex,'fancy!-functionsymbol,"\exists ")
-else
-   put('ex,'fancy!-functionsymbol,36);
 
 put('all,'rtypefn,'rl_getrtypecadr);
 put('all,'rl_simpfn,'rl_simpq);
 put('all,'number!-of!-args,2);
-put('all,'prifn,'rl_priq);
 put('all,'rl_prepfn,'rl_prepq);
-put('all,'fancy!-prifn,'rl_fancy!-priq);
-if rl_texmacsp() then
-   put('all,'fancy!-functionsymbol,"\forall ")
-else
-   put('all,'fancy!-functionsymbol,34);
 
 put('bex,'rtypefn,'quotelog);
 put('bex,'rl_simpfn,'rl_simpbq);
 put('bex,'number!-of!-args,3);
-put('bex,'prifn,'rl_pribq);
-put('bex,'rl_prepfn,'rl_prepbq); % semms not to be used!
-%put('bex,'fancy!-functionsymbol,36);
-put('bex,'fancy!-prifn,'rl_fancy!-pribq);
-if rl_texmacsp() then
-   put('bex,'fancy!-functionsymbol,"\bigsqcup ")
-else
-   put('bex,'fancy!-functionsymbol,36); %%% 36 okay?
 
 put('ball,'rtypefn,'quotelog);
 put('ball,'rl_simpfn,'rl_simpbq);
 put('ball,'number!-of!-args,3);
-put('ball,'prifn,'rl_pribq);
 put('ball,'rl_prepfn,'rl_prepbq);
-%put('ball,'fancy!-functionsymbol,34);
-put('ball,'fancy!-prifn,'rl_fancy!-pribq);
-if rl_texmacsp() then
-   put('ball,'fancy!-functionsymbol,"\bigsqcap ")
-else
-   put('ball,'fancy!-functionsymbol,34); %%% 34 okay?
 
 flag('(rl_simpbop rl_simpq rl_simpbq rl_prepbop rl_prepq rl_prepbq),'full);
 
-macro procedure rl_getversion(argl);
-   begin scalar v,w;
-      v := getenv("REDLOGVERSION") or "Development Version";
-      w := getenv("REDLOGDATE") or date();
-      return lto_sconcat {"Redlog ",v,", ",w}
-   end;
+algebraic procedure rlabout();
+   lisp rl_about();
 
-operator rlabout;
-
-procedure rlabout();
-   <<
-      ioto_tprin2t rl_getversion();
-      ioto_prin2 "(C)";
-      ioto_prin2t " A. Dolzmann and T. Sturm";
+asserted procedure rl_about();
+   begin scalar rev, date, time, year;
+      {rev, date, time} := rl_getversion();
+      ioto_tprin2t {"Redlog Revision ", rev, " of ", date, ", ", time};
+      year := car lto_stringSplit(date, '(!-));
+      ioto_tprin2t {"(c) 1992-", year, " A. Dolzmann and T. Sturm"};
       ioto_tprin2t "http://www.redlog.eu/"
-   >>;
-
-macro procedure rl_mkbb(lst);
-   % Make black box.
-   begin scalar args,vn,name,n,prgn;
-      name := eval cadr lst;
-      n := eval caddr lst;
-      args := for i := 1:n collect mkid('a,i);
-      vn := intern compress nconc(explode name,'(!! !*));
-      prgn := {'setq,'rl_bbl!*,{'cons,mkquote vn,'rl_bbl!*}} . prgn;
-      prgn := {'put,mkquote name,''number!-of!-args,n} . prgn;
-      prgn := {'de,name,args,{'apply,vn,'list . args}} . prgn;
-      prgn := {'fluid,mkquote {vn}} . prgn;
-      return 'progn . prgn
    end;
 
-macro procedure rl_mkserv(argl);
-   begin
-      scalar aprefix,sprefix,bname,evalfnl,oevalfnl,odefl,resconv,amp,len,
-	 args,sm,smv,prgn,am,psval;
-      sprefix := reversip explode nth(argl,1);
-      while not eqcar(sprefix,'!_) do sprefix := cdr sprefix;
-      aprefix := reverse cdr sprefix;
-      sprefix := reversip sprefix;
-      bname := eval nth(argl,2);
-      evalfnl := eval nth(argl,3);
-      oevalfnl := eval nth(argl,4);
-      odefl := eval nth(argl,5);
-      resconv := eval nth(argl,6);
-      amp := eval nth(argl,7);
-      len := length evalfnl + length oevalfnl;
-      args := for i := 1:len collect mkid('a,i);
-      sm := intern compress append(sprefix,explode bname);
-      smv := intern compress nconc(explode sm,'(!! !*));
-      prgn := {'setq,'rl_servl!*,{'cons,mkquote smv,'rl_servl!*}} . prgn;
-      prgn := {'put,mkquote sm,''number!-of!-args,len} . prgn;
-      prgn := {'de,sm,args,{'apply,smv,'list . args}} . prgn;
-      prgn := {'fluid,mkquote {smv}} . prgn;
-      if amp then <<
-      	 am := intern compress append(aprefix,explode bname);
-      	 psval := intern compress nconc(explode sm,'(!! !$));
-	 prgn := {'put,mkquote am,''psopfn,mkquote psval} . prgn;
-	 prgn := {'put,mkquote am,''rtypefn,''rtypepart} . prgn;
-	 prgn := {'put,mkquote psval,''number!-of!-args,1} . prgn;
-	 prgn := {'put,mkquote psval,''cleanupfn,''rl_cleanup} . prgn;
-	 prgn := {'de,psval,'(argl),{'rl_interf1,mkquote sm,mkquote evalfnl,
-	    mkquote oevalfnl,mkquote odefl,mkquote resconv,'argl}} . prgn
-      >>;
-      return 'progn . prgn
+asserted procedure rl_getversion(): List3;
+   begin scalar w, res; integer rev, cur;
+      for each pack in get('redlog, 'known!-packages) do
+	 for each mod in get(pack, 'package) do <<
+	    w := lto_stringSplit(get(mod, 'revision), {'! , !$eol!$, cr!*, ff!*, tab!*});
+	    if length w = 7 then <<
+	       rev := lto_id2int lto_string2id nth(w, 3);
+	       if rev > cur then <<
+	       	  cur := rev;
+ 		  res := {nth(w, 3), nth(w, 4), nth(w, 5)}
+	       >>
+	    >> else
+	       lprim lto_sconcat {"revision missing on ", lto_at2str pack, "/", lto_at2str mod}
+	 >>;
+      return res
    end;
-
-procedure rl_alias(new,old);
-   put(intern compress append('(!r !l),explode new),
-      'psopfn,
-      get(intern compress append('(!r !l),explode old),'psopfn));
 
 inline procedure rl_op(f);
    % Reduce logic operator. [f] is a formula. Returns the top-level

@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2015 M. Kosta, T. Sturm
-% ----------------------------------------------------------------------
+module ofsfvseset;
+
+revision('ofsfvseset, "$Id$");
+
+copyright('ofsfvseset, "(c) 2015-2017 M. Kosta, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ofsfvseset_rcsid!* ofsfvseset_copyright!*);
-   ofsfvseset_rcsid!* :=
-      "$Id$";
-   ofsfvseset_copyright!* := "(c) 2015 M. Kosta, T. Sturm"
->>;
-
-module ofsfvseset;
 
 fluid '(rlbndswithilp!*);
 rlbndswithilp!* := nil;

@@ -29,11 +29,6 @@ copyright('rlcont, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2016 T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
-%put('rlset,'stat,'rl_setstat);
-%put('rlset,'formfn,'rl_setform);
-
-put('rlset,'psopfn,'rl_set!$);
-
 put('b,'rl_calias,'ibalp);
 put('!B,'rl_calias,'ibalp);  % for !*raise=nil
 put('boolean,'rl_calias,'ibalp);
@@ -58,24 +53,7 @@ put('z,'rl_calias,'pasf);
 put('!Z,'rl_calias,'pasf);
 put('integers,'rl_calias,'pasf);
 
-% procedure rl_setstat();
-%    begin scalar f,x,l;
-%       f := cursym!*;
-%       x := scan();
-%       if x neq '!*lpar!* then <<
-% 	 scan();
-% 	 return f . {x}
-%       >>;
-%        while (x := scan()) neq '!*semicol!* do
-% 	 if not (x eq '!*comma!*) then
-% 	    l := x . l;
-%       if not eqcar(l,'!*rpar!*) then
-% 	 symerr("Too few right parentheses",nil);
-%       return f . reversip cdr l
-%    end;
-
-% procedure rl_setform(l);
-%    rl_set!$ cdr l;
+put('rlset,'psopfn,'rl_set!$);
 
 procedure rl_set!$(argl);
    begin scalar w;

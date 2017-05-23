@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm
-% ----------------------------------------------------------------------
+module clnf;  % Common logic normal forms. Submodule of [cl].
+
+revision('clnf, "$Id$");
+
+copyright('clnf, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(cl_nf_rcsid!* cl_nf_copyright!*);
-   cl_nf_rcsid!* := "$Id$";
-   cl_nf_copyright!* := "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm"
->>;
-
-module clnf;
-% Common logic normal forms. Submodule of [cl].
 
 procedure cl_expand!-extbool(f);
    % Common logic expand extended boolean operators. [f] is a formula.

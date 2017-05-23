@@ -285,7 +285,12 @@ asserted procedure lto_substr(s: String, n: Integer, m: Integer): ExtraBoolean;
    end;
 
 asserted procedure lto_string2id(s: String): Id;
-   intern compress explodec s;
+   begin scalar w;
+      w := explodec s;
+      if not lto_alphap car w then
+	 w := '!! . w;
+      return intern compress w
+   end;
 
 asserted procedure lto_max(l: List): Any;
    if null l then '(minus infinity) else lto_max1 l;

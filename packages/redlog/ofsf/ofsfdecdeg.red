@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2011 T. Sturm
-% ----------------------------------------------------------------------
+module ofsfdecdeg;  % Ordered field standard form decdeg service for cl_qe
+
+revision('ofsfdecdeg, "$Id$");
+
+copyright('ofsfdecdeg, "(c) 1995-2009 A. Dolzmann, T. Sturm, 2010-2014 T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,18 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ofsf_decdeg_rcsid!* ofsf_decdeg_copyright!*);
-   ofsf_decdeg_rcsid!* :=
-      "$Id$";
-   ofsf_decdeg_copyright!* :=
-      "(c) 1995-2009 A. Dolzmann T. Sturm, 2010-2011 T. Sturm"
->>;
-
-module ofsfdecdeg;
-% Ordered field standard form decdeg service for cl_qe. Submodule of
-% [ofsf].
 
 procedure ofsf_decdeg(f);
    % Ordered field standard form decrease degrees. [f] is a formula.

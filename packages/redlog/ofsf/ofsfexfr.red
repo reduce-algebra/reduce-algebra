@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2012 M. Kosta, T. Sturm
-% ----------------------------------------------------------------------
+module ofsfexfr;
+
+revision('ofsfexfr, "$Id$");
+
+copyright('ofsfexfr, "(c) 2012-2015 M. Kosta, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ofsf_exfr_rcsid!* ofsf_exfr_copyright!*);
-   ofsf_exfr_rcsid!* :=
-      "$Id$";
-   ofsf_exfr_copyright!* := "(c) 2012 M. Kosta, T. Sturm"
->>;
-
-module ofsfexfr;
 
 %DS
 % GAnu ::= 'minf | 'pinf | Anu

@@ -1,8 +1,9 @@
-% ----------------------------------------------------------------------
-% $Id$
-% ----------------------------------------------------------------------
-% Copyright (c) 2015 M. Kosta, T. Sturm
-% ----------------------------------------------------------------------
+module ofsfvslists;
+
+revision('ofsfvslists, "$Id$");
+
+copyright('ofsfvslists, "(c) 2015-2017 M. Kosta, T. Sturm");
+
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions
 % are met:
@@ -27,15 +28,6 @@
 % (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
-
-lisp <<
-   fluid '(ofsfvslists_rcsid!* ofsfvslists_copyright!*);
-   ofsfvslists_rcsid!* :=
-      "$Id$";
-   ofsfvslists_copyright!* := "(c) 2015 M. Kosta, T. Sturm"
->>;
-
-module ofsfvslists;
 
 fluid '(rlclustering!*);
 fluid '(rlmaxdeg!*);
