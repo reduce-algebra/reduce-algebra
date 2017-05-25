@@ -185,7 +185,7 @@
  (pident        "pident"                                     csl psl)
  (pgauss        "pgauss"                                     csl psl)
  (qhull         "qhull"                                      csl psl)
- (smt           "redlog/smt"                                 csl psl)
+ (smt           "redlog/smt"            test                 csl psl)
  (gurobi        "foreign/gurobi"                             csl)
  (z3            "foreign/z3"                                 csl)
  (cuba          "foreign/cuba"                               csl)
