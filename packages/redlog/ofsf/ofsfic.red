@@ -76,9 +76,7 @@ fluid '(!*rlqeicfallback);  %TS
      (cl_qeatal1 . ofsfic!*cl_qeatal1)
      (cl_simpl . ofsfic!*cl_simpl)
      (ofsf_exploitKnowl . ofsfic!*ofsf_exploitKnowl)
-     (ofsf_qemkans . ofsfic!*ofsf_qemkans)
-     (ofsf_qebacksub . ofsfic!*ofsf_qebacksub)
-     (ofsf_qenobacksub . ofsfic!*ofsf_qenobacksub))$
+     (ofsf_qemkans . ofsfic!*ofsf_qemkans))$
 
 procedure rlqeinfcore_storedefs();
    % Store current procedure definitions into [!*rlqeinfcore!-defal].
@@ -539,7 +537,7 @@ asserted procedure ofsfic!*cl_qe1(f: Formula, theo: Theory, xbvl: KernelL): Elim
 asserted procedure ofsfic!*cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory, ans: Boolean, bvl: KernelL, dpth: Integer, vlv: Integer): List3;
    % Quantifier elimination for one block soubroutine. Arguments are as in
    % [cl_qeblock], where [q] has been dropped. Return value as well.
-   begin scalar w,co,remvl,newj,cvl,coe,ww;
+   begin scalar w,co,remvl,newj,cvl,coe,ww,tmp;
       integer c,count,delc,oldcol,comax,comaxn;
       cvl := varl;
       co := co_new();
@@ -582,22 +580,27 @@ asserted procedure ofsfic!*cl_qeblock4(f: QfFormula, varl: KernelL, theo: Theory
 		     delc := delc + oldcol + length w - co_length(co)
 	       >> else
 		  for each x in w do newj := lto_insert(cl_co2J x, newj)
-	 >> else  % There is no eliminable variable.
+	 >> else << % There is no eliminable variable.
 	    % <max>
-	    if ofsfic_process!-coe coe then <<  % [coe] is equivalent to ['true]
-	       co := co_new();
-	       newj := {'true . nil}
-	    >> % </max>
+	    tmp := ofsfic_fallback!-on!-coe coe;
+	    if tmp then <<  % [coe] is equivalent to ['true]
+	       co := co_new();  % We empty the working container.
+	       newj := {'true . append(tmp, ce_ans coe)}  % We collect the answers computed by CAD.
+	    >>
+	    % </max>
+	 >>
       >>;
       if !*rlverbose then
  	 ioto_prin2{"[DEL:",delc,"/",count,"]"};
       return {remvl, newj, theo}
    end;
 
-asserted procedure ofsfic_process!-coe(coe: ContainerElement): Boolean;
-   % Returns [t] or [nil] depending on whether [coe] is equivalent to
-   % ['true] or ['false].
-   begin scalar fvect, cadinput, cd, cadres, rfvect, falseFound, celleval, sf, vl, vlsp, tmpres;
+asserted procedure ofsfic_fallback!-on!-coe(coe: ContainerElement): ExtraBoolean;
+   % TODO: Update this description!!!
+   % Returns [nil] or AList depending on whether [coe] is equivalent
+   % to ['false] or ['true]. In the ['true] case we return an AList of
+   % answers that are pairs [x . anu].
+   begin scalar fvect, cadinput, cd, cadres, resal, rfvect, falseFound, celleval, sf, vl, vlsp, tmpres;
       !*rlqeicfallback := t;
       fvect := ce_fvect coe;
       cadinput := rl_ex(rl_smkn('and, vector2list fvect), nil);
@@ -608,11 +611,21 @@ asserted procedure ofsfic_process!-coe(coe: ContainerElement): Boolean;
       cadres := acell_gettv atree_rootcell caddata_dd cd;
       assert(cadres memq '(true false));
       if cadres eq 'true then <<
+	 % We extract anu values for the existentially quantified variables.
+	 for each cell in atree_getleaves caddata_dd cd do
+	    if acell_gettv cell eq 'true then
+	       resal := for each anu in acell_getsp cell collect
+		  aex_mvar anu_dp anu . anu;
 	 ofsf_cadfinish cd;
-	 return t
+	 assert(resal);
+	 return for each pr in resal collect
+	    {car pr, 'cadanu, anu_reorder cdr pr, nil}
       >>;
       ofsf_cadfinish cd;
       return nil;  % TS: We disable infcore computation when ['false] was found by CAD.
+
+      % The following is therefore dead code for now.
+
       % [cadres] is ['false]
       % We make a reorder copy of [fvect].
       rfvect := mkvect upbv fvect;
@@ -1688,19 +1701,26 @@ procedure ofsfic!*ofsf_exploitKnowl(knowl);
       return {subal, zvl, posvl, negvl, geqvl, leqvl, neqvl}
    end;
 
-procedure ofsfic!*ofsf_qemkans(an,svf);
-   begin scalar res; integer time, gctime;
+procedure ofsfic!*ofsf_qemkans(an, svf);
+   begin scalar anual, res, w;
+      integer time, gctime, s;
       if !*rlverbose then <<
 	 time := time();
 	 gctime := gctime()
       >>;
-      an := ofsf_qemkstdans(an, svf);
-      res := ofsf_qemkans1 an;
-      res := if !*rlqebacksub then
-	 ofsfic!*ofsf_qebacksub res
-      else
-	 ofsfic!*ofsf_qenobacksub res;
-      if !*rlqebacksub then res := sort(res, function ordpcar);
+      anual := ofsfic_qemkstdans an;
+      for each pr in anual do
+      	 ioto_tprin2t {car pr, " = ", anu_evalf cdr pr};
+      ioto_tprin2t {"MODEL IN FORM OF (POSSIBLY NEGATED) EQUATIONS:"};
+      for each al on anual do <<
+	 w := car al;
+	 for each pr in cdr al do
+	    if eqn(anu_compare(cdr w, cdr pr), 0) then
+	       ioto_tprin2t {car w, " = ", car pr}
+	    else
+	       ioto_tprin2t {car w, " <> ", car pr}
+      >>;
+      % ioto_tprin2t {anual};
       if !*rlverbose then <<
 	 ioto_tprin2 {"++++ Time for answer processing: ", time() - time, " ms"};
 	 gctime := gctime() - gctime;
@@ -1710,25 +1730,210 @@ procedure ofsfic!*ofsf_qemkans(an,svf);
       return res
    end;
 
-procedure ofsfic!*ofsf_qebacksub(eql);
-   % Quantifier elimination back substitution. [eql] is a list $((v . w), ...)$,
-   % where $v$ is a variable and $w$ is an SQ. Returns a list of equations.
-   begin scalar subl, e;
-      return for each w in eql join <<
-	 e := car w . prepsq subsq(cdr w, subl);
-	 subl := (car w . cdr e) . subl;
-	 if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then {e}
-      >>
+procedure ofsfic_qemkstdans(an);
+   begin scalar y, v, sub, xargl, f, ctx, rat, anu;
+      if !*rlverbose then
+	 ioto_tprin2t {"++++ Determining standard real numbers for the answers ",
+	    for each y in an collect car y, "..."};
+      while an do <<
+	 y := pop an;
+	 {v, sub, xargl, f} := y;
+	 if sub eq 'cadanu then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " = Anu computed by CAD"};
+	    % in this case [xargl] is in fact an Anu
+	    push(v . xargl, ctx);
+	 >> else if sub eq 'arbitrary then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " = arbitrary -> 0"};
+	    push(v . ofsfic_arbitrary2anu v, ctx)
+	 >> else if sub eq 'ofsf_shift!-indicator then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " = shift"};
+	    % This should never happen in this module, because shift
+	    % is disabled, i.e., not called!
+	    rederr "unexpected shift - tell sturm@redlog.eu!";
+	    % push(v . ofsfic_shift2anu(v, sv), ctx)
+	 >> else if sub eq 'ofsf_qesubcq then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " = quotient"};
+	    push(v . ofsfic_q2anu(cadr xargl, v, ctx), ctx)
+	 >> else if sub eq 'ofsf_qesubcr1 then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " = root expression"};
+	    push(v . ofsfic_r2anu(cadr xargl, v, ctx), ctx)
+	 >> else if sub eq 'ofsf_qesubi then <<
+	    assert(car xargl memq '(minf pinf));
+	    if car xargl eq 'minf then <<
+	       if !*rlverbose then
+	       	  ioto_tprin2 {"++++ ", v, " = - infinity"};
+	       rat := ofsfic_fix!-minf(f, v, ctx)
+	    >>;
+	    if car xargl eq 'pinf then <<
+	       if !*rlverbose then
+	       	  ioto_tprin2 {"++++ ", v, " = + infinity"};
+	       rat := ofsfic_fix!-pinf(f, v, ctx)
+	    >>;
+	    if !*rlverbose then
+	       ioto_prin2 {" -> ", ioto_form2str prepsq rat};
+	    push(v . ofsfic_q2anu(rat, v, ctx), ctx)
+	 >> else if sub eq 'ofsf_qesubcqme then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " = quotient - epsilon"};
+	    anu := ofsfic_q2anu(cadr xargl, v, ctx);
+	    rat := ofsfic_fix!-pme(f, v, anu, ctx);
+	    if !*rlverbose then
+	       ioto_prin2 {" -> ", ioto_form2str prepsq rat};
+	    push(v . ofsfic_q2anu(rat, v, ctx), ctx)
+	 >> else if sub eq 'ofsf_qesubcqpe then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " = quotient + epsilon"};
+	    anu := ofsfic_q2anu(cadr xargl, v, ctx);
+	    rat := ofsfic_fix!-ppe(f, v, anu, ctx);
+	    if !*rlverbose then
+	       ioto_prin2 {" -> ", ioto_form2str prepsq rat};
+	    push(v . ofsfic_q2anu(rat, v, ctx), ctx)
+	 >> else if sub eq 'ofsf_qesubcrme1 then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " = root expression - epsilon"};
+	    anu := ofsfic_r2anu(cadr xargl, v, ctx);
+	    rat := ofsfic_fix!-pme(f, v, anu, ctx);
+	    if !*rlverbose then
+	       ioto_prin2 {" -> ", ioto_form2str prepsq rat};
+	    push(v . ofsfic_q2anu(rat, v, ctx), ctx)
+      	 >> else if sub eq 'ofsf_qesubcrpe1 then <<
+	    if !*rlverbose then
+	       ioto_tprin2 {"++++ ", v, " = root expression + epsilon"};
+	    anu := ofsfic_r2anu(cadr xargl, v, ctx);
+	    rat := ofsfic_fix!-ppe(f, v, anu, ctx);
+	    if !*rlverbose then
+	       ioto_prin2 {" -> ", ioto_form2str prepsq rat};
+	    push(v . ofsfic_q2anu(rat, v, ctx), ctx)
+	 >> else
+	    rederr "BUG IN ofsfic_qemkstdans"
+      >>;
+      return reversip ctx
    end;
 
-procedure ofsfic!*ofsf_qenobacksub(eql);
-   % Quantifier elimination back substitution. [eql] is a list $(((v .
-   % w) . a), ...)$, where $v$ is a variable, $w$ is an SQ, and $a$ is
-   % an answer translation. Returns a list $((e,a),...)$, where $e$ is
-   % an equation and $a$ is an answer translation.
-   for each w in eql join
-      if !*rlqefullans or not flagp(car w, 'rl_qeansvar) then
-	 {car w . prepsq cdr w};
+asserted procedure ofsfic_arbitrary2anu(v: Kernel): Anu;
+   % arbitrary to Anu
+   anu_fromrat(v, rat_0());
+
+asserted procedure ofsfic_shift2anu(v: Kernel, sv: Kernel): Anu;
+   % shift to Anu
+   % TODO: Write this procedure!
+   anu_fromrat(v, rat_0());
+
+asserted procedure ofsfic_q2anu(q: SQ, v: Kernel, ctx: AList): Anu;
+   % quotient to Anu
+   begin scalar n, d, aex, w, cb;
+      n := numr q;
+      d := denr q;
+      aex := aex_fromsf addf(multf(d, !*k2f v), negf n);  % d*v - n
+      assert(not aex_badp(aex, 1));
+      for each pr in ctx do
+	 aex := aex_bind(aex, car pr, cdr pr);
+      % TODO: Compute primitive part of [aex].
+      cb := aex_cauchybound(aex, v);
+      cb := addsq(cb, 1 ./ 1);
+      return anu_mk(aex, iv_mk(negsq cb, cb))
+   end;
+
+asserted procedure ofsfic_r2anu(r: List4, v: Kernel, ctx: AList): Anu;
+   % root to Anu
+   begin scalar a, b, c, d, aexb, aexc, sgnb, sgnc, p, aex, aexd, sgnd, roots;
+      {a, b, c, d} := r;
+      aexb := aex_fromsf b;
+      aexc := aex_fromsf c;
+      for each pr in ctx do <<
+	 aexb := aex_bind(aexb, car pr, cdr pr);
+	 aexc := aex_bind(aexc, car pr, cdr pr)
+      >>;
+      sgnb := aex_sgn aexb;
+      if eqn(aex_sgn aexb, 0) then
+	 return ofsfic_q2anu(quotsq(!*f2q a, !*f2q d), v, ctx);
+      sgnc := aex_sgn aexc;
+      if eqn(sgnc, 0) then
+	 return ofsfic_q2anu(quotsq(!*f2q a, !*f2q d), v, ctx);
+      assert(sgnc > 0);
+      % p = d^2*v^2 - 2*a*d*v + a^2 - b^2*c
+      p := addf(multf(exptf(d, 2), exptf(!*k2f v, 2)),
+	 addf(negf multf(2, multf(a, multf(d, !*k2f v))),
+	    addf(exptf(a, 2), negf multf(exptf(b, 2), c))));
+      aex := aex_fromsf p;
+      aexd := aex_fromsf d;
+      for each pr in ctx do <<
+	 aex := aex_bind(aex, car pr, cdr pr);
+	 aexd := aex_bind(aexd, car pr, cdr pr)
+      >>;
+      sgnd := aex_sgn aexd;
+      % TODO: Compute primitive part of [aex].
+      roots := aex_findroots(aex, v);
+      assert(eqn(length roots, 2));
+      if sgnb*sgnd < 0 then
+      	 return car roots;
+      return cadr roots
+   end;
+
+asserted procedure ofsfic_fix!-minf(f: QfFormula, v: Kernel, ctx: AList): Rational;
+   % fix an interpretation for - infinity
+   begin scalar tval; integer vval;
+      vval := -1;
+      repeat <<
+	 vval := 2 * vval;
+	 tval := qff_evalatp(f, (v . anu_fromrat(v, vval ./ 1)) . ctx)
+      >> until tval eq 'true;
+      return vval ./ 1
+   end;
+
+asserted procedure ofsfic_fix!-pinf(f: QfFormula, v: Kernel, ctx: AList): Rational;
+   % fix an interpretation for + infinity
+   begin scalar tval; integer vval;
+      vval := 1;
+      repeat <<
+	 vval := 2 * vval;
+	 tval := qff_evalatp(f, (v . anu_fromrat(v, vval ./ 1)) . ctx)
+      >> until tval eq 'true;
+      return vval ./ 1
+   end;
+
+asserted procedure ofsfic_fix!-pme(f: QfFormula, v: Kernel, root: Anu, ctx: AList): Rational;
+   % fix an interpretation for point - epsilon
+   begin scalar sc, stp, lb, rb, vval, tval;
+      sc := aex_stdsturmchain(anu_dp root, v);
+      stp := rat_1();
+      repeat <<
+	 anu_refineip(root, sc);
+	 lb := iv_lb anu_iv root;
+	 rb := iv_rb anu_iv root;
+	 if rat_eq(lb, rb) then <<  % [root] is a rational and we have hit it
+	    vval := rat_minus(lb, stp);
+	    stp := rat_quot(stp, rat_fromnum 2)
+	 >> else  % we take the left bound of an isolating interval
+	    vval := lb;
+	 tval := qff_evalatp(f, (v . anu_fromrat(v, vval)) . ctx)
+      >> until tval eq 'true;
+      return vval
+   end;
+
+asserted procedure ofsfic_fix!-ppe(f: QfFormula, v: Kernel, root: Anu, ctx: AList): Rational;
+   % fix an interpretation for point + epsilon
+   begin scalar sc, stp, lb, rb, vval, tval;
+      sc := aex_stdsturmchain(anu_dp root, v);
+      stp := rat_1();
+      repeat <<
+	 anu_refineip(root, sc);
+	 lb := iv_lb anu_iv root;
+	 rb := iv_rb anu_iv root;
+	 if rat_eq(lb, rb) then <<  % [root] is a rational and we have hit it
+	    vval := rat_add(lb, stp);
+	    stp := rat_quot(stp, rat_fromnum 2)
+	 >> else  % we take the right bound of an isolating interval
+	    vval := rb;
+	 tval := qff_evalatp(f, (v . anu_fromrat(v, vval)) . ctx)
+      >> until tval eq 'true;
+      return vval
+   end;
 
 endmodule;  % [ofsfic]
 
