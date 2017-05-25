@@ -29,6 +29,9 @@ copyright('ofsfvsans, "(c) 2017 M. Kosta, T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
+% TODO: Rename [ctx] to [anual] within this module to avoid confusion
+% with ctx in an AEX.
+
 asserted procedure vsdb_computeAns(db: VSdb): AList;
    % Compute answers to existential sentences: entry point.
    begin scalar nd;
@@ -133,7 +136,7 @@ asserted procedure vsnd_ans!-infinity(nd: VSnd, ctx: AList): Anu;
  	    1;
       repeat <<
 	 vval := 2 * vval;
-	 tval := vsnd_evalqff(f, (v . anu_fromrat(v, vval ./ 1)) . ctx)
+	 tval := qff_evalatp(f, (v . anu_fromrat(v, vval ./ 1)) . ctx)
       >> until tval eq 'true;
       return anu_fromrat(v, vval ./ 1)
    end;
@@ -164,7 +167,7 @@ asserted procedure vsnd_ans!-epsilon(nd: VSnd, ctx: AList): Anu;
 	    else
 	       rb
 	 >>;
-	 tval := vsnd_evalqff(f, (v . anu_fromrat(v, vval)) . ctx)
+	 tval := qff_evalatp(f, (v . anu_fromrat(v, vval)) . ctx)
       >> until tval eq 'true;
       return anu_fromrat(v, vval)
    end;
@@ -189,7 +192,8 @@ asserted procedure vsnd_ans!-root(nd: VSnd, ctx: AList): Anu;
       return nth(aex_findroots(aex, v), rindex)
    end;
 
-asserted procedure vsnd_evalqff(f: QfFormula, ctx: AList): Id;
+asserted procedure qff_evalatp(f: QfFormula, ctx: AList): Id;
+   % Quantifier-free formula evaluate at point.
    % a wrapper for [ofsf_evalqff]
    begin scalar sp, varl;
       sp := for each pr in ctx collect cdr pr;
