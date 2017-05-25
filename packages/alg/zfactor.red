@@ -196,7 +196,13 @@ symbolic procedure primep n;
     else if n<0 then primep(-n)
 % This new test will often take fewer operations that the search through
 % !*primelist!* using the member function, so I will use it in preference.
+#if (memq 'psl lispsystem!*)
+    else if n <= 0xffffffff and
+            n <= largest!-small!-modulus then primep32 n
+#else
+% CSL
     else if n <= 0xffffffff then primep32 n
+#endif
     else if n=1 then nil
     else if n<=!*last!-prime!-in!-list!* then n member !*primelist!*
     else if n<=!*last!-prime!-squared!*
@@ -211,7 +217,13 @@ symbolic procedure primep n;
 flag('(primep),'boolean);
 
 symbolic procedure internal!-primep n;
+#if (memq 'psl lispsystem!*)
+   if n <= 0xffffffff and
+      n <= largest!-small!-modulus then primep32 n
+#else
+% CSL
    if n <= 0xffffffff then primep32 n
+#endif
    else if n>largest!-small!-modulus then general!-primep n
    else small!-primep n;
 
