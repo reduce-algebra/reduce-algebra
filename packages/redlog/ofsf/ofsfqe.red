@@ -1932,7 +1932,7 @@ procedure ofsf_qemkstdans(an, svf);
    % intermediate results from the quantifier-free starting formula
    % for the outermost quantifier block. These were computed using
    % ofsf_qemkansfl.
-   begin scalar y, yy, f, v, sub, xargl, nan, anunan, a, b, c, d;
+   begin scalar y, yy, f, v, sub, xargl, nan, anunan;
       if !*rlverbose then
 	 ioto_tprin2t {"++++ Determining standard real numbers for the answers ",
 	    for each y in an collect car y, "..."};
