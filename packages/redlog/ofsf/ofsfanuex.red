@@ -521,7 +521,7 @@ asserted procedure aex_bind(ae: Aex, x: Kernel, a: Anu): Aex;
       r := anu_ratp a;
       if r then <<  % [a] is rational and equals [r]
       	 oo := updkorder x;
-	 res := aex_subrat(aex_reorder ae, x, r);
+	 res := aex_subrat(aex_reorderex ae, x, r);
 	 setkorder oo;
       	 return res
       >>;
@@ -539,10 +539,24 @@ asserted procedure aex_unbind(ae: Aex, x: Kernel): Aex;
    % Delete assignment to [x].
    aex_mk(aex_ex ae, ctx_remove(aex_ctx ae, x));
 
-asserted procedure aex_reorder(ae: Aex): Aex;
+asserted procedure aex_reorderex(ae: Aex): Aex;
+   % Reorder the expression [aex_ex ae] of [aex] w.r.t. current
+   % [kord!*].
    begin scalar rp;
       rp := aex_ex ae;
       return aex_mk(reorder numr rp ./ denr rp, ctx_fromial ctx_ial aex_ctx ae)
+   end;
+
+asserted procedure aex_reorder(ae: Aex): Aex;
+   % Reorder [aex] (both its expression and context) w.r.t. current
+   % [kord!*].
+   begin scalar rp, res;
+      rp := aex_ex ae;
+      rp := reorder numr rp ./ denr rp;
+      res := aex_fromrp rp;
+      for each pr in ctx_ial aex_ctx ae do
+	 res := aex_bind(res, car pr, anu_reorder cdr pr);
+      return res
    end;
 
 asserted procedure aex_print(ae: Aex): Any;
@@ -1728,6 +1742,10 @@ asserted procedure anu_rename(a: Anu, xnew: Kernel): Anu;
       >>;
       return anu_mk(aex_mk(rpnew, ctx_fromial ialnew), anu_iv a)
    end;
+
+asserted procedure anu_reorder(a: Anu): Anu;
+   % Reorder [a] w.r.t. current [kord!*].
+   anu_mk(aex_reorder anu_dp a, anu_iv a);
 
 asserted procedure anu_check(a: Anu): Boolean;
    % Algebraic number check.
