@@ -246,7 +246,7 @@ procedure smt_token!-number(x);
    end;
 
 procedure smt_liter(x);
-  liter x or x memq '(!~ !! !@ !$ !% !^ !& !* !_ !- !+ != !< !> !. !? !/);
+  liter x or x memq '(!~ !! !@ !$ !% !^ !& !* !_ !- !+ != !< !> !. !? !/ !:);
 
 procedure smt_token();
    % This provides a hook for a faster TOKEN.

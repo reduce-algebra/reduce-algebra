@@ -1702,24 +1702,24 @@ procedure ofsfic!*ofsf_exploitKnowl(knowl);
    end;
 
 procedure ofsfic!*ofsf_qemkans(an, svf);
-   begin scalar anual, res, w;
-      integer time, gctime, s;
+   begin scalar anual, w;
+      integer time, gctime;
       if !*rlverbose then <<
 	 time := time();
 	 gctime := gctime()
       >>;
       anual := ofsfic_qemkstdans an;
-      for each pr in anual do
-      	 ioto_tprin2t {car pr, " = ", anu_evalf cdr pr};
-      ioto_tprin2t {"MODEL IN FORM OF (POSSIBLY NEGATED) EQUATIONS:"};
-      for each al on anual do <<
-	 w := car al;
-	 for each pr in cdr al do
-	    if eqn(anu_compare(cdr w, cdr pr), 0) then
-	       ioto_tprin2t {car w, " = ", car pr}
-	    else
-	       ioto_tprin2t {car w, " <> ", car pr}
-      >>;
+%%       for each pr in anual do
+%%       	 ioto_tprin2t {car pr, " = ", anu_evalf cdr pr};
+%%       ioto_tprin2t {"MODEL IN FORM OF (POSSIBLY NEGATED) EQUATIONS:"};
+%%       for each al on anual do <<
+%% 	 w := car al;
+%% 	 for each pr in cdr al do
+%% 	    if eqn(anu_compare(cdr w, cdr pr), 0) then
+%% 	       ioto_tprin2t {car w, " = ", car pr}
+%% 	    else
+%% 	       ioto_tprin2t {car w, " <> ", car pr}
+%%       >>;
       % ioto_tprin2t {anual};
       if !*rlverbose then <<
 	 ioto_tprin2 {"++++ Time for answer processing: ", time() - time, " ms"};
@@ -1727,7 +1727,7 @@ procedure ofsfic!*ofsf_qemkans(an, svf);
 	 if gctime > 0 then
 	    ioto_prin2t {" plus GC time: ", gctime, " ms"}
       >>;
-      return res
+      return anual
    end;
 
 procedure ofsfic_qemkstdans(an);

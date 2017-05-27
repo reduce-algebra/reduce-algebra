@@ -44,10 +44,15 @@ fluid '(smt_assertionl!*);
 fluid '(smt_oassertionl!*);
 fluid '(smt_model!*);
 fluid '(smt_unsatcore!*);
+fluid '(smt_options!*);
 fluid '(!*smtsplain);
 
 switch smtslog;
 switch smtsilent;
+
+smt_options!* := '((!:model!-values . nil));
+
+put('!:model!-values, 'smt_admissible!-values, '("float" "anu" "hidden"));
 
 operator smt;
 
@@ -67,10 +72,15 @@ procedure smt_mainloop();
    begin scalar oc;
       oc := rl_set '(ofsf);
       on1 'rlqeinfcore;
+      smt_initOptions();
       errorset({'smt_mainloop1}, t, !*backtrace);
       off1 'rlqeinfcore;
       rl_set oc
    end;
+
+procedure smt_initOptions();
+   for each pr in smt_options!* do
+      cdr pr := car get(car pr, 'smt_admissible!-values);
 
 procedure smt_mainloop1();
    begin scalar raise, !*lower, form, w, pchar; integer pno;
@@ -120,6 +130,10 @@ procedure smt_processForm(form);
       smt_processReduceEval cadr form
    else if eqcar(form, 'reduce!-dump!-assertions) then
       smt_processReduceDumpAssertions cadr form
+   else if eqcar(form, 'set!-option) then
+      smt_processSetOption(cadr form, caddr form)
+   else if eqcar(form, 'get!-option) then
+      smt_processGetOption cadr form
    else if eqcar(form, 'quit) then
       quit
    else if eqcar(form, 'help) then
@@ -141,14 +155,21 @@ procedure smt_processHelp();
       ioto_tprin2t "(assert <form>)           add assertions";
       ioto_tprin2t "(print-assertions)        print existing assertions";
       ioto_tprin2t "(check-sat)               return sat, unsat, or unknown";
-      ioto_tprin2t "(get-model)               get model after sat (deleted with next assert)";
-      ioto_tprin2t "(get-unsat-core)          get minimal unsat core after unsat (deleted with next assert)";
+      ioto_tprin2t "(get-model)               get model after sat";
+      ioto_tprin2t "(get-unsat-core)          get minimal unsat core after unsat";
       ioto_tprin2t "(reset)                   clear all assertions";
       ioto_tprin2t "(read <string>)           read an SMT-LIB2 file";
+      ioto_tprin2t "(set-option <opt> <val>)  set an option (see below)";
+      ioto_tprin2t "(get-option <opt>)        get current option value";
       ioto_tprin2t "(reduce-dump-assertions>) print existing assertions as Reduce input";
       ioto_tprin2t "(reduce-eval <form>)      evaluate <form> in Reduce Standard Lisp";
       ioto_tprin2t "(help)                    this help";
-      ioto_tprin2t "(exit)                    leave the SMT-LIB REPL and return to Reduce"
+      ioto_tprin2t "(exit)                    leave the SMT-LIB REPL and return to Reduce";
+      terpri();
+      ioto_tprin2t "(set-option :model-values <string>)";
+      ioto_tprin2t "   ""float""                float approximation to 1/100";
+      ioto_tprin2t "   ""anu""                  the exact algebraic number";
+      ioto_tprin2t "   ""hidden""               print the string ""hidden"" (saves time)"
    >>;
   
 procedure smt_processAssert(constraint);
@@ -229,14 +250,25 @@ procedure smt_processGetModel();
       for each v in varl do
 	 model := {'equal, v, v} . model;
       for each e in model do <<
-	 w := assoc(cdr e, mal);
+	 w := smt_anuassoc(cdr e, mal);
 	 if w then
 	    cdr w := car e . cdr w
 	 else
 	    mal := (cdr e . {car e}) . mal;
       >>;
-      smt_prin2t for each pr in mal collect {cdr pr, smt_rl2smtAns car pr}
+      %      smt_prin2t for each pr in mal collect {cdr pr, smt_rl2smtAns car pr}
+      w := smt_testOption '!:model!-values;
+      smt_prin2t for each pr in mal collect
+ 	 {cdr pr, if w = "hidden" then 'hidden else if w = "anu" then car pr else anu_evalf car pr}
    end;
+
+procedure smt_anuassoc(anu, al);
+   if null al then
+      nil
+   else if eqn(anu_compare(anu, caar al), 0) then
+      car al
+   else
+      smt_anuassoc(anu, cdr al);
 
 procedure smt_rl2smtAns(smtform);
    if atom smtform then
@@ -310,6 +342,24 @@ procedure smt_processReduceDumpAssertions(phi);
       smt_prin2t ""
    >>;
 
+procedure smt_processSetOption(option, value);
+   begin scalar w;
+      w := atsoc(option, smt_options!*);
+      if not w then
+	 return smt_error();
+      if not (value member get(option, 'smt_admissible!-values)) then
+	 return smt_error();
+      cdr w := value
+   end;
+
+procedure smt_processGetOption(option);
+   begin scalar w;
+      w := atsoc(option, smt_options!*);
+      if not w then
+	 return smt_error();
+      smt_print cdr w
+   end;
+
 procedure smt_processSetLogic(id);
    if id eq '!Q!F_!N!R!A then <<
       rl_set '(ofsf);
@@ -319,6 +369,18 @@ procedure smt_processSetLogic(id);
       smt_prin2t ""
    >> else
       smt_error();
+
+procedure smt_print(item);
+   if !*smtsplain then
+      (if item neq "" then print if item then item else "()")
+   else <<
+      lr_result();
+      if item neq "" then prin if item then item else "()";
+      lr_statcounter();
+      prin2 0;
+      lr_mode();
+      prin2 2
+   >>;
 
 procedure smt_prin2t(item);
    if !*smtsplain then
@@ -352,6 +414,14 @@ procedure smt_error();
       lr_mode();
       prin2 2
    >>;
+
+procedure smt_testOption(option);
+   begin scalar w;
+      w := atsoc(option, smt_options!*);
+      if not w then
+	 rederr {"smt_testOption:", option, "unkown"};
+      return cdr w
+   end;
 
 endmodule;
 

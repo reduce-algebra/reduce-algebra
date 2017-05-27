@@ -837,8 +837,7 @@ smt();
 (exit)
 
 
-% 67-99 in one session, all "unknown". "unknown" here means "sat obtained via
-% fallback cad" so that we cannot provide a model yet.
+% 67-99 in one session, all sat, all using fallback cad   
 smt();
 (set-logic QF_NRA)
 
@@ -849,6 +848,7 @@ smt();
 (assert (not (<= (/ 31415927 10000000) v18)))
 (assert (not (<= v5 v29)))
 (check-sat)
+(get-model)
 
 ; 68.red
 (reset)
@@ -858,6 +858,7 @@ smt();
 (assert (not (<= v5 0)))
 (assert (not (<= v17 0)))
 (check-sat)
+(get-model)
 
 ; 69.red
 (reset)
@@ -870,6 +871,7 @@ smt();
 (assert (not (<= (+ (- (/ 1 10000000)) (* (/ 1 2) v47)) v12)))
 (assert (= (* v5 v5) 3))
 (check-sat)
+(get-model)
 
 ; 70.red
 (reset)
@@ -880,6 +882,7 @@ smt();
 (assert (<= v5 75))
 (assert (<= 0 v5))
 (check-sat)
+(get-model)
 
 ; 71.red
 (reset)
@@ -895,6 +898,7 @@ smt();
 (assert (not (<= v8 1)))
 (assert (not (<= v5 1)))
 (check-sat)
+(get-model)
 
 ; 72.red
 (reset)
@@ -906,6 +910,7 @@ smt();
 (assert (not (<= v9 (/ 1 10))))
 (assert (not (<= v14 (/ 1 10))))
 (check-sat)
+(get-model)
 
 ; 73.red
 (reset)
@@ -914,6 +919,7 @@ smt();
 (assert (not (<= v40 (/ 15707963 5000000))))
 (assert (not (<= (/ 31415927 10000000) v40)))
 (check-sat)
+(get-model)
 
 ; 74.red
 (reset)
@@ -924,6 +930,7 @@ smt();
 (assert (not (<= (/ 31415927 10000000) v23)))
 (assert (not (<= v23 (/ 15707963 5000000))))
 (check-sat)
+(get-model)
 
 ; 75.red
 (reset)
@@ -937,6 +944,7 @@ smt();
 (assert (not (<= (/ 31415927 10000000) v128)))
 (assert (not (<= v5 v16)))
 (check-sat)
+(get-model)
 
 ; 76.red
 (reset)
@@ -950,6 +958,7 @@ smt();
 (assert (<= 0 v5))
 (assert (not (<= v10 v5)))
 (check-sat)
+(get-model)
 
 ; 77.red
 (reset)
@@ -957,6 +966,7 @@ smt();
 (assert (not (<= (* v5 (+ (/ 5472 125) (* v5 (+ (/ 6498 15625) (* v5 (+ (/ 20577 7812500) (* v5 (+ (/ 2736741 250000000000) (* v5 (+ (/ 7428297 250000000000000) (* (/ 47045881 1000000000000000000) v5))))))))))) (- 2304))))
 (assert (not (<= v79 (* (/ 1770 689) v80))))
 (check-sat)
+(get-model)
 
 ; 78.red
 (reset)
@@ -968,6 +978,7 @@ smt();
 (assert (not (<= 0 v5)))
 (assert (<= v5 0))
 (check-sat)
+(get-model)
 
 ; 79.red
 (reset)
@@ -979,6 +990,7 @@ smt();
 (assert (<= (/ 1 10) v5))
 (assert (not (<= v125 v5)))
 (check-sat)
+(get-model)
 
 ; 80.red
 (reset)
@@ -995,6 +1007,7 @@ smt();
 (assert (not (<= v8 1)))
 (assert (not (<= v5 1)))
 (check-sat)
+(get-model)
 
 ; 81.red
 (reset)
@@ -1006,6 +1019,7 @@ smt();
 (assert (not (<= 1 v18)))
 (assert (not (<= v18 v5)))
 (check-sat)
+(get-model)
 
 ; 82.red
 (reset)
@@ -1017,6 +1031,7 @@ smt();
 (assert (not (<= 1 v13)))
 (assert (not (<= v13 v5)))
 (check-sat)
+(get-model)
 
 ; 83.red
 (reset)
@@ -1028,6 +1043,7 @@ smt();
 (assert (not (<= 1 v15)))
 (assert (not (<= v15 v5)))
 (check-sat)
+(get-model)
 
 ; 84.red
 (reset)
@@ -1042,6 +1058,7 @@ smt();
 (assert (not (<= v5 (* (/ 1 2000) v6))))
 (assert (not (<= (* v5 (* v5 (* v5 (* (/ 1 6) v6)))) (* v6 (* (/ 1 2000) v6)))))
 (check-sat)
+(get-model)
 
 ; 85.red
 (reset)
@@ -1057,6 +1074,7 @@ smt();
 (assert (<= 0 v26))
 (assert (not (<= v5 v26)))
 (check-sat)
+(get-model)
 
 ; 86.red
 (reset)
@@ -1069,6 +1087,7 @@ smt();
 (assert (not (<= v28 0)))
 (assert (not (<= 10 (+ (- 1) (* v18 (* v18 v18))))))
 (check-sat)
+(get-model)
 
 ; 87.red
 (reset)
@@ -1080,6 +1099,7 @@ smt();
 (assert (not (<= (/ 31415927 10000000) v10)))
 (assert (<= 0 v5))
 (check-sat)
+(get-model)
 
 ; 88.red
 (reset)
@@ -1092,6 +1112,7 @@ smt();
 (assert (not (<= v28 0)))
 (assert (not (<= 5 (+ (- 1) (* v5 v5)))))
 (check-sat)
+(get-model)
 
 ; 89.red
 (reset)
@@ -1104,6 +1125,7 @@ smt();
 (assert (not (<= (+ (- (/ 1 10000000)) (* (/ 1 2) v87)) v20)))
 (assert (= 3 (* v5 v5)))
 (check-sat)
+(get-model)
 
 ; 90.red
 (reset)
@@ -1117,6 +1139,7 @@ smt();
 (assert (not (<= (/ 31415927 10000000) v126)))
 (assert (not (<= v19 v5)))
 (check-sat)
+(get-model)
 
 ; 91.red
 (reset)
@@ -1129,6 +1152,7 @@ smt();
 (assert (not (<= (/ 11 10) v22)))
 (assert (not (<= (/ 11 10) v15)))
 (check-sat)
+(get-model)
 
 ; 92.red
 (reset)
@@ -1137,6 +1161,7 @@ smt();
 (assert (not (<= (/ 31415927 10000000) v32)))
 (assert (not (<= v32 (/ 15707963 5000000))))
 (check-sat)
+(get-model)
 
 ; 93.red
 (reset)
@@ -1147,6 +1172,7 @@ smt();
 (assert (not (<= v53 (/ 15707963 5000000))))
 (assert (not (<= (+ (- (/ 1 10000000)) (* (/ 1 2) v53)) v5)))
 (check-sat)
+(get-model)
 
 ; 94.red
 (reset)
@@ -1158,6 +1184,7 @@ smt();
 (assert (<= 0 v37))
 (assert (= (+ 1 (* v37 (* (- 1) v37))) (* (+ 1 (* v7 (* (- 1) v7))) (+ 1 (* v7 (* (- 1) v7))))))
 (check-sat)
+(get-model)
 
 ; 95.red
 (reset)
@@ -1169,6 +1196,7 @@ smt();
 (assert (not (<= 2 v9)))
 (assert (not (<= v9 v5)))
 (check-sat)
+;;(get-model)
 
 ; 96.red
 (reset)
@@ -1180,6 +1208,7 @@ smt();
 (assert (<= v8 120))
 (assert (<= 100 v8))
 (check-sat)
+(get-model)
 
 ; 97.red
 (reset)
@@ -1194,6 +1223,7 @@ smt();
 (assert (<= 0 v5))
 (assert (not (<= v25 v5)))
 (check-sat)
+(get-model)
 
 ; 98.red
 (reset)
@@ -1203,6 +1233,7 @@ smt();
 (assert (not (<= (/ 31415927 10000000) v115)))
 (assert (not (<= v115 (/ 15707963 5000000))))
 (check-sat)
+(get-model)
 
 ; 99.red
 (reset)
@@ -1219,6 +1250,7 @@ smt();
 (assert (not (<= v8 1)))
 (assert (not (<= v5 1)))
 (check-sat)
+(get-model)
 (exit)
 
 end;
