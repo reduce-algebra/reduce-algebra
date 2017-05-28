@@ -52,7 +52,7 @@ switch smtsilent;
 
 smt_options!* := '((!:model!-values . nil));
 
-put('!:model!-values, 'smt_admissible!-values, '("float" "anu" "hidden"));
+put('!:model!-values, 'smt_admissible!-values, '("interval" "float" "anu" "hidden"));
 
 operator smt;
 
@@ -167,11 +167,12 @@ procedure smt_processHelp();
       ioto_tprin2t "(exit)                    leave the SMT-LIB REPL and return to Reduce";
       terpri();
       ioto_tprin2t "(set-option :model-values <string>)";
-      ioto_tprin2t "   ""float""                float approximation to 1/100";
-      ioto_tprin2t "   ""anu""                  the exact algebraic number";
-      ioto_tprin2t "   ""hidden""               print the string ""hidden"" (saves time)"
+      ioto_tprin2t "   ""interval""             isolating interval of the real algebraic number";
+      ioto_tprin2t "   ""float""                float approximation to 1/100 (can be slow)";
+      ioto_tprin2t "   ""anu""                  the exact algebraic number (conatains dotted pairs)";
+      ioto_tprin2t "   ""hidden""               hide information; use () for syntactical correctness"
    >>;
-  
+
 procedure smt_processAssert(constraint);
    <<
       smt_assertionl!* := nconc(smt_assertionl!*, {cl_smt2ReadForm constraint});
@@ -257,10 +258,21 @@ procedure smt_processGetModel();
 	    mal := (cdr e . {car e}) . mal;
       >>;
       %      smt_prin2t for each pr in mal collect {cdr pr, smt_rl2smtAns car pr}
-      w := smt_testOption '!:model!-values;
+      w := smt_getOption '!:model!-values;
       smt_prin2t for each pr in mal collect
- 	 {cdr pr, if w = "hidden" then 'hidden else if w = "anu" then car pr else anu_evalf car pr}
+ 	 {cdr pr,
+	    if w = "interval" then
+	       {'interval, smt_rat2smt2 iv_lb anu_iv car pr, smt_rat2smt2 iv_rb anu_iv car pr}
+	    else if w = "hidden" then
+ 	       "()"
+ 	    else if w = "anu" then
+	       car pr
+ 	    else
+ 	       anu_evalf car pr}
    end;
+
+procedure smt_rat2smt2(q);
+   {'!/, rat_numrn q, rat_denr q};
 
 procedure smt_anuassoc(anu, al);
    if null al then
@@ -415,11 +427,11 @@ procedure smt_error();
       prin2 2
    >>;
 
-procedure smt_testOption(option);
+procedure smt_getOption(option);
    begin scalar w;
       w := atsoc(option, smt_options!*);
       if not w then
-	 rederr {"smt_testOption:", option, "unkown"};
+	 rederr {"smt_getOption:", option, "unkown"};
       return cdr w
    end;
 

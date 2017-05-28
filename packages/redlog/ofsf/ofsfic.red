@@ -431,9 +431,9 @@ asserted procedure ofsfic!*cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
 	 smt_unsatcore!* := ic;
 	 rlqeicdata!* := ic_init f;
 	 if !*rlverbose then <<
-	    ioto_tprin2t {"infcore: ", ic};
-	    ioto_tprin2t {"infcore length: ", length ic};
-	    ioto_tprin2t {"input length: ", upbv ic_currentfvect rlqeicdata!* + 1}
+	    ioto_tprin2t {"+++ infcore: ", ic};
+	    ioto_tprin2t {"+++ infcore length: ", length ic};
+	    ioto_tprin2t {"+++ input length: ", upbv ic_currentfvect rlqeicdata!* + 1}
       	 >>;
 	 er := nil . '((false))
 	    %
@@ -444,10 +444,17 @@ asserted procedure ofsfic!*cl_qea(f: Formula, theo: Theory): ExtendedQeResult;
 	    % !*rlqeinfcore := nil;
 	    % ioto_tprin2t {"test: ", ofsfic!*cl_qea(newF, nil)}
       >> else
-	 if !*rlverbose then
-	    ioto_tprin2t {"model: ",
-	       for each pr in cdar cl_erEQR er collect ioto_smaprin {'equal, car pr, cdr pr}};
-      % </max>
+	 if !*rlverbose then <<
+	    ioto_tprin2 "+++ model: ";
+      	    for each rpr on cdar cl_erEQR er do <<
+	       ioto_prin2 {caar rpr, " = ", iv_tostring anu_iv cdar rpr};
+	       if cdr rpr then
+		  ioto_prin2 ", "
+	       else
+		  ioto_prin2t "}"
+	    >>
+	 >>;
+      % </maax>
       return cl_erEQR er
    end;
 

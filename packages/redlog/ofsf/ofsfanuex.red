@@ -106,12 +106,15 @@ asserted procedure rat_denr(q: Rational): Integer;
 
 asserted procedure rat_print(q: Rational): Any;
    % Rational number print.
-   <<
-      prin2 rat_numrn q;
-      prin2 "/";
-      prin2 rat_denr q;
-      nil
-   >>;
+   prin2t rat_tostring q;
+
+asserted procedure rat_tostring(q: Rational): String;
+   begin scalar sl;
+      push(lto_at2str rat_numrn q, sl);
+      push("/", sl);
+      push(lto_at2str rat_denr q, sl);
+      return lto_sconcat reversip sl
+   end;
 
 asserted procedure rat_fromnum(n: Integer): Rational;
    % Rational number from integer number.
@@ -227,14 +230,17 @@ asserted procedure iv_rb(iv: RatInterval): Rational;
 
 asserted procedure iv_print(iv: RatInterval): Any;
    % Print interval.
-   <<
-      prin2 "]";
-      rat_print iv_lb iv;
-      prin2 ",";
-      rat_print iv_rb iv;
-      prin2t "[";
-      nil
-   >>;
+   prin2t iv_tostring iv;
+
+asserted procedure iv_tostring(iv: RatInterval): String;
+   begin scalar sl;
+      push("]", sl);
+      push(rat_tostring iv_lb iv, sl);
+      push(", ", sl);
+      push(rat_tostring iv_rb iv, sl);
+      push("[", sl);
+      return lto_sconcat reversip sl
+   end;
 
 asserted procedure iv_neg(iv: RatInterval): RatInterval;
    % Returns $-[i]$, i.e., the interval mirrored at 0.
