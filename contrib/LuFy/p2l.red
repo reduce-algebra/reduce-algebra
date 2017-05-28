@@ -24,7 +24,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 %
 
-% $Id: p2l.red 3979 2017-03-26 14:36:41Z arthurcnorman $
+% $Id$
 
 
 % Part of the Pascal to Lisp conversion code. This file will read in
@@ -215,6 +215,7 @@ symbolic procedure tidyprocdecblock u;
     h := car u;
     b := cadr u;
     if not eqcar(h, 'prochead) then rederr "prochead expected";
+princ "### prochead: "; print h;
     n := cadr h;
     if not eqcar(n, 'procid) then rederr "procid expected";
     a := caddr h;
@@ -339,7 +340,7 @@ begin
   terpri();
   printc "% See README.lufy for a discussion of license issues";
   terpri();
-  printc "% $Id: $";
+  princ "% $"; printc "Id: $";
   terpri();
   seqprint tidy input_data;
   terpri();

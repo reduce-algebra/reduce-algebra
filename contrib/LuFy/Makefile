@@ -18,9 +18,34 @@ all:	lufy.red
 # Pascal.
 
 tex.p:	tex.web
+	rm -f tex.p
 	tangle tex.web
 
-# "p2l" is a Pascal to Lisp converter, and it has three components.
+# "Free Pascal" (https://www.freepascal.org/) comes with a utility "ptop"
+# that can prettyprint Pascal code, and the raw output from tangle is
+# in pretty despate need of prettyprinting. The path to ptop corresponds
+# to the default location the Free Pascal installer put it for me. The
+# sed script is to get rid of {nn:} and {:mm} comments that tangle leave in
+# its expanded code that may refer back to the literate documentation but
+# that otherwise get in my way.
+
+# I do not actually use tex.pas in my transformation pipeline here, but it is
+# really useful to have it around as a somewhat human readable version
+# of the Pascal code. I mess around with sed so that character literals '{'
+# and '}' are not discarded as comments, but that otherwise things within
+# braces get removed. I am not fully comfortable that I will cope with
+# all potential arrangements of braces here, but the output I generate
+# is merely for documentation so it it is "tidy enough" I may be content.
+
+tex.pas:	tex.p
+	sed -e "s/'{'/@@@1/g" -e "s/'}'/@@@2/g" tex.p | \
+		sed "s/{[^}]*}/ /g" | \
+		sed '/{/,/}/d' | \
+		sed -e "s/@@@1/'{'/g" -e "s/@@@2/'}'/g" > tex.tmp
+	/cygdrive/c/FPC/3.0.2/bin/i386-win32/ptop -l 72 tex.tmp tex.pas
+	rm tex.tmp
+
+# "p2l" is my Pascal to Lisp converter, and it has three components.
 # The first is flex lexer...
 
 plex.cpp:	p2l.l
@@ -51,22 +76,25 @@ p2l:	p2l.cpp p2l-generated.cpp p2l-generated.hpp plex.cpp
 	g++ p2l.cpp p2l-generated.cpp plex.cpp $$L -lfl -o p2l
 
 # Run p2l to convert tex.p.
+# lufy.raw is the parse tree for the Pascal code but in an crude form
+# that merely ties to capture the syntax. It will not be usable until I
+# have processed it somewhat more.
 
-lufy.tmp:	tex.p p2l
-	./p2l < tex.p > lufy.tmp
+lufy.raw:	tex.p p2l
+	./p2l < tex.p > lufy.raw
 
-# Run some rlisp code that reads in lufy.tmp and creates lufy.red
+# Run some rlisp code that reads in lufy.raw and creates lufy.red
 
 # There is a misery here about how to invoke Reduce. I look in turn for
 #     redcsl             (ie installed on your PATH)
 #     $reduce/bin/redcsl (if "$reduce" is your Reduce build tree)
-#     $O/bin/redcsl      (I use "$O" for the root of my build tree)
+#     $O/bin/redcsl      (I use "$O" for the root of my private build tree)
 #     reduce             (a fall-back)
 #
 # Eventually I should work to make the code support either PSL or CSL,
 # but for now it will be being developed as a CSL-only system.
 
-lufy.red:	lufy.tmp p2l.red
+lufy.red:	lufy.raw p2l.red
 	if which redcsl; then R="redcsl -w"; \
 	elif test -x "$$reduce/bin/redcsl"; then R="$$reduce/bin/redcsl -w"; \
 	elif test -x "$$O/bin/redcsl"; then R="$$O/bin/redcsl -w"; \
@@ -78,10 +106,10 @@ lufy.red:	lufy.tmp p2l.red
 .PHONY:	clean
 clean:
 	rm -f *.o *.log *~ *.bak *.old\
-		tex.p tex.pool *.tmp \
+		tex.p tex.pool *.tmp lufy.raw tex.pas \
 		p2l-generated.hpp p2l-generated.cpp plex.cpp \
 		p2l p2l.exe \
-	lufy.red
+		lufy.red
 		
 
 # end of Makefile
