@@ -47,7 +47,12 @@ that the smallest table they were able to create had 224 entries, but that
 one had larger witness values stored in it and so the table had to be one
 made of 32-bit integers rather than 16 bit ones.
 
-At the time of writing this note I have found a table of size 218 16-bit
+I now use a bitmap to note all primes up to 4086 using simple table lookup.
+This makes these tiny cases especially fast. It hardly relieves pressure on
+the Miller Rabin hash tables at all, but I think I view ths 256 bytes of
+bitmap a reasonable scheme.
+
+At the time of writing this note I have found a table of size 217 16-bit
 integers, which is more compact than the ones reported by F&J. In practical
 terms this is not a significant improvement, but I still like it!
 

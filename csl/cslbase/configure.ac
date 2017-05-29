@@ -1244,12 +1244,11 @@ AC_CHECK_TYPES([complex double], [], [],
 # most common situations and hence one where using the hardware support
 # for multiplication and division here can be good.
 #
-AC_CHECK_TYPES([__int128, unsigned __int128])
+AC_CHECK_TYPES([__int128,unsigned __int128])
 
-# I would view the following as better names for 128-bit integer types and
-# will map __int128 etc onto them. But if they exist already I will expect
-# them to do what they should.
-AC_CHECK_TYPES([int128_t, uint128_t])
+# I would view the following as a better names for an 128-bit integer type and
+# will map "unsigned __int128" etc onto it when relevant.
+AC_CHECK_TYPES([int128_t,uint128_t])
 
 if test "x$have_intptr" = "xno"
 then

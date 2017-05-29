@@ -37,38 +37,8 @@
 
 // $Id$
 
-#include <errno.h>
-
-#ifdef WIN32
-#include <winsock.h>
-#else
-#define unix_posix 1        // Assume all non-windows systems are Unix!
 //
-// There may well be terrible delicacies re different variants on Unix. I
-// have (initially) tested this using Solaris and Linux. As I find
-// trouble in other cases I guess I can make the autoconf checks more and
-// more elaborate...
-//
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <sys/time.h>
-#include <fcntl.h>
-#define WSAGetLastError()   errno  // retrieve error code
-#define WSACleanup()               // tidy up at end of day
-#define closesocket(a)      close(a)
-#define SOCKET              int
-#define SOCKET_ERROR        (-1)
-#ifndef INADDR_NONE
-#  define INADDR_NONE       0xffffffff
-#endif
-#endif
-
-//
-// Now some declarations for my own variables and functions.
+// Some declarations for my own variables and functions.
 //
 
 extern const char *WSAErrName(int i);

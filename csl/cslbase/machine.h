@@ -48,6 +48,35 @@
 #ifndef header_machine_h
 #define header_machine_h 1
 
+#ifndef DEBUG
+#define NDEBUG 1
+#endif
+
+//
+// If the header "complex.h" is available, the type "complex double" is
+// accepted and the function "csqrt" is present I will assume I can use the
+// standard C99 complex number support facilities. Aha SOME C++ systems
+// support this, but others use a template class, and I will adapt my code
+// to use that some time.
+//
+
+#if defined HAVE_COMPLEX_H && \
+    defined HAVE_COMPLEX_DOUBLE && \
+    defined HAVE_CSQRT
+#define HAVE_COMPLEX 1
+#endif
+
+//
+// I will check a number of things before I try to use sigaltstack()
+//
+#if defined HAVE_SIGNAL_H && defined HAVE_SETJMP_H
+#if defined HAVE_SIGSETJMP && defined HAVE_SIGLONGJMP
+#if defined HAVE_SIGACTION && defined HAVE_SIGALTSTACK
+#define USE_SIGALTSTACK 1
+#endif
+#endif
+#endif
+
 // WIth really old versions of C++ you may not be able to write
 // large literal integers without some decoration. So e.g.
 // 0x7fffffffffffffff might count as an overflow. In those old days you
@@ -77,6 +106,72 @@
 
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS 1
+#endif
+
+// At some stage I might wish to move to "#include <cstdio>" etc however
+// that would put things in the std: namespace, and the killer for me is
+// that with g++ I can then not find putc_unlocked and getc_unlocked.
+
+#ifdef WIN32
+// The aim here is to avoid use of the Microsoft versions of printf and
+// friends and (hence) allow g++ to parse and check format strings reliably.
+#define __USE_MINGW_ANSI_STDIO 1
+#endif
+
+#ifdef WIN32
+
+#include <winsock.h>
+#include <semaphore.h>
+#include <windows.h>
+
+#else // WIN32
+
+#define unix_posix 1        // Assume all non-windows systems are Unix!
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <sys/time.h>
+#include <fcntl.h>
+#define WSAGetLastError()   errno  // retrieve error code
+#define WSACleanup()               // tidy up at end of day
+#define closesocket(a)      close(a)
+#define SOCKET              int
+#define SOCKET_ERROR        (-1)
+#ifndef INADDR_NONE
+#  define INADDR_NONE       0xffffffff
+#endif
+
+#ifdef HAVE_LIBPTHREAD
+#include <semaphore.h>
+#include <pthread.h>
+#endif
+
+#endif //WIN32
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <math.h>
+#include <float.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <limits.h>
+#include <string.h>
+#include <ctype.h>
+#include <wctype.h>
+#include <time.h>
+#include <stdarg.h>
+#include <setjmp.h>
+#include <signal.h>
+#include <exception>
+#include <errno.h>
+#include <assert.h>
+
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
 #endif
 
 extern "C"
@@ -122,9 +217,6 @@ extern "C"
 #  endif
 #endif
 
-#include <stdint.h>
-#include <inttypes.h>
-
 // C++ does not guarantee that intptr_t is provided, so I patch around
 // that if necessary.
 
@@ -162,19 +254,80 @@ typedef uint64_t uintptr_t;
 #define INTPTR_MIN (-1-INTPTR_MAX)
 #endif
 
-// Tidy up re possible 128-bit arithmetic support.
+// The C and C++ refuse to define the behaviour of right shifts
+// on signed types. The underlying reason may relate to the possibility that
+// numbers might be stored in sign-and-magnitude notation or some other
+// scheme other than the 2s complement that is in practice universal these
+// days. I provide support here that will guarantee to do right shifts
+// in arithmetic mode - and hope that modern compilers will map them
+// onto the single machine instruction that is generally what I want.
 
-#if defined HAVE___INT128 && !defined HAVE_INT128_T
-typedef __int128 int128_t;
-#define HAVE_INT128_T
-#endif
+// Shifts by more than the word-length are invalid, and I should not perform
+// any, but the code may indicate some guarded by SIXTY_FOUR_BIT, so
+// I will fudge things here! In MANY cases the extra tests here will be
+// ones where the compiler can remove them because the shift amount is
+// manifest. If that is not the case they are still cheap and ensure that
+// my code behaves in a defined manner (even if that could be wrong!).
 
-#if defined HAVE_UNSIGNED___INT128 && !defined HAVE_UINT128_T
+#define MAXSHIFT(n, a)   ((n) >= (int)(8*sizeof(a)) || (n) < 0 ? 0 : (n))
+
+#ifdef SIGNED_SHIFTS_ARE_ARITHMETIC
+
+// In this case I can make it simpler for the compiler! Something that is
+// "implementation defined" is much safer to use than anything that is
+// "undefined" in that the optimiser has to preserve whetever semantics the
+// implementation settled on!
+
+#define ASR(a, n) ((a) >> MAXSHIFT((n), a))
+
+#else // SIGNED_SHIFTS_ARE_ARITHMETIC
+
+// I use <type_traits> so ensure that I have a signed type for when I do the
+// division. It is a header file that was introduced in C++-11, but g++
+// supports it with -std-gnu++0x, and I have checked and it seems to
+// exists as far back as Fedora 9 (which is, I think, now as old as I am
+// interested in going).
+
+#include <type_traits>
+
+template <typename T>
+static inline T ASR(T a, int n)
+{   typedef typename std::make_signed<T>::type ST;
+    return ((ST)(a&~(((T)1<<MAXSHIFT(n,T))-1)))/((ST)1<<MAXSHIFT(n,T));
+}
+
+#endif // SIGNED_SHIFTS_ARE_ARITHMETIC
+
+// The behaviour of left shifts on negative (signed) values seems to be
+// labelled as undefined in C/C++, so any time I am going to do a left shift
+// I need to work in an unsigned type. Rather than messing with templates
+// again I will have versions for each possible width that I might use.
+
+#define ASL32(a,n)  ((int32_t)((uint32_t)(a)<<MAXSHIFT((n),uint32_t)))
+#define ASLptr(a,n) ((intptr_t)((uintptr_t)(a)<<MAXSHIFT((n),uintptr_t)))
+#define ASL64(a,n)  ((int64_t)((uint64_t)(a)<<MAXSHIFT((n),uint64_t)))
+// The following is provided in int128_t.h not here
+// #define ASL128(a,n) ((int128_t)((uint128_t)(a)<<MAXSHIFT((n),uint128_t)))
+
+// Tidy up re possible 128-bit arithemetic support.
+
+#ifdef HAVE_UINT128_T
+#define HAVE_NATIVE_UINT128 1
+#elif defined HAVE_UNSIGNED___INT128
 typedef unsigned __int128 uint128_t;
-#define HAVE_UINT128_T
+#define HAVE_NATIVE_UINT128
+#else
+#include "uint128_t.h"  // For software emulation. Needs C++-11
 #endif
 
-
+#ifdef HAVE_INT128_T
+#define HAVE_NATIVE_INT128 1
+#elif defined HAVE___INT128
+typedef __int128 int128_t;
+#define HAVE_NATIVE_INT128
+#elif defined HAVE_UINT128_T || defined HAVE_UNSIGNED___INT128
+#error Seem to have unsigned 128-bit type but not a signed one!
+#endif
 
 // With luck that will have regularised the situation with regard to
 // integer types!

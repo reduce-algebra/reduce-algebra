@@ -36,6 +36,8 @@
 % This file defines functions and values used in the machine-translated
 % parts of Lufy.
 
+lisp;
+
 % A "memoryword" in the TeX source is a 32-bit word that can be
 % interpreted as an integer, as two half words, as 4 bytes or as a
 % (single precision) floating point number. To cope with type punning
@@ -65,7 +67,7 @@ symbolic procedure set!-rh(w, n);   % right halfword
     lor(land(w, 0xffff0000), land(n, 0xffff));
 
 symbolic procedure set!-lh(w, n);   % left halfword
-    lor(land(w, 0xffff), lshift(land(n, 0xffff), 16);
+    lor(land(w, 0xffff), lshift(land(n, 0xffff), 16));
 
 symbolic procedure set!-b0(w, n);   % rightmost byte
     lor(land(w, 0xffffff00), land(n, 0xff));
@@ -84,7 +86,7 @@ symbolic procedure set!-b3(w, n);   % leftmost byte
 symbolic procedure get!-fp n;
   begin
     scalar s, x, m;
-% Inspectr the sign bit.
+% Inspect the sign bit.
     if land(n, 0x80000000) neq 0 then <<
        s := t; % negative
        n = land(n, 0x7fffffff) >>;
@@ -93,23 +95,23 @@ symbolic procedure get!-fp n;
     x := land(lshift(n, -23), 0xff);
     m := land(n, 0x007fffff);
     if x = 0 then return 0.0;  % sub-normalised values go to zero here
-    m = lor(m, 0x00800000);    % restore hidden bit
+    m := lor(m, 0x00800000);    % restore hidden bit
 % On the next line I float an integer representation of the mantissa,
-% and the power of 2 that I need to mulriply this by is 0x7f-23, which
-% is 104. because Lisp will be working using doubles not floats I will not
+% and the power of 2 that I need to multiply this by is 0x7f+23, which
+% is 150. because Lisp will be working using doubles not floats I will not
 % get premature exponent overflow or underflow in the use of expt here.
-    n := float m*expt(2.0, x-104); 
+    n := float m*expt(2.0, x-150); 
 % Now attach the sign.
     if s then return -n
     else return n
 end;
 
-symbolic procedure put!-fp d;
+symbolic procedure set!-fp d;
   begin
-    scalar s, x, m, w;
+    scalar s, x, m;
 % Deal with zeros, NaNs and infinities.
-    if x = 0.0 or x neq x then return 0
-    else if 1.0/x = 0.0 then <<
+    if d = 0.0 or d neq d then return 0
+    else if 1.0/d = 0.0 then <<
       if d < 0.0 then return 0xff800000
       else return 0x7ff800000 >>;
 % Separate off the sign.
@@ -133,7 +135,7 @@ symbolic procedure put!-fp d;
 % "round to even" policy., but if the input number really represented
 % a 32-bit float there ought not to be any rounding needed at all, so this
 % does not matter much.
-    m := fix(8388608.8*d + 0.5) - 83886608;
+    m := fix(8388608.0*d + 0.5) - 8388608;
 % Offset the exponent.
     x := x + 0x7f;
 % Deal with exponent overflow and underflow.
@@ -141,9 +143,12 @@ symbolic procedure put!-fp d;
       if s neq 0 then return 0xff800000
       else return 0x7ff800000 >>;
 % Sub-normal numbers are all flushed to zero.
-    if x <= 0 return 0;
+    if x <= 0 then return 0
 % Pack and return.
-    return lor(s, lor(lshift(x, 23), m))
+    else return lor(s, lor(lshift(x, 23), m))
   end;
 
+end;
+
 % End of lufylib.red
+

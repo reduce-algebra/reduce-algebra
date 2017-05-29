@@ -42,10 +42,6 @@
 #include "sockhdr.h"
 #endif
 
-#ifdef WIN32
-#include <windows.h>
-#endif
-
 //
 // At present CSL is single threaded - at least as regards file IO - and
 // using the unlocked versions of putc and getc can be a MAJOR saving.

@@ -230,18 +230,31 @@ static inline bool valid_as_fixnum(int64_t x)
 {   return int_of_fixnum(fixnum_of_int(x)) == x;
 }
 
-#ifdef HAVE_INT128_T
 static inline bool valid_as_fixnum(int128_t x)
-{   return int_of_fixnum(fixnum_of_int(x)) == x;
+{   return int_of_fixnum(fixnum_of_int(NARROW128(x))) == x;
 }
-#endif // HAVE_INT128_T
 
-// The foillowing has given me some pain wrt the overloading where gcc and
+// The following has given me some pain wrt the overloading where gcc and
 // clang disagree about validity. Until I have read the C++ standard carefully
-// enough I use this non-overloaded version in a few places.
+// enough I use this non-overloaded version in a few places. This issue is
+// that intptr_t is liable to be either similar to int32_t or similar to
+// int64_t. So if I try to provide overloads that accept all of int32_t,
+// intptr_t and int64_t there is scope for confusion between the 3 versions. 
 
 static inline bool intptr_valid_as_fixnum(intptr_t x)
 {   return int_of_fixnum(fixnum_of_int(x)) == x;
+}
+
+static inline bool valid_as_fixnum(uint32_t x)
+{   return x < (((uintptr_t)1) << (SIXTY_FOUR_BIT ? 60 : 28));
+}
+
+static inline bool valid_as_fixnum(uint64_t x)
+{   return x < (((uintptr_t)1) << (SIXTY_FOUR_BIT ? 60 : 28));
+}
+
+static inline bool uint128_valid_as_fixnum(uint128_t x)
+{   return x < (((uintptr_t)1) << (SIXTY_FOUR_BIT ? 60 : 28));
 }
 
 #define MOST_POSITIVE_FIXVAL (((intptr_t)1 << (8*sizeof(LispObject)-5)) - 1)
@@ -1079,67 +1092,6 @@ typedef union _Double_union
 
 #define SHOW_FNAME  ((exit_reason & UNWIND_FNAME) != 0)
 #define SHOW_ARGS   ((exit_reason & UNWIND_ARGS) != 0)
-
-// The C and C++ refuse to define the behaviour of right shifts
-// on signed types. The underlying reason may relate to the possibility that
-// numbers might be stored in sign-and-magnitude notation or some other
-// scheme other than the 2s complement that is in practice universal these
-// days. I provide support here that will guarantee to do right shifts
-// in arithmetic mode - and hope that modern compilers will map them
-// onto the single machine instruction that is generally what I want.
-
-// Shifts by more than the word-length are invalid, and I should not perform
-// any, but the code may indicate some guarded by SIXTY_FOUR_BIT, so
-// I will fudge things here! In MANY cases the extra tests here will be
-// ones where the compiler can remove them because the shift amount is
-// manifest. If that isnot the case they are still cheap and ensure that
-// my code behaves in a defined manner (even if that could be wrong!).
-
-#define MAXSHIFT(n, a)   ((n) >= (int)(8*sizeof(a)) || (n) < 0 ? 0 : (n))
-
-#ifdef SIGNED_SHIFTS_ARE_ARITHMETIC
-
-// In this case I can make it simpler for the compiler! Something that is
-// "implementation defined" is much safer to use than anything that is
-// "undefined" in that the optimiser has to preserve whetever semantics the
-// implementation settled on!
-
-#define ASR(a, n) ((a) >> MAXSHIFT((n), a))
-
-#else // SIGNED_SHIFTS_ARE_ARITHMETIC
-
-// I use <type_traits> so ensure that I have a signed type for when I do the
-// division. It is a header file that was introduced in C++-11, but g++
-// supports it with -std-gnu++0x, and I have checked and it seems to
-// exists as far back as Fedora 9 (which is, I think, now as old as I am
-// interested in going).
-
-// I will note that at the time of introducing this it is the first place
-// where I use significant C++ features and even more than that the first
-// place where I rely on C++11. And this will only ever happen on computers
-// where either native ">>" does not seem to be a signed shift when applied
-// to signed integers, or where I am cross compiling and so am not in a
-// position to verify that.
-
-#include <type_traits>
-
-template <typename T>
-static inline T ASR(T a, int n)
-{   typedef typename std::make_signed<T>::type ST;
-    return ((ST)(a&~(((T)1<<MAXSHIFT(n,T))-1)))/((ST)1<<MAXSHIFT(n,T));
-}
-
-#endif // SIGNED_SHIFTS_ARE_ARITHMETIC
-
-// The behaviour of left shifts on negative (signed) values seems to be
-// labelled as undefined in C/C++, so any time I am going to do a left shift
-// I need to work in an unsigned type. Rather than messing with templates
-// again I will have versions for each possible width that I might use.
-
-#define ASL32(a,n)  ((int32_t)((uint32_t)(a)<<MAXSHIFT((n),uint32_t)))
-#define ASLptr(a,n) ((intptr_t)((uintptr_t)(a)<<MAXSHIFT((n),uintptr_t)))
-#define ASL64(a,n)  ((int64_t)((uint64_t)(a)<<MAXSHIFT((n),uint64_t)))
-#define ASL128(a,n) ((int128_t)((uint128_t)(a)<<MAXSHIFT((n),uint128_t)))
 
 #endif // header_tags_h
 

@@ -104,114 +104,12 @@ static inline LispObject timesii(LispObject a, LispObject b)
 // If I am on a 32-bit system then fixnums are only 28 bits wide so using
 // int64_t multiplication can never overflow.
     if (!SIXTY_FOUR_BIT) return make_lisp_integer64(aa*bb);
-#ifdef HAVE_INT128_T
-// If I have an integer type with width 128 bits I will just use it straight
-// away, and expect that the resulting generated code will in effect contain
-// and special case tricks to cover small values that might be useful.
+// I am now arranging that there will ALWAYS appear to be a 128-bit
+// integer type int128_t. On some platforms this will be provided by the
+// C++ compiler, possibly with direct CPU assistance. In other cases it
+// will be implemented painfully in software in the files int128_t.h and
+// and int128_t.cpp.
     return make_lisp_integer128((int128_t)aa * (int128_t)bb);
-#else // HAVE_INT128_T
-//
-// The code here should never be activated on a 32-bit machine and never on
-// a 64-bit machine that supports int128_t, and that means that x86_64 does
-// not come through here. At the time of writing aarch64 (ie 64-bit ARM
-// uses this...
-//
-// Multiplication by 0 or by 1 is just possibly common enough to be worth
-// filtering out the following special cases.  Avoidance of the tedious
-// checks for overflow may make this useful even if Imultiply is very fast.
-//
-    if ((uint64_t)aa <= 1U)
-    {   if (aa == 0) return fixnum_of_int(0);
-        else return b;
-    }
-    else if ((uint64_t)bb <= 1U)
-    {   if (bb == 0) return fixnum_of_int(0);
-        else return a;
-    }
-// Here I am on a 64-bit machine... First I will see if the two inputs
-// would have fitted nicely in 32-bit words because if they would have then I
-// can just multiply them to get a 64-bit result.
-//===========================================================================
-// Oh BOTHER. The cast "(int32_t)aa" here is at best implementation defined.
-// I may even need to write it as (int32_t)(uint32_t)aa to reach even that
-// state! I think that it is likely that ALL the casts I have between signed
-// and unsigned values represent reliance on implementation defined behaviour,
-// or as I know it "the Spirit of C". But the reason I am writing this
-// comment now is that if a direct cast to a signed arithmetic type that
-// reduces width were to be undefined or if the "implementation definition"
-// was that it could behave in an arbitrary manner then the casts here
-// could be optimised out and the tests compiled as if tautologies. The g++
-// documentation explains that its implelmentation defined behaviour in C++
-// follows what gcc did in C, and the gcc documentation is explicit that
-// conversion to (and bitwise operations on) signed integer types just keep
-// the low bits and do not report exceptions or do anything that I would find
-// unexpected. So I feel a little bit safe. But note that in the past I have
-// been aware of CPUs (designed for embedded use) where arithmetic overflow
-// saturates or raises exceptions rather than wrapping modulo 2^N, so there
-// have been and potentiall still may be stabndards-conforming C++ compilers
-// that would cause this code to do very much not what I want. To be 100%
-// safe I believe I would probably need to eschew all use of signed integer
-// types. Wow!  
-//===========================================================================
-    if (aa == (int32_t)aa)
-    {   if (bb == (int32_t)bb) return make_lisp_integer64(aa*bb);
-        int32_t blo = (int32_t)bb & 0x7fffffff;
-        int32_t bhi = (int32_t)ASR(bb, 31);
-        int64_t lo = aa*blo;
-        int64_t hi = aa*bhi + ASR(lo, 31);
-        lo &= 0x7fffffff;
-// The value I have is now (hi,lo) where lo contains 31 bits. I can turn this
-// into a fixnum if hi is a 29-bit signed value.
-        if (signed29_in_64(hi)) // Result can be a fixnum
-            return fixnum_of_int(ASL64(hi, 31) | lo);
-// If hi would fit in a 31-bit integer I can use a 2-word bignum.
-        if (signed31_in_64(hi)) // Result can be a 2-word bignum
-            return make_two_word_bignum((int32_t)hi, (uint32_t)lo);
-        else return make_three_word_bignum((int32_t)ASR(hi,31),
-            (uint32_t)(hi & 0x7fffffff), (uint32_t)lo);
-    }
-    else if (bb == (int32_t)bb)
-    {
-// here b fits in 32-bits but a does not. This is basically the same code
-// as for the same state but the other way around
-        int32_t alo = (int32_t)aa & 0x7fffffff;
-        int32_t ahi = (int32_t)ASR(aa,31);
-        int64_t lo = bb*alo;
-        int64_t hi = bb*ahi + ASR(lo, 31);
-        lo &= 0x7fffffff;
-        if (signed29_in_64(hi)) // Result can be a fixnum
-            return fixnum_of_int(ASL64(hi, 31) | lo);
-        if (signed31_in_64(hi)) // Result can be a 2-word bignum
-            return make_two_word_bignum((int32_t)hi, (uint32_t)lo);
-        else return make_three_word_bignum((int32_t)ASR(hi, 31),
-            (uint32_t)(hi & 0x7fffffff), (uint32_t)lo);
-    }
-// Here both operands are larger than 32-bits, so I have to use the most
-// general procedure. Well at least each input is at most 60-bits wide,
-// so I have some range in hand while I work in 64-bit integers. Also
-// here I know that the result will be at least a 64-bit value and so
-// will need to be at least a 3-word bignum.
-    int32_t alo = (int32_t)aa & 0x7fffffff;
-    int32_t ahi = (int32_t)ASR(aa, 31);
-    int32_t blo = (int32_t)bb & 0x7fffffff;
-    int32_t bhi = (int32_t)ASR(bb, 31);
-// alo and blo are both 31-bit integers and hence look positive
-    int64_t lo = (int64_t)alo*(int64_t)blo;
-// ahi and bhi are only 29-bit (signed) values, so mid ends up at
-// worst a 61-bit value.
-    int64_t mid = (int64_t)alo*(int64_t)bhi + (int64_t)ahi*(int64_t)blo;
-// hi is limited to 58 bits
-    int64_t hi = (int64_t)ahi*(int64_t)bhi;
-    mid += ASR(lo, 31);
-    lo &= 0x7fffffff;
-    hi += ASR(mid, 31);
-    mid &= 0x7fffffff;
-    if (signed31_in_64(hi)) // Result can be a 3-word bignum
-        return make_three_word_bignum((int32_t)hi,
-            (uint32_t)mid, (uint32_t)lo);
-    else return make_four_word_bignum((int32_t)ASR(hi,31),
-        (uint32_t)(hi & 0x7fffffff), (uint32_t)mid, (uint32_t)lo);
-#endif // HAVE_INT128_T
 }
 
 static LispObject timesis(LispObject a, LispObject b)

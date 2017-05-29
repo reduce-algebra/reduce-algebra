@@ -237,18 +237,27 @@ LispObject make_lisp_unsignedptr_fn(uintptr_t n)
                (uint32_t)(n & 0x7fffffff));
 }
 
-#ifdef HAVE_INT128_T
+// In some cases I need the software implementation of wide arithmetic.
+// Rather than arrange that it gets compiled separately if needed, I include
+// the source here if needed.
+
+#ifndef HAVE_NATIVE_UINT128
+#include "uint128_t.cpp"
+#endif
 
 LispObject make_lisp_integer128_fn(int128_t r)
 {
-// The result will be a bignum using 2, 3 or 4 digits.
-    if (r < (int128_t)INT64_C(0x2000000000000000) &&
-        r >= (int128_t)-INT64_C(0x2000000000000000))
-        return make_two_word_bignum((int32_t)ASR(r, 31),
+// The result will be a bignum using 2, 3, 4 or 5 digits.
+    if (lessp128(r, (int128_t)INT64_C(0x2000000000000000)) &&
+        geq128(r, -(int128_t)INT64_C(0x2000000000000000)))
+        return make_two_word_bignum((int32_t)ASR(NARROW128(r), 31),
                                     (uint32_t)(r & 0x7fffffff));
 // I will split off the high and low 62-bit chunks...
-    uint64_t lo = (uint64_t)(r & INT64_C(0x3fffffffffffffffU));
-    int64_t hi = (int64_t)ASR(r, 62);
+
+//@@@@@ I have not dealt with the 5 word case here yet. BUG BUG BUG
+
+    uint64_t lo = (uint64_t)(r & UINT64_C(0x3fffffffffffffff));
+    int64_t hi = NARROW128(ASR128(r, 62));
     if (hi < INT64_C(0x40000000) &&
         hi >= -INT64_C(0x40000000))
         return make_three_word_bignum(
@@ -263,7 +272,28 @@ LispObject make_lisp_integer128_fn(int128_t r)
                (uint32_t)(lo & 0x7fffffff));
 }
 
-#endif // HAVE_INT128_T
+LispObject make_lisp_unsigned128_fn(uint128_t r)
+{
+// The result will be a bignum using 2, 3 or 4 digits.
+    if (lessp128(r, (int128_t)INT64_C(0x2000000000000000)))
+        return make_two_word_bignum((int32_t)ASR(NARROW128(r), 31),
+            (uint32_t)(NARROW128(r) & 0x7fffffff));
+// I will split off the high and low 62-bit chunks...
+    uint64_t lo = (uint64_t)(NARROW128(r) &
+                             INT64_C(0x3fffffffffffffffU));
+    int64_t hi = NARROW128(ASR128(r, 62)); // Will be posititive
+    if (hi < INT64_C(0x40000000))
+        return make_three_word_bignum(
+               (int32_t)hi,
+               (uint32_t)((lo >> 31) & 0x7fffffff),
+               (uint32_t)(lo & 0x7fffffff));
+    else
+        return make_four_word_bignum(
+               (int32_t)ASR(hi, 31),
+               (uint32_t)(hi & 0x7fffffff),
+               (uint32_t)((lo >> 31) & 0x7fffffff),
+               (uint32_t)(lo & 0x7fffffff));
+}
 
 // There are places within the arithmetic code where the simplest
 // implementatiom for combining a bignum and a fixnum seemed to be to

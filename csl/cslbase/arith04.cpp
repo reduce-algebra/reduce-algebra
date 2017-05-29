@@ -261,8 +261,8 @@ static LispObject rationalizef(double dd, int bits)
         double d2 = 1.0/d;
         a = (uint64_t)d2;
 // Given a quotient I can compute a remainder as q = 1<<(53-x) - a*p.
-//      __int128_t w1 = (__int128_t)1<<(53-x);
-//      __int128_t w2 = (__int128_t)a*(__int128_t)p;
+//      int128_t w1 = (int128_t)1<<(53-x);
+//      int128_t w2 = (int128_t)a*(int128_t)p;
 // but if the quotient (a) was correct then the remainder will be less
 // than p, and p is known to be a 53-bit integer. Even if the computed
 // quotient was a little bit out the value of q that I get here will not
@@ -305,13 +305,13 @@ static LispObject rationalizef(double dd, int bits)
     {   a = p/q;
         uint64_t u2 = u0 + a*u1;
         uint64_t v2 = v0 + a*v1;
-        a = p % q;
-        p = q;   q = a;
+        p = q;   q = p%q;
         u0 = u1; u1 = u2;
         v0 = v1; v1 = v2;
     }
-    if (dd < 0.0) u1 = -u1;
-    LispObject p1 = make_lisp_integer64(u1);
+    LispObject p1;
+    if (dd < 0.0) p1 = make_lisp_integer64(-(int64_t)u1);
+    else p1 = make_lisp_integer64(u1);
     if (v1 == 1) return p1;
     push(p1);
     LispObject q1 = make_lisp_integer64(v1);
@@ -444,149 +444,27 @@ LispObject rationalf128(float128_t *d)
 // comments to make it shorter, and then the task is just to re-work
 // it to cope with 128-bit wide values rather than 64-bit wide ones!
 
-// First I need a little library to support 124-bit unsigned integers,
-// I am not going to worry about performance at all here! Well I could
-// have just delegated all this to the existing general bignum code, but
-// that would have meant I needed to worry more about garbage collection
-// and it would have carried a rather large amount of overhead in dispatch
-// as between all the different arithmetic types. Given then I know I
-// am working with a fixed (albeit mildly long) precision I end up with
-// the mess I have here!
-//
-// Once I have debugged the version that uses nothin beyond uint64_t I
-// will consider an alternative version that uses a 128-bit integer type
-// that is provided by the platform. But given that I will want to support
-// systems where that will not be available I need to get the portable
-// version working first.
+//-- static void uint128_prinhex(const char *msg, uint128_t a)
+//-- {   printf("%s%.8x %.8x %.8x %.8x\n", msg,
+//--         (uint32_t)(a >> 96), (uint32_t)(a >> 64),
+//--         (uint32_t)(a >> 32), (uint32_t)a);
+//-- }
 
-
-#if defined HAVE_UINT128_T && defined EXPERIMENT
-
-// This is to remind me of future plans!
-
-typedef struct __u124_t
-{   uint128_t n;
-} u124_t;
-
-u124_t u124_1 = {1};
-
-void u124_prinhex(const char *msg, u124_t *a)
-{   printf("%s%.8x %.8x %.8x %.8x\n", msg,
-        (uint32_t)(a->n >> 96), (uint32_t)(a->n >> 64),
-        (uint32_t)(a->n >> 32), (uint32_t)a->n);
-}
-
-LispObject make_lisp_integer124(u124_t *a)
-{   return make_lisp_integer128(a->n);
-}
-
-void u124_zero(u124_t *a)
-{   a->n = 0;
-}
-
-// Set a to the value 2^n (n positive and in range).
-
-void u124_two_to_n(u124_t *a, int n)
-{   a->n = (uint128_t)1 << n;
-}
-
-// Test for zero.
-
-bool u124_zerop(u124_t *a)
-{   return a->n == 0;
-}
-
-bool u124_onep(u124_t *a)
-{   return a->n == 1;
-}
-
-// The numbers are unsigned, but I will describe them as "negative"
-// if the top bit is set.
-
-bool u124_minusp(u124_t *a)
-{   return (int128_t)(a->n) < 0;
-}
-
-// Comparisons.
-
-bool u124_lessp(u124_t *a, u124_t *b)
-{   return a->n < b->n;
-}
-
-bool u124_leq(u124_t *a, u124_t *b)
-{   return a->n <= b->n;
-}
-
-// "Negating" does it work modulo 2^124.
-
-void u124_negate(u124_t *a, u124_t *b)
-{   b->n = -a->n;
-}
-
-// Addition and subtraction.
-
-void u124_add(u124_t *a, u124_t *b, u124_t *c)
-{   c->n = a->n + b->n;
-}
-
-void u124_sub(u124_t *a, u124_t *b, u124_t *c)
-{   c->n = a->n - b->n;
-}
-
-// Multiplication only keep the low 124 bits of the product. Well 128
-// bits here!
-
-void u124_mul(u124_t *a, u124_t *b, u124_t *c)
-{   c->n = a->n * b->n;
-}
-
-void u124_leftshift(u124_t *a)
-{   a->n = a->n << 1;
-}
-
-void u124_rightshift(u124_t *a)
-{   a->n = a->n >> 1;
-}
-
-// To perform variable shifts I take a path that was quickest and easiest
-// for me to code. I shift successivly in units of 31, 6 and 1. With more
-// care I could do everythin in close to a single sequence of (variable)
-// shifts. but I do not view this as liable to be worth the coding effort,
-// even though that would not be vary great..
-
-void u124_leftshiftn(u124_t *a, int n)
-{   a->n = a->n << n;
-}
-
-void u124_rightshiftn(u124_t *a, int n)
-{   a->n = a->n >> n;
-}
-
-// Division (and remainder).
-
-void u124_divrem(u124_t *a, u124_t *b, u124_t *q, u124_t *r)
-{   q->n = a->n / b->n;
-    r->n = a->n % b->n;
-}
-
-// Now I need to be able to convert between float128_t and u124_t with
+// Now I need to be able to convert between float128_t and uint128_t with
 // "fix" and "float" operations. I will only concern myself with positive
 // numbers, and my expected use will be that I only attempt to fix
 // values that will fit within 113 bits (ie well within 128), and
 // I will only float values that are in around the same range.
 
-void u124_fix(float128_t *a, u124_t *b)
-{   if (f128M_eq(a, &f128_0))
-    {   b->n = 0;
-        return;
-    }
+uint128_t uint128_fix(float128_t *a)
+{   if (f128M_eq(a, &f128_0)) return 0;
 // I am not going to do anything clever with NaN or infinity here - they
 // are just not permitted and would lead to chaos.
     float128_t aa;
     int x;
     f128M_frexp(a, &aa, &x);
 // Now I take the 113 bits of mantissa (including an implicit bit) and
-// shuffle to be in the form of the u124_t multiple precision integer.
+// shuffle to be in the form of the uint128_t integer.
     uint64_t hi = (aa.v[HIPART] & UINT64_C(0x0000ffffffffffff)) |
                   UINT64_C(0x0001000000000000);
     uint128_t w = aa.v[LOPART] | ((uint128_t)hi<<64);
@@ -594,12 +472,11 @@ void u124_fix(float128_t *a, u124_t *b)
     x = x - 113;
     if (x > 0) w = w<<x;
     else if (x < 0) w = w>>(-x);
-    b->n = w;
+    return w;
 }
 
-void u124_float(u124_t *a, float128_t *b)
-{   uint128_t aa = a->n;
-    if (aa == 0)
+void uint128_float(uint128_t a, float128_t *b)
+{   if (a == 0)
     {   *b = f128_0;
         return;
     }
@@ -607,347 +484,29 @@ void u124_float(u124_t *a, float128_t *b)
 // Now I want to normalize the integer so that the bit at position
 // 00010000:00000000:00000000:00000000 is set, ie the one that will be
 // the "hidden bit".
-    while (aa >= ((uint128_t)1<<113))
-    {   aa = aa>>1;
+//
+// Here what I want is a "find most significant bit" operation.
+    while (a >= ((uint128_t)1<<113))
+    {   a = a>>1;
         x++;
     }
-    while (aa < ((uint128_t)1<<(96-24+1)))
-    {   aa = aa<<24;
+    while (a < ((uint128_t)1<<(96-24+1)))
+    {   a = a<<24;
         x = x - 24;
     }
-    while (aa < ((uint128_t)1<<(96-5+1)))
-    {   aa = aa<<5;
+    while (a < ((uint128_t)1<<(96-5+1)))
+    {   a = a<<5;
         x = x - 5;
     }
-    while (aa < ((uint128_t)1<<112))
-    {   aa = aa<<1;
+    while (a < ((uint128_t)1<<112))
+    {   a = a<<1;
         x--;
     }
-    uint64_t ahi = (uint64_t)(aa>>64) & UINT64_C(0x0000ffffffffffff);
+    uint64_t ahi = (uint64_t)(a>>64) & UINT64_C(0x0000ffffffffffff);
     ahi = ahi | ((uint64_t)(x + 0x3ffe)<<48);
     b->v[HIPART] = ahi;
-    b->v[LOPART] = (uint64_t)aa; 
+    b->v[LOPART] = (uint64_t)a; 
 }
-
-#else // HAVE_UINT128_T
-
-typedef struct __u124_t
-{   uint32_t d[4];
-} u124_t;
-
-u124_t u124_1 = {{1, 0, 0, 0}};
-
-// For debugging purposes I will arrange to be able to print values in
-// hex notation.
-
-void u124_prinhex(const char *msg, u124_t *a)
-{   uint32_t d0 = a->d[0], d1 = a->d[1], d2 = a->d[2], d3 = a->d[3];
-// Now adjust for the fact that I only have 31 bits stored in each digit
-    d0 |= (d1<<31);
-    d1 = (d1>>1) | (d2<<30);
-    d2 = (d2>>2) | (d3<<29);
-    d3 = (d3>>3);
-    printf("%s%.8x %.8x %.8x %.8x\n", msg, d3, d2, d1, d0);
-}
-
-// For conversion to a bignum the fact that my number is represented in
-// 31-bit digits is really convenient. But I need to cope with
-// signed values and work out how many digits are actually required, so this
-// is still going to be astonishingly ugly!
-
-LispObject make_lisp_integer124(u124_t *a)
-{   uint32_t *d = a->d;
-// I think it will be nicer to handle the positive and negative cases
-// as separate ones.
-    if ((d[3] & 0x40000000) == 0) // i.e. the positive case
-    {   if (d[3] != 0 || (d[2] & 0x40000000) != 0)
-            return make_four_word_bignum(d[3], d[2], d[1], d[0]);
-        if (d[2] != 0 || (d[1] & 0x40000000) != 0)
-            return make_three_word_bignum(d[2], d[1], d[0]);
-        return make_lisp_integer64(((int64_t)d[1]<<31) | d[0]);
-    }
-// Now I have the negative case. Note that the top bit of each 32-bit
-// word is zero, and I will need to change that when I pack up the value.
-    if (d[3] != 0x7fffffff || (d[2] & 0x40000000) == 0)
-        return make_four_word_bignum(d[3] | 0x80000000, d[2], d[1], d[0]);
-    if (d[2] != 0x7fffffff || (d[1] & 0x40000000) == 0)
-        return make_three_word_bignum(d[2] | 0x80000000, d[1], d[0]);
-    int64_t r = (int32_t)(d[1] | 0x80000000);
-    return make_lisp_integer64((r<<31) | d[0]);
-}
-
-void u124_zero(u124_t *a)
-{   a->d[0] = a->d[1] = a->d[2] = a->d[3] = 0;
-}
-
-// Set a to the value 2^n (n positive and in range).
-
-void u124_two_to_n(u124_t *a, int n)
-{   a->d[0] = a->d[1] = a->d[2] = a->d[3] = 0;
-    a->d[n/31] = 1<<(n%31);
-}
-
-// Test for zero.
-
-bool u124_zerop(u124_t *a)
-{   return a->d[0] == 0 &&
-           a->d[1] == 0 &&
-           a->d[2] == 0 &&
-           a->d[3] == 0;
-}
-
-bool u124_onep(u124_t *a)
-{   return a->d[0] == 1 &&
-           a->d[1] == 0 &&
-           a->d[2] == 0 &&
-           a->d[3] == 0;
-}
-
-// The numbers are unsigned, but I will describe them as "negative"
-// if the top bit is set.
-
-bool u124_minusp(u124_t *a)
-{   return ((a->d[3] & 0x40000000) != 0);
-}
-
-// Comparisons.
-
-bool u124_lessp(u124_t *a, u124_t *b)
-{   return a->d[3] < b->d[3] ||
-           (a->d[3] == b->d[3] &&
-            (a->d[2] < b->d[2] ||
-             (a->d[2] == b->d[2] &&
-              (a->d[1] < b->d[1] ||
-               (a->d[1] == b->d[1] &&
-                (a->d[0] < b->d[0]))))));
-}
-
-bool u124_leq(u124_t *a, u124_t *b)
-{   return a->d[3] < b->d[3] ||
-           (a->d[3] == b->d[3] &&
-            (a->d[2] < b->d[2] ||
-             (a->d[2] == b->d[2] &&
-              (a->d[1] < b->d[1] ||
-               (a->d[1] == b->d[1] &&
-                (a->d[0] <= b->d[0]))))));
-}
-
-// "Negating" does it work modulo 2^124.
-
-void u124_negate(u124_t *a, u124_t *b)
-{   uint32_t c = -a->d[0];
-    b->d[0] = c & 0x7fffffff;
-    c = ~a->d[1] + (c>>31);
-    b->d[1] = c & 0x7fffffff;
-    c = ~a->d[2] + (c>>31);
-    b->d[2] = c & 0x7fffffff;
-    c = ~a->d[3] + (c>>31);
-    b->d[3] = c & 0x7fffffff;
-}
-
-// Addition and subtraction.
-
-void u124_add(u124_t *a, u124_t *b, u124_t *c)
-{   uint32_t w = a->d[0] + b->d[0];
-    c->d[0] = w & 0x7fffffff;
-    w = (w >> 31) + a->d[1] + b->d[1];
-    c->d[1] = w & 0x7fffffff;
-    w = (w >> 31) + a->d[2] + b->d[2];
-    c->d[2] = w & 0x7fffffff;
-    w = (w >> 31) + a->d[3] + b->d[3];
-    c->d[3] = w & 0x7fffffff;
-}
-
-void u124_sub(u124_t *a, u124_t *b, u124_t *c)
-{   uint32_t w = a->d[0] - b->d[0];
-    c->d[0] = w & 0x7fffffff;
-    w = (w >> 31) + a->d[1] - b->d[1];
-    c->d[1] = w & 0x7fffffff;
-    w = (w >> 31) + a->d[2] - b->d[2];
-    c->d[2] = w & 0x7fffffff;
-    w = (w >> 31) + a->d[3] - b->d[3];
-    c->d[3] = w & 0x7fffffff;
-}
-
-// Multiplication only keep the low 124 bits of the product.
-
-void u124_mul(u124_t *a, u124_t *b, u124_t *c)
-{   for (int i=0; i<4; i++) c->d[i] = 0;
-    for (int i=0; i<4; i++)
-    {   int k;
-        for (int j=0; (k=i+j)<4; j++)
-        {   uint64_t w = a->d[i]*b->d[j];
-            while (k < 4)
-            {   w = w + c->d[k];
-                c->d[k] = w & 0x7fffffff;
-                w = w >> 31;
-                k++;
-            }
-        }
-    }
-}
-
-void u124_leftshift(u124_t *a)
-{   a->d[3] = (a->d[3]<<1) | (a->d[2]>>30);
-    a->d[2] = ((a->d[2]<<1) & 0x7fffffff) | (a->d[1]>>30);
-    a->d[1] = ((a->d[1]<<1) & 0x7fffffff) | (a->d[0]>>30);
-    a->d[0] = (a->d[0]<<1) & 0x7fffffff;
-}
-
-void u124_rightshift(u124_t *a)
-{   a->d[0] = (a->d[0]>>1) | (((a->d[1]) & 1U) << 30);
-    a->d[1] = (a->d[1]>>1) | (((a->d[2]) & 1U) << 30);
-    a->d[2] = (a->d[2]>>1) | (((a->d[3]) & 1U) << 30);
-    a->d[3] = (a->d[3]>>1);
-}
-
-// To perform variable shifts I take a path that was quickest and easiest
-// for me to code. I shift successivly in units of 31, 6 and 1. With more
-// care I could do everythin in close to a single sequence of (variable)
-// shifts. but I do not view this as liable to be worth the coding effort,
-// even though that would not be vary great..
-
-void u124_leftshiftn(u124_t *a, int n)
-{   while (n >= 31)
-    {   a->d[3] = a->d[2];
-        a->d[3] = a->d[1];
-        a->d[1] = a->d[0];
-        a->d[0] = 0;
-        n = n - 31;
-    }
-    while (n >= 6)
-    {   a->d[3] = (a->d[3]<<6) | ((a->d[2]>>25) & 0x3f);
-        a->d[2] = (a->d[2]<<6) | ((a->d[1]>>25) & 0x3f);
-        a->d[1] = (a->d[1]<<6) | ((a->d[0]>>25) & 0x3f);
-        a->d[0] = (a->d[0]<<6);
-        n = n - 6;
-    }
-    for (int i=0; i<n; i++)
-        u124_leftshift(a);
-}
-
-void u124_rightshiftn(u124_t *a, int n)
-{   while (n >= 31)
-    {   a->d[0] = a->d[1];
-        a->d[1] = a->d[2];
-        a->d[2] = a->d[3];
-        a->d[3] = 0;
-        n = n - 31;
-    }
-    while (n >= 6)
-    {   a->d[0] = (a->d[0]>>6) | ((a->d[1]<<25) & 0x7fffffff);
-        a->d[1] = (a->d[1]>>6) | ((a->d[2]<<25) & 0x7fffffff);
-        a->d[2] = (a->d[2]>>6) | ((a->d[3]<<25) & 0x7fffffff);
-        a->d[3] = (a->d[3]>>6);
-        n = n - 6;
-    }
-    for (int i=0; i<n; i++)
-        u124_rightshift(a);
-}
-
-// Division (and remainder) are done bit by bit, which is seriously
-// inefficient but is straightforward to code. If I needed more speed I
-// could follow the treaditional long division route and after a bit
-// of normalization ger 31 bits at a time not 1. Or in the case that
-// the platform supported a 128-bit integer type I could use that and
-// so this directly!
-
-void u124_divrem(u124_t *a, u124_t *b, u124_t *q, u124_t *r)
-{   u124_t ww = *b;
-    int n = 0;
-    while (u124_leq(&ww, a))
-    {   u124_leftshift(&ww);
-        n++;
-    }
-    q->d[0] = q->d[1] = q->d[2] = q->d[3] = 0;
-    *r = *a;
-    while (n > 0)
-    {   u124_rightshift(&ww);
-        n--;
-        u124_leftshift(q);
-        if (u124_leq(&ww, r))
-        {   u124_sub(r, &ww, r);
-            q->d[0] |= 1;
-        }
-    }
-}
-
-// Now I need to be able to convert between float128_t and u124_t with
-// "fix" and "float" operations. I will only concern myself with positive
-// numbers, and my expected use will be that I only attempt to fix
-// values that will fit within 113 bits (ie well within 124), and
-// I will only float values that are in around the same range.
-
-void u124_fix(float128_t *a, u124_t *b)
-{   if (f128M_eq(a, &f128_0))
-    {   b->d[0] = b->d[1] = b->d[2] = b->d[3] = 0;
-        return;
-    }
-// I am not going to do anything clever with NaN or infinity here - they
-// are just not permitted and would lead to chaos.
-    float128_t aa;
-    int x;
-    f128M_frexp(a, &aa, &x);
-// Now I take the 113 bits of mantissa (including an implicit bit) and
-// shuffle to be in the form of the u124_t multiple precision integer.
-    b->d[0] = aa.v[LOPART] & 0x7fffffff;
-    b->d[1] = (aa.v[LOPART] >> 31) & 0x7fffffff;
-    b->d[2] = ((aa.v[LOPART] >> 62) & 0x3) |
-              ((aa.v[HIPART] << 2) & 0x7ffffffc);
-// Remember to OR in the hidden bit on the next line.
-    b->d[3] = ((aa.v[HIPART] >> 29) & 0x0007ffff) | 0x00080000;
-// Now I may need to shift b by an amount determined by x.
-    x = x - 113;
-    if (x > 0) u124_leftshiftn(b, x);
-    else if (x < 0) u124_rightshiftn(b, -x); 
-}
-
-void u124_float(u124_t *a, float128_t *b)
-{   if (u124_zerop(a))
-    {   *b = f128_0;
-        return;
-    }
-// Turn the u124_t object into a pair of 64-bit integers, which will make
-// packing to look like a float easier.
-    uint64_t alo = (uint64_t)a->d[0] |
-                   ((uint64_t)a->d[1]<<31) |
-                   ((uint64_t)a->d[2]<<62),
-             ahi = ((uint64_t)a->d[2]>>2) |
-                   ((uint64_t)a->d[3]<<29);
-    int x = 113;
-// Now I want to normalize the integer so that the bit at position
-// 00010000:00000000:00000000:00000000 is set, ie the one that will be
-// the "hidden bit". This could involve either shifting left or right, but
-// I expect the right shift case to be uncommon so I will do it rather
-// crudely.
-    if ((ahi & UINT64_C(0xfffe000000000000)) != 0)
-    {   while ((ahi & UINT64_C(0xfffe000000000000)) != 0)
-        {   alo = (alo>>1) | (ahi<<63);
-            ahi = ahi>>1;
-            x++;
-        }
-    }
-    else
-    {   while ((ahi & UINT64_C(0xfffffffffe000000)) == 0)
-        {   ahi = (ahi<<24) | (alo>>40);
-            alo = alo<<24;
-            x = x - 24;
-        }
-        while ((ahi & UINT64_C(0x0001000000000000)) == 0)
-        {   ahi = (ahi<<1) | (alo>>63);
-            alo = alo<<1;
-            x--;
-        }
-    }
-    ahi = ahi & UINT64_C(0x0000ffffffffffff);
-    ahi = ahi | ((uint64_t)(x + 0x3ffe)<<48);
-    b->v[HIPART] = ahi;
-    b->v[LOPART] = alo;
-}
-
-// end of implementation of 124-bit integers using reasonably
-// portable C++.
-#endif // HAVE_UINT128_T
 
 static LispObject rationalizef128(float128_t *dd)
 {   float128_t d;
@@ -964,80 +523,76 @@ static LispObject rationalizef128(float128_t *dd)
         r = lisp_ifix(denominator(r), numerator(r), FIX_ROUND);
         return make_ratio(fixnum_of_int(1), r);
     }
-    u124_t p, q;
-    u124_t a;
-    u124_t u0, u1;
-    u124_t v0, v1;
+    uint128_t p, q;
+    uint128_t a;
+    uint128_t u0, u1;
+    uint128_t v0, v1;
     if (f128M_le(&f128_1, &d))
     {   int x;
         float128_t d1;
         f128M_frexp(&d, &d1, &x);
         f128M_ldexp(&d1, 113);
-        u124_fix(&d1, &p);
-        u124_two_to_n(&q, 113-x);
-        u124_divrem(&p, &q, &u1, &a);
-        u124_two_to_n(&u0, 0);
+        p = uint128_fix(&d1);
+        q = (uint128_t)1 << (113-x);
+        u1 = p/q;
+        a = p%q;
+        u0 = 1;
         p = q;
         q = a;
-        u124_zero(&v0);
-        u124_two_to_n(&v1, 0);
+        v0 = 0;
+        v1 = 1;
     }
     else
     {   int x;
         float128_t d1, d2;
         f128M_frexp(&d, &d1, &x);
         f128M_ldexp(&d1, 113);
-        u124_fix(&d1, &p);
+        p = uint128_fix(&d1);
         f128M_div(&f128_1, &d, &d2);
-        u124_fix(&d2, &a);
-        u124_t w1, w2;
-        if (113-x < 128) u124_two_to_n(&w1, 113-x);
-        else u124_zero(&w1);
-        u124_mul(&a, &p, &w2);
-        u124_sub(&w1, &w2, &q);
-        while (u124_minusp(&q))
-        {   u124_add(&q, &p, &q);
-            u124_sub(&a, &u124_1, &a);
+        a = uint128_fix(&d2);
+        uint128_t w1;
+        if (113-x < 128) w1 = (uint128_t)1 << (113-x);
+        else w1 = 0;
+        q = w1 - a*p;
+        while ((q >> 127) != 0)  // i.e. "negative"
+        {   q += p;
+            a -= 1;
         }
-        while (u124_leq(&p, &q))
-        {   u124_sub(&q, &p, &q);
-            u124_add(&a, &u124_1, &a);
+        while (p <= q)
+        {   q -= p;
+            a += 1;
         }
-        u124_zero(&u0);
-        u124_two_to_n(&u1, 0);
-        u124_two_to_n(&v0, 0);
+        u0 = 0;
+        u1 = 1;
+        v0 = 1;
         v1 = a;
     }
     float128_t du1, dv1, q2;
-    while (u124_float(&u1, &du1),
-           u124_float(&v1, &dv1),
+    while (uint128_float(u1, &du1),
+           uint128_float(v1, &dv1),
            f128M_div(&du1, &dv1, &q2),
            !f128M_eq(&d, &q2))
-    {   u124_t a1, a2;
-        if (u124_zerop(&q))
+    {   uint128_t a1;
+        if (q == 0)
         {   printf("\n+++ Trouble in rationalizef128. q = 0\n");
             break;
         }
-        u124_divrem(&p, &q, &a1, &a2);
-        u124_t u2;
-        u124_mul(&a1, &u1, &u2);
-        u124_add(&u2, &u0, &u2);
-        u124_t v2;
-        u124_mul(&a1, &v1, &v2);
-        u124_add(&v2, &v0, &v2);
-        p = q;   q = a2;
+        a1 = p/q;
+        uint128_t u2 = a1*u1 + u0;
+        uint128_t v2 = a1*v1 + v0;
+        p = q;   q = p%q;
         u0 = u1; u1 = u2;
         v0 = v1; v1 = v2;
     }
-    if (f128M_negative(dd)) u124_negate(&u1, &u1);
-    LispObject p1 = make_lisp_integer124(&u1);
-    if (u124_onep(&v1)) return p1;
+    LispObject p1;
+    if (f128M_negative(dd)) p1 = make_lisp_integer128(-(int128_t)u1);
+    else p1 = make_lisp_unsigned128(u1);
+    if (v1 == 1) return p1;
     push(p1);
-    LispObject q1 = make_lisp_integer124(&v1);
+    LispObject q1 = make_lisp_unsigned128(v1);
     pop(p1);
     return make_ratio(p1, q1);
 }
-
 
 LispObject rational(LispObject a)
 {   switch ((int)a & XTAG_BITS)

@@ -44,6 +44,8 @@
 // appears best to include this file very early - otherwise I have found
 // some confusion between cygwin and mingw entrypoints hurting me.
 //
+#include <winsock.h>
+#include <semaphore.h>
 #include <windows.h>
 #include <sys/cygwin.h>
 #endif

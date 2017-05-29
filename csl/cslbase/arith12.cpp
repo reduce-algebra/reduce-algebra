@@ -231,23 +231,13 @@ LispObject Lmodular_times(LispObject env, LispObject a, LispObject b)
             return onevalue(fixnum_of_int((intptr_t)r));
         }
 // Now my modulus is over 32-bits...
-#ifdef HAVE_INT128_T
-// If I have an int128_t bit type I can use it and the code is really neat!
+// Using an int128_t bit type I can use it and the code is really neat!
+// On some platforms this goes via C++ templates and operator overloading
+// into a software implementation of 128-bit integer arithmetic!
         else
-        {   int64_t r = (int64_t)(((int128_t)aa*(int128_t)bb) % (int128_t)cm);
+        {   int64_t r = NARROW128(((int128_t)aa*(int128_t)bb) % (int128_t)cm);
             return onevalue(fixnum_of_int((intptr_t)r));
         }
-#else
-// In the final case I can just drop through and do standard CSL
-// arithmetic. This will never arise on a 32-bit machine (because any "small"
-// modulus will fit in 32 bits and so the 64-bit multiplication and division
-// suffice), and it should not apply on most x86_64 hosts because they can
-// support 128-bit integers.
-        else
-        {   a = times2(a, b);
-            return modulus(a, fixnum_of_int(cm));
-        }
-#endif
     }
     a = times2(a, b);
     return modulus(a, large_modulus);
@@ -291,15 +281,8 @@ LispObject large_modular_expt(LispObject a, int x)
 
 static inline intptr_t muldivptr(uintptr_t a, uintptr_t b, uintptr_t c)
 {   if (!SIXTY_FOUR_BIT || c <= 0xffffffffU)
-        return ((uint64_t)a * (uint64_t)b) % (uintptr_t)c;
-    else
-#ifdef HAVE_UINT128_T
-        return (intptr_t)(((uint128_t)a * (uint128_t)a) % (uintptr_t)c);
-#else
-    {   LispObject w = times2(fixnum_of_int(a), fixnum_of_int(a)), nil;
-        return int_of_fixnum(modulus(w, fixnum_of_int(c)));
-    }
-#endif
+        return ((uint64_t)a*(uint64_t)b)%(uintptr_t)c;
+    else return (intptr_t)NARROW128(((uint128_t)a*(uint128_t)a)%(uintptr_t)c);
 }
 
 LispObject Lmodular_expt(LispObject env, LispObject a, LispObject b)

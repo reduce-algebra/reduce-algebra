@@ -35,18 +35,6 @@
 #ifndef header_arith_h
 #define header_arith_h 1
 
-// Tidy up re possible 128-bit arithemetic support.
-
-#if defined HAVE___INT128 && !defined __HAVE_INT128_T
-typedef __int128 int128_t;
-#define HAVE_INT128_T
-#endif
-
-#if defined HAVE_UNSIGNED___INT128 && !defined __HAVE_UINT128_T
-typedef unsigned __int128 uint128_t;
-#define HAVE_UINT128_T
-#endif
-
 #define TWO_32    4294967296.0      // 2^32
 #define TWO_31    2147483648.0      // 2^31
 #define TWO_24    16777216.0        // 2^24
@@ -464,15 +452,18 @@ static inline LispObject make_lisp_unsignedptr(uintptr_t n)
     else return make_lisp_unsignedptr_fn(n);
 }
 
-#ifdef HAVE_INT128_T
-
 extern LispObject make_lisp_integer128_fn(int128_t n);
 static inline LispObject make_lisp_integer128(int128_t n)
-{   if (valid_as_fixnum(n)) return fixnum_of_int((intptr_t)n);
+{   if (valid_as_fixnum(n)) return fixnum_of_int(NARROW128(n));
     else return make_lisp_integer128_fn(n);
 }
 
-#endif
+extern LispObject make_lisp_unsigned128_fn(uint128_t n);
+static inline LispObject make_lisp_unsigned128(uint128_t n)
+{   if (uint128_valid_as_fixnum(n))
+        return fixnum_of_int((uint64_t)NARROW128(n));
+    else return make_lisp_unsigned128_fn(n);
+}
 
 extern double float_of_integer(LispObject a);
 extern "C" LispObject add1(LispObject p);
@@ -520,10 +511,7 @@ extern double Cabs(Complex a);
 // semaphores.
 //
 
-#include <semaphore.h>
-
 #ifdef WIN32
-#include <windows.h>
 
 extern HANDLE kara_thread1, kara_thread2;
 #define KARARESULT DWORD
@@ -532,7 +520,6 @@ extern KARARESULT WINAPI kara_worker1(KARAARG p);
 extern KARARESULT WINAPI kara_worker2(KARAARG p);
 
 #else
-#include <pthread.h>
 
 extern pthread_t kara_thread1, kara_thread2;
 #define KARARESULT void *

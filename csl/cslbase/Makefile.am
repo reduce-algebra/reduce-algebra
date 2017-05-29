@@ -1827,14 +1827,14 @@ endif !canrun
 
 machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(EXEEXT) \
 			makeheaders$(EXEEXT) Makefile $(srcdir)/impex.def \
-			$(srcdir)/machine.h $(srcdir)/tags.h \
-			$(srcdir)/cslerror.h $(srcdir)/externs.h \
-			$(srcdir)/arith.h $(srcdir)/entries.h \
-			$(srcdir)/lispthrow.h
+			$(srcdir)/machine.h $(srcdir)/int128_t.h \
+			$(srcdir)/tags.h $(srcdir)/cslerror.h \
+			$(srcdir)/externs.h $(srcdir)/arith.h \
+			$(srcdir)/entries.h $(srcdir)/lispthrow.h
 	./objtype$(EXEEXT) reduce-cslread.$(OBJEXT) \
 		$(srcdir)/impex.def machineid-1.cpp $(COMPILE_DLL)
 	./makeheaders$(EXEEXT) config.h $(srcdir)/machine.h \
-		$(srcdir)/tags.h \
+		$(srcdir)/int128_t.h $(srcdir)/tags.h \
 		$(srcdir)/cslerror.h $(srcdir)/externs.h \
 		$(srcdir)/arith.h $(srcdir)/entries.h \
 		$(srcdir)/lispthrow.h > machineid-2.cpp

@@ -478,11 +478,11 @@ static LispObject quotbi(LispObject a, LispObject b)
 // I should only get here on a 64-bit machine! I fake up a 2-word bignum
 // for the value. On a 64-bit system that is NOT a standardly valid bignum,
 // but it will allow me to call quotbb.
-#ifdef HAVE_INT128_T
 // Here I  cope with any case of a bignum with up to 4 digits divided
 // by a 60-bit fixnum by converting things to the very wide type int128_t
 // and just doing the division there. This may be faster than using long
-// division!
+// division on some platforms, while on others it will involve its own
+// limited-width long division code.
     size_t lena = (bignum_length(a)-CELL-4)/4;
     int128_t p;
     switch (lena)
@@ -508,9 +508,6 @@ static LispObject quotbi(LispObject a, LispObject b)
 // Now I need to re-pack the quotient, which could be anything up to a 3-digit
 // bignum.
     return make_lisp_integer128(p);
-#else
-    return quotbb(a, make_fake_bignum(n), QUOTBB_QUOTIENT_NEEDED);
-#endif
 }
 
 static LispObject quotrembi(LispObject a, LispObject b)
@@ -535,7 +532,6 @@ static LispObject quotrembi(LispObject a, LispObject b)
 // I should only get here on a 64-bit machine! I fake up a 2-word bignum
 // for the value. On a 64-bit system that is NOT a standardly valid bignum,
 // but it will allow me to call quotbb.
-#ifdef HAVE_INT128_T
     size_t lena = (bignum_length(a)-CELL-4)/4;
     int128_t p;
     switch (lena)
@@ -554,18 +550,15 @@ static LispObject quotrembi(LispObject a, LispObject b)
             p = ((uint128_t)p << 31) | bignum_digits(a)[1];
             p = ((uint128_t)p << 31) | bignum_digits(a)[0];
             break;
-    default:
-        return quotbb(a, make_fake_bignum(n),
+        default:
+            return quotbb(a, make_fake_bignum(n),
                       QUOTBB_QUOTIENT_NEEDED | QUOTBB_REMAINDER_NEEDED);
     }
-// Because b is a fixnum the remainder must be.
-    mv_2 = fixnum_of_int((int64_t)(p % int_of_fixnum(b)));
+// Because b is a fixnum the remainder must be. Note that p and b might be
+// negative here, 
+    mv_2 = fixnum_of_int(NARROW128(p % int_of_fixnum(b)));
     p = p / int_of_fixnum(b);
     return make_lisp_integer128(p);
-#else
-    return quotbb(a, make_fake_bignum(n),
-                  QUOTBB_QUOTIENT_NEEDED | QUOTBB_REMAINDER_NEEDED);
-#endif
 }
 
 static LispObject quotbs(LispObject a, LispObject b)

@@ -198,6 +198,7 @@ static inline bool miller_rabin_isprime(uint32_t a, uint32_t n)
 #define MAX_NUMBER_OF_BUCKETS 1024
 
 unsigned int number_of_buckets;
+unsigned number_to_fill;
 
 // The value hash_multiplier will be used as part of the hashing.
 static __thread uint64_t local_hash_multiplier;
@@ -284,7 +285,7 @@ int main(int argc, char *argv[])
     }
     report_time("Solution found");
     display_results();
-    verify_results();
+    if (number_of_buckets == number_to_fill) verify_results();
     report_time("Finished");
     return 0;
 }
@@ -311,6 +312,13 @@ static hash_entry *hashtable;
 unsigned int max_tries;
 uint64_t malloc_use = 0;
 
+static inline void check_malloc(void *p)
+{   if (p == NULL)
+    {   printf("malloc or realloc failed\n");
+        exit(1);
+    }
+}
+
 static void initialize_everything(int argc, char *argv[])
 {
 // Read the clock so I can report how long everything takes.
@@ -325,9 +333,18 @@ static void initialize_everything(int argc, char *argv[])
     {   printf("Argument '%u' seems out of range\n", number_of_buckets);
         exit(1);
     }
-    if (argc <= 2) max_tries = 50;
-    else if (sscanf(argv[2], "%u", &max_tries) != 1)
+    if (argc <= 2) number_to_fill = number_of_buckets;
+    else if (sscanf(argv[2], "%u", &number_to_fill) != 1)
     {   printf("Argument '%s' seems invalid\n", argv[2]);
+        exit(1);
+    }
+    if (number_to_fill < 1 || number_to_fill > number_of_buckets)
+    {   printf("Argument '%u' seems out of range\n", number_to_fill);
+        exit(1);
+    }
+    if (argc <= 3) max_tries = 1200;
+    else if (sscanf(argv[3], "%u", &max_tries) != 1)
+    {   printf("Argument '%s' seems invalid\n", argv[3]);
         exit(1);
     }
     if (max_tries < 1 || max_tries > 0x01000000)
@@ -340,18 +357,33 @@ static void initialize_everything(int argc, char *argv[])
 // by having inspected the data already that there will be about 8 million
 // entries in it, so I will use a fixed size table allocated right
 // at the start. The size used here is a prime and is such that that
-// table will be around 2/3 full.
+// table will be around 2/3 full. I view that as a decent balance on
+// space used, the cost of a linear scan and keeping hash access fast enough.
     hashsize = 12000017;
     hashtable = (hash_entry *)malloc(hashsize*sizeof(hash_entry));
+    check_malloc(hashtable);
     malloc_use += hashsize*sizeof(hash_entry);
     memset(hashtable, 0, hashsize*sizeof(hash_entry));
 }
 
-static inline void check_malloc(void *p)
-{   if (p == NULL)
-    {   printf("malloc or realloc failed\n");
-        exit(1);
+#define POOL_SIZE 10000000
+static char *pool = NULL;
+static size_t pool_pointer = 0;
+
+// I will call malloc() for big blocks, and allocate within each
+// using my own simple linear allocation code. This should reduce
+// overheap in any case where malloc is expensive.
+
+static inline void *my_malloc(size_t n)
+{   if (pool == NULL ||
+        pool_pointer+n > POOL_SIZE)
+    {   pool = (char *)malloc(POOL_SIZE); // Grab in 10 Mbyte chunks
+        check_malloc(pool);
+        pool_pointer = 0;
     }
+    char *r = &pool[pool_pointer];
+    pool_pointer += n;
+    return r;
 }
 
 // Here I have a witness and a pseudoprime. Record the pair.
@@ -366,14 +398,15 @@ static void insertpseudo(uint32_t pseudoprime, int witness)
         pseudoprime % 5 == 0 ||
         pseudoprime % 7 == 0 ||
         pseudoprime % 11 == 0) return;
+// I use two simple multiplicative hash functions in a double hashing
+// scheme here, so I hope not to get too much clustering.
     int h = (0x12345678*pseudoprime) % hashsize;
     while (hashtable[h].key != 0 &&
            hashtable[h].key != pseudoprime)
         h = (h + 1 + ((0x31415926*pseudoprime) % (hashsize-2))) % hashsize;
     if (hashtable[h].key == 0)
     {   hashtable[h].key = pseudoprime;
-        hashtable[h].val = (uint16_t *)malloc(16*sizeof(uint16_t));
-        check_malloc(hashtable[h].val);
+        hashtable[h].val = (uint16_t *)my_malloc(16*sizeof(uint16_t));
         malloc_use += 16*sizeof(uint16_t);
         memset(hashtable[h].val, 0, 16*sizeof(uint16_t));
         hashtable[h].val[0] = 16;
@@ -381,10 +414,13 @@ static void insertpseudo(uint32_t pseudoprime, int witness)
     int n = hashtable[h].val[1] + 1;
     if (n == hashtable[h].val[0]-1)
     {   size_t newsize = 2*hashtable[h].val[0];
-        hashtable[h].val =
-            (uint16_t *)realloc(hashtable[h].val, newsize*sizeof(uint16_t));
-        check_malloc(hashtable[h].val);
-        malloc_use += (newsize-hashtable[h].val[0])*sizeof(uint16_t);
+// I used to use realloc here, but now I just call malloc again. Because I
+// double sizes on each expansion the eventual overhead here is at worst
+// a factor of 2 in memory occupancy.
+        uint16_t *w = (uint16_t *)my_malloc(newsize*sizeof(uint16_t));
+        memcpy(w, hashtable[h].val, hashtable[h].val[0]*sizeof(uint16_t));
+        hashtable[h].val = w;
+        malloc_use += newsize*sizeof(uint16_t);
         hashtable[h].val[0] = newsize;
     }
     hashtable[h].val[n+1] = witness;
@@ -433,14 +469,15 @@ static void read_pseudoprime_data()
         }
         if (count == 0) break;
         if (witness%5000 == 0)
-        {   printf("%5d : %5d : %d\n", witness, witnessx, count);
+        {   printf("%5d of 65536\n", witness);
             fflush(stdout);
         }
         if (witness >= WITNESS_COUNT || witness <= 1) continue;
         for (int i=0; i<count; i++)
         {   unsigned pseudoprime;
             if (fscanf(data, "%x", &pseudoprime) != 1)
-            {   printf("Malformed data file\n");
+            {   printf("Malformed data file for witness %u/%#x\n",
+                       witness, witness);
                 exit(1);
             }
             if (pseudoprime%2 == 0) c2++;
@@ -564,17 +601,26 @@ static THREADRESULT_T search_for_good_parameters(void *arg)
                 int wit = w[j];
                 if (validwitness[wit][h])
                 {   validwitness[wit][h] = false;
-                    if (--validcount[h] <= 0) goto failing;
+// If one of the first number_to_fill buckets ends up with no valid
+// witnesses then I will give up.
+                    if (--validcount[h] <= 0 &&
+                        h<number_to_fill
+                       ) goto failing;
                 }
             }
         }
-        for (b=0; b<number_of_buckets; b++)
+        for (b=0; b<number_to_fill; b++)
         {   int i;
             for (i=2; i<WITNESS_COUNT; i++)
             {  if (validwitness[i][b]) break;
             }
             if (i >= WITNESS_COUNT)
             {   printf("Unexpected failure (%d)\n", validcount[b]);
+                for (int k=0; k<number_of_buckets; k++)
+                {   if (k%16 == 0) printf("\n");
+                    printf("%4d", validcount[k]);
+                }
+                printf("\n");
                 break; // Should never happen, I think
             }
             local_witness[b] = i;
@@ -707,7 +753,10 @@ static void display_results()
 
 static void verify_results()
 {
-// Set up a table of primes.
+// Set up a table of primes. I could use a bitmap here but I will take the
+// view that the 2 Gbyte block I allocate here is tolerable on today's
+// computers. But I could reduce it to 256 Mbytes if I wanted, and indeed
+// see mr.cu for a version of the code that does that.
     char *primes = (char *)malloc(UINT64_C(0x80000000));
     if (primes == NULL)
     {   printf("Unable to allocate space\n");

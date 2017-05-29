@@ -42,66 +42,8 @@
 #include "config.h"
 #endif
 
-#ifndef DEBUG
-#define NDEBUG 1
-#endif
-
-//
-// If the header "complex.h" is available, the type "complex double" is
-// accepted and the function "csqrt" is present I will assume I can use the
-// standard C99 complex number support facilities. Aha SOME C++ systems
-// support this, but others use a template class, and I will adapt my code
-// to use that some time.
-//
-
-#if defined HAVE_COMPLEX_H && \
-    defined HAVE_COMPLEX_DOUBLE && \
-    defined HAVE_CSQRT
-#define HAVE_COMPLEX 1
-#endif
-
-//
-// I will check a number of things before I try to use sigaltstack()
-//
-#if defined HAVE_SIGNAL_H && defined HAVE_SETJMP_H
-#if defined HAVE_SIGSETJMP && defined HAVE_SIGLONGJMP
-#if defined HAVE_SIGACTION && defined HAVE_SIGALTSTACK
-#define USE_SIGALTSTACK 1
-#endif
-#endif
-#endif
-
-// At some stage I might wish to move to "#include <cstdio>" etc however
-// that would put things in the std: namespace, and the killer for me is
-// that with g++ I can then not find putc_unlocked and getc_unlocked.
-
-#ifdef WIN32
-// The aim here is to avoid use of the Microsoft versions of printf and
-// friends and (hence) allow g++ to parse and check format strings reliably.
-#define __USE_MINGW_ANSI_STDIO 1
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <math.h>
-#include <float.h>
-#include <string.h>
-#include <ctype.h>
-#include <wctype.h>
-#include <time.h>
-#include <stdarg.h>
-#include <setjmp.h>
-#include <signal.h>
-#include <exception>
-#include <assert.h>
-#include <limits.h>
-
-#ifdef HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
-
-#include "machine.h"    // N.B. includes <stdint.h> and <inttypes.h>
+#include "machine.h"
+#include "int128_t.h"
 #include "tags.h"
 #include "cslerror.h"
 #include "externs.h"
@@ -159,6 +101,6 @@
 
 #endif // HAVE_CRLIBM
 
-#endif // this header included already
+#endif // header_headers_h
 
 // end of headers.h

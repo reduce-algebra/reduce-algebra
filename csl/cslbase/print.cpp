@@ -1522,10 +1522,6 @@ LispObject Lfind_gnuplot(LispObject env, int nargs, ...)
     return onevalue(make_string(filename));
 }
 
-#ifndef WIN32
-#include <unistd.h>
-#endif
-
 LispObject Lgetpid(LispObject env, int nargs, ...)
 {   argcheck(nargs, 0, "getpid");
 #ifdef WIN32
@@ -1731,7 +1727,7 @@ static void fp_sprint(char *buff, double x, int prec, int xmark)
         char_ins(buff, '.');
     }
 // I now have a "." in there
-    while (*buff != 0 && *buff != 'e') buff++;
+    while (*buff != 0 && *buff != 'e' && *buff != xmark) buff++;
     if (*(buff-1) == '.') char_ins(buff++, '0');// ddd. to ddd.0
     while (*(buff-1) == '0' &&                  // ddd.nnn0 to ddd.nnn
            *(buff-2) != '.') char_del(--buff);
