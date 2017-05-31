@@ -1939,7 +1939,6 @@ if canrun
 	./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
-	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 	$(MAKE) -t bootstrapreduce.img > /dev/null
 else !canrun
@@ -1955,7 +1954,6 @@ if canrun
 	./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
-	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 	$(MAKE) -t $(REDUCE_IMG) > /dev/null
 else !canrun
@@ -2037,8 +2035,6 @@ if canrun
 	./bootstrapreduce$(EXEEXT) -w -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildboot.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-o boot.img -- buildlogs/boot.log \
-		-j boot.dep
-	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not build boot.img on this platform
 endif !canrun
@@ -2051,7 +2047,6 @@ if canrun
 		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- buildlogs/profile.log
-	sed -i -e 's/::	;/:/g' *.dep
 # I preserve the previous profile.dat as profile.dat.old
 	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
 	mv profile.dat $(gensrc)
@@ -2121,7 +2116,6 @@ just-c-code:
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/c-code.log
-	sed -i -e 's/::	;/:/g' *.dep
 
 # The following rule can lead to race conditions with parallel make if
 # several generated files have been deleted but not the make.stamp file.
@@ -2150,21 +2144,10 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # I rather hope that the delay while C-code is re-created is long enough
 # to let any previous steps complete.
 
-# There is a further bit of fun here. I want to survive when various source
-# files within Reduce are renamed, moved or removed. I cope with this by
-# arranging that if I have a dependency on foo.red I put a line
-#      foo.red::	;
-# somewhere too. That is a rule with an empty recipe, so that if foo.red
-# is not present nobody fusses. I need to make it a double-colon rule
-# because there may be several such (eg from the builds of reduce and
-# bootstrapreduce). But the dependency tracking stuff for C sets up
-# rules for stuff in the .deps directory using single colons, so I need to
-# separate out how I handle those files.
-
 $(generated_source_deps):	$(gensrc)/make.stamp
 	$(MAKE) standard_c_code
 
-standard-c-code $(generated_lisp)::	$(gensrc)/make.stamp
+standard-c-code $(generated_lisp):	$(gensrc)/make.stamp
 ## Recover from the removal of $@
 	if test -f $@; then touch $@; else \
 	  $(RM) -f $(gensrc)/make.stamp; \
@@ -2185,7 +2168,6 @@ if canrun
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/partial-c-code.log
-	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 else !canrun
 	echo Can not generate C code on this platfrom
@@ -2202,7 +2184,6 @@ if canrun
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c -Dfull_c_code \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/full-c-code.log
-	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 else !canrun
 	echo Can not generate C code on this platfrom
@@ -2219,7 +2200,6 @@ if canrun
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-java \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/j-code.log
-	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not generate Java code on this platfrom
 endif !canrun
@@ -2232,7 +2212,6 @@ if canrun
 		-Dno_init_file $(CYGSRC)/make-smacros.red \
 		-Dhow_many=$(how_many) -Dhow_big=$(how_big) \
 		-L buildlogs/smacros.log
-	sed -i -e 's/::	;/:/g' *.dep
 	echo You may now copy smacros.red to trunk/packages/support
 else !canrun
 	echo Can not generate smacros.red on this platfrom
@@ -2244,11 +2223,9 @@ if canrun
 	./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/testslow.log
-	sed -i -e 's/::	;/:/g' *.dep
 	./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/checkslow.log
-	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
@@ -2260,11 +2237,9 @@ if canrun
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/testreduce.log
-	sed -i -e 's/::	;/:/g' *.dep
 	./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/checkall.log
-	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
@@ -2276,7 +2251,6 @@ if canrun
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/test$(which).log -Dwhich=$(which)
-	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
@@ -2290,7 +2264,6 @@ countall:	$(REDUCE_IMG)
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=30000 -Dconslimit=$(conslimit) \
 		-- testlogs/countreduce.log
-	sed -i -e 's/::	;/:/g' *.dep
 
 
 
@@ -2303,7 +2276,6 @@ if canrun
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/test$(which).log -Dwhich=$(which) \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit)
-	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
@@ -2317,7 +2289,6 @@ count1:	$(REDUCE_IMG)
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/count$(which).log -Dwhich=$(which) \
 		-Dcpulimit=30000 -Dconslimit=$(conslimit)
-	sed -i -e 's/::	;/:/g' *.dep
 
 endif valgrind
 
@@ -2327,7 +2298,6 @@ if canrun
 	./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/checkall.log
-	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not check test results on this platfrom
 endif !canrun
