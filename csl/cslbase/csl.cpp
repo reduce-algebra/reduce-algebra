@@ -669,9 +669,9 @@ static void report_dependencies()
         putc('\n', f);
     }
     putc('\n', f);
-// Now I put in empty rules for each file that was used... By making these
-// ones double-colon rules and by making any rules that might conflict
-// with them double colon ones too I avoid diagnostics from "make".
+// Now I put in empty rules for each file that was used... By having
+// rules rules with no prerequisites and no recipes I avoid trouble
+// when files get moved.
     for (i=0; i<dependency_count; i++)
     {   p = dependency_map[i];
         if (p[0] != 0 &&
@@ -684,7 +684,7 @@ static void report_dependencies()
         {   if (c == ' ') putc('\\', f); // for spaces in file-name
             putc(c == '\\' ? '/' : c, f);
         }
-        fprintf(f, "::\t;\n");
+        fprintf(f, ":\n");
     }
     putc('\n', f);
     fclose(f);

@@ -1869,6 +1869,7 @@ if canrun
 		-D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-o- -- buildlogs/reduce.log \
 		-j reduce.dep
+	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 # I copy an image into $(gensrc) with a view to keeping a copy thare that
 # is up to date with my lastest build. There is a complication here that I
@@ -1912,6 +1913,7 @@ if canrun
 		-o ./reduce.img/ \
 		-- buildlogs/reduce.log \
 		-j reduce.dep
+	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 else !canrun
 	echo Can not build reduce.img on this platform
@@ -1937,6 +1939,7 @@ if canrun
 	./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
+	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 	$(MAKE) -t bootstrapreduce.img > /dev/null
 else !canrun
@@ -1952,6 +1955,7 @@ if canrun
 	./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/recompile.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-l buildlogs/$(which).log -Dwhich=$(which)
+	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 	$(MAKE) -t $(REDUCE_IMG) > /dev/null
 else !canrun
@@ -2002,6 +2006,7 @@ if canrun
 		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-o- -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
+	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 	if test -f bootstrapreduce.app/Contents/bootstrapreduce.img; \
 	then $(CP) bootstrapreduce.app/Contents/bootstrapreduce.img $(gensrc); \
@@ -2033,6 +2038,7 @@ if canrun
 		$(CYGSRC)/buildboot.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-o boot.img -- buildlogs/boot.log \
 		-j boot.dep
+	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not build boot.img on this platform
 endif !canrun
@@ -2045,6 +2051,7 @@ if canrun
 		$(CYGSRC)/profile.red -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- buildlogs/profile.log
+	sed -i -e 's/::	;/:/g' *.dep
 # I preserve the previous profile.dat as profile.dat.old
 	-$(CP) $(gensrc)/profile.dat $(gensrc)/profile.dat.old
 	mv profile.dat $(gensrc)
@@ -2114,6 +2121,7 @@ just-c-code:
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/c-code.log
+	sed -i -e 's/::	;/:/g' *.dep
 
 # The following rule can lead to race conditions with parallel make if
 # several generated files have been deleted but not the make.stamp file.
@@ -2177,6 +2185,7 @@ if canrun
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/partial-c-code.log
+	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 else !canrun
 	echo Can not generate C code on this platfrom
@@ -2193,6 +2202,7 @@ if canrun
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-c -Dfull_c_code \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/full-c-code.log
+	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 else !canrun
 	echo Can not generate C code on this platfrom
@@ -2209,6 +2219,7 @@ if canrun
 		-D@destdir=$(CYGSRC)/../../cslbuild/generated-java \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
 		-- buildlogs/j-code.log
+	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not generate Java code on this platfrom
 endif !canrun
@@ -2221,6 +2232,7 @@ if canrun
 		-Dno_init_file $(CYGSRC)/make-smacros.red \
 		-Dhow_many=$(how_many) -Dhow_big=$(how_big) \
 		-L buildlogs/smacros.log
+	sed -i -e 's/::	;/:/g' *.dep
 	echo You may now copy smacros.red to trunk/packages/support
 else !canrun
 	echo Can not generate smacros.red on this platfrom
@@ -2232,9 +2244,11 @@ if canrun
 	./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) $(CYGSRC)/testall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/testslow.log
+	sed -i -e 's/::	;/:/g' *.dep
 	./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/checkslow.log
+	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
@@ -2246,9 +2260,11 @@ if canrun
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/testreduce.log
+	sed -i -e 's/::	;/:/g' *.dep
 	./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/checkall.log
+	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
@@ -2260,6 +2276,7 @@ if canrun
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/test$(which).log -Dwhich=$(which)
+	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
@@ -2273,6 +2290,7 @@ countall:	$(REDUCE_IMG)
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-Dcpulimit=30000 -Dconslimit=$(conslimit) \
 		-- testlogs/countreduce.log
+	sed -i -e 's/::	;/:/g' *.dep
 
 
 
@@ -2285,6 +2303,7 @@ if canrun
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/test$(which).log -Dwhich=$(which) \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit)
+	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not run tests on this platfrom
 endif !canrun
@@ -2298,6 +2317,7 @@ count1:	$(REDUCE_IMG)
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/count$(which).log -Dwhich=$(which) \
 		-Dcpulimit=30000 -Dconslimit=$(conslimit)
+	sed -i -e 's/::	;/:/g' *.dep
 
 endif valgrind
 
@@ -2307,6 +2327,7 @@ if canrun
 	./reduce$(COM) -v -w $(CSLFLAGS) $(CYGSRC)/checkall.red \
 		-Dno_init_file -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 		-- testlogs/checkall.log
+	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not check test results on this platfrom
 endif !canrun
@@ -2334,6 +2355,7 @@ if canrun
 		-D@cslbase="$(CYGSRC)" \
 		-o- -- buildlogs/csl.img.log \
 		-j csl.dep
+	sed -i -e 's/::	;/:/g' *.dep
 	if test -f csl.app/Contents/csl.img; \
 	then $(CP) -r csl.app/Contents/csl.img $(gensrc); \
 	elif test -f csl.img; then $(CP) -r csl.img $(gensrc); fi
@@ -2355,6 +2377,7 @@ csli.img:	csl$(COM) $(csldep)
 		-D@cslbase="$(CYGSRC)" \
 		-o csli.img -L buildlogs/csli.img.log \
 		-j csl.dep
+	sed -i -e 's/::	;/:/g' *.dep
 
 
 csl.dir:	csl$(COM) $(csldep)
@@ -2365,6 +2388,7 @@ if canrun
 		-o ./csl.img/ -D@cslbase="$(CYGSRC)" \
 		-- buildlogs/csl.img.log \
 		-j csl.dep
+	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not create csl.img on this platfrom
 	echo Copying from $(gensrc)
