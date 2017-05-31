@@ -708,10 +708,13 @@ static double rcbrt(double a)
 //
 // b is now in the range 0.5 to 1.  The next line produces an
 // approximately minimax linear approximation to the cube root
-//% function over the range concerned.
+// function over the range concerned.
 //
     b = 0.5996 + 0.4081*b;
-    while (x % 3 != 0) x--; b *= 1.26;
+    while (x % 3 != 0)
+    {   x--;
+        b *= 1.26;
+    }
     b = ldexp(b, x/3);
 //
 // Experiment shows that there are values of the input variable
