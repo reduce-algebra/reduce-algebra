@@ -2034,7 +2034,7 @@ if canrun
 	chmod 664 $(gensrc)/*
 	./bootstrapreduce$(EXEEXT) -w -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildboot.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-		-o boot.img -- buildlogs/boot.log \
+		-o boot.img -- buildlogs/boot.log
 else !canrun
 	echo Can not build boot.img on this platform
 endif !canrun
