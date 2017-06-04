@@ -28,7 +28,7 @@
 
 
 % Part of the Pascal to Lisp conversion code. This file will read in
-% lufy.tmp and create lufy.red
+% lufy.raw and create lufy.red
 
 lisp;
 on echo;
@@ -44,14 +44,14 @@ global '(input_data);
 
 begin
   scalar a, !*echo, !*raise, !*lower;
-  a := open("lufy.tmp", 'input);
+  a := open("lufy.raw", 'input);
   a := rds a;
   input_data := read();
   close rds a
 end;
 
 % A function that prints an S-expression truncating the output so it
-% will fit on one line.
+% will fit on one line. This is for debugging and logging purposes.
 
 symbolic procedure mediumprint(u, n);
   begin
@@ -67,7 +67,7 @@ symbolic procedure mediumprint(u, n);
 symbolic procedure shortprint u;
   mediumprint(u, 68);
 
-% This next function does the work.
+% This function "tidy" does the main work.
 
 global '(pending);
 pending := nil;
@@ -80,11 +80,6 @@ pending := nil;
 % To cope with scope issue, typedecs and vardecs must be rebound as I
 % start to process any BEGIN..END block or equivalent region of code
 % that defines a local scope.
-
-% I might - while I am about it - track when a variable name refers to a
-% procedure, integer or read typed value. I might not use that to start with
-% if I am translating into Lisp, but if I ever translated into some other
-% stricter language I could use that information.
 
 % When I see a reference to a field selection "V.f" I need to look up the
 % record type associated with V and identify the selector f based on that. I
@@ -99,6 +94,13 @@ symbolic procedure tidy x;
     if atom x then return x
     else if idp car x and (w := get(car x, 'tidyfn)) then
       return apply1(w, cdr x);
+% All the parse tree itsms that I know what to do with have "tidyfn" tags
+% so get handled above. During development there will be some that I have
+% not (yet) implemented, and I form those into a record of pending clauses.
+% When I first find an instance of a tag that I do not recognise I will
+% print it. I then count how many of each such occur, and at the end I can
+% dump those counts so that I have an idea of which of the not-handled cases
+% are most frequently used and hence perhaps deserve first attention.
     if not zerop posn() then terpri();
     long := 68;
     if w := assoc(car x, pending) then rplacd(w, add1 cdr w)
@@ -107,15 +109,37 @@ symbolic procedure tidy x;
       long := 400 >>;
     princ "%?: ";  % Unknown leading operator.
     mediumprint(x, long);
-    return '!?
+    return concat("???", symbol!-name car x)
   end;
 
-% Ignore the name that is given for the program
+% A Pascal program starts off "program Name" or "program Name(id-list)"
+% and I use the name as the name of a function to run it. I ignore any list
+% of identifiers that appears after the name!
+% At present I also do not support "module".
+
+% I want all procedure definitions to end up lifted to the outer level, so
+% while expanding code I collect them in "procdefs" and I tage that onto my
+% result at the end. Sort of similarly for top-level variables and constants,
+% using vardefs.
+
+fluid '(vardefs procdefs within_procedure);
 
 symbolic procedure tidyprogram u;
-  tidy cadr u;      
+  begin
+    scalar vardefs, procdefs, w, within_procedure;
+    w := list('de,
+              intern concat(symbol!-name cadr car u, "entrypoint"), nil,
+              tidy cadr u);
+    return mkprogn3(vardefs, w, procdefs)
+  end;
 
 put('program, 'tidyfn, 'tidyprogram);
+
+% There are a number of places where I wish to generate sequences of
+% operations, and in the generated Lisp those will be represented using
+% PROGN. Here I arrange to avoid generating unnecessary nested uses of
+% PROGN, so I exploit associativity and set up for instance (progn a b c d)
+% rather than (progn (progn a b) (progn c d)).
 
 symbolic procedure mkprogn2(u, v);
   if null u then v
@@ -138,6 +162,11 @@ symbolic procedure mkprogn5(u, v, w, x, y);
 symbolic procedure mkprogn6(u, v, w, x, y, z);
   mkprogn2(u, mkprogn2(v, mkprogn2(w, mkprogn2(x, mkprogn2(y, z)))));
 
+% A Pascal block is parser with six sorts of stuff in it, starting with
+% level declarations and ending in the list of statements to be obeyed.
+% I need to arrange that the declarations that are introduced are recorded
+% as in scope for the later parts of the block.
+
 symbolic procedure tidyblock u;
   begin
     scalar labs, consts, types, vars, procs, stmts;
@@ -147,13 +176,36 @@ symbolic procedure tidyblock u;
     vars := car u; u := cdr u;
     procs := car u; u := cdr u;
     stmts := car u;
-    return mkprogn6(
-      tidy labs,
-      tidy consts,
-      tidy types,
-      tidy vars,
-      tidy procs,
-      list('de, 'texmain, nil, tidy stmts))
+% When I have forms that can introduce declarations I will let the TIDYFN
+% update the variables typedecs and vardecs. In places like this I have
+% set up new bindings for these so that they get retored once processing the
+% block is complete. This behaviour means that I need to tidy the
+% declarations in the correct order. The "block" construct can arise as the
+% main contents of a whole file or as the body of a procedure or function.
+    labs := tidy labs;
+    consts := tidy consts;
+    types := tidy types;
+    vars := tidy vars;
+    procs := tidy procs;
+    stmts := tidy stmts;
+    procdefs := mkprogn2(procdefs, procs);
+    return mkprogn5(
+% label, constant and type declarations are made here and I rather hope that
+% none of those expand into executable code. The declaraction effect of them
+% will have been made available to procedures defined in their scope. Well
+% this slightly concerns me as regards contant declarations - if I replace
+% names by the associated values at this language conversion time I will get
+% correct behaviour but I will lose some clarity. Hmmm that may need further
+% though.
+      labs,
+      consts,
+      types,
+% Variables are declared before procedures, so the variables may be expected
+% to be accessible within those procedures. To achive that the processing
+% of a variable declaration can stick something that establishes a global
+% variable onto procdefs. 
+      vars,
+      stmts)
   end where typedefs=typedecs, vardecs = vardecs;
 
 put('block, 'tidyfn, 'tidyblock);
@@ -194,9 +246,10 @@ symbolic procedure tidylabeldec u;
 put('labeldec, 'tidyfn, 'tidylabeldec);
 
 symbolic procedure tidyconstdef u;
-  mkprogn2(
-    list('global, mkquote list car u),
-    list('setq, car u, cadr u));
+  <<vardefs := mkprogn3(vardefs,
+      list('global, mkquote list car u),
+      list('setq, car u, cadr u));
+    nil>>;
 
 put('constdef, 'tidyfn, 'tidyconstdef);
 
@@ -344,7 +397,7 @@ begin
   terpri();
   seqprint tidy input_data;
   terpri();
-  printf "% End of lufy.red";
+  printf "% End of lufy.red%n%n";
   close wrs a;
   terpri();
   print "lufy.red created";
