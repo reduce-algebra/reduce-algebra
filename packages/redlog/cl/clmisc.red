@@ -883,79 +883,42 @@ procedure cl_smt2PrefixPrint(op, argl);
 
 rl_provideService rl_smt2Read = cl_smt2Read using rl_smt2ReadAt;
 
+fluid '(!*smtsplain);
+fluid '(smt_assertionl!*);
+
 procedure cl_smt2Read(file);
    % [file] is a string.
-   begin scalar filech,  oldch, w;
+   begin scalar filech, oldch, w, form, smt_assertionl!*, !*smtsplain;
+      !*smtsplain := t;
       filech := open(file, 'input);
       oldch := rds filech;
-      w := cl_smt2Read1();
-      rds oldch;
-      return w
-   end;
-
-procedure cl_smt2Read1();
-   begin scalar inp, w, phil;
-      while (inp := read()) neq '(check!-sat) do
-      	 if eqcar(inp, 'assert) then <<
-	    w := cl_smt2ReadForm cadr inp;
-	    phil := w . phil;
-      	 >>;
-      return cl_ex(rl_smkn('and, phil),nil)
-   end;
-
-
-procedure cl_smt2ReadForm(form);
-   % SMT lib 2 read. Form is the argument of an assert form in the smt2 format.
-   % Returns a quantifier-free formula.
-   cl_smt2ReadForm1 cl_xpandlet(form, nil);
-
-asserted procedure cl_xpandlet(u: List, letal: AList): List;
-   begin scalar bl, w;
-      if atom u then
-	 return if (w := atsoc(u, letal)) then cdr w else u;
-      if not pairp u then
-	 rederr {"cl_xpandlet: something wrong:", u};
-      if car u eq 'let then <<
-	 u := cdr u;
-      	 if not u then
-	    rederr "cl_xpandlet: syntax error in let";
-      	 bl := pop u;
-      	 for each b in bl do
-	    letal := (car b . cadr b) . letal;
-      	 if not u then
-	    rederr "cl_xpandlet: syntax error in let";
-      	 w := cl_xpandlet(pop u, letal);
-      	 if u then
-	    rederr "cl_xpandlet: syntax error in let";
-      	 for each b in bl do
-	    letal := cdr letal;
-      	 return w
+      form := smt_rread();
+      while not cl_smt2ReadLastFormP form do <<
+	 w := errorset({'smt_processForm, mkquote form}, t, t);
+       	 if errorp w then <<
+	    rds oldch;
+	    close filech;
+ 	    rederr nil
+ 	 >>;
+      	 form := smt_rread()
       >>;
-      if car u eq '!:dn!: then
- 	 return u;
-      return car u . for each arg in cdr u collect cl_xpandlet(arg, letal)
+      rds oldch;
+      close filech;
+      return rl_smkn('and, smt_assertionl!*)
    end;
 
-procedure cl_smt2ReadForm1(form);
-   % SMT lib 2 read. Form is the argument of an assert form in the smt2 format.
-   % Returns a quantifier-free formula.
-   begin scalar op;
-      if form memq '(true false) then
-	 return form;
-      op := car form;
-      if op eq '!=!> or op eq 'implies then
- 	 op := 'impl;
-      if op memq '(not impl) then
-	 return rl_mkn(op, for each arg in cdr form collect
- 	    cl_smt2ReadForm arg);
-      if op memq '(and or) then
-	 return rl_smkn(op, for each arg in cdr form collect
- 	    cl_smt2ReadForm arg);
-      return rl_smt2ReadAt form
-   end;
+asserted procedure cl_smt2ReadLastFormP(form: Any): Boolean;
+   form eq !$eof!$ or eqcar(form, 'check!-sat) or eqcar(form, 'exit);
 
-procedure cl_smt2ReadError(x);
-   error(99, x);
+%% procedure cl_smt2Read1();
+%%    begin scalar inp, w, phil;
+%%       while (inp := smt_rread()) neq '(check!-sat) do
+%%       	 if eqcar(inp, 'assert) then <<
+%% 	    w := cl_smt2ReadForm cadr inp;
+%% 	    phil := w . phil;
+%%       	 >>;
+%%       return cl_ex(rl_smkn('and, phil),nil)
+%%    end;
 
 rl_provideService rl_sign = cl_sign using rl_signat;
 

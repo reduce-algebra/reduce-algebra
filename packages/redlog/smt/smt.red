@@ -119,7 +119,7 @@ procedure smt_processForm(form);
    else if eqcar(form, 'get!-unsat!-core) then
       smt_processGetUnsatCore()
    else if eqcar(form, 'print!-assertions) then
-      smt_processPrintAssertions()
+      smt_processPrintAssertions form
    else if eqcar(form, 'reset) then
       smt_processReset()
    else if eqcar(form, 'set!-logic) then
@@ -149,7 +149,7 @@ procedure smt_processForm(form);
 
 procedure smt_processHelp();
    <<
-      ioto_tprin2t "(set-logic <symbol>)      <symbol> must be QF_NRA";
+      ioto_tprin2t "(set-logic <symbol>)      <symbol> must be in {NRA, QF_NRA}";
       ioto_tprin2t "(declare-const)           ingored";
       ioto_tprin2t "(declare-fun)             ingored";
       ioto_tprin2t "(assert <form>)           add assertions";
@@ -175,7 +175,7 @@ procedure smt_processHelp();
 
 procedure smt_processAssert(constraint);
    <<
-      smt_assertionl!* := nconc(smt_assertionl!*, {cl_smt2ReadForm constraint});
+      smt_assertionl!* := nconc(smt_assertionl!*, {smt_toRl constraint});
       smt_oassertionl!* := nconc(smt_oassertionl!*, {constraint});
       smt_model!* := 'unset;
       smt_unsatcore!* := 'unset;
@@ -306,24 +306,30 @@ procedure smt_processGetUnsatCore();
       smt_prin2t core
    end;
 
-procedure smt_processPrintAssertions();
+procedure smt_processPrintAssertions(form);
    if !*smtsplain then
-      smt_processPrintAssertions1()
+      smt_processPrintAssertions1(form)
    else <<
       lr_result();
-      smt_processPrintAssertions1();
+      smt_processPrintAssertions1(form);
       lr_statcounter();
       prin2 0;
       lr_mode();
       prin2 2
    >>;
 
-procedure smt_processPrintAssertions1();
-   <<
+procedure smt_processPrintAssertions1(form);
+   begin scalar svsymm;
       smt_checkAlConsistency();
       for each a in smt_oassertionl!* do
-      	 prin2t a
-   >>;
+	 if cdr form and cadr form eq '!:pretty then <<
+	    svsymm := !*pretty!-symmetric;
+ 	    !*pretty!-symmetric := nil;
+	    prettyprint a;
+ 	    !*pretty!-symmetric := svsymm
+	 >> else
+      	    prin2t a
+   end;
 
 procedure smt_checkAlConsistency();
    begin scalar al, oal;
@@ -373,7 +379,7 @@ procedure smt_processGetOption(option);
    end;
 
 procedure smt_processSetLogic(id);
-   if id eq '!Q!F_!N!R!A then <<
+   if id memq '(!N!R!A !Q!F_!N!R!A) then <<
       rl_set '(ofsf);
       smt_prin2t ""
    >> else if id eq '!Q!F_!N!I!A or id eq '!Q!F_!L!I!A then <<
@@ -433,6 +439,71 @@ procedure smt_getOption(option);
       if not w then
 	 rederr {"smt_getOption:", option, "unkown"};
       return cdr w
+   end;
+
+asserted procedure smt_xpandlet(u: List): List;
+   smt_xpandlet1(u, nil);
+
+asserted procedure smt_xpandlet1(u: List, letal: AList): List;
+   begin scalar bl, w;
+      if atom u then
+	 return if (w := atsoc(u, letal)) then cdr w else u;
+      if not pairp u then
+	 rederr {"smt_xpandlet: something wrong:", u};
+      if car u eq 'let then <<
+	 u := cdr u;
+      	 if not u then
+	    rederr "smt_xpandlet: syntax error in let";
+      	 bl := pop u;
+      	 for each b in bl do
+	    letal := (car b . cadr b) . letal;
+      	 if not u then
+	    rederr "smt_xpandlet: syntax error in let";
+      	 w := smt_xpandlet1(pop u, letal);
+      	 if u then
+	    rederr "smt_xpandlet: syntax error in let";
+      	 for each b in bl do
+	    letal := cdr letal;
+      	 return w
+      >>;
+      if car u eq '!:dn!: then
+ 	 return u;
+      return car u . for each arg in cdr u collect smt_xpandlet1(arg, letal)
+   end;
+
+procedure smt_toRl(form);
+   % SMT lib 2 read. Form is the argument of an assert form in the smt2 format.
+   % Returns a quantifier-free formula.
+   smt_toRl1 smt_xpandlet form;
+
+procedure smt_toRl1(form);
+   % SMT lib 2 read. Form is the argument of an assert form in the smt2 format.
+   % Returns a quantifier-free formula.
+   begin scalar op, w;
+      if form memq '(true false) then
+	 return form;
+      op := car form;
+      if op eq '!=!> or op eq 'implies then
+ 	 op := 'impl;
+      if op memq '(not impl) then
+	 return rl_mkn(op, for each arg in cdr form collect
+ 	    smt_toRl1 arg);
+      if op memq '(and or) then
+	 return rl_smkn(op, for each arg in cdr form collect
+ 	    smt_toRl1 arg);
+      if op eq 'exists then <<
+	 w := smt_toRl1 caddr form;
+	 for each l2 in reverse cadr form do
+	    w := rl_mkq('ex, car l2, w);
+	 return w
+      >>;
+      if op eq 'forall then <<
+	 w := smt_toRl1 caddr form;
+	 for each l2 in reverse cadr form do
+	    w := rl_mkq('all, car l2, w);
+	 return w
+      >>;
+      return rl_smt2ReadAt form
    end;
 
 endmodule;
