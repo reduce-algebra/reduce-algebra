@@ -257,7 +257,7 @@ component_type : type_denoter
 record_type : RECORD record_section_list END
                    { $$ = item("recordtype", $2, NULL); }
  | RECORD record_section_list semicolon variant_part END
-                   { $$ = item("recordtype", $2, $3); }
+                   { $$ = item("recordtype", $2, $4); }
  | RECORD variant_part END
                    { $$ = item("recordtype", NULL, $2); }
  ;
@@ -292,17 +292,22 @@ variant_list : variant_list semicolon variant
  ;
 
 variant : case_constant_list COLON LPAREN record_section_list RPAREN
+                   { $$ = item("variant", $1, $4, NULL); }
  | case_constant_list COLON LPAREN record_section_list semicolon
-  variant_part RPAREN
+                      variant_part RPAREN
+                   { $$ = item("variant", $1, $4, $6); }
  | case_constant_list COLON LPAREN variant_part RPAREN
- ;
+                   { $$ = item("variant", $1, NULL, $4); }
+
 
 case_constant_list : case_constant_list comma case_constant
+                   { $$ = item("appendcaseconstant", $1, $3); }
  | case_constant
+                   { $$ = $1; }
  ;
 
-case_constant : constant
- | constant DOTDOT constant
+case_constant : constant   { $$ = $1; }
+ | constant DOTDOT constant { $$ = item("range", $1, $3); }
  ;
 
 tag_field : identifier

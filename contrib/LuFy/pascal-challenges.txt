@@ -64,7 +64,16 @@ it also becomes straightforward.
 Well variant records will need further care. As far as I can see the Pascal
 for TeX does not use variant types (only variant records). It also does not
 seem to use the "with" construction, so all access to components of records
-will be directly and clearly visible.
+will be directly and clearly visible. Furthermore the variant records that
+it uses are free unions (ie no tag field is used, so the behaviour is basically
+just like and as insecure as C unions). The examples used are
+      twohalves = halfword, (halfword | byte, byte)
+and   memoryword = integer | real | twohalves | fourquarters
+and these rely on twohalves and fourquarters being packed records. It is
+jolly clear what the intent of these is! Arranging translation that is
+based on some generic scheme rather than an utterly hacky detection of
+these as special cases is potentially a bit delicate. so I MAY end up
+with specialist hand-crafted treatment!
 
 (6) Type-punning via variant records. I believe that when TeX uses the
 variant record "memoryword" and will keep an integer, a 32-bit float,
@@ -92,7 +101,14 @@ point is going to be ugly (to say the least). I will take the attitude that
 I will not need to consider Sub-normal numbers, Infinities or NaNs and that
 performance will be unimportant, so I will just go ahead and cope.
 
+All this is really elaborating on what I have already said about the use of
+a free union for memoryword.
+
+(7) An identifier present within an expression could denote call to
+a function that does not take any arguments, or it could be reference
+to a variable. Context information needs to resolve this.
 
 
 
+@end of file@
  

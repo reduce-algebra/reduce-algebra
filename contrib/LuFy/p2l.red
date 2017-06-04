@@ -112,6 +112,73 @@ symbolic procedure tidy x;
     return concat("???", symbol!-name car x)
   end;
 
+symbolic procedure tidytypedeflist u;
+ << tidy car u;
+    tidy cadr u;
+    nil >>;
+
+put('typedeflist, 'tidyfn, 'tidytypedeflist);
+
+symbolic procedure tidytypedef u;
+  begin
+    typedecs := (car u . tidy cadr u) . typedecs;
+    printf("Define type %p = %p%n", caar typedecs, cdar typedecs);
+    return nil
+  end;
+
+put('typedef, 'tidyfn, 'tidytypedef);
+
+symbolic procedure tidysubrangetype u;
+   list('subrange, tidy car u, tidy cadr u);
+
+put('subrangetype, 'tidyfn, 'tidysubrangetype);
+
+symbolic procedure tidyenumeratedtype u;
+   list('enumerated, tidy car u);
+
+put('enumeratedtype, 'tidyfn, 'tidyenumeratedtype);
+
+% If I have a record type it will have a list of selectors that can be
+% used with it
+
+symbolic procedure tidyrecseclist u;
+  append(tidy car u, list tidy cadr u);
+
+put('recseclist, 'tidyfn, 'tidyrecseclist);
+
+symbolic procedure tidyrecsec u;
+  begin
+    scalar w;
+    w := tidy cadr u;
+    return for each n in tidy car u collect list(n, w) 
+  end;
+
+put('recsec, 'tidyfn, 'tidyrecsec);
+
+symbolic procedure tidyrecordtype u;
+   list('record, tidy car u, tidy cadr u); 
+
+put('recordtype, 'tidyfn, 'tidyrecordtype);
+
+
+
+
+
+% I think that the easiest path for me to take here is to suppose that
+% the word "packed" has no impact. I think that when I have variant
+% records I will need all their components to be packed against the
+% prospect of deliberate aliasing between them (see the memoryword type
+% and reading and writing dump files in this regard) but I rather hope
+% that apart from the variant issue the issue of packed vs not packed is
+% going to be purely one of a speed/space tradeoff and is not actually
+% something I need to worry about too much these days.
+
+symbolic procedure tidypackedtype u;
+  tidy car u;
+
+put('packedtype, 'tidyfn, 'tidypackedtype);
+
+
 % A Pascal program starts off "program Name" or "program Name(id-list)"
 % and I use the name as the name of a function to run it. I ignore any list
 % of identifiers that appears after the name!
@@ -206,7 +273,11 @@ symbolic procedure tidyblock u;
 % variable onto procdefs. 
       vars,
       stmts)
-  end where typedefs=typedecs, vardecs = vardecs;
+  end
+% If a way that seems truly ugly, if I put the "where" on the same line as
+% the "end" Reduce would moan, because once upon a time in the distant past
+% you could put comments after the word "end".
+  where typedefs=typedecs, vardecs = vardecs;
 
 put('block, 'tidyfn, 'tidyblock);
 
