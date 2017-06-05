@@ -126,6 +126,8 @@ procedure smt_processForm(form);
       smt_processSetLogic cadr form
    else if eqcar(form, 'read) then
       smt_processRead cadr form
+   else if eqcar(form, 'eliminate!-quantifiers) then
+      smt_processEliminateQuantifiers()
    else if eqcar(form, 'reduce!-eval) then
       smt_processReduceEval cadr form
    else if eqcar(form, 'reduce!-dump!-assertions) then
@@ -207,6 +209,17 @@ procedure smt_processAssert(constraint);
 %%       else
 %% 	 smt_prin2t 'unknown
 %%    end;
+
+procedure smt_processEliminateQuantifiers();
+   begin scalar w;
+      off1 'rlqeinfcore;
+      w := errorset({'ofsf_qe, {'rl_smkn, ''and, mkquote smt_assertionl!*}, nil}, t, !*backtrace);
+      on1 'rlqeinfcore;
+      if errorp w then
+	 return smt_error();
+      cl_smt2PrintQff car w;
+      terpri()
+   end;
 
 procedure smt_processCheckSat();
    begin scalar w, tval, model;
@@ -335,7 +348,7 @@ procedure smt_checkAlConsistency();
    begin scalar al, oal;
       al := smt_assertionl!*;
       oal := smt_oassertionl!*;
-      while al and oal and car al = cl_smt2ReadForm car oal do <<
+      while al and oal and car al = smt_toRl car oal do <<
 	 al := cdr al;
 	 oal := cdr oal
       >>;
