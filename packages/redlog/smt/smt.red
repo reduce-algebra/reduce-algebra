@@ -217,8 +217,7 @@ procedure smt_processEliminateQuantifiers();
       on1 'rlqeinfcore;
       if errorp w then
 	 return smt_error();
-      cl_smt2PrintQff car w;
-      terpri()
+      smt_prin2t smt_fromRl car w
    end;
 
 procedure smt_processCheckSat();
@@ -517,6 +516,47 @@ procedure smt_toRl1(form);
 	 return w
       >>;
       return rl_smt2ReadAt form
+   end;
+
+procedure smt_fromRl(f);
+   begin scalar op;
+      op := rl_op f;
+      if rl_tvalp op then
+	 return op;
+      if op memq '(not and or) then
+	 return op . for each subf in rl_argn f collect smt_fromRl subf;
+      if op eq 'impl then
+	 return {'!=!>, smt_fromRl rl_arg2l f, smt_fromRl rl_arg2r f};
+      if op eq 'repl then
+	 return {'!=!>, smt_fromRl rl_arg2r f, smt_fromRl rl_arg2l f};
+      if op eq 'equiv then
+	 return {'and,
+ 	    {'!=!>, smt_fromRl rl_arg2l f, smt_fromRl rl_arg2r f},
+	    {'!=!>, smt_fromRl rl_arg2r f, smt_fromRl rl_arg2l f}};
+      return smt_fromrlAt f
+   end;
+
+procedure smt_fromRlAt(f);
+   begin scalar opal, op, w;
+      op := rl_op f;
+      lhs := prepf ofsf_arg2l f;
+      if op eq 'neq then
+	 return {'not, smt_fromRlAt ofsf_0mk2('equal,ofsf_arg2l f)};
+      opal := '((lessp . !<) (leq . !<!=) (greaterp . !>) (geq . !>!=) (equal . !=));
+      op := if w := atsoc(op, opal) then cdr w else op;
+      return {op, smt_fromRlTerm prepf ofsf_arg2l f, 0}
+   end;
+
+procedure smt_fromRlTerm(u);
+   begin scalar op, argl, opal;
+      if numberp u or idp u then
+      	 return u;
+      op . argl := u;
+      if op eq 'expt then
+	 return smt_fromRlTerm('times . for i:=1:cadr argl collect car argl);
+      opal := '((difference . !-) (minus . !-) (plus . !+) (times . !*));
+      op := if w := atsoc(op, opal) then cdr w else op;
+      return op . for each subt in argl collect smt_fromRlTerm subt
    end;
 
 endmodule;

@@ -258,6 +258,7 @@ put('ofsf,'rl_services,'(
    (rl_preqe!* . ofsf_preqe)
    (rl_mathematica!* . mma_mathematica)
    (rl_qepcad!* . qepcad_qepcad)
+   (rl_nra2qf!* . cl_nra2qf)	 
    (rl_slfq!* . qepcad_slfq)));
 
 % Admin

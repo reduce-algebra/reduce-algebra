@@ -360,6 +360,14 @@ rl_service {
    mode = both};
 
 rl_service {
+   name = nra2qf,
+   doc = "translate SMTLIB file from NRA to QF_NRA",
+   arg = {pos = 1, name = infile, type = String, doc = "smt2 input file (NRA)"},
+   arg = {pos = 2, name = outfile, type = String, doc = "smt2 output file (QF_NRA)"},
+   returns = {type = Void},
+   mode = both};
+
+rl_service {
    name = opt,
    doc = "optimize linear objective function subject to linear constraints",
    arg = {pos = 1, name = constraints, type = List(Atom), doc = "linear constraints"},

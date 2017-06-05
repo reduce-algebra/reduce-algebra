@@ -888,8 +888,10 @@ fluid '(smt_assertionl!*);
 
 procedure cl_smt2Read(file);
    % [file] is a string.
-   begin scalar filech, oldch, w, form, smt_assertionl!*, !*smtsplain;
+   begin scalar filech, oldch, w, form, smt_assertionl!*, !*smtsplain, raise;
       !*smtsplain := t;
+      raise := !*raise;
+      !*raise := !*lower := nil;
       filech := open(file, 'input);
       oldch := rds filech;
       form := smt_rread();
@@ -898,12 +900,14 @@ procedure cl_smt2Read(file);
        	 if errorp w then <<
 	    rds oldch;
 	    close filech;
+      	    !*raise := raise;
  	    rederr nil
  	 >>;
       	 form := smt_rread()
       >>;
       rds oldch;
       close filech;
+      !*raise := raise;
       return rl_smkn('and, smt_assertionl!*)
    end;
 
@@ -919,6 +923,13 @@ asserted procedure cl_smt2ReadLastFormP(form: Any): Boolean;
 %%       	 >>;
 %%       return cl_ex(rl_smkn('and, phil),nil)
 %%    end;
+
+asserted procedure cl_nra2qf(infile: String, outfile: String);
+   begin scalar w, fl;
+      w := cl_qe(cl_smt2Read infile, nil);
+      fl := if rl_op w eq 'and then rl_argn w else {w};
+      cl_smt2Print(rl_ex(w, nil), outfile, nil)
+   end;
 
 rl_provideService rl_sign = cl_sign using rl_signat;
 
