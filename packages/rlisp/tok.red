@@ -967,6 +967,7 @@ symbolic procedure token;
 symbolic procedure filenderr;
    begin
       curescaped!* := nil;
+      cursym!* := '!*semicol!*;
       eof!* := eof!*+1;
       if terminalp() then error1()
        else error(99,if ifl!*
