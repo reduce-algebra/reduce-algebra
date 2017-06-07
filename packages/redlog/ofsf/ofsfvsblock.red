@@ -57,10 +57,7 @@ asserted procedure vs_patchfnal(key: Id, value: Applicable);
    vs_fnal!* := lto_alpatch(key, value, vs_fnal!*);
 
 asserted procedure vs_applyfn(fn: Id, argl: List): Any;
-   <<
-      ioto_tprin2t vs_fnal!*;
-      apply(cdr atsoc(fn, vs_fnal!*), argl)
-   >>;
+   apply(cdr atsoc(fn, vs_fnal!*), argl);
 
 %%% implementation of parameterizing procedures
 
