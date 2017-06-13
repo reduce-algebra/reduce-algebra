@@ -925,10 +925,11 @@ asserted procedure cl_smt2ReadLastFormP(form: Any): Boolean;
 %%    end;
 
 asserted procedure cl_nra2qf(infile: String, outfile: String);
-   begin scalar w, fl;
+   begin scalar w, fl, linel;
       w := cl_qe(cl_smt2Read infile, nil);
-      fl := if rl_op w eq 'and then rl_argn w else {w};
-      cl_smt2Print(rl_ex(w, nil), outfile, nil)
+%%       fl := if rl_op w eq 'and then rl_argn w else {w};
+      linel := {lto_sconcat {"(set-info :source | obtained from ", infile, " by Redlog Qe |)"}};
+      cl_smt2Print(rl_ex(w, nil), outfile, linel)
    end;
 
 rl_provideService rl_sign = cl_sign using rl_signat;
