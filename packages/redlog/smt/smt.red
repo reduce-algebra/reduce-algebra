@@ -457,7 +457,7 @@ asserted procedure smt_xpandlet(u: List): List;
    smt_xpandlet1(u, nil);
 
 asserted procedure smt_xpandlet1(u: List, letal: AList): List;
-   begin scalar bl, w;
+   begin scalar bl, w, oletal;
       if atom u then
 	 return if (w := atsoc(u, letal)) then cdr w else u;
       if not pairp u then
@@ -466,9 +466,10 @@ asserted procedure smt_xpandlet1(u: List, letal: AList): List;
 	 u := cdr u;
       	 if not u then
 	    rederr "smt_xpandlet: syntax error in let";
+	 oletal := letal;
       	 bl := pop u;
       	 for each b in bl do
-	    letal := (car b . cadr b) . letal;
+	    letal := (car b . smt_xpandlet1(cadr b, oletal)) . letal;
       	 if not u then
 	    rederr "smt_xpandlet: syntax error in let";
       	 w := smt_xpandlet1(pop u, letal);
