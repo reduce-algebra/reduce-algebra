@@ -43,7 +43,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber* sigaddr*))
+(fluid '(errornumber* sigaddr* arith-exception-type*))
 
 (compiletime
  (progn
@@ -67,6 +67,11 @@
      ,handler
      (*move (wconst ,signumber) (reg 1))
      (*move (reg 1)(fluid errornumber*))
+     % for arithmetic expressions, get exception subtype:
+     % Reg RSI contains a pointer to a siginto_t structure, and at offset 8
+     % there is si_code (4 byte integer) which is the FPE subtype
+     (*field (reg 2) (displacement (reg rsi) 8) 32 32)
+     (*move (reg 2) (fluid arith-exception-type*))
      (*move ,handler (reg 2))
      (*move (memory (reg rdx) 168) (fluid sigaddr*))   % instruction pointer at fault
      (*link sigrelse expr 2)
@@ -87,24 +92,37 @@
  
 (lap '(
    % (*sigsetup 1  Huphandler  Huphandlerinstruction  "Hup")
-       (*sigsetup 2  Inthandler  IntHandlerInstruction  "Interrupt")
-       (*sigsetup 3  QuitHandler QuitHandlerInstruction "Quit")
-       (*sigsetup 4  IllHandler  IllHandlerInstruction  "Illegal Instruction")
-       (*sigsetup 5  Traphandler TrapHandlerInstruction "Trace Trap")
-       (*sigsetup 6  IotHandler  IotHandlerInstruction  "IOT Instruction")
-       (*sigsetup 7  Emthandler  EmtHandlerInstruction  "EMT Instruction")
-       (*sigsetup 8  FpeHandler  FpeHandlerInstruction "Floating Pt Exception")
-       (*sigsetup 10 Bushandler  BusHandlerInstruction  "Bus Error")
-       (*sigsetup 11 SegHandler  SegHandlerInstruction
-                                    "Segmentation Violation")
-       (*sigsetup 12 SysHandler  SysHandlerInstruction
-                                    "Bad Args to System Call")
-       (*sigsetup 13 PipeHandler PipeHandlerinstruction
-                                    "Write on Pipe With Noone to Read")
-       (*sigsetup 14 AlrmHandler AlrmHandlerInstruction "Alarm Clock")
-       (*entry initializeinterrupts-1 expr 0)
-       (*sigcall)
-       (*exit 0)))
+   (*sigsetup 2  Inthandler   IntHandlerInstruction   "Interrupt")
+   (*sigsetup 3  QuitHandler  QuitHandlerInstruction  "Quit")
+   (*sigsetup 4  IllHandler   IllHandlerInstruction   "Illegal Instruction")
+   (*sigsetup 5  Traphandler  TrapHandlerInstruction  "Trace Trap")
+   (*sigsetup 6  AbortHandler AbortHandlerInstruction "Program aborted")
+   (*sigsetup 7  Bushandler   BusHandlerInstruction   "Bus error")
+   (*sigsetup 8  FpeHandler   FpeHandlerInstruction   "Arithmetic Exception")
+%   (*sigsetup 10 Usr1handler  Usr1HandlerInstruction  "User defined signal 1")
+   (*sigsetup 11 SegHandler   SegHandlerInstruction   "Segmentation Violation")
+%   (*sigsetup 12 Usr2handler  Usr2HandlerInstruction  "User defined signal 2")
+   (*sigsetup 13 PipeHandler  PipeHandlerinstruction  "Write on Pipe With Noone to Read")
+   (*sigsetup 14 AlrmHandler  AlrmHandlerInstruction  "Alarm Clock")
+   (*sigsetup 15 TermHandler  TermHandlerInstruction  "Termination signal")
+%   (*sigsetup 16 STKXhandler STKXHandlerInstruction   "Stack fault")
+%   (*sigsetup 17 Childhandler ChildHandlerInstruction "Child waiting")
+%   (*sigsetup 18 Conthandler  ContHandlerInstruction  "SIGCONT received")
+%   (*sigsetup 20 Stophandler  StopHandlerInstruction  "SIGTSTP received")
+%   (*sigsetup 21 Ttinhandler  TtinHandlerInstruction  "Bg process waiting for input")
+%   (*sigsetup 22 Ttouhandler  TtouHandlerInstruction  "Bg process waiting for output")
+%   (*sigsetup 23 Urghandler   UrgHandlerInstruction   "Urgent out-of-band data")
+   (*sigsetup 24 CPUXhandler  CPUXHandlerInstruction  "CPU time limit exceeded")
+   (*sigsetup 25 FileXhandler FileXHandlerInstruction "File size limit exceeded")
+%   (*sigsetup 26 VAlrmHandler VAlrmHandlerInstruction "CPU Timer")
+%   (*sigsetup 27 ProfHandler ProfHandlerInstruction  "Profiling timer")
+%   (*sigsetup 28 WinchHandler WinchHandlerInstruction "Window size change")
+%   (*sigsetup 29 IOHandler    IOHandlerInstruction    "IO ready")
+   (*sigsetup 30 Pwrhandler   PwrHandlerInstruction   "Power failure")
+   (*sigsetup 31 Syshandler   SysHandlerInstruction   "Bad system call")
+   (*entry initializeinterrupts-1 expr 0)
+   (*sigcall)
+   (*exit 0)))
  
 (de initializeinterrupts ()
      %  (ieee_flags (strbase (strinf "set")) (strbase (strinf "direction"))
@@ -144,6 +162,11 @@
      (pop (reg 2))
      (*move (fluid errornumber*) (reg 1))
      (*wplus2 (reg 1)(wconst 10000))
+     % if the error number = 8 (arithmetic exception), pass the subtype in register 3
+     (*move (wconst 0) (reg 3))
+     (*jumpnoteq (label done) (fluid errornumber*) 8)
+     (*move (fluid arith-exception-type*) (reg 3))
+    done
      (*jcall error-trap) 
      ))
 
@@ -169,8 +192,35 @@
        (wait)
        (*exit 0)))
 
-(de error-trap (errornumber errorstring)
-  (error errornumber (build-trap-message errorstring sigaddr*)))
+%% Error subtypes for arithmetic exception
+(define-constant FPE_INTDIV 1)
+(define-constant FPE_INTOVF 2)
+(define-constant FPE_FLTDIV 3)
+(define-constant FPE_FLTOVF 4)
+(define-constant FPE_FLTUND 5)
+(define-constant FPE_FLTRES 6)
+(define-constant FPE_FLTINV 7)
+(define-constant FPE_FLTSUB 8)
+
+%% convert arithmetic error subtype to error message
+(de get-fpe-errmsg (n)
+  (cond
+    ((eq n FPE_INTDIV) "Integer divide by zero")
+    ((eq n FPE_INTOVF) "Integer overflow")
+    ((eq n FPE_FLTDIV) "Floating point divide by zero")
+    ((eq n FPE_FLTOVF) "Floating point overflow")
+    ((eq n FPE_FLTUND) "Floating point underflow")
+    ((eq n FPE_FLTRES) "Floating point inexact result")
+    ((eq n FPE_FLTINV) "Floating point invalid operation")
+    ((eq n FPE_FLTSUB) "Subscript out of range")
+    (t "Arithmetic exception")))
+
+(de error-trap (errornumber errorstring arithsubtype)
+  (error errornumber
+   (build-trap-message
+    (if (eq errornumber* 8) (get-fpe-errmsg arithsubtype)
+	errorstring)
+    sigaddr*)))
 
 (de build-trap-message (trap-type trap-addr)
     (let (extra-info)
