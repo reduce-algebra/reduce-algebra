@@ -730,11 +730,40 @@ LispObject Linteger_decode_float(LispObject env, LispObject a)
 }
 
 static LispObject Linteger_length(LispObject env, LispObject a)
-{   return Lmsd(nil, Labsval(nil, a));
+{   if (is_fixnum(a))
+    {   intptr_t n = int_of_fixnum(a);
+        if (n < 0) n = -n-1;
+// Now n is positive.
+        int r = 0;
+        if (SIXTY_FOUR_BIT &&
+            n >= (intptr_t)INT64_C(0x100000000))
+            r += 32, n = (intptr_t)((int64_t)n >> 32);
+        if (n >= 0x10000) r += 16, n >>= 16;
+        if (n >= 0x100)   r += 8,  n >>= 8;
+        return onevalue(fixnum_of_int(r + msd_table[n]));
+    }
+    if (!is_numbers(a) || !is_bignum(a)) aerror1("integer-length", a);
+    if (minusp(a)) a = sub1(negate(a));
+    return Lmsd(nil, a);
 }
 
 static LispObject Llogbitp(LispObject env, LispObject a1, LispObject a2)
-{   aerror("logbitp");
+{   if (!is_fixnum(a1) || (intptr_t)a1 < 0)
+        aerror1("logbitp", a1);
+    intptr_t n = int_of_fixnum(a1);
+    if (is_fixnum(a2))
+    {   intptr_t v = int_of_fixnum(a2);
+        if (n < 8*sizeof(v)) return Lispify_predicate(((v>>n)&1) != 0);
+        else return Lispify_predicate(v < 0);
+    }
+    else if (is_numbers(a2) && is_bignum(a2))
+    {   size_t len = (length_of_header(numhdr(a2)) - CELL)/4;
+        size_t word = n / 31;
+        if (word > len)
+            return Lispify_predicate(((int32_t)bignum_digits(a2)[len-1]) < 0);
+        return Lispify_predicate((bignum_digits(a2)[word] & (1<<(n%31))) != 0);
+    }
+    else aerror1("logbitp", a2);
 }
 
 static LispObject Llogcount(LispObject env, LispObject a)

@@ -223,7 +223,8 @@ static inline intptr_t int_of_fixnum(LispObject x)
 // I need to overload these to cover various integer widths.
 
 static inline bool valid_as_fixnum(int32_t x)
-{   return int_of_fixnum(fixnum_of_int(x)) == x;
+{   if (SIXTY_FOUR_BIT) return true;
+    else return int_of_fixnum(fixnum_of_int(x)) == x;
 }
 
 static inline bool valid_as_fixnum(int64_t x)
@@ -246,7 +247,8 @@ static inline bool intptr_valid_as_fixnum(intptr_t x)
 }
 
 static inline bool valid_as_fixnum(uint32_t x)
-{   return x < (((uintptr_t)1) << (SIXTY_FOUR_BIT ? 60 : 28));
+{   if (SIXTY_FOUR_BIT) return true;
+    else return x < (((uintptr_t)1) << 28);
 }
 
 static inline bool valid_as_fixnum(uint64_t x)

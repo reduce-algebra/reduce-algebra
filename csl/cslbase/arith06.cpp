@@ -123,7 +123,7 @@ LispObject Lash1(LispObject env, LispObject a, LispObject b)
     return onevalue(a);
 }
 
-static int msd_table[256] =
+int msd_table[256] =
 {   0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4,
     5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
     6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
@@ -161,7 +161,7 @@ LispObject Lmsd(LispObject, LispObject a)
 // The effect of this code is that I return (msd 0) => 0.
 //
 // If sizeof(intptr_t)==4 most of the next statement becomes silly, but
-// if test on SIXTY_FOUR_BIT would ensure it dis not get executed and the
+// if test on SIXTY_FOUR_BIT would ensure it did not get executed and the
 // slightly odd casts should render it valid.
     if (SIXTY_FOUR_BIT &&
         top >= (intptr_t)INT64_C(0x100000000))
@@ -171,7 +171,7 @@ LispObject Lmsd(LispObject, LispObject a)
     return onevalue(fixnum_of_int(r + msd_table[top]));
 }
 
-static int lsd_table[256] =
+int lsd_table[256] =
 {   8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
     4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
     5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
