@@ -27,6 +27,10 @@
        (divsd (indirect (reg r12)) (reg xmm1))
        (divsd (reg xmm12) (reg xmm1))
        (divsd (reg xmm1) (reg xmm12))
+       (sqrtsd (indirect (reg 1))(reg xmm9))
+       (sqrtsd (indirect (reg r12)) (reg xmm1))
+       (sqrtsd (reg xmm12) (reg xmm1))
+       (sqrtsd (reg xmm1) (reg xmm12))
        (cvtsi2sdq (indirect (reg 1))(reg xmm2))
        (cvtsi2sdq (indirect (reg r12))(reg xmm2))
        (cvtsi2sdq (indirect (reg 1))(reg xmm9))
@@ -38,3 +42,21 @@
        (ldmxcsr (indirect (reg 3)) nil)
        (stmxcsr (indirect (reg 3)) nil)
        (!*exit 0)))
+
+(lap '((!*entry *float-clear-all-except expr 0)
+       (*move (wxor -1 16#3d) (reg 1))
+       (*move ($fluid fpstatusloc*) (reg T1))
+       (stmxcsr (indirect (reg T1)))
+       (and (reg 1) (indirect (reg T1)))
+       (ldmxcsr (indirect (reg T1)))
+       (!*exit 0)))
+
+%%
+%% The following generates an error: the compiler doesn't know how to generate
+%%  an and instruction with a 32bit immediate operand and a general address
+%%
+%%(lap '((!*entry *float-clear-all-except expr 0)
+%%       (stmxcsr ($fluid fpstatusloc*))
+%%       (and 16#ffffffc2 ($fluid fpstatusloc*))
+%%       (ldmxcsr ($fluid fpstatusloc*))
+%%       (!*exit 0)))

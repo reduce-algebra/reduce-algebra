@@ -266,7 +266,7 @@
 	CVTPS2PI CVTPD2PI CVTSS2SI CVTSD2SI
 	UCOMISS UCOMISD COMISS COMISD
 	MOVW MOVSX MOVZX
-	ADDSD MULsd subsd divsd
+	ADDSD MULsd subsd divsd sqrtsd
 	movd movq ldmxcsr stmxcsr
 	) 'norexprefix)
 

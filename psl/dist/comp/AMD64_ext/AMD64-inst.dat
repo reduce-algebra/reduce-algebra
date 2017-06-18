@@ -1643,6 +1643,25 @@ par1
 par2))        ((and (equal '(reg cl) par1) (effap par2)) (lth-dshift '(15 173) 
 par2)))
 
+ (defopcode sqrtsd (par1 par2) ((and (effap par1) (xmmregp par2)) (
+op-xmmreg-effa                                                                    
+'                                                                                  
+(                                                                                   
+242                                                                                     
+15                                                                                      
+81)                                                                               
+par2                                                                              
+par1)))
+ (defoplength sqrtsd (par1 par2) ((and (effap par1) (xmmregp par2)) (
+lth-xmmreg-effa                                                                      
+'                                                                                     
+(                                                                                      
+242                                                                                        
+15                                                                                         
+81)                                                                                  
+par2                                                                                 
+par1)))
+
  (defopcode ss: (par1 par2) (t (op-byte '(54))))
  (defoplength ss: (par1 par2) (t (lth-byte '(54))))
 

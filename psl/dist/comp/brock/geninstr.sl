@@ -728,7 +728,7 @@ nil)
 %(instI SQRTPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#51)
 %(instI SQRTPD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#51)
 %(instI SQRTSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#51)
-%(instI SQRTSD(effa xmmreg)	OP-xmmreg-effa	 16#f2 16#0f 16#51)
+(instI SQRTSD(effa xmmreg)	OP-xmmreg-effa	 16#f2 16#0f 16#51)
 
 %(instI RSQRTPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#52)
 %(instI RSQRTSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#52)
