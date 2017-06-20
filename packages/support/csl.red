@@ -34,14 +34,6 @@ remflag ('(fl2bf msd!: fix2 rndpwr timbf),'lose);
 
 symbolic inline procedure fix2 u; fix u;
 
-%remflag('(lshift ashift), 'lose);
-%
-%% lshift & ashift are now built in to CSL
-%
-%symbolic inline procedure lshift(m,d); ash(m,d);
-%
-%symbolic inline procedure ashift(m,d); ash1(m,d);
-
 flag('(lshift ashift), 'lose);
 
 symbolic inline procedure msd!: u; msd u;
@@ -74,7 +66,16 @@ symbolic procedure csl_normbf x;
 % not yet available.
       if (mt := cadr x)=0 then return '(!:rd!: 0 . 0);
       if mt<0 then <<mt := -mt; s := t>>;
+% This is pretty well the only place that the LSD function from CSL is used in Reduce.
+% Reduce. Up to June 2016 it returned a result perhaps better described as
+% "count trailing zeros" rather than "least significant digit". At that stage
+% it was rationalized to match its name. The hack here allows fof either old
+% or new behaviour.
+!#if (equal (lsd 1) 0)
       ep := lsd mt;
+!#else
+      ep := sub1 lsd mt;
+!#endif
       mt := lshift(mt, -ep);
       if s then mt := -mt;
       ep := ep + cddr x;

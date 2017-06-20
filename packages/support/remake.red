@@ -120,8 +120,6 @@ symbolic procedure inline_defs_file();
 % The PSL bootstrap build needs the "!" here
 !#if (memq 'vsl lispsystem!*)
    "inline-defs.dat";
-!#elif (memq 'cslplus lispsystem!*)
-   "$reduce/cslplusbuild/generated-cpp/inline-defs.dat";
 !#elif (memq 'csl lispsystem!*)
    "$reduce/cslbuild/generated-c/inline-defs.dat";
 !#else
