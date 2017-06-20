@@ -74,7 +74,7 @@
 #define boole_nand  14
 #define boole_set   15
 
-extern int msd_table[256], lsd_table[256];
+extern unsigned char msd_table[256], lsd_table[256];
 
 //
 // Bignums are represented as vectors of digits, where each digit

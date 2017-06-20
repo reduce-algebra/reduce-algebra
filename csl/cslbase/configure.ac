@@ -1170,6 +1170,33 @@ then
 
 fi
 
+
+AC_MSG_CHECKING([for __builtin_clz])
+AC_LINK_IFELSE([AC_LANG_PROGRAM(,
+                return ( __builtin_clz(0x10000u) == 15) ? 1 : 0)],
+[have_builtin_clz=yes
+ AC_MSG_RESULT([yes])],
+[have_builtin_clz=no
+ AC_MSG_RESULT([no])])
+if test x$have_builtin_clz = xyes
+then
+  AC_DEFINE([HAVE___BUILTIN_CLZ], [1],
+            [Define to 1 if the compiler support __builtin_clz.])
+fi
+
+AC_MSG_CHECKING([for __builtin_ctz])
+AC_LINK_IFELSE([AC_LANG_PROGRAM(,
+                return ( __builtin_ctz(0x10000u) == 16) ? 1 : 0)],
+[have_builtin_ctz=yes
+ AC_MSG_RESULT([yes])],
+[have_builtin_ctz=no
+ AC_MSG_RESULT([no])])
+if test x$have_builtin_ctz = xyes
+then
+  AC_DEFINE([HAVE___BUILTIN_CTZ], [1],
+            [Define to 1 if the compiler support __builtin_ctz.])
+fi
+
 # These days I want zlib to do the compression I want.
 AC_CHECK_HEADERS(zlib.h)
 AC_SEARCH_LIBS(deflate, z)

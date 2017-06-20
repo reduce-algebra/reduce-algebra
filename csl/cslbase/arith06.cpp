@@ -123,7 +123,7 @@ LispObject Lash1(LispObject env, LispObject a, LispObject b)
     return onevalue(a);
 }
 
-int msd_table[256] =
+unsigned char msd_table[256] =
 {   0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4,
     5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
     6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
@@ -166,12 +166,17 @@ LispObject Lmsd(LispObject, LispObject a)
     if (SIXTY_FOUR_BIT &&
         top >= (intptr_t)INT64_C(0x100000000))
         r += 32, top = (intptr_t)((int64_t)top >> 32);
+#ifdef HAVE___BUILTIN_CTZ
+    if (top == 0) return onevalue(fixnum_of_int(r));
+    else return onevalue(fixnum_of_int(r + 32 - __builtin_clz((uint32_t)top)));
+#else
     if (top >= 0x10000) r += 16, top >>= 16;
     if (top >= 0x100)   r += 8,  top >>= 8;
     return onevalue(fixnum_of_int(r + msd_table[top]));
+#endif
 }
 
-int lsd_table[256] =
+unsigned char lsd_table[256] =
 {   8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
     4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
     5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
@@ -210,9 +215,14 @@ LispObject Llsd(LispObject, LispObject a)
     if (SIXTY_FOUR_BIT &&
         (top & (uintptr_t)UINT64_C(0xffffffff)) == 0)
         r += 32, top = (intptr_t)((int64_t)top >> 32);
+#ifdef HAVE___BUILTIN_CTZ
+    if (top == 0) return onevalue(fixnum_of_int(r + 1 + 32));
+    return onevalue(fixnum_of_int(r + 1 + __builtin_ctz((uint32_t)top)));
+#else
     if ((top & 0xffffu) == 0) r += 16, top >>= 16;
     if ((top & 0xff) == 0)    r += 8,  top >>= 8;
-    return onevalue(fixnum_of_int(r + lsd_table[top & 0xff]));
+    return onevalue(fixnum_of_int(r + 1 + lsd_table[top & 0xff]));
+#endif
 }
 
 LispObject Linorm(LispObject env, LispObject a, LispObject k)

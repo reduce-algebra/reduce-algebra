@@ -733,14 +733,19 @@ static LispObject Linteger_length(LispObject env, LispObject a)
 {   if (is_fixnum(a))
     {   intptr_t n = int_of_fixnum(a);
         if (n < 0) n = -n-1;
-// Now n is positive.
+        if (n == 0) return onevalue(fixnum_of_int(0));
+// Now n is strictly positive.
         int r = 0;
         if (SIXTY_FOUR_BIT &&
             n >= (intptr_t)INT64_C(0x100000000))
             r += 32, n = (intptr_t)((int64_t)n >> 32);
+#ifdef HAVE___BUILTIN_CLZ
+        return onevalue(fixnum_of_int(r + 32 - __builtin_clz((uint32_t)n)));
+#else
         if (n >= 0x10000) r += 16, n >>= 16;
         if (n >= 0x100)   r += 8,  n >>= 8;
         return onevalue(fixnum_of_int(r + msd_table[n]));
+#endif
     }
     if (!is_numbers(a) || !is_bignum(a)) aerror1("integer-length", a);
     if (minusp(a)) a = sub1(negate(a));
