@@ -49,6 +49,7 @@ create!-package('(cgb gb dp gbsc),nil);
 #if (and (memq 'psl lispsystem!*) (not (getd 'modulep)))
 fluid '(!*lower loadextentions!*);
 
+% This version uses PSL-specific variables...
 procedure modulep(u);
    begin scalar found,ld,le,!*lower;
       !*lower := t;

@@ -147,32 +147,24 @@ flag ('(cont),'ignore);
 
 trap!-time!* := nil; % nil here means no trapping active.
 
-% Building the PSL bootstrap image needs this "!"
-#if (memq 'psl lispsystem!*)
-
 % Note that when I detect a timeout I not only throw an exception, but I
 % clear trap!-time!* so that unwinding and processing the timeout will not
 % provoke a further activation of the mechanism.
-
-symbolic procedure aftergcsystemhook();
-  if trap!-time!* and
-    time() > trap!-time!* then <<
-      trap!-time!* := nil;
-      throw('!@timeout!@, '!@timeout!@) >>;
-
-#else
-
 % In CSL the gc-hook function is passed an argument that indicates something
-% about the garbage collection that just happened.
+% about the garbage collection that just happened. In PSL it does not have
+% an argument.
 
+#if (memq 'psl lispsystem!*)
+symbolic procedure aftergcsystemhook();
+#else
 symbolic procedure aftergcsystemhook u;
+#endif
   if trap!-time!* and
     time() > trap!-time!* then <<
       trap!-time!* := nil;
       throw('!@timeout!@, '!@timeout!@) >>;
 
 !*gc!-hook!* := 'aftergcsystemhook;
-#endif
 
 symbolic procedure trap!-time!-value();
   trap!-time!*;
@@ -184,7 +176,7 @@ symbolic procedure trap!-time!-value();
 % is still delicate because the return lies within a lambda expression not
 % directly in "program context" but that will either work or at worst
 % lead to some diagnostic, while using a "begin/end" here make things appear
-% to be Ok but to behave unexpectedly.
+% to be OK but to behave unexpectedly.
 
 smacro procedure with!-timeout(n, u);
   (lambda ott;

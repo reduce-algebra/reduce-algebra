@@ -194,7 +194,9 @@ if lr_pslp() then <<
    flag('(yesp),'lose)
 >>;
 
-% Color PSL prompts, in case user falls through:
+% Color PSL prompts, in case user falls through. The issue of
+% whether this matters at all in the CVS case or with any other Lisp
+% systems is unresolved.
 
 #if (memq 'psl lispsystem!*)
 

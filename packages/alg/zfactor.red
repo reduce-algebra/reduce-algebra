@@ -1,4 +1,4 @@
-xmodule zfactor;  % Integer factorization.
+module zfactor;  % Integer factorization.
 
 % Author: Julian Padget.
 % Modifications by: Fran Burstall, John Abbott, Herbert Melenk,
@@ -46,10 +46,6 @@ set!-general!-modulus, set!-modulus, set!-small!-modulus, typerr;
 
 % Parameters to this module are:
 %
-%    !*confidence!* - controls the computation in the primality test.
-%        Probability that a number is composite when test says it is
-%        prime is 1/(2**(2*!*confidence!*)).
-%
 %    !*maxtrys!* - controls the maximum number of attempts to be made
 %        at factorisation (using mcfactor) whilst varying the polynomial
 %        used as part of the Monte-Carlo technique.  When !*maxtrys!* is
@@ -68,9 +64,9 @@ set!-general!-modulus, set!-modulus, set!-small!-modulus, typerr;
 %
 %    !*last!-prime!-in!-list!* - the largest prime in the !*primelist!*
 
-fluid '(!*maxtrys!* !*confidence!*);
+fluid '(!*maxtrys!*);
 
-!*maxtrys!*:=10; !*confidence!* := 40;
+!*maxtrys!*:=10;
 
 global '(!*last!-prime!-squared!* !*primelist!*
          !*last!-prime!-in!-list!* largest!-small!-modulus);
@@ -190,190 +186,564 @@ inner:
 end;
 
 symbolic procedure primep n;
-   % Returns T if n is prime (an integer that is not zero or a unit).
+% Returns T if n is prime (an integer that is not zero or a unit).
    if not fixp n then typerr(n,"integer")
-%    then <<lprim list("No primep function defined for",n); nil>>
     else if n<0 then primep(-n)
-% This new test will often take fewer operations that the search through
-% !*primelist!* using the member function, so I will use it in preference.
-#if (memq 'psl lispsystem!*)
     else if n <= 0xffffffff and
             n <= largest!-small!-modulus then primep32 n
-#else
-% CSL
-    else if n <= 0xffffffff then primep32 n
-#endif
-    else if n=1 then nil
-    else if n<=!*last!-prime!-in!-list!* then n member !*primelist!*
-    else if n<=!*last!-prime!-squared!*
-     then begin scalar p;
-             p := !*primelist!*;
-             while p and remainder(n,car p) neq 0 do p := cdr p;
-             return null p
-          end
-    else if n>largest!-small!-modulus then general!-primep n
-    else small!-primep n;
+    else if evenp n or
+       remainder(n,3) = 0 or
+       remainder(n,5) = 0 or
+       remainder(n,7) = 0 then nil
+% I will always start with a test using base 2.
+    else if not general!-miller!-rabin(2, n) then nil
+% If n < 2^64 one can guarantee correct results by using a special set of 7
+% witness values determined by Sinclair in 2011. In a while I intend to
+% replace this with a hashed version using a smaller number of bases.
+% but providing a correct version first seems good, even though in this
+% form the BPSW general case might in fact be faster.
+    else if n < 0x10000000000000000 then
+      general!-miller!-rabin(325, n) and
+      general!-miller!-rabin(9375, n) and
+      general!-miller!-rabin(28178, n) and
+      general!-miller!-rabin(450775, n) and
+      general!-miller!-rabin(9780504, n) and
+      general!-miller!-rabin(1795265022, n)
+% For yet larger cases I use BPSW, which follows up the base 2 Miller Rabin
+% with a Strong Lucas test. This is certainly known to give correct answers
+% up to 2^64, and while it is expected that there will be BPSW-pseudoprimes
+% there are (at the time of writing) no known ones at all, and some estimates
+% that the smallest may be greater than 10^10000
+% (http://mathworld.wolfram.com/Baillie-PSWPrimalityTest.html).
+    else lucas_test n;
 
 flag('(primep),'boolean);
 
 symbolic procedure internal!-primep n;
-#if (memq 'psl lispsystem!*)
-   if n <= 0xffffffff and
-      n <= largest!-small!-modulus then primep32 n
-#else
-% CSL
-   if n <= 0xffffffff then primep32 n
-#endif
-   else if n>largest!-small!-modulus then general!-primep n
-   else small!-primep n;
+   primep n;
 
-global '(witness!-table);
+% The next few functions are ones that could be implemented within the
+% Lisp system (at least if its bignum representation was in binary!) in
+% rather easy ways. The code here can serve as an explanation and a
+% reference implementation.
+
+% My initial idea here had been that if there were functions that might
+% be built in to SOME but not ALL of the Lisp system then I could guard
+% portable definitions with "#if (not (getd 'foo))". That is a good idea,
+% but if fails when a bootstrap bersion of Reduce is built (thereby
+% defining the function) and that is then used to build the final version
+% of the module. To cope with that I arrange that when I define a portable
+% version of a function I flag its name with 'rlisp, and then during the
+% final definitive build I will see that and understand that I need to
+% instate it.
+
+#if (or (not (getd 'lsd)) (flagp 'lsd 'rlisp))
+
+% Find least significant bit of an integer. c.f. msd and integer!-length,
+% and before using any of these check whether counting treats the lowest bit
+% of a number as "bit 0" or as "bit 1". This function and msd treat it as
+% "bit 1" which is what Reduce historically wanted. But logbitp uses a
+% zero-based bit labelling.
+
+symbolic procedure lsd n;
+  begin
+    scalar r;
+    if n = 0 then return 0;
+    r := 1;
+    while land(n, 0xffffffffffffffff) = 0 do <<
+      n := lshift(n, -64);
+      r := r + 64 >>;
+    if land(n, 0xffffffff) = 0 then << n := lshift(n, -32); r := r + 32 >>;
+    if land(n, 0xffff) = 0 then << n := lshift(n, -16); r := r + 16 >>;
+    if land(n, 0xff) = 0 then << n := lshift(n, -8); r := r + 8 >>;
+    if land(n, 0xf) = 0 then << n := lshift(n, -4); r := r + 4 >>;
+    if land(n, 0x3) = 0 then << n := lshift(n, -2); r := r + 2 >>;
+    if land(n, 0x1) = 0 then r := r + 1;
+    return r;
+  end;
+
+flag('(lsd), 'rlisp);
+
+#endif
+
+#if (or (not (getd 'logbitp)) (flagp 'logbitp 'rlisp))
+
+% Test if bit i is set in the binary representation of n. I rather expect
+% that for large i this will yield true when n is negative, as one would
+% expect if the notional representation of a negative number (in 2s
+% complement representation) has an unending sequence of leading 1 bits.
+
+symbolic procedure logbitp(i, n);
+  not zerop land(n, lshift(1, i));
+
+flag('(logbitp), 'rlisp);
+
+#endif
+
+#if (or (not (getd 'integer!-length)) (flagp 'integer!-length 'rlisp))
+
+% Determine the number of bits needed to represent an integer in binary. For
+% negative numbers this is the number of bits not counting the sign bit... a
+% convention adopted by Common Lisp. Thus the results should be
+%        integer!-length -6  =>  3
+%        integer!-length -5  =>  3
+%        integer!-length -4  =>  2
+%        integer!-length -3  =>  2
+%        integer!-length -2  =>  1
+%        integer!-length -1  =>  0
+%        integer!-length 0   =>  0
+%        integer!-length 1   =>  1
+%        integer!-length 2   =>  2
+%        integer!-length 3   =>  2
+%        integer!-length 4   =>  3
+%        integer!-length 5   =>  3
+%        integer!-length 6   =>  3
+
+symbolic procedure integer!-length n;
+  begin
+    scalar r;
+    if n < 0 then n := -n-1;
+    if n = 0 then return 0;
+    r := 1;
+% I shift in chunks of 64 first
+    while n >= 0x10000000000000000 do <<
+       n := lshift(n, -64);
+       r := r + 64 >>;
+    if n >= 0x100000000 then << n := lshift(n, -32), r := r + 32 >>;
+    if n >= 0x10000 then << n := lshift(n, -16), r := r + 16 >>;
+    if n >= 0x100 then << n := lshift(n, -8), r := r + 8 >>;
+    if n >= 0x10 then << n := lshift(n, -4), r := r + 4 >>;
+    if n >= 0x4 then << n := lshift(n, -2), r := r + 2 >>;
+    if n >= 0x2 then r := r + 1;
+    return r
+  end;
+
+flag('(integer!-length), 'rlisp);
+
+#endif
+
+global '(witness!-table oddprime!-bitmap);
+
+% This is a table of 64 32-bit integers, so 2048 bits in all, reporting
+% whioch of the odd numbers up to 4096 are prime using a simple bitmap
+% lookup.
+
+oddprime!-bitmap := list!-to!-vector
+  '(0x64b4cb6e  0x816d129a  0x864a4c32  0x2196820d  0x5a0434c9  0xa4896120 
+    0x29861144  0x4a2882d1  0x32424030  0x08349921  0x4225064b  0x148a4884 
+    0x6c304205  0x0b40b408  0x125108a0  0x65048928  0x804c3098  0x80124496 
+    0x41124221  0xc02104c9  0x00982d32  0x08044900  0x82689681  0x220825b0 
+    0x40a28948  0x90042659  0x30434006  0x69009244  0x08088210  0x12410da4 
+    0x2400c060  0x086122d2  0x821b0484  0x0110d301  0xc044a002  0x14916022 
+    0x04a6400c  0x092094d2  0x00522094  0x4ca21008  0x51018200  0xa48b0810 
+    0x44309a25  0x034c1081  0x80522502  0x20844908  0x18003250  0x241140a2 
+    0x01840128  0x0a41a001  0x36004512  0x29260008  0xc0618283  0x10100480 
+    0x4822006d  0xc20c2658  0x24894810  0x45205820  0x19002488  0x10c02502 
+    0x01140868  0x802832ca  0x264b0400  0x60901300); 
 
 % All the values in this table are in fact 16-bit unsigned integers. See
 % the directory csl/cslbase/mr in the Reduce source tree for further
 % commentary and explanation.
 
 witness!-table := list!-to!-vector
-   '(3008  49948  12233   7093  21445   6147  15325   3129    771   2096 
-    18117   6730  16995   7540   2334  23126   1970   5749   3479   7483 
-    30586  10811   6697  31219  26128   6443  13750   1134  11739  54532 
-    27495  16604   4740  20360  25521  64660  22625   4178   7472  31392 
-     5062   1065  41070   8828   1070   5487  20346   4877    701   3957 
-    11745   8527   6505   1063  33187  17507    898   9284   8799  10352 
-    35076  31159   4154   5744  45476  24208  20475   1387  24960  15656 
-      819  19405  28585  19771   2935   3851   1894  13684    789   4773 
-    15648   8910  14241    527  28724   1447    713  25916  18772   1098 
-     4239   4664  24185  12239  42085   2246  10599   4921   7199  38090 
-    32014   4425  18294  12131   6095    406   4921  10379  44820  21344 
-    10267  14960  14269   8689   2903  36047  10749    810   3695  31858 
-    26793   2941  16636   3743   1909   9434    690  53301   7839  15600 
-     5695   4700  18672  60846   9164   6614   3398    570   1567   7232 
-      566   6509  17270  10927  11537   2033  25472  30378   3827   1074 
-      357  26202   4064   3287   1964    679   1573   6957  20907  25658 
-     1677  27929  58745  14757  54584    539    152   4899   6981  17360 
-     6450   7204   4099   3853   1839    328  14266   1413  21492   3980 
-    59251   6530  26818   1505  20926   1593  41688  23148  13297   1431 
-    12811   4935   1635  38016   7996  40096  18137  14919   3521  32804 
-      711   6311   6884  10778   1045   4105  25928  41963   3145   2919 
-     2354  29087   6895   2199   6515  33793    629    603  30873   4937 
-    20963   2222  20900   6620  37036);
+  '(17490   5756   7143  10476  13223   5143  54949  46324  11327  21776 
+       14  11348   1837  11945  17130    814  24668  27778  29292  12320 
+    27999  24665    217   2136    370  15513  11577  11464   9734   5117 
+     4796  11231   1760   9541  13930   1807  10976  11212  46077  10885 
+    13981    148    415   4031  26689   9236   2257  14300    183   6148 
+    31088   7970   6283    556   2674   6442   3501  17049  20938  44337 
+     7812   4627  21294   6768   5134  40093   4662    774  12178  10453 
+    16975  20017   3405  32346  11745    294  14936  20713   3371  13471 
+     3728   4090  40339  57759  22007   1115  24211  10564  13850  11754 
+     2278   5745  16753  51913  13076   1160   2581  13858  13147   1072 
+    44224   5022   1417  19493  39737   6276   6792   4207   6345  40285 
+    23786  51941   4542   3302   9249   6428  35246   4981   9628   9231 
+    23685  15481   2335  34333  27605  11926   6602   6167   2161   6073 
+    10601   4248  46263   2678   6247   8332   5569   4439  50964   2326 
+    17596   1511  43893  11640   2691  40811   4676  32329   3214  18961 
+     9118   3713  41097   4067   9690   8901   3074     67   3153    985 
+    33378   8698  16533  41199  47465  47912  21939  21286    652  21348 
+    12998   3723   1294   8768   7897  60772   9880  25647   5644   1481 
+    16626   1608  16379  25558    176   5553  17031   9330   6323   2764 
+     5798   4108   6234  51499  19125   1845  22910   9111   5817  55318 
+     2221   7784  13964  46759   3442  14692   6748   6657   7293   1576 
+      330  27166   1625  10388  16052   6421);
+
+fluid '(!*trace_primep);
+!*trace_primep := nil;
 
 symbolic procedure primep32 n;
-  begin integer i,l,m,x,y,w,save; scalar result;
-% Filter out some easy cases first
-    if evenp n then return n = 2
-    else if remainder(n, 3) = 0 then return n = 3
-    else if remainder(n, 5) = 0 then return n = 5
-    else if remainder(n, 7) = 0 then return n = 7
-    else if n < 121 then return n neq 1;
-    m := n-1;
-    save := set!-small!-modulus n;
-% Express n-1 = (2^l)*m
-    l:=0;
-    while evenp m do <<m := m/2; l := l+1>>;
-    i:=1;
+  begin integer l,m,x,y,w,save; scalar result;
+% First deal with any input up to 4096 using simple table look-up. That
+% should be very fast!
+    if n <= 4096 then <<
+      if !*trace_primep then
+        printf("%fTesting %w. <= 4096 so use table lookup%n", n);
+      if evenp n then return (n = 2)
+      else return logbitp(remainder(n/2, 32), getv(oddprime!-bitmap,n/64)) >>
+% Now if I look at the number modulo 42 I can detect cases where the
+% input is a multiple of 2, 3 or 7. logbitp uses the "magic" integer constant
+% here as a vector of bits to look up the result in.
+    else if logbitp(remainder(n, 42), 0x000001df5d75d7dd) then return nil
+% In a similar way multiples of 5 and 11 can be filtered out.
+    else if logbitp(remainder(n, 55), 0x0004310a42508c21) then return nil;
+% Now I have a value over 4096 that does not have any factors lower than 13.
 % The next 3 lines compute a hash function and use it to extract a
 % witness from a carefully pre-computed table so that the Miller Rabin test
 % will be reliable on all integers up to 2^32 that have not already been
-% sorted out by the trial divisions by 2, 3, 5 and 7.
-    w := remainder(0x868b01cd82a78e5f*n, 0x10000000000000000);
-    w := ashift(w, -31);
-    w := remainder(w, 226);
+% sorted out by special cases above.
+% The next line has as its intent "multiply n but the given 64-bit
+% constant and only keep the low 64 bits of the result".
+    w := 0x8bd03fd5cb49666b*n;
+% I now have a 64-bit intermediate value. I shift it right by 31 bits to
+% discard low order bits and then take the remainder by my table size. I
+% need to do the mask operation here to ger results that match the C code,
+% because a case ti (unsigned int) has effects that were in fact not what I
+% had probably first intended! But that are what the hash table is built
+% to work with.
+    w := land(lshift(w, -31), 0xffffffff);
+    w := remainder(w, 216);
+    if !*trace_primep then printf("%fTesting %w which hashes to %w,", n, w);
+    w := getv(witness!-table, w);
+    if !*trace_primep then printf(" so use base %w%n", w);
+% Start implementation of Miller-Rabin... which will only be use on
+% numbers up to largest!-small!-modulus.
+    save := set!-small!-modulus n;
+    m := n-1;
+% Express n-1 = (2^l)*m
+%      l:=0;
+%      while evenp m do <<m := m/2; l := l+1>>;
+    l := sub1 lsd m;
+    m := m / lshift(1, l);
     x := modular!-expt(w, m);
+    if !*trace_primep then printf("%w = %w * %w, and %w^%w = %w%n",
+       n-1, m, lshift(1, l), w, m, x);
     result:=t;
     if x neq 1 then <<
       for k:=1:l do <<
         y := modular!-times(x,x);
+        if !*trace_primep then <<
+          m := 2*m;
+          printf("%w^%w = %w%n", w, m, y) >>;
         if y=1 and x neq (n-1) and x neq 1 then result := nil
         else x := y >>;
       if x neq 1 then result := nil >>;
     set!-small!-modulus save;
+    if !*trace_primep then printf("result is %w%n", result);
     return result
   end;
 
 % This is a version of primep written by FEB for inclusion in zfactor.
-% It provides small-primep and general-primep with the following
-% corrections of the distribution versions:
-% (1) random number zero excluded as a potential witness
-% (2) correct range of powers of seed provided
-% (3) inspection for -1 replacing gcd's.
+% It has been updated by ACN.
 
+% Test n for primality using Miller-Rabin with base w. This version of the
+% code is for used with arbitrarily large inputs, and will in fact just
+% be needed when n is at least largest!-small!-modulus.
 
-symbolic procedure small!-primep n;
-% Based on an algorithm of M.Rabin published in the Journal of Number
-% Theory Vol 12, pp 128-138 (1980).
-  begin integer i,l,m,x,y,w,save; scalar result;
-% Filter out some easy cases first
-    if evenp n or remainder(n,3) = 0 then return nil;
+symbolic procedure general!-miller!-rabin(w, n);
+  begin
+    scalar m, save, l, result, x, y;
+    if !*trace_primep then
+      printf("%fGeneral M-R test on %w using base %w%n", m, w);
     m := n-1;
-    save := set!-small!-modulus n;
+    save := set!-general!-modulus n;
 % Express n-1 = (2^l)*m
     l:=0;
-    while evenp m do <<m := m/2; l := l+1>>;
-    i:=1;
-    result:=t;
-    while result and i<=!*confidence!* do <<
-% Select a potential witness, noting 0, 1 and -1 are not liable to help.
-       w := 1 + random(n-2);
+    while evenp m do << m := m/2; l := l+1 >>;
+    result := t;
 % Raise to the odd power.
-       x := modular!-expt(w, m);
+    x := general!-modular!-expt(w, m);
+    if !*trace_primep then
+      printf("%w^%w = %w%n", w, m, x);
 % From here I can complete the calculation of w^(n-1) by doing a
 % sequence of squaring operations.  While I do that I check to see if I
 % come across a non-trivial square root of 1, and if I do then I know n
-% could not have been prime.  In fact in that case I could exhibit a
-% factor, but that does not concern me here.
-       if x neq 1 then <<
-         for k:=1:l do <<
-           y := modular!-times(x,x);
+% could not have been prime.
+    if x neq 1 then <<
+      for k:=1:l do <<
+        y := general!-modular!-times(x,x);
+        if !*trace_primep then <<
+          m := 2*m;
+          printf("%w^%w = %w%n", w, m, y) >>;
 % It is tolerable to continue round the loop after setting result=nil
 % because I will then be repeating a squaring of 1, which is cheap.
-           if y=1 and x neq (n-1) and x neq 1 then result := nil
-           else x := y >>;
-% Also if I do not get to 1 at the end then the number is composite, but
-% I have no clue as to any factor.
+        if y=1 and x neq (n-1) and x neq 1 then result := nil
+        else x := y >>;
+% Also if I do not get to 1 at the end then the number is composite.
          if x neq 1 then result := nil >>;
-       i:=i+1 >>;
-    set!-small!-modulus save;
+    set!-general!-modulus save;
+    if !*trace_primep then printf("result = %w%n", result);
     return result
   end;
 
 symbolic procedure general!-primep n;
 % Based on an algorithm of M.Rabin published in the Journal of Number
 % Theory Vol 12, pp 128-138 (1980).
-  begin integer i,l,m,x,y,w,save; scalar result;
+  begin
 % Filter out some easy cases first
-    if evenp n or remainder(n,3) = 0 then return nil;
-    m := n-1;
-    save := set!-general!-modulus n;
-% Express n-1 = (2^l)*m
-    l:=0;
-    while evenp m do <<m := m/2; l := l+1>>;
-    i:=1;
-    result:=t;
-    while result and i<=!*confidence!* do <<
-% Select a potential witness, noting 0, 1 and -1 are not liable to help.
-       w := 1 + random(n-2);
-% Raise to the odd power.
-       x:=general!-modular!-expt(w, m);
-% From here I can complete the calculation of w^(n-1) by doing a
-% sequence of squaring operations.  While I do that I check to see if I
-% come across a non-trivial square root of 1, and if I do then I know n
-% could not have been prime.  In fact in that case I could exhibit a
-% factor, but that does not concern me here.
-       if x neq 1 then <<
-         for k:=1:l do <<
-           y:=general!-modular!-times(x,x);
-% It is tolerable to continue round the loop after setting result=nil
-% because I will then be repeating a squaring of 1, which is cheap.
-           if y=1 and x neq (n-1) and x neq 1 then result := nil
-           else x := y >>;
-% Also if I do not get to 1 at the end then the number is composite, but
-% I have no clue as to any factor.
-         if x neq 1 then result := nil >>;
-       i:=i+1 >>;
-    set!-general!-modulus save;
-    return result
+    if evenp n or
+       remainder(n,3) = 0 or
+       remainder(n,5) = 0 or
+       remainder(n,7) = 0 then return nil;
+% I will always start with a test using base 3.
+    if not general!-miller!-rabin(2, n) then return nil;
+% If n < 2^64 one can guarantee correct results by using a special set of 7
+% witness values determined by Sinclair in 2011:
+    if n < 0x10000000000000000 then <<
+% I will be able to improve on this using hashing, but for now I want
+% a version of this code that I dare to check-in.
+      if not general!-miller!-rabin(325, n) then return nil;
+      if not general!-miller!-rabin(325, n) then return nil;
+      if not general!-miller!-rabin(9375, n) then return nil;
+      if not general!-miller!-rabin(28178, n) then return nil;
+      if not general!-miller!-rabin(9780504, n) then return nil;
+      if not general!-miller!-rabin(1795265022, n) then return nil;
+      return t >>;
+% For yet larger cases I use BPSW, which follows up the base 2 Miller Rabin
+% with a Strong Lucas test. This is certainly known to give correct answers
+% up to 2^64, and while it is expected that there will be BPSW-pseudoprimes
+% there are (at the time of writing) no known ones at all, and some estimates
+% that the smallest may be greater than 10^10000
+% (http://mathworld.wolfram.com/Baillie-PSWPrimalityTest.html).
+    return lucas_test n
   end;
+
+% The implementation of primep is:
+%   up to 2^32     a single Miller-Rabin test with witness selected using
+%                  a hash table.
+%   up to 2^64     4 Miller-Rabin tests, where the first 3 used fixed bases
+%                  but the fourth uses one selected using a hash table.
+%                  (at present I use a deterministic set of 7 bases, because
+%                  I have not merged in the hashing code).
+% The above cases should be 100% reliable.
+%   over 2^64      one Miller-Rabin using base 2, followed by one Strong
+%                  Lucas test. At the time of writing this (June 2017) I
+%                  believe that there are no known cases where this fails,
+%                  but it is expected that for large enough numbers there
+%                  will be some pseudoprimes. This is the Baillie-PSW test,
+%                  and the Lucas part of it is sufficiently more expensive
+%                  than a few extra Miller-Rabin rounds that it is not the
+%                  scheme of choice for up to 2^64.
+% For heavy-duty security-related applications I see suggestions of
+% a modest number of Miller-Rabin rounds using reliable random bases,
+% followed by a single Lucas test. But current predictions are that the
+% code I give here yields correct judgements on all integer inputs with
+% up to at least 10000 digits.
+
+
+
+% This computes the Jacobi symbol. As in the number theory function
+% related to Legendre Symbols and perhaps quadratic residues.
+
+#if (or (not (getd 'jacobi!-symbol)) (flagp 'jacobi!-symbol 'rlisp))
+
+symbolic procedure jacobi!-symbol(a, b);
+  if b <= 0 or evenp b then 0
+  else begin
+    scalar j, r;
+    j := 1;
+    if a < 0 then <<
+      a := -a;
+      if remainder(b, 4) = 3 then j := -j >>;
+    while not zerop a do <<
+      while evenp a do <<
+        a := a/2;
+        if (r := remainder(b, 8)) = 3 or r = 5 then j := -j >>;
+      r := a;
+      a := b;
+      b := r;
+      if remainder(a, 4) = 3 and remainder(b, 4) = 3 then j := -j;
+      a := remainder(a, b) >>;
+    if b = 1 then return j
+    else return 0
+  end;
+
+flag('(jacobi!-symbol), 'rlisp);
+
+#endif
+
+#if (or (not (getd 'is!-perfect!-square)) (flagp 'is!-perfect!-square 'rlisp))
+
+% I expect that this can be be implemented better within the Lisp, among
+% other things using the representation of a bignum to generate an initial
+% estimate for the square root and folding the final test into the
+% square root iteration. But this portable version is neat and concise!
+
+symbolic procedure is!-perfect!-square n;
+  n = r*r where r = isqrt n;
+
+flag('(is!-perfect!-square), 'rlisp);
+
+#endif
+
+% This  code for the Lucas test will only be invoked if small factors
+% for c have been rules out. In particular c will certainly be odd. It
+% returns true if c is a Lucas probable-prime.
+
+symbolic procedure lucas_test c;
+  begin
+    scalar d, j, k, kk, u, v, q, qk, l, ll, tmp, savemod;
+% Find a proper value for D such that jacobi(d,c)=-1. This is achieved
+% by trying the sequence 5, -7, 9, -11, 13, -15, 17, -19, 21, -23,....
+% until one works (note that 9 and 25 can not work because they are perfect
+% squares, but they are included in the test sequence anyway. It is very much
+% expected that almost always a suitable d will be found within the first
+% couple of tries. If the input c had been a perfect square then there will
+% never be a valid d, so if I am searching for longer than expected I will
+% divert and check for that. At present the world believe that even for the
+% biggest inputs one could envisage here that the value of d found will be
+% small.
+    d := 5;
+    while (j := jacobi!-symbol(d, c)) > 0 and
+          (d neq 21 or not is!-perfect!-square c) do
+      if d > 0 then d := -d - 2
+      else d := -d + 2;
+    if !*trace_primep then printf("%fTest %w using D=%w, j=%w%n", c, d, j);
+% j would be zero if d and c had a non-trivial gcd (and hence unless
+% |d|=c and d is a prime c is certainly composite. Well in the big picture
+% I will only be using this when c > 2^64 and for d to get that large would
+% take more time than could possibly be feasible.
+% j would be 1 if I exited because c was a perfect square, and again that
+% means it is not prime. Well if c = |d| then c might still be a prime!
+    if j >= 0 then return (c=abs d and primep32 c);
+% The sequence of values for d that are tried guarantee that the divison
+% by 4 here is always exact.
+    q := (1-d)/4;
+    if !*trace_primep then printf("will use P=1, Q=%w%n", q);
+% Another cheap test for easy cases that could detect c being composite, and
+% where c > 2^24 and d having been found by checking in an arithmetic
+% progression means I can not have q prime and q = c.
+    if gcdn(c, q) neq 1 then return nil;
+    k := c+1;
+    savemod := set!-general!-modulus c;
+% I now set up a Lucas sequence with initial values u_0=1, v_0=2, u_1=1, v_1=1
+% and the general iteration u_{n} = u_{n-1} - q u_{n-2}. In terms of articles
+% about Lucas sequences this is the special case where p=1.
+    u := 1;
+    v := 1;
+% For small examples I can compute the Lucas sequence in a naive manner
+% and display all the values. This is intended to be useful for comparison
+% with the values calculated below using the more sophisticated method.
+% The cut-off at 500 is entirely arbitrary, but tabulating more than 500
+% lines of sequence would start to get clumsy.
+    if !*trace_primep then begin
+      scalar nn, w, u0, u1, ut, v0, v1, vt;
+      w := c+1;
+% I will tabulate the values of k that the doubling method will go via..
+      while w neq 0 do <<
+        nn := w . nn;
+        if evenp w then w := w/2 else w := w-1 >>;
+      u0 := 0; u1 := 1;
+      v0 := 2; v1 := 1;
+      for i := 1:(c+1) do <<
+        ut := u1 - q*u0;
+        vt := v1 - q*v0;
+        u0 := u1; u1 := ut;
+        v0 := v1; v1 := vt;
+% I display k, u_k, v_k and then those two values modulo c, just in the
+% cases that should arise in the cleverer doubling code. I will display the
+% exact integer values if they are small enough to fit on the line, otherwise
+% the annotation "<huge>"
+        if abs u0 <= 99999999999999999999999999 then ut := u0
+        else ut := "<huge>";
+        if abs v0 <= 99999999999999999999999999 then vt := v0
+        else vt := "<huge>";
+        if i member nn then printf("%f%w:%t[%w, %w]%t%w %t%w%n",
+               i, 7, mod(u0, c), mod(v0, c), 24, ut, 51, vt)  >>
+    end;
+% For subsequent arithmetic to work properly I must ensure that even if
+% q starts off negative I have a version of it reduced to the range [0,c) to
+% work with. Similarly d. The variable qk will hold q^k where k is an index
+% into the Lucas sequence. 
+    qk := q := modular!-number q;
+    d := modular!-number d;
+% I will iterate downwards over bits in a binary representation of (c+1).
+% well to implement a Strong Lucas Test I need to iterate down until I
+% have no more below bits set in k.
+    l := sub1 integer!-length k;
+    ll := sub1 lsd k;
+    if !*trace_primep then
+      printf("k=%w uses %w bits and has %w trailing zero bits%n",
+             k, add1 l, ll);
+% I will first do the part of the Lucas sequence up to where it will have
+% used up all the nonzero bits in the representation of k. kk will track how
+% far I have gone, and is only needed for trace output but tracking it is
+% cheap.
+    kk := 1;
+    if !*trace_primep then printf "1:     [1, 1]%n"; % Always the start-line!
+    while (l := l-1) >= ll do <<
+% I can double a subscript in the Lucas sequence using:
+%    u_{2k} := u_{k} v_{k}
+%    v_{2k} := v_{k}^2 - 2 qk_{k}
+%    qk_{2k}:= qk_{k} qk_{k}
+% and happily I can do those updates sequentially.
+      u := modular!-times(u, v);
+      v := modular!-difference(modular!-times(v, v),
+                               modular!-times(2, qk));
+      kk := 2*kk;
+      qk := modular!-times(qk, qk);
+      if !*trace_primep then printf("%f%w: %t[%w, %w] q^k=%w%n", kk, 7, u, v, qk);
+if !*trace_primep then printf("(A) l=%w ll=%w k=%w logbit=%w%n", l, ll, k, logbitp(l, k));
+% Now I need to do a step whenever there is a "1" bit in the binary
+% representation of k.
+      if logbitp(l, k) then <<
+% The rule used here is:
+%    u_{k+1} = (u_{k} + v_{k})/2
+%    v_{k+1} = (d u_{k} + v_{k})/2
+%    qk_{k+1}= q qk_{k}
+% and again all the arithmetic is to be done modulo c. I need a temporary
+% veriable when updating u and v since each depends on the other.
+        tmp := modular!-plus(u, v);
+        v := modular!-plus(modular!-times(d, u), v);
+        u := tmp;
+% Dividing by 2 when I have an even modulus is something I can write out
+% in-line here rather easily, and I expect this to be nicer than using
+% modular!-quotient or even that having computed a modular reciprocal of 2
+% and doing a modular multiplication by it.
+        if not evenp u then u := u + c;
+        u := u/2;
+        if not evenp v then v := v + c;
+        v := v/2;
+        kk := kk+1;
+        qk := modular!-times(q, qk);
+        if !*trace_primep then printf("%f%w: %t[%w, %w] q^k=%w%n", kk, 7, u, v, qk)
+      >>
+    >>;
+% From now on I will only do doubling operations, and they are of the form
+%      u := u*v;
+% so if u is zero now I can be certain that it will be at the end, and the
+% Regular (as distinct from Strong) Lucas test will be passed.
+    if u = 0 then <<
+      if !*trace_primep then printf("u=0 so value is probably prime%n");
+      set!-general!-modulus savemod;
+      return t >>; % Probably prime!
+% Now all the rest of the Lucas sequence is done using just the "doubling"
+% process. But I am no longer interested in u.
+    if !*trace_primep then <<
+      printf("After final non-doubling step u = %w%n", u);
+      printf("Will just do doubling steps from now on...%n") >>;
+    while v neq 0 and (l := l-1) >= 0 do <<
+% I can again double a subscript in the Lucas sequence using:
+%    v_{2k} := v_{k}^2 - 2 qk_{k}
+%    qk_{2k}:= qk_{k} qk_{k}
+      v := modular!-difference(modular!-times(v, v),
+                               modular!-times(2, qk));
+      kk := 2*kk;
+      qk := modular!-times(qk, qk);
+% I do not compute u here because at each stage I just multiply u by v. If
+% I have a prime then this is a field multiplication and u can only end up zero
+% if some v is zero.
+      if !*trace_primep then printf("%f%w: %t[??, %w] qk=%w%n", kk, 7, v, qk);
+if !*trace_primep then printf("(B) l=%w ll=%w k=%w logbit=%w%n", l, ll, k, logbitp(l, k));
+    >>;
+if !*trace_primep then printf("exit loop with l = %w and v = %w%n", l, v);
+% If at this point v=0 then c is a Strong Lucas Probable-prime using the
+% values p=1 and q as derived here.
+    set!-general!-modulus savemod;
+    return (v = 0)
+  end;
+
+
 
 % The next function comes from J.H. Davenport.
 
@@ -427,3 +797,4 @@ done:
 endmodule;
 
 end;
+

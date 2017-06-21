@@ -56,9 +56,9 @@ fluid '(
 
 );
 
-#if(or (errorp (errorset '!*writingfaslfile nil nil))
-        (not !*writingfaslfile)
-        (errorp (errorset '(load fcomp) nil nil)))
+#if (or (errorp (errorset '!*writingfaslfile nil nil)) % ie undefined...
+        (not !*writingfaslfile)                        % or NIL.
+        (errorp (errorset '(load fcomp) nil nil)))     % PSL specific.
 %  prin2t "*** No support for fast float!";
    symbolic macro procedure fdeclare u; nil;
    symbolic macro procedure thefloat u; cadr u;

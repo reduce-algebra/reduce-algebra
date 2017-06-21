@@ -102,7 +102,17 @@ symbolic procedure formproc(u,vars,mode);
            if null car varlis or car varlis eq 't then rsverr car varlis;
            varlis := cdr varlis >>;
         varlis := cadr u;
-#if (memq 'csl lispsystem!*)
+% For the benefit of CSL - and also perhaps for source analysis tools - if
+% a fluid variable is bound I will insert a (DECLARE...) form at the
+% head of the function. The justification for this is that the status of
+% the variable as fluid is being checked at parse time. With CSL I capture
+% the Lisp versions of function definitions and translate them into C++
+% at a later stage, and when I do that the fluid declarations are in general
+% not still around. But with the adjustment that is made here I have a local
+% fluid declaration to guide me. I test for DECLARE being defined (it should
+% be a special form not a regular function) rather than looking at the
+% identity of the Lisp system.
+#if (getd 'declare)
         while varlis do <<
            if fluidp car varlis or globalp car varlis then
               fl := car varlis . fl;
@@ -119,7 +129,7 @@ symbolic procedure formproc(u,vars,mode);
 % !*noinlines being set causes every inline that is defined to be downgraded
 % to a regular procedure.
         if !*noinlines and type eq 'inline then type := 'expr;
-#if (memq 'csl lispsystem!*)
+#if (getd 'declare)
 % Note the non-Common way in which the DECLARE sits within a PROGN here.
 % Furthermore I only insert DECLARE for sort-of ordinary functions.
 % Specifically this will not include "inline procedure"... but a consequence
@@ -243,9 +253,12 @@ symbolic procedure simplify!-filename s;
     return list2string a;
   end;
 
-!#if !*psl
+!#if (or (null (getd 'mkhash)) (flagp 'mkhash 'rlisp))
 
 % I need to simulate hash tables, which PSL does not appear to provide.
+% Well I will provide a minimal functional (but not performance)
+% replacement here for use in any Lisp that does not heva a function
+% called "mkhash" defined.
 
 % The type is 0 for EQ hashes and all other cases are treated as EQUAL
 % ones here. Since I am simulating "hash" tables in PSL using just simple
@@ -298,6 +311,8 @@ symbolic procedure puthash(key, table, val);
 
 symbolic procedure hashcontents table;
   cdr table;
+
+flag('(mkhash), 'rlisp);
 
 !#endif
 

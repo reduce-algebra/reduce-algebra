@@ -655,23 +655,14 @@ begin scalar a,b,l,l1,ft1,v,prflag,f1,vli$
     %--- Now the divisions and differentiations are to be done
     % l:=nil$ % necessary initialization (already guarateed)
     while l1 do <<
-
-!#if (equal version!* "REDUCE 3.6")
-      b:=reval aeval car l1$ %--- b is the v-dep. coefficient   
-!#else          
       b:=reval car l1$ %--- b is the v-dep. coefficient   
-!#endif
       l1:=cdr l1$
       % then the extra case 0 = b has to be considered
       if zerop b then << 
        write"#### Planned division through zero in gensep! ####"$
        terpri()
       >>         else <<                    
-!#if (equal version!* "REDUCE 3.6")
-        a:=reval aeval list('quotient,q,b)$ 
-!#else 
         a:=reval list('quotient,q,b)$ 
-!#endif
         %--- for later backward integrations: extension of the history
         l:=cons(b . q ,l)$  %--- new: q is the equ. before division & diff.
         % l will be returned later by felim unless the last q=0 then 0 is returned

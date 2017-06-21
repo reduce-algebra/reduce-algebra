@@ -102,6 +102,7 @@ symbolic procedure find!!minnorm();
 
 symbolic procedure infinityp u;
    % Check for a representation of an IEEE floating point infinity.
+   % YUK this might also return true on a NaN!
    not(x eq '!- or digit x) where x=car explode u;
 
 symbolic procedure !!mfefix;

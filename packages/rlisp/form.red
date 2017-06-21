@@ -67,7 +67,7 @@ symbolic procedure formlamb(u,vars,mode);
          v := cdr v >>;
       v := cadr u;
       b := list form1(caddr u, pairvars(v, vars, mode), mode);
-#if (memq 'csl lispsystem!*)
+#if (getd 'declare)
 % See comments elsewhere in the source about why DECLARE is important here.
       while v do <<
          if fluidp car v or globalp car v then fl := car v . fl;
@@ -366,7 +366,7 @@ symbolic procedure !*!*a2s(u,vars);
     % Expressions involving "random" cannot be cached.
     % We need smember rather than smemq in case the "random" is
     % in a quoted expression.
-#if (memq 'csl lispsystem!*)
+#if (getd 'declare)
     else if smember('random,u) then
      list(list('lambda,'(!*uncached),
        list('progn, '(declare (special !*uncached)), list(!*!*a2sfn,u))),t)

@@ -335,11 +335,7 @@ begin scalar a,ea,b,eb,lcp,h,s,print_bak,iq,nr$
         % change pdes so one needs backup,... . We instead check directly:
         if s then <<
          iq:=ineq_$
-!#if (equal version!* "REDUCE 3.6")
-         while iq and not zerop reval reval aeval subst(caddar s,cadar s,car iq) do 
-!#else          
          while iq and not zerop reval subst(caddar s,cadar s,prepsq car iq) do 
-!#endif
          % This is a try to find a situation where one reval is not enough.
             iq:=cdr iq$
          if iq then s:=nil
@@ -781,16 +777,16 @@ endmodule$
 
 end$
 
-tr splitSQ
-tr separation
-tr get_separ_pde
-tr separate
-tr separ
-tr sep
-tr eqsep
-tr sumsep
-tr termsep
-tr termsort
-tr equality_assumption
-tr linearindeptest
-tr itercoeff
+% tr splitSQ
+% tr separation
+% tr get_separ_pde
+% tr separate
+% tr separ
+% tr sep
+% tr eqsep
+% tr sumsep
+% tr termsep
+% tr termsort
+% tr equality_assumption
+% tr linearindeptest
+% tr itercoeff

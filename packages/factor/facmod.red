@@ -44,7 +44,9 @@ fluid '(current!-modulus
         work!-vector2);
 
 
-#if (memq 'csl lispsystem!*)
+#if (getd 'carcheck)
+% In fact pslrend.red defines a summy carcheck function so this gets
+% obeyed all the time.
 safe!-flag:= carcheck 0; % For speed of array access - important here.
 carcheck 0;              % and again for fasl purposes (in case carcheck
                          % is flagged EVAL).
@@ -471,7 +473,7 @@ symbolic procedure append!-new!-factors(a,b);
 
 
 
-#if (memq 'csl lispsystem!*)
+#if (getd 'carcheck)
 carcheck safe!-flag; % Restore status quo.
 #endif
 

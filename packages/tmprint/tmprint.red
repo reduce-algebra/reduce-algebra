@@ -356,10 +356,10 @@ inline procedure writechar n;
 #else
 
 inline procedure string!-to!-list a;
-    string2list a;
+   string2list a;
 
 symbolic procedure raw!-print!-string s;
-     prin2 s;
+   prin2 s;
 
 % writechar already exists in PSL.
 

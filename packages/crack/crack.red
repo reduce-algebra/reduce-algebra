@@ -56,7 +56,13 @@ other packages$
 % POSSIBILITY OF SUCH DAMAGE.                                                 *
 %******************************************************************************
 
-!#if (null(getd 'setprop))
+% The 'rlisp flag is relevant if this module was loaded into an image used to
+% recompile itself into a fasl-file. Because then the functions are present,
+% and that could lead to them NOT being put in the fasl file. That could
+% cause trouble next time!
+
+!#if (or (null (getd 'setprop)) (flagp 'setprop 'rlisp))
+
 symbolic procedure setprop(u, l)$
    %% Store item L as the property list of U.
    %% FJW: Defined (but NOT flagged lose) in PSL only.
@@ -64,26 +70,35 @@ symbolic procedure setprop(u, l)$
    %% Note that in CSL flags are properties with value t.
    << for each p in plist u do remprop(u, car p)$
       for each p in l do put(u, car p, cdr p) >>$
+
+flag('(setprop), 'rlisp);
+
 !#endif
 
-% The following smacro definitions MUST be in this header file!
+!#if (or (null (getd 'flag1)) (flagp 'flag1 'rlisp))
 
-!#if (null(getd 'flag1))
 symbolic inline procedure flag1(u, v)$
    %% smacro is replaced by inline as new policy in sourceforge Reduce
    %% The identifier U is flagged V.
    %% FJW: Defined and flagged lose in PSL only.
    %% FJW: This implementation based on the PSL manual.
    flag({u}, v)$
+
+flag('(flag1), 'rlisp);
+
 !#endif
 
-!#if (null(getd 'remflag1))
+!#if (or (null (getd 'remflag1)) (flagp 'remflag1 'rlisp))
+
 symbolic inline procedure remflag1(u, v)$
    %% smacro is replaced by inline as new policy in sourceforge Reduce
    %% Remove V from the property list of identifier U.
    %% FJW: Defined and flagged lose in PSL only.
    %% FJW: This implementation based on the PSL manual.
    remflag({u}, v)$
+
+flag('(remflag1), 'rlisp);
+
 !#endif
 
 if lisp(null(getd 'redfront_color) ) then
@@ -145,14 +160,9 @@ i_to i_ut i_br i_pc i_in i_cu i_tr i_qt i_pq i_so i_sf i_ls i_lg i_dc i_xp
 i_sp i_jp i_pp i_wp i_yp i_zp i_vp i_np i_mp i_tp i_dp i_fo i_ff i_gs i_gg
 i_gr i_df ))$
 
-!#if (getd 'packages_to_load)  % Load support packages, but not when compiling:
-     packages_to_load ezgcd,odesolve,factor,int,algint,matrix,groebner,gnuplot$
-     if getd('pvm_mytid) then  % Load PVM support
-     packages_to_load pvm,reducepvm$
-!#else                         % for REDUCE 3.6
-     apply1('load_package, '(ezgcd odesolve factor int algint matrix
-                             groebner gnuplot))$
-!#endif
+packages_to_load ezgcd,odesolve,factor,int,algint,matrix,groebner,gnuplot$
+if getd('pvm_mytid) then  % Load PVM support
+packages_to_load pvm,reducepvm$
 
 !#if (memq 'psl lispsystem!*)
      load pipes$       % to detect the operating system for parallel runs

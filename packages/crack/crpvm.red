@@ -31,11 +31,13 @@ module crackpvm$
 symbolic fluid '(loaddirectories!* loadextensions!* !*lower unixargs!*
                  options!*)$                             % for crload()
 
-!#if (memq 'csl lispsystem!*)
+#if (or (not (getd 'pwd)) (flagp 'pwd 'rlisp))
 
 symbolic procedure pwd$ bldmsg("%w/",getenv "PWD")$
 
-!#endif
+flag('(pwd), 'rlisp);
+
+#endif
 
 % symbolic fluid '(lock_)$
 % lock_ := gtwarray 4$     % see /usr/include/sys/fnctl.h
@@ -232,7 +234,7 @@ symbolic procedure crack_load_cmd$
 % further loads of CRACK in parallel computations
 if null crack_load_command then
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
 
 begin scalar h,s,found$
  h:=options!*;
@@ -268,7 +270,7 @@ begin scalar h,s,found$
  >>
 end$
 
-!#else
+#else
  
 begin scalar h$ 
  write"If this session was started by loading ""crack"" then enter  1  else "$terpri()$
@@ -282,14 +284,14 @@ begin scalar h$
  restore_interactive_prompt()
 end$
 
-!#endif
+#endif
 
 symbolic procedure reduce_call_cmd$
 % Determines the path of the first load of CRACK. This is to be used in automatic
 % further loads of CRACK in parallel computations
 if null reduce_call then <<
 
-!#if (memq 'psl lispsystem!*)
+#if (memq 'psl lispsystem!*)
   % comment:   unixargs!*;   looks like:
   % ["/usr/local/reduce37d/lisp/psl/linux/psl/bpsl" "-td" "22000000" "-f"
   %  "/usr/local/reduce37d/lisp/psl/linux/red/reduce.img"]
@@ -303,7 +305,7 @@ if null reduce_call then <<
    reduce_call:=""$
    for n:=0:4 do setq(reduce_call,bldmsg("%w %w",reduce_call,getv(unixargs!*,n)))
   >>$
-!#endif
+#endif
 
   if null reduce_call then <<
     write"For calling REDUCE the program needs to know the calling command."$terpri()$
@@ -771,14 +773,14 @@ endmodule$
 
 end$
 
-tr proczaehler
-tr ini_check_of_parallel_crack
-tr pvm_activate
-tr pvm_active
-tr crload
-tr crack_load_cmd
-tr read_proczaehler
-tr add_session
-tr add_process
-tr drop_process
-tr crackmain_if_possible_remote
+% tr proczaehler
+% tr ini_check_of_parallel_crack
+% tr pvm_activate
+% tr pvm_active
+% tr crload
+% tr crack_load_cmd
+% tr read_proczaehler
+% tr add_session
+% tr add_process
+% tr drop_process
+% tr crackmain_if_possible_remote

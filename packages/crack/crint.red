@@ -1265,11 +1265,7 @@ begin scalar l,l1,l2,fl,ltdl$
 
  if fl then
  <<l:=cons(q,l)$
-!#if (equal version!* "REDUCE 3.6")
-   l:=for each a in l collect reval aeval a$
-!#else          
    l:=for each a in l collect reval a$
-!#endif
    l:=for each a in l collect
           if pairp a and (car a='quotient) then cadr a
                                            else a>>$
@@ -2039,12 +2035,8 @@ begin
  % exfactors is the list of factors extracted at the beginning
  % pri:=t;
 
-!#if (equal version!* "REDUCE 3.6")
- precise_old:=nil$  % to avoid compiler warning
-!#else 
  precise_old:=!*precise$
  !*precise:=nil$
-!#endif
 
  factr:=t; % whether tozero should be factorized
  if pri then <<terpri()$write"START VON FINDINTFAC">>;
@@ -2146,10 +2138,7 @@ begin
   if length pl = 1 then write"An integrating factor has been found:"
                    else write"Integrating factors have been found: "$
  >>;
-!#if (equal version!* "REDUCE 3.6")
-!#else 
  !*precise:=precise_old$
-!#endif
 
  if (null h) or (zerop newequ) then return nil$
 
@@ -2637,13 +2626,7 @@ begin scalar j,h,h1,h2,t2,ford_,newco,oldde,newde,newvl,null_,ruli,ld$
     >>
    >>
   >>                      else <<
-!#if (equal version!* "REDUCE 3.6")
-   null_:=reval reval aeval subst(caddr newde, ford_, oldde)$  
-   %  reval reval because of a REDUCE bug for special data, 
-   %  to be dropped as soon as possible
-!#else          
    null_:=simp!* reval subst(caddr newde, ford_, oldde)$  
-!#endif
    if not sqzerop null_ then <<
     if print_ then <<
      write "odesolve solves :  "$

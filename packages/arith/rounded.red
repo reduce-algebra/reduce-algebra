@@ -348,6 +348,16 @@ symbolic procedure rd!:plus(u,v);
    begin scalar x,y;
       x := convprc2(u,v); y := yy!!;
       u := if not atom x then plubf(x,y) else
+%
+% There are issues and uncertainties at present as to whether floating point
+% overflow should lead to and IEEE infinity or to the raising of an
+% exception. I view use of errorset (and hence the need for it) as
+% liable to be clumsy and  expensive, so I tend to believe that I want
+% Lisp-level arithmetic to make overflow soft. But potentially some segments
+% of code elsewhere in Reduce assume or expect an error to be raised and
+% try to rely on it... For the present I will leave the conditional here
+% based on CSL vs PSL.
+%
 #if (member 'csl lispsystem!*)
 % Pretty-well ever since IEEE arithmetic has been in use CSL has probably
 % just overflowed to give an IEEE infinity, and has not raised an exception.
@@ -415,8 +425,12 @@ symbolic procedure rd!:quotient(u,v);
 % Here  use the test "not fp!-finite" which would notice a NaN as well
 % as infinities. That is because 0.0/0.0 might generate a NaN (although
 % at present it raises an exception whhich would then not be caught here).
-% This is a bit hypothetical because the case of dividion by 0.0 is trapped
-% a few libes above here!
+% This is a bit hypothetical because the case of division by 0.0 is trapped
+% a few lines above here! There is an issue of proper specification as to
+% whether (quotient 0.0 0.0) should raise an exception or return a NaN,
+% and whether (quotient x 0.0) for non-zero x should yield and IEEE infinity
+% or raise an exception. If it yields an infinity it may become proper
+% to consider division by both +0.0 and -0.0.
              if not fp!-finite z then <<rndbfon(); divbf(bfloat x,bfloat y)>>
                 else z>> end) where z=nil;
 #else

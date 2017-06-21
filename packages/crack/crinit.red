@@ -1256,10 +1256,6 @@ end$
   random_new_seed(datestamp())$
 !#endif
 
-% symbolic procedure randomhack()$
-%  wand(external_time datebuffer,255)$
-% random_new_seed ( 100 * lisp randomhack() + 27)$
-
 endmodule$
 
 end$

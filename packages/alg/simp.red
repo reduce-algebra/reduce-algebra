@@ -151,7 +151,11 @@ symbolic procedure subs2 u;
 % also cause pain! To help me understand this I will make all access to this
 % table abstract via small procedures here.
 
-#if (and (memq 'csl lispsystem!*) (not (memq 'vsl lispsystem!*)))
+% Elsewhere I may define stand-in versions of mkhash etc that will work
+% (albeit slowly) on platforms where hash tables are not built in. In such
+% cases mkhash will have ended up flagged 'rlisp.
+
+#if (and (getd 'mkhash) (not (flagp 'mkhash 'rlisp)))
 
 % With CSL I have hash tables and I am fairly confident both that for
 % cases where alglist!* becomes long they are a significant win and that
@@ -197,8 +201,8 @@ symbolic procedure delete_from_alglist(key, l);
 
 #else
 
-% With PSL I maintain the previous association-list model, albeit now
-% lifted by a level of abstraction.
+% If genuine hash tables are not available I maintain the previous
+% association-list model, albeit now lifted by a level of abstraction.
 
 inline procedure add_to_alglist(key, val, l);
   (key . val) . l;

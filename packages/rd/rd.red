@@ -112,11 +112,9 @@ procedure rlint!-msg(y);
       prin2 "MAKESHMSG ";
       prin2 "Syntax-checking ";
       prin2 y;
-      #if (memq 'csl lispsystem!*)
-      	 prin2t " for csl ...";
-      #else
-      	 prin2t " for psl ...";
-      #endif
+      prin2t (if 'csl memq lispsystem!* then " for csl ..."
+              else if 'psl memq lispsysten!* then " for psl ..."
+              else " ...")
    >>;
 
 procedure rlint(y);
@@ -132,18 +130,14 @@ procedure rlint(y);
 
 procedure make(y);
    <<
-      #if (memq 'csl lispsystem!*)
-      <<
-   	 on backtrace;  % In case something goes wrong.
-      	 !*savedef := nil;
-	 !*native_code := nil
-      >>;
-      #else
-      <<
-	 load!-package 'compiler;
-	 errorset('(load compat),nil,nil)  % PSL compiler support.
-      >>;
-      #endif
+#if (memq 'csl lispsystem!*)
+      on backtrace;  % In case something goes wrong.
+      !*savedef := nil;
+      !*native_code := nil
+#else
+      load!-package 'compiler;
+      errorset('(load compat),nil,nil)  % PSL compiler support.
+#endif
       !*argnochk := t;
       package!-remake2(y,get_path y)
    >>;

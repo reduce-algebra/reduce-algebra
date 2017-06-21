@@ -35,15 +35,12 @@ symbolic procedure find_Singular$
    % DiffElim which is distributed together with Crack.
 begin scalar h1$
 
-!#if (memq 'psl lispsystem!*)
  if null singular_call then <<
   singular_call:=getenv "SingularCall"$
   if not filep singular_call then singular_call:=nil$
  >>$
-!#endif  
 
- % as getenv does currently (May 2014) not exist for redcsl:
- if null singular_call then 
+ if null singular_call then
  if null filep (singular_call:="/usr/bin/Singular") then % lie, Eee, sente, gote, miai, tenuki, silo
  if null filep (singular_call:="/home/syam/Singular/3-0-4/x86_64-Linux/Singular") then % on SharcNet
  if null filep (singular_call:="/usr/local/share/Singular/3-1-6/x86_64-Linux/Singular") then % on sharc-198
@@ -72,14 +69,11 @@ begin scalar h1$
   restore_interactive_prompt()$ 
  >>$
 
-!#if (memq 'psl lispsystem!*)
  if null singular_lib then <<
   singular_lib:=getenv "SingularLib"$
   if not filep singular_lib then singular_lib:=nil$
  >>$
-!#endif  
 
- % as getenv does currently (May 2014) not exist for redcsl:
  if null singular_lib then 
  if null filep (singular_lib:="/usr/share/Singular/LIB") then % on Eee PC, sente, gote, tenuki, silo
  if null filep (singular_lib:="/usr/share/singular/LIB") then % miai
@@ -728,13 +722,13 @@ endmodule$
 
 end$
 
-tr comp_groebner_basis
-tr call_gb
-tr read_bg_output
-tr gb_vars
-tr gb_polys
-tr call_singular
-tr call_diffelim
-tr read_singular_output
-tr singular_vars
-tr singular_polys
+% tr comp_groebner_basis
+% tr call_gb
+% tr read_bg_output
+% tr gb_vars
+% tr gb_polys
+% tr call_singular
+% tr call_diffelim
+% tr read_singular_output
+% tr singular_vars
+% tr singular_polys

@@ -6361,7 +6361,8 @@ begin scalar u1,u2,u3,fli,v;
  return fli
 end$
 
-!#if (memq 'psl lispsystem!*) % PSL does not have a function oblist(), therefore:
+!#if (memq 'psl lispsystem!*)
+% PSL does not have a function oblist(), therefore:
 
 symbolic lispeval '(putd 'countids 'expr
           '(lambda nil (prog (nn) (setq nn 0)
@@ -6642,12 +6643,10 @@ begin
  if null !*ratarg    then algebraic(on  ratarg)$
 % if null !*rational  then algebraic(on  rational)$
 
- !#if (neq version!* "REDUCE 3.6")
   !*nopowers_bak   := cons(!*nopowers,!*nopowers_bak)$     
   !*allowdfint_bak := cons(!*allowdfint,!*allowdfint_bak)$ 
   if null !*nopowers   then algebraic(on nopowers)$
   if null !*allowdfint then algebraic(on allowdfint)$
- !#endif
 
 end$
 
@@ -6687,14 +6686,12 @@ begin
  if !*rational then algebraic(off rational) else algebraic(on rational)$
  !*rational_bak:= cdr !*rational_bak$ 
 
- !#if (neq version!* "REDUCE 3.6")
   if !*nopowers neq car !*nopowers_bak then
   if !*nopowers then algebraic(off nopowers) else algebraic(on nopowers)$
   !*nopowers_bak:= cdr !*nopowers_bak$ 
   if !*allowdfint neq car !*allowdfint_bak then
   if !*allowdfint then algebraic(off allowdfint) else algebraic(on allowdfint)$
   !*allowdfint_bak:= cdr !*allowdfint_bak$ 
- !#endif
 end$
 
 algebraic procedure maklist(ex)$
@@ -9467,28 +9464,28 @@ endmodule$
 
 end$
 
-tr err_catch_groeb
-tr err_catch_readin
-tr err_catch_solve
-tr err_catch_odesolve
-tr err_catch_minsub
-tr err_catch_gb
-tr err_catch_sub
-tr ecs_SQ
-tr err_catch_int
-tr err_catch_reval
-tr err_catch_fac
-tr err_catch_fac2
-tr err_catch_fac3
-tr err_catch_gcd
-tr err_catch_preduce
+% tr err_catch_groeb
+% tr err_catch_readin
+% tr err_catch_solve
+% tr err_catch_odesolve
+% tr err_catch_minsub
+% tr err_catch_gb
+% tr err_catch_sub
+% tr ecs_SQ
+% tr err_catch_int
+% tr err_catch_reval
+% tr err_catch_fac
+% tr err_catch_fac2
+% tr err_catch_fac3
+% tr err_catch_gcd
+% tr err_catch_preduce
 
-tr updateSQ
-tr err_catch_fac2
-tr sffac
-tr simplifySQ
-tr sort_according_to
-tr pdeweightSF
-tr stardep3
-tr sep_var
-tr new_ineq_from_equ_SQ
+% tr updateSQ
+% tr err_catch_fac2
+% tr sffac
+% tr simplifySQ
+% tr sort_according_to
+% tr pdeweightSF
+% tr stardep3
+% tr sep_var
+% tr new_ineq_from_equ_SQ

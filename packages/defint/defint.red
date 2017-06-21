@@ -44,6 +44,12 @@ create!-package ('(defint definta defintc defintf definti defint0
                  '(contrib defint));
 
 #if (memq 'psl lispsystem!*)
+%
+% Might I suggest that this be reviewed, and a comment explaining what
+% it does be inserted here? As things are I can not tell if this is
+% something where there may be a CSL vs PSL divergence that matters.
+% ACN, June 2017.
+%
   flag('(definta defintb definte defintf definti defintk),'lap);
 #endif
 

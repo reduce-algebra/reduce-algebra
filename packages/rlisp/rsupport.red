@@ -237,6 +237,18 @@ symbolic procedure map!-reserved!-ids l;
 symbolic procedure get!-print!-name u;
    idp u and get(u,'oldnam) or u;
 
+% If there is an error while a bootstrap version of Reduce is being built
+% the disgnostics associated with it can be unhelpful. Providing a dummy
+% print function here may help...
+
+symbolic procedure assgnpri(u, v, w);
+ << terpri();
+    prin2t "Bootstrap version of assgnpri:";
+    print u;
+    print v;
+    print w;
+    nil >>;
+
 % It looks to me as if this name-mapping was an idea that was being looked
 % at but never ended up activated...
 

@@ -74,14 +74,11 @@ symbolic procedure read!:lnum(l);
 if not allfixp l then bflerrmsg 'read!:lnum
  else begin scalar mt, ep, k, sign, u, v, dcnt;
           mt := dcnt := 0;      %JBM
-%          ep := car(u := l) + 1;   %JBM
           u := l;
           ep := add1 car u;
           sign := if minusp cadr l then -1 else 1;   %JBM
           while u:=cdr u do
             << k := length explode(v := abs car u);  %JBM
-%               k := 0;  %JBM
-%               while v do << k := k + 1; v := cdr v >>;  %JBM
                mt := mt * 10**k + v; %JBM
                ep := ep - k;
                dcnt := dcnt +  k;    % JBM

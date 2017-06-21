@@ -143,7 +143,7 @@ symbolic procedure symbvarlst(vars,body,mode);
 
 symbolic procedure make_prog_declares(v, b);
    begin
-#if (memq 'csl lispsystem!*)
+#if (getd 'declare)
 % This detects any bound variables that are fluid (or global) at the
 % time I process this code and adds in a DECLARE to remind us about
 % that fact. I should put in an explanation for the benefit of those who

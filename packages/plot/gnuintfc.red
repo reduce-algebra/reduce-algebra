@@ -253,12 +253,7 @@ begin
 
   tempdir!* := getenv 'tmp;
   if null tempdir!* then tempdir!* := getenv 'temp;
-% Because the tmpdir() function is new in October 2014 I will check for
-% its availability before use. On cygwin tmpdir passes back a "mixed" format
-% name such as "C:/cygwin/tmp" which tends to make it safe to pass to the
-% shell in case where back-slashes might be an issue, however note that
-% there could be whitespace in the path.
-  if null tempdir!* and getd 'tmpdir then tempdir!* := tmpdir();
+  if null tempdir!* then tempdir!* := tmpdir();
 
   !*plotusepipe := t;
 % find-gnuplot returns the full name of a version of gnuplot (if it can

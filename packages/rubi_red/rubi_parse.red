@@ -14,19 +14,22 @@ fluid '(mmachar);  % variable to hold next character
 
 mmachar := '! ;    % starts off as a space character
 
-#if (memq 'psl lispsystem!*)
 
-fluid '(blank tab);
+global '(blank tab);
 
-blank := intern int2id 32;
-tab   := intern int2id 9;
+if not boundp 'blank or null blank then blank := intern int2id 32;
+if not boundp 'tab or null tab then     tab   := intern int2id 9;
+
+#if (or (not (getd 'flush)) (flagp 'flush 'rlisp))
 
 symbolic procedure flush u;  % Flush a file...
   nil;
 
+flag('(flush), 'rlisp);
+
 #endif 
 
-fluid '(carriage_return);
+global '(carriage_return);
 
 carriage_return := intern int2id 13;
 

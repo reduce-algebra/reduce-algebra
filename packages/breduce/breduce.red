@@ -128,7 +128,7 @@ procedure breduce_verbatim(sol);
    {'list,"\verb@",aeval sol,"@"};
 
 procedure breduce_flush();
-#if (memq 'psl lispsystem!*)
+#if (and (getd 'flushbuffer) (getd 'channelflush))
    <<
       flushbuffer out!*;
       channelflush out!*

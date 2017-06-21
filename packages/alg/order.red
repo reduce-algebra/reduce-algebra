@@ -66,7 +66,64 @@ symbolic procedure ord2(u,v);
 % then their redefinitions get discarded as well as this one. Hence I am
 % moving to the ugly and somwhat unsatisfactory use of #if. A better
 % resolution will be to arrange that neither hephys nor spde redefine
-% this function!
+% this function! But doing that might require that the version within
+% CSL be updated to include the changes that they want.
+
+% I will put a copy of the version from hephys/noncom2.red first, but
+% commented out. This is to encourage a merge operation! I suspect that
+% the regular and the hephys versions could be merged with a bit of thought.
+
+%hephys% symbolic procedure ordp(u,v); % modified
+%hephys%    %returns true if u ordered ahead or equal to v, nil otherwise.
+%hephys%    %an expression with more structure at a given level is ordered
+%hephys%    % behind (and not ahead) of one with less;
+%hephys%    % ordering of numbers is left as default
+%hephys%    if null u then t
+%hephys%    else if null v then nil
+%hephys%    else if vectorp u then if vectorp v then ordpv(u,v) else atom v
+%hephys%    else if atom u then
+%hephys%            if atom v then
+%hephys%               if numberp u then
+%hephys%                   if numberp v then not(u < v)
+%hephys%                   else t
+%hephys%               else if numberp v then nil
+%hephys%                    else orderp(u,v)
+%hephys%            else t
+%hephys%     else if atom v then nil
+%hephys%     else if car u=car v then ordpl(cdr u,cdr v)
+%hephys%     else if flagp(car u,'noncom)
+%hephys%      then if flagp(car v,'noncom) then ordp(car u, car v) else t
+%hephys%     else if flagp(car v,'noncom) then nil
+%hephys%     else ordp(car u,car v);
+
+% The variant from spde seems to be amazingly different and specialized,
+% and it looks to me as if I would be a lot harder to merge with it.
+% Issues of the general "setkorder" mechanism and its interaction with
+% spde would need to be considered too! Note that loading spde will
+% have an impact on any attempt to use non-commuting quantities.
+
+%spde% remflag('(ordp ordpa),'lose);   % We must use these definitions.
+%spde%
+%spde% symbolic procedure ordp(u,v)$
+%spde% %Modified ordering function which orders kernels with CAR parts;
+%spde% %DF, ETA, XI and C ahead of anything else;
+%spde% if null u then null v else if null v then t else
+%spde% if eq(u,'df) or eq(u,'eta) and not eq(v,'df)
+%spde% or eq(u,'xi) and not(eq(v,'df) or eq(v,'eta))
+%spde% or eq(u,'c) and not(eq(v,'df) or eq(v,'eta) or eq(v,'xi)) then t else
+%spde% if eq(u,'eta) and eq(v,'df)
+%spde% or eq(u,'xi) and (eq(v,'df) or eq(v,'eta))
+%spde% or eq(u,'c) and (eq(v,'df) or eq(v,'eta) or eq(v,'xi))
+%spde% or eq(v,'df) or eq(v,'eta) or eq(v,'xi) or eq(v,'c) then nil else
+%spde% if atom u then if atom v then
+%spde% if numberp u then numberp v and not(u<v) else
+%spde% if numberp v then t else orderp(u,v) else nil else
+%spde% if atom v then t else
+%spde% if car u=car v then ordp(cdr u,cdr v) else ordp(car u,car v)$
+%spde%
+%spde% symbolic procedure ordpa(u,v); ordp(u,v);
+
+
 
 symbolic procedure ordp(u,v);
    % Returns TRUE if U ordered ahead or equal to V, NIL otherwise.
@@ -80,14 +137,8 @@ symbolic procedure ordp(u,v);
                 then if numberp u then numberp v and not(u<v)
                       else if idp v then orderp(u,v)
                       else numberp v
-%            else flagp(car v,'noncom)
              else nil
-%   else if atom v then not flagp(car u,'noncom)
     else if atom v then t
-    % I used to think the additional noncom check was needed here, but
-    % it can lead to confusing results.
-%   else if car u=car v then ordp(cdr u,cdr v)
-%   else if car u=car v then flagp(car u,'noncom) or ordpl(cdr u,cdr v)
     else if car u=car v then ordpl(cdr u,cdr v)
     else if flagp(car u,'noncom)
      then if flagp(car v,'noncom) then ordp(car u, car v) else t

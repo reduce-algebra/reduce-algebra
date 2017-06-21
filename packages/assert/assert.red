@@ -424,9 +424,14 @@ procedure assert_at2str(s);
    % of the atom [s] as a string.
    compress('!" . reversip('!" . reversip explode s));
 
-#if (not (memq 'psl lispsystem!*))
+#if (or (not (getd 'id2string)) (flagp 'id2string 'rlisp))
+% Note that CSL has had id2string since March 2014.
+
 procedure id2string(id);
    symbol!-name id;
+
+flag('(id2string), 'rlisp);
+
 #endif
 
 endmodule;  % assert

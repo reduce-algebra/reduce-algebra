@@ -73,17 +73,24 @@ symbolic procedure mk!-point(x0,y0,fcn);
             rederr("Implicit function cannot be plotted")
          ) where point = {x0,y0,apply2(fcn,x0,y0)};
 
-#if (member 'csl lispsystem!*)
-    symbolic procedure deletip1 (u,v);
-       % Auxiliary function for DeletIP.
-       pairp cdr v and
-          (if u=cadr v then rplacd(v,cddr v) else deletip1(u,cdr v));
+#if (or (not (getd 'deletip)) (flagp 'deletip 'rlisp))
 
-    symbolic procedure deletip (u,v);
-       % Destructive DELETE.
-       if not pairp v then v
-        else if u=car v then cdr v
-        else <<deletip1(u,v); v>>;
+symbolic procedure deletip1 (u,v);
+% Auxiliary function for deletip. This does the work provided the
+% item to be deleted is not the first element of the list, but it
+% then returns nil.
+  pairp cdr v and
+  (if u=cadr v then rplacd(v,cddr v) else deletip1(u,cdr v));
+
+symbolic procedure deletip (u,v);
+% Destructive DELETE.
+  if not pairp v then v
+  else if u=car v then cdr v
+  else << deletip1(u,v);
+          v >>;
+
+flag('(deletip), 'rlisp);
+
 #endif
 
 symbolic procedure imp2!-delete!-pt!-reference(i,p);

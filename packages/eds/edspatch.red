@@ -95,8 +95,6 @@ symbolic procedure putform(u,v);
    end;
 
 
-% Have to update ndepends to REDUCE3.6 depends.
-
 symbolic procedure ndepends(u,v);
    if null u or numberp u or numberp v then nil
     else if u=v then u

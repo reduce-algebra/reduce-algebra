@@ -66,7 +66,6 @@ symbolic procedure orderp(u,v);
       go to a;
    end;
 
-
 !#endif
 
 % I will maintain an ordered binary tree of the names of switches that
