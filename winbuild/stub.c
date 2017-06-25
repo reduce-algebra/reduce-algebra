@@ -1,4 +1,4 @@
-// stub.c                                      Copyright A C Norman 2014-17
+// stub.c                                      Copyright A C Norman 2014
 //
 
 // The object of this code is to have several binaries embedded in it and
@@ -18,7 +18,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2014-17, Codemist Ltd.                  A C Norman       *
+ * Copyright (C) 2014, Codemist Ltd.                     A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -92,7 +92,8 @@
 //
 
 int inf(FILE *source, FILE *dest, int length)
-{   int ret;
+{
+    int ret;
     unsigned have;
     z_stream strm;
     unsigned char in[CHUNK];
@@ -213,7 +214,8 @@ typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
 LPFN_ISWOW64PROCESS fnIsWow64Process;
 
 BOOL IsWow64()
-{   BOOL bIsWow64 = FALSE;
+{
+    BOOL bIsWow64 = FALSE;
 // IsWow64Process is not available on all supported versions of Windows.
 // Use GetModuleHandle to get a handle to the DLL that contains the function
 // and GetProcAddress to get a pointer to the function if available. Well
@@ -235,7 +237,8 @@ BOOL IsWow64()
 #endif // FAT32
 
 static int64_t read8(FILE *f)
-{   int64_t r = 0;
+{
+    int64_t r = 0;
     int i;
     for (i=0; i<8; i++)
     {   int w = getc(f) & 0xff;
@@ -263,7 +266,8 @@ static int64_t length[NUMBER_OF_MODULES];
 #define ERROR_NO_TEMP_FILE         88
 
 int RunResource(int index, int forcegui, const char *modulename)
-{   FILE *src, *dest;
+{
+    FILE *src, *dest;
     int i;
     uint64_t hdr;
 #ifdef DEBUG
@@ -308,7 +312,7 @@ int RunResource(int index, int forcegui, const char *modulename)
 // Windows machine and seem to be OK...
 //
     DWORD path = GetTempPath(sizeof(pPath), pPath);
-    if (path == 0 || path > sizeof(pPath)-14)
+    if (path ==0 || path > sizeof(pPath)-14)
         strcpy(pPath, ".\\"); // Try to use currect directory
 // Now pPath holds a directory, with a "\" character at the end...
 //
@@ -321,9 +325,6 @@ int RunResource(int index, int forcegui, const char *modulename)
 // Here I create a number that depends on the date and time of day as
 // well as on my process number. Using this in the generated file name
 // can not guarantee to avoid clashes. but it will at least help.
-// The various multiplierds here are to scramble information somewhat. They
-// do nmot lead to high quality randomness and even nore so they are not
-// even pretending to be cryptographically secure.
     int k = (t0.wMilliseconds + 1000*t0.wSecond) +
             314159*(int)time(NULL) +
             2718281*(int)myid;
@@ -347,29 +348,26 @@ int RunResource(int index, int forcegui, const char *modulename)
 // This use of CreateFile arranges that the file opened is guaranteed
 // to be new. This is just what I want.
         HANDLE h = CreateFile(
-            pPath,                  // name
-            GENERIC_WRITE,          // access
-            FILE_SHARE_READ |       // shared
-            FILE_SHARE_WRITE |
-            FILE_SHARE_DELETE,
-            NULL,                   // security attributes
-            CREATE_NEW,             // creation disposition
-            FILE_ATTRIBUTE_NORMAL | // flags & attributes
-            FILE_FLAG_DELETE_ON_CLOSE,
-            NULL);                  // template file
+            pPath,                 // name
+            GENERIC_WRITE,         // access
+            0,                     // shared
+            NULL,                  // security attributes
+            CREATE_NEW,            // creation disposition
+            FILE_ATTRIBUTE_NORMAL, // flags & attributes
+            NULL);                 // template file
         if (h == INVALID_HANDLE_VALUE) continue;
 // I want to write to the file using a C style FILE object so I convert
 // from a Windows handle to one of those - in two steps.
         int ch = _open_osfhandle((intptr_t)h, 0);
         if (ch == -1)
         {   CloseHandle(h);
-            DeleteFile(pPath); // should not be needed!
+            DeleteFile(pPath);
             continue;
         }
         dest = fdopen(ch, "wb");
         if (dest == NULL)
         {   close(ch);
-            DeleteFile(pPath); // should not be needed!
+            DeleteFile(pPath);
             continue;
         }
         break;
@@ -381,17 +379,14 @@ int RunResource(int index, int forcegui, const char *modulename)
 // Decompress the relevant resource into the new file.
     inf(src, dest, length[index]);
     fclose(src);
-//  fclose(dest);       // I must NOT close the file, because that
-                        // would cause it to be deleted. But I had
-                        // better flush it so all data is on disk.
-    fflush(out);
+    fclose(dest);
     chmod(pPath, 0755); // Make executable
 
     const char *cmd = GetCommandLine();
     char *cmd1 = (char *)malloc(strlen(cmd) + 12);
     if (cmd1 == NULL)
     {   printf("No memory for new command line\n"); fflush(stdout);
-        DeleteFile(pPath); // again should not be needed.
+        DeleteFile(pPath);
         return ERROR_NO_MEMORY;
     }
     strcpy(cmd1, cmd);
@@ -403,7 +398,7 @@ int RunResource(int index, int forcegui, const char *modulename)
 //     winreduce.exe    for double-clicking - does not support cygwin
 //    [winreduce32.exe] double-clickable and 32-bit only
 // The last of these does not go through this packing process.
-// To cope with all of those the code inside Reduce will strip "win" from
+// To cope with all of those the code inside Reduce will strin "win" from
 // the front of an application and "32" from the end before using it
 // to decide where to look for an image file. That way all the above
 // will be able to use a single file "reduce.img". Further it will be
@@ -444,9 +439,6 @@ int RunResource(int index, int forcegui, const char *modulename)
         fflush(stdout);
         CloseHandle(peProcessInformation.hProcess);
         CloseHandle(peProcessInformation.hThread);
-// This is supposed to delete the temporary file after Reduce has exited.
-// If one kills the task with enough enthusiasm then this tidy up code
-// may also be supressed. 
         DeleteFile(pPath);
         return rc;
     }
@@ -468,9 +460,7 @@ int RunResource(int index, int forcegui, const char *modulename)
         printf("CreateProcess failed (%d): %s\n", dw, lpMsgBuf);
         fflush(stdout);
 #endif
-        fclose(dest); // This and the sub-process terminating should
-                      // lead to the temp file being deleted...
-        DeleteFile(pPath); // so this shoukd be harmless but unnecessary.
+        DeleteFile(pPath);
         return ERROR_CREATEPROCESS;
     }
 }

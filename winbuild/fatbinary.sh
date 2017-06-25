@@ -11,7 +11,7 @@ case ${1:-2} in
   ver=cslwin32
   ;;
 *)
-  echo argument $1 invalid: should ba 1, 2 or 3
+  echo argument $1 invalid: should be 1, 2 or 3
   exit 1
   ;;
 esac
@@ -78,8 +78,14 @@ x86_64)
   ;;
 esac
 
+if test "x$2" = "xDEBUG"
+then
+  debugflag="-DDEBUG=1"
+else
+  debugflag=
+fi
 
-i686-w64-mingw32-gcc -DFAT64 -O2 stub.c \
+i686-w64-mingw32-gcc -DFAT64 $debugflag -O3 stub.c \
 	--static -lz -o cslbuild/reduce.exe
 i686-w64-mingw32-strip cslbuild/reduce.exe
 
@@ -99,7 +105,7 @@ i686-w64-mingw32-strip cslbuild/reduce.exe
 # not a console binary. As such it will not be useful in a cygwin world,
 # but it will be the correct thing to double click on.
 
-i686-w64-mingw32-gcc -DFATWIN -O2 stub.c \
+i686-w64-mingw32-gcc -DFATWIN $debugflag -O3 stub.c \
 	-Wl,--subsystem,windows --static -lz -o cslbuild/winreduce.exe
 i686-w64-mingw32-strip cslbuild/winreduce.exe
 
@@ -113,7 +119,7 @@ i686-w64-mingw32-strip cslbuild/winreduce.exe
 	cslwin32/csl/reduce.exe \
 	cslwin64/csl/reduce.exe
 
-i686-w64-mingw32-gcc -DFAT64 -O2 stub.c \
+i686-w64-mingw32-gcc -DFAT64 $debugflag -O3 stub.c \
 	--static -lz -o cslbuild/bootstrapreduce.exe
 i686-w64-mingw32-strip cslbuild/bootstrapreduce.exe
 
@@ -129,7 +135,7 @@ i686-w64-mingw32-strip cslbuild/bootstrapreduce.exe
 	cslcyg32/csl/bootstrapreduce.exe \
 	cslcyg64/csl/bootstrapreduce.exe
 
-i686-w64-mingw32-gcc -DFAT64 -O2 stub.c \
+i686-w64-mingw32-gcc -DFAT64 $debugflag -O3 stub.c \
 	--static -lz -o cslbuild/csl.exe
 i686-w64-mingw32-strip cslbuild/csl.exe
 
@@ -149,7 +155,7 @@ i686-w64-mingw32-strip cslbuild/csl.exe
 # not a console binary. As such it will not be useful in a cygwin world,
 # but it will be the correct thing to double click on.
 
-i686-w64-mingw32-gcc -DFATWIN -O2 stub.c \
+i686-w64-mingw32-gcc -DFATWIN $debugflag -O3 stub.c \
 	-Wl,--subsystem,windows --static -lz -o cslbuild/wincsl.exe
 i686-w64-mingw32-strip cslbuild/wincsl.exe
 
@@ -165,7 +171,7 @@ i686-w64-mingw32-strip cslbuild/wincsl.exe
 
 # Inspect the files created.
 
-ls -lhd cslbuild
+ls -lh cslbuild
 
 # Tidy up the the helper apps
 
