@@ -19,18 +19,18 @@ ell := all x all y ( - a *b  + a *y  + b *c  - 2*b *c*x + b *x  = 0
 rlqepcad ell;
 
 
-a <> 0 and b <> 0 and a + c - 1 <= 0 and a + c + 1 >= 0 and  - a + c - 1 <= 0
+b <> 0 and a - c + 1 >= 0 and a - c - 1 <= 0 and a + c - 1 <= 0
 
- and  - a + c + 1 >= 0
+ and a + c + 1 >= 0 and a <> 0
 
-           2                2            2  2    2    4    2  2    2
- and (a + b  < 0 or  - a + b  < 0 or  - a *b  + a  + b  + b *c  - b  <= 0)
+       2  2    2    4    2  2    2           2                  2
+ and (a *b  - a  - b  - b *c  + b  >= 0 or (b  + c - 1 < 0 and b  - c - 1 < 0))
 
 
 end;
 
-Tested on londo.fritz.box running Darwin 16.6.0 x86_64 CSL
-Time (counter 1): 30 ms  plus GC time: 30 ms
-1: real         3.00
-user         2.60
-sys          0.38
+Tested on alfred running Linux 4.4.38.1.amd64-smp x86_64 CSL
+Time (counter 1): 40 ms  plus GC time: 69 ms
+1: real 81.01
+user 79.54
+sys 1.33
