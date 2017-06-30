@@ -8,14 +8,6 @@ rlset reals;
 {}
 
 
-load_package qepcad;
-
-
-
-rlrndseed 19;
-
-
-
 wilk := ex(x,8388608*x**20 + 1761607681*x**19 + 172931153920*x**18 +
 10543221964800*x**17 + 447347234439168*x**16 +
 14028108264898560*x**15 + 336985244869591040*x**14 +
@@ -38,8 +30,8 @@ false
 
 end;
 
-Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 5 ms  plus GC time: 85 ms
-1: real 0.32
-user 0.21
-sys 0.04
+Tested on londo.fritz.box running Darwin 16.6.0 x86_64 CSL
+Time (counter 1): 10 ms  plus GC time: 50 ms
+1: real         1.11
+user         0.87
+sys          0.22

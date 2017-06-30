@@ -10,4 +10,4 @@
 # meminfo();
 #
 
-echo 1000
+echo 4000

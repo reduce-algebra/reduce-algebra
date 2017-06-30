@@ -4710,14 +4710,14 @@ dynmodule.$(DLLEXT):	$(srcdir)/dynmodule.cpp $(dyndep)
 
 machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(EXEEXT) \
 			makeheaders$(EXEEXT) Makefile $(srcdir)/impex.def \
-			$(srcdir)/machine.h $(srcdir)/tags.h \
-			$(srcdir)/cslerror.h $(srcdir)/externs.h \
-			$(srcdir)/arith.h $(srcdir)/entries.h \
-			$(srcdir)/lispthrow.h
+			$(srcdir)/machine.h $(srcdir)/int128_t.h \
+			$(srcdir)/tags.h $(srcdir)/cslerror.h \
+			$(srcdir)/externs.h $(srcdir)/arith.h \
+			$(srcdir)/entries.h $(srcdir)/lispthrow.h
 	./objtype$(EXEEXT) reduce-cslread.$(OBJEXT) \
 		$(srcdir)/impex.def machineid-1.cpp $(COMPILE_DLL)
 	./makeheaders$(EXEEXT) config.h $(srcdir)/machine.h \
-		$(srcdir)/tags.h \
+		$(srcdir)/int128_t.h $(srcdir)/tags.h \
 		$(srcdir)/cslerror.h $(srcdir)/externs.h \
 		$(srcdir)/arith.h $(srcdir)/entries.h \
 		$(srcdir)/lispthrow.h > machineid-2.cpp
@@ -4751,6 +4751,7 @@ $(REDUCE_IMG):	reduce$(COM) $(reducedep) $(generated_lisp)
 @canrun_TRUE@		-D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 @canrun_TRUE@		-o- -- buildlogs/reduce.log \
 @canrun_TRUE@		-j reduce.dep
+@canrun_TRUE@	sed -i -e 's/::	;/:/g' *.dep
 @canrun_TRUE@	chmod 664 $(gensrc)/*
 # I copy an image into $(gensrc) with a view to keeping a copy thare that
 # is up to date with my lastest build. There is a complication here that I
@@ -4791,6 +4792,7 @@ reduce.dir:	reduce$(COM) $(reducedep) $(generated_lisp)
 @canrun_TRUE@		-o ./reduce.img/ \
 @canrun_TRUE@		-- buildlogs/reduce.log \
 @canrun_TRUE@		-j reduce.dep
+@canrun_TRUE@	sed -i -e 's/::	;/:/g' *.dep
 @canrun_TRUE@	chmod 664 $(gensrc)/*
 @canrun_FALSE@	echo Can not build reduce.img on this platform
 @canrun_FALSE@	echo Copying from $(gensrc)
@@ -4871,6 +4873,7 @@ bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 @canrun_TRUE@		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
 @canrun_TRUE@		-o- -- buildlogs/bootstrapreduce.log \
 @canrun_TRUE@		-j bootstrapreduce.dep
+@canrun_TRUE@	sed -i -e 's/::	;/:/g' *.dep
 @canrun_TRUE@	chmod 664 $(gensrc)/*
 @canrun_TRUE@	if test -f bootstrapreduce.app/Contents/bootstrapreduce.img; \
 @canrun_TRUE@	then $(CP) bootstrapreduce.app/Contents/bootstrapreduce.img $(gensrc); \
@@ -4897,8 +4900,7 @@ boot.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep)
 @canrun_TRUE@	chmod 664 $(gensrc)/*
 @canrun_TRUE@	./bootstrapreduce$(EXEEXT) -w -z $(CSLFLAGS) -Dno_init_file \
 @canrun_TRUE@		$(CYGSRC)/buildboot.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGSRC)/../.. \
-@canrun_TRUE@		-o boot.img -- buildlogs/boot.log \
-@canrun_TRUE@		-j boot.dep
+@canrun_TRUE@		-o boot.img -- buildlogs/boot.log
 @canrun_FALSE@	echo Can not build boot.img on this platform
 
 profile:	bootstrapreduce.img
@@ -5003,21 +5005,10 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # I rather hope that the delay while C-code is re-created is long enough
 # to let any previous steps complete.
 
-# There is a further bit of fun here. I want to survive when various source
-# files within Reduce are renamed, moved or removed. I cope with this by
-# arranging that if I have a dependency on foo.red I put a line
-#      foo.red::	;
-# somewhere too. That is a rule with an empty recipe, so that if foo.red
-# is not present nobody fusses. I need to make it a double-colon rule
-# because there may be several such (eg from the builds of reduce and
-# bootstrapreduce). But the dependency tracking stuff for C sets up
-# rules for stuff in the .deps directory using single colons, so I need to
-# separate out how I handle those files.
-
 $(generated_source_deps):	$(gensrc)/make.stamp
 	$(MAKE) standard_c_code
 
-standard-c-code $(generated_lisp)::	$(gensrc)/make.stamp
+standard-c-code $(generated_lisp):	$(gensrc)/make.stamp
 	if test -f $@; then touch $@; else \
 	  $(RM) -f $(gensrc)/make.stamp; \
 	  $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \
@@ -5153,6 +5144,7 @@ csl.img:	csl$(COM) $(csldep)
 @canrun_TRUE@		-D@cslbase="$(CYGSRC)" \
 @canrun_TRUE@		-o- -- buildlogs/csl.img.log \
 @canrun_TRUE@		-j csl.dep
+@canrun_TRUE@	sed -i -e 's/::	;/:/g' *.dep
 @canrun_TRUE@	if test -f csl.app/Contents/csl.img; \
 @canrun_TRUE@	then $(CP) -r csl.app/Contents/csl.img $(gensrc); \
 @canrun_TRUE@	elif test -f csl.img; then $(CP) -r csl.img $(gensrc); fi
@@ -5171,6 +5163,7 @@ csli.img:	csl$(COM) $(csldep)
 		-D@cslbase="$(CYGSRC)" \
 		-o csli.img -L buildlogs/csli.img.log \
 		-j csl.dep
+	sed -i -e 's/::	;/:/g' *.dep
 
 csl.dir:	csl$(COM) $(csldep)
 	-$(TRACE)$(RM) -rf csl.img
@@ -5179,6 +5172,7 @@ csl.dir:	csl$(COM) $(csldep)
 @canrun_TRUE@		-o ./csl.img/ -D@cslbase="$(CYGSRC)" \
 @canrun_TRUE@		-- buildlogs/csl.img.log \
 @canrun_TRUE@		-j csl.dep
+@canrun_TRUE@	sed -i -e 's/::	;/:/g' *.dep
 @canrun_FALSE@	echo Can not create csl.img on this platfrom
 @canrun_FALSE@	echo Copying from $(gensrc)
 # Note that the following will only behave properly if some version where the

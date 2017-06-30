@@ -6,14 +6,6 @@ rlset reals;
 {}
 
 
-load_package qepcad;
-
-
-
-rlrndseed 9;
-
-
-
 hong := all(x,ex(y,x**2+x*y+b>0 and x+a*y**2+b<=0))$
 
 
@@ -21,13 +13,13 @@ hong := all(x,ex(y,x**2+x*y+b>0 and x+a*y**2+b<=0))$
 rlqepcad hong;
 
 
-b > 0 and a < 0
+a < 0 and b > 0
 
 
 end;
 
-Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 4 ms  plus GC time: 87 ms
-1: real 0.36
-user 0.23
-sys 0.05
+Tested on londo.fritz.box running Darwin 16.6.0 x86_64 CSL
+Time (counter 1): 20 ms  plus GC time: 40 ms
+1: real         1.27
+user         0.97
+sys          0.25

@@ -23837,9 +23837,8 @@ _ACEOF
 fi
 
 
-# I would view the following as better names for 128-bit integer types and
-# will map __int128 etc onto them. But if they exist already I will expect
-# them to do what they should.
+# I would view the following as a better names for an 128-bit integer type and
+# will map "unsigned __int128" etc onto it when relevant.
 ac_fn_cxx_check_type "$LINENO" "int128_t" "ac_cv_type_int128_t" "$ac_includes_default"
 if test "x$ac_cv_type_int128_t" = xyes; then :
 

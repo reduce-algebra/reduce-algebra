@@ -104,9 +104,17 @@ asserted procedure qepcad_dump(f: Formula, fn: String, printer: Applicable);
    end;
 
 asserted procedure qepcad_printer(f: Formula);
-   begin scalar fl, bl, l;
-      f := cl_pnf f;
-      fl . bl := cl_varl f;
+   begin scalar ff, fl, bl, l;
+      ff := f := cl_pnf f;
+      % Apparently, Qepcad wants the bound variables in the order as they appear
+      % in the prenex block. I am not certain about quanified variables that do
+      % not occur in the sense of of logic.
+      while rl_quap rl_op ff do <<
+	 push(rl_var ff, bl);
+	 ff := rl_mat ff
+      >>;
+      bl := reversip bl;
+      fl := cl_fvarl1 f;
       l := append(fl, bl);
       prin2t "[Qepcad B input, automatically generated in Reduce/Redlog";
       prin2t lto_sconcat {" by ", getenv("USER") or unknown, " on ", date()};
