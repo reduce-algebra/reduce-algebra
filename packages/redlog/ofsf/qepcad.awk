@@ -84,7 +84,11 @@ BEGIN {
     print
 }
 
-/WARNING/ && (slfqvb=="nil") {
+/^WARNING/ && (slfqvb=="nil") {
+    print
+}
+
+/^is everywhere/ && (slfqvb=="nil") {
     print
 }
 
