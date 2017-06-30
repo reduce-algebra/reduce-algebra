@@ -1,0 +1,63 @@
+rlset reals;
+
+
+{}
+
+
+testseries3 :=
+2*p1 - 7 >= 0 and 400*q + 9*td - 20050 <= 0 and i2 = 0 and n - td = 0
+and q >= 0 and q - 40 <= 0 and (td - 400 >= 0 and td - 700 < 0 and 3*td
++ 400*z - 5320 = 0 or td - 700 >= 0 and td - 990 < 0 and 2*td - 300*z +
+1015 = 0 or td = 0 and z = 0) or 2*p1 - 7 >= 0 and 400*q + 9*td - 20050
+>= 0 and i2 = 0 and n - td = 0 and td - 450 >= 0 and 9*td - 20050 <= 0
+and q - 40 <= 0 and q >= 0 and (td - 400 >= 0 and td - 700 < 0 and 3*td
++ 400*z - 5320 = 0 or td - 700 >= 0 and td - 990 < 0 and 2*td - 300*z +
+1015 = 0 or td = 0 and z = 0) or 2*p1 - 7 >= 0 and i2 = 0 and n - td = 0
+ and q - 40 <= 0 and q >= 0 and (td - 400 >= 0 and td - 700 < 0 and 3*td
+ + 400*z - 5320 = 0 or td - 700 >= 0 and td - 990 < 0 and 2*td - 300*z +
+ 1015 = 0 or td = 0 and z = 0) and (400*q + 9*td - 20050 <= 0 and q - 40
+ = 0 or 400*q + 9*td - 20050 > 0 and td - 450 = 0) or 2*p1 - 7 < 0 and
+400*q + 9*td - 20050 <= 0 and i2 = 0 and n - td = 0 and q >= 0 and q -
+40 <= 0 and (td - 400 >= 0 and td - 700 < 0 and 3*td + 400*z - 5320 = 0
+or td - 700 >= 0 and td - 990 < 0 and 2*td - 300*z + 1015 = 0 or td = 0
+and z = 0) or 2*p1 - 7 < 0 and 400*q + 9*td - 20050 >= 0 and i2 = 0 and
+n - td = 0 and td - 450 >= 0 and 9*td - 20050 <= 0 and q - 40 <= 0 and q
+ >= 0 and (td - 400 >= 0 and td - 700 < 0 and 3*td + 400*z - 5320 = 0 or
+ td - 700 >= 0 and td - 990 < 0 and 2*td - 300*z + 1015 = 0 or td = 0
+and z = 0) or 2*p1 - 7 < 0 and i2 = 0 and n - td = 0 and q - 40 <= 0 and
+ q >= 0 and (td - 400 >= 0 and td - 700 < 0 and 3*td + 400*z - 5320 = 0
+or td - 700 >= 0 and td - 990 < 0 and 2*td - 300*z + 1015 = 0 or td = 0
+and z = 0) and (400*q + 9*td - 20050 <= 0 and q - 40 = 0 or 400*q + 9*td
+ - 20050 > 0 and td - 450 = 0)$
+
+
+
+rltab testseries3;
+
+
+true and (i2 = 0 and (n - td = 0 and (td - 990 < 0 and ((td - 450 <= 0
+
+ and q - 40 = 0
+
+ and ((z = 0 and td = 0) or (td - 400 >= 0 and 3*td + 400*z - 5320 = 0))) or (
+
+td - 450 >= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0 and (
+
+(td - 700 < 0 and 3*td + 400*z - 5320 = 0)
+
+ or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0))) or (q >= 0 and q - 40 <= 0
+
+ and 400*q + 9*td - 20050 <= 0 and ((z = 0 and td = 0)
+
+ or (td - 700 < 0 and td - 400 >= 0 and 3*td + 400*z - 5320 = 0)
+
+ or (td - 700 >= 0 and 2*td - 300*z + 1015 = 0)))))))
+
+
+end;
+
+Tested on londo.fritz.box running Darwin 16.6.0 x86_64 CSL
+Time (counter 1): 210 ms  plus GC time: 50 ms
+1: real         0.43
+user         0.34
+sys          0.06
