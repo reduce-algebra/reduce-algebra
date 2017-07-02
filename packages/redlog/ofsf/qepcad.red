@@ -117,7 +117,7 @@ asserted procedure qepcad_printer(f: Formula);
       fl := cl_fvarl1 f;
       l := append(fl, bl);
       prin2t "[Qepcad B input, automatically generated in Reduce/Redlog";
-      prin2t lto_sconcat {" by ", getenv("USER") or unknown, " on ", date()};
+      prin2t lto_sconcat {" by ", getenv("USER") or "unknown", " on ", date()};
       prin2t " http://reduce-algebra.sourceforge.net/";
       prin2t " http://www.redlog.eu/]";
       prin2 "(";
