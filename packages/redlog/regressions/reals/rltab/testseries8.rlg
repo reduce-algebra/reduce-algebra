@@ -549,8 +549,8 @@ q >= 0 and q - 40 <= 0 and 100*n - 10*td - 2500*z - 46519 <= 0
 
 end;
 
-Tested on londo.fritz.box running Darwin 16.6.0 x86_64 CSL
-Time (counter 1): 12869 ms  plus GC time: 430 ms
-1: real        13.56
-user        13.41
-sys          0.10
+Tested on alfred running Linux 4.4.38.1.amd64-smp x86_64 CSL
+Time (counter 1): 21320 ms  plus GC time: 640 ms
+1: real 22.34
+user 22.22
+sys 0.04

@@ -1,6 +1,6 @@
-Tested on alfred running Linux 3.18.18.1.amd64-smp x86_64 PSL
-Time (counter 1): 440 ms
+Tested on alfred running Linux 4.4.38.1.amd64-smp x86_64 PSL
+Time (counter 1): 480 ms
 Quitting
-real 0.70
-user 0.51
+real 0.75
+user 0.57
 sys 0.09

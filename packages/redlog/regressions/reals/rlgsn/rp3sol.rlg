@@ -176,8 +176,8 @@ false
 
 end;
 
-Tested on alfred running Linux 3.18.18.1.amd64-smp x86_64 CSL
-Time (counter 1): 48509 ms  plus GC time: 7200 ms
-1: real 58.54
-user 57.29
-sys 1.19
+Tested on alfred running Linux 4.4.38.1.amd64-smp x86_64 CSL
+Time (counter 1): 74640 ms  plus GC time: 10120 ms
+1: real 87.07
+user 86.10
+sys 0.88

@@ -56,8 +56,8 @@ td - 450 >= 0 and q >= 0 and q - 40 <= 0 and 400*q + 9*td - 20050 >= 0 and (
 
 end;
 
-Tested on londo.fritz.box running Darwin 16.6.0 x86_64 CSL
-Time (counter 1): 210 ms  plus GC time: 50 ms
-1: real         0.43
-user         0.34
-sys          0.06
+Tested on alfred running Linux 4.4.38.1.amd64-smp x86_64 CSL
+Time (counter 1): 380 ms  plus GC time: 50 ms
+1: real 0.70
+user 0.55
+sys 0.05

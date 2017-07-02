@@ -1,5 +1,5 @@
-Tested on londo.fritz.box running Darwin 16.6.0 x86_64 CSL
-Time (counter 1): 9929 ms  plus GC time: 350 ms
-1: real        10.53
-user        10.41
-sys          0.09
+Tested on alfred running Linux 4.4.38.1.amd64-smp x86_64 CSL
+Time (counter 1): 16689 ms  plus GC time: 520 ms
+1: real 17.57
+user 17.44
+sys 0.04

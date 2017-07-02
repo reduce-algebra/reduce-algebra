@@ -37,8 +37,8 @@ false
 
 end;
 
-Tested on alfred running Linux 3.2.48.1.amd64-smp x86_64 CSL
-Time (counter 1): 44 ms  plus GC time: 47 ms
-1: real 0.31
-user 0.21
-sys 0.02
+Tested on alfred running Linux 4.4.38.1.amd64-smp x86_64 CSL
+Time (counter 1): 80 ms  plus GC time: 49 ms
+1: real 0.39
+user 0.26
+sys 0.04
