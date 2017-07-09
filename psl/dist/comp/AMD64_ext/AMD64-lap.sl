@@ -227,7 +227,8 @@
     (setq allowextrarexprefix 0)
     (setq REX-Prefix 16#48)
     (when *writingfaslfile (setq offs currentoffset*))
-    (cond ((eqcar x 'movq) (Depositbyte  16#48)  % REX Prefix
+    (cond ((and (eqcar x 'movq) (not (xmmregp (cadr x))) (not (xmmregp (caddr x))))
+                          (Depositbyte  16#48)  % REX Prefix
 			  (SETQ REX? (plus codebase!* currentoffset* -1))
 			  (setq allowextrarexprefix 0)
                           (rplaca x 'mov))
@@ -268,6 +269,7 @@
 	MOVW MOVSX MOVZX
 	ADDSD MULsd subsd divsd sqrtsd
 	movd movq ldmxcsr stmxcsr
+	pand pandn por pxor andpd andnpd orpd xorpd
 	) 'norexprefix)
 
 (de DepositLabel (x) 
@@ -423,10 +425,10 @@
          (equal base 2#101) )
 	    (return (modR/M op1 (list 'displacement (cadr op2) 0))))
 
-	  % case: reg - (indirect (reg ESP) )
+	  % case: reg - (indirect (reg ESP/R12) )
 	  (when (and (eq mode 'indirect)
 		     (regp (cadr op2))
-		     (not (upperreg64p (cadr op2)))
+		    % (not (upperreg64p (cadr op2)))
 		     (setq base (reg2int (cadr op2) 'REXB))
 		     (equal base 2#100) )
 	    (depositbyte (lor 2#00000100 op1))
@@ -723,13 +725,17 @@
 	  (setq need_rex (or (upperreg64p op1)  (upperreg64p op2)))
 	  (depositbyte (car code))
 	  (setq code (cdr code))
-	  (if (or need_rex (eqcar code 'rex))
+	  % check for optional rex byte
+	  (if (eqcar code 'rex)
 	      (progn
-		(setq REX-prefix 16#48)
-		(depositbyte 16#48)
-		(SETQ REX? (plus codebase!* currentoffset* -1))
-		(setq allowextrarexprefix (if (eqcar code 'rex) 0 1) )
-		(setq code (cdr code))))
+		(setq code (cdr code))	% skip symbolic "rex" byte in inst. def.
+		(if need_rex		% deposit necessary rex byte
+		 (progn
+		   (setq REX-prefix 16#48)
+		   (depositbyte 16#48)
+		   (SETQ REX? (plus codebase!* currentoffset* -1))
+		   (setq allowextrarexprefix (if (eqcar code 'rex) 0 1) )))
+		))
 	  (depositbyte (car code)))
     (modR/M op1 op2))
 
@@ -747,16 +753,16 @@
   (prog (need_rex)
     (setq need_rex (or (upperreg64p op1)  (upperreg64p op2)))
     % deposit prefix bytes
-    (while (cddr code)
-      (if (not (eqcar code 'rex)) (depositbyte (car code)))
+    (while (and (cddr code) (not (eqcar code 'rex))) 
+      (depositbyte (car code))
       (setq code (cdr code)))
     (if (or need_rex (eqcar code 'rex))
 	(progn
-	  (setq REX-prefix 16#48)
-	  (depositbyte 16#48)
+	  (setq REX-prefix (if (eqcar code 'rex) 16#48 16#40))
+	  (depositbyte REX-prefix)
 	  (SETQ REX? (plus codebase!* currentoffset* -1))
 	  (setq allowextrarexprefix (if (eqcar code 'rex) 0 1) )
-	  (setq code (cdr code))))
+	  (if (eqcar code 'rex) (setq code (cdr code)))))
     (depositbyte (car code)))
     (depositbyte (cadr code))
     (modR/M op1 op2))
@@ -1364,8 +1370,8 @@
 % ------------------------------------------------------------
 
 (de InstructionLength (X) 
-   (cond ((eqcar x 'movq) (wplus2 1 (InstructionLength1 
-				 (cons 'mov (cdr x)))))
+   (cond ((and (eqcar x 'movq) (not (xmmregp (cadr x))) (not (xmmregp (caddr x))))
+	  (wplus2 1 (InstructionLength1 (cons 'mov (cdr x)))))
          ((eqcar x 'addq) (wplus2 1 (InstructionLength1 
 				 (cons 'add (cdr x)))))
          ((eqcar x 'subq) (wplus2 1 (InstructionLength1 
