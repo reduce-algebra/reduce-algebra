@@ -1876,7 +1876,9 @@ LispObject Lintern(LispObject env, LispObject str)
 // explicitly that symbols are NOT allowed here.
 //
     if (symbolp(str))
-    {   str = get_pname(str);
+    {   push(p);
+        str = get_pname(str);
+        pop(p);
     }
     if (!is_vector(str) || !is_string_header(h = vechdr(str)))
         aerror1("intern (not a string)", str);

@@ -180,10 +180,10 @@ static intptr_t spbase = 0, spmin;
 
 static uintptr_t stack_depth[C_STACK_ALLOCATION];
 static int stack_line[C_STACK_ALLOCATION];
-static char *stack_file[C_STACK_ALLOCATION];
+static const char *stack_file[C_STACK_ALLOCATION];
 static uintptr_t c_stack_ptr = 0;
 
-int check_stack(char *file, int line)
+int check_stack(const char *file, int line)
 {   uintptr_t temp = (intptr_t)&temp;
     char *file1;
     int first = 1;
@@ -1906,7 +1906,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
                 case 'c':
                     fwin_restore();
-                    term_printf("\nCSL was coded by Codemist    , 1988-2012\n");
+                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2017\n");
                     term_printf("Distributed under the Modified BSD License\n");
                     term_printf("See also --help\n");
                     continue;
