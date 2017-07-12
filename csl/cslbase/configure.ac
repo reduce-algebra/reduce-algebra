@@ -688,31 +688,28 @@ AC_MSG_NOTICE([Signed shifts status [yes for arithmetic] : $arithmetic_shifts])
 if test "x$arithmetic_shifts" = "xyes"
 then
   AC_DEFINE(SIGNED_SHIFTS_ARE_ARITHMETIC, [1], [Not guaranteed by ANSI spec])
-  cxx11="optional"
-else
-  cxx11="mandatory"
 fi
 
 # The following seems to be an "official" way to ensure that I have at least
-# -std-gnu++11 (or gnu++0x) available.
+# -std=gnu++11 (or gnu++0x) available.
 
 AX_CXX_COMPILE_STDCXX([14], [ext], [optional])
 
-# If I can not use C++-14 I will INSIST on C++-11 if signed shifts are
-# not arithmetic since in that case I will use a messy template to
-# emulate what I need.
+# If I can not use C++-14 I will INSIST on C++-11. This is somewhat an issue
+# in thet older platforms may not support this instantly. A particular case
+# is that Ubuntu 12.04 provides gcc-4.6 which would choke here, But a brief
+# web search will allow those using such a system to see how to install
+# gcc 4.9... and that MUST be done for Reduce to build. C++-11 provides
+# things like static_assert and type traits that at present are used in just
+# a small corner of the code, but that are potentially generally valuable.
 
 if test "x$HAVE_CXX14" != "x1"
 then
-  if test "x$cxx11" = "xoptional"
-  then
-    AX_CXX_COMPILE_STDCXX([11], [ext], [optional])
-  else
     AX_CXX_COMPILE_STDCXX([11], [ext], [mandatory])
-  fi
 fi
 
-# See if C++-11 attributes (specifically [[noreturn]]) will be accepted
+# See if C++-11 attributes (specifically [[noreturn]]) will be accepted.
+# It jolly well ought to be now I am insisting on C++-11 compatibility!
 
 AC_COMPILE_IFELSE([AC_LANG_SOURCE(
   [[#include <exception>
