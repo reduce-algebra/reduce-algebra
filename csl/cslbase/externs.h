@@ -741,7 +741,7 @@ extern "C" void record_get(LispObject tag, bool found);
 // building CSL as a DLL for some while and so I expect that any attempt to
 // do so would call for careful review of linkage styles etc!
 
-extern bool        isprime(uint32_t);
+extern bool        isprime(uint64_t);
 extern void        set_up_functions(int restartp);
 extern void        get_user_files_checksum(unsigned char *);
 extern "C" LispObject acons(LispObject a, LispObject b, LispObject c);
@@ -858,6 +858,7 @@ extern bool        stringp(LispObject a);
 extern "C" LispObject times2(LispObject a, LispObject b);
 extern int32_t     thirty_two_bits(LispObject a);
 extern int64_t     sixty_four_bits(LispObject a);
+extern uint64_t     sixty_four_bits_unsigned(LispObject a);
 
 extern uint64_t crc64(uint64_t crc, const void *buf, size_t size);
 // I now use the zlib version of crc32 so do not need a declaration here.

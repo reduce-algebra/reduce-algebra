@@ -393,17 +393,34 @@ static void insertpseudo(uint32_t pseudoprime, int witness)
 // I have a hash table for all the pseudoprimes (to any base). I use
 // rather a simple hash function.
      if (pseudoprime < 4096) return; // I will handle small numbers specially.
-    if (pseudoprime % 2 == 0 ||
-        pseudoprime % 3 == 0 ||
-        pseudoprime % 5 == 0 ||
-        pseudoprime % 7 == 0 ||
-        pseudoprime % 11 == 0) return;
+    if (pseudoprime%2 == 0 ||
+        pseudoprime%3 == 0 ||
+        pseudoprime%5 == 0 ||
+        pseudoprime%7 == 0 ||
+        pseudoprime%11 == 0 ||
+        pseudoprime%13 == 0 ||
+// There factors checked for here are picked so that they include numbers
+// that are most often factors of base 2 strong pseudoprimes. Between all of
+// these this only spots factors of around 0.5% of the pseudoprimes up to
+// 2^64.
+        pseudoprime%29 == 0 ||
+        pseudoprime%31 == 0 ||
+        pseudoprime%37 == 0 ||
+        pseudoprime%41 == 0 ||
+        pseudoprime%53 == 0 ||
+        pseudoprime%61 == 0 ||
+        pseudoprime%101 == 0 ||
+        pseudoprime%109 == 0 ||
+        pseudoprime%113 == 0 ||
+        pseudoprime%137 == 0 ||
+        pseudoprime%157 == 0 ||
+        pseudoprime%181 == 0) return;
 // I use two simple multiplicative hash functions in a double hashing
 // scheme here, so I hope not to get too much clustering.
-    int h = (0x12345678*pseudoprime) % hashsize;
+    int h = (0x12345678*pseudoprime)%hashsize;
     while (hashtable[h].key != 0 &&
            hashtable[h].key != pseudoprime)
-        h = (h + 1 + ((0x31415926*pseudoprime) % (hashsize-2))) % hashsize;
+        h = (h + 1 + ((0x31415926*pseudoprime)%(hashsize-2))) % hashsize;
     if (hashtable[h].key == 0)
     {   hashtable[h].key = pseudoprime;
         hashtable[h].val = (uint16_t *)my_malloc(16*sizeof(uint16_t));

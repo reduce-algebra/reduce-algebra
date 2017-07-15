@@ -842,14 +842,18 @@ float128_t float128_of_number(LispObject a)
 int32_t thirty_two_bits(LispObject a)
 //
 // return a 32 bit integer value for the Lisp integer (fixnum or bignum)
-// passed down - ignore any higher order bits and return 0 if the arg was
-// floating, rational etc or not a number at all.  Only really wanted where
+// passed down - return 0 if the arg was out of range, or floating,
+// rational etc or not a number at all.  Only really wanted where
 // links between C-specific code (that might really want 32-bit values)
 // and Lisp are being coded.
 //
-{   switch ((int)a & XTAG_BITS)
+{   int64_t r;
+    switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            return (int32_t)int_of_fixnum(a);
+            r = (int64_t)int_of_fixnum(a);
+            if (r > INT32_MAX ||
+                r < INT32_MIN) return 0;
+            return (int32_t)r;
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
             if (is_bignum(a))
@@ -859,22 +863,29 @@ int32_t thirty_two_bits(LispObject a)
 // thus if I have a one-word bignum I just want its contents but in all
 // other cases I need just one bit from the next word up.
 // The left shift by 31-bits is OK because it is on an unsigned value.
-                if (len == CELL+4) return bignum_digits(a)[0]; // One word bignum
-                return bignum_digits(a)[0] | (bignum_digits(a)[1] << 31);
+                if (len == CELL+4) return bignum_digits(a)[0]; // One word.
+                if (len == CELL+8)
+                {   uint32_t d1 = bignum_digits(a)[1];
+                    if (d1 == 0 || d1 == 0xffffffff)
+                        return bignum_digits(a)[0] | (d1 << 31);
+                }
             }
         // else drop through
         default:
 //
-// return 0 for all non-fixnums
+// return 0 for all non-fixnums and for varius overflow cases
 //
             return 0;
     }
 }
 
+// This returns a 64-bit signed integer if the argument is in that range,
+// or 0 for an invalid argument.
+
 int64_t sixty_four_bits(LispObject a)
 {   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            return (int64_t)int_of_fixnum(a);
+            return (int64_t)int_of_fixnum(a); // always bin range
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
             if (is_bignum(a))
@@ -884,17 +895,52 @@ int64_t sixty_four_bits(LispObject a)
 // One word bignum. Do a double cast to stress how sign extension is needed.
                         return (int64_t)(int32_t)bignum_digits(a)[0];
                     case CELL+8:
+// Here the bignum provides 62 bits as a 2s complement value
                         return bignum_digits(a)[0] |
                                ASL64(bignum_digits64(a, 1), 31);
                     default:
-                        return bignum_digits(a)[0] |
-                               ((uint64_t)bignum_digits(a)[1] << 31) |
-                               ASL64(bignum_digits64(a, 2), 62);
+                        int64_t d2 = bignum_digits64(a, 2);
+                        if (d2==0 || d2==1 || d2==-1 || d2==-2)
+                            return bignum_digits(a)[0] |
+                                ((uint64_t)bignum_digits(a)[1] << 31) |
+                                ASL64(d2, 62);
                 }
             }
         // else drop through
         default:
 // return 0 for all non-fixnums
+            return 0;
+    }
+}
+
+uint64_t sixty_four_bits_unsigned(LispObject a)
+{   switch ((int)a & XTAG_BITS)
+    {   case TAG_FIXNUM:
+            if (int_of_fixnum(a) < 0) return 0;
+            return (uint64_t)int_of_fixnum(a);
+        case TAG_NUMBERS:
+        case TAG_NUMBERS+TAG_XBIT:
+            if (is_bignum(a))
+            {   int len = bignum_length(a);
+                switch (len)
+                {   case CELL+4:
+                        if ((int32_t)bignum_digits(a)[0] < 0) return 0;
+                        return (uint64_t)bignum_digits(a)[0];
+                    case CELL+8:
+                        if ((int32_t)bignum_digits(a)[1] < 0) return 0;
+                        return bignum_digits(a)[0] |
+                               ASL64(bignum_digits64(a, 1), 31);
+                    default:
+                        int64_t d2 = bignum_digits64(a, 2);
+                        if (d2==0 || d2==1 || d2==2 || d2==3)
+                            return bignum_digits(a)[0] |
+                                ((uint64_t)bignum_digits(a)[1] << 31) |
+                                ASL64(d2, 62);
+                }
+            }
+        // else drop through
+        default:
+// return 0 for all non-fixnums or for overflow
             return 0;
     }
 }

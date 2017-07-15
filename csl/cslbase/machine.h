@@ -93,7 +93,7 @@
 // defined by <stdint.h> regardless, so use is not required but is
 // permitted. To cope with all these situations I will define the
 // magic symbols __STDC_CONSTANT_MACROS and __STDC_FORMAT_MACROS (which
-// helps for printf etc) and always wrire large-value literals in the
+// helps for printf etc) and always write large-value literals in the
 // way that ancient systems and C required.
 
 #ifndef __STDC_CONSTANT_MACROS
