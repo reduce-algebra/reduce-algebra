@@ -187,7 +187,7 @@ uxwritefloat(buf, flt, convstr)
 	strcat(temps, ".0");     /* Add .0 ono original string */
 	strcat(temps, tempbuf);  /* add the exponent part onto the end */
       }
-  else
+    else
     {
       strcat(temps, ".0");
     }
