@@ -448,8 +448,11 @@
                       (bldmsg " -> %w" 
                        (safe-int2id (wshift
 			  (wdifference
-				 (wplus2 (wplus2 base 8) w) symval) -3))))))
-              (bldmsg "*%w" w))
+				 (wplus2 (wplus2 base 8) w) symval) -3)))))
+                    (t (setq *comment (bldmsg " -> 0x%x" (wplus2 (wplus2 addr* lth*) w)))))
+              (if *gassyntax 
+                  (bldmsg "%w(%%rip)" w)
+                (bldmsg "[rip%w0x%x]" (if (wlessp w 0) "-" "+") (if (wlessp w 0) (wminus w) w))))
         ((eq mod 0) (if *gassyntax
 			(bldmsg "(%%%w)" (reg-m rm))
 		      (bldmsg "[%w]" (reg-m rm) )))
