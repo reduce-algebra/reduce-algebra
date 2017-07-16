@@ -185,10 +185,16 @@ inner:
    return if gg=n then n else gg . (n/gg)
 end;
 
+global '(has!-primep64!*);
+has!-primep64!* := not null getd 'primep64;
+
 symbolic procedure primep n;
 % Returns T if n is prime (an integer that is not zero or a unit).
    if not fixp n then typerr(n,"integer")
     else if n<0 then primep(-n)
+% CSL now has a built-in function primep64 that can test any integer up to
+% 64-bits (unsigned)...
+    else if has!-primep64!* and n < 0x10000000000000000 then primep64 n
     else if n <= 0xffffffff and
             n <= largest!-small!-modulus then primep32 n
     else if evenp n or
@@ -376,6 +382,7 @@ symbolic procedure primep32 n;
   begin integer l,m,x,y,w,save; scalar result;
 % First deal with any input up to 4096 using simple table look-up. That
 % should be very fast!
+    if n < 0 then n := -n; % sShould not arise, but done here to be safe.
     if n <= 4096 then <<
       if !*trace_primep then
         printf("%fTesting %w. <= 4096 so use table lookup%n", n);
@@ -401,7 +408,7 @@ symbolic procedure primep32 n;
 % because a case ti (unsigned int) has effects that were in fact not what I
 % had probably first intended! But that are what the hash table is built
 % to work with.
-    w := land(lshift(w, -31), 0xffffffff);
+    w := land(lshift(w, -31), 0xffffffff); % Leaves a positive result.
     w := remainder(w, 216);
     if !*trace_primep then printf("%fTesting %w which hashes to %w,", n, w);
     w := getv(witness!-table, w);
@@ -480,6 +487,7 @@ symbolic procedure general!-primep n;
 % Based on an algorithm of M.Rabin published in the Journal of Number
 % Theory Vol 12, pp 128-138 (1980).
   begin
+    if n < 0 then n := -n;
 % Filter out some easy cases first
     if evenp n or
        remainder(n,3) = 0 or
@@ -544,15 +552,16 @@ symbolic procedure jacobi!-symbol(a, b);
     j := 1;
     if a < 0 then <<
       a := -a;
-      if remainder(b, 4) = 3 then j := -j >>;
+      if land(b, 3) = 3 then j := -j >>;
+% a and b are both positive here, so the use of REMAINDER lower down is safe.
     while not zerop a do <<
       while evenp a do <<
         a := a/2;
-        if (r := remainder(b, 8)) = 3 or r = 5 then j := -j >>;
+        if (r := land(b, 7)) = 3 or r = 5 then j := -j >>;
       r := a;
       a := b;
       b := r;
-      if remainder(a, 4) = 3 and remainder(b, 4) = 3 then j := -j;
+      if land(a, 3) = 3 and land(b, 3) = 3 then j := -j;
       a := remainder(a, b) >>;
     if b = 1 then return j
     else return 0
