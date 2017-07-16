@@ -284,7 +284,7 @@
 (fluid '( the-instruction* addr* rex_w rex_r rex_x rex_b size-override* sse-prefix* !0f-prefix* mod-is-3*
 			   byte-operand*))
 
-(de decode(p1 pl addr* base)
+(de decode(p1 pl addr*)
   (prog(i lth name with-rex)
       (setq rex_w nil rex_r nil rex_x nil rex_b nil size-override* nil sse-prefix* nil !0f-prefix* nil
 	    mod-is-3* nil)
@@ -306,7 +306,7 @@
          (setq lth (add1 lth)))
       (setq i (assoc p1 instrs1))
       (when (and i (eq (cadr i) 'x87fpu))
-	(return (decode-x87fpu p1 pl addr* lth base)))
+	(return (decode-x87fpu p1 pl addr* lth)))
       (when (eq p1 16#0f)
             (setq !0f-prefix* t)
             (setq p1 (pop pl))
@@ -316,7 +316,7 @@
       (setq the-instruction* i)
       (setq name (cadr i))
       (when (eq name 'ss:) (setq segment* "ss"))
-      (setq i (decode-operands pl lth (cddr i) base))
+      (setq i (decode-operands pl lth (cddr i)))
       (return `(,(car i)  % lth
                 ,name
                 .,(cdr i)))))
@@ -341,14 +341,14 @@
 	 '((V) (W)))
 	(t nil)))
 
-(de decode-operands(bytes* lth* pat base)
+(de decode-operands(bytes* lth* pat)
   (prog (r reg* xreg* byte-operand* x)
     (setq x (decode-operands-special-pattern-cases bytes* lth* pat))
     (when (and x (pairp x)) (setq pat x))
     (when (eqcar pat nil) (go done))
-    (push (cons 'op1 (decode-operand1 (pop pat) base)) r)
+    (push (cons 'op1 (decode-operand1 (pop pat))) r)
     (when pat
-        (push (cons 'op2 (decode-operand1 (pop pat) base)) r))
+        (push (cons 'op2 (decode-operand1 (pop pat))) r))
  done
     (when *gassyntax
       (setq reg* (bldmsg "%%%w" reg*) xreg* (bldmsg "%%%w" xreg*)))
@@ -358,7 +358,7 @@
 
 (deflist '((eax rax) (ebx rbx) (ecx rcx) (edx rdx) (ebp rbp) (esp rsp) (esi rsi) (edi rsi)) 'reg64)
 
-(de decode-operand1(p base)
+(de decode-operand1(p)
  (let(w)
   (cond ((and rex_w (setq w (get p 'reg64)))
 	 (if *gassyntax (bldmsg "%%%w" w) w))
@@ -393,12 +393,12 @@
          (setq  lth* (plus 4 lth*))
          (plus addr* (bytes2word) 5))
            % mod R/M
-        ((eqcar p 'E) (decode-modrm p base))
-        ((eqcar p 'R) (decode-modrm p base))
-        ((eqcar p 'M) (decode-modrm p base))
-	((eqcar p 'W) (decode-modrm p base))
-	((eqcar p 'UMW) (decode-modrm p base))
-	((eqcar p 'UM) (decode-modrm p base))
+        ((eqcar p 'E) (decode-modrm p))
+        ((eqcar p 'R) (decode-modrm p))
+        ((eqcar p 'M) (decode-modrm p))
+	((eqcar p 'W) (decode-modrm p))
+	((eqcar p 'UMW) (decode-modrm p))
+	((eqcar p 'UM) (decode-modrm p))
              % offset
         ((equal p '(o b))
          (setq lth!* (plus lth!* 1))
@@ -410,13 +410,13 @@
          
 	((eqcar p 'ST) % x87fpu instruction
 	 (if (eq (wand (car bytes*) 2#11000000) 2#11000000)
-	     (decode-x87fpu p bytes* addr* 0 base)
-	   (decode-modrm p base)))
+	     (decode-x87fpu p bytes* addr* 0)
+	   (decode-modrm p)))
         (t (terpri)
            (prin2t (list "dont know operand declaration:" p))
            (stderror "disassemble")))))
 
-(de decode-modrm(p base)
+(de decode-modrm(p)
    (prog(mod rm b w usexmm)
      (setq b (pop bytes*)) (setq  lth* (add1 lth*))
      (setq mod (wshift b -6))
@@ -435,20 +435,20 @@
                   % probably a sym*** reference
               (setq  lth* (plus 4 lth*))
               (setq w (bytes2word))
-              (cond ((and (xgreaterp (wplus2 (wplus2 base 7) w) symfnc)
-                          (xgreaterp symfnchigh (wplus2 (wplus2 base 7) w)))
+              (cond ((and (xgreaterp (wplus2 (wplus2 addr* 7) w) symfnc)
+                          (xgreaterp symfnchigh (wplus2 (wplus2 addr* 7) w)))
                      (setq *comment
                       (bldmsg " -> %w" 
                        (safe-int2id (wshift
 			 (wdifference
-				 (wplus2 (wplus2 base 7) w) symfnc) -3)))))
-                    ((and (xgreaterp (wplus2 (wplus2 base 4) w) symval)
-                          (xgreaterp symvalhigh (wplus2 (wplus2 base 8) w)))
+				 (wplus2 (wplus2 addr* 7) w) symfnc) -3)))))
+                    ((and (xgreaterp (wplus2 (wplus2 addr* 4) w) symval)
+                          (xgreaterp symvalhigh (wplus2 (wplus2 addr* 8) w)))
                      (setq *comment
                       (bldmsg " -> %w" 
                        (safe-int2id (wshift
 			  (wdifference
-				 (wplus2 (wplus2 base 8) w) symval) -3)))))
+				 (wplus2 (wplus2 addr* 8) w) symval) -3)))))
                     (t (setq *comment (bldmsg " -> 0x%x" (wplus2 (wplus2 addr* lth*) w)))))
               (if *gassyntax 
                   (bldmsg "%w(%%rip)" w)
@@ -498,16 +498,16 @@
      (when (and (eq mod 0)(eq base 2#101))
            (setq  lth* (plus lth* 4))
            (setq w (bytes2word))
-           (cond ((and (xgreaterp (wplus2 (wplus2 base 7) w) symfnc)
-                       (xgreaterp symfnchigh (wplus2 (wplus2 base 7) w)))
+           (cond ((and (xgreaterp (wplus2 (wplus2 addr* 7) w) symfnc)
+                       (xgreaterp symfnchigh (wplus2 (wplus2 addr* 7) w)))
                   (setq *comment
                     (bldmsg " -> %w"
-                      (safe-int2id (wshift (wdifference (wplus2 (wplus2 base 7) w) symfnc) -3)))))
-                 ((and (xgreaterp (wplus2 (wplus2 base 4) w) symval)
-                       (xgreaterp symvalhigh (wplus2 (wplus2 base 8) w)))
+                      (safe-int2id (wshift (wdifference (wplus2 (wplus2 addr* 7) w) symfnc) -3)))))
+                 ((and (xgreaterp (wplus2 (wplus2 addr* 4) w) symval)
+                       (xgreaterp symvalhigh (wplus2 (wplus2 addr* 8) w)))
                   (setq *comment
                     (bldmsg " -> %w"
-                      (safe-int2id (wshift (wdifference (wplus2 (wplus2 base 8) w) symval) -3))))))
+                      (safe-int2id (wshift (wdifference (wplus2 (wplus2 addr* 8) w) symval) -3))))))
            (if *gassyntax 
 	       (return (bldmsg "*0x%x%w" w index))
 	     (return (bldmsg "[%x%w]" w index))))
@@ -591,10 +591,10 @@
         ((eq n 14) 'xmm14)
         ((eq n 15) 'xmm15)))
 
-(de decode-x87fpu (p1 bytes* addr lth* base)
+(de decode-x87fpu (p1 bytes* addr lth*)
   (prog (p2 modrm name op1 op2)
     (setq p2 (car bytes*))
-    (setq modrm (decode-modrm 'ST base))
+    (setq modrm (decode-modrm 'ST))
     (when mod-is-3*
       (return (cons lth* (decode-x87fpu-mod3 p1 p2))))
     (setq name
@@ -1122,7 +1122,7 @@ loop
          (if pat (prinblx (subla instr pat)))
          (prin2 "    ")
 
-         (when *comment (ttab 63) (prin2 *comment))
+         (when *comment (ttab 65) (prin2 *comment))
          (setq *comment nil)
          (setq base (plus2 base lth))
          (setq lc (add1 lc))
