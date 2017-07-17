@@ -169,7 +169,7 @@
 		    (weq filedescriptor unixtty))
 		(fflush unixstdout))
 	  % Ensure prompts seen before input.                                
-	  (cond ((wneq (fgets (unixstring stringbuffer) 
+	  (cond ((wneq (unixfgets (unixstring stringbuffer) 
 			      (sysmaxbuffer filedescriptor) filedescriptor)
 		       unixnull)
 		 % Check that not end of file.                             
