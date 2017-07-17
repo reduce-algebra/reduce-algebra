@@ -403,7 +403,7 @@ stacklowerbound:
  .quad ((253<<56)+329)
  .quad ((253<<56)+330)
  .quad ((253<<56)+331)
- .quad 494
+ .quad 495
  .quad _symnam
  .quad ((254<<56)+128)
  .quad ((253<<56)+335)
@@ -565,7 +565,8 @@ stacklowerbound:
  .quad ((253<<56)+491)
  .quad ((253<<56)+492)
  .quad ((253<<56)+493)
-  .space 516056
+ .quad ((253<<56)+494)
+  .space 516048
  .globl _symprp
 _symprp:
  .quad ((254<<56)+128)
@@ -1062,11 +1063,10 @@ _symprp:
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
-  .space 516056
+ .quad ((254<<56)+128)
+  .space 516048
  .globl _symnam
 _symnam:
- .globl l0293
- .quad ((4<<56)+l0293)
  .globl l0294
  .quad ((4<<56)+l0294)
  .globl l0295
@@ -2053,7 +2053,11 @@ _symnam:
  .quad ((4<<56)+l0785)
  .globl l0786
  .quad ((4<<56)+l0786)
-  .space 516056
+ .globl l0787
+ .quad ((4<<56)+l0787)
+ .globl l0788
+ .quad ((4<<56)+l0788)
+  .space 516048
  .globl _symfnc
 _symfnc:
  .quad undefinedfunction
@@ -2368,8 +2372,8 @@ _symfnc:
  .quad l0005
  .globl l0195
  .quad l0195
- .globl l0246
- .quad l0246
+ .globl l0247
+ .quad l0247
  .globl _psl_main
  .quad _psl_main
  .quad undefinedfunction
@@ -2378,8 +2382,8 @@ _symfnc:
  .quad undefinedfunction
  .globl l0006
  .quad l0006
- .globl l0239
- .quad l0239
+ .globl l0240
+ .quad l0240
  .globl l0020
  .quad l0020
  .globl initcode
@@ -2399,22 +2403,22 @@ _symfnc:
  .quad l0013
  .globl l0236
  .quad l0236
- .globl l0241
- .quad l0241
+ .globl l0242
+ .quad l0242
  .globl l0181
  .quad l0181
  .globl binaryopenread
  .quad binaryopenread
- .globl l0257
- .quad l0257
+ .globl l0258
+ .quad l0258
  .globl binaryread
  .quad binaryread
- .globl l0249
- .quad l0249
+ .globl l0250
+ .quad l0250
  .globl binaryreadblock
  .quad binaryreadblock
- .globl l0248
- .quad l0248
+ .globl l0249
+ .quad l0249
  .globl binaryclose
  .quad binaryclose
  .globl l0045
@@ -2641,20 +2645,20 @@ _symfnc:
  .quad l0234
  .globl l0235
  .quad l0235
- .globl l0240
- .quad l0240
- .globl l0242
- .quad l0242
+ .globl l0239
+ .quad l0239
+ .globl l0241
+ .quad l0241
  .globl l0243
  .quad l0243
  .globl l0244
  .quad l0244
  .globl l0245
  .quad l0245
- .globl l0247
- .quad l0247
- .globl l0250
- .quad l0250
+ .globl l0246
+ .quad l0246
+ .globl l0248
+ .quad l0248
  .globl l0251
  .quad l0251
  .globl l0252
@@ -2667,8 +2671,8 @@ _symfnc:
  .quad l0255
  .globl l0256
  .quad l0256
- .globl l0258
- .quad l0258
+ .globl l0257
+ .quad l0257
  .globl l0259
  .quad l0259
  .globl l0260
@@ -2715,12 +2719,14 @@ _symfnc:
  .quad l0280
  .globl l0281
  .quad l0281
+ .globl l0282
+ .quad l0282
  .quad undefinedfunction
  .globl codeaddressp
  .quad codeaddressp
  .globl lastkernel
  .quad lastkernel
-  .space 516056
+  .space 516048
  .globl _symget
 _symget:
  .quad ((254<<56)+128)
@@ -3217,4 +3223,5 @@ _symget:
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
-  .space 516056
+ .quad ((254<<56)+128)
+  .space 516048

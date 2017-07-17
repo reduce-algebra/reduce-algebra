@@ -65,6 +65,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
 
  
 /* There is an assumption here that coercing addresses into ints is OK */
@@ -127,7 +128,20 @@ long long n;
 {
     fprintf(stdout, "%llx", n);
 }
+
+/* a version of fgets that is restarted automatically when interrupted by a signal 
+ */
+char *unixfgets(char *s, int size, FILE *stream)
+{
+  char *result;
+
+  do {
+    result = fgets(s, size, stream);
+  } while (result == NULL && errno == EINTR);
  
+  return result;
+}
+
 /* Tag( unixcleario )
  */
 void

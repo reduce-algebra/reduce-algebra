@@ -30,7 +30,7 @@ int sig;
 
    if (signal(sig, SIG_IGN) != SIG_IGN)  {
      act.sa_sigaction = action;
-     act.sa_flags = SA_SIGINFO;
+     act.sa_flags = SA_SIGINFO | SA_RESTART;
      sigaction(sig, &act, (void*)0);
    }
 

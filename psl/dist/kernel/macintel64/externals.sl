@@ -162,6 +162,7 @@
 (external-function unixputc             (ch))
 (external-function unixputs             (str))
 (external-function unixputn             (num))
+(external-function unixfgets		(buf count fp))
 (external-function unixcleario          ())
 (external-function expand_file_name     (str))
 (external-function unixopen             (name mode))
