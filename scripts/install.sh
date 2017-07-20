@@ -3,13 +3,14 @@
 # I want this script to be one I can launch from anywhere, but at least
 # some of its sub-scripts will not be so generous. So find out where it
 # lives so that other locations can be found relative to that.
+curr=`pwd`
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
 
 
-printf "MFLAGS=<%s> MKFLAGS=<%s> MAKECMDGOALS=<%s> args=<%s> here=<%s>\n" \
+printf "MFLAGS=<%s> MKFLAGS=<%s> MAKECMDGOALS=<%s>\nargs=<%s> here=<%s>\n" \
        "$MFLAGS"    "$MKFLAGS"   "$MAKECMDGOALS"   "$*"  "$here"
 
 args=""
@@ -39,9 +40,9 @@ then
   installpsl=yes
 fi
 
-host=`./config.guess`
-host=`scripts/findhost.sh $host`
-os=`scripts/findos.sh`
+host=`$here/config.guess`
+host=`$here/scripts/findhost.sh $host`
+os=`$here/scripts/findos.sh`
 
 case `uname -s` in
 *CYGWIN*)
@@ -170,11 +171,11 @@ printf "cslversions=<%s>\npslversions=<%s>\n" "$cslversions" "$pslversions"
 for x in $cslversions
 do
   printf "Build for CSL in %s\n" "$x"
-  pushd $x/csl
+  cd $x/csl
   $MAKE csl.img
   $MAKE bootstrapreduce.img
   $MAKE reduce.img
-  popd
+  cd $curr
 done
 
 # In the Windows case I build several versions of CSL (specifically
@@ -185,20 +186,20 @@ done
 for x in $cslversions
 do
   printf "Build for CSL in %s\n" "$x"
-  pushd $x/csl
+  cd $x/csl
   $MAKE install
-  popd
+  cd $curr
   break
 done
 
 for x in $pslversions
 do
   printf "Build for PSL in %s\n" "$x"
-  pushd $x
+  cd $x
   $MAKE
   $MAKE bootstrapreduce.img
   $MAKE install
-  popd
+  cd $curr
 done
 
 # end of install script...

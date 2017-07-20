@@ -3,6 +3,7 @@
 # I want this script to be one I can launch from anywhere, but at least
 # some of its sub-scripts will not be so generous. So find out where it
 # lives so that other locations can be found relative to that.
+curr=`pwd`
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
@@ -103,9 +104,9 @@ then
     printf "No version for CSL configured?\n"
     exit 1
   else
-    pushd $cslversions/csl
+    cd $cslversions/csl
     $MAKE uninstall
-    popd
+    cd $curr
   fi
 fi
 
@@ -130,9 +131,9 @@ then
     printf "No version for PSL configured?\n"
     exit 1
   else
-    pushd $pslversions
+    cd $pslversions
     $MAKE uninstall
-    popd
+    cd $curr
   fi
 fi
 
