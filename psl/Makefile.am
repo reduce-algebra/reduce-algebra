@@ -150,21 +150,21 @@ endif !windows
 
 if windows
 
-uninstall-exec-local:
+uninstall-local:
 	echo uninstall for windows not implemented
 	exit 1
 
 else !windows
 if macintosh
 
-uninstall-exec-local:
+uninstall-local:
 	echo uninstall for macintosh not implemented
 	exit 1
 
 else !macintosh
 if linux
 
-uninstall-exec-local:
+uninstall-local:
 # This version is mainly for Linux... It follows the directory layout used
 # in the "debianbuild" directory.
 	echo install for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(prefix)
@@ -174,7 +174,7 @@ uninstall-exec-local:
 
 else !linux
 
-uninstall-exec-local:
+uninstall-local:
 	echo uninstall for this unknown system not implemented
 	exit 1
 

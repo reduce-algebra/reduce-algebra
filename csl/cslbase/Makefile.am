@@ -2492,24 +2492,24 @@ endif !mac_framework
 endif !cygwin
 
 if cygwin
-uninstall-exec-local:
+uninstall-local:
 	echo uninstall for cygwin not implemented
 	exit 1
 
 else !cygwin
 if mac_framework
-uninstall-exec-local:
+uninstall-local:
 	echo uninstall for macintosh not implemented
 	exit 1
 
 else !mac_framework
 if windows
-uninstall-exec-local:
+uninstall-local:
 	echo uninstall for windows not implemented
 	exit 1
 
 else !windows
-uninstall-exec-local:
+uninstall-local:
 	echo uninstall for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(DESTDIR)$(prefix)
 	rm -rf $(DESTDIR)$(prefix)/lib/reduce/cslbuild
 	rm -rf $(DESTDIR)$(prefix)/share/reduce/cslbuild
@@ -2525,7 +2525,6 @@ endif !mac_framework
 endif !cygwin
 
 install-data-local:
-
-uninstall-data-local:
+	echo " "
 
 # end of Makefile
