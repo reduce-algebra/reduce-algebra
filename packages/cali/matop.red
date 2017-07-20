@@ -265,6 +265,10 @@ symbolic procedure mod!*(a,b);
       return (bas_dpoly car u) . cdr u;
   end)  where cali!=degrees:=dpmat_coldegs b;
 
+
+% This function name clashes with a function "mod" for reducing one
+% number modulo another!
+
 symbolic operator mod;
 symbolic procedure mod(a,b);
 % True normal form as s.q. also for matrices.

@@ -1,17 +1,16 @@
 # This is a hand-written top-level Makefile
 
 
-.PHONY: dist all csl psl
+.PHONY: dist all csl psl install
 
-VERBOSE =
 # When debugging it may be useful to invoke scripts/make.sh in a noisy way...
-#VERBOSE = -v
+# as in "make VERBOSE=-v"
+
+# By default or with an explicit target "all" this will try to
+# (re-)build all versions of Reduce thhat have been configured.
 
 all:
 	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
-
-dist:
-	$(SHELL) $(VERBOSE) scripts/dist.sh
 
 # This script tries a fairly basic sanity check to see if the
 # support-tools, include files and libraries needed to build the
@@ -27,7 +26,10 @@ csltest:
 # I have csl and psl as special targets here because those names are
 # also names of top-level directories, but eg "make csl" wants to
 # delegate to the build directory and does not relate to the top-level
-# csl directory being up to date.
+# csl directory being up to date. When multiple copies of Reduce have
+# been configured (eg a regular and a debug version, or ones with or without
+# GUI, testing options, ...) "make csl" or "make psl" will build all of
+# them.
 
 csl:
 	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
@@ -35,8 +37,19 @@ csl:
 psl:
 	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
 
+# "make install" will try to install both CSL and PSL versions (if
+# configured) in the same place and manner that they would have been
+# installed using the platform-specific installers. This should work
+# on Linux/Unix but the situation on Macintosh and Windows will be
+# harder. On *ix it will honours the "--prefix" option used with configure,
+# but on Windows it will probably always install in a default location.
+
 install:
-	@echo No install: target yet!
+	$(SHELL) $(VERBOSE) scripts/install.sh $(MAKECMDGOALS)
+
+uninstall:
+	$(SHELL) $(VERBOSE) scripts/uninstall.sh $(MAKECMDGOALS)
+
 
 %::
 	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)

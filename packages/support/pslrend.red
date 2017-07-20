@@ -686,9 +686,12 @@ symbolic procedure subst(a, b, c);
 symbolic procedure mod(a, b);
   begin
     scalar r;
-    r := remainder(a, b);
-    if r >= 0 then return r
-    else return r + b
+    if n >= 0 then <<
+      if (r := remainder(a, b)) >= 0 then return r
+      else return r + b >>
+    else <<
+      if (r := remainder(a, -b)) <= 0 then return r
+      else return r + b >>
   end;
 
 symbolic procedure gensymp u;

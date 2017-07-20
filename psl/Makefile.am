@@ -100,5 +100,53 @@ red/reduce.img:  red/hugo
 	"$(srcdir)/reduce.img.sh" $(BUILD); \
 	fi
 
+
+# Now I am going to put some customized and rather odd install stuff. When I
+# have this working I will want to put in matching uninstall code, but for
+# now that will wait. The idea I have is that the files that get set up by the
+# stuff here should match the ones created by the system-specific installers,
+# i.e. reduce.deb and .rpm and the Windows installer. I am really not sure
+# what I should do on a Macintosh! So I think I will put things so that
+# reduce can be launched from the command-line an dnot worry (at least the
+# start with) about applications bundles etc.
+
+if windows
+
+install-exec-local:	red/reduce.img
+	echo install for windows not implemented
+	exit 1
+
+else !windows
+if macintosh
+
+UNAME_S := $(SHELL uname -s)
+ifeq($(UNAME_S), Darwin)
+	echo install for macintosh not implemented
+	exit 1
+
+else !macintosh
+if linux
+
+install-exec-local:	red/reduce.img
+# This version is mainly for Linux... It follows the directory layout used
+# in the "debianbuild" directory.
+	echo install for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(prefix)
+	rm -rf $(prefix)/lib/reduce/pslbuild ; \
+	mkdir -p $(prefix)/lib/reduce/pslbuild/psl ; \
+	mkdir -p $(prefix)/lib/reduce/pslbuild/red ; \
+	cp -r psl/* $(prefix)/lib/reduce/pslbuild/psl ; \
+	cp -r red/* $(prefix)/lib/reduce/pslbuild/red ; \
+	cp $(reducec)/psl/redpsl $(prefix)/bin/redpsl ; \
+	echo Installed for PSL in $(prefix)
+
+else !linux
+install-exec-local:
+	echo install for this unknown system not implemented
+	exit 1
+
+endif !linux
+endif !macintosh
+endif !windows
+
 # end of Makefile.am
 

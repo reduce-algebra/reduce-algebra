@@ -1011,10 +1011,6 @@ end;
 
 % A new approach to the ongoing determinent problem.
 
-symbolic procedure mod(a,b);
- if a < b then a
- else mod((a - b), b);
-
 % THE determinant solver (based on the Sarrus' Rule!!)
 % The algorithm only works for matrices > 2. As a result a further
 % function has been written to deal with this case.

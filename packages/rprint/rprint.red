@@ -268,7 +268,10 @@ symbolic procedure ifox u;
     u := cdr u;
     if u then << a := car u; u := cdr u >>;
     if u then << b := car u; u := cdr u >>;
-    condox list(list(p, a), list(t, b))
+% (if b X nil) can be treated as just (cond (b X)) and does not need to be
+% the full (cond (b X) (t nil)).
+    if null b then condox list(list(p, a))
+    else condox list(list(p, a), list(t, b))
   end;
 
 put('if,pretoprinf,'ifox);

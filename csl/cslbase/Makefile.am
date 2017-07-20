@@ -169,7 +169,6 @@ else !wx
 WXC=
 endif !wx
 
-# I wish to know where this build intends to install things...
 AM_CPPFLAGS     += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
 reduce_CPPFLAGS += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
 csl_CPPFLAGS    += -DBINDIR=$(bindir) -DPKGDATADIR=$(pkgdatadir)
@@ -210,12 +209,12 @@ wxdemotarget =
 endif !wx
 
 if wx
-bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
+noinst_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT) wxpsl$(EXEEXT)
 else !wx
-bin_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
+noinst_PROGRAMS = csl$(EXEEXT) reduce$(EXEEXT)
 endif !wx
 if mac_framework
-noinst_PROGRAMS = bootstrapreduce$(EXEEXT)
+noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
 	zlibdemo$(EXEEXT) $(wxdemotarget)
@@ -1644,16 +1643,6 @@ else
 image_files = csl.img reduce.img reduce.doc reduce.resources reduce.$(fontsdir)
 endif
 endif !windows
-install-data-local: $(image_files)
-	$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	list='$(image_files)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    f=`echo "$$p" | sed 's,^.*/,,'`; \
-	   echo " $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) $$p $(DESTDIR)$(bindir)/$$f"; \
-	   $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) $$p $(DESTDIR)$(bindir)/$$f || exit 1; \
-	  else :; fi; \
-	done
 
 if windows
 
@@ -1669,25 +1658,6 @@ console_binaries =
 noinstall_console_binaries =
 endif !gui
 
-install-exec-local: $(console_binaries)
-	$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	list='$(console_binaries)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    f=`echo "$$p" | sed 's,^.*/,,'`; \
-	   echo " $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) $$p $(DESTDIR)$(bindir)/$$f"; \
-	   $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) $$p $(DESTDIR)$(bindir)/$$f || exit 1; \
-	  else :; fi; \
-	done
-
-uninstall-local:
-	$(NORMAL_UNINSTALL)
-	list='$(console_binaries) $(image_files)'; for p in $$list; do \
-	  f=`echo "$$p" | sed 's,^.*/,,'`; \
-	  echo " rm -f $(DESTDIR)$(bindir)/$$f"; \
-	  -rm -rf $(DESTDIR)$(bindir)/$$f; \
-	done
-
 local_image_files = bootstrapreduce.img
 
 win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
@@ -1702,14 +1672,6 @@ clean-local:
 	-$(RM) -rf $(generatedfiles)
 	
 else !windows
-
-uninstall-local:
-	$(NORMAL_UNINSTALL)
-	list='$(image_files)'; for p in $$list; do \
-	  f=`echo "$$p" | sed 's,^.*/,,'`; \
-	  echo " rm -f $(DESTDIR)$(bindir)/$$f"; \
-	  -rm -rf $(DESTDIR)$(bindir)/$$f; \
-	done
 
 local_image_files = bootstrapreduce.img
 
@@ -2466,5 +2428,67 @@ endif redfront
 
 showhost:
 	echo host = $(HOST)
+
+# Now I am going to put some customized and rather odd install stuff. When I
+# have this working I will want to put in matching uninstall code, but for
+# now that will wait. The idea I have is that the files that get set up by the
+# stuff here should match the ones created by the system-specific installers,
+# i.e. reduce.deb and .rpm and the Windows installer. I am really not sure
+# what I should do on a Macintosh! So I think I will put things so that
+# reduce can be launched from the command-line an dnot worry (at least the
+# start with) about applications bundles etc.
+
+if cygwin
+install-exec-local:	reduce.exe reduce.img bootstrapreduce.exe bootstrapreduce.img csl.exe csl.img
+	echo install for cygwin not implemented
+	exit 1
+
+else !cygwin
+if mac_framework
+install-exec-local:	reduce reduce.img bootstrapreduce bootstrapreduce.img csl csl.img
+	echo install for macintosh not implemented
+	exit 1
+
+else !mac_framework
+if windows
+install-exec-local:	reduce.exe reduce.img bootstrapreduce.exe bootstrapreduce.img csl.exe csl.img
+	echo install for windows not implemented
+	exit 1
+
+else !windows
+install-exec-local:	reduce reduce.img bootstrapreduce bootstrapreduce.img csl csl.img
+# This version is mainly for Linus... It follows the directory layout used
+# in the "debianbuild" directory.
+	echo install for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(prefix)
+	rm -rf $(prefix)/lib/reduce/cslbuild
+	rm -rf $(prefix)/share/reduce/cslbuild
+	rm -rf $(prefix)/share/reduce/fonts
+	rm -rf $(prefix)/share/doc/reduce
+	mkdir -p $(prefix)/lib/reduce/cslbuild/csl/reduce.resources
+	mkdir -p $(prefix)/share/reduce/fonts
+	mkdir -p $(prefix)/share/doc/reduce
+	cp csl $(prefix)/lib/reduce/cslbuild/csl
+	cp bootstrapreduce $(prefix)/lib/reduce/cslbuild/csl
+	cp reduce $(prefix)/lib/reduce/cslbuild/csl
+	cp csl.img $(prefix)/lib/reduce/cslbuild/csl
+	cp bootstrapreduce.img $(prefix)/lib/reduce/cslbuild/csl
+	cp reduce.img $(prefix)/lib/reduce/cslbuild/csl
+	cp -r reduce.resources/* $(prefix)/lib/reduce/cslbuild/csl/reduce.resources
+	cp -r reduce.fonts/* $(prefix)/share/reduce/fonts
+	cp -r reduce.doc/* $(prefix)/share/doc/reduce
+	rm -f $(prefix)/lib/reduce/cslbuild/csl/reduce.doc
+	rm -f $(prefix)/lib/reduce/cslbuild/csl/reduce.fonts
+	rm -f $(prefix)/share/reduce/cslbuild
+	ln -s $(prefix)/share/doc/reduce $(prefix)/lib/reduce/cslbuild/csl/reduce.doc
+	ln -s $(prefix)/share/reduce/fonts $(prefix)/lib/reduce/cslbuild/csl/reduce.fonts
+	ln -s $(prefix)/lib/reduce/cslbuild $(prefix)/share/reduce/cslbuild
+	cp $(srcdir)/binscripts/csl $(prefix)/bin/csl
+	cp $(srcdir)/binscripts/bootstrapreduce $(prefix)/bin/bootstrapreduce
+	cp $(srcdir)/binscripts/redcsl $(prefix)/bin/redcsl
+	echo Installed for CSL in $(prefix)
+
+endif !windows
+endif !mac_framework
+endif !cygwin
 
 # end of Makefile
