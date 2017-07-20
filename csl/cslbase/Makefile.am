@@ -2459,36 +2459,73 @@ else !windows
 install-exec-local:	reduce reduce.img bootstrapreduce bootstrapreduce.img csl csl.img
 # This version is mainly for Linus... It follows the directory layout used
 # in the "debianbuild" directory.
-	echo install for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(prefix)
-	rm -rf $(prefix)/lib/reduce/cslbuild
-	rm -rf $(prefix)/share/reduce/cslbuild
-	rm -rf $(prefix)/share/reduce/fonts
-	rm -rf $(prefix)/share/doc/reduce
-	mkdir -p $(prefix)/lib/reduce/cslbuild/csl/reduce.resources
-	mkdir -p $(prefix)/share/reduce/fonts
-	mkdir -p $(prefix)/share/doc/reduce
-	cp csl $(prefix)/lib/reduce/cslbuild/csl
-	cp bootstrapreduce $(prefix)/lib/reduce/cslbuild/csl
-	cp reduce $(prefix)/lib/reduce/cslbuild/csl
-	cp csl.img $(prefix)/lib/reduce/cslbuild/csl
-	cp bootstrapreduce.img $(prefix)/lib/reduce/cslbuild/csl
-	cp reduce.img $(prefix)/lib/reduce/cslbuild/csl
-	cp -r reduce.resources/* $(prefix)/lib/reduce/cslbuild/csl/reduce.resources
-	cp -r reduce.fonts/* $(prefix)/share/reduce/fonts
-	cp -r reduce.doc/* $(prefix)/share/doc/reduce
-	rm -f $(prefix)/lib/reduce/cslbuild/csl/reduce.doc
-	rm -f $(prefix)/lib/reduce/cslbuild/csl/reduce.fonts
-	rm -f $(prefix)/share/reduce/cslbuild
-	ln -s $(prefix)/share/doc/reduce $(prefix)/lib/reduce/cslbuild/csl/reduce.doc
-	ln -s $(prefix)/share/reduce/fonts $(prefix)/lib/reduce/cslbuild/csl/reduce.fonts
-	ln -s $(prefix)/lib/reduce/cslbuild $(prefix)/share/reduce/cslbuild
-	cp $(srcdir)/binscripts/csl $(prefix)/bin/csl
-	cp $(srcdir)/binscripts/bootstrapreduce $(prefix)/bin/bootstrapreduce
-	cp $(srcdir)/binscripts/redcsl $(prefix)/bin/redcsl
-	echo Installed for CSL in $(prefix)
+	echo install for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(DESTDIR)$(prefix)
+	rm -rf $(DESTDIR)$(prefix)/lib/reduce/cslbuild
+	rm -rf $(DESTDIR)$(prefix)/share/reduce/cslbuild
+	rm -rf $(DESTDIR)$(prefix)/share/reduce/fonts
+	rm -rf $(DESTDIR)$(prefix)/share/doc/reduce
+	mkdir -p $(DESTDIR)$(prefix)/lib/reduce/cslbuild/csl/reduce.resources
+	mkdir -p $(DESTDIR)$(prefix)/share/reduce/fonts
+	mkdir -p $(DESTDIR)$(prefix)/share/doc/reduce
+	cp csl $(DESTDIR)$(prefix)/lib/reduce/cslbuild/csl
+	cp bootstrapreduce $(DESTDIR)$(prefix)/lib/reduce/cslbuild/csl
+	cp reduce $(DESTDIR)$(prefix)/lib/reduce/cslbuild/csl
+	cp csl.img $(DESTDIR)$(prefix)/lib/reduce/cslbuild/csl
+	cp bootstrapreduce.img $(DESTDIR)$(prefix)/lib/reduce/cslbuild/csl
+	cp reduce.img $(DESTDIR)$(prefix)/lib/reduce/cslbuild/csl
+	cp -r reduce.resources/* $(DESTDIR)$(prefix)/lib/reduce/cslbuild/csl/reduce.resources
+	cp -r reduce.fonts/* $(DESTDIR)$(prefix)/share/reduce/fonts
+	cp -r reduce.doc/* $(DESTDIR)$(prefix)/share/doc/reduce
+	rm -f $(DESTDIR)$(prefix)/lib/reduce/cslbuild/csl/reduce.doc
+	rm -f $(DESTDIR)$(prefix)/lib/reduce/cslbuild/csl/reduce.fonts
+	rm -f $(DESTDIR)$(prefix)/share/reduce/cslbuild
+	ln -s $(DESTDIR)$(prefix)/share/doc/reduce $(DESTDIR)$(prefix)/lib/reduce/cslbuild/csl/reduce.doc
+	ln -s $(DESTDIR)$(prefix)/share/reduce/fonts $(DESTDIR)$(prefix)/lib/reduce/cslbuild/csl/reduce.fonts
+	ln -s $(DESTDIR)$(prefix)/lib/reduce/cslbuild $(DESTDIR)$(prefix)/share/reduce/cslbuild
+	cp $(srcdir)/binscripts/csl $(DESTDIR)$(prefix)/bin/csl
+	cp $(srcdir)/binscripts/bootstrapreduce $(DESTDIR)$(prefix)/bin/bootstrapreduce
+	cp $(srcdir)/binscripts/redcsl $(DESTDIR)$(prefix)/bin/redcsl
+	echo Installed for CSL in $(DESTDIR)$(prefix)
 
 endif !windows
 endif !mac_framework
 endif !cygwin
+
+if cygwin
+uninstall-exec-local:
+	echo uninstall for cygwin not implemented
+	exit 1
+
+else !cygwin
+if mac_framework
+uninstall-exec-local:
+	echo uninstall for macintosh not implemented
+	exit 1
+
+else !mac_framework
+if windows
+uninstall-exec-local:
+	echo uninstall for windows not implemented
+	exit 1
+
+else !windows
+uninstall-exec-local:
+	echo uninstall for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(DESTDIR)$(prefix)
+	rm -rf $(DESTDIR)$(prefix)/lib/reduce/cslbuild
+	rm -rf $(DESTDIR)$(prefix)/share/reduce/cslbuild
+	rm -rf $(DESTDIR)$(prefix)/share/reduce/fonts
+	rm -rf $(DESTDIR)$(prefix)/share/doc/reduce
+	rm -f $(DESTDIR)$(prefix)/bin/csl
+	rm -f $(DESTDIR)$(prefix)/bin/bootstrapreduce
+	rm -f $(DESTDIR)$(prefix)/bin/redcsl
+	echo Uninstalled for CSL in $(DESTDIR)$(prefix)
+
+endif !windows
+endif !mac_framework
+endif !cygwin
+
+install-data-local:
+
+uninstall-data-local:
 
 # end of Makefile

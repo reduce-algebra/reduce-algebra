@@ -119,8 +119,7 @@ install-exec-local:	red/reduce.img
 else !windows
 if macintosh
 
-UNAME_S := $(SHELL uname -s)
-ifeq($(UNAME_S), Darwin)
+install-exec-local:	red/reduce.img
 	echo install for macintosh not implemented
 	exit 1
 
@@ -131,17 +130,52 @@ install-exec-local:	red/reduce.img
 # This version is mainly for Linux... It follows the directory layout used
 # in the "debianbuild" directory.
 	echo install for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(prefix)
-	rm -rf $(prefix)/lib/reduce/pslbuild ; \
-	mkdir -p $(prefix)/lib/reduce/pslbuild/psl ; \
-	mkdir -p $(prefix)/lib/reduce/pslbuild/red ; \
-	cp -r psl/* $(prefix)/lib/reduce/pslbuild/psl ; \
-	cp -r red/* $(prefix)/lib/reduce/pslbuild/red ; \
-	cp $(reducec)/psl/redpsl $(prefix)/bin/redpsl ; \
-	echo Installed for PSL in $(prefix)
+	rm -rf $(DESTDIR)$(prefix)/lib/reduce/pslbuild ; \
+	mkdir -p $(DESTDIR)$(prefix)/lib/reduce/pslbuild/psl ; \
+	mkdir -p $(DESTDIR)$(prefix)/lib/reduce/pslbuild/red ; \
+	cp -r psl/* $(DESTDIR)$(prefix)/lib/reduce/pslbuild/psl ; \
+	cp -r red/* $(DESTDIR)$(prefix)/lib/reduce/pslbuild/red ; \
+	cp $(reducec)/psl/redpsl $(DESTDIR)$(prefix)/bin/redpsl ; \
+	echo Installed for PSL in $(DESTDIR)$(prefix)
 
 else !linux
+
 install-exec-local:
 	echo install for this unknown system not implemented
+	exit 1
+
+endif !linux
+endif !macintosh
+endif !windows
+
+if windows
+
+uninstall-exec-local:
+	echo uninstall for windows not implemented
+	exit 1
+
+else !windows
+if macintosh
+
+uninstall-exec-local:
+	echo uninstall for macintosh not implemented
+	exit 1
+
+else !macintosh
+if linux
+
+uninstall-exec-local:
+# This version is mainly for Linux... It follows the directory layout used
+# in the "debianbuild" directory.
+	echo install for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(prefix)
+	rm -rf $(DESTDIR)$(prefix)/lib/reduce/pslbuild ; \
+	rf -f $(DESTDIR)$(prefix)/bin/redpsl ; \
+	echo Uninstalled for PSL in $(DESTDIR)$(prefix)
+
+else !linux
+
+uninstall-exec-local:
+	echo uninstall for this unknown system not implemented
 	exit 1
 
 endif !linux
