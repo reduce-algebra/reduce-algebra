@@ -1,21 +1,19 @@
 ## Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                         2008-2017
+# A C Norman.                                                     2008-2017
+
+# I guess that this file scan be subject to the same BSD license that
+# applies to almost all other parts of the code here.
 
 #
 # Special flags that can be used here:
 #
-#   --with-lto        Try link-time optimisation with gcc. EXPERIMENTAL.
-#   --with-cygwin     Build native cygwin X11 based system, 
-#                     Please note cygwin licensing issues, which do not
-#                     have any adverse effects so long as you retain BSD
-#                     licensing here. But if you included CSL in a closed
-#                     product (as BSD permits) think about this!
-#   --with-smallpage  build in way that may be better for small embedded
-#                     machines.
 #   --enable-debug    Switch on debugging.
 #
-#
+#   --with-cygwin     Build native cygwin X11 based system, 
+#   --with-smallpage  build in way that may be better for small embedded
+#                     machines.
+#   --with-lto        Try link-time optimisation with gcc. EXPERIMENTAL.
 #   --enable-conservative   development version not working yet!
 #   --enable-test     predefine a symbol EXPERIMENT used to protect
 #                     temporary or unfinished code developments.
@@ -23,12 +21,8 @@
 #   --enable-embedded well the EMBEDDED option is intended for use via
 #                     a heavily cleaned up minimalist build system, but
 #                     for testing purposes I allow a build here.
-
+#
 #   --host=<triplet>  cross compile for that host.
-# Eg if I have installed the 64-bit mingw compilers that cygwin supports
-# I can go  --host=x86_64-w64-mingw32  and build everything.
-# The "--with-mingw64" option is a convenience feature for use by
-# a higher level configure script and should not be used directly here.
 # 
 
 # FOX gets built in a directory whose name is based on the platform
@@ -189,7 +183,7 @@ AC_MSG_NOTICE([--with-wx=$with_wx])
 
 AC_ARG_WITH(cygwin,
   AC_HELP_STRING([--with-cygwin],
-                 [Force use of raw cywgin (note Cygwin license)]),
+                 [Force use of raw cywgin]),
   [],
   [with_cygwin="no"])
 
@@ -252,18 +246,6 @@ case $host in
   exeext="yes"
   if test "x$with_cygwin" != "xno"
   then
-# If you go "--with-cygwin" in the call to configure then I will build
-# in native cygwin mode, and not use the "-mno-cywgin" flag (or the more
-# modern cross-compiler-style equivalent mechanisms). As a consequence
-# some GPL libraries will be linked with your application. The cygwin
-# license has a special exception so that when cygwin1.dll is linked
-# with other code that is subject to an approved Open Source License
-# the GPL constraints do not come into force, but that nature of the
-# BSD license that CSL is subject to is that it would be quite proper
-# to extent it with non-open components or use it in a non-open context,
-# and the BSD license was adopted in part because I do not wish to apply
-# any constraints that would prevent that.
-#
 # The next line may ALMOST count as a lie, but under raw cygwin the world
 # is closer to Unix than to Windows so this does make some sense!
     AC_DEFINE(UNIX,[1],[True if we are running on Unix, Linux, BSD etc])
@@ -1049,6 +1031,9 @@ fi
 
 if test "x$GCC" = "xyes"
 then
+# At one stage I was concerned about "strict aliasing" so disabled the
+# exploitation of it. It still seems delicate in places, but experience is
+# now that enough works that I will allow g++ to optimise enthusiastically!
   NSA=
 # NSA="-fno-strict-aliasing"
   if test "x$enable_debug" = "xyes"
@@ -1060,8 +1045,7 @@ then
 # check if the "-pg" option is at least acceptable to the compiler... but
 # for now it is unconditional based on a belief that those who specify
 # --enable-debug will be experienced enough to sort out any mess that could
-# arise. Beware: the initial release of cygwin-64 seems to fail if this is
-# used... but I will leave people to adjust for that manually.
+# arise.
     PROFILE="-pg"
 #   PROFILE=""
     CFLAGS="${CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
@@ -1069,10 +1053,6 @@ then
     DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     LDFLAGS="${LDFLAGS} -g ${PROFILE}"
   else
-# As of April 2016 my belief is that gcc with strict aliasing enabled breaks
-# some things. I do not understand exactly what, but implementing dynamic
-# memory allocation is just the sort of area where the strict aliasing
-# rule sin general are a total misery and disaster!
     CFLAGS="$CFLAGS ${NSA} ${HIGHOPT} -Wall"
     CXXFLAGS="$CXXFLAGS ${NSA} ${HIGHOPT} -Wall"
     DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${HIGHOPT}"
@@ -1083,12 +1063,6 @@ then
     AC_MSG_NOTICE([including -static in linker flags])
   fi
 else
-#
-# BEWARE any other C compilers that take an enthusiastic view on Strict
-# Aliasing! It causes real problems with the way that Lisp data is mapped onto
-# machine resources. Actually my current reading of the standard makes it feel
-# perhaps less horrid than I had at one stage thought...
-# I am 
   if test "x$enable_debug" = "xyes"
   then
     CFLAGS="${CFLAGS} -g -DDEBUG=1"
@@ -1562,6 +1536,20 @@ fi
 
 AC_SUBST(HOST)
 HOST="$host"
+
+if test "x$cyg32" = "xyes"
+then
+  CC="`pwd`/cyg32 $CC"
+  CXX="`pwd`/cyg32 $CXX"
+  CSTRIP="`pwd`/cyg32 $STRIP"
+else
+if test "x$cyg64" = "xyes"
+then
+  CC="`pwd`/cyg64 $CC"
+  CXX="`pwd`/cyg64 $CXX"
+  CSTRIP="`pwd`/cyg64 $STRIP"
+fi
+fi
 
 #
 # Make some things available for conditional segments of a Makefile
