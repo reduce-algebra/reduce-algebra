@@ -2507,7 +2507,7 @@ install-exec-local:	reduce reduce.img bootstrapreduce bootstrapreduce.img csl cs
 	cp -r reduce.resources/* $(DESTDIR)$(libdir)/reduce/cslbuild/csl/reduce.resources
 	cp -r reduce.fonts/* $(DESTDIR)$(prefix)/share/reduce/fonts
 	cp -r reduce.doc/* $(DESTDIR)$(docdir)
-	cp  $(cslbase)redcsl.1 $(DESTDIR)$(mandir)
+	cp  $(cslbase)/redcsl.1 $(DESTDIR)$(mandir)
 	rm -f $(DESTDIR)$(libdir)/reduce/cslbuild/csl/reduce.doc
 	rm -f $(DESTDIR)$(libdir)/reduce/cslbuild/csl/reduce.fonts
 	rm -f $(DESTDIR)$(prefix)/share/reduce/cslbuild
