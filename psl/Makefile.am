@@ -130,12 +130,12 @@ install-exec-local:	red/reduce.img
 # This version is mainly for Linux... It follows the directory layout used
 # in the "debianbuild" directory.
 	echo install for Linux, Unix etc into destdir=$(DESTDIR) prefix=$(prefix)
-	rm -rf $(DESTDIR)$(prefix)/lib/reduce/pslbuild ; \
-	mkdir -p $(DESTDIR)$(prefix)/lib/reduce/pslbuild/psl ; \
-	mkdir -p $(DESTDIR)$(prefix)/lib/reduce/pslbuild/red ; \
-	cp -r psl/* $(DESTDIR)$(prefix)/lib/reduce/pslbuild/psl ; \
-	cp -r red/* $(DESTDIR)$(prefix)/lib/reduce/pslbuild/red ; \
-	cp $(reducec)/psl/redpsl $(DESTDIR)$(prefix)/bin/redpsl ; \
+	rm -rf $(DESTDIR)$(libdir)/reduce/pslbuild ; \
+	mkdir -p $(DESTDIR)$(libdir)/reduce/pslbuild/psl ; \
+	mkdir -p $(DESTDIR)$(libdir)/reduce/pslbuild/red ; \
+	cp -r psl/* $(DESTDIR)$(libdir)/reduce/pslbuild/psl ; \
+	cp -r red/* $(DESTDIR)$(libdir)/reduce/pslbuild/red ; \
+	sed -e "s+#libdir#+$(libdir)+" < $(reducec)/psl/redpsl > $(DESTDIR)$(prefix)/bin/redpsl ; \
 	echo Installed for PSL in $(DESTDIR)$(prefix)
 
 else !linux
