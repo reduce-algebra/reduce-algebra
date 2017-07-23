@@ -2514,9 +2514,9 @@ install-exec-local:	reduce reduce.img bootstrapreduce bootstrapreduce.img csl cs
 	ln -s $(DESTDIR)$(docdir) $(DESTDIR)$(libdir)/reduce/cslbuild/csl/reduce.doc
 	ln -s $(DESTDIR)$(prefix)/share/reduce/fonts $(DESTDIR)$(libdir)/reduce/cslbuild/csl/reduce.fonts
 	ln -s $(DESTDIR)$(libdir)/reduce/cslbuild $(DESTDIR)$(prefix)/share/reduce/cslbuild
-	sed -e "s/@libdir@/$(libdir)/" $(cslbase)/binscripts/csl > $(DESTDIR)$(prefix)/bin/csl
-	sed -e "s/@libdir@/$(libdir)/" $(cslbase)/binscripts/bootstrapreduce > $(DESTDIR)$(prefix)/bin/bootstrapreduce
-	sed -e "s/@libdir@/$(libdir)/" $(cslbase)/binscripts/redcsl > $(DESTDIR)$(prefix)/bin/redcsl
+	sed -e "s|#libdir#|$(libdir)|" $(cslbase)/binscripts/csl > $(DESTDIR)$(prefix)/bin/csl
+	sed -e "s|#libdir#|$(libdir)|" $(cslbase)/binscripts/bootstrapreduce > $(DESTDIR)$(prefix)/bin/bootstrapreduce
+	sed -e "s|#libdir#|$(libdir)|" $(cslbase)/binscripts/redcsl > $(DESTDIR)$(prefix)/bin/redcsl
 	echo Installed for CSL in $(DESTDIR)$(prefix)
 
 endif !windows

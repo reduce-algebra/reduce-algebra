@@ -1,5 +1,5 @@
 #! /bin/sh
 
-CSLBUILDDIR=`readlink -m @libdir@/reduce/cslbuild`
+CSLBUILDDIR=`readlink -m #libdir#/reduce/cslbuild`
 exec $CSLBUILDDIR/csl/reduce $*
 
