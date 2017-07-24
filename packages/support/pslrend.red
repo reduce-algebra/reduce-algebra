@@ -686,7 +686,7 @@ symbolic procedure subst(a, b, c);
 symbolic procedure mod(a, b);
   begin
     scalar r;
-    if n >= 0 then <<
+    if b >= 0 then <<
       if (r := remainder(a, b)) >= 0 then return r
       else return r + b >>
     else <<
