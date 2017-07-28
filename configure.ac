@@ -74,15 +74,21 @@ AC_ARG_WITH(c64,
   []
   [with_c64="default"])
 
-uname_o=`uname -o`
 uname_m=`uname -m`
 uname_s=`uname -s`
 case "$uname_s" in
 *WOW)
   wow="yes"
+  uname_o=`uname -o`
+  ;;
+Darwin)
+# "uname -o" is not available on the Macintosh!
+  wow="no"
+  uname_o="macOS"
   ;;
 *)
   wow="no"
+  uname_o=`uname -o`
   ;;
 esac
 
@@ -119,9 +125,9 @@ then
   fi
 # If 32-bit cygwin is available then by defauly build for it. If it is
 # not then refuse to even if the user asked for it.
-  if "$cyg32_available" = "yes"
+  if test "$cyg32_available" = "yes"
   then
-    if "$with_c32" = "default"
+    if test "$with_c32" = "default"
     then
       with_c32="yes"
     fi
@@ -133,9 +139,9 @@ then
     with_c32="no"
   fi
 
-  if test "$sixtyfour_feasible" = "yes" && "$cyg64_available" = "yes"
+  if test "$sixtyfour_feasible" = "yes" && test "$cyg64_available" = "yes"
   then
-    if "$with_c32" = "default"
+    if test "$with_c32" = "default"
     then
       with_c64="yes"
     fi
