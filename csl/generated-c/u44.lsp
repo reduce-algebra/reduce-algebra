@@ -1,115 +1,134 @@
 
 % u44.lsp           Machine generated Lisp
 
-(c!:install "u44" 64989 6754151 9191832)
+(c!:install "u44" 114315 9993615 6161037)
 
-(c!:install 'cl_gand!-col '(cl_gand!-col true and !*rlsichk cl_cflip
-cl_flip cl_simpl1) 6160713033187959660)
+(c!:install 'mchsarg '(mchsarg times mtp noncomfree noncomperm pair
+mcharg2 lastpair reversip!*) 15121871990663945559)
 
-(c!:install 'conditionml '(conditionml "<condition>" "</condition>"
-printout indent!* expression) 7439993112548794210)
+(c!:install 'mkcrn '(mkcrn !:crn!:) 3117764722230454000)
 
-(c!:install 'rnfix!* '(rnfix!*) 3256443848001070039)
+(c!:install 'ofsf_simplequal '(ofsf_simplequal stsq false !*rlsitsqspl
+!*rlsiexpla !*rlsiexpl and tsq ofsf_posdefp sfto_sqfpartf
+ofsf_tsqsplequal ofsf_facequal!*) 11100723496419915682)
 
-(c!:install 'dip2a '(dip2a dip2a1 dipreplus) 11861845728545505400)
+(c!:install 'gcdlist '(gcdlist "Term content division failed" poly!-abs
+gcdld mapcarcar powers1 numeric!-content vintersection gcddd mksp multf
+quotfail1 gcdlist1) 14143677021300326377)
 
-(c!:install 'mkexdf '(mkexdf d opmtch partitop mkupf) 
-4388880663920067806)
+(c!:install 'enter!-sorted '(enter!-sorted nreverse taydegree!<) 
+17819389047023974106)
 
-(c!:install 'markedvarp '(markedvarp !*marked!*) 2259735358532423556)
+(c!:install 'iv_cutn '(iv_cutn iv_cut) 18130037756634153349)
 
-(c!:install 'ev!-edgeloop '(ev!-edgeloop ndim!* binc) 
-10671481024158201592)
+(c!:install 'cols2rows2 '(cols2rows2 ithlistelem) 11761456053114286748)
 
-(c!:install 'applsmacro '(applsmacro inlineinfo rlisp
-"Argument mismatch for SMACRO" !*loginlines g lambda rerror log_inlines
-no!-side!-effect!-listp one!-entry!-listp pair subla!-q
-no!-side!-effectp one!-entryp aconc) 10980045500133507434)
+(c!:install 'ldf!-dep!-var '(ldf!-dep!-var depl!* ldt!-tvar makeset) 
+12329147144362832437)
 
-(c!:install 'prepsq!*0 '(prepsq!*0 gcdf quotf!-fail prepsq!*1) 
-1045838241206605395)
+(c!:install 'ndepends '(ndepends frlis!* depl!* domain!-depends!-fn
+lndepends atomf) 4110452451038505699)
 
-(c!:install 'change!+int!+to!+sq '(change!+int!+to!+sq) 
-14816472864499624533)
+(c!:install 'make_spoly_pair '(make_spoly_pair spoly_pair pfordp xval
+xlcm triviallcm mknwedge xdegreecheck) 16730509289712052345)
 
-(c!:install 'pasf_coeflst '(pasf_coeflst setkorder reorder negf) 
-2841843459196695079)
+(c!:install 'all_defined_map_ '(all_defined_map_ al1_defined_map_) 
+11847781095836290666)
 
-(c!:install 'lto_sgnchg1 '(lto_sgnchg1 sgn) 261130623156442352)
+(c!:install 'rl_nnfnot '(rl_nnfnot rl_nnfnot!* apply) 
+11366376447126177282)
 
-(c!:install 'numir '(numir atts name complex_cartesian plus times
-!&imaginaryi!; complex_polar exp rational divide find lex omobj) 
-204094701760676937)
+(c!:install 'nlist '(nlist nreverse) 10472874980530235129)
 
-(c!:install 'mkexpt '(mkexpt expt) 5754935854877136791)
+(c!:install 'makecoeffpairshom '(makecoeffpairshom ((nil))
+tayexp!-difference tayexp!-times2 tayexp!-minusp tayexp!-plus2 lastpair)
+ 15245645716957047788)
 
-(c!:install 'evalmember '(evalmember getrlist) 5286359330849485084)
+(c!:install 'depend!-f '(depend!-f depend!-p) 7582361734257302030)
 
-(c!:install 'e!* '(e!* !:bprec!: !:e) 15144487963355805024)
+(c!:install 'quotexf!* '(quotexf!* nreverse quotfexf!*1) 
+16925846353836221873)
 
-(c!:install 'gpargp '(gpargp gpexpp gplogexpp) 3658154410741724482)
+(c!:install 'lowupperlimitml '(lowupperlimitml "<lowlimit>"
+"</lowlimit>" "<uplimit>" "</uplimit>" printout indent!* expression) 
+8410065134618955200)
 
-(c!:install 'indexvp '(indexvp) 11663335178243527811)
+(c!:install 'findhr '(findhr headhisto codhisto psi npsi codmat maxvar
+rcoccup) 13838382850889596042)
 
-(c!:install 'extract_vars '(extract_vars variable nreverse raiseind!:) 
-581001641406960949)
+(c!:install 'gfstorval '(gfstorval !*xnlist) 12264309616471478407)
 
-(c!:install 'ev_mtest!? '(ev_mtest!?) 5121257538194335172)
+(c!:install 'try!-all!-constants '(try!-all!-constants number!-needed
+current!-modulus split!-further) 14167453229868141545)
 
-(c!:install 'cgp_greenp '(cgp_greenp cgp_rp) 14495413788687484424)
+(c!:install 'rule '(rule !*sq!* mcond!* "Unmatched free variable(s)"
+hold erfg!* getel errpri1 prepsq!* smemql setdiff lprie lispeval let3) 
+17927910212934432100)
 
-(c!:install 'matrixml '(matrixml "<matrix" "" matrixrow "</matrix>"
-printout attributesml indent!* matrix_rows cols2rows) 
-14211731179809632096)
+(c!:install 'qqe_simplbtat '(qqe_simplbtat neq false true equal
+rl_prepat qqe_op qqe_arg2l qqe_eta!-in!-term qqe_arg2r rl_simpat) 
+13126731773829347008)
 
-(c!:install 'ps!:arg!-values '(ps!:arg!-values !:ps!: ps!:value) 
-15612600895103978694)
+(c!:install 'pasf_ceil '(pasf_ceil
+"pasf_ceil: not a domain valued sf in input" simp rederr) 
+14816327850986668498)
 
-(c!:install 'diford '(diford lengthn) 7054798114156165767)
+(c!:install 'quotientml '(quotientml !*web "<cn type=""rational""> "
+"<cn type=&quot;rational&quot;> " " <sep/> " " </cn>" "<apply>" "<" "/>"
+"</apply>" printout indent!* expression) 2636813940372006033)
 
-(c!:install 'specrd!:times '(specrd!:times minus add_minus mkround
-rd!:times) 8213566267099448959)
+(c!:install 'simpdf '(simpdf subfg!* df "kernel or integer"
+domain!-diff!-fn dmode!* alglist!* "kernel" mksq simp!* prepsq typerr
+prepf prekernp diffsq d2int) 10496397630730647885)
 
-(c!:install 'remdiff '(remdiff difference plus minus constp) 
-14005009348996126671)
+(c!:install 'wedgewedge '(wedgewedge wedgepf2) 17383049050819657757)
 
-(c!:install 'remove_least_item '(remove_least_item
-"How did we get here?" rederr remove_root_item) 4979620738984819027)
+(c!:install 'simpsetdiff '(simpsetdiff setdiff empty_set applysetop mksp
+) 7728987522191007542)
 
-(c!:install 'nspaces '(nspaces !! ! ) 9403753038800802083)
+(c!:install 'evalletsub '(evalletsub alg "Invalid simplification"
+evalletsub2 errorp rerror) 336294914740379549)
 
-(c!:install 'mk_simpl_map_ '(mk_simpl_map_ mk_simpl_map_1) 
-11429407052348500504)
+(c!:install 'negex '(negex nreverse negf) 2507449366090575275)
 
-(c!:install 'mk_dummy_ids '(mk_dummy_ids dummy reserved dummy_id!*
-intersection clean_numid union) 3153376571271088760)
+(c!:install 'ra_wrapper '(ra_wrapper dmode!* ra_wrapper1 !*backtrace
+"caught error - restoring domain mode" errorset errorp lprim on1) 
+17490729383560982244)
 
-(c!:install 'createtriple '(createtriple fluidbibasistripleid) 
-6471021107549576289)
+(c!:install 'mri_ofsf2mri '(mri_ofsf2mri mri_ofsf2mriat cl_apply2ats1) 
+9220106144109790875)
 
-(c!:install 'totalcompareconstants '(totalcompareconstants equal less
-greater wukord!* wuvarlist!* symbollessp) 1087222859431793036)
+(c!:install 'cl_bnfsimpl '(cl_bnfsimpl !*rlbnfsac cl_sac) 
+6603799946669511995)
 
-(c!:install 'gigcdsq '(gigcdsq d giintgcd quotf) 2701479337646345197)
+(c!:install 'vdp_getprop '(vdp_getprop vdp_plist) 10290374778868375321)
 
-(c!:install 'simpexpt2 '(simpexpt2 expt !*precise_complex !*precise abs
-sqrt !*keepsqrts times !*modular quotient !*mcd minus dmode!* frlis!*
-simp multsq simpexpt1 split!-sign retimes posnump prepsq simp!* simpexpt
-quotsq prepf simpx1 mksq) 15655962808424643348)
+(c!:install 'matrixir '(matrixir matrixcolumn matrixrow matrix lex
+omobjs matrixelems) 16908110675907796155)
 
-(c!:install 'mk!+resimp!+mat '(mk!+resimp!+mat resimp) 
-624978839118700389)
+(c!:install '!*rn2rd '(!*rn2rd r2bf chkrn!* mkround) 4804769577357159913
+)
 
-(c!:install 'talp_invtscsimpl '(talp_invtscsimpl or and (ex all)
-talp_rnf talp_atfp talp_invtscc talp_simpat talp_invtscsimplat talp_op
-talp_argl) 8503326907152582869)
+(c!:install 'prim!-part '(prim!-part comfac comfac!-to!-poly quotf1) 
+1260543398647750397)
 
-(c!:install 'conditionrd '(conditionrd char (!/ c o n d i t i o n)
-"</condition>" condition mathml lex errorml) 13950345929221872061)
+(c!:install 'precision '(precision arith "positive number required"
+rerror precision1) 13453333914508305559)
 
-(c!:install 'ieval '(ieval reval !*s2i) 10970267165119146512)
+(c!:install 'mksqrt '(mksqrt !*keepsqrts expt quotient !*!*sqrt (x) (
+let00 (quote ((equal (expt (sqrt x) 2) x)))) sqrt forall aeval) 
+6961194266824060434)
 
-(c!:install 'znumrnil '(znumrnil znumr) 3406126826241646652)
+(c!:install 'which_first '(which_first) 5362535682633495787)
+
+(c!:install 'gd_gcasesimpl '(gd_gcasesimpl gd_simpl) 3106971393313232138
+)
+
+(c!:install 'cl_pnf2!-junctor '(cl_pnf2!-junctor all ex cl_pnf2 cl_qb
+cl_interchange) 17851120715859743429)
+
+(c!:install 'mri_prifloor '(mri_prifloor !*nat failed "[" "]" prin2!*
+maprin) 3143759303351340392)
 
 
 % End of generated Lisp code

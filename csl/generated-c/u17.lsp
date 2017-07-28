@@ -1,23 +1,7 @@
 
 % u17.lsp           Machine generated Lisp
 
-(c!:install "u17" 170951 7099627 9483623)
-
-(c!:install 'qremf '(qremf !*exp qremd praddf multf to negf addf ordop) 
-8572729870254090815)
-
-(c!:install 'remove!-free!-vars!* '(remove!-free!-vars!*
-!*!*noremove!*!* remove!-free!-vars) 4819420631164452905)
-
-(c!:install 'tmsf '(tmsf sfp tmsf!*) 14540052551771722099)
-
-(c!:install 'talp_td '(talp_td talp_fargl lto_max) 3753277161145513143)
-
-(c!:install 'ibalp_lenisone '(ibalp_lenisone) 5121027212227306889)
-
-(c!:install 'vdp_zero!? '(vdp_zero!? vdp_poly) 3453044351461631223)
-
-(c!:install 'sq2sscfpl '(sq2sscfpl mkzl sq2sstm) 7910318926466258719)
+(c!:install "u17" 35911 7024711 6246756)
 
 (c!:install 'omsir '(omsir atts name cd (v e c t o r) (vectorml linalg1)
 mmleq!* special_cases!* special_cases2!* valid_om!* find apply encodeir)
@@ -188,6 +172,29 @@ bcint2op quotfx quotsq) 10560766879555860784)
 (c!:install 'polynomheadreduceby '(polynomheadreduceby
 fluidbibasisreductionsmade monomisdivisibleby monomdivide
 polynommultiplybymonom polynomadd) 9096444161962194715)
+
+(c!:install 'exptcompare '(exptcompare) 5372125586460383598)
+
+(c!:install 'cl_smsimpl!-junct2 '(cl_smsimpl!-junct2 !*rlsichk !*rlsiso
+rl_ordatp !*rlsisocx cl_sordp rl_smmkatl lto_insert sort cl_flip) 
+10742815408394509146)
+
+(c!:install 'variableom '(variableom constantsom!* "<OMS " "cd=""" """ "
+"name=""" """/>" "<OMV " printout) 12706099796162667316)
+
+(c!:install 'onoff '(onoff "switch" rlisp "not defined as switch" !*
+!*switchcheck simpfg progn !*raise typerr rerror list2string lispeval) 
+16635437059189018759)
+
+(c!:install 'unchecked_getmatelem '(unchecked_getmatelem mat matrix
+"Matrix" "not set" rerror nth) 3837257970903198919)
+
+(c!:install 'guesspftype '(guesspftype (wedge d partdf hodge innerprod
+liedf) xvarlistp mknwedge) 6617237155091291956)
+
+(c!:install 'deleteall '(deleteall) 8011811616758810551)
+
+(c!:install 'cstimes '(cstimes times) 13052923761714089834)
 
 
 % End of generated Lisp code

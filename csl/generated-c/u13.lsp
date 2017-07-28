@@ -1,16 +1,7 @@
 
 % u13.lsp           Machine generated Lisp
 
-(c!:install "u13" 86227 1525242 4050241)
-
-(c!:install 'gcdf2 '(gcdf2 asymplis!* !*anygcd !*gcd num!-exponents
-kernord setkorder reorder comfac gcdf1 comfac!-to!-poly quotf1 gcdk
-multf noncomp gcdfnc ordop) 10016176172079722155)
-
-(c!:install 'subs3f1 '(subs3f1 !*mymatch mchfg!* !*resubs !*sub2
-powlis1!* addsq !*subs3tnc subs3t subs2q subs3q) 5861254699348922205)
-
-(c!:install 'get_group_in '(get_group_in) 7681727314505217329)
+(c!:install "u13" 103817 7299068 970137)
 
 (c!:install 'qqe_ofsf_prepat '(qqe_ofsf_prepat qqe_op qqe_rqopp
 qqe_prepat ofsf_prepat) 1589176860606541047)
@@ -43,13 +34,7 @@ qqe_prepat ofsf_prepat) 1589176860606541047)
 (c!:install '!*q2f '(!*q2f polynomial prepsq typerr) 8910299028062321553
 )
 
-(c!:install 'sfto_greaterq '(sfto_greaterq negsq addsq minusf) 
-13605754833193865976)
-
 (c!:install 'rl_simp '(rl_simp rl_simp1 rl_csimpl) 1301825759816865816)
-
-(c!:install 'lto_max '(lto_max (minus infinity) lto_max1) 
-13062146211658040404)
 
 (c!:install 'qqe_qprefix!-var '(qqe_qprefix!-var (ltail rtail lhead
 rhead) qqe_op qqe_arg2l qqe_arg2r) 15201380281209160393)
@@ -59,8 +44,6 @@ rhead) qqe_op qqe_arg2l qqe_arg2r) 15201380281209160393)
 
 (c!:install 'ibalp_hassimple '(ibalp_hassimple ibalp_commonlenisone) 
 15418386519129336830)
-
-(c!:install 'sfto_mvartest '(sfto_mvartest) 7542854994468228994)
 
 (c!:install 'sub_math '(sub_math char (i d e n t !/) ident (v e c t o r)
 (!/ v e c t o r) "</vector>" constructors!* csymbol fn vectorrd errorml
@@ -137,7 +120,7 @@ fterpri scprint) 2556988473238841502)
 (c!:install 'rd!:minus '(rd!:minus !:rd!: safe!-fp!-minus minus!:) 
 1785567278384127790)
 
-(c!:install 'groebcpcompless!? '(groebcpcompless!? !*gsugar d number
+(c!:install 'groebcpcompless!? '(groebcpcompless!? !*gsugar number
 vevcomp vdpgetprop vevcompless!?) 45463741637778272)
 
 (c!:install 'wedget2 '(wedget2 multsq wedgek2 multpfsq) 
@@ -161,6 +144,28 @@ recursiveerror aconc) 13372840733956172816)
 
 (c!:install 'p_princ '(p_princ bldmsg_chars!* !  !*ll!* " ") 
 2900324150656089120)
+
+(c!:install 'exceeds!-order '(exceeds!-order tayexp!-plus2 tayexp!-lessp
+) 11075431926768230131)
+
+(c!:install 'talp_rnf '(talp_rnf cl_simpl talp_rnf1) 
+10476314859936877117)
+
+(c!:install 'qqe_ofsf_simplat1 '(qqe_ofsf_simplat1 (true false)
+qqe_simplat1 qqe_op qqe_rqopp ofsf_simplat1) 4071328728144776747)
+
+(c!:install 'rl_simpbop '(rl_simpbop rl_simp1) 186782563312927961)
+
+(c!:install 'minusp!: '(minusp!: !:rd!:) 2935256932381667861)
+
+(c!:install 'isimplicit '(isimplicit implicit! ) 14035966247736076855)
+
+(c!:install 'set!-ordp '(set!-ordp ordp) 11286157267328432309)
+
+(c!:install 'scalopp '(scalopp scalar vector tensor tensdimen isanindex
+nth areallindices) 12955472892045792015)
+
+(c!:install 'lengthcdr '(lengthcdr) 6543389359225820768)
 
 
 % End of generated Lisp code

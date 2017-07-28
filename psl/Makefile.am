@@ -136,6 +136,7 @@ install-exec-local:	red/reduce.img
 	cp -r psl/* $(DESTDIR)$(libdir)/reduce/pslbuild/psl ; \
 	cp -r red/* $(DESTDIR)$(libdir)/reduce/pslbuild/red ; \
 	sed -e "s+#libdir#+$(libdir)+" < $(reducec)/psl/redpsl > $(DESTDIR)$(prefix)/bin/redpsl ; \
+	chmod +x > $(DESTDIR)$(prefix)/bin/redpsl ; \
 	echo Installed for PSL in $(DESTDIR)$(prefix)
 
 else !linux

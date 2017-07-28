@@ -1,22 +1,7 @@
 
 % u04.lsp           Machine generated Lisp
 
-(c!:install "u04" 125750 2090329 4170924)
-
-(c!:install 'retimes '(retimes !*bool times minus retimes1) 
-10466653925941673875)
-
-(c!:install 'mkwedge '(mkwedge) 6371839370084388030)
-
-(c!:install 'idlistp '(idlistp) 14853692317672070322)
-
-(c!:install 'qassoc '(qassoc) 11801307530585957207)
-
-(c!:install 'negf '(negf dmode!* nreverse !:minus) 18425682831999215169)
-
-(c!:install 'formlis '(formlis form1 reversip!*) 761340711108558520)
-
-(c!:install 'nonzero!-length '(nonzero!-length) 13279789547682091641)
+(c!:install "u04" 152425 6439266 1550391)
 
 (c!:install 'pv_renorm '(pv_renorm pv_neg gcdf!*) 2913080176010837600)
 
@@ -161,6 +146,15 @@ subs2q exptchksq resimp subs3q subs4q) 9661079352785559604)
 
 (c!:install 'expdrmacro '(expdrmacro noexpand !*cref expand !*force
 getrmacro) 18039924872036670149)
+
+(c!:install 'getrtype '(getrtype (scalar generic) physop sub
+yetunknowntype getrtype1 eval physopp!* getrtype2) 17463766755553874190)
+
+(c!:install 'fs!:plus '(fs!:plus angles!-equal addsq fs!:angle!-order) 
+13903516929866200135)
+
+(c!:install 'mo_sum '(mo_sum mo!=sum mo!=shorten mo!=deglist) 
+11690513269509191580)
 
 
 % End of generated Lisp code

@@ -1,10 +1,7 @@
 
 % u10.lsp           Machine generated Lisp
 
-(c!:install "u10" 36520 1607368 1902195)
-
-(c!:install 'opnum!* '(opnum!* opnum collectindices removeindices) 
-4437767772325788303)
+(c!:install "u10" 95394 5996910 1640184)
 
 (c!:install 'assert_analyze '(assert_analyze assertstatistics!*
 lambda_46uwl1lq71ua2 (function !#calls !#bad! calls
@@ -45,9 +42,6 @@ orig!* posn!* obrkp!* !*comma!* physopp vec!-maprin prin2!* inprint)
 15396926397083613611)
 
 (c!:install 'freeof '(freeof depl!* smember) 3637959333020234962)
-
-(c!:install 'sfto_qsub1 '(sfto_qsub1 ordop exptsq multsq addsq to) 
-10620019699950722880)
 
 (c!:install 'remflagss '(remflagss) 4435156902296550872)
 

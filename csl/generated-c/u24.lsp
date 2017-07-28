@@ -1,64 +1,7 @@
 
 % u24.lsp           Machine generated Lisp
 
-(c!:install "u24" 174657 6676070 1844823)
-
-(c!:install 'fs!:prin1 '(fs!:prin1 (1 . 1) "(" ")" "[" "-" "+"
-fourier!-name!* "]" "1" prin2!* sqprint fs!:null!-angle) 
-9305787713891364547)
-
-(c!:install 'st_sorttree '(st_sorttree st_sorttree1) 
-15826997532839114877)
-
-(c!:install 'general!-modular!-expt '(general!-modular!-expt alg
-"0^0 formed" current!-modulus rerror primep general!-modular!-times
-reverse!-num) 3819843854313685478)
-
-(c!:install 'random!-teeny!-prime '(random!-teeny!-prime all
-teeny!-primes next!-random!-number) 10079275317954736717)
-
-(c!:install 'refprint '(refprint cloc!* "*TTYINPUT*" pfiles!* curfun!* g
-rccnam curlin!* locls!* globs!* calls!* anform outrefend) 
-13080195673109096165)
-
-(c!:install 'polynomlistreduce '(polynomlistreduce
-polynomlistfinddivisor polynomreduceby polynomadd) 15512609324025294193)
-
-(c!:install 'pasf_sacat '(pasf_sacat) 3607541727113827278)
-
-(c!:install 'unaryrd '(unaryrd mathml lex) 13082927852549454775)
-
-(c!:install 'groedeletip '(groedeletip setcdr) 16361312757688004926)
-
-(c!:install 'mktails '(mktails mktails1) 7834943372407695769)
-
-(c!:install 'numlist_ordp '(numlist_ordp lambda_ygm6np4pcqv31 cons_ordp)
- 12358394684798595155)
-
-(c!:install 'lambda_ygm6np4pcqv31 '(lambda_ygm6np4pcqv31) 
-15088082726560262194)
-
-(c!:install 'subf '(subf alglist!* ncmp!* expt varstack!* !*d2q
-noncomexpf subf1 kernord intersection setkorder reorder kernels prepsq
-simp) 17978689418572348717)
-
-(c!:install 'lalr_prin_production '(lalr_prin_production " -> "
-lalr_prin_symbol lalr_prin_rhs) 1726331608870260106)
-
-(c!:install 'cl_pnf '(cl_pnf rl_nnf cl_pnf1) 8997355690223370541)
-
-(c!:install 'poly!-multfnc '(poly!-multfnc !*sstools!-loaded
-!*!*processed sstools!-multfnc poly!-multf mkspm addf noncomp) 
-4419973584290133566)
-
-(c!:install 'lto_nconcn '(lto_nconcn) 6396443634867625555)
-
-(c!:install 'inprint '(inprint times !*nat !*asterisk times2 infix prtch
-" " plus !*revpri not setq tag setprifn inbrackets "(" ")" !*nosplit
-testing!-width!* (setq !*comma!*) oprin getrtype prin2!* maprint prinfit
-negnumberchk) 5888655686248825375)
-
-(c!:install 'row '(row expression) 10105843944902245972)
+(c!:install "u24" 8385 2224168 5100169)
 
 (c!:install 'my_letmtr '(my_letmtr mat matrix "Matrix" "not set" hold
 rerror reval numlis errpri2 nth pnth) 9315658091723113449)
@@ -151,6 +94,52 @@ subs2q rationalizef multf gcdchk) 618899159186762670)
 (c!:install 'cos!* '(cos!* !:bprec!: cos!:) 10648388374146150234)
 
 (c!:install 'flatindl '(flatindl) 3390827990497104525)
+
+(c!:install 'physopsimp '(physopsimp !*sq tensdimen antisymmetric minus
+isanindex isavarindex physopsm!* prepsqxx opmtch!* scalopp tensopp nth
+pnth ordn repeats permp vecopp listp putanewindex!*) 
+17378261404484775512)
+
+(c!:install 'ev!-denom2 '(ev!-denom2 ev!-edgeloop) 10469132586978593068)
+
+(c!:install 'impartf '(impartf i kord!* cmpxfn reorder int!-equiv!-chk
+addf multf) 6890187095049936448)
+
+(c!:install 'endstat '(endstat cursym!* end comm1) 2062630210712658115)
+
+(c!:install 'red_topredbe '(red_topredbe " reduce " bas_dpoly cali_trace
+dp_print dp_lmon bas_dpecart red_divtestbe red_subst) 
+17249925396800045955)
+
+(c!:install 'pa_coinc_split '(pa_coinc_split lambda_er1ez819f9yx2 upbve
+sort) 126824076894980172)
+
+(c!:install 'lambda_er1ez819f9yx2 '(lambda_er1ez819f9yx2) 
+13794168774309563647)
+
+(c!:install 'safe!-modrecip '(safe!-modrecip !*msg !*protfg !:mod!:
+general!-modular!-reciprocal erfg!* errorset errorp) 
+14808290800131132436)
+
+(c!:install 'cde_position '(cde_position cde_position2) 
+238037469412860599)
+
+(c!:install 'gettype '(gettype number form operator procedure global
+fluid parm parameter getd) 10081372716598977143)
+
+(c!:install 'evaluatecoeffts '(evaluatecoeffts indexlist valuecoefft
+!*multf addf) 5406277702025676168)
+
+(c!:install 'expnd '(expnd !*really_off_exp !*sub2 expnd1 subs2f) 
+11413463028146551512)
+
+(c!:install 'mri_prepat '(mri_prepat mri_2pasfat pasf_prepat) 
+17918178496807478614)
+
+(c!:install 'pasf_vf '(pasf_vf true false (cong ncong) pasf_evalatp) 
+18406771852544693406)
+
+(c!:install 'dip_fmon '(dip_fmon) 16129702713853537519)
 
 
 % End of generated Lisp code

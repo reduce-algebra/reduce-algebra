@@ -1,33 +1,12 @@
 
 % u16.lsp           Machine generated Lisp
 
-(c!:install "u16" 146007 4468478 5957590)
-
-(c!:install 'rread1 '(rread1 ttype!* !*quotenewnam quotenewnam !:dn!:
-symbolic !( !+ !- " " nxtsym!* "Syntax error: improper number" minus
-ptoken dnform rrdls symerr) 13500108704407649270)
-
-(c!:install 'powers3 '(powers3) 3323641930007482181)
-
-(c!:install 'rsubla '(rsubla rassoc) 16645073108331555335)
-
-(c!:install 'qqe_id!-nyt!-branchq '(qqe_id!-nyt!-branchq qqe_qtidp
-qqe_nytidp qqe_qopaddp qqe_qoptailp) 11050168470374905022)
-
-(c!:install 'setunion '(setunion) 942439817850394096)
-
-(c!:install 'ibalp_redclause '(ibalp_redclause ibalp_vmember) 
-614149274002913780)
-
-(c!:install 'quotodd '(quotodd mkrn int!-equiv!-chk lowest!-terms) 
-680472806820485415)
-
-(c!:install 'bsubs '(bsubs bound binding) 7609595528360115474)
+(c!:install "u16" 68931 2012172 6513738)
 
 (c!:install 'dipilcomb1 '(dipilcomb1 !*gcd vbcsize evzero!? dipprod
 evsum evcomp bcprod bczero!? bcsum) 14052257147707387263)
 
-(c!:install 'greaterp!: '(greaterp!: d !:bprec!: normbf ashift) 
+(c!:install 'greaterp!: '(greaterp!: !:bprec!: normbf ashift) 
 7774966988171925016)
 
 (c!:install 'mkinds '(mkinds) 1345525827787502947)
@@ -62,9 +41,6 @@ sqchk) 3243638504056923274)
 
 (c!:install 'c!:extmult '(c!:extmult "should never get here" c!:ordexn
 c!:subs2multf negf c!:extadd rederr) 571422204684123209)
-
-(c!:install 'assert_uninstall_all '(assert_uninstall_all
-assert_functionl!* assert_uninstall) 13268434617714908990)
 
 (c!:install 'cali_bc_inv '(cali_bc_inv qremf) 1879288417171672158)
 
@@ -115,6 +91,22 @@ procedure "proc form" !*semicol!* !*colon!* for !*blockp nodel (
 "Please send hearn@rand.org your program!!" lispapply toknump chknewnam
 symerr scan eolcheck remcomma xread mkvar typerr delcp procstat1
 xcomment) 4665307065193035288)
+
+(c!:install 'qremf '(qremf !*exp qremd praddf multf to negf addf ordop) 
+8572729870254090815)
+
+(c!:install 'remove!-free!-vars!* '(remove!-free!-vars!*
+!*!*noremove!*!* remove!-free!-vars) 4819420631164452905)
+
+(c!:install 'tmsf '(tmsf sfp tmsf!*) 14540052551771722099)
+
+(c!:install 'talp_td '(talp_td talp_fargl lto_max) 3753277161145513143)
+
+(c!:install 'ibalp_lenisone '(ibalp_lenisone) 5121027212227306889)
+
+(c!:install 'vdp_zero!? '(vdp_zero!? vdp_poly) 3453044351461631223)
+
+(c!:install 'sq2sscfpl '(sq2sscfpl mkzl sq2sstm) 7910318926466258719)
 
 
 % End of generated Lisp code

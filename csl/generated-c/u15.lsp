@@ -1,41 +1,7 @@
 
 % u15.lsp           Machine generated Lisp
 
-(c!:install "u15" 64798 7113265 8309970)
-
-(c!:install 'ibalp_var!-satlist '(ibalp_var!-satlist setcar
-ibalp_calcmom delq) 3404357006433764569)
-
-(c!:install 'ofsf_pow2q '(ofsf_pow2q d to) 9555663570031789959)
-
-(c!:install 'downwght1 '(downwght1 codmat maxvar dm!-abs !:onep) 
-15360006528447657581)
-
-(c!:install 'newenv '(newenv unbound bind) 7633756221636202719)
-
-(c!:install 'evenfree '(evenfree qremd absf addf) 18154060703490971120)
-
-(c!:install 'fortranprecedence '(fortranprecedence !*fortranprecedence!*
-) 11537112185118381901)
-
-(c!:install 'mo_neworder '(mo_neworder mo!=shorten mo!=deglist) 
-3498630001384855489)
-
-(c!:install 'eqdummy '(eqdummy) 18076016336838887221)
-
-(c!:install 'ra_budan!-0!-1 '(ra_budan!-0!-1 ra_budan!-transform minusf)
- 15518973105210631036)
-
-(c!:install 'lexer_word_continues '(lexer_word_continues !_
-lexer_style!* !. !' land) 10021294736520097938)
-
-(c!:install 'sfto_varisnump '(sfto_varisnump) 7883640532582903528)
-
-(c!:install 'intexprlisp '(intexprlisp intexprnp) 6347235130115113606)
-
-(c!:install 'qqe_arg!-check!-b '(qqe_arg!-check!-b qqe_id!-nyt!-branchb
-qqe_qtidp qqe_nytidp qqe_btid qqe_add2rollbackids qqe_arg!-check) 
-7263150955247412042)
+(c!:install "u15" 93479 2123043 2673964)
 
 (c!:install 'matsm!*1 '(matsm!*1 mat !*sub2 subs2!* !*q2a) 
 14068891089045412209)
@@ -154,6 +120,27 @@ dividef dcombine) 229903107460967749)
 13693123787237902409)
 
 (c!:install 'tr_write '(tr_write !*trsolve) 9464242599202146762)
+
+(c!:install 'rread1 '(rread1 ttype!* !*quotenewnam quotenewnam !:dn!:
+symbolic !( !+ !- " " nxtsym!* "Syntax error: improper number" minus
+ptoken dnform rrdls symerr) 13500108704407649270)
+
+(c!:install 'powers3 '(powers3) 3323641930007482181)
+
+(c!:install 'rsubla '(rsubla rassoc) 16645073108331555335)
+
+(c!:install 'qqe_id!-nyt!-branchq '(qqe_id!-nyt!-branchq qqe_qtidp
+qqe_nytidp qqe_qopaddp qqe_qoptailp) 11050168470374905022)
+
+(c!:install 'setunion '(setunion) 942439817850394096)
+
+(c!:install 'ibalp_redclause '(ibalp_redclause ibalp_vmember) 
+614149274002913780)
+
+(c!:install 'quotodd '(quotodd mkrn int!-equiv!-chk lowest!-terms) 
+680472806820485415)
+
+(c!:install 'bsubs '(bsubs bound binding) 7609595528360115474)
 
 
 % End of generated Lisp code

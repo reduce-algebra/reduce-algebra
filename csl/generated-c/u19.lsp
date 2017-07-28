@@ -1,39 +1,7 @@
 
 % u19.lsp           Machine generated Lisp
 
-(c!:install "u19" 28001 9869325 29998)
-
-(c!:install 'ibalp_process!-var '(ibalp_process!-var !! setcar) 
-18440587624209677374)
-
-(c!:install 'aex_simpleratp '(aex_simpleratp aex_ex) 
-12227076808602370977)
-
-(c!:install 'exptpri '(exptpri !*utf8 !*list !*nat !*fort failed expt
-!*eraise inbrackets indexprin !*ratpri quotient minus spare!* orig!*
-posn!* "(" ")" utf8_exptpri layout!-formula indexpower negnumberchk
-terpri!* prin2!* putpline oprin update!-pline) 1764904720989000181)
-
-(c!:install 'tobvarir '(tobvarir bvar) 4702481268318296806)
-
-(c!:install 'floatprop '(floatprop !:rd!:) 9827860526588982079)
-
-(c!:install 'inttovec '(inttovec inttovec!-solve inttovec1) 
-13972934414845309666)
-
-(c!:install 'physopaeval '(physopaeval !*sq psimpfn physopp !*q2a
-opmtch!*) 12861057458750378330)
-
-(c!:install 'mkarray1 '(mkarray1 symbolic) 416267680075305298)
-
-(c!:install 'mo_from_a '(mo_from_a cali!=basering "dpoly variable"
-ring_all_names typerr mo!=shorten mo!=deglist) 17438636991179603879)
-
-(c!:install 'idcons_ordp '(idcons_ordp atom_compare cons_ordp) 
-17803095815279840494)
-
-(c!:install 'general!-expt!-mod!-p '(general!-expt!-mod!-p
-general!-times!-mod!-p) 12454319538062397665)
+(c!:install "u19" 179199 4132816 7178925)
 
 (c!:install '!:expt '(!:expt poly "0/0 formed" expt rerror fieldp
 mkratnum !:recip) 1906246832538517278)
@@ -134,8 +102,6 @@ print_with_margin_sub) 6076479413304500728)
 (c!:install 'gcref_mkgraph '(gcref_mkgraph !*gcrefudg gcref_mkgraph!-udg
 gcref_mkgraph!-tgf) 16501711106482065827)
 
-(c!:install 'sfto_varp '(sfto_varp) 14207091916696203657)
-
 (c!:install 'talp_rnf1 '(talp_rnf1 true false cl_simpl talp_atfp
 talp_acfrp talp_raf talp_op talp_argl) 3402747954690578402)
 
@@ -144,6 +110,40 @@ talp_acfrp talp_raf talp_op talp_argl) 3402747954690578402)
 
 (c!:install 'binomial!-coefft!-mod!-p '(binomial!-coefft!-mod!-p !*n2f
 min) 18069998271637071980)
+
+(c!:install 'ir2om '(ir2om ind indent "<OMOBJ>" "</OMOBJ>" printout
+indent!* objectom) 13344185890426862144)
+
+(c!:install 'groebcplistsortin '(groebcplistsortin groebcplistsortin1) 
+6911557174824682766)
+
+(c!:install 'mo_times_ei '(mo_times_ei mo!=deglist) 17361248855841632455
+)
+
+(c!:install 'th_match '(th_match th_match0 dl_get) 16649238676373897991)
+
+(c!:install 'arplus!: '(arplus!: dmode!* !*exp !:ar!: addf) 
+7059790470572779135)
+
+(c!:install 'subf1 '(subf1 dmode!* resimplify varstack!* wtl!*
+asymplis!* k!* yetunknowntype list "substituted expression" frlis!*
+simpatom !*d2q prepf simp degr wtchk subsublis getrtype
+eval!-yetunknowntypeexpr typerr setkorder reordsq kernp prepsq simpexpt
+exptsq subs2 multsq addsq sub2chk simprecip) 12224686838927291519)
+
+(c!:install 'decprec2internal '(decprec2internal !!log2of10 ceiling) 
+11314076629012560127)
+
+(c!:install 'triplesetprolongset '(triplesetprolongset) 
+2405898036471723158)
+
+(c!:install 'rl_csimpl '(rl_csimpl !*rlsimpl rl_simpl getd) 
+14355992846025687008)
+
+(c!:install 'talp_invn '(talp_invn talp_op) 3909389058722197269)
+
+(c!:install 'lx2xx '(lx2xx lastnondomain delet xxsort) 
+3267089086882027254)
 
 
 % End of generated Lisp code

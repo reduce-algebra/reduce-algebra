@@ -1,27 +1,7 @@
 
 % u06.lsp           Machine generated Lisp
 
-(c!:install "u06" 101834 6864909 1361666)
-
-(c!:install 'pnthxzz '(pnthxzz) 4749855178029359567)
-
-(c!:install 'rd!:onep '(rd!:onep 1.0 !!fleps1 bfone!* bftrim!: equal!:) 
-10840846068437734264)
-
-(c!:install 'atomf '(atomf) 6612718896541201503)
-
-(c!:install 'mknwedge '(mknwedge wedge) 9273441016196573903)
-
-(c!:install 'putpline '(putpline posn!* spare!* orig!* ycoord!* pline!*
-ymin!* ymax!* terpri!* update!-pline min max) 9984476619971481198)
-
-(c!:install 'int!-equiv!-chk '(int!-equiv!-chk !*noequiv) 
-3177926317644332068)
-
-(c!:install 'dp!=ecart '(dp!=ecart dp_lmon mo_ecart) 1513483039109638609
-)
-
-(c!:install 'gperm1 '(gperm1 rev) 5120862869177590181)
+(c!:install "u06" 104010 6600098 2135947)
 
 (c!:install 'mkrn '(mkrn !:rn!:) 8615064137746325980)
 
@@ -70,9 +50,6 @@ horner!-rule) 9840903884908678569)
 
 (c!:install 'xread '(xread !*eoldelimp cursym!* !*semicol!* scan xread1)
  5105264040667216641)
-
-(c!:install 'sfto_gcdf!* '(sfto_gcdf!* !*gcd sfto_gcdf) 
-7448789985163009459)
 
 (c!:install 'removev '(removev "Vertex" "is absent." cerror) 
 11755252615704088808)
@@ -168,6 +145,25 @@ rerror getel1) 10029705835642610942)
 (c!:install 'general!-modular!-quotient '(general!-modular!-quotient
 general!-modular!-reciprocal general!-modular!-times) 
 10028416593412426364)
+
+(c!:install 'minus!-mod!-p '(minus!-mod!-p nreverse) 
+13865097314770874216)
+
+(c!:install 'raddf '(raddf nreverse addd ordpp) 7057771059515183709)
+
+(c!:install 'talp_varlt1 '(talp_varlt1 talp_getl lto_insert talp_argl
+union) 17322878992346705249)
+
+(c!:install 'mri_simplfloor '(mri_simplfloor mri_floorkernelp
+mri_simplfloor1) 16657927298066891305)
+
+(c!:install 'quotfd '(quotfd dmode!* divd quotdd quotk) 
+12457232032859727359)
+
+(c!:install 'downwght '(downwght delhisto downwght1 inshisto) 
+16079583727061489875)
+
+(c!:install 'freexp '(freexp pm!:free) 2227958442769940130)
 
 
 % End of generated Lisp code

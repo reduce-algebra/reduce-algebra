@@ -1,44 +1,7 @@
 
 % u20.lsp           Machine generated Lisp
 
-(c!:install "u20" 73091 5186985 4893354)
-
-(c!:install 'ir2om '(ir2om ind indent "<OMOBJ>" "</OMOBJ>" printout
-indent!* objectom) 13344185890426862144)
-
-(c!:install 'groebcplistsortin '(groebcplistsortin groebcplistsortin1) 
-6911557174824682766)
-
-(c!:install 'assert_uninstall '(assert_uninstall assert_uninstall1) 
-1295276184374747594)
-
-(c!:install 'mo_times_ei '(mo_times_ei mo!=deglist) 17361248855841632455
-)
-
-(c!:install 'th_match '(th_match th_match0 dl_get) 16649238676373897991)
-
-(c!:install 'arplus!: '(arplus!: dmode!* !*exp !:ar!: addf) 
-7059790470572779135)
-
-(c!:install 'subf1 '(subf1 dmode!* resimplify varstack!* wtl!*
-asymplis!* k!* yetunknowntype list "substituted expression" frlis!*
-simpatom !*d2q prepf simp degr wtchk subsublis getrtype
-eval!-yetunknowntypeexpr typerr setkorder reordsq kernp prepsq simpexpt
-exptsq subs2 multsq addsq sub2chk simprecip) 12224686838927291519)
-
-(c!:install 'decprec2internal '(decprec2internal !!log2of10 ceiling) 
-11314076629012560127)
-
-(c!:install 'triplesetprolongset '(triplesetprolongset) 
-2405898036471723158)
-
-(c!:install 'rl_csimpl '(rl_csimpl !*rlsimpl rl_simpl getd) 
-14355992846025687008)
-
-(c!:install 'talp_invn '(talp_invn talp_op) 3909389058722197269)
-
-(c!:install 'lx2xx '(lx2xx lastnondomain delet xxsort) 
-3267089086882027254)
+(c!:install "u20" 63977 1225651 7504586)
 
 (c!:install 'ibalp_var!-unsatlist '(ibalp_var!-unsatlist setcar) 
 5332863275592178335)
@@ -77,11 +40,6 @@ unidev_nextp!* unidev_vec!* randommodulus!*) 9218661205682165902)
 (c!:install 'subsublis '(subsublis sqrt expt (quotient 1 2) subfunc !*sq
 prepsq) 11015806341792197022)
 
-(c!:install 'token!-number '(token!-number ttype!* !) !$eof!$ !. (!0) x
-!X !\ e !E !- !+ hexdigit rlisp "Syntax error: improper number " !:dn!:
-!*adjprec !:int!: nxtsym!* crchar!* readch1 id2string string!-length
-list2string concat rerror reversip!*) 1022775197163142427)
-
 (c!:install 'applyrd '(applyrd atts (type definitionurl encoding)
 mmlatts char functions!* lex retattributes compress!* apply errorml) 
 5937752342201095232)
@@ -95,9 +53,6 @@ mmlatts char functions!* lex retattributes compress!* apply errorml)
 
 (c!:install 'contr2!-strand '(contr2!-strand contrsp contr2) 
 12378258184561139660)
-
-(c!:install 'assert_install '(assert_install assert_install1) 
-3565703158059169395)
 
 (c!:install 'rnminusp!: '(rnminusp!:) 15441971619235793483)
 
@@ -135,7 +90,52 @@ plus!-mod!-p) 9498715387900674649)
 (c!:install 'indexvarordp '(indexvarordp kord!* indxl!* ordop flatindxl
 boundindp indordlp) 574791126496740713)
 
-(c!:install 'inttovec!-solve '(inttovec!-solve d) 14272456348591913501)
+(c!:install 'inttovec!-solve '(inttovec!-solve) 14272456348591913501)
+
+(c!:install 'begin1a '(begin1a otime!* gctime ogctime!* otime3!*
+otime2!* otime1!* ogctime3!* ogctime2!* ogctime1!* peekchar!*
+!*semicol!* cursym!* curescaped!* !*nosave!* statcounter !*strind !*time
+(showtime nil) !*output ofl!* !*defn !*lessspace tslin!* !*slin
+lreadfn!* initl!* forkeywords!* delim repeatkeywords!* whilekeywords!*
+!*int erfg!* end key!* ed promptexp!* (command) symbolic xmodule err2
+err3 crbuf1!* "Closing object improperly removed. Redo edit." eof!*
+"End-of-file read" (bye) crbuf!* "BEGIN invalid" !*errcont !*echo cmsg!*
+"Continuing with parsing only ..." getd terminalp add2buflis
+update_prompt lispeval sinitl comm1 printprompt errorset!* condterpri
+errorp eval xmodloop begin11 lprim eofcheck resetparser lprie pause1) 
+12038476465788420567)
+
+(c!:install 'bas_newnumber '(bas_newnumber) 16517938802484585713)
+
+(c!:install 'derivative!-mod!-p!-1 '(derivative!-mod!-p!-1
+multiply!-by!-constant!-mod!-p mksp) 10394859023526844875)
+
+(c!:install 'carrassoc '(carrassoc "RASSOC trouble: " " "
+"rassoc trouble" rassoc rederr) 3017662206685756414)
+
+(c!:install 'simpqg '(simpqg qg simpcv) 7904410273408591343)
+
+(c!:install 'mkprod '(mkprod !*exp !*sub2 !*mcd !*sqfree !*factor !*gcd
+!*group kernlp subs2 ckrn quotf expnd multf fctrf mksp!* tmsf) 
+5396723553033127465)
+
+(c!:install 'cl_simpl1 '(cl_simpl1 true false or and not ex all !*rlsism
+bex ball impl repl equiv cl_simpl "cl_simpl1(): unknown operator"
+cl_smsimpl!-junct cl_flip cl_atfp rl_negateat cl_negate!-invol
+rl_smrmknowl cl_fvarl cl_simplbq cl_smsimpl!-imprep cl_smsimpl!-equiv
+rl_external apply cl_simplat rl_smcpknowl rl_smupdknowl rl_smmkatl
+rederr) 7900051791536078423)
+
+(c!:install 'gb_buch!-ev_divides!? '(gb_buch!-ev_divides!? ev_mtest!?) 
+3408037194448717213)
+
+(c!:install 'ev_invlexcomp '(ev_invlexcomp iequal) 301871774651962531)
+
+(c!:install 'ir2mml '(ir2mml (indent) ind indent "<math>" "</math>"
+fluid printout indent!* expression) 10494619312634463605)
+
+(c!:install 'rd!:prep '(rd!:prep !*noconvert rdprep1 rd!:onep rd!:minus)
+ 11603492088250160958)
 
 
 % End of generated Lisp code

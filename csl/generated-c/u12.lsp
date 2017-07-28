@@ -1,15 +1,7 @@
 
 % u12.lsp           Machine generated Lisp
 
-(c!:install "u12" 149409 6374458 8140405)
-
-(c!:install 'integerom '(integerom "<OMI> " " </OMI>" printout) 
-17516490804314905868)
-
-(c!:install 'writepri '(writepri eval assgnpri) 14111625423404019942)
-
-(c!:install 'cut!:ep '(cut!:ep !:rd!: ashift bflerrmsg) 
-4612005151744339248)
+(c!:install "u12" 117705 4819786 5558605)
 
 (c!:install 'split!-road '(split!-road sroad) 3337914756389053626)
 
@@ -132,15 +124,16 @@ bf2flck) 2300856283230210226)
 (c!:install 'artimes!: '(artimes!: dmode!* !*exp !:ar!: multf
 reducepowers) 6267152915256128623)
 
-(c!:install 'sfto_avgq '(sfto_avgq addsq quotsq) 12044505774779079513)
-
 (c!:install 'efface1 '(efface1) 12879838724924137848)
 
-(c!:install 'lto_almerge '(lto_almerge apply setcdr) 3039584596757673217
-)
+(c!:install 'gcdf2 '(gcdf2 asymplis!* !*anygcd !*gcd num!-exponents
+kernord setkorder reorder comfac gcdf1 comfac!-to!-poly quotf1 gcdk
+multf noncomp gcdfnc ordop) 10016176172079722155)
 
-(c!:install 'sfto_ucontentf '(sfto_ucontentf sfto_ucontentf1) 
-1520555230224091218)
+(c!:install 'subs3f1 '(subs3f1 !*mymatch mchfg!* !*resubs !*sub2
+powlis1!* addsq !*subs3tnc subs3t subs2q subs3q) 5861254699348922205)
+
+(c!:install 'get_group_in '(get_group_in) 7681727314505217329)
 
 
 % End of generated Lisp code

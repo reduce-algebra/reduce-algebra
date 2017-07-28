@@ -1,77 +1,7 @@
 
 % u22.lsp           Machine generated Lisp
 
-(c!:install "u22" 119821 7550241 9798415)
-
-(c!:install 'exc '(exc) 3033767915002397882)
-
-(c!:install 'yypeek '(yypeek lex_char lex_peek_char yyreadch) 
-11241116925781033268)
-
-(c!:install 'defineargs '(defineargs calledby hasarg instdof) 
-18221869149588598285)
-
-(c!:install 'mk!+unit!+mat '(mk!+unit!+mat gen!+can!+bas) 
-14051174035683025759)
-
-(c!:install 'cl_flip '(cl_flip and or all ex ball bex true false
-"cl_flip(): don't know" rederr) 5068947937171819402)
-
-(c!:install 'ibalp_negateat '(ibalp_negateat ibalp_op ibalp_arg2l
-ibalp_arg2r ibalp_negatet ibalp_mk2) 11674072354734338620)
-
-(c!:install 'aex_deg '(aex_deg aex_ex sfto_vardeg) 3607510624473054238)
-
-(c!:install 'simprecip '(simprecip !*mcd recip carx simpexpt simp invsq)
- 13770365170578457092)
-
-(c!:install 'coordp '(coordp coord!*) 11743679015531548263)
-
-(c!:install 'begin11 '(begin11 errmsg!* newrule!* cursym!* end
-!*lisp_hook !*semicol!* curescaped!* !*nosave!* !*reduce4 retry
-programl!* "No previous expression" program!* c eof!* (bye quit) bye
-!*byeflag!* ed cedit "ED not supported" !*defn erfg!* key!* ignore quote
-eval !*output ifl!* !*echo !*lessspace ulimit!* err2 symbolic noval
-semic!* !$ !*debug "Value:" print !*mode assgnpri list only err3
-"of type: " terminalp comm1 lprim eofcheck add2inputbuf getd lispeval
-dfprint errorset_with_timeout errorset!* errorp getsetvars mkobject type
-value add2resultbuf prin2t rapply1) 4807105361341105352)
-
-(c!:install 'lienjactest '(lienjactest lie_jtest difference plus times
-lie_cc aeval setk aeval!* aminusp!: evalneq) 10602272048410938972)
-
-(c!:install 'mv!-pow!-mv!-!+ '(mv!-pow!-mv!-!+ nreverse
-mv!-pow!-mv!-term!-!+) 1405175115176094435)
-
-(c!:install 'ilcm '(ilcm) 2240973133276570764)
-
-(c!:install 'symbvarlst '(symbvarlst symbolic !*novarmsg
-"local variable" "in procedure" fname!* "not used" lprim) 
-13485731643948571336)
-
-(c!:install 'ezgcdf1 '(ezgcdf1 factor!-level gcdlist poly!-abs) 
-12619626237804511922)
-
-(c!:install 'talp_eqnrhskernels '(talp_eqnrhskernels talp_varlt) 
-15705245276850491214)
-
-(c!:install 'qqe_arg!-check '(qqe_arg!-check
-"some arguments are not of queue type"
-"some arguments are not of basic type" qqe_rqopp qqe_arg!-check!-lq!-rq
-qqe_rbopp qqe_arg!-check!-lb!-rb qqe_qopheadp qqe_qoptailp
-qqe_arg!-check!-q qqe_arg!-check!-marked!-ids!-rollback typerr
-qqe_qopaddp qqe_arg!-check!-lb!-rq qqe_arg!-check!-b) 
-5175762209027666479)
-
-(c!:install 'delet '(delet nreverse) 4196219192857472711)
-
-(c!:install 'cl_qb '(cl_qb ex all) 16899144078553875742)
-
-(c!:install 'horner!-rule!-mod!-p '(horner!-rule!-mod!-p expt!-mod!-p
-times!-mod!-p plus!-mod!-p) 17881801528335960065)
-
-(c!:install 'getsetvars '(getsetvars (setel setk) setq nreverse
-getsetvarlis) 7017665945125256390)
+(c!:install "u22" 122006 2917369 1019535)
 
 (c!:install 'mchkopt1 '(mchkopt1 mchk) 10998985577953184966)
 
@@ -113,9 +43,6 @@ getd rederr error efface1) 12877371633144329667)
 )
 
 (c!:install 'ibalp_negatet '(ibalp_negatet bnot) 13505881871668969693)
-
-(c!:install 'sfto_dprpartksf '(sfto_dprpartksf sfto_dcontentf quotf) 
-7862046075339663375)
 
 (c!:install 'reln '(reln "<apply>" "<" "/" "</apply>" printout
 attributesml indent!* multi_elem) 6783350485341983158)
@@ -197,6 +124,67 @@ gcref_mknode!-tgf prin2t gcref_select gcref_mkedges!-tgf)
 
 (c!:install 'simpexpt '(simpexpt kord!* expt resimp carx simpexpon
 simpexpon1 simpexpt1) 2098624782700169361)
+
+(c!:install 'ibalp_var!-set '(ibalp_var!-set setcar ibalp_var!-satlist
+ibalp_var!-unsatlist ibalp_var!-wclist ibalp_calcmom) 
+12560658765589559647)
+
+(c!:install 'inttovec1 '(inttovec1 inttovec!-solve) 6831836483047742586)
+
+(c!:install 'collectphystype '(collectphystype physopp getphystype
+deletemult!*) 13475269568287233990)
+
+(c!:install 'replace1_parents '(replace1_parents replace2_parents) 
+13308275718975735306)
+
+(c!:install 'repartf '(repartf i kord!* cmpxfn reorder int!-equiv!-chk
+multf addf) 14224353227990139716)
+
+(c!:install 'setelv '(setelv reval_without_mod setel) 
+10897900906222372279)
+
+(c!:install 'red!=cancelsimp '(red!=cancelsimp red_better bas_dpoly
+dp_lmon mo_vdivides!?) 11561457350048644172)
+
+(c!:install 'pst_termnodep '(pst_termnodep) 9722157953327035154)
+
+(c!:install 'ratn '(ratn !:rn!: arnum "Illegal domain in :ar:" rerror) 
+11435966345470479614)
+
+(c!:install 'crprcd2 '(crprcd2 yy!! crprcd) 9422509343997585347)
+
+(c!:install 'innprodkp '(innprodkp reversip2) 18318363658522855146)
+
+(c!:install 'ordered!-gcd!-mod!-p '(ordered!-gcd!-mod!-p
+reduction!-count reduce!-degree!-mod!-p monic!-mod!-p) 
+819731155986328946)
+
+(c!:install 'pairxvars '(pairxvars scalar "Invalid parameter:" symerr
+reversip!*) 17900708030155431)
+
+(c!:install 'monomwrite '(monomwrite fluidbibasisnumberofvariables
+fluidbibasisreversedvariables) 9581876070223371965)
+
+(c!:install 'super_der_simp '(super_der_simp variables (ext) ext
+even_dimension odd_dimension reval simp!* split_form nth split_ext
+even_action odd_action addsq quotsq super_product_sq multf negsq
+simpiden) 1026326478841048770)
+
+(c!:install 'tayexp!-times2 '(tayexp!-times2 !*i2rn rntimes!:) 
+13349100696667971078)
+
+(c!:install 'get!*elements '(get!*elements elems) 8511605685852624688)
+
+(c!:install 'talp_subt '(talp_subt) 13420465045802095597)
+
+(c!:install 'ibalp_readform '(ibalp_readform and true !*rlverbose
+"Detected empty clause" "Tautology detected"
+"Deleted redundant clauses: " cl_mkstrict ibalp_readclause
+ibalp_emptyclausep ibalp_clmember ibalp_redclause ibalp_undoclause
+ioto_tprin2t) 5947913626491699670)
+
+(c!:install 'vsl_boundtype '(vsl_boundtype vsl_boundtype1) 
+3575532393259757734)
 
 
 % End of generated Lisp code

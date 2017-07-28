@@ -1,68 +1,7 @@
 
 % u23.lsp           Machine generated Lisp
 
-(c!:install "u23" 14514 6341145 5071715)
-
-(c!:install 'ibalp_var!-set '(ibalp_var!-set setcar ibalp_var!-satlist
-ibalp_var!-unsatlist ibalp_var!-wclist ibalp_calcmom) 
-12560658765589559647)
-
-(c!:install 'inttovec1 '(inttovec1 inttovec!-solve) 6831836483047742586)
-
-(c!:install 'collectphystype '(collectphystype physopp getphystype
-deletemult!*) 13475269568287233990)
-
-(c!:install 'replace1_parents '(replace1_parents replace2_parents) 
-13308275718975735306)
-
-(c!:install 'repartf '(repartf i kord!* cmpxfn reorder int!-equiv!-chk
-multf addf) 14224353227990139716)
-
-(c!:install 'setelv '(setelv reval_without_mod setel) 
-10897900906222372279)
-
-(c!:install 'red!=cancelsimp '(red!=cancelsimp red_better bas_dpoly
-dp_lmon mo_vdivides!?) 11561457350048644172)
-
-(c!:install 'pst_termnodep '(pst_termnodep) 9722157953327035154)
-
-(c!:install 'ratn '(ratn !:rn!: arnum "Illegal domain in :ar:" rerror) 
-11435966345470479614)
-
-(c!:install 'crprcd2 '(crprcd2 yy!! crprcd) 9422509343997585347)
-
-(c!:install 'innprodkp '(innprodkp reversip2) 18318363658522855146)
-
-(c!:install 'ordered!-gcd!-mod!-p '(ordered!-gcd!-mod!-p
-reduction!-count reduce!-degree!-mod!-p monic!-mod!-p) 
-819731155986328946)
-
-(c!:install 'pairxvars '(pairxvars scalar "Invalid parameter:" symerr
-reversip!*) 17900708030155431)
-
-(c!:install 'monomwrite '(monomwrite fluidbibasisnumberofvariables
-fluidbibasisreversedvariables) 9581876070223371965)
-
-(c!:install 'super_der_simp '(super_der_simp variables (ext) ext
-even_dimension odd_dimension reval simp!* split_form nth split_ext
-even_action odd_action addsq quotsq super_product_sq multf negsq
-simpiden) 1026326478841048770)
-
-(c!:install 'tayexp!-times2 '(tayexp!-times2 !*i2rn rntimes!:) 
-13349100696667971078)
-
-(c!:install 'get!*elements '(get!*elements elems) 8511605685852624688)
-
-(c!:install 'talp_subt '(talp_subt) 13420465045802095597)
-
-(c!:install 'ibalp_readform '(ibalp_readform and true !*rlverbose
-"Detected empty clause" "Tautology detected"
-"Deleted redundant clauses: " cl_mkstrict ibalp_readclause
-ibalp_emptyclausep ibalp_clmember ibalp_redclause ibalp_undoclause
-ioto_tprin2t) 5947913626491699670)
-
-(c!:install 'vsl_boundtype '(vsl_boundtype vsl_boundtype1) 
-3575532393259757734)
+(c!:install "u23" 168823 6011591 788850)
 
 (c!:install 'naryom '(naryom var variance valid_om!* multiset "<OMA>"
 indent "<OMS cd=""" """ name=""" """>" "</OMA>" printout multiom) 
@@ -105,8 +44,8 @@ ibalp_unvar!-unsatlist ibalp_calcmom) 14812467450794752512)
 
 (c!:install 'ev_lexcomp '(ev_lexcomp iequal) 9797634101757613345)
 
-(c!:install 'subs4q '(subs4q d slash opmtch slash!* quotient minus
-prepsq reval simp!*) 7954872445197849127)
+(c!:install 'subs4q '(subs4q slash opmtch slash!* quotient minus prepsq
+reval simp!*) 7954872445197849127)
 
 (c!:install 'makeset '(makeset nreverse) 11107701159491364533)
 
@@ -142,6 +81,61 @@ addsq) 4771978532570979384)
 
 (c!:install 'setel '(setel dimension rlisp "Incorrect array reference"
 rerror setel1) 1520989627832643292)
+
+(c!:install 'fs!:prin1 '(fs!:prin1 (1 . 1) "(" ")" "[" "-" "+"
+fourier!-name!* "]" "1" prin2!* sqprint fs!:null!-angle) 
+9305787713891364547)
+
+(c!:install 'st_sorttree '(st_sorttree st_sorttree1) 
+15826997532839114877)
+
+(c!:install 'general!-modular!-expt '(general!-modular!-expt alg
+"0^0 formed" current!-modulus rerror primep general!-modular!-times
+reverse!-num) 3819843854313685478)
+
+(c!:install 'random!-teeny!-prime '(random!-teeny!-prime all
+teeny!-primes next!-random!-number) 10079275317954736717)
+
+(c!:install 'refprint '(refprint cloc!* "*TTYINPUT*" pfiles!* curfun!* g
+rccnam curlin!* locls!* globs!* calls!* anform outrefend) 
+13080195673109096165)
+
+(c!:install 'polynomlistreduce '(polynomlistreduce
+polynomlistfinddivisor polynomreduceby polynomadd) 15512609324025294193)
+
+(c!:install 'pasf_sacat '(pasf_sacat) 3607541727113827278)
+
+(c!:install 'unaryrd '(unaryrd mathml lex) 13082927852549454775)
+
+(c!:install 'groedeletip '(groedeletip setcdr) 16361312757688004926)
+
+(c!:install 'mktails '(mktails mktails1) 7834943372407695769)
+
+(c!:install 'numlist_ordp '(numlist_ordp lambda_ygm6np4pcqv31 cons_ordp)
+ 12358394684798595155)
+
+(c!:install 'lambda_ygm6np4pcqv31 '(lambda_ygm6np4pcqv31) 
+15088082726560262194)
+
+(c!:install 'subf '(subf alglist!* ncmp!* expt varstack!* !*d2q
+noncomexpf subf1 kernord intersection setkorder reorder kernels prepsq
+simp) 17978689418572348717)
+
+(c!:install 'lalr_prin_production '(lalr_prin_production " -> "
+lalr_prin_symbol lalr_prin_rhs) 1726331608870260106)
+
+(c!:install 'cl_pnf '(cl_pnf rl_nnf cl_pnf1) 8997355690223370541)
+
+(c!:install 'poly!-multfnc '(poly!-multfnc !*sstools!-loaded
+!*!*processed sstools!-multfnc poly!-multf mkspm addf noncomp) 
+4419973584290133566)
+
+(c!:install 'inprint '(inprint times !*nat !*asterisk times2 infix prtch
+" " plus !*revpri not setq tag setprifn inbrackets "(" ")" !*nosplit
+testing!-width!* (setq !*comma!*) oprin getrtype prin2!* maprint prinfit
+negnumberchk) 5888655686248825375)
+
+(c!:install 'row '(row expression) 10105843944902245972)
 
 
 % End of generated Lisp code

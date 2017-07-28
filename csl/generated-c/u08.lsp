@@ -1,16 +1,7 @@
 
 % u08.lsp           Machine generated Lisp
 
-(c!:install "u08" 141994 4238039 7275483)
-
-(c!:install 'general!-plus!-mod!-p '(general!-plus!-mod!-p nreverse
-general!-modular!-plus !*n2f ordop) 15694382996916044951)
-
-(c!:install 'divide!: '(divide!: !:rd!: msd conv!:mt round!:mt) 
-822680077161613832)
-
-(c!:install 'mcharg2 '(mcharg2 mchk updtemplate msappend lastpair) 
-8310717807567935274)
+(c!:install "u08" 48577 2173519 221936)
 
 (c!:install 'times!-term!-mod!-p '(times!-term!-mod!-p
 multiply!-by!-constant!-mod!-p mksp times!-mod!-p ordop) 
@@ -51,7 +42,7 @@ ibalp_arg2r union) 3082100373558802606)
 (c!:install 'dp_ecart '(dp_ecart dp!=ecart dp_lmon mo_ecart) 
 6091531937966727815)
 
-(c!:install 'pdmult '(pdmult d pair) 1769095089218186773)
+(c!:install 'pdmult '(pdmult pair) 1769095089218186773)
 
 (c!:install 'cancel '(cancel !*mcd multsq mk!*sq simpexpt) 
 2615146117212680732)
@@ -136,6 +127,33 @@ anforml add2calls checkargcount) 11765923365426148039)
 
 (c!:install 'ibalp_varlt1 '(ibalp_varlt1 lto_insertq ibalp_argn) 
 15073405374690958584)
+
+(c!:install 'isarb_int '(isarb_int arbint found_int multi_isarb_int) 
+8903692645515055984)
+
+(c!:install 'gsetsugar '(gsetsugar !*gsugar sugar vdptdeg vdpputprop) 
+5956100697013325100)
+
+(c!:install 'xdegree '(xdegree deg!*form) 18238910096532210186)
+
+(c!:install 'xdegreemon '(xdegreemon xdegreelist!* mknwedge xdegree) 
+11940686756163340154)
+
+(c!:install 'contrsp2 '(contrsp2) 14356978763788615465)
+
+(c!:install 'lpri '(lpri " ") 354308775184825461)
+
+(c!:install 'simpdiff '(simpdiff ckpreci!# simpcar simpminus addsq) 
+8946894650303966450)
+
+(c!:install 'rnquotient!: '(rnquotient!: mkrn) 12337815946570309451)
+
+(c!:install 'mo_diff '(mo_diff mo_neg mo_sum) 4737960852278499905)
+
+(c!:install 'anforml '(anforml !*globals locls!* glb2rf globs!* anform) 
+14423759540013469578)
+
+(c!:install '!*sqprint '(!*sqprint sqprint) 14862046607707741929)
 
 
 % End of generated Lisp code

@@ -1,30 +1,7 @@
 
 % u18.lsp           Machine generated Lisp
 
-(c!:install "u18" 267 7875121 255701)
-
-(c!:install 'exptcompare '(exptcompare) 5372125586460383598)
-
-(c!:install 'cl_smsimpl!-junct2 '(cl_smsimpl!-junct2 !*rlsichk !*rlsiso
-rl_ordatp !*rlsisocx cl_sordp rl_smmkatl lto_insert sort cl_flip) 
-10742815408394509146)
-
-(c!:install 'variableom '(variableom constantsom!* "<OMS " "cd=""" """ "
-"name=""" """/>" "<OMV " printout) 12706099796162667316)
-
-(c!:install 'onoff '(onoff "switch" rlisp "not defined as switch" !*
-!*switchcheck simpfg progn !*raise typerr rerror list2string lispeval) 
-16635437059189018759)
-
-(c!:install 'unchecked_getmatelem '(unchecked_getmatelem mat matrix
-"Matrix" "not set" rerror nth) 3837257970903198919)
-
-(c!:install 'guesspftype '(guesspftype (wedge d partdf hodge innerprod
-liedf) xvarlistp mknwedge) 6617237155091291956)
-
-(c!:install 'deleteall '(deleteall) 8011811616758810551)
-
-(c!:install 'cstimes '(cstimes times) 13052923761714089834)
+(c!:install "u18" 82108 1625071 1307615)
 
 (c!:install 'copyd '(copyd !*savedef rlisp "has no definition in copyd"
 lose getd rerror putd) 644475855128438402)
@@ -46,9 +23,6 @@ ra_budancount) 4048150596571684560)
 
 (c!:install 'talp_simplatat '(talp_simplatat equal talp_getl talp_mk2
 talp_telp talp_simplt) 2110880859993528509)
-
-(c!:install 'ibalp_unvar!-unsatlist '(ibalp_unvar!-unsatlist delq setcar
-ibalp_calcmom ibalp_getnewwl) 14883868643605701059)
 
 (c!:install 'mml2om '(mml2om "Intermediate representation: " mml2ir
 terpri!* ir2om) 10393749499664844907)
@@ -128,6 +102,38 @@ putobject terminalp) 8341139044900548353)
 
 (c!:install 'rl_susipost '(rl_susipost rl_susipost!* apply) 
 5661986307684209988)
+
+(c!:install 'ibalp_process!-var '(ibalp_process!-var !! setcar) 
+18440587624209677374)
+
+(c!:install 'aex_simpleratp '(aex_simpleratp aex_ex) 
+12227076808602370977)
+
+(c!:install 'exptpri '(exptpri !*utf8 !*list !*nat !*fort failed expt
+!*eraise inbrackets indexprin !*ratpri quotient minus spare!* orig!*
+posn!* "(" ")" utf8_exptpri layout!-formula indexpower negnumberchk
+terpri!* prin2!* putpline oprin update!-pline) 1764904720989000181)
+
+(c!:install 'tobvarir '(tobvarir bvar) 4702481268318296806)
+
+(c!:install 'floatprop '(floatprop !:rd!:) 9827860526588982079)
+
+(c!:install 'inttovec '(inttovec inttovec!-solve inttovec1) 
+13972934414845309666)
+
+(c!:install 'physopaeval '(physopaeval !*sq psimpfn physopp !*q2a
+opmtch!*) 12861057458750378330)
+
+(c!:install 'mkarray1 '(mkarray1 symbolic) 416267680075305298)
+
+(c!:install 'mo_from_a '(mo_from_a cali!=basering "dpoly variable"
+ring_all_names typerr mo!=shorten mo!=deglist) 17438636991179603879)
+
+(c!:install 'idcons_ordp '(idcons_ordp atom_compare cons_ordp) 
+17803095815279840494)
+
+(c!:install 'general!-expt!-mod!-p '(general!-expt!-mod!-p
+general!-times!-mod!-p) 12454319538062397665)
 
 
 % End of generated Lisp code

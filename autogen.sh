@@ -56,9 +56,12 @@ else
   a="$*"
 fi
 
+# I will re-process the top level first sequentially.
+autoreconf -f -i -v
+
 # Here are the directories that I will always process...
 
-L=". ./scripts ./libraries/crlibm ./libraries/libedit-20140620-3.1 \
+L="./scripts ./libraries/crlibm ./libraries/libedit-20140620-3.1 \
    ./generic/newfront"
 
 case $a in
@@ -113,6 +116,8 @@ esac
 
 printf "About to process $L\n"
 
+procids=""
+
 for d in $L
 do
   printf "\nautoreconf in directory '%s'\n" $d
@@ -120,14 +125,22 @@ do
   then
     cd $d
     printf "autoreconf -f -i -v\n"
-    autoreconf -f -i -v
+# I will spawn all the calls to autoconf to run concurrently...
+    autoreconf -f -i -v &
+    procids="$procids $!"
     cd $here
   fi
 done
-   
+
+# ...then wait until they have all finished.
+
+wait $procids
+
 scripts/resetall.sh
 
 cd $save
+printf "\nAll autoconf files now up to date\n"
+
 exit 0
 
 # end of autogen.sh

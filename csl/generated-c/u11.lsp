@@ -1,7 +1,7 @@
 
 % u11.lsp           Machine generated Lisp
 
-(c!:install "u11" 123008 1657306 12680)
+(c!:install "u11" 131242 2938543 6997044)
 
 (c!:install 'scan '(scan cursym!* !*semicol!* escaped!* nxtsym!* else
 outl!* comment !C!O!M!M!E!N!T !Comment !*comment !% ttype!*
@@ -104,10 +104,6 @@ real) convertmode typerr) 13801781145021425803)
 
 (c!:install 'arintequiv!: '(arintequiv!: !:rn!:) 5145923688412295730)
 
-(c!:install 'primep '(primep "integer" !*last!-prime!-in!-list!*
-!*primelist!* !*last!-prime!-squared!* largest!-small!-modulus typerr
-general!-primep small!-primep) 1407526069060308827)
-
 (c!:install 'lalr_prin_nonterminal '(lalr_prin_nonterminal
 nonterminal_codes cdrassoc explode2uc) 12680425989593305962)
 
@@ -126,7 +122,7 @@ ibalp_isinminclause) 14841464116390590590)
 (c!:install 'initwght '(initwght codmat maxvar dm!-abs !:onep) 
 1049804139918570648)
 
-(c!:install 'plus!: '(plus!: d !:rd!: ashift) 12247297853357438346)
+(c!:install 'plus!: '(plus!: !:rd!: ashift) 12247297853357438346)
 
 (c!:install 'getphystypesf '(getphystypesf domain!*p getphystype) 
 15012319228892138193)
@@ -158,6 +154,14 @@ wuconstantp totalcompareconstants) 11251330360413400364)
 (c!:install 'ibalp_getnewwl '(ibalp_getnewwl) 12925733746143081045)
 
 (c!:install 'sgn '(sgn) 1074806718032526601)
+
+(c!:install 'integerom '(integerom "<OMI> " " </OMI>" printout) 
+17516490804314905868)
+
+(c!:install 'writepri '(writepri eval assgnpri) 14111625423404019942)
+
+(c!:install 'cut!:ep '(cut!:ep !:rd!: ashift bflerrmsg) 
+4612005151744339248)
 
 
 % End of generated Lisp code

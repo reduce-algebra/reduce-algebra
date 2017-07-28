@@ -1,29 +1,7 @@
 
 % u14.lsp           Machine generated Lisp
 
-(c!:install "u14" 108779 5686220 4723292)
-
-(c!:install 'exceeds!-order '(exceeds!-order tayexp!-plus2 tayexp!-lessp
-) 11075431926768230131)
-
-(c!:install 'talp_rnf '(talp_rnf cl_simpl talp_rnf1) 
-10476314859936877117)
-
-(c!:install 'qqe_ofsf_simplat1 '(qqe_ofsf_simplat1 (true false)
-qqe_simplat1 qqe_op qqe_rqopp ofsf_simplat1) 4071328728144776747)
-
-(c!:install 'rl_simpbop '(rl_simpbop rl_simp1) 186782563312927961)
-
-(c!:install 'minusp!: '(minusp!: !:rd!:) 2935256932381667861)
-
-(c!:install 'isimplicit '(isimplicit implicit! ) 14035966247736076855)
-
-(c!:install 'set!-ordp '(set!-ordp ordp) 11286157267328432309)
-
-(c!:install 'scalopp '(scalopp scalar vector tensor tensdimen isanindex
-nth areallindices) 12955472892045792015)
-
-(c!:install 'lengthcdr '(lengthcdr) 6543389359225820768)
+(c!:install "u14" 50962 8826643 2731684)
 
 (c!:install 'red!-ratios2 '(red!-ratios2 red!-lowest!-terms) 
 3376847918635603851)
@@ -154,11 +132,37 @@ find!-null!-space) 10421087587991988417)
 
 (c!:install 'setpage '(setpage title!* pgnum!*) 17822129394673273623)
 
-(c!:install 'sfto_tsqsumf '(sfto_tsqsumf tsq stsq minusf) 
-4298095342290691801)
-
 (c!:install 'qqe_ofsf_chsimpterm '(qqe_ofsf_chsimpterm expt (ltail rtail
 ) qqe_op qqe_arg2l qqe_chsimpterm setcar) 14229263982680834276)
+
+(c!:install 'ofsf_pow2q '(ofsf_pow2q to) 9555663570031789959)
+
+(c!:install 'downwght1 '(downwght1 codmat maxvar dm!-abs !:onep) 
+15360006528447657581)
+
+(c!:install 'newenv '(newenv unbound bind) 7633756221636202719)
+
+(c!:install 'evenfree '(evenfree qremd absf addf) 18154060703490971120)
+
+(c!:install 'fortranprecedence '(fortranprecedence !*fortranprecedence!*
+) 11537112185118381901)
+
+(c!:install 'mo_neworder '(mo_neworder mo!=shorten mo!=deglist) 
+3498630001384855489)
+
+(c!:install 'eqdummy '(eqdummy) 18076016336838887221)
+
+(c!:install 'ra_budan!-0!-1 '(ra_budan!-0!-1 ra_budan!-transform minusf)
+ 15518973105210631036)
+
+(c!:install 'lexer_word_continues '(lexer_word_continues !_
+lexer_style!* !. !' land) 10021294736520097938)
+
+(c!:install 'intexprlisp '(intexprlisp intexprnp) 6347235130115113606)
+
+(c!:install 'qqe_arg!-check!-b '(qqe_arg!-check!-b qqe_id!-nyt!-branchb
+qqe_qtidp qqe_nytidp qqe_btid qqe_add2rollbackids qqe_arg!-check) 
+7263150955247412042)
 
 
 % End of generated Lisp code

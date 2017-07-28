@@ -1,7 +1,7 @@
 #! /bin/sh
 # Usage: scripts/nohost "$ac_configure_args"
 # displays the arguments that are NOT ones that are specific to
-# Reduce! It also removes ant "--host=XXX" entry.
+# Reduce! It also removes any "--host=XXX" entry.
 
 filter=""
 for x in $1
@@ -11,6 +11,7 @@ do
 # to have a catalogue of all the options I need to ignore. Messy!
   case $x in
   \'--host=*\' | \
+  \'host_alias=*\' | \
   \'--with-force*\' | \
   \'--with*-autogen*\' | \
   \'--with-mingw*\' | \

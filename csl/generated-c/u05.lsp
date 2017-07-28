@@ -1,16 +1,7 @@
 
 % u05.lsp           Machine generated Lisp
 
-(c!:install "u05" 160350 6165279 3166477)
-
-(c!:install 'getrtype '(getrtype (scalar generic) physop sub
-yetunknowntype getrtype1 eval physopp!* getrtype2) 17463766755553874190)
-
-(c!:install 'fs!:plus '(fs!:plus angles!-equal addsq fs!:angle!-order) 
-13903516929866200135)
-
-(c!:install 'mo_sum '(mo_sum mo!=sum mo!=shorten mo!=deglist) 
-11690513269509191580)
+(c!:install "u05" 32816 1922899 5968733)
 
 (c!:install 'insert_pv '(insert_pv sieve_pv pv_renorm insert_pv1) 
 3928730491069730406)
@@ -208,6 +199,26 @@ cl_smcpknowl) 13028224229960715909)
 (c!:install 'minus!: '(minus!: !:rd!:) 10147849189749433953)
 
 (c!:install 'emtch '(emtch opmtch) 9395393102454316218)
+
+(c!:install 'pnthxzz '(pnthxzz) 4749855178029359567)
+
+(c!:install 'rd!:onep '(rd!:onep 1.0 !!fleps1 bfone!* bftrim!: equal!:) 
+10840846068437734264)
+
+(c!:install 'atomf '(atomf) 6612718896541201503)
+
+(c!:install 'mknwedge '(mknwedge wedge) 9273441016196573903)
+
+(c!:install 'putpline '(putpline posn!* spare!* orig!* ycoord!* pline!*
+ymin!* ymax!* terpri!* update!-pline min max) 9984476619971481198)
+
+(c!:install 'int!-equiv!-chk '(int!-equiv!-chk !*noequiv) 
+3177926317644332068)
+
+(c!:install 'dp!=ecart '(dp!=ecart dp_lmon mo_ecart) 1513483039109638609
+)
+
+(c!:install 'gperm1 '(gperm1 rev) 5120862869177590181)
 
 
 % End of generated Lisp code

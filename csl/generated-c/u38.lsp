@@ -1,139 +1,148 @@
 
 % u38.lsp           Machine generated Lisp
 
-(c!:install "u38" 21386 2350622 1467020)
+(c!:install "u38" 107288 9924471 806751)
 
-(c!:install 'valuecoefft '(valuecoefft "Valuecoefft - no value" interr) 
-11085630856475024248)
+(c!:install 'num_signsort '(num_signsort lambda_ygm6np4pcqv31
+ad_signsort) 9981247964616828867)
 
-(c!:install 'rl_convertarg '(rl_convertarg rl_conversionfunction apply) 
-16762408709431988432)
+(c!:install 'lambda_ygm6np4pcqv31 '(lambda_ygm6np4pcqv31) 
+15088082726560262194)
 
-(c!:install 'mri_opn '(mri_opn mri_op) 2036384330803727972)
+(c!:install 'makeqn!-maybe '(makeqn!-maybe equal) 10780296787096721220)
 
-(c!:install 'internal!-factorf '(internal!-factorf current!-modulus
-m!-image!-variable d !*kernreverse kernord setkorder reorder minusf negf
-comfac comfac!-to!-poly quotf1 factorize!-primitive!-polynomial
-distribute!.multiplicity fctrf1 to fac!-merge) 16295624143771728723)
+(c!:install 'assoc2 '(assoc2) 15546565872355360023)
 
-(c!:install 'ioto_smaprinbuf '(ioto_smaprinbuf !! rlsmaprinbuf!*) 
-18419973655955222314)
+(c!:install 'vector!-to!-poly '(vector!-to!-poly !*n2f to) 
+12971166603679893390)
 
-(c!:install 'setfuncsnaryrd '(setfuncsnaryrd multiset mmlatts mathml) 
-11760292879859386480)
+(c!:install 'lalr_make_compressed_goto_table '(
+lalr_make_compressed_goto_table nonterminals !S!' lalr_nonterminal_code
+!*lalr_verbose lalr_make_compressed_goto_column
+lalr_print_compressed_goto_table) 16494174393177441415)
 
-(c!:install 'rewrite '(rewrite list part length only difference
-arglength plus den num "g is " first last limit quotient log x infinity
-expt e times w append aeval assgnpri aeval!* aminusp!: evallessp
-getrlist) 12642202879719868384)
+(c!:install 'my!+nullsq!+p '(my!+nullsq!+p) 13231798978309316526)
 
-(c!:install 'evalnumberp '(evalnumberp !*sq numbertag aeval) 
-16980738746779213824)
+(c!:install 'dvfsf_simplat1 '(dvfsf_simplat1 equal neq dvfsf_op
+dvfsf_arg2l dvfsf_safield dvfsf_arg2r dvfsf_saval) 3976312358638915735)
 
-(c!:install 'contposp '(contposp) 8182456738789676309)
+(c!:install 'matrixelems '(matrixelems nreverse) 6488175335555744394)
 
-(c!:install 'diff_vertex '(diff_vertex !_0edge nreverse) 
-13748214954855354062)
+(c!:install 'multerm '(multerm !*multsq mulpower multdfconst) 
+12104691084579091829)
 
-(c!:install 'dp_from_ei '(dp_from_ei cali_bc_fi mo_from_ei dp_term) 
-1551402700809790358)
+(c!:install 'sptransmat '(sptransmat spm matlength aeval mkempspmat
+letmtr3) 11078188207137486602)
 
-(c!:install 'getavalue '(getavalue) 9120817111259796697)
+(c!:install 'weak_xreduce1 '(weak_xreduce1 !*trxmod "   " first wedge
+" +" last xval xdiv mknwedge wedgepf quotsq negsq multpfsq addpf subs2pf
+writepri preppf) 10067255446068332118)
 
-(c!:install 'msolve!-psys1 '(msolve!-psys1 subf moduntag
-general!-reduce!-mod!-p msolve!-poly) 5325365900206753023)
+(c!:install 'toolongassignp '(toolongassignp toolongexpp) 
+4118697004373164395)
 
-(c!:install 'lalr_expand_grammar '(lalr_expand_grammar pending_rules!*
-lalr_check_grammar expand_rule) 3272494871112121132)
+(c!:install 'simppartdf '(simppartdf partitpartdf !*pf2sq) 
+18226010435382712502)
 
-(c!:install 'cl_atnum '(cl_atnum or and not impl repl equiv ex all bex
-ball true false rl_external apply) 16613845702167105898)
+(c!:install 'dfp!-sub '(dfp!-sub generic_function list dfp listsub reval
+pair dfp!-sub1) 7670772426438171903)
 
-(c!:install 'simpexpt1 '(simpexpt1 !*allfac !*div e log alg
-"0**0 formed" "Zero divisor" !*mcd expt simp simp!* prepsq!* simpexpt11
-rerror minusf !*d2q !:expt resimp domainvalchk exptsq invsq expf mksfpf
-multf subs2!*) 11760113747554941655)
+(c!:install 'lf!=zero '(lf!=zero) 4076842374495190263)
 
-(c!:install 'rl_bnfsimpl '(rl_bnfsimpl rl_bnfsimpl!* apply) 
-12102889295070448289)
+(c!:install 'setqinsertlist '(setqinsertlist fluidbibasissetq
+monomcompare) 7255240212151745159)
 
-(c!:install 'dvfsf_smupdknowl '(dvfsf_smupdknowl !*rlsusi
-cl_susiupdknowl cl_smupdknowl) 7560784988877215503)
+(c!:install 'pickbasicset '(pickbasicset wuvarlist!* symbollessp
+wureducedpolysp) 11600875189995843870)
 
-(c!:install 'groebinvokecritm '(groebinvokecritm mcount!*
-buchvevdivides!? groedeletip) 590440005261952739)
-
-(c!:install 'vdpcleanup '(vdpcleanup dipevlist!*) 9726310706373385971)
-
-(c!:install 'bflessp '(bflessp grpbf) 6727009590002545733)
-
-(c!:install 'intrdsortin '(intrdsortin nreverse !:difference !:minusp) 
-12946241828873678541)
-
-(c!:install 'z!-roads '(z!-roads) 9627785030673955102)
-
-(c!:install 'janettreenodebuild '(janettreenodebuild
-monomgetvariabledegree setcdr) 2912401590804738272)
-
-(c!:install 'ofsf_qesubqat '(ofsf_qesubqat !*rlqesubf !*rlqelocal equal
-neq geq ofsf_varlat prepsq subf ofsf_subf ofsf_qesubqat!-local
-ofsf_surep sfto_pdecf multf) 10452000760203204783)
-
-(c!:install 'testord '(testord) 2601262472684569069)
-
-(c!:install 'tayfkern '(tayfkern !*tayinternal!* taylor!* (taylor!*)
-kprops!* klist ordad union) 12384334866080713467)
-
-(c!:install 'mk!+outer!+list '(mk!+outer!+list list) 1120975289848745138
+(c!:install 'ofsf_optsplitterm '(ofsf_optsplitterm "ofsf_optsplitterm:"
+"has degree" "in" sfto_reorder degr rederr reorder) 18140749730664133842
 )
 
-(c!:install 'repr_n '(repr_n "repr_n : invalid REPR structure" rederr) 
-9234101115622280862)
+(c!:install 'determinantrd '(determinantrd mathml lex) 
+13299823222255331775)
 
-(c!:install 'minusrd '(minusrd mathml lex) 8109520012474094012)
+(c!:install 'transmat1 '(transmat1 spm avalue sparse rtype aeval
+matlength mkempspmat letmtr3) 13407070583228247971)
 
-(c!:install 'divide!-by!-power!-of!-ten '(divide!-by!-power!-of!-ten
-bften!* !:bprec!: bflerrmsg divide!: normbf lshift times!: cut!:mt) 
-11769155870995793676)
+(c!:install 'remzzzz '(remzzzz nreverse) 12941972615663851898)
 
-(c!:install 'atom_compare '(atom_compare) 14638703734338634116)
+(c!:install 'diplmon2sq '(diplmon2sq dipvars!* dipev2f multsq) 
+15227123221674441372)
 
-(c!:install 'set_parser '(set_parser parser_action_table reduction_fn
-reduction_rhs_n reduction_lhs parser_goto_table nonterminal_codes
-terminal_codes lex_restore_context) 1610539588129598405)
+(c!:install 'sc_rowscalarproduct '(sc_rowscalarproduct sc_simp
+fast!-column!-dim sc_getmat sc_multsq sc_addsq) 12509885332419258561)
 
-(c!:install 'sq_member '(sq_member sf_member) 383677299105792360)
+(c!:install 'xnsiz '(xnsiz !!log2of10 xnsiz1 ceiling) 
+5834800755168866135)
 
-(c!:install 'mri_ofsf2mriat '(mri_ofsf2mriat mri_0mk2) 
-16306935581848189185)
+(c!:install 'rd!:difference '(rd!:difference !*!*roundbf !:rd!: yy!!
+safe!-fp!-minus safe!-fp!-plus convprc2 difbf fp!-infinite rndbfon fl2bf
+read!:num normbf minus!: rdzchk mkround) 11687049646556656826)
 
-(c!:install 'rl_surep '(rl_surep rl_surep!* apply) 1119419072422884408)
+(c!:install 'indxsymp '(indxsymp) 15395267106291607297)
 
-(c!:install 'sfto_b!:ordexp '(sfto_b!:ordexp) 17719563479385124546)
+(c!:install 'calc_coeffmap_ '(calc_coeffmap_ times calc_map_ calc_coeff)
+ 3656005963211299502)
 
-(c!:install 'intervalom '(intervalom lowupperlimit integer_interval
-valid_om!* interval!* "<OMA>" "<OMS cd=""" """ name=""" """/>" "</OMA>"
-printout indent!* multiom) 17922406443138092447)
+(c!:install 'lengthreval '(lengthreval alg
+"LENGTH called with wrong number of arguments" list dimension lengthfn
+sparse "LENGTH not defined for argument of type" "LENGTH argument"
+rerror arrayp aeval getrtype lprie typerr) 7036667717362130412)
 
-(c!:install 'greatertype '(greatertype optlang!* fortran conversion eval
-typerror) 14283713471881068885)
+(c!:install 'gcdld '(gcdld gcd!-with!-number) 1316750812650340790)
 
-(c!:install 'groebspolynom3 '(groebspolynom3 groebspolynom4
-groebsavelterm) 8179078728466715752)
+(c!:install 'lalr_lr0_initial_itemset '(lalr_lr0_initial_itemset !S!' !.
+lalr_productions lalr_lr0_closure) 4845558967770285634)
 
-(c!:install 'exdfprn '(exdfprn "d" prin2!* rembras) 5596773582070494333)
+(c!:install 'createmonomunit '(createmonomunit) 15320518510719391198)
 
-(c!:install 'multiply!-by!-power!-of!-ten '(multiply!-by!-power!-of!-ten
-bften!* !:bprec!: bflerrmsg times!: normbf lshift cut!:mt) 
-18394915745764875788)
+(c!:install 'sfto_yun!-updecf '(sfto_yun!-updecf !*gcd diff sfto_gcdf
+quotf negf addf multf setcar setcdr) 10250296188671186867)
 
-(c!:install 'calc_den_tar '(calc_den_tar denlist constimes) 
-2091616914098872757)
+(c!:install 'squashsqrt '(squashsqrt sqrtflag sqrt expt !*multfsqrt addf
+prefix!-rational!-numberp !*multfexpt) 11918770788985965987)
 
-(c!:install 'log_freevars '(log_freevars constant!?
-"+++ Use of free variable in smacro/inline body: " "+++ Macro was: "
-inlineinfo quote function go prog lambda cond log_freevars_list
-log_freevars_list_list) 17921410601274168701)
+(c!:install 'cl_bvarl '(cl_bvarl ordp cl_bvarl1 sort) 208407522678842217
+)
+
+(c!:install 'rl_onp '(rl_onp !* eval) 12324384732156656671)
+
+(c!:install 'termorder1 '(termorder1) 8275765336605015274)
+
+(c!:install 'vdp_make '(vdp_make vdp) 11832810818583622840)
+
+(c!:install 'omattrir '(omattrir (!/ o m a t t r) csymbol cn ci lex
+omatpir omobj checktag) 15199935747480460102)
+
+(c!:install 'dipcontevmin '(dipcontevmin) 5891717190099008862)
+
+(c!:install 'f2dip1 '(f2dip1 f2dip11 bcfd bcprod f2dip2 dipsum) 
+14214282398288548756)
+
+(c!:install 'add_item '(add_item !*xset!* setcar setcdr monordp) 
+5074126693414448741)
+
+(c!:install 'fl2bf '(fl2bf "Floating point infinity or NaN" !!nbfpd
+!:rd!: fp!-finite rederr frexp normbf) 18367469440066822488)
+
+(c!:install 'spp '(spp kernelp) 2104866104876182072)
+
+(c!:install 'fs!:minusp '(fs!:minusp minusf) 16879958195719117773)
+
+(c!:install 'lex_keywords '(lex_keywords
+"Empty string passed to lex_keywords" lex_code lex_keyword_names
+lex_next_code lex_codename !*tracelex "Token '" "' allocated code "
+"dipthong data '" "' plus '" "' => '" "'" lex_dipthong widestring2list
+rederr list2widestring lastcar) 5650203126095189328)
+
+(c!:install 'mk!+scal!+mult!+mat '(mk!+scal!+mult!+mat
+"no matrix in add" !*sub2 matrix!+p rederr multsq subs2) 
+8701325537221077134)
+
+(c!:install 'talp_nextt1 '(talp_nextt1 talp_nextt!-atom talp_invp
+talp_fargl setcdr setcar talp_get!-idx talp_get!-minfct) 
+18100725233100552879)
 
 
 % End of generated Lisp code

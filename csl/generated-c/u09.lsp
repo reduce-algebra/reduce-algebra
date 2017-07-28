@@ -1,34 +1,7 @@
 
 % u09.lsp           Machine generated Lisp
 
-(c!:install "u09" 105427 7977333 7520458)
-
-(c!:install 'isarb_int '(isarb_int arbint found_int multi_isarb_int) 
-8903692645515055984)
-
-(c!:install 'gsetsugar '(gsetsugar !*gsugar sugar vdptdeg vdpputprop) 
-5956100697013325100)
-
-(c!:install 'xdegree '(xdegree deg!*form) 18238910096532210186)
-
-(c!:install 'xdegreemon '(xdegreemon xdegreelist!* mknwedge xdegree) 
-11940686756163340154)
-
-(c!:install 'contrsp2 '(contrsp2) 14356978763788615465)
-
-(c!:install 'lpri '(lpri " ") 354308775184825461)
-
-(c!:install 'simpdiff '(simpdiff ckpreci!# simpcar simpminus addsq) 
-8946894650303966450)
-
-(c!:install 'rnquotient!: '(rnquotient!: mkrn) 12337815946570309451)
-
-(c!:install 'mo_diff '(mo_diff mo_neg mo_sum) 4737960852278499905)
-
-(c!:install 'anforml '(anforml !*globals locls!* glb2rf globs!* anform) 
-14423759540013469578)
-
-(c!:install '!*sqprint '(!*sqprint sqprint) 14862046607707741929)
+(c!:install "u09" 17346 7122378 8357065)
 
 (c!:install 'talp_candp '(talp_candp true talp_arg2l talp_arg2r
 talp_invp talp_invarg) 14705223956677754842)
@@ -167,6 +140,9 @@ talp_tordp talp_arg2r) 16605772488172605382)
 
 (c!:install 'dim!<deg '(dim!<deg dimex!* deg!*farg negf addf) 
 7251850768166510267)
+
+(c!:install 'opnum!* '(opnum!* opnum collectindices removeindices) 
+4437767772325788303)
 
 
 % End of generated Lisp code

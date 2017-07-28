@@ -1,87 +1,94 @@
 
 % u58.lsp           Machine generated Lisp
 
-(c!:install "u58" 85207 621940 6820211)
+(c!:install "u58" 63039 4650152 8722178)
 
-(c!:install 'absodeg '(absodeg plus eval) 15211225628975707552)
+(c!:install 'invbase!* '(invbase!* thirdway!* shortway!* !*trinvbase
+maxord!* path gg!* varlist!* bv!* "---------- ORDER = " " ----------"
+alglist!* list plus gv!* invtempbasis "Maximum degree bound exceeded."
+ng!* redall newbasis ord !*di2q prepsq rederr max ljet class nonmult
+pdmult nf stat dim) 9973221616266214468)
 
-(c!:install 'talp_raf '(talp_raf equal neq and or talp_op talp_arg2l
-talp_tcfrp talp_arg2r talp_getinvfsym talp_mkinv talp_mk2 talp_simpat
-talp_getl talp_fargl nth talp_rnf1 talp_mkn) 15957899528406532110)
+(c!:install 'distri_pol '(distri_pol addfd multf) 13109417853935887981)
 
-(c!:install 'pasf_qff2ivl '(pasf_qff2ivl
-"pasf_qff2ivl : uniform Presburger arithmetic formula in input"
-pasf_uprap rederr pasf_dnf pasf_qff2ivl1) 8801269133230318599)
+(c!:install 'ofsf_ordrelp '(ofsf_ordrelp (equal neq leq lessp geq
+greaterp)) 677969609291168617)
 
-(c!:install 'vdp_putprop '(vdp_putprop) 16409054744709111877)
+(c!:install 'yetunknowntypeeval '(yetunknowntypeeval
+eval!-yetunknowntypeexpr reval1) 16888849423757944204)
 
-(c!:install 'compute!:intlog '(compute!:intlog intlog!:rem
-compute!:intlog1) 3832981292976916831)
+(c!:install 'depend!-l '(depend!-l simp depend!-sq) 11705703878846753641
+)
 
-(c!:install 'product!-set2 '(product!-set2) 5753609067411079214)
+(c!:install 'rl_print!*fof '(rl_print!*fof reval maprin) 
+8948476633242711435)
 
-(c!:install 'vdplsortin '(vdplsortin vdplsortin1) 7299351269199537602)
+(c!:install 'unary '(unary "<apply>" "<" "/>" indent "</apply>" printout
+expression) 17628353546270141862)
 
-(c!:install 'preproc1 '(preproc1 !:rd!: !:dn!: !*sq procedure !*params!*
-!*getdecs (real integer) deftype!* declare (subroutine function)
-!*type!* setq (cond progn) (plus times difference quotient minus) (
-!:cr!: !:crn!: !:gi!:) quotient (!~for for) (integer) fl2bf read!:num
-normbf decimal2internal prepsq symtabput lastpair preprocdec
-migrate!-setqs simp!*) 6528805567621417354)
+(c!:install 'xpwrlcmp '(xpwrlcmp expt sqrt getdenom getdenomx lcm) 
+13809688206923474696)
 
-(c!:install 'basisvectorp '(basisvectorp basisvectorl!*) 
-18044454894974143165)
+(c!:install 'ps!:expansion!-point '(ps!:expansion!-point !:ps!: ps!:getv
+) 16036982018896120238)
 
-(c!:install 'listofvarnames '(listofvarnames
-"invalid argument to listofvarnames" free listp rederr domain!*p) 
-14668539973731296408)
+(c!:install 'appends '(appends) 4527622923441649088)
 
-(c!:install 'find_bubles1 '(find_bubles1 select_bubles) 
-17544506527090479506)
+(c!:install 'pm!:gensym '(pm!:gensym !? !_ pm!:gensym!-count!*) 
+2925043532280623506)
 
-(c!:install 'compactf1 '(compactf1 intersection compactf11) 
-6316266038581973281)
+(c!:install 'partitpartdf '(partitpartdf !*a2k mknatvec simppartdf0) 
+14341146793199646748)
 
-(c!:install 'mo_deletecomp '(mo_deletecomp mo!=deglist) 
-12018199225992509237)
+(c!:install 'p_eq_vertex '(p_eq_vertex) 7973572559622386248)
 
-(c!:install 'solvevars '(solvevars allbkern constant_exprp ordad) 
-15451545184830350089)
+(c!:install 'com43 '(com43 liemat bb ff algebraic l_z cc minus det
+quotient plus times comcom0 comcom1 comcom3 matrix aeval arrayfn aeval!*
+setk evalneq evalequal clear) 15034922302418064058)
 
-(c!:install 'gcdlist1 '(gcdlist1 reduction!-count lesspcdr vunion
-vintersection vdelete sort mapcarcar setkorder reorder gcdlist3 gcdlist2
-split!-wrt!-variables total!-degree!-in!-powers) 10504323934466736076)
+(c!:install 'partsym_zerop '(partsym_zerop !- repeats) 
+5809084812164251243)
 
-(c!:install 'get!-min!-degreelist '(get!-min!-degreelist confusion
-tayexp!-plus2 taymindegreel) 8744899286662908442)
+(c!:install 'sc_repkern '(sc_repkern !* lambda_1x539vlzlwg93
+pa_list2vect sort) 8973480175038941953)
 
-(c!:install 'cl_subfof1 '(cl_subfof1 true false ex all bex ball or and
-not impl repl equiv lastpair cl_newv cl_subvarsubstat rl_subat) 
-13040601500932645714)
+(c!:install 'lambda_1x539vlzlwg93 '(lambda_1x539vlzlwg93) 
+17810050070257344241)
 
-(c!:install 'sfto_redx '(sfto_redx) 12091247961382086806)
+(c!:install 'setqdeletedescendants '(setqdeletedescendants
+fluidbibasissetq) 7347142229758694898)
 
-(c!:install 'force!-lc '(force!-lc) 17754422174457067786)
+(c!:install 'ofsf_facneq!* '(ofsf_facneq!* !*rlsifac !*rlsiexpla
+!*rlsiexpl and neq ofsf_facneq) 9484445756966266993)
 
-(c!:install 'vdpenumerate '(vdpenumerate number pcount!* vdpsave
-vdpgetprop vdpputprop) 11111691383406042490)
+(c!:install 'interglue '(interglue !\co!  !+ !- ord clo !\cdot! ) 
+4372386679573287132)
 
-(c!:install 'xnormalise '(xnormalise invsq multpfsq) 
-11085071778112155648)
+(c!:install 'ofsf_updsignadd '(ofsf_updsignadd equal neq leq lessp geq
+greaterp unknown) 16951784179863989701)
 
-(c!:install 'simpintersection '(simpintersection intersection empty_set
-applysetop ordn mksp) 18333976700864013619)
+(c!:install '!*s2arg '(!*s2arg quote nochange mkarg) 4918202841384322310
+)
 
-(c!:install 'calc_map_2d '(calc_map_2d mk_names_map_2 mk_binding
-coeff_calc) 4378061536774923404)
+(c!:install 'actual_world '(actual_world exclude_edges union_edges) 
+17227129322063686337)
 
-(c!:install '!*sf2exb '(!*sf2exb degr nreverse) 16721578175864221016)
+(c!:install 'simpabs '(simpabs abs revlis mksq sign!-abs simp!* simpabs1
+quotsq) 3087722267708201599)
 
-(c!:install 'x!*!*p!-w '(x!*!*p!-w to general!-difference!-mod!-p) 
-5260913038693974719)
+(c!:install 'mo_dlexcomp '(mo_dlexcomp mo!=lexcomp) 1176551237110189972)
 
-(c!:install 'rlval '(rlval !:rd!: !:bprec!: r2flbf ncoeffs times!:
-plus!: inorm) 7083699386214399275)
+(c!:install 'affinep '(affinep belong_to_space get_sign_space) 
+17023873794737433173)
+
+(c!:install 'r2flbf '(r2flbf !*bftag r2bf r2fl) 11486658120533823622)
+
+(c!:install 'ofsf_qesubq '(ofsf_qesubq ofsf_qesubqat cl_apply2ats1) 
+3485473431444974310)
+
+(c!:install 'redmsg '(redmsg !*wsm !*msg ("operator" "predicate")
+"Declare" "?" "declared" terminalp get!-print!-name yesp lprim) 
+6641158512662921381)
 
 
 % End of generated Lisp code

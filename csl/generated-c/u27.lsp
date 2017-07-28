@@ -1,79 +1,7 @@
 
 % u27.lsp           Machine generated Lisp
 
-(c!:install "u27" 167482 6370819 5652261)
-
-(c!:install 'extmult '(extmult ordexn c!:subs2multf negf extadd) 
-12972388777221124706)
-
-(c!:install 'formrlis '(formrlis flagop list share algebraic !*comma!*
-"identifier list" flag reversip!* formlis idlistp typerr) 
-12765168990828294447)
-
-(c!:install 'smemberlp '(smemberlp) 17268134400216882209)
-
-(c!:install 'talp_list2vec '(talp_list2vec) 8253378456129271759)
-
-(c!:install 'lambdafun '(lambdafun) 12041889918379956612)
-
-(c!:install 'setdmode '(setdmode complex!-rational dmode!* complex
-rational complex!-rounded rounded tag poly "Domain mode error:"
-"is not a domain mode" package!-name !*complex onoff rerror
-load!-package setcmpxmode setdmode1) 12705680654026163510)
-
-(c!:install 'random '(random "positive number" unidev_fac!*
-randommodulus!* typerr next!-random!-number) 12010203026302926177)
-
-(c!:install 'assert_install1 '(assert_install1 assert_installed
-"assert already installed for" expr
-"is not an expr procedure - ignoring assert" assert_noassertfn
-assert_assertfn lprim getd copyd) 13732944119485760763)
-
-(c!:install 'red!=hidelt '(red!=hidelt bas_dpoly bas_nr bas_rep
-red!=hide dp_sum bas_make1) 16913627379240696840)
-
-(c!:install 'repeats '(repeats nreverse) 8853322230546325945)
-
-(c!:install 'gf2cr!: '(gf2cr!: !:cr!: striptag) 11144561141645672652)
-
-(c!:install 'lalr_make_compressed_goto_column '(
-lalr_make_compressed_goto_column goto_table gethash
-lalr_most_common_dest) 770456876220403427)
-
-(c!:install 'comm1 '(comm1 end cursym!* !*semicol!* (end else then until
-!*rpar!* !*rsqbkt!*) "END-COMMENT NO LONGER SUPPORTED" scan lprim) 
-5288551752529575392)
-
-(c!:install 'simpcv '(simpcv "Invalid number of edges in vertex"
-simpcgraph mul!* cerror aconc!* to) 2630641004084128340)
-
-(c!:install 'matrixrowom '(matrixrowom "<OMA>"
-"<OMS cd=""linalg1"" name=""matrixrow""/>" "</OMA>" printout indent!*
-multiom) 1732016591589103317)
-
-(c!:install 'ft!:zerop '(ft!:zerop !:prec!:) 12657352824314599557)
-
-(c!:install 'vdpequal '(vdpequal number vdpgetprop dipequal) 
-17003390932381677455)
-
-(c!:install 'freeoff '(freeoff sfp ndepends) 8924154528667918378)
-
-(c!:install 'oprinla '(oprinla lapr lapop !  prin2la prinlatom) 
-15336934279451026930)
-
-(c!:install 'physopordchk!* '(physopordchk!* ncmpchk invp) 
-5368466983580771193)
-
-(c!:install 'fieldconv '(fieldconv d dmode!* !:rn!: quotient
-"field conversion" dcombine multd errach simpgd divd) 
-13145165320174665890)
-
-(c!:install 'mod_eval_uni_poly '(mod_eval_uni_poly d current!-modulus
-mod!# general!-modular!-expt general!-modular!-plus) 
-13950732281834820421)
-
-(c!:install 'reduce!-mod!-p!* '(reduce!-mod!-p!* current!-modulus
-general!-reduce!-mod!-p) 304745808878314680)
+(c!:install "u27" 2315 7805745 7549231)
 
 (c!:install 'string!-of!-list '(string!-of!-list "" !; lastpair
 list2string) 360023129920980546)
@@ -135,7 +63,7 @@ fluidbibasistripleid) 2496970852756381967)
 comfac!-to!-poly quotf to multf minusf negf factor!-prim!-f fac!-merge) 
 10808334927500479478)
 
-(c!:install 'ofsf_updsigndom '(ofsf_updsigndom d equal greaterp lessp
+(c!:install 'ofsf_updsigndom '(ofsf_updsigndom equal greaterp lessp
 "something wrong in ofsf_updSignDom:" rederr) 65917844509290034)
 
 (c!:install 'oldmtch '(oldmtch mcharg eval) 7900546910151258767)
@@ -156,6 +84,109 @@ comfac!-to!-poly quotf to multf minusf negf factor!-prim!-f fac!-merge)
 
 (c!:install 'lalr_most_common_dest '(lalr_most_common_dest) 
 5788833161221427184)
+
+(c!:install 'get_char_value '(get_char_value
+"error in get character element" rederr) 11725546894135015819)
+
+(c!:install 'aex_mvartest '(aex_mvartest aex_ex sfto_mvartest) 
+18072716557489035181)
+
+(c!:install 'multi_args '(multi_args expression) 3695083030306321180)
+
+(c!:install 'n_nary '(n_nary e power exp "<apply>" "<" "/>" indent
+"</apply>" unary printout multi_elem) 17889661689617899542)
+
+(c!:install 'gcd2 '(gcd2) 18207054630592118474)
+
+(c!:install 'meq '(meq unbound binding) 5890158521722239333)
+
+(c!:install 'gcompatible '(gcompatible gmodule!* gevcompatible1) 
+4395588156138570702)
+
+(c!:install 'groebnormalform '(groebnormalform groebnormalform0) 
+9246680682546895048)
+
+(c!:install 'memqcar '(memqcar) 3612662733220245317)
+
+(c!:install 'equalreval '(equalreval substitution equal reval evalequal)
+ 954477476166961243)
+
+(c!:install 'log_assignment_list '(log_assignment_list log_assignment) 
+3080942992296707352)
+
+(c!:install 'red!=subst1 '(red!=subst1 !*bcsimp "---> " "." " uses "
+bas_dpoly dp_lc bas_rep cali_bc_inv cali_bc_prod cali_bc_fi cali_bc_gcd
+cali_bc_divmod dp_lmon mo_diff dp_times_bc dp_times_bcmo dp_diff
+cali_trace dp_print bas_nr bas_make1) 9007145003661642186)
+
+(c!:install 'insert '(insert gg!* dless) 7587831350715892853)
+
+(c!:install 'dv_cambhead '(dv_cambhead expt minus listp) 
+17214961675878932154)
+
+(c!:install 'lalr_make_compressed_action_table '(
+lalr_make_compressed_action_table itemset_collection !*lalr_verbose
+lalr_make_compressed_action_row lalr_print_compressed_action_table) 
+7857996445380963171)
+
+(c!:install 'ifstat '(ifstat cursym!* then if else cond xread symerr
+aconc!* scan xread1) 6210997275525221212)
+
+(c!:install 'opmtchrevop '(opmtchrevop !*val cons opmtch revlis) 
+13637205868658300566)
+
+(c!:install 'ofsf_optsubstat '(ofsf_optsubstat ofsf_optsplitterm multf
+addf) 9000488330514093711)
+
+(c!:install 'lambdavar '(lambdavar) 13345965240957427380)
+
+(c!:install 'rowdel '(rowdel codmat maxvar delhisto downwght) 
+16951615583918496840)
+
+(c!:install 'bfplusn '(bfplusn plus!:) 12942028341686078589)
+
+(c!:install 'fortranname '(fortranname !*notfortranfuns!* !*stdout!*
+"*** WARNING: " " is not an intrinsic Fortran function" !*double
+!*doublename!* !*fortranname!* stringtoatom prin2t) 8730742722275511588)
+
+(c!:install 'mk!-numr '(mk!-numr difference nreverse) 
+1867480981460826744)
+
+(c!:install 'mksetq '(mksetq setq setfn "assignment argument" typerr) 
+1047142451462299460)
+
+(c!:install 'bndtst '(bndtst tentothetenth!*!* abs!: greaterp!:) 
+14872575748311463317)
+
+(c!:install 'termorder '(termorder listsum termorder1) 
+7713265788379872149)
+
+(c!:install 'lalr_collect_terminals '(lalr_collect_terminals
+nonterminals setdiff) 11963650507052955258)
+
+(c!:install 'co_new '(co_new) 12258803853388898570)
+
+(c!:install 'homogp '(homogp lastnondomain listsum) 10718859950017304996
+)
+
+(c!:install 'bc_2sq '(bc_2sq) 2666237714914294559)
+
+(c!:install 'atomlis '(atomlis) 6501944974261703121)
+
+(c!:install 'dip2vdp '(dip2vdp !*groebsubs vdp dipsubs2 a2bc) 
+15231011002842528392)
+
+(c!:install 'contr!-strand '(contr!-strand contr1!-strand) 
+14991622701045679338)
+
+(c!:install 'assert_stat1 '(assert_stat1 !*lpar!*
+"expecting '(' in assert but found" cursym!* !*rpar!* !*comma!*
+"expecting ',' or ')' in assert but found" scan rederr) 
+18363279491029694016)
+
+(c!:install 'nf '(nf gg!* redtails gv!* tred "r e d u c t i o n :  " "/"
+stars "*" reductions!* nforms!* zeros!* dless dd gcdf!* cdiv pcmult
+dquot pdmult pdif gcdout) 4254518414598757272)
 
 
 % End of generated Lisp code

@@ -1,12 +1,7 @@
 
 % u02.lsp           Machine generated Lisp
 
-(c!:install "u02" 66385 4540813 2524971)
-
-(c!:install '!*d2q '(!*d2q !:zerop) 2942878362772793713)
-
-(c!:install 'talp_simplt '(talp_simplt talp_simplt1) 
-17444896794875062292)
+(c!:install "u02" 179582 2818616 7961136)
 
 (c!:install 'ibalp_cequal '(ibalp_cequal lto_setequalq) 
 7258514506553550344)
@@ -23,9 +18,6 @@ gevcompatible1) 11196724188458402298)
 (c!:install 'ordpp '(ordpp kord!* ordpa) 12822298693234152376)
 
 (c!:install 'sublistp '(sublistp) 3169363773062908815)
-
-(c!:install 'csl_normbf '(csl_normbf (!:rd!: 0 . 0) !:rd!: lsd lshift) 
-8674949767452352441)
 
 (c!:install 'reval_without_mod '(reval_without_mod dmode!* !:mod!: reval
 ) 11636295117530310728)
@@ -75,7 +67,7 @@ mchkopt mcharg mchkminus) 148810512295251760)
 (c!:install 'ibalp_cec '(ibalp_cec ibalp_emptyclausep) 
 12136049770026895052)
 
-(c!:install 'get_token '(get_token d ch !> !$) 9412163165595484911)
+(c!:install 'get_token '(get_token ch !> !$) 9412163165595484911)
 
 (c!:install 'xsimp '(xsimp simp!* expchk) 3255895205295822210)
 
@@ -106,9 +98,6 @@ lalr_item_with_rule setdiff lalr_add_lookahead) 11861106866886183000)
 
 (c!:install 'list2wideid '(list2wideid list2widestring) 
 3523675516333595609)
-
-(c!:install 'sfto_dcontentf '(sfto_dcontentf sfto_dcontentf1) 
-4379143378296623626)
 
 (c!:install 'monomclone '(monomclone) 14855044415434424746)
 
@@ -176,8 +165,6 @@ remove!-free!-vars) 109993854797769662)
 (c!:install 'qqe_qopaddp '(qqe_qopaddp (ladd radd)) 11458331942659716410
 )
 
-(c!:install 'delq '(delq nreverse) 13392303388654834576)
-
 (c!:install 'notstring '(notstring !  !" delall) 2964729193865468950)
 
 (c!:install 'bcprod '(bcprod !*grmod!* times bcfi bcint2op multsq
@@ -209,6 +196,16 @@ rederr) 1475441646810113968)
 14863886936527861088)
 
 (c!:install 'powers0 '(powers0 repasc) 6537133265482714906)
+
+(c!:install 'rank '(rank !*mcd degr) 13785758358482167955)
+
+(c!:install 'sizchk '(sizchk nreverse) 12235146735279254117)
+
+(c!:install 'rl_smcpknowl '(rl_smcpknowl rl_smcpknowl!* apply) 
+16284918986271660351)
+
+(c!:install 'qqe_qopheadp '(qqe_qopheadp (lhead rhead)) 
+15180717920636906257)
 
 
 % End of generated Lisp code

@@ -1,17 +1,7 @@
 
 % u01.lsp           Machine generated Lisp
 
-(c!:install "u01" 60914 2431971 2153094)
-
-(c!:install 'reval '(reval reval1) 607148151428708743)
-
-(c!:install 'simpcar '(simpcar simp) 3553785855597976598)
-
-(c!:install 'noncomp '(noncomp !*ncmp noncomp1) 7281023392677228180)
-
-(c!:install 'num!-exponents '(num!-exponents) 15463308288451653383)
-
-(c!:install 'argsofopr '(argsofopr) 14485097781522944211)
+(c!:install "u01" 48212 7024074 266453)
 
 (c!:install 'smember '(smember) 13191502175548781548)
 
@@ -27,7 +17,11 @@
 (c!:install 'monomgetvariabledegree '(monomgetvariabledegree) 
 8023262334649356999)
 
+(c!:install 'num!-exponents '(num!-exponents) 15463308288451653383)
+
 (c!:install 'quotelist '(quotelist list) 1574403703834970305)
+
+(c!:install 'simpcar '(simpcar simp) 3553785855597976598)
 
 (c!:install 'wuconstantp '(wuconstantp wuvarlist!*) 12941656753920697454
 )
@@ -67,6 +61,8 @@
 (c!:install 'ordad '(ordad ordp) 5232203268885888725)
 
 (c!:install 'mval '(mval) 11011388250209885205)
+
+(c!:install 'reval '(reval reval1) 607148151428708743)
 
 (c!:install 'evcomp '(evcomp dipsortevcomp!* apply) 11458319438815987135
 )
@@ -119,6 +115,8 @@ deglex monomcomparelex monomcomparedeglex monomcomparedegrevlex)
 
 (c!:install 'find2 '(find2 (stop)) 3919817123441467574)
 
+(c!:install 'noncomp '(noncomp !*ncmp noncomp1) 7281023392677228180)
+
 (c!:install 'exchk '(exchk exchk1) 11606904193205051154)
 
 (c!:install 'pm!:free '(pm!:free unbound binding) 6755412176488262089)
@@ -131,6 +129,8 @@ deglex monomcomparelex monomcomparedeglex monomcomparedegrevlex)
 (c!:install 'wedgefax '(wedgefax wedge) 9774641278439376054)
 
 (c!:install '!*physopp '(!*physopp) 17193575244302011073)
+
+(c!:install 'argsofopr '(argsofopr) 14485097781522944211)
 
 (c!:install 'wideid2list '(wideid2list id2string widestring2list) 
 14899334837554163239)
@@ -236,9 +236,6 @@ frlis!* frasc!* revassoc) 12508025661076306506)
 
 (c!:install 'kernels1 '(kernels1) 11809629817331374048)
 
-(c!:install 'lto_setequalq '(lto_setequalq !*rlsetequalqhash
-lto_hashequalq lto_equallengthp) 18310391915588803596)
-
 (c!:install 'aex_ex '(aex_ex nth) 6874894332184563799)
 
 (c!:install 'addd '(addd nreverse adddm) 3070103899685532212)
@@ -291,6 +288,11 @@ current!-modulus) 12723973456730574931)
 (c!:install 'reorder '(reorder rmultpf raddf) 12871853738173991382)
 
 (c!:install 'aconc!* '(aconc!*) 12129366969500193987)
+
+(c!:install '!*d2q '(!*d2q !:zerop) 2942878362772793713)
+
+(c!:install 'talp_simplt '(talp_simplt talp_simplt1) 
+17444896794875062292)
 
 
 % End of generated Lisp code

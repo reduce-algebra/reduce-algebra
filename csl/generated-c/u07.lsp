@@ -1,26 +1,7 @@
 
 % u07.lsp           Machine generated Lisp
 
-(c!:install "u07" 146120 1689511 7625096)
-
-(c!:install 'minus!-mod!-p '(minus!-mod!-p nreverse) 
-13865097314770874216)
-
-(c!:install 'raddf '(raddf nreverse addd ordpp) 7057771059515183709)
-
-(c!:install 'talp_varlt1 '(talp_varlt1 talp_getl lto_insert talp_argl
-union) 17322878992346705249)
-
-(c!:install 'mri_simplfloor '(mri_simplfloor mri_floorkernelp
-mri_simplfloor1) 16657927298066891305)
-
-(c!:install 'quotfd '(quotfd dmode!* divd quotdd quotk) 
-12457232032859727359)
-
-(c!:install 'downwght '(downwght delhisto downwght1 inshisto) 
-16079583727061489875)
-
-(c!:install 'freexp '(freexp pm!:free) 2227958442769940130)
+(c!:install "u07" 172863 5679913 7658343)
 
 (c!:install 'prepd '(prepd minus prepfn !:minus prepd1) 
 16549409407206613223)
@@ -152,7 +133,7 @@ string!-store4) 4879502497584558050)
 
 (c!:install 'rnplus!: '(rnplus!: mkrn) 1535836573879756582)
 
-(c!:install 'lalr_analyze_lookaheads '(lalr_analyze_lookaheads d
+(c!:install 'lalr_analyze_lookaheads '(lalr_analyze_lookaheads
 itemset_collection (-1) !. lalr_closure lalr_goto lalr_lr0_move_dot
 lalr_item_with_rule lalr_add_lookahead) 2902620670388623196)
 
@@ -191,6 +172,15 @@ cx rerror revlis numlis errpri2 sortcolelem) 14473509980124684464)
 
 (c!:install 'dv_skelhead '(dv_skelhead dv_cambhead) 17417041200199632033
 )
+
+(c!:install 'general!-plus!-mod!-p '(general!-plus!-mod!-p nreverse
+general!-modular!-plus !*n2f ordop) 15694382996916044951)
+
+(c!:install 'divide!: '(divide!: !:rd!: msd conv!:mt round!:mt) 
+822680077161613832)
+
+(c!:install 'mcharg2 '(mcharg2 mchk updtemplate msappend lastpair) 
+8310717807567935274)
 
 
 % End of generated Lisp code

@@ -1,58 +1,7 @@
 
 % u25.lsp           Machine generated Lisp
 
-(c!:install "u25" 168832 6325959 9456831)
-
-(c!:install 'physopsimp '(physopsimp !*sq tensdimen antisymmetric minus
-isanindex isavarindex physopsm!* prepsqxx opmtch!* scalopp tensopp nth
-pnth ordn repeats permp vecopp listp putanewindex!*) 
-17378261404484775512)
-
-(c!:install 'ev!-denom2 '(ev!-denom2 ev!-edgeloop) 10469132586978593068)
-
-(c!:install 'impartf '(impartf i kord!* cmpxfn reorder int!-equiv!-chk
-addf multf) 6890187095049936448)
-
-(c!:install 'endstat '(endstat cursym!* end comm1) 2062630210712658115)
-
-(c!:install 'red_topredbe '(red_topredbe " reduce " bas_dpoly cali_trace
-dp_print dp_lmon bas_dpecart red_divtestbe red_subst) 
-17249925396800045955)
-
-(c!:install 'pa_coinc_split '(pa_coinc_split lambda_er1ez819f9yx2 upbve
-sort) 126824076894980172)
-
-(c!:install 'lambda_er1ez819f9yx2 '(lambda_er1ez819f9yx2) 
-13794168774309563647)
-
-(c!:install 'safe!-modrecip '(safe!-modrecip !*msg !*protfg !:mod!:
-general!-modular!-reciprocal erfg!* errorset errorp) 
-14808290800131132436)
-
-(c!:install 'cde_position '(cde_position cde_position2) 
-238037469412860599)
-
-(c!:install 'sfto_int2sf '(sfto_int2sf) 7893318515058811444)
-
-(c!:install 'gettype '(gettype number form operator procedure global
-fluid parm parameter getd) 10081372716598977143)
-
-(c!:install 'evaluatecoeffts '(evaluatecoeffts indexlist valuecoefft
-!*multf addf) 5406277702025676168)
-
-(c!:install 'expnd '(expnd !*really_off_exp !*sub2 expnd1 subs2f) 
-11413463028146551512)
-
-(c!:install 'lto_alunion '(lto_alunion union lto_almerge) 
-980192573495283260)
-
-(c!:install 'mri_prepat '(mri_prepat mri_2pasfat pasf_prepat) 
-17918178496807478614)
-
-(c!:install 'pasf_vf '(pasf_vf true false (cong ncong) pasf_evalatp) 
-18406771852544693406)
-
-(c!:install 'dip_fmon '(dip_fmon) 16129702713853537519)
+(c!:install "u25" 135916 5927935 8151344)
 
 (c!:install 'mml2ir '(mml2ir mmlatts space count ch temp2 char (m a t h)
 "<math>" (!/ m a t h) "</math>" list2string lex mathml errorml) 
@@ -122,6 +71,77 @@ testchar1) 6843894542313904978)
 (c!:install 'assert_check1 '(assert_check1 !*assertstatistics
 assertstatistics!* assert_dyntypechk assert_ignore setcar apply
 assert_error) 13554576978207690733)
+
+(c!:install 'merge '(merge) 11618120737974801924)
+
+(c!:install '!*di2q0 '(!*di2q0 varlist!* ordering lex ljet pair multsq
+addsq) 15148302668535177444)
+
+(c!:install 'dv_skel2factor1 '(dv_skel2factor1 !~dv !~dva minus listp) 
+12834239992638262862)
+
+(c!:install 'lalr_print_compressed_action_table '(
+lalr_print_compressed_action_table itemset_collection
+"=== ACTION TABLE ===" "STATE" "TERMINAL" "ACTION" "<any>"
+lalr_prin_symbol lalr_prin_action) 2209936760884675793)
+
+(c!:install 'outref '(outref curfun!* calls!* globs!* locls!* toplv!* (
+anp!!atom anp!!idb anp!!eq anp!!unknown) anp!!eq sameas alsois outrdefun
+add2locs anform remlocs traput add2calls outrefend) 5769129379516808474)
+
+(c!:install 'rl_bettergaussp '(rl_bettergaussp rl_bettergaussp!* apply) 
+11229114519218706476)
+
+(c!:install 'wupseudodivide '(wupseudodivide setkorder reorder
+wuconstantp gcdf!* quotf multf exptf qremf) 18397524205360628269)
+
+(c!:install 'distribute!.multiplicity '(distribute!.multiplicity) 
+499274864297745022)
+
+(c!:install 'vdp_plist '(vdp_plist) 16380982896306623454)
+
+(c!:install 'dip_condense '(dip_condense) 7708418469248712677)
+
+(c!:install 'encodeir '(encodeir char !  atts !$ semantic delall) 
+1922988493163827553)
+
+(c!:install 'ps!:putv '(ps!:putv !:ps!: tps "PS:PUTV: not a ps" eval
+rerror) 1552922531143688513)
+
+(c!:install 'delhisto '(delhisto codmat maxvar codhisto min) 
+12626252279824721122)
+
+(c!:install 'pfordp '(pfordp termordp) 8068693215543952127)
+
+(c!:install 'evaluate1 '(evaluate1 i dmode!* ivalue (nil)
+"i used as indeterminate value" e pi !*evaluateerror "number"
+force!-to!-dm apply rederr simp typerr evaluate2) 6309802894990943255)
+
+(c!:install 'insertparens '(insertparens !( !)) 9173971090588331245)
+
+(c!:install 'comblog '(comblog domainlist!* plus times log nreverse
+simp!* clogsq prepsq!*) 2258708424463560692)
+
+(c!:install 'matop_pseudomod '(matop_pseudomod mod!*) 
+7244224576917796558)
+
+(c!:install 'nonlnrsys '(nonlnrsys nonlnr) 16893386471568554588)
+
+(c!:install 'outrdefun '(outrdefun defd function dclglb locls!*
+"**** Variable " " defined as function" naryarg naryargs gall curlin!*
+globs!* calls!* curfun!* qtypnm recref qerline princng newline
+defineargs) 11050453971390909373)
+
+(c!:install 'ofsf_at2ir '(ofsf_at2ir negf addf sfto_dcontentf quotf
+quotsq) 7906019418542268564)
+
+(c!:install 'quotelog '(quotelog logical) 17183556804632955927)
+
+(c!:install 'cl_susiupdknowl1 '(cl_susiupdknowl1 and cl_susiupdknowl2
+rl_negateat) 14302886500742299120)
+
+(c!:install 'ofsf_sippsubst '(ofsf_sippsubst ofsf_sippsubst1) 
+16344775967043512851)
 
 
 % End of generated Lisp code

@@ -1,19 +1,9 @@
 
 % u03.lsp           Machine generated Lisp
 
-(c!:install "u03" 37115 6634642 2596832)
+(c!:install "u03" 70889 2443995 4863155)
 
-(c!:install 'rank '(rank !*mcd degr) 13785758358482167955)
-
-(c!:install 'sizchk '(sizchk nreverse) 12235146735279254117)
-
-(c!:install 'rl_smcpknowl '(rl_smcpknowl rl_smcpknowl!* apply) 
-16284918986271660351)
-
-(c!:install 'qqe_qopheadp '(qqe_qopheadp (lhead rhead)) 
-15180717920636906257)
-
-(c!:install 'get_content '(get_content d ch !< !$eof!$ !  !" !$
+(c!:install 'get_content '(get_content ch !< !$eof!$ !  !" !$
 list2string delall) 9268416252380254427)
 
 (c!:install '!:zerop '(!:zerop) 2700266875788551690)
@@ -185,8 +175,6 @@ physopp) 158985461405150257)
 
 (c!:install '!*!*s2a '(!*!*s2a) 14753551702131982369)
 
-(c!:install 'lto_insertq '(lto_insertq) 4651751164390655183)
-
 (c!:install 'lnc '(lnc) 9828819496956821615)
 
 (c!:install 'mtchp '(mtchp mtchp1 lispeval simp exptsq to multsq) 
@@ -213,9 +201,6 @@ mo_sum ring_ecart mo!=sprod) 3017722440507251153)
 (c!:install 'flatten!-sorted!-tree '(flatten!-sorted!-tree) 
 15115184242697306585)
 
-(c!:install 'sfto_reorder '(sfto_reorder setkorder reorder) 
-5387905530709825855)
-
 (c!:install 'ofsf_posdefp '(ofsf_posdefp !*rlpos ofsf_posdefp!-pos
 sfto_tsqsumf) 3541930251710259147)
 
@@ -224,7 +209,20 @@ sfto_tsqsumf) 3541930251710259147)
 
 (c!:install 'free!-powerp '(free!-powerp) 14743946471998162386)
 
-(c!:install 'lto_insert '(lto_insert) 6445582470395634312)
+(c!:install 'retimes '(retimes !*bool times minus retimes1) 
+10466653925941673875)
+
+(c!:install 'mkwedge '(mkwedge) 6371839370084388030)
+
+(c!:install 'idlistp '(idlistp) 14853692317672070322)
+
+(c!:install 'qassoc '(qassoc) 11801307530585957207)
+
+(c!:install 'negf '(negf dmode!* nreverse !:minus) 18425682831999215169)
+
+(c!:install 'formlis '(formlis form1 reversip!*) 761340711108558520)
+
+(c!:install 'nonzero!-length '(nonzero!-length) 13279789547682091641)
 
 
 % End of generated Lisp code

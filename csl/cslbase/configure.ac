@@ -57,6 +57,64 @@ AC_PREREQ(2.61)
 AC_CONFIG_SRCDIR(csl.cpp)
 AC_CONFIG_FILES(Makefile)
 
+# The following is a messy hack related to building on Windows...
+
+AC_ARG_WITH(cygwin32,
+  AC_HELP_STRING([--with-cygwin32],
+                 [Force configure and build to be under cygwin32]),
+  [],
+  [with_cygwin32="no"])
+
+# If the "--with-cygwin32" flag was passed and I am at present running under
+# a 64-bit cygwin shell then I will insist on changing gear so that I run
+# using a 32-bit cygwin shell.
+uname_o=`uname -o`
+uname_m=`uname -m`
+uname_s=`uname -s`
+case "$uname_s" in
+*WOW)
+  wow="yes"
+  ;;
+*)
+  wow="no"
+  ;;
+esac
+
+AC_MSG_NOTICE([with_cygwin32=$with_cygwin32 with_cygwin64=$with_cygwin64 uname_o=$uname_o uname_m=$uname_m uname_s=$uname_s wow=$wow])
+
+if test "$with_cygwin32" != "no" &&
+   test "$uname_o" = "Cygwin" &&
+   test "$uname_m" = "x86_64"
+then
+  AC_MSG_NOTICE([Restart to use a 32-bit Cygwin shell])
+# I am on cygwin - and I will just assume that the directory with Reduce
+# in it is writable so I can put the cyg32 binary there. I always use a 32-bit
+# mingw-style compiler to create the program that can flip between 32 and
+# 64 bit usage.
+  i686-w64-mingw32-g++ -O3 -DFORCE32 $srcdir/other-cygwin.cpp -o ./cyg32
+  i686-w64-mingw32-strip ./cyg32
+  AC_MSG_NOTICE([./cyg32 $srcdir/configure $ac_configure_args])
+  exec /bin/sh -c "./cyg32 $srcdir/configure $ac_configure_args"
+fi
+
+AC_ARG_WITH(cygwin64,
+  AC_HELP_STRING([--with-cygwin64],
+                 [Force configure and build to be under cygwin64]),
+  [],
+  [with_cygwin64="no"])
+
+if test "$with_cygwin64" != "no"
+   test "$uname_o" = "Cygwin" &&
+   test "$uname_m" = "i686" &&
+   test "wow" = "yes"
+then
+  AC_MSG_NOTICE([Restart to use a 64-bit Cygwin shell])
+  i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -o ./cyg64
+  i686-w64-mingw32-strip ./cyg64
+  AC_MSG_NOTICE([./cyg64 $srcdir/configure $ac_configure_args])
+  exec /bin/sh -c "./cyg64 $srcdir/configure $ac_configure_args"
+fi
+
 # These days I am making all the source files for CSL ones in C++ not C
 # and so it is best to make configuration tests match.
 
@@ -301,7 +359,19 @@ case $host in
   AC_MSG_NOTICE([with_cygwin=<$with_cygwin> cyg32=$cyg32 cyg64=$cyg64])
   ;;
 *-*-msdos* | *-*-go32* | *-*-windows*)
-  AC_MSG_ERROR([For Windows you are expected to use cygwin as your build environment])
+    AC_MSG_NOTICE([Windows built creating native binary])
+    AC_DEFINE(WIN32, [1], [True if we are running on Windows])
+# I seem to need to link with "-static" in a Windows mode or else things
+# like the C++ library do not get found when I try to run the executables.
+# This is of course liable to be an issue of my $PATH, but linking in static
+# mode will still keep me safe.
+    LDFLAGS="$LDFLAGS -static"
+    DLL_CFLAGS="$CFLAGS -shared"
+# In this case I make the machine appear to be "i686-pc-windows" or some
+# such to distinguish it from the case where cygwin1.dll might be involved.
+    foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`
+    windows_build="yes"
+    exeext="yes"
   ;;
 *-*solaris*)
   AC_MSG_NOTICE([Building for Solaris])
@@ -1537,19 +1607,45 @@ fi
 AC_SUBST(HOST)
 HOST="$host"
 
-if test "x$cyg32" = "xyes"
+# I really need an absolute path to the cyg32 or cyg64 utility, and at one
+# stage I fell into a trap that I could just use $abs_srcdir here, but I
+# can not.
+
+LOCALCYG=""
+
+if test "x$with_cygwin" = "xyes"
 then
-  CC="`pwd`/cyg32 $CC"
-  CXX="`pwd`/cyg32 $CXX"
-  CSTRIP="`pwd`/cyg32 $STRIP"
-else
-if test "x$cyg64" = "xyes"
-then
-  CC="`pwd`/cyg64 $CC"
-  CXX="`pwd`/cyg64 $CXX"
-  CSTRIP="`pwd`/cyg64 $STRIP"
+
+  if test "x$cyg32" = "xyes"
+  then
+    absolute_cyg32=`pwd -P`/cyg32
+    AC_SUBST(absolute_cyg32)
+    i686-w64-mingw32-g++ -O3 -DFORCE32 $srcdir/other-cygwin.cpp -o $absolute_cyg32
+    i686-w64-mingw32-strip $absolute_cyg32
+    CC="$absolute_cyg32 $CC"
+    CXX="$absolute_cyg32 $CXX"
+    LOCALCXX="$absolute_cyg32 $LOCALCXX"
+    STRIP="$absolute_cyg32 $STRIP"
+    RANLIB="$absolute_cyg32 $RANLIB"
+    LOCALCYG=$absolute_cyg32
+  fi
+
+  if test "x$cyg64" = "xyes"
+  then
+    absolute_cyg64=`pwd -P`/cyg64
+    AC_SUBST(absolute_cyg64)
+    i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -o $absolute_cyg64
+    i686-w64-mingw32-strip $absolute_cyg64
+    CC="$absolute_cyg64 $CC"
+    CXX="$absolute_cyg64 $CXX"
+    LOCALCXX="$absolute_cyg64 $LOCALCXX"
+    STRIP="$absolute_cyg64 $STRIP"
+    RANLIB="$absolute_cyg64 $RANLIB"
+    LOCALCYG=$absolute_cyg64
+  fi
 fi
-fi
+
+AC_SUBST(LOCALCYG)
 
 #
 # Make some things available for conditional segments of a Makefile

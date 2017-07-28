@@ -1,116 +1,7 @@
 
 % u31.lsp           Machine generated Lisp
 
-(c!:install "u31" 175645 7176666 422310)
-
-(c!:install 'subsq '(subsq alg "0/0 formed" "Zero divisor" subf subs2!*
-rerror quotsq) 2328511050533666755)
-
-(c!:install 'changearg '(changearg nreverse) 3622155650508054526)
-
-(c!:install 'simp!-prop2 '(simp!-prop2 propvars!* prop!* not_prop!*
-union simp!-prop!-condense) 18327063984962764399)
-
-(c!:install 'cons_ordp '(cons_ordp) 5587147247341243531)
-
-(c!:install 'poly!-to!-vector '(poly!-to!-vector poly!-vector !*d2n) 
-3599356024780753765)
-
-(c!:install 'ofsf_smordtable '(ofsf_smordtable ((equal (equal . false) (
-neq equal . t) (geq equal . t) (leq . false) (greaterp equal . t) (lessp
-. false)) (neq (equal equal) (neq) (geq) (leq leq) (greaterp) (lessp
-lessp)) (geq (equal . false) (neq geq . t) (geq geq . t) (leq . false) (
-greaterp geq . t) (lessp . false)) (leq (equal equal) (neq) (geq) (leq
-leq) (greaterp) (lessp lessp)) (greaterp (equal . false) (neq greaterp .
-t) (geq greaterp . t) (leq . false) (greaterp greaterp . t) (lessp .
-false)) (lessp (equal equal) (neq) (geq) (leq leq) (greaterp) (lessp
-lessp)))) 14560317248216607311)
-
-(c!:install 'checku '(checku) 15822881287339415887)
-
-(c!:install 'mk!+squared!+norm '(mk!+squared!+norm mk!+inner!+product) 
-3644133023429157522)
-
-(c!:install 'cl_nnfnot '(cl_nnfnot cl_nnf1) 11231145940357742317)
-
-(c!:install 'repr_a '(repr_a addf) 13167846556635871198)
-
-(c!:install 'sfto_lcx '(sfto_lcx) 10672129849864694857)
-
-(c!:install 'sfto_b!:extmult '(sfto_b!:extmult sfto_b!:ordexn multf negf
-sfto_b!:extadd) 16650362805446348592)
-
-(c!:install 'relnrd '(relnrd atts (type definitionurl) char relations!*
-lex retattributes compress!* apply) 7698492374233116587)
-
-(c!:install 'bcminus!? '(bcminus!? !*grmod!* minusf) 6378942423523588168
-)
-
-(c!:install 'dipprod '(dipprod diplength dipprodin) 14131312737934490340
-)
-
-(c!:install 'basisformp '(basisformp basisforml!*) 4086774854439652781)
-
-(c!:install 'nconc2 '(nconc2) 8019592056523493459)
-
-(c!:install 'formatfort '(formatfort !*lower !*posn!* maxint !*double e
-!D !E (d !0) fortlinelen!* lispeval i2rd!* fortcontline pprin2) 
-11603302336187822563)
-
-(c!:install 'locate_member '(locate_member) 4764278102994726603)
-
-(c!:install 'ra_wrapper1 '(ra_wrapper1 off1 apply on1) 
-11745660691622589799)
-
-(c!:install 'deginvar '(deginvar kord!* wuconstantp reorder) 
-4021669980146091331)
-
-(c!:install 'vunion '(vunion) 10411977164311836912)
-
-(c!:install 'dfconst '(dfconst zlist vp2) 15827301056878358237)
-
-(c!:install 'ofsf_xor '(ofsf_xor) 2741990505211844294)
-
-(c!:install 'exptplus '(exptplus "Bad exponent sum" interr) 
-15800345272466755993)
-
-(c!:install 'unify '(unify op r p "UNIFY:pattern over-run for function "
-symm comb identity mcontract acontract expand i upb resume ident mgenp
-pm!:free genp initarg nextarg suspend bind chk mval unbind meq) 
-5085765813978083439)
-
-(c!:install 'evload '(evload) 11219261006708819634)
-
-(c!:install 'repartsq '(repartsq splitcomplex multsq addsq invsq) 
-1876562266233041932)
-
-(c!:install 'formsetq '(formsetq symbolic list cons formsetq0 formsetq1
-formsetq2) 14303897429664626038)
-
-(c!:install 'harmonicp '(harmonicp fourier!-angle) 6327494936315734929)
-
-(c!:install 'red_topred '(red_topred !*noetherian bas_dpoly red_topredbe
-dp_lmon red_divtest red_subst red_update) 14392805755887232125)
-
-(c!:install 'reverse!-num1 '(reverse!-num1 reverse!-num!-table!*) 
-4190109204128489908)
-
-(c!:install 'mksf '(mksf !*sub2 mksq mksp) 16383421118374179651)
-
-(c!:install 'make!-x!-to!-p '(make!-x!-to!-p dpoly poly!-vector
-times!-in!-vector remainder!-in!-vector) 6629668419058198533)
-
-(c!:install 'lalr_process_productions '(lalr_process_productions
-nonterminals lalr_produces carrassoc) 11669776550209890589)
-
-(c!:install 'sfto_updecf '(sfto_updecf !*sfto_yun !*sfto_musser
-"sfto_updecf: select a decomposition method" sfto_yun!-updecf
-sfto_musser!-updecf rederr) 9570799290316021347)
-
-(c!:install 'width '(width textag "cannot find item " fatal tri!-error) 
-6407596289288209404)
-
-(c!:install 'get_char_group '(get_char_group) 8299995027405440554)
+(c!:install "u31" 174514 3604770 4493392)
 
 (c!:install 'cl_susiupdknowl2 '(cl_susiupdknowl2 false rl_susibin
 cl_susiinter) 14100854535063077308)
@@ -151,6 +42,67 @@ general!-reduce!-degree!-mod!-p general!-monic!-mod!-p)
 12646109401517478620)
 
 (c!:install 'not_included '(not_included) 13035740386792352516)
+
+(c!:install 'lex_basic_token '(lex_basic_token lex_peeked
+lex_peeked_yylval yylval lex_peeked_escaped lex_escaped lex_char ! 
+!$eol!$ !	 !$eof!$ lex_eof_code !! lexer_style!* !*raise !*lower
+comment !; !$ lex_code !' lex_is_typename lex_typename_code
+lex_symbol_code !~ !0 x !X lex_number_code !. e !E !+ !- !" !\
+lex_string_code lex_char_code quote lex_list_code !` backquote !#
+lex_dipthong sml_opchar (if else elif endif define eval)
+lex_start_line_comment lex_skip_line_comment lex_start_block_comment
+lex_skip_block_comment yyreadch lexer_word_starter land
+lexer_word_continues list2widestring yypeek lex_hexval read_s_expression
+widestring2list all_sml_opchar list2string) 6007149577768455066)
+
+(c!:install 'formbool '(formbool symbolic boolvalue!* boolfn boolean
+boolargs "Too many formbools" where bool!-eval formc formc!* intexprlisp
+formclis formboollis rederr) 2515251499427664278)
+
+(c!:install 'even_action_sf '(even_action_sf even_action_term addsq) 
+17992264046879664529)
+
+(c!:install 'matrix_rows '(matrix_rows "<matrixrow>" "</matrixrow>"
+printout indent!* row) 12368609926542696831)
+
+(c!:install 'sc_getrow '(sc_getrow sc_igetv) 3551891752755930172)
+
+(c!:install 'gparg1p '(gparg1p gpargp) 11507040959066206646)
+
+(c!:install 'indordn '(indordn indord2 indordad) 1270862301250861552)
+
+(c!:install 'one!-entryp '(one!-entryp) 1880773745218423214)
+
+(c!:install 'modp '(modp) 14828617985740440421)
+
+(c!:install 'horner!-rule!-for!-one!-var '(horner!-rule!-for!-one!-var
+!*n2f multf addf) 3366819904428384819)
+
+(c!:install 'lalr_process_reductions '(lalr_process_reductions
+nonterminals lalr_nonterminal_code lalr_productions mkvect16 mkvect8
+putv16 putv8 lalr_construct_fn) 4573902986117076329)
+
+(c!:install 'profile_a_package '(profile_a_package !*errcont cpulimit
+jlisp lispsystem!* conslimit "PROFILING: " !*backtrace !*int
+reduce_regression_tests folder "$reduce/packages/" testdirectory "/"
+".tst" alglist!* algebraic !*mode "[Profile] " quit expr posn errorset
+in_list1 erfg!* profile_compare_fn "buildlogs/flaguse.log" append
+!*savedef lambda "profile.dat" "% +++++ Error: Resource limit exceeded"
+"% @@@@@ Resources used: " !*resources!* "(" "  (" " " ")" "  )" input
+!$eof!$ orderp ((symbol!-make!-fastget (quote lose) 1) (
+symbol!-make!-fastget (quote noncom) 0)) (lose noncom) processed
+symbol!-make!-fastget "buildlogs/fastgets.lsp" output
+"% fastgets.lsp generated by profiling" progn "% end of fastgets.lsp"
+"Profiling complete" (remake profile_a_package) get_configuration_data
+load!-package concat list!-to!-string window!-heading getd putd
+resource!-limit sort open bytecounts load!-source md60 prettyprint
+restart!-csl) 2815953169272495238)
+
+(c!:install 'ofsf_siatsubf '(ofsf_siatsubf exptsq multsq addsq
+ofsf_pow2q) 9348361271224187083)
+
+(c!:install 'monomgetfirstmultivar '(monomgetfirstmultivar) 
+13534559078993598004)
 
 
 % End of generated Lisp code

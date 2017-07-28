@@ -34,6 +34,11 @@ csltest:
 csl:
 	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
 
+# This target is mainly for debugging. It will arrange that the build
+# happens sequentially so that log output is easier to decode.
+seqcsl:
+	+$(SHELL) $(VERBOSE) scripts/make.sh --seqential $(MAKECMDGOALS)
+
 psl:
 	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
 
