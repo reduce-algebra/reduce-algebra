@@ -55,22 +55,22 @@ AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 # installed even if you specify --without-w32.
 
 AC_ARG_WITH(w32,
-  AC_HELP_STRING("[--with-w32], [Build 32-bit Windows version]),
+  AC_HELP_STRING([--with-w32], [Build 32-bit Windows version]),
   []
   [with_w32="yes"])
 
 AC_ARG_WITH(w64,
-  AC_HELP_STRING("[--with-w64], [Build 64-bit Windows version]),
+  AC_HELP_STRING([--with-w64], [Build 64-bit Windows version]),
   []
   [with_w64="yes"])
 
 AC_ARG_WITH(c32,
-  AC_HELP_STRING("[--with-c32], [Build 32-bit Cygwin version]),
+  AC_HELP_STRING([--with-c32], [Build 32-bit Cygwin version]),
   []
   [with_c32="default"])
 
 AC_ARG_WITH(c64,
-  AC_HELP_STRING("[--with-c64], [Build 64-bit Cygwin version]),
+  AC_HELP_STRING([--with-c64], [Build 64-bit Cygwin version]),
   []
   [with_c64="default"])
 
@@ -110,7 +110,7 @@ then
   fi
 # If I am either running under 64-bit cygwin or are on 32-bit cygwin but on
 # a 64-bit operating system I might be able to build 64-bit cygwin stuff.
-  if test "$uname_m" = "x86_64 ||
+  if test "$uname_m" = "x86_64" ||
      test "$wow" = "yes"
   then
     sixtyfour_feasible="yes"
@@ -757,7 +757,7 @@ csl_inplace_windows_build ()
 #   x86_64-w64-mingw
 # I am going to suppose that all the compilers I could possibly want
 # are installed. That means I do not need to put in code here to test that!
-  if test "$with_c32" = "yes
+  if test "$with_c32" = "yes"
   then
     csl_inplace_cygwin_build "i686-pc-cygwin" "--with-cygwin32"
   fi
