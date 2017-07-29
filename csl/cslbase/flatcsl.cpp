@@ -1,9 +1,10 @@
-// version.h                              Copyright (C) 1990-2017 Codemist
+// flatcsl.h                               Copyright (C) 2016-2017 Codemist
 
-#ifndef header_version_h
-#define header_version_h 1
-
-// $Id$
+// The idea of this file is that it uses #include to gather ALL the source
+// files for CSL so they get compiled as a single program unit. This will
+// perhaps be a long compilation that needs much memory, but it could give
+// extra opportunities for function inlining and other inter-procedural
+// optimisations, as well as bein in some respects a "simpler" build process.
 
 
 /**************************************************************************
@@ -35,30 +36,54 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
+// $Id$
+
+
+#include "csl.cpp"
+#include "fasl.cpp"
+#include "cslgc.cpp"
+#include "preserve.cpp"
+#include "arith01.cpp"
+#include "arith02.cpp"
+#include "arith03.cpp"
+#include "arith04.cpp"
+#include "arith05.cpp"
+#include "arith06.cpp"
+#include "arith07.cpp"
+#include "arith08.cpp"
+#include "arith09.cpp"
+#include "arith10.cpp"
+#include "arith11.cpp"
+#include "arith12.cpp"
+#include "arith13.cpp"
+#include "arith14.cpp"
+#include "bytes1.cpp"
+#include "char.cpp"
+#include "cslmpi.cpp"
+#include "eval1.cpp"
+#include "eval2.cpp"
+#include "eval3.cpp"
+#include "eval4.cpp"
+#include "fns1.cpp"
+#include "fns2.cpp"
+#include "fns3.cpp"
+#include "inthash.cpp"
+#include "print.cpp"
+#include "cslread.cpp"
+#include "restart.cpp"
+#include "lisphash.cpp"
+#include "newhash.cpp"
+#include "serialize.cpp"
+#include "sysfwin.cpp"
+#include "stubs.cpp"
+#ifndef HAVE_LIBFOX
+#ifdef HAVE_LIBWX
+#include "wxfwin.cpp"
+#else
+#include "fwin.cpp"
+#endif
+#include "termed.cpp"
 #endif
 
-//
-// VERSION is used to control the version number displayed when CSL/CCL
-// is started up in verbose mode (command line option -v). Version numbers
-// are also recorded in image files. But NOTE NOTE NOTE that the macro
-// VERSION gets set in config.h based on the version number established in
-// "configure.ac" and so the value set here is merely a fall-back. Indeed
-// this whole file is a bit of a joke! Well to prevent it from being a joke
-// I make it undefine anything that config.h has established and set up its
-// own value explictly.
-//
 
-#undef VERSION
-
-#define VERSION     "9.00"
-
-// As of February 2016 I am making the file scripts/commit.sh update the
-// revision number stored here...
-
-#define REVISION 4130
-
-#endif // header_version_h
-
-// end of version.h
+// end of flatcsl.cpp

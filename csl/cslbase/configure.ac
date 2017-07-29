@@ -522,7 +522,12 @@ esac
 # but here I will see which of g++, clang++, c++ and CC is at least present.
 # I will then assume that that is a viable compiler to use.
 
-AC_PATH_PROGS(LOCALCXX, [g++ clang++ c++ CC], g++, [])
+if test "x$windows_build" = "xyes"
+then
+  LOCALCXX="i686-w64-mingw32-g++"
+else
+  AC_PATH_PROGS(LOCALCXX, [g++ clang++ c++ CC], g++, [])
+fi
 
 # In some cases there may be explicitly GNU versions of various utilities,
 # and I will perhaps use them if I find them.
@@ -1624,7 +1629,6 @@ then
     i686-w64-mingw32-strip $absolute_cyg32
     CC="$absolute_cyg32 $CC"
     CXX="$absolute_cyg32 $CXX"
-    LOCALCXX="$absolute_cyg32 $LOCALCXX"
     STRIP="$absolute_cyg32 $STRIP"
     RANLIB="$absolute_cyg32 $RANLIB"
     LOCALCYG=$absolute_cyg32
@@ -1638,7 +1642,6 @@ then
     i686-w64-mingw32-strip $absolute_cyg64
     CC="$absolute_cyg64 $CC"
     CXX="$absolute_cyg64 $CXX"
-    LOCALCXX="$absolute_cyg64 $LOCALCXX"
     STRIP="$absolute_cyg64 $STRIP"
     RANLIB="$absolute_cyg64 $RANLIB"
     LOCALCYG=$absolute_cyg64

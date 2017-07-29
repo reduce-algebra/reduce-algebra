@@ -2491,6 +2491,11 @@ showhost:
 # reduce can be launched from the command-line an dnot worry (at least the
 # start with) about applications bundles etc.
 
+forinstall:	reduce$(EXEEXT) reduce.img \
+		bootstrapreduce$(EXEEXT) bootstrapreduce.img \
+		csl$(EXEEXT) csl.img \
+		$(FONTDEP) $(AWKFILES)
+
 if cygwin
 install-exec-local:	reduce.exe reduce.img bootstrapreduce.exe bootstrapreduce.img csl.exe csl.img
 	echo install for cygwin not implemented
