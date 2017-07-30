@@ -122,7 +122,8 @@
 %% not present in 64bit mode
 %(fi 16#40 inc (rax) (rcx) (rdx) (rbx) (rsp) (rbp) (rsi) (rdi))
 
-(fi 16#48 rex (" ") (b) (x) (xb) (r) (rb) (rx) (rxb))
+(fi 16#40 rex   (" ") (b) (x) (xb) (r) (rb) (rx) (rxb)
+                (" ") (b) (x) (xb) (r) (rb) (rx) (rxb))
 
 (fi 16#50 push (rax) (rcx) (rdx) (rbx) (rsp) (rbp) (rsi) (rdi))
 
@@ -231,9 +232,9 @@
 (fi 16#5e (sse div) ((V) (W)))
 (fi 16#5f (sse max) ((V) (W)))
 
-(fi 16#6e (sse movq) ((E q) (V q)))
+(fi 16#6e (sse movq) ((V q) (E q)))
 (fi 16#6f (sse movwa) ((W q) (V q)))
-(fi 16#7e (sse movq) ((V q) (E q)))
+(fi 16#7e (sse movq) ((E q) (V q)))
 (fi 16#7f (sse movwa) ((V q) (W q)))
 
 (fi 16#80 JO  ((j v)))
@@ -256,6 +257,12 @@
 (fi 16#ae Grp15 ((M)))
 
 (fi 16#af imul ((G v)(E v)))
+
+(fi 16#d6 (sse movq) ((W) (V)))
+(fi 16#db (sse pand) ((V) (W)))
+(fi 16#df (sse pandn) ((V) (W)))
+(fi 16#eb (sse por) ((V) (W)))
+(fi 16#ef (sse pxor) ((V) (W)))
 
 (dm make-the-instructions(u)
   `(progn
@@ -291,7 +298,7 @@
          (setq sse-prefix* p1)
 	 (setq p1 (pop pl))
          (setq lth (add1 lth)))
-      (when (and (wlessp p1 16#50) (wgeq p1 16#48))
+      (when (and (wlessp p1 16#50) (wgeq p1 16#40))
          (decode-rex-prefix p1)
 	 %% 66 prefix is ignored when REX.W bit is set
 	 (when (and rex_w (eq size-override* 16#66)) (setq size-override* nil))
@@ -314,6 +321,8 @@
                 ,name
                 .,(cdr i)))))
 
+(compiletime (load addr2id))
+
 (de decode-rex-prefix (p1)
    (when (eq 8 (wand p1 8)) (setq rex_w t))
    (when (eq 4 (wand p1 4)) (setq rex_r t))
@@ -322,8 +331,22 @@
 )
 
 
-(de decode-operands(bytes* lth* pat)
-  (prog (r reg* xreg* byte-operand*)
+(de decode-operands-special-pattern-cases (bytes lth pat)
+  %
+  % handle a number of special cases where the operands are interpreted
+  %  differently if some prefix is present
+  %				%
+  (cond ((and (pairp the-instruction*)
+	      (pairp (cdr the-instruction*))
+	      (equal (cadr the-instruction*) '(sse movq)) 
+	      (eq sse-prefix* 16#f3))
+	 '((V) (W)))
+	(t nil)))
+
+(de decode-operands (bytes* lth* pat)
+  (prog (r reg* xreg* byte-operand* x)
+    (setq x (decode-operands-special-pattern-cases bytes* lth* pat))
+    (when (and x (pairp x)) (setq pat x))
     (when (eqcar pat nil) (go done))
     (push (cons 'op1 (decode-operand1 (pop pat) t)) r)
     (when pat
@@ -406,9 +429,9 @@
      (setq rm (wand 7 b))
      (setq usexmm (and !0f-prefix* (not (eqcar p 'E))))
      (when rex_b (setq rm (wplus2 rm 8)))
-       %(terpri)(prin2t(list "modrm" b mod regnr* rm)) (print bytes*)
+%       (terpri)(prin2t(list "modrm" b mod regnr* rm)) (print bytes*)
      (return
-  (cond ((and (lessp mod 3)(eq rm 2#100))
+  (cond ((and (lessp mod 3)(or (eq rm 2#100) (eq rm 12)))
          (decode-sib p mod))
         ((and (eq mod 0)(eq rm 5))
                   % probably a sym*** reference
@@ -882,6 +905,7 @@
 	((eqcar rest 'comis)
 	 (cond ((eq sse-prefix* 16#66) 'comisd)
 	       (t 'comiss)))
+	((pairp rest) (car rest))
 	))
 
 (de name-sse2 (rest)
@@ -947,6 +971,10 @@
 	       ((eq sse-prefix* 16#f3) 'maxss)
 	       ((eq sse-prefix* 16#f2) 'maxsd)
 	       (t 'maxps)))
+	((eqcar rest 'pand) 'pand)
+	((eqcar rest 'pandn) 'pandn)
+	((eqcar rest 'por) 'por)
+	((eqcar rest 'pxor) 'pxor)
 	))
 
 (de name-sse3 (rest)
