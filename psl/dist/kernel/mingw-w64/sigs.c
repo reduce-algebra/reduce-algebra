@@ -11,7 +11,9 @@
  */
  
 #include <signal.h>
+#include <float.h>
 
+int
 sun3_sigset( sig, action )
 void (*action)();
 int sig;
@@ -19,27 +21,32 @@ int sig;
    if (signal(sig, SIG_IGN) != SIG_IGN) 
     signal(sig, action);
 }
- 
+
+int
 sun3_sigrelse(sig, action)
 void (*action)();
 int sig;
 {
    sun3_sigset(sig,action);
 }
- 
+
+void
 setlinebuf()
 {
 }
- 
+
+unsigned int
 ieee_handler()
 {
   _clearfp();
 }
 
+void
 ualarm()
 {
 }
 
+void
 ieee_flags()
 {
 }

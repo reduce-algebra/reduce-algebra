@@ -60,9 +60,18 @@ extern void gcleanup ();
 
 void init_fp();
 
+void clear_iob();
+void clear_dtabsize();
+void psl_main(int,char **);
+char ** copy_argv(int argc,char * argv[]);
+void os_startup_hook(int,char **);
+int setupbpsandheap(int, char **);
+
 // Install a global Vectored exception handler for exceptions in Lisp code
 // to call the standard handler _gnu_exception_handler after saving the pointer
 // to the exception info area, for use in trap.sl
+
+long CALLBACK _gnu_exception_handler (EXCEPTION_POINTERS * exception_data);
 
 LONG WINAPI
 GlobalVectoredHandler1(
@@ -80,7 +89,7 @@ GlobalVectoredHandler1(
 }
 
 
-
+void
 main(argc,argv)
 int argc;
 char *argv[];
@@ -106,7 +115,7 @@ char *argv[];
   val=setjmp(mainenv);        /* set non-local return point for exit    */
  
   if (val == 0) {
-    init_fp();
+    /*    init_fp();*/
     AddVectoredExceptionHandler(1,GlobalVectoredHandler1);
     psl_main(argc,copy_argv(argc,argv));
   }
@@ -114,25 +123,33 @@ char *argv[];
   gcleanup ();
   exit(0);
 }
- 
+
+/*
+ * Initialize floating point exceptions
+ * Allow hardware exception for floating point overflow, division by zero and invalid 
+ */
+
 void init_fp()
 {
   unsigned int cw, cwOriginal;
   
   _clearfp();			/* always call _clearfp before setting the control word */
 
+  /* clear OVERFLOW, ZERODIVIDE, INVALID */
   cw = ~(_EM_OVERFLOW|_EM_ZERODIVIDE|_EM_INVALID);
   cwOriginal = _controlfp(cw, _MCW_EM); //Set it.   
 }
 
 
+void
 os_startup_hook(argc, argv)
      int argc;
      char *argv[];
 {
   setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
 }
- 
+
+void
 os_cleanup_hook()
 {
 longjmp(mainenv,1);
@@ -143,6 +160,7 @@ char * get_execfilepath ()
   return abs_execfilepath;
 }
 
+void
 clear_iob()
 {
 }
@@ -189,6 +207,7 @@ extern char *end;
 /*
  *     Size of dtabsize is 0x34c bytes.
  */
+void
 clear_dtabsize()
 {
  int i;

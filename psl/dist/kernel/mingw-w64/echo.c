@@ -30,6 +30,7 @@
 /* TAG( EchoOff )
  * Enter charcter-at-a-time mode.
  */
+void
 echooff()		/* (Note names lowercased by PSL compiler... */
 {
 }
@@ -37,6 +38,7 @@ echooff()		/* (Note names lowercased by PSL compiler... */
 /* TAG( EchoOn )
  * Re-enter line I/O mode.
  */
+void
 echoon()
 {
 }
@@ -45,6 +47,7 @@ echoon()
 /* TAG( External_CharsInInputBuffer )
  *  Return number of characters in input buffer.
  */
+int
 external_charsininputbuffer( fp )
 FILE * fp;		/* Ptr to stdio file structure for terminal. */
 {
@@ -53,6 +56,7 @@ FILE * fp;		/* Ptr to stdio file structure for terminal. */
 /* TAG( FlushStdOutputBuffer )
  *  Clear out buffer, when in EchoOff mode.
  */
+void
 flushstdoutputbuffer()
 {
     fflush( stdout );

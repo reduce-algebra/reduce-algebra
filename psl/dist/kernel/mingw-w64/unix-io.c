@@ -65,6 +65,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <direct.h>
 
 /* There is an assumption here that coercing addresses into ints is OK */
 /*
@@ -95,6 +96,7 @@ char * cygpath2winpath(char * cygpath);
 
 /* Tag( unixinitio )
  */
+void
 unixinitio()
 {
     unixstdin = stdin;
@@ -115,6 +117,7 @@ unixinitio()
 /* Tag( unixputc )
  * Used by kernel routines that write to the console
  */
+int
 unixputc(c)
 char c;
 {
@@ -123,6 +126,7 @@ char c;
  
 /* Tag( unixputs )
  */
+int
 unixputs(str)
 char *str;
 {
@@ -131,6 +135,7 @@ char *str;
  
 /* Tag( unixputn )
  */
+int
 unixputn(n)
 long long n;
 {
@@ -139,6 +144,7 @@ long long n;
  
 /* Tag( unixcleario )
  */
+void
 unixcleario()
 {
     unixinitio();
@@ -217,12 +223,14 @@ FILE* unixopen(filename, type)
   return(fptr);
 }
 
+int
 unixcd(filename)
      char *filename;
 {
-  chdir(expand_file_name(filename));
+  _chdir(expand_file_name(filename));
 }
- 
+
+int
 unixfclose (ix)
 FILE* ix;
 
@@ -288,6 +296,7 @@ unixputw(int binint, FILE *stream)
   return _putw(binint, stream);
 }
 
+int
 external_system(command)
      char *command;
 {
@@ -300,6 +309,7 @@ external_system(command)
  */
 extern void gcleanup ();
 
+void
 external_exit(status)
      int status;
 {

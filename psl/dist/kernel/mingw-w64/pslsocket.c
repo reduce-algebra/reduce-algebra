@@ -1,6 +1,7 @@
 #include <stdio.h> 
 #include <stdlib.h> 
-#include <string.h> 
+#include <string.h>
+#include <unistd.h>
 #include <sys/types.h> 
 
 #include <winsock.h>
@@ -8,6 +9,7 @@
 /* #define PORT_NUMBER 1188    /* Port number to listen on. 
                                Must be the same as in client!!!! */ 
 
+int
 unixsocketopen(name , number)
 
 char * name;
@@ -72,6 +74,7 @@ int number;
   }
 }
 
+int
 getsocket (mail_fd , string , length)
 
 int mail_fd,length;
@@ -84,6 +87,7 @@ char * string;
   else { string[len] = (char) 0x00;
          return(len);}}}
 
+long
 writesocket (mail_fd , string , length) 
 
 int mail_fd,length; 
@@ -91,6 +95,7 @@ char * string;
  
 { send (mail_fd, string, length, 0); }
 
+int
 unixclosesocket (conn_fd)
 int conn_fd;
 

@@ -93,10 +93,10 @@ Be sure to update $pxnk/load-psl.sl to include correct collector. */
 
 #define NUMBEROFHEAPS 2
 
-#define MINSIZE        1000     /* Default total in number of bytes. */
-#define MALLOCSIZE     500000   /* Default size for OS support functions. */
-#define EXTRABPSSIZE   300000   /* Minimum amount to increase bps by. */
-#define MINIMUMHEAPADD 20000    /* Minimum amount to increase heap by */
+#define MINSIZE        1000 * 1024 * 1024  /* Default total in number of bytes. */
+#define MALLOCSIZE     500000              /* Default size for OS support functions. */
+#define EXTRABPSSIZE   300000              /* Minimum amount to increase bps by. */
+#define MINIMUMHEAPADD 20000               /* Minimum amount to increase heap by */
 
 
 #ifndef BPSSIZE
@@ -132,8 +132,12 @@ extern long long  oldheapupperbound;
 extern long long  oldheaplast;
 extern long long  oldheaptrapbound;
 
+void setupbps();
+void getheap();
+void read_error();
+
 /* Write this ourselves to keep from including half the math library */
-static power(x, n)
+static int power(x, n)
 int x, n;
 {
 int i, p;
@@ -147,6 +151,7 @@ return(p);
 int creloc (long long array[], long len, long long diff, long long lowb);
 char * cygpath2winpath(char * cygpath);
 
+int
 setupbpsandheap(argc,argv)
 int argc;
 char *argv[];
@@ -346,6 +351,7 @@ return (0);
 
 }
 
+void
 read_error()
 {
   printf("file too short\n");
@@ -359,6 +365,7 @@ read_error()
 
 extern int mprotect_exec (char *p,  long long bpssize);
 
+void
 setupbps ()
 {
   char *p = (char *) bps;
@@ -381,6 +388,7 @@ setupbps ()
    nextbps is now greater than heaplast means that unexec should be not be
    tried after this routine is called. The image would be huge.
  */
+long
 allocatemorebps()
 {
   int old_nextbps = nextbps;
@@ -439,7 +447,7 @@ allocatemorebps()
   return(EXTRABPSSIZE);   /* This will be a paramter later */
 }
 
-
+void
 getheap(heapsize)
 long long heapsize;
 {
@@ -528,6 +536,7 @@ long long heapsize;
 
 /* Tag( alterheapsize )
  */
+int
 alterheapsize(increment)
 int increment;
 {

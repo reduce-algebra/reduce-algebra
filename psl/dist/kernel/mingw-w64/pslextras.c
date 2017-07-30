@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <direct.h>
 
 /*
 #include <string.h>
