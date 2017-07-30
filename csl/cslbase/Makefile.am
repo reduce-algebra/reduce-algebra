@@ -1867,7 +1867,7 @@ if canrun
 # but I could have also have just made a directory with the right name
 # before starting the build job.
 	mkdir -p buildlogs
-	echo Building in `pwd`
+	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 # A reasonable person might ask what all the "chmod 664 $(gensrc)/* commands
 # are doing here. Well they are because if you run under a cygwin (mintty)
 # shell but execute that native windows (mingw-style) version of Reduce and
@@ -1883,7 +1883,6 @@ if canrun
 		-D@srcdir=$(CYGSRC) -D@reduce=$(CYGREDUCE) \
 		-o- -- buildlogs/reduce.log \
 		-j reduce.dep
-	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 # I copy an image into $(gensrc) with a view to keeping a copy thare that
 # is up to date with my lastest build. There is a complication here that I
@@ -1927,7 +1926,6 @@ if canrun
 		-o ./reduce.img/ \
 		-- buildlogs/reduce.log \
 		-j reduce.dep
-	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 else !canrun
 	echo Can not build reduce.img on this platform
@@ -2012,13 +2010,12 @@ bootstrapreduce.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep) $(LOCALCYG)
 	-$(TRACE)$(RM) -f bootstrapreduce.img
 if canrun
 	mkdir -p buildlogs
-	echo Building in `pwd`
+	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
 	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -w -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGREDUCE) \
 		-o- -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep
-	sed -i -e 's/::	;/:/g' *.dep
 	chmod 664 $(gensrc)/*
 	if test -f bootstrapreduce.app/Contents/bootstrapreduce.img; \
 	then $(CP) bootstrapreduce.app/Contents/bootstrapreduce.img $(gensrc); \
@@ -2044,7 +2041,7 @@ boot.img:	bootstrapreduce$(EXEEXT) $(bootstrapreducedep) $(LOCALCYG)
 	-$(TRACE)$(RM) -f boot.img
 if canrun
 	mkdir -p buildlogs
-	echo Building in `pwd`
+	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
 	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -w -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildboot.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGREDUCE) \
@@ -2334,12 +2331,11 @@ csl.img:	csl$(COM) $(csldep) $(LOCALCYG)
 	-$(TRACE)$(RM) -rf csl.img
 if canrun
 	mkdir -p buildlogs
-	echo Building in `pwd`
+	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	$(LOCALCYG) ./csl$(COM) -w -v -z $(CSLFLAGS) "$(CYGSRC)/buildcsl.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-o- -- buildlogs/csl.img.log \
 		-j csl.dep
-	sed -i -e 's/::	;/:/g' *.dep
 	if test -f csl.app/Contents/csl.img; \
 	then $(CP) -r csl.app/Contents/csl.img $(gensrc); \
 	elif test -f csl.img; then $(CP) -r csl.img $(gensrc); fi
@@ -2356,12 +2352,11 @@ endif !canrun
 csli.img:	csl$(COM) $(csldep) $(LOCALCYG)
 	-$(TRACE)$(RM) -rf csli.img
 	mkdir -p buildlogs
-	echo Building in `pwd`
+	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	$(LOCALCYG) ./csl$(COM) -w -v -z $(CSLFLAGS) "$(CYGSRC)/buildcsli.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-o csli.img -L buildlogs/csli.img.log \
 		-j csl.dep
-	sed -i -e 's/::	;/:/g' *.dep
 
 
 csl.dir:	csl$(COM) $(csldep) $(LOCALCYG)
@@ -2372,7 +2367,6 @@ if canrun
 		-o ./csl.img/ -D@cslbase="$(CYGSRC)" \
 		-- buildlogs/csl.img.log \
 		-j csl.dep
-	sed -i -e 's/::	;/:/g' *.dep
 else !canrun
 	echo Can not create csl.img on this platfrom
 	echo Copying from $(gensrc)

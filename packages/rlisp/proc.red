@@ -341,68 +341,220 @@ symbolic procedure make!-string!-unique s;
     return s
   end;    
 
-% Another function with quite a few labels and gotos...
+% In an earlier version of this code a procedure specification could use
+% an infix expression or a non-atomic function name. Such generality is not
+% described in the manual, and ACN hopes that withdrawing it will not cause
+% pain.
+
+%symbolic procedure read_signature();
+%  xread 'proc;
+
+% At present this code only allows single token type specifiers. This is
+% far from enough, but may still do as a placeholder while I implement
+% more of the infrastructure.
+
+% read_type() reads a description of a type.
+
+symbolic procedure read_type();
+  begin
+    scalar x;
+    x := cursym!*;
+    scan();
+    return x;
+  end;
+
+% read_typed_name will read either "name" or "name : type", and if the
+% explicit typs is not given it defaults to "general".
+
+symbolic procedure read_typed_name();
+  begin
+    scalar a;
+    a := cursym!*;
+    scan();
+    if not (cursym!* = '!*colon!*) then return (a . 'general);
+    scan();
+    return (a . read_type())
+  end;
+
+% read_namelist knows that there is at least one name - so it reads
+% a sequence of typed names connected to "," tokens. It stops as soon
+% as the tyken following a typed name is not a comma.
+
+symbolic procedure read_namelist();
+  begin
+    scalar a;
+    if not valid_as_variable cursym!* then return nil;
+    a := read_typed_name();
+    if not (cursym!* = '!*comma!*) then return list al
+    scan();
+    return a . read_namelist()
+  end;    
+
+% valid_as_variable is a function that exists because the Rlisp tokenization
+% code does not make a clear distinction between reserved words and ordinary
+% identifiers.
+
+symbolic procedure valid_as_variable u;
+  idp u and
+  not flagp(u, 'invalid_as_variable);
+
+flag('(nil t !*comma!* !*lpar!* !*rpar!* !*colon!* !*semicol!*),
+     'invalid_as_variable);
+
+% read_signature is used for procedure headers. The syntax it accepts
+% should be as shown here (where the final ";" tells parsing when to stop).
+%     name ;
+%     name : type ;
+%     name() ;
+%     name() : type ;
+%     name( arg1:type1, ...) ;
+%     name( arg1:type1, ...) : type ;
+
+symbolic procedure read_signature();
+  begin
+    scalar x;
+    x := cursym!*;
+    if not valid_as_variable x then
+      rerror('rlisp, 7, list(x, "invalid as formal parameter name"));
+    scan();
+    if cursym!* = '!*colon!* or cursym!* = '!*semicol!* then x := list x
+    else if cursym!* = '!*lpar!* then <<
+      scan();
+      if cursym!* = '!*rpar!* then x := list x
+      else <<
+        x := x . read_namelist();
+        if not (cursym!* = '!*rpar!*) then rerror('rlisp, 8,
+          list(cursym!*, "found where right parenthesis expected")) >>;
+      scan() >>
+    else x := list(x, read_typed_name());
+    if cursym!* = '!*colon!* then <<
+      scan();
+      return list(x, read_type()) >>
+    else return list(x, 'general)
+  end;
+
+fluid '(!*acn);  % So that I can test things!
 
 symbolic procedure procstat1 mode;
    begin scalar bool,u,type,x,y,z, file, line;
+% Note the file and line that this procedure is in. This will be the
+% location that the procedure statement starts on.
       if ifl!* then file := car ifl!* else file = "-";
       line := curline!*;
+% I think that erfl!* will be set if we have already suffered an error, so
+% we may be parsing in a sort of recovery mode.
       bool := erfg!*;
-      if fname!* then << bool := t; go to a5 >>
-       else if cursym!* eq 'procedure then type := 'expr
-       else << type := cursym!*; scan() >>;
-      if not(cursym!* eq 'procedure) then go to a5;
-      if !*reduce4 then go to a1;
-      x := errorset!*('(xread (quote proc)),nil);
-      if errorp x then go to a3
-       else if atom (x := car x) then x := list x;   % No arguments.
-      fname!* := car x;   % Function name.
-      if idp fname!*
-        then if null fname!* or fname!* eq 't
-               then << rsverr fname!*; go to a3 >>
-              else if (z := gettype fname!*)
-                       and null(z memq '(procedure operator))
-               then << typerr(list(z,fname!*),"procedure"); go to a3 >>;
-      u := cdr x;
-      y := u;   % Variable list.
-      if idlistp y then x := car x . y
-       else lprie list(y,"invalid as parameter list");
-      go to a2;
-  a1: fname!* := scan();
-      if not idp fname!*
-        then << typerr(fname!*,"procedure name"); go to a3 >>;
-      scan();
-      y := errorset!*(list('read_param_list,mkquote mode),nil);
-      if errorp y then go to a3;
-      y := car y;
-      if cursym!* eq '!*colon!* then mode := read_type();
-  a2: if idp fname!* and not getd fname!* then flag(list fname!*,'fnc);
-         % To prevent invalid use of function name in body.
-  a3: if eof!*>0 then
-        << cursym!* := '!*semicol!*; curescaped!* := nil; go to a4 >>;
-      z := errorset!*('(xread t),nil);
-      if not errorp z then z := car z;
-%     if not atom z and eqcar(car z,'!*comment!*) then z := cadr z;
-      if null erfg!*
-        then z :=
-           list('procedure,if null !*reduce4 then car x else fname!*,
-                mode,type,y,z);
-  a4: remflag(list fname!*,'fnc);
+% fname!* is set to the name of a procedure while we are parsing the body
+% of that procedure, so if it is set here then we have an illegal attempt at
+% a procedure definition nested within another. This will most typically
+% occur if a previous procedure fails to have enough ">>" or "end" tokens.
+      if fname!* then <<
+         bool := t;
+         errorset!*('(symerr (quote procedure) t),nil) >>
+      else <<
+% Here we allow for "procedure", "symbolic procedure", "algebraic procedure"
+% or "maud procedure" with (in that case) "maud" ending up in the variable
+% "type". If the word "procedure" is not found we will complain.
+         if cursym!* eq 'procedure then type := 'expr
+         else << type := cursym!*; scan() >>;
+         if not(cursym!* eq 'procedure) then <<
+            errorset!*('(symerr (quote procedure) t),nil) >>
+         else <<
+% Reduce 4 differs from previous versions... it allows type specifiers.
+            if !*reduce4 then <<
+% Name of the procedure comes next
+               fname!* := scan();
+               if not idp fname!* then typerr(fname!*,"procedure name")
+               else <<
+                  scan();
+% Move past the procedure name and read the list of parameters.
+                  y := errorset!*(list('read_param_list,mkquote mode),nil);
+                  if not errorp y then <<
+% If parameters were read happily and the next token is a colon then there
+% will be a type given after it.
+                     y := car y;
+                     if cursym!* eq '!*colon!* then mode := read_type() >> >> >>
+            else if !*acn then <<
+               scan();
+               x := read_signature();
+% The result of read_signature is
+%    ((fname (arg1 . type1) ...) result_type)
+               prin2 "TRACE:"; print x;
+               x := car x;
+               x := car x . for each a in cdr x collect car a;
+               prin2 "TRACE:"; print x;
+               fname!* := car x;
+               y := cdr x >>
+            else <<
+% In the old world we read the function name and arguments with one call to
+% xread. The result might be atomic in "procedure maud;" or it might be a list
+% of the form (maud arg1 .. argn). Note that because of the use of xread
+% this can handle infix operators, so
+%   infix maud; procedure u maud v; ...
+% will be legal. Also one can have [extra] parentheses around formal arguments
+% and possibly other really odd things based aroudn Reduce special syntax.
+               x := errorset!*('(xread (quote proc)),nil);
+               if errorp x then errorset!*('(symerr (quote procedure) t),nil)
+               else <<
+                  if atom (x := car x) then x := list x;   % No arguments.
+                  fname!* := car x;   % Function name.
+% ensure that the name of the procedure that is being defined seems reasonable.
+                  if null idp fname!* then % Function name should be an identifier
+                     errorset!*('(symerr (quote procedure) t),nil)
+                  else if null fname!* or fname!* eq 't then rsverr fname!*
+                  else if (z := gettype fname!*) and
+                          null(z memq '(procedure operator)) then
+                     typerr(list(z,fname!*),"procedure")
+                  else <<
+                     u := cdr x;
+                     y := u;   % Variable list.
+% Now although xread had been generous and you could have had almost anything
+% written as a formal argument, a check is made here so that only identifiers
+% are allowed through.
+                     if idlistp y then x := car x . y
+                     else lprie list(y,"invalid as parameter list") >> >> >>;
+            if idp fname!* and not getd fname!* then
+               flag(list fname!*,'fnc) >> >>;
+% Recover a bit of there was an end of file encountered while reading the
+% procedure heading.
+      if eof!*>0 then <<
+         cursym!* := '!*semicol!*;
+         curescaped!* := nil >>
+      else <<
+% Now read the procedure body. It is quite reasonable to use xread here.
+         z := errorset!*('(xread t),nil);
+         if not errorp z then z := car z;
+         if null erfg!* then
+            z := list('procedure,
+                      if null !*reduce4 then car x else fname!*,
+                      mode,type,y,z) >>;
+% Parsing is complete. So now just tidy up.
+      remflag(list fname!*,'fnc);
       fname!* := nil;
-      if erfg!* then << z := nil; if not bool then error1() >>;
+      if erfg!* then <<
+         z := nil;
+% What seems to be going on here is that most errors spotted during parsing
+% get deferred to here. I rather believe that this is so that the state of
+% Reduce is not messed up too much by a parse failure, and so that lines
+% of input beyond an error get skipped past in a reasonable way.
+         if not bool then error1() >>;
+% In sensible cases the value of z here will be something like
+%  (de maud (arg1 ... argn) body)
+% so cadr z will be the name of the procedure that is being defined.
+% I can tag it with the file name and line where it was defined, and that
+% may be really helpful in some debugging contextx.
       if ifl!* and not atom z and not atom cdr z and idp cadr z then
-        z := list('progn,
-          list('put, mkquote cadr z,
-            ''defined!-in!-file,
-            list('make!-string!-unique, simplify!-filename file)),
-          list('put, mkquote cadr z, ''defined!-on!-line, line),
-          z);
-      return z;
-  a5: errorset!*('(symerr (quote procedure) t),nil);
-      go to a3
+         z := list('progn,
+            list('put, mkquote cadr z,
+                 ''defined!-in!-file,
+                 list('make!-string!-unique, simplify!-filename file)),
+            list('put, mkquote cadr z, ''defined!-on!-line, line),
+            z);
+      return z
    end;
 
-symbolic procedure procstat; procstat1 nil;
+symbolic procedure procstat;
+  procstat1 nil;
 
 deflist ('((procedure procstat) (expr procstat) (fexpr procstat)
            (emb procstat) (macro procstat) (inline procstat)
