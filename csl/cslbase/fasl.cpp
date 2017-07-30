@@ -444,6 +444,8 @@ LispObject Lstart_module(LispObject env, LispObject name)
 // change during the life-time of a piece of software!
 // (March 2001) "early 386" bug hah. Gosh that was slow by today's standards.
 // (May 2010) !!!!!!!
+// (July 2017) The early 1990s now represent a rather different world. But
+// I still like this story.
 //
             while (k != 3) k++, Iputc(0);
             IcloseOutput();

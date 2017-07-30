@@ -172,7 +172,6 @@ symbolic procedure form1(u,vars,mode);
        else if car u eq '!*comma!*
         then if not atom cadr u and atom caddr u
                  and flagp(caadr u,'type)
-%                and(get(caddr u,'stat) eq 'decstat)
                then blocktyperr caadr u
               else rerror('rlisp,10,
                           list("Syntax error: , invalid after",cadr u));

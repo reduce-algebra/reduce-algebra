@@ -50,22 +50,60 @@ put('goto,'newnam,'go);
 
 % ***** Declaration Statement *****
 
+% This is called from two locations. It is called with argument "t"
+% at the head of a block, so there it deals with things like
+% "begin scalar v1,v2,v3; ...". Then decstat could call it with argument nil
+% and that arises when the xread encounters INTEGER, REAL or SCALAR.
+
+symbolic procedure read_parameter_list u;
+% This version should only be used for declaring local variables. It
+% allows types and intialization, so the syntax will allow for things like
+%    scalar a,          % original style
+%           b:typeb,    % with type specifier
+%           c:=initc,   % initialize as you go
+%           d:td:=id,   % type and initializer
+%           e;
+%
+% It returns a list of items each of which is (name type initial_value).
+%
+   begin scalar x,xt,xv,y,z;
+      repeat <<
+        if cursym!* = '!*comma!* then scan();
+        x := cursym!*;
+        if not idp x then typerr(x,"variable name");
+        y := scan();
+        if y eq '!*colon!* then <<
+          scan();
+          xt := read_type();
+          y := cursym!* >>
+        else xt := 'generic;
+        if y eq 'setq then <<
+          scan();
+          xv := xread1 t;
+          y := cursym!* >>
+        else xv := nil;
+        z := list(x, xt, xv) . z >> until not (y = '!*comma!*);
+      return reversip z
+   end;
+
 symbolic procedure decl u;
    begin scalar varlis,w;
-   a: while cursym!* eq '!*semicol!* do scan();
-      if cursym!* eq 'local and !*reduce4 then nil
+   a: while cursym!* = '!*semicol!* do scan();
+      if cursym!* = 'local and !*reduce4 then nil
       else if not flagp(cursym!*,'type) then return varlis
       else if !*reduce4 then typerr(cursym!*,"local declaration");
       w := cursym!*;
       scan();
-      if null !*reduce4 then
-         if cursym!* eq 'procedure then return procstat1 w
-          else if cursym!* eq '!*semicol!* then <<
-             lprim list("Empty variable list in",w,"declaration");
-             return nil >>
-          else varlis := append(varlis,pairvars(remcomma xread1 nil,nil,w))
-      else varlis := append(varlis,read_param_list nil);
-      if not(cursym!* eq '!*semicol!*) or null u then symerr(nil,t);
+      if !*reduce4 then varlis := append(varlis,read_param_list nil)
+      else if cursym!* eq 'procedure then return procstat1 w
+      else if cursym!* eq '!*semicol!* then <<
+        lprim list("Empty variable list in",w,"declaration");
+        return nil >>
+      else if !*acn then <<
+        varlis := append(varlis,
+          for each v in read_parameter_list nil collect (car v . 'scalar)) >>
+      else varlis := append(varlis,pairvars(remcomma xread1 nil,nil,w));
+      if not(cursym!* = '!*semicol!*) or null u then symerr(nil,t);
       scan();
       go to a
    end;

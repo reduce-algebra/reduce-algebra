@@ -59,7 +59,7 @@ symbolic procedure remcomma u;
 symbolic procedure eolcheck;
    if null !*eoldelimp then nil
    else while nxtsym!* eq !$eol!$ do
-           nxtsym!* := (if cursym!* eq 'end then '!;
+           nxtsym!* := (if cursym!* = 'end then '!;
                         else token());
 
 symbolic procedure xcomment(u,commentlist);
@@ -99,13 +99,13 @@ symbolic procedure xread1 u;
            commentlist!* := nil >>;
   a:    z := cursym!*;
   a1:   if null idp z then nil
-         else if z eq '!*lpar!* then go to lparen
-         else if z eq '!*rpar!* then go to rparen
+         else if z = '!*lpar!* then go to lparen
+         else if z = '!*rpar!* then go to rparen
          else if y := get(z,'infix) then go to infx
          % The next line now commented out was intended to allow a STAT
          % to be used as a label. However, it prevents the definition of
          % a diphthong whose first character is a colon.
-%        else if nxtsym!* eq '!: then nil
+%        else if nxtsym!* = '!: then nil
          else if flagp(z,'delim) then go to delimit
          else if y := get(z,'stat) then go to stat
          else if null !*reduce4 and flagp(z,'type) then <<
@@ -117,45 +117,45 @@ symbolic procedure xread1 u;
            and null(z1 eq !$eol!$)
            and idp (z1 := chknewnam nxtsym!*)
            and null flagp(z1,'delim)
-           and null(get(z1,'switch!*) and null(z1 eq '!())
+           and null(get(z1,'switch!*) and null(z1 = '!())
            and null get(z1,'infix)
            and null (!*eoldelimp and z1 eq !$eol!$)
           then << cursym!* := 'times; curescaped!* := nil; go to a >>
-         else if u eq 'proc and length w > 2
+         else if u = 'proc and length w > 2
           then symerr("Syntax error in procedure header",nil);
   next: z := scan();
         go to a1;
   lparen:
         eolcheck();
         y := nil;
-        if scan() eq '!*rpar!* then go to lp1    % no args
+        if scan() = '!*rpar!* then go to lp1    % no args
          else if flagpcar(w,'struct) then z := xread1 car w
          else z := xread1 'paren;
         if flagp(u,'struct) then << z := remcomma z; go to a3 >>
          else if null eqcar(z,'!*comma!*) then go to a3
          else if null w         % then go to a3
-           then (if u eq 'lambda then go to a3
+           then (if u = 'lambda then go to a3
                  else symerr("Improper delimiter",nil))
          else w := (car w . cdr z) . cdr w;
         go to next;
   lp1:  if w then w := list car w . cdr w;  % Function of no args.
         go to next;
   rparen:
-        if null u or u eq 'group
-           or u eq 'proc % and null !*reduce4
+        if null u or u = 'group
+           or u = 'proc % and null !*reduce4
           then symerr("Too many right parentheses",nil)
          else go to end1;
   infx: eolcheck();
-        if z eq '!*comma!* or null atom (z1 := scan())
+        if z = '!*comma!* or null atom (z1 := scan())
                 or toknump z1 then go to in1
-         else if z1 eq '!*rpar!* % Infix operator used as variable.
-                or z1 eq '!*comma!*
+         else if z1 = '!*rpar!* % Infix operator used as variable.
+                or z1 = '!*comma!*
                 or flagp(z1,'delim)
           then go to in2
-         else if z1 eq '!*lpar!* % Infix operator in prefix position.
+         else if z1 = '!*lpar!* % Infix operator in prefix position.
                     and null eolcheck()     % Side effect important
                     and null atom(z1 := xread 'paren)
-                    and car z1 eq '!*comma!*
+                    and car z1 = '!*comma!*
                     and (z := z . cdr z1)
           then go to a1;
   in1:  if w then go to unwind
@@ -182,7 +182,7 @@ symbolic procedure xread1 u;
   un2:  v:= z2 . v;
   preced:
         if null x then if y=0 then go to end2 else nil
-%        else if z eq 'setq then nil
+%        else if z = 'setq then nil
 % The next line is intended to generate a diagnostic in cases such as
 %       a ^ - b * c
 % and   a / - b / c
@@ -214,20 +214,20 @@ symbolic procedure xread1 u;
                                  and null flagp(z,'right))
                              or get(cdar x,'alt)))
           then go to pr2;
-  pr1:  %if v and eqcar(cdr v,'!*!*un!*!*) and not (car v eq '!*!*un!*!*)
+  pr1:  %if v and eqcar(cdr v,'!*!*un!*!*) and not (car v = '!*!*un!*!*)
         %  then symerr("Invalid combination of prefix and infix operator",nil);
         x:= (y . z) . x;
-        if null(z eq '!*comma!*) then go to in3
+        if null(z = '!*comma!*) then go to in3
          else if cdr x or null u or u memq '(lambda paren)
             or flagp(u,'struct)
           then go to next
          else go to end2;
-  pr2:  %if cdar x eq 'setq then go to assign else;
+  pr2:  %if cdar x = 'setq then go to assign else;
         % Check for NOT used as infix operator.
         if eqcar(cadr v,'not) and caar x >= get('member,'infix)
           then typerr("NOT","infix operator");
-        if cadr v eq '!*!*un!*!*
-          then (if car v eq '!*!*un!*!* then go to pr1
+        if cadr v = '!*!*un!*!*
+          then (if car v = '!*!*un!*!* then go to pr1
                 else z2 := list(cdar x,car v))
          else z2 := cdar x .
                      if eqcar(car v,cdar x) and flagp(cdar x,'nary)
@@ -236,13 +236,13 @@ symbolic procedure xread1 u;
         x:= cdr x;
         v := z2 . cddr v;
         go to preced;
-  stat: if null(y eq 'endstat) then eolcheck();
+  stat: if null(y = 'endstat) then eolcheck();
         if null (flagp(z,'go) or
-                 (null(u eq 'proc) and
+                 (null(u = 'proc) and
                   (flagp(y,'endstatfn) or
-                   (null delcp nxtsym!* and null (nxtsym!* eq '!,)))))
+                   (null delcp nxtsym!* and null (nxtsym!* = '!,)))))
           then go to a2;
-        if z eq 'procedure and !*reduce4
+        if z = 'procedure and !*reduce4
           then if w then if cdr w or !*reduce4
                            then symerr("proc form",nil)
                           else w := list procstat1 car w
@@ -251,16 +251,16 @@ symbolic procedure xread1 u;
         y := nil;
         go to a;
   delimit:
-        if null(cursym!* eq '!*semicol!*) then eolcheck();
-        if z eq '!*colon!* and null(u eq 'for)
+        if null(cursym!* = '!*semicol!*) then eolcheck();
+        if z = '!*colon!* and null(u = 'for)
               and (null !*blockp or null w or null atom car w or cdr w)
            or flagp(z,'nodel)
               and (null u
-                      or u eq 'group
+                      or u = 'group
                         and null(z memq
                                    '(!*rsqbkt!* !*rcbkt!* !*rsqb!*)))
           then symerr("Improper delimiter",nil)
-         else if idp u and (u eq 'paren or flagp(u,'struct))
+         else if idp u and (u = 'paren or flagp(u,'struct))
           then symerr("Too few right parentheses",nil);
   end1:
         if y then symerr("Improper delimiter",nil) % Probably ,).
@@ -288,7 +288,7 @@ flag ('(begin),'go);
 symbolic procedure xread u;
    begin
       while << scan();
-               !*eoldelimp and cursym!* eq '!*semicol!* >> do nil;
+               !*eoldelimp and cursym!* = '!*semicol!* >> do nil;
       return xread1 u
    end;
 
