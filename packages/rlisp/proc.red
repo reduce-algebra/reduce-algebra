@@ -385,7 +385,7 @@ symbolic procedure read_namelist();
     scalar a;
     if not valid_as_variable cursym!* then return nil;
     a := read_typed_name();
-    if not (cursym!* = '!*comma!*) then return list al
+    if not (cursym!* = '!*comma!*) then return list a;
     scan();
     return a . read_namelist()
   end;    
