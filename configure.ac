@@ -54,6 +54,11 @@ AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 # being able to run everywhere. Specifically I will want that toolchain
 # installed even if you specify --without-w32.
 
+with_w32="yes"
+with_w64="yes"
+with_c32="yes"
+with_c64="yes"
+
 AC_ARG_WITH(w32,
   AC_HELP_STRING([--with-w32], [Build 32-bit Windows version]),
   []
@@ -717,7 +722,7 @@ csl_inplace_nativewin_build ()
 {
   buildmc=$1
   host=$2
-  AC_MSG_NOTICE([])
+  AC_MSG_NOTICE([CSL inplace for native Windows])
   build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $buildmc $ac_configure_args"`
   AC_MSG_NOTICE([About to configure using $host in $build])
   mkdir -p "$abssrcdir/cslbuild/$build"
@@ -761,8 +766,10 @@ csl_inplace_windows_build ()
 #   x86_64-pc-cygwin
 #   i686-w64-mingw
 #   x86_64-w64-mingw
+  AC_MSG_NOTICE([Inplace Windows build...])
 # I am going to suppose that all the compilers I could possibly want
 # are installed. That means I do not need to put in code here to test that!
+  AC_MSG_NOTICE([with_c32=$with_c32 with_c64=$with_c64 with_w32=$with_w32 with_w64=$with_w64 ])
   if test "$with_c32" = "yes"
   then
     csl_inplace_cygwin_build "i686-pc-cygwin" "--with-cygwin32"
@@ -796,6 +803,7 @@ csl_inplace_build ()
     cp -r "$abssrcdir/csl/generated-c" "$abssrcdir/cslbuild"
   fi
 # Now I am configuring for CSL and am doing so from the top directory.
+  AC_MSG_NOTICE([CSL in-place build for $build])
   case $build in
   *cygwin* | *windows* | *mingw*)
     csl_inplace_windows_build
