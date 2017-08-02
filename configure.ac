@@ -146,7 +146,7 @@ then
 
   if test "$sixtyfour_feasible" = "yes" && test "$cyg64_available" = "yes"
   then
-    if test "$with_c32" = "default"
+    if test "$with_c64" = "default"
     then
       with_c64="yes"
     fi
