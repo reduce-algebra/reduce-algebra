@@ -74,8 +74,8 @@ deflist('((product 1) (sum 0)),'initval);
 
 symbolic procedure forstat;
    begin scalar !*blockp;
-      return if scan() eq 'all then forallstat()
-              else if cursym!* eq 'each then foreachstat()
+      return if scan() = 'all then forallstat()
+              else if cursym!* = 'each then foreachstat()
               else forloop()
    end;
 
@@ -90,14 +90,14 @@ symbolic procedure forloop;
       if not eqcar(x,'setq) or not idp(var := cadr x)
         then symerr('for,t);
       x := caddr x;
-      if cursym!* eq 'step
+      if cursym!* = 'step
         then <<if flagp('until,'delim) then bool := t
                 else flag('(until),'delim);
                incr := xread t;
                if null bool then remflag('(until),'delim)
                 else bool := nil;
-               if not(cursym!* eq 'until) then symerr('for,t)>>
-       else if cursym!* eq '!*colon!* then incr := 1
+               if not(cursym!* = 'until) then symerr('for,t)>>
+       else if cursym!* = '!*colon!* then incr := 1
        else symerr('for,t);
       if flagp(car foractions!*,'delim) then bool := t % nested loop
        else flag(foractions!*,'delim);
@@ -199,12 +199,12 @@ symbolic procedure formforeach(u,vars,mode);
         var := cadr u; u := cddr u;
         mod1 := car u; u := cdr u;
         lst := formc(car u,vars,mode); u := cdr u;
-        if not(mode eq 'symbolic) then lst := list('getrlist,lst);
+        if not(mode = 'symbolic) then lst := list('getrlist,lst);
         action := car u; u := cdr u;
         body := formc(car u,(var . mode) . vars,mode); % was FORMC
-        if mod1 eq 'in
+        if mod1 = 'in
           then body := list(list('lambda,list var,body),list('car,var))
-         else if not(mode eq 'symbolic) then typerr(mod1,'action);
+         else if not(mode = 'symbolic) then typerr(mod1,'action);
         return forformat(action,body,lst,
                          list('null,var),list 'cdr,var,vars,mode)
    end;
@@ -235,33 +235,33 @@ symbolic procedure forformat(action,body,initval,
       result := 'forall!-result; % gensym();
       return
          sublis(list('body2 .
-                if mode eq 'symbolic or intexprnp(body,vars)
+                if mode = 'symbolic or intexprnp(body,vars)
                   then list(get(action,'bin),body,result)
                  else list('aeval!*,list('list,mkquote get(action,'bin),
                             unreval body,result)),
                'body3 .
-                   if mode eq 'symbolic then body
+                   if mode = 'symbolic then body
                       else list('getrlist,body),
                'body . body,
                'initval . initval,
                'nillist .
-                   if mode eq 'symbolic then nil else '(makelist nil),
+                   if mode = 'symbolic then nil else '(makelist nil),
                'result . result,
                'initresult . get(action,'initval),
-               'resultlist . if mode eq 'symbolic then result
+               'resultlist . if mode = 'symbolic then result
                               else list('cons,''list,result),
                'testexp . testexp,
                'updfn . car updform,
                'updval . cdr updform,
                'var . var),
-          if action eq 'do
+          if action = 'do
             then '(prog (var)
                   (setq var initval)
               lab (cond (testexp (return nil)))
                   body
                   (setq var (updfn var . updval))
                   (go lab))
-           else if action eq 'collect
+           else if action = 'collect
             then '(prog (var result forall!-endptr)
                   (setq var initval)
                   (cond (testexp (return nillist)))
@@ -272,7 +272,7 @@ symbolic procedure forformat(action,body,initval,
                   (rplacd forall!-endptr (cons body nil))
                   (setq forall!-endptr (cdr forall!-endptr))
                   (go looplabel))
-           else if action eq 'conc
+           else if action = 'conc
             then '(prog (var result forall!-endptr)
                   (setq var initval)
                startover

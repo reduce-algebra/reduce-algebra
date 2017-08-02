@@ -55,7 +55,7 @@ put('goto,'newnam,'go);
 % "begin scalar v1,v2,v3; ...". Then decstat could call it with argument nil
 % and that arises when the xread encounters INTEGER, REAL or SCALAR.
 
-symbolic procedure read_parameter_list u;
+symbolic procedure read_parameter_list();
 % This version should only be used for declaring local variables. It
 % allows types and intialization, so the syntax will allow for things like
 %    scalar a,          % original style
@@ -72,38 +72,45 @@ symbolic procedure read_parameter_list u;
         x := cursym!*;
         if not idp x then typerr(x,"variable name");
         y := scan();
-        if y eq '!*colon!* then <<
+        if y = '!*colon!* then <<
           scan();
           xt := read_type();
           y := cursym!* >>
         else xt := 'generic;
-        if y eq 'setq then <<
+        if y = 'setq then <<
           scan();
           xv := xread1 t;
           y := cursym!* >>
         else xv := nil;
-        z := list(x, xt, xv) . z >> until not (y = '!*comma!*);
+        z := list(x, xt, xv) . z
+      >> until not (y = '!*comma!*);
       return reversip z
    end;
 
-symbolic procedure decl u;
-   begin scalar varlis,w;
+% This now returns a list of variables and a list of declaration
+% information.
+
+symbolic procedure collect_decls(u, w);
+  if null u then nil
+  else (caar u . w) . collect_decls(cdr u, w);
+
+symbolic procedure decl();
+   begin scalar varlis,w,pl,typelist;
    a: while cursym!* = '!*semicol!* do scan();
       if cursym!* = 'local and !*reduce4 then nil
-      else if not flagp(cursym!*,'type) then return varlis
+      else if not flagp(cursym!*,'type) then return (varlis . typelist)
       else if !*reduce4 then typerr(cursym!*,"local declaration");
       w := cursym!*;
       scan();
       if !*reduce4 then varlis := append(varlis,read_param_list nil)
-      else if cursym!* eq 'procedure then return procstat1 w
-      else if cursym!* eq '!*semicol!* then <<
+      else if cursym!* = '!*semicol!* then <<
         lprim list("Empty variable list in",w,"declaration");
-        return nil >>
-      else if !*acn then <<
-        varlis := append(varlis,
-          for each v in read_parameter_list nil collect (car v . 'scalar)) >>
-      else varlis := append(varlis,pairvars(remcomma xread1 nil,nil,w));
-      if not(cursym!* = '!*semicol!*) or null u then symerr(nil,t);
+        return (nil . nil) >>
+      else <<
+        pl := read_parameter_list();
+        typelist := append(typelist, pl);
+        varlis := append(varlis, collect_decls(pl, w)) >>;
+      if not(cursym!* = '!*semicol!*) then symerr(nil,t);
       scan();
       go to a
    end;
@@ -111,16 +118,17 @@ symbolic procedure decl u;
 put('integer,'initvalue!*,0);
 
 symbolic procedure decstat;
-  % Called if a declaration occurs at the top level or not first
-  % in a block.
-  begin scalar x,y,z;
+% Called following a word like "scalar" or "integer" or "real"
+% other than at the start of a block. The only valid case is when the
+% next word is "procedure" and even this is an archaic thow-back to
+% "mode Reduce".
+  begin scalar x;
      if !*blockp then symerr('block,t);
      x := cursym!*;
-     y := nxtsym!*;
-     z := decl nil;
-     if y neq 'procedure
+     if nxtsym!* neq 'procedure
        then rerror('rlisp,7,list(x,"invalid outside block"));
-     return z
+     scan();
+     return procstat1 x
   end;
 
 flag('(integer real scalar),'type);
@@ -140,19 +148,30 @@ symbolic procedure mapovercar u;
    return reversip!* x
    end;
 
+% If you annotate the declaration of local variable (at a block-head)
+% with type information then the block will end up starting with
+% a quoted expression of the types...
+%
+%     begin scalar a:type1:=val1, b:type2, c:=val3; ...
+% =>  (prog (a b) (quote ((a type1 val1) (b type2 nil) (c general val3))) ...
+%
+% I will want to migrate the initialization material into executable
+% code soon.
+
 symbolic procedure blockstat;
    begin scalar hold,varlis,x,!*blockp;
         !*blockp := t;
         scan();
         if cursym!* memq '(nil !*rpar!*)
           then rerror('rlisp, 9, "BEGIN invalid");
-        varlis := decl t;
-    a:  if cursym!* eq 'end and not(nxtsym!* eq '!:) then <<
+        varlis := decl();
+    a:  if cursym!* = 'end and not(nxtsym!* = '!:) then <<
            comm1 'end;
-           return mkblock(varlis, hold) >>;
+           return mkblock(car varlis, mkquote car varlis . hold) >>;
         x := xread1 nil;
-        if eqcar(x, 'end) then return mkblock(varlis, hold);
-        if not(cursym!* eq 'end) then scan();
+        if eqcar(x, 'end) then
+           return mkblock(car varlis, mkquote cdr varlis . hold);
+        if not(cursym!* = 'end) then scan();
         if x then <<
            (if eqcar(x, 'equal) then
                lprim list("top level", cadr x, "= ... in block"));
@@ -167,7 +186,7 @@ putd('rblock,'macro,
 
 symbolic procedure symbvarlst(vars,body,mode);
    begin scalar x,y;
-      if not (mode eq 'symbolic) then return nil;
+      if not (mode = 'symbolic) then return nil;
       y := vars;
       while y do <<
          x := if pairp car y then caar y else car y;
@@ -223,7 +242,7 @@ symbolic procedure formblock(u,vars,mode);
 symbolic procedure initprogvars u;
    begin scalar x,y,z;
       while u do <<
-         if null caar u or caar u eq 't then rsverr caar u
+         if null caar u or caar u = 't then rsverr caar u
          else if (z := get(caar u,'initvalue!*)) or
                  (z := get(cdar u,'initvalue!*)) then
             y := mksetq(caar u,z) . y;
@@ -233,7 +252,8 @@ symbolic procedure initprogvars u;
    end;
 
 symbolic procedure formprog(u,vars,mode);
-   make_prog_declares(cadr u, formprog1(cddr u,pairvars(cadr u,vars,mode),mode));
+   make_prog_declares(cadr u,
+                      formprog1(cddr u,pairvars(cadr u,vars,mode),mode));
 
 
 symbolic procedure formprog1(u,vars,mode);
@@ -241,8 +261,10 @@ symbolic procedure formprog1(u,vars,mode);
     else if null car u then formprog1(cdr u,vars,mode)
         % remove spurious NILs, probably generated by FOR statements.
     else if atom car u then car u . formprog1(cdr u,vars,mode)
+    else if eqcar(car u, 'quote) and not (mode = 'symbolic) then
+       formprog1(cdr u,vars,mode)
     else if idp caar u and flagp(caar u,'modefn)
-           then if !*rlisp88 and null(caar u eq 'symbolic)
+           then if !*rlisp88 and null(caar u = 'symbolic)
                   then typerr("algebraic expression","Rlisp88 form")
           else formc(cadar u,vars,caar u) . formprog1(cdr u,vars,mode)
     else formc(car u,vars,mode) . formprog1(cdr u,vars,mode);

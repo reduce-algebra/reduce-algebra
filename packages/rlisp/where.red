@@ -34,7 +34,7 @@ symbolic procedure formwhere(u,vars,mode);
    begin scalar expn,equivs,y,z;
      expn := cadr u;
      equivs := remcomma caddr u;
-     if not(mode eq 'symbolic)
+     if not(mode = 'symbolic)
 % The following line used to call formc instead of form1
 %  It failed with nested rules, e.g.,
 %   let { f(~x,~x) => (rp where rp => x*x) };

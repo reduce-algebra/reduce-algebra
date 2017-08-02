@@ -1533,14 +1533,14 @@ gensym) (cdr env)) nil)) labs)))))))) (setq var1097 (cdr var1097)) (go
 lab1096)) (setq s!:current_proglabels (cons labs s!:current_proglabels)) (
 setq w (s!:residual_local_decs local_decs w)) (prog (var1099) (setq var1099 
 body) lab1098 (cond ((null var1099) (return nil))) (prog (a) (setq a (car 
-var1099)) (cond ((not (atom a)) (s!:comval a env (plus context 4))) (t (prog 
-(d) (setq d (atsoc a labs)) (cond ((null (cddr d)) (progn (rplacd (cdr d) t) 
-(s!:set_label (caadr d))))))))) (setq var1099 (cdr var1099)) (go lab1098)) (
-s!:cancel_local_decs w) (s!:comval nil env context) (cond (fluids (
-s!:outopcode0 (quote FREERSTR) (quote (FREERSTR))))) (s!:outlose n) (rplacd 
-env s) (s!:set_label (cadar s!:current_exitlab)) (setq s!:current_exitlab (
-cdr s!:current_exitlab)) (setq s!:current_proglabels (cdr 
-s!:current_proglabels))))
+var1099)) (cond ((not (atom a)) (progn (cond ((not (eqcar a (quote quote))) (
+s!:comval a env (plus context 4)))))) (t (prog (d) (setq d (atsoc a labs)) (
+cond ((null (cddr d)) (progn (rplacd (cdr d) t) (s!:set_label (caadr d)))))))
+)) (setq var1099 (cdr var1099)) (go lab1098)) (s!:cancel_local_decs w) (
+s!:comval nil env context) (cond (fluids (s!:outopcode0 (quote FREERSTR) (
+quote (FREERSTR))))) (s!:outlose n) (rplacd env s) (s!:set_label (cadar 
+s!:current_exitlab)) (setq s!:current_exitlab (cdr s!:current_exitlab)) (setq
+s!:current_proglabels (cdr s!:current_proglabels))))
 
 (put (quote prog) (quote s!:compfn) (function s!:comprog))
 
@@ -1552,11 +1552,12 @@ a) (princ " multiply defined") (terpri)))))) (t (setq labs (cons (cons a (
 cons (cons (gensym) (cdr env)) nil)) labs)))))))) (setq var1101 (cdr var1101)
 ) (go lab1100)) (setq s!:current_proglabels (cons labs s!:current_proglabels)
 ) (prog (var1103) (setq var1103 (cdr x)) lab1102 (cond ((null var1103) (
-return nil))) (prog (a) (setq a (car var1103)) (cond ((not (atom a)) (
-s!:comval a env (plus context 4))) (t (prog (d) (setq d (atsoc a labs)) (cond
-((null (cddr d)) (progn (rplacd (cdr d) t) (s!:set_label (caadr d))))))))) (
-setq var1103 (cdr var1103)) (go lab1102)) (s!:comval nil env context) (setq 
-s!:current_proglabels (cdr s!:current_proglabels))))
+return nil))) (prog (a) (setq a (car var1103)) (cond ((not (atom a)) (progn (
+cond ((not (eqcar a (quote quote))) (s!:comval a env (plus context 4)))))) (t
+(prog (d) (setq d (atsoc a labs)) (cond ((null (cddr d)) (progn (rplacd (cdr
+d) t) (s!:set_label (caadr d))))))))) (setq var1103 (cdr var1103)) (go 
+lab1102)) (s!:comval nil env context) (setq s!:current_proglabels (cdr 
+s!:current_proglabels))))
 
 (put (quote tagbody) (quote s!:compfn) (function s!:comtagbody))
 
@@ -2653,7 +2654,13 @@ quote)) (eqcar a3 (quote function))) (eqcar (cadr a3) (quote lambda))) (progn
 cond ((equal a2 (quote expr)) (quote de)) (t (quote dm))) (cons a1 (cdr a3)))
 ) (s!:fslout1 u loadonly))) (t (setq s!:fasl_code (cons u s!:fasl_code)))))) 
 (t (cond ((and (not (eqcar u (quote faslend))) (not (eqcar u (quote carcheck)
-))) (setq s!:fasl_code (cons u s!:fasl_code))))))))))))))))
+))) (progn (setq s!:fasl_code (cons u s!:fasl_code)) (cond ((and !*savedef (
+eqcar u (quote put)) (not (atom (setq w (cdr u)))) (eqcar (car w) (quote 
+quote)) (not (atom (setq w (cdr w)))) (eqcar (car w) (quote quote)) (memq (
+cadar w) (quote (procedure_type defined!-in!-file defined!-on!-line))) (or (
+numberp (setq w (cadr w))) (eqcar w (quote quote)))) (setq s!:fasl_savedef (
+cons (list nil (cadar (setq u (cdr u))) (cadar (setq u (cdr u))) (cond ((
+numberp w) w) (t (cadr w)))) s!:fasl_savedef)))))))))))))))))))
 
 (de s!:fslout2 (p u) (prog (name nargs code env w) (setq name (car p)) (setq 
 nargs (cadr p)) (setq code (caddr p)) (setq env (cdddr p)) (cond ((and 

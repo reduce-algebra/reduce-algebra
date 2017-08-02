@@ -34,7 +34,7 @@ symbolic procedure aconc(u,v);
    % Adds element v to the tail of u. u is destroyed in process.
    nconc(u,list v);
 
-symbolic procedure arrayp u; get(u,'rtype) eq 'array;
+symbolic procedure arrayp u; get(u,'rtype) = 'array;
 
 symbolic procedure atsoc(u,v);
    % This definition allows for a search of a general list.
@@ -130,7 +130,7 @@ symbolic procedure smemq(u,v);
    % True if id U is a member of V at any level (excluding quoted
    % expressions).
    if atom v then u eq v
-   else if car v eq 'quote then nil
+   else if car v = 'quote then nil
    else smemq(u,car v) or smemq(u,cdr v);
 
 symbolic procedure ssubst(a, b, c);

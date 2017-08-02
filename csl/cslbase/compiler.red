@@ -2957,7 +2957,9 @@ symbolic procedure s!:comprog(x, env, context);
     w := s!:residual_local_decs(local_decs, w);
 % handle the body of the prog
     for each a in body do
-       if not atom a then s!:comval(a, env, context+4)
+       if not atom a then <<
+          if not eqcar(a, 'quote) then
+             s!:comval(a, env, context+4) >>
        else begin
           scalar d;
           d := atsoc(a, labs);
@@ -2999,7 +3001,9 @@ symbolic procedure s!:comtagbody(x, env, context);
           else labs := (a . ((gensym() . cdr env) . nil)) . labs >>;
     s!:current_proglabels := labs . s!:current_proglabels;
     for each a in cdr x do
-       if not atom a then s!:comval(a, env, context+4)
+       if not atom a then <<
+          if not eqcar(a, 'quote) then
+             s!:comval(a, env, context+4) >>
        else begin
           scalar d;
           d := atsoc(a, labs);
@@ -5342,7 +5346,11 @@ symbolic procedure s!:fslout1(u, loadonly);
 !#if common!-lisp!-mode
        >> where !*package!* = !*package!*
 !#endif
-    else if !*nocompile then <<  % Funny option not for general use!
+% The object on "*nocompile is to disable compilation while allowing
+% definitions to end up in fasl files. It is mainly for debugging, where if
+% theer is a problem with the compiler this can allow everything to fall
+% back and run as really slow interpreted code!
+    else if !*nocompile then <<
        if not eqcar(u, 'faslend) and
           not eqcar(u, 'carcheck) then s!:fasl_code := u . s!:fasl_code >>
 % If I have a regular function definition, ie NOT a macro then I will
@@ -5406,7 +5414,29 @@ symbolic procedure s!:fslout1(u, loadonly);
          s!:fslout1(u, loadonly) >>
       else s!:fasl_code := u . s!:fasl_code end
     else if not eqcar(u, 'faslend) and
-            not eqcar(u, 'carcheck) then s!:fasl_code := u . s!:fasl_code
+            not eqcar(u, 'carcheck) then <<
+       s!:fasl_code := u . s!:fasl_code;
+% If I have information being "put" about the current functiuon I will
+% record it along with the !*savedef stuff. That material is not kept
+% as directly executable code. The main material is a list with entries
+%   (function-name saved-definition)
+% so as something of a hack I emit an entry with NIL where the function
+% name would be to note a "put". This code does a laborious check to
+% spot the useas of PUT that I want to carry forward.
+       if !*savedef and 
+          eqcar(u, 'put) and
+          not atom (w := cdr u) and
+          eqcar(car w, 'quote) and
+          not atom (w := cdr w) and
+          eqcar(car w, 'quote) and
+          memq(cadar w,
+             '(procedure_type defined!-in!-file defined!-on!-line)) and
+          (numberp (w := cadr w) or eqcar(w, 'quote)) then
+          s!:fasl_savedef :=
+             list(nil,    % get rid of the QUOTEs.
+                  cadar (u:=cdr u),
+                  cadar (u := cdr u),
+                  if numberp w then w else cadr w) . s!:fasl_savedef >>
   end;
 
 symbolic procedure s!:fslout2(p, u);

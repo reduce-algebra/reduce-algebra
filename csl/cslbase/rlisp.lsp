@@ -342,7 +342,11 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 %
 % This file is "rlisp.red" taken from the REDUCE 3.3 sources, and can be
 % used to reconstruct the CSL files compiler.lsp and ccomp.lsp from
-% the associated RLISP source files.
+% the associated RLISP source files. Being from such an old version of
+% REDUCE means that it may not support all syntax that a more modern
+% copy would, so during an initial bootstrap build it will be necessary
+% to be cautious and stick to a coding style that can be coped with by
+% this parser.
 %
 
 % module module; % Support for module use.

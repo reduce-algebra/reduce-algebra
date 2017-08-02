@@ -99,7 +99,7 @@ symbolic procedure formproc(u,vars,mode);
           then lprim list(name,"redefined");
         varlis := cadr u;
         while varlis do <<
-           if null car varlis or car varlis eq 't then rsverr car varlis;
+           if null car varlis or car varlis = 't then rsverr car varlis;
            varlis := cdr varlis >>;
         varlis := cadr u;
 % For the benefit of CSL - and also perhaps for source analysis tools - if
@@ -128,7 +128,7 @@ symbolic procedure formproc(u,vars,mode);
                  else form1(body,car y,mode);
 % !*noinlines being set causes every inline that is defined to be downgraded
 % to a regular procedure.
-        if !*noinlines and type eq 'inline then type := 'expr;
+        if !*noinlines and type = 'inline then type := 'expr;
 #if (getd 'declare)
 % Note the non-Common way in which the DECLARE sits within a PROGN here.
 % Furthermore I only insert DECLARE for sort-of ordinary functions.
@@ -157,22 +157,22 @@ symbolic procedure formproc(u,vars,mode);
               print list('de,name,varlis,body);
               new_inline_definitions := (name . dd) . new_inline_definitions >>
            end;
-        if (not(type eq 'inline) and get(name,'inline)) or
-           (not(type eq 'smacro) and get(name,'smacro))
+        if (not(type = 'inline) and get(name,'inline)) or
+           (not(type = 'smacro) and get(name,'smacro))
           then lprim list("SMACRO/INLINE",name,"redefined");
 % the next line generates warnings if any arguments are not used (in symbolic
 % mode, and not counting arguments that are fluid).
         symbvarlst(varlis,body,mode);
-        if type eq 'expr then body := list('de,name,varlis,body)
-         else if type eq 'fexpr then body := list('df,name,varlis,body)
-         else if type eq 'macro then body := list('dm,name,varlis,body)
+        if type = 'expr then body := list('de,name,varlis,body)
+         else if type = 'fexpr then body := list('df,name,varlis,body)
+         else if type = 'macro then body := list('dm,name,varlis,body)
          else if (x := get(type,'procfn))
           then return apply3(x,name,varlis,body)
          else body := list('putc,
                            mkquote name,
                            mkquote type,
                            mkquote list('lambda,varlis,body));
-        if not(mode eq 'symbolic)
+        if not(mode = 'symbolic)
           then body :=
               mkprogn(list('flag,mkquote list name,mkquote 'opfn),body);
         if !*argnochk and type memq '(expr inline smacro)
@@ -219,10 +219,10 @@ symbolic procedure pairxvars(u,v,vars,mode);
       while u do <<
          if (y := atsoc(car u,v)) then <<
             v := delete(y,v);
-            if not(cdr y eq 'scalar) then x := (car u . cdr y) . x
+            if not(cdr y = 'scalar) then x := (car u . cdr y) . x
             else x := (car u . mode) . x >>
-         else if null idp car u or get(car u,'infix) or get(car u,'stat)
-             then symerr(list("Invalid parameter:",car u),nil)
+         else if null idp car u or get(car u,'infix) or get(car u,'stat) then
+            symerr(list("Invalid parameter:",car u),nil)
          else x := (car u . mode) . x;
          u := cdr u >>;
       return append(reversip!* x,vars) . v
@@ -316,39 +316,6 @@ flag('(mkhash), 'rlisp);
 
 !#endif
 
-% Now stuff that I will use when recording the names of files associated
-% with procedure definitions...
-
-global '(string!-table!*);
-
-% I want a hash tables where keys are compared using EQUAL, or at
-% least something that treats string that have the same letters in them as
-% the same. The numeric code "3" here is a messy CSL oddity on that
-% respect.
-
-string!-table!* := mkhash(10, 3, 2.0);
-
-% Note that I will have installed a placeholder version of
-% make!-string!-unique that is just the identity function (ie that
-% does not impose uniquene4ss at all!) to hold the fort during
-% bootstrapping. The version here will replace it when it can.
-
-symbolic procedure make!-string!-unique s;
-  begin
-    scalar w;
-    if w := gethash(s, string!-table!*) then return w;
-    puthash(s, string!-table!*, s);
-    return s
-  end;    
-
-% In an earlier version of this code a procedure specification could use
-% an infix expression or a non-atomic function name. Such generality is not
-% described in the manual, and ACN hopes that withdrawing it will not cause
-% pain.
-
-%symbolic procedure read_signature();
-%  xread 'proc;
-
 % At present this code only allows single token type specifiers. This is
 % far from enough, but may still do as a placeholder while I implement
 % more of the infrastructure.
@@ -364,7 +331,7 @@ symbolic procedure read_type();
   end;
 
 % read_typed_name will read either "name" or "name : type", and if the
-% explicit typs is not given it defaults to "general".
+% explicit type is not given it defaults to "general".
 
 symbolic procedure read_typed_name();
   begin
@@ -403,21 +370,54 @@ flag('(nil t !*comma!* !*lpar!* !*rpar!* !*colon!* !*semicol!*),
 
 % read_signature is used for procedure headers. The syntax it accepts
 % should be as shown here (where the final ";" tells parsing when to stop).
-%     name ;
-%     name : type ;
-%     name() ;
+%     name ;                           No arguments, no type info
+%     name : type ;                    No arguments, resuly type specified
+%     name arg ;                       A single argument
+%     name arg1 : type1 ;              One arg with arg type specified
+%     name arg1 : type1 : type ;       Both arg and result type specified
+%     name() ;                         No arguments, but () to stress that!
 %     name() : type ;
-%     name( arg1:type1, ...) ;
+%     name( arg1, ...) ;               Argument or arguments without types
+%     name( arg1, ...) : type ;        Ditto but with result type
+%     name( arg1:type1, ...) ;         Arguments may have type specifiers
 %     name( arg1:type1, ...) : type ;
+% Note that "name arg:type;" is treated as "name(arg:type);" rather
+% then "name(arg):type;".
+%
+% For compatibility I also need
+%    arg1[:type1] infix-operator arg1[:type2] [:result_type]
+% and this is used in a situation
+%    infix .*; inline procedure u .* v; u + v;
+% where I can even imagine wanting to put in type decorations. Oh bother -
+% I had thought I could get away with not supporting that case!
+
 
 symbolic procedure read_signature();
   begin
-    scalar x;
+    scalar x, y;
     x := cursym!*;
     if not valid_as_variable x then
       rerror('rlisp, 7, list(x, "invalid as formal parameter name"));
     scan();
-    if cursym!* = '!*colon!* or cursym!* = '!*semicol!* then x := list x
+    if cursym!* = '!*semicol!* then return list(list x, 'general);
+    if cursym!* = '!*colon!* then <<
+% The signature started off as "x : type". There are two wanys this
+% can end up. One is just as
+%       x : type ;
+% which introduces a procedure with no arguments but with a declared
+% return type. The other is
+%       x : type infix_op y [: type] [: type] ;
+% where the procedure is specified using infix notation but with a type
+% for at least its left operand.
+       scan();
+       y := read_type();
+       if cursym!* = '!*semicol!* then return list(list x, y)
+       else if not idp cursym!* or
+          not get(cursym!*, 'infix) then symerr(nil, cursym!*);
+       x := x . y;
+       y := cursym!*;
+       scan();
+       x := list(y, x, read_typed_name()) >>
     else if cursym!* = '!*lpar!* then <<
       scan();
       if cursym!* = '!*rpar!* then x := list x
@@ -426,6 +426,12 @@ symbolic procedure read_signature();
         if not (cursym!* = '!*rpar!*) then rerror('rlisp, 8,
           list(cursym!*, "found where right parenthesis expected")) >>;
       scan() >>
+    else if idp cursym!* and get(cursym!*, 'infix) then <<
+% This is the case
+%        u infix_op v [: type] [: type]
+      y := cursym!*;
+      scan();
+      x := list(y, x . 'general, read_typed_name()) >> 
     else x := list(x, read_typed_name());
     if cursym!* = '!*colon!* then <<
       scan();
@@ -433,10 +439,24 @@ symbolic procedure read_signature();
     else return list(x, 'general)
   end;
 
-fluid '(!*acn);  % So that I can test things!
+symbolic procedure make_tuple_type x;
+  if null x then 'unit
+  else if null cdr x then cdar x
+  else 'times . collect_cdrs x;
+
+% At this stage in the bootstrap process I can not use a "for each"
+% statement, so I write this out as a separate function
+
+symbolic procedure collect_cars u;
+  if null u then nil
+  else caar u . collect_cars cdr u;
+
+symbolic procedure collect_cdrs u;
+  if null u then nil
+  else cdar u . collect_cdrs cdr u;
 
 symbolic procedure procstat1 mode;
-   begin scalar bool,u,type,x,y,z, file, line;
+   begin scalar bool, u, type, x, y, z, file, line, puttype;
 % Note the file and line that this procedure is in. This will be the
 % location that the procedure statement starts on.
       if ifl!* then file := car ifl!* else file = "-";
@@ -455,9 +475,9 @@ symbolic procedure procstat1 mode;
 % Here we allow for "procedure", "symbolic procedure", "algebraic procedure"
 % or "maud procedure" with (in that case) "maud" ending up in the variable
 % "type". If the word "procedure" is not found we will complain.
-         if cursym!* eq 'procedure then type := 'expr
+         if cursym!* = 'procedure then type := 'expr
          else << type := cursym!*; scan() >>;
-         if not(cursym!* eq 'procedure) then <<
+         if not(cursym!* = 'procedure) then <<
             errorset!*('(symerr (quote procedure) t),nil) >>
          else <<
 % Reduce 4 differs from previous versions... it allows type specifiers.
@@ -473,48 +493,26 @@ symbolic procedure procstat1 mode;
 % If parameters were read happily and the next token is a colon then there
 % will be a type given after it.
                      y := car y;
-                     if cursym!* eq '!*colon!* then mode := read_type() >> >> >>
-            else if !*acn then <<
+                     if cursym!* = '!*colon!* then mode := read_type() >> >> >>
+            else <<
                scan();
                x := read_signature();
 % The result of read_signature is
 %    ((fname (arg1 . type1) ...) result_type)
-               prin2 "TRACE:"; print x;
+% I will edit that to make something that looks a bit more like the style
+% of typs signature I have used before... Examples could be
+%    (arrow unit general)
+%    (arrow integer integer)
+%    (arrow (times general integer general) general)
+% where "unit" denotes nothing (ie not having any arguments), "general" is
+% where the type had not been speciied, and otherwise at present types
+% are merely symbols.
+               puttype := list('put, mkquote caar x, ''procedure_type,
+                   mkquote('arrow . make_tuple_type cdar x . cdr x)); 
                x := car x;
-               x := car x . for each a in cdr x collect car a;
-               prin2 "TRACE:"; print x;
                fname!* := car x;
-               y := cdr x >>
-            else <<
-% In the old world we read the function name and arguments with one call to
-% xread. The result might be atomic in "procedure maud;" or it might be a list
-% of the form (maud arg1 .. argn). Note that because of the use of xread
-% this can handle infix operators, so
-%   infix maud; procedure u maud v; ...
-% will be legal. Also one can have [extra] parentheses around formal arguments
-% and possibly other really odd things based aroudn Reduce special syntax.
-               x := errorset!*('(xread (quote proc)),nil);
-               if errorp x then errorset!*('(symerr (quote procedure) t),nil)
-               else <<
-                  if atom (x := car x) then x := list x;   % No arguments.
-                  fname!* := car x;   % Function name.
-% ensure that the name of the procedure that is being defined seems reasonable.
-                  if null idp fname!* then % Function name should be an identifier
-                     errorset!*('(symerr (quote procedure) t),nil)
-                  else if null fname!* or fname!* eq 't then rsverr fname!*
-                  else if (z := gettype fname!*) and
-                          null(z memq '(procedure operator)) then
-                     typerr(list(z,fname!*),"procedure")
-                  else <<
-                     u := cdr x;
-                     y := u;   % Variable list.
-% Now although xread had been generous and you could have had almost anything
-% written as a formal argument, a check is made here so that only identifiers
-% are allowed through.
-                     if idlistp y then x := car x . y
-                     else lprie list(y,"invalid as parameter list") >> >> >>;
-            if idp fname!* and not getd fname!* then
-               flag(list fname!*,'fnc) >> >>;
+               x := fname!* . collect_cars cdr x;
+               y := cdr x >> >> >>;
 % Recover a bit of there was an end of file encountered while reading the
 % procedure heading.
       if eof!*>0 then <<
@@ -544,12 +542,18 @@ symbolic procedure procstat1 mode;
 % I can tag it with the file name and line where it was defined, and that
 % may be really helpful in some debugging contextx.
       if ifl!* and not atom z and not atom cdr z and idp cadr z then
-         z := list('progn,
+         z := list(
             list('put, mkquote cadr z,
                  ''defined!-in!-file,
-                 list('make!-string!-unique, simplify!-filename file)),
+% By using intern I turn the string that is the file-name into a symbol.
+% That arranges that when the file-name is used multiple times only one
+% copy is kept in memory.
+                  mkquote intern simplify!-filename file),
             list('put, mkquote cadr z, ''defined!-on!-line, line),
-            z);
+            z)
+         else z := list z;
+      if puttype then z := puttype . z;
+      if null cdr z then z := car z else z := 'progn . z;
       return z
    end;
 
@@ -563,7 +567,7 @@ deflist ('((procedure procstat) (expr procstat) (fexpr procstat)
 
 % Next line refers to bootstrapping process.
 
-if get('symbolic,'stat) eq 'procstat then remprop('symbolic,'stat);
+if get('symbolic,'stat) = 'procstat then remprop('symbolic,'stat);
 
 deflist('((lisp symbolic)),'newnam);
 

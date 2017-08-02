@@ -50,7 +50,7 @@ global '(!$eof!$
 symbolic procedure pause;
    %Must appear at the top-most level;
    if null !*int then nil
-    else if key!* eq 'pause then pause1 nil
+    else if key!* = 'pause then pause1 nil
     else %typerr('pause,"lower level command");
          pause1 nil;   % Allow at lower level for now.
 
@@ -108,7 +108,7 @@ symbolic procedure yesp1;
         if x eq !$eol!$ then go to a
         % Assume an end-of-file means lost control and exit.
          else if x eq !$eof!$ then eval '(bye)
-         %% else if (y := x eq 'y) or x eq 'n then return y
+         %% else if (y := x = 'y) or x = 'n then return y
          else if (y := x memq '(!y !Y)) or x memq '(!n !N)
           then return y % F.J. Wright.
          else if null bool then <<prin2t "Type Y or N"; bool := t>>;

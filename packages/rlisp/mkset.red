@@ -45,12 +45,12 @@ symbolic procedure mkset;
    % expects a list of expressions enclosed by {, }.
    % also allows expressions separated by ; --- treats these as progn.
    begin scalar cursym,delim,lst;
-        if scan() eq '!*rcbkt!* then <<scan(); return list 'set>>;
+        if scan() = '!*rcbkt!* then <<scan(); return list 'set>>;
     a:      lst := aconc(lst,xread1 'group);
         cursym := cursym!*;
         scan();
-        if cursym eq '!*rcbkt!*
-          then return if delim eq '!*semicol!* then 'progn . lst
+        if cursym = '!*rcbkt!*
+          then return if delim = '!*semicol!* then 'progn . lst
                        else 'set . trim lst
          else if null delim then delim := cursym
          else if not(delim eq cursym)

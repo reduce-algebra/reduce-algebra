@@ -32,23 +32,23 @@ fluid '(!*backtrace);
 
 global '(cursym!*);
 
-%With the exception of assignment statements, which are handled by
-%XREAD, statements in REDUCE are introduced by a key-word, which
-%initiates a reading process peculiar to that statement.  The key-word
-%is recognized (in XREAD1) by the indicator STAT on its property list.
-%The corresponding property is the name of the function (of no
-%arguments) which carries out the reading sequence.
+% With the exception of assignment statements, which are handled by
+% XREAD, statements in REDUCE are introduced by a key-word, which
+% initiates a reading process peculiar to that statement.  The key-word
+% is recognized (in XREAD1) by the indicator STAT on its property list.
+% The corresponding property is the name of the function (of no
+% arguments) which carries out the reading sequence.
 
 % ***** COMMENTS *****
 
 symbolic procedure comm1 u;
    begin scalar bool;
-      if u eq 'end then scan();
+      if u = 'end then scan();
       while not
-         (cursym!* eq '!*semicol!* or
-          (u eq 'end and
+         (cursym!* = '!*semicol!* or
+          (u = 'end and
            cursym!* memq '(end else then until !*rpar!* !*rsqbkt!*))) do <<
-         if u eq 'end and null bool then <<
+         if u = 'end and null bool then <<
             lprim list("END-COMMENT NO LONGER SUPPORTED");
             bool := t >>;
          scan() >>
@@ -60,10 +60,10 @@ symbolic procedure comm1 u;
 symbolic procedure ifstat;
    begin scalar condx,condit;
     a:  condx := xread t;
-        if not(cursym!* eq 'then) then symerr('if,t);
+        if not(cursym!* = 'then) then symerr('if,t);
         condit := aconc!*(condit,list(condx,xread t));
-        if not(cursym!* eq 'else) then nil
-         else if scan() eq 'if then go to a
+        if not(cursym!* = 'else) then nil
+         else if scan() = 'if then go to a
          else condit := aconc!*(condit,list(t,xread1 t));
         return ('cond . condit)
    end;
@@ -79,8 +79,8 @@ symbolic procedure functionstat;
    begin scalar x;
       x := scan();
       return list('function,
-                  if x eq '!*lpar!* then xread1 t
-                  else if idp x and null(x eq 'lambda) then << scan(); x >>
+                  if x = '!*lpar!* then xread1 t
+                  else if idp x and null(x = 'lambda) then << scan(); x >>
                   else symerr("Function", t))
    end;
 
@@ -106,7 +106,7 @@ symbolic procedure readprogn;
    %Expects a list of statements terminated by a >>;
    begin scalar lst;
       lst := list xread 'group;
-      while not (cursym!* eq '!*rsqbkt!*) do
+      while not (cursym!* = '!*rsqbkt!*) do
          lst := aconc!*(lst,xread 'group);
       scan();
       return ('progn . lst)
@@ -149,7 +149,7 @@ symbolic procedure endstat1;
     x := cursym!*;
     scan();
     if stringp cursym!* then optarg := cursym!*;
-    while not (cursym!* eq '!*semicol!*) and
+    while not (cursym!* = '!*semicol!*) and
 % The next line is to allow for an ENDSTAT1 to omit the semicolon that
 % would normally come after it if what happens next is a word like
 % ">>" or "else"...

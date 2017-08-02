@@ -46,7 +46,7 @@ flag('(define),'eval);
 symbolic procedure formwrite(u,vars,mode);
    begin scalar bool1,bool2,x,y,z;
       u := cdr u;
-      bool1 := mode eq 'symbolic;
+      bool1 := mode = 'symbolic;
       while u do
         <<x := formc(car u,vars,mode);
           y := getsetvars x;

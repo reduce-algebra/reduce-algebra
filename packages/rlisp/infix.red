@@ -34,7 +34,7 @@ global '(preclis!*);
 
 symbolic procedure forminfix(u,vars,mode);
    begin scalar x;
-      if null(mode eq 'symbolic)
+      if null(mode = 'symbolic)
        then x := for each j in cdr u collect list('mkop,mkarg(j,vars));
       u := list(car u,mkarg(cdr u,vars));
       return if x then 'progn . aconc(x,u) else u

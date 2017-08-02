@@ -119,7 +119,6 @@ endif !exeext
 .PHONY:	bootstraprecompile
 .PHONY:	recompile
 .PHONY:	profile
-.PHONY:	prof-inst
 .PHONY:	c-code
 .PHONY:	just-c-code
 .PHONY:	standard-c-code
@@ -2065,11 +2064,6 @@ if canrun
 else !canrun
 	echo Can not profile on this platform
 endif !canrun
-
-prof-inst:	profile.dat
-	$(CP) profile.dat $(gensrc)
-	chmod 664 $(gensrc)/*
-	-$(RM) -f profile.dat
 
 $(gensrc)/profile.dat:	$(csl)/generated-c/profile.dat
 	-$(TRACE)mkdir -p $(gensrc)

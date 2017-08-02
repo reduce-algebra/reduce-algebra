@@ -38,14 +38,14 @@ symbolic procedure n_formblock(u,vars);
 
 symbolic procedure n_initprogvars u;
    begin scalar x,y,z;
-    a: if null u then return(reversip!* x . reversip!* y)
-       else if (z := get(caar u,'initvalue!*))  % variable
-          or (z := get_type_initvalue cdar u)   % type
-        then y := mksetq(caar u,mkquote z) . y
-       else y := mksetq(caar u,mkquote ideval nil) . y;
-      x := caar u . x;
-      u := cdr u;
-      go to a
+      while u do <<
+         if (z := get(caar u,'initvalue!*)) or      % variable
+            (z := get_type_initvalue cdar u) then   % type
+            y := mksetq(caar u,mkquote z) . y
+         else y := mksetq(caar u,mkquote ideval nil) . y;
+         x := caar u . x;
+         u := cdr u >>;
+      return(reversip!* x . reversip!* y)
    end;
 
 symbolic procedure get_type_initvalue u;
@@ -54,7 +54,7 @@ symbolic procedure get_type_initvalue u;
 symbolic procedure mkobject(u,v);
    % Makes an object with value u and type v.
    % Next line is a kludge that needs to be fixed up in the poly code.
-   if null u and v eq 'poly then list('zero,0) else
+   if null u and v = 'poly then list('zero,0) else
    list(v,u);
 
 put('int,'initvalue!*,mkobject(0,'zero));
@@ -99,29 +99,12 @@ put('return,'n_formfn,'n_formreturn);
 
 put('rblock,'n_formfn,'n_formblock);
 
-% symbolic procedure decl u;
-%    begin scalar varlis,w;
-%     a:  if cursym!* eq '!*semicol!* then go to c
-%          else if cursym!* eq 'local and !*reduce4 then nil
-%          else if not flagp(cursym!*,'type) then return varlis
-%          else typerr(cursym!*,"local declaration");
-%         w := cursym!*;
-%         scan();
-%         if not !*reduce4 and cursym!* eq 'procedure
-%           then return procstat1 w;
-% %       varlis := append(varlis,pairvars(remcomma xread1 nil,nil,w));
-%         varlis := append(varlis,read_param_list nil);
-%         if not(cursym!* eq '!*semicol!*) or null u then symerr(nil,t);
-%     c:  scan();
-%         go to a
-%    end;
-
 symbolic procedure read_type;
    % This is a very restricted parser for type expressions.
    begin scalar y,z;
       y := scan();
    a: z := scan();
-      if z eq '!*lpar!* then <<y := list(y,xread 'paren); go to a>>
+      if z = '!*lpar!* then <<y := list(y,xread 'paren); go to a>>
        else if null(z memq '(!*comma!* !*rpar!* !*semicol!* mapped_to))
         then <<y := if atom y then list(y,z) else aconc(y,z);
                go to a>>;
@@ -133,31 +116,27 @@ symbolic procedure read_param_list u;
    % Used only when reduce4 is on.
    begin scalar lparp,x,y,z;
       x := cursym!*;
-      if not(x eq '!*lpar!*) then go to b;
-      lparp := t;
-  a:  x := scan();
+      if x = '!*lpar!* then <<
+         lparp := t;
+         x := scan() >>;
   b:  if not idp x then typerr(x,"parameter");
       y := scan();
-      if y eq '!*colon!* then go to typed
-%      else x := x . if u then u
-%                     else if not !*reduce4 then 'scalar else 'generic;
+      if y = '!*colon!* then <<
+         x := x . read_type();
+         y := cursym!* >>
        else x := x . 'generic;
-  c:  if y eq '!*comma!* then progn(z := x . z, go to a)
-       else if y eq '!*rpar!*
+      if y = '!*comma!* then << z := x . z; x := scan(); go to b >>
+       else if y = '!*rpar!*
         then if lparp
-              then if scan() eq '!*semicol!* then return reversip(x . z)
-             else if cursym!* eq '!*colon!* and null u
+              then if scan() = '!*semicol!* then return reversip(x . z)
+             else if cursym!* = '!*colon!* and null u
               then return reversip(x . z)
                      else typerr(cursym!*,"delimiter")
               else rerror(rlisp,100,"Too many right parentheses")
-       else if y eq '!*semicol!*
+       else if y = '!*semicol!*
         then if lparp
                then rerror(rlisp,101,"Too few right parentheses")
-       else return reversip(x . z);
-  typed:
-      x := x . read_type();
-      y := cursym!*;
-      go to c
+       else return reversip(x . z)
    end;
 
 flag('(local),'type);

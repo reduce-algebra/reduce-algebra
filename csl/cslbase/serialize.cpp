@@ -3419,7 +3419,7 @@ static LispObject load_module(LispObject env, LispObject file,
 // if I am in load_selected_source mode I need to check before I set up
 // !*savedef information.
             bool getsavedef = true;
-            if (option == F_SELECTED_SOURCE)
+            if (option == F_SELECTED_SOURCE && name != nil)
             {   LispObject w;
                 w = get(name, load_selected_source_symbol, nil);
                 if (w == nil) getsavedef = false;
@@ -3434,7 +3434,14 @@ static LispObject load_module(LispObject env, LispObject file,
             }
             if (getsavedef)
             {   push3(name, file, r)
-                putprop(name, savedef, def);
+                if (name == nil)
+                {   LispObject p1 = qcdr(p);
+                    LispObject n1 = qcar(p1);
+                    LispObject t1 = qcar(p1 = qcdr(p1));
+                    LispObject v1 = qcar(p1 = qcdr(p1));
+                    putprop(n1, t1, v1);
+                }
+                else putprop(name, savedef, def);
                 pop3(r, file, name);
 // Build up a list of the names of all functions whose !*savedef information
 // has been established.

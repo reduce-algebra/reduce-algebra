@@ -61,8 +61,6 @@ symbolic procedure remopr u;
 
 flag('(remopr),'eval);
 
-operator make!-string!-unique;
-
 symbolic procedure den u;
    mk!*sq (denr simp!* u ./ 1);
 

@@ -262,7 +262,7 @@ symbolic procedure log_freevars_list(varlist, u, isprog);
 
 symbolic procedure no!-side!-effectp u;
    if atom u then numberp u or (idp u and not(fluidp u or globalp u))
-    else if car u eq 'quote then t
+    else if car u = 'quote then t
     else if flagp(car u,'nosideeffects)
      then no!-side!-effect!-listp cdr u
     else nil;
@@ -320,7 +320,7 @@ symbolic procedure subla!-q(u,v);
         if null u or null v then return v
          else if atom v
                  then return if x:= atsoc(v,u) then cdr x else v
-         else if car v eq 'quote or car v eq 'go then return v
+         else if car v = 'quote or car v = 'go then return v
          else if (eqcar(v, 'lambda) or eqcar(v, 'prog)) and
                  not atom cdr v then <<
             x := cadr v;  % (LAMBDA x . body) or (PROG x . body)

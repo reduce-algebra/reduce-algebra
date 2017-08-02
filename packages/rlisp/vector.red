@@ -43,12 +43,12 @@ flag('(vec!*),'vecfn);
 symbolic procedure xreadvec;
    % Expects a list of expressions enclosed by [, ].
    begin scalar cursym,delim,lst;
-        if scan() eq '!*rsqb!* then <<scan(); return list 'list>>;
+        if scan() = '!*rsqb!* then <<scan(); return list 'list>>;
     a:      lst := aconc(lst,xread1 'group);
         cursym := cursym!*;
         scan();
-        if cursym eq '!*rsqb!*
-          then return if delim eq '!*semicol!* then 'progn . lst
+        if cursym = '!*rsqb!*
+          then return if delim = '!*semicol!* then 'progn . lst
                        else list('vec!*,'list . lst)
          else if null delim then delim := cursym
          else if not(delim eq cursym)

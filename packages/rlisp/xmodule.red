@@ -86,7 +86,7 @@ symbolic procedure xmodloop u;
       while x := u do <<
          x := cadar u;
          if null atom x and
-            ((car x eq 'put and
+            ((car x = 'put and
               caddr x = mkquote 'number!-of!-args and
               memq(cadadr x,intfns!*)) or
              car x memq '(exports imports)) then nil

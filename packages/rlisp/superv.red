@@ -190,18 +190,18 @@ symbolic procedure command;
    b: if !*reduce4 then go to c
        else if !*struct then y := structchk y;
       if !*pret and (atom y or null (car y memq '(in out shut)))
-        then if null y and cursym!* eq 'end then rprint 'end
+        then if null y and cursym!* = 'end then rprint 'end
               else << rprint y; terpri() >>;
       if !*slin then return list('symbolic,y);
       x := form y;
       % Determine target mode.
       if flagp(key!*,'modefn) then mode := key!*
        else if null atom x % and null !*micro!-version
-         and null(car x eq 'quote)
+         and null(car x = 'quote)
          and (null(idp car x
                  and (flagp(car x,'nochange)
                        or flagp(car x,'intfn)
-                       or car x eq 'list))
+                       or car x = 'list))
            or car x memq '(setq setel setf)
                    and eqcar(caddr x,'quote))
         then mode := 'symbolic
@@ -209,7 +209,7 @@ symbolic procedure command;
       return list(mode,convertmode1(x,nil,'symbolic,mode));
    c: if !*debug then << prin2 "Parse: "; prettyprint y >>;
     % Mode analyze input.
-      if key!* eq '!*semicol!* then go to a;  % Should be a comment.
+      if key!* = '!*semicol!* then go to a;  % Should be a comment.
       if null !*reduce4 then y := form y else y := n!_form y;
 %     y := n!_form y;
       if !*debug then << terpri(); prin2 "Form: "; prettyprint y >>;
@@ -221,7 +221,7 @@ symbolic procedure update!_prompt;
       statcounter := statcounter + 1;
       promptexp!* :=
          intern list2string append(explode statcounter,
-                     if null symchar!* or !*mode eq 'algebraic
+                     if null symchar!* or !*mode = 'algebraic
                      then '(!: ! ) else '(!* ! ));
       setpchar promptexp!*
    end;
@@ -261,21 +261,21 @@ symbolic procedure begin1a prefixchars;
       remflag(repeatkeywords!*,'delim);
       remflag( whilekeywords!*,'delim);
       if !*int then erfg!* := nil;   % To make editing work properly.
-      if cursym!* eq 'end then << comm1 'end; return nil >>
+      if cursym!* = 'end then << comm1 'end; return nil >>
        % Note that key* was set from *previous* command in following.
-       else if terminalp() and null(key!* eq 'ed)
+       else if terminalp() and null(key!* = 'ed)
         then printprompt promptexp!*;
       x := errorset!*('(command),t);
       condterpri();
       if errorp x then go to err1;
       x := car x;
-      if car x eq 'symbolic and eqcar(cadr x,'xmodule)
+      if car x = 'symbolic and eqcar(cadr x,'xmodule)
         then result := xmodloop eval cadr x
        else result := begin11 x;
       if null result then go to a
-       else if result eq 'end then return nil
-       else if result eq 'err2 then go to err2
-       else if result eq 'err3 then go to err3;
+       else if result = 'end then return nil
+       else if result = 'err2 then go to err2
+       else if result = 'err3 then go to err3;
   c:  if crbuf1!* then <<
          lprim "Closing object improperly removed. Redo edit.";
          crbuf1!* := nil;
@@ -315,7 +315,7 @@ ulimit!* := nil;
 
 symbolic procedure begin11 x;
    begin scalar errmsg!*,mode,result,newrule!*;
-      if cursym!* eq 'end
+      if cursym!* = 'end
          then if terminalp() and null !*lisp!_hook
                 then << cursym!* := '!*semicol!*;
                            curescaped!* := nil;
@@ -363,7 +363,7 @@ symbolic procedure begin11 x;
         then << programl!* := list(mode,x); return 'err2 >>
        else if !*defn then return nil;
       if null !*reduce4
-        then if null(mode eq 'symbolic) then x := getsetvars x else nil
+        then if null(mode = 'symbolic) then x := getsetvars x else nil
        else << result := car result;
                   (if null result then result := mkobject(nil,'noval));
                   mode := type result;
@@ -371,15 +371,15 @@ symbolic procedure begin11 x;
       add2resultbuf((if null !*reduce4 then car result else result),
                     mode);
       if null !*output then return nil
-       else if null(semic!* eq '!$)
+       else if null(semic!* = '!$)
         then if !*reduce4 then (begin
                    terpri();
-                   if mode eq 'noval then return nil
+                   if mode = 'noval then return nil
                     else if !*debug then prin2t "Value:";
                    rapply1('print,list list(mode,result))
                  end)
-       else if mode eq 'symbolic
-              then if null car result and null(!*mode eq 'symbolic)
+       else if mode = 'symbolic
+              then if null car result and null(!*mode = 'symbolic)
                      then nil
               else begin
                   terpri();
@@ -393,7 +393,7 @@ symbolic procedure begin11 x;
                                   t);
       if null !*reduce4
         then return if errorp result then 'err3 else nil
-       else if null(!*mode eq 'noval) % and !*debug
+       else if null(!*mode = 'noval) % and !*debug
         then << terpri(); prin2 "of type: "; print mode >>;
       return nil
    end;
@@ -404,14 +404,14 @@ symbolic procedure getsetvarlis u;
     else if atom car u then car u . getsetvarlis cdr u
     else if caar u memq '(setel setk)   % setk0.
      then getsetvarlis cadar u . getsetvarlis cdr u
-    else if caar u eq 'setq then mkquote cadar u . getsetvarlis cdr u
+    else if caar u = 'setq then mkquote cadar u . getsetvarlis cdr u
     else car u . getsetvarlis cdr u;
 
 symbolic procedure getsetvars u;
    if atom u then nil
     else if car u memq '(setel setk)   % setk0.
      then getsetvarlis cadr u . getsetvars caddr u
-    else if car u eq 'setq then mkquote cadr u . getsetvars caddr u
+    else if car u = 'setq then mkquote cadr u . getsetvars caddr u
     else nil;
 
 flag ('(deflist flag fluid global remflag remprop unfluid),'eval);
@@ -457,15 +457,15 @@ symbolic procedure add2resultbuf(u,mode);
 % Note that functions like lr_results etc are ones in the libreduce package.
       if !*libreduce!_active then <<
          lr!_result();
-         if null(semic!* eq '!$) then lr!_printer(u,mode);
+         if null(semic!* = '!$) then lr!_printer(u,mode);
          lr!_statcounter();
          prin2 statcounter;
          lr!_mode();
-         prin2 (if !*mode eq 'symbolic then 1 else 0);
+         prin2 (if !*mode = 'symbolic then 1 else 0);
          lr!_posttext();
          terpri() >>;
-      if mode eq 'symbolic
-       or (null u and (null !*reduce4 or null(mode eq 'empty!_list)))
+      if mode = 'symbolic
+       or (null u and (null !*reduce4 or null(mode = 'empty!_list)))
        or !*nosave!* then return nil;
       if !*reduce4 then putobject('ws,u,mode) else ws := u;
       if terminalp()

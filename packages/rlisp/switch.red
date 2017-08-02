@@ -114,7 +114,7 @@ symbolic procedure onoff(u,bool);
       if !*switchcheck and lispeval x eq bool then return nil
        else if y := atsoc(bool,get(u,'simpfg))
         then lispeval('progn . append(cdr y,list nil));
-      if bool and x eq '!*!r!a!i!s!e then x := '!*raise; % Special case.
+      if bool and x = '!*!r!a!i!s!e then x := '!*raise; % Special case.
        set(x,bool)
    end;
 
@@ -135,8 +135,8 @@ symbolic procedure switch u;
          if eqcar(x,'equal) and not atom cdr x and idp cadr x
              and not null cddr x and null cdddr x
            then if caddr x memq '(on off t nil)
-                  then <<dflt := list if caddr x eq 'on then t
-                                       else if caddr x eq 'off then nil
+                  then <<dflt := list if caddr x = 'on then t
+                                       else if caddr x = 'off then nil
                                        else caddr x;
                          x := cadr x>>
                  else typerr(caddr x,"switch default value");

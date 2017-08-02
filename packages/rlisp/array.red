@@ -69,7 +69,7 @@ COMMENT further support for REDUCE arrays;
 
 symbolic procedure typechk(u,v);
    begin scalar x;
-      if (x := gettype u) eq v or x eq 'parameter
+      if (x := gettype u) eq v or x = 'parameter
         then lprim list(v,u,"redefined")
        else if x then typerr(list(x,u),v)
    end;
@@ -100,7 +100,7 @@ symbolic macro procedure mkarray u;
 symbolic procedure mkarray1(u,v);
    % U is a list of positive integers representing array bounds, V
    % the defining mode. Value is an array structure.
-   if null u then if v eq 'symbolic then nil else 0
+   if null u then if v = 'symbolic then nil else 0
     else begin integer n; scalar x;
       n := car u - 1;
       x := mkvect n;

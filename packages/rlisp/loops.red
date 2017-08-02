@@ -41,7 +41,7 @@ symbolic procedure repeatstat;
          else flag('(until),'delim);
         body:= xread t;
         if not bool then remflag('(until),'delim);
-        if not(cursym!* eq 'until) then symerr('repeat,t);
+        if not(cursym!* = 'until) then symerr('repeat,t);
         return list('repeat,body,xread t);
    end;
 
@@ -74,7 +74,7 @@ symbolic procedure whilstat;
         if flagp('do,'delim) then bool2 := t else flag('(do),'delim);
         bool := xread t;
         if not bool2 then remflag('(do),'delim);
-        if not(cursym!* eq 'do) then symerr('while,t);
+        if not(cursym!* = 'do) then symerr('while,t);
         return list('while,bool,xread t)
    end;
 
@@ -102,6 +102,4 @@ put('while,'formfn,'formwhile);
 endmodule;
 
 end;
-
-
 

@@ -545,7 +545,31 @@ a     (setq hold (nconc hold (list (xread1 nil))))
 (put 'while 'stat 'whilstat)
 (flag '(while) 'nochange)
 
-(de make!-string!-unique (x) x) % placeholder while bootstrapping
+(de repeatstat ()
+   (prog (!*blockp body bool)
+      (cond
+         ((flagp 'until 'delim) (setq bool t))
+         (t (flag '(until) 'delim)))
+      (setq body (xread t))
+      (cond
+         ((null bool) (remflag '(until) 'delim)))
+      (cond
+         ((not (eq cursym!* 'until)) (symerr 'repeat t)))
+      (return (list 'repeat body (xread t)))))
+
+(dm repeat (u)
+   (progn (terpri) (print (prog (body bool lab)
+      (setq body (cadr u))
+      (setq bool (caddr u))
+      (setq lab 'repeatlabel) 
+      (return (list
+      'prog nil
+    lab  body
+         (list 'cond
+            (list (list 'not bool) (list 'go lab))))))))))
+
+(put 'repeat 'stat 'repeatstat)
+(flag '(repeat) 'nochange)
 
 % Now we have just enough to be able to start to express ourselves in
 % (a subset of) rlisp.

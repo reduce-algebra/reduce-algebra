@@ -46,9 +46,6 @@ remprop('imports,'stat);
 
 remprop('module,'stat);
 
-if not getd 'make!-string!-unique then
-  putd('make!-string!-unique, 'expr, '(lambda (x) x));
-
 symbolic procedure exports u;
    begin exportslist!* := union(u,exportslist!*) end;
 
@@ -90,7 +87,7 @@ put('load,'formfn,'formload);
 
 
 symbolic procedure formload(u,vars,mode);
-   if mode eq 'symbolic then
+   if mode = 'symbolic then
       list('progn,
 % Adapted to maintain loaded!-modules!*
            list('setq, 'loaded!-modules!*,
@@ -203,7 +200,7 @@ symbolic procedure instate!-patches(new,old,pkg);
   end;
 
 symbolic procedure install!-patches u;
-   if u eq 'patches then nil
+   if u = 'patches then nil
    else if (u := get(u,'patchfn)) then
    begin scalar !*usermode,!*redefmsg;
       eval list u

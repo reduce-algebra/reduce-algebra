@@ -135,7 +135,7 @@ symbolic procedure rmmbreval(u,v);
    <<w:=reval1(y,nil); u2:=aconc(u2,w);
      if eqcar(w,'!*sq) then w:=!*q2a(cadr w);
      u1:=aconc(u1,w)>>;
-   if (x:=assoc(u1,w:=get(fn,'kvalue))) then<<x:=cadr x; go to a>>;
+   if (x:=assoc(u1,w:=get(fn,'kvalue))) then return cadr x;
      % Evaluate "algebraic procedure" and "algebraic operator" directly.
    if flagp(fn,'opfn) then x:= reval1(opfneval u2,v)
    else if get(fn,'simpfn) then x:=!*q2a1(simp!* u2,v)
@@ -147,7 +147,7 @@ symbolic procedure rmmbreval(u,v);
    if not smember(u1,x) and not smember(u2,x)
         then put!-kvalue(fn,get(fn,'kvalue),(car u)
                 . foreach uuu in cdr u collect reval uuu,x);
- a: return x;
+   return x;
   end;
 
 symbolic procedure remember u;

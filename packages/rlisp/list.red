@@ -59,16 +59,16 @@ symbolic procedure xreadlist;
    % Expects a list of expressions enclosed by {, }.
    % Used to allow expressions separated by ; - treated these as progn.
    begin scalar cursym,delim,lst,lst2;
-        if scan() eq '!*rcbkt!* then <<scan(); return list 'list>>;
+        if scan() = '!*rcbkt!* then <<scan(); return list 'list>>;
     a:  if null lst then << lst := lst2  := aconc(lst,xread1 'group)>>
         else lst2 := nconc2 (lst2,list(xread1 ' group));;
         cursym := cursym!*;
-        if cursym eq '!*semicol!*
+        if cursym = '!*semicol!*
           then symerr("Syntax error: semicolon in list",nil)
-         else if scan() eq '!*rcbkt!* and cursym eq '!*comma!*
+         else if scan() = '!*rcbkt!* and cursym = '!*comma!*
           then symerr("Syntax error: invalid comma in list",nil);
-        if cursym eq '!*rcbkt!*
-          then return % if delim eq '!*semicol!*
+        if cursym = '!*rcbkt!*
+          then return % if delim = '!*semicol!*
                       %   then 'progn . lst else
                       'list . lst
          else if null delim then delim := cursym;
@@ -106,7 +106,7 @@ symbolic procedure listeval(u,v);
             then listeval(if flagp(u,'share) then eval u
                            else if x then cadr x else typerr(u,'list),v)
                                   where x=get(u,'avalue)
-           else if car u eq 'list
+           else if car u = 'list
             then makelist for each x in cdr u collect reval1(x,v)
            else ((if x then apply2(x,cdr u,v)
                    else rerror(rlisp,19,"Illegal operation on lists"))
@@ -175,7 +175,7 @@ symbolic procedure listeval0 u;
        then if flagp(u,'share) then u := listeval0 eval u
              else if (v := get(u,'avalue)) and cadr v neq u
               then u := listeval0 cadr v;
-     if getrtype car u eq 'array then u := listeval0 getelv u;
+     if getrtype car u = 'array then u := listeval0 getelv u;
      simpcount!* := simpcount!* - 1;
      return u
    end;
@@ -188,8 +188,8 @@ symbolic inline procedure rlistp u; eqcar(u,'list);
 symbolic procedure rfirst u;
    begin scalar x;
       u := car u;
-%     if null(getrtype(x := listeval0 u) eq 'list)
-%        and null(getrtype(x := aeval u) eq 'list)
+%     if null(getrtype(x := listeval0 u) = 'list)
+%        and null(getrtype(x := aeval u) = 'list)
       if not rlistp(x := listeval0 u) and not rlistp(x := aeval u)
         then typerr(u,"list");
       if null cdr x then parterr(u,1) else return reval cadr x
@@ -245,9 +245,9 @@ deflist('((first 1) (second 1) (third 1) (rest 1)),'number!-of!-args);
 symbolic procedure rappend u;
    begin scalar x,y;
       argnochk('append . u);
-      if null(getrtype(x := reval car u) eq 'list)
+      if null(getrtype(x := reval car u) = 'list)
         then typerr(x,"list")
-      else if null(getrtype(y := reval cadr u) eq 'list)
+      else if null(getrtype(y := reval cadr u) = 'list)
        then typerr(y,"list")
       else return 'list . append(cdr x,cdr y)
    end;
@@ -257,11 +257,11 @@ put('append,'psopfn,'rappend);
 symbolic procedure rcons u;
    begin scalar x,y,z;
       argnochk('cons . u);
-      if (y := getrtypeor(x := revlis u)) eq 'hvector
+      if (y := getrtypeor(x := revlis u)) = 'hvector
     then return if get('cons,'opmtch) and (z := opmtch('cons . x))
                    then reval z
                  else prepsq subs2 simpdot x
-       else if not(getrtype cadr x eq 'list) then typerr(x,"list")
+       else if not(getrtype cadr x = 'list) then typerr(x,"list")
        else return 'list . car x . cdadr x
    end;
 
@@ -269,7 +269,7 @@ put('cons,'psopfn,'rcons);
 
 symbolic procedure rreverse u;
    <<argnochk ('reverse . u);
-     if null(getrtype(u := reval car u) eq 'list) then typerr(u,"list")
+     if null(getrtype(u := reval car u) = 'list) then typerr(u,"list")
       else 'list . reverse cdr u>>;
 
 put('reverse,'psopfn,'rreverse);
