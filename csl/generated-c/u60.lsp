@@ -1,57 +1,100 @@
 
 % u60.lsp           Machine generated Lisp
 
-(c!:install "u60" 142385 6511438 5329825)
+(c!:install "u60" 23040 7621367 6545458)
 
-(c!:install 'comcom3 '(comcom3 l_k l_a plus expt ff times minus
-difference det "Is " first ">0 and " ">0 ? (y/n) and press <RETURN>"
-last y lie4so3 lie4so21 liemat mat bb quotient cc !*tr_lie
-"[W,X]=Y, [W,Y]=-X, [X,Y]=W" only lie_class list liealg comtab
-"[W,X]=Y, [W,Y]=X, [X,Y]=W" matrix aeval setk evalnumberp assgnpri
-evalequal evalgreaterp aeval!* revalx boolvalue!* clear) 
-449270489247826737)
+(c!:install 'preproc1 '(preproc1 !:rd!: !:dn!: !*sq procedure !*params!*
+!*getdecs (real integer) deftype!* declare (subroutine function)
+!*type!* setq (cond progn) (plus times difference quotient minus) ((
+simp_exp . scalar)) (!:cr!: !:crn!: !:gi!:) quotient (!~for for) (
+integer) fl2bf read!:num normbf decimal2internal prepsq symtabput
+lastpair preprocdec migrate!-setqs simp!*) 5973871366085276256)
 
-(c!:install 'pst_partition '(pst_partition lambda_sorneshiwvd12 pst_d
-sort) 17217556705073099669)
+(c!:install 'find_bubles1 '(find_bubles1 select_bubles) 
+17544506527090479506)
 
-(c!:install 'lambda_sorneshiwvd12 '(lambda_sorneshiwvd12 numlist_ordp) 
-9272889440585894424)
+(c!:install 'compactf1 '(compactf1 ((z . scalar)) intersection
+compactf11) 4750216803604100979)
 
-(c!:install 'ratleqp '(ratleqp ratdif) 9146806343219559736)
+(c!:install 'solvevars '(solvevars allbkern constant_exprp ordad) 
+15451545184830350089)
 
-(c!:install 'reduce!-eival!-powers1 '(reduce!-eival!-powers1 multsq
-addsq to multf) 10867898188346190559)
+(c!:install 'nrootnn '(nrootnn ((pl . scalar) (signn . scalar) (qr .
+scalar) (w . scalar) (r . integer) (s . integer) (p . integer) (q .
+integer)) !*primelist!* mcfactor!* iroot) 257289543218596627)
 
-(c!:install 'deg '(deg gdmode!* dmode!* simp!* tstpolyarg numrdeg) 
-11030504842515431628)
+(c!:install 'rat_min '(rat_min rat_leq) 2567018000700184613)
 
-(c!:install 'imports '(imports importslist!* union) 14856359103180957613
-)
+(c!:install 'let0 '(let0 frasc!* let00) 7391967956783306752)
 
-(c!:install 'lto_hentry '(lto_hentry) 8213524916477710154)
+(c!:install 'get!-min!-degreelist '(get!-min!-degreelist confusion
+tayexp!-plus2 taymindegreel) 8744899286662908442)
 
-(c!:install 'preptaycoeff '(preptaycoeff infinity quotient checkexp
-reval checkdifference) 125000764193721640)
+(c!:install 'cl_subfof1 '(cl_subfof1 ((op . scalar) (v . scalar) (newv .
+scalar) (m . scalar) (b . scalar)) true false ex all bex ball or and not
+impl repl equiv lastpair cl_newv cl_subvarsubstat rl_subat) 
+6943140463705729776)
 
-(c!:install 'taysimpsq!* '(taysimpsq!* !*taylorautoexpand taysimpsq) 
-2248755144385674747)
+(c!:install 'ps!:find!-order '(ps!:find!-order ps !:ps!: tps
+"Unexpected form in ps!:find!-order" ps!:unknown!-order ps!:expression
+ps!:order ps!:find!-order1 rerror) 1678637726556154181)
 
-(c!:install 'talp_tcandt '(talp_tcandt talp_op talp_tcandt1) 
-4572306192278396036)
+(c!:install 'vdpenumerate '(vdpenumerate number pcount!* vdpsave
+vdpgetprop vdpputprop) 11111691383406042490)
 
-(c!:install 'pasf_exprng!-gball '(pasf_exprng!-gball
-"pasf_exprng: bad bound " " with free variables " !*rlexprngnatural and
-true false cl_fvarl rederr pasf_exprng pasf_qff2ivl pasf_sisub) 
-7187494486004864692)
+(c!:install 'xnormalise '(xnormalise invsq multpfsq) 
+11085071778112155648)
 
-(c!:install 'make!-ps '(make!-ps tps tag !*sqvar!* ps!:putv) 
-4101018185669340029)
+(c!:install 'validrule '(validrule validrule1) 2742724852769084751)
 
-(c!:install 'nestprep!: '(nestprep!: co simp prepsq) 
-13873545229761536726)
+(c!:install 'listofvarnames '(listofvarnames
+"invalid argument to listofvarnames" free listp rederr domain!*p) 
+14668539973731296408)
 
-(c!:install 'calc_map_ '(calc_map_ quotient actual_alst calc_map_tar
-reval calc_den_tar) 13813670919727514222)
+(c!:install 'calc_map_2d '(calc_map_2d mk_names_map_2 mk_binding
+coeff_calc) 4378061536774923404)
+
+(c!:install '!*sf2exb '(!*sf2exb degr nreverse) 16721578175864221016)
+
+(c!:install 'x!*!*p!-w '(x!*!*p!-w to general!-difference!-mod!-p) 
+5260913038693974719)
+
+(c!:install 'ofsf_ordrelp '(ofsf_ordrelp (equal neq leq lessp geq
+greaterp)) 677969609291168617)
+
+(c!:install 'makecoeffpairs1 '(makecoeffpairs1 ((nil)) tayexp!-minus
+makecoeffpairshom lastpair) 1976336402385581849)
+
+(c!:install 'null!+vec!+p '(null!+vec!+p mk!+squared!+norm my!+nullsq!+p
+) 5038748472918740970)
+
+(c!:install 'talp_get!-minfct '(talp_get!-minfct talp_invp talp_fop
+talp_mktn) 10298220219146545044)
+
+(c!:install 'xpwrlcmp '(xpwrlcmp expt sqrt getdenom getdenomx lcm) 
+13809688206923474696)
+
+(c!:install 'ps!:expansion!-point '(ps!:expansion!-point !:ps!: ps!:getv
+) 16036982018896120238)
+
+(c!:install 'frlp '(frlp frlis!*) 8131105772210933591)
+
+(c!:install 'dm!-quotient '(dm!-quotient ((noequiv . scalar)) !*noequiv
+dm!-mkfloat !:quotient) 8954821169235857289)
+
+(c!:install 'groebsaveltermbc '(groebsaveltermbc glterms vbc2a
+constant_exprp simp fctrf prepf) 2234765308638356198)
+
+(c!:install 'lispcondp '(lispcondp cond) 15172181409483727939)
+
+(c!:install 'tot!-asym!-indp '(tot!-asym!-indp indordp indxchk indordlp)
+ 16378113130650151290)
+
+(c!:install 'simpabs '(simpabs abs ((x . scalar)) revlis mksq sign!-abs
+simp!* simpabs1 quotsq) 15480467851583599509)
+
+(c!:install 'formclear '(formclear clear formclear1) 
+11707879931340615398)
 
 
 % End of generated Lisp code

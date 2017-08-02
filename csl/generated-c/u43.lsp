@@ -1,117 +1,125 @@
 
 % u43.lsp           Machine generated Lisp
 
-(c!:install "u43" 45121 9993862 2917546)
+(c!:install "u43" 97119 4221058 7161180)
 
-(c!:install 'numir '(numir atts name complex_cartesian plus times
-!&imaginaryi!; complex_polar exp rational divide find lex omobj) 
-204094701760676937)
+(c!:install 'redall '(redall gg!* ((rr . scalar) (f . scalar) (f1 .
+scalar) (lj . scalar) (k . scalar) (new . scalar)) shortway!* thirdway!*
+gv!* path " ==> " " --> " conds!* bv!* ljet nf ord dd insert) 
+3583834346292665134)
 
-(c!:install 'mkexpt '(mkexpt expt) 5754935854877136791)
+(c!:install 'pa_list2vect '(pa_list2vect ((ve . scalar) (reps . scalar)
+(abs . integer)) min eval) 15685377400841758969)
 
-(c!:install 'evalmember '(evalmember getrlist) 5286359330849485084)
+(c!:install 'get!-current!-representation '(get!-current!-representation
+currep) 5098454424683034082)
 
-(c!:install 'e!* '(e!* !:bprec!: !:e) 15144487963355805024)
+(c!:install 'simpquot '(simpquot alg "0/0 formed" "Zero divisor" dmode!*
+(!:rd!: !:cr!:) !*modular simpcar simp rerror !:onep divd simprecip
+multsq) 3293748250358531092)
 
-(c!:install 'gpargp '(gpargp gpexpp gplogexpp) 3658154410741724482)
+(c!:install 'dnform '(dnform e dnform1) 6931039935746521334)
 
-(c!:install 'indexvp '(indexvp) 11663335178243527811)
+(c!:install 'mk!+mat!+plus!+mat '(mk!+mat!+plus!+mat ((dims . scalar) (
+dimz . scalar) (s . scalar) (z . scalar) (res . scalar) (sum . scalar))
+"no matrix in add" "wrong dimensions in add" !*sub2 matrix!+p rederr
+get!+col!+nr get!+row!+nr get!+mat!+entry addsq subs2) 
+8750189808238668709)
 
-(c!:install 'extract_vars '(extract_vars variable nreverse raiseind!:) 
-581001641406960949)
+(c!:install 'cl_sacatlp '(cl_sacatlp) 546834097179446475)
 
-(c!:install 'ev_mtest!? '(ev_mtest!?) 5121257538194335172)
+(c!:install 'make!-modular!-symmetric '(make!-modular!-symmetric
+modulus!/2 current!-modulus !*n2f) 6815586440753749212)
 
-(c!:install 'cgp_greenp '(cgp_greenp cgp_rp) 14495413788687484424)
+(c!:install 'upperlimitrd '(upperlimitrd ((upperlimit . scalar)) char (u
+p l i m i t) "<uplimit>" (!/ u p l i m i t) "</uplimit>" lex errorml
+mathml) 267582976777254657)
 
-(c!:install 'matrixml '(matrixml "<matrix" "" matrixrow "</matrix>"
-printout attributesml indent!* matrix_rows cols2rows) 
-14211731179809632096)
+(c!:install 'init '(init ((i . integer)) fluidbibasisvariables
+fluidbibasisreversedvariables fluidbibasissinglevariablemonomialss
+fluidbibasissinglevariablemonomialsa fluidbibasissetq
+fluidbibasisreductionsmade fluidbibasisnormalforms
+fluidbibasisnonzeronormalforms initmonomials settreset) 
+4695481218495237017)
 
-(c!:install 'ps!:arg!-values '(ps!:arg!-values !:ps!: ps!:value) 
-15612600895103978694)
+(c!:install 'fnreval '(fnreval nreverse reval1) 14280642333297093583)
 
-(c!:install 'diford '(diford lengthn) 7054798114156165767)
+(c!:install 'copy_mat '(copy_mat ((c . scalar) (row_dim . integer) (
+col_dim . integer)) matrix_input_test size_of_matrix mkmatrix getmat
+setmat) 1370902882280465895)
 
-(c!:install 'specrd!:times '(specrd!:times minus add_minus mkround
-rd!:times) 8213566267099448959)
+(c!:install 'evzero '(evzero ((x . scalar)) dipvars!*) 
+3807153495825059309)
 
-(c!:install 'remdiff '(remdiff difference plus minus constp) 
-14005009348996126671)
+(c!:install 'exdf0 '(exdf0 exdff0 negf multpfsq addpf) 
+9904970085747053740)
 
-(c!:install 'remove_least_item '(remove_least_item
-"How did we get here?" rederr remove_root_item) 4979620738984819027)
+(c!:install 'gbfdiff '(gbfdiff difbf) 11601477481004078606)
 
-(c!:install 'nspaces '(nspaces !! ! ) 9403753038800802083)
+(c!:install 'getphystypeexpt '(getphystypeexpt ((x . scalar)) scalar
+getphystypecar) 15954947826563692638)
 
-(c!:install 'mk_simpl_map_ '(mk_simpl_map_ mk_simpl_map_1) 
-11429407052348500504)
+(c!:install 'mk_binding '(mk_binding can_be_proved edge_bind) 
+11011753991814478595)
 
-(c!:install 'mk_dummy_ids '(mk_dummy_ids dummy reserved dummy_id!*
-intersection clean_numid union) 3153376571271088760)
+(c!:install 'ratnump '(ratnump !:rn!: simp!*) 12588082219399414369)
 
-(c!:install 'createtriple '(createtriple fluidbibasistripleid) 
-6471021107549576289)
+(c!:install 'groeb!=testc1 '(groeb!=testc1 nth bas_dpoly dp_lmon mo_sum
+mo_equal!?) 8189644749997674322)
 
-(c!:install 'totalcompareconstants '(totalcompareconstants equal less
-greater wukord!* wuvarlist!* symbollessp) 1087222859431793036)
+(c!:install 'polynomread '(polynomread fluidbibasisvariables
+fluidbibasissinglevariablemonomialsa createmonomunit
+polynommultiplybymonom polynomadd) 2488681923758697205)
 
-(c!:install 'gigcdsq '(gigcdsq giintgcd quotf) 2701479337646345197)
+(c!:install 'fctlength '(fctlength fctargs) 3620606859388514100)
 
-(c!:install 'simpexpt2 '(simpexpt2 expt !*precise_complex !*precise abs
-sqrt !*keepsqrts times !*modular quotient !*mcd minus dmode!* frlis!*
-simp multsq simpexpt1 split!-sign retimes posnump prepsq simp!* simpexpt
-quotsq prepf simpx1 mksq) 15655962808424643348)
+(c!:install 'ofsf_anegrel '(ofsf_anegrel ((equal . equal) (neq . neq) (
+leq . geq) (geq . leq) (lessp . greaterp) (greaterp . lessp))
+"ofsf_anegrel: unknown operator " rederr) 5691787172200909886)
 
-(c!:install 'mk!+resimp!+mat '(mk!+resimp!+mat resimp) 
-624978839118700389)
+(c!:install 'intervalrd '(intervalrd ((l . scalar) (u . scalar) (ats .
+scalar)) atts (closure) char (!/ i n t e r v a l) interval "</interval>"
+retattributes mathml lex errorml) 3319708556584217398)
 
-(c!:install 'talp_invtscsimpl '(talp_invtscsimpl or and (ex all)
-talp_rnf talp_atfp talp_invtscc talp_simpat talp_invtscsimplat talp_op
-talp_argl) 8503326907152582869)
+(c!:install 'new_simpexpt '(new_simpexpt !*precise !*factor !*exp !*mcd
+!*allfac ((!*precise . scalar) (!*factor . scalar) (!*exp . scalar) (
+!*mcd . scalar) (!*allfac . scalar) (redefmode . scalar)) exp mcd
+precise allfac minus !*redefmsg simpexpt original_simpexpt on off multsq
+copyd) 12435952187326570815)
 
-(c!:install 'conditionrd '(conditionrd char (!/ c o n d i t i o n)
-"</condition>" condition mathml lex errorml) 13950345929221872061)
+(c!:install 'get!:const '(get!:const ((u . scalar)) save!:c not_found
+round!:mt bflerrmsg) 12804783829501056757)
 
-(c!:install 'ieval '(ieval reval !*s2i) 10970267165119146512)
+(c!:install 'numprintlen '(numprintlen !:rd!: (!:cr!: !:crn!: !:gi!:)
+plus rd!:explode lispeval) 5981142656198358253)
 
-(c!:install 'znumrnil '(znumrnil znumr) 3406126826241646652)
+(c!:install 'miller!-rabin '(miller!-rabin ((d . scalar) (s . scalar) (x
+. scalar)) set!-modulus) 14981114285015630988)
 
-(c!:install 'diffp '(diffp !*sq dfform plus wtl!* k!* dmode!* powlis!*
-!*depend !*expanddf depl!* df !*commutedf !*simpnoncomdf int
-!*allowdfint !*df_partial (!! !! !_) simpfn simpiden (df int)
-"Possible inconsistent dependencies in" noncomp simpdf simpexpt multsq
-to addsq difff diffsq dfn_prop simp pair int!-equiv!-chk rationalizesq
-depends df!-chain!-rule opmtch mksq quotsq simp!* not_df_p mk!*sq reval
-smember get!-all!-kernels ldepends merge!-ind!-vars find_sub_df mkid
-dependsl msgpri) 10518100153410283175)
+(c!:install 'revalpart '(revalpart alg "part called without arguments"
+!*intstr ((!*intstr . scalar) (bool . scalar) (expn . scalar) (v .
+scalar) (z . scalar)) list listfn ((x . scalar) (y . scalar) (ishold .
+scalar)) !*hold "Invalid argument" "to part" partop rerror getrtype
+reval listeval0 parterr2 msgpri nth) 205284706188181199)
 
-(c!:install 'letmtr '(letmtr mat matrix "Matrix" "not set" hold rerror
-revlis numlis errpri2 nth pnth) 508084208141511444)
+(c!:install 'equiv!-coeffs '(equiv!-coeffs nzeros nreverse mv!-pow!-!>) 
+8249380351838145758)
 
-(c!:install 'xpartitop '(xpartitop simp!* xpartitsq) 7201581560387780161
-)
+(c!:install '!*g2lex '(!*g2lex ((p1 . scalar)) psum) 
+10484203126794432742)
 
-(c!:install 'r2oaddspecies '(r2oaddspecies "new species: " prin2t) 
-13662323801649141225)
+(c!:install 'isimp1 '(isimp1 !*cvit calc_spurx spur0 multd index_simp
+emult multf isimp2 addf) 16874276077515923660)
 
-(c!:install 'ev!-poles '(ev!-poles) 8441536304507899222)
+(c!:install 'rl_qe '(rl_qe rl_qe!* apply) 17320963409233102897)
 
-(c!:install 'dfp!-rule!-found '(dfp!-rule!-found dfp) 
-9877567616346544088)
+(c!:install 'cl_nnf1 '(cl_nnf1 ((op . scalar)) not impl or repl equiv
+and true false ex all bex ball cl_cflip rl_negateat) 
+13624183289966478860)
 
-(c!:install 'mv!-compact2 '(mv!-compact2 equiv!-coeffs mv!-domainlist
-reduce mv!-domainlist!-!- mv!-coeff!-replace mv!-!+) 
-18366684156009604270)
-
-(c!:install 'prepcadr '(prepcadr prepsq) 17465412849862105063)
-
-(c!:install 'listminimize '(listminimize cali!=min) 12763062043939354477
-)
-
-(c!:install 'general!-multiply!-by!-constant!-mod!-p '(
-general!-multiply!-by!-constant!-mod!-p general!-modular!-times !*n2f) 
-13076077458684898091)
+(c!:install 'pasf_or '(pasf_or ((decp . scalar)) true false (lessp
+greaterp leq geq) lessp leq greaterp geq pasf_deci simp addf negf) 
+6191031066841316803)
 
 
 % End of generated Lisp code

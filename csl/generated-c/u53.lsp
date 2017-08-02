@@ -1,141 +1,147 @@
 
 % u53.lsp           Machine generated Lisp
 
-(c!:install "u53" 137633 7609280 6193553)
+(c!:install "u53" 124171 8887589 9458327)
 
-(c!:install 'pasf_exprng '(pasf_exprng !*rlsism and true false or ball
-bex not impl repl equiv pasf_exprng!-gand pasf_exprng!-gball cl_simpl) 
-18106096511587248063)
+(c!:install 'pst_d1 '(pst_d1 sc_kern pa_coinc_split ordn) 
+14917182381630739938)
 
-(c!:install 'aex_neg '(aex_neg aex_ex negsq aex_ctx aex_mk) 
-17068603941868108587)
+(c!:install 'baglistp '(baglistp list bag) 16976112971610824149)
 
-(c!:install 'varsinsf '(varsinsf union) 15554101783376022867)
+(c!:install 'general!-difference!-mod!-p '(general!-difference!-mod!-p
+general!-minus!-mod!-p general!-plus!-mod!-p) 14228395893305165229)
 
-(c!:install 'mkratnum '(mkratnum !:gi!: !:crn!: !:rn!: !*i2rn) 
-4938996573169262951)
+(c!:install 'constructinvolutivebasis '(constructinvolutivebasis ((
+tmptriple . scalar) (tmpmonom . scalar) (normalform . scalar) (
+normalformlm . scalar) (settiterator . scalar) (newtriplelist . scalar))
+fluidbibasissetq fluidbibasisnonzeronormalforms fluidbibasissett
+polynomlistautoreduce createtriple sortedtriplelistinsert setqget
+normalform monomisdivisibleby setqdeletedescendants janettreedelete
+createtriplewithancestor settinsert triplesetprolongset
+settcollectnonmultiprolongations setqinsertlist sortedpolynomlistinsert)
+ 8872644642250061121)
 
-(c!:install 'xpartitsq '(xpartitsq sfp xexptpf cancel wedgepf xvarp
-xpartitk multpfsq addpf) 3770491268411413216)
+(c!:install 'talp_cocc '(talp_cocc ((noccs . integer))) 
+14303804919251597706)
 
-(c!:install 'binc '(binc mk!-numr constimes factorial listquotient) 
-14077582727497147310)
+(c!:install 'qqe_length!-graph!-marked '(qqe_length!-graph!-marked
+blockmark) 1172609336130959371)
 
-(c!:install 'gi '(gi gg!* class) 12570059923375073769)
+(c!:install 'dipreplus '(dipreplus plus) 6843528938903311371)
 
-(c!:install 'exports '(exports exportslist!* union) 10515641968720128232
-)
+(c!:install 'make_wedge_pair '(make_wedge_pair !*twosided xtruncate!*
+wedge_pair xval xlcm overall_factor mknwedge xdegreecheck) 
+11385409692619205938)
 
-(c!:install 'square!-free!-mod!-p '(square!-free!-mod!-p
-derivative!-mod!-p gcd!-mod!-p) 11016584804240126921)
+(c!:install 'decimal2internal '(decimal2internal !:rd!:
+divide!-by!-power!-of!-ten) 14631323547991593864)
 
-(c!:install 'addinds '(addinds "Powrhs too long" "Powu too long"
-nreverse interr) 8783814793223218724)
+(c!:install 'gpexpp '(gpexpp (!:rd!: !:cr!: !:crn!: !:gi!:) plus (minus
+recip) (difference quotient expt) times !:rd!: (!:cr!: !:crn!: !:gi!:)
+gpexp1p unresidp gparg1p) 1997977812855299707)
 
-(c!:install 'subscriptedvarp2 '(subscriptedvarp2 symtabget) 
-2356643343232798268)
+(c!:install 'rule!-list '(rule!-list ((v . scalar) (x . scalar) (y .
+scalar) (z . scalar)) frasc!* mcond!* list "rule list" equal
+"Please use => instead of = in rules" replaceby "rule" when algebraic
+typerr lprim remove!-free!-vars remove!-free!-vars!* formbool rule!*) 
+2882640230993513101)
 
-(c!:install 'evalsubset '(evalsubset subset evalsetbool evalsymsubset) 
-18227868268543170902)
+(c!:install 'even_action_pow '(even_action_pow ((kernel . scalar) (n .
+scalar) (component . scalar) (derivative . scalar) (action . scalar) (
+active_components . scalar)) to component_action multsq
+find_active_components diffp addsq) 11492088459283824785)
 
-(c!:install '!*kp2q '(!*kp2q "Zero divisor" mksq rederr revpr) 
-3599326762998707582)
+(c!:install '!*multsq '(!*multsq ((w . scalar) (x . scalar) (y . scalar)
+) !*multf gcdf quotf!-fail minusf negf) 10673589038287821472)
 
-(c!:install 'calc_world '(calc_world s_world_names actual_alst
-calc_atlas reval) 6347126962586917981)
+(c!:install 'taymindegreel '(taymindegreel nreverse tayexp!-plus2
+tayexp!-min2) 14005103839088980420)
 
-(c!:install 'liendimcom '(liendimcom lie_dim difference lie_cc lie_p
-lie_q plus quotient times lie_help lie_s lientrans lie_kk!* lie_tt aeval
-setk aeval!* aminusp!: evalneq evalequal) 14036051703278256262)
+(c!:install 'vdp_zero '(vdp_zero invalid vdp_make) 17290158580285103512)
 
-(c!:install 'dpmat_gbtag '(dpmat_gbtag nth) 7853934172546639414)
+(c!:install 'ldf!-spf!-var '(ldf!-spf!-var ((v . scalar) (z . scalar)) x
+u kernels makeset prlist sacar appends) 8035023838312364069)
 
-(c!:install 'st_extract_symcells1 '(st_extract_symcells1 !* listp) 
-9261528819786944218)
+(c!:install 'solvealgtrig01 '(solvealgtrig01 (sin cos tan cot sinh cosh
+tanh coth) constant_exprp union) 8913583277979887080)
 
-(c!:install 'addcoeffs '(addcoeffs smallest!-increment common!-increment
-makecoeffpairs multsq addsq) 15259186419355437484)
+(c!:install 'latexprint '(latexprint prinlabegin latexprin prinlaend) 
+1824421567986552037)
 
-(c!:install 'qqe_simpat '(qqe_simpat) 9761063186935570134)
+(c!:install 'is_buble '(is_buble diff_vertex) 4718446988208433996)
 
-(c!:install 'bc_minus!? '(bc_minus!? minusf) 13892838142220692503)
+(c!:install 'dp!=comp '(dp!=comp nreverse dp_lmon mo_comp) 
+14670774762518676824)
 
-(c!:install 'crprimp '(crprimp i minus times) 17061817778349731192)
+(c!:install 'simpsqrt3 '(simpsqrt3 ((u . scalar)) listofallsqrts
+listofnewsqrts knowntobeindep actualsimpsqrt) 5889776684012724167)
 
-(c!:install 'remove_critical_pairs '(remove_critical_pairs remove_items)
- 12426658889339854311)
+(c!:install 'qroundup '(qroundup) 10750519726693016495)
 
-(c!:install 'acmemb '(acmemb aceq) 13271867179498849625)
+(c!:install 'ofsf_smmkatl!-and '(ofsf_smmkatl!-and ((w . scalar))
+!*rlsipw !*rlsipo and ofsf_irl2atl ofsf_ir2atl ofsf_smmkatl!-and1
+lastpair) 13733817320460224119)
 
-(c!:install 'physopplus '(physopplus "type mismatch in plus "
-physopsim!* getphystype rederr2 physop2sq addsq mk!*sq) 
-16067418966038295158)
+(c!:install 'ofsf_smwrmknowl '(ofsf_smwrmknowl !*rlsusi ofsf_susirmknowl
+ofsf_smrmknowl) 4692894082393399308)
 
-(c!:install 'bassoc '(bassoc th_match) 16440937476530816831)
+(c!:install 'ofsf_smmkatl!-or '(ofsf_smmkatl!-or ((w . scalar)) or
+ofsf_ir2atl ofsf_smmkatl!-or1 lastpair) 1039771555611564003)
 
-(c!:install '!*sq2fourier '(!*sq2fourier cos fourier tag
-fs!:make!-nullangle) 5891675253994263450)
+(c!:install 'eval!-yetunknowntypeexpr '(eval!-yetunknowntypeexpr !*sq
+!:dn!: yetunknowntype getrtype) 16027293666846484104)
 
-(c!:install 'all_index_lst '(all_index_lst list listp) 
-3654155541323541217)
+(c!:install 'division!-test '(division!-test quotf) 7457882569290507332)
 
-(c!:install 'sc_create '(sc_create symbolic list2vect!*) 
-7753972097936331166)
+(c!:install 'vsl_boundtype1 '(vsl_boundtype1 ub lb minusf) 
+9650985489234634930)
 
-(c!:install 'ofsf_exploitknowl '(ofsf_exploitknowl equal !*rlsippsubst
-greaterp geq lessp leq neq sfto_varp negsq lto_insertq) 
-6407292417331235835)
+(c!:install 'ps!:value '(ps!:value !:ps!: ps!:getv) 8457495156308057488)
 
-(c!:install 'uterm '(uterm rhs!* addinds evaluatecoeffts plusdf) 
-5304631242153271363)
+(c!:install 'vdpfmon '(vdpfmon ((r . scalar)) vdp !*gsugar vevtdeg
+gsetsugar) 15826923711763612056)
 
-(c!:install 'change!+sq!+to!+int '(change!+sq!+to!+int
-"no integer in change!+sq!+to!+int" prepsq simp!* rederr) 
-11238142442414323586)
+(c!:install 'xexptpf '(xexptpf wedgepf) 11225990668432378292)
 
-(c!:install 'ofsf_factsf '(ofsf_factsf negf addf multf) 
-4753044934003228333)
+(c!:install 'mk!-contract!-coeff '(mk!-contract!-coeff ((numr . scalar)
+(denr . scalar) (pk . scalar) (k . scalar)) ndim!* mk!-numr constimes) 
+10912754249200542061)
 
-(c!:install 'operator '(operator mkop) 1409021900333175665)
+(c!:install 'hdiff '(hdiff hdiffterm fs!:plus) 16897863673431883770)
 
-(c!:install 'look_for_rational '(look_for_rational look_for_exponential
-sqrt expt quotient look_for_rational1 listp) 2450808978774114722)
+(c!:install 'test!-bool '(test!-bool boolean!-eval1 simp!-prop mk!*sq) 
+8932349539925656937)
 
-(c!:install 'vevzero!?1 '(vevzero!?1) 10157384379837683846)
+(c!:install 'combin '(combin ((i1 . integer) (i2 . integer))) 
+995755140025794233)
 
-(c!:install 'xpndwedge '(xpndwedge partitop mkunarywedge wedgepf2) 
-3250510587247370634)
+(c!:install 'coeffs!-to!-form1 '(coeffs!-to!-form1 to) 
+17890572078723803509)
 
-(c!:install 'unshift '(unshift !*xo (0.0 . 0.0) gfplus gfadjust) 
-18342691400931012398)
+(c!:install 'giprim '(giprim i times) 8790229893788072726)
 
-(c!:install 'r2speclist '(r2speclist plus r2speclist1) 
-5879233124307570045)
+(c!:install 'quotf!* '(quotf!* "DIVISION FAILED" quotf rationalizesq
+errach) 5639812097743456829)
 
-(c!:install 'noncom1 '(noncom1 !*ncmp noncom) 11419460836052736216)
+(c!:install 'qqe_simplqequal '(qqe_simplqequal ((lhs . scalar) (rhs .
+scalar) (varlhs . scalar) (varrhs . scalar) (noal . scalar) (noar .
+scalar) (notl . scalar) (notr . scalar) (rhsnew . scalar) (lhsnew .
+scalar)) true qepsilon false qequal qqe_arg2r qqe_arg2l qqe_qprefix!-var
+qqe_number!-of!-adds!-in!-qterm qqe_number!-of!-tails!-in!-qterm
+qqe_simplterm qqe_mk2) 10112309462767014798)
 
-(c!:install 'rationalizef '(rationalizef expt quotient i (quotient 1 2)
-sqrt (quotient 1 3) (quotient 1 4) kernels lowertowerp mkmain
-conjquadratic conjcubic conjquartic) 7151580781870530831)
+(c!:install 'rl_simplb '(rl_simplb rl_simplb!* apply) 
+7197064830390758941)
 
-(c!:install 'lowestdeg '(lowestdeg expt "exponents must be integers"
-simp!* !*q2f erase_pol_cst !*a2k setkorder reorder rederr) 
-18356434283429461902)
+(c!:install 'acfsf_varlat '(acfsf_varlat acfsf_arg2l kernels) 
+3942176160301289890)
 
-(c!:install 'simprd '(simprd !:rd!: dmode!* simplist) 
-15671832098548929442)
+(c!:install 'symmetrize!-inds '(symmetrize!-inds ((x . scalar) (y .
+scalar) (z . scalar) (n . integer)) nth indordn indordln flatindl pair) 
+16484037784269657687)
 
-(c!:install 'add!-to!-sorted!-tree '(add!-to!-sorted!-tree nreverse) 
-16019473893027424821)
-
-(c!:install 'get!*nr!*real!*irred!*reps '(get!*nr!*real!*irred!*reps
-realrepnumber) 6749148416422812882)
-
-(c!:install 'pasf_ceeq '(pasf_ceeq true false (equal neq) sfto_dcontentf
-simp quotfx) 955635599020591632)
-
-(c!:install 'matrix_input_test '(matrix_input_test mat "ERROR: `"
-"' is non matrix input." rederr) 4007855338312678546)
+(c!:install 'al1_defined_vertex '(al1_defined_vertex re_parents
+defined_edge) 519817027080077876)
 
 
 % End of generated Lisp code

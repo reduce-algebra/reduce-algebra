@@ -1,150 +1,171 @@
 
 % u29.lsp           Machine generated Lisp
 
-(c!:install "u29" 117642 4062196 8683270)
+(c!:install "u29" 88119 3500639 3285629)
 
-(c!:install 'evrevgradlexcomp '(evrevgradlexcomp (0) iequal evtdeg
-evinvlexcomp) 1094894507621156151)
+(c!:install 'ordexp '(ordexp ordop) 10875341827804411375)
 
-(c!:install 'physop!-multfnc '(physop!-multfnc !*contract2 !*!*processed
-physop!-multf physopp mkspm addf noncommuting physop!-ordop) 
-16166522819702933346)
+(c!:install 'mk!-numr '(mk!-numr difference nreverse) 
+1867480981460826744)
 
-(c!:install 'no!-side!-effect!-listp '(no!-side!-effect!-listp
-no!-side!-effectp) 850758379198238797)
+(c!:install 'mksetq '(mksetq setq ((x . scalar)) setfn
+"assignment argument" typerr) 2374947029089550834)
+
+(c!:install 'dv_cambhead '(dv_cambhead expt minus listp) 
+2660212666043555066)
+
+(c!:install 'proper!-simpsqrt '(proper!-simpsqrt carx simpsqrti) 
+12726400845289891393)
+
+(c!:install 'setk1 '(setk1 !*uncached ((x . scalar) (y . scalar) (z .
+scalar) (!*uncached . scalar)) "not found" avalue scalar alg
+"Invalid syntax: improper assignment" wtl!* !*sqrtrulep kvalue msgpri
+put!-avalue rerror revlis delasc put!-kvalue updoldrules) 
+9286455232915096593)
+
+(c!:install 'lalr_make_compressed_action_table '(
+lalr_make_compressed_action_table ((table . scalar)) itemset_collection
+!*lalr_verbose lalr_make_compressed_action_row
+lalr_print_compressed_action_table) 16059805160660646027)
+
+(c!:install 'quotfx1 '(quotfx1 ((f . scalar) (dp . scalar) (dq . scalar)
+(u . scalar) (v . scalar) (w . scalar) (x . scalar) (y . scalar) (z .
+scalar) (n . integer)) quotfxerr quotfdx lt!* rnconc to cutf multf negf
+addf aconc!* ordop quotkx) 15794829873909332119)
+
+(c!:install 'mksp!* '(mksp!* ((b . scalar)) kernlp exptf minusf negf
+mksp) 8440063269549727700)
+
+(c!:install 'cl_susiupdknowl '(cl_susiupdknowl ((at . scalar)) false
+break cl_susiupdknowl1) 7889903086247909767)
+
+(c!:install 'lambdavar '(lambdavar) 2486530969090446106)
+
+(c!:install 'gcd2 '(gcd2 ((a3 . scalar))) 12146434601528345793)
+
+(c!:install 'groebnormalform '(groebnormalform groebnormalform0) 
+9246680682546895048)
+
+(c!:install 'fortranname '(fortranname !*notfortranfuns!* !*stdout!*
+"*** WARNING: " " is not an intrinsic Fortran function" !*double
+!*doublename!* !*fortranname!* stringtoatom prin2t) 8730742722275511588)
+
+(c!:install 'contr!-strand '(contr!-strand contr1!-strand) 
+14991622701045679338)
+
+(c!:install 'assert_stat1 '(assert_stat1 ((argtypel . scalar)) !*lpar!*
+"expecting '(' in assert but found" cursym!* !*rpar!* !*comma!*
+"expecting ',' or ')' in assert but found" scan rederr) 
+9630921746124137384)
+
+(c!:install 'nf '(nf gg!* ((f . scalar) (lpf . scalar) (g . scalar) (c .
+scalar) (cf . scalar) (cg . scalar) (nf . scalar) (g1 . scalar) (g2 .
+scalar) (u . scalar) (nr . scalar)) redtails gv!* tred
+"r e d u c t i o n :  " "/" stars "*" reductions!* nforms!* zeros!*
+dless dd gcdf!* cdiv pcmult dquot pdmult pdif gcdout) 
+8217863840401290696)
+
+(c!:install 'bndtst '(bndtst tentothetenth!*!* abs!: greaterp!:) 
+14872575748311463317)
+
+(c!:install 'lalr_collect_terminals '(lalr_collect_terminals ((
+rhs_symbols . scalar)) nonterminals setdiff) 10717518476450529983)
+
+(c!:install 'formrlis '(formrlis flagop list share ((x . scalar) (y .
+scalar)) algebraic !*comma!* "identifier list" flag reversip!* formlis
+idlistp typerr) 11836350707531685779)
+
+(c!:install 'prepreform1 '(prepreform1 ((w . scalar) (l1 . scalar)) (
+plus difference minus times quotient) !*sq sqhorner!* prepsq!* simp!*) 
+9817408133920599795)
+
+(c!:install 'talp_try '(talp_try rl_pnf talp_invtscsimpl talp_lssimpl
+talp_try1) 5158418108379367388)
+
+(c!:install 'ps!:expression '(ps!:expression !:ps!: ps!:getv) 
+18283141111150797452)
+
+(c!:install 'rowdel '(rowdel codmat maxvar delhisto downwght) 
+16951615583918496840)
+
+(c!:install 'prop!-simp '(prop!-simp prop!-simp1) 8182520842950749849)
+
+(c!:install 'formde '(formde procedure symbolic expr progn formproc) 
+6755753224063973974)
+
+(c!:install 'nzero '(nzero nreverse) 15339904031012778709)
+
+(c!:install 'general!-evaluate!-mod!-p '(general!-evaluate!-mod!-p
+"Variable=NIL in GENERAL-EVALUATE-MOD-P" errorf
+general!-horner!-rule!-mod!-p) 11683667927005855121)
+
+(c!:install 'delasc '(delasc ((w . scalar))) 6259586124549875503)
+
+(c!:install 'lex_export_codes '(lex_export_codes lex_codename ordopcar
+sort) 2806139020963600379)
+
+(c!:install 'procstat1 '(procstat1 ((bool . scalar) (u . scalar) (type .
+scalar) (x . scalar) (y . scalar) (z . scalar) (file . scalar) (line .
+scalar) (puttype . scalar)) ifl!* "-" curline!* erfg!* fname!* (symerr (
+quote procedure) t) cursym!* procedure expr !*reduce4 "procedure name"
+read_param_list !*colon!* put (quote procedure_type) arrow eof!*
+!*semicol!* curescaped!* (xread t) fnc (quote defined!-in!-file) (quote
+defined!-on!-line) progn errorset!* scan typerr errorp read_type
+read_signature make_tuple_type collect_cars simplify!-filename) 
+6356138858267025724)
+
+(c!:install 'co_new '(co_new) 12258803853388898570)
+
+(c!:install 'wureducedp '(wureducedp wuconstantp deginvar) 
+5890090197619083285)
+
+(c!:install 'simpexpt11 '(simpexpt11 ((x . scalar)) !*precise_complex
+simpexpt2 qremf simpexpt1 multsq) 12360799317881640106)
+
+(c!:install 'get!-denom!-ll '(get!-denom!-ll nreverse get!-denom!-l lcmn
+) 9865865357402086746)
+
+(c!:install 'mk!+conjugate!+sq '(mk!+conjugate!+sq conjsq) 
+13834148479991360326)
+
+(c!:install 'pasf_sisub!-gand '(pasf_sisub!-gand ((c . scalar) (w .
+scalar) (a . scalar) (nargl . scalar)) and true false pasf_sisub) 
+9173830311419404156)
+
+(c!:install 'ombindir '(ombindir ((symb . scalar) (vars . scalar) (obj .
+scalar)) (!/ o m b i n d) lex omobj variablesir tobvarir checktag) 
+4342110375949294232)
+
+(c!:install 'nextcomb '(nextcomb i ((args . scalar) (nenv . scalar) (v .
+scalar) (i . integer)) initcomb) 12654837144705039292)
+
+(c!:install 'vevstrictlydivides!? '(vevstrictlydivides!? vevmtest!?) 
+5512672298824972725)
+
+(c!:install 'pterpri '(pterpri ((ch . scalar) (pbuf . scalar))
+!*pprinbuf!* !*outchanl!* gentranlang!* fortran !*posn!* fprin2) 
+11039349250831005504)
+
+(c!:install 'getphystypeor '(getphystypeor getphystype) 
+15248518432785527981)
+
+(c!:install 'l!-subst '(l!-subst nreverse) 13157143314028632447)
+
+(c!:install 'sqhorner!* '(sqhorner!* !*horner ordl!* kord!* reorder
+hornerf hornersq) 11381696496110012456)
 
 (c!:install 'red_tailred '(red_tailred !*noetherian red_topred
 red_topredbe red_tailreddriver) 14658725045549140417)
 
-(c!:install 'all_sml_opchar '(all_sml_opchar lexer_style!* sml_opchar
-land) 12095717356018498271)
+(c!:install 'lalr_generate_collection '(lalr_generate_collection ((
+itemset0 . scalar) (propagation_list . scalar)) itemset_collection
+!*lalr_verbose lalr_lr0_itemset_to_lalr_kernel lalr_analyze_lookaheads
+carrassoc lalr_add_lookahead lalr_propagate_lookaheads lalr_closure
+lalr_print_collection) 382997599160102784)
 
-(c!:install 'tayexp!-minus '(tayexp!-minus rnminus!:) 
-9378126259797931177)
-
-(c!:install 'talp_copy '(talp_copy) 11070956600525334828)
-
-(c!:install 'qqe_arg!-check!-lb!-rb '(qqe_arg!-check!-lb!-rb
-"type conflict: arguments don't fit
-             binary op with basic type args" qqe_arg!-check!-b
-qqe_arg!-check!-marked!-ids!-rollback typerr) 7561473729744837887)
-
-(c!:install 'pasf_sisub!-gand '(pasf_sisub!-gand and true false
-pasf_sisub) 5209455540577850077)
-
-(c!:install 'dm!-mkfloat '(dm!-mkfloat !:rd!:) 13213154614696441939)
-
-(c!:install 'rd!:times '(rd!:times !*!*roundbf !:rd!: yy!!
-safe!-fp!-times convprc2 csl_timbf fp!-infinite rndbfon fl2bf read!:num
-normbf mkround) 4810163512376853745)
-
-(c!:install 'permp '(permp) 7444515488059382937)
-
-(c!:install 'subla!-q '(subla!-q quote go lambda prog delasc) 
-4621156998353020291)
-
-(c!:install 'groeb!=rf1 '(groeb!=rf1 red_totalred) 7915201577852284808)
-
-(c!:install 'qtypnm '(qtypnm function seen seen!* tseen !( !) tseen!*
-rccnam funs traput) 14045573743009214131)
-
-(c!:install 'negind '(negind) 3888326271223543550)
-
-(c!:install 'talp_specsubat '(talp_specsubat talp_op talp_arg2l
-talp_specsubt talp_arg2r talp_mk2 talp_simpat) 13087732386055039465)
-
-(c!:install 'qqe_ofsf_simpat '(qqe_ofsf_simpat (qequal qneq) qqe_arg2l
-qqe_ofsf_chsimpterm qqe_arg2r qqe_arg!-check qqe_op qqe_simpat
-ofsf_simpat) 15868148505977473450)
-
-(c!:install 'getdec '(getdec symtabget implicitdec) 15548304567600766736
-)
-
-(c!:install 'plubf '(plubf !:rd!: !:bprec!: msd ashift inorm) 
-14385353088373813766)
-
-(c!:install 'unresidp '(unresidp !*reservedops!*) 17723194268344580602)
-
-(c!:install 'log_inlines '(log_inlines log_assignment log_freevars) 
-4860750300544105035)
-
-(c!:install 'quotpri '(quotpri !*ratpri !*nat !*fort !*list !*mcd failed
-dmode!* ratmode ratfunpri1) 9313002402001459369)
-
-(c!:install 'mo_2a '(mo_2a cali!=basering ring_all_names mo!=expvec2a1) 
-7244578972536245603)
-
-(c!:install 'cde_odd_derivatives '(cde_odd_derivatives
-n_all_parametric_ext n_all_principal_ext svf_ext mkid super_vectorfield
-set_svf) 7059385793284244930)
-
-(c!:install 'expansion_name '(expansion_name lalr_internal_
-expansion_count) 15783678150400557790)
-
-(c!:install 'formproc '(formproc fname!* ftype!* !*lose !*defn
-"not defined (LOSE flag)" (quote nil) !*redeflg!* "redefined" rblock
-formc !*noinlines inline expr (expr fexpr macro) progn declare special
-lambda "+++ Record new inline definition:" de new_inline_definitions
-smacro "SMACRO/INLINE" fexpr df macro dm procfn putc symbolic flag opfn
-!*argnochk (expr inline smacro) variadic !*strict_argcount
-"Definition of" "different count from args previously called with"
-"defined with" "but previously called with" "arguments" put
-number!-of!-args (fexpr macro inline smacro) !*micro!-version (fexpr
-macro smacro) lprim getd rsverr pairxvars rplaca!* form1 symbvarlst
-mkprogn lprie lispeval) 7330440742090740656)
-
-(c!:install 'pushback '(pushback) 8836067283905998773)
-
-(c!:install 'cl_rename!-vars '(cl_rename!-vars cl_replace!-varl
-cl_rename!-vars1) 18151438177595091197)
-
-(c!:install 'pasf_pdp '(pasf_pdp indef ndef pdef psdef nsdef) 
-10778362112038030753)
-
-(c!:install 'omfir '(omfir atts dec name "wrong att" find errorml) 
-9251066245444986048)
-
-(c!:install 'initarg '(initarg op symm p r identity assoc !*sym!-assoc
-mcontract acontract expand i upb comb ident mgenp list!-mgen initcomb) 
-11987421245099069190)
-
-(c!:install 'vdpcondense '(vdpcondense dipcondense) 7472009799357661127)
-
-(c!:install 'edge_new_parents '(edge_new_parents old_edge_list
-edge_new_parent) 4434932712476921496)
-
-(c!:install 'idtomind '(idtomind i2m_jetspace!* i2m_jetspace_odd!*) 
-3282693554831447091)
-
-(c!:install 'gcref_off1 '(gcref_off1 dfprint!* !*defn !*algebraics
-algebraic newnam seen!* calledby entpts!* tseen!* tseen funs rccnam
-gseen!* usedunby undefg!* undefdchk idsort) 16304191943616561554)
-
-(c!:install 'talp_getinvfsym '(talp_getinvfsym talp_getextl) 
-9177800204687041786)
-
-(c!:install 'qqe_eta!-in!-term1 '(qqe_eta!-in!-term1 qepsilon
-qqe_simplterm qqe_op) 3218916659083563987)
-
-(c!:install 'get!-height '(get!-height max) 14864850226468545265)
-
-(c!:install 'lambdaom '(lambdaom "<OMBIND>"
-"<OMS cd=""fns1"" name=""lambda""/>" "<OMBVAR>" "</OMBVAR>" "</OMBIND>"
-printout indent!* objectom) 847063321728976000)
-
-(c!:install 'dipsum '(dipsum evcomp iequal bcsum bczero!? setcdr) 
-17754619527837437931)
-
-(c!:install 'prop!-simp2 '(prop!-simp2) 8845509374503537807)
-
-(c!:install 'boolvalue!* '(boolvalue!*) 4038980927605819518)
-
-(c!:install 'generic!-sub '(generic!-sub dfp list dfp!-sub) 
-17996181599572078420)
-
-(c!:install 'arminusp!: '(arminusp!: minusf) 7589179714353625469)
-
-(c!:install 'sgn1 '(sgn1 sgn) 4395985868830635280)
+(c!:install 'comm1 '(comm1 ((bool . scalar)) end cursym!* !*semicol!* (
+end else then until !*rpar!* !*rsqbkt!*)
+"END-COMMENT NO LONGER SUPPORTED" scan lprim) 143015543358304009)
 
 
 % End of generated Lisp code
