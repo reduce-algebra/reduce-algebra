@@ -62,7 +62,7 @@
 
 #define NUMBEROFHEAPS 1
 
-#define MINSIZE        8000000  /* Default total in number of bytes. */
+#define MINSIZE        16000000  /* Default total in number of bytes. */
 #define MALLOCSIZE     500000   /* Default size for OS support functions. */
 #define EXTRABPSSIZE   300000   /* Minimum amount to increase bps by. */
 #define MINIMUMHEAPADD 20000    /* Minimum amount to increase heap by */
