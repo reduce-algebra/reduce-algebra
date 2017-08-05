@@ -1,100 +1,84 @@
 
 % u60.lsp           Machine generated Lisp
 
-(c!:install "u60" 23040 7621367 6545458)
+(c!:install "u60" 55327 4906264 6217405)
 
-(c!:install 'preproc1 '(preproc1 !:rd!: !:dn!: !*sq procedure !*params!*
-!*getdecs (real integer) deftype!* declare (subroutine function)
-!*type!* setq (cond progn) (plus times difference quotient minus) ((
-simp_exp . scalar)) (!:cr!: !:crn!: !:gi!:) quotient (!~for for) (
-integer) fl2bf read!:num normbf decimal2internal prepsq symtabput
-lastpair preprocdec migrate!-setqs simp!*) 5973871366085276256)
+(c!:install 'com43 '(com43 liemat bb ff algebraic l_z cc minus det
+quotient plus times comcom0 comcom1 comcom3 matrix aeval arrayfn aeval!*
+setk evalneq evalequal clear) 15034922302418064058)
 
-(c!:install 'find_bubles1 '(find_bubles1 select_bubles) 
-17544506527090479506)
+(c!:install 'partsym_zerop '(partsym_zerop !- repeats) 
+5809084812164251243)
 
-(c!:install 'compactf1 '(compactf1 ((z . scalar)) intersection
-compactf11) 4750216803604100979)
+(c!:install 'sc_repkern '(sc_repkern !* lambda_1x539vlzlwg93
+pa_list2vect sort) 8973480175038941953)
 
-(c!:install 'solvevars '(solvevars allbkern constant_exprp ordad) 
-15451545184830350089)
+(c!:install 'lambda_1x539vlzlwg93 '(lambda_1x539vlzlwg93) 
+17810050070257344241)
 
-(c!:install 'nrootnn '(nrootnn ((pl . scalar) (signn . scalar) (qr .
-scalar) (w . scalar) (r . integer) (s . integer) (p . integer) (q .
-integer)) !*primelist!* mcfactor!* iroot) 257289543218596627)
+(c!:install 'super_product_sq '(super_product_sq (ext) split_ext multsq
+ext_mult addsq) 17325628299063995866)
+
+(c!:install 'sfto_mindeg1 '(sfto_mindeg1) 14523690705715977540)
 
 (c!:install 'rat_min '(rat_min rat_leq) 2567018000700184613)
 
-(c!:install 'let0 '(let0 frasc!* let00) 7391967956783306752)
+(c!:install 'setqdeletedescendants '(setqdeletedescendants
+fluidbibasissetq) 7347142229758694898)
 
-(c!:install 'get!-min!-degreelist '(get!-min!-degreelist confusion
-tayexp!-plus2 taymindegreel) 8744899286662908442)
+(c!:install 'interglue '(interglue !\co!  !+ !- ord clo !\cdot! ) 
+4372386679573287132)
 
-(c!:install 'cl_subfof1 '(cl_subfof1 ((op . scalar) (v . scalar) (newv .
-scalar) (m . scalar) (b . scalar)) true false ex all bex ball or and not
-impl repl equiv lastpair cl_newv cl_subvarsubstat rl_subat) 
-6943140463705729776)
+(c!:install '!*s2arg '(!*s2arg quote nochange mkarg) 4918202841384322310
+)
 
-(c!:install 'ps!:find!-order '(ps!:find!-order ps !:ps!: tps
-"Unexpected form in ps!:find!-order" ps!:unknown!-order ps!:expression
-ps!:order ps!:find!-order1 rerror) 1678637726556154181)
+(c!:install 'actual_world '(actual_world exclude_edges union_edges) 
+17227129322063686337)
 
-(c!:install 'vdpenumerate '(vdpenumerate number pcount!* vdpsave
-vdpgetprop vdpputprop) 11111691383406042490)
+(c!:install 'mo_dlexcomp '(mo_dlexcomp mo!=lexcomp) 1176551237110189972)
 
-(c!:install 'xnormalise '(xnormalise invsq multpfsq) 
-11085071778112155648)
+(c!:install 'affinep '(affinep belong_to_space get_sign_space) 
+17023873794737433173)
 
-(c!:install 'validrule '(validrule validrule1) 2742724852769084751)
+(c!:install 'r2flbf '(r2flbf !*bftag r2bf r2fl) 11486658120533823622)
 
-(c!:install 'listofvarnames '(listofvarnames
-"invalid argument to listofvarnames" free listp rederr domain!*p) 
-14668539973731296408)
-
-(c!:install 'calc_map_2d '(calc_map_2d mk_names_map_2 mk_binding
-coeff_calc) 4378061536774923404)
-
-(c!:install '!*sf2exb '(!*sf2exb degr nreverse) 16721578175864221016)
-
-(c!:install 'x!*!*p!-w '(x!*!*p!-w to general!-difference!-mod!-p) 
-5260913038693974719)
+(c!:install 'redmsg '(redmsg !*wsm !*msg ("operator" "predicate")
+"Declare" "?" "declared" terminalp get!-print!-name yesp lprim) 
+6641158512662921381)
 
 (c!:install 'ofsf_ordrelp '(ofsf_ordrelp (equal neq leq lessp geq
 greaterp)) 677969609291168617)
 
-(c!:install 'makecoeffpairs1 '(makecoeffpairs1 ((nil)) tayexp!-minus
-makecoeffpairshom lastpair) 1976336402385581849)
+(c!:install 'gcdk '(gcdk !*heugcd modular!-multicheck !*mcd dmode!* degr
+quotf1 heu!-gcd getd remk addlc prim!-part) 5851774828797611237)
 
-(c!:install 'null!+vec!+p '(null!+vec!+p mk!+squared!+norm my!+nullsq!+p
-) 5038748472918740970)
+(c!:install 'mk_character '(mk_character get_group_in get!*elements
+get_rep_matrix_in mk!+trace) 18096703642181927895)
 
-(c!:install 'talp_get!-minfct '(talp_get!-minfct talp_invp talp_fop
-talp_mktn) 10298220219146545044)
+(c!:install 'qqe_length!-graph!-remove!-mark '(
+qqe_length!-graph!-remove!-mark) 377600596588172727)
 
-(c!:install 'xpwrlcmp '(xpwrlcmp expt sqrt getdenom getdenomx lcm) 
-13809688206923474696)
+(c!:install 'groebfactorize3 '(groebfactorize3) 10814495949344781944)
 
-(c!:install 'ps!:expansion!-point '(ps!:expansion!-point !:ps!: ps!:getv
-) 16036982018896120238)
+(c!:install 'xvarp '(xvarp xvars!* (wedge d partdf hodge innerprod liedf
+) xdegree) 10414475765977978179)
 
-(c!:install 'frlp '(frlp frlis!*) 8131105772210933591)
+(c!:install 'exp!: '(exp!: bfone!* !:rd!: !:bprec!: bflerrmsg bfzerop!:
+abs!: conv!:bf2i difference!: msd !:e texpt!: greaterp!: times!: cut!:ep
+order!: max divide!: plus!: cut!:mt minusp!: round!:mt) 
+2083980255184111067)
 
-(c!:install 'dm!-quotient '(dm!-quotient ((noequiv . scalar)) !*noequiv
-dm!-mkfloat !:quotient) 8954821169235857289)
+(c!:install 'kernelp '(kernelp) 8367153360350514607)
 
-(c!:install 'groebsaveltermbc '(groebsaveltermbc glterms vbc2a
-constant_exprp simp fctrf prepf) 2234765308638356198)
+(c!:install 'rep_parents '(rep_parents) 10604531587366957043)
 
-(c!:install 'lispcondp '(lispcondp cond) 15172181409483727939)
+(c!:install 'dp_content '(dp_content cali_bc_fi dp_lc cali_bc_inv
+cali_bc_gcd) 14102068279141683648)
 
-(c!:install 'tot!-asym!-indp '(tot!-asym!-indp indordp indxchk indordlp)
- 16378113130650151290)
+(c!:install 'tensor_has_dummy_idx '(tensor_has_dummy_idx smember) 
+3965533702827161558)
 
-(c!:install 'simpabs '(simpabs abs ((x . scalar)) revlis mksq sign!-abs
-simp!* simpabs1 quotsq) 15480467851583599509)
-
-(c!:install 'formclear '(formclear clear formclear1) 
-11707879931340615398)
+(c!:install 'algebnp '(algebnp !:ar!:) 14842853218592494742)
 
 
 % End of generated Lisp code

@@ -41,9 +41,34 @@
 #ifndef header_tags_h
 #define header_tags_h 1
 
+//
+// General objects in Lisp are represented as pointer-sized integers
+// and the type LispObject reflects this representation and
+// not the elaborate tagged union that at some other level exists.
+// If I could use "void *" for this type that might give me a bit more
+// security since not much can be done with a "void *" object - in particular
+// it can not participate in arithmetic.  But when I do that I run into
+// trouble in protected mode on a PC if I have items of type LispObject
+// that are not valid pointers. I suspect that the same used to be
+// the case on a Motorola 68000 with address and data registers.
+//
+//
+// Sometimes the pointer-sized integer will be 64-bits wide, and will be the
+// data type for the type LispObject. A result will be that anywhere in
+// the code where I am sloppy about putting such an object into an int32_t
+// I will have trouble, and anywhere that I use absolute numeric offsets
+// instead of multiples of sizeof(LispObject) there can be pain.
+
+typedef intptr_t LispObject;
+
 #define SIXTY_FOUR_BIT (sizeof(intptr_t) == 8)
 
-#define CSL_IGNORE(x)       ((void)(x))
+// My hope is that writing CSL_IGNORE(x) will cause the compiler to believe
+// that x is "used" enough that it does not give any "not used" warnings.
+
+static inline void CSL_IGNORE(LispObject x)
+{   (void)x;
+}
 
 //
 // I allocate memory (using malloc()) in CSL_PAGE_SIZE chunks.
@@ -97,26 +122,6 @@
 // my code caused by this fixed limit.
 //
 #define LONGEST_LEGAL_FILENAME 1024
-
-//
-// General objects in Lisp are represented as pointer-sized integers
-// and the type LispObject reflects this representation and
-// not the elaborate tagged union that at some other level exists.
-// If I could use "void *" for this type that might give me a bit more
-// security since not much can be done with a "void *" object - in particular
-// it can not participate in arithmetic.  But when I do that I run into
-// trouble in protected mode on a PC if I have items of type LispObject
-// that are not valid pointers. I suspect that the same used to be
-// the case on a Motorola 68000 with address and data registers.
-//
-//
-// Sometimes the pointer-sized integer will be 64-bits wide, and will be the
-// data type for the type LispObject. A result will be that anywhere in
-// the code where I am sloppy about putting such an object into an int32_t
-// I will have trouble, and anywhere that I use absolute numeric offsets
-// instead of multiples of sizeof(LispObject) there can be pain.
-
-typedef intptr_t LispObject;
 
 
 // The macro CELL had better have either the value 4 or 8. It is the
@@ -265,29 +270,72 @@ static inline bool uint128_valid_as_fixnum(uint128_t x)
 #define MOST_POSITIVE_FIXNUM fixnum_of_int(MOST_POSITIVE_FIXVAL)
 #define MOST_NEGATIVE_FIXNUM fixnum_of_int(MOST_NEGATIVE_FIXVAL)
 
-#define is_cons(p)   ((((int)(p)) & TAG_BITS)  == TAG_CONS)
-#define is_fixnum(p) ((((int)(p)) & XTAG_BITS) == TAG_FIXNUM)
-#define is_odds(p)   ((((int)(p)) & TAG_BITS)  == TAG_HDR_IMMED) // many subcases
-#define is_sfloat(p) ((((int)(p)) & XTAG_BITS) == XTAG_SFLOAT)
-#define is_symbol(p) ((((int)(p)) & TAG_BITS)  == TAG_SYMBOL)
-#define is_numbers(p)((((int)(p)) & TAG_BITS)  == TAG_NUMBERS)
-#define is_vector(p) ((((int)(p)) & TAG_BITS)  == TAG_VECTOR)
-#define is_bfloat(p) ((((int)(p)) & TAG_BITS)  == TAG_BOXFLOAT)
+static inline bool is_cons(LispObject p)
+{   return ((((int)(p)) & TAG_BITS)  == TAG_CONS);
+}
 
-#define consp(p)     is_cons(p)
-#define symbolp(p)   is_symbol(p)
+static inline bool is_fixnum(LispObject p)
+{   return ((((int)(p)) & XTAG_BITS) == TAG_FIXNUM);
+}
+
+static inline bool is_odds(LispObject p)
+{   return ((((int)(p)) & TAG_BITS)  == TAG_HDR_IMMED); // many subcases
+}
+
+static inline bool is_sfloat(LispObject p)
+{   return ((((int)(p)) & XTAG_BITS) == XTAG_SFLOAT);
+}
+
+static inline bool is_symbol(LispObject p)
+{   return ((((int)(p)) & TAG_BITS)  == TAG_SYMBOL);
+}
+
+static inline bool is_numbers(LispObject p)
+{   return ((((int)(p)) & TAG_BITS)  == TAG_NUMBERS);
+}
+
+static inline bool is_vector(LispObject p)
+{   return ((((int)(p)) & TAG_BITS)  == TAG_VECTOR);
+}
+
+static inline bool is_bfloat(LispObject p)
+{   return ((((int)(p)) & TAG_BITS)  == TAG_BOXFLOAT);
+}
+
+static inline bool consp(LispObject p)
+{   return is_cons(p);
+}
+static inline bool symbolp(LispObject p)
+{   return is_symbol(p);
+}
 
 // For Common Lisp it would be necessary to detect and trap any attempt
 // to take CAR or CDR of NIL and do something special.
-#define car_legal(p) is_cons(p)
+
+static inline bool car_legal(LispObject p)
+{   return is_cons(p);
+}
 
 typedef struct Cons_Cell
 {   LispObject car;
     LispObject cdr;
 } Cons_Cell;
 
-#define qcar(p) (((Cons_Cell *) (p))->car)
-#define qcdr(p) (((Cons_Cell *) (p))->cdr)
+static inline LispObject& qcar(LispObject p)
+{   return ((Cons_Cell *)p)->car;
+}
+
+static inline LispObject& qcdr(LispObject p)
+{   return ((Cons_Cell *)p)->cdr;
+}
+
+static inline LispObject& qcar(char * p)
+{   return ((Cons_Cell *)p)->car;
+}
+
+static inline LispObject& qcdr(char * p)
+{   return ((Cons_Cell *)p)->cdr;
+}
 
 //
 // car32(p) refers to the 32-bit integer pointed at by p. It is
@@ -296,7 +344,9 @@ typedef struct Cons_Cell
 // use needs to be recorded.
 //
 
-#define car32(p) (*(int32_t *)(p))
+static inline int32_t& car32(LispObject p)
+{   return ((int32_t *)p)[0];
+}
 
 //
 // cdr32(p) reads the next 32-bit word after that used by car32(p), and
@@ -304,7 +354,18 @@ typedef struct Cons_Cell
 // just 32-bit values..
 //
 
-#define cdr32(p) (*(int32_t *)(p))[1])
+static inline int32_t& cdr32(LispObject p)
+{   return ((int32_t *)p)[1];
+}
+
+static inline int32_t& car32(char * p)
+{   return ((int32_t *)p)[0];
+}
+
+static inline int32_t& cdr32(char * p)
+{   return ((int32_t *)p)[1];
+}
+
 
 typedef LispObject Special_Form(LispObject, LispObject);
 
@@ -388,268 +449,6 @@ typedef uintptr_t Header;
 // move to it would be cost-effective.
 
 #define header_mask                (0x7f<<Tw)
-#define type_of_header(h)          (((unsigned int)(h)) & header_mask)
-
-// length_of_header returns the length of a word or doubleword oriented
-// object in bytes. NOT in words.
-#define length_of_header(h)        ((((size_t)(h)) >> (Tw+7)) << 2)
-
-// length_of_bitheader returns a length in bits.
-#define length_of_bitheader(h)     ((((size_t)(h)) >> (Tw+2)) - 31)
-
-// length_of_byteheader returns a length in bytes, and so compatible with what
-// length_of_header used to do on byte arrays (and hence strings)
-#define length_of_byteheader(h)    ((((size_t)(h)) >> (Tw+5))  - 3)
-
-// length_of_hwordheader gives the number of halfwords used.
-#define length_of_hwordheader(h)   ((((size_t)(h)) >> (Tw+6)) - 1)
-
-#define bitvechdr_(n) (TYPE_BITVEC_1 + ((((n)+31)&31)<<(Tw+2)))
-
-// Values for the type field in a header
-
-//
-// Symbols are so important that they have 25+ bits used to sub-classify them.
-// These are used by the interpreter to identify special variables, special
-// forms, and those symbols which are defined as macros.  The bits live where
-// other items would store a length, but since all symbol headers are the
-// same size an explicit length field is not necessary - but missing one out
-// means that I have to do a special check for the SYMBOL case whenever I
-// scan the vector heap, which is a bit messy. Well when I say "25 bits" what
-// I mean is that even on a 32-bit machine there are 25 bits available. On a
-// 64-bit system there are an extra 32 (which at present I do not use).
-//
-
-#define TYPE_SYMBOL         0x00000000 
-#define  SYM_SPECIAL_VAR    0x00000080       // (fluid '(xxx))
-#define  SYM_FLUID_VAR      0x00000080       // (fluid '(xxx))
-#define  SYM_GLOBAL_VAR     0x00000100       // (global '(xxx))
-// I will set both SPECIAL and GLOBAL for "keywords" and those will be
-// initialised to have themselves as their value and then neither be
-// bindable or settable.
-#define  SYM_KEYWORD_VAR    0x00000180       // (keyword '(xxx))
-#define  SYM_SPECIAL_FORM   0x00000200       // eg. COND, QUOTE
-#define  SYM_MACRO          0x00000400       // (putd 'xxx 'macro ...)
-#define  SYM_C_DEF          0x00000800       // has definition from C kernel
-#define  SYM_CODEPTR        0x00001000       // just carries code pointer
-#define  SYM_ANY_GENSYM     0x00002000       // gensym, printed or not
-#define  SYM_TRACED         0x00004000       // function is traced.
-#define  SYM_TRACESET       0x00008000       // traceset support
-#define  SYM_TAGGED         0x00010000       // used for special versions
-#define  SYM_FASTGET_MASK   0x007e0000       // used to support "fast" gets
-#define  SYM_FASTGET_SHIFT  17
-//
-//
-#ifdef COMMON
-// In Common Lisp mode I use the rest of the header to help speed up
-// test for the availability of a symbol in a package (while I am printing).
-// Note that on a 32-bit machine I have just 8 bits for that. I think that
-// will help with the first 8 packages I come across (or many more on a
-// 64-bit machine). If I ever enable package support!
-#define  SYM_EXTERN_IN_HOME 0x00800000      // external in its home package
-#define  SYM_IN_PACKAGE     0xff000000U     // availability in 8 packages
-#define  SYM_IN_PKG_SHIFT   24
-#define  SYM_IN_PKG_COUNT   8
-#else // COMMON
-// In Standard Lisp mode I only allocate a print-name to a gensym when I
-// first print it, so I have a bit that tells me when a gensym is still
-// not printed.
-#define  SYM_UNPRINTED_GENSYM 0x00800000    // not-yet-printed gensym
-// Here in Standard Lisp mode I have 8 bits left in a symbol header even
-// on a 32-bit system.
-#endif // COMMON
-
-#define symhdr_length       (doubleword_align_up(sizeof(Symbol_Head)))
-#define is_symbol_header(h) (((int)h & (0xf<<Tw)) == TYPE_SYMBOL)
-#define is_symbol_header_full_test(h) \
-    (((int)h & ((0xf<<Tw) + TAG_BITS)) == (TYPE_SYMBOL + TAG_HDR_IMMED))
-#define header_fastget(h)   (((h) >> SYM_FASTGET_SHIFT) & 0x3f)
-#define is_number_header_full_test(h) \
-    (((int)h & ((0x1d<<Tw) + TAG_BITS)) == ((0x1d<<Tw) + TAG_HDR_IMMED))
-// The "vector" case here includes vector-like number cases
-#define is_vector_header_full_test(h) \
-    (is_odds(h) && (((int)h & (0x3<<Tw)) != 0))
-#define is_array_header(h) (type_of_header(h) == TYPE_ARRAY)
-
-// The codes for yyyyy are as follows:
-
-//   xx:x00 0:0 010  symbol header
-//   xx:x01 0:0 010  character
-//   xx:x10 0:0 010  handle for bytecode. Why do I do it this way?
-//   xx:x11 0:0 010  special marker identifier (Spid) for internal use
-//
-//   00:000 0:1 010  simple vector
-//   00:001 0:1 010  array
-//   00:010 0:1 010  structure
-//   00:011 0:1 010  object
-//   00:100 0:1 010  indexvec (used to implement huge vectors)
-//   00:101 0:1 010  new style hash table
-//   00:110 0:1 010  new hash table with rehash pending
-//   00:111 0:1 010  rational number  *
-//   01:000 0:1 010  old style hash table
-//   01:0xx 0:1 010  (spare: 3 codes, one a "number")
-//   01:111 0:1 010  complex number   *
-//   10:0xx 0:1 010  stream and mixed1, 2 and 3
-//   1x:111 0:1 010  (spare, but classifies as a number: 2 codes)
-//   1x:xxx 0:1 010  (spare: 14 codes)
-//   11:111 0:1 010  used when calculating hash codes as if it was the
-//                   header for a CONS cell.
-
-//   yyy:yy 10 010  bit-vector with yyyyy (1 to 32) bits in final word.
-
-// The final column here explains what size units of storage fit within
-// the object. For (eg) "encapsulated general pointer" I have made it
-// 64 and I should pad 32-bit cases to that width - but I do not expect
-// those sorts of data to survive serialization, so I annotate them here
-// as "64?".
-
-//   00:000 1:1 010  vec8-1                         8
-//   00:001 1:1 010  string-1                       8
-//   00:010 1:1 010  bytecode-1                     8
-//   00:011 1:1 010  vec16-1                        16
-//   00:100 1:1 010  vec32                          32
-//   00:101 1:1 010  vec64                          64
-//   00:110 1:1 010  vec128                         128
-//   00:111 1:1 010  bignum            *            32
-//   01:000 1:1 010  vec8-2                         8
-//   01:001 1:1 010  string-2                       8
-//   01:010 1:1 010  bytecode-2                     8
-//   01:011 1:1 010  maple-ref                      64?
-//   01:100 1:1 010  foreign                        64?
-//   01:101 1:1 010  encapsulated-sp                64?
-//   01:110 1:1 010  encapsulated eneral pointer   64?
-//   01:111 1:1 010  float32           *            F32
-//   10:000 1:1 010  vec8-2                         8
-//   10:001 1:1 010  string-3                       8
-//   10:010 1:1 010  bytecode-3                     8
-//   10:011 1:1 010  vec16-2                        16
-//   10:100 1:1 010  vecflt32                       F32
-//   10:101 1:1 010  vecflt64                       F64
-//   10:110 1:1 010  vecflt128                      F128
-//   10:111 1:1 010  float64           *            F64
-//   11:000 1:1 010  vec8-3                         8
-//   11:001 1:1 010  string-4                       8
-//   11:010 1:1 010  bytecode-4                     8
-// [[11:011 1:1 010  nativecode                     8]] NOT USED
-//   11:100 1:1 010  (spare: 1 code)                X
-//   11:101 1:1 010  (spare: 1 code)                X
-//   11:110 1:1 010  (spare: 1 code)                X
-//   11:111 1:1 010  float128          *            F128
-
-// I have tests that let me discern the size of storage units within a
-// vector. This matters for serialization and deserialization because the
-// source and target machines may use different ordering for bytes within
-// words etc.
-
-// I use a bitmap scheme for all of these because that gives me uniformity
-// and because I do not believe that special treatment of any of the
-// case would do much better. I expect that strings and bignums will be
-// the most common cases.
-
-#define vector_i8(h)   (((0x7f070707u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
-#define vector_i16(h)  (((0x00080008u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
-#define vector_i32(h)  (((0x00000090u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
-#define vector_i64(h)  (((0x00007820u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
-#define vector_i128(h) (((0x00000040u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
-#define vector_f32(h)  (((0x00108000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
-#define vector_f64(h)  (((0x00a00000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
-#define vector_f128(h) (((0x80400000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0)
-
-// I have made the allocation so that any header of the form xx1:11x1:g010
-// is the header of a number.
-
-
-#define TYPE_BIGNUM         ( 0x1f <<Tw)
-#define TYPE_RATNUM         ( 0x1d <<Tw)
-#define TYPE_COMPLEX_NUM    ( 0x3d <<Tw)
-#define TYPE_SINGLE_FLOAT   ( 0x3f <<Tw)
-#define TYPE_DOUBLE_FLOAT   ( 0x5f <<Tw)
-#define TYPE_LONG_FLOAT     ( 0x7f <<Tw)
-
-#define numhdr(v) (*(Header *)((char *)(v) - TAG_NUMBERS))
-#define flthdr(v) (*(Header *)((char *)(v) - TAG_BOXFLOAT))
-
-//
-// The following tests are valid provided that n is already known to
-// have tag TAG_NUMBERS, i.e. it is a bignum, ratio or complex.
-//
-#define is_ratio(n) \
-    (type_of_header(numhdr(n)) == TYPE_RATNUM)
-
-#define is_complex(n) \
-    (type_of_header(numhdr(n)) == TYPE_COMPLEX_NUM)
-
-#define is_bignum_header(h) (type_of_header(h) == TYPE_BIGNUM)
-#define is_bignum(n) is_bignum_header(numhdr(n))
-
-#define is_string_header(h) ((type_of_header(h) & (0x1f<<Tw)) == TYPE_STRING_1)
-#define is_string(n) is_string_header(vechdr(n))
-
-#define is_vec8_header(h) ((type_of_header(h) & (0x1f<<Tw)) == TYPE_VEC8_1)
-#define is_vec8(n) is_vec8_header(vechdr(n))
-
-#define is_bps_header(h) ((type_of_header(h) & (0x1f<<Tw)) == TYPE_BPS_1)
-#define is_bps(n) is_bps_header(vechdr(n))
-
-#define is_vec16_header(h) ((type_of_header(h) & (0x3f<<Tw)) == TYPE_VEC16_1)
-#define is_vec16(n) is_vec16_header(vechdr(n))
-
-#define is_bitvec_header(h) ((type_of_header(h) & (0x03<<Tw)) == TYPE_BITVEC_1)
-#define is_bitvec(n) is_bitvec_header(vechdr(n))
-
-#define vechdr(v)  (*(Header *)((char *)(v) - TAG_VECTOR))
-#define elt(v, n)  (*(LispObject *)((char *)(v) + \
-                               (CELL-TAG_VECTOR) + \
-                               (((intptr_t)(n))*sizeof(LispObject))))
-#define celt(v, n) (*((char *)(v) + (CELL-TAG_VECTOR)+((intptr_t)(n))))
-#define ucelt(v, n) (*((unsigned char *)(v) + (CELL-TAG_VECTOR)+((intptr_t)(n))))
-#define scelt(v, n) (*((signed char *)(v) + (CELL-TAG_VECTOR)+((intptr_t)(n))))
-
-#define data_of_bps(v) ((unsigned char *)(v) + (CELL-TAG_VECTOR))
-#define BPS_DATA_OFFSET (CELL-TAG_VECTOR)
-
-// In the serialization code I want to access the fields in a symbol as
-// if that symbol was a vector and the fields were indexed as follows:
-//  vselt(p, -1) : qheader(p)
-//  vselt(p, 0)  : qvalue(p)
-//  vselt(p, 1)  : qenv(p)
-//  vselt(p, 2)  : qplist(p)
-//  vselt(p, 3)  : qfastgets(p)
-//  vselt(p, 4)  : qpackage(p)
-//  vselt(p, 5)  : qpname(p)
-// and I want vselt to apply to vectors too and do just what elt does in
-// that case. I will also use vselt on things tagged as numbers (specifically
-// RATIO and COMPLEX.
-
-#define vselt(v, n) (*(LispObject *)(((intptr_t)(v) & ~((intptr_t)TAG_BITS)) + \
-                                    ((1 + (intptr_t)(n))*sizeof(LispObject))))
-
-//
-// The next are for 16-bit & 32 bit values and single-float & double-float
-// access. Note that halfwords are signed.
-//
-//
-// In days of ancient history some systems did not support 16-bit values.
-// Specifically the DEC Alpha compilers did not have a 16-bit data type and
-// ARM did not support 16-bit usage at all well. However these days I intend
-// to expect that int16_t will exist and will be something I can rely on.
-//
-#define helt(v, n) (*(int16_t *)((char *)(v) + \
-    (CELL-TAG_VECTOR) + ((intptr_t)(n))*sizeof(int16_t)))
-#define sethelt(v, n, x) (*(int16_t *)((char *)(v) + \
-    (CELL-TAG_VECTOR) + ((intptr_t)(n))*sizeof(int16_t)) = (x))
-#define ielt(v, n)  (*(intptr_t *)((char *)(v) + \
-    (CELL-TAG_VECTOR)+(((intptr_t)(n))*sizeof(intptr_t))))
-//
-// Even on a 64-bit machine I will support packed arrays of 32-bit
-// ints or short-floats.
-//
-#define ielt32(v, n)  (*(int32_t *)((char *)(v) + \
-    (CELL-TAG_VECTOR)+(((intptr_t)(n))*sizeof(int32_t))))
-#define felt(v, n)  (*(float *)((char *)(v) + \
-    (CELL-TAG_VECTOR)+(((intptr_t)(n))*sizeof(float))))
-#define delt(v, n)  (*(double *)((char *)(v) + \
-    (2*CELL-TAG_VECTOR)+(((intptr_t)(n))*sizeof(double))))
 
 //
 // Bit, byte and halfword-vectors need extra information held here so that
@@ -773,11 +572,414 @@ typedef uintptr_t Header;
 #define SPID_NOPROP     (TAG_SPID+(0x0b<<(Tw+4)))  // fastget entry is empty
 #define SPID_LIBRARY    (TAG_SPID+(0x0c<<(Tw+4)))  // + 0xnnn00000 offset
 
-#define is_header(x) (((int)(x) & (0x3<<Tw)) != 0) // valid if TAG_HDR_IMMED
-#define is_char(x)   (((int)(x) & HDR_IMMED_MASK) == TAG_CHAR)
-#define is_spid(x)   (((int)(x) & HDR_IMMED_MASK) == TAG_SPID)
-#define is_library(x)(((int)(x) & 0xfffff)        == SPID_LIBRARY)
-#define library_number(x) (((x) >> 20) & 0xfff)
+static Header& vechdr(LispObject v)
+{   return *(Header *)((char *)(v) - TAG_VECTOR);
+}
+
+static inline unsigned int type_of_header(Header h)
+{   return ((unsigned int)h) & header_mask;
+}
+
+// length_of_header returns the length of a word or doubleword oriented
+// object in bytes. NOT in words.
+
+static inline size_t length_of_header(Header h)
+{   return (((size_t)h) >> (Tw+7)) << 2;
+}
+
+// length_of_bitheader returns a length in bits.
+static inline size_t length_of_bitheader(Header h)
+{   return (((size_t)h) >> (Tw+2)) - 31;
+}
+
+// length_of_byteheader returns a length in bytes, and so compatible with what
+// length_of_header used to do on byte arrays (and hence strings)
+
+
+static inline size_t length_of_byteheader(Header h)
+{   return (((size_t)h) >> (Tw+5))  - 3;
+}
+
+// length_of_hwordheader gives the number of halfwords used.
+static inline size_t length_of_hwordheader(Header h)
+{   return (((size_t)h) >> (Tw+6)) - 1;
+}
+
+static inline Header bitvechdr_(size_t n)
+{   return TYPE_BITVEC_1 + (((n+31)&31)<<(Tw+2));
+}
+
+// Values for the type field in a header
+
+//
+// Symbols are so important that they have 25+ bits used to sub-classify them.
+// These are used by the interpreter to identify special variables, special
+// forms, and those symbols which are defined as macros.  The bits live where
+// other items would store a length, but since all symbol headers are the
+// same size an explicit length field is not necessary - but missing one out
+// means that I have to do a special check for the SYMBOL case whenever I
+// scan the vector heap, which is a bit messy. Well when I say "25 bits" what
+// I mean is that even on a 32-bit machine there are 25 bits available. On a
+// 64-bit system there are an extra 32 (which at present I do not use).
+//
+
+#define TYPE_SYMBOL         0x00000000 
+#define  SYM_SPECIAL_VAR    0x00000080       // (fluid '(xxx))
+#define  SYM_FLUID_VAR      0x00000080       // (fluid '(xxx))
+#define  SYM_GLOBAL_VAR     0x00000100       // (global '(xxx))
+// I will set both SPECIAL and GLOBAL for "keywords" and those will be
+// initialised to have themselves as their value and then neither be
+// bindable or settable.
+#define  SYM_KEYWORD_VAR    0x00000180       // (keyword '(xxx))
+#define  SYM_SPECIAL_FORM   0x00000200       // eg. COND, QUOTE
+#define  SYM_MACRO          0x00000400       // (putd 'xxx 'macro ...)
+#define  SYM_C_DEF          0x00000800       // has definition from C kernel
+#define  SYM_CODEPTR        0x00001000       // just carries code pointer
+#define  SYM_ANY_GENSYM     0x00002000       // gensym, printed or not
+#define  SYM_TRACED         0x00004000       // function is traced.
+#define  SYM_TRACESET       0x00008000       // traceset support
+#define  SYM_TAGGED         0x00010000       // used for special versions
+#define  SYM_FASTGET_MASK   0x007e0000       // used to support "fast" gets
+#define  SYM_FASTGET_SHIFT  17
+//
+//
+#ifdef COMMON
+// In Common Lisp mode I use the rest of the header to help speed up
+// test for the availability of a symbol in a package (while I am printing).
+// Note that on a 32-bit machine I have just 8 bits for that. I think that
+// will help with the first 8 packages I come across (or many more on a
+// 64-bit machine). If I ever enable package support!
+#define  SYM_EXTERN_IN_HOME 0x00800000      // external in its home package
+#define  SYM_IN_PACKAGE     0xff000000U     // availability in 8 packages
+#define  SYM_IN_PKG_SHIFT   24
+#define  SYM_IN_PKG_COUNT   8
+#else // COMMON
+// In Standard Lisp mode I only allocate a print-name to a gensym when I
+// first print it, so I have a bit that tells me when a gensym is still
+// not printed.
+#define  SYM_UNPRINTED_GENSYM 0x00800000    // not-yet-printed gensym
+// Here in Standard Lisp mode I have 8 bits left in a symbol header even
+// on a 32-bit system.
+#endif // COMMON
+
+#define symhdr_length       (doubleword_align_up(sizeof(Symbol_Head)))
+static inline bool is_symbol_header(Header h)
+{   return ((int)h & (0xf<<Tw)) == TYPE_SYMBOL;
+}
+
+static inline bool is_symbol_header_full_test(Header h)
+{   return ((int)h & ((0xf<<Tw) + TAG_BITS)) == (TYPE_SYMBOL + TAG_HDR_IMMED);
+}
+
+static inline int header_fastget(Header h)
+{   return (h >> SYM_FASTGET_SHIFT) & 0x3f;
+}
+
+static inline bool is_number_header_full_test(Header h)
+{   return ((int)h & ((0x1d<<Tw) + TAG_BITS)) == ((0x1d<<Tw) + TAG_HDR_IMMED);
+}
+
+// The "vector" case here includes vector-like number cases
+static inline bool is_vector_header_full_test(Header h)
+{   return is_odds(h) && (((int)h & (0x3<<Tw)) != 0);
+}
+
+static inline bool is_array_header(Header h)
+{   return type_of_header(h) == TYPE_ARRAY;
+}
+
+// The codes for yyyyy are as follows:
+
+//   xx:x00 0:0 010  symbol header
+//   xx:x01 0:0 010  character
+//   xx:x10 0:0 010  handle for bytecode. Why do I do it this way?
+//   xx:x11 0:0 010  special marker identifier (Spid) for internal use
+//
+//   00:000 0:1 010  simple vector
+//   00:001 0:1 010  array
+//   00:010 0:1 010  structure
+//   00:011 0:1 010  object
+//   00:100 0:1 010  indexvec (used to implement huge vectors)
+//   00:101 0:1 010  new style hash table
+//   00:110 0:1 010  new hash table with rehash pending
+//   00:111 0:1 010  rational number  *
+//   01:000 0:1 010  old style hash table
+//   01:0xx 0:1 010  (spare: 3 codes, one a "number")
+//   01:111 0:1 010  complex number   *
+//   10:0xx 0:1 010  stream and mixed1, 2 and 3
+//   1x:111 0:1 010  (spare, but classifies as a number: 2 codes)
+//   1x:xxx 0:1 010  (spare: 14 codes)
+//   11:111 0:1 010  used when calculating hash codes as if it was the
+//                   header for a CONS cell.
+
+//   yyy:yy 10 010  bit-vector with yyyyy (1 to 32) bits in final word.
+
+// The final column here explains what size units of storage fit within
+// the object. For (eg) "encapsulated general pointer" I have made it
+// 64 and I should pad 32-bit cases to that width - but I do not expect
+// those sorts of data to survive serialization, so I annotate them here
+// as "64?".
+
+//   00:000 1:1 010  vec8-1                         8
+//   00:001 1:1 010  string-1                       8
+//   00:010 1:1 010  bytecode-1                     8
+//   00:011 1:1 010  vec16-1                        16
+//   00:100 1:1 010  vec32                          32
+//   00:101 1:1 010  vec64                          64
+//   00:110 1:1 010  vec128                         128
+//   00:111 1:1 010  bignum            *            32
+//   01:000 1:1 010  vec8-2                         8
+//   01:001 1:1 010  string-2                       8
+//   01:010 1:1 010  bytecode-2                     8
+//   01:011 1:1 010  maple-ref                      64?
+//   01:100 1:1 010  foreign                        64?
+//   01:101 1:1 010  encapsulated-sp                64?
+//   01:110 1:1 010  encapsulated eneral pointer   64?
+//   01:111 1:1 010  float32           *            F32
+//   10:000 1:1 010  vec8-2                         8
+//   10:001 1:1 010  string-3                       8
+//   10:010 1:1 010  bytecode-3                     8
+//   10:011 1:1 010  vec16-2                        16
+//   10:100 1:1 010  vecflt32                       F32
+//   10:101 1:1 010  vecflt64                       F64
+//   10:110 1:1 010  vecflt128                      F128
+//   10:111 1:1 010  float64           *            F64
+//   11:000 1:1 010  vec8-3                         8
+//   11:001 1:1 010  string-4                       8
+//   11:010 1:1 010  bytecode-4                     8
+// [[11:011 1:1 010  nativecode                     8]] NOT USED
+//   11:100 1:1 010  (spare: 1 code)                X
+//   11:101 1:1 010  (spare: 1 code)                X
+//   11:110 1:1 010  (spare: 1 code)                X
+//   11:111 1:1 010  float128          *            F128
+
+// I have tests that let me discern the size of storage units within a
+// vector. This matters for serialization and deserialization because the
+// source and target machines may use different ordering for bytes within
+// words etc.
+
+// I use a bitmap scheme for all of these because that gives me uniformity
+// and because I do not believe that special treatment of any of the
+// case would do much better. I expect that strings and bignums will be
+// the most common cases.
+
+static inline bool vector_i8(Header h)
+{   return ((0x7f070707u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+}
+
+static inline bool vector_i16(Header h)
+{   return ((0x00080008u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+}
+
+static inline bool vector_i32(Header h)
+{   return ((0x00000090u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+}
+
+static inline bool vector_i64(Header h)
+{   return ((0x00007820u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+}
+
+static inline bool vector_i128(Header h)
+{   return ((0x00000040u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+}
+
+static inline bool vector_f32(Header h)
+{   return ((0x00108000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+}
+
+static inline bool vector_f64(Header h)
+{   return ((0x00a00000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+}
+
+static inline bool vector_f128(Header h)
+{   return ((0x80400000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
+}
+
+// I have made the allocation so that any header of the form xx1:11x1:g010
+// is the header of a number.
+
+
+#define TYPE_BIGNUM         ( 0x1f <<Tw)
+#define TYPE_RATNUM         ( 0x1d <<Tw)
+#define TYPE_COMPLEX_NUM    ( 0x3d <<Tw)
+#define TYPE_SINGLE_FLOAT   ( 0x3f <<Tw)
+#define TYPE_DOUBLE_FLOAT   ( 0x5f <<Tw)
+#define TYPE_LONG_FLOAT     ( 0x7f <<Tw)
+
+static inline Header& numhdr(LispObject v)
+{   return *(Header *)((char *)(v) - TAG_NUMBERS);
+}
+
+static inline Header& flthdr(LispObject v)
+{   return *(Header *)((char *)(v) - TAG_BOXFLOAT);
+}
+
+//
+// The following tests are valid provided that n is already known to
+// have tag TAG_NUMBERS, i.e. it is a bignum, ratio or complex.
+//
+static inline bool is_ratio(LispObject n)
+{   return type_of_header(numhdr(n)) == TYPE_RATNUM;
+}
+
+static inline bool is_complex(LispObject n)
+{   return type_of_header(numhdr(n)) == TYPE_COMPLEX_NUM;
+}
+
+static inline bool is_bignum_header(Header h)
+{   return type_of_header(h) == TYPE_BIGNUM;
+}
+
+static inline bool is_bignum(LispObject n)
+{   return is_bignum_header(numhdr(n));
+}
+
+static inline bool is_string_header(Header h)
+{   return (type_of_header(h) & (0x1f<<Tw)) == TYPE_STRING_1;
+}
+
+static inline bool is_string(LispObject n)
+{   return is_string_header(vechdr(n));
+}
+
+static inline bool is_vec8_header(Header h)
+{   return (type_of_header(h) & (0x1f<<Tw)) == TYPE_VEC8_1;
+}
+
+static inline bool is_vec8(LispObject n)
+{   return is_vec8_header(vechdr(n));
+}
+
+static inline bool is_bps_header(Header h)
+{   return (type_of_header(h) & (0x1f<<Tw)) == TYPE_BPS_1;
+}
+
+static inline bool is_bps(LispObject n)
+{   return is_bps_header(vechdr(n));
+}
+
+static inline bool is_vec16_header(Header h)
+{   return (type_of_header(h) & (0x3f<<Tw)) == TYPE_VEC16_1;
+}
+
+static inline bool is_vec16(LispObject n)
+{   return is_vec16_header(vechdr(n));
+}
+
+static inline bool is_bitvec_header(Header h)
+{   return  (type_of_header(h) & (0x03<<Tw)) == TYPE_BITVEC_1;
+}
+
+static inline bool is_bitvec(LispObject n)
+{   return is_bitvec_header(vechdr(n));
+}
+
+static inline LispObject& elt(LispObject v, size_t n)
+{   return *(LispObject *)((char *)v +
+                           (CELL-TAG_VECTOR) +
+                           (n*sizeof(LispObject)));
+}
+
+static inline char& celt(LispObject v, size_t n)
+{   return *((char *)(v) + (CELL-TAG_VECTOR) + n);
+}
+
+static inline unsigned char& ucelt(LispObject v, size_t n)
+{   return *((unsigned char *)v + (CELL-TAG_VECTOR) + n);
+}
+
+static inline signed char& scelt(LispObject v, size_t n)
+{   return *((signed char *)v + (CELL-TAG_VECTOR) + n);
+}
+
+#define BPS_DATA_OFFSET (CELL-TAG_VECTOR)
+
+static inline unsigned char* data_of_bps(LispObject v)
+{   return (unsigned char *)v + BPS_DATA_OFFSET;
+}
+
+
+// In the serialization code I want to access the fields in a symbol as
+// if that symbol was a vector and the fields were indexed as follows:
+//  vselt(p, -1) : qheader(p)
+//  vselt(p, 0)  : qvalue(p)
+//  vselt(p, 1)  : qenv(p)
+//  vselt(p, 2)  : qplist(p)
+//  vselt(p, 3)  : qfastgets(p)
+//  vselt(p, 4)  : qpackage(p)
+//  vselt(p, 5)  : qpname(p)
+// and I want vselt to apply to vectors too and do just what elt does in
+// that case. I will also use vselt on things tagged as numbers (specifically
+// RATIO and COMPLEX.
+
+static inline LispObject& vselt(LispObject v, size_t n)
+{   return *(LispObject *)(((intptr_t)v & ~((intptr_t)TAG_BITS)) +
+                            ((1 + n)*sizeof(LispObject)));
+}
+
+//
+// The next are for 16-bit & 32 bit values and single-float & double-float
+// access. Note that halfwords are signed.
+//
+//
+// In days of ancient history some systems did not support 16-bit values.
+// Specifically the DEC Alpha compilers did not have a 16-bit data type and
+// ARM did not support 16-bit usage at all well. However these days I intend
+// to expect that int16_t will exist and will be something I can rely on.
+//
+static inline int16_t& helt(LispObject v, size_t n)
+{   return *(int16_t *)((char *)v +
+                        (CELL-TAG_VECTOR) +
+                        n*sizeof(int16_t));
+}
+
+static inline intptr_t& ielt(LispObject v, size_t n)
+{   return  *(intptr_t *)((char *)v +
+                         (CELL-TAG_VECTOR) +
+                         n*sizeof(intptr_t));
+}
+
+//
+// Even on a 64-bit machine I will support packed arrays of 32-bit
+// ints or short-floats.
+//
+static inline int32_t& ielt32(LispObject v, size_t n)
+{   return *(int32_t *)((char *)v +
+                        (CELL-TAG_VECTOR) +
+                        n*sizeof(int32_t));
+}
+
+static inline float& felt(LispObject v, size_t n)
+{   return *(float *)((char *)v +
+                      (CELL-TAG_VECTOR) +
+                      n*sizeof(float));
+}
+
+static inline double& delt(LispObject v, size_t n)
+{   return *(double *)((char *)v +
+                       (8-TAG_VECTOR) +
+                       n*sizeof(double));
+}
+
+static inline bool is_header(LispObject x)
+{   return ((int)x & (0x3<<Tw)) != 0; // valid if TAG_HDR_IMMED
+}
+
+static inline bool is_char(LispObject x)
+{   return ((int)x & HDR_IMMED_MASK) == TAG_CHAR;
+}
+
+static inline bool is_spid(LispObject x)
+{   return ((int)x & HDR_IMMED_MASK) == TAG_SPID;
+}
+
+static inline bool is_library(LispObject x)
+{   return ((int)x & 0xfffff) == SPID_LIBRARY;
+}
+
+static inline unsigned int library_number(LispObject x)
+{   return (x >> 20) & 0xfff;
+}
 
 //
 // I will now support the full range of Unicode from U+0000 to U+10FFFF.
@@ -793,13 +995,23 @@ typedef uintptr_t Header;
 // with or that it has any respectable purpose today, and I only support
 // 16 distinct "Font" codes when I am on 32-bit hardware.
 
-#define font_of_char(n)  (((int32_t)(n) >> (21+4+Tw)) & 0xf)
-#define bits_of_char(n)  (0)
-#define code_of_char(n)  (((int32_t)(n) >>  (4+Tw)) & 0x001fffff)
+static inline int font_of_char(LispObject n)
+{   return ((int32_t)n >> (21+4+Tw)) & 0xf;
+}
 
-#define pack_char(font, code)                                      \
-    ((LispObject)((((uint32_t)(font)) << (21+4+Tw)) |              \
-                   (((uint32_t)(code)) << (4+Tw)) | TAG_CHAR))
+// The Common Lisp "bits" part of a character object no longer makes any sense!
+static inline int bits_of_char(LispObject n)
+{   return 0;
+}
+
+static inline unsigned int code_of_char(LispObject n)
+{   return   ((uint32_t)(n) >>  (4+Tw)) & 0x001fffff;
+}
+
+static inline LispObject pack_char(int font, unsigned int code)
+{   return (LispObject)((((uint32_t)(font)) << (21+4+Tw)) |
+                        (((uint32_t)(code)) << (4+Tw)) | TAG_CHAR);
+}
 
 //
 // For internal purposes here I will use a pseudo-character with code
@@ -860,33 +1072,88 @@ typedef struct Symbol_Head
 // macro) to stress that I view the store layout as fixed, and because
 // offsetof is badly supported by some C compilers I have come across.
 //
-#define qheader(p)     (*(Header      *)((char *)(p) + (0*CELL-TAG_SYMBOL)))
-#define qvalue(p)      (*(LispObject  *)((char *)(p) + (1*CELL-TAG_SYMBOL)))
-#define qenv(p)        (*(LispObject  *)((char *)(p) + (2*CELL-TAG_SYMBOL)))
-#define qplist(p)      (*(LispObject  *)((char *)(p) + (3*CELL-TAG_SYMBOL)))
-#define qfastgets(p)   (*(LispObject  *)((char *)(p) + (4*CELL-TAG_SYMBOL)))
-#define qpackage(p)    (*(LispObject  *)((char *)(p) + (5*CELL-TAG_SYMBOL)))
-#define qpname(p)      (*(LispObject  *)((char *)(p) + (6*CELL-TAG_SYMBOL)))
+static inline Header& qheader(LispObject p)
+{   return *(Header *)((char *)p + (0*CELL-TAG_SYMBOL));
+}
+
+static inline LispObject& qvalue(LispObject p)
+{   return *(LispObject *)((char *)p + (1*CELL-TAG_SYMBOL));
+}
+
+static inline LispObject& qenv(LispObject p)
+{   return *(LispObject *)((char *)p + (2*CELL-TAG_SYMBOL));
+}
+
+static inline LispObject& qplist(LispObject p)
+{   return *(LispObject *)((char *)p + (3*CELL-TAG_SYMBOL));
+}
+
+static inline LispObject& qfastgets(LispObject p)
+{   return *(LispObject *)((char *)p + (4*CELL-TAG_SYMBOL));
+}
+
+static inline LispObject& qpackage(LispObject p)
+{   return *(LispObject *)((char *)p + (5*CELL-TAG_SYMBOL));
+}
+
+static inline LispObject& qpname(LispObject p)
+{   return *(LispObject *)((char *)p + (6*CELL-TAG_SYMBOL));
+}
 
 // The ifn() selector gives access to the qfn() cell, but treating its
 // contents as (intptr_t).
 //
-#define ifn0(p)        (*(intptr_t    *)((char *)(p) + (7*CELL-TAG_SYMBOL)))
-#define ifn1(p)        (*(intptr_t    *)((char *)(p) + (8*CELL-TAG_SYMBOL)))
-#define ifn2(p)        (*(intptr_t    *)((char *)(p) + (9*CELL-TAG_SYMBOL)))
-#define ifn3(p)        (*(intptr_t    *)((char *)(p) + (10*CELL-TAG_SYMBOL)))
-#define ifnn(p)        (*(intptr_t    *)((char *)(p) + (11*CELL-TAG_SYMBOL)))
-#define ifn4(p)        (*(intptr_t    *)((char *)(p) + (11*CELL-TAG_SYMBOL)))
+static inline intptr_t& ifn0(LispObject p)
+{   return *(intptr_t *)((char *)p + (7*CELL-TAG_SYMBOL));
+}
 
+static inline intptr_t& ifn1(LispObject p)
+{   return *(intptr_t *)((char *)p + (8*CELL-TAG_SYMBOL));
+}
 
-#define qfn0(p)        (*(no_args    **)((char *)(p) + (7*CELL-TAG_SYMBOL)))
-#define qfn1(p)        (*(one_args   **)((char *)(p) + (8*CELL-TAG_SYMBOL)))
-#define qfn2(p)        (*(two_args   **)((char *)(p) + (9*CELL-TAG_SYMBOL)))
-#define qfn3(p)        (*(three_args **)((char *)(p) + (10*CELL-TAG_SYMBOL)))
-#define qfnn(p)        (*(n_args     **)((char *)(p) + (11*CELL-TAG_SYMBOL)))
-#define qfn4(p)        (*(four_args  **)((char *)(p) + (11*CELL-TAG_SYMBOL)))
+static inline intptr_t& ifn2(LispObject p)
+{   return *(intptr_t *)((char *)p + (9*CELL-TAG_SYMBOL));
+}
 
-#define qcount(p)      (*(uint64_t    *)((char *)(p) + (12*CELL-TAG_SYMBOL)))
+static inline intptr_t& ifn3(LispObject p)
+{   return *(intptr_t *)((char *)p + (10*CELL-TAG_SYMBOL));
+}
+
+static inline intptr_t& ifnn(LispObject p)
+{   return *(intptr_t *)((char *)p + (11*CELL-TAG_SYMBOL));
+}
+
+static inline intptr_t& ifn4(LispObject p)
+{   return *(intptr_t *)((char *)p + (11*CELL-TAG_SYMBOL));
+}
+
+static inline no_args*& qfn0(LispObject p)
+{   return *(no_args **)((char *)p + (7*CELL-TAG_SYMBOL));
+}
+
+static inline one_args*& qfn1(LispObject p)
+{   return *(one_args **)((char *)p + (8*CELL-TAG_SYMBOL));
+}
+
+static inline two_args*& qfn2(LispObject p)
+{   return *(two_args **)((char *)p + (9*CELL-TAG_SYMBOL));
+}
+
+static inline three_args*& qfn3(LispObject p)
+{   return *(three_args **)((char *)p + (10*CELL-TAG_SYMBOL));
+}
+
+static inline n_args*& qfnn(LispObject p)
+{   return *(n_args **)((char *)p + (11*CELL-TAG_SYMBOL));
+}
+
+static inline four_args*& qfn4(LispObject p)
+{   return *(four_args **)((char *)p + (11*CELL-TAG_SYMBOL));
+}
+
+static inline uint64_t& qcount(LispObject p)
+{   return *(uint64_t *)((char *)p + (12*CELL-TAG_SYMBOL));
+}
 
 typedef union _Float_union
 {   float f;
@@ -897,7 +1164,9 @@ typedef union _Float_union
 // The following macro clears any bits in a LispObject above the
 // bottom 32.
 
-#define low32(a) ((LispObject)(uint32_t)(a))
+static inline LispObject low32(LispObject a)
+{   return (LispObject)(uint32_t)a;
+}
 
 typedef struct Big_Number
 {
@@ -913,20 +1182,27 @@ typedef struct Big_Number
     uint32_t d[1];  // generally more digits than this
 } Big_Number;
 
-#define bignum_length(b)  length_of_header(numhdr(b))
-#define bignum_digits(b)  \
-   ((uint32_t *)((char *)(b)  + (CELL-TAG_NUMBERS)))
+static inline size_t bignum_length(LispObject b)
+{   return length_of_header(numhdr(b));
+}
+
+static inline uint32_t* bignum_digits(LispObject b)
+{   return (uint32_t *)((char *)b  + (CELL-TAG_NUMBERS));
+}
 
 // For work on bignums when I have a 64-bit machine I frequently need the
 // top word of a bignum as a 64-bit (signed) value...
-#define bignum_digits64(b, n) \
-   ((int64_t)((int32_t *)((char *)(b)+(CELL-TAG_NUMBERS)))[n])
+static inline int64_t bignum_digits64(LispObject b, size_t n)
+{   return (int64_t)((int32_t *)((char *)b+(CELL-TAG_NUMBERS)))[n];
+}
 
 
 // make_bighdr takes an argument measured in 32-bit units, including space
 // for the header word. This is the natural space unit used in the tagging
 // scheme so I just need to shift the count to where it has to live.
-#define make_bighdr(n)    (TAG_HDR_IMMED+TYPE_BIGNUM+(((intptr_t)(n))<<(Tw+7)))
+static inline Header make_bighdr(size_t n)
+{   return TAG_HDR_IMMED+TYPE_BIGNUM+(n<<(Tw+7));
+}
 
 // pack_hdrlength takes a length in 32-bit words (including the size of
 // the header). NOTE VERY WELL that although the other header length packers
@@ -948,8 +1224,13 @@ typedef struct Rational_Number
     LispObject den;
 } Rational_Number;
 
-#define numerator(r)    (((Rational_Number *)((char *)(r)-TAG_NUMBERS))->num)
-#define denominator(r)  (((Rational_Number *)((char *)(r)-TAG_NUMBERS))->den)
+static inline LispObject& numerator(LispObject r)
+{   return ((Rational_Number *)((char *)r-TAG_NUMBERS))->num;
+}
+
+static inline LispObject& denominator(LispObject r)
+{   return ((Rational_Number *)((char *)r-TAG_NUMBERS))->den;
+}
 
 typedef struct Complex_Number
 {   Header header;
@@ -957,8 +1238,13 @@ typedef struct Complex_Number
     LispObject imag;
 } Complex_Number;
 
-#define real_part(r)    (((Complex_Number *)((char *)(r)-TAG_NUMBERS))->real)
-#define imag_part(r)    (((Complex_Number *)((char *)(r)-TAG_NUMBERS))->imag)
+static inline LispObject& real_part(LispObject r)
+{   return ((Complex_Number *)((char *)r-TAG_NUMBERS))->real;
+}
+
+static inline LispObject& imag_part(LispObject r)
+{   return ((Complex_Number *)((char *)r-TAG_NUMBERS))->imag;
+}
 
 typedef struct Single_Float
 {   Header header;
@@ -969,12 +1255,17 @@ typedef struct Single_Float
     } f;
 } Single_Float;
 
-#define single_float_val(v) \
-    (((Single_Float *)((char *)(v)-TAG_BOXFLOAT))->f.f)
-#define float32_t_val(v) \
-    (((Single_Float *)((char *)(v)-TAG_BOXFLOAT))->f.f32)
-#define intfloat32_t_val(v) \
-    (((Single_Float *)((char *)(v)-TAG_BOXFLOAT))->f.i)
+static inline float& single_float_val(LispObject v)
+{   return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.f;
+}
+
+static inline float32_t& float32_t_val(LispObject v)
+{   return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.f32;
+}
+
+static inline int32_t& intfloat32_t_val(LispObject v)
+{   return ((Single_Float *)((char *)v-TAG_BOXFLOAT))->f.i;
+}
 
 //
 // The structures here are not actually used - because I can not get
@@ -1006,18 +1297,27 @@ typedef union _Double_union
 } Double_union;
 
 #define SIZEOF_DOUBLE_FLOAT     16
-#define double_float_addr(v)    ((double *)((char *)(v) + \
-                                   (8-TAG_BOXFLOAT)))
+static inline double *double_float_addr(LispObject v)
+{   return (double *)((char *)v + (8-TAG_BOXFLOAT));
+}
+
 // on 32-bit machines there has to be a padding work in a double_float,
 // and this lets me clear it out.
-#define double_float_pad(v)     (*(int32_t *)((char *)(v) + \
-                                   (4-TAG_BOXFLOAT)))
-#define double_float_val(v)     (*(double *)((char *)(v) + \
-                                   (8-TAG_BOXFLOAT)))
-#define float64_t_val(v)        (*(float64_t *)((char *)(v) + \
-                                   (8-TAG_BOXFLOAT)))
-#define intfloat64_t_val(v)     (*(int64_t *)((char *)(v) + \
-                                   (8-TAG_BOXFLOAT)))
+static inline int32_t& double_float_pad(LispObject v)
+{   return *(int32_t *)((char *)v + (4-TAG_BOXFLOAT));
+}
+
+static inline double& double_float_val(LispObject v)
+{   return *(double *)((char *)v + (8-TAG_BOXFLOAT));
+}
+
+static inline float64_t& float64_t_val(LispObject v)
+{   return *(float64_t *)((char *)v + (8-TAG_BOXFLOAT));
+}
+
+static inline int64_t& intfloat64_t_val(LispObject v)
+{   return *(int64_t *)((char *)v + (8-TAG_BOXFLOAT));
+}
 
 //
 // Again I do not actually introduce the struct...
@@ -1046,33 +1346,58 @@ typedef union _Double_union
 //
 
 #define SIZEOF_LONG_FLOAT       24
-#define long_float_addr(v)      ((float128_t *)((char *)(v) + \
-                                   (8-TAG_BOXFLOAT)))
-#define long_float_pad(v)       (*(int32_t *)((char *)(v) + \
-                                   (4-TAG_BOXFLOAT)))
-#define long_float_val(v)       (*(float128_t *)((char *)(v) + \
-                                   (8-TAG_BOXFLOAT)))
-#define float128_t_val(v)       (*(float128_t *)((char *)(v) + \
-                                   (8-TAG_BOXFLOAT)))
-#define intfloat128_t_val0(v)   (*(int64_t *)((char *)(v) + \
-                                   (8-TAG_BOXFLOAT)))
-#define intfloat128_t_val1(v)   (*(int64_t *)((char *)(v) + \
-                                   (16-TAG_BOXFLOAT)))
+static inline float128_t *long_float_addr(LispObject v)
+{   return (float128_t *)((char *)v + (8-TAG_BOXFLOAT));
+}
 
-#define word_align_up(n) ((LispObject)(((intptr_t)(n) + 3) & (-4)))
+static inline int32_t& long_float_pad(LispObject v)
+{   return *(int32_t *)((char *)v + (4-TAG_BOXFLOAT));
+}
 
-#define doubleword_align_up(n) ((uintptr_t)(((intptr_t)(n) + 7) & (-8)))
-#define doubleword_align_down(n) ((uintptr_t)((intptr_t)(n) & (-8)))
+static inline float128_t& long_float_val(LispObject v)
+{   return *(float128_t *)((char *)v + (8-TAG_BOXFLOAT));
+}
 
-#define object_align_up(n) ((uintptr_t)(((intptr_t)(n) + \
-                            sizeof(LispObject) - 1) & (-sizeof(LispObject))))
+static inline float128_t& float128_t_val(LispObject v)
+{   return *(float128_t *)((char *)v + (8-TAG_BOXFLOAT));
+}
 
-//
-// For the benefit of 64-bit architectures I will make the big blocks
-// of memory that I use 128-bit aligned.
-//
-#define quadword_align_up(n) ((uintptr_t)(((intptr_t)(n) + 15) & (-16)))
-#define quadword_align_down(n) ((uintptr_t)((intptr_t)(n) & (-16)))
+static inline int64_t& intfloat128_t_val0(LispObject v)
+{   return *(int64_t *)((char *)v + (8-TAG_BOXFLOAT));
+}
+
+static inline int64_t& intfloat128_t_val1(LispObject v)
+{   return *(int64_t *)((char *)v + (16-TAG_BOXFLOAT));
+}
+
+static inline uintptr_t word_align_up(uintptr_t n)
+{   return (LispObject)((n + 3) & (-(uintptr_t)4U));
+}
+
+static inline uintptr_t doubleword_align_up(uintptr_t n)
+{   return (uintptr_t)((n + 7) & (-(uintptr_t)8U));
+}
+
+static inline LispObject doubleword_align_up(LispObject n)
+{   return (LispObject)(((uintptr_t)n + 7) & (-(uintptr_t)8U));
+}
+
+static inline uintptr_t doubleword_align_down(uintptr_t n)
+{   return (uintptr_t)((intptr_t)n & (-(uintptr_t)8U));
+}
+
+static inline uintptr_t object_align_up(uintptr_t n)
+{   return (uintptr_t)((n + sizeof(LispObject) - 1) &
+                       (-(uintptr_t)sizeof(LispObject)));
+}
+
+static inline uintptr_t quadword_align_up(uintptr_t n)
+{   return (uintptr_t)((n + 15) & (-(uintptr_t)16U));
+}
+
+static inline uintptr_t quadword_align_down(uintptr_t n)
+{   return (uintptr_t)(n & (-(uintptr_t)16U));
+}
 
 //
 // values to go in exit_reason at times when exceptions are being thrown.

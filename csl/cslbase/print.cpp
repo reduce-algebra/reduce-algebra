@@ -433,7 +433,7 @@ LispObject Lis_console(LispObject env, LispObject a)
 }
 
 LispObject make_stream_handle(void)
-{   LispObject w = getvector(TAG_VECTOR, TYPE_STREAM, STREAM_SIZE);
+{   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_STREAM, STREAM_SIZE);
     stream_type(w) = nil;
     stream_write_data(w) = nil;
     stream_read_data(w) = nil;
@@ -596,7 +596,7 @@ LispObject Lget_output_stream_string(LispObject env, LispObject a)
     stream_write_data(a) = nil;
     stream_char_pos(a) = stream_byte_pos(a) = 0;
     push(w);
-    a = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
+    a = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     pop(w);
     k = (n + 3) & ~(int32_t)7;
     *(int32_t *)((char *)a + k + 4 - TAG_VECTOR) = 0;
@@ -5061,7 +5061,7 @@ start_again:
     pop(url);
     stream_type(r) = url;
     push(r);
-    url = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+4+SOCKET_BUFFER_SIZE);
+    url = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+4+SOCKET_BUFFER_SIZE);
     pop(r);
     ielt32(url, 0) = 0;
     stream_read_data(r) = url;

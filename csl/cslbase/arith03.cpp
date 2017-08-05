@@ -684,7 +684,7 @@ static inline int make_positive_and_copy(LispObject &a, size_t &lena,
     {   size_t newlen = 2*bignum_length(big_dividend);
         push2(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
-        LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
+        LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
         pop2(b, a);
         big_dividend = w;
     }
@@ -692,7 +692,7 @@ static inline int make_positive_and_copy(LispObject &a, size_t &lena,
     {   size_t newlen = 2*bignum_length(big_divisor);
         push2(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
-        LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
+        LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
         pop2(b, a);
         big_divisor = w;
     }
@@ -700,7 +700,7 @@ static inline int make_positive_and_copy(LispObject &a, size_t &lena,
     {   size_t newlen = 2*bignum_length(big_quotient);
         push2(a, b);
 //      trace_printf("newlen = %d\n", (int)newlen);
-        LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
+        LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, newlen);
         pop2(b, a);
         big_quotient = w;
     }
@@ -886,7 +886,7 @@ static inline LispObject pack_up_result(LispObject a, size_t lena)
         if (valid_as_fixnum(r)) return fixnum_of_int(r);
     }
     push(a);
-    LispObject r = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lena+4);
+    LispObject r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lena+4);
     pop(a);
 //  trace_printf("lena = %d  r = %p\n", (int)lena, (void *)r);
     for (size_t i=0; i<=lena; i++)

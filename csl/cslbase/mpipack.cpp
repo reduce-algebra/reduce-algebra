@@ -245,7 +245,7 @@ static LispObject unpack_atom()
     {       int size;
         case TYPE_DOUBLE_FLOAT:
             size = length_of_header(a);
-            a = getvector(TAG_BOXFLOAT,TYPE_DOUBLE_FLOAT,size);
+            a = get_basic_vector(TAG_BOXFLOAT,TYPE_DOUBLE_FLOAT,size);
             MPI_Unpack(mpi_pack_buffer, mpi_pack_size, &mpi_pack_position,
                        double_float_addr(a),
                        1, MPI_DOUBLE, MPI_COMM_WORLD);
@@ -253,7 +253,7 @@ static LispObject unpack_atom()
 
         case TYPE_BIGNUM:
             size = length_of_header(a);
-            a = getvector(TAG_NUMBERS,type_of_header(a),size);
+            a = get_basic_vector(TAG_NUMBERS,type_of_header(a),size);
             MPI_Unpack(mpi_pack_buffer,mpi_pack_size,&mpi_pack_position,
                        (char*)a - TAG_NUMBERS + CELL,
                        (size - sizeof(Header))>>2, MPI_UNSIGNED_LONG, MPI_COMM_WORLD);
@@ -261,7 +261,7 @@ static LispObject unpack_atom()
 
         case TYPE_STRING:
             size = length_of_byteheader(a);
-            a = getvector(TAG_VECTOR,TYPE_STRING,size);
+            a = get_basic_vector(TAG_VECTOR,TYPE_STRING,size);
             MPI_Unpack(mpi_pack_buffer, mpi_pack_size, &mpi_pack_position,
                        (char*)a - TAG_VECTOR + CELL,
                        size - sizeof(Header), MPI_CHAR, MPI_COMM_WORLD);
@@ -269,7 +269,7 @@ static LispObject unpack_atom()
 
         case TYPE_SIMPLE_VEC: case TYPE_ARRAY: case TYPE_STRUCTURE:
             size = length_of_header(a);
-            push(getvector(TAG_VECTOR,type_of_header(a),size));
+            push(get_basic_vector(TAG_VECTOR,type_of_header(a),size));
             {   int i;
                 for (i=0; i<(size>>2)-1; ++i) elt(*stack,i) = unpack_cell();
                 if (!(i&1)) elt(*stack,i) = nil;

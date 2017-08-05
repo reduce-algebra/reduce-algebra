@@ -1,142 +1,169 @@
 
 % u34.lsp           Machine generated Lisp
 
-(c!:install "u34" 98200 215618 9122247)
+(c!:install "u34" 112810 2860623 9282089)
 
-(c!:install 'dip_ilcomb2r '(dip_ilcomb2r ((cmp . scalar) (w . scalar))
-ev_comp iequal bc_prod bc_sum bc_zero!?) 16780307311017010590)
+(c!:install 'module '(module !*mode mode!-list!* alglist!* symbolic) 
+17191246551011286226)
 
-(c!:install 'innprodp2 '(innprodp2 innprodkp) 16941034384511104987)
+(c!:install 'arglength '(arglength !*intstr reval) 8071143878740418471)
 
-(c!:install 'matrix_rows '(matrix_rows "<matrixrow>" "</matrixrow>"
-printout indent!* row) 7606618789543830772)
+(c!:install 'simp!-prop!-condense '(simp!-prop!-condense
+lambda_rfde09ec49c92 sort subsetp ordn) 16837942846282228103)
 
-(c!:install 'insoccs '(insoccs subscriptedvarp insertocc constp) 
-13067674966328493129)
+(c!:install 'lambda_rfde09ec49c92 '(lambda_rfde09ec49c92) 
+4700859260019140216)
 
-(c!:install 'sc_getrow '(sc_getrow sc_igetv) 3551891752755930172)
+(c!:install 'skp_ordp '(skp_ordp atom_compare cons_ordp) 
+18096101897370550795)
 
-(c!:install 'xriterion_1 '(xriterion_1 spoly_pair !*trxideal
-"criterion 1 hit" last xval xdiv make_spoly_pair find_item writepri) 
-13595331840087151417)
+(c!:install 'ra_l '(ra_l ra_iv riv_l) 3312224385655881070)
 
-(c!:install 'testchar1 '(testchar1 nochar!* nochar1!*) 
-3304520668572494504)
+(c!:install 'lalr_extract_nonterminals '(lalr_extract_nonterminals
+"Malformed production"
+"(RHS should be a list of tokens, not a non-nil atom)" lex_fixed_code
+"(atomic item in token list should be symbol or string)" (opt seq star
+plus list listplus or) "(unrecognised item in rule)" nreverse rederr) 
+14495628518251421958)
 
-(c!:install 'assert_stat!-parse '(assert_stat!-parse ((fn . scalar) (
-argtypel . scalar) (restype . scalar)) !*colon!*
-"expecting ':' in assert but found" cursym!* difference greaterp
-"expecting '->' in assert but found" "expecting end of assert but found"
-scan rederr assert_stat1) 15576396672868092807)
+(c!:install 'aex_mklcnt '(aex_mklcnt aex_simpleratp aex_ctx ctx_idl
+aex_fvarl aex_lc aex_nullp aex_red aex_sgn aex_0) 8386333306630211088)
 
-(c!:install 'arglength '(arglength !*intstr ((!*intstr . scalar) (x .
-scalar)) reval) 13330556549831952408)
+(c!:install 'vp2 '(vp2 nreverse) 12682152641767427105)
 
-(c!:install 'max!-degree '(max!-degree) 7631694807477571889)
+(c!:install 'pasf_cein '(pasf_cein true false (leq greaterp geq lessp) (
+leq greaterp) (geq lessp) pasf_deci sfto_dcontentf simp quotfx
+pasf_floor negf pasf_ceil addf) 12169585565162376271)
 
-(c!:install 'which_first '(which_first) 5362535682633495787)
+(c!:install 'ev_2a '(ev_2a dip_vars!* ev_2a1) 40967775589971858)
 
-(c!:install 'lalr_process_reductions '(lalr_process_reductions ((
-reduction_codes . scalar) (code . scalar) (n_reductions . scalar) (
-canonical_reduction . scalar) (coded_canonical_reduction . scalar) (
-rhs_length . scalar) (lhs . scalar) (fn . scalar) (reduction_fn . scalar
-) (reduction_lhs . scalar) (reduction_rhs_length . scalar)) nonterminals
-lalr_nonterminal_code lalr_productions mkvect16 mkvect8 putv16 putv8
-lalr_construct_fn) 7181408559221808008)
+(c!:install 'bvarrd '(bvarrd char (d e g r e e) "<bvar>" (!/ d e g r e e
+) "</degree>" (!/ b v a r) bvar "</bvar>" lex errorml mathml2 mathml
+error) 7637494499477649831)
 
-(c!:install 'aex_mklcnt '(aex_mklcnt ((idl . scalar)) aex_simpleratp
-aex_ctx ctx_idl aex_fvarl aex_lc aex_nullp aex_red aex_sgn aex_0) 
-15399083307822535304)
+(c!:install 'resume '(resume substitution amatch chk bsubs) 
+17394164173255456306)
 
-(c!:install 'gcref_off1 '(gcref_off1 ((x . scalar)) dfprint!* !*defn
-!*algebraics algebraic newnam seen!* calledby entpts!* tseen!* tseen
-funs rccnam gseen!* usedunby undefg!* undefdchk idsort) 
-16496536175906911400)
+(c!:install 'evaluate '(evaluate !*evaluateerror !*protfg !*msg
+evaluate0 "error during function evaluation (e.g. singularity)" pair
+errorset errorp rederr) 8549248470219636633)
 
-(c!:install 'talp_atnum '(talp_atnum ((op . scalar)) or and not impl
-repl equiv ex all true false) 4959405839578870043)
+(c!:install 'toolongexpp '(toolongexpp maxexpprintlen!* numprintlen) 
+10528370960806224087)
 
-(c!:install 'pasf_cein '(pasf_cein ((g . scalar) (decp . scalar)) true
-false (leq greaterp geq lessp) (leq greaterp) (geq lessp) pasf_deci
-sfto_dcontentf simp quotfx pasf_floor negf pasf_ceil addf) 
-4308990666250202147)
+(c!:install 'reval3 '(reval3 simp mk!*sq) 5760933334693659966)
 
-(c!:install 'ev_dif '(ev_dif ((s . scalar))) 6901542631544229372)
+(c!:install 'incident '(incident incident1) 232370014167487459)
 
-(c!:install 'containerml '(containerml integer_interval interval "<" ""
-"</" ">" printout attributesml indent!* multi_elem) 18328243433571238992
-)
+(c!:install 'fs!:onep!: '(fs!:onep!: fs!:onep) 16865939965197051073)
 
-(c!:install 'eqexpr '(eqexpr equalopr) 3505042047303045823)
-
-(c!:install 'one!-entryp '(one!-entryp) 1880773745218423214)
-
-(c!:install '!*di2q '(!*di2q varlist!* !*di2q0) 16228567822902602514)
-
-(c!:install 'chkrn!* '(chkrn!* !*!*roundbf bf2flck) 4426900711315584015)
-
-(c!:install 'letexprn '(letexprn ((y . scalar) (z . scalar)) times
-difference quotient mcond!* !*match used!* df opmtch asymplis!* powlis!*
-replace frasc!* powlis1!* let!-prepf let2 kernlp term!-split quotf!*
-klistt rmsubs xadd!* smember fkern setk1 errpri1 xadd delasc) 
-15956752227316289145)
-
-(c!:install 'in_list1a '(in_list1a ((chan . scalar) (echo . scalar) (
-ochan . scalar) (w . scalar) (w1 . scalar) (usepipe . scalar)) !*echo
-!*reduce4 string !| !$ !/ !\ ifl!* !. (!/ !.) input linelist!* curline!*
-ipl!* contl!* "FILE STACK CONFUSION" type typerr value mkfil!*
-list2string pipe!-open open begin1a rederr) 10601306703832214093)
+(c!:install 'formbool '(formbool symbolic boolvalue!* boolfn boolean
+boolargs "Too many formbools" where bool!-eval formc formc!* intexprlisp
+formclis formboollis rederr) 12736169941840665603)
 
 (c!:install 'ofsf_lnegrel '(ofsf_lnegrel equal neq leq greaterp lessp
 geq "ofsf_lnegrel: unknown operator " rederr) 3663283369911138634)
 
-(c!:install 'cgp_mk '(cgp_mk cgp) 1967345575831606739)
+(c!:install 'multdfconst '(multdfconst nreverse multsq subs2q) 
+18239574063977063315)
 
-(c!:install 'minusml '(minusml "<apply><minus/>" "</apply>" printout
-indent!* multiminus) 5945118518168776887)
+(c!:install 'sets '(sets "<apply>" "<" "/" "</apply>" printout
+attributesml indent!* multi_elem) 535982809161287800)
 
-(c!:install 'mkempspmat '(mkempspmat ((res . scalar)) sparsemat) 
-14329566544531018762)
-
-(c!:install 'dm!-min '(dm!-min dm!-gt) 13325087570768997749)
-
-(c!:install 'f2dip11 '(f2dip11 !*notestparameters vdpvars!*
-"occurs in a parameter and is member of the groebner variables." list
-"groebner: LIST not allowed." rederr) 7234983498125750140)
-
-(c!:install 'evaluate '(evaluate !*evaluateerror ((a . scalar) (r .
-scalar) (!*evaluateerror . scalar) (msg . scalar)) !*protfg !*msg
-evaluate0 "error during function evaluation (e.g. singularity)" pair
-errorset errorp rederr) 9802765215392505103)
-
-(c!:install 'general!-horner!-rule!-mod!-p '(
-general!-horner!-rule!-mod!-p ((newdeg . scalar)) general!-expt!-mod!-p
-general!-times!-mod!-p general!-plus!-mod!-p) 8024436945216903162)
-
-(c!:install 'no_of_tm_sf_limited '(no_of_tm_sf_limited ((r . scalar))) 
-16231748116359272213)
-
-(c!:install 'ra_l '(ra_l ra_iv riv_l) 3312224385655881070)
-
-(c!:install 'expand_rule '(expand_rule expand_terminal) 
-7297132048270984005)
-
-(c!:install 'talp_specsubt '(talp_specsubt ((tmp . scalar)) talp_eqtp) 
-12632360447645427313)
-
-(c!:install 'pasf_smwmkatl '(pasf_smwmkatl !*rlsusi cl_susimkatl
-cl_smmkatl) 14491224678262139805)
-
-(c!:install 'ev_2a '(ev_2a dip_vars!* ev_2a1) 40967775589971858)
-
-(c!:install 'multiminus '(multiminus expression) 7951290680806290527)
-
-(c!:install 'suchp '(suchp such!-that) 2237043806669000480)
+(c!:install 'alg_plus '(alg_plus plus aeval) 13889267068724863557)
 
 (c!:install 'evaluate!-horner '(evaluate!-horner horner!-cache!* simp!*
 hornerf prepsq) 3733419029157992492)
 
-(c!:install '!*xadd '(!*xadd ((x . scalar))) 911932614721355153)
+(c!:install 'lispreadp '(lispreadp read) 7798977045561721809)
+
+(c!:install 'indexsymmetrize '(indexsymmetrize indxsymmetrize) 
+13445894356302575475)
+
+(c!:install 's_actual_world1 '(s_actual_world1) 13857407108230127468)
+
+(c!:install 'lex_skip_line_comment '(lex_skip_line_comment lex_char
+!$eol!$ !$eof!$ yyreadch) 17954792529991133834)
+
+(c!:install 'profile_a_package '(profile_a_package !*errcont cpulimit
+jlisp lispsystem!* conslimit "PROFILING: " !*backtrace !*int
+reduce_regression_tests folder "$reduce/packages/" testdirectory "/"
+".tst" alglist!* algebraic !*mode "[Profile] " quit expr posn errorset
+in_list1 erfg!* profile_compare_fn "buildlogs/flaguse.log" append
+!*savedef lambda "profile.dat" "% +++++ Error: Resource limit exceeded"
+"% @@@@@ Resources used: " !*resources!* "(" "  (" " " ")" "  )" input
+!$eof!$ orderp ((symbol!-make!-fastget (quote lose) 1) (
+symbol!-make!-fastget (quote noncom) 0)) (lose noncom) processed
+symbol!-make!-fastget "buildlogs/fastgets.lsp" output
+"% fastgets.lsp generated by profiling" progn "% end of fastgets.lsp"
+"Profiling complete" (remake profile_a_package) get_configuration_data
+load!-package concat list!-to!-string window!-heading getd putd
+resource!-limit sort open bytecounts load!-source md60 prettyprint
+restart!-csl) 2815953169272495238)
+
+(c!:install 'sortedpolynomlistinsert '(sortedpolynomlistinsert
+polynomcompare) 15826984959678356939)
+
+(c!:install '!*tayexp2q '(!*tayexp2q) 13103823873588407608)
+
+(c!:install 'pasf_smwmkatl '(pasf_smwmkatl !*rlsusi cl_susimkatl
+cl_smmkatl) 14491224678262139805)
+
+(c!:install 'vdelete '(vdelete nreverse) 1364860348438815528)
+
+(c!:install 'matrixom '(matrixom "<OMA>"
+"<OMS cd=""linalg1"" name=""matrix""/>" "</OMA>" printout indent!*
+matrixrowom) 14726143653554891393)
+
+(c!:install 'difference!: '(difference!: !:rd!: minus!: ashift) 
+13627056831675126278)
+
+(c!:install 'find_buble '(find_buble is_buble) 12981048816766530333)
+
+(c!:install 'log_assignment '(log_assignment quote function setq
+"+++ Assignment to parameter of inline: " "+++ Macro was: " inlineinfo
+cond log_assignment_list_list log_assignment_list) 8320727009848696406)
+
+(c!:install 'remchkf '(remchkf remchkf1 kernels intersection) 
+7564202488979874806)
+
+(c!:install 'ad_splitname '(ad_splitname charnump!:) 9997322121145538574
+)
+
+(c!:install 'ratdif '(ratdif ratminus ratplusm) 8523472214507921043)
+
+(c!:install 'cde_replace_nth '(cde_replace_nth nreverse) 
+958148222290834626)
+
+(c!:install 'gcd!-with!-number '(gcd!-with!-number dmode!* gcddd) 
+6716578182061466631)
+
+(c!:install 'lex_process_directive '(lex_process_directive yylval
+!#endif if_depth "+++ #endif not follopwing #if" !$eof!$
+"+++ #endif missing at end of file" !#if !#else !#elif read_s_expression
+errorset errorp lex_skip_to_else_or_endif) 7603308210475858270)
+
+(c!:install 'polynomwrite '(polynomwrite nreverse monomwrite) 
+8019372385341136277)
+
+(c!:install 'talp_sumd '(talp_sumd rl_atl talp_arg2l talp_td talp_arg2r)
+ 14348405121939397515)
+
+(c!:install 'mri_congp '(mri_congp (cong ncong) mri_opn) 
+8707192043286087915)
+
+(c!:install 'qqe_ofsf_varlat '(qqe_ofsf_varlat qqe_ofsf_prepat qqe_arg2l
+qqe_ofsf_varlterm qqe_arg2r union) 15296253903470199447)
+
+(c!:install 'pasf_zcong '(pasf_zcong (cong ncong) true false cong equal
+neq ncong) 9907286930392888463)
+
+(c!:install 'mapcarcar '(mapcarcar) 6573486607489535135)
+
+(c!:install 'applyfnrd '(applyfnrd fnrd stats_getargs) 
+17843552477246788365)
+
+(c!:install 'lessppair '(lessppair) 2231640877476236480)
 
 
 % End of generated Lisp code

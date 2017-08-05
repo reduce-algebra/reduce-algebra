@@ -224,7 +224,7 @@ static LispObject vbyteoptn(LispObject def, int nargs,
     wantargs = ((unsigned char *)data_of_bps(r))[0];
     wantopts = ((unsigned char *)data_of_bps(r))[1];
     if (nargs < wantargs || nargs > wantargs+wantopts)
-    {   popv(nargs); pop2(codevec, litvec)
+    {   popv(nargs); pop2(codevec, litvec);
         error(2, err_wrong_no_args, def,
                      fixnum_of_int((int32_t)nargs));
     }

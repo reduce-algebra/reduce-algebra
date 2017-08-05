@@ -52,13 +52,14 @@ uint32_t Idiv10_9(uint32_t *qp, uint32_t high, uint32_t low)
 }
 
 void print_bignum(LispObject u, bool blankp, int nobreak)
-{   int32_t len = length_of_header(numhdr(u))-CELL;
-    int32_t i, len1;
+{   size_t len = length_of_header(numhdr(u))-CELL;
+    size_t i, len1;
     LispObject w;
     char my_buff[24];    // Big enough for 2-word bignum value
-    int line_length = other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
-                                         active_stream);
-    int column =
+    unsigned int line_length =
+        other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
+                           active_stream);
+    unsigned int column =
         other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, active_stream);
 #ifdef NEED_TO_CHECK_BIGNUM_FORMAT
 // The next few lines are to help me track down bugs...
@@ -92,8 +93,8 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
 // The code I have here looks DREADFUL and I believe I should be able to
 // shrink it a lot - especially if I believe that int64_t is available
 // as a 64-bit integer type. But despite being ugly and the case of one
-// word bignums not being possible in a64-bit world this should still work and
-// so I will leave it alone for now...
+// word bignums not being possible in a 64-bit world this should still work
+// and so I will leave it alone for now...
     switch (len)
     {   case 4:         // one word bignum - especially easy!
         {   int32_t dig0 = bignum_digits(u)[0];
@@ -124,7 +125,10 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         }
         return;
         case 8:        // two word bignum
-        {   uint32_t d0 = bignum_digits(u)[0], d1 = bignum_digits(u)[1];
+        {
+// I could (and probably should) re-work this to use int64_t... but I have
+// other priorities for now!
+            uint32_t d0 = bignum_digits(u)[0], d1 = bignum_digits(u)[1];
             uint32_t d0high, d0low, w;
             uint32_t p0, p1, p2;
             bool negativep = false;
@@ -205,11 +209,11 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
 // of about 1.037, so the 10% expansion I allow for in len1 above should
 // keep me safe.
 //
-    len1 = (intptr_t)doubleword_align_up(len1);
-    w = getvector(TAG_NUMBERS, TYPE_BIGNUM, len1);
+    len1 = (size_t)doubleword_align_up((uintptr_t)len1);
+    w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len1);
     pop(u);
     bool sign = false;
-    int32_t len2;
+    size_t len2;
     len = len/4;
     len1 = (len1-CELL)/4;
     if (((int32_t)bignum_digits(u)[len-1]) >= 0)
@@ -241,7 +245,7 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
     push(w);
     {   uint32_t dig;
         int i;
-        int32_t len;
+        size_t len;
         if (bignum_digits(w)[0] == 0) dig = bignum_digits(w)[len2++];
         else dig = bignum_digits(w)[0];
         i = 0;
@@ -296,14 +300,15 @@ void print_bighexoctbin(LispObject u, int radix, int width,
 // for instance. So at present some C compilers will give me a warning about
 // width being ignored - they are RIGHT!
 //
-{   int32_t n = (bignum_length(u)-CELL-4)/4;
+{   size_t n = (bignum_length(u)-CELL-4)/4;
     uint32_t a=0, b=0;
-    int32_t len = 31*(n+1);
+    size_t len = 31*(n+1);
     int flag = 0, bits;
     bool sign = false, started = false;
-    int line_length = other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
-                                         active_stream);
-    int column =
+    unsigned int line_length =
+        other_write_action(WRITE_GET_INFO+WRITE_GET_LINE_LENGTH,
+                           active_stream);
+    unsigned int column =
         other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, active_stream);
     if (radix == 16)
     {   bits = len % 4;

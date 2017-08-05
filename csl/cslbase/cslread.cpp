@@ -1,4 +1,4 @@
-// cslread.cpp                             Copyright (C) 1990-2017 Codemist    
+// cslread.cpp                             Copyright (C) 1990-2017 Codemist
 
 //
 // Reading and symbol-table support.
@@ -90,7 +90,7 @@ LispObject make_string(const char *b)
 // Given a C string, create a Lisp (simple-) string.
 //
 {   int32_t n = strlen(b);
-    LispObject r = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
+    LispObject r = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     char *s = (char *)r - TAG_VECTOR;
     int32_t k = doubleword_align_up(CELL+n);
     memcpy(s + CELL, b, (size_t)n);
@@ -101,12 +101,12 @@ LispObject make_string(const char *b)
 
 void validate_string_fn(LispObject s, const char *file, int line)
 {   if (is_vector(s) && is_string_header(vechdr(s)))
-    {   int len = length_of_byteheader(vechdr(s));
-        int len1 = doubleword_align_up(len);
+    {   size_t len = length_of_byteheader(vechdr(s));
+        size_t len1 = doubleword_align_up((uintptr_t)len);
         while (len < len1)
         {   if (celt(s, len-CELL) != 0)
             {   char *p = (char *)(s - TAG_VECTOR);
-                int i;
+                size_t i;
                 if (strrchr(file, '/') != NULL) file = strrchr(file, '/')+1;
                 fprintf(stderr, "\n+++ Bad string at %s %d\n", file, line);
                 fprintf(stderr, "Header = %" PRIxPTR "\n", vechdr(s));
@@ -114,9 +114,9 @@ void validate_string_fn(LispObject s, const char *file, int line)
                     (int)length_of_header(vechdr(s)),
                     (int)length_of_byteheader(vechdr(s)));
                 fprintf(stderr, "messed at len:%d len1:%d [%x]\n",
-                        len, len1, celt(s, len-CELL));
+                        (int)len, (int)len1, celt(s, len-CELL));
                 for (i=0; i<len1; i++)
-                {   fprintf(stderr, "%3d %p: %.2x   (%c)\n", i, p, *p, *p);
+                {   fprintf(stderr, "%3d %p: %.2x   (%c)\n", (int)i, p, *p, *p);
                     p++;
                 }
                 fflush(stderr);
@@ -142,7 +142,7 @@ LispObject copy_string(LispObject str, size_t n)
     char *s;
     size_t k;
     push(str);
-    r = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
+    r = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     pop(str);
     s = (char *)r - TAG_VECTOR;
     memcpy(s + CELL, (char *)str + (CELL-TAG_VECTOR), (size_t)n);
@@ -649,7 +649,7 @@ LispObject intern(size_t len, bool escaped)
             {   p = -p;
                 q = -q;
             }
-            r = getvector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
+            r = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
             numerator(r) = fixnum_of_int((int32_t)p);
             denominator(r) = fixnum_of_int((int32_t)q);
             return r;
@@ -805,8 +805,8 @@ static bool add_to_hash(LispObject s, LispObject vector, uint32_t hash)
 // already there.
 //
 {   Header h = vechdr(vector);
-    int32_t size = (length_of_header(h) - CELL)/CELL;
-    int32_t i = (int32_t)(hash & (size-1));
+    size_t size = (length_of_header(h) - CELL)/CELL;
+    size_t i = (size_t)(hash & (size-1));
 //
 // I have arranged (elsewhere) that the hash table will be a power of two
 // in size, so I can avoid primary clustering by stepping on by any odd
@@ -819,8 +819,8 @@ static bool add_to_hash(LispObject s, LispObject vector, uint32_t hash)
 // value (ie up to 4M). So all the bits that might end up in the step I
 // take are available.
 //
-    int32_t step = 1 | ((hash >> 10) & (size - 1));
-    int32_t probes = 0;
+    size_t step = 1 | ((hash >> 10) & (size - 1));
+    size_t probes = 0;
 //
 // size is expected to be a power of 2 here.
 //
@@ -886,11 +886,7 @@ static LispObject rehash(LispObject v, LispObject chunks, int grow)
             h = length_of_header(vechdr(v)) - CELL;
             if (h >= ll)
             {   h = ll;
-#ifdef DEBUG
-                number_of_chunks = 500;
-#else
                 number_of_chunks = 3;
-#endif
             }
             else h = 2*h;
         }
@@ -933,13 +929,13 @@ static LispObject rehash(LispObject v, LispObject chunks, int grow)
     push(v);
 try_again:
     if (number_of_chunks == 1)
-        new_obvec = getvector_init(h+CELL, fixnum_of_int(0));
-    else
+        new_obvec = get_vector_init(h+CELL, fixnum_of_int(0));
+   else
     {   new_obvec = nil;
         for (i=0; i<number_of_chunks; i++)
         {   LispObject w;
             push(new_obvec);
-            w = getvector_init(h+CELL, fixnum_of_int(0));
+            w = get_vector_init(h+CELL, fixnum_of_int(0));
             pop(new_obvec);
             new_obvec = cons(w, new_obvec);
         }
@@ -971,7 +967,10 @@ try_again:
                 n = qcar(n);
             }
             if (!add_to_hash(s, n, hash))
-            {   number_of_chunks++;
+            {
+// Well if the table is still well under the chunk size it is silly to
+// increase the chunk count!
+                number_of_chunks++;
 //
 // In the grossly improbable case that clustering leads to one of the
 // sub-vectors overflowing I will go back and re-start the expansion
@@ -987,7 +986,6 @@ try_again:
 //  term_printf("Rehashing done\n");
     ensure_screen();
 #endif
-
     return new_obvec;
 }
 
@@ -997,19 +995,12 @@ static LispObject add_to_externals(LispObject s,
                                    LispObject p, uint32_t hash)
 {   LispObject n = packnext_(p);
     LispObject v = packext_(p);
-    uint32_t used = int_of_fixnum(packvext_(p));
-//
-// I guess the next line would overflow when around 4G ends up used just
-// in symbol hash table. This can only possibly be approached on a 64-bit
-// machine and I think that would happen when there were about 300 million
-// symbols. For now at least I view that as beyond plausibility. Maybe in a
-// few years it will seem routine!
-//
+    uintptr_t used = int_of_fixnum(packvext_(p));
     if (used == 1) used = length_of_header(vechdr(v)) - CELL;
     else used = CHUNK_SIZE*used;
 //
-// n is (16*sym_count+1)             [Lisp fixnum for sym_count]
-// used = CELL*(spaces+1)
+// n is (16*sym_count+TAG_FIXNUM)             [Lisp fixnum for sym_count]
+// used = CELL*(spaces+TAG_FIXNUM)
 // The effect is that I trigger a re-hash if the table reaches 62%
 // loading.  For small vectors when I re-hash I will double the
 // table size, for large ones I will roughly multiply the amount of
@@ -1104,6 +1095,11 @@ static bool rehash_pending = false;
 uint64_t Nhget=0, Nhgetp=0, Nhput1=0, Nhputp1=0, Nhput2=0, Nhputp2=0, Nhputtmp=0;
 uint64_t Noget=0, Nogetp=0, Noput=0, Noputp=0, Noputtmp=0;
 #endif
+
+static void myabort()
+{   ensure_screen();
+    abort();
+}
 
 static LispObject lookup(LispObject str, int32_t strsize,
                          LispObject v, LispObject nv, uint32_t hash)
@@ -1496,7 +1492,7 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
     else if (complex_stringp(str)) str = simplify_string(str);
     else if (!is_string_header(vechdr(str))) aerror1("make-symbol", str);
     push(str);
-    s = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+    s = get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
     pop(str);
     qheader(s) = TAG_HDR_IMMED+TYPE_SYMBOL;
     qvalue(s) = unset_var;
@@ -1531,7 +1527,7 @@ LispObject Lgensym(LispObject env, int nargs, ...)
     pn = make_string(genname);
     push(pn);
 #endif
-    id = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+    id = get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
 #ifdef COMMON
     pop(pn);
 #endif
@@ -1574,7 +1570,7 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     sprintf(genname, "%.*s%s", (int)len,
             (char *)genbase + (CELL-TAG_VECTOR), suffix);
     stack[0] = make_string(genname);
-    id = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+    id = get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
     pop(genbase);
 #ifdef COMMON
     qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
@@ -1621,7 +1617,7 @@ LispObject Lgensym1(LispObject env, LispObject a)
             (long unsigned)(uint32_t)gensym_ser++);
     stack[0] = make_string(genname);
 #endif
-    id = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+    id = get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
     pop(genbase);
 #ifdef COMMON
     qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
@@ -1662,7 +1658,7 @@ LispObject Lgensym2(LispObject env, LispObject a)
     stackcheck0(0);
     len = length_of_byteheader(vechdr(genbase)) - CELL;
     stack[0] = copy_string(genbase, len);
-    id = getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+    id = get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
     pop(genbase);
     qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
     qvalue(id) = unset_var;
@@ -1793,7 +1789,7 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
         Noput++;
         Noputp += Noputtmp;
 #endif
-        s = (LispObject)getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+        s = (LispObject)get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
         pop(p);
         qheader(s) = TAG_HDR_IMMED+TYPE_SYMBOL;
 #ifdef COMMON
@@ -2468,7 +2464,7 @@ static LispObject list_to_vector(LispObject l)
     LispObject p = l;
     while (consp(p)) len++, p = qcdr(p);
     push(l);
-    p = getvector_init(CELL*(len+1), nil);
+    p = get_vector_init(CELL*(len+1), nil);
     pop(l);
     len = 0;
     while (consp(l))
@@ -2769,7 +2765,7 @@ void packcharacter(int c)
 //
     if (boffop >= (size_t)boffo_size-CELL-8)
     {   LispObject new_boffo =
-            getvector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
+            get_basic_vector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
         memcpy((void *)((char *)new_boffo + (CELL-TAG_VECTOR)),
                &boffo_char(0), boffop);
         boffo = new_boffo;
@@ -2800,7 +2796,7 @@ void packbyte(int c)
 {   int32_t boffo_size = length_of_byteheader(vechdr(boffo));
     if (boffop >= (size_t)boffo_size-CELL-8)
     {   LispObject new_boffo =
-            getvector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
+            get_basic_vector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
         memcpy((void *)((char *)new_boffo + (CELL-TAG_VECTOR)),
                &boffo_char(0), boffop);
         boffo = new_boffo;
@@ -3615,7 +3611,7 @@ LispObject Llist_to_string(LispObject env, LispObject stream)
     set_stream_read_other(lisp_work_stream, read_action_list);
     stream_pushed_char(lisp_work_stream) = NOT_CHAR;
     while (consp(stream)) n++, stream = qcdr(stream);
-    str = getvector(TAG_VECTOR, TYPE_STRING_4, n);
+    str = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, n);
     s = (char *)str + CELL - TAG_VECTOR;
     for (k=CELL; k<n; k++) *s++ = (char)char_from_list(lisp_work_stream);
     for (; (k&7) != 0; k++) *s++ = 0; // zero-pad final doubleword
@@ -4094,17 +4090,17 @@ LispObject make_package(LispObject name)
 //
 {   LispObject p, w;
     push(name);
-    p = getvector_init(sizeof(Package), nil);
+    p = get_vector_init(sizeof(Package), nil);
     pop(name);
     packhdr_(p) = TYPE_STRUCTURE + (packhdr_(p) & ~header_mask);
     packid_(p) = package_symbol;
     packname_(p) = name;
     push(p);
-    w = getvector_init(STARTING_SIZE_X+CELL, fixnum_of_int(0));
+    w = get_vector_init(STARTING_SIZE_X+CELL, fixnum_of_int(0));
     pop(p);
     packext_(p) = w;
     push(p);
-    w = getvector_init(STARTING_SIZE_I+CELL, fixnum_of_int(0));
+    w = get_vector_init(STARTING_SIZE_I+CELL, fixnum_of_int(0));
     pop(p);
     packint_(p) = w;
     packflags_(p) = fixnum_of_int(++package_bits);
@@ -4453,7 +4449,7 @@ LispObject Lreadline1(LispObject env, LispObject stream)
     if (ch == EOF && n == 0) w = eof_symbol;
     else
     {
-        w = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
+        w = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
         s = (char *)w + CELL - TAG_VECTOR;
         memcpy(s, &boffo_char(0), n);
         while ((n&7) != 0) s[n++] = 0;

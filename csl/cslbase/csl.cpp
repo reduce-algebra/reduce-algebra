@@ -2536,16 +2536,16 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
         nilsegment = (LispObject *)my_malloc(NIL_SEGMENT_SIZE);
 #ifdef COMMON
-        nil = doubleword_align_up(nilsegment) + TAG_CONS + 8;
+        nil = (LispObject)doubleword_align_up((uintptr_t)nilsegment) + TAG_CONS + 8;
 #else
-        nil = doubleword_align_up(nilsegment) + TAG_SYMBOL;
+        nil = (LispObject)doubleword_align_up((uintptr_t)nilsegment) + TAG_SYMBOL;
 #endif
         pages_count = heap_pages_count = vheap_pages_count = 0;
         stacksegment = (LispObject *)my_malloc(CSL_PAGE_SIZE);
 //
 // I am lazy about protection against malloc failure here.
 //
-        heaplimit = doubleword_align_up(stacksegment);
+        heaplimit = (LispObject)doubleword_align_up((uintptr_t)stacksegment);
         fringe = heaplimit + CSL_PAGE_SIZE - 16;
         input_libraries = heaplimit + 16 + TAG_SYMBOL;
         heaplimit += 64;

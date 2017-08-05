@@ -40,7 +40,8 @@
 LispObject Lget_bps(LispObject env, LispObject n)
 {   if (!is_fixnum(n) || (intptr_t)n<0) aerror1("get-bps", n);
     intptr_t n1 = int_of_fixnum(n);
-    n = getvector(TAG_VECTOR, TYPE_BPS_4, n1+CELL);
+// Size limited
+    n = get_basic_vector(TAG_VECTOR, TYPE_BPS_4, n1+CELL);
     return onevalue(n);
 }
 

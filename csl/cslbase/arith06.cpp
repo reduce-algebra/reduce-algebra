@@ -1195,7 +1195,7 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
         if (!is_bignum(a)) aerror1("random-number", a);
         len = bignum_length(a);
         push(a);
-        r = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
+        r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
         pop(a);
         len1 = (len-CELL)/4-1;
     restart:
@@ -1302,7 +1302,7 @@ LispObject Lrandom(LispObject env, LispObject a)
         if (!is_bignum(a)) aerror1("random-number", a);
         len = bignum_length(a);
         push(a);
-        r = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
+        r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
         pop(a);
         len1 = (len-CELL)/4-1;
     restart:
@@ -1470,7 +1470,7 @@ LispObject Lmd5(LispObject env, LispObject a)
     else if (v3 != 0 || (v2 & 0x40000000) != 0) len = CELL+16;
     else if (v2 != 0 || (v1 & 0x40000000) != 0) len = CELL+12;
     else abort();  // All smaller cases were filtered earlier!
-    r = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
+    r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
     if (SIXTY_FOUR_BIT)
     {   switch (len)
         {   case CELL+20:
@@ -1541,7 +1541,7 @@ LispObject Lmd5string(LispObject env, LispObject a)
     else if (v3 != 0 || (v2 & 0x40000000) != 0) len = CELL+16;
     else if (v2 != 0 || (v1 & 0x40000000) != 0) len = CELL+12;
     else abort();
-    r = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
+    r = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
     if (SIXTY_FOUR_BIT)
     {   switch (len)
         {   case CELL+20:

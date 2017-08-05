@@ -76,7 +76,7 @@ symbolic procedure read_parameter_list();
           scan();
           xt := read_type();
           y := cursym!* >>
-        else xt := 'generic;
+        else xt := 'general;
         if y = 'setq then <<
           scan();
           xv := xread1 t;
@@ -158,6 +158,36 @@ symbolic procedure mapovercar u;
 % I will want to migrate the initialization material into executable
 % code soon.
 
+% The information I have on the local variable is in a list structured
+% as ((name type initial_value) ...)
+
+% At the head of the block I will put a quoted expression that has just
+% ((name . type) ...) info in it, and that omits any cases where the type
+% is given as just 'general.
+
+symbolic procedure extract_types vl;
+  if null vl then nil
+  else if cadar vl = 'general then extract_types cdr vl
+  else (caar vl . cadar vl) . extract_types cdr vl;
+
+% Where there are non-nil initializers stick them on the front of the
+% body code.
+
+symbolic procedure add_initializers(vl, b);
+  if null vl then b
+  else if null caddar vl then add_initializers(cdr vl, b)
+  else list('setq, caar vl, caddar vl) . add_initializers(cdr vl, b);
+
+symbolic procedure add_varinfo(vl, b);
+  begin
+    scalar tt;
+    tt := extract_types vl;
+    b := add_initializers(vl, b);
+% Only put the (quote (name . type) ...) info if there is some present.
+    if tt then b := mkquote tt . b;
+    return b
+  end;
+
 symbolic procedure blockstat;
    begin scalar hold,varlis,x,!*blockp;
         !*blockp := t;
@@ -167,10 +197,10 @@ symbolic procedure blockstat;
         varlis := decl();
     a:  if cursym!* = 'end and not(nxtsym!* = '!:) then <<
            comm1 'end;
-           return mkblock(car varlis, mkquote car varlis . hold) >>;
+           return mkblock(car varlis, add_varinfo(cdr varlis, hold)) >>;
         x := xread1 nil;
         if eqcar(x, 'end) then
-           return mkblock(car varlis, mkquote cdr varlis . hold);
+           return mkblock(car varlis, add_varinfo(cdr varlis, hold));
         if not(cursym!* = 'end) then scan();
         if x then <<
            (if eqcar(x, 'equal) then

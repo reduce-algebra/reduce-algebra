@@ -67,7 +67,7 @@
 #define HASH_CHUNK_SIZE   (((uint32_t)1) << (PAGE_BITS-3))
 #define HASH_CHUNK_WORDS  (HASH_CHUNK_SIZE/CELL)
 
-static LispObject get_hash_vector(int32_t n)
+static LispObject get_hash_vector(size_t n)
 {   LispObject v;
 //
 // A major ugliness here is that I need to support hash tables that are
@@ -82,13 +82,16 @@ static LispObject get_hash_vector(int32_t n)
 // could survive conversion between 32 and 64-bit images. To that effect
 // I have just changes the limit there to CSL_PAGE_SIZE/3. So some old
 // 32-bit images could hypothetically contain saves hash tables of size
-// just close to CAL_PAGE_SIZE/2 (the previous cut off) that would not be
+// just close to CSL_PAGE_SIZE/2 (the previous cut off) that would not be
 // re-loadable on a 64-bit system.
+//
+// In a while I should merge the treatment here with the more global treatment
+// of large vectors...
 //
     if (n > CSL_PAGE_SIZE/3)   // A fairly arbitrary cut-off
     {   int32_t chunks = (n + HASH_CHUNK_SIZE - 1)/HASH_CHUNK_SIZE;
         int32_t i;
-        v = getvector_init(CELL*(chunks+3), nil);
+        v = get_basic_vector_init(CELL*(chunks+3), nil);
 // The next line tags the top level vector as a struct
         vechdr(v) ^= (TYPE_SIMPLE_VEC ^ TYPE_STRUCTURE);
         elt(v, 1) = fixnum_of_int(n);
@@ -100,12 +103,12 @@ static LispObject get_hash_vector(int32_t n)
 // to be, but keeping all chunks the same standard size seems a useful
 // simplification right at present!
 //
-            v1 = getvector_init(HASH_CHUNK_SIZE+CELL, SPID_HASHEMPTY);
+            v1 = get_basic_vector_init(HASH_CHUNK_SIZE+CELL, SPID_HASHEMPTY);
             pop(v);
             elt(v, i+2) = v1;
         }
     }
-    else v = getvector_init(n, SPID_HASHEMPTY);
+    else v = get_basic_vector_init(n, SPID_HASHEMPTY);
     return v;
 }
 
@@ -165,7 +168,7 @@ LispObject Lmkhash(LispObject env, int nargs, ...)
 //
     v = get_hash_vector(2*size2+2*CELL);
     push(v);
-    v1 = getvector_init(6*CELL, nil);
+    v1 = get_basic_vector_init(6*CELL, nil);
     pop2(v, growth);
     push3(v, v1, growth);
     v = ncons(v);

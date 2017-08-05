@@ -49,7 +49,9 @@
 #define header_machine_h 1
 
 #ifndef DEBUG
+#ifndef NDEBUG
 #define NDEBUG 1
+#endif
 #endif
 
 //

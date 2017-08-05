@@ -1791,7 +1791,7 @@ LispObject Lcodep(LispObject env, LispObject a)
     else return onevalue(nil);
 }
 
-LispObject getvector(int tag, int type, size_t size)
+LispObject get_basic_vector(int tag, int type, size_t size)
 {
 //
 // tag is the value (e.g. TAG_SYMBOL) that will go in the low order
@@ -1875,7 +1875,7 @@ LispObject getvector(int tag, int type, size_t size)
                     sprintf(msg, "float(%ld)", (long)size);
                     break;
                 default:
-                    sprintf(msg, "getvector(%lx,%ld)", (long)tag, (long)size);
+                    sprintf(msg, "get_basic_vector(%lx,%ld)", (long)tag, (long)size);
                     break;
             }
             reclaim(nil, msg, GC_VEC, alloc_size);
@@ -1897,16 +1897,128 @@ LispObject getvector(int tag, int type, size_t size)
     }
 }
 
-LispObject getvector_init(size_t n, LispObject k)
+LispObject get_basic_vector_init(size_t n, LispObject k)
 {   LispObject p;
     push(k);
-    p = getvector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
+    p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(k);
     if (!SIXTY_FOUR_BIT && ((n & 4) != 0))
         n += 4;   // Ensure last doubleword is tidy
     while (n > CELL)
     {   n -= CELL;
         *(LispObject *)((char *)p - TAG_VECTOR + n) = k;
+    }
+    return p;
+}
+
+// I make big vectors out of chunks each of which are vectors using
+// (up to) a megabyte.
+// Well there is a delicacy in that if one of that size is created on a
+// 32 bit system and dumped, and the image is then reloaded on a 64
+// bit system then the vector will consume around 2 Mbytes. I do not
+// believe that this can cause trouble.
+// I can have two levels of structure, and by the time the index level
+// is at maximum size (128K entries on a 64-bit system) size I will have
+// a table with 128K*128K = 16G slots in it and occupying 128 Gbytes.
+// At present (2017) I view the limits there are such that they will
+// not embarass me for some while. My belief is that allocating space in
+// chunks like this is going to be more friendly as regards memory
+// fragmentation than just using huge contiguous blocks.
+
+//#define LOG2_VECTOR_CHUNK_BYTES 20     // in externs.h ...
+//#define VECTOR_CHUNK_BYTES  ((size_t)(1<<LOG2_VECTOR_CHUNK_BYTES))
+
+// I use zero to mark entries here that are not in use.  As far as a
+// LispObject is concerned that is a pointer to a CONS cell but at
+// address zero, which should not arise. And anyway I am only going
+// to put references to vectors here and this array will be cleared by the
+// garbage collector rather than being scanned. Every vector put in
+// here should have tag TAG_VECTOR and type TYPE_SIMPLE_VECTOR
+
+LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1] = {0};
+
+// This will recover a saved vector if one is available. Its argument is
+// the size of the vector including its header word, but as far as powers
+// of 2 go I look at the size of the data part only.
+
+static LispObject gvector(int tag, int type, size_t n)
+{   size_t n1 = n/CELL - 1;    // size in words of data part.
+    if (is_power_of_two(n1))   // special if size is a power of 2.
+    {   int i = intlog2(n1);   // identify what power of 2 we have.
+        LispObject r;
+        if (i <= LOG2_VECTOR_CHUNK_BYTES &&
+            (r = free_vectors[i]) != 0)
+        {   free_vectors[i] = elt(r, 0);
+// reset type field
+            vechdr(r) = type + (n << (Tw+5)) + TAG_HDR_IMMED;
+            return r - TAG_VECTOR + tag;
+        }
+    }
+// If there is no saved vector then allocate a new one. Note that when
+// called from here this will be a smallish vector.
+    return get_basic_vector(tag, type, n);
+}
+
+LispObject get_vector(int tag, int type, size_t n)
+{   LispObject v;
+//
+// A major ugliness here is that I need to support huge vectors.
+// To achieve this I will handle big cases using a vector of vectors, with
+// the higher level vector tagged as a INDEXVEC and the lower level vectors
+// each modestly sized.
+// So:
+//   A vector of size up to VECTOR_CHUNK_BYTES will be represented
+//     naturally as a single block of memory. That is the size of the DATA
+//     not including the header cell.
+//   Larger vectors will have an INDEXVEC most of whose contents are
+//     vectors of size VECTOR_CHUNK_BYTES but where the final item
+//     may be smaller.
+//
+    if (n-CELL > VECTOR_CHUNK_BYTES)
+    {
+// If the number size is exactly a multiple of the chunk size I will not
+// need a special shorter final vector.
+        size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
+        size_t i;
+// The final chunk will be full size if I have a neat multiple of
+// VECTOR_CHUNK_BYTES, oterwise smaller.
+        size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
+        if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
+        v = gvector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
+// Note that this index vector will be around while the various sub
+// vectors are allocated, so I need to make it GC safe...
+        for (i=0; i<chunks; i++)
+            elt(v, i) = nil;
+        for (i=0; i<chunks; i++)
+        {   LispObject v1;
+            int k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
+            push(v);
+            v1 = gvector(tag, type, CELL*(k+1));
+// The vector here will be active as later chunks are allocated, so it needs
+// to be GC safe.
+            if (!vector_holds_binary(type))
+            {   for (int j=0; j<k; j++)
+                    elt(v1, j) = nil;
+            }
+            pop(v);
+            elt(v, i) = v1;
+        }
+    }
+    else v = gvector(tag, type, n);
+    return v;
+}
+
+LispObject get_vector_init(size_t n, LispObject val)
+{   LispObject p;
+    push(val);
+    p = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
+    pop(val);
+    if (!SIXTY_FOUR_BIT && ((n & 4) != 0))
+        n += 4;   // Ensure last doubleword is tidy
+    n = n/CELL;
+    while (n != 0)
+    {   n--;
+        large_elt(p, n) = val;
     }
     return p;
 }

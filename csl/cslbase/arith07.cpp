@@ -46,9 +46,9 @@ LispObject copyb(LispObject a)
 // copy a bignum.
 //
 {   LispObject b;
-    int32_t len = bignum_length(a), i;
+    size_t len = bignum_length(a), i;
     push(a);
-    b = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
+    b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
     pop(a);
     len = (len-CELL)/4;
     for (i=0; i<len; i++)
@@ -100,7 +100,7 @@ LispObject negateb(LispObject a)
         else return make_one_word_bignum(d0);
     }
     push(a);
-    b = getvector(TAG_NUMBERS, TYPE_BIGNUM, len);
+    b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len);
     pop(a);
     len = (len-CELL-4)/4;
     carry = -1;

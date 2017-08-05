@@ -126,32 +126,140 @@ extern LispObject *C_stackbase, *C_stacktop;
 
 extern LispObject multiplication_buffer;
 
-#define push(a)         { *++stack = (a); }
-// push2 etc are just like push, but grouped together
-#define push2(a,b)      { stack[1] = (a); stack[2] = (b); stack += 2; }
-#define push3(a,b,c)    { stack[1] = (a); stack[2] = (b); stack[3] = (c); \
-                          stack += 3; }
-#define push4(a,b,c,d)  { stack[1] = (a); stack[2] = (b); stack[3] = (c); \
-                          stack[4] = (d); stack += 4; }
-#define push5(a,b,c,d,e){ stack[1] = (a); stack[2] = (b); stack[3] = (c); \
-                          stack[4] = (d); stack[5] = (e); stack += 5; }
-#define push6(a,b,c,d,e,f) {                                              \
-                          stack[1] = (a); stack[2] = (b); stack[3] = (c); \
-                          stack[4] = (d); stack[5] = (e); stack[6] = (f); \
-                          stack += 6; }
+static inline void push(LispObject a)
+{   *++stack = a;
+    assert(a != 0);
+}
 
-#define pop(a)          { (a) = *stack--; }
-#define pop2(a,b)       { stack -= 2;     (a) = stack[2]; (b) = stack[1]; }
-#define pop3(a,b,c)     { stack -= 3;     (a) = stack[3]; (b) = stack[2]; \
-                          (c) = stack[1]; }
-#define pop4(a,b,c,d)   { stack -= 4;     (a) = stack[4]; (b) = stack[3]; \
-                          (c) = stack[2]; (d) = stack[1]; }
-#define pop5(a,b,c,d,e) { stack -= 5;     (a) = stack[5]; (b) = stack[4]; \
-                          (c) = stack[3]; (d) = stack[2]; (e) = stack[1]; }
-#define pop6(a,b,c,d,e, f) { stack -= 6;                                  \
-                          (a) = stack[6]; (b) = stack[5]; (c) = stack[4]; \
-                          (d) = stack[3]; (e) = stack[2]; (f) = stack[1]; }
-#define popv(n)           stack -= (n)
+static inline void push2(LispObject a, LispObject b)
+{   *++stack = a;
+    assert(a != 0);
+    *++stack = b;
+    assert(b != 0);
+}
+
+static inline void push3(LispObject a, LispObject b, LispObject c)
+{   *++stack = a;
+    assert(a != 0);
+    *++stack = b;
+    assert(b != 0);
+    *++stack = c;
+    assert(c != 0);
+}
+
+static inline void push4(LispObject a, LispObject b, LispObject c,
+                         LispObject d)
+{   *++stack = a;
+    assert(a != 0);
+    *++stack = b;
+    assert(b != 0);
+    *++stack = c;
+    assert(c != 0);
+    *++stack = d;
+    assert(d != 0);
+}
+
+static inline void push5(LispObject a, LispObject b, LispObject c,
+                         LispObject d, LispObject e)
+{   *++stack = a;
+    assert(a != 0);
+    *++stack = b;
+    assert(b != 0);
+    *++stack = c;
+    assert(c != 0);
+    *++stack = d;
+    assert(d != 0);
+    *++stack = e;
+    assert(e != 0);
+}
+
+static inline void push6(LispObject a, LispObject b, LispObject c,
+                         LispObject d, LispObject e, LispObject f)
+{   *++stack = a;
+    assert(a != 0);
+    *++stack = b;
+    assert(b != 0);
+    *++stack = c;
+    assert(c != 0);
+    *++stack = d;
+    assert(d != 0);
+    *++stack = e;
+    assert(e != 0);
+    *++stack = f;
+    assert(f != 0);
+}
+
+static inline void pop(LispObject& a)
+{   a = *stack--;
+    assert(a != 0);
+}
+
+static inline void pop(volatile LispObject& a)
+{   a = *stack--;
+    assert(a != 0);
+}
+
+static inline void pop2(LispObject& a, LispObject& b)
+{   a = *stack--;
+    assert(a != 0);
+    b = *stack--;
+    assert(b != 0);
+}
+
+static inline void pop3(LispObject& a, LispObject& b, LispObject& c)
+{   a = *stack--;
+    assert(a != 0);
+    b = *stack--;
+    assert(b != 0);
+    c = *stack--;
+    assert(c != 0);
+}
+
+static inline void pop4(LispObject& a, LispObject& b, LispObject& c,
+                        LispObject& d)
+{   a = *stack--;
+    assert(a != 0);
+    b = *stack--;
+    assert(b != 0);
+    c = *stack--;
+    assert(c != 0);
+    d = *stack--;
+    assert(d != 0);
+}
+
+static inline void pop5(LispObject& a, LispObject& b, LispObject& c,
+                        LispObject& d, LispObject& e)
+{   a = *stack--;
+    assert(a != 0);
+    b = *stack--;
+    assert(b != 0);
+    c = *stack--;
+    assert(c != 0);
+    d = *stack--;
+    assert(d != 0);
+    e = *stack--;
+    assert(e != 0);
+}
+
+static inline void pop6(LispObject& a, LispObject& b, LispObject& c,
+                        LispObject& d, LispObject& e, LispObject& f)
+{   a = *stack--;
+    assert(a != 0);
+    b = *stack--;
+    assert(b != 0);
+    c = *stack--;
+    assert(c != 0);
+    d = *stack--;
+    assert(d != 0);
+    e = *stack--;
+    assert(e != 0);
+    f = *stack--;
+    assert(f != 0);
+}
+
+static inline void popv(int n)
+{   stack -= n;
+}
 
 #define GC_USER_SOFT 0
 #define GC_USER_HARD 1
@@ -447,9 +555,9 @@ extern LispObject user_base_9;
 extern void copy_into_nilseg();
 extern void copy_out_of_nilseg();
 
-#define LOG2_VECTOR_CHUNK_WORDS 17
-#define VECTOR_CHUNK_WORDS  ((size_t)(1<<LOG2_VECTOR_CHUNK_WORDS)) // 0x20000
-extern LispObject free_vectors[LOG2_VECTOR_CHUNK_WORDS+1];
+#define LOG2_VECTOR_CHUNK_BYTES  20
+#define VECTOR_CHUNK_BYTES  ((size_t)(1<<LOG2_VECTOR_CHUNK_BYTES))
+extern LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1];
 
 extern void rehash_this_table(LispObject v);
 extern void simple_print(LispObject x);
@@ -780,8 +888,10 @@ extern void        drop_heap_segments();
 extern LispObject gcd(LispObject a, LispObject b);
 extern LispObject get_pname(LispObject a);
 extern "C" LispObject get(LispObject a, LispObject b, LispObject c=nil);
-extern LispObject getvector(int tag, int type, size_t length);
-extern LispObject getvector_init(size_t n, LispObject v);
+extern LispObject get_basic_vector(int tag, int type, size_t length);
+extern LispObject get_basic_vector_init(size_t n, LispObject v);
+extern LispObject get_vector(int tag, int type, size_t length);
+extern LispObject get_vector_init(size_t n, LispObject v);
 extern uint32_t  hash_lisp_string(LispObject s);
 extern void lose_C_def(LispObject a);
 extern "C" bool        geq2(LispObject a, LispObject b);

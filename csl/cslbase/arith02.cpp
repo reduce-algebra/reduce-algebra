@@ -150,7 +150,7 @@ static LispObject timesib(LispObject a, LispObject b)
     else if (aa == -1) return negateb(b);
     lenb = bignum_length(b);
     push(b);
-    c = getvector(TAG_NUMBERS, TYPE_BIGNUM, lenb);
+    c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, lenb);
     pop(b);
     lenb = (lenb-CELL)/4;
     if (aa < 0)
@@ -240,7 +240,7 @@ extend_by_one_word:
 // Need to allocate more space to grow into. I need to grow by just 4 bytes.
 //
     push(c);
-    a = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*lenb);
+    a = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*lenb);
     pop(c);
     for (i=0; i<lenb; i++)
         bignum_digits(a)[i] = bignum_digits(c)[i];
@@ -1349,7 +1349,7 @@ static LispObject timesbb(LispObject a, LispObject b)
             k--;
         }
         lenc = 2*lenc;
-        c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
+        c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
 #if defined HAVE_LIBPTHREAD || defined WIN32
 //
 // If I run using threads then each of the three threads can need some
@@ -1371,7 +1371,7 @@ static LispObject timesbb(LispObject a, LispObject b)
             (4*lend+CELL) > length_of_header(numhdr(multiplication_buffer)))
         {   push(c);
             multiplication_buffer =
-                getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
+                get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lend);
             pop(c);
         }
         lenc = 2*lenc;
@@ -1381,11 +1381,11 @@ static LispObject timesbb(LispObject a, LispObject b)
 // In cases where I will use classical long multiplication there is no
 // need to waste space with extra padding or with the workspace vector d.
         lenc = lena + lenb;
-        c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lenc);
+        c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*lenc);
         if (multiplication_buffer == nil)
         {   push(c);
             multiplication_buffer =
-                getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
+                get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
             pop(c);
         }
     }

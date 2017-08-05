@@ -224,7 +224,7 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
     {   pl = qfastgets(a);
         if (pl == nil)
         {   push3(a, b, c);
-            pl = getvector_init(CELL+CELL*fastget_size, SPID_NOPROP);
+            pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
             pop3(c, b, a);
             qfastgets(a) = pl;
         }
@@ -648,7 +648,7 @@ LispObject Lflag(LispObject env, LispObject a, LispObject b)
         {   pl = qfastgets(v);
             if (pl == nil)
             {   push2(v, b);
-                pl = getvector_init(CELL+CELL*fastget_size, SPID_NOPROP);
+                pl = get_basic_vector_init(CELL+CELL*fastget_size, SPID_NOPROP);
                 pop2(b, v);
                 qfastgets(v) = pl;
             }
@@ -946,7 +946,7 @@ static inline LispObject encapsulate_sp(LispObject *sp)
 //
 // Creates a boxed up representation of a pointer into the stack.
 //
-{   LispObject w = getvector(TAG_VECTOR, TYPE_SP, 2*CELL);
+{   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_SP, 2*CELL);
     elt(w, 0) = (LispObject)sp;
     return w;
 }

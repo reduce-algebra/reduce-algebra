@@ -864,13 +864,13 @@ LispObject ash(LispObject a, LispObject b)
 // Bignum case here
 //
     if (bb > 0)
-    {   int32_t lena = (bignum_length(a)-CELL)/4 - 1;
-        int32_t words = bb / 31;    // words to shift left by
+    {   size_t lena = (bignum_length(a)-CELL)/4 - 1;
+        size_t words = bb / 31;    // words to shift left by
         int32_t bits = bb % 31;     // bits to shift left by
         int32_t msd = bignum_digits(a)[lena];
         int32_t d0 = ASR(msd, (31 - bits));
         int32_t d1 = clear_top_bit(msd << bits);
-        int32_t i, lenc = lena + words;
+        size_t i, lenc = lena + words;
         bool longer = false;
         LispObject c;
         if (!((d0 == 0 && (d1 & 0x40000000) == 0) ||
@@ -879,7 +879,7 @@ LispObject ash(LispObject a, LispObject b)
 // When I am shifting (left) I can work out exactly how long the resulting
 // bignum will be right at the start.
         push(a);
-        c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
+        c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
         pop(a);
 //
 // Before I do anything else I will fill the result-vector with zero, so that
@@ -909,29 +909,31 @@ LispObject ash(LispObject a, LispObject b)
 // Here for bignum right-shifts. This may sometimes collapse things to give
 // a fixnum result.
 //
-    {   int32_t lena = (bignum_length(a)-CELL)/4 - 1;
-        int32_t words = (-bb) / 31;    // words to shift right by
+    {   size_t lena = (bignum_length(a)-CELL)/4 - 1;
+        size_t words = (-bb) / 31;    // words to shift right by
         int32_t bits = (-bb) % 31;     // bits to shift right by
         int32_t msd = bignum_digits(a)[lena];
         int32_t d0 = ASR(msd, bits);
         int32_t d1 = clear_top_bit(msd << (31 - bits));
-        int32_t i, lenc = lena - words;
+// Maybe at this stage I can tell that the result will be zero (or -1).
+        if (words > lena) return fixnum_of_int(msd < 0 ? -1 : 0);
+        size_t i, lenc = lena - words;
         bool shorter = false;
         LispObject c;
         if (bits != 0 &&
             ((d0 == 0 && (d1 & 0x40000000) == 0) ||
              (d0 == -1 && (d1 & 0x40000000) != 0)))
-            lenc--, shorter = true;
-//
-// Maybe at this stage I can tell that the result will be zero (or -1).
+        {   if (lenc==0) return fixnum_of_int(msd < 0 ? -1 : 0);
+            lenc--;
+            shorter = true;
+        }
 // If the result will be a single-precision value I will nevertheless
-// build it in a onn or two-word bignum and then (if appropriate) extract the
+// build it in a one or two-word bignum and then (if appropriate) extract the
 // fixnum value.  This is slightly wasteful, but I do not (at present)
 // view right-shifting a bignum to get a fixnum as super speed-critical.
 //
-        if (lenc < 0) return fixnum_of_int(msd < 0 ? -1 : 0);
         push(a);
-        c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
+        c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*(lenc+1));
         pop(a);
         if ((lenc & 1) != 0) bignum_digits(c)[lenc+1] = 0;// The spare word
         d0 = bignum_digits(a)[words];
@@ -1016,7 +1018,7 @@ static LispObject logiorbb(LispObject a, LispObject b)
     lenb = (bignum_length(b)-CELL)/4 - 1;
     if (lena > lenb)
     {   LispObject c = a;
-        int32_t lenc = lena;
+        size_t lenc = lena;
         a = b; lena = lenb;
         b = c; lenb = lenc;
     }
@@ -1067,7 +1069,7 @@ LispObject logior2(LispObject a, LispObject b)
 }
 
 static LispObject logxorbb(LispObject a, LispObject b)
-{   int32_t lena, lenb, i;
+{   size_t lena, lenb, i;
     uint32_t w;
     lena = (bignum_length(a)-CELL)/4 - 1;
     lenb = (bignum_length(b)-CELL)/4 - 1;
@@ -1144,7 +1146,7 @@ static LispObject logandbb(LispObject a, LispObject b)
     lenb = (bignum_length(b)-CELL)/4 - 1;
     if (lena > lenb)
     {   LispObject c = a;
-        int32_t lenc = lena;
+        size_t lenc = lena;
         a = b; lena = lenb;
         b = c; lenb = lenc;
     }

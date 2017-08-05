@@ -382,7 +382,7 @@ void *my_malloc(size_t n)
 // detecting memory leaks...
 //
     char *r = (char *)(*malloc_hook)(n+64);
-    int32_t *p = (int32_t *)quadword_align_up(r);
+    int32_t *p = (int32_t *)quadword_align_up((uintptr_t)r);
 //
 //    | ... |   :   |    |    |    |    |    |    | to user |    |    |
 //    r     p <-r->    n  55aa 1234 3456 1234 3456           8765 cba9
@@ -573,9 +573,11 @@ static void init_heap_segments(double store_size)
                 pool = pool + NIL_SEGMENT_SIZE;
 #ifdef COMMON
 // NB here that NIL is tagged as a CONS not as a symbol
-                nil = doubleword_align_up(nilsegment) + TAG_CONS + 8;
+                nil = (LispObject)(
+                    doubleword_align_up((uintptr_t)nilsegment) + TAG_CONS + 8);
 #else
-                nil = doubleword_align_up(nilsegment) + TAG_SYMBOL;
+                nil = (LispObject)(
+                    doubleword_align_up((uintptr_t)nilsegment) + TAG_SYMBOL);
 #endif
 //
 // If at the end of the run I am going to free some space I had better not
@@ -1331,7 +1333,7 @@ static void cold_setup()
 // collection - that can probably be assured by ensuring that on restart there
 // is at least a little bit of space in hand.
 //
-    qvalue(nil) = getvector_init(sizeof(Package), nil);
+    qvalue(nil) = get_basic_vector_init(sizeof(Package), nil);
 #ifdef COMMON
     qpackage(nil) = qvalue(nil);    // For sake of restart code
     all_packages = ncons(qvalue(nil));
@@ -1351,7 +1353,7 @@ static void cold_setup()
 // table to have the same number of entries regardless of whether I am on
 // a 32 or 64-bit machine to make cross-loading of images possible.
 //
-    packint_(CP) = getvector_init(CELL*(1+INIT_OBVECI_SIZE), fixnum_of_int(0));
+    packint_(CP) = get_basic_vector_init(CELL*(1+INIT_OBVECI_SIZE), fixnum_of_int(0));
     packvint_(CP) = fixnum_of_int(1);
     packflags_(CP) = fixnum_of_int(++package_bits);
 #ifdef COMMON
@@ -1359,7 +1361,7 @@ static void cold_setup()
 // Common Lisp also has "external" symbols to allow for...
 //
     packnint_(CP) = fixnum_of_int(0);
-    packext_(CP) = getvector_init(CELL*(1+INIT_OBVECX_SIZE), fixnum_of_int(0));
+    packext_(CP) = get_basic_vector_init(CELL*(1+INIT_OBVECX_SIZE), fixnum_of_int(0));
     packvext_(CP) = fixnum_of_int(1);
     packnext_(CP) = fixnum_of_int(1); // Allow for nil
     {   size_t i = (int)(hash_lisp_string(qpname(nil)) &
@@ -1390,7 +1392,7 @@ static void cold_setup()
 // Ditto interrupts.
 //
 #define boffo_size 256
-    boffo = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
+    boffo = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
     memset((void *)((char *)boffo + (CELL - TAG_VECTOR)), '@', boffo_size);
 //
 // The next line has hidden depths.  When it is obeyed during cold start
@@ -1567,7 +1569,7 @@ static void cold_setup()
 // I make the vector that can hold the names used for "fast" get tags big
 // enough for the largest possible number.
 //
-    fastget_names = getvector_init((MAX_FASTGET_SIZE+2)*CELL, SPID_NOPROP);
+    fastget_names = get_basic_vector_init((MAX_FASTGET_SIZE+2)*CELL, SPID_NOPROP);
 //
 // The next bit is a horrid fudge, used in read.c (function orderp) to
 // support REDUCE. It ensures that the flag 'noncom is subject to an
@@ -1598,7 +1600,7 @@ static void cold_setup()
     set_up_functions(0);
     set_up_variables(0);
     procstack = nil;
-    procmem = getvector_init(CELL*100, nil); // 0 to 99
+    procmem = get_basic_vector_init(CELL*100, nil); // 0 to 99
     procstackp = 0;
 }
 
@@ -1725,7 +1727,7 @@ void set_up_variables(int restart_flag)
     LispObject saved_package = CP;
     CP = find_package("LISP", 4);
 #endif
-    charvec = getvector_init(257*CELL, nil);
+    charvec = get_basic_vector_init(257*CELL, nil);
     faslvec = nil;
     faslgensyms = nil;
     multiplication_buffer = nil;

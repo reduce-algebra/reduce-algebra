@@ -1,125 +1,93 @@
 
 % u59.lsp           Machine generated Lisp
 
-(c!:install "u59" 103865 5758768 8397040)
+(c!:install "u59" 17831 1851005 2394603)
 
-(c!:install 'boolean!-eval2 '(boolean!-eval2 boolean and or not !*protfg
-algebraic bool!-break!* erfg!* formbool errorset errorp) 
-13535939763071878538)
+(c!:install 'cdr_signsort '(cdr_signsort copy apply) 
+13787353986175638556)
 
-(c!:install 'mkg1 '(mkg1 nospur g mksf) 10874375751637765688)
+(c!:install 'rlval '(rlval !:rd!: !:bprec!: r2flbf ncoeffs times!:
+plus!: inorm) 7083699386214399275)
 
-(c!:install 'generate_multiindex '(generate_multiindex n_indep_var nth
-cde_replace_nth) 12093244824212738996)
+(c!:install 'nrootnn '(nrootnn !*primelist!* mcfactor!* iroot) 
+5942300179902464672)
 
-(c!:install 'sfto_b!:cquot '(sfto_b!:cquot nreverse quotf1) 
-9581205324701258159)
+(c!:install 'extodd '(extodd ext
+"the argument of extodd must be an ext variable" n_all_parametric_ext
+all_principal_odd!* all_parametric_odd!* rederr nth) 5870015481548055222
+)
 
-(c!:install 'aex_red '(aex_red ((q . scalar) (newq . scalar))
-aex_mvartest aex_ex sfto_redx quotsq kernels aex_ctx ctx_filter aex_mk
-aex_0) 18222639127884922657)
+(c!:install 'getsetvarlis '(getsetvarlis "getsetvarlis" (setel setk)
+setq nreverse errach) 10814118241406422205)
 
-(c!:install 'preptaylor!*2 '(preptaylor!*2 quotient minus prepsq!*
-preptaycoeff retimes) 11121049249434556751)
+(c!:install 'let0 '(let0 frasc!* let00) 7391967956783306752)
 
-(c!:install 'absodeg '(absodeg plus eval) 15211225628975707552)
+(c!:install 'talp_gaussand '(talp_gaussand failed ignore
+talp_trygaussvar) 16419365261122652967)
 
-(c!:install 'get_rep_of_generator '(get_rep_of_generator ((found .
-scalar) (mate . scalar) (ll . scalar)) id
-" error in get rep of generators" get!+row!+nr mk!+unit!+mat rederr) 
-10674983100849519256)
+(c!:install 'applyml '(applyml char rdlist!* (i d e n t !/) (c o m p o s
+e !/) (i n v e r s e !/) lex compress!* apply errorml) 
+3404595783190816155)
 
-(c!:install 'talp_try3 '(talp_try3 ((res . scalar) (subpairs . scalar) (
-equs . scalar) (extobj . scalar) (contlvar . scalar) (contrvar . scalar)
-(lhs . scalar) (rhs . scalar)) true false and equal talp_atfp talp_argl
-talp_op talp_arg2l talp_arg2r talp_contains talp_td talp_extlftrs
-talp_chsbstres talp_try1 talp_rnf) 8123284968507232756)
+(c!:install 'ps!:find!-order '(ps!:find!-order ps !:ps!: tps
+"Unexpected form in ps!:find!-order" ps!:unknown!-order ps!:expression
+ps!:order ps!:find!-order1 rerror) 1678637726556154181)
 
-(c!:install 'rl_b2atl '(rl_b2atl rl_b2atl!* apply) 2138926909353740864)
+(c!:install 'subsqnew '(subsqnew prepsq subf quotsq) 
+12642540119680760180)
 
-(c!:install 'ev_lcm '(ev_lcm ((x . scalar))) 9645262935259461179)
+(c!:install 'groebsimpcontnormalform '(groebsimpcontnormalform
+!*groebprot quotient gsugar vdpsimpcont gsetsugar vbc2a reval
+groebreductionprotocol2) 17945831652982038263)
 
-(c!:install 'compute!:intlog '(compute!:intlog intlog!:rem
-compute!:intlog1) 3832981292976916831)
+(c!:install 'simpintersection '(simpintersection intersection empty_set
+applysetop ordn mksp) 18333976700864013619)
 
-(c!:install 'implicitdec '(implicitdec ((decl . scalar) (decs . scalar))
-!*decs!* symtabget isimplicit firstmatch implicittype) 
-16949485813440378508)
+(c!:install 'rand!-mons!-dense '(rand!-mons!-dense mksq max multf
+lastpair) 4000640762977857342)
 
-(c!:install 'dipcontenti1 '(dipcontenti1 ((nn . scalar)) vbcgcd
-dipcontevmin bcone!?) 7456900836982566373)
+(c!:install 'tot!-asym!-indp '(tot!-asym!-indp indordp indxchk indordlp)
+ 16378113130650151290)
 
-(c!:install '!*sf2ex '(!*sf2ex nreverse) 12934913102930594307)
+(c!:install 'calc_map_tar '(calc_map_tar ev!-poles constimes ev!-tades
+strand!-alg!-top) 4380444771427007829)
 
-(c!:install 'mo_deletecomp '(mo_deletecomp mo!=deglist) 
-12018199225992509237)
+(c!:install 'invbase!* '(invbase!* thirdway!* shortway!* !*trinvbase
+maxord!* path gg!* varlist!* bv!* "---------- ORDER = " " ----------"
+alglist!* list plus gv!* invtempbasis "Maximum degree bound exceeded."
+ng!* redall newbasis ord !*di2q prepsq rederr max ljet class nonmult
+pdmult nf stat dim) 9973221616266214468)
 
-(c!:install 'sep_tens_from_other '(sep_tens_from_other ((mv . scalar) (
-tel . scalar) (other . scalar) (y . scalar)) translate1 !*n2f multf
-fullcopy setcar tensorp no_dum_varp) 6402185035174248615)
+(c!:install 'yetunknowntypeeval '(yetunknowntypeeval
+eval!-yetunknowntypeexpr reval1) 16888849423757944204)
 
-(c!:install 'zfactor '(zfactor zfactor1) 2511242439935552506)
+(c!:install 'depend!-l '(depend!-l simp depend!-sq) 11705703878846753641
+)
 
-(c!:install 'sqlessp '(sqlessp negsq addsq !:minusp) 
-17809746572932323716)
+(c!:install 'rl_print!*fof '(rl_print!*fof reval maprin) 
+8948476633242711435)
 
-(c!:install 'crn!:zerop '(crn!:zerop) 14471836097984589314)
+(c!:install 'mri_dettype '(mri_dettype int real mri_arg2l kernels
+mri_realvarp) 12589705886688684344)
 
-(c!:install 'monomispommaretdivisibleby '(monomispommaretdivisibleby ((
-exponent1 . scalar) (exponent2 . scalar) (break . scalar))) 
-4626995584513207381)
+(c!:install 'unary '(unary "<apply>" "<" "/>" indent "</apply>" printout
+expression) 17628353546270141862)
 
-(c!:install 'gd_applyscheme '(gd_applyscheme ((al . scalar) (n . integer
-)) a mkid gd_getscheme) 3900773973618318146)
+(c!:install 'xpwrlcmp '(xpwrlcmp expt sqrt getdenom getdenomx lcm) 
+13809688206923474696)
 
-(c!:install 'gcdlist1 '(gcdlist1 reduction!-count ((unionv . scalar) (
-intersectionv . scalar) (vord . scalar) (x . scalar) (l1 . scalar) (
-reduction!-count . scalar)) lesspcdr vunion vintersection vdelete sort
-mapcarcar setkorder reorder gcdlist3 gcdlist2 split!-wrt!-variables
-total!-degree!-in!-powers) 120265124565538254)
+(c!:install 'ps!:expansion!-point '(ps!:expansion!-point !:ps!: ps!:getv
+) 16036982018896120238)
 
-(c!:install 'rl_reval '(rl_reval rl_simp1 rl_prepfof rl_mk!*fof) 
-14443807258000341238)
+(c!:install 'appends '(appends) 4527622923441649088)
 
-(c!:install 'mri_irsplit '(mri_irsplit ((w . scalar)) floor to simp
-mri_simplfloor mri_irsplit1 prepf !*a2k) 16197909891217671274)
+(c!:install 'pm!:gensym '(pm!:gensym !? !_ pm!:gensym!-count!*) 
+2925043532280623506)
 
-(c!:install 'product!-set2 '(product!-set2 ((w . scalar))) 
-11276269448189057015)
+(c!:install 'partitpartdf '(partitpartdf !*a2k mknatvec simppartdf0) 
+14341146793199646748)
 
-(c!:install 'xreduce1 '(xreduce1 weak_xreduce1 nreverse) 
-11959619420246598109)
-
-(c!:install 'basisvectorp '(basisvectorp basisvectorl!*) 
-18044454894974143165)
-
-(c!:install 'mk!-coeff1 '(mk!-coeff1 times getroad factorial eval) 
-4284856049728081327)
-
-(c!:install 'depend1 '(depend1 ((y . scalar) (z . scalar)) depl!*
-"has no prior dependence on" !*a2k union repasc lprim) 
-323666507223460518)
-
-(c!:install 'distri_pol '(distri_pol ((x . scalar) (y . scalar)) addfd
-multf) 13477231095858439147)
-
-(c!:install 'bfprin0x '(bfprin0x ((lst . scalar) (dotpos . integer))
-bfexplode0x bfprin!:lst) 7399264584724653574)
-
-(c!:install 'talp_raf '(talp_raf ((rel . scalar) (f . scalar) (lhs .
-scalar) (rhs . scalar) (tmp . scalar) (fst . scalar) (snd . scalar) (
-tmp2 . scalar)) equal neq and or talp_op talp_arg2l talp_tcfrp
-talp_arg2r talp_getinvfsym talp_mkinv talp_mk2 talp_simpat talp_getl
-talp_fargl nth talp_rnf1 talp_mkn) 9540888322470280957)
-
-(c!:install 'cd_ordatp '(cd_ordatp neq equal ordp) 7200805220082662935)
-
-(c!:install 'ps!:expt!-erule '(ps!:expt!-erule ((base . scalar) (x .
-scalar) (y . scalar) (z . scalar) (p . scalar) (q . scalar)) ps quotient
-ps!:order ps!:evaluate prepsqxx simpexpt multsq addsq quotsq) 
-4271578651444559144)
-
-(c!:install 'vdplsortin '(vdplsortin vdplsortin1) 7299351269199537602)
+(c!:install 'p_eq_vertex '(p_eq_vertex) 7973572559622386248)
 
 
 % End of generated Lisp code

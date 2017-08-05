@@ -82,6 +82,12 @@
 // in the middle of its work, so it can afford to leave pointers into the
 // middle of vectors as it goes, so it does not need any extra space at all.
 //
+// One might worry about "large" vectors that are stored internally as an
+// index array and then the data. Well this serialization code just looks
+// at the representation not at the higher level semantics, and so it will
+// process the index vector much like any other vector and when data is back
+// in memory again it should be in exactly the state that it needs to be!
+//
 // The writer works in two passes. The first pass just has to identify and
 // record where there are objects referenced multiple times. It uses a sparse
 // bitmap to record which objects it has visited. When it finds that it is
@@ -1632,7 +1638,7 @@ down:
 // for SER_LVECTOR.
                     assert(opcode_repeats == 0);
                     GC_PROTECT(prev =
-                        getvector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length));
+                        get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length));
                     *p = w = prev;
                     if (c == SER_DUPRAWSYMBOL) reader_repeat_new(prev);
 // Note that the vector as created will have its LENGTH encoded in the
@@ -1767,7 +1773,7 @@ down:
                     w = read_u64();
                     {   size_t len = CELL + (w + 7)/8; // length in bytes
                         GC_PROTECT(prev =
-                            getvector(TAG_VECTOR, bitvechdr_(w), len));
+                            get_basic_vector(TAG_VECTOR, bitvechdr_(w), len));
                         *p = prev;
                         char *x = &celt(prev, 0);
                         for (size_t i=0; i<(size_t)w; i++)
@@ -1824,10 +1830,10 @@ down:
                                                              TAG_VECTOR;
                 if (type == TYPE_NEWHASH) type = TYPE_NEWHASHX;
 // The size here will be the number of Lisp items held in the vector, so
-// what I need to pass to getvector makes that into a byte count and allows
-// for the header word as well.
+// what I need to pass to get_basic_vector makes that into a byte count and
+// allows for the header word as well.
                 size_t n = read_u64();
-                GC_PROTECT(prev = getvector(tag, type, CELL*(n+1)));
+                GC_PROTECT(prev = get_basic_vector(tag, type, CELL*(n+1)));
                 w = *p = prev;
 // Note that the "vector" just created may be tagged with TAG_NUMBERS
 // rather than TAG_VECTOR, so I use the access macro "vselt" rather than
@@ -1891,7 +1897,7 @@ down:
 // making up the string, with padding at the end.
             assert(opcode_repeats == 0);
             w = (c & 0x1f) + 1;
-            GC_PROTECT(prev = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
+            GC_PROTECT(prev = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
             *p = prev;
             {   char *x = &celt(prev, 0);
                 for (size_t i=0; i<(size_t)w; i++) *x++ = read_string_byte();
@@ -1914,6 +1920,7 @@ down:
 // The general case for vectors containing binary information is followed
 // by a length code that shows how many items there are in the vector.
 // This counts in the natural size for the vector.
+// At present vectors containing binary can never be "large".
             w = read_u64();
 // Here I have assembled 7 bits of type information in c. CCCCC comes from the
 // opcode. The header I want for my vector will be
@@ -1922,7 +1929,7 @@ down:
                     tag = is_bignum_header(type) ? TAG_NUMBERS :
                                                    TAG_VECTOR;
                 if (vector_i8(type))
-                {   GC_PROTECT(prev = getvector(tag, type, CELL+w));
+                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+w));
                     *p = prev;
                     unsigned char *x = (unsigned char *)start_contents(prev);
                     if (is_string_header(type))
@@ -1933,7 +1940,7 @@ down:
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_i32(type))
-                {   GC_PROTECT(prev = getvector(tag, type, CELL+4*w));
+                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+4*w));
                     *p = prev;
                     uint32_t *x = (uint32_t *)start_contents(prev);
 // 32-bit integers are transmitted most significant byte first.
@@ -1946,7 +1953,7 @@ down:
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_f64(type))
-                {   GC_PROTECT(prev = getvector(tag, type, CELL+8*w));
+                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+8*w));
                     *p = prev;
                     double *x = (double *)start_contents64(prev);
 // There has to be a padder word in these objects on a 32-bit machine so
@@ -1955,7 +1962,7 @@ down:
                     for (size_t i=0; i<(size_t)w; i++) *x++ = read_f64();
                 }
                 else if (vector_i16(type))
-                {   GC_PROTECT(prev = getvector(tag, type, CELL+2*w));
+                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+2*w));
                     *p = prev;
                     uint16_t *x = (uint16_t *)start_contents(prev);
                     for (size_t i=0; i<(size_t)w; i++)
@@ -1965,7 +1972,7 @@ down:
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_i64(type))
-                {   GC_PROTECT(prev = getvector(tag, type, CELL+8*w));
+                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+8*w));
                     *p = prev;
                     uint64_t *x = (uint64_t *)start_contents64(prev);
                     if (!SIXTY_FOUR_BIT) *(int32_t *)start_contents(prev) = 0;
@@ -1981,20 +1988,20 @@ down:
                     }
                 }
                 else if (vector_f32(type))
-                {   GC_PROTECT(prev = getvector(tag, type, CELL+4*w));
+                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+4*w));
                     *p = prev;
                     float *x = (float *)start_contents(prev);
                     for (size_t i=0; i<(size_t)w; i++) *x++ = read_f32();
                     while (((intptr_t)x & 7) != 0) *x++ = 0;
                 }
                 else if (vector_f128(type))
-                {   GC_PROTECT(prev = getvector(tag, type, CELL+16*w));
+                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+16*w));
                     *p = prev;
                     fprintf(stderr, "128-bit integer arrays not supported (yet?)\n");
                     my_abort();
                 }
                 else if (vector_i128(type))
-                {   GC_PROTECT(prev = getvector(tag, type, CELL+16*w));
+                {   GC_PROTECT(prev = get_basic_vector(tag, type, CELL+16*w));
                     *p = prev;
                     fprintf(stderr, "128-bit floats not supported (yet?)\n");
                     my_abort();
@@ -2298,6 +2305,13 @@ down:
     if (p == 0)
     {   fprintf(stderr, "Zero pointer found from %s\n", trigger);
         // An error - but I feel safest if I detect it and do not crash.
+if (trigger[0]=='S')
+{   // @@@@
+    fprintf(stderr, "from scan_data\n");
+    for (LispObject *s=stackbase+1; s<=stack; s++)
+    {   fprintf(stderr, "%p: %p\n", s, (void *)*(void **)s);
+    }
+}
         goto up;
     }
     else if (p == nil) goto up;
@@ -3220,7 +3234,7 @@ LispObject Lwrite_module(LispObject env, LispObject a, LispObject b)
     descend_symbols = false;
     hash_init(&repeat_hash, 13); // allow 8K entries to start with.
     {   map_releaser RAII;
-        strcpy(trigger, "write-module scan a");
+        strcpy(trigger, "write-module scan A");
         scan_data(a);
         strcpy(trigger, "write-module scan B");
         scan_data(b);
@@ -3433,7 +3447,7 @@ static LispObject load_module(LispObject env, LispObject file,
                 }
             }
             if (getsavedef)
-            {   push3(name, file, r)
+            {   push3(name, file, r);
                 if (name == nil)
                 {   LispObject p1 = qcdr(p);
                     LispObject n1 = qcar(p1);
@@ -3453,10 +3467,10 @@ static LispObject load_module(LispObject env, LispObject file,
 // module it was found in.
             LispObject w;
             w = get(name, load_source_symbol, nil);
-            push3(name, file, r)
+            push3(name, file, r);
             w = cons(current_module, w);
             pop3(r, file, name);
-            push3(name, file, r)
+            push3(name, file, r);
             putprop(name, load_source_symbol, w);
             pop3(r, file, name);
         }
@@ -3750,7 +3764,7 @@ void warm_setup()
     qfastgets(nil) = nil;
     qpackage(nil) = nil;
 #define boffo_size 256
-    boffo = getvector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
+    boffo = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+boffo_size);
     memset((void *)((char *)boffo + (CELL - TAG_VECTOR)), '@', boffo_size);
 
     exit_tag = exit_value = nil;
@@ -3895,6 +3909,13 @@ down:
     if (p == 0)
     {   fprintf(stderr, "Zero pointer found from %s\n", trigger);
         // An error - but I feel safest if I detect it and do not crash.
+if (trigger[0]=='S')
+{   // @@@@
+    fprintf(stderr, "from push_symbols\n");
+    for (LispObject *s=stackbase+1; s<=stack; s++)
+    {   fprintf(stderr, "%p: %p\n", s, (void *)*(void **)s);
+    }
+}
         goto up;
     }
     else if (p == nil) goto up;

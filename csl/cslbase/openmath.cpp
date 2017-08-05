@@ -1425,7 +1425,7 @@ LispObject om_getByteArray(LispObject env, LispObject ldev)
         return om_error(status);
     else
     {   // I hope this is right...
-        obj = getvector(TAG_VECTOR, TYPE_VEC8, len + 4);
+        obj = get_basic_vector(TAG_VECTOR, TYPE_VEC8, len + 4);
         status = OMgetByteArrayN(dev, ((char *)obj - TAG_VECTOR + 4), len);
         if (status != OMsuccess)
             return om_error(status);

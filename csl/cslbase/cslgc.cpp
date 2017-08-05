@@ -861,7 +861,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         aerror("reclaim-stack-limit");
     }
 
-    for (int i=0; i<LOG2_VECTOR_CHUNK_WORDS+1; i++)
+    for (int i=0; i<LOG2_VECTOR_CHUNK_BYTES+1; i++)
         free_vectors[i] = 0;
 
 #ifdef CONSERVATIVE

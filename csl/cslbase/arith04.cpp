@@ -50,7 +50,7 @@ LispObject make_n_word_bignum(int32_t a2, uint32_t a1, uint32_t a0, size_t n)
 // words at the end!
 //
 {   size_t i;
-    LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+12);
+    LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+12);
     for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
     bignum_digits(w)[n] = a0;
     bignum_digits(w)[n+1] = a1;
@@ -64,7 +64,7 @@ LispObject make_n_word_bignum(int32_t a2, uint32_t a1, uint32_t a0, size_t n)
 LispObject make_n4_word_bignum(int32_t a3, uint32_t a2, uint32_t a1,
                                uint32_t a0, size_t n)
 {   size_t i;
-    LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+16);
+    LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+16);
     for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
     bignum_digits(w)[n] = a0;
     bignum_digits(w)[n+1] = a1;
@@ -77,7 +77,7 @@ LispObject make_n4_word_bignum(int32_t a3, uint32_t a2, uint32_t a1,
 LispObject make_n5_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
                                uint32_t a1, uint32_t a0, size_t n)
 {   size_t i;
-    LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+20);
+    LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*n+20);
     for (i=0; i<n; i++) bignum_digits(w)[i] = 0;
     bignum_digits(w)[n] = a0;
     bignum_digits(w)[n+1] = a1;

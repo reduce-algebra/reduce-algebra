@@ -327,13 +327,13 @@ LispObject make_one_word_bignum(int32_t n)
 // inside the range 0xc0000000 to 0x3fffffff on a 32-bit machine. It
 // should never be needed on a 64-bit system!
 //
-{   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4);
+{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4);
 // This happens to be the (alphabetically by file-name) first place where
 // I am removing an "errexit()" test, so let me attach some commentary.
-// If anything goes wrong within the getvector() above (or indeed some things
+// If anything goes wrong within the get_basic_vector() above (or indeed some things
 // could go right but potentially go a Lisp go, return-from, throw, quit
 // restart etc!) either a longjmp or a throw will cause me to exit abruptly
-// from the call to getvector. because I am not doing any setjmp or catch here
+// from the call to get_basic_vector. because I am not doing any setjmp or catch here
 // the rest of this function will be abandoned and control will go back to
 // or through whoever called me. When that happens things that might have
 // been pushed onto the stack can be left with in a way that is no longer
@@ -353,7 +353,7 @@ LispObject make_two_word_bignum(int32_t a1, uint32_t a0)
 // must have been arranged already that a1 and a0 are correctly
 // normalized to put in the two words as indicated.
 //
-{   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8);
+{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8);
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     if (!SIXTY_FOUR_BIT) bignum_digits(w)[2] = 0;
@@ -366,7 +366,7 @@ LispObject make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
 // must have been arranged already that the values are correctly
 // normalized.
 //
-{   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+12);
+{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+12);
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -381,7 +381,7 @@ LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
 // must have been arranged already that the values are correctly
 // normalized.
 //
-{   LispObject w = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+16);
+{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+16);
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
@@ -402,7 +402,7 @@ LispObject make_boxfloat(double a, int type)
             return pack_single_float(a);
             return r;
         default: // TYPE_DOUBLE_FLOAT I hope
-            r = getvector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT, SIZEOF_DOUBLE_FLOAT);
+            r = get_basic_vector(TAG_BOXFLOAT, TYPE_DOUBLE_FLOAT, SIZEOF_DOUBLE_FLOAT);
             if (!SIXTY_FOUR_BIT) double_float_pad(r) = 0;
             double_float_val(r) = a;
             if (trap_floating_overflow &&
@@ -416,7 +416,7 @@ LispObject make_boxfloat(double a, int type)
 
 LispObject make_boxfloat128(float128_t a)
 {   LispObject r;
-    r = getvector(TAG_BOXFLOAT, TYPE_LONG_FLOAT, SIZEOF_LONG_FLOAT);
+    r = get_basic_vector(TAG_BOXFLOAT, TYPE_LONG_FLOAT, SIZEOF_LONG_FLOAT);
     if (!SIXTY_FOUR_BIT) long_float_pad(r) = 0;
     long_float_val(r) = a;
     if (trap_floating_overflow &&
@@ -956,10 +956,10 @@ LispObject make_complex(LispObject r, LispObject i)
     if (i == fixnum_of_int(0)) return r;
     stackcheck2(0, r, i);
     push2(r, i);
-    v = getvector(TAG_NUMBERS, TYPE_COMPLEX_NUM, sizeof(Complex_Number));
+    v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM, sizeof(Complex_Number));
 //
 // The vector r has uninitialized contents here - dodgy.  If the call
-// to getvector succeeded then I fill it in, otherwise I will not
+// to get_basic_vector succeeded then I fill it in, otherwise I will not
 // refer to it again, and I think that unreferenced vectors containing junk
 // are OK.
 //
@@ -977,7 +977,7 @@ LispObject make_ratio(LispObject p, LispObject q)
     if (q == fixnum_of_int(1)) return p;
     stackcheck2(0, p, q);
     push2(p, q);
-    v = getvector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
+    v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
     pop2(q, p);
     numerator(v) = p;
     denominator(v) = q;
@@ -1215,7 +1215,7 @@ static inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // where I do not need to optimise edge cases so carefully, and where the
 // length (as a bignum) of the result is rather likely to match that of a2.
     push(a2);
-    LispObject c = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*len);
+    LispObject c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4*len);
     pop(a2);
 // Add in the lowest digit by hand because at this stage s1 can have
 // more than 31 bits and so intrudes beyond there.
@@ -1285,7 +1285,7 @@ static inline LispObject plus_i_b(LispObject a1, LispObject a2)
         return c;
     }
     push(c);
-    a2 = getvector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
+    a2 = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+4+4*len);
     pop(c);
     for (size_t i=0; i<len-1; i++)
         bignum_digits(a2)[i] = bignum_digits(c)[i];
@@ -1300,7 +1300,7 @@ static inline LispObject plus_i_b(LispObject a1, LispObject a2)
 // Finally because I know that I expanded into a new doubleword I should
 // tidy up the second word of the newly allocated pair. I know I added two
 // extra words because if I was just filling in the second of two existing
-// words I did not do not do the fresh getvector() here...
+// words I did not do not do the fresh get_basic_vector() here...
 //
     bignum_digits(a2)[i] = 0;
     return a2;
@@ -1369,7 +1369,7 @@ LispObject lengthen_by_one_bit(LispObject a, int32_t msd)
     {   LispObject b;
         int32_t i;
         push(a);
-        b = getvector(TAG_NUMBERS, TYPE_BIGNUM, len+4);
+        b = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, len+4);
         pop(a);
         len = (len-CELL)/4;
         for (i=0; i<len; i++)
@@ -1412,7 +1412,7 @@ static inline LispObject plus_b_b(LispObject a, LispObject b)
 // Now at least one operand uses 3 words... I will do a general bignum add
 // which may sometimes be overkill, but ought to be safe.
     push2(a, b);
-    LispObject c = getvector(TAG_NUMBERS, TYPE_BIGNUM, 4*la+CELL);
+    LispObject c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, 4*la+CELL);
     pop2(b, a);
     uint32_t carry = 0;
 // Add all but the top digit of b

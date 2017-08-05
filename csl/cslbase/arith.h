@@ -253,7 +253,7 @@ static inline LispObject pack_single_float(double d)
         return (LispObject)((uint64_t)aa.i << 32) + XTAG_SFLOAT + XTAG_FLOAT32;
     }
     else
-    {   LispObject r = getvector(TAG_BOXFLOAT,
+    {   LispObject r = get_basic_vector(TAG_BOXFLOAT,
             TYPE_SINGLE_FLOAT, sizeof(Single_Float));
         single_float_val(r) = (float)d;
         if (trap_floating_overflow &&

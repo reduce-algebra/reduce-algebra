@@ -130,10 +130,10 @@ LispObject large_modular_reciprocal(LispObject n, bool safe)
         w = quot2(a, b);
         pop2(y, x);
         t = b;
-        push5(a, x, y, w, t)
+        push5(a, x, y, w, t);
         b = times2(b, w);
         pop5(t, w, y, x, a);
-        push4(x, y, w, t)
+        push4(x, y, w, t);
         b = difference2(a, b);
         pop4(t, w, y, x);
         a = t;
