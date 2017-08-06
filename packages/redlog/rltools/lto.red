@@ -824,7 +824,8 @@ asserted procedure lto_setCover1(l: List): List;
 	       lhs := addf(lhs, !*k2f car pr);
 	    cdr pr := cdr cdr pr
 	 >>;
-	 push(ofsf_0mk2('geq, addf(lhs, negf 1)), l2)
+	 if lhs then
+	    push(ofsf_0mk2('geq, addf(lhs, negf 1)), l2)
       >>;
       f2 := rl_smkn('and, l2);
       for each pr in l do
