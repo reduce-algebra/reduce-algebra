@@ -346,72 +346,28 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
 
 #endif
 
-static uint32_t hash_lisp_string_with_length(LispObject s, size_t n)
-{
-//
-// I start off the hash calculation with something that depends on the
-// length of the string n. Hmmm - I want hash values to end up the same
-// on 32 and 64-bit machines and the length I pass down here includes the
-// length of the string header, so I adjust for that. The way I do that here
-// preserves the hash values that I historically used on 32-bit machines
-// and so 32-bit image files should remain valid.
-//
-    size_t hh = 0x01000000 + n - CELL + 4;
-    uint32_t *b = (uint32_t *)((char *)s + (CELL-TAG_VECTOR));
-    char *b1;
-    while (n >= CELL+4)  // Do as much as is possible word at a time
-    {   uint32_t temp;
-//
-// The next few lines take a 32-bit value with digits PQRS and for a value
-// with digits Q^R and P^Q^R^S.  Note that this is invariant under the change
-// to SRQP, and thus even though I fetched a whole word and the order of bytes
-// in that word is hard to know the hash value will not depend on the byte
-// order involved.  By that time I have done all this and thereby lost any
-// chance of ABCD and DCBA not clashing maybe a simple byte at a time hash
-// procedure would have been more sense?  Some day I should take comparative
-// timings and measurements of hash-table conflicts.
-//
-        uint32_t a = *b++;      // P      Q        R        S
-        a = a ^ (a << 8);         // P^Q    Q^R      R^S      S
-        a = a ^ (a >> 16);        // P^Q    Q^R      P^Q^R^S  Q^R^S
-        a = a << 8;               // Q^R    P^Q^R^S  Q^R^S    0
-//
-// And now compute a hash value using a CRC that has a period of
-// 0x7fffffff (i.e. maximum period in 31 bits). And at least if shift
-// operations are cheap on your computer it can be evaluated rapidly as well.
-//
-        temp = hh << 7;
-        hh = ((hh >> 25) ^
-              (temp >> 1) ^
-              (temp >> 4) ^
-              (a >> 16)) & 0x7fffffff;
-        n -= 4;
-    }
-    b1 = (char *)b;
-//
-// Finish off the hash value byte-at-a-time.  If I could be certain that
-// strings being hashed would always be zero-padded in their last word I
-// could avoid the need for this, but at present I can not.
-//
-    while (n > CELL)
-    {   uint32_t temp;
-        temp = hh << 7;
-        hh = ((hh >> 25) ^
-              (temp >> 1) ^
-              (temp >> 4) ^
-              (uint32_t)*b1++) & 0x7fffffff;
-        n -= 1;
-    }
-//
-// At the end I multiply by 139 so that at least symbols that differ
-// by just having adjacent last letters will be better spread out.
-//
-    return ((139*hh) & 0x7fffffff);
+// This will only hash basic strings, not extended ones.
+
+static uint64_t hash_lisp_string_with_length(LispObject s, size_t n)
+{   uint64_t h = crc64(n-CELL, &basic_celt(s, 0), n-CELL);
+// crc64 will produce a 64-bit hash value that is expected to be pretty
+// reasonable, however the way I use this will be to look at just some
+// number of low bits. The raw CRC does not cascade information evenly into
+// all bits. To get the low-order bits better scrambled I will mix in some
+// informationm from higher up. The shift amounts I use are chosen so they
+// are not obvious multiples of 8, since the character sequences that I
+// hash are streams of BYTES not BITS. The use of "+" rather than "^" to
+// merge in information from high order bits lets carry propagation mix
+// things up just a little more.
+    h += h >> 31;
+    h += h >> 7;
+    h += h >> 15;
+    return h + (h >> 12);    
 }
 
-uint32_t hash_lisp_string(LispObject s)
+uint64_t hash_lisp_string(LispObject s)
 //
-// Argument is a (lisp) string.  Return a 31 bit hash value.
+// Argument is a (lisp) string.  Return a 64 bit hash value.
 //
 {   return hash_lisp_string_with_length(s, length_of_byteheader(vechdr(s)));
 }
@@ -799,13 +755,12 @@ start_again:
     return v;
 }
 
-static bool add_to_hash(LispObject s, LispObject vector, uint32_t hash)
+static bool add_to_hash(LispObject s, LispObject vector, uint64_t hash)
 //
 // Adds an item into a hash table given that it is known that it is not
 // already there.
 //
-{   Header h = vechdr(vector);
-    size_t size = (length_of_header(h) - CELL)/CELL;
+{   size_t size = cells_in_vector(vector);
     size_t i = (size_t)(hash & (size-1));
 //
 // I have arranged (elsewhere) that the hash table will be a power of two
@@ -813,11 +768,6 @@ static bool add_to_hash(LispObject s, LispObject vector, uint32_t hash)
 // number.  Furthermore I might replace the (perhaps expensive) remaindering
 // operations by (perhaps cheap) bitwise "AND" when I reduce my hash value
 // to the right range to be an index into the table.
-//
-// I might make a few remarks here about sizes. Each hash table segment
-// may have 128K cells. hash is a 32-bit value, so hash>>10 is a 22-bit
-// value (ie up to 4M). So all the bits that might end up in the step I
-// take are available.
 //
     size_t step = 1 | ((hash >> 10) & (size - 1));
     size_t probes = 0;
@@ -837,11 +787,7 @@ static bool add_to_hash(LispObject s, LispObject vector, uint32_t hash)
     return false;                          // Table is totally full
 }
 
-static int32_t number_of_chunks;
-
-#define CHUNK_SIZE (CELL*(PAGE_POWER_OF_TWO/32))
-
-static LispObject rehash(LispObject v, LispObject chunks, int grow)
+static LispObject rehash(LispObject v, int grow)
 {
 //
 // If (grow) is +1 this enlarges the table. If -1 it shrinks it. In the
@@ -849,155 +795,34 @@ static LispObject rehash(LispObject v, LispObject chunks, int grow)
 // table size down will have enough space for the number of active items
 // present. grow=0 leaves the table size alone but still rehashes.
 //
-    int32_t h = CHUNK_SIZE, i;
-    LispObject new_obvec;
-    number_of_chunks = int_of_fixnum(chunks);
-//
-// Now I decide how to format the new structure.  To grow, If I had a single
-// vector at present I try to double its size.  If that would give something
-// too big I rearrange as multiple blocks in a chain, trying to roughly
-// increase by a factor of 1.5 each time.
-//
-    if (grow > 0)
-    {
-#ifdef DEBUG
-//      term_printf("Grow hash from %d chunks\n", number_of_chunks);
-//      ensure_screen();
-#endif
-        if (number_of_chunks == 1)
-        {
-//
-// Here I am going to allow the hash table size to double until trying to
-// double it again would go beyond the proper size that vectors are limited
-// to by the page size I use. The limit size ll I establish here first
-// MUST be within the size permitted for a vector. To allow 32- and 64-
-// bit images to be compatible I also want it to correspond to the same
-// number of entries in the table in either case. The size I select is
-// such that on a 32-bit machine each table is about 1/8 of the page size
-// and on a 64-bit one each is about 1/4. With 4 Mbyte pages this makes
-// each table hold 128K items - a feature of this is that Reduce will
-// generally not go into the overflow mechanism! By making the table size
-// 1/4 of my allocation page size I will end up fitting 3 tables per page
-// and leaving just the final quarter to be filled up otherwise. If I
-// went further and used yet larger hash table segments I could suffer
-// much more badly because of fragmentation.
-//
-            int32_t ll = CHUNK_SIZE;
-            h = length_of_header(vechdr(v)) - CELL;
-            if (h >= ll)
-            {   h = ll;
-                number_of_chunks = 3;
-            }
-            else h = 2*h;
-        }
-        else number_of_chunks = (3*number_of_chunks + 1)/2;
-//
-// The hash table will use 1, 3, 5, 8, 12, 18, 27, 41, 62, 93, 140, 210...
-// chunks. This geometric growth should lead to the cost of rehashing
-// ending up as a roughly constant factor of hash table access while
-// avoiding utterly undue waste of space.
-//
-    }
-    else if (grow < 0)
-    {   if (number_of_chunks == 1)
-        {   h = length_of_header(vechdr(v)) - CELL;
-//
-// When shrinking, I will not permit the hash table to have room for
-// less than 8 entries.
-//
-            if (h > 64) h = h / 2;
-        }
-        else if (number_of_chunks <= 2)
-        {   h = CHUNK_SIZE;
-            number_of_chunks = 1;
-        }
-//
-// While I expand the hash table in a geometric progression I will
-// only shrink it linearly (at least for now) since I think I believe that
-// shrinking will not happen often, and if there had been one temporary
-// huge growth I might predict the possibility of another one soon. The
-// effect of shrinking slowly is that space is wasted but speed is if
-// anything improved.
-//
-        else number_of_chunks--;
-    }
+    size_t h = cells_in_vector(v);
+    if (grow > 0) h = 2*h;
+    else if (grow < 0 && h > 64) h = h/2;
     stackcheck1(0, v);
-#ifdef DEBUG
-//  term_printf("... to %d chunks\n", number_of_chunks);
-//  ensure_screen();
-#endif
     push(v);
-try_again:
-    if (number_of_chunks == 1)
-        new_obvec = get_vector_init(h+CELL, fixnum_of_int(0));
-   else
-    {   new_obvec = nil;
-        for (i=0; i<number_of_chunks; i++)
-        {   LispObject w;
-            push(new_obvec);
-            w = get_vector_init(h+CELL, fixnum_of_int(0));
-            pop(new_obvec);
-            new_obvec = cons(w, new_obvec);
-        }
-    }
+    LispObject new_obvec = get_vector_init((h+1)*CELL, fixnum_of_int(0));
     v = stack[0];
-    while (v != nil)
-    {   LispObject vv;
-        if (is_vector(v))
-        {   vv = v;
-            v = nil;
-        }
-        else
-        {   vv = qcar(v);
-            v = qcdr(v);
-        }
-        h = (length_of_header(vechdr(vv)) - CELL)/CELL;
-        while (h != 0)
-        {   LispObject s, p, n = new_obvec;
-            uint32_t hash;
-            h--;
-            s = elt(vv, h);
-            if (is_fixnum(s)) continue;
-            p = qpname(s);
-            validate_string(p);
-            hash = hash_lisp_string(p);
-            if (number_of_chunks != 1)
-            {   int32_t i = (hash ^ (hash >> 16)) % number_of_chunks;
-                while (i-- != 0) n = qcdr(n);
-                n = qcar(n);
-            }
-            if (!add_to_hash(s, n, hash))
-            {
-// Well if the table is still well under the chunk size it is silly to
-// increase the chunk count!
-                number_of_chunks++;
-//
-// In the grossly improbable case that clustering leads to one of the
-// sub-vectors overflowing I will go back and re-start the expansion
-// process but with yet more space available.  This can ONLY happen
-// if I already had multiple sub-hash-tables.
-//
-                goto try_again;
-            }
-        }
+    h = cells_in_vector(v);
+    while (h != 0)
+    {   h--;
+        LispObject s = elt(v, h);
+        if (is_fixnum(s)) continue;
+        LispObject p = qpname(s);
+        validate_string(p);
+        uint64_t hash = hash_lisp_string(p);
+        add_to_hash(s, new_obvec, hash);
     }
     popv(1);
-#ifdef DEBUG
-//  term_printf("Rehashing done\n");
-    ensure_screen();
-#endif
     return new_obvec;
 }
 
 #ifdef COMMON
 
 static LispObject add_to_externals(LispObject s,
-                                   LispObject p, uint32_t hash)
+                                   LispObject p, uint64_t hash)
 {   LispObject n = packnext_(p);
     LispObject v = packext_(p);
-    uintptr_t used = int_of_fixnum(packvext_(p));
-    if (used == 1) used = length_of_header(vechdr(v)) - CELL;
-    else used = CHUNK_SIZE*used;
+    size_t used = cells_in_vector(v);
 //
 // n is (16*sym_count+TAG_FIXNUM)             [Lisp fixnum for sym_count]
 // used = CELL*(spaces+TAG_FIXNUM)
@@ -1009,83 +834,35 @@ static LispObject add_to_externals(LispObject s,
 // loaded (down to 31% just after an expansion) while very large ones will
 // be kept at least a bit closer to the 62% mark.
 //
-try_again:
     if ((uint32_t)n/10u > used/CELL)
     {   stackcheck3(0, s, p, v);
         push2(s, p);
-        v = rehash(v, packvext_(p), 1);
+        v = rehash(v, 1);
         pop2(p, s);
         packext_(p) = v;
-        packvext_(p) = fixnum_of_int(number_of_chunks);
     }
-    if (n == 0xfffffff1) aerror("too many symbols"); // long stop
     packnext_(p) = n + (1<<4);      // increment as a Lisp fixnum
-    {   int32_t nv = int_of_fixnum(packvext_(p));
-        if (nv == 1) add_to_hash(s, v, hash);
-        else
-        {   nv = (hash ^ (hash >> 16)) % nv;
-//
-// There is a systematic nasty problem here that I maybe ought to deal with
-// some time.  Large packages are represented as a collection of smaller
-// hash tables, and part of the hash value of a symbol decides which of these
-// sub-tables any particular string will be placed in.  I enlarge the whole
-// system when the set of tables (treated as a whole) is 70% full.  But
-// clustering COULD potentially lead to one of the sub-tables becoming
-// totally full before then, and that would give a loop here if I was not
-// careful.  To avoid the possibility I make add_to_hash() report any
-// trouble and if I have difficulty I go back and re-enlarge the tables.
-// This is not guaranteed safe, but I will be VERY unlucky if it ever bites
-// me! Specifically it can provoke early expansion of the hash table
-// so that clustering leads to ending up with a lighter loading on the
-// whole table. It wastes space but should in the end be safe.
-//
-// For HUGE tables the current segmented scheme is parhaps not very
-// satisfactory and I may need to move to a model that represents a single
-// large table in multiple hunks. Indeed for HUGE tables the fact that I
-// only compute a 32-bit hash value could be unsatisfactory too.
-//
-            while (nv-- != 0) v = qcdr(v);
-            if (!add_to_hash(s, qcar(v), hash))
-            {   used = 0;   // so table will be expanded
-                goto try_again;
-            }
-        }
-    }
+    add_to_hash(s, v, hash);
     return nil;
 }
 
 #endif
 
 static LispObject add_to_internals(LispObject s,
-                                   LispObject p, uint32_t hash)
+                                   LispObject p, uint64_t hash)
 {   LispObject n = packnint_(p);
     LispObject v = packint_(p);
-    uint32_t used = int_of_fixnum(packvint_(p));
-    if (used == 1) used = length_of_header(vechdr(v)) - CELL;
-    else used = CHUNK_SIZE*used;
-try_again:
+    size_t used = cells_in_vector(v);
     if ((uint32_t)n/10u > used/CELL)
     {   stackcheck3(0, s, p, v);
         push2(s, p);
-        v = rehash(v, packvint_(p), 1);
+        v = rehash(v, 1);
         pop2(p, s);
         packint_(p) = v;
-        packvint_(p) = fixnum_of_int(number_of_chunks);
     }
-    if (n == (LispObject)0xfffffff1) aerror("too many symbols"); // long stop
     packnint_(p) = (LispObject)((int32_t)n + (1<<4));
     // increment as a Lisp fixnum
-    {   int32_t nv = int_of_fixnum(packvint_(p));
-        if (nv == 1) add_to_hash(s, v, hash);
-        else
-        {   nv = (hash ^ (hash >> 16)) % nv;
-            while (nv-- != 0) v = qcdr(v);
-            if (!add_to_hash(s, qcar(v), hash))
-            {   used = 0;
-                goto try_again;
-            }
-        }
-    }
+    add_to_hash(s, v, hash);
     return nil;
 }
 
@@ -1096,13 +873,18 @@ uint64_t Nhget=0, Nhgetp=0, Nhput1=0, Nhputp1=0, Nhput2=0, Nhputp2=0, Nhputtmp=0
 uint64_t Noget=0, Nogetp=0, Noput=0, Noputp=0, Noputtmp=0;
 #endif
 
-static void myabort()
+// my_abort exists for two purposes. The first is so that it cal call
+// ensure_screen() before aborting, so that buffered output at least stands
+// a chance of being visible. The second is that it is a place I might
+// reasonably set breakpoints.
+
+void myabort()
 {   ensure_screen();
     abort();
 }
 
-static LispObject lookup(LispObject str, int32_t strsize,
-                         LispObject v, LispObject nv, uint32_t hash)
+static LispObject lookup(LispObject str, size_t strsize,
+                         LispObject v, uint64_t hash)
 //
 // Searches a hash table for a symbol with name matching the given string,
 // and NOTE that the string passed down here is to be treated as having
@@ -1134,26 +916,19 @@ static LispObject lookup(LispObject str, int32_t strsize,
 // hash tables for direct use by users are iplemented. I ought to consolidate
 // these two implementations of hashing!
 //
-{   Header h;
+{
 #ifdef HASH_STATISTICS
     Noputtmp = 0;
 #endif
-    size_t size, i = int_of_fixnum(nv), step, n;
-    if (i != 1)
-    {   i = (hash ^ (hash >> 16)) % i; // Segmented - find correct segment
-        while (i-- != 0) v = qcdr(v);
-        v = qcar(v);
-    }
-    h = vechdr(v);
-    size = (length_of_header(h) - CELL)/CELL;
-    i = (int32_t)(hash & (size - 1));
-    step = 1 | ((hash >> 10) & (size - 1));
+    size_t size = cells_in_vector(v);
+    size_t i = (size_t)(hash & (size - 1));
+    size_t step = 1 | ((hash >> 10) & (size - 1));
 //
 // I count the probes that I make here and if there are as many as the size
 // of the hash table then I allow the lookup to report that the symbol is not
 // present. But at least I do not get stuck in a loop.
 //
-    for (n=0; n<size; n++)
+    for (size_t n=0; n<size; n++)
     {   LispObject w = elt(v, i);
         LispObject pn;
         if (w == fixnum_of_int(0))
@@ -1427,48 +1202,32 @@ LispObject Lorderp(LispObject env, LispObject a, LispObject b)
     return onevalue(Lispify_predicate(w <= 0));
 }
 
-static uint32_t removed_hash;
+static uint64_t removed_hash;
 
-static bool remob(LispObject sym, LispObject v, LispObject nv)
+static bool remob(LispObject sym, LispObject v)
 //
 // Searches a hash table for a symbol with name matching the given string,
 // and remove it.
 //
-{   LispObject str = qpname(sym);
-    Header h;
-    uint32_t hash;
-    uint32_t i = int_of_fixnum(nv), size, step, n;
-    if (qheader(sym) & SYM_ANY_GENSYM) return false; // gensym case is easy!
+{   if (qheader(sym) & SYM_ANY_GENSYM) return false; // gensym case is easy!
+    LispObject str = qpname(sym);
     validate_string(str);
 #ifdef COMMON
 // If not in any package it has no home & is not available
     qheader(sym) &= ~SYM_EXTERN_IN_HOME & ~(0xffffffff<<SYM_IN_PKG_SHIFT);
 #endif
-    removed_hash = hash = hash_lisp_string(str);
+    uint64_t hash = removed_hash = hash_lisp_string(str);
 //
 // The search procedure used here MUST match that coded in lookup().
 //
-    if (i != 1)
-    {   i = (hash ^ (hash >> 16)) % i;
-        while (i-- != 0) v = qcdr(v);
-        v = qcar(v);
-    }
-    h = vechdr(v);
-    size = (length_of_header(h) - CELL)/CELL;
-    i = (int32_t)(hash & (size - 1));
-    step = 1 | ((hash >> 10) & (size - 1));
-    for (n=0; n<size; n++)
+    size_t size = cells_in_vector(v);
+    size_t i = hash & (size - 1);
+    size_t step = 1 | ((hash >> 10) & (size - 1));
+    for (size_t n=0; n<size; n++)
     {   LispObject w = elt(v, i);
         if (w == fixnum_of_int(0)) return false;  // Not found
         if (w == sym)
         {   elt(v, i) = fixnum_of_int(1);
-//
-// I will shrink the hash table if it becomes less than 25% full,
-// but not in this bit of code... because I want this internal
-// remob() function to avoid any possible failure or garbage collection
-// so I can call it from C code without any formality. Thus I should do
-// any tidying up afterwards.
-//
             return true;
         }
         i = i + step;
@@ -1707,12 +1466,11 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
 // NB in CSL mode only one value is returned.
 //
 {   LispObject r;
-    uint32_t hash;
     stackcheck2(0, str, p);
-    hash = hash_lisp_string_with_length(str, h+CELL);
+    uint64_t hash = hash_lisp_string_with_length(str, h+CELL);
 // find-external-symbol will not look at the internals
     if (str_is_ok != 4)
-    {   r = lookup(str, h, packint_(p), packvint_(p), hash);
+    {   r = lookup(str, h, packint_(p), hash);
 //
 // rehash_pending is intended to deal with horrible cases that involve
 // lots of remobs. But in the worst possible scenario one could have
@@ -1729,10 +1487,9 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
         if (rehash_pending)
         {   LispObject v = packint_(p);
             push2(p, r);
-            v = rehash(v, packvint_(p), 0);
+            v = rehash(v, 0);
             pop2(r, p);
             packint_(p) = v;
-            packvint_(p) = fixnum_of_int(number_of_chunks);
             rehash_pending = false;
         }
         if (r != fixnum_of_int(0))
@@ -1741,14 +1498,13 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
         }
     }
 #ifdef COMMON
-    r = lookup(str, h, packext_(p), packvext_(p), hash);
+    r = lookup(str, h, packext_(p), hash);
     if (rehash_pending)
     {   LispObject v = packext_(p);
         push2(p, r);
-        v = rehash(v, packvext_(p), 0);
+        v = rehash(v, 0);
         pop2(r, p);
         packext_(p) = v;
-        packvext_(p) = fixnum_of_int(number_of_chunks);
         rehash_pending = false;
     }
     if (r != fixnum_of_int(0))
@@ -1761,14 +1517,13 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
     }
     for (r = packuses_(p); r!=nil; r=qcdr(r))
     {   LispObject w = qcar(r);
-        w = lookup(str, h, packext_(w), packvext_(w), hash);
+        w = lookup(str, h, packext_(w), hash);
         if (rehash_pending)
         {   LispObject v = packext_(p);
             push2(p, r);
-            v = rehash(v, packvext_(p), 0);
+            v = rehash(v, 0);
             pop2(r, p);
             packext_(p) = v;
-            packvext_(p) = fixnum_of_int(number_of_chunks);
             rehash_pending = false;
         }
         if (w != fixnum_of_int(0))
@@ -1921,12 +1676,10 @@ static LispObject Lextern(LispObject env, LispObject sym, LispObject package)
 // a find-package as necessary.
 //
 {   if (!is_symbol(sym)) return onevalue(nil);
-    if (remob(sym, packint_(package), packvint_(package)))
+    if (remob(sym, packint_(package)))
     {   LispObject n = packnint_(package);
         LispObject v = packint_(package);
-        int32_t used = int_of_fixnum(packvint_(package));
-        if (used == 1) used = length_of_header(vechdr(v)) - CELL;
-        else used = CHUNK_SIZE*used;
+        size_t used = length_of_header(vechdr(v)) - CELL;
 //
 // I will shrink a hash table if a sequence of remob-style operations,
 // which will especially include the case where a symbol ceases to be
@@ -1938,13 +1691,12 @@ static LispObject Lextern(LispObject env, LispObject sym, LispObject package)
 // cause it to shrink (but it will rehash and hence tidy it up). Hence
 // every remob on such a table will cause it to be re-hashed.
 //
-        if ((int32_t)n < used && used>(CELL*INIT_OBVECI_SIZE+CELL))
+        if ((size_t)n < used && used>(CELL*INIT_OBVECI_SIZE+CELL))
         {   stackcheck3(0, sym, package, v);
             push2(sym, package);
-            v = rehash(v, packvint_(package), -1);
+            v = rehash(v), -1);
             pop2(package, sym);
             packint_(package) = v;
-            packvint_(package) = fixnum_of_int(number_of_chunks);
         }
         packnint_(package) -= (1<<4);   // decrement as fixnum
 //
@@ -1969,12 +1721,10 @@ static LispObject Limport(LispObject env, LispObject sym, LispObject package)
 // before this function is called. The second argument must be a real
 // package object, not just the name of one.
 //
-{   uint32_t hash;
-    LispObject pn;
-    if (!is_symbol(sym)) return onevalue(nil);
+{   if (!is_symbol(sym)) return onevalue(nil);
     push2(sym, package);
-    pn = get_pname(sym);
-    hash = hash_lisp_string(pn);
+    LispObject pn = get_pname(sym);
+    uint64_t hash = hash_lisp_string(pn);
     add_to_internals(stack[-1], stack[0], hash);
     pop2(package, sym);
     if (qpackage(sym) == nil) qpackage(sym) = package;
@@ -2024,39 +1774,34 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
 #endif
     if ((qheader(sym) & SYM_C_DEF) != 0)
         aerror1("remob on function with kernel definition", sym);
-    if (remob(sym, packint_(package), packvint_(package)))
+    if (remob(sym, packint_(package)))
     {   LispObject n = packnint_(package);
         LispObject v = packint_(package);
-        size_t used = int_of_fixnum(packvint_(package));
-        if (used == 1) used = length_of_header(vechdr(v)) - CELL;
-        else used = CHUNK_SIZE*used;
+        size_t used = length_of_header(vechdr(v)) - CELL;
 // I think that the next lien is playing silly whatsits wrt the representation
 // of the fixnum n and its numeric meaning...
         if ((size_t)n < used && used>(CELL*INIT_OBVECI_SIZE+CELL))
         {   stackcheck2(0, package, v);
             push(package);
-            v = rehash(v, packvint_(package), -1);
+            v = rehash(v, -1);
             pop(package);
             packint_(package) = v;
-            packvint_(package) = fixnum_of_int(number_of_chunks);
         }
         packnint_(package) -= (1<<4);   // decrement as fixnum
         return onevalue(lisp_true);
     }
 #ifdef COMMON
-    if (remob(sym, packext_(package), packvext_(package)))
+    if (remob(sym, packext_(package)))
     {   LispObject n = packnext_(package);
         LispObject v = packext_(package);
-        int32_t used = int_of_fixnum(packvext_(package));
-        if (used == 1) used = length_of_header(vechdr(v)) - CELL;
+        size_t used = length_of_header(vechdr(v)) - CELL;
         else used = CHUNK_SIZE*used;
         if ((int32_t)n < used && used>(CELL*INIT_OBVECX_SIZE+CELL))
         {   stackcheck2(0, package, v);
             push(package);
-            v = rehash(v, packvext_(package), -1);
+            v = rehash(v, -1);
             pop(package);
             packext_(package) = v;
-            packvext_(package) = fixnum_of_int(number_of_chunks);
         }
         packnext_(package) -= (1<<4);   // decrement as fixnum
         return onevalue(lisp_true);
@@ -4104,8 +3849,6 @@ LispObject make_package(LispObject name)
     pop(p);
     packint_(p) = w;
     packflags_(p) = fixnum_of_int(++package_bits);
-    packvext_(p) = fixnum_of_int(1);
-    packvint_(p) = fixnum_of_int(1);
     packnext_(p) = fixnum_of_int(0);
     packnint_(p) = fixnum_of_int(0);
     push(p);

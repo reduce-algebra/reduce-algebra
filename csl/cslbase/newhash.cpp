@@ -173,22 +173,22 @@ static inline bool COMPARE(LispObject k1, LispObject k2)
 
 static inline LispObject ht(size_t n)
 {
-    return large_elt(h_table, n);
+    return elt(h_table, n);
 }
 
 static inline void setht(size_t n, LispObject v)
 {
-    large_elt(h_table, n) = v;
+    elt(h_table, n) = v;
 }
 
 static inline LispObject htv(size_t n)
 {
-    return large_elt(v_table, n);
+    return elt(v_table, n);
 }
 
 static inline void sethtv(size_t n, LispObject v)
 {
-    large_elt(v_table, n) = v;
+    elt(v_table, n) = v;
 }
 
 // dumptable() displays the contants of the hash table (for debugging
@@ -204,7 +204,7 @@ void dumptable(LispObject tt, const char *s, bool checkdups)
     printf("%s\n", s);
     set_hash_operations(tt);
     for (i=0; i<h_table_size; i++)
-    {   LispObject k = large_elt(h_table, i);
+    {   LispObject k = elt(h_table, i);
         uint64_t h = HASH(k);
         size_t h1 = h >> h_shift;
         uint64_t hx = REHASH(h);
@@ -214,7 +214,7 @@ void dumptable(LispObject tt, const char *s, bool checkdups)
         else if (k == SPID_HASHTOMB) printf("%3" PRIuMAX ": HASHTOMB\n", (uintmax_t)i);
         else
         {   const char *s1=" ", *s2 = " ", *s3 = " ", *s4 = "";
-            uintptr_t vv = large_elt(v_table, i);
+            uintptr_t vv = elt(v_table, i);
             if (h1 == i)
             {   s1 = "=";
                 if (h2 != i && ht(h2) == k) { s2 = "?"; bad = true; }
@@ -696,12 +696,12 @@ static void newhash_rehash(LispObject tab, bool after_gc)
 //      checktable(tab, __LINE__);
 // Now try inserting everything that was in the old one...
         for (i=0; i<old_table_size; i++)
-        {   LispObject k = large_elt(keyvec, i);
+        {   LispObject k = elt(keyvec, i);
             if (k == SPID_HASHEMPTY || k == SPID_HASHTOMB) continue;
             size_t n = hash_insert_if_possible(k);
             if (n == NOT_PRESENT) break; // failed!
             setht(n, k);
-            sethtv(n, large_elt(valvec, i));
+            sethtv(n, elt(valvec, i));
 //          checktable(tab, __LINE__);
         }
         if (i>=old_table_size) break; // Managed to insert everything
@@ -713,8 +713,8 @@ static void newhash_rehash(LispObject tab, bool after_gc)
     pop2(v_table, h_table);
 // At this stage keyvec and valvec are no longer needed and so I can
 // recycle them.
-    discard_large_vector(elt(tab, HASH_KEYS));
-    discard_large_vector(elt(tab, HASH_VALUES));
+    discard_vector(elt(tab, HASH_KEYS));
+    discard_vector(elt(tab, HASH_VALUES));
     elt(tab, HASH_MULTIPLIER) = w;
     elt(tab, HASH_SHIFT) = fixnum_of_int(h_shift);
     elt(tab, HASH_KEYS) = h_table;
@@ -1469,7 +1469,7 @@ printf("rehash from get_newhash in NEWHASHX case\n");
         return nvalues(dflt, 2);
     }
     mv_2 = lisp_true;
-    return nvalues(large_elt(elt(tab, HASH_VALUES), pos), 2);
+    return nvalues(elt(elt(tab, HASH_VALUES), pos), 2);
 }
 
 LispObject Lmapnewhash(LispObject env, LispObject fn, LispObject tab)
@@ -1487,10 +1487,10 @@ LispObject Lmapnewhash(LispObject env, LispObject fn, LispObject tab)
         aerror1("maphash", tab);
     v = elt(tab, HASH_KEYS);
     v1 = elt(tab, HASH_VALUES);
-    size = cells_in_large_vector(v);
+    size = cells_in_vector(v);
     for (i=0; i<size; i++)
-    {   LispObject key = large_elt(v, i),
-                   val = large_elt(v1, i);
+    {   LispObject key = elt(v, i),
+                   val = elt(v1, i);
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         push3(v, v1, fn);
         Lapply2(nil, 3, fn, key, val);
@@ -1511,11 +1511,11 @@ LispObject Lnewhashcontents(LispObject env, LispObject tab)
         aerror1("hashcontents", tab);
     v = elt(tab, HASH_KEYS);
     v1 = elt(tab, HASH_VALUES);
-    size = cells_in_large_vector(v);
+    size = cells_in_vector(v);
     r = nil;
     for (i=0; i<size; i++)
-    {   LispObject key = large_elt(v, i),
-                   val = large_elt(v1, i);
+    {   LispObject key = elt(v, i),
+                   val = elt(v1, i);
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         push2(v, v1);
         r = acons(key, val, r);
@@ -1592,7 +1592,7 @@ printf("HASHX found so setting after_gc\n");
         after_gc = false;
     }
     h_table = elt(tab, HASH_KEYS);
-    k1 = large_elt(h_table, pos);
+    k1 = elt(h_table, pos);
 // The code here constrains the maximum number of items in a hash table to
 // the size of a fixnum. On a 32-bit machine that will remain at 2^27-1, ie
 // around 134 million. with reasonable hash table loading this will involve
@@ -1604,8 +1604,8 @@ printf("HASHX found so setting after_gc\n");
 // are no empty slots left in the table).
     if (k1 == SPID_HASHEMPTY || k1 == SPID_HASHTOMB)
         elt(tab, HASH_COUNT) += 0x10; // Increment count.
-    large_elt(h_table, pos) = key;
-    large_elt(elt(tab, HASH_VALUES), pos) = val;
+    elt(h_table, pos) = key;
+    elt(elt(tab, HASH_VALUES), pos) = val;
     return onevalue(val);
 }
 
@@ -1617,8 +1617,8 @@ LispObject Lrem_newhash(LispObject env, LispObject key, LispObject tab)
 {   set_hash_operations(tab);
     size_t pos = hash_lookup(key);
     if (pos == NOT_PRESENT) return onevalue(nil);
-    large_elt(elt(tab, HASH_KEYS), pos) = SPID_HASHTOMB;
-    large_elt(elt(tab, HASH_VALUES), pos) = nil;
+    elt(elt(tab, HASH_KEYS), pos) = SPID_HASHTOMB;
+    elt(elt(tab, HASH_VALUES), pos) = nil;
     return onevalue(lisp_true);
 }
 
@@ -1635,11 +1635,10 @@ LispObject Lclr_newhash(LispObject env, LispObject tab)
         aerror1("clrnewhash", tab);
     elt(tab, 1) = fixnum_of_int(0);
     v = elt(tab, HASH_KEYS);
-    size = cells_in_large_vector(v);
-    for (i=0; i<size; i++) large_elt(v, i) = SPID_HASHEMPTY;
+    size = cells_in_vector(v);
+    for (i=0; i<size; i++) elt(v, i) = SPID_HASHEMPTY;
     v = elt(tab, HASH_VALUES);
-    size = cells_in_large_vector(v);
-    for (i=0; i<size; i++) large_elt(v, i) = nil;
+    for (i=0; i<size; i++) elt(v, i) = nil;
     return tab;
 }
 

@@ -555,15 +555,11 @@ extern LispObject user_base_9;
 extern void copy_into_nilseg();
 extern void copy_out_of_nilseg();
 
-#define LOG2_VECTOR_CHUNK_BYTES  20
-#define VECTOR_CHUNK_BYTES  ((size_t)(1<<LOG2_VECTOR_CHUNK_BYTES))
-extern LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1];
-
 extern void rehash_this_table(LispObject v);
 extern void simple_print(LispObject x);
 extern void simple_msg(const char *s, LispObject x);
 extern LispObject eq_hash_tables, equal_hash_tables;
-extern uint32_t hash_equal(LispObject key);
+extern uint64_t hash_equal(LispObject key);
 
 //
 // The following are used to help <escape> processing.
@@ -792,7 +788,7 @@ extern bool Zputc(int ch);
 extern bool Zwrite(const void *buff, size_t size);
 extern long int Ioutsize();
 extern const char *CSLtmpdir();
-extern const char *CSLtmpnam(const char *suffix, int32_t suffixlen);
+extern const char *CSLtmpnam(const char *suffix, size_t suffixlen);
 extern int Cmkdir(const char *s);
 extern char *look_in_lisp_variable(char *o, int prefix);
 
@@ -810,6 +806,7 @@ extern int window_heading;
 extern void my_abort();
 extern "C" NORETURN void my_exit(int n);
 extern void *my_malloc(size_t n);
+extern void check_heap_segments();
 
 extern clock_t base_time;
 extern double *clock_stack;
@@ -892,7 +889,7 @@ extern LispObject get_basic_vector(int tag, int type, size_t length);
 extern LispObject get_basic_vector_init(size_t n, LispObject v);
 extern LispObject get_vector(int tag, int type, size_t length);
 extern LispObject get_vector_init(size_t n, LispObject v);
-extern uint32_t  hash_lisp_string(LispObject s);
+extern uint64_t   hash_lisp_string(LispObject s);
 extern void lose_C_def(LispObject a);
 extern "C" bool        geq2(LispObject a, LispObject b);
 extern "C" bool        greaterp2(LispObject a, LispObject b);
@@ -909,7 +906,7 @@ extern "C" LispObject lognot(LispObject a);
 extern LispObject macroexpand(LispObject form, LispObject env);
 extern LispObject make_package(LispObject name);
 extern LispObject make_string(const char *b);
-extern LispObject make_nstring(const char *b, int32_t n);
+extern LispObject make_nstring(const char *b, size_t n);
 extern LispObject make_undefined_symbol(const char *s);
 extern LispObject make_symbol(char const *s, int restartp,
                               one_args *f1, two_args *f2, n_args *fn);
@@ -968,11 +965,9 @@ extern bool        stringp(LispObject a);
 extern "C" LispObject times2(LispObject a, LispObject b);
 extern int32_t     thirty_two_bits(LispObject a);
 extern int64_t     sixty_four_bits(LispObject a);
-extern uint64_t     sixty_four_bits_unsigned(LispObject a);
+extern uint64_t    sixty_four_bits_unsigned(LispObject a);
 
 extern uint64_t crc64(uint64_t crc, const void *buf, size_t size);
-// I now use the zlib version of crc32 so do not need a declaration here.
-// extern uint32_t crc32(uint32_t crc, const void *buf, size_t size);
 
 #ifdef DEBUG
 extern void validate_string_fn(LispObject a, const char *f, int l);
@@ -1031,16 +1026,6 @@ static inline bool eql(LispObject a, LispObject b)
     else if (need_more_than_eq(a)) return eql_fn(a, b);
     else return false;
 }
-
-//
-// Helpers for the bignum arithmetic code...
-//
-
-extern uint32_t Imultiply(uint32_t *rlow, uint32_t a,
-                          uint32_t b, uint32_t c);
-extern uint32_t Idivide(uint32_t *qp, uint32_t a,
-                        uint32_t b, uint32_t c);
-extern uint32_t Idiv10_9(uint32_t *qp, uint32_t a, uint32_t b);
 
 #define argcheck(var, n, msg) if ((var)!=(n)) aerror(msg);
 

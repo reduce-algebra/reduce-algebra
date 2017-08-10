@@ -73,17 +73,13 @@ static inline void CSL_IGNORE(LispObject x)
 //
 // I allocate memory (using malloc()) in CSL_PAGE_SIZE chunks.
 // This was first implemented for the benefit of 16-bit machines
-// (in particular MSDOS/286) but now seems generally reasonable.  The biggest
-// menace about it is that it limits the size of the largest vector I can ever
-// allocate - and this (as of the time of this comment) limits the size of
-// the symbol table (object list).
+// (in particular MSDOS/286) but now seems generally reasonable as a way
+// of controlling memory fragmentation and so that when (and IF) there is
+// a multi-threaded version of this system it can use these chunks on
+// a per-thread basis.
 //
-// My default at present is to use PAGE_BITS=22, which leads to 4 Mbyte pages.
-// I use that size on both 32 and 64-bit machines, which will mean that
-// 32 bit systems can support vectors that are longer than will fit into
-// a 64-bit system. With the latest revision of the garnage collector and
-// checkpoint scheme this arrangement is no longer vital. But I may wish to
-// use a variant of it when and if I introduce a multi-threading model!
+// My default at present is to use PAGE_BITS=22, which leads to 4 Mbyte
+// pages. I use that size on both 32 and 64-bit machines.
 //
 
 #ifndef PAGE_BITS
@@ -523,7 +519,9 @@ typedef uintptr_t Header;
 #define TYPE_SP          ( 0x37 <<Tw) // Encapsulated stack ptr
 #define TYPE_ENCAPSULATE ( 0x3b <<Tw) // SAME TAG AS SP AT PRESENT@@@
 
-#define vector_holds_binary(h) (((h) & (0x2<<Tw)) != 0)
+static inline bool vector_holds_binary(Header h)
+{   return  ((h) & (0x2<<Tw)) != 0;
+}
 
 #define TYPE_SIMPLE_VEC   ( 0x01 <<Tw) // simple general vector
 #define TYPE_INDEXVEC     ( 0x11 <<Tw) // used for huge vectors
@@ -763,6 +761,10 @@ static inline bool is_array_header(Header h)
 // case would do much better. I expect that strings and bignums will be
 // the most common cases.
 
+static inline bool is_basic_vector(LispObject v)
+{   return type_of_header(vechdr(v)) != TYPE_INDEXVEC;
+}
+
 static inline bool vector_i8(Header h)
 {   return ((0x7f070707u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
@@ -795,9 +797,57 @@ static inline bool vector_f128(Header h)
 {   return ((0x80400000u >> ((h >> (Tw+2)) & 0x1f)) & 1) != 0;
 }
 
+static inline LispObject& basic_elt(LispObject v, size_t n)
+{   return *(LispObject *)((char *)v +
+                           (CELL-TAG_VECTOR) +
+                           (n*sizeof(LispObject)));
+}
+
+static inline bool vector_i8(LispObject n)
+{   if (is_basic_vector(n)) return vector_i8(vechdr(n));
+    else return vector_i8(vechdr(basic_elt(n, 0)));
+}
+
+static inline bool vector_i16(LispObject n)
+{   if (is_basic_vector(n)) return vector_i16(vechdr(n));
+    else return vector_i16(vechdr(basic_elt(n, 0)));
+}
+
+static inline bool vector_i32(LispObject n)
+{   if (is_basic_vector(n)) return vector_i32(vechdr(n));
+    else return vector_i32(vechdr(basic_elt(n, 0)));
+}
+
+static inline bool vector_i64(LispObject n)
+{   if (is_basic_vector(n)) return vector_i64(vechdr(n));
+    else return vector_i64(vechdr(basic_elt(n, 0)));
+}
+
+static inline bool vector_i128(LispObject n)
+{   if (is_basic_vector(n)) return vector_i128(vechdr(n));
+    else return vector_i128(vechdr(basic_elt(n, 0)));
+}
+
+static inline bool vector_f32(LispObject n)
+{   if (is_basic_vector(n)) return vector_f32(vechdr(n));
+    else return vector_f32(vechdr(basic_elt(n, 0)));
+}
+
+static inline bool vector_f64(LispObject n)
+{   if (is_basic_vector(n)) return vector_f64(vechdr(n));
+    else return vector_f64(vechdr(basic_elt(n, 0)));
+}
+
+static inline bool vector_f128(LispObject n)
+{   if (is_basic_vector(n)) return vector_f128(vechdr(n));
+    else return vector_f128(vechdr(basic_elt(n, 0)));
+}
+
 // I have made the allocation so that any header of the form xx1:11x1:g010
 // is the header of a number.
 
+// I could possible allocate another code here for "huge bignums" to let
+// them use multi-level vectors and so go beyond the 4Mbyte memory limit.
 
 #define TYPE_BIGNUM         ( 0x1f <<Tw)
 #define TYPE_RATNUM         ( 0x1d <<Tw)
@@ -831,7 +881,8 @@ static inline bool is_bignum_header(Header h)
 }
 
 static inline bool is_bignum(LispObject n)
-{   return is_bignum_header(numhdr(n));
+{   /*if (is_basic_vector(n) */return is_bignum_header(numhdr(n));
+    /*else return is_bignum_header(numhdr(basic_elt(n, 0))); */
 }
 
 static inline bool is_string_header(Header h)
@@ -839,7 +890,8 @@ static inline bool is_string_header(Header h)
 }
 
 static inline bool is_string(LispObject n)
-{   return is_string_header(vechdr(n));
+{   if (is_basic_vector(n)) return is_string_header(vechdr(n));
+    else return is_string_header(vechdr(basic_elt(n, 0)));
 }
 
 static inline bool is_vec8_header(Header h)
@@ -847,7 +899,8 @@ static inline bool is_vec8_header(Header h)
 }
 
 static inline bool is_vec8(LispObject n)
-{   return is_vec8_header(vechdr(n));
+{   if (is_basic_vector(n)) return is_vec8_header(vechdr(n));
+    else return is_vec8_header(vechdr(basic_elt(n, 0)));
 }
 
 static inline bool is_bps_header(Header h)
@@ -863,7 +916,8 @@ static inline bool is_vec16_header(Header h)
 }
 
 static inline bool is_vec16(LispObject n)
-{   return is_vec16_header(vechdr(n));
+{   if (is_basic_vector(n)) return is_vec16_header(vechdr(n));
+    else  return is_vec16_header(vechdr(basic_elt(n, 0)));
 }
 
 static inline bool is_bitvec_header(Header h)
@@ -871,24 +925,19 @@ static inline bool is_bitvec_header(Header h)
 }
 
 static inline bool is_bitvec(LispObject n)
-{   return is_bitvec_header(vechdr(n));
+{   if (is_basic_vector(n)) return is_bitvec_header(vechdr(n));
+    else  return is_bitvec_header(vechdr(basic_elt(n, 0)));
 }
 
-static inline LispObject& elt(LispObject v, size_t n)
-{   return *(LispObject *)((char *)v +
-                           (CELL-TAG_VECTOR) +
-                           (n*sizeof(LispObject)));
-}
-
-static inline char& celt(LispObject v, size_t n)
+static inline char& basic_celt(LispObject v, size_t n)
 {   return *((char *)(v) + (CELL-TAG_VECTOR) + n);
 }
 
-static inline unsigned char& ucelt(LispObject v, size_t n)
+static inline unsigned char& basic_ucelt(LispObject v, size_t n)
 {   return *((unsigned char *)v + (CELL-TAG_VECTOR) + n);
 }
 
-static inline signed char& scelt(LispObject v, size_t n)
+static inline signed char& basic_scelt(LispObject v, size_t n)
 {   return *((signed char *)v + (CELL-TAG_VECTOR) + n);
 }
 
@@ -910,7 +959,9 @@ static inline unsigned char* data_of_bps(LispObject v)
 //  vselt(p, 5)  : qpname(p)
 // and I want vselt to apply to vectors too and do just what elt does in
 // that case. I will also use vselt on things tagged as numbers (specifically
-// RATIO and COMPLEX.
+// RATIO and COMPLEX. But note that the serialization code is handling
+// structures in terms of their raw representation and so any issues of
+// large vs basic vectors does not apply.
 
 static inline LispObject& vselt(LispObject v, size_t n)
 {   return *(LispObject *)(((intptr_t)v & ~((intptr_t)TAG_BITS)) +
@@ -927,13 +978,13 @@ static inline LispObject& vselt(LispObject v, size_t n)
 // ARM did not support 16-bit usage at all well. However these days I intend
 // to expect that int16_t will exist and will be something I can rely on.
 //
-static inline int16_t& helt(LispObject v, size_t n)
+static inline int16_t& basic_helt(LispObject v, size_t n)
 {   return *(int16_t *)((char *)v +
                         (CELL-TAG_VECTOR) +
                         n*sizeof(int16_t));
 }
 
-static inline intptr_t& ielt(LispObject v, size_t n)
+static inline intptr_t& basic_ielt(LispObject v, size_t n)
 {   return  *(intptr_t *)((char *)v +
                          (CELL-TAG_VECTOR) +
                          n*sizeof(intptr_t));
@@ -943,23 +994,206 @@ static inline intptr_t& ielt(LispObject v, size_t n)
 // Even on a 64-bit machine I will support packed arrays of 32-bit
 // ints or short-floats.
 //
-static inline int32_t& ielt32(LispObject v, size_t n)
+static inline int32_t& basic_ielt32(LispObject v, size_t n)
 {   return *(int32_t *)((char *)v +
                         (CELL-TAG_VECTOR) +
                         n*sizeof(int32_t));
 }
 
-static inline float& felt(LispObject v, size_t n)
+static inline float& basic_felt(LispObject v, size_t n)
 {   return *(float *)((char *)v +
                       (CELL-TAG_VECTOR) +
                       n*sizeof(float));
 }
 
-static inline double& delt(LispObject v, size_t n)
+static inline double& basic_delt(LispObject v, size_t n)
 {   return *(double *)((char *)v +
                        (8-TAG_VECTOR) +
                        n*sizeof(double));
 }
+
+// The above provide support for "basic" vectors, which have a limitation
+// that they can only be up to around 4 Mbytes in size - which omn a 64-bit
+// system means that a normal Lisp vector can only have up to around half
+// a million elements. Using aa two-level structure with TYPE_INDEXVEC for
+// the upper one allows vectors to get MUCH MUCH bigger.
+
+#define LOG2_VECTOR_CHUNK_BYTES  (PAGE_BITS-2)
+#define VECTOR_CHUNK_BYTES  ((size_t)(((size_t)1)<<LOG2_VECTOR_CHUNK_BYTES))
+
+// With the above large vectors are represented in chunks each of which is
+// 1 Megabyte in size. That is smaller than the storage allocation chunk size
+// so that I do not lose TOO much space to fragmentation there. Well I
+// may lose 25%. Like this the largest 2-level structure on a 64-bit
+// machine will have around 0.5 million sub-vectors, each of size a megabyte.
+// that is 2^39 bytes, and so if this is used to store LispObjects there can
+// be up to 2^36 of them. That is 64G cells, consuming 512GBytes of memory.
+// At present (2017) that seems an acceptable limit. If at some stage (!) it
+// became essential to go yet further the natural thing would be to increase
+// the basic memory allocation block size from 4 Mbytes upwards, and each
+// doubling of that could allow me to increase the largest vector size by
+// a factor of 4.
+
+static inline bool is_power_of_two(uint64_t n)
+{    return (n == (n & (-n)));
+}
+
+static inline int intlog2(uint64_t n)
+{
+// This fragment takes a 64-bit number that is a power of 2 and
+// finds its logarithm, ie the number of bits that 1 needs to be shifted
+// left to yield it. The function will return garbage if its input is
+// not a power of 2.
+//
+// This table works because it is of length 67 and that is a prime, so
+// the sequence 2^i mod 67 cycles through 1 .. 66 as I runs from 0 to 65,
+// and 2^66 = 2^0 (mod 67). To help show this I have annotated the items at
+// offsets 1, 2, 4, 8, 16, 32 and 64.
+    static const unsigned char intlog2_table[] =
+    {
+        0,      0,/*1*/ 1,/*2*/ 39,     2,/*4*/ 15,     40,     23,
+        3,/*8*/ 12,     16,     59,     41,     19,     24,     54,
+        4,/*16*/0,      13,     10,     17,     62,     60,     28,
+        42,     30,     20,     51,     25,     44,     55,     47,
+        5,/*32*/32,     0,      38,     14,     22,     11,     58,
+        18,     53,     63,     9,      61,     27,     29,     50,
+        43,     46,     31,     37,     21,     57,     52,     8,
+        26,     49,     45,     36,     56,     7,      48,     35,
+        6,/*64*/34,     33
+    };
+    return intlog2_table[n % (sizeof(intlog2_table)/sizeof(intlog2_table[0]))];
+}
+
+// In the past when something is tagged TAG_VECTOR I have used
+// type_of_header(vechdr(v)) to detect its type. In the future
+// I should in general use type_of_vector(cv) because that can cope
+// with "large" as well as basic vector. Doing so somewhat relies on
+// a "sufficiently clever compiler" inlining the functions and then
+// observing that vechdr(v) is a value common to several of the paths,
+// and even that type_of_header(vechdr(v)) is something where repeated
+// evaluation can be avoided.
+
+static inline int type_of_vector(LispObject v)
+{   if (is_basic_vector(v)) return type_of_header(vechdr(v));
+    else return type_of_header(vechdr(basic_elt(v, 0)));
+}
+
+// In the past I have tended to use length_of_header() to get the size
+// of vectors. I now intend to move towards use of this function -
+// bytes_in_vector will find the size in bytes of active data excluding
+// and header words, and cells_in_vector() will get the number of
+// LispObjects that can be stored.
+
+static inline size_t bytes_in_vector(LispObject v)
+{   if (is_basic_vector(v)) return length_of_header(vechdr(v)) - CELL;
+    size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
+// Observe that the final chunk has its length treated individually. This
+// adds to the cost, but the extra cost only arises when the vector is
+// rather large to start with, and so I am not going to worry.
+    return VECTOR_CHUNK_BYTES*(n-1) +
+           length_of_header(vechdr(basic_elt(v, n-1))) - CELL;
+}
+
+static inline size_t cells_in_vector(LispObject v)
+{   return bytes_in_vector(v)/CELL;
+}
+
+static inline bool vector_holds_binary(LispObject v)
+{   if (is_basic_vector(v)) return vector_holds_binary(vechdr(v));
+    else return vector_holds_binary(vechdr(basic_elt(v, 0)));
+}
+
+// the table of free vectors is not saved across checkpoint/restore operations,
+// and so issues of 64- vs 32-bit sizing in that context do not arise.
+
+extern LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1];
+
+static inline void discard_basic_vector(LispObject v)
+{   size_t n = length_of_header(vechdr(v)) - CELL;
+    if (is_power_of_two(n))    // save if this has byte-count 2^i
+    {   int i = intlog2(n);    // identify what power of 2 we have
+        if (i <= LOG2_VECTOR_CHUNK_BYTES)
+        {   basic_elt(v, 0) = free_vectors[i];
+// I put the discarded vector in the free-chain as a "simple vector"
+// regardless of what it used to be. If it has contained binary information
+// its contents will not ce GC safe - but the GC should never encounter it
+// so that should not matter.
+            vechdr(v) = TYPE_SIMPLE_VEC +
+                        ((n+CELL) << (Tw+5)) +
+                        TAG_HDR_IMMED;
+            v = (v & ~(uintptr_t)TAG_BITS) | TAG_VECTOR;
+            free_vectors[i] = v;
+        }
+    }
+}
+
+static inline void discard_vector(LispObject v)
+{   if (is_basic_vector(v)) discard_basic_vector(v);
+    else
+    {   size_t n1 = length_of_header(vechdr(v))/CELL - 1;
+        for (size_t i=0; i<n1; i++)
+            discard_basic_vector(basic_elt(v, i));
+    }
+}
+
+// elt() and friends will now work on large or basic vectors.
+// I should probably consider using a template to generate the code
+// here.
+
+static inline LispObject& elt(LispObject v, size_t n)
+{   if (is_basic_vector(v)) return basic_elt(v, n);
+    return basic_elt(basic_elt(v, n/(VECTOR_CHUNK_BYTES/CELL)),
+                     n%(VECTOR_CHUNK_BYTES/CELL));
+}
+
+static inline char& celt(LispObject v, size_t n)
+{   if (is_basic_vector(v)) return basic_celt(v, n);
+    return basic_celt(basic_elt(v, n/VECTOR_CHUNK_BYTES),
+                      n%VECTOR_CHUNK_BYTES);
+}
+
+static inline unsigned char& ucelt(LispObject v, size_t n)
+{   if (is_basic_vector(v)) return basic_ucelt(v, n);
+    return basic_ucelt(basic_elt(v, n/VECTOR_CHUNK_BYTES),
+                       n%VECTOR_CHUNK_BYTES);
+}
+
+static inline signed char& scelt(LispObject v, size_t n)
+{   if (is_basic_vector(v)) return basic_scelt(v, n);
+    return basic_scelt(basic_elt(v, n/VECTOR_CHUNK_BYTES),
+                       n%VECTOR_CHUNK_BYTES);
+}
+
+static inline int16_t& helt(LispObject v, size_t n)
+{   if (is_basic_vector(v)) return basic_helt(v, n);
+    return basic_helt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(int16_t))),
+                      n%(VECTOR_CHUNK_BYTES/sizeof(int16_t)));
+}
+
+static inline intptr_t& ielt(LispObject v, size_t n)
+{   if (is_basic_vector(v)) return basic_ielt(v, n);
+    return basic_ielt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(intptr_t))),
+                      n%(VECTOR_CHUNK_BYTES/sizeof(intptr_t)));
+}
+
+static inline int32_t& ielt32(LispObject v, size_t n)
+{   if (is_basic_vector(v)) return basic_ielt32(v, n);
+    return basic_ielt32(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(int32_t))),
+                        n%(VECTOR_CHUNK_BYTES/sizeof(int32_t)));
+}
+
+static inline float& felt(LispObject v, size_t n)
+{   if (is_basic_vector(v)) return basic_felt(v, n);
+    return basic_felt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(float))),
+                      n%(VECTOR_CHUNK_BYTES/sizeof(float)));
+}
+
+static inline double& delt(LispObject v, size_t n)
+{   if (is_basic_vector(v)) return basic_delt(v, n);
+    return basic_delt(elt(v, n/(VECTOR_CHUNK_BYTES/sizeof(double))),
+                      n%(VECTOR_CHUNK_BYTES/sizeof(double)));
+}
+
 
 static inline bool is_header(LispObject x)
 {   return ((int)x & (0x3<<Tw)) != 0; // valid if TAG_HDR_IMMED

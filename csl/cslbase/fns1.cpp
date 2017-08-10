@@ -1948,7 +1948,7 @@ static LispObject gvector(int tag, int type, size_t n)
         LispObject r;
         if (i <= LOG2_VECTOR_CHUNK_BYTES &&
             (r = free_vectors[i]) != 0)
-        {   free_vectors[i] = elt(r, 0);
+        {   free_vectors[i] = basic_elt(r, 0);
 // reset type field
             vechdr(r) = type + (n << (Tw+5)) + TAG_HDR_IMMED;
             return r - TAG_VECTOR + tag;
@@ -1981,27 +1981,27 @@ LispObject get_vector(int tag, int type, size_t n)
         size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
         size_t i;
 // The final chunk will be full size if I have a neat multiple of
-// VECTOR_CHUNK_BYTES, oterwise smaller.
+// VECTOR_CHUNK_BYTES, otherwise smaller.
         size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
         if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
         v = gvector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
 // Note that this index vector will be around while the various sub
 // vectors are allocated, so I need to make it GC safe...
         for (i=0; i<chunks; i++)
-            elt(v, i) = nil;
+            basic_elt(v, i) = nil;
         for (i=0; i<chunks; i++)
         {   LispObject v1;
             int k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
             push(v);
-            v1 = gvector(tag, type, CELL*(k+1));
+            v1 = gvector(tag, type, k+CELL);
 // The vector here will be active as later chunks are allocated, so it needs
 // to be GC safe.
-            if (!vector_holds_binary(type))
-            {   for (int j=0; j<k; j++)
-                    elt(v1, j) = nil;
+            if (!vector_holds_binary(v1))
+            {   for (size_t j=0; j<k/CELL; j++)
+                    basic_elt(v1, j) = nil;
             }
             pop(v);
-            elt(v, i) = v1;
+            basic_elt(v, i) = v1;
         }
     }
     else v = gvector(tag, type, n);
@@ -2015,10 +2015,10 @@ LispObject get_vector_init(size_t n, LispObject val)
     pop(val);
     if (!SIXTY_FOUR_BIT && ((n & 4) != 0))
         n += 4;   // Ensure last doubleword is tidy
-    n = n/CELL;
+    n = n/CELL - 1;
     while (n != 0)
     {   n--;
-        large_elt(p, n) = val;
+        elt(p, n) = val;
     }
     return p;
 }
@@ -3591,6 +3591,16 @@ static LispObject Lget_callback(LispObject env, LispObject a)
     return onevalue(make_lisp_integer64((LispObject)r));
 }
 
+static LispObject Lsigsegv(LispObject env, LispObject arg)
+{   trace_printf("\nsigsegv about to be raised\n");
+    printf("llsh = %p\n", low_level_signal_handler);
+    printf("signal result = %p\n", signal(SIGSEGV, low_level_signal_handler));
+    ensure_screen();
+    if (arg == nil) raise(SIGSEGV);
+    else *(char *)(-1) = 0x55;
+    return onevalue(nil);
+}
+
 setup_type const funcs1_setup[] =
 {   {"acons",                   WRONG_NO_NA, WRONG_NO_NB, Lacons},
     {"atom",                    Latom, TOO_MANY_1, WRONG_NO_1},
@@ -3744,6 +3754,7 @@ setup_type const funcs1_setup[] =
     {"call-foreign-function",   Lcallf1, Lcallf2, Lcallfn},
     {"get-callback",            Lget_callback, TOO_MANY_1, WRONG_NO_1},
     {"gc-forcer",               Lgc_forcer1, Lgc_forcer, WRONG_NO_1},
+    {"sigsegv",                 Lsigsegv, TOO_MANY_1, WRONG_NO_1},
     {NULL,                      0, 0, 0}
 };
 

@@ -1775,7 +1775,7 @@ down:
                         GC_PROTECT(prev =
                             get_basic_vector(TAG_VECTOR, bitvechdr_(w), len));
                         *p = prev;
-                        char *x = &celt(prev, 0);
+                        char *x = &basic_celt(prev, 0);
                         for (size_t i=0; i<(size_t)w; i++)
                             *x++ = read_data_byte();
                         while (((intptr_t)x & 7) != 0) *x++ = 0;
@@ -1899,7 +1899,7 @@ down:
             w = (c & 0x1f) + 1;
             GC_PROTECT(prev = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+w));
             *p = prev;
-            {   char *x = &celt(prev, 0);
+            {   char *x = &basic_celt(prev, 0);
                 for (size_t i=0; i<(size_t)w; i++) *x++ = read_string_byte();
 // Fill in end of the memory block with zero bytes so it is properly tidy.
 // This is needed so that comaprisons between strings and hash value
@@ -1925,7 +1925,7 @@ down:
 // Here I have assembled 7 bits of type information in c. CCCCC comes from the
 // opcode. The header I want for my vector will be
 //     wwwwwwww....wwww CCC CC 10 g100
-            {   int type = ((c & 0x1f)<<(Tw+2)) | (0x3<<Tw),
+            {   Header type = ((c & 0x1f)<<(Tw+2)) | (0x3<<Tw),
                     tag = is_bignum_header(type) ? TAG_NUMBERS :
                                                    TAG_VECTOR;
                 if (vector_i8(type))
@@ -2756,7 +2756,7 @@ down:
 // of 4. This code loses that part of the name.
                 if ((isgensym = (qheader(p) & SYM_ANY_GENSYM) != 0) &&
                     (qheader(p) & SYM_UNPRINTED_GENSYM) == 0)
-                {   while (celt(w, n-4) == '_') n -= 4;
+                {   while (basic_celt(w, n-4) == '_') n -= 4;
                     n -= 4;
                 }
                 if (isgensym)
@@ -2793,7 +2793,7 @@ down:
                 }
                 write_u64(n);  // number of bytes in the name
                 for (size_t i=0; i<n; i++)
-                {   int c = celt(w, i) & 0xff;
+                {   int c = basic_celt(w, i) & 0xff;
                     char msg[40];
 #ifdef DEBUG_SERIALIZE
                     if (0x20 < c && c <= 0x7e) sprintf(msg, "'%c'", c);
@@ -2847,7 +2847,7 @@ down:
 // three of lisp data. The "-1" on the next line is because elements run from
 // 0 to len-1 rather than from 1 to len.
             if (len == 0) goto up; // NB special case
-            w = (LispObject)&elt(p, len-1);
+            w = (LispObject)&basic_elt(p, len-1);
             p = *(LispObject *)w;
             *(LispObject *)w = b;
             b = w + BACKPOINTER_VECTOR;
@@ -2865,7 +2865,7 @@ down:
 #endif // DEBUG_SERIALIZE
                 write_opcode(SER_STRING+len-1, msg);
                 for (size_t j=0; j<len; j++)
-                {   int c = ucelt(p, j);
+                {   int c = basic_ucelt(p, j);
 #ifdef DEBUG_SERIALIZE
                     if (0x20 < c && c <= 0x7e) sprintf(msg, "'%c'", c);
                     else sprintf(msg, "%#.2x", c);
@@ -2885,7 +2885,7 @@ down:
                 write_u64(len);
                 len = (len + 7)/8;
                 for (size_t j=0; j<len; j++)
-                {   int c = ucelt(p, j);
+                {   int c = basic_ucelt(p, j);
 #ifdef DEBUG_SERIALIZE
                     for (int k=0; k<8; k++)
                         msg[k] = (c & (1<<k)) != 0 ? '1' : '0';
@@ -4097,7 +4097,7 @@ static bool interesting(LispObject x)
 {   LispObject ff;
     if ((ff = qfastgets(x)) != nil)
     {   for (int i=0; i<fastget_size; i++)
-            if (elt(ff, i) != SPID_NOPROP) return true;
+            if (basic_elt(ff, i) != SPID_NOPROP) return true;
     }
     return (qfn1(x) != undefined1 ||
             qplist(x) != nil ||
@@ -4281,7 +4281,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
                             LispObject pn = qpname(x);
                             size_t npn = length_of_byteheader(vechdr(pn)) - CELL;
                             if (npn >= 40) npn = 39;
-                            strncpy(buff[buffp].name, &celt(pn, 0), npn);
+                            strncpy(buff[buffp].name, &basic_celt(pn, 0), npn);
                             buff[buffp].name[npn] = 0; 
                             buffp++;
                         }

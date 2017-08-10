@@ -107,7 +107,7 @@ LispObject Lmkxvect(LispObject env, LispObject n)
 LispObject encapsulate_pointer(void *data)
 // Creates a boxed up representation of a pointer.
 {   LispObject w = get_basic_vector(TAG_VECTOR, TYPE_ENCAPSULATE, 2*CELL);
-    *(void **)&elt(w, 0) = data;
+    *(void **)&basic_elt(w, 0) = data;
     return w;
 }
 
@@ -115,7 +115,7 @@ void *extract_pointer(LispObject a)
 {   if (!is_vector(a) ||
         type_of_header(vechdr(a)) != TYPE_ENCAPSULATE)
         return NULL;
-    else return *(void **)&elt(a, 0);
+    else return *(void **)&basic_elt(a, 0);
 }
 
 LispObject Lencapsulatedp(LispObject env, LispObject a)
@@ -248,10 +248,13 @@ LispObject Lputv(LispObject, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
-    if (!is_vector(v) || vector_holds_binary(h = vechdr(v)))
-        aerror1("putv", v);
+    if (!is_vector(v)) aerror1("putv", v);
+    h = vechdr(v);
+    if (type_of_header(h) == TYPE_INDEXVEC)
+        h = type_of_header(vechdr(basic_elt(v,0)));
+    if (vector_holds_binary(h)) aerror1("putv", v);
     else if (!is_fixnum(n)) aerror1("putv offset not fixnum", n);
-    hl = (length_of_header(h) - CELL)/CELL;
+    hl = cells_in_vector(v);
     n1 = int_of_fixnum(n);
 // Note that if the index was passed as a negative value the conversion
 // to type size_t will tend to make it end up large and positive, and
@@ -264,10 +267,13 @@ LispObject Lputv(LispObject, int nargs, ...)
 LispObject Lgetv(LispObject, LispObject v, LispObject n)
 {   Header h;
     size_t n1, hl;
-    if (!is_vector(v) || vector_holds_binary(h = vechdr(v)))
-        aerror1("getv", v);
+    if (!is_vector(v)) aerror1("getv", v);
+    h = vechdr(v);
+    if (type_of_header(h) == TYPE_INDEXVEC)
+        h = type_of_header(vechdr(basic_elt(v,0)));
+    if (vector_holds_binary(h)) aerror1("getv", v);
     else if (!is_fixnum(n)) aerror1("getv offset not fixnum", n);
-    hl = (length_of_header(h) - CELL)/CELL;
+    hl = cells_in_vector(v);
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("getv index range", n);
     else return onevalue(elt(v, n1));
@@ -282,12 +288,11 @@ LispObject Lsmkvect(LispObject env, LispObject n)
     size_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) aerror1("make-simple-string", n);
     nn = int_of_fixnum(n);
-// Strings are limited to around 4M bytes...
-    w = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
-    nn = (intptr_t)doubleword_align_up(nn+CELL);
-    while (nn > CELL)
-    {   nn -= CELL;
-        *(intptr_t *)((char *)w - TAG_VECTOR + nn) = 0;
+    w = get_vector(TAG_VECTOR, TYPE_STRING_4, nn+CELL);
+    nn = (intptr_t)doubleword_align_up(nn+CELL) - CELL;
+    while (nn != 0)
+    {   nn--;
+        celt(w, nn) = 0;
     }
     return onevalue(w);
 }
@@ -301,12 +306,11 @@ LispObject Lmkvect8(LispObject env, LispObject n)
     size_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) aerror1("mkvect8", n);
     nn = 1 + int_of_fixnum(n);  // Note that in Standard Lisp style the +1
-// Size limited
-    w = get_basic_vector(TAG_VECTOR, TYPE_VEC8_4, nn+CELL);
-    nn = (intptr_t)doubleword_align_up(nn+CELL);
-    while (nn > CELL)
-    {   nn -= CELL;
-        *(intptr_t *)((char *)w - TAG_VECTOR + nn) = 0;
+    w = get_vector(TAG_VECTOR, TYPE_VEC8_4, nn+CELL);
+    nn = (intptr_t)doubleword_align_up(nn+CELL) - CELL;
+    while (nn != 0)
+    {   nn--;
+        celt(w, nn) = 0;
     }
     return onevalue(w);
 }
@@ -319,13 +323,13 @@ LispObject Lmkvect16(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) aerror1("mkvect16", n);
-    nn = 2*(1 + int_of_fixnum(n)); // Note 1+ for Standard Lisp style
-// Size limited
-    w = get_basic_vector(TAG_VECTOR, TYPE_VEC16_2, nn+CELL);
-    nn = (intptr_t)doubleword_align_up(nn+CELL);
-    while (nn > CELL)
-    {   nn -= CELL;
-        *(intptr_t *)((char *)w - TAG_VECTOR + nn) = 0;
+    nn = sizeof(int16_t)*(1 + int_of_fixnum(n)); // Note 1+ for Standard Lisp style
+    w = get_vector(TAG_VECTOR, TYPE_VEC16_2, nn+CELL);
+    nn = (intptr_t)doubleword_align_up(nn+CELL)-CELL;
+    nn = nn/sizeof(int16_t);
+    while (nn != 0)
+    {   nn--;
+        helt(w, nn) = 0;
     }
     return onevalue(w);
 }
@@ -338,13 +342,14 @@ LispObject Lmkvect32(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
     if (!is_fixnum(n) || n<fixnum_of_int(-1)) aerror1("mkvect32", n);
-    nn = 4*(1 + int_of_fixnum(n));
+    nn = sizeof(int32_t)*(1 + int_of_fixnum(n));
 // Size limited
     w = get_basic_vector(TAG_VECTOR, TYPE_VEC32, nn+CELL);
-    nn = (intptr_t)doubleword_align_up(nn+CELL);
-    while (nn > CELL)
-    {   nn -= 4;
-        *(int32_t *)((char *)w - TAG_VECTOR + nn) = 0;
+    nn = (intptr_t)doubleword_align_up(nn+CELL) - CELL;
+    nn = nn/sizeof(int32_t);
+    while (nn != 0)
+    {   nn--;
+        ielt32(w, nn) = 0;
     }
     return onevalue(w);
 }
@@ -357,13 +362,14 @@ LispObject Lmkfvect32(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) aerror1("mkfvect32", n);
-    nn = 4*(1 + int_of_fixnum(n));
+    nn = sizeof(float)*(1 + int_of_fixnum(n));
 // Size limited
     w = get_basic_vector(TAG_VECTOR, TYPE_VECFLOAT32, nn+CELL);
-    nn = (intptr_t)doubleword_align_up(nn+CELL);
-    while (nn > CELL)
-    {   nn -= 4;
-        *(float *)((char *)w - TAG_VECTOR + nn) = (float)0.0;
+    nn = (intptr_t)doubleword_align_up(nn+CELL) - CELL;
+    nn = nn/sizeof(float);
+    while (nn != 0)
+    {   nn--;
+        felt(w, nn) = (float)0.0;
     }
     return onevalue(w);
 }
@@ -376,14 +382,15 @@ LispObject Lmkfvect64(LispObject env, LispObject n)
 {   LispObject w;
     size_t nn;
     if (!is_fixnum(n) || (intptr_t)n<0) aerror1("mkfvect64", n);
-    nn = 8*(1 + int_of_fixnum(n));
+    nn = sizeof(double)*(1 + int_of_fixnum(n));
     if (!SIXTY_FOUR_BIT) nn += 4; // get the doubles aligned
 // Size limited
     w = get_basic_vector(TAG_VECTOR, TYPE_VECFLOAT64, nn+CELL);
-    nn = (intptr_t)(nn+CELL);
-    while (nn > CELL)
-    {   nn -= 8;
-        *(double *)((char *)w - TAG_VECTOR + nn) = 0.0;
+    nn = (intptr_t)nn;
+    nn = nn/sizeof(double);
+    while (nn != 0)
+    {   nn--;
+        delt(w, nn) = 0.0;
     }
     return onevalue(w);
 }
@@ -401,29 +408,30 @@ LispObject simplify_string(LispObject s)
     size_t i, n = 0;
     if (!is_vector(s)) aerror("simplify-string");
     h = vechdr(s);
+//@ large strings...
     if (is_string_header(h))
         return onevalue(s);                 // Already simple
     if (type_of_header(h) != TYPE_ARRAY) aerror("simplify-string");
-    h1 = elt(s, 0);
+    h1 = basic_elt(s, 0);
     if (h1 != string_char_sym) aerror("simplify-string");
-    h1 = elt(s, 1);                         // Dimension list
+    h1 = basic_elt(s, 1);                         // Dimension list
     if (!consp(h1)) aerror("simplify-string");
     n = int_of_fixnum(qcar(h1));            // Look at size involved
-    h1 = elt(s, 5);                         // Fill pointer
+    h1 = basic_elt(s, 5);                         // Fill pointer
     if (is_fixnum(h1)) n = int_of_fixnum(h1);
     stackcheck1(0, s);
     push(s);
 // Size limited
-    w = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, n+CELL);
+    w = get_vector(TAG_VECTOR, TYPE_STRING_4, n+CELL);
     pop(s);
-    i = (intptr_t)doubleword_align_up(n+CELL);
-    while (i > CELL) // pre-fill target vector with zero
-    {   i -= CELL;
-        *(intptr_t *)((char *)w - TAG_VECTOR + i) = 0;
+    i = (intptr_t)doubleword_align_up(n+CELL) - CELL;
+    while (i != 0) // pre-fill target vector with zero
+    {   i--;
+        celt(w, i) = 0;
     }
-    h1 = elt(s, 3);
+    h1 = basic_elt(s, 3);
     h = int_of_fixnum(h1);               // Displace adjustment
-    s = elt(s, 2);
+    s = basic_elt(s, 2);
     for (i=0; i<n; i++) celt(w, i) = celt(s, i+h);
     return onevalue(w);
 }
@@ -440,13 +448,14 @@ LispObject Lsputv(LispObject, int nargs, ...)
     n = va_arg(a, LispObject);
     x = va_arg(a, LispObject);
     va_end(a);
+//@ huge strings
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
         aerror1("putv-char", v);
     else if (!is_fixnum(n)) aerror1("putv-char", n);
     else if (is_fixnum(x)) vx = int_of_fixnum(x);
     else if (is_char(x)) vx = code_of_char(x);
     else aerror1("putv-char contents", x);
-    hl = length_of_byteheader(h) - CELL;
+    hl = bytes_in_vector(v);
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("putv-char", n);
     celt(v, n1) = (char)vx;
@@ -478,6 +487,7 @@ LispObject Lsputv2(LispObject, int nargs, ...)
     va_end(a);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
         aerror1("putv-char2", v);
+// @ Huge strings??
     else if (!is_fixnum(n)) aerror1("putv-char", n);
     if (is_fixnum(x1)) vx1 = int_of_fixnum(x1);
     else if (is_char(x1)) vx1 = code_of_char(x1);
@@ -508,7 +518,8 @@ LispObject Lsputv3(LispObject, int nargs, ...)
     x3 = va_arg(a, LispObject);
     va_end(a);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
-        aerror1("putv-char2", v);
+        aerror1("putv-char3", v);
+// @ Huge strings??
     else if (!is_fixnum(n)) aerror1("putv-char", n);
     if (is_fixnum(x1)) vx1 = int_of_fixnum(x1);
     else if (is_char(x1)) vx1 = code_of_char(x1);
@@ -544,7 +555,8 @@ LispObject Lsputv4(LispObject, int nargs, ...)
     x4 = va_arg(a, LispObject);
     va_end(a);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
-        aerror1("putv-char2", v);
+        aerror1("putv-char4", v);
+// @ Huge strings??
     else if (!is_fixnum(n)) aerror1("putv-char", n);
     if (is_fixnum(x1)) vx1 = int_of_fixnum(x1);
     else if (is_char(x1)) vx1 = code_of_char(x1);
@@ -571,7 +583,7 @@ LispObject Lsputv4(LispObject, int nargs, ...)
 LispObject Lbpsupbv(LispObject, LispObject v)
 {   size_t n;
     if (!is_bps(v)) aerror1("bps-upbv", v);
-    n = length_of_byteheader(vechdr(v)) - CELL;
+    n = bytes_in_vector(v);
     return onevalue(fixnum_of_int(n-1));
 }
 
@@ -588,7 +600,7 @@ LispObject Lbpsputv(LispObject, int nargs, ...)
     if (!is_bps(v)) aerror1("bpsputv", v);
     else if (!is_fixnum(n) || n < 0) aerror1("bps-putv", n);
     else if (!is_fixnum(x)) aerror1("bps-putv contents", x);
-    hl = length_of_byteheader(vechdr(v)) - CELL;
+    hl = bytes_in_vector(v);
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("bps-putv", n);
     celt(v, n1) = (char)int_of_fixnum(x);
@@ -657,7 +669,7 @@ LispObject Lbytegetv(LispObject, LispObject v, LispObject n)
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
         aerror1("byte-getv", v);
     else if (!is_fixnum(n)) aerror1("byte-getv", n);
-    hl = length_of_byteheader(h) - CELL;
+    hl = bytes_in_vector(v);
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("byte-getv", n);
     w = ucelt(v, n1);
@@ -668,11 +680,11 @@ LispObject Lbpsgetv(LispObject, LispObject v, LispObject n)
 {   size_t n1, hl;
     if (!is_bps(v)) aerror1("bps-getv", v);
     else if (!is_fixnum(n)) aerror1("bps-getv", n);
-    hl = length_of_byteheader(vechdr(v)) - CELL;
+    hl = bytes_in_vector(v);
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("bps-getv", n);
-    n1 = celt(v, n1);
-    return onevalue(fixnum_of_int(n1 & 0xff));
+    n1 = ucelt(v, n1);
+    return onevalue(fixnum_of_int(n1));
 }
 
 //
@@ -881,8 +893,8 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
     push(a);
     v = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(a);
-    for(n=0; consp(a); a = qcdr(a), n++) large_elt(v, n) = qcar(a);
-    if (!SIXTY_FOUR_BIT && ((n & 1) == 0)) large_elt(v, n) = nil;  // Padder word
+    for(n=0; consp(a); a = qcdr(a), n++) elt(v, n) = qcar(a);
+    if (!SIXTY_FOUR_BIT && ((n & 1) == 0)) elt(v, n) = nil;  // Padder word
     return onevalue(v);
 }
 
@@ -1645,10 +1657,10 @@ static LispObject Lvector(LispObject env, int nargs, ...)
 // The next line allows for the fact that vectors MUST pad to an even
 // number of words.
 //
-    if (!SIXTY_FOUR_BIT && ((nargs & 1) == 0)) large_elt(r, nargs) = nil;
+    if (!SIXTY_FOUR_BIT && ((nargs & 1) == 0)) elt(r, nargs) = nil;
     while (nargs > 0)
     {   pop(w);
-        large_elt(r, --nargs) = w;
+        elt(r, --nargs) = w;
     }
     return onevalue(r);
 }
@@ -1903,7 +1915,7 @@ LispObject vector_subseq(LispObject sequence, size_t start, size_t end)
         //
         copy = get_vector_init(CELL+seq_length*CELL,nil);
         for (i=start; i < end; ++i)
-           large_elt(copy,i-start) = large_elt(sequence,i);
+           elt(copy,i-start) = elt(sequence,i);
 
         return onevalue(copy);
     }

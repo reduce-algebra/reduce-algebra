@@ -38,6 +38,10 @@
 // $Id$
 
 
+#ifndef DEBUG
+#define check_heap_segments() /* NOTHING */
+#endif
+
     LispObject A_reg;
     LispObject r1, r2;
     one_args *f1;
@@ -1439,6 +1443,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     }
                 }
                 exit_value = A_reg;
+                assert(A_reg != 0); check_heap_segments();
 // Here after performing the unwind-protect code I must restore a throw
 // action that was the same sort as the one that caused me to arrive. I
 // think that will involve switching on exit_reason and trying to re-create
@@ -1468,6 +1473,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (r2==nil) aerror1("throw: tag not found", r1);
                 exit_tag = r2;
                 exit_value = A_reg;
+                assert(A_reg != 0); check_heap_segments();
                 exit_reason = UNWIND_THROW;
                 throw LispThrow();
 
@@ -1512,6 +1518,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call0(elt(litvec, 0), f345, r1);
                 else A_reg = f345(r1, 0);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
 
@@ -1847,6 +1854,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (stack >= stacklimit) reclaim(nil, "stack", GC_STACK, 0);
                 A_reg = bytestream_interpret(CELL-TAG_VECTOR, elt(litvec, 0), stack-1);
                 pop2(litvec, codevec);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CALL1_1:
@@ -1878,6 +1886,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call1(elt(litvec, 0), f1, r1, A_reg);
                 else A_reg = f1(r1, A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CALL2_0:
@@ -1890,6 +1899,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (stack >= stacklimit) reclaim(nil, "stack", GC_STACK, 0);
                 A_reg = bytestream_interpret(CELL-TAG_VECTOR, elt(litvec, 0), stack-2);
                 pop2(litvec, codevec);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CALL2_1:
@@ -1918,6 +1928,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call2(elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else A_reg = f2(r1, B_reg, A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CALL2R:
@@ -1930,6 +1941,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call2(elt(litvec, 0), f2, r1, A_reg, B_reg);
                 else A_reg = f2(r1, A_reg, B_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CALL3:
@@ -1943,6 +1955,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if ((qheader(r1) & SYM_TRACED) != 0)
                     A_reg = traced_call3(elt(litvec, 0), f345, r1, r2, B_reg, A_reg);
                 else A_reg = f345(r1, 3, r2, B_reg, A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CALLN:
@@ -1960,6 +1973,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = apply(A_reg,
                               (int)((unsigned char *)codevec)[ppc+1],
                               nil, elt(litvec, 0));
+                assert(A_reg != 0); check_heap_segments();
                 ppc = ppc + 2;
                 continue;
 
@@ -1974,6 +1988,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     A_reg = traced_call0(elt(litvec, 0), f345,
                         make_undefined_symbol(no_arg_names[previous_byte]));
                 else A_reg = f345(nil, 0);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_BUILTIN2R:
@@ -1985,6 +2000,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         make_undefined_symbol(two_arg_names[previous_byte]),
                         A_reg, B_reg);
                 else A_reg = f2(nil, A_reg, B_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_BUILTIN3:
@@ -1997,6 +2013,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         make_undefined_symbol(three_arg_names[previous_byte]),
                         r1, B_reg, A_reg);
                 else A_reg = f345(nil, 3, r1, B_reg, A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
 //
@@ -2008,71 +2025,85 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_LOADLOC:
                 B_reg = A_reg;
                 A_reg = stack[-(int)next_byte];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOADLOC0:
                 B_reg = A_reg;
                 A_reg = stack[-0];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOADLOC1:
                 B_reg = A_reg;
                 A_reg = stack[-1];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOADLOC2:
                 B_reg = A_reg;
                 A_reg = stack[-2];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOADLOC3:
                 B_reg = A_reg;
                 A_reg = stack[-3];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOADLOC4:
                 B_reg = A_reg;
                 A_reg = stack[-4];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOADLOC5:
                 B_reg = A_reg;
                 A_reg = stack[-5];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOADLOC6:
                 B_reg = A_reg;
                 A_reg = stack[-6];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOADLOC7:
                 B_reg = A_reg;
                 A_reg = stack[-7];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOADLOC8:
                 B_reg = A_reg;
                 A_reg = stack[-8];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOADLOC9:
                 B_reg = A_reg;
                 A_reg = stack[-9];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOADLOC10:
                 B_reg = A_reg;
                 A_reg = stack[-10];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOADLOC11:
                 B_reg = A_reg;
                 A_reg = stack[-11];
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CAR:
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CARLOC0:
@@ -2080,6 +2111,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-0];
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CARLOC1:
@@ -2087,6 +2119,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-1];
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CARLOC2:
@@ -2094,6 +2127,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-2];
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CARLOC3:
@@ -2101,6 +2135,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-3];
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CARLOC4:
@@ -2108,6 +2143,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-4];
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CARLOC5:
@@ -2115,6 +2151,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-5];
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CARLOC6:
@@ -2122,6 +2159,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-6];
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CARLOC7:
@@ -2129,6 +2167,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-7];
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CARLOC8:
@@ -2136,6 +2175,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-8];
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CARLOC9:
@@ -2143,6 +2183,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-9];
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CARLOC10:
@@ -2150,6 +2191,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-10];
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CARLOC11:
@@ -2157,11 +2199,13 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = stack[-11];
                 if (car_legal(A_reg)) A_reg = qcar(A_reg);
                 else A_reg = carerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_CDR:
                 if (car_legal(A_reg)) A_reg = qcdr(A_reg);
                 else A_reg = cdrerror(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_STORELOC:
@@ -2352,6 +2396,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         make_undefined_symbol(one_arg_names[previous_byte]),
                         A_reg);
                 A_reg = f1(nil, A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_BUILTIN2:
@@ -2363,6 +2408,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         make_undefined_symbol(two_arg_names[previous_byte]),
                         B_reg, A_reg);
                 A_reg = f2(nil, B_reg, A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_EXIT:
@@ -2382,6 +2428,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
 
             case OP_PUSH:
+                assert(A_reg != 0); check_heap_segments();
                 push(A_reg);
                 continue;
 
@@ -2400,6 +2447,7 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_POP:
                 B_reg = A_reg;
                 pop(A_reg);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
             case OP_LOSE:
@@ -2466,6 +2514,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_GET:                                    // A = get(B, A)
                 A_reg = get(B_reg, A_reg, nil);
+                assert(A_reg != 0); check_heap_segments();
                 continue;
 
         }

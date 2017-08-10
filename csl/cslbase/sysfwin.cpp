@@ -873,7 +873,7 @@ const char *CSLtmpdir()
 #endif
 }
 
-const char *CSLtmpnam(const char *suffix, int32_t suffixlen)
+const char *CSLtmpnam(const char *suffix, size_t suffixlen)
 {   time_t t0 = time(NULL);
     clock_t c0 = clock();
     unsigned long taskid;

@@ -50,7 +50,6 @@
 #include "syscsl.h"
 #include "arith.h"
 #include "entries.h"
-#include "bigvector.h"
 #include "proc.h"
 #include "stream.h"
 #include "cslread.h"

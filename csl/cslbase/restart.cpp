@@ -436,6 +436,33 @@ static void my_free(void *r)
     (*free_hook)((void *)((void **)p)[0]);
 }
 
+// This does what "my_free" would as regards checking for corruption, but does
+// not free the block.
+
+static void check_block_for_corruption(void *r)
+{   int32_t *p, *q;
+    size_t n;
+    char *rr = (char *)r;
+    if (rr > big_chunk_start && rr <= big_chunk_end) return;
+    p = (int32_t *)r - 8;
+    n = (size_t)*(int64_t *)(&p[2]);
+    if (p[4] != 0x12345678 ||
+        p[5] != 0x3456789a)
+    {   term_printf("Corruption at start of memory block %p: %.8x %.8x\n",
+                    r, p[4], p[5]);
+        ensure_screen();
+        my_abort();
+    }
+    q = (int32_t *)((char *)r + n);
+    if (q[0] != (int32_t)0x87654321 ||
+        q[1] != (int32_t)0xcba98765)
+    {   term_printf("Corruption at end of memory block %p: %.8x %.8x\n",
+                    r, q[0], q[1]);
+        ensure_screen();
+        my_abort();
+    }
+}
+
 static void *my_malloc_1(size_t n)
 //
 // This is a pretty silly function - it gobbles up 24Kbytes of
@@ -648,12 +675,36 @@ static void abandon(void *p[], int32_t n)
     }
 }
 
+static void check_abandon(void *p[], int32_t n)
+{   while (n != 0)
+    {   void *w = p[--n];
+//
+// The test here that avoids calling free on a NULL pointer is
+// certainly not needed with an ANSI compliant library - but
+// rumour has it that many Unix libraries are unkind in this
+// respect, and the test is pretty cheap...
+//
+        if (w != NULL) check_block_for_corruption(w);
+    }
+}
+
 void drop_heap_segments(void)
 {   abandon(pages,           pages_count);
     abandon(heap_pages,      heap_pages_count);
     abandon(vheap_pages,     vheap_pages_count);
     my_free(stacksegment);
     my_free(nilsegment);
+}
+
+static int check_count = 0;
+
+void check_heap_segments(void)
+{   if ((check_count++)%40 != 0) return; // tune performance
+    check_abandon(pages,           pages_count);
+    check_abandon(heap_pages,      heap_pages_count);
+    check_abandon(vheap_pages,     vheap_pages_count);
+    check_block_for_corruption(stacksegment);
+    check_block_for_corruption(nilsegment);
 }
 
 static char *find_checksum(const char *name, int32_t len, const setup_type *p)
@@ -792,8 +843,12 @@ static void count_symbols(setup_type const s[])
 }
 
 #ifndef EMBEDDED
+#if 0
 static setup_type_1 *find_def_table(LispObject mod, LispObject checksum);
+#endif // 0
 #endif
+
+#if 0
 
 typedef struct dynamic_modules
 {   char *name;
@@ -1030,8 +1085,11 @@ static void tidy_up_old_dlls(const char *name, int why, long int size)
     remove(name);
 }
 
+#endif // 0
+
 #ifndef EMBEDDED
 
+#if 0
 static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 {   size_t len = 0, checklen = 0;
     const char *sname, *checkname;
@@ -1276,6 +1334,7 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
     return dll;
 }
 
+#endif // 0
 #endif // EMBEDDED
 
 static void cold_setup()
@@ -1354,7 +1413,6 @@ static void cold_setup()
 // a 32 or 64-bit machine to make cross-loading of images possible.
 //
     packint_(CP) = get_basic_vector_init(CELL*(1+INIT_OBVECI_SIZE), fixnum_of_int(0));
-    packvint_(CP) = fixnum_of_int(1);
     packflags_(CP) = fixnum_of_int(++package_bits);
 #ifdef COMMON
 //
@@ -1362,17 +1420,16 @@ static void cold_setup()
 //
     packnint_(CP) = fixnum_of_int(0);
     packext_(CP) = get_basic_vector_init(CELL*(1+INIT_OBVECX_SIZE), fixnum_of_int(0));
-    packvext_(CP) = fixnum_of_int(1);
     packnext_(CP) = fixnum_of_int(1); // Allow for nil
-    {   size_t i = (int)(hash_lisp_string(qpname(nil)) &
-                      (INIT_OBVECX_SIZE - 1));
+    {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
+                           (INIT_OBVECX_SIZE - 1));
         elt(packext_(CP), i) = nil;
     }
 #else
     packnint_(CP) = fixnum_of_int(1); // Allow for nil
 // Place NIL into the table.
-    {   size_t i = (int)(hash_lisp_string(qpname(nil)) &
-                      (INIT_OBVECI_SIZE - 1));
+    {   size_t i = (size_t)(hash_lisp_string(qpname(nil)) &
+                            (INIT_OBVECI_SIZE - 1));
         elt(packint_(CP), i) = nil;
     }
 #endif
