@@ -431,6 +431,7 @@ extern intptr_t modulus_is_large;
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 extern LispObject quote_symbol, function_symbol, comma_symbol;
 extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
+extern LispObject list_symbol, liststar_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn;

@@ -112,6 +112,7 @@ intptr_t current_modulus, fastget_size, package_bits, modulus_is_large;
 LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 LispObject quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
 LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol, evalhook;
+LispObject list_symbol, liststar_symbol;
 LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
 LispObject exit_value, catch_tags, keyword_package, current_package;
 LispObject startfn, all_packages, package_symbol, internal_symbol;
@@ -1691,6 +1692,8 @@ void set_up_functions(int restart_flag)
     special_symbol           = make_undefined_symbol("special");
     large_modulus            = fixnum_of_int(1);
     cons_symbol              = make_symbol("cons", restart_flag, TOO_FEW_2, Lcons, WRONG_NO_2);
+    list_symbol              = make_symbol("list", restart_flag, Lncons, Llist2, Llist);
+    liststar_symbol          = make_symbol("list*", restart_flag, Lidentity, Lcons, Lliststar);
     eval_symbol              = make_symbol("eval", restart_flag, Leval, TOO_MANY_1, WRONG_NO_1);
     apply_symbol             = make_symbol("apply", restart_flag, Lapply_1, Lapply_2, Lapply_n);
     load_source_symbol       = make_symbol("load-source", restart_flag, Lload_source, TOO_MANY_1, Lload_source0);
@@ -2954,6 +2957,8 @@ LispObject *list_bases[] =
     &compiler_symbol,
     &comp_symbol,
     &cons_symbol,
+    &list_symbol,
+    &liststar_symbol,
     &echo_symbol,
     &emsg_star,
     &evalhook,

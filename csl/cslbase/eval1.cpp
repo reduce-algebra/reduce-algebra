@@ -134,7 +134,7 @@ restart:
         LispObject fn, args;
 //
 // The test for nil here is because although nil is a symbol the tagging
-// structure tested here marks it as a list.
+// structure tested here may mark it as a list.
 //
         if (u == nil) return onevalue(nil);
         stackcheck2(0, u, env);
@@ -229,6 +229,50 @@ restart:
 // Otherwise we have a regular function call.  I prepare the args and
 // call APPLY.
 //
+// Well I will take two astonishingly special cases here. They will be LIST
+// and LIST* and I do magic things for them because they may sometimes by
+// used with huge numbers of arguments. In effect I handle them as special
+// forms here even though they are (also?) ordinary functions
+        if (fn == list_symbol || fn == liststar_symbol)
+        {   bool star = (fn == liststar_symbol);
+            LispObject r = nil;
+            LispObject *save_stack = stack;
+            while (consp(args))
+            {   LispObject w;
+                push2(args, env);
+                push(r);
+                w = qcar(args);
+                on_backtrace(
+                    w = eval(w, env),
+                    // Now the error handler
+                    pop(r);
+                    pop2(env, args);
+                    stack = save_stack;
+                    if (SHOW_ARGS)
+                    {   err_printf("\nEvaluating: ");
+                        loop_print_error(qcar(args));
+                    });
+                pop(r);
+                r = cons(w, r);
+                pop2(env, args);
+                args = qcdr(args);
+            }
+            if (star)
+            {   if (r == nil) fn = nil;
+                else
+                {   fn = qcar(r);
+                    r = qcdr(r);
+                }
+            }
+            else fn = nil;
+            while (r != nil)
+            {   LispObject w = r;
+                r = qcdr(w);
+                qcdr(w) = fn;
+                fn = w;
+            }
+            return onevalue(fn);
+        }
     ordinary_function:
         {   int nargs = 0;
             LispObject *save_stack = stack;

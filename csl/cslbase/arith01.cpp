@@ -333,14 +333,14 @@ LispObject make_one_word_bignum(int32_t n)
 // If anything goes wrong within the get_basic_vector() above (or indeed some things
 // could go right but potentially go a Lisp go, return-from, throw, quit
 // restart etc!) either a longjmp or a throw will cause me to exit abruptly
-// from the call to get_basic_vector. because I am not doing any setjmp or catch here
-// the rest of this function will be abandoned and control will go back to
-// or through whoever called me. When that happens things that might have
-// been pushed onto the stack can be left with in a way that is no longer
-// useful. But any CATCH block will arrange to reset the stack pointer
-// properly and so recovers from that. The overall effect is that the code
-// I have *HERE* just does not need to worry about exceptional exits, and
-// so it is way tidier than it used to be.
+// from the call to get_basic_vector. because I am not doing any setjmp or
+// catch here the rest of this function will be abandoned and control will
+// go back to or through whoever called me. When that happens things that
+// might have been pushed onto the stack can be left with in a way that is
+// no longer useful. But any CATCH block will arrange to reset the stack
+// pointer properly and so recovers from that. The overall effect is that
+// the code I have *HERE* just does not need to worry about exceptional
+// exits, and so it is way tidier than it used to be.
 // Some places where I do mind will pick up the strain.
     bignum_digits(w)[0] = n;
     if (SIXTY_FOUR_BIT) bignum_digits(w)[1] = 0;  // padding

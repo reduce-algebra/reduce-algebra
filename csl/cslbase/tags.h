@@ -152,10 +152,10 @@ static inline void CSL_IGNORE(LispObject x)
 // On a 32-bit machine I can pack a 28-bit float (implemented as a 32-bit
 // one with the low 4 bits crudely masked off) by putting XTAG_FLOAT as the
 // bottom 4 bits. On a 64-bit system I have 64-bit immediate data so if I
-// I have XTAG_FLOAT as the low 4 bits then bit 5 could select as between
-// a 28 or a 32-bit value and the high 28 or 32-bits could be that value.
-// Then single floats as well as short floats would have an immediate
-// representation. 
+// I have XTAG_FLOAT as the low 4 bits then bit 5 select as between
+// a 28 or a 32-bit value and the high 28 or 32-bits can be that value.
+// Thus on a 64-bit machine single floats as well as short floats have
+// an immediate representation. 
 #define XTAG_FLOAT32    16
 
 static inline bool is_forward(LispObject p)
@@ -661,6 +661,7 @@ static inline Header bitvechdr_(size_t n)
 #endif // COMMON
 
 #define symhdr_length       (doubleword_align_up(sizeof(Symbol_Head)))
+
 static inline bool is_symbol_header(Header h)
 {   return ((int)h & (0xf<<Tw)) == TYPE_SYMBOL;
 }
@@ -700,12 +701,13 @@ static inline bool is_array_header(Header h)
 //   00:100 0:1 010  indexvec (used to implement huge vectors)
 //   00:101 0:1 010  new style hash table
 //   00:110 0:1 010  new hash table with rehash pending
-//   00:111 0:1 010  rational number  *
+//   00:111 0:1 010  index vector for huge bignum *
 //   01:000 0:1 010  old style hash table
-//   01:0xx 0:1 010  (spare: 3 codes, one a "number")
-//   01:111 0:1 010  complex number   *
+//   01:0xx 0:1 010  (spare: 4 codes)
+//   01:111 0:1 010  rational number  *
 //   10:0xx 0:1 010  stream and mixed1, 2 and 3
-//   1x:111 0:1 010  (spare, but classifies as a number: 2 codes)
+//   10:111 0:1 010  complex number   *
+//   11:111 0:1 010  (spare, but classifies as a number)
 //   1x:xxx 0:1 010  (spare: 14 codes)
 //   11:111 0:1 010  used when calculating hash codes as if it was the
 //                   header for a CONS cell.
@@ -732,7 +734,7 @@ static inline bool is_array_header(Header h)
 //   01:011 1:1 010  maple-ref                      64?
 //   01:100 1:1 010  foreign                        64?
 //   01:101 1:1 010  encapsulated-sp                64?
-//   01:110 1:1 010  encapsulated eneral pointer   64?
+//   01:110 1:1 010  encapsulated general pointer   64?
 //   01:111 1:1 010  float32           *            F32
 //   10:000 1:1 010  vec8-2                         8
 //   10:001 1:1 010  string-3                       8
@@ -843,17 +845,21 @@ static inline bool vector_f128(LispObject n)
     else return vector_f128(vechdr(basic_elt(n, 0)));
 }
 
-// I have made the allocation so that any header of the form xx1:11x1:g010
-// is the header of a number.
+// I have made the allocation so that any header of the form xx1:11x1:010
+// is the header of a number. And the ...:..x.:... bit indicates whether
+// the number is stored as binary or Lisp data. Thus rational and complex
+// numbers are (pairs of) Lisp objects, while bignums and boxed floats have
+// binary data. The case BIGNUMINDEX is for bignums that need more than
+// 4 Mbytes of memory and is an index vector containing a number of lower-
+// level vectors of binary information. That case is not supported yet.
 
-// I could possible allocate another code here for "huge bignums" to let
-// them use multi-level vectors and so go beyond the 4Mbyte memory limit.
-
+#define TYPE_BIGNUMINDEX    ( 0x1d <<Tw)
 #define TYPE_BIGNUM         ( 0x1f <<Tw)
-#define TYPE_RATNUM         ( 0x1d <<Tw)
-#define TYPE_COMPLEX_NUM    ( 0x3d <<Tw)
+#define TYPE_RATNUM         ( 0x3d <<Tw)
 #define TYPE_SINGLE_FLOAT   ( 0x3f <<Tw)
+#define TYPE_COMPLEX_NUM    ( 0x5d <<Tw)
 #define TYPE_DOUBLE_FLOAT   ( 0x5f <<Tw)
+//      unused              ( 0x7d <<Tw)
 #define TYPE_LONG_FLOAT     ( 0x7f <<Tw)
 
 static inline Header& numhdr(LispObject v)
@@ -951,7 +957,6 @@ static inline unsigned char* data_of_bps(LispObject v)
 // In the serialization code I want to access the fields in a symbol as
 // if that symbol was a vector and the fields were indexed as follows:
 //  vselt(p, -1) : qheader(p)
-//  vselt(p, 0)  : qvalue(p)
 //  vselt(p, 1)  : qenv(p)
 //  vselt(p, 2)  : qplist(p)
 //  vselt(p, 3)  : qfastgets(p)
@@ -1083,6 +1088,39 @@ static inline int type_of_vector(LispObject v)
 // bytes_in_vector will find the size in bytes of active data excluding
 // and header words, and cells_in_vector() will get the number of
 // LispObjects that can be stored.
+
+static inline size_t bytes_in_bytevector(LispObject v)
+{   if (is_basic_vector(v)) return length_of_byteheader(vechdr(v)) - CELL;
+    size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
+// Observe that the final chunk has its length treated individually. This
+// adds to the cost, but the extra cost only arises when the vector is
+// rather large to start with, and so I am not going to worry.
+    return VECTOR_CHUNK_BYTES*(n-1) +
+           length_of_byteheader(vechdr(basic_elt(v, n-1))) - CELL;
+}
+
+static inline size_t hwords_in_hwordvector(LispObject v)
+{   if (is_basic_vector(v)) return length_of_hwordheader(vechdr(v)) - (CELL/2);
+    size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
+// Observe that the final chunk has its length treated individually. This
+// adds to the cost, but the extra cost only arises when the vector is
+// rather large to start with, and so I am not going to worry.
+    return (VECTOR_CHUNK_BYTES/2)*(n-1) +
+           length_of_hwordheader(vechdr(basic_elt(v, n-1))) - (CELL/2);
+}
+
+static inline size_t bits_in_bitvector(LispObject v)
+{   if (is_basic_vector(v)) return length_of_bitheader(vechdr(v)) - 8*CELL;
+    size_t n = (length_of_header(vechdr(v))-CELL)/CELL;
+// Observe that the final chunk has its length treated individually. This
+// adds to the cost, but the extra cost only arises when the vector is
+// rather large to start with, and so I am not going to worry.
+    return (8*VECTOR_CHUNK_BYTES)*(n-1) +
+           length_of_bitheader(vechdr(basic_elt(v, n-1))) - 8*CELL;
+}
+
+// This is the general one, and it is applicable to any sort of
+// vector with elements of size at least 4 bytes.
 
 static inline size_t bytes_in_vector(LispObject v)
 {   if (is_basic_vector(v)) return length_of_header(vechdr(v)) - CELL;
@@ -1284,11 +1322,14 @@ typedef struct Symbol_Head
     intptr_t function2;  // Executable code always (just 2 args)
 
     intptr_t function3;  // Executable code always (just 3 args)             *
-    union {
+    intptr_t function4up;// Executable code always (3 args + list of rest)   *
+
+// To help with a transition I will keep the "n argument" entrypoint that
+// uses va_args present while I try to move to a new scheme that handles
+// 0-3 args directly and 4+ args by passing 3 directly and the rest as
+// a list.
+    intptr_t unused;     //
     intptr_t functionn;  // Executable code always (0, or >= 3 args)
-    intptr_t function4;  // Executable code always (just 4 args)             *
-    intptr_t function5up;// Executable code always (3 args + vector for rest)*
-          };
 
     uint64_t count;      // for statistics
 } Symbol_Head;
@@ -1353,12 +1394,16 @@ static inline intptr_t& ifn3(LispObject p)
 {   return *(intptr_t *)((char *)p + (10*CELL-TAG_SYMBOL));
 }
 
-static inline intptr_t& ifnn(LispObject p)
+static inline intptr_t& ifn4up(LispObject p)
 {   return *(intptr_t *)((char *)p + (11*CELL-TAG_SYMBOL));
 }
 
-static inline intptr_t& ifn4(LispObject p)
-{   return *(intptr_t *)((char *)p + (11*CELL-TAG_SYMBOL));
+static inline intptr_t& ifnunused(LispObject p)
+{   return *(intptr_t *)((char *)p + (12*CELL-TAG_SYMBOL));
+}
+
+static inline intptr_t& ifnn(LispObject p)
+{   return *(intptr_t *)((char *)p + (13*CELL-TAG_SYMBOL));
 }
 
 static inline no_args*& qfn0(LispObject p)
@@ -1377,16 +1422,20 @@ static inline three_args*& qfn3(LispObject p)
 {   return *(three_args **)((char *)p + (10*CELL-TAG_SYMBOL));
 }
 
-static inline n_args*& qfnn(LispObject p)
-{   return *(n_args **)((char *)p + (11*CELL-TAG_SYMBOL));
-}
-
-static inline four_args*& qfn4(LispObject p)
+static inline four_args*& qfn4up(LispObject p)
 {   return *(four_args **)((char *)p + (11*CELL-TAG_SYMBOL));
 }
 
+static inline n_args*& qfnunused(LispObject p)
+{   return *(n_args **)((char *)p + (12*CELL-TAG_SYMBOL));
+}
+
+static inline n_args*& qfnn(LispObject p)
+{   return *(n_args **)((char *)p + (13*CELL-TAG_SYMBOL));
+}
+
 static inline uint64_t& qcount(LispObject p)
-{   return *(uint64_t *)((char *)p + (12*CELL-TAG_SYMBOL));
+{   return *(uint64_t *)((char *)p + (14*CELL-TAG_SYMBOL));
 }
 
 typedef union _Float_union

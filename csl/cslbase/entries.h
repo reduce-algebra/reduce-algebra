@@ -476,6 +476,7 @@ extern "C" LispObject Lerrorset3(LispObject env, int nargs, ...);
 extern "C" LispObject Lerrorsetn(LispObject env, int nargs, ...);
 extern "C" LispObject Lfuncalln(LispObject env, int nargs, ...);
 extern "C" LispObject Llist(LispObject env, int nargs, ...);
+extern "C" LispObject Lliststar(LispObject env, int nargs, ...);
 extern "C" LispObject Llist2star(LispObject env, int nargs, ...);
 extern "C" LispObject Llist3(LispObject env, int nargs, ...);
 extern "C" LispObject Llogand(LispObject env, int nargs, ...);

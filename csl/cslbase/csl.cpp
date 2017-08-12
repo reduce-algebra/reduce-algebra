@@ -911,7 +911,8 @@ static void lisp_main(void)
 #endif
         }
         catch (LispException e)
-        {   if (exit_reason == UNWIND_RESTART)
+        {
+            if (exit_reason == UNWIND_RESTART)
             {   if (exit_tag == fixnum_of_int(0))      // "stop"
                     return_code = (int)int_of_fixnum(exit_value);
                 else if (exit_tag == fixnum_of_int(1)) // "preserve"

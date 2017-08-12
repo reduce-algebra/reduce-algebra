@@ -172,6 +172,8 @@ static LispObject apply_lots(int nargs, n_args *f, LispObject def)
                 my_exit(EXIT_FAILURE);
             }
 #endif
+// Observe that the list of excess arguments will always have been freshly
+// consed up here.
             w = ncons(tsp[-1]);
             tsp[-1] = w;
             while (n > ARG_CUT_OFF)
@@ -254,6 +256,33 @@ void push_args_1(va_list a, int nargs)
         }
     }
     va_end(a);
+}
+
+LispObject push_args_until_cutoff(va_list a, int nargs)
+//
+// This pushes arguments up as far as ARG_CUT_OFF and if there are any
+// more it returns them as a list.
+//
+{   int i;
+    if (nargs <= ARG_CUT_OFF)
+    {   for (i = 0; i<nargs; i++)
+        {   LispObject w = va_arg(a, LispObject);
+            push(w);
+        }
+        va_end(a);
+        return nil;
+    }
+    else
+    {   LispObject x;
+        for (i = 0; i<(ARG_CUT_OFF-1); i++)
+        {   LispObject w = va_arg(a, LispObject);
+            push(w);
+        }
+        x = va_arg(a, LispObject);
+        va_end(a);
+        push(qcar(x));
+        return qcdr(x);
+    }
 }
 
 

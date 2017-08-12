@@ -447,8 +447,12 @@ public:
     switch (setjmp(jb))                             \
     {   default:                                    \
         case 1: exit_reason = UNWIND_SIGNAL;        \
+                if (miscflags & HEADLINE_FLAG)      \
+                    err_printf("\n+++ Error %s: ", errorset_msg); \
                 throw LispSignal();                 \
         case 2: exit_reason = UNWIND_SIGINT;        \
+                if (miscflags & HEADLINE_FLAG)      \
+                    err_printf("\n+++ Error %s: ", errorset_msg); \
                 throw LispSigint();                 \
         case 0: break;                              \
     }                                               \

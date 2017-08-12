@@ -768,12 +768,22 @@ static volatile char *int2str(volatile char *s, int n)
 
 void low_level_signal_handler(int code)
 {
-//
 // Observe, if you will, that in the case of a SIGSEGV this function does
 // not use a significant amount of stack end ends up just doing a
-// longjmp. I avoid use of other library functions so I can feel very safe.
+// longjmp. I avoid use of other library functions so I can feel
+// at least partially safe.
 // Well access to the buffer signal_msg and variable errorset_msg will count
 // as thread-unsafe and so are probably invalid!
+// The official rules are that all I can do really safely in a signal handler
+// is set a flag, and possibly exit the entire program. A plausible rationale
+// for that is that the exception might have arisen while I was deep in
+// operating system code not in my own user-mode code, and internal data
+// may not be in a consistent state. The rules specifically say that
+// longjmp is NOT safe, in part because when you continue you are liable to
+// resume calling system facilities. But I just want to get any chance I can
+// to report trouble and so will try it knowing it may not always work - if
+// it does well enough that I manage to display a useful diagnostic even
+// just sometimes I have won.
 //
 // Also the full rules for longjmp out of a signal handler seem very very
 // restrictive. But I only trap SIGSEGV, SIGBUS and SIGILL and really I view
@@ -816,8 +826,9 @@ void low_level_signal_handler(int code)
         }
     }
 // I am NOT ALLOWED TO USE THROW to exit from a signal handler in C++. I
-// can only use longjmp. This has the malign consequence that destructors
-// associated with stack frames passed through dill not be activated. And
+// can at best try use of longjmp, and that is not really legal
+// This has the malign consequence that destructors
+// associated with stack frames passed through will not be activated. And
 // I use destructors in a RAII style to tidy up bindings at times, so I
 // hope I never do a really long longjmp, because that would bypass things!
     longjmp(*global_jb, 1);

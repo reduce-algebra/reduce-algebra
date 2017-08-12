@@ -1657,7 +1657,7 @@ down:
 // versions of the code possibly clash. I hope that it just will not matter
 // which I cast to and assign via here, even though strict aliasing rules
 // say that it COULD.
-                    qfn4(w) = (four_args *)read_function();
+                    qfnn(w) = (n_args *)read_function();
                     qcount(w) = read_u64();
 // Now to allow me to feel safe I will put NIL in all the other fields
 // on a provisional basis. They get their proper values later.
@@ -2815,7 +2815,7 @@ down:
             write_function((void *)(qfn1(p)));
             write_function((void *)(qfn2(p)));
             write_function((void *)(qfn3(p)));
-            write_function((void *)(qfn4(p)));
+            write_function((void *)(qfnn(p)));
             write_u64(qcount(p));
             w = p;
             p = qpname(p);

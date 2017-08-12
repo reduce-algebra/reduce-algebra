@@ -967,7 +967,7 @@ static LispObject Lcomplex_arrayp(LispObject env, LispObject a)
 }
 
 static LispObject Lconvert_to_array(LispObject env, LispObject a)
-{   if (!(is_vector(a))) return onevalue(nil);
+{   if (!(is_basic_vector(a))) return onevalue(nil);
     vechdr(a) = TYPE_ARRAY + (vechdr(a) & ~header_mask);
     return onevalue(a);
 }
@@ -976,13 +976,13 @@ static LispObject Lstructp(LispObject env, LispObject a)
 //
 // structp
 //
-{   if (!(is_vector(a))) return onevalue(nil);
+{   if (!(is_basic_vector(a))) return onevalue(nil);
     else return onevalue(Lispify_predicate(
                                  type_of_header(vechdr(a))==TYPE_STRUCTURE));
 }
 
 static LispObject Lconvert_to_struct(LispObject env, LispObject a)
-{   if (!(is_vector(a))) return onevalue(nil);
+{   if (!(is_basic_vector(a))) return onevalue(nil);
     vechdr(a) = TYPE_STRUCTURE + (vechdr(a) & ~header_mask);
     return onevalue(a);
 }
@@ -1121,7 +1121,7 @@ LispObject Llist(LispObject env, int nargs, ...)
     return onevalue(r);
 }
 
-static LispObject Lliststar(LispObject env, int nargs, ...)
+LispObject Lliststar(LispObject env, int nargs, ...)
 {   LispObject r, w, w1;
     va_list a;
     if (nargs == 0) return onevalue(nil);
