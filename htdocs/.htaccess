@@ -1,0 +1,14 @@
+# External links to preserve:
+# http://www.reduce-algebra.com/documentation.htm
+# http://reduce-algebra.com/docs/help/index.html
+# http://www.reduce-algebra.com/docs/reduce.pdf
+# http://www.reduce-algebra.com/reduce40.pdf
+# http://www.reduce-algebra.com/grg32.htm
+# http://reduce-algebra.sourceforge.net/manual/manual-pdf.html
+
+Redirect "/docs" "/reduce38-docs"
+Redirect "/documentation.htm" "/documentation.php"
+Redirect "/grg32.htm" "/grg32/grg32.php"
+Redirect "/manual/manual-pdf.html" "/manual/manual.html"
+
+ErrorDocument 404 /ErrorDocument404.html

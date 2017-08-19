@@ -1,0 +1,16 @@
+This is GRG 3.2 distributive.  It contains the following files:
+
+  README          - the file you are reading now
+  grg32r6.zip     - DOS distributive
+  grg32r6.tar.gz  - UNIX distributive
+
+To install GRG 3.2 you have to unpack the distributive.
+For DOS:      unzip grg32r6.zip
+For UNIX:     gzip -d grg32r6.tar.gz
+              tar -xvf grg32r6.tar
+
+Read the file readme.txt and follow the instruction contained therein.
+
+Notice that DOS and UNIX distributives are identical.
+They differ only by text files encoding. DOS distributive contains
+little programs which converts DOS text files into UNIX format and back.

@@ -1,0 +1,137 @@
+﻿body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: black;
+    background-color: #EEF;
+    max-width: 60em;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+header {
+    background-image: url(images/header.gif);
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 60px;
+    line-height: 60px;
+    font-size: 40px;
+    font-weight: bold;
+    text-align: center;
+    margin: 0.4em auto;
+    color: #0F0;
+}
+
+    header + p { /* subheader */
+        color: #009;
+        text-align: center;
+        font-size: 21px;
+        font-weight: bold;
+        margin: 0;
+    }
+
+h1 {
+    color: #009;
+    text-align: center;
+}
+
+/*
+h2 {
+    text-align: center;
+    font-size: 2em
+}
+*/
+
+footer {
+    border-top: thin solid black;
+    text-align: center;
+    margin-top: 1em;
+    display: block;
+    font-size: 80%;
+}
+
+a img {
+    border-style: none;
+    vertical-align: middle;
+    text-decoration: none;
+}
+
+table.layout {
+    width: 100%
+}
+
+    table.layout > tbody > tr > td {
+        vertical-align: top;
+        border: none;
+        padding: 0
+    }
+
+        table.layout > tbody > tr > td:first-child {
+            width: 1%;
+            padding-right: 24px;
+        }
+
+a:link {
+    color: #6666CC
+}
+
+a:visited {
+    color: #999999
+}
+
+a:active {
+    color: #663333
+}
+
+ul {
+    list-style-image: url(images/pixbul1.gif)
+}
+
+pre, code {
+    font-size: 120%
+}
+
+/* Navigation panel */
+
+nav > ul {
+    margin-top: 0;
+    margin-left: 0;
+    padding-left: 0;
+    white-space: nowrap;
+}
+
+    nav > ul > li {
+        list-style-type: none;
+        list-style-image: none;
+        font-size: small;
+        margin-bottom: 1em;
+        background-color: #CCF;
+        text-align: center;
+    }
+
+        nav > ul > li > a {
+            text-decoration: none;
+            color: black;
+            display: block;
+            padding-left: 1.2em;
+            padding-right: 1.2em;
+        }
+
+        nav > ul > li.selected {
+            padding-left: 0.2em;
+            padding-right: 1.2em;
+            border-left: 1em solid #009;
+        }
+
+nav ul li a:link, nav ul li a:visited, nav ul li a:active {
+    color: black;
+}
+
+/* Get REDUCE from SourceForge */
+
+nav p {
+    margin-top: 2rem;
+    padding-top: 1ex;
+    font-weight: bold;
+    font-size: small;
+    text-align: center;
+    background-color: white;
+}
