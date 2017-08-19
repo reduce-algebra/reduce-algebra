@@ -29,13 +29,128 @@ copyright('ofsfsmtqe, "(c) 2017 M. Kosta, T. Sturm");
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %
 
+%%% parameterizing procedures
+
+asserted procedure smtqe_setfnal();
+   <<
+      vs_patchfnal('fn_pc!-decomposition, 'smtqe_pc!-decomposition);
+      vs_patchfnal('fn_applyvsts, 'smtqe_applyvsts)
+   >>;
+
+%%% implementation of parameterizing procedures
+
+asserted procedure smtqe_pc!-decomposition(de: VSde);
+   % Compute a prime constituent decomposition.
+   begin scalar f, gl, cgl, atl, gposl, pc, pcl;
+      integer n;
+      % Replacements with [false] in this procedure is done to mark
+      % subformulas that play no role (i.e. we do not need to look
+      % into them) in further PC computation. Simplification of [f]
+      % after thse replacements would NOT be semantically correct!
+
+      f := vsde_f de;
+      assert(rl_op f eq 'and);
+      % find Gauss prime constituents (in each subformula)
+      gl := for each subf in rl_argn f join <<
+	 n := n + 1;
+	 qff_gaussposl(vsde_v de, subf, {n}, vsde_bvl de, vsde_curtheo de)
+      >>;
+      if vsde_failedalp gl then
+	 % We continue in the failed case, because the subformula
+	 % causing the failure can become part of a co-Gauss prime
+	 % constituent.
+	 gl := nil
+      else
+      	 % TODO: Choose an efficient ordering of [gl].
+      	 % TODO: Here is the place for gentle simplification.
+      	 f := qff_replacel(f, for each pr in gl collect car pr, 'false);
+      % find co-Gauss prime constituents (in each subformula)
+      n := 0;
+      cgl := for each subf in rl_argn f join <<
+	 n := n + 1;
+	 qff_cogaussposl(vsde_v de, subf, {n}, vsde_bvl de, vsde_curtheo de)
+      >>;
+      if vsde_failedalp cgl then <<
+	 % We terminate in the failed case, because the subformula
+	 % causing the failure will lead to failure during atomic
+	 % prime constituents computation as well.
+	 vsde_putpcl(de, nil);
+	 return
+      >>;
+      gl := pos_delsubposal(cgl, gl);
+      % find atomic prime constituents
+      f := qff_replacel(f, for each pr in cgl collect car pr, 'false);
+      atl := qff_atposl(vsde_v de, f, nil, vsde_bvl de, vsde_curtheo de);
+      if vsde_failedalp atl then <<
+	 vsde_putpcl(de, nil);
+	 return
+      >>;
+      for each pr in atl do <<
+	 pc := vspc_mk(car pr, 'at, cdr pr, gposl, nil);
+	 push(pc, pcl)
+      >>;
+      for each pr in cgl do <<
+	 pc := vspc_mk(car pr, 'cogauss, cdr pr, gposl, nil);
+	 push(pc, pcl)
+      >>;
+      for each pr in gl do <<
+	 pc := vspc_mk(car pr, 'gauss, cdr pr, gposl, nil);
+	 push(pc, pcl);
+	 push(car pr, gposl)
+      >>;
+      vsde_putpcl(de, pcl)
+   end;
+
+asserted procedure smtqe_applyvsts(ds: VSds);
+   % VS data for virtual substitution apply VSts. [ds] is modified
+   % in-place. [vsds_vs ds] is a test point substitution [x // tp],
+   % where [tp] is a test point computed from formula [vsds_f ds].
+   begin scalar vs, f, tp, ttheo, theo, g;
+      vs := vsds_vs ds;
+      f := vsds_f ds;
+      tp := vsts_tp vs;
+      ttheo := vsds_ttheo ds;
+      theo := append(vsds_ptheo ds, ttheo);
+      g . ttheo := vsds_g2gtt(vstp_guard tp, theo, ttheo);
+      % We do not terminate when [g] is [false].
+      vsds_putttheo(ds, ttheo);
+      f := qff_replacel(f, vstp_gpl tp, 'false);
+      % TODO: Here we could replace the position(s) that produced the
+      % test point [tp] with ['true]. WARNING: This replacement is NOT
+      % correct when using clustering!
+      if !*rlverbose then <<
+	 ioto_tprin2 {"+++++ VSUB ", vsvs_v vs, " "};
+	 ioto_prin2 "[condense"
+      >>;
+      f := qff_condense(f, vstp_p tp);
+      if !*rlverbose then <<
+	 ioto_prin2 "]";
+	 ioto_prin2 "[substitute"
+      >>;
+      f := cl_apply2ats1(f, 'vsds_applyvsts!-at, {ds});
+      if !*rlverbose then <<
+	 ioto_prin2 "]";
+	 ioto_prin2 "[simplify"
+      >>;
+      assert(rl_op f eq 'and);
+      % Write guard [g] into each conjunction member separately.
+      f := rl_smkn('and, for each subf in rl_argn f collect rl_mkn('and, {g, subf}));
+      % Simplify each conjunction member separately.
+      f := smtqe_simpl(f, theo);
+      if !*rlverbose then
+	 ioto_prin2t "]";
+      vsds_putres(ds, f)
+   end;
+
+%%% entry point
+
 rl_provideService rl_smtqe = smtqe_smtqe;
 
 asserted procedure smtqe_smtqe(l: List): List3;
    begin scalar formula, db;
       smtqe_setfnal();
       formula := rl_smkn('and, l);
-      formula := smtqe_tlsimpl(formula, nil);
+      formula := smtqe_simpl(formula, nil);
       db := vsdb_mk(cl_fvarl formula, formula, nil, nil, t);
       vs_blockmainloop db;
       if !*ofsfvsqetree2gml then
@@ -44,27 +159,10 @@ asserted procedure smtqe_smtqe(l: List): List3;
       return smtqe_collectResult db
    end;
 
-asserted procedure smtqe_setfnal();
-   <<
-      vs_patchfnal('tlsimpl, 'smtqe_tlsimpl);
-      vs_patchfnal('tladdguard, 'smtqe_tladdguard)
-   >>;
-
-%%% implementation of parameterizing procedures
-
-asserted procedure smtqe_tlsimpl(f: QfFormula, assume: Theory): QfFormula;
-   <<
-      assert(rl_op f eq 'and);
-      rl_smkn('and, for each subf in rl_argn f collect cl_simpl(subf, assume, -1))
-   >>;
-
-asserted procedure smtqe_tladdguard(f: QfFormula, g: QfFormula): QfFormula;
-   <<
-      assert(rl_op f eq 'and);
-      rl_smkn('and, for each subf in rl_argn f collect rl_mkn('and, {g, subf}))
-   >>;
-
 %%% procedures doing "real work" %%%
+
+asserted procedure smtqe_simpl(f: QfFormula, theo: Theory): QfFormula;
+   rl_smkn('and, for each subf in rl_argn f collect cl_simpl(subf, theo, -1));
 
 asserted procedure smtqe_collectResult(db: VSdb): DottedPair;
    begin scalar fl, vl, w, uc;

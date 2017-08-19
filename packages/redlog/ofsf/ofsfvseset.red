@@ -414,7 +414,7 @@ asserted procedure vsdc_add2ttheo(dc: VSdc, fl: QfFormulaL, neg: Boolean);
 asserted procedure vsde_compute(de: VSde);
    % This is the usual entry point. Compute an elimination set.
    begin
-      vsde_pc!-decomposition de;
+      vs_applyfn('fn_pc!-decomposition, {de});
       if null vsde_pcl de then <<
 	 vsde_puttpl(de, nil);
 	 return
@@ -441,32 +441,36 @@ asserted procedure vsde_compute(de: VSde);
 asserted procedure vsde_pc!-decomposition(de: VSde);
    % Compute a prime constituent decomposition.
    begin scalar f, gl, cgl, atl, gposl, pc, pcl;
-      % Replacement with [false] is done here only to mark subformulas
-      % that play no role (i.e. we do not need to look into them).
-      % Simplification after this replacement would NOT be
-      % semantically correct!
-      % find Gauss prime constituents
+      % Replacements with [false] in this procedure is done to mark
+      % subformulas that play no role (i.e. we do not need to look
+      % into them) in further PC computation. Simplification of [f]
+      % after thse replacements would NOT be semantically correct!
+
       f := vsde_f de;
-      gl := qff_gaussposl(vsde_v de, f, vsde_bvl de, vsde_curtheo de);
-      if not vsde_failedalp gl then <<
+      % find Gauss prime constituents
+      gl := qff_gaussposl(vsde_v de, f, nil, vsde_bvl de, vsde_curtheo de);
+      if vsde_failedalp gl then
+	 % We continue in the failed case, because the subformula
+	 % causing the failure can become part of a co-Gauss prime
+	 % constituent.
+	 gl := nil
+      else
       	 % TODO: Choose an efficient ordering of [gl].
       	 % TODO: Here is the place for gentle simplification.
-      	 f := qff_replacel(f, for each pr in gl collect car pr, 'false)
-      >> else
-	 % It makes sense to continue in the failed case, because the
-	 % subformula causing the failure can become part of a
-	 % co-Gauss prime constituent.
-	 gl := nil;
+      	 f := qff_replacel(f, for each pr in gl collect car pr, 'false);
       % find co-Gauss prime constituents
-      cgl := qff_cogaussposl(vsde_v de, f, vsde_bvl de, vsde_curtheo de);
+      cgl := qff_cogaussposl(vsde_v de, f, nil, vsde_bvl de, vsde_curtheo de);
       if vsde_failedalp cgl then <<
+	 % We terminate in the failed case, because the subformula
+	 % causing the failure will lead to failure during atomic
+	 % prime constituents computation as well.
 	 vsde_putpcl(de, nil);
 	 return
       >>;
       gl := pos_delsubposal(cgl, gl);
       % find atomic prime constituents
       f := qff_replacel(f, for each pr in cgl collect car pr, 'false);
-      atl := qff_atposl(vsde_v de, f, vsde_bvl de, vsde_curtheo de);
+      atl := qff_atposl(vsde_v de, f, nil, vsde_bvl de, vsde_curtheo de);
       if vsde_failedalp atl then <<
 	 vsde_putpcl(de, nil);
 	 return
@@ -490,29 +494,32 @@ asserted procedure vsde_pc!-decomposition(de: VSde);
 asserted procedure vsde_failedalp(al: AList);
    al and null caar al and vscs_failedp cdar al;
 
-asserted procedure qff_gaussposl(var: Kernel, f: QfFormula, bvl: KernelL, theo: Theory): AList;
-   % wrapper
+asserted procedure qff_gaussposl(var: Kernel, f: QfFormula, p: Position, bvl: KernelL, theo: Theory): AList;
+   % wrapper; [p] is a position prefix: All computed positions will be
+   % prefixed with [p].
    begin scalar gdc;
       gdc := vsdc_mk(var, f, bvl, theo, nil);
-      vsdc_gaussposl(gdc, nil);
+      vsdc_gaussposl(gdc, p);
       return for each pr in vsdc_res gdc collect
 	 reverse car pr . cdr pr
    end;
 
-asserted procedure qff_cogaussposl(var: Kernel, f: QfFormula, bvl: KernelL, theo: Theory): AList;
-   % wrapper
+asserted procedure qff_cogaussposl(var: Kernel, f: QfFormula, p: Position, bvl: KernelL, theo: Theory): AList;
+   % wrapper; [p] is a position prefix: All computed positions will be
+   % prefixed with [p].
    begin scalar cgdc;
       cgdc := vsdc_mk(var, f, bvl, theo, nil);
-      vsdc_cogaussposl(cgdc, nil);
+      vsdc_cogaussposl(cgdc, p);
       return for each pr in vsdc_res cgdc collect
 	 reverse car pr . cdr pr
    end;
 
-asserted procedure qff_atposl(var: Kernel, f: QfFormula, bvl: KernelL, theo: Theory): AList;
-   % wrapper
+asserted procedure qff_atposl(var: Kernel, f: QfFormula, p: Position, bvl: KernelL, theo: Theory): AList;
+   % wrapper; [p] is a position prefix: All computed positions will be
+   % prefixed with [p].
    begin scalar atdc;
       atdc := vsdc_mk(var, f, bvl, theo, nil);
-      vsdc_atposl(atdc, nil);
+      vsdc_atposl(atdc, p);
       return for each pr in vsdc_res atdc collect
 	 reverse car pr . cdr pr
    end;

@@ -156,7 +156,7 @@ asserted procedure vsds_applyvs(ds: VSds);
       if vsvs_dgp vs then
 	 vsds_applyvsdg ds;
       if vsvs_tsp vs then
-	 vsds_applyvsts ds
+	 vs_applyfn('fn_applyvsts, {ds})
    end;
 
 asserted procedure vsds_applyvsar(ds: VSds);
@@ -225,8 +225,7 @@ asserted procedure vsds_applyvsts(ds: VSds);
 	 ioto_prin2 "]";
 	 ioto_prin2 "[simplify"
       >>;
-      f := vs_applyfn('tladdguard, {f, g});
-      f := vs_applyfn('tlsimpl, {f, theo});
+      f := cl_simpl(rl_mk2('and, g, f), theo, -1);
       if !*rlverbose then
 	 ioto_prin2t "]";
       vsds_putres(ds, f)

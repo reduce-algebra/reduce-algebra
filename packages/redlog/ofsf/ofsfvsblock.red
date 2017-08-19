@@ -49,8 +49,10 @@ fluid '(vs_fnal!*);
 
 asserted procedure vs_setfnal();
    <<
-      vs_patchfnal('tlsimpl, 'vs_tlsimpl);
-      vs_patchfnal('tladdguard, 'vs_tladdguard)
+      % 1. parameterizing procedure: PC decomposition
+      % 2. parameterizing procedure: application of test point VS
+      vs_patchfnal('fn_pc!-decomposition, 'vsde_pc!-decomposition);
+      vs_patchfnal('fn_applyvsts, 'vsds_applyvsts)
    >>;
 
 asserted procedure vs_patchfnal(key: Id, value: Applicable);
@@ -58,14 +60,6 @@ asserted procedure vs_patchfnal(key: Id, value: Applicable);
 
 asserted procedure vs_applyfn(fn: Id, argl: List): Any;
    apply(cdr atsoc(fn, vs_fnal!*), argl);
-
-%%% implementation of parameterizing procedures
-
-asserted procedure vs_tlsimpl(f: QfFormula, assume: Theory): QfFormula;
-   cl_simpl(f, assume, -1);
-
-asserted procedure vs_tladdguard(f: QfFormula, g: QfFormula): QfFormula;
-   rl_mkn('and, {g, f});
 
 %%% QE tree node %%%
 % constructors and access functions
