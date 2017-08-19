@@ -10,7 +10,9 @@
  *           renamed sigset to sun3_sigset for sun os 4.
  */
  
+#include <stdio.h>
 #include <signal.h>
+#include <fenv.h>
 
 #ifndef LINUX
 #include <ieeefp.h>
@@ -24,9 +26,17 @@ sun3_sigset( sig, action )
 void (*action)();
 int sig;
 {
-   if (signal(sig, SIG_IGN) != SIG_IGN) 
-    signal(sig, action);
+  struct sigaction actio;
 
+  actio.sa_flags = SA_SIGINFO | SA_RESTART;
+  actio.sa_sigaction = action;
+  sigaction(sig, &actio, NULL);
+
+  /*
+  if (signal(sig, SIG_IGN) != SIG_IGN) 
+    signal(sig, action);
+  */
+  
 #ifndef LINUX
    if(sig == SIGFPE && fp_first == 0)
    { 
@@ -57,11 +67,6 @@ int sig;
 }
  
 
- 
-void setlinebuf()
-{
-}
- 
 void ieee_handler()
 {
 }
