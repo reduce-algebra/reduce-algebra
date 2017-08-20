@@ -632,7 +632,7 @@
 (de recursivechannelprin2 (channel itm level)
   (case (tag itm)
     ((posint-tag negint-tag)
-	(if (eq channel 4) % explode , flatsize etc
+	(if (eq channel 4) % flatsize etc
 		 (checklinefit 10 channel 'channelwriteinteger itm)
 	  (checklinefit (flatsize2 itm) channel 'channelwriteinteger itm)))
     ((id-tag)
@@ -641,9 +641,11 @@
     ((unbound-tag)
      (checklinefit (wplus2 (strlen (strinf (symnam (idinf itm)))) 12)
 		   channel 'channelwriteunbound itm))
-    ((string-tag)
-     (checklinefit (wplus2 (strlen (strinf itm)) 1) channel
-		   'channelwritestring itm))
+    ((string-tag) % use flatsize2 to correctly count string delimiters inside string
+     (if (eq channel 4) % flatsize etc
+	 (checklinefit (wtimes2 2 (strlen (strinf itm)))
+		       channel 'channelwritestring itm)
+       (checklinefit (flatsize2 itm) channel 'channelwritestring itm)))
     ((code-tag)
      (checklinefit 14 channel 'channelwritecodepointer itm))
     ((fixnum-tag) 
@@ -679,11 +681,11 @@
 (de recursivechannelprin1 (channel itm level)
   (case (tag itm)
     ((posint-tag negint-tag)
-	(if (eq channel 4) % explode , flatsize etc
+	(if (eq channel 4) % flatsize etc
 		 (checklinefit 10 channel 'channelwriteinteger itm)
 	  (checklinefit (flatsize itm)  channel 'channelwriteinteger itm)))
     ((id-tag) % leave room for possible escape chars
-        (if (eq channel 4) % explode , flatsize etc
+        (if (eq channel 4) % flatsize etc
                  (checklinefit (wtimes2 2 (strlen (strinf (symnam (idinf itm)))))
                                channel 'channelprintid itm)
           (checklinefit (flatsize itm) channel 'channelprintid itm)))
