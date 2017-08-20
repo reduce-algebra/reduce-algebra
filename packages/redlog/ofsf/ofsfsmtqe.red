@@ -206,7 +206,7 @@ asserted procedure smtqe_fl2uc(fl: List): List;
 	 scmtx := mtx;
 	 c := t; while c and scmtx do <<
 	    if lto_ordprod(cdr row, cdr car scmtx, 'geq) then <<
-	       car mtx := row;
+	       car scmtx := row;
 	       c := nil
 	    >> else if lto_ordprod(cdr row, cdr car scmtx, 'leq) then
 	       c := nil
