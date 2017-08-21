@@ -883,7 +883,7 @@ static void reinsert_hash(LispObject v, size_t size, int flavour,
 #define REHASH_AT_ONE_GO 64
 
 void rehash_this_table(LispObject v)
-// Hash tables in general have hash funbctiosn depending on addresses and
+// Hash tables in general have hash function depending on addresses and
 // will sometimes need rehashing - I do this by removing items from the
 // table one at a time and re-inserting them. This does not guarantee that
 // the table is left in a perfect state, but for modest loading will be

@@ -267,7 +267,6 @@ symbolic procedure read_profile_data file;
       close rds w0 >>
   end;
 
-
 off echo;
 
 read_profile_data "$destdir/profile.dat";
@@ -275,9 +274,15 @@ read_profile_data "$destdir/unprofile.dat";
 
 on echo;
 
-if not everything then <<
+symbolic procedure membercar(a, l);
+  if null l then nil
+  else if a = caar l then t
+  else membercar(a, cdr l);
 
-requests := for each x in requests collect cdr x$
+symbolic procedure do_partial();
+begin
+  scalar fg, k;
+  requests := for each x in requests collect cdr x$
 
 % Now I will merge in suggestions from all modules in
 % breadth-first order of priority
@@ -291,13 +296,6 @@ requests := for each x in requests collect cdr x$
 % will get about balanced treatment if I have to truncate the list at
 % some stage.
 
-symbolic procedure membercar(a, l);
-  if null l then nil
-  else if a = caar l then t
-  else membercar(a, cdr l);
-
-begin
-  scalar fg, k;
   fg := t;
   while fg do <<
     fg := nil;
@@ -315,8 +313,7 @@ begin
         else if caaar x = 'ordp then printc "Ignoring ORDP (!)"	
         else w_reduce := caar x . w_reduce;
         fg := t;
-        rplaca(x, cdar x) >> >>
-end;
+        rplaca(x, cdar x) >> >>;
 
 
 % Now I scan all pre-compiled modules to recover source versions of the
@@ -324,134 +321,128 @@ end;
 % properties are checksums of the recovered definitions that I would be
 % prepared to accept.
 
-for each n in w_reduce do put(car n, 'load!-selected!-source, cadr n);
+  for each n in w_reduce do put(car n, 'load!-selected!-source, cadr n);
 
-w_reduce := for each n in w_reduce collect car n$
+  w_reduce := for each n in w_reduce collect car n$
 
 % Discard things that give trouble...
-for each x in omitted do w_reduce := delete(x, w_reduce);
+  for each x in omitted do w_reduce := delete(x, w_reduce);
 
 % Compile some specific things first and others last. The ability to
 % override the normal priority order may be useful when I want to
 % force-compile some functions for testing purposes.
 
-for each x in append(at_start, at_end) do <<
-   prin x; princ " "; print get(x, '!*savedef) >>;
+  for each x in append(at_start, at_end) do <<
+    prin x; princ " "; print get(x, '!*savedef) >>;
 
-w_reduce := append(at_start, append(nreverse w_reduce, at_end))$
+  w_reduce := append(at_start, append(nreverse w_reduce, at_end))$
 
-load!-selected!-source();
+  load!-selected!-source()
+end;
 
- >>;
-
-if everything then <<
-% If I have the (experimental and not really sane) option that will try
-% to convert EVERYTHING then I will load all source definitions...
-
-load!-source();
+symbolic procedure do_total();
+<<load!-source();
 
 % Hah but I really want the core versions of anything that might get redefined
 % to be the one left - so I will re-load all the core modules!
 for each m in loaded!-modules!* do load!-source m;
 
-w_reduce := nil;
+  w_reduce := nil;
 
-for each x in oblist() do
-   if get(x, '!*savedef) and not memq(x, omitted) then
-       w_reduce := x . w_reduce;
+  for each x in oblist() do
+    if get(x, '!*savedef) and not memq(x, omitted) then
+      w_reduce := x . w_reduce;
 
-w_reduce := nreverse w_reduce$ % Now in alphabetic order, which seems neat.
+  w_reduce := nreverse w_reduce$ % Now in alphabetic order, which seems neat.
 
-for each x in at_start do w_reduce := delete(x, w_reduce);
-for each x in at_end do w_reduce := delete(x, w_reduce);
+  for each x in at_start do w_reduce := delete(x, w_reduce);
+  for each x in at_end do w_reduce := delete(x, w_reduce);
 
-w_reduce := append(at_start, append(w_reduce, at_end));
-
->>;
-
-begin
-  scalar p;
-  terpri();
-  printc "Top 20 things to compile are...";
-  p := w_reduce;
-  for i := 1:20 do if p then <<
-    print car p;
-    p := cdr p >>
-end;
-
-verbos nil;
-fluid '(rprifn!*);
-
-% The following line will speed things up but lead to C++ code that
-% does less checking and that can therefore crash in bad ways if there
-% are bugs somewhere in the system. By which I mean worse ways than if
-% these switches were not set.
-
-on fastfor, fastvector, unsafecar;
+  w_reduce := append(at_start, append(w_reduce, at_end)) >>;
 
 symbolic procedure listsize(x, n);
    if null x then n
    else if atom x then n+1
    else listsize(cdr x, listsize(car x, n+1));
 
-<<
+symbolic procedure generate_cpp();
+  begin
+    scalar count;
+    count := 0;
 
-begin
-  scalar count;
-  count := 0; 
+    while fnames do begin
+      scalar name, bulk, total, defn;
+      name := car fnames;
+      princ "About to create "; printc name;
+      c!:ccompilestart(name, name, "$destdir", nil);
+      bulk := 0;
+      while bulk < size_per_file and w_reduce and how_many > 0 do begin
+        scalar name, defn;
+        name := car w_reduce;
+        if null (defn := get(name, '!*savedef)) then <<
+          princ "+++ "; prin name;
+          printc ": no saved definition found";
+          w_reduce := cdr w_reduce >>
+        else <<
+          bulk := listsize(defn, bulk);
+          if bulk < size_per_file then <<
+            count := count+1;
+            princ count;
+            princ ": ";
+            c!:ccmpout1 ('de . name . cdr defn);
+            how_many := how_many - 1;
+            w_reduce := cdr w_reduce >> >> end;
+      eval '(c!-end);
+      fnames := cdr fnames
+    end;
 
-  while fnames do begin
-    scalar name, bulk, total, defn;
-    name := car fnames;
-    princ "About to create "; printc name;
-    c!:ccompilestart(name, name, "$destdir", nil);
+    terpri();
+    printc "*** End of compilation from REDUCE into C ***";
+    terpri();
+
+    total := count;
     bulk := 0;
-    while bulk < size_per_file and w_reduce and how_many > 0 do begin
-      scalar name, defn;
-      name := car w_reduce;
-      if null (defn := get(name, '!*savedef)) then <<
-        princ "+++ "; prin name;
-        printc ": no saved definition found";
-        w_reduce := cdr w_reduce >>
-      else <<
-        bulk := listsize(defn, bulk);
-        if bulk < size_per_file then <<
-          count := count+1;
-          princ count;
+% I list the next 50 functions that WOULD get selected - just for interest.
+    if null w_reduce then printc "No more functions need compiling into C"
+    else while bulk < 50 and w_reduce do
+      begin
+        name := car w_reduce;
+        if null (defn := get(name, '!*savedef)) then <<
+          princ "+++ "; prin name; printc ": no saved definition found";
+          w_reduce := cdr w_reduce >>
+        else <<
+          bulk := bulk+1;
+          princ (count := count+1);
           princ ": ";
-          c!:ccmpout1 ('de . name . cdr defn);
-          how_many := how_many - 1;
-          w_reduce := cdr w_reduce >> >> end;
-    eval '(c!-end);
-    fnames := cdr fnames
+          print name;
+          w_reduce := cdr w_reduce >> end;
+
+    terpri();
+    prin total; printc " functions compiled into C"
   end;
 
-  terpri();
-  printc "*** End of compilation from REDUCE into C ***";
-  terpri();
+symbolic procedure completion();
+  begin
+    scalar p;
+    terpri();
+    printc "Top 20 things to compile are...";
+    p := w_reduce;
+    for i := 1:20 do if p then <<
+      print car p;
+      p := cdr p >>;
 
-  total := count;
-  bulk := 0;
-% I list the next 50 functions that WOULD get selected - just for interest.
-  if null w_reduce then printc "No more functions need compiling into C"
-  else while bulk < 50 and w_reduce do
-    begin
-      name := car w_reduce;
-      if null (defn := get(name, '!*savedef)) then <<
-        princ "+++ "; prin name; printc ": no saved definition found";
-        w_reduce := cdr w_reduce >>
-      else <<
-        bulk := bulk+1;
-        princ (count := count+1);
-        princ ": ";
-        print name;
-        w_reduce := cdr w_reduce >> end;
+    verbos nil;
+    fluid '(rprifn!*);
+    generate_cpp();
+  end;
 
-  terpri();
-  prin total; printc " functions compiled into C"
-end;
 
-nil >>;
+on fastfor, fastvector, unsafecar;
+
+<<
+  if everything then do_total()
+  else do_partial();
+  completion() >>;
 
 quit;
 

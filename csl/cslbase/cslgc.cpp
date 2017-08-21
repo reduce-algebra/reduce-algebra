@@ -3,13 +3,6 @@
 //
 // Garbage collection.
 //
-//    October 2016 and once again I REMOVE the mark/slide collector. This
-//    decision is to simplify the code and ease a transition to a replacement
-//    copying collector, and because I no longer view 32-bit machines as
-//    high priority. Well a Raspberry Pi with 1 Gbyte can still do serious
-//    size calculations even with the copying collector.
-//    This shortens and simplifies the code quite a lot!
-//
 
 /**************************************************************************
  * Copyright (C) 2017, Codemist.                         A C Norman       *
@@ -96,14 +89,12 @@ LispObject volatile saveheaplimit;
 LispObject volatile savevheaplimit;
 LispObject * volatile savestacklimit;
 
-
 static int stop_after_gc = 0;
 
 static void zero_out(void *p)
 {   char *p1 = (char *)doubleword_align_up((intptr_t)p);
     memset(p1, 0, CSL_PAGE_SIZE);
 }
-
 
 static int trailing_heap_pages_count,
            trailing_vheap_pages_count;
@@ -138,10 +129,8 @@ static void copy(LispObject *p)
 //
     for (;;)
     {
-//
 // Copy one object, pointed at by p, from the old semi-space into the new
 // one.
-//
         LispObject a = *p;
         for (;;)
         {   if (a == nil) break;    // common and cheap enough to test here
@@ -206,7 +195,16 @@ static void copy(LispObject *p)
                 if (tag == TAG_SYMBOL)
                     len = symhdr_length, symbol_heads += symhdr_length;
                 else
-                {   len = doubleword_align_up(length_of_header(h));
+                {
+// length_of_header gives me the length in bytes, including the length
+// of the header word and of any padding. Hmmm bit-vectors, byte-vectors
+// (eg strings) and halfword vectors have a bit of a fudge in the way that
+// their length is encoded, and so I will need to review that and confirm
+// that all is safe! Yes - if you go length_of_header() on a string (or one
+// of the other cases where tha actual data is short) then the restult you
+// get is the length in bytes of the data padded out to be a multiple of 4
+// bytes long.
+                    len = doubleword_align_up(length_of_header(h));
                     if (type_of_header(h) == TYPE_NEWHASH)
                         h = h ^ (TYPE_NEWHASH ^ TYPE_NEWHASHX);
                     switch (type_of_header(h))
@@ -231,6 +229,8 @@ static void copy(LispObject *p)
                 for (;;)
                 {   char *vl = (char *)vheaplimit;
                     int32_t free = (int32_t)(vl - vfr);
+// len indicates the length of the block of memory that must now be
+// allocated...
                     if (len > free)
                     {   int32_t free1 =
                             (int32_t)(vfr - (vl - (CSL_PAGE_SIZE - 8)));
@@ -254,6 +254,9 @@ static void copy(LispObject *p)
                     *p = (LispObject)(vfr + tag);
                     *(LispObject *)a = (LispObject)(vfr + TAG_FORWARD); 
                     *(Header *)vfr = h;
+// I copy EVERYTHING from the old vector to the new one. By using memcpy
+// I can do so with no worry about strict aliasing or the exact type of
+// data present. So this will copy across any padder words.
                     memcpy((char *)vfr+CELL, (char *)a+CELL, len-CELL);
                     vfr += len;
                     break;
@@ -261,11 +264,9 @@ static void copy(LispObject *p)
                 break;
             }
         }
-//
 // Now I have copied one object - the next thing to do is to scan to see
 // if any further items are in the new space, and if so I will copy
 // their offspring.
-//
         for (;;)
         {   switch (next)
             {   case CONT:
@@ -286,6 +287,9 @@ static void copy(LispObject *p)
                         h = *(Header *)tr_vfr;
                         if (h == 0)
                         {   char *w;
+// The next word in the vector heap being a zero where a header was expected
+// marks the end of data in this page of heap, so I will move on to the next
+// one.
                             p1 = new_vheap_pages[trailing_vheap_pages_count++];
                             w = (char *)doubleword_align_up((intptr_t)p1);
                             tr_vfr = w + 8;
@@ -297,19 +301,13 @@ static void copy(LispObject *p)
                             break;
                         }
                         else
-                        {   int32_t len = doubleword_align_up(length_of_header(h));
+                        {   size_t len = length_of_header(h);
                             tr = tr_vfr;
-                            tr_vfr = tr_vfr + len;
+                            tr_vfr = tr_vfr + doubleword_align_up(len);
                             if (len == CELL)
                             {
-//
-// In a 64-bit world vectors are not padded to be an even number of cells,
-// and so a vector with no elements consists of just its header word. This
-// is best treated as if it contained binary because it certainly does not
-// contain any pointers, while the general code for handling vectors is
-// written on the assumption that every vector that contains pointers at
-// all contains at least one.
-//
+// Empty vectors should be treated as if they contained binary, because they
+// certainly do not contain any pointers.
                                 continue;
                             }
                             switch (type_of_header(h))
@@ -335,8 +333,18 @@ static void copy(LispObject *p)
 //
                                 default:
                                     if (vector_holds_binary(h)) continue;
+                                    // drop through on simple vectors, hash
+                                    // tables etc etc. In general anything
+                                    // that contains Lisp pointers.
                                 case TYPE_RATNUM:
                                 case TYPE_COMPLEX_NUM:
+// Here I have a vector containing Lisp pointers. len gives its length
+// including its header, so the final active data is at tr+len-CELL.
+// I want to set next to indicate the offset of the item to be processed
+// after I have dealt with that one, and that is len-2*CELL. Note that if
+// the vector only held one pointer then len would have been just 2*CELL
+// and this would ends up as zero - the correct value to indicate the
+// end of processing a vector.
                                     next = len - 2*CELL;
                                     break;
                             }
@@ -375,6 +383,11 @@ static void copy(LispObject *p)
                     tr_vfr = tr_vfr + symhdr_length;
                     break;
                 default:
+// This will be the case when next is positive, in which case it is an
+// offser from tr into a vector. It gets decreased as one goes and
+// eventually ends up at zero (which is otherwise known as CONT) at
+// which stage the vector has been fully processed and the next item
+// to be scanned will be identified.
                     p = (LispObject *)(tr + next);
                     next -= CELL;
                     break;
@@ -659,10 +672,133 @@ static int prev_consolidated_set = 1;
 
 bool garbage_collection_permitted = false;
 
+static void real_garbage_collector()
+{
+// I lift this to a separate function mainly so that I can set breakpoints
+// on it!
+    for (int i=0; i<LOG2_VECTOR_CHUNK_BYTES+1; i++)
+        free_vectors[i] = 0;
+
+#ifdef CONSERVATIVE
+    cache_ambiguous();
+#endif // CONSERVATIVE
+
+    cons_cells = symbol_heads = strings = user_vectors =
+            big_numbers = box_floats = bytestreams = other_mem =
+                                           litvecs = getvecs = 0;
+
+    {
+//
+// Set up the new half-space initially empty.
+//
+        new_heap_pages_count = 0;
+        new_vheap_pages_count = 0;
+        trailing_heap_pages_count = 1;
+        trailing_vheap_pages_count = 1;
+        {   void *pp = pages[--pages_count];
+            char *vf, *vl;
+            int32_t len;
+//
+// A first page of (cons-)heap
+//
+            zero_out(pp);
+            new_heap_pages[new_heap_pages_count++] = pp;
+            heaplimit = quadword_align_up((intptr_t)pp);
+            car32(heaplimit) = CSL_PAGE_SIZE;
+            vl = (char *)heaplimit;
+            fringe = (LispObject)(vl + CSL_PAGE_SIZE);
+            heaplimit = (LispObject)(vl + SPARE);
+//
+// A first page of vector heap.
+//
+            pp = pages[--pages_count];
+            zero_out(pp);
+            new_vheap_pages[new_vheap_pages_count++] = pp;
+            vf = (char *)doubleword_align_up((intptr_t)pp) + 8;
+            vfringe = (LispObject)vf;
+            vl = vf + (CSL_PAGE_SIZE - 16);
+            vheaplimit = (LispObject)vl;
+            len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
+            car32(vl - (CSL_PAGE_SIZE - 8)) = (LispObject)len;
+        }
+//
+// I should remind you, gentle reader, that the value cell
+// and env cells of nil will always contain nil, which does not move,
+// and so I do not need to copy them here provided that NIL itself
+// never moves.
+//
+        copy(&(qplist(nil)));
+        copy(&(qpname(nil)));
+        copy(&(qfastgets(nil)));
+        copy(&(qpackage(nil)));
+
+//
+// I dislike the special treatment of current_package that follows. Maybe
+// I should arrange something totally different for copying the package
+// structure...
+//
+        for (LispObject **p = list_bases; *p!=NULL; p++) copy(*p);
+
+        for (LispObject *sp=stack; sp>(LispObject *)stackbase; sp--) copy(sp);
+// When running the deserialization code I keep references to multiply-
+// used items in repeat_heap, and if garbage collection occurs they must be
+// updated.
+        if (repeat_heap != NULL)
+        {   for (size_t i=1; i<=repeat_count; i++)
+                copy(&repeat_heap[i]);
+        }
+//
+// Now I need to perform some magic on the list of hash tables...
+//
+        lose_dead_hashtables();
+// When I have transitions to the new hash table scheme the two lists
+// processed specially here become redundant and this fragment of code can
+// go, I think.
+        copy(&eq_hash_tables);
+        copy(&equal_hash_tables);
+
+        tidy_fringes();
+
+//
+// Throw away the old semi-space - it is now junk.
+//
+        while (heap_pages_count!=0)
+        {   void *spare = heap_pages[--heap_pages_count];
+// I will fill the old space with explicit rubbish in the hope that that
+// will generate failures as promptly as possible if it somehow gets
+// referenced...
+            memset(spare, 0x55, (size_t)CSL_PAGE_SIZE+16);
+            pages[pages_count++] = spare;
+        }
+        while (vheap_pages_count!=0)
+        {   void *spare = vheap_pages[--vheap_pages_count];
+            memset(spare, 0xaa, (size_t)CSL_PAGE_SIZE+16);
+            pages[pages_count++] = spare;
+        }
+
+//
+// Flip the descriptors for the old and new semi-spaces.
+//
+        {   void **w = heap_pages;
+            heap_pages = new_heap_pages;
+            new_heap_pages = w;
+            w = vheap_pages;
+            vheap_pages = new_vheap_pages;
+            new_vheap_pages = w;
+            heap_pages_count = new_heap_pages_count;
+            new_heap_pages_count = 0;
+            vheap_pages_count = new_vheap_pages_count;
+            new_vheap_pages_count = 0;
+        }
+    }
+
+    LispObject qq;
+    for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
+        rehash_this_table(qcar(qq));
+}
+
 LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
-{   size_t i;
-    clock_t t0, t1, t2;
-    LispObject *sp;
+{   clock_t t0, t1, t2;
     intptr_t vheap_need = 0;
 #ifdef CONSERVATIVE
 //
@@ -861,138 +997,8 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         aerror("reclaim-stack-limit");
     }
 
-    for (int i=0; i<LOG2_VECTOR_CHUNK_BYTES+1; i++)
-        free_vectors[i] = 0;
-
-#ifdef CONSERVATIVE
-    cache_ambiguous();
-#endif // CONSERVATIVE
-
-    cons_cells = symbol_heads = strings = user_vectors =
-            big_numbers = box_floats = bytestreams = other_mem =
-                                           litvecs = getvecs = 0;
-
-    {
-//
-// Here I need to sort of what sort of GC I should do. In the new world
-// here I should do a conservative mostly-copying one most of the time, but
-// the GC from "preserve" can afford to be a full and proper one that
-// does not worry about junk on the C stack, that can assume everything it
-// finds in a List Base is a valid Lisp object and so it can compact
-// perfectly.
-//
-        t2 = t1 = t0;   // Time is not split down in this case
-//
-// Set up the new half-space initially empty.
-//
-        new_heap_pages_count = 0;
-        new_vheap_pages_count = 0;
-        trailing_heap_pages_count = 1;
-        trailing_vheap_pages_count = 1;
-        {   void *pp = pages[--pages_count];
-            char *vf, *vl;
-            int32_t len;
-//
-// A first page of (cons-)heap
-//
-            zero_out(pp);
-            new_heap_pages[new_heap_pages_count++] = pp;
-            heaplimit = quadword_align_up((intptr_t)pp);
-            car32(heaplimit) = CSL_PAGE_SIZE;
-            vl = (char *)heaplimit;
-            fringe = (LispObject)(vl + CSL_PAGE_SIZE);
-            heaplimit = (LispObject)(vl + SPARE);
-//
-// A first page of vector heap.
-//
-            pp = pages[--pages_count];
-            zero_out(pp);
-            new_vheap_pages[new_vheap_pages_count++] = pp;
-            vf = (char *)doubleword_align_up((intptr_t)pp) + 8;
-            vfringe = (LispObject)vf;
-            vl = vf + (CSL_PAGE_SIZE - 16);
-            vheaplimit = (LispObject)vl;
-            len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
-            car32(vl - (CSL_PAGE_SIZE - 8)) = (LispObject)len;
-        }
-//
-// I should remind you, gentle reader, that the value cell
-// and env cells of nil will always contain nil, which does not move,
-// and so I do not need to copy them here provided that NIL itself
-// never moves.
-//
-        copy(&(qplist(nil)));
-        copy(&(qpname(nil)));
-        copy(&(qfastgets(nil)));
-        copy(&(qpackage(nil)));
-
-//
-// I dislike the special treatment of current_package that follows. Maybe
-// I should arrange something totally different for copying the package
-// structure...
-//
-        for (LispObject **p = list_bases; *p!=NULL; p++) copy(*p);
-
-        for (sp=stack; sp>(LispObject *)stackbase; sp--) copy(sp);
-// When running the deserialization code I keep references to multiply-
-// used items in repeat_heap, and if garbage collection occurs they must be
-// updated.
-        if (repeat_heap != NULL)
-        {   for (i=1; i<=repeat_count; i++)
-                copy(&repeat_heap[i]);
-        }
-//
-// Now I need to perform some magic on the list of hash tables...
-//
-        lose_dead_hashtables();
-// When I have transitions to the new hash table scheme the two lists
-// processed specially here become redundant and this fragment of code can
-// go, I think.
-        copy(&eq_hash_tables);
-        copy(&equal_hash_tables);
-
-        tidy_fringes();
-
-//
-// Throw away the old semi-space - it is now junk.
-//
-        while (heap_pages_count!=0)
-        {   void *spare = heap_pages[--heap_pages_count];
-// I will fill the old space with explicit rubbish in the hope that that
-// will generate failures as promptly as possible if it somehow gets
-// referenced...
-            memset(spare, 0x55, (size_t)CSL_PAGE_SIZE+16);
-            pages[pages_count++] = spare;
-        }
-        while (vheap_pages_count!=0)
-        {   void *spare = vheap_pages[--vheap_pages_count];
-            memset(spare, 0xaa, (size_t)CSL_PAGE_SIZE+16);
-            pages[pages_count++] = spare;
-        }
-
-//
-// Flip the descriptors for the old and new semi-spaces.
-//
-        {   void **w = heap_pages;
-            heap_pages = new_heap_pages;
-            new_heap_pages = w;
-            w = vheap_pages;
-            vheap_pages = new_vheap_pages;
-            new_vheap_pages = w;
-            heap_pages_count = new_heap_pages_count;
-            new_heap_pages_count = 0;
-            vheap_pages_count = new_vheap_pages_count;
-            new_vheap_pages_count = 0;
-        }
-    }
-
-    LispObject qq;
-//
-// Note that EQUAL hash tables do not need to be rehashed here, though
-// they do if a heap image is exported from one system to another.
-//
-    for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
-        rehash_this_table(qcar(qq));
+    t2 = t1 = t0;   // Time is not split down in this case
+    real_garbage_collector();
 
     gc_time += pop_clock();
     t2 = base_time;
@@ -1017,7 +1023,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             "bignums=%" PRIdPTR ", floats=%" PRIdPTR ", bytestreams=%" PRIdPTR ", other=%" PRIdPTR ", litvecs=%d\n",
             big_numbers, box_floats, bytestreams, other_mem, litvecs);
         trace_printf("getvecs=%" PRIdPTR " C-stacks=%" PRIdPTR "K Lisp-stack=%" PRIdPTR "K\n",
-                     getvecs, ((C_stack_base-(char *)&sp)+1023)/1024,
+                     getvecs, ((C_stack_base-(char *)&why)+1023)/1024,
                      (intptr_t)((stack-stackbase)+1023)/1024);
     }
 

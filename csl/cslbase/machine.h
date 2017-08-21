@@ -176,6 +176,8 @@
 #include <sys/time.h>
 #endif
 
+#include <ffi.h>
+
 extern "C"
 {
 // At present softfloat.h needs inclusion in C mode not C++ mode.

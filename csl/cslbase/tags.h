@@ -70,7 +70,6 @@ static inline void CSL_IGNORE(LispObject x)
 {   (void)x;
 }
 
-//
 // I allocate memory (using malloc()) in CSL_PAGE_SIZE chunks.
 // This was first implemented for the benefit of 16-bit machines
 // (in particular MSDOS/286) but now seems generally reasonable as a way
@@ -78,12 +77,11 @@ static inline void CSL_IGNORE(LispObject x)
 // a multi-threaded version of this system it can use these chunks on
 // a per-thread basis.
 //
-// My default at present is to use PAGE_BITS=22, which leads to 4 Mbyte
-// pages. I use that size on both 32 and 64-bit machines.
-//
+// My default at present is to use PAGE_BITS=23, which leads to 8 Mbyte
+// pages. I use that size on both 32 and 64-bit machines. 
 
 #ifndef PAGE_BITS
-#  define PAGE_BITS             22
+#  define PAGE_BITS             23
 #endif // PAGE_BITS
 
 #define PAGE_POWER_OF_TWO       (((intptr_t)1) << PAGE_BITS)
@@ -111,12 +109,11 @@ static inline void CSL_IGNORE(LispObject x)
 #define MAX_PAGES               (MAX_HEAPSIZE << (20-PAGE_BITS))
 #endif
 
-//
 // Windows seems to say it can use file names up to 260 chars, Unix and
 // the like may not even have that limit, but I will assume something here.
 // There must be a number of cases of potential buffer overflow throughout
 // my code caused by this fixed limit.
-//
+
 #define LONGEST_LEGAL_FILENAME 1024
 
 
@@ -406,7 +403,6 @@ typedef uintptr_t Header;
 
 #define Tw (3)
 
-//
 // The zz bits are
 //        00    symbol header, character literal, special identifier (Spid)
 //        01    vector containing Lisp pointers
@@ -420,7 +416,9 @@ typedef uintptr_t Header;
 // of data used in the object. Note that this count does not include the
 // size of the header itself. Because this is in 32-bit words rather than bytes
 // this allows the largest object to be 16 Mbytes if your word length is 32
-// bits. That limit larger than the previous CSL tagging scheme permitted.
+// bits. That limit larger than the previous CSL tagging scheme permitted, but
+// note that the size of objects is syill also limited by the csl "page" size,
+// which is now 8 Mbytes.
 //
 // For vectors of bits, bytes and halfwords the high bits of yyyyy indicate the
 // number of bits used in the final 32-bit word that is indicated by xxx.
@@ -432,7 +430,7 @@ typedef uintptr_t Header;
 // recover the length n.
 
 // It took me some while to get my head around the full consequences here!
-// because the length code is the length of active data (from 0 upwards)
+// Because the length code is the length of active data (from 0 upwards)
 // lengths can be from 0 to 0xffffff. A byte-vector can then have a length
 // stored as up to 0xffffff:3 which stands for a length 0x3ffffc. This is a
 // string that fills all the words of the vector. [these are described as for
@@ -442,7 +440,8 @@ typedef uintptr_t Header;
 // I have considered making the length code just the length of DATA not
 // including the size of the header. In some respects that would be tidier,
 // but at present I do not believe that the widespread code changes needed to
-// move to it would be cost-effective.
+// move to it would be cost-effective and the risk introduced by a change
+// that widestream could be large.
 
 #define header_mask                (0x7f<<Tw)
 

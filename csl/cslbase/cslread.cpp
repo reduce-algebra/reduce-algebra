@@ -89,10 +89,10 @@ LispObject make_string(const char *b)
 //
 // Given a C string, create a Lisp (simple-) string.
 //
-{   int32_t n = strlen(b);
+{   size_t n = strlen(b);
     LispObject r = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
     char *s = (char *)r - TAG_VECTOR;
-    int32_t k = doubleword_align_up(CELL+n);
+    size_t k = doubleword_align_up(CELL+n);
     memcpy(s + CELL, b, (size_t)n);
     while (n < k) s[CELL+n++] = 0;
     validate_string(r);
@@ -180,9 +180,6 @@ LispObject Lbatchp(LispObject env, int nargs, ...)
 LispObject Lgetenv(LispObject env, LispObject a)
 {   char parmname[LONGEST_LEGAL_FILENAME];
     Header h;
-    LispObject r;
-    int32_t len;
-    const char *w;
     memset(parmname, 0, sizeof(parmname));
 #ifdef COMMON
     if (complex_stringp(a) a = simplify_string(a);
@@ -193,31 +190,20 @@ LispObject Lgetenv(LispObject env, LispObject a)
     }
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
         aerror1("getenv", a);
-    len = length_of_byteheader(h) - CELL;
+    size_t len = length_of_byteheader(h) - CELL;
     memcpy(parmname, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
     parmname[len] = 0;
-    w = my_getenv(parmname);
+    const char *w = my_getenv(parmname);
     if (w == NULL) return onevalue(nil);    // not available
-    r = make_string(w);
-    return onevalue(r);
+    return onevalue(make_string(w));
 }
 
 LispObject Lsystem(LispObject env, LispObject a)
 {   char parmname[LONGEST_LEGAL_FILENAME];
     Header h;
-    int32_t len;
-    int w;
     memset(parmname, 0, sizeof(parmname));
-#if 0
-#ifdef SOCKETS
-//
-// Security measure - remote client can not do "system"
-//
-    if (socket_server != 0) return onevalue(nil);
-#endif
-#endif
     if (a == nil)            // enquire if command processor is available
-    {   w = my_system(NULL);
+    {   int w = my_system(NULL);
         return onevalue(Lispify_predicate(w != 0));
     }
 #ifdef COMMON
@@ -229,13 +215,13 @@ LispObject Lsystem(LispObject env, LispObject a)
     }
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
         aerror1("system", a);
-    len = length_of_byteheader(h) - CELL;
+    size_t len = length_of_byteheader(h) - CELL;
     memcpy(parmname, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
     parmname[len] = 0;
     ensure_screen();
-    w = my_system(parmname);
+    int w = my_system(parmname);
     ensure_screen();
-    return onevalue(fixnum_of_int((int32_t)w));
+    return onevalue(fixnum_of_int(w));
 }
 
 #ifdef WIN32
@@ -250,19 +236,9 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
     char args[LONGEST_LEGAL_FILENAME];
 #endif
     Header h;
-    int32_t len;
-    int i;
     memset(cmd, 0, sizeof(cmd));
 #ifdef SHELL_EXECUTE
     memset(args, 0, sizeof(args));
-#endif
-#if 0
-#ifdef SOCKETS
-//
-// Security measure - remote client can not do "system"
-//
-    if (socket_server != 0) return onevalue(nil);
-#endif
 #endif
     if (a == nil)            // enquire if command processor is available
         return onevalue(lisp_true); // always is on Windows!
@@ -277,7 +253,7 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
     else if (!is_vector(a) || !is_string_header(h = vechdr(a)))
         aerror1("system", a);
     ensure_screen();
-    len = length_of_byteheader(h) - CELL;
+    size_t len = length_of_byteheader(h) - CELL;
     memcpy(cmd, (char *)a + (CELL-TAG_VECTOR), (size_t)len);
     cmd[len] = 0;
 #ifdef SHELL_EXECUTE
@@ -289,19 +265,21 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
 // documents). But the code below that explicitly creates a process is
 // what I really need here.
 //
-    i = 0;
+    size_t i = 0;
     while (cmd[i]!=' ' && cmd[i]!=0) i++;
     if (cmd[i]==0) args[0] = 0;
     else
     {   cmd[i] = 0;
         strcpy(args, &cmd[i+1]);
     }
-    i = (int)ShellExecute(NULL,
+    int rc = ShellExecute(NULL,
                           "open",
                           cmd,
                           args,
                           ".",
                           SW_HIDE);
+    ensure_screen();
+    return onevalue(fixnum_of_int(rc));
 #else
     {   STARTUPINFO startup;
         PROCESS_INFORMATION process;
@@ -325,11 +303,10 @@ static LispObject Lsilent_system(LispObject env, LispObject a)
         if (!GetExitCodeProcess(process.hProcess, &rc)) rc = 1000;
         CloseHandle(process.hProcess);
         CloseHandle(process.hThread);
-        i = (int)rc;
+        ensure_screen();
+        return onevalue(fixnum_of_int(rc));
     }
 #endif
-    ensure_screen();
-    return onevalue(fixnum_of_int(i));
 }
 
 #else
@@ -789,12 +766,10 @@ static bool add_to_hash(LispObject s, LispObject vector, uint64_t hash)
 
 static LispObject rehash(LispObject v, int grow)
 {
-//
 // If (grow) is +1 this enlarges the table. If -1 it shrinks it. In the
 // case that the table is to shrink I should guarantee that the next smaller
 // table size down will have enough space for the number of active items
 // present. grow=0 leaves the table size alone but still rehashes.
-//
     size_t h = cells_in_vector(v);
     if (grow > 0) h = 2*h;
     else if (grow < 0 && h > 64) h = h/2;
@@ -979,7 +954,7 @@ static int ordersymbol(LispObject v1, LispObject v2)
 //
 {   LispObject pn1 = qpname(v1), pn2 = qpname(v2);
     int c;
-    int32_t l1, l2;
+    size_t l1, l2;
 #ifndef COMMON
     if (qheader(v1) & SYM_UNPRINTED_GENSYM)
     {   push(v2);
@@ -1041,7 +1016,7 @@ static int orderp(LispObject u, LispObject v);
 
 static int ordpv(LispObject u, LispObject v)
 {   Header hu = vechdr(u), hv = vechdr(v);
-    int32_t lu = length_of_header(hu), lv = length_of_header(hv), n = CELL;
+    size_t lu = length_of_header(hu), lv = length_of_header(hv), n = CELL;
     if (type_of_header(hu) != type_of_header(hv))
         return (type_of_header(hu) < type_of_header(hv) ? -1 : 1);
     if (vector_holds_binary(hu))
@@ -1314,7 +1289,7 @@ LispObject Lgensym(LispObject env, int nargs, ...)
 
 LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
 {   LispObject id, genbase;
-    uint32_t len, len1 = strlen(suffix);
+    size_t len, len1 = strlen(suffix);
     char genname[64];
 #ifdef COMMON
     if (complex_stringp(a)) a = simplify_string(a);
@@ -1359,7 +1334,7 @@ LispObject Lgensym1(LispObject env, LispObject a)
 //
 {   LispObject id, genbase;
 #ifdef COMMON
-    uint32_t len;
+    size_t len;
     char genname[64];
     if (complex_stringp(a)) a = simplify_string(a);
 #endif
@@ -1406,7 +1381,7 @@ LispObject Lgensym2(LispObject env, LispObject a)
 // to achieve!
 //
 {   LispObject id, genbase;
-    uint32_t len;
+    size_t len;
 #ifdef COMMON
     if (complex_stringp(a)) a = simplify_string(a);
 #endif
@@ -1796,7 +1771,7 @@ LispObject Lunintern_2(LispObject env, LispObject sym, LispObject pp)
         LispObject v = packext_(package);
         size_t used = length_of_header(vechdr(v)) - CELL;
         else used = CHUNK_SIZE*used;
-        if ((int32_t)n < used && used>(CELL*INIT_OBVECX_SIZE+CELL))
+        if ((size_t)n < used && used>(CELL*INIT_OBVECX_SIZE+CELL))
         {   stackcheck2(0, package, v);
             push(package);
             v = rehash(v, -1);
@@ -2048,10 +2023,10 @@ LispObject Lrseekend(LispObject env, LispObject stream)
 }
 
 LispObject Lrseek_2(LispObject env, LispObject stream, LispObject a)
-{   int32_t n;
+{   size_t n;
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
-    if (is_fixnum(a)) n = (int32_t)int_of_fixnum(a);
+    if (is_fixnum(a)) n = (size_t)int_of_fixnum(a);
     else aerror("rseek");
     other_read_action(READ_FLUSH, stream);
     if (other_read_action(n | 0x80000000, stream) != 0) return onevalue(nil);
@@ -2205,7 +2180,7 @@ static LispObject read_list(LispObject stream)
 }
 
 static LispObject list_to_vector(LispObject l)
-{   int32_t len = 0;
+{   size_t len = 0;
     LispObject p = l;
     while (consp(p)) len++, p = qcdr(p);
     push(l);
@@ -2502,13 +2477,13 @@ static bool read_failure;
 // as necessary.
 
 void packcharacter(int c)
-{   int32_t boffo_size = length_of_byteheader(vechdr(boffo));
+{   size_t boffo_size = length_of_byteheader(vechdr(boffo));
 //
 // I expand boffo (maybe) several characters earlier than you might
 // consider necessary. Some of that is to be extra certain about having
 // space in it when I pack a multi-byte character.
 //
-    if (boffop >= (size_t)boffo_size-CELL-8)
+    if (boffop >= boffo_size-CELL-8)
     {   LispObject new_boffo =
             get_basic_vector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
         memcpy((void *)((char *)new_boffo + (CELL-TAG_VECTOR)),
@@ -2538,8 +2513,8 @@ void packcharacter(int c)
 // must already be in UTF-8 format.
 
 void packbyte(int c)
-{   int32_t boffo_size = length_of_byteheader(vechdr(boffo));
-    if (boffop >= (size_t)boffo_size-CELL-8)
+{   size_t boffo_size = length_of_byteheader(vechdr(boffo));
+    if (boffop >= boffo_size-CELL-8)
     {   LispObject new_boffo =
             get_basic_vector(TAG_VECTOR, TYPE_STRING_4, 2*boffo_size);
         memcpy((void *)((char *)new_boffo + (CELL-TAG_VECTOR)),
@@ -3376,7 +3351,7 @@ LispObject Llist_to_symbol(LispObject env, LispObject stream)
 LispObject Lstring2list(LispObject env, LispObject a)
 {   Header h;
     LispObject r;
-    int32_t i, len;
+    size_t i, len;
 #ifdef COMMON
     if (complex_stringp(a) a = simplify_string(a);
 #endif
@@ -3388,8 +3363,8 @@ LispObject Lstring2list(LispObject env, LispObject a)
         aerror1("string2list", a);
     len = length_of_byteheader(h) - CELL;
     r = nil;
-    for (i=len-1; i>=0; i--)
-    {   int c = ucelt(a, i);
+    for (i=0; i<len; i++)
+    {   int c = ucelt(a, len-1-i);
         push(a);
         r = cons(fixnum_of_int(c), r);
         pop(a);

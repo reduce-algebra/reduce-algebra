@@ -1828,6 +1828,11 @@ down:
             {   int type = ((c & 0x1f) << (Tw + 2)) | (0x01 << Tw),
                     tag = is_number_header_full_test(type) ? TAG_NUMBERS :
                                                              TAG_VECTOR;
+// If I have a NEWHASH object that is a huge vector then it will have
+// a top level INDEXVEC and all the sub-vectors will start off as
+// NEWHASH. The adjustment here can set ALL of the sub-vectors to be
+// NEWHASHX but when I re-hash I will probably only reset the first one
+// back to NEWHASH. The same may well arise in the garbage collector.
                 if (type == TYPE_NEWHASH) type = TYPE_NEWHASHX;
 // The size here will be the number of Lisp items held in the vector, so
 // what I need to pass to get_basic_vector makes that into a byte count and
@@ -1840,14 +1845,15 @@ down:
 // "elt" - and that survives whichever case I am in.
 // Now if I am on a 32-bit system and the vector uses a header word and then
 // and even number of words of data it will use a padder word to bring its
-// total size up to a 64-bit boundary. Tidy up that final word.
-                if (!SIXTY_FOUR_BIT && ((n & 1) == 0))
-                    vselt(w, n) = fixnum_of_int(0);
-// If the vector does not have any content at all then I am now done.
-                if (n == 0) goto up;
+// total size up to a 64-bit boundary. Tidy up that final word. This OUGHT
+// not to matter, but is still tidy.
+                size_t n1 = n;
+                if (!SIXTY_FOUR_BIT) n1 = n1 | 1;
 // In case there is a GC before I have finished filling in proper values
 // in the vector I will out in values that are at least safe.
-                for (size_t i=0; i<n; i++) vselt(w, i) = fixnum_of_int(0);
+                for (size_t i=0; i<n1; i++) vselt(w, i) = fixnum_of_int(0);
+// If the vector does not have any content at all then I am now done.
+                if (n == 0) goto up;
                 if (is_mixed_header(vechdr(w))) n = 2;  // Ie elements 0, 1 and 2
                 else n--; // final element is at n-1
 // Vectors chain through the first entry. If a vector was empty so it did not
@@ -1867,7 +1873,6 @@ down:
                 p = &vselt(b, n);
             }
             goto down;
-
 
         case SER_BACKREF0:
 // Investigation of bootstrapreduce.img shows a reasonable number of

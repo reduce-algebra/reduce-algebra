@@ -1815,15 +1815,10 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // but on 64-bit systems they do not.
 //
         size_t alloc_size = (size_t)doubleword_align_up(size);
-//
-// There is a real NASTY here - it is quite possible that I ought to implement
-// a scheme whereby large vectors can be allocated as a series of chunks so as
-// to avoid the current absolute limit on size.
-// For now there is a limit on the size of the largest vector you can
-// create.
+// Basic vectors must be smaller then the CSL page size.
         if (alloc_size > (CSL_PAGE_SIZE - 32))
-            aerror1("vector request too big",
-                           fixnum_of_int(alloc_size/CELL-1));
+            aerror1("request for basic vector too big",
+                    fixnum_of_int(alloc_size/CELL-1));
         if (alloc_size > free || vec_forced(alloc_size/CELL))
         {   char msg[40];
 //
@@ -1902,12 +1897,10 @@ LispObject get_basic_vector_init(size_t n, LispObject k)
     push(k);
     p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(k);
-    if (!SIXTY_FOUR_BIT && ((n & 4) != 0))
-        n += 4;   // Ensure last doubleword is tidy
-    while (n > CELL)
-    {   n -= CELL;
-        *(LispObject *)((char *)p - TAG_VECTOR + n) = k;
-    }
+    n = n/CELL - 1;
+    if (!SIXTY_FOUR_BIT) n = n | 1;
+    for (size_t i=0; i<n; i++)
+        basic_elt(p, i) = k;
     return p;
 }
 
@@ -1987,20 +1980,24 @@ LispObject get_vector(int tag, int type, size_t n)
         v = gvector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
 // Note that this index vector will be around while the various sub
 // vectors are allocated, so I need to make it GC safe...
-        for (i=0; i<chunks; i++)
+        size_t chunks1 = SIXTY_FOUR_BIT ? chunks : (chunks | 1);
+        for (i=0; i<chunks1; i++)
             basic_elt(v, i) = nil;
         for (i=0; i<chunks; i++)
         {   LispObject v1;
             int k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
             push(v);
             v1 = gvector(tag, type, k+CELL);
+            pop(v);
 // The vector here will be active as later chunks are allocated, so it needs
 // to be GC safe.
             if (!vector_holds_binary(v1))
-            {   for (size_t j=0; j<k/CELL; j++)
+            {   size_t k1 = k/CELL;
+// In the 32-bit case I will keep any final padder word safe too.
+                if (!SIXTY_FOUR_BIT) k1 |= 1;
+                for (size_t j=0; j<k1; j++)
                     basic_elt(v1, j) = nil;
             }
-            pop(v);
             basic_elt(v, i) = v1;
         }
     }
