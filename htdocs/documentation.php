@@ -53,8 +53,9 @@
 					</ul>
 					<p>For advanced users:</p>
 					<ul>
-						<li>the <strong>Symbolic Mode Primer</strong> [ <a href="lisp-docs/primer.html">HTML</a> | <a href="lisp-docs/primer.pdf">PDF</a> ] describes the REDUCE implementation language, RLISP, which is Standard Lisp with REDUCE (essentially ALGOL 60) syntax;</li>
-						<li>the <strong>Standard Lisp Report</strong> [ <a href="lisp-docs/sl.html">HTML</a> | <a href="lisp-docs/sl.pdf">PDF</a> ] defines Standard Lisp;</li>
+						<li><a href="lisp-docs/insidereduce.pdf"><strong>Inside Reduce</strong></a> describes how to build REDUCE, the structure of the REDUCE source code, and some low-level programming features;</li>
+						<li>the <strong>Symbolic Mode Primer</strong> [ <a href="lisp-docs/primer.html">HTML</a> | <a href="lisp-docs/primer.pdf">PDF</a> ] provides an introduction to programming in the REDUCE implementation language, RLISP, which is Standard Lisp with REDUCE (essentially ALGOL 60) syntax;</li>
+						<li>the <strong>Standard Lisp Report</strong> [ <a href="lisp-docs/sl.html">HTML</a> | <a href="lisp-docs/sl.pdf">PDF</a> ] defines Standard Lisp, the dialect of Lisp assumed by REDUCE;</li>
 						<li>the <strong>PSL Users Manual</strong> [ <a href="lisp-docs/allman1.html">HTML</a> | <a href="lisp-docs/allman1.pdf">PDF</a> ] documents Portable Standard Lisp, the original implementation of Standard Lisp, and the <a href="lisp-docs/csl.html"><strong>CSL Reference</strong></a> documents Codemist Standard Lisp, a later implementation of Standard Lisp.</li>
 					</ul>
 					<p>The following PDF documents for the user-contributed packages are extracts from the full REDUCE User&#39;s Manual.</p>

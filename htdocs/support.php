@@ -20,7 +20,7 @@
 					</nav>
 				</td>
 				<td>
-					<p>This page gathers together some useful support links.</p>
+					<p>Support for <a href="obtaining.php">obtaining and installing REDUCE</a> and for <a href="documentation.php">running REDUCE</a> is available from this web site. This page gathers together some other useful support links.</p>
 					<dl>
 						<dt><a href="http://sourceforge.net/projects/reduce-algebra/">Project home page</a></dt>
 						<dd>the home page for the REDUCE distributions</dd>
@@ -30,24 +30,10 @@
 						<dd>We use Subversion (SVN). For instructions and other options, go to the <a href="http://sourceforge.net/projects/reduce-algebra/">Project</a> page and click on the <strong>Code</strong> button.</dd>
 						<dt><a href="https://lists.sourceforge.net/lists/listinfo/reduce-algebra-developers">Join the mailing list</a></dt>
 						<dd>currently the main source of support for REDUCE</dd>
-						<dt><a href="downloading.php">Brief general installation instructions</a></dt>
-						<dd>generic instructions for installing and building REDUCE on any platform</dd>
-						<dt><a href="windows.php">Installation instructions for Microsoft Windows users</a></dt>
-						<dd>instructions for installing and building REDUCE on Microsoft Windows platforms</dd>
 						<dt><a href="https://sourceforge.net/p/reduce-algebra/bugs/">Bug tracker</a></dt>
 						<dd>If you think you have found a bug in REDUCE or any of its support or related systems then please report it here.</dd>
 						<dt><a href="http://sourceforge.net/p/reduce-algebra/discussion/">Discussion fora</a></dt>
 						<dd>a list of the current discussion fora</dd>
-						<dt>REDUCE User's Manual [ <a href="manual/manual.html">HTML</a> | <a href="manual/manual.pdf">PDF</a> ]</dt>
-						<dd>the definitive guide to REDUCE</dd>
-						<dt>REDUCE Symbolic Mode Primer [ <a href="lisp-docs/primer.html">HTML</a> | <a href="lisp-docs/primer.pdf">PDF</a> ]</dt>
-						<dd>an introduction to REDUCE symbolic mode programming</dd>
-						<dt>Standard Lisp Report [ <a href="lisp-docs/sl.html">HTML</a> | <a href="lisp-docs/sl.pdf">PDF</a> ]</dt>
-						<dd>definition of the dialect of Lisp assumed by REDUCE</dd>
-						<dt>PSL Users Manual [ <a href="lisp-docs/allman1.html">HTML</a> | <a href="lisp-docs/allman1.pdf">PDF</a> ]</dt>
-						<dd>PSL (Portable Standard Lisp) is the original implementation of Standard Lisp.</dd>
-						<dt><a href="lisp-docs/csl.html">CSL Reference</a></dt>
-						<dd>CSL (Codemist Standard Lisp) is a later implementation of Standard Lisp.</dd>
 						<dt><a href="http://www.redlog.eu/">Redlog home page</a></dt>
 						<dd>REDLOG provides an extension of REDUCE to a <em>computer logic system</em>. It is included in the SourceForge distribution.</dd>
 						<dt><a href="http://redlog.eu/reduce-wiki">REDUCE Wiki</a></dt>
