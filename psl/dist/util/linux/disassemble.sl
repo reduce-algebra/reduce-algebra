@@ -167,11 +167,11 @@
 
 (fi 16#a0 mov (AL (O b)) (eax (O v)) ((O b) AL) ((O v) EAX))
 
-(fi 16#b0 mov ((I b) AL)((I b) CL)((I b) DL)((I b) BL)
-              ((I b) AH)((I b) CH)((I b) DH)((I b) BH))
+(fi 16#b0 mov (AL (I b))(CL (I b))(DL (I b))(BL (I b))
+              (AH (I b))(CH (I b))(DH (I b))(BH (I b)))
 
-(fi 16#b8 mov ((I v) EAX)((I v) ECX)((I v) ECX)((I v) EBX)
-              ((I v) ESP)((I v) EBP)((I v) ESI)((I v) EDI))
+(fi 16#b8 mov (EAX (I v))(ECX (I v))(EDX (I v))(EBX (I v))
+              (ESP (I v))(EBP (I v))(ESI (I v))(EDI (I v)))
 
 (fi 16#c0 shift ((E b)(I b)) ((E v)(I b)))
 
@@ -333,7 +333,10 @@
               (bldmsg "[%w+%w]" (reg-m rm)(pop bytes*)))
         ((eq mod 2) 
               (setq  lth* (plus 4 lth*))
-              (bldmsg "[%w+%w]" (reg-m rm) (bytes2word)))
+	      (setq w (bytes2word))
+	      (cond ((equal w 16#C0000000) (setq *comment " -> car"))
+		    ((equal w 16#C0000004) (setq *comment " -> cdr")))	      
+              (bldmsg "[%w+%x]" (reg-m rm) (int2sys w)))
         ((eq mod 3)  (bldmsg "%w" (reg-m rm)))) )))
               
 (de decode-sib(p mod)
@@ -549,7 +552,7 @@ loop
          (prinblx (subla instr pat))
          (prin2 "    ")
 
-         (when *comment (ttab 55) (prin2 *comment))
+         (when *comment (ttab 60) (prin2 *comment))
          (setq *comment nil)
          (setq base (plus2 base lth))
          (setq lc (add1 lc))

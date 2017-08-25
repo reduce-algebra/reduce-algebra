@@ -257,6 +257,8 @@
    (when (wgreaterp b 1)(go error))
    (when (wlessp s 0) 
        (if (bbminusp u) (return s) (go error)))
+% The following is possibly "more" correct, but doesn't work properly
+%       (if (bbminusp u) (return (wminus s)) (go error)))
    (return (if (bbminusp u) (wminus s) s))
 error
    (continuableerror 99 "BIGNUM too large to convert to SYS" u)
@@ -606,7 +608,7 @@ error
   % V1 is a BigNum, C a fixnum.                                            
   % Assume C positive, ignore sign(V1)                                     
   % also assume V1 neq 0.                                                  
-  (cond ((and (izerop c)(izerop cc)) (return (gtpos 0)))
+  (cond ((and (izerop c)(izerop cc)) (gtpos 0))
 	(t % Only used from BHardDivide, BReadAdd.                          
 	   (prog (j l1 v3 carry)
 		 (setq l1 (bbsize v1))
@@ -1184,8 +1186,8 @@ error
 
 (de bsmalladd (v c)
   %V big, C fix.                                                           
-  (cond ((izerop c) (return v))
-	((bzerop v) (return (int2big c)))
+  (cond ((izerop c) v)
+	((bzerop v) (int2big c))
 	((bbminusp v) (bminus (bsmalldiff (bminus v) c)))
 	((iminusp c) (bsmalldiff v (iminus c)))
 	(t (prog (v1 l1)
