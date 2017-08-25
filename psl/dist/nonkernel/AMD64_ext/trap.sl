@@ -151,6 +151,9 @@
      % if this is a terminal interrupt (errornumber* = 2) we check
      % whether it occured within lisp code. If not, just return.
      (*jumpnoteq (label in-lisp) (fluid errornumber*) 2)
+     (*move (quote "Terminal Interrupt") (reg 1))
+     (*call console-print-string)
+     (*call console-newline)
      (*move (fluid sigaddr*) (reg 1))
      (*link codeaddressp expr 1)
      (!*jumpnoteq (label in-lisp) (reg 1) (quote nil))
