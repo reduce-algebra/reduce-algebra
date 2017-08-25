@@ -8,9 +8,9 @@
 }
 
 header {
-    background-image: url(images/header.gif);
+    background-image: url(images/icon.png), url(images/header.gif);
     background-repeat: no-repeat;
-    background-position: center;
+    background-position: 50px center, center;
     height: 60px;
     line-height: 60px;
     font-size: 40px;
