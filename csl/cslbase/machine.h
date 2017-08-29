@@ -176,6 +176,15 @@
 #include <sys/time.h>
 #endif
 
+#undef PACKAGE
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef VERSION
+#undef PACKAGE_VERSION
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_TARNAME
+#undef PACKAGE_URL
+
 #include <ffi.h>
 
 extern "C"

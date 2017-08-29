@@ -40,7 +40,17 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#undef VERSION
+
+// On the Macintosh I find that <ffi.h> redefined VERSION and PACKAGE_VERSION
+// and that will obviously clash with what I find set up by autoconf for me.
+// To work around this I make an inline getter function here:
+
+static inline const char *get_VERSION()
+{   return VERSION;
+}
+
+// I can now undefine VERSION before including <ffi.h> and still have
+// access to the version infro from MY version of "config.h"
 #endif
 
 #include "machine.h"

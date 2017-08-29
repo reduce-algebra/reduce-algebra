@@ -31,7 +31,7 @@
 # change that. These are the things I note above as "special flags"
 
 # Specify the name of this "application" and a version number
-AC_INIT([REDUCE],[9.00])
+AC_INIT([REDUCE],[9.01])
 
 AC_CONFIG_AUX_DIR([.])
 

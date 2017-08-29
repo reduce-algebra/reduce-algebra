@@ -35,11 +35,6 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-//
 // PACKAGE_VERSION is used to control the version number displayed when CSL
 // is started up in verbose mode (command line option -v). Version numbers
 // are also recorded in image files. But NOTE NOTE NOTE that the macro
@@ -48,7 +43,9 @@
 // fall-back. Indeed this whole file is a bit of a joke! Well to prevent it
 // from being a joke I make it undefine anything that config.h has set up and
 // provide its own value explictly.
-//
+// This adjustment is more important than ever given that <ffi.h> on the
+// Macintosh seems to (to my mind improperly!) define this symbol to reflect
+// its version.
 
 #undef PACKAGE_VERSION
 #define PACKAGE_VERSION     "9.01"
@@ -56,7 +53,7 @@
 // As of February 2016 I am making the file scripts/commit.sh update the
 // revision number stored here...
 
-#define REVISION 4172
+#define REVISION 4174
 
 #endif // header_version_h
 
