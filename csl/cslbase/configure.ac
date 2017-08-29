@@ -482,7 +482,7 @@ case $host in
     fi
     LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL"
   fi
-  CPPFLAGS=$CPPFLAGS -I/usr/local/include"
+  CPPFLAGS="$CPPFLAGS -I/usr/local/include"
   LDFLAGS="$LDFLAGS -pthread"
   DLL_CFLAGS="$CFLAGS -shared"
   XLIBS="-lXext -lX11"
