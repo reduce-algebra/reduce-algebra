@@ -40,24 +40,23 @@
 #endif
 
 //
-// VERSION is used to control the version number displayed when CSL/CCL
+// PACKAGE_VERSION is used to control the version number displayed when CSL
 // is started up in verbose mode (command line option -v). Version numbers
 // are also recorded in image files. But NOTE NOTE NOTE that the macro
-// VERSION gets set in config.h based on the version number established in
-// "configure.ac" and so the value set here is merely a fall-back. Indeed
-// this whole file is a bit of a joke! Well to prevent it from being a joke
-// I make it undefine anything that config.h has established and set up its
-// own value explictly.
+// PACKAGE_VERSION gets set in config.h based on the version number
+// established in "configure.ac" and so the value set here is merely a
+// fall-back. Indeed this whole file is a bit of a joke! Well to prevent it
+// from being a joke I make it undefine anything that config.h has set up and
+// provide its own value explictly.
 //
 
-#undef VERSION
-
-#define VERSION     "9.00"
+#undef PACKAGE_VERSION
+#define PACKAGE_VERSION     "9.01"
 
 // As of February 2016 I am making the file scripts/commit.sh update the
 // revision number stored here...
 
-#define REVISION 4171
+#define REVISION 4172
 
 #endif // header_version_h
 

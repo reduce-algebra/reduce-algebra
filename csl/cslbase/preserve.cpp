@@ -524,7 +524,7 @@ static directory *make_empty_directory(const char *name)
     d = (directory *) malloc(sizeof(directory) - sizeof(directory_entry));
     if (d == NULL) return &empty_directory;
     d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
-    d->h.version = IMAGE_FORMAT_VERSION | (SIXTY_FOUR_BIT ? 0x80 : 0);
+    d->h.version = IMAGE_FORMAT_VERSION;
     d->h.dirsize = 0;
     d->h.dirused = 0;
     d->h.dirext = 0;
@@ -554,7 +554,7 @@ static directory *make_pending_directory(const char *name, int pds)
     d = (directory *)malloc(n);
     if (d == NULL) return &empty_directory;
     d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
-    d->h.version = IMAGE_FORMAT_VERSION | (SIXTY_FOUR_BIT ? 0x80 : 0);
+    d->h.version = IMAGE_FORMAT_VERSION;
     d->h.dirsize = DIRECTORY_SIZE & 0xff;
     d->h.dirused = 0;
     d->h.dirext = (DIRECTORY_SIZE >> 4) & 0xf0;
@@ -578,7 +578,7 @@ static directory *make_native_directory(const char *shortname, const char *fulln
     d = (directory *)malloc(sizeof(directory) - sizeof(directory_entry));
     if (d == NULL) return &empty_directory;
     d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
-    d->h.version = IMAGE_FORMAT_VERSION | (SIXTY_FOUR_BIT ? 0x80 : 0);
+    d->h.version = IMAGE_FORMAT_VERSION;
     d->h.dirsize = DIRECTORY_SIZE & 0xff;
     d->h.dirused = 0;
     d->h.dirext = (DIRECTORY_SIZE >> 4) & 0xf0;
@@ -607,9 +607,7 @@ static void clear_entry(directory_entry *d)
 
 static bool version_moan(int v)
 {
-    if ((v & 0x7f) == IMAGE_FORMAT_VERSION) return false;
-// This printing of a newline here lookes really odd to me!
-//  term_printf("\n");
+    if (v == IMAGE_FORMAT_VERSION) return false;
     return true;
 }
 
@@ -739,7 +737,7 @@ directory *open_pds(const char *name, int mode)
             malloc(sizeof(directory)+(n-1)*sizeof(directory_entry));
         if (d == NULL) return &empty_directory;
         d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
-        d->h.version = IMAGE_FORMAT_VERSION | (SIXTY_FOUR_BIT ? 0x80 : 0);
+        d->h.version = IMAGE_FORMAT_VERSION;
         d->h.dirsize = (unsigned char)(n & 0xff);
         d->h.dirused = 0;
         d->h.dirext = (unsigned char)((n >> 4) & 0xf0);
@@ -799,7 +797,7 @@ static int unpending(directory *d)
     n = DIRECTORY_SIZE;      // Size for a directory
 // (the next bits were done when the pending directory was first created
 //  d->h.C = 'C'; d->h.S = MIDDLE_INITIAL; d->h.L = 'L';
-//  d->h.version = IMAGE_FORMAT_VERSION | (SIXTY_FOUR_BIT ? 0x80 : 0);
+//  d->h.version = IMAGE_FORMAT_VERSION;
 //  d->h.dirsize = n & 0xff;
 //  d->h.dirused = 0;
 //  d->h.dirext = (n >> 4) & 0xf0;
@@ -1191,7 +1189,7 @@ bool open_output(const char *name, size_t len)
             if (i == 0) Istatus = I_WRITING;
             else current_output_directory = NULL;
             if (name == NULL && len == IMAGE_CODE)
-                d->h.version = IMAGE_FORMAT_VERSION | (SIXTY_FOUR_BIT ? 0x80 : 0);
+                d->h.version = IMAGE_FORMAT_VERSION;
             return i;
         }
     }
@@ -1203,7 +1201,7 @@ bool open_output(const char *name, size_t len)
     if (len == IMAGE_CODE)
     {   name = "InitialImage";
         n = 1;
-        d->h.version = IMAGE_FORMAT_VERSION | (SIXTY_FOUR_BIT ? 0x80 : 0);
+        d->h.version = IMAGE_FORMAT_VERSION;
     }
     else if (len == HELP_CODE) name = "HelpDataFile", len = IMAGE_CODE, n = 1;
     else if (len == BANNER_CODE) name = "Start-Banner", len = IMAGE_CODE, n = 1;
