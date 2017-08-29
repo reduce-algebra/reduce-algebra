@@ -35,9 +35,6 @@
 
 #include "headers.h"
 
-#include "version.h"
-
-
 static int spset = 0;
 static int32_t spbase = 0, spmin;
 

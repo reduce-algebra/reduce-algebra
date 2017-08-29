@@ -55,8 +55,6 @@
 
 #include "headers.h"
 
-#include "version.h"
-
 //
 // The following extra includes should probably be hidden away elsewere
 // and/or abtracted away a bit. They are here so I can check if a file-name

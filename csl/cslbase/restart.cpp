@@ -2100,7 +2100,7 @@ void set_up_variables(int restart_flag)
                  w = acons(make_keyword("EXECUTABLE"),
                            make_string(fullProgramName), w);
                  w = acons(make_keyword("NAME"), make_string(IMPNAME), w);
-                 w = acons(make_keyword("VERSION"), make_string(VERSION), w);
+                 w = acons(make_keyword("VERSION"), make_string(PACKAGE_VERSION), w);
                  w = cons(make_keyword("CCL"), w);
                  w = cons(make_keyword("COMMON-LISP"), w);
 
@@ -2187,7 +2187,7 @@ void set_up_variables(int restart_flag)
                   make_string(programName), w);
         if (!restartp) w = cons(make_keyword("cold-start"), w);
         w = acons(make_keyword("name"), make_string(IMPNAME), w);
-        w = acons(make_keyword("version"), make_string(VERSION), w);
+        w = acons(make_keyword("version"), make_string(PACKAGE_VERSION), w);
         w = cons(make_keyword("csl"), w);
 //
 // Ha Ha a trick here - if a symbol ADDSQ is defined I view this image

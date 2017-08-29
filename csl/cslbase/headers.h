@@ -50,7 +50,7 @@ static inline const char *get_VERSION()
 }
 
 // I can now undefine VERSION before including <ffi.h> and still have
-// access to the version infro from MY version of "config.h"
+// access to the version info from MY version of "config.h"
 #endif
 
 #include "machine.h"
@@ -66,6 +66,7 @@ static inline const char *get_VERSION()
 #include "cslread.h"
 #include "inthash.h"
 #include "lispthrow.h"
+#include "version.h"
 
 #if HAVE_LIBWX
 #include "wxfwin.h"
