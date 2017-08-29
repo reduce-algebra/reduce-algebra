@@ -964,9 +964,12 @@ const char *CSLtmpnam(const char *suffix, size_t suffixlen)
 #if defined __CYGWIN__ || defined __unix__ || defined MACINTOSH
 
 // This code is intended to discover whether the pointer that is passed
-// is a valid address.
-// Writing to /dev/rand is certainly harmless. Any bytes written merely
-// get merged in with other entropy that influences future random numbers.
+// is a valid address. This is JUST intended for debugging so that I can
+// go things like
+//   my_assert(valid_address(p), [=]{ ... });
+// with my own custom diagnostics in the code that reports trouble.
+// The failure is not expected to arise except when I have an internal
+// error in CSL.
 // The write() function never causes an exception, but instead returns
 // -1 if it fails, and sets errno to EFAULT if the buffer address that it
 // is passed offends it.
@@ -974,17 +977,19 @@ const char *CSLtmpnam(const char *suffix, size_t suffixlen)
 #include <unistd.h>
 #include <fcntl.h>
 
-static int devrand = 0;
-static bool devrand_set = false;
+static FILE *file_handle;
+static int fd_handle;
+static bool file_handle_set = false;
 
 bool valid_address(void *pointer)
-{   if (!devrand_set)
-    {   devrand = open("/dev/random", O_WRONLY);
-        devrand_set = true;   // I will open the fd just once.
+{   if (!file_handle_set)
+    {   if ((file_handle = tmpfile()) == NULL) return false;
+        fd_handle = fileno(file_handle);
+        file_handle_set = true;   // I will open the fd just once.
     }
 // I will not bother to check errno, and just take any failure as
 // indicating a bad memory address in the pointer.
-    return (write(devrand, pointer, 1) >= 0);
+    return (write(fd_handle, pointer, 1) != -1);
 }
 
 #elif defined WIN32
