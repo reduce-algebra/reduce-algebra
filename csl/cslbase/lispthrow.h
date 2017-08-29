@@ -231,7 +231,7 @@ public:
 // here to avoid complaints when they are not justified.
     ~RAIIstack_sanity()
     {   if (saveStack != stack && !std::uncaught_exception())
-        {   printf("???SP %p => %p in %s : %s:%d\n",
+        {   printf("[Stack Sanity Oddity] %p => %p in %s : %s:%d\n",
                    saveStack, stack, fname, file, line);
             if (w != nil)
             {   err_printf("Data: ");

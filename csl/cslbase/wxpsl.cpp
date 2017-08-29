@@ -256,7 +256,7 @@ int fwin_main(int argc, const char **argv)
                   MeToReduce[0], ReduceToMe[1]));
         dup2(MeToReduce[0],STDIN_FILENO);
         dup2(ReduceToMe[1],STDOUT_FILENO);
-//      dup2(ReduceToMe[1],STDERR_FILENO);    // ??????
+//      dup2(ReduceToMe[1],STDERR_FILENO);    // ?
         close(MeToReduce[0]);
         close(ReduceToMe[1]);
 

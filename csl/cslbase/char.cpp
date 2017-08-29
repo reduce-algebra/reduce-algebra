@@ -402,7 +402,7 @@ LispObject Lspecial_char(LispObject, LispObject a)
             aerror("special-char");
     }
 //
-// What about this and Standard Lisp mode???  Well it still hands back
+// What about this and Standard Lisp mode?  Well it still hands back
 // a "character object", and these are generally not at all useful in
 // Standard Lisp.  Two exceptions occur - first character objects are
 // valid in lists handed to compress, and secondly the character object

@@ -487,7 +487,7 @@ LispObject Lsputv2(LispObject, int nargs, ...)
     va_end(a);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
         aerror1("putv-char2", v);
-// @ Huge strings??
+// @ Huge strings?
     else if (!is_fixnum(n)) aerror1("putv-char", n);
     if (is_fixnum(x1)) vx1 = int_of_fixnum(x1);
     else if (is_char(x1)) vx1 = code_of_char(x1);
@@ -519,7 +519,7 @@ LispObject Lsputv3(LispObject, int nargs, ...)
     va_end(a);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
         aerror1("putv-char3", v);
-// @ Huge strings??
+// @ Huge strings?
     else if (!is_fixnum(n)) aerror1("putv-char", n);
     if (is_fixnum(x1)) vx1 = int_of_fixnum(x1);
     else if (is_char(x1)) vx1 = code_of_char(x1);
@@ -556,7 +556,7 @@ LispObject Lsputv4(LispObject, int nargs, ...)
     va_end(a);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
         aerror1("putv-char4", v);
-// @ Huge strings??
+// @ Huge strings?
     else if (!is_fixnum(n)) aerror1("putv-char", n);
     if (is_fixnum(x1)) vx1 = int_of_fixnum(x1);
     else if (is_char(x1)) vx1 = code_of_char(x1);

@@ -1748,7 +1748,7 @@ void showstats(size_t n)
     for (i=0; i<h_table_size; i++)
     {   if (ht(i) != SPID_HASHEMPTY && ht(i) != SPID_HASHTOMB)
         {   size_t j = instrumented_lookup(ht(i)); // should be there
-            if (i != j) printf("??? i=%" PRIuMAX " j=%" PRIuMAX "(%" PRIxMAX ")\n",
+            if (i != j) printf("? i=%" PRIuMAX " j=%" PRIuMAX "(%" PRIxMAX ")\n",
                                (uintmax_t)i, (uintmax_t)j, (uintmax_t)j);
             instrumented_lookup(my_lrand48());      // probably not there
         }

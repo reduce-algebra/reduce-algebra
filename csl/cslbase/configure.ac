@@ -428,6 +428,7 @@ case $host in
 # compilation of any sort at all are then THEIR job to resolve by providing
 # settings that are satisfactory.
   CPPFLAGS="$CPPFLAGS -I/opt/local/include -I/opt/local/include/freetype2"
+  CPPFLAGS="$CPPFLAGS -I/usr/include/ffi"
   XLIBS="-lXext -lX11 -lXft -lfontconfig"
   macintosh_build="yes"
   darwin_build="yes"
@@ -481,6 +482,7 @@ case $host in
     fi
     LDFLAGS="$LDFLAGS -L/usr/X11R6/$XLL"
   fi
+  CPPFLAGS=$CPPFLAGS -I/usr/local/include"
   LDFLAGS="$LDFLAGS -pthread"
   DLL_CFLAGS="$CFLAGS -shared"
   XLIBS="-lXext -lX11"

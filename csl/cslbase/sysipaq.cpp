@@ -364,7 +364,7 @@ int fwin_windowmode()
 // particular application.
 //
 char about_box_title[32] = "About Reduce";
-char about_box_description[32] = "Version ???";
+char about_box_description[32] = "Version \?\?\?";
 char about_box_rights_1[32] = "A C Hearn";
 char about_box_rights_2[32] = "Codemist    ";
 char about_box_rights_3[32] = "Ipaq version March 2005";

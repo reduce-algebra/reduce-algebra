@@ -4845,7 +4845,7 @@ void fwin_acknowledge_tick()
 // This is to do with my handling of "^Z" to suspend the computation.
 // If the user enters ^Z I lock the pause mutex and then send a "TICK".
 // The user is expected to notice it and respond here - and hence get
-// suspended. ????
+// suspended. ?
     if (!windowed) return;
 // To keep wxWidgets threads happy I must poll like this periodically.
     wxThread::This()->TestDestroy();

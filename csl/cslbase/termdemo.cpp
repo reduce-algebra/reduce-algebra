@@ -121,7 +121,7 @@
 // M    Newline              [Module load menu] ($!)
 // N    Next history         Search history next  (also down arrow key)
 // O    Discard output (!?)  [Font menu] (!)
-//++ I think I see redfront binding ALT-OQ to "line_help"???
+//++ I think I see redfront binding ALT-OQ to "line_help"?
 // P    Previous history     Search history prev  (also up arrow key)
 // Q    Resume output (!?)   -
 //++ I am not quite certain about the status of ^S and ^Q for pausing
@@ -129,7 +129,7 @@
 //++ of what I want to!
 // R    Redisplay            [Break menu] (!)
 //++ redfront appears to use ^R to start a backwards incremental search
-//++ which if it searchs history is something I trigger with ALT-P ???
+//++ which if it searchs history is something I trigger with ALT-P ?
 // S    Pause output (!?)    [Switch menu] (!)
 // T    Transpose chars      -
 // U    Undo($!)escape srch  Uppercase word

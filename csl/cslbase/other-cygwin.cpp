@@ -220,9 +220,9 @@ int main(int argc, char *argv[])
     if (user == NULL) user = "unknown";
     memset(newenv, 0, sizeof(newenv));
     if (run64)
-        sprintf(newenv, "USER=%s%cPATH=/cygdrive/c/cygwin64/bin%c", user, 0, 0);
+        sprintf(newenv, "OTHER=yes%cUSER=%s%cPATH=/cygdrive/c/cygwin64/bin%c", 0, user, 0, 0);
     else
-        sprintf(newenv, "USER=%s%cPATH=/cygdrive/c/cygwin/bin%c", user, 0, 0);
+        sprintf(newenv, "OTHER=yes%cUSER=%s%cPATH=/cygdrive/c/cygwin/bin%c", 0, user, 0, 0);
     for (i=0; i<dirsize; i++)
         if (current[i] == '\\') current[i] = '/';
     sprintf(command,

@@ -386,7 +386,7 @@ LispObject intern(size_t len, bool escaped)
                     continue;
                 }
 // only basic characters can possibly be digits
-                if (c <= 0xff && isdigit(c)) // Inspect *read-base* ???
+                if (c <= 0xff && isdigit(c)) // Inspect *read-base* ?
                 {   numberp = 2;
                     continue;
                 }

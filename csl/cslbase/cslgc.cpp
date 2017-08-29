@@ -803,7 +803,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 #ifdef CONSERVATIVE
 //
 // How do I know that all callee-save registers are on the stack by the
-// stage that I get to the level that C_stacktop now refers to???
+// stage that I get to the level that C_stacktop now refers to?
 //
     get_stacktop();
     trace_printf("\n=== C stack size = %5d\n", (C_stackbase-C_stacktop));

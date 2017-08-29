@@ -865,7 +865,7 @@ static bool lucas_test(uint64_t c)
 // I have a prime then this is a field multiplication and u can only end up zero
 // if some v is zero.
         if (trace_primep)
-            printf("%" P ": [??, %" P "] qk=%" P "\n",
+            printf("%" P ": [?, %" P "] qk=%" P "\n",
                 kk, v, qk);
         if (trace_primep)
             printf("(B) l=%d ll=%d k=%" P " logbit=%s\n",

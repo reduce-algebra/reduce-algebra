@@ -957,7 +957,7 @@ LispObject om_putByteArray(LispObject env, LispObject ldev, LispObject val)
         aerror("om_toDev");
 
     // Get the length of the array.
-    len = length_of_byteheader(val) - CELL; // is this correct???
+    len = length_of_byteheader(val) - CELL; // is this correct?
 
     // Write out the array data.
     status = OMputByteArray(dev, ((char *)val - TAG_VECTOR + CELL), len);
