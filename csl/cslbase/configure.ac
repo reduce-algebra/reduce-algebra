@@ -583,6 +583,13 @@ AC_ARG_ENABLE(debug,
   [enable_debug="no"])
 AC_MSG_RESULT([$enable_debug])
 
+AC_ARG_ENABLE(profile,
+  AC_HELP_STRING([--enable-profile],
+                 [compile for profiling]),
+  [],
+  [enable_profile="no"])
+AC_MSG_RESULT([$enable_profile])
+
 if test "x$enable_debug" = "xyes"
 then
   foxdir="$foxdir-debug"
@@ -1113,16 +1120,13 @@ then
 # NSA="-fno-strict-aliasing"
   if test "x$enable_debug" = "xyes"
   then
-# If only to see how many people get upset, I will put "-pg" in the command
-# line if debugging is requested. For gcc (at least on many platforms) this
-# will enabling profiling so that "gprof" can be used after a run to observe
-# where theer were hot-spots. If I get keen I will put in extra tests here to
-# check if the "-pg" option is at least acceptable to the compiler... but
-# for now it is unconditional based on a belief that those who specify
-# --enable-debug will be experienced enough to sort out any mess that could
-# arise.
-    PROFILE="-pg"
-#   PROFILE=""
+# I will only allow profiling if debugging is also switched on.
+    if test "x$enable_profile" = "xyes"
+    then
+      PROFILE="-pg"
+    else
+      PROFILE=""
+    fi
     CFLAGS="${CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     CXXFLAGS="${CXXFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
