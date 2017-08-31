@@ -164,8 +164,8 @@
 
 (fi 16#a0 mov (AL (O b)) (eax (O v)) ((O b) AL) ((O v) EAX))
 
-(fi 16#b0 mov ((I b) AL)((I b) CL)((I b) DL)((I b) BL)
-              ((I b) AH)((I b) CH)((I b) DH)((I b) BH))
+(fi 16#b0 mov (AL (I b))(CL (I b))(DL (I b))(BL (I b))
+              (AH (I b))(CH (I b))(DH (I b))(BH (I b)))
 
 (fi 16#b8 mov (EAX (I v))(ECX (I v))(EDX (I v))(EBX (I v))
               (ESP (I v))(EBP (I v))(ESI (I v))(EDI (I v)))

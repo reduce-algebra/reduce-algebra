@@ -38,7 +38,7 @@
 # 
 ###############################################################################
 
-PSL     = $(PROOT)
+PSL     = $(PROOT)/dist
 PSYS    = $(PROOT)/bin
 PK      = $(PSL)/kernel
 PXK     = $(PK)/$(MACHINE)
@@ -51,7 +51,7 @@ PU      = $(PSL)/util
 PXU     = $(PU)/$(MACHINE)
 PDIST   = $(PSL)/distrib
 PXDIST  = $(PDIST)/$(MACHINE)
-PL      = $(PSL)/lap
+PL      = $(PSL)/lap/$(MACHINE)
 
 all: \
 	$(PL)/fc-indirect.b $(PL)/get-options.b \
