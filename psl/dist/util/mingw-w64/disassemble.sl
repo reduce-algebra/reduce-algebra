@@ -179,7 +179,7 @@
               (AH (I b))(CH (I b))(DH (I b))(BH (I b)))
 
 (fi 16#b8 mov (EAX (I v))(ECX (I v))(EDX (I v))(EBX (I v))
-              (ESP (I v))(ESP (I v))(ESI (I v))(EDI (I v)))
+              (ESP (I v))(EBP (I v))(ESI (I v))(EDI (I v)))
 
 (fi 16#c0 shift ((E b)(I b)) ((E v)(I b)))
 
