@@ -172,7 +172,7 @@
 					<dt id="Barfoot:87">[Barfoot:87] D.&nbsp;T. Barfoot and D.&nbsp;J. Broadhurst.</dt>
 					<dd><a href="http://dx.doi.org/10.1007/BF01552545">Finite field theories in three dimensions with and without supersymmetry</a>. <em>Zeitschrift f&uuml;r Physik C. Particles and Fields</em> <strong>33</strong> no. 3, pages 391-395, September 1987.</dd>
 					<dt id="Barfoot:88">[Barfoot:88] D.&nbsp;T. Barfoot and D.&nbsp;J. Broadhurst.</dt>
-					<dd><a href="http://dx.doi.org/10.1007/BF01412581">Z<sub>2</sub>\timesS<sub>6</sub>
+					<dd><a href="http://dx.doi.org/10.1007/BF01412581">Z<sub>2</sub>&times;S<sub>6</sub>
 						symmetry of the two-loop diagram</a>. <em>Zeitschrift f&uuml;r Physik C. Particles and Fields</em> <strong>41</strong> no. 1, pages 81-85, March 1988.</dd>
 					<dt id="Bark:78">[Bark:78] Fritz&nbsp;H. Bark and Herman Tinoco.</dt>
 					<dd><a href="http://dx.doi.org/10.1017/S0022112078001627">Stability of plane Poiseuille flow of a dilute suspension of slender fibres</a>. <em>J. Fluid Mech.</em> <strong>87</strong> no. 2, pages 321-333, 1978.</dd>

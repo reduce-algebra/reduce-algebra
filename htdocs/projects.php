@@ -33,7 +33,8 @@
 					<li>the <a href="http://mentorproducts.com/">Mentor Mathematics Advisor</a> for mathematics education;
 					</li>
 					<li><a href="http://mtt.sourceforge.net/">MTT</a>, a set of tools for modeling dynamic physical systems using the bond-graph methodology<!--.
-  Authors: <a href="http://www.mech.gla.ac.uk/~gbevan/">Geraint Bevan</a> &amp; <a href="http://www.mech.gla.ac.uk/~peterg/sig.htm">Peter Gawthrop</a> -->.</li>
+  Authors: <a href="http://www.mech.gla.ac.uk/~gbevan/">Geraint Bevan</a> &amp; <a href="http://www.mech.gla.ac.uk/~peterg/sig.htm">Peter Gawthrop</a> -->;</li>
+					<li><a href="https://github.com/chakravala/Reduce.jl">Reduce.jl</a>, an interface for calling REDUCE from the Julia language for symbolic manipulation.</li>
 				</ul>
 				<p>
 					The following projects were distributed independently but are now available from the REDUCE SourceForge project:
