@@ -20,6 +20,7 @@
     menuItem('characteristics.php', 'Characteristics', 'REDUCE capabilities and design characteristics');
     menuItem('obtaining.php', 'Obtaining REDUCE', 'Guidance on obtaining REDUCE from SourceForge');
     menuItem('documentation.php', 'Documentation', 'User guides for REDUCE, its packages and Lisp systems');
+    menuItem('books.php', 'Books', 'Books about REDUCE');
     menuItem('support.php', 'Support', 'Support available for REDUCE');
     menuItem('packages.php', 'Available Packages', 'Additional packages that use REDUCE');
     menuItem('projects.php', 'Related Projects', 'Projects related to REDUCE');
