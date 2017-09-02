@@ -5,6 +5,38 @@
 	<title>REDUCE Books</title>
 	<link rel="icon" type="image/png" href="images/icon.png" />
 	<link rel="stylesheet" href="StyleSheet.css" />
+	<style type="text/css">
+		#main img {
+			width: 60px;
+			height: 91px;
+			float: left;
+			margin: 0 1em 1em 0;
+		}
+
+		#main p, #main h2 {
+			clear: both
+		}
+
+		#main .title {
+			display: block;
+			font-weight: bold;
+			font-size: large;
+		}
+
+		#main .subtitle {
+			display: block;
+			font-size: small;
+		}
+
+		#main .authors {
+			display: block;
+		}
+
+		#main .biblio {
+			font-size: small;
+			display: block
+		}
+	</style>
 </head>
 <body>
 	<div id="content">
@@ -12,24 +44,69 @@
 		<div id="middle">
 			<nav>
 				<script language="php">
-						include 'navigation.inc';
+					include 'navigation.inc';
 				</script>
 			</nav>
 			<div id="main">
-				<p>The definitive guide to using REDUCE, namely the REDUCE User&#39;s Manual, and other user guides are distributed with REDUCE and also <a href="documentation.php">available online</a> for free. In addition, the following independently published books are available, sorted by publication date from newest to oldest. (They should also be included in the <a href="bibliography.php">bibliography</a>, but can be hard to find there.) Links are to the publisher if possible and otherwise to a bookseller such as Amazon.</p>
+				<p>The definitive guide to using REDUCE, namely the REDUCE User&#39;s Manual, and other user guides are distributed with REDUCE and also <a href="documentation.php">available online</a> for free. In addition, the following independently published books are available, sorted by publication date from newest to oldest. (They should also be included in the <a href="bibliography.php">bibliography</a>, but can be hard to find there.) Links are to the publisher if possible or otherwise to a bookseller such as Amazon.</p>
 				<h2>Books primarily about REDUCE</h2>
-				<p><a href="http://www.cambridge.org/gb/academic/subjects/physics/particle-physics-and-nuclear-physics/using-reduce-high-energy-physics?format=PB#si7TZq9PBUEIGGG9.97"><b>Using REDUCE in High Energy Physics</b></a> by A. G. Grozin, 404 pages, Cambridge University Press, ISBN 9780521019521, 2005. (<a href="http://www.inp.nsk.su/~grozin/book/">See also the author&#39;s own web page.</a>)</p>
-				<p><a href="http://www.springer.com/gb/book/9783540567059"><b>REDUCE</b>: <span lang="de">Ein Kompaktkurs &uuml;ber die Anwendung von Computer-Algebra</span></a> by Friedrich W. Hehl, Volker Winkelmann and Hartmut Meyer, 143 pages, Springer, ISBN 9783540567059, 1993.</p>
-				<p><a href="https://www.amazon.de/Einf%C3%BChrung-Computeralgebra-Mathematiker-Informatiker-Physiker/dp/341115781X/ref=sr_1_1?s=books&ie=UTF8&qid=1504285074&sr=1-1"><span lang="de"><b>Einf&uuml;hrung in die Computeralgebra mit REDUCE</b>: f&uuml;r Mathematiker, Informatiker und Physiker</span></a> by Johannes Ueberberg, 331 pages, BI-Wiss.-Verlag, ISBN 9783411157815, 1992.</p>
-				<p><a href="http://www.springer.com/gb/book/9780792314417"><b>Computer Algebra with LISP and REDUCE</b>: An Introduction to Computer-aided Pure Mathematics</a> by F.&nbsp;Brackx and D.&nbsp;Constales, 264 pages, Springer, ISBN 9789401055499, 1991.</p>
-				<p><a href="https://global.oup.com/academic/product/algebraic-computing-with-reduce-9780198534433?lang=en&amp;cc=se"><b>Algebraic Computing with REDUCE</b></a> by Malcolm A. H. MacCallum and Francis J. Wright, 314 pages, Oxford University Press, ISBN 9780198534433, 1991.</p>
-				<p><a href="http://www.springer.com/math/cse/book/978-0-387-96598-7"><b>REDUCE</b>: Software for Computer Algebra</a> by Gerhard Rayna, 329 pages, Springer, ISBN 9780387965987, 1987.</p>
+				<p>
+					<a href="http://www.cambridge.org/gb/academic/subjects/physics/particle-physics-and-nuclear-physics/using-reduce-high-energy-physics?format=PB#si7TZq9PBUEIGGG9.97">
+						<img src="http://assets.cambridge.org/97805210/19521/cover/9780521019521.jpg" width="180" height="259" />
+						<span class="title">Using REDUCE in High Energy Physics</span></a> <span class="authors">by A. G. Grozin</span> <span class="biblio">404 pages, Cambridge University Press, ISBN 9780521019521, 2005</span>
+					(See also <a href="http://www.inp.nsk.su/~grozin/book/">the author&#39;s own web page</a>.)
+				</p>
+				<p>
+					<a href="http://www.springer.com/gb/book/9783540567059">
+						<img src="https://images.springer.com/sgw/books/medium/9783540567059.jpg" width="153" height="235" />
+						<span class="title">REDUCE</span></a> <span class="subtitle" lang="de">Ein Kompaktkurs &uuml;ber die Anwendung von Computer-Algebra</span> <span class="authors">by Friedrich W. Hehl, Volker Winkelmann and Hartmut Meyer</span> <span class="biblio">143 pages, Springer, ISBN 9783540567059, 1993</span>
+				</p>
+				<p>
+					<a href="https://www.amazon.de/Einf%C3%BChrung-Computeralgebra-Mathematiker-Informatiker-Physiker/dp/341115781X/ref=sr_1_1?s=books&ie=UTF8&qid=1504285074&sr=1-1">
+						<img src="https://images-eu.ssl-images-amazon.com/images/I/31w8s2-nqGL._SL500_BO1,204,203,200_.jpg" width="202" height="306" />
+						<span lang="de"><span class="title">Einf&uuml;hrung in die Computeralgebra mit REDUCE</span></a> <span class="subtitle">f&uuml;r Mathematiker, Informatiker und Physiker</span></span> <span class="authors">by Johannes Ueberberg</span> <span class="biblio">331 pages, BI-Wiss.-Verlag, ISBN 9783411157815, 1992</span>
+				</p>
+				<p>
+					<a href="http://www.springer.com/gb/book/9780792314417">
+						<img src="https://images.springer.com/sgw/books/medium/9780792314417.jpg" width="153" height="232" />
+						<span class="title">Computer Algebra with LISP and REDUCE</span></a> <span class="subtitle">An Introduction to Computer-aided Pure Mathematics</span> <span class="authors">by F.&nbsp;Brackx and D.&nbsp;Constales</span> <span class="biblio">264 pages, Springer, ISBN 9789401055499, 1991</span>
+				</p>
+				<p>
+					<a href="https://global.oup.com/academic/product/algebraic-computing-with-reduce-9780198534433?lang=en&amp;cc=se">
+						<img src="http://global.oup.com/academic/covers/uk/pdp/9780198534433" width="180" height="273" />
+						<span class="title">Algebraic Computing with REDUCE</span></a> <span class="authors">by Malcolm A. H. MacCallum and Francis J. Wright</span> <span class="biblio">314 pages, Oxford University Press, ISBN 9780198534433, 1991</span>
+				</p>
+				<p>
+					<a href="http://www.springer.com/math/cse/book/978-0-387-96598-7">
+						<img src="https://images.springer.com/sgw/books/medium/9780387965987.jpg" width="153" height="232" />
+						<span class="title">REDUCE</span></a> <span class="subtitle">Software for Computer Algebra</span> <span class="authors">by Gerhard Rayna</span> <span class="biblio">329 pages, Springer, ISBN 9780387965987, 1987</span>
+				</p>
 				<h2>Books that include information about, or closely related to, REDUCE</h2>
-				<p><a href="http://www.springer.com/gb/book/9783540654667"><b>Computer Algebra Handbook</b>: Foundations &middot; Applications &middot; Systems</a> edited by Johannes Grabmeier, Erich Kaltofen and Volker Weispfenning, 637 pages, Springer, ISBN 9783642629884, 2003.</p>
-				<p><a href="http://www.worldscientific.com/worldscibooks/10.1142/2362"><b>Quantum Mechanics Using Computer Algebra</b>: Includes Sample Programs for REDUCE, MAPLE, MATHEMATICA and C++</a> by Willi-Hans Steeb, 200 pages, World Scientific, ISBN 9789810217709, 1994.</p>
-				<p><a href="http://www.springer.com/gb/book/9783540565307"><b>Computer Simulation and Computer Algebra</b>: Lectures for Beginners</a> by D. Stauffer, Friedrich W. Hehl, Nobuyasu Ito, Volker Winkelmann and John G. Zabolitzky, 287 pages, Springer, ISBN 9783540565307, 1993.</p>
-				<p><a href="http://www.worldscientific.com/worldscibooks/10.1142/2097"><b>RLISP &#39;88</b>: An Evolutionary Approach to Program Design and Reuse</a> by Jed Marti, 268 pages, World Scientific, ISBN 9789810214791, 1993.</p>
-				<p><a href="https://www.amazon.co.uk/Computer-Algebra-Algorithms-Algebraic-Computation/dp/0122042328"><b>Computer Algebra</b>: Systems and Algorithms for Algebraic Computation</a> by J. H. Davenport, Y. Siret and E. Tournier, 256 pages, Academic Press, second edition, ISBN 0122042301, 1993.</p>
+				<p>
+					<a href="http://www.springer.com/gb/book/9783540654667">
+						<img src="https://images.springer.com/sgw/books/medium/9783540654667.jpg" width="153" height="232" />
+						<span class="title">Computer Algebra Handbook</span></a> <span class="subtitle">Foundations &middot; Applications &middot; Systems</span> <span class="authors">edited by Johannes Grabmeier, Erich Kaltofen and Volker Weispfenning</span> <span class="biblio">637 pages, Springer, ISBN 9783642629884, 2003</span>
+				</p>
+				<p>
+					<a href="http://www.worldscientific.com/worldscibooks/10.1142/2362">
+						<img src="http://www.worldscientific.com/na101/home/literatum/publisher/wspc/books/content/books/1994/2362/2362/production/2362.cover.jpg" width="120" height="168" />
+						<span class="title">Quantum Mechanics Using Computer Algebra</span></a> <span class="subtitle">Includes Sample Programs for REDUCE, MAPLE, MATHEMATICA and C++</span> <span class="authors">by Willi-Hans Steeb</span> <span class="biblio">200 pages, World Scientific, ISBN 9789810217709, 1994</span>
+				</p>
+				<p>
+					<a href="http://www.springer.com/gb/book/9783540565307">
+						<img src="https://images.springer.com/sgw/books/medium/9783540565307.jpg" width="153" height="232" />
+						<span class="title">Computer Simulation and Computer Algebra</span></a> <span class="subtitle">Lectures for Beginners</span> <span class="authors">by D. Stauffer, Friedrich W. Hehl, Nobuyasu Ito, Volker Winkelmann and John G. Zabolitzky</span> <span class="biblio">287 pages, Springer, ISBN 9783540565307, 1993</span>
+				</p>
+				<p>
+					<a href="http://www.worldscientific.com/worldscibooks/10.1142/2097">
+						<img src="http://www.worldscientific.com/na101/home/literatum/publisher/wspc/books/content/wsscs/1993/2097/2097/production/2097.cover.jpg" width="120" height="168" />
+						<span class="title">RLISP &#39;88</span></a> <span class="subtitle">An Evolutionary Approach to Program Design and Reuse</span> <span class="authors">by Jed Marti</span> <span class="biblio">268 pages, World Scientific, ISBN 9789810214791, 1993</span>
+				</p>
+				<p>
+					<a href="https://www.amazon.co.uk/Computer-Algebra-Algorithms-Algebraic-Computation/dp/0122042328">
+						<img src="https://books.google.co.uk/books/content?id=h9tQAAAAMAAJ&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE73Aztscidl538_RNyv1SyCxy3hRsQ4pPRlO4NrLA0skCTjaT7oExzE-w4EMwIpHr5b-Cqv0_X12Oz6nnsD2i3MTkelLmcKe7kpIn70bJxU-8aAerSV5_BgZV-gCsWIZ9B4CmXgw" width="128" height="202" />
+						<span class="title">Computer Algebra</span></a> <span class="subtitle">Systems and Algorithms for Algebraic Computation</span> <span class="authors">by J. H. Davenport, Y. Siret and E. Tournier</span> <span class="biblio">256 pages, Academic Press, second edition, ISBN 0122042301, 1993</span>
+				</p>
 			</div>
 			<!--/#main-->
 		</div>
