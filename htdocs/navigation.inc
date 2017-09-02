@@ -22,7 +22,7 @@
     menuItem('documentation.php', 'Documentation', 'User guides for REDUCE, its packages and Lisp systems');
     menuItem('books.php', 'Books', 'Books about REDUCE');
     menuItem('support.php', 'Support', 'Support available for REDUCE');
-    menuItem('packages.php', 'Available Packages', 'Additional packages that use REDUCE');
+    menuItem('packages.php', 'Related Packages', 'Packages that use REDUCE');
     menuItem('projects.php', 'Related Projects', 'Projects related to REDUCE');
     menuItem('bibliography.php', 'Bibliography', 'Publications that reference REDUCE');
     menuItem('about.php', 'About REDUCE', 'History and contributors');
