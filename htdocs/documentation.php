@@ -9,28 +9,6 @@
 		#contributed li a {
 			font-weight: bold
 		}
-
-		/* TeX and LaTeX logo markup from http://tess.oconnor.cx/2007/08/tex-poshlet */
-		.tex sub, .latex sub, .latex sup {
-			text-transform: uppercase;
-		}
-
-		.tex sub, .latex sub {
-			vertical-align: -0.5ex;
-			margin-left: -0.1667em;
-			margin-right: -0.125em;
-		}
-
-		.tex, .latex, .tex sub, .latex sub {
-			font-size: 1em;
-		}
-
-			.latex sup {
-				font-size: 0.85em;
-				vertical-align: 0.15em;
-				margin-left: -0.36em;
-				margin-right: -0.15em;
-			}
 	</style>
 </head>
 <body>
