@@ -29,8 +29,8 @@
 </script>
 </ul>
 
-<p>Get REDUCE from<br />
-<a href="https://sourceforge.net/p/reduce-algebra/" rel="nofollow"><img alt="Download REDUCE" src="https://sourceforge.net/sflogo.php?type=13&group_id=248416"></a></p>
+<a href="https://sourceforge.net/p/reduce-algebra/" rel="nofollow"><p>Download REDUCE from<br />
+	<img alt="Download REDUCE" src="https://sourceforge.net/sflogo.php?type=13&group_id=248416"></p></a>
 
 <div id="google_translate_element"></div><script type="text/javascript">
 function googleTranslateElementInit() {
