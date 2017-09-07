@@ -44,12 +44,11 @@
 					<li><a href="http://cds.cern.ch/record/438562/files/0005081.pdf">Ortocartan</a> is a <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/contrib/ortocartan/">set of programs</a> for algebraic calculations in relativity, implemented in the Lisp underlying REDUCE;</li>
 					<li><a href="reduce-ide/reduce-ide.php">REDUCE IDE</a> is an <u>I</u>ntegrated <u>D</u>evelopment <u>E</u>nvironment for the <a href="http://www.gnu.org/software/emacs/emacs.html">GNU Emacs</a> editor.</li>
 				</ul>
-				<h2>Some other current Open Source computer algebra projects</h2>
+				<h2>Other computer algebra systems</h2>
+				<p>Wikipedia provides a fairly comprehensive <a href="https://en.wikipedia.org/wiki/List_of_computer_algebra_systems">list of computer algebra systems</a>, but it does not include the following:</p>
 				<ul>
 					<li><a href="http://www.mathpiper.org/">MathPiper</a></li>
-					<li><a href="http://open-axiom.sourceforge.net/">OpenAxiom: The Open Scientific Computation Platform</a></li>
-					<li><a href="http://polybori.sourceforge.net/">PolyBoRi &ndash; Polynomials over Boolean Rings</a></li>
-					<li><a href="http://singular.mathematik.uni-kl.de/">Singular</a></li>
+					<li><a href="http://polybori.sourceforge.net/">PolyBoRi</a> &ndash; Polynomials over Boolean Rings</li>
 				</ul>
 			</div>
 			<!--/#main-->
