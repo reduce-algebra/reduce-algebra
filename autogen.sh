@@ -8,7 +8,7 @@
 
 #
 # Usage:
-#     autogen.sh [options as for the configure script]
+#     autogen.sh [--sequential] [options as for the configure script]
 #
 # If no arguments are passed the script will rebuild everything. If
 # --with-csl or --with-psl is specified only that section of the tree
@@ -16,6 +16,13 @@
 # "--with-boehm" and perhaps other sub-options will be checked to try
 # to save reworking directories that would not be used.
 #
+
+sequential="no"
+if test "x$1" = "x--sequential"
+then
+  sequential="yes"
+  shift
+fi
 
 # I want this script to be one I can launch from anywhere.
 
@@ -57,6 +64,7 @@ else
 fi
 
 # I will re-process the top level first sequentially.
+aclocal
 autoreconf -f -i -v
 
 # Here are the directories that I will always process...
@@ -126,15 +134,23 @@ do
     cd $d
     printf "autoreconf -f -i -v\n"
 # I will spawn all the calls to autoconf to run concurrently...
-    autoreconf -f -i -v &
-    procids="$procids $!"
+    if test "$sequential" = "yes"
+    then
+      ( aclocal ; autoreconf -f -i -v )
+    else
+      ( aclocal ; autoreconf -f -i -v ) &
+      procids="$procids $!"
+    fi
     cd $here
   fi
 done
 
 # ...then wait until they have all finished.
 
-wait $procids
+if test "$sequential" != "yes"
+then
+  wait $procids
+fi
 
 scripts/resetall.sh
 

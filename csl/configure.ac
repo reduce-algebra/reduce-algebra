@@ -1,6 +1,6 @@
 ## Process this file with autoconf to produce a configure script.
 
-# A C Norman.                                         April 2009
+# A C Norman.                                         April 2009-2017
 
 #
 # The object of this configuration file is not to set the world up to
@@ -37,7 +37,7 @@ fi
 #
 
 AC_ARG_WITH(autogen,
-  AC_HELP_STRING([--with-autogen], [Regenetare autoconf file at start]),
+  AC_HELP_STRING([--with-autogen], [Regenerate autoconf file at start]),
   [],
   [with_autogen="yes"])
 
