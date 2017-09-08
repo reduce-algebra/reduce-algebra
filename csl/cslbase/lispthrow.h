@@ -231,13 +231,13 @@ public:
 // here to avoid complaints when they are not justified.
     ~RAIIstack_sanity()
     {   if (saveStack != stack && !std::uncaught_exception())
-        {   printf("[Stack Sanity Oddity] %p => %p in %s : %s:%d\n",
+        {   err_printf("[Stack Sanity Oddity] %p => %p in %s : %s:%d\n",
                    saveStack, stack, fname, file, line);
-            if (w != nil)
-            {   err_printf("Data: ");
-                prin_to_error(w);
-                err_printf("\n");
-            }
+            err_printf("Data: ");
+            prin_to_error(w);
+            err_printf("\n");
+            err_printf("exit_count = %d, exit_reason = %d\n",
+                       exit_count, exit_reason);
         }
     }
 };

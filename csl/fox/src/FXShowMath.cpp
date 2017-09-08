@@ -2657,7 +2657,7 @@ static Keyword texWords[1<<texWordBits] =
     {"smallint",         TeXVSymbol, FntExtension, 0x52, NULL},
     {"int",              TeXVSymbol, FntExtension, 0x5a, NULL},
 // It looks to me as if tmprint.red can generate either \int or \Int
-// and maybe it expects one to be smaller than the other...???
+// and maybe it expects one to be smaller than the other...?
     {"Int",              TeXVSymbol, FntExtension, 0x5a, NULL},
     {"smalloint",        TeXVSymbol, FntExtension, 0x48, NULL},
     {"oint",             TeXVSymbol, FntExtension, 0x49, NULL},
@@ -3788,7 +3788,7 @@ case '.':   case '?':   case '!':   case '|':
 case '`':   case '#':   case '~':   case '=':
 case '(':   case ')':   case '<':   case '>':
 case '[':   case ']':
-// "NOTSIGN" ??
+// "NOTSIGN" ?
         lexerBuffer[0] = curChar;
         lexerBuffer[1] = 0;
         lexLength = 1;

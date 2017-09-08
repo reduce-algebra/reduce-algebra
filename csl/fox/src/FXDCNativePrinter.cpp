@@ -667,7 +667,7 @@ void FXDCNativePrinter::drawHashBox(FXint x, FXint y, FXint w, FXint h,
                                     FXint b)
 {
   // FIXME: Scaling border by horizontal resolution,
-  // what when logpixelsx != logpixelsy ??
+  // what when logpixelsx != logpixelsy ?
     pdc->drawHashBox(ScaleX(x), ScaleY(y), ScaleX(w), ScaleY(h), ScaleX(b));
 }
 
@@ -696,7 +696,7 @@ void FXDCNativePrinter::setDashes(FXuint dashoffset, const FXchar *dashpattern, 
 
 void FXDCNativePrinter::setLineWidth(FXuint linewidth)
 {
-    // FIXME: Scaling by X resolution, what if Xdpi != Ydpi ????
+    // FIXME: Scaling by X resolution, what if Xdpi != Ydpi ?
     pdc->setLineWidth(ScaleX(linewidth));
 }
 

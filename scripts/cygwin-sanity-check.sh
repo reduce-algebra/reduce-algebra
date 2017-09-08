@@ -67,7 +67,7 @@ i686)
         libpng-devel libtool libXext-devel libXft-devel make \
         libffi-devel mingw64-i686-libffi ming64-x86_64-libffi \
         mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
-        mingw64-x86_64-zlib openssh subversion time wget \
+        mingw64-x86_64-zlib openssh subversion time wget gcab \
         $fordistrib
     do
       if cygcheck -c -d $m | grep $m > /dev/null
@@ -96,7 +96,7 @@ x86_64)
         libncurses-devel libpng-devel libtool libXext-devel libXft-devel \
         libffi-devel mingw64-i686-libffi ming64-x86_64-libffi \
         make mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
-        mingw64-x86_64-zlib openssh subversion time wget \
+        mingw64-x86_64-zlib openssh subversion time wget gcab \
         $fordistrib
     do
       if cygcheck -c -d $m | grep $m > /dev/null

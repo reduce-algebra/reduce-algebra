@@ -1,4 +1,4 @@
-// cyg64.cpp                             Copyright (C) A C Norman  2014-15
+// other-cygwin.cpp                     Copyright (C) A C Norman  2014-2017
 
 //
 // This program is to be run from a DOS command prompt or any cygwin
@@ -12,16 +12,18 @@
 // relevant files appear in consistent places from both 32 and 64-bit
 // worlds. This may be easiest if paths are fully rooted and so always
 // start /cygdrive/x/...
-// In particular BEWARE of hom directories!
+// In particular BEWARE of home directories!
 //
 // You must compile this with i686-w64-mingw32-gc++. This now requires that
 // the 32 and 64-bit versions of cygwin have been installed in c:\cygwin and
 // c:\cygwin64.
 //
+// If compiled with "-DFORCE32" or "-DFORCE64" it will only change gear
+// if not in the context suggested...
 
 
 /**************************************************************************
- * Copyright (C) 2016, Codemist.                         A C Norman       *
+ * Copyright (C) 2017, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -50,7 +52,7 @@
  *************************************************************************/
 
 
-// $Id: other-cygwin.cpp 3324 2015-12-24 10:15:30Z arthurcnorman $
+// $Id: other-cygwin.cpp 4121 2017-07-23 13:35:50Z arthurcnorman $
 
 
 
@@ -59,8 +61,10 @@
 #include <string.h>
 #include <windows.h>
 #include <tlhelp32.h>
+#include <unistd.h>
+#include <process.h>
 
-static int run64;
+static bool run64;
 
 #define scygwin (run64 ? "c:\\cygwin64" : "c:\\cygwin")
 
@@ -74,7 +78,7 @@ void append_command(char *s)
 {   strcat(command, s);
 }
 
-// The following code was foind in newsgroup postings, and I believe it was
+// The following code was found in newsgroup postings, and I believe it was
 // intended to be available for re-use.
 
 // Find a process with a given id in a snapshot
@@ -121,7 +125,7 @@ BOOL GetParentProcessId(DWORD* parent_process_id)
 
 int main(int argc, char *argv[])
 {
-    run64 = 0;
+    run64 = false;
     DWORD parent;
     if (!GetParentProcessId(&parent))
     {   printf("Parent process not found\n");
@@ -138,7 +142,7 @@ int main(int argc, char *argv[])
     }
     if (b)
     {   // printf("parent is a 32-bit application via Wow64\n");
-        run64 = 1;
+        run64 = true;
     }
     else
     {   SYSTEM_INFO s;
@@ -147,17 +151,30 @@ int main(int argc, char *argv[])
         {
         case PROCESSOR_ARCHITECTURE_AMD64:
             // printf("parent is a 64-bit process\n");
-            run64 = 0;
+            run64 = false;
             break;
         case PROCESSOR_ARCHITECTURE_INTEL:
+#ifndef FORCE32
             printf("You seem to be running 32-bit operating system\n");
             printf("This utility can not work. Exiting\n");
             return 1;
+#else
+            break;
+#endif
         default:
             printf("Unknown platform: exiting.\n");
             return 1;
         }
     }
+
+// At this stage run64 is set to indicate the opposite of the shell currently
+// in use.
+
+#if defined FORCE64
+    run64 = true;
+#elif defined FORCE32
+    run64 = false;
+#endif
 
     STARTUPINFO startup;
     PROCESS_INFORMATION process;
@@ -203,9 +220,9 @@ int main(int argc, char *argv[])
     if (user == NULL) user = "unknown";
     memset(newenv, 0, sizeof(newenv));
     if (run64)
-        sprintf(newenv, "USER=%s%cPATH=/cygdrive/c/cygwin64/bin%c", user, 0, 0);
+        sprintf(newenv, "OTHER=yes%cUSER=%s%cPATH=/cygdrive/c/cygwin64/bin%c", 0, user, 0, 0);
     else
-        sprintf(newenv, "USER=%s%cPATH=/cygdrive/c/cygwin/bin%c", user, 0, 0);
+        sprintf(newenv, "OTHER=yes%cUSER=%s%cPATH=/cygdrive/c/cygwin/bin%c", 0, user, 0, 0);
     for (i=0; i<dirsize; i++)
         if (current[i] == '\\') current[i] = '/';
     sprintf(command,

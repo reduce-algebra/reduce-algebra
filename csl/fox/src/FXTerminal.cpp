@@ -534,7 +534,7 @@ long FXTerminal::onCmdSave(FXObject *c, FXSelector sel, void *ptr)
 {
     UNUSED_ARG(c); UNUSED_ARG(sel); UNUSED_ARG(ptr);
     keyFlags &= ~ESC_PENDING;
-// Use FXFileDialog::getSaveFilename() here ???
+// Use FXFileDialog::getSaveFilename() here ?
     FXFileDialog d(this, "Save", DECOR_BORDER|DECOR_TITLE);
     d.setFilename(most_recent_save_file);
     d.setPatternList(
@@ -3335,7 +3335,7 @@ int FXTerminal::matchString(const wchar_t *pat, int n, const wchar_t *targettext
 // ^O  abandon pending output. Menu shortcut
 
 // ^P  history previous if we are on bottom line
-//     [else cursor up????]
+//     [else cursor up?]
 // (also uparrow key)
 
 int FXTerminal::editHistoryPrev()
