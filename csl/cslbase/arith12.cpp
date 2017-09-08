@@ -44,7 +44,6 @@
 
 #define FP_EVALUATE   1
 
-
 LispObject Lfrexp(LispObject env, LispObject a)
 {   double d;
     int x;
@@ -341,7 +340,7 @@ LispObject Liadd1(LispObject, LispObject a)
     return onevalue((LispObject)((intptr_t)a + 0x10));
 }
 
-LispObject Lidifference(LispObject, LispObject a, LispObject b)
+LispObject Lidifference_2(LispObject, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("idifference", a, b);
     return onevalue((LispObject)((intptr_t)a - (intptr_t)b + TAG_FIXNUM));
 }
@@ -361,107 +360,132 @@ LispObject Lxdifference(LispObject env, LispObject a, LispObject b)
     return onevalue(fixnum_of_int(r));
 }
 
-LispObject Ligreaterp(LispObject env, LispObject a, LispObject b)
+LispObject Ligreaterp_2(LispObject env, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("igreaterp", a, b);
     return onevalue(Lispify_predicate(a > b));
 }
 
-LispObject Lilessp(LispObject env, LispObject a, LispObject b)
+LispObject Lilessp_2(LispObject env, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("ilessp", a, b);
     return onevalue(Lispify_predicate(a < b));
 }
 
-LispObject Ligeq(LispObject env, LispObject a, LispObject b)
+LispObject Ligeq_2(LispObject env, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("igeq", a, b);
     return onevalue(Lispify_predicate(a >= b));
 }
 
-LispObject Lileq(LispObject env, LispObject a, LispObject b)
+LispObject Lileq_2(LispObject env, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("ileq", a, b);
     return onevalue(Lispify_predicate(a <= b));
 }
 
-static LispObject Lilogand(LispObject, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    if (nargs == 0) return onevalue(fixnum_of_int(-1));
-    if (nargs > ARG_CUT_OFF) aerror("too many args for ilogand");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    if (!is_fixnum(r)) aerror1("ilogand", r);
-    while (--nargs != 0)
-    {   LispObject w = va_arg(a, LispObject);
-        if (!is_fixnum(w))
-        {   va_end(a);
-            aerror1("ilogand", w);
-        }
-        r = (LispObject)((intptr_t)r & (intptr_t)w);
+static LispObject Lilogand_0(LispObject)
+{   return onevalue(fixnum_of_int(-1));
+}
+
+static LispObject Lilogor_0(LispObject)
+{   return onevalue(fixnum_of_int(0));
+}
+
+static LispObject Lilogxor_0(LispObject)
+{   return onevalue(fixnum_of_int(0));
+}
+
+static LispObject Lilogand_1(LispObject, LispObject a1)
+{   return onevalue(a1);
+}
+
+static LispObject Lilogor_1(LispObject, LispObject a1)
+{   return onevalue(a1);
+}
+
+static LispObject Lilogxor_1(LispObject, LispObject a1)
+{   return onevalue(a1);
+}
+
+static LispObject Lilogand_2(LispObject, LispObject a1, LispObject a2)
+{   if (!is_fixnum(a1) || !is_fixnum(a2)) aerror2("ilogand", a1, a2);
+    return onevalue(a1 & a2);
+}
+
+static LispObject Lilogor_2(LispObject, LispObject a1, LispObject a2)
+{   if (!is_fixnum(a1) || !is_fixnum(a2)) aerror2("ilogor", a1, a2);
+    return onevalue(a1 | a2);
+}
+
+static LispObject Lilogxor_2(LispObject, LispObject a1, LispObject a2)
+{   if (!is_fixnum(a1) || !is_fixnum(a2)) aerror2("ilogxor", a1, a2);
+    return onevalue((a1 ^ a2) + TAG_FIXNUM);
+}
+
+static LispObject Lilogand_3(LispObject, LispObject a1, LispObject a2, LispObject a3)
+{   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
+         aerror3("ilogand", a2, a2, a3);
+    return onevalue(a1 & a2 & a3);
+}
+
+static LispObject Lilogor_3(LispObject, LispObject a1, LispObject a2, LispObject a3)
+{   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
+         aerror3("ilogor", a2, a2, a3);
+    return onevalue(a1 | a2 | a3);
+}
+
+static LispObject Lilogxor_3(LispObject, LispObject a1, LispObject a2, LispObject a3)
+{   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
+         aerror3("ilogxor", a2, a2, a3);
+    return onevalue(a1 ^ a2 ^ a3);
+}
+
+static LispObject Lilogand_4up(LispObject env, LispObject a1, LispObject a2,
+                LispObject a3, LispObject a4up)
+{   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
+         aerror3("ilogand", a2, a2, a3);
+    a1 = a1 & a2 & a3;
+    while (a4up != nil)
+    {   a2 = qcar(a4up);
+        a4up = qcdr(a4up);
+        if (!is_fixnum(a2)) aerror1("ilogand", a2);
+        a1 = a1 & a2;
     }
-    va_end(a);
-    return onevalue(r);
+    return onevalue(a1);
 }
 
-static LispObject Lilogor(LispObject, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    if (nargs == 0) return onevalue(fixnum_of_int(0));
-    if (nargs > ARG_CUT_OFF) aerror("too many args for ilogor");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    if (!is_fixnum(r)) aerror1("ilogor", r);
-    while (--nargs != 0)
-    {   LispObject w = va_arg(a, LispObject);
-        if (!is_fixnum(w))
-        {   va_end(a);
-            aerror1("ilogor", w);
-        }
-        r = (LispObject)((intptr_t)r | (intptr_t)w);
+static LispObject Lilogor_4up(LispObject env, LispObject a1, LispObject a2,
+                LispObject a3, LispObject a4up)
+{   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
+         aerror3("ilogor", a2, a2, a3);
+    a1 = a1 | a2 | a3;
+    while (a4up != nil)
+    {   a2 = qcar(a4up);
+        a4up = qcdr(a4up);
+        if (!is_fixnum(a2)) aerror1("ilogor", a2);
+        a1 = a1 | a2;
     }
-    va_end(a);
-    return onevalue(r);
+    return onevalue(a1);
 }
 
-static LispObject Lilogxor(LispObject, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    if (nargs == 0) return onevalue(fixnum_of_int(0));
-    if (nargs > ARG_CUT_OFF) aerror("too many args for ilogxor");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    if (!is_fixnum(r)) aerror1("ilogxor", r);
-    while (--nargs != 0)
-    {   LispObject w = va_arg(a, LispObject);
-        if (!is_fixnum(w))
-        {   va_end(a);
-            aerror1("ilogxor", w);
-        }
-        r = (LispObject)(((intptr_t)r ^ (intptr_t)w) + TAG_FIXNUM);
+static LispObject Lilogxor_4up(LispObject env, LispObject a1, LispObject a2,
+                LispObject a3, LispObject a4up)
+{   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
+         aerror3("ilogxor", a2, a2, a3);
+    a1 = a1 ^ a2 ^ a3;
+    while (a4up != nil)
+    {   a2 = qcar(a4up);
+        a4up = qcdr(a4up);
+        if (!is_fixnum(a2)) aerror1("ilogxor", a2);
+        a1 = a1 ^ a2;
     }
-    va_end(a);
-    return onevalue(r);
+    a1 = (a1 & ~(LispObject)TAG_BITS) | TAG_FIXNUM;
+    return onevalue(a1);
 }
 
-static LispObject Lilogand2(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("ilogand", a, b);
-    return onevalue(a & b);
-}
-
-static LispObject Lilogor2(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("ilogor", a, b);
-    return onevalue(a | b);
-}
-
-static LispObject Lilogxor2(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("ilogxor", a, b);
-    return onevalue((a ^ b) + TAG_FIXNUM);
-}
-
-LispObject Limin(LispObject, LispObject a, LispObject b)
+LispObject Limin_2(LispObject, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("imin", a, b);
     return onevalue(a < b ? a : b);
 }
 
-LispObject Limax(LispObject, LispObject a, LispObject b)
+LispObject Limax_2(LispObject, LispObject a, LispObject b)
 {   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("imax", a, b);
     return onevalue(a > b ? a : b);
 }
@@ -475,32 +499,42 @@ LispObject Liminusp(LispObject env, LispObject a)
 {   return onevalue(Lispify_predicate((intptr_t)a < (intptr_t)fixnum_of_int(0)));
 }
 
-static LispObject Liplus(LispObject, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    if (nargs == 0) return onevalue(fixnum_of_int(0));
-    if (nargs > ARG_CUT_OFF) aerror("too many args for iplus");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    if (!is_fixnum(r)) aerror1("iplus", r);
-    while (--nargs != 0)
-    {   LispObject w = va_arg(a, LispObject);
-        if (!is_fixnum(w))
-        {   va_end(a);
-            aerror1("iplus", w);
-        }
-        r = (LispObject)((intptr_t)r + (intptr_t)w - TAG_FIXNUM);
+LispObject Liplus_0(LispObject)
+{   return onevalue(fixnum_of_int(1));
+}
+
+LispObject Liplus_1(LispObject, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Liplus_2(LispObject, LispObject a1, LispObject a2)
+{   if (!is_fixnum(a1) || !is_fixnum(a2)) aerror2("iplus2", a1, a2);
+    return onevalue((LispObject)((intptr_t)a1 + (intptr_t)a2 - TAG_FIXNUM));
+}
+
+LispObject Liplus_3(LispObject, LispObject a1, LispObject a2, LispObject a3)
+{   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
+        aerror3("iplus", a1, a2, a3);
+    return onevalue((LispObject)((intptr_t)a1 +
+                                 (intptr_t)a2 - 2*TAG_FIXNUM +
+                                 (intptr_t)a3));
+}
+
+static LispObject Liplus_4up(LispObject, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
+        aerror3("iplus", a1, a2, a3);
+    a1 = (intptr_t)a1 + (intptr_t)a2 - 2*TAG_FIXNUM + (intptr_t)a3;
+    while (a4up != nil)
+    {   a2 = qcar(a4up);
+        a4up = qcdr(a4up);
+        if (!is_fixnum(a2)) aerror1("iplus", a2);
+        a1 = a1 + (intptr_t)a2 - TAG_FIXNUM;
     }
-    va_end(a);
-    return onevalue(r);
+    return onevalue(a1);
 }
 
-LispObject Liplus2(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("iplus2", a, b);
-    return onevalue((LispObject)((intptr_t)a + (intptr_t)b - TAG_FIXNUM));
-}
-
-LispObject Liquotient(LispObject, LispObject a, LispObject b)
+LispObject Liquotient_2(LispObject, LispObject a, LispObject b)
 {   intptr_t aa, bb, c;
     if (!is_fixnum(a) || !is_fixnum(b) ||
         b == fixnum_of_int(0)) aerror2("iquotient", a, b);
@@ -515,7 +549,7 @@ LispObject Liquotient(LispObject, LispObject a, LispObject b)
     return onevalue(fixnum_of_int((aa-c)/bb));
 }
 
-LispObject Liremainder(LispObject, LispObject a, LispObject b)
+LispObject Liremainder_2(LispObject, LispObject a, LispObject b)
 {   intptr_t aa, bb, c;
     if (!is_fixnum(a) || !is_fixnum(b) ||
         b == fixnum_of_int(0)) aerror2("iremainder", a, b);
@@ -540,31 +574,39 @@ LispObject Lisub1(LispObject, LispObject a)
     return onevalue((LispObject)((intptr_t)a - 0x10));
 }
 
-static LispObject Litimes(LispObject, int nargs, ...)
-{   va_list a;
-    LispObject rr;
-    intptr_t r;
-    if (nargs == 0) return onevalue(fixnum_of_int(1));
-    if (nargs > ARG_CUT_OFF) aerror("too many args for itimes");
-    va_start(a, nargs);
-    rr = va_arg(a, LispObject);
-    if (!is_fixnum(rr)) aerror1("itimes", rr);
-    r = int_of_fixnum(rr);
-    while (nargs-- != 0)
-    {   LispObject w = va_arg(a, LispObject);
-        if (!is_fixnum(w))
-        {   va_end(a);
-            aerror1("itimes", w);
-        }
-        r = r * int_of_fixnum(w);
-    }
-    va_end(a);
-    return onevalue(fixnum_of_int(r));
+LispObject Litimes_0(LispObject)
+{   return onevalue(fixnum_of_int(1));
 }
 
-LispObject Litimes2(LispObject, LispObject a, LispObject b)
-{   if (!is_fixnum(a) || !is_fixnum(b)) aerror2("itimes2", a, b);
-    return onevalue(fixnum_of_int(int_of_fixnum(a) * int_of_fixnum(b)));
+LispObject Litimes_1(LispObject, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Litimes_2(LispObject, LispObject a1, LispObject a2)
+{   if (!is_fixnum(a1) || !is_fixnum(a2)) aerror2("itimes2", a1, a2);
+    return onevalue(fixnum_of_int(int_of_fixnum(a1) * int_of_fixnum(a2)));
+}
+
+LispObject Litimes_3(LispObject, LispObject a1, LispObject a2, LispObject a3)
+{   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
+        aerror3("itimes", a1, a2, a3);
+    return onevalue(fixnum_of_int(int_of_fixnum(a1) *
+                                  int_of_fixnum(a2) *
+                                  int_of_fixnum(a3)));
+}
+
+static LispObject Litimes_4up(LispObject env, LispObject a1, LispObject a2,
+                LispObject a3, LispObject a4up)
+{   if (!is_fixnum(a1) || !is_fixnum(a2) || !is_fixnum(a3))
+        aerror3("iplus", a1, a2, a3);
+    intptr_t r = int_of_fixnum(a1) * int_of_fixnum(a2) * int_of_fixnum(a3);
+    while (a4up != nil)
+    {   a2 = qcar(a4up);
+        a4up = qcdr(a4up);
+        if (!is_fixnum(a2)) aerror1("itimes", a2);
+        r = r * int_of_fixnum(a2);
+    }
+    return onevalue(fixnum_of_int(r));
 }
 
 LispObject Lionep(LispObject env, LispObject a)
@@ -682,45 +724,45 @@ static LispObject Lfp_eval(LispObject env, LispObject code,
 #endif
 
 setup_type const arith12_setup[] =
-{   {"frexp",                   Lfrexp, TOO_MANY_1, WRONG_NO_1},
-    {"modular-difference",      TOO_FEW_2, Lmodular_difference, WRONG_NO_2},
-    {"modular-minus",           Lmodular_minus, TOO_MANY_1, WRONG_NO_1},
-    {"modular-number",          Lmodular_number, TOO_MANY_1, WRONG_NO_1},
-    {"modular-plus",            TOO_FEW_2, Lmodular_plus, WRONG_NO_2},
-    {"modular-quotient",        TOO_FEW_2, Lmodular_quotient, WRONG_NO_2},
-    {"modular-reciprocal",      Lmodular_reciprocal, TOO_MANY_1, WRONG_NO_1},
-    {"safe-modular-reciprocal", Lsafe_modular_reciprocal, TOO_MANY_1, WRONG_NO_1},
-    {"modular-times",           TOO_FEW_2, Lmodular_times, WRONG_NO_2},
-    {"modular-expt",            TOO_FEW_2, Lmodular_expt, WRONG_NO_2},
-    {"set-small-modulus",       Lset_small_modulus, TOO_MANY_1, WRONG_NO_1},
-    {"iadd1",                   Liadd1, TOO_MANY_1, WRONG_NO_1},
-    {"idifference",             TOO_FEW_2, Lidifference, WRONG_NO_2},
-    {"xdifference",             TOO_FEW_2, Lxdifference, WRONG_NO_2},
-    {"igeq",                    TOO_FEW_2, Ligeq, WRONG_NO_2},
-    {"igreaterp",               TOO_FEW_2, Ligreaterp, WRONG_NO_2},
-    {"ileq",                    TOO_FEW_2, Lileq, WRONG_NO_2},
-    {"ilessp",                  TOO_FEW_2, Lilessp, WRONG_NO_2},
-    {"ilogand",                 Lidentity, Lilogand2, Lilogand},
-    {"ilogor",                  Lidentity, Lilogor2, Lilogor},
-    {"ilogxor",                 Lidentity, Lilogxor2, Lilogxor},
-    {"imax",                    TOO_FEW_2, Limax, WRONG_NO_2},
-    {"imin",                    TOO_FEW_2, Limin, WRONG_NO_2},
-    {"iminus",                  Liminus, TOO_MANY_1, WRONG_NO_1},
-    {"iminusp",                 Liminusp, TOO_MANY_1, WRONG_NO_1},
-    {"iplus",                   Lidentity, Liplus2, Liplus},
-    {"iplus2",                  TOO_FEW_2, Liplus2, WRONG_NO_2},
-    {"iquotient",               TOO_FEW_2, Liquotient, WRONG_NO_2},
-    {"iremainder",              TOO_FEW_2, Liremainder, WRONG_NO_2},
-    {"irightshift",             TOO_FEW_2, Lirightshift, WRONG_NO_2},
-    {"isub1",                   Lisub1, TOO_MANY_1, WRONG_NO_1},
-    {"itimes",                  Lidentity, Litimes2, Litimes},
-    {"itimes2",                 TOO_FEW_2, Litimes2, WRONG_NO_2},
-    {"ionep",                   Lionep, TOO_MANY_1, WRONG_NO_1},
-    {"izerop",                  Lizerop, TOO_MANY_1, WRONG_NO_1},
+{   {"frexp",                   G0W1, Lfrexp, G2W1, G3W1, G4W1},
+    {"modular-difference",      G0W2, G1W2, Lmodular_difference, G3W2, G4W2},
+    {"modular-minus",           G0W1, Lmodular_minus, G2W1, G3W1, G4W1},
+    {"modular-number",          G0W1, Lmodular_number, G2W1, G3W1, G4W1},
+    {"modular-plus",            G0W2, G1W2, Lmodular_plus, G3W2, G4W2},
+    {"modular-quotient",        G0W2, G1W2, Lmodular_quotient, G3W2, G4W2},
+    {"modular-reciprocal",      G0W1, Lmodular_reciprocal, G2W1, G3W1, G4W1},
+    {"safe-modular-reciprocal", G0W1, Lsafe_modular_reciprocal, G2W1, G3W1, G4W1},
+    {"modular-times",           G0W2, G1W2, Lmodular_times, G3W2, G4W2},
+    {"modular-expt",            G0W2, G1W2, Lmodular_expt, G3W2, G4W2},
+    {"set-small-modulus",       G0W1, Lset_small_modulus, G2W1, G3W1, G4W1},
+    {"iadd1",                   G0W1, Liadd1, G2W1, G3W1, G4W1},
+    {"idifference",             G0W2, G1W2, Lidifference_2, G3W2, G4W2},
+    {"xdifference",             G0W2, G1W2, Lxdifference, G3W2, G4W2},
+    {"igeq",                    G0W2, G1W2, Ligeq_2, G3W2, G4W2},
+    {"igreaterp",               G0W2, G1W2, Ligreaterp_2, G3W2, G4W2},
+    {"ileq",                    G0W2, G1W2, Lileq_2, G3W2, G4W2},
+    {"ilessp",                  G0W2, G1W2, Lilessp_2, G3W2, G4W2},
+    {"ilogand",                 Lilogand_0, Lilogand_1, Lilogand_2, Lilogand_3, Lilogand_4up},
+    {"ilogor",                  Lilogor_0, Lilogor_1, Lilogor_2, Lilogor_3, Lilogor_4up},
+    {"ilogxor",                 Lilogxor_0, Lilogxor_1, Lilogxor_2, Lilogxor_3, Lilogxor_4up},
+    {"imax",                    G0W2, G1W2, Limax_2, G3W2, G4W2},
+    {"imin",                    G0W2, G1W2, Limin_2, G3W2, G4W2},
+    {"iminus",                  G0W1, Liminus, G2W1, G3W1, G4W1},
+    {"iminusp",                 G0W1, Liminusp, G2W1, G3W1, G4W1},
+    {"iplus",                   Liplus_0, Liplus_1, Liplus_2, Liplus_3, Liplus_4up},
+    {"iplus2",                  G0W2, G1W2, Liplus_2, G3W2, G4W2},
+    {"iquotient",               G0W2, G1W2, Liquotient_2, G3W2, G4W2},
+    {"iremainder",              G0W2, G1W2, Liremainder_2, G3W2, G4W2},
+    {"irightshift",             G0W2, G1W2, Lirightshift, G3W2, G4W2},
+    {"isub1",                   G0W1, Lisub1, G2W1, G3W1, G4W1},
+    {"itimes",                  Litimes_0, Litimes_1, Litimes_2, Litimes_3, Litimes_4up},
+    {"itimes2",                 G0W2, G1W2, Litimes_2, G3W2, G4W2},
+    {"ionep",                   G0W1, Lionep, G2W1, G3W1, G4W1},
+    {"izerop",                  G0W1, Lizerop, G2W1, G3W1, G4W1},
 #ifdef FP_EVALUATE
-    {"fp-evaluate",             TOO_FEW_2, Lfp_eval, WRONG_NO_2},
+    {"fp-evaluate",             G0W2, G1W2, Lfp_eval, G3W2, G4W2},
 #endif
-    {NULL,                      0, 0, 0}
+    {NULL,                      0, 0, 0, 0, 0}
 };
 
 // end of arith12.cpp

@@ -120,7 +120,7 @@ extern int delete_file(char *filename, const char *old, size_t n);
 
 extern int delete_wildcard(char *filename, const char *old, size_t n);
 
-extern "C" int rename_file(char *from_name, const char *from_old, size_t from_size,
+extern int rename_file(char *from_name, const char *from_old, size_t from_size,
                            char *to_name, const char *to_old, size_t to_size);
 
 //
@@ -132,13 +132,13 @@ extern "C" int rename_file(char *from_name, const char *from_old, size_t from_si
 // directoryp tests whether its argument is a directory.
 //
 
-extern "C" bool file_readable(char *filename, const char *old, size_t n);
+extern bool file_readable(char *filename, const char *old, size_t n);
 
-extern "C" bool file_writeable(char *filename, const char *old, size_t n);
+extern bool file_writeable(char *filename, const char *old, size_t n);
 
-extern "C" bool file_executable(char *filename, const char *old, size_t n);
+extern bool file_executable(char *filename, const char *old, size_t n);
 
-extern "C" bool directoryp(char *filename, const char *old, size_t n);
+extern bool directoryp(char *filename, const char *old, size_t n);
 
 //
 // file_length returns the length of its argument (a file) in bytes.
@@ -156,9 +156,9 @@ extern int current_directory(char *name, int len);
 // The next three are much-like the same... On some operating systems
 // they will be pretty meaningless!
 //
-extern "C" int get_current_directory(char *name, size_t len);
-extern "C" int get_home_directory(char *name, size_t len);
-extern "C" int get_users_home_directory(char *name, size_t len);
+extern int get_current_directory(char *name, size_t len);
+extern int get_home_directory(char *name, size_t len);
+extern int get_users_home_directory(char *name, size_t len);
 
 //
 // Just for Reduce, find_gnuplot fills in the command to launch gnuplot
@@ -218,7 +218,7 @@ extern void list_directory_members(char *filename, const char *old,
 //
 // (f) is an open file - truncate it at position (where).
 //
-extern "C" int truncate_file(FILE *f, long int where);
+extern int truncate_file(FILE *f, long int where);
 
 //
 // If I am to process directories I need a set of routines that will
@@ -291,7 +291,7 @@ extern const char *my_getenv(const char *s);
 // needed.
 //
 
-extern "C" int my_system(const char *s);
+extern int my_system(const char *s);
 
 //
 // my_popen() and my_pclose() are intended to be just like the Unix

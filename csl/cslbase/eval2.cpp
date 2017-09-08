@@ -38,384 +38,88 @@
 #include "headers.h"
 
 
-static LispObject apply_lots(int nargs, n_args *f, LispObject def)
-//
-// Cases with 8 or more args are lifted out here into a subroutine
-// to make APPLY a bit shorter and because these cases should be
-// uncommon & not worth optimising much.  The code that Microsoft C 6.00A
-// produced for this was utterly DREADFUL - maybe other C compilers will
-// make a mess of it too.  Anyway I hope it will not be called very often.
-// Also I have plans that will deal with functions with many arguments in
-// a micer way so this MESS will be able to go away.
-//
-{   switch(nargs)
-    {   case 9:
-            return (*f)(def, 9,   stack[-9],  stack[-8],  stack[-7],
-                        stack[-6],  stack[-5],  stack[-4],  stack[-3],
-                        stack[-2],  stack[-1]);
-        case 10:
-            return (*f)(def, 10,  stack[-10], stack[-9],  stack[-8],
-                        stack[-7],  stack[-6],  stack[-5],  stack[-4],
-                        stack[-3],  stack[-2],  stack[-1]);
-        case 11:
-            return (*f)(def, 11,  stack[-11], stack[-10],
-                        stack[-9],  stack[-8],  stack[-7],  stack[-6],
-                        stack[-5],  stack[-4],  stack[-3],  stack[-2],
-                        stack[-1]);
-        case 12:
-            return (*f)(def, 12,  stack[-12], stack[-11],
-                        stack[-10], stack[-9],  stack[-8],  stack[-7],
-                        stack[-6],  stack[-5],  stack[-4],  stack[-3],
-                        stack[-2],  stack[-1]);
-        case 13:
-            return (*f)(def, 13,  stack[-13], stack[-12],
-                        stack[-11], stack[-10], stack[-9],  stack[-8],
-                        stack[-7],  stack[-6],  stack[-5],  stack[-4],
-                        stack[-3],  stack[-2],  stack[-1]);
-        case 14:
-            return (*f)(def, 14,  stack[-14], stack[-13],
-                        stack[-12], stack[-11], stack[-10], stack[-9],
-                        stack[-8],  stack[-7],  stack[-6],  stack[-5],
-                        stack[-4],  stack[-3],  stack[-2],  stack[-1]);
-        case 15:
-            return (*f)(def, 15,  stack[-15], stack[-14],
-                        stack[-13], stack[-12], stack[-11], stack[-10],
-                        stack[-9],  stack[-8],  stack[-7],  stack[-6],
-                        stack[-5],  stack[-4],  stack[-3],  stack[-2],
-                        stack[-1]);
-        case 16:
-            return (*f)(def, 16,  stack[-16], stack[-15],
-                        stack[-14], stack[-13], stack[-12], stack[-11],
-                        stack[-10], stack[-9],  stack[-8],  stack[-7],
-                        stack[-6],  stack[-5],  stack[-4],  stack[-3],
-                        stack[-2],  stack[-1]);
-        case 17:
-            return (*f)(def, 17,  stack[-17], stack[-16],
-                        stack[-15], stack[-14], stack[-13], stack[-12],
-                        stack[-11], stack[-10], stack[-9],  stack[-8],
-                        stack[-7],  stack[-6],  stack[-5],  stack[-4],
-                        stack[-3],  stack[-2],  stack[-1]);
-        case 18:
-            return (*f)(def, 18,  stack[-18], stack[-17],
-                        stack[-16], stack[-15], stack[-14], stack[-13],
-                        stack[-12], stack[-11], stack[-10], stack[-9],
-                        stack[-8],  stack[-7],  stack[-6],  stack[-5],
-                        stack[-4],  stack[-3],  stack[-2],  stack[-1]);
-        case 19:
-            return (*f)(def, 19,  stack[-19], stack[-18],
-                        stack[-17], stack[-16], stack[-15], stack[-14],
-                        stack[-13], stack[-12], stack[-11], stack[-10],
-                        stack[-9],  stack[-8],  stack[-7],  stack[-6],
-                        stack[-5],  stack[-4],  stack[-3],  stack[-2],
-                        stack[-1]);
-        case 20:
-            return (*f)(def, 20,  stack[-20], stack[-19],
-                        stack[-18], stack[-17], stack[-16], stack[-15],
-                        stack[-14], stack[-13], stack[-12], stack[-11],
-                        stack[-10], stack[-9],  stack[-8],  stack[-7],
-                        stack[-6],  stack[-5],  stack[-4],  stack[-3],
-                        stack[-2],  stack[-1]);
-        case 21:
-            return (*f)(def, 21,  stack[-21], stack[-20],
-                        stack[-19], stack[-18], stack[-17], stack[-16],
-                        stack[-15], stack[-14], stack[-13], stack[-12],
-                        stack[-11], stack[-10], stack[-9],  stack[-8],
-                        stack[-7],  stack[-6],  stack[-5],  stack[-4],
-                        stack[-3],  stack[-2],  stack[-1]);
-        case 22:
-            return (*f)(def, 22,  stack[-22], stack[-21],
-                        stack[-20], stack[-19], stack[-18], stack[-17],
-                        stack[-16], stack[-15], stack[-14], stack[-13],
-                        stack[-12], stack[-11], stack[-10], stack[-9],
-                        stack[-8],  stack[-7],  stack[-6],  stack[-5],
-                        stack[-4],  stack[-3],  stack[-2],  stack[-1]);
-        case 23:
-            return (*f)(def, 23,  stack[-23], stack[-22],
-                        stack[-21], stack[-20], stack[-19], stack[-18],
-                        stack[-17], stack[-16], stack[-15], stack[-14],
-                        stack[-13], stack[-12], stack[-11], stack[-10],
-                        stack[-9],  stack[-8],  stack[-7],  stack[-6],
-                        stack[-5],  stack[-4],  stack[-3],  stack[-2],
-                        stack[-1]);
-        case 24:
-            return (*f)(def, 24,  stack[-24], stack[-23],
-                        stack[-22], stack[-21], stack[-20], stack[-19],
-                        stack[-18], stack[-17], stack[-16], stack[-15],
-                        stack[-14], stack[-13], stack[-12], stack[-11],
-                        stack[-10], stack[-9],  stack[-8],  stack[-7],
-                        stack[-6],  stack[-5],  stack[-4],  stack[-3],
-                        stack[-2],  stack[-1]);
-        case 25:
-            return (*f)(def, 25,  stack[-25], stack[-24], stack[-23],
-                        stack[-22], stack[-21], stack[-20], stack[-19],
-                        stack[-18], stack[-17], stack[-16], stack[-15],
-                        stack[-14], stack[-13], stack[-12], stack[-11],
-                        stack[-10], stack[-9],  stack[-8],  stack[-7],
-                        stack[-6],  stack[-5],  stack[-4],  stack[-3],
-                        stack[-2],  stack[-1]);
-        default:
-//
-// If more than 25 args are going to be passed I will arrange that the
-// final ones are built into a list - as if the 25th arg was specified
-// as a "&rest" one.  Why?  Because passing VERY large numbers of arguments
-// in C is not a good idea - ANSI C compilers are only obliged to support
-// up to 31 args, and one some machines this limit seems to really matter.
-// But Common Lisp can need more args than that.  I will ignore the fact that
-// what I do here is slow.  I will HOPE that calls with 25 or more args
-// are very uncommon.
-//
-        {   int n = nargs;
-            LispObject w, *tsp = stack;
-#if (ARG_CUT_OFF != 25)
-            if (ARG_CUT_OFF != 25)
-            {   fprintf(stderr, "\n+++ ARG_CUT_OFF incorrectly configured\n");
-                my_exit(EXIT_FAILURE);
-            }
-#endif
-// Observe that the list of excess arguments will always have been freshly
-// consed up here.
-            w = ncons(tsp[-1]);
-            tsp[-1] = w;
-            while (n > ARG_CUT_OFF)
-            {   w = cons(tsp[-2], tsp[-1]);
-                tsp[-2] = w;
-                tsp[-1] = tsp[0];
-                tsp--;
-                n--;
-            }
-            return (*f)(def, nargs,   tsp[-25], tsp[-24], tsp[-23],
-                        tsp[-22], tsp[-21], tsp[-20], tsp[-19],
-                        tsp[-18], tsp[-17], tsp[-16], tsp[-15],
-                        tsp[-14], tsp[-13], tsp[-12], tsp[-11],
-                        tsp[-10], tsp[-9],  tsp[-8],  tsp[-7],
-                        tsp[-6],  tsp[-5],  tsp[-4],  tsp[-3],
-                        tsp[-2],  tsp[-1]);
-        }
-    }
-}
-
-void push_args(va_list a, int nargs)
-//
-// The unpacking here must match "apply_lots" as above.  For up to
-// (and including) ARG_CUT_OFF (=25) args things are passed normally.
-// beyond that the first ARG_CUT_OFF-1 args are passed normally, and the
-// rest are in a list as a final actual arg.  Note that this list will
-// have at least two elements.
-//
-{   int i;
-    if (nargs <= ARG_CUT_OFF)
-    {   for (i = 0; i<nargs; i++)
-        {   LispObject w = va_arg(a, LispObject);
-            push(w);
-        }
-    }
-    else
-    {   LispObject x;
-        for (i = 0; i<(ARG_CUT_OFF-1); i++)
-        {   LispObject w = va_arg(a, LispObject);
-            push(w);
-        }
-        x = va_arg(a, LispObject);
-//
-// Internal consistency should ensure that the list passed here is long
-// enough for the following unpacking operation.  But if (as a result of
-// internal system muddles it is not maybe the fact that qcar(nil) =
-// qcdr(nil) = nil will tend to reduce the damage?
-//
-        for (; i<nargs; i++)
-        {   push(qcar(x));
-            x = qcdr(x);
-        }
-    }
-    va_end(a);
-}
-
-void push_args_1(va_list a, int nargs)
-//
-// This is very much like push_args(), but is for the (rather small number
-// of) cases where the first argument to a function must NOT be pushed on the
-// stack.  See, for instance, "funcall" as an example.
-//
-{   int i;
-    if (nargs <= ARG_CUT_OFF)
-    {   for (i = 1; i<nargs; i++)
-        {   LispObject w = va_arg(a, LispObject);
-            push(w);
-        }
-    }
-    else
-    {   LispObject x;
-        for (i = 1; i<(ARG_CUT_OFF-1); i++)
-        {   LispObject w = va_arg(a, LispObject);
-            push(w);
-        }
-        x = va_arg(a, LispObject);
-        for (; i<nargs; i++)
-        {   push(qcar(x));
-            x = qcdr(x);
-        }
-    }
-    va_end(a);
-}
-
-LispObject push_args_until_cutoff(va_list a, int nargs)
-//
-// This pushes arguments up as far as ARG_CUT_OFF and if there are any
-// more it returns them as a list.
-//
-{   int i;
-    if (nargs <= ARG_CUT_OFF)
-    {   for (i = 0; i<nargs; i++)
-        {   LispObject w = va_arg(a, LispObject);
-            push(w);
-        }
-        va_end(a);
-        return nil;
-    }
-    else
-    {   LispObject x;
-        for (i = 0; i<(ARG_CUT_OFF-1); i++)
-        {   LispObject w = va_arg(a, LispObject);
-            push(w);
-        }
-        x = va_arg(a, LispObject);
-        va_end(a);
-        push(qcar(x));
-        return qcdr(x);
-    }
-}
-
-
-// My plan in a while is to change CSL so that functions of 0, 1, 2 and 3
+// CSL is now set up so that so that functions of 0, 1, 2 and 3
 // arguments are called directly via dedicated function cells. For 4 and
 // up args I will pass args 1-3 naturally and the rest as a list, rather as
 // if the call had been
 //     (fff 1 2 3 (list 4 5 6 7 ...))
-// Such a scheme supports having no (serious) limit on the number of arguments
-// but does not need va_arg messing around so much. And in particular it
-// gets rid of apply_lots() which really is very ugly.
+// Such a scheme supports having no (serious) limit on the number of
+// arguments, and it is (internally) much tidier in this C++ code than
+// my previous scheme which relied on the va_arg facility of C++ and could
+// occasionally use vast amounts of stack.
 
-LispObject apply(LispObject fn, int nargs, LispObject env, LispObject from)
-//
-// There are (nargs) arguments on the Lisp stack, and apply() must use them
-// then pop them off.  They were pushed in the order push(arg1); push(arg2),
-// and so on, and the stack grows upwards.
-// from is a symbol that names the function that called me...
-//
+LispObject apply(LispObject fn, LispObject args,
+                 LispObject env, LispObject from)
 {   LispObject def;
     for (;;)
     {   if (symbolp(fn))
         {   debug_assert(1);
             debug_record_symbol(fn);
 // Heer I am calling a function named by the symbol "fn" and all the arguments
-// have been prepared and are on the stack.
+// have been prepared and in the list "args"
             bool tracing = (qheader(fn) & SYM_TRACED) != 0;
             if (tracing)
-            {   push2(fn, from);
+            {   push3(args, fn, from);
                 freshline_trace();
                 trace_printf("Calling ");
-                loop_print_trace(stack[-1]);
+                loop_print_trace(stack[-1]); // Function being called
                 trace_printf(" from ");
-                loop_print_trace(stack[0]);
-                popv(1);
+                loop_print_trace(stack[0]);  // caller
                 trace_printf("\n");
-                for (int i=1; i<=nargs; i++)
+                stack[0] = stack[-2];
+                for (int i=1;stack[0]!=nil; i++)
                 {   trace_printf("Arg%d: ", i);
-                    loop_print_trace(stack[i-nargs-1]);
+                    loop_print_trace(qcar(stack[0]));
                     trace_printf("\n");
+                    stack[0] = qcdr(stack[0]);
                 }
-                pop(fn);
+                popv(1);
+                pop2(fn, args);
             }
             def = fn; // this is passed as arg1 to the called code
-//
-// apply will find arguments on the stack and is responsible for
-// popping them before it exits.
-//
-            {
-//
-// Because there are nargs values pushed on the (upwards growing) stack,
-// &stack[1-nargs] points at the first value pushed, i.e. arg-1.  At one stage
-// I had a machine-specific bit of code (called "ncall") to do the following,
-// arguing that maybe in assembly code it would be possible to do much better
-// than the really ugly switch statement shown now.  My belief now (especially
-// given that ncall was used in just one place - here) is that the switch will
-// cost no more than the procedure call did, and that in-line code will help
-// speed up the common and critical cases of 0, 1, 2 and 3 args.  Also apply
-// is otherwise a reasonably short function, so if this switch is needed
-// anywhere here is not too bad.
-//
-                push(fn);
-                switch (nargs)
-                {
-//
-// The Standard Lisp Report (Marti et al, Utah UUCS-78-101) only
-// requires support for 15 args.  Common Lisp requires at least 50.
-// I deal with up to 8 args in-line here (I expect more than that to be
-// amazingly uncommon) so that this function is kept under contol.
-// Calls with more than 8 args go over to apply_lots, and within that
-// function calls with over 25 args have an even more clumsy treatment.
-//
-                    case 0:
-                        def = (*qfnn(fn))(def, 0);
-                        break;
-                    case 1:
-                        def = (*qfn1(fn))(def, stack[-1]);
-                        break;
-                    case 2:
-                        def = (*qfn2(fn))(def, stack[-2], stack[-1]);
-                        break;
-                    case 3:
-                        def = (*qfnn(fn))(def, 3, stack[-3], stack[-2], stack[-1]);
-                        break;
-                    case 4:
-                        def = (*qfnn(fn))(def, 4, stack[-4], stack[-3], stack[-2],
-                                          stack[-1]);
-                        break;
-                    case 5:
-                        def = (*qfnn(fn))(def, 5, stack[-5], stack[-4], stack[-3],
-                                          stack[-2], stack[-1]);
-                        break;
-                    case 6:
-                        def = (*qfnn(fn))(def, 6, stack[-6], stack[-5], stack[-4],
-                                          stack[-3], stack[-2], stack[-1]);
-                        break;
-                    case 7:
-                        def = (*qfnn(fn))(def, 7, stack[-7], stack[-6], stack[-5],
-                                          stack[-4], stack[-3], stack[-2], stack[-1]);
-                        break;
-                    case 8:
-                        def = (*qfnn(fn))(def, 8, stack[-8], stack[-7], stack[-6],
-                                          stack[-5], stack[-4], stack[-3], stack[-2],
-                                          stack[-1]);
-                        break;
-                    default:
-                        def = apply_lots(nargs, qfnn(fn), def);
-                        break;
+            push(fn); // I may need the function name when tracing
+                      // displays a result.
+            if (args == nil)
+                 def = (*qfn0(fn))(def);
+            else
+            {   LispObject a1 = qcar(args);
+                args = qcdr(args);
+                if (args == nil)
+                    def = (*qfn1(fn))(def, a1);
+                else
+                {   LispObject a2 = qcar(args);
+                    args = qcdr(args);
+                    if (args == nil)
+                        def = (*qfn2(fn))(def, a1, a2);
+                    else
+                    {   LispObject a3 = qcar(args);
+                        args = qcdr(args);
+                        if (args == nil)
+                            def = (*qfn3(fn))(def, a1, a2, a3);
+                        else
+                            def = (*qfn4up(fn))(def, a1, a2, a3, args);
+                    }
                 }
-                debug_assert(1);
-//
-// here I have to pop the stack by hand - note that popv does not
-// corrupt exit_count, which tells me how many results were being handed
-// back.
-//
-                pop(fn);
-                popv(nargs);
-                if (tracing)
-                {   push(def);
-// In due course I will need to worry about multiple values here
-                    freshline_trace();
-                    loop_print_trace(fn);
-                    trace_printf(" => ");
-                    loop_print_trace(stack[0]);
-                    trace_printf("\n");
-                    pop(def);
-                }
-                return def;
             }
+            debug_assert(1);
+            pop(fn);
+            if (tracing)
+            {   push(def);
+// In due course I will need to worry about multiple values here
+                freshline_trace();
+                loop_print_trace(fn);
+                trace_printf(" => ");
+                loop_print_trace(stack[0]);
+                trace_printf("\n");
+                pop(def);
+            }
+            return def;
         }
         else if (!is_cons(fn))
         {   char message[64];
-            popv(nargs);
+// If the object in the function position is not a symbol but is atomic I
+// have an error state, and it happens that I can tell something about where
+// the call was from so I will construct a half decent diagnostic.
             push(fn);
             char name_of_caller[32];
             from = qpname(from);
@@ -427,35 +131,30 @@ LispObject apply(LispObject fn, int nargs, LispObject env, LispObject from)
                     name_of_caller);
             aerror1(message, fn);
         }
-// apply_lambda() will pop the args from the stack when it is done
+// apply_lambda() is the key part of calls to interpreted functions.
         if ((def = qcar(fn)) == lambda)
-            return apply_lambda(qcdr(fn), nargs, env, fn);
-//
+            return apply_lambda(qcdr(fn), args, env, fn);
 // A bytecoded funarg is stored as (cfunarg <actual fn> <env>) and any call
 // to it behaves as if the actual function was called with the environment
 // passed as a forced-in first argument.
-//
         else if (def == cfunarg)
-        {   int i;
-            push(nil);
-            def = qcdr(fn);
+        {   def = qcdr(fn);
             fn = qcar(def);
-            for (i=0; i<nargs; i++) stack[-i] = stack[-i-1];
-            stack[-nargs] = qcdr(def);
-            nargs++;
+            push2(fn, env);
+            args = cons(qcdr(def), args);
+            pop2(env, fn);
+// The "continue" here just goes back and tries again!
             continue;
         }
         else if (def == funarg)
         {   def = qcdr(fn);
             if (consp(def))
-                return apply_lambda(qcdr(def), nargs, qcar(def), fn);
+                return apply_lambda(qcdr(def), args, qcar(def), fn);
         }
         break;
     }
-//
-// Other cases are all errors.
-//
-    popv(nargs);
+// I have now handled all the cases that are valid - so if I get here I need
+// to generate a diagnostic.
     char message[64];
     char name_of_caller[32];
     from = qpname(from);
@@ -468,11 +167,8 @@ LispObject apply(LispObject fn, int nargs, LispObject env, LispObject from)
     aerror1(message, fn);
 }
 
-//
-// Now for implementation of all the special forms...
-//
 
-// activity.
+// Now for implementations of many of the special forms...
 
 static LispObject and_fn(LispObject args, LispObject env)
 // also needs to be a macro for Common Lisp
@@ -835,13 +531,13 @@ static LispObject defun_fn(LispObject args, LispObject)
             }
             qheader(fname) = qheader(fname) & ~SYM_MACRO;
             if ((qheader(fname) & SYM_C_DEF) != 0) lose_C_def(fname);
-            if (qfn1(fname) != undefined1)
+            if (qfn1(fname) != undefined_1)
             {   if (qvalue(redef_msg) != nil)
                 {   debug_printf("\n+++ ");
                     loop_print_debug(fname);
                     debug_printf(" redefined\n");
                 }
-                set_fns(fname, undefined1, undefined2, undefinedn);
+                set_fns(fname, undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
                 qenv(fname) = fname;
             }
 //
@@ -850,9 +546,9 @@ static LispObject defun_fn(LispObject args, LispObject)
 // case the definition (in qenv()) is a pair (<def> . <env>)
 //
             qenv(fname) = args;         // Sort of notional lambda present
-            set_fns(fname, interpreted1, interpreted2, interpretedn);
+            set_fns(fname, interpreted_0, interpreted_1, interpreted_2, interpreted_3, interpreted_4up);
             if (qvalue(comp_symbol) != nil &&
-                qfn1(compiler_symbol) != undefined1)
+                qfn1(compiler_symbol) != undefined_1)
             {   push(fname);
                 args = ncons(fname);
                 (qfn1(compiler_symbol))(compiler_symbol, args);
@@ -880,7 +576,7 @@ static LispObject defmacro_fn(LispObject args, LispObject)
         LispObject bvl = qcar(args);
 // Here if bvl is a list such as (u) I will expand it to be (u &optional g).
         if (consp(bvl) && qcdr(bvl) == nil)
-            args = cons(list3(qcar(bvl), opt_key, Lgensym(nil, 0)),
+            args = cons(list3(qcar(bvl), opt_key, Lgensym(nil)),
                         qcdr(args)); 
         if (is_symbol(fname))
         {   if ((qheader(fname) & (SYM_C_DEF | SYM_CODEPTR)) ==
@@ -898,17 +594,17 @@ static LispObject defmacro_fn(LispObject args, LispObject)
 //
             if ((qheader(fname) & SYM_SPECIAL_FORM) == 0)
             {   qheader(fname) &= ~SYM_C_DEF;
-                if (qfn1(fname) != undefined1 &&
+                if (qfn1(fname) != undefined_1 &&
                     qvalue(redef_msg) != nil)
                 {   debug_printf("\n+++ ");
                     loop_print_debug(fname);
                     debug_printf(" redefined as a macro\n");
                 }
-                set_fns(fname, undefined1, undefined2, undefinedn);
+                set_fns(fname, undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
             }
             qenv(fname) = args;         // Sort of notional lambda present
             if (qvalue(comp_symbol) != nil &&
-                qfn1(compiler_symbol) != undefined1)
+                qfn1(compiler_symbol) != undefined_1)
             {   LispObject t1, t2;
                 push(fname);
                 if (!(consp(args) &&
@@ -1191,35 +887,35 @@ static LispObject letstar_fn(LispObject args, LispObject env)
 #undef Return
 }
 
-static LispObject bad_specialfn2(LispObject env, LispObject a, LispObject b)
-{   aerror1("bad special function", env);
-}
+// In many ways I think it is astonishing how few special forms there are.
+// OK some are listed here and some in eval3.cpp, but both the lists are
+// fairly short.
 
 setup_type const eval2_setup[] =
-{   {"and",                     and_fn, bad_specialfn2, BAD_SPECIALN},
-    {"catch",                   catch_fn, bad_specialfn2, BAD_SPECIALN},
-    {"cond",                    cond_fn, bad_specialfn2, BAD_SPECIALN},
-    {"eval-when",               eval_when_fn, bad_specialfn2, BAD_SPECIALN},
-    {"function",                function_fn, bad_specialfn2, BAD_SPECIALN},
-    {"go",                      go_fn, bad_specialfn2, BAD_SPECIALN},
-    {"if",                      if_fn, bad_specialfn2, BAD_SPECIALN},
-    {"let*",                    letstar_fn, bad_specialfn2, BAD_SPECIALN},
+{   {"and",                     BAD_SPECIAL_0, and_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"catch",                   BAD_SPECIAL_0, catch_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"cond",                    BAD_SPECIAL_0, cond_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"eval-when",               BAD_SPECIAL_0, eval_when_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"function",                BAD_SPECIAL_0, function_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"go",                      BAD_SPECIAL_0, go_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"if",                      BAD_SPECIAL_0, if_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"let*",                    BAD_SPECIAL_0, letstar_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
 // DE and DM are used as low level primitives in the Common Lisp bootstrap
-    {"de",                      defun_fn, bad_specialfn2, BAD_SPECIALN},
-    {"dm",                      defmacro_fn, bad_specialfn2, BAD_SPECIALN},
-    {"declare",                 declare_fn, bad_specialfn2, BAD_SPECIALN},
-    {"compiler-let",            compiler_let_fn, bad_specialfn2, BAD_SPECIALN},
-    {"flet",                    flet_fn, bad_specialfn2, BAD_SPECIALN},
-    {"labels",                  labels_fn, bad_specialfn2, BAD_SPECIALN},
-// For the purposes of Reduce there is a problem with the names LET anb BLOCK
+    {"de",                      BAD_SPECIAL_0, defun_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"dm",                      BAD_SPECIAL_0, defmacro_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"declare",                 BAD_SPECIAL_0, declare_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"compiler-let",            BAD_SPECIAL_0, compiler_let_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"flet",                    BAD_SPECIAL_0, flet_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"labels",                  BAD_SPECIAL_0, labels_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+// For the purposes of Reduce there is a problem with the names LET and BLOCK
 // because they are used in the system, and having them as Lisp-level special
 // forms would clash. I provide implementations but with names prefixed by
 // "~". This is perhaps an issue that ough to get resolved some time.
-//  {"block",                   block_fn, bad_specialfn2, BAD_SPECIALN},
-//  {"let",                     let_fn, bad_specialfn2, BAD_SPECIALN},
-    {"~block",                  block_fn, bad_specialfn2, BAD_SPECIALN},
-    {"~let",                    let_fn, bad_specialfn2, BAD_SPECIALN},
-    {NULL,                      0, 0, 0}
+//  {"block",                   BAD_SPECIAL_0, block_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+//  {"let",                     BAD_SPECIAL_0, let_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"~block",                  BAD_SPECIAL_0, block_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"~let",                    BAD_SPECIAL_0, let_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {NULL,                      0, 0, 0, 0, 0}
 };
 
 // end of eval2.cpp

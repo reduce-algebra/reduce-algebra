@@ -321,11 +321,6 @@ void FXTerminal::create()
 
 }
 
-extern "C"
-{
-int showmathInitialised = 0;
-}
-
 void FXTerminal::setupShowMath()
 {
 // Note that the terminal must have been created before I set up the
@@ -4704,6 +4699,12 @@ void FXTerminal::drawBufferText(FXDCWindow& dc,FXint x,FXint y,FXint,FXint,FXint
   }
 
 
-}
+} // end of FX namespace
+
+// not in the FX namespace...
+
+int showmathInitialised = 0;
+
+
 
 // End of FXTerminal.cpp

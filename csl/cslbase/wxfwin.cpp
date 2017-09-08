@@ -1324,8 +1324,8 @@ int find_program_directory(const char *argv0)
 #endif
 #endif
 
-extern "C" int get_home_directory(char *b, size_t len);
-extern "C" int get_users_home_directory(char *b, size_t len);
+extern int get_home_directory(char *b, size_t len);
+extern int get_users_home_directory(char *b, size_t len);
 
 static lookup_function *look_in_variable = NULL;
 

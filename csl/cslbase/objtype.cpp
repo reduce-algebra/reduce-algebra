@@ -37,7 +37,7 @@
 // Decodes the type of an object file and generates a small source
 // file that gives information about it and that can also be used to
 // give information about a compiler command. Typical usage:
-//   objtype foo.o imports.def - $CC $CFLAGS
+//   objtype foo.o - $CC $CFLAGS
 //
 
 #ifdef HAVE_CONFIG_H
@@ -66,14 +66,14 @@ static FILE *myfopen(const char *name, const char *mode)
 }
 
 int main(int argc, const char *argv[])
-{   FILE *f1, *f2, *f3;
+{   FILE *f1, *f2;
     time_t t = time(NULL);
     unsigned char hdr[20];
     int sixtyFourBit = 0, byteOrder = 0, machine = 0;
     const char *s = NULL;
     int i;
-    if (argc < 4)
-    {   fprintf(stderr, "Usage: objtype xx.obj imports.def dest.c $CC $CFLAGS\n");
+    if (argc < 3)
+    {   fprintf(stderr, "Usage: objtype xx.obj dest.c $CC $CFLAGS\n");
         return 1;
     }
     if (strcmp(argv[1], "-") == 0) f1 = stdin;
@@ -82,34 +82,25 @@ int main(int argc, const char *argv[])
     {   fprintf(stderr, "File \"%s\" not found\n", argv[1]);
         return 1;
     }
-    if (strcmp(argv[2], "-") == 0) f2 = stdin;
-    else f2 = myfopen(argv[2], "r");
+    if (strcmp(argv[2], "-") == 0) f2 = stdout;
+    else f2 = myfopen(argv[2], "w");
     if (f2 == NULL)
-    {   fprintf(stderr, "File \"%s\" not found\n", argv[2]);
+    {   fprintf(stderr, "File \"%s\" can not be written to\n", argv[2]);
         fclose(f1);
-        return 1;
-    }
-    if (strcmp(argv[3], "-") == 0) f3 = stdout;
-    else f3 = myfopen(argv[3], "w");
-    if (f3 == NULL)
-    {   fprintf(stderr, "File \"%s\" can not be written to\n", argv[3]);
-        fclose(f1);
-        fclose(f2);
         return 1;
     }
     if (fread(hdr, 20, 1, f1) != 1)
     {   fprintf(stderr, "Unable to read header from input file\n");
         fclose(f1);
         fclose(f2);
-        fclose(f3);
         return 1;
     }
-    fprintf(f3, "/*\n * Created %s */\n\n", asctime(localtime(&t)));
-    fprintf(f3, "\nconst char *linker_type = \"");
+    fprintf(f2, "/*\n * Created %s */\n\n", asctime(localtime(&t)));
+    fprintf(f2, "\nconst char *linker_type = \"");
     if (hdr[0] == 0xfe &&
         hdr[1] == 0xed &&
         hdr[2] == 0xfa &&
-        hdr[3] == 0xce) fprintf(f3, "mac-darwin");
+        hdr[3] == 0xce) fprintf(f2, "mac-darwin");
     else if (hdr[0] == 0x7f &&
              hdr[1] == 'E' &&
              hdr[2] == 'L' &&
@@ -153,8 +144,8 @@ int main(int argc, const char *argv[])
             case 62:if (sixtyFourBit) s = "x86_64";
                 break;
         }
-        if (s != NULL) fprintf(f3, "%s", s);
-        else fprintf(f3, "ELF-%d-%d", 2*sixtyFourBit+byteOrder, machine);
+        if (s != NULL) fprintf(f2, "%s", s);
+        else fprintf(f2, "ELF-%d-%d", 2*sixtyFourBit+byteOrder, machine);
     }
     else
     {
@@ -169,36 +160,20 @@ int main(int argc, const char *argv[])
 //
         machine = hdr[0] + (hdr[1]<<8);
         switch (machine)
-        {   case 0x14c: fprintf(f3, "win32");
+        {   case 0x14c: fprintf(f2, "win32");
                 break;
-            case 0x1c0: fprintf(f3, "arm-coff");
+            case 0x1c0: fprintf(f2, "arm-coff");
                 break;
-            case 0x8664:fprintf(f3, "win64");
+            case 0x8664:fprintf(f2, "win64");
                 break;
             default:    // eg Itanium Windows could hit this case, I guess
-                fprintf(f3, "COFF-%x", hdr[0] | (hdr[1]<<8));
+                fprintf(f2, "COFF-%x", hdr[0] | (hdr[1]<<8));
                 break;
         }
     }
-    fprintf(f3, "\";\n\nconst char *import_data[] = {\n");
-    for (;;)
-    {   char line[100];
-        int ch = getc(f2);
-// Here I just IGNORE carriage returns.
-        while (ch == '\r') ch = getc(f2);
-        i = 0;
-        while (ch != '\n' && ch != EOF)
-        {   if (i < 90) line[i++] = ch;
-            ch = getc(f2);
-            while (ch == '\r') ch = getc(f2);
-        }
-        line[i] = 0;
-        if (i == 0) break;
-        fprintf(f3, "    \"%s\",\n", line);
-    }
-    fprintf(f3, "    NULL\n};\n\nconst char *compiler_command[] = {\n    \"%s\"",
-            argv[4]);
-    for (i=5; i<argc; i++)
+    fprintf(f2, "\";\n\nconst char *compiler_command[] = {\n    \"%s\"",
+           argv[3]);
+    for (i=4; i<argc; i++)
     {   const char *a = argv[i];
 //
 // I filter out some options that I do not think I will need in the
@@ -208,18 +183,16 @@ int main(int argc, const char *argv[])
         if (a[0]=='-' && a[1]=='I' && a[2]=='.') continue;
         if (strcmp(a, "-Wall") == 0) continue;
         if (strcmp(a, "-DHAVE_CONFIG_H") == 0) continue;
-        fprintf(f3, ",\n    \"%s\"", a);
+        fprintf(f2, ",\n    \"%s\"", a);
     }
-    fprintf(f3, "\n};\n\n");
+    fprintf(f2, "\n};\n\n");
     fclose(f1);
     fclose(f2);
-    fclose(f3);
     return 0;
 invalidObjectFormat:
     fprintf(stderr, "Object file appears to be corrupt\n");
     fclose(f1);
     fclose(f2);
-    fclose(f3);
     return 1;
 }
 

@@ -45,12 +45,8 @@ LispObject Lget_bps(LispObject env, LispObject n)
     return onevalue(n);
 }
 
-// Soon this will need to take FIVE functions not THREE. Specifically ones
-// that support 0, 1, 2, 3 and 4+ arguments.
-
-void set_fns(LispObject a, one_args *f1, two_args *f2, n_args *fn)
-{
-    if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
+void set_fns(LispObject a, no_args *f0, one_arg *f1, two_args *f2, three_args *f3, fourup_args *f4up)
+{   if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR))
     {   if (symbol_protect_flag)
         {   if (warn_about_protected_symbols)
@@ -69,9 +65,11 @@ void set_fns(LispObject a, one_args *f1, two_args *f2, n_args *fn)
             Lsymbol_protect(nil, a, nil);
         }
     }
+    ifn0(a) = (intptr_t)f0;
     ifn1(a) = (intptr_t)f1;
     ifn2(a) = (intptr_t)f2;
-    ifnn(a) = (intptr_t)fn;
+    ifn3(a) = (intptr_t)f3;
+    ifn4up(a) = (intptr_t)f4up;
 }
 
 #ifdef HIDE_USELESS_SYMBOL_ENVIRONMENTS
@@ -81,17 +79,22 @@ static bool interpreter_entry(LispObject a)
 // If a function will be handled by the interpreter, including the case
 // of it being undefined, then the fn1() cell will tell me so.
 //
-{   return (
-               qfn1(a) == interpreted1 ||
-               qfn1(a) == funarged1 ||
-               qfn1(a) == undefined1);
+{   return (   qfn1(a) == interpreted_1 ||
+               qfn1(a) == funarged_1 ||
+               qfn1(a) == undefined_1);
 }
 
 #endif
 
-// Here again I will need to deal with 0 and 3-argument cases...
 
-static const char *c_fn1(one_args *p, setup_type const s[])
+static const char *c_fn0(no_args *p, setup_type const s[])
+{   int i;
+    for (i=0; s[i].name!=NULL; i++)
+        if (s[i].zero == p) return s[i].name;
+    return NULL;
+}
+
+static const char *c_fn1(one_arg *p, setup_type const s[])
 {   int i;
     for (i=0; s[i].name!=NULL; i++)
         if (s[i].one == p) return s[i].name;
@@ -105,14 +108,35 @@ static const char *c_fn2(two_args *p, setup_type const s[])
     return NULL;
 }
 
-static const char *c_fnn(n_args *p, setup_type const s[])
+static const char *c_fn3(three_args *p, setup_type const s[])
 {   int i;
     for (i=0; s[i].name!=NULL; i++)
-        if (s[i].n == p) return s[i].name;
+        if (s[i].three == p) return s[i].name;
     return NULL;
 }
 
-static const char *show_fn1(one_args *p)
+static const char *c_fn4up(fourup_args *p, setup_type const s[])
+{   int i;
+    for (i=0; s[i].name!=NULL; i++)
+        if (s[i].fourup == p) return s[i].name;
+    return NULL;
+}
+
+static const char *show_fn0(no_args *p)
+{   int i;
+    const char *r;
+    for (i=0; entries_table0[i].s!=NULL; i++)
+        if (entries_table0[i].p == p) return entries_table0[i].s;
+    for (i=0; setup_tables[i]!=NULL; i++)
+        if ((r = c_fn0(p, setup_tables[i])) != NULL) return r;
+// There are more entries in setup_tables after the first NULL!
+    for (i++; setup_tables[i]!=NULL; i++)
+        if ((r = c_fn0(p, setup_tables[i])) != NULL) return r;
+    trace_printf("+++ Unknown function pointer = %p\n", p);
+    return "unknown";
+}
+
+static const char *show_fn1(one_arg *p)
 {   int i;
     const char *r;
     for (i=0; entries_table1[i].s!=NULL; i++)
@@ -139,32 +163,47 @@ static const char *show_fn2(two_args *p)
     return "unknown";
 }
 
-static const char *show_fnn(n_args *p)
+static const char *show_fn3(three_args *p)
 {   int i;
     const char *r;
-    for (i=0; entries_tablen[i].s!=NULL; i++)
-        if (entries_tablen[i].p == p) return entries_tablen[i].s;
+    for (i=0; entries_table3[i].s!=NULL; i++)
+        if (entries_table3[i].p == p) return entries_table3[i].s;
     for (i=0; setup_tables[i]!=NULL; i++)
-        if ((r = c_fnn(p, setup_tables[i])) != NULL) return r;
+        if ((r = c_fn3(p, setup_tables[i])) != NULL) return r;
     for (i++; setup_tables[i]!=NULL; i++)
-        if ((r = c_fnn(p, setup_tables[i])) != NULL) return r;
+        if ((r = c_fn3(p, setup_tables[i])) != NULL) return r;
+    trace_printf("+++ Unknown function pointer = %p\n", p);
+    return "unknown";
+}
+
+static const char *show_fn4up(fourup_args *p)
+{   int i;
+    const char *r;
+    for (i=0; entries_table4up[i].s!=NULL; i++)
+        if (entries_table4up[i].p == p) return entries_table4up[i].s;
+    for (i=0; setup_tables[i]!=NULL; i++)
+        if ((r = c_fn4up(p, setup_tables[i])) != NULL) return r;
+    for (i++; setup_tables[i]!=NULL; i++)
+        if ((r = c_fn4up(p, setup_tables[i])) != NULL) return r;
     trace_printf("+++ Unknown function pointer = %p\n", p);
     return "unknown";
 }
 
 LispObject Lsymbol_fn_cell(LispObject env, LispObject a)
 //
-// For debugging... This looks in the 3 (soon 5) function cells that any
+// For debugging... This looks in the 5 function cells that any
 // symbol has and attempts to display the name of the function there.
 // There are enough tables for me to find the names of MANY things, but I
 // do not guarantee everything.
 //
-{   const char *s1, *s2, *sn;
+{   const char *s0, *s1, *s2, *s3, *s4up;
     if (!symbolp(a)) return onevalue(nil);
+    s0 = show_fn0(qfn0(a));
     s1 = show_fn1(qfn1(a));
     s2 = show_fn2(qfn2(a));
-    sn = show_fnn(qfnn(a));
-    trace_printf("%s %s %s\n", s1, s2, sn);
+    s3 = show_fn3(qfn3(a));
+    s4up = show_fn4up(qfn4up(a));
+    trace_printf("%s %s %s %s %s\n", s0, s1, s2, s3, s4up);
     return onevalue(nil);
 }
 
@@ -249,60 +288,56 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
 // for the bytecoded stuff to unpick, otherwise they should be mapped to nil
 // somewhere. The 2 bit is present if a &rest argument is present.
 //
-{   one_args *f1;
+{   no_args *f0;
+    one_arg *f1;
     two_args *f2;
-    n_args *fn;
+    three_args *f3;
+    fourup_args *f4up;
     int low, high, hardrest;
     LispObject r;
     unsigned char *b;
     if (!symbolp(a)) return onevalue(nil);
+    f0 = qfn0(a);
     f1 = qfn1(a);
     f2 = qfn2(a);
-    fn = qfnn(a);
+    f3 = qfn3(a);
+    f4up = qfn4up(a);
     r = qenv(a);
     if (!consp(r)) return onevalue(nil);
     r = qcar(r);
     if (!is_bps(r)) return onevalue(nil);
     b = (unsigned char *)data_of_bps(r);
-    if (f1 == bytecoded1 ||
+    if (f0 == bytecoded_0 ||
+        f0 == f0_as_0
+        ) return onevalue(fixnum_of_int(1));
+    if (f1 == bytecoded_1 ||
         f1 == f1_as_0 ||
         f1 == f1_as_1
         ) return onevalue(fixnum_of_int(1));
-    if (f2 == bytecoded2 ||
+    if (f2 == bytecoded_2 ||
         f2 == f2_as_0 ||
         f2 == f2_as_1 ||
         f2 == f2_as_2
         ) return onevalue(fixnum_of_int(2));
-    if (fn == bytecoded0 ||
-        fn == f0_as_0
-        ) return onevalue(fixnum_of_int(0));
-    if (fn == bytecoded3 ||
-        fn == f3_as_0 ||
-        fn == f3_as_1 ||
-        fn == f3_as_2 ||
-        fn == f3_as_3
-        ) return onevalue(fixnum_of_int(3));
-    if (fn == bytecodedn) return onevalue(fixnum_of_int(b[0]));
+    if (f3 == bytecoded_3 ||
+        f3 == f3_as_0 ||
+        f3 == f3_as_1 ||
+        f3 == f3_as_2 ||
+        f3 == f3_as_3
+        ) return onevalue(fixnum_of_int(2));
+    if (f4up == bytecoded_4up) return onevalue(fixnum_of_int(b[0]));
     low = b[0];          // smallest number of valid args
     high = low + b[1];   // largest number before &rest is accounted for
     hardrest = 0;
-//
 // byteopt - optional arguments, with default of NIL
-//
-    if (f1 == byteopt1) hardrest = 0;
-//
+    if (f1 == byteopt_1) hardrest = 0;
 // hardopt - optional arguments but default is passed as a SPID so that
 // the user can follow up and apply cleverer default processing
-//
-    else if (f1 == hardopt1) hardrest = 1;
-//
+    else if (f1 == hardopt_1) hardrest = 1;
 // byteoptrest - anything with a &rest argument on the end.
-//
-    else if (f1 == byteoptrest1) hardrest = 1;
-//
+    else if (f1 == byteoptrest_1) hardrest = 1;
 // hardoptrest - some &optional args with non-nil default value, plus &rest
-//
-    else if (f1 == hardoptrest1) hardrest = 3;
+    else if (f1 == hardoptrest_1) hardrest = 3;
     else return onevalue(nil);
     r = list3(fixnum_of_int(low),
               fixnum_of_int(high), fixnum_of_int(hardrest));
@@ -312,7 +347,7 @@ LispObject Lsymbol_argcount(LispObject env, LispObject a)
 LispObject Lsymbol_argcode(LispObject env, LispObject a)
 //
 // This hands back a single integer that encodes what must be in the
-// three function cells for anything byte-coded.
+// five function cells for anything byte-coded.
 // Or nil if the argument did not name a bytecoded function.
 //
 {
@@ -326,37 +361,37 @@ LispObject Lsymbol_argcode(LispObject env, LispObject a)
 // I can not see any way much better than a grim sequence of explicit
 // tests to achieve what I want here.
 //
-    one_args *f1;
+    no_args *f0;
+    one_arg *f1;
     two_args *f2;
-    n_args *fn;
+    three_args *f3;
+    fourup_args *f4up;
     LispObject r;
     int val;
     if (!symbolp(a)) return onevalue(nil);
+    f0 = qfn0(a);
     f1 = qfn1(a);
     f2 = qfn2(a);
-    fn = qfnn(a);
+    f3 = qfn3(a);
+    f4up = qfn4up(a);
     r = qenv(a);
     if (!consp(r)) return onevalue(nil);
     r = qcar(r);
     if (!is_bps(r)) return onevalue(nil);
-    if (f1 == bytecoded1) val = 1;
-    else if (f2 == bytecoded2) val = 2;
-    else if (fn == bytecoded0) val = 0;
-    else if (fn == bytecoded3) val = 3;
-    else if (fn == bytecodedn) val = 4;
-//
-// I observe that I do not support double-execute for &optional and &rest
-// functions. I do not mind that too much!
-//
-    else if (f1 == byteopt1) val = BYTE_OPT;
-    else if (f1 == hardopt1) val = BYTE_HARDOPT;
-    else if (f1 == byteoptrest1) val = BYTE_OPT + BYTE_REST;
-    else if (f1 == hardoptrest1) val = BYTE_HARDOPT + BYTE_REST;
-    else if (fn == f3_as_0) val = BYTE_CALLAS + 0;
-    else if (fn == f3_as_1) val = BYTE_CALLAS + 1;
-    else if (fn == f3_as_2) val = BYTE_CALLAS + 2;
-    else if (fn == f3_as_3) val = BYTE_CALLAS + 3;
-    else if (fn == f0_as_0) val = BYTE_CALLAS + 4;
+    if (f0 == bytecoded_0) val = 0;
+    else if (f1 == bytecoded_1) val = 1;
+    else if (f2 == bytecoded_2) val = 2;
+    else if (f3 == bytecoded_3) val = 3;
+    else if (f4up == bytecoded_4up) val = 4;
+    else if (f1 == byteopt_1) val = BYTE_OPT;
+    else if (f1 == hardopt_1) val = BYTE_HARDOPT;
+    else if (f1 == byteoptrest_1) val = BYTE_OPT + BYTE_REST;
+    else if (f1 == hardoptrest_1) val = BYTE_HARDOPT + BYTE_REST;
+    else if (f3 == f3_as_0) val = BYTE_CALLAS + 0;
+    else if (f3 == f3_as_1) val = BYTE_CALLAS + 1;
+    else if (f3 == f3_as_2) val = BYTE_CALLAS + 2;
+    else if (f3 == f3_as_3) val = BYTE_CALLAS + 3;
+    else if (f0 == f0_as_0) val = BYTE_CALLAS + 4;
     else if (f2 == f2_as_0) val = BYTE_CALLAS + 5;
     else if (f2 == f2_as_1) val = BYTE_CALLAS + 6;
     else if (f2 == f2_as_2) val = BYTE_CALLAS + 7;
@@ -494,7 +529,7 @@ static bool restore_fn_cell(LispObject a, char *name,
             memcmp(name, s[i].name, len) == 0) break;
     }
     if (s[i].name == NULL) return false;
-    set_fns(a, s[i].one, s[i].two, s[i].n);
+    set_fns(a, s[i].zero, s[i].one, s[i].two, s[i].three, s[i].fourup);
     return true;
 }
 
@@ -565,7 +600,7 @@ LispObject Lsymbol_set_definition(LispObject env,
     {   if (qheader(a) & SYM_C_DEF) return onevalue(nil);
         aerror1("symbol-set-definition", a);
     }
-    set_fns(a, undefined1, undefined2, undefinedn); // Tidy up first
+    set_fns(a, undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up); // Tidy up first
     qenv(a) = a;
     if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
     if (b == nil) return onevalue(b); // set defn to nil to undefine
@@ -582,7 +617,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         if ((qheader(b) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0)
             aerror1("symbol-set-definition", b);
         qheader(a) = qheader(a) & ~SYM_MACRO;
-        {   set_fns(a, qfn1(b), qfn2(b), qfnn(b));
+        {   set_fns(a, qfn0(b), qfn1(b), qfn2(b), qfn3(b), qfn4up(b));
             qenv(a) = qenv(b);
 //
 // In order that checkpoint files can be made there is some very
@@ -614,16 +649,16 @@ LispObject Lsymbol_set_definition(LispObject env,
         flagbits &= 3;
         if (ntail != 0)
         {   switch (100*nargs + ntail-1)
-            {   case 300: set_fns(a, WRONG_NO_NA, WRONG_NO_NB, f3_as_0); break;
-                case 301: set_fns(a, WRONG_NO_NA, WRONG_NO_NB, f3_as_1); break;
-                case 302: set_fns(a, WRONG_NO_NA, WRONG_NO_NB, f3_as_2); break;
-                case 303: set_fns(a, WRONG_NO_NA, WRONG_NO_NB, f3_as_3); break;
-                case 200: set_fns(a, TOO_FEW_2, f2_as_0, WRONG_NO_2); break;
-                case 201: set_fns(a, TOO_FEW_2, f2_as_1, WRONG_NO_2); break;
-                case 202: set_fns(a, TOO_FEW_2, f2_as_2, WRONG_NO_2); break;
-                case 100: set_fns(a, f1_as_0, TOO_MANY_1, WRONG_NO_1); break;
-                case 101: set_fns(a, f1_as_1, TOO_MANY_1, WRONG_NO_1); break;
-                case 000: set_fns(a, WRONG_NO_NA, WRONG_NO_NB, f0_as_0); break;
+            {   case 300: set_fns(a, G0W3, G1W3, G2W3, f3_as_0, G4W3); break;
+                case 301: set_fns(a, G0W3, G1W3, G2W3, f3_as_1, G4W3); break;
+                case 302: set_fns(a, G0W3, G1W3, G2W3, f3_as_2, G4W3); break;
+                case 303: set_fns(a, G0W3, G1W3, G2W3, f3_as_3, G4W3); break;
+                case 200: set_fns(a, G0W2, G1W2, f2_as_0, G3W2, G4W2); break;
+                case 201: set_fns(a, G0W2, G1W2, f2_as_1, G3W2, G4W2); break;
+                case 202: set_fns(a, G0W2, G1W2, f2_as_2, G3W2, G4W2); break;
+                case 100: set_fns(a, G0W1, f1_as_0, G2W1, G3W1, G4W1); break;
+                case 101: set_fns(a, G0W1, f1_as_1, G2W1, G3W1, G4W1); break;
+                case 000: set_fns(a, f0_as_0, G1W0, G2W0, G3W0, G4W0); break;
             }
             b = qcdr(b);
         }
@@ -631,29 +666,29 @@ LispObject Lsymbol_set_definition(LispObject env,
         {   switch(flagbits)
             {   default:
                 case 0:  // easy case optional arguments
-                    set_fns(a, byteopt1, byteopt2, byteoptn); break;
+                    set_fns(a, byteopt_0, byteopt_1, byteopt_2, byteopt_3, byteopt_4up); break;
                 case 1:  // optional args, but non-nil default, or supplied-p extra
-                    set_fns(a, hardopt1, hardopt2, hardoptn); break;
+                    set_fns(a, hardopt_0, hardopt_1, hardopt_2, hardopt_3, hardopt_4up); break;
                 case 2:  // easy opt args, but also a &rest arg
-                    set_fns(a, byteoptrest1, byteoptrest2, byteoptrestn); break;
+                    set_fns(a, byteoptrest_0, byteoptrest_1, byteoptrest_2, byteoptrest_3, byteoptrest_4up); break;
                 case 3:  // complicated &options and &rest
-                    set_fns(a, hardoptrest1, hardoptrest2, hardoptrestn); break;
+                    set_fns(a, hardoptrest_0, hardoptrest_1, hardoptrest_2, hardoptrest_3, hardoptrest_4up); break;
             }
         }
         else
         {   if (nargs > 4) nargs = 4;
             qheader(a) = qheader(a) & ~SYM_MACRO;
             switch (nargs)
-            {   case 0:   set_fns(a, WRONG_NO_0A, WRONG_NO_0B, bytecoded0);
+            {   case 0:   set_fns(a, bytecoded_0, G1W0, G2W0, G3W0, G4W0);
                     break;
-                case 1:   set_fns(a, bytecoded1,  TOO_MANY_1,  WRONG_NO_1);
+                case 1:   set_fns(a, G0W1, bytecoded_1, G2W1, G3W1, G4W1);
                     break;
-                case 2:   set_fns(a, TOO_FEW_2,   bytecoded2,  WRONG_NO_2);
+                case 2:   set_fns(a, G0W2, G1W2, bytecoded_2, G3W2, G4W2);
                     break;
-                case 3:   set_fns(a, WRONG_NO_3A, WRONG_NO_3B, bytecoded3);
+                case 3:   set_fns(a, G0W3, G1W3, G2W3, bytecoded_3, G4W3);
                     break;
                 default:
-                case 4:   set_fns(a, WRONG_NO_NA, WRONG_NO_NB, bytecodedn);
+                case 4:   set_fns(a, G0W4up, G1W4up, G2W4up, G3W4up, bytecoded_4up);
                     break;
             }
         }
@@ -664,10 +699,10 @@ LispObject Lsymbol_set_definition(LispObject env,
         int nargs = 0;
         while (consp(bvl)) nargs++, bvl = qcdr(bvl);
         qheader(a) = qheader(a) & ~SYM_MACRO;
-        set_fns(a, interpreted1, interpreted2, interpretedn);
+        set_fns(a, interpreted_0, interpreted_1, interpreted_2, interpreted_3, interpreted_4up);
         qenv(a) = qcdr(b);
         if (qvalue(comp_symbol) != nil &&
-            qfn1(compiler_symbol) != undefined1)
+            qfn1(compiler_symbol) != undefined_1)
         {   push(a);
             a = ncons(a);
             (qfn1(compiler_symbol))(compiler_symbol, a);
@@ -679,7 +714,7 @@ LispObject Lsymbol_set_definition(LispObject env,
         int nargs = 0;
         while (consp(bvl)) nargs++, bvl = qcdr(bvl);
         qheader(a) = qheader(a) & ~SYM_MACRO;
-        set_fns(a, funarged1, funarged2, funargedn);
+        set_fns(a, funarged_0, funarged_1, funarged_2, funarged_3, funarged_4up);
         qenv(a) = qcdr(b);
     }
     else aerror1("symbol-set-definition", b);
@@ -721,7 +756,7 @@ LispObject Lremd(LispObject env, LispObject a)
 //
     qheader(a) = qheader(a) & ~SYM_MACRO;
     if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
-    set_fns(a, undefined1, undefined2, undefinedn);
+    set_fns(a, undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
     qenv(a) = a;
     return onevalue(res);
 }
@@ -745,8 +780,9 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
     if (!is_symbol(a) ||
         (qheader(a) & SYM_SPECIAL_FORM) != 0)
         aerror1("set-autoload", a);
-    if (!(qfn1(a) == undefined1 && qfn2(a) == undefined2 &&
-          qfnn(a) == undefinedn)) return onevalue(nil);
+    if (!(qfn0(a) == undefined_0 && qfn1(a) == undefined_1 &&
+          qfn2(a) == undefined_2 && qfn3(a) == undefined_3 &&
+          qfn4up(a) == undefined_4up)) return onevalue(nil);
     if ((qheader(a) & (SYM_C_DEF | SYM_CODEPTR)) ==
         (SYM_C_DEF | SYM_CODEPTR)) return onevalue(nil);
     push2(a, b);
@@ -760,7 +796,7 @@ LispObject Lset_autoload(LispObject env, LispObject a, LispObject b)
 //
     qheader(a) = qheader(a) & ~SYM_MACRO;
     if ((qheader(a) & SYM_C_DEF) != 0) lose_C_def(a);
-    set_fns(a, autoload1, autoload2, autoloadn);
+    set_fns(a, autoload_0, autoload_1, autoload_2, autoload_3, autoload_4up);
     qenv(a) = res;
     return onevalue(res);
 }
@@ -778,7 +814,7 @@ static void trace_builtin(LispObject s, bool state)
     w = get(s, builtin3_symbol, nil);
     if (is_fixnum(w)) three_arg_traceflags[int_of_fixnum(w)] = state;
     w = get(s, builtin4_symbol, nil);
-    if (is_fixnum(w)) four_arg_traceflags[int_of_fixnum(w)] = state;
+    if (is_fixnum(w)) fourup_arg_traceflags[int_of_fixnum(w)] = state;
 }
 
 // The arrangements here are such that traceset always includes trace.
@@ -793,8 +829,8 @@ LispObject Ltrace(LispObject env, LispObject a)
     {   LispObject s = qcar(w);
         w = qcdr(w);
         if (symbolp(s))
-        {   one_args *f1 = qfn1(s);
-            if (f1 == undefined1)
+        {   one_arg *f1 = qfn1(s);
+            if (f1 == undefined_1)
             {   freshline_debug();
 // If you trace a function that is not defined I will issue a warning, since
 // there is a chance that you made a mistake in the name of the function
@@ -1037,19 +1073,10 @@ static LispObject Lrestart_lisp(LispObject env, LispObject a)
 {   return Lrestart_lisp2(env, a, SPID_NOARG);
 }
 
-static LispObject Lpreserve_03(LispObject env, int nargs, ...)
-{   LispObject startup = nil, banner = nil, resume = nil;
-    char filename[LONGEST_LEGAL_FILENAME];
+static LispObject Lpreserve_3(LispObject env, LispObject startup,
+        LispObject banner, LispObject resume)
+{   char filename[LONGEST_LEGAL_FILENAME];
     bool failed;
-    if (nargs!=0)
-    {   va_list a;
-        argcheck(nargs, 3, "preserve");
-        va_start(a, nargs);
-        startup = va_arg(a, LispObject);
-        banner = va_arg(a, LispObject);
-        resume = va_arg(a, LispObject);
-        va_end(a);
-    }
     memset(filename, 0, sizeof(filename));
     if (startup != nil) supervisor = startup;
     failed = Iwriterootp(filename);  // Can I open image file for writing?
@@ -1064,10 +1091,6 @@ static LispObject Lpreserve_03(LispObject env, int nargs, ...)
     throw LispRestart();
 }
 
-static LispObject Lpreserve_1(LispObject env, LispObject startup)
-{   return Lpreserve_03(env, 3, startup, nil, nil);
-}
-
 static LispObject Lpreserve_2(LispObject env,
                               LispObject startup, LispObject banner)
 //
@@ -1080,7 +1103,15 @@ static LispObject Lpreserve_2(LispObject env,
 // I want a string) is is a message of up to 40 characters to display
 // when the system restart.
 //
-{   return Lpreserve_03(env, 3, startup, banner, nil);
+{   return Lpreserve_3(env, startup, banner, nil);
+}
+
+static LispObject Lpreserve_1(LispObject env, LispObject startup)
+{   return Lpreserve_3(env, startup, nil, nil);
+}
+
+static LispObject Lpreserve_0(LispObject env)
+{   return Lpreserve_3(env, nil, nil, nil);
 }
 
 
@@ -1127,9 +1158,8 @@ static LispObject Lcheckpoint(LispObject env,
     return onevalue(nil);
 }
 
-static LispObject Lcheckpoint_0(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "checkpoint");
-    return Lcheckpoint(env, nil, nil);
+static LispObject Lcheckpoint_0(LispObject env)
+{   return Lcheckpoint(env, nil, nil);
 }
 
 static LispObject Lcheckpoint_1(LispObject env, LispObject startup)
@@ -1144,9 +1174,8 @@ static LispObject Lcheckpoint_1(LispObject env, LispObject startup)
 // been an overflow.
 //
 
-NORETURN static LispObject Lresource_exceeded(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "resource-exceeded");
-    resource_exceeded();
+NORETURN static LispObject Lresource_exceeded(LispObject env)
+{   resource_exceeded();
 }
 
 static bool eql_numbers(LispObject a, LispObject b)
@@ -2000,7 +2029,7 @@ LispObject Lequalp(LispObject env, LispObject a, LispObject b)
     else return onevalue(Lispify_predicate(equalp(a, b)));
 }
 
-LispObject Lneq(LispObject env, LispObject a, LispObject b)
+LispObject Lneq_2(LispObject env, LispObject a, LispObject b)
 {   bool r;
 #ifdef COMMON
     r = cl_equal(a, b);
@@ -2032,9 +2061,9 @@ LispObject Lnreverse(LispObject env, LispObject a)
     {   intptr_t n = Llength(nil, a) - 0x10;
         intptr_t i = TAG_FIXNUM;
         while (n > i)
-        {   LispObject w = Laref2(nil, a, i);
-            Laset(nil, 3, a, i, Laref2(nil, a, n));
-            Laset(nil, 3, a, n, w);
+        {   LispObject w = Laref_2(nil, a, i);
+            Laset_3(nil, a, i, Laref_2(nil, a, n));
+            Laset_3(nil, a, n, w);
             i += 0x10;
             n -= 0x10;
         }
@@ -2055,6 +2084,32 @@ LispObject Lnreverse2(LispObject env, LispObject a, LispObject b)
         a = qcdr(a);
         qcdr(c) = b;
         b = c;
+    }
+    return onevalue(b);
+}
+
+LispObject Lnrevlist_2(LispObject env, LispObject b, LispObject a)
+{   push(a);
+    b = ncons(b);
+    pop(a);
+    while (consp(a))
+    {   LispObject c = a;
+        a = qcdr(a);
+        qcdr(c) = b;
+        b = c;
+    }
+    return onevalue(b);
+}
+
+LispObject Lnrevlist_3(LispObject env, LispObject a, LispObject b, LispObject c)
+{   push(a);
+    b = list2(b, c);
+    pop(a);
+    while (consp(a))
+    {   LispObject d = a;
+        a = qcdr(a);
+        qcdr(d) = b;
+        b = d;
     }
     return onevalue(b);
 }
@@ -2402,58 +2457,18 @@ LispObject Llength(LispObject env, LispObject a)
     else return onevalue(fixnum_of_int(0));
 }
 
-LispObject Lappend_n(LispObject env, int nargs, ...)
-{   va_list a;
-    int i;
-    LispObject r;
-    if (nargs == 0) return onevalue(nil);
-    va_start(a, nargs);
-    push_args(a, nargs);
-//
-// The actual args have been passed a C args - I can not afford to
-// risk garbage collection until they have all been moved somewhere safe,
-// and here that safe place is the Lisp stack.  I have to delay checking for
-// overflow on same until all args have been pushed.
-//
-    stackcheck0(nargs);
-    r = nil;
-//
-// rearrange order of items on the stack...
-// The idea is that I will then reverse-copy the args in the order a1,
-// a2 , ... to make a result list.  But I want to pop the stack as soon as
-// I can, so I need arg1 on the TOP of the stack.
-//
-    for (i = 0; 2*i+1<nargs; i++)
-    {   LispObject temp = stack[-i];
-        stack[-i] = stack[i+1-nargs];
-        stack[i+1-nargs] = temp;
-    }
-    for (i = 0; i<nargs; i++)
-    {   LispObject w;
-        pop(w);
-        while (consp(w))
-        {   push(w);
-            r = cons(qcar(w), r);
-            pop(w);
-            w = qcdr(w);
-        }
-    }
-    return onevalue(nreverse(r));
-}
-
 LispObject Lappend_1(LispObject, LispObject a)
 {   return onevalue(a);
 }
 
-LispObject Lappend(LispObject env, LispObject a, LispObject b)
+LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil;
     push(b);
     stackcheck2(1, a, r);
     while (consp(a))
-    {   push(a);
+    {   push(qcdr(a));
         r = cons(qcar(a), r);
         pop(a);
-        a = qcdr(a);
     }
     pop(b);
     while (r != nil)
@@ -2463,6 +2478,35 @@ LispObject Lappend(LispObject env, LispObject a, LispObject b)
         r = a;
     }
     return onevalue(b);
+}
+
+LispObject Lappend_3(LispObject env, LispObject a, LispObject b, LispObject c)
+{   push(a);
+    b = Lappend_2(nil, b, c);
+    pop(a);
+    return Lappend_2(nil, a, b);
+}
+
+LispObject Lappend_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   push3(a1, a2, a3);
+// Note that the list of arguments from a4 upwards will be freshly consed
+// and so I am entitled to overwrite it as I go.
+    a4up = nreverse(a4up);
+    LispObject r = qcar(a4up);
+    a4up = qcdr(a4up);
+    while (a4up != nil)
+    {   LispObject w = qcar(a4up);
+        push(qcdr(a4up));
+        r = Lappend_2(nil, w, r);
+        pop(a4up);
+    }
+    pop(a3);
+    r = Lappend_2(nil, a3, r);
+    pop(a2);
+    r = Lappend_2(nil, a2, r);
+    pop(a1);
+    return onevalue(Lappend_2(nil, a1, r));
 }
 
 LispObject Ldelete(LispObject env, LispObject a, LispObject b)
@@ -3143,39 +3187,25 @@ LispObject sublis(LispObject a, LispObject c)
 
 
 
-LispObject Lsubstq(LispObject env, int nargs, ...)
-{   LispObject a, b, c;
-    va_list aa;
-    argcheck(nargs, 3, "substq");
+LispObject Lsubstq(LispObject env, LispObject a, LispObject b, LispObject c)
+{
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         aerror("subst");
     }
 #endif
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    va_end(aa);
     return substq(a, b, c);
 }
 
-LispObject Lsubst(LispObject env, int nargs, ...)
-{   LispObject a, b, c;
-    va_list aa;
-    argcheck(nargs, 3, "subst");
+LispObject Lsubst(LispObject env, LispObject a, LispObject b, LispObject c)
+{
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
         aerror("subst");
     }
 #endif
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    va_end(aa);
     if (c == b) return onevalue(a);
     else if (is_symbol(b) || is_fixnum(b)) return substq(a, b, c);
     else return subst(a, b, c);
@@ -3211,101 +3241,102 @@ LispObject Lsubla(LispObject env, LispObject al, LispObject x)
 
 
 setup_type const funcs2_setup[] =
-{   {"all-symbols",             Lall_symbols, TOO_MANY_1, Lall_symbols0},
-    {"assoc",                   TOO_FEW_2, Lassoc, WRONG_NO_2},
+{   {"all-symbols",             Lall_symbols0, Lall_symbols, G2Wother, G3Wother, G4Wother},
+    {"assoc",                   G0W1, G1W2, Lassoc, G3W2, G4W2},
 //
 // assoc** is expected to remain as the Standard Lisp version even if in
 // a Common Lisp world I redefine assoc to be something messier. xassoc was
 // an earlier name I used for the same purpose, and is being withdrawn.
 //
-    {"assoc**",                 TOO_FEW_2, Lassoc, WRONG_NO_2},
-    {"xassoc",                  TOO_FEW_2, Lassoc, WRONG_NO_2},
-    {"atsoc",                   TOO_FEW_2, Latsoc, WRONG_NO_2},
-    {"member",                  TOO_FEW_2, Lmember, WRONG_NO_2},
-    {"member**",                TOO_FEW_2, Lmember, WRONG_NO_2},
-    {"memq",                    TOO_FEW_2, Lmemq, WRONG_NO_2},
-    {"contained",               TOO_FEW_2, Lcontained, WRONG_NO_2},
+    {"assoc**",                 G0W1, G1W2, Lassoc, G3W2, G4W2},
+    {"xassoc",                  G0W1, G1W2, Lassoc, G3W2, G4W2},
+    {"atsoc",                   G0W1, G1W2, Latsoc, G3W2, G4W2},
+    {"member",                  G0W1, G1W2, Lmember, G3W2, G4W2},
+    {"member**",                G0W1, G1W2, Lmember, G3W2, G4W2},
+    {"memq",                    G0W1, G1W2, Lmemq, G3W2, G4W2},
+    {"contained",               G0W1, G1W2, Lcontained, G3W2, G4W2},
 //
 // I originally called this restart!-csl but I am now changing the name
 // to be restart!-lisp to be a little less specific about exactly which
 // implementation of Lisp is involved. IN the fullness of time I will
 // remove the name restart!-csl...
 //
-    {"restart-lisp",            Lrestart_lisp, Lrestart_lisp2, WRONG_NO_1},
-    {"restart-csl",             Lrestart_lisp, Lrestart_lisp2, WRONG_NO_1},
-    {"eq",                      TOO_FEW_2, Leq, WRONG_NO_2},
-    {"iequal",                  TOO_FEW_2, Leq, WRONG_NO_2},
-    {"eqcar",                   TOO_FEW_2, Leqcar, WRONG_NO_2},
-    {"equalcar",                TOO_FEW_2, Lequalcar, WRONG_NO_2},
-    {"eql",                     TOO_FEW_2, Leql, WRONG_NO_2},
-    {"equalp",                  TOO_FEW_2, Lequalp, WRONG_NO_2},
-    {"endp",                    Lendp, TOO_MANY_1, WRONG_NO_1},
-    {"getd",                    Lgetd, TOO_MANY_1, WRONG_NO_1},
-    {"last",                    Llast, TOO_MANY_1, WRONG_NO_1},
-    {"lastpair",                Llastpair, TOO_MANY_1, WRONG_NO_1},
-    {"length",                  Llength, TOO_MANY_1, WRONG_NO_1},
-    {"make-bps",                Lget_bps, TOO_MANY_1, WRONG_NO_1},
-    {"symbol-env",              Lsymbol_env, TOO_MANY_1, WRONG_NO_1},
-    {"symbol-make-fastget",     Lsymbol_make_fastget1, Lsymbol_make_fastget, WRONG_NO_2},
-    {"symbol-fastgets",         Lsymbol_fastgets, TOO_MANY_1, WRONG_NO_1},
-    {"object-header",           Lobject_header, TOO_MANY_1, WRONG_NO_1},
-    {"symbol-fn-cell",          Lsymbol_fn_cell, TOO_MANY_1, WRONG_NO_1},
-    {"symbol-argcode",          Lsymbol_argcount, TOO_MANY_1, WRONG_NO_1},
-    {"symbol-argcount",         Lsymbol_argcount, TOO_MANY_1, WRONG_NO_1},
-    {"symbol-set-env",          TOO_FEW_2, Lsymbol_set_env, WRONG_NO_2},
-    {"symbol-set-definition",   TOO_FEW_2, Lsymbol_set_definition, WRONG_NO_2},
-    {"restore-c-code",          Lrestore_c_code, TOO_MANY_1, WRONG_NO_1},
-    {"set-autoload",            TOO_FEW_2, Lset_autoload, WRONG_NO_2},
-    {"remd",                    Lremd, TOO_MANY_1, WRONG_NO_1},
-    {"trace",                   Ltrace, TOO_MANY_1, WRONG_NO_1},
-    {"untrace",                 Luntrace, TOO_MANY_1, WRONG_NO_1},
-    {"traceset",                Ltraceset, TOO_MANY_1, WRONG_NO_1},
-    {"untraceset",              Luntraceset, TOO_MANY_1, WRONG_NO_1},
-    {"macro-function",          Lmacro_function, TOO_MANY_1, WRONG_NO_1},
-    {"symbol-name",             Lsymbol_name, TOO_MANY_1, WRONG_NO_1},
-    {"id2string",               Lsymbol_name, TOO_MANY_1, WRONG_NO_1},
-    {"plist",                   Lplist, TOO_MANY_1, WRONG_NO_1},
-    {"prop",                    Lplist, TOO_MANY_1, WRONG_NO_1},
-    {"delete",                  TOO_FEW_2, Ldelete, WRONG_NO_2},
-    {"deleq",                   TOO_FEW_2, Ldeleq, WRONG_NO_2},
-    {"preserve",                Lpreserve_1, Lpreserve_2, Lpreserve_03},
-    {"mkvect",                  Lmkvect, TOO_MANY_1, WRONG_NO_1},
-    {"nconc",                   TOO_FEW_2, Lnconc, WRONG_NO_2},
-    {"neq",                     TOO_FEW_2, Lneq, WRONG_NO_2},
-    {"not",                     Lnull, TOO_MANY_1, WRONG_NO_1},
-    {"null",                    Lnull, TOO_MANY_1, WRONG_NO_1},
-    {"resource-exceeded",       WRONG_NO_0A, WRONG_NO_0B, Lresource_exceeded},
-    {"reverse",                 Lreverse, TOO_MANY_1, WRONG_NO_1},
-    {"reversip",                Lnreverse, Lnreverse2, WRONG_NO_1},
+    {"restart-lisp",            G0Wother, Lrestart_lisp, Lrestart_lisp2, G3Wother, G4Wother},
+    {"restart-csl",             G0Wother, Lrestart_lisp, Lrestart_lisp2, G3Wother, G4Wother},
+    {"eq",                      G0W1, G1W2, Leq, G3W2, G4W2},
+    {"iequal",                  G0W1, G1W2, Leq, G3W2, G4W2},
+    {"eqcar",                   G0W1, G1W2, Leqcar, G3W2, G4W2},
+    {"equalcar",                G0W1, G1W2, Lequalcar, G3W2, G4W2},
+    {"eql",                     G0W1, G1W2, Leql, G3W2, G4W2},
+    {"equalp",                  G0W1, G1W2, Lequalp, G3W2, G4W2},
+    {"endp",                    G0W1, Lendp, G2W1, G3W1, G4W1},
+    {"getd",                    G0W1, Lgetd, G2W1, G3W1, G4W1},
+    {"last",                    G0W1, Llast, G2W1, G3W1, G4W1},
+    {"lastpair",                G0W1, Llastpair, G2W1, G3W1, G4W1},
+    {"length",                  G0W1, Llength, G2W1, G3W1, G4W1},
+    {"make-bps",                G0W1, Lget_bps, G2W1, G3W1, G4W1},
+    {"symbol-env",              G0W1, Lsymbol_env, G2W1, G3W1, G4W1},
+    {"symbol-make-fastget",     G0Wother, Lsymbol_make_fastget1, Lsymbol_make_fastget, G3Wother, G4Wother},
+    {"symbol-fastgets",         G0W1, Lsymbol_fastgets, G2W1, G3W1, G4W1},
+    {"object-header",           G0W1, Lobject_header, G2W1, G3W1, G4W1},
+    {"symbol-fn-cell",          G0W1, Lsymbol_fn_cell, G2W1, G3W1, G4W1},
+    {"symbol-argcode",          G0W1, Lsymbol_argcount, G2W1, G3W1, G4W1},
+    {"symbol-argcount",         G0W1, Lsymbol_argcount, G2W1, G3W1, G4W1},
+    {"symbol-set-env",          G0W1, G1W2, Lsymbol_set_env, G3W2, G4W2},
+    {"symbol-set-definition",   G0W1, G1W2, Lsymbol_set_definition, G3W2, G4W2},
+    {"restore-c-code",          G0W1, Lrestore_c_code, G2W1, G3W1, G4W1},
+    {"set-autoload",            G0W1, G1W2, Lset_autoload, G3W2, G4W2},
+    {"remd",                    G0W1, Lremd, G2W1, G3W1, G4W1},
+    {"trace",                   G0W1, Ltrace, G2W1, G3W1, G4W1},
+    {"untrace",                 G0W1, Luntrace, G2W1, G3W1, G4W1},
+    {"traceset",                G0W1, Ltraceset, G2W1, G3W1, G4W1},
+    {"untraceset",              G0W1, Luntraceset, G2W1, G3W1, G4W1},
+    {"macro-function",          G0W1, Lmacro_function, G2W1, G3W1, G4W1},
+    {"symbol-name",             G0W1, Lsymbol_name, G2W1, G3W1, G4W1},
+    {"id2string",               G0W1, Lsymbol_name, G2W1, G3W1, G4W1},
+    {"plist",                   G0W1, Lplist, G2W1, G3W1, G4W1},
+    {"prop",                    G0W1, Lplist, G2W1, G3W1, G4W1},
+    {"delete",                  G0W1, G1W2, Ldelete, G3W2, G4W2},
+    {"deleq",                   G0W1, G1W2, Ldeleq, G3W2, G4W2},
+    {"preserve",                Lpreserve_0, Lpreserve_1, Lpreserve_2, Lpreserve_3, G4Wother},
+    {"mkvect",                  G0W1, Lmkvect, G2W1, G3W1, G4W1},
+    {"nconc",                   G0W1, G1W2, Lnconc, G3W2, G4W2},
+    {"neq",                     G0W1, G1W2, Lneq_2, G3W2, G4W2},
+    {"not",                     G0W1, Lnull, G2W1, G3W1, G4W1},
+    {"null",                    G0W1, Lnull, G2W1, G3W1, G4W1},
+    {"resource-exceeded",       Lresource_exceeded, G1W0, G2W0, G3W0, G4W0},
+    {"reverse",                 G0W1, Lreverse, G2W1, G3W1, G4W1},
+    {"reversip",                G0Wother, Lnreverse, Lnreverse2, G3Wother, G4Wother},
 // I make the name nreverse generally available as well as reversip
-    {"nreverse",                Lnreverse, Lnreverse2, WRONG_NO_1},
+    {"nreverse",                G0Wother, Lnreverse, Lnreverse2, G3Wother, G4Wother},
 // also reversip2 for the 2-arg varient
-    {"reversip2",               TOO_FEW_2, Lnreverse2, WRONG_NO_1},
-    {"smemq",                   TOO_FEW_2, Lsmemq, WRONG_NO_2},
-    {"subla",                   TOO_FEW_2, Lsubla, WRONG_NO_2},
-    {"sublis",                  TOO_FEW_2, Lsublis, WRONG_NO_2},
-    {"subst",                   WRONG_NO_3A, WRONG_NO_3B, Lsubst},
-    {"substq",                  WRONG_NO_3A, WRONG_NO_3B, Lsubstq},
-    {"symbol-protect",          TOO_FEW_2, Lsymbol_protect, WRONG_NO_2},
-    {"symbol-plist",            Lplist, TOO_MANY_1, WRONG_NO_1},
-    {"append",                  Lappend_1, Lappend, Lappend_n},
+    {"reversip2",               G0W2, G1W2, Lnreverse2, G3W2, G4W2},
+    {"nrevlist",                G0Wother, G1Wother, Lnrevlist_2, Lnrevlist_3, G4Wother},
+    {"smemq",                   G0W1, G1W2, Lsmemq, G3W2, G4W2},
+    {"subla",                   G0W1, G1W2, Lsubla, G3W2, G4W2},
+    {"sublis",                  G0W1, G1W2, Lsublis, G3W2, G4W2},
+    {"subst",                   G0W3, G1W3, G2W3, Lsubst, G4W3},
+    {"substq",                  G0W3, G1W3, G2W3, Lsubstq, G4W3},
+    {"symbol-protect",          G0W1, G1W2, Lsymbol_protect, G3W2, G4W2},
+    {"symbol-plist",            G0W1, Lplist, G2W1, G3W1, G4W1},
+    {"append",                  Lnilfn, Lappend_1, Lappend_2, Lappend_3, Lappend_4up},
 //
 // In Common Lisp mode I make EQUAL do what Common Lisp says it should, but
 // also have EQUALS that is much the same but which also descends vectors.
 //
-//  {"equal",                   TOO_FEW_2, Lcl_equal, WRONG_NO_2},
-//  {"equals",                  TOO_FEW_2, Lequal, WRONG_NO_2},
-//  {"nreverse0",               Lnreverse0, TOO_MANY_1, WRONG_NO_1},
+//  {"equal",                   G0W1, G1W2, Lcl_equal, G3W2, G4W2},
+//  {"equals",                  G0W1, G1W2, Lequal, G3W2, G4W2},
+//  {"nreverse0",               G0W1, Lnreverse0, G2W1, G3W1, G4W1},
 // In Standard Lisp mode EQUAL descends vectors (but does not case fold)
 // I provide cl-equal to do what Common Lisp does.
-    {"cl-equal",                TOO_FEW_2, Lcl_equal, WRONG_NO_2},
-    {"equal",                   TOO_FEW_2, Lequal, WRONG_NO_2},
-    {"member",                  TOO_FEW_2, Lmember, WRONG_NO_2},
-    {"symbol-package",          Lsymbol_package, TOO_MANY_1, WRONG_NO_1},
-    {"serialize",               Lserialize, TOO_MANY_1, WRONG_NO_1},
-    {"full-serialize",          Lserialize1, TOO_MANY_1, WRONG_NO_1},
-    {"unserialize",             WRONG_NO_0A, WRONG_NO_0B, Lunserialize},
-    {NULL,                      0, 0, 0}
+    {"cl-equal",                G0W1, G1W2, Lcl_equal, G3W2, G4W2},
+    {"equal",                   G0W1, G1W2, Lequal, G3W2, G4W2},
+    {"member",                  G0W1, G1W2, Lmember, G3W2, G4W2},
+    {"symbol-package",          G0W1, Lsymbol_package, G2W1, G3W1, G4W1},
+    {"serialize",               G0W1, Lserialize, G2W1, G3W1, G4W1},
+    {"full-serialize",          G0W1, Lserialize1, G2W1, G3W1, G4W1},
+    {"unserialize",             Lunserialize, G1W0, G2W0, G3W0, G4W0},
+    {NULL,                      0, 0, 0, 0, 0}
 };
 
 // end of fns2.cpp

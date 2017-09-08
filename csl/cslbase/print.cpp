@@ -454,7 +454,6 @@ LispObject Lmake_broadcast_stream_n(LispObject env, int nargs, ...)
 {   LispObject r = nil, w, w1;
     va_list a;
     va_start(a, nargs);
-    push_args(a, nargs);
     while (nargs > 1)
     {   pop2(w, w1);
         nargs-=2;
@@ -486,7 +485,6 @@ LispObject Lmake_concatenated_stream_n(LispObject env, int nargs, ...)
 {   LispObject r = nil, w, w1;
     va_list a;
     va_start(a, nargs);
-    push_args(a, nargs);
     while (nargs > 1)
     {   pop2(w, w1);
         nargs-=2;
@@ -578,9 +576,8 @@ LispObject Lmake_string_input_stream_2(LispObject env, LispObject a, LispObject 
 {   return Lmake_string_input_stream_n(env, 2, a, b);
 }
 
-LispObject Lmake_string_output_stream(LispObject env, int nargs, ...)
+LispObject Lmake_string_output_stream(LispObject env)
 {   LispObject w;
-    argcheck(nargs, 0, "make-string-output-stream");
     w = make_stream_handle();
     set_stream_write_fn(w, code_to_list);
     set_stream_write_other(w, write_action_list);
@@ -906,7 +903,7 @@ LispObject Ltmpnam1(LispObject env, LispObject extn)
     return onevalue(r);
 }
 
-LispObject Ltmpnam(LispObject env, int nargs, ...)
+LispObject Ltmpnam(LispObject env)
 //
 // Returns a string that is suitable for use as the name of a temporary
 // file. Note that this is generally NOT a comfortable thing to use,
@@ -923,11 +920,10 @@ LispObject Ltmpnam(LispObject env, int nargs, ...)
 // respectable than the standard one, but using it avoids linker messages
 // that are clearly intended to be useful but which are in fact a nuisance.
 //
-{   argcheck(nargs, 0, "tmpnam");
-    return onevalue(make_string(CSLtmpnam("tmp", 3)));
+{   return onevalue(make_string(CSLtmpnam("tmp", 3)));
 }
 
-LispObject Ltmpdir(LispObject env, int nargs, ...)
+LispObject Ltmpdir(LispObject env)
 //
 // Returns a string that is suitable for use as the name of a directory
 // to hold temporary files. Does not have a trailing "/", so will be
@@ -935,8 +931,7 @@ LispObject Ltmpdir(LispObject env, int nargs, ...)
 // it is in "mixed" mode, so the dircetory is indicated with "x:" but "/"
 // rather than "\" is used as the path separator.
 //
-{   argcheck(nargs, 0, "tmpdir");
-    return onevalue(make_string(CSLtmpdir()));
+{   return onevalue(make_string(CSLtmpdir()));
 }
 
 #ifdef DEBUG
@@ -1259,8 +1254,10 @@ LispObject Lclose(LispObject env, LispObject a)
 }
 
 #if defined HAVE_LIBFOX
+namespace FX {
 extern void *text;
-#define GUI_TEST text
+}
+#define GUI_TEST FX::text
 #endif
 #if defined HAVE_LIBWX
 extern void *panel;
@@ -1465,31 +1462,28 @@ LispObject Ldirectoryp(LispObject env, LispObject name)
 }
 
 
-LispObject Lget_current_directory(LispObject env, int nargs, ...)
+LispObject Lget_current_directory(LispObject env)
 {   char filename[LONGEST_LEGAL_FILENAME];
     int len;
     memset(filename, 0, sizeof(filename));
-    argcheck(nargs, 0, "get-current-directory");
     len = get_current_directory(filename, LONGEST_LEGAL_FILENAME);
     if (len == 0) return onevalue(nil);
     return onevalue(make_string(filename));
 }
 
-LispObject Luser_homedir_pathname(LispObject env, int nargs, ...)
+LispObject Luser_homedir_pathname(LispObject env)
 {   char home[LONGEST_LEGAL_FILENAME];
     int len;
     memset(home, 0, sizeof(home));
-    argcheck(nargs, 0, "user-homedir-pathname")
     len = get_home_directory(home, LONGEST_LEGAL_FILENAME);
     if (len == 0) return onevalue(nil);
     return onevalue(make_string(home));
 }
 
-LispObject Lget_lisp_directory(LispObject env, int nargs, ...)
+LispObject Lget_lisp_directory(LispObject env)
 {   char filename[LONGEST_LEGAL_FILENAME];
     int len;
     memset(filename, 0, sizeof(filename));
-    argcheck(nargs, 0, "get-lisp-directory");
     strcpy(filename, standard_directory);
     len = strlen(filename);
     while (len-- > 0 &&
@@ -1500,10 +1494,9 @@ LispObject Lget_lisp_directory(LispObject env, int nargs, ...)
     return onevalue(make_string(filename));
 }
 
-LispObject Lfind_gnuplot(LispObject env, int nargs, ...)
+LispObject Lfind_gnuplot(LispObject env)
 {   char filename[LONGEST_LEGAL_FILENAME];
     char *s;
-    argcheck(nargs, 0, "find-gnuplot");
     find_gnuplot(filename);
     s = filename;
 //
@@ -1522,8 +1515,8 @@ LispObject Lfind_gnuplot(LispObject env, int nargs, ...)
     return onevalue(make_string(filename));
 }
 
-LispObject Lgetpid(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "getpid");
+LispObject Lgetpid(LispObject env)
+{
 #ifdef WIN32
     return onevalue(fixnum_of_int(_getpid()));
 #else
@@ -1627,9 +1620,8 @@ static LispObject Lprint_precision(LispObject env, LispObject a)
     return onevalue(fixnum_of_int(old));
 }
 
-static LispObject Lget_precision(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "getprintprecision");
-    return onevalue(fixnum_of_int(print_precision));
+static LispObject Lget_precision(LispObject env)
+{   return onevalue(fixnum_of_int(print_precision));
 }
 
 static void prin_buf(char *buf, int blankp)
@@ -3372,7 +3364,7 @@ void prin_to_query(LispObject u)
 
 void loop_print_stdout(LispObject o)
 {   int32_t sx = exit_reason;
-    one_args *f;
+    one_arg *f;
     LispObject lp = qvalue(traceprint_symbol);
     if (lp == nil || lp == unset_var) lp = prinl_symbol;
 //
@@ -3385,8 +3377,8 @@ void loop_print_stdout(LispObject o)
 // to using the simpler version of prin.
 //
     if (!is_symbol(lp) ||
-        (f = qfn1(lp)) == undefined1 ||
-        (f != bytecoded1 && !is_vector(qenv(lp)))) prin_to_stdout(o);
+        (f = qfn1(lp)) == undefined_1 ||
+        (f != bytecoded_1 && !is_vector(qenv(lp)))) prin_to_stdout(o);
     else (*f)(lp, o);
     exit_reason = sx;
 }
@@ -3783,17 +3775,17 @@ LispObject Llinelength(LispObject env, LispObject a)
     else return onevalue(fixnum_of_int(oll));
 }
 
-static LispObject Llinelength0(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "linelength");
-    return Llinelength(env, nil);
+static LispObject Llinelength0(LispObject env)
+{   return Llinelength(env, nil);
 }
 
-LispObject Lprint_imports(LispObject env, int nargs, ...)
-{   const char *p;
+LispObject Lprint_imports(LispObject env)
+{
+#ifdef NO_LONGER_NEEDED
+    const char *p;
     const char *s;
     int i, ch;
     LispObject stream;
-    argcheck(nargs, 0, "print-imports");
     stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -3809,14 +3801,14 @@ LispObject Lprint_imports(LispObject env, int nargs, ...)
         while ((ch = *p++) != 0) putc_stream(ch, stream);
         putc_stream('\n', stream);
     }
+#endif
     return onevalue(nil);
 }
 
-LispObject Lprint_csl_headers(LispObject env, int nargs, ...)
+LispObject Lprint_csl_headers(LispObject env)
 {   const char *p;
     int i, ch;
     LispObject stream;
-    argcheck(nargs, 0, "print-csl-headers");
     stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -3827,11 +3819,10 @@ LispObject Lprint_csl_headers(LispObject env, int nargs, ...)
     return onevalue(nil);
 }
 
-LispObject Lprint_config_header(LispObject env, int nargs, ...)
+LispObject Lprint_config_header(LispObject env)
 {   const char *p;
     int i, ch;
     LispObject stream;
-    argcheck(nargs, 0, "print-config-header");
     stream = qvalue(standard_output);
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -3933,9 +3924,8 @@ static LispObject Lprinbinary2(LispObject env, LispObject a, LispObject b)
     return onevalue(a);
 }
 
-LispObject Lposn(LispObject, int nargs, ...)
-{   argcheck(nargs, 0, "posn");
-    return onevalue(
+LispObject Lposn(LispObject)
+{   return onevalue(
        fixnum_of_int((int32_t)
            other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN,
                               qvalue(standard_output))));
@@ -3948,9 +3938,8 @@ LispObject Lposn_1(LispObject, LispObject stream)
         (int32_t)other_write_action(WRITE_GET_INFO+WRITE_GET_COLUMN, stream)));
 }
 
-LispObject Llposn(LispObject, int nargs, ...)
-{   argcheck(nargs, 0, "lposn");
-    return onevalue(fixnum_of_int(0));
+LispObject Llposn(LispObject)
+{   return onevalue(fixnum_of_int(0));
 }
 
 // This does not do anything!
@@ -4143,9 +4132,8 @@ LispObject Lprintc(LispObject env, LispObject a)
     return onevalue(a);
 }
 
-LispObject Lterpri(LispObject env, int nargs, ...)
+LispObject Lterpri(LispObject env)
 {   LispObject stream = qvalue(standard_output);
-    argcheck(nargs, 0, "terpri");
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     putc_stream('\n', stream);
@@ -4153,13 +4141,8 @@ LispObject Lterpri(LispObject env, int nargs, ...)
     return onevalue(nil);
 }
 
-LispObject Lflush(LispObject env, int nargs, ...)
+LispObject Lflush(LispObject env)
 {   LispObject stream = qvalue(standard_output);
-#ifdef COMMON
-    argcheck(nargs, 0, "finish-output");
-#else
-    argcheck(nargs, 0, "flush");
-#endif
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     other_write_action(WRITE_FLUSH, stream);
@@ -4200,9 +4183,8 @@ LispObject Lxtab(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
-LispObject Leject(LispObject env, int nargs, ...)
+LispObject Leject(LispObject env)
 {   LispObject stream = qvalue(standard_output);
-    argcheck(nargs, 0, "eject");
     if (!is_stream(stream)) stream = qvalue(terminal_io);
     if (!is_stream(stream)) stream = lisp_terminal_io;
     putc_stream('\f', stream);
@@ -4380,16 +4362,14 @@ static LispObject Lbinary_prinfloat(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
-static LispObject Lbinary_terpri(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "binary_terpri");
-    if (binary_outfile != NULL) PUTC('\n', binary_outfile);
+static LispObject Lbinary_terpri(LispObject env)
+{   if (binary_outfile != NULL) PUTC('\n', binary_outfile);
     if (io_limit >= 0 && io_now > io_limit) resource_exceeded();
     return onevalue(nil);
 }
 
-static LispObject Lbinary_close_output(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "binary-close-output");
-    if (binary_outfile != NULL)
+static LispObject Lbinary_close_output(LispObject env)
+{   if (binary_outfile != NULL)
     {   fclose(binary_outfile);
         binary_outfile = NULL;
     }
@@ -4416,9 +4396,8 @@ static LispObject Lbinary_select_input(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
-static LispObject Lbinary_readbyte(LispObject, int nargs, ...)
-{   argcheck(nargs, 0, "binary-readbyte");
-    if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
+static LispObject Lbinary_readbyte(LispObject)
+{   if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
     if (++io_kilo >= 1024)
     {   io_kilo = 0;
         io_now++;
@@ -4426,9 +4405,8 @@ static LispObject Lbinary_readbyte(LispObject, int nargs, ...)
     return onevalue(fixnum_of_int((int32_t)GETC(binary_infile) & 0xff));
 }
 
-static LispObject Lbinary_read2(LispObject, int nargs, ...)
-{   argcheck(nargs, 0, "binary-read2");
-    if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
+static LispObject Lbinary_read2(LispObject)
+{   if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
     {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
         ++io_kilo;
@@ -4440,9 +4418,8 @@ static LispObject Lbinary_read2(LispObject, int nargs, ...)
     }
 }
 
-static LispObject Lbinary_read3(LispObject, int nargs, ...)
-{   argcheck(nargs, 0, "binary-read3");
-    if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
+static LispObject Lbinary_read3(LispObject)
+{   if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
     {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c3 = (int32_t)GETC(binary_infile) & 0xff;
@@ -4455,9 +4432,8 @@ static LispObject Lbinary_read3(LispObject, int nargs, ...)
     }
 }
 
-static LispObject Lbinary_read4(LispObject, int nargs, ...)
-{   argcheck(nargs, 0, "binary-read4");
-    if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
+static LispObject Lbinary_read4(LispObject)
+{   if (binary_infile == NULL) return onevalue(fixnum_of_int(-1));
     {   int32_t c1 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c2 = (int32_t)GETC(binary_infile) & 0xff;
         int32_t c3 = (int32_t)GETC(binary_infile) & 0xff;
@@ -4472,10 +4448,9 @@ static LispObject Lbinary_read4(LispObject, int nargs, ...)
     }
 }
 
-static LispObject Lbinary_readfloat(LispObject env, int nargs, ...)
+static LispObject Lbinary_readfloat(LispObject env)
 {   LispObject r = make_boxfloat(0.0, TYPE_DOUBLE_FLOAT);
     uint32_t w;
-    argcheck(nargs, 0, "binary-readfloat");
     if (binary_infile == NULL) return onevalue(r);
 // Note that the code here treats the float as binary data so infinities and
 // NaNs are never anything special.
@@ -4497,9 +4472,8 @@ static LispObject Lbinary_readfloat(LispObject env, int nargs, ...)
     return onevalue(r);
 }
 
-static LispObject Lbinary_close_input(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "binary-close-input");
-    if (binary_infile != NULL)
+static LispObject Lbinary_close_input(LispObject env)
+{   if (binary_infile != NULL)
     {   fclose(binary_infile);
         binary_infile = NULL;
     }
@@ -5230,118 +5204,118 @@ LispObject Lwindow_heading1(LispObject env, LispObject a)
 setup_type const print_setup[] =
 {
 #ifdef SOCKETS
-    {"open-url",                Lopen_url, TOO_MANY_1, WRONG_NO_1},
+    {"open-url",                G0W1, Lopen_url, G2W1, G3W1, G4W1},
 #endif
-    {"check-list",              Lcheck_list, TOO_MANY_1, WRONG_NO_1},
-    {"window-heading",          Lwindow_heading1, Lwindow_heading2, WRONG_NO_1},
-    {"eject",                   WRONG_NO_NA, WRONG_NO_NB, Leject},
-    {"filep",                   Lfilep, TOO_MANY_1, WRONG_NO_1},
-    {"filedate",                Lfiledate, TOO_MANY_1, WRONG_NO_1},
-    {"flush",                   Lflush1, WRONG_NO_NB, Lflush},
-    {"streamp",                 Lstreamp, TOO_MANY_1, WRONG_NO_1},
-    {"is-console",              Lis_console, TOO_MANY_1, WRONG_NO_1},
-    {"lengthc",                 Llengthc, TOO_MANY_1, WRONG_NO_1},
-    {"widelengthc",             Lwidelengthc, TOO_MANY_1, WRONG_NO_1},
-    {"linelength",              Llinelength, TOO_MANY_1, Llinelength0},
-    {"lposn",                   WRONG_NO_NA, WRONG_NO_NB, Llposn},
-    {"internal-open",           TOO_FEW_2, Lopen, WRONG_NO_2},
-    {"open-library",            Lopen_library_1, Lopen_library, WRONG_NO_2},
-    {"close-library",           Lclose_library, TOO_MANY_1, WRONG_NO_1},
-    {"library-name",            Llibrary_name, TOO_MANY_1, WRONG_NO_1},
-    {"create-directory",        Lcreate_directory, TOO_MANY_1, WRONG_NO_1},
-    {"delete-file",             Ldelete_file, TOO_MANY_1, WRONG_NO_1},
-    {"delete-wildcard",         Ldelete_wildcard, TOO_MANY_1, WRONG_NO_1},
-    {"rename-file",             TOO_FEW_2, Lrename_file, WRONG_NO_2},
-    {"file-readablep",          Lfile_readable, TOO_MANY_1, WRONG_NO_1},
-    {"file-writeablep",         Lfile_writeable, TOO_MANY_1, WRONG_NO_1},
-    {"directoryp",              Ldirectoryp, TOO_MANY_1, WRONG_NO_1},
-    {"file-length",             Lfile_length, TOO_MANY_1, WRONG_NO_1},
-    {"truename",                Ltruename, TOO_MANY_1, WRONG_NO_1},
-    {"list-directory",          Llist_directory, TOO_MANY_1, WRONG_NO_1},
-    {"chdir",                   Lchange_directory, TOO_MANY_1, WRONG_NO_1},
-    {"make-function-stream",    Lmake_function_stream, TOO_MANY_1, WRONG_NO_1},
-    {"make-string-output-stream",WRONG_NO_NA, WRONG_NO_NB, Lmake_string_output_stream},
-    {"get-output-stream-string",Lget_output_stream_string, TOO_MANY_1, WRONG_NO_1},
-    {"get-current-directory",   WRONG_NO_NA, WRONG_NO_NB, Lget_current_directory},
-    {"user-homedir-pathname",   WRONG_NO_NA, WRONG_NO_NB, Luser_homedir_pathname},
-    {"get-lisp-directory",      WRONG_NO_NA, WRONG_NO_NB, Lget_lisp_directory},
-    {"find-gnuplot",            WRONG_NO_NA, WRONG_NO_NB, Lfind_gnuplot},
-    {"getpid",                  WRONG_NO_NA, WRONG_NO_NB, Lgetpid},
-    {"pagelength",              Lpagelength, TOO_MANY_1, WRONG_NO_1},
-    {"posn",                    Lposn_1, WRONG_NO_NB, Lposn},
-    {"spaces",                  Lxtab, TOO_MANY_1, WRONG_NO_1},
-    {"terpri",                  WRONG_NO_NA, WRONG_NO_NB, Lterpri},
-    {"tmpdir",                  WRONG_NO_NA, WRONG_NO_NB, Ltmpdir},
-    {"tmpnam",                  Ltmpnam1, WRONG_NO_NB, Ltmpnam},
-    {"ttab",                    Lttab, TOO_MANY_1, WRONG_NO_1},
-    {"wrs",                     Lwrs, TOO_MANY_1, WRONG_NO_1},
-    {"xtab",                    Lxtab, TOO_MANY_1, WRONG_NO_1},
-    {"princ-upcase",            Lprinc_upcase, TOO_MANY_1, WRONG_NO_1},
-    {"princ-downcase",          Lprinc_downcase, TOO_MANY_1, WRONG_NO_1},
-    {"binary_open_output",      Lbinary_open_output, TOO_MANY_1, WRONG_NO_1},
-    {"binary_prin1",            Lbinary_prin1, TOO_MANY_1, WRONG_NO_1},
-    {"binary_princ",            Lbinary_princ, TOO_MANY_1, WRONG_NO_1},
-    {"binary_prinbyte",         Lbinary_prinbyte, TOO_MANY_1, WRONG_NO_1},
-    {"binary_prin2",            Lbinary_prin2, TOO_MANY_1, WRONG_NO_1},
-    {"binary_prin3",            Lbinary_prin3, TOO_MANY_1, WRONG_NO_1},
-    {"binary_prinfloat",        Lbinary_prinfloat, TOO_MANY_1, WRONG_NO_1},
-    {"binary_terpri",           WRONG_NO_NA, WRONG_NO_NB, Lbinary_terpri},
-    {"binary_close_output",     WRONG_NO_NA, WRONG_NO_NB, Lbinary_close_output},
-    {"binary_open_input",       Lbinary_open_input, TOO_MANY_1, WRONG_NO_1},
-    {"binary_select_input",     Lbinary_select_input, TOO_MANY_1, WRONG_NO_1},
-    {"binary_readbyte",         WRONG_NO_NA, WRONG_NO_NB, Lbinary_readbyte},
-    {"binary_read2",            WRONG_NO_NA, WRONG_NO_NB, Lbinary_read2},
-    {"binary_read3",            WRONG_NO_NA, WRONG_NO_NB, Lbinary_read3},
-    {"binary_read4",            WRONG_NO_NA, WRONG_NO_NB, Lbinary_read4},
-    {"binary_readfloat",        WRONG_NO_NA, WRONG_NO_NB, Lbinary_readfloat},
-    {"binary_close_input",      WRONG_NO_NA, WRONG_NO_NB, Lbinary_close_input},
-    {"prinraw",                 Lprinraw, TOO_MANY_1, WRONG_NO_1},
-    {"prinhex",                 Lprinhex, Lprinhex2, WRONG_NO_1},
-    {"prinoctal",               Lprinoctal, Lprinoctal2, WRONG_NO_1},
-    {"prinbinary",              Lprinbinary, Lprinbinary2, WRONG_NO_1},
-    {"print-config-header",     WRONG_NO_NA, WRONG_NO_NB, Lprint_config_header},
-    {"print-csl-headers",       WRONG_NO_NA, WRONG_NO_NB, Lprint_csl_headers},
-    {"print-imports",           WRONG_NO_NA, WRONG_NO_NB, Lprint_imports},
-    {"math-display",            Lmath_display, TOO_MANY_1, WRONG_NO_1},
-    {"debug-print",             Ldebug_print, TOO_MANY_1, WRONG_NO_1},
-    {"set-print-precision",     Lprint_precision, TOO_MANY_1, WRONG_NO_1},
-    {"setprintprecision",       Lprint_precision, TOO_MANY_1, WRONG_NO_1},
-    {"getprintprecision",       WRONG_NO_NA, WRONG_NO_NB, Lget_precision},
-    {"close",                   Lclose, TOO_MANY_1, WRONG_NO_1},
-    {"explode",                 Lexplode, TOO_MANY_1, WRONG_NO_1},
-    {"explodec",                Lexplodec, TOO_MANY_1, WRONG_NO_1},
-    {"explode2",                Lexplodec, TOO_MANY_1, WRONG_NO_1},
-    {"explode2lc",              Lexplode2lc, TOO_MANY_1, WRONG_NO_1},
-    {"explode2uc",              Lexplode2uc, TOO_MANY_1, WRONG_NO_1},
-    {"exploden",                Lexploden, TOO_MANY_1, WRONG_NO_1},
-    {"explodecn",               Lexplodecn, TOO_MANY_1, WRONG_NO_1},
-    {"explode2n",               Lexplodecn, TOO_MANY_1, WRONG_NO_1},
-    {"explode2lcn",             Lexplode2lcn, TOO_MANY_1, WRONG_NO_1},
-    {"explode2ucn",             Lexplode2ucn, TOO_MANY_1, WRONG_NO_1},
-    {"explodehex",              Lexplodehex, TOO_MANY_1, WRONG_NO_1},
-    {"explodeoctal",            Lexplodeoctal, TOO_MANY_1, WRONG_NO_1},
-    {"explodebinary",           Lexplodebinary, TOO_MANY_1, WRONG_NO_1},
-    {"prin",                    Lprin, TOO_MANY_1, WRONG_NO_1},
-    {"prin1",                   Lprin, TOO_MANY_1, WRONG_NO_1},
-    {"princ",                   Lprinc, TOO_MANY_1, WRONG_NO_1},
-    {"prin2",                   Lprinc, TOO_MANY_1, WRONG_NO_1},
-    {"prin2a",                  Lprin2a, TOO_MANY_1, WRONG_NO_1},
-    {"print",                   Lprint, TOO_MANY_1, WRONG_NO_1},
-    {"printc",                  Lprintc, TOO_MANY_1, WRONG_NO_1},
+    {"check-list",              G0W1, Lcheck_list, G2W1, G3W1, G4W1},
+    {"window-heading",          G0Wother, Lwindow_heading1, Lwindow_heading2, G3Wother, G4Wother},
+    {"eject",                   Leject, G1W0, G2W0, G3W0, G4W0},
+    {"filep",                   G0W1, Lfilep, G2W1, G3W1, G4W1},
+    {"filedate",                G0W1, Lfiledate, G2W1, G3W1, G4W1},
+    {"flush",                   Lflush, Lflush1, G2Wother, G3Wother, G4Wother},
+    {"streamp",                 G0W1, Lstreamp, G2W1, G3W1, G4W1},
+    {"is-console",              G0W1, Lis_console, G2W1, G3W1, G4W1},
+    {"lengthc",                 G0W1, Llengthc, G2W1, G3W1, G4W1},
+    {"widelengthc",             G0W1, Lwidelengthc, G2W1, G3W1, G4W1},
+    {"linelength",              Llinelength0, Llinelength, G2Wother, G3Wother, G4Wother},
+    {"lposn",                   Llposn, G1W0, G2W0, G3W0, G4W0},
+    {"internal-open",           G0W2, G1W2, Lopen, G3W2, G4W2},
+    {"open-library",            G0Wother, Lopen_library_1, Lopen_library, G3W2, G4W2},
+    {"close-library",           G0W1, Lclose_library, G2W1, G3W1, G4W1},
+    {"library-name",            G0W1, Llibrary_name, G2W1, G3W1, G4W1},
+    {"create-directory",        G0W1, Lcreate_directory, G2W1, G3W1, G4W1},
+    {"delete-file",             G0W1, Ldelete_file, G2W1, G3W1, G4W1},
+    {"delete-wildcard",         G0W1, Ldelete_wildcard, G2W1, G3W1, G4W1},
+    {"rename-file",             G0W2, G1W2, Lrename_file, G3W2, G4W2},
+    {"file-readablep",          G0W1, Lfile_readable, G2W1, G3W1, G4W1},
+    {"file-writeablep",         G0W1, Lfile_writeable, G2W1, G3W1, G4W1},
+    {"directoryp",              G0W1, Ldirectoryp, G2W1, G3W1, G4W1},
+    {"file-length",             G0W1, Lfile_length, G2W1, G3W1, G4W1},
+    {"truename",                G0W1, Ltruename, G2W1, G3W1, G4W1},
+    {"list-directory",          G0W1, Llist_directory, G2W1, G3W1, G4W1},
+    {"chdir",                   G0W1, Lchange_directory, G2W1, G3W1, G4W1},
+    {"make-function-stream",    G0W1, Lmake_function_stream, G2W1, G3W1, G4W1},
+    {"make-string-output-stream",Lmake_string_output_stream, G1W0, G2W0, G3W0, G4W0},
+    {"get-output-stream-string", G0W1, Lget_output_stream_string, G2W1, G3W1, G4W1},
+    {"get-current-directory",   Lget_current_directory, G1W0, G2W0, G3W0, G4W0},
+    {"user-homedir-pathname",   Luser_homedir_pathname, G1W0, G2W0, G3W0, G4W0},
+    {"get-lisp-directory",      Lget_lisp_directory, G1W0, G2W0, G3W0, G4W0},
+    {"find-gnuplot",            Lfind_gnuplot, G1W0, G2W0, G3W0, G4W0},
+    {"getpid",                  Lgetpid, G1W0, G2W0, G3W0, G4W0},
+    {"pagelength",              G0W1, Lpagelength, G2W1, G3W1, G4W1},
+    {"posn",                    Lposn, Lposn_1, G2Wother, G3Wother, G4Wother},
+    {"spaces",                  G0W1, Lxtab, G2W1, G3W1, G4W1},
+    {"terpri",                  Lterpri, G1W0, G2W0, G3W0, G4W0},
+    {"tmpdir",                  Ltmpdir, G1W0, G2W0, G3W0, G4W0},
+    {"tmpnam",                  Ltmpnam, Ltmpnam1, G2Wother, G3Wother, G4Wother},
+    {"ttab",                    G0W1, Lttab, G2W1, G3W1, G4W1},
+    {"wrs",                     G0W1, Lwrs, G2W1, G3W1, G4W1},
+    {"xtab",                    G0W1, Lxtab, G2W1, G3W1, G4W1},
+    {"princ-upcase",            G0W1, Lprinc_upcase, G2W1, G3W1, G4W1},
+    {"princ-downcase",          G0W1, Lprinc_downcase, G2W1, G3W1, G4W1},
+    {"binary_open_output",      G0W1, Lbinary_open_output, G2W1, G3W1, G4W1},
+    {"binary_prin1",            G0W1, Lbinary_prin1, G2W1, G3W1, G4W1},
+    {"binary_princ",            G0W1, Lbinary_princ, G2W1, G3W1, G4W1},
+    {"binary_prinbyte",         G0W1, Lbinary_prinbyte, G2W1, G3W1, G4W1},
+    {"binary_prin2",            G0W1, Lbinary_prin2, G2W1, G3W1, G4W1},
+    {"binary_prin3",            G0W1, Lbinary_prin3, G2W1, G3W1, G4W1},
+    {"binary_prinfloat",        G0W1, Lbinary_prinfloat, G2W1, G3W1, G4W1},
+    {"binary_terpri",           Lbinary_terpri, G1W0, G2W0, G3W0, G4W0},
+    {"binary_close_output",     Lbinary_close_output, G1W0, G2W0, G3W0, G4W0},
+    {"binary_open_input",       G0W1, Lbinary_open_input, G2W1, G3W1, G4W1},
+    {"binary_select_input",     G0W1, Lbinary_select_input, G2W1, G3W1, G4W1},
+    {"binary_readbyte",         Lbinary_readbyte, G1W0, G2W0, G3W0, G4W0},
+    {"binary_read2",            Lbinary_read2, G1W0, G2W0, G3W0, G4W0},
+    {"binary_read3",            Lbinary_read3, G1W0, G2W0, G3W0, G4W0},
+    {"binary_read4",            Lbinary_read4, G1W0, G2W0, G3W0, G4W0},
+    {"binary_readfloat",        Lbinary_readfloat, G1W0, G2W0, G3W0, G4W0},
+    {"binary_close_input",      Lbinary_close_input, G1W0, G2W0, G3W0, G4W0},
+    {"prinraw",                 G0W1, Lprinraw, G2W1, G3W1, G4W1},
+    {"prinhex",                 G0Wother, Lprinhex, Lprinhex2, G3Wother, G4Wother},
+    {"prinoctal",               G0Wother, Lprinoctal, Lprinoctal2, G3Wother, G4Wother},
+    {"prinbinary",              G0Wother, Lprinbinary, Lprinbinary2, G3Wother, G4Wother},
+    {"print-config-header",     Lprint_config_header, G1W0, G2W0, G3W0, G4W0},
+    {"print-csl-headers",       Lprint_csl_headers, G1W0, G2W0, G3W0, G4W0},
+    {"print-imports",           Lprint_imports, G1W0, G2W0, G3W0, G4W0},
+    {"math-display",            G0W1, Lmath_display, G2W1, G3W1, G4W1},
+    {"debug-print",             G0W1, Ldebug_print, G2W1, G3W1, G4W1},
+    {"set-print-precision",     G0W1, Lprint_precision, G2W1, G3W1, G4W1},
+    {"setprintprecision",       G0W1, Lprint_precision, G2W1, G3W1, G4W1},
+    {"getprintprecision",       Lget_precision, G1W0, G2W0, G3W0, G4W0},
+    {"close",                   G0W1, Lclose, G2W1, G3W1, G4W1},
+    {"explode",                 G0W1, Lexplode, G2W1, G3W1, G4W1},
+    {"explodec",                G0W1, Lexplodec, G2W1, G3W1, G4W1},
+    {"explode2",                G0W1, Lexplodec, G2W1, G3W1, G4W1},
+    {"explode2lc",              G0W1, Lexplode2lc, G2W1, G3W1, G4W1},
+    {"explode2uc",              G0W1, Lexplode2uc, G2W1, G3W1, G4W1},
+    {"exploden",                G0W1, Lexploden, G2W1, G3W1, G4W1},
+    {"explodecn",               G0W1, Lexplodecn, G2W1, G3W1, G4W1},
+    {"explode2n",               G0W1, Lexplodecn, G2W1, G3W1, G4W1},
+    {"explode2lcn",             G0W1, Lexplode2lcn, G2W1, G3W1, G4W1},
+    {"explode2ucn",             G0W1, Lexplode2ucn, G2W1, G3W1, G4W1},
+    {"explodehex",              G0W1, Lexplodehex, G2W1, G3W1, G4W1},
+    {"explodeoctal",            G0W1, Lexplodeoctal, G2W1, G3W1, G4W1},
+    {"explodebinary",           G0W1, Lexplodebinary, G2W1, G3W1, G4W1},
+    {"prin",                    G0W1, Lprin, G2W1, G3W1, G4W1},
+    {"prin1",                   G0W1, Lprin, G2W1, G3W1, G4W1},
+    {"princ",                   G0W1, Lprinc, G2W1, G3W1, G4W1},
+    {"prin2",                   G0W1, Lprinc, G2W1, G3W1, G4W1},
+    {"prin2a",                  G0W1, Lprin2a, G2W1, G3W1, G4W1},
+    {"print",                   G0W1, Lprint, G2W1, G3W1, G4W1},
+    {"printc",                  G0W1, Lprintc, G2W1, G3W1, G4W1},
 #ifdef COMMON
-    {"charpos",                 Lposn_1, WRONG_NO_NB, Lposn},
-    {"finish-output",           Lflush1, WRONG_NO_NB, Lflush},
-    {"make-synonym-stream",     Lmake_synonym_stream, TOO_MANY_1, WRONG_NO_1},
-    {"make-broadcast-stream",   Lmake_broadcast_stream_1, Lmake_broadcast_stream_2, Lmake_broadcast_stream_n},
-    {"make-concatenated-stream",Lmake_concatenated_stream_1, Lmake_concatenated_stream_2, Lmake_concatenated_stream_n},
-    {"make-two-way-stream",     TOO_FEW_2, Lmake_two_way_stream, WRONG_NO_2},
-    {"make-echo-stream",        TOO_FEW_2, Lmake_echo_stream, WRONG_NO_2},
-    {"make-string-input-stream",Lmake_string_input_stream_1, Lmake_string_input_stream_2, Lmake_string_input_stream_n},
-    {"~tyo",                    Ltyo, TOO_MANY_1, WRONG_NO_1},
+    {"charpos",                 Lposn, Lposn_1, G2Wother, G3Wother, G4Wother},
+    {"finish-output",           Lflush, Lflush1, G2Wother, G3Wother, G4Wother},
+    {"make-synonym-stream",     G0W1, Lmake_synonym_stream, G2W1, G3W1, G4W1},
+    {"make-broadcast-stream",   Lmake_broadcast_stream_1, Lmake_broadcast_stream_2, Lmake_broadcast_stream_3, Lmake_broadcast_stream_4up},
+    {"make-concatenated-stream",Lmake_concatenated_stream_1, Lmake_concatenated_stream_2, Lmake_concatenated_stream_3, Lmake_concatenated_stream_4up},
+    {"make-two-way-stream",     G0W2, G1W2, Lmake_two_way_stream, G3W2, G4W2},
+    {"make-echo-stream",        G0W2, G1W2, Lmake_echo_stream, G3W2, G4W2},
+    {"make-string-input-stream",Lmake_string_input_stream_1, Lmake_string_input_stream_2, Lmake_string_input_stream_3, Lmake_string_input_stream_4up},
+    {"~tyo",                    G0W1, Ltyo, G2W1, G3W1, G4W1},
 #else
-    {"tyo",                     Ltyo, TOO_MANY_1, WRONG_NO_1},
+    {"tyo",                     G0W1, Ltyo, G2W1, G3W1, G4W1},
 #endif
-    {NULL,                      0, 0, 0}
+    {NULL,                      0, 0, 0, 0, 0}
 };
 
 // end of print.cpp

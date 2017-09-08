@@ -42,11 +42,11 @@
 //
 
 // It may be useful to call this at the start...
-extern "C" int find_program_directory(const char *argv0);
+extern int find_program_directory(const char *argv0);
 
 // .. and this to exit
 
-extern "C" NORETURN void my_exit(int n);
+NORETURN extern void my_exit(int n);
 
 //
 // These types are used for callback functions used to send and receive

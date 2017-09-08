@@ -262,7 +262,7 @@ all-local:	csl.img $(REDUCE_IMG)
 core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 		arith06.cpp arith07.cpp arith08.cpp arith09.cpp arith10.cpp \
 		arith11.cpp arith12.cpp arith13.cpp arith14.cpp isprime.cpp \
-                bytes1.cpp \
+                mersenne-twister.cpp bytes1.cpp \
 		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
 		restart.cpp lisphash.cpp newhash.cpp serialize.cpp sysfwin.cpp
@@ -578,26 +578,32 @@ if windows
 # pain!
 #
 
-local-bootstrapreduceexe.def:	$(cslbase)/bootstrapreduceexe.def $(cslbase)/impex.def
-	cat $(cslbase)/bootstrapreduceexe.def $(cslbase)/impex.def > local-bootstrapreduceexe.def
+# At one time I was considering CSL as a Windows DLL and needed to provide
+# a collection of specially exported symbols. I have not tried that for AGES
+# now, and in particular not since I moved to use of C++. So I will remove
+# features that related to it. For a WHILE I will leave comments in to show
+# what I used to have.
 
-local-reduceexe.def:	$(cslbase)/reduceexe.def $(cslbase)/impex.def
-	cat $(cslbase)/reduceexe.def $(cslbase)/impex.def > local-reduceexe.def
+#local-bootstrapreduceexe.def:	$(cslbase)/bootstrapreduceexe.def $(cslbase)/impex.def
+#	cat $(cslbase)/bootstrapreduceexe.def $(cslbase)/impex.def > local-bootstrapreduceexe.def
 
-local-reducecom.def:	$(cslbase)/reducecom.def $(cslbase)/impex.def
-	cat $(cslbase)/reducecom.def $(cslbase)/impex.def > local-reducecom.def
+#local-reduceexe.def:	$(cslbase)/reduceexe.def $(cslbase)/impex.def
+#	cat $(cslbase)/reduceexe.def $(cslbase)/impex.def > local-reduceexe.def
 
-local-cslexe.def:	$(cslbase)/cslexe.def $(cslbase)/impex.def
-	cat $(cslbase)/cslexe.def $(cslbase)/impex.def > local-cslexe.def
+#local-reducecom.def:	$(cslbase)/reducecom.def $(cslbase)/impex.def
+#	cat $(cslbase)/reducecom.def $(cslbase)/impex.def > local-reducecom.def
 
-local-cslcom.def:	$(cslbase)/cslcom.def $(cslbase)/impex.def
-	cat $(cslbase)/cslcom.def $(cslbase)/impex.def > local-cslcom.def
+#local-cslexe.def:	$(cslbase)/cslexe.def $(cslbase)/impex.def
+#	cat $(cslbase)/cslexe.def $(cslbase)/impex.def > local-cslexe.def
 
-CSLEXEDEF = local-cslexe.def
-CSLCOMDEF = local-cslcom.def
-BOOTSTRAPREDUCEEXEDEF = local-bootstrapreduceexe.def
-REDUCEEXEDEF = local-reduceexe.def
-REDUCECOMDEF = local-reducecom.def
+#local-cslcom.def:	$(cslbase)/cslcom.def $(cslbase)/impex.def
+#	cat $(cslbase)/cslcom.def $(cslbase)/impex.def > local-cslcom.def
+
+#CSLEXEDEF = local-cslexe.def
+#CSLCOMDEF = local-cslcom.def
+#BOOTSTRAPREDUCEEXEDEF = local-bootstrapreduceexe.def
+#REDUCEEXEDEF = local-reduceexe.def
+#REDUCECOMDEF = local-reducecom.def
 
 # For a build on Windows with a GUI I want to add an icon into each binary,
 # via a resource-file. I also want linking to be in "windows-subsystem-mode",
@@ -657,14 +663,14 @@ not-under-cygwin.exe:	$(cslbase)/not-under-cygwin.cpp
 	i686-w64-mingw32-g++ -O3 $(cslbase)/not-under-cygwin.cpp -o not-under-cygwin.exe
 	i686-w64-mingw32-strip not-under-cygwin.exe
 
-csl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
+# These used to have things like local-cslexe.def as dependencies...
+csl_DEPENDENCIES = fwin-csl.$(OBJEXT) \
 		$(FONTDEP) $(WXC)
-flatcsl_DEPENDENCIES = local-cslexe.def local-cslcom.def fwin-csl.$(OBJEXT) \
+flatcsl_DEPENDENCIES = fwin-csl.$(OBJEXT) \
 		$(FONTDEP) $(WXC)
-bootstrapreduce_DEPENDENCIES = local-bootstrapreduceexe.def \
-		fwin-csl.$(OBJEXT) $(FONTDEP) \
+bootstrapreduce_DEPENDENCIES = fwin-csl.$(OBJEXT) $(FONTDEP) \
 		reduce.doc/index.html $(AWKFILES) $(GP) $(WXC)
-reduce_DEPENDENCIES = local-reduceexe.def local-reducecom.def $(reduceres) \
+reduce_DEPENDENCIES = $(reduceres) \
 		$(FONTDEP) reduce.doc/index.html $(GP) $(WXC) \
 		$(AWKFILES)
 
@@ -695,12 +701,12 @@ else !windows
 CONAP=
 WINAP=
 
-CSLEXEDEF =
-CSLCOMDEF =
-BOOTSTRAPREDUCEEXEDEF =
-BOOTSTRAPREDUCECOMDEF =
-REDUCEEXEDEF =
-REDUCECOMDEF =
+#CSLEXEDEF =
+#CSLCOMDEF =
+#BOOTSTRAPREDUCEEXEDEF =
+#BOOTSTRAPREDUCECOMDEF =
+#REDUCEEXEDEF =
+#REDUCECOMDEF =
 
 GP=
 
@@ -1135,27 +1141,25 @@ else !gui
 endif !gui
 if !cygwin
 if cyg32
-	if test x"$(with_cygbuild)" != "x"; then \
+	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(MAKE) csl.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
 if cyg64
-	if test x"$(with_cygbuild64)" != "x"; then \
+	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(MAKE) csl.exe; fi
 endif cyg64
 	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 endif !cygwin
 endif windows
-	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
+	$(CXXLINKTO) $(DEST)csl$(EXEEXT) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 if windows
 if gui
 	-$(RM) -f csl$(COM)
-	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)csl$(COM) $(csl_OBJECTS) $(csl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 endif gui
-	$(DLLTOOL) --def $(CSLEXEDEF) --output-lib libcslexe.a
-	$(DLLTOOL) --def $(CSLCOMDEF) --output-lib libcslcom.a
 endif windows
 if !debug
 if !darwin
@@ -1189,27 +1193,25 @@ else !gui
 endif !gui
 if !cygwin
 if cyg32
-	if test x"$(with_cygbuild)" != "x"; \
+	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
-	then cd $(with_cygbuild)/csl && $(MAKE) flatcsl.exe; fi
+	cd $(with_cygbuild)/csl && $(MAKE) flatcsl.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/flatcsl.exe; then $(CP) $(with_cygbuild)/csl/flatcsl.exe cygwin-flatcsl.exe; fi
 if cyg64
-	if test x"$(with_cygbuild64)" != "x"; then \
+	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(MAKE) flatcsl.exe; fi
 endif cyg64
 	if test -x $(with_cygbuild64)/csl/flatcsl.exe; then $(CP) $(with_cygbuild64)/csl/flatcsl.exe cygwin64-flatcsl.exe; fi
 endif !cygwin
 endif windows
-	$(CXXLINKTO) $(CSLEXEDEF) $(DEST)flatcsl$(EXEEXT) $(flatcsl_OBJECTS) $(flatcsl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
+	$(CXXLINKTO) $(DEST)flatcsl$(EXEEXT) $(flatcsl_OBJECTS) $(flatcsl_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 if windows
 if gui
 	-$(RM) -f csl$(COM)
-	$(CXXLINKTO) $(CSLCOMDEF) $(DEST)flatcsl$(COM) $(flatcsl_OBJECTS) $(flatcsl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)flatcsl$(COM) $(flatcsl_OBJECTS) $(flatcsl_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 endif gui
-	$(DLLTOOL) --def $(CSLEXEDEF) --output-lib libcslexe.a
-	$(DLLTOOL) --def $(CSLCOMDEF) --output-lib libcslcom.a
 endif windows
 if !debug
 if !darwin
@@ -1245,27 +1247,27 @@ else !gui
 endif !gui
 if !cygwin
 if cyg32
-	if test x"$(with_cygbuild)" != "x"; then \
+	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(MAKE) reduce.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
 if cyg64
-	if test "x$(with_cygbuild64)" != "x"; then \
+	if test "x$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(MAKE) reduce.exe; fi
 endif cyg64
 	if test -x $(with_cygbuild64)/csl/reduce.exe; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
 endif !cygwin
 endif windows
-	$(CXXLINKTO) $(REDUCEEXEDEF) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
+	$(CXXLINKTO) $(DEST)reduce$(EXEEXT) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(WINAP)
 if windows
 if gui
 	-$(RM) -f reduce$(COM)
-	$(CXXLINKTO) $(REDUCECOMDEF) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)reduce$(COM) $(reduce_OBJECTS) $(reduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 endif gui
-	$(DLLTOOL) --def $(REDUCEEXEDEF) --output-lib libreduceexe.a
-	$(DLLTOOL) --def $(REDUCECOMDEF) --output-lib libreducecom.a
+#	$(DLLTOOL) --def $(REDUCEEXEDEF) --output-lib libreduceexe.a
+#	$(DLLTOOL) --def $(REDUCECOMDEF) --output-lib libreducecom.a
 endif windows
 if !debug
 if !darwin
@@ -1309,20 +1311,20 @@ if windows
 	$(CP) $(cslbase)/bootstrapreduce .
 if !cygwin
 if cyg32
-	if test x"$(with_cygbuild)" != "x"; then \
+	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(MAKE) bootstrapreduce.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
 if cyg64
-	if test x"$(with_cygbuild64)" != "x"; then \
+	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(MAKE) bootstrapreduce.exe; fi
 endif cyg64
 	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 endif !cygwin
 endif windows
-	$(CXXLINKTO) $(BOOTSTRAPREDUCEEXEDEF) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
+	$(CXXLINKTO) $(DEST)bootstrapreduce$(EXEEXT) $(bootstrapreduce_OBJECTS) $(bootstrapreduce_LDADD) $(AM_LIBS) $(LIBS) $(CONAP)
 if !debug
 if !darwin
 	$(STRIP) bootstrapreduce$(EXEEXT)
@@ -1339,7 +1341,6 @@ if mac_framework
 endif mac_framework
 endif !wx
 if windows
-	$(DLLTOOL) --def $(BOOTSTRAPREDUCEEXEDEF) --output-lib libbootstrapreduce.a
 endif windows
 
 fwindemo$(EXEEXT): $(fwindemo_OBJECTS) $(fwindemo_DEPENDENCIES) $(FOXDEPS) $(WXDEPS) $(WINHELPERS)
@@ -1352,13 +1353,13 @@ else !gui
 endif !gui
 if !cygwin
 if cyg32
-	if test x"$(with_cygbuild)" != "x"; then \
+	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
 	cd $(with_cygbuild)/csl && $(MAKE) fwindemo.exe; fi
 endif cyg32
 	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
 if cyg64
-	if test x"$(with_cygbuild64)" != "x"; then \
+	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
 	cd $(with_cygbuild64)/csl && $(MAKE) fwindemo.exe; fi
 endif cyg64
@@ -1716,7 +1717,7 @@ win_specials = cygwin-reduce.exe cygwin-csl.exe cygwin-fwindemo.exe \
 
 generatedfiles=$(console_binaries) $(noinstall_console_binaries) \
 	$(image_files) $(local_image_files) $(win_specials) \
-	objtype* cl-wrap* makeheaders* *.def machineid.cpp *.dep $(INLINE_DEFS)
+	objtype* cl-wrap* makeheaders* machineid.cpp *.dep $(INLINE_DEFS)
 
 clean-local:
 	-$(RM) -rf $(generatedfiles) $(LOCALCYG)
@@ -1832,6 +1833,27 @@ makeheaders$(EXEEXT):	$(cslbase)/makeheaders.cpp $(LOCALCYG)
 
 endif !canrun
 
+# "prototypes" is a utility that will only be available if libclang has
+# been installed, and the recipe provided here perhaps works on Ubuntu and
+# cygwin, but I do not guarantee it anywhere else. If you go
+#   prototypes f1.cpp f2.cpp ...
+# the output should be a collection of the function heading lines. Ie the
+# sort of material that might properly appear in header files.
+
+prototypes:	$(srcdir)/prototypes.cpp
+	g++ -std=gnu++14 -I/usr/lib/llvm-4.0/include $(srcdir)/prototypes.cpp \
+		-L /usr/lib/llvm-4.0/lib -lclang -o prototypes
+
+csl.prototypes:	prototypes
+	./prototypes -I $(srcdir) $(csl_SOURCES) > csl.prototypes
+
+bootstrapreduce.prototypes:	prototypes
+	./prototypes -I $(srcdir) $(bootstrapreduce_SOURCES) > bootstrapreduce.prototypes
+
+reduce.prototypes:	prototypes
+	./prototypes -I $(srcdir) $(reduce_SOURCES) > reduce.prototypes
+
+
 # The next line generates a small file that contains inforation about the
 # object files used on this computer and the command used to compile
 # simple C code. Note that machineid.cpp is made to depend on Makefile
@@ -1839,13 +1861,13 @@ endif !canrun
 # restart.o and the rest.
 
 machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(EXEEXT) \
-			makeheaders$(EXEEXT) Makefile $(cslbase)/impex.def \
+			makeheaders$(EXEEXT) Makefile \
 			$(cslbase)/machine.h $(cslbase)/int128_t.h \
 			$(cslbase)/tags.h $(cslbase)/cslerror.h \
 			$(cslbase)/externs.h $(cslbase)/arith.h \
 			$(cslbase)/entries.h $(cslbase)/lispthrow.h $(LOCALCYG)
 	$(LOCALCYG) ./objtype$(EXEEXT) reduce-cslread.$(OBJEXT) \
-		$(cslbase)/impex.def machineid-1.cpp $(COMPILE_DLL)
+		machineid-1.cpp $(COMPILE_DLL)
 	$(LOCALCYG) ./makeheaders$(EXEEXT) config.h $(cslbase)/machine.h \
 		$(cslbase)/int128_t.h $(cslbase)/tags.h \
 		$(cslbase)/cslerror.h $(cslbase)/externs.h \

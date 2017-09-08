@@ -342,12 +342,11 @@ LispObject Lbanner(LispObject env, LispObject info)
     return onevalue(lisp_true);
 }
 
-LispObject Llist_modules(LispObject env, int nargs, ...)
+LispObject Llist_modules(LispObject env)
 //
 // display information about available modules
 //
-{   argcheck(nargs, 0, "list-modules");
-    Ilist();
+{   Ilist();
     return onevalue(nil);
 }
 

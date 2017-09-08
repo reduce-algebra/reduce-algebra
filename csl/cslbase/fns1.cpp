@@ -51,6 +51,14 @@
 //      Some basic functions
 /*****************************************************************************/
 
+// For some debugging purposes it is noce to have a counter...
+
+static uintptr_t countup_counter = 0;
+
+LispObject Lcount_up(LispObject)
+{   return fixnum_of_int(countup_counter++);
+}
+
 LispObject integerp(LispObject p)
 {   if (is_fixnum(p) || (is_numbers(p) && is_bignum(p))) return lisp_true;
     else return nil;
@@ -152,6 +160,19 @@ LispObject list2star(LispObject a, LispObject b, LispObject c)
     else return (LispObject)((char *)r + TAG_CONS);
 }
 
+LispObject list2starrev(LispObject c, LispObject b, LispObject a)
+{   LispObject r = (LispObject)((char *)fringe - 2*sizeof(Cons_Cell));
+    qcar(r) = a;
+    qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
+    qcar((char *)r+sizeof(Cons_Cell)) = b;
+    qcdr((char *)r+sizeof(Cons_Cell)) = c;
+    fringe = r;
+    if ((char *)r <= (char *)heaplimit || cons_forced(2))
+        return reclaim((LispObject)((char *)r + TAG_CONS),
+                       "internal list2*", GC_CONS, 0);
+    else return (LispObject)((char *)r + TAG_CONS);
+}
+
 LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
 {   LispObject r = (LispObject)((char *)fringe - 3*sizeof(Cons_Cell));
     qcar(r) = a;
@@ -203,6 +224,22 @@ LispObject acons(LispObject a, LispObject b, LispObject c)
 }
 
 LispObject list3(LispObject a, LispObject b, LispObject c)
+{   LispObject r = (LispObject)((char *)fringe - 3*sizeof(Cons_Cell));
+    qcar(r) = a;
+    qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
+    qcar((char *)r+sizeof(Cons_Cell)) = b;
+    qcdr((char *)r+sizeof(Cons_Cell)) =
+        (LispObject)((char *)r + 2*sizeof(Cons_Cell) + TAG_CONS);
+    qcar((char *)r+2*sizeof(Cons_Cell)) = c;
+    qcdr((char *)r+2*sizeof(Cons_Cell)) = nil;
+    fringe = r;
+    if ((char *)r <= (char *)heaplimit || cons_forced(3))
+        return reclaim((LispObject)((char *)r + TAG_CONS),
+                       "internal list3", GC_CONS, 0);
+    else return (LispObject)((char *)r + TAG_CONS);
+}
+
+LispObject list3rev(LispObject c, LispObject b, LispObject a)
 {   LispObject r = (LispObject)((char *)fringe - 3*sizeof(Cons_Cell));
     qcar(r) = a;
     qcdr(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
@@ -1011,6 +1048,10 @@ LispObject Lxcons(LispObject, LispObject a, LispObject b)
     else return onevalue((LispObject)((char *)r + TAG_CONS));
 }
 
+LispObject Lnilfn(LispObject)
+{   return onevalue(nil);
+}
+
 LispObject Lncons(LispObject env, LispObject a)
 {   LispObject r;
     r = (LispObject)((char *)fringe - sizeof(Cons_Cell));
@@ -1023,7 +1064,7 @@ LispObject Lncons(LispObject env, LispObject a)
     else return onevalue((LispObject)((char *)r + TAG_CONS));
 }
 
-LispObject Llist2(LispObject env, LispObject a, LispObject b)
+LispObject Llist_2(LispObject env, LispObject a, LispObject b)
 {   a = list2(a, b);
     return onevalue(a);
 }
@@ -1033,141 +1074,62 @@ LispObject Lmkquote(LispObject env, LispObject a)
     return onevalue(a);
 }
 
-LispObject Llist2star(LispObject env, int nargs, ...)
-{   va_list aa;
-    LispObject a, b, c;
-    argcheck(nargs, 3, "list2*");
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    va_end(aa);
-    a = list2star(a,b,c);
-    return onevalue(a);
+LispObject Llist_2star(LispObject env, LispObject a, LispObject b, LispObject c)
+{   return onevalue(list2star(a,b,c));
 }
 
-LispObject Lacons(LispObject env, int nargs, ...)
-{   va_list aa;
-    LispObject a, b, c;
-    argcheck(nargs, 3, "acons");
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    va_end(aa);
-    a = acons(a,b,c);
-    return onevalue(a);
+LispObject Llist_2starrev(LispObject env, LispObject a, LispObject b, LispObject c)
+{   return onevalue(list2starrev(a,b,c));
 }
 
-LispObject Llist3(LispObject env, int nargs, ...)
-{   va_list aa;
-    LispObject a, b, c;
-    argcheck(nargs, 3, "list3");
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    va_end(aa);
-    a = list3(a,b,c);
-    return onevalue(a);
+LispObject Lacons(LispObject env, LispObject a, LispObject b, LispObject c)
+{   return onevalue(acons(a, b, c));
 }
 
-LispObject Llist3star(LispObject env, int nargs, ...)
-{   va_list aa;
-    LispObject a, b, c, d;
-    argcheck(nargs, 4, "list3*");
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    d = va_arg(aa, LispObject);
-    va_end(aa);
-    a = list3star(a,b,c,d);
-    return onevalue(a);
+LispObject Llist_3(LispObject env, LispObject a, LispObject b, LispObject c)
+{   return onevalue(list3(a, b, c));
 }
 
-LispObject Llist4(LispObject env, int nargs, ...)
-{   va_list aa;
-    LispObject a, b, c, d;
-    argcheck(nargs, 4, "list4");
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    d = va_arg(aa, LispObject);
-    va_end(aa);
-    a = list4(a,b,c,d);
-    return onevalue(a);
+LispObject Llist_3rev(LispObject env, LispObject a, LispObject b, LispObject c)
+{   return onevalue(list3rev(a, b, c));
+}
+
+LispObject Llist_3star(LispObject, LispObject a, LispObject b, LispObject c, LispObject a4up)
+{   if (qcdr(a4up) != nil) aerror("too many arrguments for list3*");
+    LispObject d = qcar(a4up);
+    return onevalue(list3star(a,b,c,d));
+}
+
+LispObject Llist_4(LispObject env, LispObject a, LispObject b, LispObject c, LispObject a4up)
+{   if (qcdr(a4up) != nil) aerror("too many arguments for list4");
+    LispObject d = qcar(a4up);
+    return onevalue(list4(a,b,c,d));
 }
 
 
-LispObject Llist(LispObject env, int nargs, ...)
-{   LispObject r = nil, w, w1;
-    va_list a;
-    va_start(a, nargs);
-    push_args(a, nargs);
-    while (nargs > 1)
-    {   pop2(w, w1);
-        nargs-=2;
-        r = list2star(w1, w, r);
+LispObject Llist_4up(LispObject env, LispObject a, LispObject b,
+        LispObject c, LispObject a4up)
+{   return onevalue(list3star(a, b, c, a4up));
+}
+
+LispObject Lliststar_4up(LispObject env, LispObject a, LispObject b,
+        LispObject c, LispObject a4up)
+{   LispObject r= nil, w;
+    while (a4up != nil)
+    {   w = qcdr(a4up);
+        qcdr(a4up) = r;
+        r = a4up;
+        a4up = w;
     }
-// I could possibly speed up long cases a little by doing 2 or 3 cons
-// operations at a time...
-    while (nargs > 0)
-    {   pop(w);
-        nargs--;
-        r = cons(w, r);
+    a4up = qcar(r);
+    r = qcdr(r);
+    while (r != nil)
+    {   w = qcdr(r);
+        qcdr(r) = a4up;
+        a4up = r;
+        r = w;
     }
-    return onevalue(r);
-}
-
-LispObject Lliststar(LispObject env, int nargs, ...)
-{   LispObject r, w, w1;
-    va_list a;
-    if (nargs == 0) return onevalue(nil);
-    va_start(a, nargs);
-    push_args(a, nargs);
-    pop(r);
-    nargs--;
-    while (nargs > 1)
-    {   pop2(w, w1);
-        nargs-=2;
-        r = list2star(w1, w, r);
-    }
-    while (nargs > 0)
-    {   pop(w);
-        nargs--;
-        r = cons(w, r);
-    }
-    return onevalue(r);
-}
-
-//
-// fill-vector is used for open-compilation of (vector ...) to avoid
-// passing grossly unreasonable numbers of arguments. The expansion of
-// (vector e1 ... en) should be
-//    (let ((v (mkvect <n-1>)) (i 0))
-//       (setq i (fill-vector v i e1 e2 ... e10))
-//       (setq i (fill-vector v i e11 e12 ... ))
-//       ...
-//       v)
-//
-static LispObject Lfill_vector(LispObject, int nargs, ...)
-{   va_list a;
-    LispObject v, il;
-    intptr_t i;
-    if (nargs < 3) aerror("fill-vector");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    il = va_arg(a, LispObject);
-    if (!is_vector(v) || !is_fixnum(il)) aerror("fill-vector");
-    i = int_of_fixnum(il);
-    nargs -= 2;
-    while (nargs != 0)
-    {   elt(v, i++) = va_arg(a, LispObject);
-        nargs--;
-    }
-    return onevalue(fixnum_of_int(i));
+    return onevalue(a4up);
 }
 
 LispObject Lpair(LispObject env, LispObject a, LispObject b)
@@ -1450,9 +1412,8 @@ LispObject Lenable_backtrace(LispObject env, LispObject a)
                                   0));
 }
 
-LispObject Lunwind(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "unwind");
-    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+LispObject Lunwind(LispObject env)
+{   exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
                   (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
                   UNWIND_UNWIND;
     exit_count = 0;
@@ -1467,69 +1428,50 @@ LispObject Lunwind(LispObject env, int nargs, ...)
 // the system will unwind in the usual manner.
 //
 
-void Lerror(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject w;
-#ifdef COMMON
-    LispObject r = nil, w1;
-#else
-    int i;
-#endif
-    if (nargs == 0) aerror("error");
+NORETURN void error_N(LispObject args)
+{   LispObject w;
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
         resource_exceeded();
-    va_start(a, nargs);
-    push_args(a, nargs);
 #ifdef COMMON
-    while (nargs > 1)
-    {   pop2(w, w1);
-        nargs -= 2;
-        if_error(r = list2star(w1, w, r), r = nil);
-    }
-    while (nargs > 0)
-    {   pop(w);
-        nargs--;
-        if_error(r = cons(w, r), r = nil);
-    }
-    if (miscflags & (HEADLINE_FLAG|ALWAYS_NOISY))
-    {   push(r);
-        err_printf("\n+++ error: ");
-//
+    LispObject a1 = qcar(args);
+    args = qcdr(args);
 // I will use FORMAT to handle error messages provided the first arg
 // to error had been a string and also provided (for bootstrapping) that
 // the function FORMAT seems to be defined.
-//
-        if (qfn1(format_symbol) == undefined1 ||
-            !consp(r) ||
-            !stringp(qcar(r))) loop_print_error(r);
-        else Lapply_n(nil, 3, format_symbol, qvalue(error_output), r);
+        if (qfn1(format_symbol) == undefined_1 ||
+            !stringp(a1)) loop_print_error(cons(a1, args));
+        else Lapply_3(nil, format_symbol, qvalue(error_output), a1, args);
         err_printf("\n");
         pop(r);
     }
-    qvalue(emsg_star) = r;               // "Error message" in CL world
+    qvalue(emsg_star) = cons(a1, r);     // "Error message" in CL world
     exit_value = fixnum_of_int(0);       // "Error number"  in CL world
 #else
     if (miscflags & HEADLINE_FLAG)
-    {   err_printf("\n+++ error: ");
-        loop_print_error(stack[1-nargs]);
-        for (i=1; i<nargs; i++)
+    {   push2(args, qcdr(args));
+        err_printf("\n+++ error: ");
+        loop_print_error(qcar(stack[-1]));
+        while (is_cons(stack[0]))
         {   err_printf(" ");
-            loop_print_error(stack[1+i-nargs]);
+            loop_print_error(qcar(stack[0]));
+            stack[0] = qcdr(stack[0]);
         }
         err_printf("\n");
+        popv(1);
+        pop(args);
     }
-    if (nargs == 1)
-    {   push(nil);
-        nargs++;
-    }
-    qvalue(emsg_star) = stack[2-nargs];  // "Error message" in SL world
-    exit_value = stack[1-nargs];         // "Error number"  in SL world
-    popv(nargs);
+// So if you go (error n A B C) the output should be
+//     +++ error n A B C
+// and emsg!* gets set to A, while an errorset that catches this will get n.
+    LispObject msg = nil;
+    if (is_cons(qcdr(args))) msg = qcar(qcdr(args));
+    qvalue(emsg_star) = msg;         // "Error message" in SL world
+    exit_value = qcar(args);         // "Error number"  in SL world
 #endif
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
-        qfn1(w) != undefined1)
+        qfn1(w) != undefined_1)
     {   (*qfn1(w))(qenv(w), qvalue(emsg_star));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
@@ -1540,15 +1482,24 @@ void Lerror(LispObject env, int nargs, ...)
     throw LispError();
 }
 
-void Lerror1(LispObject env, LispObject a1)
-{   Lerror(env, 1, a1);
+NORETURN void Lerror_1(LispObject env, LispObject a1)
+{   error_N(ncons(a1));
 }
 
-void Lerror2(LispObject env, LispObject a1, LispObject a2)
-{   Lerror(env, 2, a1, a2);
+NORETURN void Lerror_2(LispObject env, LispObject a1, LispObject a2)
+{   error_N(list2(a1, a2));
 }
 
-void Lerror0(LispObject env, int nargs, ...)
+NORETURN void Lerror_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   error_N(list3(a1, a2, a3));
+}
+
+NORETURN void Lerror_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   error_N(list3star(a1, a2, a3, a4up));
+}
+
+NORETURN void Lerror_0(LispObject env)
 {
 //
 // Silently provoked error - unwind to surrounding errorset level. Note that
@@ -1556,7 +1507,6 @@ void Lerror0(LispObject env, int nargs, ...)
 // Also note that (enable-errorset) can set a lower limit to noise levels
 // that can result in the error here NOT being silent!
 //
-    argcheck(nargs, 0, "error0");
     errors_now++;
     if (errors_limit >= 0 && errors_now > errors_limit)
         resource_exceeded();
@@ -1689,23 +1639,31 @@ LispObject Lmakeunbound(LispObject env, LispObject a)
 }
 
 LispObject Lsymbol_function(LispObject env, LispObject a)
-{   one_args *f1;
+{   no_args *f0;
+    one_arg *f1;
     two_args *f2;
-    n_args *fn;
+    three_args *f3;
+    fourup_args *f4up;
     if (!symbolp(a)) return onevalue(nil);
-// @@ This will need adapting for fn0 and fn3...
-    f1 = qfn1(a); f2 = qfn2(a); fn = qfnn(a);
+    f0 = qfn0(a);
+    f1 = qfn1(a);
+    f2 = qfn2(a);
+    f3 = qfn3(a);
+    f4up = qfn4up(a);
     if ((qheader(a) & (SYM_SPECIAL_FORM | SYM_MACRO)) != 0 ||
-        (f1 == undefined1 && f2 == undefined2 &&
-         fn == undefinedn)) return onevalue(nil);
-    else if (f1 == interpreted1 ||
-             f2 == interpreted2 ||
-             fn == interpretedn)
-// I wonder if onevalue(cons(...)) is really valid here. It is OK in SL mode
+        (f0 == undefined_0 && f1 == undefined_1 && f2 == undefined_2 &&
+         f3 == undefined_3 && f4up == undefined_4up)) return onevalue(nil);
+    else if (f0 == interpreted_0 ||
+             f1 == interpreted_1 ||
+             f2 == interpreted_2 ||
+             f3 == interpreted_3 ||
+             f4up == interpreted_4up)
         return onevalue(cons(lambda, qenv(a)));
-    else if (f1 == funarged1 ||
-             f2 == funarged2 ||
-             fn == funargedn)
+    else if (f0 == funarged_0 ||
+             f1 == funarged_1 ||
+             f2 == funarged_2 ||
+             f3 == funarged_3 ||
+             f4up == funarged_4up)
         return onevalue(cons(funarg, qenv(a)));
     else
     {   LispObject b = get(a, work_symbol, nil);
@@ -1747,7 +1705,7 @@ LispObject Lsymbol_function(LispObject env, LispObject a)
         qfn1(b) = qfn1(a);
         qfn2(b) = qfn2(a);
         qfn3(b) = qfn3(a);
-        qfnn(b) = qfnn(a);
+        qfn4up(b) = qfn4up(a);
         qenv(b) = qenv(a);
 #ifdef COMMON
 // in Common Lisp mode gensyms that are "unprinted" are not special
@@ -1807,13 +1765,6 @@ LispObject get_basic_vector(int tag, int type, size_t size)
     for (;;)
     {   char *r = (char *)vfringe;
         size_t free = (size_t)((char *)vheaplimit - r);
-//
-// On a 64-bit system the allocation size will be a multiple of 8 anyway, so
-// the doubleword_align here will have no effect! The result is that I never
-// need or use a padding word at the end of a vector in that case. Note that
-// well. On 32-bit systems vectors may have a dummy padder word at the end
-// but on 64-bit systems they do not.
-//
         size_t alloc_size = (size_t)doubleword_align_up(size);
 // Basic vectors must be smaller then the CSL page size.
         if (alloc_size > (CSL_PAGE_SIZE - 32))
@@ -1888,6 +1839,16 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // This is OK if the vector will contain binary information, but if it
 // will hold any LispObjects it needs safe values put in PDQ.
 //
+// All vectors are allocated so as to be 8-byte aligned. On a 64-bit system
+// a vector that will not end up being a multipe of 8 bytes long naturally
+// gets padded out. Here I arrange to zero out any such padder word. This
+// should not be very important since nobody should ever try to use that
+// word. When the garbage collector copies material around it transcribes
+// the whole vector (including the padder), but it should never try to trace
+// through it. By tidying this up here can feel that I do not have any
+// need to worry about it elsewhere.
+        if (!SIXTY_FOUR_BIT && alloc_size != size)
+            *(LispObject *)(vfringe-CELL) = 0;
         return (LispObject)(r + tag);
     }
 }
@@ -1898,7 +1859,6 @@ LispObject get_basic_vector_init(size_t n, LispObject k)
     p = get_basic_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(k);
     n = n/CELL - 1;
-    if (!SIXTY_FOUR_BIT) n = n | 1;
     for (size_t i=0; i<n; i++)
         basic_elt(p, i) = k;
     return p;
@@ -1980,8 +1940,7 @@ LispObject get_vector(int tag, int type, size_t n)
         v = gvector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
 // Note that this index vector will be around while the various sub
 // vectors are allocated, so I need to make it GC safe...
-        size_t chunks1 = SIXTY_FOUR_BIT ? chunks : (chunks | 1);
-        for (i=0; i<chunks1; i++)
+        for (i=0; i<chunks; i++)
             basic_elt(v, i) = nil;
         for (i=0; i<chunks; i++)
         {   LispObject v1;
@@ -1993,8 +1952,6 @@ LispObject get_vector(int tag, int type, size_t n)
 // to be GC safe.
             if (!vector_holds_binary(v1))
             {   size_t k1 = k/CELL;
-// In the 32-bit case I will keep any final padder word safe too.
-                if (!SIXTY_FOUR_BIT) k1 |= 1;
                 for (size_t j=0; j<k1; j++)
                     basic_elt(v1, j) = nil;
             }
@@ -2010,8 +1967,6 @@ LispObject get_vector_init(size_t n, LispObject val)
     push(val);
     p = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(val);
-    if (!SIXTY_FOUR_BIT && ((n & 4) != 0))
-        n += 4;   // Ensure last doubleword is tidy
     n = n/CELL - 1;
     while (n != 0)
     {   n--;
@@ -2020,9 +1975,9 @@ LispObject get_vector_init(size_t n, LispObject val)
     return p;
 }
 
-void Lstop(LispObject env, LispObject code)
+NORETURN void Lstop1(LispObject env, LispObject code)
 {   if (!is_fixnum(code)) aerror("stop");
-    if (Lposn(nil, 0) != fixnum_of_int(0)) Lterpri(nil, 0);
+    if (Lposn(nil) != fixnum_of_int(0)) Lterpri(nil);
     exit_value = code;
     exit_tag = fixnum_of_int(0);    // Flag to say "stop"
     exit_reason = UNWIND_RESTART;
@@ -2030,19 +1985,8 @@ void Lstop(LispObject env, LispObject code)
     throw LispRestart();
 }
 
-void Lstop2(LispObject env, LispObject code, LispObject)
-{   Lstop(env, code);
-}
-
-void Lstop0(LispObject env, int nargs, ...)
-{   va_list aa;
-    LispObject code = fixnum_of_int(0);
-    if (nargs != 0)
-    {   va_start(aa, nargs);
-        code = va_arg(aa, LispObject);
-        va_end(aa);
-    }
-    Lstop(env, code);
+NORETURN void Lstop0(LispObject env)
+{   Lstop1(env, fixnum_of_int(0));
 }
 
 clock_t base_time;
@@ -2067,7 +2011,7 @@ double pop_clock(void)
     return delta + *clock_stack--;
 }
 
-LispObject Ltime(LispObject env, int nargs, ...)
+LispObject Ltime(LispObject env)
 {   LispObject r;
     if (clock_stack == &consolidated_time[0])
     {   clock_t t0 = read_clock();
@@ -2075,19 +2019,16 @@ LispObject Ltime(LispObject env, int nargs, ...)
         base_time = t0;
         consolidated_time[0] += delta;
     }
-    argcheck(nargs, 0, "time");
     r = make_lisp_unsigned64((uint64_t)(1000.0 * consolidated_time[0]));
     return onevalue(r);
 }
 
-LispObject Lgctime(LispObject env, int nargs, ...)
-{   LispObject r;
-    argcheck(nargs, 0, "gctime");
-    r = make_lisp_unsigned64((uint64_t)(1000.0 * gc_time));
+LispObject Lgctime(LispObject env)
+{   LispObject r = make_lisp_unsigned64((uint64_t)(1000.0 * gc_time));
     return onevalue(r);
 }
 
-LispObject Ldecoded_time(LispObject env, int nargs, ...)
+LispObject Ldecoded_time(LispObject env)
 {   time_t t0 = time(NULL);
 //
 //        tm_sec      -- seconds 0..59
@@ -2105,7 +2046,6 @@ LispObject Ldecoded_time(LispObject env, int nargs, ...)
     struct tm *tbuf = localtime(&t0);
     LispObject r, *p = &mv_2;
     int w;
-    argcheck(nargs, 0, "get-decoded-time");
     r = fixnum_of_int(tbuf->tm_sec);
     *p++ = fixnum_of_int(tbuf->tm_min);
     *p++ = fixnum_of_int(tbuf->tm_hour);
@@ -2132,12 +2072,11 @@ LispObject Ldecoded_time(LispObject env, int nargs, ...)
 // argument will suffice).
 //
 
-LispObject Ldate(LispObject env, int nargs, ...)
+LispObject Ldate(LispObject env)
 {   LispObject w;
     time_t t = time(NULL);
     char today[32];
     char today1[32];
-    argcheck(nargs, 0, "date");
     strcpy(today, ctime(&t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
     //       012345678901234567890123
     today[24] = 0;             // loses final '\n'
@@ -2165,11 +2104,10 @@ LispObject Ldate1(LispObject env, LispObject a1)
     return onevalue(w);
 }
 
-LispObject Ldate_and_time(LispObject env, int nargs, ...)
+LispObject Ldate_and_time(LispObject env)
 {   LispObject w;
     time_t t = time(NULL);
     char today[32];
-    argcheck(nargs, 0, "date");
     strcpy(today, ctime(&t));  // e.g. "Sun Sep 16 01:03:52 1973\n"
     today[24] = 0;             // loses final '\n'
     w = make_string(today);
@@ -2197,21 +2135,16 @@ LispObject Ldate_and_time1(LispObject env, LispObject a1)
     return onevalue(w);
 }
 
-LispObject Ldatestamp(LispObject env, int nargs, ...)
-//
+LispObject Ldatestamp(LispObject env)
 // Returns date-stamp integer, which on many systems will be the
 // number of seconds between 1970.0.0 and now, but which could be
 // pretty-well almost any other thing, as per the C "time_t" type.
 // I do not allow for time-zones etc here either!
-//
-{   LispObject r;
-    time_t t = time(NULL);
-    argcheck(nargs, 0, "datestamp");
-    r = make_lisp_integer64((int64_t)t);
-    return onevalue(r);
+{   time_t t = time(NULL);
+    return onevalue(make_lisp_integer64((int64_t)t));
 }
 
-LispObject Ltimeofday(LispObject env, int nargs, ...)
+LispObject Ltimeofday(LispObject env)
 //
 // This is like datestamp, in that it returns information about the
 // current real time. However it returns a pair of two values, the
@@ -2235,10 +2168,8 @@ LispObject Ltimeofday(LispObject env, int nargs, ...)
     un = (uint32_t)tv.tv_usec;
 #endif
 #endif
-    argcheck(nargs, 0, "datestamp");
     w = make_lisp_unsigned64(n);
-    w = cons(w, fixnum_of_int(un));
-    return onevalue(w);
+    return onevalue(cons(w, fixnum_of_int(un)));
 }
 
 // This will be the header for a string of length exactly 24. It is
@@ -2484,9 +2415,6 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
     w = get_string_data(name, "find-foreign-function", len);
     if (len > sizeof(sname)-2) len = sizeof(sname)-2;
     sprintf(sname, "%.*s", (int)len, w);
-//=== //
-//=== // Again I will leave the print statement in on a temporary basis...
-//=== //
 //=== #ifdef __CYGWIN__
 //===     printf("name to look up = %s\r\n", sname);
 //=== #else
@@ -2503,6 +2431,8 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
 #endif
     if (b == NULL) return onevalue(nil);
     r = encapsulate_pointer(b);
+// Observe that the result is an encapsulated pointer to the entrypoint of the
+// function that you are interested in.
     return onevalue(r);
 }
 
@@ -2512,12 +2442,24 @@ LispObject Lfind_foreign_function(LispObject env, LispObject name,
 // any arguments and not expecting any result.
 //
 
-LispObject Lcallf1(LispObject env, LispObject entry)
+typedef void void_function();
+
+LispObject Lcallf_1(LispObject env, LispObject entry)
 {   void *f;
     if (Lencapsulatedp(nil, entry) == nil)
         aerror("call-foreign-function");
     f = extract_pointer(entry);
-    (*(void(*)())f)();
+    ffi_cif cif;
+    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 0, &ffi_type_void, NULL) != FFI_OK)
+        aerror("callf for a function with no arguments");
+// The strange looking double cast here is because some versions of C++ took
+// the view that conversion between function pointers and object pointers
+// should be labelled as illegal. On a Harvard architecture machine you can
+// see that as making a lof of sense. So I convert from the object pointer
+// "void *" to the function pointer "void_function *" using intptr_t as
+// an intermediary. This is obviously undefined behaviour! But "The Spirit
+// of C" would give a clear indication of expectations!
+    ffi_call(&cif, (void_function *)(uintptr_t)f, NULL, NULL);
     return onevalue(nil);
 }
 
@@ -2526,7 +2468,7 @@ LispObject Lcallf1(LispObject env, LispObject entry)
 // signature. The view I will take here is NOT guaranteed portable but
 // is liable to work on many practical systems. I classify arguments that
 // are actually passed as Int32, Int64 or Double. These are expected to
-// be sufficiant for:
+// be sufficient for:
 // Int32     int when sizeof(int)==4
 //           char *, void * when sizeof(void *)==4, and hence "abcdef"
 //           'x'
@@ -2535,53 +2477,30 @@ LispObject Lcallf1(LispObject env, LispObject entry)
 //           char *, void *, strings etc when size 8
 // Double    double
 //
-// So the code that arranges to pass arguments will need to map from one of
-// the intended types to one of the above three options. It could be that for
-// some system that pointers and integers (of the relevant with) are passed in
-// different locations or with different alignment constraints, but I believe
-// that will not be the case on any system I am at present concerned with.
-// Result types can be any of the above together with Void.
-// As one further mess, a function signature can end with "..." and I use
-// the pseudo-type VarArg to denote that.
-//
 
-#define foreign_Int32  0
-#define foreign_Int64  1
-#define foreign_Double 2
-#define foreign_VarArg 3
-//
-// The ones that follow are only given as return types.
-//
-#define foreign_Void   4
-#define foreign_String 5
-
-#define A1(a1)             (a1)
-#define A2(a1, a2)         ((a2)<<2 | (a1))
-#define A3(a1, a2, a3)     ((a3)<<4 | (a2)<<2 | (a1))
-#define A4(a1, a2, a3, a4) ((a4)<<6 | (a3)<<4 | (a2)<<2 | (a1))
-
-#define MAX_ARGCOUNT 10
+#define MAX_ARGCOUNT 20
 #define MAX_STRINGLEN 256
 
-int32_t i32a[MAX_ARGCOUNT];
-int64_t i64a[MAX_ARGCOUNT];
-double da[MAX_ARGCOUNT];
-char sa[MAX_ARGCOUNT][MAX_STRINGLEN];
+// I will collect arguments for foreign functions in these arrays.
 
-int32_t i32r;
-int64_t i64r;
-double dr;
+// targs and vargs are the arrays passed to libffi. i32args etc are
+// where the data is actually put.
 
-//
-// This seems HORRID to me, and as it is it only supports passing up to three
-// arguments. The alternatives that I can think of seem even worse!
-// Well ACTUALLY I should change all of this to use "libffi" (which is subject
-// to a generously liberal license and so will not cause problems in the
-// BSD context I am working in). But it would be nice if somebody else did
-// that conversion for me... since it should be a useful and self-contained
-// task that would generalise and clean up the code but doing it would take
-// me away from other things that I also want to do.
-//
+ffi_type *targs[MAX_ARGCOUNT];
+void     *vargs[MAX_ARGCOUNT];
+
+void *fresult;
+
+int32_t i32args[MAX_ARGCOUNT];
+int64_t i64args[MAX_ARGCOUNT];
+int64_t dblargs[MAX_ARGCOUNT];
+char    strargs[MAX_ARGCOUNT][MAX_STRINGLEN];
+
+long longres;
+int32_t i32res;
+int64_t i64res;
+double  dblres;
+void   *strres;
 
 //
 // Given a symbol (or in fact a string) this checks if its name is the
@@ -2595,741 +2514,6 @@ int name_matches(LispObject a, const char *s)
     else return 0;
 }
 
-// I rather strongly believe that by using libffi I could make the code
-// here a LOT nicer!
-
-LispObject callforeign(void *f, int returntype, int nargs, int signature)
-{   int rt = (returntype == foreign_String) ?
-             (sizeof(char *)==4 ? foreign_Int32 : foreign_Int64) :
-             returntype;
-    switch (rt)
-    {   case foreign_Void:
-            switch (nargs)
-            {   case 0:
-                    (*(void(*)())f)();
-                    return onevalue(nil);
-                case 1:
-                    switch (signature)
-                    {   case A1(foreign_Int32):
-                            (*(void(*)(int32_t))f)(i32a[0]);
-                            return onevalue(nil);
-                        case A1(foreign_Int64):
-                            (*(void(*)(int64_t))f)(i64a[0]);
-                            return onevalue(nil);
-                        case A1(foreign_Double):
-                            (*(void(*)(double))f)(da[0]);
-                            return onevalue(nil);
-                        default:
-                            break;
-                    }
-                case 2:
-                    switch (signature)
-                    {   case A2(foreign_Int32,foreign_Int32):
-                            (*(void(*)(int32_t,int32_t))f)(i32a[0],i32a[1]);
-                            return onevalue(nil);
-                        case A2(foreign_Int32,foreign_Int64):
-                            (*(void(*)(int32_t,int64_t))f)(i32a[0],i64a[1]);
-                            return onevalue(nil);
-                        case A2(foreign_Int32,foreign_Double):
-                            (*(void(*)(int32_t,double))f)(i32a[0],da[1]);
-                            return onevalue(nil);
-                        case A2(foreign_Int64,foreign_Int32):
-                            (*(void(*)(int64_t,int32_t))f)(i64a[0],i32a[1]);
-                            return onevalue(nil);
-                        case A2(foreign_Int64,foreign_Int64):
-                            (*(void(*)(int64_t,int64_t))f)(i64a[0],i64a[1]);
-                            return onevalue(nil);
-                        case A2(foreign_Int64,foreign_Double):
-                            (*(void(*)(int64_t,double))f)(i64a[0],da[1]);
-                            return onevalue(nil);
-                        case A2(foreign_Double,foreign_Int32):
-                            (*(void(*)(double,int32_t))f)(da[0],i32a[1]);
-                            return onevalue(nil);
-                        case A2(foreign_Double,foreign_Int64):
-                            (*(void(*)(double,int64_t))f)(da[0],i64a[1]);
-                            return onevalue(nil);
-                        case A2(foreign_Double,foreign_Double):
-                            (*(void(*)(double,double))f)(da[0],da[1]);
-                            return onevalue(nil);
-                        default:
-                            break;
-                    }
-                case 3:
-                    switch (signature)
-                    {   case A3(foreign_Int32,foreign_Int32,foreign_Int32):
-                            (*(void(*)(int32_t,int32_t,int32_t))f)(i32a[0],i32a[1],i32a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int32,foreign_Int32,foreign_Int64):
-                            (*(void(*)(int32_t,int32_t,int64_t))f)(i32a[0],i32a[1],i64a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int32,foreign_Int32,foreign_Double):
-                            (*(void(*)(int32_t,int32_t,double))f)(i32a[0],i32a[1],da[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int32,foreign_Int64,foreign_Int32):
-                            (*(void(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int32,foreign_Int64,foreign_Int64):
-                            (*(void(*)(int32_t,int64_t,int64_t))f)(i32a[0],i64a[1],i32a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int32,foreign_Int64,foreign_Double):
-                            (*(void(*)(int32_t,int64_t,double))f)(i32a[0],i64a[1],da[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int32,foreign_Double,foreign_Int32):
-                            (*(void(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int32,foreign_Double,foreign_Int64):
-                            (*(void(*)(int32_t,double,int64_t))f)(i32a[0],da[1],i32a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int32,foreign_Double,foreign_Double):
-                            (*(void(*)(int32_t,double,double))f)(i32a[0],da[1],da[2]);
-                            return onevalue(nil);
-
-                        case A3(foreign_Int64,foreign_Int32,foreign_Int32):
-                            (*(void(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int64,foreign_Int32,foreign_Int64):
-                            (*(void(*)(int64_t,int32_t,int64_t))f)(i64a[0],i32a[1],i64a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int64,foreign_Int32,foreign_Double):
-                            (*(void(*)(int64_t,int32_t,double))f)(i64a[0],i32a[1],da[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int64,foreign_Int64,foreign_Int32):
-                            (*(void(*)(int64_t,int64_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int64,foreign_Int64,foreign_Int64):
-                            (*(void(*)(int64_t,int64_t,int64_t))f)(i64a[0],i64a[1],i64a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int64,foreign_Int64,foreign_Double):
-                            (*(void(*)(int64_t,int64_t,double))f)(i64a[0],i64a[1],da[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int64,foreign_Double,foreign_Int32):
-                            (*(void(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int64,foreign_Double,foreign_Int64):
-                            (*(void(*)(int64_t,double,int64_t))f)(i64a[0],da[1],i64a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Int64,foreign_Double,foreign_Double):
-                            (*(void(*)(int64_t,double,double))f)(i64a[0],da[1],da[2]);
-                            return onevalue(nil);
-
-                        case A3(foreign_Double,foreign_Int32,foreign_Int32):
-                            (*(void(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Double,foreign_Int32,foreign_Int64):
-                            (*(void(*)(double,int32_t,int64_t))f)(da[0],i32a[1],i64a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Double,foreign_Int32,foreign_Double):
-                            (*(void(*)(double,int32_t,double))f)(da[0],i32a[1],da[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Double,foreign_Int64,foreign_Int32):
-                            (*(void(*)(double,int64_t,int32_t))f)(da[0],i64a[1],i32a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Double,foreign_Int64,foreign_Int64):
-                            (*(void(*)(double,int64_t,int64_t))f)(da[0],i64a[1],i64a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Double,foreign_Int64,foreign_Double):
-                            (*(void(*)(double,int64_t,double))f)(da[0],i64a[1],da[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Double,foreign_Double,foreign_Int32):
-                            (*(void(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Double,foreign_Double,foreign_Int64):
-                            (*(void(*)(double,double,int64_t))f)(da[0],da[1],i64a[2]);
-                            return onevalue(nil);
-                        case A3(foreign_Double,foreign_Double,foreign_Double):
-                            (*(void(*)(double,double,double))f)(da[0],da[1],da[2]);
-                            return onevalue(nil);
-                        default:
-                            break;
-                    }
-                    break;
-            }
-            break;
-        case foreign_Int32:
-            switch (nargs)
-            {   case 0:
-                    i32r = (*(int32_t(*)())f)();
-                    return make_lisp_integer32(i32r);
-                case 1:
-                    switch (signature)
-                    {   case A1(foreign_Int32):
-                            i32r = (*(int32_t(*)(int32_t))f)(i32a[0]);
-                            return make_lisp_integer32(i32r);
-                        case A1(foreign_Int64):
-                            i32r = (*(int32_t(*)(int64_t))f)(i64a[0]);
-                            return make_lisp_integer32(i32r);
-                        case A1(foreign_Double):
-                            i32r = (*(int32_t(*)(double))f)(da[0]);
-                            return make_lisp_integer32(i32r);
-                        default:
-                            break;
-                    }
-                case 2:
-                    switch (signature)
-                    {   case A2(foreign_Int32,foreign_Int32):
-                            i32r = (*(int32_t(*)(int32_t,int32_t))f)(i32a[0],i32a[1]);
-                            return make_lisp_integer32(i32r);
-                        case A2(foreign_Int32,foreign_Int64):
-                            i32r = (*(int32_t(*)(int32_t,int64_t))f)(i32a[0],i64a[1]);
-                            return make_lisp_integer32(i32r);
-                        case A2(foreign_Int32,foreign_Double):
-                            i32r = (*(int32_t(*)(int32_t,double))f)(i32a[0],da[1]);
-                            return make_lisp_integer32(i32r);
-                        case A2(foreign_Int64,foreign_Int32):
-                            i32r = (*(int32_t(*)(int64_t,int32_t))f)(i64a[0],i32a[1]);
-                            return make_lisp_integer32(i32r);
-                        case A2(foreign_Int64,foreign_Int64):
-                            i32r = (*(int32_t(*)(int64_t,int64_t))f)(i64a[0],i64a[1]);
-                            return make_lisp_integer32(i32r);
-                        case A2(foreign_Int64,foreign_Double):
-                            i32r = (*(int32_t(*)(int64_t,double))f)(i64a[0],da[1]);
-                            return make_lisp_integer32(i32r);
-                        case A2(foreign_Double,foreign_Int32):
-                            i32r = (*(int32_t(*)(double,int32_t))f)(da[0],i32a[1]);
-                            return make_lisp_integer32(i32r);
-                        case A2(foreign_Double,foreign_Int64):
-                            i32r = (*(int32_t(*)(double,int64_t))f)(da[0],i64a[1]);
-                            return make_lisp_integer32(i32r);
-                        case A2(foreign_Double,foreign_Double):
-                            i32r = (*(int32_t(*)(double,double))f)(da[0],da[1]);
-                            return make_lisp_integer32(i32r);
-                        default:
-                            break;
-                    }
-                case 3:
-                    switch (signature)
-                    {   case A3(foreign_Int32,foreign_Int32,foreign_Int32):
-                            i32r = (*(int32_t(*)(int32_t,int32_t,int32_t))f)(i32a[0],i32a[1],i32a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int32,foreign_Int32,foreign_Int64):
-                            i32r = (*(int32_t(*)(int32_t,int32_t,int64_t))f)(i32a[0],i32a[1],i64a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int32,foreign_Int32,foreign_Double):
-                            i32r = (*(int32_t(*)(int32_t,int32_t,double))f)(i32a[0],i32a[1],da[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int32,foreign_Int64,foreign_Int32):
-                            i32r = (*(int32_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int32,foreign_Int64,foreign_Int64):
-                            i32r = (*(int32_t(*)(int32_t,int64_t,int64_t))f)(i32a[0],i64a[1],i32a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int32,foreign_Int64,foreign_Double):
-                            i32r = (*(int32_t(*)(int32_t,int64_t,double))f)(i32a[0],i64a[1],da[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int32,foreign_Double,foreign_Int32):
-                            i32r = (*(int32_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int32,foreign_Double,foreign_Int64):
-                            i32r = (*(int32_t(*)(int32_t,double,int64_t))f)(i32a[0],da[1],i32a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int32,foreign_Double,foreign_Double):
-                            i32r = (*(int32_t(*)(int32_t,double,double))f)(i32a[0],da[1],da[2]);
-                            return make_lisp_integer32(i32r);
-
-                        case A3(foreign_Int64,foreign_Int32,foreign_Int32):
-                            i32r = (*(int32_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int64,foreign_Int32,foreign_Int64):
-                            i32r = (*(int32_t(*)(int64_t,int32_t,int64_t))f)(i64a[0],i32a[1],i64a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int64,foreign_Int32,foreign_Double):
-                            i32r = (*(int32_t(*)(int64_t,int32_t,double))f)(i64a[0],i32a[1],da[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int64,foreign_Int64,foreign_Int32):
-                            i32r = (*(int32_t(*)(int64_t,int64_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int64,foreign_Int64,foreign_Int64):
-                            i32r = (*(int32_t(*)(int64_t,int64_t,int64_t))f)(i64a[0],i64a[1],i64a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int64,foreign_Int64,foreign_Double):
-                            i32r = (*(int32_t(*)(int64_t,int64_t,double))f)(i64a[0],i64a[1],da[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int64,foreign_Double,foreign_Int32):
-                            i32r = (*(int32_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int64,foreign_Double,foreign_Int64):
-                            i32r = (*(int32_t(*)(int64_t,double,int64_t))f)(i64a[0],da[1],i64a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Int64,foreign_Double,foreign_Double):
-                            i32r = (*(int32_t(*)(int64_t,double,double))f)(i64a[0],da[1],da[2]);
-                            return make_lisp_integer32(i32r);
-
-                        case A3(foreign_Double,foreign_Int32,foreign_Int32):
-                            i32r = (*(int32_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Double,foreign_Int32,foreign_Int64):
-                            i32r = (*(int32_t(*)(double,int32_t,int64_t))f)(da[0],i32a[1],i64a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Double,foreign_Int32,foreign_Double):
-                            i32r = (*(int32_t(*)(double,int32_t,double))f)(da[0],i32a[1],da[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Double,foreign_Int64,foreign_Int32):
-                            i32r = (*(int32_t(*)(double,int64_t,int32_t))f)(da[0],i64a[1],i32a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Double,foreign_Int64,foreign_Int64):
-                            i32r = (*(int32_t(*)(double,int64_t,int64_t))f)(da[0],i64a[1],i64a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Double,foreign_Int64,foreign_Double):
-                            i32r = (*(int32_t(*)(double,int64_t,double))f)(da[0],i64a[1],da[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Double,foreign_Double,foreign_Int32):
-                            i32r = (*(int32_t(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Double,foreign_Double,foreign_Int64):
-                            i32r = (*(int32_t(*)(double,double,int64_t))f)(da[0],da[1],i64a[2]);
-                            return make_lisp_integer32(i32r);
-                        case A3(foreign_Double,foreign_Double,foreign_Double):
-                            i32r = (*(int32_t(*)(double,double,double))f)(da[0],da[1],da[2]);
-                            return make_lisp_integer32(i32r);
-                        default:
-                            break;
-                    }
-                    break;
-            }
-            break;
-        case foreign_Int64:
-            switch (nargs)
-            {   case 0:
-                    i64r = (*(int64_t(*)())f)();
-                    return make_lisp_integer64(i64r);
-                case 1:
-                    switch (signature)
-                    {   case A1(foreign_Int32):
-                            i64r = (*(int64_t(*)(int32_t))f)(i32a[0]);
-                            return make_lisp_integer64(i64r);
-                        case A1(foreign_Int64):
-                            i64r = (*(int64_t(*)(int64_t))f)(i64a[0]);
-                            return make_lisp_integer64(i64r);
-                        case A1(foreign_Double):
-                            i64r = (*(int64_t(*)(double))f)(da[0]);
-                            return make_lisp_integer64(i64r);
-                        default:
-                            break;
-                    }
-                case 2:
-                    switch (signature)
-                    {   case A2(foreign_Int32,foreign_Int32):
-                            i64r = (*(int64_t(*)(int32_t,int32_t))f)(i32a[0],i32a[1]);
-                            return make_lisp_integer64(i64r);
-                        case A2(foreign_Int32,foreign_Int64):
-                            i64r = (*(int64_t(*)(int32_t,int64_t))f)(i32a[0],i64a[1]);
-                            return make_lisp_integer64(i64r);
-                        case A2(foreign_Int32,foreign_Double):
-                            i64r = (*(int64_t(*)(int32_t,double))f)(i32a[0],da[1]);
-                            return make_lisp_integer64(i64r);
-                        case A2(foreign_Int64,foreign_Int32):
-                            i64r = (*(int64_t(*)(int64_t,int32_t))f)(i64a[0],i32a[1]);
-                            return make_lisp_integer64(i64r);
-                        case A2(foreign_Int64,foreign_Int64):
-                            i64r = (*(int64_t(*)(int64_t,int64_t))f)(i64a[0],i64a[1]);
-                            return make_lisp_integer64(i64r);
-                        case A2(foreign_Int64,foreign_Double):
-                            i64r = (*(int64_t(*)(int64_t,double))f)(i64a[0],da[1]);
-                            return make_lisp_integer64(i64r);
-                        case A2(foreign_Double,foreign_Int32):
-                            i64r = (*(int64_t(*)(double,int32_t))f)(da[0],i32a[1]);
-                            return make_lisp_integer64(i64r);
-                        case A2(foreign_Double,foreign_Int64):
-                            i64r = (*(int64_t(*)(double,int64_t))f)(da[0],i64a[1]);
-                            return make_lisp_integer64(i64r);
-                        case A2(foreign_Double,foreign_Double):
-                            i64r = (*(int64_t(*)(double,double))f)(da[0],da[1]);
-                            return make_lisp_integer64(i64r);
-                        default:
-                            break;
-                    }
-                case 3:
-                    switch (signature)
-                    {   case A3(foreign_Int32,foreign_Int32,foreign_Int32):
-                            i64r = (*(int64_t(*)(int32_t,int32_t,int32_t))f)(i32a[0],i32a[1],i32a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int32,foreign_Int32,foreign_Int64):
-                            i64r = (*(int64_t(*)(int32_t,int32_t,int64_t))f)(i32a[0],i32a[1],i64a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int32,foreign_Int32,foreign_Double):
-                            i64r = (*(int64_t(*)(int32_t,int32_t,double))f)(i32a[0],i32a[1],da[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int32,foreign_Int64,foreign_Int32):
-                            i64r = (*(int64_t(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int32,foreign_Int64,foreign_Int64):
-                            i64r = (*(int64_t(*)(int32_t,int64_t,int64_t))f)(i32a[0],i64a[1],i32a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int32,foreign_Int64,foreign_Double):
-                            i64r = (*(int64_t(*)(int32_t,int64_t,double))f)(i32a[0],i64a[1],da[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int32,foreign_Double,foreign_Int32):
-                            i64r = (*(int64_t(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int32,foreign_Double,foreign_Int64):
-                            i64r = (*(int64_t(*)(int32_t,double,int64_t))f)(i32a[0],da[1],i32a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int32,foreign_Double,foreign_Double):
-                            i64r = (*(int64_t(*)(int32_t,double,double))f)(i32a[0],da[1],da[2]);
-                            return make_lisp_integer64(i64r);
-
-                        case A3(foreign_Int64,foreign_Int32,foreign_Int32):
-                            i64r = (*(int64_t(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int64,foreign_Int32,foreign_Int64):
-                            i64r = (*(int64_t(*)(int64_t,int32_t,int64_t))f)(i64a[0],i32a[1],i64a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int64,foreign_Int32,foreign_Double):
-                            i64r = (*(int64_t(*)(int64_t,int32_t,double))f)(i64a[0],i32a[1],da[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int64,foreign_Int64,foreign_Int32):
-                            i64r = (*(int64_t(*)(int64_t,int64_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int64,foreign_Int64,foreign_Int64):
-                            i64r = (*(int64_t(*)(int64_t,int64_t,int64_t))f)(i64a[0],i64a[1],i64a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int64,foreign_Int64,foreign_Double):
-                            i64r = (*(int64_t(*)(int64_t,int64_t,double))f)(i64a[0],i64a[1],da[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int64,foreign_Double,foreign_Int32):
-                            i64r = (*(int64_t(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int64,foreign_Double,foreign_Int64):
-                            i64r = (*(int64_t(*)(int64_t,double,int64_t))f)(i64a[0],da[1],i64a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Int64,foreign_Double,foreign_Double):
-                            i64r = (*(int64_t(*)(int64_t,double,double))f)(i64a[0],da[1],da[2]);
-                            return make_lisp_integer64(i64r);
-
-                        case A3(foreign_Double,foreign_Int32,foreign_Int32):
-                            i64r = (*(int64_t(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Double,foreign_Int32,foreign_Int64):
-                            i64r = (*(int64_t(*)(double,int32_t,int64_t))f)(da[0],i32a[1],i64a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Double,foreign_Int32,foreign_Double):
-                            i64r = (*(int64_t(*)(double,int32_t,double))f)(da[0],i32a[1],da[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Double,foreign_Int64,foreign_Int32):
-                            i64r = (*(int64_t(*)(double,int64_t,int32_t))f)(da[0],i64a[1],i32a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Double,foreign_Int64,foreign_Int64):
-                            i64r = (*(int64_t(*)(double,int64_t,int64_t))f)(da[0],i64a[1],i64a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Double,foreign_Int64,foreign_Double):
-                            i64r = (*(int64_t(*)(double,int64_t,double))f)(da[0],i64a[1],da[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Double,foreign_Double,foreign_Int32):
-                            i64r = (*(int64_t(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Double,foreign_Double,foreign_Int64):
-                            i64r = (*(int64_t(*)(double,double,int64_t))f)(da[0],da[1],i64a[2]);
-                            return make_lisp_integer64(i64r);
-                        case A3(foreign_Double,foreign_Double,foreign_Double):
-                            i64r = (*(int64_t(*)(double,double,double))f)(da[0],da[1],da[2]);
-                            return make_lisp_integer64(i64r);
-                        default:
-                            break;
-                    }
-                    break;
-            }
-            break;
-        case foreign_Double:
-            switch (nargs)
-            {   case 0:
-                    dr = (*(double(*)())f)();
-                    return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                case 1:
-                    switch (signature)
-                    {   case A1(foreign_Int32):
-                            dr = (*(double(*)(int32_t))f)(i32a[0]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A1(foreign_Int64):
-                            dr = (*(double(*)(int64_t))f)(i64a[0]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A1(foreign_Double):
-                            dr = (*(double(*)(double))f)(da[0]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        default:
-                            break;
-                    }
-                case 2:
-                    switch (signature)
-                    {   case A2(foreign_Int32,foreign_Int32):
-                            dr = (*(double(*)(int32_t,int32_t))f)(i32a[0],i32a[1]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A2(foreign_Int32,foreign_Int64):
-                            dr = (*(double(*)(int32_t,int64_t))f)(i32a[0],i64a[1]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A2(foreign_Int32,foreign_Double):
-                            dr = (*(double(*)(int32_t,double))f)(i32a[0],da[1]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A2(foreign_Int64,foreign_Int32):
-                            dr = (*(double(*)(int64_t,int32_t))f)(i64a[0],i32a[1]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A2(foreign_Int64,foreign_Int64):
-                            dr = (*(double(*)(int64_t,int64_t))f)(i64a[0],i64a[1]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A2(foreign_Int64,foreign_Double):
-                            dr = (*(double(*)(int64_t,double))f)(i64a[0],da[1]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A2(foreign_Double,foreign_Int32):
-                            dr = (*(double(*)(double,int32_t))f)(da[0],i32a[1]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A2(foreign_Double,foreign_Int64):
-                            dr = (*(double(*)(double,int64_t))f)(da[0],i64a[1]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A2(foreign_Double,foreign_Double):
-                            dr = (*(double(*)(double,double))f)(da[0],da[1]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        default:
-                            break;
-                    }
-                case 3:
-                    switch (signature)
-                    {   case A3(foreign_Int32,foreign_Int32,foreign_Int32):
-                            dr = (*(double(*)(int32_t,int32_t,int32_t))f)(i32a[0],i32a[1],i32a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int32,foreign_Int32,foreign_Int64):
-                            dr = (*(double(*)(int32_t,int32_t,int64_t))f)(i32a[0],i32a[1],i64a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int32,foreign_Int32,foreign_Double):
-                            dr = (*(double(*)(int32_t,int32_t,double))f)(i32a[0],i32a[1],da[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int32,foreign_Int64,foreign_Int32):
-                            dr = (*(double(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],i32a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int32,foreign_Int64,foreign_Int64):
-                            dr = (*(double(*)(int32_t,int64_t,int64_t))f)(i32a[0],i64a[1],i32a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int32,foreign_Int64,foreign_Double):
-                            dr = (*(double(*)(int32_t,int64_t,int32_t))f)(i32a[0],i64a[1],da[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int32,foreign_Double,foreign_Int32):
-                            dr = (*(double(*)(int32_t,double,int32_t))f)(i32a[0],da[1],i32a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int32,foreign_Double,foreign_Int64):
-                            dr = (*(double(*)(int32_t,double,int64_t))f)(i32a[0],da[1],i32a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int32,foreign_Double,foreign_Double):
-                            dr = (*(double(*)(int32_t,double,int32_t))f)(i32a[0],da[1],da[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-
-                        case A3(foreign_Int64,foreign_Int32,foreign_Int32):
-                            dr = (*(double(*)(int64_t,int32_t,int32_t))f)(i64a[0],i32a[1],i32a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int64,foreign_Int32,foreign_Int64):
-                            dr = (*(double(*)(int64_t,int32_t,int64_t))f)(i64a[0],i32a[1],i64a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int64,foreign_Int32,foreign_Double):
-                            dr = (*(double(*)(int64_t,int32_t,double))f)(i64a[0],i32a[1],da[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int64,foreign_Int64,foreign_Int32):
-                            dr = (*(double(*)(int64_t,int64_t,int32_t))f)(i64a[0],i64a[1],i32a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int64,foreign_Int64,foreign_Int64):
-                            dr = (*(double(*)(int64_t,int64_t,int64_t))f)(i64a[0],i64a[1],i64a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int64,foreign_Int64,foreign_Double):
-                            dr = (*(double(*)(int64_t,int64_t,double))f)(i64a[0],i64a[1],da[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int64,foreign_Double,foreign_Int32):
-                            dr = (*(double(*)(int64_t,double,int32_t))f)(i64a[0],da[1],i32a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int64,foreign_Double,foreign_Int64):
-                            dr = (*(double(*)(int64_t,double,int64_t))f)(i64a[0],da[1],i64a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Int64,foreign_Double,foreign_Double):
-                            dr = (*(double(*)(int64_t,double,double))f)(i64a[0],da[1],da[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-
-                        case A3(foreign_Double,foreign_Int32,foreign_Int32):
-                            dr = (*(double(*)(double,int32_t,int32_t))f)(da[0],i32a[1],i32a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Double,foreign_Int32,foreign_Int64):
-                            dr = (*(double(*)(double,int32_t,int64_t))f)(da[0],i32a[1],i64a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Double,foreign_Int32,foreign_Double):
-                            dr = (*(double(*)(double,int32_t,double))f)(da[0],i32a[1],da[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Double,foreign_Int64,foreign_Int32):
-                            dr = (*(double(*)(double,int64_t,int32_t))f)(da[0],i64a[1],i32a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Double,foreign_Int64,foreign_Int64):
-                            dr = (*(double(*)(double,int64_t,int64_t))f)(da[0],i64a[1],i64a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Double,foreign_Int64,foreign_Double):
-                            dr = (*(double(*)(double,int64_t,double))f)(da[0],i64a[1],da[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Double,foreign_Double,foreign_Int32):
-                            dr = (*(double(*)(double,double,int32_t))f)(da[0],da[1],i32a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Double,foreign_Double,foreign_Int64):
-                            dr = (*(double(*)(double,double,int64_t))f)(da[0],da[1],i64a[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        case A3(foreign_Double,foreign_Double,foreign_Double):
-                            dr = (*(double(*)(double,double,double))f)(da[0],da[1],da[2]);
-                            return make_boxfloat(dr, TYPE_DOUBLE_FLOAT);
-                        default:
-                            break;
-                    }
-                    break;
-            }
-            break;
-        default:
-            break;
-    }
-    aerror("Too many arguments for foreign function");
-}
-
-//
-// For things with type-signatures involving "..." the only case I will
-// support at present is "int f(const char *s,...)" which is of course the
-// signature of printf. I will permit three arguments beyond the "char *" one.
-//
-
-LispObject callforeignvarargs(void *f, int returntype, int nargs, int signature)
-{   const char *s;
-    if (sizeof(const char *)==4) s = (const char *)(intptr_t)i32a[0];
-    else s = (const char *)(intptr_t)i64a[0];
-    switch (nargs)
-    {   case 0:
-            i32r = (*(int32_t(*)(const char *s,...))f)(s);
-            return make_lisp_integer32(i32r);
-        case 1:
-            switch (signature)
-            {   case A1(foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1]);
-                    return make_lisp_integer32(i32r);
-                case A1(foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1]);
-                    return make_lisp_integer32(i32r);
-                case A1(foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1]);
-                    return make_lisp_integer32(i32r);
-                default:
-                    break;
-            }
-        case 2:
-            switch (signature)
-            {   case A2(foreign_Int32,foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1],i32a[2]);
-                    return make_lisp_integer32(i32r);
-                case A2(foreign_Int32,foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1],i64a[2]);
-                    return make_lisp_integer32(i32r);
-                case A2(foreign_Int32,foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1],da[2]);
-                    return make_lisp_integer32(i32r);
-                case A2(foreign_Int64,foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1],i32a[2]);
-                    return make_lisp_integer32(i32r);
-                case A2(foreign_Int64,foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1],i64a[2]);
-                    return make_lisp_integer32(i32r);
-                case A2(foreign_Int64,foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1],da[2]);
-                    return make_lisp_integer32(i32r);
-                case A2(foreign_Double,foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1],i32a[2]);
-                    return make_lisp_integer32(i32r);
-                case A2(foreign_Double,foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1],i64a[2]);
-                    return make_lisp_integer32(i32r);
-                case A2(foreign_Double,foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1],da[2]);
-                    return make_lisp_integer32(i32r);
-                default:
-                    break;
-            }
-        case 3:
-            switch (signature)
-            {   case A3(foreign_Int32,foreign_Int32,foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1],i32a[2],i32a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int32,foreign_Int32,foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1],i32a[2],i64a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int32,foreign_Int32,foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1],i32a[2],da[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int32,foreign_Int64,foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1],i64a[2],i32a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int32,foreign_Int64,foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1],i64a[2],i32a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int32,foreign_Int64,foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1],i64a[2],da[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int32,foreign_Double,foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1],da[2],i32a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int32,foreign_Double,foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1],da[2],i32a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int32,foreign_Double,foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i32a[1],da[2],da[3]);
-                    return make_lisp_integer32(i32r);
-
-                case A3(foreign_Int64,foreign_Int32,foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1],i32a[2],i32a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int64,foreign_Int32,foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1],i32a[2],i64a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int64,foreign_Int32,foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1],i32a[2],da[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int64,foreign_Int64,foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1],i64a[2],i32a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int64,foreign_Int64,foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1],i64a[2],i64a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int64,foreign_Int64,foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1],i64a[2],da[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int64,foreign_Double,foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1],da[2],i32a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int64,foreign_Double,foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1],da[2],i64a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Int64,foreign_Double,foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,i64a[1],da[2],da[3]);
-                    return make_lisp_integer32(i32r);
-
-                case A3(foreign_Double,foreign_Int32,foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1],i32a[2],i32a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Double,foreign_Int32,foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1],i32a[2],i64a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Double,foreign_Int32,foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1],i32a[2],da[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Double,foreign_Int64,foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1],i64a[2],i32a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Double,foreign_Int64,foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1],i64a[2],i64a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Double,foreign_Int64,foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1],i64a[2],da[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Double,foreign_Double,foreign_Int32):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1],da[2],i32a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Double,foreign_Double,foreign_Int64):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1],da[2],i64a[3]);
-                    return make_lisp_integer32(i32r);
-                case A3(foreign_Double,foreign_Double,foreign_Double):
-                    i32r = (*(int32_t(*)(const char *s,...))f)(s,da[1],da[2],da[3]);
-                    return make_lisp_integer32(i32r);
-                default:
-                    break;
-            }
-            break;
-    }
-    aerror("Too many arguments for foreign varargs function");
-}
-
 //
 // The general scheme for call-foreign-function is as follows, where the
 // key issue is that of the types of data passed and returned...
@@ -3337,21 +2521,27 @@ LispObject callforeignvarargs(void *f, int returntype, int nargs, int signature)
 //    (call-foreign-function f)    call f with no args, ignoring any result
 //    (call-foreign-function f a1)
 //    (call-foreign-function f a1 a2)
-//    (call-foreign-function f a1 a2 a3)
+//    (call-foreign-function f a1 a2 ...)
 //    etc
 // Each argument can be one of the following:
 //    A symbol, where int32, int64, int, long, longlong, intptr and size
-//    are the useful values. This specifies the way in which the next
-//    argument (which should be an integer) will be passed. If there is no
-//    further argument then the name can also possibly be void, string
-//    or double and it indicates a return type.
+//    double and string are the useful values. This specifies the way in
+//    which the next argument will be passed. If there is no
+//    further argument then the name can also possibly be void,
+//    and it indicates a return type.
 //
 //    An integer. This is passed as the next argument to the function
 //    as a 32-bit integer unless a type was specified by the previous symbol.
+//
 //    A double-precision float. Passed to the function as the next argument.
 //
 //    A string. A C string is passed to the function. There will be a
 //    limit on the length of string that can be passed this way.
+//    You might very reasonablly have expected that the string could be
+//    passed to the foreign function without being copied. That is not
+//    (always) possible because the Lisp representation of strings holds them
+//    as a length and then bytes of data rather than as a null-terminated
+//    sequence of bytes.
 //
 //    A pair (sym . val) where sym can be one of
 //        int int32 long int64 longlong intptr size string double
@@ -3359,154 +2549,137 @@ LispObject callforeignvarargs(void *f, int returntype, int nargs, int signature)
 //    purpose of this is so that whether an integer passed this way will be
 //    32 or 64-bit can depend on the nature of the host system.
 //
-// The foreign function may only be provided with 0, 1, 2 or 3 arguments.
-// At some stage I may need to find a way to be able to call functions that
-// use va_arg style argument passing. But that is not worked out or
-// implemented yet.
-//
 
-int dumparg(int i, LispObject type, LispObject value)
-{   int typecode;
-    size_t len = 0;
+static void dumparg(int i, LispObject type, LispObject value)
+{   size_t len = 0;
     const char *w = get_string_data(type, "call-foreign-function", len);
-    if (len==5 && strncmp(w, "int32", 5)==0)
-    {   i32a[i] = thirty_two_bits(value);
-        typecode = foreign_Int32;
+    if ((len==5 && strncmp(w, "int64", 5)==0) ||
+        (sizeof(long)==8 && len==4 && strncmp(w, "long", 4)==0) ||
+        (sizeof(size_t)==8 && len==4 && strncmp(w, "size", 4)==0) ||
+        (sizeof(intptr_t)==8 && len==6 && strncmp(w, "intptr", 6)==0) ||
+        (len==8 && strncmp(w, "longlong", 8)==0))
+    {   vargs[i] = &i64args[i];
+        targs[i] = &ffi_type_sint64;
+        i64args[i] = sixty_four_bits(value);
     }
-    else if (len==3 && strncmp(w, "int", 3)==0)
-    {   i32a[i] = thirty_two_bits(value);
-        typecode = foreign_Int32;
+    else if ((type == nil && (is_fixnum(value) || is_bignum(value))) ||
+        (len==5 && strncmp(w, "int32", 5)==0) ||
+        (sizeof(long)==4 && len==4 && strncmp(w, "long", 4)==0) ||
+        (sizeof(size_t)==4 && len==4 && strncmp(w, "size", 4)==0) ||
+        (sizeof(intptr_t)==4 && len==6 && strncmp(w, "intptr", 6)==0) ||
+        (len==3 && strncmp(w, "int", 3)==0))
+    {   vargs[i] = &i32args[i];
+        targs[i] = &ffi_type_sint32;
+        i32args[i] = thirty_two_bits(value);
     }
-    else if (len==5 && strncmp(w, "int64", 5)==0)
-    {   i64a[i] = sixty_four_bits(value);
-        typecode = foreign_Int64;
+    else if ((type == nil && is_float(value)) ||
+             (len==6 && strncmp(w, "double", 6)==0))
+    {   vargs[i] = &dblargs[i];
+        targs[i] = &ffi_type_double;
+        dblargs[i] = float_of_number(value);
     }
-    else if (len==4 && strncmp(w, "long", 4)==0)
-    {   if (sizeof(long)==4)
-        {   i32a[i] = thirty_two_bits(value);
-            typecode = foreign_Int32;
-        }
-        else
-        {   i64a[i] = sixty_four_bits(value);
-            typecode = foreign_Int64;
-        }
+    else if ((type == nil && is_string(value)) ||
+             (len==6 && strncmp(w, "string", 6)==0))
+    {   const char *w = get_string_data(value, "call-foreign-function", len);
+        memcpy(&strargs[i][0], w, len);
+        strargs[i][len] = 0;
+        vargs[i] = &strargs[i][0];
+        targs[i] = &ffi_type_pointer;
     }
-    else if (len==8 && strncmp(w, "longlong", 8)==0)
-    {   i64a[i] = sixty_four_bits(value);
-        typecode = foreign_Int64;
-    }
-    else if (len==4 && strncmp(w, "size", 4)==0)
-    {   if (sizeof(size_t)==4)
-        {   i32a[i] = thirty_two_bits(value);
-            typecode = foreign_Int32;
-        }
-        else
-        {   i64a[i] = sixty_four_bits(value);
-            typecode = foreign_Int64;
-        }
-    }
-    else if (len==6 && strncmp(w, "intptr", 6)==0)
-    {   if (sizeof(intptr_t)==4)
-        {   i32a[i] = thirty_two_bits(value);
-            typecode = foreign_Int32;
-        }
-        else
-        {   i64a[i] = sixty_four_bits(value);
-            typecode = foreign_Int64;
-        }
-    }
-    else if (len==6 && strncmp(w, "double", 6)==0)
-    {   da[i] = float_of_number(value);
-        typecode = foreign_Double;
-    }
-    else if (len==6 && strncmp(w, "string", 6)==0)
-    {   w = get_string_data(value, "call-foreign-function", len);
-        memcpy(&sa[i][0], w, len);
-        sa[i][len] = 0;
-        if (sizeof(char *)==4)
-        {   i32a[i] = (int32_t)(intptr_t)&sa[i][0];
-            typecode = foreign_Int32;
-        }
-        else
-        {   i64a[i] = (int64_t)(intptr_t)&sa[i][0];
-            typecode = foreign_Int64;
-        }
-    }
-    else
-    {   i32a[i] = 0;
-        typecode = foreign_Int32;
-    }
-    return typecode << (2*i);
+    else aerror2("call-foreign-function", type, value);
 }
 
-LispObject Lcallfn(LispObject env, int nargs, ...)
-{   int i;
-    LispObject w;
-    void *f;
-    int resulttype = foreign_Void, rtype, typemap = 0;
+LispObject callf_n(LispObject fun, LispObject args)
+{   if (Lencapsulatedp(nil, fun) == nil)
+        aerror1("call-foreign-function", fun);
+// Note double cast to allow some pre C++-11 compilers to cope.
+    void_function *f = (void_function *)(uintptr_t)extract_pointer(fun);
     LispObject currenttype = nil;
-    va_list aa;
-    for (i=0; i<MAX_ARGCOUNT; i++)
-    {   i32a[i] = 0;
-        i64a[i] = 0;
-        da[i] = 0.0;
-    }
-    i = 0;  // Where to put next argument
-    va_start(aa, nargs);
-    w = va_arg(aa, LispObject);
-    nargs--;
-    if (Lencapsulatedp(nil, w) == nil)
-        aerror("call-foreign-function");
-    f = extract_pointer(w);
-    while (nargs > 0)
-    {   nargs--;
-        w = va_arg(aa, LispObject);
-        if (is_cons(w))
-        {   typemap |= dumparg(i, qcar(w), qcdr(w));
-            i++;
+    unsigned int nargs = 0;
+    while (args != nil)
+    {   LispObject a = qcar(args);
+        args = qcdr(args);
+// Perhaps the next argument is (type . value)...
+        if (is_cons(a))
+        {   if (nargs >= MAX_ARGCOUNT) aerror("call-foreign-function");
+            dumparg(nargs++, qcar(a), qcdr(a));
             currenttype = nil;
         }
-        else if (is_symbol(w))
-        {   currenttype = w;
+// Perhaps the next argument is just a type name. I should never have two
+// type names in a row.
+        else if (is_symbol(a))
+        {   if (currenttype != nil) aerror1("call-foreign-function", a);
+            currenttype = a;
         }
-        else if (is_fixnum(w) || is_numbers(w) ||
-                 is_bfloat(w) || stringp(w))
-        {   typemap |= dumparg(i, currenttype, w);
-            i++;
+// The next argument is a value, which will either use the type specified
+// by the previous argument, or a default type based on what its own type is.
+        else if (is_fixnum(a) || is_numbers(a) ||
+                 is_bfloat(a) || stringp(a))
+        {   if (nargs >= MAX_ARGCOUNT) aerror("call-foreign-function");
+            dumparg(nargs++, currenttype, a);
             currenttype = nil;
         }
-        else aerror1("call-foreign-function", w);
+// Other cases are invalid.
+        else aerror1("call-foreign-function", a);
     }
-    va_end(aa);
-//
-// Now I need to call (*f)
-//
-    resulttype = foreign_Void;
-    if (currenttype != nil)
-    {   if (name_matches(currenttype, "int32")) resulttype = foreign_Int32;
-        else if (name_matches(currenttype, "int64")) resulttype = foreign_Int64;
-        else if (name_matches(currenttype, "int")) resulttype = foreign_Int32;
-        else if (name_matches(currenttype, "long")) resulttype = sizeof(long)==4 ? foreign_Int32 : foreign_Int64;
-        else if (name_matches(currenttype, "longlong")) resulttype = foreign_Int64;
-        else if (name_matches(currenttype, "size")) resulttype = sizeof(size_t)==4 ? foreign_Int32 : foreign_Int64;
-        else if (name_matches(currenttype, "intptr")) resulttype = sizeof(void *)==4 ? foreign_Int32 : foreign_Int64;
-        else if (name_matches(currenttype, "double")) resulttype = foreign_Double;
-        else if (name_matches(currenttype, "string")) resulttype = foreign_String;
-        else if (name_matches(currenttype, "void")) resulttype = foreign_Void;
-        else aerror1("call-foreign-function", currenttype);
+// The last item in the argument list may have been a type-name, in which
+// case it indicates a return type. If that was not provided then the
+// return type is taken as "void". You will see here that there are various
+// synonyms, sometimes conditional on the machine being used. So for instance
+// intptr_t is identified with either int32_t or int64_t.
+    ffi_cif cif;
+    if (currenttype == nil || name_matches(currenttype, "void"))
+    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_void, targs) != FFI_OK)
+            aerror("call-foreign-function");
+        ffi_call(&cif, f, NULL, vargs);
+        return onevalue(nil); 
     }
-    rtype = (resulttype == foreign_String) ? (sizeof(void *)==4 ? foreign_Int32 : foreign_Int64) :
-            resulttype;
-    w = callforeign(f, rtype, i, typemap);
-    if (resulttype == foreign_String)
-    {   char *s = (char *)(intptr_t)sixty_four_bits(w);
-        w = make_string(s);
+    if (name_matches(currenttype, "int32") ||
+        name_matches(currenttype, "int") ||
+        (sizeof(long)==4 && name_matches(currenttype, "long")) ||
+        (sizeof(size_t)==4 && name_matches(currenttype, "size")) ||
+        (sizeof(intptr_t)==4 && name_matches(currenttype, "intptr")))
+    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_sint32, targs) != FFI_OK)
+            aerror("call-foreign-function");
+        ffi_call(&cif, f, &i32res, vargs);
+        return onevalue(make_lisp_integer32(i32res)); 
     }
-    return onevalue(w);
+    if (name_matches(currenttype, "int64") ||
+        name_matches(currenttype, "longlong") ||
+        (sizeof(long)==8 && name_matches(currenttype, "long")) ||
+        (sizeof(size_t)==8 && name_matches(currenttype, "size")) ||
+        (sizeof(intptr_t)==8 && name_matches(currenttype, "intptr")))
+    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_sint64, targs) != FFI_OK)
+            aerror("call-foreign-function");
+        ffi_call(&cif, f, &i64res, vargs);
+        return onevalue(make_lisp_integer64(i64res)); 
+    }
+    if (name_matches(currenttype, "double"))
+    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_double, targs) != FFI_OK)
+            aerror("call-foreign-function");
+        ffi_call(&cif, f, &dblres, vargs);
+        return onevalue(make_boxfloat(dblres, TYPE_DOUBLE_FLOAT)); 
+    }
+    if (name_matches(currenttype, "string"))
+    {   if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, nargs, &ffi_type_pointer, targs) != FFI_OK)
+            aerror("call-foreign-function");
+        ffi_call(&cif, f, &strres, vargs);
+        return onevalue(make_string((const char *)strres)); 
+    }
+    else aerror1("call-foreign-function", currenttype);
 }
 
-LispObject Lcallf2(LispObject env, LispObject entry, LispObject arg)
-{   return Lcallfn(env, 2, entry, arg);;
+LispObject Lcallf_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   return callf_n(a1, list2star(a2, a3, a4up));
+}
+
+LispObject Lcallf_3(LispObject env, LispObject entry, LispObject a1, LispObject a2)
+{   return callf_n(entry, list2(a1, a2));
+}
+
+LispObject Lcallf_2(LispObject env, LispObject entry, LispObject a1)
+{   return callf_n(entry, ncons(a1));
 }
 
 //
@@ -3599,160 +2772,164 @@ static LispObject Lsigsegv(LispObject env, LispObject arg)
 }
 
 setup_type const funcs1_setup[] =
-{   {"acons",                   WRONG_NO_NA, WRONG_NO_NB, Lacons},
-    {"atom",                    Latom, TOO_MANY_1, WRONG_NO_1},
-    {"boundp",                  Lboundp, TOO_MANY_1, WRONG_NO_1},
+{   {"acons",                   G0W3, G1W3, G2W3, Lacons, G4W3},
+    {"atom",                    G0W1, Latom, G2W1, G3W1, G4W1},
+    {"boundp",                  G0W1, Lboundp, G2W1, G3W1, G4W1},
 
-    {"car",                     Lcar, TOO_MANY_1, WRONG_NO_1},
-    {"car*",                    Lcar_star, TOO_MANY_1, WRONG_NO_1},
-    {"cdr",                     Lcdr, TOO_MANY_1, WRONG_NO_1},
-    {"caar",                    Lcaar, TOO_MANY_1, WRONG_NO_1},
-    {"cadr",                    Lcadr, TOO_MANY_1, WRONG_NO_1},
-    {"cdar",                    Lcdar, TOO_MANY_1, WRONG_NO_1},
-    {"cddr",                    Lcddr, TOO_MANY_1, WRONG_NO_1},
-    {"caaar",                   Lcaaar, TOO_MANY_1, WRONG_NO_1},
-    {"caadr",                   Lcaadr, TOO_MANY_1, WRONG_NO_1},
-    {"cadar",                   Lcadar, TOO_MANY_1, WRONG_NO_1},
-    {"caddr",                   Lcaddr, TOO_MANY_1, WRONG_NO_1},
-    {"cdaar",                   Lcdaar, TOO_MANY_1, WRONG_NO_1},
-    {"cdadr",                   Lcdadr, TOO_MANY_1, WRONG_NO_1},
-    {"cddar",                   Lcddar, TOO_MANY_1, WRONG_NO_1},
-    {"cdddr",                   Lcdddr, TOO_MANY_1, WRONG_NO_1},
-    {"caaaar",                  Lcaaaar, TOO_MANY_1, WRONG_NO_1},
-    {"caaadr",                  Lcaaadr, TOO_MANY_1, WRONG_NO_1},
-    {"caadar",                  Lcaadar, TOO_MANY_1, WRONG_NO_1},
-    {"caaddr",                  Lcaaddr, TOO_MANY_1, WRONG_NO_1},
-    {"cadaar",                  Lcadaar, TOO_MANY_1, WRONG_NO_1},
-    {"cadadr",                  Lcadadr, TOO_MANY_1, WRONG_NO_1},
-    {"caddar",                  Lcaddar, TOO_MANY_1, WRONG_NO_1},
-    {"cadddr",                  Lcadddr, TOO_MANY_1, WRONG_NO_1},
-    {"cdaaar",                  Lcdaaar, TOO_MANY_1, WRONG_NO_1},
-    {"cdaadr",                  Lcdaadr, TOO_MANY_1, WRONG_NO_1},
-    {"cdadar",                  Lcdadar, TOO_MANY_1, WRONG_NO_1},
-    {"cdaddr",                  Lcdaddr, TOO_MANY_1, WRONG_NO_1},
-    {"cddaar",                  Lcddaar, TOO_MANY_1, WRONG_NO_1},
-    {"cddadr",                  Lcddadr, TOO_MANY_1, WRONG_NO_1},
-    {"cdddar",                  Lcdddar, TOO_MANY_1, WRONG_NO_1},
-    {"cddddr",                  Lcddddr, TOO_MANY_1, WRONG_NO_1},
+    {"car",                     G0W1, Lcar, G2W1, G3W1, G4W1},
+    {"car*",                    G0W1, Lcar_star, G2W1, G3W1, G4W1},
+    {"cdr",                     G0W1, Lcdr, G2W1, G3W1, G4W1},
+    {"caar",                    G0W1, Lcaar, G2W1, G3W1, G4W1},
+    {"cadr",                    G0W1, Lcadr, G2W1, G3W1, G4W1},
+    {"cdar",                    G0W1, Lcdar, G2W1, G3W1, G4W1},
+    {"cddr",                    G0W1, Lcddr, G2W1, G3W1, G4W1},
+    {"caaar",                   G0W1, Lcaaar, G2W1, G3W1, G4W1},
+    {"caadr",                   G0W1, Lcaadr, G2W1, G3W1, G4W1},
+    {"cadar",                   G0W1, Lcadar, G2W1, G3W1, G4W1},
+    {"caddr",                   G0W1, Lcaddr, G2W1, G3W1, G4W1},
+    {"cdaar",                   G0W1, Lcdaar, G2W1, G3W1, G4W1},
+    {"cdadr",                   G0W1, Lcdadr, G2W1, G3W1, G4W1},
+    {"cddar",                   G0W1, Lcddar, G2W1, G3W1, G4W1},
+    {"cdddr",                   G0W1, Lcdddr, G2W1, G3W1, G4W1},
+    {"caaaar",                  G0W1, Lcaaaar, G2W1, G3W1, G4W1},
+    {"caaadr",                  G0W1, Lcaaadr, G2W1, G3W1, G4W1},
+    {"caadar",                  G0W1, Lcaadar, G2W1, G3W1, G4W1},
+    {"caaddr",                  G0W1, Lcaaddr, G2W1, G3W1, G4W1},
+    {"cadaar",                  G0W1, Lcadaar, G2W1, G3W1, G4W1},
+    {"cadadr",                  G0W1, Lcadadr, G2W1, G3W1, G4W1},
+    {"caddar",                  G0W1, Lcaddar, G2W1, G3W1, G4W1},
+    {"cadddr",                  G0W1, Lcadddr, G2W1, G3W1, G4W1},
+    {"cdaaar",                  G0W1, Lcdaaar, G2W1, G3W1, G4W1},
+    {"cdaadr",                  G0W1, Lcdaadr, G2W1, G3W1, G4W1},
+    {"cdadar",                  G0W1, Lcdadar, G2W1, G3W1, G4W1},
+    {"cdaddr",                  G0W1, Lcdaddr, G2W1, G3W1, G4W1},
+    {"cddaar",                  G0W1, Lcddaar, G2W1, G3W1, G4W1},
+    {"cddadr",                  G0W1, Lcddadr, G2W1, G3W1, G4W1},
+    {"cdddar",                  G0W1, Lcdddar, G2W1, G3W1, G4W1},
+    {"cddddr",                  G0W1, Lcddddr, G2W1, G3W1, G4W1},
 
-    {"qcar",                    Lcar, TOO_MANY_1, WRONG_NO_1},
-    {"qcdr",                    Lcdr, TOO_MANY_1, WRONG_NO_1},
-    {"qcaar",                   Lcaar, TOO_MANY_1, WRONG_NO_1},
-    {"qcadr",                   Lcadr, TOO_MANY_1, WRONG_NO_1},
-    {"qcdar",                   Lcdar, TOO_MANY_1, WRONG_NO_1},
-    {"qcddr",                   Lcddr, TOO_MANY_1, WRONG_NO_1},
+    {"qcar",                    G0W1, Lcar, G2W1, G3W1, G4W1},
+    {"qcdr",                    G0W1, Lcdr, G2W1, G3W1, G4W1},
+    {"qcaar",                   G0W1, Lcaar, G2W1, G3W1, G4W1},
+    {"qcadr",                   G0W1, Lcadr, G2W1, G3W1, G4W1},
+    {"qcdar",                   G0W1, Lcdar, G2W1, G3W1, G4W1},
+    {"qcddr",                   G0W1, Lcddr, G2W1, G3W1, G4W1},
 
-    {"bpsp",                    Lbpsp, TOO_MANY_1, WRONG_NO_1},
-    {"codep",                   Lcodep, TOO_MANY_1, WRONG_NO_1},
-    {"cons",                    TOO_FEW_2, Lcons, WRONG_NO_2},
-    {"constantp",               Lconstantp, TOO_MANY_1, WRONG_NO_1},
-    {"date",                    Ldate1, WRONG_NO_NB, Ldate},
-    {"date-and-time",           Ldate_and_time1, WRONG_NO_NB, Ldate_and_time},
-    {"datestamp",               WRONG_NO_NA, WRONG_NO_NB, Ldatestamp},
-    {"timeofday",               WRONG_NO_NA, WRONG_NO_NB, Ltimeofday},
-    {"enable-errorset",         TOO_FEW_2, Lenable_errorset, WRONG_NO_2},
-    {"enable-backtrace",        Lenable_backtrace, TOO_MANY_1, WRONG_NO_1},
-    {"error",                   (one_args *)Lerror1, (two_args *)Lerror2, (n_args *)Lerror},
-    {"error1",                  WRONG_NO_NA, WRONG_NO_NB, (n_args *)Lerror0},
+    {"bpsp",                    G0W1, Lbpsp, G2W1, G3W1, G4W1},
+    {"codep",                   G0W1, Lcodep, G2W1, G3W1, G4W1},
+    {"cons",                    G0W2, G1W2, Lcons, G3W2, G4W2},
+    {"constantp",               G0W1, Lconstantp, G2W1, G3W1, G4W1},
+    {"count-up",                Lcount_up, G1W0, G2W0, G3W0, G4W0},
+    {"date",                    Ldate, Ldate1, G2Wother, G3Wother, G4Wother},
+    {"date-and-time",           Ldate_and_time, Ldate_and_time1, G2Wother, G3Wother, G4Wother},
+    {"datestamp",               Ldatestamp, G1W0, G2W0, G3W0, G4W0},
+    {"timeofday",               Ltimeofday, G1W0, G2W0, G3W0, G4W0},
+    {"enable-errorset",         G0W2, G1W2, Lenable_errorset, G3W2, G4W2},
+    {"enable-backtrace",        G0W1, Lenable_backtrace, G2W1, G3W1, G4W1},
+// The casts here are because error, stop and a few related functions
+// have the NORETURN attribute which would otherwise upset the type checker
+// in C++.
+    {"error",                   (no_args *)Lerror_0, (one_arg *)Lerror_1, (two_args *)Lerror_2, (three_args *)Lerror_3, (fourup_args *)Lerror_4up},
+    {"error1",                  (no_args *)Lerror_0, G1W0, G2W0, G3W0, G4W0},
 #ifdef NAG
-    {"unwind",                  WRONG_NO_NA, WRONG_NO_NB, Lunwind},
+    {"unwind",                  Lunwind, G1W0, G2W0, G3W0, G4W0},
 #endif
-    {"eq-safe",                 Leq_safe, TOO_MANY_1, WRONG_NO_1},
-    {"fixp",                    Lfixp, TOO_MANY_1, WRONG_NO_1},
-    {"floatp",                  Lfloatp, TOO_MANY_1, WRONG_NO_1},
-    {"fluidp",                  Lsymbol_specialp, TOO_MANY_1, WRONG_NO_1},
-    {"gctime",                  WRONG_NO_NA, WRONG_NO_NB, Lgctime},
-    {"globalp",                 Lsymbol_globalp, TOO_MANY_1, WRONG_NO_1},
-    {"hash-table-p",            Lhash_table_p, TOO_MANY_1, WRONG_NO_1},
-    {"indirect",                Lindirect, TOO_MANY_1, WRONG_NO_1},
-    {"integerp",                Lintegerp, TOO_MANY_1, WRONG_NO_1},
-    {"intersection",            TOO_FEW_2, Lintersect, WRONG_NO_2},
-    {"intersection_symlist",    TOO_FEW_2, Lintersect_symlist, WRONG_NO_2},
-    {"keywordp",                Lsymbol_keywordp, TOO_MANY_1, WRONG_NO_1},
-    {"list2",                   TOO_FEW_2, Llist2, WRONG_NO_2},
-    {"list2*",                  WRONG_NO_NA, WRONG_NO_NB, Llist2star},
-    {"list3",                   WRONG_NO_NA, WRONG_NO_NB, Llist3},
-    {"list3*",                  WRONG_NO_NA, WRONG_NO_NB, Llist3star},
-    {"list4",                   WRONG_NO_NA, WRONG_NO_NB, Llist4},
-    {"make-global",             Lmake_global, TOO_MANY_1, WRONG_NO_1},
-    {"make-keyword",            Lmake_keyword, TOO_MANY_1, WRONG_NO_1},
-    {"make-special",            Lmake_special, TOO_MANY_1, WRONG_NO_1},
-    {"mkquote",                 Lmkquote, TOO_MANY_1, WRONG_NO_1},
-    {"ncons",                   Lncons, TOO_MANY_1, WRONG_NO_1},
-    {"numberp",                 Lnumberp, TOO_MANY_1, WRONG_NO_1},
-    {"pair",                    TOO_FEW_2, Lpair, WRONG_NO_2},
-    {"protect-symbols",     Lprotect_symbols, TOO_MANY_1, WRONG_NO_1},
-    {"protected-symbol-warn",   Lwarn_about_protected_symbols, TOO_MANY_1, WRONG_NO_1},
-    {"put",                     WRONG_NO_NA, WRONG_NO_NB, Lputprop},
-    {"remprop",                 TOO_FEW_2, Lremprop, WRONG_NO_2},
-    {"representation",          Lrepresentation1, Lrepresentation2, WRONG_NO_2},
-    {"rplaca",                  TOO_FEW_2, Lrplaca, WRONG_NO_2},
-    {"rplacd",                  TOO_FEW_2, Lrplacd, WRONG_NO_2},
-    {"set",                     TOO_FEW_2, Lset, WRONG_NO_2},
-    {"makeunbound",             Lmakeunbound, TOO_MANY_1, WRONG_NO_1},
-    {"special-form-p",          Lspecial_form_p, TOO_MANY_1, WRONG_NO_1},
-    {"stop",                    (one_args *)Lstop, (two_args *)Lstop2, (n_args *)Lstop0},
-    {"symbol-function",         Lsymbol_function, TOO_MANY_1, WRONG_NO_1},
-    {"symbol-value",            Lsymbol_value, TOO_MANY_1, WRONG_NO_1},
-    {"time",                    WRONG_NO_NA, WRONG_NO_NB, Ltime},
-    {"datelessp",               TOO_FEW_2, Ldatelessp, WRONG_NO_2},
-    {"union",                   TOO_FEW_2, Lunion, WRONG_NO_2},
-    {"union-symlist",           TOO_FEW_2, Lunion_symlist, WRONG_NO_2},
-    {"unmake-global",           Lunmake_global, TOO_MANY_1, WRONG_NO_1},
-    {"unmake-keyword",          Lunmake_keyword, TOO_MANY_1, WRONG_NO_1},
-    {"unmake-special",          Lunmake_special, TOO_MANY_1, WRONG_NO_1},
-    {"xcons",                   TOO_FEW_2, Lxcons, WRONG_NO_2},
+    {"eq-safe",                 G0W1, Leq_safe, G2W1, G3W1, G4W1},
+    {"fixp",                    G0W1, Lfixp, G2W1, G3W1, G4W1},
+    {"floatp",                  G0W1, Lfloatp, G2W1, G3W1, G4W1},
+    {"fluidp",                  G0W1, Lsymbol_specialp, G2W1, G3W1, G4W1},
+    {"gctime",                  Lgctime, G1W0, G2W0, G3W0, G4W0},
+    {"globalp",                 G0W1, Lsymbol_globalp, G2W1, G3W1, G4W1},
+    {"hash-table-p",            G0W1, Lhash_table_p, G2W1, G3W1, G4W1},
+    {"indirect",                G0W1, Lindirect, G2W1, G3W1, G4W1},
+    {"integerp",                G0W1, Lintegerp, G2W1, G3W1, G4W1},
+    {"intersection",            G0W2, G1W2, Lintersect, G3W2, G4W2},
+    {"intersection_symlist",    G0W2, G1W2, Lintersect_symlist, G3W2, G4W2},
+    {"keywordp",                G0W1, Lsymbol_keywordp, G2W1, G3W1, G4W1},
+    {"list2",                   G0W2, G1W2, Llist_2, G3W2, G4W2},
+    {"list2*",                  G0W3, G1W3, G2W3, Llist_2star, G4W3},
+    {"list2*rev",               G0W3, G1W3, G2W3, Llist_2starrev, G4W3},
+    {"list3",                   G0W3, G1W3, G2W3, Llist_3, G4W3},
+    {"list3rev",                G0W3, G1W3, G2W3, Llist_3rev, G4W3},
+    {"list3*",                  G0W4up, G1W4up, G2W4up, G3W4up, Llist_3star},
+    {"list4",                   G0W4up, G1W4up, G2W4up, G3W4up, Llist_4},
+    {"make-global",             G0W1, Lmake_global, G2W1, G3W1, G4W1},
+    {"make-keyword",            G0W1, Lmake_keyword, G2W1, G3W1, G4W1},
+    {"make-special",            G0W1, Lmake_special, G2W1, G3W1, G4W1},
+    {"mkquote",                 G0W1, Lmkquote, G2W1, G3W1, G4W1},
+    {"ncons",                   G0W1, Lncons, G2W1, G3W1, G4W1},
+    {"numberp",                 G0W1, Lnumberp, G2W1, G3W1, G4W1},
+    {"pair",                    G0W2, G1W2, Lpair, G3W2, G4W2},
+    {"protect-symbols",         G0W1, Lprotect_symbols, G2W1, G3W1, G4W1},
+    {"protected-symbol-warn",   G0W1, Lwarn_about_protected_symbols, G2W1, G3W1, G4W1},
+    {"put",                     G0W3, G1W3, G2W3, Lputprop, G4W3},
+    {"remprop",                 G0W2, G1W2, Lremprop, G3W2, G4W2},
+    {"representation",          G0W1, Lrepresentation1, Lrepresentation2, G3Wother, G4Wother},
+    {"rplaca",                  G0W2, G1W2, Lrplaca, G3W2, G4W2},
+    {"rplacd",                  G0W2, G1W2, Lrplacd, G3W2, G4W2},
+    {"set",                     G0W2, G1W2, Lset, G3W2, G4W2},
+    {"makeunbound",             G0W1, Lmakeunbound, G2W1, G3W1, G4W1},
+    {"special-form-p",          G0W1, Lspecial_form_p, G2W1, G3W1, G4W1},
+    {"stop",                    (no_args *)Lstop0, (one_arg *)Lstop1, G2Wother, G3Wother, G4Wother},
+    {"symbol-function",         G0W1, Lsymbol_function, G2W1, G3W1, G4W1},
+    {"symbol-value",            G0W1, Lsymbol_value, G2W1, G3W1, G4W1},
+    {"time",                    Ltime, G1W0, G2W0, G3W0, G4W0},
+    {"datelessp",               G0W2, G1W2, Ldatelessp, G3W2, G4W2},
+    {"union",                   G0W2, G1W2, Lunion, G3W2, G4W2},
+    {"union-symlist",           G0W2, G1W2, Lunion_symlist, G3W2, G4W2},
+    {"unmake-global",           G0W1, Lunmake_global, G2W1, G3W1, G4W1},
+    {"unmake-keyword",          G0W1, Lunmake_keyword, G2W1, G3W1, G4W1},
+    {"unmake-special",          G0W1, Lunmake_special, G2W1, G3W1, G4W1},
+    {"xcons",                   G0W2, G1W2, Lxcons, G3W2, G4W2},
 // I provide both IDP and SYMBOLP in both modes...
-    {"symbolp",                 Lsymbolp, TOO_MANY_1, WRONG_NO_1},
-    {"idp",                     Lsymbolp, TOO_MANY_1, WRONG_NO_1},
+    {"symbolp",                 G0W1, Lsymbolp, G2W1, G3W1, G4W1},
+    {"idp",                     G0W1, Lsymbolp, G2W1, G3W1, G4W1},
 // I support the Common Lisp names here in both modes
-    {"simple-string-p",         Lstringp, TOO_MANY_1, WRONG_NO_1},
-    {"simple-vector-p",         Lsimple_vectorp, TOO_MANY_1, WRONG_NO_1},
-    {"get-decoded-time",        WRONG_NO_0A, WRONG_NO_0B, Ldecoded_time},
-    {"short-floatp",            Lshort_floatp, TOO_MANY_1, WRONG_NO_1},
-    {"single-floatp",           Lsingle_floatp, TOO_MANY_1, WRONG_NO_1},
-    {"double-floatp",           Ldouble_floatp, TOO_MANY_1, WRONG_NO_1},
-    {"long-floatp",             Llong_floatp, TOO_MANY_1, WRONG_NO_1},
-    {"mantissa-bits",           Lmantissa_bits, TOO_MANY_1, WRONG_NO_1},
-    {"rationalp",               Lrationalp, TOO_MANY_1, WRONG_NO_1},
-    {"complexp",                Lcomplexp, TOO_MANY_1, WRONG_NO_1},
-    {"bit-vector-p",            Lsimple_bit_vector_p, TOO_MANY_1, WRONG_NO_1},
-    {"simple-bit-vector-p",     Lsimple_bit_vector_p, TOO_MANY_1, WRONG_NO_1},
-    {"fill-vector",             WRONG_NO_NA, WRONG_NO_NB, Lfill_vector},
-    {"get",                     TOO_FEW_2, Lget, Lget_3},
-    {"arrayp",                  Larrayp, TOO_MANY_1, WRONG_NO_1},
-    {"complex-arrayp",          Lcomplex_arrayp, TOO_MANY_1, WRONG_NO_1},
-    {"consp",                   Lconsp, TOO_MANY_1, WRONG_NO_1},
-    {"convert-to-array",        Lconvert_to_array, TOO_MANY_1, WRONG_NO_1},
-    {"convert-to-struct",       Lconvert_to_struct, TOO_MANY_1, WRONG_NO_1},
-    {"identity",                Lidentity, TOO_MANY_1, WRONG_NO_1},
-    {"list",                    Lncons, Llist2, Llist},
-    {"list*",                   Lidentity, Lcons, Lliststar},
-    {"listp",                   Llistp, TOO_MANY_1, WRONG_NO_1},
-    {"structp",                 Lstructp, TOO_MANY_1, WRONG_NO_1},
-    {"flag",                    TOO_FEW_2, Lflag, WRONG_NO_2},
-    {"flagp",                   TOO_FEW_2, Lflagp, WRONG_NO_2},
-    {"flagpcar",                TOO_FEW_2, Lflagpcar, WRONG_NO_2},
-    {"remflag",                 TOO_FEW_2, Lremflag, WRONG_NO_2},
-    {"time*",                   WRONG_NO_NA, WRONG_NO_NB, Ltime},
-    {"convert-to-evector",      Lconvert_to_struct, TOO_MANY_1, WRONG_NO_1},
-    {"evectorp",                Lstructp, TOO_MANY_1, WRONG_NO_1},
-    {"get*",                    TOO_FEW_2, Lget, WRONG_NO_2},
-    {"pairp",                   Lconsp, TOO_MANY_1, WRONG_NO_1},
-    {"consp",                   Lconsp, TOO_MANY_1, WRONG_NO_1},
-    {"flagp**",                 TOO_FEW_2, Lflagp, WRONG_NO_2},
-    {"cl-stringp",              Lc_stringp, TOO_MANY_1, WRONG_NO_1},
-    {"stringp",                 Lstringp, TOO_MANY_1, WRONG_NO_1},
-    {"threevectorp",            Lthreevectorp, TOO_MANY_1, WRONG_NO_1},
-//  {"throw",                   Lthrow_nil, Lthrow_one_value, WRONG_NO_2},
-    {"vectorp",                 Lsimple_vectorp, TOO_MANY_1, WRONG_NO_1},
-    {"open-foreign-library",    Lopen_foreign_library, TOO_MANY_1, WRONG_NO_1},
-    {"find-foreign-function",   TOO_FEW_2, Lfind_foreign_function, WRONG_NO_2},
-    {"call-foreign-function",   Lcallf1, Lcallf2, Lcallfn},
-    {"get-callback",            Lget_callback, TOO_MANY_1, WRONG_NO_1},
-    {"gc-forcer",               Lgc_forcer1, Lgc_forcer, WRONG_NO_1},
-    {"sigsegv",                 Lsigsegv, TOO_MANY_1, WRONG_NO_1},
-    {NULL,                      0, 0, 0}
+    {"simple-string-p",         G0W1, Lstringp, G2W1, G3W1, G4W1},
+    {"simple-vector-p",         G0W1, Lsimple_vectorp, G2W1, G3W1, G4W1},
+    {"get-decoded-time",        Ldecoded_time, G1W0, G2W0, G3W0, G4W0},
+    {"short-floatp",            G0W1, Lshort_floatp, G2W1, G3W1, G4W1},
+    {"single-floatp",           G0W1, Lsingle_floatp, G2W1, G3W1, G4W1},
+    {"double-floatp",           G0W1, Ldouble_floatp, G2W1, G3W1, G4W1},
+    {"long-floatp",             G0W1, Llong_floatp, G2W1, G3W1, G4W1},
+    {"mantissa-bits",           G0W1, Lmantissa_bits, G2W1, G3W1, G4W1},
+    {"rationalp",               G0W1, Lrationalp, G2W1, G3W1, G4W1},
+    {"complexp",                G0W1, Lcomplexp, G2W1, G3W1, G4W1},
+    {"bit-vector-p",            G0W1, Lsimple_bit_vector_p, G2W1, G3W1, G4W1},
+    {"simple-bit-vector-p",     G0W1, Lsimple_bit_vector_p, G2W1, G3W1, G4W1},
+    {"get",                     G0Wother, G1Wother, Lget, Lget_3, G4Wother},
+    {"arrayp",                  G0W1, Larrayp, G2W1, G3W1, G4W1},
+    {"complex-arrayp",          G0W1, Lcomplex_arrayp, G2W1, G3W1, G4W1},
+    {"consp",                   G0W1, Lconsp, G2W1, G3W1, G4W1},
+    {"convert-to-array",        G0W1, Lconvert_to_array, G2W1, G3W1, G4W1},
+    {"convert-to-struct",       G0W1, Lconvert_to_struct, G2W1, G3W1, G4W1},
+    {"identity",                G0W1, Lidentity, G2W1, G3W1, G4W1},
+    {"list",                    Lnilfn, Lncons, Llist_2, Llist_3, Llist_4up},
+    {"list*",                   G0W1, Lidentity, Lcons, Llist_2star, Lliststar_4up},
+    {"listp",                   G0W1, Llistp, G2W1, G3W1, G4W1},
+    {"structp",                 G0W1, Lstructp, G2W1, G3W1, G4W1},
+    {"flag",                    G0W2, G1W2, Lflag, G3W2, G4W2},
+    {"flagp",                   G0W2, G1W2, Lflagp, G3W2, G4W2},
+    {"flagpcar",                G0W2, G1W2, Lflagpcar, G3W2, G4W2},
+    {"remflag",                 G0W2, G1W2, Lremflag, G3W2, G4W2},
+    {"time*",                   Ltime, G1W0, G2W0, G3W0, G4W0},
+    {"convert-to-evector",      G0W1, Lconvert_to_struct, G2W1, G3W1, G4W1},
+    {"evectorp",                G0W1, Lstructp, G2W1, G3W1, G4W1},
+    {"get*",                    G0W2, G1W2, Lget, G3W2, G4W2},
+    {"pairp",                   G0W1, Lconsp, G2W1, G3W1, G4W1},
+    {"consp",                   G0W1, Lconsp, G2W1, G3W1, G4W1},
+    {"flagp**",                 G0W2, G1W2, Lflagp, G3W2, G4W2},
+    {"cl-stringp",              G0W1, Lc_stringp, G2W1, G3W1, G4W1},
+    {"stringp",                 G0W1, Lstringp, G2W1, G3W1, G4W1},
+    {"threevectorp",            G0W1, Lthreevectorp, G2W1, G3W1, G4W1},
+    {"vectorp",                 G0W1, Lsimple_vectorp, G2W1, G3W1, G4W1},
+    {"open-foreign-library",    G0W1, Lopen_foreign_library, G2W1, G3W1, G4W1},
+    {"find-foreign-function",   G0W2, G1W2, Lfind_foreign_function, G3W2, G4W2},
+    {"call-foreign-function",   G0Wother, Lcallf_1, Lcallf_2, Lcallf_3, Lcallf_4up},
+    {"get-callback",            G0W1, Lget_callback, G2W1, G3W1, G4W1},
+    {"gc-forcer",               G0Wother, Lgc_forcer1, Lgc_forcer, G3Wother, G4Wother},
+    {"sigsegv",                 G0W1, Lsigsegv, G2W1, G3W1, G4W1},
+    {NULL,                      0, 0, 0, 0, 0}
 };
 
 // end of fns1.cpp

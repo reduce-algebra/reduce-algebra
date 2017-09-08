@@ -1221,9 +1221,11 @@ bool insert_codepointer(uintptr_t x, const char *s)
 uint64_t use_setup(uint64_t crc, const setup_type *p)
 {   while (p->name != NULL)
     {   unsigned char n = 0;
-        if (insert_codepointer((uintptr_t)(p->one), p->name)) n += 1;
-        if (insert_codepointer((uintptr_t)(p->two), p->name)) n += 2;
-        if (insert_codepointer((uintptr_t)(p->n), p->name)) n += 4;
+        if (insert_codepointer((uintptr_t)(p->zero), p->name)) n += 1;
+        if (insert_codepointer((uintptr_t)(p->one), p->name)) n += 2;
+        if (insert_codepointer((uintptr_t)(p->two), p->name)) n += 4;
+        if (insert_codepointer((uintptr_t)(p->three), p->name)) n += 8;
+        if (insert_codepointer((uintptr_t)(p->fourup), p->name)) n += 16;
         crc = crc64(crc, &n, 1);
         crc = crc64(crc, (const unsigned char *)p->name, strlen(p->name));
         p++;
@@ -1266,15 +1268,11 @@ void set_up_function_tables()
     {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
     }
-    for (entry_point4 *p = &entries_table4[1]; p->p!=NULL; p++)
+    for (entry_point4up *p = &entries_table4up[1]; p->p!=NULL; p++)
     {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
     }
-    for (entry_pointn *p = &entries_tablen[1]; p->p!=NULL; p++)
-    {   insert_codepointer((uintptr_t)p->p, p->s);
-        crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
-    }
-    for (entry_pointn *p = &entries_tableio[1]; p->p!=NULL; p++)
+    for (entry_point1 *p = &entries_tableio[1]; p->p!=NULL; p++)
     {   insert_codepointer((uintptr_t)p->p, p->s);
         crc = crc64(crc, (const unsigned char *)p->s, strlen(p->s));
     }
@@ -1650,14 +1648,10 @@ down:
 // I will first fill in the fields that hold binary data or pointers to
 // executable code.
                     qfn0(w) = (no_args *)read_function();
-                    qfn1(w) = (one_args *)read_function();
+                    qfn1(w) = (one_arg *)read_function();
                     qfn2(w) = (two_args *)read_function();
                     qfn3(w) = (three_args *)read_function();
-// There is an issue of four_args vs n_args here that means that new and old
-// versions of the code possibly clash. I hope that it just will not matter
-// which I cast to and assign via here, even though strict aliasing rules
-// say that it COULD.
-                    qfnn(w) = (n_args *)read_function();
+                    qfn4up(w) = (fourup_args *)read_function();
                     qcount(w) = read_u64();
 // Now to allow me to feel safe I will put NIL in all the other fields
 // on a provisional basis. They get their proper values later.
@@ -1848,7 +1842,6 @@ down:
 // total size up to a 64-bit boundary. Tidy up that final word. This OUGHT
 // not to matter, but is still tidy.
                 size_t n1 = n;
-                if (!SIXTY_FOUR_BIT) n1 = n1 | 1;
 // In case there is a GC before I have finished filling in proper values
 // in the vector I will out in values that are at least safe.
                 for (size_t i=0; i<n1; i++) vselt(w, i) = fixnum_of_int(0);
@@ -2310,13 +2303,6 @@ down:
     if (p == 0)
     {   fprintf(stderr, "Zero pointer found from %s\n", trigger);
         // An error - but I feel safest if I detect it and do not crash.
-if (trigger[0]=='S')
-{   // @@@@
-    fprintf(stderr, "from scan_data\n");
-    for (LispObject *s=stackbase+1; s<=stack; s++)
-    {   fprintf(stderr, "%p: %p\n", s, (void *)*(void **)s);
-    }
-}
         goto up;
     }
     else if (p == nil) goto up;
@@ -2820,7 +2806,7 @@ down:
             write_function((void *)(qfn1(p)));
             write_function((void *)(qfn2(p)));
             write_function((void *)(qfn3(p)));
-            write_function((void *)(qfnn(p)));
+            write_function((void *)(qfn4up(p)));
             write_u64(qcount(p));
             w = p;
             p = qpname(p);
@@ -3538,17 +3524,15 @@ LispObject Lload_selected_source(LispObject env, LispObject file)
 {   return load_module(env, file, F_SELECTED_SOURCE);
 }
 
-LispObject Lload_source0(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "load-source");
-    return load_source0(F_LOAD_SOURCE);
+LispObject Lload_source0(LispObject env)
+{   return load_source0(F_LOAD_SOURCE);
 }
 
-LispObject Lload_selected_source0(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "load-selected-source");
-    return load_source0(F_SELECTED_SOURCE);
+LispObject Lload_selected_source0(LispObject env)
+{   return load_source0(F_SELECTED_SOURCE);
 }
 
-LispObject Lunserialize(LispObject env, int nargs, ...)
+LispObject Lunserialize(LispObject env)
 {   LispObject r;
     reader_setup_repeats(read_u64());
     r = serial_read();
@@ -3914,13 +3898,6 @@ down:
     if (p == 0)
     {   fprintf(stderr, "Zero pointer found from %s\n", trigger);
         // An error - but I feel safest if I detect it and do not crash.
-if (trigger[0]=='S')
-{   // @@@@
-    fprintf(stderr, "from push_symbols\n");
-    for (LispObject *s=stackbase+1; s<=stack; s++)
-    {   fprintf(stderr, "%p: %p\n", s, (void *)*(void **)s);
-    }
-}
         goto up;
     }
     else if (p == nil) goto up;
@@ -4104,7 +4081,7 @@ static bool interesting(LispObject x)
     {   for (int i=0; i<fastget_size; i++)
             if (basic_elt(ff, i) != SPID_NOPROP) return true;
     }
-    return (qfn1(x) != undefined1 ||
+    return (qfn1(x) != undefined_1 ||
             qplist(x) != nil ||
             qvalue(x) != unset_var);
 }
@@ -4139,7 +4116,7 @@ LispObject Lall_symbols(LispObject env, LispObject include_gensyms)
     return onevalue(r);
 }
 
-LispObject Lall_symbols0(LispObject env, int nargs, ...)
+LispObject Lall_symbols0(LispObject env)
 {   LispObject *stacksave = stack;
     if (push_all_symbols(interesting))
     {   stack = stacksave;
@@ -4323,9 +4300,8 @@ LispObject Lmapstore(LispObject env, LispObject a)
     return onevalue(r);
 }
 
-LispObject Lmapstore0(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "mapstore");
-    return Lmapstore(env, nil);
+LispObject Lmapstore0(LispObject env)
+{   return Lmapstore(env, nil);
 }
 
 // end of serialize.cpp

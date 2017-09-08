@@ -394,29 +394,12 @@ LispObject Lget(LispObject env, LispObject a, LispObject b)
     }
 }
 
-LispObject Lget_3(LispObject, int nargs, ...)
-{   va_list aa;
-    LispObject a, b, c;
-    if (nargs != 3) aerror("get");
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    va_end(aa);
-    return onevalue(get(a, b, c));
+LispObject Lget_3(LispObject, LispObject a, LispObject b, LispObject c)
+{   return onevalue(get(a, b, c));
 }
 
-LispObject Lputprop(LispObject env, int nargs, ...)
-{   va_list aa;
-    LispObject a, b, c;
-    argcheck(nargs, 3, "put");
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    va_end(aa);
-    a = putprop(a, b, c);
-    return onevalue(a);
+LispObject Lputprop(LispObject env, LispObject a, LispObject b, LispObject c)
+{   return onevalue(putprop(a, b, c));
 }
 
 LispObject Lflagp(LispObject env, LispObject a, LispObject b)
@@ -759,7 +742,7 @@ static uint64_t total = 0, frequencies[256];
 
 #endif
 
-LispObject bytecounts(LispObject env, int nargs, ...)
+LispObject Lbytecounts_0(LispObject env)
 {
 #if !defined NO_BYTECOUNT || defined RECORD_GET
     int32_t i;
@@ -769,7 +752,6 @@ LispObject bytecounts(LispObject env, int nargs, ...)
     LispObject v;
     double tot;
 #endif
-    argcheck(nargs, 0, "bytecounts");
 #ifdef NO_BYTECOUNT
     stdout_printf("bytecode statistics not available\n");
 #else
@@ -814,13 +796,13 @@ LispObject bytecounts(LispObject env, int nargs, ...)
         stdout_printf("\n");
     }
 
-    v = Lmkhash(nil, 3, fixnum_of_int(5), fixnum_of_int(0), nil);
+    v = Lmkhash_2(nil, fixnum_of_int(5), fixnum_of_int(0));
     get_counts = v;
 #endif
     return onevalue(nil);
 }
 
-LispObject bytecounts1(LispObject env, LispObject a)
+LispObject Lbytecounts_1(LispObject env, LispObject a)
 {
 #ifdef RECORD_GET
     int32_t i, size;
@@ -861,7 +843,7 @@ LispObject bytecounts1(LispObject env, LispObject a)
     }
     stdout_printf("\n)\n");
 
-    v = Lmkhash(nil, 3, fixnum_of_int(5), fixnum_of_int(0), nil);
+    v = Lmkhash_2(nil, 3, fixnum_of_int(5), fixnum_of_int(0));
     get_counts = v;
 #endif
 
@@ -898,10 +880,9 @@ static inline void do_freerstr()
     }
 }
 
-static inline LispObject poll_jump_back(LispObject A_reg)
+static inline void poll_jump_back(LispObject& A_reg)
 {   if (--countdown < 0) deal_with_tick();
     if (stack >= stacklimit) A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
-    return A_reg;
 }
 
 static inline void do_pvbind(LispObject vals, LispObject vars)
@@ -981,7 +962,7 @@ static LispObject show_result(LispObject r)
     pop(r);
     return r;
 }
-LispObject traced_call0(LispObject from, n_args *f0, LispObject name)
+LispObject traced_call0(LispObject from, no_args *f0, LispObject name)
 {   push(name);
     push(from);
     freshline_trace();
@@ -991,11 +972,11 @@ LispObject traced_call0(LispObject from, n_args *f0, LispObject name)
     pop(from);
     loop_print_trace(from);
     trace_printf("\n");
-    LispObject r = f0(stack[0], 0);
+    LispObject r = f0(stack[0]);
     return show_result(r);
 }
 
-LispObject traced_call1(LispObject from, one_args *f1,
+LispObject traced_call1(LispObject from, one_arg *f1,
                         LispObject name, LispObject a1)
 {   push2(name, a1);
     push(from);
@@ -1036,7 +1017,7 @@ LispObject traced_call2(LispObject from, two_args *f2,
     return show_result(r);
 }
 
-LispObject traced_call3(LispObject from, n_args *f345,
+LispObject traced_call3(LispObject from, three_args *f3,
                         LispObject name,
                         LispObject a1, LispObject a2, LispObject a3)
 {   push4(name, a1, a2, a3);
@@ -1058,7 +1039,42 @@ LispObject traced_call3(LispObject from, n_args *f345,
     loop_print_trace(stack[0]);
     trace_printf("\n");
     pop3(a3, a2, a1);
-    LispObject r = f345(stack[0], 3, a1, a2, a3);
+    LispObject r = f3(stack[0], a1, a2, a3);
+    return show_result(r);
+}
+
+LispObject traced_call4up(LispObject from, fourup_args *f4up,
+                          LispObject name,
+                          LispObject a1, LispObject a2, LispObject a3,
+                          LispObject a4up)
+{   push5(name, a1, a2, a3, a4up);
+    push(from);
+    freshline_trace();
+    trace_printf("Calling ");
+    loop_print_trace(name);
+    trace_printf(" from ");
+    pop(from);
+    loop_print_trace(from);
+    trace_printf("\n");
+    trace_printf("Arg1: ");
+    loop_print_trace(stack[-3]);
+    trace_printf("\n");
+    trace_printf("Arg2: ");
+    loop_print_trace(stack[-2]);
+    trace_printf("\n");
+    trace_printf("Arg3: ");
+    loop_print_trace(stack[-1]);
+    trace_printf("\n");
+    push(stack[0]);
+    for (int i=4; stack[0]!=nil; i++)
+    {   trace_printf("Arg%d: ", i);
+        loop_print_trace(qcar(stack[0]));
+        trace_printf("\n");
+        stack[0] = qcdr(stack[0]);
+    }
+    popv(1);
+    pop4(a4up, a3, a2, a1);
+    LispObject r = f4up(stack[0], a1, a2, a3, a4up);
     return show_result(r);
 }
 
@@ -1097,6 +1113,76 @@ LispObject cdrerror(LispObject a)
 #ifdef CHECK_STACK
 char *native_stack = NULL, *native_stack_base = NULL;
 #endif
+
+static inline void short_jump(size_t& ppc, size_t xppc)
+{
+#ifdef LABEL_RESOLUTION_DEBUGGING
+    size_t oldppc = ppc;
+#endif
+    ppc = ppc + ((unsigned char *)codevec)[xppc];
+// The extra test here was useful at a time I was worried about label
+// resolution in the compiler, and some jumps led to bytecode execution
+// resuming a byte early or late. The bug that was involved there has
+// now been fixed, and i no longer put the label-marker bytes in the
+// bytestream. The code here illustrates use of "my_abort" with a lambda
+// expression so that I can have absolute control over the message
+// displayed if the assertion fails.
+#ifdef LABEL_RESOLUTION_DEBUGGING
+    my_assert(
+        current_byte == OP_SPARE,
+        [&]{trace_printf("failure at ppc=%d = %x from %d %x\n",
+                         ppc, ppc, oldppc, oldppc);
+           });
+#endif
+}
+
+static inline void short_jump_back(size_t& ppc, size_t xppc, LispObject& A_reg)
+{
+#ifdef LABEL_RESOLUTION_DEBUGGING
+    size_t oldppc = ppc;
+#endif
+    ppc = ppc - ((unsigned char *)codevec)[xppc];
+// To allow for interruption I will poll on every backwards jump
+    poll_jump_back(A_reg);
+#ifdef LABEL_RESOLUTION_DEBUGGING
+    my_assert(
+        current_byte == OP_SPARE,
+        [&]{trace_printf("failure at ppc=%d = %x from %d %x\n",
+                         ppc, ppc, oldppc, oldppc);
+           });
+#endif
+}
+
+static inline void long_jump(unsigned int w, size_t& ppc, size_t xppc)
+{
+#ifdef LABEL_RESOLUTION_DEBUGGING
+    size_t oldppc = ppc;
+#endif
+    ppc = ppc + ((w << 8) + ((unsigned char *)codevec)[xppc]);
+#ifdef LABEL_RESOLUTION_DEBUGGING
+    my_assert(
+        current_byte == OP_SPARE,
+        [&]{trace_printf("failure at ppc=%d = %x from %d %x\n",
+                         ppc, ppc, oldppc, oldppc);
+           });
+#endif
+}
+
+static inline void long_jump_back(unsigned int w, size_t& ppc, size_t xppc, LispObject& A_reg)
+{
+#ifdef LABEL_RESOLUTION_DEBUGGING
+    size_t oldppc = ppc;
+#endif
+    ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
+    poll_jump_back(A_reg);
+#ifdef LABEL_RESOLUTION_DEBUGGING
+    my_assert(
+        current_byte == OP_SPARE,
+        [&]{trace_printf("failure at ppc=%d = %x from %d %x\n",
+                         ppc, ppc, oldppc, oldppc);
+           });
+#endif
+}
 
 extern LispObject bytestream_interpret1(size_t ppc, LispObject lit,
                                         LispObject *entry_stack);

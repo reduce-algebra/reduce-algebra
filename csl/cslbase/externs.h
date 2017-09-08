@@ -268,6 +268,23 @@ static inline void popv(int n)
 #define GC_VEC       4
 #define GC_BPS       5
 
+// An "assert" scheme that lets me write in my own code to print the
+// diagnostics.
+
+NORETURN extern void my_abort();
+
+template <typename F>
+inline void my_assert(bool ok, F&& action)
+{
+#ifndef NDEBUG
+// Use this as in
+//     my_assert(predicate, [&]{...});
+// where the "..." is an arbitrary sequence of actions to be taken
+// if the assertion fails.
+    if (!ok) { action(); my_abort(); }
+#endif //NDEBUG
+}
+
 extern volatile char stack_contents_temp;
 
 #ifdef CHECK_STACK
@@ -359,8 +376,6 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
         a1 = reclaim(a1, "stack", GC_STACK, 0);             \
         pop3(a4, a3, a2);                                   \
     }
-
-extern LispObject nil;
 
 #define first_nil_offset         50     // GC collector marks from here up
 
@@ -551,6 +566,7 @@ extern LispObject user_base_9;
 #define mv_1                workbase[1]
 #define mv_2                workbase[2]
 #define mv_3                workbase[3]
+#define mv_4                workbase[4]
 #define work_50             workbase[50]
 
 extern void copy_into_nilseg();
@@ -694,7 +710,7 @@ typedef struct _entry_point0
 } entry_point0;
 
 typedef struct _entry_point1
-{   one_args *p;
+{   one_arg *p;
     const char *s;
 } entry_point1;
 
@@ -708,31 +724,17 @@ typedef struct _entry_point3
     const char *s;
 } entry_point3;
 
-typedef struct _entry_point4
-{   four_args *p;
+typedef struct _entry_point4up
+{   fourup_args *p;
     const char *s;
-} entry_point4;
-
-typedef struct _entry_pointn
-{   n_args *p;
-    const char *s;
-} entry_pointn;
+} entry_point4up;
 
 extern entry_point0 entries_table0[];
 extern entry_point1 entries_table1[];
 extern entry_point2 entries_table2[];
 extern entry_point3 entries_table3[];
-extern entry_point4 entries_table4[];
-extern entry_pointn entries_tablen[];
-extern entry_pointn entries_tableio[];
-
-extern void set_up_entry_lookup();
-extern int32_t code_up_fn1(one_args *e);
-extern int32_t code_up_fn2(two_args *e);
-extern int32_t code_up_fnn(n_args *e);
-extern int32_t code_up_io(void *e);
-
-extern int doubled_execution;
+extern entry_point4up entries_table4up[];
+extern entry_point1 entries_tableio[];
 
 extern const char *linker_type;
 extern const char *compiler_command[], *import_data[],
@@ -745,10 +747,6 @@ typedef void initfn(LispObject *, LispObject **, LispObject * volatile *);
 
 extern LispObject characterify(LispObject a);
 extern LispObject char_to_id(int ch);
-
-#define ARG_CUT_OFF 25
-extern void push_args(va_list a, int nargs);
-extern void push_args_1(va_list a, int nargs);
 
 extern void Iinit();
 extern void IreInit();
@@ -804,8 +802,7 @@ extern void inject_randomness(int n);
 
 extern void ensure_screen();
 extern int window_heading;
-extern void my_abort();
-extern "C" NORETURN void my_exit(int n);
+NORETURN extern void my_exit(int n);
 extern void *my_malloc(size_t n);
 extern void check_heap_segments();
 
@@ -828,11 +825,11 @@ extern int escaped_printing;
 // may not necessarily be supported otherwise. There are severe restrictions
 // on what may be done within one, but if our system adhers to Posix it is
 // legal to use longjmp.
-extern "C" void low_level_signal_handler(int code);
-extern "C" void sigint_handler(int code);
-extern "C" int async_interrupt(int a);
+extern void low_level_signal_handler(int code);
+extern void sigint_handler(int code);
+extern int async_interrupt(int a);
 
-extern "C" void record_get(LispObject tag, bool found);
+extern void record_get(LispObject tag, bool found);
 
 //
 // Functions used internally - not to be installed in Lisp function
@@ -850,80 +847,82 @@ extern "C" void record_get(LispObject tag, bool found);
 extern bool        isprime(uint64_t);
 extern void        set_up_functions(int restartp);
 extern void        get_user_files_checksum(unsigned char *);
-extern "C" LispObject acons(LispObject a, LispObject b, LispObject c);
-extern "C" LispObject ash(LispObject a, LispObject b);
+extern LispObject acons(LispObject a, LispObject b, LispObject c);
+extern LispObject ash(LispObject a, LispObject b);
 extern LispObject bytestream_interpret(size_t ppc, LispObject lit,
                                        LispObject *entry_stack);
 extern bool     complex_stringp(LispObject a);
 extern LispObject  copy_string(LispObject a, size_t n);
 extern void        freshline_trace();
 extern void        freshline_debug();
-extern "C" LispObject cons(LispObject a, LispObject b);
+extern LispObject cons(LispObject a, LispObject b);
 extern LispObject cons_no_gc(LispObject a, LispObject b);
 extern LispObject cons_gc_test(LispObject a);
 extern void       convert_fp_rep(void *p, int old_rep, int new_rep, int type);
 extern LispObject eval(LispObject u, LispObject env);
 extern uint32_t   Crand();
-extern "C" LispObject Cremainder(LispObject a, LispObject b);
+extern LispObject Cremainder(LispObject a, LispObject b);
 extern void        Csrand(uint32_t a, uint32_t b);
 extern void        discard(LispObject a);
-extern "C" bool eql_fn(LispObject a, LispObject b);
-extern "C" bool cl_equal_fn(LispObject a, LispObject b);
-extern "C" bool equal_fn(LispObject a, LispObject b);
+extern bool eql_fn(LispObject a, LispObject b);
+extern bool cl_equal_fn(LispObject a, LispObject b);
+extern bool equal_fn(LispObject a, LispObject b);
 #ifdef TRACED_EQUAL
 extern bool traced_equal_fn(LispObject a, LispObject b,
                                const char *, int, int);
 #define equal_fn(a, b) traced_equal_fn(a, b, __FILE__, __LINE__, 0)
 extern void dump_equals();
 #endif
-extern "C" bool equalp(LispObject a, LispObject b);
-extern LispObject apply(LispObject fn, int nargs, LispObject env,
+extern bool equalp(LispObject a, LispObject b);
+extern LispObject apply(LispObject fn, LispObject args, LispObject env,
                         LispObject from);
-extern LispObject apply_lambda(LispObject def, int nargs,
+extern LispObject apply_lambda(LispObject def, LispObject args,
                                LispObject env, LispObject name);
 extern void        deallocate_pages();
 extern void        drop_heap_segments();
 extern LispObject gcd(LispObject a, LispObject b);
 extern LispObject get_pname(LispObject a);
-extern "C" LispObject get(LispObject a, LispObject b, LispObject c=nil);
+extern LispObject get(LispObject a, LispObject b, LispObject c=nil);
 extern LispObject get_basic_vector(int tag, int type, size_t length);
 extern LispObject get_basic_vector_init(size_t n, LispObject v);
 extern LispObject get_vector(int tag, int type, size_t length);
 extern LispObject get_vector_init(size_t n, LispObject v);
 extern uint64_t   hash_lisp_string(LispObject s);
 extern void lose_C_def(LispObject a);
-extern "C" bool        geq2(LispObject a, LispObject b);
-extern "C" bool        greaterp2(LispObject a, LispObject b);
-extern "C" bool        lesseq2(LispObject a, LispObject b);
-extern "C" bool        lessp2(LispObject a, LispObject b);
-extern "C" LispObject list2(LispObject a, LispObject b);
-extern "C" LispObject list2star(LispObject a, LispObject b, LispObject c);
-extern "C" LispObject list3(LispObject a, LispObject b, LispObject c);
-extern "C" LispObject list3star(LispObject a, LispObject b,
+extern bool        geq2(LispObject a, LispObject b);
+extern bool        greaterp2(LispObject a, LispObject b);
+extern bool        lesseq2(LispObject a, LispObject b);
+extern bool        lessp2(LispObject a, LispObject b);
+extern LispObject list2(LispObject a, LispObject b);
+extern LispObject list2star(LispObject a, LispObject b, LispObject c);
+extern LispObject list3(LispObject a, LispObject b, LispObject c);
+extern LispObject list3star(LispObject a, LispObject b,
                             LispObject c, LispObject d);
-extern "C" LispObject list4(LispObject a, LispObject b,
+extern LispObject list4(LispObject a, LispObject b,
                         LispObject c, LispObject d);
-extern "C" LispObject lognot(LispObject a);
+extern LispObject lognot(LispObject a);
 extern LispObject macroexpand(LispObject form, LispObject env);
 extern LispObject make_package(LispObject name);
 extern LispObject make_string(const char *b);
 extern LispObject make_nstring(const char *b, size_t n);
 extern LispObject make_undefined_symbol(const char *s);
 extern LispObject make_symbol(char const *s, int restartp,
-                              one_args *f1, two_args *f2, n_args *fn);
+                              no_args *f0, one_arg *f1, two_args *f2,
+                              three_args *f3, fourup_args *f4up);
 extern void stdout_printf(const char *fmt, ...);
 extern void term_printf(const char *fmt, ...);
 extern void err_printf(const char *fmt, ...);
 extern void debug_printf(const char *fmt, ...);
 extern void trace_printf(const char *fmt, ...);
 extern const char *my_getenv(const char *name);
-extern "C" LispObject ncons(LispObject a);
+extern LispObject ncons(LispObject a);
 extern LispObject ndelete(LispObject a, LispObject b);
-extern "C" LispObject negate(LispObject a);
+extern LispObject negate(LispObject a);
 extern LispObject nreverse(LispObject a);
+extern LispObject nreverse2(LispObject a, LispObject b);
 extern FILE        *open_file(char *filename, const char *original_name,
                               size_t n, const char *dirn, FILE *old_file);
-extern "C" LispObject plus2(LispObject a, LispObject b);
+extern LispObject plus2(LispObject a, LispObject b);
 extern void        preserve(const char *msg, size_t len);
 extern LispObject prin(LispObject u);
 extern const char *get_string_data(LispObject a, const char *why, size_t &len);
@@ -949,21 +948,21 @@ extern void        print_bighexoctbin(LispObject u,
                                       int radix, int width, bool blankp, int nobreak);
 extern LispObject putprop(LispObject a, LispObject b,
                           LispObject c);
-extern "C" LispObject quot2(LispObject a, LispObject b);
-extern "C" LispObject quotrem2(LispObject a, LispObject b);
-extern "C" LispObject rational(LispObject a);
+extern LispObject quot2(LispObject a, LispObject b);
+extern LispObject quotrem2(LispObject a, LispObject b);
+extern LispObject rational(LispObject a);
 extern void        read_eval_print(int noisy);
-extern "C" LispObject reclaim(LispObject value_to_return, const char *why,
+extern LispObject reclaim(LispObject value_to_return, const char *why,
                           int stg_class, intptr_t size);
-extern void        set_fns(LispObject sym, one_args *f1,
-                           two_args *f2, n_args *fn);
+extern void        set_fns(LispObject sym, no_args *f0, one_arg *f1,
+                           two_args *f2, three_args *f3, fourup_args *f4up);
 extern void        setup(int restartp, double storesize);
 extern void        set_up_variables(int restart_flag);
 extern void        warm_setup();
 extern void        write_everything();
 extern LispObject  simplify_string(LispObject s);
 extern bool        stringp(LispObject a);
-extern "C" LispObject times2(LispObject a, LispObject b);
+extern LispObject times2(LispObject a, LispObject b);
 extern int32_t     thirty_two_bits(LispObject a);
 extern int64_t     sixty_four_bits(LispObject a);
 extern uint64_t    sixty_four_bits_unsigned(LispObject a);
@@ -977,14 +976,11 @@ extern void validate_string_fn(LispObject a, const char *f, int l);
 #define validate_string(a) // nothing
 #endif
 
-//
-// The next few provide support for multiple values. In the past I had
-// these as #define macros, which had a hidden trap if one wrote
-// (say) "return onevalue(something_complicated);" and evaluation of the
-// complicated thing could set the exit_count variable. Here using
-// inline procedures the variable exit_count should always be set right
-// at the end, as required.
-//
+// The next few provide support for multiple values.
+// At present I do what may count as the naive thing and every function
+// leaves the variable exit_count set to indicate how many results it is
+// returning.
+
 static inline LispObject onevalue(LispObject r)
 {   exit_count = 1;
     return r;
@@ -1028,39 +1024,41 @@ static inline bool eql(LispObject a, LispObject b)
     else return false;
 }
 
-#define argcheck(var, n, msg) if ((var)!=(n)) aerror(msg);
-
-extern n_args      *no_arg_functions[];
-extern one_args    *one_arg_functions[];
+extern no_args     *no_arg_functions[];
+extern one_arg     *one_arg_functions[];
 extern two_args    *two_arg_functions[];
-extern four_args   *four_arg_functions[];
-extern n_args      *three_arg_functions[];
+extern three_args  *three_arg_functions[];
+extern fourup_args *fourup_arg_functions[];
 
 extern bool no_arg_traceflags[];
 extern bool one_arg_traceflags[];
 extern bool two_arg_traceflags[];
-extern bool four_arg_traceflags[];
 extern bool three_arg_traceflags[];
+extern bool fourup_arg_traceflags[];
 
 extern const char *no_arg_names[];
 extern const char *one_arg_names[];
 extern const char *two_arg_names[];
-extern const char *four_arg_names[];
 extern const char *three_arg_names[];
+extern const char *fourup_arg_names[];
 
 
 typedef struct setup_type
 {   const char *name;
-    one_args *one;
+    no_args *zero;
+    one_arg *one;
     two_args *two;
-    n_args *n;
+    three_args *three;
+    fourup_args *fourup;
 } setup_type;
 
 typedef struct setup_type_1
 {   const char *name;
-    one_args *one;
+    no_args *zero;
+    one_arg *one;
     two_args *two;
-    n_args *n;
+    three_args *three;
+    fourup_args *fourup;
     uint32_t c1;
     uint32_t c2;
 } setup_type_1;

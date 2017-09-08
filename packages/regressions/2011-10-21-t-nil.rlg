@@ -25,28 +25,25 @@ share t;
 ***** t is a reserved identifier 
 
 
-symbolic procedure ws(u);
-***** global ws invalid as procedure
-
- u;
+symbolic procedure ws(u); u;
 
 
-u
+ws
 
 
-symbolic procedure nil(u);
-***** nil is a reserved identifier 
+symbolic procedure nil(u
+***** nil invalid as formal parameter name 
 
- u;
+); u;
 
 
 u
 
 
-algebraic procedure nil(u);
-***** nil is a reserved identifier 
+algebraic procedure nil(u
+***** nil invalid as formal parameter name 
 
- u;
+); u;
 
 
 u
@@ -137,9 +134,13 @@ begin scalar t; return t end;
 
 
 
-algebraic procedure x1(t);t;
-***** t is a reserved identifier 
+algebraic procedure x1(t);
+***** t found where right parenthesis expected 
 
+t;
+
+
+t
 
 
 x1(1);
@@ -150,8 +151,11 @@ x1(1);
 x1(1)
 
 
-algebraic procedure x2(t); begin scalar nil; return (t+nil); end;
-***** t is a reserved identifier 
+algebraic procedure x2(t);
+***** t found where right parenthesis expected 
+
+ begin scalar nil; return (t+nil); end;
+***** nil is a reserved identifier 
 
 
 
@@ -172,8 +176,11 @@ x2(1)
 %% next line commented out sine it crashes CSL
 %x2(nil);
 
-algebraic procedure y1(t); begin integer nil; return (t+nil); end;
-***** t is a reserved identifier 
+algebraic procedure y1(t);
+***** t found where right parenthesis expected 
+
+ begin integer nil; return (t+nil); end;
+***** nil is a reserved identifier 
 
 
 
@@ -191,9 +198,13 @@ y1(nil);
 y1()
 
 
-algebraic procedure z1(t,u); begin t := t + u^2; return t; end;
-***** t is a reserved identifier 
+algebraic procedure z1(t,u
+***** t found where right parenthesis expected 
 
+); begin t := t + u^2; return t; end;
+
+
+***** t improperly defined in terms of itself 
 
 
 z1(1,2);
@@ -222,10 +233,10 @@ clear t;
 
 
 
-algebraic procedure t(x);
-***** t is a reserved identifier 
+algebraic procedure t(x
+***** t invalid as formal parameter name 
 
- x;
+); x;
 
 
 b*fun_f + c*fun_nt + d*fun_nf + fun_0 + fun_t
@@ -251,10 +262,10 @@ t(nil);
 t()
 
 
-algebraic procedure nil(x);
-***** nil is a reserved identifier 
+algebraic procedure nil(x
+***** nil invalid as formal parameter name 
 
- x;
+); x;
 
 
 b*fun_f + c*fun_nt + d*fun_nf + fun_0 + fun_t
@@ -280,10 +291,3 @@ nil(nil);
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 0 ms
-
-End of Lisp run after 0.00+0.04 seconds
-real 0.20
-user 0.00
-sys 0.09

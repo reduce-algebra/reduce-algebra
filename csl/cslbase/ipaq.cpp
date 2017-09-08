@@ -631,11 +631,8 @@ void ce_getline()
 // input data is now in workerLine.
 }
 
-extern "C"
-{
 extern int ce_readch();
 extern void ce_print(char *s);
-}
 
 int ce_readch()
 {
@@ -658,10 +655,7 @@ char *argvec[] =
     NULL
 };
 
-extern "C"
-{
 extern int fwin_main(int argc, char *argv[]);
-}
 
 DWORD WINAPI WorkerProc(LPVOID parm)
 {

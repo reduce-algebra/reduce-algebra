@@ -49,9 +49,8 @@ static intptr_t cons_cells, symbol_heads, strings, user_vectors,
        big_numbers, box_floats, bytestreams, other_mem,
        litvecs, getvecs;
 
-LispObject Lgc0(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "reclaim");
-    return Lgc(env, lisp_true);
+LispObject Lgc0(LispObject env)
+{   return Lgc(env, lisp_true);
 }
 
 LispObject Lgc(LispObject env, LispObject a)
@@ -1082,7 +1081,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         }
     }
     report_at_end();
-    if (stop_after_gc) Lstop(nil, fixnum_of_int(0));
+    if (stop_after_gc) Lstop1(nil, fixnum_of_int(0));
     if (interrupt_pending)
     {   interrupt_pending = false;
         already_in_gc = false;

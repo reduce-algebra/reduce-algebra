@@ -1122,13 +1122,15 @@ then
 # NSA="-fno-strict-aliasing"
   if test "x$enable_debug" = "xyes"
   then
-# I will only allow profiling if debugging is also switched on.
-    if test "x$enable_profile" = "xyes"
-    then
-      PROFILE="-pg"
-    else
-      PROFILE=""
-    fi
+# I could put "-pg" in option list. For gcc (at least on many platforms) this
+# will enabling profiling so that "gprof" can be used after a run to observe
+# where there were hot-spots. If I get keen I will put in extra tests here to
+# check if the "-pg" option is at least acceptable to the compiler... but
+# for now it is something that one puts in by manually editing this file or
+# the eventual Makefile.
+#
+#   PROFILE="-pg"
+    PROFILE=""
     CFLAGS="${CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     CXXFLAGS="${CXXFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
     DLL_CFLAGS="${DLL_CFLAGS} ${NSA} ${LOWOPT} -g ${PROFILE} -DDEBUG=1 -Wall"
@@ -1604,6 +1606,9 @@ then
     LDFLAGS="-L/usr/lib -lcurses $LDFLAGS"
   fi  
 fi
+
+# Force in linking against libffi
+LIBS="$LIBS -lffi"
 
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 

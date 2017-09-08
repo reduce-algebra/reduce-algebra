@@ -107,7 +107,7 @@ extern int fwin_main(int argc, const char *argv[]);
 #include <unistd.h>
 #else // HAVE_UNISTD_H
 // The declaration here is an expression of optimism!
-extern char *getcwd(const char *s, size_t n);
+extern "C" char *getcwd(const char *s, size_t n);
 #endif // HAVE_UNISTD_H
 
 #include <sys/stat.h>
@@ -389,7 +389,7 @@ void consoleWait()
 
 static int ssh_client = 0;
 
-int windows_checks(int windowed)
+int windows_checks(int is_windowed)
 {
 // I have tried various messy Windows API calls here to get this right.
 // But so far I find that the cases that apply to me are
@@ -429,7 +429,7 @@ int windows_checks(int windowed)
 // code, and the file "gui-or-not.txt" in the source tree discusses just
 // what I do.
 //
-    if (programNameDotCom && windowed == 2)
+    if (programNameDotCom && is_windowed == 2)
     {
 // The program was named "xxx.com". I will assume that that means it was
 // a console-mode application and it is being launched directly from a
@@ -472,20 +472,20 @@ int windows_checks(int windowed)
         if (ssh != NULL && *ssh != 0)
         {   FWIN_LOG("SSH_CLIENT set on Windows, so treat as console app\n");
             ssh_client = 1;
-            windowed = 0;
+            is_windowed = 0;
         }
         else
         {   h = GetStdHandle(STD_INPUT_HANDLE);
-            if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
-            else if (!GetConsoleMode(h, &w)) windowed = 0;
+            if (GetFileType(h) != FILE_TYPE_CHAR) is_windowed = 0;
+            else if (!GetConsoleMode(h, &w)) is_windowed = 0;
             else
             {   h = GetStdHandle(STD_OUTPUT_HANDLE);
-                if (GetFileType(h) != FILE_TYPE_CHAR) windowed = 0;
-                else if (!GetConsoleScreenBufferInfo(h, &csb)) windowed = 0;
+                if (GetFileType(h) != FILE_TYPE_CHAR) is_windowed = 0;
+                else if (!GetConsoleScreenBufferInfo(h, &csb)) is_windowed = 0;
             }
         }
     }
-    else if (windowed == 2)
+    else if (is_windowed == 2)
     {
 // The program was named "xxx.exe". I am going to suppose that this has NOT
 // been launched from a normal Windows command prompt (since xxx.com would
@@ -514,21 +514,21 @@ int windows_checks(int windowed)
         if (ssh != NULL && *ssh != 0)
         {   FWIN_LOG("SSH_CLIENT set\n");
             ssh_client = 1;
-            windowed = 0;
+            is_windowed = 0;
         }
-        else if (GetFileType(h) == FILE_TYPE_DISK) windowed = 0;
+        else if (GetFileType(h) == FILE_TYPE_DISK) is_windowed = 0;
     }
-    return windowed;
+    return is_windowed;
 }
 
-void sort_out_windows_console(int windowed)
+void sort_out_windows_console(int is_windowed)
 {
 //
 // If I am running under Windows and I have set command line options
 // that tell me to run in a console then I will create one if one does
 // not already exist.
 //
-    if (windowed == 0)
+    if (is_windowed == 0)
     {   int consoleCreated = AllocConsole();
         if (consoleCreated)
         {   if (ssh_client)
@@ -651,7 +651,7 @@ static int unix_and_osx_checks(int xwindowed)
 
 #else // __APPLE__
 
-static int unix_and_osx_checks(int windowed)
+static int unix_and_osx_checks(int is_windowed)
 {
     const char *disp;
 //
@@ -660,8 +660,8 @@ static int unix_and_osx_checks(int windowed)
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
 //
-    if (windowed != 0)
-    {   if (!isatty(fileno(stdin)) || !isatty(fileno(stdout))) windowed = 0;
+    if (is_windowed != 0)
+    {   if (!isatty(fileno(stdin)) || !isatty(fileno(stdout))) is_windowed = 0;
 //
 // On Unix-like systems I will check the DISPLAY variable, and if it is not
 // set I will suppose that I can not create a window. That case will normally
@@ -673,14 +673,14 @@ static int unix_and_osx_checks(int windowed)
 // native display I would merely omit this test.
 //
         disp = my_getenv("DISPLAY");
-        if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
+        if (disp == NULL || strchr(disp, ':')==NULL) is_windowed = 0;
     }
 // If stdin or stdout is not from a "tty" I will run in non-windowed mode.
 // This may help when the system is used in scripts. I worry a bit about
 // what the status of stdin/stdout are when launched not from a command line
 // but by clicking on an icon...
 //
-    if ((!isatty(fileno(stdin)) || !isatty(fileno(stdout)))) windowed = 0;
+    if ((!isatty(fileno(stdin)) || !isatty(fileno(stdout)))) is_windowed = 0;
 // On Unix-like systems I will check the DISPLAY variable, and if it is not
 // set I will suppose that I can not create a window. That case will normally
 // arise when you have gained remote access to the system eg via telnet or
@@ -689,8 +689,8 @@ static int unix_and_osx_checks(int windowed)
 // string.
 //
     disp = my_getenv("DISPLAY");
-    if (disp == NULL || strchr(disp, ':')==NULL) windowed = 0;
-    return windowed;
+    if (disp == NULL || strchr(disp, ':')==NULL) is_windowed = 0;
+    return is_windowed;
 }
 
 #endif // __APPLE__
@@ -1071,7 +1071,7 @@ void fwin_set_prompt(const char *s)
     fwin_prompt_string[sizeof(fwin_prompt_string)-1] = 0;
 }
 
-extern void fwin_menus(char **modules, char **switches,
+void fwin_menus(char **modules, char **switches,
                        review_switch_settings_function *f)
 {
 }
@@ -1501,8 +1501,8 @@ int find_program_directory(const char *argv0)
 #endif // __S_IXUSR
 #endif // S_IXUSR
 
-extern "C" int get_home_directory(char *b, size_t len);
-extern "C" int get_users_home_directory(char *b, size_t len);
+extern int get_home_directory(char *b, size_t len);
+extern int get_users_home_directory(char *b, size_t len);
 
 static lookup_function *look_in_variable = NULL;
 

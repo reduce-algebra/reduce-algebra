@@ -54,7 +54,7 @@
 // rehashing them in an eager manner.
 //
 
-LispObject Lmkhash2(LispObject env, LispObject size, LispObject flavour)
+LispObject Lmkhash_2(LispObject env, LispObject size, LispObject flavour)
 {   if (!is_fixnum(size)) aerror1("mkhash", size);
     if (int_of_fixnum(size) <= 0) aerror1("mkhash", size);
     size_t size1 = int_of_fixnum(size);
@@ -94,9 +94,10 @@ LispObject Lmkhash2(LispObject env, LispObject size, LispObject flavour)
     return onevalue(v1);
 }
 
-LispObject Lmkhash(LispObject env, int nargs, ...)
+LispObject Lmkhash_3(LispObject env, LispObject size, LispObject flavour, LispObject growth)
 //
 // (mkhash size flavour growth)
+//    Once upon a time the third argument mattered. Now it is ignored!
 //
 // size suggests qbout how large the table will be. It certainly ends up
 // rounded to a prime.
@@ -112,14 +113,7 @@ LispObject Lmkhash(LispObject env, int nargs, ...)
 // I expect numeric hash values), and eqfn is a function used to compare
 // items. [this facility is at present not implemented]
 //
-{   va_list a;
-    argcheck(nargs, 3, "mkhash");
-    va_start(a, nargs);
-    LispObject size = va_arg(a, LispObject);
-    LispObject flavour = va_arg(a, LispObject);
-//@ growth = va_arg(a, LispObject);   // just ignore third argument
-    va_end(a);
-    return Lmkhash2(env, size, flavour);
+{   return Lmkhash_2(env, size, flavour);
 }
 
 //
@@ -723,17 +717,10 @@ static uint64_t hash_equalp(LispObject key)
 static uint64_t hashcode;
 static size_t hashsize, hashoffset, hashgap;
 
-LispObject Lget_hash(LispObject env, int nargs, ...)
+LispObject Lget_hash(LispObject env, LispObject key, LispObject tab, LispObject dflt)
 {   int32_t flavour = -1;
     size_t p, size, hashstride, nprobes;
-    va_list a;
-    LispObject v, key, tab, dflt;
-    argcheck(nargs, 3, "gethash");
-    va_start(a, nargs);
-    key = va_arg(a, LispObject);
-    tab = va_arg(a, LispObject);
-    dflt = va_arg(a, LispObject);
-    va_end(a);
+    LispObject v;
     if (!is_vector(tab) || type_of_vector(tab) != TYPE_HASH)
         aerror1("gethash", tab);
     v = basic_elt(tab, 0);
@@ -969,7 +956,7 @@ LispObject Lmaphash(LispObject env, LispObject fn, LispObject tab)
                    val = elt(v1, i+1);
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         push2(v1, fn);
-        Lapply2(nil, 3, fn, key, val);
+        Lapply2(nil, fn, key, val);
         pop2(fn, v1);
     }
     return onevalue(nil);
@@ -1020,7 +1007,7 @@ LispObject Lget_hash_1(LispObject env, LispObject key)
 //
     LispObject r;
     push(key);
-    r = Lget_hash(nil, 3, key, sys_hash_table, nil);
+    r = Lget_hash(nil, key, sys_hash_table, nil);
     pop(key);
     if (mv_2 != nil)
     {   r = cons(key, r);
@@ -1030,23 +1017,15 @@ LispObject Lget_hash_1(LispObject env, LispObject key)
 }
 
 LispObject Lget_hash_2(LispObject env, LispObject key, LispObject tab)
-{   return Lget_hash(env, 3, key, tab, nil);
+{   return Lget_hash(env, key, tab, nil);
 }
 
 #ifdef DEBUG
 //static int biggest_hash = 0;
 #endif
 
-LispObject Lput_hash(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject key, tab, val;
-    va_start(a, nargs);
-    key = va_arg(a, LispObject);
-    tab = va_arg(a, LispObject);
-    val = va_arg(a, LispObject);
-    va_end(a);
-    argcheck(nargs, 3, "puthash");
-    if (!is_vector(tab) || type_of_vector(tab) != TYPE_HASH)
+LispObject Lput_hash(LispObject env, LispObject key, LispObject tab, LispObject val)
+{   if (!is_vector(tab) || type_of_vector(tab) != TYPE_HASH)
         aerror1("puthash", tab);
     push3(key, tab, val);
 // I call Lget_hash here and that updates the GET statistics. So I fiddle
@@ -1058,7 +1037,7 @@ LispObject Lput_hash(LispObject env, int nargs, ...)
 // A side effect of get_hash is that it leaves a pointer to either the
 // entry in the table where something was found or to the first available
 // empty cell encountered.
-    Lget_hash(nil, 3, key, tab, nil);
+    Lget_hash(nil, key, tab, nil);
 #ifdef HASH_STATISTICS
     Nhputtmp = Nhgetp - Nhputtmp;
     Nhgetp -= Nhputtmp;
@@ -1101,7 +1080,7 @@ LispObject Lput_hash(LispObject env, int nargs, ...)
                 if (key1 == SPID_HASHEMPTY || key1 == SPID_HASHTOMB) continue;
                 push3(v, tab, val);
 // Re-inserting will add to the counts for hash PUT operations.
-                Lput_hash(nil, 3, key1, tab, val1);
+                Lput_hash(nil, key1, tab, val1);
                 pop3(val, tab, v);
             }
         }
@@ -1121,12 +1100,12 @@ LispObject Lput_hash(LispObject env, int nargs, ...)
 
 
 LispObject Lput_hash_2(LispObject env, LispObject a, LispObject b)
-{   return Lput_hash(env, 3, a, sys_hash_table, b);
+{   return Lput_hash(env, a, sys_hash_table, b);
 }
 
 LispObject Lrem_hash(LispObject env, LispObject key, LispObject tab)
 {   push2(key, tab);
-    Lget_hash(nil, 3, key, tab, nil);
+    Lget_hash(nil, key, tab, nil);
     pop2(tab, key);
     if (mv_2 == nil) return onevalue(nil);
     else
@@ -1160,9 +1139,8 @@ LispObject Lclr_hash(LispObject, LispObject tab)
     return tab;
 }
 
-LispObject Lclr_hash_0(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "clrhash");
-    return Lclr_hash(env, sys_hash_table);
+LispObject Lclr_hash_0(LispObject env)
+{   return Lclr_hash(env, sys_hash_table);
 }
 
 // sxhash is a function that I am coming to believe that I do not like.
@@ -1217,18 +1195,18 @@ LispObject Lhash_flavour(LispObject env, LispObject tab)
 }
 
 setup_type const lisphash_setup[] =
-{   {"mkhash",                  WRONG_NO_3A, Lmkhash2, Lmkhash},
-    {"gethash",                 Lget_hash_1, Lget_hash_2, Lget_hash},
-    {"puthash",                 WRONG_NO_3A, Lput_hash_2, Lput_hash},
-    {"remhash",                 Lrem_hash_1, Lrem_hash, WRONG_NO_2},
-    {"clrhash",                 Lclr_hash, TOO_MANY_1, Lclr_hash_0},
-    {"sxhash",                  Lsxhash, TOO_MANY_1, WRONG_NO_1},
-    {"eqlhash",                 Leqlhash, TOO_MANY_1, WRONG_NO_1},
-    {"equalhash",               Lequalhash, TOO_MANY_1, WRONG_NO_1},
-    {"maphash",                 TOO_FEW_2, Lmaphash, WRONG_NO_2},
-    {"hashcontents",            Lhashcontents, TOO_MANY_1, WRONG_NO_1},
-    {"hashtable-flavour",       Lhash_flavour, TOO_MANY_1, WRONG_NO_1},
-    {NULL,                      0, 0, 0}
+{   {"mkhash",                  G0Wother, G1Wother, Lmkhash_2, Lmkhash_3, G4Wother},
+    {"gethash",                 G0Wother, Lget_hash_1, Lget_hash_2, Lget_hash, G4Wother},
+    {"puthash",                 G0Wother, G1Wother, Lput_hash_2, Lput_hash, G4Wother},
+    {"remhash",                 G0Wother, Lrem_hash_1, Lrem_hash, G3Wother, G4Wother},
+    {"clrhash",                 Lclr_hash_0, Lclr_hash, G2Wother, G3Wother, G4Wother},
+    {"sxhash",                  G0W1, Lsxhash, G2W1, G3W1, G4W1},
+    {"eqlhash",                 G0W1, Leqlhash, G2W1, G3W1, G4W1},
+    {"equalhash",               G0W1, Lequalhash, G2W1, G3W1, G4W1},
+    {"maphash",                 G0W2, G1W2, Lmaphash, G3W2, G4W2},
+    {"hashcontents",            G0W1, Lhashcontents, G2W1, G3W1, G4W1},
+    {"hashtable-flavour",       G0W1, Lhash_flavour, G2W1, G3W1, G4W1},
+    {NULL,                      0, 0, 0, 0, 0}
 };
 
 // end of lisphash.cpp

@@ -153,7 +153,6 @@
 
 extern char **loadable_packages, **switches;
 
-
 #ifdef WIN32
 
 #include <windows.h>

@@ -244,6 +244,8 @@ void show_stack()
 
 #define errcode(n) error_message_table[n]
 
+#define ARG_CUT_OFF 10
+
 void error(int nargs, int code, ...)
 //
 // nargs indicates how many values have been provided AFTER the
@@ -280,7 +282,7 @@ void error(int nargs, int code, ...)
     }
     if ((w1 = qvalue(break_function)) != nil &&
         symbolp(w1) &&
-        qfn1(w1) != undefined1)
+        qfn1(w1) != undefined_1)
     {   ignore_exception((*qfn1(w1))(qenv(w1), nil));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
@@ -316,7 +318,7 @@ void cerror(int nargs, int code1, int code2, ...)
     }
     if ((w1 = qvalue(break_function)) != nil &&
         symbolp(w1) &&
-        qfn1(w1) != undefined1)
+        qfn1(w1) != undefined_1)
     {   ignore_exception((*qfn1(w1))(qenv(w1), nil));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
@@ -413,7 +415,7 @@ LispObject interrupted(LispObject p)
         err_printf("+++ Interrupted\n");
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
-        qfn1(w) != undefined1)
+        qfn1(w) != undefined_1)
     {   ignore_exception((*qfn1(w))(qenv(w), nil));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
@@ -430,7 +432,7 @@ void aerror(const char *s)
         err_printf("+++ Error bad args for %s\n", s);
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
-        qfn1(w) != undefined1)
+        qfn1(w) != undefined_1)
     {   ignore_exception((*qfn1(w))(qenv(w), nil));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
@@ -447,7 +449,7 @@ void aerror0(const char *s)
         err_printf("+++ Error: %s\n", s);
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
-        qfn1(w) != undefined1)
+        qfn1(w) != undefined_1)
     {   ignore_exception((*qfn1(w))(qenv(w), nil));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
@@ -467,7 +469,7 @@ void aerror1(const char *s, LispObject a)
     }
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
-        qfn1(w) != undefined1)
+        qfn1(w) != undefined_1)
     {   ignore_exception((*qfn1(w))(qenv(w), nil));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
@@ -489,7 +491,7 @@ void aerror2(const char *s, LispObject a, LispObject b)
     }
     if ((w = qvalue(break_function)) != nil &&
         symbolp(w) &&
-        qfn1(w) != undefined1)
+        qfn1(w) != undefined_1)
     {   ignore_exception((*qfn1(w))(qenv(w), nil));
     }
     exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
@@ -500,9 +502,42 @@ void aerror2(const char *s, LispObject a, LispObject b)
     throw LispError();
 }
 
-NORETURN static void wrong(int wanted, int given, LispObject env)
+void aerror3(const char *s, LispObject a, LispObject b, LispObject c)
+{   LispObject w;
+    if (miscflags & HEADLINE_FLAG)
+    {   err_printf("+++ Error: %s ", s);
+        loop_print_error(a);
+        err_printf(" ");
+        loop_print_error(b);
+        err_printf("\n");
+        loop_print_error(c);
+        err_printf("\n");
+    }
+    if ((w = qvalue(break_function)) != nil &&
+        symbolp(w) &&
+        qfn1(w) != undefined_1)
+    {   ignore_exception((*qfn1(w))(qenv(w), nil));
+    }
+    exit_reason = (miscflags & ARGS_FLAG) ? UNWIND_ERROR :
+                  (miscflags & FNAME_FLAG) ? UNWIND_FNAME :
+                  UNWIND_UNWIND;
+    exit_value = exit_tag = nil;
+    exit_count = 0;
+    throw LispError();
+}
+
+NORETURN static void wrong(int given, int wanted, LispObject env)
 {   char msg[64];
-    sprintf(msg, "Function called with %d args where %d wanted", given, wanted);
+    if (wanted == 4)
+        sprintf(msg,
+            "Function called with %d args where more then three wanted",
+            given);
+    else if (given == 4)
+        sprintf(msg,
+            "Function called with more than three args where %d wanted",
+            wanted);
+    else sprintf(msg, "Function called with %d args where %d wanted",
+                      given, wanted);
     if ((miscflags & HEADLINE_FLAG))
     {   err_printf("\nCalling ");
         loop_print_error(env);
@@ -511,48 +546,141 @@ NORETURN static void wrong(int wanted, int given, LispObject env)
     aerror(msg);
 }
 
-void too_few_2(LispObject env, LispObject)
-{   wrong(2, 1, env);
+NORETURN static void wrong(int given, LispObject env)
+{   char msg[64];
+    if (given == 4)
+        sprintf(msg, "Function called incorrectly with more than 3 args");
+    else sprintf(msg, "Function called incorrectly with %d args", given);
+    if ((miscflags & HEADLINE_FLAG))
+    {   err_printf("\nCalling ");
+        loop_print_error(env);
+        err_printf("\n");
+    }
+    aerror(msg);
 }
 
-void too_many_1(LispObject env, LispObject, LispObject)
-{   wrong(1, 2, env);
-}
-
-void wrong_no_0a(LispObject env, LispObject)
+NORETURN void got_0_wanted_1(LispObject env)
 {   wrong(0, 1, env);
 }
 
-void wrong_no_0b(LispObject env, LispObject, LispObject)
+NORETURN void got_0_wanted_2(LispObject env)
 {   wrong(0, 2, env);
 }
 
-void wrong_no_3a(LispObject env, LispObject)
+NORETURN void got_0_wanted_3(LispObject env)
+{   wrong(0, 3, env);
+}
+
+NORETURN void got_0_wanted_4up(LispObject env)
+{   wrong(0, 4, env);
+}
+
+NORETURN void got_0_wanted_other(LispObject env)
+{   wrong(0, env);
+}
+
+
+NORETURN void got_1_wanted_0(LispObject env, LispObject a1)
+{   wrong(0, 1, env);
+}
+
+NORETURN void got_1_wanted_2(LispObject env, LispObject a1)
+{   wrong(2, 1, env);
+}
+
+NORETURN void got_1_wanted_3(LispObject env, LispObject a1)
 {   wrong(3, 1, env);
 }
 
-void wrong_no_3b(LispObject env, LispObject, LispObject)
+NORETURN void got_1_wanted_4up(LispObject env, LispObject a1)
+{   wrong(4, 1, env);
+}
+
+NORETURN void got_1_wanted_other(LispObject env, LispObject a1)
+{   wrong(1, env);
+}
+
+
+NORETURN void got_2_wanted_0(LispObject env, LispObject a1,
+                             LispObject a2)
+{   wrong(0, 2, env);
+}
+
+NORETURN void got_2_wanted_1(LispObject env, LispObject a1,
+                             LispObject a2)
+{   wrong(1, 2, env);
+}
+
+NORETURN void got_2_wanted_3(LispObject env, LispObject a1,
+                             LispObject a2)
 {   wrong(3, 2, env);
 }
 
-void wrong_no_na(LispObject env, LispObject)
-{   if (is_cons(env) && is_bps(qcar(env)))
-        wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 1, env);
-    else aerror1("function called with 1 arg when 0 or >= 3 wanted", env);
+NORETURN void got_2_wanted_4up(LispObject env, LispObject a1,
+                               LispObject a2)
+{   wrong(4, 2, env);
 }
 
-void wrong_no_nb(LispObject env, LispObject, LispObject)
-{   if (is_cons(env) && is_bps(qcar(env)))
-        wrong(((unsigned char *)data_of_bps(qcar(env)))[0], 2, env);
-    else aerror1("function called with 2 args when 0 or >= 3 wanted", env);
+NORETURN void got_2_wanted_other(LispObject env, LispObject a1,
+                                 LispObject a2)
+{   wrong(2, env);
 }
 
-void wrong_no_1(LispObject env, int nargs, ...)
-{   wrong(1, nargs, env);
+
+NORETURN void got_3_wanted_0(LispObject env, LispObject a1,
+                             LispObject a2, LispObject a3)
+{   wrong(0, 3, env);
 }
 
-void wrong_no_2(LispObject env, int nargs, ...)
-{   wrong(2, nargs, env);
+NORETURN void got_3_wanted_1(LispObject env, LispObject a1,
+                             LispObject a2, LispObject a3)
+{   wrong(1, 3, env);
+}
+
+NORETURN void got_3_wanted_2(LispObject env, LispObject a1,
+                             LispObject a2, LispObject a3)
+{   wrong(2, 3, env);
+}
+
+NORETURN void got_3_wanted_4up(LispObject env, LispObject a1,
+                               LispObject a2, LispObject a3)
+{   wrong(4, 3, env);
+}
+
+NORETURN void got_3_wanted_other(LispObject env, LispObject a1,
+                                 LispObject a2, LispObject a3)
+{   wrong(3, env);
+}
+
+
+NORETURN void got_4up_wanted_0(LispObject env, LispObject a1,
+                               LispObject a2, LispObject a3,
+                               LispObject a4up)
+{   wrong(0, 4, env);
+}
+
+NORETURN void got_4up_wanted_1(LispObject env, LispObject a1,
+                               LispObject a2, LispObject a3,
+                               LispObject a4up)
+{   wrong(1, 4, env);
+}
+
+NORETURN void got_4up_wanted_2(LispObject env, LispObject a1,
+                               LispObject a2, LispObject a3,
+                               LispObject a4up)
+{   wrong(2, 4, env);
+}
+
+NORETURN void got_4up_wanted_3(LispObject env, LispObject a1,
+                               LispObject a2, LispObject a3,
+                               LispObject a4up)
+{   wrong(3, 4, env);
+}
+
+NORETURN void got_4up_wanted_other(LispObject env, LispObject a1,
+                                   LispObject a2, LispObject a3,
+                                   LispObject a4up)
+{   wrong(4, env);
 }
 
 void bad_specialn(LispObject, int, ...)
@@ -854,9 +982,7 @@ static void lisp_main(void)
             terminal_pushed = NOT_CHAR;
             if (supervisor != nil && !ignore_restart_fn)
             {   miscflags |= BACKTRACE_MSG_BITS;
-//
 // Here I reconstruct the argument that I passed in (restart_csl f a).
-//
                 if (exit_charvec != NULL)
                 {   LispObject a;
                     try
@@ -868,10 +994,9 @@ static void lisp_main(void)
                     }
                     free(exit_charvec);
                     exit_charvec = NULL;
-                    push(a);
-                    apply(supervisor, 1, nil, current_function = startup_symbol);
+                    apply(supervisor, ncons(a), nil, current_function = startup_symbol);
                 }
-                else apply(supervisor, 0, nil, current_function = startup_symbol);
+                else apply(supervisor, nil, nil, current_function = startup_symbol);
             }
 //
 // Here the default read-eval-print loop used if the user has not provided
@@ -2972,7 +3097,7 @@ int PROC_set_switch(const char *name, int val)
              push(w1);
              w = make_undefined_symbol(name);
              pop(w1);
-             Lapply2(nil, 3, w1, w, val == 0 ? nil : lisp_true),
+             Lapply2(nil, w1, w, val == 0 ? nil : lisp_true),
              // Error handler
              return 1);  // Failed to set the switch
     return 0;

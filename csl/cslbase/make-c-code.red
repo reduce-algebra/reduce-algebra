@@ -31,7 +31,8 @@
 
 % $Id$
 
-on echo;
+on echo, backtrace;
+off int;
 
 % This file can be run to turn bits of the REDUCE source code
 % into C so that this C can be compiled and linked in to make a

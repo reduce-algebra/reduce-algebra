@@ -33,6 +33,6 @@ gcc r2l.c -o r2l
 ./r2l -rights extras.red extras.lsp
 ./r2l -rights compiler.red compiler.lsp
 
-rm -f r2l r2l.exe r2l.c
+# rm -f r2l r2l.exe r2l.c
 
 echo "done"

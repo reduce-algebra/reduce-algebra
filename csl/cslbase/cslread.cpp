@@ -152,8 +152,8 @@ LispObject copy_string(LispObject str, size_t n)
     return r;
 }
 
-LispObject Lbatchp(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "batchp");
+LispObject Lbatchp(LispObject env)
+{
 //
 // If the user had specified input files on the command line I will say that
 // we are in batch mode even if there is a terminal present somewhere. So
@@ -623,15 +623,15 @@ LispObject intern(size_t len, bool escaped)
 }
 
 LispObject make_undefined_symbol(char const *s)
-{   return make_symbol(s, 0, undefined1, undefined2, undefinedn);
+{   return make_symbol(s, 0, undefined_0, undefined_1, undefined_2,
+                             undefined_3, undefined_4up);
 }
 
 LispObject make_symbol(char const *s, int restartp,
-                       one_args *f1, two_args *f2, n_args *fn)
-//
+                       no_args *f0, one_arg *f1, two_args *f2,
+                       three_args *f3, fourup_args *f4up)
 // Used from the startup code to create an interned symbol and (maybe)
 // put something in its function cell.
-//
 {   LispObject v, v0 = nil;
     bool first_try = true;
 //
@@ -668,13 +668,13 @@ start_again:
 // of C code (or if I gave first_try false which is when I am going round
 // again and doing rather curious things...)
 //
-    if (f1 != undefined1)
+    if (f1 != undefined_1)
     {   if ((restartp & 1)==0 || (qheader(v) & SYM_C_DEF) != 0 || !first_try)
-        {   ifn0(v) = (intptr_t)undefined0;
+        {   ifn0(v) = (intptr_t)f0;
             ifn1(v) = (intptr_t)f1;
             ifn2(v) = (intptr_t)f2;
-            ifn3(v) = (intptr_t)undefined3;
-            ifnn(v) = (intptr_t)fn;
+            ifn3(v) = (intptr_t)f3;
+            ifn4up(v) = (intptr_t)f4up;
             qheader(v) |= SYM_C_DEF;
         }
         else
@@ -721,11 +721,11 @@ start_again:
             while (consp(v1))
             {   LispObject w = qcar(v1);
                 v1 = qcdr(v1);
-                ifn0(w) = (intptr_t)undefined0;
+                ifn0(w) = (intptr_t)f0;
                 ifn1(w) = (intptr_t)f1;
                 ifn2(w) = (intptr_t)f2;
-                ifn3(w) = (intptr_t)undefined3;
-                ifnn(w) = (intptr_t)fn;
+                ifn3(w) = (intptr_t)f3;
+                ifn4up(w) = (intptr_t)f4up;
             }
         }
     }
@@ -1236,16 +1236,16 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
     qfastgets(s) = nil;
     qpackage(s) = nil;
     qenv(s) = s;
-    ifn0(s) = (intptr_t)undefined0;
-    ifn1(s) = (intptr_t)undefined1;
-    ifn2(s) = (intptr_t)undefined2;
-    ifn3(s) = (intptr_t)undefined3;
-    ifnn(s) = (intptr_t)undefinedn;
+    ifn0(s) = (intptr_t)undefined_0;
+    ifn1(s) = (intptr_t)undefined_1;
+    ifn2(s) = (intptr_t)undefined_2;
+    ifn3(s) = (intptr_t)undefined_3;
+    ifn4up(s) = (intptr_t)undefined_4up;
     qcount(s) = 0;      // set counts to zero to be tidy
     return onevalue(s);
 }
 
-LispObject Lgensym(LispObject env, int nargs, ...)
+LispObject Lgensym(LispObject env)
 //
 // Lisp function (gensym) creates an uninterned symbol with odd name.
 //
@@ -1254,7 +1254,6 @@ LispObject Lgensym(LispObject env, int nargs, ...)
     LispObject pn;
     char genname[64];
 #endif
-    argcheck(nargs, 0, "gensym");
     stackcheck0(0);
 #ifdef COMMON
     sprintf(genname, "G%lu", (long unsigned)(uint32_t)gensym_ser++);
@@ -1277,11 +1276,11 @@ LispObject Lgensym(LispObject env, int nargs, ...)
     qfastgets(id) = nil;
     qpackage(id) = nil; // Marks it as a uninterned
     qenv(id) = id;
-    ifn0(id) = (intptr_t)undefined0;
-    ifn1(id) = (intptr_t)undefined1;
-    ifn2(id) = (intptr_t)undefined2;
-    ifn3(id) = (intptr_t)undefined3;
-    ifnn(id) = (intptr_t)undefinedn;
+    ifn0(id) = (intptr_t)undefined_0;
+    ifn1(id) = (intptr_t)undefined_1;
+    ifn2(id) = (intptr_t)undefined_2;
+    ifn3(id) = (intptr_t)undefined_3;
+    ifn4up(id) = (intptr_t)undefined_4up;
     qcount(id) = 0;     // to be tidy
 
     return onevalue(id);
@@ -1317,11 +1316,11 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     qfastgets(id) = nil;
     qpackage(id) = nil; // Marks it as a uninterned
     qenv(id) = id;
-    ifn0(id) = (intptr_t)undefined0;
-    ifn1(id) = (intptr_t)undefined1;
-    ifn2(id) = (intptr_t)undefined2;
-    ifn3(id) = (intptr_t)undefined3;
-    ifnn(id) = (intptr_t)undefinedn;
+    ifn0(id) = (intptr_t)undefined_0;
+    ifn1(id) = (intptr_t)undefined_1;
+    ifn2(id) = (intptr_t)undefined_2;
+    ifn3(id) = (intptr_t)undefined_3;
+    ifn4up(id) = (intptr_t)undefined_4up;
     qcount(id) = 0;     // to be tidy
     return onevalue(id);
 }
@@ -1364,11 +1363,11 @@ LispObject Lgensym1(LispObject env, LispObject a)
     qfastgets(id) = nil;
     qpackage(id) = nil; // Marks it as a uninterned
     qenv(id) = id;
-    ifn0(id) = (intptr_t)undefined0;
-    ifn1(id) = (intptr_t)undefined1;
-    ifn2(id) = (intptr_t)undefined2;
-    ifn3(id) = (intptr_t)undefined3;
-    ifnn(id) = (intptr_t)undefinedn;
+    ifn0(id) = (intptr_t)undefined_0;
+    ifn1(id) = (intptr_t)undefined_1;
+    ifn2(id) = (intptr_t)undefined_2;
+    ifn3(id) = (intptr_t)undefined_3;
+    ifn4up(id) = (intptr_t)undefined_4up;
     qcount(id) = 0;     // to be tidy
     return onevalue(id);
 }
@@ -1401,11 +1400,11 @@ LispObject Lgensym2(LispObject env, LispObject a)
     qfastgets(id) = nil;
     qpackage(id) = nil; // Marks it as a uninterned
     qenv(id) = id;
-    ifn0(id) = (intptr_t)undefined0;
-    ifn1(id) = (intptr_t)undefined1;
-    ifn2(id) = (intptr_t)undefined2;
-    ifn3(id) = (intptr_t)undefined3;
-    ifnn(id) = (intptr_t)undefinedn;
+    ifn0(id) = (intptr_t)undefined_0;
+    ifn1(id) = (intptr_t)undefined_1;
+    ifn2(id) = (intptr_t)undefined_2;
+    ifn3(id) = (intptr_t)undefined_3;
+    ifn4up(id) = (intptr_t)undefined_4up;
     qcount(id) = 0;     // to be tidy
     return onevalue(id);
 }
@@ -1535,12 +1534,11 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
         qfastgets(s) = nil;
         qpackage(s) = p;
         qenv(s) = (LispObject)s;
-        ifn0(s) = (intptr_t)undefined0;
-        ifn1(s) = (intptr_t)undefined1;
-        ifn2(s) = (intptr_t)undefined2;
-        ifn3(s) = (intptr_t)undefined3;
-// The issue of ifn4 and ifnn is one to review from time to time...
-        ifnn(s) = (intptr_t)undefinedn;
+        ifn0(s) = (intptr_t)undefined_0;
+        ifn1(s) = (intptr_t)undefined_1;
+        ifn2(s) = (intptr_t)undefined_2;
+        ifn3(s) = (intptr_t)undefined_3;
+        ifn4up(s) = (intptr_t)undefined_4up;
         qcount(s) = 0;
         push(s);
 #ifdef COMMON
@@ -1999,7 +1997,7 @@ LispObject Lrtell_1(LispObject env, LispObject stream)
     else return onevalue(fixnum_of_int(n));
 }
 
-LispObject Lrtell(LispObject env, int nargs, ...)
+LispObject Lrtell(LispObject env)
 //
 // RTELL returns an integer that indicates the position of the current
 // input stream (as selected by RDS). If the position is not available
@@ -2010,8 +2008,7 @@ LispObject Lrtell(LispObject env, int nargs, ...)
 // behave predictably - for text streams the value returned should be
 // thought of as an abstract position-tag.
 //
-{   argcheck(nargs, 0, "rtell");
-    return Lrtell_1(nil, qvalue(standard_input));
+{   return Lrtell_1(nil, qvalue(standard_input));
 }
 
 LispObject Lrseekend(LispObject env, LispObject stream)
@@ -3156,13 +3153,12 @@ public:
     }
 };
 
-LispObject Lread(LispObject env, int nargs, ...)
+LispObject Lread(LispObject env)
 //
 // The full version of read_s() has to support extra optional args
 // that deal with error and eof returns... and a recursive-p arg!
 //
 {   LispObject stream = qvalue(standard_input);
-    argcheck(nargs, 0, "read");
 #ifdef COMMON
     save_reader_workspace RAII;
     reader_workspace = nil;
@@ -3172,9 +3168,13 @@ LispObject Lread(LispObject env, int nargs, ...)
 #endif
 }
 
-static LispObject Lwhere_was_that(LispObject env, int nargs, ...)
+// This is an odd function that may help with diagnostics sometimes. Whenever
+// READ is called it should make a record of the line number. If there is an
+// issue (eg caused by mis-matched parentheses) then where-was-that can
+// retrieve thsi information.
+
+static LispObject Lwhere_was_that(LispObject env)
 {   LispObject w;
-    argcheck(nargs, 0, "where-was-that");
 #ifdef COMMON
     w = list3(current_file, fixnum_of_int(most_recent_read_point),
               packname_(CP));
@@ -3383,7 +3383,7 @@ void read_eval_print(int noisy)
         errorset_msg = NULL;
         try
         {   START_SETJMP_BLOCK;
-            u = Lread(nil, 0);
+            u = Lread(nil);
         }
         catch (LispSignal e)
         {   u = nil;
@@ -3717,6 +3717,10 @@ LispObject Lrdf4(LispObject env, LispObject file, LispObject noisyp,
 #endif
 }
 
+LispObject Lrdf0(LispObject env)
+{   return Lrdf4(nil, nil, lisp_true, lisp_true, lisp_true);
+}
+
 LispObject Lrdf1(LispObject env, LispObject file)
 {   return Lrdf4(env, file, lisp_true, lisp_true, lisp_true);
 }
@@ -3725,18 +3729,14 @@ LispObject Lrdf2(LispObject env, LispObject file, LispObject noisy)
 {   return Lrdf4(env, file, noisy, lisp_true, lisp_true);
 }
 
-LispObject Lrdfn(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject file, noisy, verbose, nofile = lisp_true;
-    if (nargs == 0)
-        return Lrdf4(nil, nil, lisp_true, lisp_true, lisp_true);
-    if (nargs < 3 || nargs > 4) aerror("load");
-    va_start(a, nargs);
-    file = va_arg(a, LispObject);
-    noisy = va_arg(a, LispObject);
-    verbose = va_arg(a, LispObject);
-    if (nargs > 3) nofile = va_arg(a, LispObject);
-    va_end(a);
+LispObject Lrdf3(LispObject env, LispObject file, LispObject noisy, LispObject verbose)
+{   return Lrdf4(env, file, noisy, verbose, lisp_true);
+}
+
+LispObject Lrdfn(LispObject env, LispObject file, LispObject noisy,
+        LispObject verbose, LispObject nofile)
+{   if (qcdr(nofile) != nil) aerror("too many args for rdf/load");
+    nofile = qcar(nofile);
     return Lrdf4(env, file, noisy, verbose, nofile);
 }
 
@@ -3791,9 +3791,8 @@ LispObject Lspool(LispObject env, LispObject file)
     return onevalue(nil);
 }
 
-static LispObject Lspool0(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, spool_name);
-    return Lspool(env, nil);
+static LispObject Lspool0(LispObject env)
+{   return Lspool(env, nil);
 }
 
 #ifdef COMMON
@@ -3942,32 +3941,40 @@ static LispObject Luse_package(LispObject env, LispObject uses, LispObject pkg)
     return onevalue(lisp_true);
 }
 
-static LispObject Lmake_package(LispObject env, int nargs, ...)
-{   LispObject name, nicknames = nil, uses = nil, w = nil, k;
-    bool has_use = false;
-    va_list a;
-    int i;
-    if (nargs == 0) aerror("make-package");
-//
-// First I scan the arguments - there may be a lot of them - looking for
-// any relevant keyword parameters
-//
-    va_start(a, nargs);
-    push_args(a, nargs);
-    name = stack[1-nargs];
-    if ((nargs & 1) == 0)
-    {   popv(1);
-        nargs--;
+// (de make!-package (packagename &key nicknames use) ...)
+// so a call can be
+//  (make!-package N)
+//  (make!-package N :nicknames NN)
+//  (make!-package N :nicknames NN :use U)
+//  (make!-package N :use U)
+//  (make!-package N :use U :nicknames NN)
+// and there should be 1, 3 or 5.
+
+static LispObject Lmake_package(LispObject env, LispObject name, LispObject k1,
+        LispObject v1, LispObject kv2)
+{   LispObject nicknames = nil, uses = nil, w = nil
+    bool has_nicknames = false, has_use = false;
+    LispObject k2 = nil, v2 = nil;
+    k2 = qcar(kv2);
+    kv2 = qcdr(kv2);
+    if (kv2 == nil) aerror("wrong number of arguments for make-package");
+    v2 = qcar(kv2);
+    kv2 = qcdr(kv2);
+    if (kv2 != nil) aerror("wrong number of arguments for make-package");    if (k1 == nicknames_symbol) nicknames = v1;
+    if (k1 == nicknames_symbol) nicknames = v1, has_nicknames = true;
+    else if (k1 == use_symbol) uses = v1, has_uses = true;
+// I will not permit other keys.
+    else aerror1("make-package", k1);
+// I will moan if a keyword is repeated.
+    if (k2 == nicknames_symbol)
+    {   if (hash_nicknames) aerror("make-package", k2);
+        else nicknames = v2, has_nicknames = true;
     }
-    for (i=1; i<nargs; i+=2)
-    {   pop2(k, w);
-        if (w == nicknames_symbol) nicknames = k;
-        else if (w == use_symbol) has_use = true, uses = k;
+    else if (k2 == use_symbol)
+    {   if (has_uses) aerror1("make-package", k2);
+        else uses = v2, has_uses = true;
     }
-    popv(1);
-//
-// I provide a default value for the ":use" argument
-//
+    else aerror1("make-package", k2);
     if (!has_use)
     {   push2(name, nicknames);
         uses = make_string("LISP");
@@ -4026,23 +4033,26 @@ static LispObject Lmake_package(LispObject env, int nargs, ...)
     return onevalue(name);
 }
 
+static LispObject Lmake_package_3(LispObject env, LispObject a, LispObject b, LispObject c)
+{   return Lmake_package(env, a, b, c, SPID_NOARG);
+}
+
 static LispObject Lmake_package_2(LispObject env, LispObject a, LispObject b)
-{   return Lmake_package(env, 2, a, b);
+{   aerror("wrong number of arguments for make-package");
 }
 
 static LispObject Lmake_package_1(LispObject env, LispObject a)
-{   return Lmake_package(env, 1, a);
+{   return Lmake_package(env, a, SPID_NOARG, SPID_NOARG, SPID_NOARG);
 }
 
-static LispObject Llist_all_packages(LispObject, int, ...)
+static LispObject Llist_all_packages(LispObject)
 {   return onevalue(all_packages);
 }
 
 #endif
 
-LispObject Ltyi(LispObject env, int nargs, ...)
+LispObject Ltyi(LispObject env)
 {   int ch;
-    argcheck(nargs, 0, "tyi");
     if (curchar == NOT_CHAR)
     {   LispObject stream = qvalue(standard_input);
         if (!is_stream(stream)) stream = qvalue(terminal_io);
@@ -4096,9 +4106,8 @@ LispObject Lreadch1(LispObject env, LispObject stream)
     return onevalue(w);
 }
 
-LispObject Lreadch(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "readch");
-    return Lreadch1(env, qvalue(standard_input));
+LispObject Lreadch(LispObject env)
+{   return Lreadch1(env, qvalue(standard_input));
 }
 
 LispObject Lpeekch2(LispObject env, LispObject type, LispObject stream)
@@ -4131,9 +4140,8 @@ LispObject Lpeekch1(LispObject env, LispObject type)
 {   return Lpeekch2(env, type, qvalue(standard_input));
 }
 
-LispObject Lpeekch(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "peekch");
-    return Lpeekch2(env, nil, qvalue(standard_input));
+LispObject Lpeekch(LispObject env)
+{   return Lpeekch2(env, nil, qvalue(standard_input));
 }
 
 LispObject Lunreadch2(LispObject, LispObject a, LispObject stream)
@@ -4178,62 +4186,61 @@ LispObject Lreadline1(LispObject env, LispObject stream)
     return nvalues(w, 2);
 }
 
-LispObject Lreadline(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "readline");
-    return Lreadline1(env, qvalue(standard_input));
+LispObject Lreadline(LispObject env)
+{   return Lreadline1(env, qvalue(standard_input));
 }
 
 setup_type const read_setup[] =
-{   {"batchp",                  WRONG_NO_NA, WRONG_NO_NB, Lbatchp},
-    {"rseek",                   Lrseek, Lrseek_2, WRONG_NO_1},
+{   {"batchp",                  Lbatchp, G1W0, G2W0, G3W0, G4W0},
+    {"rseek",                   G0Wother, Lrseek, Lrseek_2, G3Wother, G4Wother},
 #ifdef COMMON
-    {"rseekend",                Lrseekend, TOO_MANY_1, WRONG_NO_1},
+    {"rseekend",                G0W1, Lrseekend, G2W1, G3W1, G4W1},
 #endif
-    {"rtell",                   Lrtell_1, WRONG_NO_NB, Lrtell},
-    {"gensym1",                 Lgensym1, TOO_MANY_1, WRONG_NO_1},
-    {"gensym2",                 Lgensym2, TOO_MANY_1, WRONG_NO_1},
-    {"gensymp",                 Lgensymp, TOO_MANY_1, WRONG_NO_1},
-    {"reset-gensym",            Lreset_gensym, TOO_MANY_1, WRONG_NO_1},
-    {"getenv",                  Lgetenv, TOO_MANY_1, WRONG_NO_1},
-    {"orderp",                  TOO_FEW_2, Lorderp, WRONG_NO_2},
-    {"rdf",                     Lrdf1, Lrdf2, Lrdfn},
-    {"rds",                     Lrds, TOO_MANY_1, WRONG_NO_1},
-    {"peekch",                  Lpeekch1, Lpeekch2, Lpeekch},
-    {"readch",                  Lreadch1, WRONG_NO_NB, Lreadch},
-    {"readb",                   Lreadbyte, TOO_MANY_1, WRONG_NO_1},
-    {"unreadch",                Lunreadch, Lunreadch2, WRONG_NO_1},
-    {"readline",                Lreadline1, WRONG_NO_NB, Lreadline},
-    {"setpchar",                Lsetpchar, TOO_MANY_1, WRONG_NO_1},
-    {"spool",                   Lspool, TOO_MANY_1, Lspool0},
-    {"dribble",                 Lspool, TOO_MANY_1, Lspool0},
-    {"system",                  Lsystem, TOO_MANY_1, WRONG_NO_1},
-    {"silent-system",           Lsilent_system, TOO_MANY_1, WRONG_NO_1},
-    {"~tyi",                    WRONG_NO_NA, WRONG_NO_NB, Ltyi},
-    {"list-to-string",          Llist_to_string, TOO_MANY_1, WRONG_NO_1},
-    {"list2string",             Llist_to_string, TOO_MANY_1, WRONG_NO_1},
-    {"list-to-symbol",          Llist_to_symbol, TOO_MANY_1, WRONG_NO_1},
-    {"string2list",             Lstring2list, TOO_MANY_1, WRONG_NO_1},
-    {"where-was-that",          WRONG_NO_NA, WRONG_NO_NB, Lwhere_was_that},
-    {"compress",                Lcompress, TOO_MANY_1, WRONG_NO_1},
-    {"compress1",               Lcompress, TOO_MANY_1, WRONG_NO_1},
-    {"read",                    Lread_1, WRONG_NO_NB, Lread},
-    {"intern",                  Lintern, Lintern_2, WRONG_NO_1},
-    {"gensym",                  Lgensym1, WRONG_NO_NB, Lgensym},
-    {"ordp",                    TOO_FEW_2, Lorderp, WRONG_NO_2},
-    {"unintern",                Lunintern, Lunintern_2, WRONG_NO_1},
-    {"remob",                   Lunintern, Lunintern_2, WRONG_NO_1},
-    {"make-symbol",             Lmake_symbol, TOO_MANY_1, WRONG_NO_1},
+    {"rtell",                   Lrtell, Lrtell_1, G2Wother, G3Wother, G4Wother},
+    {"gensym1",                 G0W1, Lgensym1, G2W1, G3W1, G4W1},
+    {"gensym2",                 G0W1, Lgensym2, G2W1, G3W1, G4W1},
+    {"gensymp",                 G0W1, Lgensymp, G2W1, G3W1, G4W1},
+    {"reset-gensym",            G0W1, Lreset_gensym, G2W1, G3W1, G4W1},
+    {"getenv",                  G0W1, Lgetenv, G2W1, G3W1, G4W1},
+    {"orderp",                  G0W2, G1W2, Lorderp, G3W2, G4W2},
+    {"rdf",                     G0Wother, Lrdf1, Lrdf2, Lrdf3, Lrdfn},
+    {"rds",                     G0W1, Lrds, G2W1, G3W1, G4W1},
+    {"peekch",                  Lpeekch, Lpeekch1, Lpeekch2, G3Wother, G4Wother},
+    {"readch",                  Lreadch, Lreadch1, G2Wother, G3Wother, G4Wother},
+    {"readb",                   G0W1, Lreadbyte, G2W1, G3W1, G4W1},
+    {"unreadch",                G0Wother, Lunreadch, Lunreadch2, G3W1, G4W1},
+    {"readline",                Lreadline, Lreadline1, G2Wother, G3Wother, G4Wother},
+    {"setpchar",                G0W1, Lsetpchar, G2W1, G3W1, G4W1},
+    {"spool",                   Lspool0, Lspool, G2Wother, G3Wother, G4Wother},
+    {"dribble",                 Lspool0, Lspool, G2Wother, G3Wother, G4Wother},
+    {"system",                  G0W1, Lsystem, G2W1, G3W1, G4W1},
+    {"silent-system",           G0W1, Lsilent_system, G2W1, G3W1, G4W1},
+    {"~tyi",                    Ltyi, G1W0, G2W0, G3W0, G4W0},
+    {"list-to-string",          G0W1, Llist_to_string, G2W1, G3W1, G4W1},
+    {"list2string",             G0W1, Llist_to_string, G2W1, G3W1, G4W1},
+    {"list-to-symbol",          G0W1, Llist_to_symbol, G2W1, G3W1, G4W1},
+    {"string2list",             G0W1, Lstring2list, G2W1, G3W1, G4W1},
+    {"where-was-that",          Lwhere_was_that, G1W0, G2W0, G3W0, G4W0},
+    {"compress",                G0W1, Lcompress, G2W1, G3W1, G4W1},
+    {"compress1",               G0W1, Lcompress, G2W1, G3W1, G4W1},
+    {"read",                    Lread, Lread_1, G2Wother, G3Wother, G4Wother},
+    {"intern",                  G0Wother, Lintern, Lintern_2, G3Wother, G4Wother},
+    {"gensym",                  Lgensym, Lgensym1, G2Wother, G3Wother, G4Wother},
+    {"ordp",                    G0W2, G1W2, Lorderp, G3W2, G4W2},
+    {"unintern",                G0Wother, Lunintern, Lunintern_2, G3Wother, G4Wother},
+    {"remob",                   G0Wother, Lunintern, Lunintern_2, G3Wother, G4Wother},
+    {"make-symbol",             G0W1, Lmake_symbol, G2W1, G3W1, G4W1},
 #ifdef COMMON
 // The package system...
-    {"extern",                  Lextern_1, Lextern, WRONG_NO_1},
-    {"import*",                 Limport_1, Limport, WRONG_NO_1},
-    {"find-symbol",             Lfind_symbol_1, Lfind_symbol, WRONG_NO_1},
-    {"find-package",            Lfind_package, TOO_MANY_1, WRONG_NO_1},
-    {"make-package",            Lmake_package_1, Lmake_package_2, Lmake_package},
-    {"use-package*",            TOO_FEW_2, Luse_package, WRONG_NO_2},
-    {"list-all-packages",       WRONG_NO_NA, WRONG_NO_NB, Llist_all_packages},
+    {"extern",                  G0Wother, Lextern_1, Lextern, G3Wother, G4Wother},
+    {"import*",                 G0Wother, Limport_1, Limport, G3Wother, G4Wother},
+    {"find-symbol",             G0Wother, Lfind_symbol_1, Lfind_symbol, G3Wother, G4Wother},
+    {"find-package",            G0W1, Lfind_package, G2W1, G3W1, G4W1},
+    {"make-package",            G0Wother, Lmake_package_1, Lmake_package_2, Lmake_package_3, LMake_package_4up},
+    {"use-package*",            G0W2, G1W2, Luse_package, G3W2, G4W2},
+    {"list-all-packages",       Llist_all_packages, G1W0, G2W0, G3W0, G4W0},
 #endif
-    {NULL,                      0, 0, 0}
+    {NULL,                      0, 0, 0, 0, 0}
 };
 
 // end of cslread.cpp

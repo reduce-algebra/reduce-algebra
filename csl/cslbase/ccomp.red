@@ -55,6 +55,8 @@ symbolic macro procedure c!:printf(u,!&optional,env);
 % arbitrary number of arguments.
   list('c!:printf1, cadr u, 'list . cddr u);
 
+flag('(c!:printf), 'variadic);
+
 symbolic procedure c!:printf1(fmt, args);
 % this is the inner works of print formatting.
 % the special sequences that can occur in format strings are
@@ -607,6 +609,12 @@ symbolic procedure c!:ccall1(fn, args, env);
     else if null cdr args then
       c!:outop('call, val, list c!:cval(car args, env), fn)
     else <<
+% Here I map (f a b c d e f) to (f a b c (list d e f)). But BEWARE - if the
+% function is one with a direct C entrypoint then it takes its arguments
+% "naturally". This case only arises with list3* and list4 at present...
+      if not get(car fn, 'c!:direct_entrypoint) and
+         cddr args and cdddr args then
+        args := list(car args, cadr args, caddr args, 'list . cdddr args);
       r := c!:pareval(args, env);
       c!:outop('call, val, r, fn) >>;
     c!:outop('reloadenv, 'env, nil, nil);
@@ -673,7 +681,7 @@ symbolic procedure c!:cfndef(c!:current_procedure,
 % so that the fluids get bound by !~PROG.
 %
     c!:current_args := args;
-    varargs := null args or length args >= 3;
+    varargs := length args >= 4;
     for each v in args do
        if v = '!&optional or v = '!&rest then
           error(0, "&optional and &rest not supported by this compiler (yet)")
@@ -694,15 +702,33 @@ symbolic procedure c!:cfndef(c!:current_procedure,
 % This bit sets up the PROG block for binding fluid arguments. 
     if n then <<
        body := list list('return, body);
+% If there were any fluid variable amongst the arguments I put a gensym in
+% where the actual formals go sothat I can use the fluid name later on.
        args := subla(n, args);
-% Note that the values I assign from here are gensyms, and so in particular
-% are never messy expressions that reference any fluid.
+% Note that the values I assign FROM here are gensyms, and so in particular
+% are never messy expressions that reference any fluid. So if I have a fluid
+% argument, say, B, I will map
+%       (de foo (a B c) ...)
+% onto  (de foo (a g1 c) (prog (B) (setq B g1) (return ...)))
+% so that the binding of the fluid is done by the compilation of PROG.
        for each v in n do
          body := list('setq, car v, cdr v) . body;
        body := '!~prog . (for each v in reverse n collect car v) . body >>;
+% Now I am ready to emit the procedure header.
     c!:printf("static LispObject %s(LispObject env", c!:current_c_name);
     env := nil;
-    if varargs then c!:printf(", int nargs, ...")
+    if varargs then <<
+      for each x in list(car args, cadr args, caddr args) do begin
+         scalar aa;
+         c!:printf ",";
+         if n then << c!:printf "\n                        "; n := nil >>
+         else n := t;
+         aa := c!:my_gensym();
+         env := (x . aa) . env;
+         c!:registers := aa . c!:registers;
+         args1 := aa . args1;
+         c!:printf(" LispObject %s", aa) end;
+       c!:printf(", LispObject _a4up_") >>
     else <<
       n := t;
       for each x in args do begin
@@ -717,8 +743,9 @@ symbolic procedure c!:cfndef(c!:current_procedure,
          c!:printf(" LispObject %s", aa) end >>;
     c!:printf(")\n{\n");
     c!:printf("    env = qenv(env);\n");
-    if varargs and args then
-      for each x in args do begin
+    if varargs then
+% each argument from 4 up will also need an asociated virtual register.
+      for each x in cdddr args do begin
         scalar aa;
         aa := c!:my_gensym();
         env := (x . aa) . env;
@@ -738,7 +765,8 @@ symbolic procedure c!:cfndef(c!:current_procedure,
 % Note that (in an ugly manner) optimise_flowgraph prints out first the
 % procedure header and then the body of the function.
     c!:optimise_flowgraph(entrypoint, c!:all_blocks, env,
-                        length args . c!:current_procedure, args1, varargs);
+                        length args . c!:current_procedure,
+                        reverse args1, varargs);
 
     wrs O_file;
 
@@ -1022,7 +1050,7 @@ procedure C!-end1 create_lfile;
     else c!:printf("\n\nsetup_type_1 const %s_setup[] =\n{\n", Setup_name);
     c!:defnames := reverse c!:defnames;
     while c!:defnames do begin
-       scalar name, nargs, f1, f2, cast, fn;
+       scalar name, nargs, f0, f1, f2, f3, f4up;
 !#if common!-lisp!-mode
        name := cadddr car c!:defnames;
        checksum := cadddr cdar c!:defnames;
@@ -1030,26 +1058,28 @@ procedure C!-end1 create_lfile;
        name := caar c!:defnames;
        checksum := cadddr car c!:defnames;
 !#endif
-       f1 := cadar c!:defnames;
+       f0 := cadar c!:defnames;
        nargs := caddar c!:defnames;
-       cast := "(n_args *)";
-       if nargs = 1 then <<
-          f2 := '!T!O!O_!M!A!N!Y_1; cast := ""; fn := '!W!R!O!N!G_!N!O_1 >>
+       if nargs = 0 then <<
+          f1 := "G1W0"; f2 := "G2W0"; f3 := "G3W0"; f4up := "G4W0" >>
+       else if nargs = 1 then <<
+          f1 := f0; f0 := "G0W1"; f2 := "G2W1"; f3 := "G3W1"; f4up := "G4W1" >>
        else if nargs = 2 then <<
-          f2 := f1; f1 := '!T!O!O_!F!E!W_2; cast := "";
-          fn := '!W!R!O!N!G_!N!O_2 >>
-       else << fn := f1; f1 := '!W!R!O!N!G_!N!O_!N!A;
-               f2 := '!W!R!O!N!G_!N!O_!N!B >>;
-       if create_lfile then c!:printf("    {\q%s\q,%t%s,%t%s,%t%s%s},\n",
-                                      name, 32, f1, 48, f2, 63, cast, fn)
+          f2 := f0; f0 := "G0W2"; f1 := "G1W2"; f3 := "G3W2"; f4up := "G4W2" >>
+       else if nargs = 3 then <<
+          f3 := f0; f0 := "G0W3"; f1 := "G1W3"; f2 := "G2W3"; f4up := "G4W3" >>
+       else <<
+          f4up := f0; f0 := "G0W4up"; f1 := "G1W4up"; f2 := "G2W4up"; f3 := "G3W4up" >>;
+       if create_lfile then c!:printf("    {\q%s\q,%t%s,%t%s,%t%s,%t%s,%t%s},\n",
+                                      name, 32, f0, 42, f1, 52, f2, 62, f3, 72, f4up)
        else
        begin
           scalar c1, c2;
           c1 := divide(checksum, expt(2, 31));
           c2 := cdr c1;
           c1 := car c1;
-          c!:printf("    {\q%s\q, %t%s, %t%s, %t%s%s, %t%s, %t%s},\n",
-                    name, 24, f1, 40, f2, 52, cast, fn, 64, c1, 76, c2)
+          c!:printf("    {\q%s\q, %t%s, %t%s, %t%s, %t%s, %t%s, %t%s, %t%s},\n",
+                    name, 24, f0, 40, f1, 52, f2, 64, f3, 76, f4up)
        end;
        c!:defnames := cdr c!:defnames end;
     c3 := checksum := md60 L_contents;
@@ -1059,7 +1089,7 @@ procedure C!-end1 create_lfile;
     c3 := c3 / 10000000;
     checksum := list2string append(explodec c3,
                      '!  . append(explodec c2, '!  . explodec c1));
-    c!:printf("    {NULL, (one_args *)%a, (two_args *)%a, 0}\n};\n\n",
+    c!:printf("    {NULL, (no_args *)%a, (one_arg *)%a,\n        NULL, NULL, NULL}\n};\n\n",
               Setup_name, checksum);
     c!:printf "%<// end of generated code\n";
     close C_file;
@@ -1220,7 +1250,6 @@ symbolic procedure c!:print_exit_condition1(why, where_to, next);
           if flagp(intern w, 'c!:noreturn) then
              c!:printf("        %s(nil", w)
           else c!:printf("        return %s(nil", w);
-          if null args or length args >= 3 then c!:printf(", %s", length args);
           for each a in reversip args do c!:printf(", %v", a);
           c!:printf(");\n");
           if g then c!:printf "    }\n" >>
@@ -1234,11 +1263,13 @@ symbolic procedure c!:print_exit_condition1(why, where_to, next);
                c!:printf("        LispObject %s = %v;\n", g, a);
                args := g . args >>
             else args := a . args;
-          c!:printf("        fn = elt(env, %s); %<// %c\n",
+          c!:printf("        fn = basic_elt(env, %s); %<// %c\n",
                     c!:find_literal cadar why, cadar why);
-          if nargs = 1 then c!:printf("        return (*qfn1(fn))(fn")
+          if nargs = 0 then c!:printf("        return (*qfn0(fn))(fn")
+          else if nargs = 1 then c!:printf("        return (*qfn1(fn))(fn")
           else if nargs = 2 then c!:printf("        return (*qfn2(fn))(fn")
-          else c!:printf("        return (*qfnn(fn))(fn, %s", nargs);
+          else if nargs = 3 then c!:printf("        return (*qfn3(fn))(fn")
+          else c!:printf("        return (*qfn4up(fn))(fn");
           for each a in reversip args do c!:printf(", %s", a);
           c!:printf(");\n    }\n") end;
        return nil end;
@@ -1274,7 +1305,7 @@ symbolic procedure c!:pmovr(op, r1, r2, r3);
 put('movr, 'c!:opcode_printer, function c!:pmovr);
 
 symbolic procedure c!:pmovk(op, r1, r2, r3);
-   c!:printf("    %v = elt(env, %s); %<// %c\n", r1, r3, r2);
+   c!:printf("    %v = basic_elt(env, %s); %<// %c\n", r1, r3, r2);
 
 put('movk, 'c!:opcode_printer, function c!:pmovk);
 
@@ -1293,17 +1324,17 @@ symbolic procedure c!:preloadenv(op, r1, r2, r3);
 put('reloadenv, 'c!:opcode_printer, function c!:preloadenv);
 
 symbolic procedure c!:pldrglob(op, r1, r2, r3);
-   c!:printf("    %v = qvalue(elt(env, %s)); %<// %c\n", r1, r3, r2);
+   c!:printf("    %v = qvalue(basic_elt(env, %s)); %<// %c\n", r1, r3, r2);
 
 put('ldrglob, 'c!:opcode_printer, function c!:pldrglob);
 
 symbolic procedure c!:pstrglob(op, r1, r2, r3);
-   c!:printf("    qvalue(elt(env, %s)) = %v; %<// %c\n", r3, r1, r2);
+   c!:printf("    qvalue(basic_elt(env, %s)) = %v; %<// %c\n", r3, r1, r2);
 
 put('strglob, 'c!:opcode_printer, function c!:pstrglob);
 
 symbolic procedure c!:pnilglob(op, r1, r2, r3);
-   c!:printf("    qvalue(elt(env, %s)) = nil; %<// %c\n", r3, r2);
+   c!:printf("    qvalue(basic_elt(env, %s)) = nil; %<// %c\n", r3, r2);
 
 put('nilglob, 'c!:opcode_printer, function c!:pnilglob);
 flag('(nilglob), 'c!:uses_nil);
@@ -1562,12 +1593,10 @@ put('equal, 'c!:opcode_printer, function c!:pequal);
 flag('(equal), 'c!:uses_nil);
 
 flag ('(
-    error           cerror          too_few_2       too_many_1
-    wrong_no_0a     wrong_no_0b     wrong_no_3a     wrong_no_3b
-    wrong_no_na     wrong_no_nb     wrong_no_1      wrong_no_2
-    bad_specialn    aerror          aerror0         aerror1
-    aerror2         fatal_error     !Lerror         !Lerror0
-    !Lerror1        !Lstop          !Lerror2        !Lthrow_one_value
+    error           cerror
+    aerror          aerror0         aerror1
+    aerror2         fatal_error     !Lerror_3       !Lerror_0
+    !Lerror_1       !Lstop          !Lerror_2       !Lthrow_one_value
     my_exit         resource_exceeded), 'c!:noreturn);
 
 symbolic procedure c!:pcall(op, r1, r2, r3);
@@ -1590,45 +1619,34 @@ symbolic procedure c!:pcall(op, r1, r2, r3);
           for each a in cdr r2 do c!:printf(", %v", a) >>;
        c!:printf(");\n") >>
     else if car r3 = c!:current_procedure then <<
-% Things could go sour here if a function tried to call itself but with the
-% wrong number of args. And this happens at one place in the REDUCE source
-% code (I hope it will be fixed soon!). I will patch things up here by
-% discarding any excess args or padding with NIL if not enough had been
-% written.
-       r2 := c!:fix_nargs(r2, c!:current_args);
-       c!:printf("    %v = %s(elt(env, 0)", r1, c!:current_c_name);
-       if null r2 or length r2 >= 3 then c!:printf(", %s", length r2);
+       c!:printf("    %v = %s(basic_elt(env, 0)", r1, c!:current_c_name);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n") >>
     else if w := get(car r3, 'c!:c_entrypoint) then <<
 % For things that have a C entrypoint I will rather improperly pass NIL where
-% the codce really expects its own name. This should only have a bad
+% the code really expects its own name. This should only have a bad
 % effect if the C code tries to pick something up from the environment cell
-% of that name. That is the case with LOGAND aned friends at present, but
+% of that name. That is the case with LOGAND and friends at present, but
 % does not arise for any other (current) C code... So I think I am safe.
        if flagp(intern w, 'c!:noreturn) then
           c!:printf("    %s(nil", w)
        else c!:printf("    %v = %s(nil", r1, w);
-       if null r2 or length r2 >= 3 then c!:printf(", %s", length r2);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n") >>
     else begin
        scalar nargs;
        nargs := length r2;
-       c!:printf("    fn = elt(env, %s); %<// %c\n",
+       c!:printf("    fn = basic_elt(env, %s); %<// %c\n",
               c!:find_literal car r3, car r3);
-       if nargs = 1 then c!:printf("    %v = (*qfn1(fn))(fn", r1)
+       if nargs = 0 then c!:printf("    %v = (*qfn0(fn))(fn", r1)
+       else if nargs = 1 then c!:printf("    %v = (*qfn1(fn))(fn", r1)
        else if nargs = 2 then c!:printf("    %v = (*qfn2(fn))(fn", r1)
-       else c!:printf("    %v = (*qfnn(fn))(fn, %s", r1, nargs);
+       else if nargs = 3 then c!:printf("    %v = (*qfn3(fn))(fn", r1)
+       else c!:printf("    %v = (*qfn4up(fn))(fn", r1);
        for each a in r2 do c!:printf(", %v", a);
        c!:printf(");\n") end;
     if boolfn then c!:printf("    %v = %v ? lisp_true : nil;\n", r1, r1);
   end;
-
-symbolic procedure c!:fix_nargs(r2, act);
-   if null act then nil
-   else if null r2 then nil . c!:fix_nargs(nil, cdr act)
-   else car r2 . c!:fix_nargs(cdr r2, cdr act);
 
 put('call, 'c!:opcode_printer, function c!:pcall);
 
@@ -1999,8 +2017,14 @@ symbolic procedure c!:insert_tailcall b;
 % Now check if the block exits with a transfer of control that is
 % either a direct return or is a jump to another block that at most moves
 % the return value around a bit and then eventually returns it.
+%
+% I only detect tailcalls to self if there are at most 3 arguments, because
+% otherwise the wrapping up of extra args in a list causes pain. I think that
+% further tail-call optimisation in those cases needs to happen as a source
+% to source transformation earlier.
     if c!:does_return(res, why, dest) then
-       if car cadddr fcall = c!:current_procedure then <<
+       if car cadddr fcall = c!:current_procedure and
+          length c!:current_args < 4 then <<
 % If a tail call to self then copy args for the call into the local
 % variables used at the head of the procedure.
           for each p in pair(c!:current_args, caddr fcall) do
@@ -2065,7 +2089,7 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
 % set up by fluidbind and fluidunbind are not defeated.
 %
 % insert_tailcall can take the end of blocks and if they represent tail-calls
-% it maps thm either onto a sequence of assignments and a jump to the head
+% it maps them either onto a sequence of assignments and a jump to the head
 % of the current procedure, or it leaves them as something that code-emitting
 % knows will be an exit. Note that if a fluidunbind was present after the
 % last function call then that would prevent this transformation.
@@ -2111,23 +2135,19 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
 %   if stacks or reloadenv then
 %      c!:printf("stack_restorer stack_restorer_var;\n");
 %
-% Functions with 3 or more arguments do not declare their argument variables
-% in the procedure head - they use va_arg stuff, si I emit that here.
-    if varargs and args then <<
+% Functions with 4 or more arguments do not declare their argument variables
+% in the procedure head - they pass a list, so I unpick that here.
+    if varargs then <<
       w := " ";
       c!:printf("    LispObject");
-      for each v in args do <<
-         c!:printf("%s%s", w, v);
-         w := ", " >>;
-      c!:printf(";\n    va_list aa;\n");
-      c!:printf("    va_start(aa, nargs);\n") >>;
-    if car argch = 0 or car argch >= 3 then
-       c!:printf("    argcheck(nargs, %s, \q%s\q);\n", car argch, cdr argch);
-    if varargs and args then <<
-       c!:printf("    va_start(aa, nargs);\n");
-       for each v in reverse args do
-          c!:printf("    %s = va_arg(aa, LispObject);\n", v);
-       c!:printf("    va_end(aa);\n") >>;
+      for each v in cdddr args do <<
+        c!:printf("%s%s", w, v);
+        w := ", " >>;
+      c!:printf(";\n");
+      for each v in cdddr args do <<
+        c!:printf("    if (_a4up_ == nil)\n        aerror1(\qnot enough arguments provided\q, basic_elt(env, 0));\n");
+        c!:printf("    %s = qcar(_a4up_); _a4up_ = qcdr(_a4up_);\n", v) >>;
+      c!:printf("    if (_a4up_ != nil)\n        aerror1(\qtoo many arguments provided\q, basic_elt(env, 0));\n") >>;
 % There is some silly code enclosed in #ifdef stuff that is useful
 % while debugging, maybe.
     c!:printf("#ifdef CHECK_STACK\n");
@@ -2575,6 +2595,12 @@ symbolic procedure c!:cor(u, env);
 
 put('or, 'c!:code, function c!:cor);
 
+% Note that the main CSL compiler now supports things like
+%   (prog (a (b init-for-b) c) ...)
+% and if I ever moved to using that via Reduce (for instance if
+% PSL supported that syntax too) I would probably want to upgrade things
+% here. For now I will not.
+
 symbolic procedure c!:cprog(u, env);
   begin
     scalar w, w1, bvl, local_proglabs, progret, progexit,
@@ -3015,6 +3041,11 @@ symbolic procedure c!:builtin_two(x, env);
     c!:outop(car x, r:=c!:newreg(), car rr, cadr rr);
     return r
   end;
+
+% At present it is important that any variatic function is called with
+% a rigid number of arguments if it goes via the direct calls to C++ code
+% route here. I may worry about logand etc for now, and I may review and
+% generalize this code later.
 
 symbolic procedure c!:narg(x, env);
   c!:cval(expand(cdr x, get(car x, 'c!:binary_version)), env);
@@ -3488,16 +3519,16 @@ null (c!:c_entrypoint_list := '(
 %  (cons                   c!:c_entrypoint "Lcons")
    (date                   c!:c_entrypoint "Ldate")
    (deleq                  c!:c_entrypoint "Ldeleq")
-%  (difference             c!:c_entrypoint "Ldifference2")
+%  (difference             c!:c_entrypoint "Ldifference_2")
    (digit                  c!:c_entrypoint "Ldigitp")
    (eject                  c!:c_entrypoint "Leject")
    (endp                   c!:c_entrypoint "Lendp")
    (eq                     c!:c_entrypoint "Leq")
    (eqcar                  c!:c_entrypoint "Leqcar")
    (eql                    c!:c_entrypoint "Leql")
-   (eqn                    c!:c_entrypoint "Leqn")
+   (eqn                    c!:c_entrypoint "Leqn_2")
 %  (error                  c!:c_entrypoint "Lerror")
-   (error1                 c!:c_entrypoint "Lerror0")   % !!!
+   (error1                 c!:c_entrypoint "Lerror_0")   % !!!
 %  (errorset               c!:c_entrypoint "Lerrorset")
    (evenp                  c!:c_entrypoint "Levenp")
    (evlis                  c!:c_entrypoint "Levlis")
@@ -3514,38 +3545,38 @@ null (c!:c_entrypoint_list := '(
    (float                  c!:c_entrypoint "Lfloat")
    (floatp                 c!:c_entrypoint "Lfloatp")
    (fluidp                 c!:c_entrypoint "Lsymbol_specialp")
-   (gcdn                   c!:c_entrypoint "Lgcd")
+   (gcdn                   c!:c_entrypoint "Lgcd_2")
    (gctime                 c!:c_entrypoint "Lgctime")
    (gensym                 c!:c_entrypoint "Lgensym")
    (gensym1                c!:c_entrypoint "Lgensym1")
-   (geq                    c!:c_entrypoint "Lgeq")
+   (geq                    c!:c_entrypoint "Lgeq_2")
    (get!*                  c!:c_entrypoint "Lget")
 %  (get                    c!:c_entrypoint "Lget")
    (getenv                 c!:c_entrypoint "Lgetenv")
    (getv                   c!:c_entrypoint "Lgetv")
    (svref                  c!:c_entrypoint "Lgetv")
    (globalp                c!:c_entrypoint "Lsymbol_globalp")
-   (greaterp               c!:c_entrypoint "Lgreaterp")
+   (greaterp               c!:c_entrypoint "Lgreaterp_2")
    (iadd1                  c!:c_entrypoint "Liadd1")
-   (idifference            c!:c_entrypoint "Lidifference")
+   (idifference            c!:c_entrypoint "Lidifference_2")
    (idp                    c!:c_entrypoint "Lsymbolp")
-   (igreaterp              c!:c_entrypoint "Ligreaterp")
+   (igreaterp              c!:c_entrypoint "Ligreaterp_2")
    (ilessp                 c!:c_entrypoint "Lilessp")
    (iminus                 c!:c_entrypoint "Liminus")
    (iminusp                c!:c_entrypoint "Liminusp")
    (indirect               c!:c_entrypoint "Lindirect")
    (integerp               c!:c_entrypoint "Lintegerp")
-   (iplus2                 c!:c_entrypoint "Liplus2")
-   (iquotient              c!:c_entrypoint "Liquotient")
-   (iremainder             c!:c_entrypoint "Liremainder")
+   (iplus2                 c!:c_entrypoint "Liplus_2")
+   (iquotient              c!:c_entrypoint "Liquotient_2")
+   (iremainder             c!:c_entrypoint "Liremainder_2")
    (irightshift            c!:c_entrypoint "Lirightshift")
    (isub1                  c!:c_entrypoint "Lisub1")
-   (itimes2                c!:c_entrypoint "Litimes2")
-%  (lcm                    c!:c_entrypoint "Llcm")
+   (itimes2                c!:c_entrypoint "Litimes_2")
+%  (lcm                    c!:c_entrypoint "Llcm_2")
    (length                 c!:c_entrypoint "Llength")
    (lengthc                c!:c_entrypoint "Llengthc")
-   (leq                    c!:c_entrypoint "Lleq")
-   (lessp                  c!:c_entrypoint "Llessp")
+   (leq                    c!:c_entrypoint "Lleq_2")
+   (lessp                  c!:c_entrypoint "Llessp_2")
    (linelength             c!:c_entrypoint "Llinelength")
 %  (list2!*                c!:c_entrypoint "Llist2star")
 %  (list2                  c!:c_entrypoint "Llist2")
@@ -3561,14 +3592,14 @@ null (c!:c_entrypoint_list := '(
    (make!-simple!-string   c!:c_entrypoint "Lsmkvect")
    (make!-special          c!:c_entrypoint "Lmake_special")
    (mapstore               c!:c_entrypoint "Lmapstore")
-   (max2                   c!:c_entrypoint "Lmax2")
+   (max2                   c!:c_entrypoint "Lmax_2")
    (memq                   c!:c_entrypoint "Lmemq")
-   (min2                   c!:c_entrypoint "Lmin2")
+   (min2                   c!:c_entrypoint "Lmin_2")
    (minus                  c!:c_entrypoint "Lminus")
    (minusp                 c!:c_entrypoint "Lminusp")
    (mkquote                c!:c_entrypoint "Lmkquote")
    (mkvect                 c!:c_entrypoint "Lmkvect")
-   (mod                    c!:c_entrypoint "Lmod")
+   (mod                    c!:c_entrypoint "Lmod_2")
    (modular!-difference    c!:c_entrypoint "Lmodular_difference")
    (modular!-expt          c!:c_entrypoint "Lmodular_expt")
    (modular!-minus         c!:c_entrypoint "Lmodular_minus")
@@ -3579,7 +3610,7 @@ null (c!:c_entrypoint_list := '(
    (modular!-times         c!:c_entrypoint "Lmodular_times")
    (nconc                  c!:c_entrypoint "Lnconc")
 %  (ncons                  c!:c_entrypoint "Lncons")
-   (neq                    c!:c_entrypoint "Lneq")
+   (neq                    c!:c_entrypoint "Lneq_2")
 %  (next!-random!-number   c!:c_entrypoint "Lnext_random")
    (not                    c!:c_entrypoint "Lnull")
    (null                   c!:c_entrypoint "Lnull")
@@ -3591,7 +3622,7 @@ null (c!:c_entrypoint_list := '(
    (pagelength             c!:c_entrypoint "Lpagelength")
    (pairp                  c!:c_entrypoint "Lconsp")
    (plist                  c!:c_entrypoint "Lplist")
-%  (plus2                  c!:c_entrypoint "Lplus2")
+%  (plus2                  c!:c_entrypoint "Lplus_2")
    (plusp                  c!:c_entrypoint "Lplusp")
    (posn                   c!:c_entrypoint "Lposn")
    (put                    c!:c_entrypoint "Lputprop")
@@ -3604,12 +3635,12 @@ null (c!:c_entrypoint_list := '(
    (qcddr                  c!:c_entrypoint "Lcddr")
    (qcdr                   c!:c_entrypoint "Lcdr")
    (qgetv                  c!:c_entrypoint "Lgetv")
-%  (quotient               c!:c_entrypoint "Lquotient")
+%  (quotient               c!:c_entrypoint "Lquotient_2")
 %  (random                 c!:c_entrypoint "Lrandom")
 %  (rational               c!:c_entrypoint "Lrational")
    (rds                    c!:c_entrypoint "Lrds")
    (reclaim                c!:c_entrypoint "Lgc")
-%  (remainder              c!:c_entrypoint "Lrem")
+%  (remainder              c!:c_entrypoint "Lrem_2")
    (remd                   c!:c_entrypoint "Lremd")
    (remflag                c!:c_entrypoint "Lremflag")
    (remob                  c!:c_entrypoint "Lunintern")
@@ -3642,7 +3673,7 @@ null (c!:c_entrypoint_list := '(
    (terpri                 c!:c_entrypoint "Lterpri")
    (threevectorp           c!:c_entrypoint "Lthreevectorp")
    (time                   c!:c_entrypoint "Ltime")
-%  (times2                 c!:c_entrypoint "Ltimes2")
+%  (times2                 c!:c_entrypoint "Ltimes_2")
    (ttab                   c!:c_entrypoint "Lttab")
    (tyo                    c!:c_entrypoint "Ltyo")
    (unmake!-global         c!:c_entrypoint "Lunmake_global")
@@ -3652,7 +3683,6 @@ null (c!:c_entrypoint_list := '(
    (wrs                    c!:c_entrypoint "Lwrs")
    (xcons                  c!:c_entrypoint "Lxcons")
    (xtab                   c!:c_entrypoint "Lxtab")
-%  (orderp                 c!:c_entrypoint "Lorderp") being retired.
    (zerop                  c!:c_entrypoint "Lzerop")
 
 % The following can be called without having to provide an environment
@@ -3695,11 +3725,11 @@ null (c!:c_entrypoint_list := append(c!:c_entrypoint_list, '(
 
 !#if (not common!-lisp!-mode)
 null (c!:c_entrypoint_list := append(c!:c_entrypoint_list, '(
-   (append                 c!:c_entrypoint "Lappend")
+   (append                 c!:c_entrypoint "Lappend_2")
    (assoc                  c!:c_entrypoint "Lassoc")
    (compress               c!:c_entrypoint "Lcompress")
    (delete                 c!:c_entrypoint "Ldelete")
-   (divide                 c!:c_entrypoint "Ldivide")
+   (divide                 c!:c_entrypoint "Ldivide_2")
    (equal                  c!:c_entrypoint "Lequal")
    (intern                 c!:c_entrypoint "Lintern")
    (liter                  c!:c_entrypoint "Lalpha_char_p")
@@ -3723,8 +3753,7 @@ flag(
  '(atom atsoc codep constantp deleq digit endp eq eqcar evenp
    eql fixp flagp flagpcar floatp get globalp iadd1 idifference idp
    igreaterp ilessp iminus iminusp indirect integerp iplus2 irightshift
-   isub1 itimes2 liter memq minusp modular!-difference modular!-expt
-   modular!-minus modular!-number modular!-plus modular!-times not
+   isub1 itimes2 liter memq minusp not
    null numberp onep pairp plusp qcaar qcadr qcar qcdar qcddr
    qcdr remflag remprop reversip seprp special!-form!-p stringp
    symbol!-env symbol!-name symbol!-value threevectorp vectorp zerop),

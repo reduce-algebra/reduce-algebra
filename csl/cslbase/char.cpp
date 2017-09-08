@@ -164,8 +164,6 @@ static LispObject Lchar_downcase(LispObject, LispObject a)
 #endif
 }
 
-#ifdef COMMON
-
 LispObject Lcharacter(LispObject env, LispObject a)
 {   if (is_char(a)) return onevalue(a);
     else if (is_vector(a))
@@ -185,7 +183,7 @@ LispObject Lcharacter(LispObject env, LispObject a)
     }
     else if (is_fixnum(a))
         return onevalue(pack_char(0, int_of_fixnum(a) & 0x001fffff));
-    else if (is_symbol(a)) return onevalue(characterify_string(qpname(a));
+    else if (is_symbol(a)) return onevalue(characterify_string(qpname(a)));
     else aerror1("character", a);
 }
 
@@ -202,12 +200,14 @@ static LispObject Lchar_bits(LispObject, LispObject a)
 }
 
 static LispObject Lchar_font(LispObject, LispObject a)
-{   a = characterify(a);
+{
+// "font" is no longer really sensible, but I will (for now) allow
+// people to pack 3 bits of information in with a character, and I will
+// hope that they never do.
+    a = characterify(a);
     if (!is_char(a)) aerror("char-font");
     return onevalue(fixnum_of_int(font_of_char(a)));
 }
-
-#endif
 
 static LispObject Lchar_upcase(LispObject, LispObject a)
 {   int cc;
@@ -252,19 +252,21 @@ LispObject Lalpha_char_p(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
-#ifdef COMMON
-
 static LispObject Lgraphic_char_p(LispObject env, LispObject a)
 {   int cc;
     a = characterify(a);
     if (!is_char(a)) return onevalue(nil);
     if (a == CHAR_EOF) return onevalue(nil);
     cc = code_of_char(a);
+// What is goin on here is that I am expecting the if sizeof(wchar_t) is 4
+// (ie I have 32-bit wide characters) then the iswgraph() test is generally
+// valid. If sizeof(wchar_t) is only 2 then I should only try to use it
+// on codepoints up to U+FFFF, and I am going to declare that all codepoints
+// above that will record as "not graphics chatacters".
     if (cc <= 0xffff || sizeof(wchar_t) == 4)
     {   if (iswgraph(cc) || cc==' ') return onevalue(lisp_true);
     }
     return onevalue(nil);
-    return onevalue(Lispify_predicate(ISgraph(cc) || cc==' '));
 }
 
 static LispObject Lupper_case_p(LispObject env, LispObject a)
@@ -274,7 +276,8 @@ static LispObject Lupper_case_p(LispObject env, LispObject a)
     if (a == CHAR_EOF) return onevalue(nil);
     cc = code_of_char(a);
     if (cc <= 0xffff || sizeof(wchar_t) == 4)
-    {   if (iswupper(cc) || cc==' ') return onevalue(lisp_true);
+    {   if (iswupper(cc)) return onevalue(lisp_true);
+        else return onevalue(nil);
     }
     return onevalue(nil);
 }
@@ -291,14 +294,12 @@ static LispObject Llower_case_p(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
-#endif
 
-#ifdef COMMON
 LispObject Ldigit_char_p_2(LispObject env, LispObject a, LispObject radix)
 {   int cc;
     LispObject r = radix;
     if (!is_fixnum(r) || r < fixnum_of_int(2) ||
-        r >= fixnum_of_int(36)) aerror("digit-char-p");
+        r >= fixnum_of_int(36)) aerror1("digit-char-p", r);
     a = characterify(a);
     if (!is_char(a) || a == CHAR_EOF) return onevalue(nil);
     cc = code_of_char(a);
@@ -317,8 +318,6 @@ LispObject Ldigit_char_p_1(LispObject env, LispObject a)
 {   return Ldigit_char_p_2(nil, a, fixnum_of_int(10));
 }
 
-#endif
-
 LispObject Ldigitp(LispObject env, LispObject a)
 {   int cc;
     a = characterify(a);
@@ -329,18 +328,9 @@ LispObject Ldigitp(LispObject env, LispObject a)
     return onevalue(Lispify_predicate(iswdigit(cc)));
 }
 
-#ifdef COMMON
-
-static LispObject Ldigit_char_n(LispObject env, int nargs, ...)
-{   va_list aa;
-    LispObject a, r, f;
-    if (nargs != 3) aerror("digit-char");
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    r = va_arg(aa, LispObject);
-    f = va_arg(aa, LispObject);
-    va_end(aa);
-    if (!is_fixnum(a) || !is_fixnum(r) || !is_fixnum(f) ||
+static LispObject Ldigit_char_3(LispObject env, LispObject a,
+        LispObject r, LispObject f)
+{   if (!is_fixnum(a) || !is_fixnum(r) || !is_fixnum(f) ||
         a < 0 || r < fixnum_of_int(2) || f < 0 ||
         a >= r || r > fixnum_of_int(36) ||
         f > fixnum_of_int(255)) return onevalue(nil);
@@ -352,15 +342,12 @@ static LispObject Ldigit_char_n(LispObject env, int nargs, ...)
 
 static LispObject Ldigit_char_2(LispObject env, LispObject a,
                                 LispObject r1)
-{   return Ldigit_char_n(nil, 3, a, r1, fixnum_of_int(0));
+{   return Ldigit_char_3(nil, a, r1, fixnum_of_int(0));
 }
 
 static LispObject Ldigit_char_1(LispObject env, LispObject a)
-{   return Ldigit_char_n(nil, 3, a, fixnum_of_int(10), fixnum_of_int(0));
+{   return Ldigit_char_3(nil, a, fixnum_of_int(10), fixnum_of_int(0));
 }
-
-
-#endif
 
 LispObject Lspecial_char(LispObject, LispObject a)
 {   if (!is_fixnum(a)) aerror("special-char");
@@ -441,7 +428,7 @@ LispObject Lutf8_encode(LispObject env, LispObject a)
 static LispObject utf8_decode(int c1, int c2, int c3, int c4)
 {   int32_t n;
     switch (c1 & 0xf0)
-{       default:
+    {   default:
             if ((c2&0x80)==0) aerror("utf8-decode");
             return onevalue(fixnum_of_int(c1));
         case 0x80:
@@ -471,17 +458,10 @@ static LispObject utf8_decode(int c1, int c2, int c3, int c4)
     }
 }
 
-LispObject Lutf8_decoden(LispObject env, int nargs, ...)
-{   LispObject a, b, c, d;
-    va_list aa;
-    if (nargs != 3 && nargs != 4) aerror("utf8-decode");
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    if (nargs == 4) d = va_arg(aa, LispObject);
-    else d = fixnum_of_int(0);
-    va_end(aa);
+LispObject Lutf8_decode_4up(LispObject env, LispObject a, LispObject b,
+        LispObject c, LispObject d)
+{   if (qcdr(d) != nil) aerror("utf8-decode");
+    d = qcar(d);
     if (!is_fixnum(a)) aerror1("utf8-decode", a);
     if (!is_fixnum(b)) aerror1("utf8-decode", b);
     if (!is_fixnum(c)) aerror1("utf8-decode", c);
@@ -489,17 +469,25 @@ LispObject Lutf8_decoden(LispObject env, int nargs, ...)
     return utf8_decode(int_of_fixnum(a) & 0xff,
                        int_of_fixnum(b) & 0xff,
                        int_of_fixnum(c) & 0xff,
-                       nargs == 4 ? int_of_fixnum(d) & 0xff : -1);
+                       int_of_fixnum(d) & 0xff);
 }
 
-LispObject Lutf8_decode2(LispObject env, LispObject a, LispObject b)
+LispObject Lutf8_decode_3(LispObject env, LispObject a, LispObject b, LispObject c)
+{   if (!is_fixnum(a)) aerror1("utf8-decode", a);
+    if (!is_fixnum(b)) aerror1("utf8-decode", b);
+    if (!is_fixnum(c)) aerror1("utf8-decode", c);
+    return utf8_decode(int_of_fixnum(a) & 0xff, int_of_fixnum(b) & 0xff,
+                       int_of_fixnum(c) & 0xff, -1);
+}
+
+LispObject Lutf8_decode_2(LispObject env, LispObject a, LispObject b)
 {   if (!is_fixnum(a)) aerror1("utf8-decode", a);
     if (!is_fixnum(b)) aerror1("utf8-decode", b);
     return utf8_decode(int_of_fixnum(a) & 0xff, int_of_fixnum(b) & 0xff,
                        -1, -1);
 }
 
-LispObject Lutf8_decode1(LispObject env, LispObject a)
+LispObject Lutf8_decode_1(LispObject env, LispObject a)
 {   if (car_legal(a))  // I allow for a list of ints too
     {   LispObject b=qcdr(a);
         a = qcar(a);
@@ -512,13 +500,13 @@ LispObject Lutf8_decode1(LispObject env, LispObject a)
                 if (car_legal(d))
                 {   if (car_legal(qcdr(d)))
                         aerror1("utf8-decode", qcdr(d));
-                    else return Lutf8_decoden(nil, 4, a, b, c, qcar(d));
+                    else return Lutf8_decode_4up(nil, a, b, c, d);
                 }
-                else return Lutf8_decoden(nil, 3, a, b, c);
+                else return Lutf8_decode_3(nil, a, b, c);
             }
-            else return Lutf8_decode2(nil, a, b);
+            else return Lutf8_decode_2(nil, a, b);
         }
-        else return Lutf8_decode1(nil, a);
+        else return Lutf8_decode_1(nil, a);
     }
     if (!is_fixnum(a)) aerror1("utf8-decode", a);
     return utf8_decode(int_of_fixnum(a) & 0xff, -1, -1, -1);
@@ -536,36 +524,26 @@ LispObject Lchar_code(LispObject, LispObject a)
     return onevalue(fixnum_of_int(code_of_char(a)));
 }
 
-static LispObject Lcode_charn(LispObject, int nargs, ...)
-{   va_list aa;
-    LispObject a, font;
-    int32_t av;
-    argcheck(nargs, 3, "code-char");
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    (void)va_arg(aa, LispObject);
-    font = va_arg(aa, LispObject);
-    va_end(aa);
-    if ((int32_t)font < 0 || (int32_t)font > (int32_t)fixnum_of_int(7) ||
-        (int32_t)a < 0 || (int32_t)a > (int32_t)fixnum_of_int(0x001fffff))
+static LispObject Lcode_char_3(LispObject, LispObject code, LispObject bits,
+        LispObject font )
+{   if ((intptr_t)font < 0 || (intptr_t)font > (intptr_t)fixnum_of_int(7) ||
+        (intptr_t)code < 0 || (intptr_t)code > (intptr_t)fixnum_of_int(0x001fffff))
         aerror("code-char");
-    av = int_of_fixnum(a) & 0x001fffff;
+    uintptr_t icode = int_of_fixnum(code) & 0x001fffff;
 #ifdef COMMON
-    return onevalue(pack_char(int_of_fixnum(font) & 0x7, av));
+    return onevalue(pack_char(int_of_fixnum(font) & 0x7, icode));
 #else
-    return char_to_id(av);
+    return char_to_id(icode);
 #endif
 }
 
-static LispObject Lcode_char1(LispObject env, LispObject a)
-{   return Lcode_charn(nil, 3, a, fixnum_of_int(0), fixnum_of_int(0));
+static LispObject Lcode_char_1(LispObject env, LispObject a)
+{   return Lcode_char_3(nil, a, fixnum_of_int(0), fixnum_of_int(0));
 }
 
-static LispObject Lcode_char2(LispObject env, LispObject a, LispObject b)
-{   return Lcode_charn(nil, 3, a, b, fixnum_of_int(0));
+static LispObject Lcode_char_2(LispObject env, LispObject a, LispObject b)
+{   return Lcode_char_3(nil, a, b, fixnum_of_int(0));
 }
-
-#ifdef COMMON
 
 static LispObject Lchar_int(LispObject, LispObject a)
 {   a = characterify(a);
@@ -575,29 +553,31 @@ static LispObject Lchar_int(LispObject, LispObject a)
 }
 
 static LispObject Lint_char(LispObject env, LispObject a)
-{   int32_t n;
+{   intptr_t n;
     if (!is_fixnum(a)) return nil;
     n = int_of_fixnum(a);
     if (n == -1) n = 0x001fffff;
     return onevalue(pack_char(0, n));
 }
 
-static LispObject Lmake_char(LispObject, int nargs, ...)
-{   va_list aa;
-    LispObject a, bits, font;
-    if (nargs == 0 || nargs > 3) aerror("make-char");
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    if (nargs > 1) bits = va_arg(aa, LispObject);
-    else bits = fixnum_of_int(0);
-    if (nargs > 2) font = va_arg(aa, LispObject);
-    else font = fixnum_of_int(0);
-    va_end(aa);
-    a = characterify(a);
-    if (font < 0 || font > fixnum_of_int(3L) ||
+static LispObject Lmake_char_3(LispObject, LispObject a,
+        LispObject bits, LispObject font)
+{   a = characterify(a);
+// bits are ignores these days. They represented an attempt by Common Lisp
+// to put extra information into character objects that has not really
+// survived very well.
+    if ((intptr_t)font < 0 || (intptr_t)font > fixnum_of_int(3L) ||
         !is_char(a)) aerror("make-char");
     return onevalue(pack_char(int_of_fixnum(font) & 0x3,
                               code_of_char(a)));
+}
+
+static LispObject Lmake_char_2(LispObject, LispObject a, LispObject bits)
+{   return Lmake_char_3(nil, a, bits, fixnum_of_int(0));
+}
+
+static LispObject Lmake_char_1(LispObject, LispObject a)
+{   return Lmake_char_3(nil, a, fixnum_of_int(0), fixnum_of_int(0));
 }
 
 //
@@ -606,234 +586,263 @@ static LispObject Lmake_char(LispObject, int nargs, ...)
 // in general terms nicer.
 //
 
-static bool chartest(LispObject c)
-{   if (!is_char(c))
-    {   aerror1("Character object expected", c);
-        return true;
-    }
-    else return false;
+static void chartest(LispObject c)
+{   if (!is_char(c)) aerror1("Character object expected", c);
 }
 
-static LispObject Lchar_eqn(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    int i;
-    if (nargs < 2) return onevalue(lisp_true);
-    if (nargs > ARG_CUT_OFF)
-        aerror("too many args for character comparison");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    if (chartest(r))
-    {   va_end(a);
-        return nil;
+static LispObject Lchar_eqn_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 != a2) return onevalue(nil);
+    chartest(a3);
+    if (a2 != a3) return onevalue(nil);
+    while (a4up != nil)
+    {   a1 = qcar(a4up);
+        a4up = qcdr(a4up);
+        chartest(a1);
+        if (a3 != a1) return onevalue(nil);
+        a3 = a1;
     }
-    for (i = 1; i<nargs; i++)
-    {   LispObject s = va_arg(a, LispObject);
-        if (chartest(s))
-        {   va_end(a);
-            return nil;
-        }
-        if (r != s)
-        {   va_end(a);
-            return onevalue(nil);
-        }
-        r = s;
-    }
-    va_end(a);
     return onevalue(lisp_true);
 }
 
-static LispObject Lchar_eqn_2(LispObject env, LispObject a, LispObject b)
-{   return Lchar_eqn(nil, 2, a, b);
+static LispObject Lchar_eqn_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 != a2) return onevalue(nil);
+    chartest(a3);
+    if (a2 != a3) return onevalue(nil);
+    return onevalue(lisp_true);
+}
+
+static LispObject Lchar_eqn_2(LispObject env, LispObject a1, LispObject a2)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 != a2) return onevalue(nil);
+    return onevalue(lisp_true);
 }
 
 static LispObject Lchar_eqn_1(LispObject env, LispObject a)
-{   return Lchar_eqn(nil, 1, a);
+{   return onevalue(lisp_true);
 }
 
-static LispObject Lchar_lessp(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    int i;
-    if (nargs < 2) return onevalue(lisp_true);
-    if (nargs > ARG_CUT_OFF)
-        aerror("too many args for character comparison");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    if (chartest(r))
-    {   va_end(a);
-        return nil;
+static LispObject Lchar_eqn_0(LispObject env)
+{   return onevalue(lisp_true);
+}
+
+static LispObject Lchar_lessp_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 >= a2) return onevalue(nil);
+    chartest(a3);
+    if (a2 >= a3) return onevalue(nil);
+    while (a4up != nil)
+    {   a1 = qcar(a4up);
+        a4up = qcdr(a4up);
+        chartest(a1);
+        if (a3 >= a1) return onevalue(nil);
+        a3 = a1;
     }
-    for (i = 1; i<nargs; i++)
-    {   LispObject s = va_arg(a, LispObject);
-        if (chartest(s))
-        {   va_end(a);
-            return nil;
-        }
-        if ((uint32_t)r >= (uint32_t)s)
-        {   va_end(a);
-            return onevalue(nil);
-        }
-        r = s;
-    }
-    va_end(a);
     return onevalue(lisp_true);
 }
 
-static LispObject Lchar_lessp_2(LispObject env, LispObject a, LispObject b)
-{   return Lchar_lessp(nil, 2, a, b);
+static LispObject Lchar_lessp_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 >= a2) return onevalue(nil);
+    chartest(a3);
+    if (a2 >= a3) return onevalue(nil);
+    return onevalue(lisp_true);
+}
+
+static LispObject Lchar_lessp_2(LispObject env, LispObject a1, LispObject a2)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 >= a2) return onevalue(nil);
+    return onevalue(lisp_true);
 }
 
 static LispObject Lchar_lessp_1(LispObject env, LispObject a)
-{   return Lchar_lessp(nil, 1, a);
+{   return onevalue(lisp_true);
 }
 
-static LispObject Lchar_greaterp(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    int i;
-    if (nargs < 2) return onevalue(lisp_true);
-    if (nargs > ARG_CUT_OFF)
-        aerror("too many args for character comparison");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    if (chartest(r))
-    {   va_end(a);
-        return nil;
+static LispObject Lchar_lessp_0(LispObject env)
+{   return onevalue(lisp_true);
+}
+
+
+static LispObject Lchar_greaterp_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 <= a2) return onevalue(nil);
+    chartest(a3);
+    if (a2 <= a3) return onevalue(nil);
+    while (a4up != nil)
+    {   a1 = qcar(a4up);
+        a4up = qcdr(a4up);
+        chartest(a1);
+        if (a3 <= a1) return onevalue(nil);
+        a3 = a1;
     }
-    for (i = 1; i<nargs; i++)
-    {   LispObject s = va_arg(a, LispObject);
-        if (chartest(s))
-        {   va_end(a);
-            return nil;
-        }
-        if ((uint32_t)r <= (uint32_t)s)
-        {   va_end(a);
-            return onevalue(nil);
-        }
-        r = s;
-    }
-    va_end(a);
     return onevalue(lisp_true);
 }
 
-static LispObject Lchar_greaterp_2(LispObject env, LispObject a, LispObject b)
-{   return Lchar_greaterp(nil, 2, a, b);
+static LispObject Lchar_greaterp_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 <= a2) return onevalue(nil);
+    chartest(a3);
+    if (a2 <= a3) return onevalue(nil);
+    return onevalue(lisp_true);
+}
+
+static LispObject Lchar_greaterp_2(LispObject env, LispObject a1, LispObject a2)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 <= a2) return onevalue(nil);
+    return onevalue(lisp_true);
 }
 
 static LispObject Lchar_greaterp_1(LispObject env, LispObject a)
-{   return Lchar_greaterp(nil, 1, a);
+{   return onevalue(lisp_true);
 }
 
-static LispObject Lchar_neq_n(LispObject env, int nargs, ...)
-//
-// /= is supposed to check that NO pair of args match.
-// Because this involves multiple scanning of the vector of args it seems
-// necessary to copy the args into a vector that I can scan more directly
-// than va_args lets me scan the arg list.
-//
-{   int i, j;
-    va_list a;
-    LispObject *r;
-    if (nargs < 2) return onevalue(lisp_true);
-    if (nargs > ARG_CUT_OFF)
-        aerror("too many args for character comparison");
-    r = (LispObject *)&work_1;
-    va_start(a, nargs);
-    for (i=0; i<nargs; i++) r[i] = va_arg(a, LispObject);
-    va_end(a);
-    if (chartest(r[0])) return nil;
-    for (i = 1; i<nargs; i++)
-    {   LispObject n1 = r[i];
-        if (chartest(n1)) return nil;
-        for (j=0; j<i; j++)
-        {   LispObject n2 = r[j];
-            if (n1 == n2) return onevalue(nil);
+static LispObject Lchar_greaterp_0(LispObject env)
+{   return onevalue(lisp_true);
+}
+
+
+static LispObject Lchar_neq_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 == a2) return onevalue(nil);
+    chartest(a3);
+    if (a1 == a3 || a2 == a3) return onevalue(nil);
+    while (a4up != nil)
+    {   LispObject a4 = qcar(a4up);
+        a4up = qcdr(a4up);
+        chartest(a4);
+        if (a1 == a4 || a2 == a4 || a3 == a4) return onevalue(nil);
+        for (LispObject a5up=a4up; a5up!=nil; a5up=qcdr(a5up))
+        {   LispObject a5 = qcar(a5up);
+            a5up = qcdr(a5up);
+            chartest(a5);
+            if (a4 == a5) return onevalue(nil);
         }
     }
     return onevalue(lisp_true);
 }
 
-static LispObject Lchar_neq_2(LispObject env, LispObject a, LispObject b)
-{   return Lchar_neq_n(nil, 2, a, b);
+static LispObject Lchar_neq_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 == a2) return onevalue(nil);
+    chartest(a3);
+    if (a2 == a3) return onevalue(nil);
+    return onevalue(lisp_true);
+}
+
+static LispObject Lchar_neq_2(LispObject env, LispObject a1, LispObject a2)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 == a2) return onevalue(nil);
+    return onevalue(lisp_true);
 }
 
 static LispObject Lchar_neq_1(LispObject env, LispObject a)
-{   return Lchar_neq_n(nil, 1, a);
+{   return onevalue(lisp_true);
 }
 
-static LispObject Lchar_geq(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    int i;
-    if (nargs < 2) return onevalue(lisp_true);
-    if (nargs > ARG_CUT_OFF)
-        aerror("too many args for character comparison");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    if (chartest(r))
-    {   va_end(a);
-        return nil;
+static LispObject Lchar_neq_0(LispObject env)
+{   return onevalue(lisp_true);
+}
+
+
+static LispObject Lchar_geq_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 < a2) return onevalue(nil);
+    chartest(a3);
+    if (a2 < a3) return onevalue(nil);
+    while (a4up != nil)
+    {   a1 = qcar(a4up);
+        a4up = qcdr(a4up);
+        chartest(a1);
+        if (a3 < a1) return onevalue(nil);
+        a3 = a1;
     }
-    for (i = 1; i<nargs; i++)
-    {   LispObject s = va_arg(a, LispObject);
-        if (chartest(s))
-        {   va_end(a);
-            return nil;
-        }
-        if ((uint32_t)r < (uint32_t)s)
-        {   va_end(a);
-            return onevalue(nil);
-        }
-        r = s;
-    }
-    va_end(a);
     return onevalue(lisp_true);
 }
 
-static LispObject Lchar_geq_2(LispObject env, LispObject a, LispObject b)
-{   return Lchar_geq(nil, 2, a, b);
+static LispObject Lchar_geq_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 < a2) return onevalue(nil);
+    chartest(a3);
+    if (a2 < a3) return onevalue(nil);
+    return onevalue(lisp_true);
+}
+
+static LispObject Lchar_geq_2(LispObject env, LispObject a1, LispObject a2)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 < a2) return onevalue(nil);
+    return onevalue(lisp_true);
 }
 
 static LispObject Lchar_geq_1(LispObject env, LispObject a)
-{   return Lchar_geq(nil, 1, a);
+{   return onevalue(lisp_true);
 }
 
-static LispObject Lchar_leq(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    int i;
-    if (nargs < 2) return onevalue(lisp_true);
-    if (nargs > ARG_CUT_OFF)
-        aerror("too many args for character comparison");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    if (chartest(r))
-    {   va_end(a);
-        return nil;
+static LispObject Lchar_geq_0(LispObject env)
+{   return onevalue(lisp_true);
+}
+
+
+static LispObject Lchar_leq_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 > a2) return onevalue(nil);
+    chartest(a3);
+    if (a2 > a3) return onevalue(nil);
+    while (a4up != nil)
+    {   a1 = qcar(a4up);
+        a4up = qcdr(a4up);
+        chartest(a1);
+        if (a3 > a1) return onevalue(nil);
+        a3 = a1;
     }
-    for (i = 1; i<nargs; i++)
-    {   LispObject s = va_arg(a, LispObject);
-        if (chartest(s))
-        {   va_end(a);
-            return nil;
-        }
-        if ((uint32_t)r > (uint32_t)s)
-        {   va_end(a);
-            return onevalue(nil);
-        }
-        r = s;
-    }
-    va_end(a);
     return onevalue(lisp_true);
 }
 
-static LispObject Lchar_leq_2(LispObject env, LispObject a, LispObject b)
-{   return Lchar_leq(nil, 2, a, b);
+static LispObject Lchar_leq_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 > a2) return onevalue(nil);
+    chartest(a3);
+    if (a2 > a3) return onevalue(nil);
+    return onevalue(lisp_true);
+}
+
+static LispObject Lchar_leq_2(LispObject env, LispObject a1, LispObject a2)
+{   chartest(a1);
+    chartest(a2);
+    if (a1 > a2) return onevalue(nil);
+    return onevalue(lisp_true);
 }
 
 static LispObject Lchar_leq_1(LispObject env, LispObject a)
-{   return Lchar_leq(nil, 1, a);
+{   return onevalue(lisp_true);
+}
+
+static LispObject Lchar_leq_0(LispObject env)
+{   return onevalue(lisp_true);
 }
 
 
@@ -854,197 +863,305 @@ static LispObject casefold(LispObject c)
     return onevalue(pack_char(font_of_char(c), cc));
 }
 
-static LispObject Lcharacter_eqn(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    int i;
-    if (nargs < 2) return onevalue(lisp_true);
-    if (nargs > ARG_CUT_OFF)
-        aerror("too many args for character comparison");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    r = casefold(r);
-    for (i = 1; i<nargs; i++)
-    {   LispObject s = va_arg(a, LispObject);
-        s = casefold(s);
-        if (r != s)
-        {   va_end(a);
-            return onevalue(nil);
-        }
-        r = s;
-    }
-    va_end(a);
-    return onevalue(lisp_true);
-}
-
-static LispObject Lcharacter_eqn_2(LispObject env, LispObject a, LispObject b)
-{   return Lcharacter_eqn(nil, 2, a, b);
-}
-
-static LispObject Lcharacter_eqn_1(LispObject env, LispObject a)
-{   return Lcharacter_eqn(nil, 1, a);
-}
-
-static LispObject Lcharacter_lessp(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    int i;
-    if (nargs < 2) return onevalue(lisp_true);
-    if (nargs > ARG_CUT_OFF)
-        aerror("too many args for character comparison");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    r = casefold(r);
-    for (i = 1; i<nargs; i++)
-    {   LispObject s = va_arg(a, LispObject);
-        s = casefold(s);
-        if ((uint32_t)r >= (uint32_t)s)
-        {   va_end(a);
-            return onevalue(nil);
-        }
-        r = s;
-    }
-    va_end(a);
-    return onevalue(lisp_true);
-}
-
-static LispObject Lcharacter_lessp_2(LispObject env, LispObject a, LispObject b)
-{   return Lcharacter_lessp(nil, 2, a, b);
-}
-
-static LispObject Lcharacter_lessp_1(LispObject env, LispObject a)
-{   return Lcharacter_lessp(nil, 1, a);
-}
-
-static LispObject Lcharacter_greaterp(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    int i;
-    if (nargs < 2) return onevalue(lisp_true);
-    if (nargs > ARG_CUT_OFF)
-        aerror("too many args for character comparison");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    r = casefold(r);
-    for (i = 1; i<nargs; i++)
-    {   LispObject s = va_arg(a, LispObject);
-        s = casefold(s);
-        if ((uint32_t)r <= (uint32_t)s)
-        {   va_end(a);
-            return onevalue(nil);
-        }
-        r = s;
-    }
-    va_end(a);
-    return onevalue(lisp_true);
-}
-
-static LispObject Lcharacter_greaterp_2(LispObject env, LispObject a, LispObject b)
-{   return Lcharacter_greaterp(nil, 2, a, b);
-}
-
-static LispObject Lcharacter_greaterp_1(LispObject env, LispObject a)
-{   return Lcharacter_greaterp(nil, 1, a);
-}
-
-static LispObject Lcharacter_neq_n(LispObject env, int nargs, ...)
-//
-// /= is supposed to check that NO pair of args match.
-// Because this involves multiple scanning of the vector of args it seems
-// necessary to copy the args into a vector that I can scan more directly
-// than va_args lets me scan the arg list.
-//
-{   int i, j;
-    va_list a;
-    LispObject *r;
-    if (nargs < 2) return onevalue(lisp_true);
-    if (nargs > ARG_CUT_OFF)
-        aerror("too many args for character comparison");
-    r = (LispObject *)&work_1;
-    va_start(a, nargs);
-    for (i=0; i<nargs; i++) r[i] = va_arg(a, LispObject);
-    va_end(a);
-    if (chartest(r[0])) return nil;
-    for (i = 1; i<nargs; i++)
-    {   LispObject n1 = r[i];
-        n1 = casefold(n1);
-        for (j=0; j<i; j++)
-        {   LispObject n2 = r[j];
-            n2 = casefold(n2);  // can not fail - this arg tested earlier
-            if (n1 == n2) return onevalue(nil);
-        }
+static LispObject Lcharacter_eqn_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    if (a1 != a2) return onevalue(nil);
+    chartest(a3);
+    a3 = casefold(a3);
+    if (a2 != a3) return onevalue(nil);
+    while (a4up != nil)
+    {   a1 = qcar(a4up);
+        a4up = qcdr(a4up);
+        chartest(a1);
+        a1 = casefold(a1);
+        if (a3 != a1) return onevalue(nil);
+        a3 = a1;
     }
     return onevalue(lisp_true);
 }
 
-static LispObject Lcharacter_neq_2(LispObject env, LispObject a, LispObject b)
-{   return Lcharacter_neq_n(nil, 2, a, b);
+static LispObject Lcharacter_eqn_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    if (a1 != a2) return onevalue(nil);
+    chartest(a3);
+    a3 = casefold(a3);
+    return onevalue(Lispify_predicate(a2 == a3));
 }
 
-static LispObject Lcharacter_neq_1(LispObject env, LispObject a)
-{   return Lcharacter_neq_n(nil, 1, a);
+static LispObject Lcharacter_eqn_2(LispObject env, LispObject a1, LispObject a2)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    return onevalue(Lispify_predicate(a1 == a2));
 }
 
-static LispObject Lcharacter_geq(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    int i;
-    if (nargs < 2) return onevalue(lisp_true);
-    if (nargs > ARG_CUT_OFF)
-        aerror("too many args for character comparison");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    r = casefold(r);
-    for (i = 1; i<nargs; i++)
-    {   LispObject s = va_arg(a, LispObject);
-        s = casefold(s);
-        if ((uint32_t)r < (uint32_t)s)
-        {   va_end(a);
-            return onevalue(nil);
-        }
-        r = s;
-    }
-    va_end(a);
+static LispObject Lcharacter_eqn_1(LispObject env, LispObject a1)
+{   chartest(a1);
     return onevalue(lisp_true);
 }
 
-static LispObject Lcharacter_geq_2(LispObject env, LispObject a, LispObject b)
-{   return Lcharacter_geq(nil, 2, a, b);
+static LispObject Lcharacter_eqn_0(LispObject env)
+{   return onevalue(lisp_true);
 }
 
-static LispObject Lcharacter_geq_1(LispObject env, LispObject a)
-{   return Lcharacter_geq(nil, 1, a);
-}
-
-static LispObject Lcharacter_leq(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject r;
-    int i;
-    if (nargs < 2) return onevalue(lisp_true);
-    if (nargs > ARG_CUT_OFF)
-        aerror("too many args for character comparison");
-    va_start(a, nargs);
-    r = va_arg(a, LispObject);
-    r = casefold(r);
-    for (i = 1; i<nargs; i++)
-    {   LispObject s = va_arg(a, LispObject);
-        s = casefold(s);
-        if ((uint32_t)r > (uint32_t)s)
-        {   va_end(a);
-            return onevalue(nil);
-        }
-        r = s;
+static LispObject Lcharacter_lessp_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    if (a1 >= a2) return onevalue(nil);
+    chartest(a3);
+    a3 = casefold(a3);
+    if (a2 >= a3) return onevalue(nil);
+    while (a4up != nil)
+    {   a1 = qcar(a4up);
+        a4up = qcdr(a4up);
+        chartest(a1);
+        a1 = casefold(a1);
+        if (a3 >= a1) return onevalue(nil);
+        a3 = a1;
     }
-    va_end(a);
     return onevalue(lisp_true);
 }
 
-static LispObject Lcharacter_leq_2(LispObject env, LispObject a, LispObject b)
-{   return Lcharacter_leq(nil, 2, a, b);
+static LispObject Lcharacter_lessp_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    if (a1 >= a2) return onevalue(nil);
+    chartest(a3);
+    a3 = casefold(a3);
+    return onevalue(Lispify_predicate(a2 < a3));
 }
 
-static LispObject Lcharacter_leq_1(LispObject env, LispObject a)
-{   return Lcharacter_leq(nil, 1, a);
+static LispObject Lcharacter_lessp_2(LispObject env, LispObject a1, LispObject a2)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    return onevalue(Lispify_predicate(a1 < a2));
+}
+
+static LispObject Lcharacter_lessp_1(LispObject env, LispObject a1)
+{   chartest(a1);
+    return onevalue(lisp_true);
+}
+
+static LispObject Lcharacter_lessp_0(LispObject env)
+{   return onevalue(lisp_true);
+}
+
+
+static LispObject Lcharacter_greaterp_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    if (a1 <= a2) return onevalue(nil);
+    chartest(a3);
+    a3 = casefold(a3);
+    if (a2 <= a3) return onevalue(nil);
+    while (a4up != nil)
+    {   a1 = qcar(a4up);
+        a4up = qcdr(a4up);
+        chartest(a1);
+        a1 = casefold(a1);
+        if (a3 <= a1) return onevalue(nil);
+        a3 = a1;
+    }
+    return onevalue(lisp_true);
+}
+
+static LispObject Lcharacter_greaterp_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    if (a1 <= a2) return onevalue(nil);
+    chartest(a3);
+    a3 = casefold(a3);
+    return onevalue(Lispify_predicate(a2 > a3));
+}
+
+static LispObject Lcharacter_greaterp_2(LispObject env, LispObject a1, LispObject a2)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    return onevalue(Lispify_predicate(a1 > a2));
+}
+
+static LispObject Lcharacter_greaterp_1(LispObject env, LispObject a1)
+{   chartest(a1);
+    return onevalue(lisp_true);
+}
+
+static LispObject Lcharacter_greaterp_0(LispObject env)
+{   return onevalue(lisp_true);
+}
+
+static LispObject Lcharacter_neq_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    if (a1 == a2) return onevalue(nil);
+    chartest(a3);
+    a3 = casefold(a3);
+    if (a1 == a3 || a2 == a3) return onevalue(nil);
+    while (a4up != nil)
+    {   LispObject a4 = qcar(a4up);
+        a4up = qcdr(a4up);
+        chartest(a4);
+        a4 = casefold(a4);
+        if (a1 == a4 || a2 == a4 || a3 == a4) return onevalue(nil);
+        for (LispObject a5up=a4up; a5up!=nil; a5up=qcdr(a5up))
+        {   LispObject a5 = qcar(a5up);
+            a5up = qcdr(a5up);
+            chartest(a5);
+            a5 = casefold(a5);
+            if (a4 == a5) return onevalue(nil);
+        }
+    }
+    return onevalue(lisp_true);
+}
+
+static LispObject Lcharacter_neq_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    if (a1 == a2) return onevalue(nil);
+    chartest(a3);
+    a3 = casefold(a3);
+    return onevalue(Lispify_predicate(a2 != a3));
+}
+
+static LispObject Lcharacter_neq_2(LispObject env, LispObject a1, LispObject a2)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    return onevalue(Lispify_predicate(a1 != a2));
+}
+
+static LispObject Lcharacter_neq_1(LispObject env, LispObject a1)
+{   chartest(a1);
+    return onevalue(lisp_true);
+}
+
+static LispObject Lcharacter_neq_0(LispObject env)
+{   return onevalue(lisp_true);
+}
+
+static LispObject Lcharacter_geq_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    if (a1 < a2) return onevalue(nil);
+    chartest(a3);
+    a3 = casefold(a3);
+    if (a2 < a3) return onevalue(nil);
+    while (a4up != nil)
+    {   a1 = qcar(a4up);
+        a4up = qcdr(a4up);
+        chartest(a1);
+        a1 = casefold(a1);
+        if (a3 < a1) return onevalue(nil);
+        a3 = a1;
+    }
+    return onevalue(lisp_true);
+}
+
+static LispObject Lcharacter_geq_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    if (a1 < a2) return onevalue(nil);
+    chartest(a3);
+    a3 = casefold(a3);
+    return onevalue(Lispify_predicate(a2 >= a3));
+}
+
+static LispObject Lcharacter_geq_2(LispObject env, LispObject a1, LispObject a2)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    return onevalue(Lispify_predicate(a1 >= a2));
+}
+
+static LispObject Lcharacter_geq_1(LispObject env, LispObject a1)
+{   chartest(a1);
+    return onevalue(lisp_true);
+}
+
+static LispObject Lcharacter_geq_0(LispObject env)
+{   return onevalue(lisp_true);
+}
+
+static LispObject Lcharacter_leq_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    if (a1 > a2) return onevalue(nil);
+    chartest(a3);
+    a3 = casefold(a3);
+    if (a2 > a3) return onevalue(nil);
+    while (a4up != nil)
+    {   a1 = qcar(a4up);
+        a4up = qcdr(a4up);
+        chartest(a1);
+        a1 = casefold(a1);
+        if (a3 > a1) return onevalue(nil);
+        a3 = a1;
+    }
+    return onevalue(lisp_true);
+}
+
+static LispObject Lcharacter_leq_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    if (a1 > a2) return onevalue(nil);
+    chartest(a3);
+    a3 = casefold(a3);
+    return onevalue(Lispify_predicate(a2 <= a3));
+}
+
+static LispObject Lcharacter_leq_2(LispObject env, LispObject a1, LispObject a2)
+{   chartest(a1);
+    chartest(a2);
+    a1 = casefold(a1);
+    a2 = casefold(a2);
+    return onevalue(Lispify_predicate(a1 <= a2));
+}
+
+static LispObject Lcharacter_leq_1(LispObject env, LispObject a1)
+{   chartest(a1);
+    return onevalue(lisp_true);
+}
+
+static LispObject Lcharacter_leq_0(LispObject env)
+{   return onevalue(lisp_true);
 }
 
 
@@ -1301,62 +1418,58 @@ static LispObject L_string_not_lessp_2(LispObject env,
 {   return L_string_not_greaterp_2(nil, b, a);
 }
 
-#endif
 
 setup_type const char_setup[] =
-{   {"char-code",               Lchar_code, TOO_MANY_1, WRONG_NO_1},
-    {"char-downcase",           Lchar_downcase, TOO_MANY_1, WRONG_NO_1},
-    {"char-upcase",             Lchar_upcase, TOO_MANY_1, WRONG_NO_1},
-    {"code-char",               Lcode_char1, Lcode_char2, Lcode_charn},
-    {"digit",                   Ldigitp, TOO_MANY_1, WRONG_NO_1},
-    {"special-char",            Lspecial_char, TOO_MANY_1, WRONG_NO_1},
-    {"utf8-encode",             Lutf8_encode, TOO_MANY_1, WRONG_NO_1},
-    {"utf8-decode",             Lutf8_decode1, Lutf8_decode2, Lutf8_decoden},
-#ifdef COMMON
-    {"alpha-char-p",            Lalpha_char_p, TOO_MANY_1, WRONG_NO_1},
-    {"both-case-p",             Lalpha_char_p, TOO_MANY_1, WRONG_NO_1},
-    {"char-bits",               Lchar_bits, TOO_MANY_1, WRONG_NO_1},
-    {"char-equal",              Lcharacter_eqn_1, Lcharacter_eqn_2, Lcharacter_eqn},
-    {"char-font",               Lchar_font, TOO_MANY_1, WRONG_NO_1},
-    {"char-greaterp",           Lcharacter_greaterp_1, Lcharacter_greaterp_2, Lcharacter_greaterp},
-    {"char-int",                Lchar_int, TOO_MANY_1, WRONG_NO_1},
-    {"char-lessp",              Lcharacter_lessp_1, Lcharacter_lessp_2, Lcharacter_lessp},
-    {"char-not-equal",          Lcharacter_neq_1, Lcharacter_neq_2, Lcharacter_neq_n},
-    {"char-not-greaterp",       Lcharacter_leq_1, Lcharacter_leq_2, Lcharacter_leq},
-    {"char-not-lessp",          Lcharacter_geq_1, Lcharacter_geq_2, Lcharacter_geq},
-    {"char/=",                  Lchar_neq_1, Lchar_neq_2, Lchar_neq_n},
-    {"char<",                   Lchar_lessp_1, Lchar_lessp_2, Lchar_lessp},
-    {"char<=",                  Lchar_leq_1, Lchar_leq_2, Lchar_leq},
-    {"char=",                   Lchar_eqn_1, Lchar_eqn_2, Lchar_eqn},
-    {"char>",                   Lchar_greaterp_1, Lchar_greaterp_2, Lchar_greaterp},
-    {"char>=",                  Lchar_geq_1, Lchar_geq_2, Lchar_geq},
-    {"character",               Lcharacter, TOO_MANY_1, WRONG_NO_1},
-    {"characterp",              Lcharacterp, TOO_MANY_1, WRONG_NO_1},
-    {"digit-char",              Ldigit_char_1, Ldigit_char_2, Ldigit_char_n},
-    {"digit-char-p",            Ldigit_char_p_1, Ldigit_char_p_2, WRONG_NO_1},
-    {"graphic-char-p",          Lgraphic_char_p, TOO_MANY_1, WRONG_NO_1},
-    {"int-char",                Lint_char, TOO_MANY_1, WRONG_NO_1},
-    {"lower-case-p",            Llower_case_p, TOO_MANY_1, WRONG_NO_1},
-    {"make-char",               WRONG_NO_NA, WRONG_NO_NB, Lmake_char},
-    {"upper-case-p",            Lupper_case_p, TOO_MANY_1, WRONG_NO_1},
-    {"whitespace-char-p",       Lwhitespace_char_p, TOO_MANY_1, WRONG_NO_1},
-    {"string<2",                TOO_FEW_2, Lstring_lessp_2, WRONG_NO_2},
-    {"string>2",                TOO_FEW_2, Lstring_greaterp_2, WRONG_NO_2},
-    {"string=2",                TOO_FEW_2, Lstring_equal_2, WRONG_NO_2},
-    {"string/=2",               TOO_FEW_2, Lstring_not_equal_2, WRONG_NO_2},
-    {"string<=2",               TOO_FEW_2, Lstring_not_greaterp_2, WRONG_NO_2},
-    {"string>=2",               TOO_FEW_2, Lstring_not_lessp_2, WRONG_NO_2},
-    {"string-lessp2",           TOO_FEW_2, L_string_lessp_2, WRONG_NO_2},
-    {"string-greaterp2",        TOO_FEW_2, L_string_greaterp_2, WRONG_NO_2},
-    {"string-equal2",           TOO_FEW_2, L_string_equal_2, WRONG_NO_2},
-    {"string-not-equal2",       TOO_FEW_2, L_string_not_equal_2, WRONG_NO_2},
-    {"string-not-greaterp2",    TOO_FEW_2, L_string_not_greaterp_2, WRONG_NO_2},
-    {"string-not-lessp2",       TOO_FEW_2, L_string_not_lessp_2, WRONG_NO_2},
-#else
-    {"liter",                   Lalpha_char_p, TOO_MANY_1, WRONG_NO_1},
-    {"seprp",                   Lwhitespace_char_p, TOO_MANY_1, WRONG_NO_1},
-#endif
-    {NULL,                      0, 0, 0}
+{   {"char-code",               G0W1, Lchar_code, G2W1, G3W1, G4W1},
+    {"char-downcase",           G0W1, Lchar_downcase, G2W1, G3W1, G4W1},
+    {"char-upcase",             G0W1, Lchar_upcase, G2W1, G3W1, G4W1},
+    {"code-char",               G0Wother, Lcode_char_1, Lcode_char_2, Lcode_char_3, G4Wother},
+    {"digit",                   G0W1, Ldigitp, G2W1, G3W1, G4W1},
+    {"liter",                   G0W1, Lalpha_char_p, G2W1, G3W1, G4W1},
+    {"seprp",                   G0W1, Lwhitespace_char_p, G2W1, G3W1, G4W1},
+    {"special-char",            G0W1, Lspecial_char, G2W1, G3W1, G4W1},
+    {"utf8-encode",             G0W1, Lutf8_encode, G2W1, G3W1, G4W1},
+    {"utf8-decode",             G0Wother, Lutf8_decode_1, Lutf8_decode_2, Lutf8_decode_3, Lutf8_decode_4up},
+    {"alpha-char-p",            G0W1, Lalpha_char_p, G2W1, G3W1, G4W1},
+    {"both-case-p",             G0W1, Lalpha_char_p, G2W1, G3W1, G4W1},
+    {"char-bits",               G0W1, Lchar_bits, G2W1, G3W1, G4W1},
+    {"char-equal",              Lcharacter_eqn_0, Lcharacter_eqn_1, Lcharacter_eqn_2, Lcharacter_eqn_3, Lcharacter_eqn_4up},
+    {"char-font",               G0W1, Lchar_font, G2W1, G3W1, G4W1},
+    {"char-greaterp",           Lcharacter_greaterp_0, Lcharacter_greaterp_1, Lcharacter_greaterp_2, Lcharacter_greaterp_3, Lcharacter_greaterp_4up},
+    {"char-int",                G0W1, Lchar_int, G2W1, G3W1, G4W1},
+    {"char-lessp",              Lcharacter_lessp_0, Lcharacter_lessp_1, Lcharacter_lessp_2, Lcharacter_lessp_3, Lcharacter_lessp_4up},
+    {"char-not-equal",          Lcharacter_neq_0, Lcharacter_neq_1, Lcharacter_neq_2, Lcharacter_neq_3, Lcharacter_neq_4up},
+    {"char-not-greaterp",       Lcharacter_leq_0, Lcharacter_leq_1, Lcharacter_leq_2, Lcharacter_leq_3, Lcharacter_leq_4up},
+    {"char-not-lessp",          Lcharacter_geq_0, Lcharacter_geq_1, Lcharacter_geq_2, Lcharacter_geq_3, Lcharacter_geq_4up},
+    {"char/=",                  Lchar_neq_0, Lchar_neq_1, Lchar_neq_2, Lchar_neq_3, Lchar_neq_4up},
+    {"char<",                   Lchar_lessp_0, Lchar_lessp_1, Lchar_lessp_2, Lchar_lessp_3, Lchar_lessp_4up},
+    {"char<=",                  Lchar_leq_0, Lchar_leq_1, Lchar_leq_2, Lchar_leq_3, Lchar_leq_4up},
+    {"char=",                   Lchar_eqn_0, Lchar_eqn_1, Lchar_eqn_2, Lchar_eqn_3, Lchar_eqn_4up},
+    {"char>",                   Lchar_greaterp_0, Lchar_greaterp_1, Lchar_greaterp_2, Lchar_greaterp_3, Lchar_greaterp_4up},
+    {"char>=",                  Lchar_geq_0, Lchar_geq_1, Lchar_geq_2, Lchar_geq_3, Lchar_geq_4up},
+    {"character",               G0W1, Lcharacter, G2W1, G3W1, G4W1},
+    {"characterp",              G0W1, Lcharacterp, G2W1, G3W1, G4W1},
+    {"digit-char",              G0Wother, Ldigit_char_1, Ldigit_char_2, Ldigit_char_3, G4Wother},
+    {"digit-char-p",            G0Wother, Ldigit_char_p_1, Ldigit_char_p_2, G3Wother, G4Wother},
+    {"graphic-char-p",          G0W1, Lgraphic_char_p, G2W1, G3W1, G4W1},
+    {"int-char",                G0W1, Lint_char, G2W1, G3W1, G4W1},
+    {"lower-case-p",            G0W1, Llower_case_p, G2W1, G3W1, G4W1},
+    {"make-char",               G0Wother, Lmake_char_1, Lmake_char_2, Lmake_char_3, G4Wother},
+    {"upper-case-p",            G0W1, Lupper_case_p, G2W1, G3W1, G4W1},
+    {"whitespace-char-p",       G0W1, Lwhitespace_char_p, G2W1, G3W1, G4W1},
+    {"string<2",                G0W2, G1W2, Lstring_lessp_2, G3W2, G4W2},
+    {"string>2",                G0W2, G1W2, Lstring_greaterp_2, G3W2, G4W2},
+    {"string=2",                G0W2, G1W2, Lstring_equal_2, G3W2, G4W2},
+    {"string/=2",               G0W2, G1W2, Lstring_not_equal_2, G3W2, G4W2},
+    {"string<=2",               G0W2, G1W2, Lstring_not_greaterp_2, G3W2, G4W2},
+    {"string>=2",               G0W2, G1W2, Lstring_not_lessp_2, G3W2, G4W2},
+    {"string-lessp2",           G0W2, G1W2, L_string_lessp_2, G3W2, G4W2},
+    {"string-greaterp2",        G0W2, G1W2, L_string_greaterp_2, G3W2, G4W2},
+    {"string-equal2",           G0W2, G1W2, L_string_equal_2, G3W2, G4W2},
+    {"string-not-equal2",       G0W2, G1W2, L_string_not_equal_2, G3W2, G4W2},
+    {"string-not-greaterp2",    G0W2, G1W2, L_string_not_greaterp_2, G3W2, G4W2},
+    {"string-not-lessp2",       G0W2, G1W2, L_string_not_lessp_2, G3W2, G4W2},
+    {NULL,                      0, 0, 0, 0, 0}
 };
 
 // end of char.cpp

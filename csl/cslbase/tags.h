@@ -61,6 +61,9 @@
 
 typedef intptr_t LispObject;
 
+// Perhaps the most important value here is nil!
+extern LispObject nil;
+
 #define SIXTY_FOUR_BIT (sizeof(intptr_t) == 8)
 
 // My hope is that writing CSL_IGNORE(x) will cause the compiler to believe
@@ -373,12 +376,11 @@ typedef LispObject Special_Form(LispObject, LispObject);
 //   (F n a1 a2 a3 (list a4 a5 a6 ... an))
 
 typedef LispObject no_args(LispObject);
-typedef LispObject one_args(LispObject, LispObject);
+typedef LispObject one_arg(LispObject, LispObject);
 typedef LispObject two_args(LispObject, LispObject, LispObject);
 typedef LispObject three_args(LispObject, LispObject, LispObject, LispObject);
-typedef LispObject n_args(LispObject, int, ...);
-typedef LispObject four_args(LispObject, size_t, LispObject, LispObject,
-                                                 LispObject, LispObject);
+typedef LispObject fourup_args(LispObject, LispObject, LispObject,
+                                           LispObject, LispObject);
 
 //
 // Headers are also LispObjects, but I give them a separate typedef
@@ -1298,13 +1300,6 @@ typedef intptr_t junkxx;   // Unused cell-sized field for structures
 
 typedef struct Symbol_Head
 {
-//
-// TAG_SYMBOL has the value 4, so on a 32-bit system a pointer
-// to a symbol points at the second word of it, ie the value cell. The
-// effect in that case is that the selector CAR would access the value
-// cell. For 64-bit addresses this pun will not work so easily.
-//
-// The fields marked with a "*" are pending a re-work.
     Header header;       // Standard format header for vector types
     LispObject value;    // Global or special value cell
 
@@ -1312,27 +1307,86 @@ typedef struct Symbol_Head
     LispObject plist;    // A list
 
     LispObject fastgets; // to speed up flagp and get
-    LispObject package;  // Home package - a package object                  *
+    LispObject package;  // Home package - a package object
 
     LispObject pname;    // A string (always)
-    intptr_t function0;  // Executable code always (no arguments)            *
+    intptr_t function0;  // Executable code always (no arguments)
 
     intptr_t function1;  // Executable code always (just 1 arg)
     intptr_t function2;  // Executable code always (just 2 args)
 
-    intptr_t function3;  // Executable code always (just 3 args)             *
-    intptr_t function4up;// Executable code always (3 args + list of rest)   *
-
-// To help with a transition I will keep the "n argument" entrypoint that
-// uses va_args present while I try to move to a new scheme that handles
-// 0-3 args directly and 4+ args by passing 3 directly and the rest as
-// a list.
-    intptr_t unused;     //
-    intptr_t functionn;  // Executable code always (0, or >= 3 args)
+    intptr_t function3;  // Executable code always (just 3 args)
+    intptr_t function4up;// Executable code always (3 args + list of rest)
 
     uint64_t count;      // for statistics
 } Symbol_Head;
 
+#ifdef FUTURE_IDEA
+
+// If I move the function cells into a separate structure I make
+// "anonymous functions" more proper, and I save memory in the headers
+// of all symbols that do not actually have a definition. Let me quote
+// snapshot figures for Reduce (with EVERYTHING loaded)...
+// There are 41500 symbols of which 3700 have definitions as functions.
+// On a 64-bit system with the existing scheme that represents 4.3 Mbytes
+// of space in symbol headers. With the "idea" scheme that woudl end up
+// as 2.5 Mbytes. Or if some user created 100K gensyms then the new scheme
+// would save not that far short of 5 Mbytes.
+//
+// Hmmm these space savings are not utterly convincing in today's world,
+// even though the proposed scheme looks "tidy". More thought is needed!
+
+typedef struct Symbol_Head
+{   Header header;       // Standard format header for vector types
+    LispObject value;    // Global or special value cell
+
+    LispObject plist;    // A list
+    LispObject fastgets; // to speed up flagp and get
+
+    LispObject pname;    // A string (always)
+    LispObject package;  // Home package - a package object
+
+    LispObject function; // A "function" object
+    uintptr_t count;     // for statistics
+} Symbol_Head;
+
+
+typedef struct Function_Object
+{   Header header;       // Standard format header for vector types
+    LispObject env;      // Extra stuff to provide literals etc
+
+    intptr_t function0;  // Executable code always (no arguments)
+    intptr_t function1;  // Executable code always (just 1 arg)
+
+    intptr_t function2;  // Executable code always (just 2 args)
+    intptr_t function3;  // Executable code always (just 3 args)
+
+    intptr_t function4up;// Executable code always (3 args + list of rest)
+    uintptr_t count;     // for statistics
+} Function_Object;
+
+// Furthermore bytecoded functions could have the bytes of their definition
+// stored at the end of the Function_Object. That would save an indirection
+// fetching them and the space for their header word. The space saving from
+// that would be at most 100K, but again I think it would win as regards
+// elegance.
+
+typedef struct Bytecoded_Function_Object
+{   Header header;       // Standard format header for vector types
+    LispObject env;      // Extra stuff to provide literals etc
+
+    intptr_t function0;  // Executable code always (no arguments)
+    intptr_t function1;  // Executable code always (just 1 arg)
+
+    intptr_t function2;  // Executable code always (just 2 args)
+    intptr_t function3;  // Executable code always (just 3 args)
+
+    intptr_t function4up;// Executable code always (3 args + list of rest)
+    uintptr_t count;     // for statistics
+    unsigned char bytecodes[]; // length deduced from header word
+} Bytecoded_Function_Object;
+
+#endif // FUTURE_IDEA
 
 #define MAX_FASTGET_SIZE  63
 // I have up to 63 "fast" tags for PUT/GET/FLAG/FLAGP
@@ -1409,8 +1463,8 @@ static inline no_args*& qfn0(LispObject p)
 {   return *(no_args **)((char *)p + (7*CELL-TAG_SYMBOL));
 }
 
-static inline one_args*& qfn1(LispObject p)
-{   return *(one_args **)((char *)p + (8*CELL-TAG_SYMBOL));
+static inline one_arg*& qfn1(LispObject p)
+{   return *(one_arg **)((char *)p + (8*CELL-TAG_SYMBOL));
 }
 
 static inline two_args*& qfn2(LispObject p)
@@ -1421,20 +1475,41 @@ static inline three_args*& qfn3(LispObject p)
 {   return *(three_args **)((char *)p + (10*CELL-TAG_SYMBOL));
 }
 
-static inline four_args*& qfn4up(LispObject p)
-{   return *(four_args **)((char *)p + (11*CELL-TAG_SYMBOL));
+static inline fourup_args*& qfn4up(LispObject p)
+{   return *(fourup_args **)((char *)p + (11*CELL-TAG_SYMBOL));
 }
 
-static inline n_args*& qfnunused(LispObject p)
-{   return *(n_args **)((char *)p + (12*CELL-TAG_SYMBOL));
+NORETURN extern void aerror1(const char *s, LispObject a);
+
+// When I have functions with 4 or more args I may need to
+// extract them..
+
+static inline LispObject arg4(const char *name, LispObject a4up)
+{   if (qcdr(a4up) != nil) aerror1(name, a4up); // Too many args provided
+    return qcar(a4up);
 }
 
-static inline n_args*& qfnn(LispObject p)
-{   return *(n_args **)((char *)p + (13*CELL-TAG_SYMBOL));
+static inline void a4a5(const char *name, LispObject a4up,
+                        LispObject& a4, LispObject& a5)
+{   a4 = qcar(a4up);
+    a4up = qcdr(a4up);
+    if (a4up==nil || qcdr(a4up) != nil) aerror1(name, a4up); // wrong number
+    a5 = qcar(a4up);
+}
+
+static inline void a4a5a6(const char *name, LispObject a4up,
+                          LispObject& a4, LispObject& a5, LispObject& a6)
+{   a4 = qcar(a4up);
+    a4up = qcdr(a4up);
+    if (a4up == nil) aerror1(name, a4up); // not enough args
+    a5 = qcar(a4up);
+    a4up = qcdr(a4up);
+    if (a4up==nil || qcdr(a4up) != nil) aerror1(name, a4up); // wrong number
+    a6 = qcar(a4up);
 }
 
 static inline uint64_t& qcount(LispObject p)
-{   return *(uint64_t *)((char *)p + (14*CELL-TAG_SYMBOL));
+{   return *(uint64_t *)((char *)p + (12*CELL-TAG_SYMBOL));
 }
 
 typedef union _Float_union
@@ -1497,8 +1572,6 @@ static inline Header make_bighdr(size_t n)
 //@#define pack_hdrlengthbits(n) ((31+(intptr_t)(n))<<(Tw+2))
 //@#define pack_hdrlengthbytes(n) ((3+(intptr_t)(n))<<(Tw+5))
 //@#define pack_hdrlengthhwords(n) ((1+(intptr_t)(n))<<(Tw+4))
-
-#define make_padder(n) (pack_hdrlength((n)/4) + TYPE_VEC8_1 + TAG_HDR_IMMED)
 
 typedef struct Rational_Number
 {   Header header;

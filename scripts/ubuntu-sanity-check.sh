@@ -18,12 +18,13 @@ sudo apt-get -y install git
 sudo apt-get -y install gnuplot
 sudo apt-get -y install imagemagick
 sudo apt-get -y install libedit-dev
+sudo apt-get -y install libffi-dev
 sudo apt-get -y install libgtk2.0-dev
 sudo apt-get -y install libncurses5-dev
 # I believe I have seen some systems where I need "libtool" and some
-# where it has to be "libtool-bin". By making the -y install requests each
+# where it has to be "libtool-bin". By making the install requests each
 # individual when one of the following two fails it should not wreck
-# the whole attempt to get stuff -y installed!
+# the whole attempt to get stuff installed!
 sudo apt-get -y install libtool
 sudo apt-get -y install libtool-bin
 sudo apt-get -y install linux-generic

@@ -62,7 +62,7 @@ static LispObject macrolet_fn(LispObject args, LispObject env)
 //
             push2(args, env);
             w = cons(expand_def_symbol, w);
-            w = Lfuncalln(nil, 3, expand_def_symbol, w, nil);
+            w = Lfuncall_3(nil, expand_def_symbol, w, nil);
 //
 // I expect expand-definer to return either
 //     (~~defmacro name bvl ...)
@@ -1014,37 +1014,25 @@ static LispObject errorset3(volatile LispObject env,
     return onevalue(r);
 }
 
-LispObject Lerrorsetn(LispObject env, int nargs, ...)
+LispObject Lerrorset_3(LispObject env, LispObject form, LispObject fg1, LispObject fg2)
 //
 // This is not a special form, but is put into the code here because,
 // like unwind-protect, it has to re-gain control after an evaluation
 // error.
 //
-{   LispObject form, fg1, fg2;
-    STACK_SANITY;
-    va_list a;
-    if (nargs < 1 || nargs > 3) aerror("errorset");
-    va_start(a, nargs);
-    form = va_arg(a, LispObject);
-    fg1 = fg2 = lisp_true;
-    if (nargs >= 2)
-    {   fg1 = fg2 = va_arg(a, LispObject);
-        if (nargs >= 3) fg2 = va_arg(a, LispObject);
-    }
-    va_end(a);
+{   STACK_SANITY;
     return errorset3(env, form, fg1, fg2);
 }
 
-LispObject Lerrorset1(LispObject env, LispObject form)
+LispObject Lerrorset_1(LispObject env, LispObject form)
 {   return errorset3(env, form, nil, nil);
 }
 
 
-LispObject Lerrorset2(LispObject env, LispObject form, LispObject ffg1)
+LispObject Lerrorset_2(LispObject env, LispObject form, LispObject ffg1)
 {   return errorset3(env, form, ffg1, nil);
 }
 
-//
 // (resource!-limit form time space io errors C_stack Lisp_stack)
 //   Evaluate the given form and if it succeeds return a
 //   list whose first item is its value. If it fails in the ordinary manner
@@ -1235,40 +1223,43 @@ static LispObject resource_limit7(LispObject env,
     return onevalue(r);
 }
 
-LispObject Lresource_limitn(LispObject env, int nargs, ...)
-{   LispObject form, ltime, lspace, lio, lerrors, Csk, Lsk;
+LispObject Lresource_limit_4up(LispObject env, LispObject form, LispObject ltime,
+    LispObject lspace, LispObject a4up)
+{   LispObject lio, lerrors, Csk, Lsk;
     STACK_SANITY;
-    va_list a;
-    if (nargs < 2 || nargs > 7) aerror("resource_limit");
-    va_start(a, nargs);
-    form = va_arg(a, LispObject);
-    ltime = lspace = lio = lerrors = Csk = Lsk = fixnum_of_int(-1);
-    if (nargs >= 2)
-    {   ltime = va_arg(a, LispObject);
-        if (nargs >= 3)
-        {   lspace = va_arg(a, LispObject);
-            if (nargs >= 4)
-            {   lio = va_arg(a, LispObject);
-                if (nargs >= 5)
-                {   lerrors = va_arg(a, LispObject);
-                    if (nargs >= 6)
-                    {   Csk = va_arg(a, LispObject);
-                        if (nargs >= 7)
-                        {   Lsk = va_arg(a, LispObject);
-                        }
-                    }
+    if (!is_fixnum(ltime)) ltime = fixnum_of_int(-1);
+    if (!is_fixnum(lspace)) lspace = fixnum_of_int(-1);
+    lio = lerrors = Csk = Lsk = fixnum_of_int(-1);
+    if (a4up != nil)
+    {   lio = qcar(a4up);
+        a4up = qcdr(a4up);
+        if (a4up != nil)
+        {   lerrors = qcar(a4up);
+            a4up = qcdr(a4up);
+            if (a4up != nil)
+            {   Csk = qcar(a4up);
+                a4up = qcdr(a4up);
+                if (a4up != nil)
+                {   Lsk = qcar(a4up);
                 }
             }
         }
     }
-    va_end(a);
     return resource_limit7(env, form, ltime, lspace, lio, lerrors, Csk, Lsk);
 }
 
 
-LispObject Lresource_limit2(LispObject env, LispObject form, LispObject ltime)
+LispObject Lresource_limit_2(LispObject env, LispObject form, LispObject ltime)
 {   return resource_limit7(env, form, ltime,
                            fixnum_of_int(-1),
+                           fixnum_of_int(-1),
+                           fixnum_of_int(-1),
+                           fixnum_of_int(-1),
+                           fixnum_of_int(-1));
+}
+
+LispObject Lresource_limit_3(LispObject env, LispObject form, LispObject ltime, LispObject lspace)
+{   return resource_limit7(env, form, ltime, lspace,
                            fixnum_of_int(-1),
                            fixnum_of_int(-1),
                            fixnum_of_int(-1),
@@ -1289,31 +1280,44 @@ static LispObject when_fn(LispObject args, LispObject env)
     else return progn_fn(qcdr(args), env);
 }
 
-static LispObject bad_specialfn3(LispObject env, LispObject a, LispObject b)
+void bad_specialfn_0(LispObject env)
+{   aerror1("bad special function", env);
+}
+
+void bad_specialfn_2(LispObject env, LispObject a, LispObject b)
+{   aerror1("bad special function", env);
+}
+
+void bad_specialfn_3(LispObject env, LispObject a, LispObject b, LispObject c)
+{   aerror1("bad special function", env);
+}
+
+void bad_specialfn_4up(LispObject env, LispObject a, LispObject b,
+                LispObject c, LispObject d)
 {   aerror1("bad special function", env);
 }
 
 setup_type const eval3_setup[] =
-{   {"or",                      or_fn, bad_specialfn3, BAD_SPECIALN},
-    {"prog",                    prog_fn, bad_specialfn3, BAD_SPECIALN},
-    {"prog1",                   prog1_fn, bad_specialfn3, BAD_SPECIALN},
-    {"prog2",                   prog2_fn, bad_specialfn3, BAD_SPECIALN},
-    {"progn",                   progn_fn, bad_specialfn3, BAD_SPECIALN},
-    {"quote",                   quote_fn, bad_specialfn3, BAD_SPECIALN},
-    {"return",                  return_fn, bad_specialfn3, BAD_SPECIALN},
-    {"setq",                    setq_fn, bad_specialfn3, BAD_SPECIALN},
-    {"tagbody",                 tagbody_fn, bad_specialfn3, BAD_SPECIALN},
-    {"unless",                  unless_fn, bad_specialfn3, BAD_SPECIALN},
-    {"unwind-protect",          unwind_protect_fn, bad_specialfn3, BAD_SPECIALN},
-    {"when",                    when_fn, bad_specialfn3, BAD_SPECIALN},
-    {"macrolet",                macrolet_fn, bad_specialfn3, BAD_SPECIALN},
-    {"multiple-value-call",     mv_call_fn, bad_specialfn3, BAD_SPECIALN},
-    {"multiple-value-prog1",    mv_prog1_fn, bad_specialfn3, BAD_SPECIALN},
-    {"progv",                   progv_fn, bad_specialfn3, BAD_SPECIALN},
-    {"return-from",             return_from_fn, bad_specialfn3, BAD_SPECIALN},
-    {"the",                     the_fn, bad_specialfn3, BAD_SPECIALN},
-    {"throw",                   throw_fn, bad_specialfn3, BAD_SPECIALN},
-    {NULL,                      0, 0, 0}
+{   {"or",                      BAD_SPECIAL_0, or_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"prog",                    BAD_SPECIAL_0, prog_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"prog1",                   BAD_SPECIAL_0, prog1_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"prog2",                   BAD_SPECIAL_0, prog2_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"progn",                   BAD_SPECIAL_0, progn_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"quote",                   BAD_SPECIAL_0, quote_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"return",                  BAD_SPECIAL_0, return_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"setq",                    BAD_SPECIAL_0, setq_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"tagbody",                 BAD_SPECIAL_0, tagbody_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"unless",                  BAD_SPECIAL_0, unless_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"unwind-protect",          BAD_SPECIAL_0, unwind_protect_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"when",                    BAD_SPECIAL_0, when_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"macrolet",                BAD_SPECIAL_0, macrolet_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"multiple-value-call",     BAD_SPECIAL_0, mv_call_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"multiple-value-prog1",    BAD_SPECIAL_0, mv_prog1_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"progv",                   BAD_SPECIAL_0, progv_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"return-from",             BAD_SPECIAL_0, return_from_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"the",                     BAD_SPECIAL_0, the_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {"throw",                   BAD_SPECIAL_0, throw_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up},
+    {NULL,                      0, 0, 0, 0, 0}
 };
 
 // end of eval3.cpp

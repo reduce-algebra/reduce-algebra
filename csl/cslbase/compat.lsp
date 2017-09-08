@@ -31,8 +31,6 @@
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 
 
-% $ Id: $
-
 % Some of my trickery when bootstrap-building Reduce can load this
 % file multiple times. But it has calls to setpchar and assignments to
 % variables (the one to !!fleps1 bit me!) that ought not to be done

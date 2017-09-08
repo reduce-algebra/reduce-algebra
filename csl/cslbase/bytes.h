@@ -120,7 +120,7 @@
 #define OP_CALL2                0x49
 #define OP_CALL2R               0x4a
 #define OP_CALL3                0x4b
-#define OP_CALLN                0x4c
+#define OP_CALL4                0x4c
 #define OP_CALL0_0              0x4d
 #define OP_CALL0_1              0x4e
 #define OP_CALL0_2              0x4f
@@ -146,7 +146,7 @@
 #define OP_APPLY3               0x63
 #define OP_APPLY4               0x64
 #define OP_JCALL                0x65
-#define OP_JCALLN               0x66
+#define OP_unused_now           0x66   // spare
 #define OP_JUMP                 0x67
 #define OP_JUMP_B               0x68
 #define OP_JUMP_L               0x69

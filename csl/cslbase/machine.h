@@ -172,6 +172,8 @@
 #include <errno.h>
 #include <assert.h>
 
+#include <ffi.h> // libffi now relied on.
+
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif

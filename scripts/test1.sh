@@ -40,6 +40,7 @@ install="no"
 keep="no"
 platform=""
 debug="no"
+slow="no"
 
 csl="no"
 cslboot="no"
@@ -99,6 +100,7 @@ do
         exit 1
       fi
       cslboot="yes"
+      slow="yes"
       platform="$platform cslboot"
       shift
       ;;
@@ -109,6 +111,7 @@ do
         exit 1
       fi
       jlisp="yes"
+      slow="yes"
       platform="$platform jlisp"
       shift
       ;;
@@ -119,6 +122,7 @@ do
         exit 1
       fi
       jlispboot="yes"
+      slow="yes"
       platform="$platform jlispboot"
       shift
       ;;
@@ -241,11 +245,18 @@ fi
 # uses around 20 seconds on a decent speed desktop machine. So a limit
 # at 600 seconds seems tolerably safe for most machine. It is sufficient for
 # if the Raspberry Pi 3, where the sstools and qsum take a fair proportion
-# of that.
+# of that. Well I will qualify that the bootstrap version -- especially if
+# built with debug options enabled - can be much slower, so if one of the
+# tests is for that I will increase the limit significantly.
 
 if test "x$timeoutcmd" != "x"
 then
-  timeoutcmd="$timeoutcmd 600"
+  if test "x$slow" = "xyes"
+  then
+    timeoutcmd="$timeoutcmd 2400"
+  else
+    timeoutcmd="$timeoutcmd 600"
+  fi
 fi
 
 # If I am running on Windows I need to have the file name in

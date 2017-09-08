@@ -4708,13 +4708,9 @@ void fwin_ensure_screen()
     panel->GetEventHandler()->QueueEvent(event);
 }
 
-extern "C"
-{
 static review_switch_settings_function *review_switch_settings = NULL;
-}
 
 static int update_next_time = 0;
-
 
 int fwin_getchar()
 {

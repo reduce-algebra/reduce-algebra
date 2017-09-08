@@ -871,13 +871,7 @@ void simple_msg(const char *s, LispObject x)
 // A version of Lmkhash with just 2 arguments so you to not supply the
 // (unused and hence irrelevant) third argument.
 
-extern LispObject Lmknewhash(LispObject env, int nargs, ...);
-
-LispObject Lmknewhash2(LispObject env, LispObject a, LispObject b)
-{   return Lmknewhash(env, 3, a, b, nil);
-}
-
-LispObject Lmknewhash(LispObject env, int nargs, ...)
+LispObject Lmknewhash3(LispObject env, LispObject size, LispObject flavour, LispObject growth)
 //
 // (mkhash size flavour growth)
 //
@@ -895,14 +889,9 @@ LispObject Lmknewhash(LispObject env, int nargs, ...)
 // I expect numeric hash values), and eqfn is a function used to compare
 // items. [this facility may not be implemented at first]
 //
-{   va_list a;
-    int32_t shift, size1, size2;
-    LispObject v, v1, v2, size, flavour;
-    argcheck(nargs, 3, "mkhash");
-    va_start(a, nargs);
-    size = va_arg(a, LispObject);
-    flavour = va_arg(a, LispObject);
-    va_end(a);
+{   int shift;
+    size_t size1, size2;
+    LispObject v, v1, v2;
 // I allow fixnums or bignums as size spacifiers.
     if (is_fixnum(size)) size1 = int_of_fixnum(size);
     else if (is_numbers(size) && is_bignum(size)) size1 = 1000000;
@@ -913,7 +902,7 @@ LispObject Lmknewhash(LispObject env, int nargs, ...)
     else if (size1 < 4) size1 = 4;
     if (!is_fixnum(flavour) && !consp(flavour))
         aerror1("mkhash", flavour);
-// I will make the initial size a power of 2 such that wiith "size"
+// I will make the initial size a power of 2 such that with "size"
 // entries present the table will be about between 30% and 60% full.
     size1 = 5*((size1+1)/3);
 // The smallest hash table I will ever create will have 8 slots in the
@@ -943,6 +932,10 @@ LispObject Lmknewhash(LispObject env, int nargs, ...)
 // extracting it for use will be an unwelcome extra cost.
     vechdr(v) ^= (TYPE_SIMPLE_VEC ^ TYPE_NEWHASH);
     return onevalue(v);
+}
+
+LispObject Lmknewhash2(LispObject env, LispObject a, LispObject b)
+{   return Lmknewhash3(env, a, b, nil);
 }
 
 static uint64_t newhash_eq(LispObject key);
@@ -1430,16 +1423,8 @@ static bool newhash_compare_symtab(LispObject key, LispObject hashentry)
 
 //==========================================================================
 
-LispObject Lget_newhash(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject key, tab, dflt;
-    size_t pos;
-    argcheck(nargs, 3, "getnewhash");
-    va_start(a, nargs);
-    key = va_arg(a, LispObject);
-    tab = va_arg(a, LispObject);
-    dflt = va_arg(a, LispObject);
-    va_end(a);
+LispObject Lget_newhash(LispObject env, LispObject key, LispObject tab, LispObject dflt)
+{   size_t pos;
     if (!is_vector(tab) || type_of_header(vechdr(tab)) != TYPE_NEWHASH)
     {   if (type_of_header(vechdr(tab)) != TYPE_NEWHASHX)
             aerror1("getnewhash", tab);
@@ -1493,7 +1478,7 @@ LispObject Lmapnewhash(LispObject env, LispObject fn, LispObject tab)
                    val = elt(v1, i);
         if (key == SPID_HASHEMPTY || key == SPID_HASHTOMB) continue;
         push3(v, v1, fn);
-        Lapply2(nil, 3, fn, key, val);
+        Lapply2(nil, fn, key, val);
         pop3(fn, v1, v);
     }
     return onevalue(nil);
@@ -1537,7 +1522,7 @@ LispObject Lget_newhash_1(LispObject env, LispObject key)
 //
     LispObject r;
     push(key);
-    r = Lget_newhash(nil, 3, key, sys_hash_table, nil);
+    r = Lget_newhash(nil, key, sys_hash_table, nil);
     pop(key);
     if (mv_2 != nil)
     {   r = cons(key, r);
@@ -1547,24 +1532,17 @@ LispObject Lget_newhash_1(LispObject env, LispObject key)
 }
 
 LispObject Lget_newhash_2(LispObject env, LispObject key, LispObject tab)
-{   return Lget_newhash(env, 3, key, tab, nil);
+{   return Lget_newhash(env, key, tab, nil);
 }
 
 #ifdef DEBUG
 //static int new_biggest_hash = 0;
 #endif
 
-LispObject Lput_newhash(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject key, tab, val, k1;
+LispObject Lput_newhash(LispObject env, LispObject key, LispObject tab, LispObject val)
+{   LispObject k1;
     size_t pos;
     bool after_gc = false;
-    va_start(a, nargs);
-    key = va_arg(a, LispObject);
-    tab = va_arg(a, LispObject);
-    val = va_arg(a, LispObject);
-    va_end(a);
-    argcheck(nargs, 3, "putnewhash");
     if (!is_vector(tab)) aerror1("putnewhash", tab);
     if (type_of_header(vechdr(tab)) != TYPE_NEWHASH)
     {   if (type_of_header(vechdr(tab)) == TYPE_NEWHASHX)
@@ -1610,7 +1588,7 @@ printf("HASHX found so setting after_gc\n");
 }
 
 LispObject Lput_newhash_2(LispObject env, LispObject a, LispObject b)
-{   return Lput_hash(env, 3, a, sys_hash_table, b);
+{   return Lput_hash(env, a, sys_hash_table, b);
 }
 
 LispObject Lrem_newhash(LispObject env, LispObject key, LispObject tab)
@@ -1653,9 +1631,8 @@ LispObject Lnewhash_rehash(LispObject env, LispObject tab)
     return tab;
 }
 
-LispObject Lclr_newhash_0(LispObject env, int nargs, ...)
-{   argcheck(nargs, 0, "clrnewhash");
-    return Lclr_newhash(env, sys_hash_table);
+LispObject Lclr_newhash_0(LispObject env)
+{   return Lclr_newhash(env, sys_hash_table);
 }
 
 // (sxhash key) is supposed to return a positive fixnum such that any
@@ -1770,19 +1747,19 @@ void showstats(size_t n)
 }
 
 setup_type const newhash_setup[] =
-{   {"mknewhash",               WRONG_NO_3A, Lmknewhash2, Lmknewhash},
-    {"getnewhash",              Lget_newhash_1, Lget_newhash_2, Lget_newhash},
-    {"putnewhash",              WRONG_NO_3A, Lput_newhash_2, Lput_newhash},
-    {"remnewhash",              Lrem_newhash_1, Lrem_newhash, WRONG_NO_2},
-    {"clrnewhash",              Lclr_newhash, TOO_MANY_1, Lclr_newhash_0},
-    {"sxnewhash",               Lsxnewhash, TOO_MANY_1, WRONG_NO_1},
-    {"eqlnewhash",              Leqlnewhash, TOO_MANY_1, WRONG_NO_1},
-    {"equalnewhash",            Lequalnewhash, TOO_MANY_1, WRONG_NO_1},
-    {"mapnewhash",              TOO_FEW_2, Lmapnewhash, WRONG_NO_2},
-    {"newhashcontents",         Lnewhashcontents, TOO_MANY_1, WRONG_NO_1},
-    {"newhashtable-flavour",    Lnewhash_flavour, TOO_MANY_1, WRONG_NO_1},
-    {"newhashrehash",           Lnewhash_rehash, TOO_MANY_1, WRONG_NO_1},
-    {NULL,                      0, 0, 0}
+{   {"mknewhash",               G0Wother, G1Wother, Lmknewhash2, Lmknewhash3, G4Wother},
+    {"getnewhash",              G0Wother, Lget_newhash_1, Lget_newhash_2, Lget_newhash, G4Wother},
+    {"putnewhash",              G0Wother, G1Wother, Lput_newhash_2, Lput_newhash, G4Wother},
+    {"remnewhash",              G0Wother, Lrem_newhash_1, Lrem_newhash, G3Wother, G4Wother},
+    {"clrnewhash",              Lclr_newhash_0, Lclr_newhash, G2Wother, G3Wother, G4Wother},
+    {"sxnewhash",               G0W1, Lsxnewhash, G2W1, G3W1, G4W1},
+    {"eqlnewhash",              G0W1, Leqlnewhash, G2W1, G3W1, G4W1},
+    {"equalnewhash",            G0W1, Lequalnewhash, G2W1, G3W1, G4W1},
+    {"mapnewhash",              G0W2, G1W2, Lmapnewhash, G3W2, G4W2},
+    {"newhashcontents",         G0W1, Lnewhashcontents, G2W1, G3W1, G4W1},
+    {"newhashtable-flavour",    G0W1, Lnewhash_flavour, G2W1, G3W1, G4W1},
+    {"newhashrehash",           G0W1, Lnewhash_rehash, G2W1, G3W1, G4W1},
+    {NULL,                      0, 0, 0, 0, 0}
 };
 
 // end of newhash.cpp

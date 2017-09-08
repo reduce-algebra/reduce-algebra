@@ -1,5 +1,5 @@
 //
-// "FXWorker.cpp"                          Copyright A C Norman 2003-2015
+// "FXWorker.cpp"                            Copyright A C Norman 2003-2017
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -7,7 +7,7 @@
 // always believe that running them under emacs is best!
 
 /******************************************************************************
-* Copyright (C) 2003-10 by Arthur Norman, Codemist.  All Rights Reserved.     *
+* Copyright (C) 2003-17 by Arthur Norman, Codemist.  All Rights Reserved.     *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -101,9 +101,13 @@ static void write_log(const char *s, ...)
 #endif
 
 
+#include "fwin.h"
+
+
 namespace FX {
 
-#include "fwin.h"
+// In general things that for part of the interface that fwin wants to
+// provide must not be in the FX namespace.
 
 #ifdef WIN32
 HANDLE thread1;
@@ -169,14 +173,7 @@ void FXMainWindow1::create()
 FXApp *application_object;
 FXMainWindow1 *main_window;
 
-extern "C"
-{
-
-extern int windowed;
-
 FXTerminal *text = NULL;
-
-}
 
 long FXMainWindow1::onConfigure(FXObject *c, FXSelector s, void *ptr)
 {
@@ -590,7 +587,7 @@ FXFont *selectFont(const char *name, int size,
     FXuint n;
     FXFont::listFonts(all, n, "");
     LOG("%d fonts detected\n", n);
-    for (int i=0; i<n; i++)
+    for (FXuint i=0; i<n; i++)
     {   LOG("Font %d is <%s> %x %x %x %x %x %x\n", i, all[i].face,
           all[i].face[0]&0xff, all[i].face[1]&0xff, all[i].face[2]&0xff,
           all[i].face[3]&0xff, all[i].face[4]&0xff, all[i].face[5]&0xff);
@@ -663,11 +660,6 @@ FXFont *selectFont(const char *name, int size,
 void fwin_callback_on_delay(delay_callback_t *f)
 {
     delay_callback = f;
-}
-
-void fwin_callback_to_interrupt(interrupt_callback_t *f)
-{
-    interrupt_callback = f;
 }
 
 
@@ -773,32 +765,6 @@ void *FXTerminal::worker_thread(void *arg)
 #endif
 }
 
-int fwin_windowmode()
-{
-    int r = 0;
-    r |= FWIN_WITH_TERMED;
-    if (windowed) r |= FWIN_IN_WINDOW;
-    return r;
-}
-
-void fwin_exit(int return_code)
-{
-    if (windowed)
-    {   wake_up_terminal(FXTerminal::WORKER_EXITING);
-        returncode = return_code;
-#ifdef WIN32
-        ExitThread(returncode);
-#else
-        pthread_exit(&returncode);
-#endif
-    }
-    if (using_termed)
-    {   input_history_end();
-        term_close();
-    }
-    exit(return_code);
-}
-
 
 void fwin_minimize()
 {
@@ -808,43 +774,6 @@ void fwin_minimize()
 // I do not feel any need to get the threads into lockstep here.
 }
 
-
-void fwin_restore()
-{
-    if (!windowed) return;
-    fflush(stdout);
-    wake_up_terminal(FXTerminal::RESTORE_MAIN);
-}
-
-void fwin_putchar(int c)
-{
-    if (!windowed)
-    {
-#ifdef __CYGWIN__
-        if (c == '\n') putchar('\r');
-#endif
-        putchar(c);
-        return;
-    }
-// Observe that since I am concerned (at least a bit) with performance
-// I buffer characters here so that the cost of inter-thread communication
-// is not suffered. But every other second (or so) the user-interface thread
-// will be worken up and will flush the buffer for me, so the user ought to
-// be given a tolerable experience/
-    int nxt = term->fwin_in + 1;
-    if (nxt == FWIN_BUFFER_SIZE) nxt = 0;
-    if (nxt == term->fwin_out ||
-        term->pauseFlags & PAUSE_PAUSE) fwin_ensure_screen();
-// Note and BEWARE here that fwin_ensure_screen() can synchronize the
-// worker and interface threads and update fwin_in. Observe also that I
-// can generate a screen update if ^S has been hit.
-    term->fwin_buffer[term->fwin_in] = c;
-    nxt = term->fwin_in + 1;
-    if (nxt == FWIN_BUFFER_SIZE) nxt = 0;
-    term->fwin_in = nxt;
-    FILE *f = term->logfile;
-    if (f != NULL) putc(c, f);
-}
 
 static void fwin_ensure_buffer_space();
 
@@ -875,11 +804,7 @@ void fwin_puts(const char *s)
 }
 
 
-void 
-#ifdef _MSC_VER
-            __cdecl
-#endif
-            fwin_printf(const char *fmt, ...)
+void fwin_printf(const char *fmt, ...)
 {
     va_list a;
     va_start(a, fmt);
@@ -967,6 +892,149 @@ static void regain_lockstep()
 
 const char *fwin_maths = NULL;
 
+static void fwin_ensure_buffer_space()
+{
+    if (!windowed) return;
+    if (term->fwin_in == term->fwin_out) return;
+    LockMutex(term->pauseMutex);
+    if (delay_callback != NULL) (*delay_callback)(1);
+    wake_up_terminal(FXTerminal::FLUSH_BUFFER);
+    if (term->sync_even)
+    {   UnlockMutex(term->mutex1);
+        LockMutex(term->mutex3);
+        term->fwin_in = term->fwin_out = 0;
+        UnlockMutex(term->mutex2);
+        LockMutex(term->mutex4);
+    }
+    else
+    {   UnlockMutex(term->mutex3);
+        LockMutex(term->mutex1);
+        term->fwin_in = term->fwin_out = 0;
+        UnlockMutex(term->mutex4);
+        LockMutex(term->mutex2);
+    }
+    if (delay_callback != NULL) (*delay_callback)(0);
+    UnlockMutex(term->pauseMutex);
+}
+
+static review_switch_settings_function *review_switch_settings = NULL;
+static int update_next_time = 0;
+static clock_t review_time = 0;
+
+
+static char left_stuff[32] = "",
+            right_stuff[32] = "";
+char mid_stuff[32] = "", full_title[90] = "";
+
+#ifdef USE_A0_SPACER
+#define SPACER_CHAR 0xa0
+#else
+#define SPACER_CHAR 0x20
+#endif
+
+static void rewrite_title_bar()
+{
+// Just at present this does not cope with cases where the width of the window
+// has been changed...
+    int ll = strlen(left_stuff),
+        lm = strlen(mid_stuff),
+        lr = strlen(right_stuff);
+    int i, j;
+    for (i=0; i<80; i++) full_title[i] = SPACER_CHAR;
+    strncpy(full_title, left_stuff, ll);
+    j = 80 - strlen(right_stuff);
+    strncpy(&full_title[j], right_stuff, lr);
+    j = 40-(lm/2);
+    strncpy(&full_title[j], mid_stuff, lm);
+    full_title[80] = 0;
+    wake_up_terminal(FXTerminal::REFRESH_TITLE);
+    regain_lockstep();
+}
+
+
+}  // end of "namespace FX"
+
+
+
+// The following parts of the fwin interface would be relevant even when
+// fwin was using something other than FOX to provide its GUI, and so they
+// do not want to go in the FX namespace.
+
+void fwin_set_help_file(const char *key, const char *path)
+{
+    if (!windowed) return;
+    printf("fwin_set_help_file called\n");
+    fflush(stdout);
+}
+
+void fwin_callback_to_interrupt(interrupt_callback_t *f)
+{
+    interrupt_callback = f;
+}
+
+int fwin_windowmode()
+{
+    int r = 0;
+    r |= FWIN_WITH_TERMED;
+    if (windowed) r |= FWIN_IN_WINDOW;
+    return r;
+}
+
+void fwin_exit(int return_code)
+{
+    if (windowed)
+    {   wake_up_terminal(FXTerminal::WORKER_EXITING);
+        returncode = return_code;
+#ifdef WIN32
+        ExitThread(returncode);
+#else
+        pthread_exit(&returncode);
+#endif
+    }
+    if (using_termed)
+    {   input_history_end();
+        term_close();
+    }
+    exit(return_code);
+}
+
+void fwin_restore()
+{
+    if (!windowed) return;
+    fflush(stdout);
+    wake_up_terminal(FXTerminal::RESTORE_MAIN);
+}
+
+void fwin_putchar(int c)
+{
+    if (!windowed)
+    {
+#ifdef __CYGWIN__
+        if (c == '\n') putchar('\r');
+#endif
+        putchar(c);
+        return;
+    }
+// Observe that since I am concerned (at least a bit) with performance
+// I buffer characters here so that the cost of inter-thread communication
+// is not suffered. But every other second (or so) the user-interface thread
+// will be worken up and will flush the buffer for me, so the user ought to
+// be given a tolerable experience/
+    int nxt = term->fwin_in + 1;
+    if (nxt == FWIN_BUFFER_SIZE) nxt = 0;
+    if (nxt == term->fwin_out ||
+        term->pauseFlags & PAUSE_PAUSE) fwin_ensure_screen();
+// Note and BEWARE here that fwin_ensure_screen() can synchronize the
+// worker and interface threads and update fwin_in. Observe also that I
+// can generate a screen update if ^S has been hit.
+    term->fwin_buffer[term->fwin_in] = c;
+    nxt = term->fwin_in + 1;
+    if (nxt == FWIN_BUFFER_SIZE) nxt = 0;
+    term->fwin_in = nxt;
+    FILE *f = term->logfile;
+    if (f != NULL) putc(c, f);
+}
+
 void fwin_showmath(const char *s)
 {
     if (!windowed) return;
@@ -1001,39 +1069,6 @@ void fwin_ensure_screen()
     if (delay_callback != NULL) (*delay_callback)(0);
     UnlockMutex(term->pauseMutex);
 }
-
-static void fwin_ensure_buffer_space()
-{
-    if (!windowed) return;
-    if (term->fwin_in == term->fwin_out) return;
-    LockMutex(term->pauseMutex);
-    if (delay_callback != NULL) (*delay_callback)(1);
-    wake_up_terminal(FXTerminal::FLUSH_BUFFER);
-    if (term->sync_even)
-    {   UnlockMutex(term->mutex1);
-        LockMutex(term->mutex3);
-        term->fwin_in = term->fwin_out = 0;
-        UnlockMutex(term->mutex2);
-        LockMutex(term->mutex4);
-    }
-    else
-    {   UnlockMutex(term->mutex3);
-        LockMutex(term->mutex1);
-        term->fwin_in = term->fwin_out = 0;
-        UnlockMutex(term->mutex4);
-        LockMutex(term->mutex2);
-    }
-    if (delay_callback != NULL) (*delay_callback)(0);
-    UnlockMutex(term->pauseMutex);
-}
-
-extern "C"
-{
-static review_switch_settings_function *review_switch_settings = NULL;
-}
-static int update_next_time = 0;
-static clock_t review_time = 0;
-
 
 int fwin_getchar()
 {
@@ -1116,36 +1151,6 @@ void fwin_refresh_switches(char **switches, char **packages)
     regain_lockstep();
 }
 
-static char left_stuff[32] = "",
-            right_stuff[32] = "";
-char mid_stuff[32] = "", full_title[90] = "";
-
-#ifdef USE_A0_SPACER
-#define SPACER_CHAR 0xa0
-#else
-#define SPACER_CHAR 0x20
-#endif
-
-static void rewrite_title_bar()
-{
-// Just at present this does not cope with cases where the width of the window
-// has been changed...
-    int ll = strlen(left_stuff),
-        lm = strlen(mid_stuff),
-        lr = strlen(right_stuff);
-    int i, j;
-    for (i=0; i<80; i++) full_title[i] = SPACER_CHAR;
-    strncpy(full_title, left_stuff, ll);
-    j = 80 - strlen(right_stuff);
-    strncpy(&full_title[j], right_stuff, lr);
-    j = 40-(lm/2);
-    strncpy(&full_title[j], mid_stuff, lm);
-    full_title[80] = 0;
-    wake_up_terminal(FXTerminal::REFRESH_TITLE);
-    regain_lockstep();
-}
-
-
 void fwin_acknowledge_tick()
 {
 // This is to do with my handling of "^Z" to suspend the computation.
@@ -1182,14 +1187,8 @@ void fwin_report_right(const char *msg)
     rewrite_title_bar();
 }
 
-void fwin_set_help_file(const char *key, const char *path)
-{
-    if (!windowed) return;
-    printf("fwin_set_help_file called\n");
-    fflush(stdout);
-}
-
-
+int windowed_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main)
+{ return FX::windowed_worker(argc, argv, fwin_main);
 }
 
 // end of FXWorker.cpp

@@ -555,7 +555,7 @@ symbolic procedure superprinm(x,s!:lmar);
     w:=posn();
     if w>s!:lmar then << terpri(); w:=0 >>;
     if w<s!:lmar then s!:initialblanks:=s!:lmar - w;
-    s!:prindent(x,s!:lmar+3); %main recursive print routine.
+    s!:prindent(x,s!:lmar+2); %main recursive print routine.
 % traverse routine finished - now tidy up buffers.
     s!:overflow 'none; %flush out the buffer.
     linelength s!:rmar;
@@ -625,7 +625,7 @@ symbolic procedure s!:prindent(x,n);
         if cx=2 and atom cddr x then cx:=nil;
         if cx='prog then <<
             s!:putch '! ;
-            s!:prindent(car (x:=cdr x),n+3) >>;
+            s!:prindent(car (x:=cdr x),n+2) >>;
 % CX now controls the formatting of what follows:
 %    nil      default action
 %    <number> first few blanks are non-indenting
@@ -639,7 +639,7 @@ symbolic procedure s!:prindent(x,n);
              s!:overflow s!:bufferi; %force format for prog.
              if atom car x then << % a label.
                  s!:lmar:=s!:initialblanks:=max(s!:lmar - 6,0);
-                 s!:prindent(car x,n - 3); % print the label.
+                 s!:prindent(car x,n - 2); % print the label.
                  x:=cdr x;
                  if not atom x and atom car x then go to scan;
                  if s!:lmar+s!:bn>n then s!:putblank()
@@ -650,7 +650,7 @@ symbolic procedure s!:prindent(x,n);
              if cx=0 then cx:=nil;
              s!:putch '!  >>
          else s!:putblank();
-         s!:prindent(car x,n+3);
+         s!:prindent(car x,n+2);
          x:=cdr x;
          go to scan;
 
@@ -660,7 +660,7 @@ symbolic procedure s!:prindent(x,n);
             s!:putch '!.;
             s!:putch '! ;
             s!:prindent(x,n+5) >>;
-        s!:putch ('rpar . (n - 3));
+        s!:putch ('rpar . (n - 2));
         if s!:indenting s!:top()='indent and not null s!:blanklist s!:top() then
                s!:overflow car s!:blanklist s!:top()
         else s!:endlist s!:top();
@@ -677,12 +677,12 @@ symbolic procedure s!:prvector(x,n);
     bound:=upbv x; % length of the vector.
     s!:stack:=(s!:newframe n) . s!:stack;
     s!:putch ('lsquare . s!:top());
-    s!:prindent(getv(x,0),n+3);
+    s!:prindent(getv(x,0),n+2);
     for i:=1:bound do <<
         s!:putch '!,;
         s!:putblank();
-        s!:prindent(getv(x,i),n+3) >>;
-    s!:putch('rsquare . (n - 3));
+        s!:prindent(getv(x,i),n+2) >>;
+    s!:putch('rsquare . (n - 2));
     s!:endlist s!:top();
     s!:stack:=cdr s!:stack
   end;
@@ -793,9 +793,9 @@ symbolic procedure s!:overflow flg;
 %      <a pointer into the buffer>
 %                  prints up to and including that character, which
 %                  should be a blank.
-    if s!:indblanks=0 and s!:initialblanks>3 and flg='more then <<
-        s!:initialblanks:=s!:initialblanks - 3;
-        s!:lmar:=s!:lmar - 3;
+    if s!:indblanks=0 and s!:initialblanks>2 and flg='more then <<
+        s!:initialblanks:=s!:initialblanks - 2;
+        s!:lmar:=s!:lmar - 2;
         return 'moved!-left >>;
 fblank:
     if s!:bn=0 then <<

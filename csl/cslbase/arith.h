@@ -357,36 +357,36 @@ static inline bool lessp_di64(double a, int64_t b)
     return (int64_t)a < b;
 }
 
-extern "C" LispObject negateb(LispObject);
-extern "C" LispObject copyb(LispObject);
-extern "C" LispObject negate(LispObject);
-extern "C" LispObject plus2(LispObject a, LispObject b);
-extern "C" LispObject difference2(LispObject a, LispObject b);
-extern "C" LispObject times2(LispObject a, LispObject b);
-extern "C" LispObject quot2(LispObject a, LispObject b);
-extern "C" LispObject CLquot2(LispObject a, LispObject b);
-extern "C" LispObject quotbn(LispObject a, int32_t n);
-extern "C" LispObject quotbn1(LispObject a, int32_t n);
+extern LispObject negateb(LispObject);
+extern LispObject copyb(LispObject);
+extern LispObject negate(LispObject);
+extern LispObject plus2(LispObject a, LispObject b);
+extern LispObject difference2(LispObject a, LispObject b);
+extern LispObject times2(LispObject a, LispObject b);
+extern LispObject quot2(LispObject a, LispObject b);
+extern LispObject CLquot2(LispObject a, LispObject b);
+extern LispObject quotbn(LispObject a, int32_t n);
+extern LispObject quotbn1(LispObject a, int32_t n);
 #define QUOTBB_QUOTIENT_NEEDED    1
 #define QUOTBB_REMAINDER_NEEDED   2
-extern "C" LispObject quotbb(LispObject a, LispObject b, int needs);
-extern "C" LispObject Cremainder(LispObject a, LispObject b);
-extern "C" LispObject rembi(LispObject a, LispObject b);
-extern "C" LispObject rembb(LispObject a, LispObject b);
-extern "C" LispObject shrink_bignum(LispObject a, size_t lena);
-extern "C" LispObject modulus(LispObject a, LispObject b);
-extern "C" LispObject rational(LispObject a);
-extern "C" LispObject rationalize(LispObject a);
-extern "C" LispObject lcm(LispObject a, LispObject b);
-extern "C" LispObject lengthen_by_one_bit(LispObject a, int32_t msd);
-extern "C" bool numeq2(LispObject a, LispObject b);
-extern "C" bool zerop(LispObject a);
-extern "C" bool onep(LispObject a);
-extern "C" bool minusp(LispObject a);
-extern "C" bool plusp(LispObject a);
+extern LispObject quotbb(LispObject a, LispObject b, int needs);
+extern LispObject Cremainder(LispObject a, LispObject b);
+extern LispObject rembi(LispObject a, LispObject b);
+extern LispObject rembb(LispObject a, LispObject b);
+extern LispObject shrink_bignum(LispObject a, size_t lena);
+extern LispObject modulus(LispObject a, LispObject b);
+extern LispObject rational(LispObject a);
+extern LispObject rationalize(LispObject a);
+extern LispObject lcm(LispObject a, LispObject b);
+extern LispObject lengthen_by_one_bit(LispObject a, int32_t msd);
+extern bool numeq2(LispObject a, LispObject b);
+extern bool zerop(LispObject a);
+extern bool onep(LispObject a);
+extern bool minusp(LispObject a);
+extern bool plusp(LispObject a);
 
-extern "C" LispObject integer_decode_long_float(LispObject a);
-extern "C" LispObject Linteger_decode_float(LispObject env, LispObject a);
+extern LispObject integer_decode_long_float(LispObject a);
+extern LispObject Linteger_decode_float(LispObject env, LispObject a);
 
 extern LispObject validate_number(const char *s, LispObject a,
                                   LispObject b, LispObject c);
@@ -397,6 +397,8 @@ extern LispObject make_two_word_bignum(int32_t a, uint32_t b);
 extern LispObject make_three_word_bignum(int32_t a, uint32_t b, uint32_t c);
 extern LispObject make_four_word_bignum(int32_t a, uint32_t b,
                                         uint32_t c, uint32_t d);
+extern LispObject make_five_word_bignum(int32_t a, uint32_t b,
+                                        uint32_t c, uint32_t d, uint32_t e);
 extern LispObject make_n_word_bignum(int32_t a2, uint32_t a1,
                                      uint32_t a0, size_t n);
 extern LispObject make_n4_word_bignum(int32_t a3, uint32_t a2,
@@ -468,16 +470,16 @@ static inline LispObject make_lisp_unsigned128(uint128_t n)
 }
 
 extern double float_of_integer(LispObject a);
-extern "C" LispObject add1(LispObject p);
-extern "C" LispObject sub1(LispObject p);
-extern "C" LispObject integerp(LispObject p);
+extern LispObject add1(LispObject p);
+extern LispObject sub1(LispObject p);
+extern LispObject integerp(LispObject p);
 extern double float_of_number(LispObject a);
 extern float128_t float128_of_number(LispObject a);
 extern LispObject make_complex(LispObject r, LispObject i);
 extern LispObject make_ratio(LispObject p, LispObject q);
 extern LispObject make_approx_ratio(LispObject p, LispObject q, int bits);
-extern "C" LispObject ash(LispObject a, LispObject b);
-extern "C" LispObject lognot(LispObject a);
+extern LispObject ash(LispObject a, LispObject b);
+extern LispObject lognot(LispObject a);
 extern LispObject logior2(LispObject a, LispObject b);
 extern LispObject logxor2(LispObject a, LispObject b);
 extern LispObject logand2(LispObject a, LispObject b);
@@ -575,15 +577,15 @@ extern size_t karatsuba_parallel;
 
 static int f128M_exponent(const float128_t *p);
 static void f128M_set_exponent(float128_t *p, int n);
-extern "C" void f128M_ldexp(float128_t *p, int n);
-extern "C" void f128M_frexp(float128_t *p, float128_t *r, int *x);
+extern void f128M_ldexp(float128_t *p, int n);
+extern void f128M_frexp(float128_t *p, float128_t *r, int *x);
 static bool f128M_infinite(const float128_t *p);
 static bool f128M_finite(const float128_t *p);
 static bool f128M_nan(const float128_t *x);
 static bool f128M_subnorm(const float128_t *x);
 static bool f128M_negative(const float128_t *x);
 static void f128M_negate(float128_t *x);
-extern "C" void f128M_split(
+extern void f128M_split(
     const float128_t *x, float128_t *yhi, float128_t *ylo);
 
 #ifdef LITTLEENDIAN
@@ -666,7 +668,7 @@ extern intptr_t float128_to_5_digits(float128_t *d,
     int32_t &a4, uint32_t &a3, uint32_t &a2, uint32_t &a1, uint32_t &a0);
 
 
-extern "C" float128_t f128_0,      // 0.0L0
+extern float128_t f128_0,      // 0.0L0
                       f128_half,   // 0.5L0
                       f128_mhalf,  // -0.5L0
                       f128_1,      // 1.0L0
@@ -692,28 +694,28 @@ static inline void f128M_to_f256M(const float128_t *a, float256_t *b)
     b->lo = f128_0;
 } 
 
-extern "C" void f256M_add(
+extern void f256M_add(
     const float256_t *x, const float256_t *y, float256_t *z);
 
-extern "C" void f256M_mul(
+extern void f256M_mul(
     const float256_t *x, const float256_t *y, float256_t *z);
 
-extern "C" void f256M_pow(const float256_t *x, unsigned int y, float256_t *z);
+extern void f256M_pow(const float256_t *x, unsigned int y, float256_t *z);
 
-extern "C" float256_t f256_1, f256_10, f256_r10, f256_5, f256_r5;
+extern float256_t f256_1, f256_10, f256_r10, f256_5, f256_r5;
 
 // These print 128-bit floats in the various standard styles, returning the
 // number of characters used. The "sprint" versions put their result in
 // a buffer, while "print" goes to stdout.
 
-extern "C" int f128M_sprint_E(char *s, int width, int precision, float128_t *p);
-extern "C" int f128M_sprint_F(char *s, int width, int precision, float128_t *p);
-extern "C" int f128M_sprint_G(char *s, int width, int precision, float128_t *p);
-extern "C" int f128M_print_E(int width, int precision, float128_t *p);
-extern "C" int f128M_print_F(int width, int precision, float128_t *p);
-extern "C" int f128M_print_G(int width, int precision, float128_t *p);
+extern int f128M_sprint_E(char *s, int width, int precision, float128_t *p);
+extern int f128M_sprint_F(char *s, int width, int precision, float128_t *p);
+extern int f128M_sprint_G(char *s, int width, int precision, float128_t *p);
+extern int f128M_print_E(int width, int precision, float128_t *p);
+extern int f128M_print_F(int width, int precision, float128_t *p);
+extern int f128M_print_G(int width, int precision, float128_t *p);
 
-extern "C" float128_t atof128(const char *s);
+extern float128_t atof128(const char *s);
 
 // Now let me provide a macro to do full type-dispatch for the implementation
 // of a generic arithmetic operator. This is a pretty hideously large macro

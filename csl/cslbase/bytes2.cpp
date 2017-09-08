@@ -38,10 +38,12 @@
 // $Id$
 
     LispObject A_reg;
-    LispObject r1, r2;
-    one_args *f1;
+    LispObject r1, r2, r3;
+    no_args *f0;
+    one_arg *f1;
     two_args *f2;
-    n_args *f345;
+    three_args *f3;
+    fourup_args *f4up;
     unsigned int fname, w;
     int32_t n, k;
     size_t xppc;
@@ -111,7 +113,7 @@
 // bytecode but was called just under 2 million times. The overheads of
 // starting up the bytecode interpreter nake that an invalid judgement,
 // and the "+30" here is intended to counterbalance it.
-    qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
+    qcount(basic_elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
 //
     A_reg = nil;
@@ -193,10 +195,13 @@ next_opcode:   // This label is so that I can restart what I am doing
     for (;;)
     {
 #ifndef NO_BYTECOUNT
-        if (!profile_count_mode) qcount(elt(litvec, 0)) += 1;
+        if (!profile_count_mode) qcount(basic_elt(litvec, 0)) += 1;
         total++;
         frequencies[((unsigned char *)codevec)[ppc]]++;
 #endif
+
+//trace_printf("ppc=%d, byte=%.2x\n", ppc, ((unsigned char *)codevec)[ppc]);
+//ensure_screen();
 
         switch (next_byte)
         {
@@ -206,6 +211,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 // be activated.
 //
             case OP_SPARE:
+                continue; // used on a temporary basis as LABEL
+
             default:
 //
 // Here I have an unrecognised opcode - the result of a compiler error
@@ -269,7 +276,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 return onevalue(nil);
 
             case OP_FREEBIND:
-                do_freebind(elt(litvec, next_byte));
+                do_freebind(basic_elt(litvec, next_byte));
                 continue;
 
             case OP_FREERSTR:
@@ -285,43 +292,43 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_STOREFREE:
-                if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
+                if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   STACK_SANITY;
                     push(A_reg);
                     print_traceset(current_byte, A_reg);
                     pop(A_reg);
                 }
-                qvalue(elt(litvec, next_byte)) = A_reg;  // store into special var
+                qvalue(basic_elt(litvec, next_byte)) = A_reg;  // store into special var
                 continue;
 
             case OP_STOREFREE1:
-                if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
+                if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   STACK_SANITY;
                     push(A_reg);
                     print_traceset(1, A_reg);
                     pop(A_reg);
                 }
-                qvalue(elt(litvec, 1)) = A_reg;
+                qvalue(basic_elt(litvec, 1)) = A_reg;
                 continue;
 
             case OP_STOREFREE2:
-                if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
+                if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   STACK_SANITY;
                     push(A_reg);
                     print_traceset(2, A_reg);
                     pop(A_reg);
                 }
-                qvalue(elt(litvec, 2)) = A_reg;
+                qvalue(basic_elt(litvec, 2)) = A_reg;
                 continue;
 
             case OP_STOREFREE3:
-                if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
+                if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                 {   STACK_SANITY;
                     push(A_reg);
                     print_traceset(3, A_reg);
                     pop(A_reg);
                 }
-                qvalue(elt(litvec, 3)) = A_reg;
+                qvalue(basic_elt(litvec, 3)) = A_reg;
                 continue;
 
             case OP_PUSHNILS:
@@ -536,13 +543,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   f1 = qfn1(B_reg);
                     push(B_reg);
                     if ((qheader(B_reg) & SYM_TRACED) != 0)
-                        A_reg = traced_call1(elt(litvec, 0), f1, B_reg, A_reg);
+                        A_reg = traced_call1(basic_elt(litvec, 0), f1, B_reg, A_reg);
                     else A_reg = f1(B_reg, A_reg);
                     popv(1);
                     continue;
                 }
-                push(A_reg);
-                A_reg = apply(B_reg, 1, nil, elt(litvec, 0));
+                push(B_reg);
+                A_reg = ncons(A_reg);
+                pop(B_reg);
+                A_reg = apply(B_reg, A_reg, nil, basic_elt(litvec, 0));
                 continue;
 
             case OP_APPLY2:
@@ -551,40 +560,58 @@ next_opcode:   // This label is so that I can restart what I am doing
                 {   f2 = qfn2(r2);
                     popv(1);
                     if ((qheader(r2) & SYM_TRACED) != 0)
-                        A_reg = traced_call2(elt(litvec, 0), f2, r2, B_reg, A_reg);
+                        A_reg = traced_call2(basic_elt(litvec, 0), f2, r2, B_reg, A_reg);
                     else A_reg = f2(r2, B_reg, A_reg);
                     continue;
                 }
 // Here the stack has fn on the top and the 2 args are in B_reg, A_reg
-// in effect go "pop(fn); push2(B_reg, A_reg);" so args are on the stack
-                *stack = B_reg;
-                push(A_reg);
-                A_reg = apply(r2, 2, nil, elt(litvec, 0));
+                A_reg = list2(B_reg, A_reg);
+                pop(r2);
+                A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
                 continue;
 
             case OP_APPLY3:
+// Somewhat beware here - This is (apply3 F a1 a2 a3) or
+// (funcall F a1 a2 a3) and a3 will be passed directly as is in the stack.
+// In particular a general call to an "apply3" function would have passed in
+// effect (apply3' F a1 a2 [a3]) with the fourth argument passed as a list.
+// When I use the bytecode op I do not do that.
                 pop(r1);
                 r2 = *stack;
                 if (is_symbol(r2))   // can optimise this case, I guess
-                {   f345 = qfnn(r2);
+                {   f3 = qfn3(r2);
                     if ((qheader(r2) & SYM_TRACED) != 0)
-                        A_reg = traced_call3(elt(litvec, 0), f345, r2, r1, B_reg, A_reg);
-                    else A_reg = f345(r2, 3, r1, B_reg, A_reg);
+                        A_reg = traced_call3(basic_elt(litvec, 0), f3, r2, r1, B_reg, A_reg);
+                    else A_reg = f3(r2, r1, B_reg, A_reg);
                     popv(1);
                     continue;
                 }
-                *stack = r1;
-                push2(B_reg, A_reg);
-                A_reg = apply(r2, 3, nil, elt(litvec, 0));
+                A_reg = list3(stack[-1], B_reg, A_reg);
+                pop(r2);
+                A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
                 continue;
 
             case OP_APPLY4:
-//
-// It is not yet clear that APPLY4 is important enough to justify the
-// mess it would involve here...
-//
-                err_printf("\nAPPLY4 not implemented yet\n");
-                aerror("unfinished work in bytes1.c");
+                pop2(r1, r3);
+// The 4 arguments are now r3, r1, B_reg, A_reg in that order, and as with
+// APPLY3 I do not wrap the final two arguments up in a list but instead pass
+// them individually.
+                r2 = *stack;
+                if (is_symbol(r2))   // can optimise this case, I guess
+                {   push4(r2, r3, r1, B_reg);
+                    A_reg = ncons(A_reg);    // Make 4th arg a list!
+                    pop4(B_reg, r1, r3, r2);
+                    f4up = qfn4up(r2);
+                    if ((qheader(r2) & SYM_TRACED) != 0)
+                        A_reg = traced_call4up(basic_elt(litvec, 0), f4up, r2, r3, r1, B_reg, A_reg);
+                    else A_reg = f4up(r2, r3, r1, B_reg, A_reg);
+                    popv(1);
+                    continue;
+                }
+                A_reg = list4(r3, r1, B_reg, A_reg);
+                pop(r2);
+                A_reg = apply(r2, A_reg, nil, basic_elt(litvec, 0));
+                continue;
 
 #ifdef COMMON
 #define SL_OR_CL_EQUAL cl_equal
@@ -800,273 +827,272 @@ next_opcode:   // This label is so that I can restart what I am doing
 // but are expected to pick up a useful number of cases (for both speed and
 // compactness) all the same.
 //
-
             case OP_JUMPL0NIL:
                 xppc = ppc;
                 ppc++;
-                if (stack[0] == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (stack[0] == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL0T:
                 xppc = ppc;
                 ppc++;
-                if (stack[0] != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (stack[0] != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL1NIL:
                 xppc = ppc;
                 ppc++;
-                if (stack[-1] == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (stack[-1] == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL1T:
                 xppc = ppc;
                 ppc++;
-                if (stack[-1] != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (stack[-1] != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL2NIL:
                 xppc = ppc;
                 ppc++;
-                if (stack[-2] == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (stack[-2] == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL2T:
                 xppc = ppc;
                 ppc++;
-                if (stack[-2] != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (stack[-2] != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL3NIL:
                 xppc = ppc;
                 ppc++;
-                if (stack[-3] == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (stack[-3] == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL3T:
                 xppc = ppc;
                 ppc++;
-                if (stack[-3] != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (stack[-3] != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL4NIL:
                 xppc = ppc;
                 ppc++;
-                if (stack[-4] == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (stack[-4] == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL4T:
                 xppc = ppc;
                 ppc++;
-                if (stack[-4] != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (stack[-4] != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL0ATOM:
                 xppc = ppc;
                 ppc++;
-                if (!consp(stack[0])) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (!consp(stack[0])) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL0NATOM:
                 xppc = ppc;
                 ppc++;
-                if (consp(stack[0])) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (consp(stack[0])) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL1ATOM:
                 xppc = ppc;
                 ppc++;
-                if (!consp(stack[-1])) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (!consp(stack[-1])) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL1NATOM:
                 xppc = ppc;
                 ppc++;
-                if (consp(stack[-1])) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (consp(stack[-1])) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL2ATOM:
                 xppc = ppc;
                 ppc++;
-                if (!consp(stack[-2])) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (!consp(stack[-2])) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL2NATOM:
                 xppc = ppc;
                 ppc++;
-                if (consp(stack[-2])) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (consp(stack[-2])) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL3ATOM:
                 xppc = ppc;
                 ppc++;
-                if (!consp(stack[-3])) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (!consp(stack[-3])) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPL3NATOM:
                 xppc = ppc;
                 ppc++;
-                if (consp(stack[-3])) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (consp(stack[-3])) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPST0NIL:
                 xppc = ppc;
                 ppc++;
-                if ((stack[0] = A_reg) == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if ((stack[0] = A_reg) == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPST0T:
                 xppc = ppc;
                 ppc++;
-                if ((stack[0] = A_reg) != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if ((stack[0] = A_reg) != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPST1NIL:
                 xppc = ppc;
                 ppc++;
-                if ((stack[-1] = A_reg) == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if ((stack[-1] = A_reg) == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPST1T:
                 xppc = ppc;
                 ppc++;
-                if ((stack[-1] = A_reg) != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if ((stack[-1] = A_reg) != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPST2NIL:
                 xppc = ppc;
                 ppc++;
-                if ((stack[-2] = A_reg) == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if ((stack[-2] = A_reg) == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPST2T:
                 xppc = ppc;
                 ppc++;
-                if ((stack[-2] = A_reg) != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if ((stack[-2] = A_reg) != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE1NIL:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(elt(litvec, 1)) == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (qvalue(basic_elt(litvec, 1)) == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE1T:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(elt(litvec, 1)) != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (qvalue(basic_elt(litvec, 1)) != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE2NIL:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(elt(litvec, 2)) == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (qvalue(basic_elt(litvec, 2)) == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE2T:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(elt(litvec, 2)) != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (qvalue(basic_elt(litvec, 2)) != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE3NIL:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(elt(litvec, 3)) == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (qvalue(basic_elt(litvec, 3)) == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE3T:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(elt(litvec, 3)) != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (qvalue(basic_elt(litvec, 3)) != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE4NIL:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(elt(litvec, 4)) == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (qvalue(basic_elt(litvec, 4)) == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREE4T:
                 xppc = ppc;
                 ppc++;
-                if (qvalue(elt(litvec, 4)) != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (qvalue(basic_elt(litvec, 4)) != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT1EQ:
                 xppc = ppc;
                 ppc++;
-                if (elt(litvec, 1) == A_reg) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (basic_elt(litvec, 1) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT1NE:
                 xppc = ppc;
                 ppc++;
-                if (elt(litvec, 1) != A_reg) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (basic_elt(litvec, 1) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT2EQ:
                 xppc = ppc;
                 ppc++;
-                if (elt(litvec, 2) == A_reg) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (basic_elt(litvec, 2) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT2NE:
                 xppc = ppc;
                 ppc++;
-                if (elt(litvec, 2) != A_reg) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (basic_elt(litvec, 2) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT3EQ:
                 xppc = ppc;
                 ppc++;
-                if (elt(litvec, 3) == A_reg) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (basic_elt(litvec, 3) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT3NE:
                 xppc = ppc;
                 ppc++;
-                if (elt(litvec, 3) != A_reg) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (basic_elt(litvec, 3) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT4EQ:
                 xppc = ppc;
                 ppc++;
-                if (elt(litvec, 4) == A_reg) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (basic_elt(litvec, 4) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLIT4NE:
                 xppc = ppc;
                 ppc++;
-                if (elt(litvec, 4) != A_reg) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (basic_elt(litvec, 4) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREENIL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (qvalue(elt(litvec, w)) == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (qvalue(basic_elt(litvec, w)) == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFREET:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (qvalue(elt(litvec, w)) != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (qvalue(basic_elt(litvec, w)) != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLITEQ:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (elt(litvec, w) == A_reg) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (basic_elt(litvec, w) == A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPLITNE:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (elt(litvec, w) != A_reg) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (basic_elt(litvec, w) != A_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPB1NIL:
@@ -1074,7 +1100,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = f1(nil, A_reg);
                 xppc = ppc;
                 ppc++;
-                if (A_reg == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (A_reg == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPB1T:
@@ -1082,7 +1108,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = f1(nil, A_reg);
                 xppc = ppc;
                 ppc++;
-                if (A_reg != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (A_reg != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPB2NIL:
@@ -1090,7 +1116,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = f2(nil, B_reg, A_reg);
                 xppc = ppc;
                 ppc++;
-                if (A_reg == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (A_reg == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPB2T:
@@ -1098,7 +1124,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 A_reg = f2(nil, B_reg, A_reg);
                 xppc = ppc;
                 ppc++;
-                if (A_reg != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (A_reg != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPEQCAR:     // jump if eqcar(A, <some literal>)
@@ -1106,7 +1132,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (car_legal(A_reg) &&
-                    elt(litvec, w) == qcar(A_reg)) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                    basic_elt(litvec, w) == qcar(A_reg)) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPNEQCAR:
@@ -1114,7 +1140,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (!car_legal(A_reg) ||
-                    elt(litvec, w) != qcar(A_reg)) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                    basic_elt(litvec, w) != qcar(A_reg)) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPFLAGP:
@@ -1124,13 +1150,13 @@ next_opcode:   // This label is so that I can restart what I am doing
                 if (!symbolp(A_reg)) continue;
                 else
 #ifdef COMMON
-                {   r1 = get(A_reg, elt(litvec, w), unset_var);
-                    if (r1 != unset_var) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                {   r1 = get(A_reg, basic_elt(litvec, w), unset_var);
+                    if (r1 != unset_var) short_jump(ppc, xppc);
                     continue;
                 }
 #else
-                r1 = Lflagp(nil, A_reg, elt(litvec, w));
-                if (r1 != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
+                if (r1 != nil) short_jump(ppc, xppc);
                 continue;
 #endif
 
@@ -1139,18 +1165,18 @@ next_opcode:   // This label is so that I can restart what I am doing
                 xppc = ppc;
                 ppc++;
                 if (!symbolp(A_reg))
-                {   ppc = ppc + ((unsigned char *)codevec)[xppc];
+                {   short_jump(ppc, xppc);
                     continue;
                 }
                 else
 #ifdef COMMON
-                {   r1 = get(A_reg, elt(litvec, w), unset_var);
-                    if (r1 == unset_var) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                {   r1 = get(A_reg, basic_elt(litvec, w), unset_var);
+                    if (r1 == unset_var) short_jump(ppc, xppc);
                     continue;
                 }
 #else
-                    r1 = Lflagp(nil, A_reg, elt(litvec, w));
-                if (r1 == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                    r1 = Lflagp(nil, A_reg, basic_elt(litvec, w));
+                if (r1 == nil) short_jump(ppc, xppc);
                 continue;
 #endif
 
@@ -1163,215 +1189,179 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_JUMPATOM:
                 xppc = ppc;
                 ppc++;
-                if (!consp(A_reg)) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (!consp(A_reg)) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPATOM_B:
                 xppc = ppc;
                 ppc++;
-                if (!consp(A_reg))
-                {   ppc = ppc - ((unsigned char *)codevec)[xppc];
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (!consp(A_reg)) short_jump_back(ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMPNATOM:
                 xppc = ppc;
                 ppc++;
-                if (consp(A_reg)) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (consp(A_reg)) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPNATOM_B:
                 xppc = ppc;
                 ppc++;
-                if (consp(A_reg))
-                {   ppc = ppc - ((unsigned char *)codevec)[xppc];
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (consp(A_reg)) short_jump_back(ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMPEQ:
                 xppc = ppc;
                 ppc++;
-                if (A_reg == B_reg) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (A_reg == B_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPEQ_B:
                 xppc = ppc;
                 ppc++;
-                if (A_reg == B_reg)
-                {   ppc = ppc - ((unsigned char *)codevec)[xppc];
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (A_reg == B_reg) short_jump_back(ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMPNE:
                 xppc = ppc;
                 ppc++;
-                if (A_reg != B_reg) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (A_reg != B_reg) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPNE_B:
                 xppc = ppc;
                 ppc++;
-                if (A_reg != B_reg)
-                {   ppc = ppc - ((unsigned char *)codevec)[xppc];
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (A_reg != B_reg) short_jump_back(ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMPEQUAL:
                 xppc = ppc;
                 ppc++;
-                if (SL_OR_CL_EQUAL(A_reg, B_reg)) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPEQUAL_B:
                 xppc = ppc;
                 ppc++;
-                if (SL_OR_CL_EQUAL(A_reg, B_reg))
-                {   ppc = ppc - ((unsigned char *)codevec)[xppc];
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump_back(ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMPNEQUAL:
                 xppc = ppc;
                 ppc++;
-                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPNEQUAL_B:
                 xppc = ppc;
                 ppc++;
-                if (!SL_OR_CL_EQUAL(A_reg, B_reg))
-                {   ppc = ppc - ((unsigned char *)codevec)[xppc];
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) short_jump_back(ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMP:
-                ppc = ppc + ((unsigned char *)codevec)[ppc] + 1;
+                ppc++;
+                short_jump(ppc, ppc-1);
                 continue;
 
             case OP_JUMP_B:
-                ppc = ppc - ((unsigned char *)codevec)[ppc] + 1;
-                A_reg = poll_jump_back(A_reg);
+                ppc++;
+                short_jump_back(ppc, ppc-1, A_reg);
                 continue;
 
             case OP_JUMPATOM_L:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (!consp(A_reg)) ppc = ppc + ((w << 8) + ((unsigned char *)codevec)[xppc]);
+                if (!consp(A_reg)) long_jump(w, ppc, xppc);
                 continue;
 
             case OP_JUMPATOM_BL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (!consp(A_reg))
-                {   ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (!consp(A_reg)) long_jump_back(w, ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMPNATOM_L:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (consp(A_reg)) ppc = ppc + ((w << 8) + ((unsigned char *)codevec)[xppc]);
+                if (consp(A_reg)) long_jump(w, ppc, xppc);
                 continue;
 
             case OP_JUMPNATOM_BL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (consp(A_reg))
-                {   ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (consp(A_reg)) long_jump_back(w, ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMPEQ_L:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (A_reg == B_reg) ppc = ppc + ((w << 8) + ((unsigned char *)codevec)[xppc]);
+                if (A_reg == B_reg) long_jump(w, ppc, xppc);
                 continue;
 
             case OP_JUMPEQ_BL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (A_reg == B_reg)
-                {   ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (A_reg == B_reg) long_jump_back(w, ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMPNE_L:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (A_reg != B_reg) ppc = ppc + ((w << 8) + ((unsigned char *)codevec)[xppc]);
+                if (A_reg != B_reg) long_jump(w, ppc, xppc);
                 continue;
 
             case OP_JUMPNE_BL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (A_reg != B_reg)
-                {   ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (A_reg != B_reg) long_jump_back(w, ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMPEQUAL_L:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (SL_OR_CL_EQUAL(A_reg, B_reg))
-                    ppc = ppc + ((w << 8) + ((unsigned char *)codevec)[xppc]);
+                if (SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump(w, ppc, xppc);
                 continue;
 
             case OP_JUMPEQUAL_BL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (SL_OR_CL_EQUAL(A_reg, B_reg))
-                {   ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump_back(w, ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMPNEQUAL_L:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (!SL_OR_CL_EQUAL(A_reg, B_reg))
-                    ppc = ppc + ((w << 8) + ((unsigned char *)codevec)[xppc]);
+                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump(w, ppc, xppc);
                 continue;
 
             case OP_JUMPNEQUAL_BL:
                 w = next_byte;
                 xppc = ppc;
                 ppc++;
-                if (!SL_OR_CL_EQUAL(A_reg, B_reg))
-                {   ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (!SL_OR_CL_EQUAL(A_reg, B_reg)) long_jump_back(w, ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMP_L:
                 w = next_byte;
-                ppc = ppc + ((w << 8) + ((unsigned char *)codevec)[ppc]) + 1;
+                ppc++;
+                long_jump(w, ppc, ppc-1);
                 continue;
 
             case OP_JUMP_BL:
                 w = next_byte;
-                ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[ppc]) + 1;
-                A_reg = poll_jump_back(A_reg);
+                ppc++;
+                long_jump_back(w, ppc, ppc-1, A_reg);
                 continue;
 
             case OP_CATCH:
@@ -1505,29 +1495,29 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CALL0:
                 fname = next_byte;
             call0:
-                r1 = elt(litvec, fname);
+                r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
 //
 // NB I set fname to be the literal-vector offset in the line above so that
 // it will be possible to find the name of the function that was called
 // if I have to display a backtrace.
 //
-                f345 = qfnn(r1);
+                f0 = qfn0(r1);
 // CALL0:  A=fn()
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call0(elt(litvec, 0), f345, r1);
-                else A_reg = f345(r1, 0);
+                    A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
+                else A_reg = f0(r1);
                 assert(A_reg != 0);
                 continue;
 
 
             case OP_JCALL:
-//
 // This version has the number of args and the target packed into a
-// single operand byte.  JCALLN is functionally similar but allows
-// for more extreme cases by using one byte to specify the target
-// and another to give the number of arguments being passed.
-//
+// single operand byte.  Cases where the offset does not fit into this
+// will go via BIGCALL.
+// Note that the argument count can only ever be 0, 1, 2, 3 or 4, so
+// codes 5, 6 and 7 ar enot used. Hmmm I could provide a JCALL2R option
+// if I wanted!
                 w = next_byte;
                 fname = w & 0x1f;
                 w = (w >> 5) & 0x7;
@@ -1536,12 +1526,12 @@ next_opcode:   // This label is so that I can restart what I am doing
                     case 1: goto jcall1;
                     case 2: goto jcall2;
                     case 3: goto jcall3;
-                    default:goto jcalln;
+                    default:goto jcall4;
                 }
 
-            jcall0: r1 = elt(litvec, fname);
+            jcall0: r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
-                f345 = qfnn(r1);
+                f0 = qfn0(r1);
 //
 // The issue here is cases such as
 //    (de f1 (x) (f2 x))
@@ -1550,16 +1540,16 @@ next_opcode:   // This label is so that I can restart what I am doing
 // for interrupts or for window-system updates will happen. Thus it seems
 // I need to perform a polling operation as part of the tail-call sequence.
 //
-                A_reg = poll_jump_back(A_reg);
+                poll_jump_back(A_reg);
 // If I have an (untraced) tailcall to a bytecoded function I can just reset
 // some pointers and go back to the top of the code of the bytecode
 // interpreter.
-                if (f345 == bytecoded0 &&
+                if (f0 == bytecoded_0 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
                     codevec = qcar(lit);
                     litvec = qcdr(lit);
-                    ffpname = qpname(elt(litvec, 0));
+                    ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
@@ -1568,7 +1558,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     stack = entry_stack;
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
+                    qcount(basic_elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
                     continue;
                 }
@@ -1576,8 +1566,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call0(elt(litvec, 0), f345, r1);
-                else A_reg = f345(r1, 0);
+                    A_reg = traced_call0(basic_elt(litvec, 0), f0, r1);
+                else A_reg = f0(r1);
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
@@ -1587,21 +1577,21 @@ next_opcode:   // This label is so that I can restart what I am doing
                 global_jb = jbsave;
 #endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    return traced_call0(elt(litvec, 0), f345, r1);
-                else return f345(r1, 0);
+                    return traced_call0(basic_elt(litvec, 0), f0, r1);
+                else return f0(r1);
 #endif
 
             jcall1:
-                r1 = elt(litvec, fname);
+                r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f1 = qfn1(r1);
-                A_reg = poll_jump_back(A_reg);
-                if (f1 == bytecoded1 &&
+                poll_jump_back(A_reg);
+                if (f1 == bytecoded_1 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
                     codevec = qcar(lit);
                     litvec = qcdr(lit);
-                    ffpname = qpname(elt(litvec, 0));
+                    ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
@@ -1611,7 +1601,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     push(A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
+                    qcount(basic_elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
                     continue;
                 }
@@ -1619,7 +1609,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call1(elt(litvec, 0), f1, r1, A_reg);
+                    A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                 else A_reg = f1(r1, A_reg);
 #ifdef DEBUG
                 global_jb = jbsave;
@@ -1630,22 +1620,22 @@ next_opcode:   // This label is so that I can restart what I am doing
                 global_jb = jbsave;
 #endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    return traced_call1(elt(litvec, 0), f1, r1, A_reg);
+                    return traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                 else return f1(r1, A_reg);
 #endif
 
 
             jcall2:
-                r1 = elt(litvec, fname);
+                r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
-                A_reg = poll_jump_back(A_reg);
-                if (f2 == bytecoded2 &&
+                poll_jump_back(A_reg);
+                if (f2 == bytecoded_2 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
                     codevec = qcar(lit);
                     litvec = qcdr(lit);
-                    ffpname = qpname(elt(litvec, 0));
+                    ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
@@ -1655,7 +1645,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     push2(B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
+                    qcount(basic_elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
                     continue;
                 }
@@ -1663,7 +1653,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call2(elt(litvec, 0), f2, r1, B_reg, A_reg);
+                    A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else A_reg = f2(r1, B_reg, A_reg);
 #ifdef DEBUG
                 global_jb = jbsave;
@@ -1674,22 +1664,22 @@ next_opcode:   // This label is so that I can restart what I am doing
                 global_jb = jbsave;
 #endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    return traced_call2(elt(litvec, 0), f2, r1, B_reg, A_reg);
+                    return traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else return f2(r1, B_reg, A_reg);
 #endif
 
             jcall3:
-                r1 = elt(litvec, fname);
+                r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
-                f345 = qfnn(r1);
+                f3 = qfn3(r1);
                 pop(r2);
-                A_reg = poll_jump_back(A_reg);
-                if (f345 == bytecoded3 &&
+                poll_jump_back(A_reg);
+                if (f3 == bytecoded_3 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
                     codevec = qcar(lit);
                     litvec = qcdr(lit);
-                    ffpname = qpname(elt(litvec, 0));
+                    ffpname = qpname(basic_elt(litvec, 0));
                     fflength =
                         (size_t)(length_of_byteheader(vechdr(ffpname)) - CELL);
                     if (fflength >= sizeof(ffname)) fflength = sizeof(ffname)-1;
@@ -1699,7 +1689,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                     push3(r2, B_reg, A_reg);
                     ppc = BPS_DATA_OFFSET;
 #ifndef NO_BYTECOUNT
-                    qcount(elt(litvec, 0)) += profile_count_mode ? 1 : 30;
+                    qcount(basic_elt(litvec, 0)) += profile_count_mode ? 1 : 30;
 #endif
                     continue;
                 }
@@ -1707,8 +1697,8 @@ next_opcode:   // This label is so that I can restart what I am doing
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call3(elt(litvec, 0), f345, r1, r2, B_reg, A_reg);
-                else A_reg = f345(r1, 3, r2, B_reg, A_reg);
+                    A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
+                else A_reg = f3(r1, r2, B_reg, A_reg);
 #ifdef DEBUG
                 global_jb = jbsave;
 #endif
@@ -1718,29 +1708,21 @@ next_opcode:   // This label is so that I can restart what I am doing
                 global_jb = jbsave;
 #endif
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    return traced_call3(elt(litvec, 0), f345, r1, r2, B_reg, A_reg);
-                else return f345(r1, 3, r2, B_reg, A_reg);
+                    return traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
+                else return f3(r1, r2, B_reg, A_reg);
 #endif
 
-            jcalln:
-                A_reg = poll_jump_back(A_reg);
-//
-// here I could shuffle the stack down quite a lot...
-//
-                push2(B_reg, A_reg);
-                A_reg = elt(litvec, fname);
+            jcall4:
+// fname is the offset in the literal vector of the function to call.
+// The args are in stack[-1], stack[0], B_reg, A_reg
+// In some other JCALL cases I optimise if the called function is
+// bytecoded. I have not done that here (yet?).
+                poll_jump_back(A_reg);
+                pop2(r2, r1);
+                B_reg = list3star(r1, r2, B_reg, A_reg);
+                A_reg = basic_elt(litvec, fname);
                 debug_record_symbol(A_reg);
-//
-// Also if the function is byte-coded I can enter it more directly.
-// It is strongly desirable that I do so so that backtraces will work
-// better. However (at present) I have not implemented the hack tha
-// would turn a jcalln into an iteration here. That is sort of a
-// matter of laziness and because I had not expected it to be on
-// too many critical paths. The first case where I feel it might have
-// been mattering is the 4-arg general-reciprocal!-by!-gcd (which I have
-// just re-written so that what happens here is irrelevant in that case!).
-//
-                A_reg = apply(A_reg, (int)w, nil, elt(litvec, 0));
+                A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
                 stack = entry_stack;
 #ifndef NO_BYTECOUNT
                 if (callstack != nil) callstack = qcdr(callstack);
@@ -1749,17 +1731,6 @@ next_opcode:   // This label is so that I can restart what I am doing
                 global_jb = jbsave;
 #endif
                 return A_reg;
-
-            case OP_JCALLN:
-                fname = next_byte;
-                w = next_byte;
-                switch (w)
-                {   case 0: goto jcall0;
-                    case 1: goto jcall1;
-                    case 2: goto jcall2;
-                    case 3: goto jcall3;
-                    default:goto jcalln;
-                }
 
             case OP_BIGCALL:
 //
@@ -1781,56 +1752,47 @@ next_opcode:   // This label is so that I can restart what I am doing
                     case 2: goto call2;
                     case 3: goto call3;
                     case 4:
-//
-// Here I write out a variant on the CALLN code.
-//
-                        push2(B_reg, A_reg);
-                        A_reg = elt(litvec, fname);
-                        A_reg = apply(A_reg,
-                                      (int)(((unsigned char *)codevec)[ppc]),
-                                      nil, elt(litvec, 0));
+// Here I write out a variant on the CALL4 code.
+                        B_reg = list3star(stack[-1], stack[0], B_reg, A_reg);
+                        popv(2);
+                        A_reg = basic_elt(litvec, fname);
+                        A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
                         ppc++;
                         continue;
 
                     case 5: goto call2r;
-//
 // sub-opcodes 6 and 7 are use for LOADFREE and STOREFREE - this is a bit
 // odd but fits the required operations tightly into the opcode map.
-//
                     case 6:
                         B_reg = A_reg;
-                        A_reg = qvalue(elt(litvec, fname));
+                        A_reg = qvalue(basic_elt(litvec, fname));
                         continue;
                     case 7:
-                        if ((qheader(elt(litvec, 0)) & SYM_TRACESET) != 0)
+                        if ((qheader(basic_elt(litvec, 0)) & SYM_TRACESET) != 0)
                         {   push(A_reg);
                             print_traceset(fname, A_reg);
                             pop(A_reg);
                         }
-                        qvalue(elt(litvec, fname)) = A_reg;  // store into special var
+                        qvalue(basic_elt(litvec, fname)) = A_reg;  // store into special var
                         continue;
+// Now tailcalls.
                     case 8: goto jcall0;
                     case 9: goto jcall1;
                     case 10:goto jcall2;
                     case 11:goto jcall3;
-// The codes for big JCALLs take a further byte that give the number of args
-                    case 12:w = next_byte; goto jcalln;
-//
+                    case 12:goto jcall4;
 // Codes 13 and 14 do FREEBIND and LITGET, which completes the list of
 // byte operations that access big literals.
-//
-                    case 13:do_freebind(elt(litvec, fname));
+                    case 13:do_freebind(basic_elt(litvec, fname));
                         continue;
                     case 14:B_reg = A_reg;
-                        A_reg = elt(litvec, fname);
+                        A_reg = basic_elt(litvec, fname);
                         A_reg = get(B_reg, A_reg, nil);
                         continue;
-//
 // Code 15 is LOADLIT with a long offset, which may be used as an alternative
 // to the LOADLIT/QGETVN mechanism that I otherwise support.
-//
                     case 15:B_reg = A_reg;
-                        A_reg = elt(litvec, fname);
+                        A_reg = basic_elt(litvec, fname);
                         continue;
                 }
 
@@ -1844,14 +1806,14 @@ next_opcode:   // This label is so that I can restart what I am doing
 // might itself do a JCALL and corrupt them!  Also I know that the current
 // function is bytecoded, so I avoid the overhead of (re-)discovering that.
 //
-                if ((qheader(elt(litvec, 0)) & SYM_TRACED) != 0)
+                if ((qheader(basic_elt(litvec, 0)) & SYM_TRACED) != 0)
                 {   fname = 0;
                     goto call1;
                 }
                 push3(codevec, litvec, A_reg); // the argument
                 if (--countdown < 0) deal_with_tick();
                 if (stack >= stacklimit) reclaim(nil, "stack", GC_STACK, 0);
-                A_reg = bytestream_interpret(CELL-TAG_VECTOR, elt(litvec, 0), stack-1);
+                A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0), stack-1);
                 pop2(litvec, codevec);
                 assert(A_reg != 0);
                 continue;
@@ -1878,25 +1840,25 @@ next_opcode:   // This label is so that I can restart what I am doing
 
             case OP_CALL1:
                 fname = next_byte;
-            call1:  r1 = elt(litvec, fname);
+            call1:  r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f1 = qfn1(r1);
 // CALL1:   A=fn(A);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call1(elt(litvec, 0), f1, r1, A_reg);
+                    A_reg = traced_call1(basic_elt(litvec, 0), f1, r1, A_reg);
                 else A_reg = f1(r1, A_reg);
                 assert(A_reg != 0);
                 continue;
 
             case OP_CALL2_0:
-                if ((qheader(elt(litvec, 0)) & SYM_TRACED) != 0)
+                if ((qheader(basic_elt(litvec, 0)) & SYM_TRACED) != 0)
                 {   fname = 0;
                     goto call2;
                 }
                 push4(codevec, litvec, B_reg, A_reg);
                 if (--countdown < 0) deal_with_tick();
                 if (stack >= stacklimit) reclaim(nil, "stack", GC_STACK, 0);
-                A_reg = bytestream_interpret(CELL-TAG_VECTOR, elt(litvec, 0), stack-2);
+                A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0), stack-2);
                 pop2(litvec, codevec);
                 assert(A_reg != 0);
                 continue;
@@ -1920,12 +1882,12 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CALL2:
                 fname = next_byte;
             call2:
-                r1 = elt(litvec, fname);
+                r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
 // CALL2:   A=fn(B,A);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call2(elt(litvec, 0), f2, r1, B_reg, A_reg);
+                    A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, B_reg, A_reg);
                 else A_reg = f2(r1, B_reg, A_reg);
                 assert(A_reg != 0);
                 continue;
@@ -1933,12 +1895,12 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CALL2R:
                 fname = next_byte;
             call2r:
-                r1 = elt(litvec, fname);
+                r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
 // CALL2R:   A=fn(A,B); NOTE arg order reversed
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call2(elt(litvec, 0), f2, r1, A_reg, B_reg);
+                    A_reg = traced_call2(basic_elt(litvec, 0), f2, r1, A_reg, B_reg);
                 else A_reg = f2(r1, A_reg, B_reg);
                 assert(A_reg != 0);
                 continue;
@@ -1946,47 +1908,64 @@ next_opcode:   // This label is so that I can restart what I am doing
             case OP_CALL3:
                 fname = next_byte;
             call3:
-                r1 = elt(litvec, fname);
+                r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
-                f345 = qfnn(r1);
+                f3 = qfn3(r1);
 // CALL3:   A=fn(pop(),B,A);
                 pop(r2);
                 if ((qheader(r1) & SYM_TRACED) != 0)
-                    A_reg = traced_call3(elt(litvec, 0), f345, r1, r2, B_reg, A_reg);
-                else A_reg = f345(r1, 3, r2, B_reg, A_reg);
+                    A_reg = traced_call3(basic_elt(litvec, 0), f3, r1, r2, B_reg, A_reg);
+                else A_reg = f3(r1, r2, B_reg, A_reg);
                 assert(A_reg != 0);
                 continue;
 
-            case OP_CALLN:
-//
-// Here the first post-byte indicates the function to be called,
-// and the second is the number of args (>= 4) to be passed. All but the
-// last two args have been pushed onto the stack already. The last two are
-// in A and B.
-//
-                push2(B_reg, A_reg);
-                A_reg = elt(litvec, ((unsigned char *)codevec)[ppc]);
-//
-// Note that I never need to call something with 0, 1, 2 or 3 args here.
-//
-                A_reg = apply(A_reg,
-                              (int)((unsigned char *)codevec)[ppc+1],
-                              nil, elt(litvec, 0));
+            case OP_CALL4:
+// All but the last two args have been pushed onto the stack already.
+// The last two are in A and B.
+                pop2(r2, r1);
+                B_reg = list3star(r1, r2, B_reg, A_reg);
+// Here the post-byte indicates the function to be called.
+                A_reg = basic_elt(litvec, ((unsigned char *)codevec)[ppc]);
+                A_reg = apply(A_reg, B_reg, nil, basic_elt(litvec, 0));
                 assert(A_reg != 0);
-                ppc = ppc + 2;
+                ppc++;
                 continue;
 
             case OP_BUILTIN0:
 // At present this uses the "old" scheme for functions that do not take
 // arguments that passes the integer 0 to tell them of the lack of args
 // actually passed.
-                f345 = no_arg_functions[next_byte];
+                f0 = no_arg_functions[next_byte];
                 debug_record_int("BUILTIN0", previous_byte);
 // BUILTIN0:  A=fn()
                 if (no_arg_traceflags[previous_byte])
-                    A_reg = traced_call0(elt(litvec, 0), f345,
+                    A_reg = traced_call0(basic_elt(litvec, 0), f0,
                         make_undefined_symbol(no_arg_names[previous_byte]));
-                else A_reg = f345(nil, 0);
+                else A_reg = f0(nil);
+                assert(A_reg != 0);
+                continue;
+
+            case OP_BUILTIN1:
+                f1 = one_arg_functions[next_byte];
+                debug_record_int("BUILTIN1", previous_byte);
+// BUILTIN1:   A=fn(A);
+                if (one_arg_traceflags[previous_byte])
+                    A_reg = traced_call1(basic_elt(litvec, 0), f1,
+                        make_undefined_symbol(one_arg_names[previous_byte]),
+                        A_reg);
+                A_reg = f1(nil, A_reg);
+                assert(A_reg != 0);
+                continue;
+
+            case OP_BUILTIN2:
+                f2 = two_arg_functions[next_byte];
+                debug_record_int("BUILTIN2", previous_byte);
+// BUILTIN2:   A=fn(B,A);
+                if (two_arg_traceflags[previous_byte])
+                    A_reg = traced_call2(basic_elt(litvec, 0), f2,
+                        make_undefined_symbol(two_arg_names[previous_byte]),
+                        B_reg, A_reg);
+                A_reg = f2(nil, B_reg, A_reg);
                 assert(A_reg != 0);
                 continue;
 
@@ -1995,7 +1974,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 debug_record_int("BUILTIN2R", previous_byte);
 // BUILTIN2R:   A=fn(A,B); NOTE arg order reversed
                 if (two_arg_traceflags[previous_byte])
-                    A_reg = traced_call2(elt(litvec, 0), f2,
+                    A_reg = traced_call2(basic_elt(litvec, 0), f2,
                         make_undefined_symbol(two_arg_names[previous_byte]),
                         A_reg, B_reg);
                 else A_reg = f2(nil, A_reg, B_reg);
@@ -2003,15 +1982,15 @@ next_opcode:   // This label is so that I can restart what I am doing
                 continue;
 
             case OP_BUILTIN3:
-                f345 = three_arg_functions[next_byte];
+                f3 = three_arg_functions[next_byte];
                 debug_record_int("BUILTIN3", previous_byte);
 // CALL3:   A=fn(pop(),B,A);
                 pop(r1);
                 if (three_arg_traceflags[previous_byte])
-                    A_reg = traced_call3(elt(litvec, 0), f345,
+                    A_reg = traced_call3(basic_elt(litvec, 0), f3,
                         make_undefined_symbol(three_arg_names[previous_byte]),
                         r1, B_reg, A_reg);
-                else A_reg = f345(nil, 3, r1, B_reg, A_reg);
+                else A_reg = f3(nil, r1, B_reg, A_reg);
                 assert(A_reg != 0);
                 continue;
 
@@ -2251,42 +2230,42 @@ next_opcode:   // This label is so that I can restart what I am doing
 // header word and is tagged as a Lisp vector.
 //
                 B_reg = A_reg;
-                A_reg = elt(litvec, next_byte);
+                A_reg = basic_elt(litvec, next_byte);
                 continue;
 
             case OP_LOADLIT1:
                 B_reg = A_reg;
-                A_reg = elt(litvec, 1);
+                A_reg = basic_elt(litvec, 1);
                 continue;
 
             case OP_LOADLIT2:
                 B_reg = A_reg;
-                A_reg = elt(litvec, 2);
+                A_reg = basic_elt(litvec, 2);
                 continue;
 
             case OP_LOADLIT3:
                 B_reg = A_reg;
-                A_reg = elt(litvec, 3);
+                A_reg = basic_elt(litvec, 3);
                 continue;
 
             case OP_LOADLIT4:
                 B_reg = A_reg;
-                A_reg = elt(litvec, 4);
+                A_reg = basic_elt(litvec, 4);
                 continue;
 
             case OP_LOADLIT5:
                 B_reg = A_reg;
-                A_reg = elt(litvec, 5);
+                A_reg = basic_elt(litvec, 5);
                 continue;
 
             case OP_LOADLIT6:
                 B_reg = A_reg;
-                A_reg = elt(litvec, 6);
+                A_reg = basic_elt(litvec, 6);
                 continue;
 
             case OP_LOADLIT7:
                 B_reg = A_reg;
-                A_reg = elt(litvec, 7);
+                A_reg = basic_elt(litvec, 7);
                 continue;
 
             case OP_LOADFREE:
@@ -2294,62 +2273,51 @@ next_opcode:   // This label is so that I can restart what I am doing
 // Load the value of a free (GLOBAL, SPECIAL, FLUID) variable
 //
                 B_reg = A_reg;
-                A_reg = qvalue(elt(litvec, next_byte));
+                A_reg = qvalue(basic_elt(litvec, next_byte));
                 continue;
 
             case OP_LOADFREE1:
                 B_reg = A_reg;
-                A_reg = qvalue(elt(litvec, 1));
+                A_reg = qvalue(basic_elt(litvec, 1));
                 continue;
 
             case OP_LOADFREE2:
                 B_reg = A_reg;
-                A_reg = qvalue(elt(litvec, 2));
+                A_reg = qvalue(basic_elt(litvec, 2));
                 continue;
 
             case OP_LOADFREE3:
                 B_reg = A_reg;
-                A_reg = qvalue(elt(litvec, 3));
+                A_reg = qvalue(basic_elt(litvec, 3));
                 continue;
 
             case OP_LOADFREE4:
                 B_reg = A_reg;
-                A_reg = qvalue(elt(litvec, 4));
+                A_reg = qvalue(basic_elt(litvec, 4));
                 continue;
 
             case OP_JUMPNIL:
                 xppc = ppc;
                 ppc++;
-                if (A_reg == nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (A_reg == nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPNIL_B:
                 xppc = ppc;
                 ppc++;
-                if (A_reg == nil)
-                {   ppc = ppc - ((unsigned char *)codevec)[xppc];
-//
-// To ensure that all code is interruptable I poll on every backwards
-// jump.  The SIGINT event simulates a stack overflow, and the
-// consequent entry to the garbage collector then handles the event.
-//
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (A_reg == nil) short_jump_back(ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMPT:
                 xppc = ppc;
                 ppc++;
-                if (A_reg != nil) ppc = ppc + ((unsigned char *)codevec)[xppc];
+                if (A_reg != nil) short_jump(ppc, xppc);
                 continue;
 
             case OP_JUMPT_B:
                 xppc = ppc;
                 ppc++;
-                if (A_reg != nil)
-                {   ppc = ppc - ((unsigned char *)codevec)[xppc];
-                    A_reg = poll_jump_back(A_reg);
-                }
+                if (A_reg != nil) short_jump_back(ppc, xppc, A_reg);
                 continue;
 
             case OP_JUMPNIL_L:
@@ -2365,7 +2333,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                 ppc++;
                 if (A_reg == nil)
                 {   ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
-                    A_reg = poll_jump_back(A_reg);
+                    poll_jump_back(A_reg);
                 }
                 continue;
 
@@ -2382,32 +2350,8 @@ next_opcode:   // This label is so that I can restart what I am doing
                 ppc++;
                 if (A_reg != nil)
                 {   ppc = ppc - ((w << 8) + ((unsigned char *)codevec)[xppc]);
-                    A_reg = poll_jump_back(A_reg);
+                    poll_jump_back(A_reg);
                 }
-                continue;
-
-            case OP_BUILTIN1:
-                f1 = one_arg_functions[next_byte];
-                debug_record_int("BUILTIN1", previous_byte);
-// BUILTIN1:   A=fn(A);
-                if (one_arg_traceflags[previous_byte])
-                    A_reg = traced_call1(elt(litvec, 0), f1,
-                        make_undefined_symbol(one_arg_names[previous_byte]),
-                        A_reg);
-                A_reg = f1(nil, A_reg);
-                assert(A_reg != 0);
-                continue;
-
-            case OP_BUILTIN2:
-                f2 = two_arg_functions[next_byte];
-                debug_record_int("BUILTIN2", previous_byte);
-// BUILTIN2:   A=fn(B,A);
-                if (two_arg_traceflags[previous_byte])
-                    A_reg = traced_call2(elt(litvec, 0), f2,
-                        make_undefined_symbol(two_arg_names[previous_byte]),
-                        B_reg, A_reg);
-                A_reg = f2(nil, B_reg, A_reg);
-                assert(A_reg != 0);
                 continue;
 
             case OP_EXIT:
@@ -2488,7 +2432,7 @@ next_opcode:   // This label is so that I can restart what I am doing
                         else A_reg = nil;
                     }
                     else
-                    {   A_reg = elt(r1, w & 0x3f);
+                    {   A_reg = basic_elt(r1, w & 0x3f);
                         if (A_reg == SPID_NOPROP)
                         {   if (w & 0x40) A_reg = B_reg;
                             else A_reg = nil;
@@ -2501,13 +2445,13 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 else A_reg = nil;
 #ifdef RECORD_GET
-                record_get(elt(fastget_names, w & 0x7f), n);
+                record_get(basic_elt(fastget_names, w & 0x7f), n);
 #endif
                 continue;
 
             case OP_LITGET:
                 B_reg = A_reg;
-                A_reg = elt(litvec, next_byte);
+                A_reg = basic_elt(litvec, next_byte);
                 A_reg = get(B_reg, A_reg, nil);
                 continue;
 
@@ -2528,7 +2472,7 @@ next_opcode:   // This label is so that I can restart what I am doing
 // What follows is my current guess for a good diagnostic...
         if (SHOW_FNAME)
         {   err_printf("Inside: ");
-            loop_print_error(elt(litvec, 0));
+            loop_print_error(basic_elt(litvec, 0));
             err_printf("\n");
         }
 // Here I need to scan down the current stack-frame looking for either a

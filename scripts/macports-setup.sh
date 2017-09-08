@@ -99,6 +99,7 @@ sudo port install          \
   gnuplot                  \
   gnutar                   \
   gzip                     \
+  libffi                   \
   md5sha1sum               \
   netpbm                   \
   pkgconfig                \

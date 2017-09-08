@@ -1,4 +1,4 @@
-//eval1.cpp                               Copyright (C) 1989-2017 Codemist    
+// eval1.cpp                               Copyright (C) 1989-2017 Codemist    
 
 //
 // Interpreter (part 1).
@@ -69,107 +69,118 @@ LispObject nreverse(LispObject a)
 //
 // Format for def in case (f)
 //
-//  (1)       (funarg env bvl ...)    flet and labels
+//  (1)       (funarg env bvl ...)    flet and labels for local function
 //  (2)       (bvl ...)               macrolet
 //                                    Note that 'funarg is not valid as a bvl
 //                                    and indeed in this case bvl is a list
+//                                    and can never be an atom.
 //
 
 LispObject eval(LispObject u, LispObject env)
 {   STACK_SANITY;
-    if (env != nil && !consp(env)) *((int *)(-1)) = 0; // Haha!
-    int t;
+    assert (env == nil || consp(env));
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__)) aerror("deep stack in eval");
 #endif
 restart:
-    t = (int)u & TAG_BITS;
-//
+    int t = (int)u & TAG_BITS;
 // The first case considered is of symbols - lexical and special bindings
-// have to be sorted out.
-//
+// have to be allowed for.
     if (t == TAG_SYMBOL)
     {   Header h = qheader(u);
         debug_record_symbol(u);
-        if ((h & SYM_KEYWORD_VAR) != 0)   // fluid and global detected too
-        {   LispObject v = qvalue(u);
-            if (v == unset_var) error(1, err_unset_var, u);
-            else return onevalue(v);
-        }
+// I detect FLUID and GLOBAL variables because each of those situation is
+// marked with a big in the symbol header. Both bits are set to mark
+// a KEYWORD. In all such cases the value is in the symbol's value cell.
+// If the symbol was fluid or global its value cell should have been
+// initialized when it got declared, so I will not cgeck for "unset_var"
+// again here.
+        if ((h & SYM_KEYWORD_VAR) != 0) return onevalue(qvalue(u));
+// If a symbol is not global or fluid then it ought to be bound locally,
+// ir mentioned in the environment. This can include as a special case it
+// being subject to a local declaration that it is global! This is
+// "deep binding".
         else
         {   while (env != nil)
             {   LispObject p = qcar(env);
                 if (qcar(p) == u)
                 {   LispObject v =qcdr(p);
-//
 // If a variable is lexically bound to the value work_symbol that means
 // that the symbol has been (lexically) declared to be special, so its
 // value cell should be inspected.
-//
                     if (v == work_symbol)
                     {   v = qvalue(u);
+// I will trigger the "unset variable" message if a variable is declared
+// locally global but did not have a global value set.
                         if (v == unset_var) error(1, err_unset_var, u);
                     }
                     return onevalue(v);
                 }
                 env = qcdr(env);
             }
+// If a symbol has not been declared FLUID or GLOBAL and is not lovally
+// bound then if I was feeling really cautious I would raise an error
+// explaining that it should not be accessed. But that feels MEAN, and
+// so I will treat it as if it had been made locally global. I COULD force
+// it to be globally fluid here. There is a balance that has to be struck
+// between error detection and convenience for the informal user!
             {   LispObject v = qvalue(u);
                 if (v == unset_var) error(1, err_unset_var, u);
                 else return onevalue(v);
             }
         }
     }
-//
 // Things that are neither symbols nor lists evaluate to themselves,
-// e.g. numbers and vectors.
-//
-    else if (t != TAG_CONS) return onevalue(u);
+// e.g. numbers, characters, string and vectors. The special test for nil
+// here is a throw-back to times when NIL was tagged as if a CONS. That
+// happened in Common Lisp mode so that (car nil) and (cdr nil) could
+// both yield nil without there needing to be any special treatment.
+// My forward looking idea is that NIL will always be tagged as a symbol
+// but in Common Lisp mode every CAR or CDR access will be checked for
+// validity, and in the error case a special check for (CAR NIL) or
+// (CDR NIL) will be made... In Standard Lisp mode there is no special
+// issue to worry about here.
+    else if (t != TAG_CONS || u == nil) return onevalue(u);
     else
     {
-//
 // The final case is that of a list (fn ...), and one case that has to
 // be checked is if fn is lexically bound.
-//
         LispObject fn, args;
-//
-// The test for nil here is because although nil is a symbol the tagging
-// structure tested here may mark it as a list.
-//
-        if (u == nil) return onevalue(nil);
         stackcheck2(0, u, env);
         fn = qcar(u);
         args = qcdr(u);
-//
-// Local function bindings must be looked for first.
-//
+// Local function bindings must be looked for first. Well Standard Lisp
+// does not have local function bindings, but Common Lisp does - hence the
+// extra "fun" here.
         {   LispObject p;
+            if (is_symbol(fn)) // can only be a local function if atomic.
             for (p=env; p!=nil; p=qcdr(p))
             {   LispObject w = qcar(p);
-//
 // The form (<list> . sym) is used in an environment to indicate a local
 // binding of a function, either as a regular function or as a macro
 // (i.e. flet or macrolet).  The structure of the list distinguishes
 // between these two cases.
-//
                 if (qcdr(w) == fn && is_cons(w = qcar(w)) && w!=nil)
                 {   p = qcar(w);
+// p will now be (funarg env bvl ...body...) for a simple local
+// function definition, or (bvl ...body...) with the bvl non-atomic
+// for a local macro introduced using MACROLET.
                     if (p == funarg) // ordinary function
                     {   fn = w;      // (funarg ...) is OK to apply
                         goto ordinary_function;
                     }
-//
 // Here it is a local macro. Observe that the macroexpansion is done
 // with respect to an empty environment.  Macros that are defined at the same
 // time may seem to be mutually recursive but there is a sense in which they
 // are not (as well as a sense in which they are) - self and cross references
 // only happen AFTER an expansion and can not happen during one.
-//
                     push2(u, env);
                     on_backtrace(
                         w = cons(lambda, w);
-                        p = Lfuncalln(nil, 4, qvalue(macroexpand_hook),
-                                      w, u, nil),
+                        p = apply(qvalue(macroexpand_hook),
+                                  list3(w, u, nil),
+                                  nil,
+                                  macroexpand_hook),
                         // now the error handler
                         pop2(env, u);
                         if (SHOW_FNAME)
@@ -182,35 +193,28 @@ restart:
                 }
             }
         }
+// Here I have dropped out from the search for a local definition of the
+// function, so a global interpretation is needed.
         if (is_symbol(fn))
         {
-//
-// Special forms and macros are checked for next.  Special forms
+// Special forms and (global) macros are checked for next.  Special forms
 // take precedence over macros.
-//
             Header h = qheader(fn);
             debug_record_symbol(fn);
             if (h & SYM_SPECIAL_FORM)
             {   STACK_SANITY1(u);
-#ifdef DEBUG
-                if (qfn1(fn) == NULL)
-                {   term_printf("Illegal special form\n");
-                    my_exit(EXIT_FAILURE);
-                }
-#endif
-                return ((Special_Form *)qfn1(fn))(args, env);
+                assert(qfn1(fn) != NULL);
+                return (qfn1(fn))(args, env);
             }
             else if (h & SYM_MACRO)
             {   STACK_SANITY;
                 push2(u, env);
-//
 // the environment passed to macroexpand should only be needed to cope
 // with macrolet, I think.  Since I use just one datastructure for the
 // whole environment I also pass along lexical bindings etc, but I hope that
 // they will never be accessed.  I do not think that macrolet is important
 // enough to call for complication and slow-down in the interpreter this
 // way - but then I am not exactly what you would call a Common Lisp Fan!
-//
                 debug_record("About to expand a macro");
                 on_backtrace(
                     fn = macroexpand(u, env);
@@ -225,87 +229,94 @@ restart:
                 return eval(fn, env);
             }
         }
-//
 // Otherwise we have a regular function call.  I prepare the args and
-// call APPLY.
-//
-// Well I will take two astonishingly special cases here. They will be LIST
-// and LIST* and I do magic things for them because they may sometimes by
-// used with huge numbers of arguments. In effect I handle them as special
-// forms here even though they are (also?) ordinary functions
-        if (fn == list_symbol || fn == liststar_symbol)
-        {   bool star = (fn == liststar_symbol);
-            LispObject r = nil;
-            LispObject *save_stack = stack;
-            while (consp(args))
-            {   LispObject w;
-                push2(args, env);
-                push(r);
-                w = qcar(args);
-                on_backtrace(
-                    w = eval(w, env),
-                    // Now the error handler
-                    pop(r);
-                    pop2(env, args);
-                    stack = save_stack;
-                    if (SHOW_ARGS)
-                    {   err_printf("\nEvaluating: ");
-                        loop_print_error(qcar(args));
-                    });
-                pop(r);
-                r = cons(w, r);
-                pop2(env, args);
-                args = qcdr(args);
-            }
-            if (star)
-            {   if (r == nil) fn = nil;
-                else
-                {   fn = qcar(r);
-                    r = qcdr(r);
-                }
-            }
-            else fn = nil;
-            while (r != nil)
-            {   LispObject w = r;
-                r = qcdr(w);
-                qcdr(w) = fn;
-                fn = w;
-            }
-            return onevalue(fn);
-        }
+// call APPLY. In the Lisp 1.5 manual there was a call to EVLIS here.
+// I want the same sort of effect, but will avoid any recursion as I
+// evaluate all the arguments!
     ordinary_function:
-        {   int nargs = 0;
-            LispObject *save_stack = stack;
-            STACK_SANITY1(u);
-//
-// Args are built up on the stack here...
-//
+// Here I might reasonably unwind the process of evaluating arguments
+// so that if I have at most 3 and if the function is a symbol I do
+// things rather directly.
+        LispObject eargs = nil;
+        if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+        {   if (args == nil) return (*qfn0(fn))(fn);
+            LispObject a1 = qcar(args);
+            push3(fn, args, env);
+            on_backtrace(
+                a1 = eval(a1, env),
+                pop3(env, args, fn);
+                if (SHOW_ARGS)
+                {   err_printf("\nEvaluating: ");
+                    loop_print_error(qcar(args));
+                });
+            pop3(env, args, fn);
+if (a1 == 0)
+{ trace_printf("\n!! a==0 fn="); prin_to_trace(fn);
+  trace_printf(" args = "); prin_to_trace(args);
+  trace_printf(" eargs = "); prin_to_trace(eargs);
+  trace_printf("\n"); ensure_screen(); my_abort();
+}
+            args = qcdr(args);
+            if (args == nil) return (*qfn1(fn))(fn, a1);
+            LispObject a2 = qcar(args);
+            push4(fn, args, env, a1);
+            on_backtrace(
+                a2 = eval(a2, env),
+                pop4(a1, env, args, fn);
+                if (SHOW_ARGS)
+                {   err_printf("\nEvaluating: ");
+                    loop_print_error(qcar(args));
+                });
+            pop4(a1, env, args, fn);
+if (a1 == 0 || a2==0)
+{ trace_printf("\n!! a1==0 or a2==0 fn="); prin_to_trace(fn);
+  trace_printf(" args = "); prin_to_trace(args);
+  trace_printf(" eargs = "); prin_to_trace(eargs);
+  trace_printf("\n"); ensure_screen(); my_abort();
+}
+            args = qcdr(args);
+            if (args == nil) return (*qfn2(fn))(fn, a1, a2);
+            LispObject a3 = qcar(args);
+            push5(fn, args, env, a1, a2);
+            on_backtrace(
+                a3 = eval(a3, env),
+                pop5(a2, a1, env, args, fn);
+                if (SHOW_ARGS)
+                {   err_printf("\nEvaluating: ");
+                    loop_print_error(qcar(args));
+                });
+            pop5(a2, a1, env, args, fn);
+            args = qcdr(args);
+            if (args == nil) return (*qfn3(fn))(fn, a1, a2, a3);
+            push3(fn, env, args);
+            eargs = list3(a3, a2, a1);
+            pop3(args, env, fn);
+        }
+// I have evaluated the first 3 args if the function was a symbol, so
+// now I process the rest.
+        {   STACK_SANITY1(u);
             while (consp(args))
             {   LispObject w;
-                push3(fn, args, env);
+                push4(fn, args, env, eargs);
                 w = qcar(args);
                 on_backtrace(
                     w = eval(w, env),
                     // Now the error handler
-                    pop3(env, args, fn);
-                    stack = save_stack;
+                    pop4(eargs, env, args, fn);
                     if (SHOW_ARGS)
                     {   err_printf("\nEvaluating: ");
                         loop_print_error(qcar(args));
                     });
+                pop(eargs);
+                eargs = cons(w, eargs);
                 pop3(env, args, fn);
-                push(w);        // args build up on the Lisp stack
-                nargs++;
                 args = qcdr(args);
             }
-
-//
+            eargs = nreverse(eargs);
 // I pass the environment down to apply() because it will be used if the
 // function was a simple lambda expression.  If the function is a symbol
-// or a closure, env will be irrelevant.  The arguments are on the Lisp
-// stack, and it is the responsibility of apply() to pop them.
-//
-            return apply(fn, nargs, env, current_function);
+// or a closure, env will be irrelevant.  The arguments are in a list.
+            return apply(fn, eargs, env, current_function);
         }
     }
 }
@@ -317,9 +328,7 @@ restart:
 //
 
 static bool check_no_unwanted_keys(LispObject restarg, LispObject ok_keys)
-//
 // verify that there were no unwanted keys in the actual arg list
-//
 {   bool odd_key_found = false;
     while (restarg!=nil)
     {   LispObject k = qcar(restarg);
@@ -349,20 +358,25 @@ static bool check_keyargs_even(LispObject restarg)
         if (restarg==nil) return true;      // Odd length is wrong
         restarg = qcdr(restarg);
     }
-    return false;                               // OK
+    return false;                           // OK
 }
 
 static LispObject keywordify(LispObject v)
 {
-//
-// arg is a non-nil symbol.  Should nil be permitted - I think not
-// since there seems too much chance of confusion.
-//
     LispObject name = get_pname(v);
-// For Standard Lisp the concept of a "keyword package" is not really
-// relevant! I am going to need to invent some scheme that provides some
-// sort of treatment that identifies keywords as being special.
+#ifdef COMMON
     return Lintern_2(nil, name, qvalue(keyword_package));
+#else
+// For Standard Lisp I will force a ":" as the first character of the
+// name, and than tag it as a "keyword".
+    if (basic_celt(name, 0) != ':')
+    {   v = Lexplode(nil, v);
+        v = list2star(fixnum_of_int('!'), fixnum_of_int(':'), v);
+        v = Lcompress(nil, v);
+    }
+    Lmake_keyword(nil, v);
+    return v;
+#endif
 }
 
 static LispObject key_lookup(LispObject keyname, LispObject args)
@@ -376,66 +390,11 @@ static LispObject key_lookup(LispObject keyname, LispObject args)
 }
 
 
-LispObject apply_lambda(LispObject def, int nargs,
-                        LispObject env, LispObject name)
-//
-// Here def is a lambda expression (sans the initial lambda) that is to
-// be applied.  Much horrible messing about is needed so that I can cope
-// with &optional and &rest args (including initialisers and supplied-p
-// variables, also &key, &allow-other-keys and &aux).  Note the need to find
-// any special declarations at the head of the body of the lambda-form.
-// Must pop (nargs) items from the stack at exit.
-//
-{
-//
-// lambda-lists are parsed using a finite state engine with the
-// following states, plus an exit state.
-//
-#define STATE_NULL     0        // at start and during regular args
-#define STATE_OPT      1        // after &optional
-#define STATE_OPT1     2        // after &optional + at least one var
-#define STATE_REST     3        // immediately after &rest
-#define STATE_REST1    4        // after &rest vv
-#define STATE_KEY      5        // &key with no &rest
-#define STATE_ALLOW    6        // &allow-other-keys
-#define STATE_AUX      7        // &aux
+// Within apply_lambda I have a fairly large amount of state that needs
+// to be kept on the Lisp stack so that it is GC safe. Here I introduce
+// names so I can access the information as if it was ordinary data. Note
+// that I MUST NOT use push or pop operations while referencing these!
 
-    int opt_rest_state = STATE_NULL;
-    LispObject *next_arg;
-    int args_left = nargs;
-    LispObject w;
-    if (!consp(def))
-    {   popv(nargs);
-        return onevalue(nil);    // Should never happen
-    }
-    stackcheck3(0, def, env, name);
-    w = qcar(def);
-    next_arg = &stack[1-nargs];         // Points to arg1
-    push4(w,                            // bvl
-          qcdr(def),                    // body
-          env, name);
-//
-// Here I need to macroexpand the first few items in body and
-// look for declare/special items.  I will only bother with SPECIAL decls.
-// Note that args have been pushed onto the stack first to avoid corruption
-// while the interpreter performs macroexpansion.  This is the sort of place
-// where I feel that Common Lisp has built in causes of inefficiency.
-// Well oh well!!! The Common Lisp standardisation group thought so too,
-// and have now indicated that DECLARE forms can not be hidden away as
-// the result of macros, so some of this is unnecessary.
-//
-    push5(nil, nil,                  // local_decs, ok_keys
-          nil, nil, nil);            // restarg, specenv, val1
-    push5(nil, nil,                  // arg, v1
-          nil, nil, nil);            // v, p, w
-//
-// On computers which have unsigned offsets in indexed memory reference
-// instructions the negative indexes off the stack suggested here might
-// be more expensive than I would like - maybe on such machines the stack
-// pointer should be kept offset by 64 bytes (say).  Doing so in general
-// would be to the disadvantage of machines with auto-index address modes
-// that might be used when pushing/popping single items on the stack.
-//
 #define w           stack[0]
 #define p           stack[-1]
 #define v           stack[-2]
@@ -450,13 +409,92 @@ LispObject apply_lambda(LispObject def, int nargs,
 #define env         stack[-11]
 #define body        stack[-12]
 #define bvl         stack[-13]
-#define arg1        stack[-14]
-#define stack_used ((int)(nargs + 14))
+#define arglist     stack[-14]
+#define stack_used  15
 // Wow - that looks like a lot of state to be kept on the stack!
 
+static inline void instate_binding(LispObject var, LispObject val,
+        LispObject local_decs1)
+{   Header h;
+// Complain if the varianble that somebody is attempting to bind seems bad.
+    if (!is_symbol(var) || (qheader(var) & SYM_GLOBAL_VAR)!=0)
+        error(1, err_bad_bvl, var);
+    h = qheader(var);
+// Special variables have their old value saved in the association list
+// specenv, and then get updated.
+    if ((h & SYM_SPECIAL_VAR) != 0)
+    {   specenv = acons(var, qvalue(var), specenv);
+        qvalue(var) = val;
+    }
+    else
+    {
+// If something is not globally special it may still have been locally
+// declared special, so I scan the environment. I clobber local declarations
+// when I use them so that they do not get applied multiple times.
+        for (w = local_decs1; w!=nil; w = qcdr(w))
+        {   if (qcar(w) == var)
+            {   qcar(w) = fixnum_of_int(0); // decl is used up
+                env = acons(var, work_symbol, env);
+                specenv = acons(var, qvalue(var), specenv);
+                qvalue(var) = val;
+                return;
+            }
+        }
+// Finally simple lexical bindings use deep binding.
+        env = acons(var, val, env);
+    }
+}
+
+static inline LispObject next_arg()
+{   LispObject r = qcar(arglist);
+    arglist = qcdr(arglist);
+    return r;
+}
+
+LispObject apply_lambda(LispObject def, LispObject args,
+                        LispObject env1, LispObject name1)
+// Here def is a lambda expression (sans the initial lambda) that is to
+// be applied.  Much horrible messing about is needed so that I can cope
+// with &optional and &rest args (including initialisers and supplied-p
+// variables, also &key, &allow-other-keys and &aux).  Note the need to find
+// any special declarations at the head of the body of the lambda-form.
+{
+
+// lambda-lists are parsed using a finite state engine with the
+// following states, plus an exit state.
+#define STATE_NULL     0        // at start and during regular args
+#define STATE_OPT      1        // after &optional
+#define STATE_OPT1     2        // after &optional + at least one var
+#define STATE_REST     3        // immediately after &rest
+#define STATE_REST1    4        // after &rest vv
+#define STATE_KEY      5        // &key with no &rest
+#define STATE_ALLOW    6        // &allow-other-keys
+#define STATE_AUX      7        // &aux
+
+    int opt_rest_state = STATE_NULL;
+    int args_left = 0;
+    for (LispObject u=args; u!=nil; u=qcdr(u)) args_left++;
+    LispObject w1;
+    if (!consp(def)) return onevalue(nil);    // Should never happen
+    stackcheck4(0, def, args, env1, name1);
+    w1 = qcar(def);
+    push(args);                         // arglist
+    push4(w1,                           // bvl
+          qcdr(def),                    // body
+          env1, name1);
+    push5(nil, nil,                     // local_decs, ok_keys
+          nil, nil, nil);               // restarg, specenv, val1
+    push5(nil, nil,                     // arg, v1
+          nil, nil, nil);               // v, p, w
+// Now I am entitled to reference the names that resolve to the above
+// stack offsets.
     for (;;)
     {   if (!consp(body)) break;
-        p = macroexpand(qcar(body), env);
+// I used to macroexpand things here in case a macro might expand into
+// a DECLARE expression, but versions of the Common Lisp specification later
+// than the one I originally looked at say that DECLARE may only appear
+// directly and manifestly, so I can avoid that extra step.
+        p = qcar(body);
         body = qcdr(body);
         if (!consp(p))
         {   if (stringp(p) && consp(body)) continue; // string is comment here.
@@ -479,10 +517,13 @@ LispObject apply_lambda(LispObject def, int nargs,
             for (v1=qcdr(v1); consp(v1); v1 = qcdr(v1))
                 local_decs = cons(qcar(v1), local_decs);
         }
+// I keep going so that several DECLARE expressions one after the other will
+// be supported. Note that the way I have coded this allows strings interleaved
+// amongst the DECLARE expressions. I think that is not supposed to be
+// permitted.
     }
-//
-// Parse the BVL
-//
+// Next parse the BVL
+    LispObject *stacksave = stack;
     try
     {   START_SETJMP_BLOCK;
         for (p = bvl; consp(p); p=qcdr(p))
@@ -490,51 +531,36 @@ LispObject apply_lambda(LispObject def, int nargs,
             v1 = nil;
             arg = nil;
             val1 = nil;
-//
 // I can break from this switch statement with v a variable to bind
 // and arg the value to bind to it, also v1 (if not nil) is a second
 // variable to be bound (a supplied-p value) and val1 the value to bind it to.
 // If I see &rest or &key the remaining actual args get collected into
 // restarg, which takes the place of arg in some respects.
-//
             switch (opt_rest_state)
-            {
-                case STATE_NULL:
+            {   case STATE_NULL:
                     if (v == opt_key)
                     {   opt_rest_state = STATE_OPT;
                         continue;
                     }
-    
-// #define BAD1(msg)    { error(0, msg);    }
-#define BAD1(msg)    { \
-err_printf("\n@@@ BAD1 "); prin_to_error(def); err_printf("\n"); \
-error(0, msg);    }
-#define BAD2(msg, a) { error(1, msg, a); }
-
-#define collect_rest_arg()                                  \
-    while (args_left-- != 0)                                \
-        restarg = cons(next_arg[args_left], restarg);
-
                     if (v == rest_key)
-                    {   collect_rest_arg();
+                    {   restarg = arglist;
                         opt_rest_state = STATE_REST;
                         continue;
                     }
                     if (v == key_key)
-                    {   collect_rest_arg();
-                        if (check_keyargs_even(restarg)) BAD2(err_bad_keyargs, restarg);
+                    {   restarg = arglist;
+                        if (check_keyargs_even(restarg)) error(1, err_bad_keyargs, restarg);
                         opt_rest_state = STATE_KEY;
                         continue;
                     }
-
                     if (v == aux_key)
-                    {   if (args_left != 0) BAD1(err_excess_args);
+                    {   if (args_left != 0) error(0, err_excess_args);
                         opt_rest_state = STATE_AUX;
                         continue;
                     }
-                    if (v == allow_other_keys) BAD2(err_bad_bvl, v);
-                    if (args_left == 0) BAD1(err_insufficient_args);
-                    arg = *next_arg++;
+                    if (v == allow_other_keys) error(1, err_bad_bvl, v);
+                    if (args_left == 0) error(0, err_insufficient_args);
+                    arg = next_arg(); // the simple case!
                     args_left--;
                     v1 = nil;       // no suppliedp mess here, I'm glad to say
                     break;
@@ -545,14 +571,12 @@ error(0, msg);    }
                         || v == key_key
                         || v == allow_other_keys
                         || v == aux_key
-                       ) BAD2(err_bad_bvl, v);
-//
+                       ) error(1, err_bad_bvl, v);
 // Here v may be a simple variable, or a list (var init suppliedp)
-//
                     opt_rest_state = STATE_OPT1;
                 process_optional_parameter:
                     if (args_left != 0)
-                    {   arg = *next_arg++;
+                    {   arg = next_arg();       // Arg available for optional
                         args_left--;
                         val1 = lisp_true;
                     }
@@ -576,23 +600,23 @@ error(0, msg);    }
 
                 case STATE_OPT1:
                     if (v == rest_key)
-                    {   collect_rest_arg();
+                    {   restarg = arglist;
                         opt_rest_state = STATE_REST;
                         continue;
                     }
                     if (v == key_key)
-                    {   collect_rest_arg();
-                        if (check_keyargs_even(restarg)) BAD2(err_bad_keyargs, restarg);
+                    {   restarg = arglist;
+                        if (check_keyargs_even(restarg)) error(1, err_bad_keyargs, restarg);
                         opt_rest_state = STATE_KEY;
                         continue;
                     }
                     if (v == aux_key)
-                    {   if (args_left != 0) BAD1(err_excess_args);
+                    {   if (args_left != 0) error(0, err_excess_args);
                         opt_rest_state = STATE_AUX;
                         continue;
                     }
                     if (v == opt_key ||
-                        v == allow_other_keys) BAD2(err_bad_bvl, v);
+                        v == allow_other_keys) error(1, err_bad_bvl, v);
                     goto process_optional_parameter;
 
                 case STATE_REST:
@@ -601,14 +625,14 @@ error(0, msg);    }
                         || v == key_key
                         || v == allow_other_keys
                         || v == aux_key
-                       ) BAD2(err_bad_bvl, v);
+                       ) error(1, err_bad_bvl, v);
                     opt_rest_state = STATE_REST1;
                     arg = restarg;
                     break;
 
                 case STATE_REST1:
                     if (v == key_key)
-                    {   if (check_keyargs_even(restarg)) BAD2(err_bad_keyargs, restarg);
+                    {   if (check_keyargs_even(restarg)) error(1, err_bad_keyargs, restarg);
                         opt_rest_state = STATE_KEY;
                         continue;
                     }
@@ -616,7 +640,7 @@ error(0, msg);    }
                     {   opt_rest_state = STATE_AUX;
                         continue;
                     }
-                    BAD2(err_bad_bvl, rest_key);
+                    error(1, err_bad_bvl, rest_key);
 
                 case STATE_KEY:
                     if (v == allow_other_keys)
@@ -625,21 +649,19 @@ error(0, msg);    }
                     }
                     if (v == aux_key)
                     {   if (check_no_unwanted_keys(restarg, ok_keys))
-                            BAD2(err_bad_keyargs, restarg);
+                            error(1, err_bad_keyargs, restarg);
                         opt_rest_state = STATE_AUX;
                         continue;
                     }
                     if (v == opt_key || v == rest_key || v == key_key)
-                        BAD2(err_bad_bvl, v);
+                        error(1, err_bad_bvl, v);
                 process_keyword_parameter:
-//
 // v needs to expand to ((:kv v) init svar) in effect here.
-//
                     {   LispObject keyname = nil;
                         w = nil;
                         if (!consp(v))
                         {   if (!is_symbol(v) || v==nil || v==lisp_true)
-                                BAD2(err_bad_bvl, v);
+                                error(1, err_bad_bvl, v);
                             keyname = keywordify(v);
                         }
                         else
@@ -647,17 +669,17 @@ error(0, msg);    }
                             v = qcar(v);
                             if (!consp(v))
                             {   if (!is_symbol(v) || v==nil || v==lisp_true)
-                                    BAD2(err_bad_bvl, v);
+                                    error(1, err_bad_bvl, v);
                                 keyname = keywordify(v);
                             }
                             else
                             {   keyname = qcar(v);
                                 if (!is_symbol(keyname) || v==nil || v ==lisp_true)
-                                    BAD2(err_bad_bvl, v);
+                                    error(1, err_bad_bvl, v);
                                 keyname = keywordify(keyname);
                                 v = qcdr(v);
                                 if (consp(v)) v = qcar(v);
-                                else BAD2(err_bad_bvl, v);
+                                else error(1, err_bad_bvl, v);
                             }
                         }
                         ok_keys = cons(keyname, ok_keys);
@@ -684,13 +706,13 @@ error(0, msg);    }
                         continue;
                     }
                     if (v == opt_key || v == rest_key || v == key_key ||
-                        v == allow_other_keys) BAD2(err_bad_bvl, v);
+                        v == allow_other_keys) error(1, err_bad_bvl, v);
                     goto process_keyword_parameter;
 
                 case STATE_AUX:
                     if (v == opt_key || v == rest_key ||
                         v == key_key || v == allow_other_keys ||
-                        v == aux_key) BAD2(err_bad_bvl, v);
+                        v == aux_key) error(1, err_bad_bvl, v);
                     if (consp(v))
                     {   w = qcdr(v);
                         v = qcar(v);
@@ -703,86 +725,43 @@ error(0, msg);    }
                     v1 = nil;
                     break;
             }
-//
-// This is where I get when I have one or two vars to bind.
-//
-#define instate_binding(var, val, local_decs1, lab)                     \
-        {   Header h;                                                   \
-            if (!is_symbol(var) || var==nil || var==lisp_true ||        \
-                (qheader(var) & SYM_GLOBAL_VAR)!=0)                     \
-                BAD2(err_bad_bvl, var);                                 \
-            h = qheader(var);                                           \
-            if ((h & SYM_SPECIAL_VAR) != 0)                             \
-            {   w = acons(var, qvalue(var), specenv);                   \
-                specenv = w;                                            \
-                qvalue(var) = val;                                      \
-            }                                                           \
-            else                                                        \
-            {   for (w = local_decs1; w!=nil; w = qcdr(w))              \
-                {   if (qcar(w) == var)                                 \
-                    {   qcar(w) = fixnum_of_int(0);/* decl is used up */\
-                        w = acons(var, work_symbol, env);               \
-                        env = w;                                        \
-                        w = acons(var, qvalue(var), specenv);           \
-                        specenv = w;                                    \
-                        qvalue(var) = val;                              \
-                        goto lab;                                       \
-                    }                                                   \
-                }                                                       \
-                w = acons(var, val, env);                               \
-                env = w;                                                \
-        lab:    ;                                                       \
-            }                                                           \
-        }
-
-//
-// Must check about local special declarations here...
-//
-            instate_binding(v, arg, local_decs, label1);
-            if (v1 != nil) instate_binding(v1, val1, local_decs, label2);
-
+            instate_binding(v, arg, local_decs);
+            if (v1 != nil) instate_binding(v1, val1, local_decs);
         }   // End of for loop that scans BVL
 
-//
 // As well as local special declarations that have applied to bindings here
 // there can be some that apply just to variable references within the body.
-//
         while (local_decs!=nil)
         {   LispObject q = qcar(local_decs);
             local_decs=qcdr(local_decs);
             if (!is_symbol(q)) continue;
-            w = acons(q, work_symbol, env);
-            env = w;
+            env = acons(q, work_symbol, env);
         }
 
         switch (opt_rest_state)
         {   case STATE_NULL:
             case STATE_OPT1:        // Ensure there had not been too many args
-                if (args_left != 0) BAD1(err_excess_args);
+                if (args_left != 0) error(0, err_excess_args);
                 break;
 
             case STATE_OPT:         // error if bvl finishes here
             case STATE_REST:
-                BAD2(err_bad_bvl, opt_rest_state == STATE_OPT ? opt_key : rest_key);
+                error(1, err_bad_bvl, opt_rest_state == STATE_OPT ? opt_key : rest_key);
 
             case STATE_KEY:         // ensure only valid keys were given
                 if (check_no_unwanted_keys(restarg, ok_keys))
-                    BAD2(err_bad_keyargs, restarg);
+                    error(1, err_bad_keyargs, restarg);
                 break;
 
             default:
-//                             in the following cases all is known to be well
 //case STATE_REST1:
 //case STATE_ALLOW:
 //case STATE_AUX:
-//
                 break;
         }
 
-//
 // Now all the argument bindings have been performed - it remains to
 // process the body of the lambda-expression.
-//
         {   exit_count = 1;
             def = progn_fn(body, env);
             while (specenv != nil)
@@ -793,10 +772,9 @@ error(0, msg);    }
         }
     }
     catch (LispException e)
-    {
-//
-// I am having to unwind the stack, restoring special bindings as I go.
-//
+    {   stack = stacksave;
+// On any exception raised above I will need to restore any fluid bindings
+// that have been made.
         while (specenv != nil)
         {   LispObject bv = qcar(specenv);
             qvalue(qcar(bv)) = qcdr(bv);
@@ -805,12 +783,14 @@ error(0, msg);    }
         throw;
     }
     popv(stack_used);
-//
 // note that exit_count has not been disturbed since I called progn_fn,
 // so the number of values that will be returned remains correctly
 // established.
-//
     return def;
+}
+
+// Get rid of the stack reference short names.
+
 #undef w
 #undef p
 #undef v
@@ -826,7 +806,6 @@ error(0, msg);    }
 #undef body
 #undef bvl
 #undef stack_used
-}
 
 LispObject Leval(LispObject env, LispObject a)
 {   save_current_function saver(eval_symbol);
@@ -850,166 +829,109 @@ LispObject Levlis(LispObject env, LispObject a)
     return onevalue(nreverse(r));
 }
 
-LispObject Lapply_n(LispObject env, int nargs, ...)
+// The Lisp-level APPLY functions could potentially confuse. What we have is
+//
+//   (APPLY fn a1 a2 .. an)
+// The simple form of this is just (APPLY fn a1) where a1 is a list of
+// all the arguments to be passed,. All the cases where more arguments are
+// given behave rather like
+//   (APPLY fn (LIST* a1 a2 ... an)).
+// In my C code here these cases are Lapply_1, Lapply_2 etc.
+
+LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
+        LispObject a2, LispObject a3up)
 {   STACK_SANITY;
     save_current_function saver(apply_symbol);
-    va_list a;
-    int i;
-    LispObject last, fn = nil;
-    if (nargs == 0) aerror("apply");
-    else if (nargs > 1)
-    {   va_start(a, nargs);
-        fn = va_arg(a, LispObject);
-        push_args_1(a, nargs);
-        pop(last);
-        i = nargs-2;
-        while (consp(last))
-        {   push(qcar(last));
-            last = qcdr(last);
-            i++;
-        }
-    }
-    else i = 0;
-    return apply(fn, i, nil, apply_symbol);
+// Here I have something like
+//   (APPLY fn a1 a2 (a3 a4 a5up))
+// where a5up will be a list (a5 a6 ...).
+    a3up = Lreverse(nil, a3up);
+    a3up = nreverse2(qcdr(a3up), qcar(a3up));
+// I have just flattened out the final argument.
+    push(fn);
+    a1 = list2star(a1, a2, a3up);
+    pop(fn);
+    return apply(fn, a1, nil, apply_symbol);
 }
 
 LispObject Lapply_1(LispObject env, LispObject fn)
-{   return Lapply_n(env, 1, fn);
+{   save_current_function saver(apply_symbol);
+    return apply(fn, nil, nil, apply_symbol);
 }
 
 LispObject Lapply_2(LispObject env, LispObject fn, LispObject a1)
-{   return Lapply_n(env, 2, fn, a1);
+{   save_current_function saver(apply_symbol);
+    return apply(fn, a1, nil, apply_symbol);
 }
+
+LispObject Lapply_3(LispObject env, LispObject fn, LispObject a1, LispObject a2)
+{   save_current_function saver(apply_symbol);
+    push(fn);
+    a1 = cons(a1, a2);
+    pop(fn);
+    return apply(fn, a1, nil, apply_symbol);
+}
+
+// Next I have (APPLY0 fn), (APPLY1 fn a1), (APPLY2 fr a1 a2) where the
+// name of the function indicates the number of arguments to be involved.
 
 LispObject Lapply0(LispObject env, LispObject fn)
-{   STACK_SANITY;
-    save_current_function saver(apply_symbol);
-#ifndef DEBUG
-// I avoid this optimisation if debugging...
-    if (is_symbol(fn)) return (*qfnn(fn))(fn, 0);
-#endif
-    stackcheck1(0, fn);
-    return apply(fn, 0, nil, apply_symbol);
+{   return Lapply_2(env, fn, nil);
 }
 
-LispObject Lapply1(LispObject env, LispObject fn, LispObject a)
-{   STACK_SANITY;
-    save_current_function saver(apply_symbol);
-#ifndef DEBUG
-    if (is_symbol(fn)) return (*qfn1(fn))(fn, a);
-#endif
-    push(a);
-    stackcheck1(1, fn);
-    return apply(fn, 1, nil, apply_symbol);
+LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
+{   push2(env, fn);
+    a1 = ncons(a1);
+    pop2(fn, env);
+    return Lapply_2(env, fn, a1);
 }
 
-LispObject Lapply2(LispObject env, int nargs, ...)
-{   STACK_SANITY;
-    save_current_function saver(apply_symbol);
-    va_list aa;
-    LispObject fn, a, b;
-    argcheck(nargs, 3, "apply2");
-    va_start(aa, nargs);
-    fn = va_arg(aa, LispObject);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    va_end(aa);
-#ifndef DEBUG
-    if (is_symbol(fn)) return (*qfn2(fn))(fn, a, b);
-#endif
-    push2(a, b);
-    stackcheck1(2, fn);
-    return apply(fn, 2, nil, apply_symbol);
+LispObject Lapply2(LispObject env, LispObject fn,
+        LispObject a1, LispObject a2)
+{   push2(env, fn);
+    a1 = list2(a1, a2);
+    pop2(fn, env);
+    return Lapply_2(env, fn, a1);
 }
 
-LispObject Lapply3(LispObject env, int nargs, ...)
-{   STACK_SANITY;
-    save_current_function saver(apply_symbol);
-    va_list aa;
-    LispObject fn, a, b, c;
-    argcheck(nargs, 4, "apply3");
-    va_start(aa, nargs);
-    fn = va_arg(aa, LispObject);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    va_end(aa);
-#ifndef DEBUG
-    if (is_symbol(fn)) return (*qfnn(fn))(fn, 3, a, b, c);
-#endif
-    push3(a, b, c);
-    stackcheck1(3, fn);
-    return apply(fn, 3, nil, apply_symbol);
+LispObject Lapply3(LispObject env, LispObject fn,
+        LispObject a1, LispObject a2, LispObject a3up)
+{   LispObject a3 = arg4("apply3", a3up);
+    push2(env, fn);
+    a1 = list3(a1, a2, a3);
+    pop2(fn, env);
+    return Lapply_2(env, fn, a1);
 }
 
-LispObject Lfuncall1(LispObject env, LispObject fn)
-{   STACK_SANITY;
-    save_current_function saver(funcall_symbol);
-#ifndef DEBUG
-    if (is_symbol(fn)) return (*qfnn(fn))(fn, 0);
-#endif
-    stackcheck1(0, fn);
-    return apply(fn, 0, nil, funcall_symbol);
+// Finally I can have (FUNCALL fn a1 ...) which behaves like
+// APPLY0, APPLY1,... for few arguments and continues passing more
+// of its own arguments to the called function.
+
+LispObject Lfuncall_1(LispObject env, LispObject fn)
+{   return Lapply_2(env, fn, nil);
 }
 
-LispObject Lfuncall2(LispObject env, LispObject fn, LispObject a1)
-{   STACK_SANITY;
-    save_current_function saver(funcall_symbol);
-#ifndef DEBUG
-    if (is_symbol(fn)) return (*qfn1(fn))(fn, a1);
-#endif
-    push(a1);
-    stackcheck1(1, fn);
-    return apply(fn, 1, nil, funcall_symbol);
+LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
+{   push2(env, fn);
+    a1 = ncons(a1);
+    pop2(fn, env);
+    return Lapply_2(env, fn, a1);
 }
 
-static LispObject funcalln_sub(LispObject env, int nargs, va_list a)
-{   STACK_SANITY;
-    LispObject fn = va_arg(a, LispObject);
-    push_args_1(a, nargs);
-    return apply(fn, nargs-1, nil, funcall_symbol);
+LispObject Lfuncall_3(LispObject env, LispObject fn,
+        LispObject a1, LispObject a2)
+{   push2(env, fn);
+    a1 = list2(a1, a2);
+    pop2(fn, env);
+    return Lapply_2(env, fn, a1);
 }
 
-LispObject Lfuncalln(LispObject env, int nargs, ...)
-{   STACK_SANITY;
-    save_current_function saver(funcall_symbol);
-    va_list a;
-    LispObject fn, a1, a2, a3, a4;
-    va_start(a, nargs);
-    switch (nargs)
-    {   case 0: aerror("funcall");
-        case 1: // cases 1 and 2 should go through Lfuncall1,2 not here
-        case 2: aerror("funcall wrong call");
-        case 3: fn = va_arg(a, LispObject);
-            a1 = va_arg(a, LispObject);
-            a2 = va_arg(a, LispObject);
-#ifndef DEBUG
-            if (is_symbol(fn)) return (*qfn2(fn))(fn, a1, a2);
-#endif
-            push2(a1, a2);
-            return apply(fn, 2, nil, funcall_symbol);
-        case 4: fn = va_arg(a, LispObject);
-            a1 = va_arg(a, LispObject);
-            a2 = va_arg(a, LispObject);
-            a3 = va_arg(a, LispObject);
-#ifndef DEBUG
-            if (is_symbol(fn)) return (*qfnn(fn))(fn, 3, a1, a2, a3);
-#endif
-            push3(a1, a2, a3);
-            return apply(fn, 3, nil, funcall_symbol);
-        case 5: fn = va_arg(a, LispObject);
-            a1 = va_arg(a, LispObject);
-            a2 = va_arg(a, LispObject);
-            a3 = va_arg(a, LispObject);
-            a4 = va_arg(a, LispObject);
-#ifndef DEBUG
-            if (is_symbol(fn)) return (*qfnn(fn))(fn, 4, a1, a2, a3, a4);
-#endif
-            push4(a1, a2, a3, a4);
-            return apply(fn, 4, nil, funcall_symbol);
-        default:
-            return funcalln_sub(nil, nargs, a);
-    }
+LispObject Lfuncall_4up(LispObject env, LispObject fn,
+        LispObject a1, LispObject a2, LispObject a3up)
+{   push2(env, fn);
+    a1 = list2star(a1, a2, a3up);
+    pop2(fn, env);
+    return Lapply_2(env, fn, a1);
 }
 
 // My initial implementation of multiple values insists that every function
@@ -1023,43 +945,56 @@ LispObject Lfuncalln(LispObject env, int nargs, ...)
 // indirectly) rely on how many values were in play. The most naive version
 // of that would involve resetting the count to 1 after any call to anything
 // unknown. If I go that way it will be in the future.
+// Well the scheme indicated above favours leaf procedures and so is
+// liable to clean up the C++-coded kernel a fair deal. But it looks to
+// me as if for non-leaf things it is less help.
 
-LispObject Lvalues(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject *p = &mv_2, w;
-    int i;
-//
+LispObject Lvalues_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   mv_2 = a2;
+    mv_3 = a3;
 // Because multiple-values get passed back in static storage there is
 // a fixed upper limit to how many I can handle - truncate here to allow
 // for that.
-//
-    if (nargs > 50) nargs = 50;
-    if (nargs == 0) return nvalues(nil, 0);
-    va_start(a, nargs);
-    push_args(a, nargs);
-    for (i=1; i<nargs; i++)
-    {   pop(w);
-        p[nargs-i-1] = w;
+    int n = 3;
+    for (int i=4; i<=50; i++)
+    {   if (a4up == nil) break;
+        workbase[i] = qcar(a4up);
+        a4up = qcdr(a4up);
+        n++;
     }
-    pop(w);
-    return nvalues(w, nargs);
+    return nvalues(a1, n);
+}
+
+LispObject Lvalues_3(LispObject env, LispObject a, LispObject b, LispObject c)
+{   mv_2 = b;
+    mv_3 = c;
+    return nvalues(a, 3);
 }
 
 LispObject Lvalues_2(LispObject env, LispObject a, LispObject b)
-{   return Lvalues(env, 2, a, b);
+{   mv_2 = b;
+    return nvalues(a, 2);
 }
 
 LispObject Lvalues_1(LispObject env, LispObject a)
-{   return Lvalues(env, 1, a);
+{   return onevalue(a);
+}
+
+LispObject Lvalues_0(LispObject env)
+{   return nvalues(nil, 0);
 }
 
 LispObject mv_call_fn(LispObject args, LispObject env)
-//
-// here with the rest of the interpreter rather than in specforms.c
+// Here with the rest of the interpreter rather than with other
+// special forms because this is so closely related to APPLY.
+//   (MULTIPLE-VALUE-CALL 'fn (values a1 a2)
+//                            (values a3 a4 a5) a6 (values a7 a8))
+// (for example) is rather like
+//   (FUNCALL 'fn a1 a2 a3 a4 a5 a6 a7 a8)
 //
 {   STACK_SANITY;
     save_current_function saver(mv_call_symbol);
-    int i=0;
     if (!consp(args)) return nil;       // (multiple-value-call) => nil
     stackcheck2(0, args, env);
     push2(args, env);
@@ -1067,92 +1002,98 @@ LispObject mv_call_fn(LispObject args, LispObject env)
     fn = eval(fn, env);
     pop2(env, args);
     args = qcdr(args);
+    push(fn);
+    LispObject xargs = nil;             // for list of eventual args
     while (consp(args))
     {   LispObject r1;
-        push2(args, env);
+        push3(args, env, xargs);
         r1 = qcar(args);
         exit_count = 1;
         r1  = eval(r1, env);
-//
-// It is critical here that push does not check for stack overflow and
-// thus can not call the garbage collector, or otherwise lead to calculation
-// that could possibly clobber the multiple results that I am working with
-// here.
-//
-        pop2(env, args);
-        push(r1);
-        i++;
-        for (size_t j = 2; j<=exit_count; j++)
-        {   push((&work_0)[j]);
-            i++;
-        }
+        if (exit_count != 0) stack[0] = cons(r1, stack[0]);
+        for (unsigned int i=2; i<=exit_count; i++)
+            stack[0] = cons((&work_0)[i], stack[0]);
+        pop3(xargs, env, args);
         args = qcdr(args);
     }
-    return apply(fn, i, env, mv_call_symbol);
+    return apply(fn, xargs, env, mv_call_symbol);
 }
 
-LispObject interpreted1(LispObject def, LispObject a1)
+LispObject interpreted_0(LispObject def)
 {   STACK_SANITY;
     save_current_function saver(def);
-    push(a1);
-    stackcheck1(1, def);
-    return apply_lambda(qenv(def), 1, nil, def);
+    stackcheck1(0, def);
+    return apply_lambda(qenv(def), nil, nil, def);
 }
 
-LispObject interpreted2(LispObject def, LispObject a1, LispObject a2)
+LispObject interpreted_1(LispObject def, LispObject a1)
 {   STACK_SANITY;
     save_current_function saver(def);
-    push2(a1, a2);
-    stackcheck1(2, def);
-    return apply_lambda(qenv(def), 2, nil, def);
+    stackcheck1(0, def);
+    return apply_lambda(qenv(def), ncons(a1), nil, def);
 }
 
-LispObject interpretedn(LispObject def, int nargs, ...)
-{
-//
-// The messing about here is to get the (unknown number of) args
-// into a nice neat vector so that they can be indexed into. If I knew
-// that the args were in consecutive locations on the stack I could
-// probably save a copying operation.
-//
-    STACK_SANITY;
-    save_current_function saver(def);
-    va_list a;
-    if (nargs != 0)
-    {   va_start(a, nargs);
-        push_args(a, nargs);
-    }
-    return apply_lambda(qenv(def), nargs, nil, def);
-}
-
-LispObject funarged1(LispObject def, LispObject a1)
+LispObject interpreted_2(LispObject def, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     save_current_function saver(def);
-    push(a1);
-    stackcheck1(1, def);
+    stackcheck1(0, def);
+    return apply_lambda(qenv(def), list2(a1, a2), nil, def);
+}
+
+LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2, LispObject a3)
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck1(0, def);
+    return apply_lambda(qenv(def), list3(a1, a2, a3), nil, def);
+}
+
+LispObject interpreted_4up(LispObject def, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck1(0, def);
+    return apply_lambda(qenv(def), list3star(a1, a2, a3, a4up), nil, def);
+}
+
+LispObject funarged_0(LispObject def)
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck1(0, def);
     def = qenv(def);
-    return apply_lambda(qcdr(def), 1, qcar(def), qcdr(def));
+    return apply_lambda(qcdr(def), nil, qcar(def), qcdr(def));
 }
 
-LispObject funarged2(LispObject def, LispObject a1, LispObject a2)
+LispObject funarged_1(LispObject def, LispObject a1)
 {   STACK_SANITY;
     save_current_function saver(def);
-    push2(a1, a2);
-    stackcheck1(2, def);
+    stackcheck1(0, def);
     def = qenv(def);
-    return apply_lambda(qcdr(def), 2, qcar(def), qcdr(def));
+    return apply_lambda(qcdr(def), ncons(a1), qcar(def), qcdr(def));
 }
 
-LispObject funargedn(LispObject def, int nargs, ...)
+LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     save_current_function saver(def);
-    va_list a;
-    if (nargs != 0)
-    {   va_start(a, nargs);
-        push_args(a, nargs);
-    }
+    stackcheck1(0, def);
     def = qenv(def);
-    return apply_lambda(qcdr(def), nargs, qcar(def), qcdr(def));
+    return apply_lambda(qcdr(def), list2(a1, a2), qcar(def), qcdr(def));
+}
+
+LispObject funarged_3(LispObject def, LispObject a1, LispObject a2, LispObject a3)
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck1(0, def);
+    def = qenv(def);
+    return apply_lambda(qcdr(def), list3(a1, a2, a3), qcar(def), qcdr(def));
+}
+
+LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   STACK_SANITY;
+    save_current_function saver(def);
+    stackcheck1(0, def);
+    def = qenv(def);
+    return apply_lambda(qcdr(def), list3star(a1, a2, a3, a4up), qcar(def), qcdr(def));
 }
 
 static LispObject macroexpand_1(LispObject form, LispObject env)
@@ -1178,9 +1119,12 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
                     }
                     push2(form, done);
                     w = cons(lambda, w);
+                    w = list3(w, stack[-1], nil);
                     on_backtrace(
-                        p = Lfuncalln(nil, 4, qvalue(macroexpand_hook),
-                                      w, stack[-1], nil),
+                        p = apply(qvalue(macroexpand_hook),
+                                  w,
+                                  env,
+                                  macroexpand_hook),
                         // Now the error handler
                         pop2(done, form);
                         if (SHOW_FNAME)
@@ -1193,9 +1137,7 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
                 }
             }
         }
-//
 // If there is no local macro definition I need to look for a global one
-//
         if (symbolp(f) && (qheader(f) & SYM_MACRO) != 0)
         {   done = qvalue(macroexpand_hook);
             if (done == unset_var)
@@ -1203,7 +1145,13 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
             push3(form, env, done);
             f = cons(lambda, qenv(f));
             pop3(done, env, form);
-            form = Lfuncalln(nil, 4, done, f, form, env);
+            push2(done, env);
+            f = list3(f, form, env);
+            pop2(env, done);
+            form = apply(done,
+                         f,
+                         env,
+                         macroexpand_hook);
             done = lisp_true;
         }
     }
@@ -1253,49 +1201,11 @@ LispObject Lmacroexpand_1_2(LispObject, LispObject a, LispObject b)
 // function involved.
 //
 
-LispObject autoload1(LispObject fname, LispObject a1)
+LispObject autoload_0(LispObject fname)
 {   STACK_SANITY;
     fname = qenv(fname);
-    push2(a1, qcar(fname));
-// worry about 0 and 3 args special cases...
-    set_fns(qcar(fname), undefined1, undefined2, undefinedn);
-    qenv(qcar(fname)) = qcar(fname);
-    fname = qcdr(fname);
-    while (consp(fname))
-    {   push(qcdr(fname));
-        Lload_module(nil, qcar(fname));
-        pop(fname);
-    }
-    pop(fname);
-    return apply(fname, 1, nil, autoload_symbol);
-}
-
-LispObject autoload2(LispObject fname, LispObject a1, LispObject a2)
-{   STACK_SANITY;
-    fname = qenv(fname);
-    push3(a1, a2, qcar(fname));
-// 0 and 3 args special casess
-    set_fns(qcar(fname), undefined1, undefined2, undefinedn);
-    qenv(qcar(fname)) = qcar(fname);
-    fname = qcdr(fname);
-    while (consp(fname))
-    {   push(qcdr(fname));
-        Lload_module(nil, qcar(fname));
-        pop(fname);
-    }
-    pop(fname);
-    return apply(fname, 2, nil, autoload_symbol);
-}
-
-LispObject autoloadn(LispObject fname, int nargs, ...)
-{   STACK_SANITY;
-    fname = qenv(fname);
-    va_list a;
-    va_start(a, nargs);
-    push_args(a, nargs);
     push(qcar(fname));
-// 0 and 3 arg special cases...
-    set_fns(qcar(fname), undefined1, undefined2, undefinedn);
+    set_fns(qcar(fname), undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
     qenv(qcar(fname)) = qcar(fname);
     fname = qcdr(fname);
     while (consp(fname))
@@ -1304,15 +1214,88 @@ LispObject autoloadn(LispObject fname, int nargs, ...)
         pop(fname);
     }
     pop(fname);
-    return apply(fname, nargs, nil, autoload_symbol);
+    return apply(fname, nil, nil, autoload_symbol);
 }
 
-LispObject undefined0(LispObject fname)
+LispObject autoload_1(LispObject fname, LispObject a1)
+{   STACK_SANITY;
+    fname = qenv(fname);
+    push2(qcar(fname), a1);
+    set_fns(qcar(fname), undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    qenv(qcar(fname)) = qcar(fname);
+    fname = qcdr(fname);
+    while (consp(fname))
+    {   push(qcdr(fname));
+        Lload_module(nil, qcar(fname));
+        pop(fname);
+    }
+    pop(a1);
+    a1 = ncons(a1);
+    pop(fname);
+    return apply(fname, a1, nil, autoload_symbol);
+}
+
+LispObject autoload_2(LispObject fname, LispObject a1, LispObject a2)
+{   STACK_SANITY;
+    fname = qenv(fname);
+    push3(qcar(fname), a1, a2);
+    set_fns(qcar(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    qenv(qcar(fname)) = qcar(fname);
+    fname = qcdr(fname);
+    while (consp(fname))
+    {   push(qcdr(fname));
+        Lload_module(nil, qcar(fname));
+        pop(fname);
+    }
+    pop2(a2, a1);
+    a1 = list2(a1, a2);
+    pop(fname);
+    return apply(fname, a1, nil, autoload_symbol);
+}
+
+LispObject autoload_3(LispObject fname, LispObject a1, LispObject a2, LispObject a3)
+{   STACK_SANITY;
+    fname = qenv(fname);
+    push4(qcar(fname), a1, a2, a3);
+    set_fns(qcar(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    qenv(qcar(fname)) = qcar(fname);
+    fname = qcdr(fname);
+    while (consp(fname))
+    {   push(qcdr(fname));
+        Lload_module(nil, qcar(fname));
+        pop(fname);
+    }
+    pop3(a3, a2, a1);
+    a1 = list3(a1, a2, a3);
+    pop(fname);
+    return apply(fname, a1, nil, autoload_symbol);
+}
+
+LispObject autoload_4up(LispObject fname, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   STACK_SANITY;
+    fname = qenv(fname);
+    push5(fname, a1, a2, a3, a4up);
+    set_fns(qcar(fname),  undefined_0, undefined_1, undefined_2, undefined_3, undefined_4up);
+    qenv(qcar(fname)) = qcar(fname);
+    fname = qcdr(fname);
+    while (consp(fname))
+    {   push(qcdr(fname));
+        Lload_module(nil, qcar(fname));
+        pop(fname);
+    }
+    pop4(a4up, a3, a2, a1);
+    a1 = list3star(a1, a2, a3, a4up);
+    pop(fname);
+    return apply(fname, a1, nil, autoload_symbol);
+}
+
+LispObject undefined_0(LispObject fname)
 {
     error(1, err_undefined_function_0, fname);
 }
 
-LispObject undefined1(LispObject fname, LispObject)
+LispObject undefined_1(LispObject fname, LispObject)
 {
 //
 // It would be perfectly possible to grab and save the args here, and retry
@@ -1323,21 +1306,17 @@ LispObject undefined1(LispObject fname, LispObject)
     error(1, err_undefined_function_1, fname);
 }
 
-LispObject undefined2(LispObject fname, LispObject, LispObject)
+LispObject undefined_2(LispObject fname, LispObject, LispObject)
 {   error(1, err_undefined_function_2, fname);
 }
 
-LispObject undefined3(LispObject fname, LispObject, LispObject, LispObject)
+LispObject undefined_3(LispObject fname, LispObject, LispObject, LispObject)
 {   error(1, err_undefined_function_3, fname);
 }
 
-LispObject undefined4(LispObject fname, size_t,
+LispObject undefined_4up(LispObject fname,
                       LispObject, LispObject, LispObject, LispObject)
-{   error(1, err_undefined_function_4, fname);
-}
-
-LispObject undefinedn(LispObject fname, int, ...)
-{   error(1, err_undefined_function_n, fname);
+{   error(1, err_undefined_function_4up, fname);
 }
 
 //
@@ -1350,30 +1329,28 @@ LispObject undefinedn(LispObject fname, int, ...)
 //   (de funny_equal (a b c) (equal a b))
 //
 
-LispObject f0_as_0(LispObject env, int nargs, ...)
-{   if (nargs != 0) aerror1("wrong number of args (0->0)", env);
-    env = qenv(env);
+LispObject f0_as_0(LispObject env)
+{   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfnn(env))(env, 0);
+    return (*qfn0(env))(env);
 }
 
 LispObject f1_as_0(LispObject env, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfnn(env))(env, 0);
+    return (*qfn0(env))(env);
 }
 
 LispObject f2_as_0(LispObject env, LispObject, LispObject)
 {   env = qenv(env);
     debug_record_symbol(env);
-    return (*qfnn(env))(env, 0);
+    return (*qfn0(env))(env);
 }
 
-LispObject f3_as_0(LispObject env, int nargs, ...)
+LispObject f3_as_0(LispObject env, LispObject, LispObject, LispObject)
 {   env = qenv(env);
-    if (nargs != 3) aerror1("wrong number of args (3->0)", env);
     debug_record_symbol(env);
-    return (*qfnn(env))(env, 0);
+    return (*qfn0(env))(env);
 }
 
 LispObject f1_as_1(LispObject env, LispObject a)
@@ -1388,14 +1365,8 @@ LispObject f2_as_1(LispObject env, LispObject a, LispObject)
     return (*qfn1(env))(env, a);
 }
 
-LispObject f3_as_1(LispObject env, int nargs, ...)
+LispObject f3_as_1(LispObject env, LispObject a1, LispObject, LispObject)
 {   env = qenv(env);
-    va_list a;
-    LispObject a1;
-    if (nargs != 3) aerror1("wrong number of args (3->1)", env);
-    va_start(a, nargs);
-    a1 = va_arg(a, LispObject);
-    va_end(a);
     debug_record_symbol(env);
     return (*qfn1(env))(env, a1);
 }
@@ -1406,31 +1377,16 @@ LispObject f2_as_2(LispObject env, LispObject a, LispObject b)
     return (*qfn2(env))(env, a, b);
 }
 
-LispObject f3_as_2(LispObject env, int nargs, ...)
+LispObject f3_as_2(LispObject env, LispObject a1, LispObject a2, LispObject)
 {   env = qenv(env);
-    va_list a;
-    LispObject a1, a2;
-    if (nargs != 3) aerror1("wrong number of args (3->2)", env);
-    va_start(a, nargs);
-    a1 = va_arg(a, LispObject);
-    a2 = va_arg(a, LispObject);
-    va_end(a);
     debug_record_symbol(env);
     return (*qfn2(env))(env, a1, a2);
 }
 
-LispObject f3_as_3(LispObject env, int nargs, ...)
+LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 {   env = qenv(env);
-    va_list a;
-    LispObject a1, a2, a3;
-    if (nargs != 3) aerror1("wrong number of args (3->3)", env);
-    va_start(a, nargs);
-    a1 = va_arg(a, LispObject);
-    a2 = va_arg(a, LispObject);
-    a3 = va_arg(a, LispObject);
-    va_end(a);
     debug_record_symbol(env);
-    return (*qfnn(env))(env, 3, a1, a2, a3);
+    return (*qfn3(env))(env, a1, a2, a3);
 }
 
 //
@@ -1580,7 +1536,7 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
     else if (pid1 == 0)
     {   // TASK 1 created OK
         LispObject r1;
-        if_error(r1 = Lapply2(nil, 3, a, b, nil),
+        if_error(r1 = Lapply2(nil, a, b, nil),
 // If the evaluation failed I will exit indicating a failure.
                  strcpy(shared, "Failed");
                  exit(1));
@@ -1612,7 +1568,7 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
         else if (pid2 == 0)
         {   // TASK 2
             LispObject r2;
-            if_error(r2 = Lapply2(nil, 3, a, b, lisp_true),
+            if_error(r2 = Lapply2(nil, a, b, lisp_true),
                      // Error handler
                      strcpy(shared, "Failed");
                      exit(1));
@@ -1697,34 +1653,61 @@ LispObject Lsleep(LispObject env, LispObject a)
     return onevalue(nil);
 }
 
+// This is intended for use when debugging!
+// (show-stack m n) displays stack locations from m to n (inclusive)
+// where the top item on the stack has number 0.
+// (show-stack n) is equivalent to (show-stack 0 n)
+// (show-stack) is equivalent to (show-stack 0 0), ie it shows just the
+// top item on the stack.
+// If m > n then this just reports stack depth.
+// This will refuse to handle arguments larger than 100.
+
+LispObject Lshow_stack_2(LispObject env, LispObject a1, LispObject a2)
+{   int m = 0, n = 0;
+    if (is_fixnum(a1))
+    {   m = int_of_fixnum(a1);
+        if (m < 0 || m > 100) m = 0;
+    }
+    if (is_fixnum(a2))
+    {   n = int_of_fixnum(a2);
+        if (n > 100) n = m+10;
+    }
+    term_printf("Stack depth %d\n", (int)(stack-stackbase));
+    for (int i=m; i<=n; i++)
+    {   term_printf("%d: ", i);
+        prin_to_terminal(stack[-i]);
+        term_printf("\n");
+    }
+    return onevalue(nil);
+}
+
+LispObject Lshow_stack_1(LispObject env, LispObject a1)
+{   return Lshow_stack_2(env, fixnum_of_int(0), a1);
+}
+
+LispObject Lshow_stack_0(LispObject env)
+{   return Lshow_stack_2(env, fixnum_of_int(0), fixnum_of_int(0));
+}
+
 setup_type const eval1_setup[] =
-{   {"bytecounts",              bytecounts1, WRONG_NO_NB, bytecounts},
-//
-// PSL has a function idapply that is, as best I understand, just the
-// same as apply apart from the fact that it expects an identifier as
-// its first argument. But it them says it tests for that and moans if
-// given a list, so I find it hard to understand how or why it is liable
-// to be faster than plain apply! However to ease portability I provide
-// that name here...  I think I should mention funcall as a possible
-// optimisation in this area...
-//
-    {"idapply",                 Lapply_1, Lapply_2, Lapply_n},
-    {"eval",                    Leval, TOO_MANY_1, WRONG_NO_1},
-    {"apply",                   Lapply_1, Lapply_2, Lapply_n},
-    {"apply0",                  Lapply0, TOO_MANY_1, WRONG_NO_1},
-    {"apply1",                  TOO_FEW_2, Lapply1, WRONG_NO_2},
-    {"apply2",                  WRONG_NO_NA, WRONG_NO_NB, Lapply2},
-    {"apply3",                  WRONG_NO_NA, WRONG_NO_NB, Lapply3},
-    {"evlis",                   Levlis, TOO_MANY_1, WRONG_NO_1},
-    {"funcall",                 Lfuncall1, Lfuncall2, Lfuncalln},
-    {"funcall*",                Lfuncall1, Lfuncall2, Lfuncalln},
-    {"parallel",                TOO_FEW_2, Lparallel, WRONG_NO_2},
-    {"sleep",                   Lsleep, TOO_MANY_1, WRONG_NO_1},
-    {"values",                  Lvalues_1, Lvalues_2, Lvalues},
-    {"macroexpand",             Lmacroexpand, Lmacroexpand_2, WRONG_NO_1},
-    {"macroexpand-1",           Lmacroexpand_1, Lmacroexpand_1_2, WRONG_NO_1},
-    {NULL,                      0, 0, 0}
+{   {"bytecounts",              Lbytecounts_0, Lbytecounts_1, G2Wother, G3Wother, G4Wother},
+    {"idapply",                 G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up},
+    {"eval",                    G0W1, Leval, G2W1, G3W1, G4W1},
+    {"apply",                   G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up},
+    {"apply0",                  G0W1, Lapply0, G2W1, G3W1, G4W1},
+    {"apply1",                  G0W2, G1W2, Lapply1, G3W2, G4W2},
+    {"apply2",                  G0W3, G1W3, G2W3, Lapply2, G4W3},
+    {"apply3",                  G0W4up, G1W4up, G2W4up, G3W4up, Lapply3},
+    {"evlis",                   G0W1, Levlis, G2W1, G3W1, G4W1},
+    {"funcall",                 G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
+    {"funcall*",                G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up},
+    {"parallel",                G0W2, G1W2, Lparallel, G3W2, G4W2},
+    {"sleep",                   G0W1, Lsleep, G2W1, G3W1, G4W1},
+    {"values",                  Lvalues_0, Lvalues_1, Lvalues_2, Lvalues_3, Lvalues_4up},
+    {"macroexpand",             G0Wother, Lmacroexpand, Lmacroexpand_2, G3W1, G4W1},
+    {"macroexpand-1",           G0Wother, Lmacroexpand_1, Lmacroexpand_2, G3Wother, G4Wother},
+    {"show-stack",              Lshow_stack_0, Lshow_stack_1, Lshow_stack_2, G3Wother, G4Wother},
+    {NULL,                      0, 0, 0, 0, 0}
 };
 
 // end of eval1.cpp
-

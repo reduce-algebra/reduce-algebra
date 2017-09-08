@@ -209,6 +209,6 @@ do
 done
 
 wait $procids
-printf "\nReduce should now be remade\n"
+printf "\nReduce has now been remade\n"
 
 exit $rc

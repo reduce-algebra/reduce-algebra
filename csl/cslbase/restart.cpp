@@ -202,7 +202,21 @@ int procstackp;
 entry_point0 entries_table0[] =
 {
     {0,                                 "illegal"},
-    {undefined0,                        "undefined0"},
+    {undefined_0,                       "undefined_0"},
+    {autoload_0,                        "autoload_0"},
+    {interpreted_0,                     "interpreted_0"},
+    {funarged_0,                        "funarged_0"},
+    {bytecoded_0,                       "bytecoded_0"},
+    {byteopt_0,                         "byteopt_0"},
+    {hardopt_0,                         "hardopt_0"},
+    {byteoptrest_0,                     "byteoptrest_0"},
+    {hardoptrest_0,                     "hardoptrest_0"},
+    {G0W1,                              "G0W1"},
+    {G0W2,                              "G0W2"},
+    {G0W3,                              "G0W3"},
+    {G0W4up,                            "G0W4up"},
+    {G0Wother,                          "G0Wother"},
+    {f0_as_0,                           "0->0"},
     {NULL,                              "dummy"}
 };
 
@@ -216,67 +230,66 @@ entry_point1 entries_table1[] =
 // is an entrypoint there is a corresponding one that behaves just the
 // same except that it has tracing enabled.
 //
-    {0,                                  "illegal"},
+    {0,                                 "illegal"},
 // A few special forms that are set up manually so slip through the normal
 // scheme...
-    {quote_fn,                           "quote"},
-    {progn_fn,                           "progn"},
-    {declare_fn,                         "declare"},
-    {function_fn,                        "function"},
-    {undefined1,                         "undefined1"},
-    {autoload1,                          "autoload1"},
-    {interpreted1,                       "interpreted1"},
-    {funarged1,                          "funarged1"},
-    {bytecoded1,                         "bytecoded1"},
-    {byteopt1,                           "byteopt1"},
-    {hardopt1,                           "hardopt1"},
-    {byteoptrest1,                       "byteoptrest1"},
-    {hardoptrest1,                       "hardoptrest1"},
-    {TOO_FEW_2,                          "too_few_2"},
-    {WRONG_NO_0A,                        "wrong_no_0a"},
-    {WRONG_NO_3A,                        "wrong_no_3a"},
-    {WRONG_NO_NA,                        "wrong_no_na"},
-
-//
+    {quote_fn,                          "quote"},
+    {progn_fn,                          "progn"},
+    {declare_fn,                        "declare"},
+    {function_fn,                       "function"},
+    {undefined_1,                       "undefined_1"},
+    {autoload_1,                        "autoload_1"},
+    {interpreted_1,                     "interpreted_1"},
+    {funarged_1,                        "funarged_1"},
+    {bytecoded_1,                       "bytecoded_1"},
+    {byteopt_1,                         "byteopt_1"},
+    {hardopt_1,                         "hardopt_1"},
+    {byteoptrest_1,                     "byteoptrest_1"},
+    {hardoptrest_1,                     "hardoptrest_1"},
+    {G1W0,                              "G1W0"},
+    {G1W2,                              "G1W2"},
+    {G1W3,                              "G1W3"},
+    {G1W4up,                            "G1W4up"},
+    {G1Wother,                          "G1Wother"},
 // The batch here relate to function re-work that discards unwanted
 // extra arguments.
-//
-    {f1_as_0,                            "1->0"},
-    {f1_as_1,                            "1->1"},
-    {NULL,                               "dummy"}
+    {f1_as_0,                           "1->0"},
+    {f1_as_1,                           "1->1"},
+    {NULL,                              "dummy"}
 };
 
 #define entry_table_size1 ((int)(sizeof(entries_table1)/sizeof(entries_table1[0])))
 
 entry_point2 entries_table2[] =
-{   {0,                                  "illegal"},
+{   {0,                                 "illegal"},
 // A few special forms that are set up manually so slip through the normal
 // scheme...
-    {(two_args *)quote_fn,               "quote"},
-    {(two_args *)progn_fn,               "progn"},
-    {(two_args *)declare_fn,             "declare"},
-    {(two_args *)function_fn,            "function"},
-    {undefined2,                         "undefined2"},
-    {autoload2,                          "autoload2"},
-    {interpreted2,                       "interpreted2"},
-    {funarged2,                          "funarged2"},
-    {bytecoded2,                         "bytecoded2"},
-    {byteopt2,                           "byteopt2"},
-    {hardopt2,                           "hardopt2"},
-    {byteoptrest2,                       "byteoptrest2"},
-    {hardoptrest2,                       "hardoptrest2"},
-    {TOO_MANY_1,                         "too_many_1"},
-    {WRONG_NO_0B,                        "wrong_no_0b"},
-    {WRONG_NO_3B,                        "wrong_no_3b"},
-    {WRONG_NO_NB,                        "wrong_no_nb"},
+    {(two_args *)quote_fn,              "quote"},
+    {(two_args *)progn_fn,              "progn"},
+    {(two_args *)declare_fn,            "declare"},
+    {(two_args *)function_fn,           "function"},
+    {undefined_2,                       "undefined_2"},
+    {G2W0,                              "G2W0"},
+    {G2W1,                              "G2W1"},
+    {G2W3,                              "G2W3"},
+    {G2W4up,                            "G2W4up"},
+    {G2Wother,                          "G2Wother"},
+    {autoload_2,                        "autoload_2"},
+    {interpreted_2,                     "interpreted_2"},
+    {funarged_2,                        "funarged_2"},
+    {bytecoded_2,                       "bytecoded_2"},
+    {byteopt_2,                         "byteopt_2"},
+    {hardopt_2,                         "hardopt_2"},
+    {byteoptrest_2,                     "byteoptrest_2"},
+    {hardoptrest_2,                     "hardoptrest_2"},
 //
 // The batch here relate to function re-work that discards unwanted
 // extra arguments.
 //
-    {f2_as_0,                            "2->0"},
-    {f2_as_1,                            "2->1"},
-    {f2_as_2,                            "2->2"},
-    {NULL,                               "dummy"}
+    {f2_as_0,                           "2->0"},
+    {f2_as_1,                           "2->1"},
+    {f2_as_2,                           "2->2"},
+    {NULL,                              "dummy"}
 };
 
 #define entry_table_size2 ((int)(sizeof(entries_table2)/sizeof(entries_table2[0])))
@@ -284,84 +297,84 @@ entry_point2 entries_table2[] =
 entry_point3 entries_table3[] =
 {
     {0,                                 "illegal"},
-    {undefined3,                        "undefined3"},
+    {undefined_3,                       "undefined_3"},
+    {autoload_3,                        "autoload_3"},
+    {interpreted_3,                     "interpreted_3"},
+    {funarged_3,                        "funarged_3"},
+    {bytecoded_3,                       "bytecoded_3"},
+    {byteopt_3,                         "byteopt_3"},
+    {hardopt_3,                         "hardopt_3"},
+    {byteoptrest_3,                     "byteoptrest_3"},
+    {hardoptrest_3,                     "hardoptrest_3"},
+    {G3W0,                              "G3W0"},
+    {G3W1,                              "G3W1"},
+    {G3W2,                              "G3W2"},
+    {G3W4up,                            "G3W4up"},
+    {G3Wother,                          "G3Wother"},
+    {f3_as_0,                           "3->0"},
+    {f3_as_1,                           "3->1"},
+    {f3_as_2,                           "3->2"},
+    {f3_as_3,                           "3->3"},
     {NULL,                              "dummy"}
 };
 
 #define entry_table_size3 ((int)(sizeof(entries_table3)/sizeof(entries_table3[0])))
 
-entry_point4 entries_table4[] =
-{
-    {0,                                 "illegal"},
-    {undefined4,                        "undefined4"},
+entry_point4up entries_table4up[] =
+{   {0,                                 "illegal"},
+    {undefined_4up,                     "undefined_4up"},
+    {autoload_4up,                      "autoload_4up"},
+    {interpreted_4up,                   "interpreted_4up"},
+    {funarged_4up,                      "funarged_4up"},
+    {bytecoded_4up,                     "bytecoded_4up"},
+    {byteopt_4up,                       "byteopt_4up"},
+    {hardopt_4up,                       "hardopt_4up"},
+    {byteoptrest_4up,                   "byteoptrest_4up"},
+    {hardoptrest_4up,                   "hardoptrest_4up"},
+    {G4W0,                              "G4W0"},
+    {G4W1,                              "G4W1"},
+    {G4W2,                              "G4W2"},
+    {G4W3,                              "G4W3"},
+    {G4Wother,                          "G4Wother"},
     {NULL,                              "dummy"}
 };
 
-#define entry_table_size4 ((int)(sizeof(entries_table4)/sizeof(entries_table4[0])))
+#define entry_table_size4up ((int)(sizeof(entries_table4up)/sizeof(entries_table4up[0])))
 
-entry_pointn entries_tablen[] =
-{   {0,                                  "illegal"},
-    {undefinedn,                         "undefinedn"},
-    {autoloadn,                          "autoloadn"},
-    {interpretedn,                       "interpretedn"},
-    {funargedn,                          "funargedn"},
-    {bytecoded0,                         "bytecoded0"},
-    {bytecoded3,                         "bytecoded3"},
-    {bytecodedn,                         "bytecodedn"},
-    {byteoptn,                           "byteoptn"},
-    {hardoptn,                           "hardoptn"},
-    {byteoptrestn,                       "byteoptrestn"},
-    {hardoptrestn,                       "hardoptrestn"},
-    {WRONG_NO_1,                         "wrong_no_1"},
-    {WRONG_NO_2,                         "wrong_no_2"},
-//
-// The batch here relate to function variants that discard unwanted
-// extra arguments and call something else.
-//
-    {f0_as_0,                            "0->0"},
-    {f3_as_0,                            "3->0"},
-    {f3_as_1,                            "3->1"},
-    {f3_as_2,                            "3->2"},
-    {f3_as_3,                            "3->3"},
-    {NULL,                               "dummy"}
-};
-
-#define entry_table_sizen ((int)(sizeof(entries_tablen)/sizeof(entries_tablen[0])))
-
-entry_pointn entries_tableio[] =
-{   {0,                                          "illegal"},
-    {(n_args *)char_from_illegal,                "char_from_illegal"},
-    {(n_args *)char_to_illegal,                  "char_to_illegal"},
-    {(n_args *)read_action_illegal,              "read_action_illegal"},
-    {(n_args *)write_action_illegal,             "write_action_illegal"},
-    {(n_args *)char_from_terminal,               "char_from_terminal"},
-    {(n_args *)char_to_terminal,                 "char_to_terminal"},
-    {(n_args *)read_action_terminal,             "read_action_terminal"},
-    {(n_args *)write_action_terminal,            "write_action_terminal"},
-    {(n_args *)char_from_file,                   "char_from_file"},
-    {(n_args *)char_to_file,                     "char_to_file"},
-    {(n_args *)read_action_file,                 "read_action_file"},
-    {(n_args *)read_action_output_file,          "read_action_output_file"},
-    {(n_args *)write_action_file,                "write_action_file"},
-    {(n_args *)binary_outchar,                   "binary_outchar"},
-    {(n_args *)char_from_list,                   "char_from_list"},
-    {(n_args *)char_to_list,                     "char_to_list"},
-    {(n_args *)code_to_list,                     "code_to_list"},
-    {(n_args *)read_action_list,                 "read_action_list"},
-    {(n_args *)write_action_list,                "write_action_list"},
-    {(n_args *)count_character,                  "count_character"},
-    {(n_args *)char_to_pipeout,                  "char_to_pipeout"},
-    {(n_args *)write_action_pipe,                "write_action_pipe"},
-    {(n_args *)char_from_synonym,                "char_from_synonym"},
-    {(n_args *)char_to_synonym,                  "char_to_synonym"},
-    {(n_args *)read_action_synonym,              "read_action_synonym"},
-    {(n_args *)write_action_synonym,             "write_action_synonym"},
-    {(n_args *)char_from_concatenated,           "char_from_concatenated"},
-    {(n_args *)char_to_broadcast,                "char_to_broadcast"},
-    {(n_args *)read_action_concatenated,         "read_action_concatenated"},
-    {(n_args *)write_action_broadcast,           "write_action_broadcast"},
-    {(n_args *)char_from_echo,                   "char_from_echo"},
-    {NULL,                                       "dummy"}
+entry_point1 entries_tableio[] =
+{   {0,                                 "illegal"},
+    {(one_arg *)char_from_illegal,      "char_from_illegal"},
+    {(one_arg *)char_to_illegal,        "char_to_illegal"},
+    {(one_arg *)read_action_illegal,    "read_action_illegal"},
+    {(one_arg *)write_action_illegal,   "write_action_illegal"},
+    {(one_arg *)char_from_terminal,     "char_from_terminal"},
+    {(one_arg *)char_to_terminal,       "char_to_terminal"},
+    {(one_arg *)read_action_terminal,   "read_action_terminal"},
+    {(one_arg *)write_action_terminal,  "write_action_terminal"},
+    {(one_arg *)char_from_file,         "char_from_file"},
+    {(one_arg *)char_to_file,           "char_to_file"},
+    {(one_arg *)read_action_file,       "read_action_file"},
+    {(one_arg *)read_action_output_file,"read_action_output_file"},
+    {(one_arg *)write_action_file,      "write_action_file"},
+    {(one_arg *)binary_outchar,         "binary_outchar"},
+    {(one_arg *)char_from_list,         "char_from_list"},
+    {(one_arg *)char_to_list,           "char_to_list"},
+    {(one_arg *)code_to_list,           "code_to_list"},
+    {(one_arg *)read_action_list,       "read_action_list"},
+    {(one_arg *)write_action_list,      "write_action_list"},
+    {(one_arg *)count_character,        "count_character"},
+    {(one_arg *)char_to_pipeout,        "char_to_pipeout"},
+    {(one_arg *)write_action_pipe,      "write_action_pipe"},
+    {(one_arg *)char_from_synonym,      "char_from_synonym"},
+    {(one_arg *)char_to_synonym,        "char_to_synonym"},
+    {(one_arg *)read_action_synonym,    "read_action_synonym"},
+    {(one_arg *)write_action_synonym,   "write_action_synonym"},
+    {(one_arg *)char_from_concatenated, "char_from_concatenated"},
+    {(one_arg *)char_to_broadcast,      "char_to_broadcast"},
+    {(one_arg *)read_action_concatenated,"read_action_concatenated"},
+    {(one_arg *)write_action_broadcast, "write_action_broadcast"},
+    {(one_arg *)char_from_echo,         "char_from_echo"},
+    {NULL,                              "dummy"}
 };
 
 #define entry_table_sizeio ((int)(sizeof(entries_tableio)/sizeof(entries_tableio[0])))
@@ -372,6 +385,8 @@ void *allocate_page(const char *why)
 }
 
 static char *global_handle;
+
+void *allocated_blocks = NULL;
 
 void *my_malloc(size_t n)
 {
@@ -384,25 +399,28 @@ void *my_malloc(size_t n)
 //
     char *r = (char *)(*malloc_hook)(n+64);
     int32_t *p = (int32_t *)quadword_align_up((uintptr_t)r);
-//
-//    | ... |   :   |    |    |    |    |    |    | to user |    |    |
-//    r     p <-r->    n  55aa 1234 3456 1234 3456           8765 cba9
+//          0       8        16        24        32
+//    | ... |   :   |    :    |    :    |    |    | to user |    |    |
+//    r     p   r        n       chain   1234 3456           8765 cba9
+//          L___ p is quadword aligned.
 // where p is quadword aligned whatever r is.
 //
 //
     if (r == NULL) return NULL;
     n = quadword_align_up(n);
     inject_randomness((int)(intptr_t)r);
+
     if (!SIXTY_FOUR_BIT) p[1] = 0;
     *(void **)(p) = r;                 // base address for free()
-    *(int64_t *)(&p[2]) = (int64_t)n;  // allow for 64-bit size
-    p[4] = 0x12345678;            // Marker words for security
-    p[5] = 0x3456789a;
-    p[6] = 0x12345678;
-    p[7] = 0x3456789a;
-    r = (char *)&p[8];
-    car32(r+n)   = 0x87654321;
-    car32(r+n+4) = 0xcba98765;
+                                       // goes in 0 & 1
+    *(int64_t *)(&p[2]) = (int64_t)n;  // size goes in 2 and 3
+    *(void **)(&p[4]) = allocated_blocks;
+    allocated_blocks = (void *)p;
+    p[6] = 0x12345678;                 // bit-pattern that I hope will be
+    p[7] = 0x3456789a;                 // recognizable.
+    r = (char *)&p[8];                 // address to return.
+    car32(r+n)   = 0x87654321;         // guard words at end of block as
+    car32(r+n+4) = 0xcba98765;         // well as at start.
     return (void *)r;
 }
 
@@ -419,8 +437,8 @@ static void my_free(void *r)
     if (rr > big_chunk_start && rr <= big_chunk_end) return;
     p = (int32_t *)r - 8;
     n = (size_t)*(int64_t *)(&p[2]);
-    if (p[4] != 0x12345678 ||
-        p[5] != 0x3456789a)
+    if (p[6] != 0x12345678 ||
+        p[7] != 0x3456789a)
     {   term_printf("Corruption at start of memory block %p: %.8x %.8x\n",
                     r, p[4], p[5]);
         ensure_screen();
@@ -434,7 +452,9 @@ static void my_free(void *r)
         ensure_screen();
         my_exit(0);
     }
+#ifndef DEBUG
     (*free_hook)((void *)((void **)p)[0]);
+#endif
 }
 
 // This does what "my_free" would as regards checking for corruption, but does
@@ -447,8 +467,8 @@ static void check_block_for_corruption(void *r)
     if (rr > big_chunk_start && rr <= big_chunk_end) return;
     p = (int32_t *)r - 8;
     n = (size_t)*(int64_t *)(&p[2]);
-    if (p[4] != 0x12345678 ||
-        p[5] != 0x3456789a)
+    if (p[6] != 0x12345678 ||
+        p[7] != 0x3456789a)
     {   term_printf("Corruption at start of memory block %p: %.8x %.8x\n",
                     r, p[4], p[5]);
         ensure_screen();
@@ -708,12 +728,12 @@ void check_heap_segments(void)
     check_block_for_corruption(nilsegment);
 }
 
-static char *find_checksum(const char *name, int32_t len, const setup_type *p)
+static char *find_checksum(const char *name, size_t len, const setup_type *p)
 {   char *n;
     while (p->name != NULL) p++;
-    n = (char *)p->one;
-    if (strlen(n) == (size_t)len && memcmp(name, n, len) == 0)
-        return (char *)p->two;
+    n = (char *)p->zero;
+    if (strlen(n) == len && memcmp(name, n, len) == 0)
+        return (char *)p->one;
     else return NULL;
 }
 
@@ -751,22 +771,23 @@ setup_type const *setup_tables[] =
 // performance issue.
 //
 
-static LispObject Lcheck_c_code(LispObject env, int nargs, ...)
-{   LispObject name, lc1, lc2, lc3;
-    int32_t c1=-1, c2=-1, c3=-1;
+static LispObject Lcheck_c_code(LispObject env, LispObject name,
+        LispObject lc1, LispObject lc2, LispObject a4up)
+{   int32_t c1=-1, c2=-1, c3=-1;
     long int x1=-2, x2=-2, x3=-2;
     int32_t len;
-    va_list a;
     char *p;
     const char *sname;
     size_t i;
-    argcheck(nargs, 4, "check-c-code");
-    va_start(a, nargs);
-    name = va_arg(a, LispObject);
-    lc1 = va_arg(a, LispObject);
-    lc2 = va_arg(a, LispObject);
-    lc3 = va_arg(a, LispObject);
-    va_end(a);
+    LispObject lc3 = arg4("check-c-code", a4up);
+// This is called as when the system is about to install some linke between
+// Lisp and code that has been compiled into C++. It is given 4 arguments:
+//   (check-c-code name-of-module-of-C++-code
+//       c1 c2 c3)     % 3 parts of a checksum
+// It looks at the setup table sfo rall the modules it is aware of. For
+// each such the final entry will be of the form
+//    {NULL, "module-name", "checksum info", ...}
+// and it sees if the information from there matches what it is looking for.
     if (!is_vector(name) ||
         !is_string_header(vechdr(name)) ||
         !is_fixnum(lc1) ||
@@ -800,40 +821,41 @@ setup_type const restart_setup[] =
 // to be worth giving separate entry-tables.
 //
 {
-    {"~load-spid",              WRONG_NO_NA, WRONG_NO_NB, Lload_spid},
-    {"~is-spid",                Lis_spid, TOO_MANY_1, WRONG_NO_1},
-    {"~spid-to-nil",            Lspid_to_nil, TOO_MANY_1, WRONG_NO_1},
-    {"~mv-list",                Lmv_list, TOO_MANY_1, WRONG_NO_1},
-    {"check-c-code",            WRONG_NO_NA, WRONG_NO_NB, Lcheck_c_code},
-    {"modulep",                 Lmodule_exists, TOO_MANY_1, WRONG_NO_1},
-    {"start-module",            Lstart_module, TOO_MANY_1, WRONG_NO_1},
-    {"write-module",            TOO_FEW_2, Lwrite_module, WRONG_NO_2},
-    {"copy-module",             Lcopy_module, TOO_MANY_1, WRONG_NO_1},
-    {"delete-module",           Ldelete_module, TOO_MANY_1, WRONG_NO_1},
-    {"load-module",             Lload_module, TOO_MANY_1, WRONG_NO_1},
-    {"load-source",             Lload_source, TOO_MANY_1, Lload_source0},
-    {"load-selected-source",    Lload_selected_source, TOO_MANY_1, Lload_selected_source0},
-    {"list-modules",            WRONG_NO_NA, WRONG_NO_NB, Llist_modules},
-    {"writable-libraryp",       Lwritable_libraryp, TOO_MANY_1, WRONG_NO_1},
-    {"library-members",         Llibrary_members, TOO_MANY_1, Llibrary_members0},
-    {"startup-banner",          Lbanner, TOO_MANY_1, WRONG_NO_1},
-    {"set-help-file",           TOO_FEW_2, Lset_help_file, WRONG_NO_2},
-    {"mapstore",                Lmapstore, TOO_MANY_1, Lmapstore0},
-    {"verbos",                  Lverbos, TOO_MANY_1, WRONG_NO_1},
-    {"gc",                      Lgc, TOO_MANY_1, Lgc0},
-    {"reclaim",                 Lgc, TOO_MANY_1, Lgc0},
-    {"reclaim-trap",            Lreclaim_trap, TOO_MANY_1, WRONG_NO_1},
-    {"reclaim-stack-limit",     Lreclaim_stack_limit, TOO_MANY_1, WRONG_NO_1},
-    {"resource-limit",          TOO_FEW_2, Lresource_limit2, Lresource_limitn},
-    {"errorset",                Lerrorset1, Lerrorset2, Lerrorsetn},
-    {NULL,                      0, 0, 0}
+    {"~load-spid",              Lload_spid, G1W0, G2W0, G3W0, G4W0},
+    {"~is-spid",                G0W1, Lis_spid, G2W1, G3W1, G4W1},
+    {"~spid-to-nil",            G0W1, Lspid_to_nil, G2W1, G3W1, G4W1},
+    {"~mv-list",                G0W1, Lmv_list, G2W1, G3W1, G4W1},
+    {"check-c-code",            G0W4up, G1W4up, G2W4up, G3W4up, Lcheck_c_code},
+    {"modulep",                 G0W1, Lmodule_exists, G2W1, G3W1, G4W1},
+    {"start-module",            G0W1, Lstart_module, G2W1, G3W1, G4W1},
+    {"write-module",            G0W1, G1W2, Lwrite_module, G3W2, G4W2},
+    {"copy-module",             G0W1, Lcopy_module, G2W1, G3W1, G4W1},
+    {"delete-module",           G0W1, Ldelete_module, G2W1, G3W1, G4W1},
+    {"load-module",             G0W1, Lload_module, G2W1, G3W1, G4W1},
+    {"load-source",             Lload_source0, Lload_source, G2W0, G3W0, G4W0},
+    {"load-selected-source",    Lload_selected_source0, Lload_selected_source, G2W0, G3W0, G4W0},
+    {"list-modules",            Llist_modules, G1W0, G2W0, G3W0, G4W0},
+    {"writable-libraryp",       G0W1, Lwritable_libraryp, G2W1, G3W1, G4W1},
+    {"library-members",         Llibrary_members0, Llibrary_members, G2W0, G3W0, G4W0},
+    {"startup-banner",          G0W1, Lbanner, G2W1, G3W1, G4W1},
+    {"set-help-file",           G0W1, G1W2, Lset_help_file, G3W2, G4W2},
+    {"mapstore",                Lmapstore0, Lmapstore, G2Wother, G3Wother, G4Wother},
+    {"verbos",                  G0W1, Lverbos, G2W1, G3W1, G4W1},
+    {"gc",                      Lgc0, Lgc, G2W0, G3W0, G4W0},
+    {"reclaim",                 Lgc0, Lgc, G2W0, G3W0, G4W0},
+    {"reclaim-trap",            G0W1, Lreclaim_trap, G2W1, G3W1, G4W1},
+    {"reclaim-stack-limit",     G0W1, Lreclaim_stack_limit, G2W1, G3W1, G4W1},
+    {"resource-limit",          G0Wother, G1Wother, Lresource_limit_2, Lresource_limit_3, Lresource_limit_4up},
+    {"errorset",                G0Wother, Lerrorset_1, Lerrorset_2, Lerrorset_3, G4Wother},
+    {NULL,                      0, 0, 0, 0, 0}
 };
 
 
 static void create_symbols(setup_type const s[], int restart_flag)
 {   size_t i;
     for (i=0; s[i].name != NULL; i++)
-        make_symbol(s[i].name, restart_flag, s[i].one, s[i].two, s[i].n);
+        make_symbol(s[i].name, restart_flag,
+           s[i].zero,  s[i].one, s[i].two, s[i].three, s[i].fourup);
 }
 
 static int32_t defined_symbols;
@@ -1354,9 +1376,11 @@ static void cold_setup()
     qplist(nil) = nil;
     qfastgets(nil) = nil;
     qenv(nil) = nil;        // points to self in undefined case
-    ifn1(nil) = (intptr_t)undefined1;
-    ifn2(nil) = (intptr_t)undefined2;
-    ifnn(nil) = (intptr_t)undefinedn;
+    ifn0(nil) = (intptr_t)undefined_0;
+    ifn1(nil) = (intptr_t)undefined_1;
+    ifn2(nil) = (intptr_t)undefined_2;
+    ifn3(nil) = (intptr_t)undefined_3;
+    ifn4up(nil) = (intptr_t)undefined_4up;
     qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR;
     qvalue(nil) = nil;
 //
@@ -1563,14 +1587,14 @@ static void cold_setup()
     compiler_symbol     = make_undefined_symbol("compile");
     current_function    = // system-startup
     startup_symbol      = make_undefined_symbol("system-startup");
-    mv_call_symbol      = make_symbol("multiple-value-call", 0, mv_call_fn, NULL, BAD_SPECIALN);
+    mv_call_symbol      = make_symbol("multiple-value-call", 0, BAD_SPECIAL_0, mv_call_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up);
     autoload_symbol     = make_undefined_symbol("autoload");
     bytecoded_symbol    = make_undefined_symbol("bytecoded-definition");
     traceprint_symbol   = make_undefined_symbol("trace-print");
-    load_source_symbol  = make_symbol("load-source", 0, Lload_source, TOO_MANY_1, Lload_source0);
+    load_source_symbol  = make_symbol("load-source", 0, Lload_source0, Lload_source, G2Wother, G3Wother, G4Wother);
     load_selected_source_symbol =
-                          make_symbol("load-selected-source", 0, Lload_selected_source, TOO_MANY_1, Lload_selected_source0);
-    prinl_symbol        = make_symbol("prinl", 0, Lprin, TOO_MANY_1, WRONG_NO_1);
+                          make_symbol("load-selected-source", 0, Lload_selected_source0, Lload_selected_source, G2Wother, G3Wother, G4Wother);
+    prinl_symbol        = make_symbol("prinl", 0, G0W1, Lprin, G2W1, G3W1, G4W1);
     emsg_star           = make_undefined_symbol("emsg*");
     redef_msg           = make_undefined_symbol("*redefmsg");
     expr_symbol         = make_undefined_symbol("expr");
@@ -1621,8 +1645,8 @@ static void cold_setup()
     qvalue(emsg_star)      = nil;
     qvalue(redef_msg)      = lisp_true;
 
-    sys_hash_table = Lmkhash(nil, 3, fixnum_of_int(5), fixnum_of_int(2), nil);
-    get_counts = Lmkhash(nil, 3, fixnum_of_int(5), fixnum_of_int(0), nil);
+    sys_hash_table = Lmkhash_2(nil, fixnum_of_int(5), fixnum_of_int(2));
+    get_counts = Lmkhash_2(nil, fixnum_of_int(5), fixnum_of_int(0));
 //
 // I make the vector that can hold the names used for "fast" get tags big
 // enough for the largest possible number.
@@ -1681,22 +1705,22 @@ void set_up_functions(int restart_flag)
     LispObject saved_package = CP;
     CP = find_package("LISP", 4);
 #endif
-    function_symbol          = make_symbol("function", restart_flag, function_fn, (two_args *)function_fn, BAD_SPECIALN);
+    function_symbol          = make_symbol("function", restart_flag, BAD_SPECIAL_0, function_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up);
     qheader(function_symbol)|= SYM_SPECIAL_FORM;
-    quote_symbol             = make_symbol("quote", restart_flag, quote_fn, (two_args *)quote_fn, BAD_SPECIALN);
+    quote_symbol             = make_symbol("quote", restart_flag, BAD_SPECIAL_0, quote_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up);
     qheader(quote_symbol)   |= SYM_SPECIAL_FORM;
-    progn_symbol             = make_symbol("progn", restart_flag, progn_fn, (two_args *)progn_fn, BAD_SPECIALN);
+    progn_symbol             = make_symbol("progn", restart_flag, BAD_SPECIAL_0, progn_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up);
     qheader(progn_symbol)   |= SYM_SPECIAL_FORM;
-    declare_symbol           = make_symbol("declare", restart_flag, declare_fn, (two_args *)declare_fn, BAD_SPECIALN);
+    declare_symbol           = make_symbol("declare", restart_flag, BAD_SPECIAL_0, declare_fn, BAD_SPECIAL_2, BAD_SPECIAL_3, BAD_SPECIAL_4up);
     qheader(declare_symbol) |= SYM_SPECIAL_FORM;
     special_symbol           = make_undefined_symbol("special");
     large_modulus            = fixnum_of_int(1);
-    cons_symbol              = make_symbol("cons", restart_flag, TOO_FEW_2, Lcons, WRONG_NO_2);
-    list_symbol              = make_symbol("list", restart_flag, Lncons, Llist2, Llist);
-    liststar_symbol          = make_symbol("list*", restart_flag, Lidentity, Lcons, Lliststar);
-    eval_symbol              = make_symbol("eval", restart_flag, Leval, TOO_MANY_1, WRONG_NO_1);
-    apply_symbol             = make_symbol("apply", restart_flag, Lapply_1, Lapply_2, Lapply_n);
-    load_source_symbol       = make_symbol("load-source", restart_flag, Lload_source, TOO_MANY_1, Lload_source0);
+    cons_symbol              = make_symbol("cons", restart_flag, G0W1, G1W2, Lcons, G3W2, G4W2);
+    list_symbol              = make_symbol("list", restart_flag, Lnilfn, Lncons, Llist_2, Llist_3, Llist_4up);
+    liststar_symbol          = make_symbol("list*", restart_flag, G0Wother, Lidentity, Lcons, Llist_2star, Lliststar_4up);
+    eval_symbol              = make_symbol("eval", restart_flag, G0W1, Leval, G2W1, G3W1, G4W1);
+    apply_symbol             = make_symbol("apply", restart_flag, G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up);
+    load_source_symbol       = make_symbol("load-source", restart_flag, Lload_source0, Lload_source, G2Wother, G3Wother, G4Wother);
     builtin0_symbol          = make_undefined_symbol("s:builtin0");
     builtin1_symbol          = make_undefined_symbol("s:builtin1");  
     builtin2_symbol          = make_undefined_symbol("s:builtin2");  
@@ -1704,8 +1728,9 @@ void set_up_functions(int restart_flag)
     builtin4_symbol          = make_undefined_symbol("s:builtin4");  
     load_selected_source_symbol =
                                make_symbol("load-selected-source",
-                                   restart_flag, Lload_selected_source,
-                                   TOO_MANY_1, Lload_selected_source0);
+                                   restart_flag, Lload_selected_source0,
+                                   Lload_selected_source, G2Wother, G3Wother,
+                                   G4Wother);
 //
 // The main bunch of symbols can be handed using a table that
 // gives names and values.
@@ -1713,15 +1738,19 @@ void set_up_functions(int restart_flag)
     for (i=0; eval2_setup[i].name != NULL; i++)
         qheader(make_symbol(eval2_setup[i].name,
                             restart_flag,
+                            eval2_setup[i].zero,
                             eval2_setup[i].one,
                             eval2_setup[i].two,
-                            eval2_setup[i].n)) |= SYM_SPECIAL_FORM;
+                            eval2_setup[i].three,
+                            eval2_setup[i].fourup)) |= SYM_SPECIAL_FORM;
     for (i=0; eval3_setup[i].name != NULL; i++)
         qheader(make_symbol(eval3_setup[i].name,
                             restart_flag,
+                            eval3_setup[i].zero,
                             eval3_setup[i].one,
                             eval3_setup[i].two,
-                            eval3_setup[i].n)) |= SYM_SPECIAL_FORM;
+                            eval3_setup[1].three,
+                            eval3_setup[i].fourup)) |= SYM_SPECIAL_FORM;
 
     create_symbols(arith06_setup, restart_flag);
     create_symbols(arith08_setup, restart_flag);
@@ -1806,7 +1835,7 @@ void set_up_variables(int restart_flag)
     big_dividend = make_four_word_bignum(0, 0, 0, 0);
     big_quotient = make_four_word_bignum(0, 0, 0, 0);
     qvalue(macroexpand_hook) = funcall_symbol =
-        make_symbol("funcall", restart_flag, Lfuncall1, Lfuncall2, Lfuncalln);
+        make_symbol("funcall", restart_flag, G0Wother, Lfuncall_1, Lfuncall_2, Lfuncall_3, Lfuncall_4up);
     input_libraries = make_undefined_symbol("input-libraries");
     qheader(input_libraries)  |= SYM_SPECIAL_VAR;
     qvalue(input_libraries) = nil;
@@ -2195,7 +2224,7 @@ void set_up_variables(int restart_flag)
 // and I also reset the "about box" information (if using fwin).
 //
         w1 = make_undefined_symbol("addsq");
-        if (qfn1(w1) != undefined1)
+        if (qfn1(w1) != undefined_1)
         {   w = cons(make_keyword("reduce"), w);
             w1 = qvalue(make_undefined_symbol("version*"));
             if (is_vector(w1) &&

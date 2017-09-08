@@ -33,6 +33,8 @@
 %%
 
 
+% $Id$
+
 % Pretty-well all internal functions defined here and all fluid and
 % global variables have been written with names of the form s!:xxx. This
 % might keep them away from most users.  In Common Lisp I may want to put
@@ -102,9 +104,7 @@ symbolic procedure s!:vecof1 l;
 
    put('abs,                      's!:builtin1, 0);
    put('add1,                     's!:builtin1, 1);
-!#if common!-lisp!-mode
    put('!1!+,                     's!:builtin1, 1);
-!#endif
 !#if (not common!-lisp!-mode)
    put('atan,                     's!:builtin1, 2);
 !#endif
@@ -202,9 +202,7 @@ symbolic procedure s!:vecof1 l;
    put('stringp,                  's!:builtin1, 79);
 !#endif
    put('sub1,                     's!:builtin1, 80);
-!#if common!-lisp!-mode
    put('!1!-,                     's!:builtin1, 80);
-!#endif
    put('symbol!-env,              's!:builtin1, 81);
    put('symbol!-function,         's!:builtin1, 82);
    put('symbol!-name,             's!:builtin1, 83);
@@ -250,9 +248,7 @@ symbolic procedure s!:vecof1 l;
 % They are part of the support for &optional arguments.
    put('is!-spid,                 's!:builtin1, 111);
    put('spid!-to!-nil,            's!:builtin1, 112);
-!#if common!-lisp!-mode
    put('mv!-list!*,               's!:builtin1, 113);
-!#endif
    put('append,                   's!:builtin2, 0);
    put('ash,                      's!:builtin2, 1);
 !#if (not common!-lisp!-mode)
@@ -471,6 +467,14 @@ symbolic procedure s!:set_label x;
        s!:current_block := nil;
        s!:current_size := 0 end;
     s!:current_label := x;
+% At one stage I was concerned that label resolution was not happening
+% properly and so that when I did any sort of JUMP in the bytecode stream I
+% might arrive a byte late or early. To track that down I arranged (here) to
+% insert a marker byte at least label position, and then the execution of
+% jumps could test if the target address had that byte present. A side-effect
+% of that was that some tail-recursion optimisations stopped happening and
+% so some test scripts suffered from stack overflow...
+%   s!:outopcode0('SPARE, list('label, x));
     s!:a_reg_values := nil
  >>;
 
@@ -611,18 +615,6 @@ symbolic procedure s!:outopcode2(op, arg1, arg2, doc);
     if !*plap or !*pgwd then s!:current_block := (op . doc) . s!:current_block
   end;
 
-symbolic procedure s!:outopcode2lit(op, arg1, arg2, doc, env);
-% This is only used for CALLN
-  begin
-    if not flagp(op, 's!:preserves_a) then s!:a_reg_values := nil;
-    if null s!:current_label then return nil;
-    s!:current_block := arg1 . op . s!:current_block;
-    s!:record_literal env;
-    s!:current_block := arg2 . s!:current_block;
-    s!:current_size := s!:current_size + 3;
-    if !*plap or !*pgwd then s!:current_block := (op . doc) . s!:current_block
-  end;
-
 symbolic procedure s!:outlexref(op, arg1, arg2, arg3, doc);
 % Only used for LOADLEX and STORELEX
   begin
@@ -684,14 +676,13 @@ put('JUMPLITNE!*, 's!:shortform, get('JUMPLITNE, 's!:shortform));
 % so the upper four bits of the byte after the BIGCALL opcode select what
 % operation is actually performed (from the following list). There is a
 % 12-bit literal-vector offset with its 4 high bits packed into that byte
-% and the next 8 in the byte "low". Then just in the cases CALLN and JCALLN
-% a further byte indicates how many arguments are actually being passed.
+% and the next 8 in the byte "low".
 
 put('CALL0,     's!:longform,   0);     % 0
 put('CALL1,     's!:longform,   16);    % 1
 put('CALL2,     's!:longform,   32);    % 2
 put('CALL3,     's!:longform,   48);    % 3
-put('CALLN,     's!:longform,   64);    % 4
+put('CALL4,     's!:longform,   64);    % 4
 put('CALL2R,    's!:longform,   80);    % 5 (no JCALL version)
 put('LOADFREE,  's!:longform,   96);
 put('STOREFREE, 's!:longform,   112);
@@ -699,7 +690,7 @@ put('JCALL0,    's!:longform,   128);
 put('JCALL1,    's!:longform,   144);
 put('JCALL2,    's!:longform,   160);
 put('JCALL3,    's!:longform,   176);
-put('JCALLN,    's!:longform,   192);
+put('JCALL4,    's!:longform,   192);
 put('FREEBIND,  's!:longform,   208);
 put('LITGET,    's!:longform,   224);
 put('LOADLIT,   's!:longform,   240);
@@ -768,7 +759,7 @@ symbolic procedure s!:resolve_literals(env, checksum);
 % There are two ways I get around this. To consider these it is useful to
 % document the opcodes that reference literals:
 %
-% operations:  CALL0, CALL1, CALL2, CALL2R, CALL3, CALLN,
+% operations:  CALL0, CALL1, CALL2, CALL2R, CALL3, CALL4,
 %              LOADLIT, LOADFREE, STOREFREE, FREEBIND, LITGET
 % and jumps:   JUMPLITEQ, JUMPLITNE, JUMPFREENIL, JUMPFREET,
 %              JUMPEQCAR, JUMPNEQCAR, JUMPFLAGP, JUMPNFLAGP
@@ -786,7 +777,7 @@ symbolic procedure s!:resolve_literals(env, checksum);
 % sub-opcode, while the remaining twelve bits provide for access within the
 % first 2048 literals for all the above operations and for the JCALL
 % operations corresponding to the CALL ones shown (except CALL2R which does
-% not have a coresponding JCALL version). So normally I can just map
+% not have a corresponding JCALL version). So normally I can just map
 % references that need to address literals beyong the 256th onto these
 % extended opcodes.
 %
@@ -1035,69 +1026,76 @@ put('CALL2_4,  's!:shortcall, '(2 . 4));
 
 symbolic procedure s!:remcall b;
 % If the instruction stream b has a CALL opcode at its head then
-% return (p . q . r . s . b') where p is any comment assocated with
-% the call, q is the number of arguments the called function expects,
-% r is the literal-vector offset involved, s is the number of bytes
-% in the codestream used up and b' is the code stream with the CALL deleted.
-% Return NIL if no CALL is found.
+% return (cmnt . nargs . lvoff . callsize . b') where cmnt is any comment
+% assocated with the call, nargs is the number of arguments the called
+% function expects, lvoff is the literal-vector offset involved, callsize
+% is the number of bytes in the codestream used up and b' is the code stream
+% with the CALL deleted. Return NIL if no CALL is found.
   begin
-    scalar w, p, q, r, s;
+    scalar w, cmnt, nargs, lvoff, callsize;
     while b and not atom car b do <<
-       p := car b;    % Strip comments, leaves p=nil if none
+       cmnt := car b;    % Strip comments, leaves cmnt=nil if none
        b := cdr b >>;
     if null b then return nil  % Nothing left
 % The possible interesting cases here are:
 %     CALL0_0 .... JCALL2_4   (1 byte opcodes)
-%     CALL0 n .... CALL3 n    (2 bytes)
+%     CALL0 n .... CALL4 n    (2 bytes)
 %     CALL2R n                (2 bytes, treat as (SWOP;CALL2 n))
-%     CALLN m n               (3 bytes)
-%     BIGCALL [CALL0..3] n    (3 bytes)
+%     BIGCALL [CALL0..4] n    (3 bytes)
 %     BIGCALL [CALL2R] n      (3 bytes, treat as (SWOP;BIGCALL [CALL2] n))
-%     BIGCALL [CALLN] n m     (4 bytes)
     else if numberp car b then <<
-       r := car b;
-       s := 2;
+% Here I have either "n1 n2 CALLop" or "n CALLop"
+       lvoff := car b;
+       callsize := 2;
        b := cdr b;
-       if null b then return nil
+       if null b then return nil    % Just "n", so that is not interesting
        else if numberp car b then <<
-          q := r;
-          r := car b;
-          s := 3;
+% Here I have "n1 n2" so I need to check for a CALLop. The only cases that
+% have 2 operand bytes will be BIGCALL ones.
+          nargs := lvoff;
+          lvoff := car b;
+          callsize := 3;
           b := cdr b;
-          if b and numberp (w := car b) and eqcar(cdr b, 'BIGCALL) and
-             truncate(w, 16) = 4 then <<
-              r := 256*logand(w, 15) + r;
-              s := 4;
-              b := cdr b >>
-          else if eqcar(b, 'BIGCALL) then <<
-              w := truncate(r,16);
-              r := 256*logand(r, 15) + q;
-              q := w;
-              if q = 5 then <<   % BIGCALL [CALL2R]
-                 q := 2;
-                 s := s-1; % fudge for the inserted byte
+          if eqcar(b, 'BIGCALL) then <<
+              w := truncate(lvoff,16);
+              lvoff := 256*logand(lvoff, 15) + nargs;
+              nargs := w;
+% I do not have a "JCALL2R" and so if I find the sequence "CALL2R;EXIT"
+% I will map it onto "SWOP;JCALL2". That adds a byte, and a way of accounting
+% for that is to report that removing the call part lost one fewer bytes
+% than it actually did.
+              if nargs = 5 then <<   % BIGCALL [CALL2R]
+                 nargs := 2;
+                 callsize := callsize-1; % fudge for the inserted byte
                  b := 'BIGCALL . 'SWOP . cdr b >>;
-              if q > 4 then return nil >>
-          else if not eqcar(b, 'CALLN) then return nil >>
-       else if car b = 'CALL0 then q := 0
-       else if car b = 'CALL1 then q := 1
-       else if car b = 'CALL2 then q := 2
+% BIGCALL opcodes with an "argument count" over 5 are not actually calls,
+% but are used for other operations that access parts of the literal vector
+% beyond position 255.
+              if nargs > 4 then return nil >>
+          else return nil >>
+       else if car b = 'CALL0 then nargs := 0
+       else if car b = 'CALL1 then nargs := 1
+       else if car b = 'CALL2 then nargs := 2
        else if car b = 'CALL2R then <<
-           q := 2;
-           s := s-1; % fudge for the inserted byte
+           nargs := 2;
+           callsize := callsize-1; % fudge for the inserted byte
            b := 'CALL2 . 'SWOP . cdr b >>
-       else if car b = 'CALL3 then q := 3
+       else if car b = 'CALL3 then nargs := 3
+       else if car b = 'CALL4 then nargs := 4
        else return nil;
+% Now get rid of the CALL opcode.
        b := cdr b >>
-    else if (q := get(car b, 's!:shortcall)) then <<
-       r := cdr q;
-       q := car q;
-       s := 1;
+% If the head of the list os not a number then it may be a 1-byte CALL.
+% these are identified because their s!:shortcall property will
+% be pair (nargs . lvoff).
+    else if (nargs := get(car b, 's!:shortcall)) then <<
+       lvoff := cdr nargs;
+       nargs := car nargs;
+       callsize := 1;
        b := cdr b >>
     else return nil;
-    return (p . q . r . s . b);
+    return (cmnt . nargs . lvoff . callsize . b);
   end;
-
 
 symbolic procedure s!:is_lose_and_exit(b, blocks);
 % If the block b amounts to just a sequence of LOSE
@@ -1121,7 +1119,7 @@ symbolic procedure s!:is_lose_and_exit(b, blocks);
 
 symbolic procedure s!:try_tail_1(b, blocks);
   begin
-    scalar exit, size, body, w, w0, w1, w2, op;
+    scalar exit, size, body, w, nargs, litoff, w2, op;
     exit := cadr b;
     if null exit then return b
     else if not (car exit = 'EXIT) then <<
@@ -1139,30 +1137,28 @@ symbolic procedure s!:try_tail_1(b, blocks);
     w := s!:remcall body;
     if null w then return b;
 % w = (comment . nargs . target . bytes . other_bytes)
-    w0 := cadr w;       % nargs
-    w1 := caddr w;      % target
+    nargs := cadr w;       % nargs
+    litoff := caddr w;      % target
     body := cddddr w;   % byte-stream tail
-    if w0 <= 7 and w1 <= 31 then <<
+    if nargs <= 4 and litoff <= 31 then <<
 % Here I can use a version of JCALL that packs both operands into
 % a single post-byte
        body := 'JCALL . body;
-       body := (32*w0 + w1) . body;
+       body := (32*nargs + litoff) . body;
        size := size-1 >>
-% For reasonably short calls I can use a generic JCALL where both nargs
-% and the target address use one byte each
-    else if w1 < 256 then body := w0 . w1 . 'JCALLN . body
-% When the offset required is over-large I use variants on BIGCALL.
+% For reasonably short calls I used use a generic JCALL where both nargs
+% and the target address use one byte each. However now the more general
+% BIGCALL scheme does noy take up any more space, and so I will use that
+% instead and release an opcode.
     else <<
         body := 'BIGCALL . body;
-        w2 := logand(w1, 255); w1 := truncate(w1,256);
-        if w0 < 4 then body := w2 . (w1 + 16*w0 + 128) . body
-        else <<
-            body := w0 . w2 . (w1 + (16*4 + 128)) . body;
-            size := size + 1 >> >>;
+        w2 := logand(litoff, 255); litoff := truncate(litoff,256);
+        body := w2 . (litoff + 16*nargs + 128) . body >>;
     if car w then body := append(car w, list('TAIL)) . body;
     rplaca(cdr b, nil);
     rplaca(cddr b, size-cadddr w+3);
     rplacd(cddr b, body);
+princ "##### "; print b;
     return b
   end;
 
@@ -1171,7 +1167,7 @@ symbolic procedure s!:try_tailcall b;
 
 symbolic procedure s!:tidy_exits_1(b, blocks);
   begin
-    scalar exit, size, body, comm, w, w0, w1, w2, op;
+    scalar exit, size, body, comm, w, op;
     exit := cadr b;
     if null exit then return b
     else if not (car exit = 'EXIT) then <<
@@ -1651,12 +1647,10 @@ symbolic procedure s!:comval(x, env, context);
     else if eqcar(car x, 'lambda) then
         return s!:comlambda(cadar x, cddar x, cdr x, env, context)
     else if car x eq s!:current_function then s!:comcall(x, env, context)
-!#if common!-lisp!-mode
     else if helper := s!:local_macro car x then <<
        if atom cdr helper then
           s!:comval('funcall . cdr helper . cdr x, env, context)
        else s!:comval(funcall('lambda . cdr helper, x), env, context) >>
-!#endif
     else if (helper := get(car x, 's!:compilermacro)) and
             (helper := funcall(helper, x, env, context)) then
         return s!:comval(helper, env, context)
@@ -1687,14 +1681,10 @@ if null get('and, 's!:compfn) then <<
     put('flet,                   's!:compfn, function s!:comspecform);
     put('labels,                 's!:compfn, function s!:comspecform);
     put('macrolet,               's!:compfn, function s!:comspecform);
-!#if (not common!-lisp!-mode)
-% In Common Lisp Mode I support there. In Standard Lisp mode they
-% are not very meaningful so I do not, but I still reserve the names.
     put('multiple!-value!-call,  's!:compfn, function s!:comspecform);
     put('multiple!-value!-prog1, 's!:compfn, function s!:comspecform);
     put('prog!*,                 's!:compfn, function s!:comspecform);
     put('progv,                  's!:compfn, function s!:comspecform);
-!#endif
     nil >>;
 
 symbolic procedure s!:improve u;
@@ -1724,8 +1714,6 @@ symbolic procedure s!:imp_minus u;
 put('minus, 's!:tidy_fn, 's!:imp_minus);
 put('iminus, 's!:tidy_fn, 's!:imp_minus);
 
-!#if common!-lisp!-mode
-
 symbolic procedure s!:imp_1!+ u;
   s!:improve ('add1 . cdr u);
 
@@ -1735,8 +1723,6 @@ symbolic procedure s!:imp_1!- u;
   s!:improve ('sub1 . cdr u);
 
 put('!1!-, 's!:tidy_fn, 's!:imp_1!-);
-
-!#endif
 
 symbolic procedure s!:imp_times u;
   begin
@@ -1907,9 +1893,7 @@ symbolic procedure s!:easygetv x;
   end;
 
 put('getv, 's!:helpeasy, function s!:easygetv);
-!#if common!-lisp!-mode
 put('svref, 's!:heapeasy, function s!:easygetv);
-!#endif
 
 symbolic procedure s!:easyqgetv x;
   begin
@@ -1920,9 +1904,7 @@ symbolic procedure s!:easyqgetv x;
   end;
 
 put('qgetv, 's!:helpeasy, function s!:easyqgetv);
-!#if common!-lisp!-mode
 put('qsvref, 's!:heapeasy, function s!:easyqgetv);
-!#endif
 
 symbolic procedure s!:iseasy x;
   begin
@@ -2063,8 +2045,6 @@ put('quote, 's!:compfn, function s!:comquote);
 
 fluid '(s!:current_exitlab s!:current_proglabels s!:local_macros);
 
-!#if common!-lisp!-mode
-
 symbolic procedure s!:comval_m(x, env, context, s!:local_macros);
     s!:comval(x, env, context);
 
@@ -2115,8 +2095,6 @@ symbolic procedure s!:local_macro fn;
     return y
   end;
 
-!#endif
-
 symbolic procedure s!:comfunction(x, env, context);
 <<if context = 0 and s!:maybe_values then
     s!:outopcode0('ONEVALUE, '(onevalue));
@@ -2153,11 +2131,9 @@ symbolic procedure s!:comfunction(x, env, context);
                s!:outopcode2('BIGSTACK, 128+truncate(w,256), logand(w, 255),
                              list('CLOSURE, w))
             else s!:outopcode1('CLOSURE, w, x) >> end
-!#if common!-lisp!-mode
      else if context := s!:local_macro x then <<
         if atom cdr context then s!:comatom(cdr context, env, 1)
         else error(0, "(function <local macro>) is illegal") >>
-!#endif
      else s!:loadliteral(x, env) >> >>;
 
 put('function, 's!:compfn, function s!:comfunction);
@@ -2347,14 +2323,9 @@ flag('(cons xcons list2 get flagp plus2 difference times2
 
 flag('(apply2 list2!* list3 acons), 's!:threearg);
 
-% The case of APPLY3 is handled by in-line code rather than a general flag,
-% but I leave the flag statement here as a reminder that it is present as a
-% special case. There is a byte-code allocated for APPLY4, but at present
-% the compiler never generates it and the bytecode interpreter does not
-% implement it. It is reserved in case that sort of use of APPLY/FUNCALL
-% proves sufficiently important.
-% flag('(apply3), 's!:fourarg);
-% flag('(apply4), 's!:fivearg);
+% The cases of APPLY3 and APPLY4 are handled by in-line code rather than
+% a general flag, This is because when I use the special byte opcodes
+% for them I can pass 4 or 5 arguments directly rather than via a list.
 
 symbolic procedure s!:comcall(x, env, context);
 % generate a procedure call - different CALL instructions
@@ -2365,19 +2336,6 @@ symbolic procedure s!:comcall(x, env, context);
     if not symbolp fn then error(0, "non-symbol used in function position");
     args := for each v in cdr x collect s!:improve v;
     nargs := length args;
-% Standard Lisp only allows 15 arguments.  CSL supports 20 just
-% to be on the safe side, but it tells the programmer when the lower
-% limit is violated. Common Lisp can cope with rather more args, but I
-% will still let people know if I think they have gone over the top.
-    if nargs > 15 and !*pwrds then <<
-        if posn() neq 0 then terpri();
-        princ "+++ ";
-        prin fn;
-        princ " called with ";
-        prin nargs;
-        princ " from function ";
-        prin s!:current_function;
-        terpri() >>;
     s := cdr env;
     if context = 0 and s!:maybe_values then
       s!:outopcode0('ONEVALUE, '(onevalue));
@@ -2444,9 +2402,17 @@ symbolic procedure s!:comcall(x, env, context);
           if fn neq s!:current_function then s!:maybe_values := t >>;
         rplacd(env, cddr env) >>
     else begin
-% Functions with 4 or more arguments are called by pushing all their
-% arguments onto the stack.  I expect that this will not be a common case.
+% Functions with 4 arguments have a3 and a4 on the stack.
       scalar largs;
+% Reduce so that there are only 4 actual arguments passed. Except in the
+% case of APPLY3 and APPLY4 that I will handle using special bytecodes!
+      if not (fn = 'apply3 and nargs = 4) and
+         not (fn = 'apply4 and nargs = 5) then <<
+        w1 := car args; args := cdr args;
+        w2 := car args; args := cdr args;
+        w3 := car args; args := cdr args;
+        args := list(w1, w2, w3, 'list . args);
+        nargs := 4 >>;
       largs := reverse args;
       for each a in reverse cddr largs do <<
         if null a then s!:outstack 1
@@ -2459,13 +2425,11 @@ symbolic procedure s!:comcall(x, env, context);
       if s!:load2(cadr largs, car largs, env) then
          s!:outopcode0('SWOP, '(SWOP));
       if fn = 'apply3 and nargs = 4 then s!:outopcode0('APPLY3, '(APPLY3))
-%     else if fn = 'apply4 and nargs = 5 then   % Not yet implemented.
-%        s!:outopcode0('APPLY4, '(APPLY4));
-      else if nargs > 255 then error(0, "Over 255 args in a function call")
+      else if fn = 'apply4 and nargs = 5 then s!:outopcode0('APPLY4, '(APPLY4))
       else <<
         if context = 0 and s!:maybe_values then
           s!:outopcode0('ONEVALUE, '(onevalue));
-        s!:outopcode2lit('CALLN, fn, nargs, list(nargs, fn), env);
+        s!:outopcode1lit('CALL4, fn, env);
         if fn neq s!:current_function then s!:maybe_values := t >>;
       rplacd(env, s) end
   end;
@@ -2636,18 +2600,14 @@ symbolic procedure s!:complus(x, env, context);
 
 put('plus, 's!:compfn, function s!:complus);
 
-!#if common!-lisp!-mode
 put('!+, 's!:compfn, function s!:complus);
-!#endif
 
 symbolic procedure s!:comtimes(x, env, context);
    s!:comval(expand(cdr x, 'times2), env, context);
 
 put('times, 's!:compfn, function s!:comtimes);
 
-!#if common!-lisp!-mode
 put('!*, 's!:compfn, function s!:comtimes);
-!#endif
 
 
 symbolic procedure s!:comiplus(x, env, context);
@@ -3018,8 +2978,6 @@ symbolic procedure s!:comtagbody(x, env, context);
 
 put('tagbody, 's!:compfn, function s!:comtagbody);
 
-!#if common!-lisp!-mode
-
 symbolic procedure s!:comprogv(x, env, context);
   begin
     x := cdr x;
@@ -3038,7 +2996,7 @@ symbolic procedure s!:comprog!*(x, env, context);
     scalar local_decs;
     local_decs := s!:find_local_decs(cddr x, t);
 % Macroexpand as per CLTL trying to migrate declarations to the right place
-    x := list('block, nil,
+    x := list('!~block, nil,
            list('let!*, cadr x,
               'declare . car local_decs,
               'tagbody . cdr local_decs));
@@ -3047,7 +3005,19 @@ symbolic procedure s!:comprog!*(x, env, context);
 
 put('prog!*, 's!:compfn, function s!:comprog!*);
 
-!#endif
+symbolic procedure s!:comprog(x, env, context);
+  begin
+    scalar local_decs;
+    local_decs := s!:find_local_decs(cddr x, t);
+% Macroexpand as per CLTL trying to migrate declarations to the right place
+    x := list('!~block, nil,
+           list('!~let, cadr x,
+              'declare . car local_decs,
+              'tagbody . cdr local_decs));
+    return s!:comval(x, env, context)
+  end;
+
+put('prog, 's!:compfn, function s!:comprog);
 
 % s!:comblock is just for RETURN to work with.
 
@@ -3061,9 +3031,9 @@ symbolic procedure s!:comblock(x, env, context);
 
 !#if common!-lisp!-mode
 put('block, 's!:compfn, function s!:comblock);
-!#else
-put('!~block, 's!:compfn, function s!:comblock);
 !#endif
+
+put('!~block, 's!:compfn, function s!:comblock);
 
 symbolic procedure s!:comcatch(x, env, context);
   begin
@@ -3154,9 +3124,9 @@ symbolic procedure s!:comlet(x, env, context);
 
 !#if common!-lisp!-mode
 put('let, 's!:compfn, function s!:comlet);
-!#else
-put('!~let, 's!:compfn, function s!:comlet);
 !#endif
+
+put('!~let, 's!:compfn, function s!:comlet);
 
 symbolic procedure s!:expand_let!*(vl, local_decs, b);
 % This has loads of fun because although it basically wants to expand
@@ -3221,13 +3191,11 @@ symbolic procedure s!:restore_stack(e1, e2);
           s!:outopcode0('UNPROTECT, '(UNPROTECT));
           e1 := cdddr e1;
           n := 0 >>
-!#if common!-lisp!-mode
        else if car e1 = '(pvbind) then <<
           if not zerop n then s!:outlose n;
           s!:outopcode0('PVRESTORE, '(PVRESTORE));
           e1 := cddr e1;
           n := 0 >>
-!#endif
        else <<
           e1 := cdr e1;
           n := n + 1 >> >>;
@@ -3327,12 +3295,10 @@ top:
     if not atom x then <<
        w := s!:improve x;
        if atom w or not eqcar(x, car w) then << x := w; go to top >>;
-!#if common!-lisp!-mode
        if w1 := s!:local_macro car w then <<
           if atom cdr w1 then x := 'funcall . cdr w1 . cdr w
           else x := funcall('lambda . cdr w1, w);
           go to top >>;
-!#endif
        if (w1 := get(car w, 's!:compilermacro)) and
           (w1 := funcall(w1, w, env, 1)) then <<
           x := w1; go to top >> >>;
@@ -3588,9 +3554,7 @@ symbolic procedure s!:comcase(x, env, context);
             if atom w then w := list w;
             for each n in w do <<
                 if idp n
-!#if common!-lisp!-mode
                    or characterp n
-!#endif
                    or numberp n then <<
                     if not fixp n then nonnum := t;
                     keys := n . keys;
@@ -3938,9 +3902,50 @@ symbolic procedure s!:comlist(x, env, context);
        s!:comval(list('list2, car x, cadr x), env, context)
     else if null cdr w then
        s!:comval(list('list3, car x, cadr x, car w), env, context)
-    else s!:comval(list('list2!*, car x, cadr x, 'list . w), env, context)
+% In longer cases I generate mildly odd-looking  code that is designed
+% to avoid undue stack usage.
+    else s!:comlonglist(x, env, context)
   end;
 
+symbolic procedure s!:comlonglist(x, env, context);
+  begin
+% This handles (LIST a1 a2 a3 a4 a5 a6 ...)
+    s!:comval(list('list3rev, car x, cadr x, caddr x), env, 1);
+% First compute value w = (A3 A2 A1) 
+    x := cdddr x;
+    rplacd(env, 0 . cdr env);
+    while cdr x and cddr x do <<
+      s!:a_reg_values := nil;
+      s!:outopcode0('PUSH, '(PUSHA3));
+      if s!:load2(car x, cadr x, env) then
+         s!:outopcode0('SWOP, '(SWOP));
+      s!:outopcode1lit('CALL3, 'list2!*rev, env);
+% Now update w := list2!*rev(w, a4, a5) to set w = (A5 A4 A3 A2 A1)
+      x := cddr x >>;
+% Keep going until only 1 or 2 further items are in the list
+    s!:outopcode0('PUSH, '(PUSH));
+    if null cdr x then << % Only one at end
+% here I will prepare the final item and call nrevlist to put everything
+% as it should be.
+      s!:comval(car x, env, 1);
+      s!:outopcode0('POP, '(POP));
+      s!:outopcode1lit('CALL2, 'nrevlist, env) >>
+    else <<
+% Evaluate final 2 args...
+      if s!:load2(car x, cadr x, env) then
+         s!:outopcode0('SWOP, '(SWOP));
+      s!:outopcode1lit('CALL3, 'nrevlist, env) >>;
+    rplacd(env, cddr env)
+% The overall effect is rather as if I had gone
+%   (NREVLIST (LIST2!*REV (LIST3REV a1 a2 a3) a4 a5) a6)
+% where the potentially large number of calls to LIST2!*REV that could
+% be involved if the list was very very long will not lead to much stack
+% use either here at compile time or at run-time. The odd-looking helper
+% functions that are called exist so that their arguments get evaluated
+% in what corresponds to left to right evaluation for the overall LIST,
+% while initially building up the result in reversed order.
+  end;
+      
 put('list, 's!:compfn, function s!:comlist);
 
 symbolic procedure s!:comlist!*(x, env, context);
@@ -3981,36 +3986,6 @@ symbolic procedure s!:comcons(x, env, context);
 
 put('cons, 's!:compfn, function s!:comcons);
 
-!#if common!-lisp!-mode
-
-% I must not open-compile VECTOR in Standard Lisp mode because REDUCE
-% has a function of that name that is nothing like the one I support here.
-% But the version here can be useful so that things like
-%    (vector e1 e2 ... en)
-% for large n do not generate function calls with excessive numbers of args.
-
-symbolic procedure s!:vector_compilermacro(x, env, context);
-  begin
-    scalar args, n, n1, r, w, v, i;
-    v := gensym();
-    i := gensym();
-    args := cdr x;
-    n := n1 := length args;
-    while n > 12 do <<
-       w := nil;
-       for j := 1:12 do << w := car args . w; args := cdr args >>;
-       r := list('setq, i, ('fill!-vector . v . i . reverse w)) . r;
-       n := n - 12 >>;
-    if n > 0 then r := ('fill!-vector . v . i . args) . r;
-    r := 'let .
-          list(list(v, list('mkvect, n1-1)),
-               list(i, 0)) .
-          reverse (v . r);
-    return r
-  end;
-
-put('vector, 's!:compilermacro, function s!:vector_compilermacro);
-
 symbolic procedure s!:commv!-call(x, env, context);
   begin
     scalar fn, args;
@@ -4041,8 +4016,6 @@ symbolic procedure s!:commv!-prog1(x, env, context);
   end;
 
 put('multiple!-value!-prog1, 's!:compfn, function s!:commv!-prog1);
-
-!#endif
 
 symbolic procedure s!:comapply(x, env, context);
   begin
@@ -4087,8 +4060,8 @@ symbolic procedure s!:imp_funcall u;
       else if n = 1 then 'apply1 . u
       else if n = 2 then 'apply2 . u
       else if n = 3 then 'apply3 . u
-%     else if n = 4 then 'apply4 . u
-      else 'funcall!* . u;
+      else if n = 4 then 'apply4 . u
+      else 'funcall . u;
 !#if record!-use!-of!-funcall
 % If this flag is set when the compiler is built then every "funcall" in the
 % original source will get logged. If there are too many of them this
@@ -5944,15 +5917,13 @@ put('tagbody, 's!:expandfn, function s!:expandtagbody);
 put('progv, 's!:expandfn, function s!:expandprogv);
 !#if common!-lisp!-mode
 put('block, 's!:expandfn, function s!:expandblock);
-!#else
-put('!~block, 's!:expandfn, function s!:expandblock);
 !#endif
+put('!~block, 's!:expandfn, function s!:expandblock);
 put('declare, 's!:expandfn, function s!:expanddeclare);
 !#if common!-lisp!-mode
 put('let, 's!:expandfn, function s!:expandlet);
-!#else
-put('!~let, 's!:expandfn, function s!:expandlet);
 !#endif
+put('!~let, 's!:expandfn, function s!:expandlet);
 put('let!*, 's!:expandfn, function s!:expandlet!*);
 put('go, 's!:expandfn, function s!:expandgo);
 put('return!-from, 's!:expandfn, function s!:expandreturn!-from);

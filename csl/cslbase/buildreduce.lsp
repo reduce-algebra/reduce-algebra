@@ -145,26 +145,33 @@
   ((memq 'jlisp lispsystem!*) "$srcdir/compiler-for-jlisp.lsp")
   (t "$srcdir/compiler.lsp")))
 
-(global '(do!-not!-compile))
-(setq do!-not!-compile nil)
+(fluid '(!*nocompile))
+(setq !*nocompile nil)
 
 (cond
-  ((and (boundp 'interpreted) interpreted)
-   (setq do!-not!-compile t)))
+  ((and (boundp 'interpreted) (eq (compress (explodec interpreted)) 'yes))
+   (setq !*nocompile t)))
+
+(progn (terpri)
+       (princ "### !*nocompile = ")
+       (print !*nocompile)
+       nil)
+
+(setq !*comp (null !*nocompile))
 
 % Compile some important things first to improve bootstrapping speed.
 
-(compile '(
-    s!:improve s!:literal_order s!:comval s!:outopcode0
-    s!:plant_basic_block s!:remlose s!:islocal
-    s!:is_lose_and_exit s!:comatom s!:destination_label
-    s!:record_literal s!:resolve_labels s!:expand_jump
-    s!:outopcode1lit stable!-sortip s!:iseasy s!:outjump
-    s!:add_pending s!:comcall s!:resolve_literals))
+(cond
+  ((null !*nocompile)
+   (compile '(
+       s!:improve s!:literal_order s!:comval s!:outopcode0
+       s!:plant_basic_block s!:remlose s!:islocal
+       s!:is_lose_and_exit s!:comatom s!:destination_label
+       s!:record_literal s!:resolve_labels s!:expand_jump
+       s!:outopcode1lit stable!-sortip s!:iseasy s!:outjump
+       s!:add_pending s!:comcall s!:resolve_literals))
+   (compile!-all)))
 
-(compile!-all)
-
-(setq !*comp (null do!-not!-compile))
 
 % Tidy up be deleting any modules that are left over in this image
 
@@ -172,6 +179,8 @@
 
 % Build fasl files for the compatibility code and the two
 % versions of the compiler.
+
+(print (list "*comp =" !*comp))
 
 (faslout 'cslcompat)
 (rdf "$srcdir/fastgets.lsp")
@@ -185,7 +194,7 @@
   (t "$srcdir/compiler.lsp")))
 (faslend)
 
-(setq !*comp (null do!-not!-compile))
+(setq !*comp (null !*nocompile))
 
 (de concat (u v)
     (compress (cons '!" (append (explode2 u)
@@ -793,6 +802,9 @@ symbolic procedure get_configuration_data();
 symbolic procedure build_reduce_modules names;
   begin
     scalar w;
+    if boundp 'interpreted and interpreted then !*nocompile := t;
+    !*comp := null !*nocompile;
+
 !#if !*savedef
     !*savedef := t;
 !#else

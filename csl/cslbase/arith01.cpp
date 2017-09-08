@@ -253,9 +253,6 @@ LispObject make_lisp_integer128_fn(int128_t r)
         return make_two_word_bignum((int32_t)ASR(NARROW128(r), 31),
                                     (uint32_t)(r & 0x7fffffff));
 // I will split off the high and low 62-bit chunks...
-
-//@@@@@ I have not dealt with the 5 word case here yet. BUG BUG BUG
-
     uint64_t lo = (uint64_t)(r & UINT64_C(0x3fffffffffffffff));
     int64_t hi = NARROW128(ASR128(r, 62));
     if (hi < INT64_C(0x40000000) &&
@@ -264,9 +261,16 @@ LispObject make_lisp_integer128_fn(int128_t r)
                (int32_t)hi,
                (uint32_t)((lo >> 31) & 0x7fffffff),
                (uint32_t)(lo & 0x7fffffff));
-    else
+    else if (hi < INT64_C(0x2000000000000000) &&
+             hi >= -INT64_C(0x2000000000000000))
         return make_four_word_bignum(
                (int32_t)ASR(hi, 31),
+               (uint32_t)(hi & 0x7fffffff),
+               (uint32_t)((lo >> 31) & 0x7fffffff),
+               (uint32_t)(lo & 0x7fffffff));
+    else return make_five_word_bignum(
+               (int32_t)ASR(hi, 62),
+               (uint32_t)(ASR(hi, 31) & 0x7fffffff),
                (uint32_t)(hi & 0x7fffffff),
                (uint32_t)((lo >> 31) & 0x7fffffff),
                (uint32_t)(lo & 0x7fffffff));
@@ -343,7 +347,6 @@ LispObject make_one_word_bignum(int32_t n)
 // exits, and so it is way tidier than it used to be.
 // Some places where I do mind will pick up the strain.
     bignum_digits(w)[0] = n;
-    if (SIXTY_FOUR_BIT) bignum_digits(w)[1] = 0;  // padding
     return w;
 }
 
@@ -356,7 +359,6 @@ LispObject make_two_word_bignum(int32_t a1, uint32_t a0)
 {   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8);
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
-    if (!SIXTY_FOUR_BIT) bignum_digits(w)[2] = 0;
     return w;
 }
 
@@ -370,7 +372,6 @@ LispObject make_three_word_bignum(int32_t a2, uint32_t a1, uint32_t a0)
     bignum_digits(w)[0] = a0;
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
-    if (SIXTY_FOUR_BIT) bignum_digits(w)[3] = 0;
     return w;
 }
 
@@ -386,7 +387,22 @@ LispObject make_four_word_bignum(int32_t a3, uint32_t a2,
     bignum_digits(w)[1] = a1;
     bignum_digits(w)[2] = a2;
     bignum_digits(w)[3] = a3;
-    if (!SIXTY_FOUR_BIT) bignum_digits(w)[4] = 0;
+    return w;
+}
+
+LispObject make_five_word_bignum(int32_t a4, uint32_t a3, uint32_t a2,
+                                 uint32_t a1, uint32_t a0)
+//
+// This make a 5-word bignum from the 5-word value (a4,a3,a2,a1,a0), where it
+// must have been arranged already that the values are correctly
+// normalized.
+//
+{   LispObject w = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+20);
+    bignum_digits(w)[0] = a0;
+    bignum_digits(w)[1] = a1;
+    bignum_digits(w)[2] = a2;
+    bignum_digits(w)[3] = a3;
+    bignum_digits(w)[4] = a4;
     return w;
 }
 

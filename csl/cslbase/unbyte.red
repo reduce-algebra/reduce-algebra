@@ -757,13 +757,13 @@ opnames := mkvect 255$
 %--  CAARLOC0     CAARLOC1     CAARLOC2     CAARLOC3
 %--  
 %--  Function call support
-%--  CALL0        CALL1        CALL2        CALL2R       CALL3        CALLN
+%--  CALL0        CALL1        CALL2        CALL2R       CALL3        CALL4
 %--  CALL0_0      CALL0_1      CALL0_2      CALL0_3
 %--  CALL1_0      CALL1_1      CALL1_2      CALL1_3      CALL1_4      CALL1_5
 %--  CALL2_0      CALL2_1      CALL2_2      CALL2_3      CALL2_4
 %--  BUILTIN0     BUILTIN1     BUILTIN2     BUILTIN2R    BUILTIN3
 %--  APPLY1       APPLY2       APPLY3       APPLY4   
-%--  JCALL        JCALLN
+%--  JCALL        spare66
 %--  
 %--  Branches. The main collection come in variants with long or short
 %--  offsets and with the branch to go fowards or backwards.
@@ -1158,13 +1158,10 @@ symbolic procedure h!:CALL2R(pc, code, env);
 symbolic procedure h!:CALL3(pc, code, env);
   list(2, list('setq, !@a, expand_call(3, freeref(env, byte1()))), 'lose);
 
-symbolic procedure h!:CALLN(pc, code, env);
+symbolic procedure h!:CALL4(pc, code, env);
   begin
-    scalar n, w;
-    n := byte1();
-    for i := 1:n-2 do w := 'lose . w;
-    return list!*(3, 
-      list('setq, !@a, expand_call(n, freeref(env, byte2()))), w)
+    return list!*(2, 
+      list('setq, !@a, expand_call(4, freeref(env, byte2()))), '(lose lose))
   end;
 
 symbolic procedure h!:CALL0_0(pc, code, env);
@@ -1273,9 +1270,6 @@ symbolic procedure h!:JCALL(pc, code, env);
     nargs := irightshift(nargs, 5);
     return list(2, expand_jcall(nargs, dest))
   end;
-
-symbolic procedure h!:JCALLN(pc, code, env);
-  list(3, expand_jcall(byte2(), freeref(env, byte1())));
 
 symbolic procedure expand_jcall(nargs, dest);
   list('return, expand_call(nargs, dest));

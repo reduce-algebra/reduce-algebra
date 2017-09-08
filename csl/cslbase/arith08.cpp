@@ -39,69 +39,63 @@
 #include "headers.h"
 
 
-static LispObject Lboole(LispObject env, int nargs, ...)
-{   LispObject r, op, a, b;
-    va_list aa;
-    argcheck(nargs, 3, "boole");
-    va_start(aa, nargs);
-    op = va_arg(aa, LispObject);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    va_end(aa);
+static LispObject Lboole_3(LispObject env, LispObject op,
+        LispObject a1, LispObject a2)
+{   LispObject r;
     switch (is_fixnum(op) ? int_of_fixnum(op) : -1)
     {   case boole_clr:
             return onevalue(fixnum_of_int(0));
         case boole_and:
-            r = logand2(a, b);
+            r = logand2(a1, a2);
             break;
         case boole_andc2:
-            push(a);
-            b = lognot(b);
-            pop(a);
-            r = logand2(a, b);
+            push(a1);
+            a2 = lognot(a2);
+            pop(a1);
+            r = logand2(a1, a2);
             break;
         case boole_1:
-            return onevalue(a);
+            return onevalue(a1);
         case boole_andc1:
-            push(b);
-            a = lognot(a);
-            pop(b);
-            r = logand2(a, b);
+            push(a2);
+            a1 = lognot(a1);
+            pop(a2);
+            r = logand2(a1, a2);
             break;
         case boole_2:
-            return onevalue(b);
+            return onevalue(a2);
         case boole_xor:
-            r = logxor2(a, b);
+            r = logxor2(a1, a2);
             break;
         case boole_ior:
-            r = logior2(a, b);
+            r = logior2(a1, a2);
             break;
         case boole_nor:
-            a = logior2(a, b);
-            r = lognot(a);
+            a1 = logior2(a1, a2);
+            r = lognot(a1);
             break;
         case boole_eqv:
-            r = logeqv2(a, b);
+            r = logeqv2(a1, a2);
             break;
         case boole_c2:
-            r = lognot(b);
+            r = lognot(a2);
             break;
         case boole_orc2:
-            b = lognot(b);
-            r = logior2(a, b);
+            a2 = lognot(a2);
+            r = logior2(a1, a2);
             break;
         case boole_c1:
-            r = lognot(a);
+            r = lognot(a1);
             break;
         case boole_orc1:
-            push(b);
-            a = lognot(a);
-            pop(b);
-            r = logior2(a, b);
+            push(a2);
+            a1 = lognot(a1);
+            pop(a2);
+            r = logior2(a1, a2);
             break;
         case boole_nand:
-            a = logand2(a, b);
-            r = lognot(a);
+            a1 = logand2(a1, a2);
+            r = lognot(a1);
             break;
         case boole_set:
             return onevalue(fixnum_of_int(-1));
@@ -161,38 +155,26 @@ static LispObject Ldenominator(LispObject env, LispObject a)
     else return onevalue(fixnum_of_int(1));
 }
 
-static LispObject Ldeposit_field(LispObject env, int nargs, ...)
+static LispObject Ldeposit_field_3(LispObject env, LispObject a1,
+        LispObject a2, LispObject a3)
 {
 //
 // Not implemented yet!
 //
 #ifdef LATER
-    va_list aa;
-    LispObject a, b, c;
-    (void)nargs;   // should really check value
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    va_end(aa);
+// Perhaps I will eventually implement this!
 #endif
     aerror("deposit-field");
 }
 
-static LispObject Ldpb(LispObject env, int nargs, ...)
+static LispObject Ldpb_3(LispObject env, LispObject a1,
+        LispObject a2, LispObject a3)
 {
 //
 // Not implemented yet!
 //
 #ifdef LATER
-    va_list aa;
-    LispObject a, b, c;
-    (void)nargs;  // should really check value
-    va_start(aa, nargs);
-    a = va_arg(aa, LispObject);
-    b = va_arg(aa, LispObject);
-    c = va_arg(aa, LispObject);
-    va_end(aa);
+// Ha ha!
 #endif
     aerror("dpb");
 }
@@ -205,39 +187,39 @@ static LispObject Lffloor(LispObject env, LispObject a1, LispObject a2)
     aerror("ffloor");
 }
 
-LispObject Lgcd_n(LispObject env, int nargs, ...)
-{   va_list a;
-    int i;
-    LispObject r;
-    if (nargs == 0) return fixnum_of_int(0);
-    va_start(a, nargs);
-    push_args(a, nargs);
-//
-// The actual args have been passed a C args - I can not afford to
-// risk garbage collection until they have all been moved somewhere safe,
-// and here that safe place is the Lisp stack.  I have to delay checking for
-// overflow on same until all args have been pushed.
-//
-    stackcheck0(nargs);
-    pop(r);
-    for (i = 1; i<nargs; i++)
-    {   LispObject w;
-        if (r == fixnum_of_int(1))
-        {   popv(nargs-i);
-            break;
-        }
-        pop(w);
-        r = gcd(r, w);
+LispObject Lgcd_0(LispObject env)
+{   return onevalue(fixnum_of_int(0));
+}
+
+LispObject Lgcd_1(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Lgcd_2(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(gcd(a1, a2));
+}
+
+LispObject Lgcd_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   push(a3);
+    a1 = gcd(a1, a2);
+    pop(a2);
+    return onevalue(gcd(a1, a2));
+}
+
+LispObject Lgcd_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   push2(a4up, a3);
+    a1 = gcd(a1, a2);
+    pop(a3);
+    a1 = gcd(a1, a3);
+    while (stack[0] != nil)
+    {   a2 = stack[0];
+        a3 = qcar(a2);
+        stack[0] = qcdr(a2);
+        a1 = gcd(a1, a3);
     }
-    return onevalue(r);
-}
-
-LispObject Lgcd(LispObject env, LispObject a, LispObject b)
-{   return onevalue(gcd(a, b));
-}
-
-LispObject Lgcd_1(LispObject env, LispObject a)
-{   return onevalue(a);
+    popv(1);
+    return onevalue(a1);
 }
 
 static LispObject Limagpart(LispObject env, LispObject a)
@@ -256,29 +238,39 @@ static LispObject Lldb(LispObject env, LispObject a1, LispObject a2)
     aerror("ldb");
 }
 
-LispObject Llcm_n(LispObject env, int nargs, ...)
-{   va_list a;
-    int i;
-    LispObject r;
-    if (nargs == 0) return onevalue(fixnum_of_int(1));
-    va_start(a, nargs);
-    push_args(a, nargs);
-    stackcheck0(nargs);
-    pop(r);
-    for (i = 1; i<nargs; i++)
-    {   LispObject w;
-        pop(w);
-        r = lcm(r, w);
+LispObject Llcm_0(LispObject env)
+{   return onevalue(fixnum_of_int(1));
+}
+
+LispObject Llcm_1(LispObject env, LispObject a1)
+{   return onevalue(a1);
+}
+
+LispObject Llcm_2(LispObject env, LispObject a1, LispObject a2)
+{   return onevalue(lcm(a1, a2));
+}
+
+LispObject Llcm_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
+{   push(a3);
+    a1 = lcm(a1, a2);
+    pop(a2);
+    return onevalue(lcm(a1, a2));
+}
+
+LispObject Llcm_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   push2(a4up, a3);
+    a1 = lcm(a1, a2);
+    pop(a3);
+    a1 = lcm(a1, a3);
+    while (stack[0] != nil)
+    {   a2 = stack[0];
+        a3 = qcar(a2);
+        stack[0] = qcdr(a2);
+        a1 = lcm(a1, a3);
     }
-    return onevalue(r);
-}
-
-LispObject Llcm(LispObject env, LispObject a, LispObject b)
-{   return onevalue(lcm(a, b));
-}
-
-LispObject Llcm_1(LispObject env, LispObject a)
-{   return onevalue(a);
+    popv(1);
+    return onevalue(a1);
 }
 
 static LispObject Lldb_test(LispObject env, LispObject a1, LispObject a2)
@@ -755,7 +747,7 @@ static LispObject Linteger_length(LispObject env, LispObject a)
 static LispObject Llogbitp(LispObject env, LispObject a1, LispObject a2)
 {   if (!is_fixnum(a1) || (intptr_t)a1 < 0)
         aerror1("logbitp", a1);
-    intptr_t n = int_of_fixnum(a1);
+    uintptr_t n = int_of_fixnum(a1);
     if (is_fixnum(a2))
     {   intptr_t v = int_of_fixnum(a2);
         if (n < 8*sizeof(v)) return Lispify_predicate(((v>>n)&1) != 0);
@@ -1192,54 +1184,54 @@ LispObject Ltruncate(LispObject env, LispObject a)
 }
 
 setup_type const arith08_setup[] =
-{   {"ceiling",                 Lceiling, Lceiling_2, WRONG_NO_1},
-    {"floor",                   Lfloor, Lfloor_2, WRONG_NO_1},
-    {"round",                   Lround, Lround_2, WRONG_NO_1},
-    {"fix",                     Ltruncate, Ltruncate_2, WRONG_NO_1},
-    {"truncate",                Ltruncate, Ltruncate_2, WRONG_NO_1},
-    {"decode-float",            Ldecode_float, TOO_MANY_1, WRONG_NO_1},
+{   {"ceiling",                 G0Wother, Lceiling, Lceiling_2, G3W1, G4W1},
+    {"floor",                   G0Wother, Lfloor, Lfloor_2, G3W1, G4W1},
+    {"round",                   G0Wother, Lround, Lround_2, G3W1, G4W1},
+    {"fix",                     G0Wother, Ltruncate, Ltruncate_2, G3W1, G4W1},
+    {"truncate",                G0Wother, Ltruncate, Ltruncate_2, G3W1, G4W1},
+    {"decode-float",            G0W1, Ldecode_float, G2W1, G3W1, G4W1},
 // The next two are old names for these functions, retained just for
 // backwards compatibility
-    {"float-denormalized-p",    Lfp_subnorm, TOO_MANY_1, WRONG_NO_1},
-    {"float-infinity-p",        Lfp_infinite, TOO_MANY_1, WRONG_NO_1},
-    {"fp-infinite",             Lfp_infinite, TOO_MANY_1, WRONG_NO_1},
-    {"fp-nan",                  Lfp_nan, TOO_MANY_1, WRONG_NO_1},
-    {"fp-finite",               Lfp_finite, TOO_MANY_1, WRONG_NO_1},
-    {"fp-subnorm",              Lfp_subnorm, TOO_MANY_1, WRONG_NO_1},
-    {"fp-signbit",              Lfp_signbit, TOO_MANY_1, WRONG_NO_1},
-    {"integer-decode-float",    Linteger_decode_float, TOO_MANY_1, WRONG_NO_1},
-    {"integer-length",          Linteger_length, TOO_MANY_1, WRONG_NO_1},
-    {"float-digits",            Lfloat_digits, TOO_MANY_1, WRONG_NO_1},
-    {"float-precision",         Lfloat_precision, TOO_MANY_1, WRONG_NO_1},
-    {"float-radix",             Lfloat_radix, TOO_MANY_1, WRONG_NO_1},
-    {"float-sign",              Lfloat_sign1, Lfloat_sign2, WRONG_NO_2},
-    {"fround",                  TOO_FEW_2, Lfround, WRONG_NO_2},
-    {"ftruncate",               TOO_FEW_2, Lftruncate, WRONG_NO_2},
-    {"logbitp",                 TOO_FEW_2, Llogbitp, WRONG_NO_2},
-    {"logcount",                Llogcount, TOO_MANY_1, WRONG_NO_1},
-    {"logtest",                 TOO_FEW_2, Llogtest, WRONG_NO_2},
-    {"mask-field",              TOO_FEW_2, Lmask_field, WRONG_NO_2},
-    {"scale-float",             TOO_FEW_2, Lscale_float, WRONG_NO_2},
-    {"boole",                   WRONG_NO_NA, WRONG_NO_NB, Lboole},
-    {"byte",                    TOO_FEW_2, Lbyte, WRONG_NO_2},
-    {"byte-position",           Lbyte_position, TOO_MANY_1, WRONG_NO_1},
-    {"byte-size",               Lbyte_size, TOO_MANY_1, WRONG_NO_1},
-    {"complex",                 Lcomplex_1, Lcomplex_2, WRONG_NO_2},
-    {"conjugate",               Lconjugate, TOO_MANY_1, WRONG_NO_1},
-    {"decode-float",            Ldecode_float, TOO_MANY_1, WRONG_NO_1},
-    {"denominator",             Ldenominator, TOO_MANY_1, WRONG_NO_1},
-    {"deposit-field",           WRONG_NO_NA, WRONG_NO_NB, Ldeposit_field},
-    {"dpb",                     WRONG_NO_NA, WRONG_NO_NB, Ldpb},
-    {"ffloor",                  TOO_FEW_2, Lffloor, WRONG_NO_2},
-    {"imagpart",                Limagpart, TOO_MANY_1, WRONG_NO_1},
-    {"ldb",                     TOO_FEW_2, Lldb, WRONG_NO_2},
-    {"ldb-test",                TOO_FEW_2, Lldb_test, WRONG_NO_2},
-    {"numerator",               Lnumerator, TOO_MANY_1, WRONG_NO_1},
-    {"realpart",                Lrealpart, TOO_MANY_1, WRONG_NO_1},
-    {"gcd",                     Lgcd_1, Lgcd, Lgcd_n},
-    {"gcdn",                    Lgcd_1, Lgcd, Lgcd_n},
-    {"lcmn",                    Llcm_1, Llcm, Llcm_n},
-    {NULL,                      0,0,0}
+    {"float-denormalized-p",    G0W1, Lfp_subnorm, G2W1, G3W1, G4W1},
+    {"float-infinity-p",        G0W1, Lfp_infinite, G2W1, G3W1, G4W1},
+    {"fp-infinite",             G0W1, Lfp_infinite, G2W1, G3W1, G4W1},
+    {"fp-nan",                  G0W1, Lfp_nan, G2W1, G3W1, G4W1},
+    {"fp-finite",               G0W1, Lfp_finite, G2W1, G3W1, G4W1},
+    {"fp-subnorm",              G0W1, Lfp_subnorm, G2W1, G3W1, G4W1},
+    {"fp-signbit",              G0W1, Lfp_signbit, G2W1, G3W1, G4W1},
+    {"integer-decode-float",    G0W1, Linteger_decode_float, G2W1, G3W1, G4W1},
+    {"integer-length",          G0W1, Linteger_length, G2W1, G3W1, G4W1},
+    {"float-digits",            G0W1, Lfloat_digits, G2W1, G3W1, G4W1},
+    {"float-precision",         G0W1, Lfloat_precision, G2W1, G3W1, G4W1},
+    {"float-radix",             G0W1, Lfloat_radix, G2W1, G3W1, G4W1},
+    {"float-sign",              G0Wother, Lfloat_sign1, Lfloat_sign2, G3Wother, G4Wother},
+    {"fround",                  G0W2, G1W2, Lfround, G3W2, G4W2},
+    {"ftruncate",               G0W2, G1W2, Lftruncate, G3W2, G4W2},
+    {"logbitp",                 G0W2, G1W2, Llogbitp, G3W2, G4W2},
+    {"logcount",                G0W1, Llogcount, G2W1, G3W1, G4W1},
+    {"logtest",                 G0W2, G1W2, Llogtest, G3W2, G4W2},
+    {"mask-field",              G0W2, G1W2, Lmask_field, G3W2, G4W2},
+    {"scale-float",             G0W2, G1W2, Lscale_float, G3W2, G4W2},
+    {"boole",                   G0W3, G1W3, G2W3, Lboole_3, G4W3},
+    {"byte",                    G0W2, G1W2, Lbyte, G3W2, G4W2},
+    {"byte-position",           G0W1, Lbyte_position, G2W1, G3W1, G4W1},
+    {"byte-size",               G0W1, Lbyte_size, G2W1, G3W1, G4W1},
+    {"complex",                 G0Wother, Lcomplex_1, Lcomplex_2, G3Wother, G4Wother},
+    {"conjugate",               G0W1, Lconjugate, G2W1, G3W1, G4W1},
+    {"decode-float",            G0W1, Ldecode_float, G2W1, G3W1, G4W1},
+    {"denominator",             G0W1, Ldenominator, G2W1, G3W1, G4W1},
+    {"deposit-field",           G0W3, G1W3, G2W3, Ldeposit_field_3, G4W3},
+    {"dpb",                     G0W3, G1W3, G2W3, Ldpb_3, G4W3},
+    {"ffloor",                  G0W1, G1W2, Lffloor, G3W2, G4W2},
+    {"imagpart",                G0W1, Limagpart, G2W1, G3W1, G4W1},
+    {"ldb",                     G0W2, G1W2, Lldb, G3W2, G4W2},
+    {"ldb-test",                G0W2, G1W2, Lldb_test, G3W2, G4W2},
+    {"numerator",               G0W1, Lnumerator, G2W1, G3W1, G4W1},
+    {"realpart",                G0W1, Lrealpart, G2W1, G3W1, G4W1},
+    {"gcd",                     Lgcd_0, Lgcd_1, Lgcd_2, Lgcd_3, Lgcd_4up},
+    {"gcdn",                    Lgcd_0, Lgcd_1, Lgcd_2, Lgcd_3, Lgcd_4up},
+    {"lcmn",                    Llcm_0, Llcm_1, Llcm_2, Llcm_3, Llcm_4up},
+    {NULL,                      0,0,0,0,0}
 };
 
 // end of arith08.cpp

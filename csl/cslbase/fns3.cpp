@@ -237,17 +237,9 @@ LispObject Lprimep32(LispObject, LispObject a)
     return Lispify_predicate(isprime(n));
 }
 
-LispObject Lputv(LispObject, int nargs, ...)
+LispObject Lputv(LispObject, LispObject v, LispObject n, LispObject x)
 {   Header h;
-    va_list a;
     size_t n1, hl;
-    LispObject v, n, x;
-    argcheck(nargs, 3, "putv");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x = va_arg(a, LispObject);
-    va_end(a);
     if (!is_vector(v)) aerror1("putv", v);
     h = vechdr(v);
     if (type_of_header(h) == TYPE_INDEXVEC)
@@ -386,6 +378,7 @@ LispObject Lmkfvect64(LispObject env, LispObject n)
     if (!SIXTY_FOUR_BIT) nn += 4; // get the doubles aligned
 // Size limited
     w = get_basic_vector(TAG_VECTOR, TYPE_VECFLOAT64, nn+CELL);
+    if (!SIXTY_FOUR_BIT) basic_elt(w, 0) = 0;
     nn = (intptr_t)nn;
     nn = nn/sizeof(double);
     while (nn != 0)
@@ -436,19 +429,11 @@ LispObject simplify_string(LispObject s)
     return onevalue(w);
 }
 
-LispObject Lsputv(LispObject, int nargs, ...)
+LispObject Lsputv(LispObject, LispObject v, LispObject n, LispObject x)
 {   Header h;
-    va_list a;
     intptr_t vx;
     size_t n1, hl;
-    LispObject v, n, x;
-    argcheck(nargs, 3, "sputv");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x = va_arg(a, LispObject);
-    va_end(a);
-//@ huge strings
+//@ huge strings?
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
         aerror1("putv-char", v);
     else if (!is_fixnum(n)) aerror1("putv-char", n);
@@ -472,19 +457,11 @@ LispObject Lsputv(LispObject, int nargs, ...)
 // was having to do mappings and conversions.
 //
 
-LispObject Lsputv2(LispObject, int nargs, ...)
+LispObject Lsputv2(LispObject, LispObject v, LispObject n, LispObject x1, LispObject a4up)
 {   Header h;
-    va_list a;
     intptr_t vx1, vx2;
     size_t n1, hl;
-    LispObject v, n, x1, x2;
-    argcheck(nargs, 4, "sputv2");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x1 = va_arg(a, LispObject);
-    x2 = va_arg(a, LispObject);
-    va_end(a);
+    LispObject x2 = arg4("sputv2", a4up);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
         aerror1("putv-char2", v);
 // @ Huge strings?
@@ -503,20 +480,12 @@ LispObject Lsputv2(LispObject, int nargs, ...)
     return onevalue(x2);
 }
 
-LispObject Lsputv3(LispObject, int nargs, ...)
+LispObject Lsputv3(LispObject, LispObject v, LispObject n, LispObject x1, LispObject a4up)
 {   Header h;
-    va_list a;
     intptr_t vx1, vx2, vx3;
     size_t n1, hl;
-    LispObject v, n, x1, x2, x3;
-    argcheck(nargs, 5, "sputv3");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x1 = va_arg(a, LispObject);
-    x2 = va_arg(a, LispObject);
-    x3 = va_arg(a, LispObject);
-    va_end(a);
+    LispObject x2, x3;
+    a4a5("sputv3", a4up, x2, x3);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
         aerror1("putv-char3", v);
 // @ Huge strings?
@@ -539,21 +508,12 @@ LispObject Lsputv3(LispObject, int nargs, ...)
     return onevalue(x3);
 }
 
-LispObject Lsputv4(LispObject, int nargs, ...)
+LispObject Lsputv4(LispObject, LispObject v, LispObject n, LispObject x1, LispObject a4up)
 {   Header h;
-    va_list a;
     intptr_t vx1, vx2, vx3, vx4;
     size_t n1, hl;
-    LispObject v, n, x1, x2, x3, x4;
-    argcheck(nargs, 6, "sputv4");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x1 = va_arg(a, LispObject);
-    x2 = va_arg(a, LispObject);
-    x3 = va_arg(a, LispObject);
-    x4 = va_arg(a, LispObject);
-    va_end(a);
+    LispObject x2, x3, x4;
+    a4a5a6("sputv4", a4up, x2, x3, x4);
     if (!is_vector(v) || !is_string_header(h = vechdr(v)))
         aerror1("putv-char4", v);
 // @ Huge strings?
@@ -587,16 +547,8 @@ LispObject Lbpsupbv(LispObject, LispObject v)
     return onevalue(fixnum_of_int(n-1));
 }
 
-LispObject Lbpsputv(LispObject, int nargs, ...)
-{   va_list a;
-    size_t n1, hl;
-    LispObject v, n, x;
-    argcheck(nargs, 3, "bpsputv");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x = va_arg(a, LispObject);
-    va_end(a);
+LispObject Lbpsputv(LispObject, LispObject v, LispObject n, LispObject x)
+{   size_t n1, hl;
     if (!is_bps(v)) aerror1("bpsputv", v);
     else if (!is_fixnum(n) || n < 0) aerror1("bps-putv", n);
     else if (!is_fixnum(x)) aerror1("bps-putv contents", x);
@@ -692,17 +644,9 @@ LispObject Lbpsgetv(LispObject, LispObject v, LispObject n)
 // in with the greater generality of vector structures.
 //
 
-LispObject Lputv8(LispObject, int nargs, ...)
+LispObject Lputv8(LispObject, LispObject v, LispObject n, LispObject x)
 {   Header h;
-    va_list a;
     size_t n1, hl;
-    LispObject v, n, x;
-    argcheck(nargs, 3, "putv8");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x = va_arg(a, LispObject);
-    va_end(a);
     if (!is_vector(v) || !is_vec8_header(h = vechdr(v)))
         aerror1("putv8", v);
     else if (!is_fixnum(n)) aerror1("putv8 offset not fixnum", n);
@@ -725,17 +669,9 @@ LispObject Lgetv8(LispObject, LispObject v, LispObject n)
     else return onevalue(fixnum_of_int(scelt(v, n1)));
 }
 
-LispObject Lputv16(LispObject, int nargs, ...)
+LispObject Lputv16(LispObject, LispObject v, LispObject n, LispObject x)
 {   Header h;
-    va_list a;
     size_t n1, hl;
-    LispObject v, n, x;
-    argcheck(nargs, 3, "putv16");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x = va_arg(a, LispObject);
-    va_end(a);
     if (!is_vector(v) || !is_vec16_header(h = vechdr(v)))
         aerror1("putv16", v);
     else if (!is_fixnum(n)) aerror1("putv16 offset not fixnum", n);
@@ -759,17 +695,9 @@ LispObject Lgetv16(LispObject, LispObject v, LispObject n)
     return onevalue(fixnum_of_int(n1));
 }
 
-LispObject Lputv32(LispObject, int nargs, ...)
+LispObject Lputv32(LispObject, LispObject v, LispObject n, LispObject x)
 {   Header h;
-    va_list a;
     size_t n1, hl;
-    LispObject v, n, x;
-    argcheck(nargs, 3, "putv32");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x = va_arg(a, LispObject);
-    va_end(a);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VEC32)
         aerror1("putv32", v);
     else if (!is_fixnum(n)) aerror1("putv32 offset not fixnum", n);
@@ -793,19 +721,10 @@ LispObject Lgetv32(LispObject, LispObject v, LispObject n)
     return make_lisp_integer32(n1);
 }
 
-LispObject Lfputv32(LispObject, int nargs, ...)
+LispObject Lfputv32(LispObject, LispObject v, LispObject n, LispObject x)
 {   Header h;
-    va_list a;
     size_t n1, hl;
-    LispObject v, n, x;
-    double d;
-    argcheck(nargs, 3, "fputv32");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x = va_arg(a, LispObject);
-    d = float_of_number(x);
-    va_end(a);
+    double d = float_of_number(x);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VECFLOAT32)
         aerror1("fputv32", v);
     else if (!is_fixnum(n)) aerror1("fputv32 offset not fixnum", n);
@@ -833,25 +752,14 @@ LispObject Lfgetv32(LispObject env, LispObject v, LispObject n)
     return onevalue(v);
 }
 
-LispObject Lfputv64(LispObject, int nargs, ...)
+LispObject Lfputv64(LispObject, LispObject v, LispObject n, LispObject x)
 {   Header h;
-    va_list a;
     size_t n1, hl;
-    LispObject v, n, x;
-    double d;
-    argcheck(nargs, 3, "fputv64");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x = va_arg(a, LispObject);
-    d = float_of_number(x);
-    va_end(a);
+    double d = float_of_number(x);
     if (!is_vector(v) || type_of_header(h = vechdr(v)) != TYPE_VECFLOAT64)
         aerror1("fputv64", v);
     else if (!is_fixnum(n)) aerror1("fputv64 offset not fixnum", n);
-//
 // NB it is not a misprint - the first double ALWAYS starts 8 bytes in...
-//
     hl = (length_of_header(h) - 8)/8;
     n1 = int_of_fixnum(n);
     if (n1 >= hl) aerror1("fputv64 index range", n);
@@ -894,7 +802,6 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
     v = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, n);
     pop(a);
     for(n=0; consp(a); a = qcdr(a), n++) elt(v, n) = qcar(a);
-    if (!SIXTY_FOUR_BIT && ((n & 1) == 0)) elt(v, n) = nil;  // Padder word
     return onevalue(v);
 }
 
@@ -907,18 +814,10 @@ LispObject Llist_to_vector(LispObject env, LispObject a)
 //       (t (putv v n x))))
 //
 
-static LispObject Lputvec(LispObject, int nargs, ...)
+static LispObject Lputvec(LispObject, LispObject v, LispObject n, LispObject x)
 {   Header h;
-    va_list a;
     intptr_t vx;
     size_t n1, hl;
-    LispObject v, n, x;
-    argcheck(nargs, 3, "putvec");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x = va_arg(a, LispObject);
-    va_end(a);
 //
 // Oh joy - here I have to dispatch based on what sort of vector I have.
 //
@@ -956,6 +855,8 @@ static LispObject Lputvec(LispObject, int nargs, ...)
     elt(v, n1) = x;
     return onevalue(x);
 }
+
+#ifdef DO_AREF_AND_ASET_LATER
 
 //
 // (defun aref (v n1 &rest r)
@@ -1091,13 +992,49 @@ LispObject Laref(LispObject env, int nargs, ...)
     aerror("aref unknown type for vector representation");
 }
 
-static LispObject Laref1(LispObject env, LispObject a)
+static LispObject Laref_1(LispObject env, LispObject a)
 {   return Laref(env, 1, a);
 }
 
-LispObject Laref2(LispObject env, LispObject a, LispObject b)
+LispObject Laref_2(LispObject env, LispObject a, LispObject b)
 {   return Laref(env, 2, a, b);
 }
+
+#else
+
+LispObject Laref_1(LispObject env, LispObject a)
+{   aerror("aref");
+}
+
+LispObject Laref_2(LispObject env, LispObject a, LispObject n)
+{   aerror("aref");
+}
+
+LispObject Laref_3(LispObject env, LispObject a, LispObject n1, LispObject n2)
+{   aerror("aref");
+}
+
+LispObject Laref_a4up(LispObject env, LispObject a, LispObject n1, LispObject n2, LispObject n3up)
+{   aerror("aref");
+}
+
+LispObject Laset_1(LispObject env, LispObject a)
+{   aerror("aset");
+}
+
+LispObject Laset_2(LispObject env, LispObject a, LispObject n)
+{   aerror("aset");
+}
+
+LispObject Laset_3(LispObject env, LispObject a, LispObject n1, LispObject n2)
+{   aerror("aset");
+}
+
+LispObject Laset_a4up(LispObject env, LispObject a, LispObject n1, LispObject n2, LispObject n3up)
+{   aerror("aset");
+}
+
+#endif // DO_AREF_AND_ASET_LATER
 
 LispObject Lelt(LispObject env, LispObject v, LispObject n)
 {   Header h;
@@ -1171,6 +1108,8 @@ LispObject Lelt(LispObject env, LispObject v, LispObject n)
     aerror("elt unknown type for vector representation");
 }
 
+#ifdef DO_AREF_AND_ASET_LATER
+
 //
 // (defun aset (v n1 x &rest r)
 //   (if (null r)
@@ -1198,7 +1137,7 @@ LispObject Lelt(LispObject env, LispObject v, LispObject n)
 // for AREF.
 //
 
-LispObject Laset(LispObject env, int nargs, ...)
+LispObject Laset_4up(LispObject env, int nargs, ...)
 {   Header h;
     LispObject v, n, w, x;
     size_t hl, n1;
@@ -1328,27 +1267,21 @@ LispObject Laset(LispObject env, int nargs, ...)
     aerror("aset unknown type for vector representation");
 }
 
-static LispObject Laset1(LispObject env, LispObject a)
+static LispObject Laset_1(LispObject env, LispObject a)
 {   aerror("aset");
 }
 
-static LispObject Laset2(LispObject env, LispObject a, LispObject b)
+static LispObject Laset_2(LispObject env, LispObject a, LispObject b)
 {   return Laset(env, 2, a, b);
 }
 
-static LispObject Lsetelt(LispObject env, int nargs, ...)
-{   LispObject v, n, x;
-    Header h;
+#endif  // DO_AREF_AND_ASET_LATER
+
+static LispObject Lsetelt(LispObject env, LispObject v, LispObject n, LispObject x)
+{   Header h;
     LispObject w;
     size_t hl, n1;
     intptr_t b;
-    va_list a;
-    argcheck(nargs, 3, "setelt");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x = va_arg(a, LispObject);
-    va_end(a);
     if (!is_fixnum(n) || n < 0) aerror1("setelt", n);
     n1 = int_of_fixnum(n);
     if (!is_vector(v))
@@ -1480,7 +1413,11 @@ static LispObject Lchar(LispObject env, LispObject v, LispObject n)
         if (n1 >= hl) aerror1("schar", n);
         return onevalue(pack_char(0, celt(v, n1)));
     }
-    return Laref(nil, 2, v, n);
+#ifdef DO_AREF_AND_ASET_LATER
+    return Laref_2(nil, v, n);
+#else
+    aerror("no AREF yet");
+#endif
 }
 
 //
@@ -1490,16 +1427,8 @@ static LispObject Lchar(LispObject env, LispObject v, LispObject n)
 //       (t (aset s n c))))
 //
 
-static LispObject Lcharset(LispObject env, int nargs, ...)
-{   LispObject v, n, c;
-    Header h;
-    va_list a;
-    argcheck(nargs, 3, "charset");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    c = va_arg(a, LispObject);
-    va_end(a);
+static LispObject Lcharset(LispObject env, LispObject v, LispObject n, LispObject c)
+{   Header h;
     if (!is_vector(v)) aerror1("charset", v);
     h = vechdr(v);
     if (!is_fixnum(n)) aerror1("charset", n);
@@ -1516,7 +1445,11 @@ static LispObject Lcharset(LispObject env, int nargs, ...)
         celt(v, n1) = (int)vx;
         return onevalue(c);
     }
+#ifdef DO_AREF_AND_ASET_LATER
     return Laset(nil, 3, v, n, c);
+#else
+    aerror("no aset yet");
+#endif
 }
 
 //
@@ -1526,17 +1459,10 @@ static LispObject Lcharset(LispObject env, int nargs, ...)
 //       s))
 //
 
-static LispObject Lmake_string(LispObject env, int nargs, ...)
-{   va_list a;
-    LispObject w, n, key, init;
+static LispObject Lmake_string_3(LispObject env, LispObject n, LispObject key, LispObject init)
+{   LispObject w;
     intptr_t nn, blanks;
     size_t z;
-    argcheck(nargs, 3, "make-string");
-    va_start(a, nargs);
-    n = va_arg(a, LispObject);
-    key = va_arg(a, LispObject);
-    init = va_arg(a, LispObject);
-    va_end(a);
     if (!is_fixnum(n) || (intptr_t)n<0) aerror1("make-string", n);
     if (!is_char(init) && !is_fixnum(init))
         aerror1("make-string", init);
@@ -1561,7 +1487,7 @@ static LispObject Lmake_string(LispObject env, int nargs, ...)
     return onevalue(w);
 }
 
-static LispObject Lmake_string1(LispObject env, LispObject n)
+static LispObject Lmake_string_1(LispObject env, LispObject n)
 {   LispObject w;
     intptr_t nn, blanks;
     size_t z;
@@ -1581,10 +1507,6 @@ static LispObject Lmake_string1(LispObject env, LispObject n)
         nn++;
     }
     return onevalue(w);
-}
-
-static LispObject Lmake_string2(LispObject env, LispObject a, LispObject b)
-{   return Lmake_string(env, 2, a, b);
 }
 
 //
@@ -1645,32 +1567,53 @@ static LispObject Lcopy_vector(LispObject env, LispObject a)
 //           (setq args (cdr args)))))
 //
 
-static LispObject Lvector(LispObject env, int nargs, ...)
-{   LispObject r = nil, w;
-    va_list a;
-    va_start(a, nargs);
-// If you have a ridiculously large number of arguments then this will
-// cause stack overflow!
-    push_args(a, nargs);
-    r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*nargs+CELL);
-//
-// The next line allows for the fact that vectors MUST pad to an even
-// number of words.
-//
-    if (!SIXTY_FOUR_BIT && ((nargs & 1) == 0)) elt(r, nargs) = nil;
-    while (nargs > 0)
-    {   pop(w);
-        elt(r, --nargs) = w;
+LispObject Lvector_4up(LispObject env, LispObject a1, LispObject a2,
+        LispObject a3, LispObject a4up)
+{   LispObject r = nil;
+    size_t n = 3;
+    for (LispObject x=a4up; x!=nil; x=qcdr(x)) n++;
+    push4(a1, a2, a3, a4up);
+    r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL*(n+1));
+    pop4(a4up, a3, a2, a1);
+    elt(r, 0) = a1;
+    elt(r, 1) = a2;
+    elt(r, 2) = a3;
+    for (size_t i=3; i<n; i++)
+    {   elt(r, i) = qcar(a4up);
+        a4up = qcdr(a4up);
     }
     return onevalue(r);
 }
 
-static LispObject Lvector1(LispObject env, LispObject a)
-{   return Lvector(env, 1, a);
+LispObject Lvector_0(LispObject env)
+{   return onevalue(get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, CELL));
 }
 
-static LispObject Lvector2(LispObject env, LispObject a, LispObject b)
-{   return Lvector(env, 2, a, b);
+LispObject Lvector_1(LispObject env, LispObject a)
+{   push(a);
+    LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 2*CELL);
+    pop(a);
+    elt(r, 0) = a;
+    return onevalue(r);
+}
+
+LispObject Lvector_2(LispObject env, LispObject a, LispObject b)
+{   push2(a, b);
+    LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 3*CELL);
+    pop2(b, a);
+    elt(r, 0) = a;
+    elt(r, 1) = b;
+    return onevalue(r);
+}
+
+LispObject Lvector_3(LispObject env, LispObject a, LispObject b, LispObject c)
+{   push3(a, b, c);
+    LispObject r = get_vector(TAG_VECTOR, TYPE_SIMPLE_VEC, 4*CELL);
+    pop3(c, b, a);
+    elt(r, 0) = a;
+    elt(r, 1) = b;
+    elt(r, 2) = c;
+    return onevalue(r);
 }
 
 
@@ -1682,13 +1625,10 @@ static LispObject Lshrink_vector(LispObject env,
     n1 = length_of_header(vechdr(v));
     n2 = CELL*int_of_fixnum(n)+CELL;
     if (n2 >= n1) return onevalue(v);  // Not shrunk at all
-    if (!SIXTY_FOUR_BIT && (n1==n2+4) && ((n2&4)==0))   // No space to free
-        *(LispObject *)((char *)v-TAG_VECTOR+n2) = nil;
-    else
-    {   size_t n2a = doubleword_align_up(n2);
-        n1 = doubleword_align_up(n1);
-        *(LispObject *)((char *)v-TAG_VECTOR+n1) = make_padder(n1-n2a);
-    }
+// In a previous version of this code I put a fake vector into any
+// released space, so that linear scans of the heap were still possible.
+// These days my garbage collector (and other code) never relies on
+// such scans, so I simplify the code here.
     size_t adjustment = n1 - n2;  // number of bytes to shrink by    
     vechdr(v) = vechdr(v) - pack_hdrlength(adjustment/4);
     return onevalue(v);
@@ -1712,18 +1652,10 @@ static LispObject Lmake_simple_bitvector(LispObject env, LispObject n)
     return onevalue(w);
 }
 
-static LispObject Lbputv(LispObject, int nargs, ...)
+static LispObject Lbputv(LispObject, LispObject v, LispObject n, LispObject x)
 {   Header h;
-    va_list a;
     int b;
     size_t n1;
-    LispObject v, n, x;
-    argcheck(nargs, 3, "bputv");
-    va_start(a, nargs);
-    v = va_arg(a, LispObject);
-    n = va_arg(a, LispObject);
-    x = va_arg(a, LispObject);
-    va_end(a);
 // This code is WRONG at present in that unexpectedly it is supposed to
 // support bit-arrays of arbitrary rank, and not just simple vectors.
 // But only wrong for Common Lisp.
@@ -1958,7 +1890,7 @@ LispObject vector_subseq(LispObject sequence, size_t start, size_t end)
         //
         for (i=start; i<end; ++i)
         {   push2(sequence,copy);
-            Lbputv(nil,3,copy,fixnum_of_int(i-start),
+            Lbputv(nil,copy,fixnum_of_int(i-start),
                    Lbgetv(nil,sequence,fixnum_of_int(i)));
             pop2(copy,sequence);
         }
@@ -1989,17 +1921,8 @@ LispObject Llist_subseq1(LispObject env, LispObject seq, LispObject start)
     return list_subseq(seq, first, last);
 }
 
-LispObject Llist_subseq2(LispObject env, int32_t nargs, ...)
-{   va_list args;
-    size_t first, last;
-    LispObject seq, start, end;
-    argcheck(nargs, 3, "list-subseq*");
-    va_start(args, nargs);
-    seq   = va_arg(args, LispObject);
-    start = va_arg(args, LispObject);
-    end   = va_arg(args, LispObject);
-    va_end(args);
-
+LispObject Llist_subseq2(LispObject env, LispObject seq, LispObject start, LispObject end)
+{   size_t first, last;
     first = int_of_fixnum(start);
     last  = int_of_fixnum(end);
     if (first > last) aerror1("list-subseq* out of range",seq);
@@ -2022,17 +1945,8 @@ LispObject Lvector_subseq1(LispObject env, LispObject seq, LispObject start)
     return vector_subseq(seq, first, last);
 }
 
-LispObject Lvector_subseq2(LispObject env, int32_t nargs, ...)
-{   va_list args;
-    size_t first, last;
-    LispObject seq, start, end;
-    argcheck(nargs, 3, "vector-subseq*");
-    va_start(args, nargs);
-    seq   = va_arg(args, LispObject);
-    start = va_arg(args, LispObject);
-    end   = va_arg(args, LispObject);
-    va_end(args);
-
+LispObject Lvector_subseq2(LispObject env, LispObject seq, LispObject start, LispObject end)
+{   size_t first, last;
     first = int_of_fixnum(start);
     last  = int_of_fixnum(end);
     if (first > last) aerror1("vector-subseq* out of range",seq);
@@ -2041,86 +1955,88 @@ LispObject Lvector_subseq2(LispObject env, int32_t nargs, ...)
 }
 
 setup_type const funcs3_setup[] =
-{   {"getv",                    TOO_FEW_2, Lgetv, WRONG_NO_2},
-    {"putv",                    WRONG_NO_3A, WRONG_NO_3B, Lputv},
-    {"getv8",                   TOO_FEW_2, Lgetv8, WRONG_NO_2},
-    {"putv8",                   WRONG_NO_3A, WRONG_NO_3B, Lputv8},
-    {"getv16",                  TOO_FEW_2, Lgetv16, WRONG_NO_2},
-    {"putv16",                  WRONG_NO_3A, WRONG_NO_3B, Lputv16},
-    {"getv32",                  TOO_FEW_2, Lgetv32, WRONG_NO_2},
-    {"putv32",                  WRONG_NO_3A, WRONG_NO_3B, Lputv32},
-    {"fgetv32",                 TOO_FEW_2, Lfgetv32, WRONG_NO_2},
-    {"fputv32",                 WRONG_NO_3A, WRONG_NO_3B, Lfputv32},
-    {"fgetv64",                 TOO_FEW_2, Lfgetv64, WRONG_NO_2},
-    {"fputv64",                 WRONG_NO_3A, WRONG_NO_3B, Lfputv64},
-    {"qgetv",                   TOO_FEW_2, Lgetv, WRONG_NO_2},
-    {"egetv",                   TOO_FEW_2, Lgetv, WRONG_NO_2},
-    {"qputv",                   WRONG_NO_3A, WRONG_NO_3B, Lputv},
-    {"eputv",                   WRONG_NO_3A, WRONG_NO_3B, Lputv},
-    {"make-simple-string",      Lsmkvect, TOO_MANY_1, WRONG_NO_1},
-    {"allocate-string",         Lsmkvect, TOO_MANY_1, WRONG_NO_1},
-    {"putv-char",               WRONG_NO_3A, WRONG_NO_3B, Lsputv},
-    {"string-store",            WRONG_NO_3A, WRONG_NO_3B, Lsputv},
-    {"string-store1",           WRONG_NO_3A, WRONG_NO_3B, Lsputv},
-    {"string-store2",           WRONG_NO_3A, WRONG_NO_3B, Lsputv2},
-    {"string-store3",           WRONG_NO_3A, WRONG_NO_3B, Lsputv3},
-    {"string-store4",           WRONG_NO_3A, WRONG_NO_3B, Lsputv4},
-    {"bps-putv",                WRONG_NO_3A, WRONG_NO_3B, Lbpsputv},
-    {"bps-getv",                TOO_FEW_2, Lbpsgetv, WRONG_NO_2},
-    {"bps-upbv",                Lbpsupbv, TOO_MANY_1, WRONG_NO_1},
-    {"eupbv",                   Lupbv, TOO_MANY_1, WRONG_NO_1},
-    {"schar",                   TOO_FEW_2, Lsgetv, WRONG_NO_2},
-    {"scharn",                  TOO_FEW_2, Lsgetvn, WRONG_NO_2},
-    {"byte-getv",               TOO_FEW_2, Lbytegetv, WRONG_NO_2},
-    {"mkvect",                  Lmkvect, TOO_MANY_1, WRONG_NO_1},
-    {"mkevect",                 Lmkevect, TOO_MANY_1, WRONG_NO_1},
-    {"mkxvect",                 Lmkxvect, TOO_MANY_1, WRONG_NO_1},
-    {"mkvect8",                 Lmkvect8, TOO_MANY_1, WRONG_NO_1},
-    {"mkvect16",                Lmkvect16, TOO_MANY_1, WRONG_NO_1},
-    {"mkvect32",                Lmkvect32, TOO_MANY_1, WRONG_NO_1},
-    {"mkfvect32",               Lmkfvect32, TOO_MANY_1, WRONG_NO_1},
-    {"mkfvect64",               Lmkfvect64, TOO_MANY_1, WRONG_NO_1},
-    {"upbv",                    Lupbv, TOO_MANY_1, WRONG_NO_1},
-    {"string-length",           Lstring_length, TOO_MANY_1, WRONG_NO_1},
-    {"getv-bit",                TOO_FEW_2, Lbgetv, WRONG_NO_2},
-    {"sbit",                    TOO_FEW_2, Lbgetv, WRONG_NO_2},
-    {"make-simple-bitvector",   Lmake_simple_bitvector, TOO_MANY_1, WRONG_NO_1},
-    {"putv-bit",                WRONG_NO_3A, WRONG_NO_3B, Lbputv},
-    {"sbitset",                 WRONG_NO_3A, WRONG_NO_3B, Lbputv},
-    {"primep32",                Lprimep32, TOO_MANY_1, WRONG_NO_1},
-    {"primep64",                Lprimep32, TOO_MANY_1, WRONG_NO_1},
+{   {"getv",                    G0W2, G1W2, Lgetv, G3W2, G4W2},
+    {"putv",                    G0W3, G1W3, G2W3, Lputv, G4W3},
+    {"getv8",                   G0W2, G1W2, Lgetv8, G3W2, G4W2},
+    {"putv8",                   G0W3, G1W3, G2W3, Lputv8, G4W3},
+    {"getv16",                  G0W2, G1W2, Lgetv16, G3W2, G4W2},
+    {"putv16",                  G0W3, G1W3, G2W3, Lputv16, G4W3},
+    {"getv32",                  G0W2, G1W2, Lgetv32, G3W2, G4W2},
+    {"putv32",                  G0W3, G1W3, G2W3, Lputv32, G4W3},
+    {"fgetv32",                 G0W2, G1W2, Lfgetv32, G3W2, G4W2},
+    {"fputv32",                 G0W3, G1W3, G2W3, Lfputv32, G4W3},
+    {"fgetv64",                 G0W2, G1W2, Lfgetv64, G3W2, G4W2},
+    {"fputv64",                 G0W3, G1W3, G2W3, Lfputv64, G4W3},
+    {"qgetv",                   G0W2, G1W2, Lgetv, G3W2, G4W2},
+    {"egetv",                   G0W2, G1W2, Lgetv, G3W2, G4W2},
+    {"qputv",                   G0W3, G1W3, G2W3, Lputv, G4W3},
+    {"eputv",                   G0W3, G1W3, G2W3, Lputv, G4W3},
+    {"make-simple-string",      G0W1, Lsmkvect, G2W1, G3W1, G4W1},
+    {"allocate-string",         G0W1, Lsmkvect, G2W1, G3W1, G4W1},
+    {"putv-char",               G0W3, G1W3, G2W3, Lsputv, G4W3},
+    {"string-store",            G0W3, G1W3, G2W3, Lsputv, G4W3},
+    {"string-store1",           G0W3, G1W3, G2W3, Lsputv, G4W3},
+    {"string-store2",           G0W4up, G1W4up, G2W4up, G3W4up, Lsputv2},
+    {"string-store3",           G0W4up, G1W4up, G2W4up, G3W4up, Lsputv3},
+    {"string-store4",           G0W4up, G1W4up, G2W4up, G3W4up, Lsputv4},
+    {"bps-putv",                G0W3, G1W3, G2W3, Lbpsputv, G4W3},
+    {"bps-getv",                G0W2, G1W2, Lbpsgetv, G3W2, G4W2},
+    {"bps-upbv",                G0W1, Lbpsupbv, G2W1, G3W1, G4W1},
+    {"eupbv",                   G0W1, Lupbv, G2W1, G3W1, G4W1},
+    {"schar",                   G0W2, G1W2, Lsgetv, G3W2, G4W2},
+    {"scharn",                  G0W2, G1W2, Lsgetvn, G3W2, G4W2},
+    {"byte-getv",               G0W2, G1W2, Lbytegetv, G3W2, G4W2},
+    {"mkvect",                  G0W1, Lmkvect, G2W1, G3W1, G4W1},
+    {"mkevect",                 G0W1, Lmkevect, G2W1, G3W1, G4W1},
+    {"mkxvect",                 G0W1, Lmkxvect, G2W1, G3W1, G4W1},
+    {"mkvect8",                 G0W1, Lmkvect8, G2W1, G3W1, G4W1},
+    {"mkvect16",                G0W1, Lmkvect16, G2W1, G3W1, G4W1},
+    {"mkvect32",                G0W1, Lmkvect32, G2W1, G3W1, G4W1},
+    {"mkfvect32",               G0W1, Lmkfvect32, G2W1, G3W1, G4W1},
+    {"mkfvect64",               G0W1, Lmkfvect64, G2W1, G3W1, G4W1},
+    {"upbv",                    G0W1, Lupbv, G2W1, G3W1, G4W1},
+    {"string-length",           G0W1, Lstring_length, G2W1, G3W1, G4W1},
+    {"getv-bit",                G0W2, G1W2, Lbgetv, G3W2, G4W2},
+    {"sbit",                    G0W2, G1W2, Lbgetv, G3W2, G4W2},
+    {"make-simple-bitvector",   G0W1, Lmake_simple_bitvector, G2W1, G3W1, G4W1},
+    {"putv-bit",                G0W3, G1W3, G2W3, Lbputv, G4W3},
+    {"sbitset",                 G0W3, G1W3, G2W3, Lbputv, G4W3},
+    {"primep32",                G0W1, Lprimep32, G2W1, G3W1, G4W1},
+    {"primep64",                G0W1, Lprimep32, G2W1, G3W1, G4W1},
 #ifdef COMMON
-    {"hashtable-flavour",       Lhash_flavour, TOO_MANY_1, WRONG_NO_1},
-    {"make-simple-vector",      Lmksimplevec, TOO_MANY_1, WRONG_NO_1},
-    {"svref",                   TOO_FEW_2, Lgetv, WRONG_NO_2},
-    {"vector-bound",            Lvecbnd, TOO_MANY_1, WRONG_NO_1},
-    {"putvec",                  WRONG_NO_3A, WRONG_NO_3B, Lputvec},
-    {"aref",                    Laref1, Laref2, Laref},
-    {"aset",                    Laset1, Laset2, Laset},
-    {"elt",                     TOO_FEW_2, Lelt, WRONG_NO_2},
-    {"setelt",                  WRONG_NO_3A, WRONG_NO_3B, Lsetelt},
-    {"vectorp",                 Lvectorp, TOO_MANY_1, WRONG_NO_1},
-    {"char",                    TOO_FEW_2, Lchar, WRONG_NO_2},
-    {"charset",                 WRONG_NO_3A, WRONG_NO_3B, Lcharset},
-    {"make-string",             Lmake_string1, Lmake_string2, Lmake_string},
-    {"vector",                  Lvector1, Lvector2, Lvector},
-    {"shrink-vector",           TOO_FEW_2, Lshrink_vector, WRONG_NO_2},
-    {"string",                  Lstring, TOO_MANY_1, WRONG_NO_1},
+    {"hashtable-flavour",       G0W1, Lhash_flavour, G2W1, G3W1, G4W1},
+    {"make-simple-vector",      G0W1, Lmksimplevec, G2W1, G3W1, G4W1},
+    {"svref",                   G0W2, G1W2, Lgetv, G3W2, G4W2},
+    {"vector-bound",            G0W1, Lvecbnd, G2W1, G3W1, G4W1},
+    {"putvec",                  G0W3, G1W3, G2W3, Lputvec, G4W3},
+#ifdef DO_AREF_AND_ASET_LATER
+    {"aref",                    G0Wother, Laref_1, Laref_2, Laref_3, Laref_4up},
+    {"aset",                    G0Wother, Laset_1, Laset_2, Laset_3, Laset_4up},
+#endif
+    {"elt",                     G0W2, G1W2, Lelt, G3W2, G4W2},
+    {"setelt",                  G0W3, G1W3, G2W3, Lsetelt, G4W3},
+    {"vectorp",                 G0W1, Lvectorp, G2W1, G3W1, G4W1},
+    {"char",                    G0W2, G1W2, Lchar, G3W2, G4W2},
+    {"charset",                 G0W3, G1W3, G2W3, Lcharset, G4W3},
+    {"make-string",             G0wother, Lmake_string_1, G2Wother, Lmake_string_3, G4Wother},
+    {"shrink-vector",           G0W2, G1W2, Lshrink_vector, G3W2, G4W2},
+    {"string",                  G0W1, Lstring, G2W1, G3W1, G4W1},
     {"vector-subseq*",          WRONG_NO_3A, Lvector_subseq1, Lvector_subseq2},
     {"list-subseq*",            WRONG_NO_3A, Llist_subseq1, Llist_subseq2},
     {"subseq",                  WRONG_NO_3A, Lvector_subseq1, Lvector_subseq2},
 // The "x" is temporary while I debug
-    {"xcopy-vector",            Lcopy_vector, TOO_MANY_1, WRONG_NO_1},
+    {"xcopy-vector",            G0W1, Lcopy_vector, G2W1, G3W1, G4W1},
 #endif
-    {"list-to-vector",          Llist_to_vector, TOO_MANY_1, WRONG_NO_1},
-    {"encapsulatedp",           Lencapsulatedp, TOO_MANY_1, WRONG_NO_1},
+    {"vector",                  Lvector_0, Lvector_1, Lvector_2, Lvector_3, Lvector_4up},
+    {"list-to-vector",          G0W1, Llist_to_vector, G2W1, G3W1, G4W1},
+    {"encapsulatedp",           G0W1, Lencapsulatedp, G2W1, G3W1, G4W1},
 #if 0
-    {"maple_atomic_value",      Lmaple_atomic_value, TOO_MANY_1, WRONG_NO_1},
-    {"maple_tag",               Lmaple_tag, TOO_MANY_1, WRONG_NO_1},
-    {"maple_length",            Lmaple_length, TOO_MANY_1, WRONG_NO_1},
-    {"maple_string_data",       Lmaple_string_data, TOO_MANY_1, WRONG_NO_1},
-    {"maple_integer",           Lmaple_integer, TOO_MANY_1, WRONG_NO_1},
-    {"maple_component",         TOO_FEW_2, Lmaple_component, WRONG_NO_2},
+    {"maple_atomic_value",      G0W1, Lmaple_atomic_value, G2W1, G3W1, G4W1},
+    {"maple_tag",               G0W1, Lmaple_tag, G2W1, G3W1, G4W1},
+    {"maple_length",            G0W1, Lmaple_length, G2W1, G3W1, G4W1},
+    {"maple_string_data",       G0W1, Lmaple_string_data, G2W1, G3W1, G4W1},
+    {"maple_integer",           G0W1, Lmaple_integer, G2W1, G3W1, G4W1},
+    {"maple_component",         G0W2, G1W2, Lmaple_component, G3W2, G4W2},
 #endif
     {NULL,                      0, 0, 0}
 };

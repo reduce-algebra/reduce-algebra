@@ -65,6 +65,7 @@ i686)
     for m in automake bc bison cygwin64-gcc-g++ \
         gcc-g++ libgtk2.0-devel libncurses-devel \
         libpng-devel libtool libXext-devel libXft-devel make \
+        libffi-devel mingw64-i686-libffi ming64-x86_64-libffi \
         mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
         mingw64-x86_64-zlib openssh subversion time wget \
         $fordistrib
@@ -93,6 +94,7 @@ x86_64)
     for m in automake bc bison cygwin32-gcc-g++ \
         gcc-g++ libgtk2.0-devel \
         libncurses-devel libpng-devel libtool libXext-devel libXft-devel \
+        libffi-devel mingw64-i686-libffi ming64-x86_64-libffi \
         make mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
         mingw64-x86_64-zlib openssh subversion time wget \
         $fordistrib

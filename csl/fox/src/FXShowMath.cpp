@@ -583,10 +583,7 @@ static const char *cmsySizesTable[] =
 // At some stage I may well move all of these to be fields within a
 // suitable object, but while I only have ONE window on which I will
 // display things using Xft I can make them simple static varaible and hence
-// fairly local to this file. But I will give them C linkage to make
-// access from code outside easier.
-
-extern "C" {
+// fairly local to this file.
 
 extern Display      *dpy;
 extern int          screen;
@@ -607,8 +604,6 @@ XRenderColor ftRenderBlack = {0x0000, 0x0000, 0x0000, 0xffff};
 XRenderColor ftRenderWhite = {0xffff, 0xffff, 0xffff, 0xffff};
 XftColor     ftBlack, ftWhite;
 XftFont      *ftFont = NULL;
-
-}
 
 #endif
 

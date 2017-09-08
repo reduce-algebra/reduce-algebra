@@ -65,20 +65,22 @@
 //      ...
 //
 
-extern "C" int term_setup(int flag, const char *colours);
+// Not in the FX namespace...
+
+extern int term_setup(int flag, const char *colours);
 
 //
 // Set the prompt string.
 //
-extern "C" void term_setprompt(const char *s);
-extern "C" void term_wide_setprompt(const wchar_t *s);
+extern void term_setprompt(const char *s);
+extern void term_wide_setprompt(const wchar_t *s);
 
 //
 // Read a line from the terminal, applying history and local editing
 // operations as it goes
 //
-extern "C" char *term_getline(void);
-extern "C" wchar_t *term_wide_getline(void);
+extern char *term_getline(void);
+extern wchar_t *term_wide_getline(void);
 
 //
 // Before returning from your code it would be a really good idea to
@@ -86,7 +88,7 @@ extern "C" wchar_t *term_wide_getline(void);
 // characteristics. In some cases use of "atext" to ensure this will
 // make sense.
 //
-extern "C" void term_close(void);
+extern void term_close(void);
 
 //
 // What follows is to do with a history mechanism... it is not
@@ -96,40 +98,40 @@ extern "C" void term_close(void);
 
 #define INPUT_HISTORY_SIZE 100
 
-extern "C" wchar_t *input_history[INPUT_HISTORY_SIZE];
-extern "C" int input_history_next;
+extern wchar_t *input_history[INPUT_HISTORY_SIZE];
+extern int input_history_next;
 
-extern "C" void input_history_init(void);
+extern void input_history_init(void);
 
-extern "C" void input_history_end(void);
+extern void input_history_end(void);
 
-extern "C" void input_history_add(const wchar_t *s);
+extern void input_history_add(const wchar_t *s);
 
-extern "C" const wchar_t *input_history_get(int n);
+extern const wchar_t *input_history_get(int n);
 
 //
 // The next few are so I can access the Unicode conversion code here
 // by pretending to be in console mode even if I am not.
 //
 
-extern "C" wchar_t *input_line;
-extern "C" int prompt_length, insert_point;
+extern wchar_t *input_line;
+extern int prompt_length, insert_point;
 
 //
 // Encode character c in UTF-8 and place result at b. Return the number
 // of bytes written.
 //
-extern "C" int utf_encode(unsigned char *b, int c);
+extern int utf_encode(unsigned char *b, int c);
 
 //
 // Decode UTF-8 from location b and return a code, or -1 in case of an
 // invalid sequence. Set utf_bytes to the number of bytes consumed, which
 // will be 1 in the case of errors.
 //
-extern "C" int utf_bytes;
-extern "C" int utf_decode(const unsigned char *b);
+extern int utf_bytes;
+extern int utf_decode(const unsigned char *b);
 
-extern "C" void term_unicode_convert();
+extern void term_unicode_convert();
 
 typedef struct _uniname
 {
@@ -142,7 +144,7 @@ typedef struct _uniname
     int code;
 } uniname;
 
-extern "C" uniname unicode_names[];
+extern uniname unicode_names[];
 
 //
 // Surrogate pairs will only arise when wide characters are only 2 bytes

@@ -1433,14 +1433,13 @@ LispObject Llibrary_members(LispObject env, LispObject oo)
     return onevalue(r);
 }
 
-LispObject Llibrary_members0(LispObject env, int nargs, ...)
+LispObject Llibrary_members0(LispObject env)
 //
 // This returns a list of the modules in the first library on the current
 // search path.
 //
 {   LispObject il = qvalue(input_libraries), w;
     LispObject ol = qvalue(output_library);
-    argcheck(nargs, 0, "library-members");
     while (consp(il))
     {   w = qcar(il); il = qcdr(il);
         if (!is_library(w)) continue;

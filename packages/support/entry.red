@@ -777,6 +777,7 @@ defautoload(assert_uninstall_all, assert, expr, 0);
 
 % LALR
 
+defautoload(lex_cleanup, lalr, expr, 0);
 defautoload(lalr_construct_parser, lalr, expr, 2);
 defautoload(yyparse, lalr, expr, 1);
 

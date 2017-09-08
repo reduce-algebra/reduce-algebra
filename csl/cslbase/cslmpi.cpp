@@ -1,4 +1,4 @@
-//  cslmpi.cpp                                      Copyright (C) 1997-2017
+// cslmpi.cpp                                       Copyright (C) 1997-2017
 
 //
 // Interfaces for mpi from CSL. The bulk of this code was written by
@@ -41,14 +41,21 @@
 #include "headers.h"
 
 
+// Note VERY WELL....
+// I have not even compiled this code at all recently, though I made
+// significant changed to it to adjust for calling conventions. Anybody
+// trying to use it should expect to need to make adjustments and
+// corrections.  ACN August 2017.
+
 
 #ifdef USE_MPI
 
 #include "mpipack.c"
 
-#define check_fix(v) if (!is_fixnum(v)) aerror1(fun_name, v)
-#define get_arg(v) v = va_arg(a,LispObject)
-#define get_fix_arg(v) get_arg(v); check_fix(v); v=int_of_fixnum(v)
+static inline LispObject get_fix_arg(LispObject& v, const char *fun_name)
+{   if (!is_fixnum(v)) aerror1(fun_name, v)
+    v = int_of_fixnum(v);
+}
 
 
 /************************ Environmental functions *******************/
@@ -63,7 +70,7 @@
 static LispObject Lmpi_comm_rank(LispObject, LispObject comm)
 {   int rank;
     static char fun_name[] = "mpi_comm_rank";
-    check_fix(comm);
+    if (!is_fixnum(comm)) aerror1(fun_name, v)
     MPI_Comm_rank(int_of_fixnum(comm),&rank);
     return onevalue(fixnum_of_int(rank));
 }
@@ -75,7 +82,7 @@ static LispObject Lmpi_comm_rank(LispObject, LispObject comm)
 static LispObject Lmpi_comm_size(LispObject, LispObject comm)
 {   int size;
     static char fun_name[] = "mpi_comm_size";
-    check_fix(comm);
+    if (!is_fixnum(comm)) aerror1(fun_name, v);
     MPI_Comm_size(int_of_fixnum(comm),&size);
     return onevalue(fixnum_of_int(size));
 }
@@ -87,16 +94,15 @@ static LispObject Lmpi_comm_size(LispObject, LispObject comm)
 // returns nil.
 //
 //  Same assumption about comm.
-static LispObject Lmpi_send(LispObject env, int nargs, ...)
+static LispObject Lmpi_send(LispObject env, LispObject message, LispObject dest,
+        LispObject tag, LispObject comm)
 {   static char fun_name[] = "mpi_send";
 
-    LispObject message;
-    int dest,tag,comm;
-    va_list a;
-    argcheck(nargs,4,fun_name);
-    va_start(a,nargs);
-    get_arg(message);
-    get_fix_arg(dest); get_fix_arg(tag); get_fix_arg(comm);
+    get_fix_arg(dest, fun_name);
+    get_fix_arg(tag, fun_name);
+    if (qcdr(comm) != nil) aerror("too many args for mpi-send");
+    comm = qcar(comm);
+    get_fix_arg(comm, fun_name);
 
     pack_object(message);
     MPI_Send(mpi_pack_buffer, mpi_pack_position, MPI_PACKED,
@@ -109,17 +115,17 @@ static LispObject Lmpi_send(LispObject env, int nargs, ...)
 // (mpi_recv source tag comm)
 // returns (message (source tag error)).
 //
-static LispObject Lmpi_recv(LispObject, int nargs, ...)
+static LispObject Lmpi_recv(LispObject, LispObject source,
+        LispObject tag, LispObject comm)
 {   static char fun_name[] = "mpi_recv";
 
     MPI_Status status;
-    int source,tag,comm;
     LispObject Lstatus;
     va_list a;
 
-    argcheck(nargs,3,fun_name);
-    va_start(a,nargs);
-    get_fix_arg(source); get_fix_arg(tag); get_fix_arg(comm);
+    get_fix_arg(source, fun_name);
+    get_fix_arg(tag, fun_name);
+    get_fix_arg(comm, fun_name);
 
     MPI_Probe(source, tag, comm, &status);
     MPI_Get_count(&status, MPI_PACKED, &mpi_pack_size);
@@ -147,21 +153,30 @@ static LispObject Lmpi_recv(LispObject, int nargs, ...)
 // THERE IS A LIMIT OF 1024 BYTES FOR THE RECEIVE BUFFER (sorry.)
 // THIS WILL BE REMOVED ASAP.
 //
-static LispObject Lmpi_sendrecv(LispObject, int nargs, ...)
+static LispObject Lmpi_sendrecv(LispObject, LispObject s_mess, LispObject dest,
+        LispObject tag, LispObject a4up)
 {   static char fun_name[] = "mpi_sendrecv";
 
     MPI_Status status;
     LispObject Lstatus;
     LispObject s_mess;
-    int s_tag, r_tag, dest, source, comm;
+    int r_tag, source, comm;
     char r_buffer[1024];
 
-    va_list a;
-    argcheck(nargs,6,fun_name);
-    va_start(a,nargs);
-    get_arg(s_mess);
-    get_fix_arg(dest); get_fix_arg(s_tag);
-    get_fix_arg(source); get_fix_arg(r_tag); get_fix_arg(comm);
+    get_fix_arg(dest, fun_name);
+    get_fix_arg(s_tag, fun_name);
+    source = qcar(a4up);
+    a4up = qcdr(a4up);
+    get_fix_arg(source);
+    if (a4up == nil) aerror("not enough arguments for mpi_sendrecv");
+    r_tag = qcar(a4up);
+    a4up = qcdr(a4up);
+    get_fix_arg(r_tag);
+    if (a4up == nil) aerror("not enough arguments for mpi_sendrecv");
+    com = qcar(a4up);
+    a4up = qcdr(a4up);
+    get_fix_arg(comm);
+    if (a4up != nil) aerror("too many arguments for mpi_sendrecv");
 
     pack_object(s_mess);
     MPI_Sendrecv(mpi_pack_buffer, mpi_pack_position, MPI_PACKED,
@@ -184,21 +199,21 @@ static LispObject Lmpi_sendrecv(LispObject, int nargs, ...)
 // (mpi_isend message dest tag comm)
 // returns request handle
 //
-static LispObject Lmpi_isend(LispObject, int nargs, ...)
+static LispObject Lmpi_isend(LispObject, LispObject message, LispObject dest,
+        LispObject tag, LispObject comm)
 {   static char fun_name[] = "mpi_isend";
 
     LispObject message, request;
     int dest, tag, comm;
 
-    va_list a;
-
     // For now, we assume type MPI_Request to be 32 bits.
     request = Lmkvect32(nil,fixnum_of_int(2));
 
-    argcheck(nargs,4,fun_name);
-    va_start(a,nargs);
-    get_arg(message);
-    get_fix_arg(dest); get_fix_arg(tag); get_fix_arg(comm);
+    get_fix_arg(dest, fun_name);
+    get_fix_arg(tag, fun_name);
+    if (qcdr(comm) != nil) aerror("too many args for mpi_isend");
+    comm = qcar(comm);
+    get_fix_arg(comm, fun_name);
 
     pack_object(message);
     MPI_Isend(mpi_pack_buffer, mpi_pack_position, MPI_PACKED,
@@ -225,20 +240,18 @@ struct dummy_request
     int comm;
 };
 
-static LispObject Lmpi_irecv(LispObject, int nargs, ...)
+static LispObject Lmpi_irecv(LispObject, LispObject aource, LispObject tag, LispObject comm
 {   static char fun_name[] = "mpi_irecv";
 
-    int source,tag,comm;
     LispObject request;
-    va_list a;
     char* buffer;
 
     // For now, we assume type MPI_Request to be 32 bits.
     request = Lmkvect32(nil,fixnum_of_int(2));
 
-    argcheck(nargs,3,fun_name);
-    va_start(a,nargs);
-    get_fix_arg(source); get_fix_arg(tag); get_fix_arg(comm);
+    get_fix_arg(source, fun_name);
+    get_fix_arg(tag, fun_name);
+    get_fix_arg(comm, fun_name);
 
     elt(request,1) = 0; // There is no buffer yet
     elt(request,0) = (int)malloc(sizeof(struct dummy_request));
@@ -367,17 +380,16 @@ static LispObject Lmpi_test(LispObject env, LispObject request)
 // (mpi_iprobe source tag comm)
 // returns (flag (source tag error))
 //
-static LispObject Lmpi_iprobe(LispObject, int nargs, ...)
+static LispObject Lmpi_iprobe(LispObject, LispObject source, LispObject tag,
+        LispObject comm)
 {   static char fun_name[] = "impi_probe";
 
     MPI_Status status;
-    int source, tag, comm, flag;
+    int flag;
     LispObject Lstatus;
-    va_list a;
-
-    argcheck(nargs,3,fun_name);
-    va_start(a,nargs);
-    get_fix_arg(source); get_fix_arg(tag); get_fix_arg(comm);
+    get_fix_arg(source, fun_name);
+    get_fix_arg(tag, fun_name);
+    get_fix_arg(comm, fun_name);
 
     MPI_Iprobe(source, tag, comm, &flag, &status);
     Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
@@ -390,17 +402,16 @@ static LispObject Lmpi_iprobe(LispObject, int nargs, ...)
 // (mpi_probe source tag comm)
 // returns (source tag error)
 //
-static LispObject Lmpi_probe(LispObject, int nargs, ...)
+static LispObject Lmpi_probe(LispObject, LispObject source, LispObject tag,
+        LispObject comm)
 {   static char fun_name[] = "mpi_probe";
 
     MPI_Status status;
     int source, tag, comm;
     LispObject Lstatus;
-    va_list a;
-
-    argcheck(nargs,3,fun_name);
-    va_start(a,nargs);
-    get_fix_arg(source); get_fix_arg(tag); get_fix_arg(comm);
+    get_fix_arg(source, fun_name);
+    get_fix_arg(tag, fun_name);
+    get_fix_arg(comm, fun_name);
 
     MPI_Probe(source, tag, comm, &status);
     Lstatus = list3(fixnum_of_int(status.MPI_SOURCE),
@@ -418,7 +429,7 @@ static LispObject Lmpi_probe(LispObject, int nargs, ...)
 static LispObject Lmpi_barrier(LispObject env, LispObject comm)
 {   int rank;
     static char fun_name[] = "mpi_barrier";
-    check_fix(comm);
+    if (!is_fixnum(comm)) aerror1(fun_name, v);
     MPI_Barrier(int_of_fixnum(comm));
     return onevalue(nil);
 }
@@ -427,16 +438,13 @@ static LispObject Lmpi_barrier(LispObject env, LispObject comm)
 // (mpi_bcast message root comm)  [message ignored if not root]
 // returns message
 //
-static LispObject Lmpi_bcast(LispObject, int nargs, ...)
+static LispObject Lmpi_bcast(LispObject, LispObject message, LispObject root, LispObject comm)
 {   static char fun_name[] = "mpi_bcast";
 
-    LispObject message;
-    int root,comm,rank;
-    va_list a;
-
-    argcheck(nargs,3,fun_name);
-    va_start(a,nargs);
-    get_arg(message); get_fix_arg(root); get_fix_arg(comm);
+    int rank;
+    get_arg(message, fun_name);
+    get_fix_arg(root, fun_name);
+    get_fix_arg(comm, fun_name);
 
     MPI_Comm_rank(comm,&rank);
     if (rank == root)
@@ -459,16 +467,14 @@ static LispObject Lmpi_bcast(LispObject, int nargs, ...)
 // (mpi_gather message root comm)
 // returns vector of messages if root, else nil.
 //
-static LispObject Lmpi_gather(LispObject, int nargs, ...)
+static LispObject Lmpi_gather(LispObject, LispObject message, LispObject root,
+        LispObject comm)
 {   static char fun_name[] = "mpi_gather";
 
-    LispObject message;
-    int root,comm,rank;
-    va_list a;
-
-    argcheck(nargs,3,fun_name);
-    va_start(a,nargs);
-    get_arg(message); get_fix_arg(root); get_fix_arg(comm);
+    int rank;
+    get_arg(message, fun_name);
+    get_fix_arg(root, fun_name);
+    get_fix_arg(comm, fun_name);
 
     MPI_Comm_rank(comm,&rank);
     pack_object(message);
@@ -515,16 +521,16 @@ static LispObject Lmpi_gather(LispObject, int nargs, ...)
 // (mpi_scatter vector_of_messages root comm)  [messages ignored if not root]
 // returns message
 //
-static LispObject Lmpi_scatter(LispObject, int nargs, ...)
+static LispObject Lmpi_scatter(LispObject, LispObject messages, LispObject root,
+        LispObject comm)
 {   static char fun_name[] = "mpi_scatter";
 
-    LispObject messages, message;
-    int root, comm, rank;
+    LispObject message;
+    int rank;
     va_list a;
 
-    argcheck(nargs,3,fun_name);
-    va_start(a,nargs);
-    get_arg(messages); get_fix_arg(root); get_fix_arg(comm);
+    get_fix_arg(root, fun_name);
+    get_fix_arg(comm, fun_name);
 
     MPI_Comm_rank(comm,&rank);
     if (rank == root)
@@ -587,7 +593,7 @@ static LispObject Lmpi_allgather(LispObject,
     int *recvcounts, *displs;
     char *recvbuffer;
 
-    check_fix(comm);
+    if (!is_fixnum(comm)) aerror1(fun_name, v);
     comm = int_of_fixnum(comm);
 
     pack_object(message);
@@ -630,7 +636,7 @@ static LispObject Lmpi_alltoall(LispObject,
     int *sendcounts, *recvcounts, *sdispls, *rdispls;
     char* recvbuffer;
 
-    check_fix(Lcomm);
+    if (!is_fixnum(comm)) aerror1(fun_name, v);
     comm = int_of_fixnum(Lcomm);
 
     MPI_Comm_size(comm,&commsize);
@@ -692,23 +698,23 @@ static LispObject Lmpi_comm_size(LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_send(LispObject, int, ...)
+static LispObject Lmpi_send(LispObject, LispObject, LispObject, LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_recv(LispObject, int, ...)
+static LispObject Lmpi_recv(LispObject, LispObject, LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_sendrecv(LispObject, int, ...)
+static LispObject Lmpi_sendrecv(LispObject, LispObject, LispObject, LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_isend(LispObject, int, ...)
+static LispObject Lmpi_isend(LispObject, LispObject, LispObject, LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_irecv(LispObject, int, ...)
+static LispObject Lmpi_irecv(LispObject, LispObject, LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
@@ -721,11 +727,11 @@ static LispObject Lmpi_test(LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_iprobe(LispObject, int, ...)
+static LispObject Lmpi_iprobe(LispObject, LispObject, LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_probe(LispObject, int, ...)
+static LispObject Lmpi_probe(LispObject, LispObject, LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
@@ -733,15 +739,15 @@ static LispObject Lmpi_barrier(LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_bcast(LispObject, int, ...)
+static LispObject Lmpi_bcast(LispObject, LispObject, LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_gather(LispObject, int, ...)
+static LispObject Lmpi_gather(LispObject, LispObject, LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
-static LispObject Lmpi_scatter(LispObject, int, ...)
+static LispObject Lmpi_scatter(LispObject, LispObject, LispObject, LispObject)
 {   aerror0("mpi support not built into this version of CSL");
 }
 
@@ -761,24 +767,24 @@ static LispObject Lmpi_alltoall(LispObject,
 
 
 setup_type const mpi_setup[] =
-{   {"mpi_comm_rank",         Lmpi_comm_rank, TOO_MANY_1,   WRONG_NO_1},
-    {"mpi_comm_size",         Lmpi_comm_size, TOO_MANY_1,   WRONG_NO_1},
-    {"mpi_send",              WRONG_NO_0A,    WRONG_NO_0B,  Lmpi_send},
-    {"mpi_recv",              WRONG_NO_0A,    WRONG_NO_0B,  Lmpi_recv},
-    {"mpi_sendrecv",          WRONG_NO_0A,    WRONG_NO_0B,  Lmpi_sendrecv},
-    {"mpi_isend",             WRONG_NO_0A,    WRONG_NO_0B,  Lmpi_isend},
-    {"mpi_irecv",             WRONG_NO_0A,    WRONG_NO_0B,  Lmpi_irecv},
-    {"mpi_barrier",           Lmpi_barrier,   TOO_MANY_1,   WRONG_NO_1},
-    {"mpi_wait",              Lmpi_wait,      TOO_MANY_1,   WRONG_NO_1},
-    {"mpi_test",              Lmpi_test,      TOO_MANY_1,   WRONG_NO_1},
-    {"mpi_probe",             WRONG_NO_0A,    WRONG_NO_0B,  Lmpi_probe},
-    {"mpi_iprobe",            WRONG_NO_0A,    WRONG_NO_0B,  Lmpi_iprobe},
-    {"mpi_bcast",             WRONG_NO_0A,    WRONG_NO_0B,  Lmpi_bcast},
-    {"mpi_gather",            WRONG_NO_0A,    WRONG_NO_0B,  Lmpi_gather},
-    {"mpi_allgather",         WRONG_NO_0A,    Lmpi_allgather, WRONG_NO_2},
-    {"mpi_scatter",           WRONG_NO_0A,    WRONG_NO_0B,  Lmpi_scatter},
-    {"mpi_alltoall",          WRONG_NO_0A,    Lmpi_alltoall, WRONG_NO_2},
-    {NULL,                    0, 0, 0}
+{   {"mpi_comm_rank",         G0W1, Lmpi_comm_rank, G2W1, G3W1, G4W1},
+    {"mpi_comm_size",         G0W1, Lmpi_comm_size, G2W1, G3W1, G4W1},
+    {"mpi_send",              G0W4up, G1W4up, G2W4up, G3W4up, Lmpi_send},
+    {"mpi_recv",              G0W3, G1W3, G2W3, Lmpi_recv, G4W3},
+    {"mpi_sendrecv",          G0W4up, G1W4up, G2W4up, G3W4up, Lmpi_sendrecv},
+    {"mpi_isend",             G0W4up, G1W4up, G2W4up, G3W4up, Lmpi_isend},
+    {"mpi_irecv",             G0W3, G1W3, G2W3, Lmpi_irecv, G4W3},
+    {"mpi_barrier",           G0W1, Lmpi_barrier, G2W1, G3W1, G4W1},
+    {"mpi_wait",              G0W1, Lmpi_wait, G2W1, G3W1, G4W1},
+    {"mpi_test",              G0W1, Lmpi_test, G2W1, G3W1, G4W1},
+    {"mpi_probe",             G0W3, G1W3, G2W3, Lmpi_probe, G4W3},
+    {"mpi_iprobe",            G0W3, G1W3, G2W3, Lmpi_iprobe, G4W3},
+    {"mpi_bcast",             G0W3, G1W3, G2W3, Lmpi_bcast, G4W3},
+    {"mpi_gather",            G0W3, G1W3, G2W3, Lmpi_gather, G4W3},
+    {"mpi_allgather",         G0W2, G1W2, Lmpi_allgather, G3W2, G4W2},
+    {"mpi_scatter",           G0W3, G1W3, G2W3, Lmpi_scatter, G4W3},
+    {"mpi_alltoall",          G0W2, G1W2, Lmpi_alltoall, G3W2, G4W2},
+    {NULL,                    0, 0, 0, 0, 0}
 };
 
 

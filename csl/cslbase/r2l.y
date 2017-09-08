@@ -215,6 +215,7 @@ int main(int argc, char *argv[])
         }
         fprintf(outputfile, "\n\n");
     }
+    fprintf(outputfile, "%% $Id: $\n\n");
     heap = (intptr_t *)malloc(2000000); /* Rather arbitrary size! */
     if (argc == 1) filestack[filestackp++] = stdin;
     else while (--argc != 0)
@@ -1053,8 +1054,13 @@ group_expr	:  LSECT cmnd group_tail{ $<LO>$ = cons(sym_progn, cons($<LO>2, $<LO>
 
 
 /*
- * At present at least this parse ignores the type specifiers, and what is
- * worst it ignores any initialization of local variables.
+ * At present at least this parse ignores the type specifiers.
+ * For initialzation it generates something like
+ *           (PROG (a (b Binit) c (d Dinit) e) ...)
+ * in a way that Common Lisp would be happy about for PROG and PROG*. Since
+ * the generated Lisp is only for use with CSL here I can be relaxed about
+ * this provided that both the CSL interpreter and compiler support this
+ * format.
  */
 scalar_tail	:  sep			{ $<LO>$ = C_nil; }
 		|  ',' SYMBOL scalar_tail
@@ -1062,9 +1068,9 @@ scalar_tail	:  sep			{ $<LO>$ = C_nil; }
 		|  ',' SYMBOL ':' type scalar_tail
 					{ $<LO>$ = cons($<LO>2, $<LO>5); }
 		|  ',' SYMBOL SETQ expr scalar_tail
-					{ $<LO>$ = cons($<LO>2, $<LO>5); }
+					{ $<LO>$ = cons(list2($<LO>2, $<LO>4), $<LO>5); }
 		|  ',' SYMBOL ':' type SETQ expr scalar_tail
-					{ $<LO>$ = cons($<LO>2, $<LO>7); }
+					{ $<LO>$ = cons(list2($<LO>2, $<LO>6), $<LO>7); }
 		;
 
 scalar_def	:  SCALAR SYMBOL scalar_tail
