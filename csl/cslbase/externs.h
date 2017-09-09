@@ -638,6 +638,8 @@ extern void report_file(const char *s);
 extern bool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
 extern int errorset_min, errorset_max;
 
+extern bool force_verbos, force_echo, force_backtrace;
+
 extern size_t number_of_input_files,
        number_of_symbols_to_define,
        number_of_fasl_paths;

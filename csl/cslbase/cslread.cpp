@@ -1885,6 +1885,8 @@ public:
     }
 };
 
+bool force_echo = false;
+
 static int raw_char_from_terminal()
 //
 // "What ..." you might ask, "is the meaning of this mess?".  Well the answer
@@ -1947,7 +1949,7 @@ static int raw_char_from_terminal()
     }
     inject_randomness(c);
     if (c == EOF || c == CTRL_D) return EOF;
-    if (qvalue(echo_symbol) != nil)
+    if (qvalue(echo_symbol) != nil || force_echo)
     {   LispObject stream = qvalue(standard_output);
         if (!is_stream(stream)) stream = qvalue(terminal_io);
         if (!is_stream(stream)) stream = lisp_terminal_io;
@@ -2928,7 +2930,7 @@ static int raw_char_from_file(LispObject stream)
     }
     ch = GETC(stream_file(stream));
     if (ch == EOF) return EOF;
-    if (qvalue(echo_symbol) != nil)
+    if (qvalue(echo_symbol) != nil || force_echo)
     {   LispObject stream1 = qvalue(standard_output);
         if (!is_stream(stream1)) stream1 = qvalue(terminal_io);
         if (!is_stream(stream1)) stream1 = lisp_terminal_io;
@@ -4075,11 +4077,14 @@ LispObject Ltyi(LispObject env)
 LispObject Lreadbyte(LispObject env, LispObject stream)
 {   int ch;
     LispObject save = qvalue(echo_symbol);
+    bool force = force_echo;
+    force_echo = nil;
     if (!is_stream(stream)) aerror0("readb requires an appropriate stream");
     qvalue(echo_symbol) = nil;
     raw_input = 1;
     ch = getc_stream(stream);
     raw_input = 0;
+    force_echo = force;
     qvalue(echo_symbol) = save;
 //
 // At one stage this code treated ^D as an end-of file marker - that is

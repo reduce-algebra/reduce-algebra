@@ -873,6 +873,11 @@ void unwind_stack(LispObject *entry_stack, bool findcatch)
     if (findcatch) stack = sp;
 }
 
+bool force_backtrace = false;
+
+// The "volatile" qualifications here are to try to improve the chances of
+// setjmp/longjmp behaving the way I want.
+
 static LispObject errorset3(volatile LispObject env,
                             volatile LispObject form,
                             volatile LispObject fg1,
@@ -880,7 +885,6 @@ static LispObject errorset3(volatile LispObject env,
 {   LispObject r;
     STACK_SANITY;
     volatile uint32_t flags = miscflags;
-
 //
 // See also (ENABLE-BACKTRACE level) and (ENABLE-ERROSET min max)
 //
@@ -939,6 +943,7 @@ static LispObject errorset3(volatile LispObject env,
             else n = 3;
         if (n < errorset_min) n = errorset_min;
         if (n > errorset_max) n = errorset_max;
+        if (force_backtrace) n = 3;
         miscflags &= ~BACKTRACE_MSG_BITS;
         switch (n)
         {   case 0: break;

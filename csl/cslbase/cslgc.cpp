@@ -528,6 +528,8 @@ int async_interrupt(int type)
     return prev;
 }
 
+bool force_verbos = false;
+
 static void report_at_end()
 {   int n = heap_pages_count + vheap_pages_count;
     int n1 = n + pages_count;
@@ -536,12 +538,12 @@ static void report_at_end()
     double z = (100.0*n)/n1;
 #ifdef WINDOW_SYSTEM
     {   report_space(gc_number, z);
-        if (verbos_flag & 1) trace_printf(
+        if (verbos_flag & 1 || force_verbos) trace_printf(
                 "At gc end about %.1f Mbytes of %.1f (%.1f%%) of heap is in use\n",
                 fn, fn1, z);
     }
 #else // WINDOW_SYSTEM
-    if (verbos_flag & 1)
+    if (verbos_flag & 1 || force_verbos)
     {   trace_printf(
             "At gc end about %.1f Mbytes of %.1f (%.1f%%) of heap is in use\n",
             fn, fn1, z);
@@ -948,7 +950,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         report_time(t, gct);
 #endif
         time_now = (int)consolidated_time[0];
-        if (verbos_flag & 1)
+        if (verbos_flag & 1 || force_verbos)
         {   freshline_trace();
             trace_printf(
                 "+++ Garbage collection %" PRId64
@@ -957,7 +959,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         }
     }
 #else // WINDOW_SYSTEM
-    if (verbos_flag & 1)
+    if (verbos_flag & 1 || force_verbos)
     {   long int t = (long int)(100.0 * consolidated_time[0]);
         long int gct = (long int)(100.0 * gc_time);
 // @@@@

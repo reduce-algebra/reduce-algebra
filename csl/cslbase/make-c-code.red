@@ -438,7 +438,10 @@ symbolic procedure completion();
   end;
 
 
-on fastfor, fastvector, unsafecar;
+% I used to prefer speed to safety. For a while at least I will go the
+% other way.
+
+off fastfor, fastvector, unsafecar;
 
 <<
   if everything then do_total()

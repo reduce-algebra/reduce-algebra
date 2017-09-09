@@ -1696,6 +1696,31 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
                         else if (strcmp(w, "guimin") == 0)
                         { }
+/*! options [--force-verbos] \item [{\ttfamily --force-verbos}] \index{{\ttfamily --force-verbos}}
+ * Forces generation of messages from the garbage collector regardless of any
+ * attempt from with the system to change that. Intended for use during system
+ * debugging where it may be important to see when a garbage collection occurs
+ * but undesirable to change the input script at all.
+ */
+                        else if (strcmp(w, "force-verbos") == 0)
+                            force_verbos = true;
+/*! options [--force-echo] \item [{\ttfamily --force-echo}] \index{{\ttfamily --force-echo}}
+ * Forces echoing of input regardless of any
+ * attempt from with the system to change that. Intended for use during system
+ * debugging where it may be important to observe progress through an
+ * input file but undesirable to change the input script at all.
+ */
+                        else if (strcmp(w, "force-echo") == 0)
+                            force_echo = true;
+/*! options [--force-backtrace] \item [{\ttfamily --force-backtrace}] \index{{\ttfamily --force-backtrace}}
+ * Forces any error to generate a backtrace regardless of any
+ * attempt from with the system to change that (eg via use of errorset).
+ * Intended for use during system  debugging where it may be important to
+ * observe behaviour otherwise hiddenn by (errorset X nil nil) but when it
+ * undesirable to change the input script at all.
+ */
+                        else if (strcmp(w, "force-backtrace") == 0)
+                            force_backtrace = true;
 /*! options [--help] \item [{\ttfamily --help}] \index{{\ttfamily --help}}
  * It is probably obvious what this option does! Note that on Windows the
  * application was linked as a windows binary so it carefully creates a
@@ -1809,9 +1834,13 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                             term_printf(
                                 "     than a native Windows version, regardless of other circumstances.\n");
                             term_printf(
-                                "--texmacs run in texmacs mode. You must use the plugin from the\n");
-                            term_printf(
+                                "--texmacs run in texmacs mode. You must use the plugin from the\n"
                                 "     cslbase/texmacs-plugin directory.\n");
+                            term_printf(
+                                "--force-backtrace, --force-echo, --force-verbos. Make system much nosier\n");
+                            term_printf(
+                                "     in ways that may help debugging when hunting low-level bugs in Reduce.\n");
+
                             term_printf(
                                 "--<other> reserved for additional extended options.\n");
                             term_printf(
