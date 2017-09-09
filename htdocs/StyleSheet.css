@@ -16,6 +16,10 @@ div#middle {
     display: flex
 }
 
+div#main {
+    width: 100%;
+}
+
 nav {
     margin-right: 24px;
 }
