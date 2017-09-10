@@ -17,7 +17,6 @@
     }
 
     menuItem('index.php', 'Home', 'The REDUCE Computer Algebra System');
-    menuItem('news.php', 'News', 'News about the REDUCE project');
     menuItem('features.php', 'Features', 'REDUCE features and design characteristics');
     menuItem('obtaining.php', 'Obtaining REDUCE', 'Guidance on obtaining REDUCE from SourceForge');
     menuItem('documentation.php', 'Documentation', 'User guides for REDUCE, its packages and Lisp systems');
