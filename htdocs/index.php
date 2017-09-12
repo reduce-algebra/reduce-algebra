@@ -21,7 +21,7 @@
 		}
 
 		aside {
-			width: 250px;
+			width: 250px; /* Firefox seems to need this; Edge doesn't! */
 			padding-left: 24px;
 		}
 
@@ -29,7 +29,7 @@
 				border: 0;
 				padding: 0;
 				margin: 1em 0 0 0;
-				width: 100%;
+				width: 250px; /* Edge seems to need this; Firefox doesn't! */
 				height: 500px;
 				border: 1px solid #333333;
 				background-color: #f8f8ff;
