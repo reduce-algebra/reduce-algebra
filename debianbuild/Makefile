@@ -31,7 +31,7 @@ $(BUILDTOPDIR).stamp:
 reduce-packages:	$(BUILDTOPDIR).stamp debpackages rpmpackages tarpackages
 
 debpackages:
-	cd reduce ; debuild --set-envvar BUILDTOPDIR=$(realpath $(BUILDTOPDIR)) -b -us -uc
+	cd reduce ; debuild --set-envvar BUILDTOPDIR=$(realpath $(BUILDTOPDIR)) --preserve-envvar=DH_OPTIONS -b -us -uc
 
 rpmpackages:
 	for f in reduce-*_$(SNAPSHOT)_*.deb ; \
