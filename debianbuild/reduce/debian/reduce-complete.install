@@ -1,0 +1,13 @@
+usr/bin/bootstrapreduce
+usr/bin/csl
+usr/bin/redcsl
+usr/bin/redpsl
+usr/lib/reduce/cslbuild
+usr/lib/reduce/pslbuild
+usr/share/doc/reduce
+usr/share/man/man1/redcsl.1
+usr/share/man/man1/redpsl.1
+usr/share/reduce/cslbuild
+usr/share/reduce/fonts
+usr/share/reduce/packages
+usr/share/reduce/pslbuild

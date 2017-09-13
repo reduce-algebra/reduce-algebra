@@ -6,6 +6,19 @@ Build-Depends: autoconf, libffi-dev, libx11-dev, libxext-dev, libxft-dev, texliv
 Standards-Version: 3.9.1
 Homepage: http://reduce-algebra.sf.net/
 
+Package: reduce-complete
+Architecture: i386 amd64
+Depends: gnuplot-x11, ${shlibs:Depends}, ${misc:Depends}
+Description: REDUCE Computer Algebra System -- common files
+ REDUCE is a system for doing scalar, vector and matrix algebra by computer,
+ which also supports arbitrary precision numerical approximation and
+ interfaces to gnuplot to provide graphics. It can be used interactively
+ for simple calculations (as illustrated in the screenshot above) but also
+ provides a full programming language, with a syntax similar to other
+ modern programming languages.
+ .
+ This package contains the complete set of files for CSL and PSL Reduce.
+
 Package: reduce-common
 Architecture: all
 Depends: gnuplot-x11, ${misc:Depends}
