@@ -970,7 +970,7 @@ LispObject make_complex(LispObject r, LispObject i)
 // arranged by here.
 //
     if (i == fixnum_of_int(0)) return r;
-    stackcheck2(0, r, i);
+    stackcheck2(r, i);
     push2(r, i);
     v = get_basic_vector(TAG_NUMBERS, TYPE_COMPLEX_NUM, sizeof(Complex_Number));
 //
@@ -991,7 +991,7 @@ LispObject make_ratio(LispObject p, LispObject q)
 //
 {   LispObject v;
     if (q == fixnum_of_int(1)) return p;
-    stackcheck2(0, p, q);
+    stackcheck2(p, q);
     push2(p, q);
     v = get_basic_vector(TAG_NUMBERS, TYPE_RATNUM, sizeof(Rational_Number));
     pop2(q, p);

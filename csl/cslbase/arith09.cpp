@@ -755,7 +755,7 @@ LispObject lcm(LispObject a, LispObject b)
 {   LispObject g;
     if (a == fixnum_of_int(0) ||
         b == fixnum_of_int(0)) return fixnum_of_int(0);
-    stackcheck2(0, a, b);
+    stackcheck2(a, b);
     push2(a, b);
     g = gcd(a, b);
     pop(b);

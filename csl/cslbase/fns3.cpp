@@ -412,7 +412,7 @@ LispObject simplify_string(LispObject s)
     n = int_of_fixnum(qcar(h1));            // Look at size involved
     h1 = basic_elt(s, 5);                         // Fill pointer
     if (is_fixnum(h1)) n = int_of_fixnum(h1);
-    stackcheck1(0, s);
+    stackcheck1(s);
     push(s);
 // Size limited
     w = get_vector(TAG_VECTOR, TYPE_STRING_4, n+CELL);

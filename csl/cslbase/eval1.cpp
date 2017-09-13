@@ -146,7 +146,7 @@ restart:
 // The final case is that of a list (fn ...), and one case that has to
 // be checked is if fn is lexically bound.
         LispObject fn, args;
-        stackcheck2(0, u, env);
+        stackcheck2(u, env);
         fn = qcar(u);
         args = qcdr(u);
 // Local function bindings must be looked for first. Well Standard Lisp
@@ -476,7 +476,7 @@ LispObject apply_lambda(LispObject def, LispObject args,
     for (LispObject u=args; u!=nil; u=qcdr(u)) args_left++;
     LispObject w1;
     if (!consp(def)) return onevalue(nil);    // Should never happen
-    stackcheck4(0, def, args, env1, name1);
+    stackcheck4(def, args, env1, name1);
     w1 = qcar(def);
     push(args);                         // arglist
     push4(w1,                           // bvl
@@ -816,7 +816,7 @@ LispObject Levlis(LispObject env, LispObject a)
 {   STACK_SANITY;
     save_current_function saver(eval_symbol);
     LispObject r;
-    stackcheck1(0, a);
+    stackcheck1(a);
     r = nil;
     while (consp(a))
     {   push2(qcdr(a), r);
@@ -996,7 +996,7 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 {   STACK_SANITY;
     save_current_function saver(mv_call_symbol);
     if (!consp(args)) return nil;       // (multiple-value-call) => nil
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     push2(args, env);
     LispObject fn = qcar(args);
     fn = eval(fn, env);
@@ -1022,28 +1022,28 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 LispObject interpreted_0(LispObject def)
 {   STACK_SANITY;
     save_current_function saver(def);
-    stackcheck1(0, def);
+    stackcheck1(def);
     return apply_lambda(qenv(def), nil, nil, def);
 }
 
 LispObject interpreted_1(LispObject def, LispObject a1)
 {   STACK_SANITY;
     save_current_function saver(def);
-    stackcheck1(0, def);
+    stackcheck1(def);
     return apply_lambda(qenv(def), ncons(a1), nil, def);
 }
 
 LispObject interpreted_2(LispObject def, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     save_current_function saver(def);
-    stackcheck1(0, def);
+    stackcheck1(def);
     return apply_lambda(qenv(def), list2(a1, a2), nil, def);
 }
 
 LispObject interpreted_3(LispObject def, LispObject a1, LispObject a2, LispObject a3)
 {   STACK_SANITY;
     save_current_function saver(def);
-    stackcheck1(0, def);
+    stackcheck1(def);
     return apply_lambda(qenv(def), list3(a1, a2, a3), nil, def);
 }
 
@@ -1051,14 +1051,14 @@ LispObject interpreted_4up(LispObject def, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
 {   STACK_SANITY;
     save_current_function saver(def);
-    stackcheck1(0, def);
+    stackcheck1(def);
     return apply_lambda(qenv(def), list3star(a1, a2, a3, a4up), nil, def);
 }
 
 LispObject funarged_0(LispObject def)
 {   STACK_SANITY;
     save_current_function saver(def);
-    stackcheck1(0, def);
+    stackcheck1(def);
     def = qenv(def);
     return apply_lambda(qcdr(def), nil, qcar(def), qcdr(def));
 }
@@ -1066,7 +1066,7 @@ LispObject funarged_0(LispObject def)
 LispObject funarged_1(LispObject def, LispObject a1)
 {   STACK_SANITY;
     save_current_function saver(def);
-    stackcheck1(0, def);
+    stackcheck1(def);
     def = qenv(def);
     return apply_lambda(qcdr(def), ncons(a1), qcar(def), qcdr(def));
 }
@@ -1074,7 +1074,7 @@ LispObject funarged_1(LispObject def, LispObject a1)
 LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
 {   STACK_SANITY;
     save_current_function saver(def);
-    stackcheck1(0, def);
+    stackcheck1(def);
     def = qenv(def);
     return apply_lambda(qcdr(def), list2(a1, a2), qcar(def), qcdr(def));
 }
@@ -1082,7 +1082,7 @@ LispObject funarged_2(LispObject def, LispObject a1, LispObject a2)
 LispObject funarged_3(LispObject def, LispObject a1, LispObject a2, LispObject a3)
 {   STACK_SANITY;
     save_current_function saver(def);
-    stackcheck1(0, def);
+    stackcheck1(def);
     def = qenv(def);
     return apply_lambda(qcdr(def), list3(a1, a2, a3), qcar(def), qcdr(def));
 }
@@ -1091,7 +1091,7 @@ LispObject funarged_4up(LispObject def, LispObject a1, LispObject a2,
         LispObject a3, LispObject a4up)
 {   STACK_SANITY;
     save_current_function saver(def);
-    stackcheck1(0, def);
+    stackcheck1(def);
     def = qenv(def);
     return apply_lambda(qcdr(def), list3star(a1, a2, a3, a4up), qcar(def), qcdr(def));
 }
@@ -1101,7 +1101,7 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
     STACK_SANITY;
     LispObject done;
     LispObject f;
-    stackcheck2(0, form, env);
+    stackcheck2(form, env);
     done = nil;
     if (consp(form))
     {   f = qcar(form);
@@ -1163,7 +1163,7 @@ LispObject macroexpand(LispObject form, LispObject env)
 {   // The environment here seems only necessary for macrolet
     STACK_SANITY;
     LispObject done;
-    stackcheck2(0, form, env);
+    stackcheck2(form, env);
     done = nil;
     for (;;)
     {   push2(env, done);

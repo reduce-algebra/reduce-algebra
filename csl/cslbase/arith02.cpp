@@ -878,41 +878,35 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         switch (semaphore_usage)
         {
 #ifdef MACINTOSH
-            case 0: while (sem_wait(kara_sem1b) != 0)
-                    /*NOTHING*/;   // wait for worker 1 to finish.
-                while (sem_wait(kara_sem2b) != 0)
-                    /*NOTHING*/;   // wait for worker 2 to finish.
+            case 0:
+                while (sem_wait(kara_sem1b) != 0)/*NOTHING*/;   // wait for worker 1 to finish.
+                while (sem_wait(kara_sem2b) != 0)/*NOTHING*/;   // wait for worker 2 to finish.
                 semaphore_usage = 1;
                 break;
-            case 1: while (sem_wait(kara_sem1a) != 0)
-                    /*NOTHING*/;   // wait for worker 1 to finish.
-                while (sem_wait(kara_sem2a) != 0)
-                    /*NOTHING*/;   // wait for worker 2 to finish.
+            case 1:
+                while (sem_wait(kara_sem1a) != 0)/*NOTHING*/;   // wait for worker 1 to finish.
+                while (sem_wait(kara_sem2a) != 0)/*NOTHING*/;   // wait for worker 2 to finish.
                 semaphore_usage = 2;
                 break;
-            case 2: while (sem_wait(kara_sem1c) != 0)
-                    /*NOTHING*/;   // wait for worker 1 to finish.
-                while (sem_wait(kara_sem2c) != 0)
-                    /*NOTHING*/;   // wait for worker 2 to finish.
+            case 2:
+                while (sem_wait(kara_sem1c) != 0)/*NOTHING*/;   // wait for worker 1 to finish.
+                while (sem_wait(kara_sem2c) != 0)/*NOTHING*/;   // wait for worker 2 to finish.
                 semaphore_usage = 0;
                 break;
 #else
-            case 0: while (sem_wait(&kara_sem1b) != 0)
-                    /*NOTHING*/;  // wait for worker 1 to finish.
-                while (sem_wait(&kara_sem2b) != 0)
-                    /*NOTHING*/;  // wait for worker 2 to finish.
+            case 0:
+                while (sem_wait(&kara_sem1b) != 0)/*NOTHING*/;  // wait for worker 1 to finish.
+                while (sem_wait(&kara_sem2b) != 0)/*NOTHING*/;  // wait for worker 2 to finish.
                 semaphore_usage = 1;
                 break;
-            case 1: while (sem_wait(&kara_sem1a) != 0)
-                    /*NOTHING*/;  // wait for worker 1 to finish.
-                while (sem_wait(&kara_sem2a) != 0)
-                    /*NOTHING*/;  // wait for worker 2 to finish.
+            case 1:
+                while (sem_wait(&kara_sem1a) != 0)/*NOTHING*/;  // wait for worker 1 to finish.
+                while (sem_wait(&kara_sem2a) != 0)/*NOTHING*/;  // wait for worker 2 to finish.
                 semaphore_usage = 2;
                 break;
-            case 2: while (sem_wait(&kara_sem1c) != 0)
-                    /*NOTHING*/;  // wait for worker 1 to finish.
-                while (sem_wait(&kara_sem2c) != 0)
-                    /*NOTHING*/;  // wait for worker 2 to finish.
+            case 2:
+                while (sem_wait(&kara_sem1c) != 0)/*NOTHING*/;  // wait for worker 1 to finish.
+                while (sem_wait(&kara_sem2c) != 0)/*NOTHING*/;  // wait for worker 2 to finish.
                 semaphore_usage = 0;
                 break;
 #endif
@@ -1036,28 +1030,34 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     switch (semaphore_usage)
     {
 #ifdef MACINTOSH
-        case 0: while (sem_wait(kara_sem1b) != 0);   // wait for worker 1 to finish.
+        case 0:
+            while (sem_wait(kara_sem1b) != 0);   // wait for worker 1 to finish.
             while (sem_wait(kara_sem2b) != 0);   // wait for worker 2 to finish.
             semaphore_usage = 1;
             break;
-        case 1: while (sem_wait(kara_sem1a) != 0);   // wait for worker 1 to finish.
+        case 1:
+            while (sem_wait(kara_sem1a) != 0);   // wait for worker 1 to finish.
             while (sem_wait(kara_sem2a) != 0);   // wait for worker 2 to finish.
             semaphore_usage = 2;
             break;
-        case 2: while (sem_wait(kara_sem1c) != 0);   // wait for worker 1 to finish.
+        case 2:
+            while (sem_wait(kara_sem1c) != 0);   // wait for worker 1 to finish.
             while (sem_wait(kara_sem2c) != 0);   // wait for worker 2 to finish.
             semaphore_usage = 0;
             break;
 #else
-        case 0: while (sem_wait(&kara_sem1b) != 0);  // wait for worker 1 to finish.
+        case 0:
+            while (sem_wait(&kara_sem1b) != 0);  // wait for worker 1 to finish.
             while (sem_wait(&kara_sem2b) != 0);  // wait for worker 2 to finish.
             semaphore_usage = 1;
             break;
-        case 1: while (sem_wait(&kara_sem1a) != 0);  // wait for worker 1 to finish.
+        case 1:
+            while (sem_wait(&kara_sem1a) != 0);  // wait for worker 1 to finish.
             while (sem_wait(&kara_sem2a) != 0);  // wait for worker 2 to finish.
             semaphore_usage = 2;
             break;
-        case 2: while (sem_wait(&kara_sem1c) != 0);  // wait for worker 1 to finish.
+        case 2:
+            while (sem_wait(&kara_sem1c) != 0);  // wait for worker 1 to finish.
             while (sem_wait(&kara_sem2c) != 0);  // wait for worker 2 to finish.
             semaphore_usage = 0;
             break;

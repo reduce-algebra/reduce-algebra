@@ -548,7 +548,7 @@ LispObject Lquotient_4up(LispObject env,
 
 LispObject Ldivide_2(LispObject env, LispObject a, LispObject b)
 {   LispObject q;
-    stackcheck2(0, a, b);
+    stackcheck2(a, b);
     mv_2 = SPID_NIL;
     q = quotrem2(a, b);
     if (is_spid(mv_2)) aerror2("divide", a, b);

@@ -1879,7 +1879,8 @@ void internal_prin(LispObject u, int blankp)
 restart:
 #endif
     if (--countdown < 0) deal_with_tick();
-    if (stack >= stacklimit)
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        stack >= stacklimit)
     {   u = reclaim(u, "stack", GC_STACK, 0);
     }
     switch ((int)u & TAG_BITS)

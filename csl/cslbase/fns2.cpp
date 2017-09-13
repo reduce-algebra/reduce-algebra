@@ -2136,7 +2136,7 @@ LispObject Lnreverse0(LispObject env, LispObject a)
 
 LispObject Lreverse(LispObject env, LispObject a)
 {   LispObject r;
-    stackcheck1(0, a);
+    stackcheck1(a);
     r = nil;
     while (consp(a))
     {   push(a);
@@ -2464,7 +2464,7 @@ LispObject Lappend_1(LispObject, LispObject a)
 LispObject Lappend_2(LispObject env, LispObject a, LispObject b)
 {   LispObject r = nil;
     push(b);
-    stackcheck2(1, a, r);
+    stackcheck2(a, r);
     while (consp(a))
     {   push(qcdr(a));
         r = cons(qcar(a), r);
@@ -2704,7 +2704,7 @@ LispObject Lnconc(LispObject env, LispObject a, LispObject b)
 
 static LispObject substq(LispObject a, LispObject b, LispObject c)
 {   LispObject w;
-    stackcheck3(0, a, b, c);
+    stackcheck3(a, b, c);
     push2(TAG_FIXNUM, TAG_FIXNUM); // rx and r
     push3(a, b, c);
 #define c   stack[0]
@@ -2816,7 +2816,7 @@ static LispObject substq(LispObject a, LispObject b, LispObject c)
 
 LispObject subst(LispObject a, LispObject b, LispObject c)
 {   LispObject w;
-    stackcheck3(0, a, b, c);
+    stackcheck3(a, b, c);
     push2(TAG_FIXNUM, TAG_FIXNUM); // rx and r
     push3(a, b, c);
 #define c   stack[0]
@@ -2937,7 +2937,7 @@ LispObject subst(LispObject a, LispObject b, LispObject c)
 
 LispObject subla(LispObject a, LispObject c)
 {   LispObject w;
-    stackcheck2(0, a, c);
+    stackcheck2(a, c);
     push2(TAG_FIXNUM, TAG_FIXNUM); // rx and r
     push2(a, c);
 #define c   stack[0]
@@ -3058,7 +3058,7 @@ LispObject subla(LispObject a, LispObject c)
 
 LispObject sublis(LispObject a, LispObject c)
 {   LispObject w;
-    stackcheck2(0, a, c);
+    stackcheck2(a, c);
     push2(TAG_FIXNUM, TAG_FIXNUM); // rx and r
     push2(a, c);
 #define c   stack[0]
@@ -3212,7 +3212,7 @@ LispObject Lsubst(LispObject env, LispObject a, LispObject b, LispObject c)
 }
 
 LispObject Lsublis(LispObject env, LispObject al, LispObject x)
-{   stackcheck2(0, al, x);
+{   stackcheck2(al, x);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();
@@ -3228,7 +3228,7 @@ LispObject Lsubla(LispObject env, LispObject al, LispObject x)
 //
 // as sublis, but uses eq test rather than equal
 //
-{   stackcheck2(0, al, x);
+{   stackcheck2(al, x);
 #ifdef CHECK_STACK
     if (check_stack("@" __FILE__,__LINE__))
     {   show_stack();

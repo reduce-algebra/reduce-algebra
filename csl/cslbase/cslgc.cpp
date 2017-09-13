@@ -44,6 +44,7 @@
 int64_t gc_number = 0;
 int64_t reclaim_trap_count = -1;
 uintptr_t reclaim_stack_limit = 0;
+uint64_t reclaim_trigger_count = 0, reclaim_trigger_target = 0;
 
 static intptr_t cons_cells, symbol_heads, strings, user_vectors,
        big_numbers, box_floats, bytestreams, other_mem,
@@ -55,24 +56,20 @@ LispObject Lgc0(LispObject env)
 
 LispObject Lgc(LispObject env, LispObject a)
 {
-//
 // If GC is called with a non-nil argument the garbage collection
 // will be a full one - otherwise it will be soft and may do hardly
 // anything.
-//
     return reclaim(nil, "user request",
                    a != nil ? GC_USER_HARD : GC_USER_SOFT, 0);
 }
 
 LispObject Lverbos(LispObject env, LispObject a)
-//
 // (verbos 0) or (verbos nil)       silent garbage collection
 // (verbos 1) or (verbos t)         standard GC messages
 // (verbos 2)                       messages when FASL module loaded
 // (verbos 4)                       extra timing info for GC process
 // These bits can be added to get combination effects, except that
 // "4" has no effect unless "1" is present.
-//
 {   int code, old_code = verbos_flag;
     if (a == nil) code = 0;
     else if (is_fixnum(a)) code = (int)int_of_fixnum(a);
@@ -99,11 +96,9 @@ static int trailing_heap_pages_count,
            trailing_vheap_pages_count;
 
 static void copy(LispObject *p)
-//
 // This copies the object pointed at by p from the old to the new semi-space,
 // and returns a copy to the pointer.  If scans the copied material to copy
 // all relevent sub-structures to the new semi-space.
-//
 {   char *fr = (char *)fringe, *vfr = (char *)vfringe;
     char *tr_fr = fr, *tr_vfr = vfr;
     void *p1;
@@ -116,7 +111,6 @@ static void copy(LispObject *p)
 #define DONE_FASTGETS -6
     int next = CONT;
     char *tr=NULL;
-//
 // The code here is a simulation of multiple procedure calls to the
 // code that copies a single object.  What might otherwise have been
 // a "return address" in the calls is handled by the variable "next" which
@@ -125,7 +119,6 @@ static void copy(LispObject *p)
 // use "break" and "continue" to leap around in the code - maybe I
 // would do better to be honest and use regular labels and "goto"
 // statements.
-//
     for (;;)
     {
 // Copy one object, pointed at by p, from the old semi-space into the new
@@ -143,12 +136,10 @@ static void copy(LispObject *p)
                     }
                     fr = fr - sizeof(Cons_Cell);
                     cons_cells += 2*CELL;
-//
 // When I am doing regular calculation I leave myself a bunch of spare
 // words (size SPARE bytes) so that I can afford to do several cons operations
 // between tests.  Here I do careful tests on every step, and so I can
 // sail much closer to the wind wrt filling up space.
-//
                     if (fr <= (char *)heaplimit - SPARE + 32)
                     {   char *hl = (char *)heaplimit;
                         void *p;
@@ -319,7 +310,6 @@ static void copy(LispObject *p)
                                 case TYPE_MIXED3: case TYPE_STREAM:
                                     next = 2*CELL;
                                     break;
-//
 // There is a slight delight here. The test "vector_holds_binary" is only
 // applicable if the header to be checked is a header of a genuine vector,
 // ie something that would have TAG_VECTOR in the pointer to it. But here
@@ -329,7 +319,6 @@ static void copy(LispObject *p)
 // deal with several of the numeric types "by accident", but I feel that
 // the security of listing them as separate cases is more important than the
 // minor speed-up that might come from exploiting such marginal behaviour.
-//
                                 default:
                                     if (vector_holds_binary(h)) continue;
                                     // drop through on simple vectors, hash
@@ -397,15 +386,12 @@ static void copy(LispObject *p)
 }
 
 static bool reset_limit_registers(intptr_t vheap_need, bool stack_flag)
-//
 // returns true if after resetting the limit registers there was
 // enough space left for me to proceed. Return false on failure, ie
 // need for a more genuine GC.
-//
 {   void *p;
     uintptr_t len;
     bool full;
-//
 // I wonder about the next test - memory would only really be full
 // if there was enough LIVE data to fill all the available free pages,
 // but what is tested here is based on the possibility that all the
@@ -413,7 +399,6 @@ static bool reset_limit_registers(intptr_t vheap_need, bool stack_flag)
 // a factor of 1.5 because fragmentation might behave differently in the
 // old and new spaces so if there are some large vectors they may leave
 // nasty gaps at the end of a page.
-//
     full = (pages_count <=
             heap_pages_count +
             (3*vheap_pages_count + 1)/2);
@@ -451,31 +436,25 @@ static bool reset_limit_registers(intptr_t vheap_need, bool stack_flag)
 }
 
 static void tidy_fringes(void)
-//
 // heaplimit was SPARE bytes above the actual base of the page,
 // so the next line dumps fringe somewhere where it can be found
 // later on when needed while scanning a page of heap.  Similarly
 // vfringe is stashed away at the end of its page.
-//
 {   char *fr = (char *)fringe,
          *vf = (char *)vfringe,
          *hl = (char *)heaplimit,
          *vl = (char *)vheaplimit;
     int32_t len = (int32_t)(fr - (hl - SPARE));
-//
 // If I used the top bit of this location to save info that a page
 // was double-size then I just clobbered that information here!
-//
     car32(hl - SPARE) = len;
     len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
     car32(vl - (CSL_PAGE_SIZE - 8)) = (LispObject)len;
 }
 
 static void lose_dead_hashtables(void)
-//
 // This splices out from the list of hash tables all entries that point to
 // tables that have not been marked or copied this garbage collection.
-//
 {   LispObject *p = &eq_hash_tables, q, r;
     while ((q = *p) != nil)
     {   Header h;
@@ -494,7 +473,6 @@ static void lose_dead_hashtables(void)
     }
 }
 
-//
 // I need a way that a thread that is not synchronised with this one can
 // generate a Lisp-level interrupt. I achieve that by
 // letting that thread reset stacklimit. Then rather soon CSL will
@@ -512,7 +490,6 @@ static void lose_dead_hashtables(void)
 // and only ever tests then to see if it has been reset to zero, while the
 // main worker thread only reads it to check for non-zero and then
 // resets it I have some degree of sanity.
-//
 
 static volatile int async_type = QUERY_INTERRUPT;
 
@@ -556,14 +533,12 @@ static void report_at_end()
 
 #ifdef CONSERVATIVE
 
-//
 // The conservative collector needs to cope with some ambiguous pointers.
 // these must all be marked from, but the data that they seem to point to
 // must not be moved since the pointer must not be changed in any way in
 // case it is in fact not a pointer. To support that I need to be ready
 // to track and record all the ambiguous roots. I will use a hash table
 // as part of this process.
-//
 
 LispObject *C_stackbase, *C_stacktop;
 
@@ -572,12 +547,10 @@ void get_stacktop()
     C_stacktop = (LispObject *)&sp;
 }
 
-//
 // I want the following number to be a prime to make some hash-table
 // activity work smoothly.
 // the LOAD value is to let the hash table become 7/8 full before I
 // give up on it.
-//
 #define AMBIGUOUS_CACHE_SIZE 2003U
 #define AMBIGUOUS_LOAD   ((7*AMBIGUOUS_CACHE_SIZE)/8)
 
@@ -623,10 +596,8 @@ static void scan_ambiguous(process_ambiguous_pointer_t *fn)
 
 static void cache_ambiguous()
 {
-//
 // This sets up my hash table of ambiguous pointers and MUST be called before
 // I use scan_ambiguous.
-//
     unsigned int i;
     LispObject *s;
     for (i=0; i<AMBIGUOUS_CACHE_SIZE; i++) ambiguous[i] = 0;
@@ -642,11 +613,9 @@ static void cache_ambiguous()
                 break;
             }
             else if (ambiguous[i] == p) break; // seen before
-//
 // I make my stride through the hash table depend on the value too, but
 // by having a table whose size is prime I will always eventually look in
 // every location.
-//
             i += 1 + (int)(((uintptr_t)p) %
                            (uintptr_t)(AMBIGUOUS_CACHE_SIZE-2));
         }
@@ -660,7 +629,20 @@ LispObject use_gchook(LispObject p, LispObject arg)
     if (symbolp(g) && g != unset_var)
     {   g = qvalue(g);
         if (symbolp(g) && g != unset_var && g != nil)
-        {   push(p);
+        {   class save_trapcount
+            {   uint64_t count, target;
+                public:
+                save_trapcount()
+                {   count = reclaim_trigger_count;
+                    target = reclaim_trigger_target;
+                    reclaim_trigger_target = 0;
+                }
+                ~save_trapcount()
+                {   reclaim_trigger_count = count;
+                    reclaim_trigger_target = target;
+                }
+            } RAII_trapcount;
+            push(p);
             Lapply1(nil, g, arg);  // Call the hook
             pop(p);
         }
@@ -689,9 +671,7 @@ static void real_garbage_collector()
                                            litvecs = getvecs = 0;
 
     {
-//
 // Set up the new half-space initially empty.
-//
         new_heap_pages_count = 0;
         new_vheap_pages_count = 0;
         trailing_heap_pages_count = 1;
@@ -699,9 +679,7 @@ static void real_garbage_collector()
         {   void *pp = pages[--pages_count];
             char *vf, *vl;
             int32_t len;
-//
 // A first page of (cons-)heap
-//
             zero_out(pp);
             new_heap_pages[new_heap_pages_count++] = pp;
             heaplimit = quadword_align_up((intptr_t)pp);
@@ -709,9 +687,7 @@ static void real_garbage_collector()
             vl = (char *)heaplimit;
             fringe = (LispObject)(vl + CSL_PAGE_SIZE);
             heaplimit = (LispObject)(vl + SPARE);
-//
 // A first page of vector heap.
-//
             pp = pages[--pages_count];
             zero_out(pp);
             new_vheap_pages[new_vheap_pages_count++] = pp;
@@ -722,22 +698,17 @@ static void real_garbage_collector()
             len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
             car32(vl - (CSL_PAGE_SIZE - 8)) = (LispObject)len;
         }
-//
 // I should remind you, gentle reader, that the value cell
 // and env cells of nil will always contain nil, which does not move,
 // and so I do not need to copy them here provided that NIL itself
 // never moves.
-//
         copy(&(qplist(nil)));
         copy(&(qpname(nil)));
         copy(&(qfastgets(nil)));
         copy(&(qpackage(nil)));
-
-//
 // I dislike the special treatment of current_package that follows. Maybe
 // I should arrange something totally different for copying the package
 // structure...
-//
         for (LispObject **p = list_bases; *p!=NULL; p++) copy(*p);
 
         for (LispObject *sp=stack; sp>(LispObject *)stackbase; sp--) copy(sp);
@@ -748,9 +719,7 @@ static void real_garbage_collector()
         {   for (size_t i=1; i<=repeat_count; i++)
                 copy(&repeat_heap[i]);
         }
-//
 // Now I need to perform some magic on the list of hash tables...
-//
         lose_dead_hashtables();
 // When I have transitions to the new hash table scheme the two lists
 // processed specially here become redundant and this fragment of code can
@@ -760,14 +729,13 @@ static void real_garbage_collector()
 
         tidy_fringes();
 
-//
 // Throw away the old semi-space - it is now junk.
-//
         while (heap_pages_count!=0)
         {   void *spare = heap_pages[--heap_pages_count];
 // I will fill the old space with explicit rubbish in the hope that that
 // will generate failures as promptly as possible if it somehow gets
-// referenced...
+// referenced... Even better if I could use mprotect to make it
+// really inaccessible.
             memset(spare, 0x55, (size_t)CSL_PAGE_SIZE+16);
             pages[pages_count++] = spare;
         }
@@ -777,9 +745,7 @@ static void real_garbage_collector()
             pages[pages_count++] = spare;
         }
 
-//
 // Flip the descriptors for the old and new semi-spaces.
-//
         {   void **w = heap_pages;
             heap_pages = new_heap_pages;
             new_heap_pages = w;
@@ -801,11 +767,13 @@ static void real_garbage_collector()
 LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 {   clock_t t0, t1, t2;
     intptr_t vheap_need = 0;
+// If the trigger is reached I will force a full GC. But only if I am allowed to!
+    if (reclaim_trigger_count == reclaim_trigger_target &&
+        garbage_collection_permitted)
+        stg_class = GC_USER_HARD;
 #ifdef CONSERVATIVE
-//
 // How do I know that all callee-save registers are on the stack by the
 // stage that I get to the level that C_stacktop now refers to?
-//
     get_stacktop();
     trace_printf("\n=== C stack size = %5d\n", (C_stackbase-C_stacktop));
     trace_printf("\n=== C_stackbase=%p C_stacktop=%p\n",
@@ -819,7 +787,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 //    printf("(*)"); fflush(stdout);  // while I debug!
 #endif // WIN32
     push_clock(); t0 = base_time;
-//
 // Life is a bit horrid here. I can have two significantly different sorts of
 // thing that cause this soft-GC to happen under FWIN. One is when I am in
 // windowed mode and FWIN provokes an asynchronous event for me. The other is
@@ -833,7 +800,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // Under Windows I have used SetConsoleMode (and under Unix/Linux tcsetattr)
 // to put the input into raw mode if it is direct from a keyboard. Thus
 // the operating system will not process ^C for me.
-//
     if (stg_class == GC_STACK && stacklimit == stackbase)
     {   stacklimit = savestacklimit;
         if (tick_pending)
@@ -845,12 +811,10 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         tidy_fringes();
         already_in_gc = false;
         pop_clock();
-//
 // There could, of course, be another async interrupt generated even during
 // this processing and certainly by the time I get into interrupted(),
 // and there could be "genuine" need for garbage collection or stack overflow
 // processing at any stage.
-//
         if (async_type == TICK_INTERRUPT)
         {   long int t = (long int)(100.0 * consolidated_time[0]);
             long int gct = (long int)(100.0 * gc_time);
@@ -865,11 +829,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
                 resource_exceeded();
             return onevalue(p);
         }
-//
 // If the user provokes a backtrace then at present I *ALWAYS* make it
 // a 100% full one. At some stage I could provide a different menu item
 // to deliver a semi-quiet interrupt...
-//
         else if (async_type == NOISY_INTERRUPT)
             miscflags |= BACKTRACE_MSG_BITS;
         else miscflags &= ~BACKTRACE_MSG_BITS;
@@ -885,11 +847,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             pop_clock();
             if (space_limit >= 0 && space_now > space_limit)
                 resource_exceeded();
-//
 // I have "soft" garbage collections - perhaps fairly frequently. I will
 // only call the GC hook function around once every 5 seconds to avoid undue
 // overhead in it.
-//
             if (!prev_consolidated_set)
             {   prev_consolidated = consolidated_time[0];
                 prev_consolidated_set = 1;
@@ -910,13 +870,11 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         }
     }
 
-//
 // There are parts of the code in setup/restart where perhaps things are not
 // yet in a consistent state and so any attempt at garbage collection could
 // cause chaos. So during them I set a flag that I test here! Since this
 // should never be triggered I am happy to leave it in state where the only
 // sane way to respond to it is to run under a debugger and set breakpoints.
-//
     if (!garbage_collection_permitted)
     {   fprintf(stderr,
                 "\n+++ Garbage collection attempt when not permitted\n");
@@ -932,10 +890,8 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     qvalue(gcknt_symbol) = fixnum_of_int(gc_number);
 
 #ifdef WINDOW_SYSTEM
-//
 // If I have a window system I tell it the current time every so often
 // just to keep things cheery...
-//
     {   long int t = (long int)(100.0 * consolidated_time[0]);
         long int gct = (long int)(100.0 * gc_time);
 // @@@@
@@ -945,7 +901,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // At present messages go to the normal output stream, which only makes
 // sense if GC messages are almost always disabled - maybe that will
 // be the case!
-//
 #ifndef EMBEDDED
         report_time(t, gct);
 #endif
@@ -969,7 +924,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // At present messages go to the normal output stream, which only makes
 // sense if GC messages are almost always disabled - maybe that will
 // be the case!
-//
         time_now = (int)consolidated_time[0];
         if ((time_limit >= 0 && time_now > time_limit) ||
             (io_limit >= 0 && io_now > io_limit))
@@ -980,10 +934,8 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             (long)gc_number, why, t/100, t%100, gct/100, gct%100);
     }
 #endif // WINDOW_SYSTEM
-//
 // If things crash really badly maybe I would rather have my output up
 // to date.
-//
     ensure_screen();
     if (spool_file != NULL) fflush(spool_file);
     if (gc_number == reclaim_trap_count)
@@ -999,22 +951,20 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     }
 
     t2 = t1 = t0;   // Time is not split down in this case
+    if (reclaim_trigger_target != 0)
+        trace_printf("+++ GC trigger = %" PRId64 "\n", reclaim_trigger_count);
     real_garbage_collector();
 
     gc_time += pop_clock();
     t2 = base_time;
 
     if ((verbos_flag & 5) == 5)
-//
 // (verbos 4) gets the system to tell me how long each phase of GC took,
 // but (verbos 1) must be ORd in too.
-//
-    {   
-        trace_printf("Copy %ld ms\n",
+    {   trace_printf("Copy %ld ms\n",
                      (long int)(1000.0 *
                                 (double)(t2-t0)/(double)CLOCKS_PER_SEC));
     }
-
 // (verbos 5) causes a display breaking down how space is used
     if ((verbos_flag & 5) == 5)
     {   trace_printf(
@@ -1027,10 +977,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
                      getvecs, ((C_stack_base-(char *)&why)+1023)/1024,
                      (intptr_t)((stack-stackbase)+1023)/1024);
     }
-
     pop(p);
-
-//
 // Here I grab more memory (if I am allowed to).
 // An initial version here, and one still suitable on machines that will
 // have plenty of real memory, will be to defined ok_to_grab_memory(n) as
@@ -1044,7 +991,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // adjusted on the basis of experience with this code.
 // On systems where it is possible to measure the amount of available
 // real memory more sophisticated calculations may be possible.
-//
     if (init_flags & INIT_EXPANDABLE)
     {   int ideal = ok_to_grab_memory(heap_pages_count + vheap_pages_count);
         int more;
@@ -1058,7 +1004,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         more = ideal - pages_count;
         while (more-- > 0)
         {   void *page = (void *)my_malloc((size_t)(CSL_PAGE_SIZE + 8));
-//
 // When I first grabbed memory in restart.c I used my_malloc_1(), which
 // gobbles a large stack frame and then called regular malloc - the idea
 // there was to avoid malloc grabbing space needed for the stack. I can
@@ -1066,8 +1011,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 // stack already active.  There is thus a danger that expanding the heap here
 // may cause me to run out of stack elsewhere.  Oh well, I guess I can not
 // win in all ways.
-//
-//
             if (page == NULL)
             {   init_flags &= ~INIT_EXPANDABLE;
                 break;

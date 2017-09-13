@@ -234,7 +234,9 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
 //
 // This stack-check is so that I can respond to interrupts
 //
-        if (stack >= stacklimit) w = reclaim(w, "stack", GC_STACK, 0);
+        if (++reclaim_trigger_count == reclaim_trigger_target ||
+            stack >= stacklimit)
+            w = reclaim(w, "stack", GC_STACK, 0);
         // divide by 10^9 to obtain remainder
         for (k=len-1; k>=0; k--)
             Ddiv10_9(carry, bignum_digits(w)[k],
@@ -279,7 +281,9 @@ void print_bignum(LispObject u, bool blankp, int nobreak)
         }
         for (i=0; i<=8; i++) putc_stream(my_buff[i], active_stream);
         pop(w);
-        if (stack >= stacklimit) w = reclaim(w, "stack", GC_STACK, 0);
+        if (++reclaim_trigger_count == reclaim_trigger_target ||
+            stack >= stacklimit)
+            w = reclaim(w, "stack", GC_STACK, 0);
     }
 }
 

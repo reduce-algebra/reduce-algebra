@@ -97,7 +97,8 @@ LispObject cons(LispObject a, LispObject b)
     qcar(r) = a;
     qcdr(r) = b;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(1))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(1))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal cons", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -111,12 +112,11 @@ LispObject cons_no_gc(LispObject a, LispObject b)
     return (LispObject)((char *)r + TAG_CONS);
 }
 
-//
 // cons_gc_test() MUST be called after any sequence of cons_no_gc() calls.
-//
 
 LispObject cons_gc_test(LispObject p)
-{   if ((char *)fringe <= (char *)heaplimit)
+{   if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)fringe <= (char *)heaplimit)
         return reclaim(p, "cons gc test", GC_CONS, 0);
     else return p;
 }
@@ -126,7 +126,8 @@ LispObject ncons(LispObject a)
     qcar(r) = a;
     qcdr(r) = nil;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(1))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(1))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal ncons", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -141,7 +142,8 @@ LispObject list2(LispObject a, LispObject b)
     qcar((char *)r+sizeof(Cons_Cell)) = b;
     qcdr((char *)r+sizeof(Cons_Cell)) = nil;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(2))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(2))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal list2", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -154,7 +156,8 @@ LispObject list2star(LispObject a, LispObject b, LispObject c)
     qcar((char *)r+sizeof(Cons_Cell)) = b;
     qcdr((char *)r+sizeof(Cons_Cell)) = c;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(2))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(2))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal list2*", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -167,7 +170,8 @@ LispObject list2starrev(LispObject c, LispObject b, LispObject a)
     qcar((char *)r+sizeof(Cons_Cell)) = b;
     qcdr((char *)r+sizeof(Cons_Cell)) = c;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(2))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(2))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal list2*", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -183,7 +187,8 @@ LispObject list3star(LispObject a, LispObject b, LispObject c, LispObject d)
     qcar((char *)r+2*sizeof(Cons_Cell)) = c;
     qcdr((char *)r+2*sizeof(Cons_Cell)) = d;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(3))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(3))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal list3*", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -202,7 +207,8 @@ LispObject list4(LispObject a, LispObject b, LispObject c, LispObject d)
     qcar((char *)r +3*sizeof(Cons_Cell)) = d;
     qcdr((char *)r + 3*sizeof(Cons_Cell)) = nil;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(4))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(4))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal list4", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -217,7 +223,8 @@ LispObject acons(LispObject a, LispObject b, LispObject c)
     qcar((char *)r+sizeof(Cons_Cell)) = a;
     qcdr((char *)r+sizeof(Cons_Cell)) = b;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(2))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(2))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal acons", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -233,7 +240,8 @@ LispObject list3(LispObject a, LispObject b, LispObject c)
     qcar((char *)r+2*sizeof(Cons_Cell)) = c;
     qcdr((char *)r+2*sizeof(Cons_Cell)) = nil;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(3))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(3))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal list3", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -249,7 +257,8 @@ LispObject list3rev(LispObject c, LispObject b, LispObject a)
     qcar((char *)r+2*sizeof(Cons_Cell)) = c;
     qcdr((char *)r+2*sizeof(Cons_Cell)) = nil;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(3))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(3))
         return reclaim((LispObject)((char *)r + TAG_CONS),
                        "internal list3", GC_CONS, 0);
     else return (LispObject)((char *)r + TAG_CONS);
@@ -1030,7 +1039,8 @@ LispObject Lcons(LispObject, LispObject a, LispObject b)
     qcar(r) = a;
     qcdr(r) = b;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(1))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(1))
         return onevalue(reclaim((LispObject)((char *)r + TAG_CONS),
                                 "cons", GC_CONS, 0));
     else return onevalue((LispObject)((char *)r + TAG_CONS));
@@ -1042,7 +1052,8 @@ LispObject Lxcons(LispObject, LispObject a, LispObject b)
     qcar(r) = b;
     qcdr(r) = a;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(1))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(1))
         return onevalue(reclaim((LispObject)((char *)r + TAG_CONS),
                                 "xcons", GC_CONS, 0));
     else return onevalue((LispObject)((char *)r + TAG_CONS));
@@ -1058,7 +1069,8 @@ LispObject Lncons(LispObject env, LispObject a)
     qcar(r) = a;
     qcdr(r) = nil;
     fringe = r;
-    if ((char *)r <= (char *)heaplimit || cons_forced(1))
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (char *)r <= (char *)heaplimit || cons_forced(1))
         return onevalue(reclaim((LispObject)((char *)r + TAG_CONS),
                                 "ncons", GC_CONS, 0));
     else return onevalue((LispObject)((char *)r + TAG_CONS));
@@ -1770,7 +1782,8 @@ LispObject get_basic_vector(int tag, int type, size_t size)
         if (alloc_size > (CSL_PAGE_SIZE - 32))
             aerror1("request for basic vector too big",
                     fixnum_of_int(alloc_size/CELL-1));
-        if (alloc_size > free || vec_forced(alloc_size/CELL))
+        if (++reclaim_trigger_count == reclaim_trigger_target ||
+            alloc_size > free || vec_forced(alloc_size/CELL))
         {   char msg[40];
 //
 // I go to a whole load of trouble here to tell the user what sort of

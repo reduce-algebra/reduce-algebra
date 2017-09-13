@@ -1812,7 +1812,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 push3(codevec, litvec, A_reg); // the argument
                 if (--countdown < 0) deal_with_tick();
-                if (stack >= stacklimit) reclaim(nil, "stack", GC_STACK, 0);
+                if (++reclaim_trigger_count == reclaim_trigger_target ||
+                    stack >= stacklimit)
+                    reclaim(nil, "stack", GC_STACK, 0);
                 A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0), stack-1);
                 pop2(litvec, codevec);
                 assert(A_reg != 0);
@@ -1857,7 +1859,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                 }
                 push4(codevec, litvec, B_reg, A_reg);
                 if (--countdown < 0) deal_with_tick();
-                if (stack >= stacklimit) reclaim(nil, "stack", GC_STACK, 0);
+                if (++reclaim_trigger_count == reclaim_trigger_target ||
+                    stack >= stacklimit)
+                    reclaim(nil, "stack", GC_STACK, 0);
                 A_reg = bytestream_interpret(CELL-TAG_VECTOR, basic_elt(litvec, 0), stack-2);
                 pop2(litvec, codevec);
                 assert(A_reg != 0);

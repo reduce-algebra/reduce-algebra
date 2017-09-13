@@ -240,7 +240,7 @@ LispObject putprop(LispObject a, LispObject b, LispObject c)
         }
         else pl = qcdr(pl);
     }
-    stackcheck3(0, a, b, c);
+    stackcheck3(a, b, c);
     push2(a, c);
     b = acons(b, c, qplist(a));
     pop2(c, a);
@@ -882,7 +882,9 @@ static inline void do_freerstr()
 
 static inline void poll_jump_back(LispObject& A_reg)
 {   if (--countdown < 0) deal_with_tick();
-    if (stack >= stacklimit) A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        stack >= stacklimit)
+        A_reg = reclaim(A_reg, "stack", GC_STACK, 0);
 }
 
 static inline void do_pvbind(LispObject vals, LispObject vars)

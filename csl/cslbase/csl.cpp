@@ -271,7 +271,7 @@ void error(int nargs, int code, ...)
         va_end(a);
         for (i=0; i<nargs; i++) push(*--w);
         if (code != err_stack_overflow)  // Be cautious here!
-        {   stackcheck0(nargs);
+        {   stackcheck0();
         }
         for (i=0; i<nargs; i++)
         {   LispObject p;
@@ -308,7 +308,7 @@ void cerror(int nargs, int code1, int code2, ...)
         for (i=0; i<nargs; i++) *w++ = va_arg(a, LispObject);
         va_end(a);
         for (i=0; i<nargs; i++) push(*--w);
-        stackcheck0(nargs-2);
+        stackcheck0();
         for (i=0; i<nargs; i++)
         {   LispObject p;
             pop(p);
@@ -940,6 +940,8 @@ void check_valid(void *p, bool expect)
 }
 #endif
 
+bool stop_on_error = false;
+
 static void lisp_main(void)
 {   volatile int i;
 #ifdef DEBUG
@@ -1112,7 +1114,8 @@ static void lisp_main(void)
 // Of course a tick may very well have happened rather recently - so
 // I will flush it out now just to clear the air.
 //
-                    if (stack >= stacklimit)
+                    if (++reclaim_trigger_count == reclaim_trigger_target ||
+                        stack >= stacklimit)
                     {   ignore_error(reclaim(nil, "stack", GC_STACK, 0));
                     }
                     cold_start = (exit_value == nil);
@@ -1696,6 +1699,25 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
                         else if (strcmp(w, "guimin") == 0)
                         { }
+/*! options [--gc-trigger] \item [{\ttfamily --gc-trigger}] \index{{\ttfamily --gc-trigger}}
+ * --gc-trigger=NNNN causes a garbage collection to be forced on the NNNNth
+ * occasion when that could possibly happen. This may sometimes be relevant
+ * when trying to track down garbage collection related bugs. If the option
+ * is set every garbage collection displays the count that it corresponds to,
+ * and the intent is that these counts should be fairly deterministic.
+ */
+                        else if (strncmp(w, "gc-trigger=", 11) == 0)
+                        {   sscanf(w+11, "%" SCNd64, &reclaim_trigger_target);
+                            term_printf("GC trigget set to %" PRId64 "\n",
+                                        reclaim_trigger_target);
+                        }
+/*! options [--stop-on-error] \item [{\ttfamily --stop-on-error}] \index{{\ttfamily --stop-on-error}}
+ * This utterly defeats errorset and arranges that if there is any error that
+ * after whatever backtrace might have been generated any inner errorset
+ * just propagates the error out, and at the top level the system exits.
+ */
+                        else if (strcmp(w, "stop-on-error") == 0)
+                            stop_on_error=true;
 /*! options [--force-verbos] \item [{\ttfamily --force-verbos}] \index{{\ttfamily --force-verbos}}
  * Forces generation of messages from the garbage collector regardless of any
  * attempt from with the system to change that. Intended for use during system

@@ -172,7 +172,7 @@ LispObject apply(LispObject fn, LispObject args,
 
 static LispObject and_fn(LispObject args, LispObject env)
 // also needs to be a macro for Common Lisp
-{   stackcheck2(0, args, env);
+{   stackcheck2(args, env);
     STACK_SANITY;
     if (!consp(args)) return onevalue(lisp_true);
     for (;;)
@@ -193,7 +193,7 @@ static LispObject and_fn(LispObject args, LispObject env)
 //{
 //  if (!consp(a)) return b;
 //  else
-//  {   stackcheck2(0, a, b);
+//  {   stackcheck2(a, b);
 //      push(a);
 //      b = append(qcdr(a), b);
 //      pop(a);
@@ -206,7 +206,7 @@ static LispObject block_fn(LispObject args, LispObject env)
 {   LispObject p;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     push3(qcar(args),          // my_tag
           qcdr(args),          // args
           env);
@@ -256,7 +256,7 @@ static LispObject catch_fn(LispObject args, LispObject env)
 {   LispObject tag, v;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     push2(args, env);
     tag = qcar(args);
     tag = eval(tag, env);
@@ -332,7 +332,7 @@ LispObject let_fn_1(LispObject bvlx, LispObject bodyx,
 // the Compiler, but in the interpreter in non-Common mode every variable
 // is SPECIAL.
 //
-{   stackcheck3(0, bvlx, bodyx, envx);
+{   stackcheck3(bvlx, bodyx, envx);
     push3(bvlx, bodyx, envx);
     push5(nil, nil, envx, nil, nil);
 //
@@ -463,7 +463,7 @@ static LispObject compiler_let_fn(LispObject args, LispObject env)
 }
 
 static LispObject cond_fn(LispObject args, LispObject env)
-{   stackcheck2(0, args, env);
+{   stackcheck2(args, env);
     STACK_SANITY;
     while (consp(args))
     {   LispObject p = qcar(args);
@@ -645,7 +645,7 @@ static LispObject flet_fn(LispObject args, LispObject env)
 {   LispObject my_env, d;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     my_env = env;
     d = qcar(args);     // The bunch of definitions
     args = qcdr(args);
@@ -720,7 +720,7 @@ static LispObject if_fn(LispObject args, LispObject env)
         args = qcdr(args);
         if (args != nil) aerror("if");
     }
-    stackcheck4(0, p, env, tr, fs);
+    stackcheck4(p, env, tr, fs);
     push3(fs, tr, env);
     p = eval(p, env);
     pop3(env, tr, fs);
@@ -733,7 +733,7 @@ static LispObject labels_fn(LispObject args, LispObject env)
 {   LispObject my_env, d;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     my_env = env;
     d = qcar(args);     // The bunch of definitions
     while (consp(d))
@@ -772,7 +772,7 @@ static LispObject letstar_fn(LispObject args, LispObject env)
 //
 {   if (!consp(args)) return onevalue(nil);
     STACK_SANITY;
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     push3(qcar(args), qcdr(args), env);
     push5(nil, nil,                // p, q
           env, nil, nil);          // env1, specenv, local_decs

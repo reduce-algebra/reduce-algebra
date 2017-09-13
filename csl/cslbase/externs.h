@@ -290,14 +290,18 @@ extern volatile char stack_contents_temp;
 #ifdef CHECK_STACK
 extern int check_stack(const char *file, int line);
 extern void show_stack();
-#define if_check_stack \
-   if (check_stack("@" __FILE__,__LINE__)) \
-   {   show_stack(); aerror("stack overflow"); }
+
+static intline void if_check_stack()
+{   if (check_stack("@" __FILE__,__LINE__))
+    {   show_stack();
+        aerror("stack overflow");
+    }
+}
 #else
-#define if_check_stack \
-   {   const char *_p_ = (char *)&_p_; \
-       if (_p_ < C_stack_limit) aerror("stack overflow"); \
-   }
+static inline void if_check_stack()
+{   const char *_p_ = (const char *)&_p_; \
+    if (_p_ < C_stack_limit) aerror("stack overflow"); \
+}
 #endif
 
 extern int32_t software_ticks, countdown;
@@ -337,45 +341,7 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 
 #endif
 
-#define stackcheck0(k)                                      \
-    if_check_stack                                          \
-    if ((--countdown < 0 && deal_with_tick()) ||            \
-        stack >= stacklimit)                                \
-    {   reclaim(nil, "stack", GC_STACK, 0);                 \
-    }
 
-#define stackcheck1(k, a1)                                  \
-    if_check_stack                                          \
-    if ((--countdown < 0 && deal_with_tick()) ||            \
-        stack >= stacklimit)                                \
-    {   a1 = reclaim(a1, "stack", GC_STACK, 0);             \
-    }
-
-#define stackcheck2(k, a1, a2)                              \
-    if_check_stack                                          \
-    if ((--countdown < 0 && deal_with_tick()) ||            \
-        stack >= stacklimit)                                \
-    {   push(a2);                                           \
-        a1 = reclaim(a1, "stack", GC_STACK, 0); pop(a2);    \
-    }
-
-#define stackcheck3(k, a1, a2, a3)                          \
-    if_check_stack                                          \
-    if ((--countdown < 0 && deal_with_tick()) ||            \
-        stack >= stacklimit)                                \
-    {   push2(a2, a3);                                      \
-        a1 = reclaim(a1, "stack", GC_STACK, 0);             \
-        pop2(a3, a2);                                       \
-    }
-
-#define stackcheck4(k, a1, a2, a3, a4)                      \
-    if_check_stack                                          \
-    if ((--countdown < 0 && deal_with_tick()) ||            \
-        stack >= stacklimit)                                \
-    {   push3(a2, a3, a4);                                  \
-        a1 = reclaim(a1, "stack", GC_STACK, 0);             \
-        pop3(a4, a3, a2);                                   \
-    }
 
 #define first_nil_offset         50     // GC collector marks from here up
 
@@ -639,6 +605,7 @@ extern bool undefine_this_one[MAX_SYMBOLS_TO_DEFINE];
 extern int errorset_min, errorset_max;
 
 extern bool force_verbos, force_echo, force_backtrace;
+extern bool stop_on_error;
 
 extern size_t number_of_input_files,
        number_of_symbols_to_define,
@@ -651,6 +618,62 @@ extern int64_t gc_number;
 extern int64_t reclaim_trap_count;
 extern uintptr_t reclaim_stack_limit;
 extern bool next_gc_is_hard;
+extern uint64_t reclaim_trigger_count, reclaim_trigger_target;
+
+extern int deal_with_tick();
+extern LispObject reclaim(LispObject value_to_return, const char *why,
+                          int stg_class, intptr_t size);
+
+static inline void stackcheck0()                                       
+{   if_check_stack();                                         
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (--countdown < 0 && deal_with_tick()) ||             
+        stack >= stacklimit)                                 
+    {   reclaim(nil, "stack", GC_STACK, 0);                  
+    }
+}
+
+static inline void stackcheck1(LispObject& a1)                                   
+{   if_check_stack();                                        
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (--countdown < 0 && deal_with_tick()) ||             
+        stack >= stacklimit)
+    {   a1 = reclaim(a1, "stack", GC_STACK, 0);              
+    }
+}
+
+static inline void stackcheck2(LispObject& a1, LispObject& a2)                               
+{   if_check_stack();                                        
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (--countdown < 0 && deal_with_tick()) ||             
+        stack >= stacklimit)
+    {   push(a2);                                            
+        a1 = reclaim(a1, "stack", GC_STACK, 0);
+        pop(a2);     
+    }
+}
+
+static inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3)                           
+{   if_check_stack();                                        
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (--countdown < 0 && deal_with_tick()) ||             
+        stack >= stacklimit)
+    {   push2(a2, a3);                                       
+        a1 = reclaim(a1, "stack", GC_STACK, 0);              
+        pop2(a3, a2);                                        
+    }
+}
+
+static inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObject& a4)                       
+{   if_check_stack();                                        
+    if (++reclaim_trigger_count == reclaim_trigger_target ||
+        (--countdown < 0 && deal_with_tick()) ||             
+        stack >= stacklimit)
+    {   push3(a2, a3, a4);                                   
+        a1 = reclaim(a1, "stack", GC_STACK, 0);              
+        pop3(a4, a3, a2);                                    
+    }
+}
 
 extern uint64_t force_cons, force_vec;
 
@@ -815,7 +838,6 @@ extern double pop_clock();
 extern double consolidated_time[10], gc_time;
 extern bool volatile already_in_gc, tick_on_gc_exit;
 extern bool volatile interrupt_pending, tick_pending;
-extern int deal_with_tick();
 extern bool trap_floating_overflow;
 extern const volatile char *errorset_msg;
 extern int errorset_code;
@@ -954,8 +976,6 @@ extern LispObject quot2(LispObject a, LispObject b);
 extern LispObject quotrem2(LispObject a, LispObject b);
 extern LispObject rational(LispObject a);
 extern void        read_eval_print(int noisy);
-extern LispObject reclaim(LispObject value_to_return, const char *why,
-                          int stg_class, intptr_t size);
 extern void        set_fns(LispObject sym, no_args *f0, one_arg *f1,
                            two_args *f2, three_args *f3, fourup_args *f4up);
 extern void        setup(int restartp, double storesize);

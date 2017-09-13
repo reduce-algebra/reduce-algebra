@@ -49,7 +49,7 @@ static LispObject macrolet_fn(LispObject args, LispObject env)
 {   LispObject d;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     d = qcar(args);     // The bunch of definitions
     while (consp(d))
     {   LispObject w = qcar(d);     // w = (name bvl ...)
@@ -86,7 +86,7 @@ static LispObject mv_prog1_fn(LispObject args, LispObject env)
     STACK_SANITY;
     int nargs, i;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     push2(args, env);
     r = qcar(args);
     r = eval(r, env);
@@ -121,7 +121,7 @@ static LispObject mv_prog1_fn(LispObject args, LispObject env)
 static LispObject or_fn(LispObject args, LispObject env)
 // also needs to be a macro for Common Lisp
 {   if (!consp(args)) return onevalue(nil);
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     STACK_SANITY;
     for (;;)
     {   LispObject v = qcar(args);
@@ -140,7 +140,7 @@ static LispObject or_fn(LispObject args, LispObject env)
 
 static LispObject prog_fn(LispObject args, LispObject env)
 {   if (!consp(args) || !consp(qcdr(args))) return onevalue(nil);
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     STACK_SANITY;
     push3(nil, args, env);
 #define env    stack[0]
@@ -190,7 +190,7 @@ LispObject progn_fn(LispObject args, LispObject env)
 {   LispObject f;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     f = nil;
     for (;;)
     {   f = qcar(args);
@@ -219,7 +219,7 @@ static LispObject prog1_fn(LispObject args, LispObject env)
 {   LispObject f;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil); // (prog1) -> nil
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     push2(args, env);
     f = qcar(args);
     f = eval(f, env);              // first arg
@@ -242,7 +242,7 @@ static LispObject prog2_fn(LispObject args, LispObject env)
 {   LispObject f;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil); // (prog2) -> nil
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     push2(args, env);
     args = qcar(args);
     (void)eval(args, env);                    // discard first arg
@@ -293,7 +293,7 @@ static LispObject progv_fn(LispObject args_x, LispObject env_x)
 {   LispObject syms_x, vals_x, specenv_x, w;
     STACK_SANITY;
     if (!consp(args_x)) return onevalue(nil);
-    stackcheck2(0, args_x, env_x);
+    stackcheck2(args_x, env_x);
     syms_x = vals_x = specenv_x = nil;
     syms_x = qcar(args_x);
     args_x = qcdr(args_x);
@@ -353,7 +353,7 @@ static LispObject return_fn(LispObject args, LispObject env)
 //
     STACK_SANITY;
     LispObject p;
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     for(p=env; consp(p); p=qcdr(p))
     {   LispObject w = qcar(p);
         if (!consp(w)) continue;
@@ -382,7 +382,7 @@ tag_found:
 
 static LispObject return_from_fn(LispObject args, LispObject env)
 {   LispObject p, tag;
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     STACK_SANITY;
     if (!consp(args)) tag = nil;
     else
@@ -418,7 +418,7 @@ tag_found:
 static LispObject setq_fn(LispObject args, LispObject env)
 {   LispObject var, val = nil;
     STACK_SANITY;
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     while (consp(args))
     {   var = qcar(args);
         if (!is_symbol(var) || var == nil || var == lisp_true ||
@@ -487,7 +487,7 @@ LispObject tagbody_fn(LispObject args, LispObject env)
 // these bindings if I ever exit from this block, so that nobody
 // even thinks that they can use (go xx) to get back in.
 //
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     STACK_SANITY;
     push2(env, args);
     for (p=args; consp(p); p=qcdr(p))
@@ -598,7 +598,7 @@ static LispObject throw_fn(LispObject args, LispObject env)
 {   LispObject tag, p;
     STACK_SANITY;
     if (!consp(args)) aerror("throw");
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     tag = qcar(args);
     args = qcdr(args);
     push2(args, env);
@@ -646,7 +646,7 @@ static LispObject unless_fn(LispObject args, LispObject env)
 {   LispObject w;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     push2(args, env);
     w = qcar(args);
     w = eval(w, env);
@@ -660,7 +660,7 @@ static LispObject unwind_protect_fn(LispObject args, LispObject env)
     STACK_SANITY;
     int nargs = 0, i;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     push2(args, env);
     r = qcar(args);
     try
@@ -956,8 +956,15 @@ static LispObject errorset3(volatile LispObject env,
                 break;
         }
     }
-
-    stackcheck2(2, form, env);
+    push2(form, env);
+    stackcheck0();
+// The messing about here is because env and form are labelled as volatile,
+// while the function prototype for pop2 is not.
+    {   LispObject env1, form1;
+        pop2(env1, form1);
+        env = env1;
+        form = form1;
+    }
     errorset_msg = NULL;
     try
     {   START_TRY_BLOCK;
@@ -991,6 +998,7 @@ static LispObject errorset3(volatile LispObject env,
             case 2: miscflags &= ~ARGS_FLAG;
             default:break;
         }
+        if (stop_on_error) throw;
         if (consp(exit_value)) exit_value = nil;
         return onevalue(exit_value);
     }
@@ -1276,7 +1284,7 @@ static LispObject when_fn(LispObject args, LispObject env)
 {   LispObject w;
     STACK_SANITY;
     if (!consp(args)) return onevalue(nil);
-    stackcheck2(0, args, env);
+    stackcheck2(args, env);
     push2(args, env);
     w = qcar(args);
     w = eval(w, env);
