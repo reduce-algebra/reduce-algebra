@@ -463,14 +463,6 @@ static void lose_dead_hashtables(void)
         if (!is_forward((LispObject)h)) *p = qcdr(q);
         else p = &qcdr(q);
     }
-    p = &equal_hash_tables;
-    while ((q = *p) != nil)
-    {   Header h;
-        r = qcar(q);
-        h = vechdr(r);
-        if (!is_forward((LispObject)h)) *p = qcdr(q);
-        else p = &qcdr(q);
-    }
 }
 
 // I need a way that a thread that is not synchronised with this one can
@@ -670,97 +662,91 @@ static void real_garbage_collector()
             big_numbers = box_floats = bytestreams = other_mem =
                                            litvecs = getvecs = 0;
 
-    {
 // Set up the new half-space initially empty.
-        new_heap_pages_count = 0;
-        new_vheap_pages_count = 0;
-        trailing_heap_pages_count = 1;
-        trailing_vheap_pages_count = 1;
-        {   void *pp = pages[--pages_count];
-            char *vf, *vl;
-            int32_t len;
+    new_heap_pages_count = 0;
+    new_vheap_pages_count = 0;
+    trailing_heap_pages_count = 1;
+    trailing_vheap_pages_count = 1;
+    void *pp = pages[--pages_count];
+    char *vf, *vl;
+    int32_t len;
 // A first page of (cons-)heap
-            zero_out(pp);
-            new_heap_pages[new_heap_pages_count++] = pp;
-            heaplimit = quadword_align_up((intptr_t)pp);
-            car32(heaplimit) = CSL_PAGE_SIZE;
-            vl = (char *)heaplimit;
-            fringe = (LispObject)(vl + CSL_PAGE_SIZE);
-            heaplimit = (LispObject)(vl + SPARE);
+    zero_out(pp);
+    new_heap_pages[new_heap_pages_count++] = pp;
+    heaplimit = quadword_align_up((intptr_t)pp);
+    car32(heaplimit) = CSL_PAGE_SIZE;
+    vl = (char *)heaplimit;
+    fringe = (LispObject)(vl + CSL_PAGE_SIZE);
+    heaplimit = (LispObject)(vl + SPARE);
 // A first page of vector heap.
-            pp = pages[--pages_count];
-            zero_out(pp);
-            new_vheap_pages[new_vheap_pages_count++] = pp;
-            vf = (char *)doubleword_align_up((intptr_t)pp) + 8;
-            vfringe = (LispObject)vf;
-            vl = vf + (CSL_PAGE_SIZE - 16);
-            vheaplimit = (LispObject)vl;
-            len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
-            car32(vl - (CSL_PAGE_SIZE - 8)) = (LispObject)len;
-        }
+    pp = pages[--pages_count];
+    zero_out(pp);
+    new_vheap_pages[new_vheap_pages_count++] = pp;
+    vf = (char *)doubleword_align_up((intptr_t)pp) + 8;
+    vfringe = (LispObject)vf;
+    vl = vf + (CSL_PAGE_SIZE - 16);
+    vheaplimit = (LispObject)vl;
+    len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
+    car32(vl - (CSL_PAGE_SIZE - 8)) = (LispObject)len;
 // I should remind you, gentle reader, that the value cell
 // and env cells of nil will always contain nil, which does not move,
 // and so I do not need to copy them here provided that NIL itself
 // never moves.
-        copy(&(qplist(nil)));
-        copy(&(qpname(nil)));
-        copy(&(qfastgets(nil)));
-        copy(&(qpackage(nil)));
+    copy(&(qplist(nil)));
+    copy(&(qpname(nil)));
+    copy(&(qfastgets(nil)));
+    copy(&(qpackage(nil)));
 // I dislike the special treatment of current_package that follows. Maybe
 // I should arrange something totally different for copying the package
 // structure...
-        for (LispObject **p = list_bases; *p!=NULL; p++) copy(*p);
+    for (LispObject **p = list_bases; *p!=NULL; p++) copy(*p);
 
-        for (LispObject *sp=stack; sp>(LispObject *)stackbase; sp--) copy(sp);
+    for (LispObject *sp=stack; sp>(LispObject *)stackbase; sp--) copy(sp);
 // When running the deserialization code I keep references to multiply-
 // used items in repeat_heap, and if garbage collection occurs they must be
 // updated.
-        if (repeat_heap != NULL)
-        {   for (size_t i=1; i<=repeat_count; i++)
-                copy(&repeat_heap[i]);
-        }
+    if (repeat_heap != NULL)
+    {   for (size_t i=1; i<=repeat_count; i++)
+            copy(&repeat_heap[i]);
+    }
 // Now I need to perform some magic on the list of hash tables...
-        lose_dead_hashtables();
+    lose_dead_hashtables();
 // When I have transitions to the new hash table scheme the two lists
 // processed specially here become redundant and this fragment of code can
 // go, I think.
-        copy(&eq_hash_tables);
-        copy(&equal_hash_tables);
+    copy(&eq_hash_tables);
 
-        tidy_fringes();
+    tidy_fringes();
 
 // Throw away the old semi-space - it is now junk.
-        while (heap_pages_count!=0)
-        {   void *spare = heap_pages[--heap_pages_count];
+    while (heap_pages_count!=0)
+    {   void *spare = heap_pages[--heap_pages_count];
 // I will fill the old space with explicit rubbish in the hope that that
 // will generate failures as promptly as possible if it somehow gets
 // referenced... Even better if I could use mprotect to make it
 // really inaccessible.
-            memset(spare, 0x55, (size_t)CSL_PAGE_SIZE+16);
-            pages[pages_count++] = spare;
-        }
-        while (vheap_pages_count!=0)
-        {   void *spare = vheap_pages[--vheap_pages_count];
-            memset(spare, 0xaa, (size_t)CSL_PAGE_SIZE+16);
-            pages[pages_count++] = spare;
-        }
-
-// Flip the descriptors for the old and new semi-spaces.
-        {   void **w = heap_pages;
-            heap_pages = new_heap_pages;
-            new_heap_pages = w;
-            w = vheap_pages;
-            vheap_pages = new_vheap_pages;
-            new_vheap_pages = w;
-            heap_pages_count = new_heap_pages_count;
-            new_heap_pages_count = 0;
-            vheap_pages_count = new_vheap_pages_count;
-            new_vheap_pages_count = 0;
-        }
+        memset(spare, 0x55, (size_t)CSL_PAGE_SIZE+16);
+        pages[pages_count++] = spare;
+    }
+    while (vheap_pages_count!=0)
+    {   void *spare = vheap_pages[--vheap_pages_count];
+        memset(spare, 0xaa, (size_t)CSL_PAGE_SIZE+16);
+        pages[pages_count++] = spare;
     }
 
-    LispObject qq;
-    for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
+// Flip the descriptors for the old and new semi-spaces.
+    void **w = heap_pages;
+    heap_pages = new_heap_pages;
+    new_heap_pages = w;
+    w = vheap_pages;
+    vheap_pages = new_vheap_pages;
+    new_vheap_pages = w;
+    heap_pages_count = new_heap_pages_count;
+    new_heap_pages_count = 0;
+    vheap_pages_count = new_vheap_pages_count;
+    new_vheap_pages_count = 0;
+
+    for (LispObject qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
         rehash_this_table(qcar(qq));
 }
 

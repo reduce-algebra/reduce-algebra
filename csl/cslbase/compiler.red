@@ -1158,7 +1158,6 @@ symbolic procedure s!:try_tail_1(b, blocks);
     rplaca(cdr b, nil);
     rplaca(cddr b, size-cadddr w+3);
     rplacd(cddr b, body);
-princ "##### "; print b;
     return b
   end;
 

@@ -341,8 +341,6 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 
 #endif
 
-
-
 #define first_nil_offset         50     // GC collector marks from here up
 
 //
@@ -541,7 +539,7 @@ extern void copy_out_of_nilseg();
 extern void rehash_this_table(LispObject v);
 extern void simple_print(LispObject x);
 extern void simple_msg(const char *s, LispObject x);
-extern LispObject eq_hash_tables, equal_hash_tables;
+extern LispObject eq_hash_tables;
 extern uint64_t hash_equal(LispObject key);
 
 //

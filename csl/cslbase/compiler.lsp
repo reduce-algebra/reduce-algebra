@@ -616,8 +616,8 @@ size 1)))) (t (progn (setq body (cons (quote BIGCALL) body)) (setq w2 (logand
 litoff 255)) (setq litoff (truncate litoff 256)) (setq body (cons w2 (cons (
 plus litoff (times 16 nargs) 128) body)))))) (cond ((car w) (setq body (cons 
 (append (car w) (list (quote TAIL))) body)))) (rplaca (cdr b) nil) (rplaca (
-cddr b) (plus (difference size (cadddr w)) 3)) (rplacd (cddr b) body) (princ 
-"##### ") (print b) (return b)))
+cddr b) (plus (difference size (cadddr w)) 3)) (rplacd (cddr b) body) (return
+b)))
 
 (de s!:try_tailcall (b) (prog (var1033 var1034) (setq var1033 b) lab1032 (
 cond ((null var1033) (return (reversip var1034)))) (prog (v) (setq v (car 

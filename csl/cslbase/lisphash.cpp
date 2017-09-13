@@ -38,7 +38,6 @@
 
 #include "headers.h"
 
-//
 // (June 2016...) I am working on a total replacement for this file that
 // will use a different hashing scheme based on Cuckoo Hashing so that
 // I end up with a guarantee that every lookup will cost at worst 3 probes
@@ -52,7 +51,6 @@
 // happen when the table is next used, and parhaps many hash tables will
 // just remain in a slightly messed up state saving the cost of gratuitously
 // rehashing them in an eager manner.
-//
 
 LispObject Lmkhash_2(LispObject env, LispObject size, LispObject flavour)
 {   if (!is_fixnum(size)) aerror1("mkhash", size);
@@ -60,8 +58,8 @@ LispObject Lmkhash_2(LispObject env, LispObject size, LispObject flavour)
     size_t size1 = int_of_fixnum(size);
     if (!is_fixnum(flavour) && !consp(flavour))
         aerror1("mkhash", flavour);
-// Very small requests will still lead to a table of size at least 5
-    if (size1 < 10) size1 = 5;
+// Very small requests will still lead to a table of size at least 7
+    if (size1 < 7) size1 = 7;
 // I want to table size to be a prime so that (hash%size) stands a good chance
 // of making use of all the bits of hash, and to ease issues of the stride
 // I use to resolve collisions.
@@ -83,7 +81,7 @@ LispObject Lmkhash_2(LispObject env, LispObject size, LispObject flavour)
 // triggered a garbage collection the value of eq_hash_tables would be
 // somewhere where the GC scanned it, and that must not be allowed to
 // happen.
-    v = ncons(v);
+    v = ncons(v1);
     qcdr(v) = eq_hash_tables;
     eq_hash_tables = v;
     pop2(v1, v);
@@ -95,7 +93,6 @@ LispObject Lmkhash_2(LispObject env, LispObject size, LispObject flavour)
 }
 
 LispObject Lmkhash_3(LispObject env, LispObject size, LispObject flavour, LispObject growth)
-//
 // (mkhash size flavour growth)
 //    Once upon a time the third argument mattered. Now it is ignored!
 //
@@ -112,18 +109,15 @@ LispObject Lmkhash_3(LispObject env, LispObject size, LispObject flavour, LispOb
 // hash the output again as if hashing under EQL - but I expect that really
 // I expect numeric hash values), and eqfn is a function used to compare
 // items. [this facility is at present not implemented]
-//
 {   return Lmkhash_2(env, size, flavour);
 }
 
-//
 // I use the following while combining parts of a structure to compute a
 // hash value. It may not be totally wonderful (I would need to soak my mind
 // in pseudo-random numbers to do a really good job) but it will probably
 // serve for now. Well I rather view it as pretty grotty in that it still
 // returns just 31-bits. But I will not mess with it while I am making
 // bigger changes here.
-//
 
 static uint64_t update_hash(uint64_t prev, uint64_t data)
 {   prev = prev ^ data;
@@ -133,11 +127,9 @@ static uint64_t update_hash(uint64_t prev, uint64_t data)
 }
 
 static uint64_t hash_eql(LispObject key)
-//
 // Must return same code for two eql numbers.  This is remarkably
 // painful! I would like the value to be insensitive to fine details
 // of the machine I am running on.
-//
 {   if (is_bfloat(key))
     {   int h = type_of_header(flthdr(key));
 // For floating point values I look at the binary representation of
@@ -156,11 +148,9 @@ static uint64_t hash_eql(LispObject key)
         switch (h)
         {   case TYPE_SINGLE_FLOAT:
                 nasty_union.fp = (double)single_float_val(key);
-//
 // A *horrid* issue arises here in that (EQL 0.0 -0.0) will be true
 // hence 0.0 and -0.0 must hash to the same value. Hence the following
 // line even if at first sight it looks ridiculous!
-//
                 if (nasty_union.fp == -0.0) nasty_union.fp = 0.0;
                 break;
             case TYPE_DOUBLE_FLOAT:
@@ -179,7 +169,6 @@ static uint64_t hash_eql(LispObject key)
             default:
                 nasty_union.fp = 0.0;
         }
-//
 // The following line is OK on any one computer, but will generate values
 // that are not portable across machines with different floating point
 // representation. This is not too important when the hash value is only
@@ -199,7 +188,6 @@ static uint64_t hash_eql(LispObject key)
         {   case TYPE_BIGNUM:
                 n = length_of_header(h);
                 n = (n-CELL-4)/4;  // last index into the data
-//
 // This may be overkill - for very long bignums it is possibly a waste to
 // walk over ALL the digits when computing a hash value - I could do well
 // enough just looking at a few. But I still feel safer using all of them.
@@ -218,24 +206,20 @@ static uint64_t hash_eql(LispObject key)
                 return 0x12345678;  // unknown type of number?
         }
     }
-//
 // For all things OTHER than messy numbers I just hand back the
 // representation of the object as a C pointer. Well, I scramble it a bit
 // because otherwise too often Lisp objects only differ in their low order
 // bits.
-//
     else return update_hash(1, (uint64_t)key);
 }
 
 static uint64_t hash_cl_equal(LispObject key, bool descend)
-//
 // This function is the one used hashing things under EQUAL, and note
 // that Common Lisp expects that EQUAL will NOT descend vectors or
 // structures, so this code had better not. But it is supposed to
 // descend path-names and it must treat non-simple strings and bitvectors
 // as if they were like ordinary strings and bitvectors.  If descend is
 // false this will not descend through lists.
-//
 {   uint64_t r = 1, c;
     LispObject w;
     size_t len;
@@ -260,20 +244,16 @@ static uint64_t hash_cl_equal(LispObject key, bool descend)
             case TAG_VECTOR:
             {   ha = vechdr(key);
                 len = bytes_in_vector(key);
-//
 // I need to treat strings and bitvectors here specially since in those
 // cases (and for pathnames) I must inspect the vector contents, while
 // in other cases I must not.
-//
                 if (is_string(key))
                 {   len = bytes_in_bytevector(key);
                     offset = 0;
                     goto hash_as_string;
                 }
-//
 // I might need to re-check that Common Lisp EQUAL and hence this
 // version of hashing inspects the bits in a bit-vector.
-//
                 else if (is_bitvec(key))
                 {   len = bits_in_bitvector(key);
                     offset = 0;
@@ -281,23 +261,19 @@ static uint64_t hash_cl_equal(LispObject key, bool descend)
                 }
                 else if (type_of_vector(key) == TYPE_ARRAY)
                 {
-//
 // Arrays are fun here! I need to pick up the special case of character
 // vectors and bit vectors and make them compute the same hash value as the
 // simple case of the same thing.
-//
                     w = basic_elt(key, 0);
                     if (w == string_char_sym) ha = 0;
 #ifdef COMMON
                     else if (w == bit_symbol) ha = 1;
 #endif
                     else return update_hash(r, (uint64_t)key);
-//
 // The stuff here is just for "non-simple" strings and bit-vectors. This
 // code will not have been tested much - if at all. I furthermore view it as
 // one of the areas where Common Lisp went over the top adding complexity
 // beyond the benefit provided.
-//
                     w = basic_elt(key, 1);           // List of dimensions
                     if (!consp(w) || consp(qcdr(w))) // 1 dim or more?
                         return update_hash(r, (uint64_t)key);
@@ -314,11 +290,9 @@ static uint64_t hash_cl_equal(LispObject key, bool descend)
                     goto hash_as_string;
                 }
 #ifdef COMMON
-//
 // Common Lisp demands that pathname structures be compared and hashed in
 // a way that is expected to look at their contents. Here I just descend
 // all components of the pathname.
-//
                 else if (type_of_vector(key) == TYPE_STRUCTURE &&
                          basic_elt(key, 0) == pathname_symbol &&
                          descend)
@@ -341,25 +315,21 @@ static uint64_t hash_cl_equal(LispObject key, bool descend)
         }
 
     hash_as_string:
-//
 // Here len is the length of the string data structure, excluding header.
 // I work character by character here both because the final word of a
 // string will usually not be full and to avoid sensitivity to byte order.
 // but that may be adding to by costs in an unhelpful way, so maybe
 // I should work harder to do this word at a time?
-//
         while (len > 0)
         {   c = celt(key, --len + offset);
             r = update_hash(r, c);
         }
         return r;
     hash_as_bitvector:
-//
 // here len is the number of bits to scan, and offsetoff is a BIT offset.
 // This really is clumsily inefficient but it is never used in Standard
 // Lisp mode anyway, so I can test and enhance it if anybody not only
 // uses Common Lisp but then relies on hashing bit-vectors.
-//
         len += offset;
         while (len > offset)
         {   len--;
@@ -372,7 +342,6 @@ static uint64_t hash_cl_equal(LispObject key, bool descend)
 }
 
 uint64_t hash_equal(LispObject key)
-//
 // This function is the one used hashing things under the Standard Lisp
 // version of EQUAL, which descends vectors but is still sensitive to
 // case and which views different types of numbers as different. I will
@@ -380,7 +349,6 @@ uint64_t hash_equal(LispObject key)
 // corresponding simple vectors: I am pretty well obliged to do that for
 // strings and bitvectors so it seems polite to do the same for general
 // vectors (which are the only other ones I support!).
-//
 {   uint64_t r = 1, c;
     LispObject w;
     int type;
@@ -406,10 +374,8 @@ uint64_t hash_equal(LispObject key)
             {   ha = vechdr(key);
                 type = type_of_vector(key);
                 len = bytes_in_vector(key);
-//
 // First I will separate off the two important cases of strings
 // and bitvectors.
-//
                 if (is_string(key))
                 {   len = bytes_in_bytevector(key);
                     offset = 0;
@@ -421,19 +387,15 @@ uint64_t hash_equal(LispObject key)
                     goto hash_as_bitvector;
                 }
 #ifdef COMMON
-//
 // Common Lisp demands that pathname structures be compared and hashed in
 // a way that is expected to look at their contents. Here I just descend
 // all components of the pathname. All other structures are hashed on
 // the basis of EQ.
-//
                 if (type == TYPE_STRUCTURE &&
                     basic_elt(key, 0) != pathname_symbol)
                     return update_hash(r, (uint64_t)key);
 #endif
-//
 // Now I will look for an array that is in fact just a vector.
-//
                 if (type == TYPE_ARRAY)
                 {   w = basic_elt(key, 0);
                     if (w == string_char_sym) ha = 0;
@@ -441,9 +403,7 @@ uint64_t hash_equal(LispObject key)
                     else if (w == bit_symbol) ha = 1;
 #endif
                     else ha = 2;
-//
 // All this mess really needs careful review and testing!
-//
                     w = basic_elt(key, 1);        // List of dimensions
                     if (consp(w) && !consp(qcdr(w)))   // 1 dim or not?
                     {   len = int_of_fixnum(qcar(w));  // This is the length
@@ -464,7 +424,6 @@ uint64_t hash_equal(LispObject key)
                         }
                     }
                 }
-//
 // Now in the case that I had a non-simple vector I have reset key to point
 // to the vector containing the true data, and
 // len is the length that I want to use. offset is an offset into the vector.
@@ -475,7 +434,6 @@ uint64_t hash_equal(LispObject key)
 // EQ.  Hmm did I implement vectors of unboxed 8, 16 and 32-bit ints and of
 // floats? If so they might need to be treated above in the sort of way that
 // strings are.
-//
                 if (vector_holds_binary(key))
                     return update_hash(r, (uint64_t)key);
 // A "mixed" vector is something I use within CSL for various system
@@ -536,12 +494,10 @@ uint64_t hash_equal(LispObject key)
 }
 
 static uint64_t hash_equalp(LispObject key)
-//
 // This function is the one used hashing things under the Common Lisp
 // version of EQUALP, which descends vectors but not structs (except
 // pathnames), which is case-insensitive and which views numbers of
 // different types but similar values (eg 1 and 1.0) as EQUALP).
-//
 {   uint64_t r = 1, c;
     LispObject w;
     size_t len, offset = 0;
@@ -579,18 +535,14 @@ static uint64_t hash_equalp(LispObject key)
                     goto hash_as_bitvector;
                 }
 #ifdef COMMON
-//
 // Common Lisp demands that pathname structures be compared and hashed in
 // a way that is expected to look at their contents. Here I just descend
 // all components of the pathname. Other structs are not descended.
-//
                 if (type_of_vector(key) == TYPE_STRUCTURE &&
                     basic_elt(key, 0) != pathname_symbol)
                     return update_hash(r, (uint64_t)key);
 #endif
-//
 // Now I will look for an array that is in fact just a vector.
-//
                 if (type_of_vector(key) == TYPE_ARRAY)
                 {   w = basic_elt(key, 0);
                     if (w == string_char_sym) ha = 0;
@@ -618,7 +570,6 @@ static uint64_t hash_equalp(LispObject key)
                         }
                     }
                 }
-//
 // Now in the case that I had a non-simple vector I have reset key to point
 // to the vector containing the true data and
 // len is the length that I want to use. offset is an offset into the vector.
@@ -626,7 +577,6 @@ static uint64_t hash_equalp(LispObject key)
 // zero). All cases of strings and bitvectors should have been dealt with
 // so the only vectors containing binary are things like "file" structures,
 // and I do not expect them to hash portably.
-//
                 if (vector_holds_binary(key))
                     return update_hash(r, (uint64_t)key);
                 if (is_mixed_header(ha))
@@ -666,12 +616,10 @@ static uint64_t hash_equalp(LispObject key)
                 }
                 return update_hash(r, hash_eql(key));
         }
-//
 // Note that I scan the elements of a string or bitvector in the same order
 // that I would process a general vector of the same length, and I adjust the
 // vector contents to its generic representation before updating the hash
 // value. For strings I fold to lower case.
-//
     hash_as_string:
 // Here len is the length of the string data structure, excluding header
         {   int32_t w = 0;
@@ -754,12 +702,10 @@ LispObject Lget_hash(LispObject env, LispObject key, LispObject tab, LispObject 
     v = basic_elt(tab, 2);
     hashsize = size = cells_in_vector(v)-1;
     p = (hashcode % (uint64_t)(size >> 1))*2;
-//
 // I want to take my single 64-bit hash value and produce a secondary
 // hash value that is a stride for the search. I can just take the
 // remainder by 1 less than the hash table size (and add 1 so I get
 // a non-zero stride).
-//
     hashstride = (1 + (hashcode % (uint64_t)((size >> 1)-1)))*2;
     hashgap = (size_t)-1;
     for (nprobes=0; nprobes<size; nprobes++)
@@ -848,12 +794,10 @@ static void reinsert_hash(LispObject v, size_t size, int flavour,
     }
     p = (hcode % (uint64_t)(size >> 1))*2;
     hstride = (1 + (hcode % (uint64_t)((size >> 1)-1)))*2;
-//
 // When I re-insert the item into the table life is especially easy -
 // I know it is not there already and I know I will be able to find a
 // gap to put it in!  So I just have to look for a gap - no comparisons
 // are needed.
-//
     for (;;)
     {   LispObject q = elt(v, p+1);
         if (q == SPID_HASHEMPTY || q == SPID_HASHTOMB)
@@ -887,25 +831,21 @@ void rehash_this_table(LispObject v)
 // the whole re-hashing procedure several times. But I have neither analysed
 // nore measured what happens! I will do so if practical applications show
 // up serious trouble here.
-//
 {   size_t size, i, j, many;
     int32_t flavour;
     LispObject pendkey[REHASH_AT_ONE_GO], pendval[REHASH_AT_ONE_GO];
-    flavour = int_of_fixnum(elt(v, 0)); // Done this way always
+    flavour = int_of_fixnum(basic_elt(v, 0));
+    v = basic_elt(v, 2);
 
     size = cells_in_vector(v)-1;
-//
 // The cycle count here is something I may want to experiment with.
-//
     for (i=0; i<REHASH_CYCLES; i++)
     {
-//
 // Change all slots in the table that are empty just because something has
 // been deleted to indicate that they are truly not in use. This makes some
 // items inaccessible by normal hash searches (because a void will be placed
 // earlier than them on a search trajectory) but this does not matter because
 // everything is about to be taken out of the table and reinserted properly.
-//
 
         for (j=0; j<size; j+=2)
             if (elt(v, j+1) == SPID_HASHTOMB) elt(v, j+1) = SPID_HASHEMPTY;
@@ -934,12 +874,10 @@ void rehash_this_table(LispObject v)
 }
 
 LispObject Lmaphash(LispObject env, LispObject fn, LispObject tab)
-//
 // There is a big worry here if the table is re-hashed because of
 // a garbage collection while I am in the middle of things. To
 // avoid utter shambles I will make a copy of the vector early
 // on and work from that.
-//
 {   size_t size, i;
     LispObject v, v1;
     if (!is_vector(tab) || type_of_vector(tab) != TYPE_HASH)
@@ -963,7 +901,6 @@ LispObject Lmaphash(LispObject env, LispObject fn, LispObject tab)
 }
 
 LispObject Lhashcontents(LispObject env, LispObject tab)
-//
 // There is a big worry here if the table is re-hashed because of
 // a garbage collection while I am in the middle of things. To
 // avoid utter shambles I will restart if a GC happens while I
@@ -971,7 +908,6 @@ LispObject Lhashcontents(LispObject env, LispObject tab)
 // in a row, on the ground that that suggests that I could not
 // find enough space for the contents even if I started immediately
 // after a GC.
-//
 {   int32_t size, i;
     int64_t ogcnum;
     int n_gc = 0;
@@ -1001,10 +937,8 @@ LispObject Lget_hash_1(LispObject env, LispObject key)
 #ifdef COMMON
     return Lget_hash(env, 3, key, sys_hash_table, nil);
 #else
-//
 // The definition implemented here is as required by Reduce in
 // the file matrix.red...  In the long term this is unsatisfactory.
-//
     LispObject r;
     push(key);
     r = Lget_hash(nil, key, sys_hash_table, nil);
@@ -1089,7 +1023,7 @@ LispObject Lput_hash(LispObject env, LispObject key, LispObject tab, LispObject 
     else
     {
 #ifdef HASH_STATISTICS
-        Nhputp2 += Nhputtmp; // Count cases wheer an existing item is updated.
+        Nhputp2 += Nhputtmp; // Count cases where an existing item is updated.
         Nhput2++;
 #endif
         elt(work_0, hashoffset+2) = val;
@@ -1155,9 +1089,7 @@ LispObject Lclr_hash_0(LispObject env)
 
 LispObject Lsxhash(LispObject env, LispObject key)
 {
-//
 // Does not descend vectors
-//
     uint64_t h = hash_cl_equal(key, true);
     h = (h ^ (h >> 16)) & 0x03ffffff; // ensure it will be a positive fixnum
     return onevalue((intptr_t)fixnum_of_int(h));
@@ -1165,9 +1097,7 @@ LispObject Lsxhash(LispObject env, LispObject key)
 
 LispObject Leqlhash(LispObject env, LispObject key)
 {
-//
 // Only handles atoms
-//
     uint32_t h = hash_cl_equal(key, false);
     h = (h ^ (h >> 16)) & 0x03ffffff; // ensure it will be a positive fixnum
     return onevalue(fixnum_of_int(h));
@@ -1175,9 +1105,7 @@ LispObject Leqlhash(LispObject env, LispObject key)
 
 LispObject Lequalhash(LispObject env, LispObject key)
 {
-//
 // Descends vectors as the Standard Lisp EQUAL function does.
-//
     uint32_t h = hash_equal(key);
     h = (h ^ (h >> 16)) & 0x03ffffff; // ensure it will be a positive fixnum
     return onevalue(fixnum_of_int(h));

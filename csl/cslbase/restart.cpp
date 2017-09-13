@@ -151,7 +151,7 @@ LispObject workbase[51];
 LispObject user_base_0, user_base_1, user_base_2, user_base_3, user_base_4;
 LispObject user_base_5, user_base_6, user_base_7, user_base_8, user_base_9;
 
-LispObject eq_hash_tables, equal_hash_tables;
+LispObject eq_hash_tables;
 
 //
 // On an Intel 80x86 (because I am almost forced to) and on other machines
@@ -1390,7 +1390,7 @@ static void cold_setup()
 //
     qpname(nil) = nil;
     for (LispObject **p=list_bases; *p!=NULL; p++) **p = nil;
-    eq_hash_tables = equal_hash_tables = nil;
+    eq_hash_tables = nil;
 #ifdef COMMON
     qpackage(nil) = nil;
     qpname(nil) = make_string("NIL");
@@ -1401,7 +1401,7 @@ static void cold_setup()
     qcount(nil) = 0;
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
-    eq_hash_tables = equal_hash_tables = nil;
+    eq_hash_tables = nil;
 
 // The package I am using at present will always be a package object
 // stored in the value cell of "current-package". But that symbol does not

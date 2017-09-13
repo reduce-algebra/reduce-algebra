@@ -138,7 +138,7 @@
 // that can help here.
 // The existing old one was that after a new heap-image was re-loaded
 // all hash tables got rehashed. To help with this the system maintains
-// lists eq_hash_tables and equal_hash_tables.
+// a list called eq_hash_tables.
 // The new scheme is that during garbage collection and when re-read from a
 // serialized form ant object that might have a header saying TYPE_NEWHASH
 // has that updates to be TYPE_NEWHASHX where this new marker indicates a
@@ -3669,8 +3669,6 @@ void write_everything()
 // lists at all.
         strcpy(trigger, "EQ hash tables scan");
         scan_data(eq_hash_tables);
-        strcpy(trigger, "EQUAL hash tables scan");
-        scan_data(equal_hash_tables);
     }
 // Now I should have identified all cyclic and shared data - including
 // eveything in the object list/package structures.
@@ -3716,8 +3714,6 @@ void write_everything()
 // lists at all.
     strcpy(trigger, "EQ hash tables write");
     write_data(eq_hash_tables);
-    strcpy(trigger, "EQUAL hash tables write");
-    write_data(equal_hash_tables);
 // Tidy up at the end. I do not logically need an explicit end of data marker
 // in the serialized form, but putting one there seems lile a way to make
 // me feel more robust against corrupred image files.
@@ -3743,7 +3739,7 @@ void warm_setup()
     qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR;
     for (LispObject **p = list_bases; *p!=NULL; p++) **p = nil;
     *stack = nil;
-    eq_hash_tables = equal_hash_tables = nil;
+    eq_hash_tables = nil;
     qcount(nil) = 0;
 // Make things GC safe first...
     qvalue(nil) = nil;
@@ -3798,7 +3794,6 @@ void warm_setup()
     for (LispObject **p = list_bases; *p!=NULL; p++) **p = serial_read();
 
     eq_hash_tables = serial_read();
-    equal_hash_tables = serial_read();
 
     if ((i = read_opcode_byte()) != SER_END)
     {   fprintf(stderr, "Did not find SER_END opcode where expected\n");
@@ -3838,13 +3833,6 @@ void warm_setup()
 
     {   LispObject qq;
         for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
-        {   if (!is_vector(qcar(qq)))
-            {   fprintf(stderr, "qq=%p should be a vector\n", (void *)qcar(qq));
-                exit(4);
-            }
-            rehash_this_table(qcar(qq));
-        }
-        for (qq = equal_hash_tables; qq!=nil; qq=qcdr(qq))
         {   if (!is_vector(qcar(qq)))
             {   fprintf(stderr, "qq=%p should be a vector\n", (void *)qcar(qq));
                 exit(4);
@@ -4063,8 +4051,6 @@ static bool push_all_symbols(symbol_processor_predicate *pp)
     }
     strcpy(trigger, "EQ hash tables push");
     if (push_symbols(pp, eq_hash_tables)) return true;
-    strcpy(trigger, "EQUAL hash tables push");
-    if (push_symbols(pp, equal_hash_tables)) return true;
     return false;
 }
 
