@@ -49,11 +49,13 @@ the division.  The default is the leading kernel in the current global
 ordering.  Specifying the main variable does not change the ordering
 of any other variables involved, nor does it change the global
 environment.  For example
+%\begin{verbatim}
+%div(x^2 + y^2, x - y, y);
+%
+%         - (x + y)
+%
+%\end{verbatim}
 \begin{verbatim}
-div(x^2 + y^2, x - y, y);
-
-         - (x + y)
-
 remainder(x^2 + y^2, x - y, y);
 
            2

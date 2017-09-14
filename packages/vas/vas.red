@@ -131,7 +131,8 @@
 %---++++++++++++++++++++++
 %---Packages required
 %---=================
-load_package polydiv;      %---to compute quo, rem of polys, divide(p,q)
+%% removed 2017-09-14: polydiv loaded in core
+%load_package polydiv;      %---to compute quo, rem of polys, divide(p,q)
 load_package randpoly;     %---for random poly generation; to test cases
 load_package redlog;       %---to compute the squareFree factors of a poly, sqfdec(p)
 load_package roots;        %---to approximate the roots nearestroot(p,s)

@@ -28,7 +28,7 @@ module poly;  % Header module and low-level support for poly package.
 %
 
 
-create!-package('(poly polrep quotf gcd exptf kernel mksp reord dmode
+create!-package('(poly polrep polydiv quotf gcd exptf kernel mksp reord dmode
                  dmodeop rational rnelem gint cpxrn compopr modular
                  facform homog tdconv primfac specfac kronf conj diff
                  polyop decompos interpol subs2q subs3q subs4q horner),

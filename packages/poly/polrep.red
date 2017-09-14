@@ -682,7 +682,8 @@ symbolic procedure remf(u,v);
    %returns the remainder of U divided by V;
    if null v then rerror(poly,201,"Zero divisor") else cdr qremf(u,v);
 
-put('remainder,'polyfn,'remf);
+%% removed 2017-09-14: polydiv loaded in core
+%put('remainder,'polyfn,'remf);
 
 symbolic procedure qremf(u,v);
    % Returns the quotient and remainder of U divided by V.
