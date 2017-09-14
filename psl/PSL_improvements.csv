@@ -1,0 +1,19 @@
+Change;Linux32;Linux64;MacOs32 (abandoned);Macos64;FreeBSD x86;FreeBSD x64;Windows32;Windows64;ARM32;ARM64
+Correct Lshift for bignums;ok;ok;-;ok;ok;ok;ok;ok;;
+Print NaN/Inf correctly;ok;ok;-;ok;ok;ok;ok;ok;;
+Fix for PSL compiler:id constant? Property;ok;ok;-;ok;ok;ok;ok;ok;;
+(quotient 0.0 0.0);ok;ok;-;ok;ok;ok;ok;ok;;
+Get-image-path etc.;ok;ok;-;ok;ok;ok;ok;ok;;
+Lisp disassembler;ok;ok;-;ok;ok;ok;ok;ok;;
+Better 64bit code in Compiler;n/a;ok;n/a;;n/a;;n/a;;;
+exploden;;;-;;;;;;;
+Reading high order bit chars from terminal;ok;ok;-;ok;ok;ok;ok;ok;;
+PSL land bignum/smallnum;;ok;-;ok;ok;ok;ok;ok;;
+Improvements to line breaking in output;ok;ok;-;ok;ok;ok;ok;ok;;
+PSL scantable for 256 chars;ok;ok;-;ok;ok;ok;ok;ok;;
+Reasonable default heap size;ok;ok;-;ok;ok;ok;ok;ok;;
+Printing of chars with high order bit set;ok;ok;-;ok;ok;ok;ok;ok;;
+Increase default size of binding stack;;;-;;;;;;;
+Unicode support;;;-;;;;;;;
+Inline floating point ops;;;;;;;;;;
+PSL for ARM;n/a;n/a;n/a;n/a;n/a;n/a;n/a;n/a;;
