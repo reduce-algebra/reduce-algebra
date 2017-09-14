@@ -24,6 +24,7 @@
     menuItem('support.php', 'Support', 'Support available for REDUCE');
     menuItem('packages.php', 'Related Packages', 'Packages that use REDUCE');
     menuItem('projects.php', 'Related Projects', 'Projects related to REDUCE');
+    menuItem('helpwanted.php', 'Help Wanted!', 'Join the REDUCE developer community!');
     menuItem('bibliography.php', 'Bibliography', 'Publications that reference REDUCE');
     menuItem('about.php', 'About REDUCE', 'History and contributors');
 </script>
