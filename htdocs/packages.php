@@ -2,7 +2,7 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta charset="utf-8" />
-	<title>Related REDUCE Packages</title>
+	<title>External REDUCE Packages</title>
 	<link rel="icon" type="image/png" href="images/icon.png" />
 	<link rel="stylesheet" href="StyleSheet.css" />
 	<style type="text/css">
@@ -13,15 +13,15 @@
 </head>
 <body>
 	<div id="content">
-		<header>Related Packages</header>
+		<header>External Packages</header>
 		<div id="middle">
 			<nav>
 				<script language="php">
-						include 'navigation.inc';
+					include 'navigation.inc';
 				</script>
 			</nav>
 			<div id="main">
-				<p>REDUCE distributions include a wide variety of specialized packages as <a href="documentation.php">described on the documentation page</a>. The related packages listed below use REDUCE but are not included in REDUCE distributions.</p>
+				<p>REDUCE distributions include a wide variety of specialized packages as <a href="documentation.php">described on the documentation page</a>. The external packages listed below use REDUCE but are not included in REDUCE distributions.</p>
 				<h2>Packages available separately for download</h2>
 				<dl>
 					<dt><a href="http://www.latrobe.edu.au/mathematics-and-statistics/research/geometric-and-algebraic-techniques-for-differential-equations/dimsym">Dimsym</a> &ndash; Symmetry Determination and Linear Differential Equation Package</dt>
