@@ -1108,6 +1108,22 @@ LispObject cdrerror(LispObject a)
     error(1, err_bad_cdr, a);
 }
 
+void car_fails(LispObject a)
+{   error(1, err_bad_car, a);
+}
+
+void cdr_fails(LispObject a)
+{   error(1, err_bad_cdr, a);
+}
+
+void rplaca_fails(LispObject a)
+{   error(1, err_bad_rplac, a);
+}
+
+void rplacd_fails(LispObject a)
+{   error(1, err_bad_rplac, a);
+}
+
 #define current_byte         (((unsigned char *)codevec)[ppc])
 #define next_byte            (((unsigned char *)codevec)[ppc++])
 #define previous_byte        (((unsigned char *)codevec)[ppc-1])

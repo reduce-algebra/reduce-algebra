@@ -158,10 +158,15 @@ NORETURN extern void aerror2(const char *s, LispObject a, LispObject b);
 NORETURN extern void aerror3(const char *s, LispObject a, LispObject b, LispObject c);
 NORETURN extern void fatal_error(int code, ...);
 
-// For the sahe of Common Lisp style treatment of (car nil) and (cdr nil)
+// For the sake of Common Lisp style treatment of (car nil) and (cdr nil)
 // I have these.
 extern LispObject carerror(LispObject a);
 extern LispObject cdrerror(LispObject a);
+
+NORETURN extern void car_fails(LispObject a);
+NORETURN extern void cdr_fails(LispObject a);
+NORETURN extern void rplaca_fails(LispObject a);
+NORETURN extern void rplacd_fails(LispObject a);
 
 //
 // Since miscflags is treated as a set of bits the issue of whether it

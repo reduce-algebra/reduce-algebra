@@ -44,7 +44,7 @@ void showwindow()
     unsigned long black, white;
     Window root, window;
     GC gc;
-    Font font;
+//-    Font font;
     XEvent event;
 
     if (disp == NULL)
@@ -67,9 +67,12 @@ void showwindow()
                                  width/3, height/3, width/3, height/3,
                                  1, black, white);
     XSelectInput(disp, window, ExposureMask);
-// Try for ANY 18 point font!
-    font = XLoadFont(disp, "-*-*-*-*-*-*-*-180-*-*");
-    XSetFont(disp, gc, font);
+// I will now use whatever font the system thinks it has as a default. When I
+// use the commented out code some systems fail to find a font that matches
+// even given all the wildcards!
+//- // Try for ANY 18 point font!
+//-     font = XLoadFont(disp, "-*-*-*-*-*-*-*-180-*-*");
+//-     XSetFont(disp, gc, font);
     Atom wmDeleteMessage = XInternAtom(disp, "WM_DELETE_WINDOW", 0);
     XSetWMProtocols(disp, window, &wmDeleteMessage, 1);
     XMapWindow(disp, window);

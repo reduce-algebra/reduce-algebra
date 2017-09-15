@@ -755,13 +755,6 @@ symbolic procedure c!:cfndef(c!:current_procedure,
     exitpoint := c!:current_block;
     c!:endblock('goto, list list c!:cval(body, env . nil));
 
-% optimise_flowgraph is something I will need to review carefully, because
-% when I use RAII to arrange that fluids always get restored I will
-% require that code ends up so that textual nesting matches my
-% expectations. Furthermore I intend to take the view that even if I
-% generate quite seriously ugly C++ code that modern C++ compilers will
-% do the optimisations that are important.
-%
 % Note that (in an ugly manner) optimise_flowgraph prints out first the
 % procedure header and then the body of the function.
     c!:optimise_flowgraph(entrypoint, c!:all_blocks, env,
@@ -1390,8 +1383,8 @@ flag('(fastflag), 'c!:uses_nil);
 symbolic procedure c!:pcar(op, r1, r2, r3);
   begin
     if not !*unsafecar then
-        c!:printf("    if (!car_legal(%v)) error(1, err_bad_car, %v);\n",
-                  r3, r3);
+        c!:printf("    if (!car_legal(%v)) %v = carerror(%v); else\n",
+                  r3, r1, r3);
     c!:printf("    %v = qcar(%v);\n", r1, r3)
   end;
 
@@ -1400,12 +1393,14 @@ put('car, 'c!:opcode_printer, function c!:pcar);
 symbolic procedure c!:pcdr(op, r1, r2, r3);
   begin
     if not !*unsafecar then
-        c!:printf("    if (!car_legal(%v)) error(1, err_bad_cdr, %v);\n",
-                  r3, r3);
+        c!:printf("    if (!car_legal(%v)) %v = cdrerror(%v); else\n",
+                  r3, r1, r3);
     c!:printf("    %v = qcdr(%v);\n", r1, r3)
   end;
 
 put('cdr, 'c!:opcode_printer, function c!:pcdr);
+
+% These are explicitly non-checking versions!
 
 symbolic procedure c!:pqcar(op, r1, r2, r3);
     c!:printf("    %v = qcar(%v);\n", r1, r3);
@@ -1573,6 +1568,22 @@ symbolic procedure c!:pqputv(op, r1, r2, r3);
 
 put('qputv, 'c!:opcode_printer, function c!:pqputv);
 
+symbolic procedure c!:prplaca(op, r1, r2, r3);
+ <<
+  c!:printf("    if (!car_legal(%v)) rplaca_fails(%v);\n", r2, r2);
+  c!:printf("    qcar(%v) = %v;\n", r2, r3);
+  c!:printf("    %v = %v;\n", r1, r2) >>;
+
+put('rplaca, 'c!:opcode_printer, function c!:prplaca);
+
+symbolic procedure c!:prplacd(op, r1, r2, r3);
+ <<
+  c!:printf("    if (!car_legal(%v)) rplacd_fails(%v);\n", r2, r2);
+  c!:printf("    qcdr(%v) = %v;\n", r2, r3);
+  c!:printf("    %v = %v;\n", r1, r2) >>;
+
+put('rplacd, 'c!:opcode_printer, function c!:prplacd);
+
 symbolic procedure c!:peq(op, r1, r2, r3);
    c!:printf("    %v = (%v == %v ? lisp_true : nil);\n", r1, r2, r3);
 
@@ -1736,6 +1747,9 @@ symbolic procedure c!:pifigreaterp s;
 
 put('ifigreaterp, 'c!:exit_helper, function c!:pifigreaterp);
 
+% This uses c!:all_blocks which is a list of all the basic blocks that
+% have been created. Each block is represented a symbol 
+
 symbolic procedure c!:display_flowgraph1();
   begin
 % here I will set the c!:visited flag on every label that gets used. That
@@ -1779,12 +1793,14 @@ for each n in '(car cdr qcar qcdr null not atom numberp fixp iminusp
 for each n in '(eq equal atsoc memq iplus2 idifference
                 itimes2 ilessp igreaterp qgetv get
                 modular!-plus modular!-difference
+%               rplaca rplacd
                 ) do c!:two_operands n;
 !#else
 for each n in '(eq equal atsoc memq iplus2 idifference
                 assoc member
                 itimes2 ilessp igreaterp qgetv get
                 modular!-plus modular!-difference
+%               rplaca rplacd
                 ) do c!:two_operands n;
 !#endif
 
@@ -1795,8 +1811,7 @@ flag('(strglob qputv fluidunbind), 'c!:read_r1);
 flag('(qputv fastget fastflag), 'c!:read_r2);
 flag('(movr qputv), 'c!:read_r3);
 flag('(ldrglob strglob nilglob movk call), 'c!:read_env);
-% special opcodes:
-%   call
+flag('(call qputv rplaca rplacd), 'c!:side_effect);
 
 fluid '(fn_used);
 
@@ -1815,7 +1830,9 @@ symbolic procedure c!:live_variable_analysis c!:all_blocks;
           if not atom w then <<
              live := union(live, cdr w);
              if eqcar(car w, 'call) and
-                not (cadar w = c!:current_procedure) and
+% At least with >= 4 args a call to the current procedure will
+% done as a general procedure call and so will use "env".
+%               not (cadar w = c!:current_procedure) and
                 not get(cadar w, 'c!:direct_entrypoint) and
                 not get(cadar w, 'c!:c_entrypoint) then <<
                     fn_used := t; live := union('(env), live) >> >>;
@@ -1829,15 +1846,15 @@ symbolic procedure c!:live_variable_analysis c!:all_blocks;
 !#else
                  if memq(r1, live) then live := delete(r1, live)
 !#endif
-                 else if op = 'call then nil % Always needed
+                 else if flagp(op, 'c!:side_effect) then nil % Always needed
                  else op := 'nop;
               if flagp(op, 'c!:read_r1) then live := union(live, list r1);
               if flagp(op, 'c!:read_r2) then live := union(live, list r2);
               if flagp(op, 'c!:read_r3) then live := union(live, list r3);
               if op = 'call then <<
                  does_call := t;
-                 if not eqcar(r3, c!:current_procedure) and
-                    not get(car r3, 'c!:direct_entrypoint) and
+                 if not get(car r3, 'c!:direct_entrypoint) and
+%                   not eqcar(r3, c!:current_procedure) and
                     not get(car r3, 'c!:c_entrypoint) then fn_used := t;
 % c!:no_gc is used to indicate that the function concerned can never
 % trigger garbage collection and so lisp values are safe across the call.
@@ -1901,7 +1918,7 @@ symbolic procedure c!:build_clash_matrix c!:all_blocks;
                   if op = 'reloadenv or
                      op = 'fluidbind then reloadenv := t;
                   for each v in live do c!:clash(r1, v) >>
-               else if op = 'call then nil
+               else if flagp(op, 'c!:side_effect) then nil
                else <<
                   op := 'nop;
                   rplacd(s, car s . cdr s); % Leaves original instrn visible
@@ -2156,7 +2173,8 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
 % I will not do a stack check if I have a leaf procedure, and I hope
 % that this policy will speed up code a bit.
     if does_call then <<
-       c!:printf "    if (stack >= stacklimit)\n";
+       c!:printf("    if (++reclaim_trigger_count == reclaim_trigger_target ||\n");
+       c!:printf("        stack >= stacklimit)\n");
        c!:printf "    {\n";
 % This is slightly clumsy code to save all args on the stack across the
 % call to reclaim(), but it is not executed often...
@@ -3042,7 +3060,7 @@ symbolic procedure c!:builtin_two(x, env);
     return r
   end;
 
-% At present it is important that any variatic function is called with
+% At present it is important that any variadic function is called with
 % a rigid number of arguments if it goes via the direct calls to C++ code
 % route here. I may worry about logand etc for now, and I may review and
 % generalize this code later.

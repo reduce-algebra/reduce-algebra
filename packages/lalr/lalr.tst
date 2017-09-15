@@ -108,6 +108,7 @@
 % I have listed the above in the order that I think I need to work on them. 
 
 symbolic;
+load_package lalr;
 
 % Before testing parser generation I will demonstrate the lexer..
 % If I was jumpy about the exact behaviour of the lexer I could go

@@ -92,6 +92,22 @@ static void zero_out(void *p)
     memset(p1, 0, CSL_PAGE_SIZE);
 }
 
+// This allocates another page of memory if that is allowed and if it is
+// possible. It returns true on success.
+
+bool allocate_more_memory()
+{   if ((init_flags & INIT_EXPANDABLE) == 0) return false;
+    void *page = (void *)my_malloc((size_t)(CSL_PAGE_SIZE + 8));
+    if (page == NULL)
+    {   init_flags &= ~INIT_EXPANDABLE;
+        return false;
+    }
+    else
+    {   pages[pages_count++] = page;
+        return true;
+    }
+}
+
 static int trailing_heap_pages_count,
            trailing_vheap_pages_count;
 
@@ -147,10 +163,11 @@ static void copy(LispObject *p)
                                                 sizeof(Cons_Cell));
                         car32(hl - SPARE) = len;
                         qcar(fr) = SPID_GCMARK;
+                        if (pages_count == 0) allocate_more_memory();
                         if (pages_count == 0)
-                        {   term_printf("pages_count = 0 in GC\n");
-                            my_abort();
-                            return;
+                        {   term_printf("\n+++ Run out of memory\n");
+                            ensure_screen();
+                            my_exit(EXIT_FAILURE);
                         }
                         p = pages[--pages_count];
                         zero_out(p);
@@ -226,10 +243,11 @@ static void copy(LispObject *p)
                             (int32_t)(vfr - (vl - (CSL_PAGE_SIZE - 8)));
                         car32(vl - (CSL_PAGE_SIZE - 8)) = free1;
                         qcar(vfr) = 0;          // sentinel value
+                        if (pages_count == 0) allocate_more_memory();
                         if (pages_count == 0)
-                        {   term_printf("pages_count = 0 in GC\n");
-                            my_abort();
-                            return;
+                        {   term_printf("\n+++ Run out of memory\n");
+                            ensure_screen();
+                            my_exit(EXIT_FAILURE);
                         }
                         p1 = pages[--pages_count];
                         zero_out(p1);
@@ -667,6 +685,7 @@ static void real_garbage_collector()
     new_vheap_pages_count = 0;
     trailing_heap_pages_count = 1;
     trailing_vheap_pages_count = 1;
+    assert(pages_count >= 2); // for the new half-space
     void *pp = pages[--pages_count];
     char *vf, *vl;
     int32_t len;
@@ -700,7 +719,6 @@ static void real_garbage_collector()
 // I should arrange something totally different for copying the package
 // structure...
     for (LispObject **p = list_bases; *p!=NULL; p++) copy(*p);
-
     for (LispObject *sp=stack; sp>(LispObject *)stackbase; sp--) copy(sp);
 // When running the deserialization code I keep references to multiply-
 // used items in repeat_heap, and if garbage collection occurs they must be
@@ -715,16 +733,13 @@ static void real_garbage_collector()
 // processed specially here become redundant and this fragment of code can
 // go, I think.
     copy(&eq_hash_tables);
-
     tidy_fringes();
-
 // Throw away the old semi-space - it is now junk.
     while (heap_pages_count!=0)
     {   void *spare = heap_pages[--heap_pages_count];
 // I will fill the old space with explicit rubbish in the hope that that
 // will generate failures as promptly as possible if it somehow gets
-// referenced... Even better if I could use mprotect to make it
-// really inaccessible.
+// referenced...
         memset(spare, 0x55, (size_t)CSL_PAGE_SIZE+16);
         pages[pages_count++] = spare;
     }
@@ -733,7 +748,6 @@ static void real_garbage_collector()
         memset(spare, 0xaa, (size_t)CSL_PAGE_SIZE+16);
         pages[pages_count++] = spare;
     }
-
 // Flip the descriptors for the old and new semi-spaces.
     void **w = heap_pages;
     heap_pages = new_heap_pages;
@@ -745,7 +759,7 @@ static void real_garbage_collector()
     new_heap_pages_count = 0;
     vheap_pages_count = new_vheap_pages_count;
     new_vheap_pages_count = 0;
-
+// Finally rehash things that need it.
     for (LispObject qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
         rehash_this_table(qcar(qq));
 }
@@ -864,6 +878,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     if (!garbage_collection_permitted)
     {   fprintf(stderr,
                 "\n+++ Garbage collection attempt when not permitted\n");
+        fflush(stderr);
         my_exit(EXIT_FAILURE);    // totally drastic...
     }
 
@@ -920,6 +935,19 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             (long)gc_number, why, t/100, t%100, gct/100, gct%100);
     }
 #endif // WINDOW_SYSTEM
+    switch (pages_count)
+    {
+    case 0: allocate_more_memory(); // ...and drop through...
+    case 1: allocate_more_memory();
+    }
+// If despite trying allocate_more_memory() I can not find a new pages to
+// form that start of the new half-space I will have to give up.
+    if (pages_count < 2)
+    {   report_at_end();
+        term_printf("\n+++ Run out of memory\n");
+        ensure_screen();
+        my_exit(EXIT_FAILURE);
+    }
 // If things crash really badly maybe I would rather have my output up
 // to date.
     ensure_screen();
@@ -964,6 +992,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
                      (intptr_t)((stack-stackbase)+1023)/1024);
     }
     pop(p);
+
 // Here I grab more memory (if I am allowed to).
 // An initial version here, and one still suitable on machines that will
 // have plenty of real memory, will be to defined ok_to_grab_memory(n) as
@@ -989,25 +1018,14 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         }
         more = ideal - pages_count;
         while (more-- > 0)
-        {   void *page = (void *)my_malloc((size_t)(CSL_PAGE_SIZE + 8));
-// When I first grabbed memory in restart.c I used my_malloc_1(), which
-// gobbles a large stack frame and then called regular malloc - the idea
-// there was to avoid malloc grabbing space needed for the stack. I can
-// not properly do that here since reclaim() may be called with a deep
-// stack already active.  There is thus a danger that expanding the heap here
-// may cause me to run out of stack elsewhere.  Oh well, I guess I can not
-// win in all ways.
-            if (page == NULL)
-            {   init_flags &= ~INIT_EXPANDABLE;
-                break;
-            }
-            else pages[pages_count++] = page;
+        {   if (!allocate_more_memory()) break;
         }
     }
     if (!reset_limit_registers(vheap_need, false))
     {   if (stack < stacklimit || stacklimit != stackbase)
         {   report_at_end();
-            term_printf("\n+++ No space left at all\n");
+            term_printf("\n+++ Run out of memory\n");
+            ensure_screen();
             my_exit(EXIT_FAILURE);    // totally drastic...
         }
     }

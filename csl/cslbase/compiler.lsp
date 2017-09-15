@@ -3706,13 +3706,13 @@ r1 r1) (c!:printf "#endif\n")))
 (flag (quote (fastflag)) (quote c!:uses_nil))
 
 (de c!:pcar (op r1 r2 r3) (prog nil (cond ((not !*unsafecar) (c!:printf 
-"    if (!car_legal(%v)) error(1, err_bad_car, %v);\n" r3 r3))) (c!:printf 
+"    if (!car_legal(%v)) %v = carerror(%v); else\n" r3 r1 r3))) (c!:printf 
 "    %v = qcar(%v);\n" r1 r3)))
 
 (put (quote car) (quote c!:opcode_printer) (function c!:pcar))
 
 (de c!:pcdr (op r1 r2 r3) (prog nil (cond ((not !*unsafecar) (c!:printf 
-"    if (!car_legal(%v)) error(1, err_bad_cdr, %v);\n" r3 r3))) (c!:printf 
+"    if (!car_legal(%v)) %v = cdrerror(%v); else\n" r3 r1 r3))) (c!:printf 
 "    %v = qcdr(%v);\n" r1 r3)))
 
 (put (quote cdr) (quote c!:opcode_printer) (function c!:pcdr))
@@ -3871,6 +3871,18 @@ r3))
 
 (put (quote qputv) (quote c!:opcode_printer) (function c!:pqputv))
 
+(de c!:prplaca (op r1 r2 r3) (progn (c!:printf 
+"    if (!car_legal(%v)) rplaca_fails(%v);\n" r2 r2) (c!:printf 
+"    qcar(%v) = %v;\n" r2 r3) (c!:printf "    %v = %v;\n" r1 r2)))
+
+(put (quote rplaca) (quote c!:opcode_printer) (function c!:prplaca))
+
+(de c!:prplacd (op r1 r2 r3) (progn (c!:printf 
+"    if (!car_legal(%v)) rplacd_fails(%v);\n" r2 r2) (c!:printf 
+"    qcdr(%v) = %v;\n" r2 r3) (c!:printf "    %v = %v;\n" r1 r2)))
+
+(put (quote rplacd) (quote c!:opcode_printer) (function c!:prplacd))
+
 (de c!:peq (op r1 r2 r3) (c!:printf 
 "    %v = (%v == %v ? lisp_true : nil);\n" r1 r2 r3))
 
@@ -4026,6 +4038,8 @@ fastflag)) (quote c!:set_r1))
 
 (flag (quote (ldrglob strglob nilglob movk call)) (quote c!:read_env))
 
+(flag (quote (call qputv rplaca rplacd)) (quote c!:side_effect))
+
 (fluid (quote (fn_used)))
 
 (de c!:live_variable_analysis (c!:all_blocks) (prog (changed z) (prog nil 
@@ -4036,31 +4050,30 @@ lab1296 (cond ((null var1297) (return nil))) (prog (x) (setq x (car var1297))
 (cond ((atom x) (setq live (union live (get x (quote c!:live))))) (t (setq 
 live (union live x))))) (setq var1297 (cdr var1297)) (go lab1296)) (setq w (
 get b (quote c!:why))) (cond ((not (atom w)) (progn (setq live (union live (
-cdr w))) (cond ((and (eqcar (car w) (quote call)) (not (equal (cadar w) 
-c!:current_procedure)) (not (get (cadar w) (quote c!:direct_entrypoint))) (
-not (get (cadar w) (quote c!:c_entrypoint)))) (progn (setq fn_used t) (setq 
-live (union (quote (env)) live)))))))) (prog (var1299) (setq var1299 (get b (
-quote c!:contents))) lab1298 (cond ((null var1299) (return nil))) (prog (s) (
-setq s (car var1299)) (prog (op r1 r2 r3) (setq op (car s)) (setq r1 (cadr s)
-) (setq r2 (caddr s)) (setq r3 (cadddr s)) (cond ((flagp op (quote c!:set_r1)
-) (cond ((memq r1 live) (setq live (delete r1 live))) (t (cond ((equal op (
-quote call)) nil) (t (setq op (quote nop)))))))) (cond ((flagp op (quote 
-c!:read_r1)) (setq live (union live (list r1))))) (cond ((flagp op (quote 
-c!:read_r2)) (setq live (union live (list r2))))) (cond ((flagp op (quote 
-c!:read_r3)) (setq live (union live (list r3))))) (cond ((equal op (quote 
-call)) (progn (setq does_call t) (cond ((and (not (eqcar r3 
-c!:current_procedure)) (not (get (car r3) (quote c!:direct_entrypoint))) (not
-(get (car r3) (quote c!:c_entrypoint)))) (setq fn_used t))) (cond ((not (
-flagp (car r3) (quote c!:no_gc))) (flag live (quote c!:live_across_call)))) (
-setq live (union live r2))))) (cond ((flagp op (quote c!:read_env)) (setq 
-live (union live (quote (env)))))))) (setq var1299 (cdr var1299)) (go lab1298
-)) (setq live (sort live (function orderp))) (cond ((not (equal live (get b (
-quote c!:live)))) (progn (put b (quote c!:live) live) (setq changed t)))))) (
-setq var1301 (cdr var1301)) (go lab1300))) (cond ((null (not changed)) (go 
-lab1302)))) (setq z c!:registers) (setq c!:registers (setq c!:stacklocs nil))
-(prog (var1304) (setq var1304 z) lab1303 (cond ((null var1304) (return nil))
-) (prog (r) (setq r (car var1304)) (cond ((flagp r (quote c!:live_across_call
-)) (setq c!:stacklocs (cons r c!:stacklocs))) (t (setq c!:registers (cons r 
+cdr w))) (cond ((and (eqcar (car w) (quote call)) (not (get (cadar w) (quote 
+c!:direct_entrypoint))) (not (get (cadar w) (quote c!:c_entrypoint)))) (progn
+(setq fn_used t) (setq live (union (quote (env)) live)))))))) (prog (var1299
+) (setq var1299 (get b (quote c!:contents))) lab1298 (cond ((null var1299) (
+return nil))) (prog (s) (setq s (car var1299)) (prog (op r1 r2 r3) (setq op (
+car s)) (setq r1 (cadr s)) (setq r2 (caddr s)) (setq r3 (cadddr s)) (cond ((
+flagp op (quote c!:set_r1)) (cond ((memq r1 live) (setq live (delete r1 live)
+)) (t (cond ((flagp op (quote c!:side_effect)) nil) (t (setq op (quote nop)))
+))))) (cond ((flagp op (quote c!:read_r1)) (setq live (union live (list r1)))
+)) (cond ((flagp op (quote c!:read_r2)) (setq live (union live (list r2))))) 
+(cond ((flagp op (quote c!:read_r3)) (setq live (union live (list r3))))) (
+cond ((equal op (quote call)) (progn (setq does_call t) (cond ((and (not (get
+(car r3) (quote c!:direct_entrypoint))) (not (get (car r3) (quote 
+c!:c_entrypoint)))) (setq fn_used t))) (cond ((not (flagp (car r3) (quote 
+c!:no_gc))) (flag live (quote c!:live_across_call)))) (setq live (union live 
+r2))))) (cond ((flagp op (quote c!:read_env)) (setq live (union live (quote (
+env)))))))) (setq var1299 (cdr var1299)) (go lab1298)) (setq live (sort live 
+(function orderp))) (cond ((not (equal live (get b (quote c!:live)))) (progn 
+(put b (quote c!:live) live) (setq changed t)))))) (setq var1301 (cdr var1301
+)) (go lab1300))) (cond ((null (not changed)) (go lab1302)))) (setq z 
+c!:registers) (setq c!:registers (setq c!:stacklocs nil)) (prog (var1304) (
+setq var1304 z) lab1303 (cond ((null var1304) (return nil))) (prog (r) (setq 
+r (car var1304)) (cond ((flagp r (quote c!:live_across_call)) (setq 
+c!:stacklocs (cons r c!:stacklocs))) (t (setq c!:registers (cons r 
 c!:registers))))) (setq var1304 (cdr var1304)) (go lab1303))))
 
 (de c!:insert1 (a b) (cond ((memq a b) b) (t (cons a b))))
@@ -4087,15 +4100,15 @@ var1310) (return nil))) (prog (s) (setq s (car var1310)) (prog (op r1 r2 r3)
 (delete r1 live)) (cond ((or (equal op (quote reloadenv)) (equal op (quote 
 fluidbind))) (setq reloadenv t))) (prog (var1308) (setq var1308 live) lab1307
 (cond ((null var1308) (return nil))) (prog (v) (setq v (car var1308)) (
-c!:clash r1 v)) (setq var1308 (cdr var1308)) (go lab1307)))) (t (cond ((equal
-op (quote call)) nil) (t (progn (setq op (quote nop)) (rplacd s (cons (car s
-) (cdr s))) (rplaca s op)))))))) (cond ((flagp op (quote c!:read_r1)) (setq 
-live (union live (list r1))))) (cond ((flagp op (quote c!:read_r2)) (setq 
-live (union live (list r2))))) (cond ((flagp op (quote c!:read_r3)) (setq 
-live (union live (list r3))))) (cond ((equal op (quote call)) (setq live (
-union live r2)))) (cond ((flagp op (quote c!:read_env)) (setq live (union 
-live (quote (env)))))))) (setq var1310 (cdr var1310)) (go lab1309)))) (setq 
-var1312 (cdr var1312)) (go lab1311)) (return nil)))
+c!:clash r1 v)) (setq var1308 (cdr var1308)) (go lab1307)))) (t (cond ((flagp
+op (quote c!:side_effect)) nil) (t (progn (setq op (quote nop)) (rplacd s (
+cons (car s) (cdr s))) (rplaca s op)))))))) (cond ((flagp op (quote 
+c!:read_r1)) (setq live (union live (list r1))))) (cond ((flagp op (quote 
+c!:read_r2)) (setq live (union live (list r2))))) (cond ((flagp op (quote 
+c!:read_r3)) (setq live (union live (list r3))))) (cond ((equal op (quote 
+call)) (setq live (union live r2)))) (cond ((flagp op (quote c!:read_env)) (
+setq live (union live (quote (env)))))))) (setq var1310 (cdr var1310)) (go 
+lab1309)))) (setq var1312 (cdr var1312)) (go lab1311)) (return nil)))
 
 (de c!:allocate_registers (rl) (prog (schedule neighbours allocation) (setq 
 neighbours 0) (prog nil lab1316 (cond ((null rl) (return nil))) (prog (w x) (
@@ -4213,7 +4226,8 @@ var1349 (cdr var1349)) (go lab1348)) (c!:printf
 "    if (_a4up_ != nil)\n        aerror1(\qtoo many arguments provided\q, basic_elt(env, 0));\n"
 )))) (c!:printf "#ifdef CHECK_STACK\n") (c!:printf "    if_check_stack;\n") (
 c!:printf "#endif\n") (cond (does_call (progn (c!:printf 
-"    if (stack >= stacklimit)\n") (c!:printf "    {\n") (c!:pushpop (quote 
+"    if (++reclaim_trigger_count == reclaim_trigger_target ||\n") (c!:printf 
+"        stack >= stacklimit)\n") (c!:printf "    {\n") (c!:pushpop (quote 
 push) args) (c!:printf 
 "        env = reclaim(env, \qstack\q, GC_STACK, 0);\n") (c!:pushpop (quote 
 pop) (reverse args)) (c!:printf "    }\n")))) (cond (reloadenv (c!:printf 

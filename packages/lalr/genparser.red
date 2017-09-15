@@ -985,11 +985,12 @@ symbolic procedure lalr_first string;
     scalar results, w;
     while string and
           not numberp car string and
-          (nil member (w := get(car string, 'lalr_first))) do <<
+          member(nil, w := get(car string, 'lalr_first)) do <<
       results := union(delete(nil, w), results);
       string := cdr string >>;
     if null string then results := nil . results
-    else if numberp car string then results := union(list car string, results)
+    else if numberp car string then
+      results := union(list car string, results)
     else results := union(w, results);
     return results
   end;

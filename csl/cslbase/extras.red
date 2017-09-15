@@ -355,7 +355,7 @@ symbolic procedure s!:prinl2(x, depth);
            if fixp !*print!-length!* and !*print!-length!* < length then
                length := !*print!-length!*;
            for i:=0:length do << s!:prinl2(getv(x,i), depth+1);
-                                 if not i=upbv x then princ " " >> >>
+                                 if not (i=upbv x) then princ " " >> >>
          else princ "...";
          princ ")";
          return nil >>
@@ -373,7 +373,7 @@ symbolic procedure s!:prinl2(x, depth);
                 if fixp !*print!-length!* and !*print!-length!* < length then
                     length := !*print!-length!*;
                 for i:=0:length do <<s!:prinl2(getv(x,i), depth+1);
-                                     if not i=upbv x then princ " ">> >>
+                                     if not (i=upbv x) then princ " ">> >>
               else princ "...";
               princ ")" >>
           else if x then <<

@@ -54,7 +54,6 @@ LispObject nreverse(LispObject a)
     return b;
 }
 
-//
 // Environments are represented as association lists, and have to cope
 // with several sorts of things.  The items in an environment can be
 // in one of the following forms:
@@ -74,7 +73,6 @@ LispObject nreverse(LispObject a)
 //                                    Note that 'funarg is not valid as a bvl
 //                                    and indeed in this case bvl is a list
 //                                    and can never be an atom.
-//
 
 LispObject eval(LispObject u, LispObject env)
 {   STACK_SANITY;
@@ -250,12 +248,6 @@ restart:
                     loop_print_error(qcar(args));
                 });
             pop3(env, args, fn);
-if (a1 == 0)
-{ trace_printf("\n!! a==0 fn="); prin_to_trace(fn);
-  trace_printf(" args = "); prin_to_trace(args);
-  trace_printf(" eargs = "); prin_to_trace(eargs);
-  trace_printf("\n"); ensure_screen(); my_abort();
-}
             args = qcdr(args);
             if (args == nil) return (*qfn1(fn))(fn, a1);
             LispObject a2 = qcar(args);
@@ -268,12 +260,6 @@ if (a1 == 0)
                     loop_print_error(qcar(args));
                 });
             pop4(a1, env, args, fn);
-if (a1 == 0 || a2==0)
-{ trace_printf("\n!! a1==0 or a2==0 fn="); prin_to_trace(fn);
-  trace_printf(" args = "); prin_to_trace(args);
-  trace_printf(" eargs = "); prin_to_trace(eargs);
-  trace_printf("\n"); ensure_screen(); my_abort();
-}
             args = qcdr(args);
             if (args == nil) return (*qfn2(fn))(fn, a1, a2);
             LispObject a3 = qcar(args);
@@ -321,11 +307,9 @@ if (a1 == 0 || a2==0)
     }
 }
 
-//
 // I am moving to a situation where the intepreter support &optional,
 // &rest and keyword arguments and all the odd generality that Common Lisp
 // introduces. This slows down the interpreter.
-//
 
 static bool check_no_unwanted_keys(LispObject restarg, LispObject ok_keys)
 // verify that there were no unwanted keys in the actual arg list
@@ -346,10 +330,8 @@ static bool check_no_unwanted_keys(LispObject restarg, LispObject ok_keys)
 }
 
 static bool check_keyargs_even(LispObject restarg)
-//
 // check that list is even length with alternate items symbols in
 // the keyword package. Return true in BAD case.
-//
 {   while (restarg!=nil)
     {   LispObject q = qcar(restarg);
         if (!is_symbol(q) || qpackage(q) != qvalue(keyword_package))
@@ -854,6 +836,13 @@ LispObject Lapply_4up(LispObject env, LispObject fn, LispObject a1,
     return apply(fn, a1, nil, apply_symbol);
 }
 
+// This may look odd at first sight, but what is happening is that the
+// basic case is (APPLY f arglist) where arglist is a list of arguments.
+// As a concession (APPLY f) is treated as if it had been (APPLY f nil), ie
+// no arguments are passed. For more arguments (APPLY f a1 a2 .. rest)
+// treates all but the final argument as being individual actual arguments,
+// and the last one passed is a list of extras.
+
 LispObject Lapply_1(LispObject env, LispObject fn)
 {   save_current_function saver(apply_symbol);
     return apply(fn, nil, nil, apply_symbol);
@@ -876,11 +865,15 @@ LispObject Lapply_3(LispObject env, LispObject fn, LispObject a1, LispObject a2)
 // name of the function indicates the number of arguments to be involved.
 
 LispObject Lapply0(LispObject env, LispObject fn)
-{   return Lapply_2(env, fn, nil);
+{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+        return (qfn0(fn))(fn);
+    return Lapply_2(env, fn, nil);
 }
 
 LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
-{   push2(env, fn);
+{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+        return (qfn1(fn))(fn, a1);
+    push2(env, fn);
     a1 = ncons(a1);
     pop2(fn, env);
     return Lapply_2(env, fn, a1);
@@ -888,7 +881,9 @@ LispObject Lapply1(LispObject env, LispObject fn, LispObject a1)
 
 LispObject Lapply2(LispObject env, LispObject fn,
         LispObject a1, LispObject a2)
-{   push2(env, fn);
+{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+        return (qfn2(fn))(fn, a1, a2);
+    push2(env, fn);
     a1 = list2(a1, a2);
     pop2(fn, env);
     return Lapply_2(env, fn, a1);
@@ -896,7 +891,11 @@ LispObject Lapply2(LispObject env, LispObject fn,
 
 LispObject Lapply3(LispObject env, LispObject fn,
         LispObject a1, LispObject a2, LispObject a3up)
-{   LispObject a3 = arg4("apply3", a3up);
+{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+    {   LispObject a3 = arg4("apply3", a3up);
+        return (qfn3(fn))(fn, a1, a2, a3);
+    }
+    LispObject a3 = arg4("apply3", a3up);
     push2(env, fn);
     a1 = list3(a1, a2, a3);
     pop2(fn, env);
@@ -908,11 +907,15 @@ LispObject Lapply3(LispObject env, LispObject fn,
 // of its own arguments to the called function.
 
 LispObject Lfuncall_1(LispObject env, LispObject fn)
-{   return Lapply_2(env, fn, nil);
+{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+        return (qfn0(fn))(fn);
+    return Lapply_2(env, fn, nil);
 }
 
 LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
-{   push2(env, fn);
+{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+        return (qfn1(fn))(fn, a1);
+    push2(env, fn);
     a1 = ncons(a1);
     pop2(fn, env);
     return Lapply_2(env, fn, a1);
@@ -920,7 +923,9 @@ LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1)
 
 LispObject Lfuncall_3(LispObject env, LispObject fn,
         LispObject a1, LispObject a2)
-{   push2(env, fn);
+{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+        return (qfn2(fn))(fn, a1, a2);
+    push2(env, fn);
     a1 = list2(a1, a2);
     pop2(fn, env);
     return Lapply_2(env, fn, a1);
@@ -928,7 +933,11 @@ LispObject Lfuncall_3(LispObject env, LispObject fn,
 
 LispObject Lfuncall_4up(LispObject env, LispObject fn,
         LispObject a1, LispObject a2, LispObject a3up)
-{   push2(env, fn);
+{   if (is_symbol(fn) && (qheader(fn) & SYM_TRACED) == 0)
+    {   if (qcdr(a3up) == nil) return (qfn3(fn))(fn, a1, a2, qcar(a3up));
+        else return (qfn4up(fn))(fn, a1, a2, qcar(a3up), qcdr(a3up));
+    }
+    push2(env, fn);
     a1 = list2star(a1, a2, a3up);
     pop2(fn, env);
     return Lapply_2(env, fn, a1);
@@ -992,7 +1001,6 @@ LispObject mv_call_fn(LispObject args, LispObject env)
 //                            (values a3 a4 a5) a6 (values a7 a8))
 // (for example) is rather like
 //   (FUNCALL 'fn a1 a2 a3 a4 a5 a6 a7 a8)
-//
 {   STACK_SANITY;
     save_current_function saver(mv_call_symbol);
     if (!consp(args)) return nil;       // (multiple-value-call) => nil
@@ -1105,9 +1113,7 @@ static LispObject macroexpand_1(LispObject form, LispObject env)
     done = nil;
     if (consp(form))
     {   f = qcar(form);
-//
 // look for local macro definitions
-//
         {   LispObject p;
             for (p=env; p!=nil; p=qcdr(p))
             {   LispObject w = qcar(p);
@@ -1192,14 +1198,12 @@ LispObject Lmacroexpand_1_2(LispObject, LispObject a, LispObject b)
 {   return macroexpand_1(a, b);
 }
 
-//
 // To make something autoloadable I should set the environment cell to
 //    (name-of-self module-name-1 module-name-2 ...)
 // and when invoked the function will do a load-module on each of the
 // modules specified and then re-attempt to call.  Loading the
 // modules is expected to establish a proper definition for the
 // function involved.
-//
 
 LispObject autoload_0(LispObject fname)
 {   STACK_SANITY;
@@ -1297,12 +1301,10 @@ LispObject undefined_0(LispObject fname)
 
 LispObject undefined_1(LispObject fname, LispObject)
 {
-//
 // It would be perfectly possible to grab and save the args here, and retry
 // the function call after error has patched things up.  Again
 // this entrypoint is for compiled code calling something that is undefined,
 // and so no lexical environment is needed.
-//
     error(1, err_undefined_function_1, fname);
 }
 
@@ -1319,15 +1321,13 @@ LispObject undefined_4up(LispObject fname,
 {   error(1, err_undefined_function_4up, fname);
 }
 
-//
 // The next few functions allow me to create variants on things! The
 // entrypoint fX_as_Y goes in the function cell of a symbol, and the name
 // of a function with Y arguments goes in is environment cell. The result will
 // be a function that accepts X arguments and discards all but the first Y of
-// them, then chains to the other function. The purpose is to support goo
+// them, then chains to the other function. The purpose is to support good
 // compilation of things like
 //   (de funny_equal (a b c) (equal a b))
-//
 
 LispObject f0_as_0(LispObject env)
 {   env = qenv(env);
@@ -1389,7 +1389,6 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
     return (*qfn3(env))(env, a1, a2, a3);
 }
 
-//
 // The next function is EXPERIMENTAL and is only available if there is
 // a "fork" function available. It is probably only even partially useful
 // if the operating system and libraries used implement that using a
@@ -1398,9 +1397,7 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 // comfortably, so this stuff will not be available there. Observe that I
 // make fairly extreme use of the autoconf detection stuff to try to avoid
 // trying this where it might not make sense!
-//
 
-//
 // Expected behaviour
 //   (parallel f a)
 //      runs two tasks, one of which is f(a, nil), the other is f(a, t).
@@ -1433,7 +1430,6 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 //
 //      While this code is in development it may genatate a certain amount
 //      of unwanted trace or logging information.
-//
 
 #if defined HAVE_UNISTD_H && \
     defined HAVE_SYS_TYPES_H && \
@@ -1462,15 +1458,11 @@ LispObject f3_as_3(LispObject env, LispObject a1, LispObject a2, LispObject a3)
 
 static void write_result(LispObject env, LispObject r, char *shared)
 {
-//
 // This converts an arbitrary result into a string so I can pass it back.
-//
     int32_t i, len, ok = 1;
-//
 // Cyclic and re-entrant structures could lead to failure here, and
 // uninterned symbols (eg gensyms) will not be coped with very well. But
 // SIMPLE data types should all be safe.
-//
     if_error(r = Lexplode(nil, r),
              // Error handler
              strcpy(shared, "Failed");
@@ -1480,12 +1472,10 @@ static void write_result(LispObject env, LispObject r, char *shared)
              strcpy(shared, "Failed");
              exit(3));
     len = length_of_byteheader(vechdr(r)) - CELL;
-//
 // If the displayed form ou the output was too long I just truncate it
 // at present. A more agressive attitude would be to count that as a form
 // of failure. As an intermediate step I use the first character in my
 // buffer as an "overflow flag" and leave a blank in it if all is well.
-//
     if (len > PARSIZE-2)
     {   len=PARSIZE-2;
         ok = 0;
@@ -1498,35 +1488,27 @@ static void write_result(LispObject env, LispObject r, char *shared)
 LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 {   STACK_SANITY;
     pid_t pid1, pid2, pidx, pidy;
-//
 // Create an identifier for a private shared segment of memory of size
 // 2*PARSIZE. This will be used for passing a result from the sub-task
 // to the main one. Give up if such a segment can not be allocated.
-//
     int status, segid = shmget(IPC_PRIVATE, (size_t)(2*PARSIZE),
                                IPC_CREAT | S_IRUSR | S_IWUSR);
     char *shared, *w;
     int overflow;
     LispObject r;
     if (segid == -1) aerror("Unable to allocate a shared segment");
-//
 // Attach to the shared segment to obtain a memory address via which it can be
 // accessed. Again raise an error if this fails.
-//
     shared = (char *)shmat(segid, NULL, 0);
     if (shared == (char *)(-1))
         aerror("Unable to attach to shared segment");
-//
 // the shared segment is set up to contain null strings in the two places
 // where it might be used to hold return values.
-//
     shared[0] = shared[PARSIZE] = 0;
-//
 // Split off a clone of the current process that can be used to do the
 // first evaluation. If this succeeds call a(b, nil) in it. Note that
 // processes created via "fork" inherit shared memory segments from their
 // parent.
-//
     pid1 = fork();
     if (pid1 < 0)     // Task not created, must tidy up.
     {   shmdt(shared);
@@ -1540,23 +1522,17 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
 // If the evaluation failed I will exit indicating a failure.
                  strcpy(shared, "Failed");
                  exit(1));
-//
 // Write result from first task into the first half of the shared memory block.
-//
         write_result(nil, r1, shared);
-//
 // Exiting from the sub-task would in fact detach from the shared data
 // segment, but I do the detaching explictly to feel tidy.
-//
         shmdt(shared);
         exit(0);
     }
     else
     {
-//
 // This is the continuation of the main process. Create a second task in
 // much the same way.
-//
         pid2 = fork();
         if (pid2 < 0)    // If task 2 can not be created then kill task 1
         {   kill(pid1, SIGKILL);
@@ -1578,21 +1554,17 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
         }
         else
         {
-//
 // Wait for whichever of the two sub-tasks finishes first. Then kill the
 // other one, and return the result left by the winner.
-//
             pidx = wait(&status);
 //          term_printf("First signal was from task %d\n", pidx);
             if (!WIFEXITED(status) ||
                 WEXITSTATUS(status) != 0)
             {
-//
 // If the first task to complete in fact failed rather than exited cleanly
 // I will count it as an overall failure and cancel everything. This
 // covers aborting (in which case WIFEXITED will return false) or
 // exiting cleanly but with a non-zero return code.
-//
                 kill(pid1, SIGKILL);
                 kill(pid2, SIGKILL);
                 waitpid(pid1, &status, 0);
@@ -1613,18 +1585,14 @@ LispObject Lparallel(LispObject env, LispObject a, LispObject b)
             }
             kill(pidy, SIGKILL);        // Kill alternate task
             waitpid(pidy, &status, 0);
-//
 // If the first character of the buffer is a blank then there was no
 // overflow and all is well.
-//
             if (w[0] == ' ') r = read_from_vector(w + 1);
             else
             {   overflow = -overflow;
                 r = make_string(w + 1);
             }
-//
 // Need to tidy up the shared segment at the end.
-//
             shmdt(shared);
             shmctl(segid, IPC_RMID, 0);
             r = cons(fixnum_of_int(overflow), r);
