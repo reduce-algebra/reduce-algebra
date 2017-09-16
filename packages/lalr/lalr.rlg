@@ -112,6 +112,11 @@ symbolic;
 
 nil
 
+load_package lalr;
+
+
+nil
+
 
 % Before testing parser generation I will demonstrate the lexer..
 % If I was jumpy about the exact behaviour of the lexer I could go

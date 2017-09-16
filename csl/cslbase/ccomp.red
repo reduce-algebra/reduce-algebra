@@ -938,7 +938,7 @@ symbolic procedure c!:ccompilestart(name, setupname, dir, hdrnow);
 !#if common!-lisp!-mode
     my_gensym_counter := 0;
 !#endif
-    c!:registers := c!:available := c!:used := nil;
+    c!:registers := c!:used := nil;
 % File_name will be the undecorated name as a string when hdrnow is false,
     File_name := list2string explodec name;
     Setup_name := explodec setupname;
@@ -1036,11 +1036,14 @@ symbolic procedure C!-end;
 
 procedure C!-end1 create_lfile;
   begin
-    scalar checksum, c1, c2, c3;
+    scalar checksum, c1, c2, c3, stubs;
     wrs C_file;
+    if explodec Setup_name = explodec 'stubs then <<
+      stubs := t;
+      Setup_name := "u01" >>;
     if create_lfile then
        c!:printf("\n\nsetup_type const %s_setup[] =\n{\n", Setup_name)
-    else c!:printf("\n\nsetup_type_1 const %s_setup[] =\n{\n", Setup_name);
+    else c!:printf("\n\nsetup_type const_1 %s_setup[] =\n{\n", Setup_name);
     c!:defnames := reverse c!:defnames;
     while c!:defnames do begin
        scalar name, nargs, f0, f1, f2, f3, f4up;
@@ -1084,7 +1087,15 @@ procedure C!-end1 create_lfile;
                      '!  . append(explodec c2, '!  . explodec c1));
     c!:printf("    {NULL, (no_args *)%a, (one_arg *)%a,\n        NULL, NULL, NULL}\n};\n\n",
               Setup_name, checksum);
-    c!:printf "%<// end of generated code\n";
+    if stubs then <<
+      for i := 2:60 do <<
+        c!:printf("setup_type const u");
+        if i < 10 then c!:printf("0");
+        c!:printf("%s_setup[] = {\n", i);
+        c!:printf("    {NULL, (no_args *)%a, (one_arg *)%a,\n        NULL, NULL, NULL}\n};\n\n",
+                  Setup_name, checksum) >>;
+      c!:printf("\n\n") >>;
+        c!:printf "%<// end of generated code\n";
     close C_file;
     if create_lfile then <<
 !#if common!-lisp!-mode
@@ -1139,6 +1150,7 @@ procedure C!-end1 create_lfile;
 !#else
        princ "% End of generated Lisp code";
 !#endif
+       c!:reset_gensyms();
        terpri(); terpri();
        L_contents := nil;
        wrs O_file;
@@ -1571,16 +1583,14 @@ put('qputv, 'c!:opcode_printer, function c!:pqputv);
 symbolic procedure c!:prplaca(op, r1, r2, r3);
  <<
   c!:printf("    if (!car_legal(%v)) rplaca_fails(%v);\n", r2, r2);
-  c!:printf("    qcar(%v) = %v;\n", r2, r3);
-  c!:printf("    %v = %v;\n", r1, r2) >>;
+  c!:printf("    qcar(%v) = %v;\n", r2, r3) >>;
 
 put('rplaca, 'c!:opcode_printer, function c!:prplaca);
 
 symbolic procedure c!:prplacd(op, r1, r2, r3);
  <<
   c!:printf("    if (!car_legal(%v)) rplacd_fails(%v);\n", r2, r2);
-  c!:printf("    qcdr(%v) = %v;\n", r2, r3);
-  c!:printf("    %v = %v;\n", r1, r2) >>;
+  c!:printf("    qcdr(%v) = %v;\n", r2, r3) >>;
 
 put('rplacd, 'c!:opcode_printer, function c!:prplacd);
 
@@ -1793,14 +1803,12 @@ for each n in '(car cdr qcar qcdr null not atom numberp fixp iminusp
 for each n in '(eq equal atsoc memq iplus2 idifference
                 itimes2 ilessp igreaterp qgetv get
                 modular!-plus modular!-difference
-%               rplaca rplacd
                 ) do c!:two_operands n;
 !#else
 for each n in '(eq equal atsoc memq iplus2 idifference
                 assoc member
                 itimes2 ilessp igreaterp qgetv get
                 modular!-plus modular!-difference
-%               rplaca rplacd
                 ) do c!:two_operands n;
 !#endif
 
@@ -1808,10 +1816,11 @@ for each n in '(eq equal atsoc memq iplus2 idifference
 flag('(movr movk movk1 ldrglob call reloadenv
        fluidbind fastget fastflag), 'c!:set_r1);
 flag('(strglob qputv fluidunbind), 'c!:read_r1);
-flag('(qputv fastget fastflag), 'c!:read_r2);
-flag('(movr qputv), 'c!:read_r3);
+flag('(qputv fastget fastflag rplaca rplacd), 'c!:read_r2);
+flag('(movr qputv rplaca rplacd), 'c!:read_r3);
 flag('(ldrglob strglob nilglob movk call), 'c!:read_env);
 flag('(call qputv rplaca rplacd), 'c!:side_effect);
+
 
 fluid '(fn_used);
 
@@ -3059,6 +3068,22 @@ symbolic procedure c!:builtin_two(x, env);
     c!:outop(car x, r:=c!:newreg(), car rr, cadr rr);
     return r
   end;
+
+
+symbolic procedure c!:rplac(x, env);
+  begin
+    scalar a1, a2, r, rr;
+    a1 := cadr x;
+    a2 := caddr x;
+    rr := c!:pareval(list(a1, a2), env);
+    c!:outop(car x, nil, car rr, cadr rr);
+    c!:outop('movr,r:=c!:newreg(),nil,car rr);
+    return r
+  end;
+
+
+put('rplaca, 'c!:code, function c!:rplac);
+put('rplacd, 'c!:code, function c!:rplac);
 
 % At present it is important that any variadic function is called with
 % a rigid number of arguments if it goes via the direct calls to C++ code

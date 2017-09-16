@@ -178,6 +178,12 @@
 #include <sys/time.h>
 #endif
 
+// In a manner that I view as bad, at least the Macintosh copy of libffi
+// installed via macports in August 2017 defined a bunch of autoconf-related
+// macros, potentially in conflict with my own set of values that autoconf
+// sets up for me. So here I do a load of #undef steps to avoid trouble, and
+// I then must not try using those macros at all.
+
 #undef PACKAGE
 #undef PACKAGE_NAME
 #undef PACKAGE_STRING
@@ -188,6 +194,15 @@
 #undef PACKAGE_URL
 
 #include <ffi.h>
+
+#undef PACKAGE
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef VERSION
+#undef PACKAGE_VERSION
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_TARNAME
+#undef PACKAGE_URL
 
 extern "C"
 {

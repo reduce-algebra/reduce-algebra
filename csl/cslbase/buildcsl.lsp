@@ -113,8 +113,28 @@
 (set!-autoload 'c_out        'compiler)
 
 
-% My choice for a Lisp system is to enable full compilation (but NOT
-% into DLL form) by default.
+(when (file!-readablep "stubs.lsp")
+   (de c!:install (name env c!-version !&optional c1)
+      (cond
+        (c1 "unused here")
+        (t (progn
+              (put name 'c!-version c!-version)
+              (cond (env (prog (v n)
+                 (setq v (mkvect (sub1 (length env))))
+                 (setq n 0)
+            top  (cond
+                    ((null env) (progn
+                     (put name 'funarg v)
+                     (return (symbol!-set!-env name v)))))
+                 (putv v n (car env))
+                 (setq n (add1 n))
+                 (setq env (cdr env))
+                 (go top))))
+              name))))
+    (rdf "stubs.lsp"))
+
+
+% My choice for a Lisp system is to enable full compilation by default.
 
 (setq !*comp t)
 (setq !*native_code nil)

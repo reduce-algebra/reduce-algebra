@@ -1854,7 +1854,7 @@ void set_up_variables(int restart_flag)
 //       (shortname . "string")   executable wuithout path or extension
 //       pipes                    do I support open-pipe?
 //       parallel                 "parallel" function supported
-//       (version . "string")     eg "2.11"
+//       (revision . number)      eg 4020. The most recent subversion checkin.
 //       (name . "string")        eg "MSDOS/386"
 //       (opsys . id)             unix/msdos/riscos/win32/finder/riscos/...
 //       id                       unix/msdos etc again...
@@ -2055,8 +2055,8 @@ void set_up_variables(int restart_flag)
          * texmacs as a front-end.
          */
 
-        /*! lispsys [version] \item[{\ttfamily  (version . ver)}] \index{{\ttfamily  (version . ver)}}
-         * The CSL version number.
+        /*! lispsys [revision] \item[{\ttfamily  (revision . ver)}] \index{{\ttfamily  (revision . ver)}}
+         * The CSL subversion revision number.
          */
 
 
@@ -2129,7 +2129,7 @@ void set_up_variables(int restart_flag)
                  w = acons(make_keyword("EXECUTABLE"),
                            make_string(fullProgramName), w);
                  w = acons(make_keyword("NAME"), make_string(IMPNAME), w);
-                 w = acons(make_keyword("VERSION"), make_string(PACKAGE_VERSION), w);
+                 w = acons(make_keyword("REVISION"), fixnum_of_int(REVISION), w);
                  w = cons(make_keyword("CCL"), w);
                  w = cons(make_keyword("COMMON-LISP"), w);
 
@@ -2216,7 +2216,7 @@ void set_up_variables(int restart_flag)
                   make_string(programName), w);
         if (!restartp) w = cons(make_keyword("cold-start"), w);
         w = acons(make_keyword("name"), make_string(IMPNAME), w);
-        w = acons(make_keyword("version"), make_string(PACKAGE_VERSION), w);
+        w = acons(make_keyword("revision"), fixnum_of_int(REVISION), w);
         w = cons(make_keyword("csl"), w);
 //
 // Ha Ha a trick here - if a symbol ADDSQ is defined I view this image

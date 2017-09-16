@@ -1908,11 +1908,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                         else if (strcmp(w, "version") == 0)
                         {   term_printf(
 #ifndef COMMON
-                        "Codemist Standard Lisp %s revision %d for %s: %s\n",
+                        "Codemist Standard Lisp revision %u for %s: %s\n",
 #else
-                        "Codemist Common Lisp %s revision %d for %s: %s\n",
+                        "Codemist Common Lisp revision %u for %s: %s\n",
 #endif
-                                PACKAGE_VERSION, REVISION, IMPNAME, __DATE__);
+                                REVISION, IMPNAME, __DATE__);
                             my_exit(0);
                         }
                         else if (strcmp(w, "maxmem") == 0)
@@ -2764,11 +2764,11 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #endif
 
 #ifndef COMMON
-            term_printf("Codemist Standard Lisp %s revision %d for %s: %s\n",
+            term_printf("Codemist Standard Lisp revision %d for %s: %s\n",
 #else
-            term_printf("Codemist Common Lisp %s revision %d for %s: %s\n",
+            term_printf("Codemist Common Lisp revision %d for %s: %s\n",
 #endif
-                        PACKAGE_VERSION, REVISION, IMPNAME, __DATE__);
+                        REVISION, IMPNAME, __DATE__);
         }
 #ifdef WINDOW_SYSTEM
         ensure_screen();

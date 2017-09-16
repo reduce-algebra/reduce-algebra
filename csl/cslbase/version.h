@@ -35,25 +35,11 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// PACKAGE_VERSION is used to control the version number displayed when CSL
-// is started up in verbose mode (command line option -v). Version numbers
-// are also recorded in image files. But NOTE NOTE NOTE that the macro
-// PACKAGE_VERSION gets set in config.h based on the version number
-// established in "configure.ac" and so the value set here is merely a
-// fall-back. Indeed this whole file is a bit of a joke! Well to prevent it
-// from being a joke I make it undefine anything that config.h has set up and
-// provide its own value explictly.
-// This adjustment is more important than ever given that <ffi.h> on the
-// Macintosh seems to (to my mind improperly!) define this symbol to reflect
-// its version.
+// Rather than having a simple version I will cause my script
+// (scripts/commit.sh) that is used to update the subversion repository to
+// update the revision number here.
 
-#undef PACKAGE_VERSION
-#define PACKAGE_VERSION     "9.01"
-
-// As of February 2016 I am making the file scripts/commit.sh update the
-// revision number stored here...
-
-#define REVISION 4203
+#define REVISION 4209
 
 #endif // header_version_h
 
