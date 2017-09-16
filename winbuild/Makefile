@@ -51,7 +51,7 @@ csl.stamp:	$(BUILDTOPDIR).stamp
 psl.stamp:	$(BUILDTOPDIR).stamp
 	(cd $(BUILDTOPDIR) ; \
 		./configure --with-psl ; \
-		./configure --with-psl -with-m32 ; \
+		./configure --with-psl --with-m32 ; \
 		script -c "time make psl" ../psl.log )
 	touch psl.stamp
 

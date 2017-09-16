@@ -835,6 +835,20 @@ then
   AC_MSG_NOTICE([rdynamic=$rdynamic_available])
 fi
 
+# With g++ I can ask the compiler to avoid trying to colour diagnostics.
+# I find this very helpful when I collect a log of a compilation, because
+# the colouring leads to many embedded control characters ending up left in
+# the log file. Some people may have alternative work flows and so will
+# want to comment out this adjustment.
+OLDCPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS -fno-diagnostic-color"
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+                                [[printf("\n");]])],
+  [],
+  [CPPFLAGS="$OLDLDFLAGS"])
+AC_MSG_NOTICE([CPPFLAGS now = $CPPFLAGS])
+
+
 case $host in
 i386* | i486* | i586* | i686*)
 # On 32-bit Intel-style machines I will try to build using gcc options
