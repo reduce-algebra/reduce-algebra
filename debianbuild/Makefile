@@ -5,6 +5,7 @@ NOW=$(shell LANG=C date "+%a, %d %b %Y %T %z")
 CHANGELOG=reduce/debian/changelog
 BUILDTOPDIR=C
 REVISION=HEAD
+BUILD=$(shell $(BUILDTOPDIR)/scripts/findhost.sh $(shell $(BUILDTOPDIR)/config.guess))
 
 all:	update-changelog reduce-packages
 
@@ -63,17 +64,17 @@ tarpackages:
 	cp $(BUILDTOPDIR)/scripts/cslhere.sh $(TARDEST)/redcsl
 	cp $(BUILDTOPDIR)/scripts/pslhere.sh $(TARDEST)/redpsl
 	cp -r $(BUILDTOPDIR)/xmpl $(TARDEST)
-	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/csl $(TARDEST)/csl
-	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/csl.img $(TARDEST)/csl
-	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce $(TARDEST)/csl
-	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.img $(TARDEST)/csl
-	cp -r $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.fonts $(TARDEST)/csl
-	cp -r $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.resources $(TARDEST)/csl
+	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/csl $(TARDEST)/csl
+	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/csl.img $(TARDEST)/csl
+	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/reduce $(TARDEST)/csl
+	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/reduce.img $(TARDEST)/csl
+	cp -r $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/reduce.fonts $(TARDEST)/csl
+	cp -r $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/reduce.resources $(TARDEST)/csl
 	cp $(BUILDTOPDIR)/generic/newfront/build/rfcsl $(TARDEST)
-	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.doc/BINARY-LICENSE.txt $(TARDEST)/reduce.doc
-	cp $(BUILDTOPDIR)/cslbuild/*ubuntu*/csl/reduce.doc/BSD-LICENSE.txt $(TARDEST)/reduce.doc
-	cp -r $(BUILDTOPDIR)/pslbuild/*ubuntu*/psl $(TARDEST)/psl
-	cp -r $(BUILDTOPDIR)/pslbuild/*ubuntu*/red $(TARDEST)/psl
+	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/reduce.doc/BINARY-LICENSE.txt $(TARDEST)/reduce.doc
+	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/reduce.doc/BSD-LICENSE.txt $(TARDEST)/reduce.doc
+	cp -r $(BUILDTOPDIR)/pslbuild/$(BUILD)/psl $(TARDEST)/psl
+	cp -r $(BUILDTOPDIR)/pslbuild/$(BUILD)/red $(TARDEST)/psl
 	cp $(BUILDTOPDIR)/generic/newfront/build/rfpsl $(TARDEST)
 	chmod +x $(TARDEST)/redcsl $(TARDEST)/redpsl $(TARDEST)/rfcsl $(TARDEST)/rfpsl 
 	tar cfj reduce-freestanding_$(SNAPSHOT)_$(MACHINE).tar.bz2 -C /tmp reduce-snapshot_$(SNAPSHOT)_$(MACHINE)
