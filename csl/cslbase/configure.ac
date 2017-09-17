@@ -845,7 +845,7 @@ CPPFLAGS="$CPPFLAGS -fno-diagnostic-color"
 AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                 [[printf("\n");]])],
   [],
-  [CPPFLAGS="$OLDLDFLAGS"])
+  [CPPFLAGS="$OLDCPPFLAGS"])
 AC_MSG_NOTICE([CPPFLAGS now = $CPPFLAGS])
 
 
@@ -880,7 +880,7 @@ i386* | i486* | i586* | i686*)
    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
                                    [[printf("\n");]])],
      [sse2math_available="yes"],
-     [CPPFLAGS="$OLDLDFLAGS"
+     [CPPFLAGS="$OLDCPPFLAGS"
      sse2math_available="no"])
    AC_MSG_NOTICE([SSE math status = $sse2math_available])
    ;;
