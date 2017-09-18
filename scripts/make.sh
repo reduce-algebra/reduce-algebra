@@ -52,8 +52,23 @@ done
 # if neither csl or psl are given, build both
 if test "$buildcsl" = "no" -a "$buildpsl" = "no"
 then
-  buildcsl=yes
-  buildpsl=yes
+  buildcsl="yes"
+  buildpsl="yes"
+fi
+
+if ! test -d cslbuild
+then
+  buildcsl="no"
+fi
+if ! test -d pslbuild
+then
+  buildpsl="no"
+fi
+if test "$buildpsl$buildcsl" = "nono"
+then
+  printf "Neither CSL nor PSL seems configured and selected here.\n"
+  printf "Nothing to do. Stopping.\n"
+  exit 1
 fi
 
 # The following arranges that if you go "make csl.exe" or
@@ -179,7 +194,7 @@ fi
 case $args in
 # If I am making bootstrapreduce or bootstrapreduce.img or csl or csl.img or
 # one of the demo programs I do not need the generated C code...
-*bootstrap* | *csl* | *demo*)
+*bootstrap* | *csl* | *demo* | *psl*)
   first="no"
   ;;
 *)
