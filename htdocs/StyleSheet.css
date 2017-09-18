@@ -13,7 +13,7 @@ div#content {
 }
 
 div#middle {
-    display: flex
+    display: flex;
 }
 
 div#main {
@@ -40,22 +40,21 @@ header {
     header + p { /* subheader */
         color: #009;
         text-align: center;
+        font-family: Georgia, Times, 'Times New Roman', serif;
         font-size: 21px;
         font-weight: bold;
         margin: 0;
     }
 
+h1, h2 {
+    font-family: Georgia, Times, 'Times New Roman', serif;
+    font-weight: bold;
+}
+
 h1 {
     color: #009;
     text-align: center;
 }
-
-/*
-h2 {
-    text-align: center;
-    font-size: 2em
-}
-*/
 
 footer {
     border-top: thin solid black;
@@ -101,6 +100,7 @@ pre, code {
 
 nav {
     font-size: 0.9rem;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
     nav > ul {
@@ -118,19 +118,27 @@ nav {
             text-align: center;
         }
 
+            nav > ul > li.selected {
+                padding-right: 1.2em;
+                padding-left: 0.2em;
+                border-left: 1em solid #009;
+            }
+
             nav > ul > li > a {
                 text-decoration: none;
                 color: black;
                 display: block;
-                padding-left: 1.2em;
                 padding-right: 1.2em;
+                padding-left: 0.2em;
+                border-left: 1em solid #CCF;
+                transition: 0.5s 0.1s;
+                /* Better to transition the opacity? */
             }
 
-            nav > ul > li.selected {
-                padding-left: 0.2em;
-                padding-right: 1.2em;
-                border-left: 1em solid #009;
-            }
+                nav > ul > li > a:hover,
+                nav > ul > li > a:focus {
+                    border-left-color: #66C;
+                }
 
     nav ul li a:link, nav ul li a:visited, nav ul li a:active {
         color: black;
@@ -155,6 +163,7 @@ nav {
 
 #google_translate_element {
     text-align: center;
+    text-shadow: none;
 }
 
 dt {
