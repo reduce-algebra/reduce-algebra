@@ -41,6 +41,8 @@ symbolic;
 
 fluid '(!*fastvector !*unsafecar);
 flag('(fastvector unsafecar), 'switch);
+global '(!*noisy);
+!*noisy := nil;
 
 %
 % I start with some utility functions that provide something
@@ -279,12 +281,19 @@ symbolic procedure c!:valid_specform x;
 %  put('when,                   'c!:valid, function c!:valid_specform) 
    >>;
 
-fluid '(c!:current_procedure c!:current_args c!:current_block c!:current_contents
-        c!:all_blocks c!:registers c!:stacklocs);
+fluid '(c!:current_procedure c!:current_args c!:current_block
+        c!:current_contents c!:all_blocks c!:registers c!:stacklocs);
 
-fluid '(c!:available c!:used);
+fluid '(c!:used);
 
-c!:available := c!:used := nil;
+c!:used := nil;
+
+symbolic procedure c!:alphanumeric(a, b);
+  begin
+    a := compress cddr explodec a;
+    b := compress cddr explodec b;
+    return a < b
+  end;
 
 symbolic procedure c!:reset_gensyms();
  << remflag(c!:used, 'c!:live_across_call);
@@ -303,8 +312,8 @@ symbolic procedure c!:reset_gensyms();
          princ "+++++ "; prin car c!:used; princ " ";
          prin plist car c!:used; terpri();
          wrs o end;
-      c!:available := car c!:used . c!:available;
-      c!:used := cdr c!:used >> >>;
+      c!:used := cdr c!:used >>;
+      my_gensym_counter := 0 >>;
 
 fluid '(my_gensym_counter);
 my_gensym_counter := 0;
@@ -312,14 +321,10 @@ my_gensym_counter := 0;
 symbolic procedure c!:my_gensym();
   begin
     scalar w;
-% I keep a list of the generated symbols I have used so far, and re-use them
-% when I cam.
-    if c!:available then <<
-       w := car c!:available; c!:available := cdr c!:available >>
 % When I need a new name I create an ordinary symbol with a name of the
 % form "v_NNN" where NNN is the next integer in sequence. It would be bad
 % that name clashed with any other one I found myself using!
-    else w := compress1
+    w := compress1
        ('!v . '!_ . explodec (my_gensym_counter := my_gensym_counter + 1));
     c!:used := w . c!:used;
     if plist w then << princ "????? "; prin w; princ " => "; prin plist w; terpri() >>;
@@ -407,6 +412,31 @@ symbolic procedure c!:cval(x, env);
 % common they are used as an expansion of (LET (...) ...) forms and so
 % they can arise.
 
+fluid '(c!:stack);
+
+symbolic procedure c!:start_nested_context();
+  begin
+    c!:stack := list(c!:current_block, c!:current_contents, c!:all_blocks) .
+                c!:stack;
+    c!:all_blocks := nil;
+    c!:startblock c!:my_gensym();
+  end;
+
+symbolic procedure c!:end_nested_context();
+  begin
+    scalar l, b, w;
+    l := c!:my_gensym();
+    c!:endblock('goto, list l);
+    b := reverse c!:all_blocks;
+    w := car c!:stack;
+    c!:stack := cdr c!:stack;
+    c!:current_block := car w;
+    c!:current_contents := cadr w;
+    c!:all_blocks := caddr w;
+    c!:endblock('inner_block, b);
+    c!:startblock l
+  end;
+
 symbolic procedure c!:clambda(bvl, body, args, env);
 % This is for ((lambda bvl body) args) and it will need to deal with
 % local declarations at the head of body. On this call body is a list of
@@ -442,6 +472,7 @@ symbolic procedure c!:clambda(bvl, body, args, env);
           fluids := (v . c!:newreg()) . fluids;
           flag(list cdar fluids, 'c!:live_across_call); % silly if not
           env1 := ('c!:dummy!:name . cdar fluids) . env1;
+          c!:start_nested_context();
           c!:outop('fluidbind, cdar fluids, v, c!:find_literal v);
           c!:outop('strglob, car w, v, c!:find_literal v) >>
        else <<
@@ -452,8 +483,15 @@ symbolic procedure c!:clambda(bvl, body, args, env);
     w := c!:cval(body, env);
 % because of the RAII magic the fluidunbind operation here only has to
 % print a "}".
-    for each v in fluids do
-       c!:outop('fluidunbind, cdr v, car v, c!:find_literal car v);
+    for each v in fluids do <<
+      c!:end_nested_context();
+% The FLUIDUNBIND opcode itself does not generate any visible code that
+% makes use of the operands specified here. However the destructor for the
+% object that FLUIDBIND set up does, and the live-register analysys needs
+% to know something about that... which it does bit looking at the
+% apparently frivolous operands here (which must be a repear of the ones
+% passed to the corresponding FLUIDBIND.
+      c!:outop('fluidunbind, cdr v, car v, c!:find_literal car v) >>;
     unfluid decs;
     localdecs := cdr localdecs;
     return w
@@ -563,40 +601,11 @@ symbolic procedure c!:any_can_reach(l, b);
   else c!:any_can_reach(cdr l, b);
 
 
-% c!:pareval related to an idea that if you have a call such as (f A B C)
-% the A, B and C could be evaluated in any order, thereby giving some scope
-% to avoid the need to save values on the stack when on eor more of the
-% expressions is easy. This seems a good plan, but too much of Reduce depends
-% on left to right evaluation of arguments, and my code here was never
-% clever enough to detect possible interactions between expressions and hence
-% only do safe rearrangement - so I have downgraded this code so that it
-% does everything simply and sequentially. But it remains some of the
-% structure of its earlier more elaborate form, and its name reminds me of
-% that.
-
-symbolic procedure c!:pareval(args, env);
+symbolic procedure c!:evalargs(args, env);
   begin
-    scalar tasks, tasks1, merge, split, r;
-    tasks := for each a in args collect (c!:my_gensym() . c!:my_gensym());
-    split := c!:my_gensym();
-    c!:endblock('goto, list split);
-    for each a in args do begin
-      scalar s;
-% I evaluate each arg as what is (at this stage) a separate task
-      s := car tasks;
-      tasks := cdr tasks;
-      c!:startblock car s;
+    scalar r;
+    for each a in args do
       r := c!:cval(a, env) . r;
-      c!:endblock('goto, list cdr s);
-      tasks1 := s . tasks1
-    end;
-    for each z in tasks1 do merge := z . merge; % do sequentially
-% Finally string end-to-end all the bits of sequential code I have left over.
-    for each v in merge do <<
-      c!:startblock split;
-      c!:endblock('goto, list car v);
-      split := cdr v >>;
-    c!:startblock split;
     return reversip r
   end;
 
@@ -615,7 +624,7 @@ symbolic procedure c!:ccall1(fn, args, env);
       if not get(car fn, 'c!:direct_entrypoint) and
          cddr args and cdddr args then
         args := list(car args, cadr args, caddr args, 'list . cdddr args);
-      r := c!:pareval(args, env);
+      r := c!:evalargs(args, env);
       c!:outop('call, val, r, fn) >>;
     c!:outop('reloadenv, 'env, nil, nil);
     return val
@@ -645,7 +654,7 @@ symbolic procedure c!:cfndef(c!:current_procedure,
     scalar env, n, w, c!:current_args, c!:current_block, restart_label,
            c!:current_contents, c!:all_blocks, entrypoint, exitpoint, args1,
            c!:registers, c!:stacklocs, literal_vector, reloadenv, does_call,
-           blockstack, proglabs, args, body, localdecs, varargs;
+           blockstack, proglabs, args, body, localdecs, varargs, c!:stack;
     args := car argsbody;
     body := cdr argsbody;
 % If there is a (DECLARE (SPECIAL ...)) extract it here, aned leave a body
@@ -934,7 +943,7 @@ symbolic procedure c!:concat(a, b);
 symbolic procedure c!:ccompilestart(name, setupname, dir, hdrnow);
   begin
     scalar o, d, w;
-    reset!-gensym 0;   % Makes output more consistent
+%%%%%%%%    reset!-gensym 0;   % Makes output more consistent
 !#if common!-lisp!-mode
     my_gensym_counter := 0;
 !#endif
@@ -1819,7 +1828,8 @@ flag('(strglob qputv fluidunbind), 'c!:read_r1);
 flag('(qputv fastget fastflag rplaca rplacd), 'c!:read_r2);
 flag('(movr qputv rplaca rplacd), 'c!:read_r3);
 flag('(ldrglob strglob nilglob movk call), 'c!:read_env);
-flag('(call qputv rplaca rplacd), 'c!:side_effect);
+flag('(call qputv rplaca rplacd fluidbind
+       fluidunbind), 'c!:side_effect);
 
 
 fluid '(fn_used);
@@ -1917,6 +1927,8 @@ symbolic procedure c!:build_clash_matrix c!:all_blocks;
           begin
             scalar op, r1, r2, r3;
             op := car s; r1 := cadr s; r2 := caddr s; r3 := cadddr s;
+            if op = 'reloadenv or
+               op = 'fluidbind then reloadenv := t;
             if flagp(op, 'c!:set_r1) then
                if memq(r1, live) then <<
 !#if common!-lisp!-mode
@@ -1924,8 +1936,6 @@ symbolic procedure c!:build_clash_matrix c!:all_blocks;
 !#else
                   live := delete(r1, live);
 !#endif
-                  if op = 'reloadenv or
-                     op = 'fluidbind then reloadenv := t;
                   for each v in live do c!:clash(r1, v) >>
                else if flagp(op, 'c!:side_effect) then nil
                else <<
@@ -2000,7 +2010,7 @@ symbolic procedure c!:remove_nops c!:all_blocks;
             if not (op = 'movr and r1 = r3) then
                r := list(op, r1, r2, r3) . r
           end;
-      put(b, 'c!:contents, reversip r);
+      put(b, 'c!:contents, reverse r);
       r := get(b, 'c!:why);
       if not atom r then
          put(b, 'c!:why, 
@@ -2107,12 +2117,57 @@ symbolic procedure c!:pushpop(op, v);
           c!:printf(");\n") >> >>
   end;
 
+% Here b will be a list of blocks labels, but some blocks may have exit
+% conditions of the form inner_block:<list of labels> and these should be
+% flattened out
+
+symbolic procedure showblock l;
+  begin
+    if !*noisy then <<
+      prin l; printc ":";
+      for each i in get(l, 'c!:contents) do << princ "  "; print i >>;
+      princ "  "; prin get(l, 'c!:why);
+      princ " ";
+      print get(l, 'c!:where_to) >>
+  end;
+
+symbolic procedure showblocklist l;
+  for each q in l do showblock q;
+
+symbolic procedure c!:flatten b;
+  begin
+    scalar w, r, inner;
+    showblocklist b;
+    while b do <<
+      if get(car b, 'c!:why) = 'inner_block then <<
+        inner := get(car b, 'c!:where_to);
+        if !*noisy then <<
+          printc "This is an inner block";
+          showblocklist inner >>;
+        w := c!:flatten inner;
+        if !*noisy then <<
+          printc "Inner block flattened";
+          showblocklist w >>;
+% Change the parent of the inner block so it just jumps to the head of
+% the block with a simple GOTO exit condition.
+        put(car b, 'c!:why, 'goto);
+        put(car b, 'c!:where_to, list car inner);
+        r := car b . r;
+        for each x in reverse w do r := x . r >>
+      else r := car b . r;
+      b := cdr b >>;
+      if !*noisy then <<
+        printc "Whole block flattened";
+        showblocklist reverse r >>;
+    return r;
+  end;
+
 symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
                                           env, argch, args, varargs);
   begin
     scalar w, n, locs, stacks, fn_used;
-% I need to be somewhat careful with optimisation here so that scopes
-% set up by fluidbind and fluidunbind are not defeated.
+    printc "#if 0 // Start of trace output";
+    c!:all_blocks := c!:flatten reverse c!:all_blocks;
 %
 % insert_tailcall can take the end of blocks and if they represent tail-calls
 % it maps them either onto a sequence of assignments and a jump to the head
@@ -2123,12 +2178,21 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
 % A live variable analysis works out which "registers" are alive at each
 % location in the code. This includes noting which variables are
 % live across a function call that might trigger garbage collection.
+    if !*noisy then <<
+      printc "now do live variable stuff";
+      showblocklist c!:all_blocks >>;
     c!:live_variable_analysis c!:all_blocks;
 % Clash information sorts of whether registers have overlapping live
 % ranges. If a pair of registers have disjoing ranges they can be mapped
 % to a single C++ variable or a single stack location and that will lead to
 % better code - especially if it ends up reducing the amount of stack used.
+    if !*noisy then <<
+      printc "now build clash list";
+      princ "reloadenv = "; print reloadenv;
+      showblocklist c!:all_blocks >>;
     c!:build_clash_matrix c!:all_blocks;
+    if !*noisy then <<
+      princ "reloadenv = "; print reloadenv >>;
 % As a special cases the variables that arguments were passed in must all
 % be kept disjoint.
     for each u in env do
@@ -2146,7 +2210,16 @@ symbolic procedure c!:optimise_flowgraph(c!:startpoint, c!:all_blocks,
 % virtual ones. While doing that it discards any lines of code that
 % end up as "rx = rx;" because the original two registers have collapsed
 % together during register allocation.
+    if !*noisy then <<
+      printc "before remove nops";
+      showblocklist c!:all_blocks >>;
     c!:remove_nops c!:all_blocks;
+    if !*noisy then <<
+      printc "after remove nops";
+      showblocklist c!:all_blocks >>;
+!#endif
+    printc "#endif // End of trace output";
+
 % Now I am ready to start emitting some code. First declare all the
 % local variables I will use.
    if locs then <<
@@ -2580,7 +2653,7 @@ put('putv, 'c!:code, function c!:cputv);
 symbolic procedure c!:cqputv(x, env);
   begin
     scalar rr;
-    rr := c!:pareval(cdr x, env);
+    rr := c!:evalargs(cdr x, env);
     c!:outop('qputv, caddr rr, car rr, cadr rr);
     return caddr rr
   end;
@@ -2660,6 +2733,7 @@ symbolic procedure c!:cprog(u, env);
           flag(list cdar fluids, 'c!:live_across_call); % silly if not
           env1 := ('c!:dummy!:name . cdar fluids) . env1;
 % see comments where LAMBDA binds fluids.
+          c!:start_nested_context();
           c!:outop('fluidbind, cdar fluids, v, c!:find_literal v);
 % !~prog does not update the values of the fluids that it binds, and is for
 % use when code within the block does that for it.
@@ -2691,8 +2765,9 @@ symbolic procedure c!:cprog(u, env);
     c!:outop('movk1, progret, nil, nil);
     c!:endblock('goto, list progexit);
     c!:startblock progexit;
-    for each v in fluids do
-      c!:outop('fluidunbind, cdr v, car v, c!:find_literal car v);
+    for each v in fluids do <<
+      c!:end_nested_context();
+      c!:outop('fluidunbind, cdr v, car v, c!:find_literal car v) >>;
     blockstack := cdr blockstack;
     proglabs := cdr proglabs;
     unfluid decs;               % reset effect of DECLARE
@@ -3064,7 +3139,7 @@ symbolic procedure c!:builtin_two(x, env);
     scalar a1, a2, r, rr;
     a1 := cadr x;
     a2 := caddr x;
-    rr := c!:pareval(list(a1, a2), env);
+    rr := c!:evalargs(list(a1, a2), env);
     c!:outop(car x, r:=c!:newreg(), car rr, cadr rr);
     return r
   end;
@@ -3075,7 +3150,7 @@ symbolic procedure c!:rplac(x, env);
     scalar a1, a2, r, rr;
     a1 := cadr x;
     a2 := caddr x;
-    rr := c!:pareval(list(a1, a2), env);
+    rr := c!:evalargs(list(a1, a2), env);
     c!:outop(car x, nil, car rr, cadr rr);
     c!:outop('movr,r:=c!:newreg(),nil,car rr);
     return r
@@ -3221,7 +3296,7 @@ symbolic procedure c!:ceq(x, env);
     a2 := s!:improve caddr x;
     if a1 = nil then return c!:cval(list('null, a2), env)
     else if a2 = nil then return c!:cval(list('null, a1), env);
-    rr := c!:pareval(list(a1, a2), env);
+    rr := c!:evalargs(list(a1, a2), env);
     c!:outop('eq, r:=c!:newreg(), car rr, cadr rr);
     return r
   end;
@@ -3235,7 +3310,7 @@ symbolic procedure c!:cequal(x, env);
     a2 := s!:improve caddr x;
     if a1 = nil then return c!:cval(list('null, a2), env)
     else if a2 = nil then return c!:cval(list('null, a1), env);
-    rr := c!:pareval(list(a1, a2), env);
+    rr := c!:evalargs(list(a1, a2), env);
     c!:outop((if c!:eqvalid a1 or c!:eqvalid a2 then 'eq else 'equal),
           r:=c!:newreg(), car rr, cadr rr);
     return r
@@ -3392,7 +3467,7 @@ symbolic procedure c!:ctesteq(x, env, d1, d2);
     a2 := caddr x;
     if a1 = nil then return c!:cjumpif(a2, env, d2, d1)
     else if a2 = nil then return c!:cjumpif(a1, env, d2, d1);
-    r := c!:pareval(list(a1, a2), env);
+    r := c!:evalargs(list(a1, a2), env);
     c!:endblock('ifeq . r, list(d1, d2))
   end;
 
@@ -3404,7 +3479,7 @@ symbolic procedure c!:ctesteqcar(x, env, d1, d2);
     a1 := cadr x;
     a2 := caddr x;
     d3 := c!:my_gensym();
-    r := c!:pareval(list(a1, a2), env);
+    r := c!:evalargs(list(a1, a2), env);
     c!:endblock(list('ifatom, car r), list(d2, d3));
     c!:startblock d3;
     c!:outop('qcar, car r, nil, car r);
@@ -3435,7 +3510,7 @@ symbolic procedure c!:ctestequal(x, env, d1, d2);
     a2 := s!:improve caddr x;
     if a1 = nil then return c!:cjumpif(a2, env, d2, d1)
     else if a2 = nil then return c!:cjumpif(a1, env, d2, d1);
-    r := c!:pareval(list(a1, a2), env);
+    r := c!:evalargs(list(a1, a2), env);
     c!:endblock((if c!:eqvalid a1 or c!:eqvalid a2 then 'ifeq else 'ifequal) .
                   r, list(d1, d2))
   end;
@@ -3449,7 +3524,7 @@ symbolic procedure c!:ctestneq(x, env, d1, d2);
     a2 := s!:improve caddr x;
     if a1 = nil then return c!:cjumpif(a2, env, d1, d2)
     else if a2 = nil then return c!:cjumpif(a1, env, d1, d2);
-    r := c!:pareval(list(a1, a2), env);
+    r := c!:evalargs(list(a1, a2), env);
     c!:endblock((if c!:eqvalid a1 or c!:eqvalid a2 then 'ifeq else 'ifequal) .
                   r, list(d2, d1))
   end;
@@ -3459,7 +3534,7 @@ put('neq, 'c!:ctest, function c!:ctestneq);
 symbolic procedure c!:ctestilessp(x, env, d1, d2);
   begin
     scalar r;
-    r := c!:pareval(list(cadr x, caddr x), env);
+    r := c!:evalargs(list(cadr x, caddr x), env);
     c!:endblock('ifilessp . r, list(d1, d2))
   end;
 
@@ -3468,7 +3543,7 @@ put('ilessp, 'c!:ctest, function c!:ctestilessp);
 symbolic procedure c!:ctestigreaterp(x, env, d1, d2);
   begin
     scalar r;
-    r := c!:pareval(list(cadr x, caddr x), env);
+    r := c!:evalargs(list(cadr x, caddr x), env);
     c!:endblock('ifigreaterp . r, list(d1, d2))
   end;
 

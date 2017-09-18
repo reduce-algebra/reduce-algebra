@@ -1,84 +1,110 @@
 
 % u60.lsp           Machine generated Lisp
 
-(c!:install "u60" 55327 4906264 6217405)
+(c!:install "u60" 161172 9825448 1550752)
 
-(c!:install 'com43 '(com43 liemat bb ff algebraic l_z cc minus det
-quotient plus times comcom0 comcom1 comcom3 matrix aeval arrayfn aeval!*
-setk evalneq evalequal clear) 15034922302418064058)
+(c!:install 'st_ad_numsorttree1 '(st_ad_numsorttree1 !* !+ numlist_ordp
+!- lastpair ad_numsort cdr_sort cdr_signsort) 594439275725404321)
 
-(c!:install 'partsym_zerop '(partsym_zerop !- repeats) 
-5809084812164251243)
+(c!:install 'make!-var!-coefflist '(make!-var!-coefflist
+make!-var!-powerlist) 5409282842627721065)
 
-(c!:install 'sc_repkern '(sc_repkern !* lambda_1x539vlzlwg93
-pa_list2vect sort) 8973480175038941953)
+(c!:install 'elimpt_unif '(elimpt_unif) 3109865902212571561)
 
-(c!:install 'lambda_1x539vlzlwg93 '(lambda_1x539vlzlwg93) 
-17810050070257344241)
+(c!:install 'vdp_ilcombr '(vdp_ilcombr vdp_poly dip_ilcombr vdp_fdip
+vdp_sugar ev_tdeg ev_max!# vdp_setsugar) 9752352719752739131)
 
-(c!:install 'super_product_sq '(super_product_sq (ext) split_ext multsq
-ext_mult addsq) 17325628299063995866)
+(c!:install 'ev_init '(ev_init) 1151919986852689506)
 
-(c!:install 'sfto_mindeg1 '(sfto_mindeg1) 14523690705715977540)
+(c!:install 'rl_siaddatl '(rl_siaddatl rl_siaddatl!* apply) 
+2233557072776740726)
 
-(c!:install 'rat_min '(rat_min rat_leq) 2567018000700184613)
+(c!:install 'sfto_updecf '(sfto_updecf !*sfto_yun !*sfto_musser
+"sfto_updecf: select a decomposition method" sfto_yun!-updecf
+sfto_musser!-updecf rederr) 9570799290316021347)
 
-(c!:install 'setqdeletedescendants '(setqdeletedescendants
-fluidbibasissetq) 7347142229758694898)
+(c!:install 'radf1 '(radf1 exptf check!-radf!-sign multf prepsq!* mkexpt
+) 9707511098203280495)
 
-(c!:install 'interglue '(interglue !\co!  !+ !- ord clo !\cdot! ) 
-4372386679573287132)
+(c!:install 'tstpolyarg '(tstpolyarg !*ratarg "polynomial" prepsq typerr
+) 13118310265481505725)
 
-(c!:install '!*s2arg '(!*s2arg quote nochange mkarg) 4918202841384322310
-)
+(c!:install 'dip!-nc!-m!*p!-distleft '(dip!-nc!-m!*p!-distleft
+dip!-nc!-ev!-prod dipsum) 14884225942062731859)
 
-(c!:install 'actual_world '(actual_world exclude_edges union_edges) 
-17227129322063686337)
+(c!:install 'a2dipatom '(a2dipatom dipzero dipvars!* evzero a2bc
+mkexpvec) 4835218540664122305)
 
-(c!:install 'mo_dlexcomp '(mo_dlexcomp mo!=lexcomp) 1176551237110189972)
+(c!:install '!:abs '(!:abs abs !:minus) 7594912881466174844)
 
-(c!:install 'affinep '(affinep belong_to_space get_sign_space) 
-17023873794737433173)
+(c!:install 'groeb!=critb '(groeb!=critb groeb!=testb lastpair) 
+10120462068171379631)
 
-(c!:install 'r2flbf '(r2flbf !*bftag r2bf r2fl) 11486658120533823622)
+(c!:install 'dependsp '(dependsp !*sq taylorvariable depends involvesq
+taylorp) 6918631214116765078)
 
-(c!:install 'redmsg '(redmsg !*wsm !*msg ("operator" "predicate")
-"Declare" "?" "declared" terminalp get!-print!-name yesp lprim) 
-6641158512662921381)
+(c!:install 'ratplusm '(ratplusm) 14731639456579723683)
 
-(c!:install 'ofsf_ordrelp '(ofsf_ordrelp (equal neq leq lessp geq
-greaterp)) 677969609291168617)
+(c!:install 'mkbin '(mkbin) 12477315725054232571)
 
-(c!:install 'gcdk '(gcdk !*heugcd modular!-multicheck !*mcd dmode!* degr
-quotf1 heu!-gcd getd remk addlc prim!-part) 5851774828797611237)
+(c!:install 'cl_applysac2 '(cl_applysac2 keep1 break keep2 failed
+cl_subandcut setcdr) 5691150542044224558)
 
-(c!:install 'mk_character '(mk_character get_group_in get!*elements
-get_rep_matrix_in mk!+trace) 18096703642181927895)
+(c!:install 'aex_stchsgnch1 '(aex_stchsgnch1 aex_subrat1 aex_sgn
+lto_sgnchg) 14323618828463299304)
 
-(c!:install 'qqe_length!-graph!-remove!-mark '(
-qqe_length!-graph!-remove!-mark) 377600596588172727)
+(c!:install 'ofsf_smmkatl1 '(ofsf_smmkatl1 and ofsf_smmkatl!-and
+ofsf_smmkatl!-or) 5746707685276759436)
 
-(c!:install 'groebfactorize3 '(groebfactorize3) 10814495949344781944)
+(c!:install 'simppsexplim '(simppsexplim ps!:exp!-lim psexplim carx
+ieval) 76995428546463393)
 
-(c!:install 'xvarp '(xvarp xvars!* (wedge d partdf hodge innerprod liedf
-) xdegree) 10414475765977978179)
+(c!:install 'crn!:minusp '(crn!:minusp) 3300531324716320081)
 
-(c!:install 'exp!: '(exp!: bfone!* !:rd!: !:bprec!: bflerrmsg bfzerop!:
-abs!: conv!:bf2i difference!: msd !:e texpt!: greaterp!: times!: cut!:ep
-order!: max divide!: plus!: cut!:mt minusp!: round!:mt) 
-2083980255184111067)
+(c!:install 'myspmatpri2 '(myspmatpri2 spm "Empty Matrix" empty sparpri)
+ 5433054294927152030)
 
-(c!:install 'kernelp '(kernelp) 8367153360350514607)
+(c!:install 'chksymmetries!&subst '(chksymmetries!&subst
+chksymmetries!&sub1) 6312180618886629172)
 
-(c!:install 'rep_parents '(rep_parents) 10604531587366957043)
+(c!:install 'list_of_parent '(list_of_parent old_edge_list memq_edgelist
+) 1779050481953425359)
 
-(c!:install 'dp_content '(dp_content cali_bc_fi dp_lc cali_bc_inv
-cali_bc_gcd) 14102068279141683648)
+(c!:install 'simpfourier '(simpfourier fourier
+"Argument should be single expression" rerror simp!* prepsq simpfourier1
+) 8339826811937687592)
 
-(c!:install 'tensor_has_dummy_idx '(tensor_has_dummy_idx smember) 
-3965533702827161558)
+(c!:install 'monic!-mod!-p '(monic!-mod!-p
+"LC not numeric in monic-mod-p" errorf multiply!-by!-constant!-mod!-p) 
+12836382814471996374)
 
-(c!:install 'algebnp '(algebnp !:ar!:) 14842853218592494742)
+(c!:install 'rdzero!* '(rdzero!* !*!*roundbf bfz!* 0.0) 
+3342126307381731242)
+
+(c!:install 'matpri1 '(matpri1 name !*fort "MAT" only !*nat spare!*
+orig!* mat!-top!-l mat!-top!-r mat!-low!-l mat!-low!-r mat!-mid!-l
+mat!-mid!-r setq posn!* ycoord!* pline!* ymax!* ymin!* assgnpri terpri!*
+layout!-formula max update!-pline min symbol maprin oprin matpri2) 
+5994328544656402695)
+
+(c!:install 'pasf_se '(pasf_se true false (neq equal) neq equal
+pasf_deci sfto_dcontentf) 11925655662409597850)
+
+(c!:install 'ev_zero!? '(ev_zero!?) 11848236246410971633)
+
+(c!:install 'aex_fromsf '(aex_fromsf aex ctx_new) 6306651090152265251)
+
+(c!:install 'mkop '(mkop "Local variable" "operator" lambda
+"The symbol ""lambda""" operator "already defined as operator" (fluid
+global procedure scalar) simpfn simpiden typerr gettype lprim) 
+418855863418111640)
+
+(c!:install 'spjordan_block '(spjordan_block spm
+"Error in spjordan_block(second argument): should be an integer."
+mkempspmat rederr letmtr3) 10388538956553508985)
+
+(c!:install 'declared!-as!-float '(declared!-as!-float (real real!*8
+real!*16 double! precision double float) symtabget) 196461025176138892)
 
 
 % End of generated Lisp code

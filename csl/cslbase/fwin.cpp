@@ -1299,7 +1299,7 @@ int find_program_directory(const char *argv0)
 //
     else if (argv0[0] == '/') fullProgramName = argv0;
     else
-    {   for (w=argv0; *w!=0 && *w!='/'; w++);   // seek a "/"
+    {   for (w=argv0; *w!=0 && *w!='/'; w++) (void)0;   // seek a "/"
         if (*w == '/')      // treat as if relative to current dir
         {   // If the thing is actually written as "./abc/..." then
             // strip of the initial "./" here just to be tidy.
