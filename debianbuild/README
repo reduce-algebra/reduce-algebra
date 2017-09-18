@@ -1,8 +1,22 @@
 This directory contains everything necessary to build Debian/Ubuntu
 packages for REDUCE. To use it, you should have already installed the 
-package
+packages
 
   devscripts
+
+  alien
+  autoconf
+  fakeroot
+  libffi-dev
+  libx11-dev
+  libxext-dev
+  libxft-dev
+  texlive-latex-base
+  texlive-fonts-extra
+  texlive-latex-recommended
+  texlive-fonts-recommended
+  tex4ht
+  debhelper 
 
 To build the packages, run the following commands from the debianbuild
 directory:
@@ -10,8 +24,14 @@ directory:
   make clean
   make
 
-After successful completion, you should have three .deb package files for
-CSL, PSL and common files, respectively.
+After successful completion, you should have several .deb package files,
+the correspondung .rpm files, and .tgz for simple unpacking. In addition,
+a file
+
+  reduce-freestanding_<date>_<arch>.tar.bz2
+
+containing the current snapshot, for those who do not have the priviledge
+of installing a .deb or .rpm package.
 
 You may check the package content with, e.g.,
 
@@ -20,11 +40,6 @@ You may check the package content with, e.g.,
 Install the package with
 
   dpkg --install reduce-common_20120514_i386.deb
-
-Rpm packages can be built from this by running (You need Ubuntu packages 
-fakeroot and alien)
-
- fakeroot alien -r -k reduce-*.deb
 
 The CSL and PSL versions of REDUCE are run with
 
