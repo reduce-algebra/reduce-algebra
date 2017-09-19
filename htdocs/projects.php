@@ -17,7 +17,7 @@
 		<div id="middle">
 			<nav>
 				<script language="php">
-						include 'navigation.inc';
+					include 'navigation.inc';
 				</script>
 			</nav>
 			<div id="main">
@@ -42,7 +42,7 @@
 				<ul>
 					<li><a href="http://www.redlog.eu/">Redlog</a> &ndash; Computing with Logic &ndash; is now an integral part of REDUCE;</li>
 					<li><a href="http://cds.cern.ch/record/438562/files/0005081.pdf">Ortocartan</a> is a <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/contrib/ortocartan/">set of programs</a> for algebraic calculations in relativity, implemented in the Lisp underlying REDUCE;</li>
-					<li><a href="reduce-ide/reduce-ide.php">REDUCE IDE</a> is an <u>I</u>ntegrated <u>D</u>evelopment <u>E</u>nvironment for the <a href="http://www.gnu.org/software/emacs/emacs.html">GNU Emacs</a> editor.</li>
+					<li><a href="reduce-ide/">REDUCE IDE</a> is an <u>I</u>ntegrated <u>D</u>evelopment <u>E</u>nvironment for the <a href="http://www.gnu.org/software/emacs/emacs.html">GNU Emacs</a> editor.</li>
 				</ul>
 				<h2>Other computer algebra systems</h2>
 				<p>Wikipedia provides a fairly comprehensive <a href="https://en.wikipedia.org/wiki/List_of_computer_algebra_systems">list of computer algebra systems</a>, but it does not include the following:</p>
