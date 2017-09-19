@@ -1708,7 +1708,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
  */
                         else if (strncmp(w, "gc-trigger=", 11) == 0)
                         {   sscanf(w+11, "%" SCNd64, &reclaim_trigger_target);
-                            term_printf("GC trigget set to %" PRId64 "\n",
+                            term_printf("GC trigger set to %" PRId64 "\n",
                                         reclaim_trigger_target);
                         }
 /*! options [--stop-on-error] \item [{\ttfamily --stop-on-error}] \index{{\ttfamily --stop-on-error}}
@@ -1862,7 +1862,12 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                                 "--force-backtrace, --force-echo, --force-verbos. Make system much nosier\n");
                             term_printf(
                                 "     in ways that may help debugging when hunting low-level bugs in Reduce.\n");
-
+                            term_printf(
+                                "--gc-trigger=NNNN causes a garbage collection to be forced on the NNNNth\n"
+                                "     occasion when that could possibly happen. This may sometimes be relevant\n"
+                                "     when trying to track down garbage collection related bugs. If the option\n"
+                                "     is set every garbage collection displays the count that it corresponds to,\n"
+                                "     and the intent is that these counts should be fairly deterministic.\n");
                             term_printf(
                                 "--<other> reserved for additional extended options.\n");
                             term_printf(

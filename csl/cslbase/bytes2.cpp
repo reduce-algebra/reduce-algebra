@@ -1532,15 +1532,15 @@ next_opcode:   // This label is so that I can restart what I am doing
             jcall0: r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f0 = qfn0(r1);
-//
 // The issue here is cases such as
 //    (de f1 (x) (f2 x))
 //    (de f2 (x) (f1 x))
 // where the bodies of the functions so not do enough work that polling
 // for interrupts or for window-system updates will happen. Thus it seems
 // I need to perform a polling operation as part of the tail-call sequence.
-//
+                push(r1);
                 poll_jump_back(A_reg);
+                pop(r1);
 // If I have an (untraced) tailcall to a bytecoded function I can just reset
 // some pointers and go back to the top of the code of the bytecode
 // interpreter.
@@ -1585,7 +1585,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f1 = qfn1(r1);
+                push(r1);
                 poll_jump_back(A_reg);
+                pop(r1);
                 if (f1 == bytecoded_1 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
@@ -1629,7 +1631,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f2 = qfn2(r1);
+                push(r1);
                 poll_jump_back(A_reg);
+                pop(r1);
                 if (f2 == bytecoded_2 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
@@ -1672,8 +1676,9 @@ next_opcode:   // This label is so that I can restart what I am doing
                 r1 = basic_elt(litvec, fname);
                 debug_record_symbol(r1);
                 f3 = qfn3(r1);
-                pop(r2);
+                push(r1);
                 poll_jump_back(A_reg);
+                pop2(r1, r2);
                 if (f3 == bytecoded_3 &&
                     (qheader(r1) & SYM_TRACED) == 0)
                 {   lit = qenv(r1);
