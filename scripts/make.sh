@@ -195,10 +195,7 @@ case $args in
 # If I am making bootstrapreduce or bootstrapreduce.img or csl or csl.img or
 # one of the demo programs I do not need the generated C code...
 *bootstrap* | *csl* | *demo* | *psl*)
-  first="no"
-  ;;
-*)
-  first="yes"
+  firstcsl=""
   ;;
 esac
 for l in $list
@@ -207,10 +204,10 @@ do
   then
     h=`pwd`
     cd ${l}
-    if test "$first" = "yes"
+    if test "x$first" != "x"
     then
       $MAKE c-code
-      first="no"
+      firstcsl=""
     fi
     if test "$sequential" = "yes"
     then
