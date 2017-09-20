@@ -405,8 +405,13 @@ static inline void instate_binding(LispObject var, LispObject val,
 // Special variables have their old value saved in the association list
 // specenv, and then get updated.
     if ((h & SYM_SPECIAL_VAR) != 0)
-    {   specenv = acons(var, qvalue(var), specenv);
+    {
+// Wow messy. var and val need to be made GC safe across the call to acons,
+// but it would not be valid to use push and pop because the name "specenv"
+// expands to a rerefence relative to the top of the stack.
+        specenv = acons_no_gc(var, qvalue(var), specenv);
         qvalue(var) = val;
+        cons_gc_test(nil);
     }
     else
     {
@@ -417,8 +422,9 @@ static inline void instate_binding(LispObject var, LispObject val,
         {   if (qcar(w) == var)
             {   qcar(w) = fixnum_of_int(0); // decl is used up
                 env = acons(var, work_symbol, env);
-                specenv = acons(var, qvalue(var), specenv);
+                specenv = acons_no_gc(var, qvalue(var), specenv);
                 qvalue(var) = val;
+                cons_gc_test(nil);
                 return;
             }
         }

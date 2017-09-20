@@ -230,6 +230,16 @@ LispObject acons(LispObject a, LispObject b, LispObject c)
     else return (LispObject)((char *)r + TAG_CONS);
 }
 
+LispObject acons_no_gc(LispObject a, LispObject b, LispObject c)
+{   LispObject r = (LispObject)((char *)fringe - 2*sizeof(Cons_Cell));
+    qcar(r) = (LispObject)((char *)r + sizeof(Cons_Cell) + TAG_CONS);
+    qcdr(r) = c;
+    qcar((char *)r+sizeof(Cons_Cell)) = a;
+    qcdr((char *)r+sizeof(Cons_Cell)) = b;
+    fringe = r;
+    return (LispObject)((char *)r + TAG_CONS);
+}
+
 LispObject list3(LispObject a, LispObject b, LispObject c)
 {   LispObject r = (LispObject)((char *)fringe - 3*sizeof(Cons_Cell));
     qcar(r) = a;
