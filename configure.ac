@@ -612,7 +612,9 @@ then
   *windows | *cygwin)
 # building PSL on Windows - need to decide whether to build for 32 or 64bit.
 # Hah - I use "--with-m32" for selection of a PSL 32-bit option.
-    if test "$uname_m" = "i686" ||
+# Do not select 32bit when I am in a 32-bit shell running on a 64-bit operating
+# system.
+    if test "$uname_m" = "i686" -a "$wow" != "yes" ||
        test "x$with_m32" = "xyes"
     then 
       build="i686-pc-windows"
