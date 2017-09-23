@@ -59,6 +59,7 @@
 				<aside>
 					<iframe src="http://us1.rssfeedwidget.com/getrss.php?time=1504885544050&amp;x=https%3A%2F%2Fsourceforge.net%2Fp%2Freduce-algebra%2Fnews%2Ffeed.rss&amp;w=300&amp;h=500&amp;bc=333333&amp;bw=1&amp;bgc=transparent&amp;m=20&amp;it=true&amp;t=(default)&amp;tc=333333&amp;ts=15&amp;tb=transparent&amp;il=true&amp;lc=0000FF&amp;ls=14&amp;lb=false&amp;id=true&amp;dc=333333&amp;ds=14&amp;idt=true&amp;dtc=284F2D&amp;dts=12">Please use a browser that supports the HTML iframe element.</iframe>
 					<iframe src="http://us1.rssfeedwidget.com/getrss.php?time=1504886904716&amp;x=https%3A%2F%2Fsourceforge.net%2Fp%2Freduce-algebra%2Factivity%2Ffeed%3Fsource%3Dproject_activity&amp;w=300&amp;h=500&amp;bc=333333&amp;bw=1&amp;bgc=transparent&amp;m=20&amp;it=true&amp;t=(default)&amp;tc=333333&amp;ts=15&amp;tb=transparent&amp;il=true&amp;lc=0000FF&amp;ls=14&amp;lb=false&amp;id=true&amp;dc=333333&amp;ds=14&amp;idt=true&amp;dtc=284F2D&amp;dts=12">Please use a browser that supports the HTML iframe element.</iframe>
+					<!-- rss.bloople.net is a potential backup feed converter, but it doesn't include date and time of post. -->
 				</aside>
 			</div>
 			<!--/#main-->
