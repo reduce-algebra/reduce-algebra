@@ -28,9 +28,6 @@ module cde_jetspace; % CDE package, routines for the definition of jetspace
 % Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)
 % email: raffaele.vitolo@unisalento.it
 % web: http://poincare.unisalento.it/vitolo
-%
-% Version and Date:  2.0, October 2015.
-%
 % ===============================================================
 
 
@@ -188,7 +185,7 @@ symbolic procedure selectvars(par,orderofder,depvars,vars);
 symbolic operator selectvars;
 
 symbolic procedure cde_jetspace();
-   begin scalar all_mind!*;
+   begin
       n_indep_var:=length(indep_var!*);
       if n_indep_var equal 0 then rederr "Error: missing dependent variables";
       % produces a list of all multiindexes obtained from the zero multiindex

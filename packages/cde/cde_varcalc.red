@@ -29,9 +29,6 @@ module cde_varcalc; % CDE package, calculus of variations
 % Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)
 % email: raffaele.vitolo@unisalento.it
 % web: http://poincare.unisalento.it/vitolo
-%
-% Version and Date:  2.0, October 2015.
-%
 % ===============================================================
 
 %
@@ -163,12 +160,10 @@ symbolic procedure schouten_bracket(mv1,mv2,mv3);
     parity1:=get('sfnarg,mv1);
     parity2:=get('sfnarg,mv2);
     check_superfun_scalar(mv1);
-    check_superfun_args(mv1);
     check_superfun_scalar(mv2);
-    check_superfun_args(mv2);
     mk_superfun(mv3,
-      parity1 + parity2 - 1,
-      cons('list,for i:=1:(parity1+parity2-1) collect n_odd_var)
+      parity1 + parity2 - 1
+%     ,cons('list,for i:=1:(parity1+parity2-1) collect n_odd_var)
 	,1);
     mv3(1):=schouten_bracket_expr(aeval list(mv1,1),parity1,
       aeval list(mv2,1),parity2);
@@ -239,8 +234,9 @@ symbolic procedure cartan_df(sfun,sfun_out);
   begin
     check_superfun_scalar(sfun);
     mk_superfun(sfun_out,
-      1+get('sfnarg,sfun),
-      reverse(cons(length(odd_var!*),reverse(get('sflarg,sfun))))
+      1+get('sfnarg,sfun)
+%	,
+%      reverse(cons(length(odd_var!*),reverse(get('sflarg,sfun))))
 	,1);
     sfun_out(1):=cartan_df_expr(aeval list(sfun,1));
   end;
@@ -278,8 +274,9 @@ symbolic procedure variational_df(sfun,sfun_out);
   begin
     check_superfun_scalar(sfun);
     mk_superfun(sfun_out,
-      1+get('sfnarg,sfun),
-      reverse(cons(length(odd_var!*),reverse(get('sflarg,sfun))))
+      1+get('sfnarg,sfun)
+%	,
+%      reverse(cons(length(odd_var!*),reverse(get('sflarg,sfun))))
 	,1);
     sfun_out(1):=variational_df_expr(cartan_df_expr(aeval list(sfun,1)));
   end;

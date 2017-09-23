@@ -28,18 +28,12 @@ module cde; % CDE package main file
 % Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)
 % email: raffaele.vitolo@unisalento.it
 % web: http://poincare.unisalento.it/vitolo
-
-%
-% Version and Date:  2.0, October 2015.
-%
 % ===============================================================
 
-%
-% write "This is CDE, a REDUCE package for calculus on differential equations";
-% write "version 2.0, October 2015";
-% write "by Raffaele Vitolo";
+prin2t "This is CDE, a REDUCE package for calculus on differential equations";
+prin2t "version 2.1, October 2017";
+prin2t "by Raffaele Vitolo";
 
-%
 %-----------------------------------------------------------------------------%
 % Initialization
 %-----------------------------------------------------------------------------%
@@ -58,7 +52,7 @@ fluid '(indep_var dep_var odd_var total_order
  deg_indep_var!* deg_dep_var!* deg_odd_var!*
     % end of internal version of input variables
  id_tot_der!*
- n_indep_var all_mind_table!* all_der_mind!* all_odd_mind!*
+ n_indep_var all_mind_table!* all_der_mind!* all_odd_mind!* all_mind!*
  all_der_id!* all_odd_id!*
  all_der_id all_odd_id
  n_all_ext
@@ -99,8 +93,8 @@ switch expand_td;
 load_package cdiff;
 
 create!-package('(cde cde_tools cde_jetspace cde_parametric
-                  cde_totalder cde_diffcon cde_varcalc cde_cdiff
-                  cde_cdcalc cde_ansatz cde_init), nil);
+                  cde_totalder cde_diffcon cde_cdiff cde_superfun
+                  cde_varcalc cde_cdcalc cde_ansatz cde_init), nil);
 
 endmodule;
 

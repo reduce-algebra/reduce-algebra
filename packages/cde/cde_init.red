@@ -28,10 +28,6 @@ module cde_init; % CDE package initialization file
 % Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)
 % email: raffaele.vitolo@unisalento.it
 % web: http://poincare.unisalento.it/vitolo
-
-%
-% Version and Date:  2.0, October 2015.
-%
 % ===============================================================
 %
 %-----------------------------------------------------------------------------%
@@ -195,7 +191,6 @@ begin
       % Change next identifiers if you wish to change prefix
       % to total derivatives
       id_tot_der!*:='dd;
-%      eid_tot_der!*:='td;
 end;
 
 symbolic procedure cde_exec_modules();
@@ -211,11 +206,14 @@ begin
       cde_total_derivatives();
       prin2t "4 - Building differential consequences in 3 steps:";
       cde_differential_consequences();
-      prin2t "5 - Defining calculus of variations ...";
-      cde_varcalc();
-      prin2t "6 - Defining C-differential calculus ...";
+      prin2t "5 - Defining C-differential operators ...";
       cde_cdiff();
+      prin2t "6 - Defining superfunctions ...";
+      cde_superfun();
+      prin2t "7 - Defining operations on C-differential operators ...";
       cde_cdcalc();
+      prin2t "8 - Defining calculus of variations ...";
+      cde_varcalc();
    end;
 
 symbolic procedure cde(jetspace,equation);
@@ -252,7 +250,6 @@ symbolic procedure save_cde_state(statefilename);
       prin2 "deg_odd_var!*:=";prin2t deg_odd_var!*;
       prin2 "total_order:=";prin2t total_order;
       prin2 "id_tot_der!*:=";prin2t id_tot_der!*;
-%      prin2 "eid_tot_der!*:=";prin2t eid_tot_der!*;
       prin2t "% Here starts the output of computations of the program.";
       prin2t "% number of independent variables:";
       prin2 "n_indep_var:=";prin2t n_indep_var;
@@ -295,7 +292,6 @@ symbolic procedure save_cde_state(statefilename);
       prin2t "% set of identifiers for total derivatives:";
       prin2 "tot_der!*:=";prin2t tot_der!*;
 %      prin2t "% set of identifiers for total derivatives for external use:";
-%      prin2 "etot_der!*:=";prin2t etot_der!*;
       prin2t "% set up the auxiliary variable `letop'";
       prin2 "for each el in indep_var do depend letop,el;";
       prin2t "% Characterization of primary differential consequences:";
@@ -384,7 +380,7 @@ symbolic procedure save_cde_state(statefilename);
    	 on nat;
    end;
 
-symbolic operator cde,save_cde_state;
+symbolic operator save_cde_state;
 
 endmodule;
 

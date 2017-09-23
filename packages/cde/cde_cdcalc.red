@@ -28,13 +28,57 @@ module cde_cdcalc; % CDE package, calculus with C-differential operators
 % Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)
 % email: raffaele.vitolo@unisalento.it
 % web: http://poincare.unisalento.it/vitolo
-%
-% Version and Date:  2.0, October 2015.
-%
 % ===============================================================
+%
 % Procedures for operations on C-Differential operators:
 % sum, multiplication by scalars, composition, linearization and its adjoint
 % many operations are still in development
+
+% Procedures for the standard vector space operations between operators
+
+symbolic procedure sum_cdiffop(cd1,cd2,cd3);
+  % Sums the values of cd1 and cd2 into cd3
+  begin
+    scalar parity1,largcd1,target1;
+    check_cdiff_sametype(cd1,cd2);
+    parity1:=get('cdnarg,cd1);
+    largcd1:=get('cdlarg,cd1);
+    target1:=get('cdtarget,cd1);
+    mk_cdiffop(cd3,parity1,largcd1,target1);
+    % Sistemare questa parte di codice con la definizione di somma
+%    cde_ev_forall cde_forall_form(opname,lpars,lfvars,rhs_opdef);
+  % Given a list of indices lpars:=(j,i1,i2,...)
+  % and a list of free variables lfvars:=(phi1,phi2,...)
+  % and an operator name opname
+  % create a list u such that the evaluation of forall u
+  % will be the same as the evaluation of the algebraic statement
+  % for all phi1,phi2,... let opname(phi1,phi2,...)=rhs_opdef;
+  end;
+
+symbolic operator sum_cdiffop;
+
+symbolic procedure scalarmult_cdiffop(cfm,cd1,cd2);
+  % Multiply the values of cd1 by the symbolic expression cfm
+  begin
+    scalar parity1,largcd1,target1;
+    parity1:=get('cdnarg,cd1);
+    largcd1:=get('cdlarg,cd1);
+    target1:=get('cdtarget,cd1);
+    mk_cdiffop(cd2,parity1,largcd1,target1);
+    return cfm
+    % Sistemare questa parte di codice con la definizione di prodotto
+%    cde_ev_forall cde_forall_form(opname,lpars,lfvars,rhs_opdef);
+  % Given a list of indices lpars:=(j,i1,i2,...)
+  % and a list of free variables lfvars:=(phi1,phi2,...)
+  % and an operator name opname
+  % create a list u such that the evaluation of forall u
+  % will be the same as the evaluation of the algebraic statement
+  % for all phi1,phi2,... let opname(phi1,phi2,...)=rhs_opdef;
+  end;
+
+% Procedures for the composition of C-Differential operators
+
+% Procedures for linearization of a vector function
 
 symbolic procedure ell_scalar_function_odd(fct);
 % Linearization of a scalar function in terms of superfunction of the
@@ -78,7 +122,9 @@ symbolic procedure ell_function_odd(l_fct,name_ell_odd);
     sl_fct:=cdr l_fct;
     n_fct:=length(sl_fct);
     n_dep_var:=length(dep_var!*);
-    mk_superfun(name_ell_odd,1,list('list,n_dep_var),length(sl_fct));
+    mk_superfun(name_ell_odd,1
+    %      ,list('list,n_dep_var)
+    ,length(sl_fct));
     for i:=1:n_fct do
       <<
         tempexpr:=ell_scalar_function_odd(nth(sl_fct,i));
@@ -103,6 +149,8 @@ symbolic procedure ell_function(l_fct,name_ell);
   end;
 
 symbolic operator ell_function;
+
+% Procedures for the adjoint of a differential operator in one argument
 
 symbolic procedure adjoint_scalar_odd(superfun,ovar);
   % Adjoint of a scalar C-differential operator
@@ -130,7 +178,7 @@ symbolic procedure adjoint_scalar_odd(superfun,ovar);
 symbolic procedure adjoint_cdiffop(cdiffop,cdadj);
   % Adjoint of a C-differential operator with ONE ARGUMENT
   % in terms of its superfunction.
-  % A superfunction cdadj_odd corresponding to the adjoint operator
+  % A superfunction cdadj_sf corresponding to the adjoint operator
   % is also defined in the process.
   begin scalar len_arg,n_arg,len_target,len_adj_arg,len_adj_target,index_adj,
       tempop,tempodd,tempadj,tempadj_ij,cdadj_sf;

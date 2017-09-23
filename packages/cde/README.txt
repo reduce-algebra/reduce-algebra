@@ -1,4 +1,4 @@
-Time-stamp: "2017-04-04 12:43:26 vitolo"
+Time-stamp: "2017-09-23 11:43:41 vitolo"
 
 This folder contains software for the CDE package, written by Raffaele
 Vitolo. It is devoted to computations for general differential equations (i.e.,
@@ -9,7 +9,8 @@ distributed under the same free license of REDUCE. A complete user guide is
 included as a chapter in the main Reduce manual. The Reduce manual can be found
 in the /doc subfolder of the main folder of Reduce source code.
 
-CDE version: 2.0.
+CDE version: 2.1 (see also the initial message, or the initial part
+of the master file cde.red).
 
 This folder contains:
 
@@ -26,6 +27,7 @@ derivatives. cde.red will load the files:
    cde_diffcon.red: calculating differential consequences of the equation
    cde_varcalc.red: calculus of variations on supermanifolds
    cde_cdiff.red: data structure of C-differential operators
+   cde_superfun.red: data structure of superfunctions
    cde_cdcalc.red: calculus of C-differential operators
    cde_ansatz.red: utilities for generating ansatz for solving equations
    cde_init.red: runs all procedures that define the environment

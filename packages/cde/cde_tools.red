@@ -28,9 +28,6 @@ module cde_tools; % CDE package, procedures of general utility
 % Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)
 % email: raffaele.vitolo@unisalento.it
 % web: http://poincare.unisalento.it/vitolo
-%
-% Version and Date:  2.0, October 2015.
-%
 % ===============================================================
 
 %
@@ -237,6 +234,20 @@ symbolic procedure check_letop(list_expr);
     rederr "Presence of letop, jetspace too small!";
 
 symbolic operator check_letop;
+
+symbolic procedure cde_create_indices l;
+  % Given a list of integers (l1,l2,...,ln) (no argument checking!)
+  % produces all lists of the form (i1,i2,...,in)
+  % where 1 <= ik <= lk.
+  begin
+    scalar ll;
+    if l then
+    <<
+      ll:=first l;
+      return for i:=1:ll join i . cde_create_indices rest l
+    >>
+    else nil;
+  end;
 
 symbolic procedure cde_tools();
 % This is a place for possible initialization routines.

@@ -29,9 +29,6 @@ module cde_parametric; % CDE package, routines for the computation
 % Dipartimento di Matematica, Universita' del Salento (Lecce, Italy)
 % email: raffaele.vitolo@unisalento.it
 % web: http://poincare.unisalento.it/vitolo
-%
-% Version and Date:  2.0, October 2015.
-%
 % ===============================================================
 
 %-----------------------------------------------------------------------------%
