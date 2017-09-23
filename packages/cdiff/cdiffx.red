@@ -236,7 +236,7 @@ lisp procedure processcarpartitie1(i,ilist,restpartitie,var,varlist);
 
 % Added by RV, 10/01/2017
 algebraic procedure graded_mon(i,j,l_grad_var);
-  % Set the global variable all_graded_mon which is an algebraic list
+  % Set the global variable all_graded_der which is an algebraic list
   % of algebraic lists of variables of the same scale degree,
   % in increasing degree order. Then create all homogeneous graded
   % monomials from degree i to degree j.
