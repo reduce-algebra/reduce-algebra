@@ -94,7 +94,8 @@ load_package cdiff;
 
 create!-package('(cde cde_tools cde_jetspace cde_parametric
                   cde_totalder cde_diffcon cde_cdiff cde_superfun
-                  cde_varcalc cde_cdcalc cde_ansatz cde_init), nil);
+                    cde_varcalc cde_vectorfield cde_cdcalc cde_ansatz
+ 		      cde_init), nil);
 
 endmodule;
 

@@ -210,9 +210,11 @@ begin
       cde_cdiff();
       prin2t "6 - Defining superfunctions ...";
       cde_superfun();
-      prin2t "7 - Defining operations on C-differential operators ...";
+      prin2t "7 - Defining supervectorfields ...";
+      cde_vectorfield();
+      prin2t "8 - Defining operations on C-differential operators ...";
       cde_cdcalc();
-      prin2t "8 - Defining calculus of variations ...";
+      prin2t "9 - Defining calculus of variations ...";
       cde_varcalc();
    end;
 
