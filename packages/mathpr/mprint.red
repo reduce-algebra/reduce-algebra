@@ -49,13 +49,14 @@ fluid  '(!*fort
          rprifn!*
          rterfn!*
          !*utf8
-         !*utf82d);
+         !*utf82d
+         !*unicode_in_off_nat);
 
 fluid '(!*TeX);
 
 global '(!*eraise initl!* nat!*!* spare!* !*asterisk);
 
-switch list,ratpri,revpri,nosplit,asterisk;
+switch list,ratpri,revpri,nosplit,asterisk,unicode_in_off_nat;
 
 % Global variables initialized in this section.
 
@@ -281,7 +282,9 @@ symbolic procedure prin2!* u;
 
 symbolic procedure add_prin_char(u,n);
    if null !*nat then if stringp u or get(u,'switch!*) or digit u
-                        or get(car explode2 u,'switch!*) then prin2 u
+                        or get(car explode2 u,'switch!*)
+                        or (!*unicode_in_off_nat and idp u and not liter u)
+                        then prin2 u
                        else prin1 u
     else <<pline!* := (((posn!* . n) . ycoord!*) . u) .  pline!*;
            posn!* := n>>;
