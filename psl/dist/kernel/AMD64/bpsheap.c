@@ -251,6 +251,9 @@ printf("total %lx %lx %x\n",heapsize_in_bytes , current_size_in_bytes,total);
                   printf(" %x != %x, %x != %x\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
 		  exit (-19);}
        fread (headerword,8,4,imago);
+#ifdef DEBUG
+	printf("symbol table: %ld (%lx) bytes\n",headerword[0],headerword[0]);
+#endif
        hugo = fread (&symval,1,headerword[0],imago);
 //       printf("neu: %lx => %lx\n",hlb, heaplowerbound);
        diff = hlb-heaplowerbound;
@@ -260,19 +263,28 @@ printf("total %lx %lx %x\n",heapsize_in_bytes , current_size_in_bytes,total);
 
        sizeofsymvectors = headerword[0]/8;
 
-       if (hugo != headerword[0]) read_error();
+       if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
 
+#ifdef DEBUG
+	printf("heap: %ld (%lx) bytes\n",headerword[1],headerword[1]);
+#endif
        hugo = fread ((char*)hlb,1,headerword[1],imago);
        if (hlb < heaplowerbound)
              {creloc(hlb,headerword[1]/8,diff,hlb -1);}
         else {creloc(hlb,headerword[1]/8,diff, heaplowerbound -1);}
        heaplast += diff;
 
-       if (hugo != headerword[1]) read_error();
+       if (hugo != headerword[1]) read_error("heap",hugo,headerword[1]);
+#ifdef DEBUG
+       printf("hash table: %ld (%lx) bytes\n",headerword[2],headerword[2]);
+#endif
        hugo = fread (&hashtable,1,headerword[2],imago);
-       if (hugo != headerword[2]) read_error();
+       if (hugo != headerword[2]) read_error("hash table",hugo,headerword[2]);
+#ifdef DEBUG
+       printf("BPS: %ld (%lx) bytes\n",headerword[3],headerword[3]);
+#endif
        hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
-       if (hugo != headerword[3]) read_error();
+       if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
        fclose (imago);
        if (memset) {
         oldheaplowerbound = ohl; oldheapupperbound = ohub;
@@ -286,9 +298,10 @@ return (0);
 
 }
 
-read_error()
+read_error(char * what,long long bytesread,long long byteswanted)
   {
-    printf("file too short\n");
+    printf("File too short while reading %s: bytes read = %ld (%lx), bytes expected = %ld (%lx)\n",
+           what,bytesread,bytesread,byteswanted,byteswanted);
     exit(-1);
   }
 

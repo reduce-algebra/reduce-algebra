@@ -939,30 +939,32 @@ loop
 		   addressingunitsperitem))
 	  (amount (wtimes2 25000 
 			   (iadd1 (wquotient number-of-items 25000)))))
-	 (when (wgreaterp bpsrest amount) (return bpsrest))
-	 (errorprintf "*** enlarging fasl space by %d items" amount)
-	 (compactheap)
+	 (if (wgreaterp bpsrest amount)
+	     bpsrest
+	   (errorprintf "*** enlarging fasl space by %d items" amount)
+	   (compactheap)
 	     % now we have a simplified memory layout
-	 (when (wgreaterp amount
+	   (when (wgreaterp amount
 			  (wquotient (wdifference heapupperbound
 						  heaplast)
 				      addressingunitsperitem))
-	       (stderror "*** fasl space cannot be enlarged"))
+		 (stderror "*** fasl space cannot be enlarged"))
 
-     (setq amount (wtimes2 amount addressingunitsperitem))   
-     (setq *moving-heap* amount)
-     (update-bases)
-     (move-heap amount)
-	% update bps pointers
-     (setq nextbps heap)
-     (setq lastbps (wplus2 nextbps (wdifference amount addressingunitsperitem)))
-	% update heap pointers
-     (setq heaplowerbound (wplus2 heaplowerbound amount))
-     (setq heap heaplowerbound)
-     (setq heaplast (wplus2 heaplast amount))
-     (init-gcarray)
-     (wquotient amount addressingunitsperitem)
-  ))
+  	   (setq amount (wtimes2 amount addressingunitsperitem))   
+           (setq *moving-heap* amount)
+	   (update-bases)
+	   (move-heap amount)
+	   % update bps pointers
+           (setq nextbps heap)
+           (setq lastbps (wplus2 nextbps (wdifference amount addressingunitsperitem)))
+	   % update heap pointers
+	   (setq heaplowerbound (wplus2 heaplowerbound amount))
+	   (setq heap heaplowerbound)
+	   (setq heaplast (wplus2 heaplast amount))
+	   (init-gcarray)
+	   (wquotient amount addressingunitsperitem)
+	)
+       ))
 
 (de move-heap(amount)
     (ifor (from i heaplast heap -1)

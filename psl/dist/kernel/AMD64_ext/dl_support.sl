@@ -45,6 +45,6 @@
 ))
 
 (de psl-dlclose (handle)
-   (return (dlclose (wgetv handle 0))))
+   (dlclose (wgetv handle 0)))
 ))
 

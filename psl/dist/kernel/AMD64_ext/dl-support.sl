@@ -126,5 +126,5 @@
 (ret)))
 
 (de psl-dlclose (handle)
-   (return (dlclose handle )))
+   (dlclose handle ))
 

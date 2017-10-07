@@ -111,7 +111,7 @@
         (binarywriteblock unexecresult heaplowerbound 
 		(wshift (wplus2 (wdifference heaplast heaplowerbound) 24) -3))
         (binarywriteblock unexecresult hashtable 
-                            (quotient (plus2 1 hash-table-size) 2))
+                         (times 2 (quotient (plus2 3 hash-table-size) 4)))
         (binarywriteblock unexecresult bpslowerbound 
                 (wshift bpssize -3)) 
         (binaryclose unexecresult)
