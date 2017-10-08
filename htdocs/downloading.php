@@ -12,7 +12,7 @@
 		<div id="middle">
 			<nav>
 				<script language="php">
-						include 'navigation.inc';
+					include 'navigation.inc';
 				</script>
 			</nav>
 			<div id="main">
@@ -44,6 +44,9 @@
 			<!--/#main-->
 		</div>
 		<!--/#middle-->
+		<script language="php">
+			include 'footer.inc';
+		</script>
 	</div>
 	<!--/#content-->
 </body>

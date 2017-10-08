@@ -57,18 +57,18 @@
 					<p>REDUCE is implemented in Lisp (as are Axiom and Macsyma), but this is completely hidden from the casual user. REDUCE primarily runs on either <a href="versions.php">Portable Standard Lisp (PSL) or Codemist Standard Lisp (CSL)</a>, both of which are available in the distributions. PSL is long-established and compiles to machine code, whereas CSL is newer and compiles to byte code. Hence, PSL may be faster but CSL may be available on a wider range of platforms.</p>
 				</section>
 				<aside>
-					<iframe src="http://us1.rssfeedwidget.com/getrss.php?time=1504885544050&amp;x=https%3A%2F%2Fsourceforge.net%2Fp%2Freduce-algebra%2Fnews%2Ffeed.rss&amp;w=300&amp;h=500&amp;bc=333333&amp;bw=1&amp;bgc=transparent&amp;m=20&amp;it=true&amp;t=(default)&amp;tc=333333&amp;ts=15&amp;tb=transparent&amp;il=true&amp;lc=0000FF&amp;ls=14&amp;lb=false&amp;id=true&amp;dc=333333&amp;ds=14&amp;idt=true&amp;dtc=284F2D&amp;dts=12">Please use a browser that supports the HTML iframe element.</iframe>
-					<iframe src="http://us1.rssfeedwidget.com/getrss.php?time=1504886904716&amp;x=https%3A%2F%2Fsourceforge.net%2Fp%2Freduce-algebra%2Factivity%2Ffeed%3Fsource%3Dproject_activity&amp;w=300&amp;h=500&amp;bc=333333&amp;bw=1&amp;bgc=transparent&amp;m=20&amp;it=true&amp;t=(default)&amp;tc=333333&amp;ts=15&amp;tb=transparent&amp;il=true&amp;lc=0000FF&amp;ls=14&amp;lb=false&amp;id=true&amp;dc=333333&amp;ds=14&amp;idt=true&amp;dtc=284F2D&amp;dts=12">Please use a browser that supports the HTML iframe element.</iframe>
-					<!-- rss.bloople.net is a potential backup feed converter, but it doesn't include date and time of post. -->
+					<h2 style="text-align:center; font-size:medium; margin-bottom:0">SourceForge RSS feeds</h2>
+					<iframe src="displayRSSfeed.php?https://sourceforge.net/p/reduce-algebra/news/feed.rss">Please use a browser that supports the HTML iframe element.</iframe>
+					<iframe src="displayRSSfeed.php?https://sourceforge.net/p/reduce-algebra/activity/feed?source=project_activity">Please use a browser that supports the HTML iframe element.</iframe>
+					<p style="text-align:center; font-size:small">RSS feed display courtesy of <a href="http://simplepie.org/">SimplePie</a></p>
 				</aside>
 			</div>
 			<!--/#main-->
 		</div>
 		<!--/#middle-->
-		<footer>
-			<p>All information available through this web site is Copyright &copy; Anthony C. Hearn 2009&ndash;2017, all Rights Reserved.</p>
-			<p>Please report broken links (both in-coming and out-going), other errors or suggestions for improvement to <a href="https://sourceforge.net/users/fjwright/">webmaster</a>.</p>
-		</footer>
+		<script language="php">
+			include 'footer.inc';
+		</script>
 	</div>
 	<!--/#content-->
 </body>

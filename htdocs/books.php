@@ -169,6 +169,9 @@
 			<!--/#main-->
 		</div>
 		<!--/#middle-->
+		<script language="php">
+			include 'footer.inc';
+		</script>
 	</div>
 	<!--/#content-->
 </body>
