@@ -856,13 +856,11 @@ float128_t float128_of_number(LispObject a)
 }
 
 int32_t thirty_two_bits(LispObject a)
-//
 // return a 32 bit integer value for the Lisp integer (fixnum or bignum)
 // passed down - return 0 if the arg was out of range, or floating,
 // rational etc or not a number at all.  Only really wanted where
 // links between C-specific code (that might really want 32-bit values)
 // and Lisp are being coded.
-//
 {   int64_t r;
     switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
@@ -874,7 +872,6 @@ int32_t thirty_two_bits(LispObject a)
         case TAG_NUMBERS+TAG_XBIT:
             if (is_bignum(a))
             {   size_t len = bignum_length(a);
-//
 // Note that I keep 31 bits per word and use a 2s complement representation.
 // thus if I have a one-word bignum I just want its contents but in all
 // other cases I need just one bit from the next word up.
@@ -888,9 +885,43 @@ int32_t thirty_two_bits(LispObject a)
             }
         // else drop through
         default:
-//
 // return 0 for all non-fixnums and for varius overflow cases
-//
+            return 0;
+    }
+}
+
+uint32_t thirty_two_bits_unsigned(LispObject a)
+// return a 32 bit unsigned integer value for the Lisp integer (fixnum
+// or bignum) passed down - return 0 if the arg was out of range, or
+// floating, rational etc or not a number at all.  Only really wanted where
+// links between C-specific code (that might really want 32-bit values)
+// and Lisp are being coded.
+{   int64_t r;
+    switch ((int)a & XTAG_BITS)
+    {   case TAG_FIXNUM:
+            r = (int64_t)int_of_fixnum(a);
+            if (r > UINT32_MAX ||
+                r < 0) return 0;
+            return (int32_t)r;
+        case TAG_NUMBERS:
+        case TAG_NUMBERS+TAG_XBIT:
+            if (is_bignum(a))
+            {   size_t len = bignum_length(a);
+// Note that I keep 31 bits per word and use a 2s complement representation.
+                if (len == CELL+4)
+                {   int32_t w = (int32_t)bignum_digits(a)[0]; // One word.
+                    if (w < 0) return 0;
+                    else return w;
+                }
+                if (len == CELL+8)
+                {   uint32_t d1 = bignum_digits(a)[1];
+                    if (d1 == 0 || d1 == 1)
+                        return bignum_digits(a)[0] | (d1 << 31);
+                }
+            }
+        // else drop through
+        default:
+// return 0 for all non-fixnums and for varius overflow cases
             return 0;
     }
 }
@@ -901,7 +932,7 @@ int32_t thirty_two_bits(LispObject a)
 int64_t sixty_four_bits(LispObject a)
 {   switch ((int)a & XTAG_BITS)
     {   case TAG_FIXNUM:
-            return (int64_t)int_of_fixnum(a); // always bin range
+            return (int64_t)int_of_fixnum(a); // always in range
         case TAG_NUMBERS:
         case TAG_NUMBERS+TAG_XBIT:
             if (is_bignum(a))
@@ -1191,7 +1222,7 @@ static inline LispObject plus_i_i(LispObject a1, LispObject a2)
 // being potential boundary cases when input or output values are around
 // 27, 30, 59, 61, 92, ... bits wide.
 
-// Through much of trhise code I am going to be close to neurotic about
+// Through much of this code I am going to be close to neurotic about
 // casting to unsigned types before I do arithmetic. This is because
 // integer overflow (eg a carry that goes into the sign bit and flips it)
 // is deemed an undefined behaviour by C++, abd clever compilers may

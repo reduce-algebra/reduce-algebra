@@ -1949,7 +1949,6 @@ static int raw_char_from_terminal()
             c = *tty_pointer++;
         }
     }
-    inject_randomness(c);
     if (c == EOF || c == CTRL_D) return EOF;
     if (qvalue(echo_symbol) != nil || force_echo)
     {   LispObject stream = qvalue(standard_output);

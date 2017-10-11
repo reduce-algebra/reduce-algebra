@@ -391,7 +391,7 @@ fi
 
 mkdir -p $name-times
 
-$timeoutcmd $timecmd sh -c "$fullcommand -v -w $gflag > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timeoutcmd $timecmd sh -c "$fullcommand -v -w $gflag $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);
@@ -522,7 +522,7 @@ then
   wh=`cygpath -m $wh`
 fi
 
-$timeoutcmd $timecmd sh -c "java -jar $wh/jlisp/$command -v -w $gflag > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
+$timeoutcmd $timecmd sh -c "java -jar $wh/jlisp/$command -v -w $gflag $otherflags > $name-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
 symbolic linelength 80;
 symbolic(!*redeflg!* := nil);

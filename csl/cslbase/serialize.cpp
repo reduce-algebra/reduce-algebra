@@ -3829,8 +3829,6 @@ void warm_setup()
     }
     repeat_heap = NULL;
 
-    inject_randomness((int)clock());
-
     {   LispObject qq;
         for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
         {   if (!is_vector(qcar(qq)))

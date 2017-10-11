@@ -820,8 +820,6 @@ extern void CSL_MD5_Final(unsigned char *md);
 extern bool CSL_MD5_busy;
 extern unsigned char *CSL_MD5(unsigned char *data, int n, unsigned char *md);
 extern void checksum(LispObject a);
-extern unsigned char unpredictable[256];
-extern void inject_randomness(int n);
 
 extern void ensure_screen();
 extern int window_heading;
@@ -885,7 +883,7 @@ extern void       convert_fp_rep(void *p, int old_rep, int new_rep, int type);
 extern LispObject eval(LispObject u, LispObject env);
 extern uint32_t   Crand();
 extern LispObject Cremainder(LispObject a, LispObject b);
-extern void        Csrand(uint32_t a, uint32_t b);
+extern void        Csrand(uint32_t a);
 extern void        discard(LispObject a);
 extern bool eql_fn(LispObject a, LispObject b);
 extern bool cl_equal_fn(LispObject a, LispObject b);
@@ -985,6 +983,7 @@ extern LispObject  simplify_string(LispObject s);
 extern bool        stringp(LispObject a);
 extern LispObject times2(LispObject a, LispObject b);
 extern int32_t     thirty_two_bits(LispObject a);
+extern uint32_t    thirty_two_bits_unsigned(LispObject a);
 extern int64_t     sixty_four_bits(LispObject a);
 extern uint64_t    sixty_four_bits_unsigned(LispObject a);
 

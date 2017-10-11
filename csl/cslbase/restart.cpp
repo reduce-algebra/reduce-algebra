@@ -408,8 +408,6 @@ void *my_malloc(size_t n)
 //
     if (r == NULL) return NULL;
     n = quadword_align_up(n);
-    inject_randomness((int)(intptr_t)r);
-
     if (!SIXTY_FOUR_BIT) p[1] = 0;
     *(void **)(p) = r;                 // base address for free()
                                        // goes in 0 & 1
@@ -1678,7 +1676,6 @@ static void cold_setup()
     lisp_trace_output = make_stream_handle();
     lisp_debug_io = make_stream_handle();
     lisp_query_io = make_stream_handle();
-    inject_randomness((int)clock());
     set_up_functions(0);
     set_up_variables(0);
     procstack = nil;
@@ -2754,30 +2751,12 @@ void review_switch_settings()
 #endif
 
 bool CSL_MD5_busy;
-unsigned char unpredictable[256];
-static int n_unpredictable = 0;
-static bool unpredictable_pending = 0;
 
-void inject_randomness(int n)
-{   unpredictable[n_unpredictable++] ^= (n % 255);
-    if (n_unpredictable >= 256)
-    {   n_unpredictable = 0;
-        unpredictable_pending = true;
-    }
-    if (unpredictable_pending & !CSL_MD5_busy)
-    {   CSL_MD5_Init();
-        CSL_MD5_Update(unpredictable, sizeof(unpredictable));
-        CSL_MD5_Final(unpredictable);
-        unpredictable_pending = false;
-    }
-}
-
-//
 // Used to ensure that an image file matches up with the C code compiled
 // into the main executable. The linear search here for the place the
 // checksum lives is a bit crummy. But the total cost is linear in the
 // number of things that have been compiled into C.
-//
+
 static void get_checksum(const setup_type *p)
 {   while (p->name!=NULL) p++;
     if (p->one != NULL && p->two != NULL)

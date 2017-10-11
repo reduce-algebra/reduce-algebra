@@ -1104,207 +1104,36 @@ static LispObject Lrationalize(LispObject env, LispObject a)
 }
 
 //
-// The following random number generator is taken from the Norcroft
-// C library, but is included here so that random sequences will be
-// identical across all implementations of CSL, and because I have bad
-// and pessimistic expectations about the quality of random number
-// generators built into typical C libraries. That is not to say that
-// I ought not to be somewhat cynical about the code I have implemented
-// here! But it is tolerably fast and less dreadful than those old
-// 32-bit linear congruential mistakes. The initial values here
-// are a repeatable set of initial "random" values.
-//
-// Well this was now implemented quite a long while ago and the standards
-// for pseudo-random sequences have probably moved on substantially. So this
-// probably really deserves review!
-//
+// I now use a Mersenne Twister pseudo-random generator. The one included
+// here was coded by Written by Christian Stigen Larsen who has a web-site
+// at http://csl.name, and I view it is a superb coincidence that his initials
+// and hence his web address echo the name of this Lisp. However he and his
+// work is independent of the CSL Lisp system!
 
-static uint32_t random_number_seed[55] =
-{   0x0d649239,    0x7c09f002,    0x6da2cd88,    0x969df534,
-    0xfd7aca32,    0x16d89669,    0xc334a2fc,    0x0aba529c,
-    0xdea5e90d,    0xdf06db3b,    0xf07d65eb,    0x74a5bf84,
-    0x81e0b59e,    0xf2ac7c6c,    0x14339237,    0xb6b89675,
-    0x61a66ca1,    0xa3fd9c3c,    0xed3ed908,    0xb4ffaf68,
-    0xe43adf58,    0x6c108373,    0x14bbefe5,    0x20045563,
-    0x8c54d44e,    0xd3470877,    0x5a8ae401,    0xa38c47fd,
-    0x70ec616e,    0x3a8e3c82,    0x5bf48b37,    0x98d07ad8,
-    0x6753e8c1,    0xc120d571,    0x7d308c18,    0x014ef96d,
-    0x7aae7f25,    0x817e97c8,    0x8127a883,    0x1f88de19,
-    0x68c2f294,    0x394ea2dd,    0x2f475077,    0x1fbea2a6,
-    0x6e943040,    0xfa736fbb,    0x89e5fc31,    0xca16186e,
-    0x720e8da7,    0xd8c0b092,    0xb340e967,    0x6e0ba043,
-    0x1250d232,    0x061a9e86,    0xaa710c75
-};
+uint32_t Crand()
+{
+    return mersenne_twister::rand_u32();
+}
 
-static int random_j = 23, random_k = 54;
-
-static bool randomization_request = false;
-
-//
 // If the user specifies a random number seed of zero I will try to
-// start things in as unpredictable a state as I reasonably can. To
-// achieve this I will update a block of unpredictable data at a
-// number of points during a CSL run, garnering incremental amounts
-// of fairly low grade "randomness" from timing information and the
-// memory addresses that get allocated to CSL. Because it will take
-// a while for such information to build up I arrange that specifying
-// a random seed of zero does not do anything at once (and in particular
-// the implicit call of this nature when CSL starts does not do much),
-// but the unpredictable mess I accumulate is inspected the first time
-// any user actually asks for a random value. Since user keyboard input
-// contributes to the clutter it could be that a cautious user will ask the
-// user to type in a long string of gibberish before asking for any
-// random numbers, and the gibberish typed will then in fact form part
-// of the seed that will be used.  On Windows I can hook in and make
-// mouse activity etc contribute to the seed too.
-//
+// start things in as unpredictable a state as I reasonably can.
+// or both Windows, Linux and the Macintosh I can get the operating
+// system to provide some level of cryptographically secure starting
+// point.
 
-static void randomize(void)
-{   int i;
-    random_j = 23;
-    random_k = 54;
-    for (i=20; i<48; i+=4)
-    {   CSL_MD5_Init();
-        CSL_MD5_Update(unpredictable, sizeof(unpredictable));
-        CSL_MD5_Final((unsigned char *)&random_number_seed[i]);
-        inject_randomness((int)time(NULL));
-    }
-//
-// Note that I do not initialise the whole array of seed values here.
-// Leaving something over can count as part of the unpredictability! But I
-// do try to put in mess through the parts of the seed that will be used
-// first so that any obvious patterns will get clobbered.
-//
-    random_number_seed[0] |= 1;
-    randomization_request = false;
-}
-
-uint32_t Crand(void)
+void Csrand(uint32_t seed)
 {
-//
-// See Knuth vol 2 section 3.2.2 for a discussion of this random
-// number generator.
-//
-    uint32_t temp;
-    if (randomization_request) randomize();
-    temp = (random_number_seed[random_k] += random_number_seed[random_j]);
-    if (--random_j < 0) random_j = 54, --random_k;
-    else if (--random_k < 0) random_k = 54;
-    return temp;
-}
-
-void Csrand(uint32_t seed, uint32_t seed2)
-{
-//
-// This allows you to put 64 bits of seed into the random sequence,
-// but it is very improbable that you have any good source of randomness
-// that good to start with! The input seeds are scrambled using md5
-// and then rather crudely widened to fill the whole array of seed data.
-// If the seed is specified as (0,0) then I will initialise things using
-// information from the time of day and the clock. This is NOT very
-// good, especially since I only use portable C-library ways of reading
-// the time. But it will at least not repeat for any single user and
-// since the clock information is then scrambled via md5 it will APPEAR
-// fairly unpredictable.
-//
-    int i;
-    unsigned char seedv[16], *p;
-    random_j = 23;
-    random_k = 54;
-    i = 0;
-    if (seed == 0 && seed2 == 0)
-    {   randomization_request = true;
-        return;
-    }
-    randomization_request = false;
-//
-// This version was byte-order sensitive, but documents the idea
-// that I first had.
-//    random_number_seed[0] = seed;
-//    random_number_seed[1] = 0x12345678;
-//    random_number_seed[2] = 0xa7086dee;
-//    random_number_seed[3] = seed2;
-// then I used the first 16 bytes of random_number_seed as input to md5.
-//
-    seedv[0] = (seed & 0xff);
-    seedv[1] = ((seed >> 8) & 0xff);
-    seedv[2] = ((seed >> 16) & 0xff);
-    seedv[3] = ((seed >> 24) & 0xff);
-    seedv[4] = 0x78;
-    seedv[5] = 0x56;
-    seedv[6] = 0x34;
-    seedv[7] = 0x12;
-    seedv[8] = 0xee;
-    seedv[9] = 0x6d;
-    seedv[10] = 0x08;
-    seedv[11] = 0xa7;
-    seedv[12] = (seed2 & 0xff);
-    seedv[13] = ((seed2 >> 8) & 0xff);
-    seedv[14] = ((seed2 >> 16) & 0xff);
-    seedv[15] = ((seed2 >> 24) & 0xff);
-#ifdef TRACE_RANDOM
-    for (i=0; i<16; i++) term_printf("%.2x ", seedv[i]);
-    term_printf("\n");
-#endif
-//
-// Next I will scramble the seed data that I have been given using md5
-// and place the resulting 128 bits of digested stuff in the start of
-// the seed vector.
-//
-    CSL_MD5_Init();
-    CSL_MD5_Update(seedv, 16);
-    CSL_MD5_Final((unsigned char *)&random_number_seed[0]);
-//
-// The remainder of the vector gets filled using a simple linear
-// congruential scheme. Note that MD5 filled in BYTES and what I need next
-// is an INTEGER, so to be byte-order insensitive I need to do things
-// the long way.
-//
-    i = 4;
-//
-// Does anybody want to think about "strict alisasing" and the next little
-// fragment of code? Ha Ha.
-//
-    p = (unsigned char *)random_number_seed;
-    seed = p[0] | (p[1]<<8) | (p[2]<<16) | (p[3]<<24);
-    random_number_seed[0] = seed;
-    random_number_seed[1] = p[4] | (p[5]<<8) | (p[6]<<16) | (p[7]<<24);
-    random_number_seed[2] = p[8] | (p[9]<<8) | (p[10]<<16) | (p[11]<<24);
-    random_number_seed[3] = p[12] | (p[13]<<8) | (p[14]<<16) | (p[15]<<24);
-    while (i<55)
-    {   seed = 69069*seed + 1725307361;  // computed modulo 2^32
-        random_number_seed[i++] = seed;
-    }
-//
-// I would like to make the least significant bits a little less
-// regular even to start with, so I xor in from one of the words that
-// md5 gave me.
-//
-    seed = random_number_seed[1];
-    i = 55-30;
-    while (i<55)
-    {   random_number_seed[i++] ^= seed & 1;
-        seed = seed >> 1;
-    }
-//
-// If all the least significant bits were zero to start with they would
-// always stay that way, so I force one of them to be 1.
-//
-    random_number_seed[21] |= 1;
-#ifdef TRACE_RANDOM
-    for (i=0; i<55; i++) term_printf("%2d %.8x\n", i, random_number_seed[i]);
-#endif
+    if (seed == 0) mersenne_twister::ssrandom();
+    else mersenne_twister::seed(seed);
 }
 
 LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
 {
 #ifdef COMMON
     LispObject b;
-//
 // Common Lisp expects an optional second arg to be used for the random
 // state - at present I do not support that, but it will not be too hard
 // when I get around to it...
-//
     b = bb;
 #endif // COMMON
     if (is_fixnum(a))
@@ -1312,13 +1141,11 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
         if (v <= 0) aerror1("random-number", a);
 // (random 1) always returns zero - a rather silly case!
         else if (v == 1) return onevalue(fixnum_of_int(0));
-//
 // I generate a value that is an exact multiple of my range (v) and
 // pick random bitpatterns until I find one less than that.  On average
 // I will have only VERY slightly more than one draw needed, and doing things
 // this way ought to ensure that my pseudo random numbers are uniformly
 // distributed provided that the underlying generator is well behaved.
-//
         if (SIXTY_FOUR_BIT)
         {   p = v*(INT64_C(0x7fffffffffffffff)/v);
             do
@@ -1357,19 +1184,15 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
             w1 = w1%((uint32_t)msd+1U);
             bignum_digits(r)[len] = w1;
             if ((int32_t)w1 != msd) break;
-//
 // The loop to restart on the next line is when the random value I
 // have built up word by word ends up being equal to the input number - I
 // will discard it and start again in that case.
-//
             if (len == 0) goto restart;
             len--;
             msd = bignum_digits(a)[len];
         }
-//
 // having got some leading digits properly set up I can fill in the rest
 // as totally independent bit-patterns.
-//
         for (len--; len>=0; len--)
             bignum_digits(r)[len] = ((uint32_t)Crand())>>1;
         a = shrink_bignum(r, len1);
@@ -1378,7 +1201,6 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
     if (is_bfloat(a))
     {   Header h = flthdr(a);
         double d = float_of_number(a), v;
-//
 // The calculation here turns 62 bits of integer data into a floating
 // point number in the range 0.0 (inclusive) to 1.0 (exclusive).  Well,
 // to be more precise, rounding the value to the machine's floating point
@@ -1387,7 +1209,6 @@ LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)
 // knew exactly how many bits my floating point format had I could avoid
 // the need for that extra test, but it does not seem very painful to me
 // and I prefer the more portable code.
-//
         do
         {   v = ((double)(int32_t)(Crand() & 0x7fffffff)) / TWO_31;
             v += (double)(int32_t)(Crand() & 0x7fffffff);
@@ -1419,13 +1240,11 @@ LispObject Lrandom_1(LispObject env, LispObject a)
         if (v <= 0) aerror1("random-number -ve argument", a);
 // (random 1) always returns zero - a rather silly case!
         else if (v == 1) return onevalue(fixnum_of_int(0));
-//
 // I generate a value that is an exact multiple of my range (v) and
 // pick random bitpatterns until I find one less than that.  On average
 // I will have only VERY slightly less than one draw needed, and doing things
 // this way ought to ensure that my pseudo random numbers are uniformly
 // distributed provided that the underlying generator is well behaved.
-//
         if (SIXTY_FOUR_BIT)
         {   p = v*(INT64_C(0x7fffffffffffffff)/v);
             do
@@ -1464,19 +1283,15 @@ LispObject Lrandom_1(LispObject env, LispObject a)
             w1 = w1%((uint32_t)msd+1U);
             bignum_digits(r)[len] = w1;
             if ((int32_t)w1 != msd) break;
-//
 // The loop to restart on the next line is when the random value I
 // have built up word by word ends up being equal to the input number - I
 // will discard it and start again in that case.
-//
             if (len == 0) goto restart;
             len--;
             msd = bignum_digits(a)[len];
         }
-//
 // having got some leading digits properly set up I can fill in the rest
 // as totally independent bit-patterns.
-//
         for (len--; len>=0; len--)
             bignum_digits(r)[len] = ((uint32_t)Crand())>>1;
         return onevalue(shrink_bignum(r, len1));
@@ -1484,7 +1299,6 @@ LispObject Lrandom_1(LispObject env, LispObject a)
     if (is_bfloat(a))
     {   Header h = flthdr(a);
         double d = float_of_number(a), v;
-//
 // The calculation here turns 62 bits of integer data into a floating
 // point number in the range 0.0 (inclusive) to 1.0 (exclusive).  Well,
 // to be more precise, rounding the value to the machine's floating point
@@ -1493,7 +1307,6 @@ LispObject Lrandom_1(LispObject env, LispObject a)
 // knew exactly how many bits my floating point format had I could avoid
 // the need for that extra test, but it does not seem very painful to me
 // and I prefer the more portable code.
-//
         do
         {   v = ((double)(int32_t)(Crand() & 0x7fffffff)) / TWO_31;
             v += (double)(int32_t)(Crand() & 0x7fffffff);
@@ -1520,30 +1333,25 @@ LispObject Lrandom_1(LispObject env, LispObject a)
 }
 
 LispObject Lnext_random(LispObject)
-//
 // Returns a random positive fixnum.  27 bits in this Lisp! At present this
 // returns 27 bits whether on a 32 or 64-bit machine...
-//
 {   int32_t r = Crand();
     return onevalue((LispObject)((r & 0x7ffffff0) + TAG_FIXNUM));
 }
 
 LispObject Lmake_random_state(LispObject env, LispObject a, LispObject b)
 {
-//
 // Nasty temporary hack here to allow me to set the seed for the
-// random number generator in Standard Lisp mode.  I need to re-think
-// this soon before it feels frozen in! Oops - too late!!!
-//
-    if (!is_fixnum(a)) aerror1("make-random-state", a);
-    Csrand(int_of_fixnum(a),
-           is_fixnum(b) ? int_of_fixnum(b) : 0);
+// random number generator in Standard Lisp mode.
+// The second argument (b) is utterly ignored, and if the first argument is
+// noyt a number in the range 1..UINT32_MAX a non-repeatable new state will
+// be established.
+    Csrand(thirty_two_bits_unsigned(a));
     return onevalue(nil);
 }
 
 LispObject Lmake_random_state1(LispObject env, LispObject a)
-{   if (!is_fixnum(a)) aerror1("make-random-state", a);
-    Csrand(int_of_fixnum(a), 0);
+{   Csrand(thirty_two_bits_unsigned(a));
     return onevalue(nil);
 }
 

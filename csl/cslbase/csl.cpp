@@ -1290,7 +1290,7 @@ int deal_with_tick(void)
     return 1;
 }
 
-static long int initial_random_seed, seed2;
+static long int initial_random_seed;
 
 const char *files_to_read[MAX_INPUT_FILES],
            *symbols_to_define[MAX_SYMBOLS_TO_DEFINE],
@@ -1575,7 +1575,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     number_of_symbols_to_define = 0;
     number_of_fasl_paths = 0;
     fasl_output_file = false;
-    initial_random_seed = seed2 = 0;
+    initial_random_seed = 0;
     init_flags = INIT_EXPANDABLE;
     return_code = EXIT_SUCCESS;
     segvtrap = true;
@@ -2460,10 +2460,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                     if (c2 != 0) w = &opt[2];
                     else if (i != argc) w = argv[++i];
                     else break; // Illegal at end of command-line
-                    if (sscanf(w, "%ld,%ld", &initial_random_seed, &seed2) != 2)
-                    {   initial_random_seed = seed2 = 0;
-                        sscanf(w, "%ld", &initial_random_seed);
-                    }
+                    initial_random_seed = 0;
+                    sscanf(w, "%ld", &initial_random_seed);
                     continue;
 
 /*! options [-s] \item [{\ttfamily -s}] \index{{\ttfamily -s}}
@@ -2810,7 +2808,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // default will be to put it in an unpredictable (well hard to predict!)
 // state
 //
-        Csrand((uint32_t)initial_random_seed, (uint32_t)seed2);
+        Csrand((uint32_t)initial_random_seed);
 
         gc_time += pop_clock();
 

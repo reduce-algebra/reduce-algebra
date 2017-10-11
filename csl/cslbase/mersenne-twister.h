@@ -24,19 +24,12 @@
 #ifndef MERSENNE_TWISTER_H
 #define MERSENNE_TWISTER_H
 
-#ifndef __STDC_LIMIT_MACROS
-// If it is already defined I am safe already!
 #define __STDC_LIMIT_MACROS
-#endif
-
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-namespace mersenne_twister
-{
 
 /*
  * Maximum number you can get from rand().
@@ -112,8 +105,6 @@ double randd_co();
  * Mnemonic: randd_oo = random double 0=open 1=open
  */
 double randd_oo();
-
-} // end of "namespace mersenne_twister"
 
 #ifdef __cplusplus
 } // extern "C"
