@@ -1,11 +1,11 @@
 %----------------------------------------------------------------------------
 %                                                                           |
-% A new Exp-Log limits package in REDUCE                                   |
+% A new Exp-Log limits package in REDUCE                                    |
 %                                                                           |
-% Author: Neil Langmead                                                        |
-% Place:  ZIB, Berlin                                                           |
-% Date:   April 1997                                                     |
-% e/mail: langmead@zib.de                                             |
+% Author: Neil Langmead                                                     |
+% Place:  ZIB, Berlin                                                       |
+% Date:   April 1997                                                        |
+% e/mail: langmead@zib.de                                                   |
 %                                                                           |
 % some cleanup and a minor fix by WN 14 Dec 2005                            |
 % all bugs and comments or suggestions please report to Winfried Neun,      |
@@ -149,7 +149,7 @@ if(atom li) then return lisp ('list.{li}) else <<
                      << if(length(cddr li)=1) then
                         return  lisp ('list.maxi1({cadr li}, {caddr li}))
                         else return maxi1({cadr li},mrv(cddr li))
-                      >>
+		     >>
                else return  maxi1(mrv(cadr li), mrv(cddr li))
                            >>
     else <<
@@ -567,7 +567,7 @@ end;
 %---------------------------------------------------------------------------
 
 %-----------------------------------------------------------------------------
-% for examples, please see the test flie included with the documentation. The
+% for examples, please see the test file included with the documentation. The
 % examples labelled from ex1 to ex12 are all taken from Dominik Gruntz' Thesis
 % paper. Most are complicated examples, as he himself admits. This package
 % does not use the standard limits operator in REDUCE: it has been written to
