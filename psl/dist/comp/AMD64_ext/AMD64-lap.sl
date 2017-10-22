@@ -445,10 +445,10 @@
 	    (depositbyte (lor 2#00000000 (lor op1 base)))
 	    (return nil))
 
-	  % case: reg - (displacement (reg ESP) const)
+	  % case: reg - (displacement (reg ESP/R12) const)
 	  (when (and (eq mode   'displacement)
 		     (regp (cadr op2)) 
-		     (not (upperreg64p (cadr op2)))
+%		     (not (upperreg64p (cadr op2)))
 		     (numberp (caddr op2))
 		     (setq base (reg2int (cadr op2) 'REXB))
 		     (equal base 2#100) )
@@ -534,26 +534,26 @@
 	  (when (regp op2) (return 1))
 	  (when (pairp op2) (setq mode (car op2)))
 
-	  % case: reg - (indirect (reg ESP) ) 
+	  % case: reg - (indirect (reg ESP/R12) ) 
 	  (when (and (eq mode   'indirect) 
 		     (regp (cadr op2)) 
 		     (setq base (reg2int (cadr op2) 'REXB)) 
 		     (equal base 2#100) ) 
 	    (return 2)) 
 
-	  % case: reg - (indirect (reg EBP) ) % no format without offset 
+	  % case: reg - (indirect (reg EBP/R13) ) % no format without offset 
 	  (when (and (eq mode   'indirect)     
 		     (regp (cadr op2)) 
 		     (setq base (reg2int (cadr op2) 'REXB)) 
 		     (equal base 2#101) ) 
 	    (return (lthmodR/M op1 (list 'displacement (cadr op2) 0)))) 
 
-	  % case: reg - (indirect reg) non ESP
+	  % case: reg - (indirect reg) non ESP/EBP
 	  (when (and (eq mode   'indirect)
 		     (regp (cadr op2)))
 	    (return 1))
 
-	  % case: reg - (displacement (reg ESP) const) 
+	  % case: reg - (displacement (reg ESP/R12) const) 
 	  (when (and (eq mode   'displacement)  
 		     (regp (cadr op2)) 
 		     (numberp (caddr op2))
