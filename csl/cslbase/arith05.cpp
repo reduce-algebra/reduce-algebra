@@ -353,7 +353,7 @@ void print_bighexoctbin(LispObject u, int radix, int width,
 // total supression of the value 0.  I will do something with leading 'f' or
 // '7' digits for negative numbers.
 //
-    while (n >= 0 || bits > 0)
+    while (n+1 > 0 || bits > 0)
     {   if (radix == 16)
         {   a = (b >> 28);    // Grab the next 4 bits of the number
             b = b << 4;       // shift buffer to position the next four

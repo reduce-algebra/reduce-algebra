@@ -4540,7 +4540,7 @@ symbolic procedure s!:subargs(args, use);
 fluid '(!*where_defined!*);
 
 symbolic procedure clear_source_database();
-  << !*where_defined!* := mkhash(10, 2, 1.5);
+  << !*where_defined!* := mkhash 'equal;
      nil >>;
 
 symbolic procedure load_source_database filename;
@@ -5020,7 +5020,7 @@ symbolic procedure s!:compile1(name, args, body, s!:lexical_env);
 % things, so one can afford to do so while for in-store compilation it
 % could make sense to preserve sharing (or not) between literal lists in
 % the code being compiled.
-%   env := mkhash(10, (if s!:faslmod_name then 2 else 1), 1.5) .
+%   env := mkhash(if s!:faslmod_name then 'equal else 'eql) .
 %          reverse args;
 %
 % On further thought maybe code that has been constructed so its behaviour
@@ -5031,7 +5031,7 @@ symbolic procedure s!:compile1(name, args, body, s!:lexical_env);
 % order items end up in a literal vector does not depend on memory addresses
 % and hence becomes consistent from platform to platform and run to run.
 %
-    env := mkhash(10, 2, 1.5) .
+    env := mkhash 'equal .
            reverse args;
     puthash(name, car env, 10000000 . nil);
     w := s!:residual_local_decs(local_decs, w);
@@ -5103,8 +5103,8 @@ symbolic procedure s!:compile2(name, nargs, nopts,
     for each v in args do <<
        env := 0 . env;
        penv := env . penv >>;
-%   env := mkhash(10, (if s!:faslmod_name then 2 else 1), 1.5) . env;
-    env := mkhash(10, 2, 1.5) . env;
+%   env := mkhash(if s!:faslmod_name then 'equal else 'eql) . env;
+    env := mkhash 'equal . env;
     puthash(name, car env, 10000000 . nil);
     penv := reversip penv;
 % I make the list of optional args as long as the complete arg list - with

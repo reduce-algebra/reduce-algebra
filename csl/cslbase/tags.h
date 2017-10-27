@@ -198,6 +198,11 @@ static inline LispObject fixnum_of_int(intptr_t x)
 {   return  (LispObject)((((uintptr_t)x)<<4) + TAG_FIXNUM);
 }
 
+// There are places where I want to use this as a case=constant and then I
+// may not use the inline procedure...
+
+#define FIXNUM_OF_INT(n) (16*(n)+TAG_FIXNUM)
+
 // The code here manages to get compiled as a simple arithmetic right shift
 // on enough architectures that I will not worry about writing it as a 
 // division. My intent here is (x>>4) with the shift being arithmetic in that
@@ -382,18 +387,15 @@ typedef LispObject three_args(LispObject, LispObject, LispObject, LispObject);
 typedef LispObject fourup_args(LispObject, LispObject, LispObject,
                                            LispObject, LispObject);
 
-//
 // Headers are also LispObjects, but I give them a separate typedef
 // name to help me keep their identity separate.  There is only any
 // chance of headers and other objects getting confused during
 // garbage collection, and the code there has to be rather on the
 // careful side.  By making Headers unsigned I help the length
 // calculation on them.
-//
 
 typedef uintptr_t Header;
 
-//
 // Objects will have a header word with the following format:
 //   xxxx:xxxx:xxxx:xxxx:xxxx:xx  yy:yyy z:z 010
 //             22-bits            5-bits  2   3
@@ -526,9 +528,9 @@ static inline bool vector_holds_binary(Header h)
 
 #define TYPE_SIMPLE_VEC   ( 0x01 <<Tw) // simple general vector
 #define TYPE_INDEXVEC     ( 0x11 <<Tw) // used for huge vectors
-#define TYPE_NEWHASH      ( 0x15 <<Tw) // new style hash table
-#define TYPE_NEWHASHX     ( 0x19 <<Tw) // new hash table in need of re-hashing
-#define TYPE_HASH         ( 0x21 <<Tw) // old style hash table.
+#define TYPE_HASH         ( 0x15 <<Tw) // new style hash table
+#define TYPE_HASHX        ( 0x19 <<Tw) // new hash table in need of re-hashing
+//#define TYPE_OLDHASH    ( 0x21 <<Tw) // old style hash table.
 #define TYPE_ARRAY        ( 0x05 <<Tw) // header record for general array
 #define TYPE_STRUCTURE    ( 0x09 <<Tw) // .. includes packages etc possibly
 #define TYPE_OBJECT       ( 0x0d <<Tw) // .. and "object"
@@ -552,6 +554,8 @@ static inline bool vector_holds_binary(Header h)
 #define TYPE_STREAM       ( 0x4d <<Tw) // 3 pointers then binary data
 
 #define VIRTUAL_TYPE_CONS ( 0x7d <<Tw) // what a header for a CONS would be!
+#define VIRTUAL_TYPE_REF  ( 0x17d <<Tw)// Used by sxhash.
+#define VIRTUAL_TYPE_NIL  ( 0x27d <<Tw)// Used in hashing.
 
 #define HDR_IMMED_MASK    (( 0xf <<Tw) | TAG_BITS)
 #define TAG_CHAR          (( 0x4 <<Tw) | TAG_HDR_IMMED) // 25 bits payload
@@ -1674,6 +1678,14 @@ static inline int64_t& intfloat64_t_val(LispObject v)
 {   return *(int64_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
 
+static inline int32_t& intfloat64_t_val_hi(LispObject v)
+{   return *(int32_t *)((char *)v + (8-TAG_BOXFLOAT));
+}
+
+static inline int32_t& intfloat64_t_val_lo(LispObject v)
+{   return *(int32_t *)((char *)v + (12-TAG_BOXFLOAT));
+}
+
 //
 // Again I do not actually introduce the struct...
 //
@@ -1725,6 +1737,22 @@ static inline int64_t& intfloat128_t_val1(LispObject v)
 {   return *(int64_t *)((char *)v + (16-TAG_BOXFLOAT));
 }
 
+static inline int32_t& intfloat128_t_val32_0(LispObject v)
+{   return *(int32_t *)((char *)v + (8-TAG_BOXFLOAT));
+}
+
+static inline int32_t& intfloat128_t_val32_1(LispObject v)
+{   return *(int32_t *)((char *)v + (12-TAG_BOXFLOAT));
+}
+
+static inline int32_t& intfloat128_t_val32_2(LispObject v)
+{   return *(int32_t *)((char *)v + (16-TAG_BOXFLOAT));
+}
+
+static inline int32_t& intfloat128_t_val32_3(LispObject v)
+{   return *(int32_t *)((char *)v + (20-TAG_BOXFLOAT));
+}
+
 static inline uintptr_t word_align_up(uintptr_t n)
 {   return (LispObject)((n + 3) & (-(uintptr_t)4U));
 }
@@ -1754,9 +1782,7 @@ static inline uintptr_t quadword_align_down(uintptr_t n)
 {   return (uintptr_t)(n & (-(uintptr_t)16U));
 }
 
-//
 // values to go in exit_reason at times when exceptions are being thrown.
-//
 
 #define UNWIND_NULL       0x0         // no error or action at all
 #define UNWIND_GO         0x1         // GO, to support non-local case
@@ -1774,6 +1800,16 @@ static inline uintptr_t quadword_align_down(uintptr_t n)
 
 #define SHOW_FNAME  ((exit_reason & UNWIND_FNAME) != 0)
 #define SHOW_ARGS   ((exit_reason & UNWIND_ARGS) != 0)
+
+// Styles or flavours of hash table.
+
+#define HASH_AS_EQ        0
+#define HASH_AS_EQL       1
+#define HASH_AS_CL_EQUAL  2
+#define HASH_AS_EQUAL     3
+#define HASH_AS_EQUALP    4
+#define HASH_AS_SYMBOL    5
+#define HASH_AS_SXHASH    6
 
 #endif // header_tags_h
 

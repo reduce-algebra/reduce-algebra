@@ -2070,8 +2070,11 @@ restart:
                     case SPID_CATCH:   strcpy(my_buff, "SPID_CATCH");   break;
                     case SPID_PROTECT: strcpy(my_buff, "SPID_PROTECT"); break;
                     case SPID_NOARG:   strcpy(my_buff, "SPID_NOARG");   break;
-                    case SPID_HASHEMPTY:strcpy(my_buff, "SPID_HASHEMPTY");break;
-                    case SPID_HASHTOMB:strcpy(my_buff, "SPID_HASHTOMB");break;
+// SPID_HASHEMPTY and SPID_HASHTOMB should anly appear within hash tables,
+// and I do not expect to be able to re-read those. I will use concise
+// representations for them.
+                    case SPID_HASHEMPTY:strcpy(my_buff, "~");break;
+                    case SPID_HASHTOMB:strcpy(my_buff, "+");break;
                     case SPID_GCMARK:  strcpy(my_buff, "SPID_GCMARK");  break;
                     case SPID_NOINPUT: strcpy(my_buff, "SPID_NOINPUT"); break;
                     case SPID_ERROR:   strcpy(my_buff, "SPID_ERROR");   break;
@@ -2497,9 +2500,9 @@ restart:
 #endif
                 case TYPE_SIMPLE_VEC:
                 case TYPE_OBJECT:
+//              case TYPE_OLDHASH:
                 case TYPE_HASH:
-                case TYPE_NEWHASH:
-                case TYPE_NEWHASHX:
+                case TYPE_HASHX:
                 case TYPE_INDEXVEC:
                 {
 #ifndef COMMON
@@ -2513,12 +2516,12 @@ restart:
                         {   outprefix(blankp, 3);
                             putc_stream('#', active_stream); putc_stream('S', active_stream); putc_stream('(', active_stream);
                         }
-                        else if (type_of_header(h) == TYPE_HASH ||
-                                 type_of_header(h) == TYPE_NEWHASH ||
-                                 type_of_header(h) == TYPE_NEWHASHX)
+                        else if (// type_of_header(h) == TYPE_OLDHASH ||
+                                 type_of_header(h) == TYPE_HASH ||
+                                 type_of_header(h) == TYPE_HASHX)
                         {   int ch = 'H';
-                            if (type_of_header(h) == TYPE_NEWHASH) ch = 'h';
-                            else if (type_of_header(h) == TYPE_NEWHASHX) ch = 'x';
+                            if (type_of_header(h) == TYPE_HASH) ch = 'H';
+                            else if (type_of_header(h) == TYPE_HASHX) ch = 'h';
                             outprefix(blankp, 3);
                             putc_stream('#', active_stream); putc_stream(ch, active_stream); putc_stream('(', active_stream);
                         }

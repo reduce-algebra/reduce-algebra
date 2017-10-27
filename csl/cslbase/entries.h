@@ -236,6 +236,8 @@ extern LispObject Lmd60(LispObject env, LispObject a1);
 extern LispObject Lminus(LispObject env, LispObject a);
 extern LispObject Lminusp(LispObject env, LispObject a);
 extern LispObject Lmkevect(LispObject env, LispObject n);
+extern LispObject Lmkhash_1(LispObject env, LispObject a);
+extern LispObject Lmkhashset(LispObject env, LispObject a);
 extern LispObject Lmkquote(LispObject env, LispObject a);
 extern LispObject Lmkvect(LispObject env, LispObject a);
 extern LispObject Lmodular_minus(LispObject env, LispObject a);

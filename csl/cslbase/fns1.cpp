@@ -1909,7 +1909,7 @@ LispObject get_basic_vector_init(size_t n, LispObject k)
 // address zero, which should not arise. And anyway I am only going
 // to put references to vectors here and this array will be cleared by the
 // garbage collector rather than being scanned. Every vector put in
-// here should have tag TAG_VECTOR and type TYPE_SIMPLE_VECTOR
+// here should have tag TAG_VECTOR and type TYPE_SIMPLE_VEC
 
 LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1] = {0};
 
@@ -1985,6 +1985,34 @@ LispObject get_vector(int tag, int type, size_t n)
     return v;
 }
 
+// This takes a vector (which can be one represented using an INDEXVEC)
+// and reduces its size to a total value len. It returns the shorter
+// vector. Only used on simple vectors.
+
+LispObject reduce_basic_vector_size(LispObject v, size_t len)
+{   vechdr(v) = TYPE_SIMPLE_VEC + (len << (Tw+5)) + TAG_HDR_IMMED;
+    return v;
+}
+
+LispObject reduce_vector_size(LispObject v, size_t len)
+{   if (is_basic_vector(v)) return reduce_basic_vector_size(v, len);
+// Maybe the shorter vector will fit entirely within the first chunk of
+// the general one.
+    if (len <= VECTOR_CHUNK_BYTES+CELL)
+        return reduce_basic_vector_size(basic_elt(v, 0), len);
+// Work out how many chunks the smaller vector will need, and how large
+// its last chunk will end up.
+    size_t chunks = (len - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
+    size_t last_size = (len - CELL) % VECTOR_CHUNK_BYTES;
+    if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
+    len = CELL*(chunks+1);
+// Shorten the index vector...
+    vechdr(v) = TYPE_INDEXVEC + (len << (Tw+5)) + TAG_HDR_IMMED;
+// ... and truncate what is now the last chunk.
+    reduce_basic_vector_size(basic_elt(v, chunks-1), last_size+CELL);
+    return v;
+}
+
 LispObject get_vector_init(size_t n, LispObject val)
 {   LispObject p;
     push(val);
@@ -1996,6 +2024,82 @@ LispObject get_vector_init(size_t n, LispObject val)
         elt(p, n) = val;
     }
     return p;
+}
+
+// The next functions (eg borrow_vector) are called just like the
+// functions that allocate new vectors, but they use space in the part
+// of memory space not at present in use by the garbage collector. If a
+// copying garbage collection triggered "right now" were to be able to
+// succeed there must be enough reserved space to make this possible provided
+// I only borrow space sufficient to make copies of existing live data.
+// One must NEVER garbage collect while space has been borrowed in this
+// way.
+
+static int borrowed_pages_count;
+static LispObject borrowed_vfringe, borrowed_vheaplimit;
+
+static void get_borrowed_page()
+{   if (borrowed_pages_count == 0)
+    {   trace_printf("\nRun out of memory (for rehashing)\n");
+#ifdef DEBUG
+        my_abort();
+#endif
+        Lstop1(nil, fixnum_of_int(1));
+    }
+    void *p = pages[--borrowed_pages_count];
+    zero_out(p);
+    borrowed_vfringe =
+        (LispObject)((char *)doubleword_align_up((intptr_t)p) + 8);
+    borrowed_vheaplimit =
+        (LispObject)((char *)borrowed_vfringe + (CSL_PAGE_SIZE-16));    
+}
+
+void prepare_for_borrowing()
+{   borrowed_pages_count = pages_count; 
+    get_borrowed_page();
+}
+
+LispObject borrow_basic_vector(int tag, int type, size_t size)
+{   for (;;)
+    {   char *r = (char *)borrowed_vfringe;
+        size_t free = (size_t)((char *)borrowed_vheaplimit - r);
+        size_t alloc_size = (size_t)doubleword_align_up(size);
+        if (alloc_size > free)
+        {   get_borrowed_page();
+            continue;
+        }
+        borrowed_vfringe = (LispObject)(r + alloc_size);
+        *((Header *)r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+        if (!SIXTY_FOUR_BIT && alloc_size != size)
+            *(LispObject *)(borrowed_vfringe-CELL) = 0;
+        return (LispObject)(r + tag);
+    }
+}
+
+LispObject borrow_vector(int tag, int type, size_t n)
+{   LispObject v;
+    if (n-CELL > VECTOR_CHUNK_BYTES)
+    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
+        size_t i;
+        size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
+        if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
+        v = borrow_basic_vector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
+        for (i=0; i<chunks; i++)
+            basic_elt(v, i) = nil;
+        for (i=0; i<chunks; i++)
+        {   LispObject v1;
+            int k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
+            push(v);
+            v1 = borrow_basic_vector(tag, type, k+CELL);
+            pop(v);
+            size_t k1 = k/CELL;
+            for (size_t j=0; j<k1; j++)
+                basic_elt(v1, j) = nil;
+            basic_elt(v, i) = v1;
+        }
+    }
+    else v = borrow_basic_vector(tag, type, n);
+    return v;
 }
 
 NORETURN void Lstop1(LispObject env, LispObject code)

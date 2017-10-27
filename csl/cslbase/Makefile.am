@@ -265,7 +265,7 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
                 mersenne-twister.cpp bytes1.cpp \
 		char.cpp cslmpi.cpp eval1.cpp eval2.cpp eval3.cpp eval4.cpp \
 		fns1.cpp fns2.cpp fns3.cpp inthash.cpp print.cpp cslread.cpp \
-		restart.cpp lisphash.cpp newhash.cpp serialize.cpp sysfwin.cpp
+		restart.cpp lisphash.cpp serialize.cpp sysfwin.cpp
 
 # Thie little rule is because from time to time I really want to see the
 # expanded version of a C++ file (ie after C++ macroexpansion has taken place).
@@ -915,7 +915,6 @@ fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 lisphash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-newhash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
@@ -956,7 +955,6 @@ csl-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 csl-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 csl-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 csl-lisphash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-csl-newhash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 csl-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 csl-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 csl-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
@@ -997,7 +995,6 @@ reduce-fns1.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-fns2.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-fns3.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-lisphash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-newhash.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-cslgc.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-ompsetup.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-openmath.$(OBJEXT):	$(CRDEP) $(BOEHMDEP) $(SOFTFLOATDEP) $(LOCALCYG)

@@ -1111,8 +1111,7 @@ static LispObject Lrationalize(LispObject env, LispObject a)
 // work is independent of the CSL Lisp system!
 
 uint32_t Crand()
-{
-    return mersenne_twister::rand_u32();
+{   return mersenne_twister::rand_u32();
 }
 
 // If the user specifies a random number seed of zero I will try to
@@ -1122,8 +1121,7 @@ uint32_t Crand()
 // point.
 
 void Csrand(uint32_t seed)
-{
-    if (seed == 0) mersenne_twister::ssrandom();
+{   if (seed == 0) mersenne_twister::ssrandom();
     else mersenne_twister::seed(seed);
 }
 

@@ -72,7 +72,6 @@
 #include "cslread.cpp"
 #include "restart.cpp"
 #include "lisphash.cpp"
-#include "newhash.cpp"
 #include "serialize.cpp"
 #include "sysfwin.cpp"
 #include "stubs.cpp"

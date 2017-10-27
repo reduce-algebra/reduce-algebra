@@ -2390,8 +2390,8 @@ s!:subargs (cdr args) (cdr use)))))))))
 
 (fluid (quote (!*where_defined!*)))
 
-(de clear_source_database nil (progn (setq !*where_defined!* (mkhash 10 2 1.5
-)) nil))
+(de clear_source_database nil (progn (setq !*where_defined!* (mkhash (quote 
+equal))) nil))
 
 (de load_source_database (filename) (prog (a b) (clear_source_database) (setq
 a (open filename (quote input))) (cond ((null a) (return nil))) (setq a (rds
@@ -2625,34 +2625,34 @@ list (quote setq) (car v) (cdr v)) body))) (setq var1173 (cdr var1173)) (go
 lab1172)) (setq body (cons (quote prog) (cons (prog (var1175 var1176) (setq 
 var1175 fluids) lab1174 (cond ((null var1175) (return (reversip var1176)))) (
 prog (v) (setq v (car var1175)) (setq var1176 (cons (car v) var1176))) (setq 
-var1175 (cdr var1175)) (go lab1174)) body)))))) (setq env (cons (mkhash 10 2 
-1.5) (reverse args))) (puthash name (car env) (cons 10000000 nil)) (setq w (
-s!:residual_local_decs local_decs w)) (s!:start_procedure nargs nopts restarg
-) (setq w1 body) more (cond ((atom w1) nil) (t (cond ((and (equal (car w1) (
-quote block)) (equal (length w1) 3)) (progn (setq w1 (caddr w1)) (go more))) 
-(t (cond ((and (equal (car w1) (quote progn)) (equal (length w1) 2)) (progn (
-setq w1 (cadr w1)) (go more))) (t (cond ((and (atom (setq w2 (car w1))) (setq
-w2 (get w2 (quote s!:newname)))) (progn (setq w1 (cons w2 (cdr w1))) (go 
-more))) (t (cond ((and (atom (setq w2 (car w1))) (setq w2 (macro!-function w2
-))) (progn (setq w1 (funcall w2 w1)) (go more)))))))))))) (cond ((not (equal 
-(setq w2 (s!:improve w1)) w1)) (progn (setq w1 w2) (go more)))) (cond ((and (
-not (atom w1)) (atom (car w1)) (not (special!-form!-p (car w1))) (s!:subargs 
-args (cdr w1)) (leq nargs 3) (equal nopts 0) (not restarg) (leq (length (cdr 
-w1)) nargs)) (progn (s!:cancel_local_decs w) (cond (restarg (setq nopts (plus
-nopts 512)))) (setq nopts (plus nopts (times 1024 (length w1)))) (setq nargs
-(plus nargs (times 256 nopts))) (cond (!*pwrds (progn (cond ((neq (posn) 0) 
-(terpri))) (princ "+++ ") (prin name) (princ " compiled as link to ") (princ 
-(car w1)) (terpri)))) (return (cons (cons name (cons nargs (cons nil (car w1)
-))) s!:other_defs))))) (s!:comval body env 0) (s!:cancel_local_decs w) (cond 
-(restarg (setq nopts (plus nopts 512)))) (setq nargs (plus nargs (times 256 
-nopts))) (return (cons (cons name (cons nargs (s!:endprocedure name env 
-checksum))) s!:other_defs))))
+var1175 (cdr var1175)) (go lab1174)) body)))))) (setq env (cons (mkhash (
+quote equal)) (reverse args))) (puthash name (car env) (cons 10000000 nil)) (
+setq w (s!:residual_local_decs local_decs w)) (s!:start_procedure nargs nopts
+restarg) (setq w1 body) more (cond ((atom w1) nil) (t (cond ((and (equal (
+car w1) (quote block)) (equal (length w1) 3)) (progn (setq w1 (caddr w1)) (go
+more))) (t (cond ((and (equal (car w1) (quote progn)) (equal (length w1) 2))
+(progn (setq w1 (cadr w1)) (go more))) (t (cond ((and (atom (setq w2 (car w1
+))) (setq w2 (get w2 (quote s!:newname)))) (progn (setq w1 (cons w2 (cdr w1))
+) (go more))) (t (cond ((and (atom (setq w2 (car w1))) (setq w2 (
+macro!-function w2))) (progn (setq w1 (funcall w2 w1)) (go more)))))))))))) (
+cond ((not (equal (setq w2 (s!:improve w1)) w1)) (progn (setq w1 w2) (go more
+)))) (cond ((and (not (atom w1)) (atom (car w1)) (not (special!-form!-p (car 
+w1))) (s!:subargs args (cdr w1)) (leq nargs 3) (equal nopts 0) (not restarg) 
+(leq (length (cdr w1)) nargs)) (progn (s!:cancel_local_decs w) (cond (restarg
+(setq nopts (plus nopts 512)))) (setq nopts (plus nopts (times 1024 (length 
+w1)))) (setq nargs (plus nargs (times 256 nopts))) (cond (!*pwrds (progn (
+cond ((neq (posn) 0) (terpri))) (princ "+++ ") (prin name) (princ 
+" compiled as link to ") (princ (car w1)) (terpri)))) (return (cons (cons 
+name (cons nargs (cons nil (car w1)))) s!:other_defs))))) (s!:comval body env
+0) (s!:cancel_local_decs w) (cond (restarg (setq nopts (plus nopts 512)))) (
+setq nargs (plus nargs (times 256 nopts))) (return (cons (cons name (cons 
+nargs (s!:endprocedure name env checksum))) s!:other_defs))))
 
 (de s!:compile2 (name nargs nopts args oargs restarg body local_decs checksum
 ) (prog (fluids env penv g v init atend w) (prog (var1178) (setq var1178 args
 ) lab1177 (cond ((null var1178) (return nil))) (prog (v) (setq v (car var1178
 )) (progn (setq env (cons 0 env)) (setq penv (cons env penv)))) (setq var1178
-(cdr var1178)) (go lab1177)) (setq env (cons (mkhash 10 2 1.5) env)) (
+(cdr var1178)) (go lab1177)) (setq env (cons (mkhash (quote equal)) env)) (
 puthash name (car env) (cons 10000000 nil)) (setq penv (reversip penv)) (cond
 (restarg (setq oargs (append oargs (quote (0)))))) (prog (i) (setq i 1) 
 lab1179 (cond ((minusp (times 1 (difference nargs i))) (return nil))) (setq 

@@ -134,22 +134,13 @@
 // Lisp hash tables represent a jolly special case! After they have been
 // passed to a different system the hash values of many objects may have
 // changed. This can arise if, for instance, hash codes are based on
-// a memory address or are sensitive to byte-order. I have two schemes
-// that can help here.
-// The existing old one was that after a new heap-image was re-loaded
-// all hash tables got rehashed. To help with this the system maintains
-// a list called eq_hash_tables.
-// The new scheme is that during garbage collection and when re-read from a
-// serialized form ant object that might have a header saying TYPE_NEWHASH
-// has that updates to be TYPE_NEWHASHX where this new marker indicates a
+// a memory address or are sensitive to byte-order.
+// During garbage collection and when re-read from a
+// serialized form ant object that might have a header saying TYPE_HASH
+// has that updates to be TYPE_HASHX where this new marker indicates a
 // hash table whos eelements may not be in the correct locations. Then any
-// operation on the hash table can check for TYPE_NEWHASHX and if it sees
-// it re-hash and reset the table to TYPE_NEWHASH. If that strategy is
-// followed it becomes unnecessary to keep any global list of hash tables.
-// Note that the object list is a sort of hash table but its implementation
-// may be separate from that for the more user-accessible ones - but the
-// issues here neverthless apply. I intend to merge object list (ie package
-// system) table maintenance with more general hash table support soon.
+// operation on the hash table can check for TYPE_HASHX and if it sees
+// it re-hash and reset the table to TYPE_HASH.
 //
 // There are a few types where I feel that serialization is probably never
 // going to make sense. For instance open streams, references to foreign
@@ -1813,21 +1804,21 @@ down:
 // One thing to observe here. If I have a vector that is a hash table using
 // EQ as its key then reading it in here will leave its entries all the right
 // values but not in the right places. My response to that is to
-// arrange that a potentially messed up hash table has type code TYPE_NEWHASHX
-// rather than TYPE_NEWHASH. The hash code accessing functions will check for
+// arrange that a potentially messed up hash table has type code TYPE_HASHX
+// rather than TYPE_HASH. The hash code accessing functions will check for
 // that, and if they find it they re-hash before use, restoring the key to
-// just TYPE_NEWHASH. The consequence is that the rehashing work is not done
+// just TYPE_HASH. The consequence is that the rehashing work is not done
 // until and unless it is actually needed.
             assert(opcode_repeats == 0);
             {   int type = ((c & 0x1f) << (Tw + 2)) | (0x01 << Tw),
                     tag = is_number_header_full_test(type) ? TAG_NUMBERS :
                                                              TAG_VECTOR;
-// If I have a NEWHASH object that is a huge vector then it will have
+// If I have a HASH object that is a huge vector then it will have
 // a top level INDEXVEC and all the sub-vectors will start off as
-// NEWHASH. The adjustment here can set ALL of the sub-vectors to be
-// NEWHASHX but when I re-hash I will probably only reset the first one
-// back to NEWHASH. The same may well arise in the garbage collector.
-                if (type == TYPE_NEWHASH) type = TYPE_NEWHASHX;
+// HASH. The adjustment here can set ALL of the sub-vectors to be
+// HASHX but when I re-hash I will probably only reset the first one
+// back to HASH. The same may well arise in the garbage collector.
+                if (type == TYPE_HASH) type = TYPE_HASHX;
 // The size here will be the number of Lisp items held in the vector, so
 // what I need to pass to get_basic_vector makes that into a byte count and
 // allows for the header word as well.
@@ -3663,12 +3654,6 @@ void write_everything()
         {   sprintf(trigger, "list base %p scan", (void *)**p);
             scan_data(**p);
         }
-// The following two are not full list bases - they are weak pointers. I hope
-// that in a while I will re-work how I get hash tables rehashed following
-// garbage collection and preserve/restart do I will not end up needing these
-// lists at all.
-        strcpy(trigger, "EQ hash tables scan");
-        scan_data(eq_hash_tables);
     }
 // Now I should have identified all cyclic and shared data - including
 // eveything in the object list/package structures.
@@ -3708,15 +3693,9 @@ void write_everything()
     {   sprintf(trigger, "list base %p write", (void *)**p);
         write_data(**p);
     }
-// The following two are not full list bases - they are weak pointers. I hope
-// that in a while I will re-work how I get hash tables rehashed following
-// garbage collection and preserve/restart do I will not end up needing these
-// lists at all.
-    strcpy(trigger, "EQ hash tables write");
-    write_data(eq_hash_tables);
 // Tidy up at the end. I do not logically need an explicit end of data marker
-// in the serialized form, but putting one there seems lile a way to make
-// me feel more robust against corrupred image files.
+// in the serialized form, but putting one there seems like a way to make
+// me feel more secure against corrupred image files.
     write_opcode(SER_END, "end of data");
 }
 
@@ -3739,7 +3718,6 @@ void warm_setup()
     qheader(nil) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_GLOBAL_VAR;
     for (LispObject **p = list_bases; *p!=NULL; p++) **p = nil;
     *stack = nil;
-    eq_hash_tables = nil;
     qcount(nil) = 0;
 // Make things GC safe first...
     qvalue(nil) = nil;
@@ -3793,8 +3771,6 @@ void warm_setup()
 
     for (LispObject **p = list_bases; *p!=NULL; p++) **p = serial_read();
 
-    eq_hash_tables = serial_read();
-
     if ((i = read_opcode_byte()) != SER_END)
     {   fprintf(stderr, "Did not find SER_END opcode where expected\n");
         fprintf(stderr, "Byte that was read was %.2x\n", (int)i);
@@ -3829,15 +3805,6 @@ void warm_setup()
     }
     repeat_heap = NULL;
 
-    {   LispObject qq;
-        for (qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
-        {   if (!is_vector(qcar(qq)))
-            {   fprintf(stderr, "qq=%p should be a vector\n", (void *)qcar(qq));
-                exit(4);
-            }
-            rehash_this_table(qcar(qq));
-        }
-    }
 // There are various things such as lispsystem* and the various standard
 // output streams that may depend on the particular system I am loading on
 // and so have to be set up as if from cold...
@@ -4047,8 +4014,6 @@ static bool push_all_symbols(symbol_processor_predicate *pp)
     {   sprintf(trigger, "list base %p push", (void *)**p);
         if (push_symbols(pp, **p)) return true;
     }
-    strcpy(trigger, "EQ hash tables push");
-    if (push_symbols(pp, eq_hash_tables)) return true;
     return false;
 }
 

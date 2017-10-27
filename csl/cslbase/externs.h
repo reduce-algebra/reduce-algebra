@@ -410,7 +410,8 @@ extern intptr_t modulus_is_large;
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 extern LispObject quote_symbol, function_symbol, comma_symbol;
 extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
-extern LispObject list_symbol, liststar_symbol;
+extern LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
+extern LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn;
@@ -428,7 +429,8 @@ extern LispObject expr_symbol, fexpr_symbol, macro_symbol;
 extern LispObject big_divisor, big_dividend, big_quotient;
 extern LispObject big_fake1, big_fake2, active_stream, current_module;
 extern LispObject mv_call_symbol, features_symbol, lisp_package;
-extern LispObject sys_hash_table, help_index, cfunarg, lex_words;
+extern LispObject sys_hash_table, sxhash_hash_table;
+extern LispObject help_index, cfunarg, lex_words;
 extern LispObject get_counts, fastget_names, input_libraries;
 extern LispObject output_library, current_file, break_function;
 extern LispObject standard_output, standard_input, debug_io;
@@ -539,7 +541,6 @@ extern void copy_out_of_nilseg();
 extern void rehash_this_table(LispObject v);
 extern void simple_print(LispObject x);
 extern void simple_msg(const char *s, LispObject x);
-extern LispObject eq_hash_tables;
 extern uint64_t hash_equal(LispObject key);
 
 //
@@ -908,12 +909,20 @@ extern LispObject get_basic_vector(int tag, int type, size_t length);
 extern LispObject get_basic_vector_init(size_t n, LispObject v);
 extern LispObject get_vector(int tag, int type, size_t length);
 extern LispObject get_vector_init(size_t n, LispObject v);
+extern LispObject reduce_vector_size(LispObject n, size_t length);
+extern void       prepare_for_borrowing();
+static inline void zero_out(void *p)
+{   char *p1 = (char *)doubleword_align_up((intptr_t)p);
+    memset(p1, 0, CSL_PAGE_SIZE);
+}
+extern LispObject borrow_basic_vector(int tag, int type, size_t length);
+extern LispObject borrow_vector(int tag, int type, size_t length);
 extern uint64_t   hash_lisp_string(LispObject s);
 extern void lose_C_def(LispObject a);
-extern bool        geq2(LispObject a, LispObject b);
-extern bool        greaterp2(LispObject a, LispObject b);
-extern bool        lesseq2(LispObject a, LispObject b);
-extern bool        lessp2(LispObject a, LispObject b);
+extern bool       geq2(LispObject a, LispObject b);
+extern bool       greaterp2(LispObject a, LispObject b);
+extern bool       lesseq2(LispObject a, LispObject b);
+extern bool       lessp2(LispObject a, LispObject b);
 extern LispObject list2(LispObject a, LispObject b);
 extern LispObject list2star(LispObject a, LispObject b, LispObject c);
 extern LispObject list3(LispObject a, LispObject b, LispObject c);
@@ -1087,7 +1096,7 @@ extern setup_type const
     arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],
     arith13_setup[], char_setup[], eval1_setup[], eval2_setup[],
     eval3_setup[], funcs1_setup[], funcs2_setup[], funcs3_setup[],
-    lisphash_setup[], newhash_setup[], print_setup[], read_setup[],
+    lisphash_setup[], print_setup[], read_setup[],
     restart_setup[], mpi_setup[];
 
 extern setup_type const

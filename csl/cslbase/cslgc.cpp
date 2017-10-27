@@ -87,11 +87,6 @@ LispObject * volatile savestacklimit;
 
 static int stop_after_gc = 0;
 
-static void zero_out(void *p)
-{   char *p1 = (char *)doubleword_align_up((intptr_t)p);
-    memset(p1, 0, CSL_PAGE_SIZE);
-}
-
 // This allocates another page of memory if that is allowed and if it is
 // possible. It returns true on success.
 
@@ -189,7 +184,7 @@ static void copy(LispObject *p)
             else                    // Here I have a symbol or vector
             {   Header h;
                 int tag;
-                intptr_t len;
+                size_t len;
                 tag = ((int)a) & TAG_BITS;
                 a = (LispObject)((char *)a - tag);
                 h = *(Header *)a;
@@ -208,12 +203,22 @@ static void copy(LispObject *p)
 // (eg strings) and halfword vectors have a bit of a fudge in the way that
 // their length is encoded, and so I will need to review that and confirm
 // that all is safe! Yes - if you go length_of_header() on a string (or one
-// of the other cases where tha actual data is short) then the restult you
+// of the other cases where tha actual data is short) then the result you
 // get is the length in bytes of the data padded out to be a multiple of 4
 // bytes long.
                     len = doubleword_align_up(length_of_header(h));
-                    if (type_of_header(h) == TYPE_NEWHASH)
-                        h = h ^ (TYPE_NEWHASH ^ TYPE_NEWHASHX);
+                    my_assert(len >= CELL,
+                        [&]{ trace_printf("\nlen = %" PRIx64 " < CELL\n", len);
+                             for (int i=-30; i<=30; i++)
+                             { LispObject q = ((LispObject *)a)[i];
+                               trace_printf("%3d: %" PRIx64, i, q);
+                               if (is_odds(q) && is_header(q))
+                                  trace_printf(" len=%" PRId64, length_of_header(q));
+                               trace_printf("\n");
+                             }
+                           });
+                    if (type_of_header(h) == TYPE_HASH)
+                        h = h ^ (TYPE_HASH ^ TYPE_HASHX);
                     switch (type_of_header(h))
                     {
                         case TYPE_STRING_1:
@@ -235,12 +240,12 @@ static void copy(LispObject *p)
                 }
                 for (;;)
                 {   char *vl = (char *)vheaplimit;
-                    int32_t free = (int32_t)(vl - vfr);
+                    size_t free = (size_t)(vl - vfr);
 // len indicates the length of the block of memory that must now be
 // allocated...
                     if (len > free)
-                    {   int32_t free1 =
-                            (int32_t)(vfr - (vl - (CSL_PAGE_SIZE - 8)));
+                    {   size_t free1 =
+                            (size_t)(vfr - (vl - (CSL_PAGE_SIZE - 8)));
                         car32(vl - (CSL_PAGE_SIZE - 8)) = free1;
                         qcar(vfr) = 0;          // sentinel value
                         if (pages_count == 0) allocate_more_memory();
@@ -468,19 +473,6 @@ static void tidy_fringes(void)
     car32(hl - SPARE) = len;
     len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
     car32(vl - (CSL_PAGE_SIZE - 8)) = (LispObject)len;
-}
-
-static void lose_dead_hashtables(void)
-// This splices out from the list of hash tables all entries that point to
-// tables that have not been marked or copied this garbage collection.
-{   LispObject *p = &eq_hash_tables, q, r;
-    while ((q = *p) != nil)
-    {   Header h;
-        r = qcar(q);
-        h = vechdr(r);
-        if (!is_forward((LispObject)h)) *p = qcdr(q);
-        else p = &qcdr(q);
-    }
 }
 
 // I need a way that a thread that is not synchronised with this one can
@@ -727,12 +719,6 @@ static void real_garbage_collector()
     {   for (size_t i=1; i<=repeat_count; i++)
             copy(&repeat_heap[i]);
     }
-// Now I need to perform some magic on the list of hash tables...
-    lose_dead_hashtables();
-// When I have transitions to the new hash table scheme the two lists
-// processed specially here become redundant and this fragment of code can
-// go, I think.
-    copy(&eq_hash_tables);
     tidy_fringes();
 // Throw away the old semi-space - it is now junk.
     while (heap_pages_count!=0)
@@ -759,9 +745,6 @@ static void real_garbage_collector()
     new_heap_pages_count = 0;
     vheap_pages_count = new_vheap_pages_count;
     new_vheap_pages_count = 0;
-// Finally rehash things that need it.
-    for (LispObject qq = eq_hash_tables; qq!=nil; qq=qcdr(qq))
-        rehash_this_table(qcar(qq));
 }
 
 LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)

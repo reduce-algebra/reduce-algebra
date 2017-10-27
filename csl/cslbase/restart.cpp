@@ -112,7 +112,8 @@ intptr_t current_modulus, fastget_size, package_bits, modulus_is_large;
 LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 LispObject quote_symbol, function_symbol, comma_symbol, comma_at_symbol;
 LispObject cons_symbol, eval_symbol, apply_symbol, work_symbol, evalhook;
-LispObject list_symbol, liststar_symbol;
+LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
+LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 LispObject applyhook, macroexpand_hook, append_symbol, exit_tag;
 LispObject exit_value, catch_tags, keyword_package, current_package;
 LispObject startfn, all_packages, package_symbol, internal_symbol;
@@ -130,7 +131,8 @@ LispObject prompt_thing, faslgensyms, prinl_symbol, emsg_star, redef_msg;
 LispObject current_function, expr_symbol, fexpr_symbol, macro_symbol;
 LispObject big_divisor, big_dividend, big_quotient, big_fake1, big_fake2;
 LispObject active_stream, current_module;
-LispObject autoload_symbol, features_symbol, lisp_package, sys_hash_table;
+LispObject autoload_symbol, features_symbol, lisp_package;
+LispObject sys_hash_table, sxhash_hash_table;
 LispObject help_index, cfunarg, lex_words, get_counts, fastget_names;
 LispObject input_libraries, output_library, current_file, break_function;
 LispObject standard_output, standard_input, debug_io;
@@ -757,7 +759,7 @@ setup_type const *setup_tables[] =
     arith06_setup, arith08_setup, arith10_setup, arith12_setup,
     arith13_setup, char_setup, eval1_setup, eval2_setup, eval3_setup,
     funcs1_setup, funcs2_setup, funcs3_setup, lisphash_setup,
-    newhash_setup, print_setup, read_setup, restart_setup, mpi_setup,
+    print_setup, read_setup, restart_setup, mpi_setup,
     NULL
 };
 
@@ -1643,8 +1645,9 @@ static void cold_setup()
     qvalue(emsg_star)      = nil;
     qvalue(redef_msg)      = lisp_true;
 
-    sys_hash_table = Lmkhash_2(nil, fixnum_of_int(5), fixnum_of_int(2));
-    get_counts = Lmkhash_2(nil, fixnum_of_int(5), fixnum_of_int(0));
+    sys_hash_table = Lmkhash_1(nil, fixnum_of_int(2));    // EQUAL
+    sxhash_hash_table = Lmkhash_1(nil, fixnum_of_int(0)); // EQ
+    get_counts = Lmkhash_1(nil, fixnum_of_int(0));        // EQ
 //
 // I make the vector that can hold the names used for "fast" get tags big
 // enough for the largest possible number.
@@ -1715,6 +1718,11 @@ void set_up_functions(int restart_flag)
     cons_symbol              = make_symbol("cons", restart_flag, G0W1, G1W2, Lcons, G3W2, G4W2);
     list_symbol              = make_symbol("list", restart_flag, Lnilfn, Lncons, Llist_2, Llist_3, Llist_4up);
     liststar_symbol          = make_symbol("list*", restart_flag, G0Wother, Lidentity, Lcons, Llist_2star, Lliststar_4up);
+    eq_symbol                = make_undefined_symbol("eq");
+    eql_symbol               = make_undefined_symbol("eql");
+    cl_equal_symbol          = make_undefined_symbol("cl-equal");
+    equal_symbol             = make_undefined_symbol("equal");
+    equalp_symbol            = make_undefined_symbol("equalp");
     eval_symbol              = make_symbol("eval", restart_flag, G0W1, Leval, G2W1, G3W1, G4W1);
     apply_symbol             = make_symbol("apply", restart_flag, G0Wother, Lapply_1, Lapply_2, Lapply_3, Lapply_4up);
     load_source_symbol       = make_symbol("load-source", restart_flag, Lload_source0, Lload_source, G2Wother, G3Wother, G4Wother);
@@ -1760,7 +1768,6 @@ void set_up_functions(int restart_flag)
     create_symbols(funcs2_setup, restart_flag);
     create_symbols(funcs3_setup, restart_flag);
     create_symbols(lisphash_setup, restart_flag);
-    create_symbols(newhash_setup, restart_flag);
     create_symbols(print_setup, restart_flag);
     create_symbols(read_setup, restart_flag);
     create_symbols(restart_setup, restart_flag);
@@ -2939,6 +2946,7 @@ LispObject *list_bases[] =
     &boffo,
     &charvec,
     &sys_hash_table,
+    &sxhash_hash_table,
     &help_index,
     &gensym_base,
     &err_table,
@@ -2967,6 +2975,11 @@ LispObject *list_bases[] =
     &cons_symbol,
     &list_symbol,
     &liststar_symbol,
+    &eq_symbol,
+    &eql_symbol,
+    &cl_equal_symbol,
+    &equal_symbol,
+    &equalp_symbol,
     &echo_symbol,
     &emsg_star,
     &evalhook,
