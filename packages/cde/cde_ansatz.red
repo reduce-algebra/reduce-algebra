@@ -91,7 +91,12 @@ symbolic procedure mkallmon0(alg_grad,vars);
    end;
 
 symbolic procedure mkallmon(alg_grad,vars);
-  'list . mkallmon0(alg_grad,cdr vars);
+  begin
+    scalar templist;
+    templist:=mkallmon0(alg_grad,cdr vars);
+    templist:=for each el in templist collect aeval el;
+    return 'list . cde_mkset(templist)
+  end;
 
 symbolic operator mkallmon;
 
