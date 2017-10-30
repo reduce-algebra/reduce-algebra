@@ -1917,22 +1917,32 @@ LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1] = {0};
 // the size of the vector including its header word, but as far as powers
 // of 2 go I look at the size of the data part only.
 
-static LispObject gvector(int tag, int type, size_t n)
-{   size_t n1 = n/CELL - 1;    // size in words of data part.
-    if (is_power_of_two(n1))   // special if size is a power of 2.
-    {   int i = intlog2(n1);   // identify what power of 2 we have.
+static LispObject gvector(int tag, int type, size_t size)
+{   STACK_SANITY;
+// I will never let odd sized vectors participate in this recycling
+// process.
+    if (size%CELL != 0) return get_basic_vector(tag, type, size);
+    size_t n = size/CELL - 1;  // size in words of data part in cells.
+    if (is_power_of_two(n))    // special if size is a power of 2.
+    {   int i = intlog2(n);    // identify what power of 2 we have.
         LispObject r;
         if (i <= LOG2_VECTOR_CHUNK_BYTES &&
             (r = free_vectors[i]) != 0)
         {   free_vectors[i] = basic_elt(r, 0);
+            basic_elt(r, 0) = nil; // Just to be tidy!
 // reset type field
-            vechdr(r) = type + (n << (Tw+5)) + TAG_HDR_IMMED;
+            vechdr(r) = type + (size << (Tw+5)) + TAG_HDR_IMMED;
+// I am going to claim that this is a recycled vector, and if I am on a 32-bit
+// system and it had a padder word at the end to bring its size up to a
+// multiple of 8 bytes then that word was tidily zeroed out when I first
+// created it, and nothing should have messed with it since - so I should not
+// need to do anything special here to maintain that tidy state.
             return r - TAG_VECTOR + tag;
         }
     }
 // If there is no saved vector then allocate a new one. Note that when
 // called from here this will be a smallish vector.
-    return get_basic_vector(tag, type, n);
+    return get_basic_vector(tag, type, size);
 }
 
 LispObject get_vector(int tag, int type, size_t n)

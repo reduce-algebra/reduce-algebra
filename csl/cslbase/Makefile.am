@@ -2030,7 +2030,7 @@ if canrun
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
-	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -w -z $(CSLFLAGS) -Dno_init_file \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -w -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp -D@srcdir=$(CYGSRC) -D@reduce=$(CYGREDUCE) \
 		-o- -- buildlogs/bootstrapreduce.log \
 		-j bootstrapreduce.dep

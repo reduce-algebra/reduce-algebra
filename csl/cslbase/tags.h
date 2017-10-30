@@ -1152,17 +1152,21 @@ static inline bool vector_holds_binary(LispObject v)
 extern LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1];
 
 static inline void discard_basic_vector(LispObject v)
-{   size_t n = length_of_header(vechdr(v)) - CELL;
+{   size_t size = length_of_header(vechdr(v));
+// I should never try to discard a vector that has a size that is not
+// a multiple of CELL. If I did then the division on the next line could
+// truncate to potential bad effect.
+    size_t n = size/CELL - 1;
     if (is_power_of_two(n))    // save if this has byte-count 2^i
     {   int i = intlog2(n);    // identify what power of 2 we have
         if (i <= LOG2_VECTOR_CHUNK_BYTES)
         {   basic_elt(v, 0) = free_vectors[i];
 // I put the discarded vector in the free-chain as a "simple vector"
 // regardless of what it used to be. If it has contained binary information
-// its contents will not ce GC safe - but the GC should never encounter it
+// its contents will not be GC safe - but the GC should never encounter it
 // so that should not matter.
             vechdr(v) = TYPE_SIMPLE_VEC +
-                        ((n+CELL) << (Tw+5)) +
+                        (size << (Tw+5)) +
                         TAG_HDR_IMMED;
             v = (v & ~(uintptr_t)TAG_BITS) | TAG_VECTOR;
             free_vectors[i] = v;
@@ -1176,6 +1180,7 @@ static inline void discard_vector(LispObject v)
     {   size_t n1 = length_of_header(vechdr(v))/CELL - 1;
         for (size_t i=0; i<n1; i++)
             discard_basic_vector(basic_elt(v, i));
+        discard_basic_vector(v);
     }
 }
 

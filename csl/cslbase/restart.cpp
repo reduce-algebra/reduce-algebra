@@ -2808,6 +2808,8 @@ void setup(int restart_flag, double store_size)
     stack[0] = nil;
     exit_tag = exit_value = nil;
     exit_reason = UNWIND_NULL;
+    for (int j=0; j<=LOG2_VECTOR_CHUNK_BYTES; j++)
+        free_vectors[j] = 0;
 
     if ((restart_flag & 1) != 0)
     {   char junkbuf[120];
