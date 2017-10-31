@@ -195,6 +195,9 @@ static void set_hash_operations(LispObject tab)
 //          not use it in tables.
     }
     h_shift = int_of_fixnum(basic_elt(tab, HASH_SHIFT));
+    my_assert(h_shift > 32 && h_shift < 63,
+        [&] { trace_printf("\n+++ h_shift = %d\nfrom table: ", h_shift);
+              prin_to_trace(tab); trace_printf("\n"); });
     h_table_size = ((size_t)(1<<(64-h_shift)));
     h_table = basic_elt(tab, HASH_KEYS);
     v_table = basic_elt(tab, HASH_VALUES);
@@ -1147,7 +1150,7 @@ LispObject Lclr_hash(LispObject env, LispObject tab)
             v_table = reduce_vector_size(v_table, CELL*(size+1));
         basic_elt(tab, HASH_KEYS) = h_table;
         basic_elt(tab, HASH_VALUES) = v_table;
-        basic_elt(tab, HASH_SHIFT) = fixnum_of_int(4);
+        basic_elt(tab, HASH_SHIFT) = fixnum_of_int(64-4);
     }
     LispObject keys = basic_elt(tab, HASH_KEYS);
     LispObject vals = basic_elt(tab, HASH_VALUES);
