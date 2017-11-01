@@ -1609,7 +1609,8 @@ then
       $LL/libXft.a \
       $LL/libfontconfig.a \
       $LL/libexpat.a \
-      -lpthread \
+      $LL/libffi.a \
+    -lpthread \
       -ldl"
     if test "x$with_wx" = "xyes"
     then
@@ -1619,10 +1620,10 @@ then
 # This is to try to force linking against a system-provided version.
     LDFLAGS="-L/usr/lib -lcurses $LDFLAGS"
   fi  
-fi
-
-# Force in linking against libffi
+else
+# Force in linking against libffi on everything except the Mac.
 LIBS="$LIBS -lffi"
+fi
 
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])
 
