@@ -99,13 +99,13 @@ sudo port install          \
   gnuplot                  \
   gnutar                   \
   gzip                     \
-  libffi                   \
   md5sha1sum               \
   netpbm                   \
   pkgconfig                \
   polyml                   \
   psutils                  \
   subversion               \
+  texinfo                  \
   texlive-fonts-extra      \
   texlive-htmlxml          \
   texlive-latex-extra      \

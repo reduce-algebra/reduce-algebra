@@ -1342,6 +1342,32 @@ else
   cd "$builddir"
 fi
 
+AC_MSG_NOTICE([About to configure libffi])
+mkdir -p libffi
+cd libffi
+
+if test "x$CC$CPP$CXX$CXXCPP" != "x"
+then
+  passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
+else
+  passcc=""
+fi
+AC_MSG_NOTICE([passcc = $passcc])
+doconfig="$SHELL \"$abssrcdir/libraries/libffi/configure\" $filtered \
+      $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+      CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+      --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+          --includedir=\"$builddir/include\""
+AC_MSG_NOTICE([doconfig = $doconfig])
+if test "x$with_sequential" = "xno"
+then
+  eval "$doconfig" &
+  procids="$procids $!"
+else
+  eval "$doconfig"
+fi
+cd "$builddir"
+
 # If I am building the "test" (aka "experiment") version I will need to
 # have the Boehm conservative garbage collector...
 if test "x$enable_test" = "xyes"

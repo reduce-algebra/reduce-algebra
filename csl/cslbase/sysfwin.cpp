@@ -127,7 +127,7 @@
 // Jollies re GC statistics...
 //
 
-static char time_string[32], space_string[32];
+static char time_string[40], space_string[32];
 
 void report_time(int32_t t, int32_t gct)
 {

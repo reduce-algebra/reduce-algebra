@@ -428,7 +428,6 @@ case $host in
 # compilation of any sort at all are then THEIR job to resolve by providing
 # settings that are satisfactory.
   CPPFLAGS="$CPPFLAGS -I/opt/local/include -I/opt/local/include/freetype2"
-  CPPFLAGS="$CPPFLAGS -I/usr/include/ffi"
   XLIBS="-lXext -lX11 -lXft -lfontconfig"
   macintosh_build="yes"
   darwin_build="yes"
@@ -1609,8 +1608,7 @@ then
       $LL/libXft.a \
       $LL/libfontconfig.a \
       $LL/libexpat.a \
-      $LL/libffi.a \
-    -lpthread \
+      -lpthread \
       -ldl"
     if test "x$with_wx" = "xyes"
     then
@@ -1620,9 +1618,6 @@ then
 # This is to try to force linking against a system-provided version.
     LDFLAGS="-L/usr/lib -lcurses $LDFLAGS"
   fi  
-else
-# Force in linking against libffi on everything except the Mac.
-LIBS="$LIBS -lffi"
 fi
 
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])

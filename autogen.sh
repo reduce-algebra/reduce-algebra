@@ -99,7 +99,7 @@ case $a in
 *--without-csl* | *with-csl=no*)
   ;;
 *--with-csl*)
-  L="$L ./csl ./csl/cslbase ./libraries/SoftFloat-3a/source"
+  L="$L ./csl ./csl/cslbase ./libraries/SoftFloat-3a/source ./libraries/libffi"
   case $a in
   *--without-fox* | *with-fox=no* | \
   *--without-gui* | *with-gui=no*)

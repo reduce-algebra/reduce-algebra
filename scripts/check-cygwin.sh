@@ -32,7 +32,6 @@ for p in \
   ${other}-gmp \
   ${other}-gnutls \
   ${other}-isl \
-  ${other}-libffi \
   ${other}-libtool \
   ${other}-libX11 \
   ${other}-libXext \
@@ -54,7 +53,6 @@ for p in \
   gzip \
   initscripts \
   less \
-  libffi-devel \
   libfontconfig-devel \
   libfontenc-devel \
   libfreetype-devel \

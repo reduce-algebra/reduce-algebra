@@ -48,8 +48,6 @@ sudo dnf -y install libXext-devel
 sudo dnf -y install ncurses-devel
 sudo dnf -y install ncurses-compat-libs
 
-sudo dnf -y install libffi-devel
-
 sudo dnf -y install polyml
 
 sudo dnf -y install redhat-lsb-core

@@ -18,7 +18,6 @@ sudo apt-get -y install git
 sudo apt-get -y install gnuplot
 sudo apt-get -y install imagemagick
 sudo apt-get -y install libedit-dev
-sudo apt-get -y install libffi-dev
 sudo apt-get -y install libgtk2.0-dev
 sudo apt-get -y install libncurses5-dev
 # I believe I have seen some systems where I need "libtool" and some
@@ -33,6 +32,7 @@ sudo apt-get -y install rpm
 sudo apt-get -y install ssh
 sudo apt-get -y install subversion
 sudo apt-get -y install tex4ht
+sudo apt-get -y install texinfo
 sudo apt-get -y install texlive-fonts-extra
 sudo apt-get -y install texlive-fonts-recommended
 sudo apt-get -y install texlive-latex-recommended
