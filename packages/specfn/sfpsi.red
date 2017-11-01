@@ -463,14 +463,14 @@ symbolic procedure rdpsi!:compute!-lowerbound eps;
    
 
 symbolic procedure rdpsi!:(z,k);
-   if bfzerop!: z or minusp!: z and integerp!: z then bflerrmsg 'rdpsi!:
+   if bfzerop!: z or rd!:minusp z and integerp!: z then bflerrmsg 'rdpsi!:
     else begin scalar result, admissable, lb, refl, pival;
       integer shift, k7;
       k7 := k+7;
       % For negative z, use the reflection formula
       % psi(z) = psi(1-z) - pi/tan(pi*z)
       % unless z is a negative integer
-      if minusp!: z
+      if rd!:minusp z
 	then  << pival := !:pi k7;
 	         refl := divide!:(pival,tan!:(times!:(pival,z),k7),k7);
 	         z := difference!:(bfone!*,z); >>;
@@ -479,7 +479,7 @@ symbolic procedure rdpsi!:(z,k);
       lb :=  rdpsi!:compute!-lowerbound admissable;
       if greaterp!:(lb,z) then <<
 	 % make 20 extra shift steps to be on the safe side
- 	 shift := 20 + conv!:bf2i difference!:(lb,z);
+         shift := 20 + conv!:bf2i difference!:(lb,z);
  	 z := plus!:(z,i2bf!: shift) >>;
       result := plus!:(difference!: (log!:(z,k7), divide!:(bfone!*, times!:(bftwo!*, z), k7)),
 	       	       rdpsi!:1(divide!:(bfone!*,times!:(z,z),k7),k,admissable));
@@ -516,29 +516,31 @@ symbolic procedure crpsi!* u;
    % For negative repart(z), use the reflection formula
    % psi(z) = psi(1-z) - pi/tan(pi*z)
    % unless z is a negative integer
-    else if minusp!: tagrl u
+    else if rd!:minusp tagrl u
      then cr!:differ(
 	   (gfpsi!:(crprcd cr!:differ(!*rd2cr bfone!*,u),!:bprec!:) where !*!*roundbf := t),
 	   (cr!:quotient(crpi,crtan!*(cr!:times(crpi,u))) where crpi:=!*rd2cr pi!*()))
     else  (gfpsi!:(crprcd u,!:bprec!:) where !*!*roundbf := t);
 
 symbolic procedure gfpsi!:(z,k);
-   begin scalar result, admissable, gfnorm, gflog, lb;
+   if rd!:minusp tagrl z then rerror('specfn,0,{"Internal error in psi computation: gfpsi!: argument is negative: ",z})
+    else begin scalar result, admissable, gfnorm, gflog, lb;
       integer shift, k7;
       k7 := k+7;
-      gfnorm := rdhypot!*(gfrl z,gfim z);
       % The following is  rd!-tolerance!*
       admissable := make!:ibf(1, 6-k);
       lb :=  rdpsi!:compute!-lowerbound admissable;
       % this is the lower bound l for the norm of z = x +i*y where (x > 0)
       % ie. we need to compute the shift for n for x via (x+n)^2 + y^2 > l^2
       % obviously, scaling is necessary only if |x| < l and |y| < l,
-      % otherwise shift s > sqrt(l^2-y^2) - x 
+      % otherwise shift s > sqrt(l^2-y^2) - x , but only if sqrt(l^2-y^2) - x > 0
       if lessp!:(gfrl z, lb) and lessp!:(abs!: gfim z, lb) then <<
-	 % make 20 extra shift steps to be on the safe side
-	 shift := 20 + conv!:bf2i difference!:(bfsqrt difference!:(times!:(lb,lb),times!:(gfim z,gfim z)),gfrl z);
-	 shift := shift + 20;
- 	 z := gfplus(z,mkgf(i2bf!: shift,bfz!*)) >>;
+	 shift := conv!:bf2i difference!:(bfsqrt difference!:(times!:(lb,lb),times!:(gfim z,gfim z)),gfrl z);
+         if shift > 0 then <<
+            % make 20 extra shift steps to be on the safe side
+	    shift := shift + 20;
+ 	    z := gfplus(z,mkgf(i2bf!: shift,bfz!*)) >> >>;
+      gfnorm := rdhypot!*(gfrl z,gfim z);
       gflog := mkgf(log!:(gfnorm,k7),rdatan2!*(gfim z,gfrl z));
       result := gfplus(gfdiffer (gflog, gfquotient(rl2gfc bfone!*, gftimes(rl2gfc bftwo!*, z))),
 	       	       gfpsi!:1(gfquotient(rl2gfc bfone!*,gftimes(z,z)),k,admissable));

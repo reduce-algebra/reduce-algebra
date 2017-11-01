@@ -239,7 +239,26 @@ x := 8/3;
 y := 7/1000;
 do!*one!*psi(z);
 
-off rounded;
+on complex;
+
+array psicomptest(10);
+
+psicomptest(1) := -13.0 + 2.0i;
+psicomptest(2) := -9.5;
+psicomptest(3) := -3.0 + i;
+psicomptest(4) := 8.0i;
+psicomptest(5) := 3.0;
+psicomptest(6) := 4.0 + 2.0i;
+psicomptest(7) := 7.0 + 4.0i;
+psicomptest(8) := 9.0 + 16.0i;
+psicomptest(9) := 10.0;
+psicomptest(10) := 15.0 + 5.0i;
+
+for j:=1:10 do do!*one!*psi(psicomptest(j));
+
+for j:=1:10 do do!*one!*psi(conj(psicomptest(j)));
+
+off complex, rounded;
 
 clear x, y;
 
