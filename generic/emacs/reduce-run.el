@@ -1,12 +1,12 @@
 ;;; reduce-run.el --- Run the REDUCE computer-algebra system in a buffer
 
-;; Copyright (C) 1998-2001, 2012 Francis J. Wright
+;; Copyright (C) 1998-2001, 2012, 2017 Francis J. Wright
 
-;; Author: Francis J. Wright <http://sourceforge.net/users/fjwright>
+;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: late 1998
 ;; Version: $Id$
 ;; Keywords: languages, processes
-;; Package-Version: 1.21
+;; Package-Version: 1.3
 ;; Package-Requires: ((reduce-mode "1.21"))
 
 ;; This program is free software: you can redistribute it and/or
@@ -25,20 +25,20 @@
 
 ;;; Commentary:
 
-;; REDUCE run is a package for running the REDUCE computer algebra
+;; REDUCE Run is a package for running the REDUCE computer algebra
 ;; system, which is Open Source and available from
-;; <http://reduce-algebra.svn.sourceforge.net/>.
+;; <https://sourceforge.net/projects/reduce-algebra>.
 
-;; The latest version of REDUCE run is available from
-;; <http://reduce-algebra.svn.sourceforge.net/viewvc/reduce-algebra/trunk/generic/emacs/>.
+;; The latest version of REDUCE Run is available from
+;; <https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/generic/emacs>.
 
 ;; Hacked from inf-lisp.el by Olin Shivers <shivers@cs.cmu.edu>
 
 ;; This file defines a REDUCE-in-a-buffer package built on top of
-;; comint mode. Since this mode is built on top of the general
+;; comint mode.  Since this mode is built on top of the general
 ;; command-interpreter-in-a-buffer mode (comint mode), it shares a
 ;; common base functionality, and a common set of bindings, with all
-;; modes derived from comint mode. This makes these modes easier to
+;; modes derived from comint mode.  This makes these modes easier to
 ;; use.
 
 ;; For documentation on the functionality provided by comint mode, and
@@ -49,7 +49,7 @@
 ;; To install in GNU Emacs 24+, download this file to any convenient
 ;; directory and run the Emacs command `package-install-file' on it.
 
-;; REDUCE run requires `reduce-mode.el' also available from the above
+;; REDUCE Run requires `reduce-mode.el' also available from the above
 ;; URL, which must be installed first.
 
 ;; Brief manual installation instructions follow.
@@ -59,8 +59,8 @@
 
 ;; (autoload 'run-reduce "reduce-run" "Run a REDUCE process" t)
 
-;; To have automatic access to REDUCE run from REDUCE mode, and make
-;; REDUCE mode customization always available, put the following
+;; To have automatic access to REDUCE Run from REDUCE Mode, and make
+;; REDUCE Mode customization always available, put the following
 ;; (after `autoload') in your `.emacs' file:
 
 ;;;###autoload
@@ -103,17 +103,44 @@
   :tag "REDUCE Run"
   :group 'reduce)
 
-(defcustom reduce-run-program "reduce"
-  "*Command to invoke REDUCE.
+;; *** OBSOLETE CODE - TO BE DELETED ***
+;; (defcustom reduce-run-program "reduce"
+;;   "Command to invoke REDUCE.
+;; It can also be a relative or absolute path name.
+;; It must invoke a command\-line version of REDUCE. A GUI version will not work!
+;; If running CSL REDUCE on Windows, this should be `reduce.com' (if in your path)
+;; or (for example) `C:/REDUCE/reduce-windows64-20110414/reduce.com'."
+;;   :type 'string
+;;   :group 'reduce-run)
+
+(define-obsolete-variable-alias 'reduce-run-program 'reduce-run-command-csl
+  "REDUCE IDE version 1.3"
+  "Replaced by the new variables `reduce-run-command-csl' and
+`reduce-run-command-psl'.")
+
+(defcustom reduce-run-command-csl "redcsl --nogui"
+  "Command to invoke CSL REDUCE.
 It can also be a relative or absolute path name.
-It must invoke a command\-line version of REDUCE. A GUI version will not work!
-If running CSL REDUCE on Windows, this should be `reduce.com' (if in your path)
-or (for example) `C:/REDUCE/reduce-windows64-20110414/reduce.com'."
+It must invoke a command\-line version of REDUCE.  A GUI version will not work!"
   :type 'string
   :group 'reduce-run)
 
+(defcustom reduce-run-command-psl "redpsl"
+  "Command to invoke PSL REDUCE.
+It can also be a relative or absolute path name.
+It must invoke a command\-line version of REDUCE.  A GUI version will not work!"
+  :type 'string
+  :group 'reduce-run)
+
+(defcustom reduce-run-lisp-preference '("CSL" . "PSL")
+  "The command `reduce-run' tries to run REDUCE on this Lisp first.
+If that fails then it tries to run REDUCE on the other Lisp.
+The value must be one of the dotted pairs `(\"CSL\" . \"PSL\")' or `(\"PSL\" . \"CSL\")'."
+  :type '(radio (const :tag "CSL" ("CSL" . "PSL")) (const :tag "PSL" ("PSL" . "CSL")))
+  :group 'reduce-run)
+
 (defcustom reduce-run-prompt "^\\([0-9]+[:*] \\)+"
-  "*Regexp to recognise prompts in REDUCE Run mode.
+  "Regexp to recognise prompts in REDUCE Run mode.
 Defaults to \"^\\([0-9]+[:*] \\)+\", which works well for CSL-REDUCE.
 This variable is used to initialize `comint-prompt-regexp' in the
 REDUCE Run buffer."
@@ -121,31 +148,31 @@ REDUCE Run buffer."
   :group 'reduce-run)
 
 (defcustom reduce-run-autostart t
-  "*If non-nil, automatically start a REDUCE process if necessary."
+  "If non-nil, automatically start a REDUCE process if necessary."
   :type 'boolean
   :group 'reduce-run)
 
 (defcustom reduce-run-mode-hook nil
-  "*Hook for customising REDUCE Run mode."
+  "Hook for customising REDUCE Run mode."
   :type 'hook
   :group 'reduce-run)
 
 (defcustom reduce-run-load-hook nil
-  "*Hook run when REDUCE Run mode is loaded.
+  "Hook run when REDUCE Run mode is loaded.
 It is a good place to put keybindings."
   :type 'hook
   :group 'reduce-run)
 
 (defcustom reduce-input-filter "\\`\\([ \t;$]*\\|[ \t]*.[ \t]*\\)\\'"
-  "*What not to save on REDUCE Run mode's input history.
-The value is a regexp. The default matches any combination of zero or
+  "What not to save on REDUCE Run mode's input history.
+The value is a regexp.  The default matches any combination of zero or
 more whitespace characters and/or statement terminators, or any single
 character (e.g. y or n) possibly surrounded by whitespace."
   :type 'regexp
   :group 'reduce-run)
 
 (defcustom reduce-run-buffer nil
-  "*The current REDUCE process buffer.
+  "The current REDUCE process buffer.
 
 MULTIPLE PROCESS SUPPORT
 ========================================================================
@@ -183,7 +210,7 @@ buffer with \\[set-variable]."
   :group 'reduce-run)
 
 (defcustom reduce-source-modes '(reduce-mode)
-  "*Used to determine if a buffer contains REDUCE source code.
+  "Used to determine if a buffer contains REDUCE source code.
 If it's loaded into a buffer that is in one of these major modes, it's
 considered a REDUCE source file by `reduce-input-file' and `reduce-fasl-file'.
 Used by these commands to determine defaults."
@@ -263,9 +290,9 @@ Used by these commands to determine defaults."
   (cons "Run REDUCE" reduce-mode-run-menu) 'REDUCE)
 
 (defun reduce-run-install-letter-bindings ()
-  "Bind many REDUCE run commands to C-c <letter> bindings.
-This makes them more accessible. These bindings are reserved for
-the user and so are non-standard. If you want to use them, you
+  "Bind many REDUCE run commands to `C-c' <letter> bindings.
+This makes them more accessible.  These bindings are reserved for
+the user and so are non-standard.  If you want to use them, you
 should have this function called by the `reduce-run-load-hook':
    (add-hook 'reduce-run-load-hook
              'reduce-run-install-letter-bindings)
@@ -296,31 +323,29 @@ You can modify this function to install just the bindings you want."
 
 (defun reduce-run-mode ()
   "Major mode for interacting with a REDUCE process -- part of REDUCE IDE.
-Author: Francis Wright <http://sourceforge.net/users/fjwright>
+Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 Version: see `reduce-run-version'
-Comments, suggestions, bug reports, etc. are welcome.
+Comments, suggestions, bug reports, etc., are welcome.
 Full texinfo documentation is provided in the file `reduce-ide.texinfo'.
 
-Runs REDUCE as a subprocess of Emacs, with I/O through an Emacs
-buffer. Variable `reduce-run-program' controls which REDUCE is
-run. Variable `reduce-run-prompt' can customize this mode for
-different REDUCE implementations.
+Run REDUCE as a subprocess of Emacs, with I/O through an Emacs buffer.
+
+Customisation: Variables in the customization group `reduce-run'
+control this mode.  Entry to this mode runs `comint-mode-hook' and
+`reduce-run-mode-hook' (in that order).
 
 For information on running multiple processes in multiple buffers, see
-documentation for variable `reduce-run-buffer'.
+the documentation for the variable `reduce-run-buffer'.
 
 \\{reduce-run-mode-map}
 
-Customisation: Entry to this mode runs the hooks on `comint-mode-hook'
-and `reduce-run-mode-hook' (in that order).
-
 You can send text to the REDUCE process from other buffers containing
 REDUCE source:
- * switch-to-reduce switches the current buffer to the REDUCE process
+ * ‘switch-to-reduce’ switches the current buffer to the REDUCE process
    buffer;
- * reduce-eval-proc sends the current procedure definition to the
+ * ‘reduce-eval-proc’ sends the current procedure definition to the
    REDUCE process;
- * reduce-eval-region sends the current region to the REDUCE process.
+ * ‘reduce-eval-region’ sends the current region to the REDUCE process.
 Prefixing the reduce-eval- commands with a \\[universal-argument]
 also switches to the REDUCE process buffer window.
 
@@ -334,7 +359,7 @@ Commands:
    shifts rest of expression rigidly with the current line.
  * \\[reduce-indent-procedure] does `reduce-indent-line' on each
    line starting within following expression.
-Paragraphs are separated only by blank lines. Percent signs start comments.
+Paragraphs are separated only by blank lines.  Percent signs start comments.
 If you accidentally suspend your process, use \\[comint-continue-subjob]
 to continue it."
   (interactive)
@@ -358,7 +383,7 @@ to continue it."
   (run-hooks 'reduce-run-mode-hook))
 
 (defun reduce-input-filter (str)
-  "True if STR does not match `reduce-input-filter'."
+  "True if STR does not match variable `reduce-input-filter'."
   (not (string-match reduce-input-filter str)))
 
 ; (defun reduce-preoutput-filter-function (string)
@@ -371,29 +396,113 @@ to continue it."
 ;        string))
 ;   string)
 
+;; *** OBSOLETE CODE - TO BE DELETED ***
+;; ;;;###autoload
+;; (defun run-reduce (cmd)
+;;   "Run CMD as a REDUCE process with input and output via buffer `*REDUCE*'.
+;; If there is a process already running in `*REDUCE*', just switch to
+;; that buffer.  With argument, allows you to edit the command line
+;; \(default is value of `reduce-run-program'). Runs the hooks from
+;; `reduce-run-mode-hook' (after the `comint-mode-hook' is run).
+;; \(Type \\[describe-mode] in the process buffer for a list of
+;; commands.)"
+;;   (interactive (list (if current-prefix-arg
+;; 			 (read-string "Run REDUCE: " reduce-run-program)
+;; 		       reduce-run-program)))
+;;   (if (not (comint-check-proc "*REDUCE*"))
+;;       (let ((cmdlist (reduce-run-args-to-list cmd)))
+;; 	(set-buffer
+;; 	 ;; `apply' used below because last arg is &rest!
+;; 	 (apply 'make-comint "REDUCE" (car cmdlist) nil (cdr cmdlist)))
+;; 	(reduce-run-mode)))
+;;   (setq reduce-run-buffer "*REDUCE*")
+;;   (pop-to-buffer "*REDUCE*"))
+
 ;;;###autoload
-(defun run-reduce (cmd)
-  "Run CMD as a REDUCE process with input and output via buffer `*REDUCE*'.
-If there is a process already running in `*REDUCE*', just switch to
-that buffer.  With argument, allows you to edit the command line
-\(default is value of `reduce-run-program'). Runs the hooks from
+(define-obsolete-function-alias 'run-reduce 'reduce-run
+  "REDUCE IDE version 1.3")
+
+(defun reduce-run-command (xsl)
+  "Get the value of the variable `reduce-run-command-XSL'.
+XSL must be one of the *upper-case* strings `CSL' or `PSL'."
+  (eval (intern (concat "reduce-run-command-" (downcase xsl)))))
+
+(defun reduce-run-reduce (cmd xsl)
+  "Run CMD as an XSL REDUCE process with IO via buffer `*XSL\ REDUCE*'.
+If there is a process already running in that buffer, just switch to it.
+If CMD is nil then construct it from XSL.
+XSL must be one of the *upper-case* strings `CSL' or `PSL'.
+Return the process buffer if successful; nil otherwise."
+  (or cmd (setq cmd (reduce-run-command xsl)))
+  (let* ((process-name (concat xsl " REDUCE"))
+		 (buffer-name (concat "*" process-name "*")))
+	(if (comint-check-proc buffer-name)
+		(pop-to-buffer (setq reduce-run-buffer buffer-name))
+	  (condition-case err
+          ;; Protected form:
+		  (let ((cmdlist (reduce-run-args-to-list cmd)))
+			(set-buffer
+			 ;; `apply' used below because last arg is &rest!
+			 (apply 'make-comint process-name (car cmdlist) nil (cdr cmdlist)))
+			(reduce-run-mode)
+			(pop-to-buffer (setq reduce-run-buffer buffer-name)))
+        ;; Error handler:
+        (error			  ; condition
+         ;; Display the usual error message then tidy up:
+         (message "%s" (error-message-string err))
+		 (kill-buffer buffer-name)
+         nil))							; return false
+	  )))
+
+;;;###autoload
+(defun reduce-run (cmd)					; Should perhaps be a macro!
+  "Run CMD as a REDUCE process with IO via a buffer.
+Assume CSL or PSL REDUCE as selected by `reduce-run-lisp-preference'.
+If CMD is nil then construct it from `reduce-run-lisp-preference'.
+See `reduce-run-csl' or `reduce-run-psl' for further details."
+  (interactive
+   (let ((reduce-run-command-xsl
+		  (reduce-run-command (car reduce-run-lisp-preference))))
+	 (list (if current-prefix-arg
+			   (read-string "Run REDUCE: " reduce-run-command-xsl)
+			 reduce-run-command-xsl))))
+  (if current-prefix-arg
+	  ;; Just run the specified command:
+	  (reduce-run-reduce cmd (car reduce-run-lisp-preference))
+	;; Automatic mode:
+	(or (reduce-run-reduce nil (car reduce-run-lisp-preference))
+		(reduce-run-reduce nil (cdr reduce-run-lisp-preference)))))
+
+;;;###autoload
+(defun reduce-run-csl (cmd)				; Should perhaps be a macro!
+  "Run CMD as a REDUCE process with IO via buffer `*CSL\ REDUCE*'.
+If there is a process already running in that buffer, just switch to it.
+An argument allows you to edit the command line
+\(default is value of `reduce-run-command-csl'). Runs the hooks from
 `reduce-run-mode-hook' (after the `comint-mode-hook' is run).
 \(Type \\[describe-mode] in the process buffer for a list of
 commands.)"
   (interactive (list (if current-prefix-arg
-			 (read-string "Run REDUCE: " reduce-run-program)
-		       reduce-run-program)))
-  (if (not (comint-check-proc "*REDUCE*"))
-      (let ((cmdlist (reduce-run-args-to-list cmd)))
-	(set-buffer
-	 ;; `apply' used below because last arg is &rest!
-	 (apply 'make-comint "REDUCE" (car cmdlist) nil (cdr cmdlist)))
-	(reduce-run-mode)))
-  (setq reduce-run-buffer "*REDUCE*")
-  (pop-to-buffer "*REDUCE*"))
+						 (read-string "Run REDUCE: " reduce-run-command-csl)
+					   reduce-run-command-csl)))
+  (reduce-run-reduce cmd "CSL"))
 
 ;;;###autoload
-(add-hook 'same-window-buffer-names "*REDUCE*")
+(defun reduce-run-psl (cmd)				; Should perhaps be a macro!
+  "Run CMD as a REDUCE process with IO via buffer `*PSL\ REDUCE*'.
+If there is a process already running in that buffer, just switch to it.
+An argument allows you to edit the command line
+\(default is value of `reduce-run-command-psl'). Runs the hooks from
+`reduce-run-mode-hook' (after the `comint-mode-hook' is run).
+\(Type \\[describe-mode] in the process buffer for a list of
+commands.)"
+  (interactive (list (if current-prefix-arg
+						 (read-string "Run REDUCE: " reduce-run-command-psl)
+					   reduce-run-command-psl)))
+  (reduce-run-reduce cmd "PSL"))
+
+;;;###autoload
+(add-hook 'same-window-regexps "REDUCE") ; ??? Not sure about this! ???
 
 (defun reduce-run-args-to-list (string)
   "Break STRING into a list of arguments.
@@ -401,15 +510,15 @@ This will fail if you have an argument with whitespace, as in
 string = \"-ab +c -x 'you lose'\"."
   (let ((where (string-match "[ \t]" string)))
     (cond ((null where) (list string))
-	  ((not (= where 0))
-	   (cons (substring string 0 where)
-		 (reduce-run-args-to-list
-		  (substring string (+ 1 where) (length string)))))
-	  (t (let ((pos (string-match "[^ \t]" string)))
-	       (if (null pos)
-		   ()
-		 (reduce-run-args-to-list
-		  (substring string pos (length string)))))))))
+		  ((not (= where 0))
+		   (cons (substring string 0 where)
+				 (reduce-run-args-to-list
+				  (substring string (+ 1 where) (length string)))))
+		  (t (let ((pos (string-match "[^ \t]" string)))
+			   (if (null pos)
+				   ()
+				 (reduce-run-args-to-list
+				  (substring string pos (length string)))))))))
 
 
 (defun reduce-send-string (string)
@@ -445,7 +554,7 @@ save it in the input history."
     (insert reg)
     ;; Send full region to REDUCE, but replace all newlines (and any
     ;; preceding comments!) with spaces to avoid multiple REDUCE
-    ;; propmts:
+    ;; prompts:
     (setq region
 	  (replace-regexp-in-string "\\(%.*\\)?\n" " " region t t))
     ;; Hack sender to actually send region!  This ugly code is
@@ -524,7 +633,7 @@ process if necessary."
 	   (when restart
 	     (goto-char (point-max))
 	     (insert ?\n))
-	   (run-reduce reduce-run-program)
+	   (reduce-run nil)
 	   ;; Wait for REDUCE to start ...
 	   (while (not (comint-check-proc "*REDUCE*"))
 	     (sit-for 1))
@@ -559,7 +668,7 @@ last `reduce-input-file' or `reduce-fasl-file' command.")
   "Name of last package loaded or compiled.")
 
 (defvar reduce-run-file-name-history nil
-     "A history list for reduce-run source file-name arguments.")
+     "A history list for ‘reduce-run’ source file-name arguments.")
 
 (defun reduce-run-get-source (prompt)
   "Get, check and save a REDUCE source file-name using prompt string PROMPT."
@@ -632,7 +741,7 @@ The user chooses whether to echo file input."
 Not intended to be set directly but by customizing `reduce-packages'.")
 
 (defcustom reduce-packages (reduce-packages-default)
-  "*File, directory or list of REDUCE packages, or nil.
+  "File, directory or list of REDUCE packages, or nil.
 The file should be \"reduce/package.ini\", the directory should be
 \"reduce/packages/\", but absolute pathnames should be used.
 For a file or directory, you can complete with `M-<TAB>'.
@@ -744,7 +853,7 @@ process if necessary."
     (cond (proc)
 	  (reduce-run-autostart
 	   (save-excursion
-	     (run-reduce reduce-run-program)
+	     (reduce-run nil)
 	     (get-buffer-process (current-buffer))))
 	  (t (error "No REDUCE process; see variable `reduce-run-buffer'")))))
 
