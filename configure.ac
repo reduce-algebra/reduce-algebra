@@ -1356,8 +1356,9 @@ AC_MSG_NOTICE([passcc = $passcc])
 doconfig="$SHELL \"$abssrcdir/libraries/libffi/configure\" $filtered \
       $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
       CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
+      --disable-multi-os-directory --disable-docs \
       --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
-          --includedir=\"$builddir/include\""
+      --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
 if test "x$with_sequential" = "xno"
 then
