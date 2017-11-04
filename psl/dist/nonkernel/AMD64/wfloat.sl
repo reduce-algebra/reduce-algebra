@@ -27,40 +27,46 @@
 
 (off echo)
 
+(de *fp-check-for-exceptions (fn flags)
+  (unless (or (eq 0 fp-except-mode*)
+	      (eq 0 (*float-get-except-flags flags)))
+    (*float-clear-all-except)
+    (stderror (bldmsg "Floating point error in %w" fn))))
+
 (de *wfloat (x y)
-  (uxfloat  (inf x) y))
+  (uxfloat x y))
 
 (de *fplus2 (x y z)
- (when (and (eq (uxplus2 (inf x) (inf y) (inf z)) 0) (not (eq fp-except-mode* 0)))
+ (when (and (eq (uxplus2 x y z) 0) (not (eq fp-except-mode* 0)))
       (stderror "Floating point error in fplus2")))
 
 (de *fdifference (x y z)
- (when (and (eq (uxdifference (inf x) (inf y) (inf z)) 0) (not (eq fp-except-mode* 0)))
+ (when (and (eq (uxdifference x y z) 0) (not (eq fp-except-mode* 0)))
       (stderror "Floating point error in fdifference")))
 
 (de *ftimes2 (x y z)
-  (when (and (eq (uxtimes2 (inf x) (inf y) (inf z)) 0) (not (eq fp-except-mode* 0)))
+  (when (and (eq (uxtimes2 x y z) 0) (not (eq fp-except-mode* 0)))
      (stderror "Floating point error in ftimes2")))
 
 (de *fquotient (x y z)
-  (when (and (eq (uxquotient (inf x) (inf y) (inf z)) 0) (not (eq fp-except-mode* 0)))
+  (when (and (eq (uxquotient x y z) 0) (not (eq fp-except-mode* 0)))
      (stderror "Floating point error in fquotient")))
 
 (de *fsqrt (x y)
-  (when (and (eq (uxsqrt (inf x) (inf y)) 0) (not (eq fp-except-mode* 0)))
+  (when (and (eq (uxsqrt x y) 0) (not (eq fp-except-mode* 0)))
      (stderror "Floating point error in fsqrt")))
 
 (de *fgreaterp (x y)
-  (uxgreaterp (inf x) (inf y) 't 'nil))
+  (uxgreaterp x y 't 'nil))
 
 (de *flessp (x y)
-  (uxlessp (inf x) (inf y) 't 'nil))
+  (uxlessp x y 't 'nil))
 
 (de *wfix (x)
-  (uxfix (inf x)))
+  (uxfix x))
 
 (de *fassign (x y)
-  (uxassign (inf x) (inf y)))
+  (uxassign x y))
 
 (de *doubletofloat (x y)
   (uxdoubletofloat (inf x) (inf y)))
