@@ -51,6 +51,9 @@ then
   *Ubuntu*)
     vendor="ubuntu"
     ;;
+  *CentOS*)
+    vendor="centos"
+    ;;
   *Scientific*)
     vendor="scientificlinux"
     ;;
