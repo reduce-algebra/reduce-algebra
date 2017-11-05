@@ -1024,8 +1024,8 @@ then
           freetype_libs=`$FREETYPE_CONFIG --libs`
           XLIBS="$XLIBS $freetype_libs"
           xft_found="yes"
-          AC_CHECK_LIB(fontconfig, FcConfigCreate)
-          AC_CHECK_LIB(Xft, XftFontOpen,,[xft_found="no"])
+          AC_SEARCH_LIBS([FcConfigCreate], [fontconfig])
+          AC_SEARCH_LIBS([XftFontOpen], [Xft],,[xft_found="no"])
           AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
           if test "$xft_found" = "yes"
           then
@@ -1035,8 +1035,8 @@ then
         else
 # Now a search without the benefit of helper tools.
           xft_found="yes"
-          AC_CHECK_LIB(fontconfig, FcConfigCreate)
-          AC_CHECK_LIB(Xft, XftFontOpen,,[xft_found="no"])
+          AC_SEARCH_LIBS([FcConfigCreate], [fontconfig])
+          AC_SEARCH_LIBS([XftFontOpen], [Xft],,[xft_found="no"])
           AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
           if test "$xft_found" = "yes"
           then
@@ -1052,8 +1052,8 @@ then
   then
 # Now a search without the benefit of helper tools.
     xft_found="yes"
-    AC_CHECK_LIB(fontconfig, FcConfigCreate)
-    AC_CHECK_LIB(Xft, XftFontOpen,,[xft_found="no"])
+    AC_SEARCH_LIBS([FcConfigCreate], [fontconfig])
+    AC_SEARCH_LIBS([XftFontOpen], [Xft],,[xft_found="no"])
     AC_CHECK_HEADER(X11/Xft/Xft.h,,[xft_found="no"])
     if test "$xft_found" = "yes"
     then
@@ -1171,13 +1171,13 @@ fi
 # On at least some systems static linking against X11 needs -ldl
 # Also I will use dlopen (and friends) for dynamic loading of stuff
 # compiled via C.
-AC_CHECK_LIB(dl, dlopen)
+AC_SEARCH_LIBS([dlopen], [dl])
 
 # Fox 1.6 seems to use nanosleep in FXThread and on some systems at least
 # the means I must link against librt.
-AC_CHECK_LIB(rt, clock_nanosleep)
+AC_SEARCH_LIBS([clock_nanosleep], [rt])
 
-AC_CHECK_LIB(pthread, pthread_create)
+AC_SEARCH_LIBS([pthread_create], [pthread])
 
 if test "x$with_gui" != "xno"
 then
@@ -1202,12 +1202,14 @@ if test "x$windows_build" != "xyes" || test "x$with_cygwin" = "xyes"
 then
   AC_CHECK_HEADERS(termios.h sys/ioctl.h)
 
+  if test -d /usr/local/include/ncurses
+  then
+    CPPFLAGS="$CPPFLAGS -I/usr/local/include/ncurses"
+  fi
+
   AC_CHECK_HEADERS(curses.h ncurses.h)
 
   AC_MSG_NOTICE([curses=$HAVE_CURSES_H ncurses=$HAVE_NCURSES_H])
-
-  AC_CHECK_LIB(curses, tgetent, [],
-    [AC_CHECK_LIB(ncurses, tgetent)])
 
 # There is a misery here! "term.h" (on some machines) needs curses.h
 # included first (typically to define "bool" for it).
@@ -1227,6 +1229,47 @@ then
       #include <ncurses.h>
       #endif
       #endif])
+
+# I have come across a platform where the curses libraries must be fetched
+# from /usr/local/lib. I am trying to deal with this in a way where special
+# treatment will only be applied if (n)curses can not be found in the usual
+# way. The commented out code here fails because autoconf caches the result of
+# the test for tgetent, and so does not perform the version of the test after
+# I have updated LDFLAGS. So I will do things by hand.
+#@@  AC_SEARCH_LIBS([tgetent], [ncurses curses], [HAVE_LIBCURSES="yes"])
+#@@  if test "x$HAVE_LIBCURSES" != "xyes" &&
+#@@     (test -f /usr/local/lib/libcurses.a ||
+#@@      test -f /usr/local/lib/libncurses.a)
+#@@  then
+#@@    LDFLAGS="$LDFLAGS -L/usr/local/lib"
+#@@    AC_SEARCH_LIBS([tgetent], [ncurses curses])
+#@@  fi
+  OLIBS="$LIBS"
+  LIBS="$OLIBS -lncurses"
+  AC_LINK_IFELSE(
+    [AC_LANG_SOURCE([#include <ncurses.h>
+       #include <term.h>
+       int main()
+       {  (void)tgetent(NULL, "xterm");
+          return 0;
+       } ])],
+    [AC_MSG_NOTICE([tgetent found in ncurses])],
+    [AC_MSG_NOTICE([tgetent NOT found in ncurses])
+     LIBS="$OLIBS -lcurses"
+     AC_LINK_IFELSE(
+       [AC_LANG_SOURCE([#include <curses.h>
+          #include <term.h>
+          int main()
+          {  (void)tgetent(NULL, "xterm");
+             return 0;
+          } ])],
+       [AC_MSG_NOTICE([tgetent found in curses])],
+       [AC_MSG_NOTICE([tgetent NOT found in curses])
+        LIBS="$OLIBS"
+        LDFLAGS="$LDFLAGS -L/usr/local/lib"
+        AC_SEARCH_LIBS([tgetent], [ncurses curses])
+       ])
+    ])
 
   AC_CHECK_FUNCS([tgetent tputs])
 
@@ -1266,7 +1309,7 @@ fi
 
 # These days I want zlib to do the compression I want.
 AC_CHECK_HEADERS(zlib.h)
-AC_SEARCH_LIBS(deflate, z)
+AC_SEARCH_LIBS([deflate], [z])
 
 # Some platforms appear to require the Xcursor library. The next line
 # should arrange that it gets scanned if it is available.
@@ -1279,9 +1322,9 @@ if test "x$with_gui" != "xno" &&
    (test "x$windows_build" != "xyes" ||
      test "x$with_cygwin" = "xyes")
 then
-  AC_SEARCH_LIBS(XRenderCreateCursor, Xrender)
-  AC_SEARCH_LIBS(XcursorImageCreate, Xcursor)
-  AC_SEARCH_LIBS(XRRQueryVersion, Xrandr)
+  AC_SEARCH_LIBS([XRenderCreateCursor], [Xrender])
+  AC_SEARCH_LIBS([XcursorImageCreate], [Xcursor])
+  AC_SEARCH_LIBS([XRRQueryVersion], [Xrandr])
 fi
 
 # Checks for header files.
@@ -1357,8 +1400,8 @@ AC_CHECK_SIZEOF(wchar_t)
 
 AC_CHECK_TYPES([socklen_t],[],[],[#include <sys/socket.h>])
 
-AC_CHECK_LIB(socket, socket)
-AC_CHECK_LIB(nsl, gethostbyname)
+AC_SEARCH_LIBS([socket], [socket])
+AC_SEARCH_LIBS([gethostbyname], [nsl])
 
 # Checks for library functions.
 AC_FUNC_CLOSEDIR_VOID
