@@ -178,7 +178,7 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
 % Ensure by simplification that the variable does not contain a power
 
-      s1 := simp_expt(u3,s1);
+      s1 := simp_expt(u3,s1,u4);
 
       u3 := car s1;
       s1 := cdr s1;
@@ -251,7 +251,7 @@ begin scalar v,v1,v2,s1,s2,s3,coef,uu1,uu2,test_1,test_1a,test_2,m,n,p,
 
 % Ensure by simplification that the variable does not contain a power
 
-      s1 := simp_expt(u3,s1);
+      s1 := simp_expt(u3,s1,u4);
 
       u3 := car s1;
       s1 := cdr s1;
@@ -512,12 +512,41 @@ end$
 %*              EVALUATION OF THE PARAMETERS FOR THE G-FUNCTION        *
 %***********************************************************************
 
-symbolic procedure simp_expt(u,v);
+algebraic <<
 
-% Reduce Meijer G functions of powers of x to x
+share intggg!-rules1;
+
+intggg!-rules1 := {
+   {~~c*!*intvar!*^~a }
+      => {a,c*!*intvar!*} when c freeof !*intvar!* and a freeof !*intvar!*,
+   {(~c*!*intvar!*^~a)/~d }
+      => {a,c/d*!*intvar!*} when c freeof !*intvar!* and d freeof !*intvar!* and a freeof !*intvar!*,
+   {~c/!*intvar!*^~a }
+      => {a,c/!*intvar!*} when c freeof !*intvar!* and a freeof !*intvar!*,
+   {!*intvar!*^~a/~c }
+      => {a,!*intvar!*/c} when c freeof !*intvar!* and a freeof !*intvar!*,
+   {1/(~~c*!*intvar!*^~a) }
+      => {a,1/(c*!*intvar!*) } when c freeof !*intvar!* and a freeof !*intvar!*,
+   {~~c*!*intvar!*^~a*sqrt(!*intvar!*) }
+      => {a+1/2,c*!*intvar!*} when c freeof !*intvar!* and a freeof !*intvar!*,
+   {~~c*sqrt(!*intvar!*)/!*intvar!*^~a }
+      => {a-1/2,c/!*intvar!*} when c freeof !*intvar!* and a freeof !*intvar!*,
+   {(!*intvar!*^~a*sqrt(!*intvar!*))/~c }
+      => {a+1/2,!*intvar!*/c} when c freeof !*intvar!* and a freeof !*intvar!*,
+   {sqrt(!*intvar!*)/(~~c*!*intvar!*^~a) }
+      => {a-1/2,1/(c*!*intvar!*) } when c freeof !*intvar!* and a freeof !*intvar!*   
+};
+
+>>;
+
+symbolic procedure simp_expt(u,v,intvar);
+
+   % Reduce Meijer G functions of powers of x to x
+
+   % Use the pattern matcher to find powers of the integration variable in the argument of Meijer G
 
 begin scalar var,m,n,coef,alpha,beta,alpha1,alpha2,expt_flag,k,temp1,
-                  temp2;
+                  temp2,varcoef,varnew;
 
 var := car cddddr(v);
 
@@ -534,52 +563,64 @@ else
 << k := u;
    coef := cadddr v;
 
-   for each i in var do
+   % step 1: replace generic !*intvar!* by the actual integration variable
+   temp1 := subst(intvar,'!*intvar!*,intggg!-rules1);
 
-   << if listp i and not constant_exprp i then
-      << if car i = 'expt then
-         << alpha := caddr i;
-            expt_flag := 't>>
+   % step 2: parse the argument into a coefficient and a power of the integration variable
+   temp2 := prepsq evalletsub({{temp1},{'simp!*,mkquote {'list,var}}},nil);
 
-         else if car i = 'sqrt then
-         << beta := 2;
-            alpha := 1;
-            expt_flag := 't>>
+   % step 3: proceed if the match succeeds (result is a list of two elements)
+   if length temp2 > 2 then <<
+      alpha := cadr temp2;
+      var := caddr temp2;
+      expt_flag := t >>;
 
-         else if car i = 'times then
-         << temp1 := cadr i;
-            temp2 := caddr i;
+   % for each i in var do
 
-            if listp temp1 then
-            << if  car temp1 = 'sqrt then
-               << beta := 2;
-                  alpha1 := 1;
-                  expt_flag := 't>>
+   % << if listp i and not constant_exprp i then
+   %    << if car i = 'expt then
+   %       << alpha := caddr i;
+   %          expt_flag := 't>>
 
-               else if car temp1 = 'expt and listp caddr temp1 then
-                  << beta := cadr cdaddr temp1;
-                     alpha1 := car cdaddr temp1;
-                            expt_flag := 't>>;
-            >>;
+   %       else if car i = 'sqrt then
+   %       << beta := 2;
+   %          alpha := 1;
+   %          expt_flag := 't>>
 
-            if listp temp2 and car temp2 = 'expt then
-            << alpha2 := caddr temp2;
-               expt_flag := 't>>;
+   %       else if car i = 'times then
+   %       << temp1 := cadr i;
+   %          temp2 := caddr i;
 
-            if alpha1 neq 'nil then
+   %          if listp temp1 then
+   %          << if  car temp1 = 'sqrt then
+   %             << beta := 2;
+   %                alpha1 := 1;
+   %                expt_flag := 't>>
 
-     alpha := reval algebraic(alpha1 + beta*alpha2)
-            else alpha := alpha2;
-         >>;
+   %             else if car temp1 = 'expt and listp caddr temp1 then
+   %                << beta := cadr cdaddr temp1;
+   %                   alpha1 := car cdaddr temp1;
+   %                          expt_flag := 't>>;
+   %          >>;
 
-      >>
+   %          if listp temp2 and car temp2 = 'expt then
+   %          << alpha2 := caddr temp2;
+   %             expt_flag := 't>>;
 
-      else
-      << if i = 'expt then
-         << alpha := caddr var;
-            expt_flag := 't>>;
-      >>;
-   >>;
+   %          if alpha1 neq 'nil then
+
+   %   alpha := reval algebraic(alpha1 + beta*alpha2)
+   %          else alpha := alpha2;
+   %       >>;
+
+   %    >>
+
+   %    else
+   %    << if i = 'expt then
+   %       << alpha := caddr var;
+   %          expt_flag := 't>>;
+   %    >>;
+   %  >>;
 
 % If the Meijer G-function is is a function of a variable which is not
 % raised to a power then return initial function
@@ -589,13 +630,13 @@ else
 
 % Otherwise reduce the power by using the following formula :-
 %
-%   infinity                  infinity
-%  /                         /
-%  |                       n |
-%  |t^alpha*F(t^(m/n))dt = - |z^[((alpha + 1)*n - m)/m]*F(z)dz
-%  |                       m |
-%  /                         /
-% 0                         0
+%   infinity                    infinity
+%  /                           /
+%  |                         n |
+%  |t^alpha*F(c*t^(m/n))dt = - |z^[((alpha + 1)*n - m)/m]*F(c*z)dz
+%  |                         m |
+%  /                           /
+% 0                           0
 
    else
 
@@ -608,9 +649,14 @@ else
       << m := alpha;
          n := beta>>;
 
+      if !*trdefint then <<
+      	 prin2t "Substituting ";
+      	 mathprint {'expt,intvar,reval {'quotient,m,n}}
+      >>;
+      
       k := reval algebraic(((k + 1)*n - m)/m);
       coef := reval algebraic((n/m)*coef);
-      var := reval algebraic(var^(n/m));
+%      var := reval algebraic(var^(n/m));
 
       return {k,car v,cadr v, caddr v,coef,var}>>;
 
@@ -630,7 +676,8 @@ symbolic procedure test_1(aa,u,v);
 %  Y.L.Luke. Chapter 5.6 page 157 (3) & (3*)
 
 begin scalar s,m,n,a,b,ai,bj,a_max,b_min,temp,temp1,
-                rnd,dmode!*;
+                rnd,dmode!*,result;
+
 
 rnd := !*rounded;
 if rnd then off rounded;
@@ -648,6 +695,15 @@ if transform_tst neq 't then
    a := cadr v;
    b := caddr v;
 
+   if !*trdefint then <<
+      prin2t "Checking test_1: -min Re{bj} < Re{s} < 1 - max Re{ai}    i=1..n, j=1..m";
+      mathprint {'equal,'s,prepsq s};
+      prin2!* length a; prin2!* " upper parameters: ";
+      mathprint {'equal,'a,'list . for each sq in a collect prepsq sq};
+      prin2!* length b; prin2!* " lower parameters: ";
+      mathprint {'equal,'b,'list . for each sq in b collect sq};
+   >>;
+   
    if aa = nil then
    << for i := 1 :n do
 
@@ -689,8 +745,8 @@ if transform_tst neq 't then
       temp1 := subtrsq(b_min,s);
 
       if sign!-of mk!*sq temp = -1 and sign!-of mk!*sq temp1 = -1
-        then << if rnd then on rounded; return test2(s,cadr v,caddr v)>>
-       else  << if rnd then on rounded; return 'fail>>
+        then << if rnd then on rounded; result := test2(prepsq s,cadr v,caddr v)>>
+       else  << if rnd then on rounded; result := 'fail>>
 
    >>
 
@@ -699,8 +755,8 @@ if transform_tst neq 't then
    << temp := subtrsq(b_min,s);
 
       if sign!-of mk!*sq temp = -1
-        then << if rnd then on rounded; return 't >>
-       else << if rnd then on rounded; return 'fail >>
+        then << if rnd then on rounded; result := 't >>
+       else << if rnd then on rounded; result := 'fail >>
 
    >>
 
@@ -709,10 +765,15 @@ if transform_tst neq 't then
    << temp :=  subtrsq(s,diffsq(a_max,1));
 
       if sign!-of mk!*sq temp = -1
-      then << if rnd then on rounded; return 't >>
-       else << if rnd then on rounded; return 'fail >>;
+      then << if rnd then on rounded; result := 't >>
+       else << if rnd then on rounded; result := 'fail >>;
 
-   >>
+   >>;
+
+   if !*trdefint then <<
+      prin2t "Result of test1 is "; prin2!* result; terpri!* t>>;
+
+   return result;
 >>
    
 else
@@ -737,7 +798,7 @@ symbolic procedure test2(s,a,b);
 % 'The Special Functions and their Approximations', Volume 1,
 %  Y.L.Luke. Chapter 5.6 page 157 (4)
 
-begin scalar s,p,q,sum_a,sum_b,diff_sum,temp1,temp2,temp,diff;
+begin scalar s,p,q,sum_a,sum_b,diff_sum,temp1,temp2,temp,diff,result;
 
 transform_tst := reval algebraic(transform_tst);
 
@@ -748,6 +809,15 @@ if transform_tst neq 't then
    p := length a;
    q := length b;
 
+   if !*trdefint then <<
+      prin2t "Checking test_2: Re{Sum(ai) - Sum(bj)} + 1/2 * (q + 1 - p) > (q - p) * Re{s}, i=1..p, j=1..q";
+      mathprint {'equal,'s,s};
+      prin2!* p; prin2!* " upper parameters: ";
+      mathprint {'equal,'a,'list . for each sq in a collect prepsq sq};
+      prin2!* q; prin2!* " lower parameters: ";
+      mathprint {'equal,'b,'list . for each sq in b collect sq};
+   >>;
+   
    for each i in a do << sum_a := reval algebraic(sum_a + i)>>;
 
    for each j in b do << sum_b := reval algebraic(sum_b + j)>>;
@@ -759,7 +829,14 @@ if transform_tst neq 't then
    temp2 := reval algebraic((q-p)*s);
    diff := simp!* reval algebraic(temp1 - temp2);
 
-   if sign!-of mk!*sq diff = 1 then return t else return 'fail>>
+   result := if sign!-of mk!*sq diff = 1 then t else  'fail;
+
+   if !*trdefint then <<
+      prin2t "Result of test2 is "; prin2!* result; terpri!* t>>;
+
+   return result;
+
+>>
 
 else
 << transform_lst := cons (('tst2 . '(list 'greaterp (list 'plus
