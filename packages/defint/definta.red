@@ -512,9 +512,9 @@ end$
 %*              EVALUATION OF THE PARAMETERS FOR THE G-FUNCTION        *
 %***********************************************************************
 
-algebraic <<
-
 share intggg!-rules1;
+
+algebraic <<
 
 intggg!-rules1 := {
    {~~c*!*intvar!*^~a }
@@ -630,32 +630,33 @@ else
 
 % Otherwise reduce the power by using the following formula :-
 %
-%   infinity                    infinity
-%  /                           /
-%  |                         n |
-%  |t^alpha*F(c*t^(m/n))dt = - |z^[((alpha + 1)*n - m)/m]*F(c*z)dz
-%  |                         m |
-%  /                           /
-% 0                           0
+%   infinity                          infinity
+%  /                                 /
+%  |                             1   |
+%  |t^gamma*F(c*t^(alpha))dt = ----- |z^[((gamma + 1)/alpha) - 1]*F(c*z)dz
+%  |                           alpha |
+%  /                                 /
+% 0                                 0
 
    else
 
-   << if listp alpha then
-      << m := cadr alpha;
-         n := caddr alpha;
-         n := reval algebraic(beta*n)>>
+   <<
+      % if listp alpha then
+      % << m := cadr alpha;
+      %    n := caddr alpha;
+      %    n := reval algebraic(beta*n)>>
 
-      else
-      << m := alpha;
-         n := beta>>;
+      % else
+      % << m := alpha;
+      %    n := beta>>;
 
       if !*trdefint then <<
       	 prin2t "Substituting ";
       	 mathprint {'expt,intvar,reval {'quotient,m,n}}
       >>;
       
-      k := reval algebraic(((k + 1)*n - m)/m);
-      coef := reval algebraic((n/m)*coef);
+      k := reval algebraic(((k + 1)/alpha) - 1);
+      coef := reval algebraic(coef/alpha);
 %      var := reval algebraic(var^(n/m));
 
       return {k,car v,cadr v, caddr v,coef,var}>>;
