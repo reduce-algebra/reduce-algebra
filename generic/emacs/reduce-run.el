@@ -113,30 +113,19 @@
 ;;   :type 'string
 ;;   :group 'reduce-run)
 
-(define-obsolete-variable-alias 'reduce-run-program 'reduce-run-command-csl
-  "REDUCE IDE version 1.3"
-  "Replaced by the new variables `reduce-run-command-csl' and
-`reduce-run-command-psl'.")
+;; (define-obsolete-variable-alias 'reduce-run-program 'reduce-run-commands
+;;   ;; *** Is this useful? ***
+;;   "REDUCE IDE version 1.3"
+;;   "Replaced by a new variable whose value is an alist.")
 
-(defcustom reduce-run-command-csl "redcsl --nogui"
-  "Command to invoke CSL REDUCE.
-It can also be a relative or absolute path name.
-It must invoke a command\-line version of REDUCE.  A GUI version will not work!"
-  :type 'string
-  :group 'reduce-run)
-
-(defcustom reduce-run-command-psl "redpsl"
-  "Command to invoke PSL REDUCE.
-It can also be a relative or absolute path name.
-It must invoke a command\-line version of REDUCE.  A GUI version will not work!"
-  :type 'string
-  :group 'reduce-run)
-
-(defcustom reduce-run-lisp-preference '("CSL" . "PSL")
-  "The command `reduce-run' tries to run REDUCE on this Lisp first.
-If that fails then it tries to run REDUCE on the other Lisp.
-The value must be one of the dotted pairs `(\"CSL\" . \"PSL\")' or `(\"PSL\" . \"CSL\")'."
-  :type '(radio (const :tag "CSL" ("CSL" . "PSL")) (const :tag "PSL" ("PSL" . "CSL")))
+(defcustom reduce-run-commands '(("CSL" . "redcsl --nogui") ("PSL" . "redpsl"))
+  "Alist of commands to invoke CSL and PSL REDUCE in preference order.
+The commands can also be relative or absolute path names, and include switches.
+They must invoke a command\-line version of REDUCE.  A GUI version will not work!
+The command `reduce-run' tries to run REDUCE on the first Lisp.
+If that fails then it tries to run REDUCE on the second Lisp."
+  ;; *** Force keys to be one of CSL or PSL? ***
+  :type '(alist :key-type string :value-type string)
   :group 'reduce-run)
 
 (defcustom reduce-run-prompt "^\\([0-9]+[:*] \\)+"
@@ -149,6 +138,14 @@ REDUCE Run buffer."
 
 (defcustom reduce-run-autostart t
   "If non-nil, automatically start a REDUCE process if necessary."
+  :type 'boolean
+  :group 'reduce-run)
+
+(defcustom reduce-run-multiple t
+  "If non-nil, `reduce-run' always starts a new distinct REDUCE process.
+It does this even if REDUCE is already running.
+The commands `reduce-run-csl' and `reduce-run-psl' do the same.
+Otherwise, these commands re-use a running REDUCE process."
   :type 'boolean
   :group 'reduce-run)
 
@@ -422,69 +419,83 @@ to continue it."
 (define-obsolete-function-alias 'run-reduce 'reduce-run
   "REDUCE IDE version 1.3")
 
-(defun reduce-run-command (xsl)
-  "Get the value of the variable `reduce-run-command-XSL'.
-XSL must be one of the *upper-case* strings `CSL' or `PSL'."
-  (eval (intern (concat "reduce-run-command-" (downcase xsl)))))
-
 (defun reduce-run-reduce (cmd xsl)
   "Run CMD as an XSL REDUCE process with IO via buffer `*XSL\ REDUCE*'.
 If there is a process already running in that buffer, just switch to it.
-If CMD is nil then construct it from XSL.
 XSL must be one of the *upper-case* strings `CSL' or `PSL'.
 Return the process buffer if successful; nil otherwise."
-  (or cmd (setq cmd (reduce-run-command xsl)))
   (let* ((process-name (concat xsl " REDUCE"))
-		 (buffer-name (concat "*" process-name "*")))
-	(if (comint-check-proc buffer-name)
-		(pop-to-buffer (setq reduce-run-buffer buffer-name))
-	  (condition-case err
-          ;; Protected form:
-		  (let ((cmdlist (reduce-run-args-to-list cmd)))
-			(set-buffer
-			 ;; `apply' used below because last arg is &rest!
-			 (apply 'make-comint process-name (car cmdlist) nil (cdr cmdlist)))
-			(reduce-run-mode)
-			(pop-to-buffer (setq reduce-run-buffer buffer-name)))
-        ;; Error handler:
-        (error			  ; condition
-         ;; Display the usual error message then tidy up:
-         (message "%s" (error-message-string err))
-		 (kill-buffer buffer-name)
-         nil))							; return false
-	  )))
+		 (buffer-name (concat "*" process-name "*"))
+		 (reduce-run-buffer-xsl (assoc xsl reduce-run-buffer))
+		 buffer-number)
+	(if reduce-run-multiple
+		;; Always create a new process buffer with an appropriate name:
+		(progn
+		  (if reduce-run-buffer-xsl
+			  (setq buffer-number (1+ (or (nth 2 reduce-run-buffer-xsl) 0))
+					process-name (concat process-name " "
+										 (number-to-string buffer-number))
+					buffer-name (concat "*" process-name "*")))
+		  (reduce-run-reduce-1 cmd process-name buffer-name)
+		  (push (list xsl buffer-name buffer-number) reduce-run-buffer))
+	  ;; Re-use any existing buffer for XSL REDUCE:
+	  (if (and reduce-run-buffer-xsl
+			   (string-match process-name (cdr reduce-run-buffer-xsl))
+			   (comint-check-proc buffer-name))
+		  (pop-to-buffer buffer-name) ; just re-visit current process buffer
+		(reduce-run-reduce-1 cmd process-name buffer-name)
+		(push (cons xsl buffer-name) reduce-run-buffer)
+		))))							; return process buffer or nil
+
+(defun reduce-run-reduce-1 (cmd process-name buffer-name)
+  "Run CMD as a REDUCE process in buffer BUFFER-NAME.
+Return the process buffer if successful; nil otherwise."
+  (condition-case err
+      ;; Protected form:
+	  (let ((cmdlist (reduce-run-args-to-list cmd)))
+		(set-buffer
+		 ;; `apply' used below because last arg is &rest!
+		 (apply 'make-comint process-name (car cmdlist) nil (cdr cmdlist)))
+		(reduce-run-mode)
+		(pop-to-buffer buffer-name))
+    ;; Error handler:
+    (error			  ; condition
+     ;; Display the usual error message then tidy up:
+     (message "%s" (error-message-string err))
+	 (kill-buffer buffer-name)
+     nil)))
 
 ;;;###autoload
-(defun reduce-run (cmd)					; Should perhaps be a macro!
+(defun reduce-run (&optional cmd)
   "Run CMD as a REDUCE process with IO via a buffer.
-Assume CSL or PSL REDUCE as selected by `reduce-run-lisp-preference'.
-If CMD is nil then construct it from `reduce-run-lisp-preference'.
+Assume whichever REDUCE appears first in `reduce-run-commands'.
 See `reduce-run-csl' or `reduce-run-psl' for further details."
   (interactive
-   (let ((reduce-run-command-xsl
-		  (reduce-run-command (car reduce-run-lisp-preference))))
+   (let ((reduce-run-command (cdar reduce-run-commands)))
 	 (list (if current-prefix-arg
-			   (read-string "Run REDUCE: " reduce-run-command-xsl)
-			 reduce-run-command-xsl))))
+			   (read-string "Run REDUCE: " reduce-run-command)
+			 reduce-run-command))))
   (if current-prefix-arg
 	  ;; Just run the specified command:
-	  (reduce-run-reduce cmd (car reduce-run-lisp-preference))
+	  (reduce-run-reduce cmd (caar reduce-run-commands))
 	;; Automatic mode:
-	(or (reduce-run-reduce nil (car reduce-run-lisp-preference))
-		(reduce-run-reduce nil (cdr reduce-run-lisp-preference)))))
+	(or (reduce-run-reduce (cdar reduce-run-commands) (caar reduce-run-commands))
+		(reduce-run-reduce (cdadr reduce-run-commands) (caadr reduce-run-commands)))))
 
 ;;;###autoload
 (defun reduce-run-csl (cmd)				; Should perhaps be a macro!
   "Run CMD as a REDUCE process with IO via buffer `*CSL\ REDUCE*'.
 If there is a process already running in that buffer, just switch to it.
 An argument allows you to edit the command line
-\(default is value of `reduce-run-command-csl'). Runs the hooks from
+\(default is given by `reduce-run-commands'). Runs the hooks from
 `reduce-run-mode-hook' (after the `comint-mode-hook' is run).
 \(Type \\[describe-mode] in the process buffer for a list of
 commands.)"
-  (interactive (list (if current-prefix-arg
-						 (read-string "Run REDUCE: " reduce-run-command-csl)
-					   reduce-run-command-csl)))
+  (interactive
+   (let ((reduce-run-command (cdr (assoc "CSL" reduce-run-commands))))
+	 (list (if current-prefix-arg
+			   (read-string "Run REDUCE: " reduce-run-command)
+			 reduce-run-command))))
   (reduce-run-reduce cmd "CSL"))
 
 ;;;###autoload
@@ -492,13 +503,15 @@ commands.)"
   "Run CMD as a REDUCE process with IO via buffer `*PSL\ REDUCE*'.
 If there is a process already running in that buffer, just switch to it.
 An argument allows you to edit the command line
-\(default is value of `reduce-run-command-psl'). Runs the hooks from
+\(default is given by `reduce-run-commands'). Runs the hooks from
 `reduce-run-mode-hook' (after the `comint-mode-hook' is run).
 \(Type \\[describe-mode] in the process buffer for a list of
 commands.)"
-  (interactive (list (if current-prefix-arg
-						 (read-string "Run REDUCE: " reduce-run-command-psl)
-					   reduce-run-command-psl)))
+  (interactive
+   (let ((reduce-run-command (cdr (assoc "PSL" reduce-run-commands))))
+	 (list (if current-prefix-arg
+			   (read-string "Run REDUCE: " reduce-run-command)
+			 reduce-run-command))))
   (reduce-run-reduce cmd "PSL"))
 
 ;;;###autoload
