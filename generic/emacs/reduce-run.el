@@ -6,8 +6,11 @@
 ;; Created: late 1998
 ;; Version: $Id$
 ;; Keywords: languages, processes
+;; Homepage: http://reduce-algebra.sourceforge.net/reduce-ide
 ;; Package-Version: 1.3
 ;; Package-Requires: ((reduce-mode "1.21"))
+
+;; This file is not part of GNU Emacs.
 
 ;; This program is free software: you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -20,8 +23,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see
-;; <http://www.gnu.org/licenses/>.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -44,7 +46,7 @@
 ;; For documentation on the functionality provided by comint mode, and
 ;; the hooks available for customising it, see the file comint.el.
 
-;;; Usage:
+;; Usage:
 
 ;; To install in GNU Emacs 24+, download this file to any convenient
 ;; directory and run the Emacs command `package-install-file' on it.
@@ -66,12 +68,13 @@
 ;;;###autoload
 (add-hook 'reduce-mode-load-hook 'require-reduce-run)
 
+;;; Code:
+
 ;;; To do:
 
 ;; phase out prompt regexp completely
 ;; control echoing from input of statement, proc or region?
 
-;;; Code:
 
 (defconst reduce-run-version
   ;; Extract version from `package-version' in file header:
@@ -96,7 +99,7 @@
 
 (require 'comint)
 
-;; Customizable user options:
+;;; Customizable user options:
 
 (defgroup reduce-run nil
   "Support for running REDUCE code."
@@ -113,19 +116,13 @@
 ;;   :type 'string
 ;;   :group 'reduce-run)
 
-;; (define-obsolete-variable-alias 'reduce-run-program 'reduce-run-commands
-;;   ;; *** Is this useful? ***
-;;   "REDUCE IDE version 1.3"
-;;   "Replaced by a new variable whose value is an alist.")
-
 (defcustom reduce-run-commands '(("CSL" . "redcsl --nogui") ("PSL" . "redpsl"))
   "Alist of commands to invoke CSL and PSL REDUCE in preference order.
 The commands can also be relative or absolute path names, and include switches.
 They must invoke a command\-line version of REDUCE.  A GUI version will not work!
 The command `reduce-run' tries to run REDUCE on the first Lisp.
 If that fails then it tries to run REDUCE on the second Lisp."
-  ;; *** Force keys to be one of CSL or PSL? ***
-  :type '(alist :key-type string :value-type string)
+  :type '(alist :key-type (choice (const "CSL") (const "PSL")) :value-type string)
   :group 'reduce-run)
 
 (defcustom reduce-run-prompt "^\\([0-9]+[:*] \\)+"
@@ -215,7 +212,7 @@ Used by these commands to determine defaults."
   :group 'reduce-run)
 
 
-;; Internal variables:
+;;; Internal variables:
 
 (defvar reduce-run-mode-map nil)
 (if reduce-run-mode-map ()
@@ -318,6 +315,9 @@ You can modify this function to install just the bindings you want."
 (put 'reduce-run-mode 'mode-class 'special)
 
 
+;;; Function to run REDUCE in a buffer
+;;; ==================================
+
 (defun reduce-run-mode ()
   "Major mode for interacting with a REDUCE process -- part of REDUCE IDE.
 Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
@@ -448,7 +448,7 @@ Return the process buffer if successful; nil otherwise."
 		))))							; return process buffer or nil
 
 (defun reduce-run-reduce-1 (cmd process-name buffer-name)
-  "Run CMD as a REDUCE process in buffer BUFFER-NAME.
+  "Run CMD as a REDUCE process PROCESS-NAME in buffer BUFFER-NAME.
 Return the process buffer if successful; nil otherwise."
   (condition-case err
       ;; Protected form:
@@ -534,6 +534,9 @@ string = \"-ab +c -x 'you lose'\"."
 				  (substring string pos (length string)))))))))
 
 
+;;; Functions to send code to REDUCE running in a buffer
+;;; ====================================================
+
 (defun reduce-send-string (string)
   "Send STRING to the REDUCE process.
 Echo and save it in the input history."
@@ -817,6 +820,47 @@ Used for completion by `reduce-load-package'."
   (setq reduce-prev-package package)
   (switch-to-reduce t))
 
+
+;;; Functions to run a REDUCE file or buffer in a unique process buffer
+;;; ===================================================================
+;;; (essentially as requested by Raffaele Vitolo)
+
+(defun reduce-run-file (filename)
+  "Run FILENAME as a REDUCE program in a unique process buffer.
+Start a new (default) REDUCE process named from FILENAME
+\(if necessary) and input FILENAME."
+  (interactive "fRun REDUCE file: ")
+  (reduce-run-file-or-buffer
+   (file-name-nondirectory filename)
+   (format "in \"%s\"%c" filename (if (y-or-n-p "Echo file input? ") ?\; ?$))))
+
+(defun reduce-run-buffer ()
+  "Run current buffer as a REDUCE program in a unique process buffer.
+Start a new (default) REDUCE process named from the current
+buffer (if necessary) and input the current buffer."
+  (interactive)
+  (reduce-run-file-or-buffer (buffer-name) (buffer-string)))
+
+(defun reduce-run-file-or-buffer (name input)
+  "Run NAME INPUT as a REDUCE program in a unique process buffer.
+Start a new (default) REDUCE process named from file or buffer NAME
+\(if necessary) and input INPUT."
+  (let* ((xsl (caar reduce-run-commands))
+		 (process-name (concat xsl " REDUCE " name))
+		 (buffer-name (concat "*" process-name "*"))
+		 (reduce-run-buffer-xsl (rassoc buffer-name reduce-run-buffer)))
+	;; Re-use any existing buffer for this REDUCE and file-name:
+	(if (and reduce-run-buffer-xsl (comint-check-proc buffer-name))
+		(pop-to-buffer buffer-name) ; just re-visit existing process buffer
+	  (reduce-run-reduce-1 (cdar reduce-run-commands) process-name buffer-name)
+	  (push (cons xsl buffer-name) reduce-run-buffer)
+	  ;; Need a delay here -- see switch-to-reduce.
+	  (sit-for 1))
+	(insert input)
+	;; Avoid triggering spurious prompts when inserting a buffer:
+	(delete-blank-lines)				; from end of inserted buffer
+	(if (bolp) (delete-char -1))		; delete previous newline
+	(comint-send-input)))
 
 
 ;;; Ancillary functions
