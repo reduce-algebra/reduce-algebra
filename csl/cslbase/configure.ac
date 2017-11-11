@@ -1233,17 +1233,7 @@ then
 # I have come across a platform where the curses libraries must be fetched
 # from /usr/local/lib. I am trying to deal with this in a way where special
 # treatment will only be applied if (n)curses can not be found in the usual
-# way. The commented out code here fails because autoconf caches the result of
-# the test for tgetent, and so does not perform the version of the test after
-# I have updated LDFLAGS. So I will do things by hand.
-#@@  AC_SEARCH_LIBS([tgetent], [ncurses curses], [HAVE_LIBCURSES="yes"])
-#@@  if test "x$HAVE_LIBCURSES" != "xyes" &&
-#@@     (test -f /usr/local/lib/libcurses.a ||
-#@@      test -f /usr/local/lib/libncurses.a)
-#@@  then
-#@@    LDFLAGS="$LDFLAGS -L/usr/local/lib"
-#@@    AC_SEARCH_LIBS([tgetent], [ncurses curses])
-#@@  fi
+# way.
   OLIBS="$LIBS"
   LIBS="$OLIBS -lncurses"
   AC_LINK_IFELSE(
