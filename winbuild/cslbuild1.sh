@@ -83,6 +83,12 @@ $cygalt $reduce/libraries/crlibm/configure $host --prefix=$here/csl$1
 $cygalt make install
 popd
 
+mkdir libffi
+pushd libffi
+$cygalt $reduce/libraries/libffi/configure $host --prefix=$here/csl$1
+$cygalt make install
+popd
+
 mkdir softfloat
 pushd softfloat
 $cygalt $reduce/libraries/SoftFloat-3a/source/configure $host --prefix=$here/csl$1
