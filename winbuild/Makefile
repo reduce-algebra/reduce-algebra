@@ -83,6 +83,12 @@ package-win:	$(BUILDTOPDIR).stamp csl.stamp psl.stamp docs.stamp reduce.iss
 		$(abspath .) '$$reduce/lib/psl'
 	if test -x "$(inno)/ISCC.exe"; then "$(inno)/ISCC" reduce.iss;\
 		else echo Please run Innosetup on winbuild/reduce.iss; fi
+# At present I do not know if the .cab files created here will be any
+# use, but I will at least create SOMETHING so that they can be tested and
+# negotiation as to just what is needed can begin.
+	cd cslbuild && gcab -c ../Output/wincsl.cab *
+	d=`pwd` && cd $(BUILDTOPDIR)/pslbuild && gcab -c $$d/Output/winpsl.cab *
+
 
 # It will be a really good idea to go "make clean" before any wholesale
 # "make" here - this removes all the working files that get created
