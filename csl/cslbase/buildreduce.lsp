@@ -38,6 +38,12 @@
 (setq !*savedef (and (not (memq 'embedded lispsystem!*))
                      (zerop (cdr (assoc 'c!-code lispsystem!*)))))
 
+(make!-special '!*noinlines)
+(prog (w)
+   (setq w (errorset 'noinlines nil nil))
+   (setq !*noinlines (and (not (atom w)) (car w)))
+   (print (list '!*noinlines 'set 'to !*noinlines)))
+
 % A command-line flag "-g" sets the variable !*backtrace and so can activate
 % this. But beware that otherwise !*backtrace may be an unset variable, and
 % so I use an errorset to protect myself.
@@ -810,6 +816,11 @@ symbolic procedure build_reduce_modules names;
 !#else
     !*savedef := nil;
 !#endif
+!#if !*noinlines
+    !*noinlines := t;
+!#else
+    !*noinlines := nil;
+!#endif
     make!-special '!*native_code;
     !*native_code := nil;
     get_configuration_data();
@@ -1068,9 +1079,6 @@ symbolic procedure profile_a_package names;
        w1 := nil;
        while w do <<
            w2 := get(caar w, '!*savedef);
-%       if eqcar(w2, 'lambda) then <<
-%           princ "md60: "; print (caar w . cdr w2);
-%           princ "= "; print md60 (caar w . cdr w2) >>;
            if eqcar(w2, 'lambda) then w1 := (caar w . md60 (caar w . cdr w2) .
                                              cadar w . caddar w) . w1;
            w := cdr w >>;
@@ -1673,6 +1681,11 @@ symbolic restart!-csl nil;
 
 (setq !*savedef (and (null (memq 'embedded lispsystem!*))
                      (zerop (cdr (assoc 'c!-code lispsystem!*)))))
+(make!-special '!*noinlines)
+(prog (w)
+   (setq w (errorset 'noinlines nil nil))
+   (setq !*noinlines (and (not (atom w)) (car w)))
+   (print (list '!*noinlines 'set 'to !*noinlines)))
 (make!-special '!*native_code)
 (setq !*native_code nil)
 
