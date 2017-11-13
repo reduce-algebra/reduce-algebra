@@ -17,7 +17,7 @@
 			</nav>
 			<div id="main">
 				<p>
-					We encourage independent binary distributions of REDUCE for platforms that the main developers do not provide. This page lists those that we know about.
+					We encourage independent distributions of REDUCE for platforms that the main developers do not provide. This page lists those that we know about.
 					Please let us know about updates to this list by email to <a href="https://sourceforge.net/users/fjwright/">webmaster</a>.</p>
 				<h2>Arch Linux (via AUR):</h2>
 				<ul>

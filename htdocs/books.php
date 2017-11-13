@@ -126,6 +126,13 @@
 				</div>
 				<h2>Books that include information about, or closely related to, REDUCE</h2>
 				<div>
+					<a href="http://www.springer.com/la/book/9783319716541">
+						<img src="https://images.springer.com/sgw/books/medium/9783319716541.jpg" width="153" height="232" />
+						<span class="title">The Symbolic Computation of Integrability Structures <br />for Partial Differential Equations</span></a>
+					<span class="authors">by Joseph Krasil'shchik, Alexander Verbovetsky and Raffaele Vitolo</span>
+					<span class="biblio">250 pages, Springer, ISBN 9783319716558, 2017</span>
+				</div>
+				<div>
 					<a href="http://www.springer.com/gb/book/9783540654667">
 						<img src="https://images.springer.com/sgw/books/medium/9783540654667.jpg" width="153" height="232" />
 						<span class="title">Computer Algebra Handbook</span></a>
