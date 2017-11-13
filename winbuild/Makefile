@@ -86,8 +86,12 @@ package-win:	$(BUILDTOPDIR).stamp csl.stamp psl.stamp docs.stamp reduce.iss
 # At present I do not know if the .cab files created here will be any
 # use, but I will at least create SOMETHING so that they can be tested and
 # negotiation as to just what is needed can begin.
-	cd cslbuild && gcab -c ../Output/wincsl.cab *
-	d=`pwd` && cd $(BUILDTOPDIR)/pslbuild && gcab -c $$d/Output/winpsl.cab *
+	cd cslbuild && gcab -c -z ../Output/wincsl.cab \
+		reduce.exe reduce.fonts reduce.img reduce.resources winreduce.exe
+	d=`pwd` && cd $(BUILDTOPDIR)/pslbuild/i686* && \
+		gcab -c -z $$d/Output/winpsl32.cab psl red
+	d=`pwd` && cd $(BUILDTOPDIR)/pslbuild/x86_64* && \
+		gcab -c -z $$d/Output/winpsl64.cab psl red
 
 
 # It will be a really good idea to go "make clean" before any wholesale

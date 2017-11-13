@@ -227,7 +227,7 @@ BOOL IsWow64()
     if(NULL != fnIsWow64Process)
     {
         if (!fnIsWow64Process(GetCurrentProcess(),&bIsWow64))
-        {   //handle error - well heer I just return "no"
+        {   //handle error - well here I just return "no"
             return FALSE;
         }
     }
