@@ -436,10 +436,11 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
   (set (make-local-variable 'which-func-mode) nil)
   (set (make-local-variable 'which-func-format) 'reduce-show-proc-string)
   (if reduce-show-proc-mode (reduce-show-proc-mode t))
+  ;; This seems to be obsolete in Emacs 26!
   ;; Experimental support for outline minor mode (cf. lisp-mode.el)
   ;; `outline-regexp' must match `heading' from beginning of line;
   ;; length of match determines level:
-  (set (make-local-variable 'outline-regexp) "[^ \t\n]")
+  ;; (set (make-local-variable 'outline-regexp) "[^ \t\n]")
   ;; Imenu support:
   (set (make-local-variable 'imenu-generic-expression)
        ;; `make-local-variable' in case imenu not yet loaded!
@@ -601,9 +602,10 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
     :help "Customize REDUCE Mode"]
    ["Show Version" reduce-mode-show-version :active t
     :help "Show the REDUCE Mode version"]
-   ["Outline" outline-minor-mode
-    :style toggle :selected outline-minor-mode :active t
-    :help "Toggle outline minor mode"]
+   ;; This seems to be obsolete in Emacs 26!
+   ;; ["Outline" outline-minor-mode
+   ;;  :style toggle :selected outline-minor-mode :active t
+   ;;  :help "Toggle outline minor mode"]
    ["Update ChangeLog" add-change-log-entry-other-window :active t
     :help "Add change log entry other window"]
    ))
