@@ -5,7 +5,7 @@
 @c Manual last updated:
 @set UPDATED Time-stamp: <2012-02-09 19:02:15 fjw>
 @c Software version:
-@set VERSION 1.0
+@set VERSION 2.0
 @afourpaper
 @c With different size paper the printed page breaks will need attention!
 @c Look for @page and @need commands.
@@ -22,7 +22,7 @@
 This file documents REDUCE IDE: GNU Emacs major modes for editing and
 running REDUCE source code.
 
-Copyright @copyright{} 1994, 1996, 1999, 2012 Francis J. Wright
+Copyright @copyright{} 1994, 1996, 1999, 2012, 2017 Francis J. Wright
 
 This manual and the software that it describes are subject to the GNU
 General Public License that is distributed with GNU Emacs -- see the
@@ -53,13 +53,13 @@ into another language, under the above conditions for modified versions.
 @subtitle An Integrated Development Environment for REDUCE:
 @subtitle Major modes for editing and running REDUCE source code
 @subtitle Software version @value{VERSION}
-@author @uref{http://sourceforge.net/users/fjwright, Francis J. Wright}
+@author @uref{https://sourceforge.net/u/fjwright, Francis J. Wright}
 Manual last updated @value{UPDATED}
 
 @comment  The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1994, 1996, 1999, 2012 Francis J. Wright
+Copyright @copyright{} 1994, 1996, 1999, 2012, 2017 Francis J. Wright
 
 This manual and the software that it describes are subject to the GNU
 General Public License that is distributed with GNU Emacs -- see the
@@ -90,7 +90,7 @@ into another language, under the above conditions for modified versions.
 @display
 GNU Emacs major modes for editing and running REDUCE source code
 Software Version @value{VERSION}
-@uref{http://sourceforge.net/users/fjwright, Francis J. Wright}
+@uref{https://sourceforge.net/u/fjwright, Francis J. Wright}
 Manual last updated @value{UPDATED}
 @end display
 @end ifnottex
@@ -129,9 +129,9 @@ This manual documents the GNU Emacs Integrated Development Environment
 syntax-directed editing of REDUCE source code (edit mode) and a
 subsidiary major mode for running REDUCE as an inferior process with
 input and output via a buffer (run mode). REDUCE is a system and
-language for algebraic computing developed primarily by Anthony C.
+language for algebraic computing developed originally by Anthony C.
 Hearn, which is now Open Source and available from
-@uref{http://sourceforge.net/projects/reduce-algebra/, SourceForge}.
+@uref{https://sourceforge.net/projects/reduce-algebra/, SourceForge}.
 It therefore shares the GNU spirit of collaborative software
 development, which provided part of my motivation to begin this
 project. REDUCE is also written in Lisp, as is (most of) Emacs.
@@ -143,14 +143,29 @@ serious development of the current version began in early 1994, and
 continued sporadically until 2001. Development of REDUCE run mode
 began in late 1998. The latest released versions of the software and
 documentation are available from
-@uref{http://sourceforge.net/projects/reduce-algebra/, SourceForge}.
+@uref{https://sourceforge.net/projects/reduce-algebra/, SourceForge}.
 Comments, suggestions, bug reports, etc.@: are welcome.
 
 The current version of the REDUCE IDE is intended for use with GNU
-Emacs version 21 and later, which I will endeavour to support under
-recent versions of Microsoft Windows; it might run under closely
-related versions of GNU Emacs but I cannot explicitly support either
-XEmacs or other platforms.
+Emacs version 25 and later, which I will endeavour to support under
+recent versions of Microsoft Windows and Ubuntu Linux; it might run
+under closely related versions of GNU Emacs but I cannot explicitly
+support either XEmacs or other platforms.
+
+REDUCE IDE version 2 provides two major updates. One is a substantial
+rewrite of REDUCE run mode to provide explicit support for both CSL
+and PSL REDUCE, and for easily running multiple copies of REDUCE
+simultaneously. The other is distribution as a multi-file package via
+@uref{http://reduce-algebra.sourceforge.net/reduce-ide/, the REDUCE
+IDE web page}, which makes installation and updating very easy via the
+GNU Emacs package manager (@pxref{Packages,, Emacs Lisp Packages,
+emacs, GNU Emacs Manual}).
+
+@strong{However, beware that in native Microsoft Windows GNU Emacs
+(only) PSL REDUCE currently does not run correctly without some
+additional support, which is explained below. The problem appears to
+be that it needs to be explicitly run from a shell. I hope to improve
+this situation in a later version of REDUCE IDE.}
 
 This manual assumes that you are familiar in general with both Emacs
 and REDUCE.
@@ -187,8 +202,8 @@ select it in some buffer and then give the command @kbd{C-h m}
 
 @node Installation, General, Introduction, Top
 @comment  node-name,  next,  previous,  up
-@chapter Installation of the REDUCE IDE
-@cindex Installation of the REDUCE IDE
+@chapter Installation of REDUCE IDE
+@cindex Installation of REDUCE IDE
 
 @c The recommended procedure for installing the REDUCE IDE is to load or
 @c evaluate the Emacs Lisp (ELisp) file @file{reduce-ide-install.el} within
