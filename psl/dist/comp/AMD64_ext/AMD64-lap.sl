@@ -203,7 +203,7 @@
 		 (MkCODE (wplus2 CodeBase* (cdr X))))))
 
 %(de DepositInstruction (X)
-% This actually dispatches to the procedures to assemble the instrucitons
+%% This actually dispatches to the procedures to assemble the instructions
 %(prog (Y)
 %    (if (eqcar x 'movq)  (progn (Depositbyte  16#48)  % REX Prefix
 %				(rplaca x 'mov))
@@ -428,7 +428,6 @@
 	  % case: reg - (indirect (reg ESP/R12) )
 	  (when (and (eq mode 'indirect)
 		     (regp (cadr op2))
-		    % (not (upperreg64p (cadr op2)))
 		     (setq base (reg2int (cadr op2) 'REXB))
 		     (equal base 2#100) )
 	    (depositbyte (lor 2#00000100 op1))
@@ -448,7 +447,6 @@
 	  % case: reg - (displacement (reg ESP/R12) const)
 	  (when (and (eq mode   'displacement)
 		     (regp (cadr op2)) 
-%		     (not (upperreg64p (cadr op2)))
 		     (numberp (caddr op2))
 		     (setq base (reg2int (cadr op2) 'REXB))
 		     (equal base 2#100) )
@@ -776,7 +774,7 @@
     (return (plus codelength (lthmodR/M op1 op2)))))
 
 %-----------------------------------------------------------------------
-% format: fixed modV/M byte
+% format: fixed modR/M byte
 (de OP-EFFA (code op1) (OP-reg-effa code (cadr code) op1))
 (de lth-EFFA (code op1) (LTH-reg-effa code (cadr code) op1))
 
@@ -1803,7 +1801,7 @@
   (reg64bitp1 !64bitregs i)))
 
 (de upperreg64p (i) (reg64bitp1 upper64bitregs i))
-  
+
 (de reg64bitp1 (reglist inst)
    (if (null reglist) nil
      (if (&smember (car reglist) inst) t
