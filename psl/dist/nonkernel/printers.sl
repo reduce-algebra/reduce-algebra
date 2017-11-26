@@ -636,8 +636,10 @@
 		 (checklinefit 10 channel 'channelwriteinteger itm)
 	  (checklinefit (flatsize2 itm) channel 'channelwriteinteger itm)))
     ((id-tag)
-     (checklinefit (wplus2 (strlen (strinf (symnam (idinf itm)))) 1)
-		   channel 'channelwriteid itm))
+     (if (eq channel 4) % flatsize etc
+	 (checklinefit (wtimes2 2 (strlen (strinf (symnam (idinf itm)))))
+		       channel 'channelwriteid itm)
+       (checklinefit (flatsize2 itm) channel 'channelwriteid itm)))
     ((unbound-tag)
      (checklinefit (wplus2 (strlen (strinf (symnam (idinf itm)))) 12)
 		   channel 'channelwriteunbound itm))
