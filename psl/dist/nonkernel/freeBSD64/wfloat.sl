@@ -23,9 +23,15 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(fluid '(**neg-zero** **neg-one**))
+(fluid '(**neg-zero** **neg-one** fp-except-mode*))
 
 (off echo)
+
+(de *fp-check-for-exceptions (fn flags)
+  (unless (or (eq 0 fp-except-mode*)
+	      (eq 0 (*float-get-except-flags flags)))
+    (*float-clear-all-except)
+    (stderror (bldmsg "Floating point error in %w" fn))))
 
 (de *wfloat (x y)
   (uxfloat  (inf x) y))
