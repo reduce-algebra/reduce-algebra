@@ -53,17 +53,26 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+(compiletime (load sys-macros))
+
 (fluid '(explodeendpointer* % pointer used to RplacD new chars onto
 
-         compresslist* % list being compressed
+         compresslist*      % list being compressed
 
-         *compressing))
+         numeric-chars*     % return numbers instead of ids
 
-% if T, don't intern IDs when read
+         *compressing       % if T, don't intern IDs when read
+        ))
+
 (fluid '(unreadbuffer lineposition))
 
 (de explodewritechar (channel ch)
-  (rplacd explodeendpointer* (list (mkid ch)))
+  (setq ch (wand 16#ff ch))
+  (rplacd explodeendpointer*
+    (list 
+     (cond
+      (numeric-chars* (sys2int ch))
+      (t (mkid ch)))))
   (setf explodeendpointer* (cdr explodeendpointer*)))
 
 (de explode (u)
@@ -81,6 +90,16 @@
         (setf (wgetv lineposition 3) 0)
         (channelprin2 '3 u)
         (return (cdr result))))
+
+(de exploden (u)
+  (let ((numeric-chars* t))
+    (explode u)))
+
+(de explode2n (u)
+  (let ((numeric-chars* t))
+    (explode2 u)))
+
+(de explodecn (u) (explode2n u))
 
 (fluid '(flatsizeaccumulator))
 
