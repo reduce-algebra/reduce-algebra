@@ -500,6 +500,20 @@ extern const char *fullProgramName;        // eg "./fwin.exe"
 extern const char *programName;            // eg "fwin.exe"
 extern const char *programDir;             // eg "."
 
+// Support for file date manipulation
+
+typedef struct date_and_type_
+{   unsigned long int date;
+    unsigned long int type;
+} date_and_type;
+
+// Reinstate date and filetype...
+
+extern void set_filedate(const char *name, unsigned long int datestamp,
+                         unsigned long int ftype);
+
+extern void put_fileinfo(date_and_type *p, const char *name);
+
 //
 // Some things that are really intended to be private to the implementation
 // but at present it seems easiest to mention them in this header rather
@@ -511,9 +525,7 @@ extern int windowed;
 extern int windowed_worker(int argc, const char *argv[],
                            fwin_entrypoint *fwin_main);
 
-extern int directoryp(char *f, const char *o, size_t n);
-
-extern int file_readable(char *f, const char *o, size_t n);
+extern bool directoryp(char *f, const char *o, size_t n);
 
 extern int using_termed;
 
@@ -528,8 +540,8 @@ extern int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main
 extern char fwin_prompt_string[MAX_PROMPT_LENGTH];
 
 extern int my_system(const char *cmd);
-extern int file_writeable(char *filename, const char *old, size_t n);
-extern int file_readable(char *f, const char *o, size_t n);
+extern bool file_writeable(char *filename, const char *old, size_t n);
+extern bool file_readable(char *f, const char *o, size_t n);
 extern int rename_file(char *from_name, const char *from_old, size_t from_size,
                 char *to_name, const char *to_old, size_t to_size);
 extern int truncate_file(FILE *f, long int where);

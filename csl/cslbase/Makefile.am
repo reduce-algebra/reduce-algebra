@@ -687,13 +687,14 @@ libdyndemo.a: $(cslbase)/dyndemo.def
 
 fwin-icon.$(OBJEXT):	$(cslbase)/fwin-icon.rc $(LOCALCYG)
 	$(LOCALCYG) \
-		$(WINDRES) $(cslbase)/fwin-icon.rc \
+		$(WINDRES) \
+		$(cslbase)/fwin-icon.rc \
 		--include-dir=$(cslbase) \
 		-o fwin-icon.$(OBJEXT)
 
 fwin-csl.$(OBJEXT):	$(cslbase)/fwin-csl.rc $(LOCALCYG)
 	$(LOCALCYG) \
-		$(WINDRES)
+		$(WINDRES) \
 		$(cslbase)/fwin-csl.rc \
 		--include-dir=$(cslbase) \
 		-o fwin-csl.$(OBJEXT)
@@ -701,7 +702,7 @@ fwin-csl.$(OBJEXT):	$(cslbase)/fwin-csl.rc $(LOCALCYG)
 fwin-reduce.$(OBJEXT):	$(cslbase)/fwin-reduce.rc $(LOCALCYG)
 	$(LOCALCYG) \
 		$(WINDRES) \
-		$(cslbase)/fwin-reduce.rc
+		$(cslbase)/fwin-reduce.rc \
 		--include-dir=$(cslbase) \
 		-o fwin-reduce.$(OBJEXT)
 

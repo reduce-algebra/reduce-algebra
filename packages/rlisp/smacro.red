@@ -109,7 +109,7 @@ module smacro;  % Support for SMACRO expansion
 %   smacro procedure increment a; a := a + 1;
 % This illustrates a case where it is clear that a direct textual expansion
 % is expected. However despite "car x := car x + 1" being accepted syntax the
-% order in which things are dons means that "increment (car x)" expands to
+% order in which things are done means that "increment (car x)" expands to
 % and illegal (setq (car x) (plus (car x) 1)) in Reduce 3.8. And
 % increment (getv(x, 2)) becomes ((lambda (a) (setq a (plus a 1))) (getv x 2)).
 % because while CAR is tagged as side-effect free GETV is not.

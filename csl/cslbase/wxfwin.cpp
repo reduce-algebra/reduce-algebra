@@ -352,10 +352,11 @@ void add_custom_fonts()
             fflush(stdout);
         }
     }
-    if (!wxFont::ActivatePrivateFonts())
-    {   printf("ActivatePrivateFonts failed\n");
-        fflush(stdout);
-    }
+// At one stage private fonts needed "activating"
+//  if (!wxFont::ActivatePrivateFonts())
+//  {   printf("ActivatePrivateFonts failed\n");
+//      fflush(stdout);
+//  }
 #endif
 #elif defined MACINTOSH
 // Note that on a Mac I put the required fonts in the Application Bundle,
@@ -1148,7 +1149,7 @@ int find_program_directory(const char *argv0)
     {   fullProgramName = argv0;
     }
     else
-    {   for (w=argv0; *w!=0 && *w!='/'; w++);   // seek a "/"
+    {   for (w=argv0; *w!=0 && *w!='/'; w++) {}   // seek a "/"
         if (*w == '/')      // treat as if relative to current dir
         {   // If the thing is actually written as "./abc/..." then
             // strip of the initial "./" here just to be tidy.
@@ -2303,11 +2304,11 @@ int file_exists(char *filename, const char *old, size_t n, char *tt)
     return 1;
 }
 
-int directoryp(char *filename, const char *old, size_t n)
+bool directoryp(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
-    if (*filename == 0) return 0;
-    if (stat(filename,&buf) == -1) return 0;
+    if (*filename == 0) return false;
+    if (stat(filename,&buf) == -1) return false;
     return ((buf.st_mode & S_IFMT) == S_IFDIR);
 }
 
@@ -2418,47 +2419,47 @@ char *get_truename(char *filename, const char *old, size_t n)
 // I do here will hold the fort for now.
 //
 
-int file_readable(char *filename, const char *old, size_t n)
+bool file_readable(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
-    if (*filename == 0) return 0;
+    if (*filename == 0) return false;
     if (stat(filename,&buf) == -1)
-        return 0; // File probably does not exist
+        return false; // File probably does not exist
 //
 // The #ifdef here is a cop-out and has surfaced while trying to build
 // using the Microsoft C compiler, where there will be a different API I
 // could use to get this information...
 //
 #ifndef S_IRUSR
-    return 1;
+    return true;
 #else
     return (buf.st_mode & S_IRUSR);
 #endif
 }
 
 
-int file_writeable(char *filename, const char *old, size_t n)
+bool file_writeable(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
-    if (*filename == 0) return 0;
+    if (*filename == 0) return false;
     if (stat(filename,&buf) == -1)
-        return 0; // Should we check to see if the directory is writeable?
+        return false; // Should we check to see if the directory is writeable?
 #ifndef S_IWUSR
-    return 1;
+    return true;
 #else
     return (buf.st_mode & S_IWUSR);
 #endif
 }
 
 
-int file_executable(char *filename, const char *old, size_t n)
+bool file_executable(char *filename, const char *old, size_t n)
 {   struct stat buf;
     process_file_name(filename, old, n);
-    if (*filename == 0) return 0;
+    if (*filename == 0) return false;
     if (stat(filename,&buf) == -1)
-        return 0; // Should we check to see if the directory is writeable?
+        return false; // Should we check to see if the directory is writeable?
 #ifndef S_IXUSR
-    return 1;
+    return true;
 #else
     return (buf.st_mode & S_IXUSR);
 #endif

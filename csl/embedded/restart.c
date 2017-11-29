@@ -4765,7 +4765,7 @@ void set_up_functions(CSLbool restartp)
     create_symbols(restart_setup, restartp);
     create_symbols(mpi_setup, restartp);
 /*
- * Although almost everything is mappeed into upper case in a Common Lisp
+ * Although almost everything is mapped into upper case in a Common Lisp
  * world I will preserve the case of symbols defined in u01 to u60.
  */
     for (i=0; setup_tables[i]!=NULL; i++)

@@ -29,15 +29,12 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-//
 // Note that the above apply even when part of this code is used within
 // an LGPL library such as FOX, even though binaries built from the
 // complete work are subject to the LGPL.
-//
 
 // $Id$
 
-//
 // This supports modest line-editing and history for terminal-mode
 // use of "fwin" applications.
 //
@@ -49,10 +46,8 @@
 // high level ones are generlly based on needing to clear the screen at
 // that start and I do not want that. Also my cursor activity is really pretty
 // simple and clever optimisation for it seems unnecessary.
-//
 
 
-//
 // I need to think properly about characters outside the simple ASCII
 // character set. There are (at least) four places where there is
 // a chance for representations to apply:
@@ -117,9 +112,7 @@
 //     change the length of a string's representation.
 // (6) By and large cursor editing and the evaluation of where on the screen
 //     things need to appear is made messier!
-//
 
-//
 // The next few #define statements are a clear indication of just how
 // unpleasantly system-dependent this code has become. Eg _DARWIN_C_SOURCE
 // must be defined ona Mac so that cfmakeraw gets properly defined by
@@ -144,14 +137,13 @@
 #include "config.h"
 #endif
 
-//
 // The following variables must hold arrays of strings to be used in
 // the completion of various items... For CSL they are provided with
 // useful values - for free-standing use they can be defined with
 // the value NULL.
-//
 
 extern char **loadable_packages, **switches;
+
 
 #ifdef WIN32
 
@@ -215,13 +207,10 @@ extern char **loadable_packages, **switches;
 
 #include "termed.h"
 
-//
 // These are colors used when in curses/term/termcap mode
-//
 
 static const char *term_colour;
 
-//
 // The following are the colour codes supported by curses/term.
 //
 //   0  black     B, K, k
@@ -232,7 +221,6 @@ static const char *term_colour;
 //   5  magenta   M, m
 //   6  cyan      C, c
 //   7  white     W, w
-//
 
 #ifndef WIN32
 
@@ -253,10 +241,9 @@ static int map_colour(int ch)
 
 #endif // WIN32
 
-//
 // The default values set here can be changed as a result of the colour
 // option passed to term_setup.
-//
+
 static int promptColour = 4;   // Blue
 static int inputColour  = 1;   // Red
 #ifndef WIN32
@@ -288,10 +275,10 @@ static void write_log(const char *s, ...)
 #endif
 
 
-//
 // My support for a history mechanism here is really primitive and simple.
 // I have a fixed size history buffer and just dump strings into it.
-//
+// This needs to be improved - among other upgrades I should save history
+// when my application exits so it can be reloaded next time.
 
 wchar_t *input_history[INPUT_HISTORY_SIZE];
 wchar_t *pending_history_line = NULL;
@@ -320,10 +307,8 @@ void input_history_end(void)
 void input_history_stage(const wchar_t *s)
 {   size_t n;
     if (s == NULL) return;
-//
 // The first line after a new prompt just simply forms the pending input
 // line.
-//
     if (pending_history_line == NULL)
     {   pending_history_line = (wchar_t *)
                                malloc((wcslen(s)+1)*sizeof(wchar_t));
@@ -331,12 +316,10 @@ void input_history_stage(const wchar_t *s)
             wcscpy(pending_history_line, s);
         return;
     }
-//
-// Second and sunsequent lines get added to the end of the stored line, with
+// Second and subsequent lines get added to the end of the stored line, with
 // "\n" characters to mark the line-breaks. This means that when I retrieve
 // something from the history I will need to worry about those newlines
 // and potentially how they display with or without associated prompts.
-//
     n = wcslen(pending_history_line);
     pending_history_line = (wchar_t *)
                            realloc(pending_history_line, (wcslen(s) + n + 2)*sizeof(wchar_t));
@@ -348,10 +331,15 @@ void input_history_stage(const wchar_t *s)
 void input_history_add(const wchar_t *s)
 {   wchar_t *scopy;
     int p;
-//
 // If the line I am attempting to add is empty or is identical to the
 // most recently added entry that is already present I will do nothing.
-//
+// HMMMM - the removal of duplicates can make sense but that needs to be
+// duplicate COMPLETE input blocks. So input such as
+//   a := {1,2,
+//         1,2,
+//         1,2,
+//         3};
+// had better not discard any of the "1,2," lines.
     if (s==NULL || *s==0) return;
     p = input_history_next;
     if (p > 0 &&
@@ -363,10 +351,8 @@ void input_history_add(const wchar_t *s)
 // If malloc returns NULL I just store an empty history entry.
     if (scopy != NULL) wcscpy(scopy, s);
     LOG("History entry has %d characters in it\n", wcslen(s));
-//
 // I can overwrite an old history item here... I will keep INPUT_HISTORY_SIZE
 // entries.
-//
     if (input_history[p] != NULL) free(input_history[p]);
     input_history[p] = scopy;
     input_history_next++;
@@ -378,10 +364,8 @@ void input_history_add(const wchar_t *s)
 
 const wchar_t *input_history_get(int n)
 {   const wchar_t *s;
-//
 // Filter our values that are out of range and in those cases return NULL
 // as a flag to report the error.
-//
     if (n == input_history_next) return L"";
     if (n < 0 ||
         n >= input_history_next ||
@@ -392,14 +376,13 @@ const wchar_t *input_history_get(int n)
     else return s;
 }
 
-//
 // Sort of beware! I have fields in the class FXTerminal with the same
 // names as these (static) variables and serving the same purpose (but for
 // windowed applications). Do not get confused please. The two sets of
 // values should never be active at the same time. If I were cleverer I
 // would have found a good way to share more of the code and avoid
 // this potential muddle.
-//
+
 static int historyFirst, historyNumber, historyLast;
 static int searchFlags;
 
@@ -413,7 +396,6 @@ static wchar_t *display_line;
 int prompt_length = 1, prompt_width = 1;
 static int input_line_size;
 
-//
 // term_wide_plain_getline() can be called when cursor addressing is not
 // available. It just reads characters into a line-buffer (which it
 // extends as necessary). The data returned includes the newline
@@ -424,7 +406,6 @@ static int input_line_size;
 // Nothing at all is done here to fuss about special characters, so
 // things like ^C, backspace, ^Q etc etc etc are handled, if at all, by
 // the system that underpins "getchar".
-//
 
 static void term_putchar(int c);
 
@@ -443,14 +424,12 @@ static wchar_t *term_wide_plain_getline(void)
     n = 0;
     for (ch=getwchar(); ch!=WEOF && ch!=L'\n'; ch=getwchar())
     {
-//
 // I will expand the buffer so that if sizeof(wchar_t)==2 I have 1.5 times
 // as many bytes as there are wchar_t items in use. This is so that when and
 // if I convert to utf-8 format there will still be enough space. The most
 // dangerous case would arise if the buffer contained a sequence of codes all
 // in the range u+800 to u+ffff since each of those could fit in a 2 byte
 // wchar_t but needs 3 bytes in utf-8.
-//
         if ((n+20)*(5-sizeof(wchar_t)) >=
             input_line_size*(4/sizeof(wchar_t)))
         {   input_line =
@@ -474,45 +453,44 @@ static wchar_t *term_wide_plain_getline(void)
     return input_line;
 }
 
-//
 // Before calling term_getline() or its variants use this to set the
 // prompt string that will be displayed.
 // A prompt string longer than the width of the terminal is liable to lead
 // to bad confusion, and anyway prompts as passed are truncated. The
 // character set used with this is 8-bit Unicode... but the stored prompt
 // is in a wide string.
-//
 
 void term_setprompt(const char *s)
 {   int i;
     prompt_length = prompt_width = strlen(s);
     LOG("prompt = %s len %d\n", s, prompt_length);
-//
 // I truncate prompts if they are really ridiculous in length since otherwise
 // it may look silly.
-//
     if (prompt_length > MAX_PROMPT_LENGTH) prompt_length = MAX_PROMPT_LENGTH;
-//
-// Here I winden the characters in the prompt by merely using the passsed
+// Here I widen the characters in the prompt by merely using the passed
 // characters as the low 8-bits of each desired character. That is fine
 // for 7-bit ASCII characters but not if the 8-bit values depend on some
-// particular code page...
-//
+// particular code page... or if the prompt is expressed in UTF8. However
+// this version is explicity for narrow character prompt strings - see the
+// following function for the more general case.
+    bool changed = false;
     for (i=0; i<prompt_length; i++)
     {   wint_t c = *s++ & 0xff;
-        termed_prompt_string[i] = c;
+        if (c != termed_prompt_string[i])
+        {   termed_prompt_string[i] = c;
+            changed = true;
+        }
     }
-    termed_prompt_string[i] = 0;
-//
-// Now when I set a prompt I need to add the previous bunch of lines
-// to the history.
-//
-    if (pending_history_line != NULL)
+    if (termed_prompt_string[i] != 0)
+    {   termed_prompt_string[i] = 0;
+        changed = true;
+    }
+// Now when I set a prompt that is different from the previous one I need
+// to add the previous bunch of lines to the history.
+    if (pending_history_line != NULL && changed)
     {   input_history_add(pending_history_line);
-//
 // Adding an entry could cause an old one to be discarded. So I now ensure
 // that I know what the first and last recorded numbers are.
-//
         historyLast = input_history_next - 1;
         historyFirst = input_history_next - INPUT_HISTORY_SIZE;
         if (historyFirst < 0) historyFirst = 0;
@@ -522,49 +500,58 @@ void term_setprompt(const char *s)
     }
 }
 
-//
 // Now a version that takes a wide string so that it is possible to
 // set prompts that include characters with codes over 0xff, and at least
 // up to 0xffff. On Windows there is a special nuisance if the truncation
 // at MAX_PROMPT_LENGTH tries to truncate half way through a surrogate
 // pair. In that case I will truncate one code earlier.
-//
 
 void term_wide_setprompt(const wchar_t *s)
 {   prompt_length = wcslen(s);
 // I truncate the prompt if it seems too long
     if (prompt_length > MAX_PROMPT_LENGTH) prompt_length = MAX_PROMPT_LENGTH;
-//
 // If I truncate it part way through a surrogate pair I need to lose
 // both parts of the pair.
-//
     if (prompt_length > 0 &&
-        is_high_surrogate(termed_prompt_string[prompt_length-1])) prompt_length--;
-    wcsncpy(termed_prompt_string, s, prompt_length);
-    termed_prompt_string[prompt_length] = 0;
-//
+        is_high_surrogate(termed_prompt_string[prompt_length-1]))
+        prompt_length--;
+    wchar_t temp[MAX_PROMPT_LENGTH+1];
+    wcsncpy(temp, s, prompt_length);
+    temp[prompt_length] = 0;
+    bool changed = false;
+    if (wcscmp(temp, termed_prompt_string) != 0)
+    {   wcscpy(termed_prompt_string, temp);
+        changed = true;
+    }
 // Now in the face of possible surrogate pairs the width in columns of the
 // prompt may not be the same as the number of wchar_t items that make it
 // up, so I will sort that out by counting units ignoring any high surrogates.
-//
     prompt_width = 0;
     for (s=termed_prompt_string; *s!=0; s++)
         if (!is_high_surrogate(*s)) prompt_width++;
+    if (pending_history_line != NULL && changed)
+    {   input_history_add(pending_history_line);
+// Adding an entry could cause an old one to be discarded. So I now ensure
+// that I know what the first and last recorded numbers are.
+        historyLast = input_history_next - 1;
+        historyFirst = input_history_next - INPUT_HISTORY_SIZE;
+        if (historyFirst < 0) historyFirst = 0;
+        historyNumber = historyLast + 1; // so that ALT-P moves to first entry
+        free(pending_history_line);
+        pending_history_line = NULL;
+    }
 }
 
 #ifdef DISABLE
-//
+
 // In some cases this code can not be activated because not enough
 // libraries are available. In that case I will provide stubs that do
 // non-clever input. It may be that an external package or body of code
 // will still be providing a good environment for the user.
-//
 
-//
 // Start up input through this package. Returns 1 in this case because
 // local editing is not supported on this platform. Hence the colour
 // option is ignored.
-//
 
 int term_setup(int flag, const char *colour)
 {
@@ -578,12 +565,11 @@ int term_setup(int flag, const char *colour)
     return 1;
 }
 
-//
 // Before returning from your code it would be a really good idea to
 // call "term_close" since that can re-set all sorts of terminal
 // characteristics. In some cases use of "atexit" to ensure this will
 // make sense.
-//
+
 void term_close(void)
 {   if (input_line != NULL)
     {   free(input_line);
@@ -599,7 +585,6 @@ static wchar_t *term_wide_fancy_getline(void)
 
 static void term_putchar(int c)
 {
-//
 // The character passed here will actually be an wchar_t and probably if I
 // was being truly proper the argument type would need to be wint_t not int.
 // However I am going to be sloppy and assume that int is good enough. Well
@@ -607,7 +592,7 @@ static void term_putchar(int c)
 // Unicode character and in some cases that will turn into a surrogate pair
 // under Windows. But then I will need to be careful when writing from a
 // (wchar_t *) style wide string where surrogates can already exist.
-//
+
 #ifdef WIN32
     DWORD nwritten;
     wchar_t buffer[4];
@@ -621,19 +606,15 @@ static void term_putchar(int c)
         WriteConsole(stdout_handle, buffer, 2, &nwritten, NULL);
     }
 #else
-//
 // Other than on Windows I will encode things using UTF-8
-//
     unsigned char buffer[8];
     int i, n = utf_encode(buffer, c);
     for (i=0; i<n; i++)
     {   c = buffer[i];
 #ifdef __CYGWIN__
-//
 // On Cygwin at the stage I am printing my terminal may be in RAW mode
 // and so I need to send CR/LF for a newline. This seems to be the case
 // just on Cygwin: on a typical Linux/Unix/BSD system I do not need this.
-//
         if (c == '\n') putchar('\r');
 #endif
         putchar(c);
@@ -650,11 +631,10 @@ static int stdin_handle, stdout_handle;
 #endif
 
 #ifdef SIMULATE_TERM_H
-//
+
 // if "term.h" is not available but the tgetent() function is then I will
 // provide my own private term.h simulation here - just including the small
 // number of features that I actually use.
-//
 
 static int columns = 80;
 static int lines = 25;
@@ -680,10 +660,8 @@ static int setupterm(char *s, int h, int *errval)
     char *p = my_entries;
     columns = 80;
     lines = 25;
-//
 // Just to feel tidy I will explicitly set all these to NULL as
 // I start up.
-//
     cursor_up = NULL;
     cursor_down = NULL;
     cursor_left = NULL;
@@ -714,10 +692,8 @@ static int setupterm(char *s, int h, int *errval)
 
 static void putpc(int c)
 {
-//
 // Here I will rely on being able to output a single octet without that
 // messing up any UTF8ness etc. I will also not be sending '\n' this way.
-//
     putchar(c);
 }
 
@@ -759,10 +735,9 @@ static void my_reset_prog_mode(void)
 
 #endif
 
-//
 // In case the system did not provide this I will supply the ANSI
 // escape code and I will use that regardless...
-//
+
 #ifndef set_a_foreground
 #define set_a_foreground "\e[3%dm"
 #endif
@@ -771,11 +746,9 @@ static void my_reset_prog_mode(void)
 #define set_foreground NULL
 #endif
 
-//
 // When the code is built it can still determine (dynamically) that it
 // should not intervene, Eg when stdin/stdout have been redirected. When
 // it is not enabled it can do simple getchar/putchar IO.
-//
 
 static int term_enabled = 0;
 
@@ -785,7 +758,7 @@ int insert_point;
 static int term_can_invert, invert_start, invert_end;
 
 #ifdef WIN32
-//
+
 // The term/termios model provides "lines" and "columns" as macros.
 // For Windows I manage them myself. By and large I will just not worry
 // about "lines". The only case it ought to matter to me is if a user
@@ -794,7 +767,7 @@ static int term_can_invert, invert_start, invert_end;
 //
 // To start with I will leave the behaviour in this case as a bug in my
 // code. If I get keen I will revisit the situation later on.
-//
+
 static int lines, columns;
 
 static HANDLE stdin_handle, stdout_handle;
@@ -808,12 +781,11 @@ extern int utf_encode(unsigned char *b, int c);
 
 static void term_putchar(int c)
 {
-//
 // The character passed here will be a Unicode character using up to 20
 // bits...
-// was being truly proper the argument type would need to be wint_t not int.
-// However I am going to be sloppy and assume that int is good enough.
-//
+// If I was being truly proper the argument type would need to be wint_t
+// not int. However I am going to be sloppy and assume that int is good enough.
+
 #ifdef WIN32
     DWORD nwritten;
     wchar_t buffer[4];
@@ -827,9 +799,7 @@ static void term_putchar(int c)
         WriteConsole(stdout_handle, buffer, 2, &nwritten, NULL);
     }
 #else
-//
 // Other than on Windows I will encode things using UTF-8
-//
     unsigned char buffer[8];
     int i, n = utf_encode(buffer, c);
     for (i=0; i<n; i++)
@@ -842,18 +812,14 @@ static void term_putchar(int c)
 #endif
 }
 
-//
 // If possible I would like to be able to retrieve the actual size of
 // the current screen, rather than relying on shell variables, like COLUMNS,
 // that could possibly get out of step with reality.
-//
 
 static void measure_screen(void)
 {
-//
 // I try to measure the size of the current window or terminal.
 // on some systems I may not be able to!
-//
 #ifdef WIN32
     CONSOLE_SCREEN_BUFFER_INFO csb;
     if (!GetConsoleScreenBufferInfo(stdout_handle, &csb)) return;
@@ -878,9 +844,7 @@ static void measure_screen(void)
 #endif // TIOCGWINSZ
 #endif // HAVE_SYS_IOCTL_H
 #endif // WIN32
-//
 //  LOG("[screen:%dx%d]\n", columns, lines);
-//
 }
 
 #ifdef WIN32
@@ -902,10 +866,8 @@ int term_setup(int flag, const char *colour)
 #ifdef TERMED_TEST
     fprintf(stderr, "term_setup in the WIN32 case\n");
 #endif
-//
 // It is VITAL to use "w+" as the access mode here for otherwise
 // it is not possible to access the Console Output Buffer sufficiently.
-//
     freopen("CONOUT$", "w+", stdout);
     term_enabled = 0;
     keyboard_buffer[0].Event.KeyEvent.wRepeatCount = 0;
@@ -927,10 +889,8 @@ int term_setup(int flag, const char *colour)
 #endif
         return 1;
     }
-//
 // Standard input must be from a character device and must be accepted
 // by the GetConsoleMode function
-//
     stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
     if (GetFileType(stdin_handle) != FILE_TYPE_CHAR)
     {
@@ -946,9 +906,7 @@ int term_setup(int flag, const char *colour)
 #endif
         return 1;
     }
-//
 // Standard output must be a character device and a ConsoleScreenBuffer
-//
     stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 #ifdef TERMED_TEST
     fprintf(stderr, "stdin handle = %p, stdout handle = %p\n", stdin_handle, stdout_handle);
@@ -963,10 +921,8 @@ int term_setup(int flag, const char *colour)
     if (!GetConsoleScreenBufferInfo(stdout_handle, &csb))
     {
 #ifdef TERMED_TEST
-//
 // This was here stdout_handled needed READ access as well as WRITE access.
 // All the extra printing was useful while I was tracking that problem down!
-//
         DWORD e = GetLastError();
         char *msg;
         fprintf(stderr, "trouble with GetConsoleScreenBufferInfo(stdout)\n");
@@ -1017,10 +973,8 @@ int term_setup(int flag, const char *colour)
     lines = csb.srWindow.Bottom - csb.srWindow.Top + 1;
     SetConsoleMode(stdout_handle, stdout_attributes);
     term_can_invert = 1;
-//
 // If I am using the Unicode functions to write to the console then
 // the issue of a code page for it becomes somewhat irrelevant!
-//
     originalCodePage = GetConsoleOutputCP();
     atexit(resetCP);
     SetConsoleOutputCP(CP_UTF8);
@@ -1063,13 +1017,9 @@ int term_setup(int flag, const char *colour)
     else input_line_size = 200;
     stdin_handle = fileno(stdin);
     stdout_handle = fileno(stdout);
-//
 // Check for redirected stdin/stdout.
-//
     if (!isatty(stdin_handle) || !isatty(stdout_handle)) return 1;
-//
 // Next check if the terminal is one that we know about...
-//
     s = getenv("TERM");
     if (s == NULL) s = "dumb";
 // There is a bit of a misery here. The standard function setupterm takes
@@ -1084,10 +1034,8 @@ int term_setup(int flag, const char *colour)
                             &errval);
         if (errcode != OK || errval != 1) return 1;
     }
-//
 // I really want the very basic units of cursor movement to be available,
 // and if they are not I will just give up.
-//
     if (cursor_up == NULL ||
         cursor_down == NULL ||
         cursor_left == NULL ||
@@ -1096,30 +1044,24 @@ int term_setup(int flag, const char *colour)
     if (enter_reverse_mode != NULL &&
         exit_attribute_mode != NULL) term_can_invert = 1;
     else term_can_invert = 0;
-//
 // def_shell_mode() remembers the configuration of my terminal in the
 // state before I alter any parameters. It saves information so that
 // reset_shell_mode() can put things back the way they were. However
 // with (at least) Ubuntu 9.10 these functions fail for me. Perhaps because
 // they want me to be using a full "curses" window, not merely low-level
 // access. So I provide my own versions with prefix "my_".
-//
     my_def_shell_mode();
-//
 // I guess I am going to suppose here that stdin and stdout are both
 // associated with the SAME terminal. If the computer had two (or more)
 // terminals and stdin/stdout were attached to different ones then
 // the use of tcgetattr/tcsetattr would only do things to the stdin
 // one here.
-//
     tcgetattr(stdin_handle, &my_term);
 #ifdef HAVE_CFMAKERAW
-//
 // If I have cfmakeraw that is liable to be a definitive way of setting
 // raw mode. Otherwise I will set the flags that I expect cfmakeraw to set.
 // The one that it took be a while to spot was c_cc[VMIN] to ensure that
 // reading characters still waits for at least one...
-//
     cfmakeraw(&my_term);
 #else
     my_term.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP |
@@ -1131,12 +1073,10 @@ int term_setup(int flag, const char *colour)
     my_term.c_cc[VMIN] = 1;
     my_term.c_cc[VTIME] = 0;
 #endif
-//
 // The tcsetattr HANGS if the console is detached/backgrounded when
 // it is  performed, As in
 //    ./reduce -v .... &
 // unless SIGTTOU is blocked or ignored...
-//
     signal(SIGTTOU, SIG_IGN);
     tcsetattr(stdin_handle, TCSADRAIN, &my_term);
     my_def_prog_mode();
@@ -1153,10 +1093,8 @@ int term_setup(int flag, const char *colour)
 
 void term_close(void)
 {
-//
 // Note here and elsewhere in this file that I go "fflush(stdout)" before
 // doing anything that may change styles or options for stream handling.
-//
     fflush(stdout);
 #ifdef WIN32
     if (term_enabled)
@@ -1179,7 +1117,6 @@ void term_close(void)
     }
 }
 
-//
 // term_getchar() will block until the user has typed something. I will use
 // this place as where I unravel various funny escape sequences that
 // stand for uses of control keys. For all cases I will hand back a
@@ -1189,7 +1126,6 @@ void term_close(void)
 // ORd in I will hand back EOF in some boundary cases. When using a Unix-
 // style terminal (rather than Windows) I will just ignore invalid or
 // unrecognized escape systems sent by the lower level terminal drivers.
-//
 
 #define TERM_UP     'A'
 #define TERM_DOWN   'B'
@@ -1210,23 +1146,19 @@ static int term_getchar(void)
     int down, key, ascii, unicode, ctrl;
     for (;;)
     {
-//
 // I need to bother myself with repeat-counts. So in general there
 // has been a call to inspect the keyboard before. If, after processing that
 // I has a keyboard event with a residual repeat-count left over I will
 // just have to handle that. Otherwise I need to call ReadConsoleInput to
 // get some more. If that call fails I will return EOF as an error indication.
-//
         if ((keyboard_buffer[0].EventType != KEY_EVENT ||
              keyboard_buffer[0].Event.KeyEvent.wRepeatCount == 0) &&
             !ReadConsoleInput(stdin_handle, keyboard_buffer, 1, &n))
         {   return EOF;
         }
-//
 // By the time I get here keyboard_buffer will hold an event. It might be
 // one of a range of sorts! At present I only do anything at all with KEY
 // events, but I could potentially look for mouse activity.
-//
         switch (keyboard_buffer[0].EventType)
     {       default:              // Ignore non-keyboard event
                 continue;
@@ -1238,7 +1170,6 @@ static int term_getchar(void)
                 ascii = keyboard_buffer[0].Event.KeyEvent.uChar.AsciiChar;
                 unicode = keyboard_buffer[0].Event.KeyEvent.uChar.UnicodeChar;
                 ctrl = keyboard_buffer[0].Event.KeyEvent.dwControlKeyState;
-//
 // If Windows thinks that the key that has been hit corresponded to an
 // ordinary character than I will just return it. No hassle here! Well
 // not quite so easy after all. If ALT is held down at the same time as
@@ -1248,26 +1179,21 @@ static int term_getchar(void)
 // notionally system independent key-code for "@" is 0xc0 (well I can worry
 // in case that is really for "'") do I test for that. Anyway at least
 // with my keyboard this lets "^@" get through!
-//
                 if (key != 0x11) LOG("\nunicode=%x VK=%x ctrl=%x\n", unicode, key, ctrl);
                 if (unicode != 0 || key == 0xc0)
                 {   if (ctrl & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))
                         unicode |= ALT_BIT;
                     return unicode;
                 }
-//
 // Now use the variable "unicode" to record the state of the ALT key.
-//
                 if (ctrl & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED)) unicode = ALT_BIT;
                 else unicode = 0;
-//
 // I map the Microsoft Key-Codes onto codes of my own. Observe that I do not
 // support anything like all of the possible keys here, and that I do not
 // detect SHIFT or CONTROL pressed in association with a function key. I will
 // extend the tables here later if I feel moved to, but getting compatibility
 // with the Unix-like case means I am unlikely to want to support every
 // possible feature.
-//
                 switch (key)
             {       default:    continue;     // Ignore unknown keys
                     case VK_LEFT:
@@ -1288,19 +1214,17 @@ static int term_getchar(void)
         }
     }
 #else
-//
 // In the Unix-like case I run a state-machine to grab sequences of
 // characters by way of escape codes. One consequence of this is that
 // a single ESC character is generally not passed through to the user.
 // So far as I can discover at present I can not guarantee to detect
 // "^@" here even though I am in raw mode. I fear that to handle that I
 // may need yet lower levels of protocol...
-//
+
 #define BASE_STATE   0
 #define ESC_STATE    1
 #define ESC_BR_STATE 2
 
-//
 // What I should almost certainly be doing here involves the following
 // variables that I have either set up for myself or that setupterm()
 // established for me.
@@ -1323,8 +1247,6 @@ static int term_getchar(void)
 //    BASE --esc--> ESC --[--> ESC_BR --0/9--> DIG --other--> done
 //                   |                          |
 //              second ESC counted         digits and ";" absorbed
-//
-
 
     int state = BASE_STATE, esc_esc = 0, ch, numval1=0, numval2=0;
     for (;;)
@@ -1332,13 +1254,10 @@ static int term_getchar(void)
         ch = getchar();
         if (ch == EOF) return EOF;
         ch &= 0xff;
-//
 // Here I will swallow extra octets if the leading one seems to introduce
 // an UTF multi-octet sequence
-//
         switch (ch & 0xf0)
         {
-//
 //  case 0x00:
 //  case 0x10:
 //  case 0x20:
@@ -1347,7 +1266,6 @@ static int term_getchar(void)
 //  case 0x50:
 //  case 0x60:
 //  case 0x70:
-//
             default:
                 break;
             case 0x80:
@@ -1419,22 +1337,18 @@ static int term_getchar(void)
         switch (state)
     {       default:
             case BASE_STATE:
-//
 // This is where I start. If I get anything other than ESC I just return
 // it, but if I get ESC I progress a state.
-//
                 if (ch == 0x1b)
                 {   state = ESC_STATE;
                     continue;
                 }
                 else return ch;
             case ESC_STATE:
-//
 // After ESC if the next character is another ESC I just count it, if
 // the next character is [ (so I have had "ESC [" or "ESC ESC [") I
 // progress, otherwise I treat the character as "escaped" and or in the
 // "meta" bit ALT_BIT.
-//
                 if (ch == 0x1b)
                 {   esc_esc ^= ALT_BIT;
                     continue;
@@ -1445,9 +1359,7 @@ static int term_getchar(void)
                 }
                 else return ch | ALT_BIT;
             case ESC_BR_STATE:
-//
 // After "ESC [" I absorb digits and semicolons.
-//
                 if (isdigit((unsigned char)ch))
                 {   numval1 = 10*numval1 + ch - '0';
                     continue;
@@ -1457,15 +1369,11 @@ static int term_getchar(void)
                     numval1 = 0;
                     continue;
                 }
-//
 // Now the whole code can be put together as one item... I will
 // only look at the low 8 bits of any character that is just after an
 // ESC.
-//
                 ch = (ch & 0xff) | (numval2 << 16) | (numval1 << 8);
-//
 // The table here represents the codes that I have come across thus far:
-//
                 esc_esc |= ARROW_BIT;
                 switch (ch)
                 {   case 0x010500+'A':
@@ -1504,10 +1412,8 @@ static int term_getchar(void)
 
 
 
-//
 // Cursor movement functions are only wanted within this file and
 // should only actually be called in the "enabled" case.
-//
 
 // term_move_down() is called in seven places. gcc-6 views it as short enough
 // that it can in-line it, and then in three of those calls it can see
@@ -1536,21 +1442,17 @@ static int term_getchar(void)
 static void term_move_down(int del, bool check)
 {
 #ifdef WIN32
-//
 // Since the screen is on the same machine as the rest of my process, and
 // I am in general interacting with a (slow) user here I will not try ANY
 // optimisations at all!
-//
     CONSOLE_SCREEN_BUFFER_INFO csb;
     if (del == 0) return;
     if (!GetConsoleScreenBufferInfo(stdout_handle, &csb)) return;
     csb.dwCursorPosition.Y += del;
     SetConsoleCursorPosition(stdout_handle, csb.dwCursorPosition);
-//
 // I do not quite know if the above is always what I want! When I move down
 // and I start on the line that is the lowest one on the screen I do really
 // want a new line to appear for me to move onto.
-//
     cursory += del;
     if (check && cursory > max_cursory) max_cursory = cursory;
 #else
@@ -1576,21 +1478,17 @@ static void term_move_right(int del)
     if (!GetConsoleScreenBufferInfo(stdout_handle, &csb)) return;
     csb.dwCursorPosition.X += del;
     SetConsoleCursorPosition(stdout_handle, csb.dwCursorPosition);
-//
 // The above would be unsatisfactory if it ever happened that the
 // movement was liable to take me beyond the width of the terminal, and
 // there is a special worry about the bottom rightmost position on the
 // screen, since it is not well supported by some terminals.
-//
     cursorx += del;
     return;
 #else
-//
 // As a small optimisation here if the target location is closer to the
 // left margin than to the currect position (by at least 3) then
 // issue a CR to move rapidly to the left margin and then sort out what
 // else is needed.
-//
     fflush(stdout);
     if (del<0 && (cursorx+del+3) < (-del))
     {   putp(carriage_return);
@@ -1598,10 +1496,8 @@ static void term_move_right(int del)
         cursorx = 0;
     }
     cursorx += del;
-//
 // ... otherwise I position the cursor by doing dull sequences that move the
 // cursor one position at a time.
-//
     while (del > 0)
     {   putp(cursor_right);
         del--;
@@ -1639,7 +1535,6 @@ static void term_bell(void)
 #endif
 }
 
-//
 // I call refresh_display() to get the screen up to date with what my
 // internal model expects.  The data I base this on will be:
 //     input_line      a string showing what I want displayed
@@ -1683,9 +1578,7 @@ static void term_bell(void)
 // (d) After a case where the user re-sizes the screen the issue of what is
 //     visible on the screen, where the cursor is and in general what to do
 //     to regain sanity seems pretty delicate!
-//
 
-//
 // With my first version of the code here I will not handle either (c) or (d)
 // a lot. Well maybe in fact (d) gets coped with by virtue of the total
 // screen re-write..., and I check screen size (if I can) whenever I am
@@ -1703,15 +1596,12 @@ static void term_bell(void)
 // Actually I do not count these as high priority - mostly because screens
 // etc etc are now usually very fast. Also inserts mid-line will be less
 // common than just adding characters at the end.
-//
 
-//
 // line_wrap() is a part of refresh_display(), and it prints a character
 // taking care of line-wrapping. The character passed will be of flavour
 // wchar_t. The character may be a value over 0xffff and in the Windows case
 // that will need to end up in the buffer as a surrogate pair. I also note
 // that the existing buffer may contain such pairs...
-//
 
 static int line_wrap(int ch, int tab_offset)
 {
@@ -1719,7 +1609,6 @@ static int line_wrap(int ch, int tab_offset)
     cursorx++;
     if (cursorx >= columns)
     {   tab_offset += cursorx;
-//
 // When the line I am wrapping is the final one of my stuff I will be super
 // careful and not write the character until it will no longer be at the
 // final position on the screen. I do this because some (but perhaps not
@@ -1727,13 +1616,11 @@ static int line_wrap(int ch, int tab_offset)
 // and for that to happen and for me to be not quite certain just what the
 // situation was would be terrible.
 //
-//
 // I could imagine that if cursory==max_cursory here I could need to do
 // something special to move down a row to ensure that if I am on the bottom
 // row of the screen I scroll properly... What I do here with a hope that it
 // counts as "on the safe side" is to switch back to cooked mode before
 // outputting a newline character.
-//
         if (cursory == max_cursory)
         {   term_move_first_column();
             LOG("need to scroll page\n");
@@ -1752,11 +1639,9 @@ static int line_wrap(int ch, int tab_offset)
 #endif
             cursory++;
             max_cursory = cursory;
-//
 // Now I have performed the scroll, so I will go back and insert the
 // character. I very much hope that this time writing to the last position on
 // a row does not do anything special at all about the cursor or scrolling.
-//
             term_move_down(-1, false);
             term_move_right(columns-1);
             term_putchar(ch);
@@ -1775,19 +1660,15 @@ static int line_wrap(int ch, int tab_offset)
 
 static void refresh_display(void)
 {
-//
 // The version here right now is done as directly as I can without
 // thought for optimisation. That is in the hope that I can get it
 // right, and then put in performance upgrades later on.
-//
     int i, ch, inverse = 0,
                tab_offset = 0,
                curx=columns, cury=lines,
                finx, finy, window_size_changed;
-//
 //  LOG("refresh_display cx=%d cy=%d\n", cursorx, cursory);
 //  LOG("il:<%ls>\ndl:<%ls>\n", input_line, display_line);
-//
 //
 // Rather than believing in any SIGWINCH signal (or some such!) to alert
 // me to screen size changes, I will (on systems that give me a way to)
@@ -1797,25 +1678,20 @@ static void refresh_display(void)
 // a handshake between the terminal and this program so on systems with
 // remote access and slow lines it may well put in a noticable screen-update
 // delay - if that proves the case I will need to review what I do.
-//
     measure_screen();
-//
 // Check if the screen-size has changed since last time.
 // At present since I re-draw the whole input line every time changes
 // in screen size make no difference to me and so I just ignore the
 // information I collect here, but as I start to optimise my screen
 // update I will need to look at it more carefully.
-//
     window_size_changed = (curx!=columns || cury!=lines);
     if (window_size_changed)
     {
-//
 // I want to force a fairly complete re-write here, so I explain that
 // the screen now holds stuff that is totally different to what is
 // desired, and that there may be residual stuff on the screen down as far
 // as the almost-rightmost column of the bottom line that I have ever put
 // anything on.
-//
         LOG("Window size has changed\n");
         display_line[0] = input_line[0] + 1;
         display_line[1] = 0;
@@ -1848,12 +1724,10 @@ static void refresh_display(void)
             finx = 0;
             finy++;
         }
-//
 // I am going to display characters whose code is in the range 0x00 to
 // 0x1f with a "^", as in "^C" will denote character 3. I am not certain that
 // this is a good idea!!! But I rather hope that such characters will
 // not get into the buffer, and at least this makes them visible if they do.
-//
         else if (ch < 0x20) finx += 2;
         else if (!is_low_surrogate(ch)) finx += 1;
         if (finx >= columns)
@@ -1863,18 +1737,14 @@ static void refresh_display(void)
         }
         i++;
     }
-//
 // Start my moving to the beginning of the where I must write stuff...
-//
     term_move_right(finx - cursorx);
     term_move_down(finy - cursory, true);
-//
 // Re-display all of the current input line. In may cases this
 // will do all the re-drawing needed, but beware if the existing displayed
 // line is longer (because I have just deleted something). While drawing
 // the current line when I reach the insert_point I will record the cursor
 // position.
-//
     for (; (ch = input_line[i])!=0; i++)
     {   if (i == insert_point)
         {   curx = cursorx;
@@ -1898,7 +1768,6 @@ static void refresh_display(void)
 #endif
             inverse = 0;
         }
-//
 // A horrid case arises here. If the cursor starts off close to the right
 // hand side of the window and a TAB is issued than it might wrap. Well
 // that in itself is OK. However if the screen width is not a multiple of
@@ -1909,7 +1778,6 @@ static void refresh_display(void)
 // I am also ignoring all possibility that Unicode code points other
 // than TAB and NEWLINE have other than regular width, so for instance
 // zero-width spaces will not be handled well.
-//
         if (ch == L'\t')
         {   do
             {   tab_offset = line_wrap(L' ', tab_offset);
@@ -1918,15 +1786,11 @@ static void refresh_display(void)
         }
         else if (ch == L'\n')
         {
-//
 // Here I want a line-break in the "single line" I am displaying. I achieve
 // the effect I want by writing blanks until cursorx gets back to zero by
 // virtue of line-wrapping!
-//
             while (cursorx !=  0) line_wrap(L' ', 0);
-//
 // Tabs should now be relative to the new line-start.
-//
             tab_offset = 0;
         }
         else if (ch < 0x20)
@@ -1941,9 +1805,7 @@ static void refresh_display(void)
         }
         else tab_offset = line_wrap(ch, tab_offset);
     }
-//
 // Clear inverse video mode.
-//
     if (inverse)
     {   fflush(stdout);
 #ifdef WIN32
@@ -1957,20 +1819,16 @@ static void refresh_display(void)
     {   curx = cursorx;
         cury = cursory;
     }
-//
 // Now the input line may have shrunk because of a deletion so there may be
 // bits of the display line remaining. I need to replace them with blanks.
 // Because I expect to be filling neatly up to the right hand end of the
 // line and I will never be creating an extra row here I do not need to
 // use line_wrap.
-//
     finx = cursorx;
     finy = cursory;
-//
 // If the cursor is now positioned below where the previously-displayed line
 // finished there is no joy at all in doing any padding to try to overwrite
 // left-over bits of that previous line.
-//
     if (cursory <= final_cursory)
     {   while (cursory < final_cursory)
         {   while (cursorx < columns)
@@ -1985,30 +1843,22 @@ static void refresh_display(void)
             cursorx++;
         }
     }
-//
 // record where real output finished this time
-//
     final_cursorx = finx;
     final_cursory = finy;
-//
 // Move the cursor to where it needs to appear.
-//
     if (cury != cursory) term_move_down(cury-cursory, true);
     if (curx != cursorx) term_move_right(curx-cursorx);
     fflush(stdout);
-//
 // Now the display should be up to date, so record that situation.
-//
     wcscpy(display_line, input_line);
 }
 
 static void term_set_mark(void)
 {
-//
 // Actually I will not (at present) do anything here! And furthermore I
 // have a degree of pain. When I try running on a Unix-like system even
 // after setting "raw" mode I do not get all the chars that I want...
-//
     term_bell();
     refresh_display();
 }
@@ -2026,11 +1876,9 @@ static void term_to_end(void)
 }
 
 
-//
 // The next two just find where the position to left or right is, searching
 // by words, with a FOX-like interpretation of the term "word", which I
 // hope will also be an emacs-like interpretation.
-//
 
 static int term_find_next_word_forwards(void)
 {   int n = insert_point;
@@ -2100,10 +1948,8 @@ static void term_back_word(void)
 
 static void term_delete_forwards(void)
 {   int i = insert_point;
-//
 // If the unit at the insertion point is a high surrogate I must delete
 // two units not just one - ie the high and then the low surrogate.
-//
     if (is_high_surrogate(input_line[i]))
     {   input_line[i] = ' ';
         term_delete_forwards();
@@ -2129,10 +1975,8 @@ static void term_delete_backwards(void)
             i++;
         }
     }
-//
 // If I just deleted a low surrogate so that there is now a high one left
 // then I need to delete that too.
-//
     if (insert_point != prompt_length &&
         is_high_surrogate(input_line[insert_point-1]))
         term_delete_backwards();
@@ -2203,10 +2047,8 @@ static void term_previous_history(void)
     {   term_bell();
         return;
     }
-//
 // If I have not moved the history pointer at all yet move it into the
 // range of valid history entries.
-//
     if (historyNumber > historyFirst) historyNumber--;
     history_string = input_history_get(historyNumber);
     if (history_string == NULL)
@@ -2230,10 +2072,8 @@ static int searchLen;
 
 static void term_search_next(void)
 {
-//
 // I remember where I was on the input line but then move to the end and
 // append a message that indicates to the user that a search is in progress.
-//
     search_found = search_saved_point = insert_point;
     regular_line_end = wcslen(input_line);
     wcscpy(&input_line[regular_line_end], L"\nN-search: ");
@@ -2258,12 +2098,10 @@ static void term_search_previous(void)
 
 static int matchString(const wchar_t *pat, int n, const wchar_t *text)
 {
-//
 // This is a crude and not especially efficient pattern match. I think
 // it should be good enough for use here! I make it return the offset where
 // a match first occurred (if one does) in case that will be useful to me
 // later. I could put the cursor there, perhaps?
-//
     int offset;
     for (offset=0; *(text+offset)!=0; offset++)
     {   const wchar_t *p = pat, *q = text+offset;
@@ -2296,7 +2134,6 @@ static int trySearch(void)
     return r;
 }
 
-//
 // After a success in a search this sets the input line to the given
 // text. The real mess here is that it has to stick the search text
 // on the end. And a further worry might be buffer overflow... Suppose that
@@ -2307,7 +2144,7 @@ static int trySearch(void)
 // overflows. Oh woe.  Well look later on and you will see that I keep track
 // of the longest line I have stuck into the history and I measure against
 // that when accepting search characters. So do not worry after all!!
-//
+
 static void set_input(const wchar_t *s)
 {   wcscpy(&input_line[prompt_length], s);
     insert_point = prompt_length + wcslen(s);
@@ -2325,21 +2162,17 @@ static void set_input(const wchar_t *s)
 #endif
 #define CTRL(n) ((n) & 0x1f)
 
-//
 // This is called when I am in the process of searching and a character is
 // typed.
 // Returns true if searching must continue, or false if searchMode has been
 // left. While in search mode I will keep insert_point at the end of the
 // buffer.
-//
 
 static int term_search_char(int ch)
 {   switch (ch)
     {
-//
 // ALT-N and ALT-Down continue the search using the current search string
 // but searching through the Next history item
-//
         case CTRL(L'N') + ALT_BIT: case L'N' + ALT_BIT: case L'n' + ALT_BIT:
         case ARROW_BIT + TERM_DOWN + ALT_BIT:
             searchFlags = 1;    // search downwards
@@ -2361,10 +2194,8 @@ static int term_search_char(int ch)
                 refresh_display();
             }
             return 1;
-//
 // ALT-P and ALT-Up continue the search using the current search string
 // but searching through the Previous history item
-//
         case CTRL(L'P') + ALT_BIT: case L'P' + ALT_BIT: case L'p' + ALT_BIT:
         case ARROW_BIT + TERM_UP + ALT_BIT:
             searchFlags = -1;    // search upwards
@@ -2387,11 +2218,9 @@ static int term_search_char(int ch)
             }
             return 1;
 
-//
 // Ctrl-H deletes exist search mode if the search string is empty, otherwise
 // it deletes a char from the search string and pops back to wherever the
 // shorter string had matched.
-//
         case CTRL(L'H'):                   // Backspace
         case 0x7f:                         // Delete
             if (searchLen != 0)
@@ -2409,41 +2238,31 @@ static int term_search_char(int ch)
             {   term_bell();
                 ch = CTRL('U');  // Drop through to exit search mode
             }
-//
 // Control characters (except TAB) and things tagged with ESC cause an exit
 // from search mode.
-//
         default:
             if ((ch & (ALT_BIT|ARROW_BIT)) != 0 ||
                 (ch != L'\t' && ch<0x20))
             {
-//
 // Exit search mode
-//
                 searchFlags = 0;
-//
 // The approved means of switching some highlights off is as follows. This
 // leads the next refresh_display to re-write the bit that had previously
 // been in inverse video... ie leave invert_start at the start of where
 // inverting had started, but set invert_end to the same value.
-//
                 invert_end = invert_start;
                 input_line[regular_line_end] = 0;
                 insert_point = prompt_length + search_found + searchLen;
                 refresh_display();
-//
 // "^U" will exit search mode, and when it does that it does not do anything
 // else. Even if there were ever a time that I had implemented an UNDO
 // facility, which I think I am not about to.
-//
                 return (ch & (~(ALT_BIT|ARROW_BIT))) == CTRL(L'U');
             }
 
     }
-//
 // So not accept search characters beyond some limit since I have a fixed-
 // size buffer for the search string. Just beep and ignore the chararcter.
-//
     if (searchLen > 98)
     {   term_bell();
         return 1;
@@ -2451,9 +2270,7 @@ static int term_search_char(int ch)
     searchStack[searchLen] = historyNumber;
     searchBuff[searchLen++] = ch;
     searchBuff[searchLen] = 0;
-//
 // Now perform a search...
-//
     {   int r;
         int save = historyNumber;
         if ((r = trySearch()) == -1)
@@ -2473,13 +2290,11 @@ static int term_search_char(int ch)
 
 static int term_find_word_start(void)
 {
-//
 // If the insert point points at an alphemumeric character this ends up
 // returning the address of the first letter of the "word". If the
 // initial point is not on an alphanumeric it returns a pointer one to the
 // right of the insert point.
-// /* surrogate pairs
-//
+// [surrogate pairs could be an issuer here]
     int n = insert_point;
     while (n>=prompt_length &&
            (iswalnum(input_line[n]) || input_line[n]==L'_')) n--;
@@ -2488,12 +2303,10 @@ static int term_find_word_start(void)
 
 static int term_find_word_end(void)
 {
-//
 // returns the address of the first character beyond the end of a current
 // word. If the character at the insert point is not alphanumeric then its
 // address is returned.
-// /* surrogate pairs
-//
+// [surrogate pairs]
     int n = insert_point;
     while (input_line[n]!=0 &&
            (iswalnum(input_line[n]) || input_line[n]==L'_')) n++;
@@ -2504,13 +2317,11 @@ static void term_capitalize_word(void)
 {   int a = term_find_word_start();
     int b = term_find_word_end();
     int i;
-//
 // towupper and towlower are only guaranteed valid if the code-point passed
 // represents a valid character in the current locale. That is, I think,
 // something I do not know how to test for! So here I will at least filter
 // out surrogate values and I will hope that (eg) non-characters do not lead
 // to crashes.
-//
     if (a < b && !is_surrogate(input_line[a]))
         input_line[a] = towupper(input_line[a]);
     for (i=a+1; i<b; i++)
@@ -2544,7 +2355,6 @@ static void term_uppercase_word(void)
 
 static void term_transpose_chars(void)
 {   int c, d;
-//
 // I fear there are 4 cases here in the windows world...
 //     x, y    =>    y, x
 //     Xx, y   =>    x, Xx
@@ -2552,7 +2362,6 @@ static void term_transpose_chars(void)
 //     Xx, Yy  =>    Yy, Xx
 // where Xy and Yy stand for pairs of surrogates. If sizeof(wchar_t)==4
 // things are a lot simpler!
-//
     if (sizeof(wchar_t) == 4)
     {   if (((c = input_line[insert_point]) == 0) ||
             ((d = input_line[insert_point+1]) == 0)) term_bell();
@@ -2656,11 +2465,9 @@ static void term_reinput(void)
 
 static void term_redisplay(void)
 {
-//
 // To get as much of the active area redrawn as I can I will reset the
 // record of what is visible to suggest that everything is totally out of
 // date.
-//
     display_line[0] = input_line[0] + 1;
     display_line[1] = 0;
     refresh_display();
@@ -2669,9 +2476,7 @@ static void term_redisplay(void)
 
 static void term_clear_screen(void)
 {
-//
 // This will then leave the input-line displayed at the top of your window...
-//
 #ifdef WIN32
     CONSOLE_SCREEN_BUFFER_INFO csb;
     DWORD size, nbytes;
@@ -2712,25 +2517,21 @@ static void term_discard_output(void)
 
 static int hexval(int c)
 {
-//
 // Regardless of the fact that in general I am working in Unicode, here
 // I am only interested in the digits 0-9 and the letters a-f and A-F and
 // if I only accept ones in the most basic form I can use 7-bit codes.
-//
     if (c < 0 || c >= 0x7f) return -1;
     if (isdigit((unsigned char)c)) return c - '0';
     else if (isupper((unsigned char)c)) return c + (10 - 'A');
     else return c + (10 - 'a');
 }
 
-//
 // The table here is the set of names used in HTML to denote characters
 // and so I hope that many of the names will be familiar to many people.
 // They are sorted into a collating order based on their names so I
 // can look up names using binary search. Note that the longest name
 // seems to be of length 31 ("CounterClockwiseContourIntegral"), and the
 // shortest are of length 2 ("mu", "pi" and the quite a few others).
-//
 //
 // The data here is derived from the HTML Living Standard at
 // http://whatwg.org which notes on its contents page
@@ -2754,15 +2555,12 @@ static int hexval(int c)
 // name &ac12; will ba mapped onto U+ac12.
 //
 // Just so you know, there are somewhat over 2000 names here.
-//
 
 uniname unicode_names[] =
 {
-//
 // It is really part of the purpose of this table that the names are all in
 // the most basic character set, and so I keep the table using "char *" and
 // regular narrow strings.
-//
     {"AElig",                           198},
     {"AMP",                             38},
     {"Aacute",                          193},
@@ -4811,10 +4609,8 @@ uniname unicode_names[] =
     {"zscr",                            120015},
     {"zwj",                             8205},
     {"zwnj",                            8204},
-//
 // The names from here down seem to map onto pairs of Unicode items. Eg
 // 342 is "Combining not tilde above". I will not support these at least yet!
-//
 //  {"NotEqualTilde",                   8770, 824},
 //  {"NotGreaterFullEqual",             8807, 824},
 //  {"NotGreaterGreater",               8811, 824},
@@ -4943,11 +4739,9 @@ static int lookup_wide_name(const wchar_t *s)
 
 const char *lookup_code(int c)
 {   size_t i;
-//
 // I do a simple linear search here. It is cheap-enough given that it is
 // only needed when the user types a special command, ALT-x. It does not
 // matter here that I scan the very final NULL entry.
-//
     for (i=0; i<sizeof(unicode_names)/sizeof(unicode_names[0]); i++)
     {   if (unicode_names[i].code == c) return unicode_names[i].name;
     }
@@ -4968,10 +4762,8 @@ const wchar_t *wide_lookup_code(int c)
 
 static void term_replace_chars_backwards(int n, const wchar_t *s)
 {
-//
 // Replace n characters that are before the caret with bytes from the
 // string s. The caret had better not be in the middle of a surrogate pair!
-//
     int m = wcslen(s);
     if (n > m)        // Overall this deletes characters
     {   int i = insert_point - n;
@@ -5013,10 +4805,8 @@ static void make_wchar(wchar_t *s, int c)
 
 static void term_ctrl_z_command(void)
 {
-//
 // It is not yet clear that I have anything much to allocate this to. In
 // emacs it would be "obey extended command".
-//
     insert_point += swprintf(&input_line[insert_point], input_line_size-insert_point, L"<^X>");
     term_bell();
     term_redisplay();
@@ -5024,7 +4814,6 @@ static void term_ctrl_z_command(void)
 
 void term_unicode_convert(void)
 {
-//
 // If you position the caret to the right of (up to) 6 hex digits and
 // go ALT-X then the digits are replaced by single Unicode character.
 // This may (and indeed often will) be a multi-byte character stored in the
@@ -5094,18 +4883,15 @@ void term_unicode_convert(void)
 // 4 hex of name with prefix     -> hex expanded    oli2260    -> 203e
 // 4 hex of name                 -> name            203e       -> oline
 // 4 hex of unnamed character    -> character       1234       -> (u+1234)
-//
     int i, n, c;
     const wchar_t *p;
     if (insert_point == prompt_length)
     {   term_bell();
         return;
     }
-//
 // I will first see if I can find a name, and I will look for long ones first.
 // The "32" here is the length of the longest word in my table of names, and
 // I note that HTML 5 has "CounterClockwiseContourIntegral" has 31 characters.
-//
     for (n=32; n>=2; n--) // word length to seek
     {   if (prompt_length+n>insert_point) continue; // not this many chars
         for (i=0; i<n; i++)
@@ -5118,22 +4904,18 @@ void term_unicode_convert(void)
         term_replace_chars_backwards(n, output_word);
         return;
     }
-//
 // Next check for a 6-digit hex value. Note that the first two digits
 // must be 01, 02, ... 0f, 10. If you had "00" there then there was no
 // point in using a 6-digit format. If you have any value beyond "10" you
 // are outside the Unicode range.
-//
     if (insert_point - prompt_length >= 6)
     {   p = &input_line[insert_point-6];
         if ((p[0] == '0' && iswxdigit(p[1]) && p[1] != '0') ||
             (p[0] == '1' && p[1] == '0'))
         {   c = (hexval(p[0]) << 4) | hexval(p[1]);
-//
 // By virtue of packing up digits here using OR it will be the case that
 // if ANY of the calls to hexval return a negative value I can be certain
 // that the overall result will be negative.
-//
             for (i=2; i<6 && c > 0; i++)
             {   n = hexval(p[i]);
                 c = (c << 4) | n;
@@ -5145,11 +4927,9 @@ void term_unicode_convert(void)
             }
         }
     }
-//
 // In the next two cases the character before the caret has a name
 // associated with it. Well first I will just extract a Unicode character
 // from before the caret.
-//
     if (insert_point - prompt_length >= 1)
     {   n = 1;
         c = input_line[insert_point-1];
@@ -5163,11 +4943,8 @@ void term_unicode_convert(void)
         }
     }
     else n = 0, c = -1;
-//
 // See if the character has a name.
-//
     p = wide_lookup_code(c);
-//
 // Now I have two messy cases to detect. The first is if the name
 // I have just found has a shorter name as a terminal sub-string. The second
 // is if the name is a suffix of something longer and the prefix part happens
@@ -5175,7 +4952,6 @@ void term_unicode_convert(void)
 // if there were say names ABC, BC and just C in the list of entities, but
 // I am glad to say that that is not the case. Beware if you ever add new
 // entity-names! I will test for these cases in a pretty crude manner.
-//
     if (p != NULL)
     {   int w = -1;
         const wchar_t *p1 = p+1;
@@ -5184,38 +4960,32 @@ void term_unicode_convert(void)
             if (w != -1) break;    // Found a suffix
             p1++;
         }
-//
 // The code here will convert (u+203e) to oli(u+2260) via expanding to
 // the name "oline" and then re-coding the last two letters "ne". And
 // a whole pile of other similar cases such Eaccute, rang, Theta, lfloor,
 // ntilde, otimes and Yuml. I count 57 cases in the HTML 4 entity table, and
-// theer will be more now I have moved to use of the HTML 5 list.
-//
+// there will be more now I have moved to use of the HTML 5 list.
         if (w != -1)
         {   wcscpy(output_word, p);
             make_wchar(&output_word[p1-p], w);
             term_replace_chars_backwards(n, output_word);
             return;
         }
-//
 // Now there is the possible conversion the other way, where (for example)
 // oli(u+2260) is in the buffer. If I merely expanded the unicode character
 // to its name here I would end up with "oline" and the next ALT-X would
 // convert that to (u+203e) - I would never get to see thing in hex form.
 // So in this case I merely expand the character to 4 hex digits.
-//
         for (i=1; i+wcslen(p)<9; i++)
         {   // i is the number of prefix characters to test for
             if (insert_point - prompt_length >= i+n)
             {   memcpy(input_word, &input_line[insert_point-i-n],
                        i*sizeof(wchar_t));
                 wcscpy(&input_word[i], p);
-//
 // I have now concatenated some stuff from the input buffer with the
 // expanded character name and look it up. If I find a match I will
 // convert the character to hex. Because the character itself was one
 // with a name it will fit within 4 digits.
-//
                 if (lookup_wide_name(input_word) != -1)
                 {   swprintf(output_word, 16, L"%.4x", c);
                     term_replace_chars_backwards(n, output_word);
@@ -5224,31 +4994,25 @@ void term_unicode_convert(void)
             }
         }
     }
-//
 // Here I have a character with code c and I am not processing any
 // name it might have just now. However maybe its low 16 bits is a named
 // character. In which case turn the low 16 bits into that name, leaving
 // two digits of hex code ahead of that.
-//
     if (c > 0xffff && (p = wide_lookup_code(c & 0xffff)) != NULL)
     {   swprintf(output_word, 16, L"%.2x%ls", (c >> 16) & 0x3f, p);
         term_replace_chars_backwards(n, output_word);
         return;
     }
-//
 // Character up to u+ffff turns into hex (except that plain ASCII characters
 // do not need that, and if I tried to convert them here that would conflict
 // with their use in hex numeric representation.
-//
     if (c > 0x7f && c <= 0xffff)
     {   swprintf(output_word, 16, L"%.4x", c);
         term_replace_chars_backwards(n, output_word);
         return;
     }
-//
 // The case I look at now all have 4 hex digits ahead of the insertion
 // point.
-//
     if (insert_point - prompt_length >= 4 &&
         iswxdigit(input_line[insert_point-4]) &&
         iswxdigit(input_line[insert_point-3]) &&
@@ -5258,20 +5022,16 @@ void term_unicode_convert(void)
         c = (c << 4) | hexval(input_line[insert_point-3]);
         c = (c << 4) | hexval(input_line[insert_point-2]);
         c = (c << 4) | hexval(input_line[insert_point-1]);
-//
 // Now c is the integer corresponding to the 4 hex digits. If it is in the
 // range 0xd800 to 0xdfff it would be a surrogate - in that case I will
 // reject it. I need to see if the code has an associated name.
-//
         if (c < 0 || c < 0xd800 || c > 0xdfff)
         {   if ((p = wide_lookup_code(c)) != NULL)  // yes it does!
             {
-//
 // Now if the buffer contains characters that would form a prefix to the
 // name I just found I will convert to the hex representation of the
 // character corresponding to the longer name.
 // This prefix processing is rather similar to a case considered earlier.
-//
                 for (i=1; i+wcslen(p)<9; i++)
                 {   // i is the number of prefix characters to test for
                     int c1;
@@ -5294,10 +5054,8 @@ void term_unicode_convert(void)
             return;
         }
     }
-//
 // If I do not recognise any of the situations I will give an alert and
 // not change the buffer at all.
-//
     term_bell();
 }
 
@@ -5391,7 +5149,6 @@ static void term_switch_menu(void)
 /****************************************************************************/
 
 #ifdef SOLARIS
-//
 // the tparm function on Solaris bites me, as it has bitten many people
 // before. On a 64-bit machine the prototype requires a load of arguments,
 // most of which will often be ignored. On a 32-bit system it can cope with
@@ -5401,7 +5158,6 @@ static void term_switch_menu(void)
 // the odd number of args (even in code that could never be executed) as
 // an ERROR not just a WARNING. So for now I will try passing the junk
 // extra args and keeping fingers crossed.
-//
 
 static void solaris_foreground(int n)
 {   if (set_a_foreground)
@@ -5484,14 +5240,12 @@ static void set_shell(void)
 #endif
 }
 
-//
 // Following on from selection of some history I might have accumulated a
 // multi-line chunk of input here. In such a case the first line of the
 // chunk will be returned by an initial call to term_wide_fancy_getline(),
 // which will have displayed a prompt (and the user will have typed some keys
 // that provoke history activity and then hit ENTER). When the left-over
 // is to be returned the prompt must not be re-displayed...
-//
 
 static int left_over = 0;
 
@@ -5505,10 +5259,8 @@ static wchar_t *term_wide_fancy_getline(void)
 #else
     my_reset_prog_mode();
 #endif
-//
 // I am going to take strong action to ensure that the prompt appears
 // at the left-hand side of the screen.
-//
     term_move_first_column();
     set_fg(promptColour);
     for (i=0; i<prompt_length; i++) term_putchar(termed_prompt_string[i]);
@@ -5532,7 +5284,6 @@ static wchar_t *term_wide_fancy_getline(void)
             return NULL;
         }
         any_keys = 1;
-//
 // First ensure there is space in the buffer. In some cases maybe putting
 // the test here is marginally over-keen, since the keystroke entered
 // might not be one that was going to add a character. But it is harmless
@@ -5540,19 +5291,14 @@ static wchar_t *term_wide_fancy_getline(void)
 // give up and return an error marker. Note that the insert_point may not
 // be at the end of the line, so I use wcslen() to find out how long the
 // line actually is.
-//
         n = wcslen(input_line);
-//
 // The curious activity here is to ensure that the buffer would not overflow
 // even if the "regular" part of it was replaced by the longest line
 // that can possibly get into the history-record.
-//
         if (n > longest_history_line) longest_history_line = n;
         if (searchFlags != 0)
             n = n - regular_line_end + longest_history_line;
-//
 // Again allow extra space in case of a need to convert to utf-8.
-//
         if ((n+20)*(5-sizeof(wchar_t)) >=
             input_line_size*(4/sizeof(wchar_t)))
         {   input_line = (wchar_t *)realloc(input_line, 2*input_line_size*sizeof(wchar_t));
@@ -5564,24 +5310,18 @@ static wchar_t *term_wide_fancy_getline(void)
             }
             else input_line_size = 2*input_line_size;
         }
-//
 // There are cases where I need to treat characters specially:
 //   (1) I am in the middle of a history search, and the
 //       character is thus to be treated as part of the incremental
 //       string, unless it terminates the search;
-//
         if (searchFlags != 0 &&
             term_search_char(ch)) continue;
-//
 // term_search_char will return true if it has handled the character and thus
 // searching continues. It returns false if it has exited search mode and the
 // key must now be treated as if it was a "normal" non-search one.
-//
 #ifdef TERMED_TEST
-//
 //      fprintf(stderr, "process character %#x\n", ch);
 //      fflush(stderr);
-//
 #endif
         switch (ch)
         {   case EOF:
@@ -5621,15 +5361,12 @@ static wchar_t *term_wide_fancy_getline(void)
             case 0x7f:     // The "delete backwards" key, I hope
                 term_delete_backwards();
                 continue;
-//
 // I treat tab as an "ordinary" character here, so it just gets inserted
 // into the input line. This is achieved by letting it hit the "default" case
 // in this switch block! Ah well, soon I may be expecting to handle tab to
 // provide some form of completion.
-//
 //  case CTRL('I'):
 //          goto default;
-//
             case CTRL('J'):                     // line-feed
                 break;
             case CTRL('K'):
@@ -5681,10 +5418,8 @@ static wchar_t *term_wide_fancy_getline(void)
             case CTRL('Z'):
                 term_pause_execution();
                 continue;
-//
 // (already dealt with)
 //  case CTRL('['):          ESC
-//
             case CTRL('\\'):
                 set_shell();
                 term_exit_program();
@@ -5699,12 +5434,10 @@ static wchar_t *term_wide_fancy_getline(void)
             case CTRL('@') + ALT_BIT:
                 term_set_mark();
                 continue;
-//
 // When a character is combined with ALT (or prefixed with ESC) I will in
 // at least very nearly every case ignore whether it is upper or lower case
 // or whether CTRL is pressed too. In a rather few cases I will let CTRL
 // take precedence over ALT...
-//
             case CTRL('A') + ALT_BIT: case 'A' + ALT_BIT: case 'a' + ALT_BIT:
                 term_to_start();
                 continue;
@@ -5792,10 +5525,8 @@ static wchar_t *term_wide_fancy_getline(void)
             case CTRL('Z') + ALT_BIT: case 'Z' + ALT_BIT: case 'z' + ALT_BIT:
                 term_pause_execution();
                 continue;
-//
 // (already dealt with)
 //  case CTRL('[') + ALT_BIT:               ESC
-//
             case CTRL('\\') + ALT_BIT:
                 continue;
             case CTRL(']') + ALT_BIT:
@@ -5825,10 +5556,8 @@ static wchar_t *term_wide_fancy_getline(void)
             case '}' + ALT_BIT:
                 continue;  // Ignored
             default:
-//
 // Here I need to insert a character into the buffer. I may not be inserting
 // at the end, so I perhaps have to shuffle existing stuff upwards.
-//
             {   int n1 = insert_point;
                 while (input_line[n1] != 0) n1++;
                 while (n1 >= insert_point)
@@ -5843,10 +5572,8 @@ static wchar_t *term_wide_fancy_getline(void)
         }
         break;
     }
-//
 // Put the cursor at the start of the final line of displayed (wrapped)
 // input before moving back to normal screen mode.
-//
     term_move_first_column();
     term_move_down(final_cursory-cursory, true);
     set_normal();
@@ -5854,15 +5581,11 @@ static wchar_t *term_wide_fancy_getline(void)
     fflush(stdout);
     insert_point = wcslen(input_line);
     if (insert_point==prompt_length && ch==EOF) return NULL;
-//
 // Stick the line into my history record: WITHOUT any newline at its end.
-//
     input_line[insert_point] = 0;
     input_history_stage(input_line+prompt_length);
-//
 // Whether the user terminated the line with CR or LF I will always
 // return "\n" to the program.
-//
     input_line[insert_point++] = L'\n';
     input_line[insert_point] = 0;
     return input_line + prompt_length;
@@ -5870,12 +5593,10 @@ static wchar_t *term_wide_fancy_getline(void)
 
 #endif // DISABLE
 
-//
 // Encode into buffer b as up to 4 characters (plus a nul). Because I
 // am only concerned with Unicode I only need encode values in the
 // range 0 to 0x10ffff. Returns the number of chars packed (not counting
 // the terminating '\0').
-//
 
 int utf_encode(unsigned char *b, int c)
 {   unsigned char *p = b;
@@ -5900,9 +5621,7 @@ int utf_encode(unsigned char *b, int c)
     return (int)(p - b);
 }
 
-//
 // Decode utf-8 or return -1 if invalid.
-//
 
 int utf_bytes = 0;
 
@@ -5911,7 +5630,6 @@ int utf_decode(const unsigned char *b)
     utf_bytes = 1;
     switch (c & 0xf0)
     {
-//
 //  case 0x00:
 //  case 0x10:
 //  case 0x20:
@@ -5920,7 +5638,6 @@ int utf_decode(const unsigned char *b)
 //  case 0x50:
 //  case 0x60:
 //  case 0x70:
-//
         default:
             return c;
         case 0x80:
@@ -5963,10 +5680,8 @@ wchar_t *term_wide_getline(void)
 char *term_getline(void)
 {   wchar_t *r = term_wide_getline();
     if (r == NULL) return NULL;
-//
 // To get a "narrow char" line I read a wide char line and then expand
 // it into utf-8 form.
-//
     char *p = (char *)r;
     wchar_t *q = r;
     int c;
@@ -5979,11 +5694,9 @@ char *term_getline(void)
     }
     else
     {
-//
 // Expanding a code such as 0x1111 unto utf-8 will expand it from a 2-byte
 // wchar_t to 3 bytes. This risks clobbering the input data. To avoid that
 // I will move the raw input data up the buffer first.
-//
         size_t n = wcslen(r);
         wchar_t *s = r + n;  // end of original data
         q = s + (n/2) + 2;   // safe place for end of copied version
@@ -5995,10 +5708,8 @@ char *term_getline(void)
         }
         while ((c = *q++) != 0)
         {   int i, n1;
-//
 // I assume that surrogate pairs are indeed properly paired: I consolidate
 // them into single characters here.
-//
             if (is_low_surrogate(c))
                 c = 0x10000 + ((c & 0x3ff)<<10) + (*q++ & 0x3ff);
             n1 = utf_encode(buffer, c);
@@ -6010,11 +5721,9 @@ char *term_getline(void)
 }
 
 #ifdef RECORD_KEYS
-//
 // This abomination is here to permit me to collect the key-sequences
 // that a whole bunch of things generate for me. I do not guarantee that
 // it will always work, but when it does it may be useful!
-//
 
 static void record_keys(void)
 {   static char *keys[] =

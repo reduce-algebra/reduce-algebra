@@ -47,8 +47,8 @@
 #endif
 
 // I need to explain the operations that happen on FASL files as regards
-// preservation of source code. I am taking the 2016 re-work of code to
-// try to rationalise and simplify behaviour.
+// preservation of source code. This describes a post-2016 implementation
+// which has been simplified and rationalised compared with earlier versions.
 //
 // The starting point for the complication is that the compiler
 // arranges that if the variable !*savedef is set when it compiles
@@ -59,7 +59,7 @@
 // it is instated onto the property list depends on the circumstances
 // associated with loading the module.
 //
-// The when load!-module is used to load the code this extra information
+// When load!-module is used to load the code this extra information
 // is ignored.
 //
 // There is however a scheme that can load !*savedef properties without
@@ -78,7 +78,7 @@
 // (or just use library!-members() without an argument to scan the first or
 // only available library). But using load!-source without an argument
 // achieves essentially just this. Well actually there are extra complications
-// which mean that MOST people should use load!-source withgout an argument!
+// which mean that MOST people should use load!-source without an argument!
 // In general it will be possible to have a number of read-only image files
 // present together with at most one read-write one. The (Lisp) variable
 // input!-libraries contains a list of rather abstract objects giving
