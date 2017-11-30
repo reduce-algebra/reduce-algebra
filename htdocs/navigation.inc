@@ -8,10 +8,10 @@
 
     function menuItem($href, $label, $title = NULL) {
         global $filename, $root;
+		if ($root) $href = "$root$href";
         if ($href === $filename)
             echo "<li title=\"$title\" class=\"selected\">$label</li>";
         else {
-			if ($root) $href = "$root$href";
             echo "<li title=\"$title\"><a href=\"$href\">$label</a></li>";
 		}
     }
