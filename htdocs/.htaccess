@@ -11,4 +11,6 @@ Redirect "/documentation.htm" "/documentation.php"
 Redirect "/grg32.htm" "/grg32/grg32.php"
 Redirect "/manual/manual-pdf.html" "/manual/manual.html"
 
+Options +Indexes
+
 ErrorDocument 404 /ErrorDocument404.html
