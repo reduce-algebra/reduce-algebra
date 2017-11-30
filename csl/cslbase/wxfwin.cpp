@@ -130,8 +130,7 @@ extern char *getcwd(char *s, size_t n);
 #ifdef DEBUG
 
 //
-// This will be used as in FWIN_LOG((format,arg,...))
-// *NOT* using a variadic macro, hence doubled parentheses.
+// This will be used as in FWIN_LOG(format,arg,...)
 // If DEBUG was enabled it send log information
 // to a file with the name fwin-debug.log: I hope that will not (often)
 // clash with any file the user has or requires. if programDir has been
@@ -555,28 +554,28 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 //
         const char *ssh = my_getenv("SSH_CLIENT");
         if (ssh != NULL && *ssh != 0)
-        {   FWIN_LOG(("SSH_CLIENT set on Windows, so treat as console app\n"));
+        {   FWIN_LOG("SSH_CLIENT set on Windows, so treat as console app\n");
             ssh_client = 1;
             windowed = 0;
         }
         else
         {   h = GetStdHandle(STD_INPUT_HANDLE);
             if (GetFileType(h) != FILE_TYPE_CHAR)
-            {   FWIN_LOG(("STD_INPUT_HANDLE not FILE_TYPE_CHAR\n"));
+            {   FWIN_LOG("STD_INPUT_HANDLE not FILE_TYPE_CHAR\n");
                 windowed = 0;
             }
             else if (!GetConsoleMode(h, &w))
-            {   FWIN_LOG(("!GetConsoleMode(STD_INPUT_HANDLE)\n"));
+            {   FWIN_LOG("!GetConsoleMode(STD_INPUT_HANDLE)\n");
                 windowed = 0;
             }
             else
             {   h = GetStdHandle(STD_OUTPUT_HANDLE);
                 if (GetFileType(h) != FILE_TYPE_CHAR)
-                {   FWIN_LOG(("STD_OUTPUT_HANDLE not FILE_TYPE_CHAR\n"));
+                {   FWIN_LOG("STD_OUTPUT_HANDLE not FILE_TYPE_CHAR\n");
                     windowed = 0;
                 }
                 else if (!GetConsoleScreenBufferInfo(h, &csb))
-                {   FWIN_LOG(("!GetConsoleMode(STD_OUTPUT_HANDLE)\n"));
+                {   FWIN_LOG("!GetConsoleMode(STD_OUTPUT_HANDLE)\n");
                     windowed = 0;
                 }
             }
@@ -610,12 +609,12 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 //
         const char *ssh = my_getenv("SSH_CLIENT");
         if (ssh != NULL && *ssh != 0)
-        {   FWIN_LOG(("SSH_CLIENT set\n"));
+        {   FWIN_LOG("SSH_CLIENT set\n");
             ssh_client = 1;
             windowed = 0;
         }
         else if (GetFileType(h) == FILE_TYPE_DISK)
-        {   FWIN_LOG(("STD_INPUT_HANDLE is FILE_TYPE_DISK\n"));
+        {   FWIN_LOG("STD_INPUT_HANDLE is FILE_TYPE_DISK\n");
             windowed = 0;
         }
     }
@@ -626,17 +625,17 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // bundle.
 //
     {   CFBundleRef mainBundle = CFBundleGetMainBundle();
-        FWIN_LOG(("mainBundle = %p\n", mainBundle));
+        FWIN_LOG("mainBundle = %p\n", mainBundle);
         if (mainBundle == NULL) macApp = 0;
         else
         {   CFDictionaryRef d = CFBundleGetInfoDictionary(mainBundle);
-            FWIN_LOG(("d=%p\n", d));
+            FWIN_LOG("d=%p\n", d);
             if (d == NULL) macApp = 0;
             else
             {   CFStringRef s =
                     (CFStringRef)CFDictionaryGetValue(d,
                         CFSTR("ATSApplicationFontsPath"));
-                FWIN_LOG(("s=%p\n", s));
+                FWIN_LOG("s=%p\n", s);
                 macApp = (s != NULL);
             }
         }
@@ -652,7 +651,7 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
         !macApp &&
 #endif
         (!isatty(fileno(stdin)) || !isatty(fileno(stdout))))
-    {   FWIN_LOG(("stdin or stdout is not a tty\n"));
+    {   FWIN_LOG("stdin or stdout is not a tty\n");
         windowed = 0;
     }
 
@@ -665,7 +664,7 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 //
     {   const char *ssh = my_getenv("SSH_CLIENT");
         if (ssh != NULL && *ssh != 0)
-        {   FWIN_LOG(("SSH_CLIENT set on MacOSX\n"));
+        {   FWIN_LOG("SSH_CLIENT set on MacOSX\n");
 //          ssh_client = 1;
             windowed = 0;
         }
@@ -680,7 +679,7 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 //
     disp = my_getenv("DISPLAY");
     if (disp == NULL || strchr(disp, ':')==NULL)
-    {   FWIN_LOG(("DISPLAY not set for an X11 version\n"));
+    {   FWIN_LOG("DISPLAY not set for an X11 version\n");
         windowed = 0;
     }
 #endif // MACINTOSH
@@ -747,7 +746,7 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // The code I have here is based on empirical observation in cases that
 // most people will probably not trigger!
 //
-                FWIN_LOG(("Running windowed mode application via ssh.\n"));
+                FWIN_LOG("Running windowed mode application via ssh.\n");
             }
             else
             {
@@ -827,7 +826,7 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
 // Well foo.app exists and is a directory, so I will try to use it
             const char **nargs = (const char **)malloc(sizeof(char *)*(argc+3));
             int i;
-            FWIN_LOG(("About to restart Mac from an application bundle\n"));
+            FWIN_LOG("About to restart Mac from an application bundle\n");
 #ifdef DEBUG
 //
 // Since I am about to restart the program I do not want the new version to
@@ -866,7 +865,7 @@ void sigint_handler(int code)
 // doing anything such as printing to a log file represents undefined
 // behaviour in a signal handler, so this may be useful for debugging but
 // i snot guaranteed safe in general.
-    FWIN_LOG(("sigint_handler called %d %#x\n", code, code));
+    FWIN_LOG("sigint_handler called %d %#x\n", code, code);
     signal(SIGINT, sigint_handler);
     if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
     return;
