@@ -862,9 +862,14 @@ psl_inplace_build ()
 
   AC_MSG_NOTICE([passcc = $passcc])
   doconfig="$SHELL \"$abssrcdir/libraries/crlibm/configure\" $filtered \
-        $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-        --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+        $pass_host \
+        CPPFLAGS=\"$CPPFLAGS\" \
+        CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" \
+        LDFLAGS=\"$LDFLAGS\" \
+        $passcc \
+        --prefix=\"$builddir\" \
+        --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
   AC_MSG_NOTICE([doconfig = $doconfig])
   eval "$doconfig"
@@ -875,9 +880,13 @@ psl_inplace_build ()
   cd libedit
   doconfig="$SHELL \"$abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure\" \
         $nohost \
-        CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-        --enable-widec=yes --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+        CPPFLAGS=\"$CPPFLAGS\" \
+        CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" \
+        LDFLAGS=\"$LDFLAGS\" \
+        --enable-widec=yes \
+        --prefix=\"$builddir\" \
+        --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
   AC_MSG_NOTICE([doconfig = $doconfig])
   eval "$doconfig"
@@ -891,9 +900,12 @@ psl_inplace_build ()
   cd redfront
 
   doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $nohost \
-        CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-        --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+        CPPFLAGS=\"$CPPFLAGS\" \
+        CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" \
+        LDFLAGS=\"$LDFLAGS\" \
+        --prefix=\"$builddir\" \
+        --libdir=\"$builddir/lib\" \
         --includedir=\"$builddir/include\""
   AC_MSG_NOTICE([doconfig = $doconfig])
   eval "$doconfig"
@@ -1099,8 +1111,13 @@ then
             wxWidgets/wxWidgets_revision
     then
       printf "will unpack a fresh copy of wxWidgets\n"
-      rm -rf wxWidgets
-      tar xfj support-packages/$a
+      mkdir wxWidgets-new
+      cp $abssrcdir/csl/support-packages/wxWidgets_revision wxWidgets-new
+      mv wxWidgets-new wxWidgets
+# At present my wxWidgets archive is packed as for a directory named
+# just "wxWidgets", but I will allow for any future change where the
+# directory mentioned in the tar archive has a version number included.
+      tar xfj support-packages/$a -C wxWidgets --strip-components=1
 # At one stage I had trouble with the unpacked archive not being all
 # readable, so here I forcibly reset permssions
       chmod -R +rw wxWidgets
@@ -1120,26 +1137,9 @@ then
       find wxWidgets -name config.h.in -print | xargs touch
       sleep 1
       find wxWidgets -name Makefile.in -print | xargs touch
-      cp $abssrcdir/csl/support-packages/wxWidgets_revision wxWidgets
-# Now I will force all autoconf-related files to be in the correct order.
-# This is because I really want to use the versions from the archive, and
-# I have seen cases where the default unpacked version triggers an attempt
-# to run autoconf/automake again in ways that are costly but what is worse
-# do not work on all platforms.
-      find . \( -name configure.ac -o -name configure.in \
-                -o -name Makefile.am \) -print | xargs touch
-      sleep 1
-      find wxWidgets -name aclocal.m4 -print | xargs touch
-      sleep 1
-      find wxWidgets -name configure -print | xargs touch
-      find wxWidgets -name configure -print | xargs chmod +x
-      sleep 1
-      find wxWidgets -name config.h.in -print | xargs touch
-      sleep 1
-      find wxWidgets -name Makefile.in -print | xargs touch
       printf "wxWidgets unpacked from archive $a\n"
-      cd $d
     fi
+    cd $d
 #
 # A short essay to explain why I pass down "--host=$host" here. There are
 # two points. The first is that I cope with 64-bit windows by use of
@@ -1209,10 +1209,6 @@ then
 # clang on MacOSX does not provide -mfpmath
 #     CFLAGS="$CFLAGS -msse2 -mfpmath=sse"
 #     CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
-# For wxWidgets I will ONLY support x86_64, and I will demand at least
-# Operating System 10.9 (Mavericks). I believe there were significant
-# changes introduces between supporting 10.8 and 10.9 as the lowest
-# release and these cause real compilation problems.
       MACARCH="--enable-macos_arch=x86_64" 
       extras="--with-xft --with-xim"
       wx="--with-cocoa \
@@ -1242,19 +1238,36 @@ then
     fi
     AC_MSG_NOTICE([passcc = $passcc pass_host=$pass_host])
     doconfig="$SHELL \"$abssrcdir/csl/wxWidgets/configure\" $wx \
-            $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+            $pass_host \
+            CPPFLAGS=\"$CPPFLAGS -D_GNU_SOURCE=1\" \
+            CFLAGS=\"$CFLAGS\" \
+            CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" \
-            LDFLAGS=\"$LDFLAGS\" $passcc \
-            --disable-shared --enable-unicode \
-            --disable-compat28 --enable-compat30 \
-            --enable-monolithic --disable-sys-libs \
-            --without-libjpeg --without-libtiff \
-            --without-libsvg --without-sdl \
-            --without-expat --without-libiconv \
-            --without-regex --disable-richtext --disable-gif \
-            --disable-pcx --enable-graphics_ctx \
-            --disable-tga --disable-pnm \
-            --disable-svg --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
+            LDFLAGS=\"$LDFLAGS\" \
+            $passcc \
+            --disable-shared \
+            --enable-unicode \
+            --disable-compat28 \
+            --enable-monolithic \
+            --disable-sys-libs \
+            --without-libjpeg \
+            --without-libtiff \
+            --disable-svg \
+            --without-sdl \
+            --without-expat \
+            --without-libiconv \
+            --without-regex \
+            --disable-webview \
+            --disable-richtext \
+            --disable-gif \
+            --disable-pcx \
+            --enable-graphics_ctx \
+            --disable-tga \
+            --disable-pnm \
+            --enable-dynlib \
+            --enable-dynamicloader \
+            --prefix=\"$builddir\" \
+            --libdir=\"$builddir/lib\" \
             --includedir=\"$builddir/include\""
     if test "x$enable_debug" != "xno"
     then
@@ -1264,8 +1277,9 @@ then
     fi
     if test "x$with_cygwin" != "xno"
     then
-      doconfig="$doconfig --with-gtk --without-msw"
+      doconfig="$doconfig --with-gtk"
     fi
+    ./autogen.sh
     AC_MSG_NOTICE([doconfig = $doconfig])
     if test "x$with_sequential" = "xno"
     then
@@ -1286,13 +1300,23 @@ then
     fi
     AC_MSG_NOTICE([passcc = $passcc])
     doconfig="$SHELL \"$abssrcdir/csl/fox/configure\" $ac_configure_args \
-            CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-            CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-            $pass_host --enable-release --with-opengl=no \
-            --disable-jpeg --disable-zlib --disable-bz2lib \
-            --disable-png --disable-tiff --prefix=\"$builddir\" \
+            CPPFLAGS=\"$CPPFLAGS\" \
+            CFLAGS=\"$CFLAGS\" \
+            CXXFLAGS=\"$CXXFLAGS\" \
+            LDFLAGS=\"$LDFLAGS\" \
+            $passcc \
+            $pass_host \
+            --enable-release \
+            --with-opengl=no \
+            --disable-jpeg \
+            --disable-zlib \
+            --disable-bz2lib \
+            --disable-png \
+            --disable-tiff \
+            --prefix=\"$builddir\" \
             --libdir=\"$builddir/lib\" \
-            --includedir=\"$builddir/include\" $extras"
+            --includedir=\"$builddir/include\" \
+            $extras"
     AC_MSG_NOTICE([doconfig = $doconfig])
     if test "x$with_sequential" = "xno"
     then
@@ -1327,10 +1351,15 @@ else
   esac
   AC_MSG_NOTICE([passcc = $passcc])
   doconfig="$SHELL \"$abssrcdir/libraries/crlibm/configure\" $filtered \
-        $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-        --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
-            --includedir=\"$builddir/include\""
+        $pass_host \
+        CPPFLAGS=\"$CPPFLAGS\" \
+        CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" \
+        LDFLAGS=\"$LDFLAGS\" \
+        $passcc \
+        --prefix=\"$builddir\" \
+        --libdir=\"$builddir/lib\" \
+        --includedir=\"$builddir/include\""
   AC_MSG_NOTICE([doconfig = $doconfig])
   if test "x$with_sequential" = "xno"
   then
@@ -1354,11 +1383,17 @@ else
 fi
 AC_MSG_NOTICE([passcc = $passcc])
 doconfig="$SHELL \"$abssrcdir/libraries/libffi/configure\" $filtered \
-      $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-      CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-      --disable-multi-os-directory --disable-docs \
-      --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
-      --includedir=\"$builddir/include\""
+        $pass_host \
+        CPPFLAGS=\"$CPPFLAGS\" \
+        CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" \
+        LDFLAGS=\"$LDFLAGS\" \
+        $passcc \
+        --disable-multi-os-directory \
+        --disable-docs \
+        --prefix=\"$builddir\" \
+        --libdir=\"$builddir/lib\" \
+        --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
 if test "x$with_sequential" = "xno"
 then
@@ -1438,11 +1473,16 @@ else
 fi
 AC_MSG_NOTICE([passcc = $passcc])
 doconfig="$SHELL \"$abssrcdir/libraries/SoftFloat-3a/source/configure\" \
-      $filtered \
-      $pass_host CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-      CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" $passcc \
-      --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
-      --includedir=\"$builddir/include\""
+        $filtered \
+        $pass_host \
+        CPPFLAGS=\"$CPPFLAGS\" \
+        CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" \
+        LDFLAGS=\"$LDFLAGS\" \
+        $passcc \
+        --prefix=\"$builddir\" \
+        --libdir=\"$builddir/lib\" \
+        --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
 if test "x$with_sequential" = "xno"
 then
@@ -1459,11 +1499,15 @@ mkdir -p libedit
 cd libedit
 
 doconfig="$SHELL \"$abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure\" \
-      $nohost \
-      CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-      CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-      --enable-widec=yes --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
-      --includedir=\"$builddir/include\""
+        $nohost \
+        CPPFLAGS=\"$CPPFLAGS\" \
+        CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" \
+        LDFLAGS=\"$LDFLAGS\" \
+        --enable-widec=yes \
+        --prefix=\"$builddir\" \
+        --libdir=\"$builddir/lib\" \
+        --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
 if test "x$with_sequential" = "xno"
 then
@@ -1482,10 +1526,13 @@ mkdir -p redfront
 cd redfront
 
 doconfig="$SHELL \"$abssrcdir/generic/newfront/configure\" $nohost \
-      CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
-      CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" \
-      --prefix=\"$builddir\" --libdir=\"$builddir/lib\" \
-      --includedir=\"$builddir/include\""
+        CPPFLAGS=\"$CPPFLAGS\" \
+        CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" \
+        LDFLAGS=\"$LDFLAGS\" \
+        --prefix=\"$builddir\" \
+        --libdir=\"$builddir/lib\" \
+        --includedir=\"$builddir/include\""
 AC_MSG_NOTICE([doconfig = $doconfig])
 if test "x$with_sequential" = "xno"
 then
