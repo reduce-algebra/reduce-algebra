@@ -3,29 +3,24 @@ README  -*- text -*-
 GNU Emacs REDUCE Integrated Development Environment:
 Major modes for editing and running REDUCE source code
 
-Author: Francis J. Wright <http://sourceforge.net/users/fjwright>
+Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 
-Version: $Id$
+Version 1.5 -- $Id$
 
 REDUCE IDE is a package that provides an Integrated Development
 Environment for the REDUCE computer algebra system within the GNU
-Emacs editor. Its two major components are Emacs Lisp libraries that
+Emacs editor.  Its two major components are Emacs Lisp libraries that
 provide major modes for respectively editing REDUCE source code and
 running a *command-line version* of REDUCE in an Emacs window.
 However, many of the facilities require that Emacs is running under a
 GUI such as Microsoft Windows or the X Window System under some
 flavour of UNIX or Linux.
 
-REDUCE IDE requires GNU Emacs 23 or later. I don't explicitly support
+REDUCE IDE requires GNU Emacs 23 or later, although I developed the
+current version using GNU Emacs 26.  I don't explicitly support
 XEmacs.
 
-All files should in principle be OS-independent. However, the
-environment I use currently consists of Microsoft Windows 7, the
-native Windows port of GNU Emacs 24, and Cygwin for other GNU
-software. I probably can't help with problems that are specific to a
-different setup, especially a different OS.
-
-* Distributed files
+* Source files
 
 Required:
 
@@ -38,30 +33,31 @@ reduce-ide.texinfo	- texinfo documentation source
 
 * Installation
 
-In GNU Emacs 24+, download reduce-mode.el and optionally reduce-run.el
+Provided you are using GNU Emacs 24 or later, I recommend that you
+install the complete package, including documentation in info format,
+by following the instructions at
+<http://reduce-algebra.sourceforge.net/reduce-ide/>.  Alternatively,
+download reduce-mode.el and optionally reduce-run.el from
+<https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/generic/emacs/>
 to any convenient directory and run the Emacs command
 `package-install-file' on reduce-mode.el and then optionally on
-reduce-run.el. *Note that reduce-mode.el must be installed first.* (I
-may provide a multi-file package including documentation later.) For
-further deails, see "Packages" in the Emacs manual.
+reduce-run.el.  *Note that reduce-mode.el must be installed first.*
+For further details, see "Packages" in the Emacs manual.
 
 For brief manual installation instructions see the comments after
 "Usage" in the .el files.
 
 * Documentation
 
-A 30-page user's guide, generated from reduce-ide.texinfo, is
-available in PDF or HTML via
-http://reduce-algebra.sourceforge.net/reduce-ide/.
+The user's guide, generated from reduce-ide.texinfo, is available as a
+32-page PDF document or a multi-page HTML document via
+<http://reduce-algebra.sourceforge.net/reduce-ide/>.
 
 You can also generate documentation yourself in various formats,
-including info, html and pdf, from reduce-ide.texinfo, but you need
-the GNU Texinfo package; see http://www.gnu.org/software/texinfo/. If
-you have TeX installed then it might include Texinfo (possibly as an
-optional package); e.g. MiKTeX for Windows provides the main
-components. To generate info or html it is probably best to run
-makeinfo; to generate pdf you need to run TeX, possibly indirectly, so
-you also need a TeX installation. For further details, please read
+including info, HTML and PDF, from reduce-ide.texinfo, but you need
+the GNU Texinfo package; see <http://www.gnu.org/software/texinfo/>.
+The commands I used to generate the formats that I provide are listed
+at the end of reduce-ide.texinfo.  For further details, please read
 sections 20 to 22 of the Texinfo manual, available online at
 http://www.gnu.org/software/texinfo/manual/texinfo/. For a quick
 summary, see http://en.wikipedia.org/wiki/Texinfo.

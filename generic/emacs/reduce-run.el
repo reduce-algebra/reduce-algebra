@@ -8,7 +8,7 @@
 ;; Keywords: languages, processes
 ;; Homepage: http://reduce-algebra.sourceforge.net/reduce-ide
 ;; Package-Version: 1.5
-;; Package-Requires: ((reduce-mode "1.21"))
+;; Package-Requires: ((reduce-mode "1.5"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -295,7 +295,7 @@ You can modify this function to install just the bindings you want."
 (defun reduce-run-mode ()
   "Major mode for interacting with a REDUCE process -- part of REDUCE IDE.
 Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
-Version: see `reduce-run-version'
+Version: see `reduce-run-version'.
 Comments, suggestions, bug reports, etc., are welcome.
 Full texinfo documentation is provided in the file `reduce-ide.texinfo'.
 
@@ -685,7 +685,7 @@ last `reduce-input-file' or `reduce-fasl-file' command.")
     ))
 
 (defun reduce-input-file (file-name)
-  "Input REDUCE source file FILE-NAME into the current REDUCE process.
+  "Input REDUCE source file FILE-NAME into a REDUCE process.
 Interactively, switch to a REDUCE process buffer first;
 otherwise assume the current buffer is a REDUCE process buffer.
 The user always chooses interactively whether to echo file input."
@@ -803,6 +803,7 @@ This directory is used for completion by `reduce-load-package'."
 ;;; ===================================================================
 ;;; (essentially as requested by Raffaele Vitolo)
 
+;;;###autoload
 (defun reduce-run-file (filename)
   "Run FILENAME as a REDUCE program in a unique process buffer.
 Start a new (default) REDUCE process named from FILENAME

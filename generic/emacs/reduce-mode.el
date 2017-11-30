@@ -1,12 +1,15 @@
 ;;; reduce-mode.el --- Major mode to edit REDUCE computer-algebra code
 
-;; Copyright (c) 1994-2001, 2012 Francis J. Wright
+;; Copyright (C) 1998-2001, 2012, 2017 Francis J. Wright
 
-;; Author: Francis J. Wright <http://sourceforge.net/users/fjwright>
+;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: late 1992
 ;; Version: $Id$
 ;; Keywords: languages
-;; Package-Version: 1.21
+;; Homepage: http://reduce-algebra.sourceforge.net/reduce-ide
+;; Package-Version: 1.5
+
+;; This file is not part of GNU Emacs.
 
 ;; This program is free software: you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -19,8 +22,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see
-;; <http://www.gnu.org/licenses/>.
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;; Contributions by Rainer Schoepf flagged ; RS
 ;; Schoepf@goofy.zdv.Uni-Mainz.DE
@@ -30,12 +32,12 @@
 
 ;;; Commentary:
 
-;; REDUCE mode is a major mode for editing source code for the REDUCE
+;; REDUCE Mode is a major mode for editing source code for the REDUCE
 ;; computer algebra system, which is Open Source and available from
-;; <http://reduce-algebra.svn.sourceforge.net/>.
+;; <https://sourceforge.net/projects/reduce-algebra>.
 
-;; The latest version of REDUCE mode is available from
-;; <http://reduce-algebra.svn.sourceforge.net/viewvc/reduce-algebra/trunk/generic/emacs/>.
+;; The latest version of REDUCE Mode is available from
+;; <https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/generic/emacs>.
 
 ;; Full documentation covering the installation and use of REDUCE mode
 ;; is provided by a texinfo source file called `reduce-ide.texinfo'.
@@ -56,13 +58,13 @@
 
 ;; (autoload 'reduce-mode "reduce-mode" "Major mode for REDUCE code editing" t)
 
-;; To run REDUCE mode automatically on files with extension ".red" or
+;; To run REDUCE Mode automatically on files with extension ".red" or
 ;; ".tst" put the following (after `autoload') in your `.emacs' file:
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.\\(red\\|tst\\)\\'" . reduce-mode))
 
-;; To make REDUCE mode customization always available put the
+;; To make REDUCE Mode customization always available put the
 ;; following (after `autoload') in your `.emacs' file:
 
 ;;;###autoload
