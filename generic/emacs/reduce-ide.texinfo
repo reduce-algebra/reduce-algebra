@@ -1,9 +1,9 @@
 \input texinfo
 @c %**start of header
 @settitle GNU Emacs REDUCE Integrated Development Environment
-@c Version: $Id$	
+@c Version: $Id$
 @c Manual last updated:
-@set UPDATED Time-stamp: <2017-11-29 18:32:35 fjw>
+@set UPDATED Time-stamp: <2017-12-05 16:00:52 fjw>
 @c Software version:
 @set VERSION 1.5
 @afourpaper
@@ -125,24 +125,24 @@ project.  REDUCE is also written in Lisp, as is (most of) Emacs.
 However, the REDUCE user language is similar to Algol-60 (which looks
 a bit like a cross between Pascal and FORTRAN-77).
 
-Development of REDUCE edit mode began tentatively in late 1992, and
-serious development of the current version began in early 1994, and
-continued sporadically until 2001.  Development of REDUCE run mode
-began in late 1998.  The latest released versions of the software and
-documentation are available from
-@uref{https://sourceforge.net/projects/reduce-algebra/, SourceForge}.
-Comments, suggestions, bug reports, etc.@: are welcome.
+I began development of REDUCE edit mode tentatively in late 1992 and
+seriously in early 1994, and continued sporadically until 2001.  I
+began development of REDUCE run mode in late 1998.  The latest
+versions of the software and documentation source code are available
+from
+@uref{https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/generic/emacs/,
+SourceForge}.  Comments, suggestions, bug reports, etc.@: are welcome.
 
 The current version of the REDUCE IDE is intended for use with GNU
-Emacs version 25 and later, which I will endeavour to support under
-recent versions of Microsoft Windows and Ubuntu Linux; it might run
+Emacs version 25 or later, which I will endeavour to support under
+recent versions of Microsoft Windows and Ubuntu Linux.  It might run
 under closely related versions of GNU Emacs but I cannot explicitly
 support either XEmacs or other platforms.
 
 REDUCE IDE version 1.5 provides two major updates.  One is a
 substantial rewrite of REDUCE run mode to provide explicit support for
-both CSL and PSL REDUCE, and for easily running multiple copies of
-REDUCE simultaneously.  The other is distribution as a multi-file
+both CSL and PSL REDUCE, and for easily running multiple REDUCE
+processes simultaneously.  The other is distribution as a multi-file
 package via @uref{http://reduce-algebra.sourceforge.net/reduce-ide/,
 the REDUCE IDE web page}, which makes installation and updating very
 easy via the GNU Emacs package manager (@pxref{Packages,, Emacs Lisp
@@ -183,33 +183,24 @@ the version of a REDUCE mode that is actually installed in your Emacs,
 select it in some buffer and then give the command @kbd{C-h m}
 (@code{describe-mode}) or use the @kbd{Help} menu option @kbd{Describe}.
 
-@page  @c to fix page 1 header
-
 @c ===================================================================
 
 @node Installation
 @chapter Installation of REDUCE IDE
 @cindex Installation of REDUCE IDE
 
-@c The recommended procedure for installing the REDUCE IDE is to load or
-@c evaluate the Emacs Lisp (ELisp) file @file{reduce-ide-install.el} within
-@c Emacs, after copying it and all the other REDUCE IDE files that you wish
-@c to install into some chosen directory, probably by down-loading them from
-@c my web server.  The installer will try to configure Emacs to use
-@c whichever files are present in its directory; @file{reduce-mode.el} is
-@c required and all other files are optional.  If the info version of this
-@c document is present then it will be configured for browsing within
-@c Emacs.  The installer asks the user a few questions and updates the
-@c user's Emacs initialization file.  It tries to avoid adding unnecessary
-@c code by testing the current configuration.
+It is probably best to use the GNU Emacs package manager to install
+the latest complete REDUCE IDE package as described in the
+@uref{http://reduce-algebra.sourceforge.net/reduce-ide/#installation,
+installation section of the main REDUCE IDE web page}.
 
-@c The rest of this chapter, and the related section of the chapter on
-@c REDUCE run mode, are for users who want to install and configure the
-@c REDUCE IDE ``by hand'', or who want to understand what is necessary and
-@c what should be done by the installer program.
+The rest of this chapter, and the related section of the chapter on
+REDUCE run mode, are for users who want to install and configure
+REDUCE IDE ``by hand'', or who want to understand the installation
+process.
 
 REDUCE edit mode is provided by a file called @file{reduce-mode.el},
-which is a file of ELisp source code.  This file should be
+which is a file of Emacs Lisp source code.  This file should be
 byte-compiled, and the compiled file @file{reduce-mode.elc} should be
 installed in the normal directory from which Emacs loads its Lisp code
 (if you have suitable permission).  Otherwise, customize your Emacs
@@ -222,7 +213,7 @@ precise meaning of ``home directory'' depends on both your OS and
 Emacs version; the easiest way to find it in Emacs is to visit the
 directory @file{~}, or just visit the file @file{~/.emacs} directly.
 Your @file{.emacs} file is updated automatically by the Emacs
-customization facility and can also be edited by hand to add other
+customization facility and you can also edit it by hand to add other
 configuration.  @xref{Init File,,,emacs,The Emacs Editor}.
 
 @findex load-library
@@ -241,8 +232,8 @@ a per-user basis, is to put the following statement into your
           "Major mode for REDUCE code editing" t)
 @end lisp
 
-This statement is completely innocuous and will have no effect unless the
-user selects REDUCE mode.  It could therefore quite safely be put in a
+This statement is completely innocuous and will have no effect unless
+you select REDUCE mode.  It could therefore quite safely be put in a
 system-wide configuration file (e.g.@: @file{default.el} or
 @file{site-start.el}).  @xref{Init File,,,emacs,The Emacs Editor}.
 
@@ -257,7 +248,7 @@ statement in your @file{.emacs} file will have the desired effect:
 (add-to-list 'auto-mode-alist '("\\.red\\'" . reduce-mode))
 @end lisp
 
-Other extensions can be used as well or instead; if you use a different
+You can use other extensions as well or instead; if you use a different
 file naming convention then make the appropriate change(s) to the above
 statement.  Emacs also provides other facilities that can be used for
 controlling major modes.
@@ -1669,10 +1660,14 @@ and the hooks available for customising it, see the file
 @section Installation of REDUCE run mode
 @cindex Installation of REDUCE run mode
 
-It is probably best to use the semi-automatic installation procedure
-described earlier.  @xref{Installation, , Installation of the REDUCE
-IDE}.  But if you want to install by hand, or understand the details of
-the installation process, then read on @enddots{}
+It is probably best to use the GNU Emacs package manager to install
+the latest complete REDUCE IDE package as described in the
+@uref{http://reduce-algebra.sourceforge.net/reduce-ide/#installation,
+installation section of the main REDUCE IDE web page}.
+
+But if you want to install by hand, or understand the details of the
+installation process, then read on.  (Please also @pxref{Installation,
+, Installation of REDUCE IDE}.)
 
 REDUCE run mode requires the library @file{reduce-mode} both when it is
 compiled and when it is loaded.  It tries quite hard to locate this
