@@ -37,8 +37,12 @@
 ;; to edit boot.sl than to hack the elisp reader. Hence, probably only
 ;; some functions need defining or redefining.
 
+;; Syntax tables are not used by the Emacs Lisp reader, which has its
+;; own built-in syntactic rules which cannot be changed!
+
 ;;; FUNCTIONS
 ;;; =========
+
 
 ;;; Elementary Predicates
 ;;; =====================
@@ -127,6 +131,7 @@ Returns T if U is a dotted-pair.")
 ;; otherwise.
 ;; EXPR PROCEDURE ZEROP(U);
 ;; OR(EQN(U, 0), EQN(U, 0.0));
+
 
 ;;; Functions on Dotted-Pairs
 ;;; =========================
@@ -247,6 +252,7 @@ If U is present on the OBLIST it is removed. This does not affect U
 having properties, flags, functions and the like. U is returned."
   (unintern u)
   u)
+
 
 ;;; Property List Functions
 ;;; =======================
@@ -257,8 +263,7 @@ U is a list of ids which are flagged with V. The effect of FLAG is
 that FLAGP will have the value T for those ids of U which were
 flagged. Both V and all the elements of U must be identifiers or the
 type mismatch error occurs."
-  (mapc (lambda (x) (put x v t)) u)
-  nil)
+  (mapc u (lambda (x) (put x v t))))	; SLISP mapc!
 
 (defun flagp (u v)
   "FLAGP(U:any, V:any):boolean eval, spread
@@ -283,8 +288,7 @@ NIL if either U or V is not an id."
 Removes the flag V from the property list of each member of the
 list U. Both V and all the elements of U must be ids or the type
 mismatch error will occur."
-  (mapc (lambda (x) (put x v nil)) u)
-  nil)
+  (mapc u (lambda (x) (put x v nil))))	; SLISP mapc!
 
 (defun remprop (u ind)
   "REMPROP(U:any, IND:any):any eval, spread
@@ -293,6 +297,7 @@ Returns the removed property or NIL if there was no such indicator."
   (prog1
 	  (get u ind)
 	(put u ind nil)))
+
 
 ;;; Function Definition
 ;;; ===================
@@ -367,18 +372,23 @@ the name may be used subsequently as a variable."
   (prog1
 	  (get fname 'type)
 	(fmakunbound fname)))
+
 
 ;;; Variables and Bindings
 ;;; ======================
 
-(defun fluid (idlist)					; really a no-op!
+(defun fluid (idlist)					; really almost a no-op!
   "FLUID(IDLIST:id-list):NIL eval, spread
 The ids in IDLIST are declared as FLUID type variables (ids not
 previously declared are initialized to NIL). Variables in IDLIST
 already declared FLUID are ignored. Changing a variable's type
 from GLOBAL to FLUID is not permissible and results in the error:
 ***** ID cannot be changed to FLUID"
-  (mapc (lambda (x) (put u 'FLUID t)) idlist))
+  (mapc idlist							; SLISP mapc!
+		(lambda (x)
+		  (if (globalp x) (error "ID cannot be changed to FLUID"))
+		  (if (not (fluidp x)) (set x nil))
+		  (put x 'FLUID t))))
 
 (defun fluidp (u)
   "FLUIDP(U:any):boolean eval, spread
@@ -386,7 +396,7 @@ If U has been declared FLUID (by declaration only) T is returned,
 otherwise NIL is returned."
   (get u 'FLUID))
 
-(defun global (idlist)					; really a no-op!
+(defun global (idlist)					; really almost a no-op!
   "GLOBAL(IDLIST:id-list):NIL eval, spread
 The ids of IDLIST are declared global type variables. If an id
 has not been declared previously it is initialized to
@@ -394,7 +404,11 @@ NIL. Variables already declared GLOBAL are ignored. Changing a
 variables type from FLUID to GLOBAL is not permissible and
 results in the error:
 ***** ID cannot be changed to GLOBAL"
-  (mapc (lambda (x) (put u 'GLOBAL t)) idlist))
+  (mapc idlist							; SLISP mapc!
+		(lambda (x)
+		  (if (fluidp x) (error "ID cannot be changed to GLOBAL"))
+		  (if (not (globalp x)) (set x nil))
+		  (put x 'GLOBAL t))))
 
 (defun globalp (u)
   "GLOBALP(U:any):boolean eval, spread
@@ -429,7 +443,10 @@ The variables in IDLIST that have been declared as FLUID
 variables are no longer considered as fluid variables. Others are
 ignored. This affects only compiled functions as free variables
 in interpreted functions are automatically considered fluid."
-  (mapc (lambda (x) (put u 'FLUID nil)) idlist))
+  (mapc idlist							; SLISP mapc!
+		(lambda (x)
+		  (if (fluidp x) (put x 'FLUID nil)))))
+
   
 ;;; Program Feature Functions
 ;;; =========================
@@ -460,7 +477,7 @@ in interpreted functions are automatically considered fluid."
 ;; another error is detected:
 ;; ***** Illegal use of GO to LABEL
 
-(defmacro prog (vars program)
+(defmacro prog (vars &rest program)
   "PROG(VARS:id-list, [PROGRAM:{id, any}]):any noeval, nospread
 VARS is a list of ids which are considered fluid when the PROG is
 interpreted and local when compiled. The PROGs variables are
@@ -474,7 +491,7 @@ determined by a RETURN function or NIL if the PROG \"falls
 through\"."
   `(let ,vars							; support local variables
 	 (cl-block PROG						; support return
-	   (cl-tagbody ,program))))			; support labels
+	   (cl-tagbody ,@program))))		; support labels
 
 ;; PROGN([U:any]):any noeval, nospread -- OK
 ;; U is a set of expressions which are executed sequentially. The value
@@ -485,14 +502,16 @@ through\"."
 ;; EXPR PROCEDURE PROG2(A, B);
 ;;    B;
 
-(defun return (u)
+(defmacro return (u)
+  ;; Needs to be a macro to expand WITHIN the above prog form!
   "RETURN(U:any) eval, spread
 Within a PROG, RETURN terminates the evaluation of a PROG
 and returns U as the value of the PROG. The restrictions on the
 placement of RETURN are exactly those of GO. Improper placement
 of RETURN results in the error:
 ***** Illegal use of RETURN"
-  (cl-return-from PROG u))
+  `(cl-return-from PROG ,u))
+
 
 ;;; Error Handling
 ;;; ==============
@@ -552,6 +571,7 @@ dependent format."
 	   ;; will not have one, so return the error message string
 	   ;; instead. What matters is that an atom is returned.
 	   msg))))
+
 
 ;;; Vectors
 ;;; =======
@@ -585,6 +605,7 @@ lie in 0...UPBV(V) an error occurs:
   "UPBV(U:any):NIL,integer eval, spread
 Returns the upper limit of U if U is a vector, or NIL if it is not."
   (if (vectorp u) (1- (length u))))
+
 
 ;;; Boolean Functions and Conditionals
 ;;; ==================================
@@ -630,6 +651,7 @@ Returns the upper limit of U if U is a vector, or NIL if it is not."
 ;;    U := CDR U;
 ;;    GO LOOP
 ;; END;
+
 
 ;;; Arithmetic Functions
 ;;; ====================
@@ -767,6 +789,7 @@ MACRO PROCEDURE TIMES(U);
 (defalias 'times2 '*
   "TIMES2(U:number, V:number):number eval, spread
 Returns the product of U and V.")
+
 
 ;;; MAP Composite Functions
 ;;; =======================
@@ -786,7 +809,11 @@ EXPR PROCEDURE MAP(X, FN);
 	  args								; Elisp mode
 	(reverse args)))					; Standard Lisp mode
 
-;; MAPC(X:list, FN:function):any eval, spread -- OK except for arg order (& value)!
+(defun sl--mapc-filter-return (value)
+  "Return nil."
+  nil)
+
+;; MAPC(X:list, FN:function):any eval, spread -- OK except for arg order & value!
 ;; FN is applied to successive CAR segments of list X. NIL is returned.
 ;; EXPR PROCEDURE MAPC(X, FN);
 ;;    WHILE X DO << FN CAR X; X := CDR X >>;
@@ -821,6 +848,7 @@ EXPR PROCEDURE MAPLIST(X, FN);
    IF NULL X THEN NIL
       ELSE FN X . MAPLIST(CDR X, FN);"
   (if x (cons (fn x) (maplist (cdr x) fn))))
+
 
 ;;; Composite Functions
 ;;; ===================
@@ -992,6 +1020,7 @@ EXPR PROCEDURE SUBST(U, V, W);
 		((equal v w) u)
 		((atom w) w)
 		(t (cons (subst u v (car w)) (subst u v (cdr w))))))
+
 
 ;;; The Interpreter
 ;;; ===============
@@ -1088,6 +1117,7 @@ EXPR PROCEDURE EXPAND(L,FN);
 ;; Stops evaluation and returns U unevaluated.
 ;; FEXPR PROCEDURE QUOTE(U);
 ;;    CAR U;
+
 
 ;;; Input and Output
 ;;; ================
@@ -1203,14 +1233,25 @@ returns the internal name of the previously selected input file.
 ;; returns the value of !$EOF!$ when the end of the currently
 ;; selected input file is reached.
 
-(defun readch ()						; temporary no-op
+(defun readch ()			  ; *Standard LISP* buffer only at present!
   "READCH():id
 Returns the next interned character from the file currently selected
 for input. Two special cases occur. If all the characters in an input
 record have been read, the value of !$EOL!$ is returned. If the file
 selected for input has all been read the value of !$EOF!$ is returned.
 Comments delimited by % and end-of-line are not transparent to READCH."
-  nil)
+  (with-current-buffer "*Standard LISP*"
+	(goto-char sl-marker)
+	(cond ((eobp) !$eof!$)
+		  ((eolp) (forward-line)
+		   (set-marker sl-marker (point)) !$eol!$)
+		  (t (let ((ch (char-after sl-marker)))
+			   (set-marker sl-marker (1+ sl-marker))
+			   (intern (if (or (and (>= ch ?A) (<= ch ?Z))
+							   (and (>= ch ?a) (<= ch ?z)))
+						   (string ch)
+						 (string ?! ch)))
+			   )))))
 
 ;; TERPRI():NIL -- OK probably
 ;; The current print line is terminated.
@@ -1225,25 +1266,10 @@ device is selected. WRS returns the internal name of the previously
 selected output file.
 ***** FILEHANDLE could not be selected for output"
   nil)
+
 
 ;;; LISP Reader
 ;;; ===========
-
-(defun sl-begin ()
-  (advice-add 'rplaca :override #'sl--rplaca-override)
-  (advice-add 'rplacd :override #'sl--rplacd-override)
-  (advice-add 'error :override #'sl--error-override)
-  (advice-add 'mapc :filter-args #'sl--mapc-filter-args)
-  (advice-add 'mapcan :filter-args #'sl--mapc-filter-args)
-  (advice-add 'mapcar :filter-args #'sl--mapc-filter-args))
-
-(defun sl-end ()
-  (advice-remove 'rplaca #'sl--rplaca-override)
-  (advice-remove 'rplacd #'sl--rplacd-override)
-  (advice-remove 'error #'sl--error-override)
-  (advice-remove 'mapc #'sl--mapc-filter-args)
-  (advice-remove 'mapcan #'sl--mapc-filter-args)
-  (advice-remove 'mapcar #'sl--mapc-filter-args))
 
 (defun standard-lisp ()
   "EXPR PROCEDURE STANDARD!-LISP();
@@ -1256,6 +1282,7 @@ BEGIN SCALAR VALUE;
 	     IF NOT ATOM VALUE THEN PRINT CAR VALUE;
 	     TERPRI() >>;
 END;"
+  (sl-begin)
   (let (value)
 	(rds nil) (wrs nil)
 	(prin2 "Standard LISP") (terpri)
@@ -1264,10 +1291,184 @@ END;"
 		(prin2 "EVAL: ") (terpri)
 		(setq value (errorset '(eval (read)) t t))
 		(if (not (atom value)) (print (car value)))
-		(terpri)))))
+		(terpri))))
+  (sl-end))
 
 (defun quit ()
   "QUIT()
 Causes termination of the LISP reader and control to be transferred
 to the operating system."
   (throw 'quit nil))
+
+
+;;; System GLOBAL Variables
+;;; =======================
+
+(defvar !*comp nil						; currently ignored!
+  "*COMP = NIL global
+The value of !*COMP controls whether or not PUTD compiles the
+function defined in its arguments before defining it. If !*COMP is
+NIL the function is defined as an EXPR. If !*COMP is something
+else the function is first compiled. Compilation will produce certain
+changes in the semantics of functions particularly FLUID type access.")
+
+(defvar emsg!* nil
+  "EMSG* = NIL global
+Will contain the MESSAGE generated by the last ERROR call.")
+
+(defconst !$eof!$ :!$EOF!$
+  "$EOF$ = <an uninterned identifier> global
+The value of !$EOF!$ is returned by all input functions when the end
+of the currently selected input file is reached.")
+
+(defconst !$eol!$ :!$EOL!$
+  "$EOL$ = <an uninterned identifier> global
+The value of !$EOL!$ is returned by READCH when it reaches the
+end of a logical input record. Likewise PRINC will terminate its
+current line (like a call to TERPRI) when !$EOL!$ is its argument.")
+
+(defvar !*gc nil						; currently ignored!
+  "*GC = NIL global
+!*GC controls the printing of garbage collector messages. If NIL
+no indication of garbage collection may occur. If non-NIL various
+system dependent messages may be displayed.")
+
+;; NIL = NIL global -- OK
+;; NIL is a special global variable. It is protected from being modified
+;; by SET or SETQ.
+
+(defvar !*raise nil						; currently ignored!
+  "*RAISE = NIL global
+If !*RAISE is non-NIL all characters input through Standard LISP
+input/output functions will be raised to upper case. If !*RAISE is
+NIL characters will be input as is.")
+
+;; T = T global -- OK
+;; T is a special global variable. It is protected from being modified by
+;; SET or SETQ.
+
+
+;;; Emacs Support
+;;; =============
+
+(defun sl-begin ()
+  (advice-add 'rplaca :override #'sl--rplaca-override)
+  (advice-add 'rplacd :override #'sl--rplacd-override)
+  (advice-add 'error :override #'sl--error-override)
+  (advice-add 'mapc :filter-args #'sl--mapc-filter-args)
+  (advice-add 'mapc :filter-return #'sl--mapc-filter-return)
+  (advice-add 'mapcan :filter-args #'sl--mapc-filter-args)
+  (advice-add 'mapcar :filter-args #'sl--mapc-filter-args))
+
+(defun sl-end ()
+  (advice-remove 'rplaca #'sl--rplaca-override)
+  (advice-remove 'rplacd #'sl--rplacd-override)
+  (advice-remove 'error #'sl--error-override)
+  (advice-remove 'mapc #'sl--mapc-filter-args)
+  (advice-remove 'mapc #'sl--mapc-filter-return)
+  (advice-remove 'mapcan #'sl--mapc-filter-args)
+  (advice-remove 'mapcar #'sl--mapc-filter-args))
+
+;;; Code that must be evaluated in Standard LISP mode:
+(sl-begin)
+(global '(!*comp emsg!* !$eof!$ !$eol!$ !*gc !*raise))
+(sl-end)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (define-derived-mode sl-interaction-mode
+;;   lisp-interaction-mode "SLISP Interaction"
+;;   "Major mode for entering and evaluating Standard LISP forms.")
+
+;; (defun sl-run ()
+;;   "Run Standard LISP with input via the minbuffer and output via a buffer."
+;;   (interactive)
+;;   (switch-to-buffer (get-buffer-create "*Standard LISP*"))
+;;   (sl-interaction-mode)
+;;   (sl-begin)
+;;   (unwind-protect
+;; 	  ;; Set IO to use this buffer:
+;; 	  (let* ((m (set-marker (make-marker) 1)) ; IO marker
+;; 			 ;; (standard-input m)
+;; 			 (standard-output m)
+;; 			 value)						; value of last sexp
+;; 		;; (rds nil) (wrs nil)
+;; 		(princ "Standard LISP") (terpri)
+;; 		(catch 'quit
+;; 		  (while t
+;; 			(princ "EVAL: ") (terpri)
+;; 			(setq value (errorset '(eval (read)) t t))
+;; 			(if (not (atom value)) (print (car value)))
+;; 			(terpri))))
+;; 	(sl-end)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar sl-interaction-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "\e\C-x" 'sl-read-eval-print)
+    (define-key map "\C-j" 'sl-read-eval-print)
+    map)
+  "Keymap for Standard LISP interaction mode.
+Most commands are inherited from `lisp-interaction-mode-map'.")
+
+(define-derived-mode sl-interaction-mode
+  lisp-interaction-mode "SLISP Interaction"
+  "Major mode for entering and evaluating Standard LISP forms."
+  (make-local-variable 'comment-start)
+  (setq comment-start "%")
+  ;; Always advance point in this buffer's window when text is inserted:
+  (make-local-variable 'window-point-insertion-type)
+  (setq window-point-insertion-type t)
+  )
+
+(defvar sl-marker (make-marker)
+  "Marker from which the next input should be read.")
+
+(defun sl-run ()
+  "Run Standard LISP with IO via a buffer."
+  (interactive)
+  (switch-to-buffer (get-buffer-create "*Standard LISP*"))
+  (sl-interaction-mode)
+  (let ((standard-output (set-marker sl-marker 1)))
+	(princ "Standard LISP") (terpri)
+	(terpri) (princ "Eval: ")))
+
+(defun sl-read-eval-print ()
+  "Read input after `sl-marker', eval it and print the result."
+  (interactive)
+  (sl-begin)
+  (unwind-protect
+	  (let ((standard-input sl-marker)
+			(standard-output sl-marker)
+			value)
+		(setq value (errorset '(eval (read)) t t))
+		(unless (atom value)
+		  (terpri) (terpri) (princ "====> ") (princ (car value)))
+		(terpri) (terpri) (princ "Eval: ")
+		;; Output does not necessarily advance point, so...
+		(goto-char sl-marker))
+	(sl-end)))
+
+(defun sl-eval-print-last-sexp ()
+  "Copy sexp before point to end of *Standard LISP* buffer.
+Then evaluate it and print value into *Standard LISP* buffer."
+  (interactive)
+  (let ((sexp (buffer-substring-no-properties
+			   (save-excursion (backward-sexp) (point))
+			   (point))))
+	(save-current-buffer
+	  (set-buffer "*Standard LISP*")
+	  (insert sexp)
+	  (sl-read-eval-print)
+	  )))
+
+(global-set-key "\C-c\C-j" 'sl-eval-print-last-sexp)
+
+(defun sl-load-file ()
+  "Load the Standard LISP file named FILE."
+  (interactive)
+  (sl-begin)
+    (unwind-protect
+		(call-interactively 'load-file)
+	  (sl-end)))
