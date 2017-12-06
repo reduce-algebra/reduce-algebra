@@ -7,7 +7,7 @@
 ;; Version: $Id$
 ;; Keywords: languages, processes
 ;; Homepage: http://reduce-algebra.sourceforge.net/reduce-ide
-;; Package-Version: 1.5
+;; Package-Version: 1.51
 ;; Package-Requires: ((reduce-mode "1.5"))
 
 ;; This file is not part of GNU Emacs.
@@ -111,7 +111,11 @@
  "This variable has been replaced by `reduce-run-commands' with different syntax."
  "1.3")
 
-(defcustom reduce-run-commands '(("CSL" . "redcsl --nogui") ("PSL" . "redpsl"))
+(defcustom reduce-run-commands
+  (if (eq system-type 'windows-nt)
+	  '(("CSL" . "C:/Program Files/Reduce/bin/redcsl.bat --nogui")
+		("PSL" . "C:/Program Files/Reduce/bin/redpsl.bat"))
+	'(("CSL" "redcsl --nogui") ("PSL" "redpsl")))
   "Alist of commands to invoke CSL and PSL REDUCE in preference order.
 The commands can also be absolute path names, and they can include switches.
 They must invoke a command\-line version of REDUCE.  A GUI version will not work!
@@ -690,7 +694,9 @@ Interactively, switch to a REDUCE process buffer first;
 otherwise assume the current buffer is a REDUCE process buffer.
 The user always chooses interactively whether to echo file input."
   (interactive (reduce-run-get-source "Input REDUCE file: "))
-  (if current-prefix-arg (switch-to-reduce t t))
+  (when (called-interactively-p 'any)
+	(switch-to-reduce t t)
+	(sit-for 1))						; Allow REDUCE time to start
   (reduce-send-string
    (format "in \"%s\"%c" file-name
 		   (if (y-or-n-p "Echo file input? ") ?\; ?$))))
