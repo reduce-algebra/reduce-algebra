@@ -3,9 +3,9 @@
 @settitle GNU Emacs REDUCE Integrated Development Environment
 @c Version: $Id$
 @c Manual last updated:
-@set UPDATED Time-stamp: <2017-12-05 16:00:52 fjw>
+@set UPDATED Time-stamp: <2017-12-08 18:17:13 fjw>
 @c Software version:
-@set VERSION 1.5
+@set VERSION 1.52
 @afourpaper
 @c With different size paper the printed page breaks will need attention!
 @c Look for @page and @need commands.
@@ -97,7 +97,7 @@ Manual last updated @value{UPDATED}
 * Access::                      Access to procedures and operators
 * Miscellaneous::               Miscellaneous minor features and bugs
 * Customization::               User options that control REDUCE IDE
-* Run::                         Running REDUCE in a buffer
+* Run::                         Running REDUCE in a window
 * Feedback::                    Bug reports, suggestions, comments, @dots{}
 * Command Index::               Index of REDUCE IDE commands
 * Variable Index::              Index of REDUCE IDE configuration variables
@@ -150,9 +150,10 @@ Packages, emacs, GNU Emacs Manual}).
 
 @strong{However, beware that in native Microsoft Windows GNU Emacs
 (only) PSL REDUCE currently does not run correctly without some
-additional support, which is explained below.  The problem appears to
-be that it needs to be explicitly run from a shell.  I hope to improve
-this situation in a later version of REDUCE IDE.}
+additional support.  The problem appears to be that PSL REDUCE needs
+to be explicitly run from a shell, which is arranged automatically if
+you use the GNU Emacs package manager.  @xref{PSL on Windows} for
+further details.}
 
 This manual assumes that you are familiar in general with both Emacs
 and REDUCE.
@@ -169,11 +170,12 @@ automatically}).
 
 The purpose of REDUCE run mode is to provide a friendly interface to a
 @strong{command-line version} of REDUCE running as an inferior process
-in an Emacs buffer.  REDUCE run mode inherits much of its functionality
-from REDUCE edit mode and cannot be run alone.  The assumption is that
-normal use will involve editing one or more REDUCE source files and
-running REDUCE simultaneously, and this is what REDUCE run mode aims
-to support.
+in an Emacs buffer.  REDUCE run mode inherits much of its
+functionality from REDUCE edit mode and cannot be run alone.  The
+assumption is that normal use will involve editing one or more REDUCE
+source files and running REDUCE simultaneously, and this is what
+REDUCE run mode aims to support.  REDUCE run mode is described in its
+own sub-manual: @pxref{Run, Running REDUCE in a buffer}.
 
 @kindex C-h m
 @findex describe-mode
@@ -192,7 +194,8 @@ select it in some buffer and then give the command @kbd{C-h m}
 It is probably best to use the GNU Emacs package manager to install
 the latest complete REDUCE IDE package as described in the
 @uref{http://reduce-algebra.sourceforge.net/reduce-ide/#installation,
-installation section of the main REDUCE IDE web page}.
+installation section of the main REDUCE IDE web page}.  None of the
+manual installation described below is then required.
 
 The rest of this chapter, and the related section of the chapter on
 REDUCE run mode, are for users who want to install and configure
@@ -1555,26 +1558,27 @@ mode locally.
 @c ===================================================================
 
 @node Run
-@chapter Running REDUCE in a buffer
+@chapter Running REDUCE in an Emacs window
 @cindex Running REDUCE
 @cindex Run mode
 
 REDUCE run mode is a subsidiary of REDUCE edit mode, in the sense that
 it requires REDUCE edit mode to be loaded before it is loaded (which
 it tries to ensure automatically).  It provides an interface that
-allows a command-line (as opposed to a GUI) version of REDUCE to be
-run interactively in an Emacs buffer, with input from and output to
-that buffer.
+allows you to run a command-line (as opposed to a GUI) version of
+REDUCE interactively in an Emacs window, with input from and output to
+that window.
 
-In fact, it allows CSL and/or PSL REDUCE to be run simultaneously and
-independently in multiple buffers.  You specify your preferred REDUCE
+In fact, it allows you to run CSL and/or PSL REDUCE simultaneously and
+independently in multiple windows.  You specify your preferred REDUCE
 version, which is then used by default, but there are also commands to
 start CSL or PSL REDUCE specifically.  (The default preference is CSL
 REDUCE, mainly because it seems to be slightly more robust.)
 
-A REDUCE source code file or an Emacs buffer containing REDUCE source
-code (in REDUCE mode) can be run as a completed REDUCE program in an
-independent buffer automatically named from its file or buffer.
+You can also run a REDUCE source code file or an Emacs buffer
+containing REDUCE source code (in REDUCE mode) as a completed REDUCE
+program in an independent window automatically named from the source
+code file or buffer.
 
 REDUCE statements, procedures or general regions of code in a REDUCE
 mode buffer can be sent to REDUCE running in another buffer.  If
@@ -1586,7 +1590,7 @@ automatically.
 @menu
 * Run Introduction::            Introduction to REDUCE run mode
 * Run Installation::            Installation of REDUCE run mode
-* PSL on Windows::              Running PSL REDUCE on Windows
+* PSL on Windows::              Running PSL REDUCE on Microsoft Windows
 * Run Customization::           Customization of REDUCE run mode
 * Run REDUCE::                  Running, re-running and switching to REDUCE
 * Run REDUCE Program::          Running complete REDUCE programs
@@ -1663,7 +1667,8 @@ and the hooks available for customising it, see the file
 It is probably best to use the GNU Emacs package manager to install
 the latest complete REDUCE IDE package as described in the
 @uref{http://reduce-algebra.sourceforge.net/reduce-ide/#installation,
-installation section of the main REDUCE IDE web page}.
+installation section of the main REDUCE IDE web page}.  None of the
+manual installation described below is then required.
 
 But if you want to install by hand, or understand the details of the
 installation process, then read on.  (Please also @pxref{Installation,
@@ -1692,27 +1697,37 @@ your @file{.emacs} file:
 @c -------------------------------------------------------------------
 
 @node PSL on Windows
-@section Running PSL REDUCE on Windows
+@section Running PSL REDUCE on Microsoft Windows
 @cindex PSL on Windows
 @cindex Running PSL REDUCE on Windows
 
-PSL REDUCE on Windows currently needs to be run explicitly from a
-shell and a reasonably easy way to arrange that is to create a text
-file called (say) @file{myredpsl.bat} containing the following two
-lines:
+It seems that PSL REDUCE on Windows currently needs to be run
+explicitly from the Windows shell, which is arranged automatically if
+you use the GNU Emacs package manager. In that case, you can ignore
+the rest of this section, unless something foes wrong!
+
+The package manager installs a file called
+@file{reduce-run-redpsl.bat} in the same folder as REDUCE IDE and
+REDUCE run mode automatically executes this file in order to run PSL
+REDUCE.  The file just contains the following two lines (apart from an
+inessential comment line):
 
 @verbatim
 @echo off
-cmd /c redpsl
+"C:\Program Files\Reduce\bin\redpsl.bat"
 @end verbatim
 
-This assumes you have added the REDUCE @file{bin} directory to your
-search path; if not then you need to use the full path for redpsl,
-which is probably "C:/Program Files/Reduce/bin/redpsl.bat".  Then
-customize @var{reduce-run-commands} (see the next section) to use the
-name of your @file{.bat} file as the command to start PSL REDUCE if it
-is on your search path, or use the full pathname of the file if it is
-not on your search path.
+It is important that the second line is the full path of the file
+@file{redpsl.bat} on your computer.  (If you include the REDUCE
+@file{bin} folder in your search path---which is not done
+automatically by the REDUCE installer---then you can optionally just
+use @file{"redpsl.bat"}, where the extension and the double quotes are
+also now optional.)
+
+The user option @var{reduce-run-commands} (see the next section)
+should automatically show the full pathname of
+@file{reduce-run-redpsl.bat} as the command to start PSL REDUCE.  If
+not, you can customize it to the correct value.
 
 @c -------------------------------------------------------------------
 
@@ -1723,11 +1738,11 @@ not on your search path.
 @cindex User options
 @cindex Variables
 
-REDUCE run mode provides a small amount of customization.  The following
-user options can be changed using the standard Emacs customization
-facilities.  The main REDUCE customization group is called ``REDUCE'',
-under which REDUCE run mode provides a sub-group ``REDUCE Run'' that
-allows the following options to be customized.
+REDUCE run mode provides a small amount of customization and the
+following user options can be changed using the standard Emacs
+customization facilities.  The main REDUCE customization group is
+called ``REDUCE'', under which REDUCE run mode provides a sub-group
+``REDUCE Run'' that allows the following options to be customized.
 
 @strong{It is essential to check that @var{reduce-run-commands} is set
 correctly otherwise REDUCE will not run correctly.  The settings of
@@ -1739,7 +1754,9 @@ This variable is obsolete and has been replaced by
 @end defopt
 
 @defopt reduce-run-commands
-Default value @code{(("CSL" . "redcsl --nogui") ("PSL" . "redpsl"))}.
+Default value @code{(("CSL" . "redcsl --nogui") ("PSL" . "redpsl"))}
+except on Microsoft Windows.
+
 The value of this variable is an association list of two elements, one
 for each of the main Lisp versions on which REDUCE is distributed,
 namely CSL and PSL.  The order of these elements determines the order
@@ -1748,14 +1765,18 @@ REDUCE versions; see below.  Each element is a ``dotted pair'' of
 strings, of which the first is either "CSL" or "PSL" and the second is
 the command to run that version of REDUCE using a command-line
 interface.  This can include any required options, as illustrated
-above by the default value for CSL REDUCE.  The command can be either
-the command name, as illustrated above, or it can be a full path name,
-which can contain spaces.  (But spaces are not allowed in the command
-options.)  If command names are used then those commands must be on
-your search path.  On most platforms, this should happen
-automatically, but on Microsoft Windows you either need to add the
-REDUCE @code{bin} directory to your search path or customize this
-variable to use full path names.
+above by the default value for CSL REDUCE.
+
+The command can be either the command name, as illustrated above, or
+it can be a full path name, which can contain spaces.  (But spaces are
+not allowed in the command options.)  If command names are used then
+those commands must be on your search path and on platforms other than
+Microsoft Windows this should be the case automatically.
+
+On Microsoft Windows REDUCE run mode uses full pathnames by default
+and moreover it uses a separate batch file to run PSL REDUCE, as
+described above (@pxref{PSL on Windows, Running PSL REDUCE on
+Microsoft Windows}).
 @end defopt
 
 @defopt reduce-run-prompt

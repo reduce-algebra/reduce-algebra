@@ -7,7 +7,7 @@
 ;; Version: $Id$
 ;; Keywords: languages, processes
 ;; Homepage: http://reduce-algebra.sourceforge.net/reduce-ide
-;; Package-Version: 1.51
+;; Package-Version: 1.52
 ;; Package-Requires: ((reduce-mode "1.5"))
 
 ;; This file is not part of GNU Emacs.
@@ -113,8 +113,14 @@
 
 (defcustom reduce-run-commands
   (if (eq system-type 'windows-nt)
-	  '(("CSL" . "C:/Program Files/Reduce/bin/redcsl.bat --nogui")
-		("PSL" . "C:/Program Files/Reduce/bin/redpsl.bat"))
+	  (list '("CSL" . "c:/Program Files/Reduce/bin/redcsl.bat --nogui")
+			(cons "PSL"
+				  (let* ((dir (file-name-directory
+							   (or load-file-name (buffer-file-name))))
+						 (file (concat dir "reduce-run-redpsl.bat")))
+					(if (file-exists-p file)
+						file
+					  "c:/Program Files/Reduce/bin/redpsl.bat"))))
 	'(("CSL" "redcsl --nogui") ("PSL" "redpsl")))
   "Alist of commands to invoke CSL and PSL REDUCE in preference order.
 The commands can also be absolute path names, and they can include switches.
