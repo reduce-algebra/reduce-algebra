@@ -198,6 +198,14 @@ occurs if U is not a dotted-pair."
 ;;; Identifiers
 ;;; ===========
 
+(defun sl--symbol-name-sans! (symbol)
+  "Return single-character SYMBOL’s name, a string,
+with any leading ! character removed."
+  (let ((s (symbol-name symbol)))
+	(if (eq (aref s 0) ?!)
+		(string (aref s 1))
+	  s)))
+
 (defun compress (u)
   "COMPRESS(U:id-list):{atom-vector} eval, spread
 U is a list of single character identifiers which is built into a Standard
@@ -209,8 +217,10 @@ pointers may be compressed but this is an undefined use. If an entity
 cannot be parsed out of U or characters are left over after parsing
 an error occurs:
 ***** Poorly formed atom in COMPRESS"
-  ;; Compress a list of ids into a single (uninterned) id.
-  (make-symbol (mapconcat 'symbol-name u "")))
+  (let ((s (mapconcat 'sl--symbol-name-sans! u "")))
+	(if (or (eq (car u) '!\") (digit (car u)))
+		(read s)						; string or number
+	  (make-symbol s))))				; uninterned symbol
 
 (defun explode (u)
   "EXPLODE(U:{atom}-{vector}):id-list eval, spread
@@ -236,7 +246,7 @@ string, or function-pointer."
 ;; Creates an identifier which is not interned on the OBLIST and con-
 ;; sequently not EQ to anything else.
 
-;; INTERN(U:{id,string}):id eval, spread -- *maybe* OK (elisp does not allow id)
+;; INTERN(U:{id,string}):id eval, spread -- Elisp intern does not allow id
 ;; INTERN searches the OBLIST for an identifier with the same print
 ;; name as U and returns the identifier on the OBLIST if a match
 ;; is found. Any properties and global values associated with U may
@@ -245,6 +255,13 @@ string, or function-pointer."
 ;; permitted by the implementation (the minimum number is 24) an
 ;; error occurs:
 ;; ***** Too many characters to INTERN
+
+(defun sl--intern-filter-args (args)
+  "If U is a symbol then convert it to a string.
+Return a list of arguments.
+Required because Emacs Lisp intern only accepts a string."
+  (let ((u (car args)))
+	(list (if (symbolp u) (symbol-name u) u))))
 
 (defun remob (u)
   "REMOB(U:id):id eval, spread
@@ -269,12 +286,16 @@ type mismatch error occurs."
   "FLAGP(U:any, V:any):boolean eval, spread
 Returns T if U has been previously flagged with V, else NIL. Returns
 NIL if either U or V is not an id."
-  (get u v))
+  (if (symbolp u) (get u v)))
 
-;; GET(U:any, IND:any):any eval, spread -- OK
-;; Returns the property associated with indicator IND from the prop-
-;; erty list of U. If U does not have indicator IND, NIL is returned.
-;; GET cannot be used to access functions (use GETD instead).
+(defun sl--get-around (orig-fun u v)
+  ;; Essentially, orig-fun = get, but avoiding recursion!
+  ;; Emacs Lisp get only accepts a symbol as first arg.
+  "GET(U:any, IND:any):any eval, spread
+Returns the property associated with indicator IND from the prop-
+erty list of U. If U does not have indicator IND, NIL is returned.
+GET cannot be used to access functions (use GETD instead)."
+  (if (symbolp u) (apply orig-fun u v nil)))
 
 ;; PUT(U:id, IND:id, PROP:any):any eval, spread -- OK
 ;; The indicator IND with the property PROP is placed on the property
@@ -311,6 +332,7 @@ type EXPR. If the !*COMP variable is non-NIL, the EXPR is first
 compiled. The name of the defined function is returned.
 FEXPR PROCEDURE DE(U);
    PUTD(CAR U, 'EXPR, LIST('LAMBDA, CADR U, CADDR U));"
+  (declare (debug (&define name lambda-list def-body)))
   (put fname 'type 'EXPR)
   `(defun ,fname ,params ,fn))
 
@@ -332,6 +354,7 @@ definitions of the function are overwritten. The function created
 is of type MACRO. The name of the macro is returned.
 FEXPR PROCEDURE DM(U);
    PUTD(CAR U, 'MACRO, LIST('LAMBDA, CADR U, CADDR U));"
+  (declare (debug (&define name lambda-list def-body)))
   (put mname 'type 'MACRO)
   `(defmacro ,mname ,param ,fn))
 
@@ -477,7 +500,9 @@ in interpreted functions are automatically considered fluid."
 ;; another error is detected:
 ;; ***** Illegal use of GO to LABEL
 
-(defmacro prog (vars &rest program)
+(def-edebug-spec go 0)
+
+(defalias 'prog 'cl-prog
   "PROG(VARS:id-list, [PROGRAM:{id, any}]):any noeval, nospread
 VARS is a list of ids which are considered fluid when the PROG is
 interpreted and local when compiled. The PROGs variables are
@@ -488,10 +513,9 @@ of their appearance in the PROG function. Identifiers appearing
 in the top level of the PROGRAM are labels which can be
 referenced by GO. The value returned by the PROG function is
 determined by a RETURN function or NIL if the PROG \"falls
-through\"."
-  `(let ,vars							; support local variables
-	 (cl-block PROG						; support return
-	   (cl-tagbody ,@program))))		; support labels
+through\".")
+
+(def-edebug-spec prog ((&rest symbolp) &rest &or symbolp form))
 
 ;; PROGN([U:any]):any noeval, nospread -- OK
 ;; U is a set of expressions which are executed sequentially. The value
@@ -502,15 +526,15 @@ through\"."
 ;; EXPR PROCEDURE PROG2(A, B);
 ;;    B;
 
-(defmacro return (u)
-  ;; Needs to be a macro to expand WITHIN the above prog form!
+(defalias 'return 'cl-return
   "RETURN(U:any) eval, spread
 Within a PROG, RETURN terminates the evaluation of a PROG
 and returns U as the value of the PROG. The restrictions on the
 placement of RETURN are exactly those of GO. Improper placement
 of RETURN results in the error:
-***** Illegal use of RETURN"
-  `(cl-return-from PROG ,u))
+***** Illegal use of RETURN")
+
+(def-edebug-spec return t)
 
 
 ;;; Error Handling
@@ -532,7 +556,7 @@ variables are not affected by the process."
 	;; Emacs-Lisp mode
 	(apply 'error args)))
 
-(defun errorset (u msgp tr)
+(defmacro errorset (u msgp tr)
   "ERRORSET(U:any, MSGP:boolean, TR:boolean):any eval, spread
 If an error occurs during the evaluation of U, the value of
 NUMBER from the ERROR call is returned as the value of
@@ -554,23 +578,23 @@ trace-back sequence will be initiated on the selected output
 device. The traceback will display information such as unbindings
 of FLUID variables, argument lists and so on in an implementation
 dependent format."
-  ;; Ignore tr argument for now!
-  (condition-case err					; error description variable
-	  (list (eval u))					; protected form
-	(user-error						; Standard LISP error
-	 (if msgp (let ((msg (cddr err)))
-				(message "***** %s"
-						 (if (listp msg)
-							 (mapconcat 'identity msg " ")
-						   msg))))
-	 (cadr err))
-	(error								; Emacs-Lisp error
-	 (let ((msg (error-message-string err)))
-	   (if msgp (message "***** %s" msg))
-	   ;; Should return the error number, but internal elisp errors
-	   ;; will not have one, so return the error message string
-	   ;; instead. What matters is that an atom is returned.
-	   msg))))
+  (declare (debug (form form form)))
+  `(condition-case err					; error description variable
+	   (list (eval ,u))					; protected form
+	 ((user-error ,(if tr 'debug))		; Standard LISP error
+	  (if ,msgp (let ((msg (cddr err)))
+				  (message "***** %s"
+						   (if (listp msg)
+							   (mapconcat 'identity msg " ")
+							 msg))))
+	  (cadr err))
+	 ((error ,(if tr 'debug))			; Emacs-Lisp error
+	  (let ((msg (error-message-string err)))
+		(if ,msgp (message "***** %s" msg))
+		;; Should return the error number, but internal elisp errors
+		;; will not have one, so return the error message string
+		;; instead. What matters is that an atom is returned.
+		msg))))
 
 
 ;;; Vectors
@@ -917,10 +941,10 @@ EXPR PROCEDURE LITER(U);
                 !a !b !c !d !e !f !g !h !i !j !k !l !m
                 !n !o !p !q !r !s !t !u !v !w !x !y !z))
       THEN T ELSE NIL;"
-  (if (memq u '(!A !B !C !D !E !F !G !H !I !J !K !L !M
-                !N !O !P !Q !R !S !T !U !V !W !X !Y !Z
-                !a !b !c !d !e !f !g !h !i !j !k !l !m
-                !n !o !p !q !r !s !t !u !v !w !x !y !z))
+  (if (memq u '(A B C D E F G H I J K L M
+                N O P Q R S T U V W X Y Z
+                a b c d e f g h i j k l m
+                n o p q r s t u v w x y z))
 	  t))
 
 ;; MEMBER(A:any, B:list):extra-boolean eval, spread -- OK
@@ -1250,8 +1274,7 @@ Comments delimited by % and end-of-line are not transparent to READCH."
 			   (intern (if (or (and (>= ch ?A) (<= ch ?Z))
 							   (and (>= ch ?a) (<= ch ?z)))
 						   (string ch)
-						 (string ?! ch)))
-			   )))))
+						 (string ?! ch))))))))
 
 ;; TERPRI():NIL -- OK probably
 ;; The current print line is terminated.
@@ -1301,8 +1324,47 @@ to the operating system."
   (throw 'quit nil))
 
 
+;;; Emacs Support
+;;; =============
+
+(defun sl-begin ()
+  (advice-add 'rplaca :override #'sl--rplaca-override)
+  (advice-add 'rplacd :override #'sl--rplacd-override)
+  (advice-add 'error :override #'sl--error-override)
+  (advice-add 'mapc :filter-args #'sl--mapc-filter-args)
+  (advice-add 'mapc :filter-return #'sl--mapc-filter-return)
+  (advice-add 'mapcan :filter-args #'sl--mapc-filter-args)
+  (advice-add 'mapcar :filter-args #'sl--mapc-filter-args)
+  (advice-add 'intern :filter-args #'sl--intern-filter-args)
+  (advice-add 'get :around #'sl--get-around))
+
+(defun sl-end ()
+  (advice-remove 'rplaca #'sl--rplaca-override)
+  (advice-remove 'rplacd #'sl--rplacd-override)
+  (advice-remove 'error #'sl--error-override)
+  (advice-remove 'mapc #'sl--mapc-filter-args)
+  (advice-remove 'mapc #'sl--mapc-filter-return)
+  (advice-remove 'mapcan #'sl--mapc-filter-args)
+  (advice-remove 'mapcar #'sl--mapc-filter-args)
+  (advice-remove 'intern #'sl--intern-filter-args)
+  (advice-remove 'get #'sl--get-around))
+
+(defmacro eval-forms-as-sl (&rest forms)
+  "Evaluate FORMS as Standard LISP."
+  `(progn
+	 (sl-begin)
+	 (unwind-protect
+		 (progn ,@forms)
+	   (sl-end))))
+
+
 ;;; System GLOBAL Variables
 ;;; =======================
+
+;; This GLOBAL declaration must be evaluated as Standard LISP and
+;; before the variable definitions:
+(eval-forms-as-sl
+ (global '(!*comp emsg!* !$eof!$ !$eol!$ !*gc !*raise)))
 
 (defvar !*comp nil						; currently ignored!
   "*COMP = NIL global
@@ -1346,33 +1408,6 @@ NIL characters will be input as is.")
 ;; T = T global -- OK
 ;; T is a special global variable. It is protected from being modified by
 ;; SET or SETQ.
-
-
-;;; Emacs Support
-;;; =============
-
-(defun sl-begin ()
-  (advice-add 'rplaca :override #'sl--rplaca-override)
-  (advice-add 'rplacd :override #'sl--rplacd-override)
-  (advice-add 'error :override #'sl--error-override)
-  (advice-add 'mapc :filter-args #'sl--mapc-filter-args)
-  (advice-add 'mapc :filter-return #'sl--mapc-filter-return)
-  (advice-add 'mapcan :filter-args #'sl--mapc-filter-args)
-  (advice-add 'mapcar :filter-args #'sl--mapc-filter-args))
-
-(defun sl-end ()
-  (advice-remove 'rplaca #'sl--rplaca-override)
-  (advice-remove 'rplacd #'sl--rplacd-override)
-  (advice-remove 'error #'sl--error-override)
-  (advice-remove 'mapc #'sl--mapc-filter-args)
-  (advice-remove 'mapc #'sl--mapc-filter-return)
-  (advice-remove 'mapcan #'sl--mapc-filter-args)
-  (advice-remove 'mapcar #'sl--mapc-filter-args))
-
-;;; Code that must be evaluated in Standard LISP mode:
-(sl-begin)
-(global '(!*comp emsg!* !$eof!$ !$eol!$ !*gc !*raise))
-(sl-end)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1471,4 +1506,12 @@ Then evaluate it and print value into *Standard LISP* buffer."
   (sl-begin)
     (unwind-protect
 		(call-interactively 'load-file)
+	  (sl-end)))
+
+(defun sl-eval-buffer ()
+  "Execute accessible portion of current buffer as Standard Lisp code."
+  (interactive)
+  (sl-begin)
+    (unwind-protect
+		(call-interactively 'eval-buffer)
 	  (sl-end)))
