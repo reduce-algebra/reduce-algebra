@@ -1209,7 +1209,7 @@ then
 # clang on MacOSX does not provide -mfpmath
 #     CFLAGS="$CFLAGS -msse2 -mfpmath=sse"
 #     CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
-      MACARCH="--enable-macos_arch=x86_64" 
+      MACARCH="--enable-macosx_arch=x86_64" 
       extras="--with-xft --with-xim"
       wx="--with-cocoa \
           --with-macosx-version-min=10.10 \

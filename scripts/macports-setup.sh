@@ -111,6 +111,7 @@ sudo port install          \
   texlive-latex-extra      \
   timeout                  \
   vim                      \
+  libffi                   \
   wget
 
 # MacPorts installs most stuff nicely, but at the time of writing

@@ -154,7 +154,7 @@ extern char *getcwd(char *s, size_t n);
 
 // I have a generated file that contains the widths of all the fonts
 // I am willing to use here. Well this will be a MESS because for rendering
-// I will use STIXMath but I will allow input to pretent that it is in
+// I will use STIXMath but I will allow input to pretend that it is in
 // cmr, cmmi, cmsy and cmex -- and I will map codepoints 0-127 in those
 // to parts of STIXMath... together with additional messy mappings that are
 // to do with how I once placed characters to get around systems that had
@@ -165,7 +165,7 @@ extern char *getcwd(char *s, size_t n);
 #include "cmfont-widths.cpp"
 
 // The information here (attempts to) map the codepoints of the original
-// Computer Moden fonts in ancient TeX coding onto Unicode code points,
+// Computer Modern fonts in ancient TeX coding onto Unicode code points,
 // where I will then use the STIXMath font for everything. Note that where
 // its metrics do not match cmr, cmmi, cmsy and cmex I will be a mess if the
 // dvi I am using used the original metrics!
@@ -583,7 +583,7 @@ int32_t dviPanel::s4()
 
 void dviPanel::DefFont(int k)
 {
-#if 0
+#if 1
     logprintf("Define Font %d at offset %d\n", k, (int)(stringInput - dviData));
 #endif
     char fontname[LONGEST_LEGAL_FILENAME];
@@ -650,14 +650,14 @@ void dviPanel::DefFont(int k)
     logprintf("Designsize = %.4g\n", (double)designsize/1048576.0);
 // Everything come from STIXMath!!!!
     graphicsFont[k] = gc->CreateFont(designsize/1048576.0, "cslSTIXMath");
+    logprintf("font = %p\n", graphicsFont[k]);
     graphicsFontValid[k] = true;
     graphicsFontMapping[k] = m;
     fontWidth[k] = p;
 }
 
 void dviPanel::SelectFont(int n)
-{
-    if (n >= MAX_FONTS)
+{   if (n >= MAX_FONTS)
     {   logprintf("This code can only cope with MAX_FONTS distinct fonts\n");
         return;
     }
@@ -672,8 +672,7 @@ void dviPanel::SelectFont(int n)
 
 
 int dviPanel::MapChar(int c)
-{
-    if (c >= 0x80) return c;
+{   if (c >= 0x80) return c;
     switch (currentFontMapping)
     {
 default:
@@ -711,8 +710,10 @@ static int rendered = 0;
 
 void dviPanel::SetChar(int32_t c)
 {
-#if 0
-    logprintf("SetChar%d [%c] %d %d\n", (int)c, (c <  0x20 || c >= 0x7f ? ' ' : (int)c), (int)h, (int)v);
+#if 1
+    logprintf("SetChar%d [%c] %d %d\n", (int)c,
+        (c <  0x20 || c >= 0x7f ? ' ' : (int)c),
+        (int)h, (int)v);
 #endif
     int k = MapChar(c);
     wchar_t ccc[4];
@@ -729,10 +730,12 @@ void dviPanel::SetChar(int32_t c)
         ccc[1] = 0xdc00 + (k & 0x3ff);
         ccc[2] = 0;
     }
-    wxString s(ccc);
+    wxString s(&ccc[0]);
     double width, height, descent, xleading;
     gc->GetTextExtent(s, &width, &height, &descent, &xleading);
+    logprintf("About to call DrawText...");
     gc->DrawText(s, DVItoScreen(h), DVItoScreen(v)-(height-descent));
+    logprintf("OK\n");
 // Now I must increase h by the width (in scaled points) of the character
 // I just set. This is not dependent at all on the way I map DVI internal
 // coordinates to screen ones.

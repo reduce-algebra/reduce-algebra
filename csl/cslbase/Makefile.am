@@ -184,6 +184,7 @@ csl_CPPFLAGS    += $(MY_CPPFLAGS)
 # I have rather a lot of that that are to do with support for short floats.
 flatcsl_CPPFLAGS    += $(MY_CPPFLAGS)
 AM_CFLAGS        = $(MY_CFLAGS)
+AM_CPPFLAGS     += $(MY_CPPFLAGS)
 AM_CXXFLAGS      = $(MY_CXXFLAGS)
 AM_LIBS          = $(MY_LIBS)
 
@@ -1910,14 +1911,14 @@ machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(E
 	$(LOCALCYG) ./objtype$(EXEEXT) reduce-cslread.$(OBJEXT) \
 		machineid-1.cpp $(COMPILE_DLL)
 	$(LOCALCYG) ./makeheaders$(EXEEXT) config.h \
-		$(cslbase)/machine.h \
-		$(cslbase)/int128_t.h \
-		$(cslbase)/tags.h \
-		$(cslbase)/cslerror.h \
-		$(cslbase)/externs.h \
-		$(cslbase)/arith.h \
-		$(cslbase)/entries.h \
-		$(cslbase)/lispthrow.h \
+		$(CYGSRC)/machine.h \
+		$(CYGSRC)/int128_t.h \
+		$(CYGSRC)/tags.h \
+		$(CYGSRC)/cslerror.h \
+		$(CYGSRC)/externs.h \
+		$(CYGSRC)/arith.h \
+		$(CYGSRC)/entries.h \
+		$(CYGSRC)/lispthrow.h \
 		> machineid-2.cpp
 	cat machineid-1.cpp machineid-2.cpp > machineid.cpp
 

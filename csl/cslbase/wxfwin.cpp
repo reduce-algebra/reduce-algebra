@@ -1,4 +1,4 @@
-// "wxfwin.cpp                                   Copyright A C Norman 2017
+// wxfwin.cpp                                     Copyright A C Norman 2017
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -344,11 +344,10 @@ void add_custom_fonts()
     {   char nn[LONGEST_LEGAL_FILENAME];
         sprintf(nn, "%s\\%s\\%s",
                     programDir, toString(fontsdir), fontNames[i]);
-//      printf("Adding %s\n", nn); fflush(stdout);
+        FWIN_LOG("Adding %s\n", nn);
         wxString nnn(nn);
         if (!wxFont::AddPrivateFont(nnn))
-        {   printf("AddPrivateFont failed\n");
-            fflush(stdout);
+        {   FWIN_LOG("AddPrivateFont failed\n");
         }
     }
 // At one stage private fonts needed "activating"
