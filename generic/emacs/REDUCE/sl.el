@@ -333,8 +333,9 @@ compiled. The name of the defined function is returned.
 FEXPR PROCEDURE DE(U);
    PUTD(CAR U, 'EXPR, LIST('LAMBDA, CADR U, CADDR U));"
   (declare (debug (&define name lambda-list def-body)))
-  (put fname 'type 'EXPR)
-  `(defun ,fname ,params ,fn))
+  `(progn
+	 (put ',fname 'type 'expr)
+	 (defun ,fname ,params ,fn)))
 
 ;; *** I'm hoping df is not actually required! ***
 ;; DF(FNAME:id, PARAM:id-list, FN:any):id noeval, nospread
@@ -355,8 +356,9 @@ is of type MACRO. The name of the macro is returned.
 FEXPR PROCEDURE DM(U);
    PUTD(CAR U, 'MACRO, LIST('LAMBDA, CADR U, CADDR U));"
   (declare (debug (&define name lambda-list def-body)))
-  (put mname 'type 'MACRO)
-  `(defmacro ,mname ,param ,fn))
+  `(progn
+	 (put ',mname 'type 'macro)
+	 (defmacro ,mname ,param ,fn)))
 
 (defun getd (fname)
   "GETD(FNAME:any):{NIL, dotted-pair} eval, spread
@@ -382,8 +384,13 @@ already exists a warning message will appear:
 *** FNAME redefined
 The function defined by PUTD will be compiled before definition if
 the !*COMP global variable is non-NIL."
+  (if (or (get fname 'global)			; only if explicitly declared
+		  (fluidp fname))
+	  (error "%s is a non-local variable" fname))
+  (if (symbol-function fname)
+	  (message "*** %s redefined" fname))
+  (fset fname (if (eq type 'macro) (cons 'macro body) body))
   (put fname 'type type)
-  (fset fname body)
   fname)
 
 (defun remd (fname)
@@ -411,13 +418,13 @@ from GLOBAL to FLUID is not permissible and results in the error:
 		(lambda (x)
 		  (if (globalp x) (error "ID cannot be changed to FLUID"))
 		  (if (not (fluidp x)) (set x nil))
-		  (put x 'FLUID t))))
+		  (put x 'fluid t))))
 
 (defun fluidp (u)
   "FLUIDP(U:any):boolean eval, spread
 If U has been declared FLUID (by declaration only) T is returned,
 otherwise NIL is returned."
-  (get u 'FLUID))
+  (get u 'fluid))
 
 (defun global (idlist)					; really almost a no-op!
   "GLOBAL(IDLIST:id-list):NIL eval, spread
@@ -431,13 +438,13 @@ results in the error:
 		(lambda (x)
 		  (if (fluidp x) (error "ID cannot be changed to GLOBAL"))
 		  (if (not (globalp x)) (set x nil))
-		  (put x 'GLOBAL t))))
+		  (put x 'global t))))
 
 (defun globalp (u)
   "GLOBALP(U:any):boolean eval, spread
 If U has been declared GLOBAL or is the name of a defined function,
 T is returned, else NIL is returned."
-  (or (get u 'GLOBAL) (symbol-function u)))
+  (or (get u 'global) (symbol-function u)))
 
 ;; SET(EXP:id, VALUE:any):any eval, spread -- OK
 ;; EXP must be an identifier or a type mismatch error occurs. The
@@ -468,7 +475,7 @@ ignored. This affects only compiled functions as free variables
 in interpreted functions are automatically considered fluid."
   (mapc idlist							; SLISP mapc!
 		(lambda (x)
-		  (if (fluidp x) (put x 'FLUID nil)))))
+		  (if (fluidp x) (put x 'fluid nil)))))
 
   
 ;;; Program Feature Functions
@@ -540,7 +547,23 @@ of RETURN results in the error:
 ;;; Error Handling
 ;;; ==============
 
-(defun sl--error-override (&rest args)
+;; (defun sl--error-override (&rest args)
+;;   "ERROR(NUMBER:integer, MESSAGE:any) eval, spread
+;; NUMBER and MESSAGE are passed back to a surrounding ERRORSET (the
+;; Standard LISP reader has an ERRORSET). MESSAGE is placed in the
+;; global variable EMSG!* and the error number becomes the value of
+;; the surrounding ERRORSET. FLUID variables and local bindings are
+;; unbound to return to the environment of the ERRORSET. Global
+;; variables are not affected by the process."
+;;   (if (integerp (car args))
+;; 	  ;; Standard Lisp mode
+;; 	  (let ((number (car args)) (message (cadr args)))
+;; 		(setq emsg!* message)
+;; 		(signal 'user-error args))
+;; 	;; Emacs-Lisp mode
+;; 	(apply 'error args)))
+
+(defun sl--error-around (orig-fun &rest args)
   "ERROR(NUMBER:integer, MESSAGE:any) eval, spread
 NUMBER and MESSAGE are passed back to a surrounding ERRORSET (the
 Standard LISP reader has an ERRORSET). MESSAGE is placed in the
@@ -551,10 +574,10 @@ variables are not affected by the process."
   (if (integerp (car args))
 	  ;; Standard Lisp mode
 	  (let ((number (car args)) (message (cadr args)))
-		(setq EMSG!* message)
+		(setq emsg!* message)
 		(signal 'user-error args))
 	;; Emacs-Lisp mode
-	(apply 'error args)))
+	(apply orig-fun args)))
 
 (defmacro errorset (u msgp tr)
   "ERRORSET(U:any, MSGP:boolean, TR:boolean):any eval, spread
@@ -1330,7 +1353,7 @@ to the operating system."
 (defun sl-begin ()
   (advice-add 'rplaca :override #'sl--rplaca-override)
   (advice-add 'rplacd :override #'sl--rplacd-override)
-  (advice-add 'error :override #'sl--error-override)
+  (advice-add 'error :around #'sl--error-around)
   (advice-add 'mapc :filter-args #'sl--mapc-filter-args)
   (advice-add 'mapc :filter-return #'sl--mapc-filter-return)
   (advice-add 'mapcan :filter-args #'sl--mapc-filter-args)
@@ -1341,7 +1364,7 @@ to the operating system."
 (defun sl-end ()
   (advice-remove 'rplaca #'sl--rplaca-override)
   (advice-remove 'rplacd #'sl--rplacd-override)
-  (advice-remove 'error #'sl--error-override)
+  (advice-remove 'error #'sl--error-around)
   (advice-remove 'mapc #'sl--mapc-filter-args)
   (advice-remove 'mapc #'sl--mapc-filter-return)
   (advice-remove 'mapcan #'sl--mapc-filter-args)
@@ -1460,18 +1483,22 @@ Most commands are inherited from `lisp-interaction-mode-map'.")
 (defvar sl-marker (make-marker)
   "Marker from which the next input should be read.")
 
-(defun sl-run ()
+(defun sl-run (rlisp-mode)
   "Run Standard LISP with IO via a buffer."
-  (interactive)
+  (interactive "P")
   (switch-to-buffer (get-buffer-create "*Standard LISP*"))
   (sl-interaction-mode)
   (let ((standard-output (set-marker sl-marker 1)))
 	(princ "Standard LISP") (terpri)
-	(terpri) (princ "Eval: ")))
+	(terpri) (princ "Eval: "))
+  (when rlisp-mode
+	(sl-load-file "boot.sl")
+	(insert "(begin2)\n\n;end;")
+	(forward-line -1)))
 
-(defun sl-read-eval-print ()
+(defun sl-read-eval-print (rlisp-mode)
   "Read input after `sl-marker', eval it and print the result."
-  (interactive)
+  (interactive "P")
   (sl-begin)
   (unwind-protect
 	  (let ((standard-input sl-marker)
@@ -1483,7 +1510,10 @@ Most commands are inherited from `lisp-interaction-mode-map'.")
 		(terpri) (terpri) (princ "Eval: ")
 		;; Output does not necessarily advance point, so...
 		(goto-char sl-marker))
-	(sl-end)))
+	(sl-end))
+  (when rlisp-mode
+	(insert "(begin2)\n\n;end;")
+	(forward-line -1)))
 
 (defun sl-eval-print-last-sexp ()
   "Copy sexp before point to end of *Standard LISP* buffer.
@@ -1500,18 +1530,24 @@ Then evaluate it and print value into *Standard LISP* buffer."
 
 (global-set-key "\C-c\C-j" 'sl-eval-print-last-sexp)
 
-(defun sl-load-file ()
+(defun sl-load-file (&optional file)
   "Load the Standard LISP file named FILE."
   (interactive)
   (sl-begin)
-    (unwind-protect
-		(call-interactively 'load-file)
-	  (sl-end)))
+  (unwind-protect
+	  (if file (load-file file)
+		(call-interactively 'load-file))
+	(sl-end)))
 
 (defun sl-eval-buffer ()
   "Execute accessible portion of current buffer as Standard Lisp code."
   (interactive)
   (sl-begin)
-    (unwind-protect
-		(call-interactively 'eval-buffer)
-	  (sl-end)))
+  (unwind-protect
+	  (call-interactively 'eval-buffer)
+	(sl-end)))
+
+(defun sl-pp-fn (symbol)
+  "Pretty-print SYMBOL's function definition."
+  (interactive)
+  (null (pp (symbol-function symbol))))
