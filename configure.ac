@@ -40,7 +40,7 @@ AC_MSG_NOTICE([Absolute path to source directory = $abssrcdir])
 # and the 64-bit native windows version may be somewhat irrelevant to you.
 # If you are on a 64-bit operating system using 64-bit cygwin you may not be
 # interested in backwards compatibility and thus the 32-bit versions. If
-# you only want tu run console mode versions under cygwin then the native
+# you only want to run console mode versions under cygwin then the native
 # windows versions will be superfluous. To cope with these variations
 # I provide flags to enable each version individually. These are of the
 # form --with-w32, --with-w64, --with-c32 and --with-c64. The intent will
@@ -190,9 +190,9 @@ then
   i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg32.exe
   i686-w64-mingw32-strip ./cyg32.exe
   AC_MSG_NOTICE([./cyg32.exe $abssrcdir/configure $ac_configure_args])
-  eval /bin/sh -c "./cyg32.exe $abssrcdir/configure $ac_configure_args"
+  eval $SHELL -c \"./cyg32.exe $abssrcdir/configure $ac_configure_args\"
   wait $procids
-  printf "All sub-tasks should have completed\n"
+  printf "cygwin32 configuration should have completed\n"
   exit 0
 fi
 
@@ -212,10 +212,7 @@ then
   i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg64.exe
   i686-w64-mingw32-strip ./cyg64.exe
   AC_MSG_NOTICE([./cyg64.exe $abssrcdir/configure $ac_configure_args])
-  exec /bin/sh -c "./cyg64.exe $abssrcdir/configure $ac_configure_args"
-  wait $procids
-  printf "All sub-tasks should have completed\n"
-  exit 0
+  exec $SHELL -c \"./cyg64.exe $abssrcdir/configure $ac_configure_args\"
 fi
 
 #
@@ -328,7 +325,7 @@ then
   here=`pwd`
   cd $abssrcdir
   printf "Regenerate autoconf-related files\n"
-  if ! ./autogen.sh $ac_configure_args
+  if ! eval $SHELL -c "./autogen.sh $ac_configure_args"
   then
     wait $procids
     printf "The autogen.sh script seems to have failed. I can not continue\n"
@@ -341,10 +338,7 @@ then
 # input later on (eg "--") could cause it not to be recognised, leading
 # to an infinite cycle of attempted re-generation!
   printf "Restart: $abssrcdir/configure --without-autogen $ac_configure_args\n"
-  exec /bin/sh -c "$abssrcdir/configure --without-autogen $ac_configure_args"
-  wait $procids
-  printf "All sub-tasks should have completed\n"
-  exit 0
+  exec $SHELL -c "\"$abssrcdir/configure\" --without-autogen $ac_configure_args"
 fi
 
 AC_CANONICAL_HOST()
@@ -641,7 +635,7 @@ then
     ;;
   *)
 # For cases other than Windows the PSL case is simpler.
-    build=`eval "$SHELL \"$abssrcdir/scripts/findhost.sh\" $host"`
+    build=`$SHELL "$abssrcdir/scripts/findhost.sh" "$host"`
     ;;
   esac
 else
@@ -692,16 +686,18 @@ csl_inplace_cygwin_build ()
   if test "$uname_m" = "x86_64" &&
      test "target" = "i686-pc-windows"
   then
+    AC_MSG_NOTICE([Will build utility to flip cygwin version from 64 to 32 bit])
     i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg32
     i686-w64-mingw32-strip cyg32
-    flip="`pwd`/cyg32 "
+    flip="`pwd`/cyg32.exe "
   fi
   if test "$uname_m" = "i686" &&
      test "target" = "x86_64-pc-windows"
   then
+    AC_MSG_NOTICE([Will build utility to flip cygwin version from 32 to 64 bit])
     i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg64
     i686-w64-mingw32-strip cyg64
-    flip="`pwd`/cyg64 "
+    flip="`pwd`/cyg64.exe "
   fi
   doconfig="$SHELL $flip \"$abssrcdir/configure\" $ac_configure_args \
           CC=\"$flip$CC\" CXX=\"$flip$CXX\" \
@@ -717,6 +713,7 @@ csl_inplace_cygwin_build ()
   else
     eval "$doconfig"
   fi
+  AC_MSG_NOTICE([configuration for cygwin on $target complete])
   cd "$abssrcdir"
 }
 
@@ -758,6 +755,7 @@ csl_inplace_nativewin_build ()
   else
     eval "$doconfig"
   fi
+  AC_MSG_NOTICE([configuration for $target complete])
   cd "$abssrcdir"
 }
 
@@ -774,19 +772,23 @@ csl_inplace_windows_build ()
   AC_MSG_NOTICE([with_c32=$with_c32 with_c64=$with_c64 with_w32=$with_w32 with_w64=$with_w64 ])
   if test "$with_c32" = "yes"
   then
+    AC_MSG_NOTICE([Configure cygwin32 version])
     csl_inplace_cygwin_build "i686-pc-cygwin" "--with-cygwin32"
   fi
   if test "$with_c64" = "yes"
   then
+    AC_MSG_NOTICE([Configure cygwin64 version])
     csl_inplace_cygwin_build "x86_64-pc-cygwin" "--with-cygwin64"
   fi
 # I will also need to build the native versions...
   if test "$with_w32" = "yes"
   then
+    AC_MSG_NOTICE([Configure windows32 version])
     csl_inplace_nativewin_build "i686-pc-windows" "i686-w64-mingw32"
   fi
   if test "$with_w64"
   then
+    AC_MSG_NOTICE([Configure windows64 version])
     csl_inplace_nativewin_build "x86_64-pc-windows" "x86_64-w64-mingw32"
   fi
 }
@@ -1559,7 +1561,6 @@ AC_MSG_NOTICE([final output from top level configuration])
 AC_OUTPUT
 
 printf "Wait for %s\n" "$procids"
-
 wait $procids
 printf "All sub-tasks should have completed\n"
 

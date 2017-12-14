@@ -106,9 +106,9 @@ int fwin_main(int argc, const char **argv)
             i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
     sprintf(memory_control, "%.*s%cpslbuild%c%s%cpsl%c64",
             i, programDir, DIRCHAR, DIRCHAR, PSLBUILD, DIRCHAR, DIRCHAR);
-    FWIN_LOG(("bin: %s\n", bpsl_binary));
-    FWIN_LOG(("img: %s\n", reduce_image));
-    FWIN_LOG(("64:  %s\n", memory_control));
+    FWIN_LOG("bin: %s\n", bpsl_binary);
+    FWIN_LOG("img: %s\n", reduce_image);
+    FWIN_LOG("64:  %s\n", memory_control);
     {
 // Here I need to check if a file called "64" is present. I do not
 // care at all about access rights or its contents, just whether it
@@ -252,15 +252,15 @@ int fwin_main(int argc, const char **argv)
 // Re-plumb the pipes to link to stdin & stdout.
         close(MeToReduce[1]);
         close(ReduceToMe[0]);
-        FWIN_LOG(("child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
-                  MeToReduce[0], ReduceToMe[1]));
+        FWIN_LOG("child: MeToReduce[0]= %d, ReduceToMe[1] = %d\n",
+                 MeToReduce[0], ReduceToMe[1]);
         dup2(MeToReduce[0],STDIN_FILENO);
         dup2(ReduceToMe[1],STDOUT_FILENO);
 //      dup2(ReduceToMe[1],STDERR_FILENO);    // ?
         close(MeToReduce[0]);
         close(ReduceToMe[1]);
 
-        FWIN_LOG(("child: entering create_call\n"));
+        FWIN_LOG("child: entering create_call\n");
 
         nargv[0] = bpsl_binary;
         nargv[1] = (char *)"-td";
@@ -273,8 +273,8 @@ int fwin_main(int argc, const char **argv)
 //    nargv[argc - xargstart + 5] = (char *)0;
 
         for (i = 0; i <= 5; i++)
-            FWIN_LOG(("child: argv[%d]=%s\n",i,nargv[i]));
-        FWIN_LOG(("child: right before execv()\n"));
+            FWIN_LOG("child: argv[%d]=%s\n",i,nargv[i]);
+        FWIN_LOG("child: right before execv()\n");
         execv(nargv[0], nargv);
         fwin_printf("Unable to perform execv(%s)\n", bpsl_binary);
         fwin_exit(EXIT_FAILURE);
@@ -324,7 +324,7 @@ int fwin_main(int argc, const char **argv)
             while ((c = fwin_getchar()) != '\n' && c != EOF)
                 if (k < BUFSIZE-1) buf[k++] = c;
             buf[k] = 0;
-            FWIN_LOG(("Sending line <%s>\n", buf));
+            FWIN_LOG("Sending line <%s>\n", buf);
             buf[k++] = 0x0a;  // send a newline too
             if (WriteFile(g_hChildStd_IN_Wr, buf, k, &n, NULL) == 0)
             {   fwin_printf("Unable to send to child process\n");
@@ -348,7 +348,7 @@ int fwin_main(int argc, const char **argv)
         int n, prevc = 0, c = -1, j = 0, k;
         n = read(ReduceToMe[0], buf, BUFSIZE);
         while (j<(int)n && (c = (buf[j++] & 0xff)) != 0x01)
-        {   FWIN_LOG(("see char %.2x\n", c));
+        {   FWIN_LOG("see char %.2x\n", c);
             if (c == 0x0d) fwin_putchar('\n');
             else if (c == 0x0a)
             {   if (prevc != 0x0d) fwin_putchar('\n');
@@ -365,18 +365,18 @@ int fwin_main(int argc, const char **argv)
             while (j<(int)n && (c = buf[j++]) != 0x02)
                 prompt[k++] = c;
             prompt[k] = 0;
-            FWIN_LOG(("Prompt observed to be <%s>\n", prompt));
+            FWIN_LOG("Prompt observed to be <%s>\n", prompt);
             fwin_set_prompt(prompt);
 // Just after a prompt there ought not to be anything else in the buffer, so I
 // can re-use it.
             k = 0;
-            FWIN_LOG(("About to read a line\n"));
+            FWIN_LOG("About to read a line\n");
             while ((c = fwin_getchar()) != '\n' && c != EOF && c != '?')
-            {   FWIN_LOG(("char = %.2x\n", c));
+            {   FWIN_LOG("char = %.2x\n", c);
                 if (k < BUFSIZE-1) buf[k++] = c;
             }
             buf[k] = 0;
-            FWIN_LOG(("Sending line <%s>\n", buf));
+            FWIN_LOG("Sending line <%s>\n", buf);
             buf[k++] = '\n';  // send a newline too
             write(MeToReduce[1], buf, k);
         }
@@ -471,7 +471,7 @@ void sig_skipUntilString(int handle,const char string[])
     read(handle,buffer,len);
 
     while (strcmp(buffer,string) != 0)
-    {   FWIN_LOG(("sig_skipUntilString(): buffer=|%s|\n",buffer));
+    {   FWIN_LOG("sig_skipUntilString(): buffer=|%s|\n",buffer);
         for (i=0; i < len-1; i++)
             buffer[i] = buffer[i+1];
         read(handle,buffer+len-1,1);
@@ -480,7 +480,7 @@ void sig_skipUntilString(int handle,const char string[])
 }
 
 void sig_sigChld(int arg)
-{   FWIN_LOG(("sig_sigChld(): Reduce process terminated\n"));
+{   FWIN_LOG("sig_sigChld(): Reduce process terminated\n");
 //  if (verbose) {
 //    printf("REDFRONT normally exiting on signal %d (%s)\n",arg,sig_identify(arg));
 //  }

@@ -117,32 +117,8 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the `curses' library (-lcurses). */
-#undef HAVE_LIBCURSES
-
-/* Define to 1 if you have the `dl' library (-ldl). */
-#undef HAVE_LIBDL
-
-/* Define to 1 if you have the `fontconfig' library (-lfontconfig). */
-#undef HAVE_LIBFONTCONFIG
-
 /* Fox library present */
 #undef HAVE_LIBFOX
-
-/* Define to 1 if you have the `ncurses' library (-lncurses). */
-#undef HAVE_LIBNCURSES
-
-/* Define to 1 if you have the `nsl' library (-lnsl). */
-#undef HAVE_LIBNSL
-
-/* Define to 1 if you have the `pthread' library (-lpthread). */
-#undef HAVE_LIBPTHREAD
-
-/* Define to 1 if you have the `rt' library (-lrt). */
-#undef HAVE_LIBRT
-
-/* Define to 1 if you have the `socket' library (-lsocket). */
-#undef HAVE_LIBSOCKET
 
 /* wxWidgets library will be used */
 #undef HAVE_LIBWX
@@ -387,6 +363,12 @@
 
 /* Define to 1 if you have the `_putc_nolock' function. */
 #undef HAVE__PUTC_NOLOCK
+
+/* Define to 1 if the compiler support __builtin_clz. */
+#undef HAVE___BUILTIN_CLZ
+
+/* Define to 1 if the compiler support __builtin_ctz. */
+#undef HAVE___BUILTIN_CTZ
 
 /* Define to 1 if the system has the type `__int128'. */
 #undef HAVE___INT128

@@ -589,6 +589,16 @@ PACKAGE_URL=''
 ac_unique_file="README.PSL"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+linux_FALSE
+linux_TRUE
+macintosh_FALSE
+macintosh_TRUE
+x86_64_FALSE
+x86_64_TRUE
+i686_FALSE
+i686_TRUE
+windows_FALSE
+windows_TRUE
 sixty_four_FALSE
 sixty_four_TRUE
 BUILD
@@ -2641,6 +2651,50 @@ else
 fi
 
 
+unm=`uname -m`
+uns=`uname -s`
+
+ if test "X$OS" = "XWindows_NT"; then
+  windows_TRUE=
+  windows_FALSE='#'
+else
+  windows_TRUE='#'
+  windows_FALSE=
+fi
+
+ if test "$unm" = "i686"; then
+  i686_TRUE=
+  i686_FALSE='#'
+else
+  i686_TRUE='#'
+  i686_FALSE=
+fi
+
+ if test "$unm" = "x86_64"; then
+  x86_64_TRUE=
+  x86_64_FALSE='#'
+else
+  x86_64_TRUE='#'
+  x86_64_FALSE=
+fi
+
+ if test "$uns" = "Darwin"; then
+  macintosh_TRUE=
+  macintosh_FALSE='#'
+else
+  macintosh_TRUE='#'
+  macintosh_FALSE=
+fi
+
+ if test "$uns" = "Linux"; then
+  linux_TRUE=
+  linux_FALSE='#'
+else
+  linux_TRUE='#'
+  linux_FALSE=
+fi
+
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -2801,6 +2855,26 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${sixty_four_TRUE}" && test -z "${sixty_four_FALSE}"; then
   as_fn_error $? "conditional \"sixty_four\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${windows_TRUE}" && test -z "${windows_FALSE}"; then
+  as_fn_error $? "conditional \"windows\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${i686_TRUE}" && test -z "${i686_FALSE}"; then
+  as_fn_error $? "conditional \"i686\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${x86_64_TRUE}" && test -z "${x86_64_FALSE}"; then
+  as_fn_error $? "conditional \"x86_64\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${macintosh_TRUE}" && test -z "${macintosh_FALSE}"; then
+  as_fn_error $? "conditional \"macintosh\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${linux_TRUE}" && test -z "${linux_FALSE}"; then
+  as_fn_error $? "conditional \"linux\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

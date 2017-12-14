@@ -12520,15 +12520,6 @@ else
 fi
 
 
-# The following lines are a (further) attempt to arrange that the
-# rebuilding of Makefile (and before that Makefile.in and the like)
-# is less sensitive to exactly which version of automake happens to
-# be installed...
-
-AUTOMAKE="automake -f -a -v"
-
-ACLOCAL="aclocal --force"
-
 ac_config_files="$ac_config_files Makefile doc/Makefile src/Makefile tests/Makefile pkgconfig/atomic_ops.pc pkgconfig/atomic_ops-uninstalled.pc"
 
 

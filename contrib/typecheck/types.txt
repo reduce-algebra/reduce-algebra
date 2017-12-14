@@ -1,0 +1,110 @@
+This is a PLANNING document, and views may change as work progresses
+or indeed it it is abandoned!
+
+The initial plan is to avoid as many technical problems as possible
+and see how far a very simple scheme can get. Types will be "just names"
+to begin with, and any issues of sub-types, variants, containers and the
+like will be looked into later.
+
+To start with I will introduce a small number of types that I think will
+be important in Reduce. There will be
+   SQ, SF, KERNEL, POWER, TERM, DOMAINELT, INTEGER, PREFIX.
+I may also wish to analyse in terms of
+   CONSCELL, ATOM, INTEGER, STRING, NIL, VECTOR
+
+Analysis can be done in a succesison of waves, each gradually more messy to
+implement that the previous. I propose the following:
+
+(1) If anywhere in the Reduce sources you see
+        (f (g ...))
+    [and I will want to allow for case where (g ...) is just one of
+    the several areguments passed to f] I will unify the argument type
+    of f with the return type of g. So for instance given that I may seed
+    the type system with the information denr:SQ->SF, if I see a call
+    (foo (denr x)) I deduce foo:SF->?, and if I see (denr (bar y)) I
+    deduce bar:?->SQ. The experiment with this has two parts. The first
+    is to see how far through the Reduce sources type information propagates.
+    So if (say) only a dozen functions have their types added by hand,
+    what proportion of the rest of the code collects at least some deduced
+    type information. As part of that it will be interesting to document the
+    length of deduction chains. The second part of the experiment arises
+    because it is expected that this simple scheme will lead to some cases
+    where two different paths suggest conflicting type judgements. Some
+    might represent errors in the Reduce code, but others will indicate
+    type inclusion issues, such as INTEGER \in DOMAINELT \in SF. There are
+    cases of Lisp-level functions like cons, member, print, equal (and many
+    many others) that work at the level of generic Lisp with little concern
+    about the structure or type of material being handled, and these will
+    surely be flagged as problematic. I am taking an initial stance that
+    until I have empirical measurement of the issues I do not want to
+    confront it!
+
+(2) If a function f has a definition of the form
+       (de f (x) (prog nil (foo x) ... (return (bar ...))))
+    then I can unify the argument type of f with that of foo, and
+    the result type of f with that of bar. Doing this properly involves
+    some data-flow analysis within the definition of f. Tracking values
+    through assignments (especially to fluid and global variables) is
+    messy, and when a value is stored in a list or vector and later-on
+    retrieved things get really messy. So again this is an experiment to
+    see how gradual strengthening of the type-propagation mechanisms
+    impact everything and to help identify where the most important
+    road-blocks are. Note that there are two alternative ways to assess the
+    success of type reconstruction. One is based on identifying a type
+    and saying "if this function has any valid type then it will be this".
+    The other goes beyond that and verifies that every single use of the
+    function is consistent with the deduced type. The second stronger scheme
+    is not at all easy to attain in a context such as Reduce - for instance
+    because code can construct trees, vectors and lists and deducing the
+    extent to which data retrieved from such aggregates has a predictable
+    type will be "challenging". I hope that in selected parts of the code
+    it will be possible to provide explicit type annotations that (for
+    instance) a certain value will be a VECTOROFSF or LISTOFSYMBOLS and
+    make progress that rather ad hoc way.
+
+(3) After a call of the predicate "domainp" one branch of the code knows
+    that the SF being processed is in fact a DOMAINELT, while the other
+    path can afford to treat it as a polynomial that has a leading term
+    and a reductum. This sort of opens up the whole issue of sub-types or
+    branches within union types! But the HOPE is that by providing some
+    hand-crafted type-deduction rules such as one for domainp and ones for
+    null and atom and perhaps my introducing new types such along the lines
+    of NON_DOMAINELT_SF that checking can proceed much further.
+
+(4) The Lisp apply function (and funcall, errorset, eval...) is a potential
+    source of woe. It may be possible to improve matters by annotating
+    particular calls with the types of arguments expected to be being passed
+    and the sort of result values that should emerge.
+
+(5) In a way that may run parallel to the somewhat abstract types being
+    looked at above, in Lisp-hosted code there is also the issue of the
+    representation types. Ie the symbols, cons cells and vectors (etc) used
+    to represent higher level entities. The style of code analysis to be
+    performed is a relative of the sort sometimes used within compilers to
+    see if an access into a composite structure will be valid. In the Lisp
+    world this amounts to tracking that after a test (atom x) has failed them
+    (car x) is known to be valid. Also after a first call (car x) has
+    succeeded a subsequent further (car x) or (cdr x) is known to be safe.
+    Suppose the known-safe calls were mapped onto (known!-safe!-car x) etc,
+    what proportion of all the accesses could end up optimised in thsi way?
+
+Throughout the above perhaps seven questions to be considered:
+(1) How much initial hand-annotation with types is necessary?
+(2) What fraction of all Reduce functions can get types attributed to them
+    by propagating information from the initial set in (1)?
+(3) What special treatment is needed to cope with sub-types, container
+    types and all the other bits of unpleasant reality?
+(4) Are there fairly simple ways to re-write some Reduce functions that
+    will significantly ease the checking?
+(5) To what extent can updates to the source code by performed automatically
+    rather than needing manual intervention?
+(6) Starting with this distinctly ad hoc sequence of experiments, can one
+    identify or import robust and principled techniques to put the analysis
+    on a respectable firm foundation?
+(7) Does this lead towards more reliable code, or code that is easier to
+    write or to debug, or perhaps even to faster code?
+
+
+
+
+ACN: 12/12/2017
