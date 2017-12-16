@@ -1,14 +1,1 @@
-$psys/lpslcomp <<EOF
-
-(faslout "$pl/nbig32")
-(dskin "nbig32.sl")
-(faslend)
-
-(faslout "$pl/nbig32a")
-(dskin "nbig32a.sl")
-(faslend)
-(quit)
-
-
-EOF
-
+../linux/mkbig

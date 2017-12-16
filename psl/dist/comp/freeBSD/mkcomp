@@ -1,15 +1,1 @@
-$psys/pslcomp <<EOF
-
-(faslout "386-comp")
-(dskin "$pxc/386-comp.sl")
-(faslend)
-
-(faslout "comp-dec")
-(dskin "$pxc/comp-dec.sl")
-(faslend)
-
-EOF
-
-cp comp-dec.b $pl
-cp 386-comp.b $pl
-
+../linux/mkcomp

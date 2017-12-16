@@ -1,2 +1,1 @@
-# link unix386 directory entry to sun386 directory 
-ln -s ../sun386/$1 $1
+../linux/link
