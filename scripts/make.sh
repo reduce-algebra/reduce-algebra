@@ -17,20 +17,6 @@
 # It also tries to build both CSL and PSL setups when they have been
 # configured.
 
-# The "--sequential" flag, if given, must be the very first argument to
-# this script. It causes all the build steps to get performed one at a time.
-# This can be useful while debugging, because it keeps the output from
-# each stage separate... With the normal parallel build the output from
-# building each variant gets interleaved.
-
-if test "x$1" = "x--sequential"
-then
-  sequential="yes"
-  shift
-else
-  sequential="no"
-fi
-
 printf "MFLAGS=<%s> MKFLAGS=<%s> MAKECMDGOALS=<%s> args=<%s>\n" \
        "$MFLAGS"    "$MKFLAGS"   "$MAKECMDGOALS"   "$*"
 
@@ -38,6 +24,10 @@ args=""
 flags=""
 buildcsl="no"
 buildpsl="no"
+sequential="no"
+
+# "make sequential" or "make csl sequential" does a sequential rather
+# then a parallel build.
 
 for a in $*
 do
@@ -45,6 +35,8 @@ do
   then buildcsl="yes"
   elif test "$a" = "psl"
   then buildpsl="yes"
+  elif test "$a" = "sequential"
+  then sequential="yes"
   else args="$args $a"
   fi  
 done
@@ -92,19 +84,6 @@ host=`./config.guess`
 host=`scripts/findhost.sh $host`
 os=`scripts/findos.sh`
 
-case `uname -s` in
-*CYGWIN*)
-  case `uname -m -o` in
-  *i686*Cygwin*)
-    cyg32="yes"
-    ;;
-  *x86_64*Cygwin*)
-    cyg64="yes"
-    ;;
-  esac
-  ;;
-esac
-
 printf "Current machine tag is %s\n" "$host"
 
 # I REALLY want to use GNU make, so here is some stuff to try to
@@ -140,30 +119,14 @@ rc=0
 list=""
 if test "$buildcsl" = "yes"
 then
-# If I am in a 64-bit cygwin shell I can make not just the 64-bit cygwin
-# version but also both 32 and 64-bit (native, mingw) Windows variants.
-# The last time I checked the 64-bit cygwin world did not have quite enough
-# libraries available for installation to make it possible for me to
-# cross-build a set of 32-bit cygwin executables here. Every so often I
-# should check and update re that.
-#
-# NOTE that these directories MUST ONLY have "make" run in them when running
-# using the version of cygwin used to configure them, so mixing use of
-# 32 and 64-bit cygwin is delicate!
-    list="cslbuild/i686-pc-cygwin* cslbuild/*-windows*"
-  if test "x$cyg64" = "xyes"
-  then
-    list="cslbuild/x86_64-pc-cygwin* cslbuild/*-windows*"
-  elif test "x$cyg32" = "xyes"
-  then
-    list="cslbuild/i686-pc-cygwin* cslbuild/x86_64-pc-cygwin* cslbuild/*-windows*"
-  else
-# If I am not running on windows my default behaviour will be to build
-# just versions that use the operating system I am running on. Anybody
-# who does cross compilation will needs to use "make" directly in the
-# subdirectory of cslbuild relevent to them.
+  case "$os" in
+  *cygwin* | *windows*)
+    list="cslbuild/*-cygwin* cslbuild/*-windows*"
+    ;;
+  *)
     list="cslbuild/*-${os}*"
-  fi
+    ;;
+  esac
 fi
 
 firstcsl=""
@@ -180,12 +143,14 @@ fi
 
 if test "$buildpsl" = "yes"
 then
-  if test "x$os" = "xwindows"
-  then
+  case "$os" in
+  *cygwin* | *windows*)
     list="$list pslbuild/*-${os}*"
-  else
+    ;;
+  *)
     list="$list pslbuild/*${host}*"
-  fi
+    ;;
+  esac
 fi
 
 # I will - now - always try building all possible versions in parallel,
@@ -198,13 +163,14 @@ case $args in
   firstcsl=""
   ;;
 esac
+
 for l in $list
 do
   if test -f ${l}/Makefile
   then
     h=`pwd`
     cd ${l}
-    if test "x$first" != "x"
+    if test "x$firstcsl" != "x"
     then
       $MAKE c-code
       firstcsl=""
