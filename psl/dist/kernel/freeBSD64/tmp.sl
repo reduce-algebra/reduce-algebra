@@ -13,6 +13,7 @@
 (dskin "/home/rainer/software/reduce-algebra/code/trunk/psl/dist/kernel/support.sl")
 (dskin "/home/rainer/software/reduce-algebra/code/trunk/psl/dist/kernel/freeBSD64/sys-support.sl")
 (dskin "/home/rainer/software/reduce-algebra/code/trunk/psl/dist/kernel/freeBSD64/externals.sl")
+(dskin "/home/rainer/software/reduce-algebra/code/trunk/psl/dist/kernel/freeBSD64/dl-support.sl")
 (dskin "$pk/lastkernel.sl")
 (asmend)
 (exitlisp)

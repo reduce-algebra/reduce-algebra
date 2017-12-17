@@ -46,17 +46,16 @@
 	     (not (eq 0 (wand nextbps 15))))
 	(setq nextbps (wplus2 16 (wshift (wshift nextbps -4) 4))))  
 
-    (let ((result nextbps))
-      (setf nextbps (wplus2 nextbps (* number-of-items
-				       addressingunitsperitem)))
-      (if (wleq nextbps lastbps)
-	result
-	(progn
-	  (setf nextbps result)
-	  (if (and (getd 'try-other-bps-spaces)
-		   (try-other-bps-spaces number-of-items))
-	    (return (gtbps number-of-items))
-	    (stderror "Ran out of binary program space"))))))
+  (let ((result nextbps))
+    (setf nextbps (wplus2 nextbps (* number-of-items addressingunitsperitem)))
+    (if (wleq nextbps lastbps)
+      result
+      (progn
+	(setf nextbps result)
+	(if (and (getd 'try-other-bps-spaces)
+		 (try-other-bps-spaces number-of-items))
+	  (gtbps number-of-items)
+	  (stderror "Ran out of binary program space"))))))
 
 
 

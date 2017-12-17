@@ -152,6 +152,7 @@ SLFILES= \
 	$(PK)/support.sl \
 	$(PXK)/sys-support.sl \
 	$(PXK)/externals.sl \
+	$(PXK)/dl-support.sl \
 	$(USERSLFILES)
  
 BFILES= \

@@ -12,7 +12,7 @@ l0001:
  mov %rdi,symval+2144
  mov symval+2080,%rdi
  mov %rdi,symval+2152
- mov $15992,%rax
+ mov $159992,%rax
  add symval+2080,%rax
  mov %rax,symval+2160
  mov symval+2080,%rdi
@@ -3878,6 +3878,138 @@ l0308:
  mov %rbx,symval+2424
  add $32,%rsp
  ret
+l0311:
+ .quad 26
+ .byte 42,42,42,42,32,69,114,114,111,114,32
+ .byte 111,112,101,110,105,110,103,32,100
+ .byte 121,110,32,108,105,98,32,0
+ .quad 2
+/ (*entry psl-dlopen expr 2)
+ .globl l0312
+l0312:
+ sub $16,%rsp
+ mov l0309,%rdi
+ mov %rdi,8(%rsp)
+ mov %rax,(%rsp)
+ mov $1,%rbx
+ shl $8,%rax
+ shr $8,%rax
+ add $8,%rax
+ call *symfnc+3896
+ mov %rax,8(%rsp)
+ cmp $0,%rax
+ jne l0313
+ mov (%rsp),%rbx
+ mov l0310,%rax
+ add $16,%rsp
+ jmp *symfnc+3944
+l0313:
+ mov 8(%rsp),%rax
+ add $16,%rsp
+ ret
+l0310:
+ .quad [[4<<56]+l0311]
+l0309:
+ .quad [[254<<56]+128]
+l0315:
+ .quad 6
+ .byte 100,108,101,114,114,111,114,0
+ .quad 0
+/ (*entry psl-dlerror expr 0)
+ .globl l0316
+l0316:
+ mov $1,%rax
+ call *symfnc+3960
+ mov l0314,%rdi
+ mov %rdi,(%rax)
+ ret
+l0314:
+ .quad [[4<<56]+l0315]
+ .quad 2
+/ (*entry psl-dlsym expr 2)
+ .globl l0318
+l0318:
+ push l0317
+ push %rax
+ mov %rbx,%rdi
+ shr $56,%rdi
+ cmp $254,%rdi
+ jne l0319
+ mov %rbx,%rax
+ call *symfnc+3976
+ mov %rax,%rbx
+ shl $8,%rbx
+ shr $8,%rbx
+ add $8,%rbx
+ mov (%rsp),%rax
+ call *symfnc+3912
+ mov %rax,8(%rsp)
+ jmp l0320
+l0319:
+ shl $8,%rbx
+ shr $8,%rbx
+ add $8,%rbx
+ call *symfnc+3912
+ mov %rax,8(%rsp)
+l0320:
+ mov 8(%rsp),%rax
+ add $16,%rsp
+ ret
+l0317:
+ .quad [[254<<56]+128]
+ .quad 1
+/ (*entry dynloadhelper expr 1)
+ .globl dynloadhelper
+dynloadhelper:
+ push %rbp
+ push %rdx
+ push %rcx
+ push %rbx
+ mov 24(%rsp),%rcx
+ mov 16(%rsp),%rdx
+ mov 8(%rsp),%rsi
+ mov 0(%rsp),%rdi
+ mov symval+2424,%rbx
+ mov %rsp,%rbx
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rbx,40(%rsp)
+ callq *%rax
+ mov 40(%rsp),%rsp
+ mov %rbx,symval+2424
+ add $32,%rsp
+ ret
+ .quad 1
+/ (*entry dynloadhelper_float_float expr 1)
+ .globl dynloadhelper_float_float
+dynloadhelper_float_float:
+ push %rbp
+ push %rdx
+ push %rcx
+ push %rbx
+ mov 24(%rsp),%rcx
+ mov 16(%rsp),%rdx
+ mov 8(%rsp),%rsi
+ mov 0(%rsp),%rdi
+ mov symval+2424,%rbx
+ mov %rsp,%rbx
+ sub $64,%rsp
+ shr $5,%rsp
+ shl $5,%rsp
+ mov %rbx,40(%rsp)
+ movsd (%rdi),%xmm0
+ callq *%rax
+ movq  %xmm0,%rax
+ mov 40(%rsp),%rsp
+ mov %rbx,symval+2424
+ add $32,%rsp
+ ret
+ .quad 1
+/ (*entry psl-dlclose expr 1)
+ .globl l0321
+l0321:
+ jmp *symfnc+3920
  .quad 1
 / (*entry codeaddressp expr 1)
  .globl codeaddressp
@@ -3886,63 +4018,63 @@ codeaddressp:
  shl $8,%rax
  shr $8,%rax
  mov %rax,(%rsp)
- mov l0309,%rax
- call *symfnc+3944
+ mov l0322,%rax
+ call *symfnc+4016
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
- jle l0313
- mov l0310,%rax
- jmp l0314
-l0313:
- mov l0311,%rax
-l0314:
- cmp l0310,%rax
- je l0315
- mov l0312,%rax
- call *symfnc+3944
+ jle l0326
+ mov l0323,%rax
+ jmp l0327
+l0326:
+ mov l0324,%rax
+l0327:
+ cmp l0323,%rax
+ je l0328
+ mov l0325,%rax
+ call *symfnc+4016
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
- jg l0316
- mov l0310,%rax
- jmp l0315
-l0316:
- mov l0311,%rax
-l0315:
- cmp l0310,%rax
- jne l0317
+ jg l0329
+ mov l0323,%rax
+ jmp l0328
+l0329:
+ mov l0324,%rax
+l0328:
+ cmp l0323,%rax
+ jne l0330
  mov symval+2272,%rax
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
- jle l0318
- mov l0310,%rax
- jmp l0319
-l0318:
- mov l0311,%rax
-l0319:
- cmp l0310,%rax
- je l0317
+ jle l0331
+ mov l0323,%rax
+ jmp l0332
+l0331:
+ mov l0324,%rax
+l0332:
+ cmp l0323,%rax
+ je l0330
  mov symval+2288,%rax
  shl $8,%rax
  shr $8,%rax
  cmp (%rsp),%rax
- jg l0320
- mov l0310,%rax
- jmp l0317
-l0320:
- mov l0311,%rax
-l0317:
+ jg l0333
+ mov l0323,%rax
+ jmp l0330
+l0333:
+ mov l0324,%rax
+l0330:
  add $8,%rsp
  ret
-l0312:
- .quad [[254<<56]+494]
-l0311:
+l0325:
+ .quad [[254<<56]+503]
+l0324:
  .quad [[254<<56]+116]
-l0310:
+l0323:
  .quad [[254<<56]+128]
-l0309:
+l0322:
  .quad [[254<<56]+256]
  .quad 1
 / (*entry lastkernel expr 1)
@@ -3953,2141 +4085,2185 @@ lastkernel:
 / (*entry initcode expr 0)
  .globl initcode
 initcode:
- mov l0321,%rax
+ mov l0334,%rax
  ret
-l0321:
+l0334:
  .quad [[254<<56]+128]
  .globl symval
  .globl symprp
  .globl symnam
- .globl l0322
-l0322:
- .quad 0
- .byte 0,0
- .globl l0323
-l0323:
- .quad 0
- .byte 1,0
- .globl l0324
-l0324:
- .quad 0
- .byte 2,0
- .globl l0325
-l0325:
- .quad 0
- .byte 3,0
- .globl l0326
-l0326:
- .quad 0
- .byte 4,0
- .globl l0327
-l0327:
- .quad 0
- .byte 5,0
- .globl l0328
-l0328:
- .quad 0
- .byte 6,0
- .globl l0329
-l0329:
- .quad 0
- .byte 7,0
- .globl l0330
-l0330:
- .quad 0
- .byte 8,0
- .globl l0331
-l0331:
- .quad 0
- .byte 9,0
- .globl l0332
-l0332:
- .quad 0
- .byte 10,0
- .globl l0333
-l0333:
- .quad 0
- .byte 11,0
- .globl l0334
-l0334:
- .quad 0
- .byte 12,0
  .globl l0335
 l0335:
  .quad 0
- .byte 13,0
+ .byte 0,0
  .globl l0336
 l0336:
  .quad 0
- .byte 14,0
+ .byte 1,0
  .globl l0337
 l0337:
  .quad 0
- .byte 15,0
+ .byte 2,0
  .globl l0338
 l0338:
  .quad 0
- .byte 16,0
+ .byte 3,0
  .globl l0339
 l0339:
  .quad 0
- .byte 17,0
+ .byte 4,0
  .globl l0340
 l0340:
  .quad 0
- .byte 18,0
+ .byte 5,0
  .globl l0341
 l0341:
  .quad 0
- .byte 19,0
+ .byte 6,0
  .globl l0342
 l0342:
  .quad 0
- .byte 20,0
+ .byte 7,0
  .globl l0343
 l0343:
  .quad 0
- .byte 21,0
+ .byte 8,0
  .globl l0344
 l0344:
  .quad 0
- .byte 22,0
+ .byte 9,0
  .globl l0345
 l0345:
  .quad 0
- .byte 23,0
+ .byte 10,0
  .globl l0346
 l0346:
  .quad 0
- .byte 24,0
+ .byte 11,0
  .globl l0347
 l0347:
  .quad 0
- .byte 25,0
+ .byte 12,0
  .globl l0348
 l0348:
  .quad 0
- .byte 26,0
+ .byte 13,0
  .globl l0349
 l0349:
  .quad 0
- .byte 27,0
+ .byte 14,0
  .globl l0350
 l0350:
  .quad 0
- .byte 28,0
+ .byte 15,0
  .globl l0351
 l0351:
  .quad 0
- .byte 29,0
+ .byte 16,0
  .globl l0352
 l0352:
  .quad 0
- .byte 30,0
+ .byte 17,0
  .globl l0353
 l0353:
  .quad 0
- .byte 31,0
+ .byte 18,0
  .globl l0354
 l0354:
  .quad 0
- .byte 32,0
+ .byte 19,0
  .globl l0355
 l0355:
  .quad 0
- .byte 33,0
+ .byte 20,0
  .globl l0356
 l0356:
  .quad 0
- .byte 34,0
+ .byte 21,0
  .globl l0357
 l0357:
  .quad 0
- .byte 35,0
+ .byte 22,0
  .globl l0358
 l0358:
  .quad 0
- .byte 36,0
+ .byte 23,0
  .globl l0359
 l0359:
  .quad 0
- .byte 37,0
+ .byte 24,0
  .globl l0360
 l0360:
  .quad 0
- .byte 38,0
+ .byte 25,0
  .globl l0361
 l0361:
  .quad 0
- .byte 39,0
+ .byte 26,0
  .globl l0362
 l0362:
  .quad 0
- .byte 40,0
+ .byte 27,0
  .globl l0363
 l0363:
  .quad 0
- .byte 41,0
+ .byte 28,0
  .globl l0364
 l0364:
  .quad 0
- .byte 42,0
+ .byte 29,0
  .globl l0365
 l0365:
  .quad 0
- .byte 43,0
+ .byte 30,0
  .globl l0366
 l0366:
  .quad 0
- .byte 44,0
+ .byte 31,0
  .globl l0367
 l0367:
  .quad 0
- .byte 45,0
+ .byte 32,0
  .globl l0368
 l0368:
  .quad 0
- .byte 46,0
+ .byte 33,0
  .globl l0369
 l0369:
  .quad 0
- .byte 47,0
+ .byte 34,0
  .globl l0370
 l0370:
  .quad 0
- .byte 48,0
+ .byte 35,0
  .globl l0371
 l0371:
  .quad 0
- .byte 49,0
+ .byte 36,0
  .globl l0372
 l0372:
  .quad 0
- .byte 50,0
+ .byte 37,0
  .globl l0373
 l0373:
  .quad 0
- .byte 51,0
+ .byte 38,0
  .globl l0374
 l0374:
  .quad 0
- .byte 52,0
+ .byte 39,0
  .globl l0375
 l0375:
  .quad 0
- .byte 53,0
+ .byte 40,0
  .globl l0376
 l0376:
  .quad 0
- .byte 54,0
+ .byte 41,0
  .globl l0377
 l0377:
  .quad 0
- .byte 55,0
+ .byte 42,0
  .globl l0378
 l0378:
  .quad 0
- .byte 56,0
+ .byte 43,0
  .globl l0379
 l0379:
  .quad 0
- .byte 57,0
+ .byte 44,0
  .globl l0380
 l0380:
  .quad 0
- .byte 58,0
+ .byte 45,0
  .globl l0381
 l0381:
  .quad 0
- .byte 59,0
+ .byte 46,0
  .globl l0382
 l0382:
  .quad 0
- .byte 60,0
+ .byte 47,0
  .globl l0383
 l0383:
  .quad 0
- .byte 61,0
+ .byte 48,0
  .globl l0384
 l0384:
  .quad 0
- .byte 62,0
+ .byte 49,0
  .globl l0385
 l0385:
  .quad 0
- .byte 63,0
+ .byte 50,0
  .globl l0386
 l0386:
  .quad 0
- .byte 64,0
+ .byte 51,0
  .globl l0387
 l0387:
  .quad 0
- .byte 65,0
+ .byte 52,0
  .globl l0388
 l0388:
  .quad 0
- .byte 66,0
+ .byte 53,0
  .globl l0389
 l0389:
  .quad 0
- .byte 67,0
+ .byte 54,0
  .globl l0390
 l0390:
  .quad 0
- .byte 68,0
+ .byte 55,0
  .globl l0391
 l0391:
  .quad 0
- .byte 69,0
+ .byte 56,0
  .globl l0392
 l0392:
  .quad 0
- .byte 70,0
+ .byte 57,0
  .globl l0393
 l0393:
  .quad 0
- .byte 71,0
+ .byte 58,0
  .globl l0394
 l0394:
  .quad 0
- .byte 72,0
+ .byte 59,0
  .globl l0395
 l0395:
  .quad 0
- .byte 73,0
+ .byte 60,0
  .globl l0396
 l0396:
  .quad 0
- .byte 74,0
+ .byte 61,0
  .globl l0397
 l0397:
  .quad 0
- .byte 75,0
+ .byte 62,0
  .globl l0398
 l0398:
  .quad 0
- .byte 76,0
+ .byte 63,0
  .globl l0399
 l0399:
  .quad 0
- .byte 77,0
+ .byte 64,0
  .globl l0400
 l0400:
  .quad 0
- .byte 78,0
+ .byte 65,0
  .globl l0401
 l0401:
  .quad 0
- .byte 79,0
+ .byte 66,0
  .globl l0402
 l0402:
  .quad 0
- .byte 80,0
+ .byte 67,0
  .globl l0403
 l0403:
  .quad 0
- .byte 81,0
+ .byte 68,0
  .globl l0404
 l0404:
  .quad 0
- .byte 82,0
+ .byte 69,0
  .globl l0405
 l0405:
  .quad 0
- .byte 83,0
+ .byte 70,0
  .globl l0406
 l0406:
  .quad 0
- .byte 84,0
+ .byte 71,0
  .globl l0407
 l0407:
  .quad 0
- .byte 85,0
+ .byte 72,0
  .globl l0408
 l0408:
  .quad 0
- .byte 86,0
+ .byte 73,0
  .globl l0409
 l0409:
  .quad 0
- .byte 87,0
+ .byte 74,0
  .globl l0410
 l0410:
  .quad 0
- .byte 88,0
+ .byte 75,0
  .globl l0411
 l0411:
  .quad 0
- .byte 89,0
+ .byte 76,0
  .globl l0412
 l0412:
  .quad 0
- .byte 90,0
+ .byte 77,0
  .globl l0413
 l0413:
  .quad 0
- .byte 91,0
+ .byte 78,0
  .globl l0414
 l0414:
  .quad 0
- .byte 92,0
+ .byte 79,0
  .globl l0415
 l0415:
  .quad 0
- .byte 93,0
+ .byte 80,0
  .globl l0416
 l0416:
  .quad 0
- .byte 94,0
+ .byte 81,0
  .globl l0417
 l0417:
  .quad 0
- .byte 95,0
+ .byte 82,0
  .globl l0418
 l0418:
  .quad 0
- .byte 96,0
+ .byte 83,0
  .globl l0419
 l0419:
  .quad 0
- .byte 97,0
+ .byte 84,0
  .globl l0420
 l0420:
  .quad 0
- .byte 98,0
+ .byte 85,0
  .globl l0421
 l0421:
  .quad 0
- .byte 99,0
+ .byte 86,0
  .globl l0422
 l0422:
  .quad 0
- .byte 100,0
+ .byte 87,0
  .globl l0423
 l0423:
  .quad 0
- .byte 101,0
+ .byte 88,0
  .globl l0424
 l0424:
  .quad 0
- .byte 102,0
+ .byte 89,0
  .globl l0425
 l0425:
  .quad 0
- .byte 103,0
+ .byte 90,0
  .globl l0426
 l0426:
  .quad 0
- .byte 104,0
+ .byte 91,0
  .globl l0427
 l0427:
  .quad 0
- .byte 105,0
+ .byte 92,0
  .globl l0428
 l0428:
  .quad 0
- .byte 106,0
+ .byte 93,0
  .globl l0429
 l0429:
  .quad 0
- .byte 107,0
+ .byte 94,0
  .globl l0430
 l0430:
  .quad 0
- .byte 108,0
+ .byte 95,0
  .globl l0431
 l0431:
  .quad 0
- .byte 109,0
+ .byte 96,0
  .globl l0432
 l0432:
  .quad 0
- .byte 110,0
+ .byte 97,0
  .globl l0433
 l0433:
  .quad 0
- .byte 111,0
+ .byte 98,0
  .globl l0434
 l0434:
  .quad 0
- .byte 112,0
+ .byte 99,0
  .globl l0435
 l0435:
  .quad 0
- .byte 113,0
+ .byte 100,0
  .globl l0436
 l0436:
  .quad 0
- .byte 114,0
+ .byte 101,0
  .globl l0437
 l0437:
  .quad 0
- .byte 115,0
+ .byte 102,0
  .globl l0438
 l0438:
  .quad 0
- .byte 116,0
+ .byte 103,0
  .globl l0439
 l0439:
  .quad 0
- .byte 117,0
+ .byte 104,0
  .globl l0440
 l0440:
  .quad 0
- .byte 118,0
+ .byte 105,0
  .globl l0441
 l0441:
  .quad 0
- .byte 119,0
+ .byte 106,0
  .globl l0442
 l0442:
  .quad 0
- .byte 120,0
+ .byte 107,0
  .globl l0443
 l0443:
  .quad 0
- .byte 121,0
+ .byte 108,0
  .globl l0444
 l0444:
  .quad 0
- .byte 122,0
+ .byte 109,0
  .globl l0445
 l0445:
  .quad 0
- .byte 123,0
+ .byte 110,0
  .globl l0446
 l0446:
  .quad 0
- .byte 124,0
+ .byte 111,0
  .globl l0447
 l0447:
  .quad 0
- .byte 125,0
+ .byte 112,0
  .globl l0448
 l0448:
  .quad 0
- .byte 126,0
+ .byte 113,0
  .globl l0449
 l0449:
  .quad 0
- .byte 127,0
+ .byte 114,0
  .globl l0450
 l0450:
- .quad 2
- .byte 110,105,108,0
+ .quad 0
+ .byte 115,0
  .globl l0451
 l0451:
  .quad 0
- .byte -127,0
+ .byte 116,0
  .globl l0452
 l0452:
  .quad 0
- .byte -126,0
+ .byte 117,0
  .globl l0453
 l0453:
  .quad 0
- .byte -125,0
+ .byte 118,0
  .globl l0454
 l0454:
  .quad 0
- .byte -124,0
+ .byte 119,0
  .globl l0455
 l0455:
  .quad 0
- .byte -123,0
+ .byte 120,0
  .globl l0456
 l0456:
  .quad 0
- .byte -122,0
+ .byte 121,0
  .globl l0457
 l0457:
  .quad 0
- .byte -121,0
+ .byte 122,0
  .globl l0458
 l0458:
  .quad 0
- .byte -120,0
+ .byte 123,0
  .globl l0459
 l0459:
  .quad 0
- .byte -119,0
+ .byte 124,0
  .globl l0460
 l0460:
  .quad 0
- .byte -118,0
+ .byte 125,0
  .globl l0461
 l0461:
  .quad 0
- .byte -117,0
+ .byte 126,0
  .globl l0462
 l0462:
  .quad 0
- .byte -116,0
+ .byte 127,0
  .globl l0463
 l0463:
- .quad 0
- .byte -115,0
+ .quad 2
+ .byte 110,105,108,0
  .globl l0464
 l0464:
  .quad 0
- .byte -114,0
+ .byte -127,0
  .globl l0465
 l0465:
  .quad 0
- .byte -113,0
+ .byte -126,0
  .globl l0466
 l0466:
  .quad 0
- .byte -112,0
+ .byte -125,0
  .globl l0467
 l0467:
  .quad 0
- .byte -111,0
+ .byte -124,0
  .globl l0468
 l0468:
  .quad 0
- .byte -110,0
+ .byte -123,0
  .globl l0469
 l0469:
  .quad 0
- .byte -109,0
+ .byte -122,0
  .globl l0470
 l0470:
  .quad 0
- .byte -108,0
+ .byte -121,0
  .globl l0471
 l0471:
  .quad 0
- .byte -107,0
+ .byte -120,0
  .globl l0472
 l0472:
  .quad 0
- .byte -106,0
+ .byte -119,0
  .globl l0473
 l0473:
  .quad 0
- .byte -105,0
+ .byte -118,0
  .globl l0474
 l0474:
  .quad 0
- .byte -104,0
+ .byte -117,0
  .globl l0475
 l0475:
  .quad 0
- .byte -103,0
+ .byte -116,0
  .globl l0476
 l0476:
  .quad 0
- .byte -102,0
+ .byte -115,0
  .globl l0477
 l0477:
  .quad 0
- .byte -101,0
+ .byte -114,0
  .globl l0478
 l0478:
  .quad 0
- .byte -100,0
+ .byte -113,0
  .globl l0479
 l0479:
  .quad 0
- .byte -99,0
+ .byte -112,0
  .globl l0480
 l0480:
  .quad 0
- .byte -98,0
+ .byte -111,0
  .globl l0481
 l0481:
  .quad 0
- .byte -97,0
+ .byte -110,0
  .globl l0482
 l0482:
  .quad 0
- .byte -96,0
+ .byte -109,0
  .globl l0483
 l0483:
  .quad 0
- .byte -95,0
+ .byte -108,0
  .globl l0484
 l0484:
  .quad 0
- .byte -94,0
+ .byte -107,0
  .globl l0485
 l0485:
  .quad 0
- .byte -93,0
+ .byte -106,0
  .globl l0486
 l0486:
  .quad 0
- .byte -92,0
+ .byte -105,0
  .globl l0487
 l0487:
  .quad 0
- .byte -91,0
+ .byte -104,0
  .globl l0488
 l0488:
  .quad 0
- .byte -90,0
+ .byte -103,0
  .globl l0489
 l0489:
  .quad 0
- .byte -89,0
+ .byte -102,0
  .globl l0490
 l0490:
  .quad 0
- .byte -88,0
+ .byte -101,0
  .globl l0491
 l0491:
  .quad 0
- .byte -87,0
+ .byte -100,0
  .globl l0492
 l0492:
  .quad 0
- .byte -86,0
+ .byte -99,0
  .globl l0493
 l0493:
  .quad 0
- .byte -85,0
+ .byte -98,0
  .globl l0494
 l0494:
  .quad 0
- .byte -84,0
+ .byte -97,0
  .globl l0495
 l0495:
  .quad 0
- .byte -83,0
+ .byte -96,0
  .globl l0496
 l0496:
  .quad 0
- .byte -82,0
+ .byte -95,0
  .globl l0497
 l0497:
  .quad 0
- .byte -81,0
+ .byte -94,0
  .globl l0498
 l0498:
  .quad 0
- .byte -80,0
+ .byte -93,0
  .globl l0499
 l0499:
  .quad 0
- .byte -79,0
+ .byte -92,0
  .globl l0500
 l0500:
  .quad 0
- .byte -78,0
+ .byte -91,0
  .globl l0501
 l0501:
  .quad 0
- .byte -77,0
+ .byte -90,0
  .globl l0502
 l0502:
  .quad 0
- .byte -76,0
+ .byte -89,0
  .globl l0503
 l0503:
  .quad 0
- .byte -75,0
+ .byte -88,0
  .globl l0504
 l0504:
  .quad 0
- .byte -74,0
+ .byte -87,0
  .globl l0505
 l0505:
  .quad 0
- .byte -73,0
+ .byte -86,0
  .globl l0506
 l0506:
  .quad 0
- .byte -72,0
+ .byte -85,0
  .globl l0507
 l0507:
  .quad 0
- .byte -71,0
+ .byte -84,0
  .globl l0508
 l0508:
  .quad 0
- .byte -70,0
+ .byte -83,0
  .globl l0509
 l0509:
  .quad 0
- .byte -69,0
+ .byte -82,0
  .globl l0510
 l0510:
  .quad 0
- .byte -68,0
+ .byte -81,0
  .globl l0511
 l0511:
  .quad 0
- .byte -67,0
+ .byte -80,0
  .globl l0512
 l0512:
  .quad 0
- .byte -66,0
+ .byte -79,0
  .globl l0513
 l0513:
  .quad 0
- .byte -65,0
+ .byte -78,0
  .globl l0514
 l0514:
  .quad 0
- .byte -64,0
+ .byte -77,0
  .globl l0515
 l0515:
  .quad 0
- .byte -63,0
+ .byte -76,0
  .globl l0516
 l0516:
  .quad 0
- .byte -62,0
+ .byte -75,0
  .globl l0517
 l0517:
  .quad 0
- .byte -61,0
+ .byte -74,0
  .globl l0518
 l0518:
  .quad 0
- .byte -60,0
+ .byte -73,0
  .globl l0519
 l0519:
  .quad 0
- .byte -59,0
+ .byte -72,0
  .globl l0520
 l0520:
  .quad 0
- .byte -58,0
+ .byte -71,0
  .globl l0521
 l0521:
  .quad 0
- .byte -57,0
+ .byte -70,0
  .globl l0522
 l0522:
  .quad 0
- .byte -56,0
+ .byte -69,0
  .globl l0523
 l0523:
  .quad 0
- .byte -55,0
+ .byte -68,0
  .globl l0524
 l0524:
  .quad 0
- .byte -54,0
+ .byte -67,0
  .globl l0525
 l0525:
  .quad 0
- .byte -53,0
+ .byte -66,0
  .globl l0526
 l0526:
  .quad 0
- .byte -52,0
+ .byte -65,0
  .globl l0527
 l0527:
  .quad 0
- .byte -51,0
+ .byte -64,0
  .globl l0528
 l0528:
  .quad 0
- .byte -50,0
+ .byte -63,0
  .globl l0529
 l0529:
  .quad 0
- .byte -49,0
+ .byte -62,0
  .globl l0530
 l0530:
  .quad 0
- .byte -48,0
+ .byte -61,0
  .globl l0531
 l0531:
  .quad 0
- .byte -47,0
+ .byte -60,0
  .globl l0532
 l0532:
  .quad 0
- .byte -46,0
+ .byte -59,0
  .globl l0533
 l0533:
  .quad 0
- .byte -45,0
+ .byte -58,0
  .globl l0534
 l0534:
  .quad 0
- .byte -44,0
+ .byte -57,0
  .globl l0535
 l0535:
  .quad 0
- .byte -43,0
+ .byte -56,0
  .globl l0536
 l0536:
  .quad 0
- .byte -42,0
+ .byte -55,0
  .globl l0537
 l0537:
  .quad 0
- .byte -41,0
+ .byte -54,0
  .globl l0538
 l0538:
  .quad 0
- .byte -40,0
+ .byte -53,0
  .globl l0539
 l0539:
  .quad 0
- .byte -39,0
+ .byte -52,0
  .globl l0540
 l0540:
  .quad 0
- .byte -38,0
+ .byte -51,0
  .globl l0541
 l0541:
  .quad 0
- .byte -37,0
+ .byte -50,0
  .globl l0542
 l0542:
  .quad 0
- .byte -36,0
+ .byte -49,0
  .globl l0543
 l0543:
  .quad 0
- .byte -35,0
+ .byte -48,0
  .globl l0544
 l0544:
  .quad 0
- .byte -34,0
+ .byte -47,0
  .globl l0545
 l0545:
  .quad 0
- .byte -33,0
+ .byte -46,0
  .globl l0546
 l0546:
  .quad 0
- .byte -32,0
+ .byte -45,0
  .globl l0547
 l0547:
  .quad 0
- .byte -31,0
+ .byte -44,0
  .globl l0548
 l0548:
  .quad 0
- .byte -30,0
+ .byte -43,0
  .globl l0549
 l0549:
  .quad 0
- .byte -29,0
+ .byte -42,0
  .globl l0550
 l0550:
  .quad 0
- .byte -28,0
+ .byte -41,0
  .globl l0551
 l0551:
  .quad 0
- .byte -27,0
+ .byte -40,0
  .globl l0552
 l0552:
  .quad 0
- .byte -26,0
+ .byte -39,0
  .globl l0553
 l0553:
  .quad 0
- .byte -25,0
+ .byte -38,0
  .globl l0554
 l0554:
  .quad 0
- .byte -24,0
+ .byte -37,0
  .globl l0555
 l0555:
  .quad 0
- .byte -23,0
+ .byte -36,0
  .globl l0556
 l0556:
  .quad 0
- .byte -22,0
+ .byte -35,0
  .globl l0557
 l0557:
  .quad 0
- .byte -21,0
+ .byte -34,0
  .globl l0558
 l0558:
  .quad 0
- .byte -20,0
+ .byte -33,0
  .globl l0559
 l0559:
  .quad 0
- .byte -19,0
+ .byte -32,0
  .globl l0560
 l0560:
  .quad 0
- .byte -18,0
+ .byte -31,0
  .globl l0561
 l0561:
  .quad 0
- .byte -17,0
+ .byte -30,0
  .globl l0562
 l0562:
  .quad 0
- .byte -16,0
+ .byte -29,0
  .globl l0563
 l0563:
  .quad 0
- .byte -15,0
+ .byte -28,0
  .globl l0564
 l0564:
  .quad 0
- .byte -14,0
+ .byte -27,0
  .globl l0565
 l0565:
  .quad 0
- .byte -13,0
+ .byte -26,0
  .globl l0566
 l0566:
  .quad 0
- .byte -12,0
+ .byte -25,0
  .globl l0567
 l0567:
  .quad 0
- .byte -11,0
+ .byte -24,0
  .globl l0568
 l0568:
  .quad 0
- .byte -10,0
+ .byte -23,0
  .globl l0569
 l0569:
  .quad 0
- .byte -9,0
+ .byte -22,0
  .globl l0570
 l0570:
  .quad 0
- .byte -8,0
+ .byte -21,0
  .globl l0571
 l0571:
  .quad 0
- .byte -7,0
+ .byte -20,0
  .globl l0572
 l0572:
  .quad 0
- .byte -6,0
+ .byte -19,0
  .globl l0573
 l0573:
  .quad 0
- .byte -5,0
+ .byte -18,0
  .globl l0574
 l0574:
  .quad 0
- .byte -4,0
+ .byte -17,0
  .globl l0575
 l0575:
  .quad 0
- .byte -3,0
+ .byte -16,0
  .globl l0576
 l0576:
  .quad 0
- .byte -2,0
+ .byte -15,0
  .globl l0577
 l0577:
  .quad 0
- .byte -1,0
+ .byte -14,0
  .globl l0578
 l0578:
+ .quad 0
+ .byte -13,0
+ .globl l0579
+l0579:
+ .quad 0
+ .byte -12,0
+ .globl l0580
+l0580:
+ .quad 0
+ .byte -11,0
+ .globl l0581
+l0581:
+ .quad 0
+ .byte -10,0
+ .globl l0582
+l0582:
+ .quad 0
+ .byte -9,0
+ .globl l0583
+l0583:
+ .quad 0
+ .byte -8,0
+ .globl l0584
+l0584:
+ .quad 0
+ .byte -7,0
+ .globl l0585
+l0585:
+ .quad 0
+ .byte -6,0
+ .globl l0586
+l0586:
+ .quad 0
+ .byte -5,0
+ .globl l0587
+l0587:
+ .quad 0
+ .byte -4,0
+ .globl l0588
+l0588:
+ .quad 0
+ .byte -3,0
+ .globl l0589
+l0589:
+ .quad 0
+ .byte -2,0
+ .globl l0590
+l0590:
+ .quad 0
+ .byte -1,0
+ .globl l0591
+l0591:
  .quad 10
  .byte 102,105,114,115,116,107,101,114,110
  .byte 101,108,0
- .globl l0579
-l0579:
+ .globl l0592
+l0592:
  .quad 4
  .byte 115,116,97,99,107,0
- .globl l0580
-l0580:
+ .globl l0593
+l0593:
  .quad 12
  .byte 97,114,103,117,109,101,110,116,98,108
  .byte 111,99,107,0
- .globl l0581
-l0581:
+ .globl l0594
+l0594:
  .quad 10
  .byte 116,111,107,101,110,98,117,102,102
  .byte 101,114,0
- .globl l0582
-l0582:
+ .globl l0595
+l0595:
  .quad 5
  .byte 98,110,100,115,116,107,0,0
- .globl l0583
-l0583:
+ .globl l0596
+l0596:
  .quad 9
  .byte 99,97,116,99,104,115,116,97,99,107
  .byte 0,0
- .globl l0584
-l0584:
+ .globl l0597
+l0597:
  .quad 8
  .byte 104,97,115,104,116,97,98,108,101,0
- .globl l0585
-l0585:
+ .globl l0598
+l0598:
  .quad 12
  .byte 111,110,101,119,111,114,100,98,117
  .byte 102,102,101,114,0
- .globl l0586
-l0586:
- .quad 7
- .byte 115,97,118,101,97,114,103,99,0,0
- .globl l0587
-l0587:
- .quad 7
- .byte 115,97,118,101,97,114,103,118,0,0
- .globl l0588
-l0588:
- .quad 9
- .byte 100,97,116,101,98,117,102,102,101,114
- .byte 0,0
- .globl l0589
-l0589:
- .quad 12
- .byte 105,110,105,116,45,112,111,105,110
- .byte 116,101,114,115,0
- .globl l0590
-l0590:
- .quad 12
- .byte 99,97,116,99,104,115,116,97,99,107
- .byte 112,116,114,0
- .globl l0591
-l0591:
- .quad 15
- .byte 98,110,100,115,116,107,108,111,119
- .byte 101,114,98,111,117,110,100,0,0
- .globl l0592
-l0592:
- .quad 15
- .byte 98,110,100,115,116,107,117,112,112
- .byte 101,114,98,111,117,110,100,0,0
- .globl l0593
-l0593:
- .quad 8
- .byte 98,110,100,115,116,107,112,116,114
- .byte 0
- .globl l0594
-l0594:
- .quad 13
- .byte 104,101,97,112,108,111,119,101,114
- .byte 98,111,117,110,100,0,0
- .globl l0595
-l0595:
- .quad 3
- .byte 104,101,97,112,0,0
- .globl l0596
-l0596:
- .quad 10
- .byte 105,110,105,116,45,102,108,117,105
- .byte 100,115,0
- .globl l0597
-l0597:
- .quad 16
- .byte 103,99,97,114,114,97,121,108,111,119
- .byte 101,114,98,111,117,110,100,0
- .globl l0598
-l0598:
- .quad 16
- .byte 103,99,97,114,114,97,121,117,112,112
- .byte 101,114,98,111,117,110,100,0
  .globl l0599
 l0599:
  .quad 7
- .byte 104,101,97,112,108,97,115,116,0,0
+ .byte 115,97,118,101,97,114,103,99,0,0
  .globl l0600
 l0600:
+ .quad 7
+ .byte 115,97,118,101,97,114,103,118,0,0
+ .globl l0601
+l0601:
+ .quad 9
+ .byte 100,97,116,101,98,117,102,102,101,114
+ .byte 0,0
+ .globl l0602
+l0602:
+ .quad 12
+ .byte 105,110,105,116,45,112,111,105,110
+ .byte 116,101,114,115,0
+ .globl l0603
+l0603:
+ .quad 12
+ .byte 99,97,116,99,104,115,116,97,99,107
+ .byte 112,116,114,0
+ .globl l0604
+l0604:
+ .quad 15
+ .byte 98,110,100,115,116,107,108,111,119
+ .byte 101,114,98,111,117,110,100,0,0
+ .globl l0605
+l0605:
+ .quad 15
+ .byte 98,110,100,115,116,107,117,112,112
+ .byte 101,114,98,111,117,110,100,0,0
+ .globl l0606
+l0606:
+ .quad 8
+ .byte 98,110,100,115,116,107,112,116,114
+ .byte 0
+ .globl l0607
+l0607:
+ .quad 13
+ .byte 104,101,97,112,108,111,119,101,114
+ .byte 98,111,117,110,100,0,0
+ .globl l0608
+l0608:
+ .quad 3
+ .byte 104,101,97,112,0,0
+ .globl l0609
+l0609:
+ .quad 10
+ .byte 105,110,105,116,45,102,108,117,105
+ .byte 100,115,0
+ .globl l0610
+l0610:
+ .quad 16
+ .byte 103,99,97,114,114,97,121,108,111,119
+ .byte 101,114,98,111,117,110,100,0
+ .globl l0611
+l0611:
+ .quad 16
+ .byte 103,99,97,114,114,97,121,117,112,112
+ .byte 101,114,98,111,117,110,100,0
+ .globl l0612
+l0612:
+ .quad 7
+ .byte 104,101,97,112,108,97,115,116,0,0
+ .globl l0613
+l0613:
  .quad 10
  .byte 111,108,100,104,101,97,112,108,97,115
  .byte 116,0
- .globl l0601
-l0601:
+ .globl l0614
+l0614:
  .quad 12
  .byte 104,101,97,112,116,114,97,112,98,111
  .byte 117,110,100,0
- .globl l0602
-l0602:
+ .globl l0615
+l0615:
  .quad 15
  .byte 111,108,100,104,101,97,112,116,114
  .byte 97,112,98,111,117,110,100,0,0
- .globl l0603
-l0603:
+ .globl l0616
+l0616:
  .quad 13
  .byte 104,101,97,112,117,112,112,101,114
  .byte 98,111,117,110,100,0,0
- .globl l0604
-l0604:
+ .globl l0617
+l0617:
  .quad 13
  .byte 95,105,110,102,98,105,116,108,101,110
  .byte 103,116,104,95,0,0
- .globl l0605
-l0605:
+ .globl l0618
+l0618:
  .quad 6
  .byte 108,97,115,116,98,112,115,0
- .globl l0606
-l0606:
+ .globl l0619
+l0619:
  .quad 12
  .byte 98,112,115,108,111,119,101,114,98,111
  .byte 117,110,100,0
- .globl l0607
-l0607:
+ .globl l0620
+l0620:
  .quad 18
  .byte 109,97,105,110,115,116,97,114,116,105
  .byte 110,105,116,105,97,108,105,122,101
  .byte 0
- .globl l0608
-l0608:
+ .globl l0621
+l0621:
  .quad 6
  .byte 110,101,120,116,98,112,115,0
- .globl l0609
-l0609:
+ .globl l0622
+l0622:
  .quad 16
  .byte 111,108,100,104,101,97,112,117,112
  .byte 112,101,114,98,111,117,110,100,0
- .globl l0610
-l0610:
+ .globl l0623
+l0623:
  .quad 16
  .byte 111,108,100,104,101,97,112,108,111
  .byte 119,101,114,98,111,117,110,100,0
- .globl l0611
-l0611:
+ .globl l0624
+l0624:
  .quad 14
  .byte 115,116,97,99,107,117,112,112,101,114
  .byte 98,111,117,110,100,0
- .globl l0612
-l0612:
+ .globl l0625
+l0625:
  .quad 8
  .byte 117,110,105,120,115,116,100,105,110
  .byte 0
- .globl l0613
-l0613:
+ .globl l0626
+l0626:
  .quad 9
  .byte 117,110,105,120,115,116,100,111,117
  .byte 116,0,0
- .globl l0614
-l0614:
+ .globl l0627
+l0627:
  .quad 9
  .byte 117,110,105,120,115,116,100,101,114
  .byte 114,0,0
- .globl l0615
-l0615:
+ .globl l0628
+l0628:
  .quad 7
  .byte 117,110,105,120,110,117,108,108,0,0
- .globl l0616
-l0616:
+ .globl l0629
+l0629:
  .quad 6
  .byte 117,110,105,120,101,111,102,0
- .globl l0617
-l0617:
+ .globl l0630
+l0630:
  .quad 6
  .byte 117,110,105,120,116,116,121,0
- .globl l0618
-l0618:
+ .globl l0631
+l0631:
  .quad 16
  .byte 42,42,42,109,117,115,116,45,98,101
  .byte 45,110,105,108,42,42,42,0
- .globl l0619
-l0619:
+ .globl l0632
+l0632:
  .quad 20
  .byte 42,42,42,109,117,115,116,45,98,101
  .byte 45,110,105,108,45,116,111,111,42,42
  .byte 42,0
- .globl l0620
-l0620:
+ .globl l0633
+l0633:
  .quad 7
  .byte 42,102,97,115,116,99,97,114,0,0
- .globl l0621
-l0621:
+ .globl l0634
+l0634:
  .quad 3
  .byte 109,97,105,110,0,0
- .globl l0622
-l0622:
+ .globl l0635
+l0635:
  .quad 14
  .byte 111,115,95,115,116,97,114,116,117,112
  .byte 95,104,111,111,107,0
- .globl l0623
-l0623:
+ .globl l0636
+l0636:
  .quad 3
  .byte 97,114,103,99,0,0
- .globl l0624
-l0624:
+ .globl l0637
+l0637:
  .quad 3
  .byte 97,114,103,118,0,0
- .globl l0625
-l0625:
+ .globl l0638
+l0638:
  .quad 7
  .byte 101,98,120,115,97,118,101,42,0,0
- .globl l0626
-l0626:
+ .globl l0639
+l0639:
  .quad 14
  .byte 115,116,97,99,107,108,111,119,101,114
  .byte 98,111,117,110,100,0
- .globl l0627
-l0627:
+ .globl l0640
+l0640:
  .quad 11
  .byte 105,110,105,116,45,103,99,97,114,114
  .byte 97,121,0,0
- .globl l0628
-l0628:
+ .globl l0641
+l0641:
  .quad 7
  .byte 112,114,101,45,109,97,105,110,0,0
- .globl l0629
-l0629:
+ .globl l0642
+l0642:
  .quad 15
  .byte 101,120,105,116,45,119,105,116,104
  .byte 45,115,116,97,116,117,115,0,0
- .globl l0630
-l0630:
+ .globl l0643
+l0643:
  .quad 14
  .byte 111,115,95,99,108,101,97,110,117,112
  .byte 95,104,111,111,107,0
- .globl l0631
-l0631:
+ .globl l0644
+l0644:
  .quad 12
  .byte 101,120,116,101,114,110,97,108,95,101
  .byte 120,105,116,0
- .globl l0632
-l0632:
+ .globl l0645
+l0645:
  .quad 10
  .byte 117,110,105,120,99,108,101,97,114,105
  .byte 111,0
- .globl l0633
-l0633:
+ .globl l0646
+l0646:
  .quad 22
  .byte 105,110,105,116,105,97,108,105,122
  .byte 101,45,115,121,109,98,111,108,45,116
  .byte 97,98,108,101,0
- .globl l0634
-l0634:
+ .globl l0647
+l0647:
  .quad 7
  .byte 105,110,105,116,99,111,100,101,0,0
- .globl l0635
-l0635:
+ .globl l0648
+l0648:
  .quad 19
  .byte 99,111,110,115,111,108,101,45,112,114
  .byte 105,110,116,45,115,116,114,105,110
  .byte 103,0,0
- .globl l0636
-l0636:
+ .globl l0649
+l0649:
  .quad 14
  .byte 99,111,110,115,111,108,101,45,110,101
  .byte 119,108,105,110,101,0
- .globl l0637
-l0637:
+ .globl l0650
+l0650:
  .quad 5
  .byte 102,97,115,108,105,110,0,0
- .globl l0638
-l0638:
+ .globl l0651
+l0651:
  .quad 10
  .byte 108,111,97,100,101,114,45,109,97,105
  .byte 110,0
- .globl l0639
-l0639:
+ .globl l0652
+l0652:
  .quad 7
  .byte 117,110,105,120,112,117,116,115,0,0
- .globl l0640
-l0640:
+ .globl l0653
+l0653:
  .quad 19
  .byte 99,111,110,115,111,108,101,45,112,114
  .byte 105,110,116,45,110,117,109,98,101,114
  .byte 0,0
- .globl l0641
-l0641:
+ .globl l0654
+l0654:
  .quad 7
  .byte 117,110,105,120,112,117,116,110,0,0
- .globl l0642
-l0642:
+ .globl l0655
+l0655:
  .quad 7
  .byte 117,110,105,120,112,117,116,99,0,0
- .globl l0643
-l0643:
+ .globl l0656
+l0656:
  .quad 13
  .byte 98,105,110,97,114,121,111,112,101,110
  .byte 114,101,97,100,0,0
- .globl l0644
-l0644:
+ .globl l0657
+l0657:
  .quad 7
  .byte 117,110,105,120,111,112,101,110,0,0
- .globl l0645
-l0645:
+ .globl l0658
+l0658:
  .quad 17
  .byte 107,101,114,110,101,108,45,102,97,116
  .byte 97,108,45,101,114,114,111,114,0,0
- .globl l0646
-l0646:
+ .globl l0659
+l0659:
  .quad 9
  .byte 98,105,110,97,114,121,114,101,97,100
  .byte 0,0
- .globl l0647
-l0647:
+ .globl l0660
+l0660:
  .quad 4
  .byte 120,103,101,116,119,0
- .globl l0648
-l0648:
+ .globl l0661
+l0661:
  .quad 14
  .byte 98,105,110,97,114,121,114,101,97,100
  .byte 98,108,111,99,107,0
- .globl l0649
-l0649:
+ .globl l0662
+l0662:
  .quad 4
  .byte 102,114,101,97,100,0
- .globl l0650
-l0650:
+ .globl l0663
+l0663:
  .quad 10
  .byte 98,105,110,97,114,121,99,108,111,115
  .byte 101,0
- .globl l0651
-l0651:
+ .globl l0664
+l0664:
  .quad 5
  .byte 102,99,108,111,115,101,0,0
- .globl l0652
-l0652:
+ .globl l0665
+l0665:
  .quad 9
  .byte 110,101,120,116,115,121,109,98,111
  .byte 108,0,0
- .globl l0653
-l0653:
+ .globl l0666
+l0666:
  .quad 5
  .byte 115,121,109,110,97,109,0,0
- .globl l0654
-l0654:
+ .globl l0667
+l0667:
  .quad 14
  .byte 104,97,115,104,45,105,110,116,111,45
  .byte 116,97,98,108,101,0
- .globl l0655
-l0655:
+ .globl l0668
+l0668:
  .quad 11
  .byte 115,104,111,119,45,110,101,119,45,105
  .byte 100,115,0,0
- .globl l0656
-l0656:
+ .globl l0669
+l0669:
  .quad 12
  .byte 102,97,115,108,105,110,45,105,110,116
  .byte 101,114,110,0
- .globl l0657
-l0657:
+ .globl l0670
+l0670:
  .quad 26
  .byte 115,101,97,114,99,104,45,115,116,114
  .byte 105,110,103,45,102,111,114,45,99,104
  .byte 97,114,97,99,116,101,114,0
- .globl l0658
-l0658:
+ .globl l0671
+l0671:
  .quad 5
  .byte 105,110,116,101,114,110,0,0
- .globl l0659
-l0659:
+ .globl l0672
+l0672:
  .quad 5
  .byte 115,117,98,115,101,113,0,0
- .globl l0660
-l0660:
+ .globl l0673
+l0673:
  .quad 22
  .byte 117,110,99,104,101,99,107,101,100,45
  .byte 115,116,114,105,110,103,45,105,110
  .byte 116,101,114,110,0
- .globl l0661
-l0661:
+ .globl l0674
+l0674:
  .quad 3
  .byte 103,116,105,100,0,0
- .globl l0662
-l0662:
+ .globl l0675
+l0675:
  .quad 9
  .byte 103,116,99,111,110,115,116,115,116
  .byte 114,0,0
- .globl l0663
-l0663:
+ .globl l0676
+l0676:
  .quad 15
  .byte 99,111,112,121,115,116,114,105,110
  .byte 103,116,111,102,114,111,109,0,0
- .globl l0664
-l0664:
+ .globl l0677
+l0677:
  .quad 16
  .byte 105,110,105,116,105,97,108,105,122
  .byte 101,45,110,101,119,45,105,100,0
- .globl l0665
-l0665:
+ .globl l0678
+l0678:
  .quad 12
  .byte 104,97,115,104,45,102,117,110,99,116
  .byte 105,111,110,0
- .globl l0666
-l0666:
+ .globl l0679
+l0679:
  .quad 21
  .byte 117,110,99,104,101,99,107,101,100,45
  .byte 115,116,114,105,110,103,45,101,113
  .byte 117,97,108,0,0
- .globl l0667
-l0667:
- .quad 5
- .byte 115,121,109,112,114,112,0,0
- .globl l0668
-l0668:
- .quad 5
- .byte 115,121,109,103,101,116,0,0
- .globl l0669
-l0669:
- .quad 5
- .byte 115,121,109,118,97,108,0,0
- .globl l0670
-l0670:
- .quad 11
- .byte 112,108,97,110,116,117,110,98,111,117
- .byte 110,100,0,0
- .globl l0671
-l0671:
- .quad 14
- .byte 102,97,115,108,105,110,45,98,97,100
- .byte 45,102,105,108,101,0
- .globl l0672
-l0672:
- .quad 12
- .byte 114,101,97,100,45,105,100,45,116,97
- .byte 98,108,101,0
- .globl l0673
-l0673:
- .quad 4
- .byte 103,116,98,112,115,0
- .globl l0674
-l0674:
- .quad 5
- .byte 103,116,119,114,100,115,0,0
- .globl l0675
-l0675:
- .quad 16
- .byte 100,111,45,114,101,108,111,99,97,116
- .byte 105,111,110,45,110,101,119,0
- .globl l0676
-l0676:
- .quad 12
- .byte 100,111,45,114,101,108,111,99,97,116
- .byte 105,111,110,0
- .globl l0677
-l0677:
- .quad 13
- .byte 99,111,100,101,45,98,97,115,101,45
- .byte 104,97,99,107,0,0
- .globl l0678
-l0678:
- .quad 12
- .byte 97,100,100,114,101,115,115,97,112,112
- .byte 108,121,48,0
- .globl l0679
-l0679:
- .quad 5
- .byte 100,101,108,98,112,115,0,0
  .globl l0680
 l0680:
- .quad 7
- .byte 98,105,116,116,97,98,108,101,0,0
+ .quad 5
+ .byte 115,121,109,112,114,112,0,0
  .globl l0681
 l0681:
- .quad 18
- .byte 114,101,108,111,99,97,116,101,45,114
- .byte 105,103,104,116,45,104,97,108,102,0
+ .quad 5
+ .byte 115,121,109,103,101,116,0,0
  .globl l0682
 l0682:
- .quad 12
- .byte 114,101,108,111,99,97,116,101,45,119
- .byte 111,114,100,0
+ .quad 5
+ .byte 115,121,109,118,97,108,0,0
  .globl l0683
 l0683:
  .quad 11
- .byte 114,101,108,111,99,97,116,101,45,105
- .byte 110,102,0,0
+ .byte 112,108,97,110,116,117,110,98,111,117
+ .byte 110,100,0,0
  .globl l0684
 l0684:
+ .quad 14
+ .byte 102,97,115,108,105,110,45,98,97,100
+ .byte 45,102,105,108,101,0
+ .globl l0685
+l0685:
+ .quad 12
+ .byte 114,101,97,100,45,105,100,45,116,97
+ .byte 98,108,101,0
+ .globl l0686
+l0686:
+ .quad 4
+ .byte 103,116,98,112,115,0
+ .globl l0687
+l0687:
+ .quad 5
+ .byte 103,116,119,114,100,115,0,0
+ .globl l0688
+l0688:
+ .quad 16
+ .byte 100,111,45,114,101,108,111,99,97,116
+ .byte 105,111,110,45,110,101,119,0
+ .globl l0689
+l0689:
+ .quad 12
+ .byte 100,111,45,114,101,108,111,99,97,116
+ .byte 105,111,110,0
+ .globl l0690
+l0690:
+ .quad 13
+ .byte 99,111,100,101,45,98,97,115,101,45
+ .byte 104,97,99,107,0,0
+ .globl l0691
+l0691:
+ .quad 12
+ .byte 97,100,100,114,101,115,115,97,112,112
+ .byte 108,121,48,0
+ .globl l0692
+l0692:
+ .quad 5
+ .byte 100,101,108,98,112,115,0,0
+ .globl l0693
+l0693:
+ .quad 7
+ .byte 98,105,116,116,97,98,108,101,0,0
+ .globl l0694
+l0694:
+ .quad 18
+ .byte 114,101,108,111,99,97,116,101,45,114
+ .byte 105,103,104,116,45,104,97,108,102,0
+ .globl l0695
+l0695:
+ .quad 12
+ .byte 114,101,108,111,99,97,116,101,45,119
+ .byte 111,114,100,0
+ .globl l0696
+l0696:
+ .quad 11
+ .byte 114,101,108,111,99,97,116,101,45,105
+ .byte 110,102,0,0
+ .globl l0697
+l0697:
  .quad 17
  .byte 99,111,109,112,117,116,101,45,114,101
  .byte 108,111,99,97,116,105,111,110,0,0
- .globl l0685
-l0685:
+ .globl l0698
+l0698:
  .quad 17
  .byte 108,111,99,97,108,45,116,111,45,103
  .byte 108,111,98,97,108,45,105,100,0,0
- .globl l0686
-l0686:
+ .globl l0699
+l0699:
  .quad 5
  .byte 115,121,109,102,110,99,0,0
- .globl l0687
-l0687:
+ .globl l0700
+l0700:
  .quad 3
  .byte 112,117,116,100,0,0
- .globl l0688
-l0688:
+ .globl l0701
+l0701:
  .quad 7
  .byte 112,117,116,101,110,116,114,121,0,0
- .globl l0689
-l0689:
+ .globl l0702
+l0702:
  .quad 14
  .byte 103,116,98,112,115,45,110,105,108,45
  .byte 101,114,114,111,114,0
- .globl l0690
-l0690:
+ .globl l0703
+l0703:
  .quad 3
  .byte 103,101,116,100,0,0
- .globl l0691
-l0691:
+ .globl l0704
+l0704:
  .quad 19
  .byte 116,114,121,45,111,116,104,101,114
  .byte 45,98,112,115,45,115,112,97,99,101
  .byte 115,0,0
- .globl l0692
-l0692:
+ .globl l0705
+l0705:
  .quad 7
  .byte 115,116,100,101,114,114,111,114,0,0
- .globl l0693
-l0693:
+ .globl l0706
+l0706:
  .quad 5
  .byte 103,116,104,101,97,112,0,0
- .globl l0694
-l0694:
+ .globl l0707
+l0707:
  .quad 15
  .byte 107,110,111,119,110,45,102,114,101
  .byte 101,45,115,112,97,99,101,0,0
- .globl l0695
-l0695:
+ .globl l0708
+l0708:
  .quad 10
  .byte 114,101,97,108,45,103,116,104,101,97
  .byte 112,0
- .globl l0696
-l0696:
+ .globl l0709
+l0709:
  .quad 12
  .byte 103,101,116,45,104,101,97,112,45,116
  .byte 114,97,112,0
- .globl l0697
-l0697:
- .quad 6
- .byte 114,101,99,108,97,105,109,0
- .globl l0698
-l0698:
- .quad 4
- .byte 103,116,115,116,114,0
- .globl l0699
-l0699:
- .quad 3
- .byte 99,111,110,115,0,0
- .globl l0700
-l0700:
- .quad 10
- .byte 105,110,116,101,114,114,111,103,97
- .byte 116,101,0
- .globl l0701
-l0701:
- .quad 5
- .byte 109,111,100,105,102,121,0,0
- .globl l0702
-l0702:
- .quad 2
- .byte 112,117,116,0
- .globl l0703
-l0703:
- .quad 12
- .byte 117,110,99,104,101,99,107,101,100,45
- .byte 112,117,116,0
- .globl l0704
-l0704:
- .quad 13
- .byte 117,110,99,104,101,99,107,101,100,45
- .byte 112,114,111,112,0,0
- .globl l0705
-l0705:
- .quad 4
- .byte 97,116,115,111,99,0
- .globl l0706
-l0706:
- .quad 16
- .byte 117,110,99,104,101,99,107,101,100,45
- .byte 115,101,116,112,114,111,112,0
- .globl l0707
-l0707:
- .quad 8
- .byte 99,111,100,101,45,112,117,116,100,0
- .globl l0708
-l0708:
- .quad 15
- .byte 112,108,97,110,116,99,111,100,101,112
- .byte 111,105,110,116,101,114,0,0
- .globl l0709
-l0709:
- .quad 3
- .byte 116,121,112,101,0,0
  .globl l0710
 l0710:
- .quad 3
- .byte 101,120,112,114,0,0
+ .quad 6
+ .byte 114,101,99,108,97,105,109,0
  .globl l0711
 l0711:
  .quad 4
- .byte 102,108,117,105,100,0
+ .byte 103,116,115,116,114,0
  .globl l0712
 l0712:
- .quad 5
- .byte 102,108,117,105,100,49,0,0
+ .quad 3
+ .byte 99,111,110,115,0,0
  .globl l0713
 l0713:
- .quad 6
- .byte 118,97,114,116,121,112,101,0
+ .quad 10
+ .byte 105,110,116,101,114,114,111,103,97
+ .byte 116,101,0
  .globl l0714
 l0714:
+ .quad 5
+ .byte 109,111,100,105,102,121,0,0
+ .globl l0715
+l0715:
+ .quad 2
+ .byte 112,117,116,0
+ .globl l0716
+l0716:
+ .quad 12
+ .byte 117,110,99,104,101,99,107,101,100,45
+ .byte 112,117,116,0
+ .globl l0717
+l0717:
+ .quad 13
+ .byte 117,110,99,104,101,99,107,101,100,45
+ .byte 112,114,111,112,0,0
+ .globl l0718
+l0718:
+ .quad 4
+ .byte 97,116,115,111,99,0
+ .globl l0719
+l0719:
+ .quad 16
+ .byte 117,110,99,104,101,99,107,101,100,45
+ .byte 115,101,116,112,114,111,112,0
+ .globl l0720
+l0720:
+ .quad 8
+ .byte 99,111,100,101,45,112,117,116,100,0
+ .globl l0721
+l0721:
+ .quad 15
+ .byte 112,108,97,110,116,99,111,100,101,112
+ .byte 111,105,110,116,101,114,0,0
+ .globl l0722
+l0722:
+ .quad 3
+ .byte 116,121,112,101,0,0
+ .globl l0723
+l0723:
+ .quad 3
+ .byte 101,120,112,114,0,0
+ .globl l0724
+l0724:
+ .quad 4
+ .byte 102,108,117,105,100,0
+ .globl l0725
+l0725:
+ .quad 5
+ .byte 102,108,117,105,100,49,0,0
+ .globl l0726
+l0726:
+ .quad 6
+ .byte 118,97,114,116,121,112,101,0
+ .globl l0727
+l0727:
  .quad 15
  .byte 42,100,101,102,105,110,101,45,99,111
  .byte 110,115,116,97,110,116,0,0
- .globl l0715
-l0715:
+ .globl l0728
+l0728:
  .quad 8
  .byte 99,111,110,115,116,97,110,116,63,0
- .globl l0716
-l0716:
+ .globl l0729
+l0729:
  .quad 14
  .byte 112,108,97,110,116,108,97,109,98,100
  .byte 97,108,105,110,107,0
- .globl l0717
-l0717:
+ .globl l0730
+l0730:
  .quad 16
  .byte 117,110,100,101,102,105,110,101,100
  .byte 102,117,110,99,116,105,111,110,0
- .globl l0718
-l0718:
+ .globl l0731
+l0731:
  .quad 20
  .byte 117,110,100,101,102,105,110,101,100
  .byte 102,117,110,99,116,105,111,110,45,97
  .byte 117,120,0
- .globl l0719
-l0719:
+ .globl l0732
+l0732:
  .quad 25
  .byte 99,111,109,112,105,108,101,100,99,97
  .byte 108,108,105,110,103,105,110,116,101
  .byte 114,112,114,101,116,101,100,0,0
- .globl l0720
-l0720:
+ .globl l0733
+l0733:
  .quad 8
  .byte 99,111,100,101,102,111,114,109,42,0
- .globl l0721
-l0721:
+ .globl l0734
+l0734:
  .quad 28
  .byte 99,111,109,112,105,108,101,100,99,97
  .byte 108,108,105,110,103,105,110,116,101
  .byte 114,112,114,101,116,101,100,97,117
  .byte 120,0
- .globl l0722
-l0722:
+ .globl l0735
+l0735:
  .quad 15
  .byte 112,115,108,115,105,103,110,97,108
  .byte 104,97,110,100,108,101,114,0,0
- .globl l0723
-l0723:
+ .globl l0736
+l0736:
  .quad 5
  .byte 101,99,104,111,111,110,0,0
- .globl l0724
-l0724:
+ .globl l0737
+l0737:
  .quad 6
  .byte 101,99,104,111,111,102,102,0
- .globl l0725
-l0725:
+ .globl l0738
+l0738:
  .quad 26
  .byte 101,120,116,101,114,110,97,108,95,99
  .byte 104,97,114,115,105,110,105,110,112
  .byte 117,116,98,117,102,102,101,114,0
- .globl l0726
-l0726:
+ .globl l0739
+l0739:
  .quad 19
  .byte 102,108,117,115,104,115,116,100,111
  .byte 117,116,112,117,116,98,117,102,102
  .byte 101,114,0,0
- .globl l0727
-l0727:
+ .globl l0740
+l0740:
  .quad 27
  .byte 101,120,116,101,114,110,97,108,95,117
  .byte 115,101,114,95,104,111,109,101,100
  .byte 105,114,95,115,116,114,105,110,103
  .byte 0,0
- .globl l0728
-l0728:
+ .globl l0741
+l0741:
  .quad 30
  .byte 101,120,116,101,114,110,97,108,95,97
  .byte 110,121,117,115,101,114,95,104,111
  .byte 109,101,100,105,114,95,115,116,114
  .byte 105,110,103,0
- .globl l0729
-l0729:
+ .globl l0742
+l0742:
  .quad 12
  .byte 97,108,116,101,114,104,101,97,112,115
  .byte 105,122,101,0
- .globl l0730
-l0730:
+ .globl l0743
+l0743:
  .quad 14
  .byte 97,108,108,111,99,97,116,101,109,111
  .byte 114,101,98,112,115,0
- .globl l0731
-l0731:
+ .globl l0744
+l0744:
  .quad 16
  .byte 103,101,116,95,105,109,97,103,101,102
  .byte 105,108,101,112,97,116,104,0
- .globl l0732
-l0732:
- .quad 14
- .byte 103,101,116,95,102,105,108,101,95,115
- .byte 116,97,116,117,115,0
- .globl l0733
-l0733:
- .quad 15
- .byte 103,101,116,95,101,120,101,99,102,105
- .byte 108,101,112,97,116,104,0,0
- .globl l0734
-l0734:
- .quad 13
- .byte 101,120,116,101,114,110,97,108,95,97
- .byte 108,97,114,109,0,0
- .globl l0735
-l0735:
- .quad 14
- .byte 101,120,116,101,114,110,97,108,95,117
- .byte 97,108,97,114,109,0
- .globl l0736
-l0736:
- .quad 12
- .byte 101,120,116,101,114,110,97,108,95,116
- .byte 105,109,101,0
- .globl l0737
-l0737:
- .quad 12
- .byte 101,120,116,101,114,110,97,108,95,116
- .byte 105,109,99,0
- .globl l0738
-l0738:
- .quad 12
- .byte 101,120,116,101,114,110,97,108,95,115
- .byte 116,97,116,0
- .globl l0739
-l0739:
- .quad 12
- .byte 101,120,116,101,114,110,97,108,95,108
- .byte 105,110,107,0
- .globl l0740
-l0740:
- .quad 14
- .byte 101,120,116,101,114,110,97,108,95,115
- .byte 116,114,108,101,110,0
- .globl l0741
-l0741:
- .quad 14
- .byte 101,120,116,101,114,110,97,108,95,117
- .byte 110,108,105,110,107,0
- .globl l0742
-l0742:
- .quad 14
- .byte 101,120,116,101,114,110,97,108,95,115
- .byte 101,116,101,110,118,0
- .globl l0743
-l0743:
- .quad 13
- .byte 101,120,116,101,114,110,97,108,95,114
- .byte 109,100,105,114,0,0
- .globl l0744
-l0744:
- .quad 13
- .byte 101,120,116,101,114,110,97,108,95,109
- .byte 107,100,105,114,0,0
  .globl l0745
 l0745:
  .quad 14
- .byte 101,120,116,101,114,110,97,108,95,103
- .byte 101,116,101,110,118,0
+ .byte 103,101,116,95,102,105,108,101,95,115
+ .byte 116,97,116,117,115,0
  .globl l0746
 l0746:
- .quad 6
- .byte 117,120,102,108,111,97,116,0
+ .quad 15
+ .byte 103,101,116,95,101,120,101,99,102,105
+ .byte 108,101,112,97,116,104,0,0
  .globl l0747
 l0747:
- .quad 4
- .byte 117,120,102,105,120,0
+ .quad 13
+ .byte 101,120,116,101,114,110,97,108,95,97
+ .byte 108,97,114,109,0,0
  .globl l0748
 l0748:
- .quad 7
- .byte 117,120,97,115,115,105,103,110,0,0
+ .quad 14
+ .byte 101,120,116,101,114,110,97,108,95,117
+ .byte 97,108,97,114,109,0
  .globl l0749
 l0749:
- .quad 6
- .byte 117,120,112,108,117,115,50,0
+ .quad 12
+ .byte 101,120,116,101,114,110,97,108,95,116
+ .byte 105,109,101,0
  .globl l0750
 l0750:
- .quad 11
- .byte 117,120,100,105,102,102,101,114,101
- .byte 110,99,101,0,0
+ .quad 12
+ .byte 101,120,116,101,114,110,97,108,95,116
+ .byte 105,109,99,0
  .globl l0751
 l0751:
- .quad 7
- .byte 117,120,116,105,109,101,115,50,0,0
+ .quad 12
+ .byte 101,120,116,101,114,110,97,108,95,115
+ .byte 116,97,116,0
  .globl l0752
 l0752:
- .quad 9
- .byte 117,120,113,117,111,116,105,101,110
- .byte 116,0,0
+ .quad 12
+ .byte 101,120,116,101,114,110,97,108,95,108
+ .byte 105,110,107,0
  .globl l0753
 l0753:
- .quad 9
- .byte 117,120,103,114,101,97,116,101,114
- .byte 112,0,0
+ .quad 14
+ .byte 101,120,116,101,114,110,97,108,95,115
+ .byte 116,114,108,101,110,0
  .globl l0754
 l0754:
- .quad 6
- .byte 117,120,108,101,115,115,112,0
+ .quad 14
+ .byte 101,120,116,101,114,110,97,108,95,117
+ .byte 110,108,105,110,107,0
  .globl l0755
 l0755:
- .quad 11
- .byte 117,120,119,114,105,116,101,102,108
- .byte 111,97,116,0,0
+ .quad 14
+ .byte 101,120,116,101,114,110,97,108,95,115
+ .byte 101,116,101,110,118,0
  .globl l0756
 l0756:
- .quad 12
- .byte 117,120,119,114,105,116,101,102,108
- .byte 111,97,116,56,0
+ .quad 13
+ .byte 101,120,116,101,114,110,97,108,95,114
+ .byte 109,100,105,114,0,0
  .globl l0757
 l0757:
- .quad 14
- .byte 117,120,100,111,117,98,108,101,116
- .byte 111,102,108,111,97,116,0
+ .quad 13
+ .byte 101,120,116,101,114,110,97,108,95,109
+ .byte 107,100,105,114,0,0
  .globl l0758
 l0758:
  .quad 14
- .byte 117,120,102,108,111,97,116,116,111
- .byte 100,111,117,98,108,101,0
+ .byte 101,120,116,101,114,110,97,108,95,103
+ .byte 101,116,101,110,118,0
  .globl l0759
 l0759:
- .quad 4
- .byte 117,120,115,105,110,0
+ .quad 6
+ .byte 117,120,102,108,111,97,116,0
  .globl l0760
 l0760:
  .quad 4
- .byte 117,120,99,111,115,0
+ .byte 117,120,102,105,120,0
  .globl l0761
 l0761:
- .quad 4
- .byte 117,120,116,97,110,0
+ .quad 7
+ .byte 117,120,97,115,115,105,103,110,0,0
  .globl l0762
 l0762:
- .quad 5
- .byte 117,120,97,115,105,110,0,0
+ .quad 6
+ .byte 117,120,112,108,117,115,50,0
  .globl l0763
 l0763:
- .quad 5
- .byte 117,120,97,99,111,115,0,0
+ .quad 11
+ .byte 117,120,100,105,102,102,101,114,101
+ .byte 110,99,101,0,0
  .globl l0764
 l0764:
- .quad 5
- .byte 117,120,97,116,97,110,0,0
+ .quad 7
+ .byte 117,120,116,105,109,101,115,50,0,0
  .globl l0765
 l0765:
- .quad 5
- .byte 117,120,115,113,114,116,0,0
+ .quad 9
+ .byte 117,120,113,117,111,116,105,101,110
+ .byte 116,0,0
  .globl l0766
 l0766:
- .quad 4
- .byte 117,120,101,120,112,0
+ .quad 9
+ .byte 117,120,103,114,101,97,116,101,114
+ .byte 112,0,0
  .globl l0767
 l0767:
- .quad 4
- .byte 117,120,108,111,103,0
+ .quad 6
+ .byte 117,120,108,101,115,115,112,0
  .globl l0768
 l0768:
- .quad 6
- .byte 117,120,97,116,97,110,50,0
+ .quad 11
+ .byte 117,120,119,114,105,116,101,102,108
+ .byte 111,97,116,0,0
  .globl l0769
 l0769:
- .quad 11
- .byte 101,120,116,101,114,110,97,108,95,112
- .byte 119,100,0,0
+ .quad 12
+ .byte 117,120,119,114,105,116,101,102,108
+ .byte 111,97,116,56,0
  .globl l0770
 l0770:
- .quad 10
- .byte 115,117,110,51,95,115,105,103,115,101
- .byte 116,0
+ .quad 14
+ .byte 117,120,100,111,117,98,108,101,116
+ .byte 111,102,108,111,97,116,0
  .globl l0771
 l0771:
- .quad 7
- .byte 115,105,103,114,101,108,115,101,0,0
+ .quad 14
+ .byte 117,120,102,108,111,97,116,116,111
+ .byte 100,111,117,98,108,101,0
  .globl l0772
 l0772:
- .quad 5
- .byte 117,110,101,120,101,99,0,0
+ .quad 4
+ .byte 117,120,115,105,110,0
  .globl l0773
 l0773:
- .quad 15
- .byte 101,120,112,97,110,100,95,102,105,108
- .byte 101,95,110,97,109,101,0,0
+ .quad 4
+ .byte 117,120,99,111,115,0
  .globl l0774
 l0774:
- .quad 5
- .byte 117,110,105,120,99,100,0,0
+ .quad 4
+ .byte 117,120,116,97,110,0
  .globl l0775
 l0775:
- .quad 4
- .byte 99,116,105,109,101,0
+ .quad 5
+ .byte 117,120,97,115,105,110,0,0
  .globl l0776
 l0776:
- .quad 14
- .byte 101,120,116,101,114,110,97,108,95,115
- .byte 121,115,116,101,109,0
+ .quad 5
+ .byte 117,120,97,99,111,115,0,0
  .globl l0777
 l0777:
- .quad 16
- .byte 101,120,116,101,114,110,97,108,95,102
- .byte 117,108,108,112,97,116,104,0
+ .quad 5
+ .byte 117,120,97,116,97,110,0,0
  .globl l0778
 l0778:
- .quad 4
- .byte 102,111,112,101,110,0
+ .quad 5
+ .byte 117,120,115,113,114,116,0,0
  .globl l0779
 l0779:
  .quad 4
- .byte 102,112,117,116,99,0
+ .byte 117,120,101,120,112,0
  .globl l0780
 l0780:
  .quad 4
- .byte 102,103,101,116,99,0
+ .byte 117,120,108,111,103,0
  .globl l0781
 l0781:
- .quad 4
- .byte 102,103,101,116,115,0
+ .quad 6
+ .byte 117,120,97,116,97,110,50,0
  .globl l0782
 l0782:
- .quad 5
- .byte 102,119,114,105,116,101,0,0
+ .quad 11
+ .byte 101,120,116,101,114,110,97,108,95,112
+ .byte 119,100,0,0
  .globl l0783
 l0783:
- .quad 5
- .byte 102,102,108,117,115,104,0,0
+ .quad 10
+ .byte 115,117,110,51,95,115,105,103,115,101
+ .byte 116,0
  .globl l0784
 l0784:
- .quad 4
- .byte 102,115,101,101,107,0
+ .quad 7
+ .byte 115,105,103,114,101,108,115,101,0,0
  .globl l0785
 l0785:
- .quad 7
- .byte 99,108,101,97,114,101,114,114,0,0
+ .quad 5
+ .byte 117,110,101,120,101,99,0,0
  .globl l0786
 l0786:
- .quad 3
- .byte 112,117,116,119,0,0
+ .quad 15
+ .byte 101,120,112,97,110,100,95,102,105,108
+ .byte 101,95,110,97,109,101,0,0
  .globl l0787
 l0787:
  .quad 5
- .byte 115,105,103,110,97,108,0,0
+ .byte 117,110,105,120,99,100,0,0
  .globl l0788
 l0788:
  .quad 4
- .byte 115,108,101,101,112,0
+ .byte 99,116,105,109,101,0
  .globl l0789
 l0789:
- .quad 11
- .byte 105,101,101,101,95,104,97,110,100,108
- .byte 101,114,0,0
+ .quad 14
+ .byte 101,120,116,101,114,110,97,108,95,115
+ .byte 121,115,116,101,109,0
  .globl l0790
 l0790:
- .quad 9
- .byte 105,101,101,101,95,102,108,97,103,115
- .byte 0,0
+ .quad 16
+ .byte 101,120,116,101,114,110,97,108,95,102
+ .byte 117,108,108,112,97,116,104,0
  .globl l0791
 l0791:
- .quad 9
- .byte 115,101,116,108,105,110,101,98,117
- .byte 102,0,0
+ .quad 4
+ .byte 102,111,112,101,110,0
  .globl l0792
 l0792:
- .quad 5
- .byte 103,101,116,112,105,100,0,0
+ .quad 4
+ .byte 102,112,117,116,99,0
  .globl l0793
 l0793:
- .quad 8
- .byte 103,101,116,104,111,115,116,105,100
- .byte 0
+ .quad 4
+ .byte 102,103,101,116,99,0
  .globl l0794
 l0794:
- .quad 13
- .byte 117,110,105,120,115,111,99,107,101
- .byte 116,111,112,101,110,0,0
+ .quad 4
+ .byte 102,103,101,116,115,0
  .globl l0795
 l0795:
- .quad 8
- .byte 103,101,116,115,111,99,107,101,116
- .byte 0
+ .quad 5
+ .byte 102,119,114,105,116,101,0,0
  .globl l0796
 l0796:
- .quad 10
- .byte 119,114,105,116,101,115,111,99,107
- .byte 101,116,0
+ .quad 5
+ .byte 102,102,108,117,115,104,0,0
  .globl l0797
 l0797:
- .quad 14
- .byte 117,110,105,120,99,108,111,115,101
- .byte 115,111,99,107,101,116,0
+ .quad 4
+ .byte 102,115,101,101,107,0
  .globl l0798
 l0798:
- .quad 3
- .byte 102,111,114,107,0,0
+ .quad 7
+ .byte 99,108,101,97,114,101,114,114,0,0
  .globl l0799
 l0799:
  .quad 3
- .byte 119,97,105,116,0,0
+ .byte 112,117,116,119,0,0
  .globl l0800
 l0800:
- .quad 4
- .byte 112,111,112,101,110,0
+ .quad 5
+ .byte 115,105,103,110,97,108,0,0
  .globl l0801
 l0801:
- .quad 5
- .byte 112,99,108,111,115,101,0,0
+ .quad 4
+ .byte 115,108,101,101,112,0
  .globl l0802
 l0802:
- .quad 5
- .byte 115,104,109,99,116,108,0,0
+ .quad 11
+ .byte 105,101,101,101,95,104,97,110,100,108
+ .byte 101,114,0,0
  .globl l0803
 l0803:
- .quad 5
- .byte 115,104,109,103,101,116,0,0
+ .quad 9
+ .byte 105,101,101,101,95,102,108,97,103,115
+ .byte 0,0
  .globl l0804
 l0804:
- .quad 4
- .byte 115,104,109,97,116,0
+ .quad 9
+ .byte 115,101,116,108,105,110,101,98,117
+ .byte 102,0,0
  .globl l0805
 l0805:
- .quad 4
- .byte 115,104,109,100,116,0
+ .quad 5
+ .byte 103,101,116,112,105,100,0,0
  .globl l0806
 l0806:
- .quad 5
- .byte 115,101,109,99,116,108,0,0
+ .quad 8
+ .byte 103,101,116,104,111,115,116,105,100
+ .byte 0
  .globl l0807
 l0807:
- .quad 5
- .byte 115,101,109,103,101,116,0,0
+ .quad 13
+ .byte 117,110,105,120,115,111,99,107,101
+ .byte 116,111,112,101,110,0,0
  .globl l0808
 l0808:
- .quad 4
- .byte 115,101,109,111,112,0
+ .quad 8
+ .byte 103,101,116,115,111,99,107,101,116
+ .byte 0
  .globl l0809
 l0809:
- .quad 5
- .byte 100,108,111,112,101,110,0,0
+ .quad 10
+ .byte 119,114,105,116,101,115,111,99,107
+ .byte 101,116,0
  .globl l0810
 l0810:
- .quad 6
- .byte 100,108,101,114,114,111,114,0
+ .quad 14
+ .byte 117,110,105,120,99,108,111,115,101
+ .byte 115,111,99,107,101,116,0
  .globl l0811
 l0811:
- .quad 4
- .byte 100,108,115,121,109,0
+ .quad 3
+ .byte 102,111,114,107,0,0
  .globl l0812
 l0812:
- .quad 6
- .byte 100,108,99,108,111,115,101,0
+ .quad 3
+ .byte 119,97,105,116,0,0
  .globl l0813
 l0813:
+ .quad 4
+ .byte 112,111,112,101,110,0
+ .globl l0814
+l0814:
+ .quad 5
+ .byte 112,99,108,111,115,101,0,0
+ .globl l0815
+l0815:
+ .quad 5
+ .byte 115,104,109,99,116,108,0,0
+ .globl l0816
+l0816:
+ .quad 5
+ .byte 115,104,109,103,101,116,0,0
+ .globl l0817
+l0817:
+ .quad 4
+ .byte 115,104,109,97,116,0
+ .globl l0818
+l0818:
+ .quad 4
+ .byte 115,104,109,100,116,0
+ .globl l0819
+l0819:
+ .quad 5
+ .byte 115,101,109,99,116,108,0,0
+ .globl l0820
+l0820:
+ .quad 5
+ .byte 115,101,109,103,101,116,0,0
+ .globl l0821
+l0821:
+ .quad 4
+ .byte 115,101,109,111,112,0
+ .globl l0822
+l0822:
+ .quad 5
+ .byte 100,108,111,112,101,110,0,0
+ .globl l0823
+l0823:
+ .quad 6
+ .byte 100,108,101,114,114,111,114,0
+ .globl l0824
+l0824:
+ .quad 4
+ .byte 100,108,115,121,109,0
+ .globl l0825
+l0825:
+ .quad 6
+ .byte 100,108,99,108,111,115,101,0
+ .globl l0826
+l0826:
  .quad 11
  .byte 117,110,105,120,45,112,114,111,102
  .byte 105,108,101,0,0
- .globl l0814
-l0814:
+ .globl l0827
+l0827:
+ .quad 9
+ .byte 112,115,108,45,100,108,111,112,101
+ .byte 110,0,0
+ .globl l0828
+l0828:
+ .quad 5
+ .byte 98,108,100,109,115,103,0,0
+ .globl l0829
+l0829:
+ .quad 10
+ .byte 112,115,108,45,100,108,101,114,114
+ .byte 111,114,0
+ .globl l0830
+l0830:
+ .quad 7
+ .byte 103,116,119,97,114,114,97,121,0,0
+ .globl l0831
+l0831:
+ .quad 8
+ .byte 112,115,108,45,100,108,115,121,109
+ .byte 0
+ .globl l0832
+l0832:
+ .quad 8
+ .byte 105,100,50,115,116,114,105,110,103
+ .byte 0
+ .globl l0833
+l0833:
+ .quad 12
+ .byte 100,121,110,108,111,97,100,104,101
+ .byte 108,112,101,114,0
+ .globl l0834
+l0834:
+ .quad 24
+ .byte 100,121,110,108,111,97,100,104,101
+ .byte 108,112,101,114,95,102,108,111,97,116
+ .byte 95,102,108,111,97,116,0
+ .globl l0835
+l0835:
+ .quad 10
+ .byte 112,115,108,45,100,108,99,108,111,115
+ .byte 101,0
+ .globl l0836
+l0836:
  .quad 11
  .byte 99,111,100,101,97,100,100,114,101,115
  .byte 115,112,0,0
- .globl l0815
-l0815:
+ .globl l0837
+l0837:
  .quad 14
  .byte 103,101,116,102,99,111,100,101,112
  .byte 111,105,110,116,101,114,0
- .globl l0816
-l0816:
+ .globl l0838
+l0838:
  .quad 9
  .byte 108,97,115,116,107,101,114,110,101
  .byte 108,0,0
