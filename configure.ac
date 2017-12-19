@@ -137,7 +137,7 @@ then
   here=`pwd`
   cd $abssrcdir
   printf "Regenerate autoconf-related files\n"
-  if ! eval $SHELL -c "./autogen.sh $ac_configure_args"
+  if ! eval $SHELL -c \"./autogen.sh $ac_configure_args\"
   then
     wait $procids
     printf "The autogen.sh script seems to have failed. I can not continue\n"
