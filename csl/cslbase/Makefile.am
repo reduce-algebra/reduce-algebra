@@ -775,8 +775,7 @@ endif !fox
 
 $(FOXDEPS):	$(csl)/fox/CHANGED $(LOCALCYG)
 	printf "About to build FOX for %s\n" `pwd`
-	$(TRACE)@cd ../fox && $(LOCALCYG) \
-		$(MAKE) install
+	$(TRACE)@cd ../fox && $(LOCALCYG) $(MAKE) install
 
 
 if crlibm
@@ -1073,18 +1072,10 @@ $(csl)/wxWidgets/wxWidgets_revision:	\
 	rm -rf wxWidgets ; \
 	tar xfj support-packages/$$a ; \
 	chmod -R +rw wxWidgets ; \
-	find . \( -name configure.ac -o -name configure.in \
-	          -o -name Makefile.am \) -print | xargs touch ; \
-	sleep 1 ; \
-	find wxWidgets -name aclocal.m4 -print | xargs touch ; \
-	sleep 1 ; \
-	find wxWidgets -name configure -print | xargs touch ; \
-	find wxWidgets -name configure -print | xargs chmod +x ; \
-	sleep 1 ; \
-	find wxWidgets -name config.h.in -print | xargs touch ; \
-	sleep 1 ; \
-	find wxWidgets -name Makefile.in -print | xargs touch ; \
 	cp $(csl)/support-packages/wxWidgets_revision wxWidgets ; \
+        cd wxWidgets ; \
+        ./autogen.sh ; \
+        cd .. ; \
 	echo wxWidgets unpacked from archive $$a )
 
 # I use wx-config as my main and only indication that wxwidgets has been
@@ -1182,17 +1173,13 @@ else !gui
 	$(CP) $(cslbase)/csl-nogui .
 endif !gui
 if !cygwin
-if cyg32
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
-	cd $(with_cygbuild)/csl && $(MAKE) csl.exe; fi
-endif cyg32
+	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) csl.exe; fi
 	if test -x $(with_cygbuild)/csl/csl.exe; then $(CP) $(with_cygbuild)/csl/csl.exe cygwin-csl.exe; fi
-if cyg64
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
-	cd $(with_cygbuild64)/csl && $(MAKE) csl.exe; fi
-endif cyg64
+	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) csl.exe; fi
 	if test -x $(with_cygbuild64)/csl/csl.exe; then $(CP) $(with_cygbuild64)/csl/csl.exe cygwin64-csl.exe; fi
 endif !cygwin
 endif windows
@@ -1234,17 +1221,13 @@ else !gui
 	$(CP) $(cslbase)/csl-nogui .
 endif !gui
 if !cygwin
-if cyg32
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
-	cd $(with_cygbuild)/csl && $(MAKE) flatcsl.exe; fi
-endif cyg32
+	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) flatcsl.exe; fi
 	if test -x $(with_cygbuild)/csl/flatcsl.exe; then $(CP) $(with_cygbuild)/csl/flatcsl.exe cygwin-flatcsl.exe; fi
-if cyg64
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
-	cd $(with_cygbuild64)/csl && $(MAKE) flatcsl.exe; fi
-endif cyg64
+	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) flatcsl.exe; fi
 	if test -x $(with_cygbuild64)/csl/flatcsl.exe; then $(CP) $(with_cygbuild64)/csl/flatcsl.exe cygwin64-flatcsl.exe; fi
 endif !cygwin
 endif windows
@@ -1288,17 +1271,13 @@ else !gui
 	$(CP) $(cslbase)/reduce-nogui .
 endif !gui
 if !cygwin
-if cyg32
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
-	cd $(with_cygbuild)/csl && $(MAKE) reduce.exe; fi
-endif cyg32
+	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) reduce.exe; fi
 	if test -x $(with_cygbuild)/csl/reduce.exe; then $(CP) $(with_cygbuild)/csl/reduce.exe cygwin-reduce.exe; fi
-if cyg64
 	if test "x$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
-	cd $(with_cygbuild64)/csl && $(MAKE) reduce.exe; fi
-endif cyg64
+	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) reduce.exe; fi
 	if test -x $(with_cygbuild64)/csl/reduce.exe; then $(CP) $(with_cygbuild64)/csl/reduce.exe cygwin64-reduce.exe; fi
 endif !cygwin
 endif windows
@@ -1352,17 +1331,13 @@ if windows
 # See "gui-or-not.txt" for an explanation of what this is about...
 	$(CP) $(cslbase)/bootstrapreduce .
 if !cygwin
-if cyg32
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
-	cd $(with_cygbuild)/csl && $(MAKE) bootstrapreduce.exe; fi
-endif cyg32
+	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) bootstrapreduce.exe; fi
 	if test -x $(with_cygbuild)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild)/csl/bootstrapreduce.exe cygwin-bootstrapreduce.exe; fi
-if cyg64
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
-	cd $(with_cygbuild64)/csl && $(MAKE) bootstrapreduce.exe; fi
-endif cyg64
+	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) bootstrapreduce.exe; fi
 	if test -x $(with_cygbuild64)/csl/bootstrapreduce.exe; then $(CP) $(with_cygbuild64)/csl/bootstrapreduce.exe cygwin64-bootstrapreduce.exe; fi
 endif !cygwin
 endif windows
@@ -1394,17 +1369,13 @@ else !gui
 	$(CP) $(cslbase)/fwindemo-nogui .
 endif !gui
 if !cygwin
-if cyg32
 	if test x"$(with_cygbuild)" != "x" && test -d $(with_cygbuild); then \
 	printf "About to build %s for %s\n" $(with_cygbuild) `pwd`; \
-	cd $(with_cygbuild)/csl && $(MAKE) fwindemo.exe; fi
-endif cyg32
+	cd $(with_cygbuild)/csl && $(CYG32) $(MAKE) fwindemo.exe; fi
 	if test -x $(with_cygbuild)/csl/fwindemo.exe; then $(CP) $(with_cygbuild)/csl/fwindemo.exe cygwin-fwindemo.exe; fi
-if cyg64
 	if test x"$(with_cygbuild64)" != "x" && test -d $(with_cygbuild64); then \
 	printf "About to build %s for %s\n" $(with_cygbuild64) `pwd`; \
-	cd $(with_cygbuild64)/csl && $(MAKE) fwindemo.exe; fi
-endif cyg64
+	cd $(with_cygbuild64)/csl && $(CYG64) $(MAKE) fwindemo.exe; fi
 	if test -x $(with_cygbuild64)/csl/fwindemo.exe; then $(CP) $(with_cygbuild64)/csl/fwindemo.exe cygwin64-fwindemo.exe; fi
 endif !cygwin
 endif windows
@@ -1946,8 +1917,7 @@ if canrun
 # will be. I make the access rights 664 not 644 in case you are a group member
 # for the file-space not actually the owner.
 	chmod 664 $(gensrc)/*
-	$(LOCALCYG) \
-		./reduce$(COM) -w -z $(CSLFLAGS) -Dno_init_file \
+	$(LOCALCYG) ./reduce$(COM) -w -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -1990,8 +1960,7 @@ if canrun
 # before starting the build job.
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(LOCALCYG) \
-		./reduce$(COM) -w -z $(CSLFLAGS) \
+	$(LOCALCYG) ./reduce$(COM) -w -z $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
@@ -2018,18 +1987,17 @@ endif !canrun
 bootstraprecompile: $(LOCALCYG)
 if canrun
 	chmod 664 $(gensrc)/*
-	if ! test -f bootstrapreduce.img; then $(MAKE) bootstrapreduce.img; fi
+	if ! test -f bootstrapreduce.img; then $(LOCALCYG) $(MAKE) bootstrapreduce.img; fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/recompile.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-l buildlogs/$(which).log -Dwhich=$(which)
 	chmod 664 $(gensrc)/*
-	$(MAKE) -t bootstrapreduce.img > /dev/null
+	$(LOCALCYG) $(MAKE) -t bootstrapreduce.img > /dev/null
 else !canrun
 	echo Can not build images on this platfrom
 endif !canrun
@@ -2037,11 +2005,10 @@ endif !canrun
 recompile:	$(LOCALCYG)
 if canrun
 	chmod 664 $(gensrc)/*
-	if ! test -f $(REDUCE_IMG); then $(MAKE) $(REDUCE_IMG); fi
+	if ! test -f $(REDUCE_IMG); then $(LOCALCYG) $(MAKE) $(REDUCE_IMG); fi
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(LOCALCYG) \
-		./reduce$(COM) -v -w $(CSLFLAGS) \
+	$(LOCALCYG) ./reduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/recompile.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2093,8 +2060,8 @@ if canrun
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -w -z -x $(CSLFLAGS) -Dno_init_file \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) \
+		-w -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -2121,8 +2088,8 @@ if canrun
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -w -z -x $(CSLFLAGS) -Dno_init_file \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) \
+		-w -z -x $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -2145,8 +2112,8 @@ if canrun
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
 	chmod 664 $(gensrc)/*
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -w -z $(CSLFLAGS) -Dno_init_file \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) \
+		-w -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildboot.lsp \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -2159,8 +2126,8 @@ profile:	bootstrapreduce.img $(LOCALCYG)
 if canrun
 	$(TRACE)mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) -Dno_init_file \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) \
+		-w $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/profile.red \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
@@ -2197,16 +2164,16 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 	fi
 	touch $(INLINE_DEFS)
 	$(RM) -f bootstrapreduce.img
-	$(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
+	$(LOCALCYG) $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img
 	chmod 664 $(gensrc)/*
 	if diff $(INLINE_DEFS) old-inline-defs.dat > /dev/null; \
 	then \
 	  echo "Inline definitions have not changed"; \
 	  else \
 	  $(RM) bootstrapreduce.img; \
-	  $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
+	  $(LOCALCYG) $(MAKE) $(AM_MAKEFLAGS) bootstrapreduce.img; \
 	fi
-	$(MAKE) $(AM_MAKEFLAGS) just-c-code
+	$(LOCALCYG) $(MAKE) $(AM_MAKEFLAGS) just-c-code
 	chmod 664 $(gensrc)/*
 # If the inline-defs file has not changed I will restore the old one. Its
 # contents will be just what I would have seen in the new one but its
@@ -2225,8 +2192,7 @@ $(gensrc)/make.stamp:	$(bootstrapreducedep) $(gensrc)/profile.dat \
 # while debugging.
 
 just-c-code:	$(LOCALCYG)
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -i- -w $(CSLFLAGS) \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -i- -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
@@ -2261,15 +2227,15 @@ $(generated_objects):	$(gensrc)/make.stamp $(bootstrapreducedep) \
 # to let any previous steps complete.
 
 $(generated_source_deps):	$(gensrc)/make.stamp
-	$(MAKE) standard_c_code
+	$(LOCALCYG) $(MAKE) standard_c_code
 
 standard-c-code $(generated_lisp):	$(gensrc)/make.stamp
 ## Recover from the removal of $@
 	if test -f $@; then touch $@; else \
 	  $(RM) -f $(gensrc)/make.stamp; \
-	  $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \
+	  $(LOCALCYG) $(MAKE) $(AM_MAKEFLAGS) $(gensrc)/make.stamp; \
 	  $(RM) -f $(generated-objects); \
-	  $(MAKE) $(AM_MAKEFLAGS) reduce; \
+	  $(LOCALCYG) $(MAKE) $(AM_MAKEFLAGS) reduce; \
 	fi
 
 
@@ -2279,8 +2245,7 @@ partial-c-code:	bootstrapreduce.img $(gensrc)/profile.dat $(LOCALCYG)
 if canrun
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
@@ -2297,8 +2262,7 @@ full-c-code:	bootstrapreduce.img $(gensrc)/profile.dat $(LOCALCYG)
 if canrun
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-c-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-c \
@@ -2316,8 +2280,7 @@ j-code:	bootstrapreduce.img $(gensrc)/profile.dat $(LOCALCYG)
 if canrun
 	mkdir -p buildlogs
 	mkdir -p $(CYGREDUCE)/cslbuild/generated-java
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
 		-Dno_init_file $(CYGSRC)/make-j-code.red \
 		-D@destdir=$(CYGREDUCE)/cslbuild/generated-java \
 		-Dhow_many=$(how_many) -Dsize_per_file=$(size_per_file) \
@@ -2330,8 +2293,7 @@ smacros smacros.red:	bootstrapreduce.img $(LOCALCYG)
 if canrun
 	mkdir -p buildlogs
 	chmod 664 $(gensrc)/*
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -w $(CSLFLAGS) \
 		-Dno_init_file \
 		$(CYGSRC)/make-smacros.red \
 		-Dhow_many=$(how_many) -Dhow_big=$(how_big) \
@@ -2344,15 +2306,13 @@ endif !canrun
 testslow:	bootstrapreduce.img $(LOCALCYG)
 if canrun
 	mkdir -p testlogs
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -v -w \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -v -w \
 		$(CSLFLAGS) $(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-- testlogs/testslow.log
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/checkall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2365,16 +2325,14 @@ endif !canrun
 testall:	$(REDUCE_IMG) $(LOCALCYG)
 if canrun
 	mkdir -p testlogs
-	$(LOCALCYG) \
-		./reduce$(COM) -v -w $(CSLFLAGS) \
+	$(LOCALCYG) ./reduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
 		-D@reduce=$(CYGREDUCE) \
 		-Dcpulimit=$(cpulimit) -Dconslimit=$(conslimit) \
 		-- testlogs/testreduce.log
-	$(LOCALCYG) \
-		./reduce$(COM) -v -w $(CSLFLAGS) \
+	$(LOCALCYG) ./reduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/checkall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2387,8 +2345,7 @@ endif !canrun
 testslow1:	bootstrapreduce.img $(LOCALCYG)
 if canrun
 	mkdir -p testlogs
-	$(LOCALCYG) \
-		./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) \
+	$(LOCALCYG) ./bootstrapreduce$(EXEEXT) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2419,8 +2376,7 @@ endif valgrind
 test1:	$(REDUCE_IMG) $(LOCALCYG)
 if canrun
 	mkdir -p testlogs
-	$(LOCALCYG) \
-		./reduce$(COM) -v -w $(CSLFLAGS) \
+	$(LOCALCYG) ./reduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/testall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2449,8 +2405,7 @@ endif valgrind
 checkall:	$(REDUCE_IMG) $(LOCALCYG)
 if canrun
 	mkdir -p testlogs
-	$(LOCALCYG) \
-		./reduce$(COM) -v -w $(CSLFLAGS) \
+	$(LOCALCYG) ./reduce$(COM) -v -w $(CSLFLAGS) \
 		$(CYGSRC)/checkall.red \
 		-Dno_init_file \
 		-D@srcdir=$(CYGSRC) \
@@ -2479,8 +2434,7 @@ csl.img:	csl$(COM) $(csldep) $(LOCALCYG)
 if canrun
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
-	$(LOCALCYG) \
-		./csl$(COM) -w -v -z $(CSLFLAGS) \
+	$(LOCALCYG) ./csl$(COM) -w -v -z $(CSLFLAGS) \
 		"$(CYGSRC)/buildcsl.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-o- -- buildlogs/csl.img.log \
@@ -2502,8 +2456,7 @@ csli.img:	csl$(COM) $(csldep) $(LOCALCYG)
 	-$(TRACE)$(RM) -rf csli.img
 	mkdir -p buildlogs
 	@ww=`pwd`; echo ~~~~~~~~ Building in $${ww##*cslbuild/}
-	$(LOCALCYG) \
-		./csl$(COM) -w -v -z $(CSLFLAGS) \
+	$(LOCALCYG) ./csl$(COM) -w -v -z $(CSLFLAGS) \
 		"$(CYGSRC)/buildcsli.lsp" \
 		-D@cslbase="$(CYGSRC)" \
 		-o csli.img -L buildlogs/csli.img.log \
@@ -2514,8 +2467,7 @@ csl.dir:	csl$(COM) $(csldep) $(LOCALCYG)
 	-$(TRACE)$(RM) -rf csl.img
 if canrun
 	mkdir -p buildlogs
-	$(LOCALCYG) \
-		./csl$(COM) -w -v -z $(CSLFLAGS) \
+	$(LOCALCYG) ./csl$(COM) -w -v -z $(CSLFLAGS) \
 		"$(CYGSRC)/buildcsl.lsp" \
 		-o ./csl.img/ -D@cslbase="$(CYGSRC)" \
 		-- buildlogs/csl.img.log \

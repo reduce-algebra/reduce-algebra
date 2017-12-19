@@ -30,6 +30,7 @@ do
   \'--with*-crlibm*\' | \
   \'--with*-boehm*\' | \
   \'--with*-redfront*\' | \
+  \'--with*-sequential*' | \
   \'--enable-debug*\' | \
   \'--enable-conservative*\' | \
   \'--enable-test*\' | \

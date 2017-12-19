@@ -60,19 +60,19 @@ endif
 
 all:	$(FOXDEP) $(WXDEP)
 	echo Build all: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) all
-	cd $(LISPDIR) && $(MAKE) $(MFLAGS) $(MYFLAGS) all MYFLAGS="$(MFLAGS) $(MYFLAGS)"
+	cd $(LISPDIR) && $(LOCALCYG) $(MAKE) $(MFLAGS) $(MYFLAGS) all MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 
 
 if csl
 if fox
 fox $(FOXDEP):
 	echo Build FOX: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
-	cd fox && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
+	cd fox && $(LOCALCYG) $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 endif
 if wx
 wx $(WXDEP):
 	echo Build wxWidgets: $(MAKE) mflags=$(MFLAGS) myflags=$(MYFLAGS) install
-	cd wxWidgets && $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
+	cd wxWidgets && $(LOCALCYG) $(MAKE) $(MFLAGS) $(MYFLAGS) install MYFLAGS="$(MFLAGS) $(MYFLAGS)"
 endif
 
 # If one of the major foundations of this Makefile have a date later than that

@@ -528,9 +528,30 @@ AC_ARG_WITH(cygwin32,
   [],
   [with_cygwin32="no"])
 
+AC_ARG_WITH(cygwin64,
+  AC_HELP_STRING([--with-cygwin64],
+                 [Force configure and build to be under cygwin64]),
+  [],
+  [with_cygwin64="no"])
+
 # If the "--with-cygwin32" flag was passed and I am at present running under
 # a 64-bit cygwin shell then I will insist on changing gear so that I run
 # using a 32-bit cygwin shell.
+
+i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg32.exe
+i686-w64-mingw32-strip ./cyg32.exe
+i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg64.exe
+i686-w64-mingw32-strip ./cyg64.exe
+LOCALCYG=""
+if test "x$with_cygwin32" != "xno"
+then
+  LOCALCYG=`pwd`/cyg32.exe
+fi
+if test "x$with_cygwin64" != "xno"
+then
+  LOCALCYG=`pwd`/cyg64.exe
+fi
+AC_SUBST(LOCALCYG)
 
 if test "x$with_cygwin32" != "xno" &&
    test "x$uname_o" = "xCygwin" &&
@@ -538,22 +559,10 @@ if test "x$with_cygwin32" != "xno" &&
 then
   AC_MSG_NOTICE([Restart to use a 32-bit Cygwin shell])
   AC_MSG_NOTICE([with-cygwin32=$with_cygwin32 uname_o=$uname_o uname_m=$uname_m])
-# I am on cygwin - and I will just assume that the directory with Reduce
-# in it is writable so I can put the cyg32 binary there. I always use a 32-bit
-# mingw-style compiler to create the program that can flip between 32 and
-# 64 bit usage.
-  i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg32.exe
-  i686-w64-mingw32-strip ./cyg32.exe
-  doconfig="./cyg32.exe $SHELL -c \"$abssrcdir/configure $ac_configure_args\""
+  doconfig="$LOCALCYG $SHELL -c \"$abssrcdir/configure $ac_configure_args\""
   AC_MSG_NOTICE([$doconfig])
   exec $doconfig
 fi
-
-AC_ARG_WITH(cygwin64,
-  AC_HELP_STRING([--with-cygwin64],
-                 [Force configure and build to be under cygwin64]),
-  [],
-  [with_cygwin64="no"])
 
 if test "x$with_cygwin64" != "xno" &&
    test "x$uname_o" = "xCygwin" &&
@@ -562,9 +571,7 @@ if test "x$with_cygwin64" != "xno" &&
 then
   AC_MSG_NOTICE([Restart to use a 64-bit Cygwin shell])
   AC_MSG_NOTICE([with-cygwin64=$with_cygwin64 uname_o=$uname_o uname_m=$uname_m uname_s=$uname_s wow=$wow])
-  i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg64.exe
-  i686-w64-mingw32-strip ./cyg64.exe
-  doconfig="./cyg64.exe $SHELL -c \"$abssrcdir/configure $ac_configure_args\""
+  doconfig="$LOCALCYG $SHELL -c \"$abssrcdir/configure $ac_configure_args\""
   AC_MSG_NOTICE([$doconfig])
   exex $doconfig
 fi
@@ -1275,17 +1282,13 @@ then
       doconfig="$doconfig --with-gtk"
     fi
     AC_MSG_NOTICE([doconfig = $doconfig])
-    ls -l $abssrcdir/csl/wxWidgets/configure
-    AC_MSG_NOTICE([About to eval"])
     if test "x$with_sequential" = "xno"
     then
       eval "$doconfig" &
-      AC_MSG_NOTICE([Background eval"])
       jobs
       procids="$procids $!"
     else
       eval "$doconfig"
-      AC_MSG_NOTICE([Foreground eval complete"])
     fi
     cd "$builddir"
   elif test "x$with_fox" != "xno"

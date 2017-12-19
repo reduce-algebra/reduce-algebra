@@ -1671,16 +1671,31 @@ HOST="$host"
 # can not.
 
 LOCALCYG=""
+CYG32=""
+CYG64=""
+AC_SUBST(LOCALCYG)
+AC_SUBST(CYG32)
+AC_SUBST(CYG64)
+
+if test "x$exeext" = "xyes"
+then
+  absolute_cyg32=`pwd -P`/cyg32
+  AC_SUBST(absolute_cyg32)
+  i686-w64-mingw32-g++ -O3 -DFORCE32 $srcdir/other-cygwin.cpp -o $absolute_cyg32
+  i686-w64-mingw32-strip $absolute_cyg32
+  absolute_cyg64=`pwd -P`/cyg64
+  AC_SUBST(absolute_cyg64)
+  i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -o $absolute_cyg64
+  i686-w64-mingw32-strip $absolute_cyg64
+  CYG32=$absolute_cyg32
+  CYG64=$absolute_cyg64
+fi
 
 if test "x$with_cygwin" = "xyes"
 then
 
   if test "x$cyg32" = "xyes"
   then
-    absolute_cyg32=`pwd -P`/cyg32
-    AC_SUBST(absolute_cyg32)
-    i686-w64-mingw32-g++ -O3 -DFORCE32 $srcdir/other-cygwin.cpp -o $absolute_cyg32
-    i686-w64-mingw32-strip $absolute_cyg32
     CC="$absolute_cyg32 $CC"
     CXX="$absolute_cyg32 $CXX"
     STRIP="$absolute_cyg32 $STRIP"
@@ -1690,10 +1705,6 @@ then
 
   if test "x$cyg64" = "xyes"
   then
-    absolute_cyg64=`pwd -P`/cyg64
-    AC_SUBST(absolute_cyg64)
-    i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -o $absolute_cyg64
-    i686-w64-mingw32-strip $absolute_cyg64
     CC="$absolute_cyg64 $CC"
     CXX="$absolute_cyg64 $CXX"
     STRIP="$absolute_cyg64 $STRIP"
@@ -1702,7 +1713,6 @@ then
   fi
 fi
 
-AC_SUBST(LOCALCYG)
 
 #
 # Make some things available for conditional segments of a Makefile
