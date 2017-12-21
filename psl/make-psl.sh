@@ -27,12 +27,28 @@ case "guess:$guess" in
 	MACHINE=macintel64
 	;;
 
-  guess:x86_64-unknown-freebsd8.* )
+  guess:x86_64-unknown-freebsd* | guess:amd64-unknown-freebsd* )
 	MACHINE=freeBSD64
 	;;
 
-  guess:i386-unknown-freebsd8.* )
+  guess:i386-unknown-freebsd* )
 	MACHINE=freeBSD
+	;;
+
+  guess:i686-pc-cygwin )
+	MACHINE=win32
+	test "$BPSL_CYGDRIVE_PREFIX" = "" && export BPSL_CYGDRIVE_PREFIX=/cygdrive
+	# get windows path of current dir and try to cd to /cygdrive version
+	CURDIR=`cygpath -a -m . | sed -e 's/^\(.\):/\/cygdrive\/\1/'`
+	cd "$CURDIR"
+	;;
+
+  guess:x86_64-unknown-cygwin )
+	MACHINE=mingw-w64
+	test "$BPSL_CYGDRIVE_PREFIX" = "" && export BPSL_CYGDRIVE_PREFIX=/cygdrive
+	# get windows path of current dir and try to cd to /cygdrive version
+        CURDIR=`cygpath -a -m . | sed -e 's/^\(.\):/\/cygdrive\/\1/'`
+        cd "$CURDIR"
 	;;
 
 esac
