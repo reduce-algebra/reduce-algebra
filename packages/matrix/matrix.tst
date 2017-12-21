@@ -296,4 +296,59 @@ nullspace m1;
 
 for each n in ws collect m1*n;
 
+% Test for matrix valued procedures.
+
+matrixproc SkewSym1 (w);
+  mat((0,-w(3,1),w(2,1)), (w(3,1),0,-w(1,1)), (-w(2,1), w(1,1), 0));
+
+
+X := SkewSym1(mat((qx),(qy),(qz)));
+
+
+X * mat((rx),(ry),(rz));
+
+
+SkewSym1(mat((qx),(qy),(qz))) * mat((rx),(ry),(rz));
+
+
+matrixproc quatInv4(a,b,c,d);
+  mat((a),(-b),(-c),(-d));
+
+
+matrixproc quatInv1(p);
+  quatInv4(p(1,1),p(2,1),p(3,1),p(4,1));
+
+
+q:=mat((qs), (qx), (qy), (qz));
+
+
+quatInv4(q(1,1),q(2,1),q(3,1),q(4,1));
+
+quatInv1(q);
+
+
+% Some mor examples.
+
+matrixproc foo u;
+  begin
+    u(1,1) := 1;
+    u(2,1) := a*u(3,1) + u(2,1);
+    return u
+  end;
+
+foo q + q;
+
+
+m := mat((a,b),(c,d));
+
+id := mat((1,0),(0,1));
+
+
+matrixproc exmpl2 u;
+  u**2 - trace u*u;
+
+
+exmpl2 m/det m;
+
+
 end;

@@ -2193,12 +2193,172 @@ for each n in ws collect m1*n;
  }
 
 
+% Test for matrix valued procedures.
+
+matrixproc SkewSym1 (w);
+  mat((0,-w(3,1),w(2,1)), (w(3,1),0,-w(1,1)), (-w(2,1), w(1,1), 0));
+
+
+skewsym1
+
+
+
+X := SkewSym1(mat((qx),(qy),(qz)));
+
+
+     [  0     - qz   qy  ]
+     [                   ]
+x := [ qz      0     - qx]
+     [                   ]
+     [ - qy   qx      0  ]
+
+
+
+
+X * mat((rx),(ry),(rz));
+
+
+[ qy*rz - qz*ry  ]
+[                ]
+[ - qx*rz + qz*rx]
+[                ]
+[ qx*ry - qy*rx  ]
+
+
+
+
+SkewSym1(mat((qx),(qy),(qz))) * mat((rx),(ry),(rz));
+
+
+[ qy*rz - qz*ry  ]
+[                ]
+[ - qx*rz + qz*rx]
+[                ]
+[ qx*ry - qy*rx  ]
+
+
+
+
+matrixproc quatInv4(a,b,c,d);
+  mat((a),(-b),(-c),(-d));
+
+
+quatinv4
+
+
+
+matrixproc quatInv1(p);
+  quatInv4(p(1,1),p(2,1),p(3,1),p(4,1));
+
+
+quatinv1
+
+
+
+q:=mat((qs), (qx), (qy), (qz));
+
+
+     [qs]
+     [  ]
+     [qx]
+q := [  ]
+     [qy]
+     [  ]
+     [qz]
+
+
+
+
+quatInv4(q(1,1),q(2,1),q(3,1),q(4,1));
+
+
+[ qs  ]
+[     ]
+[ - qx]
+[     ]
+[ - qy]
+[     ]
+[ - qz]
+
+
+
+quatInv1(q);
+
+
+[ qs  ]
+[     ]
+[ - qx]
+[     ]
+[ - qy]
+[     ]
+[ - qz]
+
+
+
+
+% Some mor examples.
+
+matrixproc foo u;
+  begin
+    u(1,1) := 1;
+    u(2,1) := a*u(3,1) + u(2,1);
+    return u
+  end;
+
+
+foo
+
+
+foo q + q;
+
+
+[  qs + 1   ]
+[           ]
+[a*qy + 2*qx]
+[           ]
+[   2*qy    ]
+[           ]
+[   2*qz    ]
+
+
+
+
+m := mat((a,b),(c,d));
+
+
+     [a  1]
+m := [    ]
+     [c  d]
+
+
+
+id := mat((1,0),(0,1));
+
+
+      [1  0]
+id := [    ]
+      [0  1]
+
+
+
+
+matrixproc exmpl2 u;
+  u**2 - trace u*u;
+
+
+exmpl2
+
+
+
+exmpl2 m/det m;
+
+
+[-1  0 ]
+[      ]
+[0   -1]
+
+
+
+
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 31 ms  plus GC time: 16 ms
-
-End of Lisp run after 0.03+0.06 seconds
-real 0.25
-user 0.00
-sys 0.09

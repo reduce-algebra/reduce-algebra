@@ -30,9 +30,11 @@ module matproc;   %  Support for matrix valued procedures.
 global '(cursym!*);
 
 symbolic procedure readmatproc;
-   begin
+   begin scalar x;
      cursym!* := 'procedure;
-     return 'matproc . procstat1 'algebraic
+     x := for each j in procstat1 'algebraic conc 
+            if eqcar(j, 'procedure) then 'matproc . j;
+     return x
    end;
 
 put('matrixproc,'stat,'readmatproc);
