@@ -12,6 +12,8 @@
 
 (rdf "vsl.lsp")
 
+(rdf "printf.lsp")
+
 % The compatibility file "vsl.lsp" defines a macro called
 % "~let" rather than "let" because of a name-clash with the
 % Reduce algbera system. I put in the more ordinary name here.

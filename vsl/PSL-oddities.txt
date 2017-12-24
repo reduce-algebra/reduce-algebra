@@ -1,0 +1,19 @@
+(1) Two different definitions of a FOR macro with quite different
+    behaviour.
+
+(2) charconst for EOF conflicted between comp/macintel64/sys-consts.sl
+    and comp/macintel64/sys-dm.sl. And for mingw-w64 and AMD64.
+
+(3) lexing of numbers is inconsistent. 1+ gets parsed as a symbol while
+    2#1+ is a number followed by the isolated +. 1#33 raises an error
+    rather than parsing as a symbol. The issue of # within symbols is
+    not that clearly consistent everywhere.
+
+(4) printf/bldmsg are defined using some LAP code and word operations
+    rendering them strongly dependent on low level PSL in a way that
+    probably exceeds needs.
+
+(5) PSL supports IF with more than 3 arguments, and my initial implementation
+    followed Common Lisp and had not, leading to misery. What is worse the
+    documentation of PSL suggests that symbols to be thoought of as keywords
+    migh be recognized with IF...

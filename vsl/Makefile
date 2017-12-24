@@ -1,37 +1,31 @@
 # Makefile for vsl
 
-ifeq ($(findstring Windows, $(OS)), Windows)
-CC = i686-w64-mingw32-gcc
-CXX = i686-w64-mingw32-g++
-else
 CC = gcc
-CXX = g++
-endif
 
 all:	vsl vsl.img vslmanual.pdf
 
-vsl:	vsl.c
-	$(CC) -O2 -Wall vsl.c -lm -o vsl
+# The "PSL" target makes vsl but with a reader that treats most punctuation
+# characters as if they were letters so that symbols can have names such as
+# *x*, &a, abc-def, 1+ and {q} without needing escape characters.
 
-vsl.img:	vsl library.lsp
+# I am making vsl use "libedit" for input local editing, which gives it
+# input history etc. 
+
+psl:	vslpsl vsl.img
+
+.PHONY:	vslpsl
+
+vsl:	vsl.c
+	$(CC) -O3 -Wall vsl.c -lm -ledit -o vsl
+
+vslpsl:	vsl.c
+	$(CC) -DPSL=1 -O3 -Wall vsl.c -lm -ledit -o vsl
+
+vsl.img:	vsl library.lsp vsl.lsp extras.lsp
 	./vsl -z library.lsp
 
-reduce:
-	mkdir -p modules
-	rm -f modules/* reduce.img
-	./vsl -z -ireduce.img -D@srcdir=. -D@reduce=.. \
-	  buildreduce.lsp | tee reduce.log
-# I will protect the image from writing so I feel safe!
-	chmod -w reduce.img
-
-# To run Reduce go
-#    ./vsl -ireduce.img
-# then
-#    in "alg.tst";
-# runs a test/demo script.
-
 clean:
-	rm -f *.o *.bak *.exe *.log *.img vsl
+	rm -f *.o *.bak *.exe *.log *.img vsl *.ind *.pdf *.aux *.idx *.ilg *~
 
 # To build this you need to go "make vslmanual.pdf" explicitly. It is
 # not done automatically because not everybody will have installed

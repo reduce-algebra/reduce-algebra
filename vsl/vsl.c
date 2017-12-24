@@ -1,11 +1,37 @@
-// "vsl.c"                                A C Norman, January 2012
+// "vsl.c"                                              A C Norman, 2012-18
 //
-// This is a small Lisp system. It is especially
-// intended for use of the Raspberry Pi board, but should build
-// on almost any computer with a modern C compiler.
+// This is a small Lisp system.
+// It should build on almost any computer with a modern C compiler.
 
-// This code may be used subject to the BSD licence included in the file
-// "bsd.txt" that should accompany it.
+// This code may be used subject to the BSD licence:
+
+// Copyright (C) 2011-2018,                               A C Norman
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the relevant
+//       copyright notice, this list of conditions and the following
+//       disclaimer.
+//     * Redistributions in binary form must reproduce the above
+//       copyright notice, this list of conditions and the following
+//       disclaimer in the documentation and/or other materials provided
+//       with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+// FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+// COPYRIGHT OWNERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+// OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+// TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+// THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+// DAMAGE.
+
 
 #include <stdio.h>
 #include <string.h>
@@ -17,6 +43,12 @@
 #include <inttypes.h>
 #include <stdarg.h>
 #include <setjmp.h>
+
+#include <histedit.h>
+
+static EditLine *elx_e;
+static History *elx_h;
+static HistEvent elx_v;
 
 // A Lisp item is represented as an integer and the low 3 bits
 // contain tag information that specify how the rest will be used.
@@ -56,12 +88,13 @@ typedef intptr_t LispObject;
 #define TYPEBITS    0x78
 
 #define typeSYM     0x00
-#define typeSTRING  0x08
-#define typeVEC     0x10
-#define typeBIGNUM  0x18
-#define typeEQHASH  0x20
-#define typeEQHASHX 0x28
-// Codes 0x30, 0x38, 0x40, 0x48, 0x50, 0x58, 0x60, 0x68,
+#define typeGENSYM  0x08
+#define typeSTRING  0x10
+#define typeVEC     0x18
+#define typeBIGNUM  0x20
+#define typeEQHASH  0x28
+#define typeEQHASHX 0x30
+// Codes 0x38, 0x40, 0x48, 0x50, 0x58, 0x60, 0x68,
 // 0x70 and 0x78 spare!
 
 #define veclength(h)  (((uintptr_t)(h)) >> 7)
@@ -161,34 +194,37 @@ LispObject stackbase, *sp, stacktop;
 
 // Some Lisp values that I will use frequently...
 
-#define nil        bases[0]
-#define undefined  bases[1]
-#define lisptrue   bases[2]
-#define lispsystem bases[3]
-#define echo       bases[4]
-#define lambda     bases[5]
-#define quote      bases[6]
-#define backquote  bases[7]
-#define comma      bases[8]
-#define comma_at   bases[9]
-#define eofsym     bases[10]
-#define cursym     bases[11]
-#define work1      bases[12]
-#define work2      bases[13]
-#define restartfn  bases[14]
-#define expr       bases[15]
-#define subr       bases[16]
-#define fexpr      bases[17]
-#define fsubr      bases[18]
-#define macro      bases[19]
-#define input      bases[20]
-#define output     bases[21]
-#define pipe       bases[22]
-#define raise      bases[23]
-#define lower      bases[24]
-#define dfprint    bases[25]
-#define bignum     bases[26]
-#define BASES_SIZE       27
+#define nil        bases[ 0]
+#define undefined  bases[ 1]
+#define lisptrue   bases[ 2]
+#define lispsystem bases[ 3]
+#define echo       bases[ 4]
+#define lambda     bases[ 5]
+#define function   bases[ 6]
+#define quote      bases[ 7]
+#define backquote  bases[ 8]
+#define comma      bases[ 9]
+#define comma_at   bases[10]
+#define comma_dot  bases[11]
+#define eofsym     bases[12]
+#define cursym     bases[13]
+#define work1      bases[14]
+#define work2      bases[15]
+#define restartfn  bases[16]
+#define expr       bases[17]
+#define subr       bases[18]
+#define fexpr      bases[19]
+#define fsubr      bases[20]
+#define macro      bases[21]
+#define input      bases[22]
+#define output     bases[23]
+#define pipe       bases[24]
+#define raise      bases[25]
+#define lower      bases[26]
+#define dfprint    bases[27]
+#define bignum     bases[28]
+#define charvalue  bases[29]
+#define BASES_SIZE       30
 
 LispObject bases[BASES_SIZE];
 LispObject obhash[OBHASH_SIZE];
@@ -503,6 +539,7 @@ void reclaim()
         else              // The item is one that uses a header
             switch (h & TYPEBITS)
             {   case typeSYM:
+                case typeGENSYM:
                     w = ((LispObject)s) + tagSYMBOL;
                     // qflags(w) does not need adjusting
                     qvalue(w) = copy(qvalue(w));
@@ -612,7 +649,7 @@ LispObject copy(LispObject x)
                     fringe2 = (fringe2 + 7) & ~7;
                     return h;
                 default:
-                    //case typeSYM:
+                    //case typeSYM: case typeGENSYM:
                     // also the spare codes!
                     disaster(__LINE__);
             }
@@ -675,6 +712,25 @@ void wrch(int c)
     }
 }
 
+const char *prompt(EditLine *e)
+{   return "> ";
+}
+
+const char *elx_line = NULL;
+int elx_count = 0;
+
+int my_getc(FILE *f)
+{   if (f != stdin) return getc(f);
+    if (elx_count == 0)
+    {   elx_line = el_gets(elx_e, &elx_count);
+        if (elx_count <= 0) return EOF;
+        if (elx_count > 1 || elx_line[0] != '\n')
+            history(elx_h, &elx_v, H_ENTER, elx_line);
+    }
+    elx_count--;
+    return *elx_line++;
+}
+
 int rdch()
 {   LispObject w;
     if (lispin == -1)
@@ -686,7 +742,7 @@ int rdch()
         return *qstring(w);
     }
     else
-    {   int c = getc(lispfiles[lispin]);
+    {   int c = my_getc(lispfiles[lispin]);
         if (c != EOF && qvalue(echo) != nil) wrch(c);
         return c;
     }
@@ -716,6 +772,7 @@ void internalprint(LispObject x)
             while (isCONS(x))
             {   i = printflags;
                 if (qcar(x) == bignum &&
+                    qcdr(x) != nil &&
                     (pn = call1("~big2str", qcdr(x))) != nil)
                 {   printflags = printPLAIN;
                     internalprint(pn);
@@ -741,6 +798,7 @@ void internalprint(LispObject x)
             return;
         case tagSYMBOL:
             pn = qpname(x);
+// gensyms get their print-names allocated whne first printed.
             if (pn == nil)
             {   int len = sprintf(printbuffer, "g%.3d", gensymcounter++);
                 push(x);
@@ -824,7 +882,7 @@ void internalprint(LispObject x)
                         wrch(']');
                         return;
                     default:
-                        //case typeSYM:
+                        //case typeSYM: case typeGENSYM:
                         // also the spare codes!
                         disaster(__LINE__);
                 }
@@ -836,7 +894,7 @@ void internalprint(LispObject x)
             }
             s = printbuffer;
 // The C printing of floating point values is not to my taste, so I (slightly)
-// asjust the output here...
+// adjust the output here...
             if (*s == '+' || *s == '-') s++;
             while (isdigit((int)*s)) s++;
             if (*s == 0 || *s == 'e')  // No decimal point present!
@@ -906,11 +964,15 @@ LispObject printc(LispObject a)
 
 int curchar = '\n', symtype = 0;
 
+// This version of hexval will cope with 0-9A-Z to support any radix up to
+// 36. This is for PSL compatibility even though the only sane radix to use
+// will be 16.
+
 int hexval(int n)
 {   if (isdigit(n)) return n - '0';
-    else if ('a' <= n && n <= 'f') return n - 'a' + 10;
-    else if ('A' <= n && n <= 'F') return n - 'A' + 10;
-    else return 0;
+    else if ('a' <= n && n <= 'z') return n - 'a' + 10;
+    else if ('A' <= n && n <= 'Z') return n - 'A' + 10;
+    else return -1;
 }
 
 LispObject token()
@@ -933,21 +995,38 @@ LispObject token()
     }
     if (curchar == '(' || curchar == '.' ||
         curchar == ')' || curchar == '\'' ||
-        curchar == '`' || curchar == ',')
+        curchar == '`' || curchar == ',' ||
+        curchar == '[' || curchar == ']' ||
+        curchar == '#')
     {   symtype = curchar;   // Lisp special characters.
         curchar = rdch();
         if (symtype == ',' && curchar == '@')
         {   symtype = '@';
             curchar = rdch();
         }
+        else if (symtype == ',' && curchar == '.')
+        {   symtype = '.' + 0x100;
+            curchar = rdch();
+        }
         return NULLATOM;
     }
     boffop = 0;
-    if (isalpha(curchar) || curchar == '!') // Start a symbol.
-    {   while (isalpha(curchar) ||
-               isdigit(curchar) ||
-               curchar == '_' ||
-               curchar == '!')
+#ifdef PSL
+// "words" starting with '+ or '-' are handled later on...
+#define wordstart(c)   (isalpha(c) || (c)=='!' || \
+  (c)=='$' || (c)=='^' || (c)=='&' || (c)=='*' || \
+  (c)=='_' || (c)=='=' || (c)==';' || (c)==':' || \
+  (c)=='@' || (c)=='#' || (c)=='~' || (c)=='<' || \
+  (c)=='>' || (c)=='/' || (c)=='?' || (c)=='\\' || \
+  (c)=='{' || (c)=='}')
+#define constituent(c) (wordstart(c) || isdigit(c) || (c)=='+' || (c)=='-')
+#else
+#define wordstart(c) (isalpha(c) || (c)=='!')
+#define constituent(c) (wordstart(c) || isdigit(c) || (c)=='_')
+#endif
+symbol_after_all:
+    if (wordstart(curchar)) // Start a symbol.
+    {   while (constituent(curchar))
         {   if (curchar == '!') curchar = rdch();
             else if (curchar != EOF && qvalue(lower) != nil) curchar = tolower(curchar);
             else if (curchar != EOF && qvalue(raise) != nil) curchar = toupper(curchar);
@@ -982,7 +1061,11 @@ LispObject token()
 // + and - are treated specially, since if followed by a digit they
 // introduce a (signed) number, but otherwise they are treated as punctuation.
         if (!isdigit(curchar))
-        {   boffo[boffop] = 0;
+        {
+#ifdef PSL
+            if (constituent(curchar)) goto symbol_after_all;
+#endif
+            boffo[boffop] = 0;
             return lookup(boffo, boffop, 1);
         }
     }
@@ -990,6 +1073,8 @@ LispObject token()
     if (curchar == '0' && boffop == 0)  // "0" without a sign in front
     {   boffo[boffop++] = curchar;
         curchar = rdch();
+// I will recognize 0xddddd as a hex number, even though PSL would probably
+// treat it is just a symbol with a funny name.
         if (curchar == 'x' || curchar == 'X') // Ahah - hexadecimal input
         {   LispObject r;
             boffop = 0;
@@ -998,23 +1083,61 @@ LispObject token()
             {   if (boffop < BOFFO_SIZE) boffo[boffop++] = curchar;
                 curchar = rdch();
             }
+            if (constituent(curchar)) goto symbol_after_all;
+            boffo[boffop] = 0;
             r = packfixnum(0);
             boffop = 0;
             while (boffo[boffop] != 0)
             {   r = call2("plus2", call2("times2", packfixnum(16), r),
                            packfixnum(hexval(boffo[boffop++])));
             }
+// I will not accept +0xddd or -0xddd as a hex number here.
             return r;
         }
     }
+    int radix = 0;
     if (isdigit(curchar) || (boffop == 1 && boffo[0] == '0'))
     {   while (isdigit(curchar))
+        {
+// I will not accept a radix over 36, so when accumularing one I stop at
+// 100 (a randomish limit over 36 but well below overflow).
+            if (radix < 100) radix = 10*radix + curchar - '0';
+            if (boffop < BOFFO_SIZE) boffo[boffop++] = curchar;
+            curchar = rdch();
+        }
+// I may have a number with a specified radix in the PSL style. In such cases
+// the radix must be in the range 2 to 36.
+        if (curchar == '#' && radix > 1 && radix <=36)
         {   if (boffop < BOFFO_SIZE) boffo[boffop++] = curchar;
             curchar = rdch();
+            int dd;
+            while ((dd = hexval(curchar))>=0 && dd<radix)
+            {   if (boffop < BOFFO_SIZE) boffo[boffop++] = curchar;
+                curchar = rdch();
+            }
+// Now the buffer contains a string of the form "rr#dddddd" where all
+// the digits are legitimate in the specified radix. If the very next
+// character is a constituent then I drop back to treating all this as a
+// symbol.
+            if (constituent(curchar)) goto symbol_after_all;
+// Now I KNOW I have an integer with a specified radix. So compute its
+// value.
+            boffo[boffop] = 0;
+            LispObject r = packfixnum(0);
+            boffop = 0;
+            while (boffo[boffop] != '#') boffop++;
+            boffop++;
+            while (boffo[boffop] != 0)
+            {   r = call2("plus2", call2("times2", packfixnum(radix), r),
+                           packfixnum(hexval(boffo[boffop++])));
+            }
+// I do allow signed numbers with radix such as -8#777
+            if (boffo[0]=='-') r = Nminus(r);
+            return r;
         }
 // At this point I have a (possibly signed) integer. If it is immediately
 // followed by a "." then a floating point value is indicated.
-        if (curchar == '.')
+        else if (curchar == '.')
         {   symtype = 'f';
             if (boffop < BOFFO_SIZE) boffo[boffop++] = curchar;
             curchar = rdch();
@@ -1022,9 +1145,6 @@ LispObject token()
             {   if (boffop < BOFFO_SIZE) boffo[boffop++] = curchar;
                 curchar = rdch();
             }
-// To make things tidy If I have a "." not followed by any digits I will
-// insert a "0".
-            if (!isdigit((int)boffo[boffop-1])) boffo[boffop++] = '0';
         }
 // Whether or not there was a ".", an "e" or "E" introduces an exponent and
 // hence indicates a floating point value.
@@ -1040,9 +1160,8 @@ LispObject token()
             {   if (boffop < BOFFO_SIZE) boffo[boffop++] = curchar;
                 curchar = rdch();
             }
-// If there had been an "e" I force at least one digit in following it.
-            if (!isdigit((int)boffo[boffop-1])) boffo[boffop++] = '0';
         }
+        if (constituent(curchar)) goto symbol_after_all;
         boffo[boffop] = 0;
         if (symtype == 'a')
         {   int neg = 0;
@@ -1070,22 +1189,102 @@ LispObject token()
     return lookup(boffo, boffop, 1);
 }
 
+extern LispObject Lget(LispObject lits, int nargs, ...);
+
+LispObject char_function(LispObject a)
+{   if (!isSYMBOL(a)) return nil;
+    LispObject pn = qpname(a);
+    char *s = qstring(pn);
+    if (strlen(s) == 1) return packfixnum(s[0]);
+    return Lget(nil, 2, a, charvalue);
+}
+
 // Syntax for Lisp input
 //
 //   S ::= name
 //     |   integer
+//     |   radix#based-integer
 //     |   float
 //     |   string
-//     |   ' S   | ` S  | , S  | ,@ S
+//     |   ' S   | ` S  | , S  | ,@ S | ,. S
+//     |   #/ char      integer code for char
+//     |   #\ char      integer code is char is single character,
+//                      otherwise NULL, BELL, BACKSPACE, TAB, LF, EOL,
+//                      FF, CR, EOF, ESC, ESCAPE, SPACE, RUBOUT, RUB,
+//                      DELETE, DEL, (lower x), (control x), (ctrl x),
+//                      (meta x). *raise can case-fold x unless ! is used.
+//     |   #' S
+//     |   #. S
+//     |   #+ S S
+//     |   #- S S
 //     |   ( T
+//     |   [ V
 //     ;
 //
 //   T ::= )
 //     |   . S )
 //     |   S T
 //     ;
+//
+//   V ::= ]
+//     |   S V
+//     ;
 
+extern LispObject readS();
 extern LispObject readT();
+extern LispObject readV();
+extern LispObject eval(LispObject x);
+
+LispObject read_hash_macro()
+{   LispObject w;
+    int c = curchar;
+    curchar = rdch();
+    switch (c)
+    {   case '\'':         // #'X  => (function X)
+            cursym = token();
+            w = readS();
+            return list2star(function, w, nil);
+        case '.':
+            cursym = token();
+            w = readS();
+            eval(w);
+            return readS();
+        case '+':
+            cursym = token();
+            w = readS();
+// For now I will suppose that the machine in use is NEVER one of the
+// ones tested fpr. The consequence is that "#+ machine S" always gets
+// ignored.
+            (void)readS();
+            return readS();
+        case '-':
+            cursym = token();
+            w = readS();
+// To match the behaviour of #+ I just make "#- machine" get ignored so that
+// the S-expression beyond that is the one that is read.
+            return readS();
+        case '/':
+            c = curchar;
+            curchar = rdch();
+            cursym = token();
+            return packfixnum(c & 0xff);
+        case '\\':
+            cursym = token();
+            w = readS();
+            return char_function(w);
+        default:
+            return nil;
+    }
+}
+
+LispObject list_to_vector(LispObject a)
+{   int n = 0;
+    for (LispObject p=a; p!=nil; p=qcdr(p)) n++;
+    LispObject r = makevector(n-1);
+    n = 0;
+    for (LispObject p=a; p!=nil; p=qcdr(p)) elt(r, n++) = qcar(p);
+    return r;
+}
 
 LispObject readS()
 {   LispObject q, w;
@@ -1097,8 +1296,13 @@ LispObject readS()
             case '(':
                 cursym = token();
                 return readT();
+            case '[':
+                cursym = token();
+                return list_to_vector(readV());
+            case '#':
+                return read_hash_macro();
             case '.':
-            case ')':     // Ignore spurious "." and ")" input.
+            case ')':     // Ignore spurious ")" input
                 cursym = token();
                 continue;
             case '\'':
@@ -1112,6 +1316,9 @@ LispObject readS()
                 break;
             case '@':
                 w = comma_at;
+                break;
+            case '.'+0x100:
+                w = comma_dot;
                 break;
             case EOF:
                 return eofsym;
@@ -1149,6 +1356,24 @@ LispObject readT()
             q = readS();
             push(q);
             r = readT();
+            pop(q);
+            return cons(q, r);
+    }
+}
+
+LispObject readV()
+{   LispObject q, r;
+    if (symtype == '?') cursym = token();
+    switch (symtype)
+    {   case EOF:
+            return eofsym;
+        case ']':
+            symtype = '?';
+            return nil;
+        default:
+            q = readS();
+            push(q);
+            r = readV();
             pop(q);
             return cons(q, r);
     }
@@ -1867,14 +2092,24 @@ LispObject Lcons(LispObject lits, int nargs, ...)
     return cons(x, y);
 }
 
-LispObject Latom(LispObject lits, int nargs, ...)
-{   ARG1("atom", x); // Observe treatment of bignums!
-    return (isCONS(x) && qcar(x) != bignum ? nil : lisptrue);
-}
-
 LispObject Lbignump(LispObject lits, int nargs, ...)
 {   ARG1("bignump", x);
-    return (isCONS(x) && qcar(x) == bignum ? lisptrue : nil);
+    if (!isCONS(x) || qcar(x) != bignum) return nil;
+    x = qcdr(x);
+// As a matter of caution I only treat something as a bignum if it not
+// only has ~bignum at the start but all that follows is a list of fixnums.
+    if (x == nil) return nil; // No digits so not a bignum.
+    while (isCONS(x))
+    {   if (!isFIXNUM(qcar(x))) return nil;
+        x = qcdr(x);
+    }
+    if (x != nil) return nil;
+    return lisptrue;
+}
+
+LispObject Latom(LispObject lits, int nargs, ...)
+{   ARG1("atom", x); // Observe treatment of bignums!
+    return (isCONS(x) && (Lbignump(lits, 1, x)==nil) ? nil : lisptrue);
 }
 
 LispObject Lsymbolp(LispObject lits, int nargs, ...)
@@ -2021,17 +2256,34 @@ LispObject Lboundp(LispObject lits, int nargs, ...)
     return (isSYMBOL(x) && qvalue(x)!=undefined) ? lisptrue : nil;
 }
 
+LispObject Lmakeunbound(LispObject lits, int nargs, ...)
+{   ARG1("makeunbound", x);
+    if (isSYMBOL(x)) qvalue(x) = undefined;
+    return nil;
+}
+
 LispObject Lgensym(LispObject lits, int nargs, ...)
 {   LispObject r;
     ARG0("gensym");
     r = allocatesymbol();
-    qflags(r) = tagHDR + typeSYM;
+    qflags(r) = tagHDR + typeGENSYM;
     qvalue(r) = undefined;
     qplist(r) = nil;
-    qpname(r) = nil;   // A nil pname marks this as a gensym.
+    qpname(r) = nil;   // A nil pname marks this as a not-yet-printed gensym.
     qdefn(r)  = NULL;
     qlits(r)  = nil;
     return r;
+}
+
+LispObject Lgensymp(LispObject lits, int nargs, ...)
+{   ARG1("gensymp", x);
+    if (!isSYMBOL(x)) return nil;
+    return (qflags(x) & TYPEBITS) == typeGENSYM ? lisptrue : nil;
+}
+
+LispObject Lchar(LispObject lits, int nargs, ...)
+{   ARG1("char", x);
+    return char_function(x);
 }
 
 LispObject Ltime(LispObject lits, int nargs, ...)
@@ -2083,6 +2335,12 @@ LispObject Lplist(LispObject lits, int nargs, ...)
 {   ARG1("plist", x);
     if (!isSYMBOL(x)) return nil;
     else return qplist(x);
+}
+
+LispObject Lpname(LispObject lits, int nargs, ...)
+{   ARG1("pname", x);
+    if (!isSYMBOL(x)) return nil;
+    else return qpname(x);
 }
 
 LispObject Lput(LispObject lits, int nargs, ...)
@@ -2177,7 +2435,7 @@ LispObject Lmkhash(LispObject lits, int nargs, ...)
 {   int n;
     LispObject x, r;
     va_list a;          // I am going to permit mkhash to have extra arguments.               
-    va_start(a, nargs); // This is for easier conmpatibility with Reduce.        
+    va_start(a, nargs); // This is for easier compatibility with Reduce.        
     x = va_arg(a, LispObject);  
     va_end(a);
     if (!isFIXNUM(x)) return error1("bad size in mkhash", x);
@@ -2216,6 +2474,7 @@ void rehash(LispObject x)
             b = cd;
         }
     }
+    qheader(x) ^= (typeEQHASH ^ typeEQHASHX);
 }
 
 LispObject Lputhash(LispObject lits, int nargs, ...)
@@ -2226,7 +2485,7 @@ LispObject Lputhash(LispObject lits, int nargs, ...)
     if (!isEQHASH(y)) return error1("not a hash table in puthash", cons(x, y));
     n = veclength(qheader(y))/sizeof(LispObject);
 // I use unsigned types so I get a positive remainder.
-    h = (int)(((uintptr_t)y) % ((uintptr_t)n));
+    h = (int)(((uintptr_t)x) % ((uintptr_t)n));
     c = elt(y, h);
     while (isCONS(c))
     {   if (qcar(qcar(c)) == x)
@@ -2249,7 +2508,7 @@ LispObject Lremhash(LispObject lits, int nargs, ...)
     if (isEQHASHX(y)) rehash(y);
     if (!isEQHASH(y)) return error1("not a hash table in remhash", cons(x, y));
     n = veclength(qheader(y))/sizeof(LispObject);
-    h = (int)(((uintptr_t)y) % ((uintptr_t)n));
+    h = (int)(((uintptr_t)x) % ((uintptr_t)n));
     c = *(cp = &elt(y, h));
     while (isCONS(c))
     {   if (qcar(qcar(c)) == x)
@@ -2268,7 +2527,7 @@ LispObject Lgethash(LispObject lits, int nargs, ...)
     if (isEQHASHX(y)) rehash(y);
     if (!isEQHASH(y)) return error1("not a hash table in gethash", cons(x, y));
     n = veclength(qheader(y))/sizeof(LispObject);
-    h = (int)(((uintptr_t)y) % ((uintptr_t)n));
+    h = (int)(((uintptr_t)x) % ((uintptr_t)n));
     c = elt(y, h);
     while (isCONS(c))
     {   if (qcar(qcar(c)) == x) return qcdr(qcar(c));
@@ -2522,7 +2781,8 @@ LispObject Lrestart_csl(LispObject lits, int nargs, ...)
 }
 
 LispObject Lstop(LispObject lits, int nargs, ...)
-{   ARG1("stop", x);
+{   if (nargs == 0) exit(0);
+    ARG1("stop", x);
     exit(isFIXNUM(x) ? (int)qfixnum(x) : 0);
 }
 
@@ -2843,6 +3103,7 @@ struct defined_functions fnsetup[] =
     {"car",        0,            (void *)Lcar},
     {"cdr",        0,            (void *)Lcdr},
     {"char-code",  0,            (void *)Lcharcode},
+    {"char",       0,            (void *)Lchar},
     {"iceiling",   0,            (void *)Lceiling},
     {"close",      0,            (void *)Lclose},
     {"code-char",  0,            (void *)Lcodechar},
@@ -2865,6 +3126,7 @@ struct defined_functions fnsetup[] =
     {"floatp",     0,            (void *)Lfloatp},
     {"ifloor",     0,            (void *)Lfloor},
     {"gensym",     0,            (void *)Lgensym},
+    {"gensymp",    0,            (void *)Lgensymp},
     {"igeq",       0,            (void *)Lgeq},
     {"get",        0,            (void *)Lget},
     {"getd",       0,            (void *)Lgetd},
@@ -2879,6 +3141,7 @@ struct defined_functions fnsetup[] =
     {"ilognot",    0,            (void *)Llognot},
     {"iminus",     0,            (void *)Lminus},
     {"iminusp",    0,            (void *)Lminusp},
+    {"makeunbound",0,            (void *)Lmakeunbound},
     {"mkhash",     0,            (void *)Lmkhash},
     {"mkvect",     0,            (void *)Lmkvect},
     {"null",       0,            (void *)Lnull},
@@ -2887,6 +3150,7 @@ struct defined_functions fnsetup[] =
     {"onep",       0,            (void *)Lonep},
     {"open",       0,            (void *)Lopen},
     {"plist",      0,            (void *)Lplist},
+    {"pname",      0,            (void *)Lpname},
     {"preserve",   0,            (void *)Lpreserve},
     {"prin",       0,            (void *)Lprin},
     {"princ",      0,            (void *)Lprinc},
@@ -2945,9 +3209,11 @@ void setup()
        list2star(lookup("vsl", 3, 1), lookup("csl", 3, 1),
                  cons(lookup("embedded", 8, 1), nil));
     quote = lookup("quote", 5, 1);
+    function = lookup("function", 8, 1);
     backquote = lookup("`", 1, 1);
     comma = lookup(",", 1, 1);
     comma_at = lookup(",@", 2, 1);
+    comma_dot = lookup(",.", 2, 1);
     eofsym = lookup("$eof$", 5, 1);
     qvalue(eofsym) = eofsym;
     lambda = lookup("lambda", 6, 1);
@@ -2959,6 +3225,7 @@ void setup()
     input = lookup("input", 5, 1);
     output = lookup("output", 6, 1);
     pipe = lookup("pipe", 4, 1);
+    charvalue = lookup("charvalue", 9, 1);
     qvalue(raise = lookup("*raise", 6, 1)) = nil;
     qvalue(lower = lookup("*lower", 6, 1)) = lisptrue;
     qvalue(dfprint = lookup("dfprint*", 6, 1)) = nil;
@@ -3058,6 +3325,7 @@ void warm_setup()
         else              // The item is one that uses a header
             switch (h & TYPEBITS)
             {   case typeSYM:
+                case typeGENSYM:
                     w = ((LispObject)s) + tagSYMBOL;
                     // qflags(w) does not need adjusting
                     qvalue(w) = relocate(qvalue(w), change);
@@ -3097,11 +3365,20 @@ void warm_setup()
 }
 
 int main(int argc, char *argv[])
-{   int i;
+{   elx_e = el_init(argv[0], stdin, stdout, stderr);
+    el_set(elx_e, EL_PROMPT, prompt);
+    el_set(elx_e, EL_EDITOR, "emacs");
+    if ((elx_h = history_init()) == 0)
+    {   fprintf(stderr, "Unable to initialize history\n");
+        exit(1);
+    }
+    history(elx_h, &elx_v, H_SETSIZE, 400);
+    el_set(elx_e, EL_HIST, history, elx_h);
+ 
     const char *inputfilename = NULL;
     coldstart = 0;
     interactive = 1;
-    for (i=1; i<argc; i++)
+    for (int i=1; i<argc; i++)
     {
 // I have some VERY simple command-line options here.
 //        -z         do a "cold start".
@@ -3113,7 +3390,7 @@ int main(int argc, char *argv[])
     }
     printf("VSL version 1.00\n");
     linepos = 0;
-    for (i=0; i>MAX_LISPFILES; i++) lispfiles[i] = 0;
+    for (int i=0; i>MAX_LISPFILES; i++) lispfiles[i] = 0;
     lispfiles[0] = stdin;   lispfiles[1] = stdout;
     lispfiles[2] = stderr;  lispfiles[3] = stdin;
     file_direction = (1<<1) | (1<<2); // 1 bits for writable files.
@@ -3132,7 +3409,7 @@ int main(int argc, char *argv[])
     sp = (LispObject *)stackbase;
     if (coldstart) cold_setup();
     else warm_setup();
-    for (i=1; i<argc; i++)
+    for (int i=1; i<argc; i++)
     {   if (argv[i][0] == '-' && argv[i][1] == 'D')
         {   const char *d1 = strchr(argv[i], '=');
             if (d1 == NULL) continue;
