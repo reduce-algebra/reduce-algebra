@@ -30,6 +30,8 @@ script -c "./vsl psl-compiler.lsp" psl-compiler.log
       1
       (times n (foo (sub1 n)))))
 
+(trace '(lap LapoptFrame LapoptPeep ReformBranches OptimizeBranches))
+
 (compile '(foo))
 
 EOF
