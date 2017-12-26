@@ -589,6 +589,10 @@ top (cond ((null a) (return (reversip r))))
 
 (de intern (x) x)
 
+(de mapobl (f)
+  % Apply F to every interned ID
+  (mapc (oblist f))
+
 (setq !*raise nil)
 (setq !*lower t)
 

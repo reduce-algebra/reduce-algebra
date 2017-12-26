@@ -6,7 +6,7 @@
     (setq r '(!"))
   top
     (cond
-      ((null x) (return (compress (cons '!" (reverse r))))))
+      ((null x) (return (compress (reverse (cons '!" r))))))
     (setq r (cons (car x) r))
     (cond
       ((eq (car x) '!") (setq r (cons '!" r))))
