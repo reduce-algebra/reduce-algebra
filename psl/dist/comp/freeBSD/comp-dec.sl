@@ -1,1 +1,0 @@
-../linux/comp-dec.sl
