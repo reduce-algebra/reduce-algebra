@@ -67,7 +67,7 @@
   )
 
 (loadtime 
- (put 'eof 'charconst (char (cntrl z)))
+ (put 'eof 'charconst (char (cntrl d)))
  (remprop 'adjuststackpointer 'openfn)
  )
 
