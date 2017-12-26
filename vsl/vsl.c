@@ -1790,11 +1790,15 @@ LispObject definer(LispObject x, int flags, void *fn)
 {
 // x should be of the form
 //     (name (arg list ...) body)
+//
+// I might plausibly check for a LOSE flag to give me that as a way of
+// ignoring definitions that I do not like.
     LispObject name, def;
     if (!isCONS(x) ||
         !isSYMBOL(name = qcar(x)) ||
         !isCONS(def = qcdr(x)))
         return error1("malformed use of de, df or dm", x);
+// For the moment I prohibit redefinition of special forms...
     if ((qflags(name) & flagSPECFORM) != 0)
         return error1("attempt to redefine special form", name);
 // Now I will try to call macroexpand_list to expand all macros.
@@ -1808,7 +1812,7 @@ LispObject definer(LispObject x, int flags, void *fn)
         qlits(name) = cons(qcar(def), x);
     }
     else qlits(name) = def;
-    qflags(name) |= flags;
+    qflags(name) = (qflags(name) & ~(flagSPECFORM|flagMACRO)) | flags;
     qdefn(name) = fn;
     return name;
 }

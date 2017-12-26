@@ -47,6 +47,8 @@
 
 (de ncons (u) (cons u nil))
 
+(de posintp (n) (and (fixp n) (geq n 0)))
+
 (dm errorprintf (u)
   (list 'errorprintf1 (cadr u) (cons 'list (cddr u))))
 
@@ -193,10 +195,10 @@
    (print (cdr u))
    nil)
 
-(dm lap (u)
+(de lap (u)
    (terpri)
    (princ "+++ LAP ")
-   (print (cdr u))
+   (print u)
    nil)
 
 (dm imports (u)
@@ -262,44 +264,36 @@
 (rdf "$pnk/constants.sl")
 
 
-(rdf "$pc/anyreg-cmac.sl")
-(rdf "$pc/cmacros.sl")
 (rdf "$pc/datamachine.sl")
-(rdf "$pc/bare-psl.sym")
-(rdf "$pc/big-faslend.sl")
-%                     (rdf "$pc/carcdrnil.sl")
-(rdf "$pc/comasm.sl")
-(rdf "$pc/faslout.sl")
-(rdf "$pc/p1-decls.sl")
 (rdf "$pc/pass-1.sl")
 (rdf "$pc/pass-2-3.sl")
+(rdf "$pc/pass-1-lap.sl")
+
+
+(rdf "$pc/anyreg-cmac.sl")
+(rdf "$pc/cmacros.sl")
+(rdf "$pc/bare-psl.sym")
+(rdf "$pc/big-faslend.sl")
+(rdf "$pc/comasm.sl")
+(rdf "$pc/p1-decls.sl")
 (rdf "$pc/p-lambind.sl")
 (rdf "$pc/predicates.sl")
 (rdf "$pc/pslcomp.sl")
 (rdf "$pc/putprint.sl")
-(rdf "$pc/pass-1-lap.sl")
-%                     (rdf "$pc/lap-to-asm.sl")
 
 
 (rdf "$pxc/compat.sl")
 (rdf "$pxc/sys-consts.sl")
 (rdf "$pxc/sys-dm.sl")
 (rdf "$pxc/tags.sl")
-(rdf "$pxc/AMD64-cmac.sl")
 (rdf "$pxc/AMD64-lap.sl")
-%                     (rdf "$pxc/AMD64-inst.dat")
-%                     (rdf "$pxc/386-inst.dat")
+(rdf "$pxc/AMD64-cmac.sl")
 (rdf "$pxc/AMD64-comp.sl")
+(rdf "$pc/faslout.sl")
 (rdf "$pxc/AMD64-spec.sl")
-(rdf "$pxc/carcdrnil.sl")
+%         (rdf "$pxc/carcdrnil.sl")
 (rdf "$pxc/comp-decls.sl")
 (rdf "$pxc/compiler.sl")
-%                     (rdf "$pxc/doshooks.sl")
-%                     (rdf "$pxc/fixup386.sl")
-%                     (rdf "$pxc/geninstr.sl")
-%                     (rdf "$pxc/lap-to-asm.sl")
-(rdf "$pxc/muls.sl")
-(rdf "$pxc/muls32.sl")
 (rdf "$pxc/nbittab.sl")
 (rdf "$pxc/neweq.sl")
 (rdf "$pxc/unixAMD64-asm.sl")

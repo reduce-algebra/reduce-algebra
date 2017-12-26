@@ -30,11 +30,10 @@ script -c "./vsl psl-compiler.lsp" psl-compiler.log
       1
       (times n (foo (sub1 n)))))
 
-(trace '(lap LapoptFrame LapoptPeep ReformBranches OptimizeBranches))
+(trace '(lap))
 (setq *test-lap t)
 (setq *lapopt t)
 (setq *trlapopt t)
-(trace '(pass1lap lapoptprint lapopt1 pass1lap asmoutlap asmpreevallap))
 
 (compile '(foo))
 
