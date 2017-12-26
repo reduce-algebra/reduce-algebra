@@ -4,6 +4,9 @@
 (2) charconst for EOF conflicted between comp/macintel64/sys-consts.sl
     and comp/macintel64/sys-dm.sl. And for mingw-w64 and AMD64.
 
+    [The definitions in sys-dm.sl must be a leftover from somewhere else. 
+     Now corrected. The relevant place is in nonkernel/$MACHINE/scantable.sl ]
+
 (3) lexing of numbers is inconsistent. 1+ gets parsed as a symbol while
     2#1+ is a number followed by the isolated +. 1#33 raises an error
     rather than parsing as a symbol. The issue of # within symbols is
@@ -13,7 +16,24 @@
     rendering them strongly dependent on low level PSL in a way that
     probably exceeds needs.
 
+    [Not as much as it seems.  The arguments are pushed on the stack, and the 
+     address of the first on the stack is loaded into register 1, ot be passed
+     as argument to printf2. The arguments on the stack are then accessed as 
+     an array of lisp items, using wgetv. 
+
+     One might try to define printf as an nexpr instead.]
+
 (5) PSL supports IF with more than 3 arguments, and my initial implementation
     followed Common Lisp and had not, leading to misery. What is worse the
     documentation of PSL suggests that symbols to be thoought of as keywords
     migh be recognized with IF...
+
+    [Yes, there are two forms: the simple one with an implicit progn around
+     the third and following arguments, and a more general form with keywords:
+
+     (IF condition1 
+      THEN then1
+      ELSE condition2 then2
+      ...
+      ELSE ... )
+     ]
