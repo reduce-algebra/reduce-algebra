@@ -704,7 +704,7 @@ void wrch(int c)
     else if (lispout == -2) boffo[boffop++] = c;
     else
     {   putc(c, lispfiles[lispout]);
-        if (c == '\n')
+        if (c == '\n' || c == '\r')
         {   linepos = 0;
             fflush(lispfiles[lispout]);
         }
@@ -724,7 +724,7 @@ int my_getc(FILE *f)
     if (elx_count == 0)
     {   elx_line = el_gets(elx_e, &elx_count);
         if (elx_count <= 0) return EOF;
-        if (elx_count > 1 || elx_line[0] != '\n')
+        if (elx_count > 1 || (elx_line[0] != '\n' && elx_line[0] != '\r'))
             history(elx_h, &elx_v, H_ENTER, elx_line);
     }
     elx_count--;
@@ -980,10 +980,14 @@ LispObject token()
     while (1)
     {   while (curchar == ' ' ||
                curchar == '\t' ||
-               curchar == '\n') curchar = rdch(); // Skip whitespace
+               curchar == '\n' ||
+               curchar == '\r' ||
+               curchar == '\f') curchar = rdch(); // Skip whitespace
 // Discard comments from "%" to end of line.
         if (curchar == '%')
         {   while (curchar != '\n' &&
+                   curchar != '\r' &&
+                   curchar != '\f' &&
                    curchar != EOF) curchar = rdch();
             continue;
         }
@@ -1793,9 +1797,6 @@ LispObject definer(LispObject x, int flags, void *fn)
         return error1("malformed use of de, df or dm", x);
     if ((qflags(name) & flagSPECFORM) != 0)
         return error1("attempt to redefine special form", name);
-    qflags(name) |= flags;
-    qdefn(name) = fn;
-    qlits(name) = def;
 // Now I will try to call macroexpand_list to expand all macros.
     x = lookup("macroexpand_list", 16, 0);
     if (x != undefined && qdefn(x) != NULL)
@@ -1806,6 +1807,9 @@ LispObject definer(LispObject x, int flags, void *fn)
         if (unwindflag != unwindNONE) return name;
         qlits(name) = cons(qcar(def), x);
     }
+    else qlits(name) = def;
+    qflags(name) |= flags;
+    qdefn(name) = fn;
     return name;
 }
 
@@ -2449,6 +2453,15 @@ LispObject Lmkhash(LispObject lits, int nargs, ...)
     return r;
 }
 
+LispObject Lclrhash(LispObject lits, int nargs, ...)
+{   ARG1("clrhash", x);
+    if (isEQHASHX(x)) qheader(x) ^= (typeEQHASH ^ typeEQHASHX);
+    if (!isEQHASH(x)) return error1("not a hash table in clrhash", x);
+    size_t n = veclength(qheader(x))/sizeof(LispObject);
+    for (size_t i=0; i<n; i++) elt(x, i) = nil;
+    return x;
+}
+
 void rehash(LispObject x)
 {
 // At the moment that this is invoked it is at least certain that
@@ -2866,8 +2879,9 @@ LispObject Lreadline(LispObject lits, int nargs, ...)
 {   char ch[100];
     int n = 0;
     ARG0("readline");
-    if (curchar == '\n') curchar = rdch();
-    while (curchar != '\n' && curchar != EOF)
+    if (curchar == '\n' || curchar == '\r') curchar = rdch();
+    while (curchar != '\n' && curchar != '\r' &&
+           curchar != '\f' && curchar != EOF)
     {   if (n < sizeof(ch)-1) ch[n++] = curchar;
         curchar = rdch();
     }
@@ -2946,6 +2960,9 @@ LispObject Lopen(LispObject lits, int nargs, ...)
         return error1("bad arg for open", cons(x, y));
     if (loadp) sprintf(filename, "modules/%.*s.fasl",
                                  (int)veclength(qheader(x)), qstring(x));
+// If the filename starts "$xxx/..." then the "$xxx" part gets replaced
+// with the value of the symbol !@xxx.
+// PSL might have looked in an environment variable...
     else if (*qstring(x)=='$' && (p=strchr(qstring(x), '/'))!=NULL)
     {   sprintf(filename, "@%.*s", (int)(p-qstring(x))-1, 1+qstring(x));
         lits = qvalue(lookup(filename, strlen(filename), 0));
@@ -3106,6 +3123,7 @@ struct defined_functions fnsetup[] =
     {"char",       0,            (void *)Lchar},
     {"iceiling",   0,            (void *)Lceiling},
     {"close",      0,            (void *)Lclose},
+    {"clrhash",    0,            (void *)Lclrhash},
     {"code-char",  0,            (void *)Lcodechar},
     {"compress",   0,            (void *)Lcompress},
     {"cons",       0,            (void *)Lcons},

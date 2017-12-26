@@ -1442,6 +1442,8 @@ top (cond ((atom a) (return (reversip r))))
          (return r))))
 
 (de ash (a n) (leftshift a n))
+(de lsh (a n) (leftshift a n))
+(de lshift (a n) (leftshift a n))
 
 (de ash1 (a n)
    (if (minusp a) (minus (leftshift (minus a) n)) (leftshift a n)))

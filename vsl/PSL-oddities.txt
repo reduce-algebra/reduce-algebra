@@ -1,16 +1,15 @@
 (1) Two different definitions of a FOR macro with quite different
-    behaviour.
-
-(2) charconst for EOF conflicted between comp/macintel64/sys-consts.sl
-    and comp/macintel64/sys-dm.sl. And for mingw-w64 and AMD64.
-
-    [The definitions in sys-dm.sl must be a leftover from somewhere else. 
-     Now corrected. The relevant place is in nonkernel/$MACHINE/scantable.sl ]
+    behaviour. In nonkernel/loop-macros.sl and util/for-loop.sl. I suspect
+    that some parts of the PSL source depend on one and other parts on the
+    other. Eg util/if.sl uses NEXT which is defined in loop-macros.sl while
+    I found quite early some other parts of PSL that needed util/for-loop.sl.
 
 (3) lexing of numbers is inconsistent. 1+ gets parsed as a symbol while
     2#1+ is a number followed by the isolated +. 1#33 raises an error
     rather than parsing as a symbol. The issue of # within symbols is
-    not that clearly consistent everywhere.
+    not that clearly consistent everywhere. Unimportant - this is merely
+    a note I put in when considering how well I can make VSL and possibly
+    CSL consistent with PSL in full detail!
 
 (4) printf/bldmsg are defined using some LAP code and word operations
     rendering them strongly dependent on low level PSL in a way that
@@ -21,11 +20,17 @@
      as argument to printf2. The arguments on the stack are then accessed as 
      an array of lisp items, using wgetv. 
 
-     One might try to define printf as an nexpr instead.]
+     One might try to define printf as an nexpr instead. ]
+    [It is a sensible and efficient way to do it, but for my purposes using
+    vsl I do not have "arguments in registers" to push and do not have
+    raw access to a stack, or wgetv. But that is JUST an issue for looking
+    at bootstrapping - use of an nexpr would use more consing. Perhaps a
+    better way for me to express things is that the implementation takes
+    advantage of the power of syslisp!]
 
 (5) PSL supports IF with more than 3 arguments, and my initial implementation
     followed Common Lisp and had not, leading to misery. What is worse the
-    documentation of PSL suggests that symbols to be thoought of as keywords
+    documentation of PSL suggests that symbols to be thought of as keywords
     migh be recognized with IF...
 
     [Yes, there are two forms: the simple one with an implicit progn around
@@ -37,3 +42,14 @@
       ...
       ELSE ... )
      ]
+    [Thank you - I now include the file that defines that version of IF. I
+    can not find it in the PSL manual but I do see places where it is used
+    in the source. OK once I had spotted it, but the code there really looks
+    to me as if it belonged to people who had not "got" Lisp and who really
+    wanted to code in a different language!]
+
+(6) There is a file AMD64/comp-dec.sl that is just a copy of comp-decls.sl
+    presumably to cope with 8-character file names at some stage in the past?
+
+
+

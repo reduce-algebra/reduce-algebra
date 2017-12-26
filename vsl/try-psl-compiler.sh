@@ -21,7 +21,7 @@ script -c "./vsl psl-compiler.lsp" psl-compiler.log
 
 # Test it
 
-./vsl <<EOF
+./vsl <<EOF |& tee test-compiler.log 
 
 (setq !*echo t) (setq !*plap t) (setq !*pgwd t)
 
@@ -31,6 +31,10 @@ script -c "./vsl psl-compiler.lsp" psl-compiler.log
       (times n (foo (sub1 n)))))
 
 (trace '(lap LapoptFrame LapoptPeep ReformBranches OptimizeBranches))
+(setq *test-lap t)
+(setq *lapopt t)
+(setq *trlapopt t)
+(trace '(pass1lap lapoptprint lapopt1 pass1lap asmoutlap asmpreevallap))
 
 (compile '(foo))
 
