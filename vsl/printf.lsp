@@ -748,6 +748,7 @@ verylong
                                           (t (progn
                                                 (p_princ "%@" nil)
                                                 (p_princ c nil)))) ))
+				 ((equal c 'e) (eval a))
                                  (t (progn
                                        (p_princ "%" nil)
                                        (p_princ c nil)))) ))) ))) )
