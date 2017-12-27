@@ -3250,7 +3250,7 @@ void setup()
     charvalue = lookup("charvalue", 9, 1);
     qvalue(raise = lookup("*raise", 6, 1)) = nil;
     qvalue(lower = lookup("*lower", 6, 1)) = lisptrue;
-    qvalue(dfprint = lookup("dfprint*", 6, 1)) = nil;
+    qvalue(dfprint = lookup("dfprint*", 8, 1)) = nil;
     bignum = lookup("~bignum", 7, 1);
     qlits(lookup("load-module", 11, 1)) = lisptrue;
     cursym = nil;

@@ -895,21 +895,21 @@ top (cond ((atom a) (return (reversip r))))
       ((null u) nil)
       ((null v) nil)
       (t (!~bigcons (ilogand (car u) (car v))
-                    (!~biglogand (cdr u) (cdr v))))))
+                    (!~biglogand2 (cdr u) (cdr v))))))
 
 (de !~biglogor2 (u v)
    (cond
       ((null u) v)
       ((null v) u)
       (t (!~bigcons (ilogor (car u) (car v))
-                    (!~biglogor (cdr u) (cdr v))))))
+                    (!~biglogor2 (cdr u) (cdr v))))))
 
 (de !~biglogxor2 (u v)
    (cond
       ((null u) v)
       ((null v) u)
       (t (!~bigcons (ilogxor (car u) (car v))
-                    (!~biglogxor (cdr u) (cdr v))))))
+                    (!~biglogxor2 (cdr u) (cdr v))))))
 
 (de !~bigdifference (u v)
    (!~bigplus2carry u (!~bigminus v) 0))

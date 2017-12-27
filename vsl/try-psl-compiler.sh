@@ -37,4 +37,25 @@ script -c "./vsl psl-compiler.lsp" psl-compiler.log
 
 (compile '(foo))
 
+(dm codeprintf (x) (list 'fprintf 'codeout* (cadr x) (cons 'list (cddr x))))
+(dm dataprintf (x) (list 'fprintf 'dataout* (cadr x) (cons 'list (cddr x))))
+
+% This is needed for ASM generation, see $pxk/main-start.sl
+(put 'symnam 'symbol 'symnam)
+(put 'symfnc 'symbol 'symfnc)
+(put 'symget 'symbol 'symget)
+(put 'symval 'symbol 'symval)
+(put 'symprp 'symbol 'symprp)
+
+(setq !*writingasmfile t) (setq !*plap t) (setq !*pgwd t)
+
+(asmout "foo")
+
+(de foo (n)
+  (if (zerop n)
+      1
+      (times n (foo (sub1 n)))))
+
+(asmend)
+
 EOF

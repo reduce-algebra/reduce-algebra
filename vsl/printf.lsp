@@ -758,5 +758,12 @@ verylong
 
 (dm bldmsg (u) (list 'bldmsg_internal (cadr u) (cons 'list (cddr u))))
 
-(flag '(printf bldmsg) 'variadic)
+(dm fprintf (u) 
+    (list 'prog '(oldout) 
+	  (list 'setq 'oldout (list 'wrs (cadr u)))
+	  (list 'printf_internal (caddr u) (cons 'list (cdddr u)))
+	  '(wrs oldout)))
 
+
+(flag '(printf bldmsg fprintf) 'variadic)
+ 

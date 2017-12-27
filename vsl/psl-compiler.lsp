@@ -207,6 +207,30 @@
    (print (cdr u))
    nil)
 
+(dm putmem (u)
+   (terpri)
+   (princ "+++ PUTMEM ")
+   (print (cdr u))
+   nil)
+
+(dm putbyte (u)
+   (terpri)
+   (princ "+++ PUTBYTE ")
+   (print (cdr u))
+   nil)
+
+(dm put_a_halfword (u)
+   (terpri)
+   (princ "+++ PUT_A_HALFWORD ")
+   (print (cdr u))
+   nil)
+
+(dm depositfunctioncelllocation (u)
+   (terpri)
+   (princ "+++ DEPOSITFUNCTIONCELLLOCATION")
+   (print (cdr u))
+   nil)
+
 (de unboundp (u) (not (boundp u)))
 
 (de fboundp (u) (not (null (getd u))))
@@ -224,8 +248,53 @@
     (reverse (cdr (reverse a)))
     (cdr b))))
 
-(de gtbps (n) (mkvect n))
+%%%% This doesn't work,  as gtbps must return the address of the vector
+%(de gtbps (n) (mkvect n))
+(de gtbps (n) 47114711)
 
+(de string-equal (x y) (equal x y))
+
+(de channelprin2 (ch x)
+   (let!* ((s (wrs ch)))
+      (prog1
+         (prin2 x)
+         (wrs s))))
+
+(de channelterpri (ch)
+   (let!* ((s (wrs ch)))
+      (prog1
+         (terpri)
+         (wrs s))))
+
+(de stringgensym () (id2string (gensym)))
+
+(dm errset (u)
+    (list 'errorset (list 'quote (cadr u))
+	  (if (null (cddr u)) t (caddr u))
+	  nil))
+
+(de id2int (x) (print (list "ID2INT called on" x)) 4711)
+(de id2int (x) 4711)
+
+% converts a binary integer in a machine word into a lisp integer
+(de int2sys (x) x)
+
+% Functions that operate on machine words
+% use integer functions for now
+(de wshift (x y) (lshift x y))
+(de wplus2 (x y) (plus2 x y))
+(de wgreaterp (x y) (greaterp x y))
+(de wand (x y) (logand x y))
+(de wor (x y) (logor x y))
+
+(dm land (u) (cons 'logand (cdr u)))
+(dm lor (u) (cons 'logor (cdr u)))
+
+(dm string (u) (list 'list2string (cons 'list (cdr u))))
+
+(dm putword (u)
+    (cons 'wputv (cdr u)))
+   
 (rdf "$pu/defmacro1.sl")
 (rdf "$pu/defmacro2.sl")
 (rdf "$pu/set1-macros.sl")
@@ -254,6 +323,9 @@
    (cond
       ((zerop n) nil)
       (t (princ " ") (spaces (sub1 n)))))
+
+(de intp (x) (and (fixp x) (not (bignump x))))
+(flag '(intp) 'lose)
 
 % The paths used here suppose that the current directory is the VSL
 % one. This is a bit unsatisfactory at present.
@@ -297,8 +369,32 @@
 (rdf "$pxc/nbittab.sl")
 (rdf "$pxc/neweq.sl")
 (rdf "$pxc/unixAMD64-asm.sl")
+
+% redefine as macros since VSL doesn't support functiosn with a variable number of arguments
+(dm codeprintf (x) (list 'fprintf 'codeout* (cadr x) (cons 'list (cddr x))))
+(dm dataprintf (x) (list 'fprintf 'dataout* (cadr x) (cons 'list (cddr x))))
+
 (rdf "$pxc/unixAMD64-lap-to-asm.sl")
 
+% Redefine a couple of functions that do not work out of the box
+
+(de intp (x) (and (fixp x) (not (bignump x))))
+
+(de sunsymbolp (x)
+   (setq x (explodec x))
+   (prog nil
+     lbl
+     (cond ((null x) (return t))
+           ((not (or (liter (car x)) (eq (car x) '!_))) (return nil)))
+     (setq x (cdr x))
+     (go lbl)))
+
+(de asm-char-downcase (c)
+    (if (and (leq 65 c) (leq c 90))
+	(plus c 32)
+      x)))
+
+    
 % For utterly cross building I may fudge some things...
 (de mkitem (tag data) (list 'list ''tagged tag data))
 
