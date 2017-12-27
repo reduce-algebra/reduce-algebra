@@ -141,13 +141,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (put 'de 'asmpreeval
-     (function (lambda (u loadtime?) (fasl-define u 'expr loadtime?))))
+     (function (lambda (u loadtime?) (fasl-define u 'expr))))
 (put 'df 'asmpreeval
-     (function (lambda (u loadtime?) (fasl-define u 'fexpr loadtime?))))
+     (function (lambda (u loadtime?) (fasl-define u 'fexpr))))
 (put 'dm 'asmpreeval
-     (function (lambda (u loadtime?) (fasl-define u 'macro loadtime?))))
+     (function (lambda (u loadtime?) (fasl-define u 'macro))))
 (put 'dn 'asmpreeval
-     (function (lambda (u loadtime?) (fasl-define u 'nexpr loadtime?))))
+     (function (lambda (u loadtime?) (fasl-define u 'nexpr))))
 (put 'loadtime 'asmpreeval
      (function (lambda (u loadtime?) (fasl-form (cadr u) T))))
 (put 'startuptime 'asmpreeval
