@@ -667,7 +667,7 @@
 	     u
 	     (stringgensym))))
     (put u 'symbol x)
-    (return x)))
+    x))
 
 (de dataprintvar (name init)
   (prog (oldout)
