@@ -6,9 +6,9 @@
  .globl tokenbuffer
   .comm tokenbuffer,40008
  .globl bndstk
-  .comm bndstk,16008
+  .comm bndstk,160008
  .globl catchstack
-  .comm catchstack,12808
+  .comm catchstack,128008
  .globl hashtable
   .comm hashtable,272096
  .globl onewordbuffer
@@ -2359,11 +2359,11 @@ symfnc:
  .quad undefinedfunction
  .globl main
  .quad main
+ .quad undefinedfunction
+ .quad undefinedfunction
+ .quad undefinedfunction
  .globl l0216
  .quad l0216
- .quad undefinedfunction
- .quad undefinedfunction
- .quad undefinedfunction
  .quad undefinedfunction
  .globl l0007
  .quad l0007

@@ -65,7 +65,7 @@ PXNKFILES= \
 	$(PNKL)/allocators.b $(PNKL)/binding.b $(PNKL)/386-ext.b \
 	$(PNKL)/scan-table.b $(PNKL)/sys-date.b $(PNKL)/sys-extras.b \
 	$(PNKL)/sys-faslin.b $(PNKL)/sys-gc.b $(PNKL)/sys-io.b \
-	$(PNKL)/static-gc.b \
+	$(PNKL)/static-gc.b $(PNKL)/catch-throw.b \
 	$(PNKL)/timc.b $(PNKL)/trap.b $(PNKL)/write-float.b $(PNKL)/wfloat.b
 
 all: $(PXNKFILES)

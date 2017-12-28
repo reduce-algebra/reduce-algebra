@@ -252,36 +252,14 @@
 
 (lap '((*entry !m!a!i!n expr 0)
 
-       %(*move (reg rcx) (reg 1))
-       %(*move (reg rdx) (reg 2))
-
-       (*alloc 3) % changes Stack pointer
-
-       (*move (reg rcx) (frame 1))
-       (*move (reg rdx) (frame 2))
-       (*move (reg 5) (frame 3)) % have to save %rbp
-
-    %  (*move (fluid argc) (frame 1))
-    %   (*move (fluid argv) (frame 2))
-    %   (*move (reg 2) (frame 3)) % have to save %ebx
-
-
-  %    (*move   (fluid stack) (reg st))
-  %    (*move   (reg st)      (fluid stackupperbound))
-  %    (*wplus2 (reg st)      (wconst (times (sub1 stacksize) 
-  % 				     addressingunitsperitem)))
-
        %  Do OS specific initializations (uses argc and argv)
-    %   (*move (fluid argc) (reg 1))
-    %   (*move (fluid argv) (reg 2))
-    %   (*move infbitlength (fluid _infbitlength_))
-       (*move (frame 1) (reg 1))
-       (*move (frame 2) (reg 2))
-       (*link os_startup_hook expr 2)
+       (*move (reg rcx) (fluid argc))
+       (*move (reg rdx) (fluid argv))
+       (*move (reg 5) (fluid ebxsave!*)) % have to save %rbp
 
-       (*move (frame 1) (fluid argc))
-       (*move (frame 2) (fluid argv))
-       (*move (frame 3) (fluid ebxsave!*))
+       (*move (reg rcx) (reg 1))
+       (*move (reg rdx) (reg 2))
+       (*link os_startup_hook expr 2)
 
        (*call init-pointers)
 
@@ -296,15 +274,15 @@
 panic-exit                      % need to do UNIX cleanup after
                                 % a fatal error, so jump here
        (*move (wconst 0) (reg 1))
-       (*linke 3 exit-with-status expr 1)
-       (*exit 3)
+       (*linke 0 exit-with-status expr 1)
+       (*exit 0)
 
        (*entry exit-with-status expr 1)
        (*push (reg 1))
        (*link os_cleanup_hook expr 0)
        (*pop (reg 1))
        (*link external_exit expr 1)
-       (*exit 3)
+       (*exit 0)
        ))
 
 (de init-gcarray() nil) % hook for garbage collector initialization 

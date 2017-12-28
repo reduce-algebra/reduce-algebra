@@ -60,7 +60,7 @@
 
 (global '(bndstksize))
 
-(setq bndstksize  2000)
+(setq bndstksize  20000)
 
 (global '(bndstk bndstkptr bndstkupperbound bndstklowerbound))
 
