@@ -63,9 +63,10 @@
        (put x 'symflagval val))
 
 (de install-symget (x val)       % install a first class property
-       (when (memq x '(symget? symgetval)) (return nil))
-       (put x 'symget? t)        % Caution cant symget id symget itself!
-       (put x 'symgetval val))
+       (cond ((memq x '(symget? symgetval)) nil)
+             (t
+              (put x 'symget? t)        % Caution cant symget id symget itself!
+              (put x 'symgetval val))))
 
 (put 'symflag 'openfn  '(nonassocpat *symflag)) % not really correct
  
