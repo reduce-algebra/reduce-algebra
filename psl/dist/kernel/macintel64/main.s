@@ -33,7 +33,7 @@ l0002:
  mov 2080(%rdi),%rdi
  mov _symval@GOTPCREL(%rip),%r8
  mov %rdi,2168(%r8)
- mov $15992,%rax
+ mov $159992,%rax
  mov _symval@GOTPCREL(%rip),%r8
  mov 2080(%r8),%r8
  add %r8,%rax

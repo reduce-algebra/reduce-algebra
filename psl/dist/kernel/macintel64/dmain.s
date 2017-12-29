@@ -6,9 +6,9 @@
  .globl tokenbuffer
   .comm tokenbuffer,40008
  .globl bndstk
-  .comm bndstk,16008
+  .comm bndstk,160008
  .globl catchstack
-  .comm catchstack,12808
+  .comm catchstack,128008
  .globl _hashtable
   .comm _hashtable,40000008
  .globl onewordbuffer

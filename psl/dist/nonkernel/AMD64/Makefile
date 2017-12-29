@@ -143,9 +143,6 @@ $(PNKL)/static-gc.b: $(PXNK)/static-gc.sl
 $(PNKL)/base-io.b: $(PXNK)/base-io.sl $(PL)/if-system.b $(PNKL)/io-decls.b
 	$(PDIST)/make-pnk-lap $(PXNK) base-io
  
-$(PNKL)/catch-throw.b: $(PXNK)/catch-throw.sl $(PL)/if-system.b	
-	$(PDIST)/make-pnk-lap $(PXNK) catch-throw
-
 $(PNKL)/copiers.b: $(PXNK)/copiers.sl
 	$(PDIST)/make-pnk-lap $(PXNK) copiers
 

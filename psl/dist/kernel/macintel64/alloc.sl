@@ -55,7 +55,7 @@
 	  (setf nextbps result)
 	  (if (and (getd 'try-other-bps-spaces)
 		   (try-other-bps-spaces number-of-items))
-	    (return (gtbps number-of-items))
+	    (gtbps number-of-items)
 	    (stderror "Ran out of binary program space"))))))
 
 
