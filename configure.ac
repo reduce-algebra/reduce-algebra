@@ -538,10 +538,14 @@ AC_ARG_WITH(cygwin64,
 # a 64-bit cygwin shell then I will insist on changing gear so that I run
 # using a 32-bit cygwin shell.
 
-i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg32.exe
-i686-w64-mingw32-strip ./cyg32.exe
-i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg64.exe
-i686-w64-mingw32-strip ./cyg64.exe
+if which i686-w64-mingw32-g++ >/dev/null 2>/dev/null &&
+   which i686-w64-mingw32-strip >/dev/null 2>/dev/null
+then
+  i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg32.exe
+  i686-w64-mingw32-strip ./cyg32.exe
+  i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg64.exe
+  i686-w64-mingw32-strip ./cyg64.exe
+fi
 LOCALCYG=""
 if test "x$with_cygwin32" != "xno"
 then
