@@ -391,7 +391,6 @@ loop
 			  (markfromonesymbol  id)
 	    ))))))
 
-(compiletime (on pcmac))
 (de markfromonesymbol (x)
   % SymNam has to be marked from before marking ID, since the mark uses its tag
 	 (setq gcfunction* 1)
@@ -411,7 +410,7 @@ loop
 		 (markfrombase (wgetv old_symval x))))
 	 (setq gcfunction* 0)    
       )
- 
+
 (de markfromstack ()
   (setq gcfunction* 5)
   (ifor (from ptr stackstart stackend 
@@ -419,7 +418,7 @@ loop
 	(do 
 	  (progn  %% (unixputn (*get-stack ptr))(console-newline)
 		  (markfrombase (*get-stack ptr))))))
- 
+
 (de markfrombase (base)
   (prog (markinfo 
 	 %%%  olditem*
@@ -939,29 +938,31 @@ loop
 		   addressingunitsperitem))
 	  (amount (wtimes2 25000 
 			   (iadd1 (wquotient number-of-items 25000)))))
-	 (when (wgreaterp bpsrest amount) (return bpsrest))
-	 (errorprintf "*** enlarging fasl space by %d items" amount)
-	 (compactheap)
+      (if (wgreaterp bpsrest amount)
+	  bpsrest
+	(errorprintf "*** enlarging fasl space by %d items" amount)
+	(compactheap)
 	     % now we have a simplified memory layout
-	 (when (wgreaterp amount
-			  (wquotient (wdifference heapupperbound
-						  heaplast)
-				      addressingunitsperitem))
-	       (stderror "*** fasl space cannot be enlarged"))
+	(when (wgreaterp amount
+	       (wquotient (wdifference heapupperbound
+			   heaplast)
+			  addressingunitsperitem))
+	      (stderror "*** fasl space cannot be enlarged"))
 
-     (setq amount (wtimes2 amount addressingunitsperitem))   
-     (setq *moving-heap* amount)
-     (update-bases)
-     (move-heap amount)
+	(setq amount (wtimes2 amount addressingunitsperitem))   
+	(setq *moving-heap* amount)
+	(update-bases)
+	(move-heap amount)
 	% update bps pointers
-     (setq nextbps heap)
-     (setq lastbps (wplus2 nextbps (wdifference amount addressingunitsperitem)))
+	(setq nextbps heap)
+	(setq lastbps (wplus2 nextbps (wdifference amount addressingunitsperitem)))
 	% update heap pointers
-     (setq heaplowerbound (wplus2 heaplowerbound amount))
-     (setq heap heaplowerbound)
-     (setq heaplast (wplus2 heaplast amount))
-     (init-gcarray)
-     (wquotient amount addressingunitsperitem)
+	(setq heaplowerbound (wplus2 heaplowerbound amount))
+	(setq heap heaplowerbound)
+	(setq heaplast (wplus2 heaplast amount))
+	(init-gcarray)
+	(wquotient amount addressingunitsperitem)
+      )
   ))
 
 (de move-heap(amount)

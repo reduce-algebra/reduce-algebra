@@ -15,11 +15,14 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%
+(define-constant hash-table-size     393241)
+(define-constant maxsymbols          300000)
+
+					%
 % Special values for labelling unoccupied slots:
 %
 
-(define-constant deleted-slot-value  16#ffff)
+(define-constant deleted-slot-value  16#ffffffff)
 (define-constant empty-slot-value    0)
 
 %
@@ -34,8 +37,25 @@
 
 (ds occupied-slot? (u) 
   (let ((hte (hash-table-entry u)))
-       (and (wlessp hte 16#ffff) (> hte 0))
+       (and (wlessp hte 16#ffffffff) (> hte 0))
   ))
+
+%
+% Compiler macros for reading and writing 32bit words:
+%
+
+(deflist 
+      '(
+        (Hashtab-HalfWord ((shl 2 (reg 2))
+                (mov (indexed (reg 2) (displacement (reg 1) 0))(reg EAX))
+                    (cdqe)))
+        (PutHashtab-HalfWord ((shl 2 (reg 2))
+                (*move (reg 3) (reg 4))
+                (mov (reg EDX)
+                    (indexed (reg 1)(displacement (reg 2) 0)))))) 
+ 'OpenCode)
+
+(put 'Hashtab-HalfWord 'assign-op 'PutHashtab-HalfWord)
 
 %
 % Assorted macros:
@@ -53,13 +73,13 @@
 
 (ds hash-table-entry (i) 
   % Access to an element of the hash table.
-  (wshift (wshift (halfword hashtable i) 48) -48) )
+  (wshift (wshift (Hashtab-halfword hashtable i) 32) -32) )
 
  % (signedfield (halfword hashtable i) 
 %	       bitsperword2
 %	       bitsperword2))
 				         
 (ds set-hash-table-entry (i x) 
-  (setf (halfword hashtable i) x))
+  (setf (Hashtab-halfword hashtable i) x))
 
 (put 'hash-table-entry 'assign-op 'set-hash-table-entry)
