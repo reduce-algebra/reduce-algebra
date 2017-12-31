@@ -32,7 +32,7 @@
 
  (setq *syslisp t)
 
-(on pcmac)
+%%(on pcmac)
  (load fast-vector) (on fast-vectors)
  (load if-system)
  (load inum)
