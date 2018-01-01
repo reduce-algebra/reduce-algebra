@@ -2,6 +2,7 @@
 
 srcdir = @srcdir@
 VPATH = @srcdir@
+ACLOCAL_AMFLAGS = -I m4
 
 if wx
 .PHONY:	all wx

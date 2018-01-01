@@ -20,6 +20,8 @@ AC_COPYRIGHT([The REDUCE project])
 # working without them.
 
 AC_PREREQ(2.61)
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIRS([m4])
 
 abssrcdir=`"$srcdir/scripts/here.sh"`
 

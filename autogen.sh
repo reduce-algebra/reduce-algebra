@@ -64,7 +64,8 @@ else
 fi
 
 # I will re-process the top level first sequentially.
-aclocal
+libtoolize --force --copy
+aclocal --force
 autoreconf -f -i -v
 
 # Here are the directories that I will always process...
@@ -136,9 +137,9 @@ do
 # I will spawn all the calls to autoconf to run concurrently...
     if test "$sequential" = "yes"
     then
-      ( aclocal ; autoreconf -f -i -v )
+      ( libtoolize --force --copy; aclocal --force ; autoreconf -f -i -v )
     else
-      ( aclocal ; autoreconf -f -i -v ) &
+      ( libtoolize --force --copy; aclocal --force ; autoreconf -f -i -v ) &
       procids="$procids $!"
     fi
     cd $here
