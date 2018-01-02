@@ -57,7 +57,7 @@ PXDIST  = $(PDIST)/$(MACHINE)
 PL      = $(PSL)/lap/$(MACHINE)
 
 all: \
-	$(PL)/fc-indirect.b $(PL)/get-options.b \
+	$(PL)/disassemble.b $(PL)/fc-indirect.b $(PL)/get-options.b \
 	$(PL)/l2cdatacon.b $(PL)/helferlein.b $(PL)/symget.b \
 	$(PL)/nbig30.b $(PL)/nbig30a.b $(PL)/double.b \
 	$(PL)/nbig32.b $(PL)/nbig32a.b $(PL)/double32.b \
@@ -73,6 +73,9 @@ $(PL)/c2l.o: $(PXU)/c2l.c
 	rm -f c2l.s
 	as c2ltemp.s -o $(PL)/c2l.o
 	rm -f c2ltemp.s
+
+$(PL)/disassemble.b: $(PXU)/disassemble.sl
+	$(PDIST)/make-lap $(PXU) disassemble
 
 $(PL)/fc-indirect.b: $(PXU)/fc-indirect.sl
 	$(PDIST)/make-lap $(PXU) fc-indirect
@@ -119,9 +122,6 @@ $(PL)/double32.b: $(PXU)/double.sl $(PL)/muls32.b
 
 $(PL)/mbarith.b: $(PXU)/mbarith.sl $(PL)/muls.b
 	$(PDIST)/make-lap $(PXU) mbarith
-
-$(PL)/disassemble.b: $(PXU)/disassemble.sl
-	$(PDIST)/make-lap $(PXU) disassemble
 #
 
 $(PL)/inum.b: $(PU)/inum.sl
