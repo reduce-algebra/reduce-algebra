@@ -623,6 +623,7 @@ symbolic procedure printf_internal(fmt, args);
             else if c = '!q or c = '!Q then p_prefix(prepsq a, 0)
             else if c = '!p or c = '!P then p_prefix(a, 0)
             else << p_princ("%@", nil); p_princ(c, nil) >> >>
+          else if c = '!e or c = '!E then eval a 
 % Rather than generating an error I will display %? (where ? is any
 % unrecognized character) unchanged.
           else << p_princ("%", nil); p_princ(c, nil) >> >> >> >>

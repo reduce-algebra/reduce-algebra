@@ -57,6 +57,11 @@ install:
 uninstall:
 	$(SHELL) $(VERBOSE) scripts/uninstall.sh $(MAKECMDGOALS)
 
+.PHONY:	csl psl
+
+csl psl:
+	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
+
 %::
 	+$(SHELL) $(VERBOSE) scripts/make.sh $(MAKECMDGOALS)
 

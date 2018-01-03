@@ -2437,15 +2437,22 @@ bool is_constituent(int c)
 }
 
 static LispObject backquote_expander(LispObject a)
-//
-// ClTl (edition 2) seems to suggest that nested backquotes are a disgusting
-// morass - this code does not worry about the fine details!
-//
 {   LispObject w1, f;
     if (a == nil) return a;
     if (!consp(a)) return list2(quote_symbol, a);
     stackcheck1(a);
     f = qcar(a);
+#if 0
+// For quite some while I did not understand what I was supposed to do with
+// nested backquotes, but PSL showed me what was required. Excet that since I
+// expaqnd backquotes while reading I do not need to do this here!
+    if (f == backquote_symbol)
+    {   a = backquote_expander(qcar(qcdr(a)));
+        if (a == nil) return a;
+        if (!consp(a)) return list2(quote_symbol, a);
+        f = qcar(a);
+    }
+#endif
     if (f == comma_symbol) return qcar(qcdr(a));
     if (consp(f) && qcar(f) == comma_at_symbol)
     {   w1 = qcar(qcdr(f));
