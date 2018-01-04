@@ -1,10 +1,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PNK:COPYING-GC.SL
+% File:         PXNK:COPYING-GC.SL
 % Description:  Copying 2-space garbage collector for PSL
 % Author:       Eric Benson
 % Created:      30 November 1981
 % Modified:     29-Aug-84 10:09:08 (Brian Beach)
+% Status:       Open SOurce: BSD License
 % Package:
 %
 % (c) Copyright 1982, University of Utah
@@ -329,7 +330,8 @@
        (do
     (let ((id-number  (hash-table-entry i)))
       (when (and (> id-number 0)     % Slot is occupied
-             (not (markedid id-number)))
+	         (not (= id-number deleted-slot-value)) % skip symbols removed from oblist
+                 (not (markedid id-number)))
         (markandcopyfromid id-number)
         ))))
  
@@ -612,10 +614,16 @@
 )
 (de gcstats ()
   (if (wgeq (known-free-space) 100)
-      (Errorprintf "*** GC %w: %w (~ %w ms cpu time, gc : %w %%)"
-                      gcknt* (date-and-time) (sys2int(timc))
+      (if (wgeq (sys2int(timc)) 3600000) % 1 hour -> float
+             (Errorprintf "*** GC %w: %w (~ %w h cpu time, gc : %w %%)"
+                      gcknt* (date-and-time)
+			     (quotient (sys2int (timc)) 3600000.0)
                              (wquotient (wtimes2 100 gctime*)
-				 (wplus2 1 (timc))))
+                                 (wplus2 1 (timc))))
+             (Errorprintf "*** GC %w: %w (~ %w ms cpu time, gc : %w %%)"
+                        gcknt* (date-and-time) (sys2int(timc))
+                               (wquotient (wtimes2 100 gctime*)
+			       (wplus2 1 (timc)))))
       (Errorprintf "*** GC %w: Heap space exhausted" gcknt*))
   (Errorprintf "*** time %d ms, %d occupied, %d recovered, %d free"
      oldtime

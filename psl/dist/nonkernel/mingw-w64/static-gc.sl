@@ -1,3 +1,33 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% File:         PXNK:STATIC-GC.SL
+% Status:       Open Source: BSD License
+% Package:
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 (fluid '(*heap-compacting*))
 
 (compiletime
@@ -391,7 +421,6 @@ loop
 			  (markfromonesymbol  id)
 	    ))))))
 
-(compiletime (on pcmac))
 (de markfromonesymbol (x)
   % SymNam has to be marked from before marking ID, since the mark uses its tag
 	 (setq gcfunction* 1)
@@ -939,30 +968,32 @@ loop
 		   addressingunitsperitem))
 	  (amount (wtimes2 25000 
 			   (iadd1 (wquotient number-of-items 25000)))))
-	 (when (wgreaterp bpsrest amount) (return bpsrest))
-	 (errorprintf "*** enlarging fasl space by %d items" amount)
-	 (compactheap)
+	 (if (wgreaterp bpsrest amount)
+	     bpsrest
+	   (errorprintf "*** enlarging fasl space by %d items" amount)
+	   (compactheap)
 	     % now we have a simplified memory layout
-	 (when (wgreaterp amount
+	   (when (wgreaterp amount
 			  (wquotient (wdifference heapupperbound
 						  heaplast)
 				      addressingunitsperitem))
-	       (stderror "*** fasl space cannot be enlarged"))
+		 (stderror "*** fasl space cannot be enlarged"))
 
-     (setq amount (wtimes2 amount addressingunitsperitem))   
-     (setq *moving-heap* amount)
-     (update-bases)
-     (move-heap amount)
-	% update bps pointers
-     (setq nextbps heap)
-     (setq lastbps (wplus2 nextbps (wdifference amount addressingunitsperitem)))
-	% update heap pointers
-     (setq heaplowerbound (wplus2 heaplowerbound amount))
-     (setq heap heaplowerbound)
-     (setq heaplast (wplus2 heaplast amount))
-     (init-gcarray)
-     (wquotient amount addressingunitsperitem)
-  ))
+  	   (setq amount (wtimes2 amount addressingunitsperitem))   
+           (setq *moving-heap* amount)
+	   (update-bases)
+	   (move-heap amount)
+	   % update bps pointers
+           (setq nextbps heap)
+           (setq lastbps (wplus2 nextbps (wdifference amount addressingunitsperitem)))
+	   % update heap pointers
+	   (setq heaplowerbound (wplus2 heaplowerbound amount))
+	   (setq heap heaplowerbound)
+	   (setq heaplast (wplus2 heaplast amount))
+	   (init-gcarray)
+	   (wquotient amount addressingunitsperitem)
+	)
+       ))
 
 (de move-heap(amount)
     (ifor (from i heaplast heap -1)

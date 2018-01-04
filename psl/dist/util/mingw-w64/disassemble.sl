@@ -321,8 +321,6 @@
                 ,name
                 .,(cdr i)))))
 
-(compiletime (load addr2id))
-
 (de decode-rex-prefix (p1)
    (when (eq 8 (wand p1 8)) (setq rex_w t))
    (when (eq 4 (wand p1 4)) (setq rex_r t))
@@ -412,7 +410,7 @@
          
 	((eqcar p 'ST) % x87fpu instruction
 	 (if (eq (wand (car bytes*) 2#11000000) 2#11000000)
-	     (decode-x87fpu p)
+	     (decode-x87fpu p bytes* addr* 0)
 	   (decode-modrm p)))
         (t (terpri)
            (prin2t (list "dont know operand declaration:" p))
@@ -447,7 +445,9 @@
                      (setq *comment
                       (bldmsg " -> %w" 
                        (safe-int2id (wshift (wdifference w symval) -3))))))
-              (bldmsg "*%w" w))
+              (if *gassyntax 
+                  (bldmsg "%w(%%rip)" w)
+                (bldmsg "[rip%w0x%x]" (if (wlessp w 0) "-" "+") (if (wlessp w 0) (wminus w) w))))
         ((eq mod 0) (if *gassyntax
 			(bldmsg "(%%%w)" (reg-m rm))
 		      (bldmsg "[%w]" (reg-m rm) )))
@@ -1117,7 +1117,7 @@ loop
          (if pat (prinblx (subla instr pat)))
          (prin2 "    ")
 
-         (when *comment (ttab 63) (prin2 *comment))
+         (when *comment (ttab 65) (prin2 *comment))
          (setq *comment nil)
          (setq base (plus2 base lth))
          (setq lc (add1 lc))

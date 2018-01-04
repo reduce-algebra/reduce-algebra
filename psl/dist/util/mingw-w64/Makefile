@@ -57,13 +57,13 @@ PXDIST  = $(PDIST)/$(MACHINE)
 PL      = $(PSL)/lap/$(MACHINE)
 
 all: \
-	$(PL)/fc-indirect.b $(PL)/get-options.b \
+	$(PL)/disassemble.b $(PL)/fc-indirect.b $(PL)/get-options.b \
 	$(PL)/l2cdatacon.b $(PL)/helferlein.b $(PL)/symget.b \
 	$(PL)/nbig30.b $(PL)/nbig30a.b $(PL)/double.b \
 	$(PL)/nbig32.b $(PL)/nbig32a.b $(PL)/double32.b \
 	$(PL)/mbarith.b \
 	$(PL)/qualified-timing.b $(PL)/spy.b \
-	$(PL)/disassemble.b $(PL)/compat.b
+	$(PL)/compat.b
 
 # MODEL should be either AREGMODEL for 3.2 or DREGMODEL for 3.4.
 MODEL   = DREGMODEL
@@ -75,7 +75,10 @@ $(PL)/c2l.o: $(PXU)/c2l.c
 	as c2ltemp.s -o $(PL)/c2l.o
 	rm -f c2ltemp.s
 
-$(PL)/fc-indirect.b: $(PXU)/fc-indir.sl
+$(PL)/disassemble.b: $(PXU)/disassemble.sl
+	$(PDIST)/make-lap $(PXU) disassemble
+
+$(PL)/fc-indirect.b: $(PXU)/fc-indirect.sl
 	$(PDIST)/make-lap $(PXU) fc-indirect
 
 $(PL)/get-options.b: $(PXU)/get-options.sl
@@ -93,8 +96,9 @@ $(PL)/symget.b:  $(PXU)/symget.sl
 $(PL)/spy.b: $(PXU)/spy.sl
 	$(PDIST)/make-lap $(PXU) spy
 
-$(PL)/qualified-timing.b: $(PXU)/qualtime.sl
+$(PL)/qualified-timing.b: $(PXU)/qualified-timing.sl
 	$(PDIST)/make-lap $(PXU) qualified-timing
+
 $(PL)/oload.b: $(PXU)/oload.sl
 	$(PDIST)/make-lap $(PXU) oload
 
@@ -120,9 +124,6 @@ $(PL)/double32.b: $(PXU)/double.sl $(PL)/muls32.b
 
 $(PL)/mbarith.b: $(PXU)/mbarith.sl $(PL)/muls.b
 	$(PDIST)/make-lap $(PXU) mbarith
-
-$(PL)/disassemble.b: $(PXU)/disassemble.sl
-	$(PDIST)/make-lap $(PXU) disassemble
 
 $(PL)/compat.b: $(PXU)/compat.sl
 	$(PDIST)/make-lap $(PXU) compat
