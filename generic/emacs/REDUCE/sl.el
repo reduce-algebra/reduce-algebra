@@ -323,6 +323,17 @@ Returns the removed property or NIL if there was no such indicator."
 ;;; Function Definition
 ;;; ===================
 
+;; NOTE that Standard Lisp macros are nospread and therefore take a
+;; single parameter that gets the list of actual arguments, so `dm'
+;; and `putd' must convert the macro parameter into an &rest
+;; parameter.  Also, when a Standard Lisp macro is called it receives
+;; its name as its first argument, i.e. the single parameter evaluates
+;; to the COMPLETE function call, so `dm' and `putd' must modify the
+;; macro argument list within the body lambda expression.
+
+;; Could remove the use of the property `type' and just process the
+;; symbol-function. Then `de' could just be an alias for `defun'.
+
 (defmacro de (fname params fn)
   "DE(FNAME:id, PARAMS:id-list, FN:any):id noeval, nospread
 The function FN with the formal parameter list PARAMS is added to
@@ -358,16 +369,30 @@ FEXPR PROCEDURE DM(U);
   (declare (debug (&define name lambda-list def-body)))
   `(progn
 	 (put ',mname 'type 'macro)
-	 (defmacro ,mname ,param ,fn)))
+	 ;; param must be a list containing a single identifier, which
+	 ;; must therefore be spliced into the macro definition.
+	 (defmacro ,mname (&rest ,@param)	; spread the arguments
+	   ;; Include macro name as first arg:
+	   (setq ,@param (cons ',mname ,@param))
+	   ,fn)))
 
 (defun getd (fname)
+  ;; BEWARE that this definition may not work properly for functions
+  ;; defined in Emacs Lisp, which will generally contain a
+  ;; documentation string and then multiple body forms!
   "GETD(FNAME:any):{NIL, dotted-pair} eval, spread
 If FNAME is not the name of a defined function, NIL is returned. If
 FNAME is a defined function then the dotted-pair
 \(TYPE:ftype . DEF:{function-pointer, lambda})
 is returned."
   (let ((def (symbol-function fname)))
-	(if def (cons (get fname 'type) def))))
+	(if def
+		(let ((type (get fname 'type)))
+		  (if (eq type 'macro)
+			  ;; def = (macro lambda (&rest u) (setq u (fname . u)) body-form)
+			  ;;  -->  (macro lambda (u) body-form)
+			  `(macro lambda ,(cdaddr def) ,@(cddddr def))
+			(cons 'expr def))))))
 
 (defun putd (fname type body)
   "PUTD(FNAME:id, TYPE:ftype, BODY:function):id eval, spread
@@ -389,7 +414,16 @@ the !*COMP global variable is non-NIL."
 	  (error "%s is a non-local variable" fname))
   (if (symbol-function fname)
 	  (message "*** %s redefined" fname))
-  (fset fname (if (eq type 'macro) (cons 'macro body) body))
+  ;; body = (lambda (u) body-form)
+  (fset fname (if (eq type 'macro)
+				  (let ((u (caadr body))) ; must be a symbol!
+					`(macro
+					  lambda (&rest ,u)	; spread the arguments
+					  ;; Include macro name as first arg:
+					  (setq ,u (cons ',fname ,u))
+					  ;; Splice in body-form:
+					  ,@(cddr body)))
+				body))
   (put fname 'type type)
   fname)
 

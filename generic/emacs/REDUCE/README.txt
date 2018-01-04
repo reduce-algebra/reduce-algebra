@@ -54,7 +54,7 @@ fixing this later if tabs are not handled correctly by rlisp.red.
 4. slfns -- error max-lisp-eval-depth exceeded processing the list of
 SL functions!  Default is 800. Try increasing to 2000. This may lead
 to Emacs crashing! Not large enough. Just comment out this module for
-now; I don't think it is necessary. (Might no longer be a problem.)
+now; I don't think it is necessary.
 
 5. superv -- OK
 
@@ -71,10 +71,8 @@ for now just downcase the offending code. Now OK.
 10. block -- OK. I can now process all of rlisp.red in one go down to
 the end of this module.
 
-11. form -- problem around macrochk. identity already defined in elisp
-with one argument.
-
-*** CHECK module form.
+11. form -- identity already defined in elisp with one argument. Code
+edited to define identity!* and use newnam.
 
 Error defining form; probably in form1.
 
@@ -95,4 +93,34 @@ putd('block,'macro,
 
 The problem is that Standard Lisp macros are nospread and so take a
 single parameter that gets the list of arguments. So I need to
-redefine putd to take a &rest parameter.
+redefine putd to take a &rest parameter. Standard Lisp macros also get
+their names as their first argument, so I need to build this into the
+macro body.
+
+Revised putd and getd (and dm) to handle macros properly (I hope). Now
+OK.
+
+12. proc -- OK
+13. forstat -- OK
+
+14. loops -- defining symbolic macro procedure while causes Lisp
+nesting exceeds ‘max-lisp-eval-depth’. repeat and while are already
+defined in Emacs Lisp, so rename them to repeat!* and while!*. Now OK.
+
+15. write -- OK
+16. smacro -- OK
+17. infix -- OK
+18. where -- OK
+
+19. list -- problem in definition of rappend and rcons, which causes
+problems reading following module. Try skipping this module.
+
+20. array -- renamed listp to listp!*. Now OK
+
+21. switch -- calling switch leads to Args out of range: "!", 1. I
+suspect a problem with explode and/or compress, which might also
+explain the problem in module list.
+
+22. io -- OK
+23. inter -- OK
+[end of file rlisp.red]
