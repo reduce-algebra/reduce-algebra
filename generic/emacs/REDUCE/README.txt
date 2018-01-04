@@ -113,14 +113,10 @@ defined in Emacs Lisp, so rename them to repeat!* and while!*. Now OK.
 18. where -- OK
 
 19. list -- problem in definition of rappend and rcons, which causes
-problems reading following module. Try skipping this module.
+problems reading following module. Skip this module for now.
 
 20. array -- renamed listp to listp!*. Now OK
-
-21. switch -- calling switch leads to Args out of range: "!", 1. I
-suspect a problem with explode and/or compress, which might also
-explain the problem in module list.
-
+21. switch -- OK
 22. io -- OK
 23. inter -- OK
 [end of file rlisp.red]

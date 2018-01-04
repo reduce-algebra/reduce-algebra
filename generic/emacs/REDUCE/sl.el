@@ -200,7 +200,7 @@ occurs if U is not a dotted-pair."
 
 (defun sl--symbol-name-sans! (symbol)
   "Return single-character SYMBOL’s name, a string,
-with any leading ! character removed."
+with any leading `!' character removed."
   (let ((s (symbol-name symbol)))
 	(if (eq (aref s 0) ?!)
 		(string (aref s 1))
@@ -217,10 +217,18 @@ pointers may be compressed but this is an undefined use. If an entity
 cannot be parsed out of U or characters are left over after parsing
 an error occurs:
 ***** Poorly formed atom in COMPRESS"
-  (let ((s (mapconcat 'sl--symbol-name-sans! u "")))
+  (let ((s (mapconcat #'sl--symbol-name-sans! u "")))
 	(if (or (eq (car u) '!\") (digit (car u)))
 		(read s)						; string or number
 	  (make-symbol s))))				; uninterned symbol
+
+(defun sl--char-to-interned-id (c)
+  "Convert ELisp character C to an interned SLisp identifier.
+If C is not a letter then it is escaped by being preceded by `!'."
+  (intern (if (or (and (>= c ?A) (<= c ?Z))
+				  (and (>= c ?a) (<= c ?z)))
+			  (string c)
+			(string ?! c))))
 
 (defun explode (u)
   "EXPLODE(U:{atom}-{vector}):id-list eval, spread
@@ -240,7 +248,9 @@ function-pointer -- The value of the function-pointer is created as a
   list of characters conforming to the conventions of the system site.
 The type mismatch error occurs if U is not a number, identifier,
 string, or function-pointer."
-  (seq-map (lambda (x) (intern (string x))) (prin1-to-string u)))
+  (seq-map
+   #'sl--char-to-interned-id
+   (prin1-to-string u)))
 
 ;; GENSYM():identifier eval, spread -- OK
 ;; Creates an identifier which is not interned on the OBLIST and con-
@@ -1326,12 +1336,9 @@ Comments delimited by % and end-of-line are not transparent to READCH."
 	(cond ((eobp) !$eof!$)
 		  ((eolp) (forward-line)
 		   (set-marker sl-marker (point)) !$eol!$)
-		  (t (let ((ch (char-after sl-marker)))
+		  (t (let ((c (char-after sl-marker)))
 			   (set-marker sl-marker (1+ sl-marker))
-			   (intern (if (or (and (>= ch ?A) (<= ch ?Z))
-							   (and (>= ch ?a) (<= ch ?z)))
-						   (string ch)
-						 (string ?! ch))))))))
+			   (sl--char-to-interned-id c)))))) ; see also explode
 
 ;; TERPRI():NIL -- OK probably
 ;; The current print line is terminated.
