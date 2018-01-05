@@ -79,7 +79,11 @@ COMMENT simple tests of MeijerG operator;
 
 MeijerG({{},1},{{0}},x);  % should be 1/2(sign( - abs(x) + 1) - sign(abs(x) + 1))
 
+MeijerG({{},a},{{b}},x);
+
 MeijerG({{1}},{{},0},x);  % should be 1-1/2(sign( - abs(x) + 1) - sign(abs(x) + 1))
+
+MeijerG({{a}},{{},b},x);
 
 MeijerG({{}},{{0}},-x);   % exp(x)
 
