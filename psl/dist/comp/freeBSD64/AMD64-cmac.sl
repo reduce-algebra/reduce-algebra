@@ -7,7 +7,7 @@
 % Modified:
 % Mode:         Lisp
 % Package:
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
@@ -156,10 +156,10 @@
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
 	  '( 1  2  3  4  5 st t1 t2 rax rcx rdx rbx rsp rbp rsi rdi
-	     eax ebx edx r8 r9 r10 r11 r12 r13 r14 r15
-	     nil heaplast heaptrapbound
-             bndstkptr bndstklowerbound
-             bndstkupperbound t3 t4
+	     eax ebx ecx edx esi edi r8 r9 r10 r11 r12 r13 r14 r15
+             nil heaplast heaptrapbound
+	     bndstkptr bndstklowerbound
+	     bndstkupperbound t3 t4
 	     al  cl ax cx es cs ss ds fs gs))))
  
 (DefList '((RAX   1) (RBX   2) (RCX   3) (RDX   4) (RBP   5) )
