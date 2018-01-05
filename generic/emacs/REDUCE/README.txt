@@ -52,9 +52,9 @@ definition is void: !\", at least during the boot process. Consider
 fixing this later if tabs are not handled correctly by rlisp.red.
 
 4. slfns -- error max-lisp-eval-depth exceeded processing the list of
-SL functions!  Default is 800. Try increasing to 2000. This may lead
-to Emacs crashing! Not large enough. Just comment out this module for
-now; I don't think it is necessary.
+SL functions!  Default is 800. Increasing max-lisp-eval-depth to 2000
+and max-specpdl-size to 2000 seems to allow this module to be
+read. Now OK
 
 5. superv -- OK
 
@@ -112,8 +112,9 @@ defined in Emacs Lisp, so rename them to repeat!* and while!*. Now OK.
 17. infix -- OK
 18. where -- OK
 
-19. list -- problem in definition of rappend and rcons, which causes
-problems reading following module. Skip this module for now.
+19. list -- obscure problem caused because I used `type' as a property
+name to record function types (expr or macro), but this clashes with
+the use of `type' as a flag in REDUCE. Now OK.
 
 20. array -- renamed listp to listp!*. Now OK
 21. switch -- OK
