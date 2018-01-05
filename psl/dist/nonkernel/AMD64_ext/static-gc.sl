@@ -391,7 +391,6 @@ loop
 			  (markfromonesymbol  id)
 	    ))))))
 
-(compiletime (on pcmac))
 (de markfromonesymbol (x)
   % SymNam has to be marked from before marking ID, since the mark uses its tag
 	 (setq gcfunction* 1)
