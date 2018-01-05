@@ -97,15 +97,15 @@
         (setq gcknt* 0 gctime* 0)
         (setq unexecresult (binaryopenwrite (bldmsg "%w.img" filename)))
 	(binarywriteblock unexecresult bpscontrol 2)
-        (binarywrite unexecresult 2600000)
+        (binarywrite unexecresult (times 8 5 maxsymbols))
         (binarywrite unexecresult 
 		(Wplus2 (wdifference heaplast heaplowerbound) 24))
-        (binarywrite unexecresult 144000)
+        (binarywrite unexecresult (times (quotient (plus2 3 hash-table-size) 4) 16))
         (binarywrite unexecresult bpssize)
-        (binarywriteblock unexecresult SYMVAL 325000)
+        (binarywriteblock unexecresult SYMVAL (times 5 maxsymbols))
         (binarywriteblock unexecresult heaplowerbound 
 		(wshift (wplus2 (wdifference heaplast heaplowerbound) 24) -3))
-        (binarywriteblock unexecresult hashtable 18000)
+        (binarywriteblock unexecresult hashtable (times 2 (quotient (plus2 3 hash-table-size) 4)))
         (binarywriteblock unexecresult bpslowerbound 
                 (wshift bpssize -3)) 
         (binaryclose unexecresult)

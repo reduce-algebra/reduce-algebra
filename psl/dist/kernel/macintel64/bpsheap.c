@@ -261,7 +261,7 @@ printf("total %llX %llX %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
 		  exit (-19); }
        fread (headerword,8,4,imago);
        hugo = fread (&symval,1,headerword[0],imago);
-       if (hugo != headerword[0]) read_error();
+       if (hugo != headerword[0]) read_error("symbol table",hugo,headerword[0]);
 
        sizeofsymvectors = headerword[0]/8;
 
@@ -279,11 +279,11 @@ printf("total %llX %llX %llx\n",heapsize_in_bytes , current_size_in_bytes,total)
 	 creloc((long long)hlb,headerword[1]/8,diff, heaplowerbound -1);
        heaplast += diff;
 
-       if (hugo != headerword[1]) read_error();
+       if (hugo != headerword[1]) read_error("heap",hugo,headerword[1]);
        hugo = fread (&hashtable,1,headerword[2],imago);
-       if (hugo != headerword[2]) read_error();
+       if (hugo != headerword[2]) read_error("hash table",hugo,headerword[2]);
        hugo = fread ((char*)bpslowerbound,1,headerword[3],imago);
-       if (hugo != headerword[3]) read_error();
+       if (hugo != headerword[3]) read_error("BPS",hugo,headerword[3]);
        fclose (imago);
        if (memset) {
         oldheaplowerbound = ohl; oldheapupperbound = ohub;
@@ -298,9 +298,10 @@ return (0);
 }
 
 void
-read_error()
+read_error(char * what,long long bytesread,long long byteswanted)
   {
-    printf("file too short\n");
+    printf("File too short while reading %s: bytes read = %lld (%llx), bytes expected = %lld (%llx)\n",
+	   what,bytesread,bytesread,byteswanted,byteswanted);
     exit(-1);
   }
 
