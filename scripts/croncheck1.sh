@@ -148,7 +148,7 @@ then
 # such as 10m and 8h here, but my experience seems to be that I need to quote
 # a time period in seconds.
   TIMEOUT="timeout 600"
-  LONGTIMEOUT="timeout 28800"
+  LONGTIMEOUT="timeout 36000"
 else
   TIMEOUT=""
   LONGTIMEOUT=""
