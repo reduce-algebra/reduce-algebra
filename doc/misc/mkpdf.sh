@@ -2,7 +2,7 @@
 
 JOBNAME=$1
 
-MAXRUNS=10
+MAXRUNS=6
 SUCCESS=0
 RUNS=0
 
@@ -11,7 +11,14 @@ rm -f ${JOBNAME}.ind
 
 # Run latex until it no longer complains about cross references
 until [ ${SUCCESS} = 1 ] ; do
+   rm -f ${JOBNAME}.log
    pdflatex ${JOBNAME}
+   grep -q "^No file ${JOBNAME}\.bbl" ${JOBNAME}.log && NEED_BIBTEX=1
+   if [ ${NEED_BIBTEX} = 1 ] ; then
+      bibtex ${JOBNAME}
+      rm -f ${JOBNAME}.log
+      pdflatex ${JOBNAME}
+   fi
    fgrep -q "Rerun to get cross-references right." ${JOBNAME}.log || SUCCESS=1
    RUNS=`expr ${RUNS} + 1`
    if [ ${RUNS} -gt ${MAXRUNS} ] ; then
