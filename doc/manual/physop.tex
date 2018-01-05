@@ -584,33 +584,6 @@ due to the internal ordering of atoms in the underlying LISP system
 (see last example in the test file). This cannot be entirely avoided
 by the package but does not affect the correctness  of the results.
 
-\subsection{Compilation of the packages}
-To build a fast loading module of the NONCOM2 package, enter the
-following commands after starting the \REDUCE\ system:
-
-\begin{verbatim}
-  faslout "noncom2";
-   in "noncom2.red";
-  faslend;
-\end{verbatim}
-To build a fast loading module of the PHYSOP package, enter the
-following commands after starting the \REDUCE\ system:
-
-\begin{verbatim}
-  faslout "physop";
-   in "noncom2.red";
-   in "physop.red";
-  faslend;
-\end{verbatim}
-Input and output file specifications may change according to the
-underlying operating system. \\
-On PSL--based systems, a spurious message:
-
-\begin{verbatim}
-*** unknown function PHYSOP!*SQ called from compiled code
-\end{verbatim}
-may appear during the compilation of the PHYSOP package. This warning
-has no effect on the functionality of the package.
 
 \subsection{Final remarks}
 The package PHYSOP has been presented by
