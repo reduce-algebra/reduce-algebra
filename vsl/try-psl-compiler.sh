@@ -17,44 +17,23 @@ make psl
 # Load in (interpreted forms of) the PSL compiler and some associated
 # utilities, and checkpoint the result.
 
-script -c "./vsl psl-compiler.lsp" psl-compiler.log
+script -c "./vsl psl-compiler.lsp -opslcomp.img" psl-compiler.log
 
 # Test it
 
-./vsl <<EOF |& tee test-compiler.log 
+./vsl -ipslcomp.img <<EOF |& tee test-compiler.log 
+
+(trace '(dfprintfasl))
 
 (setq !*echo t) (setq !*plap t) (setq !*pgwd t)
 
-(de foo (n)
-  (if (zerop n)
-      1
-      (times n (foo (sub1 n)))))
-
-(trace '(lap))
-(setq *test-lap t)
-(setq *lapopt t)
-(setq *trlapopt t)
-
-(compile '(foo))
-
-(dm codeprintf (x) (list 'fprintf 'codeout* (cadr x) (cons 'list (cddr x))))
-(dm dataprintf (x) (list 'fprintf 'dataout* (cadr x) (cons 'list (cddr x))))
-
-% This is needed for ASM generation, see $pxk/main-start.sl
-(put 'symnam 'symbol 'symnam)
-(put 'symfnc 'symbol 'symfnc)
-(put 'symget 'symbol 'symget)
-(put 'symval 'symbol 'symval)
-(put 'symprp 'symbol 'symprp)
-
 (setq !*writingasmfile t) (setq !*plap t) (setq !*pgwd t)
 
-(asmout "foo")
+(flag '(dskin) 'eval)
 
-(de foo (n)
-  (if (zerop n)
-      1
-      (times n (foo (sub1 n)))))
+(asmout "factorial")
+
+(dskin "factorial.sl")
 
 (asmend)
 

@@ -394,6 +394,17 @@
 	(plus c 32)
       x)))
 
+(dm codeprintf (x) (list 'fprintf 'codeout* (cadr x) (cons 'list (cddr x))))
+(dm dataprintf (x) (list 'fprintf 'dataout* (cadr x) (cons 'list (cddr x))))
+
+% This is needed for ASM generation, see $pxk/main-start.sl
+(put 'symnam 'symbol 'symnam)
+(put 'symfnc 'symbol 'symfnc)
+(put 'symget 'symbol 'symget)
+(put 'symval 'symbol 'symval)
+(put 'symprp 'symbol 'symprp)
+
+
     
 % For utterly cross building I may fudge some things...
 (de mkitem (tag data) (list 'list ''tagged tag data))

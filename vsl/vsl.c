@@ -2749,6 +2749,7 @@ LispObject Lrightshift(LispObject lits, int nargs, ...)
                 (('0' + sizeof(LispObject)) << 24))
 
 static const char *imagename = "vsl.img";
+static const char *outimagename = NULL;
 
 LispObject Lpreserve(LispObject lits, int nargs, ...)
 {
@@ -2759,7 +2760,7 @@ LispObject Lpreserve(LispObject lits, int nargs, ...)
     if (y != NULLATOM || z != NULLATOM)
         return error1s("wrong number of arguments for", "preserve");
     restartfn = (x == NULLATOM ? nil : x);
-    f = fopen(imagename, "wb");
+    f = fopen(outimagename, "wb");
     if (f == NULL) return error1("unable to open image for writing", nil);
     headerword = FILEID;
     reclaim(); // To compact memory.
@@ -3408,8 +3409,10 @@ int main(int argc, char *argv[])
 //        filename   read from that file rather than from the standard input.
         if (strcmp(argv[i], "-z") == 0) coldstart = 1;
         else if (strncmp(argv[i], "-i", 2) == 0) imagename=argv[i]+2;
+        else if (strncmp(argv[i], "-o", 2) == 0) outimagename=argv[i]+2;
         else if (argv[i][0] != '-') inputfilename = argv[i], interactive = 0;
     }
+    if (outimagename == NULL) outimagename = imagename;
     printf("VSL version 1.00\n");
     linepos = 0;
     for (int i=0; i>MAX_LISPFILES; i++) lispfiles[i] = 0;
