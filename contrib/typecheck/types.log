@@ -1,5 +1,5 @@
-+++ Transcript to types.log started at Sun Nov 12 19:53:06 2017 +++
-Reduce (Free CSL version, revision 4262), 12-Nov-17 ...
++++ Transcript to types.log started at Sat Jan  6 15:48:48 2018 +++
+Reduce (Free CSL version, revision 4330), 06-Jan-18 ...
 
 
 nil
@@ -3423,6 +3423,74 @@ defined-on-line : 118
 defined-in-file : poly!/polrep!.red
 procedure_type : (arrow (times general general) general)
 
+
+nil
+
+
+find_calls
+
+
+find_calls_lambda
+
+
+find_calls_cond
+
+
+*** local variable bvl in procedure find_calls_prog not used 
+
+find_calls_prog
+
+
+find_calls_let
+
+
+find_calls_setq
+
+
+reporter
+
+null                (u)
+progn               ((setq w v) (go exit))
+null                (v)
+progn               ((setq w u) (go exit))
+domainp             (u)
+addd                (u v)
+progn               ((setq w (addd u v)) (go exit))
+domainp             (v)
+addd                (v u)
+progn               ((setq w (addd v u)) (go exit))
+lpow                (u)
+lpow                (v)
+peq                 ((lpow u) (lpow v))
+lc                  (u)
+lc                  (v)
+addf                ((lc u) (lc v))
+null                (w)
+not                 ((null w))
+lpow                (u)
+mult                ((lpow u) w)
+add                 ((mult (lpow u) w) r)
+red                 (u)
+red                 (v)
+progn               ((setq w (addf (lc u) (lc v))) (cond ((not (null w)) (setq r
+(add (mult (lpow u) w) r)))) (setq u (red u)) (setq v (red v)))
+lpow                (u)
+lpow                (v)
+ordpp               ((lpow u) (lpow v))
+lt                  (u)
+add                 ((lt u) r)
+cdr                 (u)
+progn               ((setq r (add (lt u) r)) (setq u (cdr u)))
+lt                  (v)
+add                 ((lt v) r)
+red                 (v)
+progn               ((setq r (add (lt v) r)) (setq v (red v)))
+not                 (r)
+return              (nil)
+cdr                 (r)
+rplacd              (r w)
+progn               ((setq u (cdr r)) (rplacd r w) (setq w r) (setq r u))
+return              (w)
 
 nil
 
