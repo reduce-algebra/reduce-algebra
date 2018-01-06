@@ -239,6 +239,8 @@
 
 (de dskin (u) (rdf u))
 
+(flag '(dskin) 'ignore)
+
 (de pp (x) (prettyprint x))
 
 (de string-concat (a b)
@@ -404,7 +406,7 @@
 (put 'symval 'symbol 'symval)
 (put 'symprp 'symbol 'symprp)
 
-
+(setq toploopeval* 'eval)
     
 % For utterly cross building I may fudge some things...
 (de mkitem (tag data) (list 'list ''tagged tag data))

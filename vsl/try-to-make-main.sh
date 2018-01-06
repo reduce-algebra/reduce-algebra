@@ -50,7 +50,7 @@ printf "(dskin \"$PK/firstkernel.sl\")\n" >> tmp.sl
 printf "(dskin \"%s\")\n" $SLFILES >> tmp.sl
 
 printf "(dskin \"$PK/lastkernel.sl\")\n" >> tmp.sl
-printf "(endasm)\n" >> tmp.sl
+printf "(asmend)\n" >> tmp.sl
 printf "(exitlisp)\n" >> tmp.sl
 
 
