@@ -33,7 +33,11 @@ script -c "./vsl psl-compiler.lsp -opslcomp.img" psl-compiler.log
 
 (asmout "factorial")
 
+(de mycar (a) (car a))
+
 (dskin "factorial.sl")
+
+(de mycdr (a) (cdr a))
 
 (asmend)
 

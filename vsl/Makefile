@@ -1,6 +1,7 @@
 # Makefile for vsl
 
 CC = gcc
+OPT = -O3
 
 all:	vsl vsl.img vslmanual.pdf
 
@@ -16,10 +17,10 @@ psl:	vslpsl vsl.img
 .PHONY:	vslpsl
 
 vsl:	vsl.c
-	$(CC) -O3 -Wall vsl.c -lm -ledit -o vsl
+	$(CC) $(OPT) -Wall vsl.c -lm -ledit -o vsl
 
 vslpsl:	vsl.c
-	$(CC) -DPSL=1 -O3 -Wall vsl.c -lm -ledit -o vsl
+	$(CC) -DPSL=1 $(OPT) -Wall vsl.c -lm -ledit -o vsl
 
 vsl.img:	vsl library.lsp vsl.lsp extras.lsp
 	./vsl -z library.lsp

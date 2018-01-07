@@ -3,7 +3,7 @@
 # First I will build the PSL cross compiler...
 
 make clean
-make psl
+make psl OPT="-O0 -g"
 script -c "./vsl psl-compiler.lsp -opslcomp.img" psl-compiler.log
 
 export PXX=../psl/dist/kernel/AMD64_ext
@@ -34,36 +34,12 @@ export PC=../psl/dist/comp
 
 cp $PC/bare-psl.sym $MACHINE.sym
 
-### echo $SLFILES | awk -f $PXK/main.awk > tmp.sl
-
-# ACN would be happy to avoid use of awk given that in this case
-# simple shell scripting can do the job!
-
-printf "(setf *writingasmfile t)\n" > tmp.sl
-printf "%% (reload sys-consts)\n" >> tmp.sl
-printf "(off pcmac)\n" >> tmp.sl
-printf "(off usermode)\n" >> tmp.sl
-printf "(on verboseload)\n" >> tmp.sl
-printf "(asmout \"main\")\n" >> tmp.sl
-printf "(dskin \"$PK/firstkernel.sl\")\n" >> tmp.sl
-
-printf "(dskin \"%s\")\n" $SLFILES >> tmp.sl
-
-printf "(dskin \"$PK/lastkernel.sl\")\n" >> tmp.sl
-printf "(asmend)\n" >> tmp.sl
-printf "(exitlisp)\n" >> tmp.sl
-
-
-./vsl -ipslcomp.img <<EOF
+cat >tmp.sl <<EOF
 (setq *echo t)
 (off usermode)
-%(reload "AMD64-cmac")
-%(reload tags)
-%(load if-system)
-%(load lap-to-asm)
 (off immediatequote)
-%(load "unixAMD64-asm")
-%(dskin "unix-patch.sl")
+
+(put 'intern 'lose t)
 
 % I THINK that this is only called for on 32-bit targets? And anyway this
 % looks like a hacked up patch.
@@ -73,10 +49,28 @@ printf "(exitlisp)\n" >> tmp.sl
                           ((and (eq x 2) (eq y 14))  16#3fff0000)
                           (t (bitma x y)))))
 
-(dskin "tmp.sl")
+(setf *writingasmfile t)
+
+(off pcmac)
+(off usermode)
+(on verboseload)
+(asmout \"main\")
+(dskin \"$PK/firstkernel.sl\")
 
 EOF
 
+printf "(dskin \"%s\")\n" $SLFILES >> tmp.sl
+
+cat >>tmp.sl <<EOF
+
+(dskin \"$PK/lastkernel.sl\")
+(asmend)
+(exitlisp)
+EOF
+
+# The idea of the \$DEBUG here is that one can set the shell variable
+# to "cgdb --args" so as to run vsl under a debugger.
+script -c "$DEBUG ./vsl -ipslcomp.img tmp.sl" makemain.log
 
 exit 1
 
@@ -86,13 +80,13 @@ exit 1
 mv main.s main.temp
 sed -f $PXK)/main.linux.sed main.temp > main.s
 rm -f main.temp
-gcc -m64 -c $ASARGS) -o main.o main.s
+gcc -m64 -c $ASARGS -o main.o main.s
 
 # compile it again to make dmain.o
 
 dmain.o: dmain.s
  mv dmain.s dmain.temp
- sed -f $PXK)/dmain.linux.sed dmain.temp > dmain.s
+ sed -f $PXK/dmain.linux.sed dmain.temp > dmain.s
  rm -f dmain.temp
 gcc -m64 -c $ASARGS) -o dmain.o dmain.s
 

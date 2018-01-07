@@ -224,7 +224,9 @@ LispObject stackbase, *sp, stacktop;
 #define dfprint    bases[27]
 #define bignum     bases[28]
 #define charvalue  bases[29]
-#define BASES_SIZE       30
+#define toploopeval bases[30]
+#define loseflag   bases[31]
+#define BASES_SIZE       32
 
 LispObject bases[BASES_SIZE];
 LispObject obhash[OBHASH_SIZE];
@@ -1790,7 +1792,7 @@ LispObject definer(LispObject x, int flags, void *fn)
 // x should be of the form
 //     (name (arg list ...) body)
 //
-// I might plausibly check for a LOSE flag to give me that as a way of
+// I check for a LOSE flag to give me a way of
 // ignoring definitions that I do not like.
     LispObject name, def;
     if (!isCONS(x) ||
@@ -1800,6 +1802,11 @@ LispObject definer(LispObject x, int flags, void *fn)
 // For the moment I prohibit redefinition of special forms...
     if ((qflags(name) & flagSPECFORM) != 0)
         return error1("attempt to redefine special form", name);
+    if (Lget(nil, 2, name, loseflag) != nil)
+    {   printf("\n+++ LOSE flag on function, so definition ignored: ");
+        errprint(name);
+        return name;
+    }
 // Now I will try to call macroexpand_list to expand all macros.
     x = lookup("macroexpand_list", 16, 0);
     if (x != undefined && qdefn(x) != NULL)
@@ -3018,7 +3025,11 @@ void readevalprint(int loadp)
         if (loadp || qvalue(dfprint) == nil ||
             (isCONS(r) && (qcar(r) == lookup("rdf", 3, 0) ||
                            qcar(r) == lookup("faslend", 7, 0))))
-        {   r = eval(r);
+        {   if (qvalue(toploopeval) == nil) r = eval(r);
+            else
+            {   push2(qvalue(toploopeval), r);
+                r = applytostack(1);
+            }
             if (unwindflag == unwindNONE && !loadp)
             {   linepos += printf("Value: ");
                 print(r);
@@ -3251,6 +3262,8 @@ void setup()
     qvalue(raise = lookup("*raise", 6, 1)) = nil;
     qvalue(lower = lookup("*lower", 6, 1)) = lisptrue;
     qvalue(dfprint = lookup("dfprint*", 8, 1)) = nil;
+    qvalue(toploopeval = lookup("toploopeval*", 12, 1)) = nil;
+    loseflag = lookup("lose", 4, 1);
     bignum = lookup("~bignum", 7, 1);
     qlits(lookup("load-module", 11, 1)) = lisptrue;
     cursym = nil;
