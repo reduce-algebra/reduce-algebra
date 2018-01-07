@@ -423,7 +423,7 @@
     (return (mkstr j))
  ))
 
-(de initializesymnam (maxsymbol)
+(de initializesymnam ()
   (dataprintgloballabel (findgloballabel 'symnam))
   (for (from i 0 128 1) 
        (do (dataprintfullword (compileconstant (id2string (int2id i))))))
