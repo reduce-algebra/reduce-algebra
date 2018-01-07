@@ -26,16 +26,19 @@
 (setq @pxdist  "../psl/dist/distrib/AMD64_ext")
 
 
+(de stderror (msg)
+  (error 99 msg))
+
+(de exitlisp () (stop 0))
+
 % copyd is invoked (botimes ..) within the for-macro.sl source file,
 % but easy-non-sl.sl uses some macros defined in for-macro. To break the
 % circularity I define copyd here.
 
-(de stderror (msg)
-  (error 99 msg))
-
 (de copyd (new old)
   (prog (olddef)
         (setq olddef (getd old))
+	(print olddef)
         (if (pairp olddef)
           (putd new (car olddef) (cdr olddef))
           (stderror (bldmsg "%r has no definition in CopyD" old)))
@@ -55,9 +58,7 @@
 (de errorprintf1 (fmt args)
   (terpri)
   (princ "+++ errorprintf ")
-  (princ fmt)
-  (princ " ")
-  (print args)
+  (printf_internal fmt args)
   nil) 
 
 (de remob (u)
@@ -116,6 +117,20 @@
         (return (list fn lst
                       (list 'function
                        (cons 'lambda (cons (list var) body)))))))
+
+
+(dm repeat (u)
+  %
+  % From RLISP
+  % Form is (repeat exp1 ... expN bool)
+  % Repeat until bool is true, similar to Pascal, etc.
+  %
+  (cons 'prog
+        (cons 'nil
+              (cons '$loop$
+                    (foreach x on (cdr u) collect (if (null (cdr x))
+                       (list 'cond (list (list 'not (car x)) '(go $loop$)))
+                       (car x)))))))
 
 
 % I will also want IFOR, but the other things defined in util/inum.sl would
@@ -181,19 +196,23 @@
        )))
 
 
- 
+(de onoff* (u val)
+  (foreach x in u do 
+    (cond ((idp x) (set (intern (list2string (cons '!* (explode2 x)))) val)))))
 
 (dm on (u)
    (terpri)
    (princ "+++ ON ")
    (print (cdr u))
-   nil)
+   (list 'onoff* (mkquote (cdr u)) t))
 
 (dm off (u)
    (terpri)
    (princ "+++ OFF ")
    (print (cdr u))
-   nil)
+   (list 'onoff* (mkquote (cdr u)) nil))
+
+(flag '(on off) 'ignore)
 
 (de lap (u)
    (terpri)
@@ -205,7 +224,7 @@
    (terpri)
    (princ "+++ IMPORTS ")
    (print (cdr u))
-   nil)
+   (evload u))
 
 (dm putmem (u)
    (terpri)
@@ -230,6 +249,37 @@
    (princ "+++ DEPOSITFUNCTIONCELLLOCATION")
    (print (cdr u))
    nil)
+
+(dm int2id (u)
+   (terpri)
+   (princ "+++ INT2ID")
+   (print (cdr u))
+   (list 'int2id-internal (cadr u)))
+
+(de int2id-internal (u)
+  (cond ((equal u **nil-id-value**) nil)
+        ((and (greaterp u -1) (lessp u 256)) (code-char u))
+        (t 'unknown)))
+
+(dm load (x)
+  (terpri)
+  (prin2 "++++ LOAD ")
+  (prin (cdr x))
+  (printc " called")
+  (list 'evload (mkquote (cdr x))))
+
+(de evload (x)
+  (foreach u in x do (load1 u)))
+
+(setq modules-loaded* nil)
+
+(de load1 (u)
+  (print u)
+  (cond ((memq u modules-loaded*) nil)
+        ((memq u '(fasl-decls hash-decls)) (dskin (string-concat "$pxk/" (string-concat (id2string u) ".sl"))))
+%        ((memq u '(fast-vector)) (dskin (string-concat "$pu/" (string-concat (id2string u) ".sl"))))
+  )
+  (setq modules-loaded* (cons u modules-loaded*)))
 
 (de unboundp (u) (not (boundp u)))
 
@@ -268,7 +318,12 @@
          (terpri)
          (wrs s))))
 
-(de stringgensym () (id2string (gensym)))
+(setq stringgensymcounter* 0)
+(de stringgensym ()
+  (let ((x (explode2 (setq stringgensymcounter* (plus2 stringgensymcounter* 1)))))
+    (while (lessp (length x) 4)
+      (setq x (cons '!0 x)))
+    (compress (cons 'L x))))
 
 (dm errset (u)
     (list 'errorset (list 'quote (cadr u))
@@ -276,15 +331,26 @@
 	  nil))
 
 (de id2int (x) (print (list "ID2INT called on" x)) 4711)
-(de id2int (x) 4711)
+(de id2int (x)
+  (cond ((null x) **nil-id-value**)
+        ((equal (length (explode2 x)) 1) (char-code (car (explode2 x))))
+        (t 4711)))
+
+(dm idloc (x)
+  (cond ((null (cadr x)) **nil-id-value**)
+        (t (findidnumber (cadr x))))) 
 
 % converts a binary integer in a machine word into a lisp integer
 (de int2sys (x) x)
+
+(de sys2fixn (x) x)
 
 % Functions that operate on machine words
 % use integer functions for now
 (de wshift (x y) (lshift x y))
 (de wplus2 (x y) (plus2 x y))
+(de wtimes2 (x y) (times2 x y))
+(de wdifference (x y) (difference x y))
 (de wgreaterp (x y) (greaterp x y))
 (de wand (x y) (logand x y))
 (de wor (x y) (logor x y))
@@ -296,16 +362,27 @@
 
 (dm putword (u)
     (cons 'wputv (cdr u)))
-   
+
+(de evectorp (x) nil)
+
+(de bigp (u) (bignump u))
+ 
+(de isizev (u) (size u))
+(de igetv (a b) (indx a b))
+
+(rdf "$pnk/lisp-macros.sl")
+
 (rdf "$pu/defmacro1.sl")
 (rdf "$pu/defmacro2.sl")
 (rdf "$pu/set1-macros.sl")
 (rdf "$pu/set2-macros.sl")
 (rdf "$pu/iter-macros.sl")
 (rdf "$pu/for-macro.sl")
+(rdf "$pu/cond-macros.sl")
 
 (rdf "$pnk/easy-non-sl.sl")
 (rdf "$pnk/sets.sl")
+%(rdf "$pnk/type-error.sl")
 
 % $pu/if.sl defines an IF macro that uses symbols as keywords THEN, ELIF
 % and ELSE. It is coded using the NEXT macro from $pnk/loop-macros.sl, but
@@ -329,6 +406,20 @@
 (de intp (x) (and (fixp x) (not (bignump x))))
 (flag '(intp) 'lose)
 
+(de flag1 (x y) (flag (list x) y))
+
+(de remflag1 (x y) (remflag (list x) y))
+
+(dm control (x)
+  (list 'logand (list 'char-code (list 'quote (cadr x))) 31))
+(dm cntrl (x)
+  (list 'logand (list 'char-code (list 'quote (cadr x))) 31))
+
+(de continuableerror (errnum message errorform*)
+  (progn (errorprintf "***** %l" message)))
+
+(de main ())
+
 % The paths used here suppose that the current directory is the VSL
 % one. This is a bit unsatisfactory at present.
 
@@ -337,6 +428,11 @@
 (rdf "$pnk/defconst.sl")
 (rdf "$pnk/constants.sl")
 
+(rdf "$pnk/eval-when.sl")
+
+(dm bothtimes (x) (cons 'progn (cdr x)))
+(dm compiletime (x) (cons 'progn (cdr x)))
+(dm loadtime (x) (cons 'progn (cdr x)))
 
 (rdf "$pc/datamachine.sl")
 (rdf "$pc/pass-1.sl")
@@ -370,15 +466,64 @@
 (rdf "$pxc/compiler.sl")
 (rdf "$pxc/nbittab.sl")
 (rdf "$pxc/neweq.sl")
-(rdf "$pxc/unixAMD64-asm.sl")
 
 % redefine as macros since VSL doesn't support functiosn with a variable number of arguments
-(dm codeprintf (x) (list 'fprintf 'codeout* (cadr x) (cons 'list (cddr x))))
-(dm dataprintf (x) (list 'fprintf 'dataout* (cadr x) (cons 'list (cddr x))))
+(dm codeprintf (x) (cons 'fprintf (cons 'codeout* (cdr x))))
+(dm dataprintf (x) (cons 'fprintf (cons 'dataout* (cdr x))))
+
 
 (rdf "$pxc/unixAMD64-lap-to-asm.sl")
+(rdf "$pxc/unixAMD64-asm.sl")
 
 % Redefine a couple of functions that do not work out of the box
+
+(de printexpression (x)
+  ((lambda (expressioncount*)
+     (prog (hd tl fn)
+	   (setq x (resolvewconstexpression x))
+ 	   (cond ((or (numberp x) (stringp x)) (prin2 x))
+		 ((idp x) (prin2 (findlabel x)))
+		 ((atom x) 
+		  (errorprintf "***** Oddity in expression %r" x) 
+		  (prin2 x))
+		 (t
+		  (setq hd (car x)) (setq tl (cdr x)) 
+		  (cond
+		   ((setq fn (get hd 'binaryasmop))
+		    (when (greaterp expressioncount* 0)
+			  (prin2 asmopenparen*))
+		    (printexpression (car tl)) (prin2 fn) 
+		    (printexpression (cadr tl))
+		    (when (greaterp expressioncount* 0)
+			  (prin2 asmcloseparen*)))
+		   ((setq fn (get hd 'unaryasmop)) (prin2 fn) 
+		    (printexpression (car tl)))
+		   ((setq fn (get hd 'asmexpressionformat)) 
+		    (apply 'printf_internal
+			   (list fn 
+				 (foreach y in tl collect 
+					  (list 'printexpression
+						(mkquote y))))))
+		   ((and (setq fn (getd hd)) 
+			 (equal (car fn) 'macro))
+		    (printexpression (apply (cdr fn) (list x))))
+		   ((setq fn (get hd 'asmexpressionfunction)) 
+		    (apply fn (list x)))
+		   (t 
+		    (errorprintf "***** Unknown expression %r" 
+				 x)
+		    (printf "*** Expression error %r ***" x)))))))
+   (plus expressioncount* 1)))
+
+(de size (x) 
+  (cond ((stringp x) (difference (length (explodec x)) 1))
+        ((vectorp x) (upbv x))
+        ((bignump x) (difference (length (cdr x)) 1))
+        (t nil)))
+
+(de indx (s n)
+  (cond ((stringp s) (nth (explodec s) (plus2 n 1)))
+        (t nil)))
 
 (de intp (x) (and (fixp x) (not (bignump x))))
 
@@ -396,8 +541,11 @@
 	(plus c 32)
       x)))
 
-(dm codeprintf (x) (list 'fprintf 'codeout* (cadr x) (cons 'list (cddr x))))
-(dm dataprintf (x) (list 'fprintf 'dataout* (cadr x) (cons 'list (cddr x))))
+(de auxaux (i)
+  (list2string (list (code-char i))))
+
+(dm codeprintf (x) (cons 'fprintf (cons 'codeout* (cdr x))))
+(dm dataprintf (x) (cons 'fprintf (cons 'dataout* (cdr x))))
 
 % This is needed for ASM generation, see $pxk/main-start.sl
 (put 'symnam 'symbol 'symnam)
@@ -407,9 +555,19 @@
 (put 'symprp 'symbol 'symprp)
 
 (setq toploopeval* 'eval)
-    
+ 
+(setq **nil-id-value** 128)
+
+(dm idloc (x)
+  (cond ((null (cadr x)) **nil-id-value**)
+        (t (findidnumber (cadr x)))))
+
+%(de idloc (x)
+%  (if (null x) **nil-id-value**
+%    (errorprintf "idloc called with %w%n" x)))
+
 % For utterly cross building I may fudge some things...
-(de mkitem (tag data) (list 'list ''tagged tag data))
+%(de mkitem (tag data) (list 'list ''tagged tag data))
 
 (preserve)
 

@@ -40,7 +40,7 @@ cp $PC/bare-psl.sym $MACHINE.sym
 # simple shell scripting can do the job!
 
 printf "(setf *writingasmfile t)\n" > tmp.sl
-printf "% (reload sys-consts)\n" >> tmp.sl
+printf "%% (reload sys-consts)\n" >> tmp.sl
 printf "(off pcmac)\n" >> tmp.sl
 printf "(off usermode)\n" >> tmp.sl
 printf "(on verboseload)\n" >> tmp.sl
