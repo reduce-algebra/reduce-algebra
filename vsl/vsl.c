@@ -1251,8 +1251,7 @@ LispObject read_hash_macro()
         case '.':
             cursym = token();
             w = readS();
-            eval(w);
-            return readS();
+            return eval(w);
         case '+':
             cursym = token();
             w = readS();
