@@ -135,19 +135,19 @@ mkdir snapshots/linux-tar
 export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 
 # If the command "timeout" has been installed (and i hope it has!) then
-# I will limit the time spent in any use of ssh or scp to 10 minutes. That
+# I will limit the time spent in any use of ssh or scp to 20 minutes. That
 # time limit should be hugely longer than can be really needed, but is there
 # because otherwise there are circumstances when the script can get stalled
 # on an indefinite basis. Indeed just to be cautios I will apply timeouts to
 # a range of other command used here... for instance for the remote builds
-# on virtual machines I will allow 8 hours!
+# on virtual machines I will allow 10 hours!
 
 if which timeout > /dev/null 2>/dev/null
 then
 # Some documentation for "Timeout" suggests can use time specifications
 # such as 10m and 8h here, but my experience seems to be that I need to quote
 # a time period in seconds.
-  TIMEOUT="timeout 600"
+  TIMEOUT="timeout 1200"
   LONGTIMEOUT="timeout 36000"
 else
   TIMEOUT=""
