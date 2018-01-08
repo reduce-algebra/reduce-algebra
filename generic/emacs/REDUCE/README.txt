@@ -121,3 +121,12 @@ the use of `type' as a flag in REDUCE. Now OK.
 22. io -- OK
 23. inter -- OK
 [end of file rlisp.red]
+
+
+Added support for file input. The following input appears to work correctly:
+
+(sl-load-file "boot.sl")
+(begin2)
+rds open("rlisp.red",'input);
+
+But whether RLISP works correctly remains to be seen!
