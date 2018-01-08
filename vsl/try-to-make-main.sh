@@ -54,8 +54,8 @@ cat >tmp.sl <<EOF
 (off pcmac)
 (off usermode)
 (on verboseload)
-(asmout \"main\")
-(dskin \"$PK/firstkernel.sl\")
+(asmout "main")
+(dskin "$PK/firstkernel.sl")
 
 EOF
 
@@ -63,7 +63,7 @@ printf "(dskin \"%s\")\n" $SLFILES >> tmp.sl
 
 cat >>tmp.sl <<EOF
 
-(dskin \"$PK/lastkernel.sl\")
+(dskin "$PK/lastkernel.sl")
 (asmend)
 (exitlisp)
 EOF
