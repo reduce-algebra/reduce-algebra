@@ -2335,7 +2335,9 @@ LispObject Lapply(LispObject lits, int nargs, ...)
         qlits(g) = qcdr(x);
         x = g;
     }
-    else if (!isSYMBOL(x)) return error1("bad arg to apply", x);
+    else if (!isSYMBOL(x) ||
+             x == undefined ||
+             qdefn(x) == NULL) return error1("bad arg to apply", x);
     push(x);
     while (isCONS(y))
     {   push(qcar(y));
@@ -3259,10 +3261,10 @@ void setup()
     output = lookup("output", 6, 1);
     pipe = lookup("pipe", 4, 1);
     charvalue = lookup("charvalue", 9, 1);
-    qvalue(raise = lookup("*raise", 6, 1)) = nil;
-    qvalue(lower = lookup("*lower", 6, 1)) = lisptrue;
-    qvalue(dfprint = lookup("dfprint*", 8, 1)) = nil;
-    qvalue(toploopeval = lookup("toploopeval*", 12, 1)) = nil;
+    raise = lookup("*raise", 6, 1);
+    lower = lookup("*lower", 6, 1);
+    dfprint = lookup("dfprint*", 8, 1);
+    toploopeval = lookup("toploopeval*", 12, 1);
     loseflag = lookup("lose", 4, 1);
     bignum = lookup("~bignum", 7, 1);
     qlits(lookup("load-module", 11, 1)) = lisptrue;
@@ -3291,6 +3293,12 @@ void cold_setup()
 // cold start case, so I repair them now.
     restartfn = qplist(undefined) = qlits(undefined) =
         qplist(nil) = qlits(nil) = nil;
+// I must only initialize these in the code start case. For hot starts the
+// values are saved in the image file.
+    qvalue(raise) = nil;
+    qvalue(lower) = lisptrue;
+    qvalue(dfprint) = nil;
+    qvalue(toploopeval) = nil;
 }
 
 LispObject relocate(LispObject a, LispObject change)
