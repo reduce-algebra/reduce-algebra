@@ -1,13 +1,13 @@
 ;;; reduce-mode.el --- Major mode to edit REDUCE computer-algebra code
 
-;; Copyright (C) 1998-2001, 2012, 2017 Francis J. Wright
+;; Copyright (C) 1998-2001, 2012, 2017, 2018 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: late 1992
 ;; Version: $Id$
 ;; Keywords: languages
 ;; Homepage: http://reduce-algebra.sourceforge.net/reduce-ide
-;; Package-Version: 1.5
+;; Package-Version: 1.52
 
 ;; This file is not part of GNU Emacs.
 
@@ -416,18 +416,23 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
   (setq major-mode 'reduce-mode)
   (setq mode-name "REDUCE")
   (reduce-mode-variables)
-  ;; Set up font-lock mode:
-  (set (make-local-variable 'font-lock-defaults)
+  ;; Set up font-lock mode - variables automatically buffer-local:
+  (setq font-lock-defaults
        ;; reduce-font-lock-keywords evaluates to a list of symbols!
        (list reduce-font-lock-keywords	; KEYWORDS
 	     nil   			; KEYWORDS-ONLY
 	     t				; CASE-FOLD
 	     nil			; SYNTAX-ALIST
-	     nil			; SYNTAX-BEGIN
 	     (cons			; (VARIABLE . VALUE) ...
-	      'font-lock-syntactic-keywords
+	      'font-lock-syntactic-keywords	; obsolete since 24.1! Use
+										; syntax-propertize-function
+										; instead!
 	      reduce-font-lock-syntactic-keywords)
 	     ))
+  (setq font-lock-multiline t)			; for comment statements
+  ;; Additional support for comment statements:
+  (add-to-list 'font-lock-extend-region-functions
+			   #'reduce-font-lock-extend-region-for-comment)
   ;; Make all parsing respect the syntax property set by the above
   ;; font-lock option (which is essential to parse "...!"):
   (set (make-local-variable 'parse-sexp-lookup-properties) t)
@@ -2231,8 +2236,41 @@ passing on any prefix argument (in raw form)."
 	  reduce-preprocessor-rules)
   "Default minimal REDUCE fontification rules.")
 
+(defun reduce-font-lock-extend-region-for-comment ()
+  "Extend font-lock region if necessary to include all of a
+comment statement that it intersects, and if so return non-nil."
+  ;; Check whether within a comment statement:
+  (let (new-beg new-end)
+	(goto-char font-lock-beg)
+	;; Is font-lock-beg within a comment?
+	(save-excursion
+	  (if (and (re-search-backward "\\(comment\\)\\|\\(;\\)" nil t)
+			   (match-beginning 1))
+		  (setq new-beg (point))))
+	(when (or new-beg
+			  ;; Or does a comment start in the font-lock region?
+			  (search-forward "comment" font-lock-end t))
+	  ;; If either of the above then...
+	  (search-forward ";")
+	  (if (> (point) font-lock-end)
+		  (setq new-end (point))))
+	;; *** TEMPORARY MESSAGE FOR TESTING: ***
+	(message "reduce-font-lock-extend-region-for-comment: %s --> %s, %s --> %s"
+			 font-lock-beg new-beg font-lock-end new-end)
+	;; Return non-nil if font-lock region adjusted:
+	(or (if new-beg (setq font-lock-beg new-beg))
+		(if new-end (setq font-lock-end new-end)))))
+
 (defconst reduce-font-lock-keywords-basic
   (list
+   
+   ;; Comment statements:
+   ;; Note that . does not match EOL, the repetition must be
+   ;; non-greedy -- *? -- and I use a shy group -- \(?: \) -- to avoid
+   ;; saving its contents. Also, this fontification must override any
+   ;; previous (syntactic) fontification.
+   '("comment\\(?:.\\|\n\\)*?;" . (0 font-lock-comment-face t))
+
    ;; Main keywords:
    (list (concat
 	  ;; Ignore quoted keywords and composite identifiers:
@@ -2387,28 +2425,24 @@ passing on any prefix argument (in raw form)."
 	 ;; and avoid mis-highlighting variables:
 	 '(1 font-lock-function-name-face keep))
    )
-  "Full maximal REDUCE fontification sub-rules."
-  )
+  "Full maximal REDUCE fontification sub-rules.")
 
 (defconst reduce-font-lock-keywords-1
   (append reduce-font-lock-keywords-basic
-	  reduce-font-lock-keywords-algebraic)
-  "Standard algebraic-mode REDUCE fontification rules."
-  )
+		  reduce-font-lock-keywords-algebraic)
+  "Standard algebraic-mode REDUCE fontification rules.")
 
 (defconst reduce-font-lock-keywords-2
   (append reduce-font-lock-keywords-basic
-	  reduce-font-lock-keywords-symbolic)
-  "Standard symbolic-mode REDUCE fontification rules."
-  )
+		  reduce-font-lock-keywords-symbolic)
+  "Standard symbolic-mode REDUCE fontification rules.")
 
 (defconst reduce-font-lock-keywords-3
   (append reduce-font-lock-keywords-basic
-	  reduce-font-lock-keywords-algebraic
-	  reduce-font-lock-keywords-symbolic
-	  reduce-font-lock-keywords-full)
-  "Full REDUCE fontification rules."
-  )
+		  reduce-font-lock-keywords-algebraic
+		  reduce-font-lock-keywords-symbolic
+		  reduce-font-lock-keywords-full)
+  "Full REDUCE fontification rules.")
 
 ;; Provide a REDUCE font-lock menu, based on font-lock-menu.el by
 ;; Simon Marshall <simon@gnu.ai.mit.edu>.
