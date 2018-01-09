@@ -522,7 +522,7 @@
         (t nil)))
 
 (de indx (s n)
-  (cond ((stringp s) (nth (explodec s) (plus2 n 1)))
+  (cond ((stringp s) (char-code (nth (explodec s) (plus2 n 1))))
         (t nil)))
 
 (de intp (x) (and (fixp x) (not (bignump x))))
