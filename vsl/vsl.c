@@ -714,10 +714,6 @@ void wrch(int c)
     }
 }
 
-LispObject Lposn(LispObject lits, int nargs, ...)
-{   return packfixnum(linepos);
-}
-
 const char *prompt(EditLine *e)
 {   return "> ";
 }
@@ -757,7 +753,8 @@ int rdch()
 int gensymcounter = 1;
 
 void checkspace(int n)
-{   if (linepos + n >= linelength && lispout != -1) wrch('\n');
+{   if (linepos + n >= linelength && lispout != -1)
+        wrch('\n');
 }
 
 char printbuffer[32];
@@ -2816,6 +2813,18 @@ LispObject Lstop(LispObject lits, int nargs, ...)
     exit(isFIXNUM(x) ? (int)qfixnum(x) : 0);
 }
 
+LispObject Lposn(LispObject lits, int nargs, ...)
+{   ARG0("posn");
+    return packfixnum(linepos);
+}
+
+LispObject Llinelength(LispObject lits, int nargs, ...)
+{   ARG1("linelength", n);
+    LispObject prev = packfixnum(linelength);
+    if (isFIXNUM(n)) linelength = qfixnum(n);
+    return prev;
+}
+
 LispObject Lprin(LispObject lits, int nargs, ...)
 {   ARG1("prin", x);
     return prin(x);
@@ -3175,6 +3184,7 @@ struct defined_functions fnsetup[] =
     {"ileftshift", 0,            (void *)Lleftshift},
     {"ileq",       0,            (void *)Lleq},
     {"ilessp",     0,            (void *)Llessp},
+    {"linelength", 0,            (void *)Llinelength},
     {"load-module",0,            (void *)Lrdf},
     {"log",        0,            (void *)Llog},
     {"lposn",      0,            (void *)Lposn},

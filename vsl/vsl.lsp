@@ -1635,8 +1635,6 @@ top (cond ((atom a) (return (reversip r))))
 
 (de verbos (x) nil)
 
-(de linelength (n) 80)
-
 (de getenv (x) nil)
 
 (de filep (x)
