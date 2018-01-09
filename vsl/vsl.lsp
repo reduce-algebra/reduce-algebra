@@ -1759,10 +1759,6 @@ top (cond ((atom a) (return (reversip r))))
 
 (de tmpnam () "./temporary-file.tmp")
 
-(de posn () 0)
-
-(de lposn () 0)
-
 (dm unwind!-protect (x) `(progn . ,(cdr x)))
 
 % arithmetic left shift

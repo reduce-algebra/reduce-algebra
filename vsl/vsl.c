@@ -714,6 +714,10 @@ void wrch(int c)
     }
 }
 
+LispObject Lposn(LispObject lits, int nargs, ...)
+{   return packfixnum(linepos);
+}
+
 const char *prompt(EditLine *e)
 {   return "> ";
 }
@@ -3173,6 +3177,7 @@ struct defined_functions fnsetup[] =
     {"ilessp",     0,            (void *)Llessp},
     {"load-module",0,            (void *)Lrdf},
     {"log",        0,            (void *)Llog},
+    {"lposn",      0,            (void *)Lposn},
     {"ilognot",    0,            (void *)Llognot},
     {"iminus",     0,            (void *)Lminus},
     {"iminusp",    0,            (void *)Lminusp},
@@ -3186,6 +3191,7 @@ struct defined_functions fnsetup[] =
     {"open",       0,            (void *)Lopen},
     {"plist",      0,            (void *)Lplist},
     {"pname",      0,            (void *)Lpname},
+    {"posn",       0,            (void *)Lposn},
     {"preserve",   0,            (void *)Lpreserve},
     {"prin",       0,            (void *)Lprin},
     {"princ",      0,            (void *)Lprinc},
