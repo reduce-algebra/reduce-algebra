@@ -379,6 +379,7 @@
 (rdf "$pu/iter-macros.sl")
 (rdf "$pu/for-macro.sl")
 (rdf "$pu/cond-macros.sl")
+(rdf "$pu/numeric-ops.sl")
 
 (rdf "$pnk/easy-non-sl.sl")
 (rdf "$pnk/sets.sl")
@@ -547,6 +548,31 @@
 (dm codeprintf (x) (cons 'fprintf (cons 'codeout* (cdr x))))
 (dm dataprintf (x) (cons 'fprintf (cons 'dataout* (cdr x))))
 
+(def-pass-1-macro Char (u)
+%. PSL Character constant macro
+  (DoChar U))
+
+% Table driven char macro expander
+(de DoChar (u)
+  (cond
+    ((idp u) (or
+               (get u 'charvalue) 
+               ((lambda (n) (cond ((lessp n 128) n))) (id2int u))
+               (CharError u)))
+    ((pairp u) % Here's the real change -- let users add "functions"
+      ((lambda (fn)
+         (cond 
+           (fn (apply fn (list (dochar (cadr u)))))
+           (t (CharError u))))
+       (cond ((idp (car u)) (get (car u) 'char-prefix-function)))))
+    ((and (fixp u) (geq u 0) (leq u 9)) (plus u 48))  % 48 = (char 0)
+    (t (CharError u))))
+
+(de CharError (u)
+  (ErrorPrintF "*** Unknown character constant: %r" u)
+  0)
+
+
 % This is needed for ASM generation, see $pxk/main-start.sl
 (put 'symnam 'symbol 'symnam)
 (put 'symfnc 'symbol 'symfnc)
@@ -568,6 +594,29 @@
 
 % For utterly cross building I may fudge some things...
 %(de mkitem (tag data) (list 'list ''tagged tag data))
+
+%(de OperandPrintIndirect (x)            % (Indirect x)
+%  (progn (setq x (cadr x)) 
+%         (if (regp x) (progn
+%                        (prin2 "(")
+%                        (PrintOperand x) 
+%                        (Prin2 ")"))
+%               (prin2 "*")
+%               (PrintOperand x)
+%               (prin2 "         / ")
+%	       (prin1 x)
+%               (Prin2 "")) 
+%))
+%
+%
+%(de asmprintvaluecell (x)
+%  (printexpression (list 'plus2 'symval 
+%                         (list 'times (compiler-constant 'addressingunitsperitem) 
+%                          (list 'idloc (cadr x)))))
+%  (princ "     / ")
+%  (prin1 x))
+
+(flag '(evload) 'ignore)
 
 (preserve)
 
