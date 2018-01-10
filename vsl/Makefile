@@ -26,7 +26,7 @@ vsl.img:	vsl library.lsp vsl.lsp extras.lsp
 	./vsl -z library.lsp
 
 clean:
-	rm -f *.o *.bak *.exe *.log *.img vsl *.ind *.pdf *.aux *.idx *.ilg *~
+	rm -f *.o *.bak *.exe *.log *.img vsl *.ind *.aux *.idx *.ilg *~
 
 # To build this you need to go "make vslmanual.pdf" explicitly. It is
 # not done automatically because not everybody will have installed

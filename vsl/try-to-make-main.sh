@@ -69,28 +69,28 @@ cat >>tmp.sl <<EOF
 EOF
 
 # The idea of the \$DEBUG here is that one can set the shell variable
-# to "cgdb --args" so as to run vsl under a debugger.
+# using "export DEBUG='cgdb --args'" so as to run vsl under a debugger.
 script -c "$DEBUG ./vsl -ipslcomp.img tmp.sl" makemain.log
-
-exit 1
-
 
 # compile it to make main.o
 
-mv main.s main.temp
-sed -f $PXK)/main.linux.sed main.temp > main.s
-rm -f main.temp
-gcc -m64 -c $ASARGS -o main.o main.s
+# A MISERY here is that the option "sed -i" is not supported in
+# a consistent way as between Linux and MacOS. So to keep to POSIX
+# portability I avoid that nice option.
 
-# compile it again to make dmain.o
+sed -f $PXK/main.linux.sed main.s > main.s.temp
+mv main.s.temp main.s
 
-dmain.o: dmain.s
- mv dmain.s dmain.temp
- sed -f $PXK/dmain.linux.sed dmain.temp > dmain.s
- rm -f dmain.temp
-gcc -m64 -c $ASARGS) -o dmain.o dmain.s
+gcc -c main.s -o main.o
 
-# Now I can compile the C-coded support and link stuff together to make
+# compile the data part to make dmain.o
+
+sed -f $PXK/dmain.linux.sed dmain.s > dmain.s.temp
+mv dmain.s.temp dmain.s
+
+gcc -c dmain.s -o dmain.o
+
+# Finally I can compile the C-coded support and link stuff together to make
 # a bpsl executable.
 
 gcc -o bpsl \
@@ -109,6 +109,6 @@ gcc -o bpsl \
      $PXX/unix-io.c \
      $PXX/creloc.c \
      $PXX/formlink2.c \
-     main.o dmain.o -lm  -ldl
+     main.o dmain.o -lm -ldl
 
 

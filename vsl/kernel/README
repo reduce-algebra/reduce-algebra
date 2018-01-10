@@ -1,0 +1,17 @@
+The contents of this file started off as copies of the contents of
+dist/kernel/AMD64_ext. They are being changed in two ways. First to
+allow the code to compile using a recent version of gcc without warning
+messages, and soon so that differences to support various other platforms
+are merged into here with #ifdef control where that ends up essential.
+The second change is intended to be part of a move towards having just one
+set of C source file sto maintain in the full PSL tree.
+
+The following files are present here copied from the source directory but
+are not used while building bpsl.
+   flnk_startform.h
+   misc.c
+   test.c
+   testfloat.c
+
+
+ACN January 2018
