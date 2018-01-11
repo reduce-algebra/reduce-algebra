@@ -42,6 +42,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/times.h>
@@ -70,6 +71,7 @@ long *tloc;
  
 /* Tag( external_timc )
  */
+long
 external_timc(buffer)
      struct tms *buffer;
 {
@@ -146,7 +148,7 @@ int external_setenv (var, val,ov)
      and 1 extra empty slot. */
   envnew = (char **) calloc ((i + 2), sizeof(char *));
  
-  block_copy((char *)environ, (char *)envnew, i * sizeof(char *));
+  bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
   environ = envnew;
   strcpy(var_plus_equal_sign, var);
   strcat(var_plus_equal_sign, "=");
@@ -160,6 +162,7 @@ int external_setenv (var, val,ov)
  * was allocated using calloc, with enough extra room at the end so not
  * to have to do a realloc().
  */
+int
 setenv (var, value,ov)
      const char *var, *value;
      int ov;
@@ -174,7 +177,7 @@ setenv (var, value,ov)
         environ[index] = (void *)malloc (len + strlen (value) + 1);
         strcpy (environ [index], var);
         strcat (environ [index], value);
-        return;
+        return (ov);
         }
         index ++;
     }
@@ -184,7 +187,8 @@ setenv (var, value,ov)
     strcat (environ [index], value);
     environ [++index] = NULL;
 }
- 
+
+void
 block_copy (b1, b2, length)
      char *b1, *b2;
      int length;

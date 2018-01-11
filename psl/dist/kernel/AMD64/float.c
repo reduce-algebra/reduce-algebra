@@ -65,6 +65,7 @@
 
 /* Tag( uxfloat )
  */
+void
 uxfloat(f,i)
      double *f;
      long long i;
@@ -82,6 +83,7 @@ long long uxfix(f)
 
 /* Tag( uxassign )
  */
+void
 uxassign(f1,f2)
      double *f1, *f2;
 {
@@ -92,6 +94,7 @@ fexcept_t flagp;
 
 /* Tag( uxplus2 )
  */
+int
 uxplus2(f1,f2,f3)
      double *f1, *f2, *f3;
 {
@@ -103,6 +106,7 @@ uxplus2(f1,f2,f3)
 
 /* Tag( uxdifference )
  */
+int
 uxdifference(f1,f2,f3)
      double *f1, *f2, *f3;
 {
@@ -114,6 +118,7 @@ uxdifference(f1,f2,f3)
 
 /* Tag( uxtimes2 )
  */
+int
 uxtimes2(f1,f2,f3)
      double *f1, *f2, *f3;
 {
@@ -125,6 +130,7 @@ uxtimes2(f1,f2,f3)
 
 /* Tag( uxquotient )
  */
+int
 uxquotient(f1,f2,f3)
      double *f1, *f2, *f3;
 {
@@ -160,14 +166,7 @@ long long uxlessp(f1,f2,val1,val2)
 
 /* Tag( uxwritefloat )
  */
-
-uxwritefloat8(buf, flt, convstr,dummy)
-     char *buf;          /* String buffer to return float int */
-     double *flt;        /* Pointer to the float */
-     char *convstr;      /* String containing conversion field for sprintf */
-     int dummy;  /* We need to have 128 bit alingemnt of the stack */
-{ uxwritefloat(buf, flt, convstr); }
-
+void
 uxwritefloat(buf, flt, convstr)
      char *buf;          /* String buffer to return float int */
      double *flt;        /* Pointer to the float */
@@ -208,9 +207,18 @@ uxwritefloat(buf, flt, convstr)
   *((long long *)buf) = strlen(temps) - 1;
 }
 
+void
+uxwritefloat8(buf, flt, convstr,dummy)
+     char *buf;          /* String buffer to return float int */
+     double *flt;        /* Pointer to the float */
+     char *convstr;      /* String containing conversion field for sprintf */
+     int dummy;  /* We need to have 128 bit alingemnt of the stack */
+{ uxwritefloat(buf, flt, convstr); }
+
 
 /* Tag( uxdoubletofloat )
  */
+void
 uxdoubletofloat (dbl,flt)
      double *dbl;
      float  *flt;
@@ -218,6 +226,7 @@ uxdoubletofloat (dbl,flt)
   *flt = (float) *dbl;
 }
 
+void
 uxfloattodouble (flt,dbl)
      float  *flt;             
      double *dbl;             
@@ -226,6 +235,7 @@ uxfloattodouble (flt,dbl)
 }
 
 /* Functions for fast-math.sl (Unix C replacement for mathlib.) */
+int
 uxsin (r, x)
      double *r, *x;
 {
@@ -235,6 +245,7 @@ uxsin (r, x)
   return (1);
 }
 
+int
 uxcos (r, x)
      double *r, *x;
 {
@@ -244,6 +255,7 @@ uxcos (r, x)
   return (1);
 }
 
+int
 uxtan (r, x)
      double *r, *x;
 {
@@ -254,6 +266,7 @@ uxtan (r, x)
 
 }
 
+int
 uxasin (r, x)
      double *r, *x;
 {
@@ -263,6 +276,7 @@ uxasin (r, x)
   return (1);
 }
 
+int
 uxacos (r, x)
      double *r, *x;
 {
@@ -272,6 +286,7 @@ uxacos (r, x)
   return (1);
 }
 
+int
 uxatan (r, x)
      double *r, *x;
 {
@@ -281,6 +296,7 @@ uxatan (r, x)
   return (1);
 }
 
+int
 uxsqrt (r, x)
      double *r, *x;
 {
@@ -290,6 +306,7 @@ uxsqrt (r, x)
   return (1);
 }
 
+int
 uxexp (r, x)
      double *r, *x;
 {
@@ -299,6 +316,7 @@ uxexp (r, x)
   return (1);
 }
 
+int
 uxlog (r, x)
      double *r, *x;
 {
@@ -311,6 +329,7 @@ uxlog (r, x)
 #define _pi       ((12868.0 - 0.036490896206895257)/4096.0)
 #define _half_pi  ((12868.0 - 0.036490896206895257)/8192.0)
 
+int
 uxatan2 (res, y, x)
      double *res, *y, *x;
 {

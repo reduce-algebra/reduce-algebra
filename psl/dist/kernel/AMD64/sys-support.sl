@@ -120,6 +120,6 @@
 
 (lap '((*entry pslsignalhandler expr 0)
        (*move (quote "Interrupt") (reg 1))
-       (*call stderror expr 1)))
+       (*call stderror)))
 
 (off fast-integers)

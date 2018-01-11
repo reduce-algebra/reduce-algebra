@@ -45,6 +45,15 @@
 jmp_buf mainenv;
 char *abs_execfilepath;
  
+void clear_iob(), clear_dtabsize();
+
+void psl_main(int argc, char *argv[]);
+
+char ** copy_argv();
+
+int Debug = 0;
+
+int
 main(argc,argv)
 int argc;
 char *argv[];
@@ -60,7 +69,10 @@ char *argv[];
   if (argc > 0)
     abs_execfilepath = realpath(argv[0],NULL);
  
-  val=setjmp(mainenv);        /* set non-local return point for exit    */
+ if (getenv("BPSL_DEBUG") != NULL) 
+     Debug = 1;
+
+ val=setjmp(mainenv);        /* set non-local return point for exit    */
  
   if (val == 0)
      psl_main(argc,copy_argv(argc,argv));
@@ -70,13 +82,17 @@ exit(0);
 }
  
  
+int setupbpsandheap(int argc, char *argv[]);
+
+void
 os_startup_hook(argc, argv)
      int argc;
      char *argv[];
 {
   setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
 }
- 
+
+void
 os_cleanup_hook()
 {
 longjmp(mainenv,1);
@@ -87,6 +103,7 @@ char * get_execfilepath ()
   return abs_execfilepath;
 }
 
+void
 clear_iob()
 {
 }
@@ -104,6 +121,7 @@ extern char *end;
 /*
  *     Size of dtabsize is 0x34c bytes.
  */
+void
 clear_dtabsize()
 {
  int i;

@@ -10,7 +10,10 @@
  *           renamed sigset to sun3_sigset for sun os 4.
  */
  
+#include <unistd.h>
+#include <stdio.h>
 #include <signal.h>
+#include <sys/stat.h>
 
 #ifndef LINUX
 #include <ieeefp.h>
@@ -19,8 +22,11 @@ fp_except fp_mask,fp_stick;
 int      fp_first=0;
 #endif
 
+int forminit(FILE **,FILE **);
+
 struct sigaction act;
 
+void
 sun3_sigset( sig, action )
 void (*action)();
 int sig;
@@ -45,7 +51,8 @@ int sig;
      
  
 }
- 
+
+void
 sun3_sigrelse(sig, action)
 void (*action)();
 int sig;
@@ -63,23 +70,15 @@ int sig;
 }
  
 
- 
-setlinebuf()
-{
-}
- 
+int
 ieee_handler(x,y)
 char * x; int y;
 {
   mkfifo(x,y);
 }
 
-ualarm()
-
-{
-}
-
+int
 ieee_flags(long long x1,long long x2,long long x3,long long x4)
 {
- if(x1 == 10)  forminit(x2,x3);
+  if(x1 == 10)  forminit((FILE **)x2,(FILE **)x3);
 }
