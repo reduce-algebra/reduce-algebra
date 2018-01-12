@@ -86,12 +86,11 @@
 
 ;;	Enhancements
 ;;	============
-;;	highlight comment statements
 ;;	more flexible intelligent indentation, rationalize the code
 ;;	make skipping comment statements configurable (?)
 ;;	add RLisp88 support (?)
 ;;	more structure templates (?) -- while, repeat
-;;      faster font-lock (function rather than just regexps)?
+;;  faster font-lock (function rather than just regexps)?
 
 ;;; Code:
 
@@ -104,7 +103,7 @@
 
 ;; (message "Loading reduce-mode")	; TEMPORARY!
 
-(eval-when-compile			; keep compiler happy!
+(eval-when-compile						; keep compiler happy!
   (require 'font-lock)
   (require 'timer)
   (require 'paren))
@@ -247,7 +246,7 @@ Optional `cdr' is a replacement string or nullary function (for structures)."
 
 (defcustom reduce-comment-region-string "%% "
   "*String inserted by \\[reduce-comment-region] at start of each line."
-  :version "1.21" ; Names was reduce-comment-region up to version 1555!
+  :version "1.21" ; Name was reduce-comment-region up to version 1555!
   :type 'string
   :group 'reduce-format-display)
 
@@ -2099,29 +2098,30 @@ passing on any prefix argument (in raw form)."
   ;; NB: digits have word syntax
   "Regular expression matching a REDUCE identifier.")
 
-(defconst reduce-keyword-regexp
-  (mapconcat 'identity			; keywords
-	     '("begin" "return" "end\\(module\\)?"
-	       "if" "then" "else"
-	       "while" "do" "repeat" "until"
-	       "collect" "join" "conc" "sum" "product"
-	       "for\\(\\s *\\(all\\|each\\)\\)?" "step"
-	       "in" "on" "off" "comment" "write"
-	       "let"			; "where" "when" ???
-	       "assert_install" "assert_install_all"
-	       "assert_uninstall" "assert_uninstall_all"
-	       "assert"
-
-	       ;; Lisp keywords used frequently in REDUCE:
-	       "lambda"  "function"
-	       ;; "put" "flag" "remprop" "remflag"
-	       )
-	     "\\|")
-  "Regular expression matching a REDUCE keyword.")
-
 (defconst reduce-infix-regexp
-  "where\\|when\\|or\\|and\\|member\\|memq\\|neq\\|eq"
-  )
+  "where\\|when\\|or\\|and\\|member\\|memq\\|neq\\|eq")
+
+(defconst reduce-keyword-regexp
+  (mapconcat 'identity
+			 (list
+			  "begin" "return" "end\\(module\\)?"
+			  "if" "then" "else"
+			  "while" "do" "repeat" "until"
+			  "collect" "join" "conc" "sum" "product"
+			  "for\\(\\s *\\(all\\|each\\)\\)?" "step"
+			  "in" "on" "off" "write"
+			  "let" "clearrules"
+			  "clear" "pause"
+			  "assert_install" "assert_install_all"
+			  "assert_uninstall" "assert_uninstall_all"
+			  "assert"
+
+			  ;; Lisp keywords used frequently in REDUCE:
+			  "lambda" "function"
+			  ;; "put" "flag" "remprop" "remflag"
+			  reduce-infix-regexp)
+			 "\\|")
+  "Regular expression matching a REDUCE keyword.")
 
 ;(defvar reduce-reserved-variable-regexp
 ;  "e\\|i\\|infinity\\|nil\\|pi\\|t")
@@ -2227,7 +2227,7 @@ passing on any prefix argument (in raw form)."
 	     (1 font-lock-type-face))
 	   ;; Type declarations:
 	   ;; '("[^!][^_]\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\)\\>[^!_]"
-	   '("\\(?:^\\|[^_]\\)\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\)\\>[^!_]"
+	   '("\\(?:^\\|[^_]\\)\\<\\(algebraic\\|symbolic\\|operator\\|scalar\\|integer\\|real\\|linear\\)\\>[^!_]"
 	     (1 font-lock-type-face))
 	   reduce-asserted-arg-types-rule
 	   reduce-asserted-return-type-rule)
@@ -2236,10 +2236,11 @@ passing on any prefix argument (in raw form)."
 	  reduce-preprocessor-rules)
   "Default minimal REDUCE fontification rules.")
 
+(defvar font-lock-beg) (defvar font-lock-end)
 (defun reduce-font-lock-extend-region-for-comment ()
-  "Extend font-lock region if necessary to include all of a
-comment statement that it intersects, and if so return non-nil."
-  ;; Check whether within a comment statement:
+  "Extend font-lock region if necessary to include all of any
+comment statements that it intersects, and if so return non-nil.
+This function is prepended to `font-lock-extend-region-functions'."
   (let (new-beg new-end)
 	(goto-char font-lock-beg)
 	;; Is font-lock-beg within a comment?
@@ -2251,12 +2252,16 @@ comment statement that it intersects, and if so return non-nil."
 			  ;; Or does a comment start in the font-lock region?
 			  (search-forward "comment" font-lock-end t))
 	  ;; If either of the above then...
-	  (search-forward ";")
+	  (search-forward ";" nil 1)		; if un-terminated move to EOB
+	  ;; Do multiple comments start in the font-lock region?
+	  (while (and (< (point) font-lock-end)
+				  (search-forward "comment" font-lock-end t))
+		(search-forward ";" nil 1))		; if un-terminated move to EOB
 	  (if (> (point) font-lock-end)
 		  (setq new-end (point))))
-	;; *** TEMPORARY MESSAGE FOR TESTING: ***
-	(message "reduce-font-lock-extend-region-for-comment: %s --> %s, %s --> %s"
-			 font-lock-beg new-beg font-lock-end new-end)
+	;; Temporary message for testing:
+	;; (message "reduce-font-lock-extend-region-for-comment: %s --> %s, %s --> %s"
+	;; 		 font-lock-beg new-beg font-lock-end new-end)
 	;; Return non-nil if font-lock region adjusted:
 	(or (if new-beg (setq font-lock-beg new-beg))
 		(if new-end (setq font-lock-end new-end)))))
@@ -2264,68 +2269,67 @@ comment statement that it intersects, and if so return non-nil."
 (defconst reduce-font-lock-keywords-basic
   (list
    
-   ;; Comment statements:
-   ;; Note that . does not match EOL, the repetition must be
-   ;; non-greedy -- *? -- and I use a shy group -- \(?: \) -- to avoid
-   ;; saving its contents. Also, this fontification must override any
-   ;; previous (syntactic) fontification.
+   ;; Comment statements.  Note that `.' does not match EOL, the
+   ;; repetition must be non-greedy `*?' and I use a shy group `\(?:
+   ;; \)' to avoid saving its contents.  This fontification must
+   ;; override any previous (syntactic) fontification.  Being normally
+   ;; multi-line, it requires the support of the function
+   ;; `reduce-font-lock-extend-region-for-comment'.
    '("comment\\(?:.\\|\n\\)*?;" . (0 font-lock-comment-face t))
 
    ;; Main keywords:
    (list (concat
-	  ;; Ignore quoted keywords and composite identifiers:
-	  ;; "\\(^[^!_']?\\|[^!][^!_']\\)"
-	  "\\(^[^!_'#]?\\|[^!#][^!_'#]\\)"
-	  "\\<\\(\\(" reduce-keyword-regexp "\\)"
-	  ;; Handle consecutive keywords:
-	  "\\(\\s +\\(" reduce-keyword-regexp "\\)\\)*"
-	  "\\)\\>"
-	  ;; Ignore composite identifiers:
-	  ;; "[^!_]"
-	  "[^!_#]"
-	  ) '(2 font-lock-keyword-face))
+		  ;; Ignore quoted keywords and composite identifiers:
+		  ;; "\\(^[^!_']?\\|[^!][^!_']\\)"
+		  "\\(^[^!_'#]?\\|[^!#][^!_'#]\\)"
+		  "\\<\\(\\(" reduce-keyword-regexp "\\)"
+		  ;; Handle consecutive keywords:
+		  "\\(\\s +\\(" reduce-keyword-regexp "\\)\\)*"
+		  "\\)\\>"
+		  ;; Ignore composite identifiers:
+		  ;; "[^!_]"
+		  "[^!_#]"
+		  ) '(2 font-lock-keyword-face))
+
    ;; Group delimiters:  OK
    '("<<\\|>>" . font-lock-keyword-face)
 
    ;; Procedure declarations:
    (list (concat "\\<\\(procedure\\)\\s +"
-		 "\\(" reduce-identifier-regexp "\\)" "\\s *(?")
-	 '(1 font-lock-keyword-face)
-	 ;; This will probably cause highlighting within comments, see above:
-;; 	 '(2 font-lock-function-name-face t)
- 	 '(2 font-lock-function-name-face)  ; no highlighting in comments; TS
-	 ;; Anchored matches (single line only!):
-	 (list (concat "\\s *"
-		       "\\(" reduce-identifier-regexp "\\)"
-		       "\\s *\\([\);$].*\\|\\s.\\)"
-					; Stop after `)', `;' or `$'
-		       )
-	       nil nil
-	       '(1 font-lock-variable-name-face))
-	 )
+				 "\\(" reduce-identifier-regexp "\\)" "\\s *(?")
+		 '(1 font-lock-keyword-face)
+		 ;; This will probably cause highlighting within comments, see above:
+		 ;; 	 '(2 font-lock-function-name-face t)
+ 		 '(2 font-lock-function-name-face)  ; no highlighting in comments; TS
+		 ;; Anchored matches (single line only!):
+		 (list (concat "\\s *"
+					   "\\(" reduce-identifier-regexp "\\)"
+					   "\\s *\\([\);$].*\\|\\s.\\)"
+										; Stop after `)', `;' or `$'
+					   )
+			   nil nil
+			   '(1 font-lock-variable-name-face)))
 
    ;; Type declarations:
    (list "\\<\\(operator\\|scalar\\|integer\\|real\\)\\s "
-	 '(1 font-lock-type-face)
-	 ;; Anchored matches (single line only!):
-	 (list (concat "\\s *"
-		       "\\(" reduce-identifier-regexp "\\)"
-		       "\\s *\\s."
-		       )
-	       nil nil
-	       '(1 font-lock-variable-name-face))
-	 )
+		 '(1 font-lock-type-face)
+		 ;; Anchored matches (single line only!):
+		 (list (concat "\\s *"
+					   "\\(" reduce-identifier-regexp "\\)"
+					   "\\s *\\s."
+					   )
+			   nil nil
+			   '(1 font-lock-variable-name-face)))
 
    ;; References -- goto and labels:
    (list (concat "\\<\\(go\\(\\s *to\\)?\\)\\s +"
-		 "\\(" reduce-identifier-regexp "\\)")
-	 '(1 font-lock-keyword-face)
-	 '(3 font-lock-constant-face))	; was font-lock-reference-face
+				 "\\(" reduce-identifier-regexp "\\)")
+		 '(1 font-lock-keyword-face)
+		 '(3 font-lock-constant-face))	; was font-lock-reference-face
    (cons (concat "^\\s *\\(" reduce-identifier-regexp "\\)\\s *:[^=]")
-	 '(1 font-lock-constant-face))	; was font-lock-reference-face
+		 '(1 font-lock-constant-face))	; was font-lock-reference-face
    )
-  "Basic REDUCE fontification sub-rules."
-  )
+  "Basic REDUCE fontification sub-rules.")
 
 (defconst reduce-font-lock-keywords-algebraic
   (append (list
