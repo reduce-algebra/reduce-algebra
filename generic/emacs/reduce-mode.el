@@ -465,8 +465,8 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
 (defun reduce-mode-variables ()
   "Define REDUCE mode local variables."
   (set-syntax-table reduce-mode-syntax-table)
-  (set (make-local-variable 'paragraph-start)
-       (concat "^$\\|" page-delimiter))
+  ;; (set (make-local-variable 'paragraph-start)
+  ;;      (concat "^$\\|" page-delimiter))
   (set (make-local-variable 'paragraph-separate)
        ;; paragraph-start)
        (concat paragraph-start "\\|^%")) ; RS
@@ -1601,43 +1601,48 @@ or following point (cf. minor modes)."
 
 
 (defun reduce-fill-comment (justify)
-  "Fill successive %-comment lines; if JUSTIFY then also justify.
-Lines are around or immediately following point.
-Prefix arg means justify as well."
-  ;; Should perhaps add support for comment statements as well.
+  "Fill %-comment or comment statement paragraph at or after point.
+If JUSTIFY is non-nil (interactively, with prefix argument), justify as well."
   (interactive "*P")
   (save-excursion
     (let (first)
+	  ;; If in empty line then move to start of next non-empty line:
       (beginning-of-line)
-      ;; If point is before a comment line then move to its start:
-      ;; (Otherwise find start later by moving backwards.)
       (while (and (looking-at "[ \t]*$")
-		  (= (forward-line) 0)
-		  (setq first (point)) ))
-      ;; If point is in a comment then find its prefix and fill it:
-      (if (looking-at "[ \t]*%")
-	  (let (fill-prefix last)
-	    ;; Code modified from `set-fill-prefix' in fill.el
-	    (setq fill-prefix (buffer-substring
-			       (point)
-			       (progn (skip-chars-forward " \t%") (point))))
-	    (if (equal fill-prefix "")
-		(setq fill-prefix nil))
-	    ;; Find the last line of the comment:
-	    (while (and (= (forward-line) 0)
-			(looking-at "[ \t]*%")) )
-	    (setq last (point))
-	    ;; Move to the first line of the comment:
-	    (if first
-		(goto-char first)
-	      (while (and (= (forward-line -1) 0)
-			  (looking-at "[ \t]*%")) )
-	      ;; Might have reached bob, so ...
-	      (if (not (looking-at "[ \t]*%"))
-		  (forward-line)))
-	    ;; Fill region as one paragraph: break lines to fit fill-column.
-	    (fill-region-as-paragraph (point) last justify)
-	    )))))
+				  (= (forward-line) 0)
+				  (setq first (point))))
+	  ;; Is point within a comment statement?
+	  (if (or (looking-at "[ \t]*comment")
+			  ;; (See `reduce-font-lock-extend-region-for-comment'.)
+			  (save-excursion
+				(and (re-search-backward "\\(comment\\)\\|\\(;\\)" nil t)
+					 (match-beginning 1))))
+		  ;; Yes -- use normal text-mode fill:
+		  (fill-paragraph justify)
+		;;No...
+		;; If point is in a %-comment then find its prefix and fill it:
+		(if (looking-at "[ \t]*%")
+			(let (fill-prefix last)
+			  ;; Code modified from `set-fill-prefix' in fill.el.
+			  (setq fill-prefix (buffer-substring
+								 (point)
+								 (progn (skip-chars-forward " \t%") (point))))
+			  (if (equal fill-prefix "")
+				  (setq fill-prefix nil))
+			  ;; Find the last line of the comment:
+			  (while (and (= (forward-line) 0)
+						  (looking-at "[ \t]*%")))
+			  (setq last (point))
+			  ;; Move to the first line of the comment:
+			  (if first
+				  (goto-char first)
+				(while (and (= (forward-line -1) 0)
+							(looking-at "[ \t]*%")) )
+				;; Might have reached BOB, so ...
+				(if (not (looking-at "[ \t]*%"))
+					(forward-line)))
+			  ;; Fill region as one paragraph: break lines to fit fill-column.
+			  (fill-region-as-paragraph (point) last justify)))))))
 
 
 ;;;; ***************************
