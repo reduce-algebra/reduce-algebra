@@ -1612,13 +1612,18 @@ If JUSTIFY is non-nil (interactively, with prefix argument), justify as well."
 				  (= (forward-line) 0)
 				  (setq first (point))))
 	  ;; Is point within a comment statement?
-	  (if (or (looking-at "[ \t]*comment")
+	  (if (or (and (looking-at "[ \t]*comment")
+				   (setq first (point)))
 			  ;; (See `reduce-font-lock-extend-region-for-comment'.)
 			  (save-excursion
 				(and (re-search-backward "\\(comment\\)\\|\\(;\\)" nil t)
-					 (match-beginning 1))))
-		  ;; Yes -- use normal text-mode fill:
-		  (fill-paragraph justify)
+					 (match-beginning 1)
+					 (setq first (point)))))
+		  ;; Yes -- use normal text-mode fill, but only within the
+		  ;; comment statement, which might be within code:
+		  (save-restriction
+			(narrow-to-region first (save-excursion (search-forward ";")))
+			(fill-paragraph justify))
 		;;No...
 		;; If point is in a %-comment then find its prefix and fill it:
 		(if (looking-at "[ \t]*%")
