@@ -32,11 +32,20 @@ here=`cd \`dirname "$here"\` ; pwd -P`
 save=`pwd`
 cd $here
 
+# On the Mac with macports the command needed here is glibtoolize rather than
+# libtoolize.
+
+if which libtoolize > /dev/null
+  LIBTOOLIZE=libtoolize
+else
+  LIBTOOLIZE=glibtoolize
+fi
+
 if ! which autoconf > /dev/null || \
    ! which automake > /dev/null || \
-   ! which libtool > /dev/null
+   ! which $LIBTOOLIZE > /dev/null
 then
-  printf "You need to have autoconf, automake and libtool installed.\n"
+  printf "You need to have autoconf, automake and $LIBTOOLIZE installed.\n"
   printf "I seem not to be able to find them.\n"
   printf "Note that on some Linux systems it is in a package called libtool-bin\n"
   printf "Stopping...\n"
@@ -64,7 +73,7 @@ else
 fi
 
 # I will re-process the top level first sequentially.
-libtoolize --force --copy
+$LIBTOOLIZE --force --copy
 aclocal --force
 autoreconf -f -i -v
 
@@ -137,9 +146,9 @@ do
 # I will spawn all the calls to autoconf to run concurrently...
     if test "$sequential" = "yes"
     then
-      ( libtoolize --force --copy; aclocal --force ; autoreconf -f -i -v )
+      ( $LIBTOOLIZE --force --copy; aclocal --force ; autoreconf -f -i -v )
     else
-      ( libtoolize --force --copy; aclocal --force ; autoreconf -f -i -v ) &
+      ( $LIBTOOLIZE --force --copy; aclocal --force ; autoreconf -f -i -v ) &
       procids="$procids $!"
     fi
     cd $here
