@@ -2279,13 +2279,13 @@ This function is prepended to `font-lock-extend-region-functions'."
 (defconst reduce-font-lock-keywords-basic
   (list
    
-   ;; Comment statements.  Note that `.' does not match EOL, the
-   ;; repetition must be non-greedy `*?' and I use a shy group `\(?:
-   ;; \)' to avoid saving its contents.  This fontification must
+   ;; Comment statements.  Note that `.' does not match EOL and the
+   ;; repetition must be non-greedy `*?'.  This fontification must
    ;; override any previous (syntactic) fontification.  Being normally
    ;; multi-line, it requires the support of the function
    ;; `reduce-font-lock-extend-region-for-comment'.
-   '("comment\\(?:.\\|\n\\)*?;" . (0 font-lock-comment-face t))
+   '("\\(?:^\\|[ \t;$]\\)\\(comment\\(?:\\s-\\|\n\\)\\(?:.\\|\n\\)*?;\\)" .
+	 (1 font-lock-comment-face t))
 
    ;; Main keywords:
    (list (concat
