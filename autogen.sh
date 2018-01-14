@@ -36,6 +36,7 @@ cd $here
 # libtoolize.
 
 if which libtoolize > /dev/null
+then
   LIBTOOLIZE=libtoolize
 else
   LIBTOOLIZE=glibtoolize
