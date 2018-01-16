@@ -8,9 +8,10 @@ dbuild.sl orchestrates building REDUCE. It inputs boot.sl, prolog.red,
 rlisp.red, rend.red (in that order) to build RLISP, then continues to
 build REDUCE.
 
-For now, I have edited boot.sl to replace % with ; and to add \ where
-necessary. (But a better approach might be as suggested below.)  This
-slightly modified boot.sl seems to work with simple input of the form
+For now, I have edited boot.sl as boot.el to replace % with ; and to
+add \ where necessary. (But a better approach might be as suggested
+below.)  This slightly modified boot.el seems to work with simple
+input of the form
 
 (begin2)
 a_simple_form;
@@ -23,7 +24,7 @@ Consider using the newnam facility early. It might be better than
 using advise and may be the only way to handle arrayp.
 
 Also, consider regarding ! as only RLISP read syntax and not including
-it in symbols. Edit boot.sl to replace ! with \ (and % with ;).
+it in symbols. Edit boot.el to replace ! with \ (and % with ;).
 
 Could solve the function clash problem by implementing SL in
 upper-case and using the raise flag.
@@ -125,8 +126,34 @@ the use of `type' as a flag in REDUCE. Now OK.
 
 Added support for file input. The following input appears to work correctly:
 
-(sl-load-file "boot.sl")
+(sl-load-file "boot.el")
 (begin2)
 rds open("rlisp.red",'input);
 
 But whether RLISP works correctly remains to be seen!
+
+Now try running (begin1). This shows some missing functions.
+
+There is a problem that ! is included in the names of symbols, whereas
+it should not be, so there is currently no way from RLISP to access
+the Emacs Lisp function float-time! Hence, define a few additional
+functions at the end of "sl.el".
+
+The plan is that the following should run RLISP:
+
+(sl-load-file "boot.el")
+(begin2)
+rds open("rlisp.red",'input);
+(begin2)
+rds open("rend.red",'input);
+(initreduce)
+
+However, the ability to process a comment statement seems to be broken
+after reading "rlisp.red". The problem is that my current code is
+case-sensitive, and only "comment" is recognised, but no other
+capitalisation. Fixed temporarily by down-casing all input read by
+readch. Now cannot read procedure filetype. Commented out for now.
+
+Tried compiling "boot.el". It compiles OK, but when using "boot.elc"
+the above code complains that "rlisp.red" is not a symbol in
+scan. Give up on this for now.

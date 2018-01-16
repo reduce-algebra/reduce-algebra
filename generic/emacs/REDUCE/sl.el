@@ -1,6 +1,6 @@
 ;;; sl.el --- Standard LISP emulation
 
-;; Copyright (C) 2017, 2018 Francis J. Wright
+;; Copyright (C) 2017-2018 Francis J. Wright
 
 ;;; Primitive Data Types
 ;;; ====================
@@ -281,10 +281,11 @@ an error occurs:
 (defun sl--char-to-interned-id (c)
   "Convert ELisp character C to an interned SLisp identifier.
 If C is not a letter then it is escaped by being preceded by `!'."
-  (intern (if (or (and (>= c ?A) (<= c ?Z))
-				  (and (>= c ?a) (<= c ?z)))
-			  (string c)
-			(string ?! c))))
+  ;; For now, down-case all letters.  (Later, up-case letters if
+  ;; !*raise.)
+  (intern (cond ((and (>= c ?A) (<= c ?Z)) (string (+ 32 c)))
+				((and (>= c ?a) (<= c ?z)) (string c))
+				(t (string ?! c)))))
 
 (defun explode (u)
   "EXPLODE(U:{atom}-{vector}):id-list eval, spread
@@ -521,7 +522,7 @@ from GLOBAL to FLUID is not permissible and results in the error:
 ***** ID cannot be changed to FLUID"
   (mapc idlist							; SLISP mapc!
 		(lambda (x)
-		  (if (globalp x) (error "ID cannot be changed to FLUID"))
+		  (if (globalp x) (error "%s cannot be changed to FLUID" x))
 		  (if (not (fluidp x)) (set x nil))
 		  (put x 'fluid t))))
 
@@ -541,7 +542,7 @@ results in the error:
 ***** ID cannot be changed to GLOBAL"
   (mapc idlist							; SLISP mapc!
 		(lambda (x)
-		  (if (fluidp x) (error "ID cannot be changed to GLOBAL"))
+		  (if (fluidp x) (error "%s cannot be changed to GLOBAL" x))
 		  (when (not (globalp x))
 			(set x nil)
 			(put x 'global t)))))
@@ -1303,15 +1304,17 @@ the value of FILEHANDLE. An error occurs if the file can not be
 closed.
 ***** FILEHANDLE could not be closed"
   (let (buf)
-	(if (and (consp filehandle)
-			 (bufferp (setq buf (car filehandle)))
-			 (cond ((eq (cdr filehandle) 'input)
-					t)
-				   ((eq (cdr filehandle) 'output)
-					;; *** Write file before killing buffer! ***
-					t)))
-		(kill-buffer buf)
-	  (error "%s could not be closed" filehandle)))
+	;; A null filehandle represents the terminal; ignore it.
+	(if filehandle
+		(if (and (consp filehandle)
+				 (bufferp (setq buf (car filehandle)))
+				 (cond ((eq (cdr filehandle) 'input)
+						t)
+					   ((eq (cdr filehandle) 'output)
+						;; *** Write file before killing buffer! ***
+						t)))
+			(kill-buffer buf)
+		  (error "%s could not be closed" filehandle))))
   filehandle)
 
 (defun eject ()
@@ -1339,8 +1342,6 @@ Returns the number of lines printed on the current page. At the top
 of a page, 0 is returned."
   0)
 
-;; Should perhaps use hidden buffers for SL I/O!
-
 (defun open (file how)
   "OPEN(FILE:any, HOW:id):any eval, spread
 Open the file with the system dependent name FILE for output if
@@ -1352,11 +1353,12 @@ OUTPUT or the file can't be opened.
 ***** HOW is not option for OPEN
 ***** FILE could not be opened"
   (cond ((eq how 'input)
-		 (unless (file-readable-p file)
-		   (error "%s could not be opened" file))
-		 ;; Visit the file and return (buffer . 'input), where buffer
-		 ;; can then be used as an Emacs Lisp input stream.
-		 (cons (find-file-noselect file nil t) 'input))
+		 ;; Read file into a buffer and return (buffer . 'input).
+		 (with-current-buffer
+			 ;; Leading space means buffer hidden and no undo:
+			 (get-buffer-create (concat " SL-IN " file))
+		   (insert-file-contents-literally file)
+		   (cons (current-buffer) 'input)))
 		((eq how 'output) nil)			; not yet implemented!
 		(t (error "%s is not option for OPEN" how))))
 
@@ -1621,7 +1623,7 @@ Most commands are inherited from `lisp-interaction-mode-map'.")
 	(princ "Standard LISP") (terpri)
 	(terpri) (princ "Eval: "))
   (when rlisp-mode
-	(sl-load-file "boot.sl")
+	(sl-load-file "boot.el")
 	(insert "(begin2)\n\n;end;")
 	(forward-line -1)))
 
@@ -1680,3 +1682,28 @@ Then evaluate it and print value into *Standard LISP* buffer."
   "Pretty-print SYMBOL's function definition."
   (interactive)
   (null (pp (symbol-function symbol))))
+
+
+;;; Additional Lisp functions expected by REDUCE
+;;; ============================================
+
+;;; These function are not defined in the Standard Lisp Report.
+
+(defalias 'id2string 'symbol-name)
+
+(defun time ()
+  "(time): integer expr
+CPU time in milliseconds since login time."
+  ;; For now, at least, this is a different definition of time:
+  (round (* (float-time) 1000)))
+
+(defun date ()
+  "(date): string expr
+The date in the form \"day-month-year\"
+1 lisp> (date)
+\"21-Jan-1997\""
+  (format-time-string "%d-%b-%Y"))
+
+(provide 'sl)
+
+;;; FILENAME ends here
