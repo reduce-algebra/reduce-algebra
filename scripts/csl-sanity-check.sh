@@ -36,6 +36,7 @@ fi
 here=`dirname "$here"`
 
 cd $here/csl
+libtoolize --force --copy
 autoreconf -f -i -v
 
 if test -d $here/cslbuild

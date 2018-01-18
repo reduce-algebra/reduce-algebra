@@ -13,11 +13,13 @@
 sudo apt-get -y install alien
 sudo apt-get -y install astyle
 sudo apt-get -y install autoconf
+sudo apt-get -y install ccache
 sudo apt-get -y install devscripts
 sudo apt-get -y install git
 sudo apt-get -y install gnuplot
 sudo apt-get -y install imagemagick
 sudo apt-get -y install libedit-dev
+sudo apt-get -y install libffi-dev
 sudo apt-get -y install libgtk2.0-dev
 sudo apt-get -y install libncurses5-dev
 # I believe I have seen some systems where I need "libtool" and some

@@ -90,6 +90,7 @@ sudo port install          \
   autoconf213              \
   automake                 \
   bc                       \
+  ccache                   \
   dvipng                   \
   findutils                \
   fontforge                \
@@ -99,6 +100,7 @@ sudo port install          \
   gnuplot                  \
   gnutar                   \
   gzip                     \
+  libffi                   \
   md5sha1sum               \
   netpbm                   \
   pkgconfig                \
@@ -111,7 +113,6 @@ sudo port install          \
   texlive-latex-extra      \
   timeout                  \
   vim                      \
-  libffi                   \
   wget
 
 # MacPorts installs most stuff nicely, but at the time of writing
@@ -121,7 +122,7 @@ sudo port install          \
 # links against libraries that it needs to have in /opt/local/lib. If
 # it did depend on the dynamic libraries then the binary would not work
 # if copied to a different computer that dis not have all the MacPorts
-# stuff installed.
+# stuff installed. The same situation seems to apply in January 2018.
 
 cd $here/../csl/cslbase
 ./make-static-fontconfig-for-macintosh.sh
