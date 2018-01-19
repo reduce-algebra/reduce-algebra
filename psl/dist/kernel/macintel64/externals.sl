@@ -231,6 +231,14 @@
 (external-function semget (key nsems semflg))
 (external-function semop  (semid sembuf nsops))
 
+% dynamic linking
+
+
+(external-function dlopen (filenam flag))
+(external-function dlerror (void))
+(external-function dlsym (handle sym))
+(external-function dlclose (handle))
+
  
 (on r2i)
  

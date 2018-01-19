@@ -3,4 +3,6 @@
 argumentblock)))
 (fluid (quote (lastbps nextbps heaplast heaptrapbound heapupperbound heaptrapped
 nextsymbol using-other-bps-spaces*)))
+(*define-constant (quote rtld_lazy) 1)
+(*define-constant (quote rtld_now) 2)
 (fluid (quote (bpslowerbound nextbps)))

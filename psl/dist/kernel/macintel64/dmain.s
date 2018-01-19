@@ -403,7 +403,7 @@ stacklowerbound:
  .quad ((253<<56)+329)
  .quad ((253<<56)+330)
  .quad ((253<<56)+331)
- .quad 495
+ .quad 508
  .quad _symnam
  .quad ((254<<56)+128)
  .quad ((253<<56)+335)
@@ -566,7 +566,20 @@ stacklowerbound:
  .quad ((253<<56)+492)
  .quad ((253<<56)+493)
  .quad ((253<<56)+494)
-  .space 2396048
+ .quad ((253<<56)+495)
+ .quad ((253<<56)+496)
+ .quad ((253<<56)+497)
+ .quad ((253<<56)+498)
+ .quad ((253<<56)+499)
+ .quad ((253<<56)+500)
+ .quad ((253<<56)+501)
+ .quad ((253<<56)+502)
+ .quad ((253<<56)+503)
+ .quad ((253<<56)+504)
+ .quad ((253<<56)+505)
+ .quad ((253<<56)+506)
+ .quad ((253<<56)+507)
+  .space 2395944
  .globl _symprp
 _symprp:
  .quad ((254<<56)+128)
@@ -1064,39 +1077,22 @@ _symprp:
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
-  .space 2396048
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+  .space 2395944
  .globl _symnam
 _symnam:
- .globl l0296
- .quad ((4<<56)+l0296)
- .globl l0297
- .quad ((4<<56)+l0297)
- .globl l0298
- .quad ((4<<56)+l0298)
- .globl l0299
- .quad ((4<<56)+l0299)
- .globl l0300
- .quad ((4<<56)+l0300)
- .globl l0301
- .quad ((4<<56)+l0301)
- .globl l0302
- .quad ((4<<56)+l0302)
- .globl l0303
- .quad ((4<<56)+l0303)
- .globl l0304
- .quad ((4<<56)+l0304)
- .globl l0305
- .quad ((4<<56)+l0305)
- .globl l0306
- .quad ((4<<56)+l0306)
- .globl l0307
- .quad ((4<<56)+l0307)
- .globl l0308
- .quad ((4<<56)+l0308)
- .globl l0309
- .quad ((4<<56)+l0309)
- .globl l0310
- .quad ((4<<56)+l0310)
  .globl l0311
  .quad ((4<<56)+l0311)
  .globl l0312
@@ -2057,7 +2053,63 @@ _symnam:
  .quad ((4<<56)+l0789)
  .globl l0790
  .quad ((4<<56)+l0790)
-  .space 2396048
+ .globl l0791
+ .quad ((4<<56)+l0791)
+ .globl l0792
+ .quad ((4<<56)+l0792)
+ .globl l0793
+ .quad ((4<<56)+l0793)
+ .globl l0794
+ .quad ((4<<56)+l0794)
+ .globl l0795
+ .quad ((4<<56)+l0795)
+ .globl l0796
+ .quad ((4<<56)+l0796)
+ .globl l0797
+ .quad ((4<<56)+l0797)
+ .globl l0798
+ .quad ((4<<56)+l0798)
+ .globl l0799
+ .quad ((4<<56)+l0799)
+ .globl l0800
+ .quad ((4<<56)+l0800)
+ .globl l0801
+ .quad ((4<<56)+l0801)
+ .globl l0802
+ .quad ((4<<56)+l0802)
+ .globl l0803
+ .quad ((4<<56)+l0803)
+ .globl l0804
+ .quad ((4<<56)+l0804)
+ .globl l0805
+ .quad ((4<<56)+l0805)
+ .globl l0806
+ .quad ((4<<56)+l0806)
+ .globl l0807
+ .quad ((4<<56)+l0807)
+ .globl l0808
+ .quad ((4<<56)+l0808)
+ .globl l0809
+ .quad ((4<<56)+l0809)
+ .globl l0810
+ .quad ((4<<56)+l0810)
+ .globl l0811
+ .quad ((4<<56)+l0811)
+ .globl l0812
+ .quad ((4<<56)+l0812)
+ .globl l0813
+ .quad ((4<<56)+l0813)
+ .globl l0814
+ .quad ((4<<56)+l0814)
+ .globl l0815
+ .quad ((4<<56)+l0815)
+ .globl l0816
+ .quad ((4<<56)+l0816)
+ .globl l0817
+ .quad ((4<<56)+l0817)
+ .globl l0818
+ .quad ((4<<56)+l0818)
+  .space 2395944
  .globl _symfnc
 _symfnc:
  .quad undefinedfunction
@@ -2721,12 +2773,35 @@ _symfnc:
  .quad l0283
  .globl l0284
  .quad l0284
+ .globl l0285
+ .quad l0285
+ .globl l0286
+ .quad l0286
+ .globl l0287
+ .quad l0287
+ .globl l0288
+ .quad l0288
+ .quad undefinedfunction
+ .globl l0291
+ .quad l0291
+ .quad undefinedfunction
+ .globl l0295
+ .quad l0295
+ .quad undefinedfunction
+ .globl l0296
+ .quad l0296
+ .globl dynloadhelper
+ .quad dynloadhelper
+ .globl dynloadhelper_float_float
+ .quad dynloadhelper_float_float
+ .globl l0299
+ .quad l0299
  .quad undefinedfunction
  .globl codeaddressp
  .quad codeaddressp
  .globl lastkernel
  .quad lastkernel
-  .space 2396048
+  .space 2395944
  .globl _symget
 _symget:
  .quad ((254<<56)+128)
@@ -3224,4 +3299,17 @@ _symget:
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
-  .space 2396048
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+ .quad ((254<<56)+128)
+  .space 2395944
