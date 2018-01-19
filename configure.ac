@@ -720,7 +720,28 @@ AC_ARG_WITH(smallpage,
 
 ###########################################################################
 
+OLD_CFLAGS="$CFLAGS"
+OLD_CXXFLAGS="$CXXFLAGS"
+OLD_CPPFLAGS="$CPPFLAGS"
+AC_PROG_CC
+AC_PROG_CXX
+CFLAGS="$OLD_CFLAGS"
+CXXFLAGS="$OLD_CXXFLAGS"
+CPPFLAGS="$OLD_CPPFLAGS"
 AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
+AC_MSG_NOTICE([CC=/$CC/ CXX=/$CXX/ CCACHE=/$CCACHE/])
+if test "$CCACHE" != ""
+then
+  case $CC$CXX in
+  *ccache*)
+    ;;
+  *)
+    CC="$CCACHE $CC"
+    CXX="$CCACHE $CXX"
+    ;;
+  esac
+fi
+
 
 # Note that on Windows under cygwin i686-w64-mingw32 and x86_64-w64-mingw32
 # compilers MUST be installed, and there should be a 32-bit
@@ -1564,9 +1585,6 @@ cd "$builddir"
 AC_MSG_NOTICE([All sub-packages have had their configure script launched])
 
 ###############################################################################
-
-CC="$CCACHE $CC"
-CXX="$CCACHE $CXX"
 
 AM_CONDITIONAL(csl, test "x$with_csl" != "xno")
 AM_CONDITIONAL(psl, test "x$with_psl" != "xno")

@@ -705,6 +705,19 @@ CXXFLAGS="$old_CXXFLAGS"
 
 LT_INIT([disable-static])
 
+AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
+if test "$CCACHE" != ""
+then
+  case $CC$CXX in
+  *ccache*)
+    ;;
+  *)
+    CC="$CCACHE $CC"
+    CXX="$CCACHE $CXX"
+    ;;
+  esac
+fi
+
 if test "x$XLIBS" != "x"
 then
   AC_PATH_X
