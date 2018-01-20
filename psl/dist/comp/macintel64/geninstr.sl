@@ -30,6 +30,7 @@
 (setq lengthfunctions
     '((OP-reg-effa . lth-reg-effa)
       (OP-reg-effa-2 . lth-reg-effa-2)
+      (OP-xmmreg-effa . lth-xmmreg-effa)
       (Op-imm      . lth-imm)
       (Op-imm-reg  . lth-imm-reg)
       (Op-imm8-reg . lth-imm8-reg )
@@ -173,6 +174,7 @@
 	  ((eqcar op 'UNQUOTE) op)
 	  ((eq op 'reg)'(REGP)) 
 	  ((eq op 'sreg)'(SREGP))
+	  ((eq op 'xmmreg)'(xmmregp))
 	  ((eq op 'EAX) '(EAXP))
 	  ((eq op 'imm) '(STDIMMEDIATEP))
 	  ((eq op '!n) '(SMALLIMMEDIATEP))
@@ -274,7 +276,8 @@ nil)
     (tab 40) (print (cdddr l)))
  
 (de prininstrhex (n)
-   (prininstrhex1 (land 15 (lshift n -4))) (prininstrhex1 (land n 15)))
+   (if (eq n 'rex) (prin2 'rex)
+      (prininstrhex1 (land 15 (lshift n -4))) (prininstrhex1 (land n 15))))
  
 (de prininstrhex1 (n) (prin2 (getv [0 1 2 3 4 5 6 7 8 9 a b c d e f] n)))
  
@@ -305,11 +308,11 @@ nil)
 (instr MOVB (reg effa) OP-reg-effa  2#10001000)
 (instI MOVB (effa reg) OP-reg-effa  2#10001010)
 
-(instr MOVW (reg effa)  OP-reg-effa-2 16#66 2#10001001)
-(instI MOVW (effa reg)  OP-reg-effa-2 16#66 2#10001011)
+(instr MOVW (reg effa)  OP-reg-effa-2 16#66 rex 2#10001001)
+(instI MOVW (effa reg)  OP-reg-effa-2 16#66 rex 2#10001011)
 
-(instr MOVSX (reg reg) OP-reg-effa-2 2#00001111 2#10111111)  % only reg-reg
-(instr MOVZX (reg reg) OP-reg-effa-2 2#00001111 2#10110111)  % only reg-reg
+(instr MOVSX (reg reg) OP-reg-effa-2 2#00001111 rex 2#10111111)  % only reg-reg
+(instr MOVZX (reg reg) OP-reg-effa-2 2#00001111 rex 2#10110111)  % only reg-reg
  
 (instr PUSH (reg)     OP-push-reg   2#01010000)
 (instr PUSH (effa)    OP-effa       2#11111111 2#00110000)
@@ -595,6 +598,7 @@ nil)
 (instr FLD(effa)               OP-effa       16#DD /0) 
 (instr FST(effa)               OP-effa       16#DD /2) 
 (instr FSTP(effa)              OP-effa       16#DD /3)
+(instr FNSTSW(effa)	       OP-effa	     16#DD /7)
 
 (instr FLDENV(effa)            OP-effa       16#D9 /4)
 (instr FLDCW(effa)             OP-effa       16#D9 /5)
@@ -642,7 +646,196 @@ nil)
 
 (instr FBSTP (effa)            OP-effa       16#df /6)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% SSE instructions
+%
+% opcodes commented out are not tested
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
+%(instr MOVUPS(xmmreg xmmreg)   OP-xmmreg-effa   16#0f 16#10)
+%(instr MOVUPS(xmmreg reg)	OP-xmmreg-effa	 16#0f 16#10)
+%(instr MOVUPS(reg xmmreg)      OP-xmmreg-effa   16#0f 16#11)
+
+%(instr MOVSS(xmmreg xmmreg)    OP-xmmreg-effa   16#f3 16#0f 16#10)
+%(instr MOVSS(xmmreg reg)	OP-xmmreg-effa	 16#f3 16#0f 16#10)
+%(instr MOVSS(reg xmmreg)       OP-xmmreg-effa   16#f3 16#0f 16#11)
+
+%(instr MOVUPD(xmmreg xmmreg)   OP-xmmreg-effa   16#66 16#0f 16#10)
+%(instr MOVUPD(xmmreg reg)	OP-xmmreg-effa	 16#66 16#0f 16#10)
+%(instr MOVUPD(reg xmmreg)      OP-xmmreg-effa   16#66 16#0f 16#11)
+
+(instr MOVSD(xmmreg xmmreg)    	OP-xmmreg-effa   16#f2 16#0f 16#11)
+(instI MOVSD(effa xmmreg)      	OP-xmmreg-effa   16#f2 16#0f 16#10)
+(instr MOVSD(xmmreg effa)      	OP-xmmreg-effa	 16#f2 16#0f 16#11)
+
+%(instr MOVHLPS(xmmreg xmmreg)  OP-xmmreg-reg	 16#0f 16#12)
+%(instI MOVLPS(effa xmmreg)     OP-xmmreg-effa   16#0f 16#12)
+%(instr MOVLPS(xmmreg effa)     OP-xmmreg-effa	 16#0f 16#13)
+%(instI MOVLPD(effa xmmreg)     OP-xmmreg-effa   16#66 16#0f 16#12)
+%(instr MOVLPD(xmmreg effa)     OP-xmmreg-effa	 16#66 16#0f 16#13)
+
+%(instr MOVDDUP(xmmreg xmmreg)  OP-xmmreg-effa   16#f2 16#0f 16#12)
+%(instI MOVDDUP(effa xmmreg)    OP-xmmreg-effa   16#f2 16#0f 16#12)
+%(instr MOVSLDUP(xmmreg xmmreg) OP-xmmreg-effa	 16#f3 16#0f 16#12)
+%(instI MOVSLDUP(effa xmmreg)   OP-xmmreg-effa   16#f3 16#0f 16#12)
+
+%(instr UNPCKLPS(xmmreg xmmreg) OP-xmmreg-effa   16#0f 16#14)
+%(instI UNPCKLPS(effa xmmreg)   OP-xmmreg-effa   16#0f 16#14)
+%(instr UNPCKLPD(xmmreg xmmreg) OP-xmmreg-effa   16#66 16#0f 16#14)
+%(instI UNPCKLPD(effa xmmreg)   OP-xmmreg-effa   16#66 16#0f 16#14)
+
+%(instr UNPCKHPS(xmmreg xmmreg) OP-xmmreg-effa   16#0f 16#15)
+%(instI UNPCKHPS(effa xmmreg)   OP-xmmreg-effa   16#0f 16#15)
+%(instr UNPCKHPD(xmmreg xmmreg) OP-xmmreg-effa   16#66 16#0f 16#15)
+%(instI UNPCKHPD(effa xmmreg)   OP-xmmreg-effa   16#66 16#0f 16#15)
+
+%(instr MOVLHPS(xmmreg xmmreg)  OP-xmmreg-effa   16#0f 16#16)
+%(instI MOVHPS(effa xmmreg)     OP-xmmreg-effa   16#0f 16#16)
+%(instr MOVHPD(xmmreg xmmreg)   OP-xmmreg-effa   16#66 16#0f 16#16)
+%(instI MOVSHPDUP(effa xmmreg)  OP-xmmreg-effa	 16#f3 16#0f 16#16)
+
+%(instr MOVHPS(xmmreg effa)	OP-xmmreg-effa	 16#0f 16#17)
+%(instr MOVHPD(xmmreg effa)	OP-xmmreg-effa	 16#66 16#0f 16#17)
+
+%(instr MOVAPS(xmmreg effa)	OP-xmmreg-effa	 16#0f 16#28)
+%(instI MOVAPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#29)
+(instr MOVAPD(xmmreg xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#29)
+%(instI MOVAPD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#28)
+%(instr MOVAPD(xmmreg effa)	OP-xmmreg-effa	 16#66 16#0f 16#29)
+
+%(instr CVTPI2PS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#2a)
+%(instr CVTPI2PD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#2a)
+%(instr CVTSI2SS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#2a)
+%(instr CVTSI2SD(effa xmmreg)	OP-xmmreg-effa	 16#f2 16#0f 16#2a)
+(instI CVTSI2SDQ(effa xmmreg)	OP-xmmreg-effa	 16#f2 rex 16#0f 16#2a)
+
+%(instr CVTTPS2PI(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#2c)
+%(instr CVTTPD2PI(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#2c)
+%(instr CVTTSS2SI(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#2c)
+(instI CVTTSD2SI(effa reg)  	OP-xmmreg-effa	 16#f2 rex 16#0f 16#2c)
+
+%(instr CVTPS2PI(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#2d)
+%(instr CVTPD2PI(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#2d)
+%(instr CVTSS2SI(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#2d)
+%(instr CVTSD2SI(effa xmmreg)	OP-xmmreg-effa	 16#f2 16#0f 16#2d)
+
+(instI UCOMISS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#2e)
+(instI UCOMISD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#2e)
+
+(instI COMISS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#2f)
+(instI COMISD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#2f)
+
+%(instI SQRTPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#51)
+%(instI SQRTPD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#51)
+%(instI SQRTSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#51)
+(instI SQRTSD(effa xmmreg)	OP-xmmreg-effa	 16#f2 16#0f 16#51)
+
+%(instI RSQRTPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#52)
+%(instI RSQRTSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#52)
+
+%(instI RCPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#53)
+%(instI RCSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#53)
+
+%(instI ANDPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#4)
+%(instI ANDSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#54)
+
+%(instI ANDNPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#55)
+%(instI ANDNSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#55)
+
+%(instI ORPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#56)
+%(instI ORSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#56)
+
+%(instI XORPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#57)
+%(instI XORSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#57)
+
+%(instI ADDPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#58)
+%(instI ADDPD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#58)
+%(instI ADDSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#58)
+(instI ADDSD(effa xmmreg)	OP-xmmreg-effa	 16#f2 16#0f 16#58)
+
+%(instI MULPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#51)
+%(instI MULPD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#59)
+%(instI MULSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#59)
+(instI MULSD(effa xmmreg)	OP-xmmreg-effa	 16#f2 16#0f 16#59)
+
+%(instI CVTPS2PD(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#5a)
+%(instI CVTPD2PS(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#5a)
+%(instI CVTSS2SD(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#5a)
+%(instI CVTDQ2PS(effa xmmreg)	OP-xmmreg-effa	 16#f2 16#0f 16#5a)
+
+%(instI CVTPS2DQ(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#5b)
+%(instI CVTTPS2DQ(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#5b)
+
+%(instI SUBPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#5c)
+%(instI SUBPD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#5c)
+%(instI SUBSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#5C)
+(instI SUBSD(effa xmmreg)	OP-xmmreg-effa	 16#f2 16#0f 16#5c)
+
+%(instI MINPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#5d)
+%(instI MINPD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#5d)
+%(instI MINSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#5d)
+%(instI MINSD(effa xmmreg)	OP-xmmreg-effa	 16#f2 16#0f 16#5d)
+
+%(instI DIVPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#5e)
+%(instI DIVPD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#5e)
+%(instI DIVSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#5e)
+(instI DIVSD(effa xmmreg)	OP-xmmreg-effa	 16#f2 16#0f 16#5e)
+
+%(instI MAXPS(effa xmmreg)	OP-xmmreg-effa	 16#0f 16#5f)
+%(instI MAXPD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#5f)
+%(instI MAXSS(effa xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#5f)
+%(instI MAXSD(effa xmmreg)	OP-xmmreg-effa	 16#f2 16#0f 16#5f)
+
+%(instr MOVD(reg xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#6e)
+%(instr MOVD(xmmreg reg)	OP-xmmreg-effa	 16#66 16#0f 16#7e)
+%(instI MOVD(effa xmmreg)	OP-xmmreg-effa	 16#66 16#0f 16#6e)
+%(instr MOVD(xmmreg effa)	OP-xmmreg-effa	 16#66 16#0f 16#7e)
+
+(instI MOVQ(xmmreg xmmreg)	OP-xmmreg-effa	 16#f3 16#0f 16#7e)
+
+(instr MOVQ(reg xmmreg)		OP-xmmreg-effa	 16#66 rex 16#0f 16#6e)
+(instr MOVQ(xmmreg reg)		OP-xmmreg-effa	 16#66 rex 16#0f 16#7e)
+(instI MOVQ(effa xmmreg)	OP-xmmreg-effa	 16#66 rex 16#0f 16#6e)
+(instr MOVQ(xmmreg effa)	OP-xmmreg-effa	 16#66 rex 16#0f 16#7e)
+
+%(instr PAND(xmmreg xmmreg)      OP-xmmreg-effa   16#66 16#0f 16#db)
+(instI PAND(effa xmmreg)      	OP-xmmreg-effa   16#66 16#0f 16#db)
+(instr PAND(xmmreg effa)      	OP-xmmreg-effa   16#66 16#0f 16#db)
+
+%(instr PANDN(xmmreg xmmreg)     OP-xmmreg-effa   16#66 16#0f 16#df)
+(instI PANDN(effa xmmreg)      	OP-xmmreg-effa   16#66 16#0f 16#df)
+(instr PANDN(xmmreg effa)      	OP-xmmreg-effa   16#66 16#0f 16#df)
+
+%(instr POR(xmmreg xmmreg)       OP-xmmreg-effa   16#66 16#0f 16#eb)
+(instI POR(effa xmmreg)      	OP-xmmreg-effa   16#66 16#0f 16#eb)
+(instr POR(xmmreg effa)      	OP-xmmreg-effa   16#66 16#0f 16#eb)
+
+%(instr PXOR(xmmreg xmmreg)      OP-xmmreg-effa   16#66 16#0f 16#ef)
+(instI PXOR(effa xmmreg)      	OP-xmmreg-effa   16#66 16#0f 16#ef)
+(instr PXOR(xmmreg effa)      	OP-xmmreg-effa   16#66 16#0f 16#ef)
+
+%(instI ANDPD(xmmreg xmmreg)     OP-xmmreg-effa   16#66 16#0f 16#54)
+(instI ANDPD(effa xmmreg)       OP-xmmreg-effa   16#66 16#0f 16#54)
+(instr ANDPD(xmmreg effa)       OP-xmmreg-effa   16#66 16#0f 16#54)
+
+%(instI ANDNPD(xmmreg xmmreg)    OP-xmmreg-effa   16#66 16#0f 16#55)
+(instI ANDNPD(effa xmmreg)      OP-xmmreg-effa   16#66 16#0f 16#55)
+(instr ANDNPD(xmmreg effa)      OP-xmmreg-effa   16#66 16#0f 16#55)
+
+%(instI ORPD(xmmreg xmmreg)      OP-xmmreg-effa   16#66 16#0f 16#56)
+(instI ORPD(effa xmmreg)        OP-xmmreg-effa   16#66 16#0f 16#56)
+(instr ORPD(xmmreg effa)        OP-xmmreg-effa   16#66 16#0f 16#56)
+
+%(instI XORPD(xmmreg xmmreg)     OP-xmmreg-effa   16#66 16#0f 16#57)
+(instI XORPD(effa xmmreg)       OP-xmmreg-effa   16#66 16#0f 16#57)
+(instr XORPD(xmmreg effa)       OP-xmmreg-effa   16#66 16#0f 16#57)
+
+(instr LDMXCSR(effa)		OP2-effa	 16#0f 16#ae /2)
+(instr STMXCSR(effa)		OP2-effa	 16#0f 16#ae /3)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % now we generate the CXINSTR dataset
 (off usermode) (de linelength (x) 1000)
 (reload chars)
