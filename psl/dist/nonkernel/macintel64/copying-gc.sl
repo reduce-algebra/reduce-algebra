@@ -330,7 +330,8 @@
        (do
     (let ((id-number  (hash-table-entry i)))
       (when (and (> id-number 0)     % Slot is occupied
-             (not (markedid id-number)))
+                 (not (= id-number deleted-slot-value)) % skip symbols removed from oblist
+                 (not (markedid id-number)))
         (markandcopyfromid id-number)
         ))))
  
