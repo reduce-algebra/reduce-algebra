@@ -1891,12 +1891,12 @@ l0174:
 / (*entry addressapply0 expr 1)
  .globl l0175
 l0175:
- jmp  *%rax
+ jmp *%rax
  .quad 1
 / (*entry addressapplyx expr 1)
  .globl addressapplyx
 addressapplyx:
- callq *%rax
+ call *%rax
  ret
  .quad 2
 / (*entry bittable expr 2)
@@ -7114,10 +7114,10 @@ l0353:
  add $24,%rsp
  ret
 l0355:
- .quad 26
+ .quad 28
  .byte 42,42,42,42,32,69,114,114,111,114,32
  .byte 111,112,101,110,105,110,103,32,100
- .byte 121,110,32,108,105,98,32,0
+ .byte 121,110,32,108,105,98,32,37,115,0
  .quad 2
 / (*entry psl-dlopen expr 2)
  .globl l0356
@@ -7212,7 +7212,7 @@ dynloadhelper:
  shr $5,%rsp
  shl $5,%rsp
  mov %rbx,40(%rsp)
- callq *%rax
+ call *%rax
  mov 40(%rsp),%rsp
  pop %r13
  pop %r14
@@ -7248,8 +7248,8 @@ dynloadhelper_float_float:
  shl $5,%rsp
  mov %rbx,40(%rsp)
  movsd (%rdi),%xmm0
- callq *%rax
- movq  %xmm0,%rax
+ call *%rax
+ movq %xmm0,%rax
  mov 40(%rsp),%rsp
  pop %r13
  pop %r14
