@@ -6,8 +6,32 @@
 % Created:      1-August 1989
 % Modified:
 % Mode:         Lisp
+% Status:	Open Source: BSD License
+% Package:      
 %
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % Revisions
 % 28-Apr-92 (Herbert Melenk)
 % no relocation for quoted small ID's
@@ -259,7 +283,8 @@
 				(instructionlength x)))))
 ))
 
-(flag '(movups movss movupd movsd
+(flag '(JMP CALL
+	movups movss movupd movsd
 	movhlps movlps movlpd movddup movsldup unpcklps unpcklpd 
 	MOVLHPS MOVHPS MOVHPD MOVSHPDUP movaps movapd 
 	CVTPI2PS CVTPI2PD CVTSI2SS CVTSI2SD CVTSI2SDQ 
@@ -413,44 +438,44 @@
     (when (or (regp op1) (xmmregp op1)) (setq op1 (lsh (reg2int op1 'REXR) 3)))
     (when (pairp op2) (setq mode (car op2)))
 
-      % case: reg - reg
+    % case: reg - reg
     (when (or (regp op2) (xmmregp op2))
          (depositbyte (lor 2#11000000 (lor op1 (reg2int op2 'REXB))))
          (return nil))
  
-         % case: reg - (indirect (reg EBP/R13) ) % no format without offset
+    % case: reg - (indirect (reg EBP/R13) ) % no format without offset
     (when (and (eq mode 'indirect)  
          (regp (cadr op2)) 
          (setq base (reg2int (cadr op2) 'REXB))
          (equal base 2#101) )
 	    (return (modR/M op1 (list 'displacement (cadr op2) 0))))
 
-	  % case: reg - (indirect (reg ESP/R12) )
-	  (when (and (eq mode 'indirect)
-		     (regp (cadr op2))
-		     (setq base (reg2int (cadr op2) 'REXB))
-		     (equal base 2#100) )
-	    (depositbyte (lor 2#00000100 op1))
-	    (depositbyte 2#00100100)  % s-i-b byte
-	    (return nil))
+    % case: reg - (indirect (reg ESP/R12) )
+    (when (and (eq mode 'indirect)
+	       (regp (cadr op2))
+	       (setq base (reg2int (cadr op2) 'REXB))
+	       (equal base 2#100) )
+	  (depositbyte (lor 2#00000100 op1))
+	  (depositbyte 2#00100100)  % s-i-b byte
+	  (return nil))
 
-	  % case: reg - (indirect reg) non ESP/EBP
-	  (when (and (eq mode   'indirect) 
-		     (regp (cadr op2)))
-	    % no zero displacement for reg EBP:
-	    (setq base (reg2int (cadr op2) 'REXB))
-	    (when (or (and (equal base 2#100) (not (upperreg64p (cadr op2)))) (equal base 2#101))
-	      (modR/Merror op2))
-	    (depositbyte (lor 2#00000000 (lor op1 base)))
-	    (return nil))
+    % case: reg - (indirect reg) non ESP/EBP
+    (when (and (eq mode   'indirect) 
+	       (regp (cadr op2)))
+	  % no zero displacement for reg EBP:
+	  (setq base (reg2int (cadr op2) 'REXB))
+	  (when (or (and (equal base 2#100) (not (upperreg64p (cadr op2)))) (equal base 2#101))
+	    (modR/Merror op2))
+	  (depositbyte (lor 2#00000000 (lor op1 base)))
+	  (return nil))
 
-	  % case: reg - (displacement (reg ESP/R12) const)
-	  (when (and (eq mode   'displacement)
-		     (regp (cadr op2)) 
-		     (numberp (caddr op2))
-		     (setq base (reg2int (cadr op2) 'REXB))
-		     (equal base 2#100) )
-	    (return
+    % case: reg - (displacement (reg ESP/R12) const)
+    (when (and (eq mode   'displacement)
+	       (regp (cadr op2)) 
+	       (numberp (caddr op2))
+	       (setq base (reg2int (cadr op2) 'REXB))
+	       (equal base 2#100) )
+	  (return
 	     (if (bytep (caddr op2))  % 8 bit displacement
 		 (progn
 		   (depositbyte (lor 2#01000100 op1))
@@ -461,29 +486,29 @@
 		   (depositbyte 2#00100100)  % s-i-b byte
 		   (deposit32bitword (caddr op2) )))))
 
-	  % case: reg - (displacement reg const), non ESP
-	  (when (and (eq mode   'displacement) 
-		     (regp (cadr op2)) 
-		     (numberp (caddr op2)))
-	    (setq base (reg2int (cadr op2) 'REXB))
-	    (return
-	     (if (bytep (caddr op2))  % 8 bit displacement
-		 (progn 
-		   (depositbyte (lor 2#01000000 (lor op1 base)))
-		   (depositbyte (land 255 (caddr op2))))
-		 (progn  
-		   (depositbyte (lor 2#10000000 (lor op1 base)))
-		   (deposit32bitword (int2sys (caddr op2) ))))))
+    % case: reg - (displacement reg const), non ESP
+    (when (and (eq mode   'displacement) 
+	       (regp (cadr op2)) 
+	       (numberp (caddr op2)))
+	  (setq base (reg2int (cadr op2) 'REXB))
+	  (return
+	    (if (bytep (caddr op2))  % 8 bit displacement
+		(progn 
+		  (depositbyte (lor 2#01000000 (lor op1 base)))
+		  (depositbyte (land 255 (caddr op2))))
+		(progn  
+		  (depositbyte (lor 2#10000000 (lor op1 base)))
+		  (deposit32bitword (int2sys (caddr op2) ))))))
 	  
-	  % case: reg - (indexed ....) 
-	  (when (eq mode   'indexed)
-	    (return (sibbyte-for-indexed (lor 2#00000100 op1) op2)))
+    % case: reg - (indexed ....) 
+    (when (eq mode   'indexed)
+	  (return (sibbyte-for-indexed (lor 2#00000100 op1) op2)))
 
 
-	  % all other cases: reg - absolute 32 bit displacement
-	  (depositbyte (lor 2#00000100 op1 ))
-	  (depositbyte 2#00100101 ) % AMD64 no RIP relative addressing
-	  (depositextension op2)))
+    % all other cases: reg - absolute 32 bit displacement
+    (depositbyte (lor 2#00000100 op1 ))
+    (depositbyte 2#00100101 ) % AMD64 no RIP relative addressing
+    (depositextension op2)))
 
 
 (de sibbyte-for-indexed(modr/m op2)
@@ -609,7 +634,7 @@
 	  % strip off tag 'reg
 	  (cond ((xmmregp r) (setq r (cadr r)))
 		(t (cond ((eqcar r 'reg)(setq r (cadr r))))
-		   %convert a LISP-register into a 80386 register
+		   %convert a LISP-register into an x86_64 register
 		   (if (numberp r) (setq r (getv numericRegisterNames r)))))
 	  (setq r (get r 'registercode))
 	  (when (and r (wgreaterp r 7)) (setq r (wand r 7))
@@ -858,19 +883,29 @@
    (when *testlap (tab 15)(prin2 "-> ") 
 	 (prin2 n) (prin2 " rel = ")
 	 (prin2 (plus currentoffset* n))(prin2t " abs"))))
+
 (de lth-JUMP-SHORT (code op1) 2)
  
 % indirect jump to effective address
 (de OP-JUMP-EFFA (code op1)
-	      % a tag "inirect" contained already in the operation if not
+	      % a tag "indirect" contained already in the operation if not
 	      % explicit reg reference
 	   (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
 		 (setq op1 (cadr op1)))
+           % need REX byte if upper 8 register
+           (if (upperreg64p op1)
+               (progn
+                 (setq REX-prefix 16#40)
+                 (depositbyte REX-prefix)
+                 (SETQ REX? (plus codebase!* currentoffset* -1))
+                 (setq allowextrarexprefix 1)))
 	   (op-reg-effa code (cadr code) op1))
+
 (de LTH-JUMP-EFFA (code op1) 
 	   (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
 		 (setq op1 (cadr op1)))
-	   (lth-reg-effa code (cadr code) op1))
+           (if (upperreg64p op1) (add1 (lth-reg-effa code (cadr code) op1))
+	     (lth-reg-effa code (cadr code) op1)))
  
 
 (commentoutcode
@@ -1796,9 +1831,7 @@
 		  ))
 
 
-(de reg64bitP (i)
-  (if (eq (car i) 'JMP) NIL
-  (reg64bitp1 !64bitregs i)))
+(de reg64bitP (i) (reg64bitp1 !64bitregs i)))
 
 (de upperreg64p (i) (reg64bitp1 upper64bitregs i))
 

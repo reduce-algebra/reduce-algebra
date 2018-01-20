@@ -527,6 +527,18 @@
 				     (printoperand u))))
 	     (prin2 !$eol!$)))))))
 
+(put 'call 'asmpseudoop 'asmprintcall)
+(put 'jmp 'asmpseudoop 'asmprintcall)
+
+(de asmprintcall (x)
+  (prin2 '! )
+  (printopcode (car x))
+  (prin2 '! )
+  (if (eqcar (cadr x) 'reg) (prin2 '!*))
+  (printoperand (cadr x))
+  (prin2 !$eol!$)
+)
+
 % NEWLINE                                                                  
 (put '*entry 'asmpseudoop 'asmprintentry)
 

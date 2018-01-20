@@ -520,7 +520,7 @@
    )
 
 (de reg-m(n)
-  (if (or rex_w !0f-prefix*) (reg-m64 n)
+  (if (or rex_w (wgreaterp n 7) !0f-prefix*) (reg-m64 n)
   (cond ((eq n 0) 'eax)
         ((eq n 1) 'ecx)
         ((eq n 2) 'edx)

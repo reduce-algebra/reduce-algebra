@@ -1,13 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXC:SUN386-ASM.SL
-% Description:  SUN386i specific information for LAP-TO-ASM
+% File:         PXC:unixAMD64-ASM.SL
+% Description:  AMD64 specific information for LAP-TO-ASM
 % Author:       
 % Created:      16-Jan-1982
 % Modified:
 % Mode:         Lisp
 % Package:      
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -138,7 +138,7 @@
 		(t3  "%r8") (t4 "%r9")
                 (eax "%rax") (al "%al") (ax "%ax")
                 (rdx "%rdx") (rdi "%rdi") (rsi "%rsi")
-                (ecx "%ecx") (edx "%edx")
+                (ecx "%ecx") (edx "%edx") (ebx "%ebx")
                 (r8  "%r8") ( r9 "%r9") (r10 "%r10")
                 (r11 "%r11") ( r12 "%r12") (r13 "%r13")
                 (r14 "%r14") ( r15 "%r15") 
@@ -154,7 +154,7 @@
                 (xmm10 "%xmm10") (xmm11 "%xmm11")
                 (xmm12 "%xmm12") (xmm13 "%xmm13")
                 (xmm14 "%xmm14") (xmm15 "%xmm15")
-          	(sp "%rsp")
+          	(sp "%rsp") (rip "%rip") 
           	(st "%rsp") )                      % Stack Pointer
   'RegisterName)
 

@@ -71,10 +71,10 @@
 
 
 (lap '((*entry addressapply0 expr 1)
-       (*jumphugo (reg 1))))
+       (*jump (reg 1))))
   
 (lap '((*entry addressapplyx expr 1)
-       (*callhugo (reg 1))
+       (*call (reg 1))
        (*exit 0)))
   
 (de bittable (baseaddress bitoffset)
