@@ -151,10 +151,10 @@ then
 # the first argument in the re-try. This is because otherwise some malformed
 # input later on (eg "--") could cause it not to be recognised, leading
 # to an infinite cycle of attempted re-generation!
-  printf "Restart: $abssrcdir/configure -C --without-autogen $ac_configure_args\n"
+  printf "Restart: $abssrcdir/configure --without-autogen $ac_configure_args\n"
 # Because this uses "exec" it chains into the restarted processing and does
 # not proceed further in this shell.
-  exec $SHELL -c "$abssrcdir/configure -C --without-autogen $ac_configure_args"
+  exec $SHELL -c "$abssrcdir/configure --without-autogen $ac_configure_args"
 fi
 
 # Next and before I do anything much else I will see if any GUI toolkit that
@@ -565,7 +565,7 @@ if test "x$with_cygwin32" != "xno" &&
 then
   AC_MSG_NOTICE([Restart to use a 32-bit Cygwin shell])
   AC_MSG_NOTICE([with-cygwin32=$with_cygwin32 uname_o=$uname_o uname_m=$uname_m])
-  doconfig="$LOCALCYG $SHELL -c \"$abssrcdir/configure -C $ac_configure_args\""
+  doconfig="$LOCALCYG $SHELL -c \"$abssrcdir/configure $ac_configure_args\""
   AC_MSG_NOTICE([$doconfig])
   exec $doconfig
 fi
@@ -577,7 +577,7 @@ if test "x$with_cygwin64" != "xno" &&
 then
   AC_MSG_NOTICE([Restart to use a 64-bit Cygwin shell])
   AC_MSG_NOTICE([with-cygwin64=$with_cygwin64 uname_o=$uname_o uname_m=$uname_m uname_s=$uname_s wow=$wow])
-  doconfig="$LOCALCYG $SHELL -c \"$abssrcdir/configure -C $ac_configure_args\""
+  doconfig="$LOCALCYG $SHELL -c \"$abssrcdir/configure $ac_configure_args\""
   AC_MSG_NOTICE([$doconfig])
   exex $doconfig
 fi
@@ -720,32 +720,6 @@ AC_ARG_WITH(smallpage,
 
 ###########################################################################
 
-OLD_CFLAGS="$CFLAGS"
-OLD_CXXFLAGS="$CXXFLAGS"
-OLD_CPPFLAGS="$CPPFLAGS"
-AC_PROG_CC
-AC_PROG_CXX
-CFLAGS="$OLD_CFLAGS"
-CXXFLAGS="$OLD_CXXFLAGS"
-CPPFLAGS="$OLD_CPPFLAGS"
-AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
-AC_MSG_NOTICE([CC=/$CC/ CXX=/$CXX/ CCACHE=/$CCACHE/])
-if test "$CCACHE" != ""
-then
-  case $CC$CXX in
-  *ccache*)
-    ;;
-  *)
-# Just for now I have had to disable this because it really fights with
-# "--host-XXX" options by fixing the identity of the compilers that are
-# to be used too early. I need to find a new scheme!
-#   CC="$CCACHE $CC"
-#   CXX="$CCACHE $CXX"
-    ;;
-  esac
-fi
-
-
 # Note that on Windows under cygwin i686-w64-mingw32 and x86_64-w64-mingw32
 # compilers MUST be installed, and there should be a 32-bit
 # cygwin installation in c:\cygwin and a 64-bit one in c:\cygwin64.
@@ -860,6 +834,7 @@ csl_inplace_cygwin_build ()
   AC_MSG_NOTICE([target=$target => build=$build])
   mkdir -p "$abssrcdir/cslbuild/$build"
   cd "$abssrcdir/cslbuild/$build"
+  bloc=`pwd`/config.cache
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
@@ -886,7 +861,7 @@ csl_inplace_cygwin_build ()
     i686-w64-mingw32-strip cyg64
     flip="`pwd`/cyg64.exe "
   fi
-  doconfig="$SHELL $flip $abssrcdir/configure -C $ac_configure_args \
+  doconfig="$SHELL $flip $abssrcdir/configure --cache-file=$bloc $ac_configure_args \
           CC=\"$flip$CC\" CXX=\"$flip$CXX\" \
           STRIP=\"$flip$STRIP\" RANLIB=\"$flip$RANLIB\" \ 
           $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
@@ -913,6 +888,7 @@ csl_inplace_nativewin_build ()
   AC_MSG_NOTICE([About to configure using $host in $build])
   mkdir -p "$abssrcdir/cslbuild/$build"
   cd "$abssrcdir/cslbuild/$build"
+  bloc=`pwd`/config.cache
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
@@ -930,7 +906,8 @@ csl_inplace_nativewin_build ()
   cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
   AC_MSG_NOTICE([cygextra = $cygextra])
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-  doconfig="$SHELL $abssrcdir/configure -C $ac_configure_args \
+  doconfig="$SHELL $abssrcdir/configure --cache-file=$bloc $ac_configure_args \
+          CC=\"$CC\" CXX=\"$CXX\" \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
           $passcc $cygextra $pass_build --host=$host"
@@ -1003,6 +980,7 @@ csl_inplace_build ()
 # All other platforms come here...
     mkdir -p "$abssrcdir/cslbuild/$build"
     cd "$abssrcdir/cslbuild/$build"
+    bloc=`pwd`/config.cache
     if test "x$CC$CPP$CXX$CXXCPP" != "x"
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
@@ -1011,7 +989,8 @@ csl_inplace_build ()
     fi
     AC_MSG_NOTICE([passcc = $passcc])
     pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-    doconfig="$SHELL $abssrcdir/configure -C $ac_configure_args \
+    doconfig="$SHELL $abssrcdir/configure --cache-file=$bloc $ac_configure_args \
+            CC=\"$CC\" CXX=\"$CXX\" \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
             $passcc $pass_build"
@@ -1027,10 +1006,11 @@ psl_inplace_build ()
   AC_MSG_NOTICE([+++ Will build in $abssrcdir/pslbuild/$build])
   mkdir -p "$abssrcdir/pslbuild/$build"
   cd "$abssrcdir/pslbuild/$build"
+  bloc=`pwd`/config.cache
 # This passes down any configure arguments to the PSL-specific configuration
 # but at present I do not expect any to be relevant.
   pass_build="--with-build=\"$build\""
-  eval "$SHELL $abssrcdir/psl/configure -C $ac_configure_args $pass_build"
+  eval "$SHELL $abssrcdir/psl/configure --cache-file=$bloc $ac_configure_args $pass_build"
 
   AC_MSG_NOTICE([About to configure crlibm])
   builddir=`pwd`
@@ -1050,7 +1030,7 @@ psl_inplace_build ()
   esac
 
   AC_MSG_NOTICE([passcc = $passcc])
-  doconfig="$SHELL $abssrcdir/libraries/crlibm/configure -C $filtered \
+  doconfig="$SHELL $abssrcdir/libraries/crlibm/configure --cache-file=$bloc $filtered \
         $pass_host \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
@@ -1067,8 +1047,9 @@ psl_inplace_build ()
   AC_MSG_NOTICE([About to configure libedit])
   mkdir -p libedit
   cd libedit
-  doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure -C \
+  doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure --cache-file=$bloc \
         $nohost \
+        CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" \
@@ -1088,7 +1069,8 @@ psl_inplace_build ()
   mkdir -p redfront
   cd redfront
 
-  doconfig="$SHELL $abssrcdir/generic/newfront/configure -C $nohost \
+  doconfig="$SHELL $abssrcdir/generic/newfront/configure --cache-file=$bloc $nohost \
+        CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" \
@@ -1141,6 +1123,38 @@ AC_CONFIG_FILES([Makefile])
 
 ###############################################################################
 builddir=`pwd`
+
+AC_ARG_WITH(ccache,
+  AC_HELP_STRING([--with-ccache],
+                 [--without-ccache can be used to disable use of ccache]),
+  [], [])
+
+AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
+AC_MSG_NOTICE([CC=/$CC/ CXX=/$CXX/ CCACHE=/$CCACHE/])
+
+if test "with_ccache" != "no" &&
+   test "$CC$CXX" = ""
+then
+  OLD_CFLAGS="$CFLAGS"
+  OLD_CXXFLAGS="$CXXFLAGS"
+  OLD_CPPFLAGS="$CPPFLAGS"
+  AC_PROG_CC
+  AC_PROG_CXX
+  CFLAGS="$OLD_CFLAGS"
+  CXXFLAGS="$OLD_CXXFLAGS"
+  CPPFLAGS="$OLD_CPPFLAGS"
+  if test "$CCACHE" != ""
+  then
+    case $CC$CXX in
+    *ccache*)
+      ;;
+    *)
+      CC="$CCACHE $CC"
+      CXX="$CCACHE $CXX"
+      ;;
+    esac
+  fi
+fi
 
 if test "x$with_csl" != "xno"
 then
@@ -1202,15 +1216,25 @@ then
 # However if I am building for raw cygwin I find that I have pain if I
 # specify --host specifically, so in that case I will not!
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure -C $ac_configure_args $pass_host --with-wx=\"$with_wx\" $pass_build --without-fox"
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure -C \
+        $ac_configure_args \
+        CC=\"$CC\" CXX=\"$CXX\" \
+        $pass_host --with-wx=\"$with_wx\" $pass_build --without-fox"
   elif test "x$with_fox" != "xno"
   then
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure -C $ac_configure_args $pass_host --with-fox=\"$builddir\" --with-fox-pending=yes $pass_build --without-wx"
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure -C \
+        $ac_configure_args \
+        CC=\"$CC\" CXX=\"$CXX\" \
+        $pass_host --with-fox=\"$builddir\" --with-fox-pending=yes $pass_build --without-wx"
   else
 # This final version will be without any GUI.
     pass_build="--with-build=\"$build\""
-    doconfig="$SHELL $abssrcdir/csl/cslbase/configure -C $ac_configure_args $pass_host $pass_build --without-fox --without-wx"
+    doconfig="$SHELL $abssrcdir/csl/cslbase/configure \
+        -C \
+        $ac_configure_args \
+        CC=\"$CC\" CXX=\"$CXX\" \
+        $pass_host $pass_build --without-fox --without-wx"
   fi
   AC_MSG_NOTICE([$doconfig])
   if test "x$with_sequential" = "xno"
@@ -1480,6 +1504,7 @@ else
   AC_MSG_NOTICE([passcc = $passcc])
   doconfig="$SHELL $abssrcdir/csl/cslbase/gc-7/configure -C $filtered \
         $pass_host \
+        CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS -DDONT_ADD_BYTE_AT_END=1\" \
         CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" \
@@ -1541,6 +1566,7 @@ cd libedit
 
 doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure -C \
         $nohost \
+        CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" \
@@ -1567,6 +1593,7 @@ mkdir -p redfront
 cd redfront
 
 doconfig="$SHELL $abssrcdir/generic/newfront/configure -C $nohost \
+        CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
         CXXFLAGS=\"$CXXFLAGS\" \

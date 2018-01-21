@@ -705,19 +705,26 @@ CXXFLAGS="$old_CXXFLAGS"
 
 LT_INIT([disable-static])
 
-AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
-if test "$CCACHE" != ""
+AC_ARG_WITH(ccache,
+  AC_HELP_STRING([--with-ccache],
+                 [--without-ccache can be used to disable use of ccache]),
+  [], [])
+
+if test "$with_ccache" != "no"
 then
-  case $CC$CXX in
-  *ccache*)
-    ;;
-  *)
-# As at the top level, I need to review the interaction between this
-# and cross compilation.
-#   CC="$CCACHE $CC"
-#   CXX="$CCACHE $CXX"
-    ;;
-  esac
+  AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
+  if test "with_ccache" != "no" &&
+     test "$CC$CXX" = ""
+  then
+    case $CC$CXX in
+    *ccache*)
+      ;;
+    *)
+      CC="$CCACHE $CC"
+      CXX="$CCACHE $CXX"
+      ;;
+    esac
+  fi
 fi
 
 if test "x$XLIBS" != "x"
