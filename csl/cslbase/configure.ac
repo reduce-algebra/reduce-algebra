@@ -712,8 +712,10 @@ then
   *ccache*)
     ;;
   *)
-    CC="$CCACHE $CC"
-    CXX="$CCACHE $CXX"
+# As at the top level, I need to review the interaction between this
+# and cross compilation.
+#   CC="$CCACHE $CC"
+#   CXX="$CCACHE $CXX"
     ;;
   esac
 fi

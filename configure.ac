@@ -736,8 +736,11 @@ then
   *ccache*)
     ;;
   *)
-    CC="$CCACHE $CC"
-    CXX="$CCACHE $CXX"
+# Just for now I have had to disable this because it really fights with
+# "--host-XXX" options by fixing the identity of the compilers that are
+# to be used too early. I need to find a new scheme!
+#   CC="$CCACHE $CC"
+#   CXX="$CCACHE $CXX"
     ;;
   esac
 fi

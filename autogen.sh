@@ -73,6 +73,12 @@ else
   a="$*"
 fi
 
+# I will get rid of all config.cache files just to feel safe. If (say) the
+# set of libraries on your computer have changed since last time they
+# could contain misleading information.
+
+find . -name config.cache | xargs rm
+
 # I will re-process the top level first sequentially.
 $LIBTOOLIZE --force --copy
 aclocal --force

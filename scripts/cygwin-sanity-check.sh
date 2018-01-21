@@ -62,8 +62,8 @@ case `uname -m` in
 i686)
     width="x86"
     printf "Checking 32-bit cygwin environment...\n"
-    for m in automake bc bison cygwin64-gcc-g++ \
-        gcc-g++ libgtk2.0-devel libncurses-devel \
+    for m in automake bc bison ccache cygwin64-gcc-g++ \
+        gcc-g++ libffi-devel libgtk2.0-devel libncurses-devel \
         libpng-devel libtool libXext-devel libXft-devel make \
         mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
         mingw64-x86_64-zlib openssh subversion texinfo time wget gcab \
@@ -90,8 +90,8 @@ i686)
 x86_64)
     width="x86_64"
     printf "Checking 64-bit cygwin environment...\n"
-    for m in automake bc bison cygwin32-gcc-g++ \
-        gcc-g++ libgtk2.0-devel \
+    for m in automake bc bison ccache cygwin32-gcc-g++ \
+        gcc-g++ libffi-devel libgtk2.0-devel \
         libncurses-devel libpng-devel libtool libXext-devel libXft-devel \
         make mingw64-i686-gcc-g++ mingw64-i686-zlib mingw64-x86_64-gcc-g++ \
         mingw64-x86_64-zlib openssh subversion texinfo time wget gcab \

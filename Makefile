@@ -17,10 +17,12 @@
 #               A simple test to ensure that there is at least a chance of
 #               building the CSL version. This compiles a small test program
 #               that should pop up a window.
+#   [make snapshot] Work in progress to make a distributable archive relevant
+#               to the current architecture.
 #   [make install] Work in progress at this stage.
 
 
-.PHONY: dist all csl psl csl-sanity-test install
+.PHONY: dist all csl psl csl-sanity-test snapshot install
 
 # When debugging it may be useful to invoke scripts/make.sh in a noisy way...
 # as in "make VERBOSE=-v"
@@ -42,6 +44,22 @@ all:
 csl-sanity-test:
 	if which cygcheck > /dev/null; then $(SHELL) $(VERBOSE) scripts/cygwin-sanity-check.sh ; fi
 	$(SHELL) $(VERBOSE) scripts/csl-sanity-check.sh
+
+# "make snapshot" will, when I have finished implementing support for it,
+# create a file or several files in the directory "snapshots" representing
+# a distributable archive for the current system. I intend to make this
+# take over from the current situation where there are directories called
+# debianbuild, macbuild and winbuild each with separate sets of arrangements.
+# Well packing for different architectures will still involve platform-specific
+# code but I will arrange that through scripts triggerable in a uniform manner
+# here
+snapshot:
+# First build binaries for this machine.
+	$(MAKE)
+# Then package the resulting binaries as a .deb, .rpm, .dmg or as a windows
+# installer file.
+	scripts/snapshot.sh
+
 
 # "make install" will try to install both CSL and PSL versions (if
 # configured) in the same place and manner that they would have been
