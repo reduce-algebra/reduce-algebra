@@ -77,7 +77,7 @@ fi
 # set of libraries on your computer have changed since last time they
 # could contain misleading information.
 
-find . -name config.cache | xargs rm
+find . -name config.cache | xargs rm -f
 
 # I will re-process the top level first sequentially.
 $LIBTOOLIZE --force --copy

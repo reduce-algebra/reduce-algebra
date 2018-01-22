@@ -834,7 +834,6 @@ csl_inplace_cygwin_build ()
   AC_MSG_NOTICE([target=$target => build=$build])
   mkdir -p "$abssrcdir/cslbuild/$build"
   cd "$abssrcdir/cslbuild/$build"
-  bloc=`pwd`/config.cache
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
@@ -861,7 +860,7 @@ csl_inplace_cygwin_build ()
     i686-w64-mingw32-strip cyg64
     flip="`pwd`/cyg64.exe "
   fi
-  doconfig="$SHELL $flip $abssrcdir/configure --cache-file=$bloc $ac_configure_args \
+  doconfig="$SHELL $flip $abssrcdir/configure --cache-file $ac_configure_args \
           CC=\"$flip$CC\" CXX=\"$flip$CXX\" \
           STRIP=\"$flip$STRIP\" RANLIB=\"$flip$RANLIB\" \ 
           $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
@@ -888,7 +887,6 @@ csl_inplace_nativewin_build ()
   AC_MSG_NOTICE([About to configure using $host in $build])
   mkdir -p "$abssrcdir/cslbuild/$build"
   cd "$abssrcdir/cslbuild/$build"
-  bloc=`pwd`/config.cache
   if test "x$CC$CPP$CXX$CXXCPP" != "x"
   then
     passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
@@ -906,7 +904,7 @@ csl_inplace_nativewin_build ()
   cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
   AC_MSG_NOTICE([cygextra = $cygextra])
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-  doconfig="$SHELL $abssrcdir/configure --cache-file=$bloc $ac_configure_args \
+  doconfig="$SHELL $abssrcdir/configure --cache-file $ac_configure_args \
           CC=\"$CC\" CXX=\"$CXX\" \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
@@ -980,7 +978,6 @@ csl_inplace_build ()
 # All other platforms come here...
     mkdir -p "$abssrcdir/cslbuild/$build"
     cd "$abssrcdir/cslbuild/$build"
-    bloc=`pwd`/config.cache
     if test "x$CC$CPP$CXX$CXXCPP" != "x"
     then
       passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
@@ -989,7 +986,7 @@ csl_inplace_build ()
     fi
     AC_MSG_NOTICE([passcc = $passcc])
     pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-    doconfig="$SHELL $abssrcdir/configure --cache-file=$bloc $ac_configure_args \
+    doconfig="$SHELL $abssrcdir/configure --cache-file $ac_configure_args \
             CC=\"$CC\" CXX=\"$CXX\" \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
@@ -1006,11 +1003,10 @@ psl_inplace_build ()
   AC_MSG_NOTICE([+++ Will build in $abssrcdir/pslbuild/$build])
   mkdir -p "$abssrcdir/pslbuild/$build"
   cd "$abssrcdir/pslbuild/$build"
-  bloc=`pwd`/config.cache
 # This passes down any configure arguments to the PSL-specific configuration
 # but at present I do not expect any to be relevant.
   pass_build="--with-build=\"$build\""
-  eval "$SHELL $abssrcdir/psl/configure --cache-file=$bloc $ac_configure_args $pass_build"
+  eval "$SHELL $abssrcdir/psl/configure --cache-file $ac_configure_args $pass_build"
 
   AC_MSG_NOTICE([About to configure crlibm])
   builddir=`pwd`
@@ -1030,7 +1026,7 @@ psl_inplace_build ()
   esac
 
   AC_MSG_NOTICE([passcc = $passcc])
-  doconfig="$SHELL $abssrcdir/libraries/crlibm/configure --cache-file=$bloc $filtered \
+  doconfig="$SHELL $abssrcdir/libraries/crlibm/configure --cache-file $filtered \
         $pass_host \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
@@ -1047,7 +1043,7 @@ psl_inplace_build ()
   AC_MSG_NOTICE([About to configure libedit])
   mkdir -p libedit
   cd libedit
-  doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure --cache-file=$bloc \
+  doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure --cache-file \
         $nohost \
         CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS\" \
@@ -1069,7 +1065,7 @@ psl_inplace_build ()
   mkdir -p redfront
   cd redfront
 
-  doconfig="$SHELL $abssrcdir/generic/newfront/configure --cache-file=$bloc $nohost \
+  doconfig="$SHELL $abssrcdir/generic/newfront/configure --cache-file $nohost \
         CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
