@@ -1,3 +1,9 @@
+							  ESL README
+							  ==========
+
+Version 2: ESL as an upper-case Lisp
+====================================
+
 To keep things as simple as possible, work with the files in
 
 https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/historical/r33/
@@ -8,152 +14,39 @@ dbuild.sl orchestrates building REDUCE. It inputs boot.sl, prolog.red,
 rlisp.red, rend.red (in that order) to build RLISP, then continues to
 build REDUCE.
 
-For now, I have edited boot.sl as boot.el to replace % with ; and to
-add \ where necessary. (But a better approach might be as suggested
-below.)  This slightly modified boot.el seems to work with simple
-input of the form
+I have edited boot.sl as boot.el to use upper case, replaced % with ;
+and ! with \ where necessary so that Emacs Lisp can read it.
 
-(begin2)
-a_simple_form;
-end;
+I have defined a few additional functions that are assumed by REDUCE
+but not defined in Standard LISP at the end of sl.el.
 
-Now try to process rlisp.red, initially interactively via a SL
-interaction buffer.
+sl.el and boot.el now compile cleanly and seem to run.
 
-Consider using the newnam facility early. It might be better than
-using advise and may be the only way to handle arrayp.
+Provided I increase max-lisp-eval-depth to 2000 and max-specpdl-size
+to 2500 to handle module slfns, I can read the original REDUCE 3.3
+version of "rlisp.red", and I can also read a version of "rend.red"
+revised for ESL, by evaluating:
 
-Also, consider regarding ! as only RLISP read syntax and not including
-it in symbols. Edit boot.el to replace ! with \ (and % with ;).
-
-Could solve the function clash problem by implementing SL in
-upper-case and using the raise flag.
-
-PROGRESS
-========
-
-Processing rlisp.red modules. Must do this incrementally, since later
-code relies on earlier code!
-
-1. module -- OK. But note that you can't read this module twice. I
-think that the rlis declaration for keyword `module' prevents a second
-attempt to define procedure `module'!
-
-2. newtok -- OK
-
-3. support -- crashes Emacs! Functions arrayp, >=, <= are already
-defined in Emacs Lisp. I have edited the file so that arrayp is
-redefined using newnam. Later, I need to move this into prolog.red and
-flag arrayp 'lose. This is supported by boot.sl. Elisp versions of >=
-and <= are probably OK. Definitions commented out for now but later
-should also flag 'lose. Now OK.
-
-Note that tabs as white space can lead to "Symbol’s function
-definition is void: !\", at least during the boot process. Consider
-fixing this later if tabs are not handled correctly by rlisp.red.
-
-4. slfns -- error max-lisp-eval-depth exceeded processing the list of
-SL functions!  Default is 800. Increasing max-lisp-eval-depth to 2000
-and max-specpdl-size to 2000 seems to allow this module to be
-read. Now OK
-
-5. superv -- OK
-
-6. tok -- redefines some functions in boot.sl! This causes trouble.  OK
-to rread. Defining scan fails! Invalid function: (quote comment).
-Part of procedure scan is in upper case, which is not processed
-correctly. I need to solve the issue of character case properly, but
-for now just downcase the offending code. Now OK.
-
-7. xread -- OK
-8. lpri -- OK
-9. parser -- OK
-
-10. block -- OK. I can now process all of rlisp.red in one go down to
-the end of this module.
-
-11. form -- identity already defined in elisp with one argument. Code
-edited to define identity!* and use newnam.
-
-Error defining form; probably in form1.
-
-form1 starts like this:
-
-(lambda
-  (u vars mode)
-  (block
-   ((x . scalar)
-	(y . scalar))
-   (cond ...)))
-
-What is block? This probably isn't working:
-
-putd('block,'macro,
- '(lambda (u) (cons 'prog
-                 (cons (mapcar (cadr u) (function car)) (cddr u)))));
-
-The problem is that Standard Lisp macros are nospread and so take a
-single parameter that gets the list of arguments. So I need to
-redefine putd to take a &rest parameter. Standard Lisp macros also get
-their names as their first argument, so I need to build this into the
-macro body.
-
-Revised putd and getd (and dm) to handle macros properly (I hope). Now
-OK.
-
-12. proc -- OK
-13. forstat -- OK
-
-14. loops -- defining symbolic macro procedure while causes Lisp
-nesting exceeds ‘max-lisp-eval-depth’. repeat and while are already
-defined in Emacs Lisp, so rename them to repeat!* and while!*. Now OK.
-
-15. write -- OK
-16. smacro -- OK
-17. infix -- OK
-18. where -- OK
-
-19. list -- obscure problem caused because I used `type' as a property
-name to record function types (expr or macro), but this clashes with
-the use of `type' as a flag in REDUCE. Now OK.
-
-20. array -- renamed listp to listp!*. Now OK
-21. switch -- OK
-22. io -- OK
-23. inter -- OK
-[end of file rlisp.red]
-
-
-Added support for file input. The following input appears to work correctly:
-
-(sl-load-file "boot.el")
-(begin2)
+(load-file "boot.elc")
+(BEGIN2)
 rds open("rlisp.red",'input);
-
-But whether RLISP works correctly remains to be seen!
-
-Now try running (begin1). This shows some missing functions.
-
-There is a problem that ! is included in the names of symbols, whereas
-it should not be, so there is currently no way from RLISP to access
-the Emacs Lisp function float-time! Hence, define a few additional
-functions at the end of "sl.el".
-
-The plan is that the following should run RLISP:
-
-(sl-load-file "boot.el")
-(begin2)
-rds open("rlisp.red",'input);
-(begin2)
+(BEGIN2)
 rds open("rend.red",'input);
-(initreduce)
+(INITREDUCE)
 
-However, the ability to process a comment statement seems to be broken
-after reading "rlisp.red". The problem is that my current code is
-case-sensitive, and only "comment" is recognised, but no other
-capitalisation. Fixed temporarily by down-casing all input read by
-readch. Now cannot read procedure filetype. Commented out for now.
+The above interactive input produces the output
 
-Tried compiling "boot.el". It compiles OK, but when using "boot.elc"
-the above code complains that "rlisp.red" is not a symbol in
-scan. Give up on this for now.
+REDUCE 3.3, 22-Jan-2018 ...
+
+1: 
+1: 
+1: 
+1: 
+1: Entering LISP ... 
+
+and re-evaluating (INITREDUCE) reliably produces the output
+
+REDUCE 3.3, 22-Jan-2018 ...
+
+1: Entering LISP ... 
+
