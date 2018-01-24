@@ -233,45 +233,163 @@ mismatch error occurs if U is not a dotted-pair.")
 CDR(CONS(a, b)) --> b. The right part of U is returned. The type
 mismatch error occurs if U is not a dotted-pair.")
 
-;; The composites of CAR and CDR are supported up to 4 levels, namely:
+;; The composites of CAR and CDR are supported up to 4 levels. The
+;; following code is copied from "subr.el" with minor modifications.
 
-;; *******************************************************************
-;; Note that defalias does not work here, probably because the Emacs
-;; Lisp functions use compiler macro trickery! These definitions could
-;; almost certainly be handled better, maybe as inline functions or
-;; macros, but for now...
-;; *******************************************************************
+(defun sl--compiler-macro-CXXR (form x)
+  (let* ((head (car form))
+         (n (downcase (symbol-name head)))
+		 (head (intern-soft n))
+         (i (- (length n) 2)))
+    (if (not (string-match "c[ad]+r\\'" n))
+        (if (and (fboundp head) (symbolp (symbol-function head)))
+            (sl--compiler-macro-CXXR (cons (symbol-function head) (cdr form))
+                                     x)
+          (error "Compiler macro for CXXR applied to non-CXXR form"))
+      (while (> i (match-beginning 0))
+        (setq x (list (if (eq (aref n i) ?a) 'car 'cdr) x))
+        (setq i (1- i)))
+      x)))
 
-(defun CAAR (x) (caar x))
-(defun CADR (x) (cadr x))
-(defun CDAR (x) (cdar x))
-(defun CDDR (x) (cddr x))
+(defun CAAR (x)
+  "Return the car of the car of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (car x)))
 
-(defun CAAAR (x) (caaar x))
-(defun CAADR (x) (caadr x))
-(defun CADAR (x) (cadar x))
-(defun CADDR (x) (caddr x))
-(defun CDAAR (x) (cdaar x))
-(defun CDADR (x) (cdadr x))
-(defun CDDAR (x) (cddar x))
-(defun CDDDR (x) (cdddr x))
+(defun CADR (x)
+  "Return the car of the cdr of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (cdr x)))
 
-(defun CAAAAR (x) (caaaar x))
-(defun CAAADR (x) (caaadr x))
-(defun CAADAR (x) (caadar x))
-(defun CAADDR (x) (caaddr x))
-(defun CADAAR (x) (cadaar x))
-(defun CADADR (x) (cadadr x))
-(defun CADDAR (x) (caddar x))
-(defun CADDDR (x) (cadddr x))
-(defun CDAAAR (x) (cdaaar x))
-(defun CDAADR (x) (cdaadr x))
-(defun CDADAR (x) (cdadar x))
-(defun CDADDR (x) (cdaddr x))
-(defun CDDAAR (x) (cddaar x))
-(defun CDDADR (x) (cddadr x))
-(defun CDDDAR (x) (cdddar x))
-(defun CDDDDR (x) (cddddr x))
+(defun CDAR (x)
+  "Return the cdr of the car of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (car x)))
+
+(defun CDDR (x)
+  "Return the cdr of the cdr of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (cdr x)))
+
+(defun CAAAR (x)
+  "Return the `car' of the `car' of the `car' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (car (car x))))
+
+(defun CAADR (x)
+  "Return the `car' of the `car' of the `cdr' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (car (cdr x))))
+
+(defun CADAR (x)
+  "Return the `car' of the `cdr' of the `car' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (cdr (car x))))
+
+(defun CADDR (x)
+  "Return the `car' of the `cdr' of the `cdr' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (cdr (cdr x))))
+
+(defun CDAAR (x)
+  "Return the `cdr' of the `car' of the `car' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (car (car x))))
+
+(defun CDADR (x)
+  "Return the `cdr' of the `car' of the `cdr' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (car (cdr x))))
+
+(defun CDDAR (x)
+  "Return the `cdr' of the `cdr' of the `car' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (cdr (car x))))
+
+(defun CDDDR (x)
+  "Return the `cdr' of the `cdr' of the `cdr' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (cdr (cdr x))))
+
+(defun CAAAAR (x)
+  "Return the `car' of the `car' of the `car' of the `car' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (car (car (car x)))))
+
+(defun CAAADR (x)
+  "Return the `car' of the `car' of the `car' of the `cdr' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (car (car (cdr x)))))
+
+(defun CAADAR (x)
+  "Return the `car' of the `car' of the `cdr' of the `car' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (car (cdr (car x)))))
+
+(defun CAADDR (x)
+  "Return the `car' of the `car' of the `cdr' of the `cdr' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (car (cdr (cdr x)))))
+
+(defun CADAAR (x)
+  "Return the `car' of the `cdr' of the `car' of the `car' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (cdr (car (car x)))))
+
+(defun CADADR (x)
+  "Return the `car' of the `cdr' of the `car' of the `cdr' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (cdr (car (cdr x)))))
+
+(defun CADDAR (x)
+  "Return the `car' of the `cdr' of the `cdr' of the `car' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (cdr (cdr (car x)))))
+
+(defun CADDDR (x)
+  "Return the `car' of the `cdr' of the `cdr' of the `cdr' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (car (cdr (cdr (cdr x)))))
+
+(defun CDAAAR (x)
+  "Return the `cdr' of the `car' of the `car' of the `car' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (car (car (car x)))))
+
+(defun CDAADR (x)
+  "Return the `cdr' of the `car' of the `car' of the `cdr' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (car (car (cdr x)))))
+
+(defun CDADAR (x)
+  "Return the `cdr' of the `car' of the `cdr' of the `car' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (car (cdr (car x)))))
+
+(defun CDADDR (x)
+  "Return the `cdr' of the `car' of the `cdr' of the `cdr' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (car (cdr (cdr x)))))
+
+(defun CDDAAR (x)
+  "Return the `cdr' of the `cdr' of the `car' of the `car' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (cdr (car (car x)))))
+
+(defun CDDADR (x)
+  "Return the `cdr' of the `cdr' of the `car' of the `cdr' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (cdr (car (cdr x)))))
+
+(defun CDDDAR (x)
+  "Return the `cdr' of the `cdr' of the `cdr' of the `car' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (cdr (cdr (car x)))))
+
+(defun CDDDDR (x)
+  "Return the `cdr' of the `cdr' of the `cdr' of the `cdr' of X."
+  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (cdr (cdr (cdr (cdr x)))))
 
 (defalias 'CONS 'cons
   "CONS(U:any, V:any):dotted-pair eval, spread
@@ -773,6 +891,7 @@ of FLUID variables, argument lists and so on in an implementation
 dependent format.
 
 In ESL, a backtrace is shown only if `debug-on-error' is non-nil."
+  ;; This is a macro to allow control of the error handler conditions.
   (declare (debug (form form form)))
   `(condition-case err					; error description variable
 	   (list (eval ,u))					; protected form
@@ -1565,6 +1684,24 @@ Up-case letters if !*RAISE is non-nil."
    (string
 	(if (and *RAISE (>= c ?a) (<= c ?z)) (- c 32) c))))
 
+(defvar sl--readch-use-minibuffer nil
+  "If non-nil then READCH reads from the minibuffer as terminal.
+Otherwise, it reads from an interaction buffer as terminal.")
+
+(defvar sl--readch-input-string nil
+  "String used to store minibuffer input so that READCH can read
+it character-by-character.")
+
+(defvar sl--readch-input-string-index nil
+  "Integer used to store the index of the next character for
+READCH to return from `sl--readch-input-string'.")
+
+(defvar sl--readch-input-string-length nil
+  "Integer used to store the length of `sl--readch-input-string'.")
+
+(defvar sl--readch-history nil
+  "READCH minibuffer input history.")
+
 (defun READCH ()
   "READCH():id
 Returns the next interned character from the file currently selected
@@ -1589,17 +1726,44 @@ Comments delimited by % and end-of-line are not transparent to READCH."
 		  (kill-buffer sl--read-stream)
 		  (setq sl--read-stream nil))
 		result)
-	;; Read from terminal, an interactive window:
-	(with-current-buffer "*Standard LISP*"
-	  (goto-char sl-marker)
-	  ;; When end of file occurs on the standard input device the
-	  ;; Standard LISP reader terminates. [NOT YET IMPLEMENTED.]
-	  (cond ((eobp) $EOF$)
-			((eolp) (forward-line)
-			 (set-marker sl-marker (point)) $EOL$)
-			(t (let ((c (char-after sl-marker)))
-				 (set-marker sl-marker (1+ sl-marker))
-				 (sl--char-to-interned-id c)))))))
+	;; Read from terminal:
+	(if sl--readch-use-minibuffer
+		;; Read from the minibuffer:
+		(progn
+		  (if (null sl--readch-input-string)
+			  ;; If the input string is null then this is a call for new
+			  ;; input.  Read a new input string from the minibuffer,
+			  ;; save it and return the first character.
+			  (setq sl--readch-input-string
+					(read-from-minibuffer "Input: "
+										  nil nil nil sl--readch-history)
+					sl--readch-input-string-length
+					(length sl--readch-input-string)
+					sl--readch-input-string-index 0))
+		  ;; Then return the next character from the input string.
+		  ;; When the last character has been returned, clear the
+		  ;; string to trigger new input.
+		  (if (equal sl--readch-input-string "")
+			  (progn
+				(setq sl--readch-input-string nil)
+				$EOF$)			   ; for want of something better!
+			(prog1
+				(aref sl--readch-input-string sl--readch-input-string-index)
+			  (setq sl--readch-input-string-index
+					(1+ sl--readch-input-string-index))
+			  (if (= sl--readch-input-string-index sl--readch-input-string-length)
+				  (setq sl--readch-input-string nil)))))
+	  ;; Read from interaction buffer:
+	  (with-current-buffer "*Standard LISP*"
+		(goto-char sl-marker)
+		;; When end of file occurs on the standard input device the
+		;; Standard LISP reader terminates. [NOT YET IMPLEMENTED.]
+		(cond ((eobp) $EOF$)
+			  ((eolp) (forward-line)
+			   (set-marker sl-marker (point)) $EOL$)
+			  (t (let ((c (char-after sl-marker)))
+				   (set-marker sl-marker (1+ sl-marker))
+				   (sl--char-to-interned-id c))))))))
 
 (defalias 'TERPRI 'terpri
   "TERPRI():NIL
@@ -1620,64 +1784,68 @@ selected output file.
 ;;; LISP Reader
 ;;; ===========
 
-(defun standard-lisp ()
-  "EXPR PROCEDURE STANDARD!-LISP();
-BEGIN SCALAR VALUE;
-   RDS NIL; WRS NIL;
-   PRIN2 \"Standard LISP\"; TERPRI();
-   WHILE T DO
-      << PRIN2 \"EVAL:\"; TERPRI();
-    	 VALUE := ERRORSET(QUOTE EVAL READ(), T, T);
-	     IF NOT ATOM VALUE THEN PRINT CAR VALUE;
-	     TERPRI() >>;
-END;"
-  (let (value)
+;; Interaction via Emacs based on the standard read-eval-print loop.
+
+;; From the ELisp Manual:
+
+;; ‘t’ used as a stream means that the input is read from the
+;; minibuffer.  In fact, the minibuffer is invoked once and the text
+;; given by the user is made into a string that is then used as the
+;; input stream.  If Emacs is running in batch mode, standard input is
+;; used instead of the minibuffer.  For example,
+;;      (message "%s" (read t))
+;; will read a Lisp expression from standard input and print the
+;; result to standard output.
+
+;; Use the above approach to make READCH read from the minibuffer.
+
+(define-derived-mode sl-standard-lisp-interaction-mode
+  lisp-interaction-mode "SLISP Interaction"
+  "Major mode for entering and evaluating Standard LISP forms.")
+
+(defun STANDARD-LISP ()
+  "Run Standard LISP with input via the minibuffer and output via a buffer."
+  ;; EXPR PROCEDURE STANDARD!-LISP();
+  ;; BEGIN SCALAR VALUE;
+  ;;    RDS NIL; WRS NIL;
+  ;;    PRIN2 \"Standard LISP\"; TERPRI();
+  ;;    WHILE T DO
+  ;;       << PRIN2 \"EVAL:\"; TERPRI();
+  ;;     	 VALUE := ERRORSET(QUOTE EVAL READ(), T, T);
+  ;; 	     IF NOT ATOM VALUE THEN PRINT CAR VALUE;
+  ;; 	     TERPRI() >>;
+  ;; END;
+  (interactive)
+  (switch-to-buffer (get-buffer-create "*Standard LISP*"))
+  (sl-standard-lisp-interaction-mode)
+  (let* (value							  ; value of last sexp
+		 (m (set-marker (make-marker) 1)) ; IO marker
+		 ;; (standard-input m)
+		 (standard-output m)
+		 ;; (read) reads from standard-input, which defaults to t
+		 ;; meaning read from the minibuffer.  Make (READCH) also read
+		 ;; from the minibuffer:
+		 (sl--readch-use-minibuffer t))
 	(RDS nil) (WRS nil)
 	(princ "Standard LISP") (terpri)
-	(catch 'quit
+	(catch 'QUIT
 	  (while t
 		(princ "EVAL: ") (terpri)
 		(setq value (ERRORSET '(eval (read)) t t))
 		(if (not (atom value)) (print (car value)))
 		(terpri)))))
 
-(defun quit ()
+(defun QUIT ()
   "QUIT()
-Causes termination of the LISP reader and control to be transferred
-to the operating system."
-  (throw 'quit nil))
+Causes termination of the LISP reader and control to be
+transferred to the operating system."
+  (throw 'QUIT nil))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;;; Emacs Support Code
 ;;; ==================
-
-;; (define-derived-mode sl-interaction-mode
-;;   lisp-interaction-mode "SLISP Interaction"
-;;   "Major mode for entering and evaluating Standard LISP forms.")
-
-;; (defun sl-run ()
-;;   "Run Standard LISP with input via the minbuffer and output via a buffer."
-;;   (interactive)
-;;   (switch-to-buffer (get-buffer-create "*Standard LISP*"))
-;;   (sl-interaction-mode)
-;;   (sl-begin)
-;;   (unwind-protect
-;; 	  ;; Set IO to use this buffer:
-;; 	  (let* ((m (set-marker (make-marker) 1)) ; IO marker
-;; 			 ;; (standard-input m)
-;; 			 (standard-output m)
-;; 			 value)						; value of last sexp
-;; 		;; (rds nil) (wrs nil)
-;; 		(princ "Standard LISP") (terpri)
-;; 		(catch 'quit
-;; 		  (while t
-;; 			(princ "EVAL: ") (terpri)
-;; 			(setq value (errorset '(eval (read)) t t))
-;; 			(if (not (atom value)) (print (car value)))
-;; 			(terpri))))
-;; 	(sl-end)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar sl-interaction-mode-map
   (let ((map (make-sparse-keymap)))
@@ -1769,6 +1937,20 @@ The date in the form \"day-month-year\"
 
 ;;; Miscellaneous
 ;;; =============
+
+;; This procedure should be defined in rend.red, but I need to use
+;; Emacs Lisp and hence lower case, so it's easier to define it here.
+
+;; symbolic procedure orderp(u,v);
+;;    % Returns true if U has same or higher order than id V by some
+;;    % consistent convention (eg unique position in memory).
+;;    wleq(inf u,inf v);       % PSL 3.4 form.
+;; %  id2int u <= id2int v;    % PSL 3.2 form.
+
+(defun ORDERP (u v)
+  "Returns true if id U has same or higher order than id V by
+some consistent convention (eg unique position in memory)."
+  (not (string< (symbol-name v) (symbol-name u))))
 
 ;; To run Edebug on a FUNCTION defined in RLISP, use sl-pp-fn in
 ;; *scratch* to get an Emacs Lisp version of FUNCTION, change the
