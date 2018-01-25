@@ -539,7 +539,7 @@ symbolic procedure find!-gnuplot!-aux path;
 % had been installed in may vary from case to case. The code here tries
 % to sort this out!
 
-global '(cygin_tmp!*);
+global '(cygwin_tmp!*);
 
 cygwin_tmp!* := nil;
 
