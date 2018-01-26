@@ -67,8 +67,7 @@ psl_main:
  mov %rdi,%rax
  mov %rsi,%rbx
  sub $24,%rsp
- mov %r15,%rdi
- mov %rdi,16(%rsp)
+ mov %r15,16(%rsp)
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  call *symfnc+2408
@@ -215,9 +214,8 @@ binaryclose:
  .globl l0020
 l0020:
  sub $16,%rsp
- mov %r15,%rdi
- mov %rdi,8(%rsp)
- mov %rdi,(%rsp)
+ mov %r15,8(%rsp)
+ mov %r15,(%rsp)
  mov $300000,%rbx
  mov symval+2648,%rax
  mov %rax,%rdx
@@ -294,9 +292,8 @@ l0026:
  .globl l0027
 l0027:
  sub $24,%rsp
- mov %r15,%rdi
- mov %rdi,16(%rsp)
- mov %rdi,8(%rsp)
+ mov %r15,16(%rsp)
+ mov %r15,8(%rsp)
  mov %rax,(%rsp)
  mov %rax,%rbx
  xor %rax,%rax
@@ -484,10 +481,9 @@ l0046:
  .globl l0047
 l0047:
  sub $32,%rsp
- mov %r15,%rdi
- mov %rdi,24(%rsp)
- mov %rdi,16(%rsp)
- mov %rdi,8(%rsp)
+ mov %r15,24(%rsp)
+ mov %r15,16(%rsp)
+ mov %r15,8(%rsp)
  mov %rax,(%rsp)
  call *symfnc+2752
  mov %rax,8(%rsp)
@@ -503,7 +499,7 @@ l0048:
  shr $32,%rax
  cmp $0,%rax
  jne l0049
- cmp $-1,24(%rsp)
+ cmpq $-1,24(%rsp)
  je l0050
  mov 24(%rsp),%rax
  jmp l0051
@@ -522,7 +518,7 @@ l0049:
  shr $32,%rbx
  cmp l0044,%rbx
  jne l0053
- cmp $-1,24(%rsp)
+ cmpq $-1,24(%rsp)
  jne l0054
  mov 16(%rsp),%rdi
  mov %rdi,24(%rsp)
@@ -611,9 +607,8 @@ l0057:
  .globl l0060
 l0060:
  sub $40,%rsp
- mov %r15,%rdi
- mov %rdi,24(%rsp)
- mov %rdi,8(%rsp)
+ mov %r15,24(%rsp)
+ mov %r15,8(%rsp)
  shl $8,%rax
  shr $8,%rax
  mov %rax,16(%rsp)
@@ -623,7 +618,7 @@ l0060:
  mov %rax,(%rsp)
  xor %rax,%rax
  mov %rax,32(%rsp)
- cmp $20,(%rsp)
+ cmpq $20,(%rsp)
  jle l0061
  movq $20,(%rsp)
 l0061:
@@ -672,10 +667,9 @@ l0063:
  .globl faslin
 faslin:
  sub $88,%rsp
- mov %r15,%rdi
- mov %rdi,64(%rsp)
- mov %rdi,24(%rsp)
- mov %rdi,16(%rsp)
+ mov %r15,64(%rsp)
+ mov %r15,24(%rsp)
+ mov %r15,16(%rsp)
  mov %rax,(%rsp)
  mov %r15,32(%rsp)
  mov %r15,48(%rsp)
@@ -690,7 +684,7 @@ faslin:
  mov %rax,24(%rsp)
  mov $65535,%rbx
  and %rax,%rbx
- cmp $399,%rbx
+ cmpq $399,%rbx
  je l0064
  mov 16(%rsp),%rax
  call *symfnc+2632
@@ -743,7 +737,7 @@ l0064:
  call *symfnc+2632
  mov $1,%rax
  and 24(%rsp),%rax
- cmp $1,%rax
+ cmpq $1,%rax
  jne l0066
  mov 32(%rsp),%rdx
  mov 40(%rsp),%rcx
@@ -784,8 +778,7 @@ delbps:
  .globl l0068
 l0068:
  sub $48,%rsp
- mov %r15,%rdi
- mov %rdi,32(%rsp)
+ mov %r15,32(%rsp)
  mov %rax,24(%rsp)
  mov %rcx,8(%rsp)
  mov %rdx,16(%rsp)
@@ -813,11 +806,11 @@ l0070:
  mov 24(%rsp),%rbx
  add 40(%rsp),%rbx
  mov %rbx,32(%rsp)
- cmp $1,%rax
+ cmpq $1,%rax
  je l0072
- cmp $2,%rax
+ cmpq $2,%rax
  je l0073
- cmp $3,%rax
+ cmpq $3,%rax
  je l0074
  jmp l0075
 l0072:
@@ -849,8 +842,7 @@ l0071:
  .globl l0076
 l0076:
  sub $48,%rsp
- mov %r15,%rdi
- mov %rdi,16(%rsp)
+ mov %r15,16(%rsp)
  mov %rax,32(%rsp)
  mov %rcx,(%rsp)
  mov %rdx,24(%rsp)
@@ -886,11 +878,11 @@ l0078:
  shr $6,%rbx
  mov %rbx,16(%rsp)
  mov %rbx,%rax
- cmp $1,%rax
+ cmpq $1,%rax
  je l0080
- cmp $2,%rax
+ cmpq $2,%rax
  je l0081
- cmp $3,%rax
+ cmpq $3,%rax
  je l0082
  jmp l0077
 l0080:
@@ -920,8 +912,7 @@ l0079:
  .globl l0083
 l0083:
  sub $32,%rsp
- mov %r15,%rdi
- mov %rdi,24(%rsp)
+ mov %r15,24(%rsp)
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  mov %rcx,16(%rsp)
@@ -948,8 +939,7 @@ l0083:
  .globl l0084
 l0084:
  sub $24,%rsp
- mov %r15,%rdi
- mov %rdi,8(%rsp)
+ mov %r15,8(%rsp)
  mov %rax,16(%rsp)
  mov %rbx,(%rsp)
  mov (%rax),%rbx
@@ -982,9 +972,9 @@ l0085:
  add %rbx,%rax
  jmp l0087
 l0086:
- cmp $2,%rax
+ cmpq $2,%rax
  jne l0088
- cmp $8150,%rbx
+ cmpq $8150,%rbx
  jl l0089
  mov $-8156,%rax
  add %rbx,%rax
@@ -992,7 +982,7 @@ l0086:
  add symval+2064,%rax
  jmp l0087
 l0089:
- cmp $2048,%rbx
+ cmpq $2048,%rbx
  jl l0090
  mov %rdx,%rbx
  mov (%rsp),%rax
@@ -1006,9 +996,9 @@ l0090:
  add symval+2784,%rax
  jmp l0087
 l0088:
- cmp $3,%rax
+ cmpq $3,%rax
  jne l0091
- cmp $2048,%rbx
+ cmpq $2048,%rbx
  jl l0092
  mov %rdx,%rbx
  mov (%rsp),%rax
@@ -1020,9 +1010,9 @@ l0092:
  add symval+2920,%rax
  jmp l0087
 l0091:
- cmp $1,%rax
+ cmpq $1,%rax
  jne l0093
- cmp $2048,%rbx
+ cmpq $2048,%rbx
  jl l0094
  mov %rdx,%rbx
  mov (%rsp),%rax
@@ -1053,12 +1043,11 @@ l0095:
  .globl l0096
 l0096:
  sub $48,%rsp
- mov %r15,%rdi
- mov %rdi,40(%rsp)
- mov %rdi,32(%rsp)
- mov %rdi,24(%rsp)
- mov %rdi,16(%rsp)
- mov %rdi,8(%rsp)
+ mov %r15,40(%rsp)
+ mov %r15,32(%rsp)
+ mov %r15,24(%rsp)
+ mov %r15,16(%rsp)
+ mov %r15,8(%rsp)
  mov %rax,(%rsp)
  call *symfnc+2600
  mov %rax,8(%rsp)
@@ -1161,7 +1150,7 @@ l0105:
  jne l0106
  call *symfnc+2944
 l0106:
- cmp $10,(%rsp)
+ cmpq $10,(%rsp)
  jle l0107
  mov $15,%rax
  and symval+2296,%rax
@@ -1327,12 +1316,11 @@ l0123:
  .globl subseq
 subseq:
  sub $64,%rsp
- mov %r15,%rdi
- mov %rdi,56(%rsp)
- mov %rdi,48(%rsp)
- mov %rdi,40(%rsp)
- mov %rdi,32(%rsp)
- mov %rdi,24(%rsp)
+ mov %r15,56(%rsp)
+ mov %r15,48(%rsp)
+ mov %r15,40(%rsp)
+ mov %r15,32(%rsp)
+ mov %r15,24(%rsp)
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  mov %rcx,16(%rsp)
@@ -1432,8 +1420,7 @@ l0130:
  .globl l0133
 l0133:
  sub $40,%rsp
- mov %r15,%rdi
- mov %rdi,32(%rsp)
+ mov %r15,32(%rsp)
  mov %r15,24(%rsp)
  shl $8,%rax
  shr $8,%rax
@@ -1588,8 +1575,7 @@ put:
  .globl l0142
 l0142:
  sub $32,%rsp
- mov %r15,%rdi
- mov %rdi,24(%rsp)
+ mov %r15,24(%rsp)
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  mov %rcx,16(%rsp)
@@ -1763,8 +1749,7 @@ l0152:
  .globl fluid
 fluid:
  sub $24,%rsp
- mov %r15,%rdi
- mov %rdi,16(%rsp)
+ mov %r15,16(%rsp)
  mov %rax,(%rsp)
  mov %r15,%rax
  mov (%rsp),%rdi
@@ -7123,8 +7108,7 @@ l0355:
  .globl l0356
 l0356:
  sub $16,%rsp
- mov %r15,%rdi
- mov %rdi,8(%rsp)
+ mov %r15,8(%rsp)
  mov %rax,(%rsp)
  mov $1,%rbx
  shl $8,%rax
@@ -8578,8 +8562,8 @@ l0675:
  .byte 42,102,97,115,116,99,97,114,0,0
  .globl l0676
 l0676:
- .quad 3
- .byte 109,97,105,110,0,0
+ .quad 7
+ .byte 112,115,108,95,109,97,105,110,0,0
  .globl l0677
 l0677:
  .quad 14

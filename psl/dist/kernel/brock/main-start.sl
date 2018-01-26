@@ -259,8 +259,10 @@
   (setq *fastcar nil)
 )
 
+(compiletime
+  (setq mainentrypointname* '!p!s!l!_!m!a!i!n))
 
-(lap '((*entry !m!a!i!n expr 0)
+(lap '((*entry !p!s!l!_!m!a!i!n expr 0)
 
        %  Do OS specific initializations (uses argc and argv)
        (*move (reg rdi) (reg 1))

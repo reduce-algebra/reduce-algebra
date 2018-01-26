@@ -183,15 +183,15 @@ $(USERDIR)/bpsl: $(CCFILES)  \
 	$(USERDIR)/cclnk
 
 $(USERDIR)/dmain.o: $(USERDIR)/dmain.s 
-	 mv $(USERDIR)/dmain.s $(USERDIR)/dmain.temp
-	 sed -f $(PXK)/dmain.linux.sed $(USERDIR)/dmain.temp > $(USERDIR)/dmain.s
-	 rm -f $(USERDIR)/dmain.temp
+#	 mv $(USERDIR)/dmain.s $(USERDIR)/dmain.temp
+#	 sed -f $(PXK)/dmain.linux.sed $(USERDIR)/dmain.temp > $(USERDIR)/dmain.s
+#	 rm -f $(USERDIR)/dmain.temp
 	gcc -m64 -c $(ASARGS) -o $(USERDIR)/dmain.o $(USERDIR)/dmain.s
 
 $(USERDIR)/main.o: $(USERDIR)/main.s
-	mv $(USERDIR)/main.s $(USERDIR)/main.temp
-	sed -f $(PXK)/main.linux.sed $(USERDIR)/main.temp > $(USERDIR)/main.s
-	rm -f $(USERDIR)/main.temp
+#	mv $(USERDIR)/main.s $(USERDIR)/main.temp
+#	sed -f $(PXK)/main.linux.sed $(USERDIR)/main.temp > $(USERDIR)/main.s
+#	rm -f $(USERDIR)/main.temp
 	gcc -m64 -c $(ASARGS) -o $(USERDIR)/main.o $(USERDIR)/main.s
  
 

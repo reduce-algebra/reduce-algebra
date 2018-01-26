@@ -798,7 +798,7 @@
 		       (cmp ARGTWO (reg t1)) (ARGFOUR ARGTHREE))
     ((INumP AnyP     ) (*JumpIf ARGTWO ARGONE ARGTHREE (ARGFIVE . ARGFOUR)))
     ((AnyP  ZeroP    ) (cmp 0 ARGONE)          (ARGFOUR ARGTHREE))
-    ((AnyP  InumP)     (cmp ArgTWO ARGONE)  (ARGFOUR ARGTHREE))
+    ((AnyP  InumP)     (cmpq ArgTWO ARGONE)  (ARGFOUR ARGTHREE))
     ((regP AnyP     )  (cmp ARGTWO ARGONE)   (ARGFOUR ARGTHREE))
     ((AnyP  regP    )  (cmp ARGONE ARGTWO)   (ARGFIVE ARGTHREE))
     ((AnyP  InumP    ) (cmp ARGTWO ARGONE)  (ARGFOUR ARGTHREE))
