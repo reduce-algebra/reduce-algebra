@@ -41,7 +41,7 @@
 %                     (t (prog (a b c) ....))
 %
 % a frame of length 4 will be allocated, but it will not be preset (by nil)
-% completely at entering the functiont but the frmae elements for a b and c
+% completely at entering the function but the frame elements for a b and c
 % will be set (to nil) if the prog is entered.
 % So if the (null x) case is taken we have 3 unset frame elements on the stack
 % which contain random information and this is dangerous for gc.
@@ -67,7 +67,7 @@
  
             % so we have to work, starting at the *alloc 
  
-      (setq nn (cadar allo))  %the frmae size              
+      (setq nn (cadar allo))  %the frame size              
       (setq linearcode t)
       (setq restcode (cdr allo))       
  
@@ -86,7 +86,7 @@
  
       (for (from i 1 nn 1) (do
             (unless (memq i &frame-numbers)
-                  (rplaca ll `(*move (reg t1) (frame ,i)))
+                  (rplaca ll `(*move (reg nil) (frame ,i)))
                   (when (eq &fillframeholes 'verbose) 
                     (prin2 "++ in ") (prin2 name&)
                     (prin2 " presetting frame ")
@@ -96,8 +96,7 @@
       (when (eq lll ll) (return code))
       (rplacd lll (cdr allo))
  
-      (rplaca ll `(*move (quote nil) (reg t1)))
-      (rplacd allo ll)
+      (rplacd allo (cdr ll))
       (return code))) 
          
 (de lookatinstruction (instr)

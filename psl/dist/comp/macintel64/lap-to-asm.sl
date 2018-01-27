@@ -423,7 +423,7 @@
     (return (mkstr j))
  ))
 
-(de initializesymnam (maxsymbol)
+(de initializesymnam ()
   (dataprintgloballabel (findgloballabel 'symnam))
   (for (from i 0 128 1) 
        (do (dataprintfullword (compileconstant (id2string (int2id i))))))
@@ -527,7 +527,19 @@
 				     (printoperand u))))
 	     (prin2 !$eol!$)))))))
 
-% NEWLINE                                                                  
+% HACK to print indirect jumps/calls through register correctly
+(put 'call 'asmpseudoop 'asmprintcall)
+(put 'jmp 'asmpseudoop 'asmprintcall)
+
+(de asmprintcall (x)
+  (prin2 '! )
+  (printopcode (car x))
+  (prin2 '! )
+  (if (eqcar (cadr x) 'reg) (prin2 '!*))
+  (printoperand (cadr x))
+  (prin2 !$eol!$)
+)
+
 (put '*entry 'asmpseudoop 'asmprintentry)
 
 (de asmprintentry (x)

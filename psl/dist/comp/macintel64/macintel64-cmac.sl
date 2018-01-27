@@ -863,11 +863,11 @@
                             (cmp (Reg t3) ARGONE) (ARGFOUR ARGTHREE))
     ((asm_macintel64-fluid-p zerop) (*MOVE  ARGONE (Reg t3))
                             (cmp ARGTWO (Reg t3)) (ARGFOUR ARGTHREE))
-    ((any_but_not_fluid-p ZeroP ) (cmp 0 ARGONE)     (ARGFOUR ARGTHREE))
+    ((any_but_not_fluid-p ZeroP ) (cmpq 0 ARGONE)     (ARGFOUR ARGTHREE))
     ((AnyP ZeroP ) (*move 0 (Reg t3))(cmp (reg t3) ARGONE) (ARGFOUR ARGTHREE))
     ((asm_macintel64-fluid-p inump) (*MOVE  ARGONE (Reg t3))
-                            (cmp ARGTWO (Reg t3)) (ARGFOUR ARGTHREE))
-    ((any_but_not_fluid-p InumP)   (cmp ArgTWO ARGONE)  (ARGFOUR ARGTHREE))
+                            (cmpq ARGTWO (Reg t3)) (ARGFOUR ARGTHREE))
+    ((any_but_not_fluid-p InumP)   (cmpq ArgTWO ARGONE)  (ARGFOUR ARGTHREE))
     ((AnyP  InumP) (*Move ARGTWO (reg t3))(cmp (Reg t3) ARGONE)  (ARGFOUR ARGTHREE))
     ((regP AnyP     )  (cmp ARGTWO ARGONE)   (ARGFOUR ARGTHREE))
     ((AnyP  regP    )  (cmp ARGONE ARGTWO)   (ARGFIVE ARGTHREE))
@@ -1034,6 +1034,7 @@
 (de asmp () !*writingasmfile)
 
 (DefCMacro *Call
+   ((RegP)	  (CALL ARGONE))
    ((asmp)        (mov "_symfnc@GOTPCREL(%rip)" (reg t2))
                   (*move (idloc argone) (reg t1))
 		  (call (indirect (displacement (reg t2) (entry ARGONE)))))
@@ -1052,6 +1053,7 @@
 			(ret)))
  
 (DefCMacro *JCall
+   ((RegP)        (JMP ARGONE))
    ((asmp)        (mov "_symfnc@GOTPCREL(%rip)" (reg t2))
                   (*move (idloc argone) (reg t1))
                   (jmp  (indirect (displacement (reg t2) (entry ARGONE)))))

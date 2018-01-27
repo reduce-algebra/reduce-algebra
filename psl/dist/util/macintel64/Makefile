@@ -56,7 +56,7 @@ PXDIST  = $(PDIST)/$(MACHINE)
 PL      = $(PSL)/lap/$(MACHINE)
 
 all: \
-	$(PL)/fc-indirect.b $(PL)/get-options.b \
+	$(PL)/disassemble.b $(PL)/fc-indirect.b $(PL)/get-options.b \
 	$(PL)/l2cdatacon.b $(PL)/helferlein.b $(PL)/symget.b \
 	$(PL)/nbig30.b $(PL)/nbig30a.b $(PL)/double.b \
 	$(PL)/nbig32.b $(PL)/nbig32a.b $(PL)/double32.b \

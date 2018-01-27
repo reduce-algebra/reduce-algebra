@@ -458,6 +458,7 @@ nil)
 (instr NOP  ()         OP-byte       16#90)
 
 (instr CALL (indadr)           OP-jump-effa 2#11111111 2#00010000)
+(instr CALL (reg)	       OP-jump-effa 2#11111111 2#00010000)
 (instr CALL (adr)              OP-jump      16#E8)   
  
 (instr JMP  (shortlabel)       OP-jump-short 2#11101011)

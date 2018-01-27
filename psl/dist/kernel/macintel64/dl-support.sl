@@ -72,7 +72,7 @@
 (*wshift (reg st) 5)
 (*move (reg 2) (displacement (reg st) 40))
 
-       (*callhugo (reg 1)) % will be done by the sed script
+       (*call (reg 1)) % will be done by the sed script
 
 (*move (displacement (reg st) 40) (reg st))
 (*pop (reg bndstkupperbound))
@@ -111,7 +111,7 @@
 (*move (reg 2) (displacement (reg st) 40))
 (movsd (indirect (reg rdi)) (reg xmm0))
 
-       (*callhugo (reg 1)) % will be done by the sed script
+       (*call (reg 1)) % will be done by the sed script
 
 (movq (reg xmm0) (reg 1))
 (*move (displacement (reg st) 40) (reg st))

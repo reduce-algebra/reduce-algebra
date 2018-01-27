@@ -391,7 +391,7 @@
          (plus addr* w 2))
         ((equal p '(J v))
          (setq  lth* (plus 4 lth*))
-         (plus addr* (bytes2word) 5))
+         (plus addr* (bytes2word) lth*))
            % mod R/M
         ((eqcar p 'E) (decode-modrm p))
         ((eqcar p 'R) (decode-modrm p))
@@ -525,7 +525,7 @@
    )
 
 (de reg-m(n)
-  (if (or rex_w !0f-prefix*) (reg-m64 n)
+  (if (or rex_w (wgreaterp n 7) !0f-prefix*) (reg-m64 n)
   (cond ((eq n 0) 'eax)
         ((eq n 1) 'ecx)
         ((eq n 2) 'edx)

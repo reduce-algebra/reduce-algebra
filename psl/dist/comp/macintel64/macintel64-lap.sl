@@ -9,8 +9,6 @@
 % Status:	Open Source: BSD License
 % Package:      
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
 %
@@ -285,7 +283,8 @@
 				(instructionlength x)))))
 ))
 
-(flag '(movups movss movupd movsd
+(flag '(JMP CALL
+	movups movss movupd movsd
 	movhlps movlps movlpd movddup movsldup unpcklps unpcklpd 
 	MOVLHPS MOVHPS MOVHPD MOVSHPDUP movaps movapd 
 	CVTPI2PS CVTPI2PD CVTSI2SS CVTSI2SD CVTSI2SDQ 
@@ -884,19 +883,29 @@
    (when *testlap (tab 15)(prin2 "-> ") 
 	 (prin2 n) (prin2 " rel = ")
 	 (prin2 (plus currentoffset* n))(prin2t " abs"))))
+
 (de lth-JUMP-SHORT (code op1) 2)
  
 % indirect jump to effective address
 (de OP-JUMP-EFFA (code op1)
-	      % a tag "inirect" contained already in the operation if not
+	      % a tag "indirect" contained already in the operation if not
 	      % explicit reg reference
 	   (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
 		 (setq op1 (cadr op1)))
+           % need REX byte if upper 8 register
+           (if (upperreg64p op1)
+               (progn
+                 (setq REX-prefix 16#40)
+                 (depositbyte REX-prefix)
+                 (SETQ REX? (plus codebase!* currentoffset* -1))
+                 (setq allowextrarexprefix 1)))
 	   (op-reg-effa code (cadr code) op1))
+
 (de LTH-JUMP-EFFA (code op1) 
 	   (when (and (eqcar op1 'indirect) (not (regp (cadr op1))))
 		 (setq op1 (cadr op1)))
-	   (lth-reg-effa code (cadr code) op1))
+           (if (upperreg64p op1) (add1 (lth-reg-effa code (cadr code) op1))
+	     (lth-reg-effa code (cadr code) op1)))
  
 
 (commentoutcode
@@ -1832,9 +1841,7 @@
 		  ))
 
 
-(de reg64bitP (i)
-  (if (eq (car i) 'JMP) NIL
-  (reg64bitp1 !64bitregs i)))
+(de reg64bitP (i) (reg64bitp1 !64bitregs i)))
 
 (de upperreg64p (i) (reg64bitp1 upper64bitregs i))
 

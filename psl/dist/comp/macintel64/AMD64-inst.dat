@@ -251,9 +251,16 @@ par1                                                              par2)))
  (defoplength as: (par1 par2) (t (lth-byte '(103))))
 
  (defopcode call (par1 par2) ((indirectadrp par1) (op-jump-effa '(255 16) par1))
-            ((adrp par1) (op-jump '(232) par1)))
+            ((regp par1) (op-jump-effa '(255 16) par1)) ((adrp par1) (op-jump '(
+232)                                                                          
+par1)))
  (defoplength call (par1 par2) ((indirectadrp par1) (lth-jump-effa '(255 16) 
-par1))        ((adrp par1) (lth-jump '(232) par1)))
+par1))        ((regp par1) (lth-jump-effa '(255 16) par1)) ((adrp par1) (
+lth-jump                                                                          
+'                                                                                  
+(                                                                                   
+232)                                                                              
+par1)))
 
  (defopcode cbw (par1 par2) (t (op-byte '(102 152))) (t (op-byte '(152))))
  (defoplength cbw (par1 par2) (t (lth-byte '(102 152))) (t (lth-byte '(152))))

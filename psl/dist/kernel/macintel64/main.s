@@ -107,8 +107,7 @@ _psl_main:
  mov %rdi,%rax
  mov %rsi,%rbx
  sub $24,%rsp
- mov %r15,%rdi
- mov %rdi,16(%rsp)
+ mov %r15,16(%rsp)
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  mov _symfnc@GOTPCREL(%rip),%rsi
@@ -310,9 +309,8 @@ binaryclose:
  .globl l0020
 l0020:
  sub $16,%rsp
- mov %r15,%rdi
- mov %rdi,8(%rsp)
- mov %rdi,(%rsp)
+ mov %r15,8(%rsp)
+ mov %r15,(%rsp)
  mov $300000,%rbx
  mov _symval@GOTPCREL(%rip),%rax
  mov 2656(%rax),%rax
@@ -403,9 +401,8 @@ l0026:
  .globl l0027
 l0027:
  sub $24,%rsp
- mov %r15,%rdi
- mov %rdi,16(%rsp)
- mov %rdi,8(%rsp)
+ mov %r15,16(%rsp)
+ mov %r15,8(%rsp)
  mov %rax,(%rsp)
  mov %rax,%rbx
  xor %rax,%rax
@@ -628,10 +625,9 @@ l0046:
  .globl l0047
 l0047:
  sub $32,%rsp
- mov %r15,%rdi
- mov %rdi,24(%rsp)
- mov %rdi,16(%rsp)
- mov %rdi,8(%rsp)
+ mov %r15,24(%rsp)
+ mov %r15,16(%rsp)
+ mov %r15,8(%rsp)
  mov %rax,(%rsp)
  mov _symfnc@GOTPCREL(%rip),%rsi
  mov $344,%rdi
@@ -779,9 +775,8 @@ l0057:
  .globl l0060
 l0060:
  sub $40,%rsp
- mov %r15,%rdi
- mov %rdi,24(%rsp)
- mov %rdi,8(%rsp)
+ mov %r15,24(%rsp)
+ mov %r15,8(%rsp)
  shl $8,%rax
  shr $8,%rax
  mov %rax,16(%rsp)
@@ -811,7 +806,7 @@ l0062:
  cwtl
  mov $56,%rbx
  sub 24(%rsp),%rbx
- cmpq $0,%rbx
+ cmp $0,%rbx
  jge l0058
  neg %rbx
  xchg %rbx,%rcx
@@ -840,10 +835,9 @@ l0063:
  .globl faslin
 faslin:
  sub $88,%rsp
- mov %r15,%rdi
- mov %rdi,64(%rsp)
- mov %rdi,24(%rsp)
- mov %rdi,16(%rsp)
+ mov %r15,64(%rsp)
+ mov %r15,24(%rsp)
+ mov %r15,16(%rsp)
  mov %rax,(%rsp)
  mov %r15,32(%rsp)
  mov %r15,48(%rsp)
@@ -991,8 +985,7 @@ delbps:
  .globl l0068
 l0068:
  sub $48,%rsp
- mov %r15,%rdi
- mov %rdi,32(%rsp)
+ mov %r15,32(%rsp)
  mov %rax,24(%rsp)
  mov %rcx,8(%rsp)
  mov %rdx,16(%rsp)
@@ -1062,8 +1055,7 @@ l0071:
  .globl l0076
 l0076:
  sub $48,%rsp
- mov %r15,%rdi
- mov %rdi,16(%rsp)
+ mov %r15,16(%rsp)
  mov %rax,32(%rsp)
  mov %rcx,(%rsp)
  mov %rdx,24(%rsp)
@@ -1138,8 +1130,7 @@ l0079:
  .globl l0083
 l0083:
  sub $32,%rsp
- mov %r15,%rdi
- mov %rdi,24(%rsp)
+ mov %r15,24(%rsp)
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  mov %rcx,16(%rsp)
@@ -1181,8 +1172,7 @@ l0085:
  .globl l0086
 l0086:
  sub $24,%rsp
- mov %r15,%rdi
- mov %rdi,8(%rsp)
+ mov %r15,8(%rsp)
  mov %rax,16(%rsp)
  mov %rbx,(%rsp)
  mov (%rax),%rbx
@@ -1304,12 +1294,11 @@ l0097:
  .globl l0098
 l0098:
  sub $48,%rsp
- mov %r15,%rdi
- mov %rdi,40(%rsp)
- mov %rdi,32(%rsp)
- mov %rdi,24(%rsp)
- mov %rdi,16(%rsp)
- mov %rdi,8(%rsp)
+ mov %r15,40(%rsp)
+ mov %r15,32(%rsp)
+ mov %r15,24(%rsp)
+ mov %r15,16(%rsp)
+ mov %r15,8(%rsp)
  mov %rax,(%rsp)
  mov _symfnc@GOTPCREL(%rip),%rsi
  mov $326,%rdi
@@ -1570,14 +1559,14 @@ l0122:
 gtid:
  mov _symval@GOTPCREL(%rip),%r8
  mov 2656(%r8),%r8
- cmpq $0,%r8
+ cmp $0,%r8
  jne l0123
  mov _symfnc@GOTPCREL(%rip),%rsi
  mov $377,%rdi
  call *3016(%rsi)
  mov _symval@GOTPCREL(%rip),%r8
  mov 2656(%r8),%r8
- cmpq $0,%r8
+ cmp $0,%r8
  jne l0123
  mov l0121@GOTPCREL(%rip),%rax
  mov 0(%rax),%rax
@@ -1651,18 +1640,17 @@ l0125:
  .globl subseq
 subseq:
  sub $64,%rsp
- mov %r15,%rdi
- mov %rdi,56(%rsp)
- mov %rdi,48(%rsp)
- mov %rdi,40(%rsp)
- mov %rdi,32(%rsp)
- mov %rdi,24(%rsp)
+ mov %r15,56(%rsp)
+ mov %r15,48(%rsp)
+ mov %r15,40(%rsp)
+ mov %r15,32(%rsp)
+ mov %r15,24(%rsp)
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  mov %rcx,16(%rsp)
  mov %rax,%rdi
  shr $56,%rdi
- cmpq $4,%rdi
+ cmp $4,%rdi
  je l0126
  mov l0124@GOTPCREL(%rip),%rax
  mov 0(%rax),%rax
@@ -1761,8 +1749,7 @@ l0132:
  .globl l0135
 l0135:
  sub $40,%rsp
- mov %r15,%rdi
- mov %rdi,32(%rsp)
+ mov %r15,32(%rsp)
  mov %r15,24(%rsp)
  shl $8,%rax
  shr $8,%rax
@@ -1926,8 +1913,7 @@ put:
  .globl l0144
 l0144:
  sub $32,%rsp
- mov %r15,%rdi
- mov %rdi,24(%rsp)
+ mov %r15,24(%rsp)
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
  mov %rcx,16(%rsp)
@@ -1996,7 +1982,7 @@ atsoc:
 l0149:
  mov %rbx,%rdi
  shr $56,%rdi
- cmpq $9,%rdi
+ cmp $9,%rdi
  je l0150
  mov %r15,%rax
  ret
@@ -2006,7 +1992,7 @@ l0150:
  shr $8,%rdi
  mov (%rdi),%rdi
  shr $56,%rdi
- cmpq $9,%rdi
+ cmp $9,%rdi
  jne l0151
  mov %rbx,%rsi
  shl $8,%rsi
@@ -2073,15 +2059,15 @@ l0158:
  mov %rcx,16(%rsp)
  mov %rax,%rdi
  shr $56,%rdi
- cmpq $254,%rdi
+ cmp $254,%rdi
  jne l0159
  mov %rbx,%rdi
  shr $56,%rdi
- cmpq $254,%rdi
+ cmp $254,%rdi
  jne l0159
  mov %rcx,%rdi
  shr $56,%rdi
- cmpq $20,%rdi
+ cmp $20,%rdi
  je l0160
 l0159:
  mov l0154@GOTPCREL(%rip),%rax
@@ -2126,15 +2112,14 @@ l0154:
  .globl fluid
 fluid:
  sub $24,%rsp
- mov %r15,%rdi
- mov %rdi,16(%rsp)
+ mov %r15,16(%rsp)
  mov %rax,(%rsp)
  mov %r15,%rax
  mov (%rsp),%rdi
  mov %rdi,8(%rsp)
  mov 8(%rsp),%rdi
  shr $56,%rdi
- cmpq $9,%rdi
+ cmp $9,%rdi
  jne l0162
  mov 8(%rsp),%rax
  shl $8,%rax
@@ -2148,7 +2133,7 @@ l0163:
 l0164:
  mov 8(%rsp),%rdi
  shr $56,%rdi
- cmpq $9,%rdi
+ cmp $9,%rdi
  je l0165
  mov %r15,%rax
  jmp l0166
@@ -2164,7 +2149,7 @@ l0165:
  mov %rax,8(%rsp)
  mov %rax,%rdi
  shr $56,%rdi
- cmpq $9,%rdi
+ cmp $9,%rdi
  jne l0167
  shl $8,%rax
  shr $8,%rax
@@ -2276,7 +2261,7 @@ LambdaLinkInstruction:
 // (*entry addressapply0 expr 1)
  .globl l0175
 l0175:
- jmp  *%rax
+ jmp *%rax
  .quad 2
 // (*entry bittable expr 2)
  .globl bittable
@@ -2291,7 +2276,7 @@ bittable:
  shr $62,%rbx
  add %rbx,%rbx
  add $-6,%rbx
- cmpq $0,%rbx
+ cmp $0,%rbx
  jge l0176
  neg %rbx
  xchg %rbx,%rcx
@@ -5750,8 +5735,7 @@ l0290:
  .globl l0291
 l0291:
  sub $16,%rsp
- mov %r15,%rdi
- mov %rdi,8(%rsp)
+ mov %r15,8(%rsp)
  mov %rax,(%rsp)
  mov $1,%rbx
  shl $8,%rax
@@ -5801,7 +5785,7 @@ l0296:
  push %rax
  mov %rbx,%rdi
  shr $56,%rdi
- cmpq $254,%rdi
+ cmp $254,%rdi
  jne l0297
  mov %rbx,%rax
  mov _symfnc@GOTPCREL(%rip),%rsi
@@ -5854,7 +5838,7 @@ dynloadhelper:
  shr $5,%rsp
  shl $5,%rsp
  mov %rbx,40(%rsp)
- call  *%rax
+ call *%rax
  mov 40(%rsp),%rsp
  pop %r13
  pop %r14
@@ -5892,7 +5876,7 @@ dynloadhelper_float_float:
  shl $5,%rsp
  mov %rbx,40(%rsp)
  movsd (%rdi),%xmm0
- call  *%rax
+ call *%rax
  movq %xmm0,%rax
  mov 40(%rsp),%rsp
  pop %r13
@@ -7261,8 +7245,8 @@ l0615:
  .byte 120,105,116,0
  .globl l0616
 l0616:
- .quad 3
- .byte 109,97,105,110,0,0
+ .quad 7
+ .byte 112,115,108,95,109,97,105,110,0,0
  .globl l0617
 l0617:
  .quad 3
