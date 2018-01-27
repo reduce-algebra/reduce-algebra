@@ -43,6 +43,9 @@ AC_CONFIG_MACRO_DIR([m4])
 
 here=`pwd`
 AC_MSG_NOTICE([+++ Configure in directory $here +++])
+AC_MSG_NOTICE([Args: $@])
+AC_MSG_NOTICE([Args: $ac_configure_args])
+
 
 # Explain that a file "config.h" should be generated
 AC_CONFIG_HEADERS([config.h])

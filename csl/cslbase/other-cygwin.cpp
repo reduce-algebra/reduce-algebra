@@ -1,11 +1,11 @@
-// other-cygwin.cpp                     Copyright (C) A C Norman  2014-2017
+// other-cygwin.cpp                     Copyright (C) A C Norman  2014-2018
 
 //
 // This program is to be run from a DOS command prompt or any cygwin
 // shell, and it "changes gear" so that the command that it is
 // given as its arguments is run in a full cygwin context.
-// It should always run its target in the version of cygwin it is
-// nor run from - ie if launched from a 32-bit terminal it will
+// It is capable of running its target in the version of cygwin it is
+// nor run from - ie if launched from a 32-bit terminal it can
 // run a 64-bit application and vice versa.
 // Note that for good behaviour in such usage that mixes 32 and 64-bit
 // cygwin working it will be important that file systems map so that
@@ -16,14 +16,16 @@
 //
 // You must compile this with i686-w64-mingw32-gc++. This now requires that
 // the 32 and 64-bit versions of cygwin have been installed in c:\cygwin and
-// c:\cygwin64.
+// c:\cygwin64. At an earlier stage I had made that more dynamic and more
+// flexible, but I have enough delicacy here that I now want to simplify.
 //
-// If compiled with "-DFORCE32" or "-DFORCE64" it will only change gear
-// if not in the context suggested...
+// If compiled with "-DFORCE32" or "-DFORCE64" it will change gear
+// if not in the context suggested and will run in the current cygwin
+// variant otherwise.
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -70,62 +72,77 @@ static bool run64;
 
 #define LONGEST_COMMAND 4096
 
-static char command[LONGEST_COMMAND];
+static char command[LONGEST_COMMAND] = {0};
 
-// I keep this as a separate function in case I need to insert extra
-// escape characters at any stage...
+// Here I have a string s and I want to end up with 's' in the command.
+// However I am in a context where the command is itself already being
+// written within (single) quotes, so I have a messy notation to use to
+// include the quote marks.
+
 void append_command(char *s)
-{   strcat(command, s);
+{   char *p = command;
+    while (*p != 0 && p < &command[LONGEST_COMMAND]) p++;
+    if (p > &command[LONGEST_COMMAND-16])
+    {   fprintf(stderr, "\n+++ Command line too long\n");
+        exit(1);
+    }
+    *p++ = '\\';
+    *p++ = '\"';
+    int c;
+    while ((c = *s++) != 0)
+    {   if (c == '&' || c == '\\' || c == '<' || c == '>' ||
+            c == '^' || c == '|') *p++ = '^';
+        if (c == '\"' || c == '\\') *p++ = '\\';
+        *p++ = c;
+        if (p > &command[LONGEST_COMMAND-16])
+        {   fprintf(stderr, "\n+++ Command line too long\n");
+            exit(1);
+        }
+    }
+    *p++ = '\\';
+    *p++ = '\"';
+    *p = 0;
 }
 
 // The following code was found in newsgroup postings, and I believe it was
 // intended to be available for re-use.
 
 // Find a process with a given id in a snapshot
+
 BOOL FindProcessID(HANDLE snap, DWORD id, LPPROCESSENTRY32 ppe)
-{
-  BOOL res;
-  ppe->dwSize = sizeof(PROCESSENTRY32); // (mandatory)
-  res = Process32First(snap, ppe);
-  while (res) {
-    if (ppe->th32ProcessID == id) {
-      return TRUE;
+{   BOOL res;
+    ppe->dwSize = sizeof(PROCESSENTRY32); // (mandatory)
+    res = Process32First(snap, ppe);
+    while (res)
+    {   if (ppe->th32ProcessID == id) return TRUE;
+        res = Process32Next(snap, ppe);
     }
-    res = Process32Next(snap, ppe);
-  }
-  return FALSE;
+    return FALSE;
 }
 
 // Get the parent process id of the current process
+
 BOOL GetParentProcessId(DWORD* parent_process_id)
-{
-  HANDLE hSnap;
-  PROCESSENTRY32 pe;
-  DWORD current_pid = GetCurrentProcessId();
+{   HANDLE hSnap;
+    PROCESSENTRY32 pe;
+    DWORD current_pid = GetCurrentProcessId();
 
-  // Take a snapshot of all Windows processes
-  hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-  if (INVALID_HANDLE_VALUE == hSnap) {
-    return FALSE;
-  }
+    // Take a snapshot of all Windows processes
+    hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (INVALID_HANDLE_VALUE == hSnap) return FALSE;
 
-  // Find the current process in the snapshot
-  if (!FindProcessID(hSnap, current_pid, &pe)) {
-    return FALSE;
-  }
+    // Find the current process in the snapshot
+    if (!FindProcessID(hSnap, current_pid, &pe)) return FALSE;
 
-  // Close the snapshot
-  if (!CloseHandle(hSnap)) {
-    return FALSE;
-  }
+    // Close the snapshot
+    if (!CloseHandle(hSnap)) return FALSE;
 
-  *parent_process_id = pe.th32ParentProcessID;
-  return TRUE;
+    *parent_process_id = pe.th32ParentProcessID;
+    return TRUE;
 }
 
 int main(int argc, char *argv[])
-{
-    run64 = false;
+{   run64 = false;
     DWORD parent;
     if (!GetParentProcessId(&parent))
     {   printf("Parent process not found\n");
@@ -148,27 +165,27 @@ int main(int argc, char *argv[])
     {   SYSTEM_INFO s;
         GetNativeSystemInfo(&s);
         switch (s.wProcessorArchitecture)
-        {
-        case PROCESSOR_ARCHITECTURE_AMD64:
-            // printf("parent is a 64-bit process\n");
-            run64 = false;
-            break;
-        case PROCESSOR_ARCHITECTURE_INTEL:
+        {   case PROCESSOR_ARCHITECTURE_AMD64:
+                // printf("parent is a 64-bit process\n");
+                run64 = false;
+                break;
+            case PROCESSOR_ARCHITECTURE_INTEL:
 #ifndef FORCE32
-            printf("You seem to be running 32-bit operating system\n");
-            printf("This utility can not work. Exiting\n");
-            return 1;
+                printf("You seem to be running 32-bit operating system\n");
+                printf("This utility can not work. Exiting\n");
+                return 1;
 #else
-            break;
+                break;
 #endif
-        default:
-            printf("Unknown platform: exiting.\n");
-            return 1;
+            default:
+                printf("Unknown platform: exiting.\n");
+                return 1;
         }
     }
 
 // At this stage run64 is set to indicate the opposite of the shell currently
-// in use.
+// in use. That would be the default shell that one wants to end up in.
+// If one of the FORCE options is enabled then override that dynamic test.
 
 #if defined FORCE64
     run64 = true;
@@ -219,6 +236,19 @@ int main(int argc, char *argv[])
     user = getenv("USER");
     if (user == NULL) user = "unknown";
     memset(newenv, 0, sizeof(newenv));
+// What I do here is to create a string that contains
+//    windir\system32\cmd /c
+//         "c:\cygwin64\bin\bash --login -c
+//          \"cd DIRECTORY; c1; c2; ...\""
+// so first "cmd /c "..." will remove the first and fnal double quotes
+// on the line but leave all the rest exactly as is.
+// Then "bash -c '...'" uses the single quotes there to arrange that a single
+// string is provided as an operand for "-c". This will involve a sequence of
+// items that must each parse as a single word, and which (being within single
+// quotes) must have escapes and quote marks in them protected.
+// Well within the '...' if an embedded single quote is required it must be
+// rendered as '\'' - that ends the string, puts in an individual single quote
+// by escaping it with a backslash and then resumes the string.
     if (run64)
         sprintf(newenv, "OTHER=yes%cUSER=%s%cPATH=/cygdrive/c/cygwin64/bin%c", 0, user, 0, 0);
     else
@@ -226,16 +256,18 @@ int main(int argc, char *argv[])
     for (i=0; i<dirsize; i++)
         if (current[i] == '\\') current[i] = '/';
     sprintf(command,
-        "%s\\%s\\cmd /c \"%s\\bin\\bash --login -c \'cd ",
-        getenv("WINDIR"), run64 ? "sysnative" : "system32", scygwin);
+            "%s\\%s\\cmd /s /d /c %s\\bin\\bash --login -c \\\"cd ",
+            getenv("WINDIR"), run64 ? "sysnative" : "system32", scygwin);
     append_command(current);
     strcat(command, " ; ");
     for (i=1; i<argc; i++)
     {   append_command(argv[i]);
-        strcat(command, " ");
+        if (i != argc-1) strcat(command, " ");
     }
-    strcat(command, "\'\"");
-//  printf("Command is <%s>\n", command); fflush(stdout);
+    strcat(command, "\"");
+#if 1
+    printf("Command is <%s>\n", command); fflush(stdout);
+#endif
     char newdir[1024];
     sprintf(newdir, "%s\\bin", scygwin);
     rc = CreateProcess(
