@@ -35,22 +35,31 @@ win32)
   host="--host=i686-w64-mingw32"
   extras=""
   cygopt=""
+  prefix="i686-w64-mingw32-"
   ;;
 win64)
   host="--host=x86_64-w64-mingw32"
   extras=""
   cygopt=""
+  prefix="x86_64-w64-mingw32-"
   ;;
 cyg32 | cyg64)
   host=""
   extras="--with-xft --with-xim"
   cygopt="--with-cygwin"
+  prefix=""
   ;;
 *)
   printf "\n+++ bad option $1 to cslbuild1.sh\n"
   exit 1
 ;;
 esac
+
+CC="ccache ${prefix}gcc"
+CXX="ccache ${prefix}g++"
+
+pc1="CC=\"$CC\""
+pc2="CXX=\"$CXX\""
 
 if test "x$2" = "x"
 then
@@ -79,19 +88,19 @@ popd
 
 mkdir crlibm
 pushd crlibm
-$cygalt $reduce/libraries/crlibm/configure $host --prefix=$here/csl$1
+$cygalt $reduce/libraries/crlibm/configure "$pc1" "$pc2" $host --prefix=$here/csl$1
 $cygalt make install
 popd
 
 mkdir libffi
 pushd libffi
-$cygalt $reduce/libraries/libffi/configure $host --prefix=$here/csl$1
+$cygalt $reduce/libraries/libffi/configure "$pc1" "$pc2" $host --prefix=$here/csl$1
 $cygalt make install
 popd
 
 mkdir softfloat
 pushd softfloat
-$cygalt $reduce/libraries/SoftFloat-3a/source/configure $host --prefix=$here/csl$1
+$cygalt $reduce/libraries/SoftFloat-3a/source/configure "$pc1" "$pc2" $host --prefix=$here/csl$1
 $cygalt make install
 popd
 
@@ -100,13 +109,14 @@ pushd fox
 foxflags="--enable-release --with-opengl=no \
           --disable-jpeg --disable-zlib --disable-bz2lib \
           --disable-png --disable-tiff"
-$cygalt $reduce/csl/fox/configure $host --prefix=$here/csl$1 $foxflags $extras
+$cygalt $reduce/csl/fox/configure "$pc1" "$pc2" $host \
+    --prefix=$here/csl$1 $foxflags $extras
 $cygalt make install
 popd
 
 mkdir csl
 pushd csl
-$cygalt $reduce/csl/cslbase/configure $host --prefix=$here/csl$1 \
+$cygalt $reduce/csl/cslbase/configure "$pc1" "$pc2" $host --prefix=$here/csl$1 \
     $cygopt --with-fox=$here/csl$1 --with-fox-pending \
     --without-wx
 $cygalt make
