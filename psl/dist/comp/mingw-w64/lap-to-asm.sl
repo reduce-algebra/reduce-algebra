@@ -5,7 +5,7 @@
 % Author:         Eric Benson
 % Created:        13 August 1981
 % Modified:       15-Jan-85 11:00 (Brian Beach)
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Compiler
 %
@@ -141,13 +141,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (put 'de 'asmpreeval
-     (function (lambda (u loadtime?) (fasl-define u 'expr loadtime?))))
+     (function (lambda (u loadtime?) (fasl-define u 'expr))))
 (put 'df 'asmpreeval
-     (function (lambda (u loadtime?) (fasl-define u 'fexpr loadtime?))))
+     (function (lambda (u loadtime?) (fasl-define u 'fexpr))))
 (put 'dm 'asmpreeval
-     (function (lambda (u loadtime?) (fasl-define u 'macro loadtime?))))
+     (function (lambda (u loadtime?) (fasl-define u 'macro))))
 (put 'dn 'asmpreeval
-     (function (lambda (u loadtime?) (fasl-define u 'nexpr loadtime?))))
+     (function (lambda (u loadtime?) (fasl-define u 'nexpr))))
 (put 'loadtime 'asmpreeval
      (function (lambda (u loadtime?) (fasl-form (cadr u) T))))
 (put 'startuptime 'asmpreeval
@@ -423,7 +423,7 @@
     (return (mkstr j))
  ))
 
-(de initializesymnam (maxsymbol)
+(de initializesymnam ()
   (dataprintgloballabel (findgloballabel 'symnam))
   (for (from i 0 128 1) 
        (do (dataprintfullword (compileconstant (id2string (int2id i))))))
@@ -526,6 +526,18 @@
 				     % COMMA                          
 				     (printoperand u))))
 	     (prin2 !$eol!$)))))))
+
+(put 'call 'asmpseudoop 'asmprintcall)
+(put 'jmp 'asmpseudoop 'asmprintcall)
+
+(de asmprintcall (x)
+  (prin2 '! )
+  (printopcode (car x))
+  (prin2 '! )
+  (if (eqcar (cadr x) 'reg) (prin2 '!*))
+  (printoperand (cadr x))
+  (prin2 !$eol!$)
+)
 
 % NEWLINE                                                                  
 (put '*entry 'asmpseudoop 'asmprintentry)
@@ -667,7 +679,7 @@
 	     u
 	     (stringgensym))))
     (put u 'symbol x)
-    (return x)))
+    x))
 
 (de dataprintvar (name init)
   (prog (oldout)

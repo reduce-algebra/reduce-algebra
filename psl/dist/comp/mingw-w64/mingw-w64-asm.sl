@@ -1,13 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXC:SUN386-ASM.SL
-% Description:  SUN386i specific information for LAP-TO-ASM
+% File:         PXC:mingw-w64-ASM.SL
+% Description:  AMD64 specific information for LAP-TO-ASM
 % Author:       
 % Created:      16-Jan-1982
 % Modified:
 % Mode:         Lisp
 % Package:      
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -141,11 +141,23 @@
                 (r8  "%r8") ( r9 "%r9") (r10 "%r10")
                 (r11 "%r11") ( r12 "%r12") (r13 "%r13")
                 (r14 "%r14") ( r15 "%r15") 
+		(heaplast "%r10") (heaptrapbound "%r11")
+		(bndstkptr "%r12") (bndstkupperbound "%r13")
+		(nil  "%r15") (bndstklowerbound "%r14")
                 (rcx "%rcx") (cl "%cl") (cx "%cx")
-          	(sp "%rsp")
+                (xmm0 "%xmm0") (xmm1 "%xmm1")
+                (xmm2 "%xmm2") (xmm3 "%xmm3")
+                (xmm4 "%xmm4") (xmm5 "%xmm5")
+                (xmm6 "%xmm6") (xmm7 "%xmm7")
+                (xmm8 "%xmm8") (xmm9 "%xmm9")
+                (xmm10 "%xmm10") (xmm11 "%xmm11")
+                (xmm12 "%xmm12") (xmm13 "%xmm13")
+                (xmm14 "%xmm14") (xmm15 "%xmm15")
+          	(sp "%rsp") (rip "%rip")
           	(st "%rsp") )                      % Stack Pointer
   'RegisterName)
 
+(put 'NIL 'RegisterName "%r15")
 
 (setq DataProcState* 'data)
 

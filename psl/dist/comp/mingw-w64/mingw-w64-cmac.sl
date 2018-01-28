@@ -7,8 +7,29 @@
 % Modified:
 % Mode:         Lisp
 % Package:
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 (loadtime (progn
@@ -143,9 +164,9 @@
  
 %---------------------------------------------------------
 % The following set of predicates describes certain classes of
-% register classes. RegP tests if the ophe operand is a valid 68000 register.%
+% register classes. RegP tests if the ophe operand is a valid x86_64 register.%
 %
-% RegP  any 80386 register
+% RegP  any x86_64 register
 % FakeRegP tests for argument register numbers greater than LastActualReg
  
  
@@ -156,12 +177,12 @@
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
 	  '( 1  2  3  4  5 st t1 t2 rax rcx rdx rbx rsp rbp rsi rdi
-				eax ebx edx r8 r9 r10 r11 r12 r13 r14 r15
+				eax ebx ecx edx r8 r9 r10 r11 r12 r13 r14 r15
             nil heaplast heaptrapbound
 	    bndstkptr bndstklowerbound
 	    bndstkupperbound t3 t4 al  cl ax cx es cs ss ds fs gs))))
  
-(DefList '((RAX   1) (RBX   2) (RCX   3) (RDX   4) (RBP   5) )
+(DefList '((RAX   1) (RBX   2) (ebx  2) (RCX   3) (RDX   4) (RBP   5) )
 	 'RegisterNumber)
  
 (de RegisterNumber (RegSymbol)
@@ -755,7 +776,7 @@
 		       (cmp ARGTWO (reg t1)) (ARGFOUR ARGTHREE))
     ((INumP AnyP     ) (*JumpIf ARGTWO ARGONE ARGTHREE (ARGFIVE . ARGFOUR)))
     ((AnyP  ZeroP    ) (cmp 0 ARGONE)          (ARGFOUR ARGTHREE))
-    ((AnyP  InumP)     (cmp ArgTWO ARGONE)  (ARGFOUR ARGTHREE))
+    ((AnyP  InumP)     (cmpq ArgTWO ARGONE)  (ARGFOUR ARGTHREE))
     ((regP AnyP     )  (cmp ARGTWO ARGONE)   (ARGFOUR ARGTHREE))
     ((AnyP  regP    )  (cmp ARGONE ARGTWO)   (ARGFIVE ARGTHREE))
     ((AnyP  InumP    ) (cmp ARGTWO ARGONE)  (ARGFOUR ARGTHREE))
@@ -924,6 +945,7 @@
    ))
 
 (DefCMacro *Call
+   ((RegP)                (CALL ARGONE))
    ((InternallyCallableP) (call (InternalEntry ARGONE)))
    ((FastCallableP)       (call (indirect (entry ARGONE))))
 	   (              (*move (idloc argone) (reg t1))
@@ -939,6 +961,7 @@
 			(ret)))
  
 (DefCMacro *JCall
+   ((RegP)                (JMP ARGONE))
    ((InternallyCallableP) (jmp (InternalEntry ARGONE)))
    ((FastCallableP)       (JMP (indirect (entry ARGONE))))
 	   (              (*move (idloc argone) (reg t1))
@@ -1280,7 +1303,7 @@ preload  (setq initload
 	   (difference 15  NumberOfArguments))
 	  (append
 	   (list (list '!*move '(fluid ebxsave!*) '(reg 5))
-% stack has to be aligned to 16bytes (128bit) for SSE instructions
+% stack has to be aligned for SSE instructions in dyn. linking in C
                  '(!*move (reg st) (reg 1))
                  '(sub 64 (reg st))
                  '(!*wshift (reg st) -5)
