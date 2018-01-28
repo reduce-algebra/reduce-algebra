@@ -1180,7 +1180,7 @@ then
       printf "#! /bin/sh\nccache $CXX \"\$@\"\n" > $d/cachecxx.sh
       chmod +x $d/cachecc.sh $d/cachecxx.sh
       CC="$d/cachecc.sh"
-      CXX="d/cachecxx.sh"
+      CXX="$d/cachecxx.sh"
       ;;
     esac
   fi
