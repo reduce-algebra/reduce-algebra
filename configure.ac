@@ -1169,7 +1169,9 @@ then
   CPPFLAGS="$OLD_CPPFLAGS"
   if test "$CCACHE" != ""
   then
-    case $CC$CXX `ls -l $CC 2>/dev/null` `ls -l $CXX 2>/dev/null` in
+    RAWCC="`which $CC 2> /dev/null`"
+    RAWXX="`which $CXX 2> /dev/null`"
+    case "$CC$CXX `ls -l $RAWCC 2>/dev/null` `ls -l $RAWCXX 2>/dev/null`" in
     *ccache*)
       ;;
     *)

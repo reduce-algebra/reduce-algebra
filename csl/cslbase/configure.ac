@@ -716,10 +716,14 @@ AC_ARG_WITH(ccache,
 if test "$with_ccache" != "no"
 then
   AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
+  RAWCC="`which $CC 2> /dev/null`"
+  RAWCXX="`which $XX 2> /dev/null`"
   if test "with_ccache" != "no" &&
      test "$CC$CXX" = ""
   then
-    case $CC$CXX 'ls -l $CC 2>/dev/null` `ls -l $CXX 2>/dev/null` in
+    RAWCC="`which $CC 2> /dev/null`"
+    RAWCXX="`which $XX 2> /dev/null`"
+    case "$CC$CXX `ls -l $RAWCC 2>/dev/null` `ls -l $RAWCXX 2>/dev/null`" in
     *ccache*)
       ;;
     *)
