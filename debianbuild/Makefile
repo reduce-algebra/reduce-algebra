@@ -24,7 +24,7 @@ update-changelog:
 
 $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
-	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) | tee $(BUILDTOPDIR).log
+	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
 	( cd $(BUILDTOPDIR) ; ./autogen.sh -f )
 	-rm -rf reduce-source-$(SNAPSHOT)
 	touch $(BUILDTOPDIR).stamp

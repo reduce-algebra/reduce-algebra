@@ -55,11 +55,20 @@ cyg32 | cyg64)
 ;;
 esac
 
-CC="ccache ${prefix}gcc"
-CXX="ccache ${prefix}g++"
+rm -rf csl$1
+mkdir csl$1
+pushd csl$1
 
-pc1="CC=\"$CC\""
-pc2="CXX=\"$CXX\""
+printf "#! /bin/bash\nccache ${prefix}gcc \"\$@\"\n" > cachecc.sh
+printf "#! /bin/bash\nccache ${prefix}g++ \"\$@\"\n" > cachecxx.sh
+chmod +x cachecc.sh cachecxx.sh
+
+here1=`pwd`
+CC="$here1/cachecc.sh"
+CXX="$here1/cachecxx.sh"
+
+pc1="CC=$CC"
+pc2="CXX=$CXX"
 
 if test "x$2" = "x"
 then
@@ -67,10 +76,6 @@ then
 else
   cygalt="$here/cygalt.exe"
 fi
-
-rm -rf csl$1
-mkdir csl$1
-pushd csl$1
 
 mkdir libedit
 pushd libedit

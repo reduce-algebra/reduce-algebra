@@ -1128,7 +1128,35 @@ AC_ARG_WITH(ccache,
 AC_CHECK_PROG([CCACHE], [ccache], [ccache], [])
 AC_MSG_NOTICE([CC=/$CC/ CXX=/$CXX/ CCACHE=/$CCACHE/])
 
-if test "with_ccache" != "no" &&
+# The use of ccache here deserves an explanation. The first and maybe obvious
+# thing is that if wither ccache seems to to be installed or if the person
+# who invoked the configure script had overridden CC or CXX so specify any
+# custom compilers that I will not do anything.
+# Then the "obvious" thing do do would be to go 'CC="ccache $CC"' so that
+# subsequent compilation ended up cached. Well before I can do that I need
+# to get CC set - and remember that if --host is set then it may end up
+# being a cross-compiler. So 'CC="ccache gcc"' is certainly not good enough.
+# However the autoconf macros that set CC (and CXX) also set CFLAGS etc
+# in ways I do not want, so I take steps to preserve and restore those.
+# Now an issue that caused me much pain. If CC ends up as text with embedded
+# whitespace then passing it down to lower-level configure scripts is
+# delicate. And at leats one library that I use performs a test of the form
+#    if test $CC = xxx; then
+# (where perhaps more properly it would have gone 'test "$CC" = "xxx"') and
+# if CC expands to more than one word that gives a syntax error. So to work
+# around both those problems I dynamically create short scripts to compile
+# via ccache. These are placed in the top level build directory, which should
+# be platform specific. This extra layer of shell scripting will have an
+# adverse cost, but I hope that will be balanced by the effects of ccache. 
+# Please note that here (and in other places) that whitespace in the path
+# to where Reduce gets built is not supported. If some keen person would
+# like to review all the build scripts and get quoting of strings fully
+# correct that might be nice!
+# Hah - a further issue. On some platforms gcc and g++ (and som others) will
+# be links to ccache and so the facility is already used automatically. In
+# that case it is not a help to wrap in an extra call to ccache!
+
+if test "$with_ccache" != "no" &&
    test "$CC$CXX" = ""
 then
   OLD_CFLAGS="$CFLAGS"
@@ -1141,12 +1169,16 @@ then
   CPPFLAGS="$OLD_CPPFLAGS"
   if test "$CCACHE" != ""
   then
-    case $CC$CXX in
+    case $CC$CXX `ls -l $CC 2>/dev/null` `ls -l $CXX 2>/dev/null` in
     *ccache*)
       ;;
     *)
-      CC="$CCACHE $CC"
-      CXX="$CCACHE $CXX"
+      d=`pwd`
+      printf "#! /bin/sh\nccache $CC \"\$@\"\n" > $d/cachecc.sh
+      printf "#! /bin/sh\nccache $CXX \"\$@\"\n" > $d/cachecxx.sh
+      chmod +x $d/cachecc.sh $d/cachecxx.sh
+      CC="$d/cachecc.sh"
+      CXX="d/cachecxx.sh"
       ;;
     esac
   fi
