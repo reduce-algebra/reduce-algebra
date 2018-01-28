@@ -7,7 +7,7 @@
 % Created:      11 Sept  1989
 % Modified:
 % Mode:         Lisp
-% Status:       Experimental
+% Status:       Open Source: BSD License
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

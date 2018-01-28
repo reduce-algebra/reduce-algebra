@@ -6,6 +6,7 @@
 % Author:       Robert R. Kessler, University of Utah
 % Created:      3-Apr-86
 % Modified:     
+% Status:       Open Source: BSD License
 % Package:      PSL
 %
 % (c) Copyright 1986, University of Utah

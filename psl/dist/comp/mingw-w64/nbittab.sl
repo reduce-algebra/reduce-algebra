@@ -4,6 +4,7 @@
 % Description:  New bit table format.
 % Author:
 % Created:
+% Status:       Open Source: BSD License
 % Package:
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

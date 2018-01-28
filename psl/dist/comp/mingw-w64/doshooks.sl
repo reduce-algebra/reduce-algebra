@@ -5,6 +5,7 @@
 % Author:       H. Melenk
 % Created:      10-May 1990
 % Modified:
+% Status:       Open Source: BSD License
 % Mode:         Lisp
 % Package:
 %

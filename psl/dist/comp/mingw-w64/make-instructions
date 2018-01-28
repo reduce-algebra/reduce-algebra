@@ -1,1 +1,1 @@
-$bsys/pslcomp < geninstr.sl
+$psys/pslcomp < geninstr.sl

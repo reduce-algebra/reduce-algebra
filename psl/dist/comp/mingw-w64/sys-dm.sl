@@ -5,7 +5,7 @@
 % Author:       Eric Benson, University of Utah
 % Created:	10-Jul-1981
 % Modified:     21-Jun-84 (Vicki O'Day)
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 % Mode:         Lisp
 % Package:      Compiler
 % Compile to:   PL:SYS-DM.B
