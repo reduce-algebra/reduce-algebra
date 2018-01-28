@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
         if (i != argc-1) strcat(command, " ");
     }
     strcat(command, "\"");
-#if 1
+#if 0
     printf("Command is <%s>\n", command); fflush(stdout);
 #endif
     char newdir[1024];

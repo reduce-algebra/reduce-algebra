@@ -719,12 +719,16 @@ then
   if test "with_ccache" != "no" &&
      test "$CC$CXX" = ""
   then
-    case $CC$CXX in
+    case $CC$CXX 'ls -l $CC 2>/dev/null` `ls -l $CXX 2>/dev/null` in
     *ccache*)
       ;;
     *)
-      CC="$CCACHE $CC"
-      CXX="$CCACHE $CXX"
+      d=`pwd`
+      printf "#! /bin/sh\nccache $CC \"\$@\"\n" > d/cachecc.sh
+      printf "#! /bin/sh\nccache $CXX \"\$@\"\n" > d/cachecxx.sh
+      chmod +x $d/cachecc.sh $d/cachecxx.sh
+      CC="$d/cachecc.sh"
+      CXX="$d/cachecxx.sh"
       ;;
     esac
   fi
