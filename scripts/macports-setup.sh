@@ -111,6 +111,8 @@ sudo port install          \
   texlive-fonts-extra      \
   texlive-htmlxml          \
   texlive-latex-extra      \
+  texlive-plain-generic    \
+  texlive-bin-extra        \
   timeout                  \
   vim                      \
   wget
