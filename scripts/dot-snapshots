@@ -1,0 +1,163 @@
+This is a prototype and demonstration ".snapshots" file. The machine
+names and addreses used here are relevant to me, but not to anybody else,
+so you will need to adapt it to your own needs before using it.
+The machine names shown are in general the ones reported by "uname -n".
+
+--------------------------------------------------------------------------
+# $HOME/.snapshots
+
+# A C Norman, 2018
+
+# This file customises the Reduce snapshot builder by indicating private
+# or local machines that can be used for building snapshots. For each
+# system for which a snapshot may be generated there ia a function here
+# called "machine_<architecture>". This can test the identify of the machine
+# it is running on (so that a user can put exactly the same .snapshots files
+# on multiple computers - I expect that this will generally simplify
+# maintenance). It then sets a variable MODE together with some further
+# variables.
+
+# It can use this to override the snapshot building regime for macintosh,
+# windows, linux32 (ie i686), linux64 (ie x86_64) and rpi (ie a Raspberry Pi
+# running 32-bit Raspbian). It does not need to override all of these.
+# So a very simple file content would be if a Windows machine was available
+# as a server, but otherwise default behaviour was wanted. In that case this
+# file might contain just
+#     machine_windows() {
+#       MODE=ssh
+#       HOST=windows.machine.some.network
+#     }
+# where the HOST setting gives the network identity of the Windows server -
+# which will be accessed using ssh.
+#
+# More elaborate options are illustrated in what follows:
+
+machine_macintosh() {
+  case `uname -n` in
+# This is building for the Macintosh. Both panamint and rpi3-32 are
+# machines on a private network where the host with ip address 192.168.1.8
+# is a macintosh that can be used.
+  panamint | rpi3-32)
+    MODE=ssh
+    HOST=192.168.1.8
+    ;;
+  gauguin)
+# gauguin does not have a macintosh directly available, but by tunneling
+# via codemist.dynu.com it can gain access to the private macintosh on the
+# local network used above.
+    MODE=ssh+ssh
+    HOST1=codemist.dynu.com
+    HOST2=192.168.1.8
+    ;;
+  math-smreduce | OlderMacBook | acn1macbook)
+# All these hosts are macintoshes and so the build of a macintosh snapshot
+# can be performed on them directly.
+    MODE=local
+    ;;
+  *)
+# If I have not customised rule for the current machine to access a macintosh
+# I must report failure.
+    printf "Do not know how to access a macintosh from `uname -n`\n"
+    exit 1
+    ;;
+  esac
+}
+
+machine_windows() {
+  case `uname -n` in
+  panamint)
+# panamint is a windows computer
+    MODE=local
+    ;;
+  OlderMacBook | acn1macbook | rpi3-32)
+# From the private netwoirk I can access panamin using its private address.
+    MODE=ssh
+    HOST=192.168.1.10
+    ;;
+  gauguin | math-smreduce)
+# On these two machines I have virtualbox set up so that a VM called
+# REDUCE-pkg-factory-windows runs Windows 10 and has the cygwin environment
+# set up so that I can build on it. The VM runs an ssh server and this script
+# sets up port forwarding in virtualbox so that it can be accessed.
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Windows"
+    ;;
+  *)
+    printf "Do not know how to access a windows machine from `uname -n`\n"
+    exit 1
+    ;;
+  esac
+}
+
+machine_linux32() {
+  case `uname -n` in
+  panamint | gauguin | math-smreduce)
+# More cases of using a virtual machine.
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Ubuntu32"
+    ;;
+  OlderMacBook | acn1macbook | rpi3-32)
+# In this case virtualbox will be run on the host 192.168.1.10 so access
+# to it is somewhat at arm's length.
+    MODE=ssh+virtual
+    HOST=192.168.1.10
+    VM="REDUCE-pkg-factory-Ubuntu32"
+    ;;
+  *)
+    printf "Do not know how to access an i686 Linux machine from `uname -n`\n"
+    exit 1
+    ;;
+  esac
+}
+
+machine_linux64() {
+  case `uname -n` in
+  gauguin)
+# As before, use the machine directly.
+    MODE=local
+    ;;
+  panamint | math-smreduce)
+# As before a virtual machine running on the current system.
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Ubuntu"
+    ;;
+  OlderMacBook | acn1macbook | rpi3-32)
+# As before, a virtual machine running on a remote system.
+    MODE=ssh+virtual
+    HOST=192.168.1.10
+    VM="REDUCE-pkg-factory-Ubuntu"
+    ;;
+  *)
+    printf "Do not know how to access an x86_64 Linux machine from `uname -n`\n"
+    exit 1
+    ;;
+  esac
+}
+
+machine_rpi() {
+  case `uname -n` in
+  rpi3-32)
+# As before, use the machine directly.
+    MODE=local
+    ;;
+  OlderMacBook | acn1macbook | panamint)
+# As before, use a remote machine. If I had DNS set up in a more
+# elaborate way it would become more obvious that this host is "rpi3-32".
+    MODE=ssh
+    HOST=192.168.1.179
+    ;;
+  gauguin)
+# Another new option - access using ssh via a gateway system. HOST1 is
+# the gateway and HOST2 the system used for the build.
+    MODE=ssh+ssh
+    HOST1=codemist.dynu.com
+    HOST2=192.168.1.179
+    ;;
+  *)
+    printf "Do not know how to access a raspberry pi from `uname -n`\n"
+    exit 1
+    ;;
+  esac
+}
+
+# end of .snapshots

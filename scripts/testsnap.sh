@@ -22,6 +22,15 @@ here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
 
+# If you have a file called .snapshots in your home directory then that
+# will be read here to establish machines to be used in the build. See later
+# for details...
+
+if test -f $(HOME)/.snapshots
+then
+  source $(HOME)/.snapshots
+fi
+
 printf ">>>>>>>>>>>>>>>>>>>> here=$here\n"
 
 # There are a collection of issues that one needs to be aware of here...
@@ -253,106 +262,99 @@ ssh -p $PORT $USER@$HOST "cd reduce-remote-distribution; export PATH=/opt/local/
 # I will arrange for distinct settings for each target architecture and for
 # when the build runs on each possible host.
 
+# The code here only deals with the "official Reduce snapshot machine",
+# but by putting a file ".snapshots" in your home directory (and the
+# file dot-snapshots here provides a model) you can get your own systems
+# used instead.
+
 machine_macintosh() {
-  case `uname -n` in
-  panamint | rpi3-32)
-    MODE=ssh
-    HOST=192.168.1.8
-    ;;
-  gauguin)
-    MODE=ssh+ssh
-    HOST1=codemist.dynu.com
-    HOST2=192.168.1.8
-    ;;
-  math-smreduce | OlderMacBook | acn1macbook)
-    MODE=local
-    ;;
-  *)
-    printf "Do not know how to access a macintosh from `uname -n`\n"
-    exit 1
-    ;;
-  esac
+  MODE="none"
+  hosts_macintosh 2> /dev/null
+  if test "$MODE" = "none"
+  then
+    case `uname -n` in
+    math-smreduce)
+      MODE=local
+      ;;
+    *)
+      printf "Do not know how to access a macintosh from `uname -n`\n"
+      exit 1
+      ;;
+    esac
+  fi
 }
 
 machine_windows() {
-  case `uname -n` in
-  panamint)
-    MODE=local
-    HOST=192.168.1.8
-    ;;
-  OlderMacBook | acn1macbook | rpi3-32)
-    MODE=ssh
-    HOST=192.168.1.10
-    ;;
-  gauguin | math-smreduce)
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Windows"
-    ;;
-  *)
-    printf "Do not know how to access a windows machine from `uname -n`\n"
-    exit 1
-    ;;
-  esac
+  MODE="none"
+  hosts_windows 2> /dev/null
+  if test "$MODE" = "none"
+  then
+    case `uname -n` in
+    math-smreduce)
+      MODE=virtual
+      VM="REDUCE-pkg-factory-Windows"
+      ;;
+    *)
+      printf "Do not know how to access a windows machine from `uname -n`\n"
+      exit 1
+      ;;
+    esac
+  fi
 }
 
 machine_linux32() {
-  case `uname -n` in
-  panamint | gauguin | math-smreduce)
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Ubuntu32"
-    ;;
-  OlderMacBook | acn1macbook | rpi3-32)
-    MODE=ssh+virtual
-    HOST=192.168.1.10
-    VM="REDUCE-pkg-factory-Ubuntu32"
-    ;;
-  *)
-    printf "Do not know how to access an i686 Linux machine from `uname -n`\n"
-    exit 1
-    ;;
-  esac
+  MODE="none"
+  hosts_linux32 2> /dev/null
+  if test "$MODE" = "none"
+  then
+    case `uname -n` in
+    math-smreduce)
+      MODE=virtual
+      VM="REDUCE-pkg-factory-Ubuntu32"
+      ;;
+    *)
+      printf "Do not know how to access an i686 Linux machine from `uname -n`\n"
+      exit 1
+      ;;
+    esac
+  fi
 }
 
 machine_linux64() {
-  case `uname -n` in
-  gauguin)
-    MODE=local
-    ;;
-  panamint | math-smreduce)
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Ubuntu"
-    ;;
-  OlderMacBook | acn1macbook | rpi3-32)
-    MODE=ssh+virtual
-    HOST=192.168.1.10
-    VM="REDUCE-pkg-factory-Ubuntu"
-    ;;
-  *)
-    printf "Do not know how to access an x86_64 Linux machine from `uname -n`\n"
-    exit 1
-    ;;
-  esac
+  MODE="none"
+  hosts_linux64 2> /dev/null
+  if test "$MODE" = "none"
+  then
+    case `uname -n` in
+    math-smreduce)
+      MODE=virtual
+      VM="REDUCE-pkg-factory-Ubuntu"
+      ;;
+    *)
+      printf "Do not know how to access an x86_64 Linux machine from `uname -n`\n"
+      exit 1
+      ;;
+    esac
+  fi
 }
 
 machine_rpi() {
-  case `uname -n` in
-  rpi3-32)
-    MODE=local
-    ;;
-  OlderMacBook | acn1macbook | panamint)
-    MODE=ssh
-    HOST=192.168.1.179
-    ;;
-  gauguin)
-    MODE=ssh+ssh
-    HOST1=codemist.dynu.com
-    HOST2=192.168.1.179
-    ;;
-  *)
-    printf "Do not know how to access a raspberry pi from `uname -n`\n"
-    exit 1
-    ;;
-  esac
+  MODE="none"
+  hosts_rpi 2> /dev/null
+  if test "$MODE" = "none"
+  then
+    case `uname -n` in
+    math-smreduce)
+      MODE=ssh+ssh
+      HOST1=codemist.dynu.com
+      HOST2=192.168.1.179
+      ;;
+    *)
+      printf "Do not know how to access a raspberry pi from `uname -n`\n"
+      exit 1
+      ;;
+    esac
+  fi
 }
 
 
