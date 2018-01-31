@@ -358,20 +358,63 @@ machine_rpi() {
 }
 
 
-
-
+# Now I have the recipes that can be used to transfer files or execute
+# commands. Each tests MODE to see what to do.
   
 
 
 start_remote_host() {
+# This is only required if a virtual machine is involved. There are two
+# cases - one when the machine is hosted on the current system and the
+# other when it is remote.
+  case $MODE in
+  virtual)
+# If there is a VM on the local machine I start by re-configuring it so that
+# local port 1001 is redirected to its port 22 (ie ssh).
+    vboxmanage modifyvm $VM --natpf1 delete ssh 2> /dev/null
+    vboxmanage modifyvm $VM --natpf1 "ssh,tcp,,1001,,22"
+# Start up the machine.
+    vboxmanage startvm $VM --type headless
+# Now here I would like to use "vboxmanage guestproperty wait $VM" on a
+# suitable key to wait until the VM is started. However on at least one of my
+# VMs I find that that information required does not manage to filter back
+# to the host. So I drop back to polling via ssh every 10 seconds.
+    while :
+    do
+      sleep 10
+      hello=`timeout 20 ssh -p 1001 $USER@localhost printf "hello"`
+      if test "x$hello" = "xhello"
+      then
+        break
+      fi
+    done
+    ;;
+  ssh+virtual)
+# Now I express a similar sequence of steps, but with the Virtual Machine
+# being created on a remote host.
+    ssh $HOST vboxmanage modifyvm $VM --natpf1 delete ssh 2> /dev/null
+    ssh $HOST vboxmanage modifyvm $VM --natpf1 "ssh,tcp,,1001,,22"
+    ssh $HOST vboxmanage startvm $VM --type headless
+    while :
+    do
+      sleep 10
+      hello=`timeout 20 ssh -p 1001 $USER@$HOST printf "hello"`
+      if test "x$hello" = "xhello"
+      then
+        break
+      fi
+    done
+    ;;
+  esac
 }
+
 
 copy_files() {
 # Usage example : copy_files 'reduce-distribution/macbuild/' 'reduce-build/'
 }
 
 execute_in_dir() {
-# Usage examople: execute_in_dir 'reduce-build/C' './autogen.sh'
+# Usage example: execute_in_dir 'reduce-build/C' './autogen.sh'
 }
 
 fetch_from_dir() {
@@ -379,6 +422,24 @@ fetch_from_dir() {
 }
 
 stop_remote_host() {
+# I will close down the VM bu using its (virtual) power button. In various
+# cases this closes the VM down cleanly but it pauses for 60 seconds to
+# allow users to tidy up. So I will sleep for that amount of time here to
+# let it get to a state where it is actually shutting down. Even this may not
+# really be sufficient because especially if there are updates to be installed
+# the process of shutting down may be protracted. What is perhaps even worse
+# is that the VM could have been configured to ignore the power button. Please
+# ensure that is not the situation in any VM used with this script!
+  case $MODE in
+  virtual)
+    vboxmanage controlvm $VM acpipowerbutton
+    sleep 60
+    ;;
+  ssh+virtual)
+    ssh $HOST vboxmanage controlvm $VM acpipowerbutton
+    sleep 60
+    ;;
+  esac
 }
 
 
@@ -399,30 +460,6 @@ exit 77
 ###############################################################################
 
 
-# Next I will fire up a local virtualbox machine and use that. Note that
-# this does just about the same steps apart from configuring the VM at the
-# start so it does some port forwarding and then starting it up.
-
-# If there is no existing port-forwarding rule called "ssh" then this
-# command to delete it will fail and complain, but that is not a problem!
-vboxmanage modifyvm REDUCE-pkg-factory-Ubuntu32 --natpf1 delete ssh 2> /dev/null
-vboxmanage modifyvm REDUCE-pkg-factory-Ubuntu32 --natpf1 "ssh,tcp,,1001,,22"
-vboxmanage startvm REDUCE-pkg-factory-Ubuntu32 --type headless
-
-HOST=127.0.0.1
-PORT=1001
-
-sleep 5
-for x in `seq 1 20`
-do
-  hello=`ssh -p $PORT $USER@$HOST printf "hello"`
-  if test "x$hello" = "xhello"
-  then
-    break
-  fi
-  printf "Sleeping to allow Linux VM to start up...\n"
-  sleep 30
-done
 
 rsync -vrlHpEPtzC -e "ssh -p $PORT" --delete --force \
   ./reduce-distribution/ \
