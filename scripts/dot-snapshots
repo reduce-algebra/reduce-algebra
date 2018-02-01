@@ -10,8 +10,8 @@ The machine names shown are in general the ones reported by "uname -n".
 
 # This file customises the Reduce snapshot builder by indicating private
 # or local machines that can be used for building snapshots. For each
-# system for which a snapshot may be generated there ia a function here
-# called "machine_<architecture>". This can test the identify of the machine
+# system for which a snapshot may be generated there is a function here
+# called "hosts_<architecture>". This can test the identify of the machine
 # it is running on (so that a user can put exactly the same .snapshots files
 # on multiple computers - I expect that this will generally simplify
 # maintenance). It then sets a variable MODE together with some further
@@ -23,7 +23,7 @@ The machine names shown are in general the ones reported by "uname -n".
 # So a very simple file content would be if a Windows machine was available
 # as a server, but otherwise default behaviour was wanted. In that case this
 # file might contain just
-#     machine_windows() {
+#     hosts_windows() {
 #       MODE=ssh
 #       HOST=windows.machine.some.network
 #     }
@@ -32,7 +32,7 @@ The machine names shown are in general the ones reported by "uname -n".
 #
 # More elaborate options are illustrated in what follows:
 
-machine_macintosh() {
+hosts_macintosh() {
   case `uname -n` in
 # This is building for the Macintosh. Both panamint and rpi3-32 are
 # machines on a private network where the host with ip address 192.168.1.8
@@ -63,7 +63,7 @@ machine_macintosh() {
   esac
 }
 
-machine_windows() {
+hosts_windows() {
   case `uname -n` in
   panamint)
 # panamint is a windows computer
@@ -89,7 +89,7 @@ machine_windows() {
   esac
 }
 
-machine_linux32() {
+hosts_linux32() {
   case `uname -n` in
   panamint | gauguin | math-smreduce)
 # More cases of using a virtual machine.
@@ -110,7 +110,7 @@ machine_linux32() {
   esac
 }
 
-machine_linux64() {
+hosts_linux64() {
   case `uname -n` in
   gauguin)
 # As before, use the machine directly.
@@ -134,7 +134,7 @@ machine_linux64() {
   esac
 }
 
-machine_rpi() {
+hosts_rpi() {
   case `uname -n` in
   rpi3-32)
 # As before, use the machine directly.
@@ -152,6 +152,8 @@ machine_rpi() {
     MODE=ssh+ssh
     HOST1=codemist.dynu.com
     HOST2=192.168.1.179
+# OR MODE=ssh
+#    HOST=acn1a.trin.private.cam.ac.uk
     ;;
   *)
     printf "Do not know how to access a raspberry pi from `uname -n`\n"

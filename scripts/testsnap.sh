@@ -26,9 +26,9 @@ here=`dirname "$here"`
 # will be read here to establish machines to be used in the build. See later
 # for details...
 
-if test -f $(HOME)/.snapshots
+if test -f $HOME/.snapshots
 then
-  source $(HOME)/.snapshots
+  source $HOME/.snapshots
 fi
 
 printf ">>>>>>>>>>>>>>>>>>>> here=$here\n"
@@ -115,44 +115,54 @@ build() {
     ;;
   esac
 
-# If no arguments are given I will default by building a snapshot for
-# just the current machine.
+# If no arguments are given I will default by building a  full set of
+# snapshots.
   if test "$#" = "0"
   then
-    targets="$local"
+    ARGS="macintosh windows linux32 linux64 rpi"
   else
+# Here (and in general through thsi script) I am going to assume that
+# file-paths, machine-name and script arguments do not contain embedded
+# whitespace, and so I do not need to be especially careful about quotation
+# when expaning shell parameters.
+    ARGS="$@"
+  fi
+
 # If there are arguments I check that each is a recognized system name and
 # I collect them in a list - taking care that if the current platform is
 # mentioned it will be placed at the end of the list.
-    targets=""
-    for a in $@
-    do
-      case "$a" in
-      windows | \
-      linux32 | \
-      linux64 | \
-      rpi     | \
-      macintosh)
-        if test "$a" = "$local"
-        then
-          targets="$targets $a"
-        else
-          targets="$a $targets"
-        fi
-        ;;
-      *)
-        printf "\n### Option '$a' not recognized. Stopping.\n"
-        exit 1
-        ;;
-      esac
-    done
-  fi
+  targets=""
+  for a in $ARGS
+  do
+    case "$a" in
+    windows | \
+    linux32 | \
+    linux64 | \
+    rpi     | \
+    macintosh)
+      if test "$a" = "$local"
+      then
+        targets="$targets $a"
+      else
+        targets="$a $targets"
+      fi
+      ;;
+    *)
+      printf "\n### Option '$a' not recognized. Stopping.\n"
+      exit 1
+      ;;
+    esac
+  done
+
+  printf "\nTargets: $targets\n"
 
 # Now for all the systems that are to be built call the platform-specific
 # function that will do the work.
-  for t in $targets
+  for TARGET in $targets
   do
-    eval "build_$t"
+# I will expect that there is a bash function to build for each possible
+# target architecture.
+    eval "build_$TARGET"
   done
 
 }
@@ -191,7 +201,7 @@ execute_in_dir 'reduce-build/C'            './autogen.sh'
 execute_in_dir 'reduce-build/C'            'tar cfj ../Reduce-source.tar.bz2 -X ../exclude.from.source.archive *'
 execute_in_dir 'reduce-build'              'touch C.stamp'
 execute_in_dir 'reduce_build'              'make'
-fetch_from_dir 'reduce-build' '*.dmg *.bz2' "snapshots/"
+fetch_from_dir 'reduce-build' '*.dmg *.bz2' 'snapshots/'
 stop_remote_host
 
 return 0
@@ -206,36 +216,6 @@ COMMANDS=" \
 HOST=192.168.1.8
 PORT=22
 
-# All the options to rsync here say
-#   r recursive copy
-#   l copy symlinks
-#   H copy hard links
-#   p preserve permissions
-#   E preserve executability
-#   P keep any partially copied files for smoother re-start after
-#     interruption
-#   t preserve modification times of files
-#   z compress network traffic
-#   C do not send .svn directory and many built files
-#   e use ssh with a specified port number
-#   --delete get rid of files not in the local file-set
-#   --force as you might expect
-#   --progress report during the transfer
-# OR --info=...
-#
-
-# NOTE HORRIBLY WELL. On the Macintosh there is a version of rsync in
-# /usr/bin, but it is an old one. The settings of PATH that put the newer
-# version (from macports) ahead of it for normal use does not apply when
-# executing a remote command here. So the "--rsync-path" directive to
-# direct use of the macports version is needed if the "--info" option is
-# to be accepted to control the amount of displayed trace information.
-
-rsync -rlHpEPtzC -e "ssh -p $PORT" --delete --force \
-  --info=backup0,copy0,del0,flist0,misc0,mount0,name0,progress0,remove0,skip0,symsafe2,stats2 \
-  --rsync-path=/opt/local/bin/rsync \
-  ./reduce-distribution/ \
-  $USER@$HOST:reduce-remote-distribution/
 
 ssh -p $PORT $USER@$HOST "cd reduce-remote-distribution; export PATH=/opt/local/bin:\$PATH; $COMMANDS"
 
@@ -408,17 +388,85 @@ start_remote_host() {
   esac
 }
 
+# All the options to rsync here say
+#   r recursive copy
+#   l copy symlinks
+#   H copy hard links
+#   p preserve permissions
+#   E preserve executability
+#   P keep any partially copied files for smoother re-start after
+#     interruption
+#   t preserve modification times of files
+#   z compress network traffic
+#   C do not send .svn directory and many built files
+#   e use ssh with a specified port number
+#   --delete get rid of files not in the local file-set
+#   --force as you might expect
+# OR --info=...
+#
+
+RSYNC_OPTIONS="-rlHpEPtzC --delete --force \
+--info=backup0,copy0,del0,flist0,misc0,mount0,\
+name0,progress0,remove0,skip0,symsafe2,stats2"
+
+# NOTE HORRIBLY WELL. On the Macintosh there is a version of rsync in
+# /usr/bin, but it is an old one. The settings of PATH that put the newer
+# version (from macports) ahead of it for normal use does not apply when
+# executing a remote command here. So the "--rsync-path" directive to
+# direct use of the macports version is needed if the "--info" option is
+# to be accepted to control the amount of displayed trace information.
+
+MAC_RSYNC_EXTRA="--rsync-path=/opt/local/bin/rsync"
 
 copy_files() {
 # Usage example : copy_files 'reduce-distribution/macbuild/' 'reduce-build/'
+  if test "$1" = "" || test "$2" = ""
+  then
+    printf "Internal error\n"
+    exit 1
+  fi
+  src="$1"
+  dest="$2"
+  if test "$TARGET" = "macintosh"
+  then
+    RSO="$RSYNC_OPTIONS $MAC_RSYNC_EXTRA"
+  else
+    RSO="$RSYNC_OPTIONS"
+  fi
+  printf "Mode = $MODE: copy from $src to $dest\n"
+  case $MODE in
+  local)
+    printf "rsync $RSO $src $dest\n"
+    rsync $RSO $src $dest
+    ;;
+  ssh)
+    rsync $RSO $src $USER@$HOST:$dest
+    ;;
+  virtual)
+    rsync $RSO -e "ssh -p 1001" $src $USER@localhost:$dest
+    ;;
+  ssh+ssh)
+    rsync $RSO -e "ssh $USER@$HOST1" $src $USER@$HOST2:$dest
+    ;;
+  ssh+virtual)
+    rsync $RSO -e "ssh -p 1001" $src $USER@$HOST:$dest
+    ;;
+  *)
+    printf "Unknown mode: $MODE\n"
+    exit 1
+  esac
 }
 
 execute_in_dir() {
 # Usage example: execute_in_dir 'reduce-build/C' './autogen.sh'
+  printf "++++ Got to execute in dir $1 $2\n"
+  exit 1
 }
 
 fetch_from_dir() {
 # Usage example: fetch_from_dir 'reduce-build' '*.dmg *.bz2' "snapshots/"
+  printf "fetch_from_dir\n"
+  exit 1
 }
 
 stop_remote_host() {
