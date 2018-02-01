@@ -1897,7 +1897,7 @@ l0196:
 / (*entry addressapply0 expr 1)
  .globl l0197
 l0197:
- jmp  *%rax
+ jmp *%rax
  .quad 2
 / (*entry bittable expr 2)
  .globl bittable
@@ -5143,8 +5143,8 @@ l0619:
  .byte 42,102,97,115,116,99,97,114,0,0
  .globl l0620
 l0620:
- .quad 3
- .byte 109,97,105,110,0,0
+ .quad 7
+ .byte 112,115,108,95,109,97,105,110,0,0
  .globl l0621
 l0621:
  .quad 3
