@@ -9,9 +9,9 @@
 # (1) So there is a safe copy somewhere.
 # (2) Because this way I can get copies of it on a number of machines and
 #     that will help me test its portability,
-# (3) In casde others choose to look at it, review it and suggest corrections
+# (3) In case others choose to look at it, review it and suggest corrections
 #     or improvements.
-#                                                       ACN January 2018
+#                                                       ACN February 2018
 
 
 
@@ -200,24 +200,9 @@ copy_files 'reduce-distribution/'          'reduce-build/C/'
 execute_in_dir 'reduce-build/C'            './autogen.sh'
 execute_in_dir 'reduce-build/C'            'tar cfj ../Reduce-source.tar.bz2 -X ../exclude.from.source.archive *'
 execute_in_dir 'reduce-build'              'touch C.stamp'
-execute_in_dir 'reduce_build'              'make'
-fetch_from_dir 'reduce-build' '*.dmg *.bz2' 'snapshots/'
+execute_in_dir 'reduce-build'              'make'
+fetch_files    'reduce-build/*.{dmg,bz2}'  'snapshots/'
 stop_remote_host
-
-return 0
-
-# Here are the commands to be executed to build stuff
-COMMANDS=" \
-  ./autogen.sh; \
-  ./configure --with-csl; \
-  ./configure --with-psl; \
-  time make"
-
-HOST=192.168.1.8
-PORT=22
-
-
-ssh -p $PORT $USER@$HOST "cd reduce-remote-distribution; export PATH=/opt/local/bin:\$PATH; $COMMANDS"
 
 }
 
@@ -429,14 +414,13 @@ copy_files() {
   dest="$2"
   if test "$TARGET" = "macintosh"
   then
-    RSO="$RSYNC_OPTIONS $MAC_RSYNC_EXTRA"
+    RSO="$RSYNC_OPTIONS --delete $MAC_RSYNC_EXTRA"
   else
-    RSO="$RSYNC_OPTIONS"
+    RSO="$RSYNC_OPTIONS --delete"
   fi
   printf "Mode = $MODE: copy from $src to $dest\n"
   case $MODE in
   local)
-    printf "rsync $RSO $src $dest\n"
     rsync $RSO $src $dest
     ;;
   ssh)
@@ -459,112 +443,123 @@ copy_files() {
 
 execute_in_dir() {
 # Usage example: execute_in_dir 'reduce-build/C' './autogen.sh'
-  printf "++++ Got to execute in dir $1 $2\n"
-  exit 1
-}
-
-fetch_from_dir() {
-# Usage example: fetch_from_dir 'reduce-build' '*.dmg *.bz2' "snapshots/"
-  printf "fetch_from_dir\n"
-  exit 1
-}
-
-stop_remote_host() {
-# I will close down the VM bu using its (virtual) power button. In various
-# cases this closes the VM down cleanly but it pauses for 60 seconds to
-# allow users to tidy up. So I will sleep for that amount of time here to
-# let it get to a state where it is actually shutting down. Even this may not
-# really be sufficient because especially if there are updates to be installed
-# the process of shutting down may be protracted. What is perhaps even worse
-# is that the VM could have been configured to ignore the power button. Please
-# ensure that is not the situation in any VM used with this script!
+  if test "$1" = "" || test "$2" = ""
+  then
+    printf "Internal error\n"
+    exit 1
+  fi
+  dir="$1"
+  cmd="$2"
+  if test "$TARGET" = "macintosh"
+  then
+# For execution on the Macintosh I need to ensure that I have macports stuff
+# on my PATH.
+    cmd="export PATH=/opt/local/bin:\$PATH; $cmd"
+  fi
+  printf "Mode = $MODE: execute $cmd in directory $dir\n"
   case $MODE in
+  local)
+    eval "cd $dir; $cmd"
+    ;;
+  ssh)
+    ssh $USER@$HOST "cd $dir; $cmd"
+    ;;
   virtual)
-    vboxmanage controlvm $VM acpipowerbutton
-    sleep 60
+    ssh -p 1001 $USER@localhost "cd $dir; $cmd"
+    ;;
+  ssh+ssh)
+    ssh  $USER@$HOST1 "ssh $HOST2 \"cd $dir; $cmd\""
     ;;
   ssh+virtual)
-    ssh $HOST vboxmanage controlvm $VM acpipowerbutton
-    sleep 60
+    ssh -p 1001 $USER@HOST "cd $dir; $cmd"
     ;;
+  *)
+    printf "Unknown mode: $MODE\n"
+    exit 1
   esac
 }
 
+fetch_files() {
+# Usage example: fetch_files 'reduce-build/*.{dmg,bz2}' 'snapshots/'
+  if test "$1" = "" || test "$2" = ""
+  then
+    printf "Internal error\n"
+    exit 1
+  fi
+  src="$1"
+  dest="$2"
+  mkdir -p $dest
+# This function is perhaps more delicate than others, because the source
+# argumentmay be a list of files using wildcards. The wildcards must be
+# expanded on the remote machine not locally. Also observe that in this
+# case I will not be purging other files from the target directory.
+  if test "$TARGET" = "macintosh"
+  then
+    RSO="$RSYNC_OPTIONS $MAC_RSYNC_EXTRA"
+  else
+    RSO="$RSYNC_OPTIONS"
+  fi
+  printf "Mode = $MODE: copy $src to $dest\n"
+  case $MODE in
+  local)
+    eval "rsync $RSO $src $dest"
+    ;;
+  ssh)
+    rsync $RSO "$USER@$HOST:$src" $dest
+    ;;
+  virtual)
+    rsync $RSO -e "ssh -p 1001" "$USER@localhost:$src" $dest
+    ;;
+  ssh+ssh)
+# Hah - will I need the extra layer of quoting here. Check carefully!
+    rsync $RSO -e "ssh $USER@$HOST1" "\"$USER@$HOST2:$src\"" $dest
+    ;;
+  ssh+virtual)
+    rsync $RSO -e "ssh -p 1001" "$USER@$HOST:$src" $dest
+    ;;
+  *)
+    printf "Unknown mode: $MODE\n"
+    exit 1
+  esac
+}
 
+stop_remote_host() {
+# If I am using a virtual machine I will close it by using its (virtual)
+# ACPI power button.
+  case $MODE in
+  virtual)
+    vboxmanage controlvm $VM acpipowerbutton
+    ;;
+  ssh+virtual)
+    ssh $HOST vboxmanage controlvm $VM acpipowerbutton
+    ;;
+  *)
+# In cases where a virtual machine is not involved I will not need to
+# do anything, and in particular I do not want to drop through and hence
+# find myself if the wait loop.
+    return 0
+    ;;
+  esac
+# In general a virtual machine will not shut down promptly when its power
+# button is pressed. It may delay to give users a chance to tidy up and it
+# may install updates or do other system administrative tasks. So I will
+# wait until vboxmanage confirms to me that the system is actually powered
+# off.
+  while :
+  do
+    sleep 10
+    if vboxmanage showvminfo --machinereadable $VM | grep 'VMState="poweroff"'
+    then
+      break
+    fi
+  done
+}
+
+#########################################################################
 # Now do the work.
 prepare
 build "$@"
 
+exit 0
 
-exit 77
-
-###############################################################################
-###############################################################################
-###############################################################################
-###############################################################################
-###############################################################################
-###############################################################################
-###############################################################################
-###############################################################################
-
-
-
-rsync -vrlHpEPtzC -e "ssh -p $PORT" --delete --force \
-  ./reduce-distribution/ \
-  $USER@$HOST:reduce-remote-distribution/
-
-ssh -p $PORT $USER@$HOST "cd reduce-remote-distribution; $COMMANDS"
-
-# The power button causes the virtual machine to close down gracefully, but
-# to keep things graceful it gives users 60 seconds notice...
-vboxmanage controlvm REDUCE-pkg-factory-Ubuntu32 acpipowerbutton
-sleep 65
-# If I was confident that the user on the virtual machine has superuser
-# authority without needing to quote a password I could save time by
-# triggeting an instant shut-down.
-# ssh -p $PORT $USER@$HOST "sudo /sbin/shutdown -h now"
-
-
-# Another case is performing the build on a VM where the VM is hosted
-# on a remote machine. Again this is a small modification of what I do
-# in the other cases
-
-ssh $USER@$HOST vboxmanage modifyvm REDUCE-pkg-factory-Ubuntu --natpf1 delete ssh 2> /dev/null
-ssh $USER@$HOST vboxmanage modifyvm REDUCE-pkg-factory-Ubuntu --natpf1 "ssh,tcp,,1001,,22"
-ssh $USER@$HOST vboxmanage startvm REDUCE-pkg-factory-Ubuntu --type headless
-
-HOST=192.168.1.8
-PORT=1001
-
-sleep 5
-for x in `seq 1 20`
-do
-  hello=`ssh -p 1001 $USER@$HOST printf "hello"`
-  if test "x$hello" = "xhello"
-  then
-    break
-  fi
-  printf "Sleeping to allow Linux VM to start up...\n"
-  sleep 30
-done
-
-rsync -vrlHpEPtzC -e "ssh -p $PORT" --delete --force \
-  ./reduce-distribution/ \
-  $USER@$HOST:reduce-remote-distribution/
-
-ssh -p $PORT $USER@$HOST "cd reduce-remote-distribution; $COMMANDS"
-
-ssh $USER@$HOST vboxmanage controlvm REDUCE-pkg-factory-Ubuntu acpipowerbutton
-sleep 65
-# ssh -p $PORT $USER@$HOST "sudo /sbin/shutdown -h now"
-
-
-# Finally I will do a build locally
-
-pushd reduce-distribution >/dev/null
-eval $COMMANDS
-popd >/dev/null
-
-########################################
-
-
+# end of testsnaps.sh
