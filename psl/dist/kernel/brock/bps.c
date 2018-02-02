@@ -1,10 +1,11 @@
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         bps.c
+% File:         PXK:bps.c
 % Description:  Declare bps space as a static array.
 % Author:       Leigh Stoller
 % Created:      18-Dec-86
+% Status:       Open Source: BSD License
 % Package:      
 %
 % (c) Copyright 1982, University of Utah

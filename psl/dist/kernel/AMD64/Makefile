@@ -5,6 +5,7 @@
 # Author:	   Harold Carr and Leigh Stoller.
 # Created:	  29-Sep-86
 # Modified:	06-Oct-87 (Harold Carr)
+# Status:        Open Source: BSD License
 # Mode:		 Text
 # Package:
 #

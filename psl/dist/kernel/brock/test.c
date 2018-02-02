@@ -1,16 +1,16 @@
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PB:FLOAT.C
+% File:         PXK:test.c
 % Description:  Miscellaneous floating point support routines.
 % Author:       Leigh Stoller
 % Created:      29-Oct-86 
 % Modified:     
 % Mode:         Text
 % Package:      
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
-% (c) Copyright 1982, University of Utah
+% (c) Copyright 1986, University of Utah, all rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:

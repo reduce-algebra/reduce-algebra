@@ -1,11 +1,12 @@
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         bpsheap.c
+% File:         PXK:bpsheap.c
 % Description:  Code to dynamically set up bps and heap structures
 % Author:       RAM, HP/FSD
 % Created:      9-Mar-84
 % Modified:
+% Status:       Open Source: BSD License
 % Mode:         Text
 % Package:
 %

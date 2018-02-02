@@ -5,7 +5,7 @@
 % Author:         Brian Beach, Hewlett-Packard CRC
 % Created:        16-Feb-84
 % Modified:       19-Feb-85 09:36:17
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Kernel
 %
@@ -314,7 +314,7 @@ panic-exit                      % need to do UNIX cleanup after
        (*link os_cleanup_hook expr 0)
        (*pop (reg 1))
        (*link external_exit expr 1)
-       (*exit 3)
+       (*exit 0)
        ))
 
 (compiletime (remflag '($fluid fluid global $global) 'terminaloperand))

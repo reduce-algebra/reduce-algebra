@@ -1,11 +1,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PK:INTERN.SL 
+% File:         PXK:INTERN.SL 
 % Description:  Interning of symbols for the kernel. 
 % Author:       Brian Beach, Hewlett-Packard CRC 
 % Created:      16-Feb-84 
 % Modified:     13-Nov-84 14:35:11 (Brian Beach) 
 % Package:      
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
