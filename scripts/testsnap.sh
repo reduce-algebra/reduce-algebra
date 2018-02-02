@@ -175,20 +175,29 @@ build_windows() {
 
 build_linux32() {
   machine_linux32
-  printf "\n### linux32 build script not provided yet.\n"
-  exit 1
+  build_debian linux32
 }
 
 build_linux64() {
   machine_linux64
-  printf "\n### linux64 build script not provided yet.\n"
-  exit 1
+  build_debian linux64
 }
 
 build_rpi() {
   machine_rpi
-  printf "\n### rpi build script not provided yet.\n"
-  exit 1
+  build_debian rpi
+}
+
+build_debian() {
+# Common code for building on a Linux variant
+start_remote_host
+copy_files 'reduce-distribution/debianbuild/' 'reduce-build/'
+copy_files 'reduce-distribution/'             'reduce-build/C/'
+execute_in_dir 'reduce-build/C'               './autogen.sh'
+execute_in_dir 'reduce-build'                 'touch C.stamp'
+execute_in_dir 'reduce-build'                 'make'
+fetch_files    'reduce-build/*.{deb,rpm,tgz,bz2}'  "snapshots/$1/"
+stop_remote_host
 }
 
 build_macintosh() {
@@ -201,7 +210,7 @@ execute_in_dir 'reduce-build/C'            './autogen.sh'
 execute_in_dir 'reduce-build/C'            'tar cfj ../Reduce-source.tar.bz2 -X ../exclude.from.source.archive *'
 execute_in_dir 'reduce-build'              'touch C.stamp'
 execute_in_dir 'reduce-build'              'make'
-fetch_files    'reduce-build/*.{dmg,bz2}'  'snapshots/'
+fetch_files    'reduce-build/*.{dmg,bz2}'  'snapshots/macintosh'
 stop_remote_host
 
 }
