@@ -1,7 +1,7 @@
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXCC:UNIX-IO.C
+% File:         PXK:UNIX-IO.C
 % Description:  Unix PSL FileDescriptors are implemented as stdio streams
 %                 ("FILE *".)
 % Author:       Russell D. Fish
@@ -9,7 +9,7 @@
 % Modified:     17-Jul-84 22:49:12 (RAM)
 % Mode:         Text
 % Package:
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
@@ -86,7 +86,8 @@ extern int unixnull[2], unixeof[2];
 
 /* Tag( unixinitio )
  */
-void unixinitio()
+void
+unixinitio()
 {
     unixstdin = stdin;
     unixstdout = stdout;
@@ -101,7 +102,8 @@ void unixinitio()
 /* Tag( unixputc )
  * Used by kernel routines that write to the console
  */
-void unixputc(c)
+void
+unixputc(c)
 char c;
 {
     fputc(c, stdout);
@@ -109,7 +111,8 @@ char c;
  
 /* Tag( unixputs )
  */
-void unixputs(str)
+void
+unixputs(str)
 char *str;
 {
     fputs(str, stdout);
@@ -117,7 +120,8 @@ char *str;
  
 /* Tag( unixputn )
  */
-void unixputn(n)
+void
+unixputn(n)
 long long n;
 {
     fprintf(stdout, "%llx", n);
@@ -125,19 +129,15 @@ long long n;
  
 /* Tag( unixcleario )
  */
-void unixcleario()
+void
+unixcleario()
 {
     unixinitio();
 
-#ifndef LINUX
     /* set the stdin, stdout and stderr buffers to be empty */
-    stdin->_cnt = 0;
-    stdin->_ptr = stdin->_base;
-    stdout->_cnt = 0;
-    stdout->_ptr = stdout->_base;
-    stderr->_cnt = 0;
-    stderr->_ptr = stderr->_base;
-#endif
+    fpurge(stdin);
+    fpurge(stdout);
+    fpurge(stderr);
 
 }
  
@@ -224,18 +224,21 @@ FILE* unixopen(filename, type)
   return(fptr);
 }
 
-void unixcd(filename)
+void
+unixcd(filename)
      char *filename;
 {
   chdir(expand_file_name(filename));
 }
- 
-int unixfclose (ix)
+
+int
+unixfclose (ix)
 FILE* ix;
 
 { return fclose (ix); }
 
-int external_system(command)
+int
+external_system(command)
      char *command;
 {
   int value;
@@ -245,15 +248,17 @@ int external_system(command)
  
 /* Tag( external_exit )
  */
-int external_exit(status)
+int
+external_exit(status)
      int status;
 {
   exit(status);
 }
  
 char *static_argv[20];  /* static place to hold argv so it doesn't get gc'd */
- 
-long long copy_argv(argc,argv)    /* copy argv into static space. */
+
+char **
+copy_argv(argc,argv)    /* copy argv into static space. */
 int argc;
 char *argv[];
 {
@@ -262,7 +267,7 @@ char *argv[];
   for (i=0; i < argc; i++)
      static_argv[i]=argv[i];
  
-  return((long long)static_argv);
+  return(static_argv);
 }
 
 /* convert a pathname to canonical form */

@@ -7,11 +7,32 @@
 * Modified:    15-Jul-85 10:10:51 (RAM)
 * Mode:         Text
 * Package:
-* Status:       Experimental (Do Not Distribute)
+* Status:       Open Source: BSD License
 *
 *  (c) Copyright 1983, Hewlett-Packard Company, see the file
 *             HP_disclaimer at the root of the PSL file tree
 *
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+*    * Redistributions of source code must retain the relevant copyright
+*      notice, this list of conditions and the following disclaimer.
+*    * Redistributions in binary form must reproduce the above copyright
+*      notice, this list of conditions and the following disclaimer in the
+*      documentation and/or other materials provided with the distribution.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+* THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+* PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+* CONTRIBUTORS
+* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE.
 *
 ******************************************************************************
 * Revisions:
@@ -45,11 +66,13 @@
 jmp_buf mainenv;
 char *abs_execfilepath;
  
-//void clear_iob();
+void clear_iob();
 void clear_dtabsize();
 void psl_main(int argc, char *argv[]);
 
 char ** copy_argv(int, char*[]);
+
+int Debug = 0;
 
 int
 main(argc,argv)
@@ -67,7 +90,10 @@ char *argv[];
   if (argc > 0)
     abs_execfilepath = realpath(argv[0],NULL);
  
-  val=setjmp(mainenv);        /* set non-local return point for exit    */
+ if (getenv("BPSL_DEBUG") != NULL) 
+     Debug = 1;
+
+ val=setjmp(mainenv);        /* set non-local return point for exit    */
  
   if (val == 0)
      psl_main(argc,copy_argv(argc,argv));
@@ -76,8 +102,9 @@ exit(0);
  
 }
  
-int setupbpsandheap(int argc, char *argv[]);
  
+int setupbpsandheap(int argc, char *argv[]);
+
 void
 os_startup_hook(argc, argv)
      int argc;
@@ -85,7 +112,7 @@ os_startup_hook(argc, argv)
 {
   setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
 }
- 
+
 void
 os_cleanup_hook()
 {
@@ -97,6 +124,7 @@ char * get_execfilepath ()
   return abs_execfilepath;
 }
 
+void
 clear_iob()
 {
 }
@@ -120,31 +148,3 @@ clear_dtabsize()
  int i;
  }
  
-#ifndef LINUX
-
-   /* look for the last occurrence of character c in string s;
-      if found, return pointer to string part, NULL otherwise */
-char * rindex(s,c)
-        char * s; char c;
-        { int i,l; char x;
-          for (i=0; s[i]!='\000'; i++);
-          for (i=i-1; (s[i] !=c) && (i>=0) ; i--);
-          if (i<0) return(NULL); else return(& s[i]);
-        } 
-
-   /* look for the first occurrence of character c in string s;
-      if found, return pointer to string part, NULL otherwise */ 
-
-char * index(s,c) 
-        char * s; char c; 
-        { int i,l; char x;
-          for (i=0; (s[i] !=c) && (s[i]!='\000') ; i++);
-          if (s[i]=='\000') return(NULL); else return(& s[i]); 
-        } 
-
-bzero (b,length) 
-char * b; int length; 
-{ int i;
-  for (i=0; i<length; i++) b[i]='\000' ; } 
-
-#endif

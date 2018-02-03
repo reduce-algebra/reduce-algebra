@@ -53,7 +53,7 @@ l0003:
 l0002:
  .quad [[254<<56]+128]
  .quad 0
-/ (*entry main expr 0)
+/ (*entry psl_main expr 0)
 psl_main:
  .globl psl_main
  mov %rdi,%rax
@@ -89,7 +89,6 @@ l0006:
  call *symfnc+2464
  pop %rax
  call *symfnc+2472
- add $24,%rsp
  ret
 l0004:
  .quad [[254<<56]+128]
@@ -495,7 +494,7 @@ l0054:
  shr $32,%rax
  cmp $0,%rax
  jne l0055
- cmp $-1,24(%rsp)
+ cmpq $-1,24(%rsp)
  je l0056
  mov 24(%rsp),%rax
  jmp l0057
@@ -514,7 +513,7 @@ l0055:
  shr $32,%rbx
  cmp l0050,%rbx
  jne l0059
- cmp $-1,24(%rsp)
+ cmpq $-1,24(%rsp)
  jne l0060
  mov 16(%rsp),%rdi
  mov %rdi,24(%rsp)
@@ -619,7 +618,7 @@ l0068:
  mov %rax,(%rsp)
  xor %rax,%rax
  mov %rax,32(%rsp)
- cmp $20,(%rsp)
+ cmpq $20,(%rsp)
  jle l0069
  movq $20,(%rsp)
 l0069:
@@ -695,7 +694,7 @@ faslin:
  mov %rax,24(%rsp)
  mov $65535,%rbx
  and %rax,%rbx
- cmp $399,%rbx
+ cmpq $399,%rbx
  je l0073
  mov 16(%rsp),%rax
  call *symfnc+2624
@@ -748,7 +747,7 @@ l0073:
  call *symfnc+2624
  mov $1,%rax
  and 24(%rsp),%rax
- cmp $1,%rax
+ cmpq $1,%rax
  jne l0075
  mov 32(%rsp),%rdx
  mov 40(%rsp),%rcx
@@ -822,11 +821,11 @@ l0081:
  mov 24(%rsp),%rbx
  add 40(%rsp),%rbx
  mov %rbx,32(%rsp)
- cmp $1,%rax
+ cmpq $1,%rax
  je l0083
- cmp $2,%rax
+ cmpq $2,%rax
  je l0084
- cmp $3,%rax
+ cmpq $3,%rax
  je l0085
  jmp l0086
 l0083:
@@ -897,11 +896,11 @@ l0090:
  shr $6,%rbx
  mov %rbx,16(%rsp)
  mov %rbx,%rax
- cmp $1,%rax
+ cmpq $1,%rax
  je l0092
- cmp $2,%rax
+ cmpq $2,%rax
  je l0093
- cmp $3,%rax
+ cmpq $3,%rax
  je l0094
  jmp l0089
 l0092:
@@ -999,9 +998,9 @@ l0100:
  add %rbx,%rax
  jmp l0102
 l0101:
- cmp $2,%rax
+ cmpq $2,%rax
  jne l0103
- cmp $8150,%rbx
+ cmpq $8150,%rbx
  jl l0104
  mov $-8156,%rax
  add %rbx,%rax
@@ -1009,7 +1008,7 @@ l0101:
  add symval+2064,%rax
  jmp l0102
 l0104:
- cmp $2048,%rbx
+ cmpq $2048,%rbx
  jl l0105
  mov %rdx,%rbx
  mov (%rsp),%rax
@@ -1023,9 +1022,9 @@ l0105:
  add symval+2776,%rax
  jmp l0102
 l0103:
- cmp $3,%rax
+ cmpq $3,%rax
  jne l0106
- cmp $2048,%rbx
+ cmpq $2048,%rbx
  jl l0107
  mov %rdx,%rbx
  mov (%rsp),%rax
@@ -1037,9 +1036,9 @@ l0107:
  add symval+2912,%rax
  jmp l0102
 l0106:
- cmp $1,%rax
+ cmpq $1,%rax
  jne l0108
- cmp $2048,%rbx
+ cmpq $2048,%rbx
  jl l0109
  mov %rdx,%rbx
  mov (%rsp),%rax
@@ -1182,7 +1181,7 @@ l0122:
  jne l0123
  call *symfnc+2936
 l0123:
- cmp $10,(%rsp)
+ cmpq $10,(%rsp)
  jle l0124
  mov $15,%rax
  and symval+2288,%rax
@@ -1909,7 +1908,7 @@ l0197:
 / (*entry addressapply0 expr 1)
  .globl l0198
 l0198:
- jmp  *%rax
+ jmp *%rax
  .quad 2
 / (*entry bittable expr 2)
  .globl bittable
@@ -3887,10 +3886,10 @@ l0310:
  add $32,%rsp
  ret
 l0313:
- .quad 26
+ .quad 28
  .byte 42,42,42,42,32,69,114,114,111,114,32
  .byte 111,112,101,110,105,110,103,32,100
- .byte 121,110,32,108,105,98,32,0
+ .byte 121,110,32,108,105,98,32,37,115,0
  .quad 2
 / (*entry psl-dlopen expr 2)
  .globl l0314
@@ -3983,7 +3982,7 @@ dynloadhelper:
  shr $5,%rsp
  shl $5,%rsp
  mov %rbx,40(%rsp)
- callq *%rax
+ call *%rax
  mov 40(%rsp),%rsp
  mov %rbx,symval+2424
  add $32,%rsp
@@ -4007,8 +4006,8 @@ dynloadhelper_float_float:
  shl $5,%rsp
  mov %rbx,40(%rsp)
  movsd (%rdi),%xmm0
- callq *%rax
- movq  %xmm0,%rax
+ call *%rax
+ movq %xmm0,%rax
  mov 40(%rsp),%rsp
  mov %rbx,symval+2424
  add $32,%rsp
@@ -5330,8 +5329,8 @@ l0635:
  .byte 42,102,97,115,116,99,97,114,0,0
  .globl l0636
 l0636:
- .quad 3
- .byte 109,97,105,110,0,0
+ .quad 7
+ .byte 112,115,108,95,109,97,105,110,0,0
  .globl l0637
 l0637:
  .quad 14

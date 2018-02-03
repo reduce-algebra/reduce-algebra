@@ -2398,8 +2398,8 @@ symfnc:
  .quad undefinedfunction
  .quad undefinedfunction
  .quad undefinedfunction
- .globl main
- .quad main
+ .globl psl_main
+ .quad psl_main
  .globl l0219
  .quad l0219
  .quad undefinedfunction

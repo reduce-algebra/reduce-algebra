@@ -1,11 +1,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PK:FASLIN.SL 
+% File:         PXK:FASLIN.SL 
 % Title:        Loading of binary format files. 
 % Author:       E. Benson 
 % Created:      ??? 
 % Modified:     10-Jan-84 13:30 (Brian Beach)
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Kernel 
 % Compiletime:  PL:FASL-DECLS.B 
@@ -14,6 +14,28 @@
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -85,8 +107,6 @@
     (binaryclose fid)
 
     % Twiddle the bits.
-%(console-print-string "faslin ")
-%(unixputn mode) (console-newline)
 
     (if (weq (wand mode 1) 1) 
 	(do-relocation-new code-base code-size bit-table local-id-table)
@@ -128,12 +148,7 @@
 	(code-location code-base) 
 	 entry)
      (setq bit-table (strbase (strinf bit-table)))
-%(console-print-string "do-relocation-new ") (unixputn (wand 16#ff (byte bit-table ptr)))
-%(console-newline)
      (while (not (izerop (setq entry (wand 16#ff (byte bit-table ptr)))))     
-%(console-print-string "do-relocation-new-while ")
-%(unixputn (wand 16#ff (byte bit-table ptr)))
-%(console-newline)
 	  (setq ptr (iadd1 ptr))
 	  (setq code-location (iplus2 code-location (wand entry 16#3f)))
 	  (setq entry (wshift entry -6))
@@ -151,14 +166,13 @@
 (compiletime (ds reloc-word-inf (x) (wshift (wshift x 34) -34)))
 (compiletime (ds reloc-word-tag (x) (wshift (wshift x 32) -62)))
 (compiletime (put 'put_a_halfword 'opencode '(
-   (movl "%ebx" "0(%rax)")))) %% (reg 2) (displacement (reg eax) 0)))))
+   (movl "%ebx" "0(%rax)")))) %% (reg 2) (displacement (reg eax) 0))))
 (compiletime (put 'get_a_halfword 'opencode '(
    (!*move (displacement (reg eax) 0) (reg eax)))))
 
 (de relocate-word (code-location code-base id-table)
   (let ((reloc-tag (reloc-word-tag (get_a_halfword code-location)))
 	(reloc-inf (reloc-word-inf (get_a_halfword code-location))))
-%(console-print-string "relocate-word ") (unixputn  code-location) (console-print-string " ") (unixputn reloc-tag) (console-print-string " ") (unixputn reloc-inf) (console-print-string " ") (unixputn (compute-relocation reloc-tag reloc-inf code-base id-table)) (console-newline)
 
     (put_a_halfword code-location
       (compute-relocation reloc-tag reloc-inf code-base id-table)
@@ -166,9 +180,7 @@
 
 (de relocate-inf  (code-location code-base id-table)
   (let ((reloc-tag  (wand (wshift (getmem code-location) -54) 3))
-%(reloc-inf-tag (getmem code-location)))
 	(reloc-inf (reloc-inf-inf (getmem code-location))))
-%(console-print-string "relocate-inf ") (unixputn  code-location) (console-print-string " ") (unixputn reloc-tag) (console-print-string " ") (unixputn reloc-inf) (console-print-string " ") (unixputn (compute-relocation reloc-tag reloc-inf code-base id-table)) (console-newline)
 
     (setf (getmem code-location)
      (wor  (wshift (tag (getmem code-location)) 56)
@@ -192,10 +204,6 @@
      (cond ((extraargumentp reloc-inf) 
 	    (loc (wgetv argumentblock
 			(makeextraargument reloc-inf))))
-%          ((local-id-number? reloc-inf) 
-%           (loc (symval (local-to-global-id reloc-inf id-table))))
-%          (t
-%           (loc (symval reloc-inf)))))
 	   ((local-id-number? reloc-inf)
 	      (setq reloc-inf (local-to-global-id reloc-inf id-table))
               (wplus2 symval (wtimes2 addressingunitsperitem reloc-inf)) )

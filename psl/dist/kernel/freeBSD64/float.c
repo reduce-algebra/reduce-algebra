@@ -1,14 +1,14 @@
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PB:FLOAT.C
+% File:         PXK:FLOAT.C
 % Description:  Miscellaneous floating point support routines.
 % Author:       Leigh Stoller
 % Created:      29-Oct-86 
 % Modified:     
 % Mode:         Text
 % Package:      
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -166,8 +166,6 @@ long long uxlessp(f1,f2,val1,val2)
 
 /* Tag( uxwritefloat )
  */
-
-
 void
 uxwritefloat(buf, flt, convstr)
      char *buf;          /* String buffer to return float int */
@@ -210,7 +208,6 @@ uxwritefloat(buf, flt, convstr)
    */
   *((long long *)buf) = strlen(temps) - 1;
 }
-
 
 void
 uxwritefloat8(buf, flt, convstr,dummy)

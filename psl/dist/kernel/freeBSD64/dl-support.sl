@@ -4,8 +4,31 @@
 % Description:  System support for dynamic loading
 % Author:       Winfried Neun, ZIB
 % Created:      22-Jul 2013
+% Status:         Open Source: BSD License
 % Mode:         Lisp
 % Package:      
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -24,7 +47,7 @@
    (prog (libbb)
    (setq libbb (dlopen (strbase (strinf filename)) 1))
    (when (eq 0 libbb)
-          (return (bldmsg "**** Error opening dyn lib " filename)))        
+          (return (bldmsg "**** Error opening dyn lib %s" filename)))        
    (return libbb)
 ))
 
@@ -72,7 +95,7 @@
 (*wshift (reg st) 5)
 (*move (reg 2) (displacement (reg st) 40))
 
-       (*callhugo (reg 1)) % will be done by the sed script
+       (*call (reg 1)) % will be done by the sed script
 
 (*move (displacement (reg st) 40) (reg st))
 %(*pop (reg bndstkupperbound))
@@ -109,11 +132,11 @@
 (*wshift (reg st) -5)
 (*wshift (reg st) 5)
 (*move (reg 2) (displacement (reg st) 40))
-(*toxmm0 (reg rdi))
+(movsd (indirect (reg rdi)) (reg xmm0))
 
-       (*callhugo (reg 1)) % will be done by the sed script
+       (*call (reg 1)) % will be done by the sed script
 
-(*fromxmm0 (Reg 1))
+(movq (reg xmm0) (reg 1))
 (*move (displacement (reg st) 40) (reg st))
 %(*pop (reg bndstkupperbound))
 %(*pop (reg bndstklowerbound))
