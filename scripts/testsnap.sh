@@ -531,7 +531,9 @@ execute_in_dir() {
   printf "Mode = $MODE: execute $cmd in directory $dir\n"
   case $MODE in
   local)
+    current="`pwd`"
     eval "cd $dir; $cmd"
+    cd "$current"
     ;;
   ssh)
     ssh $USER@$HOST "cd $dir; $cmd"
