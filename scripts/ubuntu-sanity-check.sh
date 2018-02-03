@@ -25,9 +25,10 @@ sudo apt-get -y install libncurses5-dev
 # I believe I have seen some systems where I need "libtool" and some
 # where it has to be "libtool-bin". By making the install requests each
 # individual when one of the following two fails it should not wreck
-# the whole attempt to get stuff installed!
+# the whole attempt to get stuff installed! Ditto libltdl-dev.
 sudo apt-get -y install libtool
 sudo apt-get -y install libtool-bin
+sudo apt-get -y install libltdl-dev
 sudo apt-get -y install linux-generic
 sudo apt-get -y install polyml
 sudo apt-get -y install rpm
@@ -35,6 +36,7 @@ sudo apt-get -y install ssh
 sudo apt-get -y install subversion
 sudo apt-get -y install tex4ht
 sudo apt-get -y install texinfo
+sudo apt-get -y install texlive-latex-base
 sudo apt-get -y install texlive-fonts-extra
 sudo apt-get -y install texlive-fonts-recommended
 sudo apt-get -y install texlive-latex-recommended
@@ -44,6 +46,8 @@ sudo apt-get -y install ubuntu-minimal
 sudo apt-get -y install ubuntu-restricted-addons
 sudo apt-get -y install ubuntu-standard
 sudo apt-get -y install xorg-dev
-
+sudo apt-get -y install devscripts
+sudo apt-get -y install fakeroot
+sudo apt-get -y install alien
 exit 0
 # end of script

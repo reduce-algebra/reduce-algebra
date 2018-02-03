@@ -30,12 +30,12 @@ $(BUILDTOPDIR).stamp:
 	touch $(BUILDTOPDIR).stamp
 
 csl.stamp:	$(BUILDTOPDIR).stamp
-	( pushd $(BUILDTOPDIR) ; ./configure --with-csl ; \
+	( pushd $(BUILDTOPDIR) ; ./configure --with-csl --without-autogen ; \
 		script ../csl.log time make csl ; popd )
 	touch csl.stamp
 
 psl.stamp:	$(BUILDTOPDIR).stamp
-	( pushd $(BUILDTOPDIR) ; ./configure --with-psl ; \
+	( pushd $(BUILDTOPDIR) ; ./configure --with-psl --without-autogen ; \
 		script ../psl.log time make psl ; popd )
 	touch psl.stamp
 

@@ -1,4 +1,4 @@
-#! /bin/bash -v
+#! /bin/bash
 
 # This is a prototype of a scheme to make snapshot building more
 # flexible such that it can run either on one machine with several
@@ -21,6 +21,24 @@ here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
+
+case $@ in
+*help*)
+  printf "$0: This script is for making snapshots of Reduce\n"
+  printf "Usage: $0 machine1 machine2 ...\n"
+  printf "where the supported 'machines' are\n"
+  printf "    windows, macintosh, linux32, linux64 and rpi\n"
+  printf "The two Linux variants refer to ones hosted on i686 and x86_64,\n"
+  printf "and 'rpi' is a Raspberry Pi running raspbian.\n"
+  printf "If no machines are listed the script will attempt to build all\n"
+  printf "of them. The results will end up in a snapshots directory in the\n"
+  printf "Reduce tree. The hosts used during the build can be adapted to\n"
+  printf "local needs via a $HOME/.snapshots file, and scripts/dot-snapshots\n"
+  printf "provides a prototype for such a file and some explanation of what\n"
+  printf "needs to be present.\n"
+  exit
+  ;;
+esac
 
 # If you have a file called .snapshots in your home directory then that
 # will be read here to establish machines to be used in the build. See later
@@ -169,8 +187,14 @@ build() {
 
 build_windows() {
   machine_windows
-  printf "\n### windows build script not provided yet.\n"
-  exit 1
+  start_remote_host
+  copy_files 'reduce-distribution/winbuild/'    'reduce-build/'
+  copy_files 'reduce-distribution/'             'reduce-build/C/'
+  execute_in_dir 'reduce-build/C'               './autogen.sh'
+  execute_in_dir 'reduce-build'                 'touch C.stamp'
+  execute_in_dir 'reduce-build'                 'make'
+  fetch_files    'reduce-build/Output/*.*'      'snapshots/windows/'
+  stop_remote_host
 }
 
 build_linux32() {
@@ -190,29 +214,27 @@ build_rpi() {
 
 build_debian() {
 # Common code for building on a Linux variant
-start_remote_host
-copy_files 'reduce-distribution/debianbuild/' 'reduce-build/'
-copy_files 'reduce-distribution/'             'reduce-build/C/'
-execute_in_dir 'reduce-build/C'               './autogen.sh'
-execute_in_dir 'reduce-build'                 'touch C.stamp'
-execute_in_dir 'reduce-build'                 'make'
-fetch_files    'reduce-build/*.{deb,rpm,tgz,bz2}'  "snapshots/$1/"
-stop_remote_host
+  start_remote_host
+  copy_files 'reduce-distribution/debianbuild/' 'reduce-build/'
+  copy_files 'reduce-distribution/'             'reduce-build/C/'
+  execute_in_dir 'reduce-build/C'               './autogen.sh'
+  execute_in_dir 'reduce-build'                 'touch C.stamp'
+  execute_in_dir 'reduce-build'                 'make'
+  fetch_files    'reduce-build/*.{deb,rpm,tgz,bz2}'  "snapshots/$1/"
+  stop_remote_host
 }
 
 build_macintosh() {
-
-machine_macintosh
-start_remote_host
-copy_files 'reduce-distribution/macbuild/' 'reduce-build/'
-copy_files 'reduce-distribution/'          'reduce-build/C/'
-execute_in_dir 'reduce-build/C'            './autogen.sh'
-execute_in_dir 'reduce-build/C'            'tar cfj ../Reduce-source.tar.bz2 -X ../exclude.from.source.archive *'
-execute_in_dir 'reduce-build'              'touch C.stamp'
-execute_in_dir 'reduce-build'              'make'
-fetch_files    'reduce-build/*.{dmg,bz2}'  'snapshots/macintosh'
-stop_remote_host
-
+  machine_macintosh
+  start_remote_host
+  copy_files 'reduce-distribution/macbuild/' 'reduce-build/'
+  copy_files 'reduce-distribution/'          'reduce-build/C/'
+  execute_in_dir 'reduce-build/C'            './autogen.sh'
+  execute_in_dir 'reduce-build/C'            'tar cfj ../Reduce-source.tar.bz2 -X ../exclude.from.source.archive *'
+  execute_in_dir 'reduce-build'              'touch C.stamp'
+  execute_in_dir 'reduce-build'              'make'
+  fetch_files    'reduce-build/*.{dmg,bz2}'  'snapshots/macintosh'
+  stop_remote_host
 }
 
 # The following functions arrange access to the machine on which building
@@ -243,6 +265,13 @@ stop_remote_host
 
 machine_macintosh() {
   MODE="none"
+# A user's .snapshots file can specify ports to use, but if it does not
+# I will have a default.
+  PORT=22022
+# The function "hosts_macintosh" *MAY* have been defined in a user .snapshots
+# file, and if so then I will call it here. But it does not have to be, so if
+# the following line fails with a "command not found" error then that is
+# entirely reasonable. That is why I redirect stderr to /dev/null.
   hosts_macintosh 2> /dev/null
   if test "$MODE" = "none"
   then
@@ -260,12 +289,14 @@ machine_macintosh() {
 
 machine_windows() {
   MODE="none"
+  PORT=22022
   hosts_windows 2> /dev/null
   if test "$MODE" = "none"
   then
     case `uname -n` in
     math-smreduce)
       MODE=virtual
+      PORT=1001
       VM="REDUCE-pkg-factory-Windows"
       ;;
     *)
@@ -278,12 +309,14 @@ machine_windows() {
 
 machine_linux32() {
   MODE="none"
+  PORT=22022
   hosts_linux32 2> /dev/null
   if test "$MODE" = "none"
   then
     case `uname -n` in
     math-smreduce)
       MODE=virtual
+      PORT=1002
       VM="REDUCE-pkg-factory-Ubuntu32"
       ;;
     *)
@@ -296,12 +329,14 @@ machine_linux32() {
 
 machine_linux64() {
   MODE="none"
+  PORT=22022
   hosts_linux64 2> /dev/null
   if test "$MODE" = "none"
   then
     case `uname -n` in
     math-smreduce)
       MODE=virtual
+      PORT=1003
       VM="REDUCE-pkg-factory-Ubuntu"
       ;;
     *)
@@ -314,6 +349,7 @@ machine_linux64() {
 
 machine_rpi() {
   MODE="none"
+  PORT=22022
   hosts_rpi 2> /dev/null
   if test "$MODE" = "none"
   then
@@ -335,7 +371,12 @@ machine_rpi() {
 # Now I have the recipes that can be used to transfer files or execute
 # commands. Each tests MODE to see what to do.
   
+# If I am connecting to a Virtual Machine I will disable host key checking
+# and recording so that I can connect for the very first time without
+# that causing confusion, and so that reconfiguration of the VM does not
+# lead to pain.
 
+SSHOPTS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=error"
 
 start_remote_host() {
 # This is only required if a virtual machine is involved. There are two
@@ -343,39 +384,61 @@ start_remote_host() {
 # other when it is remote.
   case $MODE in
   virtual)
+# If the VM happens to be running already (perhaps left over from an
+# interrupted previous attempt) I need to shut it down before I try
+# to re-configure it. Note that all this will just stall if the VM
+# you are trying to work with does not exist! I check for "running" here
+# because a machine might be labelled as "aborted" or "stopped" or various
+# other states. If the machine is already in the process of stopping then
+# it might have done so before the ACPI even is posted to it and that might
+# lead to a message suggesting an error, but all ought to be well.
+    if vboxmanage showvminfo --machinereadable $VM | grep 'VMState="running"'
+    then
+      stop_remote_host
+    fi
 # If there is a VM on the local machine I start by re-configuring it so that
-# local port 1001 is redirected to its port 22 (ie ssh).
+# local port $PORT is redirected to its port 22 (ie ssh).
     vboxmanage modifyvm $VM --natpf1 delete ssh 2> /dev/null
-    vboxmanage modifyvm $VM --natpf1 "ssh,tcp,,1001,,22"
+    vboxmanage modifyvm $VM --natpf1 "ssh,tcp,,$PORT,,22"
 # Start up the machine.
     vboxmanage startvm $VM --type headless
 # Now here I would like to use "vboxmanage guestproperty wait $VM" on a
 # suitable key to wait until the VM is started. However on at least one of my
 # VMs I find that that information required does not manage to filter back
 # to the host. So I drop back to polling via ssh every 10 seconds.
+    printf "Poll at $USER@localhost port $PORT\n"
     while :
     do
       sleep 10
-      hello=`timeout 20 ssh -p 1001 $USER@localhost printf "hello"`
+      hello=`timeout 20 ssh -p $PORT $SSHOPTS $USER@localhost printf "hello"`
       if test "x$hello" = "xhello"
       then
         break
+      else
+        printf "Response: $hello\n"
       fi
     done
     ;;
   ssh+virtual)
 # Now I express a similar sequence of steps, but with the Virtual Machine
 # being created on a remote host.
+    if ssh $HOST vboxmanage showvminfo --machinereadable $VM | grep 'VMState="running"'
+    then
+      stop_remote_host
+    fi
     ssh $HOST vboxmanage modifyvm $VM --natpf1 delete ssh 2> /dev/null
-    ssh $HOST vboxmanage modifyvm $VM --natpf1 "ssh,tcp,,1001,,22"
+    ssh $HOST vboxmanage modifyvm $VM --natpf1 "ssh,tcp,,$PORT,,22"
     ssh $HOST vboxmanage startvm $VM --type headless
+    printf "Poll at $USER@$HOST port $PORT\n"
     while :
     do
       sleep 10
-      hello=`timeout 20 ssh -p 1001 $USER@$HOST printf "hello"`
+      hello=`timeout 20 ssh -p $PORT $SSHOPTS $USER@$HOST printf "hello"`
       if test "x$hello" = "xhello"
       then
         break
+      else
+        printf "Response: $hello\n"
       fi
     done
     ;;
@@ -436,13 +499,13 @@ copy_files() {
     rsync $RSO $src $USER@$HOST:$dest
     ;;
   virtual)
-    rsync $RSO -e "ssh -p 1001" $src $USER@localhost:$dest
+    rsync $RSO -e "ssh -p $PORT $SSHOPTS" $src $USER@localhost:$dest
     ;;
   ssh+ssh)
     rsync $RSO -e "ssh $USER@$HOST1" $src $USER@$HOST2:$dest
     ;;
   ssh+virtual)
-    rsync $RSO -e "ssh -p 1001" $src $USER@$HOST:$dest
+    rsync $RSO -e "ssh -p $PORT $SSHOPTS" $src $USER@$HOST:$dest
     ;;
   *)
     printf "Unknown mode: $MODE\n"
@@ -474,13 +537,13 @@ execute_in_dir() {
     ssh $USER@$HOST "cd $dir; $cmd"
     ;;
   virtual)
-    ssh -p 1001 $USER@localhost "cd $dir; $cmd"
+    ssh -p $PORT $SSHOPTS $USER@localhost "cd $dir; $cmd"
     ;;
   ssh+ssh)
     ssh  $USER@$HOST1 "ssh $HOST2 \"cd $dir; $cmd\""
     ;;
   ssh+virtual)
-    ssh -p 1001 $USER@HOST "cd $dir; $cmd"
+    ssh -p $PORT $SSHOPTS $USER@HOST "cd $dir; $cmd"
     ;;
   *)
     printf "Unknown mode: $MODE\n"
@@ -517,14 +580,14 @@ fetch_files() {
     rsync $RSO "$USER@$HOST:$src" $dest
     ;;
   virtual)
-    rsync $RSO -e "ssh -p 1001" "$USER@localhost:$src" $dest
+    rsync $RSO -e "ssh -p $PORT $SSHOPTS" "$USER@localhost:$src" $dest
     ;;
   ssh+ssh)
 # Hah - will I need the extra layer of quoting here. Check carefully!
     rsync $RSO -e "ssh $USER@$HOST1" "\"$USER@$HOST2:$src\"" $dest
     ;;
   ssh+virtual)
-    rsync $RSO -e "ssh -p 1001" "$USER@$HOST:$src" $dest
+    rsync $RSO -e "ssh -p $PORT $SSHOPTS" "$USER@$HOST:$src" $dest
     ;;
   *)
     printf "Unknown mode: $MODE\n"

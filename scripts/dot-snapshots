@@ -80,6 +80,7 @@ hosts_windows() {
 # set up so that I can build on it. The VM runs an ssh server and this script
 # sets up port forwarding in virtualbox so that it can be accessed.
     MODE=virtual
+    PORT=1004
     VM="REDUCE-pkg-factory-Windows"
     ;;
   *)
@@ -94,12 +95,14 @@ hosts_linux32() {
   panamint | gauguin | math-smreduce)
 # More cases of using a virtual machine.
     MODE=virtual
+    PORT=1005
     VM="REDUCE-pkg-factory-Ubuntu32"
     ;;
   OlderMacBook | acn1macbook | rpi3-32)
 # In this case virtualbox will be run on the host 192.168.1.10 so access
 # to it is somewhat at arm's length.
     MODE=ssh+virtual
+    PORT=1006
     HOST=192.168.1.10
     VM="REDUCE-pkg-factory-Ubuntu32"
     ;;
@@ -119,11 +122,13 @@ hosts_linux64() {
   panamint | math-smreduce)
 # As before a virtual machine running on the current system.
     MODE=virtual
+    PORT=1007
     VM="REDUCE-pkg-factory-Ubuntu"
     ;;
   OlderMacBook | acn1macbook | rpi3-32)
 # As before, a virtual machine running on a remote system.
     MODE=ssh+virtual
+    PORT=1008
     HOST=192.168.1.10
     VM="REDUCE-pkg-factory-Ubuntu"
     ;;

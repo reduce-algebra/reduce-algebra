@@ -1,3 +1,4 @@
+# Makefile for debianbuild
 
 SNAPSHOT=$(shell LANG=C date "+%Y-%m-%d")
 MACHINE=$(shell uname -m)
@@ -54,15 +55,19 @@ TARDEST=/tmp/reduce-snapshot_$(SNAPSHOT)_$(MACHINE)
 
 tarpackages:
 # This assumes that both the CSL and PSL versions have already been built in
-# the $(BUILDTOPDIR) directory.
+# the $(BUILDTOPDIR) directory. (PSL not on ARM...)
 	rm -rf $(TARDEST)
 	mkdir $(TARDEST)
 	mkdir $(TARDEST)/csl
+ifeq (,$(findstring arm,$(MACHINE)))
 	mkdir $(TARDEST)/psl
+endif
 	mkdir $(TARDEST)/reduce.doc
 	cp $(BUILDTOPDIR)/doc/manual/manual.pdf $(TARDEST)/manual.pdf
 	cp $(BUILDTOPDIR)/scripts/cslhere.sh $(TARDEST)/redcsl
+ifeq (,$(findstring arm,$(MACHINE)))
 	cp $(BUILDTOPDIR)/scripts/pslhere.sh $(TARDEST)/redpsl
+endif
 	cp -r $(BUILDTOPDIR)/xmpl $(TARDEST)
 	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/csl $(TARDEST)/csl
 	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/csl.img $(TARDEST)/csl
@@ -73,10 +78,15 @@ tarpackages:
 	cp $(BUILDTOPDIR)/generic/newfront/build/rfcsl $(TARDEST)
 	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/reduce.doc/BINARY-LICENSE.txt $(TARDEST)/reduce.doc
 	cp $(BUILDTOPDIR)/cslbuild/$(BUILD)/csl/reduce.doc/BSD-LICENSE.txt $(TARDEST)/reduce.doc
+ifeq (,$(findstring arm,$(MACHINE)))
 	cp -r $(BUILDTOPDIR)/pslbuild/$(BUILD)/psl $(TARDEST)/psl
 	cp -r $(BUILDTOPDIR)/pslbuild/$(BUILD)/red $(TARDEST)/psl
 	cp $(BUILDTOPDIR)/generic/newfront/build/rfpsl $(TARDEST)
-	chmod +x $(TARDEST)/redcsl $(TARDEST)/redpsl $(TARDEST)/rfcsl $(TARDEST)/rfpsl 
+endif
+	chmod +x $(TARDEST)/redcsl $(TARDEST)/rfcsl
+ifeq (,$(findstring arm,$(MACHINE)))
+	chmod +x $(TARDEST)/redpsl $(TARDEST)/rfpsl 
+endif
 	tar cfj reduce-freestanding_$(SNAPSHOT)_$(MACHINE).tar.bz2 -C /tmp reduce-snapshot_$(SNAPSHOT)_$(MACHINE)
 
 source-archive:
@@ -86,7 +96,9 @@ source-archive:
 	$(MAKE) reduce-source-csl-$(SNAPSHOT).tar.bz2
 	$(MAKE) reduce-source-csl-embedded-$(SNAPSHOT).tar.bz2
 	$(MAKE) reduce-source-csl-support-$(SNAPSHOT).tar.bz2
+ifeq (,$(findstring arm,$(MACHINE)))
 	$(MAKE) reduce-source-psl-$(SNAPSHOT).tar.bz2
+endif
 	ls -lh *.tar.bz2
 #	-rm -rf reduce-source-$(SNAPSHOT)
 
@@ -118,10 +130,12 @@ reduce-source-csl-support-$(SNAPSHOT).tar.bz2:
 		--owner=root --group=root \
 		reduce-source-$(SNAPSHOT)/csl/support-packages
 
+ifeq (,$(findstring arm,$(MACHINE)))
 reduce-source-psl-$(SNAPSHOT).tar.bz2:
 	tar cfj reduce-source-psl-$(SNAPSHOT).tar.bz2 \
 		--owner=root --group=root \
 		reduce-source-$(SNAPSHOT)/psl
+endif
 
 clean:
 	rm -rf $(BUILDTOPDIR) $(BUILDTOPDIR).log

@@ -23,3 +23,4 @@ export MACOSX_DEPLOYMENT_TARGET=10.10
 ./configure --enable-static
 make
 sudo cp src/.libs/libfontconfig.a /opt/local/lib
+rm -rf fontconfig-2.11.1
