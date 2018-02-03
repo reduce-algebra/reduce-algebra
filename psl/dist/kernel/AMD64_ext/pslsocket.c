@@ -46,7 +46,7 @@
 #include <netinet/in.h> 
 
  
-/* #define PORT_NUMBER 1188    /* Port number to listen on. 
+/* #define PORT_NUMBER 1188 */ /* Port number to listen on. 
                                Must be the same as in client!!!! */ 
 
 int
