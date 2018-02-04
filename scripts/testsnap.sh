@@ -93,7 +93,8 @@ prepare() {
     popd >/dev/null
   else
     printf "Will check out a new reduce-distribution to use.\n"
-    svn co svn://svn.code.sf.net/p/reduce-algebra/code/trunk ./reduce-distribution
+    svn co svn://svn.code.sf.net/p/reduce-algebra/code/trunk \
+           ./reduce-distribution > reduce-checkout.log
   fi
 }
 
@@ -396,15 +397,19 @@ start_remote_host() {
 # other states. If the machine is already in the process of stopping then
 # it might have done so before the ACPI even is posted to it and that might
 # lead to a message suggesting an error, but all ought to be well.
+    printf "vboxmanage showvminfo --machinereadable $VM\n"
     if vboxmanage showvminfo --machinereadable $VM | grep 'VMState="running"'
     then
       stop_remote_host
     fi
 # If there is a VM on the local machine I start by re-configuring it so that
 # local port $PORT is redirected to its port 22 (ie ssh).
+    printf "vboxmanage modifyvm $VM --natpf1 delete ssh\n"
     vboxmanage modifyvm $VM --natpf1 delete ssh 2> /dev/null
+    printf "vboxmanage modifyvm $VM --natpf1 \"ssh,tcp,,$PORT,,22\"\n"
     vboxmanage modifyvm $VM --natpf1 "ssh,tcp,,$PORT,,22"
 # Start up the machine.
+    printf "vboxmanage startvm $VM --type headless\n"
     vboxmanage startvm $VM --type headless
 # Now here I would like to use "vboxmanage guestproperty wait $VM" on a
 # suitable key to wait until the VM is started. However on at least one of my
@@ -414,6 +419,7 @@ start_remote_host() {
     while :
     do
       sleep 10
+      printf "ssh -p $PORT $SSHOPTS $USER@localhost printf \"hello\"\n"
       hello=`timeout 20 ssh -p $PORT $SSHOPTS $USER@localhost printf "hello"`
       if test "x$hello" = "xhello"
       then
@@ -426,17 +432,22 @@ start_remote_host() {
   ssh+virtual)
 # Now I express a similar sequence of steps, but with the Virtual Machine
 # being created on a remote host.
+    printf "ssh $HOST vboxmanage showvminfo --machinereadable $VM\n"
     if ssh $HOST vboxmanage showvminfo --machinereadable $VM | grep 'VMState="running"'
     then
       stop_remote_host
     fi
+    printf "ssh $HOST vboxmanage modifyvm $VM --natpf1 delete ssh\n"
     ssh $HOST vboxmanage modifyvm $VM --natpf1 delete ssh 2> /dev/null
+    printf "ssh $HOST vboxmanage modifyvm $VM --natpf1 \"ssh,tcp,,$PORT,,22\"\n"
     ssh $HOST vboxmanage modifyvm $VM --natpf1 "ssh,tcp,,$PORT,,22"
+    printf "ssh $HOST vboxmanage startvm $VM --type headless\n"
     ssh $HOST vboxmanage startvm $VM --type headless
     printf "Poll at $USER@$HOST port $PORT\n"
     while :
     do
       sleep 10
+      printf "ssh -p $PORT $SSHOPTS $USER@$HOST printf \"hello\"\n"
       hello=`timeout 20 ssh -p $PORT $SSHOPTS $USER@$HOST printf "hello"`
       if test "x$hello" = "xhello"
       then
@@ -498,20 +509,25 @@ copy_files() {
   case $MODE in
   local)
     cd $HERE
+    printf "rsync $RSO $src $dest\n"
     rsync $RSO $src $dest
     ;;
   ssh)
 # For direct ssh access I will expect that the remote machine has been
 # accessed before and that host key confirmation etc has been performed.
+    printf "rsync $RSO $src $USER@$HOST:$dest\n"
     rsync $RSO $src $USER@$HOST:$dest
     ;;
   virtual)
+    printf "rsync $RSO -e \"ssh -p $PORT $SSHOPTS\" $src $USER@localhost:$dest\n"
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" $src $USER@localhost:$dest
     ;;
   ssh+ssh)
+    printf "rsync $RSO -e \"ssh $SSHOPTS $USER@$HOST1\" $src $USER@$HOST2:$dest\n"
     rsync $RSO -e "ssh $SSHOPTS $USER@$HOST1" $src $USER@$HOST2:$dest
     ;;
   ssh+virtual)
+    printf "rsync $RSO -e \"ssh -p $PORT $SSHOPTS\" $src $USER@$HOST:$dest\n"
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" $src $USER@$HOST:$dest
     ;;
   *)
@@ -539,20 +555,25 @@ execute_in_dir() {
   case $MODE in
   local)
     cd $HERE
+    printf "eval \"cd $dir; $cmd\"\n"
     eval "cd $dir; $cmd"
     cd $HERE
     ;;
   ssh)
+    printf "ssh $USER@$HOST \"cd $dir; $cmd\"\n"
     ssh $USER@$HOST "cd $dir; $cmd"
     ;;
   virtual)
+    printf "ssh -p $PORT $SSHOPTS $USER@localhost \"cd $dir; $cmd\"\n"
     ssh -p $PORT $SSHOPTS $USER@localhost "cd $dir; $cmd"
     ;;
   ssh+ssh)
-    ssh  $USER@$HOST1 "ssh $HOST2 \"cd $dir; $cmd\""
+    printf "ssh $USER@$HOST1 \"ssh $HOST2 \\\"cd $dir; $cmd\\\"\"\n"
+    ssh $USER@$HOST1 "ssh $HOST2 \"cd $dir; $cmd\""
     ;;
   ssh+virtual)
-    ssh -p $PORT $SSHOPTS $USER@HOST "cd $dir; $cmd"
+    printf "ssh -p $PORT $SSHOPTS $USER@$HOST \"cd $dir; $cmd\"\n"
+    ssh -p $PORT $SSHOPTS $USER@$HOST "cd $dir; $cmd"
     ;;
   *)
     printf "Unknown mode: $MODE\n"
@@ -573,6 +594,7 @@ fetch_files() {
 # I will move any previous snapshots for this architecture to somewhere
 # else.
   mkdir -p old$dest
+  printf "cp -r ${dest}* old$dest\n"
   cp -r ${dest}* old$dest
 # This function is perhaps more delicate than others, because the source
 # argument may be a list of files using wildcards. The wildcards must be
@@ -588,19 +610,24 @@ fetch_files() {
   case $MODE in
   local)
     cd $HERE
+    printf "eval \"rsync $RSO $src $dest\"\n"
     eval "rsync $RSO $src $dest"
     ;;
   ssh)
+    printf "rsync $RSO \"$USER@$HOST:$src\" $dest\n"
     rsync $RSO "$USER@$HOST:$src" $dest
     ;;
   virtual)
+    printf "rsync $RSO -e \"ssh -p $PORT $SSHOPTS\" \"$USER@localhost:$src\" $dest\n"
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" "$USER@localhost:$src" $dest
     ;;
   ssh+ssh)
 # Hah - will I need the extra layer of quoting here. Check carefully!
+    printf "rsync $RSO -e \"ssh $USER@$HOST1\" \"\\\"$USER@$HOST2:$src\\\"\" $dest\n"
     rsync $RSO -e "ssh $USER@$HOST1" "\"$USER@$HOST2:$src\"" $dest
     ;;
   ssh+virtual)
+    printf "rsync $RSO -e \"ssh -p $PORT $SSHOPTS\" \"$USER@$HOST:$src\" $dest\n"
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" "$USER@$HOST:$src" $dest
     ;;
   *)
@@ -614,31 +641,37 @@ stop_remote_host() {
 # ACPI power button.
   case $MODE in
   virtual)
+    printf "vboxmanage controlvm $VM acpipowerbutton\n"
     vboxmanage controlvm $VM acpipowerbutton
-    ;;
-  ssh+virtual)
-    ssh $HOST vboxmanage controlvm $VM acpipowerbutton
-    ;;
-  *)
-# In cases where a virtual machine is not involved I will not need to
-# do anything, and in particular I do not want to drop through and hence
-# find myself if the wait loop.
-    return 0
-    ;;
-  esac
 # In general a virtual machine will not shut down promptly when its power
 # button is pressed. It may delay to give users a chance to tidy up and it
 # may install updates or do other system administrative tasks. So I will
 # wait until vboxmanage confirms to me that the system is actually powered
 # off.
-  while :
-  do
-    sleep 10
-    if vboxmanage showvminfo --machinereadable $VM | grep 'VMState="poweroff"'
-    then
-      break
-    fi
-  done
+    while :
+    do
+      sleep 10
+      printf "vboxmanage showvminfo --machinereadable $VM\n"
+      if vboxmanage showvminfo --machinereadable $VM | grep 'VMState="poweroff"'
+      then
+        break
+      fi
+    done
+    ;;
+  ssh+virtual)
+    printf "ssh $HOST vboxmanage controlvm $VM acpipowerbutton\n"
+    ssh $HOST vboxmanage controlvm $VM acpipowerbutton
+    while :
+    do
+      sleep 10
+      printf "ssh $HOST vboxmanage showvminfo --machinereadable $VM\n"
+      if ssh $HOST vboxmanage showvminfo --machinereadable $VM | grep 'VMState="poweroff"'
+      then
+        break
+      fi
+    done
+    ;;
+  esac
 }
 
 #########################################################################
