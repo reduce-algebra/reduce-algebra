@@ -192,7 +192,7 @@ uxwritefloat(buf, flt, convstr)
        */
       if ((e = strrchr(temps, 'e')) || (e = strrchr(temps, 'E')))
         {
-	  strcpy(tempbuf, e);       /* save save exponent part */
+	  strcpy(tempbuf, e);       /* save exponent part */
 	  *e = '\0'; 
 	  strcat(temps, ".0");     /* Add .0 ono original string */
 	  strcat(temps, tempbuf);  /* add the exponent part onto the end */
