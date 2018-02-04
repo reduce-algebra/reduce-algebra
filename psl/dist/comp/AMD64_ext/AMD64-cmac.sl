@@ -177,10 +177,11 @@
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
 	  '( 1  2  3  4  5 st t1 t2 rax rcx rdx rbx rsp rbp rsi rdi
-				eax ebx ecx edx r8 r9 r10 r11 r12 r13 r14 r15
-            nil heaplast heaptrapbound
-	    bndstkptr bndstklowerbound
-	    bndstkupperbound t3 t4 al  cl ax cx es cs ss ds fs gs))))
+	     eax ebx ecx edx esi edi r8 r9 r10 r11 r12 r13 r14 r15
+             nil heaplast heaptrapbound
+	     bndstkptr bndstklowerbound
+	     bndstkupperbound t3 t4
+	     al  cl ax cx es cs ss ds fs gs))))
  
 (DefList '((RAX   1) (RBX   2) (ebx  2) (RCX   3) (RDX   4) (RBP   5) )
 	 'RegisterNumber)
@@ -1330,7 +1331,8 @@ preload  (setq initload
 		 '(*push (reg bndstklowerbound))'(*push (reg bndstkupperbound))
 % stack has to be aligned for SSE instructions in dyn. linking in C
                  '(!*move  (reg st) (reg 1))
-                 '(sub 64 (reg st)) '(!*wshift (reg st) -5)
+                 '(sub 64 (reg st))
+		 '(!*wshift (reg st) -5)
                  '(!*wshift (reg st) 5)
                  '(!*move  (reg 1) (displacement (reg st) 40))
                 %% '(!*move  (displacement (reg rdi) 0) (reg rdi))
