@@ -20,7 +20,7 @@
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
-here=`dirname "$here"`
+HERE=`dirname "$here"`
 
 case $@ in
 *help*)
@@ -49,7 +49,7 @@ then
   source $HOME/.snapshots
 fi
 
-printf ">>>>>>>>>>>>>>>>>>>> here=$here\n"
+printf ">>>>>>>>>>>>>>>>>>>> HERE=$HERE\n"
 
 # There are a collection of issues that one needs to be aware of here...
 # The various remote machines must provide the current user with ssh access
@@ -69,13 +69,13 @@ printf ">>>>>>>>>>>>>>>>>>>> here=$here\n"
 # by using the virtualbox "controlvm acpipowerbutton" and ensure that the
 # VM respond to that by closing down gracefully.
 
-cd $here
+cd $HERE
 
 prepare() {
 # Ensure that there is a clean check-out of Reduce. If there is a directory
 # called "reduce-distribution" expect it to be a subversion checkout. Use
 # revert to discard any local changes. Get rid of any files in it that have
-# been added locally. Then use "avn update" to bring it into step with the
+# been added locally. Then use "svn update" to bring it into step with the
 # repository. If this directory does not exist create it by checking out
 # a copy from the central site.
 
@@ -84,6 +84,10 @@ prepare() {
     printf "Will update and use existing reduce-distribution file-set.\n"
     pushd ./reduce-distribution >/dev/null
     svn -R revert .
+# Get rid of any files that are in the local tree but are not present in the
+# subversion repository. If "svn update" had a "--delete" option a bit like
+# the one that rsync has or a bit like "Git clean" I would not have to
+# use odd-looking shell scripting like this!
     svn st | grep '^?' | awk '{$1=""; print $0}' | xargs -I{} rm -rf '{}'
     svn update
     popd >/dev/null
@@ -493,6 +497,7 @@ copy_files() {
   printf "Mode = $MODE: copy from $src to $dest\n"
   case $MODE in
   local)
+    cd $HERE
     rsync $RSO $src $dest
     ;;
   ssh)
@@ -533,9 +538,9 @@ execute_in_dir() {
   printf "Mode = $MODE: execute $cmd in directory $dir\n"
   case $MODE in
   local)
-    current="`pwd`"
+    cd $HERE
     eval "cd $dir; $cmd"
-    cd "$current"
+    cd $HERE
     ;;
   ssh)
     ssh $USER@$HOST "cd $dir; $cmd"
@@ -582,6 +587,7 @@ fetch_files() {
   printf "Mode = $MODE: copy $src to $dest\n"
   case $MODE in
   local)
+    cd $HERE
     eval "rsync $RSO $src $dest"
     ;;
   ssh)
@@ -638,9 +644,11 @@ stop_remote_host() {
 #########################################################################
 # Now do the work.
 
-cd $here
+cd $HERE
 prepare
+cd $HERE
 build "$@"
+cd $HERE
 
 exit 0
 

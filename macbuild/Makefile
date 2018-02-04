@@ -1,5 +1,6 @@
 # Makefile for getting ready to make Macintosh installer package
 
+SNAPSHOT=$(shell LANG=C date "+%Y-%m-%d")
 BUILDTOPDIR=C
 REVISION=HEAD
 
@@ -26,7 +27,7 @@ $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
 	( pushd $(BUILDTOPDIR) ; ./autogen.sh -f ; popd )
-	./make.source.sh 
+	./make-source.sh $(SNAPSHOT) 
 	touch $(BUILDTOPDIR).stamp
 
 csl.stamp:	$(BUILDTOPDIR).stamp
@@ -75,8 +76,8 @@ package-mac:	$(BUILDTOPDIR).stamp csl.stamp psl.stamp docs.stamp
 # for now I will content myself with putting the directory in place.
 	hdiutil create -volname Reduce-snapshot \
 		-srcfolder distrib \
-		-ov -format UDZO Reduce-snapshot.dmg
-	echo Reduce-snapshot.dmg made, I hope!!
+		-ov -format UDZO Reduce-snapshot_$(SNAPSHOT).dmg
+	echo Reduce-snapshot_$(SNAPSHOT).dmg made, I hope!!
 
 # It will be a really good idea to go "make clean" before any wholesale
 # "make" here - this removes all the working files that get created

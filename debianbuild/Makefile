@@ -27,7 +27,7 @@ $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
 	( time svn export -r $(REVISION) .. $(BUILDTOPDIR) ) > $(BUILDTOPDIR).log
 	( cd $(BUILDTOPDIR) ; ./autogen.sh -f )
-	-rm -rf reduce-source-$(SNAPSHOT)
+	-rm -rf reduce-source_$(SNAPSHOT)
 	touch $(BUILDTOPDIR).stamp
 
 reduce-packages:	$(BUILDTOPDIR).stamp debpackages rpmpackages tarpackages
@@ -90,51 +90,51 @@ endif
 	tar cfj reduce-freestanding_$(SNAPSHOT)_$(MACHINE).tar.bz2 -C /tmp reduce-snapshot_$(SNAPSHOT)_$(MACHINE)
 
 source-archive:
-	-rm -rf reduce-source-$(SNAPSHOT) *.tar.bz2
-	cp -r $(BUILDTOPDIR) reduce-source-$(SNAPSHOT)
-	$(MAKE) reduce-source-core-$(SNAPSHOT).tar.bz2
-	$(MAKE) reduce-source-csl-$(SNAPSHOT).tar.bz2
-	$(MAKE) reduce-source-csl-embedded-$(SNAPSHOT).tar.bz2
-	$(MAKE) reduce-source-csl-support-$(SNAPSHOT).tar.bz2
+	-rm -rf reduce-source_$(SNAPSHOT) *.tar.bz2
+	cp -r $(BUILDTOPDIR) reduce-source_$(SNAPSHOT)
+	$(MAKE) reduce-source-core_$(SNAPSHOT).tar.bz2
+	$(MAKE) reduce-source-csl_$(SNAPSHOT).tar.bz2
+	$(MAKE) reduce-source-csl-embedded_$(SNAPSHOT).tar.bz2
+	$(MAKE) reduce-source-csl-support_$(SNAPSHOT).tar.bz2
 ifeq (,$(findstring arm,$(MACHINE)))
-	$(MAKE) reduce-source-psl-$(SNAPSHOT).tar.bz2
+	$(MAKE) reduce-source-psl_$(SNAPSHOT).tar.bz2
 endif
 	ls -lh *.tar.bz2
-#	-rm -rf reduce-source-$(SNAPSHOT)
+#	-rm -rf reduce-source_$(SNAPSHOT)
 
-reduce-source-core-$(SNAPSHOT).tar.bz2:
-	tar cfj reduce-source-core-$(SNAPSHOT).tar.bz2 \
+reduce-source-core_$(SNAPSHOT).tar.bz2:
+	tar cfj reduce-source-core_$(SNAPSHOT).tar.bz2 \
 		--owner=root --group=root \
-		--exclude=reduce-source-$(SNAPSHOT)/csl \
-		--exclude=reduce-source-$(SNAPSHOT)/psl \
-		reduce-source-$(SNAPSHOT)
+		--exclude=reduce-source_$(SNAPSHOT)/csl \
+		--exclude=reduce-source_$(SNAPSHOT)/psl \
+		reduce-source_$(SNAPSHOT)
 
-reduce-source-csl-$(SNAPSHOT).tar.bz2:
-	tar cfj reduce-source-csl-$(SNAPSHOT).tar.bz2 \
+reduce-source-csl_$(SNAPSHOT).tar.bz2:
+	tar cfj reduce-source-csl_$(SNAPSHOT).tar.bz2 \
 		--owner=root --group=root \
-		--exclude=reduce-source-$(SNAPSHOT)/csl/support-packages \
-		--exclude=reduce-source-$(SNAPSHOT)/csl/embedded \
-		--exclude=reduce-source-$(SNAPSHOT)/csl/new-embedded \
-		--exclude=reduce-source-$(SNAPSHOT)/csl/generated-c \
-		reduce-source-$(SNAPSHOT)/csl
+		--exclude=reduce-source_$(SNAPSHOT)/csl/support-packages \
+		--exclude=reduce-source_$(SNAPSHOT)/csl/embedded \
+		--exclude=reduce-source_$(SNAPSHOT)/csl/new-embedded \
+		--exclude=reduce-source_$(SNAPSHOT)/csl/generated-c \
+		reduce-source_$(SNAPSHOT)/csl
 
-reduce-source-csl-embedded-$(SNAPSHOT).tar.bz2:
-	tar cfj reduce-source-csl-embedded-$(SNAPSHOT).tar.bz2 \
+reduce-source-csl-embedded_$(SNAPSHOT).tar.bz2:
+	tar cfj reduce-source-csl-embedded_$(SNAPSHOT).tar.bz2 \
 		--owner=root --group=root \
-		reduce-source-$(SNAPSHOT)/csl/embedded \
-		reduce-source-$(SNAPSHOT)/csl/new-embedded \
-		reduce-source-$(SNAPSHOT)/csl/generated-c
+		reduce-source_$(SNAPSHOT)/csl/embedded \
+		reduce-source_$(SNAPSHOT)/csl/new-embedded \
+		reduce-source_$(SNAPSHOT)/csl/generated-c
 
-reduce-source-csl-support-$(SNAPSHOT).tar.bz2:
-	tar cfj reduce-source-csl-support-$(SNAPSHOT).tar.bz2 \
+reduce-source-csl-support_$(SNAPSHOT).tar.bz2:
+	tar cfj reduce-source-csl-support_$(SNAPSHOT).tar.bz2 \
 		--owner=root --group=root \
-		reduce-source-$(SNAPSHOT)/csl/support-packages
+		reduce-source_$(SNAPSHOT)/csl/support-packages
 
 ifeq (,$(findstring arm,$(MACHINE)))
-reduce-source-psl-$(SNAPSHOT).tar.bz2:
-	tar cfj reduce-source-psl-$(SNAPSHOT).tar.bz2 \
+reduce-source-psl_$(SNAPSHOT).tar.bz2:
+	tar cfj reduce-source-psl_$(SNAPSHOT).tar.bz2 \
 		--owner=root --group=root \
-		reduce-source-$(SNAPSHOT)/psl
+		reduce-source_$(SNAPSHOT)/psl
 endif
 
 clean:
