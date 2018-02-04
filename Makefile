@@ -70,7 +70,7 @@ snapshot:
 # Well the "install" option is somewhjat work in progress.
 
 install:
-	$(SHELL) $(VERBOSE) scripts/install.sh $(MAKECMDGOALS)
+	$(SHELL) $(VERBOSE) scripts/install-reduce.sh $(MAKECMDGOALS)
 
 uninstall:
 	$(SHELL) $(VERBOSE) scripts/uninstall.sh $(MAKECMDGOALS)

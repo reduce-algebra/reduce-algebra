@@ -153,9 +153,35 @@ do
 # I will spawn all the calls to autoconf to run concurrently...
     if test "$sequential" = "yes"
     then
-      ( $LIBTOOLIZE --force --copy; aclocal --force ; autoreconf -f -i -v )
+      ( aclocal --force; $LIBTOOLIZE --force --copy )
     else
-      ( $LIBTOOLIZE --force --copy; aclocal --force ; autoreconf -f -i -v ) &
+      ( aclocal --force; $LIBTOOLIZE --force --copy ) &
+      procids="$procids $!"
+    fi
+    cd $here
+  fi
+done
+
+if test "$sequential" != "yes"
+then
+  wait $procids
+fi
+
+procids=""
+
+for d in $L
+do
+  printf "\nautoreconf in directory '%s'\n" $d
+  if test -d $d
+  then
+    cd $d
+    printf "autoreconf -f -i -v\n"
+# I will spawn all the calls to autoconf to run concurrently...
+    if test "$sequential" = "yes"
+    then
+      autoreconf -f -i -v
+    else
+      autoreconf -f -i -v &
       procids="$procids $!"
     fi
     cd $here
