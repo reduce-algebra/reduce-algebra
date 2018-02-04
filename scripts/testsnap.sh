@@ -69,7 +69,7 @@ printf ">>>>>>>>>>>>>>>>>>>> here=$here\n"
 # by using the virtualbox "controlvm acpipowerbutton" and ensure that the
 # VM respond to that by closing down gracefully.
 
-pushd $here >/dev/null
+cd $here
 
 prepare() {
 # Ensure that there is a clean check-out of Reduce. If there is a directory
@@ -455,16 +455,16 @@ start_remote_host() {
 #     interruption
 #   t preserve modification times of files
 #   z compress network traffic
-#   C do not send .svn directory and many built files
 #   e use ssh with a specified port number
+#   --exclude=... avoid sending certain files & directories
 #   --delete get rid of files not in the local file-set
-#   --force as you might expect
-# OR --info=...
+#   --force perform actions without requiring confirmation
+#   --info=... control messages that are generated
 #
 
-RSYNC_OPTIONS="-rlHpEPtzC --delete --force \
---info=backup0,copy0,del0,flist0,misc0,mount0,\
-name0,progress0,remove0,skip0,symsafe2,stats2"
+RSYNC_OPTIONS="-rlHpEPtz --delete --force \
+   --info=backup0,copy0,del0,flist0,misc0,mount0 \
+   --info=name0,progress0,remove0,skip0,symsafe2,stats2"
 
 # NOTE HORRIBLY WELL. On the Macintosh there is a version of rsync in
 # /usr/bin, but it is an old one. The settings of PATH that put the newer
@@ -486,9 +486,9 @@ copy_files() {
   dest="$2"
   if test "$TARGET" = "macintosh"
   then
-    RSO="$RSYNC_OPTIONS --delete $MAC_RSYNC_EXTRA"
+    RSO="$RSYNC_OPTIONS --exclude=.svn --delete $MAC_RSYNC_EXTRA"
   else
-    RSO="$RSYNC_OPTIONS --delete"
+    RSO="$RSYNC_OPTIONS --exclude=.svn --delete"
   fi
   printf "Mode = $MODE: copy from $src to $dest\n"
   case $MODE in
@@ -496,13 +496,15 @@ copy_files() {
     rsync $RSO $src $dest
     ;;
   ssh)
+# For direct ssh access I will expect that the remote machine has been
+# accessed before and that host key confirmation etc has been performed.
     rsync $RSO $src $USER@$HOST:$dest
     ;;
   virtual)
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" $src $USER@localhost:$dest
     ;;
   ssh+ssh)
-    rsync $RSO -e "ssh $USER@$HOST1" $src $USER@$HOST2:$dest
+    rsync $RSO -e "ssh $SSHOPTS $USER@$HOST1" $src $USER@$HOST2:$dest
     ;;
   ssh+virtual)
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" $src $USER@$HOST:$dest
@@ -563,15 +565,19 @@ fetch_files() {
   src="$1"
   dest="$2"
   mkdir -p $dest
+# I will move any previous snapshots for this architecture to somewhere
+# else.
+  mkdir -p old$dest
+  cp -r ${dest}* old$dest
 # This function is perhaps more delicate than others, because the source
-# argumentmay be a list of files using wildcards. The wildcards must be
-# expanded on the remote machine not locally. Also observe that in this
-# case I will not be purging other files from the target directory.
+# argument may be a list of files using wildcards. The wildcards must be
+# expanded on the remote machine not locally. I will delete any old snapshots
+# for this target as I copy the new ones across.
   if test "$TARGET" = "macintosh"
   then
-    RSO="$RSYNC_OPTIONS $MAC_RSYNC_EXTRA"
+    RSO="$RSYNC_OPTIONS --delete $MAC_RSYNC_EXTRA"
   else
-    RSO="$RSYNC_OPTIONS"
+    RSO="$RSYNC_OPTIONS --delete"
   fi
   printf "Mode = $MODE: copy $src to $dest\n"
   case $MODE in
@@ -631,6 +637,8 @@ stop_remote_host() {
 
 #########################################################################
 # Now do the work.
+
+cd $here
 prepare
 build "$@"
 
