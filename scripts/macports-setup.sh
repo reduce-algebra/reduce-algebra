@@ -106,6 +106,7 @@ sudo port install          \
   pkgconfig                \
   polyml                   \
   psutils                  \
+  rsync                    \
   subversion               \
   texinfo                  \
   texlive-fonts-extra      \

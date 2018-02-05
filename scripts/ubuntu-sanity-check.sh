@@ -49,5 +49,7 @@ sudo apt-get -y install xorg-dev
 sudo apt-get -y install devscripts
 sudo apt-get -y install fakeroot
 sudo apt-get -y install alien
+sudo apt-get -y install rsync
+
 exit 0
 # end of script
