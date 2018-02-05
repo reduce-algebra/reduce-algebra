@@ -1,16 +1,23 @@
 #! /bin/bash
 
-# This is a prototype of a scheme to make snapshot building more
-# flexible such that it can run either on one machine with several
-# virtual machines to support other operating systems, or on a network
-# of machines with at least some building happening in native mode.
-# AT present this is INCOMPLETE WORK.
-# I am checking it in now for at least three reasons:
-# (1) So there is a safe copy somewhere.
-# (2) Because this way I can get copies of it on a number of machines and
-#     that will help me test its portability,
-# (3) In case others choose to look at it, review it and suggest corrections
-#     or improvements.
+# This script makes snapshots of Reduce. It should be capable of
+# building ones for Windows, Macintosh, Linux-i686, Linux-x86_64
+# and the Raspberry Pi.
+#
+# Each snapshot needs to be built on a computer of the relevant type.
+# This can either be the current local host, a remote host that is
+# accessible using ssh (possibly via a gateway machine) or a virtual
+# machine using virtualbox that is either local or remote.
+# The exact set of machine to be used are set in a file "./snapshots"
+# in the user's home directory, and a file called dot-snapshots here
+# gives a prototype for that.
+#
+# Each host used during the build must have been set up with a comprehensive
+# set of build tools and development libraries, and where it is to be
+# accessed over ssh it must use public key authentication so that the current
+# user on the system that this script runs on can access it without needing
+# any extra interaction.
+#
 #                                                       ACN February 2018
 
 
@@ -127,7 +134,7 @@ build() {
       local="rpi"
       ;;
     *)
-      printf "Unsupported linux variant (`uname -m`)\n"
+      printf "Unsupported Linux variant (`uname -m`)\n"
       exit 1
       ;;
     esac
@@ -192,8 +199,13 @@ build() {
 
 build_windows() {
   machine_windows
+  if test "$MODE" = "none"
+  then
+    printf "Unable to build Windows snapshot here\n"
+    return 0
+  fi
   start_remote_host
-  copy_files 'reduce-distribution/winbuild/'    'reduce-build/'
+  copy_files 'reduce-distribution/winbuild/'    'reduce-build/'  '--exclude=reduce-distribution/winbuild/C'
   copy_files 'reduce-distribution/'             'reduce-build/C/'
   execute_in_dir 'reduce-build/C'               './autogen.sh'
   execute_in_dir 'reduce-build'                 'touch C.stamp'
@@ -219,8 +231,13 @@ build_rpi() {
 
 build_debian() {
 # Common code for building on a Linux variant
+  if test "$MODE" = "none"
+  then
+    printf "Unable to build $TARGET snapshot here\n"
+    return 0
+  fi
   start_remote_host
-  copy_files 'reduce-distribution/debianbuild/' 'reduce-build/'
+  copy_files 'reduce-distribution/debianbuild/' 'reduce-build/'   '--exclude=reduce-distribution/debianbuild/C'
   copy_files 'reduce-distribution/'             'reduce-build/C/'
   execute_in_dir 'reduce-build/C'               './autogen.sh'
   execute_in_dir 'reduce-build'                 'touch C.stamp'
@@ -231,8 +248,13 @@ build_debian() {
 
 build_macintosh() {
   machine_macintosh
+  if test "$MODE" = "none"
+  then
+    printf "Unable to build Macintosh snapshot here\n"
+    return 0
+  fi
   start_remote_host
-  copy_files 'reduce-distribution/macbuild/' 'reduce-build/'
+  copy_files 'reduce-distribution/macbuild/' 'reduce-build/'   '--exclude=reduce-distribution/macbuild/C'
   copy_files 'reduce-distribution/'          'reduce-build/C/'
   execute_in_dir 'reduce-build/C'            './autogen.sh'
   execute_in_dir 'reduce-build/C'            'tar cfj ../Reduce-source.tar.bz2 -X ../exclude.from.source.archive *'
@@ -285,8 +307,8 @@ machine_macintosh() {
       MODE=local
       ;;
     *)
-      printf "Do not know how to access a macintosh from `uname -n`\n"
-      exit 1
+      printf "Do not know how to access a Macintosh from `uname -n`\n"
+      MODE=none
       ;;
     esac
   fi
@@ -305,8 +327,8 @@ machine_windows() {
       VM="REDUCE-pkg-factory-Windows"
       ;;
     *)
-      printf "Do not know how to access a windows machine from `uname -n`\n"
-      exit 1
+      printf "Do not know how to access a Windows machine from `uname -n`\n"
+      MODE=none
       ;;
     esac
   fi
@@ -326,7 +348,7 @@ machine_linux32() {
       ;;
     *)
       printf "Do not know how to access an i686 Linux machine from `uname -n`\n"
-      exit 1
+      MODE=none
       ;;
     esac
   fi
@@ -346,7 +368,7 @@ machine_linux64() {
       ;;
     *)
       printf "Do not know how to access an x86_64 Linux machine from `uname -n`\n"
-      exit 1
+      MODE=none
       ;;
     esac
   fi
@@ -365,8 +387,8 @@ machine_rpi() {
       HOST2=192.168.1.179
       ;;
     *)
-      printf "Do not know how to access a raspberry pi from `uname -n`\n"
-      exit 1
+      printf "Do not know how to access a Raspberry Pi from `uname -n`\n"
+      MODE=none
       ;;
     esac
   fi
@@ -491,7 +513,7 @@ RSYNC_OPTIONS="-rlHpEPtz --delete --force \
 MAC_RSYNC_EXTRA="--rsync-path=/opt/local/bin/rsync"
 
 copy_files() {
-# Usage example : copy_files 'reduce-distribution/macbuild/' 'reduce-build/'
+# Usage example : copy_files 'reduce-distribution/macbuild/' 'reduce-build/' '--exclude...'
   if test "$1" = "" || test "$2" = ""
   then
     printf "Internal error\n"
@@ -499,11 +521,13 @@ copy_files() {
   fi
   src="$1"
   dest="$2"
+# The third argument is optional, but passes additional options to rsync.
+  xtra="$3"
   if test "$TARGET" = "macintosh"
   then
-    RSO="$RSYNC_OPTIONS --exclude=.svn --delete $MAC_RSYNC_EXTRA"
+    RSO="$RSYNC_OPTIONS --exclude=.svn $xtra --delete $MAC_RSYNC_EXTRA"
   else
-    RSO="$RSYNC_OPTIONS --exclude=.svn --delete"
+    RSO="$RSYNC_OPTIONS --exclude=.svn $xtra --delete"
   fi
   printf "Mode = $MODE: copy from $src to $dest\n"
   case $MODE in

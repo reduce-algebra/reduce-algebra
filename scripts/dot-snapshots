@@ -70,7 +70,7 @@ hosts_windows() {
     MODE=local
     ;;
   OlderMacBook | acn1macbook | rpi3-32)
-# From the private netwoirk I can access panamin using its private address.
+# From the private network I can access panamint using its private address.
     MODE=ssh
     HOST=192.168.1.10
     ;;
@@ -80,6 +80,11 @@ hosts_windows() {
 # set up so that I can build on it. The VM runs an ssh server and this script
 # sets up port forwarding in virtualbox so that it can be accessed.
     MODE=virtual
+# I believe that it is not necessary to use a different port number for each
+# virtual machine, because the scripts reset port forwarding in the
+# virtualbox setup, and the virtual machines should only be running one
+# at a time. However I show port specification here in case in some context
+# that is necessary.
     PORT=1004
     VM="REDUCE-pkg-factory-Windows"
     ;;
