@@ -257,7 +257,7 @@ build_macintosh() {
   copy_files 'reduce-distribution/macbuild/' 'reduce-build/'   '--exclude=reduce-distribution/macbuild/C'
   copy_files 'reduce-distribution/'          'reduce-build/C/'
   execute_in_dir 'reduce-build/C'            './autogen.sh'
-  execute_in_dir 'reduce-build/C'            'make source-archive'
+  execute_in_dir 'reduce-build'              'make source-archive'
   execute_in_dir 'reduce-build'              'touch C.stamp'
   execute_in_dir 'reduce-build'              'make'
   fetch_files    'reduce-build/*.{dmg,bz2}'  'snapshots/macintosh'
