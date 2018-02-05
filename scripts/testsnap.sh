@@ -257,7 +257,7 @@ build_macintosh() {
   copy_files 'reduce-distribution/macbuild/' 'reduce-build/'   '--exclude=reduce-distribution/macbuild/C'
   copy_files 'reduce-distribution/'          'reduce-build/C/'
   execute_in_dir 'reduce-build/C'            './autogen.sh'
-  execute_in_dir 'reduce-build/C'            'tar cfj ../Reduce-source.tar.bz2 -X ../exclude.from.source.archive *'
+  execute_in_dir 'reduce-build/C'            'make source-archive'
   execute_in_dir 'reduce-build'              'touch C.stamp'
   execute_in_dir 'reduce-build'              'make'
   fetch_files    'reduce-build/*.{dmg,bz2}'  'snapshots/macintosh'
@@ -403,7 +403,8 @@ machine_rpi() {
 # that causing confusion, and so that reconfiguration of the VM does not
 # lead to pain.
 
-SSHOPTS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=error"
+SSHOPTS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no\
+ -o LogLevel=error -o ForwardX11=no"
 
 start_remote_host() {
 # This is only required if a virtual machine is involved. There are two
@@ -547,8 +548,8 @@ copy_files() {
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" $src $USER@localhost:$dest
     ;;
   ssh+ssh)
-    printf "rsync $RSO -e \"ssh $SSHOPTS $USER@$HOST1\" $src $USER@$HOST2:$dest\n"
-    rsync $RSO -e "ssh $SSHOPTS $USER@$HOST1" $src $USER@$HOST2:$dest
+    printf "rsync $RSO -e \"ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS\" $src $USER@$HOST2:$dest\n"
+    rsync $RSO -e "ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS" $src $USER@$HOST2:$dest
     ;;
   ssh+virtual)
     printf "rsync $RSO -e \"ssh -p $PORT $SSHOPTS\" $src $USER@$HOST:$dest\n"
@@ -592,8 +593,15 @@ execute_in_dir() {
     ssh -p $PORT $SSHOPTS $USER@localhost "cd $dir; $cmd"
     ;;
   ssh+ssh)
-    printf "ssh $USER@$HOST1 \"ssh $HOST2 \\\"cd $dir; $cmd\\\"\"\n"
-    ssh $USER@$HOST1 "ssh $HOST2 \"cd $dir; $cmd\""
+# I had trouble getting the quotation correct here, so now I build up
+# the command that is to be executed step by step. Note that within $cmd there
+# can be the sequence "PATH=xxx:$PATH" and the expansion of "$PATH" has to
+# be delayed so it is performed on the final server.
+    cmd="cd $dir; $cmd"
+# Now create a command that will execute stuff on the final system.
+    cmd="ssh $SSHOPTS $USER@$HOST2 '$cmd'"
+    printf "ssh $SSHOPTS $USER@$HOST1 \"$cmd\"\n"
+    ssh $SSHOPTS $USER@$HOST1 "$cmd"
     ;;
   ssh+virtual)
     printf "ssh -p $PORT $SSHOPTS $USER@$HOST \"cd $dir; $cmd\"\n"
@@ -646,9 +654,8 @@ fetch_files() {
     rsync $RSO -e "ssh -p $PORT $SSHOPTS" "$USER@localhost:$src" $dest
     ;;
   ssh+ssh)
-# Hah - will I need the extra layer of quoting here. Check carefully!
-    printf "rsync $RSO -e \"ssh $USER@$HOST1\" \"\\\"$USER@$HOST2:$src\\\"\" $dest\n"
-    rsync $RSO -e "ssh $USER@$HOST1" "\"$USER@$HOST2:$src\"" $dest
+    printf "rsync $RSO -e \"ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS\" \"$USER@$HOST2:$src\" $dest\n"
+    rsync $RSO -e "ssh $SSHOPTS $USER@$HOST1 ssh $SSHOPTS" "$USER@$HOST2:$src" $dest
     ;;
   ssh+virtual)
     printf "rsync $RSO -e \"ssh -p $PORT $SSHOPTS\" \"$USER@$HOST:$src\" $dest\n"

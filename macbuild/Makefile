@@ -30,6 +30,9 @@ $(BUILDTOPDIR).stamp:
 	./make-source.sh $(SNAPSHOT) 
 	touch $(BUILDTOPDIR).stamp
 
+source-archive:
+	./make-source.sh $(SNAPSHOT) 
+
 csl.stamp:	$(BUILDTOPDIR).stamp
 	( pushd $(BUILDTOPDIR) ; ./configure --with-csl --without-autogen ; \
 		script ../csl.log time make csl ; popd )
