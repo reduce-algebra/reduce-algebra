@@ -305,9 +305,6 @@ build_macintosh() {
 
 machine_macintosh() {
   MODE="none"
-# A user's .snapshots file can specify ports to use, but if it does not
-# I will have a default.
-  PORT=22022
 # The function "hosts_macintosh" *MAY* have been defined in a user .snapshots
 # file, and if so then I will call it here. But it does not have to be, so if
 # the following line fails with a "command not found" error then that is
@@ -336,14 +333,12 @@ machine_macintosh() {
 
 machine_windows() {
   MODE="none"
-  PORT=22022
   hosts_windows 2> /dev/null
   if test "$MODE" = "none"
   then
     case `uname -n` in
     math-smreduce)
       MODE=virtual
-      PORT=1001
       VM="REDUCE-pkg-factory-Windows"
       REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
       REDUCE_BUILD="/Volumes/DATA/reduce-build"
@@ -359,14 +354,12 @@ machine_windows() {
 
 machine_linux32() {
   MODE="none"
-  PORT=22022
   hosts_linux32 2> /dev/null
   if test "$MODE" = "none"
   then
     case `uname -n` in
     math-smreduce)
       MODE=virtual
-      PORT=1002
       VM="REDUCE-pkg-factory-Ubuntu32"
       REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
       REDUCE_BUILD="/Volumes/DATA/reduce-build"
@@ -382,14 +375,12 @@ machine_linux32() {
 
 machine_linux64() {
   MODE="none"
-  PORT=22022
   hosts_linux64 2> /dev/null
   if test "$MODE" = "none"
   then
     case `uname -n` in
     math-smreduce)
       MODE=virtual
-      PORT=1003
       VM="REDUCE-pkg-factory-Ubuntu"
       REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
       REDUCE_BUILD="/Volumes/DATA/reduce-build"
@@ -405,7 +396,6 @@ machine_linux64() {
 
 machine_rpi() {
   MODE="none"
-  PORT=22022
   hosts_rpi 2> /dev/null
   if test "$MODE" = "none"
   then
@@ -450,9 +440,22 @@ start_remote_host() {
       stop_remote_host
     fi
 # If there is a VM on the local machine I start by re-configuring it so that
-# local port $PORT is redirected to its port 22 (ie ssh).
+# a local port is redirected to its port 22 (ie ssh). I pick a random port
+# number in the range 10000 to 42767 such that the ports is not in use.
+# Well there could then be a race condition once I have selected a port -
+# some other task could seize it before virualbox managed to. I rather hope
+# that there will not be too many clashes in the range I use and that
+# bad things will be uncommon.
     printf "vboxmanage modifyvm $VM --natpf1 delete ssh\n"
     vboxmanage modifyvm $VM --natpf1 delete ssh 2> /dev/null
+    while :
+    do
+      let PORT=RANDOM+10000
+      if ! true &>/dev/null </dev/tcp/127.0.0.1/$PORT
+      then
+        break
+      fi
+    done
     printf "vboxmanage modifyvm $VM --natpf1 \"ssh,tcp,,$PORT,,22\"\n"
     vboxmanage modifyvm $VM --natpf1 "ssh,tcp,,$PORT,,22"
 # Start up the machine.
@@ -478,7 +481,8 @@ start_remote_host() {
     ;;
   ssh+virtual)
 # Now I express a similar sequence of steps, but with the Virtual Machine
-# being created on a remote host.
+# being created on a remote host. Note that this means that the port that
+# I select must be available for use on that remote system.
     printf "ssh $HOST vboxmanage showvminfo --machinereadable $VM\n"
     if ssh $HOST vboxmanage showvminfo --machinereadable $VM | grep 'VMState="running"'
     then
@@ -486,6 +490,14 @@ start_remote_host() {
     fi
     printf "ssh $HOST vboxmanage modifyvm $VM --natpf1 delete ssh\n"
     ssh $HOST vboxmanage modifyvm $VM --natpf1 delete ssh 2> /dev/null
+    while :
+    do
+      let PORT=RANDOM+10000
+      if ! ssh $USER@$HOST "true &>/dev/null </dev/tcp/127.0.0.1/$PORT"
+      then
+        break
+      fi
+    done
     printf "ssh $HOST vboxmanage modifyvm $VM --natpf1 \"ssh,tcp,,$PORT,,22\"\n"
     ssh $HOST vboxmanage modifyvm $VM --natpf1 "ssh,tcp,,$PORT,,22"
     printf "ssh $HOST vboxmanage startvm $VM --type headless\n"
@@ -703,15 +715,38 @@ stop_remote_host() {
 # may install updates or do other system administrative tasks. So I will
 # wait until vboxmanage confirms to me that the system is actually powered
 # off.
-    while :
+    for n in `seq 1 30`
     do
       sleep 10
       printf "vboxmanage showvminfo --machinereadable $VM\n"
       if vboxmanage showvminfo --machinereadable $VM | grep 'VMState="poweroff"'
       then
-        break
+        return 0
       fi
     done
+# If I get here then the polling to see if the machine has stopped has gone
+# on for 5 minutes. I will next see if I can get a command to toe VM to close
+# it down.
+    case $TARGET
+    in
+    *windows*)
+      execute_in_dir "$REDUCE_BUILD" "\$WINDIR/SysWOW64/shutdown /s /t 1"
+      ;;
+    *)
+      execute_in_dir "$REDUCE_BUILD" "sudo /sbin/shutdown -h now"
+      ;;
+    esac
+# Wait another 5 minutes!
+    for n in `seq 1 30`
+    do
+      sleep 10
+      printf "vboxmanage showvminfo --machinereadable $VM\n"
+      if vboxmanage showvminfo --machinereadable $VM | grep 'VMState="poweroff"'
+      then
+        return 0
+      fi
+    done
+# Then give up!
     ;;
   ssh+virtual)
     printf "ssh $HOST vboxmanage controlvm $VM acpipowerbutton\n"

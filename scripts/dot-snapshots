@@ -30,6 +30,11 @@ The machine names shown are in general the ones reported by "uname -n".
 # where the HOST setting gives the network identity of the Windows server -
 # which will be accessed using ssh.
 #
+# It is possible to set PORT here to indicate a port to be used in redirection
+# when accessing a virtual machine. However doing so is not especially
+# recommended because the main script takes steps to choose a port that
+# it has just detected as not being in use.
+#
 # More elaborate options are illustrated in what follows:
 
 hosts_macintosh() {
@@ -86,7 +91,6 @@ hosts_windows() {
     ;;
   math-smreduce)
     MODE=virtual
-    PORT=1004
     VM="REDUCE-pkg-factory-Windows"
     REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
     REDUCE_BUILD="/Volumes/DATA/reduce-build"
@@ -108,12 +112,10 @@ hosts_linux32() {
   panamint | gauguin)
 # More cases of using a virtual machine.
     MODE=virtual
-    PORT=1005
     VM="REDUCE-pkg-factory-Ubuntu32"
     ;;
   math-smreduce)
     MODE=virtual
-    PORT=1005
     VM="REDUCE-pkg-factory-Ubuntu32"
     REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
     REDUCE_BUILD="/Volumes/DATA/reduce-build"
@@ -123,7 +125,6 @@ hosts_linux32() {
 # In this case virtualbox will be run on the host 192.168.1.10 so access
 # to it is somewhat at arm's length.
     MODE=ssh+virtual
-    PORT=1006
     HOST=192.168.1.10
     VM="REDUCE-pkg-factory-Ubuntu32"
     ;;
@@ -142,12 +143,10 @@ hosts_linux64() {
   panamint)
 # As before a virtual machine running on the current system.
     MODE=virtual
-    PORT=1007
     VM="REDUCE-pkg-factory-Ubuntu"
     ;;
   math-smreduce)
     MODE=virtual
-    PORT=1007
     VM="REDUCE-pkg-factory-Ubuntu"
     REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
     REDUCE_BUILD="/Volumes/DATA/reduce-build"
@@ -156,7 +155,6 @@ hosts_linux64() {
   OlderMacBook | acn1macbook | rpi3-32)
 # As before, a virtual machine running on a remote system.
     MODE=ssh+virtual
-    PORT=1008
     HOST=192.168.1.10
     VM="REDUCE-pkg-factory-Ubuntu"
     ;;
