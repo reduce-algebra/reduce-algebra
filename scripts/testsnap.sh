@@ -78,18 +78,26 @@ printf ">>>>>>>>>>>>>>>>>>>> HERE=$HERE\n"
 
 cd $HERE
 
+# By directory names here can be absolute or relative. If they are specified
+# as relative then they are reltive to the trunk directory in the Reduce
+# tree that the snapshot builder is run from.
+
+REDUCE_DISTRIBUTION="reduce-distribution"
+REDUCE_BUILD="reduce-build"
+SNAPSHOTS="snapshots"
+
 prepare() {
 # Ensure that there is a clean check-out of Reduce. If there is a directory
-# called "reduce-distribution" expect it to be a subversion checkout. Use
+# called "$REDUCE_DISTRIBUTION" expect it to be a subversion checkout. Use
 # revert to discard any local changes. Get rid of any files in it that have
 # been added locally. Then use "svn update" to bring it into step with the
 # repository. If this directory does not exist create it by checking out
 # a copy from the central site.
 
-  if test -d ./reduce-distribution
+  if test -d $REDUCE_DISTRIBUTION
   then
-    printf "Will update and use existing reduce-distribution file-set.\n"
-    pushd ./reduce-distribution >/dev/null
+    printf "Will update and use existing $REDUCE_DISTRIBUTION file-set.\n"
+    pushd $REDUCE_DISTRIBUTION >/dev/null
     svn -R revert .
 # Get rid of any files that are in the local tree but are not present in the
 # subversion repository. If "svn update" had a "--delete" option a bit like
@@ -99,9 +107,9 @@ prepare() {
     svn update
     popd >/dev/null
   else
-    printf "Will check out a new reduce-distribution to use.\n"
+    printf "Will check out a new $REDUCE_DISTRIBUTION to use.\n"
     svn co svn://svn.code.sf.net/p/reduce-algebra/code/trunk \
-           ./reduce-distribution > reduce-checkout.log
+           $REDUCE_DISTRIBUTION > reduce-checkout.log
   fi
 }
 
@@ -205,12 +213,17 @@ build_windows() {
     return 0
   fi
   start_remote_host
-  copy_files 'reduce-distribution/winbuild/'    'reduce-build/'  '--exclude=reduce-distribution/winbuild/C'
-  copy_files 'reduce-distribution/'             'reduce-build/C/'
-  execute_in_dir 'reduce-build/C'               './autogen.sh'
-  execute_in_dir 'reduce-build'                 'touch C.stamp'
-  execute_in_dir 'reduce-build'                 'make'
-  fetch_files    'reduce-build/Output/*.*'      'snapshots/windows/'
+###
+### I believe that I have not yet got the "--exclude" setting on the following
+### line (and similar ones in a number of other places) right so that I avoid
+### deleting what will later end up in the C directory...
+###
+  copy_files '$REDUCE_DISTRIBUTION/winbuild/'    '$REDUCE_BUILD/'  '--exclude=$REDUCE_DISTRIBUTION/winbuild/C'
+  copy_files '$REDUCE_DISTRIBUTION/'             '$REDUCE_BUILD/C/'
+  execute_in_dir '$REDUCE_BUILD/C'               './autogen.sh'
+  execute_in_dir '$REDUCE_BUILD'                 'touch C.stamp'
+  execute_in_dir '$REDUCE_BUILD'                 'make'
+  fetch_files    '$REDUCE_BUILD/Output/*.*'      '$SNAPSHOTS/windows/'
   stop_remote_host
 }
 
@@ -237,12 +250,12 @@ build_debian() {
     return 0
   fi
   start_remote_host
-  copy_files 'reduce-distribution/debianbuild/' 'reduce-build/'   '--exclude=reduce-distribution/debianbuild/C'
-  copy_files 'reduce-distribution/'             'reduce-build/C/'
-  execute_in_dir 'reduce-build/C'               './autogen.sh'
-  execute_in_dir 'reduce-build'                 'touch C.stamp'
-  execute_in_dir 'reduce-build'                 'make'
-  fetch_files    'reduce-build/*.{deb,rpm,tgz,bz2}'  "snapshots/$1/"
+  copy_files '$REDUCE_DISTRIBUTION/debianbuild/' '$REDUCE_BUILD/'   '--exclude=$REDUCE_DISTRIBUTION/debianbuild/C'
+  copy_files '$REDUCE_DISTRIBUTION/'             '$REDUCE_BUILD/C/'
+  execute_in_dir '$REDUCE_BUILD/C'               './autogen.sh'
+  execute_in_dir '$REDUCE_BUILD'                 'touch C.stamp'
+  execute_in_dir '$REDUCE_BUILD'                 'make'
+  fetch_files    '$REDUCE_BUILD/*.{deb,rpm,tgz,bz2}'  "$SNAPSHOTS/$1/"
   stop_remote_host
 }
 
@@ -254,13 +267,13 @@ build_macintosh() {
     return 0
   fi
   start_remote_host
-  copy_files 'reduce-distribution/macbuild/' 'reduce-build/'   '--exclude=reduce-distribution/macbuild/C'
-  copy_files 'reduce-distribution/'          'reduce-build/C/'
-  execute_in_dir 'reduce-build/C'            './autogen.sh'
-  execute_in_dir 'reduce-build'              'make source-archive'
-  execute_in_dir 'reduce-build'              'touch C.stamp'
-  execute_in_dir 'reduce-build'              'make'
-  fetch_files    'reduce-build/*.{dmg,bz2}'  'snapshots/macintosh'
+  copy_files '$REDUCE_DISTRIBUTION/macbuild/' '$REDUCE_BUILD/'   '--exclude=$REDUCE_DISTRIBUTION/macbuild/C'
+  copy_files '$REDUCE_DISTRIBUTION/'          '$REDUCE_BUILD/C/'
+  execute_in_dir '$REDUCE_BUILD/C'            './autogen.sh'
+  execute_in_dir '$REDUCE_BUILD'              'make source-archive'
+  execute_in_dir '$REDUCE_BUILD'              'touch C.stamp'
+  execute_in_dir '$REDUCE_BUILD'              'make'
+  fetch_files    '$REDUCE_BUILD/*.{dmg,bz2}'  '$SNAPSHOTS/macintosh'
   stop_remote_host
 }
 
@@ -305,6 +318,13 @@ machine_macintosh() {
     case `uname -n` in
     math-smreduce)
       MODE=local
+# On this host the disc space is such that it is useful to specify that
+# the work-space and eventual results from a snapshot build run are
+# put in a separate volume... Note that the settings here are repeated for
+# each target architecture.
+      REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
+      REDUCE_BUILD="/Volumes/DATA/reduce-build"
+      SNAPSHOTS="/Volumes/DATA/snapshots"
       ;;
     *)
       printf "Do not know how to access a Macintosh from `uname -n`\n"
@@ -325,6 +345,9 @@ machine_windows() {
       MODE=virtual
       PORT=1001
       VM="REDUCE-pkg-factory-Windows"
+      REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
+      REDUCE_BUILD="/Volumes/DATA/reduce-build"
+      SNAPSHOTS="/Volumes/DATA/snapshots"
       ;;
     *)
       printf "Do not know how to access a Windows machine from `uname -n`\n"
@@ -345,6 +368,9 @@ machine_linux32() {
       MODE=virtual
       PORT=1002
       VM="REDUCE-pkg-factory-Ubuntu32"
+      REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
+      REDUCE_BUILD="/Volumes/DATA/reduce-build"
+      SNAPSHOTS="/Volumes/DATA/snapshots"
       ;;
     *)
       printf "Do not know how to access an i686 Linux machine from `uname -n`\n"
@@ -365,6 +391,9 @@ machine_linux64() {
       MODE=virtual
       PORT=1003
       VM="REDUCE-pkg-factory-Ubuntu"
+      REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
+      REDUCE_BUILD="/Volumes/DATA/reduce-build"
+      SNAPSHOTS="/Volumes/DATA/snapshots"
       ;;
     *)
       printf "Do not know how to access an x86_64 Linux machine from `uname -n`\n"
@@ -381,11 +410,6 @@ machine_rpi() {
   if test "$MODE" = "none"
   then
     case `uname -n` in
-    math-smreduce)
-      MODE=ssh+ssh
-      HOST1=codemist.dynu.com
-      HOST2=192.168.1.179
-      ;;
     *)
       printf "Do not know how to access a Raspberry Pi from `uname -n`\n"
       MODE=none
@@ -514,7 +538,7 @@ RSYNC_OPTIONS="-rlHpEPtz --delete --force \
 MAC_RSYNC_EXTRA="--rsync-path=/opt/local/bin/rsync"
 
 copy_files() {
-# Usage example : copy_files 'reduce-distribution/macbuild/' 'reduce-build/' '--exclude...'
+# Usage example : copy_files '$REDUCE_DISTRIBUTION/macbuild/' '$REDUCE_BUILD/' '--exclude...'
   if test "$1" = "" || test "$2" = ""
   then
     printf "Internal error\n"
@@ -562,7 +586,7 @@ copy_files() {
 }
 
 execute_in_dir() {
-# Usage example: execute_in_dir 'reduce-build/C' './autogen.sh'
+# Usage example: execute_in_dir '$REDUCE_BUILD/C' './autogen.sh'
   if test "$1" = "" || test "$2" = ""
   then
     printf "Internal error\n"
@@ -614,7 +638,7 @@ execute_in_dir() {
 }
 
 fetch_files() {
-# Usage example: fetch_files 'reduce-build/*.{dmg,bz2}' 'snapshots/'
+# Usage example: fetch_files '$REDUCE_BUILD/*.{dmg,bz2}' '$SNAPSHOTS/'
   if test "$1" = "" || test "$2" = ""
   then
     printf "Internal error\n"

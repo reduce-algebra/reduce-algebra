@@ -49,16 +49,26 @@ hosts_macintosh() {
     HOST1=codemist.dynu.com
     HOST2=192.168.1.8
     ;;
-  math-smreduce | OlderMacBook | acn1macbook)
+  math-smreduce)
+# math-smreduce is a Macintosh, but it needs the file-space used during
+# snapshot builds to be put on a separate volume rather than within the
+# main Reduce tree.
+    MODE=local
+    REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
+    REDUCE_BUILD="/Volumes/DATA/reduce-build"
+    SNAPSHOTS="/Volumes/DATA/snapshots"
+    ;;
+  OlderMacBook | acn1macbook)
 # All these hosts are macintoshes and so the build of a macintosh snapshot
 # can be performed on them directly.
     MODE=local
     ;;
   *)
 # If I have not customised rule for the current machine to access a macintosh
-# I must report failure.
+# I must report failure. However I let this function return normally. Maybe the
+# main snapshot builder script will have information about a suitable build
+# host in it - but if not it will merely not create this flavour of snapshot.
     printf "Do not know how to access a macintosh from `uname -n`\n"
-    exit 1
     ;;
   esac
 }
@@ -74,34 +84,40 @@ hosts_windows() {
     MODE=ssh
     HOST=192.168.1.10
     ;;
-  gauguin | math-smreduce)
-# On these two machines I have virtualbox set up so that a VM called
+  math-smreduce)
+    MODE=virtual
+    PORT=1004
+    VM="REDUCE-pkg-factory-Windows"
+    REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
+    REDUCE_BUILD="/Volumes/DATA/reduce-build"
+    SNAPSHOTS="/Volumes/DATA/snapshots"
+    ;;
+  gauguin)
+# On this machine I have virtualbox set up so that a VM called
 # REDUCE-pkg-factory-windows runs Windows 10 and has the cygwin environment
 # set up so that I can build on it. The VM runs an ssh server and this script
 # sets up port forwarding in virtualbox so that it can be accessed.
-    MODE=virtual
-# I believe that it is not necessary to use a different port number for each
-# virtual machine, because the scripts reset port forwarding in the
-# virtualbox setup, and the virtual machines should only be running one
-# at a time. However I show port specification here in case in some context
-# that is necessary.
-    PORT=1004
-    VM="REDUCE-pkg-factory-Windows"
-    ;;
   *)
     printf "Do not know how to access a windows machine from `uname -n`\n"
-    exit 1
     ;;
   esac
 }
 
 hosts_linux32() {
   case `uname -n` in
-  panamint | gauguin | math-smreduce)
+  panamint | gauguin)
 # More cases of using a virtual machine.
     MODE=virtual
     PORT=1005
     VM="REDUCE-pkg-factory-Ubuntu32"
+    ;;
+  math-smreduce)
+    MODE=virtual
+    PORT=1005
+    VM="REDUCE-pkg-factory-Ubuntu32"
+    REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
+    REDUCE_BUILD="/Volumes/DATA/reduce-build"
+    SNAPSHOTS="/Volumes/DATA/snapshots"
     ;;
   OlderMacBook | acn1macbook | rpi3-32)
 # In this case virtualbox will be run on the host 192.168.1.10 so access
@@ -113,7 +129,6 @@ hosts_linux32() {
     ;;
   *)
     printf "Do not know how to access an i686 Linux machine from `uname -n`\n"
-    exit 1
     ;;
   esac
 }
@@ -124,11 +139,19 @@ hosts_linux64() {
 # As before, use the machine directly.
     MODE=local
     ;;
-  panamint | math-smreduce)
+  panamint)
 # As before a virtual machine running on the current system.
     MODE=virtual
     PORT=1007
     VM="REDUCE-pkg-factory-Ubuntu"
+    ;;
+  math-smreduce)
+    MODE=virtual
+    PORT=1007
+    VM="REDUCE-pkg-factory-Ubuntu"
+    REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
+    REDUCE_BUILD="/Volumes/DATA/reduce-build"
+    SNAPSHOTS="/Volumes/DATA/snapshots"
     ;;
   OlderMacBook | acn1macbook | rpi3-32)
 # As before, a virtual machine running on a remote system.
@@ -139,7 +162,6 @@ hosts_linux64() {
     ;;
   *)
     printf "Do not know how to access an x86_64 Linux machine from `uname -n`\n"
-    exit 1
     ;;
   esac
 }
@@ -167,7 +189,6 @@ hosts_rpi() {
     ;;
   *)
     printf "Do not know how to access a raspberry pi from `uname -n`\n"
-    exit 1
     ;;
   esac
 }
