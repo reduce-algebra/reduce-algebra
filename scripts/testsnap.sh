@@ -64,7 +64,7 @@ printf ">>>>>>>>>>>>>>>>>>>> HERE=$HERE\n"
 # authentication. The ssh link must have been used already so that the
 # system from which the link is initiated is already in the known_hosts file
 # of the remote system. Both those constraints are there so that execution
-# of a remote command doe snot requite any intervention.
+# of a remote command does not requite any intervention.
 # When the remote system is a Virtual machine then after it has been used
 # to build stuff I want to switch it off. About the most safest way I can
 # see to do that is to issue the command "sudo /sbin/shutdown -h now" on it.
@@ -74,7 +74,9 @@ printf ">>>>>>>>>>>>>>>>>>>> HERE=$HERE\n"
 # view for now that this is a VIRTUAL machine and while it trusts its host
 # nobody else needs to trust it (much). A possible alternative is to power off
 # by using the virtualbox "controlvm acpipowerbutton" and ensure that the
-# VM respond to that by closing down gracefully.
+# VM respond to that by closing down gracefully. So in fact I will try both
+# of these and if neither shuts the system down promptly I will kill it
+# crudely.
 
 cd $HERE
 
@@ -82,8 +84,42 @@ cd $HERE
 # as relative then they are reltive to the trunk directory in the Reduce
 # tree that the snapshot builder is run from.
 
+# REDUCE-DISTRIBUTION will hold a clean checkout of Reduce, updated from
+# the master repository (ie Sourceforge). When I update it I will
+# get rid of any files within that directory that are not tracked
+# at Sourceforge. At the time of preparing this script all this fills
+# 1.4 Gbytes, and of that around half is the ".svn" directory that
+# subversion uses to track everything. It is legal to delete this tree
+# between building snapshots, but if you do then the next snapshot build
+# will need to fetch eveything from Sourceforge again. If you leave it in
+# place then when a snapshot is created only updates to this will lead to
+# network traffic. This directory only appears on the host machine that
+# the snapshot builder runs on directly.
+
 REDUCE_DISTRIBUTION="reduce-distribution"
+
+# REDUCE_BUILD is created on each machine or virtual machine that
+# a snapshot is build on and for. Its exact contents will vary depending
+# omn whether the machine concerned is running Windows, Mac OSX, Linux
+# or whatever. $REDUCE_BUILD/C becomes a copy of REDUCE_DISTRIBUTION
+# but without the ".svn" directory. If this is left on the build machine
+# then only updates to it get transmitted when a snapshot is needed.
+# A local copy of Reduce is configured and built within REDUCE_BUILD,
+# and by the end of that its size may be around 2GB. The build files are
+# tidied away at the start of the next build cycle.
+
 REDUCE_BUILD="reduce-build"
+
+# SNAPSHOTS is where built snapshots are deposited. They are put in
+# separate directories for each platform, eg SNAPSHOTS/windows. When new
+# file are uploaded to this directory copies of its previous contents
+# are archived in old$SNAPSHOTS so that they are not lost and to provide
+# an historical record. A full set of snapshots for Windows, Macintosh,
+# both 32 and 64-bit pc-Linux and for a Raspberry Pi use of the order
+# of 630 Mbytes, and so obviously old$SNAPSHOTS can grow in units of
+# this amount. Discarding unwanted files from old$SNAPSHOTS is left as
+# a manual activity.
+
 SNAPSHOTS="snapshots"
 
 prepare() {
@@ -122,7 +158,10 @@ build() {
 
 # First identify the current host machine. One could imagine adding more
 # options here at some stage, but these are the ones I will initially
-# consider building snapshots for or on.
+# consider building snapshots for or on. Given either real or virtual
+# machines for other platforms they could be added here... subject to
+# the creation of scripts that would package up the results in a way that
+# suited the platform concerned.
   case `uname -s` in
   *CYGWIN*)
     local="windows"
@@ -213,17 +252,12 @@ build_windows() {
     return 0
   fi
   start_remote_host
-###
-### I believe that I have not yet got the "--exclude" setting on the following
-### line (and similar ones in a number of other places) right so that I avoid
-### deleting what will later end up in the C directory...
-###
-  copy_files '$REDUCE_DISTRIBUTION/winbuild/'    '$REDUCE_BUILD/'  '--exclude=$REDUCE_DISTRIBUTION/winbuild/C'
-  copy_files '$REDUCE_DISTRIBUTION/'             '$REDUCE_BUILD/C/'
-  execute_in_dir '$REDUCE_BUILD/C'               './autogen.sh'
-  execute_in_dir '$REDUCE_BUILD'                 'touch C.stamp'
-  execute_in_dir '$REDUCE_BUILD'                 'make'
-  fetch_files    '$REDUCE_BUILD/Output/*.*'      '$SNAPSHOTS/windows/'
+  copy_files "$REDUCE_DISTRIBUTION/winbuild/"    "$REDUCE_BUILD/"  "--exclude=C"
+  copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
+  execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "$REDUCE_BUILD"                 "make"
+  fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/"
   stop_remote_host
 }
 
@@ -250,12 +284,12 @@ build_debian() {
     return 0
   fi
   start_remote_host
-  copy_files '$REDUCE_DISTRIBUTION/debianbuild/' '$REDUCE_BUILD/'   '--exclude=$REDUCE_DISTRIBUTION/debianbuild/C'
-  copy_files '$REDUCE_DISTRIBUTION/'             '$REDUCE_BUILD/C/'
-  execute_in_dir '$REDUCE_BUILD/C'               './autogen.sh'
-  execute_in_dir '$REDUCE_BUILD'                 'touch C.stamp'
-  execute_in_dir '$REDUCE_BUILD'                 'make'
-  fetch_files    '$REDUCE_BUILD/*.{deb,rpm,tgz,bz2}'  "$SNAPSHOTS/$1/"
+  copy_files "$REDUCE_DISTRIBUTION/debianbuild/" "$REDUCE_BUILD/"   "--exclude=C"
+  copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
+  execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
+  execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
+  execute_in_dir "$REDUCE_BUILD"                 "make"
+  fetch_files    "$REDUCE_BUILD/*.{deb,rpm,tgz,bz2}"  "$SNAPSHOTS/$1/"
   stop_remote_host
 }
 
@@ -267,13 +301,13 @@ build_macintosh() {
     return 0
   fi
   start_remote_host
-  copy_files '$REDUCE_DISTRIBUTION/macbuild/' '$REDUCE_BUILD/'   '--exclude=$REDUCE_DISTRIBUTION/macbuild/C'
-  copy_files '$REDUCE_DISTRIBUTION/'          '$REDUCE_BUILD/C/'
-  execute_in_dir '$REDUCE_BUILD/C'            './autogen.sh'
-  execute_in_dir '$REDUCE_BUILD'              'make source-archive'
-  execute_in_dir '$REDUCE_BUILD'              'touch C.stamp'
-  execute_in_dir '$REDUCE_BUILD'              'make'
-  fetch_files    '$REDUCE_BUILD/*.{dmg,bz2}'  '$SNAPSHOTS/macintosh'
+  copy_files "$REDUCE_DISTRIBUTION/macbuild/" "$REDUCE_BUILD/"   "--exclude=C"
+  copy_files "$REDUCE_DISTRIBUTION/"          "$REDUCE_BUILD/C/"
+  execute_in_dir "$REDUCE_BUILD/C"            "./autogen.sh"
+  execute_in_dir "$REDUCE_BUILD"              "make source-archive"
+  execute_in_dir "$REDUCE_BUILD"              "touch C.stamp"
+  execute_in_dir "$REDUCE_BUILD"              "make"
+  fetch_files    "$REDUCE_BUILD/*.{dmg,bz2}"  "$SNAPSHOTS/macintosh"
   stop_remote_host
 }
 
@@ -483,13 +517,13 @@ start_remote_host() {
 # Now I express a similar sequence of steps, but with the Virtual Machine
 # being created on a remote host. Note that this means that the port that
 # I select must be available for use on that remote system.
-    printf "ssh $HOST vboxmanage showvminfo --machinereadable $VM\n"
-    if ssh $HOST vboxmanage showvminfo --machinereadable $VM | grep 'VMState="running"'
+    printf "ssh $USER@$HOST vboxmanage showvminfo --machinereadable $VM\n"
+    if ssh $USER@$HOST vboxmanage showvminfo --machinereadable $VM | grep 'VMState="running"'
     then
       stop_remote_host
     fi
-    printf "ssh $HOST vboxmanage modifyvm $VM --natpf1 delete ssh\n"
-    ssh $HOST vboxmanage modifyvm $VM --natpf1 delete ssh 2> /dev/null
+    printf "ssh $USER@$HOST vboxmanage modifyvm $VM --natpf1 delete ssh\n"
+    ssh $USER@$HOST vboxmanage modifyvm $VM --natpf1 delete ssh 2> /dev/null
     while :
     do
       let PORT=RANDOM+10000
@@ -498,10 +532,10 @@ start_remote_host() {
         break
       fi
     done
-    printf "ssh $HOST vboxmanage modifyvm $VM --natpf1 \"ssh,tcp,,$PORT,,22\"\n"
-    ssh $HOST vboxmanage modifyvm $VM --natpf1 "ssh,tcp,,$PORT,,22"
-    printf "ssh $HOST vboxmanage startvm $VM --type headless\n"
-    ssh $HOST vboxmanage startvm $VM --type headless
+    printf "ssh $USER@$HOST vboxmanage modifyvm $VM --natpf1 \"ssh,tcp,,$PORT,,22\"\n"
+    ssh $USER@$HOST vboxmanage modifyvm $VM --natpf1 "ssh,tcp,,$PORT,,22"
+    printf "ssh $USER@$HOST vboxmanage startvm $VM --type headless\n"
+    ssh $USER@$HOST vboxmanage startvm $VM --type headless
     printf "Poll at $USER@$HOST port $PORT\n"
     while :
     do
@@ -550,7 +584,7 @@ RSYNC_OPTIONS="-rlHpEPtz --delete --force \
 MAC_RSYNC_EXTRA="--rsync-path=/opt/local/bin/rsync"
 
 copy_files() {
-# Usage example : copy_files '$REDUCE_DISTRIBUTION/macbuild/' '$REDUCE_BUILD/' '--exclude...'
+# Usage example : copy_files "$REDUCE_DISTRIBUTION/macbuild/" "$REDUCE_BUILD/" "--exclude=C"
   if test "$1" = "" || test "$2" = ""
   then
     printf "Internal error\n"
@@ -598,7 +632,7 @@ copy_files() {
 }
 
 execute_in_dir() {
-# Usage example: execute_in_dir '$REDUCE_BUILD/C' './autogen.sh'
+# Usage example: execute_in_dir "$REDUCE_BUILD/C" "./autogen.sh"
   if test "$1" = "" || test "$2" = ""
   then
     printf "Internal error\n"
@@ -650,7 +684,7 @@ execute_in_dir() {
 }
 
 fetch_files() {
-# Usage example: fetch_files '$REDUCE_BUILD/*.{dmg,bz2}' '$SNAPSHOTS/'
+# Usage example: fetch_files "$REDUCE_BUILD/*.{dmg,bz2}" "$SNAPSHOTS/"
   if test "$1" = "" || test "$2" = ""
   then
     printf "Internal error\n"
@@ -704,10 +738,28 @@ fetch_files() {
 }
 
 stop_remote_host() {
-# If I am using a virtual machine I will close it by using its (virtual)
-# ACPI power button.
+# If I am using a virtual machine I will shut it down.
   case $MODE in
   virtual)
+# If this is closing things down at the end of a build I should know the
+# port number to communicate with it, and I will try sending a command
+# to instruct it to power off. On machines other than Windows that would
+# only work if the current user has superuser authority without needing
+# to quote a password!
+    if "$PORT" != ""
+    then
+      case $TARGET
+      in
+      *windows*)
+        execute_in_dir "$REDUCE_BUILD" "\$WINDIR/SysWOW64/shutdown /s /t 1"
+        ;;
+      *)
+        execute_in_dir "$REDUCE_BUILD" "sudo /sbin/shutdown -h now"
+        ;;
+      esac
+    fi
+# Having tried to ask the machine to power off I will also press its
+# virtual ACPI power button.
     printf "vboxmanage controlvm $VM acpipowerbutton\n"
     vboxmanage controlvm $VM acpipowerbutton
 # In general a virtual machine will not shut down promptly when its power
@@ -715,7 +767,7 @@ stop_remote_host() {
 # may install updates or do other system administrative tasks. So I will
 # wait until vboxmanage confirms to me that the system is actually powered
 # off.
-    for n in `seq 1 30`
+    for n in `seq 1 60`
     do
       sleep 10
       printf "vboxmanage showvminfo --machinereadable $VM\n"
@@ -725,41 +777,24 @@ stop_remote_host() {
       fi
     done
 # If I get here then the polling to see if the machine has stopped has gone
-# on for 5 minutes. I will next see if I can get a command to toe VM to close
-# it down.
-    case $TARGET
-    in
-    *windows*)
-      execute_in_dir "$REDUCE_BUILD" "\$WINDIR/SysWOW64/shutdown /s /t 1"
-      ;;
-    *)
-      execute_in_dir "$REDUCE_BUILD" "sudo /sbin/shutdown -h now"
-      ;;
-    esac
-# Wait another 5 minutes!
-    for n in `seq 1 30`
-    do
-      sleep 10
-      printf "vboxmanage showvminfo --machinereadable $VM\n"
-      if vboxmanage showvminfo --machinereadable $VM | grep 'VMState="poweroff"'
-      then
-        return 0
-      fi
-    done
-# Then give up!
+# on for 10 minutes. If it has taken that long I will just pull the plug.
+    printf "vboxmanage controlvm $VM poweroff\n"
+    vboxmanage controlvm $VM --type poweroff
     ;;
   ssh+virtual)
-    printf "ssh $HOST vboxmanage controlvm $VM acpipowerbutton\n"
-    ssh $HOST vboxmanage controlvm $VM acpipowerbutton
-    while :
+    printf "ssh $USER@$HOST vboxmanage controlvm $VM acpipowerbutton\n"
+    ssh $USER@$HOST vboxmanage controlvm $VM acpipowerbutton
+    for n in `seq 1 60`
     do
       sleep 10
-      printf "ssh $HOST vboxmanage showvminfo --machinereadable $VM\n"
-      if ssh $HOST vboxmanage showvminfo --machinereadable $VM | grep 'VMState="poweroff"'
+      printf "ssh $USER@$HOST vboxmanage showvminfo --machinereadable $VM\n"
+      if ssh $USER@$HOST vboxmanage showvminfo --machinereadable $VM | grep 'VMState="poweroff"'
       then
         break
       fi
     done
+    printf "ssh $USER@HOST vboxmanage controlvm $VM poweroff\n"
+    ssh $USER@$HOST vboxmanage controlvm $VM --type poweroff
     ;;
   esac
 }

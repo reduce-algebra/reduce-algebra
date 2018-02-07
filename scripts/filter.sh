@@ -12,6 +12,7 @@ do
   case $x in
   \'--with-force*\' | \
   \'--with*-autogen*\' | \
+  \'--with*-ccache*\' | \
   \'--with-mingw*\' | \
   \'--with-lto*\' | \
   \'--with-m32*\' | \
