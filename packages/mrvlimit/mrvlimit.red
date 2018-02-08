@@ -61,51 +61,38 @@ off mcd;
 
 symbolic procedure maxi(f,g);
 begin scalar c;
-if(freeof(f,'x)) then return g;
-if(freeof(g,'x)) then return f;
-if(f=g) then return  f else
-<<
-if(null f) then return  g else
-<<
-  if(null g) then return   f
-  else <<
-    if (intersection(f,g) neq '(list)) then return union(f,g)
-      else <<
-        if(evalb('x member f)='true) then return  g
-         else <<
-            if(evalb('x member g)='true) then return  f
-             else  <<
-              if(car f='list and cadr f='list) then % double list
+   if(freeof(f,'x)) then return g;
+   if(freeof(g,'x)) then return f;
+   if(f=g) then return  f
+    else if null f then return g
+    else if null g then return f
+    else if (intersection(f,g) neq '(list)) then return union(f,g)
+    else if (evalb('x member f)='true) then return  g
+    else if (evalb('x member g)='true) then return  f
+    else if eqcar(f,'list) and eqcar(cdr f,'list) then % double list
                             << % only want caddr f to be given to compare
                                       c:=compare(caddr f,cadr g);
                                  %write "c is ", c; write length(c)
                                 return c;
                             >>
-                  else <<
-                          if(car g='list and cadr g='list) then
+    else if eqcar(g,'list) and eqca(cdr g,'list) then
                              <<
                              c:=compare(cadr f,caddr g);
                              %write "c is ", c;
-                                 return c;
-                          >>
+                             return c;
+                             >>
                           else <<
                                  c:=compare(cadr f, cadr g);
                                   %write "c is ", c;
                                   return c;
                                  >>;
-                        >>;
-
+         
               %if(c=cadr f) then return cadr f else <<
               %         if(c=cadr g) then return (cadr g)
               % else return union(cdr f,cdr g);
                                            %   >>;
-                    >>;
-                >>;
-            >>;
-          >>;
- >>;
->>;
-end; % of max
+            
+end; % of maxi
 
  %max
 %-------------------------------------------------------------------------
@@ -132,66 +119,55 @@ load_package assist;
 
 symbolic procedure mrv(li);
 begin
-off mcd;  on factor;
+   off mcd;  on factor;
 
 % The next line doesn't do anything in symbolic mode. Presumably li
 % should be simplified in some way.  However, li is not always an
 % algebraic expression. Sometimes it is a list of one, or a list of a
 % number.
 
-li:=li;
-if(numberp li) then return nil else <<
-if(li='(list)) then return nil else <<
-if(atom li) then return lisp ('list.{li}) else <<
-  if car li eq 'quotient then return nil
-     else if(car li='times) then <<
-               if(atom cadr li and atom caddr li) then
+%li:=li;
+   if(numberp li) then return nil
+    else <<if(li='(list)) then return nil
+    else <<if(atom li) then return lisp ('list.{li})
+    else <<  if car li eq 'quotient then return nil
+    else if(car li='times)
+     then << if(atom cadr li and atom caddr li) then
                      << if(length(cddr li)=1) then
                         return  lisp ('list.maxi1({cadr li}, {caddr li}))
                         else return maxi1({cadr li},mrv(cddr li))
 		     >>
-               else return  maxi1(mrv(cadr li), mrv(cddr li))
-                           >>
-    else <<
-     if(car li='minus) then <<
-          if(atom cadr li) then return 'list.{cadr li} else return
-                mrv(cadr li)
-                             >>
+              else return  maxi1(mrv(cadr li), mrv(cddr li))
+          >>
+    else <<if(car li='minus)
+     then << if(atom cadr li) then return 'list.{cadr li} else return mrv(cadr li) >>
                             %return mrv(append({'plus},cdr li))
-      else <<
-     if(car li='plus) then <<
-   %if(null caddr li) then return mrv(cadr li)
-   if(length cdr li=1) then %only one argument to plus
-      return mrv(cadr li) else <<
-             if(atom cadr li and atom caddr li) then
-               << if(length(cddr li)=1) then return
-                       lisp ('list.maxi1({cadr li},{caddr li}))
-                  else return
-                  lisp ('list.maxi1({cadr li},mrv(append({'plus},cddr li))))
-                >>
-                else <<
-                   if(atom cadr li and pairp caddr li) then
-                  return
-           maxi1('list.{cadr li}, mrv(cddr li)) % here as well
-                else  <<
-         if(pairp cadr li and null caddr li) then return mrv(cadr li) else
-       <<
-         if(pairp cadr li and atom caddr li) then
-             <<
-               if(length(cdr li)>2) then % we have plus with > two args
-return lisp cdr ('list.maxi1(mrv(cadr li),mrv(append({'plus},cddr li)))) %her
- else
-    return lisp cdr ('list.maxi1(mrv(cadr li), mrv(cddr li))) >>
-    else
-<< if(null caddr li) then return mrv(cadr li)
-      else return maxi1(mrv(cadr li), mrv(append({'plus},cddr li))) >>
-             >>
+    else << if(car li='plus)
+     then <<
+      %if(null caddr li) then return mrv(cadr li)
+          if(length cdr li=1) then %only one argument to plus
+                 return mrv(cadr li)
+           else <<if(atom cadr li and atom caddr li)
+            then << if(length(cddr li)=1) then return lisp ('list.maxi1({cadr li},{caddr li}))
+                     else return lisp ('list.maxi1({cadr li},mrv(append({'plus},cddr li))))
+                 >>
+           else << if(atom cadr li and pairp caddr li)
+                     then return maxi1('list.{cadr li}, mrv(cddr li)) % here as well
+           else  <<if(pairp cadr li and null caddr li)
+                     then return mrv(cadr li)
+           else << if(pairp cadr li and atom caddr li)
+                     then << if(length(cdr li)>2) then % we have plus with > two args
+                                return lisp cdr ('list.maxi1(mrv(cadr li),mrv(append({'plus},cddr li)))) %her
+                              else return lisp cdr ('list.maxi1(mrv(cadr li), mrv(cddr li))) 
+                          >>
+           else << if(null caddr li) then return mrv(cadr li)
+           else return maxi1(mrv(cadr li), mrv(append({'plus},cddr li))) >>
                       >>
-                            >>
+                      >>
+                >>
                                  >>
                                       >>
-           else <<
-           if(car li='expt) then <<
+    else <<if(car li='expt) then <<
 	      if cadr li neq 'e
 		 and not (atom cadr li and flagp(cadr li,'constant))
                  and not numberp cadr li
@@ -211,21 +187,21 @@ return lisp cdr ('list.maxi1(mrv(cadr li),mrv(append({'plus},cddr li)))) %her
                           >>
                      >>
                                   >>
-                else << if(car li='log) then
+    else << if(car li='log) then
                         << if(atom cadr li) then return mrv(cadr li) else
                            return mrv(cdr li)
-                         >> else <<
-                       if(car li='sqrt) then return mrv(cdr li) else
+			>>
+              else << if(car li='sqrt) then return mrv(cdr li) else
                         return mrv(car li)
                                   >>
-                      >>
+         >>
                   >>
             >>
      >> % for minus
   >> %for null
  >> % for numberp
               >>;
-off mcd;
+   off mcd;
 end; % of mrv
 
 algebraic;
@@ -241,11 +217,10 @@ symbolic procedure flatten(li);
   makeflat(li,nil);
 
 symbolic procedure makeflat(li,answer);
-  if li=nil then nil
-  else
-    if atom li then li.answer
-    else if (cdr li)=nil then makeflat(car li,answer)
-       else append(makeflat(car li,answer),makeflat(cdr li,answer));
+  if null li then nil
+   else if atom li then li.answer
+   else if null cdr li then makeflat(car li,answer)
+   else append(makeflat(car li,answer),makeflat(cdr li,answer));
 
 algebraic;
 procedure flat(li); lisp(flatten li);
@@ -264,7 +239,7 @@ if(mrv_list='(list)) then rederr "unable to compute mrv set"
     >>;
 
 end;
-% nedd to consider if x belongs to mrv(exp), then follow rest of alg.
+% need to consider if x belongs to mrv(exp), then follow rest of alg.
 algebraic;
 expr procedure move_up(exp,x);
 sub({log(x)=x,x=e^x},exp);
