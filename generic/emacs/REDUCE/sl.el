@@ -4,13 +4,14 @@
 
 ;; This file aims to provide an emulation of most of Standard LISP
 ;; (enough to run REDUCE) as an upper-case LISP (to keep it distinct
-;; from the underlying Emacs Lisp). In particular, READ and FEXPRs are
-;; not implemented, and the only way to input Standard LISP is to use
-;; the Emacs Lisp reader with Emacs Lisp syntax.
+;; from the underlying Emacs Lisp). However, lambda must be kept lower
+;; case.  READ and FEXPRs are not implemented, and the only way to
+;; input Standard LISP is to use the Emacs Lisp reader with Emacs Lisp
+;; syntax.
 
-;; Some functions that map to Emacs Lisp special forms or subrs
-;; (built-in functions) are defined as macros rather than aliases so
-;; that Standard LISP files can be compiled.
+;; Some functions that correspond to Emacs Lisp special forms or subrs
+;; (built-in functions) must be defined as macros rather than aliases,
+;; either to run correctly or so that `boot.el' can be compiled.
 
 ;;; Primitive Data Types
 ;;; ====================
@@ -124,11 +125,12 @@ modified by SET or SETQ."))
 ;;; Elementary Predicates
 ;;; =====================
 
-(defmacro ATOM (u)
+(defmacro ATOM (u)				   ; boot.el does not compile as alias
   "ATOM(U:any):boolean eval, spread
 Returns T if U is not a pair.
 EXPR PROCEDURE ATOM(U);
    NULL PAIRP U;"
+  (declare (debug atom))
   `(atom ,u))
 
 (defalias 'CODEP 'functionp
@@ -649,13 +651,11 @@ is returned."
 		(let ((type (get fname 'SL--FTYPE)))
 		  (if (eq type 'MACRO)
 			  ;; def = (macro lambda (&rest u) (setq u (fname . u)) body-form)
-			  ;;  -->  (MACRO LAMBDA (u) body-form)
-			  `(MACRO LAMBDA ,(cdaddr def) ,@(cddddr def))
+			  ;;  -->  (MACRO lambda (u) body-form)
+			  `(MACRO lambda ,(cdaddr def) ,@(cddddr def))
 			;; def = (lambda (u) body-form) *or* symbol
-			;;  -->  (EXPR LAMBDA (u) body-form) *or* (EXPR . symbol)
-			(if (and (consp def) (eq (car def) 'lambda))
-				`(EXPR LAMBDA ,@(cdr def))
-			  (cons 'EXPR def)))))))
+			;;  -->  (EXPR lambda (u) body-form) *or* (EXPR . symbol)
+			(cons 'EXPR def))))))
 
 (defun PUTD (fname type body)
   "PUTD(FNAME:id, TYPE:ftype, BODY:function):id eval, spread
@@ -677,7 +677,7 @@ the !*COMP global variable is non-NIL."
 	  (error "%s is a non-local variable" fname))
   (if (symbol-function fname)
 	  (message "*** %s redefined" fname))
-  ;; body = (LAMBDA (u) body-form)
+  ;; body = (lambda (u) body-form)
   (fset fname (if (eq type 'MACRO)
 				  (let ((u (caadr body))) ; must be a symbol!
 					`(macro
@@ -747,7 +747,8 @@ If U has been declared GLOBAL or is the name of a defined function,
 T is returned, else NIL is returned."
   (or (get u 'GLOBAL) (symbol-function u)))
 
-(defalias 'SET 'set						; auto fluid not implemented!
+(defalias 'SET 'set
+  ;; Auto fluid not implemented!
   "SET(EXP:id, VALUE:any):any eval, spread
 EXP must be an identifier or a type mismatch error occurs. The
 effect of SET is replacement of the item bound to the identifier
@@ -758,7 +759,8 @@ resulting warning message:
 EXP must not evaluate to T or NIL or an error occurs:
 ***** Cannot change T or NIL")
 
-(defmacro SETQ (variable value)			; auto fluid not implemented!
+(defmacro SETQ (variable value)	   ; boot.el does not compile as alias
+  ;; Auto fluid not implemented!
   "SETQ(VARIABLE:id, VALUE:any):any noeval, nospread
 If VARIABLE is not local or GLOBAL it is by default declared
 FLUID and the warning message:
@@ -769,6 +771,7 @@ error occurs:
 ***** Cannot change T or NIL
 MACRO PROCEDURE SETQ(X);
    LIST('SET, LIST('QUOTE, CADR X), CADDR X);"
+  (declare (debug setq))
   `(setq ,variable ,value))
 
 (defun UNFLUID (idlist)					; really a no-op!
@@ -787,7 +790,6 @@ in interpreted functions are automatically considered fluid."
 ;;; =========================
 
 (eval-when-compile (require 'cl-lib))
-;; (require 'cl-lib)						; for now!
 
 (defalias 'GO 'go
   "GO(LABEL:id) noeval, nospread -- OK in cl-tagbody
@@ -830,10 +832,11 @@ through\".")
 
 (def-edebug-spec PROG ((&rest symbolp) &rest &or symbolp form))
 
-(defmacro PROGN (&rest u)
+(defmacro PROGN (&rest u)				; does not work as alias
   "PROGN([U:any]):any noeval, nospread
 U is a set of expressions which are executed sequentially. The
 value returned is the value of the last expression."
+  (declare (debug progn))
   `(progn ,@u))
 
 (defalias 'PROG2 'prog2
@@ -948,7 +951,7 @@ Returns the upper limit of U if U is a vector, or NIL if it is not."
 ;;; Boolean Functions and Conditionals
 ;;; ==================================
 
-(defmacro AND (&rest u)
+(defmacro AND (&rest u)			   ; boot.el does not compile as alias
   "AND([U:any]):extra-boolean noeval, nospread
 AND evaluates each U until a value of NIL is found or the end of the
 list is encountered. If a non-NIL value is the last value it is returned,
@@ -961,9 +964,10 @@ LOOP: IF NULL CDR U THEN RETURN EVAL CAR U
    U := CDR U;
    GO LOOP
 END;"
+  (declare (debug and))
   `(and ,@u))
 
-(defmacro COND (&rest u)
+(defmacro COND (&rest u)				; does not work as alias
   "COND([U:cond-form]):any noeval, nospread
 The antecedents of all U's are evaluated in order of their
 appearance until a non-NIL value is encountered. The consequent
@@ -975,15 +979,16 @@ cases COND does not have a defined value, but rather an
 effect. If no antecedent is non-NIL the value of COND is NIL. An
 error is detected if a U is improperly formed:
 ***** Improper cond-form as argument of COND"
+  (declare (debug cond))
   `(cond ,@u))
 
-(defalias 'NOT 'null				  ; defined this way in Emacs Lisp
+(defalias 'NOT 'null		   ; not is defined this way in Emacs Lisp
   "NOT(U:any):boolean eval, spread
 If U is NIL, return T else return NIL (same as function NULL).
 EXPR PROCEDURE NOT(U);
    U EQ NIL;")
 
-(defmacro OR (&rest u)
+(defmacro OR (&rest u)			   ; boot.el does not compile as alias
   "OR([U:any]):extra-boolean noeval, nospread
 U is any number of expressions which are evaluated in order of their
 appearance. When one is found to be non-NIL it is returned as the
@@ -995,6 +1000,7 @@ LOOP: IF NULL U THEN RETURN NIL
    U := CDR U;
    GO LOOP
 END;"
+  (declare (debug or))
   `(or ,@u))
 
 
@@ -1382,7 +1388,7 @@ EXPR PROCEDURE SUBST(U, V, W);
 ;;; The Interpreter
 ;;; ===============
 
-(defun APPLY (fn args)
+(defalias 'APPLY 'apply
   "APPLY(FN:{id,function}, ARGS:any-list):any eval, spread
 APPLY returns the value of FN with actual parameters ARGS. The
 actual parameters in ARGS are already in the form required for
@@ -1413,12 +1419,7 @@ BEGIN SCALAR DEFN;
       | of equal length then ERROR(000, \"Number
       | of parameters do not match\"); The value
       | returned is EVAL CADDR FN.
-END;
-
-In ESL, downcase LAMBDA here."
-  (if (and (not (atom fn)) (eq (car fn) 'LAMBDA))
-	  (apply (cons 'lambda (cdr fn)) args)
-	(apply fn args)))
+END;")
 
 (defalias 'EVAL 'eval
   "EVAL(U:any):any eval, spread
@@ -1471,39 +1472,20 @@ EXPR PROCEDURE EXPAND(L,FN);
 	  (car l)
 	(list fn (car l) (EXPAND (cdr l) fn))))
 
-;; Note that defalias doesn't work for FUNCTION and LAMBDA, so...
-(defmacro FUNCTION (form)
+(defalias 'FUNCTION 'function
   "FUNCTION(FN:function):function noeval, nospread
 The function FN is to be passed to another function. If FN is to have
 side effects its free variables must be fluid or global. FUNCTION is
 like QUOTE but its argument may be affected by compilation. We
-do not consider FUNARGs in this report.
+do not consider FUNARGs in this report.")
 
-In ESL, convert (FUNCTION LAMBDA FORM) to (function lambda FORM)
-or, if FORM does not start with LAMBDA, return (function FORM)."
-  (if (and (consp form) (eq (car form) 'LAMBDA))
-	  `(function (lambda ,@(cdr form)))
-	`(function ,form)))
-
-;; I suspect this definition of LAMBDA doesn't work at all and is
-;; probably redundant because LAMBDA doesn't get evaluated; it is
-;; treated as data! I now handle LAMBDA specially in FUNCTION and
-;; APPLY.
-
-;; Also, if this definition were to be used, it would need to spread
-;; the single SLisp LAMBDA argument to list of arguments used by Emacs
-;; Lisp! Having the definition below effective breaks reading
-;; rlisp.red now that I use more macros so that I can compile boot.el!
-
-;; (defmacro LAMBDA (arglist bodyform)
-;;   "Return (lambda ARGLIST BODYFORM)."
-;;   `(lambda ,arglist ,bodyform))
-
-(defalias 'QUOTE 'quote
- "QUOTE(U:any):any noeval, nospread
+(defmacro QUOTE (u)						; does not work as alias
+  "QUOTE(U:any):any noeval, nospread
 Stops evaluation and returns U unevaluated.
 FEXPR PROCEDURE QUOTE(U);
-   CAR U;")
+   CAR U;"
+  (declare (debug quote))
+  `',u)
 
 
 ;;; Input and Output
@@ -1674,7 +1656,7 @@ returns the internal name of the previously selected input file.
 ;; returns the value of !$EOF!$ when the end of the currently
 ;; selected input file is reached.
 
-(defvar sl-marker (make-marker)
+(defvar sl--marker (make-marker)
   "Marker from which the next input should be read.")
 
 (defun sl--char-to-interned-id (c)
@@ -1735,8 +1717,8 @@ Comments delimited by % and end-of-line are not transparent to READCH."
 			  ;; input.  Read a new input string from the minibuffer,
 			  ;; save it and return the first character.
 			  (setq sl--readch-input-string
-					(read-from-minibuffer "Input: "
-										  nil nil nil sl--readch-history)
+					(read-from-minibuffer "REDUCE: "
+										  nil nil nil 'sl--readch-history)
 					sl--readch-input-string-length
 					(length sl--readch-input-string)
 					sl--readch-input-string-index 0))
@@ -1748,21 +1730,22 @@ Comments delimited by % and end-of-line are not transparent to READCH."
 				(setq sl--readch-input-string nil)
 				$EOF$)			   ; for want of something better!
 			(prog1
-				(aref sl--readch-input-string sl--readch-input-string-index)
+				(sl--char-to-interned-id
+				 (aref sl--readch-input-string sl--readch-input-string-index))
 			  (setq sl--readch-input-string-index
 					(1+ sl--readch-input-string-index))
 			  (if (= sl--readch-input-string-index sl--readch-input-string-length)
 				  (setq sl--readch-input-string nil)))))
 	  ;; Read from interaction buffer:
 	  (with-current-buffer "*Standard LISP*"
-		(goto-char sl-marker)
+		(goto-char sl--marker)
 		;; When end of file occurs on the standard input device the
 		;; Standard LISP reader terminates. [NOT YET IMPLEMENTED.]
 		(cond ((eobp) $EOF$)
 			  ((eolp) (forward-line)
-			   (set-marker sl-marker (point)) $EOL$)
-			  (t (let ((c (char-after sl-marker)))
-				   (set-marker sl-marker (1+ sl-marker))
+			   (set-marker sl--marker (point)) $EOL$)
+			  (t (let ((c (char-after sl--marker)))
+				   (set-marker sl--marker (1+ sl--marker))
 				   (sl--char-to-interned-id c))))))))
 
 (defalias 'TERPRI 'terpri
@@ -1818,20 +1801,22 @@ selected output file.
   (interactive)
   (switch-to-buffer (get-buffer-create "*Standard LISP*"))
   (sl-standard-lisp-interaction-mode)
-  (let* (value							  ; value of last sexp
-		 (m (set-marker (make-marker) 1)) ; IO marker
-		 ;; (standard-input m)
-		 (standard-output m)
-		 ;; (read) reads from standard-input, which defaults to t
-		 ;; meaning read from the minibuffer.  Make (READCH) also read
-		 ;; from the minibuffer:
-		 (sl--readch-use-minibuffer t))
+  (goto-char (point-max))  ; in case buffer already exists
+  (let (value			   ; value of last sexp
+		;; Output to the END of the current buffer:
+		(standard-output (set-marker sl--marker (point-max)))
+		;; Make (READCH) read from the minibuffer:
+		(sl--readch-use-minibuffer t))
+	(when (= (buffer-size) 0)
+	  (princ "Standard LISP")
+	  (terpri))
 	(RDS nil) (WRS nil)
-	(princ "Standard LISP") (terpri)
 	(catch 'QUIT
 	  (while t
 		(princ "EVAL: ") (terpri)
-		(setq value (ERRORSET '(eval (read)) t t))
+		;; (read) reads from standard-input, which defaults to t
+		;; meaning read from the minibuffer:
+		(setq value (ERRORSET '(EVAL (read)) t t))
 		(if (not (atom value)) (print (car value)))
 		(terpri)))))
 
@@ -1870,7 +1855,7 @@ Most commands are inherited from `lisp-interaction-mode-map'.")
   (interactive "P")
   (switch-to-buffer (get-buffer-create "*Standard LISP*"))
   (sl-interaction-mode)
-  (let ((standard-output (set-marker sl-marker 1)))
+  (let ((standard-output (set-marker sl--marker 1)))
 	(princ "Standard LISP") (terpri)
 	(terpri) (princ "Eval: "))
   (when rlisp-mode
@@ -1879,17 +1864,17 @@ Most commands are inherited from `lisp-interaction-mode-map'.")
 	(forward-line -1)))
 
 (defun sl-read-eval-print (rlisp-mode)
-  "Read input after `sl-marker', eval it and print the result."
+  "Read input after `sl--marker', eval it and print the result."
   (interactive "P")
-  (let ((standard-input sl-marker)
-		(standard-output sl-marker)
+  (let ((standard-input sl--marker)
+		(standard-output sl--marker)
 		value)
-	(setq value (ERRORSET '(eval (read)) t t))
+	(setq value (ERRORSET '(EVAL (read)) t t))
 	(unless (atom value)
 	  (terpri) (terpri) (princ "====> ") (princ (car value)))
 	(terpri) (terpri) (princ "Eval: ")
 	;; Output does not necessarily advance point, so...
-	(goto-char sl-marker))
+	(goto-char sl--marker))
   (when rlisp-mode
 	(insert "(BEGIN2)\n\n;end;")
 	(forward-line -1)))

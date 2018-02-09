@@ -1,10 +1,11 @@
-;;; bool.el --- ESL (Emacs Standard LISP) version of REDUCE 3.3 "boot.red"
+;;; boot.el --- ESL (Emacs Standard LISP) version of REDUCE 3.3 "boot.red"
 
-;; Edited by FJW to use upper case and Emacs Lisp syntax, i.e. replace
-;; ! used as an escape by \. However, nil and t are retained because
-;; nil at least is required in some contexts rather than NIL, either
-;; by the syntax or in quoted expressions, and the second !  in !!
-;; must be retained.
+;; Edited by FJW to use upper case (except for lambda, nil and t) and
+;; Emacs Lisp syntax, i.e. with ! as an escape replaced by \.  The
+;; lower-case symbols lambda, nil and t are retained because I can't
+;; find any good way to implement LAMBDA as a synonym for lambda, and
+;; NIL cannot be used to represent an empty argument list or in quoted
+;; expressions.  Note that the second ! in !! must be retained.
 
 (require 'sl)
 
@@ -16,6 +17,16 @@
 (defvar CRCHAR\*)
 (defvar \*MODE)
 (defvar FNAME\*)
+
+;; Needed if this file is *not* compiled:
+(cl-eval-when (eval)
+  (setq max-lisp-eval-depth 2000
+		max-specpdl-size 2500))
+
+;; Lowercase LAMBDA -- BOTH properties are necessary:
+(put 'LAMBDA 'QUOTENEWNAM 'lambda)
+(put 'LAMBDA 'NEWNAM 'lambda)
+
 
 ;;;% Standard LISP equivalent of BOOT.RED.
 
@@ -254,7 +265,7 @@ B     (RETURN (CONS 'COND CONDIT))))
       (COND ((ATOM (SETQ X (XREAD1 nil))) (SETQ X (LIST X))))
       (SETQ Y (XREAD nil))
       (COND ((FLAGP (CAR X) 'LOSE) (RETURN nil)))
-      (PUTD (CAR X) 'EXPR (LIST 'LAMBDA (CDR X) Y))
+      (PUTD (CAR X) 'EXPR (LIST 'lambda (CDR X) Y))
       (SETQ FNAME\* nil)
       (RETURN (LIST 'QUOTE (CAR X)))) )
 
