@@ -860,7 +860,7 @@ csl_inplace_cygwin_build ()
     i686-w64-mingw32-strip cyg64
     flip="`pwd`/cyg64.exe "
   fi
-  doconfig="$SHELL $flip $abssrcdir/configure --with-cache $ac_configure_args \
+  doconfig="$SHELL $flip $abssrcdir/configure --config-cache $ac_configure_args \
           CC=\"$flip$CC\" CXX=\"$flip$CXX\" \
           STRIP=\"$flip$STRIP\" RANLIB=\"$flip$RANLIB\" \ 
           $forcer CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
@@ -904,7 +904,7 @@ csl_inplace_nativewin_build ()
   cygextra="$cygextra --with-cygbuild64=$abssrcdir/cslbuild/$dd64"
   AC_MSG_NOTICE([cygextra = $cygextra])
   pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-  doconfig="$SHELL $abssrcdir/configure --with-cache $ac_configure_args \
+  doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
           CC=\"$CC\" CXX=\"$CXX\" \
           CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
           CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
@@ -986,7 +986,7 @@ csl_inplace_build ()
     fi
     AC_MSG_NOTICE([passcc = $passcc])
     pass_build="--with-build=\"$build\" --with-pslbuild=\"$pslbuild\""
-    doconfig="$SHELL $abssrcdir/configure --with-cache $ac_configure_args \
+    doconfig="$SHELL $abssrcdir/configure --config-cache $ac_configure_args \
             CC=\"$CC\" CXX=\"$CXX\" \
             CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
             CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
@@ -1006,7 +1006,7 @@ psl_inplace_build ()
 # This passes down any configure arguments to the PSL-specific configuration
 # but at present I do not expect any to be relevant.
   pass_build="--with-build=\"$build\""
-  eval "$SHELL $abssrcdir/psl/configure --with-cache $ac_configure_args $pass_build"
+  eval "$SHELL $abssrcdir/psl/configure --config-cache $ac_configure_args $pass_build"
 
   AC_MSG_NOTICE([About to configure crlibm])
   builddir=`pwd`
@@ -1026,7 +1026,7 @@ psl_inplace_build ()
   esac
 
   AC_MSG_NOTICE([passcc = $passcc])
-  doconfig="$SHELL $abssrcdir/libraries/crlibm/configure --with-cache $filtered \
+  doconfig="$SHELL $abssrcdir/libraries/crlibm/configure --config-cache $filtered \
         $pass_host \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
@@ -1043,7 +1043,7 @@ psl_inplace_build ()
   AC_MSG_NOTICE([About to configure libedit])
   mkdir -p libedit
   cd libedit
-  doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure --with-cache \
+  doconfig="$SHELL $abssrcdir/libraries/libedit-$LIBEDIT_VERSION/configure --config-cache \
         $nohost \
         CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS\" \
@@ -1065,7 +1065,7 @@ psl_inplace_build ()
   mkdir -p redfront
   cd redfront
 
-  doconfig="$SHELL $abssrcdir/generic/newfront/configure --with-cache $nohost \
+  doconfig="$SHELL $abssrcdir/generic/newfront/configure --config-cache $nohost \
         CC=\"$CC\" CXX=\"$CXX\" \
         CPPFLAGS=\"$CPPFLAGS\" \
         CFLAGS=\"$CFLAGS\" \
@@ -1179,6 +1179,20 @@ then
       printf "#! /bin/sh\nccache $CC \"\$@\"\n" > $d/cachecc.sh
       printf "#! /bin/sh\nccache $CXX \"\$@\"\n" > $d/cachecxx.sh
       chmod +x $d/cachecc.sh $d/cachecxx.sh
+      case $build in
+      *cygwin* | *windows* | *mingw*)
+# Now I want to turn the path into one that is "very" absolute. I need to
+# do this because I will be building both cygwin32 and cygwin64 variants
+# of Reduce, and paths such as "/home/USER/..." are liable to mean different
+# things as between the 32 and 64-bit world. So what I need to end up with
+# may be more like
+#   /cygdrive/C/cygwin64/home/USER/reduce...
+# which will find the same file in both worlds. "cygpath -m" turns a path
+# into one that will start with a drive letter (C:/cygwin64...) and the
+# jolly use of sed should turn that into what I need.
+        d=`cygpath -m "$d" | sed -e 's_^\([a-zA-Z]\):_/cygdrive/\1_'`
+        ;;
+      esac
       CC="$d/cachecc.sh"
       CXX="$d/cachecxx.sh"
       ;;
