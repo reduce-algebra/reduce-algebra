@@ -646,6 +646,13 @@ execute_in_dir() {
 # on my PATH.
     cmd="export PATH=/opt/local/bin:\$PATH; $cmd"
   fi
+  if test "$TARGET" = "windows"
+  then
+# For execution on Windows I seem to need this and if I do not add it then
+# remote executaion of i686-w64-mingw32-gcc seems to get confused as to
+# whether assembly of the generated code should be done in 32 or 64-bit mode.
+    cmd="export PATH=/usr/bin:\$PATH; $cmd"
+  fi
   printf "Mode = $MODE: execute $cmd in directory $dir\n"
   case $MODE in
   local)
