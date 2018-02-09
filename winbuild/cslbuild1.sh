@@ -64,6 +64,16 @@ printf "#! /bin/bash\nccache ${prefix}g++ \"\$@\"\n" > cachecxx.sh
 chmod +x cachecc.sh cachecxx.sh
 
 here1=`pwd`
+# Now I want to turn the path into one that is "very" absolute. I need to
+# do this because I will be building both cygwin32 and cygwin64 variants
+# of Reduce, and paths such as "/home/USER/..." are liable to mean different
+# things as between the 32 and 64-bit world. So what I need to end up with
+# may be more like
+#   /cygdrive/C/cygwin64/home/USER/reduce...
+# which will find the same file in both worlds. "cygpath -m" turns a path
+# into one that will start with a drive letter (C:/cygwin64...) and the
+# jolly use of sed should turn that into what I need.
+here1=`cygpath -m "$here1" | sed -e 's_^\([a-zA-Z]\):_/cygdrive/\1_'`
 CC="$here1/cachecc.sh"
 CXX="$here1/cachecxx.sh"
 
