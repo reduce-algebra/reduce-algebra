@@ -125,7 +125,7 @@ DOT_SNAPSHOTS="$HOME/.snapshots"
 snaploc="$*"
 snaploc=${snaploc##*--rc=}
 snaploc=${snaploc%% *}
-if "$snaploc" != ""
+if test "$snaploc" != ""
 then
   DOT_SNAPSHOTS="$snaploc"
 fi
