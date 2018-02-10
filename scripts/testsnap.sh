@@ -154,8 +154,15 @@ prepare() {
 # the one that rsync has or a bit like "Git clean" I would not have to
 # use odd-looking shell scripting like this!
     svn st | grep '^?' | awk '{$1=""; print $0}' | xargs -I{} rm -rf '{}'
-    svn update | tee $SNAPSHOTS/reduce-update.log
+# I want a log of how the update went put in $SNAPSHOTS, however that might
+# either be an absolute path or it could be one relative to the Reduce
+# trunk directory on the machine coordinating the build. That makes it hard
+# to send stuff there directly, so I first put the log within
+# $REDUCE_DISTRIBUTION and then when I have done a "popd" back to my top
+# leven l0ocation I can move it to where I want it!
+    svn update | tee reduce-update.log
     popd >/dev/null
+    mv $REDUCE_DISTRIBUTION/reduce-update.log $SNAPSHOTS
   else
     printf "Will check out a new $REDUCE_DISTRIBUTION to use.\n"
     svn co svn://svn.code.sf.net/p/reduce-algebra/code/trunk \
