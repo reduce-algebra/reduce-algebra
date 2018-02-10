@@ -37,146 +37,73 @@ The machine names shown are in general the ones reported by "uname -n".
 #
 # More elaborate options are illustrated in what follows:
 
-hosts_macintosh() {
-  case `uname -n` in
-# This is building for the Macintosh. Both panamint and rpi3-32 are
-# machines on a private network where the host with ip address 192.168.1.8
-# is a macintosh that can be used.
-  panamint | rpi3-32)
+case `uname -n` in
+
+#######################################################################
+panamint)
+
+  hosts_macintosh() {
     MODE=ssh
     HOST=192.168.1.8
-    ;;
-  gauguin)
+  }
+
+  hosts_windows() {
+# panamint is a windows computer
+    MODE=local
+  }
+
+  hosts_linux32() {
+# Using a virtual machine.
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Ubuntu32"
+  }
+
+  hosts_linux64() {
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Ubuntu"
+  }
+
+  hosts_rpi() {
+# As before, use a remote machine. If I had DNS set up in a more
+# elaborate way it would become more obvious that this host is "rpi3-32".
+    MODE=ssh
+    HOST=192.168.1.179
+  }
+  ;;
+
+#######################################################################
+gauguin)
+
+  hosts_macintosh() {
 # gauguin does not have a macintosh directly available, but by tunneling
 # via codemist.dynu.com it can gain access to the private macintosh on the
 # local network used above.
     MODE=ssh+ssh
     HOST1=codemist.dynu.com
     HOST2=192.168.1.8
-    ;;
-  math-smreduce)
-# math-smreduce is a Macintosh, but it needs the file-space used during
-# snapshot builds to be put on a separate volume rather than within the
-# main Reduce tree.
-    MODE=local
-    REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
-    REDUCE_BUILD="/Volumes/DATA/reduce-build"
-    SNAPSHOTS="/Volumes/DATA/snapshots"
-    ;;
-  OlderMacBook | acn1macbook)
-# All these hosts are macintoshes and so the build of a macintosh snapshot
-# can be performed on them directly.
-    MODE=local
-    ;;
-  *)
-# If I have not customised rule for the current machine to access a macintosh
-# I must report failure. However I let this function return normally. Maybe the
-# main snapshot builder script will have information about a suitable build
-# host in it - but if not it will merely not create this flavour of snapshot.
-    printf "Do not know how to access a macintosh from `uname -n`\n"
-    ;;
-  esac
-}
+  }
 
-hosts_windows() {
-  case `uname -n` in
-  panamint)
-# panamint is a windows computer
-    MODE=local
-    ;;
-  OlderMacBook | acn1macbook | rpi3-32)
-# From the private network I can access panamint using its private address.
-    MODE=ssh
-    HOST=192.168.1.10
-    ;;
-  math-smreduce)
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Windows"
-    REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
-    REDUCE_BUILD="/Volumes/DATA/reduce-build"
-    SNAPSHOTS="/Volumes/DATA/snapshots"
-    ;;
-  gauguin)
+  hosts_windows() {
 # On this machine I have virtualbox set up so that a VM called
 # REDUCE-pkg-factory-windows runs Windows 10 and has the cygwin environment
 # set up so that I can build on it. The VM runs an ssh server and this script
 # sets up port forwarding in virtualbox so that it can be accessed.
-  *)
-    printf "Do not know how to access a windows machine from `uname -n`\n"
-    ;;
-  esac
-}
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Windows"
+  }
 
-hosts_linux32() {
-  case `uname -n` in
-  panamint | gauguin)
+  hosts_linux32() {
 # More cases of using a virtual machine.
     MODE=virtual
     VM="REDUCE-pkg-factory-Ubuntu32"
-    ;;
-  math-smreduce)
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Ubuntu32"
-    REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
-    REDUCE_BUILD="/Volumes/DATA/reduce-build"
-    SNAPSHOTS="/Volumes/DATA/snapshots"
-    ;;
-  OlderMacBook | acn1macbook | rpi3-32)
-# In this case virtualbox will be run on the host 192.168.1.10 so access
-# to it is somewhat at arm's length.
-    MODE=ssh+virtual
-    HOST=192.168.1.10
-    VM="REDUCE-pkg-factory-Ubuntu32"
-    ;;
-  *)
-    printf "Do not know how to access an i686 Linux machine from `uname -n`\n"
-    ;;
-  esac
-}
+  }
 
-hosts_linux64() {
-  case `uname -n` in
-  gauguin)
+  hosts_linux64() {
 # As before, use the machine directly.
     MODE=local
-    ;;
-  panamint)
-# As before a virtual machine running on the current system.
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Ubuntu"
-    ;;
-  math-smreduce)
-    MODE=virtual
-    VM="REDUCE-pkg-factory-Ubuntu"
-    REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
-    REDUCE_BUILD="/Volumes/DATA/reduce-build"
-    SNAPSHOTS="/Volumes/DATA/snapshots"
-    ;;
-  OlderMacBook | acn1macbook | rpi3-32)
-# As before, a virtual machine running on a remote system.
-    MODE=ssh+virtual
-    HOST=192.168.1.10
-    VM="REDUCE-pkg-factory-Ubuntu"
-    ;;
-  *)
-    printf "Do not know how to access an x86_64 Linux machine from `uname -n`\n"
-    ;;
-  esac
-}
+  }
 
-hosts_rpi() {
-  case `uname -n` in
-  rpi3-32)
-# As before, use the machine directly.
-    MODE=local
-    ;;
-  OlderMacBook | acn1macbook | panamint)
-# As before, use a remote machine. If I had DNS set up in a more
-# elaborate way it would become more obvious that this host is "rpi3-32".
-    MODE=ssh
-    HOST=192.168.1.179
-    ;;
-  gauguin)
+  hosts_rpi() {
 # Another new option - access using ssh via a gateway system. HOST1 is
 # the gateway and HOST2 the system used for the build.
     MODE=ssh+ssh
@@ -184,11 +111,126 @@ hosts_rpi() {
     HOST2=192.168.1.179
 # OR MODE=ssh
 #    HOST=acn1a.trin.private.cam.ac.uk
-    ;;
-  *)
-    printf "Do not know how to access a raspberry pi from `uname -n`\n"
-    ;;
-  esac
-}
+# if I had that machine set up for Reduce building...
+  }
+  ;;
+
+#######################################################################
+math-smreduce.mat.brocku.ca)
+
+# math-smreduce is a Macintosh, but it needs the file-space used during
+# snapshot builds to be put on a separate volume rather than within the
+# main Reduce tree.
+  REDUCE_DISTRIBUTION="/Volumes/DATA/reduce-distribution"
+  REDUCE_BUILD="/Volumes/DATA/reduce-build"
+  SNAPSHOTS="/Volumes/DATA/snapshots"
+
+
+  hosts_macintosh() {
+    MODE=local
+  }
+
+  hosts_windows() {
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Windows"
+  }
+
+hosts_linux32() {
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Ubuntu32"
+  }
+
+hosts_linux64() {
+    MODE=virtual
+    VM="REDUCE-pkg-factory-Ubuntu"
+  }
+
+  hosts_rpi() {
+# Not supported here. It seems tidy to put in a function definition that
+# does nothing just to document that fact. Note that an empty function body
+# is not acceptable to bash, so I put in a return statement.
+    return 0
+  }
+  ;;
+
+#######################################################################
+rpi3-32)
+  hosts_macintosh() {
+    MODE=ssh
+    HOST=192.168.1.8
+  }
+
+  hosts_windows() {
+# From the private network I can access panamint using its private address.
+    MODE=ssh
+    HOST=192.168.1.10
+  }
+
+hosts_linux32() {
+# In this case virtualbox will be run on the host 192.168.1.10 so access
+# to it is somewhat at arm's length.
+    MODE=ssh+virtual
+    HOST=192.168.1.10
+    VM="REDUCE-pkg-factory-Ubuntu32"
+  }
+
+hosts_linux64() {
+# As before, a virtual machine running on a remote system.
+    MODE=ssh+virtual
+    HOST=192.168.1.10
+    VM="REDUCE-pkg-factory-Ubuntu"
+  }
+
+hosts_rpi() {
+# As before, use the machine directly.
+    MODE=local
+  }
+  ;;
+
+#######################################################################
+OlderMacBook | acn1macbook)
+
+  hosts_macintosh() {
+# All these hosts are macintoshes and so the build of a macintosh snapshot
+# can be performed on them directly.
+    MODE=local
+  }
+
+  hosts_windows() {
+# From the private network I can access panamint using its private address.
+    MODE=ssh
+    HOST=192.168.1.10
+  }
+
+  hosts_linux32() {
+# In this case virtualbox will be run on the host 192.168.1.10 so access
+# to it is somewhat at arm's length.
+    MODE=ssh+virtual
+    HOST=192.168.1.10
+    VM="REDUCE-pkg-factory-Ubuntu32"
+  }
+
+  hosts_linux64() {
+# As before, a virtual machine running on a remote system.
+    MODE=ssh+virtual
+    HOST=192.168.1.10
+    VM="REDUCE-pkg-factory-Ubuntu"
+  }
+
+  hosts_rpi() {
+# As before, use a remote machine. If I had DNS set up in a more
+# elaborate way it would become more obvious that this host is "rpi3-32".
+    MODE=ssh
+    HOST=192.168.1.179
+  }
+  ;;
+
+#######################################################################
+*)
+  printf "Current host (`uname -n`) not recognized here\n"
+  ;;
+
+esac
+
 
 # end of .snapshots

@@ -84,6 +84,7 @@ if test "x$2" = "x"
 then
   cygalt=""
 else
+  here=`cygpath -m "$here" | sed -e 's_^\([a-zA-Z]\):_/cygdrive/\1_'`
   cygalt="$here/cygalt.exe"
 fi
 
