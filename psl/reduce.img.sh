@@ -41,12 +41,14 @@ then
   psldir=`cygpath -m "$cpsldir"`
   reduce=`cygpath -m "$creduce"`
   here=`cygpath -m "$chere"`
-  fasl=`cygpath -m "$cfasl"`
+# A few lines down this script goes "fasl=red" which makes this setting
+# less useful.
+# fasl=`cygpath -m "$cfasl"`
 else
   psldir="$cpsldir"
   reduce="$creduce"
   here="$chere"
-  fasl="$cfasl"
+# fasl="$cfasl"
 fi
 
 if test -f psl/64

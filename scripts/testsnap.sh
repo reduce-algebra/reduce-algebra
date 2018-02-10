@@ -43,18 +43,10 @@ case $@ in
   printf "local needs via a $HOME/.snapshots file, and scripts/dot-snapshots\n"
   printf "provides a prototype for such a file and some explanation of what\n"
   printf "needs to be present.\n"
+  printf "An option --rc=FILE uses that file in place of $HOME/.snapshots\n"
   exit
   ;;
 esac
-
-# If you have a file called .snapshots in your home directory then that
-# will be read here to establish machines to be used in the build. See later
-# for details...
-
-if test -f $HOME/.snapshots
-then
-  source $HOME/.snapshots
-fi
 
 printf ">>>>>>>>>>>>>>>>>>>> HERE=$HERE\n"
 
@@ -122,6 +114,27 @@ REDUCE_BUILD="reduce-build"
 
 SNAPSHOTS="snapshots"
 
+# If you have a file called .snapshots in your home directory then that
+# will be read here to establish machines to be used in the build. See later
+# for details...
+# Well if you have "--rc=FILE" somewhere on the command line that can specify
+# and alternative location for a configuration file.
+
+DOT_SNAPSHOTS="$HOME/.snapshots"
+
+snaploc="%*"
+snaploc=$(snaploc##*--rc=}
+snaploc=${snaploc%% *}
+if "$snaploc" != ""
+then
+  DOT_SNAPSHOTS="$snaploc"
+fi
+
+if test -f $DOT_SNAPSHOTS
+then
+  source $DOT_SNAPSHOTS
+fi
+
 prepare() {
 # Ensure that there is a clean check-out of Reduce. If there is a directory
 # called "$REDUCE_DISTRIBUTION" expect it to be a subversion checkout. Use
@@ -130,6 +143,7 @@ prepare() {
 # repository. If this directory does not exist create it by checking out
 # a copy from the central site.
 
+  mkdir -p $SNAPSHOTS
   if test -d $REDUCE_DISTRIBUTION
   then
     printf "Will update and use existing $REDUCE_DISTRIBUTION file-set.\n"
@@ -140,12 +154,12 @@ prepare() {
 # the one that rsync has or a bit like "Git clean" I would not have to
 # use odd-looking shell scripting like this!
     svn st | grep '^?' | awk '{$1=""; print $0}' | xargs -I{} rm -rf '{}'
-    svn update
+    svn update | tee $SNAPSHOTS/reduce-update.log
     popd >/dev/null
   else
     printf "Will check out a new $REDUCE_DISTRIBUTION to use.\n"
     svn co svn://svn.code.sf.net/p/reduce-algebra/code/trunk \
-           $REDUCE_DISTRIBUTION > reduce-checkout.log
+           $REDUCE_DISTRIBUTION > $SNAPSHOTS/reduce-checkout.log
   fi
 }
 
@@ -198,7 +212,7 @@ build() {
   then
     ARGS="macintosh windows linux32 linux64 rpi"
   else
-# Here (and in general through thsi script) I am going to assume that
+# Here (and in general through this script) I am going to assume that
 # file-paths, machine-name and script arguments do not contain embedded
 # whitespace, and so I do not need to be especially careful about quotation
 # when expaning shell parameters.
@@ -223,6 +237,8 @@ build() {
       else
         targets="$a $targets"
       fi
+      ;;
+    --rc=*)
       ;;
     *)
       printf "\n### Option '$a' not recognized. Stopping.\n"
