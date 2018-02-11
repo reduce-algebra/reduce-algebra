@@ -88,6 +88,9 @@ cd $HERE
 # network traffic. This directory only appears on the host machine that
 # the snapshot builder runs on directly.
 
+# The directory settings here can be overridden in your $HOME/.snapshots file
+# or a file specified via --rc=FILE.
+
 REDUCE_DISTRIBUTION="reduce-distribution"
 
 # REDUCE_BUILD is created on each machine or virtual machine that
@@ -105,11 +108,11 @@ REDUCE_BUILD="reduce-build"
 # SNAPSHOTS is where built snapshots are deposited. They are put in
 # separate directories for each platform, eg SNAPSHOTS/windows. When new
 # file are uploaded to this directory copies of its previous contents
-# are archived in old$SNAPSHOTS so that they are not lost and to provide
+# are archived in $SNAPSHOTS/old so that they are not lost and to provide
 # an historical record. A full set of snapshots for Windows, Macintosh,
 # both 32 and 64-bit pc-Linux and for a Raspberry Pi use of the order
-# of 630 Mbytes, and so obviously old$SNAPSHOTS can grow in units of
-# this amount. Discarding unwanted files from old$SNAPSHOTS is left as
+# of 630 Mbytes, and so obviously $SNAPSHOTS/old can grow in units of
+# this amount. Discarding unwanted files from $SNAPSHOTS/old is left as
 # a manual activity.
 
 SNAPSHOTS="snapshots"
@@ -170,7 +173,26 @@ prepare() {
   fi
 }
 
+add_target() {
+  if test "$1" = "$local"
+  then
+    targets="$targets $1"
+  else
+    targets="$1 $targets"
+  fi
+}
 
+remove_target() {
+  ot="$targets"
+  targets=""
+  for t in $ot
+  do
+    if test "$t" != "$1"
+    then
+      targets="$targets $t"
+    fi
+  done
+}
 
 build() {
 # I will allow command-line options to indicate the collection
@@ -213,11 +235,33 @@ build() {
     ;;
   esac
 
-# If no arguments are given I will default by building a  full set of
-# snapshots.
-  if test "$#" = "0"
+# If no positive arguments are given I will default by building a full
+# set of snapshots.
+  full="yes"
+  for a in $ARGS
+  do
+    case "$a" in
+    windows | \
+    linux32 | \
+    linux64 | \
+    rpi     | \
+    macintosh)
+      full="no"
+      ;;
+    esac
+  done
+# The idea behind this is that one can provide no arguments at all and
+# a complete set of snapshots will be built. you can provide one or more
+# platform names and then just those snapshots will be built. Or
+# you can use a platform name prefixed with a "-" to disable that one.
+# so:
+#   no arguments, or just a --rc=FILE one:   everything
+#   linux64 rpi:                             just those 2 platforms
+#   -macintosh:                              everything except macintosh
+#
+  if test "$full" = "yes"
   then
-    ARGS="macintosh windows linux32 linux64 rpi"
+    ARGS="macintosh windows linux32 linux64 rpi $@"
   else
 # Here (and in general through this script) I am going to assume that
 # file-paths, machine-name and script arguments do not contain embedded
@@ -238,12 +282,14 @@ build() {
     linux64 | \
     rpi     | \
     macintosh)
-      if test "$a" = "$local"
-      then
-        targets="$targets $a"
-      else
-        targets="$a $targets"
-      fi
+      add_target "$a"
+      ;;
+    -windows | \
+    -linux32 | \
+    -linux64 | \
+    -rpi     | \
+    -macintosh)
+      remove_target "${a#-}"
       ;;
     --rc=*)
       ;;
@@ -280,7 +326,7 @@ build_windows() {
   execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "$REDUCE_BUILD"                 "make"
-  fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/"
+  fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows/"
   stop_remote_host
 }
 
@@ -312,7 +358,7 @@ build_debian() {
   execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "$REDUCE_BUILD"                 "make"
-  fetch_files    "$REDUCE_BUILD/*.{deb,rpm,tgz,bz2}"  "$SNAPSHOTS/$1/"
+  fetch_files    "$REDUCE_BUILD/*.{deb,rpm,tgz,bz2}"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1/"
   stop_remote_host
 }
 
@@ -330,7 +376,7 @@ build_macintosh() {
   execute_in_dir "$REDUCE_BUILD"              "make source-archive"
   execute_in_dir "$REDUCE_BUILD"              "touch C.stamp"
   execute_in_dir "$REDUCE_BUILD"              "make"
-  fetch_files    "$REDUCE_BUILD/*.{dmg,bz2}"  "$SNAPSHOTS/macintosh"
+  fetch_files    "$REDUCE_BUILD/*.{dmg,bz2}"  "$SNAPSHOTS/macintosh" "$SNAPSHOTS/old/macintosh"
   stop_remote_host
 }
 
@@ -714,24 +760,34 @@ execute_in_dir() {
 }
 
 fetch_files() {
-# Usage example: fetch_files "$REDUCE_BUILD/*.{dmg,bz2}" "$SNAPSHOTS/"
-  if test "$1" = "" || test "$2" = ""
+# Usage example: fetch_files "$REDUCE_BUILD/*.{dmg,bz2}" "$SNAPSHOTS/linux32" "$SNAPSHOTS/old/linux32"
+  if test "$1" = "" || test "$2" = "" || test "$3" = ""
   then
     printf "Internal error\n"
     exit 1
   fi
   src="$1"
   dest="$2"
-  mkdir -p $dest
+  backup="$3"
 # I will move any previous snapshots for this architecture to somewhere
-# else.
-  mkdir -p old$dest
-  printf "cp -r ${dest}* old$dest\n"
-  cp -r ${dest}* old$dest
+# else, specifically to a directory "old" in the place where snapshots are
+# collected. At one stage I had copied the files here and I expected that
+# rsync would delete the old ones for me, but when I copy named files using
+# rsync ones not mentioned are not purged. I had also tried using
+# a directory called old$dest (eg oldsnapshots) but that would not be good
+# if the user had configured things to put built snapshots in a directory
+# with a fully rooted path. So now the invocation of this function specifies
+# the backup directory explicitly.
+  mkdir -p $dest
+  mkdir -p $backup
+  printf "mv -r ${dest}* $backup\n"
+  mv -r ${dest}* $backup
 # This function is perhaps more delicate than others, because the source
 # argument may be a list of files using wildcards. The wildcards must be
-# expanded on the remote machine not locally. I will delete any old snapshots
-# for this target as I copy the new ones across.
+# expanded on the remote machine not locally. The --delete option here
+# turns out not to do as much as I had hoped by way of tidying up the
+# destination directory, but all is well - I just emptied it by moving files
+# from there to the backup location.
   if test "$TARGET" = "macintosh"
   then
     RSO="$RSYNC_OPTIONS --delete $MAC_RSYNC_EXTRA"
