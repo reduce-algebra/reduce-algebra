@@ -332,7 +332,7 @@ build_windows() {
   execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "$REDUCE_BUILD"                 "make"
-  fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows/"
+  fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   stop_remote_host
 }
 
@@ -364,7 +364,7 @@ build_debian() {
   execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
   execute_in_dir "$REDUCE_BUILD"                 "make"
-  fetch_files    "$REDUCE_BUILD/*.{deb,rpm,tgz,bz2}"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1/"
+  fetch_files    "$REDUCE_BUILD/*.{deb,rpm,tgz,bz2}"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
   stop_remote_host
 }
 
@@ -786,8 +786,8 @@ fetch_files() {
 # the backup directory explicitly.
   mkdir -p $dest
   mkdir -p $backup
-  printf "mv -r ${dest}* $backup\n"
-  mv -r ${dest}* $backup
+  printf "mv ${dest}* $backup\n"
+  mv ${dest}* $backup
 # This function is perhaps more delicate than others, because the source
 # argument may be a list of files using wildcards. The wildcards must be
 # expanded on the remote machine not locally. The --delete option here
