@@ -796,6 +796,10 @@ defautoload(smt, smt, expr, 0);
 operator smt_mainloop;
 defautoload(smt_mainloop, smt, expr, 0);
 
+% mrvlimit
+symbolic operator mrv_limit;
+defautoload(mrv_limit, mrvlimit, expr, 3);
+
 endmodule;
 
 end;
