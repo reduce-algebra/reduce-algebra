@@ -125,13 +125,19 @@ SNAPSHOTS="snapshots"
 
 DOT_SNAPSHOTS="$HOME/.snapshots"
 
-snaploc="$*"
-snaploc=${snaploc##*--rc=}
-snaploc=${snaploc%% *}
-if test "$snaploc" != ""
-then
-  DOT_SNAPSHOTS="$snaploc"
-fi
+case "$*" in
+*--rc=*)
+  snaploc="$*"
+  snaploc=${snaploc##*--rc=}
+  snaploc=${snaploc%% *}
+  if test "$snaploc" != ""
+  then
+    DOT_SNAPSHOTS="$snaploc"
+  fi
+  ;;
+esac
+
+printf "Will read profile from $DOT_SNAPSHOTS\n"
 
 if test -f $DOT_SNAPSHOTS
 then
@@ -238,7 +244,7 @@ build() {
 # If no positive arguments are given I will default by building a full
 # set of snapshots.
   full="yes"
-  for a in $ARGS
+  for a in $*
   do
     case "$a" in
     windows | \
@@ -261,13 +267,13 @@ build() {
 #
   if test "$full" = "yes"
   then
-    ARGS="macintosh windows linux32 linux64 rpi $@"
+    ARGS="macintosh windows linux32 linux64 rpi $*"
   else
 # Here (and in general through this script) I am going to assume that
 # file-paths, machine-name and script arguments do not contain embedded
 # whitespace, and so I do not need to be especially careful about quotation
-# when expaning shell parameters.
-    ARGS="$@"
+# when expanding shell parameters.
+    ARGS="$*"
   fi
 
 # If there are arguments I check that each is a recognized system name and
