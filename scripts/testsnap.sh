@@ -838,7 +838,7 @@ stop_remote_host() {
 # to instruct it to power off. On machines other than Windows that would
 # only work if the current user has superuser authority without needing
 # to quote a password!
-    if "$PORT" != ""
+    if test "$PORT" != ""
     then
       case $TARGET
       in
