@@ -871,7 +871,7 @@ stop_remote_host() {
 # If I get here then the polling to see if the machine has stopped has gone
 # on for 10 minutes. If it has taken that long I will just pull the plug.
     printf "vboxmanage controlvm $VM poweroff\n"
-    vboxmanage controlvm $VM --type poweroff
+    vboxmanage controlvm $VM poweroff
     ;;
   ssh+virtual)
     printf "ssh $USER@$HOST vboxmanage controlvm $VM acpipowerbutton\n"
@@ -886,7 +886,7 @@ stop_remote_host() {
       fi
     done
     printf "ssh $USER@HOST vboxmanage controlvm $VM poweroff\n"
-    ssh $USER@$HOST vboxmanage controlvm $VM --type poweroff
+    ssh $USER@$HOST vboxmanage controlvm $VM poweroff
     ;;
   esac
 }
