@@ -17,18 +17,18 @@ all:	update-changelog reduce-packages
 
 update-changelog:
 	if head -1 $(CHANGELOG) | grep $(SNAPSHOTDATE) >/dev/null ; then : ; \
-        else  \
+	else  \
 	  ( echo "reduce ("$(SNAPSHOTDATE)") unstable; urgency=low" ; \
-            echo ; \
-            if test "$(REVISION)" = ""; then echo "  * New Snapshot." ; \
-            else echo "  * New Snapshot. Revision $(REVISION)." ; \
-            echo ; \
+	    echo ; \
+	    if test "$(REVISION)" = ""; then echo "  * New Snapshot." ; \
+	    else echo "  * New Snapshot. Revision $(REVISION)." ; \
+	    echo ; \
 	    echo " -- REDUCE Developers <reduce-algebra-developers@lists.sourceforge.net> " $(NOW) ;\
 	    echo ) > $(CHANGELOG).tmp ; \
-          cat $(CHANGELOG) >> $(CHANGELOG).tmp ; \
-          mv $(CHANGELOG).tmp $(CHANGELOG); \
-        fi
- 
+	  cat $(CHANGELOG) >> $(CHANGELOG).tmp ; \
+	  mv $(CHANGELOG).tmp $(CHANGELOG); \
+	fi
+
 
 $(BUILDTOPDIR).stamp:
 	rm -rf $(BUILDTOPDIR)
@@ -45,17 +45,17 @@ debpackages:
 rpmpackages:
 	for f in reduce-*_$(SNAPSHOT)_*.deb ; \
 	  do \
-             msg=`fakeroot alien -k -r -g $${f}` ; \
+	     msg=`fakeroot alien -k -r -g $${f}` ; \
 	     msg=$${msg#Directory } ; dir=$${msg% prepared*} ; \
 	     arch=$${f##*_} ; arch=$${arch%.deb} ; rpmarch=`echo $${arch} | sed -e 's/all/noarch/' -e 's/amd64/x86_64/'` ; \
-             pkg=$${f%.deb} ; \
-             (cd $${dir} ; \
+	     pkg=$${f%.deb} ; \
+	     (cd $${dir} ; \
 	      tar -c -z -f ../$${pkg}.tgz --exclude='*.spec' . ; \
 	      sed -i -e '/^%dir "\(\/\|\/usr\/\|\/usr\/bin\/\|\/usr\/lib\/\|\/usr\/share\/\|\/usr\/share\/doc\/\|\/etc\/\)"/d' *.spec ; \
 	      rpmbuild -bb --buildroot=`pwd` --target=$${rpmarch} *.spec >/tmp/$${dir}.log 2>&1 ; \
-              test -n "$?" && echo Build of $${dir} failed: $?, log file follows: && cat /tmp/$${dir}.log ; \
+	      test -n "$?" && echo Build of $${dir} failed: $?, log file follows: && cat /tmp/$${dir}.log ; \
 	      echo rm -f /tmp/$${dir}.log ; \
-             ) ; \
+	     ) ; \
 	  done
 
 TARDEST=/tmp/reduce-snapshot_$(SNAPSHOT)_$(MACHINE)
