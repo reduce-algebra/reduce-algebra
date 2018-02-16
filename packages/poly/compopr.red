@@ -200,14 +200,14 @@ symbolic procedure realvaluedp u;
    % True if the true prefix kernel form u is explicitly or implicitly
    % real-valued.
    if atom u then numberp u or flagp(u, 'realvalued)
-   else begin scalar caru; % cnd
+   else begin scalar caru, cnd;
      return
       flagp((caru := car u), 'alwaysrealvalued)
          % real-valued for all possible argument values
       or (flagp(caru, 'realvalued) and realvaluedlist cdr u)
          % real-valued function if arguments are real-valued,
          % an important common special case of condrealvalued.
-%%      or ((cnd := get(caru, 'condrealvalued)) and apply(cnd, cdr u))
+      or ((cnd := get(caru, 'condrealvalued)) and apply(cnd, cdr u))
          % real-valued function if arguments satisfy conditions
          % that depend on the function
       or caru eq '!:rd!:;  % rounded number - least likely?
@@ -246,6 +246,17 @@ flag('(exp cbrt hypot sin cos tan csc sec cot sind cosd tand cscd secd
        cotd sinh cosh tanh csch sech coth atan atand atan2 atan2d acot
        acotd asinh acsch factorial),
      'realvalued);
+
+symbolic procedure expt!-realvalued(base,expo);
+   % returns t if (expt base expo) is realvalued
+   % in general this is true iff impart(expo*log(base)) is an integer multiple of pi
+   % however, this is difficult to check
+   fixp expo and realvaluedp base;
+%      or realvaluedp expo and realvaluedp {'log,base};
+%      	 or ((denr r = 1 and evenp numr r)
+%	    where r := simp!* {'quotient,{'times,expo,{'log,base}},'pi});
+
+put('expt,'condrealvalued,'expt!-realvalued);
 
 % Additional such variables and functions can be declared by the user
 % with the REALVALUED command defined above.
