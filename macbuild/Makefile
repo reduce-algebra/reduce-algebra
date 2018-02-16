@@ -1,6 +1,10 @@
 # Makefile for getting ready to make Macintosh installer package
 
+ifeq ($(REVISION),)
 SNAPSHOT=$(shell LANG=C date "+%Y-%m-%d")
+else
+SNAPSHOT=$(REVISION)
+endif
 BUILDTOPDIR=C
 REVISION=HEAD
 
@@ -71,7 +75,7 @@ package-mac:	$(BUILDTOPDIR).stamp csl.stamp psl.stamp docs.stamp
 # The CSL components will be in the form of application bundles. To run from
 # the command line you "just" need to put reduce.app/Contents/MacOS on
 # your PATH.
-	./copyfiles.sh "$(BUILDTOPDIR)"
+	./copyfiles.sh "$(BUILDTOPDIR)" "$(SNAPSHOT)"
 # At present the PSL material is a mere dump from the pslbuild directory.
 # I guess that transcribing the redpsl script into there and arranging
 # that it detected its own path when run and then set up the various

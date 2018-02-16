@@ -27,6 +27,14 @@ rev=`$here/revision.sh`
 # I will predict that the revision after this checkin increments by 1!
 rev=$(( $rev + 1 ))
 
+# I will try to keep a revision history linking dates to revision numbers.
+
+touch revision_history.txt
+printf "Revision $rev : date `date +%Y-%m-%d`\n" > revision_history.tmp
+cat revision_history.txt >> revision_history.tmp
+mv revision_history.txt revision_history.old
+mv revision_history.tmp revision_history.txt
+
 # I will update version.h is cslbase if my checkin is from a directory
 # that contains it. An effect will be that any checkin from either the
 # PSL part of the tree or of the packages directory will not update
@@ -41,7 +49,7 @@ then
   mv version.tmp $here/../csl/cslbase/version.h
 fi
 # I will update the Reduce-based record of revision if the checkin
-# either includes support/revision.red or is in some lewer-level
+# either includes support/revision.red or is in some lower-level
 # part of the packages directory.
 newrevision=""
 if test -f trunk/packages/support/revision.red || \
@@ -74,13 +82,17 @@ do
   mv /tmp/work /tmp/svnfiles
 done
 
-tmp="svn ci $newrevisionx"
+tmp="svn ci $newrevision"
 for x in `cat /tmp/svnfiles`
 do
   tmp="$tmp $x"
 done
 echo $tmp
-$tmp
+if ! $tmp
+then
+  mv revision_history.old revision_history.txt
+  printf "Reverted revision_history.txt\n"
+fi
 
 # I strongly suggest use of "scripts/status.sh" or perhaps just "svn status"
 # after using this to commit changes so as to review whether more things

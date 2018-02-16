@@ -170,13 +170,20 @@ prepare() {
 # $REDUCE_DISTRIBUTION and then when I have done a "popd" back to my top
 # leven l0ocation I can move it to where I want it!
     svn update | tee reduce-update.log
+    REVISION=`svnversion`
     popd >/dev/null
     mv $REDUCE_DISTRIBUTION/reduce-update.log $SNAPSHOTS
   else
     printf "Will check out a new $REDUCE_DISTRIBUTION to use.\n"
     svn co svn://svn.code.sf.net/p/reduce-algebra/code/trunk \
            $REDUCE_DISTRIBUTION > $SNAPSHOTS/reduce-checkout.log
+    pushd $REDUCE_DISTRIBUTION >/dev/null
+    REVISION=`svnversion`
+    popd >/dev/null
+# REVISION will be the subversion revision of the copy that I will make the
+# snapshot of.
   fi
+  
 }
 
 add_target() {
@@ -331,7 +338,7 @@ build_windows() {
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
   execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "$REDUCE_BUILD"                 "make"
+  execute_in_dir "$REDUCE_BUILD"                 "make REVISON=$REVISION"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   stop_remote_host
 }
@@ -363,7 +370,7 @@ build_debian() {
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
   execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "$REDUCE_BUILD"                 "make"
+  execute_in_dir "$REDUCE_BUILD"                 "make REVISION=$REVISION"
   fetch_files    "$REDUCE_BUILD/*.{deb,rpm,tgz,bz2}"  "$SNAPSHOTS/$1/" "$SNAPSHOTS/old/$1"
   stop_remote_host
 }
@@ -381,7 +388,7 @@ build_macintosh() {
   execute_in_dir "$REDUCE_BUILD/C"            "./autogen.sh"
   execute_in_dir "$REDUCE_BUILD"              "make source-archive"
   execute_in_dir "$REDUCE_BUILD"              "touch C.stamp"
-  execute_in_dir "$REDUCE_BUILD"              "make"
+  execute_in_dir "$REDUCE_BUILD"              "make REVISION=$REVISION"
   fetch_files    "$REDUCE_BUILD/*.{dmg,bz2}"  "$SNAPSHOTS/macintosh" "$SNAPSHOTS/old/macintosh"
   stop_remote_host
 }

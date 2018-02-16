@@ -1,6 +1,11 @@
 # Makefile for debianbuild
 
-SNAPSHOT=$(shell LANG=C date "+%Y-%m-%d")
+SNAPSHOTDATE=$(shell LANG=C date "+%Y-%m-%d")
+ifeq($(REVISION),)
+SNAPSHOT=$(SNAPSHOTDATE}
+else
+SNAPSHOT=$(REVISION)
+endif
 MACHINE=$(shell uname -m)
 NOW=$(shell LANG=C date "+%a, %d %b %Y %T %z")
 CHANGELOG=reduce/debian/changelog
@@ -11,11 +16,13 @@ BUILD=$(shell $(BUILDTOPDIR)/scripts/findhost.sh $(shell $(BUILDTOPDIR)/config.g
 all:	update-changelog reduce-packages
 
 update-changelog:
-	if head -1 $(CHANGELOG) | grep $(SNAPSHOT) >/dev/null ; then : ; \
+	if head -1 $(CHANGELOG) | grep $(SNAPSHOTDATE) >/dev/null ; then : ; \
         else  \
-	  ( echo "reduce ("$(SNAPSHOT)") unstable; urgency=low" ; \
+	  ( echo "reduce ("$(SNAPSHOTDATE)") unstable; urgency=low" ; \
             echo ; \
-            echo "  * New Snapshot." ; echo ; \
+            if test "$(REVISION)" = ""; then echo "  * New Snapshot." ; \
+            else echo "  * New Snapshot. Revision $(REVISION)." ; \
+            echo ; \
 	    echo " -- REDUCE Developers <reduce-algebra-developers@lists.sourceforge.net> " $(NOW) ;\
 	    echo ) > $(CHANGELOG).tmp ; \
           cat $(CHANGELOG) >> $(CHANGELOG).tmp ; \

@@ -1,6 +1,10 @@
 # Makefile for getting ready to make Windows installer package
 
+ifeq ($(REVISION),)
 SNAPSHOT=$(shell LANG=C date "+%Y-%m-%d")
+else
+SNAPSHOT=$(REVISION)
+endif
 BUILDTOPDIR=C
 REVISION=HEAD
 
