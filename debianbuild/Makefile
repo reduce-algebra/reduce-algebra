@@ -1,7 +1,7 @@
 # Makefile for debianbuild
 
 SNAPSHOTDATE=$(shell LANG=C date "+%Y-%m-%d")
-ifeq($(REVISION),)
+ifeq ($(REVISION),)
 SNAPSHOT=$(SNAPSHOTDATE)
 else
 SNAPSHOT=$(REVISION)
