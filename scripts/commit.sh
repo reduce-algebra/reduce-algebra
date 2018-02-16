@@ -29,11 +29,11 @@ rev=$(( $rev + 1 ))
 
 # I will try to keep a revision history linking dates to revision numbers.
 
-touch revision_history.txt
-printf "Revision $rev : date `date +%Y-%m-%d`\n" > revision_history.tmp
-cat revision_history.txt >> revision_history.tmp
-mv revision_history.txt revision_history.old
-mv revision_history.tmp revision_history.txt
+touch $here/../revision_history.txt
+printf "Revision $rev : date `date +%Y-%m-%d`\n" > $here/../revision_history.tmp
+cat $here/../revision_history.txt >> $here/../revision_history.tmp
+mv $here/../revision_history.txt $here/../revision_history.old
+mv $here/../revision_history.tmp $here/../revision_history.txt
 
 # I will update version.h is cslbase if my checkin is from a directory
 # that contains it. An effect will be that any checkin from either the
@@ -73,7 +73,7 @@ cut -b 9- < /tmp/svndiffs > /tmp/svnfiles
 gen="aclocal.m4 compile config.guess config.sub configure depcomp Makefile.in \
   install-sh ltmain.sh missing test-driver config.h.in mdate-sh mkinstalldirs \
   py-compile texinfo.tex ylwrap ar-lib libtool.m4 ltoptions.m4 \
-  ltsugar.m4 ltversion.m4 lt~obsolete.m4"
+  ltsugar.m4 ltversion.m4 lt~obsolete.m4 revision_history.txt"
 for x in $gen
 do
 # printf "Getting rid of %s\n" "$x"
@@ -81,6 +81,7 @@ do
     grep -v "^$x\$" > /tmp/work
   mv /tmp/work /tmp/svnfiles
 done
+printf " $here/../revision_history.txt " >> /tmp/svnfiles
 
 tmp="svn ci $newrevision"
 for x in `cat /tmp/svnfiles`
@@ -90,7 +91,7 @@ done
 echo $tmp
 if ! $tmp
 then
-  mv revision_history.old revision_history.txt
+  mv $here/../revision_history.old $here/../revision_history.txt
   printf "Reverted revision_history.txt\n"
 fi
 
