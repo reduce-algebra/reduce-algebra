@@ -23,10 +23,14 @@
   (setq max-lisp-eval-depth 2000
 		max-specpdl-size 2500))
 
-;; Lowercase LAMBDA -- BOTH properties are necessary:
+;; Lowercase LAMBDA, NIL and T in REDUCE source code -- BOTH
+;; properties are necessary, at least for LAMBDA and T:
 (put 'LAMBDA 'QUOTENEWNAM 'lambda)
 (put 'LAMBDA 'NEWNAM 'lambda)
-
+(put 'NIL 'QUOTENEWNAM nil)
+(put 'NIL 'NEWNAM nil)
+(put 'T 'QUOTENEWNAM t)
+(put 'T 'NEWNAM t)
 
 ;;;% Standard LISP equivalent of BOOT.RED.
 

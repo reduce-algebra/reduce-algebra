@@ -55,7 +55,7 @@
 ;; Defined early to keep the Emacs Lisp compiler happy. This file
 ;; should be compiled!
 
-(defvar *COMP nil						; currently ignored!
+(defvar *COMP nil
   "*COMP = NIL global
 The value of !*COMP controls whether or not PUTD compiles the
 function defined in its arguments before defining it. If !*COMP is
@@ -125,7 +125,7 @@ modified by SET or SETQ."))
 ;;; Elementary Predicates
 ;;; =====================
 
-(defmacro ATOM (u)				   ; boot.el does not compile as alias
+(defmacro ATOM (u)				   ; boot.el does not compile if alias
   "ATOM(U:any):boolean eval, spread
 Returns T if U is not a pair.
 EXPR PROCEDURE ATOM(U);
@@ -593,7 +593,7 @@ Returns the removed property or NIL if there was no such indicator."
 ;; a list to the macros single formal parameter."
 
 ;; Could remove the use of the property `SL--FTYPE' and just process
-;; the symbol-function. Then `DE' could just be an alias for `defun'.
+;; the symbol-function.
 
 (defmacro DE (fname params fn)
   "DE(FNAME:id, PARAMS:id-list, FN:any):id noeval, nospread
@@ -606,8 +606,10 @@ FEXPR PROCEDURE DE(U);
    PUTD(CAR U, 'EXPR, LIST('LAMBDA, CADR U, CADDR U));"
   (declare (debug (&define name lambda-list def-body)))
   `(progn
+	 (defun ,fname ,params ,fn)
 	 (put ',fname 'SL--FTYPE 'EXPR)
-	 (defun ,fname ,params ,fn)))
+	 (if *COMP (byte-compile ',fname))
+	 ',fname))
 
 ;; *** I'm hoping df is not actually required! ***
 ;; DF(FNAME:id, PARAM:id-list, FN:any):id noeval, nospread
@@ -688,6 +690,7 @@ the !*COMP global variable is non-NIL."
 					  ,@(cddr body)))
 				`(lambda ,@(cdr body))))
   (put fname 'SL--FTYPE type)
+  (if *COMP (byte-compile fname))
   fname)
 
 (defun REMD (fname)
@@ -759,7 +762,7 @@ resulting warning message:
 EXP must not evaluate to T or NIL or an error occurs:
 ***** Cannot change T or NIL")
 
-(defmacro SETQ (variable value)	   ; boot.el does not compile as alias
+(defmacro SETQ (variable value)	   ; boot.el does not compile if alias
   ;; Auto fluid not implemented!
   "SETQ(VARIABLE:id, VALUE:any):any noeval, nospread
 If VARIABLE is not local or GLOBAL it is by default declared
@@ -817,7 +820,7 @@ another error is detected:
 
 (def-edebug-spec GO 0)
 
-(defalias 'PROG 'cl-prog
+(defmacro PROG (bindings &rest body)
   "PROG(VARS:id-list, [PROGRAM:{id, any}]):any noeval, nospread
 VARS is a list of ids which are considered fluid when the PROG is
 interpreted and local when compiled. The PROGs variables are
@@ -828,15 +831,21 @@ of their appearance in the PROG function. Identifiers appearing
 in the top level of the PROGRAM are labels which can be
 referenced by GO. The value returned by the PROG function is
 determined by a RETURN function or NIL if the PROG \"falls
-through\".")
-
-(def-edebug-spec PROG ((&rest symbolp) &rest &or symbolp form))
+through\"."
+  (declare (debug ((&rest symbolp) &rest &or symbolp form)))
+  ;; This is essentially how `cl-prog' is defined in `cl-macs.el'.
+  ;; But cl-tagbody does not like nil as its final body form, which
+  ;; REDUCE may generate, e.g. for EXPORTS, so remove it.
+  (cl--prog 'let bindings
+			(if (car (last body)) ; assume body never empty!
+				body
+			  (butlast body))))
 
 (defmacro PROGN (&rest u)				; does not work as alias
   "PROGN([U:any]):any noeval, nospread
 U is a set of expressions which are executed sequentially. The
 value returned is the value of the last expression."
-  (declare (debug progn))
+  (declare (debug (body)))				; no spec for progn!
   `(progn ,@u))
 
 (defalias 'PROG2 'prog2
@@ -870,7 +879,7 @@ variables are not affected by the process."
   (setq EMSG* message)
   (signal 'user-error (list number message)))
 
-(defmacro ERRORSET (u msgp tr)
+(defun ERRORSET (u msgp tr)
   "ERRORSET(U:any, MSGP:boolean, TR:boolean):any eval, spread
 If an error occurs during the evaluation of U, the value of
 NUMBER from the ERROR call is returned as the value of
@@ -891,27 +900,24 @@ If an error has been signaled and the value of TR is non-NIL a
 trace-back sequence will be initiated on the selected output
 device. The traceback will display information such as unbindings
 of FLUID variables, argument lists and so on in an implementation
-dependent format.
-
-In ESL, a backtrace is shown only if `debug-on-error' is non-nil."
-  ;; This is a macro to allow control of the error handler conditions.
-  (declare (debug (form form form)))
-  `(condition-case err					; error description variable
-	   (list (eval ,u))					; protected form
-	 ((user-error ,(if tr 'debug))		; Standard LISP error
-	  (if ,msgp (let ((msg (cddr err)))
+dependent format."
+  (let ((debug-on-error tr))
+	(condition-case err					; error description variable
+		(list (eval u))					; protected form
+	  ((user-error debug)				; Standard LISP error
+	   (if msgp (let ((msg (cddr err)))
 				  (message "***** %s"
 						   (if (listp msg)
 							   (mapconcat 'identity msg " ")
 							 msg))))
-	  (cadr err))
-	 ((error ,(if tr 'debug))			; Emacs Lisp error
-	  (let ((msg (error-message-string err)))
-		(if ,msgp (message "***** %s" msg))
-		;; Should return the error number, but internal elisp errors
-		;; will not have one, so return the error message string
-		;; instead. What matters is that an atom is returned.
-		msg))))
+	   (cadr err))
+	  ((error debug)					; Emacs Lisp error
+	   (let ((msg (error-message-string err)))
+		 (if msgp (message "***** %s" msg))
+		 ;; Should return the error number, but internal elisp errors
+		 ;; will not have one, so return the error message string
+		 ;; instead. What matters is that an atom is returned.
+		 msg)))))
 
 
 ;;; Vectors
@@ -951,7 +957,7 @@ Returns the upper limit of U if U is a vector, or NIL if it is not."
 ;;; Boolean Functions and Conditionals
 ;;; ==================================
 
-(defmacro AND (&rest u)			   ; boot.el does not compile as alias
+(defmacro AND (&rest u)			   ; boot.el does not compile if alias
   "AND([U:any]):extra-boolean noeval, nospread
 AND evaluates each U until a value of NIL is found or the end of the
 list is encountered. If a non-NIL value is the last value it is returned,
@@ -988,7 +994,7 @@ If U is NIL, return T else return NIL (same as function NULL).
 EXPR PROCEDURE NOT(U);
    U EQ NIL;")
 
-(defmacro OR (&rest u)			   ; boot.el does not compile as alias
+(defmacro OR (&rest u)			   ; boot.el does not compile if alias
   "OR([U:any]):extra-boolean noeval, nospread
 U is any number of expressions which are evaluated in order of their
 appearance. When one is found to be non-NIL it is returned as the
@@ -1472,12 +1478,14 @@ EXPR PROCEDURE EXPAND(L,FN);
 	  (car l)
 	(list fn (car l) (EXPAND (cdr l) fn))))
 
-(defalias 'FUNCTION 'function
+(defmacro FUNCTION (fn)			 ; rlisp.red does not compile if alias
   "FUNCTION(FN:function):function noeval, nospread
 The function FN is to be passed to another function. If FN is to have
 side effects its free variables must be fluid or global. FUNCTION is
 like QUOTE but its argument may be affected by compilation. We
-do not consider FUNARGs in this report.")
+do not consider FUNARGs in this report."
+  (declare (debug function))
+  `(function ,fn))
 
 (defmacro QUOTE (u)						; does not work as alias
   "QUOTE(U:any):any noeval, nospread
@@ -1804,7 +1812,9 @@ selected output file.
   (goto-char (point-max))  ; in case buffer already exists
   (let (value			   ; value of last sexp
 		;; Output to the END of the current buffer:
-		(standard-output (set-marker sl--marker (point-max)))
+		;; (standard-output (set-marker sl--marker (point-max)))
+		;; The above is proving unreliable, so try this:
+		(standard-output (current-buffer))
 		;; Make (READCH) read from the minibuffer:
 		(sl--readch-use-minibuffer t))
 	(when (= (buffer-size) 0)
@@ -1816,8 +1826,8 @@ selected output file.
 		(princ "EVAL: ") (terpri)
 		;; (read) reads from standard-input, which defaults to t
 		;; meaning read from the minibuffer:
-		(setq value (ERRORSET '(EVAL (read)) t t))
-		(if (not (atom value)) (print (car value)))
+		(setq value (ERRORSET '(eval (read)) t t))
+		(if (consp value) (print (car value)))
 		(terpri)))))
 
 (defun QUIT ()
@@ -1869,7 +1879,7 @@ Most commands are inherited from `lisp-interaction-mode-map'.")
   (let ((standard-input sl--marker)
 		(standard-output sl--marker)
 		value)
-	(setq value (ERRORSET '(EVAL (read)) t t))
+	(setq value (ERRORSET '(eval (read)) t t))
 	(unless (atom value)
 	  (terpri) (terpri) (princ "====> ") (princ (car value)))
 	(terpri) (terpri) (princ "Eval: ")

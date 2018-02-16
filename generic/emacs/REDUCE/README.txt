@@ -7,7 +7,7 @@ To keep things as simple as possible, work with the files in
 
 https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/historical/r33/
 
-Having got boot.sl to work, then I can try to build REDUCE 3.3!
+Having got boot.sl to work, I can now try to build REDUCE 3.3!
 
 dbuild.sl orchestrates building REDUCE. It inputs boot.sl, prolog.red,
 rlisp.red, rend.red (in that order) to build RLISP, then continues to
@@ -15,21 +15,24 @@ build REDUCE. I don't currently use prolog.red.
 
 I have edited boot.sl as boot.el to use upper case, replaced % with ;
 and ! with \ where necessary so that Emacs Lisp can read it. However,
-I keep lambda lower case by giving it newnam and quotenewnam
-properties. (Both are needed.)
+I keep lambda lower-case by giving LAMBDA newnam and quotenewnam
+properties. (Both are needed.) I do the same for NIL and T, although
+neither seems to be strictly necessary.
 
 I have defined a few additional functions that are assumed by REDUCE
 but not defined in Standard LISP at the end of sl.el.
 
-sl.el and boot.el now compile cleanly and seem to run.
-
-(However, to use the uncompiled boot.el file, I need to increase
+sl.el and boot.el now compile cleanly and seem to run.  (However, to
+use the uncompiled boot.el file, I need to increase
 max-lisp-eval-depth to 2000 and max-specpdl-size to 2500 to handle
 module slfns.)
 
+Moreover, setting *COMP non-nil now causes REDUCE procedures to be
+compiled as they are read, which causes REDUCE syntax to input *very
+much* faster!
 
-I can now build RLISP 3.3 in the current Emacs session and run it as
-follows:
+I can now build the main modules of REDUCE 3.3 in the current Emacs
+session and run it as follows:
 
 1. Load sl.elc and boot.elc.
 
@@ -40,6 +43,7 @@ following lines of input. The Lisp syntax is read as Emacs Lisp using
 (read) and the REDUCE syntax is read using READCH.
 
 (BEGIN2)
+!*comp := t;
 rds open("rlisp.red",'input);
 (BEGIN2)
 rds open("rend.red",'input);
@@ -63,16 +67,21 @@ n: quit;
 
 This interaction model with output to a normal buffer and input from
 the minibuffer is not very elegant, but it seems to work and is a
-fairly painless way to make Emacs wait for input.
+fairly painless way to make Emacs wait for input. However, the output
+ends up in the *Messages* buffer, which I still need to fix reliably.
 
-The RLISP foreach and lambda statements now work. (They both rely on
-lambda, which I think nor works reliably.)
-
-However, the output ends up the *Messages* buffer, which I still need
-to fix reliably.
-
-(BEGIN2)
 rds open("arith.red",'input);
+rds open("mathlib.red",'input);
+rds open("alg1.red",'input);
+rds open("alg2.red",'input);
 
-seems to work, albeit rather slowly, but REDUCE code is still
-interpreted and I need to think about trying to compile it!
+all seem to read and compile OK, except that alg1 and alg2 produce a
+few compiler warnings that :MINUSP, :EXPT, etc. are used as
+functions. I think this is because identifiers that begin with : are
+keywords in Emacs Lisp and should not be used for other purposes,
+although these function definitions seem to work. Ignore for now.
+
+*** Consider hiding these compiler warnings later. However,
+byte-compile-warnings does not affect them. The special form
+with-no-warnings may work. If not, I may need to hack COMPRESS (?) to
+escape a leading colon. ***
