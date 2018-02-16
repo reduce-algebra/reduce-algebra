@@ -1,7 +1,7 @@
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PXCC:UNIX-IO.C
+% File:         PXK:UNIX-IO.C
 % Description:  Unix PSL FileDescriptors are implemented as stdio streams
 %                 ("FILE *".)
 % Author:       Russell D. Fish
@@ -9,7 +9,7 @@
 % Modified:     17-Jul-84 22:49:12 (RAM)
 % Mode:         Text
 % Package:
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
@@ -42,7 +42,6 @@
 %
 % Revisions:
 %
-% Jan-2018 (Arthur Norman) refresh the C code.
 % 15-Sep-88 (T. Yamamoto and C. Burdorf)
 %  Moved collect out of expand_file_name so it won't be overwritten as a
 %  local before it is referenced.
@@ -62,13 +61,21 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
-
+ 
 #include <stdio.h>
 #include <stdlib.h>
-#include <inttypes.h>
-#include <stdint.h>
 #include <unistd.h>
+#include <errno.h>
 
+/* There is an assumption here that coercing addresses into ints is OK */
+/*
+asm("   alias   _unix_stdin,UNIXSTDIN");
+asm("   alias   _unix_stdout,UNIXSTDOUT");
+asm("   alias   _unix_stderr,UNIXSTDERR");
+asm("   alias   _unix_null,UNIXNULL");
+asm("   alias   _unix_eof,UNIXEOF");
+asm("   alias   _unix_tty,UNIXTTY");
+*/
 /* Initialize some PSL external variables with FileDescriptors for SysClearIO.
  */
 
@@ -80,8 +87,10 @@ extern int unixnull[2], unixeof[2];
 
 /* Tag( unixinitio )
  */
-void unixinitio()
-{   unixstdin = stdin;
+void
+unixinitio()
+{
+    unixstdin = stdin;
     unixstdout = stdout;
     unixstderr = stderr;
     unixnull[0] = (long) NULL;
@@ -90,33 +99,43 @@ void unixinitio()
     unixeof[1] = EOF;
     unixtty = fopen("/dev/tty", "r");
 }
-
+ 
 /* Tag( unixputc )
  * Used by kernel routines that write to the console
  */
-void unixputc(int c)
-{   fputc(c, stdout);
+void
+unixputc(c)
+char c;
+{
+    fputc(c, stdout);
 }
-
+ 
 /* Tag( unixputs )
  */
-void unixputs(const char *str)
-{   fputs(str, stdout);
+void
+unixputs(str)
+char *str;
+{
+    fputs(str, stdout);
 }
-
+ 
 /* Tag( unixputn )
  */
-void unixputn(uint64_t n)
-{   fprintf(stdout, "%" PRIx64, n);
+void
+unixputn(n)
+long long n;
+{
+    fprintf(stdout, "%llx", n);
 }
-
+ 
 /* Tag( unixcleario )
  */
-void unixcleario()
-{   unixinitio();
+void
+unixcleario()
+{
+    unixinitio();
 
 #ifndef LINUX
-#if 0
     /* set the stdin, stdout and stderr buffers to be empty */
     stdin->_cnt = 0;
     stdin->_ptr = stdin->_base;
@@ -125,10 +144,9 @@ void unixcleario()
     stderr->_cnt = 0;
     stderr->_ptr = stderr->_base;
 #endif
-#endif
 
 }
-
+ 
 /* The function expand_file_name is used to expand shell variable references
    and ~ notation for directories in file names before calling fopen.
    This eliminates the need for the HPUX-PATH and VAX-PATH kludges that were
@@ -141,108 +159,138 @@ void unixcleario()
    getuid, getpwuid, and getpwnam.  If any expansion fails, the original
    string is returned.
 */
-
+ 
 #include <pwd.h>
 struct passwd *getpwuid();
 struct passwd *getpwnam();
 char *getenv();
 char collect[255], copy[255];  /* Made global so it won't be overwritten
                   Used to be local to expand_file_name */
-
+ 
 /* Tag( expand_file_name )
  */
-char *expand_file_name(char *fname)
-{   register char *c, *t, *e, *s, save;
-    struct passwd *p;
-    register int tilde;
-    c = copy;
-    s = fname;
-    while (*c++ = *s++);
-    s = copy;
-    c = collect;
-    *c = '\0';
-    while (*s)
-    {   if ((tilde = (*s == '~')) || (*s == '$'))
-        {   for (e = ++s; (*e != '/' && *e != '\0' && *e != '$'); e++)
-                ;
-            t = 0;                        /* default initialization */
-            if (e == s)
-            {   if (tilde) t = ((getpwuid(getuid())) -> pw_dir);
-            }
-            else
-            {   save = *e;
-                *e = '\0';
-                if (tilde)
-                {   if (p = getpwnam(s))  t = (p -> pw_dir);
-                }
-                else
-                    t = getenv(s);
-                *e = save;
-                s = e;
-            }
-            if (t)
-                while (*c++ = *t++)
-                    ;
-            else
-                return(fname);   /* name not found, just return original fname */
-            c--;
+char *expand_file_name(fname)
+char *fname;
+{
+  register char *c, *t, *e, *s, save;
+  struct passwd *p;
+  register int tilde;
+  c = copy;
+  s = fname;
+  while (*c++ = *s++);
+  s = copy;
+  c = collect;
+  *c = '\0';
+  while (*s)
+    {
+      if ((tilde = (*s == '~')) || (*s == '$'))
+        {
+      for (e = ++s; (*e != '/' && *e != '\0' && *e != '$'); e++)
+        ;
+          t = 0;                        /* default initialization */
+          if (e == s)
+            {
+          if (tilde) t = ((getpwuid(getuid())) -> pw_dir);
         }
-        for (; (*s != '\0' && *s != '$'); *c++ = *s++)
-            ;
-        *c = '\0';
-    }
-    return (collect);
+          else
+            {
+          save = *e;
+              *e = '\0';
+              if (tilde)
+                {
+          if (p = getpwnam(s))  t = (p -> pw_dir);
+        }
+              else
+                t = getenv(s);
+              *e = save;
+              s = e;
+            }
+          if (t)
+        while (*c++ = *t++)
+          ;
+          else
+        return(fname);   /* name not found, just return original fname */
+          c--;
+        }
+    for (; (*s != '\0' && *s != '$'); *c++ = *s++)
+      ;
+      *c = '\0';
+  }
+  return (collect);
 }
-
+ 
 extern int errno;
-
-FILE* unixopen(char *filename, char *type)
-{   FILE* fptr;
-
-    fptr = fopen(expand_file_name(filename), type);
-    return(fptr);
+ 
+FILE* unixopen(filename, type)
+     char *filename, *type;
+{
+  FILE* fptr;
+ 
+  fptr = fopen(expand_file_name(filename), type);
+  return(fptr);
 }
 
-void unixcd(char *filename)
-{   chdir(expand_file_name(filename));
+void
+unixcd(filename)
+     char *filename;
+{
+  chdir(expand_file_name(filename));
 }
 
-void unixfclose (FILE *ix)
+int
+unixfclose (ix)
+FILE* ix;
 
-{   fclose (ix);
+{ fclose (ix); }
+
+int
+external_system(command)
+     char *command;
+{
+  int value;
+  value = system(command);
+  return(value);
 }
-
-int external_system(char *command)
-{   return system(command);
-}
-
+ 
 /* Tag( external_exit )
  */
-void external_exit(int status)
-{   exit(status);
+int
+external_exit(status)
+     int status;
+{
+  exit(status);
 }
-
+ 
 char *static_argv[20];  /* static place to hold argv so it doesn't get gc'd */
 
-char **copy_argv(int argc, char *argv[])    /* copy argv into static space. */
-{   int i;
-
-    for (i=0; i < argc; i++)
-        static_argv[i]=argv[i];
-
-    return (char **)static_argv;
+char **
+copy_argv(argc,argv)    /* copy argv into static space. */
+int argc;
+char *argv[];
+{
+  int i;
+ 
+  for (i=0; i < argc; i++)
+     static_argv[i]=argv[i];
+ 
+  return(static_argv);
 }
 
 /* convert a pathname to canonical form */
-char *external_fullpath(char *relpath)
-{   return realpath(relpath,NULL);
+char *
+external_fullpath(relpath)
+     char * relpath;
+{
+  return realpath(relpath,NULL);
 }
 
-uint64_t xgetw (f)
+long long xgetw (f)
 FILE* f;
-{   uint64_t a1 = (uint64_t) getw(f);
-    uint64_t a2 = (uint64_t) getw(f);
-    return (a2 << 32) | a1;
+{ long long a1,a2;
+
+  a1 = (long long) getw(f);
+  a2 = (long long) getw(f);
+  return (a2 << 32 | a1);
 }
 
 
