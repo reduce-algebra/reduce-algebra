@@ -2,7 +2,7 @@
 
 SNAPSHOTDATE=$(shell LANG=C date "+%Y-%m-%d")
 ifeq($(REVISION),)
-SNAPSHOT=$(SNAPSHOTDATE}
+SNAPSHOT=$(SNAPSHOTDATE)
 else
 SNAPSHOT=$(REVISION)
 endif
