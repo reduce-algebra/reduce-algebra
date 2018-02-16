@@ -21,10 +21,10 @@ update-changelog:
 	  ( echo "reduce ("$(SNAPSHOTDATE)") unstable; urgency=low" ; \
 	    echo ; \
 	    if test "$(REVISION)" = ""; then echo "  * New Snapshot." ; \
-	    else echo "  * New Snapshot. Revision $(REVISION)." ; \
+	    else echo "  * New Snapshot. Revision $(REVISION)." ; fi ; \
 	    echo ; \
 	    echo " -- REDUCE Developers <reduce-algebra-developers@lists.sourceforge.net> " $(NOW) ;\
-	    echo ) > $(CHANGELOG).tmp ; \
+	    echo ")" > $(CHANGELOG).tmp ; \
 	  cat $(CHANGELOG) >> $(CHANGELOG).tmp ; \
 	  mv $(CHANGELOG).tmp $(CHANGELOG); \
 	fi
