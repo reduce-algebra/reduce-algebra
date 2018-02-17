@@ -2,6 +2,31 @@
 
 ;; Copyright (C) 2017-2018 Francis J. Wright
 
+;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
+;; Created: 17 Nov 2017
+;; Version: $Id:$
+;; Keywords: languages
+;; Homepage: https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/generic/emacs/REDUCE/
+;; Package-Version: 0.1
+;; Package-Requires: ((emacs "26") cl-lib)
+
+;; This file is not part of GNU Emacs.
+
+;; This program is free software: you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation, either version 3 of
+;; the License, or (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
 ;; This file aims to provide an emulation of most of Standard LISP
 ;; (enough to run REDUCE) as an upper-case LISP (to keep it distinct
 ;; from the underlying Emacs Lisp). However, lambda must be kept lower
@@ -11,7 +36,7 @@
 
 ;; Some functions that correspond to Emacs Lisp special forms or subrs
 ;; (built-in functions) must be defined as macros rather than aliases,
-;; either to run correctly or so that `boot.el' can be compiled.
+;; either to run correctly or so that REDUCE files can be compiled.
 
 ;;; Primitive Data Types
 ;;; ====================
@@ -49,11 +74,13 @@
 ;; (Syntax tables are not used by the Emacs Lisp reader, which has its
 ;; own built-in syntactic rules which cannot be changed!)
 
+;;; Code:
+
 ;;; System GLOBAL Variables
 ;;; =======================
 
-;; Defined early to keep the Emacs Lisp compiler happy. This file
-;; should be compiled!
+;; Defined early to keep the Emacs Lisp compiler happy. (This file can
+;; be compiled.)
 
 (defvar *COMP nil
   "*COMP = NIL global
@@ -444,6 +471,8 @@ an error occurs:
   ;; characters.
   ;; Otherwise, assume an identifier. Any ! characters should be
   ;; deleted, except that !!  should be replaced by !.
+  ;; However, a leading !: should be retained to prevent the
+  ;; symbol being an Elisp keyword.
   (let* ((s (mapconcat #'symbol-name u ""))
 		 (s1 (aref s 0)))
 	(cond ((eq s1 ?\")					; string
@@ -451,17 +480,20 @@ an error occurs:
 		  ((or (eq s1 ?-)
 			   (and (>= s1 ?0) (<= s1 ?9)))	; number
 		   (string-to-number s))
-		  (t					   ; identifier: delete ! but !! --> !
+		  (t							; identifier
 		   (let ((l (length s)) (i 0) (ss nil) e)
-			   (while (< i l)
-				 (if (eq (setq e (aref s i)) ?!)
-					 (when (eq (aref s (1+ i)) ?!)
-					   (push ?! ss)
-					   (setq i (1+ i)))
-				   (push e ss))
-				 (setq i (1+ i)))
-			   (make-symbol				; uninterned symbol
-				(apply #'string (reverse ss))))))))
+			 ;; Leave leading !: in place:
+			 (if (and (eq s1 ?!) (eq (aref s 1) ?:))
+				 (setq i 2 ss '(?: ?!)))
+			 (while (< i l)				; delete ! but !! --> !
+			   (if (eq (setq e (aref s i)) ?!)
+				   (when (eq (aref s (1+ i)) ?!)
+					 (push ?! ss)
+					 (setq i (1+ i)))
+				 (push e ss))
+			   (setq i (1+ i)))
+			 (make-symbol				; uninterned symbol
+			  (apply #'string (reverse ss))))))))
 
 (defun EXPLODE (u)
   "EXPLODE(U:{atom}-{vector}):id-list eval, spread
@@ -1574,10 +1606,10 @@ OUTPUT or the file can't be opened.
 ***** HOW is not option for OPEN
 ***** FILE could not be opened"
   (cond ((eq how 'INPUT)
-		 ;; Read file into a buffer and return (buffer . 'input).
-		 (with-current-buffer
-			 ;; Leading space means buffer hidden and no undo:
-			 (get-buffer-create (concat " SL-IN " file))
+		 ;; Read file into a buffer and return (buffer . 'INPUT).
+		 (save-current-buffer
+		   ;; Leading space means buffer hidden and no undo:
+		   (set-buffer (get-buffer-create (concat " SL-IN " file)))
 		   (insert-file-contents-literally file)
 		   (cons (current-buffer) 'INPUT)))
 		((eq how 'OUTPUT) nil)			; not yet implemented!
@@ -1817,18 +1849,20 @@ selected output file.
 		(standard-output (current-buffer))
 		;; Make (READCH) read from the minibuffer:
 		(sl--readch-use-minibuffer t))
-	(when (= (buffer-size) 0)
-	  (princ "Standard LISP")
-	  (terpri))
+	(if (= (buffer-size) 0)
+		(princ "Standard LISP"))
 	(RDS nil) (WRS nil)
 	(catch 'QUIT
 	  (while t
-		(princ "EVAL: ") (terpri)
+		(terpri)
+		(princ "Eval: ")
 		;; (read) reads from standard-input, which defaults to t
 		;; meaning read from the minibuffer:
-		(setq value (ERRORSET '(eval (read)) t t))
-		(if (consp value) (print (car value)))
-		(terpri)))))
+		(prin1 (setq value (read))) (terpri)
+		(setq value (ERRORSET '(eval value) t t))
+		(unless (atom value)
+		  (terpri)
+		  (princ "====> ") (princ (car value)) (terpri))))))
 
 (defun QUIT ()
   "QUIT()

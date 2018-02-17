@@ -75,13 +75,4 @@ rds open("mathlib.red",'input);
 rds open("alg1.red",'input);
 rds open("alg2.red",'input);
 
-all seem to read and compile OK, except that alg1 and alg2 produce a
-few compiler warnings that :MINUSP, :EXPT, etc. are used as
-functions. I think this is because identifiers that begin with : are
-keywords in Emacs Lisp and should not be used for other purposes,
-although these function definitions seem to work. Ignore for now.
-
-*** Consider hiding these compiler warnings later. However,
-byte-compile-warnings does not affect them. The special form
-with-no-warnings may work. If not, I may need to hack COMPRESS (?) to
-escape a leading colon. ***
+all seem to read and compile OK.
