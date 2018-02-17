@@ -338,7 +338,7 @@ build_windows() {
   copy_files "$REDUCE_DISTRIBUTION/"             "$REDUCE_BUILD/C/"
   execute_in_dir "$REDUCE_BUILD/C"               "./autogen.sh"
   execute_in_dir "$REDUCE_BUILD"                 "touch C.stamp"
-  execute_in_dir "$REDUCE_BUILD"                 "make REVISON=$REVISION"
+  execute_in_dir "$REDUCE_BUILD"                 "make REVISION=$REVISION"
   fetch_files    "$REDUCE_BUILD/Output/*.*"      "$SNAPSHOTS/windows/" "$SNAPSHOTS/old/windows"
   stop_remote_host
 }
