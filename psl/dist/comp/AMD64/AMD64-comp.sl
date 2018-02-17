@@ -5,7 +5,7 @@
 % Author:         Eric Benson
 % Created:        11 January 1982                                              
 % Modified:       5 June 1984 (Vicki O'Day)
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Compiler
 %
