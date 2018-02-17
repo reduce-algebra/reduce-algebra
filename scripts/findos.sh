@@ -51,7 +51,7 @@ then
   *Ubuntu*)
     vendor="ubuntu"
     ;;
-  *Linux Mint*)
+  *Linux*Mint*)
     vendor="mint"
     ;;
   *CentOS*)
@@ -152,7 +152,7 @@ else
         os=`echo $hissue | sed 's/^[^0-9]*\\([0-9][0-9]*\\.*[0-9]*\\).*$/ubuntu\\1/'`
       fi
       ;;
-    *Linux Mint*)
+    *Linux*Mint*)
       if test "x$1" = "xshort"
       then
         os="mint"
