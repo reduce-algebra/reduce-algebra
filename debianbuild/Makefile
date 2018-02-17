@@ -16,12 +16,11 @@ BUILD=$(shell $(BUILDTOPDIR)/scripts/findhost.sh $(shell $(BUILDTOPDIR)/config.g
 all:	update-changelog reduce-packages
 
 update-changelog:
-	if head -1 $(CHANGELOG) | grep $(SNAPSHOTDATE) >/dev/null ; then : ; \
+	if head -1 $(CHANGELOG) | grep $(SNAPSHOT) >/dev/null ; then : ; \
 	else  \
-	  ( echo "reduce ("$(SNAPSHOTDATE)") unstable; urgency=low" ; \
+	  ( echo "reduce ("$(SNAPSHOT)") unstable; urgency=low" ; \
 	    echo ; \
-	    if test "$(REVISION)" = ""; then echo "  * New Snapshot." ; \
-	    else echo "  * New Snapshot. Revision $(REVISION)." ; fi ; \
+	    echo "  * New Snapshot. Date $(SNAPSHOTDATE)." ; \
 	    echo ; \
 	    echo " -- REDUCE Developers <reduce-algebra-developers@lists.sourceforge.net> " $(NOW) ;\
 	    echo ) > $(CHANGELOG).tmp ; \
@@ -40,7 +39,9 @@ $(BUILDTOPDIR).stamp:
 reduce-packages:	$(BUILDTOPDIR).stamp debpackages rpmpackages tarpackages
 
 debpackages:
-	cd reduce ; debuild --set-envvar BUILDTOPDIR=$(realpath $(BUILDTOPDIR)) --preserve-envvar=DH_OPTIONS -b -us -uc
+	cd reduce ; \
+	debuild --set-envvar BUILDTOPDIR=$(realpath $(BUILDTOPDIR)) \
+	    --preserve-envvar=DH_OPTIONS -b -us -uc
 
 rpmpackages:
 	for f in reduce-*_$(SNAPSHOT)_*.deb ; \
@@ -138,6 +139,7 @@ reduce-source-csl-support_$(SNAPSHOT).tar.bz2:
 		reduce-source_$(SNAPSHOT)/csl/support-packages
 
 ifeq (,$(findstring arm,$(MACHINE)))
+# PSL is not at present available on the ARM.
 reduce-source-psl_$(SNAPSHOT).tar.bz2:
 	tar cfj reduce-source-psl_$(SNAPSHOT).tar.bz2 \
 		--owner=root --group=root \

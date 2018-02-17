@@ -386,10 +386,10 @@ build_macintosh() {
   copy_files "$REDUCE_DISTRIBUTION/macbuild/" "$REDUCE_BUILD/"   "--exclude=C"
   copy_files "$REDUCE_DISTRIBUTION/"          "$REDUCE_BUILD/C/"
   execute_in_dir "$REDUCE_BUILD/C"            "./autogen.sh"
-  execute_in_dir "$REDUCE_BUILD"              "make source-archive"
+  execute_in_dir "$REDUCE_BUILD"              "make REVISION=$REVISION source-archive"
   execute_in_dir "$REDUCE_BUILD"              "touch C.stamp"
   execute_in_dir "$REDUCE_BUILD"              "make REVISION=$REVISION"
-  fetch_files    "$REDUCE_BUILD/*.{dmg,bz2}"  "$SNAPSHOTS/macintosh" "$SNAPSHOTS/old/macintosh"
+  fetch_files    "$REDUCE_BUILD/*.{dmg,bz2}"  "$SNAPSHOTS/macintosh/" "$SNAPSHOTS/old/macintosh"
   stop_remote_host
 }
 
