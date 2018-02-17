@@ -124,13 +124,14 @@ then
     list="cslbuild/*-cygwin* cslbuild/*-windows*"
     ;;
   *)
-    list="cslbuild/*-${os}*"
+    list="cslbuild/*${host}*"
     ;;
   esac
 fi
 
 firstcsl=""
 if test "x$list" != "x"
+:q!
 then
   for x in $list
   do
@@ -145,7 +146,7 @@ if test "$buildpsl" = "yes"
 then
   case "$os" in
   *cygwin* | *windows*)
-    list="$list pslbuild/*-${os}*"
+    list="$list pslbuild/*-cygwin* pslbuild/*-windows*"
     ;;
   *)
     list="$list pslbuild/*${host}*"
