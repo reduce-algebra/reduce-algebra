@@ -4,6 +4,7 @@
 % Description:  PSL Compiler.  
 % Author:       
 % Created:     
+% Status:       Open Source: BSD License
 % Package:
 %
 % (c) Copyright 1982, University of Utah
