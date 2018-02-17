@@ -131,7 +131,6 @@ fi
 
 firstcsl=""
 if test "x$list" != "x"
-:q!
 then
   for x in $list
   do
