@@ -1,10 +1,10 @@
 #! /bin/bash
 
-# This version used symval+NNN(%rip) everywhere.
+# Uses existing main.s and dmain.s that may have been hand edited.
 
 
-sed 's/symval+[0-9]*/&(%rip)/g; s/symfnc+[0-9]*/&(%rip)/g; s/mov l[0-9]*/&(%rip)/g' < ../psl/dist/kernel/AMD64_ext/main.s  > main.s
-cp ../psl/dist/kernel/AMD64_ext/dmain.s dmain.s
+#sed 's/symval+[0-9]*/&(%rip)/g; s/symfnc+[0-9]*/&(%rip)/g; s/mov l[0-9]*/&(%rip)/g' < ../psl/dist/kernel/AMD64_ext/main.s  > main.s
+#cp ../psl/dist/kernel/AMD64_ext/dmain.s dmain.s
 
 head -15 main.s
 
@@ -16,7 +16,7 @@ diff pslsocket.c ../psl/dist/kernel/AMD64_ext
 
 rm -f bpsl
 
-gcc -no-pie -o bpsl -DBPSSIZE=20500000 \
+cc -no-pie -o bpsl -DBPSSIZE=20500000 \
    ../psl/dist/kernel/AMD64_ext/bps.c \
    ../psl/dist/kernel/AMD64_ext/bpsheap.c \
    ../psl/dist/kernel/AMD64_ext/echo.c \

@@ -1,22 +1,22 @@
 #! /bin/bash
 
-# This version used symval+NNN(%rip) everywhere.
+# Assumes main.s and dmain.s have already been assembled.
 
 
-sed 's/symval+[0-9]*/&(%rip)/g; s/symfnc+[0-9]*/&(%rip)/g; s/mov l[0-9]*/&(%rip)/g' < ../psl/dist/kernel/AMD64_ext/main.s  > main.s
-cp ../psl/dist/kernel/AMD64_ext/dmain.s dmain.s
+#sed 's/symval+[0-9]*/&(%rip)/g; s/symfnc+[0-9]*/&(%rip)/g; s/mov l[0-9]*/&(%rip)/g' < ../psl/dist/kernel/AMD64_ext/main.s  > main.s
+#cp ../psl/dist/kernel/AMD64_ext/dmain.s dmain.s
 
-head -15 main.s
+#head -15 main.s
 
-gcc -c main.s
-gcc -c dmain.s
+#gcc -c main.s
+#gcc -c dmain.s
 
 diff float.c ../psl/dist/kernel/AMD64_ext
 diff pslsocket.c ../psl/dist/kernel/AMD64_ext
 
 rm -f bpsl
 
-gcc -no-pie -o bpsl -DBPSSIZE=20500000 \
+cc -no-pie -o bpsl -DBPSSIZE=20500000 \
    ../psl/dist/kernel/AMD64_ext/bps.c \
    ../psl/dist/kernel/AMD64_ext/bpsheap.c \
    ../psl/dist/kernel/AMD64_ext/echo.c \

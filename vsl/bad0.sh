@@ -15,7 +15,7 @@ diff pslsocket.c ../psl/dist/kernel/AMD64_ext
 
 rm -f bpsl
 
-cc  -m64 -o bpsl -DBPSSIZE=20500000 \
+gcc -no-pie -o bpsl -DBPSSIZE=20500000 \
    ../psl/dist/kernel/AMD64_ext/bps.c \
    ../psl/dist/kernel/AMD64_ext/bpsheap.c \
    ../psl/dist/kernel/AMD64_ext/echo.c \
