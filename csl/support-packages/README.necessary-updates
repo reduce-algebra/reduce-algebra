@@ -1,0 +1,8 @@
+If you try to build Reduce on an old release of Linux you are liable to
+need to install up to date copies of gcc, autoconf, automake, libtool
+and rsync. For gcc you need to find a suitable public repository, but
+# for the others the relevant source archives are icnluded here as
+a "convenient" package. In the fullness of time there will be even newer
+versions of these, and you should perhaps use the very latest releases
+where possible, but the copies here have been found adequate for building
+Reduce.

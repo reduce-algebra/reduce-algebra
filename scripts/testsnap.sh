@@ -170,7 +170,7 @@ prepare() {
 # $REDUCE_DISTRIBUTION and then when I have done a "popd" back to my top
 # leven l0ocation I can move it to where I want it!
     svn update | tee reduce-update.log
-    REVISION=`svnversion`
+    REVISION=svn`svnversion`
     popd >/dev/null
     mv $REDUCE_DISTRIBUTION/reduce-update.log $SNAPSHOTS
   else
@@ -178,10 +178,10 @@ prepare() {
     svn co svn://svn.code.sf.net/p/reduce-algebra/code/trunk \
            $REDUCE_DISTRIBUTION > $SNAPSHOTS/reduce-checkout.log
     pushd $REDUCE_DISTRIBUTION >/dev/null
-    REVISION=`svnversion`
+    REVISION=svn`svnversion`
     popd >/dev/null
 # REVISION will be the subversion revision of the copy that I will make the
-# snapshot of.
+# snapshot of, written in the form "svnNNNN".
   fi
   
 }
