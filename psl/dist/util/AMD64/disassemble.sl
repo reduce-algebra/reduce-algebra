@@ -281,6 +281,8 @@
 (setq rregs  '("rax" "rcx" "rdx" "rbx" "rsp" "rbp" "rsi" "rdi"
                "r8" "r9" "r10" "r11" "r12" "r13" "r14" "r15"))
 
+(deflist '((rax r8) (rcx r9) (rdx r10) (rbx r11) (rsp r12) (rbp r13) (rsi r14) (rdi r15)) 'upperreg)
+
 (fluid '( the-instruction* addr* rex_w rex_r rex_x rex_b size-override* sse-prefix* !0f-prefix* mod-is-3*
 			   byte-operand*))
 
@@ -362,7 +364,10 @@
  (let(w)
   (cond ((and rex_w (setq w (get p 'reg64)))
 	 (if *gassyntax (bldmsg "%%%w" w) w))
-	((atom p) 
+	((atom p)
+	 % for push and pop
+	 (if (and rex_b (idp p) (get p 'upperreg))
+	     (setq p (get p 'upperreg)))
 	 (if (and *gassyntax (idp p)) (bldmsg "%%%w" p) p))
         ((eq (car p) 'G) 
 	 (if (eqcar (cdr p) 'b) (setq byte-operand* t))
