@@ -4,11 +4,11 @@
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: 17 Nov 2017
-;; Version: $Id:$
+;; Version: $Id$
 ;; Keywords: languages
 ;; Homepage: https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/generic/emacs/REDUCE/
 ;; Package-Version: 0.1
-;; Package-Requires: ((emacs "26") cl-lib)
+;; Package-Requires: ((emacs "25") cl-lib)
 
 ;; This file is not part of GNU Emacs.
 
@@ -75,6 +75,14 @@
 ;; own built-in syntactic rules which cannot be changed!)
 
 ;;; Code:
+
+;; I use the GNU Emacs Common Lisp Emulation library mainly to support
+;; the Standard LISP `PROG' form, but I also need it in Emacs 25 for
+;; `GENSYM'. Also, Emacs 26 provides the `cxxxxr' family of functions
+;; but Emacs 25 only provides `cxxr', so I use the Standard LISP
+;; `CXXXXR' functions, which I have defined exactly as in Emacs 26.
+
+(eval-when-compile (require 'cl-lib))
 
 ;;; System GLOBAL Variables
 ;;; =======================
@@ -531,7 +539,8 @@ string, or function-pointer."
 		 (setq i (1+ i)))
 	   (reverse ss)))))
 
-(defalias 'GENSYM 'gensym
+(defalias 'GENSYM (if (fboundp 'gensym) 'gensym 'cl-gensym)
+  ;; gensym was not defined before Emacs 26
   "GENSYM():identifier eval, spread
 Creates an identifier which is not interned on the OBLIST and
 consequently not EQ to anything else.")
@@ -686,7 +695,7 @@ is returned."
 		  (if (eq type 'MACRO)
 			  ;; def = (macro lambda (&rest u) (setq u (fname . u)) body-form)
 			  ;;  -->  (MACRO lambda (u) body-form)
-			  `(MACRO lambda ,(cdaddr def) ,@(cddddr def))
+			  `(MACRO lambda ,(CDADDR def) ,@(CDDDDR def))
 			;; def = (lambda (u) body-form) *or* symbol
 			;;  -->  (EXPR lambda (u) body-form) *or* (EXPR . symbol)
 			(cons 'EXPR def))))))
@@ -713,7 +722,7 @@ the !*COMP global variable is non-NIL."
 	  (message "*** %s redefined" fname))
   ;; body = (lambda (u) body-form)
   (fset fname (if (eq type 'MACRO)
-				  (let ((u (caadr body))) ; must be a symbol!
+				  (let ((u (CAADR body))) ; must be a symbol!
 					`(macro
 					  lambda (&rest ,u)	; spread the arguments
 					  ;; Include macro name as first arg:
@@ -824,8 +833,6 @@ in interpreted functions are automatically considered fluid."
 ;;; Program Feature Functions
 ;;; =========================
 
-(eval-when-compile (require 'cl-lib))
-
 (defalias 'GO 'go
   "GO(LABEL:id) noeval, nospread -- OK in cl-tagbody
 GO alters the normal flow of control within a PROG function. The
@@ -852,7 +859,7 @@ another error is detected:
 
 (def-edebug-spec GO 0)
 
-(defmacro PROG (bindings &rest body)
+(defmacro PROG (vars &rest program)
   "PROG(VARS:id-list, [PROGRAM:{id, any}]):any noeval, nospread
 VARS is a list of ids which are considered fluid when the PROG is
 interpreted and local when compiled. The PROGs variables are
@@ -868,10 +875,11 @@ through\"."
   ;; This is essentially how `cl-prog' is defined in `cl-macs.el'.
   ;; But cl-tagbody does not like nil as its final body form, which
   ;; REDUCE may generate, e.g. for EXPORTS, so remove it.
-  (cl--prog 'let bindings
-			(if (car (last body)) ; assume body never empty!
-				body
-			  (butlast body))))
+  `(cl-block nil
+	 (let ,vars
+	   (cl-tagbody . ,(if (car (last program)) ; assume program never empty!
+						  program
+						(butlast program))))))
 
 (defmacro PROGN (&rest u)				; does not work as alias
   "PROGN([U:any]):any noeval, nospread
@@ -1279,7 +1287,7 @@ EXPR PROCEDURE DEFLIST(U, IND);
       ELSE << PUT(CAAR U, IND, CADAR U);
               CAAR U >> . DEFLIST(CDR U, IND);"
   (when u
-	(put (caar u) ind (cadar u))
+	(put (caar u) ind (CADAR u))
 	(cons (caar u) (DEFLIST (cdr u) ind))))
 
 (defalias 'DELETE 'delete
@@ -1858,7 +1866,11 @@ selected output file.
 		(princ "Eval: ")
 		;; (read) reads from standard-input, which defaults to t
 		;; meaning read from the minibuffer:
-		(prin1 (setq value (read))) (terpri)
+		(setq value (read))
+		;; (read) errors change standard-output to *Messages* buffer,
+		;; so...
+		(setq standard-output (current-buffer))
+		(prin1 value) (terpri)
 		(setq value (ERRORSET '(eval value) t t))
 		(unless (atom value)
 		  (terpri)
