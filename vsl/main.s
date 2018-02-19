@@ -402,7 +402,7 @@ l0037:
  shl $32,%rax
  shr $32,%rax
  mov %rax,%rbx
- cmp l0032,%rax
+ cmp l0032(%rip),%rax
  jl l0039
  mov %r15,%rax
  jmp l0040
@@ -516,7 +516,7 @@ l0049:
  mov %rax,%rbx
  shl $32,%rbx
  shr $32,%rbx
- cmp l0044,%rbx
+ cmp l0044(%rip),%rbx
  jne l0053
  cmpq $-1,24(%rsp)
  jne l0054
@@ -1727,7 +1727,7 @@ l0158:
  shr $8,%rax
  call *symfnc+3104(%rip)
  mov 8(%rsp),%rdi
- cmp l0153,%rdi
+ cmp l0153(%rip),%rdi
  je l0159
  mov 8(%rsp),%rcx
  mov l0154(%rip),%rbx
