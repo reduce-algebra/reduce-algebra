@@ -23,6 +23,21 @@
 #
 # ".quad [a+b]" turns into ".quad (a+b)" and friends again for pc/Mac
 # compatibility.
+#
+# lnnnn => Gnnnn which I find more reaable. I do not use Lnnnn because
+# symbols starting with L are reserved as "local" bt at least some assemblers.
+#
+# For every label that I declare .globl and every label that I set I will
+# set user both a version with and without a leading underscore. For
+# refernces as between assembly code I will use the versions without the
+# underscore, but the ones with are so that C code on Cygwin and Macintosh
+# can access the names. The intent here is to create code that can assemble
+# and be used by any of those platforms. The key problem that arises
+# is that this leaves calls to C code from here (and in particular to
+# the C library) done via names with leading underscores. So on Linux I
+# need to provide stubs of the form
+#   int _foo(int x) { return foo(x); }
+# for every function called from this assemble-coded part of the kernel.
 
 sed -e 's/symval+[0-9]*/&(%rip)/g' \
     -e 's/symfnc+[0-9]*/&(%rip)/g' \
@@ -32,44 +47,22 @@ sed -e 's/symval+[0-9]*/&(%rip)/g' \
     -e 's/cmp \$/cmpq $/g'         \
     -e 's/\[/(/g'                  \
     -e 's/\]/)/g'                  \
+    -e 's/l\([0-9][0-9][0-9][0-9]\)/G\1/g' \
+    -e 's/[a-zA-Z_][a-zA-Z_0-9]*:/&\n_&/g' \
+    -e 's/ \.globl .*$/&\n@@@&/g'          \
+    -e 's/@@@ .globl / .globl _/g'         \
+    -e 's/call [a-z]/call _&/g; s/_call /_/g'      \
     < ../psl/dist/kernel/AMD64_ext/main.s > main.s
 
-# dmain.s is simpler and it is just the [] => () change that I need.
+# dmain.s is simpler.
 
 sed -e 's/\[/(/g'                  \
     -e 's/\]/)/g'                  \
+    -e 's/l\([0-9][0-9][0-9][0-9]\)/G\1/g' \
+    -e 's/[a-zA-Z_][a-zA-Z_0-9]*:/&\n_&/g' \
+    -e 's/ \.globl .*$/&\n@@@&/g'          \
+    -e 's/@@@ .globl / .globl _/g'         \
     < ../psl/dist/kernel/AMD64_ext/dmain.s > dmain.s
-
-case `uname` in
-*Darwin*)
-# On the Mac we find that names tends to need an explicit underscore, while
-# on cygwin and Linmux they do not. There are two sorts of case. One is
-# all the "call foo" instructions in main.s. I spot cases where the operand
-# to call starts with a letter: internal calls are written with a "*"
-# there.
-  sed -e 's/call [a-z]/call _&/g; s/_call /_/g'      \
-      -e 's/symval/_symval/g'                        \
-      -e 's/psl_main/_psl_main/g'                    \
-      -i bak main.s
-# A modest number of symbols defined in dmain.s need underscores. I list
-# them all explicitly.
-  sed -e 's/bpslowerbound/_bpslowerbound/g'          \
-      -e 's/hashtable/_hashtable/g'                  \
-      -e 's/heaplast/_heaplast/g'                    \
-      -e 's/heaplowerbound/_heaplowerbound/g'        \
-      -e 's/heaptrapbound/_heaptrapbound/g'          \
-      -e 's/heapupperbound/_heapupperbound/g'        \
-      -e 's/lastbps/_lastbps/g'                      \
-      -e 's/nextbps/_nextbps/g'                      \
-      -e 's/old_heaplast/_oldheaplast/g'             \
-      -e 's/old_heaplowerbound/_oldheaplowerbound/g' \
-      -e 's/old_heaptrapbound/_oldheaptrapbound/g'   \
-      -e 's/old_heapupperbound/_oldheapupperbound/g' \
-      -e 's/symval/_symval/g'                        \
-      -e 's/psl_main/_psl_main/g'                    \
-      -i bak dmain.s
-  ;;
-esac
 
 gcc -c main.s
 gcc -c dmain.s
@@ -79,16 +72,16 @@ rm -f bpsl
 gcc -o bpsl \
     -DLINUX -DBPSSIZE=20500000 \
     ../psl/dist/kernel/AMD64_ext/bps.c \
-    ../psl/dist/kernel/AMD64_ext/bpsheap.c \
-    ../psl/dist/kernel/AMD64_ext/echo.c \
+    bpsheap.c \
+    echo.c \
     ../psl/dist/kernel/AMD64_ext/file-status.c \
     float.c \
-    ../psl/dist/kernel/AMD64_ext/os-hooks.c \
+    os-hooks.c \
     pslextras.c \
     pslsocket.c \
     ../psl/dist/kernel/AMD64_ext/pwd-fn.c \
     ../psl/dist/kernel/AMD64_ext/sigs.c \
-    ../psl/dist/kernel/AMD64_ext/unix-io.c \
+    unix-io.c \
     ../psl/dist/kernel/AMD64_ext/creloc.c \
     ../psl/dist/kernel/AMD64_ext/formlink2.c \
     pslstubs.c \
