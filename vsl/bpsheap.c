@@ -66,7 +66,7 @@
 
 
 
-long unexec();
+long _(unexec)();
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -261,7 +261,7 @@ int setupbpsandheap(int argc,char *argv[])
             exit (-1);
         }
         fread (headerword,8,2,imago);
-        unexec();      /* set control vector */
+        _(unexec)();      /* set control vector */
         if ((int) bpscontrol[0] != headerword[0]
             || bpscontrol[1] != headerword[1])
         {   printf(" Cannot start the image with this bpsl \n");
@@ -537,13 +537,13 @@ int64_t _(alterheapsize)(int increment)
 
 }
 
-long unexec()
+long _(unexec)()
 {   bpscontrol[0] = bpslowerbound;
     bpscontrol[1] = BPSSIZE;
     return((long) bpscontrol);
 }
 
-char *get_imagefilepath()
+char *_(get_imagefilepath)()
 {   return abs_imagefile;
 }
 
