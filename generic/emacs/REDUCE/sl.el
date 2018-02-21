@@ -273,6 +273,7 @@ mismatch error occurs if U is not a dotted-pair.")
 ;; The composites of CAR and CDR are supported up to 4 levels. The
 ;; following code is copied from "subr.el" with minor modifications.
 
+(eval-and-compile	 ; needed to compile calls of CX..XR in this file.
 (defun sl--compiler-macro-CXXR (form x)
   (let* ((head (car form))
          (n (downcase (symbol-name head)))
@@ -286,7 +287,7 @@ mismatch error occurs if U is not a dotted-pair.")
       (while (> i (match-beginning 0))
         (setq x (list (if (eq (aref n i) ?a) 'car 'cdr) x))
         (setq i (1- i)))
-      x)))
+      x))))
 
 (defun CAAR (x)
   "Return the car of the car of X."
@@ -479,8 +480,8 @@ an error occurs:
   ;; characters.
   ;; Otherwise, assume an identifier. Any ! characters should be
   ;; deleted, except that !!  should be replaced by !.
-  ;; However, a leading !: should be retained to prevent the
-  ;; symbol being an Elisp keyword.
+  ;; However, a leading !: FOLLOWED BY A UC LETTER should be retained
+  ;; to prevent the Standard LISP identifier being an Elisp keyword.
   (let* ((s (mapconcat #'symbol-name u ""))
 		 (s1 (aref s 0)))
 	(cond ((eq s1 ?\")					; string
@@ -490,8 +491,9 @@ an error occurs:
 		   (string-to-number s))
 		  (t							; identifier
 		   (let ((l (length s)) (i 0) (ss nil) e)
-			 ;; Leave leading !: in place:
-			 (if (and (eq s1 ?!) (eq (aref s 1) ?:))
+			 ;; Leave leading !: FOLLOWED BY A UC LETTER in place:
+			 (if (and (eq s1 ?!) (eq (aref s 1) ?:)
+					  (> l 2) (>= (setq e (aref s 2)) ?A) (<= e ?Z))
 				 (setq i 2 ss '(?: ?!)))
 			 (while (< i l)				; delete ! but !! --> !
 			   (if (eq (setq e (aref s i)) ?!)
@@ -533,7 +535,7 @@ string, or function-pointer."
 		 (setq e (aref s i))
 		 (if (not (or (and (not (eq i 0)) (>= e ?0) (<= e ?9))
 					  (and (>= e ?A) (<= e ?Z))
-					  (and (>= e ?a) (<= e ?z))))
+					  (and (>= e ?a) (<= e ?z)))) ; unnecessary as ids UC?
 			 (push ?! ss))
 		 (push e ss)
 		 (setq i (1+ i)))
@@ -941,7 +943,7 @@ trace-back sequence will be initiated on the selected output
 device. The traceback will display information such as unbindings
 of FLUID variables, argument lists and so on in an implementation
 dependent format."
-  (let ((debug-on-error tr))
+  (let ((debug-on-error (or debug-on-error tr)))
 	(condition-case err					; error description variable
 		(list (eval u))					; protected form
 	  ((user-error debug)				; Standard LISP error
@@ -1585,6 +1587,9 @@ executed by the print functions when the length set by the PAGE-
 LENGTH function is exceeded."
   nil)
 
+(defvar sl--linelength 80
+  "Current Standard LISP line length accessed via function `LINELENGTH'.")
+
 (defun LINELENGTH (len)
   "LINELENGTH(LEN:{integer, NIL}):integer eval, spread
 If LEN is an integer the maximum line length to be printed before
@@ -1595,7 +1600,11 @@ returns the current line length and does not cause it to be reset. An
 error occurs if the requested line length is too large for the currently
 selected output file or LEN is negative or zero.
 ***** LEN is an invalid line length"
-  nil)
+  (if len
+	  (if (or (not (integerp len)) (<= len 0))
+		  (error "%s is an invalid line length" len)
+		(prog1 sl--linelength (setq sl--linelength len)))
+	sl--linelength))
 
 (defun LPOSN ()
   "LPOSN():integer eval, spread
@@ -1695,14 +1704,30 @@ returns the internal name of the previously selected input file.
 		(if sl--read-stream (cons sl--read-stream 'INPUT))
 	  (setq sl--read-stream stream))))
 
-;; READ():any -- NOT IMPLEMENTED SINCE NOT REQUIRED FOR RLISP!
-;; The next expression from the file currently selected for
-;; input. Valid input forms are: vector-notation, dot-notation,
-;; list-notation, numbers, function-pointers, strings, and
-;; identifiers with escape characters. Identifiers are interned on
-;; the OBLIST (see the INTERN function in "Identifiers"). READ
-;; returns the value of !$EOF!$ when the end of the currently
-;; selected input file is reached.
+(defun READ ()
+  "READ():any
+The next expression from the file currently selected for
+input. Valid input forms are: vector-notation, dot-notation,
+list-notation, numbers, function-pointers, strings, and
+identifiers with escape characters. Identifiers are interned on
+the OBLIST (see the INTERN function in \"Identifiers\"). READ
+returns the value of !$EOF!$ when the end of the currently
+selected input file is reached.
+
+This ESL implementation is incomplete and provided primarily to
+support the REDUCE YESP function."
+  (condition-case nil
+	  (let ((value
+			 (let (standard-output)
+			   ;; to avoid minibuffer errors resetting this
+			   (read))))
+		(goto-char (point-max))	   ; in case point moved interactively
+		(prin1 value) (terpri)	   ; echo minibuffer input
+		(terpri)
+		(if (symbolp value)
+			(intern (upcase (symbol-name value)))
+		  value))
+	(end-of-file $EOF$)))
 
 (defvar sl--marker (make-marker)
   "Marker from which the next input should be read.")
@@ -1760,16 +1785,21 @@ Comments delimited by % and end-of-line are not transparent to READCH."
 	(if sl--readch-use-minibuffer
 		;; Read from the minibuffer:
 		(progn
-		  (if (null sl--readch-input-string)
-			  ;; If the input string is null then this is a call for new
-			  ;; input.  Read a new input string from the minibuffer,
-			  ;; save it and return the first character.
-			  (setq sl--readch-input-string
+		  (when (null sl--readch-input-string)
+			;; If the input string is null then this is a call for new
+			;; input.  Read a new input string from the minibuffer,
+			;; save it and return the first character.
+			(setq sl--readch-input-string
+				  (let (standard-output)
+					;; to avoid minibuffer errors resetting this
 					(read-from-minibuffer "REDUCE: "
-										  nil nil nil 'sl--readch-history)
-					sl--readch-input-string-length
-					(length sl--readch-input-string)
-					sl--readch-input-string-index 0))
+										  nil nil nil 'sl--readch-history))
+				  sl--readch-input-string-length
+				  (length sl--readch-input-string)
+				  sl--readch-input-string-index 0)
+			(goto-char (point-max))	; in case point moved interactively
+			(princ sl--readch-input-string) (terpri) ; echo minibuffer input
+			(terpri))
 		  ;; Then return the next character from the input string.
 		  ;; When the last character has been returned, clear the
 		  ;; string to trigger new input.
@@ -1777,13 +1807,12 @@ Comments delimited by % and end-of-line are not transparent to READCH."
 			  (progn
 				(setq sl--readch-input-string nil)
 				$EOF$)			   ; for want of something better!
-			(prog1
-				(sl--char-to-interned-id
-				 (aref sl--readch-input-string sl--readch-input-string-index))
+			(let ((c (aref sl--readch-input-string sl--readch-input-string-index)))
 			  (setq sl--readch-input-string-index
 					(1+ sl--readch-input-string-index))
 			  (if (= sl--readch-input-string-index sl--readch-input-string-length)
-				  (setq sl--readch-input-string nil)))))
+				  (setq sl--readch-input-string nil))
+			  (if (eq c ?\n) $EOL$ (sl--char-to-interned-id c)))))
 	  ;; Read from interaction buffer:
 	  (with-current-buffer "*Standard LISP*"
 		(goto-char sl--marker)
@@ -1866,10 +1895,12 @@ selected output file.
 		(princ "Eval: ")
 		;; (read) reads from standard-input, which defaults to t
 		;; meaning read from the minibuffer:
-		(setq value (read))
-		;; (read) errors change standard-output to *Messages* buffer,
-		;; so...
-		(setq standard-output (current-buffer))
+		(setq value
+			  ;; (read) errors change standard-output to *Messages*
+			  ;; buffer, so...
+			  (let (standard-output)
+				(read)))
+		(goto-char (point-max))	   ; in case point moved interactively
 		(prin1 value) (terpri)
 		(setq value (ERRORSET '(eval value) t t))
 		(unless (atom value)

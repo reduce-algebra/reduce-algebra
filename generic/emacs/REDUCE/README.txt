@@ -39,40 +39,40 @@ session and run it as follows:
 2. Run M-x STANDARD-LISP
 
 3. After the appropriate prompt in the minibuffer, enter each of the
-following lines of input. The Lisp syntax is read as Emacs Lisp using
-(read) and the REDUCE syntax is read using READCH.
+following lines of input separately. The Lisp syntax is read as Emacs
+Lisp using (read) and the REDUCE syntax is read using READCH.
 
 (BEGIN2)
-!*comp := t;
-rds open("rlisp.red",'input);
+!*comp := t; rds open("rlisp.red",'input);
 (BEGIN2)
 rds open("rend.red",'input);
 (INITREDUCE)
 
-This gives the appropriate output in the *Standard LISP* buffer, namely
+This runs without complaints and gives the appropriate output in the
+*Standard LISP* buffer, namely
 
-REDUCE 3.3, 25-Jan-2018 ...
+REDUCE 3.3, 20-Feb-2018 ...
 
-1: <read input from the minibuffer>
+1: <read and echo input from the minibuffer>
 
 <output 1>
 
-2: <read input from the minibuffer>
+2: <read and echo input from the minibuffer>
 
 <output 2>
 
 etc.
 
-n: quit;
+n: bye;
 
 This interaction model with output to a normal buffer and input from
 the minibuffer is not very elegant, but it seems to work and is a
-fairly painless way to make Emacs wait for input. However, the output
-ends up in the *Messages* buffer, which I still need to fix reliably.
+fairly painless way to make Emacs wait for input.
 
-rds open("arith.red",'input);
-rds open("mathlib.red",'input);
-rds open("alg1.red",'input);
-rds open("alg2.red",'input);
+Can then input and compile the basic packages as follows to build a
+mini-REDUCE:
 
-all seem to read and compile OK.
+in "arith.red", "mathlib.red", "alg1.red", "alg2.red";
+algebraic;
+
+This will correctly process some of alg.tst.
