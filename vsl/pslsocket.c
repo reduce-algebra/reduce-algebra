@@ -149,12 +149,7 @@ int _(getsocket)(int mail_fd, char *string, int length)
     }
 }
 
-ssize_t
-writesocket (mail_fd, string, length)
-
-int mail_fd,length;
-char * string;
-
+ssize_t _(writesocket)(int mail_fd, char *string, int length)
 {   send (mail_fd, string, length, 0);
 }
 

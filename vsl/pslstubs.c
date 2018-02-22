@@ -123,410 +123,431 @@ int unixnull[2], unixeof[2];
  * via trivial interface code of this sort (eg all the elementary functions)
  * so this does not breach the spirit of the PSL implementation too
  * badly.
+ *
+ * Furthermore the little functions here will generally compile into just
+ * a simple jump instructions:
+ *    _foo: jmp foo@PLT
+ * and if the target concerned ends up reasonably close that will end up
+ * as a pc-relative jump - while if it is seriously remote it will be a
+ * jump via a memory location that contains the long address. This is not
+ * a severe burden in any case, because the functions that are called will
+ * do enough that their costs swamp that of the extra jump.
  */
 
+#include <stdio.h>
+#define __USE_XOPEN_EXTENDED
+#define __USE_GNU
+#include <signal.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <wait.h>
+#include <pthread.h>
+#include <time.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/sem.h>
+#include <dlfcn.h>
 
-void _sigrelse()
-{   return sigrelse();
+
+/* sigrelse is obsolete - use sigaction etc instead... */
+int _sigrelse(int s)
+{   return sigrelse(s);
 }
 
-void _ctime()
-{   return ctime();
+char *_ctime(const time_t *t)
+{   return ctime(t);
 }
 
-void _fopen()
-{   return fopen();
+FILE *_fopen(const char *name, const char *mode)
+{   return fopen(name, mode);
 }
 
-void _fclose()
-{   return fclose();
+int _fclose(FILE *s)
+{   return fclose(s);
 }
 
-void _fread()
-{   return fread();
+size_t _fread(void *p, size_t n, size_t m, FILE *s)
+{   return fread(p, n, m, s);
 }
 
-void _fputc()
-{   return fputc();
+int _fputc(int c, FILE *s)
+{   return putc(c, s);
 }
 
-void _fgetc()
-{   return fgetc();
+int _fgetc(FILE *s)
+{   return getc(s);
 }
 
-void _fgets()
-{   return fgets();
+char *_fgets(char *s, int n, FILE *f)
+{   return fgets(s, n, f);
 }
 
-void _fwrite()
-{   return fwrite();
+size_t _fwrite(void *p, size_t n, size_t m, FILE *s)
+{   return fwrite(p, n, m, s);
 }
 
-void _fflush()
-{   return fflush();
+int _fflush(FILE *f)
+{   return fflush(f);
 }
 
-void _fseek()
-{   return fseek();
+int _fseek(FILE *s, long o, int w)
+{   return fseek(s, o, w);
 }
 
-void _clearerr()
-{   return clearerr();
+void _clearerr(FILE *s)
+{   clearerr(s);
 }
 
-void _putw()
-{   return putw();
+int _putw(int w, FILE *s)
+{   return putw(w, s);
 }
 
-void _signal()
-{   return signal();
+sighandler_t _signal(int s, sighandler_t h)
+{   return signal(s, h);
 }
 
-void _sleep()
-{   return sleep();
+unsigned int _sleep(unsigned int n)
+{   return sleep(n);
 }
 
-void _setlinebuf()
-{   return setlinebuf();
+void _setlinebuf(FILE *s)
+{   setlinebuf(s);
 }
 
-void _getpid()
+pid_t _getpid()
 {   return getpid();
 }
 
-void _gethostid()
+long _gethostid()
 {   return gethostid();
 }
 
-void _writesocket()
-{   return writesocket();
-}
-
-void _fork()
+pid_t _fork()
 {   return fork();
 }
 
-void _wait()
-{   return wait();
+pid_t _wait(int *w)
+{   return wait(w);
 }
 
-void _popen()
-{   return popen();
+FILE *_popen(const char *s, const char *t)
+{   return popen(s, t);
 }
 
-void _pclose()
-{   return pclose();
+int _pclose(FILE *s)
+{   return pclose(s);
 }
 
-void _shmctl()
-{   return shmctl();
+int _shmctl(int id, int c, struct shmid_ds *d)
+{   return shmctl(id, c, d);
 }
 
-void _shmget()
-{   return shmget();
+int _shmget(key_t k, size_t n, int f)
+{   return shmget(k, n, f);
 }
 
-void _shmat()
-{   return shmat();
+void *_shmat(int id, const void *ad, int f)
+{   return shmat(id, ad, f);
 }
 
-void _shmdt()
-{   return shmdt();
+int _shmdt(const void *ad)
+{   return shmdt(ad);
 }
 
-void _semctl()
-{   return semctl();
+int _semctl(int id, int num, int cmd, ...)
+{   return semctl(id, num, cmd); /* Extra arg not supported here yet */
 }
 
-void _semget()
-{   return semget();
+int _semget(key_t k, int n, int f)
+{   return semget(k, n, f);
 }
 
-void _semop()
-{   return semop();
+int _semop(int id, struct sembuf *b, size_t n)
+{   return semop(id, b, n);
 }
 
-void _dlopen()
-{   return dlopen();
+void *_dlopen(const char *name, int f)
+{   return dlopen(name, f);
 }
 
-void _dlerror()
+char *_dlerror()
 {   return dlerror();
 }
 
-void _dlsym()
-{   return dlsym();
+void *_dlsym(void *h, const char *s)
+{   return dlsym(h, s);
 }
 
-void _dlclose()
-{   return dlclose();
+int _dlclose(void *h)
+{   return dlclose(h);
 }
 
-void _profil()
-{   return profil();
+int _profil(unsigned short *b, size_t n, size_t o, unsigned int s)
+{   return profil(b, n, o, s);
 }
 
-void _pthread_create()
-{   return pthread_create();
+int _pthread_create(pthread_t *newthr, pthread_attr_t *attrs,
+                    void *(*startup)(void *), void *arg)
+{   return pthread_create(newthr, attrs, startup, arg);
 }
 
-void _pthread_exit()
-{   return pthread_exit();
+void _pthread_exit(void *retval)
+{   pthread_exit(retval);
 }
 
-void _pthread_join()
-{   return pthread_join();
+int _pthread_join(pthread_t thr, void **ret)
+{   return pthread_join(thr, ret);
 }
 
-void _pthread_detach()
-{   return pthread_detach();
+int _pthread_detach(pthread_t thr)
+{   return pthread_detach(thr);
 }
 
-void _pthread_self()
+pthread_t _pthread_self()
 {   return pthread_self();
 }
 
-void _pthread_equal()
-{   return pthread_equal();
+int _pthread_equal(pthread_t t1, pthread_t t2)
+{   return pthread_equal(t1, t2);
 }
 
-void _pthread_attr_init()
-{   return pthread_attr_init();
+int _pthread_attr_init(pthread_attr_t *atts)
+{   return pthread_attr_init(atts);
 }
 
-void _pthread_attr_destroy()
-{   return pthread_attr_destroy();
+int _pthread_attr_destroy(pthread_attr_t *atts)
+{   return pthread_attr_destroy(atts);
 }
 
-void _pthread_attr_setdetachstate()
-{   return pthread_attr_setdetachstate();
+int _pthread_attr_setdetachstate(pthread_attr_t *atts, int det)
+{   return pthread_attr_setdetachstate(atts, det);
 }
 
-void _pthread_attr_getguardsize()
-{   return pthread_attr_getguardsize();
+int _pthread_attr_getguardsize(const pthread_attr_t *atts, size_t *gs)
+{   return pthread_attr_getguardsize(atts, gs);
 }
 
-void _pthread_attr_setguardsize()
-{   return pthread_attr_setguardsize();
+int _pthread_attr_setguardsize(pthread_attr_t *atts, size_t gs)
+{   return pthread_attr_setguardsize(atts, gs);
 }
 
-void _pthread_attr_getschedparam()
-{   return pthread_attr_getschedparam();
+int _pthread_attr_getschedparam(const pthread_attr_t *atts, struct sched_param *ss)
+{   return pthread_attr_getschedparam(atts, ss);
 }
 
-void _pthread_attr_setschedparam()
-{   return pthread_attr_setschedparam();
+int _pthread_attr_setschedparam(pthread_attr_t *atts, const struct sched_param *ss)
+{   return pthread_attr_setschedparam(atts, ss);
 }
 
-void _pthread_attr_getschedpolicy()
-{   return pthread_attr_getschedpolicy();
+int _pthread_attr_getschedpolicy(const pthread_attr_t *atts, int *rp)
+{   return pthread_attr_getschedpolicy(atts, rp);
 }
 
-void _pthread_attr_setschedpolicy()
-{   return pthread_attr_setschedpolicy();
+int _pthread_attr_setschedpolicy(pthread_attr_t *atts, int rp)
+{   return pthread_attr_setschedpolicy(atts, rp);
 }
 
-void _pthread_attr_getinheritsched()
-{   return pthread_attr_getinheritsched();
+int _pthread_attr_getinheritsched(const pthread_attr_t *atts, int *ri)
+{   return pthread_attr_getinheritsched(atts, ri);
 }
 
-void _pthread_attr_setinheritsched()
-{   return pthread_attr_setinheritsched();
+int _pthread_attr_setinheritsched(pthread_attr_t *atts, int ri)
+{   return pthread_attr_setinheritsched(atts, ri);
 }
 
-void _pthread_attr_getscope()
-{   return pthread_attr_getscope();
+int _pthread_attr_getscope(const pthread_attr_t *atts, int *rs)
+{   return pthread_attr_getscope(atts, rs);
 }
 
-void _pthread_attr_setscope()
-{   return pthread_attr_setscope();
+int _pthread_attr_setscope(pthread_attr_t *atts, int rs)
+{   return pthread_attr_setscope(atts, rs);
 }
 
-void _pthread_attr_getstack()
+int _pthread_attr_getstack()
 {   return pthread_attr_getstack();
 }
 
-void _pthread_attr_setstack()
+int _pthread_attr_setstack()
 {   return pthread_attr_setstack();
 }
 
-void _pthread_attr_getstacksize()
+int _pthread_attr_getstacksize()
 {   return pthread_attr_getstacksize();
 }
 
-void _pthread_attr_setstacksize()
+int _pthread_attr_setstacksize()
 {   return pthread_attr_setstacksize();
 }
 
-void _pthread_setschedparam()
+int _pthread_setschedparam()
 {   return pthread_setschedparam();
 }
 
-void _pthread_getschedparam()
+int _pthread_getschedparam()
 {   return pthread_getschedparam();
 }
 
-void _pthread_setschedprio()
+int _pthread_setschedprio()
 {   return pthread_setschedprio();
 }
 
-void _pthread_getconcurrency()
+int _pthread_getconcurrency()
 {   return pthread_getconcurrency();
 }
 
-void _pthread_yield()
+int _pthread_yield()
 {   return pthread_yield();
 }
 
-void _pthread_setaffinity_np()
+int _pthread_setaffinity_np()
 {   return pthread_setaffinity_np();
 }
 
-void _pthread_getaffinity_np()
+int _pthread_getaffinity_np()
 {   return pthread_getaffinity_np();
 }
 
-void _pthread_once()
+int _pthread_once()
 {   return pthread_once();
 }
 
-void _pthread_setcancelstate()
+int _pthread_setcancelstate()
 {   return pthread_setcancelstate();
 }
 
-void _pthread_setcanceltype()
+int _pthread_setcanceltype()
 {   return pthread_setcanceltype();
 }
 
-void _pthread_cancel()
+int _pthread_cancel()
 {   return pthread_cancel();
 }
 
-void _pthread_testcancel()
+int _pthread_testcancel()
 {   return pthread_testcancel();
 }
 
-void _pthread_mutex_init()
+int _pthread_mutex_init()
 {   return pthread_mutex_init();
 }
 
-void _pthread_mutex_destroy()
+int _pthread_mutex_destroy()
 {   return pthread_mutex_destroy();
 }
 
-void _pthread_mutex_trylock()
+int _pthread_mutex_trylock()
 {   return pthread_mutex_trylock();
 }
 
-void _pthread_mutex_lock()
+int _pthread_mutex_lock()
 {   return pthread_mutex_lock();
 }
 
-void _pthread_mutex_unlock()
+int _pthread_mutex_unlock()
 {   return pthread_mutex_unlock();
 }
 
-void _pthread_mutexattr_init()
+int _pthread_mutexattr_init()
 {   return pthread_mutexattr_init();
 }
 
-void _pthread_mutexattr_destroy()
+int _pthread_mutexattr_destroy()
 {   return pthread_mutexattr_destroy();
 }
 
-void _pthread_mutexattr_getpshared()
+int _pthread_mutexattr_getpshared()
 {   return pthread_mutexattr_getpshared();
 }
 
-void _pthread_mutexattr_setpshared()
+int _pthread_mutexattr_setpshared()
 {   return pthread_mutexattr_setpshared();
 }
 
-void _pthread_rwlock_unlock()
+int _pthread_rwlock_unlock()
 {   return pthread_rwlock_unlock();
 }
 
-void _pthread_rwlockattr_init()
+int _pthread_rwlockattr_init()
 {   return pthread_rwlockattr_init();
 }
 
-void _pthread_rwlockattr_destroy()
+int _pthread_rwlockattr_destroy()
 {   return pthread_rwlockattr_destroy();
 }
 
-void _pthread_rwlockattr_getpshared()
+int _pthread_rwlockattr_getpshared()
 {   return pthread_rwlockattr_getpshared();
 }
 
-void _pthread_rwlockattr_setpshared()
+int _pthread_rwlockattr_setpshared()
 {   return pthread_rwlockattr_setpshared();
 }
 
-void _pthread_rwlockattr_getkind_np()
+int _pthread_rwlockattr_getkind_np()
 {   return pthread_rwlockattr_getkind_np();
 }
 
-void _pthread_rwlockattr_setkind_np()
+int _pthread_rwlockattr_setkind_np()
 {   return pthread_rwlockattr_setkind_np();
 }
 
-void _pthread_cond_init()
+int _pthread_cond_init()
 {   return pthread_cond_init();
 }
 
-void _pthread_cond_destroy()
+int _pthread_cond_destroy()
 {   return pthread_cond_destroy();
 }
 
-void _pthread_cond_signal()
+int _pthread_cond_signal()
 {   return pthread_cond_signal();
 }
 
-void _pthread_cond_broadcast()
+int _pthread_cond_broadcast()
 {   return pthread_cond_broadcast();
 }
 
-void _pthread_cond_wait()
+int _pthread_cond_wait()
 {   return pthread_cond_wait();
 }
 
-void _pthread_cond_timedwait()
+int _pthread_cond_timedwait()
 {   return pthread_cond_timedwait();
 }
 
-void _pthread_condattr_init()
+int _pthread_condattr_init()
 {   return pthread_condattr_init();
 }
 
-void _pthread_condattr_destroy()
+int _pthread_condattr_destroy()
 {   return pthread_condattr_destroy();
 }
 
-void _pthread_condattr_getpshared()
+int _pthread_condattr_getpshared()
 {   return pthread_condattr_getpshared();
 }
 
-void _pthread_condattr_setpshared()
+int _pthread_condattr_setpshared()
 {   return pthread_condattr_setpshared();
 }
 
-void _pthread_key_create()
+int _pthread_key_create()
 {   return pthread_key_create();
 }
 
-void _pthread_key_delete()
+int _pthread_key_delete()
 {   return pthread_key_delete();
 }
 
-void _pthread_getspecific()
+int _pthread_getspecific()
 {   return pthread_getspecific();
 }
 
-void _pthread_setspecific()
+int _pthread_setspecific()
 {   return pthread_setspecific();
 }
 
-void _pthread_atfork()
+int _pthread_atfork()
 {   return pthread_atfork();
 }
 
