@@ -153,6 +153,14 @@ modified by SET or SETQ."))
 
 (put 'T 'GLOBAL t)
 
+;; Not Standard LISP but PSL and assumed by REDUCE:
+(defvar *ECHO nil
+  "*echo = [Initially: nil] switch
+The switch echo is used to control the echoing of input. When (on echo)
+is placed in an input file, the contents of the file are echoed on the standard
+output device. Dskin does not change the value of *echo, so one may say
+(on echo) before calling dskin, and the input will be echoed.")
+
 ;;; FUNCTIONS
 ;;; =========
 
@@ -1705,6 +1713,7 @@ returns the internal name of the previously selected input file.
 	  (setq sl--read-stream stream))))
 
 (defun READ ()
+  ;; *** NEED TO REDIRECT INPUT AS FOR READCH. ***
   "READ():any
 The next expression from the file currently selected for
 input. Valid input forms are: vector-notation, dot-notation,
@@ -1721,9 +1730,10 @@ support the REDUCE YESP function."
 			 (let (standard-output)
 			   ;; to avoid minibuffer errors resetting this
 			   (read))))
-		(goto-char (point-max))	   ; in case point moved interactively
-		(prin1 value) (terpri)	   ; echo minibuffer input
-		(terpri)
+		(when *ECHO
+		  (goto-char (point-max))  ; in case point moved interactively
+		  (prin1 value) (terpri)
+		  (terpri))
 		(if (symbolp value)
 			(intern (upcase (symbol-name value)))
 		  value))
@@ -1763,16 +1773,21 @@ Returns the next interned character from the file currently selected
 for input. Two special cases occur. If all the characters in an input
 record have been read, the value of !$EOL!$ is returned. If the file
 selected for input has all been read the value of !$EOF!$ is returned.
-Comments delimited by % and end-of-line are not transparent to READCH."
+Comments delimited by % and end-of-line are not transparent to READCH.
+
+In ESL, if *ECHO is non-nil then echo file and minibuffer input
+to `standard-output.'"
   (if sl--read-stream
 	  ;; Read from a file:
 	  (let ((result
 			 (with-current-buffer sl--read-stream
 			   (cond ((eobp) $EOF$)
-					 ((eolp) (forward-line) $EOL$)
-					 (t (prog1
-							(sl--char-to-interned-id (char-after))
-						  (forward-char)))))))
+					 ((eolp) (if *ECHO (terpri))
+					  (forward-line) $EOL$)
+					 (t (let ((c (char-after)))
+						  (if *ECHO (write-char c))
+						  (forward-char)
+						  (sl--char-to-interned-id c)))))))
 		;; When end of file is reached on a non-standard input device,
 		;; the standard input device is reselected. But can't kill the
 		;; buffer within `with-current-buffer'!
@@ -1797,9 +1812,11 @@ Comments delimited by % and end-of-line are not transparent to READCH."
 				  sl--readch-input-string-length
 				  (length sl--readch-input-string)
 				  sl--readch-input-string-index 0)
-			(goto-char (point-max))	; in case point moved interactively
-			(princ sl--readch-input-string) (terpri) ; echo minibuffer input
-			(terpri))
+			(when *ECHO
+			  (with-current-buffer standard-output
+				(goto-char (point-max)) ; in case point moved interactively
+				(princ sl--readch-input-string) (terpri)
+				(terpri))))
 		  ;; Then return the next character from the input string.
 		  ;; When the last character has been returned, clear the
 		  ;; string to trigger new input.

@@ -72,7 +72,12 @@ fairly painless way to make Emacs wait for input.
 Can then input and compile the basic packages as follows to build a
 mini-REDUCE:
 
-in "arith.red", "mathlib.red", "alg1.red", "alg2.red";
+in "arith.red", "mathlib.red", "alg1.red", "alg2.red"$
+in "matr.red", "hephys.red"$
 algebraic;
 
-This will correctly process some of alg.tst.
+Now
+
+in "alg.tst"
+
+will correctly process most of "alg.tst".
