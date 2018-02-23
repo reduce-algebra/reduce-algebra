@@ -10,27 +10,18 @@
 (require 'sl)
 
 ;; For the Emacs Lisp compiler:
-(defvar CURSYM\*)
-(defvar OLDCHAN\*)
-(defvar TTYPE\*)
-(defvar NXTSYM\*)
-(defvar CRCHAR\*)
-(defvar \*MODE)
-(defvar FNAME\*)
+(defvar CURSYM*)
+(defvar OLDCHAN*)
+(defvar TTYPE*)
+(defvar NXTSYM*)
+(defvar CRCHAR*)
+(defvar *MODE)
+(defvar FNAME*)
 
 ;; Needed if this file is *not* compiled:
 (cl-eval-when (eval)
   (setq max-lisp-eval-depth 2000
 		max-specpdl-size 2500))
-
-;; Lowercase LAMBDA, NIL and T in REDUCE source code -- BOTH
-;; properties are necessary, at least for LAMBDA and T:
-(put 'LAMBDA 'QUOTENEWNAM 'lambda)
-(put 'LAMBDA 'NEWNAM 'lambda)
-(put 'NIL 'QUOTENEWNAM nil)
-(put 'NIL 'NEWNAM nil)
-(put 'T 'QUOTENEWNAM t)
-(put 'T 'NEWNAM t)
 
 ;;;% Standard LISP equivalent of BOOT.RED.
 

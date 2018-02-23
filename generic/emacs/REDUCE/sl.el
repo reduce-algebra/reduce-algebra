@@ -479,7 +479,11 @@ on page 3. Identifiers are not interned on the OBLIST. Function
 pointers may be compressed but this is an undefined use. If an entity
 cannot be parsed out of U or characters are left over after parsing
 an error occurs:
-***** Poorly formed atom in COMPRESS"
+***** Poorly formed atom in COMPRESS
+
+In ESL, an ! preceding an identifier beginning with : followed by
+an upper-case letter is left in place to prevent it becoming an
+Emacs Lisp keyword, and LAMBDA, NIL and T are downcased."
   ;; Concatenate the characters into a string and then handle any !
   ;; characters as follows:
   ;; A string begins with " and should retain any ! characters without
@@ -510,8 +514,10 @@ an error occurs:
 					 (setq i (1+ i)))
 				 (push e ss))
 			   (setq i (1+ i)))
-			 (make-symbol				; uninterned symbol
-			  (apply #'string (reverse ss))))))))
+			 (setq ss (apply #'string (reverse ss)))
+			 (if (member ss '("LAMBDA" "NIL" "T"))
+				 (setq ss (downcase ss)))
+			 (make-symbol ss) )))))		; uninterned symbol
 
 (defun EXPLODE (u)
   "EXPLODE(U:{atom}-{vector}):id-list eval, spread
@@ -1020,7 +1026,7 @@ LOOP: IF NULL CDR U THEN RETURN EVAL CAR U
    U := CDR U;
    GO LOOP
 END;"
-  (declare (debug and))
+  (declare (debug t))
   `(and ,@u))
 
 (defmacro COND (&rest u)				; does not work as alias
@@ -1056,7 +1062,7 @@ LOOP: IF NULL U THEN RETURN NIL
    U := CDR U;
    GO LOOP
 END;"
-  (declare (debug or))
+  (declare (debug t))
   `(or ,@u))
 
 
@@ -1712,8 +1718,22 @@ returns the internal name of the previously selected input file.
 		(if sl--read-stream (cons sl--read-stream 'INPUT))
 	  (setq sl--read-stream stream))))
 
+(defun sl--read-and-echo ()
+  "Read one Lisp expression as text from current `filehandle'.
+Return as Lisp object.  Echo the input if `*ECHO' is non-nil."
+  (let ((value
+		 (let (standard-output
+			   ;; to avoid minibuffer errors resetting this
+			   (standard-input (or sl--read-stream t)))
+		   (read))))
+	(when (or (eq standard-input t) *ECHO) ; always echo minibuffer input
+	  (with-current-buffer standard-output
+		(goto-char (point-max))	   ; in case point moved interactively
+		(prin1 value) (terpri)
+		(terpri)))
+	value))
+
 (defun READ ()
-  ;; *** NEED TO REDIRECT INPUT AS FOR READCH. ***
   "READ():any
 The next expression from the file currently selected for
 input. Valid input forms are: vector-notation, dot-notation,
@@ -1726,14 +1746,7 @@ selected input file is reached.
 This ESL implementation is incomplete and provided primarily to
 support the REDUCE YESP function."
   (condition-case nil
-	  (let ((value
-			 (let (standard-output)
-			   ;; to avoid minibuffer errors resetting this
-			   (read))))
-		(when *ECHO
-		  (goto-char (point-max))  ; in case point moved interactively
-		  (prin1 value) (terpri)
-		  (terpri))
+	  (let ((value (sl--read-and-echo)))
 		(if (symbolp value)
 			(intern (upcase (symbol-name value)))
 		  value))
@@ -1812,11 +1825,11 @@ to `standard-output.'"
 				  sl--readch-input-string-length
 				  (length sl--readch-input-string)
 				  sl--readch-input-string-index 0)
-			(when *ECHO
-			  (with-current-buffer standard-output
-				(goto-char (point-max)) ; in case point moved interactively
-				(princ sl--readch-input-string) (terpri)
-				(terpri))))
+			;; (when *ECHO
+			(with-current-buffer standard-output
+			  (goto-char (point-max)) ; in case point moved interactively
+			  (princ sl--readch-input-string) (terpri)
+			  (terpri)));)
 		  ;; Then return the next character from the input string.
 		  ;; When the last character has been returned, clear the
 		  ;; string to trigger new input.
@@ -1910,15 +1923,7 @@ selected output file.
 	  (while t
 		(terpri)
 		(princ "Eval: ")
-		;; (read) reads from standard-input, which defaults to t
-		;; meaning read from the minibuffer:
-		(setq value
-			  ;; (read) errors change standard-output to *Messages*
-			  ;; buffer, so...
-			  (let (standard-output)
-				(read)))
-		(goto-char (point-max))	   ; in case point moved interactively
-		(prin1 value) (terpri)
+		(setq value (sl--read-and-echo))
 		(setq value (ERRORSET '(eval value) t t))
 		(unless (atom value)
 		  (terpri)
@@ -2010,6 +2015,8 @@ Then evaluate it and print value into *Standard LISP* buffer."
 ;;; These function are not defined in the Standard Lisp Report.
 
 (defalias 'ID2STRING 'symbol-name)
+
+(defalias 'CONCAT 'concat)
 
 (defun TIME ()
   "(time): integer expr
