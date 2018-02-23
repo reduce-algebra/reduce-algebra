@@ -66,8 +66,6 @@
 
 
 
-long _(unexec)();
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -78,6 +76,8 @@ long _(unexec)();
 #ifndef PAGESIZE
 #define PAGESIZE 4096
 #endif
+
+intptr_t _(unexec)();
 
 
 
@@ -105,7 +105,7 @@ char *  abs_imagefile = NULL; /* like imagefile, but as an absolute path */
 int64_t   max_image_size;
 int64_t   oldbreakvalue;
 
-long bpscontrol[2];
+intptr_t bpscontrol[2];
 
 extern int64_t  alreadysetupbpsandheap;
 extern int64_t  hashtable;
@@ -143,6 +143,40 @@ long sizeofsymvectors = 0;
 void setupbps();
 void getheap(int64_t);
 void read_error(char *,int64_t,int64_t);
+
+/*
+ * On the Macintosh you get messages telling you that sbrk is deprecated.
+ * If you look up its documentation on Linux that tells you that these
+ * days you syhould use malloc instead.
+ * On Windows it is not available. So re-work to remove use of it might
+ * be in order! But will that interact with the scheme for dumping and
+ * reloading images?
+ */
+
+#ifdef __WIN64__
+
+void *sbrk(intptr_t n)
+{   void *p;
+    if (n == 0) return (void *)0;
+    p = (void *)malloc(n);
+    if (p == NULL) return (void *)(-1);
+    else return p;
+}
+
+/* realpath() is supposed to convert the path s to canonical form. This
+ * involved traversing any symbolic links and tidying up any sub-strings
+ * such as "/../". Here I just let it copy the path!
+ */
+
+char *realpath(const char *s, char *n)
+{   if (n == NULL) n = (char *)malloc(strlen(s) + 1);
+    if (n == NULL) return NULL;
+    strcpy(n, s);
+    return n;
+}
+
+#endif
+
 
 int setupbpsandheap(int argc,char *argv[])
 {   int64_t ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub,diff;
@@ -335,7 +369,18 @@ void read_error(char * what,int64_t bytesread,int64_t byteswanted)
    is made to make sure that nextbps falls on an even word boundry.
  */
 
+#ifdef __WIN64__
+#define PROT_READ  1
+#define PROT_WRITE 2
+#define PROT_EXEC  4
+
+int mprotect(void *address, size_t len, int prot)
+{
+    return 0; /* pretend success */
+}
+#else
 #include <sys/mman.h>
+#endif
 
 void setupbps()
 {   char *p = (char *) bps;
@@ -537,10 +582,10 @@ int64_t _(alterheapsize)(int increment)
 
 }
 
-long _(unexec)()
+intptr_t _(unexec)()
 {   bpscontrol[0] = bpslowerbound;
     bpscontrol[1] = BPSSIZE;
-    return((long) bpscontrol);
+    return (intptr_t)bpscontrol;
 }
 
 char *_(get_imagefilepath)()

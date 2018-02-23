@@ -38,10 +38,7 @@
 
 #ifdef __CYGWIN__
 
-/* At present the code here is not expected to WORK under Cygwin - the
- * definitions here are to let it compile and link. Well because Cygwin
- * provides a world rather like Linux I hope to be able to get it going
- * without very much pain.
+/* This is expected to be rather similar to the Linux case.
  */
 
 int profil()
@@ -68,12 +65,7 @@ int pthread_rwlockattr_setkind_np()
 
 #ifdef __clang__
 
-/* At present the code here is not expected to WORK on a Mac - the
- * definitions here are to let it compile and link. But there are
- * alternative files in the PSL distribution that I should be able to
- * merge in stuff from, and anyway at this level the Macintosh is being
- * used as a fairly straightforward variant on BSD, so there is good
- * reason to be hopeful.
+/* Foe the Macintosh.
  */
 
 
@@ -552,8 +544,11 @@ int _pthread_atfork(void (*prep)(), void (*par)(), void (*chi)())
 {   return pthread_atfork(prep, par, chi);
 }
 
-
 #endif /* __linux__ */
+
+#ifdef __WIN64__
+
+#endif
 
 /* end of pslstubs.c */
 

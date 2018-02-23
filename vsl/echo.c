@@ -49,10 +49,12 @@
  */
 
 
-/*#include <sgtty.h> */
-#include <sys/ioctl.h>
 #include <stdio.h>
+
+#ifndef __WIN64__
+#include <sys/ioctl.h>
 #include <pwd.h>
+#endif
 
 /*
  * The functions here are (just) called from compiled code. In the
@@ -118,7 +120,7 @@ char *_(external_user_homedir_string)()
 
 char *_(external_anyuser_homedir_string)(const char *username)
 {   struct passwd *ptr;
-    if (ptr = getpwnam(username)) return(ptr -> pw_dir);
+    if ((ptr = getpwnam(username)) != NULL) return(ptr -> pw_dir);
     else return "";
 }
 

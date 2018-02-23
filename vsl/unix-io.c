@@ -187,7 +187,7 @@ char *_(expand_file_name)(const char *fname)
             {   save = *e;
                 *e = '\0';
                 if (tilde)
-                {   if (p = getpwnam(s))  t = (p -> pw_dir);
+                {   if ((p = getpwnam(s)) != NULL)  t = (p -> pw_dir);
                 }
                 else
                     t = getenv(s);
@@ -195,7 +195,7 @@ char *_(expand_file_name)(const char *fname)
                 s = e;
             }
             if (t)
-                while (*c++ = *t++)
+                while ((*c++ = *t++) != 0)
                     ;
             else
             {   strcpy(copy, fname);
@@ -221,7 +221,7 @@ void _(unixcd)(const char *filename)
 }
 
 int _(unixfclose)( FILE *ix)
-{   fclose (ix);
+{   return fclose(ix);
 }
 
 int _(external_system)(const char *command)
@@ -231,7 +231,7 @@ int _(external_system)(const char *command)
 /* Tag( external_exit )
  */
 int _(external_exit)(int status)
-{   exit(status);
+{   return exit(status);
 }
 
 /* This allows for up to 20 entries and then overflows... */

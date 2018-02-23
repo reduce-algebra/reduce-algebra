@@ -73,7 +73,7 @@ fp_except fp_mask,fp_stick;
 int      fp_first=0;
 #endif
 
-int forminit(FILE **,FILE **);
+int forminit(FILE **, FILE **);
 
 struct sigaction act;
 
@@ -114,11 +114,12 @@ void _(sun3_sigrelse)(int sig, void (*action)())
 
 
 int _(ieee_handler)(char *x, int y)
-{   mkfifo(x, y);
+{   return mkfifo(x, y);
 }
 
-int _(ieee_flags)(int64_t x1,int64_t x2,int64_t x3,int64_t x4)
-{   if (x1 == 10)  forminit((FILE **)x2,(FILE **)x3);
+int _(ieee_flags)(int64_t x1, intptr_t x2, intptr_t x3, int64_t x4)
+{   if (x1 == 10) return forminit((FILE **)x2, (FILE **)x3);
+    else return 0;
 }
 
 /* end of sigs.c */

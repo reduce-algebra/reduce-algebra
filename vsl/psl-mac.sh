@@ -3,12 +3,14 @@
 # Uses existing main.s and dmain.s that may have been hand edited.
 
 
-gcc -c main.s
-gcc -c dmain.s
+gcc -c -g main.s
+gcc -c -g dmain.s
 
 rm -f bpsl
 
-gcc -o bpsl -DBPSSIZE=20500000 \
+gcc -g -O1 \
+   -DMACINTOSH \
+   -DBPSSIZE=20500000 \
    bps.c \
    bpsheap.c \
    echo.c \
@@ -23,7 +25,10 @@ gcc -o bpsl -DBPSSIZE=20500000 \
    creloc.c \
    formlink2.c \
    pslstubs.c \
-   -DLINUX main.o dmain.o -lm  -ldl -lpthread
+   main.o \
+   dmain.o \
+   -lm  -ldl -lpthread \
+   -o bpsl
 
 
 ./bpsl

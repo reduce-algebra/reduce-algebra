@@ -102,7 +102,7 @@ char *_(external_pwd)()
     /* Trash the newline at the end of the string and follow the PSL
      * convention that directory strings are terminated with a slash.
      */
-    if ( Where = index( Name, '\n' ) )
+    if ((Where = index( Name, '\n' )) != NULL)
         *Where = '/';
 
     return( Name );    /* To be imported from static area to a heap string. */

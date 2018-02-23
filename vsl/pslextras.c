@@ -76,8 +76,12 @@
 #define _(x) x
 #endif
 
-int _(external_alarm)(unsigned long int sec)
-{   alarm(sec);
+/*
+ * "This interface is made obsolete by setitimer(2)"
+ */
+
+unsigned int _(external_alarm)(unsigned long int sec)
+{   return alarm(sec);
 }
 
 int _(external_ualarm)(unsigned long int usec, unsigned long int repeat)
@@ -167,9 +171,7 @@ int _(external_setenv)(const char *var, const char *val, int ov)
  * was allocated using calloc, with enough extra room at the end so not
  * to have to do a realloc().
  */
-int setenv (var, value,ov)
-const char *var, *value;
-int ov;
+int setenv(const char *var, const char *value, int ov)
 {   extern char **environ;
     int index = 0;
     int len = strlen(var);
@@ -189,6 +191,7 @@ int ov;
     strcpy (environ [index], var);
     strcat (environ [index], value);
     environ [++index] = NULL;
+    return 0;
 }
 
 void _(block_copy)(const char *b1, char *b2, int length)
@@ -218,6 +221,7 @@ int _(unixwriterecord)(FILE *fp, char *buf, int count)
 {   int i;
     for (i=0; i<count; i++, buf++)
         fputc(*buf, fp);
+    return 0;
 }
 
 

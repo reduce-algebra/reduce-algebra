@@ -1,5 +1,7 @@
 #! /bin/bash -v
 
+# maindmain.sh
+
 # This version used symval+NNN(%rip) everywhere. If this is what is wanted
 # I obviously hope tha the compiler that generates mai.s will stick the
 # extra annotation in there!
@@ -64,29 +66,4 @@ sed -e 's/\[/(/g'                  \
     -e 's/@@@ .globl / .globl _/g'         \
     < ../psl/dist/kernel/AMD64_ext/dmain.s > dmain.s
 
-gcc -c main.s
-gcc -c dmain.s
-
-rm -f bpsl
-
-gcc -o bpsl \
-    -DLINUX -DBPSSIZE=20500000 \
-    bps.c \
-    bpsheap.c \
-    echo.c \
-    file-status.c \
-    float.c \
-    os-hooks.c \
-    pslextras.c \
-    pslsocket.c \
-    pwd-fn.c \
-    AMD64_ext/sigs.c \
-    unix-io.c \
-    creloc.c \
-    formlink2.c \
-    pslstubs.c \
-    main.o dmain.o -lm -ldl -lpthread
-
-ls -l bpsl
-
-./bpsl
+# end of file

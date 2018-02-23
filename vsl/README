@@ -4,8 +4,4 @@ the system can build and run much of Reduce. Since there is only
 an interpreter it will be slow, but for teaching purposes and for
 fun it may still be of interest.
 
-As always with things like this I would view it as nice if a couple of
-people were willing to join in debugging and getting this straight with
-me.
-
-Arthur Norman.   February 2012
+Arthur Norman.   2012-2018

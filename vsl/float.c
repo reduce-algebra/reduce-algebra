@@ -181,6 +181,9 @@ void _(uxwritefloat)(char *buf, double *flt, const char *convstr)
 
     sprintf(temps, convstr, *flt);
 
+/*
+ * The Macintosh deprecates finite().
+ */
     if (finite(*flt))
     {
 
@@ -188,7 +191,7 @@ void _(uxwritefloat)(char *buf, double *flt, const char *convstr)
          */
         dot = strrchr(temps, '.');
         if (dot == NULL)
-            /* Check to see if the number is in scientific notation. If so, we need
+        {   /* Check to see if the number is in scientific notation. If so, we need
              *  add the .0 into the middle of the string, just before the e.
              */
             if ((e = strrchr(temps, 'e')) || (e = strrchr(temps, 'E')))
@@ -200,6 +203,7 @@ void _(uxwritefloat)(char *buf, double *flt, const char *convstr)
             else
             {   strcat(temps, ".0");
             }
+        }
     }
     /* Install the length of the string into the Lisp header word
      */
