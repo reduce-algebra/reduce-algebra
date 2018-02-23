@@ -141,6 +141,7 @@ int unixnull[2], unixeof[2];
 #include <sys/types.h>
 #include <unistd.h>
 #include <wait.h>
+#define __USE_UNIX98
 #include <pthread.h>
 #include <time.h>
 #include <sys/ipc.h>
@@ -363,32 +364,32 @@ int _pthread_attr_setscope(pthread_attr_t *atts, int rs)
 {   return pthread_attr_setscope(atts, rs);
 }
 
-int _pthread_attr_getstack()
-{   return pthread_attr_getstack();
+int _pthread_attr_getstack(pthread_attr_t *attr, void **a, size_t *s)
+{   return pthread_attr_getstack(attr, a, s);
 }
 
-int _pthread_attr_setstack()
-{   return pthread_attr_setstack();
+int _pthread_attr_setstack(pthread_attr_t *attr, void *a, size_t s)
+{   return pthread_attr_setstack(attr, a, s);
 }
 
-int _pthread_attr_getstacksize()
-{   return pthread_attr_getstacksize();
+int _pthread_attr_getstacksize(const pthread_attr_t *attr, size_t *s)
+{   return pthread_attr_getstacksize(attr, s);
 }
 
-int _pthread_attr_setstacksize()
-{   return pthread_attr_setstacksize();
+int _pthread_attr_setstacksize(pthread_attr_t *attr, size_t s)
+{   return pthread_attr_setstacksize(attr, s);
 }
 
-int _pthread_setschedparam()
-{   return pthread_setschedparam();
+int _pthread_setschedparam(pthread_t t, int pol, const struct sched_param *p)
+{   return pthread_setschedparam(t, pol, p);
 }
 
-int _pthread_getschedparam()
-{   return pthread_getschedparam();
+int _pthread_getschedparam(pthread_t t, int *pol, struct sched_param *p)
+{   return pthread_getschedparam(t, pol, p);
 }
 
-int _pthread_setschedprio()
-{   return pthread_setschedprio();
+int _pthread_setschedprio(pthread_t t, int p)
+{   return pthread_setschedprio(t, p);
 }
 
 int _pthread_getconcurrency()
@@ -399,156 +400,156 @@ int _pthread_yield()
 {   return pthread_yield();
 }
 
-int _pthread_setaffinity_np()
-{   return pthread_setaffinity_np();
+int _pthread_setaffinity_np(pthread_t t, size_t n, const cpu_set_t *c)
+{   return pthread_setaffinity_np(t, n, c);
 }
 
-int _pthread_getaffinity_np()
-{   return pthread_getaffinity_np();
+int _pthread_getaffinity_np(pthread_t t, size_t n, cpu_set_t *c)
+{   return pthread_getaffinity_np(t, n, c);
 }
 
-int _pthread_once()
-{   return pthread_once();
+int _pthread_once(pthread_once_t *t, void (*i)())
+{   return pthread_once(t, i);
 }
 
-int _pthread_setcancelstate()
-{   return pthread_setcancelstate();
+int _pthread_setcancelstate(int s, int *o)
+{   return pthread_setcancelstate(s, o);
 }
 
-int _pthread_setcanceltype()
-{   return pthread_setcanceltype();
+int _pthread_setcanceltype(int t, int *o)
+{   return pthread_setcanceltype(t, o);
 }
 
-int _pthread_cancel()
-{   return pthread_cancel();
+int _pthread_cancel(pthread_t t)
+{   return pthread_cancel(t);
 }
 
-int _pthread_testcancel()
-{   return pthread_testcancel();
+void _pthread_testcancel()
+{   pthread_testcancel();
 }
 
-int _pthread_mutex_init()
-{   return pthread_mutex_init();
+int _pthread_mutex_init(pthread_mutex_t *m, const pthread_mutexattr_t *a)
+{   return pthread_mutex_init(m, a);
 }
 
-int _pthread_mutex_destroy()
-{   return pthread_mutex_destroy();
+int _pthread_mutex_destroy(pthread_mutex_t *m)
+{   return pthread_mutex_destroy(m);
 }
 
-int _pthread_mutex_trylock()
-{   return pthread_mutex_trylock();
+int _pthread_mutex_trylock(pthread_mutex_t *m)
+{   return pthread_mutex_trylock(m);
 }
 
-int _pthread_mutex_lock()
-{   return pthread_mutex_lock();
+int _pthread_mutex_lock(pthread_mutex_t *m)
+{   return pthread_mutex_lock(m);
 }
 
-int _pthread_mutex_unlock()
-{   return pthread_mutex_unlock();
+int _pthread_mutex_unlock(pthread_mutex_t *m)
+{   return pthread_mutex_unlock(m);
 }
 
-int _pthread_mutexattr_init()
-{   return pthread_mutexattr_init();
+int _pthread_mutexattr_init(pthread_mutexattr_t *m)
+{   return pthread_mutexattr_init(m);
 }
 
-int _pthread_mutexattr_destroy()
-{   return pthread_mutexattr_destroy();
+int _pthread_mutexattr_destroy(pthread_mutexattr_t *a)
+{   return pthread_mutexattr_destroy(a);
 }
 
-int _pthread_mutexattr_getpshared()
-{   return pthread_mutexattr_getpshared();
+int _pthread_mutexattr_getpshared(const pthread_mutexattr_t *a, int *p)
+{   return pthread_mutexattr_getpshared(a, p);
 }
 
-int _pthread_mutexattr_setpshared()
-{   return pthread_mutexattr_setpshared();
+int _pthread_mutexattr_setpshared(pthread_mutexattr_t *a, int p)
+{   return pthread_mutexattr_setpshared(a, p);
 }
 
-int _pthread_rwlock_unlock()
-{   return pthread_rwlock_unlock();
+int _pthread_rwlock_unlock(pthread_rwlock_t *r)
+{   return pthread_rwlock_unlock(r);
 }
 
-int _pthread_rwlockattr_init()
-{   return pthread_rwlockattr_init();
+int _pthread_rwlockattr_init(pthread_rwlockattr_t *a)
+{   return pthread_rwlockattr_init(a);
 }
 
-int _pthread_rwlockattr_destroy()
-{   return pthread_rwlockattr_destroy();
+int _pthread_rwlockattr_destroy(pthread_rwlockattr_t *a)
+{   return pthread_rwlockattr_destroy(a);
 }
 
-int _pthread_rwlockattr_getpshared()
-{   return pthread_rwlockattr_getpshared();
+int _pthread_rwlockattr_getpshared(const pthread_rwlockattr_t *a, int *p)
+{   return pthread_rwlockattr_getpshared(a, p);
 }
 
-int _pthread_rwlockattr_setpshared()
-{   return pthread_rwlockattr_setpshared();
+int _pthread_rwlockattr_setpshared(pthread_rwlockattr_t *a, int p)
+{   return pthread_rwlockattr_setpshared(a, p);
 }
 
-int _pthread_rwlockattr_getkind_np()
-{   return pthread_rwlockattr_getkind_np();
+int _pthread_rwlockattr_getkind_np(const pthread_rwlockattr_t *a, int *p)
+{   return pthread_rwlockattr_getkind_np(a, p);
 }
 
-int _pthread_rwlockattr_setkind_np()
-{   return pthread_rwlockattr_setkind_np();
+int _pthread_rwlockattr_setkind_np(pthread_rwlockattr_t *a, int p)
+{   return pthread_rwlockattr_setkind_np(a, p);
 }
 
-int _pthread_cond_init()
-{   return pthread_cond_init();
+int _pthread_cond_init(pthread_cond_t *c, const pthread_condattr_t *a)
+{   return pthread_cond_init(c, a);
 }
 
-int _pthread_cond_destroy()
-{   return pthread_cond_destroy();
+int _pthread_cond_destroy(pthread_cond_t *c)
+{   return pthread_cond_destroy(c);
 }
 
-int _pthread_cond_signal()
-{   return pthread_cond_signal();
+int _pthread_cond_signal(pthread_cond_t *c)
+{   return pthread_cond_signal(c);
 }
 
-int _pthread_cond_broadcast()
-{   return pthread_cond_broadcast();
+int _pthread_cond_broadcast(pthread_cond_t *c)
+{   return pthread_cond_broadcast(c);
 }
 
-int _pthread_cond_wait()
-{   return pthread_cond_wait();
+int _pthread_cond_wait(pthread_cond_t *c, pthread_mutex_t *m)
+{   return pthread_cond_wait(c, m);
 }
 
-int _pthread_cond_timedwait()
-{   return pthread_cond_timedwait();
+int _pthread_cond_timedwait(pthread_cond_t *c, pthread_mutex_t *m, const struct timespec *t)
+{   return pthread_cond_timedwait(c, m, t);
 }
 
-int _pthread_condattr_init()
-{   return pthread_condattr_init();
+int _pthread_condattr_init(pthread_condattr_t *a)
+{   return pthread_condattr_init(a);
 }
 
-int _pthread_condattr_destroy()
-{   return pthread_condattr_destroy();
+int _pthread_condattr_destroy(pthread_condattr_t *a)
+{   return pthread_condattr_destroy(a);
 }
 
-int _pthread_condattr_getpshared()
-{   return pthread_condattr_getpshared();
+int _pthread_condattr_getpshared(pthread_condattr_t *a, int *s)
+{   return pthread_condattr_getpshared(a, s);
 }
 
-int _pthread_condattr_setpshared()
-{   return pthread_condattr_setpshared();
+int _pthread_condattr_setpshared(pthread_condattr_t *a, int s)
+{   return pthread_condattr_setpshared(a, s);
 }
 
-int _pthread_key_create()
-{   return pthread_key_create();
+int _pthread_key_create(pthread_key_t *k, void (*d)(void *))
+{   return pthread_key_create(k, d);
 }
 
-int _pthread_key_delete()
-{   return pthread_key_delete();
+int _pthread_key_delete(pthread_key_t k)
+{   return pthread_key_delete(k);
 }
 
-int _pthread_getspecific()
-{   return pthread_getspecific();
+void *_pthread_getspecific(pthread_key_t k)
+{   return pthread_getspecific(k);
 }
 
-int _pthread_setspecific()
-{   return pthread_setspecific();
+int _pthread_setspecific(pthread_key_t k, const void *p)
+{   return pthread_setspecific(k, p);
 }
 
-int _pthread_atfork()
-{   return pthread_atfork();
+int _pthread_atfork(void (*prep)(), void (*par)(), void (*chi)())
+{   return pthread_atfork(prep, par, chi);
 }
 
 

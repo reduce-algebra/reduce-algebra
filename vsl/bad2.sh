@@ -8,8 +8,8 @@ gcc -c dmain.s
 
 rm -f bpsl
 
-gcc ${PIE:--no-pie} -o bpsl -DBPSSIZE=20500000 \
-   ../psl/dist/kernel/AMD64_ext/bps.c \
+gcc -o bpsl -DBPSSIZE=20500000 \
+   bps.c \
    bpsheap.c \
    echo.c \
    file-status.c \

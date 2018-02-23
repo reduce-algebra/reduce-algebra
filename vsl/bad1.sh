@@ -71,7 +71,7 @@ rm -f bpsl
 
 gcc -o bpsl \
     -DLINUX -DBPSSIZE=20500000 \
-    ../psl/dist/kernel/AMD64_ext/bps.c \
+    bps.c \
     bpsheap.c \
     echo.c \
     file-status.c \
