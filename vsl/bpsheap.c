@@ -294,7 +294,8 @@ int setupbpsandheap(int argc,char *argv[])
         {   perror ("error");
             exit (-1);
         }
-        fread (headerword,8,2,imago);
+        if (fread (headerword,8,2,imago) != 2)
+            printf("fread failed %d %s\n", __LINE__, __FILE__);
         _(unexec)();      /* set control vector */
         if ((int) bpscontrol[0] != headerword[0]
             || bpscontrol[1] != headerword[1])
@@ -302,7 +303,8 @@ int setupbpsandheap(int argc,char *argv[])
             printf(" %lx != %" PRIx64 ", %lx != %" PRIx64 "\n", bpscontrol[0], headerword [0], bpscontrol[1], headerword[1]);
             exit (-19);
         }
-        fread (headerword,8,4,imago);
+        if (fread(headerword,8,4,imago) != 4)
+            printf("fread failed %d %s\n", __LINE__, __FILE__);
 #ifdef DEBUG
         printf("symbol table: %ld (%lx) bytes\n",headerword[0],headerword[0]);
 #endif

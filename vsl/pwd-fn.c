@@ -96,7 +96,8 @@ char *_(external_pwd)()
     /* Simpleminded- Popen a "pwd" cmd and read a line into Name buffer. */
     PwdStream = popen( "pwd", "r" );
     if ( PwdStream == NULL ) perror( "Pwd popen" ), abort(); /* Break loop. */
-    fgets( Name, BUFSIZ, PwdStream );
+    if (fgets(Name, BUFSIZ, PwdStream) == NULL)
+        printf("fgets failed %d %s\n", __LINE__, __FILE__);;
     pclose( PwdStream );
 
     /* Trash the newline at the end of the string and follow the PSL

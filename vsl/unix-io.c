@@ -213,11 +213,12 @@ char *_(expand_file_name)(const char *fname)
 extern int errno;
 
 FILE *_(unixopen)(const char *filename, const char *type)
-{   return fopen(_(expand_file_name)(filename), type);
+{   printf("\nunixopen \"%s\" \"%s\"\n", filename, type);
+    return fopen(_(expand_file_name)(filename), type);
 }
 
-void _(unixcd)(const char *filename)
-{   chdir(_(expand_file_name)(filename));
+int _(unixcd)(const char *filename)
+{   return chdir(_(expand_file_name)(filename));
 }
 
 int _(unixfclose)( FILE *ix)
@@ -231,7 +232,8 @@ int _(external_system)(const char *command)
 /* Tag( external_exit )
  */
 int _(external_exit)(int status)
-{   return exit(status);
+{   exit(status);
+    return 0;
 }
 
 /* This allows for up to 20 entries and then overflows... */

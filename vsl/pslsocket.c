@@ -71,7 +71,7 @@
 int _(unixsocketopen)(char *name, int number)
 {   struct hostent *host_info;
     struct sockaddr_in mail_addr;   /* Address structure */
-    socklet_t mail_len = sizeof(struct sockaddr_in);
+    socklen_t mail_len = sizeof(struct sockaddr_in);
     int port_fd, conn_fd;
     int mail_fd, temp;
     int continue1;
