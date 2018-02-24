@@ -56,6 +56,8 @@
 #include <pwd.h>
 #endif
 
+#include "psl.h"
+
 /*
  * The functions here are (just) called from compiled code. In the
  * assembly code for the kernel the code is written with the names

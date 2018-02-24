@@ -73,6 +73,8 @@
 #include <inttypes.h>  // Make newer integer types  of known width available
 #include <unistd.h>
 
+#include "psl.h"
+
 #ifndef PAGESIZE
 #define PAGESIZE 4096
 #endif

@@ -52,16 +52,7 @@
 #include <string.h>
 #include <setjmp.h>
 
-/*
- * The functions here are (just) called from compiled code. In the
- * assembly code for the kernel the code is written with the names
- * having a leading underscore. For Linux that underscore remains
- * visible here in the C code that is linked to, while under Cygwin
- * or on a Macintosh it is not. So here I define functions whose names
- * have leading underscores if I am on Linux but not otherwise. This is
- * a bit messy and ugly but is still about the neatest I can think of
- * at present if I want one body of code to apply everywhere.
- */
+#include "psl.h"
 
 #if defined __linux__ || defined __CYGWIN__
 #define _(x) _ ## x
@@ -82,7 +73,8 @@ char **_(copy_argv)();
 int Debug = 0;
 
 int main(int argc, char *argv[])
-{   int val;
+{   TR1("main");
+    int val;
 
     clear_iob();             /* clear garbage pointer in _iob[]    */
     clear_dtabsize();
@@ -109,19 +101,23 @@ int main(int argc, char *argv[])
 int setupbpsandheap(int argc, char *argv[]);
 
 void _(os_startup_hook)(int argc, char *argv[])
-{   setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
+{   TR1("os_startup_hook");
+    setupbpsandheap(argc, argv);   /* Allocate bps and heap areas. */
 }
 
 void _(os_cleanup_hook)()
-{   longjmp(mainenv,1);
+{   TR1("os_cleanup_hook");
+    longjmp(mainenv,1);
 }
 
 char *_(get_execfilepath)()
-{   return abs_execfilepath;
+{   TR1("get_execfilepath");
+    return abs_execfilepath;
 }
 
 void clear_iob()
-{
+{   TR1("clear_iob");
+ 
 }
 
 /*
@@ -138,7 +134,8 @@ extern char *end;
  *     Size of dtabsize is 0x34c bytes.
  */
 void clear_dtabsize()
-{   int i;
+{   TR1("clear_dtabsize");
+    int i;
 }
 
 #if 0
@@ -148,7 +145,8 @@ void clear_dtabsize()
 /* look for the last occurrence of character c in string s;
    if found, return pointer to string part, NULL otherwise */
 char *rindex(char *s, int c)
-{   int i,l; char x;
+{   TR;
+    int i,l; char x;
     for (i=0; s[i]!='\000'; i++);
     for (i=i-1; (s[i] !=c) && (i>=0) ; i--);
     if (i<0) return(NULL); else return(& s[i]);
@@ -158,13 +156,15 @@ char *rindex(char *s, int c)
    if found, return pointer to string part, NULL otherwise */
 
 char *index(char *s, int c)
-{   int i,l; char x;
+{   TR;
+    int i,l; char x;
     for (i=0; (s[i] !=c) && (s[i]!='\000') ; i++);
     if (s[i]=='\000') return(NULL); else return(& s[i]);
 }
 
 bzero (char *b, int length)
-{   int i;
+{   TR;
+    int i;
     for (i=0; i<length; i++) b[i]='\000' ;
 }
 

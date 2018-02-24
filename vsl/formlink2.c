@@ -53,6 +53,7 @@ PURPOSE.
 #include <string.h>
 
 #include "flnk_startform.h"
+#include "psl.h"
 
 /*First argument for the function signal:*/
 #ifndef INTSIGHANDLER

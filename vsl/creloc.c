@@ -44,6 +44,8 @@
 
 #include <inttypes.h>
 
+#include "psl.h"
+
 void creloc (int64_t array[], long len, int64_t diff, int64_t lowb)
 {   long i;
     long skip;

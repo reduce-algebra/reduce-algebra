@@ -39,23 +39,7 @@
 #include <pwd.h>
 #include <grp.h>
 
-/*
- * The functions here are (just) called from compiled code. In the
- * assembly code for the kernel the code is written with the names
- * having a leading underscore. For Linux that underscore remains
- * visible here in the C code that is linked to, while under Cygwin
- * or on a Macintosh it is not. So here I define functions whose names
- * have leading underscores if I am on Linux but not otherwise. This is
- * a bit messy and ugly but is still about the neatest I can think of
- * at present if I want one body of code to apply everywhere.
- */
-
-#if defined __linux__ || defined __CYGWIN__
-#define _(x) _ ## x
-#else
-#define _(x) x
-#endif
-
+#include "psl.h"
 
 typedef struct
 {   char * string_value;        /* Interpretation of a field. */
@@ -70,7 +54,8 @@ int _(get_file_status)(const char *file_name_string, stat_info info_block[7], in
 /* char * file_name_string;       File to stat. */
 /* stat_info info_block[7];       Space to return values. */
 /* int do_strings;                Whether to interpret numbers. */
-{   /* Strings to be imported into the PSL. */
+{   TR;
+    /* Strings to be imported into the PSL. */
     static char write_str[25], access_str[25], change_str[25];
     char *get_mode_string(unsigned short), *ctime();
 #   define RET_INFO(slot,number,string) \
@@ -118,7 +103,8 @@ internal int    *m[] = { m1, m2, m3, m4, m5, m6, m7, m8, m9};
  */
 internal
 char *fmtmode(char *lp, int flags)
-{   int **mp;
+{   TR;
+    int **mp;
 
     for (mp = &m[0]; mp < &m[sizeof(m)/sizeof(m[0])]; )
     {   register int *pairp = *mp++;
@@ -135,7 +121,8 @@ char *fmtmode(char *lp, int flags)
  * Parse the mode value into a string.  Based on /usr/src/bin/ls.c .
  */
 char *get_mode_string(unsigned short mode)
-{   static char mode_string[11] = "drwxrwxrwx";
+{   TR;
+    static char mode_string[11] = "drwxrwxrwx";
 
     /* From gstat() in ls.c . */
     switch ( mode & S_IFMT )

@@ -45,6 +45,8 @@
    text boundry. See setupbps() in bpsheap.c for more info.
  */
 
+#include "psl.h"
+
 #ifndef BPSSIZE
 #define BPSSIZE 1600000  /* Minimum size in bytes */
 #endif

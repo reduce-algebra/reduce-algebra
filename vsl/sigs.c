@@ -47,22 +47,7 @@
 #include <inttypes.h>
 #include <sys/stat.h>
 
-/*
- * The functions here are (just) called from compiled code. In the
- * assembly code for the kernel the code is written with the names
- * having a leading underscore. For Linux that underscore remains
- * visible here in the C code that is linked to, while under Cygwin
- * or on a Macintosh it is not. So here I define functions whose names
- * have leading underscores if I am on Linux but not otherwise. This is
- * a bit messy and ugly but is still about the neatest I can think of
- * at present if I want one body of code to apply everywhere.
- */
-
-#if defined __linux__ || defined __CYGWIN__
-#define _(x) _ ## x
-#else
-#define _(x) x
-#endif
+#include "psl.h"
 
 #if 0
 /* This bit will need review! */
@@ -78,7 +63,8 @@ int forminit(FILE **, FILE **);
 struct sigaction act;
 
 void _(sun3_sigset)(int sig, void (*action)())
-{   struct sigaction act = {0};
+{   TR;
+    struct sigaction act = {0};
     if (signal(sig, SIG_IGN) != SIG_IGN)
     {   //#signal(sig, action);
         act.sa_sigaction = action;
@@ -99,7 +85,8 @@ void _(sun3_sigset)(int sig, void (*action)())
 }
 
 void _(sun3_sigrelse)(int sig, void (*action)())
-{
+{   TR;
+ 
 
 #if 0
     if (sig == SIGFPE)
@@ -114,11 +101,13 @@ void _(sun3_sigrelse)(int sig, void (*action)())
 
 
 int _(ieee_handler)(char *x, int y)
-{   return mkfifo(x, y);
+{   TR;
+    return mkfifo(x, y);
 }
 
 int _(ieee_flags)(int64_t x1, intptr_t x2, intptr_t x3, int64_t x4)
-{   if (x1 == 10) return forminit((FILE **)x2, (FILE **)x3);
+{   TR;
+    if (x1 == 10) return forminit((FILE **)x2, (FILE **)x3);
     else return 0;
 }
 
