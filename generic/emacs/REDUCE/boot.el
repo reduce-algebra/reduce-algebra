@@ -18,7 +18,7 @@
 (defvar *MODE)
 (defvar FNAME*)
 
-;; Needed if this file is *not* compiled:
+;; Needed if this file is *not* compiled to read module slfns in "rlisp.red":
 (cl-eval-when (eval)
   (setq max-lisp-eval-depth 2000
 		max-specpdl-size 2500))
@@ -63,7 +63,7 @@
    (PROG nil
       (SETQ CURSYM\* '\*SEMICOL\*)
 A     (COND
-         ((EQ CURSYM\* 'END) (PROGN (CLOSE (RDS OLDCHAN\*)) (RETURN nil)))
+         ((EQ CURSYM\* 'END) (PROGN (RDS OLDCHAN\*) (RETURN nil)))
          (t (PRIN2 (ERRORSET '(EVAL (FORM (XREAD nil))) t t)) ))
       (GO A)))
 
@@ -296,8 +296,6 @@ A     (SETQ HOLD (NCONC HOLD (LIST (XREAD1 nil))))
       (RETURN (COND ((NOT (FLAGP (SCAN) 'DELIM))
                      (LIST X (LIST 'QUOTE (LIST (XREAD1 t)))))
                     (t (LIST X))))))
-
-(RDS OLDCHAN\*)
 
 (provide 'boot)
 

@@ -1555,9 +1555,6 @@ FEXPR PROCEDURE QUOTE(U);
 ;;; Input and Output
 ;;; ================
 
-;; *** BEWARE that only input via readch, not via read, is currently
-;; controlled. ***
-
 ;; An ESL filehandle has the form (stream . mode) where mode is 'input
 ;; or 'output and stream is as defined below:
 
@@ -1580,11 +1577,13 @@ is that returned by the corresponding OPEN. The value returned is
 the value of FILEHANDLE. An error occurs if the file can not be
 closed.
 ***** FILEHANDLE could not be closed"
-  (let (buf)
-	;; A null filehandle represents the terminal; ignore it.
-	(if filehandle
+  ;; A null filehandle represents the terminal; ignore it.
+  (if filehandle
+	  (let (buf)
 		(if (and (consp filehandle)
 				 (bufferp (setq buf (car filehandle)))
+				 ;; It might be better to ignore a non-existent file
+				 ;; buffer, assuming it has already been closed.
 				 (cond ((eq (cdr filehandle) 'INPUT)
 						t)
 					   ((eq (cdr filehandle) 'OUTPUT)
@@ -1641,7 +1640,9 @@ OUTPUT or the file can't be opened.
 		 (save-current-buffer
 		   ;; Leading space means buffer hidden and no undo:
 		   (set-buffer (get-buffer-create (concat " SL-IN " file)))
-		   (insert-file-contents-literally file)
+		   ;; Allow re-opening a file and continuing to read it:
+		   (if (zerop (buffer-size))
+			   (insert-file-contents-literally file))
 		   (cons (current-buffer) 'INPUT)))
 		((eq how 'OUTPUT) nil)			; not yet implemented!
 		(t (error "%s is not option for OPEN" how))))
@@ -1788,8 +1789,8 @@ record have been read, the value of !$EOL!$ is returned. If the file
 selected for input has all been read the value of !$EOF!$ is returned.
 Comments delimited by % and end-of-line are not transparent to READCH.
 
-In ESL, if *ECHO is non-nil then echo file and minibuffer input
-to `standard-output.'"
+In ESL, echo minibuffer input to `standard-output' and if *ECHO
+is non-nil then echo file input."
   (if sl--read-stream
 	  ;; Read from a file:
 	  (let ((result
@@ -1805,9 +1806,8 @@ to `standard-output.'"
 		;; the standard input device is reselected. But can't kill the
 		;; buffer within `with-current-buffer'!
 		;; OR MAYBE YOU CAN!!! But leave this version for now.
-		(when (eq result $EOF$)
-		  (kill-buffer sl--read-stream)
-		  (setq sl--read-stream nil))
+		(if (eq result $EOF$)
+			(CLOSE (RDS nil)))
 		result)
 	;; Read from terminal:
 	(if sl--readch-use-minibuffer
@@ -1855,9 +1855,11 @@ to `standard-output.'"
 				   (set-marker sl--marker (1+ sl--marker))
 				   (sl--char-to-interned-id c))))))))
 
-(defalias 'TERPRI 'terpri
+(defun TERPRI ()
   "TERPRI():NIL
-The current print line is terminated.")
+The current print line is terminated."
+  (terpri)
+  nil)
 
 (defun WRS (filehandle)					; temporary no-op
   "WRS(FILEHANDLE:any):any eval, spread
@@ -2020,9 +2022,13 @@ Then evaluate it and print value into *Standard LISP* buffer."
 
 (defun TIME ()
   "(time): integer expr
-CPU time in milliseconds since login time."
-  ;; For now, at least, this is a different definition of time:
+Elapsed time from some arbitrary initial point in milliseconds."
   (round (* (float-time) 1000)))
+
+(defun GCTIME ()
+  "(gctime): integer expr
+Accumulated time elapsed in garbage collections in milliseconds."
+  (round (* gc-elapsed 1000)))
 
 (defun DATE ()
   "(date): string expr
@@ -2064,6 +2070,17 @@ some consistent convention (eg unique position in memory)."
 ;; 			   (CDDR U))))
 
 (def-edebug-spec BLOCK (sexp body))
+
+;; This code is useful for bootstrapping: (DSKIN "dbuild.el")
+
+(defvar OLDCHAN*)
+
+(defun DSKIN (name)
+  "(dskin NAME:string): nil, abort expr
+The contents of the file `NAME' are processed as if they were typed in.
+Once in* has been bound to the channel which represents the open file,
+each form is processed."
+  (RDS (setq OLDCHAN* (OPEN name 'INPUT))))
 
 (provide 'sl)
 

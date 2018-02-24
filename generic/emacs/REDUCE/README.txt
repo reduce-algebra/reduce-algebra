@@ -15,9 +15,7 @@ build REDUCE. I don't currently use prolog.red.
 
 I have edited boot.sl as boot.el to use upper case, replaced % with ;
 and ! with \ where necessary so that Emacs Lisp can read it. However,
-I keep lambda lower-case by giving LAMBDA newnam and quotenewnam
-properties. (Both are needed.) I do the same for NIL and T, although
-neither seems to be strictly necessary.
+I keep lambda, nil and t lower-case.
 
 I have defined a few additional functions that are assumed by REDUCE
 but not defined in Standard LISP at the end of sl.el.
@@ -31,25 +29,18 @@ Moreover, setting *COMP non-nil now causes REDUCE procedures to be
 compiled as they are read, which causes REDUCE syntax to input *very
 much* faster!
 
-I can now build the main modules of REDUCE 3.3 in the current Emacs
-session and run it as follows:
+To build the main modules of REDUCE 3.3 in the current Emacs session
+and run it, proceed as follows:
 
-1. Load sl.elc and boot.elc.
+1. Compile sl.el and boot.el, then load boot.elc (which loads sl.elc
+if necessary).
 
 2. Run M-x STANDARD-LISP
 
-3. After the appropriate prompt in the minibuffer, enter each of the
-following lines of input separately. The Lisp syntax is read as Emacs
-Lisp using (read) and the REDUCE syntax is read using READCH.
+3. Evaluate (DSKIN "dbuild.el") via the minibuffer.
 
-(BEGIN2)
-!*comp := t; rds open("rlisp.red",'input);
-(BEGIN2)
-rds open("rend.red",'input);
-(INITREDUCE)
-
-This runs without complaints and gives the appropriate output in the
-*Standard LISP* buffer, namely
+This build process runs without complaints and completes with the
+appropriate output in the *Standard LISP* buffer, namely
 
 REDUCE 3.3, 20-Feb-2018 ...
 
@@ -65,19 +56,22 @@ etc.
 
 n: bye;
 
-This interaction model with output to a normal buffer and input from
-the minibuffer is not very elegant, but it seems to work and is a
-fairly painless way to make Emacs wait for input.
-
-Can then input and compile the basic packages as follows to build a
-mini-REDUCE:
-
-in "arith.red", "mathlib.red", "alg1.red", "alg2.red"$
-in "matr.red", "hephys.red"$
-algebraic;
+This interaction model with output to a normal buffer and input via
+the minibuffer seems to work and is a fairly painless way to make
+Emacs wait for input.
 
 Now
 
 in "alg.tst"
 
 will correctly process most of "alg.tst".
+
+It is possible to re-enter REDUCE after stopping it with bye; as follows:
+
+1. Run M-x STANDARD-LISP
+
+2. Evaluate (BEGIN) via the minibuffer.
+
+It's very useful to be able to go in and out of a REDUCE session,
+although I currently have no way to start a new REDUCE session without
+killing and restarting Emacs!
