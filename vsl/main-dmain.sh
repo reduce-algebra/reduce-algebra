@@ -40,6 +40,8 @@
 # need to provide stubs of the form
 #   int _foo(int x) { return foo(x); }
 # for every function called from this assemble-coded part of the kernel.
+#
+# For symbols declared in dmain.s as .comm I will use .set
 
 sed -e 's/symval+[0-9]*/&(%rip)/g' \
     -e 's/symfnc+[0-9]*/&(%rip)/g' \
@@ -64,6 +66,20 @@ sed -e 's/\[/(/g'                  \
     -e 's/[a-zA-Z_][a-zA-Z_0-9]*:/&\n_&/g' \
     -e 's/ \.globl .*$/&\n@@@&/g'          \
     -e 's/@@@ .globl / .globl _/g'         \
+    -e 's/\.comm[ ]*\(.*\)$/.comm _\1/'    \
+    -e 's/.quad stack/.quad _stack/g'      \
+    -e 's/.quad argumentblock/.quad _argumentblock/g' \
+    -e 's/.quad tokenbuffer/.quad _tokenbuffer/g'     \
+    -e 's/.quad bndstk/.quad _bndstk/g'               \
+    -e 's/.quad catchstack/.quad _catchstack/g'       \
+    -e 's/.quad hashtable/.quad _hashtable/g'         \
+    -e 's/.quad onewordbuffer/.quad _onewordbuffer/g' \
+    -e 's/.quad saveargc/.quad _saveargc/g'           \
+    -e 's/.quad saveargv/.quad _saveargv/g'           \
+    -e 's/.quad datebuffer/.quad _datebuffer/g'       \
     < ../psl/dist/kernel/AMD64_ext/dmain.s > dmain.s
+
+
+
 
 # end of file

@@ -108,7 +108,7 @@ int64_t   oldbreakvalue;
 intptr_t bpscontrol[2];
 
 extern int64_t  alreadysetupbpsandheap;
-extern int64_t  hashtable;
+extern int64_t  _(hashtable);
 extern char bps[];
 extern int64_t  symval;
 extern int64_t  lastbps;
@@ -338,7 +338,7 @@ int setupbpsandheap(int argc,char *argv[])
 #ifdef DEBUG
         printf("hash table: %ld (%lx) bytes\n",headerword[2],headerword[2]);
 #endif
-        hugo = fread (&hashtable,1,headerword[2],imago);
+        hugo = fread (&_(hashtable),1,headerword[2],imago);
         if (hugo != headerword[2]) read_error("hash table",hugo,headerword[2]);
 #ifdef DEBUG
         printf("BPS: %ld (%lx) bytes\n",headerword[3],headerword[3]);

@@ -146,17 +146,27 @@ int unixnull[2], unixeof[2];
  * do enough that their costs swamp that of the extra jump.
  */
 
+#include <stdio.h>
+
 /*
  * I have to define the following - at least on some platforms - to get
  * functions defined in header files. These are often obsolete or non-standard
  * names that are used and it may be a good idea to review the code and
- * arrange that mess like this is not required! For now I am not going to
- * document just what has led me to insert each of these.
+ * arrange that mess like this is not required.
  */
-#define __USE_XOPEN_EXTENDED
-#define __USE_UNIX98
 
-#include <stdio.h>
+/* sigrelse seems to need XOPEN_EXTENDED, and the man page says that it is
+ * only provided for programs that make use of the historical System V signal
+ * API, and that new applications should use the POSIX versions (ie sigaction
+ * and friends).
+ */
+#define __USE_XOPEN_EXTENDED 1
+
+#define __USE_UNIX98 1
+
+/* pthread_setaffinity is for GNU */
+#define __USE_GNU 1
+
 #include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>

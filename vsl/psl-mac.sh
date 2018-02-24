@@ -8,8 +8,14 @@ gcc -c -g dmain.s
 
 rm -f bpsl
 
+# The Macintosh compiler is very noisy in its complaints about uses of
+# deprecated functions - in this case sbrk. So at least for a while I
+# will set a compiler flag to stop it from bothering me about things that
+# amd well aware of.
+
 gcc -g -O1 \
    -DMACINTOSH \
+   -Wno-deprecated-declarations \
    -DBPSSIZE=20500000 \
    bps.c \
    bpsheap.c \

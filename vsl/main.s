@@ -129,7 +129,6 @@ G0006:
 _G0006:
  mov %r15,%rax
  ret
- .data
 G0009:
 _G0009:
  .quad 9
@@ -141,7 +140,6 @@ _G0010:
  .byte 65,98,111,117,116,32,116,111,32,108
  .byte 111,97,100,32,76,79,65,68,45,80,83
  .byte 76,0,0
- .text
  .quad 0
 # (*entry pre-main expr 0)
  .globl G0011
@@ -157,14 +155,12 @@ _G0011:
  mov G0008(%rip),%rax
  call *symfnc+2528(%rip)
  jmp *symfnc+2536(%rip)
- .data
 G0008:
 _G0008:
  .quad ((4<<56)+G0009)
 G0007:
 _G0007:
  .quad ((4<<56)+G0010)
- .text
  .quad 1
 # (*entry console-print-string expr 1)
  .globl G0012

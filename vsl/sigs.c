@@ -64,7 +64,7 @@
 #define _(x) x
 #endif
 
-#ifndef LINUX
+#if 0
 /* This bit will need review! */
 
 #include <ieeefp.h>
@@ -86,7 +86,7 @@ void _(sun3_sigset)(int sig, void (*action)())
         sigaction(sig, &act, (void*)0);
     }
 
-#ifndef LINUX
+#if 0
     if (sig == SIGFPE && fp_first == 0)
     {   fp_first=1;
         fp_round = fpgetround();
@@ -101,7 +101,7 @@ void _(sun3_sigset)(int sig, void (*action)())
 void _(sun3_sigrelse)(int sig, void (*action)())
 {
 
-#ifndef LINUX
+#if 0
     if (sig == SIGFPE)
     {   fpsetsticky(0);
         fpsetround(FP_RN);

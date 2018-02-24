@@ -1,34 +1,34 @@
         .data
  .globl stack
  .globl _stack
-  .comm stack,24
+  .comm _stack,24
  .globl argumentblock
  .globl _argumentblock
-  .comm argumentblock,128
+  .comm _argumentblock,128
  .globl tokenbuffer
  .globl _tokenbuffer
-  .comm tokenbuffer,40008
+  .comm _tokenbuffer,40008
  .globl bndstk
  .globl _bndstk
-  .comm bndstk,160008
+  .comm _bndstk,160008
  .globl catchstack
  .globl _catchstack
-  .comm catchstack,128008
+  .comm _catchstack,128008
  .globl hashtable
  .globl _hashtable
-  .comm hashtable,1572968
+  .comm _hashtable,1572968
  .globl onewordbuffer
  .globl _onewordbuffer
-  .comm onewordbuffer,16
+  .comm _onewordbuffer,16
  .globl saveargc
  .globl _saveargc
-  .comm saveargc,16
+  .comm _saveargc,16
  .globl saveargv
  .globl _saveargv
-  .comm saveargv,16
+  .comm _saveargv,16
  .globl datebuffer
  .globl _datebuffer
-  .comm datebuffer,16
+  .comm _datebuffer,16
  .globl symval
  .globl _symval
 symval:
@@ -290,16 +290,16 @@ _symval:
  .quad ((253<<56)+254)
  .quad ((253<<56)+255)
  .quad ((253<<56)+256)
- .quad stack
- .quad argumentblock
- .quad tokenbuffer
- .quad bndstk
- .quad catchstack
- .quad hashtable
- .quad onewordbuffer
- .quad saveargc
- .quad saveargv
- .quad datebuffer
+ .quad _stack
+ .quad _argumentblock
+ .quad _tokenbuffer
+ .quad _bndstk
+ .quad _catchstack
+ .quad _hashtable
+ .quad _onewordbuffer
+ .quad _saveargc
+ .quad _saveargv
+ .quad _datebuffer
  .quad ((253<<56)+267)
  .globl heaplast
  .globl _heaplast
