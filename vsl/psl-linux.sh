@@ -31,4 +31,12 @@ gcc -g -O1 \
    -o bpsl
 
 
-./bpsl
+./bpsl -td 1000 <<EOF
+(setq loaddirectories* '("" "fasl"))
+(on verboseload)
+(load init-file)
+(load debug useful common)
+(load numeric-ops)
+(savesystem "New PSL" "psl" nil)
+(exitlisp)
+EOF

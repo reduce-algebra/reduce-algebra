@@ -45,6 +45,20 @@ int profil()
 {   return 0;
 }
 
+int sigrelse(int s)
+{   return 0;
+}
+
+int pthread_getconcurrency()
+{   return 0;
+}
+
+int pthread_yield()
+{   return 0;
+}
+
+typedef void *cpu_set_t;
+
 int pthread_setaffinity_np()
 {   return 0;
 }
@@ -60,6 +74,12 @@ int pthread_rwlockattr_getkind_np()
 int pthread_rwlockattr_setkind_np()
 {   return 0;
 }
+
+/*
+ * And now pretend to be Linux!
+ */
+
+#define __linux__
 
 #endif // __CYGWIN__
 
@@ -126,14 +146,21 @@ int unixnull[2], unixeof[2];
  * do enough that their costs swamp that of the extra jump.
  */
 
-#include <stdio.h>
+/*
+ * I have to define the following - at least on some platforms - to get
+ * functions defined in header files. These are often obsolete or non-standard
+ * names that are used and it may be a good idea to review the code and
+ * arrange that mess like this is not required! For now I am not going to
+ * document just what has led me to insert each of these.
+ */
 #define __USE_XOPEN_EXTENDED
-#define __USE_GNU
+#define __USE_UNIX98
+
+#include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <wait.h>
-#define __USE_UNIX98
 #include <pthread.h>
 #include <time.h>
 #include <sys/ipc.h>
@@ -195,7 +222,14 @@ int _putw(int w, FILE *s)
 {   return putw(w, s);
 }
 
-sighandler_t _signal(int s, sighandler_t h)
+/*
+ * Sometimes signal is defined using a type sighandler_t, but the
+ * typedef is given different names on Linux, BSD and Cygwin, so I write
+ * out the underlying type directly here. The function signal is perhaps now
+ * obsolete with sighandler now preferred.
+ */
+
+void (*_signal(int s, void (*h)(int)))(int)
 {   return signal(s, h);
 }
 

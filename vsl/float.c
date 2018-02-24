@@ -79,7 +79,7 @@
  * at present if I want one body of code to apply everywhere.
  */
 
-#ifdef __linux__
+#if defined __linux__ || defined __CYGWIN__
 #define _(x) _ ## x
 #else
 #define _(x) x
@@ -181,10 +181,7 @@ void _(uxwritefloat)(char *buf, double *flt, const char *convstr)
 
     sprintf(temps, convstr, *flt);
 
-/*
- * The Macintosh deprecates finite().
- */
-    if (finite(*flt))
+    if (isfinite(*flt))
     {
 
         /* Make sure that there is a trailing .0

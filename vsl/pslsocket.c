@@ -57,7 +57,7 @@
  * at present if I want one body of code to apply everywhere.
  */
 
-#ifdef __linux__
+#if defined __linux__ || defined __CYGWIN__
 #define _(x) _ ## x
 #else
 #define _(x) x
