@@ -59,6 +59,7 @@ case `uname -s` in
 # On the Macintosh I need to use the GNU version of sed.
   SED=gsed
   mc=AMD64_ext
+  ;;
 *Cygwin* | *CYGWIN*)
   SED=sed
 # For Cygwin I need to use base versions of main.s and dmain.s
