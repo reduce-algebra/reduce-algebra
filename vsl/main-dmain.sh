@@ -41,45 +41,76 @@
 #   int _foo(int x) { return foo(x); }
 # for every function called from this assemble-coded part of the kernel.
 #
-# For symbols declared in dmain.s as .comm I will use .set
 
-sed -e 's/symval+[0-9]*/&(%rip)/g' \
-    -e 's/symfnc+[0-9]*/&(%rip)/g' \
-    -e 's/mov l[0-9]*/&(%rip)/g'   \
-    -e 's+^/+#+g'                  \
-    -e 's/cmp l[0-9]*/&(%rip)/g'   \
-    -e 's/cmp \$/cmpq $/g'         \
-    -e 's/\[/(/g'                  \
-    -e 's/\]/)/g'                  \
-    -e 's/l\([0-9][0-9][0-9][0-9]\)/G\1/g' \
-    -e 's/[a-zA-Z_][a-zA-Z_0-9]*:/&\n_&/g' \
-    -e 's/ \.globl .*$/&\n@@@&/g'          \
-    -e 's/@@@ .globl / .globl _/g'         \
-    -e 's/call [a-z]/call _&/g; s/_call /_/g'      \
-    < ../psl/dist/kernel/AMD64_ext/main.s > main.s
+
+# I want to put data most data that is in main.s into the .data segment.
+# the utility fudgedata tries to do that.
+
+# Calling conventions on Linux and Cygwin differ so I MUST start with
+# different versions of main... That will mean that the assembly code
+# I try to use on Cygwin will tend to expect the Windows API to be used
+# for everything. Well this fact should help me in a move towards supporting
+# the native Windows version.
+# For now at least I will use the same base version for both Linux and
+# Macintosh - I may in due course find that I need to split there too.
+
+case `uname -s` in
+*Darwin*)
+# On the Macintosh I need to use the GNU version of sed.
+  SED=gsed
+  mc=AMD64_ext
+*Cygwin* | *CYGWIN*)
+  SED=sed
+# For Cygwin I need to use base versions of main.s and dmain.s
+# built on the basis of the Windows register allocation and calling
+# conventions.
+  mc=mingw-w64
+  ;;
+*)
+  SED=sed
+  mc=AMD64_ext
+  ;;
+esac
+
+$SED -e 's/symval+[0-9]*/&(%rip)/g' \
+     -e 's/symfnc+[0-9]*/&(%rip)/g' \
+     -e 's/mov l[0-9]*/&(%rip)/g'   \
+     -e 's+^/+#+g'                  \
+     -e 's/cmp l[0-9]*/&(%rip)/g'   \
+     -e 's/cmp \$/cmpq $/g'         \
+     -e 's/\[/(/g'                  \
+     -e 's/\]/)/g'                  \
+     -e 's/l\([0-9][0-9][0-9][0-9]\)/G\1/g' \
+     -e 's/[a-zA-Z_][a-zA-Z_0-9]*:/&\n_&/g' \
+     -e 's/ \.globl .*$/&\n@@@&/g'          \
+     -e 's/@@@ .globl / .globl _/g'         \
+     -e 's/call [a-z]/call _&/g; s/_call /_/g'   \
+     -e 's/\.quad \(.*\)$\n#/.QUAD \1\n#/g'      \
+      < ../psl/dist/kernel/$mc/main.s > mainx.s
+
+gcc fudgedata.c -o fudgedata
+
+./fudgedata mainx.s main.s
 
 # dmain.s is simpler.
 
-sed -e 's/\[/(/g'                  \
-    -e 's/\]/)/g'                  \
-    -e 's/l\([0-9][0-9][0-9][0-9]\)/G\1/g' \
-    -e 's/[a-zA-Z_][a-zA-Z_0-9]*:/&\n_&/g' \
-    -e 's/ \.globl .*$/&\n@@@&/g'          \
-    -e 's/@@@ .globl / .globl _/g'         \
-    -e 's/\.comm[ ]*\(.*\)$/.comm _\1/'    \
-    -e 's/.quad stack/.quad _stack/g'      \
-    -e 's/.quad argumentblock/.quad _argumentblock/g' \
-    -e 's/.quad tokenbuffer/.quad _tokenbuffer/g'     \
-    -e 's/.quad bndstk/.quad _bndstk/g'               \
-    -e 's/.quad catchstack/.quad _catchstack/g'       \
-    -e 's/.quad hashtable/.quad _hashtable/g'         \
-    -e 's/.quad onewordbuffer/.quad _onewordbuffer/g' \
-    -e 's/.quad saveargc/.quad _saveargc/g'           \
-    -e 's/.quad saveargv/.quad _saveargv/g'           \
-    -e 's/.quad datebuffer/.quad _datebuffer/g'       \
-    < ../psl/dist/kernel/AMD64_ext/dmain.s > dmain.s
-
-
-
+$SED -e 's/\[/(/g'                  \
+     -e 's/\]/)/g'                  \
+     -e 's/l\([0-9][0-9][0-9][0-9]\)/G\1/g' \
+     -e 's/[a-zA-Z_][a-zA-Z_0-9]*:/&\n_&/g' \
+     -e 's/ \.globl .*$/&\n@@@&/g'          \
+     -e 's/@@@ .globl / .globl _/g'         \
+     -e 's/\.comm[ ]*\(.*\)$/.comm _\1/'    \
+     -e 's/.quad stack/.quad _stack/g'      \
+     -e 's/.quad argumentblock/.quad _argumentblock/g' \
+     -e 's/.quad tokenbuffer/.quad _tokenbuffer/g'     \
+     -e 's/.quad bndstk/.quad _bndstk/g'               \
+     -e 's/.quad catchstack/.quad _catchstack/g'       \
+     -e 's/.quad hashtable/.quad _hashtable/g'         \
+     -e 's/.quad onewordbuffer/.quad _onewordbuffer/g' \
+     -e 's/.quad saveargc/.quad _saveargc/g'           \
+     -e 's/.quad saveargv/.quad _saveargv/g'           \
+     -e 's/.quad datebuffer/.quad _datebuffer/g'       \
+      < ../psl/dist/kernel/$mc/dmain.s > dmain.s
 
 # end of file

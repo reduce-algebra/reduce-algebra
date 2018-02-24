@@ -301,130 +301,134 @@ _symval:
  .quad _saveargv
  .quad _datebuffer
  .quad ((253<<56)+267)
- .globl heaplast
- .globl _heaplast
-heaplast:
-_heaplast:
  .quad ((253<<56)+268)
- .globl heaptrapbound
- .globl _heaptrapbound
-heaptrapbound:
-_heaptrapbound:
  .quad ((253<<56)+269)
- .globl bndstkptr
- .globl _bndstkptr
-bndstkptr:
-_bndstkptr:
- .quad ((253<<56)+270)
- .quad ((253<<56)+271)
  .globl bndstkupperbound
  .globl _bndstkupperbound
 bndstkupperbound:
 _bndstkupperbound:
- .quad ((253<<56)+272)
- .quad ((253<<56)+273)
- .quad ((253<<56)+274)
+ .quad ((253<<56)+270)
+ .globl bndstkptr
+ .globl _bndstkptr
+bndstkptr:
+_bndstkptr:
+ .quad ((253<<56)+271)
  .globl heaplowerbound
  .globl _heaplowerbound
 heaplowerbound:
 _heaplowerbound:
- .quad ((253<<56)+275)
- .quad ((253<<56)+276)
- .quad ((253<<56)+277)
+ .quad ((253<<56)+272)
+ .quad ((253<<56)+273)
+ .quad ((253<<56)+274)
  .globl gcarraylowerbound
  .globl _gcarraylowerbound
 gcarraylowerbound:
 _gcarraylowerbound:
- .quad ((253<<56)+278)
+ .quad ((253<<56)+275)
  .globl gcarrayupperbound
  .globl _gcarrayupperbound
 gcarrayupperbound:
 _gcarrayupperbound:
- .quad ((253<<56)+279)
+ .quad ((253<<56)+276)
+ .globl heaplast
+ .globl _heaplast
+heaplast:
+_heaplast:
+ .quad ((253<<56)+277)
  .globl oldheaplast
  .globl _oldheaplast
 oldheaplast:
 _oldheaplast:
- .quad ((253<<56)+280)
+ .quad ((253<<56)+278)
+ .globl heaptrapbound
+ .globl _heaptrapbound
+heaptrapbound:
+_heaptrapbound:
+ .quad ((253<<56)+279)
  .globl oldheaptrapbound
  .globl _oldheaptrapbound
 oldheaptrapbound:
 _oldheaptrapbound:
- .quad ((253<<56)+281)
+ .quad ((253<<56)+280)
  .globl heapupperbound
  .globl _heapupperbound
 heapupperbound:
 _heapupperbound:
- .quad ((253<<56)+282)
+ .quad ((253<<56)+281)
  .globl _infbitlength_
  .globl __infbitlength_
 _infbitlength_:
 __infbitlength_:
- .quad ((253<<56)+283)
+ .quad ((253<<56)+282)
  .globl lastbps
  .globl _lastbps
 lastbps:
 _lastbps:
- .quad ((253<<56)+284)
+ .quad ((253<<56)+283)
  .globl bpslowerbound
  .globl _bpslowerbound
 bpslowerbound:
 _bpslowerbound:
- .quad ((253<<56)+285)
+ .quad ((253<<56)+284)
  .globl mainstartinitialize
  .globl _mainstartinitialize
 mainstartinitialize:
 _mainstartinitialize:
- .quad ((253<<56)+286)
+ .quad ((253<<56)+285)
  .globl nextbps
  .globl _nextbps
 nextbps:
 _nextbps:
- .quad ((253<<56)+287)
+ .quad ((253<<56)+286)
  .globl oldheapupperbound
  .globl _oldheapupperbound
 oldheapupperbound:
 _oldheapupperbound:
- .quad ((253<<56)+288)
+ .quad ((253<<56)+287)
  .globl oldheaplowerbound
  .globl _oldheaplowerbound
 oldheaplowerbound:
 _oldheaplowerbound:
- .quad ((253<<56)+289)
+ .quad ((253<<56)+288)
  .globl stackupperbound
  .globl _stackupperbound
 stackupperbound:
 _stackupperbound:
- .quad ((253<<56)+290)
+ .quad ((253<<56)+289)
  .globl unixstdin
  .globl _unixstdin
 unixstdin:
 _unixstdin:
- .quad ((253<<56)+291)
+ .quad ((253<<56)+290)
  .globl unixstdout
  .globl _unixstdout
 unixstdout:
 _unixstdout:
- .quad ((253<<56)+292)
+ .quad ((253<<56)+291)
  .globl unixstderr
  .globl _unixstderr
 unixstderr:
 _unixstderr:
- .quad ((253<<56)+293)
+ .quad ((253<<56)+292)
  .globl unixnull
  .globl _unixnull
 unixnull:
 _unixnull:
- .quad ((253<<56)+294)
+ .quad ((253<<56)+293)
  .globl unixeof
  .globl _unixeof
 unixeof:
 _unixeof:
- .quad ((253<<56)+295)
+ .quad ((253<<56)+294)
  .globl unixtty
  .globl _unixtty
 unixtty:
 _unixtty:
+ .quad ((253<<56)+295)
+ .globl saved_pxcptinfoptrs
+ .globl _saved_pxcptinfoptrs
+saved_pxcptinfoptrs:
+_saved_pxcptinfoptrs:
  .quad ((253<<56)+296)
  .quad ((253<<56)+297)
  .quad ((253<<56)+298)
@@ -464,7 +468,7 @@ _stacklowerbound:
  .quad ((253<<56)+328)
  .quad ((253<<56)+329)
  .quad ((253<<56)+330)
- .quad 573
+ .quad 493
  .quad symnam
  .quad ((253<<56)+333)
  .quad ((254<<56)+128)
@@ -626,87 +630,7 @@ _stacklowerbound:
  .quad ((253<<56)+490)
  .quad ((253<<56)+491)
  .quad ((253<<56)+492)
- .quad ((253<<56)+493)
- .quad ((253<<56)+494)
- .quad ((253<<56)+495)
- .quad ((253<<56)+496)
- .quad ((253<<56)+497)
- .quad ((253<<56)+498)
- .quad ((253<<56)+499)
- .quad ((253<<56)+500)
- .quad ((253<<56)+501)
- .quad ((253<<56)+502)
- .quad ((253<<56)+503)
- .quad ((253<<56)+504)
- .quad ((253<<56)+505)
- .quad ((253<<56)+506)
- .quad ((253<<56)+507)
- .quad ((253<<56)+508)
- .quad ((253<<56)+509)
- .quad ((253<<56)+510)
- .quad ((253<<56)+511)
- .quad ((253<<56)+512)
- .quad ((253<<56)+513)
- .quad ((253<<56)+514)
- .quad ((253<<56)+515)
- .quad ((253<<56)+516)
- .quad ((253<<56)+517)
- .quad ((253<<56)+518)
- .quad ((253<<56)+519)
- .quad ((253<<56)+520)
- .quad ((253<<56)+521)
- .quad ((253<<56)+522)
- .quad ((253<<56)+523)
- .quad ((253<<56)+524)
- .quad ((253<<56)+525)
- .quad ((253<<56)+526)
- .quad ((253<<56)+527)
- .quad ((253<<56)+528)
- .quad ((253<<56)+529)
- .quad ((253<<56)+530)
- .quad ((253<<56)+531)
- .quad ((253<<56)+532)
- .quad ((253<<56)+533)
- .quad ((253<<56)+534)
- .quad ((253<<56)+535)
- .quad ((253<<56)+536)
- .quad ((253<<56)+537)
- .quad ((253<<56)+538)
- .quad ((253<<56)+539)
- .quad ((253<<56)+540)
- .quad ((253<<56)+541)
- .quad ((253<<56)+542)
- .quad ((253<<56)+543)
- .quad ((253<<56)+544)
- .quad ((253<<56)+545)
- .quad ((253<<56)+546)
- .quad ((253<<56)+547)
- .quad ((253<<56)+548)
- .quad ((253<<56)+549)
- .quad ((253<<56)+550)
- .quad ((253<<56)+551)
- .quad ((253<<56)+552)
- .quad ((253<<56)+553)
- .quad ((253<<56)+554)
- .quad ((253<<56)+555)
- .quad ((253<<56)+556)
- .quad ((253<<56)+557)
- .quad ((253<<56)+558)
- .quad ((253<<56)+559)
- .quad ((253<<56)+560)
- .quad ((253<<56)+561)
- .quad ((253<<56)+562)
- .quad ((253<<56)+563)
- .quad ((253<<56)+564)
- .quad ((253<<56)+565)
- .quad ((253<<56)+566)
- .quad ((253<<56)+567)
- .quad ((253<<56)+568)
- .quad ((253<<56)+569)
- .quad ((253<<56)+570)
- .quad ((253<<56)+571)
- .quad ((253<<56)+572)
-  .space 2395424
+  .space 2396064
  .globl symprp
  .globl _symprp
 symprp:
@@ -1204,91 +1128,179 @@ _symprp:
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
-  .space 2395424
+  .space 2396064
  .globl symnam
  .globl _symnam
 symnam:
 _symnam:
+ .globl G0320
+ .globl _G0320
+ .quad ((4<<56)+G0320)
+ .globl G0321
+ .globl _G0321
+ .quad ((4<<56)+G0321)
+ .globl G0322
+ .globl _G0322
+ .quad ((4<<56)+G0322)
+ .globl G0323
+ .globl _G0323
+ .quad ((4<<56)+G0323)
+ .globl G0324
+ .globl _G0324
+ .quad ((4<<56)+G0324)
+ .globl G0325
+ .globl _G0325
+ .quad ((4<<56)+G0325)
+ .globl G0326
+ .globl _G0326
+ .quad ((4<<56)+G0326)
+ .globl G0327
+ .globl _G0327
+ .quad ((4<<56)+G0327)
+ .globl G0328
+ .globl _G0328
+ .quad ((4<<56)+G0328)
+ .globl G0329
+ .globl _G0329
+ .quad ((4<<56)+G0329)
+ .globl G0330
+ .globl _G0330
+ .quad ((4<<56)+G0330)
+ .globl G0331
+ .globl _G0331
+ .quad ((4<<56)+G0331)
+ .globl G0332
+ .globl _G0332
+ .quad ((4<<56)+G0332)
+ .globl G0333
+ .globl _G0333
+ .quad ((4<<56)+G0333)
+ .globl G0334
+ .globl _G0334
+ .quad ((4<<56)+G0334)
+ .globl G0335
+ .globl _G0335
+ .quad ((4<<56)+G0335)
+ .globl G0336
+ .globl _G0336
+ .quad ((4<<56)+G0336)
+ .globl G0337
+ .globl _G0337
+ .quad ((4<<56)+G0337)
+ .globl G0338
+ .globl _G0338
+ .quad ((4<<56)+G0338)
+ .globl G0339
+ .globl _G0339
+ .quad ((4<<56)+G0339)
+ .globl G0340
+ .globl _G0340
+ .quad ((4<<56)+G0340)
+ .globl G0341
+ .globl _G0341
+ .quad ((4<<56)+G0341)
+ .globl G0342
+ .globl _G0342
+ .quad ((4<<56)+G0342)
+ .globl G0343
+ .globl _G0343
+ .quad ((4<<56)+G0343)
+ .globl G0344
+ .globl _G0344
+ .quad ((4<<56)+G0344)
+ .globl G0345
+ .globl _G0345
+ .quad ((4<<56)+G0345)
+ .globl G0346
+ .globl _G0346
+ .quad ((4<<56)+G0346)
+ .globl G0347
+ .globl _G0347
+ .quad ((4<<56)+G0347)
+ .globl G0348
+ .globl _G0348
+ .quad ((4<<56)+G0348)
+ .globl G0349
+ .globl _G0349
+ .quad ((4<<56)+G0349)
+ .globl G0350
+ .globl _G0350
+ .quad ((4<<56)+G0350)
+ .globl G0351
+ .globl _G0351
+ .quad ((4<<56)+G0351)
+ .globl G0352
+ .globl _G0352
+ .quad ((4<<56)+G0352)
+ .globl G0353
+ .globl _G0353
+ .quad ((4<<56)+G0353)
+ .globl G0354
+ .globl _G0354
+ .quad ((4<<56)+G0354)
+ .globl G0355
+ .globl _G0355
+ .quad ((4<<56)+G0355)
+ .globl G0356
+ .globl _G0356
+ .quad ((4<<56)+G0356)
+ .globl G0357
+ .globl _G0357
+ .quad ((4<<56)+G0357)
+ .globl G0358
+ .globl _G0358
+ .quad ((4<<56)+G0358)
+ .globl G0359
+ .globl _G0359
+ .quad ((4<<56)+G0359)
+ .globl G0360
+ .globl _G0360
+ .quad ((4<<56)+G0360)
+ .globl G0361
+ .globl _G0361
+ .quad ((4<<56)+G0361)
+ .globl G0362
+ .globl _G0362
+ .quad ((4<<56)+G0362)
+ .globl G0363
+ .globl _G0363
+ .quad ((4<<56)+G0363)
+ .globl G0364
+ .globl _G0364
+ .quad ((4<<56)+G0364)
+ .globl G0365
+ .globl _G0365
+ .quad ((4<<56)+G0365)
+ .globl G0366
+ .globl _G0366
+ .quad ((4<<56)+G0366)
+ .globl G0367
+ .globl _G0367
+ .quad ((4<<56)+G0367)
+ .globl G0368
+ .globl _G0368
+ .quad ((4<<56)+G0368)
+ .globl G0369
+ .globl _G0369
+ .quad ((4<<56)+G0369)
+ .globl G0370
+ .globl _G0370
+ .quad ((4<<56)+G0370)
+ .globl G0371
+ .globl _G0371
+ .quad ((4<<56)+G0371)
+ .globl G0372
+ .globl _G0372
+ .quad ((4<<56)+G0372)
+ .globl G0373
+ .globl _G0373
+ .quad ((4<<56)+G0373)
+ .globl G0374
+ .globl _G0374
+ .quad ((4<<56)+G0374)
+ .globl G0375
+ .globl _G0375
+ .quad ((4<<56)+G0375)
  .globl G0376
  .globl _G0376
  .quad ((4<<56)+G0376)
@@ -2600,415 +2612,7 @@ _symnam:
  .globl G0812
  .globl _G0812
  .quad ((4<<56)+G0812)
- .globl G0813
- .globl _G0813
- .quad ((4<<56)+G0813)
- .globl G0814
- .globl _G0814
- .quad ((4<<56)+G0814)
- .globl G0815
- .globl _G0815
- .quad ((4<<56)+G0815)
- .globl G0816
- .globl _G0816
- .quad ((4<<56)+G0816)
- .globl G0817
- .globl _G0817
- .quad ((4<<56)+G0817)
- .globl G0818
- .globl _G0818
- .quad ((4<<56)+G0818)
- .globl G0819
- .globl _G0819
- .quad ((4<<56)+G0819)
- .globl G0820
- .globl _G0820
- .quad ((4<<56)+G0820)
- .globl G0821
- .globl _G0821
- .quad ((4<<56)+G0821)
- .globl G0822
- .globl _G0822
- .quad ((4<<56)+G0822)
- .globl G0823
- .globl _G0823
- .quad ((4<<56)+G0823)
- .globl G0824
- .globl _G0824
- .quad ((4<<56)+G0824)
- .globl G0825
- .globl _G0825
- .quad ((4<<56)+G0825)
- .globl G0826
- .globl _G0826
- .quad ((4<<56)+G0826)
- .globl G0827
- .globl _G0827
- .quad ((4<<56)+G0827)
- .globl G0828
- .globl _G0828
- .quad ((4<<56)+G0828)
- .globl G0829
- .globl _G0829
- .quad ((4<<56)+G0829)
- .globl G0830
- .globl _G0830
- .quad ((4<<56)+G0830)
- .globl G0831
- .globl _G0831
- .quad ((4<<56)+G0831)
- .globl G0832
- .globl _G0832
- .quad ((4<<56)+G0832)
- .globl G0833
- .globl _G0833
- .quad ((4<<56)+G0833)
- .globl G0834
- .globl _G0834
- .quad ((4<<56)+G0834)
- .globl G0835
- .globl _G0835
- .quad ((4<<56)+G0835)
- .globl G0836
- .globl _G0836
- .quad ((4<<56)+G0836)
- .globl G0837
- .globl _G0837
- .quad ((4<<56)+G0837)
- .globl G0838
- .globl _G0838
- .quad ((4<<56)+G0838)
- .globl G0839
- .globl _G0839
- .quad ((4<<56)+G0839)
- .globl G0840
- .globl _G0840
- .quad ((4<<56)+G0840)
- .globl G0841
- .globl _G0841
- .quad ((4<<56)+G0841)
- .globl G0842
- .globl _G0842
- .quad ((4<<56)+G0842)
- .globl G0843
- .globl _G0843
- .quad ((4<<56)+G0843)
- .globl G0844
- .globl _G0844
- .quad ((4<<56)+G0844)
- .globl G0845
- .globl _G0845
- .quad ((4<<56)+G0845)
- .globl G0846
- .globl _G0846
- .quad ((4<<56)+G0846)
- .globl G0847
- .globl _G0847
- .quad ((4<<56)+G0847)
- .globl G0848
- .globl _G0848
- .quad ((4<<56)+G0848)
- .globl G0849
- .globl _G0849
- .quad ((4<<56)+G0849)
- .globl G0850
- .globl _G0850
- .quad ((4<<56)+G0850)
- .globl G0851
- .globl _G0851
- .quad ((4<<56)+G0851)
- .globl G0852
- .globl _G0852
- .quad ((4<<56)+G0852)
- .globl G0853
- .globl _G0853
- .quad ((4<<56)+G0853)
- .globl G0854
- .globl _G0854
- .quad ((4<<56)+G0854)
- .globl G0855
- .globl _G0855
- .quad ((4<<56)+G0855)
- .globl G0856
- .globl _G0856
- .quad ((4<<56)+G0856)
- .globl G0857
- .globl _G0857
- .quad ((4<<56)+G0857)
- .globl G0858
- .globl _G0858
- .quad ((4<<56)+G0858)
- .globl G0859
- .globl _G0859
- .quad ((4<<56)+G0859)
- .globl G0860
- .globl _G0860
- .quad ((4<<56)+G0860)
- .globl G0861
- .globl _G0861
- .quad ((4<<56)+G0861)
- .globl G0862
- .globl _G0862
- .quad ((4<<56)+G0862)
- .globl G0863
- .globl _G0863
- .quad ((4<<56)+G0863)
- .globl G0864
- .globl _G0864
- .quad ((4<<56)+G0864)
- .globl G0865
- .globl _G0865
- .quad ((4<<56)+G0865)
- .globl G0866
- .globl _G0866
- .quad ((4<<56)+G0866)
- .globl G0867
- .globl _G0867
- .quad ((4<<56)+G0867)
- .globl G0868
- .globl _G0868
- .quad ((4<<56)+G0868)
- .globl G0869
- .globl _G0869
- .quad ((4<<56)+G0869)
- .globl G0870
- .globl _G0870
- .quad ((4<<56)+G0870)
- .globl G0871
- .globl _G0871
- .quad ((4<<56)+G0871)
- .globl G0872
- .globl _G0872
- .quad ((4<<56)+G0872)
- .globl G0873
- .globl _G0873
- .quad ((4<<56)+G0873)
- .globl G0874
- .globl _G0874
- .quad ((4<<56)+G0874)
- .globl G0875
- .globl _G0875
- .quad ((4<<56)+G0875)
- .globl G0876
- .globl _G0876
- .quad ((4<<56)+G0876)
- .globl G0877
- .globl _G0877
- .quad ((4<<56)+G0877)
- .globl G0878
- .globl _G0878
- .quad ((4<<56)+G0878)
- .globl G0879
- .globl _G0879
- .quad ((4<<56)+G0879)
- .globl G0880
- .globl _G0880
- .quad ((4<<56)+G0880)
- .globl G0881
- .globl _G0881
- .quad ((4<<56)+G0881)
- .globl G0882
- .globl _G0882
- .quad ((4<<56)+G0882)
- .globl G0883
- .globl _G0883
- .quad ((4<<56)+G0883)
- .globl G0884
- .globl _G0884
- .quad ((4<<56)+G0884)
- .globl G0885
- .globl _G0885
- .quad ((4<<56)+G0885)
- .globl G0886
- .globl _G0886
- .quad ((4<<56)+G0886)
- .globl G0887
- .globl _G0887
- .quad ((4<<56)+G0887)
- .globl G0888
- .globl _G0888
- .quad ((4<<56)+G0888)
- .globl G0889
- .globl _G0889
- .quad ((4<<56)+G0889)
- .globl G0890
- .globl _G0890
- .quad ((4<<56)+G0890)
- .globl G0891
- .globl _G0891
- .quad ((4<<56)+G0891)
- .globl G0892
- .globl _G0892
- .quad ((4<<56)+G0892)
- .globl G0893
- .globl _G0893
- .quad ((4<<56)+G0893)
- .globl G0894
- .globl _G0894
- .quad ((4<<56)+G0894)
- .globl G0895
- .globl _G0895
- .quad ((4<<56)+G0895)
- .globl G0896
- .globl _G0896
- .quad ((4<<56)+G0896)
- .globl G0897
- .globl _G0897
- .quad ((4<<56)+G0897)
- .globl G0898
- .globl _G0898
- .quad ((4<<56)+G0898)
- .globl G0899
- .globl _G0899
- .quad ((4<<56)+G0899)
- .globl G0900
- .globl _G0900
- .quad ((4<<56)+G0900)
- .globl G0901
- .globl _G0901
- .quad ((4<<56)+G0901)
- .globl G0902
- .globl _G0902
- .quad ((4<<56)+G0902)
- .globl G0903
- .globl _G0903
- .quad ((4<<56)+G0903)
- .globl G0904
- .globl _G0904
- .quad ((4<<56)+G0904)
- .globl G0905
- .globl _G0905
- .quad ((4<<56)+G0905)
- .globl G0906
- .globl _G0906
- .quad ((4<<56)+G0906)
- .globl G0907
- .globl _G0907
- .quad ((4<<56)+G0907)
- .globl G0908
- .globl _G0908
- .quad ((4<<56)+G0908)
- .globl G0909
- .globl _G0909
- .quad ((4<<56)+G0909)
- .globl G0910
- .globl _G0910
- .quad ((4<<56)+G0910)
- .globl G0911
- .globl _G0911
- .quad ((4<<56)+G0911)
- .globl G0912
- .globl _G0912
- .quad ((4<<56)+G0912)
- .globl G0913
- .globl _G0913
- .quad ((4<<56)+G0913)
- .globl G0914
- .globl _G0914
- .quad ((4<<56)+G0914)
- .globl G0915
- .globl _G0915
- .quad ((4<<56)+G0915)
- .globl G0916
- .globl _G0916
- .quad ((4<<56)+G0916)
- .globl G0917
- .globl _G0917
- .quad ((4<<56)+G0917)
- .globl G0918
- .globl _G0918
- .quad ((4<<56)+G0918)
- .globl G0919
- .globl _G0919
- .quad ((4<<56)+G0919)
- .globl G0920
- .globl _G0920
- .quad ((4<<56)+G0920)
- .globl G0921
- .globl _G0921
- .quad ((4<<56)+G0921)
- .globl G0922
- .globl _G0922
- .quad ((4<<56)+G0922)
- .globl G0923
- .globl _G0923
- .quad ((4<<56)+G0923)
- .globl G0924
- .globl _G0924
- .quad ((4<<56)+G0924)
- .globl G0925
- .globl _G0925
- .quad ((4<<56)+G0925)
- .globl G0926
- .globl _G0926
- .quad ((4<<56)+G0926)
- .globl G0927
- .globl _G0927
- .quad ((4<<56)+G0927)
- .globl G0928
- .globl _G0928
- .quad ((4<<56)+G0928)
- .globl G0929
- .globl _G0929
- .quad ((4<<56)+G0929)
- .globl G0930
- .globl _G0930
- .quad ((4<<56)+G0930)
- .globl G0931
- .globl _G0931
- .quad ((4<<56)+G0931)
- .globl G0932
- .globl _G0932
- .quad ((4<<56)+G0932)
- .globl G0933
- .globl _G0933
- .quad ((4<<56)+G0933)
- .globl G0934
- .globl _G0934
- .quad ((4<<56)+G0934)
- .globl G0935
- .globl _G0935
- .quad ((4<<56)+G0935)
- .globl G0936
- .globl _G0936
- .quad ((4<<56)+G0936)
- .globl G0937
- .globl _G0937
- .quad ((4<<56)+G0937)
- .globl G0938
- .globl _G0938
- .quad ((4<<56)+G0938)
- .globl G0939
- .globl _G0939
- .quad ((4<<56)+G0939)
- .globl G0940
- .globl _G0940
- .quad ((4<<56)+G0940)
- .globl G0941
- .globl _G0941
- .quad ((4<<56)+G0941)
- .globl G0942
- .globl _G0942
- .quad ((4<<56)+G0942)
- .globl G0943
- .globl _G0943
- .quad ((4<<56)+G0943)
- .globl G0944
- .globl _G0944
- .quad ((4<<56)+G0944)
- .globl G0945
- .globl _G0945
- .quad ((4<<56)+G0945)
- .globl G0946
- .globl _G0946
- .quad ((4<<56)+G0946)
- .globl G0947
- .globl _G0947
- .quad ((4<<56)+G0947)
- .globl G0948
- .globl _G0948
- .quad ((4<<56)+G0948)
-  .space 2395424
+  .space 2396064
  .globl symfnc
  .globl _symfnc
 symfnc:
@@ -3290,11 +2894,6 @@ _symfnc:
  .quad undefinedfunction
  .quad undefinedfunction
  .quad undefinedfunction
- .globl G0002
- .globl _G0002
- .quad G0002
- .quad undefinedfunction
- .quad undefinedfunction
  .quad undefinedfunction
  .globl G0003
  .globl _G0003
@@ -3321,110 +2920,113 @@ _symfnc:
  .quad undefinedfunction
  .quad undefinedfunction
  .quad undefinedfunction
+ .quad undefinedfunction
+ .quad undefinedfunction
+ .quad undefinedfunction
  .globl psl_main
  .globl _psl_main
  .quad psl_main
- .globl G0196
- .globl _G0196
- .quad G0196
  .quad undefinedfunction
  .quad undefinedfunction
  .quad undefinedfunction
+ .globl G0218
+ .globl _G0218
+ .quad G0218
  .quad undefinedfunction
- .globl G0011
- .globl _G0011
- .quad G0011
- .globl G0005
- .globl _G0005
- .quad G0005
- .globl G0197
- .globl _G0197
- .quad G0197
- .globl G0248
- .globl _G0248
- .quad G0248
- .globl G0006
- .globl _G0006
- .quad G0006
- .globl G0241
- .globl _G0241
- .quad G0241
- .globl G0020
- .globl _G0020
- .quad G0020
- .globl initcode
- .globl _initcode
- .quad initcode
+ .globl G0007
+ .globl _G0007
+ .quad G0007
  .globl G0012
  .globl _G0012
  .quad G0012
- .globl G0014
- .globl _G0014
- .quad G0014
+ .globl G0005
+ .globl _G0005
+ .quad G0005
+ .globl G0219
+ .globl _G0219
+ .quad G0219
+ .globl G0271
+ .globl _G0271
+ .quad G0271
+ .globl G0264
+ .globl _G0264
+ .quad G0264
+ .globl G0022
+ .globl _G0022
+ .quad G0022
+ .globl initcode
+ .globl _initcode
+ .quad initcode
+ .globl G0013
+ .globl _G0013
+ .quad G0013
+ .globl G0015
+ .globl _G0015
+ .quad G0015
  .globl faslin
  .globl _faslin
  .quad faslin
  .quad undefinedfunction
- .globl G0239
- .globl _G0239
- .quad G0239
- .globl G0013
- .globl _G0013
- .quad G0013
- .globl G0240
- .globl _G0240
- .quad G0240
- .globl G0238
- .globl _G0238
- .quad G0238
+ .globl G0262
+ .globl _G0262
+ .quad G0262
+ .globl G0014
+ .globl _G0014
+ .quad G0014
+ .globl G0263
+ .globl _G0263
+ .quad G0263
+ .globl G0261
+ .globl _G0261
+ .quad G0261
  .globl binaryopenread
  .globl _binaryopenread
  .quad binaryopenread
- .globl G0243
- .globl _G0243
- .quad G0243
- .globl G0183
- .globl _G0183
- .quad G0183
+ .globl G0266
+ .globl _G0266
+ .quad G0266
+ .globl G0205
+ .globl _G0205
+ .quad G0205
  .globl binaryread
  .globl _binaryread
  .quad binaryread
- .globl G0259
- .globl _G0259
- .quad G0259
+ .globl G0282
+ .globl _G0282
+ .quad G0282
  .globl binaryreadblock
  .globl _binaryreadblock
  .quad binaryreadblock
- .globl G0251
- .globl _G0251
- .quad G0251
+ .globl G0274
+ .globl _G0274
+ .quad G0274
  .globl binaryclose
  .globl _binaryclose
  .quad binaryclose
- .globl G0250
- .globl _G0250
- .quad G0250
+ .globl G0273
+ .globl _G0273
+ .quad G0273
  .quad undefinedfunction
  .quad undefinedfunction
- .globl G0047
- .globl _G0047
- .quad G0047
+ .globl G0052
+ .globl _G0052
+ .quad G0052
  .quad undefinedfunction
- .globl G0027
- .globl _G0027
- .quad G0027
- .globl G0127
- .globl _G0127
- .quad G0127
+ .globl G0030
+ .globl _G0030
+ .quad G0030
+ .globl G0146
+ .globl _G0146
+ .quad G0146
  .globl intern
  .globl _intern
  .quad intern
  .globl subseq
  .globl _subseq
  .quad subseq
- .globl G0036
- .globl _G0036
- .quad G0036
+ .globl G0040
+ .globl _G0040
+ .quad G0040
  .globl gtid
  .globl _gtid
  .quad gtid
@@ -3434,43 +3036,43 @@ _symfnc:
  .globl copystringtofrom
  .globl _copystringtofrom
  .quad copystringtofrom
- .globl G0057
- .globl _G0057
- .quad G0057
- .globl G0060
- .globl _G0060
- .quad G0060
- .globl G0133
- .globl _G0133
- .quad G0133
+ .globl G0063
+ .globl _G0063
+ .quad G0063
+ .globl G0067
+ .globl _G0067
+ .quad G0067
+ .globl G0153
+ .globl _G0153
+ .quad G0153
  .quad undefinedfunction
  .quad undefinedfunction
  .quad undefinedfunction
  .globl plantunbound
  .globl _plantunbound
  .quad plantunbound
- .globl G0101
- .globl _G0101
- .quad G0101
- .globl G0096
- .globl _G0096
- .quad G0096
+ .globl G0116
+ .globl _G0116
+ .quad G0116
+ .globl G0111
+ .globl _G0111
+ .quad G0111
  .globl gtbps
  .globl _gtbps
  .quad gtbps
  .globl gtwrds
  .globl _gtwrds
  .quad gtwrds
- .globl G0076
- .globl _G0076
- .quad G0076
- .globl G0068
- .globl _G0068
- .quad G0068
+ .globl G0087
+ .globl _G0087
+ .quad G0087
+ .globl G0078
+ .globl _G0078
+ .quad G0078
  .quad undefinedfunction
- .globl G0175
- .globl _G0175
- .quad G0175
+ .globl G0197
+ .globl _G0197
+ .quad G0197
  .globl delbps
  .globl _delbps
  .quad delbps
@@ -3478,18 +3080,18 @@ _symfnc:
  .globl _bittable
  .quad bittable
  .quad undefinedfunction
- .globl G0083
- .globl _G0083
- .quad G0083
- .globl G0084
- .globl _G0084
- .quad G0084
- .globl G0085
- .globl _G0085
- .quad G0085
  .globl G0095
  .globl _G0095
  .quad G0095
+ .globl G0097
+ .globl _G0097
+ .quad G0097
+ .globl G0099
+ .globl _G0099
+ .quad G0099
+ .globl G0109
+ .globl _G0109
+ .quad G0109
  .quad undefinedfunction
  .globl putd
  .globl _putd
@@ -3497,9 +3099,9 @@ _symfnc:
  .globl putentry
  .globl _putentry
  .quad putentry
- .globl G0112
- .globl _G0112
- .quad G0112
+ .globl G0128
+ .globl _G0128
+ .quad G0128
  .quad undefinedfunction
  .quad undefinedfunction
  .globl stderror
@@ -3509,12 +3111,12 @@ _symfnc:
  .globl _gtheap
  .quad gtheap
  .quad undefinedfunction
- .globl G0114
- .globl _G0114
- .quad G0114
- .globl G0118
- .globl _G0118
- .quad G0118
+ .globl G0131
+ .globl _G0131
+ .quad G0131
+ .globl G0135
+ .globl _G0135
+ .quad G0135
  .quad undefinedfunction
  .quad undefinedfunction
  .globl cons
@@ -3529,22 +3131,21 @@ _symfnc:
  .globl put
  .globl _put
  .quad put
- .globl G0142
- .globl _G0142
- .quad G0142
- .globl G0151
- .globl _G0151
- .quad G0151
+ .globl G0163
+ .globl _G0163
+ .quad G0163
+ .globl G0171
+ .globl _G0171
+ .quad G0171
  .globl atsoc
  .globl _atsoc
  .quad atsoc
- .quad undefinedfunction
- .globl G0150
- .globl _G0150
- .quad G0150
- .globl G0156
- .globl _G0156
- .quad G0156
+ .globl G0170
+ .globl _G0170
+ .quad G0170
+ .globl G0177
+ .globl _G0177
+ .quad G0177
  .globl plantcodepointer
  .globl _plantcodepointer
  .quad plantcodepointer
@@ -3553,26 +3154,23 @@ _symfnc:
  .globl fluid
  .globl _fluid
  .quad fluid
- .globl G0169
- .globl _G0169
- .quad G0169
+ .globl G0191
+ .globl _G0191
+ .quad G0191
  .quad undefinedfunction
- .globl G0172
- .globl _G0172
- .quad G0172
+ .globl G0194
+ .globl _G0194
+ .quad G0194
  .quad undefinedfunction
  .globl plantlambdalink
  .globl _plantlambdalink
  .quad plantlambdalink
- .globl addressapplyx
- .globl _addressapplyx
- .quad addressapplyx
  .globl undefinedfunction
  .globl _undefinedfunction
  .quad undefinedfunction
- .globl G0180
- .globl _G0180
- .quad G0180
+ .globl G0202
+ .globl _G0202
+ .quad G0202
  .globl compiledcallinginterpreted
  .globl _compiledcallinginterpreted
  .quad compiledcallinginterpreted
@@ -3581,66 +3179,6 @@ _symfnc:
  .globl pslsignalhandler
  .globl _pslsignalhandler
  .quad pslsignalhandler
- .globl G0186
- .globl _G0186
- .quad G0186
- .globl G0187
- .globl _G0187
- .quad G0187
- .globl G0188
- .globl _G0188
- .quad G0188
- .globl G0189
- .globl _G0189
- .quad G0189
- .globl G0190
- .globl _G0190
- .quad G0190
- .globl G0191
- .globl _G0191
- .quad G0191
- .globl G0192
- .globl _G0192
- .quad G0192
- .globl G0193
- .globl _G0193
- .quad G0193
- .globl G0194
- .globl _G0194
- .quad G0194
- .globl G0195
- .globl _G0195
- .quad G0195
- .globl G0198
- .globl _G0198
- .quad G0198
- .globl G0199
- .globl _G0199
- .quad G0199
- .globl G0200
- .globl _G0200
- .quad G0200
- .globl G0201
- .globl _G0201
- .quad G0201
- .globl G0202
- .globl _G0202
- .quad G0202
- .globl G0203
- .globl _G0203
- .quad G0203
- .globl G0204
- .globl _G0204
- .quad G0204
- .globl G0205
- .globl _G0205
- .quad G0205
- .globl G0206
- .globl _G0206
- .quad G0206
- .globl G0207
- .globl _G0207
- .quad G0207
  .globl G0208
  .globl _G0208
  .quad G0208
@@ -3671,12 +3209,6 @@ _symfnc:
  .globl G0217
  .globl _G0217
  .quad G0217
- .globl G0218
- .globl _G0218
- .quad G0218
- .globl G0219
- .globl _G0219
- .quad G0219
  .globl G0220
  .globl _G0220
  .quad G0220
@@ -3731,9 +3263,24 @@ _symfnc:
  .globl G0237
  .globl _G0237
  .quad G0237
+ .globl G0238
+ .globl _G0238
+ .quad G0238
+ .globl G0239
+ .globl _G0239
+ .quad G0239
+ .globl G0240
+ .globl _G0240
+ .quad G0240
+ .globl G0241
+ .globl _G0241
+ .quad G0241
  .globl G0242
  .globl _G0242
  .quad G0242
+ .globl G0243
+ .globl _G0243
+ .quad G0243
  .globl G0244
  .globl _G0244
  .quad G0244
@@ -3746,9 +3293,18 @@ _symfnc:
  .globl G0247
  .globl _G0247
  .quad G0247
+ .globl G0248
+ .globl _G0248
+ .quad G0248
  .globl G0249
  .globl _G0249
  .quad G0249
+ .globl G0250
+ .globl _G0250
+ .quad G0250
+ .globl G0251
+ .globl _G0251
+ .quad G0251
  .globl G0252
  .globl _G0252
  .quad G0252
@@ -3770,27 +3326,15 @@ _symfnc:
  .globl G0258
  .globl _G0258
  .quad G0258
+ .globl G0259
+ .globl _G0259
+ .quad G0259
  .globl G0260
  .globl _G0260
  .quad G0260
- .globl G0261
- .globl _G0261
- .quad G0261
- .globl G0262
- .globl _G0262
- .quad G0262
- .globl G0263
- .globl _G0263
- .quad G0263
- .globl G0264
- .globl _G0264
- .quad G0264
  .globl G0265
  .globl _G0265
  .quad G0265
- .globl G0266
- .globl _G0266
- .quad G0266
  .globl G0267
  .globl _G0267
  .quad G0267
@@ -3803,18 +3347,9 @@ _symfnc:
  .globl G0270
  .globl _G0270
  .quad G0270
- .globl G0271
- .globl _G0271
- .quad G0271
  .globl G0272
  .globl _G0272
  .quad G0272
- .globl G0273
- .globl _G0273
- .quad G0273
- .globl G0274
- .globl _G0274
- .quad G0274
  .globl G0275
  .globl _G0275
  .quad G0275
@@ -3836,9 +3371,6 @@ _symfnc:
  .globl G0281
  .globl _G0281
  .quad G0281
- .globl G0282
- .globl _G0282
- .quad G0282
  .globl G0283
  .globl _G0283
  .quad G0283
@@ -3911,168 +3443,6 @@ _symfnc:
  .globl G0306
  .globl _G0306
  .quad G0306
- .globl G0307
- .globl _G0307
- .quad G0307
- .globl G0308
- .globl _G0308
- .quad G0308
- .globl G0309
- .globl _G0309
- .quad G0309
- .globl G0310
- .globl _G0310
- .quad G0310
- .globl G0311
- .globl _G0311
- .quad G0311
- .globl G0312
- .globl _G0312
- .quad G0312
- .globl G0313
- .globl _G0313
- .quad G0313
- .globl G0314
- .globl _G0314
- .quad G0314
- .globl G0315
- .globl _G0315
- .quad G0315
- .globl G0316
- .globl _G0316
- .quad G0316
- .globl G0317
- .globl _G0317
- .quad G0317
- .globl G0318
- .globl _G0318
- .quad G0318
- .globl G0319
- .globl _G0319
- .quad G0319
- .globl G0320
- .globl _G0320
- .quad G0320
- .globl G0321
- .globl _G0321
- .quad G0321
- .globl G0322
- .globl _G0322
- .quad G0322
- .globl G0323
- .globl _G0323
- .quad G0323
- .globl G0324
- .globl _G0324
- .quad G0324
- .globl G0325
- .globl _G0325
- .quad G0325
- .globl G0326
- .globl _G0326
- .quad G0326
- .globl G0327
- .globl _G0327
- .quad G0327
- .globl G0328
- .globl _G0328
- .quad G0328
- .globl G0329
- .globl _G0329
- .quad G0329
- .globl G0330
- .globl _G0330
- .quad G0330
- .globl G0331
- .globl _G0331
- .quad G0331
- .globl G0332
- .globl _G0332
- .quad G0332
- .globl G0333
- .globl _G0333
- .quad G0333
- .globl G0334
- .globl _G0334
- .quad G0334
- .globl G0335
- .globl _G0335
- .quad G0335
- .globl G0336
- .globl _G0336
- .quad G0336
- .globl G0337
- .globl _G0337
- .quad G0337
- .globl G0338
- .globl _G0338
- .quad G0338
- .globl G0339
- .globl _G0339
- .quad G0339
- .globl G0340
- .globl _G0340
- .quad G0340
- .globl G0341
- .globl _G0341
- .quad G0341
- .globl G0342
- .globl _G0342
- .quad G0342
- .globl G0343
- .globl _G0343
- .quad G0343
- .globl G0344
- .globl _G0344
- .quad G0344
- .globl G0345
- .globl _G0345
- .quad G0345
- .globl G0346
- .globl _G0346
- .quad G0346
- .globl G0347
- .globl _G0347
- .quad G0347
- .globl G0348
- .globl _G0348
- .quad G0348
- .globl G0349
- .globl _G0349
- .quad G0349
- .globl G0350
- .globl _G0350
- .quad G0350
- .globl G0351
- .globl _G0351
- .quad G0351
- .globl G0352
- .globl _G0352
- .quad G0352
- .globl G0353
- .globl _G0353
- .quad G0353
- .globl G0356
- .globl _G0356
- .quad G0356
- .quad undefinedfunction
- .globl G0360
- .globl _G0360
- .quad G0360
- .quad undefinedfunction
- .globl G0361
- .globl _G0361
- .quad G0361
- .quad undefinedfunction
- .globl dynloadhelper
- .globl _dynloadhelper
- .quad dynloadhelper
- .globl dynloadhelper_float_float
- .globl _dynloadhelper_float_float
- .quad dynloadhelper_float_float
- .globl G0364
- .globl _G0364
- .quad G0364
  .globl codeaddressp
  .globl _codeaddressp
  .quad codeaddressp
@@ -4080,7 +3450,7 @@ _symfnc:
  .globl lastkernel
  .globl _lastkernel
  .quad lastkernel
-  .space 2395424
+  .space 2396064
  .globl symget
  .globl _symget
 symget:
@@ -4578,84 +3948,4 @@ _symget:
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
  .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
- .quad ((254<<56)+128)
-  .space 2395424
+  .space 2396064
