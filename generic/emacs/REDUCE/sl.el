@@ -1569,6 +1569,12 @@ The stream nil represents the terminal, an interactive window.
 A buffer stream represents the output file to which it will be
 saved when it is closed.")
 
+(defconst sl--default-output-buffer-name "*Standard LISP*"
+  "The name of the terminal window buffer.")
+
+(defvar sl--default-output-buffer nil
+ "The terminal window buffer, set when the buffer is created." )
+
 (defun CLOSE (filehandle)
   "CLOSE(FILEHANDLE:any):any eval, spread
 Closes the file with the internal name FILEHANDLE writing any
@@ -1587,7 +1593,8 @@ closed.
 				 (cond ((eq (cdr filehandle) 'INPUT)
 						t)
 					   ((eq (cdr filehandle) 'OUTPUT)
-						;; *** Write file before killing buffer! ***
+						(with-current-buffer buf
+						  (write-file (substring (buffer-name) 8) t))
 						t)))
 			(kill-buffer buf)
 		  (error "%s could not be closed" filehandle))))
@@ -1644,7 +1651,9 @@ OUTPUT or the file can't be opened.
 		   (if (zerop (buffer-size))
 			   (insert-file-contents-literally file))
 		   (cons (current-buffer) 'INPUT)))
-		((eq how 'OUTPUT) nil)			; not yet implemented!
+		((eq how 'OUTPUT)
+		 ;; Create a new file buffer and return (buffer . 'OUTPUT).
+		 (cons (get-buffer-create (concat " SL-OUT " file)) 'OUTPUT))
 		(t (error "%s is not option for OPEN" how))))
 
 (defun PAGELENGTH (len)
@@ -1861,7 +1870,7 @@ The current print line is terminated."
   (terpri)
   nil)
 
-(defun WRS (filehandle)					; temporary no-op
+(defun WRS (filehandle)
   "WRS(FILEHANDLE:any):any eval, spread
 Output to the currently active output file is suspended and further
 output is directed to the file named. FILEHANDLE is an internal
@@ -1870,7 +1879,16 @@ opened for output. If FILEHANDLE is NIL the standard output
 device is selected. WRS returns the internal name of the previously
 selected output file.
 ***** FILEHANDLE could not be selected for output"
-  nil)
+  (let (stream)
+	(if filehandle
+		(unless (and (consp filehandle)
+					 (eq (cdr filehandle) 'OUTPUT)
+					 (bufferp (setq stream (car filehandle))))
+		  (error "%s could not be selected for output" filehandle)))
+	(prog1
+		(if sl--write-stream (cons sl--write-stream 'OUTPUT))
+	  (setq sl--write-stream stream
+			standard-output (or stream sl--default-output-buffer)))))
 
 
 ;;; LISP Reader
@@ -1908,7 +1926,9 @@ selected output file.
   ;; 	     TERPRI() >>;
   ;; END;
   (interactive)
-  (switch-to-buffer (get-buffer-create "*Standard LISP*"))
+  (switch-to-buffer
+   (setq sl--default-output-buffer
+		 (get-buffer-create sl--default-output-buffer-name)))
   (sl-standard-lisp-interaction-mode)
   (goto-char (point-max))  ; in case buffer already exists
   (let (value			   ; value of last sexp
@@ -1964,7 +1984,9 @@ Most commands are inherited from `lisp-interaction-mode-map'.")
 (defun sl-run (rlisp-mode)
   "Run Standard LISP with IO via a buffer."
   (interactive "P")
-  (switch-to-buffer (get-buffer-create "*Standard LISP*"))
+  (switch-to-buffer
+   (setq sl--default-output-buffer
+		 (get-buffer-create sl--default-output-buffer-name)))
   (sl-interaction-mode)
   (let ((standard-output (set-marker sl--marker 1)))
 	(princ "Standard LISP") (terpri)

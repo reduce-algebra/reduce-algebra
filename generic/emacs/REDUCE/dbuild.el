@@ -2,6 +2,8 @@
 ;; files.  Beware that this file is a mix of Emacs Lisp and REDUCE
 ;; syntax.  It is based on the REDUCE 3.3 file `dbuild.sl'.
 
+(WRS (OPEN "dbuild-log.txt" 'OUTPUT))
+
 (require 'boot)
 
 ;; Load enough modules to run "alg.tst":
@@ -30,5 +32,7 @@ end;
 ;; (load init!-file)
 
 (setq *COMP nil)
+
+(CLOSE (WRS nil))
 
 (INITREDUCE)

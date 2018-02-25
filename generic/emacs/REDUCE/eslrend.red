@@ -70,7 +70,7 @@ symbolic procedure error1;
    %This is the simplest error return, without a message printed. It can
    %be defined as ERROR(99,NIL) if necessary;
    %FJW throw('!$error!$,99);
-   error(99, nil);
+   ERROR(99, nil);
 
 symbolic procedure filetype u;
    %determines if string U has a specific file type.
