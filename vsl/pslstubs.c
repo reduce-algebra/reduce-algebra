@@ -47,7 +47,8 @@
 
 int _get_registry_value(const char *a, const char *b, const char *c, char *d)
 {   TR1("getregistryvalue");
-    return getregistryvalue(a, b, c, d);
+    return 1;
+//  return getregistryvalue(a, b, c, d);
 }
 
 int profil()

@@ -57,9 +57,9 @@ _G0003:
  mov %rax,symval+2384(%rip)
  mov %rax,symval+2392(%rip)
  ret
+ .data
 G0002:
 _G0002:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 0
@@ -103,9 +103,9 @@ G0007:
 _G0007:
  mov G0006(%rip),%rax
  ret
+ .data
 G0006:
 _G0006:
- .data
  .quad ((254<<56)+128)
 G0010:
 _G0010:
@@ -134,9 +134,9 @@ _G0012:
  mov G0009(%rip),%rax
  call *symfnc+2528(%rip)
  jmp *symfnc+2536(%rip)
+ .data
 G0009:
 _G0009:
- .data
  .quad ((4<<56)+G0010)
 G0008:
 _G0008:
@@ -167,9 +167,9 @@ G0015:
 _G0015:
  mov $10,%rax
  jmp *symfnc+2568(%rip)
+ .data
 G0018:
 _G0018:
- .data
  .quad 34
  .byte 67,111,117,108,100,110,39,116,32,111
  .byte 112,101,110,32,98,105,110,97,114,121
@@ -201,9 +201,9 @@ _binaryopenread:
 G0020:
 _G0020:
  ret
+ .data
 G0017:
 _G0017:
- .data
  .quad ((4<<56)+G0018)
 G0016:
 _G0016:
@@ -321,9 +321,9 @@ _G0028:
  mov %rax,symval+2672(%rip)
  add $16,%rsp
  ret
+ .data
 G0021:
 _G0021:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 1
@@ -393,9 +393,9 @@ G0034:
 _G0034:
  add $24,%rsp
  jmp *symfnc+2696(%rip)
+ .data
 G0029:
 _G0029:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 1
@@ -405,9 +405,9 @@ _G0029:
 intern:
 _intern:
  jmp *symfnc+2712(%rip)
+ .data
 G0039:
 _G0039:
- .data
  .quad 7
  .byte 78,101,119,32,105,100,58,32,0,0
  .text
@@ -530,9 +530,9 @@ G0042:
 _G0042:
  add $48,%rsp
  ret
+ .data
 G0038:
 _G0038:
- .data
  .quad ((4<<56)+G0039)
 G0037:
 _G0037:
@@ -644,9 +644,9 @@ G0057:
 _G0057:
  add $32,%rsp
  ret
+ .data
 G0050:
 _G0050:
- .data
  .quad ((4<<56)+G0051)
 G0049:
 _G0049:
@@ -697,9 +697,9 @@ _G0063:
  mov 8(%rsp),%rax
  add $16,%rsp
  ret
+ .data
 G0062:
 _G0062:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 1
@@ -770,9 +770,9 @@ _G0070:
  idiv %rbx
  mov %rdx,%rax
  ret
+ .data
 G0064:
 _G0064:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 1
@@ -894,9 +894,9 @@ _G0073:
  mov G0071(%rip),%rax
  add $88,%rsp
  ret
+ .data
 G0071:
 _G0071:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 2
@@ -907,9 +907,9 @@ delbps:
 _delbps:
  mov G0076(%rip),%rax
  ret
+ .data
 G0076:
 _G0076:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 4
@@ -986,9 +986,9 @@ G0081:
 _G0081:
  add $48,%rsp
  ret
+ .data
 G0077:
 _G0077:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 4
@@ -1070,9 +1070,9 @@ G0090:
 _G0090:
  add $48,%rsp
  ret
+ .data
 G0086:
 _G0086:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 3
@@ -1105,9 +1105,9 @@ _G0095:
  add $32,%rsp
  mov %ebx,0(%eax)
  ret
+ .data
 G0094:
 _G0094:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 3
@@ -1140,9 +1140,9 @@ _G0097:
  mov %rax,(%rsi)
  add $24,%rsp
  ret
+ .data
 G0096:
 _G0096:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 4
@@ -1221,9 +1221,9 @@ G0101:
 _G0101:
  add $8,%rsp
  ret
+ .data
 G0098:
 _G0098:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 2
@@ -1314,9 +1314,9 @@ _G0113:
  mov 16(%rsp),%rax
  add $48,%rsp
  ret
+ .data
 G0110:
 _G0110:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 3
@@ -1333,9 +1333,9 @@ _putentry:
  or %rdi,%rcx
  mov $366,%rdi
  jmp *symfnc+2928(%rip)
+ .data
 G0115:
 _G0115:
- .data
  .quad 22
  .byte 70,105,108,101,32,105,115,32,110,111
  .byte 116,32,70,65,83,76,32,102,111,114,109
@@ -1350,9 +1350,9 @@ _G0116:
  mov G0114(%rip),%rax
  call *symfnc+2512(%rip)
  jmp *symfnc+2520(%rip)
+ .data
 G0114:
 _G0114:
- .data
  .quad ((4<<56)+G0115)
 G0120:
 _G0120:
@@ -1417,9 +1417,9 @@ G0124:
 _G0124:
  add $8,%rsp
  ret
+ .data
 G0119:
 _G0119:
- .data
  .quad ((4<<56)+G0120)
 G0118:
 _G0118:
@@ -1442,9 +1442,9 @@ G0128:
 _G0128:
  mov G0126(%rip),%rax
  jmp *symfnc+2968(%rip)
+ .data
 G0126:
 _G0126:
- .data
  .quad ((4<<56)+G0127)
  .text
  .quad 1
@@ -1459,9 +1459,9 @@ _gtheap:
 G0130:
 _G0130:
  jmp *symfnc+2992(%rip)
+ .data
 G0129:
 _G0129:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 1
@@ -1483,9 +1483,9 @@ _G0131:
 G0132:
 _G0132:
  ret
+ .data
 G0134:
 _G0134:
- .data
  .quad 27
  .byte 71,97,114,98,97,103,101,32,99,111,108
  .byte 108,101,99,116,105,111,110,32,114,101
@@ -1499,9 +1499,9 @@ G0135:
 _G0135:
  mov G0133(%rip),%rax
  jmp *symfnc+2592(%rip)
+ .data
 G0133:
 _G0133:
- .data
  .quad ((4<<56)+G0134)
 G0137:
 _G0137:
@@ -1531,9 +1531,9 @@ _G0138:
  mov (%rbx),%rdi
  mov %rdi,symval+2648(%rip)
  ret
+ .data
 G0136:
 _G0136:
- .data
  .quad ((4<<56)+G0137)
  .text
  .quad 1
@@ -1578,9 +1578,9 @@ _gtconststr:
  movq $0,(%rbx)
  add $16,%rsp
  ret
+ .data
 G0141:
 _G0141:
- .data
  .quad 30
  .byte 83,85,66,83,69,81,32,99,97,108,108
  .byte 101,100,32,119,105,116,104,32,97,32
@@ -1655,9 +1655,9 @@ _G0144:
  or %rdi,%rax
  add $64,%rsp
  ret
+ .data
 G0140:
 _G0140:
- .data
  .quad ((4<<56)+G0141)
 G0139:
 _G0139:
@@ -1709,9 +1709,9 @@ G0149:
 _G0149:
  add $32,%rsp
  ret
+ .data
 G0145:
 _G0145:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 2
@@ -1779,9 +1779,9 @@ G0155:
 _G0155:
  add $40,%rsp
  ret
+ .data
 G0152:
 _G0152:
- .data
  .quad ((254<<56)+116)
 G0151:
 _G0151:
@@ -1937,9 +1937,9 @@ _G0165:
  mov 16(%rsp),%rax
  add $32,%rsp
  ret
+ .data
 G0162:
 _G0162:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 2
@@ -1984,9 +1984,9 @@ _G0169:
  shr $8,%rbx
  mov 8(%rbx),%rbx
  jmp G0167
+ .data
 G0166:
 _G0166:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 2
@@ -2021,9 +2021,9 @@ _G0171:
 putd:
 _putd:
  jmp *symfnc+3088(%rip)
+ .data
 G0176:
 _G0176:
- .data
  .quad 26
  .byte 66,97,100,32,112,97,114,97,109,101
  .byte 116,101,114,115,32,116,111,32,67,79
@@ -2077,9 +2077,9 @@ _G0180:
  mov G0175(%rip),%rax
  add $24,%rsp
  ret
+ .data
 G0175:
 _G0175:
- .data
  .quad ((254<<56)+128)
 G0174:
 _G0174:
@@ -2155,9 +2155,9 @@ G0186:
 _G0186:
  add $24,%rsp
  ret
+ .data
 G0181:
 _G0181:
- .data
  .quad ((254<<56)+128)
  .text
  .quad 1
@@ -2169,9 +2169,9 @@ _G0191:
  mov G0189(%rip),%rcx
  mov G0190(%rip),%rbx
  jmp *symfnc+3048(%rip)
+ .data
 G0190:
 _G0190:
- .data
  .quad ((254<<56)+392)
 G0189:
 _G0189:
@@ -2199,9 +2199,9 @@ _G0194:
  mov G0192(%rip),%rcx
  mov G0193(%rip),%rbx
  jmp *symfnc+3048(%rip)
+ .data
 G0193:
 _G0193:
- .data
  .quad ((254<<56)+394)
 G0192:
 _G0192:
@@ -2307,9 +2307,9 @@ _G0199:
 undefinedfunction:
 _undefinedfunction:
  jmp *symfnc+3176(%rip)
+ .data
 G0201:
 _G0201:
- .data
  .quad 26
  .byte 85,110,100,101,102,105,110,101,100
  .byte 32,102,117,110,99,116,105,111,110,32
@@ -2332,9 +2332,9 @@ _G0202:
  xor %rax,%rax
  call *symfnc+2464(%rip)
  ret
+ .data
 G0200:
 _G0200:
- .data
  .quad ((4<<56)+G0201)
  .text
  .quad 0
@@ -2350,9 +2350,9 @@ _compiledcallinginterpreted:
  or %rsi,%rdi
  mov %rdi,symval+3192(%rip)
  jmp *symfnc+3200(%rip)
+ .data
 G0204:
 _G0204:
- .data
  .quad 12
  .byte 70,65,84,65,76,32,69,82,82,79,82,58
  .byte 32,0
@@ -2372,9 +2372,9 @@ _G0205:
  mov $-1,%rax
  add $8,%rsp
  jmp *symfnc+2464(%rip)
+ .data
 G0203:
 _G0203:
- .data
  .quad ((4<<56)+G0204)
 G0207:
 _G0207:
@@ -2390,9 +2390,9 @@ pslsignalhandler:
 _pslsignalhandler:
  mov G0206(%rip),%rax
  call *symfnc+2968(%rip)
+ .data
 G0206:
 _G0206:
- .data
  .quad ((4<<56)+G0207)
  .text
  .quad 0
@@ -4490,9 +4490,9 @@ G0315:
 _G0315:
  add $8,%rsp
  ret
+ .data
 G0310:
 _G0310:
- .data
  .quad ((254<<56)+492)
 G0309:
 _G0309:
@@ -4519,9 +4519,9 @@ initcode:
 _initcode:
  mov G0319(%rip),%rax
  ret
+ .data
 G0319:
 _G0319:
- .data
  .quad ((254<<56)+128)
  .globl symval
  .globl _symval
@@ -7646,3 +7646,4 @@ _G0812:
  .globl _symfnc
  .globl symget
  .globl _symget
+
