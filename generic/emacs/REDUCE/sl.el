@@ -173,7 +173,7 @@ output device. Dskin does not change the value of *echo, so one may say
 Returns T if U is not a pair.
 EXPR PROCEDURE ATOM(U);
    NULL PAIRP U;"
-  (declare (debug atom))
+  (declare (debug t))
   `(atom ,u))
 
 (defalias 'CODEP 'functionp
@@ -2042,6 +2042,11 @@ Then evaluate it and print value into *Standard LISP* buffer."
 
 (defalias 'CONCAT 'concat)
 
+;; Function PRETTYPRINT is needed for ON DEFN to work.  It is also
+;; defined in module pretty in file util.red, which will override this
+;; definition if it is loaded.
+(defalias 'PRETTYPRINT 'pp)
+
 (defun TIME ()
   "(time): integer expr
 Elapsed time from some arbitrary initial point in milliseconds."
@@ -2099,9 +2104,9 @@ some consistent convention (eg unique position in memory)."
 
 (defun DSKIN (name)
   "(dskin NAME:string): nil, abort expr
-The contents of the file `NAME' are processed as if they were typed in.
-Once in* has been bound to the channel which represents the open file,
-each form is processed."
+The contents of the file NAME are processed as if they were typed in.
+Once the input stream has been bound to the channel which
+represents the open file, each form is processed."
   (RDS (setq OLDCHAN* (OPEN name 'INPUT))))
 
 (provide 'sl)
