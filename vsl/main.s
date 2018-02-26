@@ -189,7 +189,7 @@ _G0019:
 binaryopenread:
 _binaryopenread:
  call acn
- .asciz "binaryreadopen %llx"
+ .asciz "binaryreadopen %Q"
  mov G0016(%rip),%rbx
  shl $8,%rbx
  shr $8,%rbx
@@ -339,7 +339,7 @@ _G0021:
 G0030:
 _G0030:
  call acn
- .asciz "faslin-intern %llx"
+ .asciz "faslin-intern %Q"
  sub $24,%rsp
  mov G0029(%rip),%rdi
  mov %rdi,16(%rsp)
@@ -426,7 +426,7 @@ _G0039:
 G0040:
 _G0040:
  call acn
- .asciz "unchecked-string-intern %llx"
+ .asciz "unchecked-string-intern %Q"
  sub $48,%rsp
  mov %rax,(%rsp)
  mov G0035(%rip),%rbp
@@ -567,7 +567,7 @@ _G0051:
 G0052:
 _G0052:
  call acn
- .asciz "hash-into-table %llx"
+ .asciz "hash-into-table %Q"
  sub $32,%rsp
  mov G0048(%rip),%rdi
  mov %rdi,24(%rsp)
@@ -674,7 +674,7 @@ _G0048:
 G0063:
 _G0063:
  call acn
- .asciz "initialize-new-id %llx %llx"
+ .asciz "initialize-new-id %Q %Q"
  sub $16,%rsp
  mov %rax,(%rsp)
  shl $8,%rax
@@ -796,7 +796,7 @@ _G0064:
 faslin:
 _faslin:
  call acn
- .asciz "faslin %llx"
+ .asciz "faslin %Q"
  sub $88,%rsp
  mov G0071(%rip),%rdi
  mov %rdi,64(%rsp)
