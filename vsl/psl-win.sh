@@ -1,14 +1,12 @@
 #! /bin/bash -v
 
-# Uses existing main.s and dmain.s that may have been hand edited.
 
-
-x86_64-w64-mingw32-gcc -c -g main.s
-x86_64-w64-mingw32-gcc -c -g dmain.s
+x86_64-w64-mingw32-gcc -c -ggdb main.s
+x86_64-w64-mingw32-gcc -c -ggdb dmain.s
 
 rm -f bpsl
 
-x86_64-w64-mingw32-gcc -g -O1 \
+x86_64-w64-mingw32-gcc -ggdb -O0 \
    -DWINDOWS \
    -DBPSSIZE=20500000 \
    bps.c \
@@ -31,4 +29,6 @@ x86_64-w64-mingw32-gcc -g -O1 \
    -o bpsl
 
 
-./bpsl
+./try-bpsl.sh
+
+# end of script

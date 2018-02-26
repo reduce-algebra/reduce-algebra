@@ -801,7 +801,7 @@ void internalprint(LispObject x)
             return;
         case tagSYMBOL:
             pn = qpname(x);
-// gensyms get their print-names allocated whne first printed.
+// gensyms get their print-names allocated when first printed.
             if (pn == nil)
             {   int len = sprintf(printbuffer, "g%.3d", gensymcounter++);
                 push(x);
@@ -818,18 +818,70 @@ void internalprint(LispObject x)
             }
             else if (len != 0)
             {   esc = 0;
+#ifdef PSL
+                if (!islower((int)s[0]) &&
+                    !isupper((int)s[0]) &&
+// My implmentation here will fail to put an escape character in front
+// of a symbol named "+1", resulting in it reading back in as an integer.
+// PSL seems to have some sort of input concept of "maybe a number but I can't
+// tell yet" that defers interpretation as between number and symbol until
+// later in the day. So the symbol "1+" is another example of this effect.
+                    !isdigit((int)s[0]) &&
+                    s[0]!='!' && s[0]!='+' && s[0]!='-' &&
+                    s[0]!='$' && s[0]!='^' && s[0]!='&' && s[0]!='*' &&
+                    s[0]!='_' && s[0]!='=' && s[0]!=';' && s[0]!=':' &&
+                    s[0]!='@' && s[0]!='#' && s[0]!='~' && s[0]!='<' &&
+                    s[0]!='>' && s[0]!='/' && s[0]!='?' && s[0]!='\\' &&
+                    s[0]!='{' && s[0]!='}' && s[0]!='_') esc++;
+#else
                 if (!islower((int)s[0])) esc++;
+#endif
                 for (i=1; i<len; i++)
                 {   if (!islower((int)s[i]) &&
                         !isdigit((int)s[i]) &&
+#ifdef PSL
+                        !isupper((int)s[i]) &&
+                        s[i]!='!' && s[i]!='+' && s[i]!='-' &&
+                        s[i]!='$' && s[i]!='^' && s[i]!='&' && s[i]!='*' &&
+                        s[i]!='_' && s[i]!='=' && s[i]!=';' && s[i]!=':' &&
+                        s[i]!='@' && s[i]!='#' && s[i]!='~' && s[i]!='<' &&
+                        s[i]!='>' && s[i]!='/' && s[i]!='?' && s[i]!='\\' &&
+                        s[i]!='{' && s[i]!='}' &&
+#endif
                         s[i]!='_') esc++;
                 }
                 checkspace(len + esc);
+#ifdef PSL
+                if (!islower((int)s[0]) &&
+                    !isupper((int)s[0]) &&
+// My implmentation here will fail to put an escape character in front
+// of a symbol named "+1", resulting in it reading back in as an integer.
+// PSL seems to have some sort of input concept of "maybe a number but I can't
+// tell yet" that defers interpretation as between number and symbol until
+// later in the day. So the symbol "1+" is another example of this effect.
+                    !isdigit((int)s[0]) &&
+                    s[0]!='!' && s[0]!='+' && s[0]!='-' &&
+                    s[0]!='$' && s[0]!='^' && s[0]!='&' && s[0]!='*' &&
+                    s[0]!='_' && s[0]!='=' && s[0]!=';' && s[0]!=':' &&
+                    s[0]!='@' && s[0]!='#' && s[0]!='~' && s[0]!='<' &&
+                    s[0]!='>' && s[0]!='/' && s[0]!='?' && s[0]!='\\' &&
+                    s[0]!='{' && s[0]!='}' && s[0]!='_') wrch('!');
+#else
                 if (!islower((int)s[0])) wrch('!');
+#endif
                 wrch(s[0]);
                 for (i=1; i<len; i++)
                 {   if (!islower((int)s[i]) &&
                         !isdigit((int)s[i]) &&
+#ifdef PSL
+                        !isupper((int)s[i]) &&
+                        s[i]!='!' && s[i]!='+' && s[i]!='-' &&
+                        s[i]!='$' && s[i]!='^' && s[i]!='&' && s[i]!='*' &&
+                        s[i]!='_' && s[i]!='=' && s[i]!=';' && s[i]!=':' &&
+                        s[i]!='@' && s[i]!='#' && s[i]!='~' && s[i]!='<' &&
+                        s[i]!='>' && s[i]!='/' && s[i]!='?' && s[i]!='\\' &&
+                        s[i]!='{' && s[i]!='}' &&
+#endif
                         s[i]!='_')
                         wrch('!');
                     wrch(s[i]);

@@ -1,7 +1,5 @@
 #! /bin/bash -v
 
-# Uses existing main.s and dmain.s that may have been hand edited.
-
 
 gcc -c -g main.s
 gcc -c -g dmain.s
@@ -13,7 +11,7 @@ rm -f bpsl
 # will set a compiler flag to stop it from bothering me about things that
 # amd well aware of.
 
-gcc -g -O1 \
+gcc -g -O0 \
    -DMACINTOSH \
    -Wno-deprecated-declarations \
    -DBPSSIZE=20500000 \
@@ -37,4 +35,7 @@ gcc -g -O1 \
    -o bpsl
 
 
-./bpsl
+./try-bpsl.sh
+
+# end of script
+

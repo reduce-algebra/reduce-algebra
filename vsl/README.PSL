@@ -1,0 +1,132 @@
+This directory contains not just VSL, but a strange experiment to see
+how far it is possible to use VSL to do the initial parts of bootstrapping
+PSL.
+
+try-psl-compiler.sh
+   This makes a compiler using the PSL "AMD64_ext" model and demonstrates
+   it by compiling a small test function (see factorial.sl) to create
+   factorial.s and dfactorial.s.
+
+try-to-make-main.sh
+   Uses the technology as above to recreate an AMD64_ext version of main.s
+   and of dmain.s, which should be components of the PSL kernel. On my
+   computer this takes under 20 seconds. The output might be compared
+   against main.s and dmain.s from the AMD64_ext part of the PSL tree.
+
+There are then files *main.s and *dmain.s which are just copies of those
+files taken from the corresponding dist/kernel/* directories in the PSL
+tree. Moving forward using those means that the next step does not need to
+depend on try-to-make-main.sh yielding a perfect result, but instead moves
+forward from the saved copies of main.s and dmain.s that are in the PSL
+tree and are expected to be in full working order.
+
+Although I have these for AMD64, AMD64_ext, bsd, mac and mingw64 targets
+at present I only make use of the AMD64_ext and mningw64 ones.
+
+main-dmain.sh
+   Here I think I say "ha ha ha". This involves ugly sed scripts and an
+   even uglier jiffy C program that takes either AMD64_ext_[d]main.s or
+   mingw64_[d]main.s and creates an updated copy called just main.s and
+   dmain.s.
+   Several things are going on, but the main onjective is to end up with
+   a single way of having generates the assembly code so that it will end up
+   usable on Windows, Cygwin, Linux, BSD and Mac. The second objective is
+   to render it forward-looking on those platforms.
+   Code for the Mac is obliged to be relocatable, so absolute references
+   from code to data are prolematic. To sort that out in a way that also
+   suits the other platforms code that references (eg) symval+NNN is changed
+   to show the reference as symval+NNN(%ip), making it explicitly pc
+   relative.
+   Mac and Linux have different ideas about the mapping between assembly code
+   symbols and ones in object files and C: in particular one expects the
+   source code to write names as "_symval" while the other wants just "symval".
+   To deal with that the adjusted main.s and dmain.s define both variants.
+   That is ugly but means that one version of the generated file works in more
+   places.
+   Recent versions of gcc on Linux default to using a scheme called "pie" that
+   is there to allow for (more) randomization of the addresses of both code
+   and data. The reasoning there is that the ranedomization makes it harder
+   to create attack tools that exploit buffer overflows and similar weaknesses.
+   The Macintosh tries to default to a similar scheme. To allow the Mac
+   to follow its inclinations it appears to ve necessary to avoid building
+   any absolute references to data into the code segment, although absolute
+   references within the data segment seem OK. The PSL compiler put various
+   bits of read-only data (eg some strings) in the text segment. To avoid
+   the Mac linker moaning that is had to disable "pie" the relevant fragments
+   in main.s now have .data/.text directives scattered around them.
+   Mac and Linux assemblers diverge in ways that are minor as to when explicit
+   length qualifiers are needed for some instructions and as to the characters
+   that introduce comments. These issues are resolved by mapping to something
+   that is acceptable in each case.
+
+   One issue that this script can not deal with is that mingw64 and Cygwin
+   use the Microsoft calling conventions and register allocations, while
+   Linux and the Mac pass arguments in a different way. So it remains vital
+   to start with versions of main.s and dmain.s that adhere to platform
+   register usage. It is perhaps worth noting that internally PSL uses its
+   own yet further allocation of registers (eg passing the first argument in
+   RAX). When it is to call external code it has some mildly ugly sequences
+   of instructions that copy registers to where the external world expects
+   them to be. This causes me to wonder if there would be merit in altering
+   the PSL compiler so that it could use system-natice register and calling
+   conventions everywhere. But that is a though that goes beyond the current
+   project!
+
+*.c
+   bps.c, bpsheap.c, creloc.c, echo.c, ... started as copies of the
+   corresponding file sin the AMD64_ext directory. An attempt has then been
+   make to cause them to compile on Cygwin, Linux and Macintosh (and perhaps
+   soon mingw64). Archaic C syntax has been monernised and everything fed
+   through astyle to get the formatting consistent. Comments at the top
+   giving an explanation of bugs fixed in the mid 1980s have been replaced
+   by a shorter comments giving credit to those who worked on the system then.
+   To allow for the issues in main.s as to whether symbols should be spelt
+   with or without leading underscores, functions in the C code that are
+   called from main are defined using _(name), where the underscore macro
+   pastes on an extra underscore on platforms where that is needed.
+   The intent is that future work will merge in cide from the mingw64
+   support code in the PSL tree to provide a single set of files for
+   everything that is common, and perhaps tu use #ifdef to separate out
+   code fragments that are necessarily system-specific.
+   A new file pslstubs.c is intended to be a repository for much of the
+   system-specific code. At present it mainly contains Linux wrappers for
+   low-level functions, defining versions of them with a leading underscore
+   to their name. This looks ugly and bulky, but each such wrapper typically
+   compiles into a single jump instructions so the overhead will not be
+   too severe.
+   A header file psl.h is intended to be a place to collect declarations of
+   functions used in the PSL support code so that separate compilation
+   can still verify consistency of use.
+   While things are being developed and tested some of these files will
+   have extra trace statements in them that send messages to stderr reporting
+   on what is going on.
+
+psl-win.sh, psl-linux.sh and psl-mac.sh
+   For the three platforms listed (and the "linux" one is expected to
+   support Cygwin as well) these assemble main.s and dmain.s (as created
+   using main-dmain.sh) and compile the *.c files to create an executable
+   bpsl. They then invoke try-bpsl.sh to see how it gets on!
+
+fasl/*.b, winfasl/*.b
+   Copies of the *.b files from psl/dist/kernel/*/lap. In due course just
+   as try-to-make-main.sh builds main.s and dmain.s there ought to be a
+   scheme that builds these using vsl and cross-compilation. But until that
+   is in place using the pre-build ones is the best that can be done.
+   Furthermore using the pre-built ones probably reduces the scope for
+   errors while all this is being tested.
+
+try-bpsl.sh
+   This is based on the PSL scripts that creata a "Bare PSL". This involves
+   running bpsl with the pre-build *.b files available to it.
+   As of the end of February the versions of bpsl created by the steps listed
+   above start to run and a noticable number of function calls succeed, but
+   for reasons that call for more debugging the creation of a first psl
+   image file is not achieved. There are in fact a range of possible causes
+   that may make the PIE-enabled setup systematically impossible to support,
+   as well as all sorts of issues of mistakes (from conceptual to mere typos)
+   in everything that is being looked at here. But part of the intention is
+   to debug until limitations are properly uncovered and understood.
+
+
+
+ACN February 2018

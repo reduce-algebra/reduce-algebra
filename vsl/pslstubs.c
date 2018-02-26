@@ -227,7 +227,11 @@ int _fclose(FILE *s)
 
 size_t _fread(void *p, size_t n, size_t m, FILE *s)
 {   TR1("fread");
-    return fread(p, n, m, s);
+    fprintf(stderr, "fread(%p, %d, %d, %p)", p, (int)n, (int)m, s);
+    fflush(stderr);
+    size_t r = fread(p, n, m, s);
+    fprintf(stderr, " = %d\n", (int)r);
+    return r;
 }
 
 int _fputc(int c, FILE *s)

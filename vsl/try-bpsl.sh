@@ -1,0 +1,24 @@
+#! /bin/bash -v
+
+case `uname -s` in
+*cygwin* | *CYGWIN*)
+  d="fasl-win"
+  ;;
+*)
+  d="fasl"
+  ;;
+esac
+
+pushd $d
+
+../bpsl -td 1000 <<EOF
+(setq loaddirectories* '("" "fasl"))
+(on verboseload)
+(load init-file)
+(load debug useful common)
+(load numeric-ops)
+(savesystem "New PSL" "psl" nil)
+(exitlisp)
+EOF
+
+popd
