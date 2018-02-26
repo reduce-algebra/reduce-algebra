@@ -27,6 +27,8 @@ gcc -ggdb -O0 \
    pslstubs.c \
    main.o \
    dmain.o \
+   acn.s \
+   acn1.c \
    -lm  -ldl -lpthread \
    -o bpsl
 

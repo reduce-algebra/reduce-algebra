@@ -12,6 +12,8 @@ _firstkernel:
  .globl _G0001
 G0001:
 _G0001:
+ call acn
+ .asciz "init-pointers"
  mov symval+2088(%rip),%rdi
  mov %rdi,symval+2144(%rip)
  mov symval+2080(%rip),%rdi
@@ -186,6 +188,8 @@ _G0019:
  .globl _binaryopenread
 binaryopenread:
 _binaryopenread:
+ call acn
+ .asciz "binaryreadopen %llx"
  mov G0016(%rip),%rbx
  shl $8,%rbx
  shr $8,%rbx
@@ -240,6 +244,8 @@ _binaryclose:
  .globl _G0022
 G0022:
 _G0022:
+ call acn
+ .asciz "initialize-symbol-table"
  sub $16,%rsp
  mov G0021(%rip),%rdi
  mov %rdi,8(%rsp)
@@ -332,6 +338,8 @@ _G0021:
  .globl _G0030
 G0030:
 _G0030:
+ call acn
+ .asciz "faslin-intern %llx"
  sub $24,%rsp
  mov G0029(%rip),%rdi
  mov %rdi,16(%rsp)
@@ -417,6 +425,8 @@ _G0039:
  .globl _G0040
 G0040:
 _G0040:
+ call acn
+ .asciz "unchecked-string-intern %llx"
  sub $48,%rsp
  mov %rax,(%rsp)
  mov G0035(%rip),%rbp
@@ -556,6 +566,8 @@ _G0051:
  .globl _G0052
 G0052:
 _G0052:
+ call acn
+ .asciz "hash-into-table %llx"
  sub $32,%rsp
  mov G0048(%rip),%rdi
  mov %rdi,24(%rsp)
@@ -661,6 +673,8 @@ _G0048:
  .globl _G0063
 G0063:
 _G0063:
+ call acn
+ .asciz "initialize-new-id %llx %llx"
  sub $16,%rsp
  mov %rax,(%rsp)
  shl $8,%rax
@@ -781,6 +795,8 @@ _G0064:
  .globl _faslin
 faslin:
 _faslin:
+ call acn
+ .asciz "faslin %llx"
  sub $88,%rsp
  mov G0071(%rip),%rdi
  mov %rdi,64(%rsp)
