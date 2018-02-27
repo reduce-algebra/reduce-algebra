@@ -94,22 +94,23 @@ symbolic procedure mkfil u;
 % The following is a pretty crude definition, but since it isn't used
 % very much, its performance doesn't really matter.
 
-symbolic procedure string!-downcase u;
-   begin scalar z;
-      if not stringp u then u := id2string u;
-      for each x in explode u do
-     if x memq
-          '(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
-          then z := cdr atsoc(x,
-              '((A . !a) (B . !b) (C . !c) (D . !d) (E . !e)
-               (F . !f) (G . !g) (H . !h) (I . !i) (J . !j)
-               (K . !k) (L . !l) (M . !m) (N . !n) (O . !o)
-               (P . !p) (Q . !q) (R . !r) (S . !s) (T . !t)
-               (U . !u) (V . !v) (W . !w) (X . !x) (Y . !y)
-               (Z . !z))) . z
-      else z := x . z;
-      return compress reverse z
-   end;
+% FJW: I have defined this function in sl.el.
+% symbolic procedure string!-downcase u;
+%    begin scalar z;
+%       if not stringp u then u := id2string u;
+%       for each x in explode u do
+%      if x memq
+%           '(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
+%           then z := cdr atsoc(x,
+%               '((A . !a) (B . !b) (C . !c) (D . !d) (E . !e)
+%                (F . !f) (G . !g) (H . !h) (I . !i) (J . !j)
+%                (K . !k) (L . !l) (M . !m) (N . !n) (O . !o)
+%                (P . !p) (Q . !q) (R . !r) (S . !s) (T . !t)
+%                (U . !u) (V . !v) (W . !w) (X . !x) (Y . !y)
+%                (Z . !z))) . z
+%       else z := x . z;
+%       return compress reverse z
+%    end;
  
 % FJW: I have defined a version of this function in sl.el.
 % symbolic procedure orderp(u,v);

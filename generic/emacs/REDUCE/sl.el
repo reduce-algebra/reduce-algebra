@@ -2047,6 +2047,16 @@ Then evaluate it and print value into *Standard LISP* buffer."
 ;; definition if it is loaded.
 (defalias 'PRETTYPRINT 'pp)
 
+(defun STRING-DOWNCASE (u)
+  "Convert identifier or string U to a lower-case string."
+  (downcase (if (symbolp u) (symbol-name u) u)))
+
+;; This function is also defined in "rend.red" in a way that is less
+;; efficient and doesn't work correctly because of the special way the
+;; identifier T is currently downcased by COMPRESS, so ...
+
+(FLAG '(STRING-DOWNCASE) 'LOSE)
+
 (defun TIME ()
   "(time): integer expr
 Elapsed time from some arbitrary initial point in milliseconds."
@@ -2063,6 +2073,63 @@ The date in the form \"day-month-year\"
 1 lisp> (date)
 \"21-Jan-1997\""
   (format-time-string "%d-%b-%Y"))
+
+;; (defun FASLOUT (name)
+;;   "Compile subsequent input into file \"NAME.elc\".
+;; First, display the message
+;; FASLOUT: (DSKIN files) or type in expressions.
+;; When all done execute (FASLEND)."
+;; ;; Output subsequent code as Lisp to a temporary file until FASLEND
+;; ;; evaluated.
+;;   )
+
+;; (defun FASLEND ()
+;;   "Terminate a previous FASLOUT and generate the .elc file."
+;;   ;; Only allowed after a previous FASLOUT.
+;;   ;; Close the temporary Lisp output file and then compile it.
+;;   )
+
+
+;; This code is modelled loosely on "mkfasl.red".  It is intended to
+;; be run in REDUCE and requires RLISP, i.e. "rlisp.red" and
+;; "eslrend.red".
+
+(defvar *DEFN) (defvar *INT) (defvar *ECHO)	; necessary?
+
+(FLAG '(MKFASL) 'OPFN)					; make it a symbolic operator
+
+(FLAG '(MKFASL) 'NOVAL)					; just return Lisp value
+
+(defun MKFASL (u)
+  "Produce an ESL FASL (.elc) file for the module U."
+  (if (fboundp 'BEGIN1)
+	  (let ((*DEFN t)
+			;; Functions are often used before they are defined, so...
+			(byte-compile-warnings '(unresolved))
+			*INT *ECHO ochan oldochan ichan oldichan u.el)
+		(princ (format "*** Compiling %s ...\n" u))
+		(setq u (STRING-DOWNCASE u))
+		;; Output the Emacs Lisp version of the file:
+		(setq ochan (OPEN (setq u.el (concat u ".el")) 'OUTPUT))
+		(setq oldochan (WRS ochan))
+		(setq ichan (OPEN (concat u ".red") 'INPUT))
+		(setq oldichan (RDS ichan))
+		;; Don't need prettyprinted Lisp output; print output should
+		;; suffice:
+		(advice-add 'PRETTYPRINT :override #'print)
+		(unwind-protect
+			(BEGIN1)
+		  (advice-remove 'PRETTYPRINT #'print)
+		  (CLOSE ochan) (WRS oldochan)
+		  (CLOSE ichan) (RDS oldichan))
+		;; Compile and then delete the Emacs Lisp version of the file:
+		(if (byte-compile-file u.el)
+			(progn
+			  (delete-file u.el)
+			  (princ "... succeeded\n")
+			  nil)
+		  (error "***** Error during mkfasl of %s\n" u)))))
+
 
 ;;; Miscellaneous
 ;;; =============
