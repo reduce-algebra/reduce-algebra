@@ -3,12 +3,13 @@
 # Uses existing main.s and dmain.s that may have been hand edited.
 
 
-gcc -c -ggdb main.s
-gcc -c -ggdb dmain.s
+gcc -c -Wall -ggdb main.s
+gcc -c -Wall -ggdb dmain.s
 
 rm -f bpsl
 
 gcc -ggdb -O0 \
+   -Wall \
    -DLINUX \
    -DBPSSIZE=20500000 \
    bps.c \

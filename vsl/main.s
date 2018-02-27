@@ -1,3 +1,5 @@
+ call acn
+ .asciz ""
         .text
  .quad 1
 # (*entry firstkernel expr 1)
@@ -5,6 +7,8 @@
  .globl _firstkernel
 firstkernel:
 _firstkernel:
+ call acn
+ .asciz "firstkernel = %Q"
  ret
  .quad 0
 # (*entry init-pointers expr 0)
@@ -25,6 +29,8 @@ _G0001:
  mov %rdi,symval+2168(%rip)
  mov symval+2176(%rip),%rax
  mov %rax,symval+2184(%rip)
+ call acn
+ .asciz "init-pointers = %Q"
  ret
  .quad 0
 # (*entry init-fluids expr 0)
@@ -32,6 +38,8 @@ _G0001:
  .globl _G0003
 G0003:
 _G0003:
+ call acn
+ .asciz "init-fluids"
  mov G0002(%rip),%rax
  mov %rax,symval+2200(%rip)
  mov %rax,symval+2208(%rip)
@@ -58,6 +66,8 @@ _G0003:
  mov %rax,symval+2376(%rip)
  mov %rax,symval+2384(%rip)
  mov %rax,symval+2392(%rip)
+ call acn
+ .asciz "init-fluids = %Q"
  ret
  .data
 G0002:
@@ -70,6 +80,8 @@ psl_main:
 _psl_main:
  .globl psl_main
  .globl _psl_main
+ call acn
+ .asciz "psl_main"
  mov %rcx,symval+2408(%rip)
  mov %rdx,symval+2416(%rip)
  mov %rbp,symval+2424(%rip)
@@ -86,16 +98,22 @@ G0004:
 _G0004:
  xor %rax,%rax
  jmp *symfnc+2464(%rip)
+ call acn
+ .asciz "psl_main = %Q"
  ret
 # (*entry exit-with-status expr 1)
  .globl G0005
  .globl _G0005
 G0005:
 _G0005:
+ call acn
+ .asciz "exit-with-status %Q"
  push %rax
  call *symfnc+2472(%rip)
  pop %rax
  call *symfnc+2480(%rip)
+ call acn
+ .asciz "exit-with-status = %Q"
  ret
  .quad 0
 # (*entry init-gcarray expr 0)
@@ -103,7 +121,11 @@ _G0005:
  .globl _G0007
 G0007:
 _G0007:
+ call acn
+ .asciz "init-gcarray"
  mov G0006(%rip),%rax
+ call acn
+ .asciz "init-gcarray = %Q"
  ret
  .data
 G0006:
@@ -127,6 +149,8 @@ _G0011:
  .globl _G0012
 G0012:
 _G0012:
+ call acn
+ .asciz "pre-main"
  call *symfnc+2488(%rip)
  call *symfnc+2496(%rip)
  call *symfnc+2504(%rip)
@@ -150,6 +174,8 @@ _G0008:
  .globl _G0013
 G0013:
 _G0013:
+ call acn
+ .asciz "console-print-string %Q"
  shl $8,%rax
  shr $8,%rax
  add $8,%rax
@@ -160,6 +186,8 @@ _G0013:
  .globl _G0014
 G0014:
 _G0014:
+ call acn
+ .asciz "console-print-number %Q"
  jmp *symfnc+2560(%rip)
  .quad 0
 # (*entry console-newline expr 0)
@@ -167,6 +195,8 @@ _G0014:
  .globl _G0015
 G0015:
 _G0015:
+ call acn
+ .asciz "console-newline"
  mov $10,%rax
  jmp *symfnc+2568(%rip)
  .data
@@ -189,7 +219,7 @@ _G0019:
 binaryopenread:
 _binaryopenread:
  call acn
- .asciz "binaryreadopen %Q"
+ .asciz "binaryopenread %Q"
  mov G0016(%rip),%rbx
  shl $8,%rbx
  shr $8,%rbx
@@ -204,6 +234,8 @@ _binaryopenread:
  jmp *symfnc+2592(%rip)
 G0020:
 _G0020:
+ call acn
+ .asciz "binaryopenread = %Q"
  ret
  .data
 G0017:
@@ -219,6 +251,8 @@ _G0016:
  .globl _binaryread
 binaryread:
 _binaryread:
+ call acn
+ .asciz "binaryread %Q"
  jmp *symfnc+2608(%rip)
  .quad 3
 # (*entry binaryreadblock expr 3)
@@ -226,6 +260,8 @@ _binaryread:
  .globl _binaryreadblock
 binaryreadblock:
 _binaryreadblock:
+ call acn
+ .asciz "binaryreadblock %Q %Q %Q"
  mov %rbx,%rbp
  mov %rax,%rdx
  mov $8,%rbx
@@ -237,6 +273,8 @@ _binaryreadblock:
  .globl _binaryclose
 binaryclose:
 _binaryclose:
+ call acn
+ .asciz "binaryclose %Q"
  jmp *symfnc+2640(%rip)
  .quad 0
 # (*entry initialize-symbol-table expr 0)
@@ -326,6 +364,8 @@ _G0028:
  mov G0021(%rip),%rax
  mov %rax,symval+2672(%rip)
  add $16,%rsp
+ call acn
+ .asciz "initialize-symbol-table = %Q"
  ret
  .data
 G0021:
@@ -412,6 +452,8 @@ _G0029:
  .globl _intern
 intern:
 _intern:
+ call acn
+ .asciz "intern %Q"
  jmp *symfnc+2712(%rip)
  .data
 G0039:
@@ -539,6 +581,8 @@ _G0047:
 G0042:
 _G0042:
  add $48,%rsp
+ call acn
+ .asciz "unchecked-string-intern = %Q"
  ret
  .data
 G0038:
@@ -655,6 +699,8 @@ _G0061:
 G0057:
 _G0057:
  add $32,%rsp
+ call acn
+ .asciz "hash-into-table = %Q"
  ret
  .data
 G0050:
@@ -710,6 +756,8 @@ _G0063:
  call *symfnc+2792(%rip)
  mov 8(%rsp),%rax
  add $16,%rsp
+ call acn
+ .asciz "initialize-new-id = %Q"
  ret
  .data
 G0062:
@@ -722,6 +770,8 @@ _G0062:
  .globl _G0067
 G0067:
 _G0067:
+ call acn
+ .asciz "hash-function %Q"
  sub $40,%rsp
  mov G0064(%rip),%rdi
  mov %rdi,24(%rsp)
@@ -783,6 +833,8 @@ _G0070:
  xor %rdx,%rdx
  idiv %rbx
  mov %rdx,%rax
+ call acn
+ .asciz "hash-function = %Q"
  ret
  .data
 G0064:
@@ -909,6 +961,8 @@ G0073:
 _G0073:
  mov G0071(%rip),%rax
  add $88,%rsp
+ call acn
+ .asciz "faslin = %Q"
  ret
  .data
 G0071:
@@ -921,7 +975,11 @@ _G0071:
  .globl _delbps
 delbps:
 _delbps:
+ call acn
+ .asciz "delbps %Q %Q"
  mov G0076(%rip),%rax
+ call acn
+ .asciz "delbps = %Q"
  ret
  .data
 G0076:
@@ -934,6 +992,8 @@ _G0076:
  .globl _G0078
 G0078:
 _G0078:
+ call acn
+ .asciz "do-relocation %Q %Q %Q"
  sub $48,%rsp
  mov G0077(%rip),%rdi
  mov %rdi,32(%rsp)
@@ -1001,6 +1061,8 @@ _G0085:
 G0081:
 _G0081:
  add $48,%rsp
+ call acn
+ .asciz "do-relocation = %Q"
  ret
  .data
 G0077:
@@ -1013,6 +1075,8 @@ _G0077:
  .globl _G0087
 G0087:
 _G0087:
+ call acn
+ .asciz "do-relocation-new %Q %Q %Q"
  sub $48,%rsp
  mov G0086(%rip),%rdi
  mov %rdi,16(%rsp)
@@ -1085,6 +1149,8 @@ _G0092:
 G0090:
 _G0090:
  add $48,%rsp
+ call acn
+ .asciz "do-relocation-new = %Q"
  ret
  .data
 G0086:
@@ -1097,6 +1163,8 @@ _G0086:
  .globl _G0095
 G0095:
 _G0095:
+ call acn
+ .asciz "relocate-word %Q %Q %Q"
  sub $32,%rsp
  mov G0094(%rip),%rdi
  mov %rdi,24(%rsp)
@@ -1120,6 +1188,8 @@ _G0095:
  mov (%rsp),%rax
  add $32,%rsp
  mov %ebx,0(%eax)
+ call acn
+ .asciz "relocate-word = %Q"
  ret
  .data
 G0094:
@@ -1132,6 +1202,8 @@ _G0094:
  .globl _G0097
 G0097:
 _G0097:
+ call acn
+ .asciz "relocate-inf %Q %Q %Q"
  sub $24,%rsp
  mov G0096(%rip),%rdi
  mov %rdi,8(%rsp)
@@ -1155,6 +1227,8 @@ _G0097:
  mov 16(%rsp),%rsi
  mov %rax,(%rsi)
  add $24,%rsp
+ call acn
+ .asciz "relocate-inf = %Q"
  ret
  .data
 G0096:
@@ -1167,6 +1241,8 @@ _G0096:
  .globl _G0099
 G0099:
 _G0099:
+ call acn
+ .asciz "compute-relocation %Q %Q %Q"
  push %rbx
  cmpq $0,%rax
  jne G0100
@@ -1236,6 +1312,8 @@ _G0107:
 G0101:
 _G0101:
  add $8,%rsp
+ call acn
+ .asciz "compute-relocation = %Q"
  ret
  .data
 G0098:
@@ -1248,6 +1326,8 @@ _G0098:
  .globl _G0109
 G0109:
 _G0109:
+ call acn
+ .asciz "local-to-global-id %Q %Q"
  add $-2047,%rax
  shl $3,%rax
  mov %rbx,%rcx
@@ -1255,6 +1335,8 @@ _G0109:
  shr $8,%rcx
  add %rcx,%rax
  mov (%rax),%rax
+ call acn
+ .asciz "local-to-global-id = %Q"
  ret
  .quad 1
 # (*entry read-id-table expr 1)
@@ -1262,6 +1344,8 @@ _G0109:
  .globl _G0111
 G0111:
 _G0111:
+ call acn
+ .asciz "read-id-table %Q"
  sub $48,%rsp
  mov G0110(%rip),%rdi
  mov %rdi,40(%rsp)
@@ -1329,6 +1413,8 @@ G0113:
 _G0113:
  mov 16(%rsp),%rax
  add $48,%rsp
+ call acn
+ .asciz "read-id-table = %Q"
  ret
  .data
 G0110:
@@ -1341,6 +1427,8 @@ _G0110:
  .globl _putentry
 putentry:
 _putentry:
+ call acn
+ .asciz "putentry %Q %Q %Q"
  add symval+2848(%rip),%rcx
  shl $8,%rcx
  shr $8,%rcx
@@ -1363,6 +1451,8 @@ _G0115:
  .globl _G0116
 G0116:
 _G0116:
+ call acn
+ .asciz "faslin-bad-file %Q"
  mov G0114(%rip),%rax
  call *symfnc+2512(%rip)
  jmp *symfnc+2520(%rip)
@@ -1384,6 +1474,8 @@ _G0120:
  .globl _gtbps
 gtbps:
 _gtbps:
+ call acn
+ .asciz "gtbps %Q"
  sub $8,%rsp
 G0121:
 _G0121:
@@ -1432,6 +1524,8 @@ _G0125:
 G0124:
 _G0124:
  add $8,%rsp
+ call acn
+ .asciz "gtbps = %Q"
  ret
  .data
 G0119:
@@ -1456,6 +1550,8 @@ _G0127:
  .globl _G0128
 G0128:
 _G0128:
+ call acn
+ .asciz "gtbps-nil-error"
  mov G0126(%rip),%rax
  jmp *symfnc+2968(%rip)
  .data
@@ -1469,6 +1565,8 @@ _G0126:
  .globl _gtheap
 gtheap:
 _gtheap:
+ call acn
+ .asciz "gtheap %Q"
  cmp G0129(%rip),%rax
  jne G0130
  jmp *symfnc+2984(%rip)
@@ -1486,6 +1584,8 @@ _G0129:
  .globl _G0131
 G0131:
 _G0131:
+ call acn
+ .asciz "real-gtheap %Q"
  mov %rax,%rcx
  mov symval+2216(%rip),%rax
  mov %rcx,%rbx
@@ -1498,6 +1598,8 @@ _G0131:
  jmp *symfnc+3000(%rip)
 G0132:
 _G0132:
+ call acn
+ .asciz "real-gtheap = %Q"
  ret
  .data
 G0134:
@@ -1513,6 +1615,8 @@ _G0134:
  .globl _G0135
 G0135:
 _G0135:
+ call acn
+ .asciz "get-heap-trap %Q"
  mov G0133(%rip),%rax
  jmp *symfnc+2592(%rip)
  .data
@@ -1531,6 +1635,8 @@ _G0137:
  .globl _gtid
 gtid:
 _gtid:
+ call acn
+ .asciz "gtid"
  cmpq $0,symval+2648(%rip)
  jne G0138
  call *symfnc+3008(%rip)
@@ -1546,6 +1652,8 @@ _G0138:
  add symval+2656(%rip),%rbx
  mov (%rbx),%rdi
  mov %rdi,symval+2648(%rip)
+ call acn
+ .asciz "gtid = %Q"
  ret
  .data
 G0136:
@@ -1558,6 +1666,8 @@ _G0136:
  .globl _gtwrds
 gtwrds:
 _gtwrds:
+ call acn
+ .asciz "gtwrds %Q"
  push %rax
  add $2,%rax
  call *symfnc+2976(%rip)
@@ -1569,6 +1679,8 @@ _gtwrds:
  or %rdi,%rbx
  mov %rbx,(%rax)
  add $8,%rsp
+ call acn
+ .asciz "gtwrds = %Q"
  ret
  .quad 1
 # (*entry gtconststr expr 1)
@@ -1576,6 +1688,8 @@ _gtwrds:
  .globl _gtconststr
 gtconststr:
 _gtconststr:
+ call acn
+ .asciz "gtconststr %Q"
  sub $16,%rsp
  mov %rax,(%rsp)
  add $9,%rax
@@ -1593,6 +1707,8 @@ _gtconststr:
  add %rax,%rbx
  movq $0,(%rbx)
  add $16,%rsp
+ call acn
+ .asciz "gtconststr = %Q"
  ret
  .data
 G0141:
@@ -1609,6 +1725,8 @@ _G0141:
  .globl _subseq
 subseq:
 _subseq:
+ call acn
+ .asciz "subseq %Q %Q %Q"
  sub $64,%rsp
  mov G0139(%rip),%rdi
  mov %rdi,56(%rsp)
@@ -1670,6 +1788,8 @@ _G0144:
  shl $56,%rdi
  or %rdi,%rax
  add $64,%rsp
+ call acn
+ .asciz "subseq = %Q"
  ret
  .data
 G0140:
@@ -1685,6 +1805,8 @@ _G0139:
  .globl _G0146
 G0146:
 _G0146:
+ call acn
+ .asciz "search-string-for-character %Q %Q"
  sub $32,%rsp
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
@@ -1724,6 +1846,8 @@ _G0150:
 G0149:
 _G0149:
  add $32,%rsp
+ call acn
+ .asciz "search-string-for-character = %Q"
  ret
  .data
 G0145:
@@ -1736,6 +1860,8 @@ _G0145:
  .globl _G0153
 G0153:
 _G0153:
+ call acn
+ .asciz "unchecked-string-equal %Q %Q"
  sub $40,%rsp
  mov G0151(%rip),%rdi
  mov %rdi,32(%rsp)
@@ -1794,6 +1920,8 @@ _G0158:
 G0155:
 _G0155:
  add $40,%rsp
+ call acn
+ .asciz "unchecked-string-equal = %Q"
  ret
  .data
 G0152:
@@ -1809,6 +1937,8 @@ _G0151:
  .globl _copystringtofrom
 copystringtofrom:
 _copystringtofrom:
+ call acn
+ .asciz "copystringtofrom %Q %Q"
  sub $32,%rsp
  mov %rax,24(%rsp)
  mov %rax,%rcx
@@ -1863,6 +1993,8 @@ G0161:
 _G0161:
  mov 24(%rsp),%rax
  add $32,%rsp
+ call acn
+ .asciz "copystringtofrom = %Q"
  ret
  .quad 2
 # (*entry cons expr 2)
@@ -1870,6 +2002,8 @@ _G0161:
  .globl _cons
 cons:
 _cons:
+ call acn
+ .asciz "cons %Q %Q"
  push %rbx
  push %rax
  mov $2,%rax
@@ -1884,6 +2018,8 @@ _cons:
  shl $56,%rdi
  or %rdi,%rax
  add $16,%rsp
+ call acn
+ .asciz "cons = %Q"
  ret
  .quad 1
 # (*entry interrogate expr 1)
@@ -1891,9 +2027,13 @@ _cons:
  .globl _interrogate
 interrogate:
 _interrogate:
+ call acn
+ .asciz "interrogate %Q"
  shl $3,%rax
  add symval+2784(%rip),%rax
  mov (%rax),%rax
+ call acn
+ .asciz "interrogate = %Q"
  ret
  .quad 2
 # (*entry modify expr 2)
@@ -1901,10 +2041,14 @@ _interrogate:
  .globl _modify
 modify:
 _modify:
+ call acn
+ .asciz "modify %Q %Q"
  shl $3,%rax
  add symval+2784(%rip),%rax
  mov %rbx,(%rax)
  mov %rbx,%rax
+ call acn
+ .asciz "modify = %Q"
  ret
  .quad 3
 # (*entry put expr 3)
@@ -1912,6 +2056,8 @@ _modify:
  .globl _put
 put:
 _put:
+ call acn
+ .asciz "put %Q %Q %Q"
  jmp *symfnc+3056(%rip)
  .quad 3
 # (*entry unchecked-put expr 3)
@@ -1919,6 +2065,8 @@ _put:
  .globl _G0163
 G0163:
 _G0163:
+ call acn
+ .asciz "unchecked-put %Q %Q %Q"
  sub $32,%rsp
  mov G0162(%rip),%rdi
  mov %rdi,24(%rsp)
@@ -1952,6 +2100,8 @@ G0165:
 _G0165:
  mov 16(%rsp),%rax
  add $32,%rsp
+ call acn
+ .asciz "unchecked-put = %Q"
  ret
  .data
 G0162:
@@ -1966,11 +2116,15 @@ atsoc:
 _atsoc:
 G0167:
 _G0167:
+ call acn
+ .asciz "atsoc %Q %Q"
  mov %rbx,%rdi
  shr $56,%rdi
  cmpq $9,%rdi
  je G0168
  mov G0166(%rip),%rax
+ call acn
+ .asciz "atsoc = %Q"
  ret
 G0168:
 _G0168:
@@ -1993,6 +2147,8 @@ _G0168:
  shl $8,%rax
  shr $8,%rax
  mov (%rax),%rax
+ call acn
+ .asciz "atsoc = %Q"
  ret
 G0169:
 _G0169:
@@ -2011,12 +2167,16 @@ _G0166:
  .globl _G0170
 G0170:
 _G0170:
+ call acn
+ .asciz "unchecked-setprop %Q %Q"
  shl $8,%rax
  shr $8,%rax
  shl $3,%rax
  add symval+2768(%rip),%rax
  mov %rbx,(%rax)
  mov %rbx,%rax
+ call acn
+ .asciz "unchecked-setprop = %Q"
  ret
  .quad 1
 # (*entry unchecked-prop expr 1)
@@ -2024,11 +2184,15 @@ _G0170:
  .globl _G0171
 G0171:
 _G0171:
+ call acn
+ .asciz "unchecked-prop %Q"
  shl $8,%rax
  shr $8,%rax
  shl $3,%rax
  add symval+2768(%rip),%rax
  mov (%rax),%rax
+ call acn
+ .asciz "unchecked-prop = %Q"
  ret
  .quad 3
 # (*entry putd expr 3)
@@ -2036,6 +2200,8 @@ _G0171:
  .globl _putd
 putd:
 _putd:
+ call acn
+ .asciz "putd %Q %Q %Q"
  jmp *symfnc+3088(%rip)
  .data
 G0176:
@@ -2051,6 +2217,8 @@ _G0176:
  .globl _G0177
 G0177:
 _G0177:
+ call acn
+ .asciz "code-putd %Q %Q %Q"
  sub $24,%rsp
  mov %rax,(%rsp)
  mov %rbx,8(%rsp)
@@ -2092,6 +2260,8 @@ G0180:
 _G0180:
  mov G0175(%rip),%rax
  add $24,%rsp
+ call acn
+ .asciz "code-putd = %Q"
  ret
  .data
 G0175:
@@ -2113,6 +2283,8 @@ _G0172:
  .globl _fluid
 fluid:
 _fluid:
+ call acn
+ .asciz "fluid %Q"
  sub $24,%rsp
  mov G0181(%rip),%rdi
  mov %rdi,16(%rsp)
@@ -2170,6 +2342,8 @@ _G0188:
 G0186:
 _G0186:
  add $24,%rsp
+ call acn
+ .asciz "fluid = %Q"
  ret
  .data
 G0181:
@@ -2182,6 +2356,8 @@ _G0181:
  .globl _G0191
 G0191:
 _G0191:
+ call acn
+ .asciz "fluid1 %Q"
  mov G0189(%rip),%rcx
  mov G0190(%rip),%rbx
  jmp *symfnc+3048(%rip)
@@ -2199,6 +2375,8 @@ _G0189:
  .globl _stderror
 stderror:
 _stderror:
+ call acn
+ .asciz "stderror %Q"
  jmp *symfnc+2592(%rip)
  .quad 2
 # (*entry *define-constant expr 2)
@@ -2206,6 +2384,8 @@ _stderror:
  .globl _G0194
 G0194:
 _G0194:
+ call acn
+ .asciz "*define-constant %Q %Q"
  mov %rax,%rcx
  shl $8,%rcx
  shr $8,%rcx
@@ -2229,6 +2409,8 @@ _G0192:
  .globl _plantunbound
 plantunbound:
 _plantunbound:
+ call acn
+ .asciz "plantunbound %Q"
  add %rax,%rax
  mov %rax,%rsi
  add %rsi,%rsi
@@ -2236,6 +2418,8 @@ _plantunbound:
  add symval+2920(%rip),%rsi
  mov G0195(%rip),%rdi
  mov %rdi,0(%rsi)
+ call acn
+ .asciz "plantunbound = %Q"
  ret
  .data
  .quad 0
@@ -2249,12 +2433,16 @@ _G0195:
  .globl _plantcodepointer
 plantcodepointer:
 _plantcodepointer:
+ call acn
+ .asciz "plantcodepointer %Q %Q"
  add %rax,%rax
  mov %rax,%rsi
  add %rsi,%rsi
  add %rsi,%rsi
  add symval+2920(%rip),%rsi
  mov %rbx,0(%rsi)
+ call acn
+ .asciz "plantcodepointer = %Q"
  ret
  .quad 1
 # (*entry plantlambdalink expr 1)
@@ -2262,6 +2450,8 @@ _plantcodepointer:
  .globl _plantlambdalink
 plantlambdalink:
 _plantlambdalink:
+ call acn
+ .asciz "plantlambdalink %Q"
  add %rax,%rax
  mov %rax,%rsi
  add %rsi,%rsi
@@ -2269,6 +2459,8 @@ _plantlambdalink:
  add symval+2920(%rip),%rsi
  mov G0196(%rip),%rdi
  mov %rdi,0(%rsi)
+ call acn
+ .asciz "plantlambdalink = %Q"
  ret
  .data
  .quad 0
@@ -2282,6 +2474,8 @@ _G0196:
  .globl _G0197
 G0197:
 _G0197:
+ call acn
+ .asciz "addressapply0 %Q"
  jmp *%rax
  .quad 2
 # (*entry bittable expr 2)
@@ -2289,6 +2483,8 @@ _G0197:
  .globl _bittable
 bittable:
 _bittable:
+ call acn
+ .asciz "bittable %Q %Q"
  push %rbx
  shr $2,%rbx
  movb 0(%rax,%rbx,1),%al
@@ -2315,6 +2511,8 @@ _G0199:
  shl $30,%rax
  shr $62,%rax
  add $8,%rsp
+ call acn
+ .asciz "bittable = %Q"
  ret
  .quad 1
 # (*entry undefinedfunction expr 1)
@@ -2322,6 +2520,8 @@ _G0199:
  .globl _undefinedfunction
 undefinedfunction:
 _undefinedfunction:
+ call acn
+ .asciz "undefinedfunction %Q"
  jmp *symfnc+3176(%rip)
  .data
 G0201:
@@ -2337,6 +2537,8 @@ _G0201:
  .globl _G0202
 G0202:
 _G0202:
+ call acn
+ .asciz "undefinedfunction-aux %Q"
  push %rdi
  mov G0200(%rip),%rax
  call *symfnc+2512(%rip)
@@ -2347,6 +2549,8 @@ _G0202:
  call *symfnc+2512(%rip)
  xor %rax,%rax
  call *symfnc+2464(%rip)
+ call acn
+ .asciz "undefinedfunction-aux = %Q"
  ret
  .data
 G0200:
@@ -2359,6 +2563,8 @@ _G0200:
  .globl _compiledcallinginterpreted
 compiledcallinginterpreted:
 _compiledcallinginterpreted:
+ call acn
+ .asciz "compiledcallinginterpreted"
  mov $254,%rsi
  shl $8,%rdi
  shr $8,%rdi
@@ -2379,6 +2585,8 @@ _G0204:
  .globl _G0205
 G0205:
 _G0205:
+ call acn
+ .asciz "kernel-fatal-error %Q"
  push %rax
  mov G0203(%rip),%rax
  call *symfnc+2512(%rip)
@@ -2404,6 +2612,8 @@ _G0207:
  .globl _pslsignalhandler
 pslsignalhandler:
 _pslsignalhandler:
+ call acn
+ .asciz "pslsignalhandler"
  mov G0206(%rip),%rax
  call *symfnc+2968(%rip)
  .data
@@ -2417,6 +2627,8 @@ _G0206:
  .globl _G0208
 G0208:
 _G0208:
+ call acn
+ .asciz "echoon"
  mov symval+2424(%rip),%rbp
  mov %rsp,%rax
  sub $64,%rsp
@@ -2426,6 +2638,8 @@ _G0208:
  call _echoon
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
+ call acn
+ .asciz "echoon = %Q"
  ret
  .quad 0
 # (*entry echooff expr 0)
@@ -2433,6 +2647,8 @@ _G0208:
  .globl _G0209
 G0209:
 _G0209:
+ call acn
+ .asciz "echooff"
  mov symval+2424(%rip),%rbp
  mov %rsp,%rax
  sub $64,%rsp
@@ -2442,6 +2658,8 @@ _G0209:
  call _echooff
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
+ call acn
+ .asciz "echooff = %Q"
  ret
  .quad 1
 # (*entry external_charsininputbuffer expr 1)
@@ -2449,6 +2667,8 @@ _G0209:
  .globl _G0210
 G0210:
 _G0210:
+ call acn
+ .asciz "external_charsininputbuffer %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -2461,6 +2681,8 @@ _G0210:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "external_charsininputbuffer = %Q"
  ret
  .quad 0
 # (*entry flushstdoutputbuffer expr 0)
@@ -2468,6 +2690,8 @@ _G0210:
  .globl _G0211
 G0211:
 _G0211:
+ call acn
+ .asciz "flushstdoutputbuffer"
  mov symval+2424(%rip),%rbp
  mov %rsp,%rax
  sub $64,%rsp
@@ -2477,6 +2701,8 @@ _G0211:
  call _flushstdoutputbuffer
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
+ call acn
+ .asciz "flushstdoutputbuffer = %Q"
  ret
  .quad 0
 # (*entry external_user_homedir_string expr 0)
@@ -2484,6 +2710,8 @@ _G0211:
  .globl _G0212
 G0212:
 _G0212:
+ call acn
+ .asciz "external_user_homedir_string"
  mov symval+2424(%rip),%rbp
  mov %rsp,%rax
  sub $64,%rsp
@@ -2493,6 +2721,8 @@ _G0212:
  call _external_user_homedir_string
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
+ call acn
+ .asciz "external_user_homedir_string = %Q"
  ret
  .quad 1
 # (*entry external_anyuser_homedir_string expr 1)
@@ -2500,6 +2730,8 @@ _G0212:
  .globl _G0213
 G0213:
 _G0213:
+ call acn
+ .asciz "external_anyuser_homedir_string %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -2512,6 +2744,8 @@ _G0213:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "external_anyuser_homedir_string = %Q"
  ret
  .quad 1
 # (*entry alterheapsize expr 1)
@@ -2519,6 +2753,8 @@ _G0213:
  .globl _G0214
 G0214:
 _G0214:
+ call acn
+ .asciz "alterheapsize %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -2531,6 +2767,8 @@ _G0214:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "alterheapsize = %Q"
  ret
  .quad 1
 # (*entry allocatemorebps expr 1)
@@ -2538,6 +2776,8 @@ _G0214:
  .globl _G0215
 G0215:
 _G0215:
+ call acn
+ .asciz "allocatemorebps %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -2550,6 +2790,8 @@ _G0215:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "allocatemorebps = %Q"
  ret
  .quad 0
 # (*entry get_imagefilepath expr 0)
@@ -2557,6 +2799,8 @@ _G0215:
  .globl _G0216
 G0216:
 _G0216:
+ call acn
+ .asciz "get_imagefilepath"
  mov symval+2424(%rip),%rbp
  mov %rsp,%rax
  sub $64,%rsp
@@ -2566,6 +2810,8 @@ _G0216:
  call _get_imagefilepath
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
+ call acn
+ .asciz "get_imagefilepath = %Q"
  ret
  .quad 3
 # (*entry get_file_status expr 3)
@@ -2573,6 +2819,8 @@ _G0216:
  .globl _G0217
 G0217:
 _G0217:
+ call acn
+ .asciz "get_file_status %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -2589,6 +2837,8 @@ _G0217:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "get_file_status = %Q"
  ret
  .quad 2
 # (*entry os_startup_hook expr 2)
@@ -2596,6 +2846,8 @@ _G0217:
  .globl _G0218
 G0218:
 _G0218:
+ call acn
+ .asciz "os_startup_hook %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -2610,6 +2862,8 @@ _G0218:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "os_startup_hook = %Q"
  ret
  .quad 0
 # (*entry os_cleanup_hook expr 0)
@@ -2617,6 +2871,8 @@ _G0218:
  .globl _G0219
 G0219:
 _G0219:
+ call acn
+ .asciz "os_cleanup_hook"
  mov symval+2424(%rip),%rbp
  mov %rsp,%rax
  sub $64,%rsp
@@ -2626,6 +2882,8 @@ _G0219:
  call _os_cleanup_hook
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
+ call acn
+ .asciz "os_cleanup_hook = %Q"
  ret
  .quad 0
 # (*entry get_execfilepath expr 0)
@@ -2633,6 +2891,8 @@ _G0219:
  .globl _G0220
 G0220:
 _G0220:
+ call acn
+ .asciz "get_execfilepath"
  mov symval+2424(%rip),%rbp
  mov %rsp,%rax
  sub $64,%rsp
@@ -2642,6 +2902,8 @@ _G0220:
  call _get_execfilepath
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
+ call acn
+ .asciz "get_execfilepath = %Q"
  ret
  .quad 1
 # (*entry external_alarm expr 1)
@@ -2649,6 +2911,8 @@ _G0220:
  .globl _G0221
 G0221:
 _G0221:
+ call acn
+ .asciz "external_alarm %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -2661,6 +2925,8 @@ _G0221:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "external_alarm = %Q"
  ret
  .quad 2
 # (*entry external_ualarm expr 2)
@@ -2668,6 +2934,8 @@ _G0221:
  .globl _G0222
 G0222:
 _G0222:
+ call acn
+ .asciz "external_ualarm %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -2682,6 +2950,8 @@ _G0222:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "external_ualarm = %Q"
  ret
  .quad 1
 # (*entry external_time expr 1)
@@ -2689,6 +2959,8 @@ _G0222:
  .globl _G0223
 G0223:
 _G0223:
+ call acn
+ .asciz "external_time %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -2701,6 +2973,8 @@ _G0223:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "external_time = %Q"
  ret
  .quad 1
 # (*entry external_timc expr 1)
@@ -2708,6 +2982,8 @@ _G0223:
  .globl _G0224
 G0224:
 _G0224:
+ call acn
+ .asciz "external_timc %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -2720,6 +2996,8 @@ _G0224:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "external_timc = %Q"
  ret
  .quad 2
 # (*entry external_stat expr 2)
@@ -2727,6 +3005,8 @@ _G0224:
  .globl _G0225
 G0225:
 _G0225:
+ call acn
+ .asciz "external_stat %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -2741,6 +3021,8 @@ _G0225:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "external_stat = %Q"
  ret
  .quad 1
 # (*entry external_rmdir expr 1)
@@ -2748,6 +3030,8 @@ _G0225:
  .globl _G0226
 G0226:
 _G0226:
+ call acn
+ .asciz "external_rmdir %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -2760,6 +3044,8 @@ _G0226:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "external_rmdir = %Q"
  ret
  .quad 2
 # (*entry external_mkdir expr 2)
@@ -2767,6 +3053,8 @@ _G0226:
  .globl _G0227
 G0227:
 _G0227:
+ call acn
+ .asciz "external_mkdir %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -2781,6 +3069,8 @@ _G0227:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "external_mkdir = %Q"
  ret
  .quad 2
 # (*entry external_link expr 2)
@@ -2788,6 +3078,8 @@ _G0227:
  .globl _G0228
 G0228:
 _G0228:
+ call acn
+ .asciz "external_link %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -2802,6 +3094,8 @@ _G0228:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "external_link = %Q"
  ret
  .quad 1
 # (*entry external_unlink expr 1)
@@ -2809,6 +3103,8 @@ _G0228:
  .globl _G0229
 G0229:
 _G0229:
+ call acn
+ .asciz "external_unlink %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -2821,6 +3117,8 @@ _G0229:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "external_unlink = %Q"
  ret
  .quad 1
 # (*entry external_strlen expr 1)
@@ -2828,6 +3126,8 @@ _G0229:
  .globl _G0230
 G0230:
 _G0230:
+ call acn
+ .asciz "external_strlen %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -2840,6 +3140,8 @@ _G0230:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "external_strlen = %Q"
  ret
  .quad 2
 # (*entry external_setenv expr 2)
@@ -2847,6 +3149,8 @@ _G0230:
  .globl _G0231
 G0231:
 _G0231:
+ call acn
+ .asciz "external_setenv %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -2861,6 +3165,8 @@ _G0231:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "external_setenv = %Q"
  ret
  .quad 1
 # (*entry external_getenv expr 1)
@@ -2868,6 +3174,8 @@ _G0231:
  .globl _G0232
 G0232:
 _G0232:
+ call acn
+ .asciz "external_getenv %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -2880,6 +3188,8 @@ _G0232:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "external_getenv = %Q"
  ret
  .quad 2
 # (*entry uxfloat expr 2)
@@ -2887,6 +3197,8 @@ _G0232:
  .globl _G0233
 G0233:
 _G0233:
+ call acn
+ .asciz "uxfloat %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -2901,6 +3213,8 @@ _G0233:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxfloat = %Q"
  ret
  .quad 1
 # (*entry uxfix expr 1)
@@ -2908,6 +3222,8 @@ _G0233:
  .globl _G0234
 G0234:
 _G0234:
+ call acn
+ .asciz "uxfix %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -2920,6 +3236,8 @@ _G0234:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "uxfix = %Q"
  ret
  .quad 2
 # (*entry uxassign expr 2)
@@ -2927,6 +3245,8 @@ _G0234:
  .globl _G0235
 G0235:
 _G0235:
+ call acn
+ .asciz "uxassign %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -2941,6 +3261,8 @@ _G0235:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxassign = %Q"
  ret
  .quad 3
 # (*entry uxplus2 expr 3)
@@ -2948,6 +3270,8 @@ _G0235:
  .globl _G0236
 G0236:
 _G0236:
+ call acn
+ .asciz "uxplus2 %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -2964,6 +3288,8 @@ _G0236:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "uxplus2 = %Q"
  ret
  .quad 3
 # (*entry uxdifference expr 3)
@@ -2971,6 +3297,8 @@ _G0236:
  .globl _G0237
 G0237:
 _G0237:
+ call acn
+ .asciz "uxdifference %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -2987,6 +3315,8 @@ _G0237:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "uxdifference = %Q"
  ret
  .quad 3
 # (*entry uxtimes2 expr 3)
@@ -2994,6 +3324,8 @@ _G0237:
  .globl _G0238
 G0238:
 _G0238:
+ call acn
+ .asciz "uxtimes2 %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -3010,6 +3342,8 @@ _G0238:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "uxtimes2 = %Q"
  ret
  .quad 3
 # (*entry uxquotient expr 3)
@@ -3017,6 +3351,8 @@ _G0238:
  .globl _G0239
 G0239:
 _G0239:
+ call acn
+ .asciz "uxquotient %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -3033,6 +3369,8 @@ _G0239:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "uxquotient = %Q"
  ret
  .quad 4
 # (*entry uxgreaterp expr 4)
@@ -3040,6 +3378,8 @@ _G0239:
  .globl _G0240
 G0240:
 _G0240:
+ call acn
+ .asciz "uxgreaterp %Q %Q %Q"
  push %rdx
  push %rcx
  push %rbx
@@ -3058,6 +3398,8 @@ _G0240:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $32,%rsp
+ call acn
+ .asciz "uxgreaterp = %Q"
  ret
  .quad 4
 # (*entry uxlessp expr 4)
@@ -3065,6 +3407,8 @@ _G0240:
  .globl _G0241
 G0241:
 _G0241:
+ call acn
+ .asciz "uxlessp %Q %Q %Q"
  push %rdx
  push %rcx
  push %rbx
@@ -3083,6 +3427,8 @@ _G0241:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $32,%rsp
+ call acn
+ .asciz "uxlessp = %Q"
  ret
  .quad 3
 # (*entry uxwritefloat expr 3)
@@ -3090,6 +3436,8 @@ _G0241:
  .globl _G0242
 G0242:
 _G0242:
+ call acn
+ .asciz "uxwritefloat %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -3106,6 +3454,8 @@ _G0242:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "uxwritefloat = %Q"
  ret
  .quad 4
 # (*entry uxwritefloat8 expr 4)
@@ -3113,6 +3463,8 @@ _G0242:
  .globl _G0243
 G0243:
 _G0243:
+ call acn
+ .asciz "uxwritefloat8 %Q %Q %Q"
  push %rdx
  push %rcx
  push %rbx
@@ -3131,6 +3483,8 @@ _G0243:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $32,%rsp
+ call acn
+ .asciz "uxwritefloat8 = %Q"
  ret
  .quad 2
 # (*entry uxdoubletofloat expr 2)
@@ -3138,6 +3492,8 @@ _G0243:
  .globl _G0244
 G0244:
 _G0244:
+ call acn
+ .asciz "uxdoubletofloat %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3152,6 +3508,8 @@ _G0244:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxdoubletofloat = %Q"
  ret
  .quad 2
 # (*entry uxfloattodouble expr 2)
@@ -3159,6 +3517,8 @@ _G0244:
  .globl _G0245
 G0245:
 _G0245:
+ call acn
+ .asciz "uxfloattodouble %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3173,6 +3533,8 @@ _G0245:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxfloattodouble = %Q"
  ret
  .quad 2
 # (*entry uxsin expr 2)
@@ -3180,6 +3542,8 @@ _G0245:
  .globl _G0246
 G0246:
 _G0246:
+ call acn
+ .asciz "uxsin %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3194,6 +3558,8 @@ _G0246:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxsin = %Q"
  ret
  .quad 2
 # (*entry uxcos expr 2)
@@ -3201,6 +3567,8 @@ _G0246:
  .globl _G0247
 G0247:
 _G0247:
+ call acn
+ .asciz "uxcos %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3215,6 +3583,8 @@ _G0247:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxcos = %Q"
  ret
  .quad 2
 # (*entry uxtan expr 2)
@@ -3222,6 +3592,8 @@ _G0247:
  .globl _G0248
 G0248:
 _G0248:
+ call acn
+ .asciz "uxtan %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3236,6 +3608,8 @@ _G0248:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxtan = %Q"
  ret
  .quad 2
 # (*entry uxasin expr 2)
@@ -3243,6 +3617,8 @@ _G0248:
  .globl _G0249
 G0249:
 _G0249:
+ call acn
+ .asciz "uxasin %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3257,6 +3633,8 @@ _G0249:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxasin = %Q"
  ret
  .quad 2
 # (*entry uxacos expr 2)
@@ -3264,6 +3642,8 @@ _G0249:
  .globl _G0250
 G0250:
 _G0250:
+ call acn
+ .asciz "uxacos %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3278,6 +3658,8 @@ _G0250:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxacos = %Q"
  ret
  .quad 2
 # (*entry uxatan expr 2)
@@ -3285,6 +3667,8 @@ _G0250:
  .globl _G0251
 G0251:
 _G0251:
+ call acn
+ .asciz "uxatan %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3299,6 +3683,8 @@ _G0251:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxatan = %Q"
  ret
  .quad 2
 # (*entry uxsqrt expr 2)
@@ -3306,6 +3692,8 @@ _G0251:
  .globl _G0252
 G0252:
 _G0252:
+ call acn
+ .asciz "uxsqrt %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3320,6 +3708,8 @@ _G0252:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxsqrt = %Q"
  ret
  .quad 2
 # (*entry uxexp expr 2)
@@ -3327,6 +3717,8 @@ _G0252:
  .globl _G0253
 G0253:
 _G0253:
+ call acn
+ .asciz "uxexp %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3341,6 +3733,8 @@ _G0253:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxexp = %Q"
  ret
  .quad 2
 # (*entry uxlog expr 2)
@@ -3348,6 +3742,8 @@ _G0253:
  .globl _G0254
 G0254:
 _G0254:
+ call acn
+ .asciz "uxlog %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3362,6 +3758,8 @@ _G0254:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "uxlog = %Q"
  ret
  .quad 3
 # (*entry uxatan2 expr 3)
@@ -3369,6 +3767,8 @@ _G0254:
  .globl _G0255
 G0255:
 _G0255:
+ call acn
+ .asciz "uxatan2 %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -3385,6 +3785,8 @@ _G0255:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "uxatan2 = %Q"
  ret
  .quad 4
 # (*entry get_registry_value expr 4)
@@ -3392,6 +3794,8 @@ _G0255:
  .globl _G0256
 G0256:
 _G0256:
+ call acn
+ .asciz "get_registry_value %Q %Q %Q"
  push %rdx
  push %rcx
  push %rbx
@@ -3410,6 +3814,8 @@ _G0256:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $32,%rsp
+ call acn
+ .asciz "get_registry_value = %Q"
  ret
  .quad 0
 # (*entry external_pwd expr 0)
@@ -3417,6 +3823,8 @@ _G0256:
  .globl _G0257
 G0257:
 _G0257:
+ call acn
+ .asciz "external_pwd"
  mov symval+2424(%rip),%rbp
  mov %rsp,%rax
  sub $64,%rsp
@@ -3426,6 +3834,8 @@ _G0257:
  call _external_pwd
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
+ call acn
+ .asciz "external_pwd = %Q"
  ret
  .quad 2
 # (*entry sun3_sigset expr 2)
@@ -3433,6 +3843,8 @@ _G0257:
  .globl _G0258
 G0258:
 _G0258:
+ call acn
+ .asciz "sun3_sigset %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3447,6 +3859,8 @@ _G0258:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "sun3_sigset = %Q"
  ret
  .quad 1
 # (*entry sigrelse expr 1)
@@ -3454,6 +3868,8 @@ _G0258:
  .globl _G0259
 G0259:
 _G0259:
+ call acn
+ .asciz "sigrelse %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3466,6 +3882,8 @@ _G0259:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "sigrelse = %Q"
  ret
  .quad 4
 # (*entry unexec expr 4)
@@ -3473,6 +3891,8 @@ _G0259:
  .globl _G0260
 G0260:
 _G0260:
+ call acn
+ .asciz "unexec %Q %Q %Q"
  push %rdx
  push %rcx
  push %rbx
@@ -3491,6 +3911,8 @@ _G0260:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $32,%rsp
+ call acn
+ .asciz "unexec = %Q"
  ret
  .quad 1
 # (*entry unixputc expr 1)
@@ -3498,6 +3920,8 @@ _G0260:
  .globl _G0261
 G0261:
 _G0261:
+ call acn
+ .asciz "unixputc %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3510,6 +3934,8 @@ _G0261:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "unixputc = %Q"
  ret
  .quad 1
 # (*entry unixputs expr 1)
@@ -3517,6 +3943,8 @@ _G0261:
  .globl _G0262
 G0262:
 _G0262:
+ call acn
+ .asciz "unixputs %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3529,6 +3957,8 @@ _G0262:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "unixputs = %Q"
  ret
  .quad 1
 # (*entry unixputn expr 1)
@@ -3536,6 +3966,8 @@ _G0262:
  .globl _G0263
 G0263:
 _G0263:
+ call acn
+ .asciz "unixputn %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3548,6 +3980,8 @@ _G0263:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "unixputn = %Q"
  ret
  .quad 0
 # (*entry unixcleario expr 0)
@@ -3555,6 +3989,8 @@ _G0263:
  .globl _G0264
 G0264:
 _G0264:
+ call acn
+ .asciz "unixcleario"
  mov symval+2424(%rip),%rbp
  mov %rsp,%rax
  sub $64,%rsp
@@ -3564,6 +4000,8 @@ _G0264:
  call _unixcleario
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
+ call acn
+ .asciz "unixcleario = %Q"
  ret
  .quad 1
 # (*entry expand_file_name expr 1)
@@ -3571,6 +4009,8 @@ _G0264:
  .globl _G0265
 G0265:
 _G0265:
+ call acn
+ .asciz "expand_file_name %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3583,6 +4023,8 @@ _G0265:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "expand_file_name = %Q"
  ret
  .quad 2
 # (*entry unixopen expr 2)
@@ -3590,6 +4032,8 @@ _G0265:
  .globl _G0266
 G0266:
 _G0266:
+ call acn
+ .asciz "unixopen %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3604,6 +4048,8 @@ _G0266:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "unixopen = %Q"
  ret
  .quad 1
 # (*entry unixcd expr 1)
@@ -3611,6 +4057,8 @@ _G0266:
  .globl _G0267
 G0267:
 _G0267:
+ call acn
+ .asciz "unixcd %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3623,6 +4071,8 @@ _G0267:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "unixcd = %Q"
  ret
  .quad 1
 # (*entry ctime expr 1)
@@ -3630,6 +4080,8 @@ _G0267:
  .globl _G0268
 G0268:
 _G0268:
+ call acn
+ .asciz "ctime %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3642,6 +4094,8 @@ _G0268:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "ctime = %Q"
  ret
  .quad 1
 # (*entry external_system expr 1)
@@ -3649,6 +4103,8 @@ _G0268:
  .globl _G0269
 G0269:
 _G0269:
+ call acn
+ .asciz "external_system %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3661,6 +4117,8 @@ _G0269:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "external_system = %Q"
  ret
  .quad 1
 # (*entry external_fullpath expr 1)
@@ -3668,6 +4126,8 @@ _G0269:
  .globl _G0270
 G0270:
 _G0270:
+ call acn
+ .asciz "external_fullpath %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3680,6 +4140,8 @@ _G0270:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "external_fullpath = %Q"
  ret
  .quad 1
 # (*entry external_exit expr 1)
@@ -3687,6 +4149,8 @@ _G0270:
  .globl _G0271
 G0271:
 _G0271:
+ call acn
+ .asciz "external_exit %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3699,6 +4163,8 @@ _G0271:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "external_exit = %Q"
  ret
  .quad 2
 # (*entry fopen expr 2)
@@ -3706,6 +4172,8 @@ _G0271:
  .globl _G0272
 G0272:
 _G0272:
+ call acn
+ .asciz "fopen %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3720,6 +4188,8 @@ _G0272:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "fopen = %Q"
  ret
  .quad 1
 # (*entry fclose expr 1)
@@ -3727,6 +4197,8 @@ _G0272:
  .globl _G0273
 G0273:
 _G0273:
+ call acn
+ .asciz "fclose %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3739,6 +4211,8 @@ _G0273:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "fclose = %Q"
  ret
  .quad 4
 # (*entry fread expr 4)
@@ -3746,6 +4220,8 @@ _G0273:
  .globl _G0274
 G0274:
 _G0274:
+ call acn
+ .asciz "fread %Q %Q %Q"
  push %rdx
  push %rcx
  push %rbx
@@ -3764,6 +4240,8 @@ _G0274:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $32,%rsp
+ call acn
+ .asciz "fread = %Q"
  ret
  .quad 2
 # (*entry fputc expr 2)
@@ -3771,6 +4249,8 @@ _G0274:
  .globl _G0275
 G0275:
 _G0275:
+ call acn
+ .asciz "fputc %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3785,6 +4265,8 @@ _G0275:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "fputc = %Q"
  ret
  .quad 1
 # (*entry fgetc expr 1)
@@ -3792,6 +4274,8 @@ _G0275:
  .globl _G0276
 G0276:
 _G0276:
+ call acn
+ .asciz "fgetc %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3804,6 +4288,8 @@ _G0276:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "fgetc = %Q"
  ret
  .quad 3
 # (*entry fgets expr 3)
@@ -3811,6 +4297,8 @@ _G0276:
  .globl _G0277
 G0277:
 _G0277:
+ call acn
+ .asciz "fgets %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -3827,6 +4315,8 @@ _G0277:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "fgets = %Q"
  ret
  .quad 4
 # (*entry fwrite expr 4)
@@ -3834,6 +4324,8 @@ _G0277:
  .globl _G0278
 G0278:
 _G0278:
+ call acn
+ .asciz "fwrite %Q %Q %Q"
  push %rdx
  push %rcx
  push %rbx
@@ -3852,6 +4344,8 @@ _G0278:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $32,%rsp
+ call acn
+ .asciz "fwrite = %Q"
  ret
  .quad 1
 # (*entry fflush expr 1)
@@ -3859,6 +4353,8 @@ _G0278:
  .globl _G0279
 G0279:
 _G0279:
+ call acn
+ .asciz "fflush %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3871,6 +4367,8 @@ _G0279:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "fflush = %Q"
  ret
  .quad 3
 # (*entry fseek expr 3)
@@ -3878,6 +4376,8 @@ _G0279:
  .globl _G0280
 G0280:
 _G0280:
+ call acn
+ .asciz "fseek %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -3894,6 +4394,8 @@ _G0280:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "fseek = %Q"
  ret
  .quad 1
 # (*entry clearerr expr 1)
@@ -3901,6 +4403,8 @@ _G0280:
  .globl _G0281
 G0281:
 _G0281:
+ call acn
+ .asciz "clearerr %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3913,6 +4417,8 @@ _G0281:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "clearerr = %Q"
  ret
  .quad 1
 # (*entry xgetw expr 1)
@@ -3920,6 +4426,8 @@ _G0281:
  .globl _G0282
 G0282:
 _G0282:
+ call acn
+ .asciz "xgetw %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3932,6 +4440,8 @@ _G0282:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "xgetw = %Q"
  ret
  .quad 2
 # (*entry putw expr 2)
@@ -3939,6 +4449,8 @@ _G0282:
  .globl _G0283
 G0283:
 _G0283:
+ call acn
+ .asciz "putw %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3953,6 +4465,8 @@ _G0283:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "putw = %Q"
  ret
  .quad 2
 # (*entry signal expr 2)
@@ -3960,6 +4474,8 @@ _G0283:
  .globl _G0284
 G0284:
 _G0284:
+ call acn
+ .asciz "signal %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -3974,6 +4490,8 @@ _G0284:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "signal = %Q"
  ret
  .quad 1
 # (*entry sleep expr 1)
@@ -3981,6 +4499,8 @@ _G0284:
  .globl _G0285
 G0285:
 _G0285:
+ call acn
+ .asciz "sleep %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -3993,6 +4513,8 @@ _G0285:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "sleep = %Q"
  ret
  .quad 3
 # (*entry ieee_handler expr 3)
@@ -4000,6 +4522,8 @@ _G0285:
  .globl _G0286
 G0286:
 _G0286:
+ call acn
+ .asciz "ieee_handler %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -4016,6 +4540,8 @@ _G0286:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "ieee_handler = %Q"
  ret
  .quad 4
 # (*entry ieee_flags expr 4)
@@ -4023,6 +4549,8 @@ _G0286:
  .globl _G0287
 G0287:
 _G0287:
+ call acn
+ .asciz "ieee_flags %Q %Q %Q"
  push %rdx
  push %rcx
  push %rbx
@@ -4041,6 +4569,8 @@ _G0287:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $32,%rsp
+ call acn
+ .asciz "ieee_flags = %Q"
  ret
  .quad 1
 # (*entry setlinebuf expr 1)
@@ -4048,6 +4578,8 @@ _G0287:
  .globl _G0288
 G0288:
 _G0288:
+ call acn
+ .asciz "setlinebuf %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -4060,6 +4592,8 @@ _G0288:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "setlinebuf = %Q"
  ret
  .quad 0
 # (*entry getpid expr 0)
@@ -4067,6 +4601,8 @@ _G0288:
  .globl _G0289
 G0289:
 _G0289:
+ call acn
+ .asciz "getpid"
  mov symval+2424(%rip),%rbp
  mov %rsp,%rax
  sub $64,%rsp
@@ -4076,6 +4612,8 @@ _G0289:
  call _getpid
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
+ call acn
+ .asciz "getpid = %Q"
  ret
  .quad 0
 # (*entry gethostid expr 0)
@@ -4083,6 +4621,8 @@ _G0289:
  .globl _G0290
 G0290:
 _G0290:
+ call acn
+ .asciz "gethostid"
  mov symval+2424(%rip),%rbp
  mov %rsp,%rax
  sub $64,%rsp
@@ -4092,6 +4632,8 @@ _G0290:
  call _gethostid
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
+ call acn
+ .asciz "gethostid = %Q"
  ret
  .quad 2
 # (*entry unixsocketopen expr 2)
@@ -4099,6 +4641,8 @@ _G0290:
  .globl _G0291
 G0291:
 _G0291:
+ call acn
+ .asciz "unixsocketopen %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -4113,6 +4657,8 @@ _G0291:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "unixsocketopen = %Q"
  ret
  .quad 3
 # (*entry getsocket expr 3)
@@ -4120,6 +4666,8 @@ _G0291:
  .globl _G0292
 G0292:
 _G0292:
+ call acn
+ .asciz "getsocket %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -4136,6 +4684,8 @@ _G0292:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "getsocket = %Q"
  ret
  .quad 3
 # (*entry writesocket expr 3)
@@ -4143,6 +4693,8 @@ _G0292:
  .globl _G0293
 G0293:
 _G0293:
+ call acn
+ .asciz "writesocket %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -4159,6 +4711,8 @@ _G0293:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "writesocket = %Q"
  ret
  .quad 1
 # (*entry unixclosesocket expr 1)
@@ -4166,6 +4720,8 @@ _G0293:
  .globl _G0294
 G0294:
 _G0294:
+ call acn
+ .asciz "unixclosesocket %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -4178,6 +4734,8 @@ _G0294:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "unixclosesocket = %Q"
  ret
  .quad 0
 # (*entry fork expr 0)
@@ -4185,6 +4743,8 @@ _G0294:
  .globl _G0295
 G0295:
 _G0295:
+ call acn
+ .asciz "fork"
  mov symval+2424(%rip),%rbp
  mov %rsp,%rax
  sub $64,%rsp
@@ -4194,6 +4754,8 @@ _G0295:
  call _fork
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
+ call acn
+ .asciz "fork = %Q"
  ret
  .quad 1
 # (*entry wait expr 1)
@@ -4201,6 +4763,8 @@ _G0295:
  .globl _G0296
 G0296:
 _G0296:
+ call acn
+ .asciz "wait %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -4213,6 +4777,8 @@ _G0296:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "wait = %Q"
  ret
  .quad 2
 # (*entry popen expr 2)
@@ -4220,6 +4786,8 @@ _G0296:
  .globl _G0297
 G0297:
 _G0297:
+ call acn
+ .asciz "popen %Q %Q"
  push %rbx
  push %rax
  mov 8(%rsp),%rdx
@@ -4234,6 +4802,8 @@ _G0297:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $16,%rsp
+ call acn
+ .asciz "popen = %Q"
  ret
  .quad 1
 # (*entry pclose expr 1)
@@ -4241,6 +4811,8 @@ _G0297:
  .globl _G0298
 G0298:
 _G0298:
+ call acn
+ .asciz "pclose %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -4253,6 +4825,8 @@ _G0298:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "pclose = %Q"
  ret
  .quad 3
 # (*entry shmctl expr 3)
@@ -4260,6 +4834,8 @@ _G0298:
  .globl _G0299
 G0299:
 _G0299:
+ call acn
+ .asciz "shmctl %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -4276,6 +4852,8 @@ _G0299:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "shmctl = %Q"
  ret
  .quad 3
 # (*entry shmget expr 3)
@@ -4283,6 +4861,8 @@ _G0299:
  .globl _G0300
 G0300:
 _G0300:
+ call acn
+ .asciz "shmget %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -4299,6 +4879,8 @@ _G0300:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "shmget = %Q"
  ret
  .quad 3
 # (*entry shmat expr 3)
@@ -4306,6 +4888,8 @@ _G0300:
  .globl _G0301
 G0301:
 _G0301:
+ call acn
+ .asciz "shmat %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -4322,6 +4906,8 @@ _G0301:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "shmat = %Q"
  ret
  .quad 1
 # (*entry shmdt expr 1)
@@ -4329,6 +4915,8 @@ _G0301:
  .globl _G0302
 G0302:
 _G0302:
+ call acn
+ .asciz "shmdt %Q"
  push %rax
  mov 0(%rsp),%rcx
  mov symval+2424(%rip),%rbp
@@ -4341,6 +4929,8 @@ _G0302:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $8,%rsp
+ call acn
+ .asciz "shmdt = %Q"
  ret
  .quad 4
 # (*entry semctl expr 4)
@@ -4348,6 +4938,8 @@ _G0302:
  .globl _G0303
 G0303:
 _G0303:
+ call acn
+ .asciz "semctl %Q %Q %Q"
  push %rdx
  push %rcx
  push %rbx
@@ -4366,6 +4958,8 @@ _G0303:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $32,%rsp
+ call acn
+ .asciz "semctl = %Q"
  ret
  .quad 3
 # (*entry semget expr 3)
@@ -4373,6 +4967,8 @@ _G0303:
  .globl _G0304
 G0304:
 _G0304:
+ call acn
+ .asciz "semget %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -4389,6 +4985,8 @@ _G0304:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "semget = %Q"
  ret
  .quad 3
 # (*entry semop expr 3)
@@ -4396,6 +4994,8 @@ _G0304:
  .globl _G0305
 G0305:
 _G0305:
+ call acn
+ .asciz "semop %Q %Q %Q"
  push %rcx
  push %rbx
  push %rax
@@ -4412,6 +5012,8 @@ _G0305:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $24,%rsp
+ call acn
+ .asciz "semop = %Q"
  ret
  .quad 4
 # (*entry unix-profile expr 4)
@@ -4419,6 +5021,8 @@ _G0305:
  .globl _G0306
 G0306:
 _G0306:
+ call acn
+ .asciz "unix-profile %Q %Q %Q"
  push %rdx
  push %rcx
  push %rbx
@@ -4437,6 +5041,8 @@ _G0306:
  mov 40(%rsp),%rsp
  mov %rbp,symval+2424(%rip)
  add $32,%rsp
+ call acn
+ .asciz "unix-profile = %Q"
  ret
  .quad 1
 # (*entry codeaddressp expr 1)
@@ -4444,6 +5050,8 @@ _G0306:
  .globl _codeaddressp
 codeaddressp:
 _codeaddressp:
+ call acn
+ .asciz "codeaddressp %Q"
  sub $8,%rsp
  shl $8,%rax
  shr $8,%rax
@@ -4505,6 +5113,8 @@ _G0318:
 G0315:
 _G0315:
  add $8,%rsp
+ call acn
+ .asciz "codeaddressp = %Q"
  ret
  .data
 G0310:
@@ -4526,6 +5136,8 @@ _G0307:
  .globl _lastkernel
 lastkernel:
 _lastkernel:
+ call acn
+ .asciz "lastkernel = %Q"
  ret
  .quad 0
 # (*entry initcode expr 0)
@@ -4533,7 +5145,11 @@ _lastkernel:
  .globl _initcode
 initcode:
 _initcode:
+ call acn
+ .asciz "initcode"
  mov G0319(%rip),%rax
+ call acn
+ .asciz "initcode = %Q"
  ret
  .data
 G0319:

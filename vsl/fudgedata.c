@@ -24,6 +24,25 @@
  */
 
 /*
+ * I also intend to put in trace calls.
+ * If I find "# (*entry NAME expr NARGS)"
+ * then just before the next line that is NOT a .globl directive and
+ * not a label setting I will insert
+ *      call acn
+ *      .asciz "NAME %Q %Q"
+ * where the number of instances of %Q will match the number of arguments
+ * up to 3.
+ * and before any "ret" I will insert
+ *      call acn
+ *      .asciz "NAME = %Q"
+ *
+ * This should call a trace routine for every function in the file. If
+ * I do not want to see all of it I will arrange that some of those calls
+ * detect that the function involved is not of interest and ignore the
+ * call, not printing anything.
+ */
+
+/*
  * Strategy:
  *    if in data mode...
  *       read labels
@@ -42,22 +61,53 @@
 #include <stdio.h>
 #include <string.h>
 
+char fname[250];
+int nargs = 0;
 char line[250];
+int entrydone = 0;
 
 char lines[10][250];
 int nlines = 0;
 
 int read_line(char *b, FILE *f)
 {   int c;
+    char *b1 = b;
     while ((c = getc(f)) != EOF && c != '\n') *b++ = c;
     *b = 0;
+    if (b1[0] == '#')
+    {   if (sscanf(b1, "# (*entry %s expr %d)", fname, &nargs) == 2)
+            entrydone = 0;
+        else nargs = -1;
+    }
     return c != EOF;
 }
 
 void write_lines(FILE *f2)
-{   int i;
+{   int i, j;
     for (i=0; i<nlines; i++)
-        fprintf(f2, "%s\n", lines[i]);
+    {   const char *l = lines[i];
+        if (nargs >= 0 && i == nlines-1)
+        {   if (strstr(l, " ret") != NULL)
+            {   fprintf(f2, " call acn\n");
+                fprintf(f2, " .asciz \"%s = %%Q\"\n", fname);
+            }
+            else if (nargs >= 0 &&
+                     entrydone == 0 &&
+                     l[0] != '#' &&
+                     strchr(l, ':') == NULL &&
+                     strstr(l, ".quad") == NULL &&
+                     strstr(l, ".byte") == NULL &&
+                     strstr(l, ".globl") == NULL)
+            {   fprintf(f2, " call acn\n");
+                fprintf(f2, " .asciz \"%s", fname);
+                for (j=0; j<nargs && j<3; j++)
+                    fprintf(f2, " %%Q");
+                fprintf(f2, "\"\n");
+                entrydone = 1;
+            }
+        }
+        fprintf(f2, "%s\n", l);
+    }
     nlines = 0;
 }
 

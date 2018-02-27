@@ -128,16 +128,6 @@ extern int64_t  oldheapupperbound;
 extern int64_t  oldheaplast;
 extern int64_t  oldheaptrapbound;
 
-/* Write this ourselves to keep from including half the math library */
-static int power(int x, int n)
-{   int i, p;
-
-    p = 1;
-    for (i = 1; i <= n; ++i)
-        p = p * x;
-    return (p);
-}
-
 int creloc(int64_t array, long len, int64_t diff, int64_t lowb);
 
 long sizeofsymvectors = 0;
@@ -181,7 +171,7 @@ char *realpath(const char *s, char *n)
 
 
 int setupbpsandheap(int argc,char *argv[])
-{   int64_t ohl,ohtb,ohlb,ohub,hl,htb,hlb,hub,diff;
+{   int64_t ohl,ohtb,ohub,htb,hlb,hub,diff;
     int memset = 0;
     FILE * imago;
     int64_t headerword [8];
@@ -189,7 +179,6 @@ int setupbpsandheap(int argc,char *argv[])
     int64_t current_size_in_bytes, heapsize_in_bytes;
     double bpspercent, heappercent;
     char   *argp, *scanptr, *scanformat;
-    int ii1,ii2,ii3,ii4,ii5,ii6,ii7,ii8,ii9,ii10,ii11;
     long hugo;
 
     total        = MINSIZE;
@@ -288,7 +277,7 @@ int setupbpsandheap(int argc,char *argv[])
     {   ohl = oldheaplowerbound; ohub = oldheapupperbound;
         ohl =  oldheaplast; ohtb = oldheaptrapbound;
         hlb = heaplowerbound; hub = heapupperbound;
-        hl =  heaplast; htb = heaptrapbound;
+        htb = heaptrapbound;
         /* save the new values around restore of the old ones */
 
         printf("Loading image file: %s \n",imagefile);
@@ -358,7 +347,6 @@ int setupbpsandheap(int argc,char *argv[])
         return (4711);
     }
     return (0);
-
 }
 
 void read_error(char * what,int64_t bytesread,int64_t byteswanted)
@@ -389,8 +377,6 @@ int mprotect(void *address, size_t len, int prot)
 void setupbps()
 {   char *p = (char *) bps;
     int bpssize;
-    char c;
-
     nextbps  =  ((int64_t)bps + 7) & ~7;        /* Up to a multiple of 8. */
     bpslowerbound = nextbps;
     lastbps  =  ((int64_t)bps + BPSSIZE) & ~7;    /* Down to a multiple of 8. */
@@ -474,11 +460,11 @@ int64_t _(alterheapsize)(int increment)
       NOTE: only implemented for the one heap version on the 68000.
     */
 
-    int heapsize;
     int current_size_in_bytes;
     int64_t diff;
 
 #if (NUMBEROFHEAPS == 1)
+    int heapsize;
     int gcarraysize, newbreakvalue;
 
     printf("***** cannot extend heap on this machine\n");
@@ -556,8 +542,6 @@ int64_t _(alterheapsize)(int increment)
                heaplowerbound -1);
     }
 
-
-
     newbreakvalue = (int64_t) sbrk(0);
 
     heaplowerbound        = (uint64_t) realo;
@@ -569,21 +553,9 @@ int64_t _(alterheapsize)(int increment)
     oldheaplast           = oldheaplowerbound + diff ;
     oldheaptrapbound      = oldheapupperbound -120;
 
-
-    /*
-      heapupperbound        = heapupperbound + increment ;
-      heaptrapbound         = heapupperbound - 120;
-      oldheaplowerbound     = oldheaplowerbound + increment;
-      oldheapupperbound     = oldheapupperbound + 2* increment ;
-      oldheaplast           = oldheaplowerbound;
-      oldheaptrapbound      = oldheapupperbound -120;
-    */
-
-
     oldbreakvalue = newbreakvalue;
     return(increment);
 #endif
-
 }
 
 intptr_t _(unexec)()

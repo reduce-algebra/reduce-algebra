@@ -128,46 +128,13 @@ void clear_iob()
  *    _dtabsize ----_end
  */
 
-
 extern char *end;
+
 /*
  *     Size of dtabsize is 0x34c bytes.
  */
 void clear_dtabsize()
 {   TR1("clear_dtabsize");
-    int i;
 }
-
-#if 0
-/* I think these should be generally available */
-
-
-/* look for the last occurrence of character c in string s;
-   if found, return pointer to string part, NULL otherwise */
-char *rindex(char *s, int c)
-{   TR;
-    int i,l; char x;
-    for (i=0; s[i]!='\000'; i++);
-    for (i=i-1; (s[i] !=c) && (i>=0) ; i--);
-    if (i<0) return(NULL); else return(& s[i]);
-}
-
-/* look for the first occurrence of character c in string s;
-   if found, return pointer to string part, NULL otherwise */
-
-char *index(char *s, int c)
-{   TR;
-    int i,l; char x;
-    for (i=0; (s[i] !=c) && (s[i]!='\000') ; i++);
-    if (s[i]=='\000') return(NULL); else return(& s[i]);
-}
-
-bzero (char *b, int length)
-{   TR;
-    int i;
-    for (i=0; i<length; i++) b[i]='\000' ;
-}
-
-#endif
 
 /* end of os-hooks.c */

@@ -160,7 +160,6 @@ void _(uxwritefloat)(char *buf, double *flt, const char *convstr)
 /*   char *convstr;       String containing conversion field for sprintf */
 {   char *temps, *dot, *e;
     char tempbuf[100]; /* reasonable size limit */
-    float tempf;
 
     temps = buf + 8;       /* Skip over lisp string length to write data */
 
@@ -168,7 +167,6 @@ void _(uxwritefloat)(char *buf, double *flt, const char *convstr)
 
     if (isfinite(*flt))
     {
-
         /* Make sure that there is a trailing .0
          */
         dot = strrchr(temps, '.');
