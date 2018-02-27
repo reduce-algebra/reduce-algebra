@@ -754,6 +754,9 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     if (reclaim_trigger_count == reclaim_trigger_target &&
         garbage_collection_permitted)
         stg_class = GC_USER_HARD;
+// If I get here during system start-up I will try to give myself some
+// more memory. I expect that will usually be possible!
+    if (!garbage_collection_permitted) allocate_more_memory();
 #ifdef CONSERVATIVE
 // How do I know that all callee-save registers are on the stack by the
 // stage that I get to the level that C_stacktop now refers to?
