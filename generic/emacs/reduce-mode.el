@@ -7,7 +7,7 @@
 ;; Version: $Id$
 ;; Keywords: languages
 ;; Homepage: http://reduce-algebra.sourceforge.net/reduce-ide
-;; Package-Version: 1.52
+;; Package-Version: 1.53
 
 ;; This file is not part of GNU Emacs.
 
@@ -460,8 +460,6 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
        'reduce-current-proc)
   (run-hooks 'reduce-mode-hook))
 
-(fset 'R (symbol-function 'reduce-mode)) ; a synonym
-
 (defun reduce-mode-variables ()
   "Define REDUCE mode local variables."
   (set-syntax-table reduce-mode-syntax-table)
@@ -700,12 +698,12 @@ this one."
 	(reduce-calculate-indent-this)
 	(reduce-calculate-indent-prev))))
 
-(defconst procedure-regexp "\\<procedure[ \(]"
+(defconst procedure-regexp "\\(?:^\\|\\s-+\\|[;$]\\)procedure\\s-+[![:alpha:]]"
   "Regexp for use in a SEARCH to find a procedure header.")
 
 (defsubst looking-at-procedure ()
   "Return t if text after point matches the start of a procedure."
-  (looking-at ".*\\<procedure[ \(]"))
+  (looking-at ".*\\<procedure\\s-+[![:alpha:]]"))
 
 (defun reduce-calculate-indent-proc ()
   ;; "Handle comment lines, or if immediately following a procedure body
@@ -1045,28 +1043,25 @@ current line if the text just typed matches `reduce-auto-indent-regexp'."
       )))
 
 (defun reduce-forward-procedure (arg)
-  "Move forward to next end of procedure. With ARG, do it ARG times."
+  "Move forward to next end of procedure.  With ARG, do it ARG times."
   (interactive "p")
   (let ((case-fold-search t) (start (point)) count)
     ;; Move to end of procedure starting before point:
     (if (reduce-re-search-backward procedure-regexp)
-	(reduce-forward-statement 2))
+		(reduce-forward-statement 2))
     ;; Now move forward by arg or arg-1 procedures
     ;; or stay put if at least one move not possible
-    (if (<= (point) start)
-	()
+    (unless (<= (point) start)
       (setq arg (1- arg)) (setq start (point)))
     (setq count arg)
     (while (and (> count 0) (reduce-re-search-forward procedure-regexp))
       (setq count (1- count)))
     (if (< count arg)
-	(reduce-forward-statement 2)
-      (goto-char start))
-    )
+		(reduce-forward-statement 2)
+      (goto-char start)))
   ;; Skip white space and any following eol:
   (skip-chars-forward " \t")
-  (if (= (following-char) ?\n) (forward-char))
-  )
+  (if (= (following-char) ?\n) (forward-char)))
 
 (defun reduce-mark-procedure (arg)
   "Mark this and following ARG procedures.
@@ -1140,9 +1135,9 @@ If looking at the end of a block or group, or the end-of-file marker,
 move over it after `reduce-max-up-tries' consecutive interactive tries."
   (interactive "p")
   (let ((case-fold-search t)
-	(pattern "[;$]\\|>>\\|\\<end\\>\\|<<\\|\\<begin\\>\\|\\s(\\|\\s)")
-	(start (point))
-	reduce-forward-statement-found)
+		(pattern "[;$]\\|>>\\|\\<end\\>\\|<<\\|\\<begin\\>\\|\\s(\\|\\s)")
+		(start (point))
+		reduce-forward-statement-found)
     ;; Skip an immediate closing bracket:
     (if (looking-at "[ \t\n]*\\s)") (goto-char (match-end 0)))
     (while (and (> arg 0) (reduce-forward-statement1 pattern))
@@ -1150,8 +1145,7 @@ move over it after `reduce-max-up-tries' consecutive interactive tries."
     ;; Never move backwards:
     (if (< (point) start) (goto-char start))
     ;; Move over  >>  or  end  on repeated interactive attempt:
-    (reduce-up-block-or-group-maybe reduce-forward-statement-found start)
-    ))
+    (reduce-up-block-or-group-maybe reduce-forward-statement-found start)))
 
 (defun reduce-forward-statement1 (pattern)
   "Move forward to next statement end and return t if successful."
@@ -1361,8 +1355,8 @@ negative argument means move backward instead of forward."
 Return t if successful; otherwise move as far as possible and return nil."
   (let (return)
     (while (and (setq return (reduce-re-search-forward
-			      "\\<end\\>\\|\\<begin\\>" 'move))
-		(memq (preceding-char) '(?n ?N)))
+							  "[^'\(]\\<end\\>\\|\\([^'\(]\\<begin\\>\\)" 'move))
+				(match-beginning 1))
       (reduce-forward-block))
     return))
 
@@ -1371,8 +1365,8 @@ Return t if successful; otherwise move as far as possible and return nil."
 Return t if successful; otherwise move as far as possible and return nil."
   (let (return)
     (while (and (setq return (reduce-re-search-backward
-			      "\\<begin\\>\\|\\<end\\>" 'move))
-		(memq (following-char) '(?e ?E)))
+							  "[^'\(]\\<begin\\>\\|\\([^'\(]\\<end\\>\\)" 'move))
+				(match-beginning 1))
       (reduce-backward-block))
     return))
 
@@ -1892,26 +1886,23 @@ after `show-paren-delay' seconds of Emacs idle time."
   ;; Do nothing if input is pending.
   (when (and window-system (eq major-mode 'reduce-mode))
     (let (pos dir mismatch face
-	      (case-fold-search t))
+			  (case-fold-search t))
       (cond
        ((and (eq (following-char) ?<)
-	     ;; (or (eq (preceding-char) ?<)
-	     (eq (char-after (1+ (point))) ?<) );)
-	(setq dir 2))
+			 (eq (char-after (1+ (point))) ?<))
+		(setq dir 2))
        ((and (eq (preceding-char) ?>)
-	     ;; (or (eq (following-char) ?>)
-	     (eq (char-after (- (point) 2)) ?>) );)
-	(setq dir -2))
+			 (eq (char-after (- (point) 2)) ?>))
+		(setq dir -2))
        ((save-match-data (looking-at "\\<begin\\>"))
-	(setq dir 3))
+		(setq dir 3))
        ((and (memq (preceding-char) '(?d ?D))
-	     (memq (char-after (- (point) 2)) '(?n ?N))
-	     (memq (char-after (- (point) 3)) '(?e ?E))
-	     (/= (char-syntax (following-char)) ?w)
-	     (/= (char-syntax (char-after (- (point) 4))) ?w)
-	     )
-	(setq dir -3))
-       )
+			 (memq (char-after (- (point) 2)) '(?n ?N))
+			 (memq (char-after (- (point) 3)) '(?e ?E))
+			 (/= (char-syntax (following-char)) ?w)
+			 (/= (char-syntax (char-after (- (point) 4))) ?w)
+			 (not (eq (char-after (- (point) 4)) ?')))
+		(setq dir -3)))
       ;;
       ;; Find the other end of the sexp.
       (when dir
