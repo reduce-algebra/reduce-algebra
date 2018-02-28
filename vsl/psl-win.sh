@@ -4,6 +4,7 @@
 rm -f bpsl
 
 x86_64-w64-mingw32-gcc -ggdb -O0 \
+   -Wa,--defsym,__WIN64__=1 \
    -DWINDOWS \
    -DBPSSIZE=20500000 \
    bps.c \

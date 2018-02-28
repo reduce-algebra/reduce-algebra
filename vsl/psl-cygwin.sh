@@ -6,7 +6,8 @@
 rm -f bpsl
 
 gcc -ggdb -O0 \
-   -DWINDOWS \
+   -Wa,--defsym,__CYGWIN__=1 \
+   -DLINUX \
    -DBPSSIZE=20500000 \
    bps.c \
    bpsheap.c \
@@ -24,6 +25,8 @@ gcc -ggdb -O0 \
    pslstubs.c \
    win-main.s \
    win-dmain.s \
+   acn.s \
+   acn1.c \
    -lm  -ldl -lpthread \
    -o bpsl
 

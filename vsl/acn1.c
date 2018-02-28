@@ -64,7 +64,7 @@ void lisp_print(uint64_t a)
         break;
     case TAG_ID: // id
         fprintf(stderr, "ID%" PRIx64, a);
-        lisp_print(((intptr_t *)_symnam)[(a<<8)>>8]);
+        lisp_print(((intptr_t *)&_symnam)[(a<<8)>>8]);
         break;
     default:
         fprintf(stderr, "??%" PRIx64, a);
