@@ -2074,61 +2074,96 @@ The date in the form \"day-month-year\"
 \"21-Jan-1997\""
   (format-time-string "%d-%b-%Y"))
 
-;; (defun FASLOUT (name)
-;;   "Compile subsequent input into file \"NAME.elc\".
-;; First, display the message
-;; FASLOUT: (DSKIN files) or type in expressions.
-;; When all done execute (FASLEND)."
-;; ;; Output subsequent code as Lisp to a temporary file until FASLEND
-;; ;; evaluated.
-;;   )
 
-;; (defun FASLEND ()
-;;   "Terminate a previous FASLOUT and generate the .elc file."
-;;   ;; Only allowed after a previous FASLOUT.
-;;   ;; Close the temporary Lisp output file and then compile it.
-;;   )
+;;; Fast loading (FASL) support
+;;; ===========================
 
+;; This code is modelled loosely on "mkfasl.red" and CSL/PSL
+;; behaviour.  It is intended only to be run in REDUCE and requires
+;; RLISP, i.e. "rlisp.red" and "eslrend.red".
 
-;; This code is modelled loosely on "mkfasl.red".  It is intended to
-;; be run in REDUCE and requires RLISP, i.e. "rlisp.red" and
-;; "eslrend.red".
+;; THERE IS SOME CODE DUPLICATION HERE THAT SHOULD PERHAPS BE REMOVED!
 
-(defvar *DEFN) (defvar *INT) (defvar *ECHO)	; necessary?
-
-(FLAG '(MKFASL) 'OPFN)					; make it a symbolic operator
-
-(FLAG '(MKFASL) 'NOVAL)					; just return Lisp value
-
-(defun MKFASL (u)
-  "Produce an ESL FASL (.elc) file for the module U."
+(defun MKFASL (name)
+  "Produce an ESL FASL (.elc) file for the module NAME.
+NAME should be an identifier or string."
   (if (fboundp 'BEGIN1)
-	  (let ((*DEFN t)
-			;; Functions are often used before they are defined, so...
-			(byte-compile-warnings '(unresolved))
-			*INT *ECHO ochan oldochan ichan oldichan u.el)
-		(princ (format "*** Compiling %s ...\n" u))
-		(setq u (STRING-DOWNCASE u))
+	  (let* (*INT *ECHO faslout-filehandle faslout-stream ichan oldichan name.el
+			 (*DEFN t)
+			 ;; Don't need prettyprinted Lisp output; print
+			 ;; output should suffice:
+			 (defn-print #'(lambda (x) (print x faslout-stream)))
+			 ;; Functions are often used before they are defined, so...
+			 (byte-compile-warnings '(unresolved)))
+		(setq name (STRING-DOWNCASE name))
+		(princ (format "*** Compiling %s ..." name))
 		;; Output the Emacs Lisp version of the file:
-		(setq ochan (OPEN (setq u.el (concat u ".el")) 'OUTPUT))
-		(setq oldochan (WRS ochan))
-		(setq ichan (OPEN (concat u ".red") 'INPUT))
+		(setq faslout-filehandle (OPEN (setq name.el (concat name ".el")) 'OUTPUT))
+		(setq faslout-stream (car faslout-filehandle))
+		(setq ichan (OPEN (concat name ".red") 'INPUT))
 		(setq oldichan (RDS ichan))
-		;; Don't need prettyprinted Lisp output; print output should
-		;; suffice:
-		(advice-add 'PRETTYPRINT :override #'print)
+		(advice-add 'PRETTYPRINT :override defn-print)
 		(unwind-protect
 			(BEGIN1)
-		  (advice-remove 'PRETTYPRINT #'print)
-		  (CLOSE ochan) (WRS oldochan)
-		  (CLOSE ichan) (RDS oldichan))
+		  (advice-remove 'PRETTYPRINT defn-print)
+		  (CLOSE ichan) (RDS oldichan)
+		  (CLOSE faslout-filehandle))
 		;; Compile and then delete the Emacs Lisp version of the file:
-		(if (byte-compile-file u.el)
+		(if (byte-compile-file name.el)
 			(progn
-			  (delete-file u.el)
-			  (princ "... succeeded\n")
+			  (delete-file name.el)
+			  (princ " succeeded\n")
 			  nil)
-		  (error "***** Error during mkfasl of %s\n" u)))))
+		  (error "***** Error during mkfasl of %s" name)))))
+
+(FLAG '(MKFASL) 'OPFN)					; make it a symbolic operator
+(FLAG '(MKFASL) 'NOVAL)					; just return Lisp value
+
+(defun FASLOUT (name)
+  "Compile subsequent input into ESL FASL file \"NAME.elc\".
+NAME should be an identifier or string."
+  ;; Output subsequent code as Lisp to a temporary file until FASLEND
+  ;; evaluated.
+  (if (fboundp 'BEGIN1)
+	  (let* (faslout-filehandle faslout-stream name.el
+			 (*DEFN t)
+			 ;; Don't need prettyprinted Lisp output; print
+			 ;; output should suffice:
+			 (defn-print #'(lambda (x) (print x faslout-stream)))
+			 ;; Functions are often used before they are defined, so...
+			 (byte-compile-warnings '(unresolved)))
+		(setq name (STRING-DOWNCASE name))
+		(princ (format "FASLOUT %s: IN files; or type in expressions.
+When all done, execute FASLEND;\n\n" name))
+		;; Output the Emacs Lisp version of the file:
+		(setq faslout-filehandle (OPEN (setq name.el (concat name ".el")) 'OUTPUT))
+		(setq faslout-stream (car faslout-filehandle))
+		(advice-add 'PRETTYPRINT :override defn-print)
+		(catch 'faslend
+		  (unwind-protect
+			  (BEGIN1)
+			(advice-remove 'PRETTYPRINT defn-print)
+			(CLOSE faslout-filehandle)))
+		;; Compile and then delete the Emacs Lisp version of the file:
+		(princ (format "*** Compiling %s ..." name))
+		(if (byte-compile-file name.el)
+			(progn
+			  (delete-file name.el)
+			  (princ " succeeded\n")
+			  nil)
+		  (error "***** Error during compilation of %s" name)))))
+
+(FLAG '(FASLOUT) 'OPFN)
+(FLAG '(FASLOUT) 'NOVAL)
+
+(defun FASLEND ()
+  "Terminate a previous FASLOUT and generate the .elc file."
+  ;; Only allowed after a previous FASLOUT.
+  ;; Close the temporary Lisp output file and then compile it.
+  (throw 'faslend nil))
+
+(PUT 'FASLEND 'STAT 'ENDSTAT)
+(FLAG '(FASLEND) 'EVAL)				 ; must be evaluated in this model
 
 
 ;;; Miscellaneous
