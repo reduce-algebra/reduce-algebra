@@ -1,15 +1,13 @@
 #! /bin/bash -v
 
-
-gcc -c -g main.s
-gcc -c -g dmain.s
-
 rm -f bpsl
 
 # The Macintosh compiler is very noisy in its complaints about uses of
 # deprecated functions - in this case sbrk. So at least for a while I
 # will set a compiler flag to stop it from bothering me about things that
 # amd well aware of.
+
+# The Linux version of main.s should not be compatible enough for use here.
 
 gcc -g -O0 \
    -DMACINTOSH \
@@ -29,8 +27,8 @@ gcc -g -O0 \
    creloc.c \
    formlink2.c \
    pslstubs.c \
-   main.o \
-   dmain.o \
+   linux-main.s \
+   linux-dmain.s \
    -lm  -ldl -lpthread \
    -o bpsl
 

@@ -37,11 +37,15 @@ _acn:        # return address at 128
  mov 104(%rsp), %r9
 .else
 .ifdef __CYGWIN__
-.else
  mov 128(%rsp), %rcx
  mov 120(%rsp), %rdx
  mov 112(%rsp), %r8
  mov 104(%rsp), %r9
+.else
+ mov 128(%rsp), %rdi
+ mov 120(%rsp), %rsi
+ mov 112(%rsp), %rdx
+ mov 104(%rsp), %rcx
 .endif
 .endif
 # There must be space for 4 registers above the stack pointer, and

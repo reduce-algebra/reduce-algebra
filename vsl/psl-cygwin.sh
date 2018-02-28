@@ -1,10 +1,12 @@
 #! /bin/bash -v
 
+# For Cygwin I must use the Windows version of main.s and dmain.s because
+# Cygwin uses the Microsoft register and calling conventions.
+
 rm -f bpsl
 
 gcc -ggdb -O0 \
-   -Wall \
-   -DLINUX \
+   -DWINDOWS \
    -DBPSSIZE=20500000 \
    bps.c \
    bpsheap.c \
@@ -20,10 +22,8 @@ gcc -ggdb -O0 \
    creloc.c \
    formlink2.c \
    pslstubs.c \
-   linux-main.s \
-   linux-dmain.s \
-   acn.s \
-   acn1.c \
+   win-main.s \
+   win-dmain.s \
    -lm  -ldl -lpthread \
    -o bpsl
 

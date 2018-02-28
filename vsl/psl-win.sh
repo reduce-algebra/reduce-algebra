@@ -1,9 +1,6 @@
 #! /bin/bash -v
 
 
-x86_64-w64-mingw32-gcc -c -ggdb main.s
-x86_64-w64-mingw32-gcc -c -ggdb dmain.s
-
 rm -f bpsl
 
 x86_64-w64-mingw32-gcc -ggdb -O0 \
@@ -23,8 +20,8 @@ x86_64-w64-mingw32-gcc -ggdb -O0 \
    creloc.c \
    formlink2.c \
    pslstubs.c \
-   main.o \
-   dmain.o \
+   win-main.s \
+   win-dmain.s \
    -lm  -ldl -lpthread \
    -o bpsl
 

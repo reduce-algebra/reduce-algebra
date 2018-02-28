@@ -1,6 +1,8 @@
 #! /bin/bash -v
 
-# maindmain.sh
+# main-dmain.sh
+
+# Usage: ./main-dmain.s
 
 # This version used symval+NNN(%rip) everywhere. If this is what is wanted
 # I obviously hope tha the compiler that generates mai.s will stick the
@@ -53,25 +55,26 @@
 # the native Windows version.
 # For now at least I will use the same base version for both Linux and
 # Macintosh - I may in due course find that I need to split there too.
+#
+# This script will make win-main.s and linux-main.s (and similarly for dmain)
 
 case `uname -s` in
 *Darwin*)
 # On the Macintosh I need to use the GNU version of sed.
   SED=gsed
-  mc=AMD64_ext
   ;;
 *Cygwin* | *CYGWIN*)
   SED=sed
-# For Cygwin I need to use base versions of main.s and dmain.s
-# built on the basis of the Windows register allocation and calling
-# conventions.
-  mc=mingw-w64
   ;;
 *)
   SED=sed
   mc=AMD64_ext
   ;;
 esac
+
+gcc fudgedata.c -o fudgedata
+
+action() {
 
 $SED -e 's/symval+[0-9]*/&(%rip)/g' \
      -e 's/symfnc+[0-9]*/&(%rip)/g' \
@@ -87,11 +90,9 @@ $SED -e 's/symval+[0-9]*/&(%rip)/g' \
      -e 's/@@@ .globl / .globl _/g'         \
      -e 's/call [a-z]/call _&/g; s/_call /_/g'   \
      -e 's/\.quad \(.*\)$\n#/.QUAD \1\n#/g'      \
-      < ../psl/dist/kernel/$mc/main.s > mainx.s
+      < ../psl/dist/kernel/$1/main.s > mainx.s
 
-gcc fudgedata.c -o fudgedata
-
-./fudgedata mainx.s main.s
+./fudgedata mainx.s $2.s
 
 # dmain.s is simpler.
 
@@ -112,6 +113,11 @@ $SED -e 's/\[/(/g'                  \
      -e 's/.quad saveargc/.quad _saveargc/g'           \
      -e 's/.quad saveargv/.quad _saveargv/g'           \
      -e 's/.quad datebuffer/.quad _datebuffer/g'       \
-      < ../psl/dist/kernel/$mc/dmain.s > dmain.s
+      < ../psl/dist/kernel/$1/dmain.s > $3.s
+
+}
+
+action mingw-w64 win-main win-dmain
+action AMD64_ext linux-main linux-dmain
 
 # end of file
