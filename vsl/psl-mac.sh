@@ -29,6 +29,8 @@ gcc -g -O0 \
    pslstubs.c \
    linux-main.s \
    linux-dmain.s \
+   acn.s \
+   acn1.c \
    -lm  -ldl -lpthread \
    -o bpsl
 

@@ -9,9 +9,13 @@
 #include <string.h>
 #include <inttypes.h>
 #include <errno.h>
-
-
 #include <unistd.h>
+
+#if defined __linux__ || defined __CYGWIN__
+#define _(x) _ ## x
+#else
+#define _(x) x
+#endif
 
 //
 // The next few functions read values of various widths from
@@ -157,7 +161,7 @@ static int64_t safe_read_int64(void *p)
 #define TAG_ID        0xfe
 #define TAG_UNBOUND   0xfd
 
-extern intptr_t **symnam, **_symnam;
+extern intptr_t **_(symnam);
 
 #define TAGOF(a) ((int)((uint64_t)(a) >> 56) & 0xff)
 #define INFOF(a) (((uint64_t)(a) << 8) >> 8)
@@ -210,7 +214,7 @@ void lisp_print(uint64_t a)
         break;
     case TAG_ID: // id
         fprintf(stderr, "ID%" PRIx64, a);
-        lisp_print(((intptr_t *)&_symnam)[INFOF(a)]);
+        lisp_print(((intptr_t *)&_(symnam))[INFOF(a)]);
         break;
     default:
         fprintf(stderr, "??%" PRIx64, a);
