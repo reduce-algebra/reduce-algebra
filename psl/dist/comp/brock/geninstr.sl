@@ -401,7 +401,6 @@ nil)
 (instr CMP (imm  EAX) OP-imm-EAX   2#00111101)
 (instr CMP (!n  effa) OP-imm8-effa 2#10000011 2#00111000)
 (instr CMP (imm effa) OP-imm-effa  2#10000001 2#00111000)
-(instr CMPQ (imm effa) OP-imm-effa  2#10000001 2#00111000)
 
 (instr NEG (reg)      OP-effa      2#11110111 2#00011000)
 

@@ -264,7 +264,17 @@
 			  (SETQ REX? (plus codebase!* currentoffset* -1))
 			  (setq allowextrarexprefix 0)
                           (rplaca x 'sub))
+          ((eqcar x 'cmpq) (Depositbyte  16#48)  % REX Prefix
+			  (SETQ REX? (plus codebase!* currentoffset* -1))
+			  (setq allowextrarexprefix 0)
+                          (rplaca x 'cmp))
 	  ((and (pairp x) (flagp (car x) 'norexprefix)) NIL)
+	  ((and (pairp x) (flagp (car x) 'onlyupperregrexprefix))
+	   (cond ((upperreg64p x)
+		  (setq REX-prefix 16#40)
+		  (Depositbyte 16#40)
+		  (SETQ REX? (plus codebase!* currentoffset* -1))
+		  (setq allowextrarexprefix 0))))
           ((reg64bitp x) (Depositbyte  16#48)    % REX Prefix
 			 (SETQ REX? (plus codebase!* currentoffset* -1))))
     (cond ((setq Y (get (first X) 'InstructionDepositFunction)) 
@@ -296,6 +306,9 @@
 	movd movq ldmxcsr stmxcsr
 	pand pandn por pxor andpd andnpd orpd xorpd
 	) 'norexprefix)
+
+% Instructions that need a REX.B prefix only if using upper 8 registers
+(flag '(push pop) 'onlyupperregrexprefix)
 
 (de DepositLabel (x) 
     (when *testlap (prin2 currentoffset*) (tab 10) (print x))
@@ -877,7 +890,7 @@
   (prog(n a)
    (depositbyte (car code))
    (setq op1 (saniere-Sprungziel op1))
-   (setq n(MakeExpressionrelative op1 1)) % offset wrt next instr
+   (setq n (MakeExpressionRelative op1 1)) % offset wrt next instr
    (when (not (bytep n)) (stderror  "distance too long for short jump"))
    (depositbyte (bytep n))
    (when *testlap (tab 15)(prin2 "-> ") 
@@ -1409,8 +1422,14 @@
 				 (cons 'add (cdr x)))))
          ((eqcar x 'subq) (wplus2 1 (InstructionLength1 
 				     (cons 'sub (cdr x)))))
+         ((eqcar x 'cmpq) (wplus2 1 (InstructionLength1 
+				     (cons 'cmp (cdr x)))))
          ((and (pairp x) (flagp (car x) 'norexprefix))
 	  (InstructionLength1 x))
+	 ((and (pairp x) (flagp (car x) 'onlyupperregrexprefix))
+	  (if (upperreg64p x)
+	      (wplus2 1 (InstructionLength1 x))
+	    (InstructionLength1 x)))
          ((reg64bitp x) (wplus2 1 (InstructionLength1 x)))
          (t (InstructionLength1 x))))
 
