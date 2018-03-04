@@ -9,9 +9,14 @@ case `uname -s` in
   ;;
 esac
 
+if test "$1" != ""
+then
+  d="$1"
+fi
+
 pushd $d
 
-../bpsl -td 1000 <<EOF
+../bpsl --args -td 1000 <<EOF
 (setq loaddirectories* '("" "fasl"))
 (on verboseload)
 (load init-file)

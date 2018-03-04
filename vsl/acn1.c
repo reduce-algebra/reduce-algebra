@@ -161,10 +161,12 @@ static int64_t safe_read_int64(void *p)
 #define TAG_ID        0xfe
 #define TAG_UNBOUND   0xfd
 
-extern intptr_t **_(symnam);
+extern int64_t _(symnam);
 
-#define TAGOF(a) ((int)((uint64_t)(a) >> 56) & 0xff)
-#define INFOF(a) (((uint64_t)(a) << 8) >> 8)
+#define SYMNAM(n) ((&_(symnam))[n])
+
+#define TAGOF(a) ((int)(((uint64_t)(a)) >> 56) & 0xff)
+#define INFOF(a) ((((uint64_t)(a)) << 8) >> 8)
 #define CAR(a)   (((uint64_t *)INFOF(a))[0])
 #define CDR(a)   (((uint64_t *)INFOF(a))[1])
 
@@ -175,7 +177,6 @@ int iscons(uint64_t a)
 void lisp_print(uint64_t a)
 {   int tag = TAGOF(a);
     uint64_t v = INFOF(a);
-    int64_t *q;
     int ch;
     switch (tag)
     {
@@ -213,8 +214,14 @@ void lisp_print(uint64_t a)
         fprintf(stderr, "%" PRId64, (int64_t)a);
         break;
     case TAG_ID: // id
-        fprintf(stderr, "ID%" PRIx64, a);
-        lisp_print(((intptr_t *)&_(symnam))[INFOF(a)]);
+        fprintf(stderr, "ID%" PRIx64, a); fflush(stdout);
+        safe_read_int64(&SYMNAM(INFOF(a)));
+#if 1
+        fprintf(stderr, "?some id?");
+#else
+        if (!read_ok) fprintf(stderr, "BadSym");
+        else lisp_print(SYMNAM(INFOF(a)));
+#endif
         break;
     default:
         fprintf(stderr, "??%" PRIx64, a);

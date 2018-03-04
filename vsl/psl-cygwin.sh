@@ -7,6 +7,7 @@ rm -f bpsl
 
 gcc -ggdb -O0 \
    -Wa,--defsym,__CYGWIN__=1 \
+   -no-pie \
    -DLINUX \
    -DBPSSIZE=20500000 \
    bps.c \

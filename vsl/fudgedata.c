@@ -28,12 +28,12 @@
  * If I find "# (*entry NAME expr NARGS)"
  * then just before the next line that is NOT a .globl directive and
  * not a label setting I will insert
- *      call acn
+ *      call _acn
  *      .asciz "NAME %Q %Q"
  * where the number of instances of %Q will match the number of arguments
  * up to 3.
  * and before any "ret" I will insert
- *      call acn
+ *      call _acn
  *      .asciz "NAME = %Q"
  *
  * This should call a trace routine for every function in the file. If
@@ -88,7 +88,7 @@ void write_lines(FILE *f2)
     {   const char *l = lines[i];
         if (nargs >= 0 && i == nlines-1)
         {   if (strstr(l, " ret") != NULL)
-            {   fprintf(f2, " call acn\n");
+            {   fprintf(f2, " call _acn\n");
                 fprintf(f2, " .asciz \"%s = %%Q\"\n", fname);
             }
             else if (nargs >= 0 &&
@@ -98,7 +98,7 @@ void write_lines(FILE *f2)
                      strstr(l, ".quad") == NULL &&
                      strstr(l, ".byte") == NULL &&
                      strstr(l, ".globl") == NULL)
-            {   fprintf(f2, " call acn\n");
+            {   fprintf(f2, " call _acn\n");
                 fprintf(f2, " .asciz \"%s", fname);
                 for (j=0; j<nargs && j<3; j++)
                     fprintf(f2, " %%Q");

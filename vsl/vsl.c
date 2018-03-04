@@ -2877,6 +2877,13 @@ LispObject Llinelength(LispObject lits, int nargs, ...)
     return prev;
 }
 
+LispObject Lprinbyte(LispObject lits, int nargs, ...)
+{   ARG1("prinbyte", x);  // Arg is an integer, send it to output
+                          // with no messing around.
+    putc(qfixnum(x), lispfiles[lispout]);
+    return x;
+}
+
 LispObject Lprin(LispObject lits, int nargs, ...)
 {   ARG1("prin", x);
     return prin(x);
@@ -2941,6 +2948,14 @@ LispObject Lcodechar(LispObject lits, int nargs, ...)
     if (!isFIXNUM(x)) return error1("bad arg for code-char", x);
     b[0] = (char)qfixnum(x); b[1] = 0;
     return lookup(b, 1, 1);
+}
+
+LispObject Lreadbyte(LispObject lits, int nargs, ...)
+{   int ch;
+    ARG0("readbyte");  // Read byte and return integer.
+    ch = curchar;
+    curchar = rdch();
+    return packfixnum(ch & 0xff);
 }
 
 LispObject Lreadch(LispObject lits, int nargs, ...)
@@ -3256,6 +3271,7 @@ struct defined_functions fnsetup[] =
     {"posn",       0,            (void *)Lposn},
     {"preserve",   0,            (void *)Lpreserve},
     {"prin",       0,            (void *)Lprin},
+    {"prinbyte",   0,            (void *)Lprinbyte},
     {"princ",      0,            (void *)Lprinc},
     {"print",      0,            (void *)Lprint},
     {"printc",     0,            (void *)Lprintc},
@@ -3266,6 +3282,7 @@ struct defined_functions fnsetup[] =
     {"rdf",        0,            (void *)Lrdf},
     {"rds",        0,            (void *)Lrds},
     {"read",       0,            (void *)Lread},
+    {"readbyte",   0,            (void *)Lreadbyte},
     {"readch",     0,            (void *)Lreadch},
     {"readline",   0,            (void *)Lreadline},
     {"iremainder", 0,            (void *)Lremainder},
@@ -3494,14 +3511,20 @@ int main(int argc, char *argv[])
 // I have some VERY simple command-line options here.
 //        -z         do a "cold start".
 //        -ifilename use that as image file
+//        -i filename ditto
+//        -ofilename and -o filename: specify output image
 //        filename   read from that file rather than from the standard input.
         if (strcmp(argv[i], "-z") == 0) coldstart = 1;
+        else if (strcmp(argv[i], "-i") == 0 && i<argc-1)
+            imagename = argv[++i];
+        else if (strcmp(argv[i], "-o") == 0 && i<argc-1)
+            outimagename = argv[++i];
         else if (strncmp(argv[i], "-i", 2) == 0) imagename=argv[i]+2;
         else if (strncmp(argv[i], "-o", 2) == 0) outimagename=argv[i]+2;
         else if (argv[i][0] != '-') inputfilename = argv[i], interactive = 0;
     }
     if (outimagename == NULL) outimagename = imagename;
-    printf("VSL version 1.00\n");
+    printf("VSL version 1.01\n");
     linepos = 0;
     for (int i=0; i>MAX_LISPFILES; i++) lispfiles[i] = 0;
     lispfiles[0] = stdin;   lispfiles[1] = stdout;

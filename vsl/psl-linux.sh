@@ -3,6 +3,7 @@
 rm -f bpsl
 
 gcc -ggdb -O0 \
+   -no-pie \
    -Wall \
    -DLINUX \
    -DBPSSIZE=20500000 \
