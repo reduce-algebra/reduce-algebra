@@ -481,9 +481,9 @@ cannot be parsed out of U or characters are left over after parsing
 an error occurs:
 ***** Poorly formed atom in COMPRESS
 
-In ESL, an ! preceding an identifier beginning with : followed by
-an upper-case letter is left in place to prevent it becoming an
-Emacs Lisp keyword, and LAMBDA, NIL and T are downcased."
+In ESL, ! preceding an identifier beginning with : followed by an
+upper-case letter or digit is retained to prevent the identifier
+becoming a keyword, and LAMBDA, NIL and T are downcased."
   ;; Concatenate the characters into a string and then handle any !
   ;; characters as follows:
   ;; A string begins with " and should retain any ! characters without
@@ -491,21 +491,23 @@ Emacs Lisp keyword, and LAMBDA, NIL and T are downcased."
   ;; A number begins with - or a digit and should not contain any !
   ;; characters.
   ;; Otherwise, assume an identifier. Any ! characters should be
-  ;; deleted, except that !!  should be replaced by !.
-  ;; However, a leading !: FOLLOWED BY A UC LETTER should be retained
-  ;; to prevent the Standard LISP identifier being an Elisp keyword.
+  ;; deleted, except that !! should be replaced by !.
+  ;; However, retain a leading !: followed by a uc letter or digit to
+  ;; prevent the Standard LISP identifier being an Elisp keyword.
   (let* ((s (mapconcat #'symbol-name u ""))
 		 (s1 (aref s 0)))
 	(cond ((eq s1 ?\")					; string
 		   (substring s 1 -1))
 		  ((or (eq s1 ?-)
 			   (and (>= s1 ?0) (<= s1 ?9)))	; number
-		   (string-to-number s))
+		   ;; Emacs does not accept .E as in 123.E-2 so delete ".":
+		   (string-to-number (replace-regexp-in-string "\.E" "E" s)))
 		  (t							; identifier
 		   (let ((l (length s)) (i 0) (ss nil) e)
-			 ;; Leave leading !: FOLLOWED BY A UC LETTER in place:
-			 (if (and (eq s1 ?!) (eq (aref s 1) ?:)
-					  (> l 2) (>= (setq e (aref s 2)) ?A) (<= e ?Z))
+			 ;; Retain leading !: if followed by uc letter or digit:
+			 (if (and (eq s1 ?!) (eq (aref s 1) ?:) (> l 2)
+					  (or (and (>= (setq e (aref s 2)) ?A) (<= e ?Z))
+						  (and (>= e ?0) (<= e ?9))))
 				 (setq i 2 ss '(?: ?!)))
 			 (while (< i l)				; delete ! but !! --> !
 			   (if (eq (setq e (aref s i)) ?!)
@@ -764,7 +766,7 @@ the name may be used subsequently as a variable."
 ;;; Variables and Bindings
 ;;; ======================
 
-(defun FLUID (idlist)					; really almost a no-op!
+(defun FLUID (idlist)
   "FLUID(IDLIST:id-list):NIL eval, spread
 The ids in IDLIST are declared as FLUID type variables (ids not
 previously declared are initialized to NIL). Variables in IDLIST
@@ -773,8 +775,9 @@ from GLOBAL to FLUID is not permissible and results in the error:
 ***** ID cannot be changed to FLUID"
   (mapc (lambda (x)
 		  (when (not (FLUIDP x))
-			(if (GLOBALP x) (error "%s cannot be changed to FLUID" x))
-			(set x nil)
+			(if (GLOBALP x) (error "%s cannot be changed to FLUID" x)) 
+			;; (set x nil)
+			(eval (list 'defvar x nil "Standard LISP fluid variable."))
 			(put x 'FLUID t)))
 		idlist)
   nil)
@@ -785,7 +788,7 @@ If U has been declared FLUID (by declaration only) T is returned,
 otherwise NIL is returned."
   (get u 'FLUID))
 
-(defun GLOBAL (idlist)					; really almost a no-op!
+(defun GLOBAL (idlist)
   "GLOBAL(IDLIST:id-list):NIL eval, spread
 The ids of IDLIST are declared global type variables. If an id
 has not been declared previously it is initialized to
@@ -796,7 +799,8 @@ results in the error:
   (mapc (lambda (x)
 		  (when (not (GLOBALP x))
 			(if (FLUIDP x) (error "%s cannot be changed to GLOBAL" x))
-			(set x nil)
+			;; (set x nil)
+			(eval (list 'defvar x nil "Standard LISP global variable."))
 			(put x 'GLOBAL t)))
 		idlist)
   nil)
