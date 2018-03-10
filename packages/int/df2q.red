@@ -39,16 +39,16 @@ symbolic procedure df2q p;
    % Converts distributed form P to standard quotient.
    begin scalar n,d,w,x,y,z;
       if null p then return nil ./ 1;
-      d:=denr lc p;
-      w:=red p;
+      d:=denr int_lc p;
+      w:=int_red p;
       while w do
        <<% Get denominator of answer as lcm of denoms in input.
          d := multf(d,quotf!-fail(denr lc w,gcdf(d,denr lc w)));
          w := red w>>;
       while p do begin
-           w := sqrt2top lc p;
-           x := multf(xl2f(lpow p,zlist,indexlist),multf(numr w,d));
-           if null x then return (p := red p);  % Shouldn't occur.
+           w := sqrt2top int_lc p;
+           x := multf(xl2f(int_lpow p,zlist,indexlist),multf(numr w,d));
+           if null x then return (p := int_red p);  % Shouldn't occur.
            y := denr w;
            z := quotf(x,y);
            if null z
@@ -57,7 +57,7 @@ symbolic procedure df2q p;
                       then <<d := multf(denr z,d); n := multf(denr z,n)>>;
                     z := numr z>>;
            n := addf(n,z);
-           p := red p
+           p := int_red p
         end;
       return tidy!-powersq (n ./ d)
    end;

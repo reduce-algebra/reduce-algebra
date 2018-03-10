@@ -516,7 +516,7 @@ static void report_at_end()
     double fn1 = (double)n1*(CSL_PAGE_SIZE/(1024.0*1024.0));
     double z = (100.0*n)/n1;
 #ifdef WINDOW_SYSTEM
-    {   report_space(gc_number, z);
+    {   report_space(gc_number, z, fn1);
         if (verbos_flag & 1 || force_verbos) trace_printf(
                 "At gc end about %.1f Mbytes of %.1f (%.1f%%) of heap is in use\n",
                 fn, fn1, z);

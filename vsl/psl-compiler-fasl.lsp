@@ -366,13 +366,17 @@
 
 % This mess yields a value in the range 0 to 127 for symbols that are
 % 1 character long if that character has ASCII code in the range 0 to 127.
+% I also force nil to yield 128. For other symbols I return 256 and hope that
+% the only call to this is from findidnumber!
 
 (de idinf (u)
    (cond ((null u) 128)
          ((cdr (explodec u)) 256)
          (t (char-code u))))
 
-% Redefine this because idinf used to be a macro...
+% Redefine this because idinf used to be a macro and so its expansion had
+% been inserted early, and a simple redefinition of idinf was thus
+% ineffective.
 
 (de findidnumber (u)
   (prog (i)
@@ -381,6 +385,121 @@
                       (t (put u fasl-idnumber-property* (setq i nextidnumber*))
                          (setq orderedidlist* (tconc orderedidlist* u))
                          (setq nextidnumber* (iadd1 nextidnumber*)) i)))))
+
+% OK, I am reconstructing my understanding by inspecting the code here..
+% this makes relocation information as 2 bits of tag within a 16, 32 or
+% 64 bit item, with the relocinf in the rest. Well in a 64-bit item
+% the tag has space for 10 bits. I think that is probably because it is in
+% the top 8 bits of where a fixnum could go, leaving the high 8 bits for the
+% tag that PSL uses for identifying sorts of data.
+%
+%(de makerelocword (reloctag relocinf)
+%  (iplus2 (ilsh reloctag 30) (ilsh (ilsh relocinf 2) -2)))
+
+(de makerelocword (reloctag relocinf)
+  (iplus2 (ilsh reloctag 30) (iland relocinf 16#3fffffff)))
+
+% My belief is that the "54" here is so that there can be 2 bits of tag
+% just below where there would be 8 bits of PSL tag in a PSL finum. Now
+% on a 32-bit system one might still imagine 8 bits of PSL tag and 2 bits
+% of relocation-type tag leaving 22 bits for the real information in a
+% relocation word. However on a 64-bit system with the PSL tag in bits
+% 56-63 and the relocation tag in bits 54 and 55 that leaves 54 rather then
+% 22 bits for useful purposes. So my suspicion is that somebody was not
+% thinking things fully through when they adapted this bit of code...
+
+%(de makerelocinf (reloctag relocinf)
+%  (iplus2 (ilsh reloctag 54) (field relocinf 42 22)))
+
+(de makerelocinf (reloctag relocinf)
+  (iplus2 (ilsh reloctag 54) (LOGAND relocinf 16#003fffffffffffff)))
+
+% For a word the stored inf just loses the top 2 bits of the inf to
+% leave 30 bits.
+% For the "inf" case it keeps the low 22 (or matbe 54!) bits of 64
+% For the halfword case I suspect it is keeping the bottom 14 bits of 32. On
+% a 64-bit system this feels like the low 14 bits up the upper 32 bits of the
+% word ???????? So I will comment this out and expect that on a 64-it
+% target it is never used - if it is I will need to think harder.
+
+% (de makerelochalfword (reloctag relocinf)
+%  (iplus2 (ilsh reloctag 14) (field relocinf 18 14)))
+
+% I think that the use if "field" here is not at all a help as regards
+% clarity! Simpler use of shift and mask operations will leave things
+% easier to understand!
+
+
+% (de getbittable (baseaddress bitoffset)
+%   (field (ilsh (byte baseaddress (ilsh bitoffset -2))
+%                (idifference (itimes2 (field bitoffset 62 2) 2) 6))
+%          62 2))
+%
+% (de putbittable (baseaddress bitoffset value2)
+%   (prog (m b c)
+%         (setq b
+%               (iland (byte baseaddress (setq m (ilsh bitoffset -2)))
+%                      (ilsh (idifference -1 (itimes2 3 256))
+%                       (idifference -2
+%                        (setq c (itimes2 (field bitoffset 62 2) 2))))))
+%         (putbyte baseaddress m (if (eq value2 0)
+%                    b
+%                    (ilor b (ilsh value2 (idifference 6 c)))))))
+
+% getbittable(base, offset) =
+%    w = byte(base, offset/4);   % 4 bitpairs per byte
+%    n = offset & 3;
+%    return (w >> (2*n)) & 3
+
+% I will find bits of this code look way neater if I have a right
+% shift operator as well as a left shift one.
+
+(de irsh (w n) (ilsh w (iminus n)))
+
+% I am writing these out as sequences of operations and avoiding
+% use of the PSL "field" selector because I believe that what I have here
+% is much easier for me to read and understand.
+
+(de getbittable (baseaddress bitoffset)
+  (prog (o b s)
+     (setq o (irsh bitoffset 2))   % 4 nybbles in each byte
+     (setq b (byte baseaddress o)) % the byte with data in
+     (setq s (itimes 2 (iland bitoffset 3))) % bit position
+     (setq s (idifference 6 s))    % make big-endian
+     (return (iland (irsh b s) 3))))
+
+(de putbittable (baseaddress bitoffset value2)
+  (prog (o b m s)
+     (setq o (irsh bitoffset 2))   % address of relevant byte
+     (setq b (byte baseaddress o)) % byte to work within
+     (setq s (itimes 2 (iland bitoffset 3))) % position within byte
+     (setq s (idifference 6 s))    % make big-endian
+     (setq m (idifference 16#ff (ilsh 3 n))) % mask
+     (setq b (iland b m))           % Clear existing
+     (setq b (ilor b (ilsh value2 n)))
+     (putbyte baseaddress o b)))
+
+% I will simulate byte vectors using vectors of 64-bit integers, and here
+% I will pack the bytes little-endian. Note that the implementation here
+% requires that the Lisp used for bootstrapping can work with full 64-bit
+% integers.
+
+(de byte (v n)
+  (prog (o s)
+     (setq o (irsh n 3))
+     (setq s (itimes2 (iland n 7) 8))
+     (return (iland 16#ff (irsh (getv v o) s)))))
+
+(de putbyte (v n val)
+  (prog (o s w)
+     (setq o (irsh n 3))
+     (setq s (itimes (iland n 7) 8))
+     (setq w (getv v o))
+     (setq m (idifference 16#ffffffffffffffff (ilsh 16#ff s)))
+     (setq w (iland w m))
+     (setq w (ilor w (ilsh val s)))
+     (putv v o w)
+     (return val)))
 
 
 

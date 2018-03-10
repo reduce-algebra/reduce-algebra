@@ -99,6 +99,39 @@ put('nthroot,'simpfn,'simpiden);
 % no simplification is used here.
 % Hope is that pbuild introduces it, and simplog removes it.
 
+% Part of the integration code involves support for a distributed
+% representation of expressions. These were originally implemented using
+% the constructors ".*" and ".+" (as used with Standard Forms) because the
+% meaning is rather similar. This overloading of those operators makes
+% some code analysis harder, and so now I will be using distinct names
+% for the constructors and accessors, as introduced here.
+
+flag('(newtok infix), 'eval);
+
+newtok '((!. !~ !*) int_mult);
+newtok '((!. !~ !+) int_add);
+
+infix .~*, .~+;
+
+inline procedure a .~* b;
+   a . b;
+
+inline procedure a .~+ b;
+   a . b;
+
+accessors (int_lpow . int_lc) . int_red, int_lt . !_;
+
+% I will probably really want to make the structure of an int_pow more
+% visible and explicit here...
+
+deflist('(
+  (int_mult (arrow (times int_power sq) int_term))
+  (int_add  (arrow (times int_term int_df) int_df))
+  (int_pow  (arrow int_df int_power))
+  (int_lc   (arrow int_df sq))
+  (int_red  (arrow int_df int_df))
+  ), 'procedure_type);
+
 endmodule;
 
 end;

@@ -337,6 +337,8 @@
 
 (dm land (u) (cons 'logand (cdr u)))
 (dm lor (u) (cons 'logor (cdr u)))
+(dm iland (u) (cons 'logand (cdr u)))
+(dm ilor (u) (cons 'logor (cdr u)))
 
 (dm string (u) (list 'list2string (cons 'list (cdr u))))
 

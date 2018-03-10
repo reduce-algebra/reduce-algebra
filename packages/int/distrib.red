@@ -40,17 +40,22 @@ imports interr,addsq,negsq,exptsq,simp,domainp,mk!*sq,addf,
 %           s.f.'s.  However lc df is a s.q. not a s.f. and lpow df is a
 %           list of the exponents of the variables.  This also makes
 %           lt df different.  Red df is d.f. as expected.
+%
+% NOTE 2018: As of March 2018 I am altering the code to use int_lt etc
+%           and constructors .~* and .~+ so that type analysis code can
+%           more readily spot the distinction between distributed and
+%           regular polynomials.
 %***********************************************************************
 
 symbolic procedure plusdf(u,v);
 % U and V are D.F.'s. Value is D.F. for U+V.
     if null u then v
         else if null v then u
-        else if lpow u=lpow v then
-            (lambda(x,y); if null numr x then y else (lpow u .* x) .+ y)
-            (!*addsq(lc u,lc v),plusdf(red u,red v))
-        else if orddf(lpow u,lpow v) then lt u .+ plusdf(red u,v)
-        else (lt v) .+ plusdf(u,red v);
+        else if int_lpow u=int_lpow v then
+            (lambda(x,y); if null numr x then y else (int_lpow u .~* x) .~+ y)
+            (!*addsq(int_lc u,int_lc v),plusdf(int_red u,int_red v))
+        else if orddf(int_lpow u,int_lpow v) then int_lt u .~+ plusdf(int_red u,v)
+        else (int_lt v) .+ plusdf(u,int_red v);
 
 symbolic procedure orddf(u,v);
 % U and V are the LPOW of a D.F. - i.e. the list of exponents.
@@ -69,7 +74,7 @@ symbolic procedure exptcompare(x,y);
 
 symbolic procedure negdf u;
     if null u then nil
-        else (lpow u .* negsq lc u) .+ negdf red u;
+        else (int_lpow u .~* negsq int_lc u) .~+ negdf int_red u;
 
 symbolic procedure multdf(u,v);
 % U and V are D.F.'s. Value is D.F. for U*V.
@@ -77,9 +82,9 @@ symbolic procedure multdf(u,v);
     if null u or null v then nil
     else begin scalar y;
         % use (a+b)*(c+d) = (a*c) + a*(c+d) + b*(c+d).
-        y:=multerm(lt u,lt v); %leading terms;
-        y:=plusdf(y,multdf(red u,v));
-        y:=plusdf(y,multdf((lt u) .+ nil,red v));
+        y:=multerm(int_lt u,int_lt v); %leading terms;
+        y:=plusdf(y,multdf(int_red u,v));
+        y:=plusdf(y,multdf((int_lt u) .~+ nil,int_red v));
         return y
     end;
 
@@ -144,7 +149,8 @@ symbolic procedure multdfconst(x,u);
       % else lpow u .* !*multsq(x,lc u) .+ multdfconst(x,red u);
       % FJW: Does not handle i^2 correctly, so ...
       % (cf. solve!-for!-u in module isolve)
-    else lpow u .* subs2q multsq(x,lc u) .+ multdfconst(x,red u);
+    else (int_lpow u .~* subs2q multsq(x,int_lc u)) .~+
+         multdfconst(x,int_red u);
 
 %symbolic procedure quotdfconst(x,u);
 %    multdfconst(!*invsq x,u);
@@ -178,28 +184,28 @@ symbolic procedure vp2df(var,exprn,z);
 % power into a distributed form.  Special care needed with square-roots.
     if eqcar(var,'sqrt) and (exprn>1) then
         mulpower(vp1(var,exprn,z),vp2 z)
-    else (vp1(var,exprn,z) .* (1 ./ 1)) .+ nil;
+    else (vp1(var,exprn,z) .~* (1 ./ 1)) .~+ nil;
 
 symbolic procedure dfconst q;
 % Makes a distributed form from standard quotient constant Q.
     if numr q=nil then nil
-        else ((vp2 zlist) .* q) .+ nil;
+        else ((vp2 zlist) .~* q) .~+ nil;
 
-% Df2q moved to a section of its own.
+% df2q moved to a section of its own.
 
 symbolic procedure df2printform p;
 % Convert to a standard form good enough for printing.
     if null p then nil
     else begin
         scalar mv,co;
-        mv:=xl2q(lpow p,zlist,indexlist);
+        mv:=xl2q(int_lpow p,zlist,indexlist);
         if mv=(1 ./ 1) then <<
             co:=lc p;
             if denr co=1 then return addf(numr co,
-                df2printform red p);
+                df2printform int_red p);
             co:=mksp(mk!*sq co,1);
             return (co .* 1) .+ df2printform red p >>;
-        co:=lc p;
+        co:=int_lc p;
         if not (denr co=1) then mv:=!*multsq(mv,1 ./ denr co);
         mv:=mksp(mk!*sq mv,1) .* numr co;
         return mv .+ df2printform red p

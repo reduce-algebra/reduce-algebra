@@ -103,7 +103,7 @@ void report_time(int32_t t, int32_t gct)
     if ((window_heading & 1) == 0) fwin_report_left(time_string);
 }
 
-void report_space(int n, double percent)
+void report_space(int n, double percent, double mbytes)
 {   sprintf(space_string, "[GC %d]:%.2f%%", n, percent);
     if ((window_heading & 4) == 0) fwin_report_right(space_string);
 }

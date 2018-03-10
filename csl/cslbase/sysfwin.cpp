@@ -138,10 +138,17 @@ void report_time(int32_t t, int32_t gct)
 #endif
 }
 
-void report_space(uint64_t n, double percent)
+void report_space(uint64_t n, double percent, double mbytes)
 {
 #ifndef EMBEDDED
-    sprintf(space_string, "[GC %" PRIu64 "]:%.2f%%", n, percent);
+    if (mbytes > 9500.0)
+        sprintf(space_string, "[GC %" PRIu64 "]:%.2f%% %dG",
+            n, percent, (int)((mbytes+500.0)/1000.0));
+    else if (mbytes > 700.0)
+        sprintf(space_string, "[GC %" PRIu64 "]:%.2f%% %.1fG",
+            n, percent, mbytes/1000.0);
+    else sprintf(space_string, "[GC %" PRIu64 "]:%.2f%% %dM",
+        n, percent, (int)(mbytes + 0.5));
     if ((window_heading & 4) == 0) fwin_report_right(space_string);
 #endif
 }

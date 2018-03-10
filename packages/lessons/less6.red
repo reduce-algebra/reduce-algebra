@@ -295,10 +295,10 @@ generally have the same address, and similarly for S1 vs. S2.  The
 comparison operator "=", which is an alias for "EQUAL", does a general
 test for identical s-expressions, which need not be merely two pointers
 to the same address.  Since "=" is built-in, compiled, and crucial, I
-will define my own differently-named version denoted ".=" as follows:;
+will define my own differently-named version denoted "..=" as follows:;
 
 pause;
-newtok '((!. !=) myequal);
+newtok '((!. !. !=) myequal);
 infix eqatom, myequal;
 precedence myequal, equal;
 precedence eqatom,eq;
@@ -328,7 +328,7 @@ judgement about where best to so subdivide tasks.  This psychological
 divide-and-conquer programming technique is important in most other
 programming languages too.
 
-".=" is different from our previous examples in that ".=" recurses down
+"..=" is different from our previous examples in that "..=" recurses down
 the CAR as well as down the CDR of an s-expression;
 
 pause;
