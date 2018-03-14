@@ -483,7 +483,9 @@ an error occurs:
 
 In ESL, ! preceding an identifier beginning with : followed by an
 upper-case letter or digit is retained to prevent the identifier
-becoming a keyword, and LAMBDA, NIL and T are downcased."
+becoming a keyword, and LAMBDA, NIL and T are downcased.
+Also, !\ preceding an identifier is removed and the identifier is
+downcased to allow direct use of Emacs Lisp functions."
   ;; Concatenate the characters into a string and then handle any !
   ;; characters as follows:
   ;; A string begins with " and should retain any ! characters without
@@ -496,13 +498,13 @@ becoming a keyword, and LAMBDA, NIL and T are downcased."
   ;; prevent the Standard LISP identifier being an Elisp keyword.
   (let* ((s (mapconcat #'symbol-name u ""))
 		 (s1 (aref s 0)))
-	(cond ((eq s1 ?\")					; string
+	(cond ((eq s1 ?\")					; STRING
 		   (substring s 1 -1))
 		  ((or (eq s1 ?-)
-			   (and (>= s1 ?0) (<= s1 ?9)))	; number
+			   (and (>= s1 ?0) (<= s1 ?9)))	; NUMBER
 		   ;; Emacs does not accept .E as in 123.E-2 so delete ".":
 		   (string-to-number (replace-regexp-in-string "\.E" "E" s)))
-		  (t							; identifier
+		  (t							; IDENTIFIER
 		   (let ((l (length s)) (i 0) (ss nil) e)
 			 ;; Retain leading !: if followed by uc letter or digit:
 			 (if (and (eq s1 ?!) (eq (aref s 1) ?:) (> l 2)
@@ -518,8 +520,10 @@ becoming a keyword, and LAMBDA, NIL and T are downcased."
 			   (setq i (1+ i)))
 			 (setq ss (apply #'string (reverse ss)))
 			 (if (member ss '("LAMBDA" "NIL" "T"))
-				 (setq ss (downcase ss)))
-			 (make-symbol ss) )))))		; uninterned symbol
+				 (setq ss (downcase ss))
+			   (if (eq (aref ss 0) ?\\)
+				   (setq ss (downcase (substring ss 1)))))
+			 (make-symbol ss))))))		; uninterned symbol
 
 (defun EXPLODE (u)
   "EXPLODE(U:{atom}-{vector}):id-list eval, spread
@@ -610,13 +614,14 @@ instead)."
   ;; MUST return nil if u is not a symbol.
   (if (symbolp u) (get u ind)))
 
-(defalias 'PUT 'put
+(defmacro PUT (u ind prop)
   "PUT(U:id, IND:id, PROP:any):any eval, spread
 The indicator IND with the property PROP is placed on the
 property list of the id U. If the action of PUT occurs, the value
 of PROP is returned. If either of U and IND are not ids the type
 mismatch error will occur and no property will be placed. PUT
-cannot be used to define functions (use PUTD instead).")
+cannot be used to define functions (use PUTD instead)."
+  `(put ,u ,ind ,prop))
 
 (defun REMFLAG (u v)
   "REMFLAG(U:any-list, V:id):NIL eval, spread
@@ -664,7 +669,7 @@ compiled. The name of the defined function is returned.
 FEXPR PROCEDURE DE(U);
    PUTD(CAR U, 'EXPR, LIST('LAMBDA, CADR U, CADDR U));"
   (declare (debug (&define name lambda-list def-body)))
-  `(progn
+  `(let ((byte-compile-warnings '(not free-vars)))
 	 (defun ,fname ,params ,fn)
 	 (put ',fname 'SL--FTYPE 'EXPR)
 	 (if *COMP (byte-compile ',fname))
@@ -709,14 +714,16 @@ FNAME is a defined function then the dotted-pair
 is returned."
   (let ((def (symbol-function fname)))
 	(if def
-		(let ((type (get fname 'SL--FTYPE)))
-		  (if (eq type 'MACRO)
-			  ;; def = (macro lambda (&rest u) (setq u (fname . u)) body-form)
-			  ;;  -->  (MACRO lambda (u) body-form)
-			  `(MACRO lambda ,(CDADDR def) ,@(CDDDDR def))
-			;; def = (lambda (u) body-form) *or* symbol
-			;;  -->  (EXPR lambda (u) body-form) *or* (EXPR . symbol)
-			(cons 'EXPR def))))))
+		(if (eq (get fname 'SL--FTYPE) 'MACRO)
+			;; def = (macro lambda (&rest u) (setq u (fname . u)) body-form)
+			;;  -->  (MACRO lambda (u) body-form)
+			;; Macro may be compiled, so...
+			(if (consp (setq def (cdr def))) ; not compiled
+				`(MACRO lambda ,(CDADR def) ,@(CDDDR def))
+			  (cons 'MACRO def)) ; I hope this will suffice for compiled macros!
+		  ;; def = (lambda (u) body-form) *or* symbol
+		  ;;  -->  (EXPR lambda (u) body-form) *or* (EXPR . symbol)
+		  (cons 'EXPR def)))))
 
 (defun PUTD (fname type body)
   "PUTD(FNAME:id, TYPE:ftype, BODY:function):id eval, spread
@@ -738,7 +745,7 @@ the !*COMP global variable is non-NIL."
 	  (error "%s is a non-local variable" fname))
   (if (symbol-function fname)
 	  (message "*** %s redefined" fname))
-  ;; body = (lambda (u) body-form)
+  ;; body = (lambda (u) body-form) or function object
   (fset fname (if (eq type 'MACRO)
 				  (let ((u (CAADR body))) ; must be a symbol!
 					`(macro
@@ -747,9 +754,12 @@ the !*COMP global variable is non-NIL."
 					  (setq ,u (cons ',fname ,u))
 					  ;; Splice in body-form:
 					  ,@(cddr body)))
-				`(lambda ,@(cdr body))))
+				;; `(lambda ,@(cdr body))))
+				body))		  ; no longer need to downcase lambda here
   (put fname 'SL--FTYPE type)
-  (if *COMP (byte-compile fname))
+  (if *COMP
+	  (let ((byte-compile-warnings '(not free-vars)))
+		(byte-compile fname)))
   fname)
 
 (defun REMD (fname)
@@ -2046,20 +2056,51 @@ Then evaluate it and print value into *Standard LISP* buffer."
 
 (defalias 'CONCAT 'concat)
 
+;; This function does not appear in the PSL manual either; I have no
+;; idea where it is supposed to be defined!
+(defalias 'RASSOC 'rassoc)
+
 ;; Function PRETTYPRINT is needed for ON DEFN to work.  It is also
 ;; defined in module pretty in file util.red, which will override this
 ;; definition if it is loaded.
 (defalias 'PRETTYPRINT 'pp)
 
+(defun EXPLODE2 (u)
+  "(explode2 U:atom-vector): id-list expr
+Prin2 version of explode."
+  (seq-map
+   (lambda (c) (intern (string c)))
+   (prin1-to-string u t)))
+
+(defun INT2ID (i)
+  "(int2id I:integer): id expr
+Converts an integer to an id; this refers to the I’th id in the id space. Since
+0 ... 255 correspond to ASCII characters, int2id with an argument in this
+range converts an ASCII code to the corresponding single character id. The
+id NIL is always found by (int2id 128)."
+  ;; I'm guessing that the id should be interned! If not, use make-symbol.
+  (intern (string i)))
+
 (defun STRING-DOWNCASE (u)
   "Convert identifier or string U to a lower-case string."
   (downcase (if (symbolp u) (symbol-name u) u)))
 
-;; This function is also defined in "rend.red" in a way that is less
+;; STRING-DOWNCASE is also defined in "rend.red" in a way that is less
 ;; efficient and doesn't work correctly because of the special way the
 ;; identifier T is currently downcased by COMPRESS, so ...
 
 (FLAG '(STRING-DOWNCASE) 'LOSE)
+
+(defun LOAD-MODULE (m)
+  "Load the compiled REDUCE module file \"fasl/M.elc\"."
+  ;; Not currently used in the REDUCE distribution.
+  (load-file (concat "fasl/" (STRING-DOWNCASE m) ".elc")))
+
+(defun EVLOAD (l)
+  "Load each compiled REDUCE module in the list of identifiers L."
+  ;; symbolic procedure evload l;
+  ;;    for each m in l do load!-module m;
+  (mapc #'LOAD-MODULE l))
 
 (defun TIME ()
   "(time): integer expr
@@ -2097,8 +2138,9 @@ NAME should be an identifier or string."
 			 ;; Don't need prettyprinted Lisp output; print
 			 ;; output should suffice:
 			 (defn-print #'(lambda (x) (print x faslout-stream)))
-			 ;; Functions are often used before they are defined, so...
-			 (byte-compile-warnings '(unresolved)))
+			 ;; Functions are often used before they are defined and several
+			 ;; modules refer to undefined free variables, so...
+			 (byte-compile-warnings '(not free-vars unresolved)))
 		(setq name (STRING-DOWNCASE name))
 		(princ (format "*** Compiling %s ..." name))
 		;; Output the Emacs Lisp version of the file:
@@ -2123,40 +2165,80 @@ NAME should be an identifier or string."
 (FLAG '(MKFASL) 'OPFN)					; make it a symbolic operator
 (FLAG '(MKFASL) 'NOVAL)					; just return Lisp value
 
+;; (defun FASLOUT (name)
+;;   "Compile subsequent input into ESL FASL file \"NAME.elc\".
+;; NAME should be an identifier or string."
+;;   ;; Output subsequent code as Lisp to a temporary file until FASLEND
+;;   ;; evaluated.
+;;   (if (fboundp 'BEGIN1)
+;; 	  (let* (faslout-filehandle faslout-stream name.el
+;; 			 (*DEFN t)
+;; 			 ;; Don't need prettyprinted Lisp output; print
+;; 			 ;; output should suffice:
+;; 			 (defn-print #'(lambda (x) (print x faslout-stream)))
+;; 			 ;; Functions are often used before they are defined, so...
+;; 			 (byte-compile-warnings '(unresolved)))
+;; 		(setq name (STRING-DOWNCASE name))
+;; 		(princ (format "FASLOUT %s: IN files; or type in expressions.
+;; When all done, execute FASLEND;\n\n" name))
+;; 		;; Output the Emacs Lisp version of the file:
+;; 		(setq faslout-filehandle (OPEN (setq name.el (concat name ".el")) 'OUTPUT))
+;; 		(setq faslout-stream (car faslout-filehandle))
+;; 		(advice-add 'PRETTYPRINT :override defn-print)
+;; 		(catch 'faslend
+;; 		  (unwind-protect
+;; 			  (BEGIN1)
+;; 			(advice-remove 'PRETTYPRINT defn-print)
+;; 			(CLOSE faslout-filehandle)))
+;; 		;; Compile and then delete the Emacs Lisp version of the file:
+;; 		(princ (format "*** Compiling %s ..." name))
+;; 		(if (byte-compile-file name.el)
+;; 			(progn
+;; 			  (delete-file name.el)
+;; 			  (princ " succeeded\n")
+;; 			  nil)
+;; 		  (error "***** Error during compilation of %s" name)))))
+
+;; (FLAG '(FASLOUT) 'OPFN)
+;; (FLAG '(FASLOUT) 'NOVAL)
+
+;; (defun FASLEND ()
+;;   "Terminate a previous FASLOUT and generate the .elc file."
+;;   ;; Only allowed after a previous FASLOUT.
+;;   ;; Close the temporary Lisp output file and then compile it.
+;;   (throw 'faslend nil))
+
+;; (PUT 'FASLEND 'STAT 'ENDSTAT)
+;; (FLAG '(FASLEND) 'EVAL)				 ; must be evaluated in this model
+
+(defvar *DEFN)
+(defvar *INT)
+(defvar *writingfaslfile nil
+  "Set to t by FASLOUT and reset to nil by FASLEND.")
+
+(defvar sl--faslout-filehandle)
+(defvar sl--faslout-name.el)
+(defvar sl--faslout-stream)
+
+;; Don't need prettyprinted Lisp output; print output should suffice:
+(defconst defn-print #'(lambda (x) (print x sl--faslout-stream)))
+
 (defun FASLOUT (name)
   "Compile subsequent input into ESL FASL file \"NAME.elc\".
 NAME should be an identifier or string."
   ;; Output subsequent code as Lisp to a temporary file until FASLEND
   ;; evaluated.
-  (if (fboundp 'BEGIN1)
-	  (let* (faslout-filehandle faslout-stream name.el
-			 (*DEFN t)
-			 ;; Don't need prettyprinted Lisp output; print
-			 ;; output should suffice:
-			 (defn-print #'(lambda (x) (print x faslout-stream)))
-			 ;; Functions are often used before they are defined, so...
-			 (byte-compile-warnings '(unresolved)))
-		(setq name (STRING-DOWNCASE name))
-		(princ (format "FASLOUT %s: IN files; or type in expressions.
-When all done, execute FASLEND;\n\n" name))
-		;; Output the Emacs Lisp version of the file:
-		(setq faslout-filehandle (OPEN (setq name.el (concat name ".el")) 'OUTPUT))
-		(setq faslout-stream (car faslout-filehandle))
-		(advice-add 'PRETTYPRINT :override defn-print)
-		(catch 'faslend
-		  (unwind-protect
-			  (BEGIN1)
-			(advice-remove 'PRETTYPRINT defn-print)
-			(CLOSE faslout-filehandle)))
-		;; Compile and then delete the Emacs Lisp version of the file:
-		(princ (format "*** Compiling %s ..." name))
-		(if (byte-compile-file name.el)
-			(progn
-			  (delete-file name.el)
-			  (princ " succeeded\n")
-			  nil)
-		  (error "***** Error during compilation of %s" name)))))
-
+  (setq name (STRING-DOWNCASE name))
+  (setq *writingfaslfile t *DEFN t)
+  (if *INT
+	  (princ (format "FASLOUT %s: IN files; or type in expressions.
+When all done, execute FASLEND;\n\n" name)))
+  ;; Output the Emacs Lisp version of the file:
+  (setq sl--faslout-filehandle
+		(OPEN (setq sl--faslout-name.el (concat name ".el")) 'OUTPUT))
+  (setq sl--faslout-stream (car sl--faslout-filehandle))
+  (advice-add 'PRETTYPRINT :override defn-print))
+	
 (FLAG '(FASLOUT) 'OPFN)
 (FLAG '(FASLOUT) 'NOVAL)
 
@@ -2164,7 +2246,20 @@ When all done, execute FASLEND;\n\n" name))
   "Terminate a previous FASLOUT and generate the .elc file."
   ;; Only allowed after a previous FASLOUT.
   ;; Close the temporary Lisp output file and then compile it.
-  (throw 'faslend nil))
+  ;; Functions are often used before they are defined and several
+  ;; modules refer to undefined free variables, so...
+  (let ((byte-compile-warnings '(not free-vars unresolved)))
+	(advice-remove 'PRETTYPRINT defn-print)
+	(CLOSE sl--faslout-filehandle)
+	(setq *writingfaslfile nil *DEFN nil)
+	;; Compile and then delete the Emacs Lisp version of the file:
+	(princ (format "*** Compiling %s ..." sl--faslout-name.el))
+	(if (byte-compile-file sl--faslout-name.el)
+		(progn
+		  (delete-file sl--faslout-name.el)
+		  (princ " succeeded\n")
+		  nil)
+	  (error "***** Error during compilation of %s" sl--faslout-name.el))))
 
 (PUT 'FASLEND 'STAT 'ENDSTAT)
 (FLAG '(FASLEND) 'EVAL)				 ; must be evaluated in this model
