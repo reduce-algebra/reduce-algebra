@@ -1,38 +1,55 @@
-;; Build ESL REDUCE dynamically in main memory without the use of fasl
-;; files.  Beware that this file is a mix of Emacs Lisp and REDUCE
-;; syntax.  It is based on the REDUCE 3.3 file `dbuild.sl'.
+;;; dbuild.el --- build ESL REDUCE "in core" without use of fasl files.
+;;; Contains a mix of Emacs Standard LISP and REDUCE source code.
 
-(WRS (OPEN "dbuild-log.txt" 'OUTPUT))
+;;; Author: Anthony C. Hearn.
+;;; Revised for ESL REDUCE by Francis J. Wright.
 
+(WRS (OPEN "log/dbuild.log" 'OUTPUT))
+
+;; Assume esl.el and boot.el are already compiled, and ensure they are
+;; loaded:
 (require 'boot)
-
-;; Load enough modules to run "alg.tst":
-(setq MODULES* '(rlisp rend arith mathlib alg1 alg2 ; entry
-		  matr hephys)) ; util int solve ezgcd factor rcref
-		  ; rsltnt bfloat))
-
-(setq *INT nil)					   ; prevents input buffer being saved
-
-(setq *MSG nil)
-
-(setq *COMP t)
 
 (setq *ARGNOCHK t)
 
-(BEGIN2)
-h := open("rlisp.red",'input); rds h;
-(BEGIN2)
-close h; h := open("eslrend.red",'input); rds h;
-(BEGIN2)
-close h; for each x in cddr modules!* do infile concat(id2string x,".red");
-end;
+(setq *INT nil)					  ; Prevents input buffer being saved.
 
-(makunbound 'H)
+(setq *MSG nil)
 
-;; (load init!-file)
+(setq *COMP t)			  ; It's much faster if we compile everything!
+
+(BEGIN2)
+RDS(XXX := OPEN("eslprolo.red",'INPUT));
+(CLOSE XXX)
+
+(BEGIN2)
+RDS(XXX := OPEN("eslbuild.red",'INPUT));
+(CLOSE XXX)
+
+(LOAD-PACKAGE-SOURCES 'RLISP 'RLISP)
+
+(BEGIN2)
+RDS(XXX := OPEN("eslrend.red",'INPUT));
+(CLOSE XXX)
+
+(LOAD-PACKAGE-SOURCES 'POLY 'POLY)
+
+(LOAD-PACKAGE-SOURCES 'ALG 'ALG)
+
+(LOAD-PACKAGE-SOURCES 'ARITH 'ARITH) ; Needed by roots, specfn*, (psl).
+
+;; (LOAD-PACKAGE-SOURCES 'ENTRY 'SUPPORT)
+
+;; (LOAD-PACKAGE-SOURCES 'REMAKE 'SUPPORT)
 
 (setq *COMP nil)
 
 (CLOSE (WRS nil))
 
 (INITREDUCE)
+
+;; The following lines don't currently get read!
+
+(setq DATE* (DATE))
+
+(setq VERSION* "Bootstrapping REDUCE")

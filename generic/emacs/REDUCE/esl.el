@@ -2133,12 +2133,6 @@ id NIL is always found by (int2id 128)."
   "Convert identifier or string U to a lower-case string."
   (downcase (if (symbolp u) (symbol-name u) u)))
 
-;; STRING-DOWNCASE is also defined in "rend.red" in a way that is less
-;; efficient and doesn't work correctly because of the special way the
-;; identifier T is currently downcased by COMPRESS, so ...
-
-(FLAG '(STRING-DOWNCASE) 'LOSE)
-
 (defun LOAD-MODULE (m)
   "Load the compiled REDUCE module file \"fasl/M.elc\"."
   ;; Not currently used in the REDUCE distribution.

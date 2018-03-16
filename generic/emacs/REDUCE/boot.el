@@ -1,13 +1,14 @@
-;;; boot.el --- ESL (Emacs Standard LISP) version of REDUCE 3.3 "boot.red"
+;;; boot.el --- ESL (Emacs Standard LISP) version of REDUCE 3.8 "boot.sl"
 
 ;; Edited by FJW to use upper case (except for lambda, nil and t) and
-;; Emacs Lisp syntax, i.e. with ! as an escape replaced by \.  The
+;; Emacs Lisp syntax, i.e. with ! as an escape replaced by \ (although
+;; most resulting escapes are not necessary in Emacs Lisp).  The
 ;; lower-case symbols lambda, nil and t are retained because I can't
 ;; find any good way to implement LAMBDA as a synonym for lambda, and
 ;; NIL cannot be used to represent an empty argument list or in quoted
 ;; expressions.  Note that the second ! in !! must be retained.
 
-(require 'sl)
+(require 'esl)
 
 ;; For the Emacs Lisp compiler:
 (defvar CURSYM*)
@@ -23,13 +24,17 @@
   (setq max-lisp-eval-depth 2000
 		max-specpdl-size 2500))
 
-;;;% Standard LISP equivalent of BOOT.RED.
+; Standard LISP BOOT File.
 
-(FLUID '(\*BLOCKP \*MODE))
+; Author: Anthony C. Hearn.
+
+; Copyright (c) 1991 RAND.  All Rights Reserved.
+
+(FLUID '(FNAME\* \*BLOCKP \*LOWER \*MODE))
 
 (GLOBAL '(OLDCHAN\*))
 
-(GLOBAL '(CRCHAR\* CURSYM\* FNAME\* NXTSYM\* TTYPE\* \$EOL\$))
+(GLOBAL '(\*RAISE CRCHAR\* CURSYM\* NXTSYM\* TTYPE\* \$EOL\$))
 
 (PUT '\; 'SWITCH\* '(nil \*SEMICOL\*))
 
@@ -135,16 +140,17 @@ PR4   (COND ((NULL (EQUAL Y 0)) (GO PR1)) (t (RETURN (CAR V)))) ))
             (t X)))) )
 
 (DE RRDLS nil
-   (PROG (X)
-      (SETQ X (RREAD))
+   (PROG (X R)
+A     (SETQ X (RREAD))
       (COND
-         ((NULL (EQUAL TTYPE\* 3)) (GO A))
-         ((EQ X '\)) (RETURN nil))
-         ((NULL (EQ X '\.)) (GO A)))
+         ((NULL (EQUAL TTYPE\* 3)) (GO B))
+         ((EQ X '\)) (RETURN (REVERSE R)))   ; REVERSIP not yet defined.
+         ((NULL (EQ X '\.)) (GO B)))
       (SETQ X (RREAD))
       (TOKEN)
-      (RETURN X)
-A     (RETURN (CONS X (RRDLS)))) )
+      (RETURN (NCONC (REVERSE R) X))
+B     (SETQ R (CONS X R))
+      (GO A)))
 
 (DE TOKEN nil
    (PROG (X Y)
@@ -181,7 +187,7 @@ QUOTE (SETQ CRCHAR\* (READCH))
       (SETQ NXTSYM\* (LIST 'QUOTE (RREAD)))
       (SETQ TTYPE\* 4)
       (GO C)
-STRING(PROG (RAISE)
+STRING(PROG (RAISE \*LOWER)
          (SETQ RAISE \*RAISE)
          (SETQ \*RAISE nil)
    STRINX(SETQ Y (CONS X Y))
@@ -204,7 +210,8 @@ D     (SETQ NXTSYM\* X)
 
 (DE MKSTRNG (U) U)
 
-(DE SEPRP (U) (OR (EQ U '\ ) (EQ U \$EOL\$)))
+(DE SEPRP (U) (OR (EQ U '\ ) (EQ U \$EOL\$) (EQ U '\
+)))
 
 (DE SCAN nil
    (PROG (X Y)
@@ -285,7 +292,7 @@ A     (SETQ HOLD (NCONC HOLD (LIST (XREAD1 nil))))
 
 (DE MKPROG (U V) (CONS 'PROG (CONS U V)))
 
-(DE GOSTAT nil 
+(DE GOSTAT nil
    (PROG (X) (SCAN) (SETQ X (SCAN)) (SCAN) (RETURN (LIST 'GO X))))
 
 (PUT 'GO 'STAT 'GOSTAT)
@@ -293,9 +300,9 @@ A     (SETQ HOLD (NCONC HOLD (LIST (XREAD1 nil))))
 (DE RLIS nil
    (PROG (X)
       (SETQ X CURSYM\*)
-      (RETURN (COND ((NOT (FLAGP (SCAN) 'DELIM))
-                     (LIST X (LIST 'QUOTE (LIST (XREAD1 t)))))
-                    (t (LIST X))))))
+      (RETURN (LIST X (LIST 'QUOTE (LIST (XREAD t)))))))
+
+(DE ENDSTAT nil (PROG (X) (SETQ X CURSYM\*) (SCAN) (RETURN (LIST X))))
 
 (provide 'boot)
 
