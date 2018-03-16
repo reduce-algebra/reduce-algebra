@@ -590,12 +590,55 @@ having properties, flags, functions and the like. U is returned."
 ;;; Property List Functions
 ;;; =======================
 
+;; In file "rlisp/superv.red" is the statement
+;; 
+;; FLAG('(DEFLIST FLAG FLUID GLOBAL REMFLAG REMPROP UNFLUID),'EVAL);
+;; 
+;; which (I think) means that the functions listed are evaluated even
+;; after `ON DEFN', which is necessary to ensure that some source code
+;; reads correctly.  However, `REMPROP' is usually followed by `PUT'
+;; to reinstate whatever property was removed, but `PUT' is not
+;; flagged `EVAL', so this reinstatement doesn't happen because
+;; evaluating `PUT' at the wrong time can cause similar problems,
+;; e.g. with `rlisp88'.  Hence, viewing code with `ON DEFN' can break
+;; subsequent code.  For example, inputting "rlisp/module.red" with
+;; `ON DEFN' removes the `STAT' property from `LOAD_PACKAGE', which
+;; then no longer works correctly.  This is a major problem for the
+;; way I generate fasl files!
+;; 
+;; I therefore provide a workaround to make the functions DEFLIST,
+;; FLAG, REMFLAG and REMPROP save the property list of any identifier
+;; before modifying it if it has not already been saved, and provide a
+;; function to reinstate the saved property list.  I use this facility
+;; when generating fasl files and in `OFF DEFN' (see "eslrend.red"),
+;; so that ESL REDUCE should be immune to this `ON DEFN' side-effect.
+
+(defvar *DEFN nil)
+
+(defvar sl--saved-plist-alist nil
+  "Association list of symbols and their saved property lists.
+Its value should normally be nil, except while ON DEFN.")
+
+(defun sl--save-plist (symbol)
+  "Save property list of symbol SYMBOL if not already saved."
+  (if (not (assq symbol sl--saved-plist-alist))
+	  (push (cons symbol (copy-tree (symbol-plist symbol)))
+			sl--saved-plist-alist)))
+
+(defun SL-REINSTATE-PLISTS ()
+  "Reinstate all property lists saved during ON DEF."
+  (mapc (lambda (s) (setplist (car s) (cdr s)))
+		sl--saved-plist-alist)
+  (setq sl--saved-plist-alist nil))
+
+
 (defun FLAG (u v)
   "FLAG(U:id-list, V:id):NIL eval, spread
 U is a list of ids which are flagged with V. The effect of FLAG is
 that FLAGP will have the value T for those ids of U which were
 flagged. Both V and all the elements of U must be identifiers or the
 type mismatch error occurs."
+  (if *DEFN (mapc #'sl--save-plist u))
   (mapc (lambda (x) (put x v t)) u)
   nil)
 
@@ -628,6 +671,7 @@ cannot be used to define functions (use PUTD instead)."
 Removes the flag V from the property list of each member of the
 list U. Both V and all the elements of U must be ids or the type
 mismatch error will occur."
+  (if *DEFN (mapc #'sl--save-plist u))
   (mapc (lambda (x) (put x v nil)) u)
   nil)
 
@@ -637,6 +681,7 @@ Removes the property with indicator IND from the property list of U.
 Returns the removed property or NIL if there was no such indicator."
   (prog1
 	  (get u ind)
+	(if *DEFN (sl--save-plist u))
 	(put u ind nil)))
 
 
@@ -669,10 +714,12 @@ compiled. The name of the defined function is returned.
 FEXPR PROCEDURE DE(U);
    PUTD(CAR U, 'EXPR, LIST('LAMBDA, CADR U, CADDR U));"
   (declare (debug (&define name lambda-list def-body)))
-  `(let ((byte-compile-warnings '(not free-vars)))
+  `(progn
 	 (defun ,fname ,params ,fn)
 	 (put ',fname 'SL--FTYPE 'EXPR)
-	 (if *COMP (byte-compile ',fname))
+	 (if *COMP
+		 (let ((byte-compile-warnings '(not free-vars unresolved)))
+		   (byte-compile ',fname)))
 	 ',fname))
 
 ;; *** I'm hoping df is not actually required! ***
@@ -758,7 +805,7 @@ the !*COMP global variable is non-NIL."
 				body))		  ; no longer need to downcase lambda here
   (put fname 'SL--FTYPE type)
   (if *COMP
-	  (let ((byte-compile-warnings '(not free-vars)))
+	  (let ((byte-compile-warnings '(not free-vars unresolved)))
 		(byte-compile fname)))
   fname)
 
@@ -848,7 +895,7 @@ MACRO PROCEDURE SETQ(X);
   (declare (debug setq))
   `(setq ,variable ,value))
 
-(defun UNFLUID (idlist)					; really a no-op!
+(defun UNFLUID (idlist)
   "UNFLUID(IDLIST:id-list):NIL eval, spread
 The variables in IDLIST that have been declared as FLUID
 variables are no longer considered as fluid variables. Others are
@@ -1317,6 +1364,7 @@ EXPR PROCEDURE DEFLIST(U, IND);
       ELSE << PUT(CAAR U, IND, CADAR U);
               CAAR U >> . DEFLIST(CDR U, IND);"
   (when u
+	(if *DEFN (sl--save-plist (caar u)))
 	(put (caar u) ind (CADAR u))
 	(cons (caar u) (DEFLIST (cdr u) ind))))
 
@@ -2060,11 +2108,6 @@ Then evaluate it and print value into *Standard LISP* buffer."
 ;; idea where it is supposed to be defined!
 (defalias 'RASSOC 'rassoc)
 
-;; Function PRETTYPRINT is needed for ON DEFN to work.  It is also
-;; defined in module pretty in file util.red, which will override this
-;; definition if it is loaded.
-(defalias 'PRETTYPRINT 'pp)
-
 (defun EXPLODE2 (u)
   "(explode2 U:atom-vector): id-list expr
 Prin2 version of explode."
@@ -2133,7 +2176,8 @@ The date in the form \"day-month-year\"
   "Produce an ESL FASL (.elc) file for the module NAME.
 NAME should be an identifier or string."
   (if (fboundp 'BEGIN1)
-	  (let* (*INT *ECHO faslout-filehandle faslout-stream ichan oldichan name.el
+	  (let* (*INT *ECHO faslout-filehandle faslout-stream ichan oldichan
+			 name.el sl--saved-plist-alist
 			 (*DEFN t)
 			 ;; Don't need prettyprinted Lisp output; print
 			 ;; output should suffice:
@@ -2153,7 +2197,8 @@ NAME should be an identifier or string."
 			(BEGIN1)
 		  (advice-remove 'PRETTYPRINT defn-print)
 		  (CLOSE ichan) (RDS oldichan)
-		  (CLOSE faslout-filehandle))
+		  (CLOSE faslout-filehandle)
+		  (SL-REINSTATE-PLISTS))
 		;; Compile and then delete the Emacs Lisp version of the file:
 		(if (byte-compile-file name.el)
 			(progn
@@ -2211,7 +2256,6 @@ NAME should be an identifier or string."
 ;; (PUT 'FASLEND 'STAT 'ENDSTAT)
 ;; (FLAG '(FASLEND) 'EVAL)				 ; must be evaluated in this model
 
-(defvar *DEFN)
 (defvar *INT)
 (defvar *writingfaslfile nil
   "Set to t by FASLOUT and reset to nil by FASLEND.")
@@ -2220,8 +2264,14 @@ NAME should be an identifier or string."
 (defvar sl--faslout-name.el)
 (defvar sl--faslout-stream)
 
-;; Don't need prettyprinted Lisp output; print output should suffice:
-(defconst defn-print #'(lambda (x) (print x sl--faslout-stream)))
+(defun sl--faslout-prettyprint-override (x)
+  "Prettyprint X with output to the faslout stream.
+Used for faslout Lisp generation, which must generate Emacs Lisp,
+not Standard Lisp, since it will then be compiled by Emacs."
+  ;; However, if the Lisp source code will be deleted then it is
+  ;; overkill and `print' would suffice!
+  (pp x sl--faslout-stream)
+  (terpri sl--faslout-stream))
 
 (defun FASLOUT (name)
   "Compile subsequent input into ESL FASL file \"NAME.elc\".
@@ -2237,7 +2287,9 @@ When all done, execute FASLEND;\n\n" name)))
   (setq sl--faslout-filehandle
 		(OPEN (setq sl--faslout-name.el (concat name ".el")) 'OUTPUT))
   (setq sl--faslout-stream (car sl--faslout-filehandle))
-  (advice-add 'PRETTYPRINT :override defn-print))
+  ;; Must have a definition of PRETTYPRINT to advise, so...
+  (or (fboundp 'PRETTYPRINT) (defalias 'PRETTYPRINT 'pp))
+  (advice-add 'PRETTYPRINT :override #'sl--faslout-prettyprint-override))
 	
 (FLAG '(FASLOUT) 'OPFN)
 (FLAG '(FASLOUT) 'NOVAL)
@@ -2249,14 +2301,15 @@ When all done, execute FASLEND;\n\n" name)))
   ;; Functions are often used before they are defined and several
   ;; modules refer to undefined free variables, so...
   (let ((byte-compile-warnings '(not free-vars unresolved)))
-	(advice-remove 'PRETTYPRINT defn-print)
+	(advice-remove 'PRETTYPRINT #'sl--faslout-prettyprint-override)
 	(CLOSE sl--faslout-filehandle)
 	(setq *writingfaslfile nil *DEFN nil)
+	(SL-REINSTATE-PLISTS)
 	;; Compile and then delete the Emacs Lisp version of the file:
 	(princ (format "*** Compiling %s ..." sl--faslout-name.el))
 	(if (byte-compile-file sl--faslout-name.el)
 		(progn
-		  (delete-file sl--faslout-name.el)
+		  ;; (delete-file sl--faslout-name.el) ; keep to aid debugging
 		  (princ " succeeded\n")
 		  nil)
 	  (error "***** Error during compilation of %s" sl--faslout-name.el))))
