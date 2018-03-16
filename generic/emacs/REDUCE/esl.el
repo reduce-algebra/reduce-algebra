@@ -1,4 +1,4 @@
-;;; sl.el --- ESL (Emacs Standard LISP)
+;;; esl.el --- ESL (Emacs Standard LISP)
 
 ;; Copyright (C) 2017-2018 Francis J. Wright
 
@@ -43,32 +43,33 @@
 
 ;; integer -- probably OK
 
-;; floating -- 1. is an integer in elisp but a float in sl. Otherwise
-;; probably OK.
+;; floating -- 1. is an integer in Elisp but a float in
+;; Slisp.  Otherwise probably OK.
 
-;; id -- symbol in elisp. The sl escape chacacter is ! but the elisp
-;; escape character is \. This difference is handled by EXPLODE and
-;; COMPRESS, and would need to be handled by READ if implemented. In
-;; sl, lower case letters are automatically converted to upper case
-;; when the !*RAISE flag is T.
+;; id -- symbol in Elisp.  The Slisp escape chacacter is ! but the
+;; Elisp escape character is \.  This difference is handled by EXPLODE
+;; and COMPRESS, and would need to be handled by READ if implemented.
+;; In Slisp, lower case letters are automatically converted to upper
+;; case when the !*RAISE flag is T.
 
-;; string -- To include a double quote character in a string in sl
-;; double it, but in elisp escaped it with \. This difference would
+;; string -- To include a double quote character in a string in Slisp
+;; double it, but in Elisp escaped it with \.  This difference would
 ;; need to be handled by READ if implemented.
 
 ;; dotted-pair, vector, function-pointer -- probably OK.
 
-;; T and NIL -- elisp only recognises t and nil, so T and NIL are
+;; T and NIL -- Elisp only recognises t and nil, so T and NIL are
 ;; implemented as constants set to t and nil.
 
-;; ftype -- in sl, the set of ids {EXPR, FEXPR, MACRO} represents the
-;; class of definable function types. FEXPRs are not implemented.
+;; ftype -- in Slisp, the set of ids {EXPR, FEXPR, MACRO} represents
+;; the class of definable function types.  FEXPRs are not implemented.
 
-;; comments -- in sl these begin with % but in elisp they begin with
-;; ;. This difference would need to be handled by READ if implemented.
+;; comments -- in Slisp these begin with % but in Elisp they begin
+;; with ;.  This difference would need to be handled by READ if
+;; implemented.
 
 ;; REMARK -- very little of REDUCE is written in Lisp notation and
-;; RLISP uses its own reader. I only need to be able to read the Lisp
+;; RLISP uses its own reader.  I only need to be able to read the Lisp
 ;; bootstrap code, boot.sl, that defines RLISP, so I have edited
 ;; boot.sl as boot.el to use upper case and Emacs Lisp read syntax.
 ;; (Syntax tables are not used by the Emacs Lisp reader, which has its
@@ -78,7 +79,7 @@
 
 ;; I use the GNU Emacs Common Lisp Emulation library mainly to support
 ;; the Standard LISP `PROG' form, but I also need it in Emacs 25 for
-;; `GENSYM'. Also, Emacs 26 provides the `cxxxxr' family of functions
+;; `GENSYM'.  Also, Emacs 26 provides the `cxxxxr' family of functions
 ;; but Emacs 25 only provides `cxxr', so I use the Standard LISP
 ;; `CXXXXR' functions, which I have defined exactly as in Emacs 26.
 
@@ -87,8 +88,8 @@
 ;;; System GLOBAL Variables
 ;;; =======================
 
-;; Defined early to keep the Emacs Lisp compiler happy. (This file can
-;; be compiled.)
+;; Defined early to keep the Emacs Lisp compiler happy.  (This file
+;; should be compiled.)
 
 (defvar *COMP nil
   "*COMP = NIL global
@@ -282,14 +283,14 @@ mismatch error occurs if U is not a dotted-pair.")
 ;; following code is copied from "subr.el" with minor modifications.
 
 (eval-and-compile	 ; needed to compile calls of CX..XR in this file.
-(defun sl--compiler-macro-CXXR (form x)
+(defun esl--compiler-macro-CXXR (form x)
   (let* ((head (car form))
          (n (downcase (symbol-name head)))
 		 (head (intern-soft n))
          (i (- (length n) 2)))
     (if (not (string-match "c[ad]+r\\'" n))
         (if (and (fboundp head) (symbolp (symbol-function head)))
-            (sl--compiler-macro-CXXR (cons (symbol-function head) (cdr form))
+            (esl--compiler-macro-CXXR (cons (symbol-function head) (cdr form))
                                      x)
           (error "Compiler macro for CXXR applied to non-CXXR form"))
       (while (> i (match-beginning 0))
@@ -299,142 +300,142 @@ mismatch error occurs if U is not a dotted-pair.")
 
 (defun CAAR (x)
   "Return the car of the car of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (car x)))
 
 (defun CADR (x)
   "Return the car of the cdr of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (cdr x)))
 
 (defun CDAR (x)
   "Return the cdr of the car of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (car x)))
 
 (defun CDDR (x)
   "Return the cdr of the cdr of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (cdr x)))
 
 (defun CAAAR (x)
   "Return the `car' of the `car' of the `car' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (car (car x))))
 
 (defun CAADR (x)
   "Return the `car' of the `car' of the `cdr' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (car (cdr x))))
 
 (defun CADAR (x)
   "Return the `car' of the `cdr' of the `car' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (cdr (car x))))
 
 (defun CADDR (x)
   "Return the `car' of the `cdr' of the `cdr' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (cdr (cdr x))))
 
 (defun CDAAR (x)
   "Return the `cdr' of the `car' of the `car' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (car (car x))))
 
 (defun CDADR (x)
   "Return the `cdr' of the `car' of the `cdr' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (car (cdr x))))
 
 (defun CDDAR (x)
   "Return the `cdr' of the `cdr' of the `car' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (cdr (car x))))
 
 (defun CDDDR (x)
   "Return the `cdr' of the `cdr' of the `cdr' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (cdr (cdr x))))
 
 (defun CAAAAR (x)
   "Return the `car' of the `car' of the `car' of the `car' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (car (car (car x)))))
 
 (defun CAAADR (x)
   "Return the `car' of the `car' of the `car' of the `cdr' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (car (car (cdr x)))))
 
 (defun CAADAR (x)
   "Return the `car' of the `car' of the `cdr' of the `car' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (car (cdr (car x)))))
 
 (defun CAADDR (x)
   "Return the `car' of the `car' of the `cdr' of the `cdr' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (car (cdr (cdr x)))))
 
 (defun CADAAR (x)
   "Return the `car' of the `cdr' of the `car' of the `car' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (cdr (car (car x)))))
 
 (defun CADADR (x)
   "Return the `car' of the `cdr' of the `car' of the `cdr' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (cdr (car (cdr x)))))
 
 (defun CADDAR (x)
   "Return the `car' of the `cdr' of the `cdr' of the `car' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (cdr (cdr (car x)))))
 
 (defun CADDDR (x)
   "Return the `car' of the `cdr' of the `cdr' of the `cdr' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (car (cdr (cdr (cdr x)))))
 
 (defun CDAAAR (x)
   "Return the `cdr' of the `car' of the `car' of the `car' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (car (car (car x)))))
 
 (defun CDAADR (x)
   "Return the `cdr' of the `car' of the `car' of the `cdr' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (car (car (cdr x)))))
 
 (defun CDADAR (x)
   "Return the `cdr' of the `car' of the `cdr' of the `car' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (car (cdr (car x)))))
 
 (defun CDADDR (x)
   "Return the `cdr' of the `car' of the `cdr' of the `cdr' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (car (cdr (cdr x)))))
 
 (defun CDDAAR (x)
   "Return the `cdr' of the `cdr' of the `car' of the `car' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (cdr (car (car x)))))
 
 (defun CDDADR (x)
   "Return the `cdr' of the `cdr' of the `car' of the `cdr' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (cdr (car (cdr x)))))
 
 (defun CDDDAR (x)
   "Return the `cdr' of the `cdr' of the `cdr' of the `car' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (cdr (cdr (car x)))))
 
 (defun CDDDDR (x)
   "Return the `cdr' of the `cdr' of the `cdr' of the `cdr' of X."
-  (declare (compiler-macro sl--compiler-macro-CXXR))
+  (declare (compiler-macro esl--compiler-macro-CXXR))
   (cdr (cdr (cdr (cdr x)))))
 
 (defalias 'CONS 'cons
@@ -615,21 +616,21 @@ having properties, flags, functions and the like. U is returned."
 
 (defvar *DEFN nil)
 
-(defvar sl--saved-plist-alist nil
+(defvar esl--saved-plist-alist nil
   "Association list of symbols and their saved property lists.
 Its value should normally be nil, except while ON DEFN.")
 
-(defun sl--save-plist (symbol)
+(defun esl--save-plist (symbol)
   "Save property list of symbol SYMBOL if not already saved."
-  (if (not (assq symbol sl--saved-plist-alist))
+  (if (not (assq symbol esl--saved-plist-alist))
 	  (push (cons symbol (copy-tree (symbol-plist symbol)))
-			sl--saved-plist-alist)))
+			esl--saved-plist-alist)))
 
-(defun SL-REINSTATE-PLISTS ()
+(defun ESL-REINSTATE-PLISTS ()
   "Reinstate all property lists saved during ON DEF."
   (mapc (lambda (s) (setplist (car s) (cdr s)))
-		sl--saved-plist-alist)
-  (setq sl--saved-plist-alist nil))
+		esl--saved-plist-alist)
+  (setq esl--saved-plist-alist nil))
 
 
 (defun FLAG (u v)
@@ -638,7 +639,7 @@ U is a list of ids which are flagged with V. The effect of FLAG is
 that FLAGP will have the value T for those ids of U which were
 flagged. Both V and all the elements of U must be identifiers or the
 type mismatch error occurs."
-  (if *DEFN (mapc #'sl--save-plist u))
+  (if *DEFN (mapc #'esl--save-plist u))
   (mapc (lambda (x) (put x v t)) u)
   nil)
 
@@ -671,7 +672,7 @@ cannot be used to define functions (use PUTD instead)."
 Removes the flag V from the property list of each member of the
 list U. Both V and all the elements of U must be ids or the type
 mismatch error will occur."
-  (if *DEFN (mapc #'sl--save-plist u))
+  (if *DEFN (mapc #'esl--save-plist u))
   (mapc (lambda (x) (put x v nil)) u)
   nil)
 
@@ -681,7 +682,7 @@ Removes the property with indicator IND from the property list of U.
 Returns the removed property or NIL if there was no such indicator."
   (prog1
 	  (get u ind)
-	(if *DEFN (sl--save-plist u))
+	(if *DEFN (esl--save-plist u))
 	(put u ind nil)))
 
 
@@ -701,7 +702,7 @@ Returns the removed property or NIL if there was no such indicator."
 ;; as a NOEVAL, NOSPREAD function with the macro's invocation bound as
 ;; a list to the macros single formal parameter."
 
-;; Could remove the use of the property `SL--FTYPE' and just process
+;; Could remove the use of the property `ESL--FTYPE' and just process
 ;; the symbol-function.
 
 (defmacro DE (fname params fn)
@@ -715,8 +716,8 @@ FEXPR PROCEDURE DE(U);
    PUTD(CAR U, 'EXPR, LIST('LAMBDA, CADR U, CADDR U));"
   (declare (debug (&define name lambda-list def-body)))
   `(progn
+	 (put ',fname 'ESL--FTYPE 'EXPR)
 	 (defun ,fname ,params ,fn)
-	 (put ',fname 'SL--FTYPE 'EXPR)
 	 (if *COMP
 		 (let ((byte-compile-warnings '(not free-vars unresolved)))
 		   (byte-compile ',fname)))
@@ -742,13 +743,17 @@ FEXPR PROCEDURE DM(U);
    PUTD(CAR U, 'MACRO, LIST('LAMBDA, CADR U, CADDR U));"
   (declare (debug (&define name lambda-list def-body)))
   `(progn
-	 (put ',mname 'SL--FTYPE 'MACRO)
+	 (put ',mname 'ESL--FTYPE 'MACRO)
 	 ;; param must be a list containing a single identifier, which
 	 ;; must therefore be spliced into the macro definition.
 	 (defmacro ,mname (&rest ,@param)	; spread the arguments
 	   ;; Include macro name as first arg:
 	   (setq ,@param (cons ',mname ,@param))
-	   ,fn)))
+	   ,fn)
+	 (if *COMP
+		 (let ((byte-compile-warnings '(not free-vars unresolved)))
+		   (byte-compile ',mname)))
+	 ',mname))
 
 (defun GETD (fname)
   ;; BEWARE that this definition may not work properly for functions
@@ -761,7 +766,7 @@ FNAME is a defined function then the dotted-pair
 is returned."
   (let ((def (symbol-function fname)))
 	(if def
-		(if (eq (get fname 'SL--FTYPE) 'MACRO)
+		(if (eq (get fname 'ESL--FTYPE) 'MACRO)
 			;; def = (macro lambda (&rest u) (setq u (fname . u)) body-form)
 			;;  -->  (MACRO lambda (u) body-form)
 			;; Macro may be compiled, so...
@@ -803,7 +808,7 @@ the !*COMP global variable is non-NIL."
 					  ,@(cddr body)))
 				;; `(lambda ,@(cdr body))))
 				body))		  ; no longer need to downcase lambda here
-  (put fname 'SL--FTYPE type)
+  (put fname 'ESL--FTYPE type)
   (if *COMP
 	  (let ((byte-compile-warnings '(not free-vars unresolved)))
 		(byte-compile fname)))
@@ -816,7 +821,7 @@ tions. Returns the (ftype . function) dotted-pair or NIL as does
 GETD. The global/function attribute of FNAME is removed and
 the name may be used subsequently as a variable."
   (prog1
-	  (get fname 'SL--FTYPE)
+	  (get fname 'ESL--FTYPE)
 	(fmakunbound fname)))
 
 
@@ -1364,7 +1369,7 @@ EXPR PROCEDURE DEFLIST(U, IND);
       ELSE << PUT(CAAR U, IND, CADAR U);
               CAAR U >> . DEFLIST(CDR U, IND);"
   (when u
-	(if *DEFN (sl--save-plist (caar u)))
+	(if *DEFN (esl--save-plist (caar u)))
 	(put (caar u) ind (CADAR u))
 	(cons (caar u) (DEFLIST (cdr u) ind))))
 
@@ -1620,21 +1625,21 @@ FEXPR PROCEDURE QUOTE(U);
 ;; An ESL filehandle has the form (stream . mode) where mode is 'input
 ;; or 'output and stream is as defined below:
 
-(defvar sl--read-stream nil
+(defvar esl--read-stream nil
   "The current input stream.
 The stream nil represents the terminal, an interactive window.
 A buffer stream represents the input file opened in it.")
 
-(defvar sl--write-stream nil
+(defvar esl--write-stream nil
   "The current output stream.
 The stream nil represents the terminal, an interactive window.
 A buffer stream represents the output file to which it will be
 saved when it is closed.")
 
-(defconst sl--default-output-buffer-name "*Standard LISP*"
+(defconst esl--default-output-buffer-name "*Standard LISP*"
   "The name of the terminal window buffer.")
 
-(defvar sl--default-output-buffer nil
+(defvar esl--default-output-buffer nil
  "The terminal window buffer, set when the buffer is created." )
 
 (defun CLOSE (filehandle)
@@ -1669,7 +1674,7 @@ executed by the print functions when the length set by the PAGE-
 LENGTH function is exceeded."
   nil)
 
-(defvar sl--linelength 80
+(defvar esl--linelength 80
   "Current Standard LISP line length accessed via function `LINELENGTH'.")
 
 (defun LINELENGTH (len)
@@ -1685,8 +1690,8 @@ selected output file or LEN is negative or zero.
   (if len
 	  (if (or (not (integerp len)) (<= len 0))
 		  (error "%s is an invalid line length" len)
-		(prog1 sl--linelength (setq sl--linelength len)))
-	sl--linelength))
+		(prog1 esl--linelength (setq esl--linelength len)))
+	esl--linelength))
 
 (defun LPOSN ()
   "LPOSN():integer eval, spread
@@ -1708,14 +1713,14 @@ OUTPUT or the file can't be opened.
 		 ;; Read file into a buffer and return (buffer . 'INPUT).
 		 (save-current-buffer
 		   ;; Leading space means buffer hidden and no undo:
-		   (set-buffer (get-buffer-create (concat " SL-IN " file)))
+		   (set-buffer (get-buffer-create (concat " ESL-IN " file)))
 		   ;; Allow re-opening a file and continuing to read it:
 		   (if (zerop (buffer-size))
 			   (insert-file-contents-literally file))
 		   (cons (current-buffer) 'INPUT)))
 		((eq how 'OUTPUT)
 		 ;; Create a new file buffer and return (buffer . 'OUTPUT).
-		 (cons (get-buffer-create (concat " SL-OUT " file)) 'OUTPUT))
+		 (cons (get-buffer-create (concat " ESL-OUT " file)) 'OUTPUT))
 		(t (error "%s is not option for OPEN" how))))
 
 (defun PAGELENGTH (len)
@@ -1787,16 +1792,16 @@ returns the internal name of the previously selected input file.
 					 (bufferp (setq stream (car filehandle))))
 		  (error "%s could not be selected for input" filehandle)))
 	(prog1
-		(if sl--read-stream (cons sl--read-stream 'INPUT))
-	  (setq sl--read-stream stream))))
+		(if esl--read-stream (cons esl--read-stream 'INPUT))
+	  (setq esl--read-stream stream))))
 
-(defun sl--read-and-echo ()
+(defun esl--read-and-echo ()
   "Read one Lisp expression as text from current `filehandle'.
 Return as Lisp object.  Echo the input if `*ECHO' is non-nil."
   (let ((value
 		 (let (standard-output
 			   ;; to avoid minibuffer errors resetting this
-			   (standard-input (or sl--read-stream t)))
+			   (standard-input (or esl--read-stream t)))
 		   (read))))
 	(when (or (eq standard-input t) *ECHO) ; always echo minibuffer input
 	  (with-current-buffer standard-output
@@ -1818,38 +1823,38 @@ selected input file is reached.
 This ESL implementation is incomplete and provided primarily to
 support the REDUCE YESP function."
   (condition-case nil
-	  (let ((value (sl--read-and-echo)))
+	  (let ((value (esl--read-and-echo)))
 		(if (symbolp value)
 			(intern (upcase (symbol-name value)))
 		  value))
 	(end-of-file $EOF$)))
 
-(defvar sl--marker (make-marker)
+(defvar esl--marker (make-marker)
   "Marker from which the next input should be read.")
 
-(defun sl--char-to-interned-id (c)
+(defun esl--char-to-interned-id (c)
   "Convert ELisp character C to an interned SLisp identifier.
 Up-case letters if !*RAISE is non-nil."
   (intern
    (string
 	(if (and *RAISE (>= c ?a) (<= c ?z)) (- c 32) c))))
 
-(defvar sl--readch-use-minibuffer nil
+(defvar esl--readch-use-minibuffer nil
   "If non-nil then READCH reads from the minibuffer as terminal.
 Otherwise, it reads from an interaction buffer as terminal.")
 
-(defvar sl--readch-input-string nil
+(defvar esl--readch-input-string nil
   "String used to store minibuffer input so that READCH can read
 it character-by-character.")
 
-(defvar sl--readch-input-string-index nil
+(defvar esl--readch-input-string-index nil
   "Integer used to store the index of the next character for
-READCH to return from `sl--readch-input-string'.")
+READCH to return from `esl--readch-input-string'.")
 
-(defvar sl--readch-input-string-length nil
-  "Integer used to store the length of `sl--readch-input-string'.")
+(defvar esl--readch-input-string-length nil
+  "Integer used to store the length of `esl--readch-input-string'.")
 
-(defvar sl--readch-history nil
+(defvar esl--readch-history nil
   "READCH minibuffer input history.")
 
 (defun READCH ()
@@ -1862,17 +1867,17 @@ Comments delimited by % and end-of-line are not transparent to READCH.
 
 In ESL, echo minibuffer input to `standard-output' and if *ECHO
 is non-nil then echo file input."
-  (if sl--read-stream
+  (if esl--read-stream
 	  ;; Read from a file:
 	  (let ((result
-			 (with-current-buffer sl--read-stream
+			 (with-current-buffer esl--read-stream
 			   (cond ((eobp) $EOF$)
 					 ((eolp) (if *ECHO (terpri))
 					  (forward-line) $EOL$)
 					 (t (let ((c (char-after)))
 						  (if *ECHO (write-char c))
 						  (forward-char)
-						  (sl--char-to-interned-id c)))))))
+						  (esl--char-to-interned-id c)))))))
 		;; When end of file is reached on a non-standard input device,
 		;; the standard input device is reselected. But can't kill the
 		;; buffer within `with-current-buffer'!
@@ -1881,50 +1886,50 @@ is non-nil then echo file input."
 			(CLOSE (RDS nil)))
 		result)
 	;; Read from terminal:
-	(if sl--readch-use-minibuffer
+	(if esl--readch-use-minibuffer
 		;; Read from the minibuffer:
 		(progn
-		  (when (null sl--readch-input-string)
+		  (when (null esl--readch-input-string)
 			;; If the input string is null then this is a call for new
 			;; input.  Read a new input string from the minibuffer,
 			;; save it and return the first character.
-			(setq sl--readch-input-string
+			(setq esl--readch-input-string
 				  (let (standard-output)
 					;; to avoid minibuffer errors resetting this
 					(read-from-minibuffer "REDUCE: "
-										  nil nil nil 'sl--readch-history))
-				  sl--readch-input-string-length
-				  (length sl--readch-input-string)
-				  sl--readch-input-string-index 0)
+										  nil nil nil 'esl--readch-history))
+				  esl--readch-input-string-length
+				  (length esl--readch-input-string)
+				  esl--readch-input-string-index 0)
 			;; (when *ECHO
 			(with-current-buffer standard-output
 			  (goto-char (point-max)) ; in case point moved interactively
-			  (princ sl--readch-input-string) (terpri)
+			  (princ esl--readch-input-string) (terpri)
 			  (terpri)));)
 		  ;; Then return the next character from the input string.
 		  ;; When the last character has been returned, clear the
 		  ;; string to trigger new input.
-		  (if (equal sl--readch-input-string "")
+		  (if (equal esl--readch-input-string "")
 			  (progn
-				(setq sl--readch-input-string nil)
+				(setq esl--readch-input-string nil)
 				$EOF$)			   ; for want of something better!
-			(let ((c (aref sl--readch-input-string sl--readch-input-string-index)))
-			  (setq sl--readch-input-string-index
-					(1+ sl--readch-input-string-index))
-			  (if (= sl--readch-input-string-index sl--readch-input-string-length)
-				  (setq sl--readch-input-string nil))
-			  (if (eq c ?\n) $EOL$ (sl--char-to-interned-id c)))))
+			(let ((c (aref esl--readch-input-string esl--readch-input-string-index)))
+			  (setq esl--readch-input-string-index
+					(1+ esl--readch-input-string-index))
+			  (if (= esl--readch-input-string-index esl--readch-input-string-length)
+				  (setq esl--readch-input-string nil))
+			  (if (eq c ?\n) $EOL$ (esl--char-to-interned-id c)))))
 	  ;; Read from interaction buffer:
 	  (with-current-buffer "*Standard LISP*"
-		(goto-char sl--marker)
+		(goto-char esl--marker)
 		;; When end of file occurs on the standard input device the
 		;; Standard LISP reader terminates. [NOT YET IMPLEMENTED.]
 		(cond ((eobp) $EOF$)
 			  ((eolp) (forward-line)
-			   (set-marker sl--marker (point)) $EOL$)
-			  (t (let ((c (char-after sl--marker)))
-				   (set-marker sl--marker (1+ sl--marker))
-				   (sl--char-to-interned-id c))))))))
+			   (set-marker esl--marker (point)) $EOL$)
+			  (t (let ((c (char-after esl--marker)))
+				   (set-marker esl--marker (1+ esl--marker))
+				   (esl--char-to-interned-id c))))))))
 
 (defun TERPRI ()
   "TERPRI():NIL
@@ -1948,9 +1953,9 @@ selected output file.
 					 (bufferp (setq stream (car filehandle))))
 		  (error "%s could not be selected for output" filehandle)))
 	(prog1
-		(if sl--write-stream (cons sl--write-stream 'OUTPUT))
-	  (setq sl--write-stream stream
-			standard-output (or stream sl--default-output-buffer)))))
+		(if esl--write-stream (cons esl--write-stream 'OUTPUT))
+	  (setq esl--write-stream stream
+			standard-output (or stream esl--default-output-buffer)))))
 
 
 ;;; LISP Reader
@@ -1971,7 +1976,7 @@ selected output file.
 
 ;; Use the above approach to make READCH read from the minibuffer.
 
-(define-derived-mode sl-standard-lisp-interaction-mode
+(define-derived-mode esl-standard-lisp-interaction-mode
   lisp-interaction-mode "SLISP Interaction"
   "Major mode for entering and evaluating Standard LISP forms.")
 
@@ -1989,17 +1994,17 @@ selected output file.
   ;; END;
   (interactive)
   (switch-to-buffer
-   (setq sl--default-output-buffer
-		 (get-buffer-create sl--default-output-buffer-name)))
-  (sl-standard-lisp-interaction-mode)
+   (setq esl--default-output-buffer
+		 (get-buffer-create esl--default-output-buffer-name)))
+  (esl-standard-lisp-interaction-mode)
   (goto-char (point-max))  ; in case buffer already exists
   (let (value			   ; value of last sexp
 		;; Output to the END of the current buffer:
-		;; (standard-output (set-marker sl--marker (point-max)))
+		;; (standard-output (set-marker esl--marker (point-max)))
 		;; The above is proving unreliable, so try this:
 		(standard-output (current-buffer))
 		;; Make (READCH) read from the minibuffer:
-		(sl--readch-use-minibuffer t))
+		(esl--readch-use-minibuffer t))
 	(if (= (buffer-size) 0)
 		(princ "Standard LISP"))
 	(RDS nil) (WRS nil)
@@ -2007,7 +2012,7 @@ selected output file.
 	  (while t
 		(terpri)
 		(princ "Eval: ")
-		(setq value (sl--read-and-echo))
+		(setq value (esl--read-and-echo))
 		(setq value (ERRORSET '(eval value) t t))
 		(unless (atom value)
 		  (terpri)
@@ -2025,15 +2030,15 @@ transferred to the operating system."
 ;;; Emacs Support Code
 ;;; ==================
 
-(defvar sl-interaction-mode-map
+(defvar esl-interaction-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "\e\C-x" 'sl-read-eval-print)
-    (define-key map "\C-j" 'sl-read-eval-print)
+    (define-key map "\e\C-x" 'esl-read-eval-print)
+    (define-key map "\C-j" 'esl-read-eval-print)
     map)
   "Keymap for Standard LISP interaction mode.
 Most commands are inherited from `lisp-interaction-mode-map'.")
 
-(define-derived-mode sl-interaction-mode
+(define-derived-mode esl-interaction-mode
   lisp-interaction-mode "SLISP Interaction"
   "Major mode for entering and evaluating Standard LISP forms."
   (make-local-variable 'comment-start)
@@ -2043,14 +2048,14 @@ Most commands are inherited from `lisp-interaction-mode-map'.")
   (setq window-point-insertion-type t)
   )
 
-(defun sl-run (rlisp-mode)
+(defun esl-run (rlisp-mode)
   "Run Standard LISP with IO via a buffer."
   (interactive "P")
   (switch-to-buffer
-   (setq sl--default-output-buffer
-		 (get-buffer-create sl--default-output-buffer-name)))
-  (sl-interaction-mode)
-  (let ((standard-output (set-marker sl--marker 1)))
+   (setq esl--default-output-buffer
+		 (get-buffer-create esl--default-output-buffer-name)))
+  (esl-interaction-mode)
+  (let ((standard-output (set-marker esl--marker 1)))
 	(princ "Standard LISP") (terpri)
 	(terpri) (princ "Eval: "))
   (when rlisp-mode
@@ -2058,23 +2063,23 @@ Most commands are inherited from `lisp-interaction-mode-map'.")
 	(insert "(BEGIN2)\n\n;end;")
 	(forward-line -1)))
 
-(defun sl-read-eval-print (rlisp-mode)
-  "Read input after `sl--marker', eval it and print the result."
+(defun esl-read-eval-print (rlisp-mode)
+  "Read input after `esl--marker', eval it and print the result."
   (interactive "P")
-  (let ((standard-input sl--marker)
-		(standard-output sl--marker)
+  (let ((standard-input esl--marker)
+		(standard-output esl--marker)
 		value)
 	(setq value (ERRORSET '(eval (read)) t t))
 	(unless (atom value)
 	  (terpri) (terpri) (princ "====> ") (princ (car value)))
 	(terpri) (terpri) (princ "Eval: ")
 	;; Output does not necessarily advance point, so...
-	(goto-char sl--marker))
+	(goto-char esl--marker))
   (when rlisp-mode
 	(insert "(BEGIN2)\n\n;end;")
 	(forward-line -1)))
 
-(defun sl-eval-print-last-sexp ()
+(defun esl-eval-print-last-sexp ()
   "Copy sexp before point to end of *Standard LISP* buffer.
 Then evaluate it and print value into *Standard LISP* buffer."
   (interactive)
@@ -2084,12 +2089,12 @@ Then evaluate it and print value into *Standard LISP* buffer."
 	(save-current-buffer
 	  (set-buffer "*Standard LISP*")
 	  (insert sexp)
-	  (sl-read-eval-print nil)
+	  (esl-read-eval-print nil)
 	  )))
 
-(global-set-key "\C-c\C-j" 'sl-eval-print-last-sexp)
+(global-set-key "\C-c\C-j" 'esl-eval-print-last-sexp)
 
-(defun sl-pp-fn (symbol)
+(defun esl-pp-fn (symbol)
   "Pretty-print SYMBOL's function definition."
   (interactive)
   (null (pp (symbol-function symbol))))
@@ -2177,7 +2182,7 @@ The date in the form \"day-month-year\"
 NAME should be an identifier or string."
   (if (fboundp 'BEGIN1)
 	  (let* (*INT *ECHO faslout-filehandle faslout-stream ichan oldichan
-			 name.el sl--saved-plist-alist
+			 name.el esl--saved-plist-alist
 			 (*DEFN t)
 			 ;; Don't need prettyprinted Lisp output; print
 			 ;; output should suffice:
@@ -2198,7 +2203,7 @@ NAME should be an identifier or string."
 		  (advice-remove 'PRETTYPRINT defn-print)
 		  (CLOSE ichan) (RDS oldichan)
 		  (CLOSE faslout-filehandle)
-		  (SL-REINSTATE-PLISTS))
+		  (ESL-REINSTATE-PLISTS))
 		;; Compile and then delete the Emacs Lisp version of the file:
 		(if (byte-compile-file name.el)
 			(progn
@@ -2260,18 +2265,18 @@ NAME should be an identifier or string."
 (defvar *writingfaslfile nil
   "Set to t by FASLOUT and reset to nil by FASLEND.")
 
-(defvar sl--faslout-filehandle)
-(defvar sl--faslout-name.el)
-(defvar sl--faslout-stream)
+(defvar esl--faslout-filehandle)
+(defvar esl--faslout-name.el)
+(defvar esl--faslout-stream)
 
-(defun sl--faslout-prettyprint-override (x)
+(defun esl--faslout-prettyprint-override (x)
   "Prettyprint X with output to the faslout stream.
 Used for faslout Lisp generation, which must generate Emacs Lisp,
 not Standard Lisp, since it will then be compiled by Emacs."
   ;; However, if the Lisp source code will be deleted then it is
   ;; overkill and `print' would suffice!
-  (pp x sl--faslout-stream)
-  (terpri sl--faslout-stream))
+  (pp x esl--faslout-stream)
+  (terpri esl--faslout-stream))
 
 (defun FASLOUT (name)
   "Compile subsequent input into ESL FASL file \"NAME.elc\".
@@ -2284,12 +2289,12 @@ NAME should be an identifier or string."
 	  (princ (format "FASLOUT %s: IN files; or type in expressions.
 When all done, execute FASLEND;\n\n" name)))
   ;; Output the Emacs Lisp version of the file:
-  (setq sl--faslout-filehandle
-		(OPEN (setq sl--faslout-name.el (concat name ".el")) 'OUTPUT))
-  (setq sl--faslout-stream (car sl--faslout-filehandle))
+  (setq esl--faslout-filehandle
+		(OPEN (setq esl--faslout-name.el (concat name ".el")) 'OUTPUT))
+  (setq esl--faslout-stream (car esl--faslout-filehandle))
   ;; Must have a definition of PRETTYPRINT to advise, so...
   (or (fboundp 'PRETTYPRINT) (defalias 'PRETTYPRINT 'pp))
-  (advice-add 'PRETTYPRINT :override #'sl--faslout-prettyprint-override))
+  (advice-add 'PRETTYPRINT :override #'esl--faslout-prettyprint-override))
 	
 (FLAG '(FASLOUT) 'OPFN)
 (FLAG '(FASLOUT) 'NOVAL)
@@ -2301,18 +2306,18 @@ When all done, execute FASLEND;\n\n" name)))
   ;; Functions are often used before they are defined and several
   ;; modules refer to undefined free variables, so...
   (let ((byte-compile-warnings '(not free-vars unresolved)))
-	(advice-remove 'PRETTYPRINT #'sl--faslout-prettyprint-override)
-	(CLOSE sl--faslout-filehandle)
+	(advice-remove 'PRETTYPRINT #'esl--faslout-prettyprint-override)
+	(CLOSE esl--faslout-filehandle)
 	(setq *writingfaslfile nil *DEFN nil)
-	(SL-REINSTATE-PLISTS)
+	(ESL-REINSTATE-PLISTS)
 	;; Compile and then delete the Emacs Lisp version of the file:
-	(princ (format "*** Compiling %s ..." sl--faslout-name.el))
-	(if (byte-compile-file sl--faslout-name.el)
+	(princ (format "*** Compiling %s ..." esl--faslout-name.el))
+	(if (byte-compile-file esl--faslout-name.el)
 		(progn
-		  ;; (delete-file sl--faslout-name.el) ; keep to aid debugging
+		  ;; (delete-file esl--faslout-name.el) ; keep to aid debugging
 		  (princ " succeeded\n")
 		  nil)
-	  (error "***** Error during compilation of %s" sl--faslout-name.el))))
+	  (error "***** Error during compilation of %s" esl--faslout-name.el))))
 
 (PUT 'FASLEND 'STAT 'ENDSTAT)
 (FLAG '(FASLEND) 'EVAL)				 ; must be evaluated in this model
@@ -2335,7 +2340,7 @@ When all done, execute FASLEND;\n\n" name)))
 some consistent convention (eg unique position in memory)."
   (not (string< (symbol-name v) (symbol-name u))))
 
-;; To run Edebug on a FUNCTION defined in RLISP, use sl-pp-fn in
+;; To run Edebug on a FUNCTION defined in RLISP, use esl-pp-fn in
 ;; *scratch* to get an Emacs Lisp version of FUNCTION, change the
 ;; header from `lambda' to `defun FUNCTION', and then instrument this
 ;; definition for debugging.
@@ -2363,6 +2368,6 @@ Once the input stream has been bound to the channel which
 represents the open file, each form is processed."
   (RDS (setq OLDCHAN* (OPEN name 'INPUT))))
 
-(provide 'sl)
+(provide 'esl)
 
-;;; sl.el ends here
+;;; esl.el ends here
