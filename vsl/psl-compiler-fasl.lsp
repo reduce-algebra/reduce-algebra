@@ -167,16 +167,105 @@
 % Code here derived from nonkernel/allocators.sl but adapted for use with
 % cross-compilation via VSL.
 
+% I will set up a regular Lisp array to model a chunk of the sort of
+% memory that the target machine will have. I will use this as an array of
+% 64-bit integers. At present an array of size 100,000 (ie 800 Kbytes)
+% as as large as VSL will support. If needbe I can enlarge it!
+
+(global '(totalbytes))
+
+(setq totalbytes 800000)
+
+(global '(memory))
+(upbv (setq memory (mkvect (quotient totalbytes 8))))
+(dotimes (i (add1 (quotient totalbytes 8))) (putv memory i 0))
+
+% I will simulate byte vectors using vectors of 64-bit integers, and here
+% I will pack the bytes little-endian. Note that the implementation here
+% requires that the Lisp used for bootstrapping can work with full 64-bit
+% integers.
+
+(de byte (v n)
+  (prog (o s)
+     (setq n (plus2 v n))
+     (setq o (irsh n 3))
+     (setq s (itimes2 (iland n 7) 8))
+     (return (iland 16#ff (irsh (getv memory o) s)))))
+
+(de putbyte (v n val)
+  (prog (o s w)
+     (setq n (plus2 v n))
+     (setq o (irsh n 3))
+     (setq s (itimes (iland n 7) 8))
+     (setq w (getv memory o))
+     (setq m (difference 16#ffffffffffffffff (lsh 16#ff s)))
+     (setq w (land w m))
+     (setq w (lor w (ilsh val s)))
+     (putv memory o w)
+     (return val)))
+
+% Now similar for halfwords (16 bits)
+
+(de halfword (v n)
+  (prog (o s)
+     (setq n (plus2 (irsh v 1) n))
+     (setq o (irsh n 2))
+     (setq s (itimes2 (iland n 3) 16))
+     (return (iland 16#ffff (irsh (getv memory o) s)))))
+
+(de puthalfword (v n val)
+  (prog (o s w)
+     (setq n (plus2 (irsh v 1) n))
+     (setq o (irsh n 2))
+     (setq s (itimes (iland n 3) 16))
+     (setq w (getv memory o))
+     (setq m (difference 16#ffffffffffffffff (lsh 16#ffff s)))
+     (setq w (land w m))
+     (setq w (lor w (lsh val s)))
+     (putv memory o w)
+     (return val)))
+
+% ... and 32-bit words
+
+(de word (v n)
+  (prog (o s)
+     (setq n (plus2 (irsh v 2) n))
+     (setq o (irsh n 1))
+     (setq s (itimes2 (iland n 1) 32))
+     (return (land 16#ffffffff (rsh (getv memory o) s)))))
+
+(de putword (v n val)
+  (prog (o s w)
+     (setq n (plus2 (irsh v 2) n))
+     (setq o (irsh n 1))
+     (setq s (itimes (iland n 1) 32))
+     (setq w (getv memory o))
+     (setq m (difference 16#ffffffffffffffff (lsh 16#ffffffff s)))
+     (setq w (iland w m))
+     (setq w (ilor w (ilsh val s)))
+     (putv memory o w)
+     (return val)))
+
+% And finally 64-bit items
+% I force the retrieved value to be positive.
+
+(de wgetv (v n)
+   (land (getv memory (plus2 (irsh v 3) n)) 16#ffffffffffffffff))
+
+(de wputv (v n val)
+   (putv memory (plus2 (irsh v 3) n) val))
+
+
+
 (global '(heapupperbound heaplowerbound heaplast heaptrapbound heaplast
           heaptrapped nextbps lastbps))
 
-(setq lastbps 20000)
-(setq nextbps 0)
-(setq bpsheap (mkvect (sub1 lastbps)))
+% I set up the simulated memory so half is for BPS and half is for heap.
 
-(setq highpointer 20000)
-(setq lowpointer 0)
-(setq mainheap (mkvect (sub1 highpointer)))
+(setq lastbps (quotient totalbytes 2))
+(setq nextbps 0)
+(setq heapupperbound (setq highpointer totalbytes))
+(setq lowpointer lastbps)
 
 (de known-free-space ()
   (mkint (wquotient (wdifference heapupperbound heaplast) 
@@ -454,6 +543,7 @@
 % I will find bits of this code look way neater if I have a right
 % shift operator as well as a left shift one.
 
+(de rsh (w n) (lsh w (iminus n)))
 (de irsh (w n) (ilsh w (iminus n)))
 
 % I am writing these out as sequences of operations and avoiding
@@ -474,34 +564,28 @@
      (setq b (byte baseaddress o)) % byte to work within
      (setq s (itimes 2 (iland bitoffset 3))) % position within byte
      (setq s (idifference 6 s))    % make big-endian
-     (setq m (idifference 16#ff (ilsh 3 n))) % mask
+     (setq m (idifference 16#ff (ilsh 3 s))) % mask
      (setq b (iland b m))           % Clear existing
-     (setq b (ilor b (ilsh value2 n)))
+     (setq b (ilor b (ilsh value2 s)))
      (putbyte baseaddress o b)))
 
-% I will simulate byte vectors using vectors of 64-bit integers, and here
-% I will pack the bytes little-endian. Note that the implementation here
-% requires that the Lisp used for bootstrapping can work with full 64-bit
-% integers.
+% Maybe somebody needed to work out what name they were using...
+(de bittable (a b) (getbittable a b))
 
-(de byte (v n)
-  (prog (o s)
-     (setq o (irsh n 3))
-     (setq s (itimes2 (iland n 7) 8))
-     (return (iland 16#ff (irsh (getv v o) s)))))
+(de mapobl (ff)
+   (mapc (oblist) ff))
 
-(de putbyte (v n val)
-  (prog (o s w)
-     (setq o (irsh n 3))
-     (setq s (itimes (iland n 7) 8))
-     (setq w (getv v o))
-     (setq m (idifference 16#ffffffffffffffff (ilsh 16#ff s)))
-     (setq w (iland w m))
-     (setq w (ilor w (ilsh val s)))
-     (putv v o w)
-     (return val)))
-
-
+(de binarywriteblock (stream vec len)
+  (prog (o b i)
+    (setq o (wrs stream))
+    (setq i 0)
+ top(cond
+      ((not (lessp i len)) (go done)))
+    (prinbyte (byte vec i))
+    (setq i (add1 i))
+    (go top)
+ done
+    (wrs o)))
 
 (preserve)
 

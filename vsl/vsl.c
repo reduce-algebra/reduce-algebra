@@ -98,7 +98,7 @@ typedef intptr_t LispObject;
 // 0x70 and 0x78 spare!
 
 #define veclength(h)  (((uintptr_t)(h)) >> 7)
-#define packlength(n) (((LispObject)(n)) << 7)
+#define packlength(n) ((LispObject)(((uintptr_t)(n)) << 7))
 
 // Accessor macros the extract fields from LispObjects ...
 
@@ -134,11 +134,11 @@ typedef intptr_t LispObject;
 
 // Fixnums and Floating point numbers are rather easy!
 
-#define qfixnum(x)     ((x) >> 3)
-#define packfixnum(n)  ((((LispObject)(n)) << 3) + tagFIXNUM)
+#define qfixnum(x)     (((intptr_t)(x) - tagFIXNUM) / 8)
+#define packfixnum(n)  ((LispObject)((((uintptr_t)(n)) << 3) + tagFIXNUM))
 
-#define MIN_FIXNUM     qfixnum(INTPTR_MIN)
-#define MAX_FIXNUM     qfixnum(INTPTR_MAX)
+#define MIN_FIXNUM     qfixnum((INTPTR_MIN & (-(uintptr_t)7u)) | tagFIXNUM)
+#define MAX_FIXNUM     qfixnum((INTPTR_MAX & (-(uintptr_t)7u)) | tagFIXNUM)
 
 #define qfloat(x)      (((double *)((x)-tagFLOAT))[0])
 
@@ -944,7 +944,7 @@ void internalprint(LispObject x)
         case tagFLOAT:
             {   double d =  *((double *)(x - tagFLOAT));
                 if (isnan(d)) strcpy(printbuffer, "NaN");
-                else if (finite(d)) sprintf(printbuffer, "%.14g", d);
+                else if (isfinite(d)) sprintf(printbuffer, "%.14g", d);
                 else strcpy(printbuffer, "inf");
             }
             s = printbuffer;
@@ -2779,7 +2779,7 @@ LispObject Ldivide(LispObject lits, int nargs, ...)
 }
 
 #undef BB
-#define BB(a) makeinteger((a) << sh)
+#define BB(a) makeinteger(((uint64_t)(a)) << sh)
 
 LispObject Lleftshift(LispObject lits, int nargs, ...)
 {   int sh;
@@ -2789,8 +2789,19 @@ LispObject Lleftshift(LispObject lits, int nargs, ...)
     UNARYINTOP("leftshift", x);
 }
 
+// In C right shifts on signed values are "implementation defined" and so
+// to be really cautious I will put in code that should work everywhere!
+
+static inline intptr_t rightshift(intptr_t a, int n)
+{   if (n == 0) return a;
+    uintptr_t w1 = ((uintptr_t)a) >> n; // All the interesting bits.
+    uintptr_t w2 = ((uintptr_t)a) >> (8*sizeof(a)-1); // The top bit.
+    w2 = (-w2) << (8*sizeof(a) - n);    // Bits to force in.
+    return (intptr_t)(w1 | w2);
+}
+
 #undef BB
-#define BB(a) makeinteger((a) >> sh)
+#define BB(a) makeinteger(rightshift(a, sh))
 
 LispObject Lrightshift(LispObject lits, int nargs, ...)
 {   int sh;
@@ -2805,6 +2816,9 @@ LispObject Lrightshift(LispObject lits, int nargs, ...)
 // involved, so protects against attempts to reload an image on a machine
 // other than the one it was build on. If I was being more proper I would
 // include a version number as well.
+
+// I rather demand that ('0'+sizeof(LispObject)) is at most 0x7f here so
+// that the shifts do not overflow in 32-bit signed arithmetic.
 
 #define FILEID (('v' << 0) | ('s' << 8) | ('l' << 16) |   \
                 (('0' + sizeof(LispObject)) << 24))
@@ -3012,7 +3026,7 @@ LispObject Lrds(LispObject lits, int nargs, ...)
     if (isFIXNUM(x))
     {   int n = (int)qfixnum(x);
         if (0 <= n && n < MAX_LISPFILES && lispfiles[n] != NULL &&
-            (file_direction & (1<<n)) == 0)
+            (file_direction & (1u<<n)) == 0)
         {   lispin = n;
             symtype = '?';
             if (curchar == EOF) curchar = '\n';
@@ -3029,7 +3043,7 @@ LispObject Lwrs(LispObject lits, int nargs, ...)
     if (isFIXNUM(x))
     {   int n = (int)qfixnum(x);
         if (0 <= n && n < MAX_LISPFILES && lispfiles[n] != NULL &&
-            (file_direction & (1<<n)) != 0)
+            (file_direction & (1u<<n)) != 0)
         {   lispout = n;
             return packfixnum(old);
         }
@@ -3074,7 +3088,7 @@ LispObject Lopen(LispObject lits, int nargs, ...)
     for (n=4; n<MAX_LISPFILES && lispfiles[n]!=NULL; n++);
     if (n<MAX_LISPFILES)
     {   lispfiles[n] = f;
-        if (y != input) file_direction |= (1 << n);
+        if (y != input) file_direction |= (1u << n);
         return packfixnum(n);
     }
     return error1("too many open files", x);;
@@ -3089,7 +3103,7 @@ LispObject Lclose(LispObject lits, int nargs, ...)
             if (lispout == n) lispout = 1;
             if (lispfiles[n] != NULL) fclose(lispfiles[n]);
             lispfiles[n] = NULL;
-            file_direction &= ~(1<<n);
+            file_direction &= ~(1u<<n);
         }
     }
     return nil;

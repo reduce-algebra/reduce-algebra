@@ -112,6 +112,8 @@ newtok '((!. !~ !*) int_mult);
 newtok '((!. !~ !+) int_add);
 
 infix .~*, .~+;
+precedence .~+, .+;
+precedence .~*, .*;
 
 inline procedure a .~* b;
    a . b;
