@@ -308,57 +308,108 @@
   (when (weq highpointer heaplast)
     (setq heaplast lowpointer)))
 
+%(de gtstr (upper-bound)
+%  % Allocate a string of UPPER-BOUND+1 characters.
+%  (let* ((n-words  (strpack upper-bound))
+%	 (str      (gtheap (+ 1 n-words))))
+%    (setf (getmem str) (mkitem hbytes-tag upper-bound))
+%    (setf (wgetv str n-words) 0)  % clear last word, including last byte
+%    str
+%    ))
+
 (de gtstr (upper-bound)
   % Allocate a string of UPPER-BOUND+1 characters.
   (let* ((n-words  (strpack upper-bound))
 	 (str      (gtheap (+ 1 n-words))))
-    (setf (getmem str) (mkitem hbytes-tag upper-bound))
-    (setf (wgetv str n-words) 0)  % clear last word, including last byte
+    (wputv str 0 (mkitem hbytes-tag upper-bound))
+    (wputv str n-words 0)  % clear last word, including last byte
     str
     ))
 
+
 % GTCONSTSTR is defined in the kernel
+
+%(de gthalfwords (upper-bound)
+%  % Allocate space for a halfwords vector of UPPER-BOUND+1 elements.
+%  (let* ((n-words  (halfwordpack upper-bound))
+%	 (ptr      (gtheap (+ n-words 1))))
+%    (setf (getmem ptr) (mkitem hhalfwords-tag upper-bound))
+%    ptr
+%    ))
 
 (de gthalfwords (upper-bound)
   % Allocate space for a halfwords vector of UPPER-BOUND+1 elements.
   (let* ((n-words  (halfwordpack upper-bound))
 	 (ptr      (gtheap (+ n-words 1))))
-    (setf (getmem ptr) (mkitem hhalfwords-tag upper-bound))
+    (wputv ptr 0 (mkitem hhalfwords-tag upper-bound))
     ptr
     ))
+
+%(de gtvect (upper-bound)
+%  % Allocate space for a vector of UPPER-BOUND+1 elements.
+%  (let ((ptr  (gtheap (+ (vectpack upper-bound) 1))))
+%    (setf (getmem ptr) (mkitem hvect-tag upper-bound))
+%    ptr
+%    ))
 
 (de gtvect (upper-bound)
   % Allocate space for a vector of UPPER-BOUND+1 elements.
   (let ((ptr  (gtheap (+ (vectpack upper-bound) 1))))
-    (setf (getmem ptr) (mkitem hvect-tag upper-bound))
+    (wputv ptr 0 (mkitem hvect-tag upper-bound))
     ptr
     ))
+
+%(de gtevect (upper-bound)
+%  % Allocate space for an evector of UPPER-BOUND+1 elements.
+%  (let ((ptr  (gtheap (+ (evectpack upper-bound) 1))))
+%    (setf (getmem ptr) (mkitem hvect-tag upper-bound))
+%    ptr
+%    ))
 
 (de gtevect (upper-bound)
   % Allocate space for an evector of UPPER-BOUND+1 elements.
   (let ((ptr  (gtheap (+ (evectpack upper-bound) 1))))
-    (setf (getmem ptr) (mkitem hvect-tag upper-bound))
+    (wputv ptr 0 (mkitem hvect-tag upper-bound))
     ptr
     ))
+
+%(de gtcontext ()
+%  % allocate space for an environment descriptor (7 entries)
+%  (let ((ptr (gtheap (+ (contextpack) 1))))
+%    (setf (getmem ptr) (mkitem hvect-tag (contextpack)))
+%    ptr))
 
 (de gtcontext ()
   % allocate space for an environment descriptor (7 entries)
   (let ((ptr (gtheap (+ (contextpack) 1))))
-    (setf (getmem ptr) (mkitem hvect-tag (contextpack)))
+    (wputv ptr 0 (mkitem hvect-tag (contextpack)))
     ptr))
+
+%(de gtbvect (upper-bound)
+%  % allocate space for a bvector - four words per entry
+%  (let ((ptr (gtheap (+ (bvectpack upper-bound) 1))))
+%    (setf (getmem ptr) (mkitem hvect-tag (bvectpack upper-bound)))
+%    ptr))
 
 (de gtbvect (upper-bound)
   % allocate space for a bvector - four words per entry
   (let ((ptr (gtheap (+ (bvectpack upper-bound) 1))))
-    (setf (getmem ptr) (mkitem hvect-tag (bvectpack upper-bound)))
+    (wputv ptr 0 (mkitem hvect-tag (bvectpack upper-bound)))
     ptr))
 
 % GTWRDS is defined in the kernel
 
+%(de gtfixn ()
+%  % Allocate space for a fixnum.
+%  (let ((ptr  (gtheap (+ (fixpack) 1))))
+%    (setf (getmem ptr) (mkitem hwords-tag (- (fixpack) 1)))
+%    ptr
+%    ))
+
 (de gtfixn ()
   % Allocate space for a fixnum.
   (let ((ptr  (gtheap (+ (fixpack) 1))))
-    (setf (getmem ptr) (mkitem hwords-tag (- (fixpack) 1)))
+    (wputv ptr 0 (mkitem hwords-tag (- (fixpack) 1)))
     ptr
     ))
 
@@ -586,6 +637,13 @@
     (go top)
  done
     (wrs o)))
+
+(de mkstring (bound fill)
+  (prog (s)
+    (setq s (gtstr bound))
+    (dotimes (i (add1 bound))
+             (putbyte s i fill))
+    (return (mkstr s))))
 
 (preserve)
 

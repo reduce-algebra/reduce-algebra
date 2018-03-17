@@ -414,7 +414,7 @@ static bool reset_limit_registers(intptr_t vheap_need, bool stack_flag)
 // need for a more genuine GC.
 {   void *p;
     uintptr_t len;
-    bool full;
+    bool full = false;
 // I wonder about the next test - memory would only really be full
 // if there was enough LIVE data to fill all the available free pages,
 // but what is tested here is based on the possibility that all the
@@ -422,9 +422,19 @@ static bool reset_limit_registers(intptr_t vheap_need, bool stack_flag)
 // a factor of 1.5 because fragmentation might behave differently in the
 // old and new spaces so if there are some large vectors they may leave
 // nasty gaps at the end of a page.
-    full = (pages_count <=
-            heap_pages_count +
-            (3*vheap_pages_count + 1)/2);
+//
+    len = (uintptr_t)((char *)vheaplimit - (char *)vfringe);
+// If I get here during system start-up I will try to give myself some
+// more memory. I expect that will usually be possible!
+    if (!garbage_collection_permitted)
+    {   if (fringe <= heaplimit && pages_count == 0)
+            full = !allocate_more_memory();
+        if (vheap_need > (intptr_t)len && pages_count == 0)
+        {   if (!allocate_more_memory()) full = true;
+        }
+    }
+    else full = (pages_count <=
+        heap_pages_count + (3*vheap_pages_count + 1)/2);
     if (fringe <= heaplimit)
     {   if (full) return false;
         p = pages[--pages_count];
@@ -435,10 +445,6 @@ static bool reset_limit_registers(intptr_t vheap_need, bool stack_flag)
         car32(heaplimit) = CSL_PAGE_SIZE;
         fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
         heaplimit = (LispObject)((char *)heaplimit + SPARE);
-    }
-    {   char *vh = (char *)vheaplimit,
-                  *vf = (char *)vfringe;
-        len = (uintptr_t)(vh - vf);
     }
     if (vheap_need > (intptr_t)len)
     {   char *vf, *vh;
@@ -750,13 +756,11 @@ static void real_garbage_collector()
 LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
 {   clock_t t0, t1, t2;
     intptr_t vheap_need = 0;
-// If the trigger is reached I will force a full GC. But only if I am allowed to!
+// If the trigger is reached I will force a full GC. But only if I
+// am allowed to!
     if (reclaim_trigger_count == reclaim_trigger_target &&
         garbage_collection_permitted)
         stg_class = GC_USER_HARD;
-// If I get here during system start-up I will try to give myself some
-// more memory. I expect that will usually be possible!
-    if (!garbage_collection_permitted) allocate_more_memory();
 #ifdef CONSERVATIVE
 // How do I know that all callee-save registers are on the stack by the
 // stage that I get to the level that C_stacktop now refers to?
