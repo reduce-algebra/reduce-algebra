@@ -43,7 +43,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber* sigaddr* arith-exception-type*))
+(fluid '(errornumber* sigaddr* faultaddr* arith-exception-type* stack-pointer*))
 
 (compiletime
  (progn
@@ -66,14 +66,17 @@
        `((*entry ,function expr 0)
      ,handler
      (*move (wconst ,signumber) (reg 1))
-     (*move (reg 1)(fluid errornumber*))
-     % for arithmetic expressions, get exception subtype:
-     % Reg RSI contains a pointer to a siginto_t structure, and at offset 8
+     (*move (reg 1) (fluid errornumber*))
+     % Reg RSI contains a pointer to a siginto_t structure
+     % for SIGILL, SIGFPE, SIGSEGV, SIGBUS, get faulting address (at offset 16 of siginfo_t structure)
+     (*move (memory (reg rsi) 16) (fluid faultaddr*))
+     % for arithmetic expressions, get exception subtype: at offset 8 of siginfo_t structure
      % there is si_code (4 byte integer) which is the FPE subtype
      (*field (reg 2) (displacement (reg rsi) 8) 32 32)
      (*move (reg 2) (fluid arith-exception-type*))
      (*move ,handler (reg 2))
      (*move (memory (reg rdx) 168) (fluid sigaddr*))   % instruction pointer at fault
+     (*move (memory (reg rdx) 160) (fluid stack-pointer*))   % stack pointer at fault
      (*link sigrelse expr 2)
      (*move (quote ,errorstring) (reg 1))
      (*jcall sigunwind))
@@ -165,6 +168,16 @@
      (pop (reg 2))
      (*move (fluid errornumber*) (reg 1))
      (*wplus2 (reg 1)(wconst 10000))
+     % if the error number = 11 (segmentation violation, try to check for stack overflow
+     (*jumpnoteq (label nostackoverflow) (fluid errornumber*) 11)
+     % if rsp + 1024 >= faultaddr* >= rsp - 1024, assume a stack overflow
+     (*move (fluid faultaddr*) (reg 3))
+     (subq 1024 (reg 3))
+     (*jumpwgreaterp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
+     (addq 2048 (reg 3))
+     (*jumpwlessp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
+     (*move (quote "Stack overflow") (reg 2))
+    nostackoverflow
      % if the error number = 8 (arithmetic exception), pass the subtype in register 3
      (*move (wconst 0) (reg 3))
      (*jumpnoteq (label done) (fluid errornumber*) 8)
@@ -243,5 +256,8 @@
       )
       (bldmsg "%w%w" trap-type extra-info)))
  
+(de mask-terminal-interrupt (block?)
+  (mask_signal 2 (if block? 1 0)))
+
 % End of file.
  

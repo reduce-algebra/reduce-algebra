@@ -529,13 +529,44 @@
 
 (put 'call 'asmpseudoop 'asmprintcall)
 (put 'jmp 'asmpseudoop 'asmprintcall)
+(put 'jo 'asmpseudoop 'asmprintcall)
+(put 'jno 'asmpseudoop 'asmprintcall)
+(put 'jb 'asmpseudoop 'asmprintcall)
+(put 'jnae 'asmpseudoop 'asmprintcall)
+(put 'jnb 'asmpseudoop 'asmprintcall)
+(put 'jae 'asmpseudoop 'asmprintcall)
+(put 'je 'asmpseudoop 'asmprintcall)
+(put 'jz 'asmpseudoop 'asmprintcall)
+(put 'jne 'asmpseudoop 'asmprintcall)
+(put 'jnz 'asmpseudoop 'asmprintcall)
+(put 'jbe 'asmpseudoop 'asmprintcall)
+(put 'jna 'asmpseudoop 'asmprintcall)
+(put 'jnbe 'asmpseudoop 'asmprintcall)
+(put 'ja 'asmpseudoop 'asmprintcall)
+(put 'js 'asmpseudoop 'asmprintcall)
+(put 'jns 'asmpseudoop 'asmprintcall)
+(put 'jp 'asmpseudoop 'asmprintcall)
+(put 'jpe 'asmpseudoop 'asmprintcall)
+(put 'jnp 'asmpseudoop 'asmprintcall)
+(put 'jpo 'asmpseudoop 'asmprintcall)
+(put 'jl 'asmpseudoop 'asmprintcall)
+(put 'jnge 'asmpseudoop 'asmprintcall)
+(put 'jnl 'asmpseudoop 'asmprintcall)
+(put 'jge 'asmpseudoop 'asmprintcall)
+(put 'jle 'asmpseudoop 'asmprintcall)
+(put 'jng 'asmpseudoop 'asmprintcall)
+(put 'jnle 'asmpseudoop 'asmprintcall)
+(put 'jg 'asmpseudoop 'asmprintcall)
+
 
 (de asmprintcall (x)
   (prin2 '! )
   (printopcode (car x))
   (prin2 '! )
   (if (eqcar (cadr x) 'reg) (prin2 '!*))
-  (printoperand (cadr x))
+  (cond ((stringp (cadr x)) (prin2 (cadr x)))
+	((idp (cadr x)) (prin2 (findlabel (cadr x))))
+	(t (printoperand (cadr x))))
   (prin2 !$eol!$)
 )
 
@@ -604,10 +635,20 @@
 
 (put 'string 'asmpseudoop 'asmpseudoprintstring)
 
+(de islocallabelstring (s)
+% returns true if string s matches Lnnnn where n is a digit
+  (and (= (size s) 4) (= (indx s 0) 108)
+       (> (indx s 1) 47) (< (indx s 1) 58)
+       (> (indx s 2) 47) (< (indx s 2) 58)
+       (> (indx s 3) 47) (< (indx s 3) 58)
+       (> (indx s 4) 47) (< (indx s 4) 58)))
+
 (de printoperand (x)
-  (cond ((stringp x) (prin2 x))
+  (cond ((stringp x) (prin2 x)
+         (if (islocallabelstring x) (prin2 "(%rip)")))
         ((numberp x) (printnumericoperand x))
-        ((idp x) (prin2 (findlabel x)))
+        ((idp x) (prin2 (findlabel x))
+         (if (not (eq x 'undefinedfunction)) (prin2 "(%rip)")))
         (t (prog (hd fn)
                  (setq hd (car x))
                  (cond ((setq fn (get hd 'operandprintfunction)) 
@@ -636,7 +677,8 @@
 	 'symfnc 
 	 (list 'times2 
 	       (compiler-constant 'addressingunitsperfunctioncell) 
-	       (list 'idloc (cadr x))))))
+	       (list 'idloc (cadr x)))))
+  (prin2 "(%rip)"))
 
 (put 'entry 'operandprintfunction 'asmentry)
 
@@ -660,7 +702,8 @@
 (de asmprintvaluecell (x)
   (printexpression (list 'plus2 'symval 
                          (list 'times (compiler-constant 'addressingunitsperitem) 
-                          (list 'idloc (cadr x))))))
+                          (list 'idloc (cadr x)))))
+  (prin2 "(%rip)"))
 
 (deflist '((fluid asmprintvaluecell) (!$fluid asmprintvaluecell) 
            (global asmprintvaluecell) (!$global asmprintvaluecell))

@@ -236,7 +236,7 @@
 %	   (Apply Y (list X)))
 %	  ((setq Y (get (first X) 'InstructionDepositMacro))
 %	   (apply2safe y (cdr x)))
-%	  (t (StdError (BldMsg "Unknown AMD64 instruction %p" X))))))
+%	  (t (StdError (BldMsg "Unknown x86_64 instruction %p" X))))))
 
 
 (de DepositLabel (x) nil)
@@ -281,7 +281,7 @@
 	   (Apply Y (list X))) 
 	  ((setq Y (get (first X) 'InstructionDepositMacro))
 	   (apply2safe y (cdr x))) 
-	  (t (StdError (BldMsg "Unknown AMD64 instruction %p" X))))
+	  (t (StdError (BldMsg "Unknown x86_64 instruction %p" X))))
     (when REX? (putbyte REX? 0 REX-Prefix)) %overwrite REX-Prefix
 
     (when (and (not (eq 0 allowextrarexprefix))
@@ -379,7 +379,9 @@
 %  additional test functions
 
 (fluid '(sregs xmmregs))
+
 (setq sregs '(ES CS SS DS FS GS ))
+
 (setq xmmregs '(xmm0 xmm1 xmm2 xmm3 xmm4 xmm5 xmm6 xmm7
 		xmm8 xmm9 xmm10 xmm11 xmm12 xmm13 xmm14 xmm15))
 
@@ -552,7 +554,7 @@
 	  (t (modR/Merror op2)))))
 
 (de modR/Merror(op2)
-    (stderror (bldmsg "illegal AMD64 addressing mode %w" op2)))
+    (stderror (bldmsg "illegal x86_64 addressing mode %w" op2)))
 
 (de depositextension(op2)
     % generate a relocated fullword extension
@@ -1439,7 +1441,7 @@
 	     (return (apply2safe y (cdr x))))
        (when (setq Y (get (car x) 'INSTRUCTIONLENGTH))
 	     (return (if (numberp y) y (apply y (list x)))))
-       (stderror (bldmsg "*** Unknown AMD64 instruction:%w " x))))
+       (stderror (bldmsg "*** Unknown x86_64 instruction:%w " x))))
 
 (de apply2safe(y x) % ensure that plly has two parameters at least
      (cond ((null x) (apply y (list nil nil)))
@@ -1850,7 +1852,7 @@
 		  ))
 
 
-(de reg64bitP (i) (reg64bitp1 !64bitregs i)))
+(de reg64bitP (i) (reg64bitp1 !64bitregs i))
 
 (de upperreg64p (i) (reg64bitp1 upper64bitregs i))
 

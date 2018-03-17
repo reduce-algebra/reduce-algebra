@@ -171,9 +171,9 @@
  
 % Defined in sigs.c
 %
-(external-function sun3_sigset               (signame handler))
-(external-function sigrelse             (signame ))
- 
+(external-function sun3_sigset         (signame handler))
+(external-function sigrelse            (signame))
+(external-function mask_signal         (signo block))
  
 % Defined In unexec.c
 %

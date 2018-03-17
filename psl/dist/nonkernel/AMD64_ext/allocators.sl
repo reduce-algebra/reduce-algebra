@@ -77,10 +77,6 @@
 
 (compiletime (load if-system))
 
-(de eval(x) x)
-(de equal (x y) (eq x y))
-(de errorprintf(x) (console-print-string x) (console-newline))
-
 (global '(heapupperbound heaplowerbound heaplast heaptrapbound heaplast
           heaptrapped nextbps lastbps))
 

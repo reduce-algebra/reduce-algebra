@@ -40,6 +40,10 @@
 #include <signal.h>
 #include <sys/stat.h>
 
+#ifndef ALTSIGSTACKSIZE
+#define ALTSIGSTACKSIZE (16*SIGSTKSZ)
+#endif
+
 #ifndef LINUX
 #include <ieeefp.h>
 fp_rnd fp_round;
@@ -51,16 +55,30 @@ int forminit(FILE **,FILE **);
 
 struct sigaction act;
 
+static char alternate_signalstack[ALTSIGSTACKSIZE];
+static stack_t stackinfo = { (void *) alternate_signalstack, 0, sizeof(alternate_signalstack) };
+static stack_t *stackinfo_ptr = NULL;
+
 void
 sun3_sigset( sig, action )
 void (*action)();
 int sig;
 {
    struct sigaction act = {0};
+   
    if (signal(sig, SIG_IGN) != SIG_IGN) {
     //#signal(sig, action);
      act.sa_sigaction = action;
      act.sa_flags = SA_SIGINFO | SA_RESTART;
+
+     // set up alternate signal stack for SIGSEGV
+     if (sig == 11) {
+       if (stackinfo_ptr == NULL) {
+           stackinfo_ptr = &stackinfo;
+           sigaltstack(stackinfo_ptr,NULL);
+        }
+        act.sa_flags |= SA_ONSTACK;
+     }
      sigaction(sig, &act, (void*)0);
    }
 
@@ -106,4 +124,16 @@ int
 ieee_flags(long long x1,long long x2,long long x3,long long x4)
 {
   if(x1 == 10)  forminit((FILE **)x2,(FILE **)x3);
+}
+
+/*
+ * block / unblock a specific signal
+ */
+void mask_signal(int signo, int block)
+{
+    sigset_t sigset;
+
+    sigemptyset(&sigset);
+    sigaddset(&sigset,signo);
+    sigprocmask(block != 0 ? SIG_BLOCK : SIG_UNBLOCK, &sigset, NULL);
 }
