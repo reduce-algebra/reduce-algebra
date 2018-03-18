@@ -15,15 +15,16 @@
          (lsh tag 56)
          (land x 16#00ffffffffffffff))))))
 
-(trace '(putbittable mkitem lap))
-(trace '(putbyte puthalfword putword wputv)
+(trace '(mkitem lap))
+% (trace '(putbyte))
+(trace '(puthalfword putword wputv))
 
 (setq *plap t)
 (setq *pgwd t)
 
 
 (faslout 'foo)
-(de bar (x) x)
+(de bar (x) "hello")
 (faslend)
 
 XXX

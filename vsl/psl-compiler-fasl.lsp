@@ -140,7 +140,8 @@
 
 (rdf "psl-support-2.lsp")
 
-% Now the things just needed for creating fasl files...
+% Now the things just needed for creating fasl files... I will add things in
+% here to start with and maybe move them to psl-support-2.lsp later...
 
 (de concat (a b) (string-concat a b))
 
@@ -644,6 +645,15 @@
     (dotimes (i (add1 bound))
              (putbyte s i fill))
     (return (mkstr s))))
+
+% I think that PSL made a mistake when it defined FIELD to count bits
+% from the most significant, because that puts implicit information about
+% whether we are thinking of a 32 or 64 bit system within it.
+
+(de field (x start length)
+   (prog ()
+      (setq x (rsh x (difference 64 (plus start length))))
+      (return (land x (sub1 (lsh 1 length))))))
 
 (preserve)
 
