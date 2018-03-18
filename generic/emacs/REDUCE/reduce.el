@@ -1,21 +1,22 @@
-;;; reduce.el --- Run ESL REDUCE.
+;;; reduce.el --- Load and run ESL REDUCE.
 
 ;;; Author: Francis J. Wright.
 ;;; Based on code by Anthony C. Hearn.
 
-;; Run REDUCE on Emacs Lisp with input via the minibuffer and output
-;; to a normal buffer.
+;; Load and run REDUCE on Emacs Lisp with input via the minibuffer and
+;; output to a normal buffer.
 
-(require 'esl)
-
-;; Defines LOAD-MODULE.
+(require 'esl)							; defines LOAD-MODULE.
 
 ;; LOAD-PACKAGE is defined in "rlisp/module.red", so...
+(declare-function LOAD-PACKAGE "fasl/module" (U))
 (LOAD-MODULE 'MODULE)
 
-;; LOAD-PACKAGE calls EVLOAD and each package fasl file calls
-;; CREATE!-PACKAGE, both of which are defined in "eslprolo", so...
+;; Each package fasl file calls CREATE!-PACKAGE, which is defined in
+;; "eslprolo.red", so...
 (LOAD-MODULE 'ESLPROLO)
+
+(defvar LOADED-PACKAGES*)
 
 (setq LOADED-PACKAGES* (list 'MODULE 'ESLPROLO))
 
@@ -29,6 +30,11 @@
 
 ;; (INITREDUCE)
 ;; Currently need to run STANDARD-LISP then run (INITREDUCE), or...
+
+(with-no-warnings			   ; suppress warning about lack of prefix
+  (defvar STATCOUNTER))
+(declare-function INITREDUCE "fasl/eslrend" ())
+(declare-function BEGIN "fasl/eslrend" ())
 
 (defun reduce ()
   "Run REDUCE with input via the minibuffer and output via a buffer."
@@ -45,9 +51,10 @@
 		(standard-output (current-buffer))
 		;; Make (READCH) read from the minibuffer:
 		(esl--readch-use-minibuffer t))
-	(if (zerop STATCOUNTER)
-		(INITREDUCE)
-	  (BEGIN))))
+	(catch 'QUIT
+	  (if (zerop STATCOUNTER)
+		  (INITREDUCE)
+		(BEGIN)))))
 
 (provide 'reduce)
 

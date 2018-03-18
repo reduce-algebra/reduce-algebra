@@ -10,19 +10,11 @@
 
 (require 'esl)
 
-;; For the Emacs Lisp compiler:
-(defvar CURSYM*)
-(defvar OLDCHAN*)
-(defvar TTYPE*)
-(defvar NXTSYM*)
-(defvar CRCHAR*)
-(defvar *MODE)
-(defvar FNAME*)
-
 ;; Needed if this file is *not* compiled to read module slfns in "rlisp.red":
 (cl-eval-when (eval)
   (setq max-lisp-eval-depth 2000
 		max-specpdl-size 2500))
+
 
 ; Standard LISP BOOT File.
 

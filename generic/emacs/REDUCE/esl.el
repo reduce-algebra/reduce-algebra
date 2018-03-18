@@ -828,21 +828,24 @@ the name may be used subsequently as a variable."
 ;;; Variables and Bindings
 ;;; ======================
 
-(defun FLUID (idlist)
+(defmacro FLUID (idlist)
   "FLUID(IDLIST:id-list):NIL eval, spread
 The ids in IDLIST are declared as FLUID type variables (ids not
 previously declared are initialized to NIL). Variables in IDLIST
 already declared FLUID are ignored. Changing a variable's type
 from GLOBAL to FLUID is not permissible and results in the error:
 ***** ID cannot be changed to FLUID"
-  (mapc (lambda (x)
-		  (when (not (FLUIDP x))
-			(if (GLOBALP x) (error "%s cannot be changed to FLUID" x)) 
-			;; (set x nil)
-			(eval (list 'defvar x nil "Standard LISP fluid variable."))
-			(put x 'FLUID t)))
-		idlist)
-  nil)
+  (cons 'prog1
+		(cons nil
+			  (mapcan
+			   (lambda (x)
+				 `((with-no-warnings ; suppress warning about lack of prefix
+					 (defvar ,x nil "Standard LISP fluid variable."))
+				   (unless (FLUIDP ,x)
+					 (if (GLOBALP ',x)
+						 (error "%s cannot be changed to FLUID" ',x))
+					 (put ',x 'FLUID t))))
+			   (eval idlist)))))
 
 (defun FLUIDP (u)
   "FLUIDP(U:any):boolean eval, spread
@@ -850,7 +853,7 @@ If U has been declared FLUID (by declaration only) T is returned,
 otherwise NIL is returned."
   (get u 'FLUID))
 
-(defun GLOBAL (idlist)
+(defmacro GLOBAL (idlist)
   "GLOBAL(IDLIST:id-list):NIL eval, spread
 The ids of IDLIST are declared global type variables. If an id
 has not been declared previously it is initialized to
@@ -858,14 +861,17 @@ NIL. Variables already declared GLOBAL are ignored. Changing a
 variables type from FLUID to GLOBAL is not permissible and
 results in the error:
 ***** ID cannot be changed to GLOBAL"
-  (mapc (lambda (x)
-		  (when (not (GLOBALP x))
-			(if (FLUIDP x) (error "%s cannot be changed to GLOBAL" x))
-			;; (set x nil)
-			(eval (list 'defvar x nil "Standard LISP global variable."))
-			(put x 'GLOBAL t)))
-		idlist)
-  nil)
+  (cons 'prog1
+		(cons nil
+			  (mapcan
+			   (lambda (x)
+				 `((with-no-warnings ; suppress warning about lack of prefix
+					 (defvar ,x nil "Standard LISP global variable."))
+				   (unless (GLOBALP ,x)
+					 (if (FLUIDP ',x)
+						 (error "%s cannot be changed to GLOBAL" ',x))
+					 (put ',x 'GLOBAL t))))
+			   (eval idlist)))))
 
 (defun GLOBALP (u)
   "GLOBALP(U:any):boolean eval, spread
