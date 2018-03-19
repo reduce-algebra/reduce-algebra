@@ -192,8 +192,10 @@ convention is to use the escape character;
 esc!* := '!;
 
 
-% Make OFF DEFN reinstate property lists saved during ON DEFN:
-put('defn, 'simpfg, '((nil (SL!-REINSTATE!-PLISTS))));
+% Make ON DEFN load the prettyprinter if necessary and
+% OFF DEFN reinstate property lists saved during ON DEFN:
+put('defn, 'simpfg, '((t (!\require '!\eslpretty))
+                      (nil (!\esl!-reinstate!-plists))));
 
 endmodule;
 

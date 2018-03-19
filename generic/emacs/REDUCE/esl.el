@@ -626,7 +626,7 @@ Its value should normally be nil, except while ON DEFN.")
 	  (push (cons symbol (copy-tree (symbol-plist symbol)))
 			esl--saved-plist-alist)))
 
-(defun ESL-REINSTATE-PLISTS ()
+(defun esl-reinstate-plists ()
   "Reinstate all property lists saved during ON DEF."
   (mapc (lambda (s) (setplist (car s) (cdr s)))
 		esl--saved-plist-alist)
@@ -750,9 +750,9 @@ FEXPR PROCEDURE DM(U);
 	   ;; Include macro name as first arg:
 	   (setq ,@param (cons ',mname ,@param))
 	   ,fn)
-	 (if *COMP
-		 (let ((byte-compile-warnings '(not free-vars unresolved)))
-		   (byte-compile ',mname)))
+	 ;; (if *COMP
+	 ;; 	 (let ((byte-compile-warnings '(not free-vars unresolved)))
+	 ;; 	   (byte-compile ',mname)))
 	 ',mname))
 
 (defun GETD (fname)
@@ -835,17 +835,30 @@ previously declared are initialized to NIL). Variables in IDLIST
 already declared FLUID are ignored. Changing a variable's type
 from GLOBAL to FLUID is not permissible and results in the error:
 ***** ID cannot be changed to FLUID"
-  (cons 'prog1
-		(cons nil
-			  (mapcan
-			   (lambda (x)
-				 `((with-no-warnings ; suppress warning about lack of prefix
-					 (defvar ,x nil "Standard LISP fluid variable."))
-				   (unless (FLUIDP ,x)
-					 (if (GLOBALP ',x)
-						 (error "%s cannot be changed to FLUID" ',x))
-					 (put ',x 'FLUID t))))
-			   (eval idlist)))))
+  (if (memq (car idlist) '(quote QUOTE))
+	  ;; Assume a top-level call that needs to output `defvar' forms
+	  ;; at compile time.
+	  (cons 'prog1
+			(cons nil
+				  (mapcan
+				   (lambda (x)
+					 `((with-no-warnings ; suppress warning about lack of prefix
+						 (defvar ,x nil "Standard LISP fluid variable."))
+					   (unless (FLUIDP ',x)
+						 (if (GLOBALP ',x)
+							 (error "%s cannot be changed to FLUID" ',x))
+						 (put ',x 'FLUID t))))
+				   (eval idlist))))
+	;; Assume a run-time call that need not output `defvar' forms.
+	`(prog1 nil
+	   (mapc
+		(lambda (x)
+		  (unless (FLUIDP x)
+			(if (GLOBALP x)
+				(error "%s cannot be changed to FLUID" x))
+			(put x 'FLUID t)
+			(set x nil)))
+		,idlist))))
 
 (defun FLUIDP (u)
   "FLUIDP(U:any):boolean eval, spread
@@ -867,7 +880,7 @@ results in the error:
 			   (lambda (x)
 				 `((with-no-warnings ; suppress warning about lack of prefix
 					 (defvar ,x nil "Standard LISP global variable."))
-				   (unless (GLOBALP ,x)
+				   (unless (GLOBALP ',x)
 					 (if (FLUIDP ',x)
 						 (error "%s cannot be changed to GLOBAL" ',x))
 					 (put ',x 'GLOBAL t))))
@@ -1628,8 +1641,8 @@ FEXPR PROCEDURE QUOTE(U);
 ;;; Input and Output
 ;;; ================
 
-;; An ESL filehandle has the form (stream . mode) where mode is 'input
-;; or 'output and stream is as defined below:
+;; An ESL filehandle has the form (stream . mode) where mode is 'INPUT
+;; or 'OUTPUT and stream is as defined below:
 
 (defvar esl--read-stream nil
   "The current input stream.
@@ -1641,6 +1654,15 @@ A buffer stream represents the input file opened in it.")
 The stream nil represents the terminal, an interactive window.
 A buffer stream represents the output file to which it will be
 saved when it is closed.")
+
+(defconst esl--read-prefix " ESL-IN "
+  "Prefixed to file names to make input buffer names.")
+
+(defconst esl--write-prefix " ESL-OUT "
+  "Prefixed to file names to make output buffer names.")
+
+(defconst esl--write-prefix-length (length esl--write-prefix)
+  "Length of `esl--write-prefix' string.")
 
 (defconst esl--default-output-buffer-name "*Standard LISP*"
   "The name of the terminal window buffer.")
@@ -1667,7 +1689,11 @@ closed.
 						t)
 					   ((eq (cdr filehandle) 'OUTPUT)
 						(with-current-buffer buf
-						  (write-file (substring (buffer-name) 8) t))
+						  ;; Filename follows esl--write-prefix in
+						  ;; buffer name, so...
+						  (write-file
+						   (substring (buffer-name)
+									  esl--write-prefix-length) t))
 						t)))
 			(kill-buffer buf)
 		  (error "%s could not be closed" filehandle))))
@@ -1719,14 +1745,14 @@ OUTPUT or the file can't be opened.
 		 ;; Read file into a buffer and return (buffer . 'INPUT).
 		 (save-current-buffer
 		   ;; Leading space means buffer hidden and no undo:
-		   (set-buffer (get-buffer-create (concat " ESL-IN " file)))
+		   (set-buffer (get-buffer-create (concat esl--read-prefix file)))
 		   ;; Allow re-opening a file and continuing to read it:
 		   (if (zerop (buffer-size))
 			   (insert-file-contents-literally file))
 		   (cons (current-buffer) 'INPUT)))
 		((eq how 'OUTPUT)
 		 ;; Create a new file buffer and return (buffer . 'OUTPUT).
-		 (cons (get-buffer-create (concat " ESL-OUT " file)) 'OUTPUT))
+		 (cons (get-buffer-create (concat esl--write-prefix file)) 'OUTPUT))
 		(t (error "%s is not option for OPEN" how))))
 
 (defun PAGELENGTH (len)
@@ -2193,7 +2219,8 @@ NAME should be an identifier or string."
 		(setq name (STRING-DOWNCASE name))
 		(princ (format "*** Compiling %s ..." name))
 		;; Output the Emacs Lisp version of the file:
-		(setq faslout-filehandle (OPEN (setq name.el (concat name ".el")) 'OUTPUT))
+		(setq faslout-filehandle
+			  (OPEN (setq name.el (concat name ".el")) 'OUTPUT))
 		(setq faslout-stream (car faslout-filehandle))
 		(setq ichan (OPEN (concat name ".red") 'INPUT))
 		(setq oldichan (RDS ichan))
@@ -2203,7 +2230,7 @@ NAME should be an identifier or string."
 		  (advice-remove 'PRETTYPRINT defn-print)
 		  (CLOSE ichan) (RDS oldichan)
 		  (CLOSE faslout-filehandle)
-		  (ESL-REINSTATE-PLISTS))
+		  (esl-reinstate-plists))
 		;; Compile and then delete the Emacs Lisp version of the file:
 		(if (byte-compile-file name.el)
 			(progn
@@ -2263,20 +2290,29 @@ NAME should be an identifier or string."
 
 (defvar *INT)
 (defvar *writingfaslfile nil
-  "Set to t by FASLOUT and reset to nil by FASLEND.")
+  "REDUCE variable set to t by FASLOUT and reset to nil by FASLEND.")
 
 (defvar esl--faslout-filehandle)
 (defvar esl--faslout-name.el)
 (defvar esl--faslout-stream)
 
+(declare-function SUPERPRINM "eslpretty" (X LMAR))
+
 (defun esl--faslout-prettyprint-override (x)
-  "Prettyprint X with output to the faslout stream.
-Used for faslout Lisp generation, which must generate Emacs Lisp,
-not Standard Lisp, since it will then be compiled by Emacs."
-  ;; However, if the Lisp source code will be deleted then it is
-  ;; overkill and `print' would suffice!
-  (pp x esl--faslout-stream)
-  (terpri esl--faslout-stream))
+  "Print X with output to the faslout stream.
+For readable output, this function prettyprints each form
+followed by a blank line.  But if the Lisp source code will be
+deleted then `print' would suffice!"
+  (let ((standard-output esl--faslout-stream))
+	(SUPERPRINM x 0) (terpri) (terpri) nil))
+
+(defun esl--faslout-explode-override (u)
+  "As (EXPLODE U) but using Emacs Lisp syntax.
+Used for faslout Lisp generation, which must be Emacs Lisp,
+not Standard LISP, since it will be compiled by Emacs."
+  (seq-map
+   (lambda (c) (intern (string c)))
+   (prin1-to-string u)))
 
 (defun FASLOUT (name)
   "Compile subsequent input into ESL FASL file \"NAME.elc\".
@@ -2293,8 +2329,9 @@ When all done, execute FASLEND;\n\n" name)))
 		(OPEN (setq esl--faslout-name.el (concat name ".el")) 'OUTPUT))
   (setq esl--faslout-stream (car esl--faslout-filehandle))
   ;; Must have a definition of PRETTYPRINT to advise, so...
-  (or (fboundp 'PRETTYPRINT) (defalias 'PRETTYPRINT 'pp))
-  (advice-add 'PRETTYPRINT :override #'esl--faslout-prettyprint-override))
+  (require 'eslpretty)
+  (advice-add 'PRETTYPRINT :override #'esl--faslout-prettyprint-override)
+  (advice-add 'EXPLODE :override #'esl--faslout-explode-override))
 	
 (FLAG '(FASLOUT) 'OPFN)
 (FLAG '(FASLOUT) 'NOVAL)
@@ -2306,10 +2343,11 @@ When all done, execute FASLEND;\n\n" name)))
   ;; Functions are often used before they are defined and several
   ;; modules refer to undefined free variables, so...
   (let ((byte-compile-warnings '(not free-vars unresolved)))
+	(advice-remove 'EXPLODE #'esl--faslout-explode-override)
 	(advice-remove 'PRETTYPRINT #'esl--faslout-prettyprint-override)
 	(CLOSE esl--faslout-filehandle)
 	(setq *writingfaslfile nil *DEFN nil)
-	(ESL-REINSTATE-PLISTS)
+	(esl-reinstate-plists)
 	;; Compile and then delete the Emacs Lisp version of the file:
 	(princ (format "*** Compiling %s ..." esl--faslout-name.el))
 	(if (byte-compile-file esl--faslout-name.el)
