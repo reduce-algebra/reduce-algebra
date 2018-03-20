@@ -2,7 +2,7 @@
 
 # First I will build the PSL cross compiler...
 
-./make-psl-compiler-asm.sh
+./AMDasm.sh
 
 # Now I use the cross-compiler to make the kernel of the kernel, ie
 # the two files main.s and dmain.s. Those get assembled and linked with
@@ -64,7 +64,7 @@ cat >tmp.sl <<EOF
 
 EOF
 
-script -c "./vsl -i pslcomp-asm.img tmp.sl" make-main.log
+script -c "./vsl -i AMDasm.img tmp.sl" AMDmain.log
 
 # end of script
 

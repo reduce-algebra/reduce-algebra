@@ -352,3 +352,17 @@
 (de isizev (u) (size u))
 (de igetv (a b) (indx a b))
 
+(de channelposn (f)
+  (prog (r)
+    (setq f (wrs f))
+    (setq r (posn))
+    (wrs f)
+    (return r)))
+
+(de channelwritechar (f ch)
+  (setq f (wrs f))
+  (prin2 (if (numberp ch) (code-char ch) ch))
+  (wrs f)
+  ch)
+
+% end of file

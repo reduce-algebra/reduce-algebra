@@ -5,9 +5,7 @@
 #   (faslout 'foo) (dskin "file") (faslend)
 # and create a file called "foo.b".
 
-# It has the same configuration as make-psl-compiler-asm.sh
-
 make psl OPT="-O0 -g"
 
-script -c "./vsl psl-compiler-fasl.lsp -o pslcomp-fasl.img" pslcomp-fasl.log
+script -c "./vsl Macfasl.lsp -o Macfasl.img" Macfasl.log
 
