@@ -1031,7 +1031,7 @@
 	)
    ))
 
-(de asmp () !*writingasmfile)
+(de asmp (u) !*writingasmfile)
 
 (DefCMacro *Call
    ((RegP)	  (CALL ARGONE))

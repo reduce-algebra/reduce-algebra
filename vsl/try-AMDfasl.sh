@@ -37,6 +37,12 @@
 '(trace '(jmp!.!L!T!H jmp!.!I!N!S!T!R jmpl apply2safe
          shortlabelp op-jump-short indirectadrp op-jump-effa adrp)) 
 
+(rdf "mytrace.lsp")
+
+(mytrace 'jmp!.!L!T!H 2)
+(mytrace 'jmp!.!I!N!S!T!R 2)
+(mytrace 'op-jump-effa 2)
+
 (setq *plap t)
 (setq *pgwd t)
 (setq *testlap t)
