@@ -722,7 +722,12 @@ const char *elx_line = NULL;
 int elx_count = 0;
 
 int my_getc(FILE *f)
-{   if (f != stdin) return getc(f);
+{
+#ifdef NOLIBEDIT
+// This can help while running under a debugger!
+    return getc(f);
+#else
+    if (f != stdin) return getc(f);
     if (elx_count == 0)
     {   elx_line = el_gets(elx_e, &elx_count);
         if (elx_count <= 0) return EOF;
@@ -731,6 +736,7 @@ int my_getc(FILE *f)
     }
     elx_count--;
     return *elx_line++;
+#endif
 }
 
 int rdch()
@@ -768,7 +774,7 @@ void internalprint(LispObject x)
     LispObject pn;
     switch (x & TAGBITS)
     {   case tagCONS:
-            if (x == 0)    // can only occus in case of bugs here.
+            if (x == 0)    // can only occur in case of bugs here.
             {   wrch('#');
                 return;
             }
@@ -819,8 +825,8 @@ void internalprint(LispObject x)
             else if (len != 0)
             {   esc = 0;
 #ifdef PSL
-                if (!islower((int)s[0]) &&
-                    !isupper((int)s[0]) &&
+                if (!(islower((int)s[0]) && qvalue(raise) == nil) &&
+                    !(isupper((int)s[0]) && qvalue(lower) == nil) &&
 // My implmentation here will fail to put an escape character in front
 // of a symbol named "+1", resulting in it reading back in as an integer.
 // PSL seems to have some sort of input concept of "maybe a number but I can't
@@ -834,13 +840,13 @@ void internalprint(LispObject x)
                     s[0]!='>' && s[0]!='/' && s[0]!='?' && s[0]!='\\' &&
                     s[0]!='{' && s[0]!='}' && s[0]!='_') esc++;
 #else
-                if (!islower((int)s[0])) esc++;
+                if (!(islower((int)s[0]) && qvalue(raise) == nil)) esc++;
 #endif
                 for (i=1; i<len; i++)
-                {   if (!islower((int)s[i]) &&
+                {   if (!(islower((int)s[i]) && qvalue(raise) == nil) &&
                         !isdigit((int)s[i]) &&
 #ifdef PSL
-                        !isupper((int)s[i]) &&
+                        !(isupper((int)s[i]) && qvalue(lower) == nil) &&
                         s[i]!='!' && s[i]!='+' && s[i]!='-' &&
                         s[i]!='$' && s[i]!='^' && s[i]!='&' && s[i]!='*' &&
                         s[i]!='_' && s[i]!='=' && s[i]!=';' && s[i]!=':' &&
@@ -852,8 +858,8 @@ void internalprint(LispObject x)
                 }
                 checkspace(len + esc);
 #ifdef PSL
-                if (!islower((int)s[0]) &&
-                    !isupper((int)s[0]) &&
+                if (!(islower((int)s[0]) && qvalue(raise) == nil) &&
+                    !(isupper((int)s[0]) && qvalue(lower) == nil) &&
 // My implmentation here will fail to put an escape character in front
 // of a symbol named "+1", resulting in it reading back in as an integer.
 // PSL seems to have some sort of input concept of "maybe a number but I can't
@@ -867,14 +873,14 @@ void internalprint(LispObject x)
                     s[0]!='>' && s[0]!='/' && s[0]!='?' && s[0]!='\\' &&
                     s[0]!='{' && s[0]!='}' && s[0]!='_') wrch('!');
 #else
-                if (!islower((int)s[0])) wrch('!');
+                if (!(islower((int)s[0]) && qvalue(raise) == nil)) wrch('!');
 #endif
                 wrch(s[0]);
                 for (i=1; i<len; i++)
-                {   if (!islower((int)s[i]) &&
+                {   if (!(islower((int)s[i]) && qvalue(raise) == nil) &&
                         !isdigit((int)s[i]) &&
 #ifdef PSL
-                        !isupper((int)s[i]) &&
+                        !(isupper((int)s[i]) && qvalue(lower) == nil) &&
                         s[i]!='!' && s[i]!='+' && s[i]!='-' &&
                         s[i]!='$' && s[i]!='^' && s[i]!='&' && s[i]!='*' &&
                         s[i]!='_' && s[i]!='=' && s[i]!=';' && s[i]!=':' &&

@@ -15,41 +15,35 @@
          (lsh tag 56)
          (land x 16#00ffffffffffffff))))))
 
-'(trace '(mkitem lap))
-% (trace '(putbyte))
-'(trace '(puthalfword putword wputv labeloffset depositlabel))
-'(trace '(modR/M sibbyte-for-indexed depositextension lthmodR/M
-         lth-sibbyte-for-indexed reg2int bytep halfwordp unimmediate
-         lth-reg-5-prefix OP-mem-eax OP-reg-effa LTH-reg-effa
-         OP-im-effa lth-imm8-effa OP-reg-effa-2 OP_xmmreg-effa
-         OP2-EFFA OP-imm-EAX OP-INT OP-imm-reg OP-imm8-reg
-         OP-byte OP_HUMP_SHORT OP-JUMP-EFFA saniere-Sprungziel
-         OP-RET-n OP-enter OP-imm op-shift op-shiftimm op-dshift
-         op-dshiftimm OP-MUL OP-IMUL DepositFluid
-         DepositExtraReg DepositEntry depositforeignentry
-         MakeExpressionRelative reformBranches BuildInitCodeOffsetTable
-         BuildOffsetTable InstructionLength
-         ))
-
-'(trace '(Pass1Lap LapoptFrame LapoptPeep ReformBranches OptimizeBranches
-         DepositLabel SaveEntry DepositInstruction DefineEntries MkCODE))
-
-'(trace '(jmp!.!L!T!H jmp!.!I!N!S!T!R jmpl apply2safe
-         shortlabelp op-jump-short indirectadrp op-jump-effa adrp)) 
-
 (rdf "mytrace.lsp")
 
-(mytrace 'jmp!.!L!T!H 2)
-(mytrace 'jmp!.!I!N!S!T!R 2)
-(mytrace 'op-jump-effa 2)
+(mytrace 'jmp!.!L!T!H)
+(mytrace 'jmp!.!I!N!S!T!R)
+(mytrace 'op-jump-effa)
+
+(mytrace '*linke)
+(mytrace '*jcall)
+(mytrace 'cmacropatternexpand)
+(mytrace 'cmacrosubstitute)
+(mytrace 'anyregpatternmatch)
+(mytrace 'regp)
+(mytrace 'upperreg64p)
+(mytrace 'depositbyte)
+(mytrace 'op-reg-effa)
 
 (setq *plap t)
 (setq *pgwd t)
 (setq *testlap t)
 
 (faslout 'foo)
-(de bar (x) "hello")
-(faslend)
+
+(lap '((*entry sample expr 0)
+       (*alloc 0)
+       (*linke 0 arthur expr 0)
+       (mov (reg 1) (reg 2)))
+
+
+%(faslend)
 
 XXX
 
