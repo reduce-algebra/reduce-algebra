@@ -7,6 +7,31 @@
 % Date :  4-May-1994
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % Revisions:
 %
 (compiletime (load common))
@@ -281,6 +306,8 @@
 (setq rregs  '("rax" "rcx" "rdx" "rbx" "rsp" "rbp" "rsi" "rdi"
                "r8" "r9" "r10" "r11" "r12" "r13" "r14" "r15"))
 
+(deflist '((rax r8) (rcx r9) (rdx r10) (rbx r11) (rsp r12) (rbp r13) (rsi r14) (rdi r15)) 'upperreg)
+
 (fluid '( the-instruction* addr* rex_w rex_r rex_x rex_b size-override* sse-prefix* !0f-prefix* mod-is-3*
 			   byte-operand*))
 
@@ -341,7 +368,7 @@
 	 '((V) (W)))
 	(t nil)))
 
-(de decode-operands(bytes* lth* pat)
+(de decode-operands (bytes* lth* pat)
   (prog (r reg* xreg* byte-operand* x)
     (setq x (decode-operands-special-pattern-cases bytes* lth* pat))
     (when (and x (pairp x)) (setq pat x))
@@ -362,7 +389,10 @@
  (let(w)
   (cond ((and rex_w (setq w (get p 'reg64)))
 	 (if *gassyntax (bldmsg "%%%w" w) w))
-	((atom p) 
+	((atom p)
+	 % for push and pop
+	 (if (and rex_b (idp p) (get p 'upperreg))
+	     (setq p (get p 'upperreg)))
 	 (if (and *gassyntax (idp p)) (bldmsg "%%%w" p) p))
         ((eq (car p) 'G) 
 	 (if (eqcar (cdr p) 'b) (setq byte-operand* t))
@@ -427,7 +457,7 @@
      (setq rm (wand 7 b))
      (setq usexmm (and !0f-prefix* (not (eqcar p 'E))))
      (when rex_b (setq rm (wplus2 rm 8)))
-       %(terpri)(prin2t(list "modrm" b mod regnr* rm)) (print bytes*)
+%       (terpri)(prin2t(list "modrm" b mod regnr* rm)) (print bytes*)
      (return
   (cond ((and (lessp mod 3)(or (eq rm 2#100) (eq rm 12)))
          (decode-sib p mod))
@@ -1072,6 +1102,12 @@ loop
                   (wand 255 (byte base 7))
                   (wand 255 (byte base 8))
                   (wand 255 (byte base 9))
+                  (wand 255 (byte base 10))
+                  (wand 255 (byte base 11))
+                  (wand 255 (byte base 12))
+                  (wand 255 (byte base 13))
+                  (wand 255 (byte base 14))
+                  (wand 255 (byte base 15))
          ))
          (setq *curradr* base *currinst* pp)
          (setq !*comment nil)
@@ -1116,6 +1152,13 @@ loop
          (when (greaterp lth 5) (prin2 " ") (prinbnx (pop pp) 2))
          (when (greaterp lth 6) (prin2 " ") (prinbnx (pop pp) 2))
          (when (greaterp lth 7) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 8) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 9) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 10) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 11) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 12) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 13) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 14) (prin2 " ") (prinbnx (pop pp) 2))
          (ttab 38)
          (when name (prin2 name))
          (ttab 46)
