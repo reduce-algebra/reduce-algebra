@@ -5,7 +5,7 @@
 % Author:         Eric Benson
 % Created:        13 August 1981
 % Modified:       15-Jan-85 11:00 (Brian Beach)
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Compiler
 %
@@ -530,6 +530,35 @@
 % HACK to print indirect jumps/calls through register correctly
 (put 'call 'asmpseudoop 'asmprintcall)
 (put 'jmp 'asmpseudoop 'asmprintcall)
+(put 'jo 'asmpseudoop 'asmprintcall)
+(put 'jno 'asmpseudoop 'asmprintcall)
+(put 'jb 'asmpseudoop 'asmprintcall)
+(put 'jnae 'asmpseudoop 'asmprintcall)
+(put 'jnb 'asmpseudoop 'asmprintcall)
+(put 'jae 'asmpseudoop 'asmprintcall)
+(put 'je 'asmpseudoop 'asmprintcall)
+(put 'jz 'asmpseudoop 'asmprintcall)
+(put 'jne 'asmpseudoop 'asmprintcall)
+(put 'jnz 'asmpseudoop 'asmprintcall)
+(put 'jbe 'asmpseudoop 'asmprintcall)
+(put 'jna 'asmpseudoop 'asmprintcall)
+(put 'jnbe 'asmpseudoop 'asmprintcall)
+(put 'ja 'asmpseudoop 'asmprintcall)
+(put 'js 'asmpseudoop 'asmprintcall)
+(put 'jns 'asmpseudoop 'asmprintcall)
+(put 'jp 'asmpseudoop 'asmprintcall)
+(put 'jpe 'asmpseudoop 'asmprintcall)
+(put 'jnp 'asmpseudoop 'asmprintcall)
+(put 'jpo 'asmpseudoop 'asmprintcall)
+(put 'jl 'asmpseudoop 'asmprintcall)
+(put 'jnge 'asmpseudoop 'asmprintcall)
+(put 'jnl 'asmpseudoop 'asmprintcall)
+(put 'jge 'asmpseudoop 'asmprintcall)
+(put 'jle 'asmpseudoop 'asmprintcall)
+(put 'jng 'asmpseudoop 'asmprintcall)
+(put 'jnle 'asmpseudoop 'asmprintcall)
+(put 'jg 'asmpseudoop 'asmprintcall)
+
 
 (de asmprintcall (x)
   (prin2 '! )
