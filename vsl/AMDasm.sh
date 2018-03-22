@@ -5,5 +5,5 @@
 
 make psl OPT="-O0 -g"
 
-script -c "./vsl AMDasm.lsp -o AMDasm.img" AMD-asm.log
+script -c "./vsl AMDasm.lsp -o AMDasm.img" AMDasm.log
 

@@ -1,10 +1,20 @@
 #! /bin/bash -v
 
-$O/bin/redpsl <<XXX | tee try-real.log
-lisp;
-standardlisp();
-(setq *echo t *plap t *pgen t *testlap t)
-(load compiler)
+./vsl -i Winfasl.img <<XXX | tee try-Winfasl.log
+
+(setq *echo t)
+
+% This seems to be called at cross-compile time with NIL as the
+% second argument. That seems a bit weird to me.
+
+(de mkitem (tag x)
+  (cond
+    ((null (fixp tag)) (mkitem 0 x))
+    ((null (fixp x)) (mkitem tag 0))
+    (t (land 16#ffffffffffffffff (lor
+         (lsh tag 56)
+         (land x 16#00ffffffffffffff))))))
+
 (rdf "mytrace.lsp")
 
 (mytrace 'jmp!.!L!T!H)
@@ -20,7 +30,6 @@ standardlisp();
 (mytrace 'upperreg64p)
 (mytrace 'depositbyte)
 (mytrace 'op-reg-effa)
-(mytrace 'findidnumber)
 
 (setq *plap t)
 (setq *pgwd t)
@@ -31,9 +40,10 @@ standardlisp();
 (lap '((*entry sample expr 0)
        (*alloc 0)
        (*linke 0 arthur expr 0)
-       (mov (reg 1) (reg 2))))
- 
+       (mov (reg 1) (reg 2)))
+
+
 %(faslend)
-%(exitlisp)
 
 XXX
+
