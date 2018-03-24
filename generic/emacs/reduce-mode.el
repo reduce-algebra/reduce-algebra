@@ -7,7 +7,7 @@
 ;; Version: $Id$
 ;; Keywords: languages
 ;; Homepage: http://reduce-algebra.sourceforge.net/reduce-ide
-;; Package-Version: 1.53
+;; Package-Version: 1.54
 
 ;; This file is not part of GNU Emacs.
 
@@ -272,31 +272,6 @@ It should end with \\=\\=.  The default value is \"\\(else\\|end\\|>>\\)\\=\\=\"
   :group 'reduce-format-display)
 
 ;; Display:
-
-(defcustom reduce-show-delim-mode
-  ;; Set a sensible default:
-  (and window-system (featurep 'paren) show-paren-mode)
-  "*If non-nil then highlight matching group and block delimiters.
-Otherwise blink the opengroup matching an inserted closegroup."
-  :set (lambda (symbol value)
-	 (reduce-show-delim-mode (or value 0)))
-  :initialize 'custom-initialize-default
-  :type 'boolean
-  :group 'reduce-format-display)
-
-(defface reduce-show-delim-match-face
-  '((((class color)) (:background "turquoise"))
-    (t (:background "gray")))
-  "Face used for a matching REDUCE delimiter.
-Default is the same as for Show Paren mode."
-  :group 'reduce-format-display)
-
-(defface reduce-show-delim-mismatch-face
-  '((((class color)) (:foreground "white" :background "purple"))
-    (t (:reverse-video t)))
-  "Face used for a mismatching REDUCE delimiter.
-Default is the same as for Show Paren mode."
-  :group 'reduce-format-display)
 
 (defcustom reduce-show-proc-mode nil
   "*If non-nil then display current procedure name in mode line.
@@ -1360,6 +1335,8 @@ Return t if successful; otherwise move as far as possible and return nil."
       (reduce-forward-block))
     return))
 
+;; ***** Should reduce-backward-block also skip white space,which it
+;; ***** seems to do? This is a problem for reduce-show-delim-mode.
 (defun reduce-backward-block ()
   "Move backwards to start of block containing point.
 Return t if successful; otherwise move as far as possible and return nil."
@@ -1829,170 +1806,6 @@ With argument, do it that many times."
 			     (end-of-line)
 			     (point)))))
       )))
-
-
-;;; Display highlighting on whatever group or block delimiter matches
-;;; the one before or after point.
-;;; Based closely on paren.el --- highlight matching paren --- by RMS
-;;; NOTE: Cannot use simple syntactic matching even for group, because
-;;; it cannot distinguish a single < from <<, etc.
-
-;;; Add matching of delim AROUND point later???
-
-;; Overlay used to highlight the matching delim:
-(defvar reduce-show-delim-overlay nil)
-
-;; Overlay used to highlight the closedelim right before point:
-(defvar reduce-show-delim-overlay-1 nil)
-
-(defvar reduce-show-delim-idle-timer nil)
-
-(defun reduce-show-delim-mode (&optional arg)
-  "Toggle REDUCE Show Delim mode.
-With prefix ARG, turn REDUCE Show Delim mode on if and only if ARG is positive.
-Returns the new status of REDUCE Show Delim mode (non-nil means on).
-
-When REDUCE Show Delim mode is enabled, any matching delimiter is highlighted
-after `show-paren-delay' seconds of Emacs idle time."
-  (interactive "P")
-  (if window-system
-      (let ((on-p (if arg
-		      (> (prefix-numeric-value arg) 0)
-		    (not reduce-show-delim-mode))))
-	(and reduce-show-delim-idle-timer
-	     (cancel-timer reduce-show-delim-idle-timer))
-	(cond (on-p
-	       (require 'paren)		; for show-paren-delay
-	       (setq reduce-show-delim-idle-timer
-		     (run-with-idle-timer show-paren-delay t
-					  'reduce-show-delim-function))
-	       (define-key reduce-mode-map ">" nil)) ; undefined
-	      (t (and reduce-show-delim-overlay
-		      (overlay-buffer reduce-show-delim-overlay)
-		      (delete-overlay reduce-show-delim-overlay))
-		 (and reduce-show-delim-overlay-1
-		      (overlay-buffer reduce-show-delim-overlay-1)
-		      (delete-overlay reduce-show-delim-overlay-1))
-		 ;; Blink matching group delimiter
-		 (define-key reduce-mode-map ">"
-		   'reduce-self-insert-and-blink-matching-group-open)))
-	(setq reduce-show-delim-mode on-p))))
-
-(defun reduce-show-delim-function ()
-  "In REDUCE mode (only), perform matching delimiter highlighting.
-\(Highlights group and block delimiters only.)"
-  ;; Do nothing if no window system to display results with.
-  ;; Do nothing if executing keyboard macro.
-  ;; Do nothing if input is pending.
-  (when (and window-system (eq major-mode 'reduce-mode))
-    (let (pos dir mismatch face
-			  (case-fold-search t))
-      (cond
-       ((and (eq (following-char) ?<)
-			 (eq (char-after (1+ (point))) ?<))
-		(setq dir 2))
-       ((and (eq (preceding-char) ?>)
-			 (eq (char-after (- (point) 2)) ?>))
-		(setq dir -2))
-       ((save-match-data (looking-at "\\<begin\\>"))
-		(setq dir 3))
-       ((and (memq (preceding-char) '(?d ?D))
-			 (memq (char-after (- (point) 2)) '(?n ?N))
-			 (memq (char-after (- (point) 3)) '(?e ?E))
-			 (/= (char-syntax (following-char)) ?w)
-			 (/= (char-syntax (char-after (- (point) 4))) ?w)
-			 (not (eq (char-after (- (point) 4)) ?')))
-		(setq dir -3)))
-      ;;
-      ;; Find the other end of the sexp.
-      (when dir
-	(save-excursion
-	  (save-restriction
-	    ;; Determine the range within which to look for a match.
-	    (when blink-matching-paren-distance
-	      (narrow-to-region
-	       (max (point-min) (- (point) blink-matching-paren-distance))
-	       (min (point-max) (+ (point) blink-matching-paren-distance))))
-	    ;; Scan across one group or block within that range.
-	    ;; Errors or nil mean there is a mismatch.
-	    (condition-case ()
-		(progn
-		  (forward-char dir)
-		  (if (cond ((= dir 2) (reduce-forward-group))
-			    ((= dir -2) (reduce-backward-group))
-			    ((= dir 3) (reduce-forward-block))
-			    ((= dir -3) (reduce-backward-block)))
-		      (setq pos (point))
-		    (setq pos t mismatch t)))
-	      (error (setq pos t mismatch t)))
-	    )))
-      ;;
-      ;; Highlight the other end of the sexp, or unhighlight if none.
-      (if (not pos)
-	  (progn
-	    ;; If not at a delim that has a match,
-	    ;; turn off any previous delim highlighting.
-	    (and reduce-show-delim-overlay
-		 (overlay-buffer reduce-show-delim-overlay)
-		 (delete-overlay reduce-show-delim-overlay))
-	    (and reduce-show-delim-overlay-1
-		 (overlay-buffer reduce-show-delim-overlay-1)
-		 (delete-overlay reduce-show-delim-overlay-1)))
-	;;
-	;; Use the correct face.
-	(if mismatch
-	    (progn
-	      (if show-paren-ring-bell-on-mismatch
-		  (beep))
-	      (setq face 'reduce-show-delim-mismatch-face))
-	  (setq face 'reduce-show-delim-match-face))
-	;;
-	;; If matching backwards, highlight the closedelim
-	;; before point as well as its matching open.
-	;; If matching forward, and the opendelim is unbalanced,
-	;; highlight the delim at point to indicate misbalance.
-	;; Otherwise, turn off any such highlighting.
-	(if (and (> dir 0) (integerp pos))
-	    (when (and reduce-show-delim-overlay-1
-		       (overlay-buffer reduce-show-delim-overlay-1))
-	      (delete-overlay reduce-show-delim-overlay-1))
-	  (if (= dir 3) (setq dir 5))	; for mismatched `begin'
-	  (let ((from (if (> dir 0)
-			  (point)
-			(+ (point) dir)))
-		(to (if (> dir 0)
-			(+ (point) dir)
-		      (point))))
-	    (if reduce-show-delim-overlay-1
-		(move-overlay reduce-show-delim-overlay-1
-			      from to (current-buffer))
-	      (setq reduce-show-delim-overlay-1 (make-overlay from to)))
-	    ;; Always set the overlay face, since it varies.
-	    (overlay-put reduce-show-delim-overlay-1 'face face)))
-	;;
-	;; Turn on highlighting for the matching delim, if found.
-	;; If it's an unmatched delim, turn off any such highlighting.
-	(unless (integerp pos)
-	  (delete-overlay reduce-show-delim-overlay))
- 	(if (= dir -3) (setq dir -5))	; for matched `begin'
-	(let ((to (if (or (eq show-paren-style 'expression)
-			  (and (eq show-paren-style 'mixed)
-			       (not (pos-visible-in-window-p pos))))
-		      (point)
-		    pos))
-	      (from (if (or (eq show-paren-style 'expression)
-			    (and (eq show-paren-style 'mixed)
-				 (not (pos-visible-in-window-p pos))))
-			pos
-		      (save-excursion
-			(goto-char pos)
-			(- (point) dir)))))
-	  (if reduce-show-delim-overlay
-	      (move-overlay reduce-show-delim-overlay from to (current-buffer))
-	    (setq reduce-show-delim-overlay (make-overlay from to))))
-	;;
-	;; Always set the overlay face, since it varies.
-	(overlay-put reduce-show-delim-overlay 'face face)))))
 
 
 ;;;; *****************************
