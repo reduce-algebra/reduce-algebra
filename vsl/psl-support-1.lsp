@@ -10,7 +10,6 @@
 (de copyd (new old)
   (prog (olddef)
         (setq olddef (getd old))
-	(print olddef)
         (if (pairp olddef)
           (putd new (car olddef) (cdr olddef))
           (stderror (bldmsg "%r has no definition in CopyD" old)))
@@ -308,10 +307,6 @@
         ((equal (length (explode2 x)) 1) (char-code (car (explode2 x))))
         (t 4711)))
 
-(dm idloc (x)
-  (cond ((null (cadr x)) **nil-id-value**)
-        (t (findidnumber (cadr x))))) 
-
 % converts a binary integer in a machine word into a lisp integer
 (de int2sys (x) x)
 
@@ -364,5 +359,31 @@
   (prin2 (if (numberp ch) (code-char ch) ch))
   (wrs f)
   ch)
+
+% This mess yields a value in the range 0 to 127 for symbols that are
+% 1 character long if that character has ASCII code in the range 0 to 127.
+% I also force nil to yield 128. For other symbols I return 256 and hope that
+% the only call to this is from findidnumber!
+
+(de idinf (u)
+   (cond ((null u) 128)
+         ((cdr (explodec u)) 256)
+         (t (char-code u))))
+
+(de fastcallablep (u)
+   (member u '(putentry)))
+
+(flag '(
+   stderror exitlisp copyd codep ncons posintp errorprintf1 remob
+   totalcopy variable-increment-ifor constant-increment-ifor
+   onoff* lap int2id-internal evload load1 unboundp fboundp
+   funboundp dskin pp string-concat %gtbps gtbps string-equal channelprin2
+   channelterpri stringgensym id2int id2int int2sys sys2fixn
+   binaryopenwrite binaryclose wshift wplus2 wtimes2 wquotient
+   wdifference wgreaterp wlessp wgeq wleq weq wand wor evectorp bigp
+   isizev igetv channelposn channelwritechar idinf fastcallablep defun
+   errorprintf foreach repeat ifor on off imports putmem putbyte
+   put_a_halfword depositfunctioncelllocation int2id load errset land
+   lor iland ilor string putword) 'lose)
 
 % end of file

@@ -106,9 +106,9 @@
  
 (setq **nil-id-value** 128)
 
-(dm idloc (x)
-  (cond ((null (cadr x)) **nil-id-value**)
-        (t (findidnumber (cadr x)))))
+%(dm idloc (x)
+%  (cond ((null (cadr x)) **nil-id-value**)
+%        (t (findidnumber (cadr x)))))
 
 %(de idloc (x)
 %  (if (null x) **nil-id-value**

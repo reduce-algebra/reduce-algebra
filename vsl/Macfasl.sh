@@ -7,5 +7,6 @@
 
 make psl OPT="-O0 -g"
 
-script -c "./vsl Macfasl.lsp -o Macfasl.img" Macfasl.log
-
+script <<XXX Macfasl.log
+./vsl Macfasl.lsp -o Macfasl.img
+XXX

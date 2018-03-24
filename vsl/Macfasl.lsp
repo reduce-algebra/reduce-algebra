@@ -515,18 +515,6 @@
          ((cdr (explodec u)) 256)
          (t (char-code u))))
 
-% Redefine this because idinf used to be a macro and so its expansion had
-% been inserted early, and a simple redefinition of idinf was thus
-% ineffective.
-
-(de findidnumber (u)
-  (prog (i)
-        (return (cond ((ileq (setq i (idinf u)) 128) i)
-                      ((setq i (get u fasl-idnumber-property*)) i)
-                      (t (put u fasl-idnumber-property* (setq i nextidnumber*))
-                         (setq orderedidlist* (tconc orderedidlist* u))
-                         (setq nextidnumber* (iadd1 nextidnumber*)) i)))))
-
 % OK, I am reconstructing my understanding by inspecting the code here..
 % this makes relocation information as 2 bits of tag within a 16, 32 or
 % 64 bit item, with the relocinf in the rest. Well in a 64-bit item

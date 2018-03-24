@@ -8,7 +8,11 @@
       (length (caddr (getd ff)))))
 
 (de mytrace (name)
-  (prog (g d a r nargs)
+  (prog (g d a r nargs l)
+    (cond
+       ((flagp name 'lose)
+        (remflag (list name) 'lose)
+        (setq l t)))
     (setq nargs (argcount name))
     (setq g (newname name))
     (copyd g name)
@@ -23,6 +27,8 @@
          (list 'setq r (cons g a))
          (list 'printresult (list 'quote name) r)
          (list 'return r))))
+    (cond
+       (l (flag (list name) 'lose)))
     (return name)))
 
 (de printwidth (u)
@@ -32,7 +38,7 @@
   (cond
     ((atom u)
       (when (greaterp (plus (posn) (printwidth u)) 60) (terpri))
-      (prin u))
+      (prin1 u))
     (t (prog (sep)
       (setq sep '!()
       (while (not (atom u)) (progn
@@ -61,10 +67,9 @@
         (setq args (cdr args))))))
 
 (de printresult (name value)
-  (prin name)
+  (prin1 name)
   (princ " = ")
   (myprin value)
   (terpri))
 
 % end of mytrace.lsp
-
