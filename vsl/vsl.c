@@ -2202,12 +2202,12 @@ LispObject Lvectorp(LispObject lits, int nargs, ...)
 
 LispObject Lnumberp(LispObject lits, int nargs, ...)
 {   ARG1("numberp", x);
-    return (isFIXNUM(x) || isBIGNUM(x) || isFLOAT(x) ? lisptrue : nil);
+    return ((isFIXNUM(x) || isBIGNUM(x) || isFLOAT(x)) ? lisptrue : nil);
 }
 
 LispObject Lfixp(LispObject lits, int nargs, ...)
 {   ARG1("fixp", x);
-    return (isFIXNUM(x) || isBIGNUM(x) ? lisptrue : nil);
+    return ((isFIXNUM(x) || isBIGNUM(x)) ? lisptrue : nil);
 }
 
 LispObject Lfloatp(LispObject lits, int nargs, ...)
@@ -2217,21 +2217,21 @@ LispObject Lfloatp(LispObject lits, int nargs, ...)
 
 LispObject Lfix(LispObject lits, int nargs, ...)
 {   ARG1("fix", x);
-    return (isFIXNUM(x) || isBIGNUM(x) ? x :
+    return ((isFIXNUM(x) || isBIGNUM(x)) ? x :
             isFLOAT(x) ? boxint64((int64_t)qfloat(x)) :
             error1("arg for fix", x));
 }
 
 LispObject Lfloor(LispObject lits, int nargs, ...)
 {   ARG1("floor", x);
-    return (isFIXNUM(x) || isBIGNUM(x) ? x :
+    return ((isFIXNUM(x) || isBIGNUM(x)) ? x :
             isFLOAT(x) ? boxint64((int64_t)floor(qfloat(x))) :
             error1("arg for floor", x));
 }
 
 LispObject Lceiling(LispObject lits, int nargs, ...)
 {   ARG1("ceiling", x);
-    return (isFIXNUM(x) || isBIGNUM(x) ? x :
+    return ((isFIXNUM(x) || isBIGNUM(x)) ? x :
             isFLOAT(x) ? boxint64((int64_t)ceil(qfloat(x))) :
             error1("arg for ceiling", x));
 }

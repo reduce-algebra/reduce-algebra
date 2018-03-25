@@ -7,5 +7,8 @@
 
 make psl OPT="-O0 -g"
 
-script -c "./vsl AMDfasl.lsp -o AMDfasl.img" AMDfasl.log
+script AMDfasl.log <<XXX
+./vsl xxxfasl.lsp -Dmachine=AMD64_ext -o AMDfasl.img
+XXX
+
 

@@ -1,3 +1,543 @@
+% This file contains a mixture of two sorts of things:
+
+% (A) PSL functions that are not defined in the files that I will
+%     load to make myself a compiler, but that are required.
+%
+% (B) Replacements for some things that are defined in the compiler-related
+%     sources but where the definitions are sufficiently PSL-specific that
+%     I need to introduce my own replacements if I am to survive using some
+%     alternative Lisp for bootstrapping.
+%
+% I hope that every function (and macro) defined here ends up flagged
+% as 'lose so that a subsequent apparent definition in a PSL file that I
+% process does not override it.
+
+
+% At least for bootstrapping I need to restore MY version of SPACES
+(de spaces (n)                 % Print n blanks.
+   (cond
+      ((zerop n) nil)
+      (t (princ " ") (spaces (sub1 n)))))
+
+(de intp (x) (and (fixp x) (not (bignump x))))
+
+(flag '(spaces intp) 'lose)
+
+(de flag1 (x y) (flag (list x) y))
+
+(de remflag1 (x y) (remflag (list x) y))
+
+(dm control (x)
+  (list 'logand (list 'char-code (list 'quote (cadr x))) 31))
+(dm cntrl (x)
+  (list 'logand (list 'char-code (list 'quote (cadr x))) 31))
+
+(de continuableerror (errnum message errorform*)
+  (progn (errorprintf "***** %l" message)))
+
+(de main ())
+
+(flag '(flag1 remflag1 control cntrl continuableerror main) 'lose)
+
+% Now the things just needed for creating fasl files... I will add things in
+% here to start with and maybe move them to psl-support-2.lsp later...
+
+(de concat (a b) (string-concat a b))
+
+(de binarywrite (file val)
+   (prog (of n)
+      (setq of (wrs file))
+      (prinbyte (setq n (land val 0xff)))
+      (setq val (lshift (difference val n) -8))
+      (prinbyte (setq n (land val 0xff)))
+      (setq val (lshift (difference val n) -8))
+      (prinbyte (setq n (land val 0xff)))
+      (setq val (lshift (difference val n) -8))
+      (prinbyte (setq n (land val 0xff)))
+      (setq val (lshift (difference val n) -8))
+      (prinbyte (setq n (land val 0xff)))
+      (setq val (lshift (difference val n) -8))
+      (prinbyte (setq n (land val 0xff)))
+      (setq val (lshift (difference val n) -8))
+      (prinbyte (setq n (land val 0xff)))
+      (setq val (lshift (difference val n) -8))
+      (prinbyte (setq n (land val 0xff)))
+      (wrs of)))
+
+(flag '(concat binarywrite) 'lose)
+
+% I will simulate byte vectors using vectors of 64-bit integers, and here
+% I will pack the bytes little-endian. Note that the implementation here
+% requires that the Lisp used for bootstrapping can work with full 64-bit
+% integers.
+
+(de byte (v n)
+  (prog (o s)
+     (setq n (plus2 v n))
+     (setq o (irsh n 3))
+     (setq s (itimes2 (iland n 7) 8))
+     (return (iland 16#ff (irsh (getv memory o) s)))))
+
+(de putbyte (v n val)
+  (prog (o s w)
+     (setq n (plus2 v n))
+     (setq o (irsh n 3))
+     (setq s (itimes (iland n 7) 8))
+     (setq w (getv memory o))
+     (setq m (difference 16#ffffffffffffffff (lsh 16#ff s)))
+     (setq w (land w m))
+     (setq w (lor w (ilsh val s)))
+     (putv memory o w)
+     (return val)))
+
+(flag '(byte putbyte) 'lose)
+
+% Now similar for halfwords (16 bits)
+
+(de halfword (v n)
+  (prog (o s)
+     (setq n (plus2 (irsh v 1) n))
+     (setq o (irsh n 2))
+     (setq s (itimes2 (iland n 3) 16))
+     (return (iland 16#ffff (irsh (getv memory o) s)))))
+
+(de puthalfword (v n val)
+  (prog (o s w)
+     (setq n (plus2 (irsh v 1) n))
+     (setq o (irsh n 2))
+     (setq s (itimes (iland n 3) 16))
+     (setq w (getv memory o))
+     (setq m (difference 16#ffffffffffffffff (lsh 16#ffff s)))
+     (setq w (land w m))
+     (setq w (lor w (lsh val s)))
+     (putv memory o w)
+     (return val)))
+
+(de put_a_halfword (addr val)
+  (puthalfword addr 0 val))
+
+(flag '(halfword puthalfword put_a_halfword) 'lose)
+
+% ... and 32-bit words
+
+(de word (v n)
+  (prog (o s)
+     (setq n (plus2 (irsh v 2) n))
+     (setq o (irsh n 1))
+     (setq s (itimes2 (iland n 1) 32))
+     (return (land 16#ffffffff (rsh (getv memory o) s)))))
+
+(de putword (v n val)
+  (prog (o s w)
+     (setq n (plus2 (irsh v 2) n))
+     (setq o (irsh n 1))
+     (setq s (itimes (iland n 1) 32))
+     (setq w (getv memory o))
+     (setq m (difference 16#ffffffffffffffff (lsh 16#ffffffff s)))
+     (setq w (iland w m))
+     (setq w (ilor w (ilsh val s)))
+     (putv memory o w)
+     (return val)))
+
+(flag '(word putword) 'lose)
+
+% And finally 64-bit items
+% I force the retrieved value to be positive.
+
+(de wgetv (v n)
+   (land (getv memory (plus2 (irsh v 3) n)) 16#ffffffffffffffff))
+
+(de wputv (v n val)
+   (putv memory (plus2 (irsh v 3) n) val))
+
+(flag '(wgetv wputv) 'lose)
+
+(de known-free-space ()
+  (mkint (wquotient (wdifference heapupperbound heaplast) 
+                    addressingunitsperitem)))
+
+(de free-bps ()
+  (wquotient (wdifference lastbps nextbps) 
+	     addressingunitsperitem)
+  )
+
+
+(flag '(known-free-space free-bps) 'lose)
+
+(de gtheap (number-of-items)
+  % Allocates heap space.  As soon as all uses of (GTHEAP NIL) are
+  % removed from code, this function can be removed, and REAL-GTHEAP
+  % can become GTHEAP.
+  (if (null number-of-items)
+    (known-free-space)
+    (real-gtheap number-of-items)
+    )
+  )
+
+
+(de real-gtheap (number-of-items)
+  % This function handles the normal case where there is no trap handling
+  % to be done.  It is written so that no stack frame is allocated, which
+  % vastly improves performance (at least on the 68000).
+  (let ((result heaplast))
+    (setf heaplast (wplus2 heaplast (wtimes2 number-of-items
+                                             addressingunitsperitem)))
+    (if (wlessp heaplast heaptrapbound)
+      result
+      (error "out of heap"))))
+
+(de delheap (lowpointer highpointer)
+  (when (weq highpointer heaplast)
+    (setq heaplast lowpointer)))
+
+%(de gtstr (upper-bound)
+%  % Allocate a string of UPPER-BOUND+1 characters.
+%  (let* ((n-words  (strpack upper-bound))
+%	 (str      (gtheap (+ 1 n-words))))
+%    (setf (getmem str) (mkitem hbytes-tag upper-bound))
+%    (setf (wgetv str n-words) 0)  % clear last word, including last byte
+%    str
+%    ))
+
+(de gtstr (upper-bound)
+  % Allocate a string of UPPER-BOUND+1 characters.
+  (let* ((n-words  (strpack upper-bound))
+	 (str      (gtheap (+ 1 n-words))))
+    (wputv str 0 (mkitem hbytes-tag upper-bound))
+    (wputv str n-words 0)  % clear last word, including last byte
+    str
+    ))
+
+
+% GTCONSTSTR is defined in the kernel
+
+%(de gthalfwords (upper-bound)
+%  % Allocate space for a halfwords vector of UPPER-BOUND+1 elements.
+%  (let* ((n-words  (halfwordpack upper-bound))
+%	 (ptr      (gtheap (+ n-words 1))))
+%    (setf (getmem ptr) (mkitem hhalfwords-tag upper-bound))
+%    ptr
+%    ))
+
+(de gthalfwords (upper-bound)
+  % Allocate space for a halfwords vector of UPPER-BOUND+1 elements.
+  (let* ((n-words  (halfwordpack upper-bound))
+	 (ptr      (gtheap (+ n-words 1))))
+    (wputv ptr 0 (mkitem hhalfwords-tag upper-bound))
+    ptr
+    ))
+
+%(de gtvect (upper-bound)
+%  % Allocate space for a vector of UPPER-BOUND+1 elements.
+%  (let ((ptr  (gtheap (+ (vectpack upper-bound) 1))))
+%    (setf (getmem ptr) (mkitem hvect-tag upper-bound))
+%    ptr
+%    ))
+
+(de gtvect (upper-bound)
+  % Allocate space for a vector of UPPER-BOUND+1 elements.
+  (let ((ptr  (gtheap (+ (vectpack upper-bound) 1))))
+    (wputv ptr 0 (mkitem hvect-tag upper-bound))
+    ptr
+    ))
+
+%(de gtevect (upper-bound)
+%  % Allocate space for an evector of UPPER-BOUND+1 elements.
+%  (let ((ptr  (gtheap (+ (evectpack upper-bound) 1))))
+%    (setf (getmem ptr) (mkitem hvect-tag upper-bound))
+%    ptr
+%    ))
+
+(de gtevect (upper-bound)
+  % Allocate space for an evector of UPPER-BOUND+1 elements.
+  (let ((ptr  (gtheap (+ (evectpack upper-bound) 1))))
+    (wputv ptr 0 (mkitem hvect-tag upper-bound))
+    ptr
+    ))
+
+%(de gtcontext ()
+%  % allocate space for an environment descriptor (7 entries)
+%  (let ((ptr (gtheap (+ (contextpack) 1))))
+%    (setf (getmem ptr) (mkitem hvect-tag (contextpack)))
+%    ptr))
+
+(de gtcontext ()
+  % allocate space for an environment descriptor (7 entries)
+  (let ((ptr (gtheap (+ (contextpack) 1))))
+    (wputv ptr 0 (mkitem hvect-tag (contextpack)))
+    ptr))
+
+%(de gtbvect (upper-bound)
+%  % allocate space for a bvector - four words per entry
+%  (let ((ptr (gtheap (+ (bvectpack upper-bound) 1))))
+%    (setf (getmem ptr) (mkitem hvect-tag (bvectpack upper-bound)))
+%    ptr))
+
+(de gtbvect (upper-bound)
+  % allocate space for a bvector - four words per entry
+  (let ((ptr (gtheap (+ (bvectpack upper-bound) 1))))
+    (wputv ptr 0 (mkitem hvect-tag (bvectpack upper-bound)))
+    ptr))
+
+% GTWRDS is defined in the kernel
+
+%(de gtfixn ()
+%  % Allocate space for a fixnum.
+%  (let ((ptr  (gtheap (+ (fixpack) 1))))
+%    (setf (getmem ptr) (mkitem hwords-tag (- (fixpack) 1)))
+%    ptr
+%    ))
+
+(de gtfixn ()
+  % Allocate space for a fixnum.
+  (let ((ptr  (gtheap (+ (fixpack) 1))))
+    (wputv ptr 0 (mkitem hwords-tag (- (fixpack) 1)))
+    ptr
+    ))
+
+(de gtfltn ()
+  % Allocate space for a floating point number on a double-word boundary.
+  (let ((x (gtheap 0))
+	ptr)
+    (if (neq (remainder x 8) 4)
+	(gtheap 1))
+    (setf ptr  (gtheap (+ (floatpack) 1)))
+    (setf (getmem ptr) (mkitem hwords-tag (- (floatpack) 1)))
+    ptr
+    ))
+
+
+% GTID is defined in the kernel.
+
+% GTBPS is defined in the kernel.
+
+%% Attempt to allocate more bps space at the end of the image by calling
+%% external-allocatemorebps. Warn user and set fluid so we can head off
+%% an unexec.
+%%
+(de try-other-bps-spaces (number-of-items)
+  (let ((morebps (external-allocatemorebps)))
+    (when (wgreaterp morebps 0)
+      (printf "Warning, allocating additional bps space of %w items.%n"
+	      (quotient morebps 4))
+      (printf "  Cannot savesystem after allocating additional bps space.%n")
+      (setq using-other-bps-spaces* t))))
+
+% Return space to BPS, but make sure that nextbps will not intrude down into
+%  the heap, as might be the case after calling try-other-bps-spaces.
+(de delbps (bottom top)
+  (when (and (weq nextbps top)
+	     (wgreaterp bottom bpslowerbound))
+    (setq nextbps bottom)))
+
+(de gtwarray (n)
+  %. Allocate N words for WVar/WArray/WString                              
+  (if (null n)
+    (wquotient (wdifference lastbps nextbps) 
+	       addressingunitsperitem)
+    (let ((b (wdifference lastbps (wtimes2 n addressingunitsperitem))))
+      (if (wgreaterp nextbps b)
+	(stderror '"Ran out of WArray space")
+	(setq lastbps b))
+      )))
+
+(de delwarray (bottom top)
+  %. Return space for WArray                                               
+  (when (weq lastbps bottom)
+    (setq lastbps top)))
+
+(de allocatefaslspaces ()
+  (prog (b)
+    (setq b (gtwarray nil))
+    % how much is left?
+    (setq b (idifference b (iquotient b 3)))
+    (setq faslblockend* (gtwarray 0))
+    % pointer to top of space
+    (setq bittablebase* (gtwarray b))
+    % take 2/3 of whatever's left
+    (setq currentoffset* 0)
+    (setq bittableoffset* 0)
+
+% The "loc" here seems to be much like the C use of "&" to grab an
+% address. Well (loc (wgetv a n)) might be rather like (plus a n) but
+% in the end I will need to worry about byte vs word addressing.
+
+%    (setq codebase*
+%      (loc (wgetv bittablebase* % split the space between
+%                  (iquotient b % bit table and code
+%                             (iquotient bittable-entries-per-word
+%                                        addressingunitsperitem)))))
+% Here is a first-try re-work.
+    (setq codebase*
+      (plus bittablebase* % split the space between
+                  (iquotient b % bit table and code
+                             (iquotient bittable-entries-per-word
+                                        addressingunitsperitem))))
+
+    (setq maxfasloffset* (idifference faslblockend* codebase*))
+    (setq orderedidlist* (cons nil nil))
+    (setq nextidnumber* first-local-id-number)))
+
+% This mess yields a value in the range 0 to 127 for symbols that are
+% 1 character long if that character has ASCII code in the range 0 to 127.
+% I also force nil to yield 128. For other symbols I return 256 and hope that
+% the only call to this is from findidnumber!
+
+(setq **nil-id-value** 128)
+
+(de idinf (u)
+   (cond ((null u) **nil-is-value**)
+         ((cdr (explodec u)) 256)
+         (t (char-code u))))
+
+
+% been inserted early, and a simple redefinition of idinf was thus
+% ineffective.
+
+(de findidnumber (u)
+  (prog (i)
+        (return (cond ((ileq (setq i (idinf u)) 128) i)
+                      ((setq i (get u fasl-idnumber-property*)) i)
+                      (t (put u fasl-idnumber-property* (setq i nextidnumber*))
+                         (setq orderedidlist* (tconc orderedidlist* u))
+                         (setq nextidnumber* (iadd1 nextidnumber*)) i)))))
+
+% OK, I am reconstructing my understanding by inspecting the code here..
+% this makes relocation information as 2 bits of tag within a 16, 32 or
+% 64 bit item, with the relocinf in the rest. Well in a 64-bit item
+% the tag has space for 10 bits. I think that is probably because it is in
+% the top 8 bits of where a fixnum could go, leaving the high 8 bits for the
+% tag that PSL uses for identifying sorts of data.
+%
+%(de makerelocword (reloctag relocinf)
+%  (iplus2 (ilsh reloctag 30) (ilsh (ilsh relocinf 2) -2)))
+
+(de makerelocword (reloctag relocinf)
+  (plus (lsh reloctag 30) (land relocinf 16#3fffffff)))
+
+% My belief is that the "54" here is so that there can be 2 bits of tag
+% just below where there would be 8 bits of PSL tag in a PSL finum. Now
+% on a 32-bit system one might still imagine 8 bits of PSL tag and 2 bits
+% of relocation-type tag leaving 22 bits for the real information in a
+% relocation word. However on a 64-bit system with the PSL tag in bits
+% 56-63 and the relocation tag in bits 54 and 55 that leaves 54 rather then
+% 22 bits for useful purposes. So my suspicion is that somebody was not
+% thinking things fully through when they adapted this bit of code...
+
+%(de makerelocinf (reloctag relocinf)
+%  (iplus2 (ilsh reloctag 54) (field relocinf 42 22)))
+
+(de makerelocinf (reloctag relocinf)
+  (plus2 (lsh reloctag 54) (land relocinf 16#003fffffffffffff)))
+
+% For a word the stored inf just loses the top 2 bits of the inf to
+% leave 30 bits.
+% For the "inf" case it keeps the low 22 (or matbe 54!) bits of 64
+% For the halfword case I suspect it is keeping the bottom 14 bits of 32. On
+% a 64-bit system this feels like the low 14 bits up the upper 32 bits of the
+% word ???????? So I will comment this out and expect that on a 64-it
+% target it is never used - if it is I will need to think harder.
+
+% (de makerelochalfword (reloctag relocinf)
+%  (iplus2 (ilsh reloctag 14) (field relocinf 18 14)))
+
+% I think that the use if "field" here is not at all a help as regards
+% clarity! Simpler use of shift and mask operations will leave things
+% easier to understand!
+
+
+% (de getbittable (baseaddress bitoffset)
+%   (field (ilsh (byte baseaddress (ilsh bitoffset -2))
+%                (idifference (itimes2 (field bitoffset 62 2) 2) 6))
+%          62 2))
+%
+% (de putbittable (baseaddress bitoffset value2)
+%   (prog (m b c)
+%         (setq b
+%               (iland (byte baseaddress (setq m (ilsh bitoffset -2)))
+%                      (ilsh (idifference -1 (itimes2 3 256))
+%                       (idifference -2
+%                        (setq c (itimes2 (field bitoffset 62 2) 2))))))
+%         (putbyte baseaddress m (if (eq value2 0)
+%                    b
+%                    (ilor b (ilsh value2 (idifference 6 c)))))))
+
+% getbittable(base, offset) =
+%    w = byte(base, offset/4);   % 4 bitpairs per byte
+%    n = offset & 3;
+%    return (w >> (2*n)) & 3
+
+% I will find bits of this code look way neater if I have a right
+% shift operator as well as a left shift one.
+
+(de rsh (w n) (lsh w (iminus n)))
+(de irsh (w n) (ilsh w (iminus n)))
+
+% I am writing these out as sequences of operations and avoiding
+% use of the PSL "field" selector because I believe that what I have here
+% is much easier for me to read and understand.
+
+(de getbittable (baseaddress bitoffset)
+  (prog (o b s)
+     (setq o (irsh bitoffset 2))   % 4 nybbles in each byte
+     (setq b (byte baseaddress o)) % the byte with data in
+     (setq s (itimes 2 (iland bitoffset 3))) % bit position
+     (setq s (idifference 6 s))    % make big-endian
+     (return (iland (irsh b s) 3))))
+
+(de putbittable (baseaddress bitoffset value2)
+  (prog (o b m s)
+     (setq o (irsh bitoffset 2))   % address of relevant byte
+     (setq b (byte baseaddress o)) % byte to work within
+     (setq s (itimes 2 (iland bitoffset 3))) % position within byte
+     (setq s (idifference 6 s))    % make big-endian
+     (setq m (idifference 16#ff (ilsh 3 s))) % mask
+     (setq b (iland b m))           % Clear existing
+     (setq b (ilor b (ilsh value2 s)))
+     (putbyte baseaddress o b)))
+
+% Maybe somebody needed to work out what name they were using...
+(de bittable (a b) (getbittable a b))
+
+(de mapobl (ff)
+   (mapc (oblist) ff))
+
+(de binarywriteblock (stream vec len)
+  (prog (o b i)
+    (setq o (wrs stream))
+    (setq i 0)
+ top(cond
+      ((not (lessp i len)) (go done)))
+    (prinbyte (byte vec i))
+    (setq i (add1 i))
+    (go top)
+ done
+    (wrs o)))
+
+(de mkstring (bound fill)
+  (prog (s)
+    (setq s (gtstr bound))
+    (dotimes (i (add1 bound))
+             (putbyte s i fill))
+    (return (mkstr s))))
+
+% I think that PSL made a mistake when it defined FIELD to count bits
+% from the most significant, because that puts implicit information about
+% whether we are thinking of a 32 or 64 bit system within it.
+
+(de field (x start length)
+   (prog ()
+      (setq x (rsh x (difference 64 (plus start length))))
+      (return (land x (sub1 (lsh 1 length))))))
+
+(flag '(gtheap real-gtheap delheap gtstr gthalfwords gtvect
+        gtevect gtcontext gtbvect gtfixn gtfltn try-other-bps-spaces
+        delbps gtwarray delwarray allocatefaslspaces isinf
+        findidnumber makerelocword makerelocinf makerelochalfword
+        lsh rsh getbittable putbittable bittable mapobl
+        binarywriteblock mkstring field) 'lose)
+
+
 (de stderror (msg)
   (error 99 msg))
 
@@ -28,7 +568,6 @@
 
 (de errorprintf1 (fmt args)
   (terpri)
-  (princ "+++ errorprintf ")
   (printf_internal fmt args)
   nil) 
 
@@ -172,60 +711,12 @@
     (cond ((idp x) (set (intern (list2string (cons '!* (explode2 x)))) val)))))
 
 (dm on (u)
-   (terpri)
-   (princ "+++ ON ")
-   (print (cdr u))
    (list 'onoff* (mkquote (cdr u)) t))
 
 (dm off (u)
-   (terpri)
-   (princ "+++ OFF ")
-   (print (cdr u))
    (list 'onoff* (mkquote (cdr u)) nil))
 
 (flag '(on off) 'ignore)
-
-(de lap (u)
-   (terpri)
-   (princ "+++ LAP ")
-   (print u)
-   nil)
-
-(dm imports (u)
-   (terpri)
-   (princ "+++ IMPORTS ")
-   (print (cdr u))
-   (evload u))
-
-(dm putmem (u)
-   (terpri)
-   (princ "+++ PUTMEM ")
-   (print (cdr u))
-   nil)
-
-(dm putbyte (u)
-   (terpri)
-   (princ "+++ PUTBYTE ")
-   (print (cdr u))
-   nil)
-
-(dm put_a_halfword (u)
-   (terpri)
-   (princ "+++ PUT_A_HALFWORD ")
-   (print (cdr u))
-   nil)
-
-(dm depositfunctioncelllocation (u)
-   (terpri)
-   (princ "+++ DEPOSITFUNCTIONCELLLOCATION")
-   (print (cdr u))
-   nil)
-
-(dm int2id (u)
-   (terpri)
-   (princ "+++ INT2ID")
-   (print (cdr u))
-   (list 'int2id-internal (cadr u)))
 
 (de int2id-internal (u)
   (cond ((equal u **nil-id-value**) nil)
@@ -233,10 +724,6 @@
         (t 'unknown)))
 
 (dm load (x)
-  (terpri)
-  (prin2 "++++ LOAD ")
-  (prin (cdr x))
-  (printc " called")
   (list 'evload (mkquote (cdr x))))
 
 (de evload (x)
@@ -245,10 +732,11 @@
 (setq modules-loaded* nil)
 
 (de load1 (u)
-  (print u)
   (cond ((memq u modules-loaded*) nil)
-        ((memq u '(fasl-decls hash-decls)) (dskin (string-concat "$pxk/" (string-concat (id2string u) ".sl"))))
-%        ((memq u '(fast-vector)) (dskin (string-concat "$pu/" (string-concat (id2string u) ".sl"))))
+        ((memq u '(fasl-decls hash-decls))
+         (dskin (string-concat "$pxk/" (string-concat (id2string u) ".sl"))))
+       ((memq u '(fast-vector))
+         (dskin (string-concat "$pu/" (string-concat (id2string u) ".sl"))))
   )
   (setq modules-loaded* (cons u modules-loaded*)))
 
@@ -376,14 +864,181 @@
 (flag '(
    stderror exitlisp copyd codep ncons posintp errorprintf1 remob
    totalcopy variable-increment-ifor constant-increment-ifor
-   onoff* lap int2id-internal evload load1 unboundp fboundp
+   onoff* int2id-internal evload load1 unboundp fboundp
    funboundp dskin pp string-concat %gtbps gtbps string-equal channelprin2
    channelterpri stringgensym id2int id2int int2sys sys2fixn
    binaryopenwrite binaryclose wshift wplus2 wtimes2 wquotient
    wdifference wgreaterp wlessp wgeq wleq weq wand wor evectorp bigp
    isizev igetv channelposn channelwritechar idinf fastcallablep defun
    errorprintf foreach repeat ifor on off imports putmem putbyte
-   put_a_halfword depositfunctioncelllocation int2id load errset land
+   put_a_halfword int2id load errset land
    lor iland ilor string putword) 'lose)
+
+
+% Redefine a couple of functions that do not work out of the box
+
+(de printexpression (x)
+  ((lambda (expressioncount*)
+     (prog (hd tl fn)
+	   (setq x (resolvewconstexpression x))
+ 	   (cond ((or (numberp x) (stringp x)) (prin2 x))
+		 ((idp x) (prin2 (findlabel x)))
+		 ((atom x) 
+		  (errorprintf "***** Oddity in expression %r" x) 
+		  (prin2 x))
+		 (t
+		  (setq hd (car x)) (setq tl (cdr x)) 
+		  (cond
+		   ((setq fn (get hd 'binaryasmop))
+		    (when (greaterp expressioncount* 0)
+			  (prin2 asmopenparen*))
+		    (printexpression (car tl)) (prin2 fn) 
+		    (printexpression (cadr tl))
+		    (when (greaterp expressioncount* 0)
+			  (prin2 asmcloseparen*)))
+		   ((setq fn (get hd 'unaryasmop)) (prin2 fn) 
+		    (printexpression (car tl)))
+		   ((setq fn (get hd 'asmexpressionformat)) 
+		    (apply 'printf_internal
+			   (list fn 
+				 (foreach y in tl collect 
+					  (list 'printexpression
+						(mkquote y))))))
+		   ((and (setq fn (getd hd)) 
+			 (equal (car fn) 'macro))
+		    (printexpression (apply (cdr fn) (list x))))
+		   ((setq fn (get hd 'asmexpressionfunction)) 
+		    (apply fn (list x)))
+		   (t 
+		    (errorprintf "***** Unknown expression %r" 
+				 x)
+		    (printf "*** Expression error %r ***" x)))))))
+   (plus expressioncount* 1)))
+
+(de size (x) 
+  (cond ((stringp x) (difference (length (explodec x)) 1))
+        ((vectorp x) (upbv x))
+        ((bignump x) (difference (length (cdr x)) 1))
+        (t nil)))
+
+(de indx (s n)
+  (cond ((stringp s) (char-code (nth (explodec s) (plus2 n 1))))
+        (t nil)))
+
+(de intp (x) (and (fixp x) (not (bignump x))))
+
+(de sunsymbolp (x)
+   (setq x (explodec x))
+   (prog nil
+     lbl
+     (cond ((null x) (return t))
+           ((not (or (liter (car x)) (eq (car x) '!_))) (return nil)))
+     (setq x (cdr x))
+     (go lbl)))
+
+(de asm-char-downcase (c)
+    (if (and (leq 65 c) (leq c 90))
+	(plus c 32)
+      x)))
+
+(de auxaux (i)
+  (list2string (list (code-char i))))
+
+(dm codeprintf (x) (cons 'fprintf (cons 'codeout* (cdr x))))
+(dm dataprintf (x) (cons 'fprintf (cons 'dataout* (cdr x))))
+
+%(def-pass-1-macro Char (u)
+%. PSL Character constant macro
+%  (DoChar U))
+
+% Table driven char macro expander
+(de DoChar (u)
+  (cond
+    ((idp u) (or
+               (get u 'charvalue) 
+               ((lambda (n) (cond ((lessp n 128) n))) (id2int u))
+               (CharError u)))
+    ((pairp u) % Here's the real change -- let users add "functions"
+      ((lambda (fn)
+         (cond 
+           (fn (apply fn (list (dochar (cadr u)))))
+           (t (CharError u))))
+       (cond ((idp (car u)) (get (car u) 'char-prefix-function)))))
+    ((and (fixp u) (geq u 0) (leq u 9)) (plus u 48))  % 48 = (char 0)
+    (t (CharError u))))
+
+(de CharError (u)
+  (ErrorPrintF "*** Unknown character constant: %r" u)
+  0)
+
+
+% This is needed for ASM generation, see $pxk/main-start.sl
+(put 'symnam 'symbol 'symnam)
+(put 'symfnc 'symbol 'symfnc)
+(put 'symget 'symbol 'symget)
+(put 'symval 'symbol 'symval)
+(put 'symprp 'symbol 'symprp)
+
+(setq toploopeval* 'eval)
+ 
+%(de OperandPrintIndirect (x)            % (Indirect x)
+%  (progn (setq x (cadr x)) 
+%         (if (regp x) (progn
+%                        (prin2 "(")
+%                        (PrintOperand x) 
+%                        (Prin2 ")"))
+%               (prin2 "*")
+%               (PrintOperand x)
+%               (prin2 "         / ")
+%	       (prin1 x)
+%               (Prin2 "")) 
+%))
+%
+%
+%(de asmprintvaluecell (x)
+%  (printexpression (list 'plus2 'symval 
+%                         (list 'times (compiler-constant 'addressingunitsperitem) 
+%                          (list 'idloc (cadr x)))))
+%  (princ "     / ")
+%  (prin1 x))
+
+(flag '(evload) 'ignore)
+% $pu/if.sl defines an IF macro that uses symbols as keywords THEN, ELIF
+% and ELSE. It is coded using the NEXT macro from $pnk/loop-macros.sl, but
+% if I load that file then it gives a version of FOR that conflicts with
+% $pu/for-macro.sl. So I will provide NEXT manually here - not that I think
+% that use of it was a good idea!
+
+(dm next (u)  % Continue Loop
+  '(go $loop$))
+
+(flag '(next) 'lose)
+
+(dm bothtimes (x) (cons 'progn (cdr x)))
+(dm compiletime (x) (cons 'progn (cdr x)))
+(dm loadtime (x) (cons 'progn (cdr x)))
+
+(flag '(bothtimes compiletime loadtime) 'lose)
+
+% This seems to be called at cross-compile time with NIL as the
+% second argument. That seems a bit weird to me.
+
+(de mkitem (tag x)
+  (cond
+    ((null (integerp tag)) (print (list '++++ 'mkitem tag x)) (mkitem 0 x))
+    ((null (integerp x))  (print (list '++++ 'mkitem tag x)) (mkitem tag 0))
+    (t (land 16#ffffffffffffffff (lor
+         (lsh tag 56)
+         (land x 16#00ffffffffffffff))))))
+
+(de imports (u) nil)
+
+(flag '(mkitem imports) 'lose)
+
+(rdf "mytrace.lsp")
+
+(de lap (u)
+  (print "+++++ lap called before it is defined +++++")
+  nil)
 
 % end of file
