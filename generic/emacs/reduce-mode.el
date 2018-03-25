@@ -105,8 +105,7 @@
 
 (eval-when-compile						; keep compiler happy!
   (require 'font-lock)
-  (require 'timer)
-  (require 'paren))
+  (require 'timer))
 
 ;; Customizable user options:
 
@@ -273,6 +272,15 @@ It should end with \\=\\=.  The default value is \"\\(else\\|end\\|>>\\)\\=\\=\"
 
 ;; Display:
 
+(defcustom reduce-show-delim-mode-on show-paren-mode
+  "If non-nil then turn on `reduce-show-delim-mode' initially.
+Since `reduce-show-delim-mode' is a buffer-local minor mode, it
+can also be turned on and off in each buffer independently.
+Defaults to the value of `show-paren-mode'."
+  :package-version '(reduce-mode . "1.54")
+  :type 'boolean
+  :group 'reduce-format-display)
+
 (defcustom reduce-show-proc-mode nil
   "*If non-nil then display current procedure name in mode line.
 Update after `reduce-show-proc-delay' seconds of Emacs idle time."
@@ -411,7 +419,7 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
   ;; font-lock option (which is essential to parse "...!"):
   (set (make-local-variable 'parse-sexp-lookup-properties) t)
   ;; Optionally turn on REDUCE minor modes:
-  (if reduce-show-delim-mode (reduce-show-delim-mode t))
+  (if reduce-show-delim-mode-on (reduce-show-delim-mode))
   (if reduce-auto-indent-mode (reduce-auto-indent-mode t))
   ;; For reduce-show-proc-mode:
   (set (make-local-variable 'which-func-mode) nil)
