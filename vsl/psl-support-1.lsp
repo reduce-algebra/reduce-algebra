@@ -44,9 +44,9 @@
 
 (de concat (a b) (string-concat a b))
 
-(de binarywrite (file val)
+(de binarywrite (stream val)
    (prog (of n)
-      (setq of (wrs file))
+      (setq of (wrs stream))
       (prinbyte (setq n (land val 0xff)))
       (setq val (lshift (difference val n) -8))
       (prinbyte (setq n (land val 0xff)))
@@ -64,9 +64,9 @@
       (prinbyte (setq n (land val 0xff)))
       (wrs of)))
 
-(de binarywritebyte (file val)
+(de binarywritebyte (stream val)
    (prog (of)
-      (setq of (wrs file))
+      (setq of (wrs stream))
       (prinbyte (land val 0xff))
       (wrs of)))
 
@@ -512,6 +512,7 @@
   (prog (o b i)
     (setq o (wrs stream))
     (setq i 0)
+    (setq len (times len 8)) % length is given in WORDS
  top(cond
       ((not (lessp i len)) (go done)))
     (prinbyte (byte vec i))
@@ -1050,12 +1051,12 @@
 (de codewritestring (x)
   (prog (len w)
     (setq x (explode2 x))
-    (setq len (length x))
-    (setq w (strpack len))
+    (setq len (sub1 (length x)))
+    (setq w (times 8 (strpack len))) % 8 bytes per word
     (binarywrite codeout* len)
     (foreach b in x do (binarywritebyte codeout* (char-code b)))
     (while (lessp len w)
-      (progn (binarywritefile codeout* 0)
+      (progn (binarywritebyte codeout* 0)
       (setq len (add1 len))))))
 
 (de codefiletrailer ()
@@ -1096,7 +1097,7 @@
         ))
         (deallocatefaslspaces)))
 
-(flag '(codewritebyte codewritestring codefiletrailer) 'lose)
+(flag '(codewritestring codefiletrailer) 'lose)
 
 (rdf "mytrace.lsp")
 

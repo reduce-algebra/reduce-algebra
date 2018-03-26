@@ -11,6 +11,7 @@
   (prog (g d a r nargs l)
     (cond
        ((null (getd name)) (return (list '***** name 'not 'defined)))
+       ((flagp name 'traced) (return (list '***** name 'traced 'already)))
        ((flagp name 'lose)
         (remflag (list name) 'lose)
         (setq l t)))
@@ -30,6 +31,7 @@
          (list 'return r))))
     (cond
        (l (flag (list name) 'lose)))
+    (flag (list name) 'traced)
     (return name)))
 
 (de printwidth (u)
