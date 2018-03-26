@@ -3,9 +3,9 @@
 @settitle GNU Emacs REDUCE Integrated Development Environment
 @c Version: $Id$
 @c Manual last updated:
-@set UPDATED Time-stamp: <2017-12-08 18:17:13 fjw>
+@set UPDATED Time-stamp: <2018-03-26 16:59:43 fjw>
 @c Software version:
-@set VERSION 1.52
+@set VERSION 1.54
 @afourpaper
 @c With different size paper the printed page breaks will need attention!
 @c Look for @page and @need commands.
@@ -23,7 +23,7 @@ This manual is for REDUCE IDE (version @value{VERSION}, updated
 @value{UPDATED}), which provides GNU Emacs major modes for editing and
 running REDUCE source code.
 
-Copyright @copyright{} 1994, 1996, 1999, 2012, 2017 Francis J. Wright
+Copyright @copyright{} 1994, 1996, 1999, 2012, 2017-2018 Francis J. Wright
 
 @quotation
 This manual and the software that it describes are subject to the GNU
@@ -1241,66 +1241,115 @@ and describes how to access some special function keys that are useful
 in Emacs in general and in REDUCE mode in particular.
 
 @menu
-* Groups and blocks::           Delimiter highlighting and moving over
+* Groups and blocks moving::    Moving over
+* Groups and blocks highlighting:: Delimiter highlighting
 * Major mode menu::             Major mode menu
 * Version::                     REDUCE mode version information
 * Problems::                    Known and potential problems
 * Special function keys::       Linefeed, Meta-TAB, etc.
 @end menu
 
-@node Groups and blocks
-@section Groups and blocks: delimiter highlighting and moving over
+@node Groups and blocks moving
+@section Groups and blocks: moving over
 @cindex Groups
 @cindex Blocks
-@cindex Delimiters
-@cindex Highlighting and moving over
 @cindex Moving over
 
-Delimiters for groups (@code{<<} and @code{>>}) and blocks (@code{begin}
-and @code{end}) are treated as brackets.  Either highlighting of
-matching group and block delimiters (consistent with the @code{paren}
-library (@pxref{Matching,, Automatic Display Of Matching Parentheses,
-emacs, The Emacs Editor})) or (group only) blink matching is toggled by
-the command @code{reduce-show-delim-mode}.  Highlighting is turned on
-automatically when REDUCE mode is selected if
-@code{reduce-show-delim-mode} is non-nil, which it is by default if the
-@code{paren} library is in use.  @xref{Matching,, Automatic Display Of
-Matching Parentheses, emacs, The Emacs Editor}, all of which applies to
-this extended bracket matching facility.
-
-Beware: Currently highlighting of matching group and block delimiters
-works only when point is @emph{at the end} of the delimiter.  This may
-be changed in future.
-
-@table @kbd
-@item M-x reduce-show-delim-mode
-@findex reduce-show-delim-mode
-Toggle REDUCE Show Delim mode.  With a prefix argument, turn REDUCE Show
-Delim mode on if and only if the argument is positive.  When REDUCE Show
-Delim mode is enabled, any matching delimiter is highlighted after
-@code{show-paren-delay} seconds of Emacs idle time.
-@xref{Customization,, Customization of the REDUCE IDE}.
-@end table
-
-Groups and blocks are regarded as ``symbolic expressions'' (sexp's) by
-the commands @code{reduce-backward-sexp} and @code{reduce-forward-sexp}.
+A group or block is regarded as a ``symbolic expression'' (sexp) by
+the commands @code{reduce-backward-sexp} and
+@code{reduce-forward-sexp}.
 
 @table @kbd
 @item  C-M-f
 @kindex C-M-f
 @itemx M-x reduce-forward-sexp
 @findex reduce-forward-sexp
-Move forward across one balanced expression.  With an argument, do it
-that many times.
+Move forward across one balanced expression.  With a numeric argument,
+do it that many times.
 
 @item  C-M-b
 @kindex C-M-b
 @itemx M-x reduce-backward-sexp
 @findex reduce-backward-sexp
-Move backward across one balanced expression.  With an argument, do it
-that many times.
+Move backward across one balanced expression.  With a numeric argument,
+do it that many times.
 @end table
 
+@c -------------------------------------------------------------------
+
+@node Groups and blocks highlighting
+@section Groups and blocks: delimiter highlighting
+@cindex Groups
+@cindex Blocks
+@cindex Delimiters
+@cindex Highlighting
+
+Delimiters for groups (@code{<<} and @code{>>}) and blocks
+(@code{begin} and @code{end}) are treated like brackets.  Either
+highlighting of matching group and block delimiters or (group only)
+blink matching is toggled by the command
+@code{reduce-show-delim-mode}.
+
+Beware: Currently the blink matching facility for groups is probably
+broken!
+
+REDUCE Show Delim mode is based closely on Show Paren mode
+(@pxref{Matching,, Automatic Display Of Matching Parentheses, emacs,
+The Emacs Editor}).  It is completely independent except that all
+settings default to the corresponding values for Show Paren mode.
+Show Delim mode is turned on automatically when REDUCE mode is
+selected if @code{reduce-show-delim-mode-on} is non-nil, which it is
+by default if Show Paren mode is on.
+
+Note that highlighting of matching group and block delimiters does not
+work when point is @emph{within} a delimiter.  (This cannot happen
+with brackets, which are single characters).  This may be changed in
+future.
+
+@table @kbd
+@item M-x reduce-show-delim-mode
+@findex reduce-show-delim-mode
+Toggle REDUCE Show Delim mode.  With a prefix argument, turn REDUCE
+Show Delim mode on if and only if the argument is positive.  When
+REDUCE Show Delim mode is enabled, any matching delimiter is
+highlighted after @code{reduce-show-delim-delay} seconds of Emacs idle
+time.  @xref{Customization,, Customization of the REDUCE IDE}.
+@end table
+
+Show Delim mode is a buffer-local minor mode.  Whenever point is
+before an opening delimiter or after a closing delimiter, the
+delimiter, its matching delimiter, and optionally the text between
+them are highlighted.  To customize REDUCE Show Delim mode, type
+@kbd{M-x customize-group @key{RET} reduce-delim-showing}.  The
+customizable options which control the operation of this mode include
+the following:
+
+@itemize
+@item
+@code{reduce-show-delim-highlight-opendelim} controls whether to
+highlight an opening delimiter when point stands just before it, and
+hence its position is marked by the cursor anyway.  The default is the
+value of @code{show-paren-highlight-openparen}.
+@item
+@code{reduce-show-delim-style} controls whether just the two
+delimiters, or also the space between them get highlighted.  The valid
+options here are @code{delimiter} (show the matching delimiter),
+@code{expression} (highlight the entire expression enclosed by the
+delimiters), and @code{mixed} (highlight the matching delimiter if it
+is visible, the expression otherwise).  The default is determined by
+the value of @code{show-paren-style}.
+@item
+@code{reduce-show-delim-when-point-inside-delim}, when non-@code{nil},
+causes highlighting also when point is immediately inside a delimiter.
+The default is the value of @code{show-paren-when-point-inside-paren}.
+@item
+@code{reduce-show-delim-when-point-in-periphery}, when non-@code{nil},
+causes highlighting also when point is in whitespace at the beginning
+or end of a line, and there is respectively an opening or closing
+delimiter as the first or last non-whitespace characters on the line.
+The default is the value of @code{show-paren-when-point-in-periphery}.
+@end itemize
+     
 @c -------------------------------------------------------------------
 
 @node Major mode menu
@@ -2175,10 +2224,10 @@ at the bottom of the frame; it will also be recorded in the
 Formatting this file on Windows
 ===============================
 
-This only seems to work using Cygwin. Install the texinfo and
+This only seems to work using Cygwin.  Install the texinfo and
 texinfo-tex packages (which also installs a lot of dependent packages,
-including texlive). Then run the following commands from the Cygwin
-bash shell. (They don't run in Emacs or from other shells.)
+including texlive).  Then run the following commands from the Cygwin
+bash shell.  (They don't run in Emacs or from other shells.)
 
 To format as info: makeinfo reduce-ide.texinfo
 

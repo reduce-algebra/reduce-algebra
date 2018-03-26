@@ -47,6 +47,7 @@
 (require 'reduce-mode)
 (require 'paren)						; although loaded by default
 
+;;;###autoload
 (defgroup reduce-delim-showing nil
   "Showing (un)matching of group/block delimiters and enclosed expressions."
   :package-version '(reduce-mode . "1.54")
@@ -111,7 +112,7 @@ active, you must toggle the mode off and on again for this to take effect."
   :type 'boolean
   :group 'reduce-delim-showing)
 
-(defcustom reduce-show-delim-when-point-inside-paren
+(defcustom reduce-show-delim-when-point-inside-delim
   show-paren-when-point-inside-paren
   "If non-nil, show delimiters when point is just inside one.
 This will only be done when point isn't also just outside a delimiter."
@@ -220,8 +221,8 @@ OUTSIDE is the buffer position of the outside of the delimiter.
      ((and before (< (car before) 0)) before)		; closer before point
      ((and after (> (car after) 0)) after)			; opener after point
      ;; Point is immediately inside a delimiter.
-     ((and reduce-show-delim-when-point-inside-paren before)) ; opener before point
-     ((and reduce-show-delim-when-point-inside-paren after))  ; closer after point
+     ((and reduce-show-delim-when-point-inside-delim before)) ; opener before point
+     ((and reduce-show-delim-when-point-inside-delim after))  ; closer after point
      ;; Point is in the whitespace before the code.
      ((and reduce-show-delim-when-point-in-periphery
 		   (<= (point) ind-pos))
