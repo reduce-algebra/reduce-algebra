@@ -64,7 +64,13 @@
       (prinbyte (setq n (land val 0xff)))
       (wrs of)))
 
-(flag '(concat binarywrite) 'lose)
+(de binarywritebyte (file val)
+   (prog (of)
+      (setq of (wrs file))
+      (prinbyte (land val 0xff))
+      (wrs of)))
+
+(flag '(concat binarywrite binarywritebyte) 'lose)
 
 % I will simulate byte vectors using vectors of 64-bit integers, and here
 % I will pack the bytes little-endian. Note that the implementation here
@@ -1035,10 +1041,75 @@
 
 (flag '(mkitem imports) 'lose)
 
+% (de codewritestring (x)
+%   (setq x (strinf x))
+%   (setq s (strlen x))
+%   (binarywrite codeout* s)
+%   (binarywriteblock codeout* (strbase x) (strpack s)))
+
+(de codewritestring (x)
+  (prog (len w)
+    (setq x (explode2 x))
+    (setq len (length x))
+    (setq w (strpack len))
+    (binarywrite codeout* len)
+    (foreach b in x do (binarywritebyte codeout* (char-code b)))
+    (while (lessp len w)
+      (progn (binarywritefile codeout* 0)
+      (setq len (add1 len))))))
+
+(de codefiletrailer ()
+  (prog (s)
+        (systemfaslfixup)
+        (binarywrite codeout* (idifference (isub1 nextidnumber*)
+                                           first-local-id-number))
+        % Number of local IDs
+        (foreach x in (car orderedidlist*) do
+                 (progn (remprop x fasl-idnumber-property*)
+                        (codewritestring (faslid2string x))))
+        (binarywrite codeout* % S is size in words
+                     (setq s
+                      (iquotient
+                       (iplus2 currentoffset*
+                        (isub1 addressingunitsperitem))
+                       addressingunitsperitem)))
+        (binarywrite codeout* initoffset*)
+        (binarywriteblock codeout* codebase* s)
+        (if *compact-bittable
+         (let((b (compact-bittable bittablebase* bittableoffset*))
+              (bpw (quotient bitsperword 8)))
+           (binarywrite codeout*
+            (setq s (iquotient
+                       (iplus2 (car b)
+                        (isub1 bpw))
+                       bpw)))
+           (binarywriteblock codeout* (strbase(strinf (cdr b))) s)
+         )
+         (progn
+          (binarywrite codeout*
+                     (setq s
+                      (iquotient
+                       (iplus2 bittableoffset*
+                        (isub1 bittable-entries-per-word))
+                       bittable-entries-per-word)))
+          (binarywriteblock codeout* bittablebase* s)
+        ))
+        (deallocatefaslspaces)))
+
+(flag '(codewritebyte codewritestring codefiletrailer) 'lose)
+
 (rdf "mytrace.lsp")
+
+% A function ASSOC1 is defined using LAP in one of the source files
+% I need to load as part of the compiler - thus tending to require that
+% a working compiler/LAP is available at an early stage. By putting in
+% a dummy definition here I avoid that crashing things, and as I read in
+% more files I will instate a locally workable version of LAP - but note
+% that I will install one suitable for cross rather than local compilation.
 
 (de lap (u)
   (print "+++++ lap called before it is defined +++++")
+  (print u)
   nil)
 
 % end of file

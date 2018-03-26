@@ -10,6 +10,7 @@
 (de mytrace (name)
   (prog (g d a r nargs l)
     (cond
+       ((null (getd name)) (return (list '***** name 'not 'defined)))
        ((flagp name 'lose)
         (remflag (list name) 'lose)
         (setq l t)))

@@ -10,3 +10,5 @@ standardlisp();
 (exitlisp)
 
 XXX
+mv foo.b realfoo.b
+
