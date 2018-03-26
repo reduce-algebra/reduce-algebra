@@ -702,8 +702,16 @@ Returns the removed property or NIL if there was no such indicator."
 ;; as a NOEVAL, NOSPREAD function with the macro's invocation bound as
 ;; a list to the macros single formal parameter."
 
-;; Could remove the use of the property `ESL--FTYPE' and just process
-;; the symbol-function.
+;; REDUCE handles macros specially, assuming they are Standard LISP
+;; macros, whereas ESL functions that are actually defined as Emacs
+;; Lisp macros need to be handled by REDUCE as if they were
+;; EXPRs. Therefore, it is important that the function type defaults
+;; to EXPR, so only macros defined using DM or PUTD are given the
+;; property ESL--FTYPE with value MACRO. The ESL--FTYPE property is
+;; required so that macros defined in REDUCE can be distinguished from
+;; Emacs Lisp macros. Normal functions defined using DE or PUTD are
+;; given the property ESL--FTYPE with value EXPR just for symmetry,
+;; but this property value is not actually used by GETD.
 
 (defmacro DE (fname params fn)
   "DE(FNAME:id, PARAMS:id-list, FN:any):id noeval, nospread
@@ -718,9 +726,14 @@ FEXPR PROCEDURE DE(U);
   `(progn
 	 (put ',fname 'ESL--FTYPE 'EXPR)
 	 (defun ,fname ,params ,fn)
-	 (if *COMP
-		 (let ((byte-compile-warnings '(not free-vars unresolved)))
-		   (byte-compile ',fname)))
+	 ,@(if *COMP  ; splice in list of content or nil.
+		   ;; It makes no sense to include code to compile this
+		   ;; function when the function definition is being compiled
+		   ;; into a fasl file, so examine *COMP when the macro is
+		   ;; expanded/compiled and ensure that *COMP is nil when fasl
+		   ;; files are being generated.
+		   `((let ((byte-compile-warnings '(not free-vars unresolved)))
+			   (byte-compile ',fname))))
 	 ',fname))
 
 ;; *** I'm hoping df is not actually required! ***
@@ -750,9 +763,9 @@ FEXPR PROCEDURE DM(U);
 	   ;; Include macro name as first arg:
 	   (setq ,@param (cons ',mname ,@param))
 	   ,fn)
-	 ;; (if *COMP
-	 ;; 	 (let ((byte-compile-warnings '(not free-vars unresolved)))
-	 ;; 	   (byte-compile ',mname)))
+	 ,@(if *COMP						; see DE
+	 	   `((let ((byte-compile-warnings '(not free-vars unresolved)))
+	 		   (byte-compile ',mname))))
 	 ',mname))
 
 (defun GETD (fname)
@@ -767,14 +780,13 @@ is returned."
   (let ((def (symbol-function fname)))
 	(if def
 		(if (eq (get fname 'ESL--FTYPE) 'MACRO)
-			;; def = (macro lambda (&rest u) (setq u (fname . u)) body-form)
-			;;  -->  (MACRO lambda (u) body-form)
-			;; Macro may be compiled, so...
+			;; Macro, which may be compiled, so...
 			(if (consp (setq def (cdr def))) ; not compiled
+				;; def = (macro lambda (&rest u) (setq u (fname . u)) body-form)
+				;;  -->  (MACRO lambda (u) body-form)
 				`(MACRO lambda ,(CDADR def) ,@(CDDDR def))
-			  (cons 'MACRO def)) ; I hope this will suffice for compiled macros!
-		  ;; def = (lambda (u) body-form) *or* symbol
-		  ;;  -->  (EXPR lambda (u) body-form) *or* (EXPR . symbol)
+			  ;; Compiled macro -- trickier!
+			  `(MACRO lambda (u) (eval (cons ,def (cdr u)))))
 		  (cons 'EXPR def)))))
 
 (defun PUTD (fname type body)
@@ -806,7 +818,6 @@ the !*COMP global variable is non-NIL."
 					  (setq ,u (cons ',fname ,u))
 					  ;; Splice in body-form:
 					  ,@(cddr body)))
-				;; `(lambda ,@(cdr body))))
 				body))		  ; no longer need to downcase lambda here
   (put fname 'ESL--FTYPE type)
   (if *COMP
@@ -816,13 +827,15 @@ the !*COMP global variable is non-NIL."
 
 (defun REMD (fname)
   "REMD(FNAME:id):{NIL, dotted-pair} eval, spread
-Removes the function named FNAME from the set of defined func-
-tions. Returns the (ftype . function) dotted-pair or NIL as does
-GETD. The global/function attribute of FNAME is removed and
+Removes the function named FNAME from the set of defined
+functions. Returns the (ftype . function) dotted-pair or NIL as
+does GETD. The global/function attribute of FNAME is removed and
 the name may be used subsequently as a variable."
-  (prog1
-	  (get fname 'ESL--FTYPE)
-	(fmakunbound fname)))
+  (let ((def (GETD fname)))
+	(when def
+	  (fmakunbound fname)
+	  (put fname 'ESL--FTYPE nil))
+	def))
 
 
 ;;; Variables and Bindings
@@ -2342,7 +2355,8 @@ When all done, execute FASLEND;\n\n" name)))
   ;; Close the temporary Lisp output file and then compile it.
   ;; Functions are often used before they are defined and several
   ;; modules refer to undefined free variables, so...
-  (let ((byte-compile-warnings '(not free-vars unresolved)))
+  (let ((byte-compile-warnings '(not free-vars unresolved))
+		*COMP)			 ; OFF COMP -- don't re-compile compiled code!
 	(advice-remove 'EXPLODE #'esl--faslout-explode-override)
 	(advice-remove 'PRETTYPRINT #'esl--faslout-prettyprint-override)
 	(CLOSE esl--faslout-filehandle)
