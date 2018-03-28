@@ -757,6 +757,8 @@ FEXPR PROCEDURE DM(U);
   (declare (debug (&define name lambda-list def-body)))
   `(progn
 	 (put ',mname 'ESL--FTYPE 'MACRO)
+	 ;; Save the (uncompiled) SL macro form:
+	 (put ',mname 'ESL--MACRO '(MACRO lambda ,param ,fn))
 	 ;; param must be a list containing a single identifier, which
 	 ;; must therefore be spliced into the macro definition.
 	 (defmacro ,mname (&rest ,@param)	; spread the arguments
@@ -780,13 +782,16 @@ is returned."
   (let ((def (symbol-function fname)))
 	(if def
 		(if (eq (get fname 'ESL--FTYPE) 'MACRO)
-			;; Macro, which may be compiled, so...
-			(if (consp (setq def (cdr def))) ; not compiled
-				;; def = (macro lambda (&rest u) (setq u (fname . u)) body-form)
-				;;  -->  (MACRO lambda (u) body-form)
-				`(MACRO lambda ,(CDADR def) ,@(CDDDR def))
-			  ;; Compiled macro -- trickier!
-			  `(MACRO lambda (u) (eval (cons ,def (cdr u)))))
+			;; Return the (uncompiled) SL macro form:
+			(get fname 'ESL--MACRO)
+;; 			;; Macro, which may be compiled, so...
+;; 			;; def = (macro lambda (&rest u) (setq u (fname . u)) body-form)
+;; 			(if (consp (setq def (cdr def))) ; not compiled
+;; 				;; Now def = (lambda (&rest u) (setq u (fname . u)) body-form)
+;; 				;; Return (MACRO lambda (u) body-form)
+;; 				`(MACRO lambda ,(CDADR def) ,@(CDDDR def))
+;; 			  ;; Compiled macro -- trickier!
+;; 			  `(MACRO lambda (u) (cons ,def (cdr u))))
 		  (cons 'EXPR def)))))
 
 (defun PUTD (fname type body)
@@ -812,17 +817,19 @@ the !*COMP global variable is non-NIL."
   ;; body = (lambda (u) body-form) or function object
   (fset fname (if (eq type 'MACRO)
 				  (let ((u (CAADR body))) ; must be a symbol!
+					;; Save the (uncompiled) SL macro form:
+					(put fname 'ESL--MACRO (cons 'MACRO body))
 					`(macro
 					  lambda (&rest ,u)	; spread the arguments
 					  ;; Include macro name as first arg:
 					  (setq ,u (cons ',fname ,u))
 					  ;; Splice in body-form:
 					  ,@(cddr body)))
-				body))		  ; no longer need to downcase lambda here
+				body))
   (put fname 'ESL--FTYPE type)
   (if *COMP
-	  (let ((byte-compile-warnings '(not free-vars unresolved)))
-		(byte-compile fname)))
+  	  (let ((byte-compile-warnings '(not free-vars unresolved)))
+  		(byte-compile fname)))
   fname)
 
 (defun REMD (fname)
@@ -2362,6 +2369,10 @@ When all done, execute FASLEND;\n\n" name)))
 	(CLOSE esl--faslout-filehandle)
 	(setq *writingfaslfile nil *DEFN nil)
 	(esl-reinstate-plists)
+	;; Check the Emacs Lisp file generated:
+	(let (attribs (file-attributes esl--faslout-name.el))
+	  (unless (and attribs (> (file-attribute-size attribs) 0))
+		(error "***** Error generating %s" esl--faslout-name.el)))
 	;; Compile and then delete the Emacs Lisp version of the file:
 	(princ (format "*** Compiling %s ..." esl--faslout-name.el))
 	(if (byte-compile-file esl--faslout-name.el)
