@@ -258,12 +258,13 @@ Returns T if U is a string.")
   "VECTORP(U:any):boolean eval, spread
 Returns T if U is a vector.")
 
-(defalias 'ZEROP 'zerop
+(defun ZEROP (u)
   "ZEROP(U:any):boolean eval, spread
 Returns T if U is a number and has the value 0 or 0.0. Returns
 NIL otherwise.
 EXPR PROCEDURE ZEROP(U);
-   OR(EQN(U, 0), EQN(U, 0.0));")
+   OR(EQN(U, 0), EQN(U, 0.0));"
+  (and (numberp u) (zerop u)))
 
 
 ;;; Functions on Dotted-Pairs
@@ -2370,7 +2371,7 @@ When all done, execute FASLEND;\n\n" name)))
 	(setq *writingfaslfile nil *DEFN nil)
 	(esl-reinstate-plists)
 	;; Check the Emacs Lisp file generated:
-	(let (attribs (file-attributes esl--faslout-name.el))
+	(let ((attribs (file-attributes esl--faslout-name.el)))
 	  (unless (and attribs (> (file-attribute-size attribs) 0))
 		(error "***** Error generating %s" esl--faslout-name.el)))
 	;; Compile and then delete the Emacs Lisp version of the file:
