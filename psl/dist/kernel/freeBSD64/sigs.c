@@ -44,22 +44,35 @@
 int      fp_first=0;
 #endif
 
-void 
+#ifndef ALTSIGSTACKSIZE
+#define ALTSIGSTACKSIZE (16*SIGSTKSZ)
+#endif
+
+static char alternate_signalstack[ALTSIGSTACKSIZE];
+static stack_t stackinfo = { (void *) alternate_signalstack, sizeof(alternate_signalstack), 0 };
+static stack_t *stackinfo_ptr = NULL;
+
+void
 sun3_sigset( sig, action )
 void (*action)();
 int sig;
 {
-  struct sigaction actio;
+   struct sigaction act = {0};
+   
+   if (signal(sig, SIG_IGN) != SIG_IGN) {
+     act.sa_sigaction = action;
+     act.sa_flags = SA_SIGINFO | SA_RESTART;
 
-  actio.sa_flags = SA_SIGINFO | SA_RESTART;
-  actio.sa_sigaction = action;
-  sigaction(sig, &actio, NULL);
-
-  /*
-  if (signal(sig, SIG_IGN) != SIG_IGN) 
-    signal(sig, action);
-  */
-  
+     // set up alternate signal stack for SIGSEGV
+     if (sig == 11) {
+       if (stackinfo_ptr == NULL) {
+           stackinfo_ptr = &stackinfo;
+           sigaltstack(stackinfo_ptr,NULL);
+        }
+        act.sa_flags |= SA_ONSTACK;
+     }
+     sigaction(sig, &act, NULL);
+   } 
 }
 
 void
@@ -74,12 +87,18 @@ void ieee_handler()
 {
 }
 
-void
-ualarm()
-
+void ieee_flags()
 {
 }
 
-void ieee_flags()
+/*
+ * block / unblock a specific signal
+ */
+void mask_signal(int signo, int block)
 {
+    sigset_t sigset;
+
+    sigemptyset(&sigset);
+    sigaddset(&sigset,signo);
+    sigprocmask(block != 0 ? SIG_BLOCK : SIG_UNBLOCK, &sigset, NULL);
 }
