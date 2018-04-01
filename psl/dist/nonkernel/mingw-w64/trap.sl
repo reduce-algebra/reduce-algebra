@@ -118,6 +118,24 @@
      (*move (quote ,errorstring) (fluid errorstring*))
 					     % string for error message
      (push (reg 1))
+
+     ,@(if (eq signumber 11)
+                                             % insert code for SIGSEGV handler
+					     % to handle stack overflow
+          (list
+            '(!*jumpnoteq (label nostackoverflow) (fluid exceptioncode*) 16#c00000fd)
+                                             % check for stack overflow
+					     % and reset the stack
+            '(*link _resetstkoflw expr 0)
+            '(!*jumpnoteq (label nostackoverflow) (reg 1) 0)
+                                             % abort if _resetstkoflw failed
+            '(*move (quote "Stack overflow - aborting") (reg 1))
+	    '(*call console-print-string)
+            '(*call console-newline)
+            '(*link exit-with-status expr 1)
+           'nostackoverflow
+	  ))
+
      (*link initializeinterrupts-1 expr 0)
      (pop (reg 1))
      (pop (reg rsi)) 		             % restored saved registers
@@ -196,6 +214,7 @@
 	     ((weq exceptioncode* 16#c0000090) "Invalid floating point operation")
 	     ((weq exceptioncode* 16#c0000092) "Floating point stack over-/underflow")
 	     ((weq exceptioncode* 16#c0000093) "Floating point underflow")
+	     ((weq exceptioncode* 16#c00000fd) "Stack overflow")
 	     (t errorstring*)
 	     )
 	    sigaddr*))))

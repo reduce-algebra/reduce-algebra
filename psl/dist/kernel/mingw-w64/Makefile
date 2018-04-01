@@ -174,13 +174,13 @@ $(USERDIR)/bpsl.exe: $(CFILES)  \
 	$(USERDIR)/cclnk
 
 $(USERDIR)/dmain.o: $(USERDIR)/dmain.s 
-	cp $(USERDIR)/dmain.s $(USERDIR)/dmain.s.orig
-	sed -f $(PXK)/dmain.sed -i $(USERDIR)/dmain.s
+#	cp $(USERDIR)/dmain.s $(USERDIR)/dmain.s.orig
+#	sed -f $(PXK)/dmain.sed -i $(USERDIR)/dmain.s
 	$(ASPROG) $(ASARGS) -o $(USERDIR)/dmain.o $(USERDIR)/dmain.s
 
 $(USERDIR)/main.o: $(USERDIR)/main.s
-	cp $(USERDIR)/main.s $(USERDIR)/main.s.orig
-	sed -f $(PXK)/main.sed -i $(USERDIR)/main.s
+#	cp $(USERDIR)/main.s $(USERDIR)/main.s.orig
+#	sed -f $(PXK)/main.sed -i $(USERDIR)/main.s
 	$(ASPROG) $(ASARGS) -o $(USERDIR)/main.o $(USERDIR)/main.s
 
 $(USERDIR)/main.s: $(BFILES) $(SLFILES) $(PXK)/main.sed \

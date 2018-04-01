@@ -306,6 +306,8 @@
 (setq rregs  '("rax" "rcx" "rdx" "rbx" "rsp" "rbp" "rsi" "rdi"
                "r8" "r9" "r10" "r11" "r12" "r13" "r14" "r15"))
 
+(deflist '((rax r8) (rcx r9) (rdx r10) (rbx r11) (rsp r12) (rbp r13) (rsi r14) (rdi r15)) 'upperreg)
+
 (fluid '( the-instruction* addr* rex_w rex_r rex_x rex_b size-override* sse-prefix* !0f-prefix* mod-is-3*
 			   byte-operand*))
 
@@ -387,7 +389,10 @@
  (let(w)
   (cond ((and rex_w (setq w (get p 'reg64)))
 	 (if *gassyntax (bldmsg "%%%w" w) w))
-	((atom p) 
+	((atom p)
+	 % for push and pop
+	 (if (and rex_b (idp p) (get p 'upperreg))
+	     (setq p (get p 'upperreg)))
 	 (if (and *gassyntax (idp p)) (bldmsg "%%%w" p) p))
         ((eq (car p) 'G) 
 	 (if (eqcar (cdr p) 'b) (setq byte-operand* t))
@@ -416,7 +421,7 @@
          (plus addr* w 2))
         ((equal p '(J v))
          (setq  lth* (plus 4 lth*))
-         (plus addr* (bytes2word) 5))
+         (plus addr* (bytes2word) lth*))
            % mod R/M
         ((eqcar p 'E) (decode-modrm p))
         ((eqcar p 'R) (decode-modrm p))
@@ -545,7 +550,7 @@
    )
 
 (de reg-m(n)
-  (if (or rex_w !0f-prefix*) (reg-m64 n)
+  (if (or rex_w (wgreaterp n 7) !0f-prefix*) (reg-m64 n)
   (cond ((eq n 0) 'eax)
         ((eq n 1) 'ecx)
         ((eq n 2) 'edx)
@@ -1092,6 +1097,12 @@ loop
                   (wand 255 (byte base 7))
                   (wand 255 (byte base 8))
                   (wand 255 (byte base 9))
+                  (wand 255 (byte base 10))
+                  (wand 255 (byte base 11))
+                  (wand 255 (byte base 12))
+                  (wand 255 (byte base 13))
+                  (wand 255 (byte base 14))
+                  (wand 255 (byte base 15))
          ))
          (setq *curradr* base *currinst* pp)
          (setq !*comment nil)
@@ -1136,6 +1147,13 @@ loop
          (when (greaterp lth 5) (prin2 " ") (prinbnx (pop pp) 2))
          (when (greaterp lth 6) (prin2 " ") (prinbnx (pop pp) 2))
          (when (greaterp lth 7) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 8) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 9) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 10) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 11) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 12) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 13) (prin2 " ") (prinbnx (pop pp) 2))
+         (when (greaterp lth 14) (prin2 " ") (prinbnx (pop pp) 2))
          (ttab 38)
          (when name (prin2 name))
          (ttab 46)

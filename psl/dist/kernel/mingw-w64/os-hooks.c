@@ -106,6 +106,22 @@ GlobalVectoredHandler1(
 //    Context = ExceptionInfo->ContextRecord;
 
     saved_pxcptinfoptrs = (void *)ExceptionInfo;
+
+//
+//  Stack overflow is not handled by _gnu_exception_handler,
+//  therefore call the SIGSEGV handler by hand.
+//
+    if (ExceptionInfo->ExceptionRecord->ExceptionCode == STATUS_STACK_OVERFLOW) {
+	void (*old_handler) (int);
+
+//	fputs("Stack overflow",stderr);
+//	fflush(stderr);
+
+	old_handler = signal (SIGSEGV, SIG_DFL);
+	(*old_handler) (SIGSEGV);
+	return EXCEPTION_CONTINUE_EXECUTION;
+    }
+
     return _gnu_exception_handler(ExceptionInfo);
 }
 

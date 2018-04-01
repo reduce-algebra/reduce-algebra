@@ -177,10 +177,11 @@
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
 	  '( 1  2  3  4  5 st t1 t2 rax rcx rdx rbx rsp rbp rsi rdi
-				eax ebx ecx edx r8 r9 r10 r11 r12 r13 r14 r15
-            nil heaplast heaptrapbound
-	    bndstkptr bndstklowerbound
-	    bndstkupperbound t3 t4 al  cl ax cx es cs ss ds fs gs))))
+             eax ebx ecx edx r8 r9 r10 r11 r12 r13 r14 r15
+             nil heaplast heaptrapbound
+	     bndstkptr bndstklowerbound
+	     bndstkupperbound t3 t4
+             al cl ax cx es cs ss ds fs gs))))
  
 (DefList '((RAX   1) (RBX   2) (ebx  2) (RCX   3) (RDX   4) (RBP   5) )
 	 'RegisterNumber)
@@ -1042,10 +1043,7 @@ nopreload
 		   (*move (reg t1) (reg t2))
 		   (*wplus2 (Reg t2) ,lng)
 		   (cmp   (reg t2) ($fluid BndstkUpperBound))
-	    %  (jge   ,hugo)
-		%  (*call Bstackoverflow) %(jg    (entry Bstackoverflow))
-		%,hugo
-	   (jle (indirect(entry Bstackoverflow)))
+		   (jle (indirect(entry Bstackoverflow)))
 		   (*move (Reg t2) ($fluid BndstkPtr))  )) %start of code
  
       (setq list (append initload list))
@@ -1107,10 +1105,7 @@ preload  (setq initload
 		   (*move (reg t1) (reg t2))
 		   (*wplus2 (Reg t2) ,lng)
 		   (cmp   (reg t2) ($fluid BndstkUpperBound))
-	   %   (jge  ,kuno)
-	   %   (*call Bstackoverflow) %(jg    (entry Bstackoverflow))
-	   %  ,kuno
-	   (jle (indirect(entry Bstackoverflow)))
+		   (jle (indirect(entry Bstackoverflow)))
 		   (*move (Reg t2) ($fluid BndstkPtr))  )) %start of code
 
      (setq list (append initload list))
