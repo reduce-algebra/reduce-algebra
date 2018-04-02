@@ -7,11 +7,32 @@
 % Modified:     2-Jan-85 13:13:16 (Vicki O'Day)
 % Mode:         Lisp
 % Package:
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Revisions:
@@ -43,7 +64,9 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-(fluid '(errornumber* sigaddr* faultaddr* arith-exception-type* stack-pointer*))
+(fluid '(errornumber* sigaddr* faultaddr* arith-exception-type* stack-pointer*
+		      on-altstack*	% variable to indicate that we are on an alternate signal stack
+		      ))
 
 (compiletime
  (progn
@@ -128,12 +151,12 @@
    (*exit 0)))
  
 (de initializeinterrupts ()
-%%       (ieee_flags (strbase (strinf "set")) (strbase (strinf "direction"))
-%%				(strbase (strinf "tozero")) 0)
-%%       (ieee_handler (strbase (strinf "set"))
+%%    (ieee_flags (strbase (strinf "set")) (strbase (strinf "direction"))
+%%		  (strbase (strinf "tozero")) 0)
+%%    (ieee_handler (strbase (strinf "set"))
 %%                  (strbase (strinf "common"))
 %%                  (symfnc (id2int 'fpehandler)))
-       (initializeinterrupts-1))
+      (initializeinterrupts-1))
  
 (lap
  '((!*entry sigunwind expr 0)
@@ -151,7 +174,10 @@
      (push (reg 1))
      % if this is a terminal interrupt (errornumber* = 2) we check
      % whether it occured within lisp code. If not, just return.
-%     (*jumpnoteq (label in-lisp) (fluid errornumber*) 2)
+     (*jumpnoteq (label in-lisp) (fluid errornumber*) 2)
+     (*move (quote "Terminal Interrupt") (reg 1))
+     (*call console-print-string)
+     (*call console-newline)
      (*move (fluid sigaddr*) (reg 1))
      (*link codeaddressp expr 1)
      (!*jumpnoteq (label in-lisp) (reg 1) (quote nil))
@@ -162,6 +188,7 @@
      (*link initializeinterrupts expr 0) % MK
      (pop (reg 2))
      (*move (fluid errornumber*) (reg 1))
+     (*move (reg nil) (fluid on-altstack*))
      (*wplus2 (reg 1)(wconst 10000))
      % if the error number = 11 (segmentation violation, try to check for stack overflow
      (*jumpnoteq (label nostackoverflow) (fluid errornumber*) 11)
@@ -172,6 +199,7 @@
      (addq 2048 (reg 3))
      (*jumpwlessp (label nostackoverflow) (reg 3) (fluid stack-pointer*))
      (*move (quote "Stack overflow") (reg 2))
+     (*move (quote t) (fluid on-altstack*))
     nostackoverflow
      % if the error number = 8 (arithmetic exception), pass the subtype in register 3
      (*move (wconst 0) (reg 3))
