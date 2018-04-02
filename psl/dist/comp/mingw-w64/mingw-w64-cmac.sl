@@ -177,7 +177,7 @@
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
 	  '( 1  2  3  4  5 st t1 t2 rax rcx rdx rbx rsp rbp rsi rdi
-             eax ebx ecx edx r8 r9 r10 r11 r12 r13 r14 r15
+             eax ebx ecx edx esi edi r8 r9 r10 r11 r12 r13 r14 r15
              nil heaplast heaptrapbound
 	     bndstkptr bndstklowerbound
 	     bndstkupperbound t3 t4
