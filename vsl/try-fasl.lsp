@@ -2,8 +2,18 @@
 
 (mytrace 'internallycallablep)
 (mytrace 'fastcallablep)
+(mytrace 'saveentry)
+(mytrace 'codewritestring)
+(mytrace 'depositstring)
+(mytrace 'depositbyte)
+(mytrace 'depositwordblock)
+(mytrace 'depositquadwordexpression)
+(mytrace 'depositword)
+(mytrace 'word)
+(mytrace 'putword)
+(mytrace 'wputv)
 
-(cond
+'(cond
   ((member 'vsl lispsystem*)
    (mytrace 'mkitem)
    (mytrace 'getfcodepointer))

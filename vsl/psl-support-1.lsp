@@ -1,12 +1,39 @@
 % This file contains a mixture of two sorts of things:
 
 % (A) PSL functions that are not defined in the files that I will
-%     load to make myself a compiler, but that are required.
+%     load to make myself a compiler, but that are required. For instance
+%     various bits of the PSL compiler use "word" arithmetic (as in
+%     wplus2). That would compile inline into a single machine code instruction
+%     but it does not make good sense during cross-compilation where the issue
+%     or word-length and data tagging on the host can not be relied on.
 %
 % (B) Replacements for some things that are defined in the compiler-related
 %     sources but where the definitions are sufficiently PSL-specific that
 %     I need to introduce my own replacements if I am to survive using some
-%     alternative Lisp for bootstrapping.
+%     alternative Lisp for bootstrapping. A significant set of functions
+%     here are those that simulate a raw block of memory that can be accessed
+%     either by bytes or words. Such memory is used to collect an image of
+%     generated code and that is then written out to create a fasl file. PSL
+%     can use memory directly. I simulate it using a vector in which I place
+%     64-bit integers, and I have ugly code involving shift and mask operations
+%     for when I need to accesss it as if it was arranged in bytes.
+%     There are other places where the code exploits or relies on detailed
+%     PSL representation of data (eg idinf).
+%     A further understandable jolly is that the PSL sources contain a number
+%     of instances of definitions along the line
+%        (de stringp (u) (stringp u))
+%     which rely on the compiler generating in-line code for the body of
+%     the function. Some such definitions are present within files i wish to
+%     load to pick up other things in them! So instating my own version and
+%     then setting a 'lose flag lets me make progress.
+%
+% (C) At the end of this file I read in "mytrace.lsp" which is my own
+%     implementation of tracing code. Both VSL and PSL have perfectly
+%     respectable trace capabilities of their own, but having my own one
+%     here lets me arrange that test runs produce (almost) identical output
+%     whichever platform they are run on, and the ability to do direct
+%     log file comparisons to track down discrepancies is very useful.
+%
 %
 % I hope that every function (and macro) defined here ends up flagged
 % as 'lose so that a subsequent apparent definition in a PSL file that I
@@ -20,8 +47,6 @@
       (t (princ " ") (spaces (sub1 n)))))
 
 (de intp (x) (and (fixp x) (not (bignump x))))
-
-(flag '(spaces intp) 'lose)
 
 (de flag1 (x y) (flag (list x) y))
 
@@ -37,7 +62,6 @@
 
 (de main ())
 
-(flag '(flag1 remflag1 control cntrl continuableerror main) 'lose)
 
 % Now the things just needed for creating fasl files... I will add things in
 % here to start with and maybe move them to psl-support-2.lsp later...
@@ -70,7 +94,6 @@
       (prinbyte (land val 0xff))
       (wrs of)))
 
-(flag '(concat binarywrite binarywritebyte) 'lose)
 
 % I will simulate byte vectors using vectors of 64-bit integers, and here
 % I will pack the bytes little-endian. Note that the implementation here
@@ -96,7 +119,6 @@
      (putv memory o w)
      (return val)))
 
-(flag '(byte putbyte) 'lose)
 
 % Now similar for halfwords (16 bits)
 
@@ -122,18 +144,17 @@
 (de put_a_halfword (addr val)
   (puthalfword addr 0 val))
 
-(flag '(halfword puthalfword put_a_halfword) 'lose)
 
 % ... and 32-bit words
 
-(de word (v n)
+(de word32 (v n)
   (prog (o s)
      (setq n (plus2 (irsh v 2) n))
      (setq o (irsh n 1))
      (setq s (itimes2 (iland n 1) 32))
      (return (land 16#ffffffff (rsh (getv memory o) s)))))
 
-(de putword (v n val)
+(de putword32 (v n val)
   (prog (o s w)
      (setq n (plus2 (irsh v 2) n))
      (setq o (irsh n 1))
@@ -145,18 +166,35 @@
      (putv memory o w)
      (return val)))
 
-(flag '(word putword) 'lose)
 
 % And finally 64-bit items
-% I force the retrieved value to be positive.
+% I force the retrieved value to be positive. Furthermore it appears
+% probable that I must allow for 64-bit access that is to addresses that
+% are only 32-bit aligned. To cope with that I will code the access here by
+% combining two 32-bit accesses, which is not going to be good for
+% performance at all! Except that sometimes I put in Lisp items that are
+% not numbers...
+
+(de word (v n)
+   (if (zerop (land n 7))
+     (getv memory (rsh n 3))
+     (lor (word v n) (lsh (word v (plus n 4)) 32))))
+
+(de putword (v n val)
+   (if (zerop (land n 7))
+     (putv memory (rsh n 3) val)
+   (progn (putword32 v n (land val 16#ffffffff))
+          (putword32 v (plus n 4) (land (rsh val 32) 16#ffffffff))
+          val)))
+
 
 (de wgetv (v n)
-   (land (getv memory (plus2 (irsh v 3) n)) 16#ffffffffffffffff))
+   (getv memory (plus (rsh v 3) n)))
 
 (de wputv (v n val)
-   (putv memory (plus2 (irsh v 3) n) val))
+   (putv memory (plus (rsh v 3) n) val))
 
-(flag '(wgetv wputv) 'lose)
+
 
 (de known-free-space ()
   (mkint (wquotient (wdifference heapupperbound heaplast) 
@@ -168,7 +206,6 @@
   )
 
 
-(flag '(known-free-space free-bps) 'lose)
 
 (de gtheap (number-of-items)
   % Allocates heap space.  As soon as all uses of (GTHEAP NIL) are
@@ -209,6 +246,7 @@
   % Allocate a string of UPPER-BOUND+1 characters.
   (let* ((n-words  (strpack upper-bound))
 	 (str      (gtheap (+ 1 n-words))))
+% Note that wputv uses a word index not a byte one.
     (wputv str 0 (mkitem hbytes-tag upper-bound))
     (wputv str n-words 0)  % clear last word, including last byte
     str
@@ -393,7 +431,7 @@
 
 (de idinf (u)
    (cond ((null u) **nil-is-value**)
-         ((cdr (explodec u)) 256)
+         ((cdr (explode2 u)) 256)
          (t (char-code u))))
 
 
@@ -510,12 +548,16 @@
 
 (de binarywriteblock (stream vec len)
   (prog (o b i)
+(prin2 "binarywriteblock ") (prin2 vec) (prin2 " ") (prin2 len) (terpri)
+
+
     (setq o (wrs stream))
     (setq i 0)
     (setq len (times len 8)) % length is given in WORDS
  top(cond
       ((not (lessp i len)) (go done)))
     (prinbyte (byte vec i))
+(wrs o) (prin2 i) (prin2 ":: ") (prin2 (byte vec i)) (terpri) (wrs stream)
     (setq i (add1 i))
     (go top)
  done
@@ -537,12 +579,6 @@
       (setq x (rsh x (difference 64 (plus start length))))
       (return (land x (sub1 (lsh 1 length))))))
 
-(flag '(gtheap real-gtheap delheap gtstr gthalfwords gtvect
-        gtevect gtcontext gtbvect gtfixn gtfltn try-other-bps-spaces
-        delbps gtwarray delwarray allocatefaslspaces isinf
-        findidnumber makerelocword makerelocinf makerelochalfword
-        lsh rsh getbittable putbittable bittable mapobl
-        binarywriteblock mkstring field) 'lose)
 
 
 (de stderror (msg)
@@ -789,7 +825,7 @@
   (let ((x (explode2 (setq stringgensymcounter* (plus2 stringgensymcounter* 1)))))
     (while (lessp (length x) 4)
       (setq x (cons '!0 x)))
-    (compress (cons '!" (append (cons '!L x) '(!"))))))
+    (compress (cons '!" (append (cons 'l x) '(!"))))))
 
 (dm errset (u)
     (list 'errorset (list 'quote (cadr u))
@@ -832,9 +868,6 @@
 
 (dm string (u) (list 'list2string (cons 'list (cdr u))))
 
-(dm putword (u)
-    (cons 'wputv (cdr u)))
-
 (de evectorp (x) nil)
 
 (de bigp (u) (bignump u))
@@ -862,24 +895,12 @@
 
 (de idinf (u)
    (cond ((null u) 128)
-         ((cdr (explodec u)) 256)
+         ((cdr (explode2 u)) 256)
          (t (char-code u))))
 
 (de fastcallablep (u)
    (member u '(putentry)))
 
-(flag '(
-   stderror exitlisp copyd codep ncons posintp errorprintf1 remob
-   totalcopy variable-increment-ifor constant-increment-ifor
-   onoff* int2id-internal evload load1 unboundp fboundp
-   funboundp dskin pp string-concat %gtbps gtbps string-equal channelprin2
-   channelterpri stringgensym id2int id2int int2sys sys2fixn
-   binaryopenwrite binaryclose wshift wplus2 wtimes2 wquotient
-   wdifference wgreaterp wlessp wgeq wleq weq wand wor evectorp bigp
-   isizev igetv channelposn channelwritechar idinf fastcallablep defun
-   errorprintf foreach repeat ifor on off imports putmem putbyte
-   put_a_halfword int2id load errset land
-   lor iland ilor string putword) 'lose)
 
 
 % Redefine a couple of functions that do not work out of the box
@@ -923,19 +944,19 @@
    (plus expressioncount* 1)))
 
 (de size (x) 
-  (cond ((stringp x) (difference (length (explodec x)) 1))
+  (cond ((stringp x) (difference (length (explode2 x)) 1))
         ((vectorp x) (upbv x))
         ((bignump x) (difference (length (cdr x)) 1))
         (t nil)))
 
 (de indx (s n)
-  (cond ((stringp s) (char-code (nth (explodec s) (plus2 n 1))))
+  (cond ((stringp s) (char-code (nth (explode2 s) (plus2 n 1))))
         (t nil)))
 
 (de intp (x) (and (fixp x) (not (bignump x))))
 
 (de sunsymbolp (x)
-   (setq x (explodec x))
+   (setq x (explode2 x))
    (prog nil
      lbl
      (cond ((null x) (return t))
@@ -1019,13 +1040,11 @@
 (dm next (u)  % Continue Loop
   '(go $loop$))
 
-(flag '(next) 'lose)
 
 (dm bothtimes (x) (cons 'progn (cdr x)))
 (dm compiletime (x) (cons 'progn (cdr x)))
 (dm loadtime (x) (cons 'progn (cdr x)))
 
-(flag '(bothtimes compiletime loadtime) 'lose)
 
 % This seems to be called at cross-compile time with NIL as the
 % second argument. That seems a bit weird to me.
@@ -1040,7 +1059,6 @@
 
 (de imports (u) nil)
 
-(flag '(mkitem imports) 'lose)
 
 % (de codewritestring (x)
 %   (setq x (strinf x))
@@ -1055,9 +1073,8 @@
     (setq w (times 8 (strpack len))) % 8 bytes per word
     (binarywrite codeout* len)
     (foreach b in x do (binarywritebyte codeout* (char-code b)))
-    (while (lessp len w)
-      (progn (binarywritebyte codeout* 0)
-      (setq len (add1 len))))))
+    (while (lessp (setq len (add1 len)) w)
+      (binarywritebyte codeout* 0))))
 
 (de codefiletrailer ()
   (prog (s)
@@ -1097,7 +1114,27 @@
         ))
         (deallocatefaslspaces)))
 
-(flag '(codewritestring codefiletrailer) 'lose)
+(flag '(spaces intp flag1 remflag1 control cntrl continuableerror main
+        concat binarywrite binarywritebyte byte putbyte halfword
+        puthalfword put_a_halfword  putword wgetv wputv known-free-space
+        free-bpsgtheap real-gtheap delheap gtstrgthalfwords gtvect
+        gtevect gtcontext gtbvect gtfixn gtfltn try-other-bps-spaces
+        delbps gtwarray delwarray allocatefaslspaces isinf
+        findidnumber makerelocword makerelocinf makerelochalfword
+        lsh rsh getbittable putbittable bittable mapobl binarywriteblock
+        mkstring field stderror exitlisp copyd codep ncons posintp
+        errorprintf1 remobtotalcopy variable-increment-ifor
+        constant-increment-ifor onoff* int2id-internal evload load1
+        unboundp fboundp funboundp dskin pp string-concat gtbps
+        string-equal channelprin2 channelterpri stringgensym id2int
+        id2int int2sys sys2fixn binaryopenwrite binaryclose wshift
+        wplus2 wtimes2 wquotient wdifference wgreaterp wlessp wgeq wleq
+        weq wand wor evectorp bigp isizev igetv channelposn
+        channelwritechar idinf fastcallablep defun errorprintf foreach
+        repeat ifor on off imports putmem putbyte put_a_halfword int2id
+        load errset land lor iland ilor string putword next bothtimes
+        compiletime loadtime mkitem imports codewritestring codefiletrailer)
+      'lose)
 
 (rdf "mytrace.lsp")
 
