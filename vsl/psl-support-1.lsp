@@ -86,13 +86,15 @@
       (prinbyte (setq n (land val 0xff)))
       (setq val (lshift (difference val n) -8))
       (prinbyte (setq n (land val 0xff)))
-      (wrs of)))
+      (wrs of)
+      (return val)))
 
 (de binarywritebyte (stream val)
    (prog (of)
       (setq of (wrs stream))
       (prinbyte (land val 0xff))
-      (wrs of)))
+      (wrs of)
+      (return val)))
 
 
 % I will simulate byte vectors using vectors of 64-bit integers, and here
@@ -547,21 +549,18 @@
    (mapc (oblist) ff))
 
 (de binarywriteblock (stream vec len)
-  (prog (o b i)
-(prin2 "binarywriteblock ") (prin2 vec) (prin2 " ") (prin2 len) (terpri)
-
-
+  (prog (o b i lenb)
     (setq o (wrs stream))
     (setq i 0)
-    (setq len (times len 8)) % length is given in WORDS
+    (setq lenb (times len 8)) % length is given in WORDS
  top(cond
-      ((not (lessp i len)) (go done)))
+      ((not (lessp i lenb)) (go done)))
     (prinbyte (byte vec i))
-(wrs o) (prin2 i) (prin2 ":: ") (prin2 (byte vec i)) (terpri) (wrs stream)
     (setq i (add1 i))
     (go top)
  done
-    (wrs o)))
+    (wrs o)
+    (return len)))
 
 (de mkstring (bound fill)
   (prog (s)
@@ -586,7 +585,7 @@
 
 (de exitlisp () (stop 0))
 
-% copyd is invoked (botimes ..) within the for-macro.sl source file,
+% copyd is invoked (bothtimes ..) within the for-macro.sl source file,
 % but easy-non-sl.sl uses some macros defined in for-macro. To break the
 % circularity I define copyd here.
 
@@ -620,7 +619,9 @@
   (print u)
   u)
 
-% This definition of totalcopy is probably insufficient...
+% This definition of totalcopy may be insufficient? The issue of copying
+% strings and vectors presumably arises.
+
 (de totalcopy (x)
   (copy x))
 
@@ -899,7 +900,7 @@
          (t (char-code u))))
 
 (de fastcallablep (u)
-   (member u '(putentry)))
+   (if (member u '(putentry)) t nil))
 
 
 

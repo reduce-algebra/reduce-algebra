@@ -194,39 +194,43 @@ LispObject stackbase, *sp, stacktop;
 
 // Some Lisp values that I will use frequently...
 
-#define nil        bases[ 0]
-#define undefined  bases[ 1]
-#define lisptrue   bases[ 2]
-#define lispsystem bases[ 3]
-#define echo       bases[ 4]
-#define lambda     bases[ 5]
-#define function   bases[ 6]
-#define quote      bases[ 7]
-#define backquote  bases[ 8]
-#define comma      bases[ 9]
-#define comma_at   bases[10]
-#define comma_dot  bases[11]
-#define eofsym     bases[12]
-#define cursym     bases[13]
-#define work1      bases[14]
-#define work2      bases[15]
-#define restartfn  bases[16]
-#define expr       bases[17]
-#define subr       bases[18]
-#define fexpr      bases[19]
-#define fsubr      bases[20]
-#define macro      bases[21]
-#define input      bases[22]
-#define output     bases[23]
-#define pipe       bases[24]
-#define raise      bases[25]
-#define lower      bases[26]
-#define dfprint    bases[27]
-#define bignum     bases[28]
-#define charvalue  bases[29]
-#define toploopeval bases[30]
-#define loseflag   bases[31]
-#define BASES_SIZE       32
+#define nil          bases[ 0]
+#define undefined    bases[ 1]
+#define lisptrue     bases[ 2]
+#define lispsystem   bases[ 3]
+#define echo         bases[ 4]
+#define lambda       bases[ 5]
+#define function     bases[ 6]
+#define quote        bases[ 7]
+#define backquote    bases[ 8]
+#define comma        bases[ 9]
+#define comma_at     bases[10]
+#define comma_dot    bases[11]
+#define eofsym       bases[12]
+#define cursym       bases[13]
+#define work1        bases[14]
+#define work2        bases[15]
+#define restartfn    bases[16]
+#define expr         bases[17]
+#define subr         bases[18]
+#define fexpr        bases[19]
+#define fsubr        bases[20]
+#define macro        bases[21]
+#define input        bases[22]
+#define output       bases[23]
+#define pipe         bases[24]
+#define raise        bases[25]
+#define lower        bases[26]
+#define dfprint      bases[27]
+#define bignum       bases[28]
+#define charvalue    bases[29]
+#define toploopeval  bases[30]
+#define loseflag     bases[31]
+#define condsymbol   bases[32]
+#define prognsymbol  bases[3]
+#define gosymbol     bases[34]
+#define returnsymbol bases[35]
+#define BASES_SIZE       36
 
 LispObject bases[BASES_SIZE];
 LispObject obhash[OBHASH_SIZE];
@@ -1923,6 +1927,79 @@ LispObject Lprogn(LispObject lits, LispObject x)
     return r;
 }
 
+// I want to police a constraint that GO and RETURN are only used in
+// "prog context". The following limited number of forms are relevant to
+// this:
+//    COND
+//    PROGN
+//    GO
+//    RETURN
+// and (at least for now) I am not going to allow other conditionals, macros
+// or anything else to be transparent to it.
+
+static LispObject eval_prog_context(LispObject x);
+
+LispObject progprogn(LispObject x)
+{   LispObject r = nil;
+    while (isCONS(x))
+    {   push(x);
+        r = eval_prog_context(qcar(x));
+        pop(x);
+        x = qcdr(x);
+        if (unwindflag != unwindNONE) return nil;
+    }
+    return r;
+}
+
+LispObject progcond(LispObject x)
+{
+    while (isCONS(x))
+    {   push(x);
+        x = qcar(x);
+        if (isCONS(x))
+        {   LispObject p = eval(qcar(x));
+            if (unwindflag != unwindNONE)
+            {   pop(x);
+                return nil;
+            }
+            else if (p != nil)
+            {   pop(x);
+                return progprogn(qcdr(qcar(x)));
+            }
+        }
+        pop(x);
+        x = qcdr(x);
+    }
+    return nil;
+}
+
+LispObject proggo(LispObject x)
+{   if (!isCONS(x) || !isSYMBOL(work1 = qcar(x)))
+        return error1("bad go", x);
+    work1 = qcar(x);
+    unwindflag = unwindGO;
+    return nil;
+}
+
+LispObject progreturn(LispObject args)
+{   if (!isCONS(args) || isCONS(qcdr(args)))
+        return error1("RETURN need just 1 argument", args);
+    args = eval(qcar(args));
+    if (unwindflag != unwindNONE) return nil;
+    work1 = args;
+    unwindflag = unwindRETURN;
+    return nil;
+}
+
+static LispObject eval_prog_context(LispObject x)
+{   if (!isCONS(x)) return eval(x);
+    else if (qcar(x) == condsymbol) return progcond(qcdr(x));
+    else if (qcar(x) == prognsymbol) return progprogn(qcdr(x));
+    else if (qcar(x) == gosymbol) return proggo(qcdr(x));
+    else if (qcar(x) == returnsymbol) return progreturn(qcdr(x));
+    else return eval(x);
+}
+
 LispObject Lprog(LispObject lits, LispObject x)
 {
 // Does merely progn just now!!!
@@ -1945,7 +2022,7 @@ LispObject Lprog(LispObject lits, LispObject x)
     work1 = nil;
     while (isCONS(x))
     {   push(x);
-        if (isCONS(qcar(x))) eval(qcar(x));
+        if (isCONS(qcar(x))) eval_prog_context(qcar(x));
         pop(x);
         x = qcdr(x);
         if (unwindflag == unwindRETURN)
@@ -1978,11 +2055,12 @@ LispObject Lprog(LispObject lits, LispObject x)
 }
 
 LispObject Lgo(LispObject lits, LispObject x)
-{   if (!isCONS(x) || !isSYMBOL(work1 = qcar(x)))
-        return error1("bad go", x);
-    work1 = qcar(x);
-    unwindflag = unwindGO;
-    return nil;
+{   return error1("GO not in PROG context", x);
+//  if (!isCONS(x) || !isSYMBOL(work1 = qcar(x)))
+//      return error1("bad go", x);
+//  work1 = qcar(x);
+//  unwindflag = unwindGO;
+//  return nil;
 }
 
 #define NARY(x, base, combinefn)      \
@@ -2637,9 +2715,10 @@ LispObject Lgetd(LispObject lits, int nargs, ...)
 
 LispObject Lreturn(LispObject lits, int nargs, ...)
 {   ARG1("return", x);
-    work1 = x;
-    unwindflag = unwindRETURN;
-    return nil;
+    return error1("RETURN not in PROG context", x);
+//  work1 = x;
+//  unwindflag = unwindRETURN;
+//  return nil;
 }
 
 // Now some numeric functions
@@ -3372,6 +3451,10 @@ void setup()
     toploopeval = lookup("toploopeval*", 12, 1);
     loseflag = lookup("lose", 4, 1);
     bignum = lookup("~bignum", 7, 1);
+    condsymbol = lookup("cond", 4, 1);
+    prognsymbol = lookup("progn", 5, 1);
+    gosymbol = lookup("go", 2, 1);
+    returnsymbol = lookup("return", 6, 1);
     qlits(lookup("load-module", 11, 1)) = lisptrue;
     cursym = nil;
     work1 = work2 = nil;
