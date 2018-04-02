@@ -6,15 +6,37 @@
 % Author:         Eric Benson                                              
 % Created:        5 March 1982                                             
 % Modified:       29-Oct-84 09:08:15 (Vicki O'Day)
-% Status:         Experimental                                             
+% Status:         Open Source: BSD License
 % Mode:           Lisp                                                     
-% Package:        Kernel                                                   
+% Package:        Kernel
+% Status:	  Open Source: BSD License
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
 %
 % Copyright (c) 1982 Eric Benson                                           
 %
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                          
 % Revisions:                                                               
@@ -33,6 +55,7 @@
 (fluid '(safearithargs!*0 safearithargs!*1))
 
 (de internal_beforegcsystemhook nil
+      (mask-terminal-interrupt t)
       (setq safearithargs!*0 (wgetv arithargloc 0 )
             safearithargs!*1 (wgetv arithargloc 1 ))
       nil)
@@ -41,6 +64,7 @@
          (wputv arithargloc 0 safearithargs!*0)
          (wputv arithargloc 1 safearithargs!*1)
       (setq safearithargs!*0 NIL safearithargs!*1 nil)
+      (mask-terminal-interrupt nil)
      nil)
 
 (de beforegcsystemhook nil

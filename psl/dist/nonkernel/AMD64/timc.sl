@@ -5,6 +5,8 @@
 % Author:       Leigh Stoller
 % Created:      22-Dec-86
 % Package:      
+% Status:	Open Source: BSD License
+%
 % RCS $Header: $
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file

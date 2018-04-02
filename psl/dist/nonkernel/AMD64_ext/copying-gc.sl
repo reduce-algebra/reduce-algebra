@@ -6,6 +6,7 @@
 % Created:      30 November 1981
 % Modified:     29-Aug-84 10:09:08 (Brian Beach)
 % Package:
+% Status:	Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
