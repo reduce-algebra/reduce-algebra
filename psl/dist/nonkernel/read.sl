@@ -95,10 +95,8 @@
 (de channelreadeof (channel ef)
   % Handle end-of-file in Read
   (if *insidestructureread
-    (return (let (*insidestructureread)
-                 (stderror
-                  (bldmsg "Unexpected EOF while reading on channel %r"
-                   channel))))
+    (let (*insidestructureread)
+    	 (stderror (bldmsg "Unexpected EOF while reading on channel %r" channel)))
     $eof$))
 
 (de channelreadquotedexpression (channel qt)
