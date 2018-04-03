@@ -8,10 +8,32 @@
 % Modified:     21-Mar-85 11:25:52
 % Mode:         Text
 % Package:
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -39,7 +61,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
  
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/times.h>
@@ -52,8 +77,7 @@ unsigned long sec;
  
 int external_ualarm(usec,repeat)
 unsigned long usec,repeat;
-{
-  ualarm(usec,repeat);
+{ return( ualarm(usec,repeat));
 }
  
 char *expand_file_name();    /* from unix-io.c */
@@ -69,6 +93,7 @@ long *tloc;
  
 /* Tag( external_timc )
  */
+long
 external_timc(buffer)
      struct tms *buffer;
 {
@@ -84,6 +109,16 @@ struct stat *buf;
     return stat(expand_file_name(path), buf);
 }
  
+
+int external_mkdir (name, mode)
+    int mode;
+    char * name;
+ { return mkdir (name, mode); }
+
+int external_rmdir (name)
+    char * name;
+ { return rmdir (name); }
+
 /* Tag( external_link )
  */
 int external_link (path1, path2)
@@ -113,7 +148,7 @@ int external_strlen (s)
 char *external_getenv (name)
      char *name;
 {
-    return (char *)getenv(name);
+    return getenv(name);
 }
  
  
@@ -132,11 +167,11 @@ int external_setenv (var, val)
      and 1 extra empty slot. */
   envnew = (char **) calloc ((i + 2), sizeof(char *));
  
-  block_copy((char *)environ, (char *)envnew, i * sizeof(char *));
+  bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
   environ = envnew;
   strcpy(var_plus_equal_sign, var);
   strcat(var_plus_equal_sign, "=");
-  return(setenv (var_plus_equal_sign, val));
+  return(setenv (var_plus_equal_sign, val, 1));
 }
  
 /*
@@ -146,8 +181,10 @@ int external_setenv (var, val)
  * was allocated using calloc, with enough extra room at the end so not
  * to have to do a realloc().
  */
-setenv (var, value)
-     char *var, *value;
+int
+setenv (var, value, ov)
+     const char *var, *value;
+     int ov;
 {
     extern char **environ;
     int index = 0;
@@ -159,7 +196,7 @@ setenv (var, value)
         environ[index] = (char *)malloc (len + strlen (value) + 1);
         strcpy (environ [index], var);
         strcat (environ [index], value);
-        return;
+        return (ov);
         }
         index ++;
     }
@@ -169,7 +206,8 @@ setenv (var, value)
     strcat (environ [index], value);
     environ [++index] = NULL;
 }
- 
+
+void
 block_copy (b1, b2, length)
      char *b1, *b2;
      int length;
