@@ -8,10 +8,32 @@
 % Modified:     21-Mar-85 11:25:52
 % Mode:         Text
 % Package:
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -42,8 +64,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/times.h>
 #include <sys/resource.h>
  
 int external_alarm(sec)
@@ -73,7 +97,7 @@ long *tloc;
 external_timc()
 {
   struct rusage buffer;
-  getrusage(RUSAGE_SELF,&buffer);
+  getrusage(RUSAGE_SELF, &buffer);
   return (buffer.ru_utime.tv_sec*1000 + buffer.ru_utime.tv_usec/1000);
 }
  
@@ -86,6 +110,16 @@ struct stat *buf;
     return stat(expand_file_name(path), buf);
 }
  
+
+int external_mkdir (name, mode)
+    int mode;
+    char * name;
+ { return mkdir (name, mode); }
+
+int external_rmdir (name)
+    char * name;
+ { return rmdir (name); }
+
 /* Tag( external_link )
  */
 int external_link (path1, path2)
