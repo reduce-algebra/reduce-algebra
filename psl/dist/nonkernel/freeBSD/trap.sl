@@ -130,11 +130,11 @@
    (*exit 0)))
  
 (de initializeinterrupts (nn)
-       (ieee_flags (strbase (strinf "set")) (strbase (strinf "direction"))
-				(strbase (strinf "tozero")) 0)
-       (ieee_handler (strbase (strinf "set"))
-                  (strbase (strinf "common"))
-                  (symfnc (id2int 'fpehandler)))
+%%       (ieee_flags (strbase (strinf "set")) (strbase (strinf "direction"))
+%%				(strbase (strinf "tozero")) 0)
+%%       (ieee_handler (strbase (strinf "set"))
+%%                  (strbase (strinf "common"))
+%%                  (symfnc (id2int 'fpehandler)))
 %       (*freset)
        (initializeinterrupts-1)
        (unless (eq 17 nn) (sun3_sigset 500)) % Hack! If stated from top-loop, save
