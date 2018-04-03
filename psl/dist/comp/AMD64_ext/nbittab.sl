@@ -55,7 +55,7 @@
     (setq sb (strbase (strinf s))) 
     (setq b (isub1 l))
     (ifor (from i 0 b 1) (do (setf (byte sb i) (pop bl))))
-    (return (cons l s))))
+    (cons l s)))
 
 (fluid '(*compact-bittable))
 
