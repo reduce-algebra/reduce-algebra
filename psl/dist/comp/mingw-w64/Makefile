@@ -126,4 +126,7 @@ $(PL)/fasl-decls.b: $(PXK)/fasl-decls.sl
 $(PL)/if-system.b: $(PU)/if-system.sl
 	(cd $(PU); make $(MFLAGS) MACHINE=$(MACHINE) $(PL)/if-system.b)
 
+$(PL)/inum.b:	$(PU)/inum.sl
+	(cd $(PU); make $(MFLAGS) MACHINE=$(MACHINE) $(PL)/inum.b)
+
 # End of file.
