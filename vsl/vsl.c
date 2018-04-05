@@ -687,6 +687,7 @@ LispObject copy(LispObject x)
 
 #define printPLAIN   1
 #define printESCAPES 2
+#define printHEX     4
 
 int linelength = 80, linepos = 0, printflags = printESCAPES;
 
@@ -786,7 +787,8 @@ void internalprint(LispObject x)
             {   i = printflags;
                 if (qcar(x) == bignum &&
                     qcdr(x) != nil &&
-                    (pn = call1("~big2str", qcdr(x))) != nil)
+                    (pn = call2("~big2str", qcdr(x),
+                                (i&printHEX?lisptrue:nil))) != nil)
                 {   printflags = printPLAIN;
                     internalprint(pn);
                     printflags = i;
@@ -927,7 +929,9 @@ void internalprint(LispObject x)
                         }
                         return;
                     case typeBIGNUM:
-                        sprintf(printbuffer, "%" PRId64, qint64(x));
+                        if (printflags & printHEX)
+                            sprintf(printbuffer, "%" PRIx64, qint64(x));
+                        else sprintf(printbuffer, "%" PRId64, qint64(x));
                         checkspace(len = strlen(printbuffer));
                         for (i=0; i<len; i++) wrch(printbuffer[i]);
                         return;
@@ -974,7 +978,9 @@ void internalprint(LispObject x)
             for (i=0; i<len; i++) wrch(printbuffer[i]);
             return;
         case tagFIXNUM:
-            sprintf(printbuffer, "%" PRId64, (int64_t)qfixnum(x));
+            if (printflags & printHEX)
+                sprintf(printbuffer, "%" PRIx64, (int64_t)qfixnum(x));
+            else sprintf(printbuffer, "%" PRId64, (int64_t)qfixnum(x));
             checkspace(len = strlen(printbuffer));
             for (i=0; i<len; i++) wrch(printbuffer[i]);
             return;
@@ -995,6 +1001,14 @@ LispObject prin(LispObject a)
 
 LispObject princ(LispObject a)
 {   printflags = printPLAIN;
+    push(a);
+    internalprint(a);
+    pop(a);
+    return a;
+}
+
+LispObject prinhex(LispObject a)
+{   printflags = printESCAPES | printHEX;
     push(a);
     internalprint(a);
     pop(a);
@@ -3000,6 +3014,11 @@ LispObject Lprinc(LispObject lits, int nargs, ...)
     return princ(x);
 }
 
+LispObject Lprinhex(LispObject lits, int nargs, ...)
+{   ARG1("princ", x);
+    return prinhex(x);
+}
+
 LispObject Lprintc(LispObject lits, int nargs, ...)
 {   ARG1("printc", x);
     return printc(x);
@@ -3374,6 +3393,7 @@ struct defined_functions fnsetup[] =
     {"prin",       0,            (void *)Lprin},
     {"prinbyte",   0,            (void *)Lprinbyte},
     {"princ",      0,            (void *)Lprinc},
+    {"prinhex",    0,            (void *)Lprinhex},
     {"print",      0,            (void *)Lprint},
     {"printc",     0,            (void *)Lprintc},
     {"put",        0,            (void *)Lput},

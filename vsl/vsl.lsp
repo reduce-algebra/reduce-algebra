@@ -1127,7 +1127,7 @@ top (cond ((atom a) (return (reversip r))))
 
 (setq !*rawbig nil !*onlyraw nil)
 
-(de !~big2str (n)
+(de !~big2str (n hexp)
    (prog (r neg)
       (when (null n) (return "0"))
 % In bad cases you may try to display a list whose first element is

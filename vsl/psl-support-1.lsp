@@ -102,6 +102,10 @@
 % requires that the Lisp used for bootstrapping can work with full 64-bit
 % integers.
 
+% I will arrange that 16, 32 and 64-bit values can be read and written
+% from arbitrarily-aligned addresses. This is done by expanding the
+% access code to work byte by byte.
+
 (de byte (v n)
   (prog (o s)
      (setq n (plus2 v n))
@@ -125,67 +129,37 @@
 % Now similar for halfwords (16 bits)
 
 (de halfword (v n)
-  (prog (o s)
-     (setq n (plus2 (rsh v 1) n))
-     (setq o (rsh n 2))
-     (setq s (times2 (land n 3) 16))
-     (return (land 16#ffff (rsh (getv memory o) s)))))
+   (lor (byte v n)
+        (lsh (byte v (plus n 1)) 8)))
 
 (de puthalfword (v n val)
-  (prog (o s w)
-     (setq n (plus2 (rsh v 1) n))
-     (setq o (rsh n 2))
-     (setq s (times (iland n 3) 16))
-     (setq w (getv memory o))
-     (setq m (difference 16#ffffffffffffffff (lsh 16#ffff s)))
-     (setq w (land w m))
-     (setq w (lor w (lsh val s)))
-     (putv memory o w)
-     (return val)))
+   (putbyte v n (land val 16#ff))
+   (putbyte v (plus n 2) (land (rsh val 8) 16#ff))
+   val)
 
 (de put_a_halfword (addr val)
   (puthalfword addr 0 val))
 
-
 % ... and 32-bit words
 
 (de word32 (v n)
-  (prog (o s)
-     (setq n (plus2 (rsh v 2) n))
-     (setq o (rsh n 1))
-     (setq s (times2 (land n 1) 32))
-     (return (land 16#ffffffff (rsh (getv memory o) s)))))
+   (lor (halfword v n)
+        (lsh (halfword v (plus n 2)) 16)))
 
 (de putword32 (v n val)
-  (prog (o s w)
-     (setq n (plus2 (rsh v 2) n))
-     (setq o (rsh n 1))
-     (setq s (times (land n 1) 32))
-     (setq w (getv memory o))
-     (setq m (difference 16#ffffffffffffffff (lsh 16#ffffffff s)))
-     (setq w (land w m))
-     (setq w (lor w (lsh val s)))
-     (putv memory o w)
-     (return val)))
+   (puthalfword v n (land val 16#ffff))
+   (puthalfword v (plus n 2) (land (rsh val 16) 16#ffff))
+   val)
 
-
-% And finally 64-bit items
-% I force the retrieved value to be positive. Furthermore it appears
-% probable that I must allow for 64-bit access that is to addresses that
-% are only 32-bit aligned. To cope with that I will code the access here by
-% combining two 32-bit accesses, which is not going to be good for
-% performance at all!
 
 (de word (v n)
    (lor (word32 v n)
         (lsh (word32 v (plus n 4)) 32)))
 
 (de putword (v n val)
-   (print (list 'putword codebase* currentoffset* val))
    (putword32 v n (land val 16#ffffffff))
    (putword32 v (plus n 4) (land (rsh val 32) 16#ffffffff))
    val)
-
 
 (de wgetv (v n)
    (getv memory (plus (rsh v 3) n)))
