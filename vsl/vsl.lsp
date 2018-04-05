@@ -708,7 +708,7 @@ top (cond ((atom a) (return (reversip r))))
 % The "atom" test in vsl needs to know that a bit of
 % data stored as (!~bignum ...) should viewed as atomic.
 
-(de fixp (u) (and (inumberp u) (not (floatp u))))
+(de fixp (u) (and (numberp u) (not (floatp u))))
 (de numberp (u) (or (inumberp u) (bignump u)))
 (de integerp (u) (and (numberp u) (not (floatp u))))
 

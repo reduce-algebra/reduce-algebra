@@ -1,17 +1,18 @@
 (setq *echo t)
 
-(mytrace 'internallycallablep)
-(mytrace 'fastcallablep)
-(mytrace 'saveentry)
-(mytrace 'depositstring)
-(mytrace 'depositbyte)
+%(mytrace 'internallycallablep)
+%(mytrace 'fastcallablep)
+%(mytrace 'saveentry)
+%(mytrace 'depositstring)
+%(mytrace 'depositbyte)
 (mytrace 'depositwordblock)
 (mytrace 'depositquadwordexpression)
 (mytrace 'depositword)
-(mytrace 'compact-bittable)
+(mytrace 'putword)
+%(mytrace 'compact-bittable)
 
-(mytrace 'binarywrite)
-(mytrace 'binarywriteblock)
+%(mytrace 'binarywrite)
+%(mytrace 'binarywriteblock)
 
 
 (setq *plap t)

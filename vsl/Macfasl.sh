@@ -9,4 +9,5 @@ make psl OPT="-O0 -g"
 
 script Macfasl.log <<XXX
 ./vsl xxxfasl.lsp -Dmachine=macintel64 -o Macfasl.img
+exit $?
 XXX

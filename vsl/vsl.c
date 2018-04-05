@@ -1164,6 +1164,8 @@ symbol_after_all:
             return r;
         }
     }
+// Also for PSL-support reasons I will sort out the notation "nnn#mmm" for a
+// number is radix nnn.
     int radix = 0;
     if (isdigit(curchar) || (boffop == 1 && boffo[0] == '0'))
     {   while (isdigit(curchar))

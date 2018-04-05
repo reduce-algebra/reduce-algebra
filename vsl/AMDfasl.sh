@@ -9,6 +9,7 @@ make psl OPT="-O0 -g"
 
 script AMDfasl.log <<XXX
 ./vsl xxxfasl.lsp -Dmachine=AMD64_ext -o AMDfasl.img
+exit $?
 XXX
 
 

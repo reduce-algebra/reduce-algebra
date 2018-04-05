@@ -69,30 +69,30 @@
 (de concat (a b) (string-concat a b))
 
 (de binarywrite (stream val)
-   (prog (of n)
-      (setq of (wrs stream))
-      (prinbyte (setq n (land val 0xff)))
-      (setq val (lshift (difference val n) -8))
-      (prinbyte (setq n (land val 0xff)))
-      (setq val (lshift (difference val n) -8))
-      (prinbyte (setq n (land val 0xff)))
-      (setq val (lshift (difference val n) -8))
-      (prinbyte (setq n (land val 0xff)))
-      (setq val (lshift (difference val n) -8))
-      (prinbyte (setq n (land val 0xff)))
-      (setq val (lshift (difference val n) -8))
-      (prinbyte (setq n (land val 0xff)))
-      (setq val (lshift (difference val n) -8))
-      (prinbyte (setq n (land val 0xff)))
-      (setq val (lshift (difference val n) -8))
-      (prinbyte (setq n (land val 0xff)))
-      (wrs of)
-      (return val)))
+   (binarywritebyte stream val)
+   (binarywritebyte stream (setq val (rsh val 8)))
+   (binarywritebyte stream (setq val (rsh val 8)))
+   (binarywritebyte stream (setq val (rsh val 8)))
+   (binarywritebyte stream (setq val (rsh val 8)))
+   (binarywritebyte stream (setq val (rsh val 8)))
+   (binarywritebyte stream (setq val (rsh val 8)))
+   (binarywritebyte stream (rsh val 8)))
+
+% This writes 16 identical bytes as a way of putting a mark in a binary
+% output stream...
+
+(de binarymarker (stream n)
+%-  (setq n (lor (lsh n 8) n))
+%-  (setq n (lor (lsh n 16) n))
+%-  (setq n (lor (lsh n 32) n))
+%-  (binarywrite stream n)
+%-  (binarywrite stream n)
+   nil) 
 
 (de binarywritebyte (stream val)
    (prog (of)
       (setq of (wrs stream))
-      (prinbyte (land val 0xff))
+      (prinbyte (land val 255))
       (wrs of)
       (return val)))
 
@@ -105,19 +105,19 @@
 (de byte (v n)
   (prog (o s)
      (setq n (plus2 v n))
-     (setq o (irsh n 3))
-     (setq s (itimes2 (iland n 7) 8))
-     (return (iland 16#ff (irsh (getv memory o) s)))))
+     (setq o (rsh n 3))
+     (setq s (times2 (land n 7) 8))
+     (return (land 255 (rsh (getv memory o) s)))))
 
 (de putbyte (v n val)
   (prog (o s w)
      (setq n (plus2 v n))
-     (setq o (irsh n 3))
-     (setq s (itimes (iland n 7) 8))
+     (setq o (rsh n 3))
+     (setq s (times (land n 7) 8))
      (setq w (getv memory o))
      (setq m (difference 16#ffffffffffffffff (lsh 16#ff s)))
      (setq w (land w m))
-     (setq w (lor w (ilsh val s)))
+     (setq w (lor w (lsh val s)))
      (putv memory o w)
      (return val)))
 
@@ -126,16 +126,16 @@
 
 (de halfword (v n)
   (prog (o s)
-     (setq n (plus2 (irsh v 1) n))
-     (setq o (irsh n 2))
-     (setq s (itimes2 (iland n 3) 16))
-     (return (iland 16#ffff (irsh (getv memory o) s)))))
+     (setq n (plus2 (rsh v 1) n))
+     (setq o (rsh n 2))
+     (setq s (times2 (land n 3) 16))
+     (return (land 16#ffff (rsh (getv memory o) s)))))
 
 (de puthalfword (v n val)
   (prog (o s w)
-     (setq n (plus2 (irsh v 1) n))
-     (setq o (irsh n 2))
-     (setq s (itimes (iland n 3) 16))
+     (setq n (plus2 (rsh v 1) n))
+     (setq o (rsh n 2))
+     (setq s (times (iland n 3) 16))
      (setq w (getv memory o))
      (setq m (difference 16#ffffffffffffffff (lsh 16#ffff s)))
      (setq w (land w m))
@@ -151,20 +151,20 @@
 
 (de word32 (v n)
   (prog (o s)
-     (setq n (plus2 (irsh v 2) n))
-     (setq o (irsh n 1))
-     (setq s (itimes2 (iland n 1) 32))
+     (setq n (plus2 (rsh v 2) n))
+     (setq o (rsh n 1))
+     (setq s (times2 (land n 1) 32))
      (return (land 16#ffffffff (rsh (getv memory o) s)))))
 
 (de putword32 (v n val)
   (prog (o s w)
-     (setq n (plus2 (irsh v 2) n))
-     (setq o (irsh n 1))
-     (setq s (itimes (iland n 1) 32))
+     (setq n (plus2 (rsh v 2) n))
+     (setq o (rsh n 1))
+     (setq s (times (land n 1) 32))
      (setq w (getv memory o))
      (setq m (difference 16#ffffffffffffffff (lsh 16#ffffffff s)))
-     (setq w (iland w m))
-     (setq w (ilor w (ilsh val s)))
+     (setq w (land w m))
+     (setq w (lor w (lsh val s)))
      (putv memory o w)
      (return val)))
 
@@ -174,20 +174,17 @@
 % probable that I must allow for 64-bit access that is to addresses that
 % are only 32-bit aligned. To cope with that I will code the access here by
 % combining two 32-bit accesses, which is not going to be good for
-% performance at all! Except that sometimes I put in Lisp items that are
-% not numbers...
+% performance at all!
 
 (de word (v n)
-   (if (zerop (land n 7))
-     (getv memory (rsh n 3))
-     (lor (word v n) (lsh (word v (plus n 4)) 32))))
+   (lor (word32 v n)
+        (lsh (word32 v (plus n 4)) 32)))
 
 (de putword (v n val)
-   (if (zerop (land n 7))
-     (putv memory (rsh n 3) val)
-   (progn (putword32 v n (land val 16#ffffffff))
-          (putword32 v (plus n 4) (land (rsh val 32) 16#ffffffff))
-          val)))
+   (print (list 'putword codebase* currentoffset* val))
+   (putword32 v n (land val 16#ffffffff))
+   (putword32 v (plus n 4) (land (rsh val 32) 16#ffffffff))
+   val)
 
 
 (de wgetv (v n)
@@ -419,6 +416,8 @@
                   (iquotient b % bit table and code
                              (iquotient bittable-entries-per-word
                                         addressingunitsperitem))))
+% Ensure that codebase* is 8-byte aligned.
+    (setq codebase* (times 8 (quotient codebase* 8)))
 
     (setq maxfasloffset* (idifference faslblockend* codebase*))
     (setq orderedidlist* (cons nil nil))
@@ -550,6 +549,7 @@
 
 (de binarywriteblock (stream vec len)
   (prog (o b i lenb)
+    (binarymarker stream 16#bb)
     (setq o (wrs stream))
     (setq i 0)
     (setq lenb (times len 8)) % length is given in WORDS
@@ -560,6 +560,7 @@
     (go top)
  done
     (wrs o)
+    (binarymarker stream 16#ee)
     (return len)))
 
 (de mkstring (bound fill)
@@ -686,6 +687,16 @@
                        (list 'cond (list (list 'not (car x)) '(go $loop$)))
                        (car x)))))))
 
+
+(de first (u) (car u))
+(de second (u) (cadr u))
+(de third (u) (caddr u))
+(de fourth (u) (cadddr u))
+
+(de nth (u n)
+  (cond
+    ((equal n 1) (car u))
+    (t (nth (cdr u) (sub1 n)))))
 
 % I will also want IFOR, but the other things defined in util/inum.sl would
 % potentially clobber VSL versions of iplus etc.. so I lift the definition
@@ -1069,6 +1080,7 @@
 
 (de codewritestring (x)
   (prog (len w)
+    (binarymarker codeout* 16#55)
     (setq x (explode2 x))
     (setq len (sub1 (length x)))
     (setq w (times 8 (strpack len))) % 8 bytes per word
@@ -1078,20 +1090,24 @@
       (binarywritebyte codeout* 0))))
 
 (de codefiletrailer ()
-  (prog (s)
+  (prog (s len)
+        (binarymarker codeout* 16#22)
         (systemfaslfixup)
         (binarywrite codeout* (idifference (isub1 nextidnumber*)
                                            first-local-id-number))
+        (binarymarker codeout* 16#33)
         % Number of local IDs
         (foreach x in (car orderedidlist*) do
                  (progn (remprop x fasl-idnumber-property*)
                         (codewritestring (faslid2string x))))
+        (binarymarker codeout* 16#44)
         (binarywrite codeout* % S is size in words
                      (setq s
                       (iquotient
                        (iplus2 currentoffset*
                         (isub1 addressingunitsperitem))
                        addressingunitsperitem)))
+        (binarymarker codeout* 16#66)
         (binarywrite codeout* initoffset*)
         (binarywriteblock codeout* codebase* s)
         (if *compact-bittable
@@ -1102,8 +1118,19 @@
                        (iplus2 (car b)
                         (isub1 bpw))
                        bpw)))
-           (binarywriteblock codeout* (strbase(strinf (cdr b))) s)
+           (setq b (explode2 (cdr b)))
+           (setq len (length b))
+(prin2 "trailer ") (prin2 s) (prin2 " ") (prin2 len) (prin2 " ") (print b) %@@@
+           (setq s (times 8 s))
+           (binarymarker codeout* 16#77)
+           (foreach b1 in b do
+              (binarywritebyte codeout* (char-code b1)))
+           (while (lessp (setq len (add1 len)) s)
+              (binarywritebyte codeout* 0))
+
+%          (binarywriteblock codeout* (strbase(strinf (cdr b))) s)
          )
+         (binarymarker codeout* 16#88)
          (progn
           (binarywrite codeout*
                      (setq s
@@ -1113,7 +1140,44 @@
                        bittable-entries-per-word)))
           (binarywriteblock codeout* bittablebase* s)
         ))
+        (binarymarker codeout* 16#99)
         (deallocatefaslspaces)))
+
+
+
+(de compact-bittable(base max)
+ (prog (i d bl b l s sb)
+   (setq i (setq d 0))
+    (ifor (from i 0 (isub1 max) 1)
+     (do
+      (progn
+       (setq b (bittable base i))
+       (if (or (not (eq b 0))  % nonzero entry
+               (eq d 16#3f)    % maximum offset
+           )
+           (progn
+               (push (logor (lsh b 6) d) bl)
+               (setq d 1)
+           )
+           (setq d (iadd1 d))
+       )
+    )))
+% OK - we have now built up a list bl of the non-zero entries. Each
+% has the entry number in the low 6 bits and then 2 bits of data at the top.
+    (setq bl (cons 0 bl))
+    (setq bl (reversip bl))
+% Now in the correct order.
+    (setq l (length bl))
+% I want to pack it as a string.
+(prin2 "compress-bittable = ") (prin2 l) (prin2 " : ") (print bl) %@@@@
+    (setq s (list-to-string bl))
+%   (setq s (mkstring (isub1 l) 0))
+%   (setq sb (strbase (strinf s)))
+%   (setq b (isub1 l))
+%   (ifor (from i 0 b 1) (do (setf (byte sb i) (pop bl))))
+    (return (cons l s))))
+
+
 
 (flag '(spaces intp flag1 remflag1 control cntrl continuableerror main
         concat binarywrite binarywritebyte byte putbyte halfword
@@ -1134,7 +1198,8 @@
         channelwritechar idinf fastcallablep defun errorprintf foreach
         repeat ifor on off imports putmem putbyte put_a_halfword int2id
         load errset land lor iland ilor string putword next bothtimes
-        compiletime loadtime mkitem imports codewritestring codefiletrailer)
+        compiletime loadtime mkitem imports codewritestring codefiletrailer
+        compact-bittable)
       'lose)
 
 (rdf "mytrace.lsp")

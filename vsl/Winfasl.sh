@@ -7,5 +7,9 @@
 
 make psl OPT="-O0 -g"
 
-script -c "./vsl Winfasl.lsp -o Winfasl.img" Winfasl.log
+script Winfasl.log <<XXX
+./vsl xxxfasl.lsp -Dmachine=mingw-w64 -o Winfasl.img
+exit $?
+XXX
+
 
