@@ -5,7 +5,8 @@
 % Author:       Cris Perdue
 % Created:      April 5, 1983
 % Modified:     05-Oct-87 (Harold Carr)
-% Package:	
+% Package:
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

@@ -3,6 +3,7 @@
 % Description:  Macros to Convert data types between Lisp and C.
 % Author:       Harold Carr (borrowing from Russ Fish)
 % Created:      Summer 1985
+% Status:       Open Source: BSD License
 % Package:
 % RCS $Header: $
 %

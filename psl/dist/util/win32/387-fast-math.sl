@@ -7,7 +7,7 @@
 % Modified:     Wed Jan  7 08:16:45 1987 (Russ Fish)
 % Mode:         Lisp 
 % Package:      Utilities 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % (c) Copyright 1982, University of Utah
 %
 % Redistribution and use in source and binary forms, with or without
