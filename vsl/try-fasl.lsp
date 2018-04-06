@@ -9,6 +9,8 @@
 (mytrace 'depositquadwordexpression)
 (mytrace 'depositword)
 (mytrace 'putword)
+(mytrace 'putword32)
+(mytrace 'puthalfword)
 %(mytrace 'compact-bittable)
 
 (mytrace 'binarywrite)
@@ -32,6 +34,10 @@
 (mytrace 'OP-im-EAX)
 (mytrace 'OP-im-reg)
 (mytrace 'OP-byte)
+(mytrace 'mkitem)
+(mytrace 'deposititem)
+(mytrace 'findidnumber)
+(mytrace 'makerelocinf)
 
 (setq *plap t)
 (setq *pgwd t)

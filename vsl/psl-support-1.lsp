@@ -134,7 +134,7 @@
 
 (de puthalfword (v n val)
    (putbyte v n (land val 16#ff))
-   (putbyte v (plus n 2) (land (rsh val 8) 16#ff))
+   (putbyte v (plus n 1) (land (rsh val 8) 16#ff))
    val)
 
 (de put_a_halfword (addr val)

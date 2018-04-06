@@ -1127,8 +1127,9 @@ top (cond ((atom a) (return (reversip r))))
 
 (setq !*rawbig nil !*onlyraw nil)
 
-(de !~big2str (n hexp)
+(de !~big2str (n)
    (prog (r neg)
+      (setq n (cdr n))
       (when (null n) (return "0"))
 % In bad cases you may try to display a list whose first element is
 % "~bignum" but which is then badly formatted.
@@ -1154,6 +1155,34 @@ top (cond ((atom a) (return (reversip r))))
             (setq n (reverse n)))
          (setq r (cons (car (explodec (!~sizecheck n))) r))
          (when neg (setq r (cons '!- r))))
+      (return (compress (cons '!" r)))))
+
+(de list!-to!-vector (l)
+   (prog (n v)
+      (setq n (length l))
+      (setq v (mkvect (sub1 n)))
+      (setq n 0)
+      (while l
+         (putv v n (car l))
+         (setq n (add1 n))
+         (setq l (cdr l)))
+      (return v)))
+
+(setq hexdigs
+  (list!-to!-vector
+    '(!0 !1 !2 !3 !4 !5 !6 !7 !8 !9 !a !b !c !d !e !f)))
+
+(de !~big2strhex (n)
+   (prog (r neg)
+      (when (null (cdr n)) (return "0"))
+      (setq r '(!"))
+      (when (minusp n) (setq n (minus n) neg t))
+      (while (greaterp n 15)
+         (setq n (divide n 16))
+         (setq r (cons (getv hexdigs (cdr n)) r))
+         (setq n (car n)))
+      (setq r (cons (getv hexdigs n) r))
+      (when neg (setq r (cons '!- r)))
       (return (compress (cons '!" r)))))
 
 % I want to define these two AFTER I have defined all of the rest
@@ -1658,17 +1687,6 @@ top (cond ((atom a) (return (reversip r))))
 
 (de threevectorp (x)
    (and (vectorp x) (equal (upbv x) 2)))
-
-(de list!-to!-vector (l)
-   (prog (n v)
-      (setq n (length l))
-      (setq v (mkvect (sub1 n)))
-      (setq n 0)
-      (while l
-         (putv v n (car l))
-         (setq n (add1 n))
-         (setq l (cdr l)))
-      (return v)))
 
 (de frexp (x)
    (prog (n)

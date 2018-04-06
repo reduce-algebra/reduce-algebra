@@ -91,6 +91,7 @@
 (rdf "$pxc/compiler.sl")
 (rdf "$pxc/nbittab.sl")
 (rdf "$pxc/neweq.sl")
+(rdf "$pxc/fixup386.sl")
 
 (rdf "$pxnk/sys-faslin.sl")
 

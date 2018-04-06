@@ -787,8 +787,9 @@ void internalprint(LispObject x)
             {   i = printflags;
                 if (qcar(x) == bignum &&
                     qcdr(x) != nil &&
-                    (pn = call2("~big2str", qcdr(x),
-                                (i&printHEX?lisptrue:nil))) != nil)
+                    (pn = call1(((printflags & printHEX) ?
+                                  "~big2strhex" :
+                                  "~big2str"), x)) != nil)
                 {   printflags = printPLAIN;
                     internalprint(pn);
                     printflags = i;
