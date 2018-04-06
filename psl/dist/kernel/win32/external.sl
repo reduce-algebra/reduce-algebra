@@ -7,7 +7,7 @@
 % Modified:     15-Feb-85 13:25:43
 % Mode:         Lisp
 % Package:
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

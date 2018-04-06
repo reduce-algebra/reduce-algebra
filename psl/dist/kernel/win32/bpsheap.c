@@ -8,6 +8,7 @@
 % Modified:
 % Mode:         Text
 % Package:
+% Status:       Open Source: BSD License
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

@@ -7,7 +7,7 @@
 % Modified:     11-Apr-84 08:55:09 (Brian Beach) 
 % Mode:         Lisp 
 % Package:      
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 % Compiletime:  PL:SYS-MACROS.B 
 % Runtime:      
 %

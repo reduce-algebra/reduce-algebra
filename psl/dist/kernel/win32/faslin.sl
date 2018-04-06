@@ -5,7 +5,7 @@
 % Author:       E. Benson 
 % Created:      ??? 
 % Modified:     10-Jan-84 13:30 (Brian Beach)
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Kernel 
 % Compiletime:  PL:FASL-DECLS.B 

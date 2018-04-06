@@ -6,7 +6,8 @@
 % Author:       Leigh Stoller
 % Created:      18-Dec-86
 % Package:      
-%
+% Status:       Open Source: BSD License
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file

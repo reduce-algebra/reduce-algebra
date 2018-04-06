@@ -5,7 +5,8 @@
 % Author:       Brian Beach, Hewlett-Packard CRC 
 % Created:      16-Feb-84 
 % Modified:     13-Nov-84 14:35:11 (Brian Beach) 
-% Package:      
+% Package:
+% Status:       Open Source: BSD License
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

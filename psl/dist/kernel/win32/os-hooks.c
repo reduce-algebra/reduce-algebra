@@ -8,7 +8,7 @@
 * Modified:    15-Jul-85 10:10:51 (RAM)
 * Mode:         Text
 * Package:
-* Status:       Experimental (Do Not Distribute)
+* Status:       Open Source: BSD License
 *
 *
 ******************************************************************************

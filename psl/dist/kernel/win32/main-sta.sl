@@ -5,7 +5,7 @@
 % Author:         Brian Beach, Hewlett-Packard CRC
 % Created:        16-Feb-84
 % Modified:       19-Feb-85 09:36:17
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Kernel
 %
