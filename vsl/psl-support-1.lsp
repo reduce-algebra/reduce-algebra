@@ -137,9 +137,6 @@
    (putbyte v (plus n 1) (land (rsh val 8) 16#ff))
    val)
 
-(de put_a_halfword (addr val)
-  (puthalfword addr 0 val))
-
 % ... and 32-bit words
 
 (de word32 (v n)
@@ -150,6 +147,11 @@
    (puthalfword v n (land val 16#ffff))
    (puthalfword v (plus n 2) (land (rsh val 16) 16#ffff))
    val)
+
+% This one tricked me for some while - a "halfword" here is a 32-bit value!
+
+(de put_a_halfword (addr val)
+  (putword32 addr 0 val))
 
 
 (de word (v n)
@@ -1094,7 +1096,6 @@
                        bpw)))
            (setq b (explode2 (cdr b)))
            (setq len (length b))
-(prin2 "trailer ") (prin2 s) (prin2 " ") (prin2 len) (prin2 " ") (print b) %@@@
            (setq s (times 8 s))
            (binarymarker codeout* 16#77)
            (foreach b1 in b do
@@ -1142,8 +1143,11 @@
     (setq bl (reversip bl))
 % Now in the correct order.
     (setq l (length bl))
-% I want to pack it as a string.
-(prin2 "compress-bittable = ") (prin2 l) (prin2 " : ") (print bl) %@@@@
+% I want to pack it as a string. BEWARE of several issues. Firstly this
+% string contains a pretty arbitrary sequence of bytes, the last of which
+% is a zero byte and that must be included as part of the string. It may
+% not be valid UTF8 so passing it through print code could potentially cause
+% trouble.
     (setq s (list-to-string bl))
 %   (setq s (mkstring (isub1 l) 0))
 %   (setq sb (strbase (strinf s)))
