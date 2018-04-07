@@ -6,6 +6,7 @@
 % Created:      11-Jan-84 
 % Modified:     7 May 1984 1056-PDT (Nancy Kendzierski) 
 % Package:      
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

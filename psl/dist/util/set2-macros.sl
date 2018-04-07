@@ -7,7 +7,7 @@
 % Modified:     9 May 1984 2057-PDT (Nancy Kendzierski) 
 % Mode:         Lisp 
 % Package:      Lisp 
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 % Compiletime:  PL:BACKQUOTE.B PL:READ-MACROS.B PL:DEFMACRO.B PL:COND-MACROS.B 
 %               PL:BIND-MACROS.B PL:SET1-MACROS.B 
 % Runtime:      

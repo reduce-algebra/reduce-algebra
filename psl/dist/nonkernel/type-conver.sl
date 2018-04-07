@@ -5,7 +5,7 @@
 % Author:       Eric Benson 
 % Created:      28 August 1981 
 % Modified:     04-Apr-84 14:45:33 (Brian Beach) 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 %
 % (c) Copyright 1982, University of Utah

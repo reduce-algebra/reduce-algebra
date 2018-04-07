@@ -6,6 +6,7 @@
 % Created:      May 1981 
 % Modified:     02-Dec-83 19:04:21 (Nancy Kendzierski) 
 % Package:      Utilities 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

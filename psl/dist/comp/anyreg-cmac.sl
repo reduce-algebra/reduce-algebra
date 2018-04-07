@@ -6,6 +6,7 @@
 % Created:        17 December 1981
 % Modified:       14-Sep-84 07:58:13 (Brian Beach)
 % Package:        Compiler
+% Status:         Open Source: BSD License
 %
 % (c) Copyright 1987, University of Utah, all rights reserved.
 %

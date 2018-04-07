@@ -4,7 +4,7 @@
 % Title:        support of (car NIL) -> NIL, (cdr NIL) -> NIL
 % Author:       Herbert Melenk, ZIB-Berlin
 % Created:      21-Dec 1990
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Compiler 
 %

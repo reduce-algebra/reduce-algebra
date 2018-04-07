@@ -6,6 +6,7 @@
 % Created:      17 September 1982 
 % Modified:     26 Jan 1984 1603-PST (Brian Beach) 
 % Package:      NMODE Utilities 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

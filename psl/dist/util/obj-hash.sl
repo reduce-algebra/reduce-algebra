@@ -6,6 +6,7 @@
 % Created:      11-Dec-83 
 % Modified:     12-Jul-84 11:16:43 (Mike Creech) 
 % Package:      Utilities 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

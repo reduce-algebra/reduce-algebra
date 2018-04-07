@@ -8,6 +8,7 @@
 % Modified:     25-Sep-84 14:02:09 (Brian Beach)
 % Status:       Experimental 
 % Mode:         Lisp 
+% Status:       Open Source: BSD License
 % Package:      Kernel 
 % Compiletime:  PL:HASH-DECLS.B PL:SYS-CONSTS.B 
 % Runtime:      

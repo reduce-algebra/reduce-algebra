@@ -5,7 +5,8 @@
 % Author:       M. L. Griss 
 % Created:      
 % Modified:     05-Dec-83 17:32:05 (Nancy Kendzierski) 
-% Package:      Utilities 
+% Package:      Utilities
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

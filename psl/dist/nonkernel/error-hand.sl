@@ -5,7 +5,7 @@
 % Author:       Eric Benson 
 % Created:      18 August 1981 
 % Modified:     23-Mar-84 09:01:35 (Brian Beach) 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Kernel 
 % Compiletime:  PL:IF-SYSTEM.B 

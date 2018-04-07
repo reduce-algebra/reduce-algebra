@@ -4,7 +4,7 @@
 % Title:        Compilation of Floating point arithmetic expressions
 % Author:       Herbert Melenk
 % Created:      23 September 1994 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Compiletime:   
 % Runtime:      

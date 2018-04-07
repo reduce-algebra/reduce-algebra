@@ -7,7 +7,7 @@
 % Modified:     11-Dec-84 13:55:10 (Cris Perdue)
 % Mode:         Lisp 
 % Package:      
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 % Compiletime:  PL:USEFUL.B PL:CLCOMP.B 
 % Runtime:      
 %

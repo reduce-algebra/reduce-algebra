@@ -7,6 +7,7 @@
 % Modified:     22-Mar-84 11:04:27 (Brian Beach) 
 % Mode:         Lisp 
 % Package:      Kernel 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree

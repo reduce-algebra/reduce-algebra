@@ -7,7 +7,7 @@
 % Modified:       05-Sep-84 11:11:18 (Brian Beach)
 % Mode:           Lisp
 % Package:        Utilities
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Runtime:        PL:SYS-CONSTS.B
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file

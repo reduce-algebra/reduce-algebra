@@ -6,6 +6,8 @@
 %              Computer Science Dept.
 %              University of Utah
 % Date:        23 March 1982
+% Status:      Open Source: BSD License
+%
 % (c) Copyright 1982, University of Utah
 %
 % Redistribution and use in source and binary forms, with or without

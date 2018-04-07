@@ -5,7 +5,7 @@
 % Author:       Martin Griss 
 % Created:      21 July 1982 
 % Modified:     22-Mar-84 11:38:14 (Brian Beach) 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Kernel 
 % Compiletime:  

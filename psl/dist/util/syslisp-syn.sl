@@ -6,6 +6,7 @@
 % Created:        11 July 1981
 % Modified:       11-Jan-84 15:21:21
 % Package:        Syslisp
+% Status:         Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

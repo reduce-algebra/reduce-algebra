@@ -5,7 +5,7 @@
 % Author:       Eric Benson, Hewlett-Packard CRC 
 % Created:      30 March 1982 
 % Modified:     19 Jan 1984 1431-PST (Brian Beach) 
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Utilities 
 %

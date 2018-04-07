@@ -5,6 +5,7 @@
 % Author:       Leigh Stoller & Stan Shebs
 % Created:      22-Nov-86
 % Package:      
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1987, University of Utah
 %

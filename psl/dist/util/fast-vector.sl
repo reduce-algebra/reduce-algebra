@@ -6,6 +6,7 @@
 % Created:      
 % Modified:     19 Oct 1984 0952-PDT (Brian Beach) 
 % Package:      Utilities 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

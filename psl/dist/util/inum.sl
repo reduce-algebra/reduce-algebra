@@ -7,7 +7,7 @@
 % Modified:       12-Sep-84 09:26:56 (Brian Beach)
 % Mode:           Lisp
 % Package:        Utilities
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Compiletime:    PL:RLISP.B
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file

@@ -5,7 +5,7 @@
 % Author:       Eric Benson 
 % Created:      27 August 1981 
 % Modified:     19 Oct 1984 0617-PDT (Mark R. Swanson)
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Kernel 
 % Compiletime:  

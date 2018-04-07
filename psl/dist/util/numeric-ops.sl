@@ -5,7 +5,7 @@
 % Author:         Alan Snyder, Hewlett-Packard CRC
 % Created:        7 January 1983 (based on the earlier Fast-Int module)
 % Modified:       02-Oct-84 17:44:38 (Cris Perdue)
-% Status:         Experimental (Do Not Distribute)
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Utilities
 % Runtime:        PL:USEFUL.B

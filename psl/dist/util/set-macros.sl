@@ -7,7 +7,7 @@
 % Modified:     6 May 1984 1655-PDT (Nancy Kendzierski) 
 % Mode:         Lisp 
 % Package:      Lisp 
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 % Compiletime:  
 % Runtime:      PL:SET1-MACROS.B PL:SET2-MACROS.B 
 %

@@ -6,6 +6,7 @@
 % Created:      23-Nov-82 
 % Modified:     12 Apr 1984 1423-PST (Nancy Kendzierski) 
 % Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

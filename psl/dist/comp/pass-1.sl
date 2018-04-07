@@ -5,7 +5,7 @@
 % Author:       Brian Beach, Hewlett-Packard CRC 
 % Created:      19-Mar-84 
 % Package:      
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1987, University of Utah
 %

@@ -6,6 +6,7 @@
 % Created:      Wednesday, 2 June 1982 
 % Modified:     19 Jan 1984 1441-PST (Brian Beach) 
 % Package:      Utilities 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

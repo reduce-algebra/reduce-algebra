@@ -6,7 +6,7 @@
 % Author:       Eric Benson 
 % Created:      16 February 1982 
 % Modified:     23 Jan 1985 0937-PST (Brian Beach)
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Compiletime:  PL:FAST-VECTOR.B PL:FASL-DECLS.B 
 % Runtime:      

@@ -6,6 +6,7 @@
 % Created:      18 August 1981 
 % Modified:     25-Jul-84 09:20:18 
 % Package:      Kernel 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

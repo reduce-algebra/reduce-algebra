@@ -7,7 +7,7 @@
 % Modified:     26 Jan 1984 1550-PST (Brian Beach) 
 % Mode:         Lisp 
 % Package:      
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 % Compiletime:  PL:IF-SYSTEM.B 
 % Runtime:      
 %

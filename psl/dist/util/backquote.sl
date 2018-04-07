@@ -5,7 +5,7 @@
 % Author:       Don Morrison, Hewlett-Packard CRC 
 % Created:      Wednesday, 12 May 1982 
 % Modified:     19 Jan 1984 1429-PST (Brian Beach) 
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Utilities 
 % Compiletime:  

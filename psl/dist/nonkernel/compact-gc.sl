@@ -5,7 +5,7 @@
 % Author:         Martin Griss and Eric Benson                             
 % Created:        28 August 1981                                           
 % Modified:       26-Dec-84 13:30:52 (Vicki O'Day)
-% Status:         Experimental                                             
+% Status:         Open Source: BSD License
 % Mode:           Lisp                                                     
 % Package:        Kernel                                                   
 %

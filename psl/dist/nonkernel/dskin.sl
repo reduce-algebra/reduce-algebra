@@ -6,7 +6,7 @@
 % Author:       Eric Benson
 % Created:      24 September 1981
 % Modified:     01 Nov 1984 (Brian Beach)
-% Status:       Experimental
+% Status:       Open Source: BSD License
 % Mode:         Lisp
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file

@@ -5,7 +5,7 @@
 % Author:       Douglas Lanam, Hewlett-Packard CRC 
 % Created:      
 % Modified:     
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Utilities 
 %

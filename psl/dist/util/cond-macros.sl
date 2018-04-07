@@ -5,7 +5,7 @@
 % Author:       Don Morrison, Hewlett-Packard CRC 
 % Created:      Wednesday, 12 May 1982 
 % Modified:     9 May 1984 2055-PDT (Nancy Kendzierski) 
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Utilities 
 % Compiletime:  PL:BACKQUOTE.B PL:READ-MACROS.B PL:DEFMACRO.B 

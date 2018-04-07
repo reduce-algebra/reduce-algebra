@@ -7,7 +7,7 @@
 % Modified:     11-Sep-84 08:24:29 (Brian Beach)
 % Mode:         Lisp
 % Package:      
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 % Compile to:   none
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file

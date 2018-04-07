@@ -6,6 +6,7 @@
 % Created:      12 April 1982
 % Modified:     05-Sep-84 10:45:56 (Brian Beach)
 % Mode:         Lisp
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

@@ -6,6 +6,7 @@
 % Created:      9-Jan-84 
 % Modified:     29-Jan-85 16:32:54 (Jim Ambras)
 % Package:      Tools 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

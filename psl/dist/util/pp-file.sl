@@ -7,6 +7,7 @@
 % Modified:     31-May-84 08:08:10 (Brian Beach) 
 % Mode:         Lisp 
 % Package:      Utilities 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

@@ -4,7 +4,8 @@
 % Author:	Russell D. Fish
 % 		Computer Science Dept.
 % 		University of Utah
-% Date:	Mon Sep 13 1982
+% Date:	        Mon Sep 13 1982
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

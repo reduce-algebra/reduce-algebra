@@ -5,7 +5,7 @@
 % Author:       Eric Benson, Steve Lowder 
 % Created:      23 August 1981 
 % Modified:     29-Aug-84 10:08:36 (Brian Beach) 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Kernel 
 % Compiletime:  PL:SYS-CONSTS.B 

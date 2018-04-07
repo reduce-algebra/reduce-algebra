@@ -5,7 +5,7 @@
 % Author:       Eric Benson 
 % Created:      27 August 1981 
 % Modified:     31-May-84 10:46:09 (Brian Beach) 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Kernel 
 % Compiletime:  PL:IO-DECLS.B 

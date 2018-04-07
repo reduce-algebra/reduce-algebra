@@ -5,7 +5,7 @@
 % Author:         Eric Benson
 % Created:        14 January 1982
 % Modified:       29-Aug-84 11:03:46 (Brian Beach)
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Kernel
 %

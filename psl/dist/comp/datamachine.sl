@@ -5,7 +5,7 @@
 % Author:       Eric Benson, University of Utah 
 % Created:      5-Apr-82 
 % Modified:     29-Oct-84 (Brian Beach) 
-% Status:       Experimental (Do Not Distribute) 
+% Status:       Open Source: BSD License
 % Mode:         Lisp 
 % Package:      Compiler 
 % Compile to:   PL:DATA-MACHINE.B 

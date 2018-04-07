@@ -7,7 +7,7 @@
 % Modified:     02-Dec-83 19:03:14 (Nancy Kendzierski) 
 % Mode:         Lisp 
 % Package:      Utilities 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 % Notes:        
 % Compiletime:  
 % Runtime:      
