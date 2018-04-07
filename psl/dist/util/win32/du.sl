@@ -1,8 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%   DU.SL
-%
-%   PSL based UNIX style disk-used for MS-DOS
+% File:           DU.SL
+% Description:    PSL based UNIX style disk-used for MS-DOS
+% Status:         Open Source: BSD License
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

@@ -6,6 +6,7 @@
 % Created:      20 August 1981 
 % Modified:     31-May-84 10:45:42 (Brian Beach) 
 % Mode:         Lisp 
+% Status:       Open Source: BSD License
 % Package:      Kernel 
 % Compile to:   PNKL:EVAL-APPLY.B 
 %

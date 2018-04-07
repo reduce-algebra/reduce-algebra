@@ -6,7 +6,8 @@
 % Author:         Eric Benson                                              
 % Created:        5 March 1982                                             
 % Modified:       29-Oct-84 09:08:15 (Vicki O'Day)
-% Mode:           Lisp                                                     
+% Mode:           Lisp
+% Status:         Open Source: BSD License
 % Package:        Kernel                                                   
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file

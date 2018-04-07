@@ -6,6 +6,7 @@
 % Created:      18 August 1981 
 % Modified:     23-May-84 10:30:23 (Brian Beach) 
 % Mode:         Lisp 
+% Status:       Open Source: BSD License
 % Package:      Kernel 
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file

@@ -5,6 +5,7 @@
 % Author:       Eric Benson
 % Created:      4-May-84
 % Modified:     26-Jun-84 15:17:39
+% Status:       Open Source: BSD License
 % Package:
 %
 % (c) Copyright 1982, University of Utah

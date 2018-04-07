@@ -5,6 +5,7 @@
 % Author:       RAM, HP/FSD
 % Created:      27-Feb-84
 % Modified:     14-Jan-85 09:10:20 (Vicki O'Day)
+% Status:       Open Source: BSD License
 % Package:
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file

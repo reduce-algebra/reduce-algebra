@@ -5,7 +5,8 @@
 % Author:       Eric Benson 
 % Created:      28 August 1981 
 % Modified:     03-Aug-84 09:58:56 
-% Package:      Kernel 
+% Package:      Kernel
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %

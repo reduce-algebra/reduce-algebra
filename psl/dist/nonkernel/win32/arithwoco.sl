@@ -6,6 +6,7 @@
 % Created:      9 August 1982 
 % Modified:     06-Oct-87 (Robert Kessler)
 % Mode:         Lisp 
+% Status:       Open Source: BSD License
 % Package:      Utilities 
 %
 % (c) Copyright 1982, University of Utah

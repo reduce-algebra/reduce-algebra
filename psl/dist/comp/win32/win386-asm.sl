@@ -6,6 +6,7 @@
 % Created:      16-Jan-1993
 % Modified:
 % Mode:         Lisp
+% Status:       Open Source: BSD License
 %
 %
 % Redistribution and use in source and binary forms, with or without

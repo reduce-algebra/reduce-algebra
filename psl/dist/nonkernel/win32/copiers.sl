@@ -7,6 +7,7 @@
 % Modified:     19 Oct 1984 0617-PDT (Mark R. Swanson)
 % Status:       Experimental 
 % Mode:         Lisp 
+% Status:       Open Source: BSD License
 % Package:      Kernel 
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
