@@ -1,1 +1,0 @@
-../AMD64_ext/get-opti.sl

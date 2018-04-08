@@ -1,1 +1,0 @@
-../AMD64_ext/nbig32atest.sl

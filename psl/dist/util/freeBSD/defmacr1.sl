@@ -1,1 +1,0 @@
-../linux/defmacr1.sl
