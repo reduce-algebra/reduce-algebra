@@ -1,1 +1,0 @@
-../linux/os2-asm.sl

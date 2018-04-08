@@ -5,6 +5,7 @@
 % Author:       
 % Created:     
 % Package:
+% Status: Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
