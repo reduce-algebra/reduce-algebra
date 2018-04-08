@@ -4,6 +4,7 @@
 % Author:       Harold Carr (borrowing from Russ Fish)
 % Created:      Summer 1985
 % Package:
+% Status:       Open Source: BSD License
 % RCS $Header: $
 %
 % (c) Copyright 1982, University of Utah

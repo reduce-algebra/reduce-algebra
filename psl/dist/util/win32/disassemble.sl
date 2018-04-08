@@ -5,7 +5,7 @@
 % Author: H. Melenk , ZIB Berlin
 %
 % Date :  4-May-1994
-% Status:         Open Source: BSD License
+% Status: Open Source: BSD License
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

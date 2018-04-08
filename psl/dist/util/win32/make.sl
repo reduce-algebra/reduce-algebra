@@ -4,6 +4,8 @@
 %
 %   PSL based UNIX style make utility for MS-DOS
 %
+% Status:         Open Source: BSD License
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Redistribution and use in source and binary forms, with or without

@@ -7,7 +7,7 @@
 % Modified:     
 % Mode:         Lisp 
 % Package:      Utilities 
-% Status:       Experimental 
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -257,7 +257,7 @@
    (setq s (igetv u 1))
    (when (wgreaterp b 1)(go error))
    (when (wlessp s 0) 
-       (if (bbminusp u) (return s) (go error)))
+       (if (bbminusp u) (return (wminus s)) (go error)))
    (return (if (bbminusp u) (wminus s) s))
 error
    (continuableerror 99 "BIGNUM too large to convert to SYS" u)

@@ -6,7 +6,7 @@
 %                 includes former symflags module
 % Author:         Winfried Neun , ZIB Berlin
 % Created:        3-September-1988
-% Status:         Experimental (Do Not Distribute)
+% Status:         Open Source: BSD License
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

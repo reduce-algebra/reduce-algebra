@@ -1,12 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% File:         PU:NBIG30a.SL 
+% File:         PU:NBIG32a.SL 
 % Description:  Vector based BIGNUM package with INUM operations 
 % Author:       M. L. Griss & B Morrison 
 % Created:      25 June 1982 
 % Modified:     
 % Mode:         Lisp 
 % Package:      Utilities 
+% Status:       Open Source: BSD License
 %
 % Copyright 1982, University of Utah
 %

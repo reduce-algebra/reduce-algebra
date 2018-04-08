@@ -5,6 +5,7 @@
 %  caching binary input for load
 %
 %  Author: Herbert Melenk 
+%  Status: Open Source: BSD License
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
