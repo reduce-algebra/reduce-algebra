@@ -2,7 +2,7 @@
 (de newname (n)
    (intern (compress (cons '~ (explode n)))))
 
-(de argcount (ff)
+(de myargcount (ff)
   (if (member 'psl lispsystem*)
       (code-number-of-arguments (getfcodepointer ff))
       (length (caddr (getd ff)))))
@@ -15,7 +15,7 @@
        ((flagp name 'lose)
         (remflag (list name) 'lose)
         (setq l t)))
-    (setq nargs (argcount name))
+    (setq nargs (myargcount name))
     (setq g (newname name))
     (copyd g name)
     (while (not (zerop nargs))
@@ -25,22 +25,22 @@
     (setq r (gensym))
     (putd name 'expr (list 'lambda a
        (list 'prog (list r)
-         (list 'printargs (list 'quote name) (cons 'list a))
+         (list 'myprintargs (list 'quote name) (cons 'list a))
          (list 'setq r (cons g a))
-         (list 'printresult (list 'quote name) r)
+         (list 'myprintresult (list 'quote name) r)
          (list 'return r))))
     (cond
        (l (flag (list name) 'lose)))
     (flag (list name) 'traced)
     (return name)))
 
-(de printwidth (u)
+(de myprintwidth (u)
   (length (explode u)))
 
 (de myprin (u)
   (cond
     ((atom u)
-      (when (greaterp (plus (posn) (printwidth u)) 60) (terpri))
+      (when (greaterp (plus (posn) (myprintwidth u)) 60) (terpri))
       (prin1 u))
     (t (prog (sep)
       (setq sep '!()
@@ -58,7 +58,7 @@
     (when (greaterp (posn) 60) (terpri))
     (prin2 '!))))))
 
-(de printargs (name args)
+(de myprintargs (name args)
   (prog (i)
     (prin2 "Calling ") (print name)
     (setq i 0)
@@ -69,7 +69,7 @@
         (terpri)
         (setq args (cdr args))))))
 
-(de printresult (name value)
+(de myprintresult (name value)
   (prin1 name)
   (princ " = ")
   (myprin value)

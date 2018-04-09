@@ -159,6 +159,10 @@
         (lsh (word32 v (plus n 4)) 32)))
 
 (de putword (v n val)
+% PSL seems to be willing to pass NIL or a symbol whose name is a single
+% character here. I will patch that up in a gruesome manner!
+   (if (and (idp val) (leq (id2int val) 128))
+       (setq val (plus (id2int val) (lsh 254 56))))
    (putword32 v n (land val 16#ffffffff))
    (putword32 v (plus n 4) (land (rsh val 32) 16#ffffffff))
    val)
@@ -886,8 +890,172 @@
          ((cdr (explode2 u)) 256)
          (t (char-code u))))
 
+% Here we have sometihng of a joke! in PSL the compiler generates calls
+% to functions that are part of the PSL kernel in an abbreviated way
+% because it know that they are present in compiled not interpreted form.
+% I have not yet understood what the consequences would be if a user then
+% redefined one of these with an interpreted version! Anyway to have any
+% prospect of binary compatibility between cross-build code and native
+% build code I have to know what PSL had happened to implement this way!
+
+(flag '(
+  !%clear!-catch!-stack !%displaced!-macro !%get !%reclaim !%throw
+  !%uncatch !*!*float!*!* !*catch !*define!-constant !*doubletofloat
+  !*fassign !*fdifference !*fgreaterp !*flessp !*floattodouble
+  !*fp!-check!-for!-exceptions !*fplus2 !*fquotient !*freset !*fsqrt
+  !*ftimes2 !*load!-for!-compiler !*throw !*wfix !*wfloat !_slowcons
+  !_slowgtfltn abs aconc add1 add1!-hardcase addload addressapply0
+  adjoin adjoinq adjustcase alghandler allocate!-string allocate!-words
+  allocatemorebps and ans anyuser!-homedir!-string append apply ass
+  assoc assoc!* atom atsoc backtrace beforegcsystemhook bigp binaryclose
+  binaryopenappend binaryopenread binaryopenupdate binaryopenwrite
+  binarypositionfile binaryread binaryreadblock binarywrite binarywriteblock
+  bindeval bldmsg bothtimes break breakcontinue breakedit breakerrmsg
+  breakeval breakquit breakretry bstackoverflow bstackunderflow bstructp
+  build!-trap!-message bvectorp caaaar caaadr caaar caadar caaddr caadr
+  caar cadaar cadadr cadar caddar cadddr caddr cadr captureenvironment car
+  case catch catch!-all catchsetup catchsetupaux cd cdaaar cdaadr cdaar
+  cdadar cdaddr cdadr cdar cddaar cddadr cddar cdddar cddddr cdddr cddr
+  cdr cfserror channeleject channelerror channelfindposition channelflush
+  channellinelength channellposn channelnotopen channelposn channelprin1
+  channelprin2 channelprin2t channelprinc channelprint channelprintbstruct
+  channelprintbvector channelprintcontext channelprintevector channelprintf
+  channelprintfunarg channelprintid channelprintpair channelprintsgd
+  channelprintstring channelprintunbound channelprintvector channelread
+  channelreadch channelreadchar channelreadeof channelreadline
+  channelreadlistordottedpair channelreadquotedexpression
+  channelreadrightparen channelreadtoken channelreadtokenwithhooks
+  channelreadvector channelspaces channelspaces2 channeltab channelterpri
+  channeltyi channeltyo channelunreadchar channelwritebitstraux
+  channelwritebitstring channelwriteblankoreol channelwritebstruct
+  channelwritebvector channelwritebytes channelwritechar
+  channelwritecodepointer channelwritecontext channelwriteevector
+  channelwritefixnum channelwritefloat channelwritefunarg
+  channelwritehalfwords channelwriteid channelwriteinteger
+  channelwritepair channelwritesgd channelwritestring channelwritesysfloat
+  channelwritesysinteger channelwriteunbound channelwriteunknownitem
+  channelwritevector channelwritewords charsininputbuffer checklinefit
+  clear!-warray clear!-wstring clearbindings clearcompresschannel clearerr
+  cleario clearonechannel close code!-number!-of!-arguments code!-putd
+  codeaddressp codeapply codeevalapply codep coerce1 coerce2 commentoutcode
+  compiledcallinginterpretedaux compiler!-constant compiletime compress
+  compresserror compressreadchar compute!-prompt!-string compute!-relocation
+  concat cond cons console!-newline console!-print!-number
+  console!-print!-string const constantp conterror contextp
+  continuableerror contopenerror copy copybytes copyevector copyevectortofrom
+  copyfltn copyfromallbases copyfrombase copyfromrange copyfromstack
+  copyfromstaticheap copyhalfwords copyhalfwordstofrom copyitem
+  copyitem1 copypairitem copystring copystringtofrom copyvector
+  copyvectortofrom copywarray copywrds copywrdstofrom ctime
+  current!-stack!-pointer date date!-and!-time date!-int!-to!-string
+  datebuffer!-to!-string de defconst define!-constant deflist del
+  delasc delascip delatq delatqip delbps delete delete!-file deletip
+  delheap delq delqip delwarray depositextrareglocation
+  depositfunctioncelllocation depositvaluecelllocation df difference
+  difference!-hardcase digit digittonumber divide dm dn do!-relocation
+  do!-relocation!-new ds dskin dskin!-file dskin!-step dskin!-stream
+  dumplisp echooff echoon egetv eject eputv eq eqcar eqn eqstr equal error
+  errorprintf errorset errortrap errprin errset eupbv eval evalinitforms
+  evand evcond evdefconst evectorequal evectorp evlis evload evor
+  evprogn evreload exit exit!-with!-status exitlisp expand expand_file_name
+  expandsetf explode explode2 explode2n explodecn exploden explodewritechar
+  exprp expt!-rec external!-allocatemorebps external_alarm
+  external_anyuser_homedir_string external_charsininputbuffer
+  external_exit external_fullpath external_getenv external_link
+  external_mkdir external_pwd external_rmdir external_setenv external_stat
+  external_strlen external_system external_timc external_time
+  external_ualarm external_unlink external_user_homedir_string faslin
+  faslin!-bad!-file faslin!-intern fastapply fastlambdaapply fatalerror
+  fclose fcntl fcodep fdummy fexprp fflush fgetc fgets filep filestatus
+  findcatchmarkandthrow findfreechannel findposition first firstkernel
+  fix fix!-hardcase fixp flag flagp flambdalinkp flatsize flatsize2
+  flatsizewritechar float floatdifference floatgreaterp floatlessp floatp
+  floatplus2 floatquotient floattimes2 floatzerop flock fluid fluid1
+  fluidp flushbuffer flushstdoutputbuffer fopen force!-heap!-enlargement
+  foreach fork fourth fpehandler fputc fread free!-bps fseek funargp
+  funboundp function fwrite gc!-trap gc!-trap!-level gcstats gensym
+  geq get get!-exec!-path get!-fullpath get!-heap!-trap get!-heap!-try!-reclaim
+  get!-image!-path get!-registry!-value get_execfilepath get_file_status
+  get_imagefilepath get_registry_value getd getenv getfcodepointer getfntype
+  gethostid getpid getprintprecision getsocket getstartupname getunixargs
+  getv gget global global1 globalinstall globallookup globalp globalremove
+  go greaterp greaterp!-hardcase gtbps gtbps!-nil!-error gtbvect gtconststr
+  gtcontext gtevect gtfixn gtfltn gthalfwords gtheap gtid gtstr gtvect
+  gtwarray gtwrds hash!-function hash!-into!-table helpbreak hist
+  history!-append history!-fetch history!-reset history!-set!-input
+  history!-set!-output history!-state histprint id!-intern id2int
+  id2string idapply idp ieee_flags ieee_handler illegalstandardchannelclose
+  illhandler implode importforeignstring imports independentclosechannel
+  independentreadchar independentwritechar indexerror indx init!-file!-string
+  init!-fluids init!-gcarray init!-pointers initcode initialize!-new!-id
+  initialize!-symbol!-table initialize!-warray initialize!-wstring
+  initializeinterrupts initializeinterrupts!-1 inp input!-case
+  instantiateinform int2code int2id intern internal_aftergcsystemhook
+  internal_beforegcsystemhook interngensym internp interpbacktrace interrogate
+  intersectionq intfloat inthandler ioerror iovhandler kernel!-fatal!-error
+  killhandler known!-free!-space land land!-hardcase lapin lastcar lastkernel
+  lastpair lbind1 lconc length leq lessp lessp!-hardcase linelength
+  linux_close linux_open lisp2char list list2 list2set list2setq list2string
+  list2vector list3 list4 list5 liter lnot lnot!-hardcase load
+  load!-for!-compiler load1 loader!-main loadtime local!-to!-global!-id
+  lor lor!-hardcase lposn lshift!-hardcase lxor lxor!-hardcase macrop
+  make!-bytes make!-halfwords make!-manual!-evector make!-vector make!-words
+  makeds makefcode makeflambdalink makefunbound makeidfreelist
+  makeinputavailable makeunbound map map2 mapc mapc2 mapcan mapcar
+  mapcon maplist mapobl markandcopyfromid max max2 mem member memq
+  min min2 minus minus!-hardcase minusp minusp!-hardcase mkevector
+  mkflagvar mkquote mkstring mkvect modeless!-dskin!-file modify
+  modulep moreheap nconc ncons ne neq newid nexprp next noncharactererror
+  noniderror noninteger2error nonintegererror noniochannelerror
+  nonlisterror nonnumber1error nonnumber2error nonnumbererror nonpairerror
+  nonpositiveintegererror nonsequenceerror nonstringerror nonvectorerror
+  nonwordserror not nth null numberp oblist off old!-flag1 old!-put
+  old!-remflag1 old!-remprop oldchannelprin1 oldchannelprin2 oldfloatfix
+  on onep!-hardcase onoff!* open or os_cleanup_hook os_startup_hook
+  output!-case package pair pairp pbind1 pclose plantcodepointer
+  plantlambdalink plantunbound plus plus2 plus2!-hardcase pnth popen
+  posn pp pre!-main prettyprint prin1 prin2 prin2l prin2t print printf
+  printf1 printf2 printwithfreshline prog prog2 progn prop psl_main
+  pslsignalhandler putc putentry putv putw pwd quit quote quotient
+  quotient!-hardcase rangeerror rassoc ratom rdf rds read read!-id!-table
+  readch readchar reader!-intern readinbuf readline readonlychannel
+  real!-gtheap recip reclaim reclaim2 redo reload relocate!-inf relocate!-word
+  remainder remainder!-hardcase remd remflag remob rempropl reset
+  rest restoreenvironment return returnaddressp returnnil reverse reversip
+  robustexpand rplaca rplacd rplacw safecar safecdr sassoc savesystem
+  search!-string!-for!-character second seghandler semctl semget semop
+  set set!-bndstk!-size set!-gc!-trap!-level set!-heap!-size set!-history!-state
+  set_bndstk_size set_heap_size setenv setindx setlinebuf
+  setmacroreference setprintprecision setprop setq setsub setsubseq
+  sgdp shmat shmctl shmdt shmget signal sigrelse sigunwind size sleep
+  spaces spaces2 standardlisp staticintfloat stderror step string string!=
+  string!-intern string2list string2vector stringequal stringgensym stringp
+  sub sub1 sub1!-hardcase subla sublis subseq substip suck!-in!-files
+  sun3_sigset sys2fixn sys2int syscleario sysclose sysmaxbuffer sysopenread
+  sysopenwrite syspowerof2p sysreadrec system systemmarkasclosedchannel
+  systemopenfileforinput systemopenfileforoutput systemopenfilespecial
+  syswriterec tab tconc terminalinputhandler terpri testlegalchannel
+  third throw throwaux timc time times times2 times2!-hardcase
+  top!-loop!-eval!-and!-print top!-loop!-read toploop tostringwritechar
+  totalcopy tr trst try!-other!-bps!-spaces tyi tyo typeerror unbindn
+  unboundp unchecked!-prop unchecked!-put unchecked!-setprop
+  unchecked!-string!-equal unchecked!-string!-intern undefinedfunction!-aux
+  unexec unfluid unfluid1 unionq unix!-profile unix!-time unixcd unixcleario
+  unixclosesocket unixopen unixputc unixputn unixputs unixsocketopen
+  unixstring unixstrlen unprotected!-dskin!-stream unreadchar unwind!-all
+  unwind!-protect upbv usagetypeerror user!-homedir!-string uxacos
+  uxasin uxassign uxatan uxatan2 uxcos uxdifference uxdoubletofloat uxexp
+  uxfix uxfloat uxfloattodouble uxgreaterp uxlessp uxlog uxplus2
+  uxquotient uxsin uxsqrt uxtan uxtimes2 uxwritefloat uxwritefloat8
+  valuecell vaxreadchar vaxwritechar vector vector2list vector2string
+  vectorp verbosebacktrace wait writechar writefloat writenumber1
+  writeonlychannel writesocket writestring writesysinteger wrongcasecharp
+  wrs xcons xgetw xidapply0 xidapply1 xidapply2 xidapply3 xidapply4
+  xn xnq yesp zerop zerop!-hardcase)
+  'fastcallable)
+
 (de fastcallablep (u)
-   (if (member u '(putentry)) t nil))
+   (flagp u 'fastcallable))
 
 
 
