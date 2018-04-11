@@ -1324,6 +1324,18 @@
     (return (cons l s))))
 
 
+(de initialize-wstring (address init n)
+  (prog (i)
+    (setq init (explode2 init))
+    (setq n (times n 8))
+    (setq i 0)
+top (cond
+      ((lessp i n) (return nil))
+      (init (putbyte address i (char-code (car init)))
+            (setq init (cdr init)))
+      (t (putbyte address i 0)))
+    (setq i (add1 i))
+    (go top)))
 
 (flag '(spaces intp flag1 remflag1 control cntrl continuableerror main
         concat binarywrite binarywritebyte byte putbyte halfword
@@ -1345,7 +1357,8 @@
         repeat ifor on off imports putmem putbyte put_a_halfword int2id
         load errset land lor iland ilor string putword next bothtimes
         compiletime loadtime mkitem imports codewritestring codefiletrailer
-        compact-bittable)
+        compact-bittable length member memq last lastcar lastpair
+        initialize-wstring)
       'lose)
 
 (rdf "mytrace.lsp")

@@ -5,7 +5,7 @@
 #   (faslout 'foo) (dskin "file") (faslend)
 # and create a file called "foo.b".
 
-make psl OPT="-O0 -g"
+make psl OPT="-O3"
 
 script Winfasl.log <<XXX
 ./vsl xxxfasl.lsp -Dmachine=mingw-w64 -o Winfasl.img

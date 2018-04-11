@@ -1,12 +1,13 @@
 (setq *echo t)
 
 %(mytrace 'depositquadwordexpression)
-%(mytrace 'depositword)
-%(mytrace 'depositwordidnumber)
 
 (setq *plap t)
 (setq *pgwd t)
 (setq *testlap t)
+
+(load nbittab)
+(getd 'codefiletrailer)
 
 (cond
   ((member 'vsl lispsystem*)
@@ -14,20 +15,9 @@
      (print (list 'putentry a b c))
      nil)))
 
-(faslout 'foo)
+(faslout "foo")
 
-(de arthur (x) "hello")
-
-(de arthur1 (x) nil)
-
-(de arthur2 (x) x)
-
-(de arthur3 (x) (cadr x))
-
-(de arthur4 (x) (list x x x))
-
-(de arthur5 (x)
-   (if (zerop x) 1 (times x (arthur5 (sub1 x)))))
+(dskin "../psl/dist/comp/pass-2-3.sl")
 
 (faslend)
 

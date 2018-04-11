@@ -27,6 +27,27 @@
 (setq @pdist   "../psl/dist/distrib")
 (setq @pxdist  (bldmsg "../psl/dist/distrib/%w" machine))
 
+(setq totalbytes 800000)
+
+(global '(memory))
+(upbv (setq memory (mkvect (quotient totalbytes 8))))
+(dotimes (i (add1 (quotient totalbytes 8))) (putv memory i 0))
+
+(global '(heapupperbound heaplowerbound heaplast heaptrapbound heaplast
+          heaptrapped nextbps lastbps))
+
+% I set up the simulated memory so half is for BPS and half is for heap.
+
+(setq lastbps (quotient totalbytes 2))
+(setq nextbps 0)
+(setq heapupperbound (setq highpointer totalbytes))
+(setq lowpointer lastbps)
+
+(setq heaplast lowpointer)
+(setq heaptrapbound (sub1 highpointer))
+
+
+
 (rdf "$pnk/lisp-macros.sl")
 
 (rdf "$pu/defmacro1.sl")
@@ -38,7 +59,12 @@
 (rdf "$pu/cond-macros.sl")
 (rdf "$pu/numeric-ops.sl")
 
+(rdf "$pnk/def-smacro.sl")
 (rdf "$pnk/easy-non-sl.sl")
+(rdf "$pnk/compsupport.sl")
+
+(rdf "$pu/sys-macros.sl")
+
 (rdf "$pnk/sets.sl")
 
 %(rdf "$pnk/type-error.sl")
@@ -49,7 +75,6 @@
 
 
 (rdf "$pnk/carcdr.sl")
-(rdf "$pnk/def-smacro.sl")
 (rdf "$pnk/defconst.sl")
 (rdf "$pnk/constants.sl")
 
@@ -90,30 +115,11 @@
 (rdf "$pxc/comp-decls.sl")
 (rdf "$pxc/compiler.sl")
 (rdf "$pxc/nbittab.sl")
-(rdf "$pxc/neweq.sl")
-(rdf "$pxc/fixup386.sl")
+%(rdf "$pxc/neweq.sl")    % THIS ONE IS NOT WANTED, AND BREAKS THINGS
+(rdf "$pxc/fixup386.sl")  % The name here is worrying.
 
 (rdf "$pxnk/sys-faslin.sl")
 
 (global '(totalbytes))
-
-(setq totalbytes 800000)
-
-(global '(memory))
-(upbv (setq memory (mkvect (quotient totalbytes 8))))
-(dotimes (i (add1 (quotient totalbytes 8))) (putv memory i 0))
-
-(global '(heapupperbound heaplowerbound heaplast heaptrapbound heaplast
-          heaptrapped nextbps lastbps))
-
-% I set up the simulated memory so half is for BPS and half is for heap.
-
-(setq lastbps (quotient totalbytes 2))
-(setq nextbps 0)
-(setq heapupperbound (setq highpointer totalbytes))
-(setq lowpointer lastbps)
-
-(setq heaplast lowpointer)
-(setq heaptrapbound (sub1 highpointer))
 
 (preserve)

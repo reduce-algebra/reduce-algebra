@@ -152,14 +152,14 @@ typedef intptr_t LispObject;
 #define isEQHASH(x) (isATOM(x) && ((qheader(x) & TYPEBITS) == typeEQHASH))
 #define isEQHASHX(x) (isATOM(x) && ((qheader(x) & TYPEBITS) == typeEQHASHX))
 
-// The Lisp heap will have fixed size. Here I make it 32 Mbytes which should
+// The Lisp heap will have fixed size. Here I make it 64 Mbytes which should
 // fit comfortable on a Raspberry Pi but will also be ample for many serious
 // applications. On a 64-bit machine twice as much memory will be used.
 #ifndef MEM
-#define MEM 8
+#define MEM 16
 #endif
 #define HEAPSIZE (MEM*1024*1024*sizeof(LispObject))
-#define STACKSIZE (128*1024*sizeof(LispObject))
+#define STACKSIZE (256*1024*sizeof(LispObject))
 
 // I force sizes to be multiples of some power of 2 mostly because I view
 // it as tidy, but in part to guarantee alignment of addresses.
@@ -227,10 +227,13 @@ LispObject stackbase, *sp, stacktop;
 #define toploopeval  bases[30]
 #define loseflag     bases[31]
 #define condsymbol   bases[32]
-#define prognsymbol  bases[3]
+#define prognsymbol  bases[33]
 #define gosymbol     bases[34]
 #define returnsymbol bases[35]
-#define BASES_SIZE       36
+#ifdef PSL
+#define dummyvar     bases[36]
+#endif
+#define BASES_SIZE       37
 
 LispObject bases[BASES_SIZE];
 LispObject obhash[OBHASH_SIZE];
@@ -590,11 +593,12 @@ void reclaim()
     fpfringe1 = fpfringe2;
     fringe2 = heap2base;
     fpfringe2 = heap2top;
+    printf(" - collection complete (%" PRIu64 " Kbytes free)\n",
+        ((uint64_t)(fpfringe1-fringe1))/1024);
     if (fpfringe1 - fringe1 < 1000*sizeof(LispObject))
     {   printf("\nRun out of memory.\n");
         exit(1);
     }
-    printf(" - collection complete\n");
     fflush(stdout);
 }
 
@@ -1530,6 +1534,8 @@ LispObject error1s(const char *msg, const char *data)
 typedef LispObject specialform(LispObject data, LispObject x);
 typedef LispObject lispfn(LispObject data, int nargs, ...);
 
+LispObject function_name = 0;
+
 LispObject applytostack(int n)
 {
 // Apply a function to n arguments.
@@ -1539,6 +1545,8 @@ LispObject applytostack(int n)
 // if there are more than that I will pass the fifth and beyond all in a list.
     LispObject f, w;
     int traced = (qflags(sp[-n-1]) & flagTRACED) != 0;
+    if (sp - (LispObject *)stackbase > 10000)
+        error1("Stack overflow", sp[-n-1]);
     if (traced)
     {   int i;
         linepos = printf("Calling: ");
@@ -1559,12 +1567,14 @@ LispObject applytostack(int n)
     }
     switch (n)
     {   case 0: f = TOS;
+            function_name = f;
             w = (*(lispfn *)qdefn(f))(qlits(f), 0);
             break;
         case 1:
         {   LispObject a1;
             pop(a1);
             f = TOS;
+            function_name = f;
             w = (*(lispfn *)qdefn(f))(qlits(f), 1, a1);
             break;
         }
@@ -1573,6 +1583,7 @@ LispObject applytostack(int n)
             pop(a2)
             pop(a1);
             f = TOS;
+            function_name = f;
             w = (*(lispfn *)qdefn(f))(qlits(f), 2, a1, a2);
             break;
         }
@@ -1582,6 +1593,7 @@ LispObject applytostack(int n)
             pop(a2)
             pop(a1);
             f = TOS;
+            function_name = f;
             w = (*(lispfn *)qdefn(f))(qlits(f), 3, a1, a2, a3);
             break;
         }
@@ -1592,6 +1604,7 @@ LispObject applytostack(int n)
             pop(a2)
             pop(a1);
             f = TOS;
+            function_name = f;
             w = (*(lispfn *)qdefn(f))(qlits(f), 4,
                                       a1, a2, a3, a4);
             break;
@@ -1604,6 +1617,7 @@ LispObject applytostack(int n)
             pop(a2)
             pop(a1);
             f = TOS;
+            function_name = f;
             w = (*(lispfn *)qdefn(f))(qlits(f), 5,
                                       a1, a2, a3, a4, a5andup);
             break;
@@ -1734,6 +1748,14 @@ LispObject interpret(LispObject def, int nargs, ...)
 // sort of local scope. Note with mild distress that this implements
 // "dynamic" rather than "static" scoping, but old-fashioned Lisp code
 // will have coped with that!
+//
+#ifdef PSL
+// For bootstrapping PSL it appears to be pragmatically necessary to be
+// rather flexible about functions called with too few or too many arguments.
+// the PSL compiler seems to have a number of such issues, and until they
+// are resolved I will find that strict behaviour here results is
+// failure (rather than merely unreliable behaviour!)
+#endif
     va_list aa;
     int i, npushed;
     LispObject arglist, body, w, r = nil;
@@ -1744,10 +1766,38 @@ LispObject interpret(LispObject def, int nargs, ...)
     npushed = 0;
     for (i=0; i<nargs && i<4; i++)
     {   LispObject var;
-        if (!isCONS(w) || !isSYMBOL(var = qcar(w)))
-        {   while (npushed != 0) pop(qvalue(pushedvars[--npushed]));
+        if (!isCONS(w))  // Too many args passed
+        {
+#ifdef PSL
+// With PSL if I have either too many arguments I will ignore the
+// excess ones.
+            if (linepos != 0) printf("\n");
+            printf("+++ Warning: Function called with too many arguments\n");
+            print(function_name);
+            linepos = 0;
+            w = qcdr(w);
+            continue;
+#else
+            while (npushed != 0) pop(qvalue(pushedvars[--npushed]));
             va_end(aa);
-            return error1("excess arguments or invalid variable-name", w);
+            return error1("invalid variable-name", w);
+#endif
+        }
+        if (!isSYMBOL(var = qcar(w)))
+        {
+#ifdef PSL
+// With PSL if I have some junk in the list of variables that are to
+// be bound I will just bind something called "~dummyvar".
+            var = dummyvar;
+            if (linepos != 0) printf("\n");
+            printf("+++ Warning: Junk in bound variable list\n");
+            linepos = 0;
+            print(function_name);
+#else
+            while (npushed != 0) pop(qvalue(pushedvars[--npushed]));
+            va_end(aa);
+            return error1("excess arguments", w);
+#endif
         }
         push(qvalue(var));
         pushedvars[npushed++] = var;
@@ -1763,10 +1813,19 @@ LispObject interpret(LispObject def, int nargs, ...)
         while (isCONS(w) && isCONS(r))
         {   LispObject var = qcar(w);
             if (!isSYMBOL(var))
+#ifdef PSL
+            {   var = dummyvar;
+                if (linepos != 0) printf("\n");
+                printf("+++ Warning: Function called with too many arguments\n");
+                linepos = 0;
+                print(function_name);
+            }
+#else
             {   while (npushed != 0) pop(qvalue(pushedvars[--npushed]));
                 va_end(aa);
                 return error1("invalid variable-name", var);
             }
+#endif
             push(qvalue(var));
             pushedvars[npushed++] = var;
             qvalue(var) = qcar(r);
@@ -1776,8 +1835,18 @@ LispObject interpret(LispObject def, int nargs, ...)
     }
     va_end(aa);
     if (isCONS(w) || isCONS(r))
-    {   while (npushed != 0) pop(qvalue(pushedvars[--npushed]));
-        return error1("wrong number of args", cons(r, w));
+    {   
+#ifdef PSL
+// For PSL if I am given too many arguments I will merely ingnore the
+// extra unwanted ones.
+        if (linepos != 0) printf("\n");
+        printf("+++ Warning: Function called with too many arguments\n");
+        linepos = 0;
+        print(function_name);
+#else
+        while (npushed != 0) pop(qvalue(pushedvars[--npushed]));
+        return error1("too many args", cons(r, w));
+#endif
     }
     push(arglist);
     r = Lprogn(nil, body);
@@ -1787,11 +1856,15 @@ LispObject interpret(LispObject def, int nargs, ...)
     w = nreverse(arglist);
     arglist = nil;
     while (isCONS(w))
-    {   LispObject x = w;
+    {   LispObject x = w, var;
         w = qcdr(w);
         qcdr(x) = arglist;
         arglist = x;
-        pop(qvalue(qcar(arglist)));
+        var = qcar(arglist);
+#ifdef PSL
+        if (!isSYMBOL(var)) var = dummyvar;
+#endif
+        pop(qvalue(var));
     }
     return r;
 }
@@ -3478,6 +3551,9 @@ void setup()
     prognsymbol = lookup("progn", 5, 1);
     gosymbol = lookup("go", 2, 1);
     returnsymbol = lookup("return", 6, 1);
+#ifdef PSL
+    dummyvar = lookup("~dummyvar", 9, 1);
+#endif
     qlits(lookup("load-module", 11, 1)) = lisptrue;
     cursym = nil;
     work1 = work2 = nil;

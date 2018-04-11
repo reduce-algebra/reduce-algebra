@@ -138,40 +138,61 @@
       ((null a) b)
       (t (cons (car a) (append (cdr a) b)))))
 
+% I have written various of these in ugly imperative styles so that they
+% end up iterative not recusrive...
+
 (de length (l)                  % Find length of a list.
-   (cond
-      ((null l) 0)
-      (t (add1 (length (cdr l))))))
+   (prog (n)
+      (setq n 0)
+   top(cond ((atom l) (return n)))
+      (setq n (add1 n))
+      (setq l (cdr l))
+      (go top)))
 
 (de last (l)                    % Last element of a (non-empty) list.
-   (cond
-      ((null l) (error 1 "last on emtpy list"))
-      ((null (cdr l)) (car l))
-      (t (last (cdr l)))))
+   (prog ()
+      (cond
+         ((null l) (error 1 "last on emtpy list")))
+   top(cond
+        ((atom (cdr l)) (return l)))
+      (setq l (cdr l))
+      (go top)))
 
-(de lastcar (x)         % Not in Standard Lisp
-   (cond
-      ((null x) nil)
-      ((null (cdr x)) (car x))
-      (t (lastcar (cdr x)))))
+(de lastcar (l)         % Not in Standard Lisp
+   (prog ()
+      (cond
+         ((null l) (error 1 "lastcar on emtpy list")))
+   top(cond
+        ((atom (cdr l)) (return (car l))))
+      (setq l (cdr l))
+      (go top)))
 
 (de lastpair (l)                % Last pair of a (non-empty) list.
-   (cond
-      ((null l) nil)
-      ((null (cdr l)) l)
-      (t (lastpair (cdr l)))))
+   (prog ()
+      (cond
+         ((null l) (error 1 "lastpair on emtpy list")))
+   top(cond
+        ((atom (cdr l)) (return l)))
+      (setq l (cdr l))
+      (go top)))
 
 (de member (a l)
-   (cond
-      ((null l) nil)
-      ((equal a (car l)) l)
-      (t (member a (cdr l)))))
+  (prog ()
+  top
+    (cond
+      ((null l) (return nil))
+      ((equal a (car l)) (return l)))
+    (setq l (cdr l))
+    (go top)))
 
 (de memq (a l)
-   (cond
-      ((null l) nil)
-      ((eq a (car l)) l)
-      (t (memq a (cdr l)))))
+  (prog ()
+  top
+    (cond
+      ((null l) (return nil))
+      ((eq a (car l)) (return l)))
+    (setq l (cdr l))
+    (go top)))
 
 (de delete (a l)
    (cond

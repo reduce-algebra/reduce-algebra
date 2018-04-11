@@ -249,12 +249,20 @@
       ((atom a) b)
       (t (cons (car a) (append (cdr a) b)))))
 
+
+% I have written various of these in ugly imperative styles so that they
+% end up iterative not recusrive...
+
 (de length (l)                  % Find length of a list.
-   (cond
-      ((atom l) 0)
-      (t (iadd1 (length (cdr l))))))
+   (prog (n)
+      (setq n 0)
+   top(cond ((atom l) (return n)))
+      (setq n (add1 n))
+      (setq l (cdr l))
+      (go top)))
 
 (de last (l)                    % Last element of a (non-empty) list.
+%  #ifndef XXX
    (cond
       ((atom l) (error 1 "last on emtpy list"))
       ((atom (cdr l)) (car l))
@@ -271,8 +279,36 @@
       ((atom l) nil)
       ((atom (cdr l)) l)
       (t (lastpair (cdr l)))))
+%  #else /* XXX */
+%     (prog ()
+%        (cond
+%           ((null l) (error 1 "last on emtpy list")))
+%     top(cond
+%          ((atom (cdr l)) (return l)))
+%        (setq l (cdr l))
+%        (go top)))
+%
+%  (de lastcar (l)         % Not in Standard Lisp
+%     (prog ()
+%        (cond
+%           ((null l) (error 1 "lastcar on emtpy list")))
+%     top(cond
+%          ((atom (cdr l)) (return (car l))))
+%        (setq l (cdr l))
+%        (go top)))
+%
+%  (de lastpair (l)                % Last pair of a (non-empty) list.
+%     (prog ()
+%        (cond
+%           ((null l) (error 1 "lastpair on emtpy list")))
+%     top(cond
+%          ((atom (cdr l)) (return l)))
+%        (setq l (cdr l))
+%        (go top)))
+%  #endif /* XXX */
 
 (de member (a l)
+%  #ifndef XXX
    (cond
       ((atom l) nil)
       ((equal a (car l)) l)
@@ -280,12 +316,31 @@
 
 % "member" checks it a value is present in a list using the
 % "equal" test, while "memq" uses "eq".
+%  #else /* XXX */
+%    (prog ()
+%    top
+%      (cond
+%        ((null l) (return nil))
+%        ((equal a (car l)) (return l)))
+%      (setq l (cdr l))
+%      (go top)))
+%  #endif /* XXX */
 
 (de memq (a l)
+%  #ifndef XXX
    (cond
       ((atom l) nil)
       ((eq a (car l)) l)
       (t (memq a (cdr l)))))
+%  #else /* XXX */
+%    (prog ()
+%    top
+%      (cond
+%        ((null l) (return nil))
+%        ((eq a (car l)) (return l)))
+%      (setq l (cdr l))
+%      (go top)))
+%  #endif /* XXX */
 
 (de delete (a l)
    (cond
