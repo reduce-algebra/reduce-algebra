@@ -717,7 +717,7 @@
       (depositbyte 16#3e) ))  % DS segment override prefix
 
 %------------------------------------------------------------------------
-%  special format for EAX-ibstructions
+%  special format for EAX-instructions
 
 (de OP-mem-eax (code op1 op2) 
     (when (eqcar op1 'reg)(setq op1 op2))
@@ -827,10 +827,10 @@
 
 %-----------------------------------------------------------------------
 % immediate to EAX
-(de OP-imm-EAX (code op1) 
+(de OP-imm-EAX (code op1 op2-is-alway-EAX) 
     (depositbyte (car code)) (depositextension (unimmediate op1)))
  
-(de LTH-imm-EAX (code op1) 5) 
+(de LTH-imm-EAX (code op1 op2-is-alway-EAX) 5) 
  
 %-----------------------------------------------------------------------
 % INT with parameter

@@ -826,10 +826,10 @@
 
 %-----------------------------------------------------------------------
 % immediate to EAX
-(de OP-imm-EAX (code op1) 
+(de OP-imm-EAX (code op1 op2-is-alway-EAX) 
     (depositbyte (car code)) (depositextension (unimmediate op1)))
  
-(de LTH-imm-EAX (code op1) 5) 
+(de LTH-imm-EAX (code op1 op2-is-alway-EAX) 5) 
  
 %-----------------------------------------------------------------------
 % INT with parameter
