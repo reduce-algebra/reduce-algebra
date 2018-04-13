@@ -1107,7 +1107,7 @@
 
 (de indx (s n)
   (cond ((stringp s) (char-code (nth (explode2 s) (plus2 n 1))))
-        (t nil)))
+        (t (getv s n))))
 
 (de intp (x) (and (fixp x) (not (bignump x))))
 

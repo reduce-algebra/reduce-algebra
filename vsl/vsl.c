@@ -817,8 +817,8 @@ void internalprint(LispObject x)
             wrch(')');
             return;
         case tagSYMBOL:
-            pn = qpname(x);
 // gensyms get their print-names allocated when first printed.
+            pn = qpname(x);
             if (pn == nil)
             {   int len = sprintf(printbuffer, "g%.3d", gensymcounter++);
                 push(x);
@@ -1468,23 +1468,31 @@ LispObject readV()
     }
 }
 
+// createp = -1 for remob
+//         = 0 for lookup if exists, but do not create
+//         = 1 for create symbol if necessary.
+
 LispObject lookup(const char *s, int len, int createp)
 {   LispObject w, pn;
     int i, hash = 1;
     for (i=0; i<len; i++) hash = 13*hash + s[i];
     hash = (hash & 0x7fffffff) % OBHASH_SIZE;
-    w = obhash[hash];
+    LispObject *prev = &obhash[hash];
+    w = *prev;
     while (w != tagFIXNUM)
     {   LispObject a = qcar(w);        // Will be a symbol.
         LispObject n = qpname(a);      // Will be a string.
         int l = veclength(qheader(n)); // Length of the name.
         if (l == len &&
             strncmp(s, qstring(n), len) == 0)
+        {   if (createp == -1) *prev = qcdr(w);
             return a;                  // Existing symbol found.
-        w = qcdr(w);
+        }
+        prev = &qcdr(w);
+        w = *prev;
     }
 // here the symbol as required was not already present.
-    if (!createp) return undefined;
+    if (createp <= 0) return undefined;
     pn = makestring(s, len);
     push(pn);
     w = allocatesymbol();
@@ -3176,6 +3184,15 @@ LispObject Lreadline(LispObject lits, int nargs, ...)
     return lookup(ch, n, 1);
 }
 
+LispObject Lremob(LispObject lits, int nargs, ...)
+{   ARG1("remob", x);
+    if (!isSYMBOL(x)) return x;
+    LispObject pn = qpname(x);
+    int len = veclength(qheader(pn));
+    const char *s = qstring(pn);
+    return lookup(s, len, -1);
+}
+
 LispObject Lread(LispObject lits, int nargs, ...)
 {   ARG0("read");
     return readS();
@@ -3480,6 +3497,7 @@ struct defined_functions fnsetup[] =
     {"readbyte",   0,            (void *)Lreadbyte},
     {"readch",     0,            (void *)Lreadch},
     {"readline",   0,            (void *)Lreadline},
+    {"remob",      0,            (void *)Lremob},
     {"iremainder", 0,            (void *)Lremainder},
     {"remhash",    0,            (void *)Lremhash},
     {"remprop",    0,            (void *)Lremprop},

@@ -9,7 +9,7 @@ make psl OPT="-O3"
 
 script Winfasl.log <<XXX
 ./vsl xxxfasl.lsp -Dmachine=mingw-w64 -o Winfasl.img
-exit $?
 XXX
+exit $?
 
 

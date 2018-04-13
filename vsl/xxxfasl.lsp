@@ -119,6 +119,7 @@
 (rdf "$pxc/fixup386.sl")  % The name here is worrying.
 
 (rdf "$pxnk/sys-faslin.sl")
+(rdf "$pxu/compat.sl")
 
 (global '(totalbytes))
 
