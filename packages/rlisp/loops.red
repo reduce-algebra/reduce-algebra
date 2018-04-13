@@ -78,12 +78,22 @@ symbolic procedure whilstat;
         return list('while,bool,xread t)
    end;
 
+% The version of WHILE does more than Reduce per se requires, in that
+% it allows (WHILE pred b1 b2 ... ) with a sequence ot body components.
+% The previous version only supported a single body, so that one needed
+% to put in PROGN if several actions were involved. This more generous one
+% should be upwards compatible, and also it agrees better with a WHILE
+% macro used in raw PSL.
+
 symbolic macro procedure while u;
    begin scalar body,bool,lab;
-        bool := cadr u; body := caddr u;
+        bool := cadr u; body := cddr u;
         lab := 'whilelabel;
-        return mkprog(nil,list(lab,list('cond,list(list('not,bool),
-                list('return,nil))),body,list('go,lab)))
+        return mkprog(nil,
+                lab .
+                list('cond,list(list('not,bool), list('return,nil))) .
+                append(body,
+                list list('go,lab)))
    end;
 
 put('while,'stat,'whilstat);
