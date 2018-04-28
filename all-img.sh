@@ -1,4 +1,4 @@
-#! /bin/bash -v
+#! /usr/bin/env bash -v
 
 REDUCE_EXE="no"
 

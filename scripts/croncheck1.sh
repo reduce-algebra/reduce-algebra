@@ -1,4 +1,4 @@
-#! /bin/bash -v
+#! /usr/bin/env bash -v
 
 # This should build Windows, Linux64. Linux32 and Macintosh packages for
 # Reduce. If it is given an argument "--noupdate" it will not update the

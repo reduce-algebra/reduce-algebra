@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 # Usage:
 #   $srcdir/create_bundle.sh name srcdir ?icon

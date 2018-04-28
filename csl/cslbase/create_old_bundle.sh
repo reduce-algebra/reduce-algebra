@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 # Usage:
 #   $srcdir/create_old_bundle.sh name srcdir ?icon

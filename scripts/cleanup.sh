@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 here="$0";while test -L "$here";do here=`ls -ld "$here" | sed 's/.*-> //'`;done
 here=`dirname "$here"`

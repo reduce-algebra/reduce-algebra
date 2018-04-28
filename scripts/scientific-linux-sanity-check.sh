@@ -1,4 +1,4 @@
-# /bin/bash
+# /usr/bin/env bash
 
 # This is at least an approximation to a script that will ensure that
 # an installation of Scientific Linux has evough development tools and

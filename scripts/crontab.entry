@@ -1,4 +1,4 @@
-SHELL=/bin/bash
+SHELL=/usr/bin/env bash
 # This is a crontab entry for use on a Macintosh that is to be used to create
 # regular snapshots. It tries croncheck.sh every 10 minutes.
 # The script croncheck.sh will almost always make a very brief check

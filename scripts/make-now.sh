@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 # This arranges that a fresh distribution shapshot will be created fairly
 # soon. It is to be used with croncheck.sh and crontab.entry.

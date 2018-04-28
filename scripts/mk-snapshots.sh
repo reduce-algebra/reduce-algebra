@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 # This script makes snapshots of Reduce. It should be capable of
 # building ones for Windows, Macintosh, Linux-i686, Linux-x86_64

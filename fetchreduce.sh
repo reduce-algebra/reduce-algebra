@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 # Fetch Reduce to a folder called "reduce-algebra"
 # Give a username as an argument if you have write-authority to the

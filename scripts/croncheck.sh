@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 # This script will be run roughly every 10 minutes while my computer
 # is switched on. It will arrange that about once per week it will
 # regenerate snapshots of Reduce. See crontab.entry

@@ -1,7 +1,6 @@
-#! /bin/bash
+#! /usr/bin/env bash
 # If I am doing this I should be running under Cygwin and so /bin/bash
-# will exist! So any failure or moan about it being unavailable means
-# somebody is using this in a silly way!
+# will exist! Howver using /usr/bin/env will also be OK.
 
 missing=""
 

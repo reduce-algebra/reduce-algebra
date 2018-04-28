@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 # Only used from cygwin so I can assume bash is available.
 
 # This little script is intended to check if all the cygwin

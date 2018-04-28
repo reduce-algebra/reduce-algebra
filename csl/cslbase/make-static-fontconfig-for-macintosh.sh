@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 # Please have MACOSX_DEPLOYMENT_TARGET say to 10.10 before invoking this.
 

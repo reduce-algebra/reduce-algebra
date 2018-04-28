@@ -73,7 +73,7 @@ case $args in
   ;;
 esac
 
-# config.guess fails on Solaris if SHELL is /bin/bash.
+# config.guess fails on Solaris if SHELL is /usr/bin/env bash.
 if test -x /bin/sh
 then
   SHELL=/bin/sh

@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 # Fetch some files needed for starting to fetch and install Reduce.
 
 r=https://sourceforge.net/p/reduce-algebra/code/HEAD/tree
