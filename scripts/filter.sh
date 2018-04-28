@@ -31,14 +31,13 @@ do
   \'--with*-crlibm*\' | \
   \'--with*-boehm*\' | \
   \'--with*-redfront*\' | \
-  \'--with*-sequential*' | \
+  \'--with*-sequential*\' | \
   \'--enable-debug*\' | \
   \'--enable-conservative*\' | \
   \'--enable-test*\' | \
   \'--enable-jit*\' | \
   \'--enable-static*\' | \
-  \'--enable-silent*\' | \
-  \'--disable-silent*\' )
+  \'--*able-silent*\' )
     ;;
   *)
     filter="$filter $x"

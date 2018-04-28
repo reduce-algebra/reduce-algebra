@@ -441,7 +441,7 @@ uname_s=`uname -s`
 case "$uname_s" in
 *WOW)
   wow="yes"
-  uname_o=`uname -o`
+  uname_o=`uname -o 2>/dev/null`
   ;;
 Darwin)
 # "uname -o" is not available on the Macintosh!
@@ -450,7 +450,7 @@ Darwin)
   ;;
 *)
   wow="no"
-  uname_o=`uname -o`
+  uname_o=`uname -o 2>/dev/null`
   ;;
 esac
 
@@ -1156,31 +1156,32 @@ AC_MSG_NOTICE([CC=/$CC/ CXX=/$CXX/ CCACHE=/$CCACHE/])
 # be links to ccache and so the facility is already used automatically. In
 # that case it is not a help to wrap in an extra call to ccache!
 
+ORIG="$CC$CXX"
+OLD_CFLAGS="$CFLAGS"
+OLD_CXXFLAGS="$CXXFLAGS"
+OLD_CPPFLAGS="$CPPFLAGS"
+AC_PROG_CC
+AC_PROG_CXX
+CFLAGS="$OLD_CFLAGS"
+CXXFLAGS="$OLD_CXXFLAGS"
+CPPFLAGS="$OLD_CPPFLAGS"
+
 if test "$with_ccache" != "no" &&
-   test "$CC$CXX" = ""
+   test "$ORIG" = "" &&
+   test "$CCACHE" != ""
 then
-  OLD_CFLAGS="$CFLAGS"
-  OLD_CXXFLAGS="$CXXFLAGS"
-  OLD_CPPFLAGS="$CPPFLAGS"
-  AC_PROG_CC
-  AC_PROG_CXX
-  CFLAGS="$OLD_CFLAGS"
-  CXXFLAGS="$OLD_CXXFLAGS"
-  CPPFLAGS="$OLD_CPPFLAGS"
-  if test "$CCACHE" != ""
-  then
-    RAWCC="`which $CC 2> /dev/null`"
-    RAWXX="`which $CXX 2> /dev/null`"
-    case "$CC$CXX `ls -l $RAWCC 2>/dev/null` `ls -l $RAWCXX 2>/dev/null`" in
-    *ccache*)
-      ;;
-    *)
-      d=`pwd`
-      printf "#! /bin/sh\nccache $CC \"\$@\"\n" > $d/cachecc.sh
-      printf "#! /bin/sh\nccache $CXX \"\$@\"\n" > $d/cachecxx.sh
-      chmod +x $d/cachecc.sh $d/cachecxx.sh
-      case $build in
-      *cygwin* | *windows* | *mingw*)
+  RAWCC="`which $CC 2> /dev/null`"
+  RAWXX="`which $CXX 2> /dev/null`"
+  case "$CC$CXX `ls -l $RAWCC 2>/dev/null` `ls -l $RAWCXX 2>/dev/null`" in
+  *ccache*)
+    ;;
+  *)
+    d=`pwd`
+    printf "#! /bin/sh\nccache $CC \"\$@\"\n" > $d/cachecc.sh
+    printf "#! /bin/sh\nccache $CXX \"\$@\"\n" > $d/cachecxx.sh
+    chmod +x $d/cachecc.sh $d/cachecxx.sh
+    case $build in
+    *cygwin* | *windows* | *mingw*)
 # Now I want to turn the path into one that is "very" absolute. I need to
 # do this because I will be building both cygwin32 and cygwin64 variants
 # of Reduce, and paths such as "/home/USER/..." are liable to mean different
@@ -1190,14 +1191,13 @@ then
 # which will find the same file in both worlds. "cygpath -m" turns a path
 # into one that will start with a drive letter (C:/cygwin64...) and the
 # jolly use of sed should turn that into what I need.
-        d=`cygpath -m "$d" | sed -e 's_^\([a-zA-Z]\):_/cygdrive/\1_'`
-        ;;
-      esac
-      CC="$d/cachecc.sh"
-      CXX="$d/cachecxx.sh"
+      d=`cygpath -m "$d" | sed -e 's_^\([a-zA-Z]\):_/cygdrive/\1_'`
       ;;
     esac
-  fi
+    CC="$d/cachecc.sh"
+    CXX="$d/cachecxx.sh"
+    ;;
+  esac
 fi
 
 if test "x$with_csl" != "xno"
