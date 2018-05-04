@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+<%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % File:         PXC:armv6-LAP.SL
 % Description:  Armv6 PSL Assembler
@@ -93,6 +93,10 @@
 	shift-ops*			% known shift operations
 	*cond*
 	*set*
+	*OpNameList*
+	!*LDM-adressing-modes
+	!*condition-codes*
+
 ))
 
 (setq *lapopt t)
@@ -239,36 +243,58 @@
 	   (Apply Y (list X)))
 	  ((setq Y (get (first X) 'InstructionDepositMacro))
 	   (apply3safe y (cdr x))) 
-	  (t (StdError (BldMsg "Unknown 386 instruction %p" X))))))
+	  (t (StdError (BldMsg "Unknown ARMv6 instruction %p" X))))))
 
 
 (de DepositLabel (x) nil)
 
+(de string-begins-with (s opname)
+    (if (lessp (size s) (size opname))
+	nil
+      (equal (subseq s 0 (add1 (size opname))) opname)))
+
+(de lookup-mnemonic (s)
+    %% find opcode in *OpNameList* by comparing the first characters of x
+    (prog (x)
+	  (setq s (string s))
+	  (setq x *OpNameList*)
+	  lbl
+	  (if (string-begins-with s (car x))
+	      (return (car x)))
+	  (setq x (cdr x))
+	  (go lbl)))
+
+
 (de get-instruction-deposit-function (mnemonic)
-%
-% first tries with mnemonic,
-%  then with trailing S stripped, then with condition codes stripped
-%
-    (prog (l set!? conds fn)
-	  (setq fn (get mnemonic 'InstructionDepositMacro))
-	  (if fn (return (list fn (list mnemonic nil nil)))
-	  (setq l (reversip (explodec mnemonic)))
-	  (if (eq (car l) 's)
-	      (progn
-		(setq set!? t)
-		(setq l (cdr l))
-		(setq mnemonic (intern (compress (reversip (cddr l)))))
-		(setq fn (get mnemonic 'InstructionDepositMacro))
-		(if fn (return (list fn (mnemonic nil set!?))))
-		))
-	  (if (and (wgreaterp (size l) 2)
-		   (memq (setq conds (intern (compress (reversip (subseq l 0 2)))))
-			 !*condition-codes!*))
-	      (setq mnemonic (intern (compress (reversip (cddr l)))))
-	    (setq conds nil))
-	  (setq fn (get mnemonic 'InstructionDepositMacro))
-	  (if fn (return (list fn (mnemonic conds set!?))))
-	  )
+%%
+%% first tries with mnemonic,
+%%  then with trailing S stripped, then with condition codes stripped
+%%
+    (setq mnemonic (string mnemonic))
+    (prog (generic-opname rest set!? conds fn variants z len size size1 substr )
+	  (setq generic-opname (lookup-mnemonic mnemonic))
+	  (setq rest (subseq mnemonic (add1 (size generic-opname)) (add1 (size mnemonic))))
+	  (setq generic-opname (intern generic-opname))
+	  (setq fn (get generic-opname 'InstructionDepositMacro))
+	  (setq variants (get generic-opname 'OpCodeVariants))
+	  (setq len (add1 (size rest)))
+	  (foreach x in
+		   (list (list '*set* '(s) 0)
+			 (list '*ldm-addr* !*LDM-adressing-modes 'IA)
+			 (list '*cond* !*condition-codes!* 'AL))
+		   do
+		   (if (memq (car x) variants)
+		       (progn
+			 (setq size1 (add1 (size (car (cddr x)))))
+			 (setq substr (subseq rest (difference size size1) size))
+			 (if (memq (intern substr) (cadr x)) % found
+			     (push (cons (car x) (intern substr)) z)
+			   (push (cons (car x) (caddr x)) z))
+			 ))
+		   )
+
+	  (if fn (return (list fn (cons generic-opname z))))
+
 	  )
     )
 
@@ -283,7 +309,7 @@
 	     (Apply Y (list X)))
 	    ((setq Y (get (first X) 'InstructionDepositMacro))
 	     (apply3safe y (cdr x)))
-	    (t (StdError (BldMsg "Unknown 386 instruction %p" X))))
+	    (t (StdError (BldMsg "Unknown ARMv6 instruction %p" X))))
       (when (and offs (not (equal currentoffset* (plus offs (instructionlength x)))))
 	(StdError (BldMsg "length error with instruction %p: %p"
 			  x (difference (difference currentoffset* offs)
@@ -308,9 +334,12 @@
 	   (GT 2#1100) (LE 2#1101) (AL 2#1110))
   'condition-bits)
 
-(fluid '(!*condition-codes))
 (setq !*condition-codes!* '(EQ NE CS HS CC LO MI PL VS VC HI LS GE LT GT LE AL))
 
+(deflist '((IA 2#01) (IB 2#11) (DA 2#00) (DB 2#10))
+  'ldm-addressing-modes)
+
+(setq !*LDM-adressing-modes '(IA IB DA DB))
 
 
 (CompileTime (progn 
@@ -319,9 +348,10 @@
 %
 % (DefOpcode name (parameters) pattern)
 %
-(prog (OpName variants vars pattern fname condbits set!?) 
+(prog (OpName variants vars pattern fname condbits set!? opname-string) 
     (setq U (rest U)) 
-    (setq OpName (pop U))   
+    (setq OpName (pop U))
+    (setq opname-string (string OpName))
     (setq fname (intern (bldmsg "%w.INSTR" OpName)))
     (setq OpName (MkQuote OpName))
     (setq variants (pop u))
@@ -331,20 +361,24 @@
 	`((t (laperr ',OpName  (list .,vars))))))
     (setq pattern (cons 'cond pattern))
     (setq pattern
-	  `((lambda (*condbits* *set*) ,pattern)
+	  `((lambda (*condbits* *set* *ldm-addr*) ,pattern)
 	    (get (or ,(car variants) 'AL) 'condition-bits)
 	    ,(if (cdr variants)
 		 `(if ,(cadr variants) 1 0)
-		 )
+	       )
+	    ,(if (and (cdr variants) (cddr variants))
+		 `(get (or ,(caddr variants) 'IA) 'ldm-addressing-modes))
 	    ))
     % (setq u `(lambda ,vars ,pattern)) 
     % (return `(put ,OpName 'InstructionDepositMacro ',u))
+    (push opname-string *OpNameList*)
     (return
       `(progn
 	 (de ,fname ,vars ,pattern)
-	 (put ,OpName 'OpcodeVariants ',variants)
+	 (put ,OpName 'variants ',variants)
 	 (put ,OpName 'InstructionDepositMacro ',fname)))
- ))
+    ))
+
 
 
 (dm DefOpLength (U)
@@ -404,7 +438,8 @@
        (memq (cadr x) sregs)))
 
 (de reglistp (x)
-    (and (pairp x) (regp (car x)) (reglistp (cdr x))))
+    (and (pairp x) (regp (car x))
+	 (or (null (cdr x)) (reglistp (cdr x)))))
 
 (de memoryp(x) 
   % supports reference to explicit addresses
@@ -520,7 +555,7 @@
   (prog (r) (setq r u)
       % strip off tag 'reg
    (cond ((eqcar r 'reg)(setq r (cadr r))))
-      %convert a LISP-register into a 80386 register
+      %convert a LISP-register into a ARMv6 register
    (if (numberp r) (setq r (getv numericRegisterNames r)))
    (setq r (get r 'registercode))
    (if r (return r)
@@ -1001,8 +1036,8 @@
 	   (DepositInstructionBytes
 	    (lor (lsh cc 4) (lsh opcode1 -3))
 	    (lor (lor (lsh (land opcode1 2#111) 5) (lsh w-bit 5)) (lor (lsh ld-bit 4) (reg2int regn)))
-	    (lsh reglist -8)
-	    (land reglist 16#ff)))
+	    (lsh regbits -8)
+	    (land regbits 16#ff)))
     )
 
 (de lth-ldm-stm (code regn reg-offset12) 4)
@@ -1429,13 +1464,13 @@
 % Procedures to compute instruction lengths
 % ------------------------------------------------------------
 
-(de InstructionLength (X) 
-   (prog (Y) 
-       (when (setq Y (get (car x) 'InstructionLengthFunction))
-	     (return (apply3safe y (cdr x))))
-       (when (setq Y (get (car x) 'INSTRUCTIONLENGTH))
-	     (return (if (numberp y) y (apply y (list x)))))
-       (stderror (bldmsg "*** Unknown 386 instruction:%w " x))))
+(de InstructionLength (X) 4)
+%%   (prog (Y) 
+%%       (when (setq Y (get (car x) 'InstructionLengthFunction))
+%%	     (return (apply3safe y (cdr x))))
+%%       (when (setq Y (get (car x) 'INSTRUCTIONLENGTH))
+%%	     (return (if (numberp y) y (apply y (list x)))))
+%%       (stderror (bldmsg "*** Unknown ARMv6 instruction:%w " x))))
 
 (de apply2safe(y x) % ensure that plly has two parameters at least
      (cond ((null x) (apply y (list nil nil)))

@@ -55,14 +55,17 @@
       (Op-imm      . lth-imm)
       (Op-imm-reg  . lth-imm-reg)
       (OP-reg-imm8 . lth-reg-imm8 )
+      (OP-regn-imm8 . lth-regn-imm8 )
+      (OP-regd-imm8 . lth-regd-imm8 )
       (OP-reg-shifter . lth-reg-shifter )
+      (OP-regn-shifter . lth-regn-shifter )
       (OP-regd-shifter . lth-regd-shifter )
       (OP-mul3 . lth-mul3)
       (OP-mul4 . lth-mul4)
       (OP-ld-st . lth-ld-st)
       (OP-ldm-stm . lth-ldm-stm)
       (OP-streg . lth-streg)
-      (OP-xyz . lth-xyz)
+      (OP-clz . lth-clz)
       (OP-branch-imm . lth-branch-imm)
       (OP-branch-reg . lth-branch-reg)
       (Op-imm-effa . lth-imm-effa)
@@ -186,14 +189,14 @@
 ))
 
 (de partial-mkquote (l)
-    (if (not (or (memq '*condbits* l) (memq '*set* l)))
+    (if (not (or (memq '*condbits* l) (memq '*set* l) (memq '*ldm-addr* l)))
 	(mkquote l)
       (cons 'list
 	    (foreach x in l collect
-		     (if (memq x '(*condbits* *set*))
+		     (if (or (numberp x) (memq x '(*condbits* *set*)))
 			 x
 		       (mkquote x))))))
- 
+
 (de mktest(format code operands rev)
    (prog (params lhs rhs type val)
       (setq params formalParameters!*)
@@ -283,11 +286,12 @@ nil)
                   ,(parameterlist (get u 'ARGNO))
 		 .,(reverse (get u 'INSTRCASES))))
   (eval (list 'pp v))
-  (setq v
-   `(DefOpLength ,u ,(get u 'OpcodeVariants)
-                    ,(parameterlist (get u 'ARGNO))
-		 .,(reverse (get u 'LENGTHCASES))))
-  (eval (list 'pp v))
+  
+%%  (setq v
+%%   `(DefOpLength ,u ,(get u 'OpcodeVariants)
+%%                    ,(parameterlist (get u 'ARGNO))
+%%		 .,(reverse (get u 'LENGTHCASES))))
+%%  (eval (list 'pp v))
  (terpri)))
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -370,8 +374,8 @@ nil)
 (instr (TEQ *cond*)  (reg imm8-rotated)        OP-regn-imm8    *condbits* 2#0011001 1)
 (instr (CMP *cond*)  (reg reg-shifter)         OP-regn-shifter *condbits* 2#0001010 1)
 (instr (CMP *cond*)  (reg imm8-rotated)        OP-regn-imm8    *condbits* 2#0011010 1)
-(instr (CMPN *cond*) (reg reg reg-shifter)     OP-regn-shifter *condbits* 2#0001011 1)
-(instr (CMPN *cond*) (reg reg imm8-rotated)    OP-regn-imm8    *condbits* 2#0011011 1)
+(instr (CMN *cond*)  (reg reg-shifter)         OP-regn-shifter *condbits* 2#0001011 1)
+(instr (CMN *cond*)  (reg imm8-rotated)        OP-regn-imm8    *condbits* 2#0011011 1)
 (instr (ORR *cond* *set*)  (reg reg reg-shifter)     OP-reg-shifter  *condbits* 2#0001100 *set*)
 (instr (ORR *cond* *set*)  (reg reg imm8-rotated)    OP-reg-imm8     *condbits* 2#0011100 *set*)
 (instr (MOV *cond* *set*)  (reg reg-shifter)         OP-regd-shifter *condbits* 2#0001101 *set*)
@@ -473,6 +477,8 @@ nil)
 
 % LDR(B)T / STR(B)T -- only priviledged mode
 
+(instr (LDM *cond* *ldm-addr*)     (reg reglist writeback?)       OP-ldm-stm *condbits* 2#1000000 1)
+(instr (STM *cond* *ldm-addr*)     (reg reglist writeback?)       OP-ldm-stm *condbits* 2#1000000 0)
 (instr (LDM *cond* IA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000100 1)
 (instr (STM *cond* IA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000100 0)
 (instr (LDM *cond* IB)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1001100 1)

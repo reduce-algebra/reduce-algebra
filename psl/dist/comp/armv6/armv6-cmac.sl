@@ -5,6 +5,29 @@
 % Author:         Winfried Neun
 % Created:        Mai, 5, 2014
 % Mode:           Lisp
+% Status:       Open Source: BSD License
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
@@ -14,6 +37,8 @@
 
 (fluid '(AddressingUnitsPerItem CharactersPerWord StackDirection frameregs*
 	*usefastframe *ImmediateQuote AddressingUnitsPerFunctionCell))
+
+(global '(*writingasmfile))
 
 (loadtime (on ImmediateQuote))
 
@@ -43,8 +68,6 @@
 (de TwentySevenP (x)  (eq x 27))
 
 (de evenp (x) (and (fixp x) (eq 0 (land x 1))))
-
-(de indexedp (x) (eqcar x 'indexed))
 
 (de DeferrableP (Expression)
   (and (PairP Expression)
@@ -170,30 +193,20 @@
 
 %-----------------------------------------------------------------------------
 
-(de asmp () *writingasmfile)
+(de asmp (x) *writingasmfile)
 
 (DefCMacro *Call
        ((InternallyCallableP)  (bl (InternalEntry ArgOne)))
-	((asmp)   (ldr (reg t2) "SYMFNC")
-		  (ldr (reg t2) (displacement (reg t4) (times2 4 (idloc argone))))
-		  (*move (idloc argone) (reg t3))
-		  (brx (reg t1)))
-
-	(         (ldr (reg t1) (entryaddress argone))
-		  (mov  (reg t2) (displacement (reg 0) (idloc argone)))
-		  (brx (reg t1)))
+	(         (*move (idloc argone) (reg t3))
+		  (add (reg t2) (reg symfnc) (regshifted t2 LSL 2))
+		  (BL (reg t2)))
 )
 
 (DefCMacro *JCall
        ((InternallyCallableP)  (b (InternalEntry ArgOne)))
-	((asmp)   (ldr (reg r6) "SYMFNC")
-		  (ldr (reg r6) (displacement (reg r6) (times2 4 (idloc argone))))
-		  (*move (idloc argone) (reg t2))
-		  (blx (reg r6)))
-
-	(         (ldr (reg t4) (entryaddress argone))
-		  (mov  (reg t3) (displacement (reg 0) (idloc argone)))
-		  (blx always 0))
+	(         (*move (idloc argone) (reg t3))
+		  (add (reg t2) (reg symfnc) (regshifted t3 LSL 2))
+		  (BX (reg t2)))
 )
 
 (de quote-fix-p (x)
@@ -211,12 +224,10 @@
 
 (DefCMacro *Move
        (Equal)
-       ((regp regp)	    	 (orr ArgTwo ArgOne ArgOne))
-       ((short-immediate-p regp) (mov Argtwoo ArgOne))
-       ((indexedp regp)          (ldr ArgTwo ArgOne))
-       ((regp indexedp)          (str ArgOne ArgTwo))
-       ((regp anyp)              (*movex ArgOne ArgTwo))
-       ((anyp regp)              (*movex ArgOne ArgTwo))
+       ((regp regp)	    	 (MOV ArgTwo ArgOne))
+       ((imm8-rotatedp regp)     (mov Argtwo ArgOne))
+       ((regp anyp)              (str ArgOne ArgTwo))
+       ((anyp regp)              (ldr ArgTwo ArgOne))
        (                         (*move ArgOne (reg t5))
 				 (*move (reg t5) ArgTwo)))
 
@@ -315,14 +326,14 @@
 
 (DefCMacro *WPlus3
 	   ((regp regp regp) (add ArgOne ArgTwo ArgThree))
-	   ((regp short-immediate-p regp)
+	   ((regp imm8-rotatedp regp)
 		                (add ArgOne Argthree ArgTwo))
-	   ((regp regp short-immediate-p)
+	   ((regp regp imm8-rotatedp)
 		                (add ArgOne ArgTwo ArgThree ))
-	   ((regp short-immediate-p anyp)
+	   ((regp imm8-rotatedp anyp)
 		               (*move ArgThree (reg t5))
 		               (add ArgOne (reg t5) ArgTwo))
-	   ((regp anyp short-immediate-p)
+	   ((regp anyp imm-rotatedp)
 		               (*move ArgTwo (reg t5))
 		               (add ArgOne (reg t5) ArgThree))
 	   ((regp regp anyp)  (*move ArgThree (reg t5))
@@ -344,11 +355,11 @@
 % format ArgOne = ArgTwo - ArgThree
 
 (DefCMacro *Wdifference3
-	   ((regp regp regp) (sf ArgOne ArgThree ArgTwo))
-	   ((regp regp short-immediate-p)
-				(add ArgOne ArgTwo (minus ArgThree)))
+	   ((regp regp regp) (sub ArgOne ArgTwo ArgThree))
+	   ((regp regp imm8-rotatedp)
+				(sub ArgOne ArgTwo ArgThree))
 	   ((regp anyp regp) (*move ArgTwo (reg t5))
-		               (subArgOne ArgThree (reg t5) ))
+		               (sub ArgOne ArgThree (reg t5) ))
 	   ((regp anyp anyp)  (*move ArgTwo (reg t5))
 		               (*move ArgThree (reg t6))
 		               (sub ArgOne (reg t6) (reg t5)))
@@ -370,16 +381,14 @@
 % format ArgOne = ArgTwo * ArgThree
 
 (DefCMacro *wtimes3
-	   ((regp regp regp) (muls ArgOne ArgTwo Argthree))
-	   ((regp regp short-immediate-p)
-		             (muli ArgOne ArgTwo Argthree))
-	   ((regp short-immediate-p regp)
-		              (muli ArgOne Argthree ArgTwo))
+	   ((regp regp regp) (mul ArgOne ArgTwo ArgThree))
+	   ((regp anyp regp) (*move ArgTwo (reg t1))
+	                     (mul ArgOne (reg t1) Argthree))
 	   ((regp regp anyp) (*move argthree (reg t1))
 			     (*wtimes3 ArgOne ArgTwo (reg t1)))
 	   (        (*move ArgTwo (Reg t1))
 		    (*move ArgThree (reg t2))
-		    (muls (reg t1) (Reg t1) (reg t2))
+		    (mul (reg t1) (Reg t1) (reg t2))
 		    (*move (reg t1) ArgOne)))
  
 (defcmacro *wquotient)
@@ -425,18 +434,28 @@
 
 (de fixplusp (x) (and (fixp x) (not (minusp x))))
 
+(DefCMacro *asr
+    ((mov ArgOne (regshifted ArgTwo ASR ArgThree))))
+
+(DefCMacro *lsr
+    ((mov ArgOne (regshifted ArgTwo LSR ArgThree))))
+
+(DefCMacro *lsl
+    ((mov ArgOne (regshifted ArgTwo LSL ArgThree))))
+
 (DefCMacro *AShift
     ((AnyP ZeroP))
-    ((regp negp)     (srai ArgOne ArgOne (minus ArgTwo)))
-    ((regp fixplusp) (rlinm ArgOne ArgOne ArgTwo 0 (difference 31 argtwo)))
-    ((regp regp)     (cmp argtwo 0)
-		      (bge templabel)
-		      (Rsb (reg t6) ArgOne 0)
-		      (asr ArgOne ArgOne (reg t6))
-		      (b templabel2)
-		     templabel
-		      (lsl ArgOne ArgOne ArgTwo)
-		     templabel2)
+    ((regp negp)     (mov ArgOne (regshifted ArgOne ASR (minus ArgTwo)))
+    ((regp fixplusp) (mov ArgOne (regshifted ArgOne LSL ArgTwo)))
+    ((regp regp)     (cmp ArgTwo 0)
+                      (bge templabel)
+                      (rsb (reg t6) ArgOne 0)
+                      (*asr ArgOne ArgOne (reg t6))
+                      (b templabel2)
+                     templabel
+                      (*lsl ArgOne ArgOne ArgTwo)
+                     templabel2)
+
     ((regp anyp)     (*move ArgTwo (reg t5))
 		      (*ashift ArgOne (reg t5)))
     ((Anyp fixp)      (*move ArgOne (reg t5))
@@ -449,16 +468,16 @@
 
 
 (DefCMacro *WShift
-	((AnyP ZeroP))
-    ((regp negp)     (lsr ArgOne ArgOne ArgTwo))
-    ((regp fixplusp) (lsl ArgOne ArgOne ArgTwo))
+    ((AnyP ZeroP))
+    ((regp negp)     (*lsr ArgOne ArgOne ArgTwo))
+    ((regp fixplusp) (*lsl ArgOne ArgOne ArgTwo))
     ((regp regp)     (cmp argtwo 0)
 		      (bge templabel)
                       (rsb (reg r0) ArgTwo 0)
-		      (lsl ArgOne ArgOne (reg r0))
+		      (*lsl ArgOne Argone (reg r0))
                       (b templabel2)
                      templabel
-                      (lsl ArgOne ArgOne ArgTwo)
+                      (*lsl ArgOne ArgOne ArgTwo)
                      templabel2)
     ((regp anyp)     (*move ArgTwo (reg t5))
 		      (*wshift ArgOne (reg t5)))
@@ -471,6 +490,7 @@
 
 (DefCMacro *WNot
        ((regp regp)  (mvn ArgOne ArgTwo))
+       ((regp imm8-rotatedp) (mvn ArgOne ArgTwo))
        ((regp Anyp)  (*move ArgTwo ArgOne)
 		      (mvn ArgOne ArgOne))
        (	     (*move ArgTwo (reg t5))
@@ -478,21 +498,21 @@
 		      (*move (reg t5) ArgOne)))
 
 (DefCMacro *WMinus
-	((regp regp)  (sub ArgOne ArgTwo 0))
+	((regp regp)  (rsb ArgOne ArgTwo 0))
 	((regp Anyp)  (*move ArgTwo ArgOne)
-		      (rsb ArgOne ArgOne))
+		      (rsb ArgOne ArgOne 0))
 	(	      (*move ArgTwo (reg t5))
 	        	(*wminus (reg t5) (reg t5))
 			(*move (reg t5) ArgOne)))
 
 (DefCMacro *MkItem
-       ((regp fixp)	(*move argtwo (reg r0))
-			 (lsl (reg R0) 27 )
-                        ( and Argone argone -16777216)
-                         (orr  Argone (Reg r0)))
-       ((regp regp)	(and Argone argone -16777216)
-                         (lsl argtwo argtwo 27)
-                         (orr argone argtwo ))
+       ((regp fixp)	(MOV ArgOne (regshifted Argone LSL 5))
+                        (ORR ArgOne ArgOne (land ArgTwo 31))
+			(MOV ArgOne (regshifted ArgOne ROR 5)))
+       ((regp regp)	(and (reg t5) ArgOne 31)
+                        (MOV ArgOne (regshifted Argone LSL 5))
+			(ORR ArgOne ArgOne (reg t5))
+                        (MOV ArgOne (regshifted ArgOne ROR 5)))
        ((regp anyp)	(*move ArgTwo (reg t5))
 			 (*Mkitem ArgOne (reg t5)))
        (                (*move ArgOne (reg t1))
@@ -505,13 +525,13 @@
 
 (DefCmacro *tag
 %PPC% ((regp regp) (sriq ArgOne ArgTwo 27))
-      ((regp regp) (rlinm  ArgOne ArgTwo 5 27 31))
+      ((regp regp) (MOV ArgOne (regshifted ArgTwo LSL 27)))
 %PPC%      ((Anyp regp) (sriq (reg t1) ArgTwo 27)
-      ((Anyp regp) (rlinm (reg t1) ArgTwo 5 27 31)
+      ((Anyp regp) (MOV (reg t1) (regshifted ArgTwo LSL 27))
 		    (*move (reg t1) ArgOne))
-      ((regp anyp) (*move ArgTwo (reg t1))
+      ((regp anyp) (*move ArgTwo (reg t1)))
 %PPC% (sriq ArgOne (reg t1) 27))
-		    (rlinm ArgOne (reg t1) 5 27 31))
+		    (MOV ArgOne (regshifted (reg t1) LSL 27))
       (             (*move ArgTwo (reg t1))
 		    (*tag ArgOne (reg t1))))
 
@@ -528,30 +548,30 @@
 
 (DefCMacro *JumpInType
        ((regp Anyp) (*tag (reg t5) ArgOne)
-		     (cmpi 0 (reg t5) ArgTwo )
-		     (bc false GT ArgThree)
-		     (cmpi 0 (reg t5) 31) % negint-tag)
-		     (bc true eq ArgThree))
+		     (cmp (reg t5) ArgTwo )
+		     (bge  ArgThree)
+		     (cmp (reg t5) 31) % negint-tag)
+		     (beq ArgThree))
        (             (*move ArgOne (reg t5))
 		     (*tag (reg t6) (reg t5))
-		     (cmpi 0 (reg t6) ArgTwo)
-		     (bc false GT ArgThree)
-		     (cmpi 0 (reg t6) 31) % negint-tag
-		     (bc true eq ArgThree)))
+		     (cmp (reg t6) ArgTwo)
+		     (bge GT ArgThree)
+		     (cmp (reg t6) 31) % negint-tag
+		     (beq ArgThree)))
 
 (DefCMacro *JumpNotInType
        ((regp Anyp) (*tag (reg t5) ArgOne)
-		     (cmpi 0 (reg t5) 31) % negint-tag
-		     (bc true eq templabel)
-		     (cmpi 0 (reg t5) ArgTwo)
-		     (bc true gt ArgThree)
+		     (cmp (reg t5) 31) % negint-tag
+		     (beq templabel)
+		     (cmp (reg t5) ArgTwo)
+		     (bgt ArgThree)
 		    templabel)
        (             (*move ArgOne (reg t5))
 		     (*tag (reg t5) (reg t5))
-		     (cmpi 0 (reg t5) 31) % negint-tag
-		     (bc true eq templabel)
-		     (cmpi 0 (reg t5) ArgTwo)
-		     (bc true gt ArgThree)
+		     (cmp (reg t5) 31) % negint-tag
+		     (beq templabel)
+		     (cmp (reg t5) ArgTwo)
+		     (bgt ArgThree)
 		    templabel))
 
 %---------------------------------------------------------------------
@@ -559,23 +579,23 @@
 %   FORMAT: Operand1 Operand2 Address JumpOpCode
 
 (DefCMacro *JumpIf
-     ((regp regp)       (cmp 0 ArgOne ArgTwo)
-		         (bc ArgFour ArgFive ArgThree))
+     ((regp regp)       (cmp ArgOne ArgTwo)
+		         (ArgFour ArgThree))
      ((regp short-immediate-p) (cmpi 0 ArgOne ArgTwo)
-			 (bc ArgFour ArgFive ArgThree))
+			 (ArgFour ArgThree))
      ((regp anyp)       (*move ArgTwo (reg t5))
-		         (cmp 0 ArgOne (reg t5))
-		         (bc ArgFour ArgFive ArgThree))
+		         (cmp ArgOne (reg t5))
+		         (ArgFour ArgThree))
      ((anyp  regp)      (*move ArgOne (reg t5))
-		         (cmp 0 (reg t5) ArgTwo )
-		         (bc ArgFour ArgFive ArgThree))
+		         (cmp (reg t5) ArgTwo )
+		         (ArgFour ArgThree))
      ((anyp short-immediate-p) (*move ArgOne (reg t5))
-		         (cmpi 0 (reg t5) ArgTwo)
-		         (bc ArgFour ArgFive ArgThree))
+		         (cmp (reg t5) ArgTwo)
+		         (ArgFour ArgThree))
      (                   (*move ArgOne (reg t5))
 		         (*move ArgTwo (reg t4))
-		         (cmp 0 (reg t5) (reg t4))
-		         (bc ArgFour ArgFive ArgThree)))
+		         (cmp (reg t5) (reg t4))
+		         (ArgFour ArgThree)))
 
 (de *JumpIF (ArgOne ArgTwo Label Instruction cond)
   (prog (ResultingCode*)
@@ -589,32 +609,32 @@
 (defcmacro *jumpeq)
 
 (de *jumpeq (Lbl ArgOne ArgTwo)
-       (*jumpif ArgOne ArgTwo lbl 'true 'eq))
+       (*jumpif ArgOne ArgTwo lbl '(beq . beq)))
 
 (defcmacro *jumpnoteq)
 
 (de *jumpnoteq(Lbl ArgOne ArgTwo)
-	(*jumpif ArgOne ArgTwo lbl 'false 'eq))
+	(*jumpif ArgOne ArgTwo lbl '(bne . 'bne)))
 
 (defcmacro *jumpwlessp)
 
 (de *jumpwlessp (Lbl ArgOne ArgTwo)
-	(*jumpif ArgOne ArgTwo lbl 'true 'lt))
+	(*jumpif ArgOne ArgTwo lbl '(blt . bge)))
 
 (defcmacro *jumpwgreaterp)
 
 (de *jumpwgreaterp (Lbl ArgOne ArgTwo)
-	(*jumpif ArgOne ArgTwo lbl 'true 'gt))
+	(*jumpif ArgOne ArgTwo lbl '(bgt . ble)))
 
 (defcmacro *jumpwleq)
 
 (de  *jumpwleq(Lbl ArgOne ArgTwo)
-	(*jumpif ArgOne ArgTwo lbl 'false 'gt))
+	(*jumpif ArgOne ArgTwo lbl '(ble . bgt)))
 
 (defcmacro *jumpwgeq)
 
 (de *jumpwgeq (Lbl ArgOne ArgTwo)
-	(*jumpif ArgOne ArgTwo lbl 'false 'lt))
+	(*jumpif ArgOne ArgTwo lbl '(bge . blt)))
 
 % --------------------
 
@@ -636,12 +656,11 @@
 (DefCMacro *loc)
 
 (DefCMacro *Field
-  ((regp regp fixp fixp) (rlinm ArgOne ArgTwo (land 31 (plus Argthree Argfour))
-				(difference 32 argfour) 31))
+  ((regp regp fixp fixp) (*lsl ArgOne ArgTwo ArgThree)
+                         (*lsr ArgOne ArgOne (difference 32 ArgFour)))
   ((regp anyp fixp fixp) (*move ArgTwo (reg t5))
-		          (rlinm ArgOne (reg t5)
-				(land 31 (plus Argthree Argfour))
-		                (difference 32 argfour) 31))
+                         (*lsl ArgOne (reg t5) ArgThree)
+			 (*lsr ArgOne ArgOne (difference 32 ArgFour)))
   ((anyp regp fixp fixp) (*field (reg t5) ArgTwo ArgThree ArgFour)
 		          (*move (reg t5) ArgOne))
   (                      (*move ArgTwo (reg t6))
@@ -650,12 +669,11 @@
 
 (DefCMacro *SignedField
 
-  ((regp regp fixp fixp) (rlinm ArgOne ArgTwo Argthree 0 ArgFour)
-			  (srai ArgOne ArgOne (difference 32  Argfour)))
+  ((regp regp fixp fixp) (*lsl ArgOne ArgTwo ArgThree)
+                         (*asr ArgOne ArgOne (difference 32 ArgFour)))
   ((regp anyp fixp fixp) (*move ArgTwo (reg t5))
-		          (rlinm ArgOne (reg t5) Argthree  0 ArgFour )
-			  (srai ArgOne ArgOne 
-				(difference 32  Argfour )))
+		         (*lsl ArgOne (reg t5) ArgThree)
+			 (*asr ArgOne ArgOne (difference 32 ArgFour)))
   ((anyp regp fixp fixp) (*Signedfield (reg t5) ArgTwo ArgThree ArgFour)
 	 		  (*move (reg t5) ArgOne))
   (                      (*move ArgTwo (reg t6))
@@ -1095,11 +1113,11 @@ preload  (setq initload
 
 	    (setq x (nconc x `((*lbl (Label ,ll))) ))
 	    (return x)
-)  )  ))
+)  )  )
 
 (defcmacro !*jumpon)
 
-)))
+
 
 % Call foreign fns (loaded by oload) by putting SymFunc cell addr in a reg,
 % then doing "calls" instr indirect via the target address of the jmp
