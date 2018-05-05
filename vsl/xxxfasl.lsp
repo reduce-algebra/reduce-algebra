@@ -119,7 +119,8 @@
 (rdf "$pxc/fixup386.sl")  % The name here is worrying.
 
 (rdf "$pxnk/sys-faslin.sl")
-(rdf "$pxu/compat.sl")
+% (rdf "$pxu/compat.sl")    % HMMM worry re assoc expansion here
+(rdf "compat.sl")           % .. so use my private version
 
 (global '(totalbytes))
 

@@ -48,25 +48,6 @@
 #include "cslerror.h"
 #include "externs.h"
 #include "syscsl.h"
-
-namespace mersenne_twister
-{
-// The Mersenne-twister code defines functions with names and signatures
-// that exactly match various standard library routines, so I will wrap
-// both declarations and implementation in a namespace that keeps things
-// separated. Also the header file defined __STDC_LIMIT_MACROS and that can
-// lead to redefinition messages unless I mess about a bit. I had thought
-// of including this header before any of mine to avoid that trouble, but
-// then it includes <stdint.h> and <inttypes.h> with __STDC_LIMIT_MACROS
-// defined nicely, but not __STDC_FORMAT_MACROS. This is all a bit frustrating
-// in that those silly macros are just set here for backwards compatibility
-// and with modern C++ compilers they should be irrelevant!
-  #undef __STDC_LIMIT_MACROS
-  #include "mersenne-twister.h"
-  #undef __STDC_LIMIT_MACROS
-  #define __STDC_LIMIT_MACROS 1
-}
-
 #include "arith.h"
 #include "entries.h"
 #include "proc.h"

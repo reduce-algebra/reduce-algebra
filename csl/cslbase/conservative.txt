@@ -4,274 +4,163 @@
 
 This note is to help me while I design and implement one, and comments on
 changes from a previous world. This is a fresh version of these notes and
-is being starte din April 2016. The older version remains tagged on at the
-end.
+is being started in April 2016. I had done some redesign in October 2017, but
+the latest changes are from May 2018.
+
+The work discussed here is to arrange that CSL uses a mostly-copying
+conservative collector. The details are substantially tuned to the expected
+patterns of memory usage. Although the initial implementation will be
+single threaded the intent is to allow for a threaded system in the future.
+Following CST project work by Jamie Davenport I now intend to try for a
+design that is conservative, generational and somewhat threaded.
+
+Well the generational version will rely on having some form on write barrier,
+and I propose to implement that my temporarily marking heap pages as read-only.
+I can then trap write accesses and in the trap handler record the write (in a
+hash table) and reset memory permissions to read-write. On Linux this is
+use of mprotect and sigaction. On some platforms or configurations this
+may not be possible (for instance by reference to the Boehm conservative
+collector I am concerned that this strategy may not be compatible with
+a threaded version of BSD-family systems), and in such cases I will not be
+able provide a generational collector. 
+
+I will comment on the generational and threaded aspects first. Each thread
+will have three dedicated pages of memory, which will be used for nursery
+(a page) and school (two pages) generations. Beyond that all pages will be
+shared across all threads and so allocation in them will require the use of
+mutexes.
+Consing is first done in the nursery page. When that becomes full the whole
+world will be stopped (sorry about that) and every nursery page that is at
+least 75% full will be evacuated to its corresponding school page. I do that
+for all reasonably full pages to try to avoid triggering collections from
+different threads in close succession. The school region will eventually
+become full part way through doing the evacuation of a nursery page. When
+that happens I will evacuate the older of the two school pages into the
+general shared heap. The motivation there is that to be a candidate for
+migration to the general heap some data must have survived all the time it
+took to fill up the other school page, so maybe it is not VERY new.
+
+A big issue for a generational collector is references from old pages into
+new ones. I propose a scheme that will mark from more places that would
+really be ideal, but at least not from everywhere. At the end of each garbage
+collection all heap memory will be marked as read-only, but a signal handler
+will catch write accesses and tag a segment of memory that is written to in a
+map and reset it is read-write. Garbage collection of nursery and school pages
+will treat all static roots as roots (obviously), all the stack as (ambiguous)
+roots, and the contents of any part of the heap that has been written to as
+containing roots. Because the only bits of memory that I handle as "updated"
+live within the heap I can rely on all data within them being properly
+formatted so that I can identify references in a precise manner. What I do
+need to do is to be able to tell when one of those pointers refers into
+a nursery or school page.
 
 When I am given a value that might be a pointer I need to be able to
-tell if it is a pointer to the header of an item that could be alive.
-A special problem with this is a pointer into the middle of a huge
-vector of binary information: this is an issue because any the vector
-could contain arbitrary bit-patterns at any fixed addresses computed
-relative to the purported pointer.
+tell if it is a pointer to an item that could be alive. This issue is
+rendered just a little more delicate because compiler-generated temporary
+values might have had Lisp tag-bits stripped or may point into the
+middle of objects, but must neverthless be treated as referring to the
+object.
 
-Perhaps I should hope that there are few enough ambiguous roots that this
-is not really liable to be a huge performance issue. Let me have a page
-size (maybe 2M or 8M??) and organise most memory as chunks of that size
-allocated on boundaries that are multiples of that. I observe with some
-displeasure that (probably as a security measure) some systems make
-succesive allocations thoroughly non-consecutive and so doing multiple
-modest size calls to malloc is going to be a bad idea, and I should expect
-to see worst-case wastage because of malloc returning deliberately
-awkwardly aligned chunks. So maybe I will do malloc() in 128Mbyte chunks
-and then sub-allocate from that in 2Mbyte units.
+A good situation is that I will assume (or require!) that all global
+state is precise (ie holds properly tagged Lisp items), and so the only
+place where ambiguity can arise will be when I scan the stack (the one that
+C++ uses) as a collection of roots. Compared to everything else and
+except in the unusual case of extremely deep recursion this will represent
+a fairly small number of "ambiguous roots". So let me consider first how
+to check if an ambgiguous value seems to refer to a Lisp object.
 
-  bool validate_ambiguous_pointer(uintptr_t p)
-  {   uintptr_t page = p & ~(PAGE_SIZE-1);       // page start
-      size_t r = hash_lookup(&pagehash, page);
-      if (r == (size_t)(-1)) return false;
-      ...
-  }
-where hash_lookup is from my inhash.c implementation and performs at worst
-4 probes. This uses a hash table of all allocated pages, but that can have
-quite high occupancy and so is not that dreadfully much bigger than the
-using a simple linear table.
+I will arrange my storage allocation strategy to use fixed size pages.
+I will have two sorts of page. One holds fixed size objects. At one end
+it will hold CONS cells and any other items that are the same size. On
+a 64-bit system this will include double precision floats, Lisp vectors
+with only a single element, bignums that are only JUST bigger than a fixnum
+and strings with up to 8 characters. At the other end the items will be
+exactly twice that size, so there can be Lisp vectors with up to 3 elements,
+strings with up to 24 characters and bignums whose values can be up to around
+5*10^55 (ie 186 bits signed values). Rather simple mask operations make it
+possible to identify the location of the start of any object in such a page
+given a reference within it.
 
-The use of pages like that deals with small and medium sized objects quite
-nicely, but would tend to limit the size of the biggest legal object. I can
-perhaps allocate huge objects to dedicated blocks of consecutive pages. If
-I put ONLY the huge object in the multi-page cluster I could waste almost
-PAGE_SIZE in unused space. If when I allocate a huge object I place it
-so that it stats within the first page and ends at the end of the last one
-then I can use the remainder of the first page normally. Ambiguous pointers
-to the start of the object will still be coped with properly.
+The other case is the general one for objects that are larger. Every item
+in the page will have a header. It would be possible to identify the starts
+of objects by scanning the page from its start (since object size information
+in the headers would make it possible to skip over binary data). However that
+seems unduly expensive. A faster scheme could maintain a binary search tree
+for all the headers in the page. The space consumption of that seems
+unpaletable. At present my plan is to hold a bitmap such that every object
+header is identified it in. The space needed for that map is 1 bit for every
+16 bytes of data (ie 128 bits because I keep every item aligned on
+16 byte boundaries). Operations like "find first set bit" can be used on
+most computers so that scanning backwards from an ambiguous value could
+find the corresponding header in a time that involved a cost linear in the
+size of the object, but with very good scaling because of the opportunity to
+handle many bits as a time.
 
-Pages can be in one of several states:
-(1) A page that allocation is currently active in, so it contains some
-active data but some free space at the end. Thinking for the future I want
-it to be possible that there are several such on a one-per-thread basis.
-(2) Allocated in but now full.
-(3) An active block that will be followed by some "subsequent blocks"
-(4) In use as a "subsequent block" holding part of a large object.
-(5) Totally empty.
-(6) Mostly empty, but some potentially active items are present in it
-because they were pinned by ambiguous pointers at the time of a previous
-garbage collection.
-(7) As (6) but this is the first block of a run so this is followed by
-one or more type (4) blocks.  
+Each of the above cases means that if one can identify the page that an
+ambiguous value refers to and which of the three page types is involved it
+will be easy to find the start of any object that the value should be
+treated as identifying.
 
-Pages of type (4) do not have space for any administrative data within them
-at all. All other sorts can have a header at the start and then a bitmap
-region.
+Let each page have size PAGE_SIZE (which will be a power of 2 - at present
+I am thinking of using 8 Mbytes). Then if p holds an ambigiuous value
+I can hope that q = (p & (PAGE_SIZE-1)) has the correct granularity to help
+me identify the right page. If I could arrange that all pages were allocated
+alligned as per their size I would not have anything at all more to do.
+However forcing that seems inconvenient and potentially involved wasteful
+padding space. So I will make no assumptions about the alignment of pages or
+regarding whether they are laid out contiguous - I will merely expect that
+none of them overlap. The consequence will be that the masked value (q)
+may need to identify two pages, one relevant for high addresses within the
+range it spans and the other for low.
 
-When a page is considered for release it is necessary to check if
-any items within it are pinned. If so it normally goes to type (6). If
-if is type (3) then if the large items at its end was pinned then it has to
-turn into type (7), otherwise it can go into type (6) or type (5) as
-appropriate. 
+I will use a hash table to identify pages from addresses. For each
+page I mask both its first and its last address with PAGE_SIZE-1 and
+use that as a key to the hash table, storing the page base. Well with that
+scheme it is possible to have two pages such that the key to the top
+address of the first one is the same as the key the the bottom address of
+the other. To cope with that I will store (up to) two values in the table
+corresponding to any given key.
 
-When any page is put into type (5) a check can be made of the addresses both
-PAGE_SIZE above and below it. If one or both of them are valid block and
-they are alread type (5) then they should be collected so there is a
-record of fully free consecutive blocks. This can be used on a first-fit
-basis when wanting to allocate new big blocks.
+The space for this is really very modest. On a 64-bit system and supposing
+I keep the hash table at most half full I use 32 bytes for each 8 Mbyte
+page... this basically trivial.
 
-Haha - let me try this as the way of recording free pages. There will be
-a number of blocks of consecutive pages. Each such block is linked to
-the other blocks using double-linked lists (ie pointers both forward and
-backwards). Each page contains the offset from its start to the final page
-in the block. The final page contains a back-reference to the first one
-in the block.
-There can be three chains of blocks. One is for individual pages that
-have some pinned data within them. The next is for individual pages that
-are totally empty. The final one is for blocks make up of multiple
-consecutive empty pages.
+Now to look up an ambiguous value I mask it and perform a hash table look-up.
+If the two values stored in the hash table are r1 and r2 I check for a match
+by seeing if the value I was looking up was in the range r1:r1+PAGE_SIZE or
+r2:r2+PAGE_SIZE. If it is not I need to step on to the next hash probe, and
+obviuosly if I encounter an empty slot in the table then the ambiguous
+value was not a valid pointer. If the pointer is valid then I will identify
+either r1 or r2 as its page, and can then find the item in the page that is
+relevant.
 
-Allocating a new single block takes from the first of these chains it can.
-if it has to take from the last one it uses the first page of a block, and
-it has to update the last page of that block, but it does not have to
-touch any of the ones in between. Allocating a single page has O(1) cost.
+I now introduce the concept of "pinned" data. When an ambiguous pointer
+identifies an item within a page that item becomes pinned - a state which
+means it must not be moved. Each page will have a bitmap that is used to
+mark pinned items. This bitmap will consume one bit for every 128 bits of
+useful data, so it is not a severe worry. At various stages this bitmap will
+have to be scanned or cleared, but again its size is only around 1% of the
+size of the real data. I am going to allow pages to contain just a sprinkling
+of pinned data - this is in contrast to policies that are perhaps more common
+where when a page is the target of any ambiguous pointer the entire page
+is kept "promoted" or pinned.
 
-Allocating a consecutive sequence only looks in the third chain, and on
-a first fit basis it can find a block that is big enough. Once that is done
-the rest of the tidting up is O(1). Fragmentation can cause the allocation
-to fail.
+My main collector will be based on a straightforward copying one, so some
+pages will represent the "old space" containing existing live data and
+others will be "new space" to which data is evacuated. The introduction of
+conservatism leads to having pinned items in both old and new spaces. Dealing
+with them is a major part of this design. Perhaps the starting point is that
+storage allocation within a page can be done almost as it was before, except
+that special action will need to be taken when allocation reaches any pinned
+object. The practicality there is that pages will need to contain chains
+that identify each pinned object. In effect instead of being treated (for
+future allocation purposes) as a single block the page will be treated as
+a sequence of regions (each separated by pinned data).
 
-If a pages is freed I think that consolidating with adjacent pages is also
-a O(1) task.
-
-
-
-
-
-========================== previous version =============================
-
-(a) I can do an existing-style garbage collection during PRESERVE since
-at that stage there ought not to be any stack to mark. Thus I can guarantee
-that saved heaps will be fully compacted. Well in such cases I need just
-a bit more - I should ensure that the new space that I copy to does not
-contain any items that had been relocatable during the previous GC. If I am
-tight on space and this is not easy then I may need to do two garbage
-collections to guarantee that I end up with a fully compacted heap to save.
-
-(b) For conservative GC I should abandon the old mark-slide compacting
-collector and only ever use stop-and-copy. The effect is that if you only
-have tightly limited memory space you do not get as far. This could be held
-to be bad for people who run on a 32-bit machine and want over 1 Gbyte of
-active heap data. I propose to take the line that they need to use the
-new conservative system on a 64-bit system. But I should keep the existing
-world supported for some while as well (as a seperate executable, but
-probably able to use the same image files) so that they are not utterly
-messed about.
-
-(c) The only ambiguous bases I need to fuss about are on the C stack. All
-other refs can be taken as fully valid.
-
-(d) The new GC strategy will be:
-    (d.1) For each ambiguous base, look at content. If it does not refer to
-          heap data that I had previously allocated ignore it. Otherwise
-          tag that data as immovable. [for CONS cells, symbol-heads and
-          I think that a mark bit in the second word might serve? For vectors
-          I can mark the header. I need to be careful about ambiguity against
-          states that arise normally during GC but that are odd! I can
-          identify CONS and symbol validity by a reference into a typed page
-          with a good offset and sane content if I full unused parts of
-          pages with a value not legal in used data (eg some sort of SPID?).
-          For lisp vectors I hope that the header word is a valid test for
-          a good reference (again unused space in the page must not look
-          like header data so needs clearing). For binary and mixed vectors
-          I may need a per-page bitmap.] Set a flag for any page that has
-          immovable data on it.
-          Perhaps putting symbols and all sorts of vectors in a page with
-          a bitmap to identify headers will be easier! And if I have one bit
-          in the map per 32 bits in the page then this will give me the
-          same scheme for 32 and 64-bit machines.  Hmmm simplification!
-    (d.2) Note that I must not start copying ANYTHING until I have identified
-          everything that must be treated as immovable. Items tagged immovable
-          must never move! Run the normal copying GC except that when an
-          immovable item is reached it is just left in place. At some stage
-          re-scan the ambiguous bases and copy items that are referred to from
-          immovable items. Note that this means that the identification of
-          valid ambigious pointers has to happen during copying as well as
-          before, and this may add further limits to how tag bits must be
-          used. Any immovable item must have its contents copied exactly
-          once, so I need to be able to mark as "fixed" and also as "fixed
-          but processed".
-    (d.3) Any page that was NOT flagged as holding immovable data can be
-          put in a general free pool at once. It probably does not need
-          cleaning (but when a page is taken from a pool ready for use it
-          probably does). Pages that contain immovable stuff haveto remain the
-          same type. They have to have a linear scan to clean the parts no
-          longer in use while preserving the valid stuff, and to set up a
-          free-map for subsequent allocation. Shuffle things so that
-          after the GC allocation of that type of data happens first from
-          dirty pages.
-    (d.4) Trigger the next GC while there are still enough free pages
-          (including dirty ones, that should be accounted at a discount rate)
-          that one can be confident of being able to complete the copy.
-          In all realistic cases in fact after GC only a small proportion of
-          potential heap is in use, and so usually the "half" as in half-space
-          is way to pessimistic! Observe that there can be unrelocatable
-          items pre-allocated in otherwise free pages.
-    (d.5) Would it be worth setting up a has table of ambiguous pointers
-          early in the GC to avoid need for any costly analysis to be
-          repeated on identical values? If so how big would that table need
-          to be and how could one cope with overflow?
-    (d.6) A dirty page has a (few?) immovable items in it. Treat it as
-          a sequence of minipages each of which is a consecutive free
-          block of memory, and expect these to be large. Then allocation of
-          new stuff can be sequential but can stop at the end of the
-          minipage and skip over the unrelocatable item then. My guess is that
-          the effect will be low extra costs compared to the current scheme.
-
-Tagging during the GC
-
-m..z000    reference to a cons cell
-x..m001    a fixnum
-x..m010    "odds". Bottom 8 bits indicates exact type, eg header
-x..m011    short float
-m..z100    symbol
-m..z101    "numbers" eg pointer to bignum or complex. 1..x1xxx bits as usual
-m..z110    vector of some sort
-m..z111    regular boxed float
-
-m is the GC bit used to mark this cell. z must be zero on a 64-bit machine
-but may be 1 on a 32-bit one. But for symbols, numbers, vectors and boxfloats
-I can use a bitmap to decide if I am pointing at a valid header.
-For cons cells I will need to check that the CAR field does not contain
-a value that flags the item as not in use (some sort of SPID I expect).
-
-During the GC objects themselves get marked. The situation will be different
-for each sort of object.  I will use the notation x for a cell that is
-not tagged as above, and X for one that is.
-
-Cons cells: Before GC a cons cell is xx (obviously!). When the cell has been
-copied it is left as Xx with the X a forwarding address, which is necessarily
-a reference to a cons. The cell is initially copied into the new space
-unaltered as a fresh xx. Cons cells are allocated downwards from the top of
-the new heap page. When a page is finally filled a tag SPID_GCMARK is
-placed at its end. Newly copied stuff is scanned so that sub-structure gets
-copied in due course, but that does not involve any extra tag or mark bits.
-Ambigouos refs to cons cells can be handled as follows. An initial pass
-of the ambiguous bases sets each cons that it finds to xX. Once all ambiguous
-bases have been pre-tagged a second scan of them can call copy on the two
-fields, leaving them tagged xX. At the end of GC a final scan resets
-unrelocated items back to xx. Wheneverthe copy process finds a cons it of
-course checks to see if it is Xx and so has been copied already - but in this
-new case it also needs to check for xX to see if it shoudd be left unmoved.
-Note - I could use XX not xX to tag an immovable cons, and just what I do
-can be decided on the basis of looking to see which branch of the code would
-be the cheaper one to put the test for ?X into.
-
-Odds/BPS: one special case off otherwise immediate data needs attention. A
-reference to (bytecoded) binary code is packed in a curious way. However its
-treatment will be parallel to that for strings and bignums. An oddity here is
-that the packing used for BPS references puts a limit on the amount of
-bytecoded stuff that can be addressed, but I take the view that the bytecode
-representation is so compact that that would never be an awkward limit in
-any even vaguely realistic situation. And if it was I could re-work it for
-64-bit machines to in effect remove the limit.
-
-Fixnum, odds, short-float: the GC never changes these anyway and so for the
-purposes of ambiguous bases they just get treated as "not a pointer" and hence
-"nothing to worry about". Note however the BPS issue as above.
-
-Vectors that only contain binary data: this includes strings and bignums
-and boxed floats, and so it is actually a quite common case. And observe that
-bytecoded things fall in this category too. Between garbage collections a
-vector has a header word at its start. The pre-pass for ambiguous pointers can
-just set the mark bit in the header word. Ie the header will be of the
-for x...1010. Normally when the copy phase sees a vector it will write
-a reference to the relocated vector into that header word. It writes it
-without any special tag bits, and the presense of a non-header identifies
-the object as having been visited. A past-pass on ambiguous pointers must
-reset the marked headers.
-
-
-Symbols, vectors that contain lists, mixed vectors: these actually seem to
-be handled just the same way as vectors containing binary, except that there
-must be a scan of ambiguous pointers that copies all vector content.
-
-So in top-level outline there are 3 scans of ambiguous bases:
-(1) tag addresses as immovable;
-(2) copy contents of whatever the immovable thing was;
-<at this stage one then copies startin from all the safe list bases>
-(3) untag immovable data.
-and I think that this means that I need to have unambiguous lists of
-ambiguous pointers(!). If I just walk down the stack I might be twitchy
-that the walk could cover some part of the stack that was in use by the
-GC itself and so could change as I went. To avoid that as well as to
-(slightly) speed things up I will walk the stack from the top down, and to
-start with I will test if a value seems like a pointer and if so stick it in
-a fixed size array. If I am lucky this fixed array will end up holding all
-values that I need to trace! And I can use if in each of (1), (2) and (3).
-If I am unlucky my stack will be very deep and many of the values on it
-will appear to be Lisp values, and so I will completely fill the fixed
-table. If I do I can save the pointer into the stack where the first value
-beyond that that seemed pointerish lived, and do a the pointer validation
-on each item from there to the stack base during each of my 3 phases.
-Observation of how Reduce runs suggests that if my table were to hold
-say 4000 entries it would almost always suffice, and 2000 would do nearly as
-well. It is possible that a table of size 2000 set up as a hash table so
-that duplicate values only get stored once would be a yet better idea.
+The collector can then work as follows:
+(1) ... ... ... <to be completed>
+[Note that I had a working conservative collector in "vslplus.cpp",
+a spin-off from vsl.c, some while ago. I need to review what I did there
+and migrate an explanation to here!]
 
 

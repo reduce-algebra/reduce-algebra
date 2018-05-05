@@ -1104,25 +1104,40 @@ static LispObject Lrationalize(LispObject env, LispObject a)
 }
 
 //
-// I now use a Mersenne Twister pseudo-random generator. The one included
-// here was coded by Written by Christian Stigen Larsen who has a web-site
-// at http://csl.name, and I view it is a superb coincidence that his initials
-// and hence his web address echo the name of this Lisp. However he and his
-// work is independent of the CSL Lisp system!
+// I use a Mersenne Twister pseudo-random generator from the C++11 library.
+
+static std::random_device genuine_random;
+
+static unsigned int my_genuine_random()
+{   if (genuine_random.entropy() != 0) return genuine_random();
+// random_device may, on some platforms, NOT be able to generate truly
+// unpredictable results. If it is in fact just pseudo-random C++ guarantees
+// that entropy() will return zero here. In that case I will combine
+// thread identity, real wallclock time and the higest resolution CPU time
+// I can to provide myself with a seed.
+    size_t h1 = std::hash<std::thread::id>()(std::this_thread::get_id());
+    size_t h2 = (size_t)time(NULL);
+    size_t h3 = std::chrono::high_resolution_clock::
+                                        now().time_since_epoch().count();
+    return (h1*UINT64_C(1415926535897932385) +
+            h2*UINT64_C(7182818284590452354) +
+            h3*UINT64_C(4142135623730950488)) >> 32;
+}
+
+static std::mt19937 mersenne_twister(my_genuine_random());
 
 uint32_t Crand()
-{   return mersenne_twister::rand_u32();
+{   return mersenne_twister();
 }
 
 // If the user specifies a random number seed of zero I will try to
 // start things in as unpredictable a state as I reasonably can.
-// or both Windows, Linux and the Macintosh I can get the operating
-// system to provide some level of cryptographically secure starting
-// point.
+// The security of "genuine random values" here depends on the quality of the
+// C++ implementation.
 
 void Csrand(uint32_t seed)
-{   if (seed == 0) mersenne_twister::ssrandom();
-    else mersenne_twister::seed(seed);
+{   if (seed == 0) mersenne_twister.seed(my_genuine_random());
+    else mersenne_twister.seed(seed);
 }
 
 LispObject Lrandom_2(LispObject env, LispObject a, LispObject bb)

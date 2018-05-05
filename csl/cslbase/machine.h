@@ -1,4 +1,4 @@
-// machine.h                               Copyright (C) 1990-2017 Codemist
+// machine.h                               Copyright (C) 1990-2018 Codemist
 
 //
 // This was ONCE a place where all system-specific options were detected
@@ -14,7 +14,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -123,7 +123,6 @@
 #ifdef WIN32
 
 #include <winsock.h>
-#include <semaphore.h>
 #include <windows.h>
 
 #else // WIN32
@@ -146,14 +145,17 @@
 #  define INADDR_NONE       0xffffffff
 #endif
 
-#ifdef HAVE_LIBPTHREAD
-#include <semaphore.h>
-#include <pthread.h>
-#endif
-
 #endif //WIN32
 
+// I should possibly migrate to use of <iostream> rather than <stdio.h>,
+// but doing so will involve changes across rather a latge swathe of the
+// code!
 #include <stdio.h>
+// Similarly I should probably go either "#include <cstdlib>" or just
+// "#include <stdlib>" and in general migrate to be "more C++ than C"
+// with regard to all libraries. Maybe the main issue there will be that
+// I will need to fuss about namespaces at least a bit. That could be sensible
+// anyway!
 #include <stdlib.h>
 #include <stddef.h>
 #include <math.h>
@@ -171,6 +173,14 @@
 #include <exception>
 #include <errno.h>
 #include <assert.h>
+
+// As of May 2018 I will rely in C++11 for random number and thread support...
+
+#include <random>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
@@ -243,43 +253,6 @@ extern "C"
 #     define OPSYS           "Unknown"
 #     define IMPNAME         "Generic"
 #  endif
-#endif
-
-// C++ does not guarantee that intptr_t is provided, so I patch around
-// that if necessary.
-
-#if !defined HAVE_INTPTR_T && (SIZEOF_VOID_P == 4)
-typedef int32_t intptr_t;
-#define INTPTR_MAX INT32_MAX
-#define INTPTR_MIN INT32_MIN
-#define HAVE_INTPTR_T 1
-#endif
-
-#if !defined HAVE_INTPTR_T && (SIZEOF_VOID_P == 8)
-typedef int64_t intptr_t;
-#define HAVE_INTPTR_T 1
-#endif
-
-#if !defined HAVE_UINTPTR_T && (SIZEOF_VOID_P == 4)
-typedef uint32_t uintptr_t;
-#define HAVE_UINTPTR_T 1
-#endif
-
-#if !defined HAVE_UINTPTR_T && (SIZEOF_VOID_P == 8)
-typedef uint64_t uintptr_t;
-#define HAVE_UINTPTR_T 1
-#endif
-
-#ifndef UINTPTR_MAX
-#define UINTPTR_MAX ((uintptr_t)(-1))
-#endif
-
-#ifndef INTPTR_MAX
-#define INTPTR_MAX ((intptr_t)((UINTPTR_MAX-1)/2))
-#endif
-
-#ifndef INTPTR_MIN
-#define INTPTR_MIN (-1-INTPTR_MAX)
 #endif
 
 // The C and C++ refuse to define the behaviour of right shifts

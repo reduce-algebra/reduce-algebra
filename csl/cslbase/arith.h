@@ -508,38 +508,18 @@ extern Complex Cexp(Complex a);
 extern Complex Cpow(Complex a, Complex b);
 extern double Cabs(Complex a);
 
-#if defined HAVE_LIBPTHREAD || defined WIN32
+// For the parallel variant on Karatsuba I need thread support...
 
-//
-// For the parallel variant on Karatsuba I need thread support and
-// semaphores.
-//
+#ifndef HAVE_CILK
 
-#ifdef WIN32
+extern std::thread kara_thread1, kara_thread2;
+extern void kara_worker();
 
-extern HANDLE kara_thread1, kara_thread2;
-#define KARARESULT DWORD
-#define KARAARG    LPVOID
-extern KARARESULT WINAPI kara_worker1(KARAARG p);
-extern KARARESULT WINAPI kara_worker2(KARAARG p);
+extern std::mutex kara_mutex;
+extern std::condition_variable cv_kara_ready, cv_kara_done;
+extern int kara_ready;
+extern int kara_done;
 
-#else
-
-extern pthread_t kara_thread1, kara_thread2;
-#define KARARESULT void *
-#define KARAARG    void *
-#define WINAPI
-extern KARARESULT kara_worker1(KARAARG p);
-extern KARARESULT kara_worker2(KARAARG p);
-
-#endif
-
-#ifdef MACINTOSH
-extern sem_t *kara_sem1a, *kara_sem1b, *kara_sem1c,
-       *kara_sem2a, *kara_sem2b, *kara_sem2c;
-#else
-extern sem_t kara_sem1a, kara_sem1b, kara_sem1c,
-       kara_sem2a, kara_sem2b, kara_sem2c;
 #endif
 
 extern size_t karatsuba_parallel;
@@ -554,8 +534,6 @@ extern size_t karatsuba_parallel;
 #ifndef KARATSUBA_PARALLEL_CUTOFF
 #  define KARATSUBA_PARALLEL_CUTOFF 120
 #endif
-
-#endif // Thread support
 
 #ifndef KARATSUBA_CUTOFF
 //

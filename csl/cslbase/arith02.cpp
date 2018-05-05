@@ -497,8 +497,6 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 //
 }
 
-#if defined HAVE_LIBPTHREAD || defined WIN32
-
 //
 // If I have big enough numbers I will decompose in Karatsuba style and
 // perform the three top-level multiplications in parallel using some threads
@@ -508,11 +506,21 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 // processor. To that effect the variable karatsuba_parallel is set either to
 // the cut-off or to a value so huge that this code will never be activated.
 //
-// The two threads kara_worker1 and kara_worker2 just sit and wait for
+// The two threads that run kara_worker just sit and wait for
 // requests. When they get one they call long_times. Memory allocation etc
 // has all been done elsewhere. These threads never terminate, and so will
 // end up being killed when the whole program exits.
 //
+// A previous version of this code used Windows native threads on Windows and
+// pthreads elsewhere, with different synchronization code not just as between
+// those case but also between Linux and Macintosh. I now use the C++11
+// threading primitives which makes the code much more uniform. And I have
+// also gained better (albeit still basic!) understanding of multi-core
+// programming and so this time I use condition variables rather than an
+// indordinate number of semaphores. However there is still some conditional
+// compilation in the code here. If the "CILK" parallel framework is present
+// that will be used, which provides a yet higher level way of expressing
+// all that is needed.
 
 //
 //   Karatsuba memory:
@@ -592,215 +600,46 @@ static void long_times1(uint32_t *c, uint32_t *a, uint32_t *b,
 //   DONE!
 //
 
-#ifdef DEBUG_PARALLEL_KARATSUBA
-
-static void shownum(FILE *log, uint32_t *p, int n, const char *s)
-{   int32_t i, k, d, some = 0;
-    fprintf(log, "%s:", s);
-    k = 31*n;  // Number of bits
-    d = 0;
-    for (i=n-1; i>=0; i--)
-    {   int word = p[i];
-        int b;
-        for (b=0; b<31; b++)
-        {   d = d << 1;
-            k--;
-            if ((word & 0x40000000) != 0) d |= 1;
-            if ((k & 3) == 0)
-            {   if (d!=0 || some || (i==0 && b!=30))
-                {   fprintf(log, "%.1x", d);
-                    some = 1;
-                }
-                d = 0;
-            }
-            word = word << 1;
-        }
-    }
-    fprintf(log, "\n");
-    fflush(log);
-}
-
-#else
-#define shownum(log, p, n, s) // Nothing
-#endif
-
-#ifndef WITH_CILK
-#ifdef MACINTOSH
-sem_t *kara_sem1a, *kara_sem1b, *kara_sem1c,
-      *kara_sem2a, *kara_sem2b, *kara_sem2c;
-#else
-sem_t kara_sem1a, kara_sem1b, kara_sem1c,
-      kara_sem2a, kara_sem2b, kara_sem2c;
-#endif
-#endif // ! WITH_CILK
+static uint32_t *kara_0_c, *kara_0_a, *kara_0_b, *kara_0_d;
+static uint32_t kara_0_lena, kara_0_lenb, kara_0_lenc;
 
 static uint32_t *kara_1_c, *kara_1_a, *kara_1_b, *kara_1_d;
 static uint32_t kara_1_lena, kara_1_lenb, kara_1_lenc;
 
 #ifndef WITH_CILK
 
-KARARESULT WINAPI kara_worker1(KARAARG p)
+void kara_worker()
 {
-#ifdef DEBUG_PARALLEL_KARATSUBA
-    FILE *log = fopen("worker1.log", "w");
-    fprintf(log, "Start of worker1.log\n");
-    fflush(log);
-#endif
     for (;;)
-    {
-//
-// The handshake here uses three semaphores. Well the counting behaviour
-// of semaphore is not used, they are each either owned or free (rather like
-// a simple mutex). They have to be semaphores rather than mutexes because
-// at least on some platforms the system provided mutex has an "owner" thread
-// and can not be released by any thread other than the one that claimed it.
-// Each transaction with this worker involves just two post/wait pairs - one
-// to tell the worker that there is something for it to do and the second
-// to report that a result is available. The use of three semaphores in a
-// cyclic pattern as here is to avoid race conditions. Note that a call
-// to sem_wait could be interrupted by an signal. If that happens I will
-// fall out of step and that would be bad. So I loop on the sem_wait until
-// it returns zero.
-//
-#ifdef MACINTOSH
-        while (sem_wait(kara_sem1a) != 0)
-            /*NOTHING*/;   // wait until asked to do something
-#else
-        while (sem_wait(&kara_sem1a) != 0)
-            /*NOTHING*/;  // wait until asked to do something
-#endif
-        shownum(log, kara_1_a, kara_1_lena, "kara 1 a");
-        shownum(log, kara_1_b, kara_1_lenb, "kara 1 b");
-        if (kara_1_lenc != 0)
-            long_times(kara_1_c, kara_1_a, kara_1_b, kara_1_d,
-                       kara_1_lena, kara_1_lenb, kara_1_lenc);
-        shownum(log, kara_1_c, kara_1_lenc, "kara 1 result");
-#ifdef MACINTOSH
-        sem_post(kara_sem1b);   // announce that result is ready.
-#else
-        sem_post(&kara_sem1b);  // announce that result is ready.
-#endif
-
-#ifdef MACINTOSH
-        while (sem_wait(kara_sem1c) != 0)
-            /*NOTHING*/;   // wait until asked to do something
-#else
-        while (sem_wait(&kara_sem1c) != 0)
-            /*NOTHING*/;  // wait until asked to do something
-#endif
-        shownum(log, kara_1_a, kara_1_lena, "kara 1 a");
-        shownum(log, kara_1_b, kara_1_lenb, "kara 1 b");
-        if (kara_1_lenc != 0)
-            long_times(kara_1_c, kara_1_a, kara_1_b, kara_1_d,
-                       kara_1_lena, kara_1_lenb, kara_1_lenc);
-        shownum(log, kara_1_c, kara_1_lenc, "kara 1 result");
-#ifdef MACINTOSH
-        sem_post(kara_sem1a);   // announce that result is ready.
-#else
-        sem_post(&kara_sem1a);  // announce that result is ready.
-#endif
-
-#ifdef MACINTOSH
-        while (sem_wait(kara_sem1b) != 0)
-            /*NOTHING*/;   // wait until asked to do something
-#else
-        while (sem_wait(&kara_sem1b) != 0)
-            /*NOTHING*/;  // wait until asked to do something
-#endif
-        shownum(log, kara_1_a, kara_1_lena, "kara 1 a");
-        shownum(log, kara_1_b, kara_1_lenb, "kara 1 b");
-        if (kara_1_lenc != 0)
-            long_times(kara_1_c, kara_1_a, kara_1_b, kara_1_d,
-                       kara_1_lena, kara_1_lenb, kara_1_lenc);
-        shownum(log, kara_1_c, kara_1_lenc, "kara 1 result");
-#ifdef MACINTOSH
-        sem_post(kara_sem1c);   // announce that result is ready.
-#else
-        sem_post(&kara_sem1c);  // announce that result is ready.
-#endif
+    {   int my_id;
+// Wait until there is work to be done.
+        {   std::unique_lock<std::mutex> lk(kara_mutex);
+            cv_kara_ready.wait(lk, []{return (kara_ready != 0);});
+            if (kara_ready < 0) return; // end of run!
+            my_id = --kara_ready;
+        }
+// Do the work.
+        if (my_id == 0)
+        {   if (kara_0_lenc != 0)
+                long_times(kara_0_c, kara_0_a, kara_0_b, kara_0_d,
+                           kara_0_lena, kara_0_lenb, kara_0_lenc);
+        }
+        else
+        {   if (kara_1_lenc != 0)
+                long_times(kara_1_c, kara_1_a, kara_1_b, kara_1_d,
+                           kara_1_lena, kara_1_lenb, kara_1_lenc);
+        }
+// Inform the master thread that it may continue.
+        {   std::lock_guard<std::mutex> lk(kara_mutex);
+            kara_done++;
+        }
+        cv_kara_done.notify_one();
     }
-// The code here never exits!
-    return (KARARESULT)0;
+    return;
 }
 
 #endif // ! WITH_CILK
-static uint32_t *kara_2_c, *kara_2_a, *kara_2_b, *kara_2_d;
-static uint32_t kara_2_lena, kara_2_lenb, kara_2_lenc;
 
-#ifndef WITH_CILK
-KARARESULT WINAPI kara_worker2(KARAARG p)
-{
-#ifdef DEBUG_PARALLEL_KARATSUBA
-    FILE *log = fopen("worker2.log", "w");
-    fprintf(log, "Start of worker2.log\n");
-    fflush(log);
-#endif
-    for (;;)
-    {
-#ifdef MACINTOSH
-        while (sem_wait(kara_sem2a) != 0)
-            /*NOTHING*/;   // wait until asked to do something
-#else
-        while (sem_wait(&kara_sem2a) != 0)
-            /*NOTHING*/;  // wait until asked to do something
-#endif
-        shownum(log, kara_2_a, kara_2_lena, "kara 2 a");
-        shownum(log, kara_2_b, kara_2_lenb, "kara 2 b");
-        if (kara_2_lenc != 0)
-            long_times(kara_2_c, kara_2_a, kara_2_b, kara_2_d,
-                       kara_2_lena, kara_2_lenb, kara_2_lenc);
-        shownum(log, kara_2_c, kara_2_lenc, "kara 2 result");
-#ifdef MACINTOSH
-        sem_post(kara_sem2b);   // announce that result is ready.
-#else
-        sem_post(&kara_sem2b);  // announce that result is ready.
-#endif
-
-#ifdef MACINTOSH
-        while (sem_wait(kara_sem2c) != 0)
-            /*NOTHING*/;   // wait until asked to do something
-#else
-        while (sem_wait(&kara_sem2c) != 0)
-            /*NOTHING*/;  // wait until asked to do something
-#endif
-        shownum(log, kara_2_a, kara_2_lena, "kara 2 a");
-        shownum(log, kara_2_b, kara_2_lenb, "kara 2 b");
-        if (kara_2_lenc != 0)
-            long_times(kara_2_c, kara_2_a, kara_2_b, kara_2_d,
-                       kara_2_lena, kara_2_lenb, kara_2_lenc);
-        shownum(log, kara_2_c, kara_2_lenc, "kara 2 result");
-#ifdef MACINTOSH
-        sem_post(kara_sem2a);   // announce that result is ready.
-#else
-        sem_post(&kara_sem2a);  // announce that result is ready.
-#endif
-
-#ifdef MACINTOSH
-        while (sem_wait(kara_sem2b) != 0)
-            /*NOTHING*/;   // wait until asked to do something
-#else
-        while (sem_wait(&kara_sem2b) != 0)
-            /*NOTHING*/;  // wait until asked to do something
-#endif
-        shownum(log, kara_2_a, kara_2_lena, "kara 2 a");
-        shownum(log, kara_2_b, kara_2_lenb, "kara 2 b");
-        if (kara_2_lenc != 0)
-            long_times(kara_2_c, kara_2_a, kara_2_b, kara_2_d,
-                       kara_2_lena, kara_2_lenb, kara_2_lenc);
-        shownum(log, kara_2_c, kara_2_lenc, "kara 2 result");
-#ifdef MACINTOSH
-        sem_post(kara_sem2c);   // announce that result is ready.
-#else
-        sem_post(&kara_sem2c);  // announce that result is ready.
-#endif
-    }
-// The code here never exits!
-    return (KARARESULT)0;
-}
-
-static int semaphore_usage = 0;
-
-#endif // ! WITH_CILK
 static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
                          uint32_t *d, size_t lena, size_t lenb, size_t lenc)
 //
@@ -822,8 +661,6 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     size_t lenb1 = lenb - h;
     uint32_t carry, asumcarry, bsumcarry, carryc, carryc1, carryc2;
     size_t i;
-    shownum(stdout, a, lena, "a");
-    shownum(stdout, b, lenb, "b");
 //
 // if the top half of a would be all zero I go through a separate path,
 // doing just two subsidiary multiplications. Note that if I do that I
@@ -839,83 +676,29 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         kara_1_lenb = lenb - h;
         kara_1_lenc = 2*h;
 // To keep the worker threads in step I will post dummy work to thread 2.
-        kara_2_lena = kara_2_lenb = kara_2_lenc = 0;
+        kara_0_lena = kara_0_lenb = kara_0_lenc = 0;
 #ifndef WITH_CILK
-        switch (semaphore_usage)
-        {
-#ifdef MACINTOSH
-            case 0: sem_post(kara_sem1a);   // allow worker 1 to start.
-                sem_post(kara_sem2a);   // allow worker 2 to start.
-                break;
-            case 1: sem_post(kara_sem1c);   // allow worker 1 to start.
-                sem_post(kara_sem2c);   // allow worker 2 to start.
-                break;
-            case 2: sem_post(kara_sem1b);   // allow worker 1 to start.
-                sem_post(kara_sem2b);   // allow worker 2 to start.
-                break;
-#else
-            case 0: sem_post(&kara_sem1a);  // allow worker 1 to start.
-                sem_post(&kara_sem2a);  // allow worker 2 to start.
-                break;
-            case 1: sem_post(&kara_sem1c);  // allow worker 1 to start.
-                sem_post(&kara_sem2c);  // allow worker 2 to start.
-                break;
-            case 2: sem_post(&kara_sem1b);  // allow worker 1 to start.
-                sem_post(&kara_sem2b);  // allow worker 2 to start.
-                break;
-#endif
+        {   std::lock_guard<std::mutex> lk(kara_mutex);
+            kara_ready = 2;
+            kara_done = 0;
         }
+        cv_kara_ready.notify_all();
 #else // WITH_CILK
         cilk_spawn long_times(kara_1_c,kara_1_a,kara_1_b,kara_1_d,
                               kara_1_lena,kara_1_lenb,kara_1_lenc);
-        cilk_spawn long_times(kara_2_c,kara_2_a,kara_2_b,kara_2_d,
-                              kara_2_lena,kara_2_lenb,kara_2_lenc);
+        cilk_spawn long_times(kara_0_c,kara_0_a,kara_0_b,kara_0_d,
+                              kara_0_lena,kara_0_lenb,kara_0_lenc);
 #endif // WITH_CILK
         // Now do my own work in parallel with worker 1
         for (i=0; i<h; i++) c[3*h+i] = 0;
         long_times(d, a, b, c, lena, h, 2*h);
 #ifndef WITH_CILK
-        switch (semaphore_usage)
-        {
-#ifdef MACINTOSH
-            case 0:
-                while (sem_wait(kara_sem1b) != 0)/*NOTHING*/;   // wait for worker 1 to finish.
-                while (sem_wait(kara_sem2b) != 0)/*NOTHING*/;   // wait for worker 2 to finish.
-                semaphore_usage = 1;
-                break;
-            case 1:
-                while (sem_wait(kara_sem1a) != 0)/*NOTHING*/;   // wait for worker 1 to finish.
-                while (sem_wait(kara_sem2a) != 0)/*NOTHING*/;   // wait for worker 2 to finish.
-                semaphore_usage = 2;
-                break;
-            case 2:
-                while (sem_wait(kara_sem1c) != 0)/*NOTHING*/;   // wait for worker 1 to finish.
-                while (sem_wait(kara_sem2c) != 0)/*NOTHING*/;   // wait for worker 2 to finish.
-                semaphore_usage = 0;
-                break;
-#else
-            case 0:
-                while (sem_wait(&kara_sem1b) != 0)/*NOTHING*/;  // wait for worker 1 to finish.
-                while (sem_wait(&kara_sem2b) != 0)/*NOTHING*/;  // wait for worker 2 to finish.
-                semaphore_usage = 1;
-                break;
-            case 1:
-                while (sem_wait(&kara_sem1a) != 0)/*NOTHING*/;  // wait for worker 1 to finish.
-                while (sem_wait(&kara_sem2a) != 0)/*NOTHING*/;  // wait for worker 2 to finish.
-                semaphore_usage = 2;
-                break;
-            case 2:
-                while (sem_wait(&kara_sem1c) != 0)/*NOTHING*/;  // wait for worker 1 to finish.
-                while (sem_wait(&kara_sem2c) != 0)/*NOTHING*/;  // wait for worker 2 to finish.
-                semaphore_usage = 0;
-                break;
-#endif
+        {   std::unique_lock<std::mutex> lk(kara_mutex);
+            cv_kara_done.wait(lk, []{return (kara_done == 2);});
         }
 #else // WITH_CILK
         cilk_sync;
 #endif // WITH_CILK
-        shownum(stdout, &c[h], 2*h, "top part");
-        shownum(stdout, d, 2*h, "bottom part");
         for (i=0; i<h; i++) c[i] = d[i];
         carry = 0;
         for (; i<2*h; i++)
@@ -928,7 +711,6 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
             c[i] = clear_top_bit(w);
             carry = w >> 31;
         }
-        shownum(stdout, c, lenc, "result");
         return;
     }
 //
@@ -949,50 +731,31 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
 // Second:
 //       (c3,c2) = a1*b1 using d1 as workspace;
 //
-    kara_2_c = c+2*h;       // set up input data for worker 2
-    kara_2_a = a+h;
-    kara_2_b = b+h;
-    kara_2_d = d+h;         // workspace
+    kara_0_c = c+2*h;       // set up input data for worker 2
+    kara_0_a = a+h;
+    kara_0_b = b+h;
+    kara_0_d = d+h;         // workspace
 //
 // Note that the top halves of the two inputs might not use up the
 // full width of the number that is available, but the product generated
 // here will be widened to fill all its space.
 //
-    kara_2_lena = lena1;
-    kara_2_lenb = lenb1;
-    kara_2_lenc = 2*h;
+    kara_0_lena = lena1;
+    kara_0_lenb = lenb1;
+    kara_0_lenc = 2*h;
 #ifndef WITH_CILK
-    switch (semaphore_usage)
-    {
-#ifdef MACINTOSH
-        case 0: sem_post(kara_sem2a);   // allow worker 1 to start.
-            sem_post(kara_sem1a);   // allow worker 2 to start.
-            break;
-        case 1: sem_post(kara_sem1c);   // allow worker 1 to start.
-            sem_post(kara_sem2c);   // allow worker 2 to start.
-            break;
-        case 2: sem_post(kara_sem1b);   // allow worker 1 to start.
-            sem_post(kara_sem2b);   // allow worker 2 to start.
-            break;
-#else
-        case 0: sem_post(&kara_sem2a);  // allow worker 1 to start.
-            sem_post(&kara_sem1a);  // allow worker 2 to start.
-            break;
-        case 1: sem_post(&kara_sem1c);  // allow worker 1 to start.
-            sem_post(&kara_sem2c);  // allow worker 2 to start.
-            break;
-        case 2: sem_post(&kara_sem1b);  // allow worker 1 to start.
-            sem_post(&kara_sem2b);  // allow worker 2 to start.
-            break;
-#endif
+    {   std::lock_guard<std::mutex> lk(kara_mutex);
+        kara_ready = 2;
+        kara_done = 0;
     }
+    cv_kara_ready.notify_all();
 #else // WITH_CILK
     if (kara_1_lenc != 0)
         cilk_spawn long_times(kara_1_c,kara_1_a,kara_1_b,kara_1_d,
                               kara_1_lena,kara_1_lenb,kara_1_lenc);
-    if (kara_2_lenc != 0)
-        cilk_spawn long_times(kara_2_c,kara_2_a,kara_2_b,kara_2_d,
-                              kara_2_lena,kara_2_lenb,kara_2_lenc);
+    if (kara_0_lenc != 0)
+        cilk_spawn long_times(kara_0_c,kara_0_a,kara_0_b,kara_0_d,
+                              kara_0_lena,kara_0_lenb,kara_0_lenc);
 #endif // WITH_CILK
 //
 // The rest can be done using the main thread.
@@ -1010,7 +773,6 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         d[3*h+i] = clear_top_bit(w);
         asumcarry = w >> 31;
     }
-    shownum(stdout, &d[3*h], h, "a0+a1");
     bsumcarry = 0;
     for (i=0; i<h; i++)
     {   uint32_t w = b[i] + bsumcarry;
@@ -1018,66 +780,23 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         d[4*h+i] = clear_top_bit(w);
         bsumcarry = w >> 31;
     }
-    shownum(stdout, &d[4*h], h, "b0+b1");
 //       (d6,d5) = d3*d4 using d2 as workspace;
     long_times(&d[5*h], &d[3*h], &d[4*h], &d[2*h], h, h, 2*h);
-    shownum(stdout, &d[5*h], 2*h, "(a0+a1)*(b0+b1)");
 //
 // Now I wish to re-sync with the two sub-tasks...
 //
     fflush(stdout);
 #ifndef WITH_CILK
-    switch (semaphore_usage)
-    {
-#ifdef MACINTOSH
-        case 0:
-            while (sem_wait(kara_sem1b) != 0);   // wait for worker 1 to finish.
-            while (sem_wait(kara_sem2b) != 0);   // wait for worker 2 to finish.
-            semaphore_usage = 1;
-            break;
-        case 1:
-            while (sem_wait(kara_sem1a) != 0);   // wait for worker 1 to finish.
-            while (sem_wait(kara_sem2a) != 0);   // wait for worker 2 to finish.
-            semaphore_usage = 2;
-            break;
-        case 2:
-            while (sem_wait(kara_sem1c) != 0);   // wait for worker 1 to finish.
-            while (sem_wait(kara_sem2c) != 0);   // wait for worker 2 to finish.
-            semaphore_usage = 0;
-            break;
-#else
-        case 0:
-            while (sem_wait(&kara_sem1b) != 0);  // wait for worker 1 to finish.
-            while (sem_wait(&kara_sem2b) != 0);  // wait for worker 2 to finish.
-            semaphore_usage = 1;
-            break;
-        case 1:
-            while (sem_wait(&kara_sem1a) != 0);  // wait for worker 1 to finish.
-            while (sem_wait(&kara_sem2a) != 0);  // wait for worker 2 to finish.
-            semaphore_usage = 2;
-            break;
-        case 2:
-            while (sem_wait(&kara_sem1c) != 0);  // wait for worker 1 to finish.
-            while (sem_wait(&kara_sem2c) != 0);  // wait for worker 2 to finish.
-            semaphore_usage = 0;
-            break;
-#endif
+    {   std::unique_lock<std::mutex> lk(kara_mutex);
+        cv_kara_done.wait(lk, []{return (kara_done == 2);});
     }
 #else // WITH_CILK
     cilk_sync;
 #endif // WITH_CILK
-    shownum(stdout, kara_1_a, kara_1_lena, "kara 1 a");
-    shownum(stdout, kara_1_b, kara_1_lenb, "kara 1 b");
-    shownum(stdout, kara_1_c, kara_1_lenc, "kara 1 c");
-    shownum(stdout, kara_2_a, kara_2_lena, "kara 2 a");
-    shownum(stdout, kara_2_b, kara_2_lenb, "kara 2 b");
-    shownum(stdout, kara_2_c, kara_2_lenc, "kara 2 c");
-    shownum(stdout, c+2*h, 2*h, "top half product");
 //
 // Now I just need to combine the various bits together!
 //       d0 = c1;                  preserve (c1, c0)
 //
-    shownum(stdout, c, lenc, "packed a1*b1|a0*b0");
     for (i=0; i<h; i++) d[i] = c[h+i];
 //
 //       (c3, c2, c1) -= (0, c3, c2);
@@ -1088,7 +807,6 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         c[h+i] = clear_top_bit(w);
         carryc1 = w >> 31;
     }
-    shownum(stdout, c, lenc, "after (c3,c2,c1) -= (0, c3, c2)");
 //
 //       (c3, c2, c1) -= (0, d0, c0);
 //
@@ -1103,7 +821,6 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         c[h+i] = clear_top_bit(w);
         carryc2 = w >> 31;
     }
-    shownum(stdout, c, lenc, "after (c3,c2,c1) -= (0, d0, c0)");
 //
 // I held on to the "borrow" bits that combine with c3
 //
@@ -1133,7 +850,6 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         }
         carryc += carry;
     }
-    shownum(stdout, c, lenc, "Just needs (d5, d6) adding in");
 // Now just needs (d5, d6) adding in... as in
 //       (c3, c2, c1) += (<deferred carry>, d5, d6);
 //
@@ -1152,13 +868,10 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         c[h+i] = clear_top_bit(w);
         carry = w >> 31;
     }
-    shownum(stdout, c, lenc, "final result");
 //
 // The product is now complete
 //
 }
-
-#endif // Thread support
 
 static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
                         size_t lena, size_t lenb, size_t lenc)
@@ -1188,9 +901,7 @@ static void long_times2(uint32_t *c, uint32_t *a, uint32_t *b,
     }
 }
 
-#if defined HAVE_LIBPTHREAD || defined WIN32
 size_t karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
-#endif
 
 static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
                        uint32_t *d, size_t lena, size_t lenb, size_t lenc)
@@ -1222,7 +933,6 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
         newlenc = 4*newlenc;
         while (lenc > newlenc) c[--lenc] = 0;
     }
-#if defined HAVE_LIBPTHREAD || defined WIN32
     if (lena > karatsuba_parallel)
     {   size_t save = karatsuba_parallel;
 //
@@ -1233,10 +943,9 @@ static void long_times(uint32_t *c, uint32_t *a, uint32_t *b,
         long_times1p(c, a, b, d, lena, lenb, lenc);
         karatsuba_parallel = save;
     }
-    else
-#endif // Thread support
-        if (lena > KARATSUBA_CUTOFF) long_times1(c, a, b, d, lena, lenb, lenc);
-        else long_times2(c, a, b, lena, lenb, lenc);
+    else if (lena > KARATSUBA_CUTOFF)
+        long_times1(c, a, b, d, lena, lenb, lenc);
+    else long_times2(c, a, b, lena, lenb, lenc);
 }
 
 static LispObject timesbb(LispObject a, LispObject b)

@@ -1,4 +1,4 @@
-// tags.h                                  Copyright (C) Codemist 1990-2017
+// tags.h                                  Copyright (C) Codemist 1990-2018
 
 //
 //   Data-structure and tag bit definitions, also common C macros
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -98,10 +98,13 @@ static inline void CSL_IGNORE(LispObject x)
 //
 // On 64-bit systems I will limit myself to 512 Gbyte, while on 32-bit
 // ones the limit is around 2 Gbyte and in reality will usually be
-// rather less than that.
+// rather less than that. Note that this limit is expected to be a power
+// of 2.
 //
 #ifndef MAX_HEAPSIZE
-#  define MAX_HEAPSIZE       (SIXTY_FOUR_BIT ? (512*1024) : 2048)
+#define MAX_HEAPBITS         (SIXTY_FOUR_BIT ? 39 : 31)
+// The number here is measured in megabytes so it is always reasonably small.
+#define MAX_HEAPSIZE         (1 << (MAX_HEAPBITS-20))
 #endif // MAX_HEAPSIZE
 
 #define MEGABYTE                ((intptr_t)0x100000U)
@@ -1023,9 +1026,9 @@ static inline double& basic_delt(LispObject v, size_t n)
 }
 
 // The above provide support for "basic" vectors, which have a limitation
-// that they can only be up to around 4 Mbytes in size - which omn a 64-bit
+// that they can only be up to around 4 Mbytes in size - which on a 64-bit
 // system means that a normal Lisp vector can only have up to around half
-// a million elements. Using aa two-level structure with TYPE_INDEXVEC for
+// a million elements. Using a two-level structure with TYPE_INDEXVEC for
 // the upper one allows vectors to get MUCH MUCH bigger.
 
 #define LOG2_VECTOR_CHUNK_BYTES  (PAGE_BITS-2)
@@ -1038,11 +1041,14 @@ static inline double& basic_delt(LispObject v, size_t n)
 // machine will have around 0.5 million sub-vectors, each of size a megabyte.
 // that is 2^39 bytes, and so if this is used to store LispObjects there can
 // be up to 2^36 of them. That is 64G cells, consuming 512GBytes of memory.
-// At present (2017) that seems an acceptable limit. If at some stage (!) it
+// At present (2018) that seems an acceptable limit. If at some stage (!) it
 // became essential to go yet further the natural thing would be to increase
 // the basic memory allocation block size from 4 Mbytes upwards, and each
 // doubling of that could allow me to increase the largest vector size by
-// a factor of 4.
+// a factor of 4. Note that the above limit is on the size of a single
+// individual vector, and so mmy current limit is really unlikely to become
+// and issue until people are using computers with several terabytes of
+// main memory.
 
 static inline bool is_power_of_two(uint64_t n)
 {    return (n == (n & (-n)));

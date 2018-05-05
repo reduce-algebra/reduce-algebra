@@ -1,4 +1,4 @@
-// csl.cpp                                 Copyright (C) 1989-2017 Codemist
+// csl.cpp                                 Copyright (C) 1989-2018 Codemist
 
 //
 // This is Lisp system for use when delivering Lisp applications
@@ -7,7 +7,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -1358,14 +1358,35 @@ char *C_stack_base = NULL, *C_stack_limit = NULL;
 double max_store_size = 0.0;
 
 #ifndef HAVE_CILK
-#ifdef WIN32
-HANDLE kara_thread1, kara_thread2;
-#elif defined HAVE_LIBPTHREAD
-pthread_t kara_thread1, kara_thread2;
-#endif
+bool threads_active = false;
+std::thread kara_thread1, kara_thread2;
+std::mutex kara_mutex;
+std::condition_variable cv_kara_ready, cv_kara_done;
+int kara_ready = 0;
+int kara_done = 0;
 #endif
 
 static int kparallel = -1;
+
+// This class exists just for its destuctor, which will get invoked when
+// cslstart exits in any way. If there were other threads that had been
+// started this asks them to terminate and then does "join" operations so
+// they are tidied up.
+
+class tidy_up_threads
+{
+public:
+    ~tidy_up_threads()
+    {   if (threads_active)
+        {    {   std::lock_guard<std::mutex> lk(kara_mutex);
+                 kara_ready = -1;
+             }
+             cv_kara_ready.notify_all();
+             kara_thread1.join();
+             kara_thread2.join();
+        }
+    }
+};
 
 void cslstart(int argc, const char *argv[], character_writer *wout)
 {   int i;
@@ -1384,55 +1405,12 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     C_stack_base = (char *)&sp;
     C_stack_limit = NULL;
     max_store_size = 0.0;
-#if (defined HAVE_LIBPTHREAD || defined WIN32) && !HAVE_CILK
+#ifndef HAVE_CILK
+    tidy_up_threads thread_tidier_object;
     if (number_of_processors() >= 3)
-    {
-#ifdef MACINTOSH
-        sem_unlink("/sem1a");
-        if ((kara_sem1a = sem_open("/sem1a", O_CREAT, 0644, 0)) == SEM_FAILED)
-        {   perror("sem_open");
-            exit(EXIT_FAILURE);
-        }
-        sem_unlink("/sem1b");
-        if ((kara_sem1b = sem_open("/sem1b", O_CREAT, 0644, 0)) == SEM_FAILED)
-        {   perror("sem_open");
-            exit(EXIT_FAILURE);
-        }
-        sem_unlink("/sem1c");
-        if ((kara_sem1c = sem_open("/sem1c", O_CREAT, 0644, 0)) == SEM_FAILED)
-        {   perror("sem_open");
-            exit(EXIT_FAILURE);
-        }
-        sem_unlink("/sem2a");
-        if ((kara_sem2a = sem_open("/sem2a", O_CREAT, 0644, 0)) == SEM_FAILED)
-        {   perror("sem_open");
-            exit(EXIT_FAILURE);
-        }
-        sem_unlink("/sem2b");
-        if ((kara_sem2b = sem_open("/sem2b", O_CREAT, 0644, 0)) == SEM_FAILED)
-        {   perror("sem_open");
-            exit(EXIT_FAILURE);
-        }
-        sem_unlink("/sem2c");
-        if ((kara_sem2c = sem_open("/sem2c", O_CREAT, 0644, 0)) == SEM_FAILED)
-        {   perror("sem_open");
-            exit(EXIT_FAILURE);
-        }
-#else // MACINTOSH
-        sem_init(&kara_sem1a, 0, 0);
-        sem_init(&kara_sem1b, 0, 0);
-        sem_init(&kara_sem1c, 0, 0);
-        sem_init(&kara_sem2a, 0, 0);
-        sem_init(&kara_sem2b, 0, 0);
-        sem_init(&kara_sem2c, 0, 0);
-#endif // MACINTOSH
-#ifdef WIN32
-        kara_thread1 = CreateThread(NULL, 0, kara_worker1, NULL, 0, NULL);
-        kara_thread2 = CreateThread(NULL, 0, kara_worker2, NULL, 0, NULL);
-#else
-        pthread_create(&kara_thread1, NULL, kara_worker1, NULL);
-        pthread_create(&kara_thread2, NULL, kara_worker2, NULL);
-#endif
+    {   kara_thread1 = std::thread(kara_worker);
+        kara_thread2 = std::thread(kara_worker);
+        threads_active = true;
     }
     karatsuba_parallel = 0x7fffffff;
 #elif defined HAVE_CILK
@@ -1964,7 +1942,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 //
 // I do not really want this options heavily documented, since it is intended
 // for use by those maintaining CSL not for the general public. By default
-// log multiplication can use a threaded implementation (to exploit multi-core
+// long multiplication can use a threaded implementation (to exploit multi-core
 // machines). This happens when numbers get bigger than about
 // 2^(31*KARATSUBA_PARALLEL_CUTOFF). This option allows one to override the
 // default threshold so that performance effects can be measured and the
@@ -2086,7 +2064,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
                 case 'c':
                     fwin_restore();
-                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2017\n");
+                    term_printf("\nCSL was coded by A C Norman, Codemist, 1988-2018\n");
                     term_printf("Distributed under the Modified BSD License\n");
                     term_printf("See also --help\n");
                     continue;
@@ -2446,7 +2424,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 
 /*! options [-r] \item [{\ttfamily -r}] \index{{\ttfamily -r}}
  * The random-number generator in CSL is normally initialised to a value
- * based on the time of day and is hence not reproducible from run to run.
+ * that is intended not to be reproducible from run to run.
  * In many cases that behavious is desirable, but for debugging it can be useful
  * to force a seed. The directive {\ttfamily -r nnn,mmm} sets the seed to
  * up to 64 bits taken from the values nnn and mmm. The second value if optional,
@@ -3611,3 +3589,4 @@ PROC_handle PROC_rest(PROC_handle p)
 }
 
 // End of csl.cpp
+ 

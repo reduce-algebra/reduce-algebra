@@ -339,6 +339,10 @@ case $host in
 # mode will still keep me safe.
     LDFLAGS="$LDFLAGS -static"
     DLL_CFLAGS="$CFLAGS -shared"
+# As of May 2018 if I try using std::thread with the mingw32 compilers I
+# end up with a binary that relies on some awkward DLLs unless I add in
+# the extra curious directive here.
+    LIBS="$LIBS -static-libgcc -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic"
 # In this case I make the machine appear to be "i686-pc-windows" or some
 # such to distinguish it from the case where cygwin1.dll might be involved.
     foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`
@@ -1602,9 +1606,10 @@ then
 # 10.9  Mavericks     )
 # 10.10 Yosemite       Now the oldest deployment target I support
 # 10.11 El Capitan
-# 10.12 Sierra         Now the version I build and test on.
+# 10.12 Sierra
+# 10.13 High Sierra    Now the version I build and test on.
 
-# Well now that 10.11 has been released I will always target
+# Well now that 10.13 has been released I will always target
 # 10.10 and support for earlier versions is no longer guaranteed. I
 # take this rather agressive stance because my experience is that Apple
 # follow a line that old versions of anything can not be expected to work.
@@ -1681,6 +1686,12 @@ then
   else
 # This is to try to force linking against a system-provided version.
     LDFLAGS="-L/usr/lib -lcurses $LDFLAGS"
+    LL=/opt/local/lib
+    LIBS="$LL/libz.a \
+      $LL/libbz2.a \
+      $LL/libiconv.a \
+      -lpthread \
+      -ldl"
   fi  
 fi
 

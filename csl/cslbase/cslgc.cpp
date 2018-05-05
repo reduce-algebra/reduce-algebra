@@ -1,11 +1,11 @@
-// File cslgc.cpp                         Copyright (c) Codemist, 1990-2017
+// File cslgc.cpp                         Copyright (c) Codemist, 1990-2018
 
 //
 // Garbage collection.
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -49,6 +49,25 @@ uint64_t reclaim_trigger_count = 0, reclaim_trigger_target = 0;
 static intptr_t cons_cells, symbol_heads, strings, user_vectors,
        big_numbers, box_floats, bytestreams, other_mem,
        litvecs, getvecs;
+
+#ifdef CONSERVATIVE
+
+// Keep granularity in an address just sufficient to identify a "page".
+static inline uintptr_t masked_address(uintptr_t p)
+{   return p & (-PAGE_POWER_OF_TWO);
+}
+
+// Find the allocated page (if any) containing the address (p). This is
+// used when p comes from an ambiguous root and is a step in deciding if
+// data at p must be pinned so that the garbage collector will not relocate
+// it.
+
+LispObject *find_page(uintptr_t p)
+{   uintptr_t p1 = masked_address(p);
+    
+}
+
+#endif
 
 LispObject Lgc0(LispObject env)
 {   return Lgc(env, lisp_true);

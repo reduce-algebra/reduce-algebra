@@ -1,4 +1,4 @@
-// externs.h                               Copyright (C) Codemist 1989-2017
+// externs.h                               Copyright (C) Codemist 1989-2018
 
 //
 //   Main batch of extern declarations.
@@ -6,7 +6,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -93,14 +93,17 @@ extern void *allocate_page(const char *why);
 
 #ifdef CONSERVATIVE
 
-#define PAGE_TYPE_CONS   0
-#define PAGE_TYPE_VECTOR 1
+extern uintptr_t *pages_hash_table;
 
-typedef struct page_map_t
-{   void *start;
-    void *end;
-    int type;
-} page_map_t;
+#define PAGE_TYPE_2CELL   0
+#define PAGE_TYPE_4CELL   1
+#define PAGE_TYPE_BIG     2
+
+typedef struct _page_header
+{   unsigned int fringe;
+    unsigned int type:2
+    unsigned int pinsize:30
+} page_header;
 
 #endif
 
