@@ -91,27 +91,23 @@
 
 % expansions of addressing modes.
 
-(DefAnyreg CAR  ZIBanyregCAR)  % ZIB
+(DefAnyreg CAR
+AnyregCAR   %Grab the source so caller can displace off it.
+%          ((regp anyp)    (displacement source 16#c0000000))
+%          ((anyp regp)    (*move SOURCE REGISTER)
+%                         (displacement REGISTER 16#c0000000))
+           (       (!*Field REGISTER SOURCE 5 27)
+                   (displacement REGISTER 0))
+)
 
-(de ZIBAnyregCAR (reg source)
-   (prog (areg)
-      (setq source (resolveoperand reg source))
-      (if (and (displacementp source)     % recursive case, e.g. caar
-	       (member (cadr source) *nextreglist*))
-	     (setq areg (cadr source))
-	     (setq areg (nexttempreg)))
-      (return `(displacement ,areg 0))))
+(DefAnyreg CDR
+           AnyregCDR     %Same as CAR, except move to next word in pair.
+%          ((regp anyp)    (displacement source 16#c0000004))
+%          ((anyp regp)    (*move SOURCE REGISTER)
+%                          (displacement REGISTER 16#c0000004))
+           (       (!*Field REGISTER SOURCE 5 27)
+                   (Displacement REGISTER 4)))
 
-(DefAnyreg CDR  ZIBanyregCDR)  % ZIB
-
-(de ZIBAnyregCDR (reg source)
-   (prog (areg)
-      (setq source (resolveoperand reg source))
-      (if (and (displacementp source)     % recursive case, e.g. cddar
-	       (member (cadr source) *nextreglist*))
-	     (setq areg (cadr source))
-	     (setq areg (nexttempreg)))
-      (return `(displacement ,areg 4))))
 
 (fluid '(*nextreg* *nextreglist*))
 
@@ -146,7 +142,7 @@
 
 (de ibmrs-register-p (r)
   (cond ((idp r)
-         (cond ((get r 'Registername) T)
+         (cond ((get r 'RegisterName) T)
                ((get r '*other-name) (ibmrs-register-p (get r '*other-name)))
                ((get r '*register-code) t)
                ((get r '*f-register-code) t)
@@ -178,8 +174,8 @@
 (defanyreg $Fluid ZIBanyregfluid)
 
 (de ZIBanyregFluid (reg source)
-   (cond ((and (idp source) (get source 'registername))
-		         `(reg ,(get source 'registername)))
+   (cond ((and (idp source) (get source 'RegisterName))
+		         `(reg ,(get source 'RegisterName)))
 	 (t       `($Fluid ,SOURCE))))
 
 (defanyreg Global ZIBanyregglobal)
@@ -187,8 +183,8 @@
 (defanyreg $Global ZIBanyregglobal)
 
 (de ZIBanyregGlobal (reg source)
-   (cond ((and (idp source) (get source 'registername))
-		         `(reg ,(get source 'registername)))
+   (cond ((and (idp source) (get source 'RegisterName))
+		         `(reg ,(get source 'RegisterName)))
 	 (t       `($global ,SOURCE))))
 
 %-----------------------------------------------------------------------------
@@ -238,15 +234,10 @@
     (setq NAlloc!* framesize)
     (if (freep (times2 addressingunitsperitem framesize)) NIL
       (when (evenp framesize) (setq framesize (iadd1 framesize)))
-    (if (or *writingasmfile *usefastframe)
-      (if (lessp framesize 10)
-	`( (stmfd "sp!, {fp, lr}")
-	  (add (reg fp) (reg st) ,(minus (plus2 4 (times2 4 framesize)))))
-	`((stmfd ,(getv frameregs* framesize) (displacement (reg st) 0))
-	  (add (reg fp) (reg st) ,(minus (plus2 4 (times2 4 framesize))))))
-      `(
-        (stmfd "sp!, {fp, lr}") 
-	(add (reg st) (reg st) ,(minus (plus2 44 (times2 4 framesize))))))))
+      (if (greaterp framesize 0)
+	`( (stm "sp!, {fp, lr}")
+	  (sub (reg fp) (reg st) ,(times2 4 framesize)))
+	`((stm "sp!, {fp, lr}")))))
 
 (defcmacro *ALLOC)
 
@@ -254,17 +245,13 @@
  (setq framesize (resolveoperand '(reg error) framesize))
  (if (freep (times2 addressingunitsperitem framesize)) NIL
   (when (evenp framesize) (setq framesize (iadd1 framesize)))
-  (if (or *writingasmfile *usefastframe)
-      (if (lessp framesize 10)
+  (if (greaterp framesize 0)
 	`(
-	  (add (reg st) (reg st) ,(plus2 4 (times2 4 framesize)))
-	  (ldmfd "sp!, {fp, pc}"))
+	  (add (reg st) (reg st) ,(times2 4 framesize))
+	  (ldm "sp!, {fp, lr}"))
 	`(
-	  (ldmfd "sp!, {fp, pc}")
-	  (add (reg st) (reg st) ,(plus2 4 (times2 4 framesize)))))
-       `(
-         (add (reg st) (reg st) ,(plus2 44 (times2 4 framesize)))
-         (ldmfd "sp!, {fp, pc}")))))
+	  (ldm "sp!, {fp, lr}")))
+  ))
 
 (defcmacro *deALLOC)
 
@@ -276,7 +263,7 @@
 
 (DefCMacro *Exit     % leaf routine first
        ( (*dealloc (quotient argone AddressingUnitsPerItem))
-	 (bx (reg pc))))
+	 (bx (reg lr))))
 
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))
 
@@ -433,6 +420,16 @@
        ((*3op ArgOne ArgTwo xor xoril)))
 
 (de fixplusp (x) (and (fixp x) (not (minusp x))))
+
+(de *asr (Arg1 Arg2 Arg3)
+  (Expand3OperandCMacro Arg1 Arg2 Arg3 '*asr))
+
+(de *lsr (Arg1 Arg2 Arg3)
+  (Expand3OperandCMacro Arg1 Arg2 Arg3 '*lsr))
+
+(de *lsl (Arg1 Arg2 Arg3)
+  (Expand3OperandCMacro Arg1 Arg2 Arg3 '*lsl))
+
 
 (DefCMacro *asr
     ((mov ArgOne (regshifted ArgTwo ASR ArgThree))))
@@ -597,13 +594,15 @@
 		         (cmp (reg t5) (reg t4))
 		         (ArgFour ArgThree)))
 
-(de *JumpIF (ArgOne ArgTwo Label Instruction cond)
+(de *JumpIF (ArgOne ArgTwo Label Instructions)
   (prog (ResultingCode*)
     (return (CMacroPatternExpand
 	   (list (ResolveOperand '(Reg t1) ArgOne)
 		 (ResolveOperand '(Reg t2) ArgTwo)
-		     (ResolveOperand '(Reg Error) Label)
-		  Instruction cond)
+		 (ResolveOperand '(Reg Error) Label)
+		 (car Instructions)
+		 (cdr Instructions)
+		 )
 		 (get '*JumpIF 'CMacroPatternTable)))))
 
 (defcmacro *jumpeq)
@@ -655,7 +654,12 @@
 
 (DefCMacro *loc)
 
+
+
 (DefCMacro *Field
+
+  ((regp anyp Fivep TwentySevenP) (*move ArgTwo ArgOne)
+                                   (BIC ArgOne 16#F8000000))
   ((regp regp fixp fixp) (*lsl ArgOne ArgTwo ArgThree)
                          (*lsr ArgOne ArgOne (difference 32 ArgFour)))
   ((regp anyp fixp fixp) (*move ArgTwo (reg t5))

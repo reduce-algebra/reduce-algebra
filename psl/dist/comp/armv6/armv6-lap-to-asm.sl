@@ -5,7 +5,7 @@
 % Author:         Eric Benson
 % Created:        13 August 1981
 % Modified:       15-Jan-85 11:00 (Brian Beach)
-% Status:         Experimental
+% Status:         Open Source: BSD License
 % Mode:           Lisp
 % Package:        Compiler
 %
@@ -117,7 +117,7 @@
                  undefinedfunctioncellinstructions* 
                  definedfunctioncellformat* printexpressionform* 
                  printexpressionformpointer* commentformat* 
-                 numericregisternames* expressioncount* asmopenparen* 
+                 numericRegisterNames* expressioncount* asmopenparen* 
                  asmcloseparen* tobecompiledexpressions* 
 		 fasl-preeval* indwordformat*
                  ))
@@ -141,13 +141,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (put 'de 'asmpreeval
-     (function (lambda (u loadtime?) (fasl-define u 'expr loadtime?))))
+     (function (lambda (u loadtime?) (fasl-define u 'expr))))
 (put 'df 'asmpreeval
-     (function (lambda (u loadtime?) (fasl-define u 'fexpr loadtime?))))
+     (function (lambda (u loadtime?) (fasl-define u 'fexpr))))
 (put 'dm 'asmpreeval
-     (function (lambda (u loadtime?) (fasl-define u 'macro loadtime?))))
+     (function (lambda (u loadtime?) (fasl-define u 'macro))))
 (put 'dn 'asmpreeval
-     (function (lambda (u loadtime?) (fasl-define u 'nexpr loadtime?))))
+     (function (lambda (u loadtime?) (fasl-define u 'nexpr))))
 (put 'loadtime 'asmpreeval
      (function (lambda (u loadtime?) (fasl-form (cadr u) T))))
 (put 'startuptime 'asmpreeval
@@ -423,7 +423,7 @@
     (return (mkstr j))
  ))
 
-(de initializesymnam (maxsymbol)
+(de initializesymnam ()
   (dataprintgloballabel (findgloballabel 'symnam))
   (for (from i 0 128 1) 
        (do (dataprintfullword (compileconstant (id2string (int2id i))))))
@@ -521,8 +521,10 @@
 		     (prin2 '! )
 		     % SPACE                                  
 		 (printoperand (car x))
-		     (foreach u in (cdr x) do (progn (prin2 '!,) % COMMA 
-                        (printoperand u))))
+		 (foreach u in (cdr x) do
+			  (progn (prin2 '!,)
+				 % COMMA 
+				 (printoperand u))))
 	     (prin2 !$eol!$)))))))
 
 % NEWLINE                                                                  
@@ -590,7 +592,7 @@
 
 (put 'string 'asmpseudoop 'asmpseudoprintstring)
 
-(de printoperand (x)
+(de PrintOperand (x)
   (cond ((stringp x) (prin2 x))
         ((numberp x) (printnumericoperand x))
         ((idp x) (prin2 (findlabel x)))
@@ -609,12 +611,12 @@
   (prog (nam)
         (setq x (cadr x))
         (cond ((stringp x) (prin2 x))
-              ((numberp x) (prin2 (getv numericregisternames* x)))
+              ((numberp x) (prin2 (getv numericRegisterNames* x)))
               ((setq nam (registernamep x)) (prin2 nam))
               (t (errorprintf "***** Unknown register %r" x) (prin2 x)))))
 
 (de registernamep (x)
-  (get x 'registername))
+  (get x 'RegisterName))
 
 (de asmentry (x)
   (printexpression
@@ -665,7 +667,7 @@
 	     u
 	     (stringgensym))))
     (put u 'symbol x)
-    (return x)))
+    x))
 
 (de dataprintvar (name init)
   (prog (oldout)

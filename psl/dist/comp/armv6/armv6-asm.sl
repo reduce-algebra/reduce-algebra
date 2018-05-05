@@ -7,6 +7,7 @@
 % Modified:
 % Mode:         Lisp
 % Package:      
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1982, University of Utah
 %
@@ -109,7 +110,7 @@
 (setq ExternalDeclarationFormat* " .globl %w%n") % All in DATA space
 
 (setq FullWordFormat* " .long %e%n")     % FullWord expects %e for parameter
-(setq HalfWordFormat* " .word %e%n")     % Will EVAL formatter
+(setq HalfWordFormat* " .hword %e%n")     % Will EVAL formatter
 
 (setq ReserveDataBlockFormat* " .bss %w,%e%n")
 % This does *not* make zero blocks, however, the Sun manuals
@@ -127,8 +128,8 @@
 %LISTS and CONSTANT DEFINITIONS%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-(setq ASMOpenParen* "[")
-(setq ASMCloseParen* "]")
+(setq ASMOpenParen* "(")
+(setq ASMCloseParen* ")")
 
 (DefList '((LAnd &) 
   (LOr !!)) 'BinaryASMOp)
@@ -136,8 +137,12 @@
 (DefList '(     (t1 "R5") 
   		(t2 "R6") 
           	(fp "fp")
+		(pc "pc")
+		(lr "lr")
           	(sp "sp")
-          	(st "sp") )                      % Stack Pointer
+          	(st "sp")		% Stack Pointer
+		(nil "R8")
+		)
   'RegisterName)
 
 
@@ -297,9 +302,6 @@
 
 (setq *sun-mnemonic-change-table*
   '(
-    (cdq     . cltd )
-    (cwde    . cwtl )
-    (cbw     . cbtw )
    )
 )
 
@@ -349,6 +351,17 @@
   (printf " #%w" x))
 
 
+(de OperandPrintRegshifted (x)
+    (progn (setq x (cdr x))
+	   (PrintOperand (car x))
+	   (prin2 ", ")
+	   (prin2 (cadr x))
+	   (PrintOperand (caddr x)))
+    )
+
+(put 'regshifted 'OperandPrintFunction 'OperandPrintRegshifted)
+
+
 (de OperandPrintIndirect (x)            % (Indirect x)
   (progn (setq x (cadr x)) 
          (if (regp x) (progn
@@ -361,15 +374,24 @@
 ))
 
 (De OperandPrintDisplacement (x)        % (Displacement (reg x) disp)
-   (progn (setq x (cdr x))
-          (Prin2 " [")
-          (Printoperand (car x))
-          (Prin2 ", #")
-          (PrintExpression (cadr x))
-          (Prin2 "]")))
-
- 'Indirect 'OperandPrintFunction 'OperandPrintIndirect)
-
+   (prog (Rn arg2 rest)
+     (setq x (cdr x))
+     (setq Rn (car x) arg2 (cadr x) rest (cddr x))
+     (Prin2 " [")
+     (Printoperand (car x))
+     (if (eqcar rest 'postindexed) (prin2 "]"))
+     (cond ((zerop arg2))
+	   ((fixp arg2) (prin2 ", #") (prin2 arg2))
+	   ((regp arg2) (prin2 ", ") (PrintOperand arg2))
+	   ((and (eqcar arg2 'plus) (regp (cadr arg2)))
+	    (prin2 ", ") (PrintOperand (cadr arg2)))
+	   ((and (eqcar arg2 'minus) (regp (cadr arg2)))
+	    (prin2 ", -") (PrintOperand (cadr arg2)))
+	   )
+     (cond ((eqcar rest 'postindexed) nil)
+	   ((eqcar rest 'preindexed) (prin2 '!]!!))
+           (t (prin2 "]")))
+))
 
 (put 'displacement 'OperandPrintFunction 'OperandPrintDisplacement)
 
@@ -410,27 +432,20 @@
 (put 'Immediate 'OperandPrintFunction 'OperandPrintImmediate)
 
 
-(de OperandPrintPostIncrement (x)       % (PostIncrement x)
-  (progn (PrintOperand (cadr x)) 
-	 (Prin2 "@+")))
-
-(put 'PostIncrement 'OperandPrintFunction 'OperandPrintPostIncrement)
-
 (de OperandPrintRegList (x)             % (Reglist x)
-  (progn (setq x (cdr x)) 
-	 (PrintOperand (car x)) 
-	 (setq x (cdr x)) 
-	 (While x 
-		(progn (Prin2 "/") 
-		       (PrintOperand (car x)) 
-		       (setq x (cdr x)))) nil))
+    (progn (setq x (cdr x))
+	   (prin2 "{")
+	   (PrintOperand (car x)) 
+	   (setq x (cdr x)) 
+	   (While x 
+		  (progn (Prin2 ",") 
+			 (PrintOperand (car x)) 
+			 (setq x (cdr x))))
+	   (princ "}")
+	   nil))
 
 
 (put 'RegList 'OperandPrintFunction 'OperandPrintRegList)
-
-(de OperandPrintPreDecrement (x)        % (PreDecrement x)
-  (progn (PrintOperand (cadr x)) 
-	 (Prin2 "@-")))
 
 (put 'PreDecrement 'OperandPrintFunction 'OperandPrintPreDecrement)
 
@@ -449,10 +464,10 @@
 (Fluid '(ResultingCode*))
 
 (de MCPrint (x)                         % Echo of MC's
- (CodePrintF "/ %p%n" x))
+ (CodePrintF "@ %p%n" x))
 
 (de InstructionPrint (x) 
- (CodePrintF "/    %p%n" x))
+ (CodePrintF "@    %p%n" x))
 
 (de *cerror (x) 
  (prog (i) 
