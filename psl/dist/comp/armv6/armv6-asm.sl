@@ -100,7 +100,7 @@
 (setq MainEntryPointName* '!m!a!i!n)     % chose a simple default
                                           % main procedure name
 
-(setq NumericRegisterNames* '[nil "R0" "R1" "R2" "R3" "R4" ])
+(setq NumericRegisterNames* '[nil "r0" "r1" "r2" "r3" "r4" ])
 
 (setq LabelFormat* "%w:%n")             % Labels are in the first column
 (setq CommentFormat* "@ %p%n")          % Comments begin with a slash
@@ -134,14 +134,19 @@
 (DefList '((LAnd &) 
   (LOr !!)) 'BinaryASMOp)
 
-(DefList '(     (t1 "R5") 
-  		(t2 "R6") 
+(DefList '(     (t1 "r5") 
+  		(t2 "r6")
+		(t3 "r7")
           	(fp "fp")
 		(pc "pc")
 		(lr "lr")
           	(sp "sp")
           	(st "sp")		% Stack Pointer
-		(nil "R8")
+		(heaplast "r8")
+		(heaptrapbound "r9")
+		(symfnc "r10")
+		(symval "r11")
+		(nil "r12")
 		)
   'RegisterName)
 
@@ -348,7 +353,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 (de PrintNumericOperand (x) 
-  (printf " #%w" x))
+  (printf "#%w" x))
 
 
 (de OperandPrintRegshifted (x)
@@ -356,6 +361,7 @@
 	   (PrintOperand (car x))
 	   (prin2 ", ")
 	   (prin2 (cadr x))
+	   (princ '! )			% SPACE
 	   (PrintOperand (caddr x)))
     )
 
@@ -377,7 +383,7 @@
    (prog (Rn arg2 rest)
      (setq x (cdr x))
      (setq Rn (car x) arg2 (cadr x) rest (cddr x))
-     (Prin2 " [")
+     (Prin2 "[")
      (Printoperand (car x))
      (if (eqcar rest 'postindexed) (prin2 "]"))
      (cond ((zerop arg2))

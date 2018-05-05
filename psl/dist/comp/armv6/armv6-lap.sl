@@ -427,8 +427,8 @@
 	 (MemQ (cadr RegName) 
 	       '( 1  2  3  4  5
 		     R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 sp pc lr
-		     t1 t2 fp
-             nil heaplast heaptrapbound
+		     t1 t2 t3 fp
+             nil heaplast heaptrapbound symfnc symval
 	     bndstkptr bndstklowerbound
 	     bndstkupperbound))))
  
@@ -1734,40 +1734,35 @@
 		(list 'mov '(reg t1) (caddr (car u)))
 		(LapoptFrame1 src (cdr u))))))
 
-(fluid '(!*optimize-i486))
+(fluid '(!*optimize-armv6))
 
-(setq *optimize-i486 t)
+(setq *optimize-armv6 t)
 
 (de LapoptPeep(code)
-   (when *optimize-i486 (setq code (LapoptPeep486 code)))
+   (when *optimize-armv6 (setq code (LapoptPeepArmv6 code)))
    code)
 
-(de LapoptPeep486(code)
-% peephole optimizer for 486 code
+(de LapoptPeepArmv6(code)
+% peephole optimizer for armv6 code
 % interchanging instructions for dependencies.
  (let (rcode i1 i2 i3 r rb)
   (while code
    (setq i1 (pop code))
-   (when (and code (cdr code))
-    (setq i2(car code) i3(cadr code))
+   (when code
+     (setq i2 (car code) i3 (if (cdr code) (cadr code)))
     (cond
       % case
-      %   something
-      %   (add 16 (reg st))
-      %   (ret)
-      % move (add 16 (reg st)) one step up if possible.
-     ((and (equal i3 '(ret))
+      %   (ldm (reg sp) (reglist ... (reg lr)))
+      %   (bx (reg lr)) 
+      % replace (reg lr) in ldm by (reg pc) and remove bx instruction
+     ((and (equal i2 '(bx (reg lr)))
 	   (pairp i1)
-	   (pairp i2)
-	   (eq (car i2) 'add)
-	   (equal (caddr i2) '(reg st))
-	   (not (&jumpcontrol i1))
-	   (not (&smember '(reg st) i1))
-	)
-
-      (pop code r)
-      (push i1 code)
-      (setq i1 i2))
+	   (eq (car i1) 'ldm)
+	   (equal (cadr i1) '(reg sp))
+	   (member '(reg lr) (caddr i1))
+	   )
+      (pop code)		% remove bx instruction
+      (setq i1 (subst '(reg pc) '(reg lr) i1)))
 
       % case
       %   something
@@ -1831,7 +1826,7 @@
 
 (de lapoptprint(l)
    (terpri)
-   (prin2t " 486 tauschen:")
+   (prin2t " armv6 tauschen:")
    (mapc l 'prin2t))
 
 %---------------------------------------------------------------------

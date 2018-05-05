@@ -493,9 +493,13 @@
           (dataprintundefinedfunctioncell)
           (dataprintdefinedfunctioncell ep))))
 
+(remflag '(asmoutlap) 'lose)
+
 (de asmoutlap (u)
   (prog (locallabels* oldout)
         (setq u (pass1lap u))
+	(setq U (LapoptFrame u))
+	(setq U (LapoptPeep u)) 
         % Expand cmacros, quoted expressions                               
         (codeblockheader)
         (setq oldout (wrs codeout*))
@@ -515,19 +519,39 @@
                                                                            
       (progn (prin2 '! )
 	     % Space                                    
-	     (printopcode (car x))
+	     (PrintOpcode (car x))
 	     (setq x (cdr x))
 	     (unless (null x)
-		     (prin2 '! )
-		     % SPACE                                  
-		 (printoperand (car x))
+		     (prin2 '! )	% SPACE
+		 (PrintOperand (car x))
 		 (foreach u in (cdr x) do
-			  (progn (prin2 '!,)
-				 % COMMA 
-				 (printoperand u))))
+			  (progn (prin2 '!,! ) % COMMA 
+				 (PrintOperand u))))
 	     (prin2 !$eol!$)))))))
 
-% NEWLINE                                                                  
+
+(put 'ldm 'asmpseudoop 'asmprint-ldm-stm)
+(put 'stm 'asmpseudoop 'asmprint-ldm-stm)
+
+(de asmprint-ldm-stm (x)
+    (progn
+      (prin2 '! )
+      (PrintOpcode (car x))
+      (prin2 '! )
+      (PrintOperand (cadr x))
+      (unless (stringp (cadr x))
+	(if (and (pairp (cdddr x)) (cadddr x))
+	    (prin2 '!!))
+	(setq x (caddr x))
+	(princ ", {")
+	(PrintOperand (car x))
+	(foreach u in (cdr x) do
+		 (progn (prin2 '!,)	% COMMA 
+			(PrintOperand u)))
+	(princ "}")
+	(prin2 !$eol!$))))
+
+    
 (put '*entry 'asmpseudoop 'asmprintentry)
 
 (de asmprintentry (x)
@@ -601,7 +625,7 @@
                  (cond ((setq fn (get hd 'operandprintfunction)) 
                         (apply fn (list x)))
                        ((and (setq fn (getd hd)) (equal (car fn) 'macro)) 
-                        (printoperand (apply (cdr fn) (list x))))
+                        (PrintOperand (apply (cdr fn) (list x))))
                        ((setq fn (wconstevaluable x)) (printoperand fn))
                        (t (printexpression x)))))))
 
