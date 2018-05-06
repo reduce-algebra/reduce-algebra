@@ -15,14 +15,13 @@
 // expert than me in this area will provide me with useful advice! The
 // questions highest in my mind at present are:
 // (1) What question do I not even know enough to ask?
-// (2) Can I be provided with sample code to put Windows support here?
-// (3) Just how does the strategy embodied here interact with threading
+// (2) Just how does the strategy embodied here interact with threading
 //     across a range of operating systems? For instance in the Boehm garbage
 //     collector configuration files I think I see things that make me worry
 //     that this way of doing things might not be supportable at all on
 //     multi-threaded BSD platforms. I am expecting to use C++11 std::thread
 //     and friends for thread support.
-// (4) I have heard suggestion that some platforms use guard pages to
+// (3) I have heard suggestion that some platforms use guard pages to
 //     support gradually-allocated stack space, and that that involves
 //     trapping SIGSEGV. What are the interactions between that and this, and
 //     if the combination is problemetic then what platforms does it apply
@@ -30,15 +29,24 @@
 //     trap handler chain to the one extant when I set things up?).
 
 
+// STD_FORMAT_MACROS really ought not to be needed, but it helps in case
+// your C++ compiler is a little old.
+#define __STDC_FORMAT_MACROS 1
+
+#define __USE_MINGW_ANSI_STDIO 1
+
 #include <stdio.h>
 #include <string.h>
 
 // I will need to use different system calls on Linux and Windows! At present
-// the code covers Linux, Macintosh and *BSD, but the Windows support is not
-// yet in there, and cases such as Solaris and other Unix variants, Android,
+// the code covers Linux, Macintosh and *BSD, all using mprotefct/sigaction,
+// and Windows using WriteWatch.
+// Cases such as Solaris and other Unix variants, Android,
 // z/OS, RiscOS and the (un-)like have not been considered at all. 
 
-// Thus the next substantial changes here will involve Windows support.
+// Right now the Linux (etc) and Winndows versions are really very different
+// in structure and their arrangement in the file here is not at all neat.
+// That needs sorting out!
 
 #include <signal.h>
 #include <stdio.h>
@@ -50,10 +58,10 @@
 
 #ifdef WIN32
 #include <windows.h>
-#else
+#else // !WIN32
 #include <unistd.h>
 #include <sys/mman.h>
-#endif
+#endif // !WIN32
 
 // The system will have its idea of the granularity at which it can
 // provide memory protection. At least in this demo code I want to know
@@ -63,13 +71,13 @@
 #define MAX_PAGE_SIZE 0x10000
 #define MIN_PAGE_SIZE 0x1000
 
-#define MAX_MEM (6*MAX_PAGE_SIZE)
+#define MAX_MEMORY (6*MAX_PAGE_SIZE)
 
 // I am going to set up a region of memory aligned so that it starts
 // at a multiple of MAX_PAGE_SIZE.
 //
 
-char raw_memory[MAX_MEM+MAX_PAGE_SIZE] = {0};
+char *raw_memory;
 char *memory;
 
 // I rather hope that an atomic_flag will be only a single byte (ie that the
@@ -79,18 +87,19 @@ char *memory;
 // imagine the space overead is not too bad. In this sample code I do not
 // yet know the actual page size, so I will use a pessimistic size here.
 
-std::atomic_flag memory_used[(MAX_MEM+MAX_PAGE_SIZE+MIN_PAGE_SIZE-1)/
+std::atomic_flag memory_used[(MAX_MEMORY+MAX_PAGE_SIZE+MIN_PAGE_SIZE-1)/
                              MIN_PAGE_SIZE];
 
 static size_t page_size;
 
 
 static inline void fail(const char *msg)
-{   if (write(0, msg, sizeof(msg)) < 0)
-    {   /* Do nothing */
-    }
+{
+    printf("%s", msg);
     exit(EXIT_FAILURE);
 }
+
+#ifndef WIN32
 
 static void handler(int sig, siginfo_t *si, void *unused);
 
@@ -131,16 +140,51 @@ static inline int safe_mprotect(void *a, size_t n, int m)
     return r;
 }
 
+#endif // !WIN32
+
 int main(int argc, char *argv[])
 {
+#ifdef WIN32
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+// The page size gives the granularity at which memory protection can be
+// applied, and hence the granularity of information that WRITE_WATCH uses
+// when reporting "dirty pages".
+    printf("Windows page size = %" PRIx64 "\n",
+        (uint64_t)si.dwPageSize);
+// The allocation granularity is to do with aligment for memory block
+// allocation. Since and If I pass a NULL as the first argument to
+// VirtualAlloc I do not need to do anything about this, but the
+// returned memory will end up alligned as per this value.
+    printf("Windows allocation granularity = %" PRIx64 "\n",
+        (uint64_t)si.dwAllocationGranularity);
+    printf("About to VirtualAlloc\n");
+    fflush(stdout);
+    memory = (char *)VirtualAlloc(
+        NULL,                    // system selects address
+        MAX_MEMORY,              // size to allocate
+// I should consider MEM_WRITE_WATCH here since there is a chance that that
+// does pretty well exactly what I need! Well what it does is arrange to
+// monitow writes to all the area of memory allocated here.
+        MEM_RESERVE | MEM_COMMIT | MEM_WRITE_WATCH,
+                                 // allocate reserved pages
+        PAGE_READWRITE);         // Read and Write access
+    if (memory == NULL) fail("Unable to allocate memory\n");
+    printf("VirtualAlloc = %p\n", memory);
+#else // !WIN32
+    raw_memory = (char *)malloc(MAX_MEMORY+MAX_PAGE_SIZE);
+    if (raw_memory == NULL) fail("Unable to allocate memory\n");
     memory = (char *)((-(uintptr_t)MAX_PAGE_SIZE) &
                       (MAX_PAGE_SIZE - 1 + (uintptr_t)&raw_memory[0]));
+#endif // !WIN32
+    printf("Start of memory block:  %#" PRIx64 "\n", (uint64_t)memory);
 
-    for (size_t i=0; i<(MAX_MEM+MAX_PAGE_SIZE)/MIN_PAGE_SIZE; i++)
+    for (size_t i=0; i<(MAX_MEMORY+MAX_PAGE_SIZE)/MIN_PAGE_SIZE; i++)
         memory_used[i].clear();
     printf("size of atomic_flag = %.1f\n",
-        sizeof(memory_used)/(double)((MAX_MEM+MAX_PAGE_SIZE)/MIN_PAGE_SIZE));
+        sizeof(memory_used)/(double)((MAX_MEMORY+MAX_PAGE_SIZE)/MIN_PAGE_SIZE));
 
+#ifndef WIN32
 // Set a signal action handler for SIGSEGV
     struct sigaction new_action, old_action1, old_action2;
 // Do not disable any other signals while you process this one.
@@ -156,42 +200,72 @@ int main(int argc, char *argv[])
         fail("can not trap SIGSEGV\n");
     if (sigaction(SIGBUS, &new_action, &old_action2) == -1)
         fail("can not trap SIGBUS\n");
+#endif // WIN32
 
 // Determine the page size that this computer uses and complain if the
 // result is unexpected.
+#ifdef WIN32
+    page_size = si.dwPageSize;
+#else
     page_size = sysconf(_SC_PAGE_SIZE);
+#endif
     if (page_size == (size_t)(-1)) fail("unable to get page size\n");
     printf("page_size = %d = %#x\n", (int)page_size, (int)page_size);
     if (page_size < MIN_PAGE_SIZE ||
         page_size > MAX_PAGE_SIZE)
         fail("page_size is unacceptable here\n");
 
-    printf("Start of region:        %#" PRIx64 "\n", (uint64_t)memory);
-
+#ifndef WIN32
 // Here as a demonstration I will make pages 1 and 3 read-only.
     if (safe_mprotect(memory + 1*page_size, page_size, PROT_READ) == -1)
         fail("unable to page page 1 read-only");
     if (safe_mprotect(memory + 3*page_size, page_size, PROT_READ) == -1)
         fail("unable to make page 3 read-only");
+#endif // !WIN32
 
 // I am going to step through the memory writing bytes. Each time I
 // hit a page that I have marked read-only I should display a message
 // and reset it is R/W, and the rest of that page should then be
 // updated painlessly.
-    for (char *p = memory ; p<memory+6*page_size ; p+=1313)
+
+#ifdef WIN32
+#define STEP (2*page_size-1313)
+#else // !WIN32
+#define STEP 1313
+#endif // !WIN32
+    for (char *p = memory ; p<memory+6*page_size ; p+=STEP)
     {   *p = 'a';
+#ifdef WIN32
+        printf("Probe at %" PRIx64 "\n", (uint64_t)(p - memory));
+#else // !WIN32
         printf("#");
+#endif // !WIN32
         fflush(stdout);
     }
 
     printf("\nLoop completed\n");
 
 // Check that I have successfully written data everywhere I tried to.
-    for (char *p = memory ; p<memory+6*page_size ; p+=1313)
+    for (char *p = memory ; p<memory+6*page_size ; p+=STEP)
     {   if (*p != 'a') fail("memory not correct at end\n");
     }
 
-    for (size_t i=0; i<MAX_MEM/page_size; i++)
+#ifdef WIN32
+    void *changedpages[1000];
+    ULONG nchangedpages = 1000;
+    ULONG granularity;
+    if (GetWriteWatch(WRITE_WATCH_FLAG_RESET,
+            (void *)memory,
+            MAX_MEMORY,
+            changedpages,
+            &nchangedpages,
+            &granularity) != 0) fail("GetWriteWatch failed\n");
+    printf("Number of changed pages = %" PRIu64 "\n", (uint64_t)nchangedpages);
+    printf("Granularity = %" PRIu64 "\n", (uint64_t)granularity);
+    for (unsigned int i=0; i<nchangedpages; i++)
+        printf("%u: %" PRIx64 "\n", i, (uint64_t)changedpages[i]);
+#else // !WIN32
+    for (size_t i=0; i<MAX_MEMORY/page_size; i++)
     {
 // A side effect of checking the value of memory_used is that I set it!
         if (memory_used[i].test_and_set())
@@ -199,9 +273,13 @@ int main(int argc, char *argv[])
         }
         memory_used[i].clear();  // leave the map tidy.
     }
+#endif // !WIN32
+
     printf("End of demonstration/test\n");
     exit(EXIT_SUCCESS);
 }
+
+#ifndef WIN32
 
 // printf is not async exception safe, but write is, so I arrange that
 // I can generate messages from within the handler using write.
@@ -235,7 +313,7 @@ static void handler(int sig, siginfo_t *si, void *unused)
 // atomic type and a test-and-set operation is not needed - ie I could
 // probably just use and array of bools.
     if (addr >= (uintptr_t)memory &&
-        addr < (uintptr_t)memory + MAX_MEM)
+        addr < (uintptr_t)memory + MAX_MEMORY)
     {
 // mprotect is NOT in the list of async-signal-safe functions and so I
 // may only use it here if I guarantee that this handler will not be activated
@@ -249,5 +327,7 @@ static void handler(int sig, siginfo_t *si, void *unused)
     safe_print0("Resume test:\n");
     errno = errsav;
 }
+
+#endif // !WIN32
 
 // end of mprotect.cpp
