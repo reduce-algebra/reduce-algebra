@@ -5,7 +5,7 @@
 % Author:         Winfried Neun
 % Created:        Mai, 5, 2014
 % Mode:           Lisp
-% Status:       Open Source: BSD License
+% Status:         Open Source: BSD License
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -40,18 +40,43 @@
 
 (global '(*writingasmfile))
 
-(loadtime (on ImmediateQuote))
+(loadtime (off ImmediateQuote))
+
+% The following terminal operands try to follow the same meanings as
+% those outlined in the Motorola manuals.
+ 
+(flag '(Immediate                        % #xxx
+	UnImmediate                      % used for (unimmediate (immediate x))
+	Indirect                         % (An)
+	displacement                     % d(An)
+	predecrement                     % -(An)
+	postincrement                    % (An)+
+	Indexed                          % d(An,Dn)
+	absolute                         % absolute.long
+	extrareg                         % Regs 5 .. 15
+	idloc
+	reglist)
+	'TerminalOperand)
+ 
 
 (flag '(Immediate UnImmediate Indirect deferred label extrareg Indexed
 	displacement) 'TerminalOperand)
 
 % MkItem may be used when evaluating WConst expressions.
 
-(de MkItem (TagPart InfPart)
-  (lor (lsh TagPart 27) (land InfPart 16#7ffffff)))
+%(de MkItem (TagPart InfPart)
+%  (lor (lsh TagPart 27) (land InfPart 16#7ffffff)))
 
-(de regp (r) (eqcar r 'reg))
-
+(de RegP (RegName) 
+    (AND (eqcar Regname 'reg)
+	 (MemQ (cadr RegName) 
+	       '( 1  2  3  4  5
+		     R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 sp pc lr
+		     t1 t2 t3 fp
+             nil heaplast heaptrapbound symfnc symval
+	     bndstkptr bndstklowerbound
+	     bndstkupperbound))))
+ 
 (de short-immediate-p (X) (eq x (ashift (wshift x 16) -16)))
 
 (de pos-short-immediate-p (x) (and (numberp x)
@@ -59,9 +84,6 @@
 
 (de neg-short-immediate-p (x) (and (numberp x)
 				(greaterp x 16#ffff0000) (minusp x)))
-
-(de freep (asize)
-	(and (eq asize 0) (not &links-present&)))
 
 (de FiveP (x)  (eq x 5))
 
@@ -91,111 +113,183 @@
 
 % expansions of addressing modes.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       ANYREG DEFINITIONS
+% These are the patterns for anyreg definitions.  They are of the form:
+%
+% (DefAnyreg ANYREG_NAME RESOLUTION_FUNCTION_NAME
+%    ((Register_Predicate1) (Returned value))
+%    ((Register_Predicate2) (returned value))
+%    ...
+% )
+ 
+% The last element in the defintion has no predicate, it is a default
+% case.  "Anyregs" are flagged (on their property list) with 'ANYREG.
+% They have property indicators ANYREGPATTERNTABLE.  The predicate
+% value list, and the function  to call - ANYREGRESOLUTIONFUNCTION.
+%
+% The associated function of most ANYREG's is called with 2
+% arguments, a temporary REGISTER, used in the computation if needed,
+% and the single SOURCE.
+% The associated function usually uses (OneOperandAnyreg Register  Source
+% 'Anyregname) or (ExpandOneArgumentAnyReg Register Source
+% 'AnyregName). The 'AnyregName is used to find the associated pattern.
+% The MEMORY anyreg has an additional argument, called ARGTWO. The
+% (OneOperandAnyreg Register Source Anyregname)%
+% calls the lower level ExpandOneArgumentAnyreg, after replacing Source
+% by (ResolveOperand Register Source).  This function processes Source
+% to see if it is. The MEMORY anyreg means that the location is the
+% address of the source or destination.
+%It is important that the anyregs DO NOT assign any explicit
+% registers because an instruction may have two similar anyregs which
+% cause the explicit register to be used twice in the same instruction.
+% The future may require a scheme to allocate temporary A and D regs.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 (DefAnyreg CAR
-AnyregCAR   %Grab the source so caller can displace off it.
-%          ((regp anyp)    (displacement source 16#c0000000))
-%          ((anyp regp)    (*move SOURCE REGISTER)
-%                         (displacement REGISTER 16#c0000000))
+	   AnyregCAR   %Grab the source so caller can displace off it.
            (       (!*Field REGISTER SOURCE 5 27)
                    (displacement REGISTER 0))
 )
 
 (DefAnyreg CDR
            AnyregCDR     %Same as CAR, except move to next word in pair.
-%          ((regp anyp)    (displacement source 16#c0000004))
-%          ((anyp regp)    (*move SOURCE REGISTER)
-%                          (displacement REGISTER 16#c0000004))
            (       (!*Field REGISTER SOURCE 5 27)
                    (Displacement REGISTER 4)))
 
 
-(fluid '(*nextreg* *nextreglist*))
+(DefAnyreg MEMORY
+	   AnyregMEMORY
+	   ((RegP ZeroP)      (indirect SOURCE))
+	   ((Anyp ZeroP)      (*MOVE SOURCE REGISTER)
+			       (indirect REGISTER))
+ 	   ((RegP InumP)      (Displacement SOURCE ARGTWO))
+	   ((AnyP InumP)      (*MOVE SOURCE REGISTER)
+	                       (Displacement REGISTER ARGTWO))
+	   ((RegP RegP)       (Indexed ARGTWO (Displacement source 0)))
+	   ((RegP AnyP)       (*MOVE SOURCE REGISTER)
+			       (*WPLUS2 REGISTER ARGTWO)
+			       (indirect REGISTER))
+	   ((AnyP DispInumP)  (!*MOVE SOURCE REGISTER)
+			       (Indexed REGISTER (Displacement ARGTWO 0)))
+	   (                   (!*MOVE SOURCE REGISTER)
+			       (!*WPLUS2 REGISTER ARGTWO)
+			       (indirect REGISTER)))
 
-(setq *nextreg* 0        % Four registers should be sufficient
-      *nextreglist* '((reg t2) ))
 
-(de nexttempreg (x)   % ZIB  :This saves Regs , non static assignment
-     (setq *nextreg* (wplus2 *nextreg* 1))
-     (when (eq *nextreg* 4) (setq *nextreg* 1))
-     (nth *nextreglist* *nextreg*))
+(DefAnyreg FRAME
+  AnyregFRAME
+	   ((zerop)  (Indirect (reg st)))
+	   (         (Displacement (REG st) SOURCE)))
 
-(DefAnyreg Memory  ZIBanyregMemory)  % ZIB
-
-(de ZIBAnyregMemory (reg source offset)
-  (prog (aReg cadrsource)
-   (setq source (resolveoperand reg source))
-   (setq offset (resolveoperand reg offset))
-   (setq aReg (if (and (displacementp source)
-                    (member (setq cadrsource (cadr source))
-                                 *nextreglist*))
-               cadrsource      (nexttempreg)))
-   (unless (eq 0 offset) (push `(*wplus2 ,aReg ,offset) Resultingcode*))
-   (push `(*mkitem ,areg (quote 4)) Resultingcode*)
-   (return `(displacement ,areg 0))))
-  
-(DefAnyreg QUOTE
-	AnyregQUOTE
+% The compiler will tag expressions immediate in the procedure ResolveWConst.
+% Only expressions are tagged immediate, not numbers.
+ 
+ 
+(De AnyRegImmediate(REGISTER SOURCE)
+   (cond ((InumP  SOURCE)               SOURCE)
+	 ((Eqcar SOURCE 'Unimmediate)   SOURCE)
+	 (T                            (list 'immediate SOURCE) )
+     ))
+ 
+(DefAnyReg IMMEDIATE
+	   AnyRegImmediate)
+ 
+(Defanyreg QUOTE
+	   AnyregQUOTE
+	   ((BigIntP)  (quote SOURCE))  % more that 32 bits
+	   ((IntP)  SOURCE)    %?
            ((Null) (REG NIL))
-           ((EqTP) (reg t))
-           ((InumP) SOURCE)
-           (       (QUOTE SOURCE)))
-
-(de ibmrs-register-p (r)
-  (cond ((idp r)
-         (cond ((get r 'RegisterName) T)
-               ((get r '*other-name) (ibmrs-register-p (get r '*other-name)))
-               ((get r '*register-code) t)
-               ((get r '*f-register-code) t)
-               ((get r '*c-register-code) t)
-               (t nil)))
-        ((eqcar r 'REG) t)
-        (t nil)))
+	   (       (QUOTE SOURCE)))   %? Recursivly expand??
+ 
+(DefAnyreg WCONST
+           AnyregWCONST
+	   ((BigIntP)  (quote SOURCE))  % more that 32 bits
+           (SOURCE))
+ 
+(DefAnyreg REG
+	   AnyregREG
+	   ((FakeRegP)        (extrareg source))
+	   (                  (REG SOURCE)))
 
 
-(DefAnyreg FRAME ZIBAnyregFrame)
 
-(de ZIBAnyregFRAME (dum number)
-  (if (or *writingasmfile *usefastframe)
-     (if (lessp number 10) (getv frameregs* number)
-	`(displacement (reg st) ,(times2 4 number)))
-     `(displacement (reg st) (plus2 40 ,(times2 4 number)))))
+%% (fluid '(*nextreg* *nextreglist*))
 
-(DefAnyreg REG ZIBAnyregREG)
+%% (setq *nextreg* 0        % Four registers should be sufficient
+%%       *nextreglist* '((reg t2) ))
 
-(de ZIBanyregReg (reg source)
-   (cond ((Fakeregisternumberp source) % argumentblock lies just below SYMVAL
-	     `(indexed (reg symvalcenter) ,(wtimes2 (wplus2 source 7000) 4)))
-	 (t   `(REG ,SOURCE))))
+%% (de nexttempreg (x)   % ZIB  :This saves Regs , non static assignment
+%%      (setq *nextreg* (wplus2 *nextreg* 1))
+%%      (when (eq *nextreg* 4) (setq *nextreg* 1))
+%%      (nth *nextreglist* *nextreg*))
+
+%% (DefAnyreg Memory  ZIBanyregMemory)  % ZIB
+
+%% (de ZIBAnyregMemory (reg source offset)
+%%   (prog (aReg cadrsource)
+%%    (setq source (resolveoperand reg source))
+%%    (setq offset (resolveoperand reg offset))
+%%    (setq aReg (if (and (displacementp source)
+%%                     (member (setq cadrsource (cadr source))
+%%                                  *nextreglist*))
+%%                cadrsource      (nexttempreg)))
+%%    (unless (eq 0 offset) (push `(*wplus2 ,aReg ,offset) Resultingcode*))
+%%    (push `(*mkitem ,areg (quote 4)) Resultingcode*)
+%%    (return `(displacement ,areg 0))))
+  
+%% (de ibmrs-register-p (r)
+%%   (cond ((idp r)
+%%          (cond ((get r 'RegisterName) T)
+%%                ((get r '*other-name) (ibmrs-register-p (get r '*other-name)))
+%%                ((get r '*register-code) t)
+%%                ((get r '*f-register-code) t)
+%%                ((get r '*c-register-code) t)
+%%                (t nil)))
+%%         ((eqcar r 'REG) t)
+%%         (t nil)))
+
 
 (loadtime (remflag '(fluid global $fluid $global) 'Terminaloperand))
 
-(defanyreg Fluid ZIBanyregfluid)
+(DefAnyreg Fluid ZIBanyregfluid)
 
-(defanyreg $Fluid ZIBanyregfluid)
+(DefAnyreg $Fluid ZIBanyregfluid)
 
 (de ZIBanyregFluid (reg source)
    (cond ((and (idp source) (get source 'RegisterName))
 		         `(reg ,(get source 'RegisterName)))
 	 (t       `($Fluid ,SOURCE))))
 
-(defanyreg Global ZIBanyregglobal)
+(DefAnyreg Global ZIBanyregglobal)
 
-(defanyreg $Global ZIBanyregglobal)
+(DefAnyreg $Global ZIBanyregglobal)
 
 (de ZIBanyregGlobal (reg source)
    (cond ((and (idp source) (get source 'RegisterName))
 		         `(reg ,(get source 'RegisterName)))
 	 (t       `($global ,SOURCE))))
 
-%-----------------------------------------------------------------------------
-
-(de asmp (x) *writingasmfile)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                        CMACRO DEFINITIONS
+% Remember that it IS legal to use Other CMACROS in expansions%
+% or to define "fake" cmacros, ie procedures, for%
+% Common cases. If a new C-macro is not standard,%
+% e.g (*WFOO argone argtwo), then define its table and procedure.%
+% You may have to define some more "anyregs" or 'TerminalOperands%
+% Or define predicates to be CAREFUL.%
+% (def Cmacro *WFOO%
+%      ...... )%
+% (de *WFOO (Arg1 Arg2)%
+%   (Expand2OperandCmacro Arg1 Arg2 '*Wfoo))%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
 
 (DefCMacro *Call
-       ((InternallyCallableP)  (bl (InternalEntry ArgOne)))
+       ((InternallyCallableP)  (blx (InternalEntry ArgOne)))
 	(         (*move (idloc argone) (reg t3))
-		  (add (reg t2) (reg symfnc) (regshifted t2 LSL 2))
-		  (BL (reg t2)))
+		  (add (reg t2) (reg symfnc) (regshifted t3 LSL 2))
+		  (blx (reg t2)))
 )
 
 (DefCMacro *JCall
@@ -205,16 +299,10 @@ AnyregCAR   %Grab the source so caller can displace off it.
 		  (BX (reg t2)))
 )
 
-(de quote-fix-p (x)
-    (and (eqcar x 'quote) (fixp (cadr x))))
+(de indirectp (x)
+    (eqcar x 'indirect))
 
-(de displacement-p (x)
-    (and (eqcar x 'displacement)
-     (eqn (length x) 3) (ibmrs-register-p (cadr x))))
-
-(de deferred-p (x)
-    (and (pairp x) (or (ibmrs-register-p (car x))
-		   (eq (car x) 'deferred))))
+(de idlocp (x) (eqcar x 'idloc))
 
 (remprop '*move 'optfn)
 
@@ -222,47 +310,44 @@ AnyregCAR   %Grab the source so caller can displace off it.
        (Equal)
        ((regp regp)	    	 (MOV ArgTwo ArgOne))
        ((imm8-rotatedp regp)     (mov Argtwo ArgOne))
+       ((immediatep regp)        (mov Argtwo ArgOne))
+       ((fixp regp)              (mov ArgTwo (quote ArgOne)))
+       ((idlocp regp)            (ldr ArgTwo (quote ArgOne)))
+       ((regp indirectp)       (STR ArgOne ArgTwo))
+       ((indirectp regp)       (LDR ArgTwo ArgOne))
        ((regp anyp)              (str ArgOne ArgTwo))
        ((anyp regp)              (ldr ArgTwo ArgOne))
        (                         (*move ArgOne (reg t3))
 				 (*move (reg t3) ArgTwo)))
 
-(setq frameregs* '[ nil (reg r30) (reg r29) (reg r28) (reg r27)
-		(reg r26) (reg r25) (reg r24) (reg r23) (reg r22)])
 
 (de *ALLOC (framesize)
     (setq NAlloc!* framesize)
-    (if (freep (times2 addressingunitsperitem framesize)) NIL
-      (when (evenp framesize) (setq framesize (iadd1 framesize)))
-      (if (greaterp framesize 0)
+    (if (greaterp framesize 0)
 	`( (stm (reg sp) ((reg fp) (reg lr)) writeback)
-	  (sub (reg fp) (reg st) ,(times2 4 framesize)))
-	`((stm (reg sp) ((reg fp) (reg lr)) writeback)))))
+	   (sub (reg fp) (reg st) ,(times2 4 framesize)))
+      `((stm (reg sp) ((reg fp) (reg lr)) writeback))))
 
-(defcmacro *ALLOC)
+(DefCmacro *ALLOC)
 
 (de *DeAlloc (Framesize)
  (setq framesize (resolveoperand '(reg error) framesize))
- (if (freep (times2 addressingunitsperitem framesize)) NIL
-  (when (evenp framesize) (setq framesize (iadd1 framesize)))
-  (if (greaterp framesize 0)
-	`(
-	  (add (reg st) (reg st) ,(times2 4 framesize))
-	  (ldm (reg sp) ((reg fp) (reg lr)) writeback))
-	`(
-	  (ldm (reg sp) ((reg fp) (reg lr)) writeback)))
-  ))
+ (if (greaterp framesize 0)
+     `(
+       (add (reg st) (reg st) ,(times2 4 framesize))
+       (ldm (reg sp) ((reg fp) (reg lr)) writeback))
+   `(
+     (ldm (reg sp) ((reg fp) (reg lr)) writeback)))
+ )
 
-(defcmacro *deALLOC)
+(DefCmacro *DeAlloc)
 
 (de *Exit (N)
- (if (freep (times2 addressingunitsperitem N)) NIL
-  (when (evenp N) (setq N (iadd1 N))))
  (Expand1OperandCMacro
    (times N (compiler-constant 'AddressingUnitsPerItem)) '*Exit))
 
 (DefCMacro *Exit     % leaf routine first
-       ( (*dealloc (quotient argone AddressingUnitsPerItem))
+       ( (*DeAlloc (quotient argone AddressingUnitsPerItem))
 	 (bx (reg lr))))
 
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))
@@ -285,16 +370,16 @@ AnyregCAR   %Grab the source so caller can displace off it.
 
 (DefCMacro *3op
        ((regp regp) (ArgThree ArgOne ArgOne ArgTwo ))
-       ((regp short-immediate-p)
-		      (Argfour ArgOne ArgOne ArgTwo ))
+       ((regp imm8-rotatedp)
+		      (ArgThree ArgOne ArgOne ArgTwo ))
        ((regp AnyP)  (*move ArgTwo (reg T3))
-		      (*3op ArgOne (reg t3) ArgThree ArgFour))
+		      (*3op ArgOne (reg t3) ArgThree))
        ((Anyp regp)  (*move ArgOne (reg T3))
 		      (ArgThree (reg t3) ArgTwo (reg t3))
 		      (*move (reg t3) ArgOne))
-       ((Anyp short-immediate-p)
+       ((Anyp imm8-rotatedp)
 		      (*move ArgOne (reg T2))
-		      (ArgFour (reg t3) (reg t2) ArgTwo)
+		      (ArgThree (reg t3) (reg t2) ArgTwo)
 		      (*move (reg t3) ArgOne))
        (              (*move ArgTwo (reg T3))
 		      (*move ArgOne (reg T2))
@@ -375,44 +460,47 @@ AnyregCAR   %Grab the source so caller can displace off it.
 		    (mul (reg t1) (Reg t1) (reg t2))
 		    (*move (reg t1) ArgOne)))
  
-(defcmacro *wquotient)
+(DefCMacro *wquotient)
 
 (de *wquotient (arg1 arg2) (*wquotient3 arg1 arg1 arg2))
 
 (de *wquotient3 (arg1 arg2 arg3)
-    (expand3operandcmacro arg1 arg2 arg3 '*wquotient3))
+    (Expand3OperandCmacro arg1 arg2 arg3 '*wquotient3))
 
 % format ArgOne = ArgTwo / ArgThree
 
 (DefCMacro *wquotient3              
 	 ((anyp anyp onep)       (*move argtwo argone))
 	 ((regp regp powerof2p)  (*wquotientshift ArgOne ArgTwo ArgThree))
-	 ((regp regp regp)       (divs ArgOne ArgTwo Argthree))
+	 ((regp regp regp)       (*sdiv ArgOne ArgTwo Argthree))
 	 ((regp regp anyp)       (*move argthree (reg t1))
 		                 (*wquotient3 ArgOne ArgTwo (reg t1)))
 	   (        (*move ArgTwo (Reg t1))
 		    (*move ArgThree (reg t2))
-		    (divs (reg t1) (Reg t1) (reg t2))
+		    (*sdiv (reg t1) (Reg t1) (reg t2))
 		    (*move (reg t1) ArgOne)))
 
 (de *wquotientshift (arg1 arg2 arg3)
 	(setq arg3 (powerof2p arg3))
 	`((*asr arg1 arg2 arg3)))
 
-(defcmacro *wquotientshift)
+(DefCMacro *wquotientshift)
 
-(put 'wremainder 'opencode
-   '((divs (reg 1) (reg 1) (reg 2))
-     (mfspr (reg 1) (reg mq))))
-
+(DefCMacro *wremainder
+	   (       (*move ArgOne (reg t2))
+	           (*move ArgTwo (reg t1))
+		   (*sdiv (reg t2) (reg t2) (reg t1))
+		   (mul (reg t1) (reg t1) (reg t2))
+		   (*wdifference3 ArgOne ArgOne (reg t1))))
+				
 (DefCMacro *WAnd
-       ((*3op ArgOne ArgTwo and andil!.)))
+       ((*3op ArgOne ArgTwo and)))
 
 (DefCMacro *WOr
-       ((*3op ArgOne ArgTwo or oril)))
+       ((*3op ArgOne ArgTwo orr)))
 
 (DefCMacro *WXOr
-       ((*3op ArgOne ArgTwo xor xoril)))
+       ((*3op ArgOne ArgTwo eor)))
 
 (de fixplusp (x) (and (fixp x) (not (minusp x))))
 
@@ -511,10 +599,6 @@ AnyregCAR   %Grab the source so caller can displace off it.
 		         (*mkitem (reg t1) ArgTwo)
 		         (*move (reg t1) ArgOne)))
 
-(de smallinump (x) (short-immediate-p x))
-
-(de immediate-p (x)    (fixp x))
-
 (DefCmacro *Tag
       ((regp regp) (MOV ArgOne (regshifted ArgTwo LSR 27)))
       ((Anyp regp) (MOV (reg t1) (regshifted ArgTwo LSR 27))
@@ -525,7 +609,10 @@ AnyregCAR   %Grab the source so caller can displace off it.
 		    (*Tag ArgOne (reg t1))))
 
 (de *Tag (ar1 ar2)
-     (expand2operandCmacro ar1 ar2 '*Tag))
+     (Expand2OperandCMacro ar1 ar2 '*Tag))
+
+
+(de jump-immediate-offset-p (x) (offset26-p x))
 
 (DefCMacro *JumpType
       (             (*Tag (Reg t3) ArgOne)
@@ -570,7 +657,7 @@ AnyregCAR   %Grab the source so caller can displace off it.
 (DefCMacro *JumpIf
      ((regp regp)       (cmp ArgOne ArgTwo)
 		         (ArgFour ArgThree))
-     ((regp short-immediate-p) (cmp ArgOne ArgTwo)
+     ((regp imm8-rotatedp) (cmp ArgOne ArgTwo)
 			 (ArgFour ArgThree))
      ((regp anyp)       (*move ArgTwo (reg t3))
 		         (cmp ArgOne (reg t3))
@@ -578,7 +665,7 @@ AnyregCAR   %Grab the source so caller can displace off it.
      ((anyp  regp)      (*move ArgOne (reg t3))
 		         (cmp (reg t3) ArgTwo )
 		         (ArgFour ArgThree))
-     ((anyp short-immediate-p) (*move ArgOne (reg t3))
+     ((anyp imm8-rotatedp) (*move ArgOne (reg t3))
 		         (cmp (reg t3) ArgTwo)
 		         (ArgFour ArgThree))
      (                   (*move ArgOne (reg t3))
@@ -597,32 +684,32 @@ AnyregCAR   %Grab the source so caller can displace off it.
 		 )
 		 (get '*JumpIF 'CMacroPatternTable)))))
 
-(defcmacro *jumpeq)
+(DefCMacro *jumpeq)
 
 (de *jumpeq (Lbl ArgOne ArgTwo)
        (*jumpif ArgOne ArgTwo lbl '(beq . beq)))
 
-(defcmacro *jumpnoteq)
+(DefCMacro *jumpnoteq)
 
 (de *jumpnoteq(Lbl ArgOne ArgTwo)
 	(*jumpif ArgOne ArgTwo lbl '(bne . 'bne)))
 
-(defcmacro *jumpwlessp)
+(DefCMacro *jumpwlessp)
 
 (de *jumpwlessp (Lbl ArgOne ArgTwo)
 	(*jumpif ArgOne ArgTwo lbl '(blt . bge)))
 
-(defcmacro *jumpwgreaterp)
+(DefCMacro *jumpwgreaterp)
 
 (de *jumpwgreaterp (Lbl ArgOne ArgTwo)
 	(*jumpif ArgOne ArgTwo lbl '(bgt . ble)))
 
-(defcmacro *jumpwleq)
+(DefCMacro *jumpwleq)
 
 (de  *jumpwleq(Lbl ArgOne ArgTwo)
 	(*jumpif ArgOne ArgTwo lbl '(ble . bgt)))
 
-(defcmacro *jumpwgeq)
+(DefCMacro *jumpwgeq)
 
 (de *jumpwgeq (Lbl ArgOne ArgTwo)
 	(*jumpif ArgOne ArgTwo lbl '(bge . blt)))
@@ -696,18 +783,10 @@ AnyregCAR   %Grab the source so caller can displace off it.
 		(*Putfield (reg t3) (reg t2) ArgThree ArgFour)
 	 	(*move (reg t2) ArgTwo)))
 
-(deflist '((Byte        ((*mkitem (reg 1) (quote 4))
-			 (lbzx (reg 1) (reg 2) (reg 1))))
-	   (PutByte     ((*mkitem (reg 1) (quote 4))
-			 (stbx (reg 3) (reg 1) (reg 2))))
-%PPC%	   (HalfWord    ((sliq (reg t2) (reg 2) 1)
-	   (HalfWord    ((rlinm (reg t2) (reg 2) 1 0 30)
-			 (*mkitem (reg 1) (quote 4))
-		         (lhzx (reg 1) (reg 1) (reg t2))))
-%PPC%	   (PutHalfWord ((sliq (reg t2) (reg 2) 1)
-	   (PutHalfWord ((rlinm (reg t2) (reg 2) 1 0 30)
-			 (*mkitem (reg 1) (quote 4))
-		         (sthx (reg 3) (reg 1) (reg t2)))))
+(deflist '((Byte        ((ldrsb (reg 1) (displacement (reg 2) (reg 1)))))
+	   (PutByte     ((strb (reg 3) (displacement (reg 2) (reg 1)))))
+	   (HalfWord    ((ldrsh (reg 1) (displacement (reg 2) (reg 1)))))
+	   (PutHalfWord ((strh (reg 3) (displacement (reg 2) (reg 1))))))
   'OpenCode)
 
 (&OneReg '(Byte PutByte HalfWord PutHalfWord))
@@ -853,38 +932,28 @@ AnyregCAR   %Grab the source so caller can displace off it.
 		     (st (reg t3) (displacement (reg 1) 0)))))
 	 'opencode)
 
-(defcmacro *fast-apply-load
+(DefCMacro *fast-apply-load
    ( (*move ArgOne (reg t1)) ))
 
 (put 'fast-idapply    'opencode
-	 `((ai (reg t4) (reg symfnccenter) -32000)
-           (rlinm (reg t3) (reg t1) 0 5 31)
-%PPC%	   (sliq (reg t2) (reg t3) 2)
-	   (rlinm (reg t2) (reg t3) 2 0 29)
-	   (lx (reg t4) (reg t4) (reg t2))
-	   (mtspr (reg ctr) (reg t4))
-	   (bccl always 0)))
+     '((*move (reg t1) (reg t2)) % save id number
+       (*wshift (reg t2) 2)	   % times 4
+       (ldr (reg t2) (displacement (reg symfnc) (reg t2)))
+       (blx (reg t2))))
+     
+(put 'fast-idapply    'exitopencode
+     '((*move (reg t1) (reg t2)) % save id number
+       (*wshift (reg t2) 2)	   % times 4
+       (ldr (reg t2) (displacement (reg symfnc) (reg t2)))
+       (bx (reg t2))))
 
 (put 'fast-codeapply    'opencode
-	'((rlinm (reg t2) (reg t1) 0 5 31)
-          (*mkitem (reg t2) string-tag)
-	  (mtspr (reg ctr) (reg t2))
-	  (bccl always 0)))
-
-(put 'fast-idapply    'exitopencode
-	 `((ai (reg t4) (reg symfnccenter) -32000)
-	   (rlinm (reg t3) (reg t1) 0 5 31)
-%PPC%	   (sliq (reg t2) (reg t3) 2)
-	   (rlinm (reg t2) (reg t3) 2 0 29)
-	   (lx (reg t4) (reg t4) (reg t2))
-	   (mtspr (reg ctr) (reg t4))
-	   (bcc always 0)))
+     '((*field (reg t2) (reg t2) (wconst infstartingbit) (wconst infbitlength)) % extract codepointer
+       (blx (reg t2))))
 
 (put 'fast-codeapply    'exitopencode
-	'((rlinm (reg t2) (reg t1) 0 5 31)
-	  (*mkitem (reg t2) string-tag)
-	  (mtspr (reg ctr) (reg t2))
-	  (bcc always 0)))
+	'((*field (reg t2) (reg t2) (wconst infstartingbit) (wconst infbitlength)) % extract codepointer
+	  (bx (reg t2))))
 
 (De *LamBind (Regs Fluids)
 
@@ -905,7 +974,7 @@ AnyregCAR   %Grab the source so caller can displace off it.
 		                (cond ((member x regs) nil)
 		                       (t (cons x nil))
       )              ) )         )  )
-      (setq freeregs (nconc (list '(reg T3) '(reg T4)) freeregs))
+      (setq freeregs (nconc (list '(reg T3)) freeregs))
       (setq cfluids fluids) % copy of fluids
 
 preload  (setq initload
@@ -923,13 +992,14 @@ preload  (setq initload
        % freeregs contains the list of preloaded regs
        % and not preloaded fluids if those exist
 
-      (setq list `((*move (reg BndStkPtr) (Reg t1))
+      (setq list `((*move ($fluid BndStkPtr) (Reg t1))
 		   (*wplus3 (Reg t2) (Reg t1) ,lng)
-		   (cmp 0 (reg t2) (reg BndstkUpperBound))
-		   (*move (Reg t2) (reg BndstkPtr))
-		   (bc  false gt ,genlabel)
-		   (*call Bstackoverflow)  % is never come back
-		  ,genlabel   )) %start of code
+		   (*move ($fluid BndstkUpperBound) (reg t1))
+		   (cmp (reg t2) (reg t1))
+		   (bmi ,genlabel)
+		   (*call Bstackoverflow) % never come back
+		  ,genlabel
+		   (*move (Reg t2) ($fluid BndstkPtr))   )) %start of code
 
       (setq list (append initload list))
 
@@ -952,7 +1022,7 @@ preload  (setq initload
       (return list)
 )    )
 
-(defcmacro !*lambind)
+(DefCMacro !*lambind)
 
 (De *ProgBind (Fluids)
 
@@ -983,12 +1053,14 @@ preload  (setq initload
        % and not preloaded fluids if those exist
 
 
-      (setq list `((*move (reg BndStkPtr) (Reg t1))
-                   (*wplus2 (Reg BndstkPtr) ,lng)
-                   (cmp 0 (reg BndstkPtr) (reg BndstkUpperBound))
-                   (bc  false gt ,genlabel)
+      (setq list `((*move ($fluid BndStkPtr) (Reg t1))
+                   (*wplus3 (reg t2) (reg t1) ,lng)
+		   (*move ($fluid BndstkUpperBound) (reg t1))
+		   (cmp (reg t2) (reg t1))
+		   (bmi ,genlabel)
                    (*call Bstackoverflow)  % is never come back
-		   ,genlabel   )) %start of code
+		   ,genlabel
+		   (*move (Reg t2) ($fluid BndstkPtr))   )) %start of code
 
       (setq list (append initload list))
 
@@ -1008,7 +1080,8 @@ preload  (setq initload
       (cond ((setq Fluids (cdr Fluids)) (go loop)))
       (return list)
 )    )
-(defcmacro *progbind)
+
+(DefCMacro *progbind)
 
 (De *FreeRstr (Fluids)
 
@@ -1021,7 +1094,7 @@ preload  (setq initload
       (setq cfluids fluids) % copy of fluids
       (setq n (wtimes2 4 (wdifference 2 lng)))
       (setq lng (wtimes2 lng 4)) % * addressingunitperitem
-      (setq initload (list `(ai (reg t1) (reg Bndstkptr) ,n)))
+      (setq initload (list '(*move ($fluid Bndstkptr) (reg t1))))
       (setq n 0)
 
 preload  (setq initload
@@ -1031,7 +1104,7 @@ preload  (setq initload
 		(nconc listfluids (cons nil nil))) )
 	(nconc initload
 	 (if freeregs
-     `((*move (indexed (reg t1) ,n) ,(car freeregs))) nil)
+     `((*move (displacement (reg t1) ,n) ,(car freeregs))) nil)
        )   ))
        (setq n (wplus2 n 8))
        (when freeregs (setq freeregs (cdr freeregs)))
@@ -1044,12 +1117,13 @@ preload  (setq initload
        % freeregs contains the list of preloaded regs
        % and nil if not enough regs available
 
-      (setq list `((ai (Reg t2) (reg Bndstkptr) ,(minus lng))
-		   (cmp 0 (reg t2) (reg BndstkLowerBound))
-		   (*move (reg t2) (reg Bndstkptr))
-		   (bc false lt ,genlabel)
-		   (*call Bstackunderflow)
-		   ,genlabel  )) %start of code
+       (setq list `((sub (reg t2) (reg t1) ,lng)
+		    (*move ($fluid BndstkLowerBound) (reg t1))
+		    (cmp (reg t2) (reg t1))
+		    (bpl ,genlabel)
+		    (*call Bstackunderflow) % never returns
+		   ,genlabel
+		   (*move (reg t2) (reg Bndstkptr))  )) %start of code
 
      (setq list (append initload list))
      (setq n 0)
@@ -1062,14 +1136,15 @@ preload  (setq initload
 
       (setq list (append list
 	   (if (car freeregs) `((*move ,(car freeregs) ,cfluids ))
-		`((*move (indexed (Reg t2) ,n) ,cfluids )))
+		`((*move (displacement (reg t2) ,n) ,cfluids )))
 
       )          )
       (setq freeregs (cdr freeregs))
       (cond ((setq Fluids (cdr Fluids)) (go loop)))
       (return list)
 )    )
-(defcmacro *freerstr)
+
+(DefCMacro *freerstr)
 
 (setq *unsafebinder t)   % has to save Registers across calls
 
@@ -1083,25 +1158,17 @@ preload  (setq initload
        (setq ll2 (stringgensym))
        (SETQ X
 	(if (and (weq lowerbound 0) (weq upperbound 31))
-		  % jumpon on tags (most probably)
-      `((rlinm (reg t5) ,register 2 0 29) % 4 bytes per jumptable entry
-	(move-relocatable-object ,ll2 (reg t1))
-	(*wplus2 (reg t1) (reg t5))
-	(mtspr (reg ctr) (reg t1))
-	(bcc always 0)
+					% jumpon on tags (most probably)
+					% 4 bytes per jumptable entry
+      `((b (indirect (indexed (times ,register 8) (label ,ll2))))
        ,ll2)
-      `((cmpi 0 ,register ,upperbound )
-	(bc true eq ,(lastcar labellist))
-	(bc true gt (label ,ll))
-	(cmpi 0 ,register ,Lowerbound )
-	(bc true lt (label ,ll))
-        (ai (reg t5) ,register ,(minus lowerbound))
-%ppc%    (sliq (reg t5) (reg t5) 2 )  % 4 bytes per jumptable entry
-	(rlinm (reg t5) (reg t5) 2 0 29 )  % 4 bytes per jumptable entry
-	(move-relocatable-object ,ll2 (reg t1))
-	(*wplus2 (reg t1) (reg t5))
-	(mtspr (reg ctr) (reg t1))
-	(bcc always 0)
+      `((cmp ,register ,upperbound )
+	(beq ,(lastcar labellist))
+	(bgt (label ,ll))
+	(cmp ,register ,Lowerbound )
+	(b lt (label ,ll))
+        (*wdifference ,register ,lowerbound )
+	(jmp (indirect (indexed (times ,register 8) (label ,ll2))))
        ,ll2) ) )
       Loop  (Setq x (nconc X `((B ,(car Labellist)))))
 	    (setq Labellist (cdr Labellist))
@@ -1111,7 +1178,7 @@ preload  (setq initload
 	    (return x)
 )  )  )
 
-(defcmacro !*jumpon)
+(DefCMacro !*jumpon)
 
 
 
@@ -1121,82 +1188,13 @@ preload  (setq initload
 
 (de *foreignlink (functionname functiontype numberofarguments)
 
-	`((add (reg st) (reg st) -96)
-	(*move (reg t) (fluid *kernelmode))
-	(".globl " (foreignentry ,functionname))
-	(bl (foreignentry ,functionname))
-	(eor (reg 13) (reg 13) (reg 13))
-	(*move (reg NIL) (fluid *kernelmode))
-	(add (reg st) (reg st) 96)))
+    `((stm (reg st) (reglist r1 r2 r3 r4 r8 r9 r10 r11 r12)) % save caller-saved registers
+      (*move (reg t) (fluid *kernelmode))
+      (list 'call (list 'ForeignEntry FunctionName))
+      (*move (reg NIL) (fluid *kernelmode))
+      (ldm (reg st) (reglist r1 r2 r3 r4 r8 r9 r10 r11 r12)))) % restore saved registers
 
-(defcmacro !*foreignlink)
+(DefCMacro !*foreignlink)
 
-(defcmacro *movex)
-   % Movex is of type cmacro
 
-(de *movex (src dst)
-   (cond ((ibmrs-register-p dst)
-	  (cond ((ibmrs-register-p src) `((*move ,src ,dst)))
-		((eqcar src 'idloc) `((mov ,dst (displacement (reg 0) ,src))))
-		((and (eqcar src 'quote) (stringp (cadr src)))
-		     (if *writingasmfile           %% asmout and lap generate
-		         `((ldr ,dst "T.pslmain.s(2)")  %% different code.
-		           (ldr ,dst (displacement ,dst ,src)))
-		         `((move-relocatable-object ,src ,dst))))
-		((and (eqcar src 'quote) (idp (cadr src)))
-			(if *writingasmfile           %% asmout and lap generate
-                         `((mov ,dst (reg 0) 16#f000)  %% different code.
-                           (orrl ,dst ,dst (idloc ,(cadr src))))
-                         `((move-relocatable-object ,src ,dst))))
-		((and (eqcar src 'quote) (not *writingasmfile))
-			`((move-relocatable-object ,src ,dst)))
-		((ibmrs-absolute-p src)
-		 (if *writingasmfile           %% asmout and lap generate
-		     `((ldr ,dst "symval")  %% different code.
-		       (ldr ,dst (displacement ,dst (times2 4 (idloc src)) )))
-		     `((move-relocatable-object-and-load ,src ,dst))))
-		((ibmrs-fluid-p src)
-		     (if *writingasmfile
-		      `((ldr ,dst "symval")  %% different code.
-                        (ldr ,dst (displacement ,dst 
-					(times2 4 (idloc ,(cadr src)) ))))
-		      `((ldr ,dst (valueaddress ,src)))))
-		((short-immediate-p src) 
-				`((mov ,dst (displacement (reg 0) ,src ))))
-		((or (ibmrs-relocatable-immediate-p src)
-		     (ibmrs-foreignentry-p src))
-		 (if *writingasmfile           %% asmout and lap generate
-		     `((cau ,dst (reg 0) (hi16 ,src))  %% different code.
-		       (oril ,dst ,dst (lo16 ,src) ))
-		     `((move-relocatable-object ,src ,dst))))
-		((ibmrs-immediate-p src)
-		     `((cau ,dst (reg 0) (hi16 ,src))
-		       (oril ,dst ,dst (lo16 ,src))))
-		((ibmrs-huge-displacement-p src)
-		     `((cau ,dst (reg 0) (hi16 ,(caddr src)) )
-		       (oril ,dst ,dst (lo16 ,(caddr src)))
-		       (l ,dst (displacement ,(cadr src) ,dst))))
-		((ibmrs-indirect-p src) `((l ,dst ,src )))
-		(t  (error 0
-		 (list "Unknown addressing mode for *movex:" src dst)))))
-	 ((ibmrs-register-p src)
-	  (cond ((or (ibmrs-absolute-p dst) (ibmrs-foreignentry-p src))
-		 (if *writingasmfile
-		     `((cau (reg t6) (displacement (reg 0) (hi16 ,dst)))
-		       (oril (reg t6) (reg t6) (lo16 ,dst))
-		       (st ,src (displacement (reg t6) 0)))
-		     `((move-relocatable-object-and-store ,dst (reg t6) ,src))))
-		((and (ibmrs-fluid-p dst) *writingasmfile)
-		         `((ldr (reg t6) "symval")
-			   (str  ,src (displacement (reg t6)
-					(times2 4 (idloc ,(cadr dst)))))))
-		((ibmrs-fluid-p dst) `((st ,src (valueaddress ,dst ))))
-		((ibmrs-huge-displacement-p dst)
-		 `((cau (reg t6) (displacement (reg 0) (hi16 ,(caddr dst))))
-		   (oril (reg t6) (reg t6) (lo16 ,(caddr dst)))
-		   (stx ,src ,(cadr dst) (reg t6))))
-		((ibmrs-indirect-p dst) `((st ,src ,dst )))
-		(t  (error 0
-		        (list "Unknown addressing mode:" src dst)))))
-	(t (print (list " Unsaeglich: Move " src dst))
-)))
+

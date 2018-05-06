@@ -102,7 +102,7 @@
 (setq *lapopt t)
 
 (fluid '(*immediatequote))
-(setq *immediatequote t)
+(setq *immediatequote nil)
 (fluid '(*testlap))                     % diagnostic output from LAP  MK
 
 (ds LabelP (X) (atom X))
@@ -180,9 +180,10 @@
 		(foreach X in Entries* collect (first (car X))) 
 				CodeBase* CodeSize*))) 
 
-    (return (MkCODE LapReturnValue*)))) % How does this point at the code?
-					% It is a fluid variable that got
-					% set up when the code was generated.
+    (return (and LapReturnValue*	  % return nil if LapReturnValue* is not set
+	     (MkCODE LapReturnValue*))))) % How does this point at the code?
+					  % It is a fluid variable that got
+					  % set up when the code was generated.
 
 
 % CheckForInitCode will scan the Codelist for the first !*Entry
@@ -354,28 +355,28 @@
     (setq opname-string (string OpName))
     (setq fname (intern (bldmsg "%w.INSTR" OpName)))
     (setq OpName (MkQuote OpName))
-    (setq variants (pop u))
+%    (setq variants (pop u))
     (setq vars (pop u))
     (setq pattern
       (append u
 	`((t (laperr ',OpName  (list .,vars))))))
     (setq pattern (cons 'cond pattern))
-    (setq pattern
-	  `((lambda (*condbits* *set* *ldm-addr*) ,pattern)
-	    (get (or ,(car variants) 'AL) 'condition-bits)
-	    ,(if (cdr variants)
-		 `(if ,(cadr variants) 1 0)
-	       )
-	    ,(if (and (cdr variants) (cddr variants))
-		 `(get (or ,(caddr variants) 'IA) 'ldm-addressing-modes))
-	    ))
+    %% (setq pattern
+    %% 	  `((lambda (*condbits* *set* *ldm-addr*) ,pattern)
+    %% 	    (get (or ,(car variants) 'AL) 'condition-bits)
+    %% 	    ,(if (cdr variants)
+    %% 		 `(if ,(cadr variants) 1 0)
+    %% 	       )
+    %% 	    ,(if (and (cdr variants) (cddr variants))
+    %% 		 `(get (or ,(caddr variants) 'IA) 'ldm-addressing-modes))
+    %% 	    ))
     % (setq u `(lambda ,vars ,pattern)) 
     % (return `(put ,OpName 'InstructionDepositMacro ',u))
     (push opname-string *OpNameList*)
     (return
       `(progn
 	 (de ,fname ,vars ,pattern)
-	 (put ,OpName 'variants ',variants)
+%	 (put ,OpName 'variants ',variants)
 	 (put ,OpName 'InstructionDepositMacro ',fname)))
     ))
 
@@ -432,14 +433,21 @@
 	     bndstkptr bndstklowerbound
 	     bndstkupperbound))))
  
-(de sregp(x)
-  % test for a segment register
-  (and (eqcar x 'reg)
-       (memq (cadr x) sregs)))
-
 (de reglistp (x)
-    (and (pairp x) (regp (car x))
-	 (or (null (cdr x)) (reglistp (cdr x)))))
+    (and (eqcar Regname 'reg) (pairp (cdr x)) (reglistp1 (cdr x))))
+
+(de reglistp1 (x)
+    (or (null x)
+	(and (pairp x) (pairp (car x))
+	     (MemQ (cadr RegName) 
+		   '( 1  2  3  4  5
+			 R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 sp pc lr
+			 t1 t2 t3 fp
+			 nil heaplast heaptrapbound symfnc symval
+			 bndstkptr bndstklowerbound
+			 bndstkupperbound))
+	 (reglistp1 (cdr x)))))
+
 
 (de memoryp(x) 
   % supports reference to explicit addresses
@@ -493,6 +501,13 @@
 		 (and (null (cadddr x)) (eq (caddr x) 'RRX))))
 	)
     )
+
+(de reg-offset8-p (x)
+    (and (eqcar x 'displacement)
+	 (regp (cadr x))
+	 (fixp (caddr x))
+	 (lessp (caddr x) 256)
+	 (greaterp (caddr x) -256)))
 
 (de reg-offset12-p (x)
     (and (eqcar x 'displacement)
@@ -957,6 +972,7 @@
 
 
 %%  Instruction                                      Lisp expression for second operand
+%% LDR Rd,[Rn]                                         (indirect (reg n))
 %% LDR Rd,[Rn,+/-offset12]                             (displacement (reg n) +/-12bit-number)
 %% LDR Rd,[Rn,Rm]                                      (displacement (reg n) (reg m))
 %% LDR Rd,[Rn,+/-Rm]                                   (displacement (reg n) (plus|minus (reg m)))
@@ -976,10 +992,10 @@
 (de OP-ld-st (code regd reg-offset12)
     (prog (cc ld-bit opcode1 temp shift-op shift-amount regn displ pre-post p-bit u-bit w-bit regm lastbyte)
 	  (setq cc (car code) opcode1 (cadr code) ld-bit (caddr code) shift-amount 0)
-	  (if (or (not (eqcar reg-offset12 'displacement)) (not (regp (cadr reg-offset12))))
+	  (if (or (not (eqcar reg-offset12 'displacement)) (not (eqcar reg-offset12 'indirect)) (not (regp (cadr reg-offset12))))
 	      (stderror (bldmsg "Invalid LDR/STR operand %w" reg-offset12)))
 	  (setq regn (reg2int (cadr reg-offset12)))
-	  (setq displ (caddr reg-offset12))
+	  (setq displ (if (eqcar reg-offset12 'indirect) 0 (caddr reg-offset12)))
 	  (setq u-bit 1)
 	  (cond ((null (cdddr reg-offset12)) % no pre or post indexed
 		 (setq p-bit 1 w-bit 0))
@@ -1026,6 +1042,59 @@
     )
 
 (de lth-ld-st (code regn reg-offset12) 4)
+
+%%  Instruction                                      Lisp expression for second operand
+%% LDR Rd,[Rn,+/-offset8]                              (displacement (reg n) +/-8bit-number)
+%% LDR Rd,[Rn,Rm]                                      (displacement (reg n) (reg m))
+%% LDR Rd,[Rn,+/-Rm]                                   (displacement (reg n) (plus|minus (reg m)))
+%% LDR Rd,[Rn,+/-offset8]!                             (displacement (reg n) +/-8bit-number preindexed)
+%% LDR Rd,[Rn,Rm]!                                     (displacement (reg n) (reg m) preindexed)
+%% LDR Rd,[Rn,+/-Rm]!                                  (displacement (reg n) (plus|minus (reg m)) preindexed)
+%% LDR Rd,[Rn],+/-offset8                              (displacement (reg n) +/-8bit-number postindexed)
+%% LDR Rd,[Rn],Rm                                      (displacement (reg n) (reg m) postindexed)
+%% LDR Rd,[Rn],+/-Rm                                   (displacement (reg n) (plus|minus (reg m)) postindexed)  
+
+(de OP-ld-st-misc (code regd reg-offset8)
+    (prog (cc ld-bit opcode1 opcode2 temp shift-op shift-amount regn displ pre-post p-bit u-bit w-bit regm lastbyte)
+	  (setq cc (car code) opcode1 (cadr code) ld-bit (caddr code) opcode2 (cadddr code) shift-amount 0)
+	  (if (or (not (eqcar reg-offset8 'displacement)) (not (regp (cadr reg-offset8))))
+	      (stderror (bldmsg "Invalid misc. load/store operand %w" reg-offset8)))
+	  (setq regn (reg2int (cadr reg-offset8)))
+	  (setq displ (caddr reg-offset8))
+	  (setq u-bit 1)
+	  (cond ((null (cdddr reg-offset8)) % no pre or post indexed
+		 (setq p-bit 1 w-bit 0))
+		((memq (cadddr reg-offset8) '(preindexed postindexed))
+		 (setq pre-post (cadddr reg-offset8))
+		 (setq p-bit (if (eq pre-post 'preindexed) 1 0))
+		 (setq w-bit (if (eq pre-post 'preindexed) 1 0)))
+		(t (stderror (bldmsg "Invalid misc. load/store operand %w" reg-offset8))))
+	  (cond ((and (fixp displ) (lessp displ 256) (greaterp displ -256))
+		 (if (greaterp displ 0)
+		     (setq u-bit 1)
+		   (progn
+		     (setq u-bit 0)
+		     (setq displ (minus displ))))
+		 (setq temp (lsh displ -4))
+		 (setq lastbyte (land displ 16#0F)))
+		((or (not (pairp displ))
+		     (not (memq (car displ) '(reg plus minus))))
+		 (stderror (bldmsg "Invalid misc. load/store operand %w" reg-offset8)))
+		((or (regp displ)
+		     (and (memq (car displ) '(plus minus))
+			  (progn (if (eq (car displ) 'minus) (setq u-bit 0))
+				 (regp (setq displ (cadr displ))))))
+		 (setq temp 0)
+		 (setq lastbyte (reg2int displ)))
+		(t (stderror (bldmsg "Invalid misc. load/store operand %w" reg-offset8))))
+	  (DepositInstructionBytes
+	   (lor (lor (lsh cc 4) (lsh opcode1 -3)) p-bit)
+	   (lor (lor (lsh u-bit 7) (lsh (land opcode1 2#111) 5) ) (lor (lsh w-bit 5) (lor (lsh ld-bit 4) regn)))
+	   (lor (lsh (reg2int regd) 4) temp)
+	   (lor (lshift opcode2 4) lastnibble)))
+    )
+
+(de lth-ld-st-misc (code regn reg-offset8) 4)
 
 (de OP-ldm-stm (code regn reglist writeback?)
     (prog (cc opcode1 regbits ld-bit w-bit)

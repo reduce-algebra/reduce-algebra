@@ -118,7 +118,7 @@
 % Changed below to be like Vax version, so heap will be in bss. bao
 (setq ReserveZeroBlockFormat* "  .comm %w,%e%n")
 
-(put 'MkItem 'ASMExpressionFormat "[[%e\*0x8000000]+%e]" )
+(put 'MkItem 'ASMExpressionFormat "[[%e*0x8000000]+%e]" )
 
 (setq DefinedFunctionCellFormat* " .long %w%n")   %/ Must be LONG
 
@@ -137,11 +137,11 @@
 (DefList '(     (t1 "r5") 
   		(t2 "r6")
 		(t3 "r7")
-          	(fp "fp")
-		(pc "pc")
-		(lr "lr")
+          	(fp "fp")		% C frame pointer, R11
+		(pc "pc")		% R15
+		(lr "lr")		% R14
           	(sp "sp")
-          	(st "sp")		% Stack Pointer
+          	(st "sp")		% Stack Pointer, R13
 		(heaplast "r8")
 		(heaptrapbound "r9")
 		(symfnc "r10")
@@ -358,7 +358,7 @@
 
 (de OperandPrintRegshifted (x)
     (progn (setq x (cdr x))
-	   (PrintOperand (car x))
+	   (PrintOperand (if (eqcar (car x) 'reg) (car x) (list 'reg (car x))))
 	   (prin2 ", ")
 	   (prin2 (cadr x))
 	   (princ '! )			% SPACE
@@ -400,6 +400,18 @@
 ))
 
 (put 'displacement 'OperandPrintFunction 'OperandPrintDisplacement)
+
+(De OperandPrintIndirect (x)        % (indirect (reg x)) == (displacement (reg x) 0)
+   (prog (Rn rest)
+     (setq x (cdr x))
+     (setq Rn (car x) rest (cdr x))
+     (Prin2 "[")
+     (Printoperand (car x))
+     (cond ((eqcar rest 'preindexed) (prin2 '!]!!))
+           (t (prin2 "]")))
+))
+
+(put 'indirect 'OperandPrintFunction 'OperandPrintIndirect)
 
 % (Indexed (reg y)(displacement (reg x) disp))
 % or       (times (reg y) 1/2/4/8) (displacement (reg x) disp))
