@@ -2,8 +2,11 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 	<title>REDUCE Books</title>
 	<link rel="icon" type="image/png" href="images/icon.png" />
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+		integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous" />
 	<link rel="stylesheet" href="StyleSheet.css" />
 	<style type="text/css">
 		#main img {
@@ -60,15 +63,11 @@
 	</style>
 </head>
 <body>
-	<div id="content">
-		<header>Books</header>
-		<div id="middle">
-			<nav>
-				<script language="php">
-					include 'navigation.inc';
-				</script>
-			</nav>
-			<div id="main">
+	<div class="container-fluid">
+		<header><img src="images/icon.png" class="d-none d-md-block" />Books</header>
+		<div class="row">
+			<script language="php">include 'navigation.inc'; include 'footer.inc';</script>
+			<div id="main" class="col-md-9 col-xl-7">
 				<p>The definitive guide to using REDUCE, namely the REDUCE User&#39;s Manual, and other user guides are distributed with REDUCE and also <a href="documentation.php">available online</a>. In addition, the following books are available, sorted by publication date from newest to oldest. (They should also be included in the <a href="bibliography.php">bibliography</a>, but may be hard to find there.) Book titles and front cover images link to the publisher or to a bookseller such as Amazon (whichever seems more useful).</p>
 				<h2>Books primarily about REDUCE</h2>
 				<div>
@@ -166,7 +165,7 @@
 				</div>
 				<div>
 					<a href="https://www.amazon.co.uk/Computer-Algebra-Algorithms-Algebraic-Computation/dp/0122042328">
-						<img src="https://books.google.co.uk/books/content?id=h9tQAAAAMAAJ&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE73Aztscidl538_RNyv1SyCxy3hRsQ4pPRlO4NrLA0skCTjaT7oExzE-w4EMwIpHr5b-Cqv0_X12Oz6nnsD2i3MTkelLmcKe7kpIn70bJxU-8aAerSV5_BgZV-gCsWIZ9B4CmXgw" width="128" height="202" />
+						<img src="images/Davenport-Siret-Tournier.jpg" width="128" height="202" />
 						<span class="title">Computer Algebra</span></a>
 					<span class="subtitle">Systems and Algorithms for Algebraic Computation</span>
 					<span class="authors">by J. H. Davenport, Y. Siret and E. Tournier</span>
@@ -175,11 +174,6 @@
 			</div>
 			<!--/#main-->
 		</div>
-		<!--/#middle-->
-		<script language="php">
-			include 'footer.inc';
-		</script>
 	</div>
-	<!--/#content-->
 </body>
 </html>

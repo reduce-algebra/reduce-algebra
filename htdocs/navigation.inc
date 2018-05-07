@@ -1,5 +1,6 @@
-﻿<ul>
-<script language="php">
+﻿<nav class="col-md-3 col-xl-2">
+	<ul>
+		<script language="php">
     $filename = array_pop(explode('/', $_SERVER['PHP_SELF']));
     #echo "**Filepath: ${_SERVER['PHP_SELF']}**<br />";
     if (!$filename) $filename = 'index.php';
@@ -27,14 +28,21 @@
     menuItem('bibliography.php', 'Bibliography', 'Publications that reference REDUCE');
     menuItem('about.php', 'About REDUCE', 'History and contributors');
     menuItem('projects.php', 'Related Projects', 'Projects related to REDUCE');
-</script>
-</ul>
+		</script>
+	</ul>
 
-<a href="https://sourceforge.net/p/reduce-algebra/" rel="nofollow"><p>Download REDUCE from<br />
-	<img alt="Download REDUCE" src="https://sourceforge.net/sflogo.php?type=13&group_id=248416"></p></a>
+	<a href="https://sourceforge.net/p/reduce-algebra/" rel="nofollow">
+		<p>
+			Download REDUCE from<br />
+			<img alt="Download REDUCE" src="https://sourceforge.net/sflogo.php?type=13&group_id=248416">
+		</p>
+	</a>
 
-<div id="google_translate_element"></div><script type="text/javascript">
-function googleTranslateElementInit() {
-  new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
-}
-</script><script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+	<div id="google_translate_element"></div>
+	<script type="text/javascript">
+		function googleTranslateElementInit() {
+			new google.translate.TranslateElement({ pageLanguage: 'en' }, 'google_translate_element');
+		}
+	</script>
+	<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</nav>

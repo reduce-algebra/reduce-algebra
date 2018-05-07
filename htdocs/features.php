@@ -2,20 +2,19 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 	<title>REDUCE Features</title>
 	<link rel="icon" type="image/png" href="images/icon.png" />
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+		integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous" />
 	<link rel="stylesheet" href="StyleSheet.css" />
 </head>
 <body>
-	<div id="content">
-		<header>Features</header>
-		<div id="middle">
-			<nav>
-				<script language="php">
-					include 'navigation.inc';
-				</script>
-			</nav>
-			<div id="main">
+	<div class="container-fluid">
+		<header><img src="images/icon.png" class="d-none d-md-block" />Features</header>
+		<div class="row">
+			<script language="php">include 'navigation.inc'; include 'footer.inc';</script>
+			<div id="main" class="col-md-9 col-xl-7">
 				<p>
 					REDUCE is a system for general algebraic computations of interest to mathematicians, scientists and engineers, which is normally used interactively. It has been produced by a collaborative effort involving many <a href="about.php#contributors">contributors</a>.
 				</p>
@@ -79,13 +78,8 @@
 					REDUCE has a wide user base, which has led to a wide range of packages for specific purposes. A particular algebra system is often chosen for a given calculation because of its widespread use in a particular application area, with existing packages and templates being used to speed up problem solving. As evidenced by approximately 1000 reports listed in the current <a href="bibliography.php">bibliography</a>, REDUCE has a large and dedicated user community working in just about every branch of computational science and engineering. A large number of special purpose packages are available in support of this, with many contributed by users.
 				</p>
 			</div>
-			<!--/#main-->
+			<!--/main-->
 		</div>
-		<!--/#middle-->
-		<script language="php">
-			include 'footer.inc';
-		</script>
 	</div>
-	<!--/#content-->
 </body>
 </html>

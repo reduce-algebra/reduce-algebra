@@ -2,8 +2,11 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 	<title>External REDUCE Packages</title>
 	<link rel="icon" type="image/png" href="images/icon.png" />
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+		integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous" />
 	<link rel="stylesheet" href="StyleSheet.css" />
 	<style type="text/css">
 		dd {
@@ -12,15 +15,11 @@
 	</style>
 </head>
 <body>
-	<div id="content">
-		<header>External Packages</header>
-		<div id="middle">
-			<nav>
-				<script language="php">
-					include 'navigation.inc';
-				</script>
-			</nav>
-			<div id="main">
+	<div class="container-fluid">
+		<header><img src="images/icon.png" class="d-none d-md-block" />External Packages</header>
+		<div class="row">
+			<script language="php">include 'navigation.inc'; include 'footer.inc';</script>
+			<div id="main" class="col-md-9 col-xl-7">
 				<p>REDUCE distributions include a wide variety of specialized packages as <a href="documentation.php">described on the documentation page</a>. The external packages listed below use REDUCE but are not included in REDUCE distributions.</p>
 				<h2>Packages available separately for download</h2>
 				<dl>
@@ -45,11 +44,6 @@
 			</div>
 			<!--/#main-->
 		</div>
-		<!--/#middle-->
-		<script language="php">
-			include 'footer.inc';
-		</script>
 	</div>
-	<!--/#content-->
 </body>
 </html>

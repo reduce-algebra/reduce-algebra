@@ -2,20 +2,19 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 	<title>Help Wanted!</title>
 	<link rel="icon" type="image/png" href="images/icon.png" />
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+		integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous" />
 	<link rel="stylesheet" href="StyleSheet.css" />
 </head>
 <body>
-	<div id="content">
-		<header>Help Wanted!</header>
-		<div id="middle">
-			<nav>
-				<script language="php">
-					include 'navigation.inc';
-				</script>
-			</nav>
-			<div id="main">
+	<div class="container-fluid">
+		<header><img src="images/icon.png" class="d-none d-md-block" />Help Wanted!</header>
+		<div class="row">
+			<script language="php">include 'navigation.inc'; include 'footer.inc';</script>
+			<div id="main" class="col-md-9 col-xl-7">
 				<p>Contributors to the REDUCE project are warmly welcome! This page is meant to attract the attention of volunteers on several issues that have arisen in the REDUCE developers' community. Interested people should subscribe to the developers' mailing list and post an item indicating where they would like to help.</p>
 				<dl>
 					<dt>State of REDUCE algorithms</dt>
@@ -52,11 +51,6 @@
 			</div>
 			<!--/#main-->
 		</div>
-		<!--/#middle-->
-		<script language="php">
-			include 'footer.inc';
-		</script>
 	</div>
-	<!--/#content-->
 </body>
 </html>

@@ -2,20 +2,19 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 	<title>Obtaining REDUCE</title>
 	<link rel="icon" type="image/png" href="images/icon.png" />
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+		integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous" />
 	<link rel="stylesheet" href="StyleSheet.css" />
 </head>
 <body>
-	<div id="content">
+	<div class="container-fluid">
 		<h1>REDUCE versions</h1>
-		<div id="middle">
-			<nav>
-				<script language="php">
-					include 'navigation.inc';
-				</script>
-			</nav>
-			<div id="main">
+		<div class="row">
+			<script language="php">include 'navigation.inc'; include 'footer.inc';</script>
+			<div id="main" class="col-md-9 col-xl-7">
 				<p>REDUCE is based on a dialect of Lisp called <i><a href="lisp-docs/sl.pdf">Standard Lisp</a></i>, and the differences between versions are the result of different implementations of this Lisp; in each case the source code for REDUCE itself remains the same. The available versions of REDUCE are based on two different Lisps, namely:</p>
 				<dl>
 					<dt><strong>Portable Standard Lisp (PSL)</strong></dt>
@@ -29,11 +28,6 @@
 			</div>
 			<!--/#main-->
 		</div>
-		<!--/#middle-->
-		<script language="php">
-			include 'footer.inc';
-		</script>
 	</div>
-	<!--/#content-->
 </body>
 </html>

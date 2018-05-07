@@ -2,8 +2,11 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 	<title>REDUCE Documentation</title>
 	<link rel="icon" type="image/png" href="images/icon.png" />
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+		integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous" />
 	<link rel="stylesheet" href="StyleSheet.css" />
 	<style type="text/css">
 		#main a {
@@ -12,15 +15,11 @@
 	</style>
 </head>
 <body>
-	<div id="content">
+	<div class="container-fluid">
 		<h1>REDUCE 3.8 Documentation</h1>
-		<div id="middle">
-			<nav>
-				<script language="php">
-						include 'navigation.inc';
-				</script>
-			</nav>
-			<div id="main">
+		<div class="row">
+			<script language="php">include 'navigation.inc'; include 'footer.inc';</script>
+			<div id="main" class="col-md-9 col-xl-7">
 				<p>REDUCE 3.8, released in 2004, was the last commercial release of REDUCE before it became Open Source in 2008. This page provides access to the REDUCE 3.8 documentation, mainly for historical interest.</p>
 				<p>One key document is the <a href="reduce38-docs/reduce.pdf">REDUCE User&#39;s Manual</a>, version 3.8. This provides a comprehensive guide to the REDUCE language and the supported packages. A comprehensive html-based <a href="reduce38-docs/help/index.html">help facility</a> indexes essentially all capabilities of the system. A <a href="reduce38-docs/primer.pdf">primer</a> for the symbolic mode of REDUCE and the <a href="reduce38-docs/sl.pdf">Standard Lisp Report</a> are also online.</p>
 				<p>The particular packages with their own documentation are as follows:</p>
@@ -344,7 +343,7 @@
 					</li>
 					<li>
 						<a href="reduce38-docs/rlfi.pdf">rlfi</a> The RLFI package provides the 
-  printing of REDUCE expressions in LaTeX format, so it can be used directly for 
+  printing of REDUCE expressions in <span class="latex">L<sup>a</sup>T<sub>e</sub>X</span> format, so it can be used directly for 
   document production. 
 					</li>
 					<li>
@@ -419,7 +418,7 @@
 					</li>
 					<li>
 						<a href="reduce38-docs/tri.pdf">tri</a> This package provides facilities 
-  written in Rlisp for typesetting REDUCE formulas using TEX.
+  written in Rlisp for typesetting REDUCE formulas using <span class="tex">T<sub>e</sub>X</span>.
   <a href="reduce38-docs/tritest.tex">Examples</a> of using this program are also 
   available. 
 					</li>
@@ -496,11 +495,6 @@ version is also available.</li>
 			</div>
 			<!--/#main-->
 		</div>
-		<!--/#middle-->
-		<script language="php">
-			include 'footer.inc';
-		</script>
 	</div>
-	<!--/#content-->
 </body>
 </html>

@@ -1,35 +1,15 @@
 ﻿body {
-    font-family: Arial, Helvetica, sans-serif;
-    color: black;
-    background-color: #ddf;
-    margin: 0;
-}
-
-div#content {
-    max-width: 60em;
-    margin: 0 auto;
     background-color: #eef;
-    padding: 0.4em 24px 1em;
-}
-
-div#middle {
-    display: flex;
-}
-
-div#main {
-    width: 100%;
-}
-
-nav {
-    margin-right: 24px;
 }
 
 header {
-    background-image: url(images/icon.png), url(images/header.gif);
+    position: relative; /* for absolute positioning of icon img element (below) */
+    background-image: /*url(images/icon.png),*/ url(images/header.gif);
     background-repeat: no-repeat;
-    background-position: 56px center, center;
+    background-position: /*56px center,*/ center;
     height: 60px;
     line-height: 60px;
+    font-family: Arial, Helvetica, sans-serif; /* for correct alignment with the background image */
     font-size: 40px;
     font-weight: bold;
     text-align: center;
@@ -37,19 +17,19 @@ header {
     color: #0F0;
 }
 
+    header > img { /* icon */
+        position: absolute;
+        top: 6px;
+        left: 6px;
+    }
+
     header + p { /* subheader */
         color: #009;
         text-align: center;
-        font-family: Georgia, Times, 'Times New Roman', serif;
         font-size: 21px;
         font-weight: bold;
         margin: 0;
     }
-
-h1, h2 {
-    font-family: Georgia, Times, 'Times New Roman', serif;
-    font-weight: bold;
-}
 
 h1 {
     color: #009;
@@ -57,10 +37,7 @@ h1 {
 }
 
 footer {
-    border-top: thin solid black;
     text-align: center;
-    margin-top: 1em;
-    display: block;
     font-size: 0.8rem;
 }
 
@@ -76,24 +53,8 @@ a img {
     text-decoration: none;
 }
 
-a:link {
-    color: #6666CC
-}
-
-a:visited {
-    color: #999999
-}
-
-a:active {
-    color: #663333
-}
-
 ul {
     list-style-image: url(images/pixbul1.gif)
-}
-
-pre, code {
-    font-size: 120%
 }
 
 /* Navigation panel */
@@ -166,23 +127,20 @@ nav {
     text-shadow: none;
 }
 
-dt {
-    font-weight: bold
-}
-
 /* TeX and LaTeX logo markup from http://tess.oconnor.cx/2007/08/tex-poshlet */
 .tex sub, .latex sub, .latex sup {
+    position: static; /* undo a change made by Bootstrap (Reboot) */
     text-transform: uppercase;
+}
+
+.tex, .latex, .tex sub, .latex sub {
+    font-size: 1em;
 }
 
 .tex sub, .latex sub {
     vertical-align: -0.5ex;
     margin-left: -0.1667em;
     margin-right: -0.125em;
-}
-
-.tex, .latex, .tex sub, .latex sub {
-    font-size: 1em;
 }
 
     .latex sup {

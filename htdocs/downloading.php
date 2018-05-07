@@ -2,20 +2,19 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta charset="utf-8" />
-	<title>Obtaining REDUCE from SourceForge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+	<title>Downloading REDUCE from SourceForge</title>
 	<link rel="icon" type="image/png" href="images/icon.png" />
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+		integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous" />
 	<link rel="stylesheet" href="StyleSheet.css" />
 </head>
 <body>
-	<div id="content">
-		<h1>Obtaining REDUCE from SourceForge</h1>
-		<div id="middle">
-			<nav>
-				<script language="php">
-					include 'navigation.inc';
-				</script>
-			</nav>
-			<div id="main">
+	<div class="container-fluid">
+		<h1>Downloading REDUCE from SourceForge</h1>
+		<div class="row">
+			<script language="php">include 'navigation.inc'; include 'footer.inc';</script>
+			<div id="main" class="col-md-9 col-xl-7">
 				<p>The SourceForge repository contains several versions of REDUCE, including the complete sources for both REDUCE and the underlying CSL Lisp system. The best place to start downloading is the REDUCE <a href="http://www.sourceforge.net/projects/reduce-algebra/">project page</a> at SourceForge.</p>
 				<h2>Compiled Versions</h2>
 				<p>There are several compiled versions available for download. To obtain one of these, click on the white Download link at the right of the page near the top, and then click on reduce-algebra under &quot;Package.&quot; You will then see several instances of the available binaries. Please use the latest version if that meets your needs. Otherwise, click on the other links, and a variety of versions will be displayed. Hopefully one of these will meet your needs. The relevant files are there in zip format. To use them, create a directory where you wish to store them (e.g., &quot;reduce&quot;), connect to this directory, and then unzip the contents of the downloaded file. Among the files produced should be a REDUCE executable.</p>
@@ -43,11 +42,6 @@
 			</div>
 			<!--/#main-->
 		</div>
-		<!--/#middle-->
-		<script language="php">
-			include 'footer.inc';
-		</script>
 	</div>
-	<!--/#content-->
 </body>
 </html>
