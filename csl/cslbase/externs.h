@@ -910,6 +910,7 @@ extern LispObject get_pname(LispObject a);
 extern LispObject get(LispObject a, LispObject b, LispObject c=nil);
 extern LispObject get_basic_vector(int tag, int type, size_t length);
 extern LispObject get_basic_vector_init(size_t n, LispObject v);
+extern LispObject reduce_basic_vector_size(LispObject v, size_t len);
 extern LispObject get_vector(int tag, int type, size_t length);
 extern LispObject get_vector_init(size_t n, LispObject v);
 extern LispObject reduce_vector_size(LispObject n, size_t length);
@@ -928,7 +929,9 @@ extern bool       lesseq2(LispObject a, LispObject b);
 extern bool       lessp2(LispObject a, LispObject b);
 extern LispObject list2(LispObject a, LispObject b);
 extern LispObject list2star(LispObject a, LispObject b, LispObject c);
+extern LispObject list2starrev(LispObject a, LispObject b, LispObject c);
 extern LispObject list3(LispObject a, LispObject b, LispObject c);
+extern LispObject list3rev(LispObject a, LispObject b, LispObject c);
 extern LispObject list3star(LispObject a, LispObject b,
                             LispObject c, LispObject d);
 extern LispObject list4(LispObject a, LispObject b,

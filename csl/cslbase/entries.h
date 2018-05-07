@@ -1,8 +1,8 @@
-// entries.h                               Copyright (C) Codemist 1991-2017
+// entries.h                               Copyright (C) Codemist 1991-2018
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -195,6 +195,7 @@ extern LispObject Lfloatp(LispObject env, LispObject a);
 extern LispObject Lfrexp(LispObject env, LispObject a);
 extern LispObject Lfuncall_1(LispObject env, LispObject fn);
 extern LispObject Lgc(LispObject env, LispObject a);
+extern LispObject Lgc_forcer1(LispObject env, LispObject a);
 extern LispObject Lgensym0(LispObject env, LispObject a, const char *s);
 extern LispObject Lgensym1(LispObject env, LispObject a);
 extern LispObject Lgensym2(LispObject env, LispObject a);
@@ -371,6 +372,7 @@ extern LispObject Lflag(LispObject env, LispObject a, LispObject b);
 extern LispObject Lflagp(LispObject env, LispObject a, LispObject b);
 extern LispObject Lflagpcar(LispObject env, LispObject a, LispObject b);
 extern LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1);
+extern LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b);
 extern LispObject Lgcd_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lgeq_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lget(LispObject env, LispObject a, LispObject b);
