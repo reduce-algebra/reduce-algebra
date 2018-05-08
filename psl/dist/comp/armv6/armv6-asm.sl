@@ -90,6 +90,10 @@
                                          % [20] is a reasonable guess at aU
                                          % size specification
 
+(setq RoDataFileNameFormat* "rod%w.s")       % postfix the "d" so that the files
+                                         % [20] is a reasonable guess at aU
+                                         % size specification
+
 (setq InitFileNameFormat* "%w.init")     % [20] is a reasonable guess at a
                                          % size specification; it may need to
                                          % be changed.
@@ -180,7 +184,13 @@
 (de DataFileHeader nil 
   (DataPrintF "        .data%n")) 
 
-(de DataFileTrailer nil 
+(de RoDataFileHeader nil 
+  (RoDataPrintF "        .rodata%n")) 
+
+(de DataFileTrailer nil
+    nil)
+
+(de RoDataFileTrailer nil 
   nil)
 
 (de CodeFileTrailer nil 

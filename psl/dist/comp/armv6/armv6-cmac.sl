@@ -71,7 +71,7 @@
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
 	       '( 1  2  3  4  5
-		     R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 sp pc lr
+		     R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 sp st pc lr
 		     t1 t2 t3 fp
              nil heaplast heaptrapbound symfnc symval
 	     bndstkptr bndstklowerbound
@@ -311,8 +311,8 @@
        ((regp regp)	    	 (MOV ArgTwo ArgOne))
        ((imm8-rotatedp regp)     (mov Argtwo ArgOne))
        ((immediatep regp)        (mov Argtwo ArgOne))
-       ((fixp regp)              (mov ArgTwo (quote ArgOne)))
-       ((idlocp regp)            (ldr ArgTwo (quote ArgOne)))
+       ((fixp regp)              (!*LoadConstant ArgTwo (quote ArgOne)))
+       ((idlocp regp)            (!*LoadConstant ArgTwo ArgOne))
        ((regp indirectp)       (STR ArgOne ArgTwo))
        ((indirectp regp)       (LDR ArgTwo ArgOne))
        ((regp anyp)              (str ArgOne ArgTwo))
@@ -320,6 +320,16 @@
        (                         (*move ArgOne (reg t3))
 				 (*move (reg t3) ArgTwo)))
 
+(de *LoadConstant (dest cst)
+  (setq cst (WConstEvaluable cst))
+  (if (imm8-rotatedp cst)
+      `( (mov ,dest ,cst))
+    (progn
+%      (setq cst (SaveConstant cst))
+      `( (ldr ,dest (quote ,cst)))))
+)
+
+(DefCMacro !*LoadConstant)
 
 (de *ALLOC (framesize)
     (setq NAlloc!* framesize)
@@ -737,8 +747,9 @@
 
 (DefCMacro *Field
 
+  ((regp regp Fivep TwentySevenP) (BIC ArgOne ArgTwo 16#F8000000))
   ((regp anyp Fivep TwentySevenP) (*move ArgTwo ArgOne)
-                                   (BIC ArgOne 16#F8000000))
+                                   (BIC ArgOne ArgOne 16#F8000000))
   ((regp regp fixp fixp) (*lsl ArgOne ArgTwo ArgThree)
                          (*lsr ArgOne ArgOne (difference 32 ArgFour)))
   ((regp anyp fixp fixp) (*move ArgTwo (reg t3))

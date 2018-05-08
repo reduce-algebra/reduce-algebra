@@ -205,27 +205,27 @@
    % if X = ( _____ !*!*!*Code!*!*Pointer!*!*!* ... )
    ((equal (second x) '***code**pointer***) 
     (setq lapreturnvalue* 
-      (if *writingfaslfile currentoffset* (wplus2 codebase* currentoffset*))))
+      (if *writingfaslfile CurrentOffset* (wplus2 codebase* CurrentOffset*))))
 
    % If depositing into memory
    ((not *writingfaslfile) 
-    (setq entries* (cons (cons (rest x) currentoffset*) entries*)) 
+    (setq entries* (cons (cons (rest x) CurrentOffset*) entries*)) 
     (unless lapreturnvalue* (setq lapreturnvalue*
-		 (wplus2 codebase* currentoffset*))))
+		 (wplus2 codebase* CurrentOffset*))))
 
    % if X = ( _____ !*!*Fasl!*!*InitCode!*!* ... )
    ((equal (second x) '**fasl**initcode**) 
-    (setq initoffset* currentoffset*))
+    (setq initoffset* CurrentOffset*))
 
    % if X is an InternalFunction
    ((flagp (second x) 'internalfunction) 
-    (put (second x) 'internalentryoffset currentoffset*))
+    (put (second x) 'internalentryoffset CurrentOffset*))
 
    (t (progn
-       (put (second x) 'internalentryoffset currentoffset*) % MK
+       (put (second x) 'internalentryoffset CurrentOffset*) % MK
        (findidnumber (second x))
        (dfprintfasl (list 'putentry (mkquote (second x)) 
-			  (mkquote (third x)) currentoffset*))))))
+			  (mkquote (third x)) CurrentOffset*))))))
      
 
 % DefineEntries()
@@ -304,25 +304,25 @@
 % This actually dispatches to the procedures to assemble the instrucitons
 % version with address calculation test
 (prog (Y l offs) 
-      (when *testlap (prin2 currentoffset*) (tab 10) (print x))
-      (when *writingfaslfile (setq offs currentoffset*))
+      (when *testlap (prin2 CurrentOffset*) (tab 10) (print x))
+      (when *writingfaslfile (setq offs CurrentOffset*))
       (cond ((setq Y (get (first X) 'InstructionDepositFunction)) 
 	     (Apply Y (list X)))
 	    ((setq Y (get (first X) 'InstructionDepositMacro))
 	     (apply3safe y (cdr x)))
 	    (t (StdError (BldMsg "Unknown ARMv6 instruction %p" X))))
-      (when (and offs (not (equal currentoffset* (plus offs (instructionlength x)))))
+      (when (and offs (not (equal CurrentOffset* (plus offs (instructionlength x)))))
 	(StdError (BldMsg "length error with instruction %p: %p"
-			  x (difference (difference currentoffset* offs)
+			  x (difference (difference CurrentOffset* offs)
 					(instructionlength x)))))
       ))
 
 (de DepositLabel (x) 
-    (when *testlap (prin2 currentoffset*) (tab 10) (print x))
+    (when *testlap (prin2 CurrentOffset*) (tab 10) (print x))
     (when (and *writingfaslfile 
-	       (not (equal currentoffset* (LabelOffset x)))) 
+	       (not (equal CurrentOffset* (LabelOffset x)))) 
 	  (StdError (BldMsg "wrong address for label %p: difference = %p" 
-		       x    (difference currentoffset* (LabelOffset x)))))) 
+		       x    (difference CurrentOffset* (LabelOffset x)))))) 
 	   
 
 %
@@ -427,26 +427,19 @@
     (AND (eqcar Regname 'reg)
 	 (MemQ (cadr RegName) 
 	       '( 1  2  3  4  5
-		     R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 sp pc lr
+		     R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 sp st pc lr
 		     t1 t2 t3 fp
              nil heaplast heaptrapbound symfnc symval
 	     bndstkptr bndstklowerbound
 	     bndstkupperbound))))
  
 (de reglistp (x)
-    (and (eqcar Regname 'reg) (pairp (cdr x)) (reglistp1 (cdr x))))
+    (and (pairp x) (eqcar (car x) 'reg) (pairp (cdr x)) (reglistp1 (cdr x))))
 
 (de reglistp1 (x)
     (or (null x)
-	(and (pairp x) (pairp (car x))
-	     (MemQ (cadr RegName) 
-		   '( 1  2  3  4  5
-			 R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 sp pc lr
-			 t1 t2 t3 fp
-			 nil heaplast heaptrapbound symfnc symval
-			 bndstkptr bndstklowerbound
-			 bndstkupperbound))
-	 (reglistp1 (cdr x)))))
+	(and (pairp x) (regp (car x))
+	     (reglistp1 (cdr x)))))
 
 
 (de memoryp(x) 
@@ -495,7 +488,7 @@
 
 (de reg-shifter-p (x)
     (or (and (pairp x) (regp x))
-	(and (eqcar x 'regshifted) (regp (cadr x))
+	(and (eqcar x 'regshifted) (regp (list 'reg (cadr x)))
 	     (memq (caddr x) shift-ops*)
 	     (or (fixp (cadddr x)) (regp (cadddr x))
 		 (and (null (cadddr x)) (eq (caddr x) 'RRX))))
@@ -510,11 +503,17 @@
 	 (greaterp (caddr x) -256)))
 
 (de reg-offset12-p (x)
-    (and (eqcar x 'displacement)
-	 (regp (cadr x))
-	 (fixp (caddr x))
-	 (lessp (caddr x) 4096)
-	 (greaterp (caddr x) -4096)))
+    (cond ((stringp x) t)
+	  ((atom x) nil)
+	  ((eq (car x) 'indirect) (regp (cadr x)))
+	  ((and (memq (car x) '(displacement indirect)) (regp (cadr x)))
+	   (or
+	    (and (fixp (caddr x)) (lessp (caddr x) 4096) (greaterp (caddr x) -4096))
+	    (reg-shifter-p (cadr x))
+	    (and (pairp (cadr x)) (memq (caadr x) '(plus minus)) (reg-shifter-p (cadr (cadr x))))))
+	  (t nil))
+    )
+	      
 
 (de pm-reg-shifter-p (x)
     (and (eqcar x 'displacement)
@@ -531,10 +530,13 @@
     t)
 
 (de offset26-p (x)
-    (and (fixp x)
-	 (lessp x (add1 16#1FFFFFC))
-	 (greaterp x (sub1 -33554432))
+    (or (labelp x)
+	(and (eqcar x 'immediate) (setq x (cadr x))
+	     (fixp x)
+	     (lessp x (add1 16#1FFFFFC))
+	     (greaterp x (sub1 -33554432))
 	 )
+	)
     )
 
 
@@ -582,8 +584,14 @@
 	   (R12 12) (R13 13) (R14 14) (R15 15)
 	   (fp  11)
 	   (sp  13)        % LISP stack register
+	   (st  13)
 	   (lr  14)
 	   (pc  15)
+	   (heaplast 8)
+	   (heapupperbound 9)
+	   (symfnc 10)
+	   (symval 11)
+	   (nil 12)
 	 ) 'registercode)
 )
 (de bytep(n)
@@ -672,8 +680,9 @@
 (de LTH-imm8-reg (code op1 op2) (if (cdr code) 3 2))
 
 (de OP-branch-imm (code offset)
+    (setq offset (MakeExpressionRelative offset 4))
     (if (not (weq (land offset 2#11) 0))
-	(stderror (bldmsg "Invalid immediate branch operand %w" offset))
+	(stderror (bldmsg "Invalid immediate branch offset %w" offset))
       (progn
 	(setq offset (ashift offset -2))
 	(DepositInstructionBytes
@@ -717,7 +726,7 @@
    (depositword n)
    (when *testlap (tab 15)(prin2 "-> ")
 	 (prin2 n) (prin2 " rel = ")
-	 (prin2 (plus currentoffset* n))(prin2t " abs"))))
+	 (prin2 (plus CurrentOffset* n))(prin2t " abs"))))
 (de lth-jump (code op1) (if (cdr code) 6 5))
 
 
@@ -731,7 +740,7 @@
    (depositbyte (bytep n))
    (when *testlap (tab 15)(prin2 "-> ") 
 	 (prin2 n) (prin2 " rel = ")
-	 (prin2 (plus currentoffset* n))(prin2t " abs"))))
+	 (prin2 (plus CurrentOffset* n))(prin2t " abs"))))
 (de lth-JUMP-SHORT (code op1) 2)
  
 % indirect jump to effective address
@@ -896,11 +905,11 @@
 (de lth-reg-shifter (code reg1 reg2 reg-shifter) 4)
 
 (de OP-regn-imm8 (code regn imm8-rotated)
-    (prog (cc opcode1 opcode2 imm8-decoded set-bit)
+    (prog (cc opcode1 imm8-decoded set-bit)
 	  (setq imm8-decoded (decode-32bit-imm8-rotated imm8-rotated))
 	  (if (null imm8-decoded)
 	      (stderror (bldmsg "Invalid imm8 operand %w" imm8-rotated)))
-	  (setq cc (car code) set-bit (cadr code) opcode1 (caddr code) opcode2 (cadddr code))
+	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code))
 	  (DepositInstructionBytes
 	   (lor (lsh cc 4) (lsh opcode1 -3))
 	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4)) (reg2int regn))
@@ -910,12 +919,12 @@
 
 (de lth-regn-imm8 (code regn imm8-rotated) 4)
 
-(de OP-regd-imm8 (code regd imm8-rotated set-bit)
-    (prog (cc opcode1 opcode2 imm8-decoded)
+(de OP-regd-imm8 (code regd imm8-rotated)
+    (prog (cc opcode1 imm8-decoded set-bit)
 	  (setq imm8-decoded (decode-32bit-imm8-rotated imm8-rotated))
 	  (if (null imm8-decoded)
 	      (stderror (bldmsg "Invalid imm8 operand %w" imm8-rotated)))
-	  (setq cc (car code) set-bit (cadr code) opcode1 (caddr code) opcode2 (cadddr code))
+	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code))
 	  (DepositInstructionBytes
 	   (lor (lsh cc 4) (lsh opcode1 -3))
 	   (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4))
@@ -992,12 +1001,19 @@
 (de OP-ld-st (code regd reg-offset12)
     (prog (cc ld-bit opcode1 temp shift-op shift-amount regn displ pre-post p-bit u-bit w-bit regm lastbyte)
 	  (setq cc (car code) opcode1 (cadr code) ld-bit (caddr code) shift-amount 0)
-	  (if (or (not (eqcar reg-offset12 'displacement)) (not (eqcar reg-offset12 'indirect)) (not (regp (cadr reg-offset12))))
+	  (if (and
+	       (not (stringp reg-offset12))
+	       (or (not (pairp reg-offset12)) (not (memq (car reg-offset12) '(displacement indirect))) (not (regp (cadr reg-offset12)))))
 	      (stderror (bldmsg "Invalid LDR/STR operand %w" reg-offset12)))
-	  (setq regn (reg2int (cadr reg-offset12)))
-	  (setq displ (if (eqcar reg-offset12 'indirect) 0 (caddr reg-offset12)))
+	  (if (labelp reg-offset12)	% label --> pc-relative
+	      (progn
+		(setq regn 15)
+		(setq displ (MakeExpressionRelative reg-offset12 4)))
+	    (progn
+	      (setq regn (reg2int (cadr reg-offset12)))
+	      (setq displ (if (eqcar reg-offset12 'indirect) 0 (caddr reg-offset12)))))
 	  (setq u-bit 1)
-	  (cond ((null (cdddr reg-offset12)) % no pre or post indexed
+	  (cond ((or (labelp reg-offset12) (null (cddr reg-offset12)) (null (cdddr reg-offset12))) % no pre or post indexed
 		 (setq p-bit 1 w-bit 0))
 		((memq (cadddr reg-offset12) '(preindexed postindexed))
 		 (setq pre-post (cadddr reg-offset12))
@@ -1055,7 +1071,7 @@
 %% LDR Rd,[Rn],+/-Rm                                   (displacement (reg n) (plus|minus (reg m)) postindexed)  
 
 (de OP-ld-st-misc (code regd reg-offset8)
-    (prog (cc ld-bit opcode1 opcode2 temp shift-op shift-amount regn displ pre-post p-bit u-bit w-bit regm lastbyte)
+    (prog (cc ld-bit opcode1 opcode2 temp shift-op shift-amount regn displ pre-post p-bit u-bit w-bit regm lastnibble)
 	  (setq cc (car code) opcode1 (cadr code) ld-bit (caddr code) opcode2 (cadddr code) shift-amount 0)
 	  (if (or (not (eqcar reg-offset8 'displacement)) (not (regp (cadr reg-offset8))))
 	      (stderror (bldmsg "Invalid misc. load/store operand %w" reg-offset8)))
@@ -1076,7 +1092,7 @@
 		     (setq u-bit 0)
 		     (setq displ (minus displ))))
 		 (setq temp (lsh displ -4))
-		 (setq lastbyte (land displ 16#0F)))
+		 (setq lastnibble (land displ 16#0F)))
 		((or (not (pairp displ))
 		     (not (memq (car displ) '(reg plus minus))))
 		 (stderror (bldmsg "Invalid misc. load/store operand %w" reg-offset8)))
@@ -1085,7 +1101,7 @@
 			  (progn (if (eq (car displ) 'minus) (setq u-bit 0))
 				 (regp (setq displ (cadr displ))))))
 		 (setq temp 0)
-		 (setq lastbyte (reg2int displ)))
+		 (setq lastnibble (reg2int displ)))
 		(t (stderror (bldmsg "Invalid misc. load/store operand %w" reg-offset8))))
 	  (DepositInstructionBytes
 	   (lor (lor (lsh cc 4) (lsh opcode1 -3)) p-bit)
@@ -1193,7 +1209,7 @@
 	   (return (StdError "Only labels can be relative")))) 
 
     (setq X (plus CurrentOffset* OffsetFromHere)) 
-    (setq Y (LabelOffset Exp)) 
+    (setq Y (LabelOffset Exp))
     (return (Difference Y X))))
 
 
@@ -1207,10 +1223,10 @@
 		  (progn
 		    (setq offset 
 		     (difference offset 
-		      (plus2 currentoffset* offsetfromhere))))
+		      (plus2 CurrentOffset* offsetfromhere))))
 		  (progn
 		    (setq forwardinternalreferences* 
-		     (cons (cons currentoffset* nam) 
+		     (cons (cons CurrentOffset* nam) 
 		      forwardinternalreferences*))
 		    0)))))
 	% will be fixed in SystemFasl...
@@ -1234,17 +1250,16 @@
 
 (fluid '(ConditionalJumps*))
 (setq ConditionalJumps* 
-  '((jo  . jno)  (jno  . jo)
-    (jp  . jnp)  (jnp  . jp)
-    (jz  . jnz)  (jnz  . jz)
-    (je  . jne)  (jne  . je)
-    (jb  . jae)  (jae  . jb)  (jbe  . ja)  (ja  . jbe)
-    (jnb . jnae) (jnae . jnb) (jnbe . jna) (jna . jnbe)
-    (jl  . jge)  (jge  . jl)  (jle  . jg)  (jg  . jle) 
-    (jnl . jnge) (jnge . jnl) (jnle . jng) (jng . jnle)
+  '((beq  . bne)  (bne  . beq)
+    (bcs  . bcc)  (bcc  . bcs)
+    (bmi  . bpl)  (bpl  . bmi)
+    (bvs  . bvc)  (bvc  . bvs)
+    (bhi  . bls)  (bls  . bhi)
+    (bge  . blt)  (blt  . bge)
+    (bgt  . ble)  (ble  . bgt)
 ))
 
-(de reformBranches (code)
+(de ReformBranches (code)
   (prog (rcode instr bottom x y z)
     (while code
        (setq instr (pop code))
@@ -1276,17 +1291,15 @@
 % ------------------------------------------------------------
 
 (deflist '(
-   (JMP JMPL) (JO JOL) (JB JBL)(JNAE JNAEL)(JNB JNBL)
-   (JAE JAEL) (JE JEL) (JZ JZL)(JNE JNEL)(JNZ JNZL)
-   (JBE JBEL)(JNA JNAL)(JNBE JNBEL)(JA JAL)(JS JSL)
-   (JNS JNSL)(JP JPL)(JPE JPEL)(JNP JNPL)(JPO JPOL)
-   (JL JLL)(JNGE JNGEL)(JNL JNLL)(JGE JGEL)(JLE JLEL)
-   (JNG JNGL)(JNLE JNLEL)(JG JGL)
+   (BEQ BEQ) (BNE BNE) (BCS BCS)(BCC BCC)
+   (BMI BMI) (BPL BPL) (BVS BVS)(BVC BVC)
+   (BHI BHI)(BLS BLS)(BGE BGE)(BLT BLT)
+   (BGT BGT)(BLE BLE)(BAL BAL)
    (B B) (BX BX) (BLX BLX)
 ) 'WordBranch)
 
 (de GeneralBranchInstructionP (i) (get i 'WordBranch))
-(de LocalLabelp (l) (atom (saniere-sprungziel l)))
+(de LocalLabelp (l) (atom (saniere-Sprungziel l)))
 
 % ProcessInitCode CodeList
 % Purpose: Take a code list which has already been expanded by Pass1Lap
@@ -1334,7 +1347,7 @@
   (if (&smember 'fastapply u) u (alignCode1 u)))
 
 (de alignCode1(u)
-   (let(rcode w (a currentoffset*) l x y z q s nops)
+   (let(rcode w (a CurrentOffset*) l x y z q s nops)
      (while u
        (setq w (pop u))
        (setq nops 0)
@@ -1501,7 +1514,7 @@
     (return 
      (cond ((EqCar L 'InternalEntry) (FindEntryOffset (second L))) 
 
-	   ((setq Offset (Atsoc (saniere-sprungziel L) BranchAndLabelAList*)) (cdr Offset))
+	   ((setq Offset (Atsoc (saniere-Sprungziel L) BranchAndLabelAList*)) (cdr Offset))
 	   (t (StdError (BldMsg "Unknown label %r" L)))))))
 
 
@@ -1533,13 +1546,14 @@
 % Procedures to compute instruction lengths
 % ------------------------------------------------------------
 
-(de InstructionLength (X) 4)
-%%   (prog (Y) 
-%%       (when (setq Y (get (car x) 'InstructionLengthFunction))
-%%	     (return (apply3safe y (cdr x))))
-%%       (when (setq Y (get (car x) 'INSTRUCTIONLENGTH))
-%%	     (return (if (numberp y) y (apply y (list x)))))
-%%       (stderror (bldmsg "*** Unknown ARMv6 instruction:%w " x))))
+(de InstructionLength (X)
+   (prog (Y) 
+       (when (setq Y (get (car x) 'InstructionLengthFunction))
+	     (return (apply3safe y (cdr x))))
+       (when (setq Y (get (car x) 'INSTRUCTIONLENGTH))
+	 (return (if (numberp y) y (apply y (list x)))))
+       (return 4)))
+%       (stderror (bldmsg "*** Unknown ARMv6 instruction:%w " x))))
 
 (de apply2safe(y x) % ensure that plly has two parameters at least
      (cond ((null x) (apply y (list nil nil)))
@@ -1593,18 +1607,18 @@
     (setq CurrentOffset* (plus CurrentOffset* 2))))
 
 (de depositword (x)
-  (putword (wplus2 codebase* currentoffset*) 0 x)
+  (putword (wplus2 codebase* CurrentOffset*) 0 x)
   (updatebittable 4 0)
-  (setq currentoffset* (plus currentoffset* 4)))
+  (setq CurrentOffset* (plus CurrentOffset* 4)))
 
 (de deposit-relocated-word (offset)
   % Given an OFFSET from CODEBASE*, deposit a word containing the
   % absolute address of that offset.
-  (putword (wplus2 codebase* currentoffset*)
+  (putword (wplus2 codebase* CurrentOffset*)
 	   0 
 	   (iplus2 offset (if *writingfaslfile 0 codebase*)))
   (updatebittable 4 (const reloc_word))
-  (setq currentoffset* (plus currentoffset* 4)))
+  (setq CurrentOffset* (plus CurrentOffset* 4)))
   
 (de depositwordexpression (x)
   % Only limited expressions now handled
@@ -1618,7 +1632,7 @@
 	     (deposit-relocated-word offset)
 	     (progn
 	       (setq forwardinternalreferences*
-		     (cons (cons currentoffset* (second x))
+		     (cons (cons CurrentOffset* (second x))
 			   forwardinternalreferences*))
 	       (deposit-relocated-word 0)))))
       ((and (eq (car x) 'mkitem)
@@ -1637,9 +1651,9 @@
     ((or (not *writingfaslfile) (leq (idinf x) 128)) 
      (depositword (idinf X)))
     (t
-      (putword (wplus2 codebase* currentoffset*) 0 
+      (putword (wplus2 codebase* CurrentOffset*) 0 
 	       (makerelocword (const reloc_id_number) (findidnumber x))) 
-      (setq currentoffset* (plus currentoffset* 4)) 
+      (setq CurrentOffset* (plus CurrentOffset* 4)) 
       (updatebittable 4 (const reloc_word)))))
 
 (de DepositHalfWordExpression (X) 
@@ -1695,9 +1709,9 @@
     (cond ((or (not *WritingFaslFile) (LEQ (IDInf X) 128)) 
 	(DepositHalfWord (IDInf X))) (t 
     
-    (progn (puthalfword (wplus2 codebase* currentoffset*) 0 
+    (progn (puthalfword (wplus2 codebase* CurrentOffset*) 0 
 		    (makerelochalfword (const reloc_id_number) (findidnumber x))) 
-	(setq currentoffset* (plus currentoffset* 2)) 
+	(setq CurrentOffset* (plus CurrentOffset* 2)) 
 	(updatebittable 2 (const reloc_halfword))))))
 
 % ------------------------------------------------------------
@@ -1712,7 +1726,7 @@
 (de systemfaslfixup ()
   (prog (x)
      % THIS VERSION ASSUMES 32 bit RELATIVE ADDESSES, HM.
-     (setq x (remainder currentoffset* 16))
+     (setq x (remainder CurrentOffset* 16))
      (while (greaterp x 0) (depositbyte 0) (setq x (sub1 x)))
      (while forwardinternalreferences*
        (setq x (get (cdr (first forwardinternalreferences*)) 

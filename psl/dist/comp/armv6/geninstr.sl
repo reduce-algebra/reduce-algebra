@@ -207,11 +207,11 @@
 ))
 
 (de partial-mkquote (l)
-    (if (not (or (memq '*condbits* l) (memq '*set* l) (memq '*ldm-addr* l)))
+    (if (not (or (memq '*condbits* l) (memq '*setbit* l)))
 	(mkquote l)
       (cons 'list
 	    (foreach x in l collect
-		     (if (or (numberp x) (memq x '(*condbits* *set*)))
+		     (if (or (numberp x) (memq x '(*condbits* *setbit*)))
 			 x
 		       (mkquote x))))))
 
@@ -306,11 +306,11 @@ nil)
 		 .,(reverse (get u 'INSTRCASES))))
   (eval (list 'pp v))
   
-%%  (setq v
-%%   `(DefOpLength ,u ,(get u 'OpcodeVariants)
-%%                    ,(parameterlist (get u 'ARGNO))
-%%		 .,(reverse (get u 'LENGTHCASES))))
-%%  (eval (list 'pp v))
+  (setq v
+   `(DefOpLength ,u ,(get u 'OpcodeVariants)
+                    ,(parameterlist (get u 'ARGNO))
+		 .,(reverse (get u 'LENGTHCASES))))
+  (eval (list 'pp v))
  (terpri)))
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -499,8 +499,8 @@ nil)
 
 % LDR(B)T / STR(B)T -- only priviledged mode
 
-(instr LDM (LDM *cond* *ldm-addr*)     (reg reglist writeback?)       OP-ldm-stm *condbits* 2#1000000 1)
-(instr STM (STM *cond* *ldm-addr*)     (reg reglist writeback?)       OP-ldm-stm *condbits* 2#1000000 0)
+(instr LDM (LDM *cond*)     (reg reglist writeback?)       OP-ldm-stm *condbits* 2#1000000 1)
+(instr STM (STM *cond*)     (reg reglist writeback?)       OP-ldm-stm *condbits* 2#1000000 0)
 (instr LDM (LDM *cond* IA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000100 1)
 (instr STM (STM *cond* IA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000100 0)
 (instr LDM (LDM *cond* IB)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1001100 1)

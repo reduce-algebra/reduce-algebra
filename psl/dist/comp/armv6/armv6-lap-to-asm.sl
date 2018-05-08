@@ -102,9 +102,10 @@
 
 (fluid '(semic* *comp *plap dfprint* charactersperword 
                  addressingunitsperitem addressingunitsperfunctioncell 
-                 inputsymfile* outputsymfile* codeout* dataout* 
+                 inputsymfile* outputsymfile* codeout* dataout* rodataout*
                  initout* !; codefilenameformat* datafilenameformat* 
-                 initfilenameformat* modulename* uncompiledexpressions* 
+                 initfilenameformat* rodatafilenameformat*
+		 modulename* uncompiledexpressions* 
                  nextidnumber* orderedidlist* nilnumber*
 		 *mainfound % Main entry point found /csp
                  *main % Compiling "main" module (MAIN.RED) /csp           
@@ -131,6 +132,9 @@
 
 (when (null initfilenameformat*)
   (setq initfilenameformat* "%w.init"))
+
+(when (null rodatafilenameformat*)
+  (setq rodatafilenameformat* "rod%w.s"))
 
 (de dfprintasm (u)
   % Called by top-loop, dskin, dfprint to compile a single form.
@@ -278,6 +282,13 @@
     )
   (datafileheader)
 
+  (setq rodataout* (open (bldmsg rodatafilenameformat* modulename*) 'output))
+  (let ((oldout (wrs rodataout*)))
+    (linelength 1000)
+    (wrs oldout)
+    )
+  (rodatafileheader)
+
   % Open the INIT output file.
 
   (setq initout* (open (bldmsg initfilenameformat* modulename*) 'output))
@@ -305,6 +316,7 @@
   (codefiletrailer)
   (close codeout*)
   (datafiletrailer)
+  (rodatafiletrailer)
   (close dataout*)
   (close initout*)
   (remd 'lap)
@@ -757,6 +769,9 @@
 (de dataprintlabel (x)
   (dataprintf labelformat* x x))
 
+(de rodataprintlabel (x)
+  (rodataprintf labelformat* x x))
+
 (de codeprintlabel (x)
   (codeprintf labelformat* x x))
 
@@ -926,6 +941,12 @@
 (de dataprintf (fmt a1 a2 a3 a4)
   (prog (oldout)
         (setq oldout (wrs dataout*))
+        (printf fmt a1 a2 a3 a4)
+        (wrs oldout)))
+
+(de rodataprintf (fmt a1 a2 a3 a4)
+  (prog (oldout)
+        (setq oldout (wrs rodataout*))
         (printf fmt a1 a2 a3 a4)
         (wrs oldout)))
 
