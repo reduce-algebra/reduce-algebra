@@ -680,7 +680,7 @@
 (de LTH-imm8-reg (code op1 op2) (if (cdr code) 3 2))
 
 (de OP-branch-imm (code offset)
-    (setq offset (MakeExpressionRelative offset 4))
+    (setq offset (MakeExpressionRelative offset 8))
     (if (not (weq (land offset 2#11) 0))
 	(stderror (bldmsg "Invalid immediate branch offset %w" offset))
       (progn
@@ -714,34 +714,34 @@
 	(foreach x in code do (depositbyte x)))
 (de lth-byte (code) (length code))
 
-%---------------------------------------------------------------------
-% jump to absolute address
-% 386 has only relative jumps
-(de OP-Jump (code op1)
-  (prog(n)
-   (depositbyte (car code))
-   (when (cdr code) (depositbyte (cadr code)))
-   (setq op1 (saniere-Sprungziel op1))
-   (setq n(MakeExpressionrelative op1 4)) % offset wrt next instr
-   (depositword n)
-   (when *testlap (tab 15)(prin2 "-> ")
-	 (prin2 n) (prin2 " rel = ")
-	 (prin2 (plus CurrentOffset* n))(prin2t " abs"))))
-(de lth-jump (code op1) (if (cdr code) 6 5))
+%% %---------------------------------------------------------------------
+%% % jump to absolute address
+%% % 386 has only relative jumps
+%% (de OP-Jump (code op1)
+%%   (prog(n)
+%%    (depositbyte (car code))
+%%    (when (cdr code) (depositbyte (cadr code)))
+%%    (setq op1 (saniere-Sprungziel op1))
+%%    (setq n(MakeExpressionrelative op1 8)) % offset wrt next instr
+%%    (depositword n)
+%%    (when *testlap (tab 15)(prin2 "-> ")
+%% 	 (prin2 n) (prin2 " rel = ")
+%% 	 (prin2 (plus CurrentOffset* n))(prin2t " abs"))))
+%% (de lth-jump (code op1) (if (cdr code) 6 5))
 
 
-%jump short (8-bit displacement)
-(de OP-JUMP-SHORT (code op1)
-  (prog(n a)
-   (depositbyte (car code))
-   (setq op1 (saniere-Sprungziel op1))
-   (setq n(MakeExpressionrelative op1 1)) % offset wrt next instr
-   (when (not (bytep n)) (stderror  "distance too long for short jump"))
-   (depositbyte (bytep n))
-   (when *testlap (tab 15)(prin2 "-> ") 
-	 (prin2 n) (prin2 " rel = ")
-	 (prin2 (plus CurrentOffset* n))(prin2t " abs"))))
-(de lth-JUMP-SHORT (code op1) 2)
+%% %jump short (8-bit displacement)
+%% (de OP-JUMP-SHORT (code op1)
+%%   (prog(n a)
+%%    (depositbyte (car code))
+%%    (setq op1 (saniere-Sprungziel op1))
+%%    (setq n(MakeExpressionrelative op1 1)) % offset wrt next instr
+%%    (when (not (bytep n)) (stderror  "distance too long for short jump"))
+%%    (depositbyte (bytep n))
+%%    (when *testlap (tab 15)(prin2 "-> ") 
+%% 	 (prin2 n) (prin2 " rel = ")
+%% 	 (prin2 (plus CurrentOffset* n))(prin2t " abs"))))
+%% (de lth-JUMP-SHORT (code op1) 2)
  
 % indirect jump to effective address
 (de OP-JUMP-EFFA (code op1)
@@ -1008,7 +1008,7 @@
 	  (if (labelp reg-offset12)	% label --> pc-relative
 	      (progn
 		(setq regn 15)
-		(setq displ (MakeExpressionRelative reg-offset12 4)))
+		(setq displ (MakeExpressionRelative reg-offset12 8)))
 	    (progn
 	      (setq regn (reg2int (cadr reg-offset12)))
 	      (setq displ (if (eqcar reg-offset12 'indirect) 0 (caddr reg-offset12)))))
