@@ -1,0 +1,44 @@
+<?php
+/*
+ * Smarty plugin
+ * -------------------------------------------------------------
+ * Author:   Francis Wright
+ * File:     function.build_nav_menu.php
+ * Type:     function
+ * Name:     build_nav_menu
+ * Purpose:  returns the navigation menu as <ul> content
+ * -------------------------------------------------------------
+ */
+function smarty_function_build_nav_menu($params, $smarty)
+{
+	global $filename, $root;
+	$filename = array_pop(explode('/', $_SERVER['PHP_SELF']));
+    # echo "**Filepath: ${_SERVER['PHP_SELF']}**<br />";
+    if (!$filename) $filename = 'index.php';
+    # echo "**Filename: $filename**<br />";
+    # echo "**Scriptname: " . __FILE__ . "**<br />";
+	$root = $smarty->getTemplateVars('root');
+
+    function menuItem($href, $label, $title = NULL) {
+        global $filename, $root;
+		if ($root) $href = "$root$href";
+        if ($href === $filename)
+            echo "<li title=\"$title\" class=\"selected\">$label</li>\n";
+        else {
+            echo "<li title=\"$title\"><a href=\"$href\">$label</a></li>\n";
+		}
+    }
+
+    menuItem('index.php', 'Home', 'The REDUCE Computer Algebra System');
+    menuItem('features.php', 'Features', 'REDUCE features and design characteristics');
+    menuItem('obtaining.php', 'Obtaining REDUCE', 'Guidance on obtaining REDUCE from SourceForge');
+    menuItem('documentation.php', 'Documentation', 'User guides for REDUCE, its packages and Lisp systems');
+    menuItem('books.php', 'Books', 'Books about REDUCE');
+    menuItem('support.php', 'Support', 'Support available for REDUCE');
+    menuItem('packages.php', 'External Packages', 'External packages that use REDUCE');
+    menuItem('helpwanted.php', 'Help Wanted!', 'Join the REDUCE developer community!');
+    menuItem('bibliography.php', 'Bibliography', 'Publications that reference REDUCE');
+    menuItem('about.php', 'About REDUCE', 'History and contributors');
+    menuItem('projects.php', 'Related Projects', 'Projects related to REDUCE');
+}
+?>
