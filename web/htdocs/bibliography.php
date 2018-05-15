@@ -3,32 +3,11 @@
 require_once('../php/Smarty/setup.php');
 $smarty = new Smarty_REDUCE();
 
-$smarty->assign('head_extras', <<< END_OF_HEAD_EXTRAS
-<style type="text/css">
- dt.divider {
-	 margin: 1em auto
- }
-</style>
-END_OF_HEAD_EXTRAS
-);
-
 $smarty->assign('header_title', 'Bibliography');
 
-$smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
-<p>
-	This document contains a list of all known references to REDUCE.
-</p>
-<p style="text-align: center">
-	[ <a href="#A">A</a> | <a href="#B">B</a> | <a href="#C">C</a> | <a href="#D">D</a>
-	| <a href="#E">E</a> | <a href="#F">F</a> | <a href="#G">G</a> | <a href="#H">H</a>
-	| <a href="#I">I</a> | <a href="#J">J</a> | <a href="#K">K</a> | <a href="#L">L</a>
-	| <a href="#M">M</a> | <a href="#N">N</a> | <a href="#O">O</a> | <a href="#P">P</a>
-	| <a href="#Q">Q</a> | <a href="#R">R</a> | <a href="#S">S</a> | <a href="#T">T</a>
-	| <a href="#U">U</a> | <a href="#V">V</a> | <a href="#W">W</a> | <a href="#Y">Y</a>
-	| <a href="#Z">Z</a> ]
-</p>
-<dl>
-	<dt class="divider"><a id="A" href="#TOP">[top]</a></dt>
+$smarty->assign('biblio', array(
+
+'A' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Abbott:87a">[Abbott:87a] J.&nbsp;A. Abbott.</dt>
 	<dd><a href="http://dx.doi.org/10.1007/3-540-51517-8_155">Integration: Solving the Risch differential equation</a>. In: <em>Proc. EUROCAL '87, Lecture Notes in Computer Science</em>, volume 378, pages 465-467. Springer-Verlag, 1987.</dd>
 	<dt id="Abbott:88">[Abbott:88] J.&nbsp;A. Abbott.</dt>
@@ -110,7 +89,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://dx.doi.org/10.1016/0370-2693(84)91053-0">Prompt photon production at large p<sub>T</sub> in GCD beyond the leading order</a>. <em>Physics Letters B</em> <strong>140</strong> no. 1, pages 87-92, 1984.</dd>
 	<dt id="Autin:89">[Autin:89] B.&nbsp;Autin and J.&nbsp;Bengtsson.</dt>
 	<dd><a href="http://dx.doi.org/10.1016/S0747-7171(89)80050-1">Symbolic evaluation of integrals occurring in accelerator orbit theory</a>. <em>Journal of Symbolic Computation</em> <strong>7</strong> no. 2, pages 183-187, February 1989.</dd>
-	<dt class="divider"><a id="B" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'B' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Baekler:87a">[Baekler:87a] P.&nbsp;Baekler and M.&nbsp;Guerses.</dt>
 	<dd><a href="http://dx.doi.org/10.1007/BF00416847">Exact solutions of the Poincar&eacute; gauge theory from its linearized field equations</a>. <em>Lett. Math. Phys.</em> <strong>14</strong> no. 3, pages 185-191, October 1987.</dd>
 	<dt id="Baekler:88b">[Baekler:88b] P.&nbsp;Baekler, M.&nbsp;Guerses, and F.&nbsp;W. Hehl.</dt>
@@ -339,8 +321,11 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://dx.doi.org/10.1142/S0129183194001136">Computing the BRST operator used in quantization of gauge theories</a>. <em>International Journal of Modern Physics C</em> <strong>5</strong> no. 6, pages 1035-1047, December 1994.</dd>
 	<dt id="Burnel:94">[Burnel:94] A.&nbsp;Burnel, H.&nbsp;Caprasse, and A.&nbsp;Dresse.</dt>
 	<dd>Computing the BRST operator. Technical report, D&eacute;partement d'Astronomie et d'Astrophysique, Universit&eacute; de Li&egrave;ge, 1994.</dd>
-	<dt class="divider"><a id="C" href="#TOP">[top]</a></dt>
-	<dt id="Calmet:83">[Calmet:83] J.&nbsp;Calmet and J.&nbsp;A. van Hulzen.</dt>
+END_OF_BIBLIO_SECTION
+,
+
+'C' => <<< END_OF_BIBLIO_SECTION
+<dt id="Calmet:83">[Calmet:83] J.&nbsp;Calmet and J.&nbsp;A. van Hulzen.</dt>
 	<dd>Computer algebra applications. In: B.&nbsp;Buchberger, G.&nbsp;E. Collins, R.&nbsp;Loos, and R.&nbsp;Albrecht, editors, <em>Computer Algebra Symbolic and Algebraic Computation</em>. Springer-Verlag, 2nd edition, 1983.</dd>
 	<dt id="Calmet:72">[Calmet:72] Jacques Calmet.</dt>
 	<dd>Further evaluation of the sixth order corrections to the anomalous magnetic moment of the electron. Technical report, Department of Physics, University of Utah, 1972.</dd>
@@ -437,8 +422,11 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><em>Geometry revisted</em>. Random House, The L.W. Singer Comp., New York, 1967.</dd>
 	<dt id="Cung:75">[Cung:75] V.&nbsp;K. Cung.</dt>
 	<dd><a href="http://dx.doi.org/10.1016/0370-2693(75)90189-6">Differential cross section of e<sup>+</sup> + e<sup>-</sup> to e<sup>+</sup> + &#956;<sup>-</sup> + <span style="text-decoration: overline;">&#957;</span><sub>&#956;</sub> + <span style="text-decoration: overline;">&#957;</span><sub>e</sub></a>. <em>Physics Letters B</em> <strong>55</strong> no. 1, pages 67-70, 1975.</dd>
-	<dt class="divider"><a id="D" href="#TOP">[top]</a></dt>
-	<dt id="DAngio:94">[DAngio:94] L.&nbsp;D'Angio', S.&nbsp;Audoly, G.&nbsp;Bellu, M.P. Saccomani, and C.&nbsp;Cobelli.</dt>
+END_OF_BIBLIO_SECTION
+,
+
+'D' => <<< END_OF_BIBLIO_SECTION
+<dt id="DAngio:94">[DAngio:94] L.&nbsp;D'Angio', S.&nbsp;Audoly, G.&nbsp;Bellu, M.P. Saccomani, and C.&nbsp;Cobelli.</dt>
 	<dd>Structural identifiability of nonlinear systems: algorithms based on differential ideals. In: M.&nbsp;Blanke and T.&nbsp;Soderstrom, editors, <em>Proc. SYSID '94, 10th IFAC Symposium on System Identification</em>, volume&nbsp;3, pages 13-18, Copenhagen, Denmark, 1994. Danish Automation Society 1994.</dd>
 	<dt id="Darbaidze:86a">[Darbaidze:86a] J.&nbsp;Z. Darbaidze, V.&nbsp;A. Matveev, Z.&nbsp;V. Merebashvili, and L.&nbsp;A. Slepchenko.</dt>
 	<dd><a href="http://dx.doi.org/10.1016/0370-2693(86)91053-1">Gluon bremsstrahlung in supersymmetric QCD</a>. <em>Physics Letters B</em> <strong>177</strong> no. 2, pages 188-190, 1986.</dd>
@@ -572,8 +560,11 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><em>Diverses questions relatives au Calcul Formel Avec des Nombres Alg&eacute;briques</em>. PhD thesis, L'Universit&eacute; Scientifique, Technologique et M&eacute;dicale de Grenoble, 1987.</dd>
 	<dt id="Dyer:94">[Dyer:94] Charles&nbsp;C. Dyer.</dt>
 	<dd><a href="http://doi.acm.org/10.1145/190347.190414">An application of symbolic computation in the physical sciences</a>. In: <em>Symbolic and Algebraic Computation</em>, ISSAC, pages 181-186. SIGSAM, ACM, 1994.</dd>
-	<dt class="divider"><a id="E" href="#TOP">[top]</a></dt>
-	<dt id="Earles:70">[Earles:70] D.&nbsp;Earles.</dt>
+END_OF_BIBLIO_SECTION
+,
+
+'E' => <<< END_OF_BIBLIO_SECTION
+<dt id="Earles:70">[Earles:70] D.&nbsp;Earles.</dt>
 	<dd><a href="http://link.aps.org/doi/10.1103/PhysRevLett.25.129">A measurement of the electron-production of muon pairs</a>. <em>Physical Review Letters</em>
 		<strong>25</strong> no. 2, pages 129-133, 1970.</dd>
 	<dt id="Eastwood:87">[Eastwood:87] James&nbsp;W. Eastwood.</dt>
@@ -606,8 +597,11 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd>Algebraic computing and the Newman-Penrose formalism. <em>Computers in Physics</em> pages 285-290, May/June 1990.</dd>
 	<dt id="Euler:02">[Euler:02] Euler, N., Wolf, T., Leach, P.G.L., and Euler, M.</dt>
 	<dd><a href="http://dx.doi.org/10.1023/A:1022838932176">Linearizable third order odes and generalised sundman transformations: The case x'''=0</a>. <em>Acta Applicandae Mathematicae</em> <strong>76</strong> no. 1, pages 89-115, March 2003.</dd>
-	<dt class="divider"><a id="F" href="#TOP">[top]</a></dt>
-	<dt id="Falck:89">[Falck:89] N.&nbsp;K. Falck, D.&nbsp;Graudenz, and G.&nbsp;Kramer.</dt>
+END_OF_BIBLIO_SECTION
+,
+
+'F' => <<< END_OF_BIBLIO_SECTION
+<dt id="Falck:89">[Falck:89] N.&nbsp;K. Falck, D.&nbsp;Graudenz, and G.&nbsp;Kramer.</dt>
 	<dd><a href="http://dx.doi.org/10.1016/0010-4655(89)90019-2">Cross section for five-parton production in e<sup>+</sup> e<sup>-</sup> annihilation</a>. <em>Computer Physics Communications</em> <strong>56</strong> no. 2, pages 181-198, December 1989.</dd>
 	<dt id="Fazio:84">[Fazio:84] P.&nbsp;M. Fazio and G.&nbsp;E. Copeland.</dt>
 	<dd><a href="http://link.aps.org/doi/10.1103/PhysRevLett.53.163">Cooper-type minima in multipole cross sections of atomic hydrogen</a>. <em>Physical Review Letters</em> <strong>53</strong> no. 2, pages 163-165, July 1984.</dd>
@@ -679,8 +673,11 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://dx.doi.org/10.1016/0370-2693(84)91642-3">Phase diagrams in Scalar QED</a>. <em>Physics Letters B</em> <strong>148</strong> no. 1-3, pages 220-224, November 1984.</dd>
 	<dt id="Fuzio:85">[Fuzio:85] P.&nbsp;M. Fuzio and G.&nbsp;E. Copeland.</dt>
 	<dd><a href="http://link.aps.org/doi/10.1103/PhysRevA.31.187">Partial radiative-recombination cross sections for excited states of hydrogen</a>. <em>Phys. Rev. A</em> <strong>31</strong> no. 1, pages 187-195, 1985.</dd>
-	<dt class="divider"><a id="G" href="#TOP">[top]</a></dt>
-	<dt id="Gaemers">[Gaemers] K.&nbsp;J.&nbsp;F. Gaemers, R.&nbsp;Gastmans, and F.&nbsp;M. Renard.</dt>
+END_OF_BIBLIO_SECTION
+,
+
+'G' => <<< END_OF_BIBLIO_SECTION
+<dt id="Gaemers">[Gaemers] K.&nbsp;J.&nbsp;F. Gaemers, R.&nbsp;Gastmans, and F.&nbsp;M. Renard.</dt>
 	<dd><a href="http://dx.doi.org/10.1103/PhysRevD.19.1605">Neutrino counting in e<sup>+</sup> e<sup>-</sup> collisions</a>. <em>Physical Review D (Particles and Fields)</em> <strong>19</strong> no. 5, pages 1605-1606, 1979.</dd>
 	<dt id="Gaemers:78">[Gaemers:78] K.&nbsp;J.&nbsp;F. Gaemers and G.&nbsp;J. Gounaris.</dt>
 	<dd><a href="http://dx.doi.org/10.1007/BF01440226">Polarization amplitudes for e<sup>+</sup>e<sup>-</sup> &#8594; W<sup>+</sup>W<sup>-</sup> &#8594; ZZ</a>. <em>Zeitschrift f&uuml;r Physik C Particles and Fields</em> <strong>1</strong> no. 3, pages 259-268, September 1979.</dd>
@@ -904,7 +901,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://dx.doi.org/10.1103/PhysRevD.8.287">Large angle scattering and the interchange force</a>. <em>Physical Review D</em> <strong>8</strong> no. 1, pages 287-312, 1973.</dd>
 	<dt id="Gunion:85">[Gunion:85] J.&nbsp;F. Gunion and Z.&nbsp;Kunszt.</dt>
 	<dd><a href="http://dx.doi.org/10.1016/0370-2693(85)90774-9">Improved analytic techniques for tree graph calculations and the g g q <span style="text-decoration: overline;">q</span> &#8467; <span style="text-decoration: overline;">&#8467;</span> subprocess</a>. <em>Physics Letters B</em> <strong>161</strong> no. 4-6, pages 333-340, 1985.</dd>
-	<dt class="divider"><a id="H" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'H' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Hadinger:87">[Hadinger:87] G.&nbsp;Hadinger and Y.&nbsp;S. Tergimen.</dt>
 	<dd><a href="http://link.aip.org/link/?JCPSA6/87/2143/1">Recurrence relations for the Dunham coefficients and analytic expressions of the diagonal radial matrix elements for an anharmonic oscillator</a>. <em>Journal of Chemical Physics</em> <strong>87</strong> no. 4, pages 2143-2150, 1987.</dd>
 	<dt id="Handy:87">[Handy:87] N.&nbsp;C. Handy.</dt>
@@ -1071,7 +1071,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd>Instability of flows in spatially developing media. <em>Proc. Roy. Soc. Lond. A</em> <strong>435</strong>, pages 109-128, 1991.</dd>
 	<dt id="Husberg:81">[Husberg:81] N.&nbsp;Husberg.</dt>
 	<dd>Preliminary II REDUCE-2 and Analitik-74, a comparison. Technical report, Helsinki University of Technology Computing Center, November 1981.</dd>
-	<dt class="divider"><a id="I" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'I' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Idesawa:77">[Idesawa:77] M.&nbsp;Idesawa and T.&nbsp;Yatagai.</dt>
 	<dd>General theory of projection-type Moir&eacute; topography. Scientific Papers&nbsp;71, Institute of Physical and Chemical Research, Wako-Shi, Saitama, 1977.</dd>
 	<dt id="Finan:80">[Finan:80] Charles Henry&nbsp;Finan III.</dt>
@@ -1107,7 +1110,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://ptp.ipap.jp/link?PTP/83/682/">Discrete-time and single-spin-flip dynamics of the Ising chain</a>. <em>Prog. Theor. Phys.</em> <strong>83</strong> no. 4, pages 682-692, April 1990.</dd>
 	<dt id="Ito:90">[Ito:90] Nobuyasu Ito and Tetsuhiko Chikyu.</dt>
 	<dd><a href="http://dx.doi.org/10.1016/0378-4371(90)90012-H">Multi-spin-flip dynamics of the Ising chain</a>. <em>Physica A</em> <strong>166</strong> no. 2, pages 193-205, 1990.</dd>
-	<dt class="divider"><a id="J" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'J' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Jansen:86">[Jansen:86] Paul Jansen and Peter Weidner.</dt>
 	<dd><a href="http://doi.acm.org/10.1145/5960.5962">High-accuracy arithmetic software-some tests of the ACRITH problem-solving routines</a>. <em>ACM Trans. Math. Softw.</em> <strong>12</strong> no. 1, pages 62-70, March 1986.</dd>
 	<dt id="Janssen:87">[Janssen:87] M.&nbsp;H.&nbsp;M. Janssen, D.&nbsp;H. Parker, and S.&nbsp;Stolte.</dt>
@@ -1116,7 +1122,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd>The forces and couples acting on two nearly touching spheres in low-Reynolds-number flow. <em>Z. Ang. Math. Phys.</em> <strong>35</strong>, pages 634-641, 1984.</dd>
 	<dt id="Jimenez:88">[Jimenez:88] Javier Jim&eacute;nez.</dt>
 	<dd><a href="http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=394399&fulltextType=RA&fileId=S0022112088001041">Linear stability of a non-symmetric, inviscid, k&aacute;rm&aacute;n street of small uniform vortices</a>. <em>Journal of Fluid Mechanics Digital Archive</em> <strong>189</strong> no. -1, pages 337-348, 1988.</dd>
-	<dt class="divider"><a id="K" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'K' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Kadlecsik:88">[Kadlecsik:88] J.&nbsp;Kadlecsik.</dt>
 	<dd><a href="http://dx.doi.org/10.1007/BF01566925">New approaches to the axisymmetric vacuum</a>. <em>Zeitschrift f&uuml;r Physik C. Particles and Fields</em> <strong>41</strong> no. 2, pages 265-269, June 1988.</dd>
 	<dt id="Kadlecsik:92">[Kadlecsik:92] Jo&oacute;zsef Kadlecsik.</dt>
@@ -1317,7 +1326,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd>The role of the gg &#8594; c<span style="text-decoration: overline;">c</span>g process in the cross section of production of charmed particles (in Russian). Preprint 88-49/70, Moscow State University, 1988.</dd>
 	<dt id="Kuppers:71">[Kuppers:71] G.&nbsp;Kuppers, D.&nbsp;Pfirsch, and H.&nbsp;Tasso.</dt>
 	<dd>M.H.D. - stability of axisymmetric plasmas. Report CN -28/F-14, Max-Planck-Institut fuer Plasmaphysik, 1971.</dd>
-	<dt class="divider"><a id="L" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'L' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Lagos:04">[Lagos:04] Bernardo&nbsp;M. Lagos and Pedro&nbsp;A. Morettin.</dt>
 	<dd><a href="http://dx.doi.org/10.1111/j.1467-9892.2004.00338.x">Improvement of the likelihood ratio test statistic in arma models</a>. <em>Journal of Time Series Analysis</em> <strong>25</strong> no. 1, pages 83-101, 2004.</dd>
 	<dt id="Lambin:84">[Lambin:84] P.&nbsp;Lambin and J.&nbsp;P. Vigneron.</dt>
@@ -1403,7 +1415,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://link.aps.org/doi/10.1103/PhysRevD.35.326">Evaluation of helicity amplitudes</a>. <em>Physical Review D (Particles and Fields)</em> <strong>35</strong> no. 1, pages 326-329, 1987.</dd>
 	<dt id="Lux:75">[Lux:75] Augustin Lux.</dt>
 	<dd><em>Etude d'un Modele Abstrait pour une Machine LISP et de son Implantation</em>. PhD thesis, Universit&eacute; Scientifique et Medicale de Grenoble, March 1975.</dd>
-	<dt class="divider"><a id="M" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'M' => <<< END_OF_BIBLIO_SECTION
 	<dt id="MacCallum:86a">[MacCallum:86a] M.&nbsp;A.&nbsp;H. MacCallum.</dt>
 	<dd>Algebraic computing in relativity. Technical Report TAU 86-04, Queen Mary College, University of London, 1986.</dd>
 	<dt id="MacCallum:86">[MacCallum:86] M.&nbsp;A.&nbsp;H. MacCallum.</dt>
@@ -1497,7 +1512,7 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dt id="McIsaac:85">[McIsaac:85] Kevin McIsaac.</dt>
 	<dd><a href="http://doi.acm.org/10.1145/1089402.1089403">Pattern matching algebraic identities</a>. <em>SIGSAM Bulletin</em> <strong>19</strong> no. 2, pages 4-13, May 1985.</dd>
 	<dt id="Mei:03">[Mei:03] Z.&nbsp;Mei, A.&nbsp;J. Roberts, and Zhenquan Li.</dt>
-	<dd><a href="http://eprints.usq.edu.au/2987/1/Mei_Roberts_Li_Awaiting_file_to_upload_(Journal_article).pdf">Modelling the dynamics of turbulent floods</a>. <em>SIAM J. Appl. Math.</em> <strong>63</strong> no. 2, pages 423-458, 2003.</dd>
+	<dd><a href="http://eprints.usq.edu.au/2987/1/Mei_Roberts_Li_SECTIONwaiting_file_to_upload_(Journal_article).pdf">Modelling the dynamics of turbulent floods</a>. <em>SIAM J. Appl. Math.</em> <strong>63</strong> no. 2, pages 423-458, 2003.</dd>
 	<dt id="Mei:94">[Mei:94] Z.&nbsp;Mei and A.J. Roberts.</dt>
 	<dd>Equations for turbulent flood waves. In: A.&nbsp;Mielke and K.&nbsp;Kirchg&auml;ssner, editors, <em>Structure and dynamics of nonlinear waves in fluids</em>, pages 342-352. World Sci, 1995.</dd>
 	<dt id="Meikle:08">[Meikle:08]</dt>
@@ -1556,7 +1571,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd>Vectorization of symbolic determinant calculation. <em>Supercomputer</em> <strong>43,VIII-3</strong>, pages 36-48, 1991.</dd>
 	<dt id="Murzin:85">[Murzin:85] F.&nbsp;A. Murzin.</dt>
 	<dd><a href="http://dx.doi.org/10.1080/00207168508803455">Syntactic properties of the REFAL language</a>. <em>Int. J. Computer Maths.</em> <strong>17</strong> no. 2, pages 123-139, 1985.</dd>
-	<dt class="divider"><a id="N" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'N' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Nagata:82">[Nagata:82] Morio Nagata and Makoto Shibayama.</dt>
 	<dd>COSMOS: a conversational algebraic system. Technical Report No. 8201, Department of Administration Engineering, Keio University, March 1982.</dd>
 	<dt id="Nagata:85">[Nagata:85] Morio Nagata and Makoto Shibayama.</dt>
@@ -1608,7 +1626,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://doi.acm.org/10.1145/1089220.1089225">A note about Laplace transform tables for computer use</a>. <em>SIGSAM Bulletin</em> <strong>14</strong> no. 2, pages 30-31, May 1980.</dd>
 	<dt id="Nucci:90">[Nucci:90] M.&nbsp;C. Nucci.</dt>
 	<dd>Interactive REDUCE programs for calculating classical, non-classical and Lie-B&auml;cklund symmetries of differential equations. Preprint Math: 062090-051, Georgia Institute of Technology, School of Mathematics, 1990.</dd>
-	<dt class="divider"><a id="O" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'O' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Ochiai:90">[Ochiai:90] Mitsuyuki Ochiai and Kiyokazu Nagatomo.</dt>
 	<dd><em>Linear Algebra using REDUCE</em>. Kindai Kagaku sha, Tokyo, January 1990.</dd>
 	<dt id="Ogilvie:82">[Ogilvie:82] J.&nbsp;F. Ogilvie.</dt>
@@ -1619,7 +1640,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd>BFORT - a Fortran system with arbitrary precision integer and real arithmetic. Technical report, Department of Physics, University of Tokyo, January 1979.</dd>
 	<dt id="Ozieblo">[Ozieblo] A.&nbsp;Ozieblo.</dt>
 	<dd>Application of REDUCE 2 in general theory of relativity. Technical report, Cyfronet - Krakow, Poland.</dd>
-	<dt class="divider"><a id="P" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'P' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Padget90">[Padget90] Julian Padget and Alan Barnes.</dt>
 	<dd><a href="http://doi.acm.org/10.1145/96877.96899">Univariate power series expansions in REDUCE</a>. In: S.&nbsp;Watanabe and Morio Nagata, editors, <em>Proceedings of the International Symposium on Symbolic and Algebraic Computation</em>, pages 82-87. ACM, Addison-Wesley, 1990.</dd>
 	<dt id="Pankau:73a">[Pankau:73a] E.&nbsp;Pankau and W.&nbsp;Nakel.</dt>
@@ -1706,12 +1730,18 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd>Gravitational divergences of the electromagnetic interactions of massive vectorparticles. Preprint KUL-TF-79/032, Universiteit Leuven, October 1979.</dd>
 	<dt id="Proeyan:76">[Proeyan:76] A.&nbsp;Van Proeyen.</dt>
 	<dd>Quantum gravity corrections on the anomalous magnetic and quadrupole moments of a spin-1 particle. Technical report, Instituut voor Theor. Fys., Leuven, October 1976.</dd>
-	<dt class="divider"><a id="Q" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'Q' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Quarton">[Quarton] D.&nbsp;C. Quarton and A.&nbsp;D. Garrad.</dt>
 	<dd>Some comments on the stability analysis of horizontal axis wind turbines. Technical report, Wind Energy Group, Taylor Woodrow Construction Ltd.</dd>
 	<dt id="Quarton:84">[Quarton:84] D.&nbsp;C. Quarton and A.&nbsp;D. Garrad.</dt>
 	<dd>Symbolic computing as a tool in wind turbine dynamics. Technical report, Wind Energy Group, Taylor Woodrow Construction Ltd., 1984.</dd>
-	<dt class="divider"><a id="R" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'R' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Rao:85">[Rao:85]</dt>
 	<dd>R.&nbsp;H. Rao, Deformation of a fluid-filled cylindrical membrane by a slow viscous shear flow. Master's thesis, Washington University, Dept. of Mech. Eng., Washington University, St. Louis, 1985.</dd>
 	<dt id="Rayna:87">[Rayna:87] G.&nbsp;Rayna.</dt>
@@ -1780,7 +1810,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://dx.doi.org/10.1017/S0022112001007133">A lubrication model of coating flows over a curved substrate in space</a>. <em>J. Fluid Mech.</em> <strong>454</strong>, pages 235-261, 2002.</dd>
 	<dt id="Rudenko:91">[Rudenko:91] V.M. Rudenko, V.V. Leonov, A.F. Bragazin, and I.P Shmyglevsky.</dt>
 	<dd><a href="http://doi.acm.org/10.1145/120694.120766">Application of computer algebra to the investigation of the orbital satellite motion</a>. In: Stephen&nbsp;M. Watt, editor, <em>Proc. of the 1991 International Symposium on Symbolic and Algebraic Computation</em>, pages 450-451, Maryland, July 1991. ACM Press.</dd>
-	<dt class="divider"><a id="S" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'S' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Saccomani:97a">[Saccomani:97a] M.P. Saccomani, S.&nbsp;Audoly, G.&nbsp;Bellu, L.&nbsp;D'Angio', and C.&nbsp;Cobelli.</dt>
 	<dd>A new algorithm to test global identifiability of physiological nonlinear models. In: D.A. Linkens and E.&nbsp;Carson, editors, <em>Proc. 3rd IFAC Symposium on Modelling and Control in Biomedical Systems</em>, pages 259-264, UK, 1997. Elsevier.</dd>
 	<dt id="Saccomani:97b">[Saccomani:97b] M.P. Saccomani, S.&nbsp;Audoly, G.&nbsp;Bellu, L.&nbsp;D'Angio', and C.&nbsp;Cobelli.</dt>
@@ -1966,7 +1999,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://dx.doi.org/10.1023/A:1019169408365">Advection-dispersion in symmetric field-flow fractionation channels</a>. <em>Journal of Mathematical Chemistry</em> <strong>26</strong> no. 1-3, pages 27-46, 1999.</dd>
 	<dt id="Suslov:00">[Suslov:00] S.&nbsp;A. Suslov and A.&nbsp;J. Roberts.</dt>
 	<dd><a href="http://pubs.acs.org/doi/abs/10.1021/ac9915022">Modelling of sample dynamics in rectangular asymmetrical flow field-flow fractionation channels</a>. <em>Analytical Chemistry</em> <strong>72</strong> no. 18, pages 4331-4345, 2000.</dd>
-	<dt class="divider"><a id="T" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'T' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Tallents:84">[Tallents:84] G.&nbsp;J. Tallents.</dt>
 	<dd><a href="http://dx.doi.org/10.1088/0022-3700/17/18/008">The relative intensities of hydrogen-like fine structure</a>. <em>J. Phys. B: At. Mol. Phys.</em> <strong>17</strong> no. 18, pages 3677-3691, 1984.</dd>
 	<dt id="Tao:90">[Tao:90] Qingsheng Tao.</dt>
@@ -2003,7 +2039,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://link.aps.org/doi/10.1103/PhysRev.140.B721">Differential cross-section for e<sup>+</sup> + e<sup>-</sup> &#8594; W<sup>+</sup> + W<sup>-</sup> &#8594; e<sup>-</sup> + <span style="text-decoration: overline;">&#957;</span><sub>e</sub> + &#956;<sup>+</sup> + &#957;<sub>&#956;</sub></a>. <em>Phys. Rev. B</em> <strong>140</strong>, pages B721-B729, 1965.</dd>
 	<dt id="Tsuchida:05">[Tsuchida:05] T.&nbsp;Tsuchida and T.&nbsp;Wolf.</dt>
 	<dd><a href="http://dx.doi.org/10.1088/0305-4470/38/35/006">Classification of polynomial integrable systems of mixed scalar and vector evolution equations. i</a>. <em>J. Phys. A: Math. Gen.</em> <strong>38</strong> no. 35, pages 7691-7733, 2005. also as preprint nlin.SI/0412003.</dd>
-	<dt class="divider"><a id="U" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'U' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Ucoluk:82">[Ucoluk:82] G.&nbsp;&Uuml;&ccedil;oluk and A.&nbsp;Hacinliyan.</dt>
 	<dd><a href="http://doi.acm.org/10.1145/1089292.1089295">A proposal for extensions to REDUCE</a>. <em>SIGSAM Bulletin</em> <strong>16</strong> no. 2, pages 4-14, May 1982.</dd>
 	<dt id="Ueberberg:92">[Ueberberg:92] Johannes Ueberberg.</dt>
@@ -2014,7 +2053,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd>Symbolic computation application for the design of linear multivariable control systems. <em>Journal of Symbolic Computation</em> <strong>8</strong> no. 6, pages 581-588, December 1989.</dd>
 	<dt id="Urintsev:91">[Urintsev:91] A.L. Urintsev and A.V. Samoilov.</dt>
 	<dd>Complex reduce-programs for analytic solution of some problems of beam transport systems. In: D.V. Shirkov, V.A. Rostovtsev, and V.P. Gerdt, editors, <em>In: 4th International Conference on Computer Algebra in Physical Research</em>, pages 438-442, Singapore, New Jersey, London, Hong Kong, 1991. World Scientific.</dd>
-	<dt class="divider"><a id="V" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'V' => <<< END_OF_BIBLIO_SECTION
 	<dt id="vandenHeuvel:87a">[vandenHeuvel:87a] P.&nbsp;van&nbsp;den Heuvel, B.&nbsp;J.&nbsp;A. Hulshof, and J.&nbsp;A. van Hulzen.</dt>
 	<dd><a href="http://doi.acm.org/10.1145/24559.24561">Some simple pretty-print facilities for REDUCE</a>. <em>SIGSAM Bulletin</em> <strong>21</strong> no. 1, pages 14-17, February 1987.</dd>
 	<dt id="vandenHeuvel:87">[vandenHeuvel:87] P.&nbsp;van&nbsp;den Heuvel, J.&nbsp;A. van Hulzen, and V.&nbsp;V. Goldman.</dt>
@@ -2076,7 +2118,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://dx.doi.org/10.1016/S0010-4655(03)00344-8">Calculation of the dirac equation in curved space-times with possible torsion using maple and reduce</a>. <em>Computer Physics Communications</em> <strong>154</strong> no. 3, pages 205-218, 2003.</dd>
 	<dt id="Vulcanov:97">[Vulcanov:97] D.&nbsp;N. Vulcanov and I.&nbsp;I. Cotaescu.</dt>
 	<dd><a href="http://dx.doi.org/10.1142/S0129183197000291">Dirac field gravity inertial effects and computer algebra</a>. <em>International Journal of Modern Physics C</em> <strong>8</strong> no. 2, pages 345-359, 1997.</dd>
-	<dt class="divider"><a id="W" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'W' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Wanas">[Wanas] M.&nbsp;I. Wanas.</dt>
 	<dd>The third face of computer - computer solution of symbolic problems. Technical Report CAP-3 837, Military Technical College, Cairo, Egypt.</dd>
 	<dt id="Wanas:85">[Wanas:85] M.&nbsp;I. Wanas.</dt>
@@ -2179,7 +2224,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://opus.kobv.de/zib/volltexte/1990/29/">Towards an efficient computational treatment of heterogeneous polymer reactions</a>. In: S.&nbsp;O. Fatunla, editor, <em>Computational Ordinary Differential Equations</em>, pages 287-306. University Press, Nigeria, 1992.</dd>
 	<dt id="Wuestefeld:95">[Wuestefeld:95] G.&nbsp;W&uuml;stefeld.</dt>
 	<dd><a href="http://dx.doi.org/10.1109/PAC.1995.505720">Particle tracking with generating functions of magnetic fringing fields</a>. In: <em>Proceedings of the IEEE 1995 Particle Acelerator Conference, Dallas (USA)</em>, volume&nbsp;5, pages 2868-2870, 1995.</dd>
-	<dt class="divider"><a id="Y" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'Y' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Yamamoto:87">[Yamamoto:87] T.&nbsp;Yamamoto and Y.&nbsp;Aoki.</dt>
 	<dd><a href="http://dx.doi.org/10.1007/3-540-51517-8_101">REDUCE 3.2 on iAPX 86/286-based personal computers</a>. In: <em>Proc. EUROCAL '87, Lecture Notes in Computer Science</em>, volume 378, pages 134-135. Springer-Verlag, 1987.</dd>
 	<dt id="Yamartino:91">[Yamartino:91] Robert&nbsp;J. Yamartino and Richard Pavelle.</dt>
@@ -2188,7 +2236,10 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd><a href="http://dx.doi.org/10.1016/0010-4655(88)90175-0">An algebraic program for the states associated with the U(5) &#8835; O(5) &#8835; O(3) chain of groups</a>.  <em>Computer Physics Communications</em> <strong>52</strong> no. 1, pages 85-92, December 1988.</dd>
 	<dt id="Yannouleas:89">[Yannouleas:89] C.&nbsp;Yannouleas and J.&nbsp;M. Pacheco.</dt>
 	<dd><a href="http://dx.doi.org/10.1016/0010-4655(89)90094-5">Algebraic manipulation of the states associated with the U(5) &#8835; O(5) &#8835; O(3) chain of groups: orthonormalization and matrix elements</a>. <em>Computer Physics Communications</em> <strong>54</strong> no. 2 and 3, pages 315-328, June and July 1989.</dd>
-	<dt class="divider"><a id="Z" href="#TOP">[top]</a></dt>
+END_OF_BIBLIO_SECTION
+,
+
+'Z' => <<< END_OF_BIBLIO_SECTION
 	<dt id="Zacrep:75">[Zacrep:75] Douglas Zacrep and Bing-Lin Young.</dt>
 	<dd><a href="http://link.aps.org/doi/10.1103/PhysRevD.12.513">Trace and Ward-Takahashi identity anomalies in an SU(3) current model with energy-momentum tensor</a>. <em>Physical Review D (Particles and Fields)</em> <strong>12</strong> no. 2, pages 513-522, 1975.</dd>
 	<dt id="Zahalak:87">[Zahalak:87] G.&nbsp;I. Zahalak, P.&nbsp;R. Rao, and S.&nbsp;P. Sutera.</dt>
@@ -2205,10 +2256,9 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 	<dd>Involution approach to solving systems of algebraic equations. In: G.&nbsp;Jacob, N.&nbsp;E. Oussous, and S.&nbsp;Steinberg, editors, <em>Proceedings of the 1993 International IMACS Symposium on Symbolic Computation</em>, pages 11-16. IMACS, Laboratoire d'Informatique Fondamentale de Lille, France, 1993.</dd>
 	<dt id="Zhidkova:78">[Zhidkova:78] I.&nbsp;E. Zhidkova, I.&nbsp;P. Nedyalkov, and V.&nbsp;A. Rostovtsev.</dt>
 	<dd>On applicability limits of the experimental method for investigating strong gravitational fields. Technical Report P2 - 11589, J.I.N.R., Dubna, 1978.</dd>
-</dl>
-END_OF_MAIN_CONTENT
-);
+END_OF_BIBLIO_SECTION
+));
 
-$smarty->display('main.tpl');
+$smarty->display('bibliography.tpl');
 
 ?>

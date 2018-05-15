@@ -4,13 +4,13 @@ etc.
 
 This directory, namely trunk/web, in the Subversion repository
 corresponds to the directory /home/project-web/reduce-algebra/ on the
-web server and is the parent of the web root directory, htdocs. The
-main directory structure on the web server is as shown below but not
-all files and directories are checked into the repository. Files that
-are missing from the repository can be obtained elsewhere or generated
-from files available elsewhere in the repository. In particular, the
-main REDUCE-related documentation files can be generated from source
-files in the repository at trunk/doc.
+web server and is the parent of the web server document root
+directory, htdocs. The main directory structure on the web server is
+as shown below but not all files and directories are checked into the
+repository. Files that are missing from the repository can be obtained
+elsewhere or generated from files available elsewhere in the
+repository. In particular, the main REDUCE-related documentation files
+can be generated from source files in the repository at trunk/doc.
 
 SimplePie is the PHP library used to display RSS feeds and is
 available from http://simplepie.org/.
