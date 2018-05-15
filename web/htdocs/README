@@ -1,8 +1,0 @@
-Files for the REDUCE web site at http://reduce-algebra.sourceforge.net/
-
-This directory contains source code and image files. It does not generally
-include PDF files or other files that are generated from source files
-held elsewhere in the repository, such as documentation files generated
-from TeX or Texinfo source files.
-
-Francis Wright, August 2017

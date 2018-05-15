@@ -1,0 +1,56 @@
+Files for the REDUCE web site at
+http://reduce-algebra.sourceforge.net/, http://reduce-algebra.com,
+etc.
+
+This directory, namely trunk/web, in the Subversion repository
+corresponds to the directory /home/project-web/reduce-algebra/ on the
+web server and is the parent of the web root directory, htdocs. The
+main directory structure on the web server is as shown below but not
+all files and directories are checked into the repository. Files that
+are missing from the repository can be obtained elsewhere or generated
+from files available elsewhere in the repository. In particular, the
+main REDUCE-related documentation files can be generated from source
+files in the repository at trunk/doc.
+
+SimplePie is the PHP library used to display RSS feeds and is
+available from http://simplepie.org/.
+
+Smarty is the PHP template system available from
+https://www.smarty.net/. The main structural page markup is stored in
+Smarty template files, into which the data in the web pages in htdocs
+is inserted by Smarty.
+
+The directory simplepie contains the SimplePie cache directory and the
+directory smarty contains the Smarty cache, configuration files,
+templates and cached templates. It seems that directories that need to
+be writable by the web server, such as these cache directories, must
+be outside htdocs.
+
+Directory structure:
+
++---htdocs
+|       Data files for the web pages
+|               
++---php
+|   |   
+|   +---SimplePie
+|   |       PHP source code, all available from elsewhere
+|   |                       
+|   \---Smarty
+|           PHP source code, mostly available from elsewhere
+|               
++---simplepie
+|   \---cache
+|           Files written by the web server
+|           
+\---smarty
+    +---cache
+    |       Files written by the web server (maybe)
+    +---configs
+    +---templates
+	|       Template files for the web pages.
+    |       
+    \---templates_c
+            Files written by the web server
+
+Francis Wright, May 2018
