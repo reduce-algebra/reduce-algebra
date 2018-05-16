@@ -13,6 +13,8 @@ fi
 
 AC_COPYRIGHT([The REDUCE project])
 
+# $Id$
+
 # If necessary you can fetch source versions of autoconf and automake and
 # install private versions for use here. Following discussions with other
 # developers I am now going to require autoconf, automake and libtool
