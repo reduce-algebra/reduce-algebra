@@ -44,27 +44,6 @@
 #define header_syscsl_h 1
 
 //
-// I provide a hook so that memory allocation can be passed not to the
-// usual C library malloc() function but to some other system-specific code.
-// This is achieved by putting the actual function that is to be called in
-// a variable. Ditto for free(). I have static initialisation that causes
-// use of the ordinary C library and so anybody who needs an alternative
-// must reset the pointers VERY early on.
-//
-
-typedef void *malloc_function(size_t);
-
-extern malloc_function *malloc_hook;
-
-typedef void *realloc_function(void *, size_t);
-
-extern realloc_function *realloc_hook;
-
-typedef void free_function(void *);
-
-extern free_function *free_hook;
-
-//
 // find_image_directory is handed the information that main() sees when
 // the application is started up, and it returns a string (in freshly
 // malloc'd space) that is the default name for the checkpoint image file

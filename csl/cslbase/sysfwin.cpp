@@ -45,7 +45,6 @@
 // some confusion between cygwin and mingw entrypoints hurting me.
 //
 #include <winsock.h>
-#include <semaphore.h>
 #include <windows.h>
 #include <sys/cygwin.h>
 #endif
@@ -571,7 +570,8 @@ const char *find_image_directory(int argc, const char *argv[])
     }
 #endif
     n = strlen(xname)+1;
-    w = (char *)(*malloc_hook)(n);
+    w = (char *)malloc(n);
+    if (w == NULL) abort();
     strcpy(w, xname);
     return w;
 }
@@ -962,7 +962,7 @@ const char *CSLtmpnam(const char *suffix, size_t suffixlen)
 // The following functions are best described as delicate, and they are only
 // present for debugging purposes. It is not clear to me how much performance
 // penalty they introduce, and certainly in a multi-threaded context the
-// state of availabaility of memory to one thraed can be changed by a
+// state of availabaility of memory to one thread can be changed by a
 // different thread, leaving any result found here out of date. The Windows
 // code also hints at issues where pages are marked in a special manner to
 // let them act as guard pages - and potential consequences of that (eg

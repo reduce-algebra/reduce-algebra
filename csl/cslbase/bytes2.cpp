@@ -145,6 +145,7 @@
 
 next_opcode:   // This label is so that I can restart what I am doing
                // following a CATCH or to handle UNWIND-PROTECT.
+    my_assert(A_reg != 0, [&]{ trace_printf("A_reg == 0 @ bytes2.cpp line __LINE__\n"); });
     try
     {
 // The try block will neeed to cope with

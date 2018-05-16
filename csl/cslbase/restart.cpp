@@ -1,4 +1,4 @@
-// restart.cpp                             Copyright (C) 1989-2017 Codemist
+// restart.cpp                             Copyright (C) 1989-2018 Codemist
 
 //
 // Code needed to start off Lisp when no initial heap image is available,
@@ -8,7 +8,7 @@
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -154,38 +154,6 @@ LispObject user_base_0, user_base_1, user_base_2, user_base_3, user_base_4;
 LispObject user_base_5, user_base_6, user_base_7, user_base_8, user_base_9;
 
 LispObject eq_hash_tables;
-
-//
-// On an Intel 80x86 (because I am almost forced to) and on other machines
-// (much more cheerfully, and for choice!) I will arrange my memory as
-// a number of pages.  A general pool of these pages gets used
-// to satisfy requests for heap and vector heap space.
-//
-// Since this code was first written it has become silly to even consider
-// computers with 16-bit segmented addressing! It is still convenient to
-// allocate memory in chunks, although that does set an upper limit to the
-// size of any individual object: this may hurt if a user wants a big vector
-// and it does constrain the range of big-numbers supported by the
-// artithmetic.
-//
-
-void **pages,
-     **heap_pages,
-     **vheap_pages;
-void **new_heap_pages,
-     **new_vheap_pages;
-
-#ifdef CONSERVATIVE
-
-page_map_t *page_map;
-
-#endif
-
-int32_t pages_count,
-        heap_pages_count,
-        vheap_pages_count;
-int32_t new_heap_pages_count,
-        new_vheap_pages_count;
 
 char program_name[64] = {0};
 
@@ -381,169 +349,6 @@ entry_point1 entries_tableio[] =
 
 #define entry_table_sizeio ((int)(sizeof(entries_tableio)/sizeof(entries_tableio[0])))
 
-void *allocate_page(const char *why)
-{   if (pages_count == 0) fatal_error(err_no_store);
-    return pages[--pages_count];
-}
-
-static char *global_handle;
-
-void *allocated_blocks = NULL;
-
-void *my_malloc(size_t n)
-{
-//
-// The idea here is INTENDED to provide a small amount of extra checking and
-// robustness about use of malloc and free. It is very probable these days
-// that I would do MUCH better to use a well-developed separate package
-// to help me out here - eg I understand that "valgrind" is useful for
-// detecting memory leaks...
-//
-    char *r = (char *)(*malloc_hook)(n+64);
-    int32_t *p = (int32_t *)quadword_align_up((uintptr_t)r);
-//          0       8        16        24        32
-//    | ... |   :   |    :    |    :    |    |    | to user |    |    |
-//    r     p   r        n       chain   1234 3456           8765 cba9
-//          L___ p is quadword aligned.
-// where p is quadword aligned whatever r is.
-//
-//
-    if (r == NULL) return NULL;
-    n = quadword_align_up(n);
-    if (!SIXTY_FOUR_BIT) p[1] = 0;
-    *(void **)(p) = r;                 // base address for free()
-                                       // goes in 0 & 1
-    *(int64_t *)(&p[2]) = (int64_t)n;  // size goes in 2 and 3
-    *(void **)(&p[4]) = allocated_blocks;
-    allocated_blocks = (void *)p;
-    p[6] = 0x12345678;                 // bit-pattern that I hope will be
-    p[7] = 0x3456789a;                 // recognizable.
-    r = (char *)&p[8];                 // address to return.
-    car32(r+n)   = 0x87654321;         // guard words at end of block as
-    car32(r+n+4) = 0xcba98765;         // well as at start.
-    return (void *)r;
-}
-
-char *big_chunk_start, *big_chunk_end;
-
-static void my_free(void *r)
-{   int32_t *p, *q;
-    size_t n;
-    char *rr = (char *)r;
-//
-// I will not free it if the pointer is strictly inside the single big
-// chunk that I grabbed at the start of the run.
-//
-    if (rr > big_chunk_start && rr <= big_chunk_end) return;
-    p = (int32_t *)r - 8;
-    n = (size_t)*(int64_t *)(&p[2]);
-    if (p[6] != 0x12345678 ||
-        p[7] != 0x3456789a)
-    {   term_printf("Corruption at start of memory block %p: %.8x %.8x\n",
-                    r, p[4], p[5]);
-        ensure_screen();
-        my_exit(0);
-    }
-    q = (int32_t *)((char *)r + n);
-    if (q[0] != (int32_t)0x87654321 ||
-        q[1] != (int32_t)0xcba98765)
-    {   term_printf("Corruption at end of memory block %p: %.8x %.8x\n",
-                    r, q[0], q[1]);
-        ensure_screen();
-        my_exit(0);
-    }
-#ifndef DEBUG
-    (*free_hook)((void *)((void **)p)[0]);
-#endif
-}
-
-// This does what "my_free" would as regards checking for corruption, but does
-// not free the block.
-
-static void check_block_for_corruption(void *r)
-{   int32_t *p, *q;
-    size_t n;
-    char *rr = (char *)r;
-    if (rr > big_chunk_start && rr <= big_chunk_end) return;
-    p = (int32_t *)r - 8;
-    n = (size_t)*(int64_t *)(&p[2]);
-    if (p[6] != 0x12345678 ||
-        p[7] != 0x3456789a)
-    {   term_printf("Corruption at start of memory block %p: %.8x %.8x\n",
-                    r, p[4], p[5]);
-        ensure_screen();
-        my_abort();
-    }
-    q = (int32_t *)((char *)r + n);
-    if (q[0] != (int32_t)0x87654321 ||
-        q[1] != (int32_t)0xcba98765)
-    {   term_printf("Corruption at end of memory block %p: %.8x %.8x\n",
-                    r, q[0], q[1]);
-        ensure_screen();
-        my_abort();
-    }
-}
-
-static void *my_malloc_1(size_t n)
-//
-// This is a pretty silly function - it gobbles up 24Kbytes of
-// stack and then just calls malloc - it stuffs a pointer to the
-// stack-chunk into a static variable so that compilers can not
-// detect (I hope!) that the array remains unused.  The purpose of this
-// is to make malloc fail if it is about to encroach on space that
-// should be used for stack.  This is relevant on small systems where
-// stack and heap grow towards one another and where one space has been
-// grabbed by malloc it is unavailable for stack (even if it is FREEd).
-// The number 24000 is pretty arbitrary - but if I have 24K bytes of stack
-// I will be able to do at least something.
-// Also this code verifies that the memory addresses returned have the
-// correct most significant bit. I allocate just a bit more memory than
-// is really needed to leave a one-word (or so) guard-band between
-// allocated blocks. This is necessary on some releases of an SGI C
-// compiler (library) where blocks of memory that are word but not
-// doubleword aligned can be returned.
-//
-{   char gobble_stack[24000];
-    char *r;
-    intptr_t pun, pun1;
-    global_handle = gobble_stack;
-    r = (char *)my_malloc(n+16);
-    pun = (intptr_t)r;
-    pun1 = (intptr_t)(r + n);
-//
-// I will moan if the block of memory allocated spans zero.
-// Note that if this does happen then something very funny is happening
-// about 0 cast to a pointer (i.e. a NULL pointer) since NULL is supposed
-// not to be valid as an address (?) but appears to be within the address
-// range of the block of store just allocated.
-//
-    if ((intptr_t)(pun ^ pun1) < 0) fatal_error(err_mem_spans_zero);
-//
-// Now if I get a block with the "wrong" top bit I will just return NULL
-// to suggest that no more memory was available - CSL can then proceed
-// or fail as it sees fit.
-//
-//
-// For dynamic address sign I should not test the address sign on the
-// first call - instead I just remember what it was.  On subsequent calls
-// I will check it.
-//
-    return (void *)r;
-}
-
-static void *my_malloc_2(size_t n)
-//
-// Rather like my_malloc_1(), but does NOT check the sign bit of the
-// returned pointer. Provided as a place to put hooks to check memory
-// allocation problems.
-//
-{   char gobble_stack[24000];
-    char *r;
-    global_handle = gobble_stack;
-    r = (char *)my_malloc(n+16);
-    return (void *)r;
-}
-
 static LispObject Lreclaim_trap(LispObject env, LispObject a)
 {   int64_t previous = reclaim_trap_count;
     if (!is_fixnum(a)) aerror1("reclaim-trap", a);
@@ -560,172 +365,6 @@ static LispObject Lreclaim_stack_limit(LispObject env, LispObject a)
     term_printf("+++ Reclaim stack limit set at %d, previous = %d\n",
                 reclaim_stack_limit, previous);
     return onevalue(fixnum_of_int(previous));
-}
-
-static void init_heap_segments(double store_size)
-//
-// This function just makes nil and the pool of page-frames available.
-// The store-size is passed in units of Kilobyte, and as a double not
-// an integer so that overflow is not an issue.
-//
-{   const char *memfile = "memory.use"; // For memory statistics etc
-    pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
-#ifdef CONSERVATIVE
-    page_map = (page_map_t *)my_malloc_2(MAX_PAGES*sizeof(page_map_t));
-#endif
-    heap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
-    vheap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
-    new_heap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
-    new_vheap_pages = (void **)my_malloc_2(MAX_PAGES*sizeof(void *));
-    if (pages == NULL ||
-#ifdef CONSERVATIVE
-        page_map == NULL ||
-#endif
-        new_heap_pages == NULL ||
-        new_vheap_pages == NULL ||
-        heap_pages == NULL ||
-        vheap_pages == NULL)
-    {   fatal_error(err_no_store);
-    }
-
-    {   intptr_t free_space = SIXTY_FOUR_BIT ? 128000000 : 32000000;
-        intptr_t request;
-        request = (intptr_t)store_size;
-// By doing this in intptr_t I should avoid overflow
-        if (request != 0) free_space = 1024*request;
-        free_space = free_space/(CSL_PAGE_SIZE+4);
-        if (free_space > MAX_PAGES) free_space = MAX_PAGES;
-        pages_count = heap_pages_count = vheap_pages_count = 0;
-//
-// I grab memory using a function called my_malloc_1(), which verifies that
-// all addresses used in the heap have the same top bit.  The very first time
-// it is called nilsegment will be NULL - that time it does less checking.
-//
-        nilsegment = NULL;
-        {   size_t n = (size_t)(NIL_SEGMENT_SIZE+free_space*(CSL_PAGE_SIZE+16));
-//
-// I try to get the whole of the initial hunk of memory that I need in
-// one gulp since that (maybe) gives me the best chance to obtain all
-// the memory in just one half of my address space.
-//
-            char *pool = (char *)my_malloc_1(n);
-//
-// I get 8 bytes more than seems necessary because I will need to
-// align my page frames up to a doubleword boundary, and that can
-// potentially waste 7 bytes.
-//
-            if (pool != NULL)
-            {   big_chunk_start = (char *)pool;
-                big_chunk_end = big_chunk_start + (n-1);
-                nilsegment = (LispObject *)pool;
-                pool = pool + NIL_SEGMENT_SIZE;
-#ifdef COMMON
-// NB here that NIL is tagged as a CONS not as a symbol
-                nil = (LispObject)(
-                    doubleword_align_up((uintptr_t)nilsegment) + TAG_CONS + 8);
-#else
-                nil = (LispObject)(
-                    doubleword_align_up((uintptr_t)nilsegment) + TAG_SYMBOL);
-#endif
-//
-// If at the end of the run I am going to free some space I had better not
-// free these pages. When I free the nilsegment they all get discarded at
-// once. Observe here that the page that will be at the top of the list of
-// pages will be the one with the higher address, and pages here will
-// all be contiguous. So if I merely grab two pages from here I may
-// view them as a single double-sized one. Since I will normally grab
-// from the top of the pile it will be the second one that I grab that
-// is the base of the double-page. This feels close to cheating!
-//
-                while (pages_count < free_space)
-                {   void *page =
-//
-// Ha Ha - for some long while I had a buf whereby I missed out the cast
-// to size_t here and as a result if you asked for over 4G of memory
-// there was an integer overflow in the subscript calculation leading to
-// reasonably obscure disaster.
-//
-                        (void *)&pool[pages_count*
-                                      (size_t)(CSL_PAGE_SIZE+16)];
-                    pages[pages_count++] = page;
-                }
-            }
-        }
-    }
-
-//
-// I allocate a stack segment first because I will use it as buffer space for
-// decompressing the contents of an image file. It will come out of the
-// initial contiguous block.
-// If the user had asked for an oversize stack it has to be allocated
-// independently here anyway.
-//
-    if (nilsegment != NULL && pages_count > 0)
-    {   if (stack_segsize != 1)
-        {   stacksegment =
-                (LispObject *)my_malloc(stack_segsize*CSL_PAGE_SIZE + 16);
-            if (stacksegment == NULL)
-                fatal_error(err_no_store);
-        }
-        else stacksegment = (LispObject *)pages[--pages_count];
-    }
-    else
-    {   printf("pages_count <= 0 = %d\n", pages_count);
-        fatal_error(err_no_store);
-    }
-    CSL_MD5_Update((unsigned char *)memfile, 8);
-//
-// The stack does not need to be doubleword aligned, but it does need
-// to be word aligned (otherwise certain back-pointers in the garbage
-// collector give trouble), so I fix it up here.  Note that stacksegment
-// remains pointing at the original base so that I can free() it later.
-//
-    stackbase = (LispObject *)doubleword_align_up((intptr_t)stacksegment);
-}
-
-static void abandon(void *p[], int32_t n)
-{   while (n != 0)
-    {   void *w = p[--n];
-//
-// The test here that avoids calling free on a NULL pointer is
-// certainly not needed with an ANSI compliant library - but
-// rumour has it that many Unix libraries are unkind in this
-// respect, and the test is pretty cheap...
-//
-        if (w != NULL) my_free(w);
-    }
-}
-
-static void check_abandon(void *p[], int32_t n)
-{   while (n != 0)
-    {   void *w = p[--n];
-//
-// The test here that avoids calling free on a NULL pointer is
-// certainly not needed with an ANSI compliant library - but
-// rumour has it that many Unix libraries are unkind in this
-// respect, and the test is pretty cheap...
-//
-        if (w != NULL) check_block_for_corruption(w);
-    }
-}
-
-void drop_heap_segments(void)
-{   abandon(pages,           pages_count);
-    abandon(heap_pages,      heap_pages_count);
-    abandon(vheap_pages,     vheap_pages_count);
-    my_free(stacksegment);
-    my_free(nilsegment);
-}
-
-static int check_count = 0;
-
-void check_heap_segments(void)
-{   if ((check_count++)%40 != 0) return; // tune performance
-    check_abandon(pages,           pages_count);
-    check_abandon(heap_pages,      heap_pages_count);
-    check_abandon(vheap_pages,     vheap_pages_count);
-    check_block_for_corruption(stacksegment);
-    check_block_for_corruption(nilsegment);
 }
 
 static char *find_checksum(const char *name, size_t len, const setup_type *p)
@@ -1368,7 +1007,7 @@ static void cold_setup()
     vheaplimit = (LispObject)((char *)vfringe + (CSL_PAGE_SIZE - 16));
 
     p = heap_pages[heap_pages_count++] = allocate_page("heap cold setup");
-    heaplimit = quadword_align_up((intptr_t)p);
+    heaplimit = (intptr_t)p;
     fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
     heaplimit = (LispObject)((char *)heaplimit + SPARE);
 
@@ -2624,7 +2263,7 @@ void set_up_variables(int restart_flag)
         n = 0;
         for (w2=w1; consp(w2); w2=qcdr(w2)) n++; // How many?
         n = 2*n;
-        loadable_packages = (char **)(*malloc_hook)((n+1)*sizeof(char *));
+        loadable_packages = (char **)malloc((n+1)*sizeof(char *));
         if (loadable_packages != NULL)
         {   n = 0;
             for (w2=w1; consp(w2); w2=qcdr(w2))
@@ -2634,7 +2273,7 @@ void set_up_variables(int restart_flag)
                 if (!is_vector(w3) ||
                     !is_string_header(vechdr(w3))) break;
                 n1 = length_of_byteheader(vechdr(w3))-CELL;
-                v = (char *)(*malloc_hook)(n1+2);
+                v = (char *)malloc(n1+2);
                 if (v == NULL) break;
                 v[0] = ' ';
                 memcpy(v+1, &celt(w3, 0), n1);
@@ -2650,7 +2289,7 @@ void set_up_variables(int restart_flag)
         for (w2=w1; consp(w2); w2=qcdr(w2)) n++; // How many?
         n = (n+1)*sizeof(char *);
         n = 2*n;
-        switches = (char **)(*malloc_hook)(n);
+        switches = (char **)malloc(n);
         if (switches != NULL)
         {   n = 0;
             for (w2=w1; consp(w2); w2=qcdr(w2))
@@ -2664,7 +2303,7 @@ void set_up_variables(int restart_flag)
                 if (n1 > 60) break;
                 sprintf(sname, "*%.*s", n1, &celt(w3, 0));
                 w4 = make_undefined_symbol(sname);
-                v = (char *)(*malloc_hook)(n1+2);
+                v = (char *)malloc(n1+2);
                 if (v == NULL) break;
 //
 // The first character records the current state of the switch. With FWIN
@@ -2895,11 +2534,7 @@ void setup(int restart_flag, double store_size)
     {   int32_t more = heap_pages_count + vheap_pages_count;
         more = 3 *more - pages_count;
         while (more-- > 0)
-        {   void *page = (void *)my_malloc_1((size_t)(CSL_PAGE_SIZE + 16));
-//
-// CF the code in gc.c -- I can still use my_malloc_1 here, which makes this
-// code just a tiny bit safer.
-//
+        {   void *page = (void *)malloc((size_t)CSL_PAGE_SIZE);
             if (page == NULL)
             {   init_flags &= ~INIT_EXPANDABLE;
                 break;

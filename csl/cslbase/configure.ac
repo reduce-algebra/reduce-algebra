@@ -5,6 +5,8 @@
 # I guess that this file scan be subject to the same BSD license that
 # applies to almost all other parts of the code here.
 
+# $Id$
+
 #
 # Special flags that can be used here:
 #
@@ -827,6 +829,20 @@ then
   AC_DEFINE([NORETURN], [[[[noreturn]]]], [C++-11 attributes available?])
 else
   AC_DEFINE([NORETURN], [[/* noreturn */]], [C++-11 attributes available?])
+fi
+
+AC_COMPUTE_INT(maxalign, alignof(std::max_align_t), [#include <cstddef>],
+    AC_MSG_ERROR([Unable to get alignment of std::max_align_t]))
+AC_MSG_NOTICE([maxalign = $maxalign])
+
+# I will expect that malloc and new will return blocks of memory
+# aligned at least as per maxalign... and I require that it be at least
+# 8 so that I have 3 low bits for use as tags. IN reality I fully expect
+# it to be 16 on most if not all 64-bit systems.
+
+if test $maxalign -lt 8
+then
+  AC_MSG_ERROR([max_align_t must be at least 8 for CSL to work])
 fi
 
 # I have alternative ways of doing things on Windows and Macintosh, but

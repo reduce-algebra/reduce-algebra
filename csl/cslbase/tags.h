@@ -73,12 +73,7 @@ static inline void CSL_IGNORE(LispObject x)
 {   (void)x;
 }
 
-// I allocate memory (using malloc()) in CSL_PAGE_SIZE chunks.
-// This was first implemented for the benefit of 16-bit machines
-// (in particular MSDOS/286) but now seems generally reasonable as a way
-// of controlling memory fragmentation and so that when (and IF) there is
-// a multi-threaded version of this system it can use these chunks on
-// a per-thread basis.
+// I manage memory in CSL_PAGE_SIZE chunks.
 //
 // My default at present is to use PAGE_BITS=23, which leads to 8 Mbyte
 // pages. I use that size on both 32 and 64-bit machines. 
@@ -87,27 +82,22 @@ static inline void CSL_IGNORE(LispObject x)
 #  define PAGE_BITS             23
 #endif // PAGE_BITS
 
-#define PAGE_POWER_OF_TWO       (((intptr_t)1) << PAGE_BITS)
-//
-// When I come to allocate memory I do so in chunks that are a little less
-// than the power of two suggested here, to allow for malloc() header
-// blocks etc.
-//
-#define CSL_PAGE_SIZE           (PAGE_POWER_OF_TWO - 256)
+#define PAGE_POWER_OF_TWO       (((size_t)1) << PAGE_BITS)
+#define CSL_PAGE_SIZE           (PAGE_POWER_OF_TWO)
 
 //
-// On 64-bit systems I will limit myself to 512 Gbyte, while on 32-bit
+// On 64-bit systems I will limit myself to 2 Terabytes, while on 32-bit
 // ones the limit is around 2 Gbyte and in reality will usually be
 // rather less than that. Note that this limit is expected to be a power
 // of 2.
 //
 #ifndef MAX_HEAPSIZE
-#define MAX_HEAPBITS         (SIXTY_FOUR_BIT ? 39 : 31)
+#define MAX_HEAPBITS         (SIXTY_FOUR_BIT ? 41 : 31)
 // The number here is measured in megabytes so it is always reasonably small.
-#define MAX_HEAPSIZE         (1 << (MAX_HEAPBITS-20))
+#define MAX_HEAPSIZE         (((size_t)1) << (MAX_HEAPBITS-20))
 #endif // MAX_HEAPSIZE
 
-#define MEGABYTE                ((intptr_t)0x100000U)
+#define MEGABYTE                ((size_t)0x100000)
 
 #if PAGE_BITS >= 20
 #define MAX_PAGES               (MAX_HEAPSIZE >> (PAGE_BITS-20))
@@ -132,8 +122,8 @@ static inline void CSL_IGNORE(LispObject x)
 // this idea works provided all memory addresses needed can be kept
 // doubleword aligned.  The main tag allocation is documented here.
 
-#define TAG_BITS        7
-#define XTAG_BITS       15
+#define TAG_BITS        0x7
+#define XTAG_BITS       0xf
 
 //                                                       bit-mask in (1<<tag)
 
@@ -141,9 +131,6 @@ static inline void CSL_IGNORE(LispObject x)
 #define TAG_VECTOR      1   // Regular Lisp vectors                      02
 #define TAG_HDR_IMMED   2   // Char constants, vechdrs etc               04
 #define TAG_FORWARD     3   // For the Garbage Collector                 08
-// There are special constraints that mean I want symbols to have
-// tag code 4. These apply in the old garbage collector and the way I
-// deal with some back-pointers there.
 #define TAG_SYMBOL      4   // Symbols                                   10
 // Note that tags from 5 up are all for numeric date
 #define TAG_NUMBERS     5   // Bignum, Rational, Complex                 20
@@ -340,36 +327,6 @@ static inline LispObject& qcar(char * p)
 static inline LispObject& qcdr(char * p)
 {   return ((Cons_Cell *)p)->cdr;
 }
-
-//
-// car32(p) refers to the 32-bit integer pointed at by p. It is
-// used to cope with various bits of junk at the start and end of
-// "pages" of memory where (eg) the amount of the page that is in
-// use needs to be recorded.
-//
-
-static inline int32_t& car32(LispObject p)
-{   return ((int32_t *)p)[0];
-}
-
-//
-// cdr32(p) reads the next 32-bit word after that used by car32(p), and
-// is used in related circumstances where I explicitly wish to work using
-// just 32-bit values..
-//
-
-static inline int32_t& cdr32(LispObject p)
-{   return ((int32_t *)p)[1];
-}
-
-static inline int32_t& car32(char * p)
-{   return ((int32_t *)p)[0];
-}
-
-static inline int32_t& cdr32(char * p)
-{   return ((int32_t *)p)[1];
-}
-
 
 typedef LispObject Special_Form(LispObject, LispObject);
 
@@ -1785,13 +1742,9 @@ static inline uintptr_t object_align_up(uintptr_t n)
                        (-(uintptr_t)sizeof(LispObject)));
 }
 
-static inline uintptr_t quadword_align_up(uintptr_t n)
-{   return (uintptr_t)((n + 15) & (-(uintptr_t)16U));
-}
-
-static inline uintptr_t quadword_align_down(uintptr_t n)
-{   return (uintptr_t)(n & (-(uintptr_t)16U));
-}
+//static inline uintptr_t quadword_align_up(uintptr_t n)
+//{   return (uintptr_t)((n + 15) & (-(uintptr_t)16U));
+//}
 
 // values to go in exit_reason at times when exceptions are being thrown.
 

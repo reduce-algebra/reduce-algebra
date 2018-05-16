@@ -106,24 +106,8 @@ LispObject * volatile savestacklimit;
 
 static int stop_after_gc = 0;
 
-// This allocates another page of memory if that is allowed and if it is
-// possible. It returns true on success.
-
-bool allocate_more_memory()
-{   if ((init_flags & INIT_EXPANDABLE) == 0) return false;
-    void *page = (void *)my_malloc((size_t)(CSL_PAGE_SIZE + 8));
-    if (page == NULL)
-    {   init_flags &= ~INIT_EXPANDABLE;
-        return false;
-    }
-    else
-    {   pages[pages_count++] = page;
-        return true;
-    }
-}
-
-static int trailing_heap_pages_count,
-           trailing_vheap_pages_count;
+static size_t trailing_heap_pages_count,
+              trailing_vheap_pages_count;
 
 static void copy(LispObject *p)
 // This copies the object pointed at by p from the old to the new semi-space,
@@ -173,9 +157,6 @@ static void copy(LispObject *p)
                     if (fr <= (char *)heaplimit - SPARE + 32)
                     {   char *hl = (char *)heaplimit;
                         void *p;
-                        int32_t len = (int32_t)(fr - (hl - SPARE) +
-                                                sizeof(Cons_Cell));
-                        car32(hl - SPARE) = len;
                         qcar(fr) = SPID_GCMARK;
                         if (pages_count == 0) allocate_more_memory();
                         if (pages_count == 0)
@@ -186,9 +167,8 @@ static void copy(LispObject *p)
                         p = pages[--pages_count];
                         zero_out(p);
                         new_heap_pages[new_heap_pages_count++] = p;
-                        heaplimit = quadword_align_up((intptr_t)p);
+                        heaplimit = (intptr_t)p;
                         hl = (char *)heaplimit;
-                        car32(heaplimit) = CSL_PAGE_SIZE;
                         fr = hl + CSL_PAGE_SIZE - sizeof(Cons_Cell);
                         heaplimit = (LispObject)(hl + SPARE);
                     }
@@ -263,10 +243,7 @@ static void copy(LispObject *p)
 // len indicates the length of the block of memory that must now be
 // allocated...
                     if (len > free)
-                    {   size_t free1 =
-                            (size_t)(vfr - (vl - (CSL_PAGE_SIZE - 8)));
-                        car32(vl - (CSL_PAGE_SIZE - 8)) = free1;
-                        qcar(vfr) = 0;          // sentinel value
+                    {   qcar(vfr) = 0;          // sentinel value
                         if (pages_count == 0) allocate_more_memory();
                         if (pages_count == 0)
                         {   term_printf("\n+++ Run out of memory\n");
@@ -276,11 +253,9 @@ static void copy(LispObject *p)
                         p1 = pages[--pages_count];
                         zero_out(p1);
                         new_vheap_pages[new_vheap_pages_count++] = p1;
-                        vfr = (char *)doubleword_align_up((intptr_t)p1) + 8;
+                        vfr = (char *)p1 + 8;
                         vl = vfr + (CSL_PAGE_SIZE - 16);
                         vheaplimit = (LispObject)vl;
-                        free1 = (uintptr_t)(vfr - (vl - (CSL_PAGE_SIZE - 8)));
-                        car32(vl - (CSL_PAGE_SIZE - 8)) = free1;
                         continue;
                     }
                     *p = (LispObject)(vfr + tag);
@@ -307,7 +282,7 @@ static void copy(LispObject *p)
                         if (qcar(tr_fr) == SPID_GCMARK)
                         {   char *w;
                             p1 = new_heap_pages[trailing_heap_pages_count++];
-                            w = (char *)quadword_align_up((intptr_t)p1);
+                            w = (char *)p1;
                             tr_fr = w + (CSL_PAGE_SIZE - sizeof(Cons_Cell));
                         }
                         next = DONE_CAR;
@@ -323,7 +298,7 @@ static void copy(LispObject *p)
 // marks the end of data in this page of heap, so I will move on to the next
 // one.
                             p1 = new_vheap_pages[trailing_vheap_pages_count++];
-                            w = (char *)doubleword_align_up((intptr_t)p1);
+                            w = (char *)p1;
                             tr_vfr = w + 8;
                             h = *(Header *)tr_vfr;
                         }
@@ -427,12 +402,11 @@ static void copy(LispObject *p)
     }
 }
 
-static bool reset_limit_registers(intptr_t vheap_need, bool stack_flag)
+static bool reset_limit_registers(size_t vheap_need, bool stack_flag)
 // returns true if after resetting the limit registers there was
 // enough space left for me to proceed. Return false on failure, ie
 // need for a more genuine GC.
 {   void *p;
-    uintptr_t len;
     bool full = false;
 // I wonder about the next test - memory would only really be full
 // if there was enough LIVE data to fill all the available free pages,
@@ -442,13 +416,13 @@ static bool reset_limit_registers(intptr_t vheap_need, bool stack_flag)
 // old and new spaces so if there are some large vectors they may leave
 // nasty gaps at the end of a page.
 //
-    len = (uintptr_t)((char *)vheaplimit - (char *)vfringe);
+    size_t len = (char *)vheaplimit - (char *)vfringe;
 // If I get here during system start-up I will try to give myself some
 // more memory. I expect that will usually be possible!
     if (!garbage_collection_permitted)
     {   if (fringe <= heaplimit && pages_count == 0)
             full = !allocate_more_memory();
-        if (vheap_need > (intptr_t)len && pages_count == 0)
+        if (vheap_need > len && pages_count == 0)
         {   if (!allocate_more_memory()) full = true;
         }
     }
@@ -460,44 +434,24 @@ static bool reset_limit_registers(intptr_t vheap_need, bool stack_flag)
         space_now++;
         zero_out(p);
         heap_pages[heap_pages_count++] = p;
-        heaplimit = quadword_align_up((intptr_t)p);
-        car32(heaplimit) = CSL_PAGE_SIZE;
+        heaplimit = (intptr_t)p;
         fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
         heaplimit = (LispObject)((char *)heaplimit + SPARE);
     }
-    if (vheap_need > (intptr_t)len)
+    if (vheap_need > len)
     {   char *vf, *vh;
         if (full) return false;
         p = pages[--pages_count];
         space_now++;
         zero_out(p);
         vheap_pages[vheap_pages_count++] = p;
-        vf = (char *)doubleword_align_up((intptr_t)p) + 8;
+        vf = (char *)p + 8;
         vfringe = (LispObject)vf;
         vh = vf + (CSL_PAGE_SIZE - 16);
         vheaplimit = (LispObject)vh;
-        len = (uintptr_t)(vf - (vh - (CSL_PAGE_SIZE - 8)));
-        car32(vh - (CSL_PAGE_SIZE - 8)) = len;
     }
     if (stack_flag) return (stack < stacklimit);
     else return true;
-}
-
-static void tidy_fringes(void)
-// heaplimit was SPARE bytes above the actual base of the page,
-// so the next line dumps fringe somewhere where it can be found
-// later on when needed while scanning a page of heap.  Similarly
-// vfringe is stashed away at the end of its page.
-{   char *fr = (char *)fringe,
-         *vf = (char *)vfringe,
-         *hl = (char *)heaplimit,
-         *vl = (char *)vheaplimit;
-    int32_t len = (int32_t)(fr - (hl - SPARE));
-// If I used the top bit of this location to save info that a page
-// was double-size then I just clobbered that information here!
-    car32(hl - SPARE) = len;
-    len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
-    car32(vl - (CSL_PAGE_SIZE - 8)) = (LispObject)len;
 }
 
 // I need a way that a thread that is not synchronised with this one can
@@ -705,12 +659,10 @@ static void real_garbage_collector()
     assert(pages_count >= 2); // for the new half-space
     void *pp = pages[--pages_count];
     char *vf, *vl;
-    int32_t len;
 // A first page of (cons-)heap
     zero_out(pp);
     new_heap_pages[new_heap_pages_count++] = pp;
-    heaplimit = quadword_align_up((intptr_t)pp);
-    car32(heaplimit) = CSL_PAGE_SIZE;
+    heaplimit = (intptr_t)pp;
     vl = (char *)heaplimit;
     fringe = (LispObject)(vl + CSL_PAGE_SIZE);
     heaplimit = (LispObject)(vl + SPARE);
@@ -718,12 +670,10 @@ static void real_garbage_collector()
     pp = pages[--pages_count];
     zero_out(pp);
     new_vheap_pages[new_vheap_pages_count++] = pp;
-    vf = (char *)doubleword_align_up((intptr_t)pp) + 8;
+    vf = (char *)pp + 8;
     vfringe = (LispObject)vf;
     vl = vf + (CSL_PAGE_SIZE - 16);
     vheaplimit = (LispObject)vl;
-    len = (uintptr_t)(vf - (vl - (CSL_PAGE_SIZE - 8)));
-    car32(vl - (CSL_PAGE_SIZE - 8)) = (LispObject)len;
 // I should remind you, gentle reader, that the value cell
 // and env cells of nil will always contain nil, which does not move,
 // and so I do not need to copy them here provided that NIL itself
@@ -744,19 +694,18 @@ static void real_garbage_collector()
     {   for (size_t i=1; i<=repeat_count; i++)
             copy(&repeat_heap[i]);
     }
-    tidy_fringes();
 // Throw away the old semi-space - it is now junk.
     while (heap_pages_count!=0)
     {   void *spare = heap_pages[--heap_pages_count];
 // I will fill the old space with explicit rubbish in the hope that that
 // will generate failures as promptly as possible if it somehow gets
 // referenced...
-        memset(spare, 0x55, (size_t)CSL_PAGE_SIZE+16);
+        memset(spare, 0x55, (size_t)CSL_PAGE_SIZE);
         pages[pages_count++] = spare;
     }
     while (vheap_pages_count!=0)
     {   void *spare = vheap_pages[--vheap_pages_count];
-        memset(spare, 0xaa, (size_t)CSL_PAGE_SIZE+16);
+        memset(spare, 0xaa, (size_t)CSL_PAGE_SIZE);
         pages[pages_count++] = spare;
     }
 // Flip the descriptors for the old and new semi-spaces.
@@ -772,9 +721,9 @@ static void real_garbage_collector()
     new_vheap_pages_count = 0;
 }
 
-LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
+LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
 {   clock_t t0, t1, t2;
-    intptr_t vheap_need = 0;
+    size_t vheap_need = 0;
 // If the trigger is reached I will force a full GC. But only if I
 // am allowed to!
     if (reclaim_trigger_count == reclaim_trigger_target &&
@@ -817,7 +766,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
             vheaplimit = savevheaplimit;
             stacklimit = savestacklimit;
         }
-        tidy_fringes();
         already_in_gc = false;
         pop_clock();
 // There could, of course, be another async interrupt generated even during
@@ -848,8 +796,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
         return interrupted(p);
     }
     else
-    {   tidy_fringes();
-        if ((!next_gc_is_hard || stg_class == GC_STACK) &&
+    {   if ((!next_gc_is_hard || stg_class == GC_STACK) &&
             stg_class != GC_USER_HARD &&
             reset_limit_registers(vheap_need, true))
         {   already_in_gc = false;
@@ -1002,34 +949,8 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, intptr_t size)
     }
     pop(p);
 
-// Here I grab more memory (if I am allowed to).
-// An initial version here, and one still suitable on machines that will
-// have plenty of real memory, will be to defined ok_to_grab_memory(n) as
-// 3*n + 2. This expands until the proportion of the heap active at the
-// end of garbage collection is less than 1/4.
-// If the attempt to grab more memory fails I clear the bit in init_flags
-// that allows me to try to expand, so I will not waste time again.  If
-// HOLD_BACK_MEMORY was asserted (for machines where grabbing all seemingly
-// available memory may cause a crash) I do not try this operation.  The
-// aim of keeping the heap less than half full is an heuristic and could be
-// adjusted on the basis of experience with this code.
-// On systems where it is possible to measure the amount of available
-// real memory more sophisticated calculations may be possible.
-    if (init_flags & INIT_EXPANDABLE)
-    {   int ideal = ok_to_grab_memory(heap_pages_count + vheap_pages_count);
-        int more;
-        if (ideal > MAX_PAGES) ideal = MAX_PAGES;
-        if (max_store_size != 0.0)
-        {   double page_limit = max_store_size*1024*1024/(double)CSL_PAGE_SIZE;
-// Limit memory to (about) the amount the user indicated with --max-mem
-            int plim = (int)page_limit;
-            if (ideal > plim) ideal = plim;
-        }
-        more = ideal - pages_count;
-        while (more-- > 0)
-        {   if (!allocate_more_memory()) break;
-        }
-    }
+    grab_more_memory(heap_pages_count + vheap_pages_count);
+
     if (!reset_limit_registers(vheap_need, false))
     {   if (stack < stacklimit || stacklimit != stackbase)
         {   report_at_end();

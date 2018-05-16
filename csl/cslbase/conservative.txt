@@ -52,7 +52,11 @@ containing roots. Because the only bits of memory that I handle as "updated"
 live within the heap I can rely on all data within them being properly
 formatted so that I can identify references in a precise manner. What I do
 need to do is to be able to tell when one of those pointers refers into
-a nursery or school page.
+a nursery or school page. However I think I can not afford to reset "dirty"
+bits on pages until I do a global garbage collection - if I copied the
+nuresery page for just one or just some of the threads and then reset all
+the bits to make memory as updated I would lost information about updates
+relevant to other threads. 
 
 When I am given a value that might be a pointer I need to be able to
 tell if it is a pointer to an item that could be alive. This issue is
@@ -102,37 +106,10 @@ will be easy to find the start of any object that the value should be
 treated as identifying.
 
 Let each page have size PAGE_SIZE (which will be a power of 2 - at present
-I am thinking of using 8 Mbytes). Then if p holds an ambigiuous value
-I can hope that q = (p & (PAGE_SIZE-1)) has the correct granularity to help
-me identify the right page. If I could arrange that all pages were allocated
-alligned as per their size I would not have anything at all more to do.
-However forcing that seems inconvenient and potentially involved wasteful
-padding space. So I will make no assumptions about the alignment of pages or
-regarding whether they are laid out contiguous - I will merely expect that
-none of them overlap. The consequence will be that the masked value (q)
-may need to identify two pages, one relevant for high addresses within the
-range it spans and the other for low.
-
-I will use a hash table to identify pages from addresses. For each
-page I mask both its first and its last address with PAGE_SIZE-1 and
-use that as a key to the hash table, storing the page base. Well with that
-scheme it is possible to have two pages such that the key to the top
-address of the first one is the same as the key the the bottom address of
-the other. To cope with that I will store (up to) two values in the table
-corresponding to any given key.
-
-The space for this is really very modest. On a 64-bit system and supposing
-I keep the hash table at most half full I use 32 bytes for each 8 Mbyte
-page... this basically trivial.
-
-Now to look up an ambiguous value I mask it and perform a hash table look-up.
-If the two values stored in the hash table are r1 and r2 I check for a match
-by seeing if the value I was looking up was in the range r1:r1+PAGE_SIZE or
-r2:r2+PAGE_SIZE. If it is not I need to step on to the next hash probe, and
-obviuosly if I encounter an empty slot in the table then the ambiguous
-value was not a valid pointer. If the pointer is valid then I will identify
-either r1 or r2 as its page, and can then find the item in the page that is
-relevant.
+I am thinking of using 8 Mbytes). Then if heap space is allocated within a
+modest number of chunks (with each chunk split into pages) I can do a rather
+small number of comparisons to test which (if any) chunk an address lies
+within, and then easily discover which page within the chunk is involved.
 
 I now introduce the concept of "pinned" data. When an ambiguous pointer
 identifies an item within a page that item becomes pinned - a state which

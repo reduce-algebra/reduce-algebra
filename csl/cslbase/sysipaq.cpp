@@ -244,7 +244,8 @@ int batchp()
 //
 const char *find_image_directory(int argc, const char *argv[])
 {   int n = strlen(programName) + strlen(programDir) + 6;
-    char *w = (char *)(*malloc_hook)(n);
+    char *w = (char *)malloc(n);
+    if (w == NULL) abort();
     strcpy(w, programDir);
     n = strlen(programDir);
     w[n] = '/';                 // Should be '\\' for Windows?

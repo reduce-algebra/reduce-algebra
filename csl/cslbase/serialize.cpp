@@ -1,7 +1,7 @@
-// serialize.cpp                                Copyright (C) 2017 Codemist
+// serialize.cpp                                Copyright (C) 2018 Codemist
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -3709,7 +3709,7 @@ void warm_setup()
     vheaplimit = (LispObject)((char *)vfringe + (CSL_PAGE_SIZE - 16));
 
     p = heap_pages[heap_pages_count++] = allocate_page("heap warm setup");
-    heaplimit = quadword_align_up((intptr_t)p);
+    heaplimit = (intptr_t)p;
     fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
     heaplimit = (LispObject)((char *)heaplimit + SPARE);
 
@@ -3822,7 +3822,7 @@ void warm_setup()
 // onto the Lisp stack every one that the predicate tells it to. If there
 // is not enough stack space it return true.
 
-// In a full Reduce as of 1Q 2017 with every Reduce package loaded there
+// In a full Reduce as of 1Q 2018 with every Reduce package loaded there
 // are about 40,000 symbols present. Around half of those name functions.
 // So mapstore has at worst 20,000 symbols of note to process at this stage.
 // Of course that number will expand as Reduce does. However also of course
@@ -4171,7 +4171,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
         return onevalue(nil);
     }
     if (what == 0 || what == 1)   // needed if I am printing
-    {   buff = (mapstore_item *)(*malloc_hook)(100*sizeof(mapstore_item));
+    {   buff = (mapstore_item *)malloc(100*sizeof(mapstore_item));
         if (buff == NULL) return onevalue(nil); // fail
         buffp = 0;
         buffn = 100;
@@ -4202,7 +4202,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
                         {   if (buffp == buffn)
                             {   buffn += 100;
                                 buff = (mapstore_item *)
-                                       (*realloc_hook)((void *)buff,
+                                       realloc((void *)buff,
                                            sizeof(mapstore_item)*buffn);
                                 if (buff == NULL) return onevalue(nil);
                             }
@@ -4244,7 +4244,7 @@ LispObject Lmapstore(LispObject env, LispObject a)
             trace_printf("%s\n", buff[j].name);
         }
         trace_printf("\n");
-        (*free_hook)((void *)buff);
+        free((void *)buff);
     }
     return onevalue(r);
 }

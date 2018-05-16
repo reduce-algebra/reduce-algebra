@@ -52,6 +52,69 @@
 extern int32_t mpi_rank,mpi_size;
 #endif
 
+extern void **pages, **heap_pages, **vheap_pages;
+
+extern void **new_heap_pages, **new_vheap_pages;
+
+extern void *allocate_page(const char *why);
+
+#ifdef CONSERVATIVE
+
+extern uintptr_t *pages_hash_table;
+
+#define PAGE_TYPE_2CELL   0
+#define PAGE_TYPE_4CELL   1
+#define PAGE_TYPE_BIG     2
+
+typedef struct _page_header
+{   unsigned int fringe;
+    unsigned int type:2
+    unsigned int pinsize:30
+} page_header;
+
+#endif
+
+extern size_t pages_count, heap_pages_count, vheap_pages_count;
+
+extern size_t new_heap_pages_count, new_vheap_pages_count;
+
+extern LispObject *list_bases[];
+extern LispObject *nilsegment, *stacksegment;
+extern LispObject *stackbase;
+extern int32_t stack_segsize;  // measured in units of one CSL page
+extern LispObject *stack;
+extern char *C_stack_base, *C_stack_limit;
+extern double max_store_size;
+
+extern bool restartp;
+
+extern char *big_chunk_start, *big_chunk_end;
+
+#ifdef CONSERVATIVE
+extern LispObject *C_stackbase, *C_stacktop;
+#endif
+
+extern LispObject multiplication_buffer;
+
+// An "my_assert" scheme that lets me write in my own code to print the
+// diagnostics.
+
+NORETURN extern void my_abort();
+extern void trace_printf(const char *fmt, ...);
+
+template <typename F>
+inline void my_assert(bool ok, F&& action)
+{
+#ifndef NDEBUG
+// Use this as in
+//     my_assert(predicate, [&]{...});
+// where the "..." is an arbitrary sequence of actions to be taken
+// if the assertion fails.
+    if (!ok) { action(); my_abort(); }
+#endif //NDEBUG
+}
+
+
 //
 // I have a bunch of macros that I use for desparation-mode debugging,
 // and in particular when I have bugs that wriggle back into their lairs
@@ -85,179 +148,145 @@ extern int32_t mpi_rank,mpi_size;
           fflush(stderr); \
           } while (0)
 
-extern void **pages, **heap_pages, **vheap_pages;
+extern std::mutex debug_lock;
 
-extern void **new_heap_pages, **new_vheap_pages;
+extern void DebugTrace(const char *file, int line);
+extern void DebugTrace(const char *file, int line, int i);
+extern void DebugTrace(const char *file, int line, const char *msg);
+extern void DebugTrace(const char *file, int line,
+                       const char *fmt, int i);
 
-extern void *allocate_page(const char *why);
-
-#ifdef CONSERVATIVE
-
-extern uintptr_t *pages_hash_table;
-
-#define PAGE_TYPE_2CELL   0
-#define PAGE_TYPE_4CELL   1
-#define PAGE_TYPE_BIG     2
-
-typedef struct _page_header
-{   unsigned int fringe;
-    unsigned int type:2
-    unsigned int pinsize:30
-} page_header;
-
-#endif
-
-extern int32_t pages_count, heap_pages_count, vheap_pages_count;
-
-extern int32_t new_heap_pages_count, new_vheap_pages_count;
-
-extern LispObject *list_bases[];
-extern LispObject *nilsegment, *stacksegment;
-extern LispObject *stackbase;
-extern int32_t stack_segsize;  // measured in units of one CSL page
-extern LispObject *stack;
-extern char *C_stack_base, *C_stack_limit;
-extern double max_store_size;
-
-extern bool restartp;
-
-extern char *big_chunk_start, *big_chunk_end;
-
-#ifdef CONSERVATIVE
-extern LispObject *C_stackbase, *C_stacktop;
-#endif
-
-extern LispObject multiplication_buffer;
+#define Tr(...) DebugTrace(__FILE__, __LINE__, __VA_ARGS__)
 
 static inline void push(LispObject a)
 {   *++stack = a;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 
 static inline void push2(LispObject a, LispObject b)
 {   *++stack = a;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = b;
-    assert(b != 0);
+    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 
 static inline void push3(LispObject a, LispObject b, LispObject c)
 {   *++stack = a;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = b;
-    assert(b != 0);
+    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = c;
-    assert(c != 0);
+    my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 
 static inline void push4(LispObject a, LispObject b, LispObject c,
                          LispObject d)
 {   *++stack = a;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = b;
-    assert(b != 0);
+    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = c;
-    assert(c != 0);
+    my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = d;
-    assert(d != 0);
+    my_assert(d != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 
 static inline void push5(LispObject a, LispObject b, LispObject c,
                          LispObject d, LispObject e)
 {   *++stack = a;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = b;
-    assert(b != 0);
+    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = c;
-    assert(c != 0);
+    my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = d;
-    assert(d != 0);
+    my_assert(d != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = e;
-    assert(e != 0);
+    my_assert(e != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 
 static inline void push6(LispObject a, LispObject b, LispObject c,
                          LispObject d, LispObject e, LispObject f)
 {   *++stack = a;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = b;
-    assert(b != 0);
+    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = c;
-    assert(c != 0);
+    my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = d;
-    assert(d != 0);
+    my_assert(d != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = e;
-    assert(e != 0);
+    my_assert(e != 0, [&]{ trace_printf("pushed a zero\n"); });
     *++stack = f;
-    assert(f != 0);
+    my_assert(f != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 
 static inline void pop(LispObject& a)
 {   a = *stack--;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void pop(volatile LispObject& a)
 {   a = *stack--;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void pop2(LispObject& a, LispObject& b)
 {   a = *stack--;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
     b = *stack--;
-    assert(b != 0);
+    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void pop3(LispObject& a, LispObject& b, LispObject& c)
 {   a = *stack--;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
     b = *stack--;
-    assert(b != 0);
+    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
     c = *stack--;
-    assert(c != 0);
+    my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void pop4(LispObject& a, LispObject& b, LispObject& c,
                         LispObject& d)
 {   a = *stack--;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
     b = *stack--;
-    assert(b != 0);
+    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
     c = *stack--;
-    assert(c != 0);
+    my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
     d = *stack--;
-    assert(d != 0);
+    my_assert(d != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void pop5(LispObject& a, LispObject& b, LispObject& c,
                         LispObject& d, LispObject& e)
 {   a = *stack--;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
     b = *stack--;
-    assert(b != 0);
+    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
     c = *stack--;
-    assert(c != 0);
+    my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
     d = *stack--;
-    assert(d != 0);
+    my_assert(d != 0, [&]{ trace_printf("popped a zero\n"); });
     e = *stack--;
-    assert(e != 0);
+    my_assert(e != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void pop6(LispObject& a, LispObject& b, LispObject& c,
                         LispObject& d, LispObject& e, LispObject& f)
 {   a = *stack--;
-    assert(a != 0);
+    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
     b = *stack--;
-    assert(b != 0);
+    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
     c = *stack--;
-    assert(c != 0);
+    my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
     d = *stack--;
-    assert(d != 0);
+    my_assert(d != 0, [&]{ trace_printf("popped a zero\n"); });
     e = *stack--;
-    assert(e != 0);
+    my_assert(e != 0, [&]{ trace_printf("popped a zero\n"); });
     f = *stack--;
-    assert(f != 0);
+    my_assert(f != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 
 static inline void popv(int n)
@@ -270,23 +299,6 @@ static inline void popv(int n)
 #define GC_CONS      3
 #define GC_VEC       4
 #define GC_BPS       5
-
-// An "assert" scheme that lets me write in my own code to print the
-// diagnostics.
-
-NORETURN extern void my_abort();
-
-template <typename F>
-inline void my_assert(bool ok, F&& action)
-{
-#ifndef NDEBUG
-// Use this as in
-//     my_assert(predicate, [&]{...});
-// where the "..." is an arbitrary sequence of actions to be taken
-// if the assertion fails.
-    if (!ok) { action(); my_abort(); }
-#endif //NDEBUG
-}
 
 extern volatile char stack_contents_temp;
 
@@ -360,9 +372,11 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 // NIL_SEGMENT_SIZE must be over-large by enough to allow for
 // space lost while rounding nil up to be a multiple of 8. Also in the
 // Common Lisp case I need to give myself a spare word BEFORE the place
-// where nil points.
+// where nil points. I also want this to be an even multiple of the
+// size of LispObject.
 //
-#define NIL_SEGMENT_SIZE    (last_nil_offset*sizeof(LispObject) + 32)
+#define NIL_SEGMENT_SIZE    (((1 + last_nil_offset) & ~1) * \
+                             sizeof(LispObject) + 32)
 
 //
 // I give myself a margin of SPARE bytes at the end of a page so that I can
@@ -624,7 +638,7 @@ extern uint64_t reclaim_trigger_count, reclaim_trigger_target;
 
 extern int deal_with_tick();
 extern LispObject reclaim(LispObject value_to_return, const char *why,
-                          int stg_class, intptr_t size);
+                          int stg_class, size_t size);
 
 static inline void stackcheck0()                                       
 {   if_check_stack();                                         
@@ -828,8 +842,6 @@ extern void checksum(LispObject a);
 extern void ensure_screen();
 extern int window_heading;
 NORETURN extern void my_exit(int n);
-extern void *my_malloc(size_t n);
-extern void check_heap_segments();
 
 extern clock_t base_time;
 extern double *clock_stack;
@@ -950,15 +962,15 @@ extern void term_printf(const char *fmt, ...);
 extern void err_printf(const char *fmt, ...);
 extern void debug_printf(const char *fmt, ...);
 extern void trace_printf(const char *fmt, ...);
-extern const char *my_getenv(const char *name);
-extern LispObject ncons(LispObject a);
-extern LispObject ndelete(LispObject a, LispObject b);
-extern LispObject negate(LispObject a);
-extern LispObject nreverse(LispObject a);
-extern LispObject nreverse2(LispObject a, LispObject b);
+extern const char  *my_getenv(const char *name);
+extern LispObject  ncons(LispObject a);
+extern LispObject  ndelete(LispObject a, LispObject b);
+extern LispObject  negate(LispObject a);
+extern LispObject  nreverse(LispObject a);
+extern LispObject  nreverse2(LispObject a, LispObject b);
 extern FILE        *open_file(char *filename, const char *original_name,
                               size_t n, const char *dirn, FILE *old_file);
-extern LispObject plus2(LispObject a, LispObject b);
+extern LispObject  plus2(LispObject a, LispObject b);
 extern void        preserve(const char *msg, size_t len);
 extern LispObject prin(LispObject u);
 extern const char *get_string_data(LispObject a, const char *why, size_t &len);
@@ -976,33 +988,36 @@ extern void loop_print_query(LispObject o);
 extern void loop_print_trace(LispObject o);
 extern void loop_print_error(LispObject o);
 extern void internal_prin(LispObject u, int prefix);
-extern LispObject princ(LispObject u);
-extern LispObject print(LispObject u);
-extern LispObject printc(LispObject u);
+extern LispObject  princ(LispObject u);
+extern LispObject  print(LispObject u);
+extern LispObject  printc(LispObject u);
 extern void        print_bignum(LispObject u, bool blankp, int nobreak);
 extern void        print_bighexoctbin(LispObject u,
                                       int radix, int width, bool blankp, int nobreak);
-extern LispObject putprop(LispObject a, LispObject b,
-                          LispObject c);
-extern LispObject quot2(LispObject a, LispObject b);
-extern LispObject quotrem2(LispObject a, LispObject b);
-extern LispObject rational(LispObject a);
+extern LispObject  putprop(LispObject a, LispObject b,
+                           LispObject c);
+extern LispObject  quot2(LispObject a, LispObject b);
+extern LispObject  quotrem2(LispObject a, LispObject b);
+extern LispObject  rational(LispObject a);
 extern void        read_eval_print(int noisy);
 extern void        set_fns(LispObject sym, no_args *f0, one_arg *f1,
                            two_args *f2, three_args *f3, fourup_args *f4up);
+extern void        init_heap_segments(double size);
+extern void        grab_more_memory(size_t npages);
+extern bool        allocate_more_memory();
 extern void        setup(int restartp, double storesize);
 extern void        set_up_variables(int restart_flag);
 extern void        warm_setup();
 extern void        write_everything();
 extern LispObject  simplify_string(LispObject s);
 extern bool        stringp(LispObject a);
-extern LispObject times2(LispObject a, LispObject b);
+extern LispObject  times2(LispObject a, LispObject b);
 extern int32_t     thirty_two_bits(LispObject a);
 extern uint32_t    thirty_two_bits_unsigned(LispObject a);
 extern int64_t     sixty_four_bits(LispObject a);
 extern uint64_t    sixty_four_bits_unsigned(LispObject a);
 
-extern uint64_t crc64(uint64_t crc, const void *buf, size_t size);
+extern uint64_t    crc64(uint64_t crc, const void *buf, size_t size);
 
 #ifdef DEBUG
 extern void validate_string_fn(LispObject a, const char *f, int l);

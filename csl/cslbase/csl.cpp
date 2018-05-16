@@ -236,6 +236,51 @@ void show_stack()
 
 #endif
 
+std::mutex debug_lock;
+
+void DebugTrace(const char *file, int line)
+{   std::lock_guard<std::mutex> lk(debug_lock);
+    const char *leaf = strrchr(file, '/');
+    if (leaf != NULL) file = leaf+1;
+    leaf = strrchr(file, '\\');
+    if (leaf != NULL) file = leaf+1;
+    fprintf(stderr, "Tr in file %s line %d\n", file, line);
+    fflush(stderr);
+}
+
+void DebugTrace(const char *file, int line, int i)
+{   std::lock_guard<std::mutex> lk(debug_lock);
+    const char *leaf = strrchr(file, '/');
+    if (leaf != NULL) file = leaf+1;
+    leaf = strrchr(file, '\\');
+    if (leaf != NULL) file = leaf+1;
+    fprintf(stderr, "Tr in file %s line %d: %d/%x\n", file, line, i, i);
+    fflush(stderr);
+}
+
+void DebugTrace(const char *file, int line, const char *msg)
+{   std::lock_guard<std::mutex> lk(debug_lock);
+    const char *leaf = strrchr(file, '/');
+    if (leaf != NULL) file = leaf+1;
+    leaf = strrchr(file, '\\');
+    if (leaf != NULL) file = leaf+1;
+    fprintf(stderr, "Tr in file %s line %d: %s\n", file, line, msg);
+    fflush(stderr);
+}
+
+void DebugTrace(const char *file, int line,
+                              const char *fmt, int i)
+{   std::lock_guard<std::mutex> lk(debug_lock);
+    const char *leaf = strrchr(file, '/');
+    if (leaf != NULL) file = leaf+1;
+    leaf = strrchr(file, '\\');
+    if (leaf != NULL) file = leaf+1;
+    fprintf(stderr, "Tr in file %s line %d: ", file, line);
+    fprintf(stderr, fmt, i);
+    fprintf(stderr, "\n");
+    fflush(stderr);
+}
+
 //
 // error_message_table was defined in cslerror.h since that way I can keep its
 // contents textually close to the definitions of the message codes that it
@@ -943,24 +988,13 @@ void check_valid(void *p, bool expect)
 bool stop_on_error = false;
 
 static void lisp_main(void)
-{   volatile int i;
-#ifdef DEBUG
-    check_valid((void *)(-1), false);
-    check_valid((void *)0, false);
-    check_valid((void *)&nil, true);
-    check_valid((void *)&i, true);
-    check_valid((void *)nil, true);
-    check_valid((void *)stack, true);
-#endif
-
+{
 #ifdef USE_SIGALTSTACK
-//
 // If I get a SIGSEGV that is caused by a stack overflow then I am in
 // a world of pain because the regular stack does not have space to run my
 // exception handler. So where I can I will arrange that the exception
 // handler runs in its own small stack. This may itself lead to pain,
 // but perhaps less?
-//
     signal_stack.ss_sp = (void *)signal_stack_block;
     signal_stack.ss_size = SIGSTKSZ;
     signal_stack.ss_flags = 0;
@@ -1068,7 +1102,7 @@ static void lisp_main(void)
                     push2(litvec, codevec);
                     preserve(msg, len);
                     pop2(codevec, litvec);
-                    for (i=0; i<pages_count; i++)
+                    for (size_t i=0; i<pages_count; i++)
                     {   char *w = (char *)pages[i];
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             continue;
@@ -1086,12 +1120,12 @@ static void lisp_main(void)
                             pages[pages_count++] = w;
                     }
                     {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
-                        char *w1 = w + CSL_PAGE_SIZE + 16;
+                        char *w1 = w + CSL_PAGE_SIZE;
                         while (w1 <= big_chunk_end)
                         {   if (w != (char *)stacksegment)
                                 pages[pages_count++] = w;
                             w = w1;
-                            w1 = w + CSL_PAGE_SIZE + 16;
+                            w1 = w + CSL_PAGE_SIZE;
                         }
                     }
                     CSL_MD5_Init();
@@ -1161,7 +1195,7 @@ static void lisp_main(void)
 //
 // This puts all recorded heap pages back in the main pool.
 //
-                    for (i=0; i<pages_count; i++)
+                    for (size_t i=0; i<pages_count; i++)
                     {   char *w = (char *)pages[i];
                         if (!(w > big_chunk_start && w <= big_chunk_end))
                             continue;
@@ -1189,12 +1223,12 @@ static void lisp_main(void)
 // Finally rebuild a contiguous block of pages from the wholesale block.
 //
                     {   char *w = big_chunk_start + NIL_SEGMENT_SIZE;
-                        char *w1 = w + CSL_PAGE_SIZE + 16;
+                        char *w1 = w + CSL_PAGE_SIZE;
                         while (w1 <= big_chunk_end)
                         {   if (w != (char *)stacksegment)
                                 pages[pages_count++] = w;
                             w = w1;
-                            w1 = w + CSL_PAGE_SIZE + 16;
+                            w1 = w + CSL_PAGE_SIZE;
                         }
                     }
 //
@@ -1324,27 +1358,6 @@ const char *standard_directory;
 //
 static const char *module_enquiry = NULL;
 
-//
-// The next lines mean that (if you can get in before cslstart is
-// called) you can get memory allocation done in a custom way.
-//
-
-static void *CSL_malloc(size_t n)
-{   return malloc(n);
-}
-
-static void  CSL_free(void *p)
-{   free(p);
-}
-
-static void *CSL_realloc(void *p, size_t n)
-{   return realloc(p, n);
-}
-
-malloc_function  *malloc_hook = CSL_malloc;
-realloc_function *realloc_hook = CSL_realloc;
-free_function    *free_hook   = CSL_free;
-
 int errorset_min = 0, errorset_max = 3;
 
 int load_count = 0, load_limit = 0x7fffffff;
@@ -1358,7 +1371,6 @@ char *C_stack_base = NULL, *C_stack_limit = NULL;
 double max_store_size = 0.0;
 
 #ifndef HAVE_CILK
-bool threads_active = false;
 std::thread kara_thread1, kara_thread2;
 std::mutex kara_mutex;
 std::condition_variable cv_kara_ready, cv_kara_done;
@@ -1367,26 +1379,6 @@ int kara_done = 0;
 #endif
 
 static int kparallel = -1;
-
-// This class exists just for its destuctor, which will get invoked when
-// cslstart exits in any way. If there were other threads that had been
-// started this asks them to terminate and then does "join" operations so
-// they are tidied up.
-
-class tidy_up_threads
-{
-public:
-    ~tidy_up_threads()
-    {   if (threads_active)
-        {    {   std::lock_guard<std::mutex> lk(kara_mutex);
-                 kara_ready = -1;
-             }
-             cv_kara_ready.notify_all();
-             kara_thread1.join();
-             kara_thread2.join();
-        }
-    }
-};
 
 void cslstart(int argc, const char *argv[], character_writer *wout)
 {   int i;
@@ -1405,17 +1397,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     C_stack_base = (char *)&sp;
     C_stack_limit = NULL;
     max_store_size = 0.0;
-#ifndef HAVE_CILK
-    tidy_up_threads thread_tidier_object;
-    if (number_of_processors() >= 3)
-    {   kara_thread1 = std::thread(kara_worker);
-        kara_thread2 = std::thread(kara_worker);
-        threads_active = true;
-    }
     karatsuba_parallel = 0x7fffffff;
-#elif defined HAVE_CILK
-    karatsuba_parallel = 0x7fffffff;
-#endif // thread support
 
 #ifdef EMBEDDED
 // This provides a fixed limit in the embedded build
@@ -2655,7 +2637,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                *--p != '/' &&
                *p != '\\') /* nothing */;
         if (strncmp(standard_directory, cur, p-standard_directory) != 0)
-            p1 = (char *)(*malloc_hook)(strlen(p));
+            p1 = (char *)malloc(strlen(p));
         else p1 = NULL;
         if (p == standard_directory || p1 == NULL)
         {   fasl_paths[0] = standard_directory;
@@ -2666,7 +2648,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 //
             output_directory = 0x40000000 + 0;
             number_of_fasl_paths = 1;
-            if (p1 != NULL) (*free_hook)(p1);
+            if (p1 != NULL) free(p1);
         }
         else
         {   strcpy(p1, p+1);
@@ -2690,18 +2672,18 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // nil-segment and cons().
 //
 
-        nilsegment = (LispObject *)my_malloc(NIL_SEGMENT_SIZE);
+        nilsegment = (LispObject *)malloc(NIL_SEGMENT_SIZE);
+        if (nilsegment == NULL) abort();
 #ifdef COMMON
-        nil = (LispObject)doubleword_align_up((uintptr_t)nilsegment) + TAG_CONS + 8;
+        nil = (LispObject)nilsegment + TAG_CONS + 8;
 #else
-        nil = (LispObject)doubleword_align_up((uintptr_t)nilsegment) + TAG_SYMBOL;
+        nil = (LispObject)nilsegment + TAG_SYMBOL;
 #endif
         pages_count = heap_pages_count = vheap_pages_count = 0;
-        stacksegment = (LispObject *)my_malloc(CSL_PAGE_SIZE);
-//
-// I am lazy about protection against malloc failure here.
-//
-        heaplimit = (LispObject)doubleword_align_up((uintptr_t)stacksegment);
+        stacksegment = (LispObject *)malloc(CSL_PAGE_SIZE);
+        if (stacksegment == NULL) abort();
+        heaplimit = (LispObject)stacksegment;
+        heaplimit = (LispObject)stacksegment;
         fringe = heaplimit + CSL_PAGE_SIZE - 16;
         input_libraries = heaplimit + 16 + TAG_SYMBOL;
         heaplimit += 64;
@@ -2756,12 +2738,10 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // If the user hits the close button here I may be in trouble
 #endif
 
-#if defined HAVE_LIBPTHREAD || defined WIN32 || defined HAVE_CILK
         if (number_of_processors() >= 3)
         {   karatsuba_parallel = KARATSUBA_PARALLEL_CUTOFF;
             if (kparallel > 0) karatsuba_parallel = kparallel;
         }
-#endif
 
 //
 // Up until the time I call setup() I may only use term_printf for
@@ -3016,14 +2996,49 @@ static void iput(int c)
 
 #endif
 
+// This class exists just for its destuctor, which will get invoked when
+// sbumain exits in any way. If there were other threads that had been
+// started this asks them to terminate and then does "join" operations so
+// they are tidied up.
+
+class tidy_up_threads
+{
+public:
+    tidy_up_threads()
+    {   kara_ready = 0;
+        kara_thread1 = std::thread(kara_worker, 0);
+        kara_thread2 = std::thread(kara_worker, 1);
+    }
+    ~tidy_up_threads()
+    {   {   std::lock_guard<std::mutex> lk(kara_mutex);
+            kara_ready = -1;
+        }
+        cv_kara_ready.notify_all();
+        kara_thread1.join();
+        kara_thread2.join();
+    }
+};
+
 static int submain(int argc, const char *argv[])
 {   cslstart(argc, argv, NULL);
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
     strcpy(ibuff, "(print '(a b c d))");
+    tidy_up_threads thread_tidier_object;
     execute_lisp_function("oem-supervisor", iget, iput);
     printf("Buffered output is <%s>\n", obuff);
 #else
-    if (module_enquiry == NULL) cslaction();
+    if (module_enquiry == NULL)
+    {
+#ifndef HAVE_CILK
+// I will now always create threads even if on a uniprocessor. If my CPU
+// has fewer than 3 cores (or virtual cores) I will not make any use of
+// the two worker threads, but it is simpler if I always create them.
+// I will use RAII and the tidy-up class here to ask the worker threads
+// to close down (and then to join with them) at the end of a run.
+        tidy_up_threads thread_tidier_object;
+#endif
+        cslaction();
+    }
 #endif
     my_exit(cslfinish(NULL));
 //

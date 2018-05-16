@@ -608,15 +608,13 @@ static uint32_t kara_1_lena, kara_1_lenb, kara_1_lenc;
 
 #ifndef WITH_CILK
 
-void kara_worker()
-{
-    for (;;)
-    {   int my_id;
-// Wait until there is work to be done.
+void kara_worker(int my_id)
+{   for (;;)
+    {   // Wait until there is work to be done.
         {   std::unique_lock<std::mutex> lk(kara_mutex);
             cv_kara_ready.wait(lk, []{return (kara_ready != 0);});
             if (kara_ready < 0) return; // end of run!
-            my_id = --kara_ready;
+            kara_ready--;
         }
 // Do the work.
         if (my_id == 0)
