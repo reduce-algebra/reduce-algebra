@@ -39,5 +39,7 @@
 				{/block}
 			</div>
 		</div>
+		{block name=javascript}
+		{/block}
 	</body>
 </html>
