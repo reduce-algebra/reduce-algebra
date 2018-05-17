@@ -17,19 +17,19 @@ header {
     color: #0F0;
 }
 
-    header > img { /* icon */
-        position: absolute;
-        top: 6px;
-        left: 6px;
-    }
+header > img { /* icon */
+    position: absolute;
+    top: 6px;
+    left: 6px;
+}
 
-    header + p { /* subheader */
-        color: #009;
-        text-align: center;
-        font-size: 21px;
-        font-weight: bold;
-        margin: 0;
-    }
+header + p { /* subheader */
+    color: #009;
+    text-align: center;
+    font-size: 21px;
+    font-weight: bold;
+    margin: 0;
+}
 
 h1 {
     color: #009;
@@ -59,68 +59,67 @@ ul {
 
 /* Navigation panel */
 
-nav {
+#navmenu {
     font-size: 0.9rem;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
-    nav > ul {
-        margin-top: 0;
-        margin-left: 0;
-        padding-left: 0;
-        white-space: nowrap;
-    }
+#navmenu ul {
+    margin-top: 0;
+    margin-left: 0;
+    padding-left: 0;
+    white-space: nowrap;
+}
 
-        nav > ul > li {
-            list-style-type: none;
-            list-style-image: none;
-            margin-bottom: 1em;
-            background-color: #CCF;
-            text-align: center;
-        }
+#navmenu ul > li {
+    list-style-type: none;
+    list-style-image: none;
+    margin-bottom: 1em;
+    background-color: #CCF;
+    text-align: center;
+}
 
-            nav > ul > li.selected {
-                padding-right: 1.2em;
-                padding-left: 0.2em;
-                border-left: 1em solid #009;
-            }
+#navmenu ul > li.selected {
+    padding-right: 1.2em;
+    padding-left: 0.2em;
+    border-left: 1em solid #009;
+}
 
-            nav > ul > li > a {
-                text-decoration: none;
-                color: black;
-                display: block;
-                padding-right: 1.2em;
-                padding-left: 0.2em;
-                border-left: 1em solid #CCF;
-                transition: 0.5s 0.1s;
-                /* Better to transition the opacity? */
-            }
+#navmenu ul > li > a {
+    text-decoration: none;
+    color: black;
+    display: block;
+    padding-right: 1.2em;
+    padding-left: 0.2em;
+    border-left: 1em solid #CCF;
+    transition: 0.5s 0.1s;
+    /* Better to transition the opacity? */
+}
 
-                nav > ul > li > a:hover,
-                nav > ul > li > a:focus {
-                    border-left-color: #66C;
-                }
+#navmenu ul > li > a:hover, #navmenu ul > li > a:focus {
+    border-left-color: #66C;
+}
 
-    nav ul li a:active, nav ul li a:link, nav ul li a:visited {
-        color: black;
-    }
+#navmenu ul li a:active, #navmenu ul li a:link, #navmenu ul li a:visited {
+    color: black;
+}
 
-    /* Download REDUCE from SourceForge */
+/* Download REDUCE from SourceForge */
 
-    nav > a > p {
-        margin: 1.5rem 0;
-        border: thin solid black;
-        border-radius: 5px;
-        padding: 5px;
-        font-weight: bold;
-        text-align: center;
-        background-color: white;
-    }
+#navmenu a > p {
+    margin: 1.5rem 0;
+    border: thin solid black;
+    border-radius: 5px;
+    padding: 5px;
+    font-weight: bold;
+    text-align: center;
+    background-color: white;
+}
 
-    nav > a:active, nav > a:link, nav > a:visited {
-        text-decoration: none;
-        color: black;
-    }
+#navmenu a:active, #navmenu a:link, #navmenu a:visited {
+    text-decoration: none;
+    color: black;
+}
 
 #google_translate_element {
     text-align: center;
@@ -143,9 +142,9 @@ nav {
     margin-right: -0.125em;
 }
 
-    .latex sup {
-        font-size: 0.85em;
-        vertical-align: 0.15em;
-        margin-left: -0.36em;
-        margin-right: -0.15em;
-    }
+.latex sup {
+    font-size: 0.85em;
+    vertical-align: 0.15em;
+    margin-left: -0.36em;
+    margin-right: -0.15em;
+}

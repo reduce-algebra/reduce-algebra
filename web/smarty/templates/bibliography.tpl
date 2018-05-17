@@ -9,7 +9,7 @@
 {block name=main}
 	<div id="main" class="col-md-9 col-xl-7">
 		<p>
-			This document contains a list of all known references to REDUCE sorted by first author surname.
+			This document contains a list of all known references to REDUCE sorted by first-author surname.
 		</p>
 		<nav>
 			<div class="nav nav-tabs" id="TabbedHeader" role="tablist">
