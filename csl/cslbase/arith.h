@@ -512,12 +512,15 @@ extern double Cabs(Complex a);
 
 #ifndef HAVE_CILK
 
-extern std::thread kara_thread1, kara_thread2;
+extern std::thread kara_thread[2];
+#define KARA_0    (1<<0)
+#define KARA_1    (1<<1)
+#define KARA_QUIT (1<<2)
 extern void kara_worker(int id);
-
 extern std::mutex kara_mutex;
-extern std::condition_variable cv_kara_ready, cv_kara_done;
-extern int kara_ready;
+extern std::condition_variable cv_kara_ready,
+                               cv_kara_done;
+extern unsigned int kara_ready;
 extern int kara_done;
 
 #endif

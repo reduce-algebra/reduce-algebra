@@ -237,45 +237,42 @@ void show_stack()
 #endif
 
 std::mutex debug_lock;
+const char *debug_file;
+int debug_line;
 
-void DebugTrace(const char *file, int line)
-{   std::lock_guard<std::mutex> lk(debug_lock);
-    const char *leaf = strrchr(file, '/');
-    if (leaf != NULL) file = leaf+1;
-    leaf = strrchr(file, '\\');
-    if (leaf != NULL) file = leaf+1;
-    fprintf(stderr, "Tr in file %s line %d\n", file, line);
+void DebugTrace()
+{   const char *leaf = strrchr(debug_file, '/');
+    if (leaf != NULL) debug_file = leaf+1;
+    leaf = strrchr(debug_file, '\\');
+    if (leaf != NULL) debug_file = leaf+1;
+    fprintf(stderr, "Tr in file %s line %d\n", debug_file, debug_line);
     fflush(stderr);
 }
 
-void DebugTrace(const char *file, int line, int i)
-{   std::lock_guard<std::mutex> lk(debug_lock);
-    const char *leaf = strrchr(file, '/');
-    if (leaf != NULL) file = leaf+1;
-    leaf = strrchr(file, '\\');
-    if (leaf != NULL) file = leaf+1;
-    fprintf(stderr, "Tr in file %s line %d: %d/%x\n", file, line, i, i);
+void DebugTrace(int i)
+{   const char *leaf = strrchr(debug_file, '/');
+    if (leaf != NULL) debug_file = leaf+1;
+    leaf = strrchr(debug_file, '\\');
+    if (leaf != NULL) debug_file = leaf+1;
+    fprintf(stderr, "Tr in file %s line %d: %d/%x\n", debug_file, debug_line, i, i);
     fflush(stderr);
 }
 
-void DebugTrace(const char *file, int line, const char *msg)
-{   std::lock_guard<std::mutex> lk(debug_lock);
-    const char *leaf = strrchr(file, '/');
-    if (leaf != NULL) file = leaf+1;
-    leaf = strrchr(file, '\\');
-    if (leaf != NULL) file = leaf+1;
-    fprintf(stderr, "Tr in file %s line %d: %s\n", file, line, msg);
+void DebugTrace(const char *msg)
+{   const char *leaf = strrchr(debug_file, '/');
+    if (leaf != NULL) debug_file = leaf+1;
+    leaf = strrchr(debug_file, '\\');
+    if (leaf != NULL) debug_file = leaf+1;
+    fprintf(stderr, "Tr in file %s line %d: %s\n", debug_file, debug_line, msg);
     fflush(stderr);
 }
 
-void DebugTrace(const char *file, int line,
-                              const char *fmt, int i)
-{   std::lock_guard<std::mutex> lk(debug_lock);
-    const char *leaf = strrchr(file, '/');
-    if (leaf != NULL) file = leaf+1;
-    leaf = strrchr(file, '\\');
-    if (leaf != NULL) file = leaf+1;
-    fprintf(stderr, "Tr in file %s line %d: ", file, line);
+void DebugTrace(const char *fmt, int i)
+{   const char *leaf = strrchr(debug_file, '/');
+    if (leaf != NULL) debug_file = leaf+1;
+    leaf = strrchr(debug_file, '\\');
+    if (leaf != NULL) debug_file = leaf+1;
+    fprintf(stderr, "Tr in file %s line %d: ", debug_file, debug_line);
     fprintf(stderr, fmt, i);
     fprintf(stderr, "\n");
     fflush(stderr);
@@ -1371,10 +1368,10 @@ char *C_stack_base = NULL, *C_stack_limit = NULL;
 double max_store_size = 0.0;
 
 #ifndef HAVE_CILK
-std::thread kara_thread1, kara_thread2;
+std::thread kara_thread[2];
 std::mutex kara_mutex;
 std::condition_variable cv_kara_ready, cv_kara_done;
-int kara_ready = 0;
+unsigned int kara_ready = 0;
 int kara_done = 0;
 #endif
 
@@ -3005,17 +3002,17 @@ class tidy_up_threads
 {
 public:
     tidy_up_threads()
-    {   kara_ready = 0;
-        kara_thread1 = std::thread(kara_worker, 0);
-        kara_thread2 = std::thread(kara_worker, 1);
+    {   kara_ready = kara_done = 0;
+        for (int i=0; i<2; i++)
+            kara_thread[i] = std::thread(kara_worker, i);
     }
     ~tidy_up_threads()
     {   {   std::lock_guard<std::mutex> lk(kara_mutex);
-            kara_ready = -1;
+            kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
         }
         cv_kara_ready.notify_all();
-        kara_thread1.join();
-        kara_thread2.join();
+        for (int i=0; i<2; i++)
+            kara_thread[i].join();
     }
 };
 
@@ -3604,4 +3601,3 @@ PROC_handle PROC_rest(PROC_handle p)
 }
 
 // End of csl.cpp
- 

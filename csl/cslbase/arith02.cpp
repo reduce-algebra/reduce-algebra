@@ -612,9 +612,10 @@ void kara_worker(int my_id)
 {   for (;;)
     {   // Wait until there is work to be done.
         {   std::unique_lock<std::mutex> lk(kara_mutex);
-            cv_kara_ready.wait(lk, []{return (kara_ready != 0);});
-            if (kara_ready < 0) return; // end of run!
-            kara_ready--;
+            while ((kara_ready & (1<<my_id)) == 0)
+                cv_kara_ready.wait(lk);
+            if ((kara_ready & KARA_QUIT) != 0) return; // end of run!
+            kara_ready &= ~(1<<my_id);
         }
 // Do the work.
         if (my_id == 0)
@@ -677,7 +678,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         kara_0_lena = kara_0_lenb = kara_0_lenc = 0;
 #ifndef WITH_CILK
         {   std::lock_guard<std::mutex> lk(kara_mutex);
-            kara_ready = 2;
+            kara_ready = KARA_0 | KARA_1;
             kara_done = 0;
         }
         cv_kara_ready.notify_all();
@@ -692,7 +693,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
         long_times(d, a, b, c, lena, h, 2*h);
 #ifndef WITH_CILK
         {   std::unique_lock<std::mutex> lk(kara_mutex);
-            cv_kara_done.wait(lk, []{return (kara_done == 2);});
+            while (kara_done != 2) cv_kara_done.wait(lk);
         }
 #else // WITH_CILK
         cilk_sync;
@@ -743,7 +744,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     kara_0_lenc = 2*h;
 #ifndef WITH_CILK
     {   std::lock_guard<std::mutex> lk(kara_mutex);
-        kara_ready = 2;
+        kara_ready = KARA_0 | KARA_1;
         kara_done = 0;
     }
     cv_kara_ready.notify_all();
@@ -786,7 +787,7 @@ static void long_times1p(uint32_t *c, uint32_t *a, uint32_t *b,
     fflush(stdout);
 #ifndef WITH_CILK
     {   std::unique_lock<std::mutex> lk(kara_mutex);
-        cv_kara_done.wait(lk, []{return (kara_done == 2);});
+        while (kara_done != 2) cv_kara_done.wait(lk);
     }
 #else // WITH_CILK
     cilk_sync;
@@ -1057,23 +1058,15 @@ static LispObject timesbb(LispObject a, LispObject b)
         }
         lenc = 2*lenc;
         c = get_basic_vector(TAG_NUMBERS, TYPE_BIGNUM, CELL+8*lenc);
-#if defined HAVE_LIBPTHREAD || defined WIN32
-//
 // If I run using threads then each of the three threads can need some
 // workspace, so I will allocate (rather a lot) more.
-//
         lend = (7*lenc)/2;
-#else
-        lend = lenc;
-#endif
 
-//
 // The next line should save a serious amount of memory turn-over when
 // doing a lot of arithmetic. It maintains a multiplication buffer, but
 // one that is discarded at the start of any garbage collection. Thus
 // between garbage collections it will get allocated just big enough
 // but it should not cause clutter when not used.
-//
         if (multiplication_buffer == nil ||
             (4*lend+CELL) > length_of_header(numhdr(multiplication_buffer)))
         {   push(c);

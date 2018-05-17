@@ -149,14 +149,24 @@ inline void my_assert(bool ok, F&& action)
           } while (0)
 
 extern std::mutex debug_lock;
+extern const char *debug_file;
+extern int debug_line;
 
-extern void DebugTrace(const char *file, int line);
-extern void DebugTrace(const char *file, int line, int i);
-extern void DebugTrace(const char *file, int line, const char *msg);
-extern void DebugTrace(const char *file, int line,
-                       const char *fmt, int i);
+extern void DebugTrace();
+extern void DebugTrace(int i);
+extern void DebugTrace(const char *msg);
+extern void DebugTrace(const char *fmt, int i);
 
-#define Tr(...) DebugTrace(__FILE__, __LINE__, __VA_ARGS__)
+// This is a macro that sets some global variables bacause I want Tr()
+// without arguments to be valid, and until C++2a it seems impossible to
+// combine __VA_ARGS__ with anything else because of fussiness about commas.
+
+#define Tr(...)                                        \
+   {   std::lock_guard<std::mutex> lk(debug_lock);     \
+       debug_file = __FILE__;                          \
+       debug_line = __LINE__;                          \
+       DebugTrace(__VA_ARGS__);                        \
+   }
 
 static inline void push(LispObject a)
 {   *++stack = a;
