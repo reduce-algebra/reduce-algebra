@@ -391,7 +391,7 @@
     (setq OpName (pop U))   % (quote name)
     (setq fname (intern (bldmsg "%w.LTH" OpName)))
     (setq OpName (MkQuote OpName))   % (quote name)
-    (setq variants (pop u)) 
+%    (setq variants (pop u)) 
     (setq vars (pop u)) 
     (setq pattern
       (append u 
@@ -1606,7 +1606,7 @@
     (UpdateBitTable 2 0) 
     (setq CurrentOffset* (plus CurrentOffset* 2))))
 
-(de depositword (x)
+(de DepositWord (x)
   (putword (wplus2 codebase* CurrentOffset*) 0 x)
   (updatebittable 4 0)
   (setq CurrentOffset* (plus CurrentOffset* 4)))
@@ -1620,7 +1620,7 @@
   (updatebittable 4 (const reloc_word))
   (setq CurrentOffset* (plus CurrentOffset* 4)))
   
-(de depositwordexpression (x)
+(de DepositWordExpression (x)
   % Only limited expressions now handled
   (let (y)
     (cond
@@ -1638,12 +1638,12 @@
       ((and (eq (car x) 'mkitem)
 	    (eq (cadr x) id-tag)
 	    (eqcar (setq y (caddr x)) 'idloc)
-	    (wlessp (id2int(cadr y)) 129))
+	    (wlessp (id2int (cadr y)) 257))
 	(depositword (cadr y)))
       ((equal (first x) 'idloc) (depositwordidnumber (second x)))
       ((equal (first x) 'mkitem) (deposititem (second x) (third x)))
       ((equal (first x) 'entry) (depositentry x))
-      ((setq y (wconstevaluable x)) (depositword (int2sys y)))
+      ((setq y (wconstevaluable x)) (DepositWord (int2sys y)))
       (t (stderror (bldmsg "Expression too complicated %r" x))))))
 
 (de depositwordidnumber (x) 

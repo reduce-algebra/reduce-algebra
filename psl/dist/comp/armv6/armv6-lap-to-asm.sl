@@ -102,9 +102,9 @@
 
 (fluid '(semic* *comp *plap dfprint* charactersperword 
                  addressingunitsperitem addressingunitsperfunctioncell 
-                 inputsymfile* outputsymfile* codeout* dataout* rodataout*
-                 initout* !; codefilenameformat* datafilenameformat* 
-                 initfilenameformat* rodatafilenameformat*
+                 InputSymFile* OutputSymFile* codeout* dataout* rodataout*
+                 initout* !; CodeFileNameFormat* DataFileNameFormat* 
+                 RoDataFileNameFormat* InitFileNameFormat*
 		 modulename* uncompiledexpressions* 
                  nextidnumber* orderedidlist* nilnumber*
 		 *mainfound % Main entry point found /csp
@@ -124,17 +124,17 @@
                  ))
 
 % Default values; set up if not already initialized.                       
-(when (null inputsymfile*)
-  (setq inputsymfile* "psl.sym"))
+(when (null InputSymFile*)
+  (setq InputSymFile* "psl.sym"))
 
-(when (null outputsymfile*)
-  (setq outputsymfile* "psl.sym"))
+(when (null OutputSymFile*)
+  (setq OutputSymFile* "psl.sym"))
 
-(when (null initfilenameformat*)
-  (setq initfilenameformat* "%w.init"))
+(when (null InitFileNameFormat*)
+  (setq InitFileNameFormat* "%w.init"))
 
-(when (null rodatafilenameformat*)
-  (setq rodatafilenameformat* "rod%w.s"))
+(when (null RoDataFileNameFormat*)
+  (setq RoDataFileNameFormat* "rod%w.s"))
 
 (de dfprintasm (u)
   % Called by top-loop, dskin, dfprint to compile a single form.
@@ -271,7 +271,7 @@
     (linelength 1000)
     (wrs oldout)
     )
-  (codefileheader)
+  (CodeFileHeader)
 
   % Open the DATA output file, setting the line length large, and adding the header.
 
@@ -280,14 +280,16 @@
     (linelength 1000)
     (wrs oldout)
     )
-  (datafileheader)
+  (DataFileHeader)
+
+  % Open the RODATA output file, setting the line length large, and adding the header.
 
   (setq rodataout* (open (bldmsg rodatafilenameformat* modulename*) 'output))
   (let ((oldout (wrs rodataout*)))
     (linelength 1000)
     (wrs oldout)
     )
-  (rodatafileheader)
+  (RoDataFileHeader)
 
   % Open the INIT output file.
 
@@ -437,10 +439,8 @@
 
 (de initializesymnam ()
   (dataprintgloballabel (findgloballabel 'symnam))
-  (for (from i 0 128 1) 
+  (for (from i 0 256 1) 
        (do (dataprintfullword (compileconstant (id2string (int2id i))))))
-  (for (from i 129 255 1)
-       (do (dataprintfullword (compileconstant (auxaux i)))))
   (for (in idname (car orderedidlist*))
        (do  (dataprintfullword (compileconstant (id2string idname))))
        ))
@@ -455,10 +455,7 @@
 
 (de initializesymval ()
   (dataprintgloballabel (findgloballabel 'symval))
-  (for (from i 0 128 1) (do (initsymval1 (int2id i))))
-  (for (from i 129 255 1) (do
-      (dataprintfullword
-              (list 'mkitem (compiler-constant 'unbound-tag)  i))))
+  (for (from i 0 256 1) (do (initsymval1 (int2id i))))
   (foreach x in (car orderedidlist*) do (initsymval1 x)))
 
 (de initsymval1 (x)
@@ -495,7 +492,7 @@
 
 (de initializesymfnc ()
   (dataprintgloballabel (findgloballabel 'symfnc))
-  (for (from i 0 255 1) (do (initsymfnc1 (int2id i))))
+  (for (from i 0 256 1) (do (initsymfnc1 (int2id i))))
   (foreach x in (car orderedidlist*) do (initsymfnc1 x)))
 
 (de initsymfnc1 (x)
@@ -624,7 +621,7 @@
 (put 'halfword 'asmpseudoop 'asmpseudoprinthalfword)
 
 (de asmpseudoprintstring (x)
-  (printstring (cadr x)))
+  (rodataPrintString (cadr x)))
 
 (put 'string 'asmpseudoop 'asmpseudoprintstring)
 
@@ -801,6 +798,10 @@
   (rplaca printexpressionformpointer* x)
   (dataprintf fullwordformat* printexpressionform*))
 
+(de rodataprintfullword (x)
+  (rplaca printexpressionformpointer* x)
+  (RoDataPrintf fullwordformat* printexpressionform*))
+
 (de codeprintfullword (x)
   (rplaca printexpressionformpointer* x)
   (codeprintf fullwordformat* printexpressionform*))
@@ -911,7 +912,13 @@
 (de dataprintstring (x)
   (prog (oldout)
         (setq oldout (wrs dataout*))
-        (printstring x)
+        (PrintString x)
+        (wrs oldout)))
+
+(de rodataprintstring (x)
+  (prog (oldout)
+        (setq oldout (wrs rodataout*))
+        (PrintString x)
         (wrs oldout)))
 
 (de findlabel (x)
@@ -982,9 +989,19 @@
 %     (codedeclareexternal name)
 )
 
+(de AppendOneConstant (ExpressionLabelPair)
+  (progn (AddRoDataLabel (cdr ExpressionLabelPair))
+         (AppendRoDataItem (car ExpressionLabelPair))))
 
+(de AddRoDataLabel (Label)
+    (rodataprintlabel Label))
 
+(de AppendRoDataItem (Expression)
+  (AddRoFullWord (ExpandItem Expression)))
 
+(de AddRoFullWord (Expression)
+  (RoDataPrintFullWord Expression))
 
-
-
+(de AddRoData (Expression)
+  (RoDataPrint Expression))
+    

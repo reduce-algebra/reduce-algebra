@@ -307,7 +307,7 @@ nil)
   (eval (list 'pp v))
   
   (setq v
-   `(DefOpLength ,u ,(get u 'OpcodeVariants)
+   `(DefOpLength ,u %,(get u 'OpcodeVariants)
                     ,(parameterlist (get u 'ARGNO))
 		 .,(reverse (get u 'LENGTHCASES))))
   (eval (list 'pp v))

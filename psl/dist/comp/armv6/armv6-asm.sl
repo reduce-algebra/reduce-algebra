@@ -44,7 +44,8 @@
 (global '($eol$))
 
 (Fluid '(CodeFileNameFormat* 
-         DataFileNameFormat* 
+         DataFileNameFormat*
+	 RoDataFileNameFormat* 
          InitFileNameFormat* 
          InputSymFile* 
          OutputSymFile* 
@@ -519,20 +520,20 @@
 
 
 (de datareserveblock (x)
-  (dataprintf "  .space %w%n" (times x addressingunitsperitem)))
+  (DataPrintF "  .space %w%n" (times x addressingunitsperitem)))
 
-% (for (from i 1 x) (do (dataprintf " .long 0 %n"))))
+% (for (from i 1 x) (do (DataPrintF " .long 0 %n"))))
 % (rplaca printexpressionformpointer*
 %         (list 'times2 (compiler-constant 'addressingunitsperitem) x))
-% (dataprintf reservedatablockformat* (gensym) printexpressionform*))
+% (DataPrintF reservedatablockformat* (gensym) printexpressionform*))
 
 (de datareservefunctioncellblock (x)
-  (dataprintf "  .space %w%n" (times x addressingunitsperitem)))
+  (DataPrintF "  .space %w%n" (times x addressingunitsperitem)))
 
-% (for (from i 1 x) (do (dataprintf " .long 00 %n"))))
+% (for (from i 1 x) (do (DataPrintF " .long 00 %n"))))
 % (rplaca printexpressionformpointer*
 %         (list 'times2 (compiler-constant 'addressingunitsperfunctioncell) x))
-% (dataprintf reservedatablockformat* (gensym) printexpressionform*))
+% (DataPrintF reservedatablockformat* (gensym) printexpressionform*))
 
 % End of file.
 

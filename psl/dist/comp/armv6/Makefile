@@ -61,7 +61,7 @@ all: \
 	$(PL)/armv6-cmac.b \
 	$(PL)/armv6-comp.b \
 	$(PL)/armv6-lap.b \
-	$(PL)/lap-to-asm.b $(PL)/nbittab.b \
+	$(PL)/armv6-lap-to-asm.b $(PL)/nbittab.b \
 	$(PL)/carcdrnil.b \
 	$(PL)/compiler.b \
 	$(PL)/comp-decls.b \
@@ -83,8 +83,8 @@ $(PL)/armv6-comp.b: $(PXC)/armv6-comp.sl
 $(PL)/armv6-lap.b: $(PXC)/armv6-lap.sl $(PL)/fasl-decls.b
 	$(PDIST)/make-lap $(PXC) armv6-lap
 
-$(PL)/lap-to-asm.b: $(PXC)/lap-to-asm.sl
-	$(PDIST)/make-lap $(PXC) lap-to-asm
+$(PL)/armv6-lap-to-asm.b: $(PXC)/armv6-lap-to-asm.sl
+	$(PDIST)/make-lap $(PXC) armv6-lap-to-asm
 
 $(PL)/nbittab.b: $(PXC)/nbittab.sl $(PL)/inum.b $(PL)/fasl-decls.b
 	$(PDIST)/make-lap $(PXC) nbittab
