@@ -384,7 +384,8 @@
 
 (de findidnumber (u)
   (prog (i)
-        (return (cond ((leq (setq i (id2int u)) 128) i)
+        (return (cond ((null u) 256)
+                      ((leq (setq i (id2int u)) 256) i)
                       ((setq i (get u 'idnumber)) i)
                       (t (put u 'idnumber (setq i nextidnumber*)) 
                          (setq orderedidlist* (tconc orderedidlist* u)) 
@@ -424,8 +425,7 @@
 (de initializesymprp ()
   % init prop lists                                                        
   (dataprintgloballabel (findgloballabel 'symprp))
-  (for (from i 0 128 1) (do (initsymprp1 (int2id i))))
-  (for (from i 129 255 1) (do (initsymprp1 (int2id 0))))
+  (for (from i 0 256 1) (do (initsymprp1 (int2id i))))
   (foreach x in (car orderedidlist*) do (initsymprp1 x)))
 
 (de initsymprp1 (x) (dataprintfullword nilnumber*))
@@ -447,7 +447,7 @@
 
 (de initializesymget ()
   (dataprintgloballabel (findgloballabel 'symget))
-  (for (from i 0 255 1) (do
+  (for (from i 0 256 1) (do
                               (dataprintfullword nilnumber*)))
   (foreach x in (car orderedidlist*) do
                               (dataprintfullword nilnumber*))
@@ -636,7 +636,7 @@
                        ((and (setq fn (getd hd)) (equal (car fn) 'macro)) 
                         (PrintOperand (apply (cdr fn) (list x))))
                        ((setq fn (wconstevaluable x)) (printoperand fn))
-                       (t (printexpression x)))))))
+                       (t (PrintExpression x)))))))
 
 (put 'reg 'operandprintfunction 'printregister)
 
@@ -679,7 +679,7 @@
   (prin2 (findgloballabel (cadr x))))
 
 (de asmprintvaluecell (x)
-  (printexpression (list 'plus2 'symval 
+  (PrintExpression (list 'plus2 'symval 
                          (list 'times (compiler-constant 'addressingunitsperitem) 
                           (list 'idloc (cadr x))))))
 
@@ -842,18 +842,18 @@
 (de dataprintexpression (x)
   (prog (oldout)
         (setq oldout (wrs dataout*))
-        (printexpression x)
+        (PrintExpression x)
         (wrs oldout)))
 
 (de codeprintexpression (x)
   (prog (oldout)
         (setq oldout (wrs codeout*))
-        (printexpression x)
+        (PrintExpression x)
         (wrs oldout)))
 
 (setq expressioncount* -1)
 
-(de printexpression (x)
+(de PrintExpression (x)
   ((lambda (expressioncount*)
      (prog (hd tl fn)
 	   (setq x (resolvewconstexpression x))
@@ -898,7 +898,7 @@
 (deflist '((minus !-) (wminus !-)) 'unaryasmop)
 
 (de compileconstant (x)
-  (setq x (buildconstant x))
+  (setq x (BuildConstant x))
   (if (null (cdr x))
     (car x)
     (progn (when *declarebeforeuse

@@ -68,7 +68,7 @@
   (for (from i 0 hash-table-size)
        (do (setf (hash-table-entry i) empty-slot-value)))
   
-  (setf (hash-table-entry (hash-into-table (symnam 128))) 128)
+  (setf (hash-table-entry (hash-into-table (symnam 256))) 256)
 
   (for (from i 256 (- nextsymbol 1))  % Don't intern single character IDs
        (do (setf (hash-table-entry (hash-into-table (symnam i))) i)))

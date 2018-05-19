@@ -25,28 +25,18 @@
 (compiletime (put 'UndefinedFunction 'entrypoint 'UndefinedFunction))
 
 (lap '((!*entry PlantUnbound expr 1)
-       (add   (reg 1)  (reg 1))              % ID*2
-       (mov   (reg 1)  (reg t2))
-       (add   (reg t2) (reg t2))             % ID*4
-
-       (*WPLUS2 (reg t2) (fluid SYMFNC))       
-       (mov UndefinedFunctionInstruction (reg t1))
-       (*move (reg t1) (displacement (reg t2) 0))
+       (LDR (reg t1) UndefinedFunctionInstruction)
+       (STR (reg t1) (displacement (reg SYMFNC) (regshifted 1 LSL 2)))
        (!*EXIT 0)
        (fullword 0) 
     UndefinedFunctionInstruction
        (fullword UndefinedFunction))
-       ))
+       )
 
 
 (lap '((!*entry PlantCodePointer expr 2)
-       (add   (reg 1)  (reg 1))              % ID*2
-       (mov   (reg 1)  (reg t2))
-       (add   (reg t2) (reg t2))             % ID*4
-
-       (!*WPLUS2 (reg t2) (fluid SYMFNC))
        (*wor (reg 2) 16#8000000)
-       (*move (reg 2) (displacement (reg t2) 0))      
+       (STR (reg 2) (displacement (reg SYMFNC) (regshifted 2 LSL 2)))
        (!*EXIT 0)))
 
 (compiletime 
@@ -55,13 +45,8 @@
  (put 'CompiledCallingInterpreted 'entrypoint 'CompiledCallingInterpreted))
 
 (lap '((!*entry PlantLambdaLink expr 1)
-       (add (reg 1)  (reg 1))              % ID*2
-       (mov (reg 1)  (reg t2))
-       (add (reg t2) (reg t2))             % ID*4
-
-       (*WPLUS2 (reg t2) (fluid SYMFNC))                        
-       (mov  LambdaLinkInstruction (reg t1))
-       (*move (reg t1) (displacement (reg t2) 0))
+       (LDR (reg t1) LambdaLinkInstruction)
+       (STR (reg t1) (displacement (reg SYMFNC) (regshifted 1 LSL 2)))
        (!*EXIT 0)
        (fullword 0)
     LambdaLinkInstruction
@@ -69,7 +54,7 @@
 
 
 (lap '((*entry addressapply0 expr 1)
-       (*jumphugo (reg 1))))
+       (BLX (reg 1))))
   
 (de bittable (baseaddress bitoffset)
   (field (ilsh (byte baseaddress (ilsh bitoffset -2))
@@ -77,18 +62,17 @@
          30 2))
 
 (lap '((*entry undefinedfunction expr 1)
-       (jmp (indirect (entry undefinedfunction-aux)))))
+       (*JCall undefinedfunction-aux)))
 
    % to be redefined in nonkernel
 
 (lap '((*entry undefinedfunction-aux expr 1)
-       (*push (reg t1))
+       (*move (reg t1) (displacement (reg st) 0 postindexed))
        (*move (quote "Undefined function called: ") (reg 1))
        (*call console-print-string)
        (*move (fluid symnam) (reg t2))
-       (*pop (reg t1))
-       (*wshift (reg t1) 2)    % * 4
-       (*move (indexed (reg t1) (displacement (reg t2) 0)) (reg 1))
+       (*move (displacement (reg st) 0 postindexed) (reg t1))
+       (LDR (reg 1) (displacement (reg t2) (regshifted t1 LSL 2)))
        (*call console-print-string)
        (*move 0 (reg 1))
        (*call Exit-with-status)

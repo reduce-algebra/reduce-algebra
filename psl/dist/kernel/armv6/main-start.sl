@@ -208,6 +208,15 @@
    *fastcar
    ))
 
+(compiletime (flag '($fluid fluid global $global) 'terminaloperand))
+
+(lap '((*entry move-regs-to-mem expr 0)
+       (*Alloc 0)
+       (*MOVE (reg r8) ($fluid heaplast))
+       (*MOVE (reg r9) ($fluid heaptrapbound))
+       (*exit 0)
+))
+
 (de init-pointers()
 % (setq stacklowerbound (wplus2 stack stacksize))
 % (setq stackupperbound (wplus2 stack 100))
@@ -248,7 +257,10 @@
   (setq *fastcar nil)
 )
 
-(lap '((*entry !m!a!i!n expr 0)
+(compiletime
+  (setq mainentrypointname* '!p!s!l!_!m!a!i!n))
+
+(lap '((*entry !p!s!l!_!m!a!i!n expr 0)
 
        (*move (displacement (reg st) 4) (fluid argc))
        (*move (displacement (reg st) 8) (fluid argv))
@@ -283,6 +295,13 @@
 
        (*link init-gcarray expr 0)
 
+       (*MOVE ($fluid heaplast) (reg R8))
+       (*MOVE ($fluid heaptrapbound) (reg R9))
+       (*MOVE ($global symfnc) (reg symfnc))
+       (*MOVE ($global symval) (reg symval))
+       (*move 256 (reg NIL))
+       (*mkitem (reg NIL) id-tag)                 % initialize NIL reg
+
        (*call pre-main)                                 % call PSL
 
 panic-exit                      % need to do UNIX cleanup after
@@ -292,11 +311,11 @@ panic-exit                      % need to do UNIX cleanup after
        (*exit 3)
 
        (*entry exit-with-status expr 1)
-       (*push (reg 1))
+       (*move (reg 1) (displacement (reg st) 0 postindexed))
        (*link os_cleanup_hook expr 0)
-       (*pop (reg 1))
+       (*move (displacement (reg st) 0 postindexed) (reg 1))
        (*link external_exit expr 1)
-       (*exit 3)
+       (*exit 0)
        ))
 
 %
@@ -320,7 +339,9 @@ panic-exit                      % need to do UNIX cleanup after
   (begin1)
   (rds nil) (wrs nil) (close ch1) (close ch2)
 ))
-  
+ 
+(compiletime (remflag '($fluid fluid global $global) 'terminaloperand))
+
 (de init-gcarray() nil) % hook for garbage collector initialization 
 
 (de pre-main ()

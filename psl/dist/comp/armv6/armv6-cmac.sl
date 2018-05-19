@@ -311,10 +311,12 @@
        ((regp regp)	    	 (MOV ArgTwo ArgOne))
        ((imm8-rotatedp regp)     (mov Argtwo ArgOne))
        ((immediatep regp)        (mov Argtwo ArgOne))
-       ((fixp regp)              (!*LoadConstant ArgTwo (quote ArgOne)))
-       ((idlocp regp)            (!*LoadConstant ArgTwo ArgOne))
-       ((regp indirectp)       (STR ArgOne ArgTwo))
-       ((indirectp regp)       (LDR ArgTwo ArgOne))
+       ((fixp regp)              (*LoadConstant ArgTwo (quote ArgOne)))
+       ((idlocp regp)            (*LoadConstant ArgTwo ArgOne))
+       ((fluid-arg-p regp)       (*LoadIdNumber LDR ArgTwo ArgOne))
+       ((indirectp regp)         (LDR ArgTwo ArgOne))
+       ((regp fluid-arg-p)       (*LoadIdNumber STR ArgOne ArgTwo))
+       ((regp indirectp)         (STR ArgOne ArgTwo))
        ((regp anyp)              (str ArgOne ArgTwo))
        ((anyp regp)              (ldr ArgTwo ArgOne))
        (                         (*move ArgOne (reg t3))
@@ -329,7 +331,18 @@
       `( (ldr ,dest (quote ,cst)))))
 )
 
-(DefCMacro !*LoadConstant)
+(DefCMacro *LoadConstant)
+
+(de *LoadIdNumber (load-or-store reg nonlocal)
+  (let ((idnumber
+	 (WConstEvaluable `(idloc ,(cadr nonlocal)))))
+    (if (and (fixp idnumber) (lessp idnumber 1024) (greaterp idnumber -1024))
+	`( (,load-or-store ,reg (displacement (reg symval) ,(times 4 idnumber))) )
+      `( (LDR (reg t2) (quote ,idnumber))
+	 (,load-or-store ,reg (displacement (reg symval) (regshifted t2 LSL 2))) )
+      )))
+
+(DefCMacro *LoadIdNumber)
 
 (de *ALLOC (framesize)
     (setq NAlloc!* framesize)
@@ -340,25 +353,20 @@
 
 (DefCmacro *ALLOC)
 
-(de *DeAlloc (Framesize)
- (setq framesize (resolveoperand '(reg error) framesize))
- (if (greaterp framesize 0)
-     `(
-       (add (reg st) (reg st) ,(times2 4 framesize))
-       (ldm (reg sp) ((reg fp) (reg lr)) writeback))
-   `(
-     (ldm (reg sp) ((reg fp) (reg lr)) writeback)))
- )
-
-(DefCmacro *DeAlloc)
-
+(DefCmacro *DeAlloc
+	   ((ZeroP))
+	   (           (add (reg st) (reg st) ARGONE)))
+	   
 (de *Exit (N)
  (Expand1OperandCMacro
    (times N (compiler-constant 'AddressingUnitsPerItem)) '*Exit))
 
 (DefCMacro *Exit     % leaf routine first
-       ( (*DeAlloc (quotient argone AddressingUnitsPerItem))
-	 (bx (reg lr))))
+   ((ZeroP)  (ldm (reg sp) ((reg fp) (reg lr)) writeback)
+             (bx (reg lr)))
+   (         (add (reg st) (reg st) ARGONE)
+	     (ldm (reg sp) ((reg fp) (reg lr)) writeback)
+	     (bx (reg lr))))
 
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))
 
@@ -412,7 +420,7 @@
 	   ((regp imm8-rotatedp anyp)
 		               (*move ArgThree (reg t3))
 		               (add ArgOne (reg t3) ArgTwo))
-	   ((regp anyp imm-rotatedp)
+	   ((regp anyp imm8-rotatedp)
 		               (*move ArgTwo (reg t3))
 		               (add ArgOne (reg t3) ArgThree))
 	   ((regp regp anyp)  (*move ArgThree (reg t3))
@@ -535,7 +543,7 @@
 
 (DefCMacro *AShift
     ((AnyP ZeroP))
-    ((regp negp)     (mov ArgOne (regshifted ArgOne ASR (minus ArgTwo)))
+    ((regp negp)     (mov ArgOne (regshifted ArgOne ASR (minus ArgTwo))))
     ((regp fixplusp) (mov ArgOne (regshifted ArgOne LSL ArgTwo)))
     ((regp regp)     (cmp ArgTwo 0)
                       (bge templabel)
@@ -553,7 +561,7 @@
 		      (*move (reg t3) ArgOne))
     (                 (*move ArgOne (reg t1))
 		      (*ashift (reg t1) ArgTwo)
-		      (*move (reg t1) ArgOne)))
+		      (*move (reg t1) ArgOne))
 )
 
 
@@ -823,6 +831,7 @@
 	   (bcc always 0)))
 ))
 
+(commentoutcode
 (for (in function '(addressapply0 addressapply1 addressapply2
 		addressapply3 addressapply4))
      (from register 1)
@@ -834,6 +843,7 @@
 	 `((mtspr (reg ctr) (reg ,register))
 	   (bcc always 0)))
       ))
+)
 
 % *feq, *fgreaterp and *flessp can only occur once in a function.
 
@@ -1199,11 +1209,11 @@ preload  (setq initload
 
 (de *foreignlink (functionname functiontype numberofarguments)
 
-    `((stm (reg st) (reglist r1 r2 r3 r4 r8 r9 r10 r11 r12)) % save caller-saved registers
-      (*move (reg t) (fluid *kernelmode))
-      (list 'call (list 'ForeignEntry FunctionName))
+    `((stm (reg st) ((reg r1) (reg r2) (reg r3) (reg r4) (reg r8) (reg r9) (reg r10) (reg r11) (reg r12)) writeback) % save caller-saved registers
+      (*move (quote t) (fluid *kernelmode))
+      (blx (foreignentry ,functionname))
       (*move (reg NIL) (fluid *kernelmode))
-      (ldm (reg st) (reglist r1 r2 r3 r4 r8 r9 r10 r11 r12)))) % restore saved registers
+      (ldm (reg st) ((reg r1) (reg r2) (reg r3) (reg r4) (reg r8) (reg r9) (reg r10) (reg r11) (reg r12)) writeback))) % restore saved registers
 
 (DefCMacro !*foreignlink)
 
