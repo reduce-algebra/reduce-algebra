@@ -7,24 +7,22 @@
 {/block}
 
 {block name=main}
-	<div id="main" class="col-md-9 col-xl-7">
-		<p>
-			This document contains a list of all known references to REDUCE sorted by first-author surname.
-		</p>
-		<nav>
-			<div class="nav nav-tabs" id="TabbedHeader" role="tablist">
-				{foreach $biblio as $alpha => $section}
-					<a class="nav-item nav-link" id="{$alpha}-tab" data-toggle="tab" href="#{$alpha}" role="tab" aria-controls="{$alpha}" aria-selected="false">{$alpha}</a>
-				{/foreach}
-			</div>
-		</nav>
-		<div class="tab-content" id="TabbedContent">
+	<p>
+		This document contains a list of all known references to REDUCE sorted by first-author surname.
+	</p>
+	<nav>
+		<div class="nav nav-tabs" id="TabbedHeader" role="tablist">
 			{foreach $biblio as $alpha => $section}
-				<div class="tab-pane fade" id="{$alpha}" role="tabpanel" aria-labelledby="{$alpha}-tab">
-					{$section}
-				</div>
+				<a class="nav-item nav-link" id="{$alpha}-tab" data-toggle="tab" href="#{$alpha}" role="tab" aria-controls="{$alpha}" aria-selected="false">{$alpha}</a>
 			{/foreach}
 		</div>
+	</nav>
+	<div class="tab-content" id="TabbedContent">
+		{foreach $biblio as $alpha => $section}
+			<div class="tab-pane fade" id="{$alpha}" role="tabpanel" aria-labelledby="{$alpha}-tab">
+				{$section}
+			</div>
+		{/foreach}
 	</div>
 {/block}
 

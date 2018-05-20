@@ -46,33 +46,31 @@
 {/block}
 
 {block name=main}
-	<div id="main" class="col-md-9 col-xl-7">
-		{$preamble}
+	{$preamble}
 
-		<h2>{$primary_books_heading}</h2>
+	<h2>{$primary_books_heading}</h2>
 
-		{foreach $primary_books as $book}
-			<div class="row align-items-center">
-				<div class="col-auto">
-					<a href="{$book.url}">{$book.img}</a>
-				</div>
-				<div class="col"><a href="{$book.url}">{$book.ttl}</a>
-					{$book.dsc}
-				</div>
+	{foreach $primary_books as $book}
+		<div class="row align-items-center">
+			<div class="col-auto">
+				<a href="{$book.url}">{$book.img}</a>
 			</div>
-		{/foreach}
-		
-		<h2>{$secondary_books_heading}</h2>
-
-		{foreach $secondary_books as $book}
-			<div class="row align-items-center">
-				<div class="col-auto">
-					<a href="{$book.url}">{$book.img}</a>
-				</div>
-				<div class="col"><a href="{$book.url}">{$book.ttl}</a>
-					{$book.dsc}
-				</div>
+			<div class="col"><a href="{$book.url}">{$book.ttl}</a>
+				{$book.dsc}
 			</div>
-		{/foreach}
-	</div>
+		</div>
+	{/foreach}
+
+	<h2>{$secondary_books_heading}</h2>
+
+	{foreach $secondary_books as $book}
+		<div class="row align-items-center">
+			<div class="col-auto">
+				<a href="{$book.url}">{$book.img}</a>
+			</div>
+			<div class="col"><a href="{$book.url}">{$book.ttl}</a>
+				{$book.dsc}
+			</div>
+		</div>
+	{/foreach}
 {/block}

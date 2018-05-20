@@ -36,10 +36,9 @@
 
 {*<nav class="col-md-3 col-xl-2">*}
 
-{block name=main}
-	<div id="main" class="col-md-6 col-xl-6">
-		{$main_content}
-	</div>
+{$main_class = 'col-md-6 col-xl-6'}
+
+{block name=RSS}
 	<aside class="col-md-3 col-xl-2">
 		<h2 style="text-align:center; font-size:medium;">SourceForge RSS feeds</h2>
 		<div class="row">

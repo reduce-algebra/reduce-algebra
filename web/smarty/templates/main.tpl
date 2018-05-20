@@ -27,19 +27,18 @@
 				</header>
 			{/block}
 			<div class="row">
-				{block name=root}{/block}
 				{include file='navigation.tpl'}
-				{block name=main}
-					<div id="main" class="col-md-9 col-xl-7">
+				<div id="main" class="{$main_class|default:'col-md-9 col-xl-7'}">
+					{block name=main}
 						{$main_content}
-					</div>
-				{/block}
+					{/block}
+				</div>
+				{block name=RSS}{/block}
 				{block name=footer}
 					{include file='footer.tpl' class='col-xl-3'}
 				{/block}
 			</div>
 		</div>
-		{block name=javascript}
-		{/block}
+		{block name=javascript}{/block}
 	</body>
 </html>
