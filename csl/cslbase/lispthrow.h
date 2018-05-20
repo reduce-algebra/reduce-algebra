@@ -291,7 +291,7 @@ public:
 // First I will comment on protection for push/pop against exceptions that
 // might arise, as in
 //    push2(a, b);
-//    <exception or signal triggered here>
+//    <exception or sigaction triggered here>
 //    pop2(b, a);
 // where at present I always take care to restore the stack pointer before
 // returning. In the newer model I observe that if the condition that causes
@@ -344,12 +344,13 @@ public:
 //     called needs to generate backtraces at times.
 //
 //
-// My sketch of the protocol is as follows:
-//
+// My sketch of the protocol follows the definitions of a couple of
+// RAII classes that it relies on.:
 //
 
 extern LispObject *stack;
 extern jmp_buf *global_jb;
+NORETURN extern void global_longjmp();
 
 class RAIIsave_stack_and_jb
 {   LispObject *saveStack;
@@ -396,9 +397,16 @@ public:
 // "try { <ACTIVITY> } catch (EEE_t) { <ERROR_ACTIVITY> }" which is simple
 // code to handle exceptions that are raised within the C++ world. The extra
 // bulk and complication arises because I wish to be able to respond to
-// events noticed by signal(). For those I will arrange that global_jb points
-// at a jmp_buf structure, because one of the few things one can do in a
-// signal handler is a longjmp.
+// events noticed by sigaction(). For those I will arrange that global_jb points
+// at a jmp_buf structure, because regardless of official legality I will
+// use longjmp to exit from event handlers. Look up "async signal safe" to
+// find explanations and discussions of why this is all delicate! I believe
+// that things are liable to fail if the signal arose while a system call
+// was being executed, and I hope that events prompted directly by my own
+// code and nor arising during system calls will be reasonably safe. But my
+// official stance has to be that following an exception it is good if I
+// can recover enough to produce a diagnostic, but even that is not
+// guaranteed.
 //
 // The constructor and destructor of RAII (Resource Allocation Is
 // Initialization) class save and restore global_jb across the extent of

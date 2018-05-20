@@ -885,14 +885,6 @@ bool segvtrap = true;
 bool batch_flag = false;
 bool ignore_restart_fn = false;
 
-#ifdef USE_SIGALTSTACK
-
-static unsigned char signal_stack_block[SIGSTKSZ];
-
-stack_t signal_stack;
-
-#endif
-
 #ifdef HAVE_CRLIBM
 static unsigned long long crlibstatus = 0;
 
@@ -970,33 +962,14 @@ void debug_show_trail_raw(const char *msg, const char *file, int line)
 
 jmp_buf *global_jb;
 
-#ifdef DEBUG
-// For a while as I introduce the valid_address function I will demonstrate
-// it on entry to the code here so I build confidence that it at least
-// sometimes works.
-
-void check_valid(void *p, bool expect)
-{   if (valid_address(p) != expect)
-    {   fprintf(stderr, "Address %p validity issue\n", p);
-    }
+void global_longjmp()
+{   longjmp(*global_jb, 1);
 }
-#endif
 
 bool stop_on_error = false;
 
 static void lisp_main(void)
 {
-#ifdef USE_SIGALTSTACK
-// If I get a SIGSEGV that is caused by a stack overflow then I am in
-// a world of pain because the regular stack does not have space to run my
-// exception handler. So where I can I will arrange that the exception
-// handler runs in its own small stack. This may itself lead to pain,
-// but perhaps less?
-    signal_stack.ss_sp = (void *)signal_stack_block;
-    signal_stack.ss_size = SIGSTKSZ;
-    signal_stack.ss_flags = 0;
-    sigaltstack(&signal_stack, (stack_t *)0);
-#endif
 #ifdef HAVE_CRLIBM
     crlibstatus = crlibm_init();
     atexit(tidy_up_crlibm);
@@ -1044,27 +1017,6 @@ static void lisp_main(void)
             }
             unwind_stack(save, false);
             exit_reason = UNWIND_ERROR;
-            signal(SIGFPE, low_level_signal_handler);
-#ifdef USE_SIGALTSTACK
-// SIGSEGV will be handled on the alternative stack. This is the only
-// exception I treat this way, and that is because it is the main one
-// liable to arise in case of a stack overflow disaster when the main
-// stack has no space even for a signal handler.
-            {   struct sigaction sa;
-                sa.sa_handler = low_level_signal_handler;
-                sigemptyset(&sa.sa_mask);
-                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
-                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
-            }
-#else
-            if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
-#endif
-#ifdef SIGBUS
-            if (segvtrap) signal(SIGBUS, low_level_signal_handler);
-#endif
-#ifdef SIGILL
-            if (segvtrap) signal(SIGILL, low_level_signal_handler);
-#endif
         }
         catch (LispException e)
         {
@@ -2806,14 +2758,7 @@ static void cslaction(void)
     errorset_msg = NULL;
     try
     {   START_SETJMP_BLOCK;
-        signal(SIGFPE, low_level_signal_handler);
-        if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
-#ifdef SIGBUS
-        if (segvtrap) signal(SIGBUS, low_level_signal_handler);
-#endif
-#ifdef SIGILL
-        if (segvtrap) signal(SIGILL, low_level_signal_handler);
-#endif
+        set_up_signal_handlers();
         non_terminal_input = NULL;
 #ifdef WINDOW_SYSTEM
         terminal_eof_seen = 0;

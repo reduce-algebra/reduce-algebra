@@ -1,18 +1,7 @@
 
 % u10.lsp           Machine generated Lisp
 
-(c!:install "u10" 134107 5018148 2272331)
-
-(c!:install 'ibalp_atomp '(ibalp_atomp true false equal ibalp_arg2l
-ibalp_arg2r) 17773256308332994895)
-
-(c!:install 'off '(off off1) 11885465020214804935)
-
-(c!:install 'addpf '(addpf nreverse addmpf addsq termordp!!) 
-189716299280573791)
-
-(c!:install '!:difference '(!:difference difference !:minus dcombine) 
-5542252668030939367)
+(c!:install "u10" 164286 3428525 9766769)
 
 (c!:install 'scan '(scan cursym!* !*semicol!* escaped!* nxtsym!* else
 outl!* comment !C!O!M!M!E!N!T !Comment !*comment !% ttype!*
@@ -127,6 +116,18 @@ ifl!* !*defn !*demo) 3886476464251229633)
 (c!:install 'argnochk '(argnochk !*argnochk variadic !*strict_argcount
 "+++++ " rlisp "called with" "argument" "arguments" "instead of"
 number!-of!-args argsofopr rerror lprim) 4181807411543066481)
+
+(c!:install 'ordn '(ordn ord2 ordad) 10332192838769180338)
+
+(c!:install 'rnminus!: '(rnminus!: !:minus) 10114202910328867344)
+
+(c!:install 'freeofl '(freeofl freeof) 1695728625742780640)
+
+(c!:install 'msappend '(msappend) 11032271548117645485)
+
+(c!:install 'get_group_in '(get_group_in) 7681727314505217329)
+
+(c!:install 'mkzl '(mkzl nreverse) 17272778361100409105)
 
 
 % End of generated Lisp code

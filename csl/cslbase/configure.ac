@@ -1404,14 +1404,17 @@ AC_CHECK_TYPES([struct timeval], [], [],
     #include <sys/time.h>
     #endif])
 
+AC_CHECK_TYPES([struct sigaction], [], [],
+   [#ifdef HAVE_SIGNAL_H
+    #include <signal.h>
+    #endif])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STAT
 AC_C_CONST
 AC_STRUCT_TM
 AC_C_VOLATILE
 
-AC_CHECK_TYPES([intptr_t,uintptr_t], [], [have_intptr=no],
-   [#include <stdint.h>])
 AC_CHECK_TYPES([complex double], [], [],
    [#ifdef HAVE_COMPLEX_H
     #include <complex.h>
@@ -1427,15 +1430,6 @@ AC_CHECK_TYPES([__int128,unsigned __int128])
 # I would view the following as a better names for an 128-bit integer type and
 # will map "unsigned __int128" etc onto it when relevant.
 AC_CHECK_TYPES([int128_t,uint128_t])
-
-if test "x$have_intptr" = "xno"
-then
-  AC_MSG_NOTICE([Falling back to finding datatype sizes at configure time.])
-  AC_CHECK_SIZEOF(void *)
-  AC_CHECK_SIZEOF(int)
-  AC_CHECK_SIZEOF(long)
-  AC_CHECK_SIZEOF(long long)
-fi
 
 AC_CHECK_SIZEOF(wchar_t)
 
@@ -1800,3 +1794,4 @@ AM_CONDITIONAL(redfront, test "x$with_redfront" != "xno")
 AC_OUTPUT
 
 # end of "configure.ac"
+

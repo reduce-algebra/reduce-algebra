@@ -2456,10 +2456,11 @@ static LispObject Lget_callback(LispObject env, LispObject a)
     return onevalue(make_lisp_integer64((LispObject)r));
 }
 
+// This is a rather silly function put in here to help me debug exception
+// handling. It raises a SIGSEGV.
+
 static LispObject Lsigsegv(LispObject env, LispObject arg)
 {   trace_printf("\nsigsegv about to be raised\n");
-    printf("llsh = %p\n", low_level_signal_handler);
-    printf("signal result = %p\n", signal(SIGSEGV, low_level_signal_handler));
     ensure_screen();
     if (arg == nil) raise(SIGSEGV);
     else *(char *)(-1) = 0x55;

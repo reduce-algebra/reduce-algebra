@@ -1,7 +1,7 @@
 
 % u02.lsp           Machine generated Lisp
 
-(c!:install "u02" 123738 6997756 35410)
+(c!:install "u02" 33982 6965764 8159079)
 
 (c!:install 'mo!=sprod '(mo!=sprod) 9344181336102125413)
 
@@ -174,9 +174,6 @@ list2string delall) 9268416252380254427)
 (c!:install 'rd!:zerop '(rd!:zerop) 17709990252071441276)
 
 (c!:install 'monordp '(monordp wedge xorder) 12478659793155962360)
-
-(c!:install 'add_prin_char '(add_prin_char !*nat posn!* ycoord!* pline!*
-) 17193709539127785982)
 
 (c!:install '!*physopp!* '(!*physopp!* physopp!* getphystype) 
 948670675597052586)

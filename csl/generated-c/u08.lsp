@@ -1,53 +1,7 @@
 
 % u08.lsp           Machine generated Lisp
 
-(c!:install "u08" 109347 6548818 9290100)
-
-(c!:install 'clear!-column '(clear!-column null!-space!-basis) 
-2174171855257234860)
-
-(c!:install 'gintequiv!: '(gintequiv!:) 170157521522791609)
-
-(c!:install 'talp_smupdknowl1 '(talp_smupdknowl1 or false rl_negateat
-talp_chkknowl) 18164921448930879520)
-
-(c!:install 'pasf_deci '(pasf_deci pasf_dec) 7606875779504539690)
-
-(c!:install 'isarb_int '(isarb_int arbint found_int multi_isarb_int) 
-8903692645515055984)
-
-(c!:install 'gsetsugar '(gsetsugar !*gsugar sugar vdptdeg vdpputprop) 
-5956100697013325100)
-
-(c!:install 'add2inputbuf '(add2inputbuf !*nosave!* statcounter
-inputbuflis!* terminalp) 3273988650128620738)
-
-(c!:install 'simpdiff '(simpdiff ckpreci!# simpcar simpminus addsq) 
-8946894650303966450)
-
-(c!:install 'mv!-pow!-minusp '(mv!-pow!-minusp) 6164394581063889849)
-
-(c!:install 'rnquotient!: '(rnquotient!: mkrn) 12337815946570309451)
-
-(c!:install 'bas_make1 '(bas_make1 dp_ecart) 8684791487173625242)
-
-(c!:install 'psum '(psum dless csum c_zero) 15539650795427356691)
-
-(c!:install 'tayexp!-min2 '(tayexp!-min2 tayexp!-lessp) 
-450066141476525100)
-
-(c!:install 'talp_invf '(talp_invf talp_op) 9779812008113020496)
-
-(c!:install 'ibalp_varlt1 '(ibalp_varlt1 lto_insertq ibalp_argn) 
-15073405374690958584)
-
-(c!:install 'bc_prod '(bc_prod multsq) 1177742759903326742)
-
-(c!:install 'layout!-formula '(layout!-formula ycoord!* ymin!* ymax!*
-posn!* pline!* testing!-width!* overflowed!* orig!* inbrackets "(" ")"
-prin2!* oprin maprint) 12015381067414281630)
-
-(c!:install 'multiom '(multiom objectom) 15929192743078869346)
+(c!:install "u08" 149301 9917972 5887711)
 
 (c!:install 'isarb_compl '(isarb_compl arbcomplex found_compl
 multi_isarb_compl) 15012797369163340989)
@@ -151,6 +105,40 @@ cl_smmkatl) 4396288828514490291)
 (c!:install 'searchtm '(searchtm searchpl) 15031410852730542525)
 
 (c!:install 'ibalp_vequal '(ibalp_vequal) 5437926664406397851)
+
+(c!:install 'treesizep1 '(treesizep1) 4179991401639837357)
+
+(c!:install 'quotfail!-mod!-p '(quotfail!-mod!-p exact!-quotient!-flag
+"Quotient not exact (mod p)" quotient!-mod!-p errorf) 
+1317977702197480167)
+
+(c!:install 'equal!: '(equal!: normbf) 11244774644015991854)
+
+(c!:install 'simpindexvar '(simpindexvar partitindexvar !*pf2sq) 
+17822470104714462053)
+
+(c!:install 'take!-realpart '(take!-realpart repartf multsq) 
+9070378222395813219)
+
+(c!:install 'assert_analyze '(assert_analyze assertstatistics!*
+lambda_46uwl1lq71ua2 (function !#calls !#bad! calls
+!#assertion! violations) sum " " "-" sort prin2t) 4783383686943766855)
+
+(c!:install 'lambda_46uwl1lq71ua2 '(lambda_46uwl1lq71ua2 ordp) 
+1813469934075966741)
+
+(c!:install 'maprint '(maprint p!*!* physoppri minus "(" ")" failed
+orig!* posn!* obrkp!* !*comma!* physopp vec!-maprin prin2!* inprint) 
+15396926397083613611)
+
+(c!:install 'matrix!+p '(matrix!+p) 14190898046507498077)
+
+(c!:install 'freevarinexptchk '(freevarinexptchk) 4178118939591073996)
+
+(c!:install 'cl_fvarl1 '(cl_fvarl1 cl_varl1) 8522948151680983405)
+
+(c!:install 'objectom '(objectom ir2mml!* apply fnom basicom) 
+12657950036901911207)
 
 
 % End of generated Lisp code

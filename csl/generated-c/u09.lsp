@@ -1,41 +1,7 @@
 
 % u09.lsp           Machine generated Lisp
 
-(c!:install "u09" 146552 9844648 2344485)
-
-(c!:install 'treesizep1 '(treesizep1) 4179991401639837357)
-
-(c!:install 'quotfail!-mod!-p '(quotfail!-mod!-p exact!-quotient!-flag
-"Quotient not exact (mod p)" quotient!-mod!-p errorf) 
-1317977702197480167)
-
-(c!:install 'equal!: '(equal!: normbf) 11244774644015991854)
-
-(c!:install 'simpindexvar '(simpindexvar partitindexvar !*pf2sq) 
-17822470104714462053)
-
-(c!:install 'take!-realpart '(take!-realpart repartf multsq) 
-9070378222395813219)
-
-(c!:install 'assert_analyze '(assert_analyze assertstatistics!*
-lambda_46uwl1lq71ua2 (function !#calls !#bad! calls
-!#assertion! violations) sum " " "-" sort prin2t) 4783383686943766855)
-
-(c!:install 'lambda_46uwl1lq71ua2 '(lambda_46uwl1lq71ua2 ordp) 
-1813469934075966741)
-
-(c!:install 'maprint '(maprint p!*!* physoppri minus "(" ")" failed
-orig!* posn!* obrkp!* !*comma!* physopp vec!-maprin prin2!* inprint) 
-15396926397083613611)
-
-(c!:install 'matrix!+p '(matrix!+p) 14190898046507498077)
-
-(c!:install 'freevarinexptchk '(freevarinexptchk) 4178118939591073996)
-
-(c!:install 'cl_fvarl1 '(cl_fvarl1 cl_varl1) 8522948151680983405)
-
-(c!:install 'objectom '(objectom ir2mml!* apply fnom basicom) 
-12657950036901911207)
+(c!:install "u09" 109511 2574621 9745622)
 
 (c!:install 'smtp '(smtp sparsemat spm matrix "Matrix" "not set"
 mkempspmat rerror findrow letmtr3) 17327195793579896949)
@@ -189,6 +155,17 @@ real) convertmode typerr) 17828960826457123473)
 (c!:install 'cl_atmlc '(cl_atmlc) 17505962978350274030)
 
 (c!:install 'ofsf_prepat '(ofsf_prepat prepf) 12200178279664987678)
+
+(c!:install 'ibalp_atomp '(ibalp_atomp true false equal ibalp_arg2l
+ibalp_arg2r) 17773256308332994895)
+
+(c!:install 'off '(off off1) 11885465020214804935)
+
+(c!:install 'addpf '(addpf nreverse addmpf addsq termordp!!) 
+189716299280573791)
+
+(c!:install '!:difference '(!:difference difference !:minus dcombine) 
+5542252668030939367)
 
 
 % End of generated Lisp code

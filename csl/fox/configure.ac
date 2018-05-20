@@ -126,6 +126,9 @@ AC_CHECK_LIB(dld, shl_load)
 # Check vsscanf
 AC_CHECK_FUNCS(vsscanf vsnprintf strtoll strtoull)
 
+# Check sigaction
+AC_CHECK_FUNCS(sigaction)
+
 # Add copious amounts of debugging with gcc
 if test "${GXX}" = "yes" ; then
   # There is an issue about just how much output from g++ actually helps

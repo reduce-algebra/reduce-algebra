@@ -1,5 +1,7 @@
 # Makefile.am
 
+# $Id$
+
 srcdir = @srcdir@
 VPATH = @srcdir@
 ACLOCAL_AMFLAGS = -I m4

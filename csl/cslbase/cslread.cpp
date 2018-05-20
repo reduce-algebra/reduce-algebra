@@ -3403,24 +3403,6 @@ void read_eval_print(int noisy)
             }
             unwind_stack(save, false);
             stack = save;
-            signal(SIGFPE, low_level_signal_handler);
-#ifdef USE_SIGALTSTACK
-// SIGSEGV will be handled on the alternative stack
-            {   struct sigaction sa;
-                sa.sa_handler = low_level_signal_handler;
-                sigemptyset(&sa.sa_mask);
-                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
-                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
-            }
-#else
-            if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
-#endif
-#ifdef SIGBUS
-            if (segvtrap) signal(SIGBUS, low_level_signal_handler);
-#endif
-#ifdef SIGILL
-            if (segvtrap) signal(SIGILL, low_level_signal_handler);
-#endif
             err_printf("\n... read failed\n");
             errors_now++;
             if (errors_limit >= 0 && errors_now > errors_limit)
@@ -3539,24 +3521,6 @@ void read_eval_print(int noisy)
             }
             unwind_stack(save, false);
             stack = save;
-            signal(SIGFPE, low_level_signal_handler);
-#ifdef USE_SIGALTSTACK
-// SIGSEGV will be handled on the alternative stack
-            {   struct sigaction sa;
-                sa.sa_handler = low_level_signal_handler;
-                sigemptyset(&sa.sa_mask);
-                sa.sa_flags = SA_ONSTACK | SA_RESETHAND;
-                if (segvtrap) sigaction(SIGSEGV, &sa, NULL);
-            }
-#else
-            if (segvtrap) signal(SIGSEGV, low_level_signal_handler);
-#endif
-#ifdef SIGBUS
-            if (segvtrap) signal(SIGBUS, low_level_signal_handler);
-#endif
-#ifdef SIGILL
-            if (segvtrap) signal(SIGILL, low_level_signal_handler);
-#endif
             err_printf("\n... continuing after error\n");
             if (spool_file != NULL) fflush(spool_file);
             errors_now++;

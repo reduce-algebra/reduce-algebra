@@ -1,4 +1,4 @@
-// "wxfwin.h"                           Copyright (C) 2003-2017, A C Norman
+// "wxfwin.h"                           Copyright (C) 2003-2018, A C Norman
 //
 // This defines the public interface supported by the "wxfwin" window
 // interface. Note that this should be functionally very similar to
@@ -7,7 +7,7 @@
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -57,6 +57,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <signal.h>
 
 //
 // Logging support, only enabled in debug mode.
@@ -533,8 +534,13 @@ extern int fwin_plain_getchar();
 
 extern int texmacs_mode;
 
-extern void sigint_handler(int code);
-extern void sigbreak_handler(int code);
+#ifdef HAVE_SIGACTION
+extern void sigint_handler(int signo, siginfo_t *t, void *v);
+extern void sigbreak_handler(int signo, siginfo_t *t, void *v);
+#else // !HAVE_SIGACTION
+extern void sigint_handler(int signo);
+extern void sigbreak_handler(int signo);
+#endif // !HAVE_SIGACTION
 
 extern int plain_worker(int argc, const char *argv[], fwin_entrypoint *fwin_main);
 extern char fwin_prompt_string[MAX_PROMPT_LENGTH];

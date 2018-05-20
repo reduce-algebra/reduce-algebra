@@ -1,19 +1,7 @@
 
 % u11.lsp           Machine generated Lisp
 
-(c!:install "u11" 48378 5826655 494830)
-
-(c!:install 'ordn '(ordn ord2 ordad) 10332192838769180338)
-
-(c!:install 'rnminus!: '(rnminus!: !:minus) 10114202910328867344)
-
-(c!:install 'freeofl '(freeofl freeof) 1695728625742780640)
-
-(c!:install 'msappend '(msappend) 11032271548117645485)
-
-(c!:install 'get_group_in '(get_group_in) 7681727314505217329)
-
-(c!:install 'mkzl '(mkzl nreverse) 17272778361100409105)
+(c!:install "u11" 171925 9871 8723985)
 
 (c!:install 'sfto_davp '(sfto_davp) 17491099964523223853)
 
@@ -177,6 +165,11 @@ prepsq) 14428625574767194711)
 
 (c!:install 'prepsq!*2 '(prepsq!*2 prepsq!*1 replus) 
 18407660482813847948)
+
+(c!:install 'mo_neg '(mo_neg) 3737353681207043185)
+
+(c!:install 'dd '(dd ordering lex nc!* varlist!* dquot dless leftzeros
+class) 129747970404352349)
 
 
 % End of generated Lisp code

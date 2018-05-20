@@ -1,5 +1,5 @@
 //
-// "FXWorker.cpp"                            Copyright A C Norman 2003-2017
+// "FXWorker.cpp"                            Copyright A C Norman 2003-2018
 //
 //
 // Window interface for old-fashioned C applications. Intended to
@@ -7,7 +7,7 @@
 // always believe that running them under emacs is best!
 
 /******************************************************************************
-* Copyright (C) 2003-17 by Arthur Norman, Codemist.  All Rights Reserved.     *
+* Copyright (C) 2003-18 by Arthur Norman, Codemist.  All Rights Reserved.     *
 *******************************************************************************
 * This library is free software; you can redistribute it and/or               *
 * modify it under the terms of the GNU Lesser General Public                  *
@@ -745,7 +745,16 @@ DWORD FXTerminal::worker_thread(void *arg)
 void *FXTerminal::worker_thread(void *arg)
 #endif
 {
+#ifdef HAVE_SIGACTION
+    struct sigaction sa;
+    sa.sa_sigaction = sigint_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART | SA_SIGINFO | SA_ONSTACK | SA_NODEFER;
+    if (sigaction(SIGINT, &sa, NULL) == -1)
+        /* I can not thing of anything useful to do if I fail here! */;
+#else // !HAVE_SIGACTION
     signal(SIGINT, sigint_handler);
+#endif // !HAVE_SIGACTION
     term = (FXTerminal *)arg;
 
 // set proper initial state for all the locks.

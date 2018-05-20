@@ -46,7 +46,6 @@
 #endif
 #ifdef WIN32
 #include <winsock.h>
-#include <semaphore.h>
 #include <windows.h>
 #else 
 #define unix_posix 1 
@@ -65,10 +64,6 @@
 #define SOCKET_ERROR (-1)
 #ifndef INADDR_NONE
 # define INADDR_NONE 0xffffffff
-#endif
-#ifdef HAVE_LIBPTHREAD
-#include <semaphore.h>
-#include <pthread.h>
 #endif
 #endif 
 #include <stdio.h>
@@ -89,6 +84,10 @@
 #include <exception>
 #include <errno.h>
 #include <assert.h>
+#include <random>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
@@ -138,33 +137,6 @@ extern "C"
 # define OPSYS "Unknown"
 # define IMPNAME "Generic"
 # endif
-#endif
-#if !defined HAVE_INTPTR_T && (SIZEOF_VOID_P == 4)
-typedef int32_t intptr_t;
-#define INTPTR_MAX INT32_MAX
-#define INTPTR_MIN INT32_MIN
-#define HAVE_INTPTR_T 1
-#endif
-#if !defined HAVE_INTPTR_T && (SIZEOF_VOID_P == 8)
-typedef int64_t intptr_t;
-#define HAVE_INTPTR_T 1
-#endif
-#if !defined HAVE_UINTPTR_T && (SIZEOF_VOID_P == 4)
-typedef uint32_t uintptr_t;
-#define HAVE_UINTPTR_T 1
-#endif
-#if !defined HAVE_UINTPTR_T && (SIZEOF_VOID_P == 8)
-typedef uint64_t uintptr_t;
-#define HAVE_UINTPTR_T 1
-#endif
-#ifndef UINTPTR_MAX
-#define UINTPTR_MAX ((uintptr_t)(-1))
-#endif
-#ifndef INTPTR_MAX
-#define INTPTR_MAX ((intptr_t)((UINTPTR_MAX-1)/2))
-#endif
-#ifndef INTPTR_MIN
-#define INTPTR_MIN (-1-INTPTR_MAX)
 #endif
 #define MAXSHIFT(n, a) ((n) >= (int)(8*sizeof(a)) || (n) < 0 ? 0 : (n))
 #ifdef SIGNED_SHIFTS_ARE_ARITHMETIC
@@ -301,12 +273,13 @@ static inline void CSL_IGNORE(LispObject x)
 #ifndef PAGE_BITS
 # define PAGE_BITS 23
 #endif 
-#define PAGE_POWER_OF_TWO (((intptr_t)1) << PAGE_BITS)
-#define CSL_PAGE_SIZE (PAGE_POWER_OF_TWO - 256)
+#define PAGE_POWER_OF_TWO (((size_t)1) << PAGE_BITS)
+#define CSL_PAGE_SIZE (PAGE_POWER_OF_TWO)
 #ifndef MAX_HEAPSIZE
-# define MAX_HEAPSIZE (SIXTY_FOUR_BIT ? (512*1024) : 2048)
+#define MAX_HEAPBITS (SIXTY_FOUR_BIT ? 41 : 31)
+#define MAX_HEAPSIZE (((size_t)1) << (MAX_HEAPBITS-20))
 #endif 
-#define MEGABYTE ((intptr_t)0x100000U)
+#define MEGABYTE ((size_t)0x100000)
 #if PAGE_BITS >= 20
 #define MAX_PAGES (MAX_HEAPSIZE >> (PAGE_BITS-20))
 #else
@@ -314,8 +287,8 @@ static inline void CSL_IGNORE(LispObject x)
 #endif
 #define LONGEST_LEGAL_FILENAME 1024
 #define CELL ((size_t)sizeof(LispObject))
-#define TAG_BITS 7
-#define XTAG_BITS 15
+#define TAG_BITS 0x7
+#define XTAG_BITS 0xf
 #define TAG_CONS 0 
 #define TAG_VECTOR 1 
 #define TAG_HDR_IMMED 2 
@@ -348,6 +321,7 @@ static inline bool need_more_than_eq(LispObject p)
 static inline LispObject fixnum_of_int(intptr_t x)
 { return (LispObject)((((uintptr_t)x)<<4) + TAG_FIXNUM);
 }
+#define FIXNUM_OF_INT(n) (16*(n)+TAG_FIXNUM)
 static inline intptr_t int_of_fixnum(LispObject x)
 { return ((intptr_t)x & ~(intptr_t)15)/16;
 }
@@ -427,18 +401,6 @@ static inline LispObject& qcar(char * p)
 static inline LispObject& qcdr(char * p)
 { return ((Cons_Cell *)p)->cdr;
 }
-static inline int32_t& car32(LispObject p)
-{ return ((int32_t *)p)[0];
-}
-static inline int32_t& cdr32(LispObject p)
-{ return ((int32_t *)p)[1];
-}
-static inline int32_t& car32(char * p)
-{ return ((int32_t *)p)[0];
-}
-static inline int32_t& cdr32(char * p)
-{ return ((int32_t *)p)[1];
-}
 typedef LispObject Special_Form(LispObject, LispObject);
 typedef LispObject no_args(LispObject);
 typedef LispObject one_arg(LispObject, LispObject);
@@ -507,9 +469,8 @@ static inline bool vector_holds_binary(Header h)
 }
 #define TYPE_SIMPLE_VEC ( 0x01 <<Tw) 
 #define TYPE_INDEXVEC ( 0x11 <<Tw) 
-#define TYPE_NEWHASH ( 0x15 <<Tw) 
-#define TYPE_NEWHASHX ( 0x19 <<Tw) 
-#define TYPE_HASH ( 0x21 <<Tw) 
+#define TYPE_HASH ( 0x15 <<Tw) 
+#define TYPE_HASHX ( 0x19 <<Tw) 
 #define TYPE_ARRAY ( 0x05 <<Tw) 
 #define TYPE_STRUCTURE ( 0x09 <<Tw) 
 #define TYPE_OBJECT ( 0x0d <<Tw) 
@@ -525,6 +486,8 @@ static inline bool vector_holds_binary(Header h)
 #define TYPE_MIXED3 ( 0x49 <<Tw) 
 #define TYPE_STREAM ( 0x4d <<Tw) 
 #define VIRTUAL_TYPE_CONS ( 0x7d <<Tw) 
+#define VIRTUAL_TYPE_REF ( 0x17d <<Tw)
+#define VIRTUAL_TYPE_NIL ( 0x27d <<Tw)
 #define HDR_IMMED_MASK (( 0xf <<Tw) | TAG_BITS)
 #define TAG_CHAR (( 0x4 <<Tw) | TAG_HDR_IMMED) 
 #define TAG_SPID (( 0xc <<Tw) | TAG_HDR_IMMED) 
@@ -828,13 +791,14 @@ static inline bool vector_holds_binary(LispObject v)
 }
 extern LispObject free_vectors[LOG2_VECTOR_CHUNK_BYTES+1];
 static inline void discard_basic_vector(LispObject v)
-{ size_t n = length_of_header(vechdr(v)) - CELL;
+{ size_t size = length_of_header(vechdr(v));
+ size_t n = size/CELL - 1;
  if (is_power_of_two(n)) 
  { int i = intlog2(n); 
  if (i <= LOG2_VECTOR_CHUNK_BYTES)
  { basic_elt(v, 0) = free_vectors[i];
  vechdr(v) = TYPE_SIMPLE_VEC +
- ((n+CELL) << (Tw+5)) +
+ (size << (Tw+5)) +
  TAG_HDR_IMMED;
  v = (v & ~(uintptr_t)TAG_BITS) | TAG_VECTOR;
  free_vectors[i] = v;
@@ -847,6 +811,7 @@ static inline void discard_vector(LispObject v)
  { size_t n1 = length_of_header(vechdr(v))/CELL - 1;
  for (size_t i=0; i<n1; i++)
  discard_basic_vector(basic_elt(v, i));
+ discard_basic_vector(v);
  }
 }
 static inline LispObject& elt(LispObject v, size_t n)
@@ -1144,6 +1109,12 @@ static inline float64_t& float64_t_val(LispObject v)
 static inline int64_t& intfloat64_t_val(LispObject v)
 { return *(int64_t *)((char *)v + (8-TAG_BOXFLOAT));
 }
+static inline int32_t& intfloat64_t_val_hi(LispObject v)
+{ return *(int32_t *)((char *)v + (8-TAG_BOXFLOAT));
+}
+static inline int32_t& intfloat64_t_val_lo(LispObject v)
+{ return *(int32_t *)((char *)v + (12-TAG_BOXFLOAT));
+}
 #define SIZEOF_LONG_FLOAT 24
 static inline float128_t *long_float_addr(LispObject v)
 { return (float128_t *)((char *)v + (8-TAG_BOXFLOAT));
@@ -1163,6 +1134,18 @@ static inline int64_t& intfloat128_t_val0(LispObject v)
 static inline int64_t& intfloat128_t_val1(LispObject v)
 { return *(int64_t *)((char *)v + (16-TAG_BOXFLOAT));
 }
+static inline int32_t& intfloat128_t_val32_0(LispObject v)
+{ return *(int32_t *)((char *)v + (8-TAG_BOXFLOAT));
+}
+static inline int32_t& intfloat128_t_val32_1(LispObject v)
+{ return *(int32_t *)((char *)v + (12-TAG_BOXFLOAT));
+}
+static inline int32_t& intfloat128_t_val32_2(LispObject v)
+{ return *(int32_t *)((char *)v + (16-TAG_BOXFLOAT));
+}
+static inline int32_t& intfloat128_t_val32_3(LispObject v)
+{ return *(int32_t *)((char *)v + (20-TAG_BOXFLOAT));
+}
 static inline uintptr_t word_align_up(uintptr_t n)
 { return (LispObject)((n + 3) & (-(uintptr_t)4U));
 }
@@ -1179,12 +1162,6 @@ static inline uintptr_t object_align_up(uintptr_t n)
 { return (uintptr_t)((n + sizeof(LispObject) - 1) &
  (-(uintptr_t)sizeof(LispObject)));
 }
-static inline uintptr_t quadword_align_up(uintptr_t n)
-{ return (uintptr_t)((n + 15) & (-(uintptr_t)16U));
-}
-static inline uintptr_t quadword_align_down(uintptr_t n)
-{ return (uintptr_t)(n & (-(uintptr_t)16U));
-}
 #define UNWIND_NULL 0x0 
 #define UNWIND_GO 0x1 
 #define UNWIND_RETURN 0x2 
@@ -1199,6 +1176,13 @@ static inline uintptr_t quadword_align_down(uintptr_t n)
 #define UNWIND_UNWIND 0x400 
 #define SHOW_FNAME ((exit_reason & UNWIND_FNAME) != 0)
 #define SHOW_ARGS ((exit_reason & UNWIND_ARGS) != 0)
+#define HASH_AS_EQ 0
+#define HASH_AS_EQL 1
+#define HASH_AS_CL_EQUAL 2
+#define HASH_AS_EQUAL 3
+#define HASH_AS_EQUALP 4
+#define HASH_AS_SYMBOL 5
+#define HASH_AS_SXHASH 6
 #endif 
 #ifndef header_cslerror_h
 #define header_cslerror_h 1
@@ -1422,16 +1406,18 @@ extern void **pages, **heap_pages, **vheap_pages;
 extern void **new_heap_pages, **new_vheap_pages;
 extern void *allocate_page(const char *why);
 #ifdef CONSERVATIVE
-#define PAGE_TYPE_CONS 0
-#define PAGE_TYPE_VECTOR 1
-typedef struct page_map_t
-{ void *start;
- void *end;
- int type;
-} page_map_t;
+extern uintptr_t *pages_hash_table;
+#define PAGE_TYPE_2CELL 0
+#define PAGE_TYPE_4CELL 1
+#define PAGE_TYPE_BIG 2
+typedef struct _page_header
+{ unsigned int fringe;
+ unsigned int type:2
+ unsigned int pinsize:30
+} page_header;
 #endif
-extern int32_t pages_count, heap_pages_count, vheap_pages_count;
-extern int32_t new_heap_pages_count, new_vheap_pages_count;
+extern size_t pages_count, heap_pages_count, vheap_pages_count;
+extern size_t new_heap_pages_count, new_vheap_pages_count;
 extern LispObject *list_bases[];
 extern LispObject *nilsegment, *stacksegment;
 extern LispObject *stackbase;
@@ -1445,123 +1431,132 @@ extern char *big_chunk_start, *big_chunk_end;
 extern LispObject *C_stackbase, *C_stacktop;
 #endif
 extern LispObject multiplication_buffer;
+NORETURN extern void my_abort();
+extern void trace_printf(const char *fmt, ...);
+template <typename F>
+inline void my_assert(bool ok, F&& action)
+{
+#ifndef NDEBUG
+ if (!ok) { action(); my_abort(); }
+#endif 
+}
 static inline void push(LispObject a)
 { *++stack = a;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 static inline void push2(LispObject a, LispObject b)
 { *++stack = a;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = b;
- assert(b != 0);
+ my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 static inline void push3(LispObject a, LispObject b, LispObject c)
 { *++stack = a;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = b;
- assert(b != 0);
+ my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = c;
- assert(c != 0);
+ my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 static inline void push4(LispObject a, LispObject b, LispObject c,
  LispObject d)
 { *++stack = a;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = b;
- assert(b != 0);
+ my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = c;
- assert(c != 0);
+ my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = d;
- assert(d != 0);
+ my_assert(d != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 static inline void push5(LispObject a, LispObject b, LispObject c,
  LispObject d, LispObject e)
 { *++stack = a;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = b;
- assert(b != 0);
+ my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = c;
- assert(c != 0);
+ my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = d;
- assert(d != 0);
+ my_assert(d != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = e;
- assert(e != 0);
+ my_assert(e != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 static inline void push6(LispObject a, LispObject b, LispObject c,
  LispObject d, LispObject e, LispObject f)
 { *++stack = a;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = b;
- assert(b != 0);
+ my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = c;
- assert(c != 0);
+ my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = d;
- assert(d != 0);
+ my_assert(d != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = e;
- assert(e != 0);
+ my_assert(e != 0, [&]{ trace_printf("pushed a zero\n"); });
  *++stack = f;
- assert(f != 0);
+ my_assert(f != 0, [&]{ trace_printf("pushed a zero\n"); });
 }
 static inline void pop(LispObject& a)
 { a = *stack--;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 static inline void pop(volatile LispObject& a)
 { a = *stack--;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 static inline void pop2(LispObject& a, LispObject& b)
 { a = *stack--;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
  b = *stack--;
- assert(b != 0);
+ my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 static inline void pop3(LispObject& a, LispObject& b, LispObject& c)
 { a = *stack--;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
  b = *stack--;
- assert(b != 0);
+ my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
  c = *stack--;
- assert(c != 0);
+ my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 static inline void pop4(LispObject& a, LispObject& b, LispObject& c,
  LispObject& d)
 { a = *stack--;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
  b = *stack--;
- assert(b != 0);
+ my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
  c = *stack--;
- assert(c != 0);
+ my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
  d = *stack--;
- assert(d != 0);
+ my_assert(d != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 static inline void pop5(LispObject& a, LispObject& b, LispObject& c,
  LispObject& d, LispObject& e)
 { a = *stack--;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
  b = *stack--;
- assert(b != 0);
+ my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
  c = *stack--;
- assert(c != 0);
+ my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
  d = *stack--;
- assert(d != 0);
+ my_assert(d != 0, [&]{ trace_printf("popped a zero\n"); });
  e = *stack--;
- assert(e != 0);
+ my_assert(e != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 static inline void pop6(LispObject& a, LispObject& b, LispObject& c,
  LispObject& d, LispObject& e, LispObject& f)
 { a = *stack--;
- assert(a != 0);
+ my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
  b = *stack--;
- assert(b != 0);
+ my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
  c = *stack--;
- assert(c != 0);
+ my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
  d = *stack--;
- assert(d != 0);
+ my_assert(d != 0, [&]{ trace_printf("popped a zero\n"); });
  e = *stack--;
- assert(e != 0);
+ my_assert(e != 0, [&]{ trace_printf("popped a zero\n"); });
  f = *stack--;
- assert(f != 0);
+ my_assert(f != 0, [&]{ trace_printf("popped a zero\n"); });
 }
 static inline void popv(int n)
 { stack -= n;
@@ -1572,14 +1567,6 @@ static inline void popv(int n)
 #define GC_CONS 3
 #define GC_VEC 4
 #define GC_BPS 5
-NORETURN extern void my_abort();
-template <typename F>
-inline void my_assert(bool ok, F&& action)
-{
-#ifndef NDEBUG
- if (!ok) { action(); my_abort(); }
-#endif 
-}
 extern volatile char stack_contents_temp;
 #ifdef CHECK_STACK
 extern int check_stack(const char *file, int line);
@@ -1640,7 +1627,8 @@ extern intptr_t modulus_is_large;
 extern LispObject lisp_true, lambda, funarg, unset_var, opt_key, rest_key;
 extern LispObject quote_symbol, function_symbol, comma_symbol;
 extern LispObject comma_at_symbol, cons_symbol, eval_symbol, apply_symbol;
-extern LispObject list_symbol, liststar_symbol;
+extern LispObject list_symbol, liststar_symbol, eq_symbol, eql_symbol;
+extern LispObject cl_equal_symbol, equal_symbol, equalp_symbol;
 extern LispObject work_symbol, evalhook, applyhook, macroexpand_hook;
 extern LispObject append_symbol, exit_tag, exit_value, catch_tags;
 extern LispObject current_package, startfn;
@@ -1658,7 +1646,8 @@ extern LispObject expr_symbol, fexpr_symbol, macro_symbol;
 extern LispObject big_divisor, big_dividend, big_quotient;
 extern LispObject big_fake1, big_fake2, active_stream, current_module;
 extern LispObject mv_call_symbol, features_symbol, lisp_package;
-extern LispObject sys_hash_table, help_index, cfunarg, lex_words;
+extern LispObject sys_hash_table, sxhash_hash_table;
+extern LispObject help_index, cfunarg, lex_words;
 extern LispObject get_counts, fastget_names, input_libraries;
 extern LispObject output_library, current_file, break_function;
 extern LispObject standard_output, standard_input, debug_io;
@@ -1761,7 +1750,6 @@ extern void copy_out_of_nilseg();
 extern void rehash_this_table(LispObject v);
 extern void simple_print(LispObject x);
 extern void simple_msg(const char *s, LispObject x);
-extern LispObject eq_hash_tables;
 extern uint64_t hash_equal(LispObject key);
 extern LispObject * volatile savestacklimit;
 extern LispObject volatile saveheaplimit;
@@ -1816,7 +1804,7 @@ extern bool next_gc_is_hard;
 extern uint64_t reclaim_trigger_count, reclaim_trigger_target;
 extern int deal_with_tick();
 extern LispObject reclaim(LispObject value_to_return, const char *why,
- int stg_class, intptr_t size);
+ int stg_class, size_t size);
 static inline void stackcheck0() 
 { if_check_stack(); 
  if (++reclaim_trigger_count == reclaim_trigger_target ||
@@ -1978,13 +1966,9 @@ extern void CSL_MD5_Final(unsigned char *md);
 extern bool CSL_MD5_busy;
 extern unsigned char *CSL_MD5(unsigned char *data, int n, unsigned char *md);
 extern void checksum(LispObject a);
-extern unsigned char unpredictable[256];
-extern void inject_randomness(int n);
 extern void ensure_screen();
 extern int window_heading;
 NORETURN extern void my_exit(int n);
-extern void *my_malloc(size_t n);
-extern void check_heap_segments();
 extern clock_t base_time;
 extern double *clock_stack;
 extern void push_clock();
@@ -2016,12 +2000,13 @@ extern void freshline_trace();
 extern void freshline_debug();
 extern LispObject cons(LispObject a, LispObject b);
 extern LispObject cons_no_gc(LispObject a, LispObject b);
+extern LispObject acons_no_gc(LispObject a, LispObject b, LispObject c);
 extern LispObject cons_gc_test(LispObject a);
 extern void convert_fp_rep(void *p, int old_rep, int new_rep, int type);
 extern LispObject eval(LispObject u, LispObject env);
 extern uint32_t Crand();
 extern LispObject Cremainder(LispObject a, LispObject b);
-extern void Csrand(uint32_t a, uint32_t b);
+extern void Csrand(uint32_t a);
 extern void discard(LispObject a);
 extern bool eql_fn(LispObject a, LispObject b);
 extern bool cl_equal_fn(LispObject a, LispObject b);
@@ -2044,8 +2029,17 @@ extern LispObject get_pname(LispObject a);
 extern LispObject get(LispObject a, LispObject b, LispObject c=nil);
 extern LispObject get_basic_vector(int tag, int type, size_t length);
 extern LispObject get_basic_vector_init(size_t n, LispObject v);
+extern LispObject reduce_basic_vector_size(LispObject v, size_t len);
 extern LispObject get_vector(int tag, int type, size_t length);
 extern LispObject get_vector_init(size_t n, LispObject v);
+extern LispObject reduce_vector_size(LispObject n, size_t length);
+extern void prepare_for_borrowing();
+static inline void zero_out(void *p)
+{ char *p1 = (char *)doubleword_align_up((intptr_t)p);
+ memset(p1, 0, CSL_PAGE_SIZE);
+}
+extern LispObject borrow_basic_vector(int tag, int type, size_t length);
+extern LispObject borrow_vector(int tag, int type, size_t length);
 extern uint64_t hash_lisp_string(LispObject s);
 extern void lose_C_def(LispObject a);
 extern bool geq2(LispObject a, LispObject b);
@@ -2054,7 +2048,9 @@ extern bool lesseq2(LispObject a, LispObject b);
 extern bool lessp2(LispObject a, LispObject b);
 extern LispObject list2(LispObject a, LispObject b);
 extern LispObject list2star(LispObject a, LispObject b, LispObject c);
+extern LispObject list2starrev(LispObject a, LispObject b, LispObject c);
 extern LispObject list3(LispObject a, LispObject b, LispObject c);
+extern LispObject list3rev(LispObject a, LispObject b, LispObject c);
 extern LispObject list3star(LispObject a, LispObject b,
  LispObject c, LispObject d);
 extern LispObject list4(LispObject a, LispObject b,
@@ -2113,6 +2109,9 @@ extern LispObject rational(LispObject a);
 extern void read_eval_print(int noisy);
 extern void set_fns(LispObject sym, no_args *f0, one_arg *f1,
  two_args *f2, three_args *f3, fourup_args *f4up);
+extern void init_heap_segments(double size);
+extern void grab_more_memory(size_t npages);
+extern bool allocate_more_memory();
 extern void setup(int restartp, double storesize);
 extern void set_up_variables(int restart_flag);
 extern void warm_setup();
@@ -2121,6 +2120,7 @@ extern LispObject simplify_string(LispObject s);
 extern bool stringp(LispObject a);
 extern LispObject times2(LispObject a, LispObject b);
 extern int32_t thirty_two_bits(LispObject a);
+extern uint32_t thirty_two_bits_unsigned(LispObject a);
 extern int64_t sixty_four_bits(LispObject a);
 extern uint64_t sixty_four_bits_unsigned(LispObject a);
 extern uint64_t crc64(uint64_t crc, const void *buf, size_t size);
@@ -2193,7 +2193,7 @@ extern setup_type const
  arith06_setup[], arith08_setup[], arith10_setup[], arith12_setup[],
  arith13_setup[], char_setup[], eval1_setup[], eval2_setup[],
  eval3_setup[], funcs1_setup[], funcs2_setup[], funcs3_setup[],
- lisphash_setup[], newhash_setup[], print_setup[], read_setup[],
+ lisphash_setup[], print_setup[], read_setup[],
  restart_setup[], mpi_setup[];
 extern setup_type const
  u01_setup[], u02_setup[], u03_setup[], u04_setup[],
@@ -2516,33 +2516,18 @@ extern Complex Ccos(Complex a);
 extern Complex Cexp(Complex a);
 extern Complex Cpow(Complex a, Complex b);
 extern double Cabs(Complex a);
-#if defined HAVE_LIBPTHREAD || defined WIN32
-#ifdef WIN32
-extern HANDLE kara_thread1, kara_thread2;
-#define KARARESULT DWORD
-#define KARAARG LPVOID
-extern KARARESULT WINAPI kara_worker1(KARAARG p);
-extern KARARESULT WINAPI kara_worker2(KARAARG p);
-#else
-extern pthread_t kara_thread1, kara_thread2;
-#define KARARESULT void *
-#define KARAARG void *
-#define WINAPI
-extern KARARESULT kara_worker1(KARAARG p);
-extern KARARESULT kara_worker2(KARAARG p);
-#endif
-#ifdef MACINTOSH
-extern sem_t *kara_sem1a, *kara_sem1b, *kara_sem1c,
- *kara_sem2a, *kara_sem2b, *kara_sem2c;
-#else
-extern sem_t kara_sem1a, kara_sem1b, kara_sem1c,
- kara_sem2a, kara_sem2b, kara_sem2c;
+#ifndef HAVE_CILK
+extern void kara_worker(int n);
+extern std::thread kara_thread[2];
+extern std::mutex kara_mutex[2];
+extern std::condition_variable kara_cv[2];
+extern bool kara_ready[2];
+extern bool kara_quit;
 #endif
 extern size_t karatsuba_parallel;
 #ifndef KARATSUBA_PARALLEL_CUTOFF
 # define KARATSUBA_PARALLEL_CUTOFF 120
 #endif
-#endif 
 #ifndef KARATSUBA_CUTOFF
 #define KARATSUBA_CUTOFF 12
 #endif
@@ -2926,6 +2911,7 @@ extern LispObject Lfloatp(LispObject env, LispObject a);
 extern LispObject Lfrexp(LispObject env, LispObject a);
 extern LispObject Lfuncall_1(LispObject env, LispObject fn);
 extern LispObject Lgc(LispObject env, LispObject a);
+extern LispObject Lgc_forcer1(LispObject env, LispObject a);
 extern LispObject Lgensym0(LispObject env, LispObject a, const char *s);
 extern LispObject Lgensym1(LispObject env, LispObject a);
 extern LispObject Lgensym2(LispObject env, LispObject a);
@@ -2967,6 +2953,8 @@ extern LispObject Lmd60(LispObject env, LispObject a1);
 extern LispObject Lminus(LispObject env, LispObject a);
 extern LispObject Lminusp(LispObject env, LispObject a);
 extern LispObject Lmkevect(LispObject env, LispObject n);
+extern LispObject Lmkhash_1(LispObject env, LispObject a);
+extern LispObject Lmkhashset(LispObject env, LispObject a);
 extern LispObject Lmkquote(LispObject env, LispObject a);
 extern LispObject Lmkvect(LispObject env, LispObject a);
 extern LispObject Lmodular_minus(LispObject env, LispObject a);
@@ -3094,6 +3082,7 @@ extern LispObject Lflag(LispObject env, LispObject a, LispObject b);
 extern LispObject Lflagp(LispObject env, LispObject a, LispObject b);
 extern LispObject Lflagpcar(LispObject env, LispObject a, LispObject b);
 extern LispObject Lfuncall_2(LispObject env, LispObject fn, LispObject a1);
+extern LispObject Lgc_forcer(LispObject env, LispObject a, LispObject b);
 extern LispObject Lgcd_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lgeq_2(LispObject env, LispObject a, LispObject b);
 extern LispObject Lget(LispObject env, LispObject a, LispObject b);
@@ -8413,114 +8402,6 @@ static LispObject CC_monordp(LispObject env,
 
 
 
-// Code for add_prin_char
-
-static LispObject CC_add_prin_char(LispObject env,
-                         LispObject v_2, LispObject v_3)
-{
-    env = qenv(env);
-#if 0 // Start of trace output
-#endif // End of trace output
-    LispObject v_46, v_47, v_48;
-#ifdef CHECK_STACK
-    if_check_stack;
-#endif
-    if (++reclaim_trigger_count == reclaim_trigger_target ||
-        stack >= stacklimit)
-    {
-        push2(v_2,v_3);
-        env = reclaim(env, "stack", GC_STACK, 0);
-        pop2(v_3,v_2);
-    }
-    push(env);
-// space for vars preserved across procedure calls
-    push2(nil, nil);
-    stack_popper stack_popper_var(3);
-// copy arguments values to proper place
-    stack[0] = v_3;
-    stack[-1] = v_2;
-// end of prologue
-    v_46 = qvalue(basic_elt(env, 1)); // !*nat
-    if (v_46 == nil) goto v_7;
-    else goto v_8;
-v_7:
-    v_46 = stack[-1];
-    v_46 = Lstringp(nil, v_46);
-    env = stack[-2];
-    if (v_46 == nil) goto v_14;
-    else goto v_12;
-v_14:
-    v_46 = stack[-1];
-    if (!symbolp(v_46)) v_46 = nil;
-    else { v_46 = qfastgets(v_46);
-           if (v_46 != nil) { v_46 = elt(v_46, 11); // switch!*
-#ifdef RECORD_GET
-             if (v_46 != SPID_NOPROP)
-                record_get(elt(fastget_names, 11), 1);
-             else record_get(elt(fastget_names, 11), 0),
-                v_46 = nil; }
-           else record_get(elt(fastget_names, 11), 0); }
-#else
-             if (v_46 == SPID_NOPROP) v_46 = nil; }}
-#endif
-    if (v_46 == nil) goto v_18;
-    else goto v_12;
-v_18:
-    v_46 = stack[-1];
-    v_46 = Ldigitp(nil, v_46);
-    env = stack[-2];
-    if (v_46 == nil) goto v_22;
-    else goto v_12;
-v_22:
-    v_46 = stack[-1];
-    v_46 = Lexplodec(nil, v_46);
-    if (!car_legal(v_46)) v_46 = carerror(v_46); else
-    v_46 = qcar(v_46);
-    if (!symbolp(v_46)) v_46 = nil;
-    else { v_46 = qfastgets(v_46);
-           if (v_46 != nil) { v_46 = elt(v_46, 11); // switch!*
-#ifdef RECORD_GET
-             if (v_46 != SPID_NOPROP)
-                record_get(elt(fastget_names, 11), 1);
-             else record_get(elt(fastget_names, 11), 0),
-                v_46 = nil; }
-           else record_get(elt(fastget_names, 11), 0); }
-#else
-             if (v_46 == SPID_NOPROP) v_46 = nil; }}
-#endif
-    if (v_46 == nil) goto v_25;
-    else goto v_12;
-v_25:
-    goto v_13;
-v_12:
-    v_46 = stack[-1];
-        return Lprinc(nil, v_46);
-v_13:
-    v_46 = stack[-1];
-        return Lprin(nil, v_46);
-    v_46 = nil;
-    goto v_6;
-v_8:
-    v_48 = qvalue(basic_elt(env, 2)); // posn!*
-    v_47 = stack[0];
-    v_46 = qvalue(basic_elt(env, 3)); // ycoord!*
-    v_48 = acons(v_48, v_47, v_46);
-    env = stack[-2];
-    v_47 = stack[-1];
-    v_46 = qvalue(basic_elt(env, 4)); // pline!*
-    v_46 = acons(v_48, v_47, v_46);
-    env = stack[-2];
-    qvalue(basic_elt(env, 4)) = v_46; // pline!*
-    v_46 = stack[0];
-    qvalue(basic_elt(env, 2)) = v_46; // posn!*
-    goto v_6;
-    v_46 = nil;
-v_6:
-    return onevalue(v_46);
-}
-
-
-
 // Code for !*physopp!*
 
 static LispObject CC_HphysoppH(LispObject env,
@@ -9624,7 +9505,6 @@ setup_type const u02_setup[] =
     {"initcomb",                G0W1,     CC_initcomb,G2W1,   G3W1,     G4W1},
     {"rd:zerop",                G0W1,     CC_rdTzerop,G2W1,   G3W1,     G4W1},
     {"monordp",                 G0W2,     G1W2,     CC_monordp,G3W2,    G4W2},
-    {"add_prin_char",           G0W2,     G1W2,     CC_add_prin_char,G3W2,G4W2},
     {"*physopp*",               G0W1,     CC_HphysoppH,G2W1,  G3W1,     G4W1},
     {"cdiv",                    G0W2,     G1W2,     CC_cdiv,  G3W2,     G4W2},
     {"pv_multc",                G0W2,     G1W2,     CC_pv_multc,G3W2,   G4W2},
@@ -9644,7 +9524,7 @@ setup_type const u02_setup[] =
     {"constimes",               G0W1,     CC_constimes,G2W1,  G3W1,     G4W1},
     {"errorp",                  G0W1,     CC_errorp,G2W1,     G3W1,     G4W1},
     {"timesip",                 G0W1,     CC_timesip,G2W1,    G3W1,     G4W1},
-    {NULL, (no_args *)"u02", (one_arg *)"123738 6997756 35410",
+    {NULL, (no_args *)"u02", (one_arg *)"33982 6965764 8159079",
         NULL, NULL, NULL}
 };
 

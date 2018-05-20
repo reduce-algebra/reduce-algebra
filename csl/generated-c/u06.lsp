@@ -1,7 +1,7 @@
 
 % u06.lsp           Machine generated Lisp
 
-(c!:install "u06" 52591 6893020 8100602)
+(c!:install "u06" 94093 5192718 9701241)
 
 (c!:install 'gcdf '(gcdf !*exp !*rounded !*mcd !*ezgcd dmode!*
 !*combineexpt free!-powerp gcdf1 ezgcdf minusf negf) 940727046805833939)
@@ -10,9 +10,6 @@
 
 (c!:install 'quotfd '(quotfd dmode!* divd quotdd quotk) 
 12457232032859727359)
-
-(c!:install 'find '(find mcd factor exp ww number e x_exp expt plus
-lminus quotient minus times off freeof) 8529283549087017019)
 
 (c!:install 'simp!* '(simp!* !*asymp!* !*sq !*resimp mul!* !*sub2
 !*nospurp (isimpq) !*combinelogs dmode!* !:gi!: !*norationalgi
@@ -144,6 +141,56 @@ cx rerror revlis numlis errpri2 sortcolelem) 14473509980124684464)
 
 (c!:install 'worderp '(worderp kord!* indexvarordp ordop peel) 
 6886687244145475157)
+
+(c!:install 'vecopp '(vecopp vector isanindex) 3613955425733007325)
+
+(c!:install 'sroad '(sroad nreverse) 3816325071880864422)
+
+(c!:install 'convertmode '(convertmode form1 convertmode1) 
+1419734818002222436)
+
+(c!:install 'simpplus '(simpplus ckpreci!# simpcar addsq) 
+13307383627601434855)
+
+(c!:install 'mv!-pow!-mv!-term!-!+ '(mv!-pow!-mv!-term!-!+ mv!-pow!-!+) 
+10270817876720591082)
+
+(c!:install 'dp_times_bc '(dp_times_bc cali_bc_prod) 7292056026877438446
+)
+
+(c!:install 'general!-plus!-mod!-p '(general!-plus!-mod!-p nreverse
+general!-modular!-plus !*n2f ordop) 15694382996916044951)
+
+(c!:install 'times!-term!-mod!-p '(times!-term!-mod!-p
+multiply!-by!-constant!-mod!-p mksp times!-mod!-p ordop) 
+12134610716879626746)
+
+(c!:install 'powers1 '(powers1 powers3 powers2) 7558645644074747293)
+
+(c!:install 'talp_varlat '(talp_varlat talp_arg2l talp_varlt talp_arg2r
+union) 16180238194531187409)
+
+(c!:install 'ofsf_posdefp '(ofsf_posdefp !*rlpos ofsf_posdefp!-pos
+sfto_tsqsumf) 3541930251710259147)
+
+(c!:install 'ibalp_commonlenisone '(ibalp_commonlenisone ibalp_lenisone)
+ 16456052948373252207)
+
+(c!:install 'vdp_poly '(vdp_poly) 1621136418650712159)
+
+(c!:install 'sfto_gcdf '(sfto_gcdf !*rldavgcd !*ezgcd gcdf sfto_davp
+ezgcdf) 16666557222424495593)
+
+(c!:install 'retattributes '(retattributes find) 17993207373981413162)
+
+(c!:install 'evaluate0 '(evaluate0 evaluate!-horner evaluate1) 
+13985323310385376309)
+
+(c!:install 'eofcheck '(eofcheck program!* !$eof!$ ttype!* eof!*) 
+12693317518809967104)
+
+(c!:install 'dp_ecart '(dp_ecart dp!=ecart dp_lmon mo_ecart) 
+6091531937966727815)
 
 
 % End of generated Lisp code

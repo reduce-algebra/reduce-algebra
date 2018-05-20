@@ -1,7 +1,7 @@
 
 % u28.lsp           Machine generated Lisp
 
-(c!:install "u28" 90787 8397022 5527953)
+(c!:install "u28" 102197 2006547 3532531)
 
 (c!:install 'split_cov_cont_ids '(split_cov_cont_ids minus) 
 11739611569100803353)
@@ -39,9 +39,6 @@ errorset errorp rederr) 8549248470219636633)
 
 (c!:install 'color!-strand '(color!-strand nreverse color!-roads) 
 13048520133353012665)
-
-(c!:install 'realvaluedp '(realvaluedp realvalued alwaysrealvalued
-!:rd!: realvaluedlist) 3073624016785634084)
 
 (c!:install 'greaterpcdr '(greaterpcdr) 8968584287361009996)
 

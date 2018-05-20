@@ -1,12 +1,7 @@
 
 % u12.lsp           Machine generated Lisp
 
-(c!:install "u12" 175500 1230203 4544070)
-
-(c!:install 'mo_neg '(mo_neg) 3737353681207043185)
-
-(c!:install 'dd '(dd ordering lex nc!* varlist!* dquot dless leftzeros
-class) 129747970404352349)
+(c!:install "u12" 163033 3130775 9181526)
 
 (c!:install 'noncomperm '(noncomperm failed noncomdel mapcons lastpair) 
 8755064335032433944)
@@ -174,6 +169,9 @@ assert_dyntypep) 17209299985469235662)
 (c!:install 'cali_bc_inv '(cali_bc_inv qremf) 1879288417171672158)
 
 (c!:install 'eqdummy '(eqdummy) 18076016336838887221)
+
+(c!:install 'artimes!: '(artimes!: dmode!* !*exp !:ar!: multf
+reducepowers) 6267152915256128623)
 
 
 % End of generated Lisp code

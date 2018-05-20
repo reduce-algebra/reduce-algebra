@@ -1,10 +1,7 @@
 
 % u13.lsp           Machine generated Lisp
 
-(c!:install "u13" 141875 7337120 5351180)
-
-(c!:install 'artimes!: '(artimes!: dmode!* !*exp !:ar!: multf
-reducepowers) 6267152915256128623)
+(c!:install "u13" 26270 1085367 4566548)
 
 (c!:install 'ibalp_var!-satlist '(ibalp_var!-satlist setcar
 ibalp_calcmom lto_delq) 2167379390062323469)

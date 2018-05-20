@@ -137,4 +137,7 @@ August 2017. Tidy up the use of "namespace" with the files that I had
       added. A consequence of this is that FOX must be re-build for
       use with versions of CSL that adhere to the new namespace treatment.
 
+May 2018. Put test for presence of sigaction into the autoconf stuff, so that
+      my fwin.h/fwin.cpp can use if where available.
+
 <end of CHANGED>

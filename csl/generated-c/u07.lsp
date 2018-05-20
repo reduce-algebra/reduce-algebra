@@ -1,57 +1,7 @@
 
 % u07.lsp           Machine generated Lisp
 
-(c!:install "u07" 9753 1797158 5946160)
-
-(c!:install 'vecopp '(vecopp vector isanindex) 3613955425733007325)
-
-(c!:install 'sroad '(sroad nreverse) 3816325071880864422)
-
-(c!:install 'convertmode '(convertmode form1 convertmode1) 
-1419734818002222436)
-
-(c!:install 'simpplus '(simpplus ckpreci!# simpcar addsq) 
-13307383627601434855)
-
-(c!:install 'mv!-pow!-mv!-term!-!+ '(mv!-pow!-mv!-term!-!+ mv!-pow!-!+) 
-10270817876720591082)
-
-(c!:install 'dp_times_bc '(dp_times_bc cali_bc_prod) 7292056026877438446
-)
-
-(c!:install 'general!-plus!-mod!-p '(general!-plus!-mod!-p nreverse
-general!-modular!-plus !*n2f ordop) 15694382996916044951)
-
-(c!:install 'times!-term!-mod!-p '(times!-term!-mod!-p
-multiply!-by!-constant!-mod!-p mksp times!-mod!-p ordop) 
-12134610716879626746)
-
-(c!:install 'powers1 '(powers1 powers3 powers2) 7558645644074747293)
-
-(c!:install 'talp_varlat '(talp_varlat talp_arg2l talp_varlt talp_arg2r
-union) 16180238194531187409)
-
-(c!:install 'ofsf_posdefp '(ofsf_posdefp !*rlpos ofsf_posdefp!-pos
-sfto_tsqsumf) 3541930251710259147)
-
-(c!:install 'ibalp_commonlenisone '(ibalp_commonlenisone ibalp_lenisone)
- 16456052948373252207)
-
-(c!:install 'vdp_poly '(vdp_poly) 1621136418650712159)
-
-(c!:install 'sfto_gcdf '(sfto_gcdf !*rldavgcd !*ezgcd gcdf sfto_davp
-ezgcdf) 16666557222424495593)
-
-(c!:install 'retattributes '(retattributes find) 17993207373981413162)
-
-(c!:install 'evaluate0 '(evaluate0 evaluate!-horner evaluate1) 
-13985323310385376309)
-
-(c!:install 'eofcheck '(eofcheck program!* !$eof!$ ttype!* eof!*) 
-12693317518809967104)
-
-(c!:install 'dp_ecart '(dp_ecart dp!=ecart dp_lmon mo_ecart) 
-6091531937966727815)
+(c!:install "u07" 146182 4922807 9141763)
 
 (c!:install 'pdmult '(pdmult pair) 1769095089218186773)
 
@@ -129,6 +79,52 @@ cali_bc_zero!? dp_term) 13531247209958170102)
 
 (c!:install 'mcharg2 '(mcharg2 mchk updtemplate msappend lastpair) 
 8310717807567935274)
+
+(c!:install 'clear!-column '(clear!-column null!-space!-basis) 
+2174171855257234860)
+
+(c!:install 'gintequiv!: '(gintequiv!:) 170157521522791609)
+
+(c!:install 'talp_smupdknowl1 '(talp_smupdknowl1 or false rl_negateat
+talp_chkknowl) 18164921448930879520)
+
+(c!:install 'pasf_deci '(pasf_deci pasf_dec) 7606875779504539690)
+
+(c!:install 'isarb_int '(isarb_int arbint found_int multi_isarb_int) 
+8903692645515055984)
+
+(c!:install 'gsetsugar '(gsetsugar !*gsugar sugar vdptdeg vdpputprop) 
+5956100697013325100)
+
+(c!:install 'add2inputbuf '(add2inputbuf !*nosave!* statcounter
+inputbuflis!* terminalp) 3273988650128620738)
+
+(c!:install 'simpdiff '(simpdiff ckpreci!# simpcar simpminus addsq) 
+8946894650303966450)
+
+(c!:install 'mv!-pow!-minusp '(mv!-pow!-minusp) 6164394581063889849)
+
+(c!:install 'rnquotient!: '(rnquotient!: mkrn) 12337815946570309451)
+
+(c!:install 'bas_make1 '(bas_make1 dp_ecart) 8684791487173625242)
+
+(c!:install 'psum '(psum dless csum c_zero) 15539650795427356691)
+
+(c!:install 'tayexp!-min2 '(tayexp!-min2 tayexp!-lessp) 
+450066141476525100)
+
+(c!:install 'talp_invf '(talp_invf talp_op) 9779812008113020496)
+
+(c!:install 'ibalp_varlt1 '(ibalp_varlt1 lto_insertq ibalp_argn) 
+15073405374690958584)
+
+(c!:install 'bc_prod '(bc_prod multsq) 1177742759903326742)
+
+(c!:install 'layout!-formula '(layout!-formula ycoord!* ymin!* ymax!*
+posn!* pline!* testing!-width!* overflowed!* orig!* inbrackets "(" ")"
+prin2!* oprin maprint) 12015381067414281630)
+
+(c!:install 'multiom '(multiom objectom) 15929192743078869346)
 
 
 % End of generated Lisp code

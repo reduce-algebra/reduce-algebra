@@ -858,14 +858,18 @@ int fwin_startup(int argc, const char *argv[], fwin_entrypoint *fwin_main)
     return windowed_worker(argc, argv, fwin_main);
 }
 
-void sigint_handler(int code)
+#ifdef HAVE_SIGACTION
+void sigint_handler(int signo, siginfo_t *t, void *v)
+#else // !HAVE_SIGACTION
+void sigint_handler(int signo)
+#endif // !HAVE_SIGACTION
 {
 // For debugging I may want to see when signals get caught... Note that
 // doing anything such as printing to a log file represents undefined
 // behaviour in a signal handler, so this may be useful for debugging but
-// i snot guaranteed safe in general.
-    FWIN_LOG("sigint_handler called %d %#x\n", code, code);
-    signal(SIGINT, sigint_handler);
+// is not guaranteed safe in general. Well I could arrange to use "write"
+// rather than "fprintf" and then I would actually be safe!
+    FWIN_LOG("sigint_handler called %d %#x\n", signo, signo);
     if (interrupt_callback != NULL) (*interrupt_callback)(QUIET_INTERRUPT);
     return;
 }
@@ -911,7 +915,24 @@ static int direct_to_terminal(int argc, const char *argv[])
 
 int plain_worker(int argc, const char *argv[], fwin_entrypoint *main)
 {   int r;
+#ifdef HAVE_SIGACTION
+    struct sigaction sa;
+    sa.sa_sigaction = sigint_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART | SA_SIGINFO | SA_ONSTACK | SA_NODEFER;
+// (a) restart system calls after signal (if possible),
+// (b) use handler that gets more information,
+// (c) use alternative stack for the handler,
+// (d) leave the SIGINT unmasked while the handler is active. This
+//     will be vital if then handler "exits" using longjmp, because as
+//     far as the exception system is concerned that leaves us within the
+//     handler. But after the  exit is caught by setjmp I want the
+//     exception to remain trapped.
+    if (sigaction(SIGINT, &sa, NULL) == -1)
+        /* I can not thing of anything useful to do if I fail here! */;
+#else // !HAVE_SIGACTION
     signal(SIGINT, sigint_handler);
+#endif // !HAVE_SIGACTION
     if (!texmacs_mode && direct_to_terminal(argc, argv))
     {   input_history_init();
         term_setup(1, colour_spec);

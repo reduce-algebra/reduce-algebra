@@ -396,7 +396,7 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 // (C-) stack or wherever va_arg() can find them into a list structure, and
 // to avoid horrible potential problems with a garbage collection spotting]
 // an exception (notably a ^C interrupt), running arbitrary code in an
-// exception ghandler and then continuing, I need to cons those things up
+// exception handler and then continuing, I need to cons those things up
 // without any possible GC.  The function cons_no_gc does that, and
 // I should then call cons_gc_test() afterwards to regularise the situation.
 // 512 bytes here leaves room for 64 conses, and I support at most 50
@@ -867,12 +867,7 @@ extern void unwind_stack(LispObject *, bool findcatch);
 extern bool segvtrap;
 extern bool batch_flag;
 extern int escaped_printing;
-// Handlers registered using signal() are expected to have C linkage, and
-// may not necessarily be supported otherwise. There are severe restrictions
-// on what may be done within one, but if our system adhers to Posix it is
-// legal to use longjmp.
-extern void low_level_signal_handler(int code);
-extern void sigint_handler(int code);
+void set_up_signal_handlers();
 extern int async_interrupt(int a);
 
 extern void record_get(LispObject tag, bool found);
