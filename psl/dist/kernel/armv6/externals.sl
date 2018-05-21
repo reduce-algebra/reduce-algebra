@@ -7,10 +7,33 @@
 % Modified:     15-Feb-85 13:25:43
 % Mode:         Lisp
 % Package:
-% Status:       Experimental (Do Not Distribute)
+% Status:       Open Source: BSD License
 %
 % (c) Copyright 1983, Hewlett-Packard Company, see the file
 %            HP_disclaimer at the root of the PSL file tree
+%
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+%    * Redistributions of source code must retain the relevant copyright
+%      notice, this list of conditions and the following disclaimer.
+%    * Redistributions in binary form must reproduce the above copyright
+%      notice, this list of conditions and the following disclaimer in the
+%      documentation and/or other materials provided with the distribution.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNERS OR
+% CONTRIBUTORS
+% BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -87,8 +110,9 @@
 % Defined in bpsheap.c
 %
 (external-function alterheapsize        (integer))
-(external-function allocatemorebps    (amount))
- 
+(external-function allocatemorebps      (amount))
+(external-function get_imagefilepath    ())
+
 % Defined in file-status.c
 %
 (external-function get_file_status      (filename block flag))
@@ -97,10 +121,11 @@
 % Defined in os-hooks.c
 %
 (external-function os_startup_hook      (pargc pargv))
-(external-function os_cleanup_hook      (x))
+(external-function os_cleanup_hook      ())
+(external-function get_execfilepath     ())
 (external-function wquotient 		(x y))
 (external-function wremainder		(x y))
- 
+
  
 % Defined in pslextras.c
 %
@@ -111,6 +136,8 @@
 (external-function external_stat       (path buf))
 (external-function external_link       (path1 path2))
 (external-function external_unlink     (path))
+(external-function external_rmdir      (path))
+(external-function external_mkdir      (path mode))
 (external-function external_strlen     (strptr))
 (external-function external_setenv     (varstring valstring))
 (external-function external_getenv     (envstring))
@@ -124,35 +151,35 @@
 (external-function uxgreaterp          (arg1-buffer arg2-buffer tee nill))
 (external-function uxlessp             (arg1-buffer arg2-buffer tee nill))
 (external-function uxwritefloat        (buffer floatptr convstr))
-(external-function uuxdoubletofloat     (x y))
-(external-function uuxfloattodouble     (y y))
-(external-function uuxsin           (r x))
-(external-function uuxcos           (r x))
-(external-function uuxtan           (r x))
-(external-function uuxasin           (r x))
-(external-function uuxacos           (r x))
-(external-function uuxatan           (r x))
-(external-function uuxsqrt           (r x))
-(external-function uuxexp           (r x))
-(external-function uuxlog           (r x))
-(external-function uuxatan2           (r y x))
+(external-function uuxdoubletofloat    (x y))
+(external-function uuxfloattodouble    (y y))
+(external-function uuxsin              (r x))
+(external-function uuxcos              (r x))
+(external-function uuxtan              (r x))
+(external-function uuxasin             (r x))
+(external-function uuxacos             (r x))
+(external-function uuxatan             (r x))
+(external-function uuxsqrt             (r x))
+(external-function uuxexp              (r x))
+(external-function uuxlog              (r x))
+(external-function uuxatan2            (r y x))
  
  
 % Defined in pwd-fn.c
 %
-(external-function external_pwd         ())
+(external-function external_pwd        ())
  
  
 % Defined in sigs.c
 %
-(external-function sun3_sigset               (signame handler))
-(external-function sun3_sigrelse             (signame handler))
+(external-function sun3_sigset         (signame handler))
+(external-function sun3_sigrelse       (signame handler))
 (de sigrelse(a b)(sun3_sigrelse a b))
- 
+(external-function mask_signal         (signo block))
  
 % Defined In unexec.c
 %
-(external-function unexec               (newname aname dstart bstart))
+(external-function unexec              (newname aname dstart bstart))
  
  
 % Defined in unix-io.c
@@ -166,8 +193,9 @@
 (external-function unixcd               (dir))
 (external-function ctime                (buffer))
 (external-function external_system      (command))
- 
- 
+(external-function external_fullpath    (relpath))
+
+
 % Defined In the C Library
 %
 (external-function external_exit        (status))
@@ -226,6 +254,14 @@
 (external-function semctl (semid semnum cmd arg))
 (external-function semget (key nsems semflg))
 (external-function semop  (semid sembuf nsops))
+
+% dynamic linking
+
+
+(external-function dlopen (filenam flag))
+(external-function dlerror (void))
+(external-function dlsym (handle sym))
+(external-function dlclose (handle))
 
  
 (on r2i)

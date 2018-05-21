@@ -385,7 +385,7 @@
 (de findidnumber (u)
   (prog (i)
         (return (cond ((null u) 256)
-                      ((leq (setq i (id2int u)) 256) i)
+                      ((leq (setq i (id2int u)) 255) i)
                       ((setq i (get u 'idnumber)) i)
                       (t (put u 'idnumber (setq i nextidnumber*)) 
                          (setq orderedidlist* (tconc orderedidlist* u)) 
@@ -393,7 +393,7 @@
 
 (setq orderedidlist* (cons nil nil))
 
-(setq nextidnumber* 256)
+(setq nextidnumber* 257)
 
 (de initializesymboltable ()
   (let ((maxsymbol (compiler-constant 'maxsymbols)))
@@ -401,7 +401,9 @@
       (errorprintf "*** MaxSymbols %r is too small; at least %r are needed"
 		   maxsymbol nextidnumber*)
       (setq maxsymbol (plus nextidnumber* 100)))
-    (flag '(nil) 'nilinitialvalue)
+    %%    (flag '(nil) 'nilinitialvalue)
+    (flag (list (int2id 256)) 'nilinitialvalue)
+    (remflag (list (int2id 128)) 'nilinitialvalue)
     (put 't 'initialvalue 't)
     (setq nilnumber* (compileconstant nil))
     (dataalignfullword)
@@ -439,8 +441,12 @@
 
 (de initializesymnam ()
   (dataprintgloballabel (findgloballabel 'symnam))
-  (for (from i 0 256 1) 
+  (for (from i 0 127 1) 
        (do (dataprintfullword (compileconstant (id2string (int2id i))))))
+  (dataprintfullword (compileconstant (list2string '(128))))
+  (for (from i 129 255 1) 
+       (do (dataprintfullword (compileconstant (id2string (int2id i))))))
+  (dataprintfullword (compileconstant "nil"))
   (for (in idname (car orderedidlist*))
        (do  (dataprintfullword (compileconstant (id2string idname))))
        ))
@@ -484,6 +490,8 @@
                        ((setq val (get x 'initialvalue)) 
                         (compileconstant val))
 % print the value of nil.
+		       ((eq (id2int x) 128)
+			(list 'mkitem (compiler-constant 'unbound-tag) 128))
                        ((flagp x 'nilinitialvalue) nilnumber*)
 % print the unbound variable value.
                        (t 
@@ -621,7 +629,8 @@
 (put 'halfword 'asmpseudoop 'asmpseudoprinthalfword)
 
 (de asmpseudoprintstring (x)
-  (rodataPrintString (cadr x)))
+    (PrintString (cadr x)))
+    %  (rodataPrintString (cadr x)))
 
 (put 'string 'asmpseudoop 'asmpseudoprintstring)
 
@@ -989,19 +998,19 @@
 %     (codedeclareexternal name)
 )
 
-(de AppendOneConstant (ExpressionLabelPair)
-  (progn (AddRoDataLabel (cdr ExpressionLabelPair))
-         (AppendRoDataItem (car ExpressionLabelPair))))
+%% (de AppendOneConstant (ExpressionLabelPair)
+%%   (progn (AddRoDataLabel (cdr ExpressionLabelPair))
+%%          (AppendRoDataItem (car ExpressionLabelPair))))
 
-(de AddRoDataLabel (Label)
-    (rodataprintlabel Label))
+%% (de AddRoDataLabel (Label)
+%%     (rodataprintlabel Label))
 
-(de AppendRoDataItem (Expression)
-  (AddRoFullWord (ExpandItem Expression)))
+%% (de AppendRoDataItem (Expression)
+%%   (AddRoFullWord (ExpandItem Expression)))
 
-(de AddRoFullWord (Expression)
-  (RoDataPrintFullWord Expression))
+%% (de AddRoFullWord (Expression)
+%%   (RoDataPrintFullWord Expression))
 
-(de AddRoData (Expression)
-  (RoDataPrint Expression))
+%% (de AddRoData (Expression)
+%%   (RoDataPrint Expression))
     

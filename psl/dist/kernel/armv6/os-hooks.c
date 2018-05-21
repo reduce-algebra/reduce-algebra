@@ -41,6 +41,15 @@
 #endif
  
 jmp_buf mainenv;
+char *abs_execfilepath;
+ 
+void clear_iob(), clear_dtabsize();
+
+void psl_main(int argc, char *argv[]);
+
+char ** copy_argv();
+
+int Debug = 0;
 
 main(argc,argv)
 int argc;
@@ -53,7 +62,10 @@ char *argv[];
   /* fpsetround(FP_RZ);  */
 /*  init_malloc_param();        /* reset malloc parameters.        */
     setvbuf(stdout,NULL,_IOLBF,BUFSIZ);
-
+   /* Record path to exec file */
+  if (argc > 0)
+    abs_execfilepath = realpath(argv[0],NULL);
+ 
   val=setjmp(mainenv);        /* set non-local return point for exit    */
  
   if (val == 0)
@@ -78,13 +90,10 @@ int x;
     else  if(x==3)  longjmp(mainenv,3); else longjmp(mainenv,1);
 }
  
-int wquotient (x,y);
-  int x,y;
-{ return (x/y); }
-
-int wremainder (x,y);
-  int x,y;
-{ return (x%y); }
+char * get_execfilepath ()
+{
+  return abs_execfilepath;
+}
 
 clear_iob()
 {

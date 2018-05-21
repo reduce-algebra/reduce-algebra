@@ -143,7 +143,7 @@
  (tokenbuffer       #.(compiler-constant 'maxtokensize))
  (bndstk            #.(compiler-constant 'bndstksize))
  (catchstack        #.(times2 (compiler-constant 'catchstacksize) 4))
- (hashtable         #.(quotient (compiler-constant 'hash-table-size) 2))
+ (hashtable         #.(compiler-constant 'hash-table-size))
  (onewordbuffer     1)
  (saveargc          1)
  (saveargv          1)
@@ -258,9 +258,9 @@
 )
 
 (compiletime
-  (setq mainentrypointname* '!p!s!l!_!m!a!i!n))
+  (setq mainentrypointname* '!_!p!s!l!_!m!a!i!n))
 
-(lap '((*entry !p!s!l!_!m!a!i!n expr 0)
+(lap '((*entry !_!p!s!l!_!m!a!i!n expr 0)
 
        (*move (displacement (reg st) 4) (fluid argc))
        (*move (displacement (reg st) 8) (fluid argv))
@@ -311,9 +311,9 @@ panic-exit                      % need to do UNIX cleanup after
        (*exit 3)
 
        (*entry exit-with-status expr 1)
-       (*move (reg 1) (displacement (reg st) 0 postindexed))
+       (*push (reg 1))
        (*link os_cleanup_hook expr 0)
-       (*move (displacement (reg st) 0 postindexed) (reg 1))
+       (*pop (reg 1))
        (*link external_exit expr 1)
        (*exit 0)
        ))

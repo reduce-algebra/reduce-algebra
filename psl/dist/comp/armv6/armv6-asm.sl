@@ -87,28 +87,20 @@
 (setq *DeclareBeforeUse t)
 
 (setq CodeFileNameFormat* "%w.s")        % The name of the code segment file
-(setq DataFileNameFormat* "d%w.s")       % postfix the "d" so that the files
-                                         % [20] is a reasonable guess at aU
-                                         % size specification
+(setq DataFileNameFormat* "d%w.s")       % The name of the writeable data segment file
+(setq RoDataFileNameFormat* "ro%w.s")    % The name of the readonly data segment file
+(setq InitFileNameFormat* "%w.init")     % 
 
-(setq RoDataFileNameFormat* "rod%w.s")       % postfix the "d" so that the files
-                                         % [20] is a reasonable guess at aU
-                                         % size specification
-
-(setq InitFileNameFormat* "%w.init")     % [20] is a reasonable guess at a
-                                         % size specification; it may need to
-                                         % be changed.
-
-(setq InputSymFile* "sun386.sym")           % default for full-kernel-build
-(setq OutputSymFile* "sun386.sym")
+(setq InputSymFile* "armv6.sym")         % default for full-kernel-build
+(setq OutputSymFile* "armv6.sym")
 
 (setq MainEntryPointName* '!m!a!i!n)     % chose a simple default
-                                          % main procedure name
+                                         % main procedure name
 
 (setq NumericRegisterNames* '[nil "r0" "r1" "r2" "r3" "r4" ])
 
 (setq LabelFormat* "%w:%n")             % Labels are in the first column
-(setq CommentFormat* "@ %p%n")          % Comments begin with a slash
+(setq CommentFormat* "@ %p%n")          % Comments begin with at sign
                                         % will group alphabetically
 
 (setq ExportedDeclarationFormat* " .globl %w%n")
@@ -120,7 +112,7 @@
 (setq ReserveDataBlockFormat* " .bss %w,%e%n")
 % This does *not* make zero blocks, however, the Sun manuals
 % promise that a.out memory is init'ed to 0s
-% Changed below to be like Vax version, so heap will be in bss. bao
+% Changed below to be like Vax version, so heap will be in bss. 
 (setq ReserveZeroBlockFormat* "  .comm %w,%e%n")
 
 (put 'MkItem 'ASMExpressionFormat "[[%e*0x8000000]+%e]" )
@@ -163,10 +155,10 @@
 		(lr "lr")		% R14
           	(sp "sp")
           	(st "sp")		% Stack Pointer, R13
-		(heaplast "r8")
-		(heaptrapbound "r9")
-		(symfnc "r10")
-		(symval "r11")
+		(heaplast r8)
+		(heaptrapbound r9)
+		(symfnc r10)
+		(symval r11)
 		(nil "r12")
 		)
   'RegisterName)
@@ -202,7 +194,7 @@
   (DataPrintF "        .data%n")) 
 
 (de RoDataFileHeader nil 
-  (RoDataPrintF "        .rodata%n")) 
+  (RoDataPrintF "        .section .rodata%n")) 
 
 (de DataFileTrailer nil
     nil)

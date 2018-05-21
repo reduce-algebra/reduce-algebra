@@ -89,3 +89,15 @@ ualarm()
 ieee_flags()
 {
 }
+
+/*
+ * block / unblock a specific signal
+ */
+void mask_signal(int signo, int block)
+{
+    sigset_t sigset;
+
+    sigemptyset(&sigset);
+    sigaddset(&sigset,signo);
+    sigprocmask(block != 0 ? SIG_BLOCK : SIG_UNBLOCK, &sigset, NULL);
+}

@@ -75,22 +75,22 @@ asm("   alias   _unix_tty,UNIXTTY");
 */
 /* Initialize some PSL external variables with FileDescriptors for SysClearIO.
  */
-extern FILE * unix_stdin, * unix_stdout, * unix_stderr, * unix_tty;
+extern FILE * unixstdin, * unixstdout, * unixstderr, * unixtty;
  
 /* Import NULL and EOF constants for error returns from stdio fns.
  */
-extern int unix_null, unix_eof;
+extern int unixnull, unixeof;
  
 /* Tag( unixinitio )
  */
 unixinitio()
 {
-    unix_stdin = stdin;
-    unix_stdout = stdout;
-    unix_stderr = stderr;
-    unix_null = (long)NULL;
-    unix_eof = EOF;
-    unix_tty = fopen("/dev/tty", "r");
+    unixstdin = stdin;
+    unixstdout = stdout;
+    unixstderr = stderr;
+    unixnull = (long)NULL;
+    unixeof = EOF;
+    unixtty = fopen("/dev/tty", "r");
 }
  
 /* Tag( unixputc )
@@ -289,4 +289,12 @@ char *argv[];
      static_argv[i]=argv[i];
  
   return((int)static_argv);
+}
+
+/* convert a pathname to canonical form */
+char *
+external_fullpath(relpath)
+     char * relpath;
+{
+  return realpath(relpath,NULL);
 }

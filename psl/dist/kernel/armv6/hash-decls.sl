@@ -19,7 +19,7 @@
 % Special values for labelling unoccupied slots:
 %
 
-(define-constant deleted-slot-value  16#ffff)
+(define-constant deleted-slot-value  16#ffffffff)
 (define-constant empty-slot-value    0)
 
 %
@@ -34,7 +34,7 @@
 
 (ds occupied-slot? (u) 
   (let ((hte (hash-table-entry u)))
-	(and (< hte 16#ffff) (> hte 0)))
+	(and (wlessp hte 16#ffffffff) (> hte 0)))
   )
 
 %
@@ -53,11 +53,9 @@
 
 (ds hash-table-entry (i) 
   % Access to an element of the hash table.
-  (field (halfword hashtable i) 
-	       bitsperword2
-	       bitsperword2))
+  (wgetv hashtable i))
 				         
 (ds set-hash-table-entry (i x) 
-  (setf (halfword hashtable i) x))
+  (setf (wgetv hashtable i) x))
 
 (put 'hash-table-entry 'assign-op 'set-hash-table-entry)

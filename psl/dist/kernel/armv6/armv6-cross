@@ -1,31 +1,39 @@
 # /bin/csh
 echo "cross"
 $psys/pslcomp <<EOF
+(off redefmsg verboseload)
 (load debug)
+(load addr2id)
 
+(setq loaddirectories!* (cons "$bl/" loaddirectories!*))
+(reload sys-consts)
+(setq addressingunitsperitem 4)
 (off usermode)
 %%(load psl_case)
 (load if-system)
-(load lap-to-asm)
-(load armv6-instrs)
-(on pcmac)
+(load armv6-lap)
+(load armv6-lap-to-asm)
+%(on plap pgwd)
+%(on pcmac)
 (print (list "nextidnumber*" nextidnumber*))
 (load armv6-asm)
 (load armv6-cmac)
+(load armv6-spec)
+(remprop 'wquotient 'opencode)
+(remprop 'wremainder 'opencode)
 (print (list "nextidnumber*" nextidnumber*))
-(dskin "unix-patch.sl")
+%(dskin "unix-patch.sl")
 (print (list "nextidnumber*" nextidnumber*))
 
 (remd 'foreignlink)
-(copyd 'bitma 'bitmask)
-(de bitmask (x y) (cond ((and (eq x 2) (eq y 30))  1073741823)
-			((and (eq x 2) (eq y 14))  1073676288)
-                        (t (bitma x y))))
+%(copyd 'bitma 'bitmask)
+%(de bitmask (x y) (cond ((and (eq x 2) (eq y 30))  1073741823)
+%			((and (eq x 2) (eq y 14))  1073676288)
+%                        (t (bitma x y))))
 %(dm extrareg (u)
 %  (list 'displacement '(reg st) (plus2 20
 %        (times (difference (cadr u) (plus lastactualreg!& 1))
 %               (compiler-constant 'addressingunitsperitem)))))
-(tr *link *linke *foreignlink)
 (dskin "tmp.sl")
 EOF
 

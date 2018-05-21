@@ -39,7 +39,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
  
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/times.h>
@@ -69,6 +72,7 @@ long *tloc;
  
 /* Tag( external_timc )
  */
+int
 external_timc(buffer)
      struct tms *buffer;
 {
@@ -84,6 +88,16 @@ struct stat *buf;
     return stat(expand_file_name(path), buf);
 }
  
+
+int external_mkdir (name, mode)
+    int mode;
+    char * name;
+ { return mkdir (name, mode); }
+
+int external_rmdir (name)
+    char * name;
+ { return rmdir (name); }
+
 /* Tag( external_link )
  */
 int external_link (path1, path2)
@@ -91,7 +105,7 @@ char *path1, *path2;
 {
     return link(expand_file_name(path1), expand_file_name(path2));
 }
- 
+
 /* Tag( external_unlink )
  */
 int external_unlink (path)
@@ -117,8 +131,9 @@ char *external_getenv (name)
 }
  
  
-int external_setenv (var, val)
-    char *var, *val;
+int external_setenv (var, val, ov)
+    const char *var, *val;
+    int ov;
 {
   int i;
   extern char **environ;
@@ -132,11 +147,11 @@ int external_setenv (var, val)
      and 1 extra empty slot. */
   envnew = (char **) calloc ((i + 2), sizeof(char *));
  
-  block_copy((char *)environ, (char *)envnew, i * sizeof(char *));
+  bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
   environ = envnew;
   strcpy(var_plus_equal_sign, var);
   strcat(var_plus_equal_sign, "=");
-  return(setenv (var_plus_equal_sign, val));
+  return(setenv (var_plus_equal_sign, val, ov));
 }
  
 /*
@@ -146,8 +161,10 @@ int external_setenv (var, val)
  * was allocated using calloc, with enough extra room at the end so not
  * to have to do a realloc().
  */
-setenv (var, value)
-     char *var, *value;
+int
+setenv (var, value, ov)
+     const char *var, *value;
+     int ov;
 {
     extern char **environ;
     int index = 0;
@@ -159,7 +176,7 @@ setenv (var, value)
         environ[index] = (char *)malloc (len + strlen (value) + 1);
         strcpy (environ [index], var);
         strcat (environ [index], value);
-        return;
+        return ov;
         }
         index ++;
     }
@@ -170,6 +187,7 @@ setenv (var, value)
     environ [++index] = NULL;
 }
  
+void
 block_copy (b1, b2, length)
      char *b1, *b2;
      int length;
@@ -211,6 +229,14 @@ int  count;
 }
  
  
- 
+int wquotient(int x, int y)
+{
+	return (x / y);
+}
+
+int wremainder(int x, int y)
+{
+	return (x % y);
+}
  
  

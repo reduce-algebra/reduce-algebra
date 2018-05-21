@@ -48,6 +48,8 @@
 
 (fluid '(&fillframeholes &frame-numbers))
 
+(global '(*writingasmfile))
+
 (compiletime (flag '(findcmacro lookatinstruction) 'internalfunction)) 
  
 (de &fillframeholes (code)
@@ -137,18 +139,31 @@
 
 % fix for nbig30 bignums in faslout
 
+%(de AddString (Expression)
+%  (if *writingasmfile
+%      (progn (AddRoFullWord (Size Expression))
+%	     (RoDataPrintString Expression))
+%    (progn (AddFullWord (Size Expression))
+%	   (AddCode (list 'STRING Expression)))
+%    )
+%  )
+
 (de AppendContents (ExpressionLabelPair)
   (prog (Expression UpperBound I)
-	(if (StringP (car ExpressionLabelPair)) (AddRoDataLabel (cdr ExpressionLabelPair))
-	  (AddCodeLabel (cdr ExpressionLabelPair)))
+%	(if (and *writingasmfile (StringP (car ExpressionLabelPair)))
+%	    (AddRoDataLabel (cdr ExpressionLabelPair))
+	  (AddCodeLabel (cdr ExpressionLabelPair))
+%	  )
         (setq Expression (car ExpressionLabelPair))
         (cond ((PairP Expression)
                (progn (AppendItem (car Expression))
                       (AppendItem (cdr Expression))))
               ((StringP Expression)
-               (progn (AddRoFullWord (Size Expression))
-                      (RoDataPrintString Expression)))
-              ((VectorP Expression)
+	       (AddFullWord (Size Expression))
+	       (AddCode (list 'STRING Expression))
+%	       (AddString Expression)
+	       )
+              ((or (VectorP Expression) (EVectorP Expression))
                (progn (setq UpperBound (ISizeV Expression))
                       (AddFullWord UpperBound)
                       (setq I 0)
@@ -187,45 +202,45 @@
      (t form))))
 
 (put 'cons 'opencode
-      '((mov (reg 1) (displacement (reg heaplast) 0))
+      '((STR (reg 1) (displacement (reg heaplast) 0))
         (*move 9 (reg 1))
-        (*wshift (reg 1) 56)
+        (*wshift (reg 1) 27)
         (*wplus2 (reg 1) (reg heaplast))
-        (mov (reg 2) (displacement (reg heaplast) 8))
+        (STR (reg 2) (displacement (reg heaplast) 8))
         (*wplus2 (reg heaplast) 16)
         (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
-        (push (reg 1))
+        (*push (reg 1))
         (*link !%reclaim expr 0)
-        (pop (reg 1))
+        (*pop (reg 1))
 
         (labelref templabel)))
 
 (put 'ncons 'opencode
-      '((mov (reg 1) (displacement (reg heaplast) 0))
+      '((STR (reg 1) (displacement (reg heaplast) 0))
         (*move 9 (reg 1))
-        (*wshift (reg 1) 56)
+        (*wshift (reg 1) 27)
         (*wplus2 (reg 1) (reg heaplast))
-        (mov (reg nil) (displacement (reg heaplast) 8))
+        (STR (reg nil) (displacement (reg heaplast) 8))
         (*wplus2 (reg heaplast) 16)
         (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
-        (push (reg 1))
+        (*push (reg 1))
         (*link !%reclaim expr 0)
-        (pop (reg 1))
+        (*pop (reg 1))
 
         (labelref templabel))
 )
 
 (put 'xcons 'opencode
-      '((mov (reg 1) (displacement (reg heaplast) 8))
+      '((STR (reg 1) (displacement (reg heaplast) 8))
         (*move 9 (reg 1))
-        (*wshift (reg 1) 56)
+        (*wshift (reg 1) 27)
         (*wplus2 (reg 1) (reg heaplast))
-        (mov (reg 2) (displacement (reg heaplast) 0))
+        (STR (reg 2) (displacement (reg heaplast) 0))
         (*wplus2 (reg heaplast) 16)
         (*jumpwlessp (labelgen templabel) (reg heaplast) (reg heaptrapbound))
-        (push (reg 1))
+        (*push (reg 1))
         (*link !%reclaim expr 0)
-        (pop (reg 1))
+        (*pop (reg 1))
 
         (labelref templabel))
 )

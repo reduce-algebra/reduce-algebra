@@ -74,8 +74,8 @@
 		     R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 sp st pc lr
 		     t1 t2 t3 fp
              nil heaplast heaptrapbound symfnc symval
-	     bndstkptr bndstklowerbound
-	     bndstkupperbound))))
+%	     bndstkptr bndstklowerbound bndstkupperbound
+	     ))))
  
 (de short-immediate-p (X) (eq x (ashift (wshift x 16) -16)))
 
@@ -88,6 +88,8 @@
 (de FiveP (x)  (eq x 5))
 
 (de TwentySevenP (x)  (eq x 27))
+
+(de SixteenP (x) (eq x 16))
 
 (de evenp (x) (and (fixp x) (eq 0 (land x 1))))
 
@@ -163,8 +165,8 @@
 	   ((RegP ZeroP)      (indirect SOURCE))
 	   ((Anyp ZeroP)      (*MOVE SOURCE REGISTER)
 			       (indirect REGISTER))
- 	   ((RegP InumP)      (Displacement SOURCE ARGTWO))
-	   ((AnyP InumP)      (*MOVE SOURCE REGISTER)
+ 	   ((RegP twelve-bit-p)      (Displacement SOURCE ARGTWO))
+	   ((AnyP twelve-bit-p)      (*MOVE SOURCE REGISTER)
 	                       (Displacement REGISTER ARGTWO))
 	   ((RegP RegP)       (Indexed ARGTWO (Displacement source 0)))
 	   ((RegP AnyP)       (*MOVE SOURCE REGISTER)
@@ -347,9 +349,9 @@
 (de *ALLOC (framesize)
     (setq NAlloc!* framesize)
     (if (greaterp framesize 0)
-	`( (stm (reg sp) ((reg fp) (reg lr)) writeback)
-	   (sub (reg fp) (reg st) ,(times2 4 framesize)))
-      `((stm (reg sp) ((reg fp) (reg lr)) writeback))))
+	`( (stm (reg st) ((reg lr)) writeback)
+	   (sub (reg st) (reg st) ,(times2 4 framesize)))
+      `((stm (reg st) ((reg lr)) writeback))))
 
 (DefCmacro *ALLOC)
 
@@ -362,10 +364,10 @@
    (times N (compiler-constant 'AddressingUnitsPerItem)) '*Exit))
 
 (DefCMacro *Exit     % leaf routine first
-   ((ZeroP)  (ldm (reg sp) ((reg fp) (reg lr)) writeback)
+   ((ZeroP)  (ldm (reg sp) ((reg lr)) writeback)
              (bx (reg lr)))
    (         (add (reg st) (reg st) ARGONE)
-	     (ldm (reg sp) ((reg fp) (reg lr)) writeback)
+	     (ldm (reg sp) ((reg lr)) writeback)
 	     (bx (reg lr))))
 
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))
@@ -378,12 +380,18 @@
 
 (DefCMacro *Lbl           (ArgOne))
 
-(de *3op (a1 a2 instruction imm-instruction)
+(DefCMacro *Push
+  ( (STR ArgOne (displacement (reg st) 0 postindexed))))
+
+(DefCMacro *Pop
+  ( (LDR ArgOne (displacement (reg st) 0 postindexed))))
+
+(de *3op (a1 a2 instruction)
   (prog (ResultingCode*)
     (return (CMacroPatternExpand
 	   (list (ResolveOperand '(Reg t1) A1)
 		 (ResolveOperand '(Reg t2) A2)
-		  Instruction imm-instruction)
+		  Instruction)
 		 (get '*3op 'CMacroPatternTable)))))
 
 (DefCMacro *3op
@@ -430,7 +438,7 @@
 		               (*move (reg t3) ArgOne))
 	   (                   (*move ArgTwo (reg t3))
 		               (*move ArgThree (reg t2))
-		               (audd (reg t3) (reg t2) (reg t3))
+		               (add (reg t3) (reg t2) (reg t3))
 		               (*move (reg t3) ArgOne)))
 
 (DefCMacro *WDifference
@@ -567,7 +575,7 @@
 
 (DefCMacro *WShift
     ((AnyP ZeroP))
-    ((regp negp)     (*lsr ArgOne ArgOne ArgTwo))
+    ((regp negp)     (*lsr ArgOne ArgOne (minus ArgTwo)))
     ((regp fixplusp) (*lsl ArgOne ArgOne ArgTwo))
     ((regp regp)     (cmp argtwo 0)
 		      (bge templabel)
@@ -758,19 +766,20 @@
   ((regp regp Fivep TwentySevenP) (BIC ArgOne ArgTwo 16#F8000000))
   ((regp anyp Fivep TwentySevenP) (*move ArgTwo ArgOne)
                                    (BIC ArgOne ArgOne 16#F8000000))
+  ((regp regp zerop fixp) (*lsr ArgOne ArgTwo (difference 32 ArgFour)))
   ((regp regp fixp fixp) (*lsl ArgOne ArgTwo ArgThree)
                          (*lsr ArgOne ArgOne (difference 32 ArgFour)))
   ((regp anyp fixp fixp) (*move ArgTwo (reg t3))
-                         (*lsl ArgOne (reg t3) ArgThree)
-			 (*lsr ArgOne ArgOne (difference 32 ArgFour)))
-  ((anyp regp fixp fixp) (*field (reg t3) ArgTwo ArgThree ArgFour)
+                         (*Field ArgOne (reg t3) ArgThree ArgFour))
+  ((anyp regp fixp fixp) (*Field (reg t3) ArgTwo ArgThree ArgFour)
 		          (*move (reg t3) ArgOne))
   (                      (*move ArgTwo (reg t2))
-		          (*field (reg t3) (reg t2) ArgThree ArgFour)
+		          (*Field (reg t3) (reg t2) ArgThree ArgFour)
 		          (*move (reg t3) ArgOne)))
 
 (DefCMacro *SignedField
 
+  ((regp regp zerop fixp) (*asr ArgOne ArgTwo (difference 32 ArgFour)))
   ((regp regp fixp fixp) (*lsl ArgOne ArgTwo ArgThree)
                          (*asr ArgOne ArgOne (difference 32 ArgFour)))
   ((regp anyp fixp fixp) (*move ArgTwo (reg t3))
@@ -785,22 +794,67 @@
 % following is used by garbage collector only. Not very useful to
 % optimize other cases than put inf field or put tag field (with constant)
 
-
+(de BitMask (StartingBit Length)
+  (prog(x)
+    (setq x (wshift -1 (wminus StartingBit)))
+    (return (wand 16#ffffffff (wand x (wshift -1 
+       (wdifference 32 (wplus2 StartingBit Length))))))))
+ 
+(de NegMask (Length) (wshift -1 length))
+ 
+(ds ShiftAmt (StartingBit Length)
+  (wdifference 32
+          (wplus2 StartingBit Length) %always positive.
+          ))
+ 
 (DefCMacro *PutField
- ((inump regP) (*move   ArgOne (reg t3))
-		(rlimi Argtwo (reg t3) (difference 32 (plus ArgThree ArgFour))
-		  Argthree (plus Argthree ArgFour -1)))
- ((inump anyp) (*move ArgTwo (reg t2))
-		(*Putfield ArgOne (reg t2) ArgThree ArgFour)
-		(*Move (Reg T2) ArgTwo))
- ((regp regp)  (rlimi Argtwo ArgOne  (difference 32 (plus ArgThree ArgFour))
-		 Argthree (plus Argthree ArgFour -1)))
- ((anyp regp)  (*move   ArgOne (reg t3))
-		(*Putfield (reg t3) ArgTwo ArgThree ArgFour))
- (  	       (*move   ArgOne (reg t3))
-		(*move ArgTwo (reg t2))
-		(*Putfield (reg t3) (reg t2) ArgThree ArgFour)
-	 	(*move (reg t2) ArgTwo)))
+  ((imm8-rotatedp regP Fivep TwentySevenP)
+                     (AND ArgTwo ArgTwo 16#F8000000)
+                     (ORR ArgTwo ArgTwo ArgOne))
+	   
+  ((InumP regP Fivep TwentySevenP)
+                     (*Move ArgOne (reg t1))
+                     (AND ArgTwo ArgTwo 16#F8000000)
+                     (ORR ArgTwo ArgTwo (reg t1)))
+
+  ((RegP regP Fivep TwentySevenP)
+                     (AND ArgTwo ArgTwo 16#F8000000)
+		     (BIC ArgOne ArgOne 16#F8000000)
+                     (ORR ArgTwo ArgTwo ArgOne))
+
+%  ((InumP regP ZeroP SixteenP)
+%                     ( and  (LNOT (BITMASK  ARGTHREE ARGFOUR)) ARGTWO)
+%                     ( or   (LAND (BITMASK  ARGTHREE ARGFOUR)
+%                             (LSHIFT ARGONE (SHIFTAMT ARGTHREE ARGFOUR)))
+%                   ARGTWO))
+
+  ((InumP regP ZeroP AnyP)
+                     ( *WAnd ArgTwo (LAND 16#ffffffff (LNOT (BITMASK  ARGTHREE ARGFOUR))))
+                     ( *WOr ArgTwo (LAND (BITMASK  ARGTHREE ARGFOUR)
+					 (LSHIFT ARGONE (SHIFTAMT ARGTHREE ARGFOUR)))
+			    ))
+  ((InumP regP AnyP  AnyP)
+                     (*WAND   ARGTWO (LAND 16#ffffffff (LNOT (BITMASK  ARGTHREE ARGFOUR))))
+                     (*WOR    ARGTWO (LAND (BITMASK  ARGTHREE ARGFOUR)
+                             (LSHIFT ARGONE (SHIFTAMT ARGTHREE ARGFOUR)))))
+ 
+  ((regP regP ZeroP AnyP)
+                     (*WSHIFT ARGONE       (SHIFTAMT ARGTHREE ARGFOUR))
+                     (*WAND  ARGTWO (LAND 16#ffffffff (LNOT (BITMASK  ARGTHREE ARGFOUR)) ))
+                     (*Wor   ARGONE ARGTWO))
+  ((regP regP AnyP AnyP)
+                     (*WSHIFT ARGONE       (SHIFTAMT ARGTHREE ARGFOUR))
+                     (*Wand ArgOne (BITMASK  ARGTHREE ARGFOUR))
+                     (*WAND   ARGTWO (LAND 16#ffffffff (LNOT (BITMASK  ARGTHREE ARGFOUR))))
+                     (*WOR    ARGTWO ARGONE))
+  ((AnyP  regP AnyP AnyP)
+                     (*MOVE ARGONE (reg t1))
+             (*PUTFIELD    (Reg T1) ARGTWO ARGTHREE ARGFOUR))
+  (                  (*MOVE ARGTWO     (reg t1))
+                     (*PUTFIELD ARGONE (Reg T1) ARGTHREE ARGFOUR)
+                     (*MOVE            (reg t1) ARGTWO))
+ )
+ 
 
 (deflist '((Byte        ((ldrsb (reg 1) (displacement (reg 2) (reg 1)))))
 	   (PutByte     ((strb (reg 3) (displacement (reg 2) (reg 1)))))
@@ -812,6 +866,7 @@
 
 (on fast-integers)
 
+(commentoutcode
 (for (in function '(idapply0 idapply1 idapply2 idapply3 idapply4))
      (from register 1)
      (do
@@ -830,6 +885,7 @@
 	   (mtspr (reg ctr) (reg t1))
 	   (bcc always 0)))
 ))
+)
 
 (commentoutcode
 (for (in function '(addressapply0 addressapply1 addressapply2
@@ -1210,9 +1266,9 @@ preload  (setq initload
 (de *foreignlink (functionname functiontype numberofarguments)
 
     `((stm (reg st) ((reg r1) (reg r2) (reg r3) (reg r4) (reg r8) (reg r9) (reg r10) (reg r11) (reg r12)) writeback) % save caller-saved registers
-      (*move (quote t) (fluid *kernelmode))
+%      (*move (quote t) (fluid *kernelmode))
       (blx (foreignentry ,functionname))
-      (*move (reg NIL) (fluid *kernelmode))
+%      (*move (reg NIL) (fluid *kernelmode))
       (ldm (reg st) ((reg r1) (reg r2) (reg r3) (reg r4) (reg r8) (reg r9) (reg r10) (reg r11) (reg r12)) writeback))) % restore saved registers
 
 (DefCMacro !*foreignlink)

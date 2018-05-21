@@ -430,8 +430,8 @@
 		     R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 sp st pc lr
 		     t1 t2 t3 fp
              nil heaplast heaptrapbound symfnc symval
-	     bndstkptr bndstklowerbound
-	     bndstkupperbound))))
+%%	     bndstkptr bndstklowerbound bndstkupperbound
+	     ))))
  
 (de reglistp (x)
     (and (pairp x) (eqcar (car x) 'reg) (pairp (cdr x)) (reglistp1 (cdr x))))
@@ -479,6 +479,7 @@
      (bytep x)) 
 
 (de imm8-rotatedp (x)
+    (setq x (wand 16#ffffffff x))
     (and (fixp x) (decode-32bit-imm8-rotated x)))
 
 % possibly shifted register (data movement), one of:
@@ -488,7 +489,7 @@
 
 (de reg-shifter-p (x)
     (or (and (pairp x) (regp x))
-	(and (eqcar x 'regshifted) (regp (list 'reg (cadr x)))
+	(and (eqcar x 'regshifted) (or (regp (cadr x)) (regp (list 'reg (cadr x))))
 	     (memq (caddr x) shift-ops*)
 	     (or (fixp (cadddr x)) (regp (cadddr x))
 		 (and (null (cadddr x)) (eq (caddr x) 'RRX))))
@@ -508,12 +509,14 @@
 	  ((eq (car x) 'indirect) (regp (cadr x)))
 	  ((and (memq (car x) '(displacement indirect)) (regp (cadr x)))
 	   (or
-	    (and (fixp (caddr x)) (lessp (caddr x) 4096) (greaterp (caddr x) -4096))
+	    (twelve-bit-p (caddr x))
 	    (reg-shifter-p (cadr x))
 	    (and (pairp (cadr x)) (memq (caadr x) '(plus minus)) (reg-shifter-p (cadr (cadr x))))))
 	  (t nil))
     )
 	      
+(de twelve-bit-p (x)
+    (and (fixp x) (lessp x 4096) (greaterp x -4096)))
 
 (de pm-reg-shifter-p (x)
     (and (eqcar x 'displacement)
@@ -582,11 +585,11 @@
 	   (R4   4) (R5   5) (R6   6) (R7   7)
 	   (R8   8) (R9   9) (R10 10) (R11 11)
 	   (R12 12) (R13 13) (R14 14) (R15 15)
-	   (fp  11)
-	   (sp  13)        % LISP stack register
-	   (st  13)
-	   (lr  14)
-	   (pc  15)
+	   (T1   5) (T2   6) (T3   7)
+	   (fp  11)			% frame pointer for C subroutine calls
+	   (sp  13) (st  13)		% LISP stack register
+	   (lr  14)			% link register
+	   (pc  15)			% program counter
 	   (heaplast 8)
 	   (heapupperbound 9)
 	   (symfnc 10)
@@ -918,6 +921,33 @@
     )
 
 (de lth-regn-imm8 (code regn imm8-rotated) 4)
+
+(de OP-regn-shifter (code regn reg-shifter)
+    (prog (cc opcode1 imm8-decoded set-bit)
+	  (setq cc (car code) opcode1 (cadr code) set-bit (caddr code) shift-amount 0)
+	  (cond ((regp reg-shifter) (setq reg3 (reg2int reg-shifter) reg4 0 opcode2 0))
+		((eqcar reg-shifter 'regshifted)
+		 (setq reg3 (reg2int (cadr reg-shifter)) shift-op (caddr reg-shifter))
+		 (if (eq shift-op 'RRX)
+		     (setq shift-amount 0)
+		   (setq shift-amount (cadddr reg-shifter)))
+		 (cond ((fixp shift-amount)
+			(setq reg4 (lsh shift-amount -1)
+			      opcode2 (lor (lsh (land shift-amount 1) 3) (subla '((LSL . 2#000) (LSR . 2#010) (ASR . 2#100) (ROR . 2#110) (RRX . 2#110)) shift-op))))
+		       ((regp shift-amount)
+			(setq reg4 (reg2int (cadddr reg-shifter)))
+			(setq opcode2 (subla '((LSL . 2#0001) (LSR . 2#0011) (ASR . 2#0101) (ROR 2#0111)) shift-op))
+			)
+		       (T (stderr (bldmsg "Invalid operand %w" reg-shifter)))))
+		(T (stderr (bldmsg "Invalid operand %w" reg-shifter))))
+	  (DepositInstructionBytes
+	   (lor (lsh cc 4) (lsh opcode1 -3))
+	   (lor (lor (lsh (land opcode1 2#111) 5) (lsh set-bit 4)) (reg2int regn))
+	   reg4
+	    (lor (lsh opcode2 4) reg3)))
+    )
+
+(de lth-regn-shifter (code regn reg-shifter) 4)
 
 (de OP-regd-imm8 (code regd imm8-rotated)
     (prog (cc opcode1 imm8-decoded set-bit)
@@ -1335,13 +1365,15 @@
     (setq LabelOffsets* (DeleteAllButLabels BranchAndLabelAList*)) 
     (return BranchCodeList*)))
 
-(de &make-nop(n)
-   % make n bytes of nop instructions
-   (cond ((wleq n 0) nil)
-	 ((eq n 1)'((inc (reg t2))))
-	 ((eq n 2)'((mov (reg t1)(reg t1))))
-	 ((eq n 3)'((lea (displacement(reg t1)0) (reg t1))))
-	 (t (append (&make-nop 3)(&make-nop (difference n 3)))) ))
+%% (de &make-nop(n)
+%%    % make n bytes of nop instructions
+%%    (cond ((wleq n 0) nil)
+%% 	 ((eq n 1)'((inc (reg t2))))
+%% 	 ((eq n 2)'((mov (reg t1)(reg t1))))
+%% 	 ((eq n 3)'((lea (displacement(reg t1)0) (reg t1))))
+%% 	 (t (append (&make-nop 3)(&make-nop (difference n 3)))) ))
+
+(de &make-nop(n))
 
 (de alignCode(u)
   (if (&smember 'fastapply u) u (alignCode1 u)))
