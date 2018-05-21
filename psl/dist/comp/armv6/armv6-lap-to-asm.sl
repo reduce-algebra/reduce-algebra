@@ -549,6 +549,10 @@
 
 (put 'ldm 'asmpseudoop 'asmprint-ldm-stm)
 (put 'stm 'asmpseudoop 'asmprint-ldm-stm)
+(put 'ldmia 'asmpseudoop 'asmprint-ldm-stm)
+(put 'stmia 'asmpseudoop 'asmprint-ldm-stm)
+(put 'ldmdb 'asmpseudoop 'asmprint-ldm-stm)
+(put 'stmdb 'asmpseudoop 'asmprint-ldm-stm)
 
 (de asmprint-ldm-stm (x)
     (progn

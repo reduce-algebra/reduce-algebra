@@ -290,14 +290,16 @@
 (DefCMacro *Call
        ((InternallyCallableP)  (blx (InternalEntry ArgOne)))
 	(         (*move (idloc argone) (reg t3))
-		  (add (reg t2) (reg symfnc) (regshifted t3 LSL 2))
-		  (blx (reg t2)))
+		  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
+		  (BLX (reg t2)))
 )
 
 (DefCMacro *JCall
        ((InternallyCallableP)  (b (InternalEntry ArgOne)))
 	(         (*move (idloc argone) (reg t3))
-		  (add (reg t2) (reg symfnc) (regshifted t3 LSL 2))
+		  (LDR (reg t2) (displacement (reg symfnc) (regshifted t3 LSL 2)))
+		  % pop link register
+		  (LDMIA (reg sp) ((reg lr)) writeback)
 		  (BX (reg t2)))
 )
 
@@ -349,9 +351,9 @@
 (de *ALLOC (framesize)
     (setq NAlloc!* framesize)
     (if (greaterp framesize 0)
-	`( (stm (reg st) ((reg lr)) writeback)
-	   (sub (reg st) (reg st) ,(times2 4 framesize)))
-      `((stm (reg st) ((reg lr)) writeback))))
+	`( (STMDB (reg st) ((reg lr)) writeback)
+	   (SUB (reg st) (reg st) ,(times2 4 framesize)))
+      `((STMDB (reg st) ((reg lr)) writeback))))
 
 (DefCmacro *ALLOC)
 
@@ -364,10 +366,10 @@
    (times N (compiler-constant 'AddressingUnitsPerItem)) '*Exit))
 
 (DefCMacro *Exit     % leaf routine first
-   ((ZeroP)  (ldm (reg sp) ((reg lr)) writeback)
+   ((ZeroP)  (LDMIA (reg sp) ((reg lr)) writeback)
              (bx (reg lr)))
    (         (add (reg st) (reg st) ARGONE)
-	     (ldm (reg sp) ((reg lr)) writeback)
+	     (LDMIA (reg sp) ((reg lr)) writeback)
 	     (bx (reg lr))))
 
 (de displacementp (x) (and (pairp x) (eq (car x) 'displacement)))
@@ -1265,11 +1267,11 @@ preload  (setq initload
 
 (de *foreignlink (functionname functiontype numberofarguments)
 
-    `((stm (reg st) ((reg r1) (reg r2) (reg r3) (reg r4) (reg r8) (reg r9) (reg r10) (reg r11) (reg r12)) writeback) % save caller-saved registers
+    `((STMDB (reg st) ((reg r1) (reg r2) (reg r3) (reg r4) (reg r8) (reg r9) (reg r10) (reg r11) (reg r12)) writeback) % save caller-saved registers
 %      (*move (quote t) (fluid *kernelmode))
-      (blx (foreignentry ,functionname))
+      (BLX (foreignentry ,functionname))
 %      (*move (reg NIL) (fluid *kernelmode))
-      (ldm (reg st) ((reg r1) (reg r2) (reg r3) (reg r4) (reg r8) (reg r9) (reg r10) (reg r11) (reg r12)) writeback))) % restore saved registers
+      (LDMIA (reg st) ((reg r1) (reg r2) (reg r3) (reg r4) (reg r8) (reg r9) (reg r10) (reg r11) (reg r12)) writeback))) % restore saved registers
 
 (DefCMacro !*foreignlink)
 

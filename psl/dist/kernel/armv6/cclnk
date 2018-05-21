@@ -1,4 +1,4 @@
-gcc  -o bpsl -m32 -w -DBPSSIZE=8000000 bps.c bpsheap.c echo.c file-status.c float.c \
+gcc  -o bpsl  -w -DBPSSIZE=8000000 bps.c bpsheap.c echo.c file-status.c float.c \
    os-hooks.c pslextras.c pslsocket.c pwd-fn.c sigs.c unix-io.c \
-   -DLINUX main.o dmain.o -lm
+   -DLINUX main.o dmain.o -lm -ldl
 

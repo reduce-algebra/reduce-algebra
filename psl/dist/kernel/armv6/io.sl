@@ -31,7 +31,7 @@
 %(fluid '(onewordbuffer))
 
 (de console-print-string (string)
-  (unixputs (strbase (mkitem fixnum-tag string))))
+  (unixputs (strbase (strinf string))))
 
 %  (let ((upper-bound (strlen (strinf string))))
 %  ` (for (from i 0 upper-bound)
@@ -46,8 +46,8 @@
   )
 
 (de binaryopenread (filename)
-  (let ((f (unixopen (strbase (mkitem fixnum-tag filename))
-		 (strbase (mkitem fixnum-tag "r")))))
+  (let ((f (unixopen (strbase (strinf filename))
+		 (strbase (strinf "r")))))
         (if (weq f 0)
             (kernel-fatal-error "Couldn't open binary file for input")
             f)))

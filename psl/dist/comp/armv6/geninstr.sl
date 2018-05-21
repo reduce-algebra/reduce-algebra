@@ -511,14 +511,14 @@ nil)
 (instr STM (STM *cond* DB)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1001000 0)       
 
 % alternative names
-%(instr LDM (LDM *cond* FD)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000100 1)
-%(instr STM (STM *cond* EA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000100 0)
-%(instr LDM (LDM *cond* ED)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1001100 1)
-%(instr STM (STM *cond* FA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1001100 0)       
-%(instr LDM (LDM *cond* FA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000000 1)
-%(instr STM (STM *cond* ED)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000000 0)       
-%(instr LDM (LDM *cond* EA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1001000 1)
-%(instr STM (STM *cond* FD)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1001000 0)       
+(instr LDM (LDM *cond* FD)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000100 1)
+(instr STM (STM *cond* EA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000100 0)
+(instr LDM (LDM *cond* ED)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1001100 1)
+(instr STM (STM *cond* FA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1001100 0)       
+(instr LDM (LDM *cond* FA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000000 1)
+(instr STM (STM *cond* ED)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1000000 0)       
+(instr LDM (LDM *cond* EA)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1001000 1)
+(instr STM (STM *cond* FD)  (reg reglist writeback?)                  OP-ldm-stm *condbits* 2#1001000 0)       
 
 
 (instr B (B *cond*) (offset26)         OP-branch-imm *condbits* 2#1010)
