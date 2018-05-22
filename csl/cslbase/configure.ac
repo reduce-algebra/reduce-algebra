@@ -831,14 +831,25 @@ else
   AC_DEFINE([NORETURN], [[/* noreturn */]], [C++-11 attributes available?])
 fi
 
+# Using gcc 4.8.x even in C++11 mode std::max_align_t is not available, so
+# for the benefit of people using a compiler that old I will then look
+# for the aligment of "long double".
 AC_COMPUTE_INT(maxalign, alignof(std::max_align_t), [#include <cstddef>],
+               maxalign="0")
+if test "$maxalign" = "0"
+then
+  AC_COMPUTE_INT(maxalign, alignof(long double), [#include <cstddef>],
     AC_MSG_ERROR([Unable to get alignment of std::max_align_t]))
+fi
 AC_MSG_NOTICE([maxalign = $maxalign])
 
 # I will expect that malloc and new will return blocks of memory
 # aligned at least as per maxalign... and I require that it be at least
-# 8 so that I have 3 low bits for use as tags. IN reality I fully expect
-# it to be 16 on most if not all 64-bit systems.
+# 8 so that I have 3 low bits for use as tags. In reality I fully expect
+# it to be 16 on most if not all 64-bit systems. The test here is in case
+# somebody tries a build on a system where everything can be placed at
+# arbitrary byte boundaries and hence where malloc (and friends) feel
+# entitles to return values that are not aligned at all.
 
 if test $maxalign -lt 8
 then
