@@ -54,14 +54,13 @@ $smarty->assign('Q_A', array(
 	</li>
 	<li>If you don&#39;t have subversion then create a directory on your computer called<code> lessons</code> (although you can call it whatever you want). Go to the <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/packages/lessons/">lessons directory in the SourceForge code repository</a>, click on the first lesson file (called <code>less1.red</code>), click on the link labelled &quot;Download this file&quot; that appears above the file listing, download the file to your computer and save it in your <code>lessons</code> directory. Repeat this process for the remaining lesson files.</li>
 </ul>
-<p>The lesson files are intended to be perused in REDUCE (although they are plain text files). They consist of long comments interspersed with REDUCE input that is intended to be executed, and they automatically pause every so often so that you can read the next section. But you may need to scroll back to the beginning of the file or to the last pause to see the beginning of the current section.</p>
+<p>The lesson files are intended to be perused in REDUCE (although they are plain text files). They consist of long comments interspersed with REDUCE input that is intended to be executed, and they automatically pause every so often so that you can read the next section. But you may need to scroll back to the beginning of the file or to the last pause to see the beginning of the current section. If you want to read a lesson outside of REDUCE then it is easy to do so in your web browser, as described in the second bullet point above.</p>
 <ul>
-	<li>One way to run the lessons in CSL REDUCE is to start it normally, click on the <code>File / Read...</code> menu item, find your <code>lessons</code> directory in the file selector and select <code>less1.red</code>. REDUCE will remember the last input directory (until you close it), making it easy to select subsequent lessons.</li>
-	<li>One way to run the lessons in PSL REDUCE is to start it normally and then execute the following commands (customized as appropriate for your computer):
-		<pre>cd &quot;path/to/lessons&quot;;
-in &quot;less1.red&quot;;</pre>
-		REDUCE will remember the current directory (until you close it), making it easy to input subsequent lessons by using only the <code>in</code> command.</li>
-</ul>'),
+	<li>One way to run the lessons in CSL REDUCE is to start it normally, click on the <code>File / Read...</code> menu item, find your <code>lessons</code> directory in the file selector and then select a lesson file, such as <code>less1.red</code>.</li>
+	<li>One way to run the lessons in PSL REDUCE is to start it normally and then execute a command of the following form (customized as appropriate for your computer):
+		<pre>in &quot;path/to/lessons/less1.red&quot;;</pre></li>
+</ul>
+<p>It is advisable to run each lesson in a new REDUCE sessions, otherwise the lessons may interfere with each other.</p>'),
 
 	array(
 		'Q' => 'How can I learn how REDUCE works and how to modify or extend it?',
