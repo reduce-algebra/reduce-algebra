@@ -447,12 +447,14 @@ lessons only if and when:
    2.  You feel the need for a facility which you believe is
        impossible or quite awkward to implement solely in ALGEBRAIC
        mode.
-   3.  You have read the pamphlet "Introduction to LISP", by D. Lurie,
-       or an equivalent.
+   3.  You have read an introductory text about LISP, such as "A
+       Concise Introduction to LISP" by David L. Matuszek, which is
+       freely available at
+       https://www.cis.upenn.edu/~matuszek/LispText/lisp.html.
    4.  You are familiar with the definition of Standard LISP, as
        described in the "Standard LISP Report" which was published in
-       the October 1979 SIGPLAN Notices.  [This is available from the
-       REDUCE web site.]
+       the October 1979 SIGPLAN Notices.  [A copy is freely available
+       via http://reduce-algebra.sourceforge.net/documentation.php.]
 
 Don't forget to view or print your newly generated FORTRAN file and to
 delete any temporary files created by this lesson.;
