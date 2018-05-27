@@ -82,7 +82,6 @@ extern LispObject *list_bases[];
 extern LispObject *nilsegment, *stacksegment;
 extern LispObject *stackbase;
 extern int32_t stack_segsize;  // measured in units of one CSL page
-extern LispObject *stack;
 extern char *C_stack_base, *C_stack_limit;
 extern double max_store_size;
 
@@ -167,141 +166,6 @@ extern void DebugTrace(const char *fmt, int i);
        debug_line = __LINE__;                          \
        DebugTrace(__VA_ARGS__);                        \
    }
-
-static inline void push(LispObject a)
-{   *++stack = a;
-    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
-}
-
-static inline void push2(LispObject a, LispObject b)
-{   *++stack = a;
-    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = b;
-    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
-}
-
-static inline void push3(LispObject a, LispObject b, LispObject c)
-{   *++stack = a;
-    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = b;
-    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = c;
-    my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
-}
-
-static inline void push4(LispObject a, LispObject b, LispObject c,
-                         LispObject d)
-{   *++stack = a;
-    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = b;
-    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = c;
-    my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = d;
-    my_assert(d != 0, [&]{ trace_printf("pushed a zero\n"); });
-}
-
-static inline void push5(LispObject a, LispObject b, LispObject c,
-                         LispObject d, LispObject e)
-{   *++stack = a;
-    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = b;
-    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = c;
-    my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = d;
-    my_assert(d != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = e;
-    my_assert(e != 0, [&]{ trace_printf("pushed a zero\n"); });
-}
-
-static inline void push6(LispObject a, LispObject b, LispObject c,
-                         LispObject d, LispObject e, LispObject f)
-{   *++stack = a;
-    my_assert(a != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = b;
-    my_assert(b != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = c;
-    my_assert(c != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = d;
-    my_assert(d != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = e;
-    my_assert(e != 0, [&]{ trace_printf("pushed a zero\n"); });
-    *++stack = f;
-    my_assert(f != 0, [&]{ trace_printf("pushed a zero\n"); });
-}
-
-static inline void pop(LispObject& a)
-{   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
-}
-
-static inline void pop(volatile LispObject& a)
-{   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
-}
-
-static inline void pop2(LispObject& a, LispObject& b)
-{   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
-    b = *stack--;
-    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
-}
-
-static inline void pop3(LispObject& a, LispObject& b, LispObject& c)
-{   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
-    b = *stack--;
-    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
-    c = *stack--;
-    my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
-}
-
-static inline void pop4(LispObject& a, LispObject& b, LispObject& c,
-                        LispObject& d)
-{   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
-    b = *stack--;
-    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
-    c = *stack--;
-    my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
-    d = *stack--;
-    my_assert(d != 0, [&]{ trace_printf("popped a zero\n"); });
-}
-
-static inline void pop5(LispObject& a, LispObject& b, LispObject& c,
-                        LispObject& d, LispObject& e)
-{   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
-    b = *stack--;
-    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
-    c = *stack--;
-    my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
-    d = *stack--;
-    my_assert(d != 0, [&]{ trace_printf("popped a zero\n"); });
-    e = *stack--;
-    my_assert(e != 0, [&]{ trace_printf("popped a zero\n"); });
-}
-
-static inline void pop6(LispObject& a, LispObject& b, LispObject& c,
-                        LispObject& d, LispObject& e, LispObject& f)
-{   a = *stack--;
-    my_assert(a != 0, [&]{ trace_printf("popped a zero\n"); });
-    b = *stack--;
-    my_assert(b != 0, [&]{ trace_printf("popped a zero\n"); });
-    c = *stack--;
-    my_assert(c != 0, [&]{ trace_printf("popped a zero\n"); });
-    d = *stack--;
-    my_assert(d != 0, [&]{ trace_printf("popped a zero\n"); });
-    e = *stack--;
-    my_assert(e != 0, [&]{ trace_printf("popped a zero\n"); });
-    f = *stack--;
-    my_assert(f != 0, [&]{ trace_printf("popped a zero\n"); });
-}
-
-static inline void popv(int n)
-{   stack -= n;
-}
 
 #define GC_USER_SOFT 0
 #define GC_USER_HARD 1
@@ -416,15 +280,12 @@ extern void debug_show_trail_raw(const char *msg, const char *file, int line);
 //   64-bit    nil+4     nil
 //
 
-extern intptr_t byteflip;
-
 extern LispObject * volatile stacklimit;
 
-extern LispObject fringe;
-extern LispObject volatile heaplimit;
-
-extern LispObject volatile vheaplimit;
-extern LispObject vfringe;
+extern LispObject fringe, next_fringe;
+extern LispObject heaplimit;
+extern LispObject vfringe, next_vfringe;
+extern LispObject vheaplimit;
 
 extern intptr_t nwork;
 
@@ -649,57 +510,6 @@ extern uint64_t reclaim_trigger_count, reclaim_trigger_target;
 extern int deal_with_tick();
 extern LispObject reclaim(LispObject value_to_return, const char *why,
                           int stg_class, size_t size);
-
-static inline void stackcheck0()                                       
-{   if_check_stack();                                         
-    if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (--countdown < 0 && deal_with_tick()) ||             
-        stack >= stacklimit)                                 
-    {   reclaim(nil, "stack", GC_STACK, 0);                  
-    }
-}
-
-static inline void stackcheck1(LispObject& a1)                                   
-{   if_check_stack();                                        
-    if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (--countdown < 0 && deal_with_tick()) ||             
-        stack >= stacklimit)
-    {   a1 = reclaim(a1, "stack", GC_STACK, 0);              
-    }
-}
-
-static inline void stackcheck2(LispObject& a1, LispObject& a2)                               
-{   if_check_stack();                                        
-    if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (--countdown < 0 && deal_with_tick()) ||             
-        stack >= stacklimit)
-    {   push(a2);                                            
-        a1 = reclaim(a1, "stack", GC_STACK, 0);
-        pop(a2);     
-    }
-}
-
-static inline void stackcheck3(LispObject& a1, LispObject& a2, LispObject& a3)                           
-{   if_check_stack();                                        
-    if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (--countdown < 0 && deal_with_tick()) ||             
-        stack >= stacklimit)
-    {   push2(a2, a3);                                       
-        a1 = reclaim(a1, "stack", GC_STACK, 0);              
-        pop2(a3, a2);                                        
-    }
-}
-
-static inline void stackcheck4(LispObject& a1, LispObject& a2, LispObject& a3, LispObject& a4)                       
-{   if_check_stack();                                        
-    if (++reclaim_trigger_count == reclaim_trigger_target ||
-        (--countdown < 0 && deal_with_tick()) ||             
-        stack >= stacklimit)
-    {   push3(a2, a3, a4);                                   
-        a1 = reclaim(a1, "stack", GC_STACK, 0);              
-        pop3(a4, a3, a2);                                    
-    }
-}
 
 extern uint64_t force_cons, force_vec;
 

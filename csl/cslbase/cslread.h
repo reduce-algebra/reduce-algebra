@@ -97,6 +97,7 @@ extern bool is_constituent(int c);
 extern LispObject intern(size_t len, bool escaped);
 extern LispObject iintern(LispObject str, size_t h, LispObject p,
                           int str_is_ok /* NOT a bool */);
+extern LispObject get_symbol(bool gensymp);
 extern LispObject find_package(char *name, size_t len);
 extern LispObject read_from_vector(char *v);
 

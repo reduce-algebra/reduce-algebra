@@ -1217,8 +1217,7 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
 //
 // Lisp function (make-symbol ..) creates an uninterned symbol.
 //
-{   LispObject s;
-    stackcheck1(str);
+{   stackcheck1(str);
 //
 // Common Lisp wants a STRING passed here, but as a matter of generosity and
 // for the benefit of some of my system code I support symbols too.
@@ -1228,7 +1227,7 @@ static LispObject Lmake_symbol(LispObject env, LispObject str)
     else if (complex_stringp(str)) str = simplify_string(str);
     else if (!is_string_header(vechdr(str))) aerror1("make-symbol", str);
     push(str);
-    s = get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+    LispObject s = get_symbol(false);
     pop(str);
     qheader(s) = TAG_HDR_IMMED+TYPE_SYMBOL;
     qvalue(s) = unset_var;
@@ -1251,7 +1250,7 @@ LispObject Lgensym(LispObject env)
 //
 // Lisp function (gensym) creates an uninterned symbol with odd name.
 //
-{   LispObject id;
+{
 #ifdef COMMON
     LispObject pn;
     char genname[64];
@@ -1262,7 +1261,7 @@ LispObject Lgensym(LispObject env)
     pn = make_string(genname);
     push(pn);
 #endif
-    id = get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+    LispObject id = get_symbol(true);
 #ifdef COMMON
     pop(pn);
 #endif
@@ -1289,7 +1288,7 @@ LispObject Lgensym(LispObject env)
 }
 
 LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
-{   LispObject id, genbase;
+{   LispObject genbase;
     size_t len, len1 = strlen(suffix);
     char genname[64];
 #ifdef COMMON
@@ -1305,7 +1304,7 @@ LispObject Lgensym0(LispObject env, LispObject a, const char *suffix)
     sprintf(genname, "%.*s%s", (int)len,
             (char *)genbase + (CELL-TAG_VECTOR), suffix);
     stack[0] = make_string(genname);
-    id = get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+    LispObject id = get_symbol(true);
     pop(genbase);
 #ifdef COMMON
     qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
@@ -1333,7 +1332,7 @@ LispObject Lgensym1(LispObject env, LispObject a)
 // The case (gensym <number>) is DEPRECATED by the Common Lisp standards
 // committee and so I will not implement it at least for now.
 //
-{   LispObject id, genbase;
+{   LispObject genbase;
 #ifdef COMMON
     size_t len;
     char genname[64];
@@ -1352,7 +1351,7 @@ LispObject Lgensym1(LispObject env, LispObject a)
             (long unsigned)(uint32_t)gensym_ser++);
     stack[0] = make_string(genname);
 #endif
-    id = get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+    LispObject id = get_symbol(true);
     pop(genbase);
 #ifdef COMMON
     qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
@@ -1381,7 +1380,7 @@ LispObject Lgensym2(LispObject env, LispObject a)
 // concerned, but seems to be what the Common Lisp syntax #:ggg expects
 // to achieve!
 //
-{   LispObject id, genbase;
+{   LispObject genbase;
     size_t len;
 #ifdef COMMON
     if (complex_stringp(a)) a = simplify_string(a);
@@ -1393,7 +1392,7 @@ LispObject Lgensym2(LispObject env, LispObject a)
     stackcheck0();
     len = length_of_byteheader(vechdr(genbase)) - CELL;
     stack[0] = copy_string(genbase, len);
-    id = get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+    LispObject id = get_symbol(true);
     pop(genbase);
     qheader(id) = TAG_HDR_IMMED+TYPE_SYMBOL+SYM_ANY_GENSYM;
     qvalue(id) = unset_var;
@@ -1512,15 +1511,14 @@ LispObject iintern(LispObject str, size_t h, LispObject p, int str_is_ok)
     {   mv_2 = nil;
         return nvalues(nil, 2);
     }
-    {   LispObject s;
-        push2(str, p);
+    {   push2(str, p);
 // Here I was looking up a symbol and it did not exist so I need to
 // create it.
 #ifdef HASH_STATISTICS
         Noput++;
         Noputp += Noputtmp;
 #endif
-        s = (LispObject)get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+        LispObject s = get_symbol(false);
         pop(p);
         qheader(s) = TAG_HDR_IMMED+TYPE_SYMBOL;
 #ifdef COMMON
@@ -4155,8 +4153,7 @@ LispObject Lreadline1(LispObject env, LispObject stream)
     }
     if (ch == EOF && n == 0) w = eof_symbol;
     else
-    {
-        w = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
+    {   w = get_basic_vector(TAG_VECTOR, TYPE_STRING_4, CELL+n);
         s = (char *)w + CELL - TAG_VECTOR;
         memcpy(s, &boffo_char(0), n);
         while ((n&7) != 0) s[n++] = 0;

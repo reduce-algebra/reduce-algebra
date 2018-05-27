@@ -99,11 +99,6 @@ int32_t stack_segsize = 1;
 char *exit_charvec = NULL;
 intptr_t exit_reason;
 
-intptr_t byteflip;
-LispObject fringe;
-LispObject volatile heaplimit;
-LispObject volatile vheaplimit;
-LispObject vfringe;
 intptr_t nwork;
 unsigned int exit_count;
 uint64_t gensym_ser;

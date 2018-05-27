@@ -147,8 +147,11 @@ static volatile char *int2str(volatile char *s, int n)
 // will come with an associated bitmap that is used to record which pages
 // within it have been written to. The concept of "page" here will be keyed
 // to the operating system in use and the mechanism used to detect which
-// parts of memory have been updated.
-// I try to pack the bitsmaps for small(ish) pages into a single vector
+// parts of memory have been updated. And I use the same word (ie "page")
+// later on for the way that CSL divides segments into chunks for its own
+// purposes... if I was being pedantic I would use the term "system pages"
+// around here, but I hope there will - in the end - not be much confusion.
+// I try to pack the bitmaps for small(ish) pages into a single vector
 // heap_small_bitmaps. Once the bitmaps get to be at least 0x10000 byte in
 // size they just get added to the size of memory block allocated for a
 // segment (and that has to happen once heap_small_bitmaps is full).
@@ -163,8 +166,23 @@ static volatile char *int2str(volatile char *s, int n)
 
 size_t page_size;
 
+
+// For up to 32 segments I have...
+//   heap_segment_count   number of allocated segments
+//   heap_segment[i]      base address of a segment of memory
+//   heap_segment_size[i] size of useful part of that segment, in bytes
+//   heap_dirty_pages_bitmap[i] a bitmap used to track which block
+//                        have been written to, information that can
+//                        help with garbage collection. The "block"
+//                        granularity here is determined by the operating
+//                        system and is probably 0x1000 or 0x10000.
+//
+// Within each segment the memory is arranged in pages each of size
+// CSL_PAGE_SIZE, which may be 8 Mbytes. The arrangement of information
+// within pages is documented lower down this file.
+
 void *heap_segment[32];
-uintptr_t heap_segment_size[32];
+size_t heap_segment_size[32];
 // I will arrange my bitmap in 64-bit words - expecting that memory access
 // to 64-bits when I update an entry ias as cheap as anything else, but then
 // scanning for nonzero bits can go 64-bits as a time.
@@ -201,6 +219,14 @@ void get_page_size()
 
 bool mprotect_valid = true;
 
+// THis code allocates a segment by asking the operating system. On
+// Windows it uses VirtualAlloc() and on other systems mmap(). It arranges
+// that heap_segment[] gets updates and that bitmaps for "dirty" pages are
+// established.  The collection of segments must be stored in heap_segments[]
+// such that their addresses are in ascending order, and in consequence of
+// that allocating a new segment may shuffle existing ones in the tables.
+// So the index of a segment in the tables may not be viewed as permenant.
+
 void *allocate_segment(size_t n)
 {
 // I will round up the size to allocate so it is a multiple of the
@@ -210,7 +236,7 @@ void *allocate_segment(size_t n)
     n = (n + page_size - 1) & -page_size;
     size_t map_size = n/page_size; // number of bits of map needed
 // Round up map_size to be a multiple of sizeof(unit64_t)
-    map_size = (n + sizeof(uint64_t) - 1) / sizeof(uint64_t);
+    map_size = (map_size + sizeof(uint64_t) - 1) / sizeof(uint64_t);
 // Where possible I allocate map space within the small bitmap block, working
 // down from the top. I leave map_ptr NULL if this is not possible, otherwise
 // it identified the location within the block;
@@ -245,11 +271,11 @@ void *allocate_segment(size_t n)
 // if the bitmap for it lies within it that will be zero.
 #ifdef MAP_ANONYMOUS
     void *r = mmap(0, n+extra, PROT_READ, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-    bool failed = (r = MAP_FAILED);
+    bool failed = (r == MAP_FAILED);
 #else // !MAP_ANONYMOUS
     int fd = open("/dev/zero", O_RDWR);
     void *r = mmap(0, n+extra, PROT_READ, MAP_PRIVATE, fd, 0);
-    bool failed = (r = MAP_FAILED);
+    bool failed = (r == MAP_FAILED);
     close(fd);
 #endif // !MAP_ANONYMOUS
 // If there was a chunk of the memory that was to be used for a bitmap then
@@ -273,6 +299,21 @@ void *allocate_segment(size_t n)
 // Note that the recorded size here does not include any appended bitmap.
     heap_segment_size[heap_segment_count] = n;
     heap_segment_count++;
+// Now I need to arrange that the segments are sorted in the tables
+// that record them.
+    for (int i=heap_segment_count-1; i!=0; i--)
+    {   int j = i-1;
+        void *h1 = heap_segment[i], *h2 = heap_segment[j];
+        if ((char *)h1 < (char *)h2) break; // Inserted
+// The segment must sink a place in the tables.
+        heap_segment[i] = h2; heap_segment[j] = h1;
+        h1 = heap_dirty_pages_bitmap[i]; h2 = heap_dirty_pages_bitmap[j];
+        heap_dirty_pages_bitmap[i] = (uint64_t *)h2;
+        heap_dirty_pages_bitmap[j] = (uint64_t *)h1;
+        size_t w = heap_segment_size[i];
+        heap_segment_size[i] = heap_segment_size[j];
+        heap_segment_size[j] = w;
+    }
     return r;
 }
 
@@ -363,6 +404,11 @@ bool refresh_bitmap(size_t h)
 #endif // !WIN32
     return true;
 }
+
+
+// find_heap_segment() can be given an arbitrary bit-pattern and
+// if that could represent a pointer into one of the segments it returns
+// the index into the table of segments associated with it.
 
 extern int find_heap_segment(uintptr_t p);
 
@@ -473,6 +519,181 @@ static void low_level_signal_handler(int signo)
     global_longjmp();
 }
 
+// Now let me start to talk about the arrangement within a "page" (which
+// is a region of memory of size CSL_PAGE_SIZE, maybe 8 Mbytes).
+// Pages can be in a number of states. One obvious one is "unused". Others
+// involved what sort of information is stored in them, whether they are
+// in the "new" or "old" region of the heap (as regards the copying nature of
+// garbage collection), whether they are a "nursery page" (as regards a
+// generational collection strategy) and so on. The first word of a page
+// will contain information about that sort of thing!
+// The second word is available for forming chains of pages.
+// There are then two words that are available to hold information about how
+// full the page is.
+// After that is a bitmap region, followed by a data region.
+//
+// The first sort of page to be discussed is used to store large vectors.
+// The format is as follows:
+//     type info
+//     chaining word
+//     vfringe
+//     vheaplimit
+//     next-vfringe
+//     -
+//     bitmap bitmap bitmap bitmap ...
+//     start of used data
+//     ... used
+//     end of used data <----------- vfringe
+//     ... free
+//     end of available space <----- vheaplimit
+//     ... pinned data
+//     next-vheaplimit
+//     next'-vfringe  <------------- next' vfringe
+//     ... free
+//     <end of page> <-------------- next vheaplimit
+//
+// The idea is that the whole page can be interrupted if "pinned" items
+// are present within it. These are items that were referenced from an
+// ambiguous base during a previous garbage collection and so which can not
+// be moved - fresh allocation has to work around them. So the space available
+// in the page is made up of a series of chunks. During allocation chunks
+// are used from the low address upwards, and vfringe/vheaplimit show where
+// allocation can happen and its limit. The chunks will be kept in a free
+// chain: the first two words of each chunk hold first the end-point of that
+// chunk and then the start of the next one. If the chunnk is the last one of
+// the poge then its successor can be given as NULL.
+// While CSL is running the chaining from the current chunk will have been
+// overwritten when the first vector is allocated in that chunk. So it
+// will be necessary (and indeed reasonable) to store vfringe, vheaplimit and
+// next_vfringe in (static or extern) variables. Now supposing there are
+// multiple threads active the garbage collector would need to access and
+// update each thread's versions of these variables. So at the start of
+// garbage collection the values of these variables will be dumped at the
+// start of the page.
+// During normal CSL processing if an attempt is made to allocate a vector
+// and it will not fit into the current chunk then the end of the current
+// chunk can be left in whatever (potentially messy) state that it is. But
+// during the copying part of garbage collection the newly copied data will
+// be scanned linearly. This scan will include processing pinned as well as
+// newly allocated items. To allow for this the copying code can insert
+// dummy binary vectors to fill up any gaps.
+
+// The bitmap covers the "used data" region. For each location that could
+// possibly be the start of an item (ie evenr other word, where a word is
+// the size of a machine pointer) there are two bits. The first marks when
+// words are headers of objects. By having that bit present it becomes
+// possible to take an arbitrary bit-pattern and identify an object that
+// it points within: first the segment associated with the pointer is
+// identified. Then the page (by rounding down addresses within segments so
+// that the offset within the segment is a multiple of the page size).
+// Then the address at or before the pointer that has its "object start"
+// bit set is the object of interest. Finally the offset of the pointer from
+// the object header can be compared against the length of the object (which
+// can be deduced from the header).
+// The second bit is set when an item that starts at a given address is
+// pinned. So the generally valid combinations of bits are
+//    not-start, not-pinned
+//    start, not pinned,
+//    start, pinned.
+// That leaves the combination (not-start,pinned) available for use during
+// garbage collection if having an additional state is useful.
+//
+// The second sort of page is used for storage of "small" items. When I
+// started planning this scheme I had first intended to arrange that the
+// "small" page would hold 2-word items at one end and 4-word ones at the
+// other. The reasoning was that 2-word items would cover CONS cells and
+// at least on a 64-bit system boxed double-floats and strings with up to 8
+// characters, while 4-word items would be good for somewhat longer strings
+// and fairly significan bignums. But having instrumented CSL and checked
+// what happened when the full set of Reduce tests were run I saw there
+// that allocating 4-word items was happening around 0.5% as frequently as
+// 2-word ones (on a 64-bit platform). In a 32-bit world the ratio was a
+// little over 1%. So if making special privision for 4-word items could have
+// any impact at all on the cost of CONS it would be a bad idea. I then
+// looked at the allocation of vectors. On the 32-bit system about 37% of
+// allocations were for items of size 4 words, but on a 64-bit system this
+// dropped to only 14%. I attribute this difference to the fact that on a
+// 64-bit system floats and strings of length up to 8 end up in the
+// 2-word region. Especially if I view 64-bits as much more important for the
+// future than 32-bits this suggests that special treatment of 4-word items is
+// not worthwhile.
+//
+// So since I now just need to cope with 2-word items I can have a page layout
+// almost identical to that used for vectors:
+//
+//     type info
+//     chaining word
+//     fringe
+//     heaplimit
+//     next-fringe
+//     -
+//     bitmap bitmap bitmap bitmap ...
+//     start of used data
+//     ... used
+//     end of used data <----------- fringe
+//     ... free
+//     end of available space <----- heaplimit
+//     ... pinned data
+//     next-heaplimit
+//     next'-fringe  <-------------- next' fringe
+//     ... free
+//     <end of page> <-------------- next heaplimit
+//
+// The only difference is that I only allow for a single bit of information
+// associated with each doubleword, and this marks "pinned" data.
+
+LispObject fringe, next_fringe;
+LispObject heaplimit;
+LispObject vfringe, next_vfringe;
+LispObject vheaplimit;
+
+// Now I will provide the kernel of the allocation code...
+
+extern void garbage_collect();
+
+static inline LispObject get_2_words()
+{
+// If there is a free doubleword immediatly available then use it. I very
+// much hope that this will be the situation almost all of the time.
+    if (fringe < heaplimit)
+    {   LispObject r = fringe;
+        fringe += 2*CELL;
+        return r;
+    }
+// If I am at the end of one segment of free space but there is another
+// in the current page then merely move on to the next segment. Because
+// it will be non-empry (otherwise it would not have been a "free segment"!)
+// I do not need to check further, but can just use the first doubeword in
+// it.
+    if (next_fringe != NULL)
+    {   LispObject r = next_fringe;
+        heaplimit = ((LispObject *)r)[0];
+        next_fringe = ((LispObject *)r)[1];
+        fringe = r + 2*CELL;
+        return r;
+    }
+// Now I have the more complex situation where the current page is full.
+// I need to garbage collect. In the code I am writing here I am assuming
+// a conservative garbage collector, so I do not need to do anything special
+// here about preserving values. After garbage collection it will be certain
+// that memory is available.
+    garbage_collect();
+    LispObject r = fringe;
+    fringe += 2*CELL;
+    return r;
+}
+
+static inline LispObject get_n_words(size_t n)
+{   LispObject r = fringe;
+    return r;
+}
+
+#ifndef ALLOCTEST
+
+void garbage_collect()
+{   term_printf("\nGarbage collect here. Not yet implemented\n");
+    my_abort();
+}
 
 char *big_chunk_start, *big_chunk_end;
 
@@ -663,6 +884,8 @@ void grab_more_memory(size_t npages)
     }
 }
 
+#endif // !ALLOCTEST
+
 // Given a value I want to see if it could be a pointer into on eof the
 // allocated segments. Because there are only 32 of them and if I keep my
 // table og segments such that they are sorted on their start address
@@ -702,6 +925,8 @@ int find_heap_segment(uintptr_t p)
     return n;
 }
 
+
+#ifndef ALLOCTEST
 
 /*****************************************************************************/
 //      Storage allocation.
@@ -956,12 +1181,15 @@ LispObject Lncons(LispObject env, LispObject a)
     else return onevalue((LispObject)((char *)r + TAG_CONS));
 }
 
+LispObject get_symbol(bool gensymp)
+{   return get_basic_vector(TAG_SYMBOL, TYPE_SYMBOL, symhdr_length);
+}
+
 LispObject get_basic_vector(int tag, int type, size_t size)
 {
-//
-// tag is the value (e.g. TAG_SYMBOL) that will go in the low order
+// tag is the value (e.g. TAG_VECTOR) that will go in the low order
 // 3 bits of the pointer result.
-// type is the code (e.g. TYPE_SYMBOL) that gets packed, together with
+// type is the code (e.g. TYPE_STRING) that gets packed, together with
 // the size, into a header word.
 // size is measured in bytes and must allow space for the header word.
 // [Note that this last issue - size including the header - was probably
@@ -969,6 +1197,7 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // 32-bit or 64-bit representation. However it would be hard to unwind
 // that now!]
 //
+    size_t w = doubleword_align_up(size);
     for (;;)
     {   char *r = (char *)vfringe;
         size_t free = (size_t)((char *)vheaplimit - r);
@@ -1147,5 +1376,6 @@ LispObject borrow_vector(int tag, int type, size_t n)
     return v;
 }
 
+#endif // !ALLOCTEST
 
 // end of allocate.cpp

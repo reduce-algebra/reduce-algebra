@@ -1,10 +1,8 @@
-// version.h                               Copyright (C) 1990-2018 Codemist
+// allocate_test.cpp                       Copyright (C) 1989-2018 Codemist    
 
-#ifndef header_version_h
-#define header_version_h 1
-
-// $Id$
-
+//
+// Code for testing storage allocation
+//
 
 /**************************************************************************
  * Copyright (C) 2018, Codemist.                         A C Norman       *
@@ -35,12 +33,62 @@
  * DAMAGE.                                                                *
  *************************************************************************/
 
-// Rather than having a simple version I will cause my script
-// (scripts/commit.sh) that is used to update the subversion repository to
-// update the revision number here.
+// $Id$
 
-#define REVISION 4618
+// The code in allocate.cpp involves an experimental change in how storage
+// management is done in CSL. The code here is a TEMPORARY framework of
+// test code to activate and exercise it. When (and if) everything stablizes
+// the new code will be used by the main system and this file will be
+// removed. I will have stubs here for all sorts of bits of CSL that are
+// referenced from allocate.cpp - only s few of them will be truly relevant
+// for the testing.
 
-#endif // header_version_h
 
-// end of version.h
+#include "headers.h"
+
+void *allocate_segment(size_t);
+void get_page_size();
+extern size_t page_size;
+
+void global_longjmp()
+{   abort();
+}
+
+void term_printf(const char *fm, ...)
+{   abort();
+}
+
+LispObject **get_stack_addr()
+{   return NULL;
+}
+
+jmp_buf **get_global_jb_addr()
+{   return NULL;
+}
+
+const volatile char *errorset_msg;
+
+intptr_t miscflags;
+
+
+void garbage_collect()
+{
+}
+
+void my_abort()
+{   abort();
+}
+
+int main(int argc, char *argv[])
+{
+    printf("Allocate test code\n");
+    get_page_size();
+    printf("page_size = %x\n", (int)page_size);
+    LispObject *m = (LispObject *)allocate_segment(32*1024*1024);
+    printf("segment at %p\n", m);
+    return 0;
+}
+
+
+
+// end of allocate_test.cpp

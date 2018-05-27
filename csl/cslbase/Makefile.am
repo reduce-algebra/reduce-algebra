@@ -75,6 +75,7 @@ plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
 plain_zlibdemo = zlibdemo
 plain_gctest = gctest
+plain_alloctest = alloctest
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
 plain_flatcsl = csl.unnecessary.except.on.windows
@@ -95,6 +96,7 @@ plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 plain_dyndemo = dyndemo.unnecessary.except.on.windows
 plain_zlibdemo = zlibdemo.unnecessary.except.on.windows
 plain_gctest = gctest.unnecessary.except.on.windows
+plain_alloctest = alloctest.unnecessary.except.on.windows
 endif !exeext
 
 .PHONY: $(plain_csl)
@@ -116,6 +118,7 @@ endif !exeext
 .PHONY: $(plain_dyndemo)
 .PHONY: $(plain_zlibdemo)
 .PHONY: $(plain_gctest)
+.PHONY:	$(plain_alloctest)
 
 .PHONY:	bootstraprecompile
 .PHONY:	recompile
@@ -243,11 +246,13 @@ check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
 	zlibdemo$(EXEEXT) $(wxdemotarget)
 else !mac_framework
-noinst_PROGRAMS = bootstrapreduce$(EXEEXT)
+noinst_PROGRAMS += bootstrapreduce$(EXEEXT)
 check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
 	dyndemo$(EXEEXT) zlibdemo$(EXEEXT) $(wxdemotarget)
 endif !mac_framework
+
+noinst_PROGRAMS += alloctest$(EXEEXT)
 
 if boehm
 check_PROGRAMS += gctest$(EXEEXT)
@@ -532,6 +537,10 @@ wxshowmathdemo_SOURCES = wxshowmathdemo.cpp wxfwin.cpp termed.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
 wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
+alloctest_SOURCES = allocate.cpp allocate_test.cpp
+alloctest_CPPFLAGS = $(TRACE) -DALLOCTEST=1
+alloctest_LDFLAGS = -static
+
 AWKFILES=reduce.resources/mma.awk reduce.resources/qepcad.awk
 
 if windows
@@ -789,6 +798,7 @@ AM_CPPFLAGS     += $(CRINC)
 reduce_CPPFLAGS += $(CRINC)
 csl_CPPFLAGS    += $(CRINC)
 flatcsl_CPPFLAGS    += $(CRINC)
+alloctest_CPPFLAGS  += $(CRINC)
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and crlibm building will get
@@ -820,10 +830,11 @@ LIBFFIDEPS=../lib/libffi.a ../include/ffi.h
 
 FFIDEP = ../include/ffi.h $(LOCALCYG)
 FFIINC = -I../include
-AM_CPPFLAGS     += $(CRINC)
-reduce_CPPFLAGS += $(CRINC)
-csl_CPPFLAGS    += $(CRINC)
-flatcsl_CPPFLAGS    += $(CRINC)
+AM_CPPFLAGS     += $(FFINC)
+reduce_CPPFLAGS += $(FFINC)
+csl_CPPFLAGS    += $(FFINC)
+flatcsl_CPPFLAGS    += $(FFINC)
+alloctest_CPPFLAGS  += $(FFINC)
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and libffi building will get
@@ -1601,6 +1612,7 @@ $(plain_wxpsl):	wxpsl.exe wxpsl$(COM)
 	echo "$(MAKE) wxpsl.exe is preferred"
 endif wx
 
+
 else !gui
 $(plain_csl):	csl.exe
 	echo "$(MAKE) csl.exe is preferred"
@@ -1670,6 +1682,9 @@ $(plain_gctest):	gctest.exe
 	echo "$(MAKE) gctest.exe is preferred"
 
 endif boehm
+
+$(plain_alloctest): alloctest.exe
+	echo "$(MAKE) alloctest.exe is preferred"
 
 endif exeext
 
