@@ -82,11 +82,13 @@ void set_up_signal_handlers()
     signal_stack.ss_flags = 0;
     sigaltstack(&signal_stack, (stack_t *)0);
 #endif
+    for (int i=0; i<32; i++)
+        heap_segment[i] = (void *)UINTPTR_MAX;
 #ifdef HAVE_SIGACTION
     struct sigaction sa;
     sa.sa_sigaction = low_level_signal_handler;
     sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART | SA_SIGINFO | SA_ONSTACK | SA_NODEFER;
+    sa.sa_flags = SA_RESTART | SA_SIGINFO; //???@@@ | SA_ONSTACK | SA_NODEFER;
 // (a) restart system calls after signal (if possible),
 // (b) use handler that gets more information,
 // (c) use alternative stack for the handler,
@@ -161,8 +163,8 @@ static volatile char *int2str(volatile char *s, int n)
 // acceptable. Well here it is - pages can be as amall as 4096 bytes
 // or as large as 64K.
 
-#define MIN_PAGE_SIZE 0x01000
-#define MAX_PAGE_SIZE 0x10000
+// #define MIN_PAGE_SIZE 0x01000
+// #define MAX_PAGE_SIZE 0x10000
 
 size_t page_size;
 
@@ -190,7 +192,7 @@ uint64_t *heap_dirty_pages_bitmap[32];
 int heap_segment_count = 0;
 // I have a simple fixed bitmap region of size MAX_PAGE_SIZE bytes (ie 64K)
 // here.
-#define SMALL_BITMAP_SIZE (MAX_PAGE_SIZE/sizeof(uint64_t))
+// [defined in allocate.h] SMALL_BITMAP_SIZE = (MAX_PAGE_SIZE/sizeof(uint64_t))
 uint64_t heap_small_bitmaps[SMALL_BITMAP_SIZE+1];
 uint64_t *heap_small_bitmaps_ptr = &heap_small_bitmaps[SMALL_BITMAP_SIZE];
 
@@ -270,26 +272,18 @@ void *allocate_segment(size_t n)
 // block of memory is initializer to zero - in particular this means that
 // if the bitmap for it lies within it that will be zero.
 #ifdef MAP_ANONYMOUS
-    void *r = mmap(0, n+extra, PROT_READ, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+    void *r = mmap(0, n+extra,
+                   PROT_READ|PROT_WRITE,
+                   MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
     bool failed = (r == MAP_FAILED);
 #else // !MAP_ANONYMOUS
     int fd = open("/dev/zero", O_RDWR);
-    void *r = mmap(0, n+extra, PROT_READ, MAP_PRIVATE, fd, 0);
+    void *r = mmap(0, n+extra,
+                   PROT_READ|PROT_WRITE,
+                   MAP_PRIVATE, fd, 0);
     bool failed = (r == MAP_FAILED);
     close(fd);
 #endif // !MAP_ANONYMOUS
-// If there was a chunk of the memory that was to be used for a bitmap then
-// make that read-write now, because it is updated from within the exception
-// handler for SIGSEGV and I really do not want it to trigger a further
-// exception when touched. What is more the bitmap is large enough to cover
-// the "real" memory allocated, but not itself, so an exception caused by
-// accessing the bitmap could lead to a further memory access out of bounds.
-    if (!failed && extra != 0)
-    {   mprotect_valid = false;
-        if (mprotect((void *)((char *)r + n), extra,
-                     PROT_READ|PROT_WRITE) == -1) failed = true;
-        mprotect_valid = true;
-    }
 #endif // !WIN32
     if (failed) return NULL;
     if (map_ptr != NULL) heap_small_bitmaps_ptr = map_ptr;
@@ -304,7 +298,7 @@ void *allocate_segment(size_t n)
     for (int i=heap_segment_count-1; i!=0; i--)
     {   int j = i-1;
         void *h1 = heap_segment[i], *h2 = heap_segment[j];
-        if ((char *)h1 < (char *)h2) break; // Inserted
+        if ((uintptr_t)h2 < (uintptr_t)h1) break; // Ordering is OK
 // The segment must sink a place in the tables.
         heap_segment[i] = h2; heap_segment[j] = h1;
         h1 = heap_dirty_pages_bitmap[i]; h2 = heap_dirty_pages_bitmap[j];
@@ -325,7 +319,7 @@ void *allocate_segment(size_t n)
 // next refresh_bitmap().
 // Returns true on success.
 
-bool clear_bitmap(int h)
+bool clear_bitmap(size_t h)
 {   size_t n = heap_segment_size[h]/page_size; // measured in bits
     n = (n + 7) & -(size_t)8;                  // now in bytes
     memset(heap_dirty_pages_bitmap[h], 0, n);  // clear the map
@@ -457,8 +451,9 @@ static void low_level_signal_handler(int signo)
 // the critical region guarded by the spinlock here may cause a SIGSEGV.
 // Well all there is in the critical region is access to the spinlock
 // itself and the mprotect call.
+            addr = (void *)((uintptr_t)addr & -(uintptr_t)page_size);
             while (spin_lock.test_and_set(std::memory_order_acquire)) {}
-            int rc = mprotect(addr, CELL, PROT_READ | PROT_WRITE);
+            int rc = mprotect(addr, page_size, PROT_READ | PROT_WRITE);
             spin_lock.clear();
             if (rc == -1)
             {   errorset_msg = "Unable to restore R/W status of memory page";
@@ -471,6 +466,10 @@ static void low_level_signal_handler(int signo)
 // know that the critical region is very short, so I am not concerned about
 // performance here.
             atomic_set_bit(heap_dirty_pages_bitmap[h], page_offset);
+// When the SIGSEGV or SIGBUS was activation of a wtite barrier I will
+// exit from the signal handler when I have dealt with it. That should
+// re-try the memory access, which ought now to succeed.
+            return;
         }
     }
 #endif
@@ -649,9 +648,7 @@ LispObject vheaplimit;
 
 // Now I will provide the kernel of the allocation code...
 
-extern void garbage_collect();
-
-static inline LispObject get_2_words()
+LispObject get_2_words()
 {
 // If there is a free doubleword immediatly available then use it. I very
 // much hope that this will be the situation almost all of the time.
@@ -683,7 +680,7 @@ static inline LispObject get_2_words()
     return r;
 }
 
-static inline LispObject get_n_words(size_t n)
+LispObject get_n_words(size_t n)
 {   LispObject r = fringe;
     return r;
 }

@@ -46,12 +46,10 @@
 
 #include "headers.h"
 
-void *allocate_segment(size_t);
-void get_page_size();
-extern size_t page_size;
-
 void global_longjmp()
-{   abort();
+{   printf("\nglobal_longjmp called\n");
+    fflush(stdout);
+    abort();
 }
 
 void term_printf(const char *fm, ...)
@@ -79,13 +77,42 @@ void my_abort()
 {   abort();
 }
 
+static std::random_device rd;
+
 int main(int argc, char *argv[])
 {
     printf("Allocate test code\n");
     get_page_size();
     printf("page_size = %x\n", (int)page_size);
-    LispObject *m = (LispObject *)allocate_segment(32*1024*1024);
-    printf("segment at %p\n", m);
+    set_up_signal_handlers();
+    LispObject *m1 = (LispObject *)allocate_segment(4*1024*1024);
+    LispObject *m2 = (LispObject *)allocate_segment(4*1024*1024);
+    printf("segments at %p %p\n", m1, m2);
+    for (int i=0; i<heap_segment_count; i++)
+    {   printf("%d) %p %" PRIx64 "  %p\n", i,
+            heap_segment[i],
+            (uint64_t)heap_segment_size[i],
+            heap_dirty_pages_bitmap[i]);
+    }
+    clear_bitmap(0);
+    clear_bitmap(1);
+    for (int i=0; i<20; i++)
+    {   uintptr_t b = (uintptr_t)heap_segment[0];
+        uintptr_t n = ((uintptr_t)rd()) % heap_segment_size[0];
+        printf("Access at offset %.10" PRIx64 " = %d\n",
+               (uint64_t)n, (int)(n/page_size));
+        *(char *)(b + n) = 1;
+    }
+    uint64_t *w = heap_dirty_pages_bitmap[0];
+    size_t nb = heap_segment_size[0]/page_size/64;
+    for (size_t i=0; i<nb; i++)
+    {   uint64_t k = w[i];
+        for (int j=0; j<64; j++)
+        {   putchar('0' + (int)(k & 1));
+            k = k >> 1;
+        }
+    }
+    printf("\n");
     return 0;
 }
 

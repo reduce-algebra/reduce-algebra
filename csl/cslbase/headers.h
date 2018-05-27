@@ -47,6 +47,7 @@
 #include "tags.h"
 #include "cslerror.h"
 #include "externs.h"
+#include "allocate.h"
 #include "syscsl.h"
 #include "arith.h"
 #include "entries.h"
