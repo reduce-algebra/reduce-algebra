@@ -332,19 +332,15 @@ case $host in
   else
 # Here is the normal situation where cygwin is the BUILD environment. Mostly
 # that means using the mingw-style version of the compiler via
-# "i686-w64-mingw32-gcc".
+# "i686-w64-mingw32-g++" or "x86_64-w64-mingw32-g++".
     AC_MSG_NOTICE([Windows built creating native binary])
     AC_DEFINE(WIN32, [1], [True if we are running on Windows])
-# I seem to need to link with "-static" in a Windows mode or else things
-# like the C++ library do not get found when I try to run the executables.
-# This is of course liable to be an issue of my $PATH, but linking in static
-# mode will still keep me safe.
     LDFLAGS="$LDFLAGS -static"
     DLL_CFLAGS="$CFLAGS -shared"
 # As of May 2018 if I try using std::thread with the mingw32 compilers I
 # end up with a binary that relies on some awkward DLLs unless I add in
 # the extra curious directive here.
-    LIBS="$LIBS -static-libgcc -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic"
+    LIBS="$LIBS -static-libgcc -Wl,-Bstatic -lstdc++ -lpthread"
 # In this case I make the machine appear to be "i686-pc-windows" or some
 # such to distinguish it from the case where cygwin1.dll might be involved.
     foxdir=`echo $foxdir | sed -e 's/cygwin/windows/'`

@@ -77,7 +77,31 @@ void my_abort()
 {   abort();
 }
 
-static std::random_device rd;
+//
+// I use a Mersenne Twister pseudo-random generator from the C++11 library.
+// For seeding it there is a severe misery in that the most obvious source
+// of unpredictability, ie std::random_devivce, is deterministic on some
+// platforms (including mingw32). So I seed my mersenene twister with
+// something based on what it returns AND on the time of day (and on the
+// identity of the current thread).
+//
+
+static std::random_device genuine_random;
+
+static uint64_t my_genuine_random()
+{   uint64_t r = genuine_random();
+    r = 1234567*r ^ genuine_random();
+    r = 7654321*r ^ genuine_random();
+    size_t h1 = std::hash<std::thread::id>()(std::this_thread::get_id());
+    size_t h2 = (size_t)time(NULL);
+    size_t h3 = std::chrono::high_resolution_clock::
+                                        now().time_since_epoch().count();
+    return ((h1*UINT64_C(1415926535897932385) +
+            h2*UINT64_C(7182818284590452354) +
+            h3*UINT64_C(4142135623730950488)) ^ r) >> 21;
+}
+
+static std::mt19937 mersenne_twister(my_genuine_random());
 
 int main(int argc, char *argv[])
 {
@@ -98,11 +122,12 @@ int main(int argc, char *argv[])
     clear_bitmap(1);
     for (int i=0; i<20; i++)
     {   uintptr_t b = (uintptr_t)heap_segment[0];
-        uintptr_t n = ((uintptr_t)rd()) % heap_segment_size[0];
+        uintptr_t n = ((uintptr_t)mersenne_twister()) % heap_segment_size[0];
         printf("Access at offset %.10" PRIx64 " = %d\n",
                (uint64_t)n, (int)(n/page_size));
         *(char *)(b + n) = 1;
     }
+    refresh_bitmap(0);
     uint64_t *w = heap_dirty_pages_bitmap[0];
     size_t nb = heap_segment_size[0]/page_size/64;
     for (size_t i=0; i<nb; i++)

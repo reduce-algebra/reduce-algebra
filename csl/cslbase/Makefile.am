@@ -538,8 +538,8 @@ wxshowmathdemo_LDADD = $(fwin_icon)
 wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
 alloctest_SOURCES = allocate.cpp allocate_test.cpp
-alloctest_CPPFLAGS = $(TRACE) -DALLOCTEST=1
-alloctest_LDFLAGS = -static
+alloctest_CPPFLAGS = -DALLOCTEST=1
+#alloctest_LDFLAGS = -static
 
 AWKFILES=reduce.resources/mma.awk reduce.resources/qepcad.awk
 

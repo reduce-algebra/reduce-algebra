@@ -1105,26 +1105,28 @@ static LispObject Lrationalize(LispObject env, LispObject a)
 
 //
 // I use a Mersenne Twister pseudo-random generator from the C++11 library.
+// For seeding it there is a severe misery in that the most obvious source
+// of unpredictability, ie std::random_devivce, is deterministic on some
+// platforms (including mingw32). So I seed my mersenene twister with
+// something based on what it returns AND on the time of day (and on the
+// identity of the current thread). You will see that I could easily add
+// other sources of entropy here.
+//
 
-static std::random_device genuine_random;
+static std::random_device hopefully_random;
 
-static unsigned int my_genuine_random()
-{   if (genuine_random.entropy() != 0) return genuine_random();
-// random_device may, on some platforms, NOT be able to generate truly
-// unpredictable results. If it is in fact just pseudo-random C++ guarantees
-// that entropy() will return zero here. In that case I will combine
-// thread identity, real wallclock time and the higest resolution CPU time
-// I can to provide myself with a seed.
-    size_t h1 = std::hash<std::thread::id>()(std::this_thread::get_id());
-    size_t h2 = (size_t)time(NULL);
-    size_t h3 = std::chrono::high_resolution_clock::
-                                        now().time_since_epoch().count();
-    return (h1*UINT64_C(1415926535897932385) +
-            h2*UINT64_C(7182818284590452354) +
-            h3*UINT64_C(4142135623730950488)) >> 32;
+static std::seed_seq genuine_random()
+{   unsigned int seed[4];
+    seed[0] = hopefully_random();
+    seed[1] = (unsigned int)
+        std::hash<std::thread::id>()(std::this_thread::get_id());
+    seed[2] = (unsigned int)time(NULL);
+    seed[3] = (unsigned int)
+        std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    return new std::seed_seq seq(seeds);
 }
 
-static std::mt19937 mersenne_twister(my_genuine_random());
+static std::mt19937 mersenne_twister(genuine_random());
 
 uint32_t Crand()
 {   return mersenne_twister();
@@ -1136,7 +1138,7 @@ uint32_t Crand()
 // C++ implementation.
 
 void Csrand(uint32_t seed)
-{   if (seed == 0) mersenne_twister.seed(my_genuine_random());
+{   if (seed == 0) mersenne_twister.seed(genuine_random());
     else mersenne_twister.seed(seed);
 }
 
