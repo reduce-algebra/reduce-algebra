@@ -1115,18 +1115,15 @@ static LispObject Lrationalize(LispObject env, LispObject a)
 
 static std::random_device hopefully_random;
 
-static std::seed_seq genuine_random()
-{   unsigned int seed[4];
-    seed[0] = hopefully_random();
-    seed[1] = (unsigned int)
-        std::hash<std::thread::id>()(std::this_thread::get_id());
-    seed[2] = (unsigned int)time(NULL);
-    seed[3] = (unsigned int)
-        std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    return new std::seed_seq seq(seeds);
-}
-
-static std::mt19937 mersenne_twister(genuine_random());
+static std::seed_seq initial_random_seed
+    {hopefully_random(),
+     (unsigned int)
+         std::hash<std::thread::id>()(std::this_thread::get_id()),
+     (unsigned int)time(NULL),
+     (unsigned int)
+         std::chrono::high_resolution_clock::now().time_since_epoch().count()
+    };
+static std::mt19937 mersenne_twister(initial_random_seed);
 
 uint32_t Crand()
 {   return mersenne_twister();
@@ -1138,7 +1135,18 @@ uint32_t Crand()
 // C++ implementation.
 
 void Csrand(uint32_t seed)
-{   if (seed == 0) mersenne_twister.seed(genuine_random());
+{   if (seed == 0)
+    {   std::seed_seq random_seed
+            {hopefully_random(),
+             (unsigned int)
+                 std::hash<std::thread::id>()(std::this_thread::get_id()),
+             (unsigned int)time(NULL),
+             (unsigned int)
+                 std::chrono::high_resolution_clock::now().
+                     time_since_epoch().count()
+            };
+        mersenne_twister.seed(random_seed);
+    }
     else mersenne_twister.seed(seed);
 }
 
