@@ -93,3 +93,20 @@ If it is the current output file that is shut, output will switch to the
 terminal.  Attempts to shut files that have not been opened by \texttt{OUT},
 or an input file, will lead to errors.
 
+\section{\REDUCE startup file}\index{Startup file}
+\index{Startup file}\index{File, startup}
+\ttindextype{reducerc}{file}
+\hypertarget{startup file}
+At the start of a \REDUCE session, the system checks for the existence of a user's
+startup file, and executes the \REDUCE statements in it. This is equivalent to 
+inputting the file with the \texttt{IN} command.
+
+To find the directory/folder where the file resides, the system checks
+the existence of the following environment variables:
+\begin{enumerate}
+\item \texttt{HOME},
+\item \texttt{HOMEDRIVE} and \texttt{HOMEPATH} together (Windows).
+\end{enumerate}
+If none of these are set, the current directory is used. The file itself must be named either \texttt{.reducerc} or \texttt{reduce.rc}\footnote{If none of these exist, the system checks for a file called \texttt{reduce.INI} in the current directory. This is historical and may be removed in future.}.
+
+
