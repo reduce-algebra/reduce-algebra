@@ -51,6 +51,9 @@ else
 # fasl="$cfasl"
 fi
 
+logdir=$here/buildlogs
+logfile=reduce.img.blg
+
 if test -f psl/64
 then
 STORE=600
@@ -62,9 +65,16 @@ fasl=red
 
 export here fasl psldir reduce
 
+if test -d "$logdir"
+then
+  :
+else
+  mkdir -p "$logdir"
+fi
+
 cd psl
 
-./bpsl -td $STORE <<XXX > ../buildlogs/reduce.img.blg
+./bpsl -td $STORE <<XXX > $logdir/$logfile
 
 % This re-starts a bare reduce and loads in the modules compiled
 % by the very first step. It then checkpoints a system that can be
@@ -155,7 +165,8 @@ cd psl
                                              (set-load-directories)
                                              (cond ((null (member "--no-rcfile" (vector2list unixargs!*)))
                                                     (read-init-file "reduce")))
-		              	             (cond ((member "--texmacs" (vector2list unixargs!*))
+		              	             (cond ((or (member "--texmacs" (vector2list unixargs!*))
+                                                        (getenv "TEXMACS_REDUCE_PATH"))
 						    (load tmprint))))))
 (bye)
 
