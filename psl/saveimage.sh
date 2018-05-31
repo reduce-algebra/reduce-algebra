@@ -1,14 +1,18 @@
 #! /bin/sh
 
 # Extract from build.sh to only save a new image.
-# Takes build dir and toplevel pslbuild dir pathname as arguments
-# Optional third argument is topdir to be used for load-path in saved image
+# First parameter is architecture.
+#
+# Without additional parameters it builds in the current directory.
+#
+# Takes build dir and toplevel pslbuild dir pathname as optional second and third
+# arguments.
+# Optional fourth argument is topdir to be used for load-path in saved image
 #
 # Usage:
 #         .../psl/saveimage.sh .../builddir /usr/lib/reduce/pslbuild [topdir]
 
-# This script must live in the PSL directory, but it builds things in the
-# current directory.
+# This script must live in the PSL directory.
 
 a=$0
 c=unknown
@@ -40,20 +44,46 @@ case $a in
   ;;
 esac
 
-builddir="$1"
-imagedir="$2"
-if test -d "$imagedir"
+#
+# Check whether this script with called with one parameter (as classic reduce.img.sh)
+#  or with two or three (as saveimage.sh)
+#
+if test -n "$2"
 then
-  :
-else
-  mkdir -p "$imagedir"
-fi
+  builddir="$1"
+  imagedir="$2"
+  if test -d "$imagedir"
+  then
+    :
+  else
+    mkdir -p "$imagedir"
+  fi
 
-if test -z "$3"
-then
-  topdir="$here"
+  if test -z "$3"
+  then
+    topdir="$here"
+  else
+    topdir="$3"
+  fi
+
+  bhere="$builddir"
+
+  logdir=$here/log
+  logfile=reduce.blg
+  #logfile=saveimage.blg
+
 else
-  topdir="$3"
+
+  builddir=.
+  imagedir=../red
+
+  bhere=`pwd`
+
+  logdir=../buildlogs
+  logfile=reduce.img.blg
+
+  echo Create red/reduce.img for architecture $1
+
 fi
 
 cpsldir=`echo $c | sed -e 's+/[^/]*$++'`
@@ -84,11 +114,11 @@ fi
 
 export here fasl psldir reduce
 
-if test -d "$here/log"
+if test -d "$logdir"
 then
   :
 else
-  mkdir -p "$here/log"
+  mkdir -p "$logdir"
 fi
 
 cd "$builddir"
@@ -96,7 +126,8 @@ bhere=`pwd`
 test -x /usr/bin/cygpath && bhere=`cygpath -m $bhere`
 cd psl
 
-./bpsl -td $STORE <<XXX > "$here/log/reduce.blg"
+./bpsl -td $STORE <<XXX > "$logdir/$logfile"
+
 % This re-starts a bare reduce and loads in the modules compiled
 % by the very first step. It then checkpoints a system that can be
 % used to rebuild all other modules.
@@ -189,9 +220,12 @@ cd psl
                                                 (set-load-directories)
                                                 (cond ((null (member "--no-rcfile" (vector2list unixargs!*)))
                                                        (read-init-file "reduce")))
-			                        (cond ((member "--texmacs" (vector2list unixargs!*))
+		              	                (cond ((or (member "--texmacs" (vector2list unixargs!*))
+                                                           (getenv "TEXMACS_REDUCE_PATH"))
 						       (load tmprint))))))
 (bye)
 
 XXX
+
+cd $chere
 
