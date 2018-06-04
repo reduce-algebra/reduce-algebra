@@ -462,22 +462,31 @@ then
 # If I am building under some sort of Cygwin I will adjust the "with-w32"
 # etc options...
 #
-# If c:\cygwin\bin\cygwin1.dll exists as an executable file I will judge
-# that the 32-bit version of cygwin is installed, and I will expect to be
-# able to use it.
-  if test -x /cygdrive/c/cygwin/bin/cygwin1.dll
-  then
-    cyg32_available="yes"
-  else
-    cyg32_available="no"
-  fi
-# Similarly I view c:\cygwin64\bin/cygwin1.dll as a signature of 64-bit cygwin.
-  if test -x /cygdrive/c/cygwin64/bin/cygwin1.dll
-  then
-    cyg64_available="yes"
-  else
-    cyg64_available="no"
-  fi
+
+# The program that I build here scans the Windows registry to look for
+# cygwin installations. When run it generates output "32", "64" or "32 64"
+# depending on which variants it finds.
+
+i686-w64-mingw32-g++ -O3 $srcdir/csl/cslbase/other-cygwin.cpp -static -o ./other-cygwin
+i686-w64-mingw32-strip ./other-cygwin
+CYGAVAIL=`./other-cygwin`
+
+case $CYGAVAIL in
+*32*)
+  cyg32_available="yes"
+  ;;
+*)
+  cyg32_available="no"
+  ;;
+esac
+case $CYGAVAIL in
+*64*)
+  cyg64_available="yes"
+  ;;
+*)
+  cyg64_available="no"
+  ;;
+esac
 # If I am either running under 64-bit cygwin or are on 32-bit cygwin but on
 # a 64-bit operating system I might be able to build 64-bit cygwin stuff.
   if test "$uname_m" = "x86_64" ||
@@ -545,9 +554,9 @@ AC_ARG_WITH(cygwin64,
 if which i686-w64-mingw32-g++ >/dev/null 2>/dev/null &&
    which i686-w64-mingw32-strip >/dev/null 2>/dev/null
 then
-  i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg32.exe
+  i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -static -o cyg32.exe
   i686-w64-mingw32-strip ./cyg32.exe
-  i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg64.exe
+  i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -static -o cyg64.exe
   i686-w64-mingw32-strip ./cyg64.exe
 fi
 LOCALCYG=""
@@ -850,7 +859,7 @@ csl_inplace_cygwin_build ()
      test "target" = "i686-pc-windows"
   then
     AC_MSG_NOTICE([Will build utility to flip cygwin version from 64 to 32 bit])
-    i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg32
+    i686-w64-mingw32-g++ -O3 -DFORCE32 $abssrcdir/csl/cslbase/other-cygwin.cpp -static -o cyg32
     i686-w64-mingw32-strip cyg32
     flip="`pwd`/cyg32.exe "
   fi
@@ -858,7 +867,7 @@ csl_inplace_cygwin_build ()
      test "target" = "x86_64-pc-windows"
   then
     AC_MSG_NOTICE([Will build utility to flip cygwin version from 32 to 64 bit])
-    i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -o cyg64
+    i686-w64-mingw32-g++ -O3 -DFORCE64 $abssrcdir/csl/cslbase/other-cygwin.cpp -static -o cyg64
     i686-w64-mingw32-strip cyg64
     flip="`pwd`/cyg64.exe "
   fi
@@ -1265,6 +1274,8 @@ then
     doconfig="$SHELL $abssrcdir/csl/cslbase/configure -C \
         $ac_configure_args \
         CC=\"$CC\" CXX=\"$CXX\" \
+        CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
         $pass_host --with-wx=\"$with_wx\" $pass_build --without-fox"
   elif test "x$with_fox" != "xno"
   then
@@ -1272,6 +1283,8 @@ then
     doconfig="$SHELL $abssrcdir/csl/cslbase/configure -C \
         $ac_configure_args \
         CC=\"$CC\" CXX=\"$CXX\" \
+        CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
         $pass_host --with-fox=\"$builddir\" --with-fox-pending=yes $pass_build --without-wx"
   else
 # This final version will be without any GUI.
@@ -1280,6 +1293,8 @@ then
         -C \
         $ac_configure_args \
         CC=\"$CC\" CXX=\"$CXX\" \
+        CPPFLAGS=\"$CPPFLAGS\" CFLAGS=\"$CFLAGS\" \
+        CXXFLAGS=\"$CXXFLAGS\" LDFLAGS=\"$LDFLAGS\" LIBS=\"$LIBS\" \
         $pass_host $pass_build --without-fox --without-wx"
   fi
   AC_MSG_NOTICE([$doconfig])

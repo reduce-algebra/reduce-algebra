@@ -94,7 +94,7 @@ then
 # in it is writable so I can put the cyg32 binary there. I always use a 32-bit
 # mingw-style compiler to create the program that can flip between 32 and
 # 64 bit usage.
-  i686-w64-mingw32-g++ -O3 -DFORCE32 $srcdir/other-cygwin.cpp -o ./cyg32
+  i686-w64-mingw32-g++ -O3 -DFORCE32 $srcdir/other-cygwin.cpp -static -o ./cyg32
   i686-w64-mingw32-strip ./cyg32
   AC_MSG_NOTICE([./cyg32 $srcdir/configure $ac_configure_args])
   exec /bin/sh -c "./cyg32 $srcdir/configure $ac_configure_args"
@@ -112,7 +112,7 @@ if test "$with_cygwin64" != "no"
    test "wow" = "yes"
 then
   AC_MSG_NOTICE([Restart to use a 64-bit Cygwin shell])
-  i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -o ./cyg64
+  i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -static -o ./cyg64
   i686-w64-mingw32-strip ./cyg64
   AC_MSG_NOTICE([./cyg64 $srcdir/configure $ac_configure_args])
   exec /bin/sh -c "./cyg64 $srcdir/configure $ac_configure_args"
@@ -1740,11 +1740,11 @@ if test "x$exeext" = "xyes"
 then
   absolute_cyg32=`pwd -P`/cyg32
   AC_SUBST(absolute_cyg32)
-  i686-w64-mingw32-g++ -O3 -DFORCE32 $srcdir/other-cygwin.cpp -o $absolute_cyg32
+  i686-w64-mingw32-g++ -O3 -DFORCE32 $srcdir/other-cygwin.cpp -static -o $absolute_cyg32
   i686-w64-mingw32-strip $absolute_cyg32
   absolute_cyg64=`pwd -P`/cyg64
   AC_SUBST(absolute_cyg64)
-  i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -o $absolute_cyg64
+  i686-w64-mingw32-g++ -O3 -DFORCE64 $srcdir/other-cygwin.cpp -static -o $absolute_cyg64
   i686-w64-mingw32-strip $absolute_cyg64
   CYG32=$absolute_cyg32
   CYG64=$absolute_cyg64
