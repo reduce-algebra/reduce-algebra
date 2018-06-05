@@ -2942,35 +2942,23 @@ static void iput(int c)
 }
 
 #endif
-
-// This class exists just for its destuctor, which will get invoked when
-// sbumain exits in any way. If there were other threads that had been
-// started this asks them to terminate and then does "join" operations so
-// they are tidied up.
-
-class tidy_up_threads
-{
-public:
-    tidy_up_threads()
-    {   kara_ready = kara_done = 0;
-        for (int i=0; i<2; i++)
-            kara_thread[i] = std::thread(kara_worker, i);
+static void start_threads()
+{   kara_ready = kara_done = 0;
+    for (int i=0; i<2; i++)
+    {   kara_thread[i] = std::thread(kara_worker, i);
+// By making detaching the threads I will not need to join them when the
+// program exits. Well it seems that just what happens when threads are left
+// running at program exit (and in fact waiting on a condition variable!)
+// may be "undefined", but my EXPECTATION is that they will be killed for me.
+        kara_thread[i].detach();
     }
-    ~tidy_up_threads()
-    {   {   std::lock_guard<std::mutex> lk(kara_mutex);
-            kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
-        }
-        cv_kara_ready.notify_all();
-        for (int i=0; i<2; i++)
-            kara_thread[i].join();
-    }
-};
+}
 
 static int submain(int argc, const char *argv[])
 {   cslstart(argc, argv, NULL);
 #ifdef SAMPLE_OF_PROCEDURAL_INTERFACE
     strcpy(ibuff, "(print '(a b c d))");
-    tidy_up_threads thread_tidier_object;
+    start_threads();
     execute_lisp_function("oem-supervisor", iget, iput);
     printf("Buffered output is <%s>\n", obuff);
 #else
@@ -2980,9 +2968,7 @@ static int submain(int argc, const char *argv[])
 // I will now always create threads even if on a uniprocessor. If my CPU
 // has fewer than 3 cores (or virtual cores) I will not make any use of
 // the two worker threads, but it is simpler if I always create them.
-// I will use RAII and the tidy-up class here to ask the worker threads
-// to close down (and then to join with them) at the end of a run.
-        tidy_up_threads thread_tidier_object;
+        start_threads();
 #endif
         cslaction();
     }
