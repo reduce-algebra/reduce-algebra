@@ -31,8 +31,11 @@ module linop; % Linear operator package.
 fluid '(!*intstr);
 
 symbolic procedure linear u;
-   for each x in u do
-    if not idp x then typerr(x,'operator) else flag(list x,'linear);
+   <<
+	  for each x in u do
+      	 if not idp x then typerr(x,'operator) else flag(list x,'linear);
+   	  rmsubs()
+   >>;
 
 rlistat '(linear);
 
