@@ -230,7 +230,7 @@ You may experiment with this problem later at your own risk.
 It is often desirable to make an assignment to an indeterminate in a
 previously established expression have a permanent effect, as if the
 assignment were done before forming the expression.  This can be done
-by using the substitute function, SUB.
+by using the substitute function, SUB.;
 
 g1 := f1 + f2;
 h1 := sub(f1=h, g1);
