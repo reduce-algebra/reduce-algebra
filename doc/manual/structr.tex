@@ -278,6 +278,18 @@ expression would print as
 \end{verbatim}
 \sw{DIV} is normally off.
 
+\subsubsection{HORNER Switch}\ttindex{HORNER}
+\hypertarget{switch:HORNER}{}
+\ttindexswitch{HORNER}
+
+This switch causes the system to print polynomial according to Horner's rule.
+line. With \sw{HORNER} on, our expression prints as
+\begin{verbatim}
+            2
+        X*(Y  + Z + 2*(Y + 2)*A*X*Y)/(2*A) .
+\end{verbatim}
+\texttt{HORNER} is normally off.
+
 \subsubsection{LIST Switch}\ttindex{LIST}
 \hypertarget{switch:LIST}{}
 \ttindexswitch{LIST}
