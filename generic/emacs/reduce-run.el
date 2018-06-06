@@ -1,13 +1,13 @@
 ;;; reduce-run.el --- Run the REDUCE computer-algebra system in a buffer
 
-;; Copyright (C) 1998-2001, 2012, 2017 Francis J. Wright
+;; Copyright (C) 1998-2001, 2012, 2017, 2018 Francis J. Wright
 
 ;; Author: Francis J. Wright <https://sourceforge.net/u/fjwright>
 ;; Created: late 1998
 ;; Version: $Id$
 ;; Keywords: languages, processes
 ;; Homepage: http://reduce-algebra.sourceforge.net/reduce-ide
-;; Package-Version: 1.52
+;; Package-Version: 1.54
 ;; Package-Requires: ((reduce-mode "1.5"))
 
 ;; This file is not part of GNU Emacs.
@@ -115,10 +115,13 @@
   (if (eq system-type 'windows-nt)
 	  (list '("CSL" . "c:/Program Files/Reduce/bin/redcsl.bat --nogui")
 			(cons "PSL"
-				  (let* ((dir (file-name-directory
-							   (or load-file-name (buffer-file-name))))
-						 (file (concat dir "reduce-run-redpsl.bat")))
-					(if (file-exists-p file)
+				  (let ((file (or load-file-name (buffer-file-name))))
+					;; file can be nil if REDUCE Run mode is customized
+					;; before it is otherwise used!
+					(if file
+						(setq file (concat (file-name-directory file)
+										   "reduce-run-redpsl.bat")))
+					(if (and file (file-exists-p file))
 						file
 					  "c:/Program Files/Reduce/bin/redpsl.bat"))))
 	'(("CSL" "redcsl --nogui") ("PSL" "redpsl")))
@@ -518,9 +521,12 @@ checked!  Echo STRING and save it in the input history."
   (insert string)
   (comint-send-input))
 
-(defun reduce-send-region (start end)
-  "Switch to a REDUCE process buffer and send it region from START to END.
-Echo a possibly shortened version and save it in the input history."
+(defun reduce-eval-region (start end switch)
+  "Send the current region, from START to END, to a REDUCE process.
+Prefix argument SWITCH means also switch to the REDUCE window.
+Echo a possibly shortened version and save it in the input history.
+Used by all functions that send input to REDUCE."
+  (interactive "r\nP")
   (let ((region (buffer-substring-no-properties start end))
 		(START 0) (lines 1) reg
 		(comint-input-sender-old comint-input-sender))
@@ -538,7 +544,7 @@ Echo a possibly shortened version and save it in the input history."
 				   "\\(.*\n\\)\\(\\(.*\n\\)*.*\\)\n"
 				   "%\\1%   ...\n%" region t)
 				region))
-    (switch-to-reduce t t)
+    (switch-to-reduce t t switch)
     (insert reg)
     ;; Send full region to REDUCE, but replace all newlines (and any
     ;; preceding comments!) with spaces to avoid multiple REDUCE
@@ -554,27 +560,15 @@ Echo a possibly shortened version and save it in the input history."
     (comint-send-input)
     (setq comint-input-sender comint-input-sender-old)))
 
-(defun reduce-eval-region (start end switch)
-  "Send the current region, from START to END, to a REDUCE process.
-Prefix argument SWITCH means also switch to the REDUCE window."
-  (interactive "r\nP")
-  (if switch
-      (reduce-send-region start end)
-    (save-selected-window (reduce-send-region start end))))
-
 (defun reduce-eval-last-statement (switch)
   "Send the previous statement to a REDUCE process.
 Prefix argument SWITCH means also switch to the REDUCE window."
   (interactive "P")
-  (cond ((bobp) (user-error "No previous statement"))
-		(switch (reduce-eval-last-statement-1))
-		(t (save-selected-window (reduce-eval-last-statement-1)))))
-
-(defun reduce-eval-last-statement-1 ()
-  "Send the previous statement to a REDUCE process."
-  (reduce-send-region
-   (save-excursion (reduce-backward-statement 1) (point))
-   (point)))
+  (if (bobp)
+	  (user-error "No previous statement")
+	(reduce-eval-region
+	 (save-excursion (reduce-backward-statement 1) (point))
+	 (point) switch)))
 
 (defun reduce-eval-proc (switch)
   "Send the current procedure definition to the REDUCE process.
@@ -588,11 +582,7 @@ Prefix argument SWITCH means also switch to the REDUCE window."
 	(skip-chars-forward " \t\n")	; skip trailing white space
 	(let ((end (point)))
 	  (reduce-backward-procedure 1)
-	  (if switch
-	      (reduce-send-region (point) end)
-	    (save-selected-window
-	      (reduce-send-region (point) end)))
-	)))))
+	  (reduce-eval-region (point) end switch))))))
 
 (defun reduce-running-buffer-p ()
   "Return non-nil if current buffer is running a REDUCE process."
@@ -611,42 +601,43 @@ which appears to have the form `buffer-name . buffer-object'."
 (defvar switch-to-reduce-default nil
   "Default buffer used by `switch-to-reduce'.")
 
-(defun switch-to-reduce (to-eob &optional no-mark)
+(defun switch-to-reduce (to-eob &optional no-mark switch)
   "Switch to REDUCE process buffer, at end if TO-EOB; if NO-MARK do not save mark.
 With interactive argument, TO-EOB, position cursor at end of buffer.
 If `reduce-run-autostart' is non-nil then automatically start a new REDUCE
 process if necessary."
   (interactive "P")
-  ;; Find the appropriate REDUCE process buffer:
-  (cond
-   ;; If the current buffer is running REDUCE then do nothing:
-   ((reduce-running-buffer-p))
-   ;; Find an *active* REDUCE process buffer (RPB):
-   (reduce-run-buffer-alist
-	(let (buf)
-	  (if (and (null (cdr reduce-run-buffer-alist))
-			   (get-buffer-process
-				(setq buf (cadar reduce-run-buffer-alist)))) ; only 1 RPB
-		  (switch-to-buffer buf)
-		;; Offer a choice of RPBs to switch to:
-		(switch-to-buffer
-		 (setq switch-to-reduce-default
-			   (read-buffer
-				"Switch to REDUCE process buffer: "
-				(and
-				 (get-buffer-process switch-to-reduce-default)
-				 switch-to-reduce-default)
-				t						; require-match
-				'reduce-run-buffer-p))))))
-   ;; Start a new REDUCE process if appropriate:
-   (reduce-run-autostart
-	(run-reduce)
-	;; Wait for REDUCE to start. May need to do this properly!
-	(sit-for 1)))
-  ;; Go to the end of the buffer if required:
-  (when (and to-eob (not (eobp)))
-	(or no-mark (push-mark))
-	(goto-char (point-max))))
+  (let ((set-or-switch-to-buffer (if switch #'switch-to-buffer #'set-buffer)))
+	;; Find the appropriate REDUCE process buffer:
+	(cond
+	 ;; If the current buffer is running REDUCE then do nothing:
+	 ((reduce-running-buffer-p))
+	 ;; Find an *active* REDUCE process buffer (RPB):
+	 (reduce-run-buffer-alist
+	  (let (buf)
+		(if (and (null (cdr reduce-run-buffer-alist))
+				 (get-buffer-process
+				  (setq buf (cadar reduce-run-buffer-alist)))) ; only 1 RPB
+			(funcall set-or-switch-to-buffer buf)
+		  ;; Offer a choice of RPBs to switch to:
+		  (funcall set-or-switch-to-buffer
+				   (setq switch-to-reduce-default
+						 (read-buffer
+						  "Switch to REDUCE process buffer: "
+						  (and
+						   (get-buffer-process switch-to-reduce-default)
+						   switch-to-reduce-default)
+						  t						; require-match
+						  'reduce-run-buffer-p))))))
+	 ;; Start a new REDUCE process if appropriate:
+	 (reduce-run-autostart
+	  (run-reduce)
+	  ;; Wait for REDUCE to start. May need to do this properly!
+	  (sit-for 1)))
+	;; Go to the end of the buffer if required:
+	(when (and to-eob (not (eobp)))
+	  (or no-mark (push-mark))
+	  (goto-char (point-max)))))
 
 (defun re-run-reduce ()
   "Re-run REDUCE in the current buffer, killing it first if necessary."
@@ -701,7 +692,7 @@ otherwise assume the current buffer is a REDUCE process buffer.
 The user always chooses interactively whether to echo file input."
   (interactive (reduce-run-get-source "Input REDUCE file: "))
   (when (called-interactively-p 'any)
-	(switch-to-reduce t t)
+	(switch-to-reduce t t t)
 	(sit-for 1))						; Allow REDUCE time to start
   (reduce-send-string
    (format "in \"%s\"%c" file-name
@@ -729,7 +720,7 @@ The user chooses whether to echo file input."
   (let ((fasl-name (file-name-sans-extension (cdr reduce-prev-dir/file))))
 	(setq fasl-name (read-minibuffer "FASL name: " fasl-name)
 		  reduce-prev-package fasl-name)
-	(switch-to-reduce t t)
+	(switch-to-reduce t t t)
     (reduce-send-string (format "faslout %s;" fasl-name))
     (reduce-wait-for-prompt)
     (reduce-input-file file-name)
@@ -807,7 +798,7 @@ This directory is used for completion by `reduce-load-package'."
        default)
       )))
   (setq reduce-prev-package package)
-  (switch-to-reduce t t)
+  (switch-to-reduce t t t)
   (reduce-send-string (format "load_package %s;" package)))
 
 
