@@ -10,7 +10,8 @@ The first three operators are described here; \texttt{LOAD} and
 \section{IN Command}\ttindextype{IN}{command}
 \hypertarget{command:IN}{}
 \hypertarget{switch:ECHO}{}
-\hypertarget{reserved:_LINE_}{}
+\hypertarget{reserved:__FILE__}{}
+\hypertarget{reserved:__LINE__}{}
 This command takes a list of file names as argument and directs the system
 to input\index{Input} each file (that should contain {\REDUCE} statements
 and commands) into the system.  File names can either be an identifier or
@@ -36,9 +37,12 @@ the user will have if there are, by mistake, more \texttt{BEGIN}s than
 which may improve system efficiency.  If \texttt{END} is omitted, an error
 message \texttt{"End-of-file read"} will occur.
 
-While a file is being loaded, the special identifier 
-\texttt{\_LINE\_}\ttindextype{\_LINE\_}{(special identifier)}
+While a file is being loaded, the special identifier
+\texttt{!\_\_LINE\_\_}\ttindextype{"!\_\_LINE\_\_}{(special identifier)}
 is replaced by the number of the current line in the file currently
+being read.
+Similarly, \texttt{!\_\_FILE\_\_}\ttindextype{"!\_\_FILE\_\_}{(special identifier)}
+is replaced by the name of the file currently
 being read.
 
 \section{OUT Command}\ttindextype{OUT}{command}

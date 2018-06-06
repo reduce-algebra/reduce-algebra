@@ -384,8 +384,9 @@ expressions and particularly their application  on states
 (see section 3.4.3). However it may be useful to get rid of these
 dummy indices in order to enhance the readability of the
 system's final output.
-For this purpose the switch \f{CONTRACT} \ttindex{CONTRACT} has to
-be turned on (\f{CONTRACT} is normally set to \f{OFF}).
+\hypertarget{switch:CONTRACT}{}%
+For this purpose the switch \sw{CONTRACT} \ttindex{CONTRACT} has to
+be turned on (\sw{CONTRACT} is normally set to \f{OFF}).
 The system in this case contracts over dummy indices reinserting the
 \f{DOT} operator and reassembling the expanded powers.  However due to
 the predefined operator ordering the system may not remove all the
@@ -432,10 +433,11 @@ A*B;
 \end{verbatim}
 so that the user may introduce the commutation relation later on.
 
+\hypertarget{switch:ANTICOM}{}
 The user may want to force the system to look for
 \underline{anticommutators} only; for this purpose a switch \sw{ANTICOM}
 \ttindexswitch[PHYSOP]{ANTICOM}
-is defined which has to be turned on ( \f{ANTICOM} is normally set to
+is defined which has to be turned on (\sw{ANTICOM} is normally set to
 \f{OFF}). In this case, the above example is replaced by: 
 
 \begin{verbatim}

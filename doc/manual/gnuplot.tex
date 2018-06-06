@@ -316,6 +316,8 @@ from the {\Gnuplot} text window - it offers an exit function.
 
 
 \subsection{Saving {\Gnuplot} command sequences}
+\hypertarget{switch:TRPLOT}{}
+\hypertarget{switch:PLOTKEEP}{}
 \ttindexswitch[GNUPLOT]{TRPLOT}\ttindexswitch{PLOTKEEP}{GNUPLOT}
 \index{Tracing!GNUPLOT package}
 If you want to use the internal {\Gnuplot} command sequence more than once
@@ -325,7 +327,7 @@ on trplot, plotkeep;
 \end{verbatim}
 \texttt{trplot} causes all {\Gnuplot} commands to be written additionally to the
 actual {\REDUCE} output.  Normally the data files are erased after calling
-{\Gnuplot}, however with \texttt{plotkeep} on the files are not erased.
+{\Gnuplot}, however with \sw{plotkeep} on the files are not erased.
 
 
 \subsection{Direct Call of {\Gnuplot}}
