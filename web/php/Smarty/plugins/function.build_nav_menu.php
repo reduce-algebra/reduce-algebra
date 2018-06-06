@@ -31,10 +31,11 @@ function smarty_function_build_nav_menu($params, $smarty)
 
     menuItem('index.php', 'Home', 'The REDUCE Computer Algebra System');
     menuItem('features.php', 'Features', 'REDUCE features and design characteristics');
-    menuItem('obtaining.php', 'Obtaining REDUCE', 'Guidance on obtaining REDUCE from SourceForge');
+    menuItem('obtaining.php', 'Obtaining REDUCE', 'Guidance on downloading REDUCE from SourceForge');
     menuItem('documentation.php', 'Documentation', 'User guides for REDUCE, its packages and Lisp systems');
     menuItem('books.php', 'Books', 'Books about REDUCE');
-    menuItem('support.php', 'Support', 'Support available for REDUCE');
+    menuItem('support.php', 'Support', 'Answers to questions about using REDUCE');
+    menuItem('tutorials.php', 'Tutorials', 'Simple examples of using REDUCE');
     menuItem('packages.php', 'External Packages', 'External packages that use REDUCE');
     menuItem('helpwanted.php', 'Help Wanted!', 'Join the REDUCE developer community!');
     menuItem('bibliography.php', 'Bibliography', 'Publications that reference REDUCE');

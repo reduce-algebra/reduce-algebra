@@ -5,15 +5,6 @@ $smarty = new Smarty_REDUCE();
 
 $smarty->assign('header_title', 'Support');
 
-$smarty->assign('head_extras', <<< END_OF_HEAD_EXTRAS
-<style type="text/css">
- pre {
-	 margin: 0
- }
-</style>
-END_OF_HEAD_EXTRAS
-);
-
 $smarty->assign('Q_A', array(
 
 	array(
@@ -43,7 +34,7 @@ $smarty->assign('Q_A', array(
 		'A' => 'REDUCE runs on <a href="documentation.php">Standard Lisp</a> and there are two versions of Standard Lisp that were developed primarily to support REDUCE, namely <a href="versions.php">PSL and CSL</a> (in that order chronologically). We only release distributions of REDUCE based on these two Lisps, although REDUCE can be implemented on other versions of Standard Lisp (and there is some experimental code to do this in the <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/">repository</a>).'),
 
 	array(
-		'Q' => 'What user interfaces does REDUCE provide?',
+		'Q' => '<span id="interfaces">What user interfaces does REDUCE provide?</span>',
 		'A' => 'PSL REDUCE itself provides only a command-line interface (CLI). CSL REDUCE provides a graphical user interface (GUI) by default, but it provides a command-line interface if started with the <code>--nogui</code> option. <a href="https://www.gnu.org/software/emacs/emacs.html">GNU Emacs</a> provides a GUI for PSL and CSL REDUCE via the <a href="reduce-ide/">REDUCE IDE</a> package and <a href="http://www.texmacs.org/">GNU TeXmacs</a> provides a GUI for PSL and CSL REDUCE via a <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/generic/texmacs/">plugin for running REDUCE</a>. There is code in the repository for two other packages, <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/generic/redfront">redfront</a> and <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/psl/xr/">XR</a>, that provide GUIs for PSL, but neither is currently distributed as a pre-built binary and XR is somewhat out of date.'),
 
 	array(
@@ -52,26 +43,7 @@ $smarty->assign('Q_A', array(
 
 	array(
 		'Q' => 'How can I learn how to use REDUCE?',
-		'A' => 'The <strong>REDUCE User&#39;s Manual</strong> <small>[ <a href="manual/manual.html">HTML</a> | <a href="manual/manual.pdf">PDF</a> ]</small> is the obvious starting point and there are a number of <a href="books.php">published books</a> covering various aspects of REDUCE. You may like to work through the <a href="javascript:void $(\'#lessons\').parent().parent().collapse(\'show\');">REDUCE interactive lessons</a>. Each of the <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/packages/">REDUCE packages</a> has one or more associated test files (with extension &quot;<code>.tst</code>&quot;) and a corresponding log file containing the output from running the test (with extension &quot;<code>.rlg</code>&quot;). These files, particularly the log files, provide instructive examples of how to use REDUCE, although they were not written as instructional material and are somewhat cryptic, assuming the reader is familiar with the problems addressed. The <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/xmpl">xmpl</a> directory provides a convenient collection of test and log files from many of the packages, although they may be out of date.'),
-
-	array(
-		'Q' => 'How can I run the REDUCE interactive lessons?',
-		'A' => '<p id="lessons">First, you need to download them, which you can do in any of the following ways:</p>
-<ul>
-	<li>Create a directory on your computer called <code>lessons</code> (although you can call it whatever you want), then download <a href="tutorials/lessons.zip">lessons.zip</a> to your <code>lessons</code> directory and unzip it.</li>
-	<li>If you have the <a href="https://en.wikipedia.org/wiki/Apache_Subversion">subversion</a> program installed then select a directory on your computer to contain the <code>lessons</code> directory, open a command prompt window in that directory (if necessary) and execute the shell command
-		<pre>svn checkout svn://svn.code.sf.net/p/reduce-algebra/code/trunk/packages/lessons</pre>
-You can also download individual lesson files this way.
-	</li>
-	<li id="read-lesson">To download or read just one of the lessons, go to the <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/packages/lessons/">lessons directory in the SourceForge code repository</a> and click on the lesson file (e.g. <code>less1.red</code>). To download it, click on the link labelled &quot;Download this file&quot; that appears above the file listing, download the file to your computer, optionally create a directory on your computer called <code>lessons</code> (although you can call it whatever you want) and save the file there.</li>
-</ul>
-<p>The lesson files are intended to be perused in REDUCE (although they are plain text files). They consist of long comments interspersed with REDUCE input that is intended to be executed, and they automatically pause every so often so that you can read the next section. But you may need to scroll back to the beginning of the file or to the last pause to see the beginning of the current section. If you want to read a lesson outside of REDUCE then it is easy to do so in your web browser, as described in the <a href="#read-lesson">last bullet point above</a>.</p>
-<ul>
-	<li>One way to run the lessons in CSL REDUCE is to start it normally, click on the <code>File / Read...</code> menu item, find your <code>lessons</code> directory in the file selector and then select a lesson file, such as <code>less1.red</code>.</li>
-	<li>One way to run the lessons in PSL REDUCE is to start it normally and then execute a command of the following form (customized as appropriate for your computer):
-		<pre>in &quot;path/to/lessons/less1.red&quot;;</pre></li>
-</ul>
-<p>It is advisable to run each lesson in a new REDUCE sessions, otherwise the lessons may interfere with each other.</p>'),
+		'A' => 'The <strong>REDUCE User&#39;s Manual</strong> <small>[ <a href="manual/manual.html">HTML</a> | <a href="manual/manual.pdf">PDF</a> ]</small> is the obvious starting point and there are a number of <a href="books.php">published books</a> covering various aspects of REDUCE. You may like to work through the <a href="tutorials.php#lessons">REDUCE interactive lessons</a>. Each of the <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/packages/">REDUCE packages</a> has one or more associated test files (with extension &quot;<code>.tst</code>&quot;) and a corresponding log file containing the output from running the test (with extension &quot;<code>.rlg</code>&quot;). These files, particularly the log files, provide instructive examples of how to use REDUCE, although they were not written as instructional material and are somewhat cryptic, assuming the reader is familiar with the problems addressed. The <a href="https://sourceforge.net/p/reduce-algebra/code/HEAD/tree/trunk/xmpl">xmpl</a> directory provides a convenient collection of test and log files from many of the packages, although they may be out of date.'),
 
 	array(
 		'Q' => 'How can I learn how REDUCE works and how to modify or extend it?',
