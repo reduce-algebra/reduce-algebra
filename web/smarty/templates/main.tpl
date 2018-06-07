@@ -12,9 +12,7 @@
 		<link rel="icon" type="image/png" href="images/icon.png" />
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
 			  integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous" />
-		{block name=stylesheet}
-			<link rel="stylesheet" href="StyleSheet.css" />
-		{/block}
+		<link rel="stylesheet" href="/StyleSheet.css" />
 		{block name=style}
 			{$head_extras|default:''}
 		{/block}

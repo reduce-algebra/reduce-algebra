@@ -57,6 +57,6 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 END_OF_MAIN_CONTENT
 );
 
-$smarty->display('subdir.tpl');
+$smarty->display('secondary.tpl');
 
 ?>
