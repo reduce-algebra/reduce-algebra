@@ -117,30 +117,27 @@ module jordsymb; % Computation of the Jordan normal form of a matrix.           
 switch looking_good;
 
 
-switch balanced_was_on;
 symbolic procedure jordansymbolic(a);
   begin
     scalar aa,p,pinv,tmp,ans_mat,ans_list,full_coeff_list,rule_list,
-           output,input_mode;
+           output,input_mode,balanced_mod,combineexpt;
+
+    balanced_mod := !*balanced_mod;
+    combineexpt := !*combineexpt;
 
     matrix_input_test(a);
     if (car size_of_matrix(a)) neq (cadr size_of_matrix(a))
      then rederr "ERROR: expecting a square matrix. ";
 
-    if !*balanced_mod then
-    <<
-      off balanced_mod;
-      on balanced_was_on;
-    >>;
+    if !*balanced_mod then off1 'balanced_mod;
 
-    input_mode := get(dmode!*,'dname);
+    input_mode := dmode!* and get(dmode!*,'dname);
     %
     % If modular or arnum are on then we keep them on else we want
     % rational on.
     %
-    if input_mode neq 'modular and input_mode neq 'arnum and
-     input_mode neq 'rational then on rational;
-    on combineexpt;
+    if not(input_mode memq '(modular arnum rational)) then on1 'rational;
+    on1 'combineexpt;
 
     tmp := nest_input(a);
     aa := car tmp;
@@ -174,15 +171,10 @@ symbolic procedure jordansymbolic(a);
     %
     % Return to original mode.
     %
-    if input_mode neq 'modular and input_mode neq 'arnum and
-     input_mode neq 'rational then
-       <<
-         % onoff('nil,t) doesn't work so ...
-         if input_mode = 'nil then off rational
-         else onoff(input_mode,t);
-       >>;
-    if !*balanced_was_on then on balanced_mod;
-    off combineexpt;
+    if null input_mode then off1 'rational
+     else if not(input_mode memq '(modular arnum rational)) then on1 input_mode;
+    if balanced_mod then on1 'balanced_mod;
+    if null combineexpt then off1 'combineexpt;
 
     output := {'list,ans_mat,ans_list,p,pinv};
     if !*looking_good then output := looking_good(output);
