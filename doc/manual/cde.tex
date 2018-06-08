@@ -256,10 +256,11 @@ When an error message about \texttt{letop} is issued the script
 reruns the computation with a new value of \texttt{total\_order} one unity
 higher than the previous one.
 
+\hypertarget{switch:CHECKORD}{}
 The function that checks an expression for the presence of \texttt{letop} is
 \texttt{check\_letop}.  If you wish to switch off this kind of check in order
 to increase the speed, the switch
-\texttt{checkord}\ttindexswitch[CDE]{CHECKORD} must be set off:
+\sw{checkord}\ttindexswitch[CDE]{CHECKORD} must be set off:
 \begin{verbatim}
 off checkord;
 \end{verbatim}

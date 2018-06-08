@@ -2,8 +2,8 @@
 \subsection{Loading and Using}
 The package is loaded using \texttt{load\_package} or
 \texttt{load!-package} in algebraic or symbolic mode, resp. There is a
-central switch \texttt{assertcheck}, which is off by default. With
-\texttt{assertcheck} off, all type definitions and assertions described
+central switch \sw{assert}, which is off by default. With
+\sw{assert} off, all type definitions and assertions described
 in the sequel are ignored and have the status of comments. For
 verification of the assertions it most be turned on (dynamically) before
 the first relevant type definition or assertion.
@@ -63,10 +63,10 @@ A natural order for adding type definitions and assertions to the source
 code files would be to have all typedefs at the beginning of a module
 and assertions immediately after the respective functions.
 Fig.~\ref{FIG:assMod} illustrates this. Note that for dynamic checking
-of the assertions the switch \texttt{assertcheck} has to be on during
+of the assertions the switch \sw{assert} has to be on during
 the translation of the module; i.e., either when reading it with
 \texttt{in} or during compilation. For compilation this can be achieved
-by commenting in the \texttt{on assertcheck} at the beginning or by
+by commenting in the \texttt{on assert} at the beginning or by
 parameterizing the Lisp-specific compilation scripts in a suitable way.
 
 An alternative option is to have type definitions and assertions for
@@ -79,7 +79,7 @@ module sizetools;
 
 load!-package 'assert;
 
-% on assertcheck;
+% on assert;
 
 typedef any;
 typedef number checked by number;
@@ -106,7 +106,7 @@ end;  % of file
 load_package sizetools;
 load_package assert;
 
-on assertcheck;
+on assert;
 
 lisp <<
    typedef any;
@@ -126,10 +126,10 @@ end;  % of file
 \end{figure}
 
 \subsection{Dynamic Checking of Assertions}
-Recall that with the switch \texttt{assertcheck} off at translation
+Recall that with the switch \sw{assert} off at translation
 time, all type definitions and assertions have the status of comments.
 We are now going to discuss how these statements are processed with
-\texttt{assertcheck} on.
+\sw{assert} on.
 
 \texttt{typedef} marks the type identifier as a valid type and possibly
 associates the given typechecking function with it. Technically, the
@@ -159,7 +159,7 @@ Fig.~\ref{FIG:sample} shows an interactive sample session.
 
 2* load_package assert$
 
-3* on assertcheck$
+3* on assert$
 
 4* typedef sq checked by sqp;
 sqp
@@ -205,15 +205,22 @@ sum                    4                       2                       4
 \end{figure}
 
 \subsection{Switches}
-As discussed above, the switch \texttt{assertcheck} controls at
+\ttindextype{switch}{ASSERT}
+\ttindextype{switch}{ASSERTBREAK}
+\ttindextype{switch}{ASSERTSTATISTICS}
+\hypertarget{switch:ASSERT}{}
+\hypertarget{switch:ASSERTBREAK}{}
+\hypertarget{switch:ASSERTSTATISTICS}{}
+
+As discussed above, the switch \sw{assert} controls at
 translation time whether or not assertions are dynamically checked.
 
-There is a switch \texttt{assertbreak}, which is off by default. When
+There is a switch \sw{assertbreak}, which is off by default. When
 on, there are not only warnings issued for assertion violations but the
 computations is interrupted with a corresponding error.
 
 The statistical counting of procedure calls and assertion violations is
-toggled by the switch \texttt{assertstatistics}, which is on by default.
+toggled by the switch \sw{assertstatistics}, which is on by default.
 
 \subsection{Efficiency}
 The encapsulating functions introduced with assertions are automatically

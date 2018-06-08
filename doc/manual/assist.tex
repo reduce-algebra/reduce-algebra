@@ -153,7 +153,8 @@ COMBINEEXPT, COMPLEX, REVPRI, DISTRIBUTE.}
 The selection is somewhat arbitrary but it may be changed in a trivial
 fashion by the user.
 
-The new switch {\tt DISTRIBUTE} allows one to put polynomials in a
+\hypertarget{switch:DISTRIBUTE}{}
+The new switch \sw{DISTRIBUTE} allows one to put polynomials in a
 distributed form (see the description below of
 the new functions for manipulating  them.~).
 
@@ -657,7 +658,7 @@ generated numbers.
 \f{MKRANDTABL} generates a table of random numbers. This table is either
 a one or two dimensional array. The base of random numbers may be either
 an integer or a decimal number. In this last case, to work properly,
-the switch \f{rounded} must be ON. It has three arguments. The first is
+the switch \sw{rounded} must be ON. It has three arguments. The first is
 either a one integer or a two integer list. The second is the base chosen
 to generate the random numbers. The third is the chosen name for the
 generated array. In the example below a two-dimensional table of
@@ -1155,12 +1156,12 @@ much too involved in many applications and the necessity to load the package
 makes it interesting
 to construct an elementary facility to handle the distributive representation 
 of polynomials. A new switch has been created for that purpose.
-It is called {\tt DISTRIBUTE} and a new function \f{DISTRIBUTE} puts a
+It is called \sw{DISTRIBUTE} and a new function \f{DISTRIBUTE} puts a
 polynomial in distributive form. With that switch set to {\bf on},
 \f{LEADTERM} gives {\bf true} monoms.
 
 \f{MONOM} transforms a polynomial into a list of monoms. It works
-{\em whatever the position of the switch} {\tt DISTRIBUTE}.
+\emph{whatever the position of the switch} \sw{DISTRIBUTE}.
 
 \f{SPLITTERMS} is analoguous to \f{MONOM} except that it gives
 a list of two lists. The first sublist contains the positive terms
