@@ -614,6 +614,7 @@ void kara_worker(int my_id)
         {   std::unique_lock<std::mutex> lk(kara_mutex);
             while ((kara_ready & (1<<my_id)) == 0)
                 cv_kara_ready.wait(lk);
+            if ((kara_ready & KARA_QUIT) != 0) return;
             kara_ready &= ~(1<<my_id);
         }
 // Do the work.

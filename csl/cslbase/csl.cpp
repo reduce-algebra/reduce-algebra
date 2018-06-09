@@ -2942,6 +2942,14 @@ static void iput(int c)
 }
 
 #endif
+static void quit_kara_threads()
+{   {   std::lock_guard<std::mutex> lk(kara_mutex);
+        kara_ready = KARA_0 | KARA_1 | KARA_QUIT;
+        kara_done = 0;
+    }
+    cv_kara_ready.notify_all();
+}
+
 static void start_threads()
 {   kara_ready = kara_done = 0;
     for (int i=0; i<2; i++)
@@ -2952,6 +2960,7 @@ static void start_threads()
 // may be "undefined", but my EXPECTATION is that they will be killed for me.
         kara_thread[i].detach();
     }
+    atexit(quit_kara_threads);
 }
 
 static int submain(int argc, const char *argv[])
