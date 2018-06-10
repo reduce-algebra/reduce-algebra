@@ -8,11 +8,11 @@ $smarty->assign('page_title', 'Downloading REDUCE from SourceForge');
 $smarty->assign('header_title', 'Downloading REDUCE from SourceForge');
 
 $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
-<p>The SourceForge repository contains several versions of REDUCE, including the complete sources for both REDUCE and the underlying CSL Lisp system. The best place to start downloading is the REDUCE <a href="http://www.sourceforge.net/projects/reduce-algebra/">project page</a> at SourceForge.</p>
-<h2>Compiled Versions</h2>
-<p>There are several compiled versions available for download. To obtain one of these, click on the white Download link at the right of the page near the top, and then click on reduce-algebra under &quot;Package.&quot; You will then see several instances of the available binaries. Please use the latest version if that meets your needs. Otherwise, click on the other links, and a variety of versions will be displayed. Hopefully one of these will meet your needs. The relevant files are there in zip format. To use them, create a directory where you wish to store them (e.g., &quot;reduce&quot;), connect to this directory, and then unzip the contents of the downloaded file. Among the files produced should be a REDUCE executable.</p>
-<h2>Complete Sources and Supporting Files</h2>
-<p>If none of the above versions meets your needs, you will need to download the complete sources. For this you need the &quot;subversion&quot; program svn. If you don't have this, you will need to obtain it from somewhere. Once that is available, you can say</p>
+	<p>The SourceForge repository contains several versions of REDUCE, including the complete sources for both REDUCE and the underlying CSL Lisp system. The best place to start downloading is the REDUCE <a href="htts://sourceforge.net/p/reduce-algebra/">project page</a> at SourceForge.</p>
+	<h2>Compiled Versions</h2>
+	<p>There are several compiled versions available for download. To obtain one of these, click on the white Download link at the right of the page near the top, and then click on reduce-algebra under &quot;Package.&quot; You will then see several instances of the available binaries. Please use the latest version if that meets your needs. Otherwise, click on the other links, and a variety of versions will be displayed. Hopefully one of these will meet your needs. The relevant files are there in zip format. To use them, create a directory where you wish to store them (e.g., &quot;reduce&quot;), connect to this directory, and then unzip the contents of the downloaded file. Among the files produced should be a REDUCE executable.</p>
+	<h2>Complete Sources and Supporting Files</h2>
+	<p>If none of the above versions meets your needs, you will need to download the complete sources. For this you need the &quot;subversion&quot; program svn. If you don't have this, you will need to obtain it from somewhere. Once that is available, you can say</p>
 <p><code>svn co https://svn.code.sf.net/p/reduce-algebra/code/trunk/</code></p>
 <p>This will download all relevant files to a sub-directory &quot;reduce-algebra.&quot;</p>
 <p>To create the necessary executables, cd to the reduce-algebra/trunk directory, and then type:</p>

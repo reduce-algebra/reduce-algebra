@@ -9,7 +9,7 @@
 				{$page_title|default: "REDUCE $header_title"}
 			</title>
 		{/block}
-		<link rel="icon" type="image/png" href="images/icon.png" />
+		<link rel="icon" type="image/png" href="/images/icon.png" />
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
 			  integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous" />
 		<link rel="stylesheet" href="/StyleSheet.css" />
@@ -20,7 +20,7 @@
 	<body>
 		<div class="container-fluid">
 			{block name=header}
-				<header><img src="images/icon.png" class="d-none d-md-block" />
+				<header><img src="/images/icon.png" class="d-none d-md-block" />
 					{$header_title}
 				</header>
 			{/block}

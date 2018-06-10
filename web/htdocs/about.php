@@ -23,7 +23,7 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 </p>
 <blockquote>In 1963, I began work on a software system that would in time evolve into REDUCE. By 1968, copies had been made available to various researchers throughout the world. Forty years later, there is still an active community of users. In order to encourage further development, I have decided to make the software freely available under a <a href="license.php">modified BSD license</a>.</blockquote>
 <p>The Open Source version of the REDUCE algebra system was registered on SourceForge.net on Dec 18, 2008.</p>
-<p><a href="http://reduce-algebra.com/reduce40.pdf">REDUCE: The First Forty Years</a> provides a more complete history.</p>
+<p><a href="/reduce40.pdf">REDUCE: The First Forty Years</a> provides a more complete history.</p>
 <p>The documentation for <a href="documentation38.php">REDUCE 3.8</a>, the last commercial version of REDUCE released in 2004, is also still available.</p>
 <h2 id="contributors">Contributors</h2>
 <p>REDUCE <a>traces its origins to work begun by Anthony Hearn in 1963</a> and continued ever since. The first distribution occurred in 1968. Since that time, over a hundred people have been involved in various ways in its development.</p>
