@@ -520,19 +520,6 @@ case $host in
   ;;
 esac
 
-# I need a C++ compiler that is use to compile small utility programs.
-# Im some cases I can not use $CXX because that is a cross-compiler that
-# generates binaries that I can not run. I used to just use "g++" and hope,
-# but here I will see which of g++, clang++, c++ and CC is at least present.
-# I will then assume that that is a viable compiler to use.
-
-if test "x$windows_build" = "xyes"
-then
-  LOCALCXX="i686-w64-mingw32-g++"
-else
-  AC_PATH_PROGS(LOCALCXX, [g++ clang++ c++ CC], g++, [])
-fi
-
 # In some cases there may be explicitly GNU versions of various utilities,
 # and I will perhaps use them if I find them.
 
@@ -554,6 +541,29 @@ then
 fi
 
 AC_CHECK_PROGS(VALGRIND,[valgrind],[x])
+
+# I need a C++ compiler that is use to compile small utility programs.
+# Im some cases I can not use $CXX because that is a cross-compiler that
+# generates binaries that I can not run. I used to just use "g++" and hope,
+# but here I will see which of g++, clang++, c++ and CC is at least present.
+# I will then assume that that is a viable compiler to use.
+
+case $host in
+*-*-cygwin* | *-*-mingw*)
+# I use the native windows compilers here so that my scripts can run hosted
+# on either 32 or 64-bit cygwin equally happily - the x686-w64-mingw toolchain
+# should work on any varient of a Windows platform.
+  LOCALCXX="i686-w64-mingw32-g++ -static"
+  LOCALSTRIP="i686-w64-mingw32-strip"
+  ;;
+*)
+  AC_PATH_PROGS(LOCALCXX, [g++ clang++ c++ CC], g++, [])
+  LOCALSTRIP="$STRIP"
+  ;;
+esac
+
+AC_SUBST(LOCALCXX)
+AC_SUBST(LOCALSTRIP)
 
 AC_ARG_WITH(fox-pending,
   AC_HELP_STRING([--with-fox-pending],

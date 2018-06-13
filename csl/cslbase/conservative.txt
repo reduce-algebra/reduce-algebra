@@ -5,7 +5,7 @@
 This note is to help me while I design and implement one, and comments on
 changes from a previous world. This is a fresh version of these notes and
 is being started in April 2016. I had done some redesign in October 2017, but
-the latest changes are from May 2018.
+the latest changes are from June 2018.
 
 The work discussed here is to arrange that CSL uses a mostly-copying
 conservative collector. The details are substantially tuned to the expected
@@ -14,130 +14,165 @@ single threaded the intent is to allow for a threaded system in the future.
 Following CST project work by Jamie Davenport I now intend to try for a
 design that is conservative, generational and somewhat threaded.
 
-Well the generational version will rely on having some form on write barrier,
-and I propose to implement that my temporarily marking heap pages as read-only.
-I can then trap write accesses and in the trap handler record the write (in a
-hash table) and reset memory permissions to read-write. On Linux this is
-use of mprotect and sigaction. On some platforms or configurations this
-may not be possible (for instance by reference to the Boehm conservative
-collector I am concerned that this strategy may not be compatible with
-a threaded version of BSD-family systems), and in such cases I will not be
-able provide a generational collector. 
+Memory is used in pages (of size CSL_PAGE_SIZE). Each page will either hold
+CONS cells (and other items of size 2*CELL) or larger items (typically
+symbol headers and vectors). Given an arbitrary bit-pattern it will be
+possible to tell if it refers to an address within an object in one of these
+pages.
 
-I will comment on the generational and threaded aspects first. Each thread
-will have three dedicated pages of memory, which will be used for nursery
-(a page) and school (two pages) generations. Beyond that all pages will be
-shared across all threads and so allocation in them will require the use of
-mutexes.
-Consing is first done in the nursery page. When that becomes full the whole
-world will be stopped (sorry about that) and every nursery page that is at
-least 75% full will be evacuated to its corresponding school page. I do that
-for all reasonably full pages to try to avoid triggering collections from
-different threads in close succession. The school region will eventually
-become full part way through doing the evacuation of a nursery page. When
-that happens I will evacuate the older of the two school pages into the
-general shared heap. The motivation there is that to be a candidate for
-migration to the general heap some data must have survived all the time it
-took to fill up the other school page, so maybe it is not VERY new.
+With each page I will have a bitmap that is used to record a concept "pinned"
+that can be associated with any object in the page. An item will be marked
+pinned if an ambiguous pointer refers to it, and hence it may not be moved.
+I will have an array of size half a page for each thread and will bse that
+to collect a list of all the pinned items in a single page of memory that
+I am evacuating. The size here is only half a page because the smallest items
+ever allocated within the heap are 2 pointers large. I rather expect that the
+full capacity of this will never be approached.
 
-A big issue for a generational collector is references from old pages into
-new ones. I propose a scheme that will mark from more places that would
-really be ideal, but at least not from everywhere. At the end of each garbage
-collection all heap memory will be marked as read-only, but a signal handler
-will catch write accesses and tag a segment of memory that is written to in a
-map and reset it is read-write. Garbage collection of nursery and school pages
-will treat all static roots as roots (obviously), all the stack as (ambiguous)
-roots, and the contents of any part of the heap that has been written to as
-containing roots. Because the only bits of memory that I handle as "updated"
-live within the heap I can rely on all data within them being properly
-formatted so that I can identify references in a precise manner. What I do
-need to do is to be able to tell when one of those pointers refers into
-a nursery or school page. However I think I can not afford to reset "dirty"
-bits on pages until I do a global garbage collection - if I copied the
-nuresery page for just one or just some of the threads and then reset all
-the bits to make memory as updated I would lost information about updates
-relevant to other threads. 
+Pages of memory are classified as
+  Current (C). These are the pages within which the mutator allocates
+     new material. There may be several such if allocation of CONS cells
+     and vectors use different dedicated current pages and in a multi-thread
+     world each thread would have its own current page or pages.
+  Recent (R). When a current page becomes full it is replaced with a new
+     empty page, and the full page that had been current is re-badged as
+     "recent". When that happens the previous recent page will have its
+     content evacuated - that process representing a minor garbage collection.
+  Stable (S). When live material is moved out of an "old recent" page it is
+     copied into the stable region. This will come to be the bulk of the
+     active heap and uses as many pages as are called for. At any one time
+     one of these pages will be the "stable fringe" where new material is
+     added. In a multi-thread world there is just a single pool of stable
+     heap.
+  Free (F). Pages that are not in use are in this group. When a minor garbage
+     collection places in a fresh stable page such that |S| > |F| then a full
+     garbage collection is triggered. At that stage R is empty. The stable
+     fringe page is then deemed part of what will become the new heap, and
+     all material apart from that is copied into that and subsequent pages
+     taken from free. The vacated pages are then re-labelled to form the
+     new free region. While doing this the current page does not have
+     its content relocated.
 
-When I am given a value that might be a pointer I need to be able to
-tell if it is a pointer to an item that could be alive. This issue is
-rendered just a little more delicate because compiler-generated temporary
-values might have had Lisp tag-bits stripped or may point into the
-middle of objects, but must neverthless be treated as referring to the
-object.
+Within the heap I can maintain "dirty bits" that mark parts of pages where
+data has been updated. I will arrange that as the start of a minor garbage
+collection I will have two maps of dirty memory, one corresponding to the
+time period while R was being filled and a second to the time that C was
+filled. Clearly at the end of a minor collection the old C becomes the new
+R and a fresh C is allocated, so the previous C-map becomes the new R-map
+and the new C-map starts off fresh and clean. These maps will not be needed
+or used during a major collection.
 
-A good situation is that I will assume (or require!) that all global
-state is precise (ie holds properly tagged Lisp items), and so the only
-place where ambiguity can arise will be when I scan the stack (the one that
-C++ uses) as a collection of roots. Compared to everything else and
-except in the unusual case of extremely deep recursion this will represent
-a fairly small number of "ambiguous roots". So let me consider first how
-to check if an ambgiguous value seems to refer to a Lisp object.
-
-I will arrange my storage allocation strategy to use fixed size pages.
-I will have two sorts of page. One holds fixed size objects. At one end
-it will hold CONS cells and any other items that are the same size. On
-a 64-bit system this will include double precision floats, Lisp vectors
-with only a single element, bignums that are only JUST bigger than a fixnum
-and strings with up to 8 characters. At the other end the items will be
-exactly twice that size, so there can be Lisp vectors with up to 3 elements,
-strings with up to 24 characters and bignums whose values can be up to around
-5*10^55 (ie 186 bits signed values). Rather simple mask operations make it
-possible to identify the location of the start of any object in such a page
-given a reference within it.
-
-The other case is the general one for objects that are larger. Every item
-in the page will have a header. It would be possible to identify the starts
-of objects by scanning the page from its start (since object size information
-in the headers would make it possible to skip over binary data). However that
-seems unduly expensive. A faster scheme could maintain a binary search tree
-for all the headers in the page. The space consumption of that seems
-unpaletable. At present my plan is to hold a bitmap such that every object
-header is identified it in. The space needed for that map is 1 bit for every
-16 bytes of data (ie 128 bits because I keep every item aligned on
-16 byte boundaries). Operations like "find first set bit" can be used on
-most computers so that scanning backwards from an ambiguous value could
-find the corresponding header in a time that involved a cost linear in the
-size of the object, but with very good scaling because of the opportunity to
-handle many bits as a time.
-
-Each of the above cases means that if one can identify the page that an
-ambiguous value refers to and which of the three page types is involved it
-will be easy to find the start of any object that the value should be
-treated as identifying.
-
-Let each page have size PAGE_SIZE (which will be a power of 2 - at present
-I am thinking of using 8 Mbytes). Then if heap space is allocated within a
-modest number of chunks (with each chunk split into pages) I can do a rather
-small number of comparisons to test which (if any) chunk an address lies
-within, and then easily discover which page within the chunk is involved.
-
-I now introduce the concept of "pinned" data. When an ambiguous pointer
-identifies an item within a page that item becomes pinned - a state which
-means it must not be moved. Each page will have a bitmap that is used to
-mark pinned items. This bitmap will consume one bit for every 128 bits of
-useful data, so it is not a severe worry. At various stages this bitmap will
-have to be scanned or cleared, but again its size is only around 1% of the
-size of the real data. I am going to allow pages to contain just a sprinkling
-of pinned data - this is in contrast to policies that are perhaps more common
-where when a page is the target of any ambiguous pointer the entire page
-is kept "promoted" or pinned.
-
-My main collector will be based on a straightforward copying one, so some
-pages will represent the "old space" containing existing live data and
-others will be "new space" to which data is evacuated. The introduction of
-conservatism leads to having pinned items in both old and new spaces. Dealing
-with them is a major part of this design. Perhaps the starting point is that
-storage allocation within a page can be done almost as it was before, except
-that special action will need to be taken when allocation reaches any pinned
-object. The practicality there is that pages will need to contain chains
-that identify each pinned object. In effect instead of being treated (for
-future allocation purposes) as a single block the page will be treated as
-a sequence of regions (each separated by pinned data).
-
-The collector can then work as follows:
-(1) ... ... ... <to be completed>
-[Note that I had a working conservative collector in "vslplus.cpp",
-a spin-off from vsl.c, some while ago. I need to review what I did there
-and migrate an explanation to here!]
+Now I will be explicit about the expectations that I have that lead to this
+plan. They are
+(1) Much material that is allocated will only remain active for a short
+while. The time that it takes to fill up the C page will be long enough that
+when C becomes full everything in R will have had time for this infant
+mortality to take effect, and so on a minor garbage collection a substantial
+fraction of R will be garbage and hence does not get copied into S.
+(2) In CSL the only place the ambiguous pointers reside is on the stack.
+An especially large number of entries towards the top of the stack will
+refer to data that is just in the process of being worked on, and this will
+mean that most ambiguous pointers that refer to anything at all will refer
+to locations within C. In particular I hope that there will be few ambiguous
+references into R. Neither minor nor major garbage collection will relocate
+data that is in C, so my expectation and hope is that there will be only
+minor disruption to storage elsewhere because of conservatism.
+(3) The schemes I have for identifying dirty regions of memory are based on
+storage protection and accepting an exception when a region is first written
+to. Because subsequent memory access is unimpeded I expect this will have low
+overhead. Memory protection is performed at a granularity substantially
+smaller then the size of whole pages. My expectation is that almost all
+writes to memory will be in either C or in symbol headers. Symbol headers will
+be distributed across S, but I can imagine arranging that the major
+garbage collection would copy all symbol headers from the oblist in such
+a way as to leave them as a compact block (along with the vectors that
+represent the object list itself). The hope is that the amount of memory
+identified as dirty will be a rather small fraction of the full size of the
+heap.
+(4) Given an arbitrary bit pattern it will first be possible to tell if it
+could be an address within any active page of the heap, and if it is then
+the starting address and Lisp type of any item it points within can be
+discerned reasonably efficiently.
+(5) Given a region of memory within a page it will be possible to identify all
+Lisp objects that overlap it, and on that basis scan all pointers that flow
+out from it. Maybe the key issue here is when the region covers the end but
+not the start of some Lisp vector and it is thus necessary to search back
+through lower-address parts of a page to find the start and hence the length
+of the vector. The assumption here requires consideration of any cases where
+ojjects in memory are not strictly laid out one after the other but where
+there are gaps between them.
+(6) With a conservative collector it is necessary to leave some items
+unrelocated in a manner that leaves the free space at the end of garbage
+collection fragmented. In pathological cases this could lead to major
+inefficient in  attempots to allocate vectors, and premature failure to
+allocate. This may include failure to allocate while performing the
+copying operstions of a major garbage collection! Perhaps I can manage a
+temporary recovery if I find myself gummed up during garbage collection by
+just giving up and not evacuating some data. That way I can at least get
+back to normal operation, albeit without enough memory freed up to be
+able to start any subsequent garbage collection with any confidence at all.
+But that may be sufficient to allow be to display a disgnostic about
+running out of memory and then close down. Note that within CSL I allocate
+vectors of size up to (1/4) of the page size, and allowing for the fact
+that pages contain headers and bitmaps this means that (only) up to 3
+maximum size vector chunks can fit on one page, and a wasted gap can be left.
+I need to consider whether vector allocation should have two strands: the
+simple one being linear allocation at the end of the current page, but
+building any space that has to be skipped either because of pinned data or
+the granularity of the pages into a free-chain, and then an alternative scheme
+that allocates from within this free-chain so that smaller allocations can
+be used to fill in the gaps. I think that sort of plan may be especially
+useful for the allocations that are performed for material that is being
+copied during a major garbage collection.
 
 
+The overall pattern for a minor garbage collection will be
+(1) Clear the pinned map for R
+(2) Scan all ambiguous bases (ie the stack) and if any item there could
+    be a pointer into R then set the pinned bit against the head of the
+    relevant object. Keep a list of all those objects in the "pinned table".
+(3) Scan all unambiguous bases, all locations within objects that are
+    in regions of memory dirty since R was set up and all locations within
+    the pinned items in R. In each case if the reference is to a non-pinned
+    item in R then on the first visit evacuate that item into S, and on
+    a subsequent visit just use the forwarding pointer set up on the first
+    visit. Update the base. Note that I expect all of C to be dirty, and
+    so scanning it may perhaps be done more elegantly than checking every
+    part of it for dirty bits.
+(4) Scan the material newly places in S. If references into R are found
+    then evacuate more or follow the forwarding address. This may expand
+    the region in S that is used - grab further pages for it as needed.
+    Stop when the scan has covered everything moved into S.
+(5) Now the only live data in R should be the things that are pinned.
+    Use the pinned table to build the structures within it that support
+    allocation. [Note: after this step the pin map and table are both no
+    longer needed].
+(6) Check if S is now over-full and if so trigger a major garbage collection.
+(7) Swap the interpretation of C and R, and update the dirty maps to match.
+    Well the dirty map issue is maybe ugly. Any part of S that has been
+    updated such that it refers into C must now be tagged in the map, and
+    all of what used to be R but is now C can have map info cleared.
+
+
+A major garbage collection has a slightly simpler structure because while it
+must cope with ambiguous pointers it processes all data apart from C.
+(1) Clear pinned map for R and S.
+(2) Scan ambiguous bases, marking items referred to in R or S as pinned.
+    Build a table of the pinned items first using the pinned-table and if
+    that overflows building a linked list in pages from F.
+    If there had been a list of pinned items left in S by the previous
+    collection then scan down it clearing any pinned bits on its entries,
+    because that data is now not needed.
+(3) Scan unambiguous bases and pointers out of C relocating anything except
+    references into C or to things that are pinned. This copies material to
+    new pages in F.
+(4) Scan the new material in F much as step (4) in the minor case.
+(5) Using information about pinned data in the table and any overflow list
+    build up freespace tables/maps/chains in all the blocks from S.
+(6) Swap interpretation of S and F, and allocate a new empty block for R
+    (which in step 7 of the minor GC will then instantly become the new C).
+(7) Consider dirty bits. What is needed is to mark any segment of memory
+    containing a reference to C as dirty, and all others as clean. I rather
+    hope to be able to build up that information as part of steps (3) and
+    (4) since they already need to test for references into C.
+ 

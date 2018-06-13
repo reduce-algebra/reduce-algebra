@@ -86,22 +86,20 @@ void my_abort()
 // identity of the current thread).
 //
 
-static std::random_device genuine_random;
+static std::random_device hopefully_random;
 
-static uint64_t my_genuine_random()
-{   uint64_t r = genuine_random();
-    r = 1234567*r ^ genuine_random();
-    r = 7654321*r ^ genuine_random();
-    size_t h1 = std::hash<std::thread::id>()(std::this_thread::get_id());
-    size_t h2 = (size_t)time(NULL);
-    size_t h3 = std::chrono::high_resolution_clock::
-                                        now().time_since_epoch().count();
-    return ((h1*UINT64_C(1415926535897932385) +
-            h2*UINT64_C(7182818284590452354) +
-            h3*UINT64_C(4142135623730950488)) ^ r) >> 21;
-}
+static std::seed_seq initial_random_seed
+    {hopefully_random(),
+     (unsigned int)
+         std::hash<std::thread::id>()(std::this_thread::get_id()),
+     (unsigned int)time(NULL),
+     (unsigned int)
+         std::chrono::high_resolution_clock::now().time_since_epoch().count()
+    };
+static std::mt19937 mersenne_twister(initial_random_seed);
 
-static std::mt19937 mersenne_twister(my_genuine_random());
+// Stuff above here is basically providing enough stubs for other parts of
+// CSL that I can compile allocate.cpp happily... 
 
 int main(int argc, char *argv[])
 {

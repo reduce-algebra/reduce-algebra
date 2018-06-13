@@ -47,6 +47,178 @@
 #include <sys/mman.h>
 #endif // !WIN32
 
+
+// The work discussed here is to arrange that CSL uses a mostly-copying
+// conservative collector. The details are substantially tuned to the expected
+// patterns of memory usage. Although the initial implementation will be
+// single threaded the intent is to allow for a threaded system in the future.
+// Following CST project work by Jamie Davenport I now intend to try for a
+// design that is conservative, generational and somewhat threaded.
+//
+// Memory is used in pages (of size CSL_PAGE_SIZE). Each page will either hold
+// CONS cells (and other items of size 2*CELL) or larger items (typically
+// symbol headers and vectors). Given an arbitrary bit-pattern it will be
+// possible to tell if it refers to an address within an object in one of these
+// pages.
+//
+// With each page I will have a bitmap that is used to record a concept "pinned"
+// that can be associated with any object in the page. An item will be marked
+// pinned if an ambiguous pointer refers to it, and hence it may not be moved.
+// I will have an array of size half a page for each thread and will bse that
+// to collect a list of all the pinned items in a single page of memory that
+// I am evacuating. The size here is only half a page because the smallest items
+// ever allocated within the heap are 2 pointers large. I rather expect that the
+// full capacity of this will never be approached.
+//
+// Pages of memory are classified as
+//   Current (C). These are the pages within which the mutator allocates
+//      new material. There may be several such if allocation of CONS cells
+//      and vectors use different dedicated current pages and in a multi-thread
+//      world each thread would have its own current page or pages.
+//   Recent (R). When a current page becomes full it is replaced with a new
+//      empty page, and the full page that had been current is re-badged as
+//      "recent". When that happens the previous recent page will have its
+//      content evacuated - that process representing a minor garbage collection.
+//   Stable (S). When live material is moved out of an "old recent" page it is
+//      copied into the stable region. This will come to be the bulk of the
+//      active heap and uses as many pages as are called for. At any one time
+//      one of these pages will be the "stable fringe" where new material is
+//      added. In a multi-thread world there is just a single pool of stable
+//      heap.
+//   Free (F). Pages that are not in use are in this group. When a minor garbage
+//      collection places in a fresh stable page such that |S| > |F| then a full
+//      garbage collection is triggered. At that stage R is empty. The stable
+//      fringe page is then deemed part of what will become the new heap, and
+//      all material apart from that is copied into that and subsequent pages
+//      taken from free. The vacated pages are then re-labelled to form the
+//      new free region. While doing this the current page does not have
+//      its content relocated.
+//
+// Within the heap I can maintain "dirty bits" that mark parts of pages where
+// data has been updated. I will arrange that as the start of a minor garbage
+// collection I will have two maps of dirty memory, one corresponding to the
+// time period while R was being filled and a second to the time that C was
+// filled. Clearly at the end of a minor collection the old C becomes the new
+// R and a fresh C is allocated, so the previous C-map becomes the new R-map
+// and the new C-map starts off fresh and clean. These maps will not be needed
+// or used during a major collection.
+//
+// Now I will be explicit about the expectations that I have that lead to this
+// plan. They are
+// (1) Much material that is allocated will only remain active for a short
+// while. The time that it takes to fill up the C page will be long enough that
+// when C becomes full everything in R will have had time for this infant
+// mortality to take effect, and so on a minor garbage collection a substantial
+// fraction of R will be garbage and hence does not get copied into S.
+// (2) In CSL the only place the ambiguous pointers reside is on the stack.
+// An especially large number of entries towards the top of the stack will
+// refer to data that is just in the process of being worked on, and this will
+// mean that most ambiguous pointers that refer to anything at all will refer
+// to locations within C. In particular I hope that there will be few ambiguous
+// references into R. Neither minor nor major garbage collection will relocate
+// data that is in C, so my expectation and hope is that there will be only
+// minor disruption to storage elsewhere because of conservatism.
+// (3) The schemes I have for identifying dirty regions of memory are based on
+// storage protection and accepting an exception when a region is first written
+// to. Because subsequent memory access is unimpeded I expect this will have low
+// overhead. Memory protection is performed at a granularity substantially
+// smaller then the size of whole pages. My expectation is that almost all
+// writes to memory will be in either C or in symbol headers. Symbol headers will
+// be distributed across S, but I can imagine arranging that the major
+// garbage collection would copy all symbol headers from the oblist in such
+// a way as to leave them as a compact block (along with the vectors that
+// represent the object list itself). The hope is that the amount of memory
+// identified as dirty will be a rather small fraction of the full size of the
+// heap.
+// (4) Given an arbitrary bit pattern it will first be possible to tell if it
+// could be an address within any active page of the heap, and if it is then
+// the starting address and Lisp type of any item it points within can be
+// discerned reasonably efficiently.
+// (5) Given a region of memory within a page it will be possible to identify all
+// Lisp objects that overlap it, and on that basis scan all pointers that flow
+// out from it. Maybe the key issue here is when the region covers the end but
+// not the start of some Lisp vector and it is thus necessary to search back
+// through lower-address parts of a page to find the start and hence the length
+// of the vector. The assumption here requires consideration of any cases where
+// objects in memory are not strictly laid out one after the other but where
+// there are gaps between them.
+// (6) With a conservative collector it is necessary to leave some items
+// unrelocated in a manner that leaves the free space at the end of garbage
+// collection fragmented. In pathological cases this could lead to major
+// inefficient in  attempots to allocate vectors, and premature failure to
+// allocate. This may include failure to allocate while performing the
+// copying operstions of a major garbage collection! Perhaps I can manage a
+// temporary recovery if I find myself gummed up during garbage collection by
+// just giving up and not evacuating some data. That way I can at least get
+// back to normal operation, albeit without enough memory freed up to be
+// able to start any subsequent garbage collection with any confidence at all.
+// But that may be sufficient to allow be to display a disgnostic about
+// running out of memory and then close down. Note that within CSL I allocate
+// vectors of size up to (1/4) of the page size, and allowing for the fact
+// that pages contain headers and bitmaps this means that (only) up to 3
+// maximum size vector chunks can fit on one page, and a wasted gap can be left.
+// I need to consider whether vector allocation should have two strands: the
+// simple one being linear allocation at the end of the current page, but
+// building any space that has to be skipped either because of pinned data or
+// the granularity of the pages into a free-chain, and then an alternative scheme
+// that allocates from within this free-chain so that smaller allocations can
+// be used to fill in the gaps. I think that sort of plan may be especially
+// useful for the allocations that are performed for material that is being
+// copied during a major garbage collection.
+//
+//
+// The overall pattern for a minor garbage collection will be
+// (1) Clear the pinned map for R
+// (2) Scan all ambiguous bases (ie the stack) and if any item there could
+//     be a pointer into R then set the pinned bit against the head of the
+//     relevant object. Keep a list of all those objects in the "pinned table".
+// (3) Scan all unambiguous bases, all locations within objects that are
+//     in regions of memory dirty since R was set up and all locations within
+//     the pinned items in R. In each case if the reference is to a non-pinned
+//     item in R then on the first visit evacuate that item into S, and on
+//     a subsequent visit just use the forwarding pointer set up on the first
+//     visit. Update the base. Note that I expect all of C to be dirty, and
+//     so scanning it may perhaps be done more elegantly than checking every
+//     part of it for dirty bits.
+// (4) Scan the material newly places in S. If references into R are found
+//     then evacuate more or follow the forwarding address. This may expand
+//     the region in S that is used - grab further pages for it as needed.
+//     Stop when the scan has covered everything moved into S.
+// (5) Now the only live data in R should be the things that are pinned.
+//     Use the pinned table to build the structures within it that support
+//     allocation. [Note: after this step the pin map and table are both no
+//     longer needed].
+// (6) Check if S is now over-full and if so trigger a major garbage collection.
+// (7) Swap the interpretation of C and R, and update the dirty maps to match.
+//     Well the dirty map issue is maybe ugly. Any part of S that has been
+//     updated such that it refers into C must now be tagged in the map, and
+//     all of what used to be R but is now C can have map info cleared.
+//
+//
+// A major garbage collection has a slightly simpler structure because while it
+// must cope with ambiguous pointers it processes all data apart from C.
+// (1) Clear pinned map for R and S.
+// (2) Scan ambiguous bases, marking items referred to in R or S as pinned.
+//     Build a table of the pinned items first using the pinned-table and if
+//     that overflows building a linked list in pages from F.
+//     If there had been a list of pinned items left in S by the previous
+//     collection then scan down it clearing any pinned bits on its entries,
+//     because that data is now not needed.
+// (3) Scan unambiguous bases and pointers out of C relocating anything except
+//     references into C or to things that are pinned. This copies material to
+//     new pages in F.
+// (4) Scan the new material in F much as step (4) in the minor case.
+// (5) Using information about pinned data in the table and any overflow list
+//     build up freespace tables/maps/chains in all the blocks from S.
+// (6) Swap interpretation of S and F, and allocate a new empty block for R
+//     (which in step 7 of the minor GC will then instantly become the new C).
+// (7) Consider dirty bits. What is needed is to mark any segment of memory
+//     containing a reference to C as dirty, and all others as clean. I rather
+//     hope to be able to build up that information as part of steps (3) and
+//     (4) since they already need to test for references into C.
+// 
+
+
 #ifdef USE_SIGALTSTACK
 
 static unsigned char signal_stack_block[SIGSTKSZ];
@@ -535,21 +707,24 @@ static void low_level_signal_handler(int signo)
 // The format is as follows:
 //     type info
 //     chaining word
-//     vfringe
-//     vheaplimit
-//     next-vfringe
+//     fringe
+//     heaplimit
+//     next-fringe
 //     -
 //     bitmap bitmap bitmap bitmap ...
 //     start of used data
 //     ... used
-//     end of used data <----------- vfringe
+//     end of used data <----------- fringe
 //     ... free
-//     end of available space <----- vheaplimit
+//     end of available space <----- heaplimit
 //     ... pinned data
-//     next-vheaplimit
-//     next'-vfringe  <------------- next' vfringe
+//     next-heaplimit
+//     next'-fringe  <-------------- next' fringe
 //     ... free
-//     <end of page> <-------------- next vheaplimit
+//     ... <------------------------ next heaplimit
+//     [object start bitmap]
+//     [pin bitmap]
+//     <end of page>
 //
 // The idea is that the whole page can be interrupted if "pinned" items
 // are present within it. These are items that were referenced from an
@@ -616,37 +791,127 @@ static void low_level_signal_handler(int signo)
 // 2-word region. Especially if I view 64-bits as much more important for the
 // future than 32-bits this suggests that special treatment of 4-word items is
 // not worthwhile.
-//
-// So since I now just need to cope with 2-word items I can have a page layout
-// almost identical to that used for vectors:
-//
-//     type info
-//     chaining word
-//     fringe
-//     heaplimit
-//     next-fringe
-//     -
-//     bitmap bitmap bitmap bitmap ...
-//     start of used data
-//     ... used
-//     end of used data <----------- fringe
-//     ... free
-//     end of available space <----- heaplimit
-//     ... pinned data
-//     next-heaplimit
-//     next'-fringe  <-------------- next' fringe
-//     ... free
-//     <end of page> <-------------- next heaplimit
-//
-// The only difference is that I only allow for a single bit of information
-// associated with each doubleword, and this marks "pinned" data.
+// The layout for such a page is just the same as that for vector pages
+// except that the "object start" bitmap is not needed and so not present,
+// and so a few more bytes of memory are available for storing data.
 
 LispObject fringe, next_fringe;
 LispObject heaplimit;
 LispObject vfringe, next_vfringe;
 LispObject vheaplimit;
 
-// Now I will provide the kernel of the allocation code...
+// A bitmap that covers a page has to have a size (in bytes) that allows for
+// 8 bits in each byte and that covers the page at a granularity of 2*CELL.
+
+#define PAGE_BITMAP_SIZE (CSL_PAGE_SIZE/(2*CELL)/8)
+
+// These structures show how a page is laid out. Every so often I will
+// cast a reference to a page to be a reference to this structure.
+
+typedef struct page_header_
+{   uintptr_t page_type;
+    uintptr_t page_chain;
+
+    uintptr_t fringe;
+    uintptr_t heaplimit;
+
+    uintptr_t next_fringe;
+    uintptr_t padding;
+
+    LispObject data[1];
+} page_header;
+
+typedef struct cons_page_trailer_
+{   uint64_t pinned_bitmap[PAGE_BITMAP_SIZE/sizeof(uint64_t)];
+} cons_page_trailer;
+
+typedef struct vector_page_trailer_
+{   uint64_t objectstart_bitmap[PAGE_BITMAP_SIZE/sizeof(uint64_t)];
+    uint64_t pinned_bitmap[PAGE_BITMAP_SIZE/sizeof(uint64_t)];
+} vector_page_trailer;
+
+static inline cons_page_trailer *cons_trailer(page_header *p)
+{   return (cons_page_trailer *)((char *)p +
+                                 (CSL_PAGE_SIZE - sizeof(cons_page_trailer)));
+}
+
+static inline vector_page_trailer *vector_trailer(page_header *p)
+{   return (vector_page_trailer *)((char *)p +
+                                 (CSL_PAGE_SIZE - sizeof(vector_page_trailer)));
+}
+
+static inline bool is_header_vector(LispObject p, page_header *page)
+{   size_t offset = p - (LispObject)page;
+// If the putative pointer refers to parts of the header that are before
+// any useful data (for instance it refers into the bitmap) or if it points
+// beyond the end of the page it is not valid.
+    if (offset < offsetof(page_header, data) ||
+        offset >= page->fringe) return false;
+    offset /= 2*CELL;
+    size_t n = offset/64;
+    uint64_t bit = ((uint64_t)1)<<(offset%64);
+    return (vector_trailer(page)->objectstart_bitmap[n] & bit) != 0;
+}
+
+// When I set or clear bits that mark an object header I will only do so
+// with addresses that are validly in-range.
+
+static inline void set_header_vector(LispObject p, page_header *page)
+{   size_t offset = (p - (LispObject)page)/(2*CELL);
+    size_t n = offset/64;
+    uint64_t bit = ((uint64_t)1)<<(offset%64);
+    vector_trailer(page)->objectstart_bitmap[n] |= bit;
+}
+
+static inline void clear_header_vector(LispObject p, page_header *page)
+{   size_t offset = (p - (LispObject)page)/(2*CELL);
+    size_t n = offset/64;
+    uint64_t bit = ((uint64_t)1)<<(offset%64);
+    vector_trailer(page)->objectstart_bitmap[n] &= ~bit;
+}
+
+static inline bool is_pinned_vector(LispObject p, page_header *page)
+{   size_t offset = p - (LispObject)page;
+// If the putative pointer refers to parts of the header that are before
+// any useful data (for instance it refers into the bitmap) or if it points
+// beyond the end of the page it is not valid.
+    if (offset < offsetof(page_header, data) ||
+        offset >= page->fringe) return false;
+    offset /= 2*CELL;
+    size_t n = offset/64;
+    uint64_t bit = ((uint64_t)1)<<(offset%64);
+    return (vector_trailer(page)->pinned_bitmap[n] & bit) != 0;
+}
+
+static inline bool is_pinned_cons(LispObject p, page_header *page)
+{   size_t offset = p - (LispObject)page;
+// If the putative pointer refers to parts of the header that are before
+// any useful data (for instance it refers into the bitmap) or if it points
+// beyond the end of the page it is not valid.
+    if (offset < offsetof(page_header, data) ||
+        offset >= page->fringe) return false;
+    size_t n = offset/(2*CELL*64);
+    uint64_t bit = ((uint64_t)1)<<(offset%64);
+    return (cons_trailer(page)->pinned_bitmap[n] & bit) != 0;
+}
+
+static inline void set_pinned_vector(LispObject p, page_header *page)
+{
+}
+
+static inline void set_pinned_cons(LispObject p, page_header *page)
+{
+}
+
+static inline void clear_pinned_vector(LispObject p, page_header *page)
+{
+}
+
+static inline void clear_pinned_cons(LispObject p, page_header *page)
+{
+}
+
+// Provide the kernel of the allocation code...
 
 LispObject get_2_words()
 {
@@ -662,7 +927,7 @@ LispObject get_2_words()
 // it will be non-empry (otherwise it would not have been a "free segment"!)
 // I do not need to check further, but can just use the first doubeword in
 // it.
-    if (next_fringe != NULL)
+    if (next_fringe != 0)
     {   LispObject r = next_fringe;
         heaplimit = ((LispObject *)r)[0];
         next_fringe = ((LispObject *)r)[1];
@@ -684,6 +949,160 @@ LispObject get_n_words(size_t n)
 {   LispObject r = fringe;
     return r;
 }
+
+void major_garbage_collect()
+{
+// (1) Clear pinned map for R and S.
+
+
+// (2) Scan ambiguous bases, marking items referred to in R or S as pinned.
+//     Build a table of the pinned items first using the pinned-table and if
+//     that overflows building a linked list in pages from F.
+//     If there had been a list of pinned items left in S by the previous
+//     collection then scan down it clearing any pinned bits on its entries,
+//     because that data is now not needed.
+
+
+// (3) Scan unambiguous bases and pointers out of C relocating anything except
+//     references into C or to things that are pinned. This copies material to
+//     new pages in F.
+
+
+// (4) Scan the new material in F much as step (4) in the minor case.
+
+
+// (5) Using information about pinned data in the table and any overflow list
+//     build up freespace tables/maps/chains in all the blocks from S.
+// (6) Swap interpretation of S and F, and allocate a new empty block for R
+//     (which in step 7 of the minor GC will then instantly become the new C).
+// (7) Consider dirty bits. What is needed is to mark any segment of memory
+//     containing a reference to C as dirty, and all others as clean. I rather
+//     hope to be able to build up that information as part of steps (3) and
+//     (4) since they already need to test for references into C.
+
+}
+
+
+LispObject *C_stackbase, *C_stacktop;
+
+void get_stacktop()
+{   volatile LispObject sp;
+    C_stacktop = (LispObject *)&sp;
+}
+
+extern void middle_reclaim();
+extern void inner_reclaim(LispObject *sp);
+
+// The next section of code represents an attempt to coax "reasonable"
+// compilers into arranging that all registers that had been in use when
+// reclaim() is called end up somewhere on the stack by the time that
+// inner_reclaim() is entered. It is pretty clear that this is not the
+// sort of thing that fully guaranteed portable code can achieve! I apply
+// two ideas. The first is to have a function that is liable to want to
+// keep a dozen value in its registers - and to do that it is liable to
+// flush calee-save ones to the stack. I use the "register" qualifier
+// to try to advise the compiler to do what I want, but modern compilers
+// probably ignore me, so may not. As a secoondary attempt I use setjmp()
+// which I hope and expect dumps a copy of all useful machine registers into
+// the given jmp_buf. Again this is not guaranteed!
+// The use of volatile_variable is a further attempt to prevent any
+// clever compiler frm observing that all that I do is frivolous and
+// then discarding it.
+
+volatile int volatile_variable = 12345;
+
+void reclaim(int line)
+{
+// The purpose of this function is to force any even partially
+// reasonable C compiler into putting all registers that contain
+// values from the caller onto the stack. It assumes that there
+// could not be more than 12 "callee saves" registers, that the
+// "register" qualifier in the declaraion here will cause a1-a12 to
+// take precedence when allocating same, and that the volatile
+// qualifier on the variable that is repeatedly referenced is there
+// to try to tell the compiler that it may not make any assumptions
+// (eg that a1-a12 might not all have the same value), and the use
+// of them again after the call to inner_reclaim() should force
+// each of those values to be saved across that call. The work done
+// is of course a waste (but assigning back to a volatile variable
+// may force it to be done!) but is modest in the large scheme of
+// things. On most machines I can think of there are a lot fewer
+// than 12 callee-save registers and so this is overkill!
+    register int a1 = volatile_variable;
+// The declarations here go one at a time to stress the sequential nature
+// of the references to volatile_variable.
+    register int a2 = volatile_variable;
+    register int a3 = volatile_variable;
+    register int a4 = volatile_variable;
+    register int a5 = volatile_variable;
+    register int a6 = volatile_variable;
+    register int a7 = volatile_variable;
+    register int a8 = volatile_variable;
+    register int a9 = volatile_variable;
+    register int a10 = volatile_variable;
+    register int a11 = volatile_variable;
+    register int a12 = volatile_variable;
+// Even with a heavily optimising compiler the above ough to generate
+// 12 loads from the volatile_variable and in principle the values so
+// loaded could all be different.
+    jmp_buf jb;
+    if (setjmp(jb) != 0) volatile_variable++;
+// setjmp is expected to save all registers in jb.
+    for (int i=0; i<1000000; i++)
+    {   middle_reclaim();
+// The loop is so that a compiler can believe that there is a chance that
+// everything will be executed up to a million times, and that might encourage
+// it to try quite hard to store the values of a1-a12 in registers (thus
+// flushing any values from its caller to stack). But in fact the code will
+// reynr after calling middle_reclaim() without doing anything else that
+// might be costly. So my expectation is that the function here will consume
+// some space in program memory but will represent really rather a small
+// burden on CPU time.
+        if (volatile_variable == volatile_variable) return;
+        if (volatile_variable != volatile_variable) longjmp(jb, 1);
+// The longjmp will never be taken, but the compiler is not allowed to
+// assume that! Therefore it must  keep jb on alive on the stack during the
+// call to middle_reclaim().
+        volatile_variable += a1;
+        volatile_variable += a2;
+        volatile_variable += a3;
+        volatile_variable += a4;
+        volatile_variable += a5;
+        volatile_variable += a6;
+        volatile_variable += a7;
+        volatile_variable += a8;
+        volatile_variable += a9;
+        volatile_variable += a10;
+        volatile_variable += a11;
+        volatile_variable += a12;
+// The code above references each of a1 to a12 and combines their
+// values with volatile_variable in a way intended to mean that they must
+// all be saved across the call to middle_reclaim(). The code is written
+// line by line to arrange that there are sequence points between each
+// access to volatile_variable.
+    }
+}
+
+void middle_reclaim()
+{
+// This function is here to have a stack frame (containing w) that will
+// lie between that of reclaim and inner_reclaim. The stupid-looking test
+// on volatile_variable is intended to persuade clever compilers that they
+// should not compile this procedure in-line or consolidate its stack
+// frame with either its caller or callee by making it appear that it
+// could be recursive. The address of the top of the stack is passed onwards.
+    int w;
+    if (volatile_variable != volatile_variable)
+    {   inner_reclaim(NULL);  // never executed!
+        middle_reclaim();     // never executed! But looks recursive.
+    }
+    inner_reclaim((LispObject *)((intptr_t)&w & -sizeof(LispObject)));
+}
+
+void inner_reclaim(LispObject *sp)
+{
+}
+
 
 #ifndef ALLOCTEST
 
@@ -1194,7 +1613,6 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // 32-bit or 64-bit representation. However it would be hard to unwind
 // that now!]
 //
-    size_t w = doubleword_align_up(size);
     for (;;)
     {   char *r = (char *)vfringe;
         size_t free = (size_t)((char *)vheaplimit - r);

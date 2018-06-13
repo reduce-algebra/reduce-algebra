@@ -36,6 +36,16 @@ here=`dirname "$here"`
 here=`cd "$here"; pwd -P`
 here=`dirname "$here"`
 
+diffBw() {
+# if "diff" is not the GNU version it may not support the "-B" or "-w"
+# options that ignore whitespace, so here I use sed to get rid of it
+# before running diff.
+    sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $1 > $name-times/temp1.tmp
+    sed 's/[[:space:]]//g; /^[[:space:]]*$/d' < $2 > $name-times/temp2.tmp
+    diff $name-times/temp1.tmp $name-times/temp2.tmp
+    rm $name-times/temp1.tmp $name-times/temp2.tmp
+}
+
 install="no"
 keep="no"
 platform=""
@@ -413,7 +423,7 @@ sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
   sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
   sed -e "s/${ESCAPED_DIR}.//" | \
   sed -e "$SED1" >$name-times/$p.rlg
-diff -B -w $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
+diffBw $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
 if test -s $name-times/$p.rlg.diff
   then printf "Diff is in $name-times/$p.rlg.diff "
   else printf "OK " ; rm -f $name-times/$p.rlg.diff $name-times/$p.rlg.orig
@@ -459,7 +469,8 @@ then
 # PSL testing
 #######################################################################
 
-mkdir -p psl-times
+name=psl
+mkdir -p $name-times
 
 $timeoutcmd $timecmd sh -c "$here/bin/redpsl > psl-times/$p.rlg.tmp" <<XXX 2>$p.howlong.tmp
 off int;
@@ -485,7 +496,7 @@ sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
   sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
   sed -e "s/${ESCAPED_DIR}.//" | \
   sed -e "$SED1" >psl-times/$p.rlg
-diff -B -w psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
+diffBw psl-times/$p.rlg.orig psl-times/$p.rlg >psl-times/$p.rlg.diff
 if test -s psl-times/$p.rlg.diff
   then echo "diff is in psl-times/$p.rlg.diff"
   else printf "OK " ; rm -f psl-times/$p.rlg.diff psl-times/$p.rlg.orig
@@ -543,7 +554,7 @@ sed -e "1,/START OF REDUCE TEST RUN/d" -e "/END OF REDUCE TEST RUN/,//d" \
     -e "/OMIT/,/TIMO/d" <$name-times/$p.rlg.tmp | \
   sed -e "1s/^1: //" | sed -e '$s/^1: //' | \
   sed -e "$SED1" >$name-times/$p.rlg
-diff -B -w $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
+diffBw $name-times/$p.rlg.orig $name-times/$p.rlg >$name-times/$p.rlg.diff
 if test -s $name-times/$p.rlg.diff
   then printf "Diff is in $name-times/$p.rlg.diff "
   else printf "OK " ; rm -f $name-times/$p.rlg.diff $name-times/$p.rlg.orig
@@ -628,7 +639,7 @@ then
       base="$sys"
     else
       mkdir -p $base-$sys-times-comparison
-      diff -B -w $base-times/$p.rlg $sys-times/$p.rlg >$base-$sys-times-comparison/$p.rlg.diff
+      diffBw $base-times/$p.rlg $sys-times/$p.rlg >$base-$sys-times-comparison/$p.rlg.diff
       if test -s $base-$sys-times-comparison/$p.rlg.diff
       then
         printf "***** $base and $sys test logs differ!\n"

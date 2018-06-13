@@ -146,7 +146,7 @@ RM = rm
 if cygpath
 # Note that "cygpath -m" converts to a Windows-style path except that
 # if leaves "/" not "\" in the name. This latter fact matters because
-# of shell quoting issues. The fomer can be vital when non-cygwin
+# of shell quoting issues. The former can be vital when non-cygwin
 # applications might otherwise receive a file-name starting "/cygdrive/x/.."
 # and not understand it.
 CYGSRC = $(shell cygpath -m $(cslbase))
@@ -158,20 +158,25 @@ CYGREDUCE = $(CYGSRC)/../..
 if cygwin
 EXE=
 
-if cyg32
 $(absolute_cyg32):	$(cslbase)/other-cygwin.cpp
-	i686-w64-mingw32-g++ -O3 -DFORCE32 $(cslbase)/other-cygwin.cpp -o $(absolute_cyg32)
+	i686-w64-mingw32-g++ -O3 -DFORCE32 $(cslbase)/other-cygwin.cpp -static -o $(absolute_cyg32)
 	i686-w64-mingw32-strip $(absolute_cyg32)
-else !cyg32
-if cyg64
+
 $(absolute_cyg64):	$(cslbase)/other-cygwin.cpp
-	i686-w64-mingw32-g++ -O3 -DFORCE64 $(cslbase)/other-cygwin.cpp -o $(absolute_cyg64)
+	i686-w64-mingw32-g++ -O3 -DFORCE64 $(cslbase)/other-cygwin.cpp -static -o $(absolute_cyg64)
 	i686-w64-mingw32-strip $(absolute_cyg64)
-endif cyg64
-endif !cyg32
+
 else !cygwin
 EXE=$(EXEEXT)
 endif !cygwin
+
+cyg32.exe:	$(cslbase)/other-cygwin.cpp
+	i686-w64-mingw32-g++ -O3 -DFORCE32 $(cslbase)/other-cygwin.cpp -static -o cyg32
+	i686-w64-mingw32-strip cyg32
+
+cyg64.exe:	$(cslbase)/other-cygwin.cpp
+	i686-w64-mingw32-g++ -O3 -DFORCE64 $(cslbase)/other-cygwin.cpp -static -o cyg64
+	i686-w64-mingw32-strip cyg64
 
 if wx
 WXC=../bin/wx-config
@@ -649,29 +654,14 @@ else !cygwin
 WINHELPERS= cygwin-isatty.exe cygwin64-isatty.exe not-under-cygwin.exe
 endif !cygwin
 
-# A brief note about version of C compilers under cygwin. On either the
-# 32 or 64-bit cygwin just "g++" is the main C++ compiler that targets the
-# native width of the platform. But on each it is also possible to have
-# one or both of i686-pc-cygwin-g++ and x86_64-pc-cygwin-g++ which explicitly
-# target one or other width. These count as cross compilers, and at the
-# time of writing they behave well enough to build the small command-line
-# utilities here but do not come with enough development libraries to make
-# it possible to use them to build all of CSL/Reduce. Because some people
-# may not have them installed I have a fallback scheme here that fetches
-# precompiled versions of the utilities. Note that they will include
-# copies of cygwin1.dll but because they are BSD-licensed open source code
-# that does not prevent me from redistributing them in an unconstrained manner.
+cygwin-isatty.exe:	$(cslbase)/cygwin-isatty.cpp $(absolute_cyg32)
+	$(absolute_cyg32) g++ -O3 $(cslbase)/cygwin-isatty.cpp -o cygwin-isatty.exe
 
-cygwin-isatty.exe:	$(cslbase)/cygwin-isatty.cpp
-	if test -x /usr/bin/i686-pc-cygwin-g++.exe; then i686-pc-cygwin-g++ -O3 $(cslbase)/cygwin-isatty.cpp -o cygwin-isatty.exe; else $(CP) $(cslbase)/premade-cygwin-isatty.exe .; \
-	  if test -x /usr/bin/i686-pc-cygwin-strip.exe; then i686-pc-cygwin-strip cygwin-isatty.exe; else strip cygwin-isatty.exe; fi fi
-
-cygwin64-isatty.exe:	$(cslbase)/cygwin-isatty.cpp
-	if test -x /usr/bin/x86_64-pc-cygwin-g++.exe; then x86_64-pc-cygwin-g++ -O3 $(cslbase)/cygwin-isatty.cpp -o cygwin64-isatty.exe; else $(CP) $(cslbase)/premade-cygwin64-isatty.exe .; \
-	  if test -s /usr/bin/x86_64-pc-cygwin-strip.exe; then x86_64-pc-cygwin-strip cygwin64-isatty.exe; else strip cygwin64-isatty.exe; fi fi
+cygwin64-isatty.exe:	$(cslbase)/cygwin-isatty.cpp $(absolute_cyg64)
+	$(absolute_cyg64) g++ -O3 $(cslbase)/cygwin-isatty.cpp -o cygwin64-isatty.exe
 
 not-under-cygwin.exe:	$(cslbase)/not-under-cygwin.cpp
-	i686-w64-mingw32-g++ -O3 $(cslbase)/not-under-cygwin.cpp -o not-under-cygwin.exe
+	i686-w64-mingw32-g++ -O3 $(cslbase)/not-under-cygwin.cpp -static -o not-under-cygwin.exe
 	i686-w64-mingw32-strip not-under-cygwin.exe
 
 # These used to have things like local-cslexe.def as dependencies...
@@ -1838,29 +1828,13 @@ endif !windows
 dynmodule.$(DLLEXT):	$(cslbase)/dynmodule.cpp $(dyndep)
 	$(COMPILE_DLL) $(cslbase)/dynmodule.cpp $(dyndep) $(DEST)dynmodule.$(DLLEXT)
 
-if canrun
-
 objtype$(EXEEXT):	$(cslbase)/objtype.cpp $(LOCALCYG)
 	$(LOCALCXX) $(cslbase)/objtype.cpp -o objtype$(EXEEXT)
+	$(LOCALSTRIP) objtype$(EXEEXT)
 
 makeheaders$(EXEEXT):	$(cslbase)/makeheaders.cpp $(LOCALCYG)
 	$(LOCALCXX) $(cslbase)/makeheaders.cpp -o makeheaders$(EXEEXT)
-
-else !canrun
-
-# If I can not run programs built by the normal C compiler (eg because I am
-# cross-compiling) I will build these two utilities using $(LOCALCXX). I will blandly
-# assume that in any cross-compilation situation that $(LOCALCXX) is available
-# and works, and the assumption is simplified by the fact that these two
-# programs are both fairly small and conservative.
-
-objtype$(EXEEXT):	$(cslbase)/objtype.cpp $(LOCALCYG)
-	$(LOCALCXX) $(cslbase)/objtype.cpp -o objtype$(EXEEXT)
-
-makeheaders$(EXEEXT):	$(cslbase)/makeheaders.cpp $(LOCALCYG)
-	$(LOCALCXX) $(cslbase)/makeheaders.cpp -o makeheaders$(EXEEXT)
-
-endif !canrun
+	$(LOCALSTRIP) objtype$(EXEEXT)
 
 # "prototypes" is a utility that will only be available if libclang has
 # been installed, and the recipe provided here perhaps works on Ubuntu and
@@ -1895,9 +1869,9 @@ machineid.cpp:	reduce-cslread.$(OBJEXT) config.h objtype$(EXEEXT) makeheaders$(E
 			$(cslbase)/tags.h $(cslbase)/cslerror.h \
 			$(cslbase)/externs.h $(cslbase)/arith.h \
 			$(cslbase)/entries.h $(cslbase)/lispthrow.h $(LOCALCYG)
-	$(LOCALCYG) ./objtype$(EXEEXT) reduce-cslread.$(OBJEXT) \
+	./objtype$(EXEEXT) reduce-cslread.$(OBJEXT) \
 		machineid-1.cpp $(COMPILE_DLL)
-	$(LOCALCYG) ./makeheaders$(EXEEXT) config.h \
+	./makeheaders$(EXEEXT) config.h \
 		$(CYGSRC)/machine.h \
 		$(CYGSRC)/int128_t.h \
 		$(CYGSRC)/tags.h \

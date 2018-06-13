@@ -24,13 +24,15 @@
 // guarantees. 
 //
 // When compiled without command line flags this executes the command it
-// is given in the opposite versio nof cygwin to whichever is is invoked
+// is given in the opposite version of cygwin to whichever is is invoked
 // from. If it is compiled with FORCE32 or FORCE64 set it will ensure that
 // the command is executed in the specifed context.
 //
-// If called without any thing as a command to execure this will display
+// If called without any explicit command to execute then this will display
 // an indication of which versions of cygwin it believes are available.
-// that may be useful at configure time.
+// that may be useful at configure time. This will be in the form "32"
+// "64", "32 64" or a moaning message that no Cygwin installation can be
+// identified.
 
 /**************************************************************************
  * Copyright (C) 2018, Codemist.                         A C Norman       *
@@ -62,7 +64,7 @@
  *************************************************************************/
 
 
-// $Id: other-cygwin.cpp 4402 2018-01-28 13:45:22Z arthurcnorman $
+// $Id: other-cygwin.cpp 4635 2018-06-04 15:49:50Z arthurcnorman $
 
 
 
@@ -152,7 +154,6 @@ static char cygwinized_root[256];
 
 bool find_cygwin(bool sixty_four)
 {
-//  printf("look for %s\n", sixty_four ? "64-bit" : "32-bit");
 // Here I wish to find a cygwin installation (of the given word-length).
 // I will look in the registry under HKCU\Software\cygwin\Installations.
 // I will return true on success.
@@ -220,7 +221,6 @@ bool find_cygwin(bool sixty_four)
 // and executable and on that basis work out whether they are 32 or 64-bit
 // variants.
             char *p = (char *)data;
-//          printf("Try this: %s\n", p);
 // Verify that the data starts of "\??\x:\" as expected. Also ignore any
 // cases where the string is unreasonably long.
             if (p[0] != '\\' ||
@@ -231,11 +231,9 @@ bool find_cygwin(bool sixty_four)
                 p[5] != ':' ||
                 p[6] != '\\' ||
                 strlen(p) > 200) continue;
-//          printf("%s\n", p);
             char path1[256], path2[256];
             sprintf(path1, "%s\\bin\\cygwin1.dll", p+4);
             sprintf(path2, "%s\\bin\\bash.exe", p+4);
-//          printf("Investigate %s and %s\n", path1, path2);
             FILE *f1 = fopen(path1, "rb");
             FILE *f2 = fopen(path2, "rb");
 // If the file does not exist or is not readable then this is not a good
@@ -263,9 +261,6 @@ bool find_cygwin(bool sixty_four)
                     fread(&nt_headers2, sizeof(nt_headers2), 1, f2) == 1 &&
                     nt_headers2.Signature == IMAGE_NT_SIGNATURE)
                 {
-//                  printf("read NT headers\n");
-//                  printf("machine1 = %x\n", nt_headers1.FileHeader.Machine);
-//                  printf("machine2 = %x\n", nt_headers2.FileHeader.Machine);
 // The machine type is expected to be either IMAGE_FILE_MACHINE_I386 for
 // a 32-bit image or IMAGE_FILE_MACHINE_AMD64 for 64-bit.
                     bool ok;
@@ -331,16 +326,12 @@ int main(int argc, char *argv[])
     {   printf("isWow64Process() failed\n");
         return 1;
     }
-    if (b)
-    {   // printf("parent is a 32-bit application via Wow64\n");
-        run64 = true;
-    }
+    if (b) run64 = true;
     else
     {   SYSTEM_INFO s;
         GetNativeSystemInfo(&s);
         switch (s.wProcessorArchitecture)
         {   case PROCESSOR_ARCHITECTURE_AMD64:
-                // printf("parent is a 64-bit process\n");
                 run64 = false;
                 break;
             case PROCESSOR_ARCHITECTURE_INTEL:
@@ -379,7 +370,6 @@ int main(int argc, char *argv[])
 
     STARTUPINFO startup;
     PROCESS_INFORMATION process;
-    char *current;
     const char *user;
     char newenv[1024];
     int dirsize, i, rc;
@@ -406,20 +396,9 @@ int main(int argc, char *argv[])
     startup.wShowWindow = SW_HIDE;
     startup.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
 // Now set up a command line
-    dirsize = GetCurrentDirectory(0, NULL);
-    current = (char *)malloc(dirsize+4);
-    rc = GetCurrentDirectory(dirsize, current);
-    if (rc > dirsize)
-    {   printf("Getting directory failed\n");
-        return 1;
-    }
-// Under cygwin the shell variable USER gives the effective user name. A
-// second variable USERNAME holds the name of the user that Windows believes
-// is active: eg when I am linked in over ssh that may be "cyg_server".
-// If I fail to read USER I will default to the name "unknown".
-    user = getenv("USER");
-    if (user == NULL) user = "unknown";
-    memset(newenv, 0, sizeof(newenv));
+    const char *pnewdir = NULL;
+    char *pnewenv = NULL;
+    char *current;
 // What I do here is to create a string that contains
 //    windir\system32\cmd /c
 //         "c:\cygwin64\bin\bash --login -c
@@ -434,30 +413,67 @@ int main(int argc, char *argv[])
 // rendered as '\'' - that ends the string, puts in an individual single quote
 // by escaping it with a backslash and then resumes the string.
 //
-// I need a variant on cygwin_root converted from x:\... to /cygdrive/x/...
-    sprintf(cygwinized_root, "/cygdrive/%c%s",
-         cygwin_root[0], &cygwin_root[2]);
-    for (char *p=cygwinized_root; *p!=0; p++)
-        if (*p == '\\') *p = '/';
-    sprintf(newenv, "OTHER=yes%cUSER=%s%cPATH=%s/bin%c",
-        0, user, 0, cygwinized_root, 0);
-    for (i=0; i<dirsize; i++)
-        if (current[i] == '\\') current[i] = '/';
-    sprintf(command,
-            "%s\\%s\\cmd /s /d /c %s\\bin\\bash --login -c \\\"cd ",
-            getenv("WINDIR"), run64 ? "sysnative" : "system32", cygwin_root);
-    append_command(current);
-    strcat(command, " ; ");
-    for (i=1; i<argc; i++)
-    {   append_command(argv[i]);
-        if (i != argc-1) strcat(command, " ");
-    }
-    strcat(command, "\"");
-#if 0
-    printf("Command is <%s>\n", command); fflush(stdout);
-#endif
+// If I am NOT needing to flip which version of cygwin I am using I can try
+// use of a command line "bash -c \"c1; c2; ...\""
+// and avoid starting up cygwin from scrath again.
+//
     char newdir[1024];
-    sprintf(newdir, "%s\\bin", cygwin_root);
+ 
+    if (run64 == running64)
+    {
+// The command I issue here will be interpreted by Windows, but I should have
+// the environment and current directory as for Cygwin. So I say just "bash"
+// at the front not "/bin/bash" because the command-name needs to be a
+// Windows version.
+        sprintf(command, "bash -cv \"");
+        for (i=1; i<argc; i++)
+        {   append_command(argv[i]);
+            if (i != argc-1) strcat(command, " ");
+        }
+        strcat(command, "\"");
+    }
+    else
+    {// Under cygwin the shell variable USER gives the effective user name. A
+// second variable USERNAME holds the name of the user that Windows believes
+// is active: eg when I am linked in over ssh that may be "cyg_server".
+// If I fail to read USER I will default to the name "unknown".
+        user = getenv("USER");
+        if (user == NULL) user = "unknown";
+        memset(newenv, 0, sizeof(newenv));
+// I need a variant on cygwin_root converted from x:\... to /cygdrive/x/...
+        sprintf(cygwinized_root, "/cygdrive/%c%s",
+             cygwin_root[0], &cygwin_root[2]);
+        for (char *p=cygwinized_root; *p!=0; p++)
+            if (*p == '\\') *p = '/';
+        sprintf(newenv, "OTHER=yes%cUSER=%s%cPATH=%s/bin%c",
+            0, user, 0, cygwinized_root, 0);
+        pnewenv = newenv;
+
+        sprintf(newdir, "%s\\bin", cygwin_root);
+        pnewdir = newdir;
+
+        dirsize = GetCurrentDirectory(0, NULL);
+        current = (char *)malloc(dirsize+4);
+        rc = GetCurrentDirectory(dirsize, current);
+        if (rc > dirsize)
+        {   printf("Getting directory failed\n");
+            return 1;
+        }
+        for (i=0; i<dirsize; i++)
+            if (current[i] == '\\') current[i] = '/';
+
+        sprintf(command,
+                "%s\\%s\\cmd /s /d /c %s\\bin\\bash --login -c \\\"cd ",
+            getenv("WINDIR"), run64 ? "sysnative" : "system32",
+            cygwin_root);
+        append_command(current);
+        strcat(command, " ; ");
+        for (i=1; i<argc; i++)
+        {   append_command(argv[i]);
+            if (i != argc-1) strcat(command, " ");
+        }
+        strcat(command, "\"");
+    }
     rc = CreateProcess(
              NULL,                       // ApplicationName
              command,                    // Command line
@@ -465,12 +481,28 @@ int main(int argc, char *argv[])
              NULL,                       // Security attributes
              1,                          // Inherit handles?
              CREATE_NEW_CONSOLE,         // Process creation flags
-             newenv,                     // environment
-             newdir,                     // Current Directory
+             pnewenv,                    // environment
+             pnewdir,                    // Current Directory
              &startup,                   // Startup Info
              &process);                  // process info
     if (rc == 0)
-    {   printf("Process creation failed\n");
+    {   LPTSTR msg = NULL;
+        FormatMessage(
+            FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL,
+            GetLastError(),
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPTSTR)&msg,
+            0,
+            NULL);
+        if (msg != NULL)
+        {   fprintf(stderr, "%s\n", msg);
+            LocalFree(msg);
+            msg = NULL;
+        }
+        else fprintf(stderr, "Process creation failed\n");
         return 1;
     }
     WaitForSingleObject(process.hThread, INFINITE);
