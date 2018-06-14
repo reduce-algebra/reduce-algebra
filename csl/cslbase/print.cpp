@@ -2083,10 +2083,10 @@ restart:
                     case SPID_LIBRARY: u = (u >> 20) & 0xfff;
 //
 // When I print the name of a library I will truncate the displayed name
-// to 125 characters. This is somewhat arbitrary (but MUST relate to the
+// to 124 characters. This is somewhat arbitrary (but MUST relate to the
 // size of my_buff), but will tend to keep output more compact.
 //
-                        sprintf(my_buff, "#{%.125s}", fasl_paths[u]);
+                        sprintf(my_buff, "#{%.124s}", fasl_paths[u]);
                         break;
                     default:           sprintf(my_buff, "SPID_%lx",
                                                (long)((u >> 8) & 0x00ffffff));

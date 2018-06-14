@@ -51,18 +51,26 @@
 // thread_local variable I undo the "#define" and refer to the variable
 // directly thereby avoiding the extra indirection.
 
-extern thread_local LispObject *stack;
-extern thread_local jmp_buf *global_jb;
+// BUT: "Oh dear" these changes led to an order of magnitude slowdown for
+// REDUCE, and so I am removing them. I will need to be rather careful before
+// I put more thread_local usage back. But one reason for hope here is that
+// when I have a conservative garbage collector I will not need the separate
+// Lisp stack that is at issue here!
 
-extern LispObject **get_stack_addr();
-extern jmp_buf **get_global_jb_addr();
+//extern thread_local LispObject *stack;
+extern LispObject *stack;
+//extern thread_local jmp_buf *global_jb;
+extern  jmp_buf *global_jb;
+
+//extern LispObject **get_stack_addr();
+//extern jmp_buf **get_global_jb_addr();
 // In any single compilation unit you will only scan this header file
 // once, and so the static variables set up here get defined just once
 // and the initialization of them should happen during thread initialization.
-static thread_local LispObject **const stack_addr = get_stack_addr();
-static thread_local jmp_buf **const global_jb_addr = get_global_jb_addr();
-#define stack (*stack_addr)
-#define global_jb (*global_jb_addr)
+//static thread_local LispObject **const stack_addr = get_stack_addr();
+//static thread_local jmp_buf **const global_jb_addr = get_global_jb_addr();
+//#define stack (*stack_addr)
+//#define global_jb (*global_jb_addr)
 
 // End of thread_local hack.
 

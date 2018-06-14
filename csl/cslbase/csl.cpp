@@ -961,11 +961,12 @@ void debug_show_trail_raw(const char *msg, const char *file, int line)
 #endif
 
 // See comments in lispthrow.h for an explanation of this.
-#undef global_jb
-thread_local jmp_buf *global_jb;
-jmp_buf **get_global_jb_addr()
-{   return &global_jb;
-}
+//#undef global_jb
+//thread_local jmp_buf *global_jb;
+//jmp_buf **get_global_jb_addr()
+//{   return &global_jb;
+//}
+jmp_buf *global_jb;
 
 void global_longjmp()
 {   longjmp(*global_jb, 1);
