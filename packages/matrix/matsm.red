@@ -125,7 +125,9 @@ symbolic procedure lchk u;
 symbolic procedure addm(u,v);
    % Returns sum of two matrix canonical forms U and V.
    % Returns U + 0 as U. Patch by Francis Wright.
-   if v = '(((nil . 1))) then u else       % FJW.
+   if v = '(((nil . 1))) then u        % FJW.
+   % Return also 0 + v as v.
+    else  if u = '(((nil . 1))) then v else
    for each j in addm1(u,v,function cons)
       collect addm1(car j,cdr j,function addsq);
 
