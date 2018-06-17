@@ -113,13 +113,18 @@ top:
        begin
           scalar z;
           z := retimes(prepd u . exchk v);
-% I will note that an embedded (plus P Q) can arise from the conversion
-% of a domain element in the case of complex values, so without the
-% top line (x + (i+1)) might end up as
-%    (plus x (plus i 1))
+% I will note that an embedded (plus P Q) or (difference P Q) can arise from
+% the conversion of a domain element in the case of complex values, so without
+% the top line (x + (i+1)) might end up as
+%    (plus x (plus i 1)),
 % while I adjust it here to be (plus x i 1). That seems reasonable.
+% Similarly (x + (-1-i)) might end up as
+%    (plus x (difference (minus 1) i))
+% and is adjusted to (plus (minus 1) (minus i).
           if eqcar(z, 'plus) then <<
              for each y in cdr z do r := y . r >>
+	  else if eqcar(z, 'difference) then <<
+	     r := cadr z . r; r := {'minus,caddr z} . r >>
           else r := z . r;
           return r
        end;

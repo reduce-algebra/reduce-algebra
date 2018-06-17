@@ -77,8 +77,6 @@ put('!:rn!:,'cmpxtype,'!:crn!:);
 
 put('!:crn!:,'minusp,'crn!:minusp);
 
-symbolic procedure crn!:minusp u; caddr u=0 and minusp caadr u;
-
 symbolic procedure mkcrn(u,v); '!:crn!: . u . v;
 
 symbolic inline procedure crntag x; '!:crn!: . x;
@@ -88,6 +86,8 @@ symbolic inline procedure rntag x; '!:rn!: . x;
 symbolic inline procedure crnrl x; cadr x;
 
 symbolic inline procedure crnim x; cddr x;
+
+symbolic procedure crn!:minusp u; car crnim u=0 and minusp car crnrl u;
 
 symbolic procedure crn!:simp u; (crntag u) ./ 1;
 
@@ -168,9 +168,16 @@ symbolic procedure crnprimp u;
 symbolic procedure crnprep1 u;
    if rnzerop!: cdr u then rnprep!: car u
    else if rnzerop!: car u then crnprimp cdr u
-   else if rnminusp!: cdr u
-      then list('difference,rnprep!: car u,crnprimp rnminus!: cdr u)
-   else list('plus,rnprep!: car u,crnprimp cdr u);
+   else
+% Make sure for that a negative real part has always minus as toplevel prefix op.
+% Otherwise, a number like -1/2 + i would be returned as
+%   (plus (quotient (minus 1) 2) i)
+% Now it returns (plus (minus (quotient 1 2)) i) 
+%  which is better handled in printing.
+      (if rnminusp!: cdr u
+       then list('difference,v,crnprimp rnminus!: cdr u)
+      else list('plus,v,crnprimp cdr u))
+	 where v := if rnminusp!: car u then {'minus,rnprep!: rnminus!: car u} else rnprep!: car u;
 
 symbolic procedure crn!:prin u;
    (if atom v or car v eq 'times or car v memq domainlist!*

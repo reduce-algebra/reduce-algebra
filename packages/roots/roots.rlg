@@ -1712,9 +1712,9 @@ zz1 := mkpoly sss;
 
 
                       2
-zz1 := 5000000000000*x  - (4999999500000 + 25000010000000*i)*x
+zz1 := 5000000000000*x  - (4999999500000 + 25000010000000*i)*x + 5000012308763
 
-        + 5000012308763 - 2110440*i
+        - 2110440*i
 
 
 %                      2
@@ -1742,9 +1742,9 @@ zz1 - zz;
 
 
                2
-4999999999999*x  - (4999999499999 + 25000009999995*i)*x
+4999999999999*x  - (4999999499999 + 25000009999995*i)*x + 5000012308762
 
- + 5000012308762 - 2110440*i
+ - 2110440*i
 
 
 %               2
@@ -4376,10 +4376,10 @@ roots bb;
 
 end;
 
-Tested on x86_64-pc-windows CSL
-Time (counter 1): 484 ms
+Tested on x86_64-unknown-ubuntu16.04 CSL
+Time (counter 1): 900 ms  plus GC time: 90 ms
 
-End of Lisp run after 0.48+0.06 seconds
-real 0.73
-user 0.04
-sys 0.03
+End of Lisp run after 0.90+0.11 seconds
+real 1.22
+user 1.13
+sys 0.02
