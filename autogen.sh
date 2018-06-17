@@ -13,8 +13,8 @@
 # If no arguments are passed the script will rebuild everything. If
 # --with-csl or --with-psl is specified only that section of the tree
 # will be processed. In the CSL case "--with-wx", "--withoug-gui",
-# "--with-boehm" and perhaps other sub-options will be checked to try
-# to save reworking directories that would not be used.
+# and perhaps other sub-options will be checked to try to save reworking
+# directories that would not be used.
 #
 
 sequential="no"
@@ -68,7 +68,7 @@ printf "autogen.sh arguments: $*\n"
 
 if test $# -eq 0
 then
-  a="--with-psl --with-csl --with-fox --with-boehm"
+  a="--with-psl --with-csl --with-fox"
 else
   a="$*"
 fi
@@ -124,15 +124,6 @@ case $a in
     ;;
   *)
     L="$L ./csl/fox"
-    ;;
-  esac
-  case $a in
-  *--without-boehm* | *with-boehm=no*)
-    ;;
-  *--with-boehm*)
-    L="$L ./csl/cslbase/gc-7"
-    ;;
-  *)
     ;;
   esac
   ;;
