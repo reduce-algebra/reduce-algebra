@@ -620,11 +620,6 @@ AC_ARG_WITH(force,
   [],
   [with_force="no"])
 
-AC_ARG_WITH(boehm,
-  AC_HELP_STRING([--with-boehm], [Can be used to disable use of boehm collector]),
-  [],
-  [with_boehm="no"])
-
 # I could provide a --with-libedit=... option but the plan here is that
 # the version used will only change during transitions made by the developers
 # and so I limit myself to a fixed setting here. No ordinary person should
@@ -690,7 +685,7 @@ AC_ARG_ENABLE(debug,
 
 AC_ARG_ENABLE(conservative,
   AC_HELP_STRING([--enable-conservative],
-                 [garbage collect option: not available yet (CSL only)]),
+                 [garbage collect option: testing andf development use (CSL only)]),
   [],
   [enable_conservative="no"])
 
@@ -1125,6 +1120,7 @@ esac
 AC_CONFIG_SRCDIR(scripts/make.sh)
 
 AM_INIT_AUTOMAKE([1.13 -Wno-portability foreign no-dist-gzip dist-bzip2])
+LT_INIT
 
 AC_CONFIG_FILES([Makefile])
 
@@ -1529,68 +1525,6 @@ else
   eval "$doconfig"
 fi
 cd "$builddir"
-
-# If I am building the "test" (aka "experiment") version I will need to
-# have the Boehm conservative garbage collector...
-if test "x$enable_test" = "xyes"
-then
-  with_boehm="yes"
-fi
-
-# For now I will insist on an explicit request for this...
-AC_MSG_NOTICE([with_boehm = $with_boehm])
-
-if test "x$with_boehm" = "xno"
-then
-  AC_MSG_NOTICE([boehm will not be used here])
-else
-  AC_MSG_NOTICE([About to configure boehm])
-  mkdir -p boehm
-  cd boehm
-
-  if test "x$CC$CPP$CXX$CXXCPP" != "x"
-  then
-    passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
-  else
-    passcc=""
-  fi
-  case $build in
-  *windows* | *win32* | *mingw*)
-    thr="win32"
-    ;;
-  *)
-    thr="posix"
-    ;;
-  esac
-  AC_MSG_NOTICE([passcc = $passcc])
-  doconfig="$SHELL $abssrcdir/csl/cslbase/gc-7/configure -C $filtered \
-        $pass_host \
-        CC=\"$CC\" CXX=\"$CXX\" \
-        CPPFLAGS=\"$CPPFLAGS -DDONT_ADD_BYTE_AT_END=1\" \
-        CFLAGS=\"$CFLAGS\" \
-        CXXFLAGS=\"$CXXFLAGS\" \
-        LDFLAGS=\"$LDFLAGS\" $passcc \
-        --prefix=\"$builddir\" \
-        --libdir=\"$builddir/lib\" \
-        --includedir=\"$builddir/include\" \
-        --enable-threads=$thr \
-        --enable-thread-local-alloc \
-        --enable-parallel-mark \
-        --without-libatomic-ops"
-  AC_MSG_NOTICE([doconfig = $doconfig])
-  if test "x$with_sequential" = "xno"
-  then
-    eval "$doconfig" &
-    procids="$procids $!"
-  else
-    eval "$doconfig"
-  fi
-  cd "$builddir"
-fi
-
-AC_MSG_NOTICE([About to configure libsoftfloat])
-mkdir -p softfloat
-cd softfloat
 
 if test "x$CC$CPP$CXX$CXXCPP" != "x"
 then

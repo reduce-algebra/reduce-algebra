@@ -33,6 +33,7 @@ AC_INIT([Redfront],[3.3],[http://sourceforge.net/reduce-algebra])
 
 AM_INIT_AUTOMAKE([1.13 -Wno-portability -Wno-override foreign dist-bzip2])
 AC_CONFIG_MACRO_DIRS([m4])
+LT_INIT
 # I will use the older version too.
 AC_CONFIG_MACRO_DIR([m4])
 

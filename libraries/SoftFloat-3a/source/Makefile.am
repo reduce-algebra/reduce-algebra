@@ -43,6 +43,8 @@ lib_LIBRARIES = libsoftfloat.a
 
 VPATH = $(srcdir):$(srcdir)/8086-SSE
 
+ACLOCAL_AMFLAGS = -I m4
+
 SOFTFLOAT_PRIMITIVES = \
   s_eq128.c \
   s_le128.c \

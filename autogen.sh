@@ -80,6 +80,7 @@ fi
 find . -name config.cache | xargs rm -f
 
 # I will re-process the top level first sequentially.
+mkdir -p m4
 $LIBTOOLIZE --force --copy
 aclocal --force
 autoreconf -f -i -v
@@ -151,6 +152,7 @@ do
     cd $d
     printf "autoreconf -f -i -v\n"
 # I will spawn all the calls to autoconf to run concurrently...
+    mkdir -p m4
     if test "$sequential" = "yes"
     then
       ( aclocal --force; $LIBTOOLIZE --force --copy )

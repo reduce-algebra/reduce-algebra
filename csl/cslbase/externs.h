@@ -58,22 +58,6 @@ extern void **new_heap_pages, **new_vheap_pages;
 
 extern void *allocate_page(const char *why);
 
-#ifdef CONSERVATIVE
-
-extern uintptr_t *pages_hash_table;
-
-#define PAGE_TYPE_2CELL   0
-#define PAGE_TYPE_4CELL   1
-#define PAGE_TYPE_BIG     2
-
-typedef struct _page_header
-{   unsigned int fringe;
-    unsigned int type:2
-    unsigned int pinsize:30
-} page_header;
-
-#endif
-
 extern size_t pages_count, heap_pages_count, vheap_pages_count;
 
 extern size_t new_heap_pages_count, new_vheap_pages_count;
@@ -89,9 +73,7 @@ extern bool restartp;
 
 extern char *big_chunk_start, *big_chunk_end;
 
-#ifdef CONSERVATIVE
 extern LispObject *C_stackbase, *C_stacktop;
-#endif
 
 extern LispObject multiplication_buffer;
 

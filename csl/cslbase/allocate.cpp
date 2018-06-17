@@ -55,11 +55,29 @@
 // Following CST project work by Jamie Davenport I now intend to try for a
 // design that is conservative, generational and somewhat threaded.
 //
-// Memory is used in pages (of size CSL_PAGE_SIZE). Each page will either hold
-// CONS cells (and other items of size 2*CELL) or larger items (typically
-// symbol headers and vectors). Given an arbitrary bit-pattern it will be
-// possible to tell if it refers to an address within an object in one of these
-// pages.
+// Memory is used in pages (of size CSL_PAGE_SIZE). Given an arbitrary
+// bit-pattern it will be possible to tell if it refers to an address
+// within an object in one of these pages.
+//
+// All pages are the same and can contain a mix of CONS cells and vectors.
+// The associated penalty as against having one sort of page for cons cells
+// and another for vectors will be that every CONS cell needs to be identified
+// in a bitmap being at the start of an object.
+// Well because the majority of allocations will be of these, I will take
+// the view that rather than marking the first word of every object I will
+// mark bits on every word that is NOT the start of an object. For
+// vectors this means every word of their content. When a large vector is
+// allocated this can feel like a lot of mark bits to set - but I have three
+// responses to that:
+// (1) For vectors that hold list pointers I will need to initialize all the
+//     cells of the vector anyway, so I already have a cost that is linear
+//     in the vector-size and adjusting mark bits is thus maybe not too bad.
+// (2) For large vectors I will be able to set the bits up to 64 at a time
+//     by using word operations, so the total overhead should be modest.
+// (3) I can still leave a "1" bit in the bitmap as indicating the start of
+//     an object and a "0" the interior. And when I look at the first word of
+//     an object I can distinguish a CONS because it does not have a word
+//     tagged as a header in what is its CAR field.
 //
 // With each page I will have a bitmap that is used to record a concept "pinned"
 // that can be associated with any object in the page. An item will be marked
@@ -67,8 +85,8 @@
 // I will have an array of size half a page for each thread and will bse that
 // to collect a list of all the pinned items in a single page of memory that
 // I am evacuating. The size here is only half a page because the smallest items
-// ever allocated within the heap are 2 pointers large. I rather expect that the
-// full capacity of this will never be approached.
+// ever allocated within the heap are 2 pointers large. I rather expect that
+// the full capacity of this will never be approached.
 //
 // Pages of memory are classified as
 //   Current (C). These are the pages within which the mutator allocates
@@ -693,25 +711,25 @@ static void low_level_signal_handler(int signo)
 // Now let me start to talk about the arrangement within a "page" (which
 // is a region of memory of size CSL_PAGE_SIZE, maybe 8 Mbytes).
 // Pages can be in a number of states. One obvious one is "unused". Others
-// involved what sort of information is stored in them, whether they are
-// in the "new" or "old" region of the heap (as regards the copying nature of
-// garbage collection), whether they are a "nursery page" (as regards a
-// generational collection strategy) and so on. The first word of a page
-// will contain information about that sort of thing!
+// involved whether they are in the "new" or "old" region of the heap (as
+// regards the copying nature of garbage collection), whether they are a
+// "nursery page" (as regards a generational collection strategy) and so on.
+// The first word of a page will contain information about that sort of thing!
 // The second word is available for forming chains of pages.
 // There are then two words that are available to hold information about how
 // full the page is.
-// After that is a bitmap region, followed by a data region.
+// After are some bitmaps and then data..
 //
 // The first sort of page to be discussed is used to store large vectors.
 // The format is as follows:
-//     type info
-//     chaining word
-//     fringe
-//     heaplimit
-//     next-fringe
-//     -
-//     bitmap bitmap bitmap bitmap ...
+//     type info      )
+//     chaining word  )
+//     fringe               )
+//     heaplimit            )
+//     next-fringe    )
+//     -              )
+//     [object start bitmap]
+//     [pin bitmap]
 //     start of used data
 //     ... used
 //     end of used data <----------- fringe
@@ -722,8 +740,6 @@ static void low_level_signal_handler(int signo)
 //     next'-fringe  <-------------- next' fringe
 //     ... free
 //     ... <------------------------ next heaplimit
-//     [object start bitmap]
-//     [pin bitmap]
 //     <end of page>
 //
 // The idea is that the whole page can be interrupted if "pinned" items
@@ -818,59 +834,64 @@ typedef struct page_header_
     uintptr_t next_fringe;
     uintptr_t padding;
 
+    uint64_t objectstart_bitmap[PAGE_BITMAP_SIZE/sizeof(uint64_t)];
+    uint64_t pinned_bitmap[PAGE_BITMAP_SIZE/sizeof(uint64_t)];
+
     LispObject data[1];
 } page_header;
 
-typedef struct cons_page_trailer_
-{   uint64_t pinned_bitmap[PAGE_BITMAP_SIZE/sizeof(uint64_t)];
-} cons_page_trailer;
+// Test if a pointer (p) points at an object header.
 
-typedef struct vector_page_trailer_
-{   uint64_t objectstart_bitmap[PAGE_BITMAP_SIZE/sizeof(uint64_t)];
-    uint64_t pinned_bitmap[PAGE_BITMAP_SIZE/sizeof(uint64_t)];
-} vector_page_trailer;
-
-static inline cons_page_trailer *cons_trailer(page_header *p)
-{   return (cons_page_trailer *)((char *)p +
-                                 (CSL_PAGE_SIZE - sizeof(cons_page_trailer)));
-}
-
-static inline vector_page_trailer *vector_trailer(page_header *p)
-{   return (vector_page_trailer *)((char *)p +
-                                 (CSL_PAGE_SIZE - sizeof(vector_page_trailer)));
-}
-
-static inline bool is_header_vector(LispObject p, page_header *page)
-{   size_t offset = p - (LispObject)page;
+static inline bool is_header_address(LispObject p, page_header *page)
+{   uintptr_t offset = (char *)p - (char *)page;
 // If the putative pointer refers to parts of the header that are before
 // any useful data (for instance it refers into the bitmap) or if it points
 // beyond the end of the page it is not valid.
     if (offset < offsetof(page_header, data) ||
         offset >= page->fringe) return false;
+// The bitmap will have one bit for every 2 CELLS...
     offset /= 2*CELL;
+// ... and it stores 64 bits of information in each uint64_t entry.
     size_t n = offset/64;
     uint64_t bit = ((uint64_t)1)<<(offset%64);
-    return (vector_trailer(page)->objectstart_bitmap[n] & bit) != 0;
+// A header is signified by having a 1 in the bitmap.
+    return (page->objectstart_bitmap[n] & bit) == 1;
 }
 
 // When I set or clear bits that mark an object header I will only do so
 // with addresses that are validly in-range.
 
-static inline void set_header_vector(LispObject p, page_header *page)
+static inline void set_header_bit(LispObject p, page_header *page)
 {   size_t offset = (p - (LispObject)page)/(2*CELL);
     size_t n = offset/64;
     uint64_t bit = ((uint64_t)1)<<(offset%64);
-    vector_trailer(page)->objectstart_bitmap[n] |= bit;
+    page->objectstart_bitmap[n] |= bit;
 }
 
-static inline void clear_header_vector(LispObject p, page_header *page)
+static inline void clear_header_bit(LispObject p, page_header *page)
 {   size_t offset = (p - (LispObject)page)/(2*CELL);
     size_t n = offset/64;
     uint64_t bit = ((uint64_t)1)<<(offset%64);
-    vector_trailer(page)->objectstart_bitmap[n] &= ~bit;
+    page->objectstart_bitmap[n] &= ~bit;
 }
 
-static inline bool is_pinned_vector(LispObject p, page_header *page)
+static inline void clear_header_bits(LispObject p, size_t n, page_header *page)
+{
+// This is not yet coded properly! I want to use word-at-a-time operations to
+// clear multiple bits. But working one entry at a time should yield correct
+// results, just not the best possible performance.
+    while (n != 0)
+    {   clear_header_bit(p, page);
+        p += 2*CELL;
+        n -= 2*CELL;
+    }
+//  size_t offset = (p - (LispObject)page)/(2*CELL);
+//  size_t n = offset/64;
+//  uint64_t bit = ((uint64_t)1)<<(offset%64);
+//  page->objectstart_bitmap[n] &= ~bit;
+}
+
+static inline bool is_pinned(LispObject p, page_header *page)
 {   size_t offset = p - (LispObject)page;
 // If the putative pointer refers to parts of the header that are before
 // any useful data (for instance it refers into the bitmap) or if it points
@@ -880,35 +901,23 @@ static inline bool is_pinned_vector(LispObject p, page_header *page)
     offset /= 2*CELL;
     size_t n = offset/64;
     uint64_t bit = ((uint64_t)1)<<(offset%64);
-    return (vector_trailer(page)->pinned_bitmap[n] & bit) != 0;
+    return (page->pinned_bitmap[n] & bit) != 0;
 }
 
-static inline bool is_pinned_cons(LispObject p, page_header *page)
+static inline void set_pinned(LispObject p, page_header *page)
 {   size_t offset = p - (LispObject)page;
-// If the putative pointer refers to parts of the header that are before
-// any useful data (for instance it refers into the bitmap) or if it points
-// beyond the end of the page it is not valid.
-    if (offset < offsetof(page_header, data) ||
-        offset >= page->fringe) return false;
-    size_t n = offset/(2*CELL*64);
+    offset /= 2*CELL;
+    size_t n = offset/64;
     uint64_t bit = ((uint64_t)1)<<(offset%64);
-    return (cons_trailer(page)->pinned_bitmap[n] & bit) != 0;
+    page->pinned_bitmap[n] |= bit;
 }
 
-static inline void set_pinned_vector(LispObject p, page_header *page)
-{
-}
-
-static inline void set_pinned_cons(LispObject p, page_header *page)
-{
-}
-
-static inline void clear_pinned_vector(LispObject p, page_header *page)
-{
-}
-
-static inline void clear_pinned_cons(LispObject p, page_header *page)
-{
+static inline void clear_pinned(LispObject p, page_header *page)
+{   size_t offset = p - (LispObject)page;
+    offset /= 2*CELL;
+    size_t n = offset/64;
+    uint64_t bit = ((uint64_t)1)<<(offset%64);
+    page->pinned_bitmap[n] &= ~bit;
 }
 
 // Provide the kernel of the allocation code...
@@ -1013,6 +1022,8 @@ volatile int volatile_variable = 12345;
 
 void reclaim(int line)
 {
+// This function is not officially portable in any way.
+//
 // The purpose of this function is to force any even partially
 // reasonable C compiler into putting all registers that contain
 // values from the caller onto the stack. It assumes that there
@@ -1042,8 +1053,8 @@ void reclaim(int line)
     register int a10 = volatile_variable;
     register int a11 = volatile_variable;
     register int a12 = volatile_variable;
-// Even with a heavily optimising compiler the above ough to generate
-// 12 loads from the volatile_variable and in principle the values so
+// Even with a heavily optimising compiler the above ought to generate
+// 12 loads from the volatile_variable because in principle the values so
 // loaded could all be different.
     jmp_buf jb;
     if (setjmp(jb) != 0) volatile_variable++;
@@ -1054,15 +1065,15 @@ void reclaim(int line)
 // everything will be executed up to a million times, and that might encourage
 // it to try quite hard to store the values of a1-a12 in registers (thus
 // flushing any values from its caller to stack). But in fact the code will
-// reynr after calling middle_reclaim() without doing anything else that
+// return after calling middle_reclaim() without doing anything else that
 // might be costly. So my expectation is that the function here will consume
 // some space in program memory but will represent really rather a small
 // burden on CPU time.
         if (volatile_variable == volatile_variable) return;
-        if (volatile_variable != volatile_variable) longjmp(jb, 1);
-// The longjmp will never be taken, but the compiler is not allowed to
-// assume that! Therefore it must  keep jb on alive on the stack during the
+// The longjmp here will never be taken, but the compiler is not allowed to
+// assume that! Therefore it must keep jb on alive on the stack during the
 // call to middle_reclaim().
+        if (volatile_variable != volatile_variable) longjmp(jb, 1);
         volatile_variable += a1;
         volatile_variable += a2;
         volatile_variable += a3;
@@ -1079,7 +1090,11 @@ void reclaim(int line)
 // values with volatile_variable in a way intended to mean that they must
 // all be saved across the call to middle_reclaim(). The code is written
 // line by line to arrange that there are sequence points between each
-// access to volatile_variable.
+// access to volatile_variable, and in the compiler's imagination some other
+// part of the full world might inspect the value stored there at any of
+// those points, so there should be no legitimate scope for any optimization
+// that would avoid having all the 12 potentially distinct value in a1-a12
+// safely kept available.
     }
 }
 
@@ -1090,7 +1105,8 @@ void middle_reclaim()
 // on volatile_variable is intended to persuade clever compilers that they
 // should not compile this procedure in-line or consolidate its stack
 // frame with either its caller or callee by making it appear that it
-// could be recursive. The address of the top of the stack is passed onwards.
+// could be recursive. The address of the top of the stack is passed onwards,
+// adjusted so as to be alined as for a LispObject.
     int w;
     if (volatile_variable != volatile_variable)
     {   inner_reclaim(NULL);  // never executed!
@@ -1099,8 +1115,85 @@ void middle_reclaim()
     inner_reclaim((LispObject *)((intptr_t)&w & -sizeof(LispObject)));
 }
 
+static inline LispObject find_object_start(LispObject v, page_header *p)
+{
+// I will code this CRUDELY to start with.
+    LispObject v1 = v;
+// I will scan downwards in memory until I find a doubleword that is
+// marked as being the start of an object. If the page is not empty then
+// there will always be an object present at its start, and so this
+// loop will terminate. If the page was empty then the putative pointer
+// into it would have been rejected. So the loop here is safe.
+// At present I have coded this scanning down one unit at a time, but I
+// will be able to scan down through the bitmap up to 64 steps per go by
+// using word-at-a-time operations and probably a "find first set bit"
+// operation. That would speed this up in an interesting manner.
+    v1 &= -(LispObject)(2*CELL);
+    while (!is_header_address(v1, p)) v1 -= 2*CELL;
+    LispObject h = *(LispObject *)v1;
+// Now the item referenced is one of the following:
+//  A CONS, with a non-header value in h
+//  A padder vector.
+//  A symbol
+//  A genuine vector
+    
+}
+
+
 void inner_reclaim(LispObject *sp)
 {
+// (1) Clear pinned map for R and S.
+//     [Well I am at least for now going to suppose that that had been
+//     done as part of the final stage of the previous garbage collection,
+//     so I do not have anything to do here.]
+// (2) Scan ambiguous bases, marking items referred to in R or S as pinned.
+//     Build a table of the pinned items first using the pinned-table and if
+//     that overflows building a linked list in pages from F.
+//     If there had been a list of pinned items left in S by the previous
+//     collection then scan down it clearing any pinned bits on its entries,
+//     because that data is now not needed.
+    for (LispObject *s=sp; s<C_stackbase; s++)
+    {   LispObject v = *s;   // Possibly a valid pointer!
+        int h = find_heap_segment((uintptr_t)v);
+        if (h < 0) continue;
+// Here the ambiguous pointer at least lies within one of the regions of
+// memory that I had set aside for the heap.
+        void *seg = heap_segment[h];
+#ifdef SOMETIME
+// References into the "current" page will not be treated as cause for
+// pinning. That is because I expect that there will be quite a few references
+// into that page on the stack and that would lead to many pinned items.
+// 
+        if (seg == C) continue;
+#endif
+        uintptr_t off = (char *)v - (char *)seg;
+        uintptr_t pagenum = off/CSL_PAGE_SIZE;
+        page_header *p = (page_header *)((char *)seg + CSL_PAGE_SIZE*pagenum);
+// Now p points to the start of a page that the pointer seems to address.
+// Reject it if the "pointer" is into the page header...
+        if ((char *)v < (char *)&p->data) continue;
+// ... and also if it is beyond all live data in the page.
+        if ((char *)v >= (char *)p->fringe) continue;
+        v = find_object_start(v, p);
+        if (v == 0) continue;
+// Now v is a sort of honest reference to an item that must be pinned.
+    }
+// (3) Scan unambiguous bases and pointers out of C relocating anything except
+//     references into C or to things that are pinned. This copies material to
+//     new pages in F.
+// (4) Scan the new material in F much as step (4) in the minor case.
+// (5) Using information about pinned data in the table and any overflow list
+//     build up freespace tables/maps/chains in all the blocks from S.
+// (6) Swap interpretation of S and F, and allocate a new empty block for R
+//     (which in step 7 of the minor GC will then instantly become the new C).
+// (7) Consider dirty bits. What is needed is to mark any segment of memory
+//     containing a reference to C as dirty, and all others as clean. I rather
+//     hope to be able to build up that information as part of steps (3) and
+//     (4) since they already need to test for references into C.
+
+
+
+
 }
 
 
@@ -1140,17 +1233,11 @@ void init_heap_segments(double store_size)
 //
 {   const char *memfile = "memory.use"; // For memory statistics etc
     pages = (void **)malloc(MAX_PAGES*sizeof(void *));
-#ifdef CONSERVATIVE
-    page_map = (page_map_t *)malloc(MAX_PAGES*sizeof(page_map_t));
-#endif
     heap_pages = (void **)malloc(MAX_PAGES*sizeof(void *));
     vheap_pages = (void **)malloc(MAX_PAGES*sizeof(void *));
     new_heap_pages = (void **)malloc(MAX_PAGES*sizeof(void *));
     new_vheap_pages = (void **)malloc(MAX_PAGES*sizeof(void *));
     if (pages == NULL ||
-#ifdef CONSERVATIVE
-        page_map == NULL ||
-#endif
         new_heap_pages == NULL ||
         new_vheap_pages == NULL ||
         heap_pages == NULL ||

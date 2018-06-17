@@ -650,11 +650,6 @@ then
   enable_test="yes"
 fi
 
-AC_ARG_WITH(boehm,
-   AC_HELP_STRING([--with-boehm], [Can be used to disable use of boehm]),
-   [],
-   [with_boehm="no"])
-
 if test "x$enable_test" = "xyes"
 then
 # I force EXPERIMENT into CPPFLAGS because when u01.cpp to u60.cpp get
@@ -662,14 +657,6 @@ then
 # on the option!
   CPPFLAGS="$CPPFLAGS -DEXPERIMENT=1"
   AC_DEFINE(EXPERIMENT, [1], [True if this is an experimental testing mode variant])
-# Note that if I go "--enable-test" that causes a default "--with-boehm",
-# so that the conservative garbage collector will be available.
-  with_boehm="yes"
-fi
-
-if test "x$with_boehm" != "xno"
-then
-  AC_DEFINE(HAVE_BOEHM, [1], [Boehm conservative collector should be available])
 fi
 
 # Want to build "embedded" variant?
@@ -1805,7 +1792,6 @@ AM_CONDITIONAL(canrun,test "x$can_run_executables" = "xyes")
 AM_CONDITIONAL(cygpath, test "x$CYGPATH" != "xno")
 AM_CONDITIONAL(valgrind, test "x$VALGRIND" = "xvalgrind")
 AM_CONDITIONAL(crlibm, test "x$with_crlibm" != "xno")
-AM_CONDITIONAL(boehm, test "x$with_boehm" != "xno")
 AM_CONDITIONAL(redfront, test "x$with_redfront" != "xno")
 
 AC_OUTPUT

@@ -5,6 +5,8 @@
 
 TRACE = $(warning TRACE: $@ :: $?)
 
+ACLOCAL_AMFLAGS = -I m4
+
 srcdir = @srcdir@
 VPATH = @srcdir@
 

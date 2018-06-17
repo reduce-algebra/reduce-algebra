@@ -4,6 +4,7 @@
 
 bin_PROGRAMS = rfpsl rfcsl rfboot
 
+ACLOCAL_AMFLAGS = -I m4
 
 if WINDOWS
 dist_bin_SCRIPTS = rfpslwin.exe rfcslwin.exe rfbootwin.exe

@@ -478,9 +478,13 @@ typedef uintptr_t Header;
 #define TYPE_MAPLEREF    ( 0x2f <<Tw) // hook for interface to Maple ...
                                       // ... note this was an EXPERIMENT
 #endif
+
 #define TYPE_FOREIGN     ( 0x33 <<Tw) // entrypoint to foreign function
 #define TYPE_SP          ( 0x37 <<Tw) // Encapsulated stack ptr
-#define TYPE_ENCAPSULATE ( 0x3b <<Tw) // SAME TAG AS SP AT PRESENT@@@
+#define TYPE_ENCAPSULATE ( 0x3b <<Tw) // Encapsulated address
+
+#define TYPE_PADDER      ( 0x7b <<Tw) // a padder vector
+
 
 static inline bool vector_holds_binary(Header h)
 {   return  ((h) & (0x2<<Tw)) != 0;
@@ -715,7 +719,7 @@ static inline bool is_array_header(Header h)
 // [[11:011 1:1 010  nativecode                     8]] NOT USED
 //   11:100 1:1 010  (spare: 1 code)                X
 //   11:101 1:1 010  (spare: 1 code)                X
-//   11:110 1:1 010  (spare: 1 code)                X
+//   11:110 1:1 010  padder vector                  X
 //   11:111 1:1 010  float128          *            F128
 
 // I have tests that let me discern the size of storage units within a

@@ -50,25 +50,6 @@ static intptr_t cons_cells, symbol_heads, strings, user_vectors,
        big_numbers, box_floats, bytestreams, other_mem,
        litvecs, getvecs;
 
-#ifdef CONSERVATIVE
-
-// Keep granularity in an address just sufficient to identify a "page".
-static inline uintptr_t masked_address(uintptr_t p)
-{   return p & (-PAGE_POWER_OF_TWO);
-}
-
-// Find the allocated page (if any) containing the address (p). This is
-// used when p comes from an ambiguous root and is a step in deciding if
-// data at p must be pinned so that the garbage collector will not relocate
-// it.
-
-LispObject *find_page(uintptr_t p)
-{   uintptr_t p1 = masked_address(p);
-    
-}
-
-#endif
-
 LispObject Lgc0(LispObject env)
 {   return Lgc(env, lisp_true);
 }
@@ -512,99 +493,6 @@ static void report_at_end()
     qvalue(avail_space) = fixnum_of_int((int)(1024.0*fn1));
 }
 
-#ifdef CONSERVATIVE
-
-// The conservative collector needs to cope with some ambiguous pointers.
-// these must all be marked from, but the data that they seem to point to
-// must not be moved since the pointer must not be changed in any way in
-// case it is in fact not a pointer. To support that I need to be ready
-// to track and record all the ambiguous roots. I will use a hash table
-// as part of this process.
-
-LispObject *C_stackbase, *C_stacktop;
-
-void get_stacktop()
-{   volatile LispObject sp;
-    C_stacktop = (LispObject *)&sp;
-}
-
-// I want the following number to be a prime to make some hash-table
-// activity work smoothly.
-// the LOAD value is to let the hash table become 7/8 full before I
-// give up on it.
-#define AMBIGUOUS_CACHE_SIZE 2003U
-#define AMBIGUOUS_LOAD   ((7*AMBIGUOUS_CACHE_SIZE)/8)
-
-static LispObject ambiguous[AMBIGUOUS_CACHE_SIZE];
-static int nambiguous;
-static LispObject *C_stack_remaining;
-
-// The next function is intended to allow me to detect some values as
-// being certain not to be valid LispObjects, and hence not in need of
-// processing by a conservative coollector. For now this is does not
-// do anything meaningful!
-
-static bool certainly_not_valid(LispObject p)
-{   switch (p & 0x7)
-    {   case TAG_CONS:
-
-        case TAG_SYMBOL:
-        case TAG_NUMBERS:
-        case TAG_VECTOR:
-        case TAG_BOXFLOAT:
-
-        default:
-            return true;
-    }
-}
-
-typedef void process_ambiguous_pointer_t(LispObject x);
-
-static void scan_ambiguous(process_ambiguous_pointer_t *fn)
-{   unsigned int i;
-    LispObject *s;
-    for (i=0; i<AMBIGUOUS_CACHE_SIZE; i++)
-    {   LispObject p = ambiguous[i];
-        if (p == 0) continue;
-        (*fn)(p);
-    }
-    for (s=C_stack_remaining; s<=C_stackbase; s++)
-    {   LispObject p = *s;
-        if (certainly_not_valid(p)) continue;
-        (*fn)(p);
-    }
-}
-
-static void cache_ambiguous()
-{
-// This sets up my hash table of ambiguous pointers and MUST be called before
-// I use scan_ambiguous.
-    unsigned int i;
-    LispObject *s;
-    for (i=0; i<AMBIGUOUS_CACHE_SIZE; i++) ambiguous[i] = 0;
-    nambiguous = 0;
-    for (s=C_stacktop; s<=C_stackbase && nambiguous<AMBIGUOUS_LOAD; s++)
-    {   LispObject p = *s;
-        if (certainly_not_valid(p)) continue;
-        i = (unsigned int)(((uintptr_t)p) % (uintptr_t)AMBIGUOUS_CACHE_SIZE);
-        for (;;)
-        {   if (ambiguous[i] == 0)
-            {   ambiguous[i] = p;   // enter new pointer into the table
-                nambiguous++;       // count entries in the table
-                break;
-            }
-            else if (ambiguous[i] == p) break; // seen before
-// I make my stride through the hash table depend on the value too, but
-// by having a table whose size is prime I will always eventually look in
-// every location.
-            i += 1 + (int)(((uintptr_t)p) %
-                           (uintptr_t)(AMBIGUOUS_CACHE_SIZE-2));
-        }
-    }
-}
-
-#endif // CONSERVATIVE
-
 LispObject use_gchook(LispObject p, LispObject arg)
 {   LispObject g = gchook;
     if (symbolp(g) && g != unset_var)
@@ -642,10 +530,6 @@ static void real_garbage_collector()
 // so that I can set breakpoints on it!
     for (int i=0; i<=LOG2_VECTOR_CHUNK_BYTES; i++)
         free_vectors[i] = 0;
-
-#ifdef CONSERVATIVE
-    cache_ambiguous();
-#endif // CONSERVATIVE
 
     cons_cells = symbol_heads = strings = user_vectors =
             big_numbers = box_floats = bytestreams = other_mem =
@@ -729,14 +613,6 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
     if (reclaim_trigger_count == reclaim_trigger_target &&
         garbage_collection_permitted)
         stg_class = GC_USER_HARD;
-#ifdef CONSERVATIVE
-// How do I know that all callee-save registers are on the stack by the
-// stage that I get to the level that C_stacktop now refers to?
-    get_stacktop();
-    trace_printf("\n=== C stack size = %5d\n", (C_stackbase-C_stacktop));
-    trace_printf("\n=== C_stackbase=%p C_stacktop=%p\n",
-                 (void *)C_stackbase, (void *)C_stacktop);
-#endif // CONSERVATIVE
     stop_after_gc = 0;
     if (stg_class == GC_VEC || stg_class == GC_BPS) vheap_need = size;
     already_in_gc = true;

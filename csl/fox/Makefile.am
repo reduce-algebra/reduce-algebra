@@ -17,6 +17,8 @@ AUTOMAKE_OPTIONS = foreign dist-zip
 SUBDIRS    = utils include src
 EXTRA_DIST = ADDITIONS AUTHORS INSTALL LICENSE LICENSE_ADDENDUM TRACING README fox.lsm index.html aclocal.m4
 
+ACLOCAL_AMFLAGS = -I m4
+
 bin_SCRIPTS = fox-config
 
 pkgconfigdir = $(libdir)/pkgconfig

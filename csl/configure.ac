@@ -15,6 +15,8 @@ AC_INIT([CSLCONFIGTEST],[1.0])
 AC_PREREQ(2.61)
 AM_INIT_AUTOMAKE([1.13 -Wall -Wno-portability -Wno-override foreign dist-bzip2])
 
+AC_CONFIG_MACRO_DIRS([m4])
+
 # The next bit is because config.guess fails on Solaris if SHELL=/bin/bash
 if test -x /bin/sh
 then
@@ -140,25 +142,25 @@ AC_CONFIG_FILES([Makefile])
 AC_CHECK_PROG([ACLOCAL],    [aclocal], [yes], [no])
 if test "x$ACLOCAL" = "xno"
 then
-  AC_MSG_WARN([Please consider installing aclocal (and other autoconf tools)])
+  AC_MSG_WARN([Please install aclocal (and other autoconf tools)])
 fi
 
 AC_CHECK_PROG([AUTOCONF],   [autoconf], [yes], [no])
 if test "x$AUTOCONF" = "xno"
 then
-  AC_MSG_WARN([Please consider installing autoconf])
+  AC_MSG_WARN([Please install autoconf])
 fi
 
 AC_CHECK_PROG([AUTOMAKE],   [automake], [yes], [no])
 if test "x$AUTOMAKE" = "xno"
 then
-  AC_MSG_WARN([Please consider installing automake])
+  AC_MSG_WARN([Please install automake])
 fi
 
 AC_CHECK_PROG([AUTORECONF], [autoreconf], [yes], [no])
 if test "x$AUTORECONF" = "xno"
 then
-  AC_MSG_WARN([Please consider installing autoreconf])
+  AC_MSG_WARN([Please install autoreconf])
 fi
 
 
@@ -394,23 +396,6 @@ then
   AC_DEFINE(X86, [1], [True if Intel or AMD (32 or 64-bit)])
 fi
 
-# The following may not give the most helpful messages if there is no
-# C compiler at all, so I will do a simple pre-check based on a limited
-# number of plausible choices.
-
-AC_CHECK_PROGS(CCOMPILER, [gcc cc $CC], [none])
-AC_CHECK_PROGS(CXXCOMPILER, [g++ CC $CXX], [none])
-
-
-if test "x$CCOMPILER" = "xnone" || test "x$CXXCOMPILER" = "xnone"
-then
-   AC_MSG_WARN([You need a C compiler and a C++ compiler installed])
-   AC_MSG_WARN([and the most obvious ones do not seem to be present.])
-   AC_MSG_WARN([If you do not have a compiler you probably do not have])
-   AC_MSG_WARN([development libraries (eg for X, Xft, curses, etc etc])
-   AC_MSG_WARN([either. I will let a further test check more carefully])
-fi
-
 old_CFLAGS="$CFLAGS"
 old_CXXFLAGS="$CXXFLAGS"
 AC_MSG_NOTICE([Looking for C pre-processor])
@@ -425,6 +410,7 @@ AC_PROG_CXX
 CFLAGS="$old_CFLAGS"
 CXXFLAGS="$old_CXXFLAGS"
 
+LT_INIT
 
 if test "x$CC" = "x"
 then
@@ -435,8 +421,6 @@ if test "x$CXX" = "x"
 then
   AC_MSG_ERROR([Please install a C++ compiler and try again])
 fi
-
-AC_PROG_RANLIB
 
 AC_MSG_NOTICE([Checking for "--hash-style=both"])
 if test "x$GCC" = "xyes"

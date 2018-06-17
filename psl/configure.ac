@@ -10,6 +10,8 @@ AC_CONFIG_SRCDIR(README.PSL)
 
 AM_INIT_AUTOMAKE([1.8.3 -Wno-portability foreign no-dist-gzip dist-bzip2])
 
+LT_INIT
+
 AC_CONFIG_FILES([Makefile])
 
 AC_CHECK_PROGS(CYGPATH,[cygpath],[no])

@@ -4,6 +4,7 @@
 # a reasonably full set of development resources are available for
 # building the CSL version of Reduce.
 
+ACLOCAL_AMFLAGS = -I m4
 
 lib_LIBRARIES = libwindow.a
 libwindow_a_SOURCES = window.cpp

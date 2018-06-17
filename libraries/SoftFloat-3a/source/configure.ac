@@ -7,14 +7,15 @@ AC_INIT([SoftFP],[3a])
 
 AM_INIT_AUTOMAKE([1.13 -Wno-portability -Wno-override foreign dist-bzip2])
 
-AC_PROG_RANLIB
-
 AC_COPYRIGHT([Codemist])
 
 AC_PREREQ(2.61)
 
 AC_CONFIG_SRCDIR(softfloat_state.c)
 AC_CONFIG_FILES(Makefile)
+AC_CONFIG_MACRO_DIRS([m4])
+
+LT_INIT
 
 AC_C_BIGENDIAN(
   [],

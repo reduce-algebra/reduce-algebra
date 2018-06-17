@@ -11,6 +11,10 @@ AC_PREREQ(2.61)
 
 AM_INIT_AUTOMAKE([1.13 foreign])
 
+LT_INIT
+
+AC_CONFIG_MACRO_DIRS([m4])
+
 AC_CONFIG_FILES([Makefile])
 
 # end of "configure.ac"

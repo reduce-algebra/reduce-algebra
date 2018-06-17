@@ -1346,9 +1346,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // or otherwise do things that run against my intent!
 //
     volatile LispObject sp;
-#ifdef CONSERVATIVE
     C_stackbase = (LispObject *)&sp;
-#endif
     C_stack_base = (char *)&sp;
     C_stack_limit = NULL;
     max_store_size = 0.0;
@@ -2757,10 +2755,8 @@ static void cslaction(void)
 // to provide a network service on some socket.
 //
 {
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     errorset_msg = NULL;
     try
     {   START_SETJMP_BLOCK;
@@ -2816,10 +2812,8 @@ static void cslaction(void)
 
 int cslfinish(character_writer *w)
 {
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     procedural_output = w;
     if (Ifinished())
         term_printf("\n+++ Errors on checkpoint-image file\n");
@@ -2875,10 +2869,8 @@ int execute_lisp_function(const char *fname,
                           character_reader *r,
                           character_writer *w)
 {   LispObject ff;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     if_error(ff = make_undefined_symbol(fname),
              return 1);  // Failed to make the symbol
     procedural_input = r;
@@ -3063,10 +3055,8 @@ int PROC_set_callbacks(character_reader *r,
 
 int PROC_load_package(const char *name)
 {   LispObject w = nil, w1 = nil;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     if_error(w1 = make_undefined_symbol("load-package");
              push(w1);
              w = make_undefined_symbol(name);
@@ -3079,10 +3069,8 @@ int PROC_load_package(const char *name)
 
 int PROC_set_switch(const char *name, int val)
 {   LispObject w = nil, w1 = nil;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     if_error(w1 = make_undefined_symbol("onoff");
              push(w1);
              w = make_undefined_symbol(name);
@@ -3116,10 +3104,8 @@ int PROC_clear_stack()
 
 int PROC_push_symbol(const char *name)
 {   LispObject w = nil;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     if_error(w = make_undefined_symbol(name);
              w = cons(w, procstack),
         return 1);
@@ -3134,10 +3120,8 @@ int PROC_push_symbol(const char *name)
 
 int PROC_push_string(const char *data)
 {   LispObject w = nil;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     if_error(w = make_string(data);
              w = cons(w, procstack),
         return 2);  // Failed to push onto stack
@@ -3158,10 +3142,8 @@ int PROC_push_string(const char *data)
 
 int PROC_push_small_integer(int32_t n)
 {   LispObject w = nil;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     if_error(w = make_lisp_integer32(n);
              w = cons(w, procstack),
         return 1);
@@ -3172,10 +3154,8 @@ int PROC_push_small_integer(int32_t n)
 int PROC_push_big_integer(const char *n)
 {   LispObject w = nil;
     int len = 0;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
 // Here I need to parse a C string to obtain a Lisp number.
     boffop = 0;
     if_error(
@@ -3192,10 +3172,8 @@ int PROC_push_big_integer(const char *n)
 
 int PROC_push_floating(double n)
 {   LispObject w = nil;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
 // Here I have to construct a Lisp (boxed) float
     if_error(w = make_boxfloat(n, TYPE_DOUBLE_FLOAT);
              w = cons(w, procstack),
@@ -3216,10 +3194,8 @@ int PROC_push_floating(double n)
 
 int PROC_make_function_call(const char *name, int n)
 {   LispObject w = nil, w1 = nil;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     if_error(
         while (n > 0)
         {   if (procstack == nil) return 1; // Not enough args available
@@ -3255,10 +3231,8 @@ int PROC_save(int n)
 
 int PROC_load(int n)
 {   LispObject w = nil;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     if (n < 0 || n > 99) return 1; // index out of range
     w = elt(procmem, n);
     if_error(w = cons(w, procstack),
@@ -3273,10 +3247,8 @@ int PROC_load(int n)
 
 int PROC_dup()
 {   LispObject w = nil;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     if (procstack == nil) return 1; // no item to duplicate
     w = qcar(procstack);
     if_error(w = cons(w, procstack),
@@ -3300,10 +3272,8 @@ int PROC_pop()
 
 int PROC_simplify()
 {   LispObject w = nil, w1 = nil;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = make_undefined_symbol("simp");
@@ -3342,10 +3312,8 @@ static void PROC_standardise_gensyms(LispObject w)
 int PROC_lisp_eval()
 {   save_current_function saver(eval_symbol);
     LispObject w = nil;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = eval(qcar(procstack), nil);
@@ -3393,10 +3361,8 @@ static LispObject PROC_standardise_printed_form(LispObject w)
 
 int PROC_make_printable()
 {   LispObject w = nil, w1 = nil;
-#ifdef CONSERVATIVE
     volatile LispObject sp;
     C_stackbase = (LispObject *)&sp;
-#endif
     if (procstack == nil) return 1; // stack is empty
 //
 // I want to use "simp" again so that I can then use prepsq!
