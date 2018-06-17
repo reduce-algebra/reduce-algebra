@@ -1526,6 +1526,10 @@ else
 fi
 cd "$builddir"
 
+AC_MSG_NOTICE([About to configure libsoftfloat])
+mkdir -p softfloat
+cd softfloat
+
 if test "x$CC$CPP$CXX$CXXCPP" != "x"
 then
   passcc="CC=\"$CC\" CPP=\"$CPP\" CXX=\"$CXX\" CXXCPP=\"$CXXCPP\""
