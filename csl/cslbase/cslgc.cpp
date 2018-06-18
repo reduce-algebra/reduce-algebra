@@ -790,7 +790,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
         aerror("reclaim-trap-count");
     }
     if (reclaim_stack_limit != 0 &&
-        (uintptr_t)&t0 + reclaim_stack_limit < (uintptr_t)C_stack_base)
+        (uintptr_t)&t0 + reclaim_stack_limit < (uintptr_t)C_stackbase)
     {   reclaim_stack_limit = 0;
         trace_printf("\nReclaim stack limit reached...\n");
         aerror("reclaim-stack-limit");
@@ -820,7 +820,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
             "bignums=%" PRIdPTR ", floats=%" PRIdPTR ", bytestreams=%" PRIdPTR ", other=%" PRIdPTR ", litvecs=%d\n",
             big_numbers, box_floats, bytestreams, other_mem, litvecs);
         trace_printf("getvecs=%" PRIdPTR " C-stacks=%" PRIdPTR "K Lisp-stack=%" PRIdPTR "K\n",
-                     getvecs, ((C_stack_base-(char *)&why)+1023)/1024,
+                     getvecs, (((char *)C_stackbase-(char *)&why)+1023)/1024,
                      (intptr_t)((stack-stackbase)+1023)/1024);
     }
     pop(p);

@@ -66,14 +66,13 @@ extern LispObject *list_bases[];
 extern LispObject *nilsegment, *stacksegment;
 extern LispObject *stackbase;
 extern int32_t stack_segsize;  // measured in units of one CSL page
-extern char *C_stack_base, *C_stack_limit;
 extern double max_store_size;
 
 extern bool restartp;
 
 extern char *big_chunk_start, *big_chunk_end;
 
-extern LispObject *C_stackbase, *C_stacktop;
+extern uintptr_t *C_stackbase, C_stacklimit;
 
 extern LispObject multiplication_buffer;
 
@@ -171,7 +170,7 @@ static intline void if_check_stack()
 #else
 static inline void if_check_stack()
 {   const char *_p_ = (const char *)&_p_; \
-    if (_p_ < C_stack_limit) aerror("stack overflow"); \
+    if ((uintptr_t)_p_ < C_stacklimit) aerror("stack overflow"); \
 }
 #endif
 

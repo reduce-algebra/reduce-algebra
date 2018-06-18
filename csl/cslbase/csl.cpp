@@ -216,7 +216,7 @@ int check_stack(const char *file, int line)
         term_printf("\n");
         spmin = temp;
         if (temp < spbase-C_STACK_ALLOCATION ||
-            temp < (uintptr_t)C_stack_limit) return 1;
+            temp < (uintptr_t)C_stacklimit) return 1;
     }
     return 0;
 }
@@ -1322,7 +1322,7 @@ const char **csl_argv;
 
 bool restartp;
 
-char *C_stack_base = NULL, *C_stack_limit = NULL;
+uintptr_t C_stacklimit = 0;
 double max_store_size = 0.0;
 
 #ifndef HAVE_CILK
@@ -1342,19 +1342,19 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // I make "sp" volatile - it is a variable I declare here but then only use by
 // taking its address to get a pointer into the current stack-frame. When it
 // is volatile my compiler will not be entitles to moan about the lack of
-// assignment to it and will not be entitles to optimise it out of existance
-// or otherwise do things that run against my intent!
+// assignment to it and will not be entitled to optimise it out of existance
+// or otherwise do things that run against my intent! But then to put its
+// address iun C_stackbase I need to cast away the volatile qualifier.
 //
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
-    C_stack_base = (char *)&sp;
-    C_stack_limit = NULL;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
+    C_stacklimit = 0;
     max_store_size = 0.0;
     karatsuba_parallel = 0x7fffffff;
 
 #ifdef EMBEDDED
 // This provides a fixed limit in the embedded build
-    C_stack_limit = C_stack_base - 2*1024*1024 + 0x10000;
+    C_stacklimit = (uintptr_t)C_stackbase - 2*1024*1024 + 0x10000;
 #else // EMBEDDED
 #ifdef WIN32
     {   HMODULE h = GetModuleHandle(NULL); // For current executable
@@ -1374,7 +1374,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 // I also assume that any figure over 20 Mbytes is a mess so ignore it
             if (stackLimit <= 20*1024*1024)
             {   // I try to give myself 64K spare...
-                C_stack_limit = C_stack_base - stackLimit + 0x10000;
+                C_stacklimit = (uintptr_t)C_stackbase - stackLimit + 0x10000;
 #ifdef DEBUG
                 fprintf(stderr, "[debug] stack %dK\n", (int)(stackLimit/1024));
 #endif
@@ -1412,7 +1412,7 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
                         stackLimit = 20*1024*1024;
 // I view values under 200K as silly and ignore them!
             if (stackLimit >= 200*1024)
-            {   C_stack_limit = C_stack_base - stackLimit + 0x10000;
+            {   C_stacklimit = (uintptr_t)C_stackbase - stackLimit + 0x10000;
 #ifdef DEBUG
                 fprintf(stderr, "[debug] stack %dK\n", (int)(stackLimit/1024));
 #endif
@@ -1422,8 +1422,8 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
 #endif // HAVE_SYS_RESOURCE_H
 #endif // WIN32
 // If I can not read a value then I will set a limit at 4 Mbytes...
-    if (C_stack_limit == NULL)
-    {   C_stack_limit = C_stack_base - 4*1024*1024 + 0x10000;
+    if (C_stacklimit == 0)
+    {   C_stacklimit = (uintptr_t)C_stackbase - 4*1024*1024 + 0x10000;
 #ifdef DEBUG
         fprintf(stderr, "[debug] stack defaulting to 4Mb\n");
 #endif
@@ -2755,8 +2755,8 @@ static void cslaction(void)
 // to provide a network service on some socket.
 //
 {
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     errorset_msg = NULL;
     try
     {   START_SETJMP_BLOCK;
@@ -2812,8 +2812,8 @@ static void cslaction(void)
 
 int cslfinish(character_writer *w)
 {
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     procedural_output = w;
     if (Ifinished())
         term_printf("\n+++ Errors on checkpoint-image file\n");
@@ -2869,8 +2869,8 @@ int execute_lisp_function(const char *fname,
                           character_reader *r,
                           character_writer *w)
 {   LispObject ff;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(ff = make_undefined_symbol(fname),
              return 1);  // Failed to make the symbol
     procedural_input = r;
@@ -3055,8 +3055,8 @@ int PROC_set_callbacks(character_reader *r,
 
 int PROC_load_package(const char *name)
 {   LispObject w = nil, w1 = nil;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("load-package");
              push(w1);
              w = make_undefined_symbol(name);
@@ -3069,8 +3069,8 @@ int PROC_load_package(const char *name)
 
 int PROC_set_switch(const char *name, int val)
 {   LispObject w = nil, w1 = nil;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(w1 = make_undefined_symbol("onoff");
              push(w1);
              w = make_undefined_symbol(name);
@@ -3104,8 +3104,8 @@ int PROC_clear_stack()
 
 int PROC_push_symbol(const char *name)
 {   LispObject w = nil;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_undefined_symbol(name);
              w = cons(w, procstack),
         return 1);
@@ -3120,8 +3120,8 @@ int PROC_push_symbol(const char *name)
 
 int PROC_push_string(const char *data)
 {   LispObject w = nil;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_string(data);
              w = cons(w, procstack),
         return 2);  // Failed to push onto stack
@@ -3142,8 +3142,8 @@ int PROC_push_string(const char *data)
 
 int PROC_push_small_integer(int32_t n)
 {   LispObject w = nil;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(w = make_lisp_integer32(n);
              w = cons(w, procstack),
         return 1);
@@ -3154,8 +3154,8 @@ int PROC_push_small_integer(int32_t n)
 int PROC_push_big_integer(const char *n)
 {   LispObject w = nil;
     int len = 0;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
 // Here I need to parse a C string to obtain a Lisp number.
     boffop = 0;
     if_error(
@@ -3172,8 +3172,8 @@ int PROC_push_big_integer(const char *n)
 
 int PROC_push_floating(double n)
 {   LispObject w = nil;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
 // Here I have to construct a Lisp (boxed) float
     if_error(w = make_boxfloat(n, TYPE_DOUBLE_FLOAT);
              w = cons(w, procstack),
@@ -3194,8 +3194,8 @@ int PROC_push_floating(double n)
 
 int PROC_make_function_call(const char *name, int n)
 {   LispObject w = nil, w1 = nil;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if_error(
         while (n > 0)
         {   if (procstack == nil) return 1; // Not enough args available
@@ -3231,8 +3231,8 @@ int PROC_save(int n)
 
 int PROC_load(int n)
 {   LispObject w = nil;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if (n < 0 || n > 99) return 1; // index out of range
     w = elt(procmem, n);
     if_error(w = cons(w, procstack),
@@ -3247,8 +3247,8 @@ int PROC_load(int n)
 
 int PROC_dup()
 {   LispObject w = nil;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // no item to duplicate
     w = qcar(procstack);
     if_error(w = cons(w, procstack),
@@ -3272,8 +3272,8 @@ int PROC_pop()
 
 int PROC_simplify()
 {   LispObject w = nil, w1 = nil;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = make_undefined_symbol("simp");
@@ -3312,8 +3312,8 @@ static void PROC_standardise_gensyms(LispObject w)
 int PROC_lisp_eval()
 {   save_current_function saver(eval_symbol);
     LispObject w = nil;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
     if_error(
         w = eval(qcar(procstack), nil);
@@ -3361,8 +3361,8 @@ static LispObject PROC_standardise_printed_form(LispObject w)
 
 int PROC_make_printable()
 {   LispObject w = nil, w1 = nil;
-    volatile LispObject sp;
-    C_stackbase = (LispObject *)&sp;
+    volatile uintptr_t sp;
+    C_stackbase = (uintptr_t *)&sp;
     if (procstack == nil) return 1; // stack is empty
 //
 // I want to use "simp" again so that I can then use prepsq!

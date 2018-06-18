@@ -133,7 +133,7 @@
 #endif
 #else // CHECK_STACK
     {   char *p = (char *)&p;
-        if (p < C_stack_limit)
+        if ((uintptr_t)p < C_stacklimit)
         {   err_printf("\n+++ stack overflow\n");
             aerror("stack_overflow");
         }

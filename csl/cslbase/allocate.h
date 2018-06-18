@@ -77,9 +77,11 @@ extern uint64_t *heap_dirty_pages_bitmap[32];
 // to be large then the segment requested from the operating system would
 // be large enough to hold it.
 
-#define SMALL_BITMAP_SIZE (MAX_PAGE_SIZE/sizeof(uint64_t))
-extern uint64_t heap_small_bitmaps[SMALL_BITMAP_SIZE+1];
-extern uint64_t *heap_small_bitmaps_ptr;
+#define SMALL_BITMAP_SIZE (MAX_PAGE_SIZE/sizeof(uint64_t)/2)
+extern uint64_t heap_small_bitmaps_1[SMALL_BITMAP_SIZE+1];
+extern uint64_t *heap_small_bitmaps_1_ptr;
+extern uint64_t heap_small_bitmaps_2[SMALL_BITMAP_SIZE+1];
+extern uint64_t *heap_small_bitmaps_2_ptr;
 
 // Given an arbitrary bit-pattern the find_heap_segment() function tests
 // if it could be an address within one of the allocated segments, and if so
@@ -90,7 +92,7 @@ int find_heap_segment(uintptr_t p);
 
 // Each system-page within an allocated segment has a bitmap entry showing
 // whether it has been written to. The following two functions provide
-// key operation son those bitmaps.
+// key operations on those bitmaps.
 
 extern bool clear_bitmap(size_t h);
 extern bool refresh_bitmap(size_t h);

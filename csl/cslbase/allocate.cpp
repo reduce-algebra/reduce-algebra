@@ -1,7 +1,8 @@
 // allocate.cpp                            Copyright (C) 1989-2018 Codemist    
 
 //
-// Code to do with storage allocation
+// Code to deal with storage allocation, both grabbing memory at the start
+// or a run and significant aspects of garbage collection. 
 //
 
 /**************************************************************************
@@ -178,11 +179,15 @@
 // I need to consider whether vector allocation should have two strands: the
 // simple one being linear allocation at the end of the current page, but
 // building any space that has to be skipped either because of pinned data or
-// the granularity of the pages into a free-chain, and then an alternative scheme
-// that allocates from within this free-chain so that smaller allocations can
-// be used to fill in the gaps. I think that sort of plan may be especially
-// useful for the allocations that are performed for material that is being
-// copied during a major garbage collection.
+// the granularity of the pages into a free-chain, and then an alternative
+// scheme that allocates from within this free-chain so that smaller
+// allocations can be used to fill in the gaps. I think that sort of plan
+// may be especially useful for the allocations that are performed for
+// material that is being copied during a major garbage collection, so my
+// my current plan is that the mutator uses simple allocation that may leave
+// significant gets adjacent to where large vectors are allocated, but that
+// the collector, when copying live data to the new half-space, tries a bit
+// harder to fill in those gaps.
 //
 //
 // The overall pattern for a minor garbage collection will be
@@ -363,11 +368,13 @@ size_t page_size;
 //   heap_segment_count   number of allocated segments
 //   heap_segment[i]      base address of a segment of memory
 //   heap_segment_size[i] size of useful part of that segment, in bytes
-//   heap_dirty_pages_bitmap[i] a bitmap used to track which block
+//   heap_dirty_pages_bitmap_1[i] a bitmap used to track which block
 //                        have been written to, information that can
 //                        help with garbage collection. The "block"
 //                        granularity here is determined by the operating
 //                        system and is probably 0x1000 or 0x10000.
+//   heap_dirty_pages_bitmap_2[i] a second such bitmap, used to record
+//                        pages updated during a recent previous era.
 //
 // Within each segment the memory is arranged in pages each of size
 // CSL_PAGE_SIZE, which may be 8 Mbytes. The arrangement of information
@@ -378,13 +385,16 @@ size_t heap_segment_size[32];
 // I will arrange my bitmap in 64-bit words - expecting that memory access
 // to 64-bits when I update an entry ias as cheap as anything else, but then
 // scanning for nonzero bits can go 64-bits as a time.
-uint64_t *heap_dirty_pages_bitmap[32];
+uint64_t *heap_dirty_pages_bitmap_1[32];
+uint64_t *heap_dirty_pages_bitmap_2[32];
 int heap_segment_count = 0;
 // I have a simple fixed bitmap region of size MAX_PAGE_SIZE bytes (ie 64K)
 // here.
-// [defined in allocate.h] SMALL_BITMAP_SIZE = (MAX_PAGE_SIZE/sizeof(uint64_t))
-uint64_t heap_small_bitmaps[SMALL_BITMAP_SIZE+1];
-uint64_t *heap_small_bitmaps_ptr = &heap_small_bitmaps[SMALL_BITMAP_SIZE];
+// [defined in allocate.h] SMALL_BITMAP_SIZE=(MAX_PAGE_SIZE/sizeof(uint64_t)/2)
+uint64_t heap_small_bitmaps_1[SMALL_BITMAP_SIZE+1];
+uint64_t heap_small_bitmaps_2[SMALL_BITMAP_SIZE+1];
+uint64_t *heap_small_bitmaps_1_ptr = &heap_small_bitmaps_1[SMALL_BITMAP_SIZE];
+uint64_t *heap_small_bitmaps_2_ptr = &heap_small_bitmaps_2[SMALL_BITMAP_SIZE];
 
 std::atomic_flag spin_lock = ATOMIC_FLAG_INIT;
 
@@ -407,7 +417,8 @@ void get_page_size()
 }
 
 // I can set mprotect_valid false if I want to avoid the code here
-// calling mprotect.
+// calling mprotect. This is done because mprotect, while thread-safe, is
+// not async signal safe.
 
 bool mprotect_valid = true;
 
@@ -433,14 +444,18 @@ void *allocate_segment(size_t n)
 // down from the top. I leave map_ptr NULL if this is not possible, otherwise
 // it identified the location within the block;
     size_t extra = 0;
-    uint64_t *map_ptr;
-    if (map_size >= (size_t)(heap_small_bitmaps_ptr - heap_small_bitmaps))
-    {   map_ptr = NULL;
+    uint64_t *map_ptr_1, *map_ptr_2;
+    if (map_size >= (size_t)((char *)heap_small_bitmaps_1_ptr -
+                             (char *)heap_small_bitmaps_1))
+    {   map_ptr_1 = map_ptr_2 = NULL;
 // The map will need to go at the end of the newly allocated block... I
 // sort out how much space that will use.
-        extra = (map_size*sizeof(uint64_t) + page_size - 1) & -page_size;
+        extra = (2*map_size*sizeof(uint64_t) + page_size - 1) & -page_size;
     }
-    else map_ptr = heap_small_bitmaps_ptr - map_size;
+    else
+    {   map_ptr_1 = (uint64_t *)((char *)heap_small_bitmaps_1_ptr - map_size);
+        map_ptr_2 = (uint64_t *)((char *)heap_small_bitmaps_2_ptr - map_size);
+    }
 #ifdef WIN32
 // This will allocate a block that is aligned at least at a page boundary
 // well it will tends to be aligned even more than just that). The memory
@@ -476,10 +491,13 @@ void *allocate_segment(size_t n)
 #endif // !MAP_ANONYMOUS
 #endif // !WIN32
     if (failed) return NULL;
-    if (map_ptr != NULL) heap_small_bitmaps_ptr = map_ptr;
-    else map_ptr = (uint64_t*)((char *)r + n);
+    if (map_ptr_1 != NULL) heap_small_bitmaps_1_ptr = map_ptr_1;
+    else map_ptr_1 = (uint64_t*)((char *)r + n);
     heap_segment[heap_segment_count] = r;
-    heap_dirty_pages_bitmap[heap_segment_count] = map_ptr;
+    heap_dirty_pages_bitmap_1[heap_segment_count] = map_ptr_1;
+    if (map_ptr_2 != NULL) heap_small_bitmaps_2_ptr = map_ptr_2;
+    else map_ptr_2 = (uint64_t*)((char *)r + n + extra/2);
+    heap_dirty_pages_bitmap_2[heap_segment_count] = map_ptr_2;
 // Note that the recorded size here does not include any appended bitmap.
     heap_segment_size[heap_segment_count] = n;
     heap_segment_count++;
@@ -491,9 +509,12 @@ void *allocate_segment(size_t n)
         if ((uintptr_t)h2 < (uintptr_t)h1) break; // Ordering is OK
 // The segment must sink a place in the tables.
         heap_segment[i] = h2; heap_segment[j] = h1;
-        h1 = heap_dirty_pages_bitmap[i]; h2 = heap_dirty_pages_bitmap[j];
-        heap_dirty_pages_bitmap[i] = (uint64_t *)h2;
-        heap_dirty_pages_bitmap[j] = (uint64_t *)h1;
+        h1 = heap_dirty_pages_bitmap_1[i]; h2 = heap_dirty_pages_bitmap_1[j];
+        heap_dirty_pages_bitmap_1[i] = (uint64_t *)h2;
+        heap_dirty_pages_bitmap_1[j] = (uint64_t *)h1;
+        h1 = heap_dirty_pages_bitmap_2[i]; h2 = heap_dirty_pages_bitmap_2[j];
+        heap_dirty_pages_bitmap_2[i] = (uint64_t *)h2;
+        heap_dirty_pages_bitmap_2[j] = (uint64_t *)h1;
         size_t w = heap_segment_size[i];
         heap_segment_size[i] = heap_segment_size[j];
         heap_segment_size[j] = w;
@@ -512,7 +533,7 @@ void *allocate_segment(size_t n)
 bool clear_bitmap(size_t h)
 {   size_t n = heap_segment_size[h]/page_size; // measured in bits
     n = (n + 7) & -(size_t)8;                  // now in bytes
-    memset(heap_dirty_pages_bitmap[h], 0, n);  // clear the map
+    memset(heap_dirty_pages_bitmap_1[h], 0, n);  // clear the map
 #ifdef WIN32
     if (ResetWriteWatch(heap_segment[h], heap_segment_size[h]) != 0)
         return false;
@@ -581,7 +602,7 @@ bool refresh_bitmap(size_t h)
         {   char *page = (char *)buffer[i];
             size_t page_offset =
                 ((size_t)(page - (char *)heap_segment[h])) / page_size;
-            non_atomic_set_bit(heap_dirty_pages_bitmap[h], page_offset);
+            non_atomic_set_bit(heap_dirty_pages_bitmap_1[h], page_offset);
         }
         base += amount_to_scan;
     }
@@ -655,7 +676,7 @@ static void low_level_signal_handler(int signo)
 // I will re-acquire the spin lock to update the bitmap, but this time I
 // know that the critical region is very short, so I am not concerned about
 // performance here.
-            atomic_set_bit(heap_dirty_pages_bitmap[h], page_offset);
+            atomic_set_bit(heap_dirty_pages_bitmap_1[h], page_offset);
 // When the SIGSEGV or SIGBUS was activation of a wtite barrier I will
 // exit from the signal handler when I have dealt with it. That should
 // re-try the memory access, which ought now to succeed.
@@ -834,6 +855,10 @@ typedef struct page_header_
     uintptr_t next_fringe;
     uintptr_t padding;
 
+// Ha ha. The bitmap as impleme4nted here has bits in it that cover
+// all the page header (including itself) and that is a waste. But it is
+// such a small one that I propose not to worry myself!
+
     uint64_t objectstart_bitmap[PAGE_BITMAP_SIZE/sizeof(uint64_t)];
     uint64_t pinned_bitmap[PAGE_BITMAP_SIZE/sizeof(uint64_t)];
 
@@ -842,7 +867,7 @@ typedef struct page_header_
 
 // Test if a pointer (p) points at an object header.
 
-static inline bool is_header_address(LispObject p, page_header *page)
+static inline bool is_header_address(Header *p, page_header *page)
 {   uintptr_t offset = (char *)p - (char *)page;
 // If the putative pointer refers to parts of the header that are before
 // any useful data (for instance it refers into the bitmap) or if it points
@@ -992,15 +1017,10 @@ void major_garbage_collect()
 }
 
 
-LispObject *C_stackbase, *C_stacktop;
-
-void get_stacktop()
-{   volatile LispObject sp;
-    C_stacktop = (LispObject *)&sp;
-}
+uintptr_t *C_stackbase, *C_stacktop;
 
 extern void middle_reclaim();
-extern void inner_reclaim(LispObject *sp);
+extern void inner_reclaim(uintptr_t *sp);
 
 // The next section of code represents an attempt to coax "reasonable"
 // compilers into arranging that all registers that had been in use when
@@ -1107,18 +1127,27 @@ void middle_reclaim()
 // frame with either its caller or callee by making it appear that it
 // could be recursive. The address of the top of the stack is passed onwards,
 // adjusted so as to be alined as for a LispObject.
-    int w;
+    uintptr_t w = 0;
     if (volatile_variable != volatile_variable)
     {   inner_reclaim(NULL);  // never executed!
         middle_reclaim();     // never executed! But looks recursive.
     }
-    inner_reclaim((LispObject *)((intptr_t)&w & -sizeof(LispObject)));
+    inner_reclaim((uintptr_t *)((intptr_t)&w & -sizeof(LispObject)));
 }
 
-static inline LispObject find_object_start(LispObject v, page_header *p)
+// It gives me a certain amount of pause when I wonder what types the
+// arguments to some of these functions should have. Here I have an
+// "ambiguous pointer" v, and I will pass that as a uintptr_t, but if I
+// find that it can be interpreted as a reference within the body of a
+// valid Lisp Object I will return a tagged pointer if the form of a
+// LispObject. I will return zero if the address passed is not satisfactory.
+
+static inline LispObject find_object_start(uintptr_t v, page_header *p)
 {
+// v is expected to be double-CELL aligned on entry, and what is returned
+// will be a proper tagged object.
 // I will code this CRUDELY to start with.
-    LispObject v1 = v;
+    uintptr_t v1 = v;
 // I will scan downwards in memory until I find a doubleword that is
 // marked as being the start of an object. If the page is not empty then
 // there will always be an object present at its start, and so this
@@ -1128,19 +1157,42 @@ static inline LispObject find_object_start(LispObject v, page_header *p)
 // will be able to scan down through the bitmap up to 64 steps per go by
 // using word-at-a-time operations and probably a "find first set bit"
 // operation. That would speed this up in an interesting manner.
-    v1 &= -(LispObject)(2*CELL);
-    while (!is_header_address(v1, p)) v1 -= 2*CELL;
-    LispObject h = *(LispObject *)v1;
+    v1 &= -(uintptr_t)(2*CELL);
+    while (!is_header_address((Header *)v1, p)) v1 -= 2*CELL;
+    Header h = *(Header *)v1;
 // Now the item referenced is one of the following:
 //  A CONS, with a non-header value in h
 //  A padder vector.
 //  A symbol
 //  A genuine vector
-    
+    if (is_symbol_header_full_test(h))
+    {   if (v1 > v+symhdr_length) return 0;
+        return (LispObject)(TAG_SYMBOL+v);
+    }
+    else if (is_vector_header_full_test(h))
+    {
+// This requires that a pointer to be within the active data region of a
+// vector to be accepted, except that for bit-vectors, byte and halfword
+// vectors pointers within the final 32-bit word of useful data will
+// be treated as pointing "within" the vector. I also deem the pointer
+// invalid if it is to within a padder object.
+        if (v1 > v+length_of_header(h) ||
+            type_of_header(h) == TYPE_PADDER) return 0;
+        
+// Both vectors and those numeric types that are stored with a header
+// will be returned as with TAG_VECTOR here. So for instance double-floats
+// and bignums are returned with dodgy tags, but for the purposes here that
+// really does not matter!
+        return (LispObject)(TAG_VECTOR+v);
+    }
+    else
+    {   if (v1 > v+2*CELL) return 0;
+        return (LispObject)(TAG_CONS+v);
+    }
 }
 
 
-void inner_reclaim(LispObject *sp)
+void inner_reclaim(uintptr_t *sp)
 {
 // (1) Clear pinned map for R and S.
 //     [Well I am at least for now going to suppose that that had been
@@ -1152,8 +1204,8 @@ void inner_reclaim(LispObject *sp)
 //     If there had been a list of pinned items left in S by the previous
 //     collection then scan down it clearing any pinned bits on its entries,
 //     because that data is now not needed.
-    for (LispObject *s=sp; s<C_stackbase; s++)
-    {   LispObject v = *s;   // Possibly a valid pointer!
+    for (uintptr_t *s=sp; s<C_stackbase; s++)
+    {   uintptr_t v = *s;   // Possibly a valid pointer!
         int h = find_heap_segment((uintptr_t)v);
         if (h < 0) continue;
 // Here the ambiguous pointer at least lies within one of the regions of
@@ -1166,6 +1218,9 @@ void inner_reclaim(LispObject *sp)
 // 
         if (seg == C) continue;
 #endif
+// Now I know which memory segment the potential pointer was within. The
+// segment was divided up into pages each of size CSL_PAGE_SIZE so I can now
+// sort out which of those is involved.
         uintptr_t off = (char *)v - (char *)seg;
         uintptr_t pagenum = off/CSL_PAGE_SIZE;
         page_header *p = (page_header *)((char *)seg + CSL_PAGE_SIZE*pagenum);
@@ -1174,9 +1229,17 @@ void inner_reclaim(LispObject *sp)
         if ((char *)v < (char *)&p->data) continue;
 // ... and also if it is beyond all live data in the page.
         if ((char *)v >= (char *)p->fringe) continue;
+// Now my potential pointer is to within a region that holds live data. If it
+// points within a Lisp value then find a tagged pointer to that as a more
+// or less valid LispObject.
         v = find_object_start(v, p);
+// In unusual cases the pointer might not actually point within valid data.
+// This can only arise if there are gaps in the data.
         if (v == 0) continue;
 // Now v is a sort of honest reference to an item that must be pinned.
+
+// <PIN IT HERE>
+
     }
 // (3) Scan unambiguous bases and pointers out of C relocating anything except
 //     references into C or to things that are pinned. This copies material to
