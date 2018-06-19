@@ -129,7 +129,7 @@ loadable!-packages!* := find!-loadable!-packages();
 % flags only get added at a fairly slow rate so this list not always
 % being kept up to date may not be a calamity.
 
-%%% Updated 2017-10-02 RmS
+%%% Updated 2018-06-08 RmS
 switches!* := '(
     acinfo                    acn                       adjprec
     again                     algint                    algpri
@@ -137,7 +137,7 @@ switches!* := '(
     allpoly                   anticom                   anygcd
     arbvars                   arnum                     assert
     assertbreak               assertstatistics          asterisk
-    backtrace                 balanced_mod              balanced_was_on
+    backtrace                 balanced_mod              
     batch_mode                bcsimp                    bezout
     bfspace                   boese                     both
     carcheckflag              centergrid                cgbcheckg
