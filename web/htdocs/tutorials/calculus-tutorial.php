@@ -6,8 +6,7 @@ $smarty = new Smarty_REDUCE();
 $smarty->assign('header_title', 'Tutorial: Calculus');
 
 $smarty->assign('preamble',  <<< END_OF_PREAMBLE
-	<p>Francis Wright, June 2018</p>
-	<p>The problems on this page are typical undergraduate calculus problems.</p>
+	<p><a href="https://sourceforge.net/users/fjwright/">Francis Wright</a>, June 2018</p>
 END_OF_PREAMBLE
 );
 
@@ -82,8 +81,8 @@ factor log;  ws;'),
 
 	// Q2
 	array(
-	'P' => 'Consider the curve \(y = f(x)\) for the function \(f(x) = 3x^\frac23(5 - x)\).
-	<ol>
+		'P' => 'Consider the curve \(y = f(x)\) for the function \(f(x) = 3x^\frac23(5 - x)\).
+<ol style="list-style: lower-alpha">
 		<li>Identify the domain of \(f\) and determine whether or not \(f\) is an even function or an odd function.</li>
 		<li>Find \(f\'(x)\) and \(f\'\'(x)\).</li>
 		<li>Find the critical points of \(f\), determine where \(f\) is increasing or decreasing, and determine the behavior of \(f\) at each of its critical points.</li>
@@ -91,7 +90,7 @@ factor log;  ws;'),
 		<li>Determine the behavior of \(f(x)\) as \(x \to \pm\infty\) and identify any asymptotes.</li>
 		<li>Plot key points, such as intercepts, critical points, and points of inflexion, and sketch the curve.</li>
 	</ol>',
-	'S' => <<< END_OF_SOLN
+		'S' => <<< END_OF_SOLN
 operator f;  let f(~x) => 3x^(2/3)*(5-x);
 % Domain is x >= 0 since x^(2/3) is undefined for x < 0.
 % Hence f(x) is neither even nor odd.  Also, formally:

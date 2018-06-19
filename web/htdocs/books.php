@@ -50,7 +50,7 @@ $smarty->assign('primary_books', array(
 
 	array('url' => 'https://global.oup.com/academic/product/algebraic-computing-with-reduce-9780198534433?lang=en&amp;cc=se',
 		  'img' => '<img src="images/MacCallum-Wright.jpg" width="180" height="273" />',
-		  'ttl' => '<span class="title">Algebraic Computing with REDUCE</span>',
+		  'ttl' => '<span id="MacCallum-Wright" class="title">Algebraic Computing with REDUCE</span>',
 		  'dsc' => '<span class="authors">by Malcolm A. H. MacCallum and Francis J. Wright</span>
 					<span class="biblio">314 pages, Oxford University Press, ISBN 9780198534433, 1991</span>'),
 
@@ -101,7 +101,7 @@ $smarty->assign('secondary_books', array(
 	
 	array('url' => 'https://www.amazon.co.uk/Computer-Algebra-Algorithms-Algebraic-Computation/dp/0122042328',
 		  'img' => '<img src="images/Davenport-Siret-Tournier.jpg" width="128" height="202" />',
-		  'ttl' => '<span class="title">Computer Algebra</span>',
+		  'ttl' => '<span id="Davenport-Siret-Tournier" class="title">Computer Algebra</span>',
 		  'dsc' => '<span class="subtitle">Systems and Algorithms for Algebraic Computation</span>
 					<span class="authors">by J. H. Davenport, Y. Siret and E. Tournier</span>
 					<span class="biblio">256 pages, Academic Press, second edition, ISBN 0122042301, 1993</span>')));

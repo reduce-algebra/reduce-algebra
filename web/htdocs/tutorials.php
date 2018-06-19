@@ -34,9 +34,13 @@ You can also download individual lesson files this way.
 	<p>It is advisable to run each lesson in a new REDUCE session, otherwise the lessons may interfere with each other.</p>
 
 	<h2>Elementary mathematics tutorials</h2>
-	<p>The following tutorials cover the application of REDUCE to a range of elementary mathematics problems at pre-university and first/second-year undergraduate level. You should be able to copy and paste the REDUCE solutions into REDUCE, but you are recommended to try your own solutions first. If you spot any errors or have better solutions then please <a href="https://sourceforge.net/users/fjwright/">let us know</a>. Other tutorials will follow as they are developed.</p>
-	<h3><a href="tutorials/em-tutorial.php">Pre-university algebra</a></h3>
-	<h3><a href="tutorials/calculus-tutorial.php">Undergraduate calculus</a></h3>
+	<p>The following tutorials cover the application of REDUCE to a range of elementary mathematics problems at pre-university and first/second-year undergraduate level.  If you spot any errors or have better solutions then please <a href="https://sourceforge.net/users/fjwright/">let us know</a>.  Other tutorials will follow as they are developed.</p>
+	<p>It is assumed that the reader is familiar with the mathematics, which is not explained here. Please refer to the <strong>REDUCE User's Manual</strong> <small>[ <a href="manual/manual.html">HTML</a> | <a href="manual/manual.pdf">PDF</a> ]</small> for details of the REDUCE facilities used, which are also not explained here.  You should be able to copy and paste the REDUCE solutions into REDUCE, but you are recommended to try your own solutions first.</p>
+	<h4><a href="tutorials/em-tutorial.php">Pre-university algebra tutorial</a></h4>
+	<h3>Undergraduate mathematics</h3>
+	<h4><a href="tutorials/calculus-tutorial.php">Calculus tutorial</a></h4>
+	<h4><a href="tutorials/veclinalg-tutorial.php">Vectors and linear algebra tutorial</a></h4>
+	<h4><a href="tutorials/pure-tutorial.php">Pure mathematics tutorial</a></h4>
 END_OF_MAIN_CONTENT
 );
 

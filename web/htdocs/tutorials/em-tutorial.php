@@ -6,7 +6,7 @@ $smarty = new Smarty_REDUCE();
 $smarty->assign('header_title', 'Tutorial: Essential Mathematics');
 
 $smarty->assign('preamble',  <<< END_OF_PREAMBLE
-	<p>Francis Wright, June 2018</p>
+	<p><a href="https://sourceforge.net/users/fjwright/">Francis Wright</a>, June 2018</p>
 	<p>The problems on this page are taken
 	from <a href="http://www.maths.qmul.ac.uk/~fvivaldi/books/em/">essential
 	mathematics</a>, a free web-book by franco vivaldi.  I include
