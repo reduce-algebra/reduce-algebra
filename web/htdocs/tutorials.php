@@ -41,6 +41,7 @@ You can also download individual lesson files this way.
 	<h4><a href="tutorials/calculus-tutorial.php">Calculus tutorial</a></h4>
 	<h4><a href="tutorials/veclinalg-tutorial.php">Vectors and linear algebra tutorial</a></h4>
 	<h4><a href="tutorials/pure-tutorial.php">Pure mathematics tutorial</a></h4>
+	<h4><a href="tutorials/complex-tutorial.php">Complex variables tutorial</a></h4>
 END_OF_MAIN_CONTENT
 );
 
