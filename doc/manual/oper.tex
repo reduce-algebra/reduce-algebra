@@ -249,7 +249,6 @@ positive only as long as the switch \texttt{COMPLEX} is off.
 \hypertarget{operator:IBETA}{}
 \hypertarget{operator:IGAMMA}{}
 \hypertarget{operator:LERCH_PHI}{}
-\hypertarget{operator:LN}{}
 \hypertarget{operator:LOG}{}
 \hypertarget{operator:LOGB}{}
 \hypertarget{operator:LOG10}{}
@@ -274,7 +273,7 @@ take arbitrary scalar expressions as their argument(s):
 \begin{verbatim}
    ACOS ACOSH ACOT ACOTH ACSC ACSCH ASEC ASECH ASIN
    ASINH ATAN ATANH ATAN2 BETA CI COS COSH COT COTH CSC
-   CSCH DILOG EI EXP GAMMA HYPOT IBETA IGAMMA LN LOG
+   CSCH DILOG EI EXP GAMMA HYPOT IBETA IGAMMA LOG
    LOGB LOG10 SEC SECH SI SIN SINH SQRT TAN TANH
    AIRY_AI AIRY_AIPRIME AIRY_BI AIRY_BIPRIME
    BESSELI BESSELJ BESSELK BESSELY
@@ -298,12 +297,12 @@ take arbitrary scalar expressions as their argument(s):
 \ttindex{Lommel1}\ttindex{Lommel2}
 \ttindex{StruveH}\ttindex{StruveL}
 \ttindex{WhittakerM}\ttindex{WhittakerU}
-\ttindex{HYPOT}\ttindex{IBETA}\ttindex{IGAMMA}\ttindex{LN}\ttindex{LOG}\ttindex{LOGB}\ttindex{LOG10}
+\ttindex{HYPOT}\ttindex{IBETA}\ttindex{IGAMMA}\ttindex{LOG}\ttindex{LOGB}\ttindex{LOG10}
 \ttindex{POCHHAMMER}\ttindex{POLYGAMMA}\ttindex{PSI}
 \ttindex{SEC}\ttindex{SECH}\ttindex{SI}\ttindex{SIN}
 \ttindex{SINH}\ttindex{SQRT}\ttindex{TAN}\ttindex{TANH}
 \ttindex{ZETA}
-where \texttt{LOG} is the natural logarithm (and equivalent to \texttt{LN}),
+where \texttt{LOG} is the natural logarithm,
 and \texttt{LOGB} has two arguments of which the second is the logarithmic base.
 
 The derivatives of all these functions are also known to the system.
@@ -473,6 +472,7 @@ yields the output
 2*sqrt( - 2*a *b)
 \end{verbatim}
 
+\hypertarget{operator:LN}{}
 The statement that {\REDUCE} knows very little about these functions
 applies only in the mathematically exact \texttt{off rounded} mode.  If
 \sw{ROUNDED}\ttindexswitch{ROUNDED} is on, any of the functions
