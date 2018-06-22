@@ -592,8 +592,13 @@ symbolic procedure taylorexpand!-diff2(sq,el,flg);
      % If we have a special singularity, then set c0 to zero.
      %
      if not null sterm then c0 := nil ./ 1
-      else c0 := subsq(sq,for each var in taytpelvars el collect
-                            (var . taytpelpoint el));
+      else <<
+	 c0 := errorset!*({'subsq,mkquote sq,
+	                   mkquote for each var in taytpelvars el collect (var . taytpelpoint el)},
+	                  !*trtaylor);
+         if errorp c0 then taylor!-error('zero!-denom,"computation of constant term")
+	 else c0 := car c0 >>;
+
      l0 := {nzerolist length taytpelvars el};
 
      if null numr c0 then nil

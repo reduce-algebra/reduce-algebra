@@ -7,7 +7,7 @@ module taylor;
 %
 %****************************************************************
 %
-%  Copyright (C) 1989--2015 by Rainer M. Schoepf, all rights reserved.
+%  Copyright (C) 1989--2018 by Rainer M. Schoepf, all rights reserved.
 %
 %
 %  Error reports please to: <reduce-algebra-developers@lists.sourceforge.net>
@@ -80,6 +80,14 @@ module taylor;
 %
 %*****************************************************************
 %
+%
+% 22-Jun-2018    2.2g
+%   When a taylor series is computed via differentiation, the constant term is
+%    evaluated by substituting the expansion point. Catch a possible error
+%    (i.e. division by zero) at this point and call taylor!-error.
+%   Modify taylor!-error to print the error message if the switch trtaylor is on.
+%    This helps if taylor expansions are computed in an errorset where error
+%    messages are not printed (i.e. when calling from the limit package).
 %
 % 05-Nov-2015    2.2f
 %   Protect computation of implicit_taylor against error during substitution.
@@ -951,8 +959,8 @@ taylorprintterms := 5;         % Only this nubmer of non-zero terms
                                % in progress to indicate that the error
                                % might disappear if the order is
                                % increased.
-taylor!:version := "2.2f";     % version number of the package
-taylor!:date!* := "05-Nov-2015"; % release date
+taylor!:version := "2.2g";     % version number of the package
+taylor!:date!* := "22-Jun-2018"; % release date
 
 if !*verboseload then
   << terpri ();
@@ -1382,7 +1390,7 @@ symbolic inline procedure !*tay2q u;
 COMMENT some procedures for tracing;
 
 symbolic smacro procedure taylor!-trace u;
-   if !*trtaylor then lpri("Taylor: " . if u and atom u then list u else u);
+   if !*trtaylor then << lpri("Taylor: " . if u and atom u then list u else u); terpri()>>;
 
 symbolic smacro procedure taylor!-trace!-mprint u;
    if !*trtaylor then mathprint u;

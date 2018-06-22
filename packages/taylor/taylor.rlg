@@ -2604,6 +2604,8 @@ taylor(gamma(x),x,-1,3);
 
 ***** Psi undefined for nonpositive integer argument -1 
 
+***** Zero divisor in computation of constant term 
+
 ***** Psi undefined for nonpositive integer argument -1 
 
 ***** Error during expansion (possible singularity!) 

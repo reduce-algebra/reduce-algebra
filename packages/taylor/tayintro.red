@@ -171,11 +171,10 @@ symbolic procedure taylor!-error (type, info);
             else if type eq 'not!-implemented
              then "Not implemented yet"
             else confusion 'taylor!-error;
+    if not null info then msg := if  atom info then {msg, info} else msg . info;
+    if !*trtaylor then taylor!-trace msg;
 %    rerror (taylor, errno,
-    rerror (taylor, 2,
-            if null info then msg
-             else if atom info then {msg, info}
-             else msg . info);
+    rerror (taylor, 2, msg);
   end;
 
 symbolic procedure taylor!-error!*(type,info);
