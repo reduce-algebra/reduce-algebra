@@ -245,9 +245,9 @@ operator term;  let term ~n => 2^n*x^n/factorial n;
 % The Taylor polynomial to degree 6 is
 for n := 0:6 sum term n;
 % This looks better like this:
-on div;  ws;  off div;
-% Apart from term order, this is the same as
-taylorprintterms := all$
+on div, revpri;  ws;  off div, revpri;
+% This is the same as
+load_package "taylor";  taylorprintterms := all$
 taylor(f, x, 0, 6);'),
 
 ));

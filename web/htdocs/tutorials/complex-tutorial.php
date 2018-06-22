@@ -38,7 +38,7 @@ z := 2 + i*y$  w;
 		'S' => 'clear z;  f := 1/(1+4z);
 % Deduce that the nth derivative is (-4)^n*n!/(1+4z)^(n+1).  Hence
 operator a;  let a(~n) => (-4)^n/13^(n+1);
-on div;  for n := 0:6 sum a(n)*!(z!-3!)^n;
+on div, revpri;  for n := 0:6 sum a(n)*!(z!-3!)^n;
 % where I have used !(z!-3!) instead of (z-3) to stop the powers being expanded.
 % Check:
 load_package "taylor";

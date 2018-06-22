@@ -34,14 +34,17 @@ You can also download individual lesson files this way.
 	<p>It is advisable to run each lesson in a new REDUCE session, otherwise the lessons may interfere with each other.</p>
 
 	<h2>Elementary mathematics tutorials</h2>
-	<p>The following tutorials cover the application of REDUCE to a range of elementary mathematics problems at pre-university and first/second-year undergraduate level.  If you spot any errors or have better solutions then please <a href="https://sourceforge.net/users/fjwright/">let us know</a>.  Other tutorials will follow as they are developed.</p>
-	<p>It is assumed that the reader is familiar with the mathematics, which is not explained here. Please refer to the <strong>REDUCE User's Manual</strong> <small>[ <a href="manual/manual.html">HTML</a> | <a href="manual/manual.pdf">PDF</a> ]</small> for details of the REDUCE facilities used, which are also not explained here.  You should be able to copy and paste the REDUCE solutions into REDUCE, but you are recommended to try your own solutions first.</p>
-	<h4><a href="tutorials/em-tutorial.php">Pre-university algebra tutorial</a></h4>
-	<h3>Undergraduate mathematics</h3>
-	<h4><a href="tutorials/calculus-tutorial.php">Calculus tutorial</a></h4>
-	<h4><a href="tutorials/veclinalg-tutorial.php">Vectors and linear algebra tutorial</a></h4>
-	<h4><a href="tutorials/pure-tutorial.php">Pure mathematics tutorial</a></h4>
-	<h4><a href="tutorials/complex-tutorial.php">Complex variables tutorial</a></h4>
+	<p>The following tutorials cover the application of REDUCE to a range of elementary mathematics problems at pre-university and first/second-year undergraduate level.  If you spot any errors or have better solutions then please <a href="https://sourceforge.net/users/fjwright/">let us know</a>.  Other tutorials may follow as they are developed.</p>
+	<p>It is assumed that the reader is familiar with the mathematics, which is not explained here.  Please refer to the <strong>REDUCE User's Manual</strong> <small>[ <a href="manual/manual.html">HTML</a> | <a href="manual/manual.pdf">PDF</a> ]</small> for details of the REDUCE facilities used, which are also not explained here.  You should be able to copy and paste the REDUCE solutions into REDUCE, but you are recommended to try your own solutions first.</p>
+	<p><a href="tutorials/em-tutorial.php">Pre-university algebra tutorial</a></p>
+	<p>Undergraduate mathematics tutorials on &hellip;</p>
+<ul>
+	<li><a href="tutorials/calculus-tutorial.php">calculus</a></li>
+	<li><a href="tutorials/veclinalg-tutorial.php">vectors and linear algebra</a></li>
+	<li><a href="tutorials/pure-tutorial.php">pure mathematics</a></li>
+	<li><a href="tutorials/complex-tutorial.php">complex variables</a></li>
+	<li><a href="tutorials/ode-tutorial.php">ordinary differential equations</a></li>
+</ul>
 END_OF_MAIN_CONTENT
 );
 
