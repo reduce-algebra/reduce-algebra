@@ -193,6 +193,7 @@ send REDUCE input.")
 (if reduce-run-mode-map ()
   (setq reduce-run-mode-map (copy-keymap comint-mode-map))
   (define-key reduce-run-mode-map "\C-x\C-e" 'reduce-eval-last-statement)
+  (define-key reduce-run-mode-map "\C-c\C-n" 'reduce-eval-line)
   (define-key reduce-run-mode-map "\C-c\C-i" 'reduce-input-file)
   (define-key reduce-run-mode-map "\C-c\C-l" 'reduce-load-package)
   (define-key reduce-run-mode-map "\C-c\C-f" 'reduce-fasl-file)
@@ -203,6 +204,7 @@ send REDUCE input.")
 ;; code in file editing buffers.
 (define-key reduce-mode-map "\M-\C-x"  'reduce-eval-proc) ; Emacs convention
 (define-key reduce-mode-map "\C-x\C-e" 'reduce-eval-last-statement) ; ditto
+(define-key reduce-mode-map "\C-c\C-n" 'reduce-eval-line)
 (define-key reduce-mode-map "\C-c\C-e" 'reduce-eval-proc)
 (define-key reduce-mode-map "\C-c\C-r" 'reduce-eval-region)
 (define-key reduce-mode-map "\C-c\C-z" 'switch-to-reduce)
@@ -246,6 +248,8 @@ send REDUCE input.")
 	"--"
 	["Input Last Statement" reduce-eval-last-statement :active t
 	 :help "Input the statement before point to a REDUCE process"]
+	["Input Line" reduce-eval-line :active t
+	 :help "Input the line containing point to a REDUCE process"]
 	["Input Procedure" reduce-eval-proc :active t
 	 :help "Input the procedure containing point to a REDUCE process"]
 	["Input Region" reduce-eval-region :active mark-active
@@ -527,8 +531,9 @@ Prefix argument SWITCH means also switch to the REDUCE window.
 Echo a possibly shortened version and save it in the input history.
 Used by all functions that send input to REDUCE."
   (interactive "r\nP")
-  (let ((region (buffer-substring-no-properties start end))
-		(START 0) (lines 1) reg
+  (let ((oldbuf (current-buffer))
+		(region (buffer-substring-no-properties start end))
+		(START 0) (lines 1) reg window
 		(comint-input-sender-old comint-input-sender))
     ;; Delete all leading and trailing newlines from region:
     (while (eq (aref region 0) ?\n)
@@ -544,7 +549,7 @@ Used by all functions that send input to REDUCE."
 				   "\\(.*\n\\)\\(\\(.*\n\\)*.*\\)\n"
 				   "%\\1%   ...\n%" region t)
 				region))
-    (switch-to-reduce t t switch)
+    (setq window (switch-to-reduce t t switch))
     (insert reg)
     ;; Send full region to REDUCE, but replace all newlines (and any
     ;; preceding comments!) with spaces to avoid multiple REDUCE
@@ -558,7 +563,12 @@ Used by all functions that send input to REDUCE."
 		  (lambda (proc string)
 			(comint-simple-send (get-buffer-process (current-buffer)) region)))
     (comint-send-input)
-    (setq comint-input-sender comint-input-sender-old)))
+    (setq comint-input-sender comint-input-sender-old)
+	(set-window-point window (point-max))
+	;; Re-select file window (if possible):
+	(unless switch
+	  (if (setq window (get-buffer-window oldbuf))
+		  (select-window window)))))
 
 (defun reduce-eval-last-statement (switch)
   "Send the previous statement to a REDUCE process.
@@ -569,6 +579,20 @@ Prefix argument SWITCH means also switch to the REDUCE window."
 	(reduce-eval-region
 	 (save-excursion (reduce-backward-statement 1) (point))
 	 (point) switch)))
+
+(defun reduce-eval-line (switch)
+  "Send the current line of code to the REDUCE process.
+Prefix argument SWITCH means also switch to the REDUCE window."
+  (interactive "P")
+  (save-excursion
+	(beginning-of-line)
+	(skip-chars-forward " \t")
+	(let ((start (point)))
+	  (end-of-line)
+	  (skip-chars-backward " \t")
+	  (if (= (point) start)
+		  (user-error "Empty line")
+		(reduce-eval-region start (point) switch)))))
 
 (defun reduce-eval-proc (switch)
   "Send the current procedure definition to the REDUCE process.
@@ -605,7 +629,8 @@ which appears to have the form `buffer-name . buffer-object'."
   "Switch to REDUCE process buffer, at end if TO-EOB; if NO-MARK do not save mark.
 With interactive argument, TO-EOB, position cursor at end of buffer.
 If `reduce-run-autostart' is non-nil then automatically start a new REDUCE
-process if necessary."
+process if necessary.
+Return the window displaying the REDUCE process buffer."
   (interactive "P")
   (let ((set-or-switch-to-buffer (if switch #'switch-to-buffer #'set-buffer)))
 	;; Find the appropriate REDUCE process buffer:
@@ -629,15 +654,21 @@ process if necessary."
 						   switch-to-reduce-default)
 						  t						; require-match
 						  'reduce-run-buffer-p))))))
-	 ;; Start a new REDUCE process if appropriate:
+	 ;; Start a new REDUCE process in a new window as appropriate:
 	 (reduce-run-autostart
+	  (unless switch (split-window))
 	  (run-reduce)
-	  ;; Wait for REDUCE to start. May need to do this properly!
-	  (sit-for 1)))
+	  ;; Wait for REDUCE to start:
+	  (while (not (looking-back "^1: " nil))
+		(sit-for 1))))
 	;; Go to the end of the buffer if required:
 	(when (and to-eob (not (eobp)))
 	  (or no-mark (push-mark))
-	  (goto-char (point-max)))))
+	  (goto-char (point-max))))
+  ;; Ensure that the new buffer is displayed and return its window:
+  (or (get-buffer-window)
+	  (get-buffer-window
+	   (switch-to-buffer-other-window (current-buffer)))))
 
 (defun re-run-reduce ()
   "Re-run REDUCE in the current buffer, killing it first if necessary."

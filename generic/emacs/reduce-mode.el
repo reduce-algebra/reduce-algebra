@@ -419,7 +419,9 @@ Entry to this mode calls the value of `reduce-mode-hook' if non-nil."
   ;; font-lock option (which is essential to parse "...!"):
   (set (make-local-variable 'parse-sexp-lookup-properties) t)
   ;; Optionally turn on REDUCE minor modes:
-  (if reduce-show-delim-mode-on (reduce-show-delim-mode))
+  (when reduce-show-delim-mode-on
+	(require 'reduce-delim)
+	(funcall 'reduce-show-delim-mode))
   (if reduce-auto-indent-mode (reduce-auto-indent-mode t))
   ;; For reduce-show-proc-mode:
   (set (make-local-variable 'which-func-mode) nil)
