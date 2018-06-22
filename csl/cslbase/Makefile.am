@@ -75,7 +75,6 @@ plain_wxshowmathdemo = wxshowmathdemo
 plain_dyndemo = dyndemo
 plain_zlibdemo = zlibdemo
 plain_gctest = gctest
-plain_alloctest = alloctest
 else !exeext
 plain_csl = csl.unnecessary.except.on.windows
 plain_flatcsl = csl.unnecessary.except.on.windows
@@ -96,7 +95,6 @@ plain_wxshowmathdemo = wxshowmathdemo.unnecessary.except.on.windows
 plain_dyndemo = dyndemo.unnecessary.except.on.windows
 plain_zlibdemo = zlibdemo.unnecessary.except.on.windows
 plain_gctest = gctest.unnecessary.except.on.windows
-plain_alloctest = alloctest.unnecessary.except.on.windows
 endif !exeext
 
 .PHONY: $(plain_csl)
@@ -118,7 +116,6 @@ endif !exeext
 .PHONY: $(plain_dyndemo)
 .PHONY: $(plain_zlibdemo)
 .PHONY: $(plain_gctest)
-.PHONY:	$(plain_alloctest)
 
 .PHONY:	bootstraprecompile
 .PHONY:	recompile
@@ -256,8 +253,6 @@ check_PROGRAMS = flatcsl$(EXEEXT) fwindemo$(EXEEXT) \
 	termdemo$(EXEEXT) $(foxdemotarget) \
 	dyndemo$(EXEEXT) zlibdemo$(EXEEXT) $(wxdemotarget)
 endif !mac_framework
-
-noinst_PROGRAMS += alloctest$(EXEEXT)
 
 if mac_framework
 REDUCE_IMG=reduce.app/Contents/MacOS/reduce.img
@@ -538,10 +533,6 @@ wxshowmathdemo_SOURCES = wxshowmathdemo.cpp wxfwin.cpp termed.cpp
 wxshowmathdemo_LDADD = $(fwin_icon)
 wxshowmathdemo_DEPENDENCIES = $(fwin_icon) $(FONTDEP) $(WXC)
 
-alloctest_SOURCES = allocate.cpp allocate_test.cpp
-alloctest_CPPFLAGS = -DALLOCTEST=1
-#alloctest_LDFLAGS = -static
-
 AWKFILES=reduce.resources/mma.awk reduce.resources/qepcad.awk
 
 if windows
@@ -784,7 +775,6 @@ AM_CPPFLAGS     += $(CRINC)
 reduce_CPPFLAGS += $(CRINC)
 csl_CPPFLAGS    += $(CRINC)
 flatcsl_CPPFLAGS    += $(CRINC)
-alloctest_CPPFLAGS  += $(CRINC)
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and crlibm building will get
@@ -820,7 +810,6 @@ AM_CPPFLAGS     += $(FFINC)
 reduce_CPPFLAGS += $(FFINC)
 csl_CPPFLAGS    += $(FFINC)
 flatcsl_CPPFLAGS    += $(FFINC)
-alloctest_CPPFLAGS  += $(FFINC)
 
 # The following ugly dependencies are here so that one can go, for
 # instance, "make csl.o" in a clean tree and libffi building will get
@@ -1609,9 +1598,6 @@ $(plain_dyndemo):	dyndemo.exe
 
 $(plain_zlibdemo):	zlibdemo.exe
 	echo "$(MAKE) zlibdemo.exe is preferred"
-
-$(plain_alloctest): alloctest.exe
-	echo "$(MAKE) alloctest.exe is preferred"
 
 endif exeext
 
