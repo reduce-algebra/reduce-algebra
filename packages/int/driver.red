@@ -948,6 +948,20 @@ intrules :=
    int(1/~f^(~x^2/~b),x) => erf(x/sqrt(b*log(f)))*sqrt(pi)*sqrt(b*log(f))/2
               when f freeof x and b freeof x,
 
+%% RmS: shifted gaussians:
+   int(~f^((~~b*~x^2+~~c*~x)/~~d),x) => erf(i*sqrt(b*log(f)/d)*x - c*log(f)/(2*i*d*sqrt(b*log(f)/d)))
+                          *sqrt(pi)*exp(-c^2*log(f)/(4*b*d))/(2i*sqrt(b*log(f)/d))
+              when f freeof x and b freeof x and c freeof x and d freeof x,
+   int(~f^((~x^2/~b+~~c*~x)/~~d),x) => erf(i*sqrt(log(f)/(b*d))*x - c*log(f)/(2*i*d*sqrt(log(f)/(b*d))))
+                          *sqrt(pi)*exp(-b*c^2*log(f)/(4d))/(2i*sqrt(log(f)/(b*d)))
+              when f freeof x and b freeof x and c freeof x and d freeof x,
+   int(~f^(~~c*~x)/~f^((~~b*~x^2+~~d)/~~a),x) => f^(-d/a)*erf(sqrt(b*log(f)/a)*x - c*log(f)/(2*sqrt(b*log(f)/a)))
+                          *sqrt(pi)*exp(a*c^2*log(f)/(4b))/(2*sqrt(b*log(f)/a))
+              when f freeof x and b freeof x and c freeof x and d freeof x and a freeof x,
+   int(~g/~f^((~~b*~x^2+~~c*~x+~~d)/~~a),x) => g*f^(-d/a)*erf(sqrt(b*log(f)/a)*x + c*log(f)/(2*a*sqrt(b*log(f)/a)))
+                          *sqrt(pi)*exp(c^2*log(f)/(4*a*b))/(2*sqrt(b*log(f)/a))
+              when f freeof x and b freeof x and c freeof x and d freeof x and a freeof x and g freeof x,
+
    int(e^(~~b*~x)/x,x) => Ei(b*x) when b freeof x,
    int(e^(~x/~b)/x,x) => Ei(x/b) when b freeof x,
    int(1/(exp(~x*~~b)*x),x) => Ei(-x*b) when b freeof x,
