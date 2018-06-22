@@ -251,3 +251,26 @@ For example, given the above dependencies,
 says that \texttt{Z} is no longer dependent on \texttt{COS(X)}, although it remains
 dependent on \texttt{Y}.
 
+As a convenience, one or more dependent variables can be specified
+together in a list for both the \texttt{DEPEND} and \texttt{NODEPEND}
+commands, i.e.
+
+\texttt{(no)depend \{$y_1$, $y_2$, $\ldots$\}, $x_1$, $x_2$, $\ldots$}
+
+is equivalent to
+
+\texttt{(no)depend $y_1$, $x_1$, $x_2$, $\ldots$; (no)depend $y_2$, $x_1$, $x_2$, $\ldots$; $\ldots$}
+
+Both commands also accept a sequence of ``dependence sequences'',
+where the beginning of each new dependence sequence is indicated by a
+list of one or more dependent variables.  For example,
+\begin{verbatim}
+        depend {x,y,z},u,v,{theta},time;
+\end{verbatim}
+is equivalent to
+\begin{verbatim}
+        depend x,u,v;
+        depend y,u,v;
+        depend z,u,v;
+        depend theta,time;
+\end{verbatim}
