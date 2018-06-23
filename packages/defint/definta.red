@@ -1098,9 +1098,9 @@ transform_tst := reval algebraic(transform_tst);
 
    if !*trdefint then <<
       prin2t "Checking tst3: Re{alpha + r*ai + cj} < r + 1,          i=1..n, j=1..l";
-      prin2!* n; prin2!* " first upper parameters: ";
+      prin2!* "n="; prin2!* n; prin2!* " first upper parameters: ";
       mathprint {'equal,'a,'list . for each sq in a collect prepsq sq};
-      prin2!* l; prin2!* " second upper parameters: ";
+      prin2!* "l="; prin2!* l; prin2!* " second upper parameters: ";
       mathprint {'equal,'c,'list . for each sq in c collect prepsq sq};
       mathprint {'equal,'alpha,alpha};
       mathprint {'equal,'r,r};
@@ -1263,7 +1263,7 @@ if transform_tst neq 't then
       mathprint {'equal,'a,'list . for each sq in a collect prepsq sq};
       mathprint {'equal,'alpha,alpha};
       mathprint {'equal,'r,r};
-      mathprint {'equal,'r,rho};
+      mathprint {'equal,'rho,rho};
    >>;
 
    for j := 1 :n do
@@ -1369,6 +1369,7 @@ if transform_tst neq 't then
       prin2t "Checking tst8: abs(phi) + 2*Re{(q - p)*(v - u)*alpha + r*(v - u)*(mu - 1) + (q - p)*(rho - 1)} > 0";
       terpri!* t; prin2!* "p="; prin2!* p; prin2!* ",q=" ; prin2!* q; 
       prin2!* ",u="; prin2!* u; prin2!* ",v="; prin2!* v; terpri!* t;
+      mathprint {'equal,'phi,phi};
       mathprint {'equal,'alpha,alpha};
       mathprint {'equal,'r,r};
       mathprint {'equal,'mu,mu};
@@ -1424,6 +1425,7 @@ if transform_tst neq 't then
       prin2t "Checking tst9: abs(phi) - 2*Re{(q - p)*(v - u)*alpha + r*(v - u)*(mu - 1) + (q - p)*(rho - 1)} > 0";
       terpri!* t; prin2!* "p="; prin2!* p; prin2!* ",q=" ; prin2!* q; 
       prin2!* ",u="; prin2!* u; prin2!* ",v="; prin2!* v; terpri!* t;
+      mathprint {'equal,'phi,phi};
       mathprint {'equal,'alpha,alpha};
       mathprint {'equal,'r,r};
       mathprint {'equal,'mu,mu};
@@ -1658,7 +1660,9 @@ if transform_tst neq 't then
      write "                 or";
      write "                   z = sigma^r1*omega^(-r2) when Re{mu + rho + alpha*(v - u)}<1";
      write "u=",u,",v=",v;
+     write "r=r1/r2=",r,"; r1=",r1,",r2=",r2;
      write "alpha=",alpha;
+     write "phi=",phi;
      write "mu=",mu;
      write "rho=",rho;
      write "sigma=",sigma;
@@ -1730,11 +1734,59 @@ begin scalar lc,ls,temp_ls,psi,theta,arg_omega,arg_sigma,
 if transform_tst neq 't then
 
 << if symbolic(!*trdefint) then <<
-     write "Checking tst15:";
+   write "Checking tst15:";
+   symbolic <<
+      prin2t "Compute ";
+   symbolic mathprint
+      {'setq,'lambda_c,
+	 {'plus,
+	    {'times,'(difference q p),
+	       '(expt (abs omega) (quotient 1 (difference q p))),
+	       '(cos psi)},
+	    {'times,'(difference v u),
+	       '(expt (abs sigma) (quotient 1 (difference v u))),
+	       '(cos theta)}}};
+   symbolic prin2t " and ";
+   symbolic mathprint
+      {'setq,'lambda_s,
+	 {'plus,
+	    {'times,'(difference q p),
+	       '(expt (abs omega) (quotient 1 (difference q p))),
+	       '(sign (arg omega)),
+	       '(sin psi)},
+	    {'times,'(difference v u),
+	       '(expt (abs sigma) (quotient 1 (difference v u))),
+	       '(sign (arg sigma)),
+	       '(sin theta)}}};
+   symbolic prin2t " where ";
+   symbolic mathprint
+      {'setq,'psi,
+      {'quotient,
+	 {'plus,
+	    '(times pi (plus q (minus m) (minus n))),
+	    '(abs (arg omega))},
+	 '(difference q p)}};
+   symbolic prin2t " and ";
+   symbolic mathprint
+    {'setq,'theta,
+      {'quotient,
+	 {'plus,
+	    '(times pi (plus v (minus k) (minus l))),
+	    '(abs (arg sigma))},
+	 '(difference v u)}};
+   >>;
      write "m=",m,",n=",n,",p=",p,",q=",q,",k=",k,",l=",l,",u=",u,",v=",v;
      write "sigma=",sigma;
      write "omega=",omega;
      write "eta=",eta;
+     symbolic prin2t "The test fails immediately if";
+     symbolic mathprint
+	'(or (equal (arg sigma) 0) (equal (arg omega) 0));
+     symbolic prin2t "The test succeeds when";
+     symbolic mathprint
+	{'or,'(greaterp lambda_c 0),
+	   '(and (equal lambda_c 0) (not (equal lambda_s 0)) (greaterp (repart eta) -1)),
+	   '(and (equal lambda_c 0) (equal lambda_s 0)(greaterp (repart eta) 0))};
    >>;
 
    arg_omega := atan2(impart omega,repart omega);
@@ -1748,12 +1800,33 @@ if transform_tst neq 't then
                              (v - u)*abs(sigma)^(1/(v - u))*cos theta;
 
    lc := lc;
+
+   if symbolic(!*trdefint) then <<
+      write %{'equal,'(arg omega),arg_omega};
+      "arg(omega)=",arg_omega;
+      write %{'equal,'(arg sigma),arg_sigma};
+      "arg(sigma)=",arg_sigma;
+      write %{'equal,'psi,psi};
+      "psi=",psi;
+      write %{'equal,'theta,theta};
+      "theta=",theta;
+      write %{'equal,'lambda_c,lc};
+      "lambda_c=",lc;
+   >>;
+	 
    temp_ls := (q - p)*abs(omega)^(1/(q - p))*sign(arg_omega)*sin psi +
           (v - u)*abs(sigma)^(1/(v - u))*sign(arg_sigma)*sin theta;
 
    if arg_sigma*arg_omega neq 0 then ls := temp_ls
-        else return reval 'fail;
+   else <<
+      if symbolic(!*trdefint) then write "Result of tst15 is fail";
+      return reval 'fail>>;
 
+   if symbolic(!*trdefint) then <<
+      %mathprint {'equal,'lambda_s,ls};
+      write "lambda_s=",ls;
+   >>;
+	 
    on rounded;
    if (numberp lc and lc > 0) or lc = 0 and ls = 0 and repart eta > -1
                   or lc = 0 and ls = 0 and repart eta > 0 then
