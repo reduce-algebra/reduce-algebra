@@ -788,11 +788,12 @@ case the derivative is reported as the symbol \texttt{df(z,x)}.
 \hypertarget{switch:NOCOMMUTEDF}{}
 \hypertarget{switch:SIMPNONCOMDF}{}
 
-Consider \texttt{df(u,x,y,z)}.  If non of \texttt{x,y,z} are equal to \var{u}
+Consider \texttt{df(u,x,y,z)}, assuming \var{u} depends on each of \texttt{x,y,z}
+in some way.  If none of \texttt{x,y,z} is equal to \var{u}
 then the order of differentiation is commuted into a canonical form, unless the
 switch \sw{NOCOMMUTEDF}\ttindexswitch{NOCOMMUTEDF} is turned on (default is off).
-if at least one of \texttt{x,y,z} is equal to \var{u} then the order of
-differentiation is \emph{not} commuted and the derivative is \emph{not}
+If at least one of \texttt{x,y,z} is equal to \var{u} then the order of
+differentiation is \emph{not} fully commuted and the derivative is \emph{not}
 simplified
 to zero, unless the switch \sw{COMMUTEDF}\ttindexswitch{COMMUTEDF} is turned on.
 It is off by default.
@@ -815,7 +816,7 @@ It is off by default.  Thus, for example, given
 \begin{verbatim}
         DEPEND F,U,V; DEPEND {U,V},X;
         ON EXPANDDF;
-        DF(F,X)        -> DF(F,U)*DF(U,X) + DF(F,V)*DF(V,X)
+        DF(F,X)    -> DF(F,U)*DF(U,X) + DF(F,V)*DF(V,X)
 \end{verbatim}
 whereas after
 \begin{verbatim}
