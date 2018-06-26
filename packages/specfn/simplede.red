@@ -121,25 +121,23 @@ begin scalar cap_a,degree0fde,cap_f,j,cap_j,nnn,s,ind,deq,eqq,reqq,
         return deq;
 end;
 
-put('fps,'psopfn,'fpseval);
+put('fps,'simpfn,'simp!-fps);
 
-symbolic procedure fpseval(u);
-   begin scalar gens,res,opm,!*factor,!*precise;
-     if get('fps,'opmtch) and (opm := opmtchrevop ('fps . u))
-       then return aeval opm;
+symbolic procedure simp!-fps(u);
+   begin scalar gens,res,!*factor,!*precise;
      if length u = 2 then
         << res := psalg(car u,cadr u);
            if eq(res,-1) then return fpsexit(car u,cadr u,0);
-        return sublis('((oddexpt . expt)(ba . a) (nn . k)),res)
+	   return sublis('((oddexpt . expt)(ba . a) (nn . k)), simp res)
         >>
         else if length u = 3 then
                << gens := gensym();
                res := psalg(sublis(list( cadr u . gens),car u),gens);
                if eq(res,-1) then return fpsexit(car u,cadr u,caddr u);
                res := sublis('((oddexpt . expt)(ba . a) (nn . k)),res);
-               res := subf(caadr res, list list(gens,'plus,cadr u,
+               res := subf(numr simp res, list list(gens,'plus,cadr u,
                          list('minus,caddr u)));
-               return mk!*sq res;
+               return res;
                >>
                 else rederr("Wrong number of Arguments for FPS");
         end;
@@ -148,10 +146,12 @@ algebraic procedure asymptpowerseries (f,x);
   sub(x=1/x,fps(sub(x=1/x,f),x));
 
 symbolic procedure fpsexit(a,b,z);
- << erfg!* := nil; list ('fps,a,b, z) >>$
+%   << erfg!* := nil; simpiden {'fps,a,b, z} >>;
+   << erfg!* := nil; !*k2q {'fps,a,b, z} >>;
 
 symbolic procedure simpledeexit(a,b,z);
- << erfg!* := nil; list ('simplede,a,b, z) >>$
+%   << erfg!* := nil; simpiden {'simplede,a,b, z} >>;
+   << erfg!* := nil; !*k2q {'simplede,a,b, z} >>;
 
 algebraic procedure psalg(f,x);
 
@@ -231,7 +231,7 @@ begin scalar cap_a,degree0fde,cap_f,j,cap_j,nnn,s,ind,deq,eqq,reqq,
         req := (pssubst(deq,x,ba,nn) where subst_rules);
 
         if symbolic !*tracefps
-          then write("Recurrence equation is :",req);
+          then write("Recurrence equation is: ",req);
 
         ind := {};
         for ii:=-50 : 50 do
@@ -585,8 +585,11 @@ fps!*rules := {
    fps(polylog(~s,~x),~x,0) => infsum((-1)^k*x^k/k^s,k,1,infinity)
 };
 
-%% doesn't work yet
-%let fps!*rules;
+let fps!*rules;
+
+%% Clear variable fps!*rules;
+clear fps!*rules;
+
 
 endmodule;
 
