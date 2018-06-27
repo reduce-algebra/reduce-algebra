@@ -1,4 +1,4 @@
-<!-- Index page for http://reduce-algebra.sourceforge.net/, http://reduce-algebra.com, etc. -->
+<!-- Index page for https://reduce-algebra.sourceforge.io/, http://reduce-algebra.com, etc. -->
 
 <?php
 
@@ -6,6 +6,7 @@ require_once('../php/Smarty/setup.php');
 $smarty = new Smarty_REDUCE();
 
 $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
+	<p>See also the <a href="https://sourceforge.net/p/reduce-algebra/" rel="nofollow">REDUCE project page at <img class="sflogo" alt="Download REDUCE" src="https://sourceforge.net/sflogo.php?type=10&group_id=248416"></a>.</p>
 	<p>REDUCE is a system for doing scalar, vector and matrix algebra by computer, which also supports arbitrary precision numerical approximation and interfaces to <a href="http://www.gnuplot.info/">gnuplot</a> to provide graphics. It can be used interactively for simple calculations (as illustrated in the screenshot below) but also provides a full programming language, with a syntax similar to other modern programming languages. REDUCE supports alternative <a href="support.php#interfaces">user interfaces</a> including Emacs and TeXmacs.</p>
 	<p>REDUCE (and its complete source code) is <a href="obtaining.php">available free of charge</a> for most common computing systems, in some cases in more than one version (see below) for the same machine. The <a href="documentation.php">manual and other support documents</a> and tutorials are also included in the distributions.</p>
 	<a href="images/reduce_screenshot_1.PNG">

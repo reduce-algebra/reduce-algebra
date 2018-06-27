@@ -16,6 +16,12 @@
 		 border: thin solid;
 	 }
 
+	 #main img.sflogo {
+		 margin: auto;
+		 width: auto;
+		 border: none;
+	 }
+
 	 aside iframe {
 		 border: 0;
 		 padding: 0;

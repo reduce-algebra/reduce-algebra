@@ -20,7 +20,8 @@ $smarty->assign('main_content', <<< END_OF_MAIN_CONTENT
 <p>REDUCE includes considerable documentation, not only for the core system, but also for the many application packages included in the release. (The documentation for <a href="documentation38.php">REDUCE 3.8</a>, the last commercial version of REDUCE released in 2004, is also still available.)</p>
 <p>For all users:</p>
 <ul>
-	<li>the <strong>REDUCE User's Manual</strong> <small>[ <a href="manual/manual.html">HTML</a> | <a href="manual/manual.pdf">PDF</a> ]</small> provides a comprehensive guide to the REDUCE language and the supported packages.</li>
+	<li>the <strong>REDUCE User's Manual</strong> <small>[ <a href="manual/manual.html">HTML</a> | <a href="manual/manual.pdf">PDF</a> ]</small> provides a comprehensive guide to the REDUCE language and the supported packages;</li>
+	<li>the <a href="switches.php">switch summary</a> provides an overview of all the switches that control REDUCE.</li>
 </ul>
 <p>For advanced users:</p>
 <ul>
