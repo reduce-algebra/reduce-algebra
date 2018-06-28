@@ -53,8 +53,6 @@ int      fp_first=0;
 
 int forminit(FILE **,FILE **);
 
-struct sigaction act;
-
 static char alternate_signalstack[ALTSIGSTACKSIZE];
 static stack_t stackinfo = { (void *) alternate_signalstack, 0, sizeof(alternate_signalstack) };
 static stack_t *stackinfo_ptr = NULL;
@@ -67,7 +65,6 @@ int sig;
    struct sigaction act = {0};
    
    if (signal(sig, SIG_IGN) != SIG_IGN) {
-    //#signal(sig, action);
      act.sa_sigaction = action;
      act.sa_flags = SA_SIGINFO | SA_RESTART;
 
@@ -79,7 +76,7 @@ int sig;
         }
         act.sa_flags |= SA_ONSTACK;
      }
-     sigaction(sig, &act, (void*)0);
+     sigaction(sig, &act, NULL);
    }
 
 #ifndef LINUX

@@ -73,6 +73,10 @@
   (when (and (eq (uxquotient x y z) 0) (not (eq fp-except-mode* 0)))
      (stderror "Floating point error in fquotient")))
 
+(de *fminus (x y)
+  (when (and (eq (uxminus x y) 0) (not (eq fp-except-mode* 0)))
+     (stderror "Floating point error in fminus")))
+ 
 (de *fsqrt (x y)
   (when (and (eq (uxsqrt x y) 0) (not (eq fp-except-mode* 0)))
      (stderror "Floating point error in fsqrt")))

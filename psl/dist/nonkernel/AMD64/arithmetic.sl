@@ -453,9 +453,13 @@
 (defarith1entry sub1 isub1 (lambda (x)
                                    (floatdifference x '1.0)) bigsub1)
 
-(defarith1entry minus iminus 
-                (lambda (x)
-                        (floatdifference '0.00000E+000 x)) bigminus)
+(defarith1entry minus iminus floatminus bigminus)
+
+(de floatminus (x)
+  (let ((y (gtfltn)))
+    (*fminus (floatbase y) (floatbase (fltinf x)))
+    (mkfltn y))
+)
 
 (defarith1entry fix (lambda (x)
                             x) floatfix (lambda (x)
