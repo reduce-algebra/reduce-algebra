@@ -145,8 +145,11 @@ symbolic procedure float!-is!-infinite x;
 symbolic procedure float!-is!-subnormal x;
   floatp x and ieeeexpt x = 0;
 
+symbolic procedure float!-is!-negative x;
+  floatp x and not(0 eq ieeesign x);
 
-remflag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm),'lose);
+
+remflag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm fp!-signbit),'lose);
 
 symbolic inline procedure fp!-infinite x;
   float!-is!-infinite x;
@@ -160,7 +163,10 @@ symbolic inline procedure fp!-finite x;
 symbolic inline procedure fp!-subnorm x;
   float!-is!-subnormal x;
 
-flag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm),'lose);
+symbolic inline procedure fp!-signbit x;
+  float!-is!-negative x;
+
+flag('(fp!-infinite fp!-nan fp!-finite fp!-subnorm fp!-signbit),'lose);
 
 %---------------------------------------------------------------
 
