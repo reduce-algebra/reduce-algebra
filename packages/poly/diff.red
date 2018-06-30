@@ -207,7 +207,12 @@ symbolic procedure diffp(u,v);
                   or (car u eq '!*sq and (w:= diffsq(cadr u,v)))
           then go to c  % extended kernel found.
          else if x := get(car u,'dfform) then return apply3(x,u,v,n)
-         else if x:= get(car u,dfn_prop u) then nil
+         else if (x := get(car u,dfn_prop u))
+%  The following condition not used as it doesn't work properly
+%           % The following takes care of implicit dependencies of known kernels
+%           % like "depend cos(y),x; df(cos(y),x);"
+%                 and not(depends(u,v) and not smember(v,u))
+       	  then nil
          else if car u eq 'plus and (w := diffsq(simp u,v))
           then go to c
          else go to h;  % unknown derivative.
