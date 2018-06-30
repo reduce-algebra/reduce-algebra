@@ -72,7 +72,6 @@
 
 ;;; To do:
 
-;; phase out prompt regexp completely
 ;; control echoing from input of statement, proc or region?
 
 
@@ -133,11 +132,8 @@ If that fails then it tries to run REDUCE on the second Lisp."
   :type '(alist :key-type (choice (const "CSL") (const "PSL")) :value-type string)
   :group 'reduce-run)
 
-(defcustom reduce-run-prompt "^\\([0-9]+[:*] \\)+"
-  "Regexp to recognise prompts in REDUCE Run mode.
-Defaults to \"^\\([0-9]+[:*] \\)+\", which works well for CSL-REDUCE.
-This variable is used to initialize `comint-prompt-regexp' in the
-REDUCE Run buffer."
+(defcustom reduce-run-prompt "^\\(?:[0-9]+[:*] \\)+"
+  "Regexp to recognise prompts in REDUCE Run mode."
   :type 'regexp
   :group 'reduce-run)
 
@@ -637,30 +633,30 @@ Return the window displaying the REDUCE process buffer."
 	(cond
 	 ;; If the current buffer is running REDUCE then do nothing:
 	 ((reduce-running-buffer-p))
-	 ;; Find an *active* REDUCE process buffer (RPB):
-	 (reduce-run-buffer-alist
-	  (let (buf)
-		(if (and (null (cdr reduce-run-buffer-alist))
-				 (get-buffer-process
-				  (setq buf (cadar reduce-run-buffer-alist)))) ; only 1 RPB
-			(funcall set-or-switch-to-buffer buf)
-		  ;; Offer a choice of RPBs to switch to:
-		  (funcall set-or-switch-to-buffer
-				   (setq switch-to-reduce-default
-						 (read-buffer
-						  "Switch to REDUCE process buffer: "
-						  (and
-						   (get-buffer-process switch-to-reduce-default)
-						   switch-to-reduce-default)
-						  t						; require-match
-						  'reduce-run-buffer-p))))))
+	 ;; Look for an *active* REDUCE process buffer (RPB):
+	 ((and reduce-run-buffer-alist
+		   (if (null (cdr reduce-run-buffer-alist)) ; at most one active RPB
+			   (let ((buf (cadar reduce-run-buffer-alist)))
+				 (if (get-buffer-process buf) ; one active RPB, so use it:
+					 (funcall set-or-switch-to-buffer buf)
+				   ;; No active RPB, so fall through to start a new one:
+				   nil))
+			 ;; Multiple RPBs, so offer a choice:
+			 (funcall set-or-switch-to-buffer
+					  (setq switch-to-reduce-default
+							(read-buffer
+							 "Switch to REDUCE process buffer: "
+							 (and
+							  (get-buffer-process switch-to-reduce-default)
+							  switch-to-reduce-default)
+							 t			; require-match
+							 'reduce-run-buffer-p)))
+			 t)))
 	 ;; Start a new REDUCE process in a new window as appropriate:
 	 (reduce-run-autostart
 	  (unless switch (split-window))
 	  (run-reduce)
-	  ;; Wait for REDUCE to start:
-	  (while (not (looking-back "^1: " nil))
-		(sit-for 1))))
+	  (reduce--wait-for-prompt)))
 	;; Go to the end of the buffer if required:
 	(when (and to-eob (not (eobp)))
 	  (or no-mark (push-mark))
@@ -722,25 +718,26 @@ Interactively, switch to a REDUCE process buffer first;
 otherwise assume the current buffer is a REDUCE process buffer.
 The user always chooses interactively whether to echo file input."
   (interactive (reduce-run-get-source "Input REDUCE file: "))
-  (when (called-interactively-p 'any)
-	(switch-to-reduce t t t)
-	(sit-for 1))						; Allow REDUCE time to start
+  (if (called-interactively-p 'any)
+	  (switch-to-reduce t t t))
   (reduce-send-string
    (format "in \"%s\"%c" file-name
 		   (if (y-or-n-p "Echo file input? ") ?\; ?$))))
 
-(defun reduce-wait-for-prompt ()
+(defun reduce--wait-for-prompt ()
   "Wait for REDUCE prompt in the current buffer.
 Assume the current buffer is a REDUCE process buffer!"
-  (save-excursion
-    (while (progn
-			 (goto-char (point-max))
-			 ;; (beginning-of-line)
-			 ;; Unlike `beginning-of-line', forward-line ignores field
-			 ;; boundaries (cf. `comint-bol')
-			 (forward-line 0)
-			 (not (looking-at reduce-run-prompt)))
-      (sit-for 1))))
+  ;; (save-excursion
+  ;;   (while (progn
+  ;; 			 (goto-char (point-max))
+  ;; 			 ;; (beginning-of-line)
+  ;; 			 ;; Unlike `beginning-of-line', forward-line ignores field
+  ;; 			 ;; boundaries (cf. `comint-bol')
+  ;; 			 (forward-line 0)
+  ;; 			 (not (looking-at reduce-run-prompt)))
+  ;;     (sit-for 1)))
+  (while (not (looking-back reduce-run-prompt nil))
+	(sit-for 1)))
 
 (defalias 'reduce-compile-file 'reduce-fasl-file)
 
@@ -753,9 +750,9 @@ The user chooses whether to echo file input."
 		  reduce-prev-package fasl-name)
 	(switch-to-reduce t t t)
     (reduce-send-string (format "faslout %s;" fasl-name))
-    (reduce-wait-for-prompt)
+    (reduce--wait-for-prompt)
     (reduce-input-file file-name)
-    (reduce-wait-for-prompt)
+    (reduce--wait-for-prompt)
     (reduce-send-string "faslend;")))
 
 
@@ -867,8 +864,7 @@ Start a new (default) REDUCE process named from file or buffer NAME
 		(pop-to-buffer buffer-name) ; just re-visit existing process buffer
 	  (reduce-run-reduce-1 (cdar reduce-run-commands) process-name buffer-name)
 	  (push (list xsl buffer-name) reduce-run-buffer-alist)
-	  ;; Need a delay here -- see switch-to-reduce.
-	  (sit-for 1))
+	  (reduce--wait-for-prompt))
 	(insert input)
 	;; Avoid triggering spurious prompts when inserting a buffer:
 	(delete-blank-lines)				; from end of inserted buffer
