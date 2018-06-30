@@ -168,9 +168,16 @@ matching delimiter is highlighted in `reduce-show-delim-style' after
     (delete-overlay reduce-show-delim--overlay-1)))
 
 (defun reduce-show-delim--unescaped-p ()
-  "Determine whether the delimiter after point is unescaped."
-  ;; Only used in the following function!
+  "Return non-nil if the delimiter after point is unescaped."
+  ;; Only used in reduce-show-delim--categorize-delim.
+  ;; (logand x 1) = lowest order bit of x = 0 if x is even.
   (= (logand (skip-syntax-backward "/\\") 1) 0))
+
+(defun reduce-show-delim--unescaped-word-p ()
+  "Return non-nil if point precedes an unescaped word, i.e.
+point is not preceded by an escape or a word character."
+  ;; Only used in reduce-show-delim--categorize-delim.
+  (= (skip-syntax-backward "/\\w") 0))
 
 (defun reduce-show-delim--categorize-delim (pos)
   "Determine whether the characters after POS form a delimiter.
@@ -188,9 +195,9 @@ isn't a delimiter, or it is an escaped delimiter, return nil."
 			(cons 2 pos))
 		   ((and (looking-at ">>") (reduce-show-delim--unescaped-p))
 			(cons -2 (+ pos 2)))
-		   ((and (looking-at "begin") (reduce-show-delim--unescaped-p))
+		   ((and (looking-at "begin") (reduce-show-delim--unescaped-word-p))
 			(cons 5 pos))
-		   ((and (looking-at "end") (reduce-show-delim--unescaped-p))
+		   ((and (looking-at "end") (reduce-show-delim--unescaped-word-p))
 			(cons -3 (+ pos 3))))))))
 
 (defun reduce-show-delim--locate-delim-backward (&optional pos)
@@ -198,8 +205,13 @@ isn't a delimiter, or it is an escaped delimiter, return nil."
 Use point if POS not given.  Return nil if no delimiter found."
   (save-excursion
 	(if pos (goto-char pos))			; otherwise start from point
-	(search-backward-regexp
-	 "\\(?:<<\\|>>\\|begin\\|end\\)\\=" nil t)))
+	(save-match-data
+	  (and (setq pos (search-backward-regexp
+					  "\\(?:\\(<<\\|>>\\)\\|begin\\|end\\)\\=" nil 0))
+		   (if (match-beginning 1)
+			   (reduce-show-delim--unescaped-p)
+			 (reduce-show-delim--unescaped-word-p))
+		   pos))))
 
 (defun reduce-show-delim--locate-near-delim ()
   "Locate an unescaped delimiter \"near\" point to show.
