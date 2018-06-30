@@ -282,7 +282,8 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 # line numbers that relate to the expanded version...
 
 %.cxx:	%.cpp
-	$(AM_V_CXX)$(CXXCOMPILE) -E -o $@ $<
+	echo CXX -E $<
+	@$(AM_V_CXX)$(CXXCOMPILE) -E -o $@ $<
 	astyle -n $@
 	sed -e '/^#/ s:#:// #:' < $@ > $@.tmp
 	mv $@.tmp $@
@@ -291,7 +292,8 @@ core_sources = arith01.cpp arith02.cpp arith03.cpp arith04.cpp arith05.cpp \
 # form of foo.
 
 %.s:	%.cpp
-	$(AM_V_CXX)$(CXXCOMPILE) -S -o $@ $<
+	echo CXX -S $<
+	@$(AM_V_CXX)$(CXXCOMPILE) -S -o $@ $<
 
 demo_sources = csl.cpp fasl.cpp cslgc.cpp preserve.cpp
 
@@ -880,25 +882,25 @@ arith13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 arith14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 isprime.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 bytes1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-char.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-csl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+char.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+csl.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 cslmpi.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 cslread.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 eval1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 eval2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 eval3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 eval4.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-fasl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-fns1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-fns2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-fns3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+fasl.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+fns1.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+fns2.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+fns3.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 lisphash.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 cslgc.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 ompsetup.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 print.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-pro.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+pro.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) machineid.cpp $(LOCALCYG)
 stubs.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
@@ -960,27 +962,27 @@ reduce-arith13.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-arith14.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-isprime.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-bytes1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-char.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-csl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-char.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-csl.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-cslmpi.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-cslread.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-eval1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-eval2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-eval3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-eval4.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-fasl.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-fns1.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-fns2.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-fns3.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-eval1.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-eval2.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-eval3.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-eval4.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-fasl.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-fns1.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-fns2.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-fns3.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-lisphash.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-cslgc.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-cslgc.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-ompsetup.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-openmath.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-preserve.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-print.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
-reduce-pro.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-print.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-pro.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-restart.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) machineid.cpp $(LOCALCYG)
-reduce-stubs.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
+reduce-stubs.$(OBJEXT):		$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-sysfwin.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 reduce-sysipaq.$(OBJEXT):	$(CRDEP) $(FFIDEP) $(SOFTFLOATDEP) $(LOCALCYG)
 

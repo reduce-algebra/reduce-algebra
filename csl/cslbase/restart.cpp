@@ -996,6 +996,9 @@ static setup_type_1 *find_def_table(LispObject mod, LispObject checksum)
 
 static void cold_setup()
 {   LispObject w;
+#ifndef CONSERVATIVE
+// In the conservative version I set up everything read for allocation
+// already.
     void *p = allocate_page("vheap cold setup");
     vheap_pages[vheap_pages_count++] = p;
     vfringe = (LispObject)(8 + (char *)doubleword_align_up((intptr_t)p));
@@ -1005,7 +1008,7 @@ static void cold_setup()
     heaplimit = (intptr_t)p;
     fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
     heaplimit = (LispObject)((char *)heaplimit + SPARE);
-
+#endif // CONSERVATIVE
     miscflags = 3;
     qplist(nil) = nil;
     qfastgets(nil) = nil;

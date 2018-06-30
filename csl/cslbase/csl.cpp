@@ -1057,6 +1057,11 @@ static void lisp_main(void)
                     push2(litvec, codevec);
                     preserve(msg, len);
                     pop2(codevec, litvec);
+#ifdef CONSERVATIVE
+// I believe that this is all to abandon all existing in-use pages and
+// put things back as if all memory is totally empty.
+// NOT DONE in the conservative case yet. @@@@@
+#else
                     for (size_t i=0; i<pages_count; i++)
                     {   char *w = (char *)pages[i];
                         if (!(w > big_chunk_start && w <= big_chunk_end))
@@ -1083,9 +1088,7 @@ static void lisp_main(void)
                             w1 = w + CSL_PAGE_SIZE;
                         }
                     }
-                    CSL_MD5_Init();
-                    CSL_MD5_Update((unsigned char *)"Initial State", 13);
-                    IreInit();
+#endif // CONS$ERVATIVE
                     setup(1, 0.0); // warm start mode
                     exit_tag = exit_value = nil;
                     exit_reason = UNWIND_NULL;
@@ -1147,6 +1150,9 @@ static void lisp_main(void)
                             }
                         }
                     }
+#ifdef CONSERVATIVE
+// @@@@@
+#else // CONSERVATIVE
 //
 // This puts all recorded heap pages back in the main pool.
 //
@@ -1186,14 +1192,13 @@ static void lisp_main(void)
                             w1 = w + CSL_PAGE_SIZE;
                         }
                     }
+#endif // CONSERVATIVE
 //
 // When I call restart-csl I will leave the random number generator where it
 // was. Anybody who wants to reset if either to a freshly randomised
 // configuration or to a defined condition must do so for themselves. For
 // people who do not care too much what I do here is probably acceptable!
 //
-                    CSL_MD5_Init();
-                    CSL_MD5_Update((unsigned char *)"Initial State", 13);
                     IreInit();
                     setup(cold_start ? 0 : 1, 0.0);
                     exit_tag = exit_value = nil;
@@ -1496,8 +1501,6 @@ void cslstart(int argc, const char *argv[], character_writer *wout)
     load_count = 0;
     load_limit = 0x7fffffff;
 
-    CSL_MD5_Init();
-    CSL_MD5_Update((unsigned char *)"Initial State", 13);
 // I save the args so that setup can make a lisp variable out of them
     csl_argc = argc;
     csl_argv = argv;

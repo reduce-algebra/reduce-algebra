@@ -61,7 +61,7 @@ extern void *allocate_segment(size_t);
 // amount of user data in it. There may have been additional space allocated
 // at the end of the segment for bitmaps.
 
-extern int heap_segment_count;
+extern size_t heap_segment_count;
 extern void *heap_segment[32];
 extern size_t heap_segment_size[32];
 
@@ -70,7 +70,8 @@ extern size_t heap_segment_size[32];
 // memory allocation granularity, which is typically 0x1000 but may be
 // 0x10000 on some platforms).
 
-extern uint64_t *heap_dirty_pages_bitmap[32];
+extern uint64_t *heap_dirty_pages_bitmap_1[32];
+extern uint64_t *heap_dirty_pages_bitmap_2[32];
 
 // I only export the next few for debugging purposes. When a bitmap is small
 // it gets allocated within a pre-allocated fixed bit-array. If it needed
@@ -97,25 +98,11 @@ int find_heap_segment(uintptr_t p);
 extern bool clear_bitmap(size_t h);
 extern bool refresh_bitmap(size_t h);
 
-// The following will eventually need to be thread_local, and they
-// refer to an "active page" of memory within which the code can
-// allocate individual objects.
-
-extern LispObject fringe, next_fringe;
-extern LispObject heaplimit;
-extern LispObject vfringe, next_vfringe;
-extern LispObject vheaplimit;
-
 // Low level functions for allocating objects.
 
-extern LispObject get_2_words();
-extern LispObject get_n_words(size_t n);
-
-// Entr to a garbage collector.
+// Entry to a garbage collector.
 
 extern void garbage_collect();
-
-
 
 #endif // header_allocate_h
 

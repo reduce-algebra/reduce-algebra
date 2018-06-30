@@ -37,6 +37,8 @@
 
 #include "headers.h"
 
+#ifndef CONSERVATIVE
+
 #ifdef WIN32
 #include <conio.h>
 #endif
@@ -851,5 +853,7 @@ LispObject reclaim(LispObject p, const char *why, int stg_class, size_t size)
     prev_consolidated = consolidated_time[0];
     return use_gchook(p, lisp_true);
 }
+
+#endif // !CONSERVATIVE
 
 // end of file cslgc.cpp

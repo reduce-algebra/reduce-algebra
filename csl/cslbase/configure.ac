@@ -39,6 +39,10 @@ AC_CONFIG_AUX_DIR([.])
 
 # automake 1.13 was the first to support AC_CONFIG_MACRO_DIRS
 AM_INIT_AUTOMAKE([1.13 -Wno-portability -Wno-override foreign dist-bzip2])
+# The automake documentation feels that noisy rules are perhaps safer. This
+# is overridden here to make the output from use of "make" a lot more concise
+# and people who need to debug the build process can delete this line!
+AM_SILENT_RULES([yes])
 AC_CONFIG_MACRO_DIRS([m4])
 # I will use the older version too.
 AC_CONFIG_MACRO_DIR([m4])
