@@ -19,11 +19,14 @@ generic = $(reduce)/generic
 ACLOCAL_AMFLAGS = -I m4
 
 # I want to be able to see what gets built and why, so here is a GNU
-# make trace facility.
+# make trace facility. Well I find that the list $? of prerequisites is
+# often hideously bulky to the extent that it is a distraction rather than
+# a help, so I am removing it. But in case anybody wants to put it back
+# I leave the previous verbose variant here just commented out.
 
-# A user may go "make CSLFLAGS=-g" to force "-g" into built-times Lisp flags...
-
-TRACE = $(warning TRACE: $@ :: $?)
+# TRACE = $(warning TRACE: $@ :: $?)
+# TRACE = $(warning TRACE: $@ ::)
+TRACE =
 
 AM_CPPFLAGS = $(TRACE)
 AM_LDFLAGS  = $(TRACE)
@@ -1831,6 +1834,8 @@ if canrun
 # here. This ought to be harmless under other systems - at least I hope it
 # will be. I make the access rights 664 not 644 in case you are a group member
 # for the file-space not actually the owner.
+#
+# A user may go "make CSLFLAGS=-g" to force "-g" into build-times Lisp flags...
 	chmod 664 $(gensrc)/*
 	$(LOCALCYG) ./reduce$(COM) -w -z $(CSLFLAGS) -Dno_init_file \
 		$(CYGSRC)/buildreduce.lsp \

@@ -625,10 +625,8 @@ static void find_dll_cache_directory()
     struct stat stbuf;
     int count;
     if (dll_cache_directory[0] != 0) return;
-//
 // This does its real work just once. But I may need to re-try
 // if the first choice directory name does not work well.
-//
     for (count=0; count<100; count++)
     {   CSL_MD5_Init();
         sprintf(counts, "%d:", count);
@@ -654,11 +652,9 @@ static void find_dll_cache_directory()
                      fullProgramName, userinfo, linker_type);
 #endif
         p = dll_cache_directory + strlen(dll_cache_directory);
-//
 // The name of the directory that I invent will be the letters
 // CSL followed by 25 characters (0-9, a-t) (ie 25*5-125 bits derived
 // from an MD5 checksum).
-//
         *p++ = 'C'; *p++ = 'S'; *p++ = 'L';
         for (i=0; i<25; i++)
         {   int j, w = 0;
@@ -2801,6 +2797,13 @@ LispObject *list_bases[] =
 // The proper uses hare are as a checksum fur use when chance rather than
 // malice is the opponent.
 //
+// The Checksums here are used in two areas in CSL:
+// (1) There is a user-visible checksum function that can be applied to
+//     arbitrary Lisp objects. It is for whatever use anybody might like to
+//     make of it.
+// (2) There is a scheme that ensures that Lisp that has been translated
+//     into C++ and put in u01.cpp .. u60.cpp is only activated when a
+//     Lisp function with the same checksum is to be used. 
 
 #include "md5.cpp"
 

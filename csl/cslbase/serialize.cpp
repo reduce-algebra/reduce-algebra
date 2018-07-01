@@ -1320,6 +1320,9 @@ void write_function(void *p)
 // case p=&r and pbase is fixnum_of_int(0)). The protected statement must
 // not assign to any of the variables that are stacked here! It will
 // usually be a good idea to go "GC_PROTECT(prev = ...);".
+//
+// When I have a conservative garbage collector this complication will
+// become unnecessary!
 
 #define GC_PROTECT(stmt)                             \
     do                                               \

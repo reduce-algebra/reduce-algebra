@@ -387,7 +387,7 @@ size_t heap_segment_size[32];
 // scanning for nonzero bits can go 64-bits as a time.
 uint64_t *heap_dirty_pages_bitmap_1[32];
 uint64_t *heap_dirty_pages_bitmap_2[32];
-int heap_segment_count = 0;
+size_t heap_segment_count = 0;
 // I have a simple fixed bitmap region of size MAX_PAGE_SIZE bytes (ie 64K)
 // here.
 // [defined in allocate.h] SMALL_BITMAP_SIZE=(MAX_PAGE_SIZE/sizeof(uint64_t)/2)
@@ -1289,13 +1289,10 @@ void *allocate_page(const char *why)
 }
 
 void init_heap_segments(double store_size)
-//
 // This function just makes nil and the pool of page-frames available.
 // The store-size is passed in units of Kilobyte, and as a double not
 // an integer so that overflow is not an issue.
-//
-{   const char *memfile = "memory.use"; // For memory statistics etc
-    pages = (void **)malloc(MAX_PAGES*sizeof(void *));
+{   pages = (void **)malloc(MAX_PAGES*sizeof(void *));
     heap_pages = (void **)malloc(MAX_PAGES*sizeof(void *));
     vheap_pages = (void **)malloc(MAX_PAGES*sizeof(void *));
     new_heap_pages = (void **)malloc(MAX_PAGES*sizeof(void *));
@@ -1367,7 +1364,6 @@ void init_heap_segments(double store_size)
     {   printf("pages_count <= 0 = %d\n", (int)pages_count);
         fatal_error(err_no_store);
     }
-    CSL_MD5_Update((unsigned char *)memfile, 8);
     stackbase = (LispObject *)stacksegment;
 }
 
@@ -1841,8 +1837,8 @@ LispObject get_basic_vector(int tag, int type, size_t size)
 // This is OK if the vector will contain binary information, but if it
 // will hold any LispObjects it needs safe values put in PDQ.
 //
-// All vectors are allocated so as to be 8-byte aligned. On a 64-bit system
-// a vector that will not end up being a multipe of 8 bytes long naturally
+// All vectors are allocated so as to be 8-byte aligned. On a 32-bit system
+// a vector that will not end up being a multiple of 8 bytes long naturally
 // gets padded out. Here I arrange to zero out any such padder word. This
 // should not be very important since nobody should ever try to use that
 // word. When the garbage collector copies material around it transcribes

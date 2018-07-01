@@ -1088,7 +1088,8 @@ static void lisp_main(void)
                             w1 = w + CSL_PAGE_SIZE;
                         }
                     }
-#endif // CONS$ERVATIVE
+                    IreInit();
+#endif // CONSERVATIVE
                     setup(1, 0.0); // warm start mode
                     exit_tag = exit_value = nil;
                     exit_reason = UNWIND_NULL;

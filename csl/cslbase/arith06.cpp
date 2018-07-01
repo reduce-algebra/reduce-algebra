@@ -1421,8 +1421,8 @@ LispObject Lmd5(LispObject env, LispObject a)
     v1 = md[4] + (md[5]<<8) + (md[6]<<16) + (md[7]<<24);
     v2 = md[8] + (md[9]<<8) + (md[10]<<16) + (md[11]<<24);
     v3 = md[12] + (md[13]<<8) + (md[14]<<16) + (md[15]<<24);
-// I will deal with caes where the top 64 bits are all zero first - very
-// uncommon I know, but disposoing of that case here will simplify the code
+// I will deal with cases where the top 64 bits are all zero first - very
+// uncommon I know, but disposing of that case here will simplify the code
 // that follows!
     if (v3 == 0 && v2 == 0)
     {   r = make_lisp_unsigned64((uint64_t)v1<<32 | v0);

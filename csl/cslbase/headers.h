@@ -42,6 +42,10 @@
 #include "config.h"
 #endif
 
+#if defined EXPERIMENT && !defined CONSERVATIVE
+#define CONSERVATIVE 1
+#endif
+
 #include "machine.h"
 #include "int128_t.h"
 #include "tags.h"
