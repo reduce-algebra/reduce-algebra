@@ -1,9 +1,9 @@
-// bytes.h                                 Copyright (C) Codemist 1993-2017
+// bytes.h                                 Copyright (C) Codemist 1993-2018
 
 
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -299,7 +299,8 @@
 #define OP_ICASE                0xfc
 #define OP_FASTGET              0xfd
 #define OP_ONEVALUE             0xfe
-#define OP_SPARE                0xff
+
+#define OP_SPARE                0xff  // A single truly spare opcode!
 
 #endif // header_bytes_h
 

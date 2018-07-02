@@ -140,10 +140,10 @@ do
   --enable-debug)
     debug=-debug
     ;;
-  --enable-test=no | --disable-test)
+  --enable-test=no | --disable-test | --enable-experiment=no | disable-experiment)
     test=
     ;;
-  --enable-test)
+  --enable-test* | enable-experiment*)
     test=-test
     ;;
   --with-mingw64=no | --without-mingw64)

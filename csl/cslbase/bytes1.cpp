@@ -1,11 +1,11 @@
-// bytes1.cpp                             Copyright (C) 1991-2017, Codemist
+// bytes1.cpp                             Copyright (C) 1991-2018, Codemist
 //
 //
 // Bytecode interpreter for Lisp
 //
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *

@@ -1,9 +1,9 @@
-// lispthrow.h                                      Copyright Codemist 2017
+// lispthrow.h                                      Copyright Codemist 2018
 
 // Some exception processing stuff for CSL
 
 /**************************************************************************
- * Copyright (C) 2017, Codemist.                         A C Norman       *
+ * Copyright (C) 2018, Codemist.                         A C Norman       *
  *                                                                        *
  * Redistribution and use in source and binary forms, with or without     *
  * modification, are permitted provided that the following conditions are *
@@ -496,6 +496,9 @@ static inline const char *tidy_filename(const char *a)
 // In parts of the interpreter I want to save litvec and codevec and be
 // certain that I will restore them at function exit. This macro will help
 // me.
+// This mess may not be required when I have a conservative garbage collector
+// if I then make codevec and litvec local rather than global variables, and
+// the result might be both clearer code and less overhead.
 
 class RAIIsave_codevec
 {   LispObject *saveStack;

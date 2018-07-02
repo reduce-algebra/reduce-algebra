@@ -425,7 +425,7 @@ int main(int argc, char *argv[])
 // the environment and current directory as for Cygwin. So I say just "bash"
 // at the front not "/bin/bash" because the command-name needs to be a
 // Windows version.
-        sprintf(command, "bash -cv \"");
+        sprintf(command, "bash -c \"");
         for (i=1; i<argc; i++)
         {   append_command(argv[i]);
             if (i != argc-1) strcat(command, " ");

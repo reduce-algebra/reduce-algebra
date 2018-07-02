@@ -89,7 +89,11 @@
 // the bytecode interpreter.
 
 LispObject bytecoded_0(LispObject def)
-{   SAVE_CODEVEC;
+{
+// Note that when I have a conservative garbage collector the mess
+// of SAVE_CODEVEC can be removed, and that should at least slightly
+// speed things up.
+    SAVE_CODEVEC;
     push(def);
     LispObject r;
 // I can use START_TRY_BLOCK without "try" if there are not going to be any

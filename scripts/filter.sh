@@ -37,6 +37,7 @@ do
   *--enable-debug* | \
   *--enable-conservative* | \
   *--enable-test* | \
+  *--enable-experiment* | \
   *--enable-jit* | \
   *--enable-static* | \
   *--*able-silent* )
