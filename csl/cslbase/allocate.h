@@ -73,6 +73,8 @@ extern size_t heap_segment_size[32];
 extern uint64_t *heap_dirty_pages_bitmap_1[32];
 extern uint64_t *heap_dirty_pages_bitmap_2[32];
 
+extern size_t free_pages_count, active_pages_count;
+
 // I only export the next few for debugging purposes. When a bitmap is small
 // it gets allocated within a pre-allocated fixed bit-array. If it needed
 // to be large then the segment requested from the operating system would

@@ -395,6 +395,8 @@ typedef struct page_header_
 
 page_header *free_pages;
 page_header *used_pages;
+size_t free_pages_count;
+size_t active_pages_count;
 page_header *previous_active_page;
 page_header *active_page;
 
@@ -908,6 +910,13 @@ uintptr_t vfringe;
 // are no pinned regions it will point to the vect end of the page.
 uintptr_t vheaplimit;
 
+
+// vheaptop is the address above any pinned block that is at the end of
+// the current vector allocation region. vheaptop-vheaplimit == vlen
+// in easy circumstances, but by having these two variables separate I
+// am free to alter vheaplimit any time I feel that I need to.
+uintptr_t vheaptop;
+
 // vlen is the length of the pinned block (if any) that lies just beyond
 // the end of this allocation region.
 uintptr_t vlen;
@@ -970,11 +979,32 @@ uintptr_t xor_chain;
 
 static void allocate_next_page();
 
-static void find_next_2_word_chunk()
-{   if (heaplimit == vfringe)
-    {   allocate_next_page();
+static inline Header make_padding_header(size_t n)
+{   return TAG_HDR_IMMED+TYPE_PADDER+(n<<(Tw+7));
+}
+
+static void get_2_words_past_pin()
+{   if (vheaptop == heapstart)
+    {
+// Vector and 2-word items have just collided, well ALMOST because the vector
+// allocation may have used an odd number of words. To leave everything
+// tidy in case I need to do a linear scan (eg as part of a generational
+// collector) I fill in the 1-word gap with a nice padder.
+        if (fringe == vfringe-CELL)
+        {   *(Header *)vfringe = make_padding_header(CELL);
+// Logically I want this padder not to be accepted by the conservative
+// collector as the start of a real object, so I want its "object start" bit
+// to be clear. Ha ha that will already be the case. So I show what the code
+// would be but comment it out as unnecessary.
+//--        clear_header_bit(vfringe, active_page);
+        }
+        allocate_next_page();
 // After allocating a new page (and sometimes that will involve garbage
-// collection) there will always be room to set aside memort for a CONS.
+// collection) there will always be room to set aside memory for a CONS.
+// That is because the garbage collector must never set a new active page
+// that is totally full. A page could hypothetically be totally full if
+// every address within it was pinned, but that would be a really unusual
+// pathological situation!
         return;
     }
     uintptr_t w = heaplimit;
@@ -983,12 +1013,24 @@ static void find_next_2_word_chunk()
     fringe = w - len;
 // Now I may just have moved down onto the segment within which vector
 // allocation is taking place...
-    if (heaplimit == vheapstart)
-    {   heaplimit = vfringe;
+    if (vheaptop == heapstart)
+    {
+// When vector and 2-word regions coalesce I will not subsequently have any
+// more movement across pinned areas, and so I do not need heaplimit as a
+// pointer to the base of the region.
+        heaplimit = vfringe;
 // It might be that the segment was in fact already totally full of vectors,
-// in which case I must garbage collect.
-        if (fringe == vfringe) allocate_next_page();
-// Otherwise there is space for a 2-word item.
+// in which case I must garbage collect. I need to allow for the possibility
+// that vectors had filled all bar one word of the chunk.
+        if (fringe == vfringe+CELL)
+        {   *(Header *)vfringe = make_padding_header(CELL);
+            vfringe += CELL;
+            allocate_next_page();
+        }
+        else if (fringe == vfringe) allocate_next_page();
+// Now I know that there is space for a 2-word item, either because there
+// was genuine space in the region or because allocate_next_page will have
+// left me in good shape.
         return;
     }
 // Here I have moved to a new region which is not totally full, so I can
@@ -1000,6 +1042,12 @@ static void find_next_2_word_chunk()
     xor_chain = ((uintptr_t *)heaplimit)[1];
 }
 
+// get_2_words() is the core of CONS and can also be used for allocating the
+// space needed for a double-precision float on a 64-bit machine. The aim is
+// therefore to make the common case in it as fast as feasible. This is
+// the allocation of 2 consecutive words of memory until the current active
+// block is full or until pinned data within it is reached.
+
 static inline LispObject get_2_words()
 {
 // If there is a free doubleword immediately available then use it. I very
@@ -1007,7 +1055,8 @@ static inline LispObject get_2_words()
 // This is "inline" because it is fairly short and it should represent
 // by a large margin the most common case encountered when performing CONS
 // operations.
-    if (fringe == heaplimit) find_next_2_word_chunk();
+    fringe -= 2*CELL;
+    if (fringe < heaplimit) get_2_words_past_pin();
 // There is an additional condiction that I am arranging will not need any
 // code here by that does need commenting on. Within a page the first word
 // of any object must be tagged in the "object start" bitmap. This bitmap
@@ -1019,45 +1068,44 @@ static inline LispObject get_2_words()
 // tagged, and this will be taken as marking the 32-bit part that falls as an
 // even address.
 // I should further note that object start bits must be correctly set for
-// any items in pinned regions.
-    fringe -= 2*CELL;
+// any items in pinned regions, but that if one has padding items (sometimes
+// needed to help with alignment) their headers will not be tagged.
     return fringe;
 }
 
-static inline Header make_padding_header(size_t n)
-{   return TAG_HDR_IMMED+TYPE_PADDER+(n<<(Tw+7));
-}
-
-static void find_next_n_bytes()
+static void get_n_bytes_past_pin()
 {
-// If the vector and the 2-word segments are one and the same I must
-// move on to a fresh page. This is liable to involve storing
-// vfringe and fringe in the page header so that subsequent garbage
-// collection can identify which parts of the page are active.
-    if (heaplimit == vfringe)
+// The vector I want to allocate will not fit at the next consecutive
+// address. So to keep the heap tidy I will insert a padder record
+// there.
+    if (vfringe != vheaplimit)
+    {   *(Header *)vfringe = make_padding_header(vheaplimit - vfringe);
+        clear_header_bits(vfringe, vheaplimit - vfringe, active_page);
+    }
+// If 2-word and vector regions are one and the same that means that
+// there is not enough space in the current page, so I need to allocate
+// a new one. There is no guarantee that it will have a large enough
+// uninterrupted block of free memory for my vector, but if it does not
+// then this function will just get called again.
+    if (vheaptop == heapstart)
     {   allocate_next_page();
         return;
     }
-// Now I need to move on to the next segment within this page. I need to
-// clear header bits in the region that will be left.
-    clear_header_bits(vfringe, vheaplimit-vfringe, active_page);
-// Looking foward to a generational collector I also need to allow for
-// linear scanning of the page in the case that some part of this page
-// is is old memory that has been updated to contain references to newer
-// data. Even though this sets up a header word it will not be tagged as
-// such, so ambiguous pointers that refer to it will be considered not to
-// count as valid pointers to useful Lisp data.
-    if (vfringe != vheaplimit)
-        *(Header *)vfringe = make_padding_header(vheaplimit - vfringe);
-    vfringe = vheaplimit + vlen;
-    vheaplimit = vheapstart ^ vxor_chain;
-    vlen = ((uintptr_t *)vheaplimit)[0];
-    vxor_chain = ((uintptr_t *)vheaplimit)[1];
-    vheaplimit -= vlen;
+// Now I am in the situation where there was some pinned data that blocked
+// the allocation I wanted to do. I skip to be beyond it.
+    vfringe = vheaptop;
+    vheaptop = vheapstart ^ vxor_chain;
+    vlen = ((uintptr_t *)vheaptop)[0];
+    vxor_chain = ((uintptr_t *)vheaptop)[1];
+    vheaplimit = vheaptop - vlen;
     vheapstart = vfringe;
-// This can leave vfringe == heaplimit in relevant cases without needing
-// any special action to make that so.
 }
+
+// The great majority of allocations are liable to be for CONS or for
+// double floats, so modest extra burden when larger (or indeed smaller)
+// vectors are allocated can be tolerated. The most obvious excess cost here
+// is setting and clearing bitmap information for the identification of
+// object start addresses.
 
 static inline LispObject get_n_bytes(size_t n)
 {
@@ -1065,11 +1113,16 @@ static inline LispObject get_n_bytes(size_t n)
 // a multiple of 8 bytes, but for now and as a matter of caution I will
 // round up.
     n = doubleword_align_up(n);
-// The process of allocating vectors is a bit messier than allocating 2-word
-// items in that fragmentation can mean that multiple attempts may be required
-// before a large enough gap is found. The loop here is to allow repeated
-// tries.
-    while (vfringe + n > vheaplimit) find_next_n_bytes();
+// If 2-word and vector items are allocated in the same chunk I must
+// not allocate on to of the 2-word items. So in that case I will reset
+// vheaplimit.
+    if (vheaptop == heapstart) vheaplimit = fringe;
+// Now check if there is enough space for the vector in the area up as far
+// as the next limit. If not then put in a padder and move beyond the pinned
+// items. It may be necessary to do this several times if there are pinned
+// items with shortish free gaps between them, hence the WHILE loop.
+    while (vfringe + n > vheaplimit) get_n_bytes_past_pin();
+// Now I have a gap that is big enough. Hoorah!
     LispObject r = vfringe;
     vfringe += n;
 // For vectors the bitmap that will record where objects start must be
@@ -1079,6 +1132,9 @@ static inline LispObject get_n_bytes(size_t n)
 // at-a-time operations on the bitmap and hence be respectably fast.
     set_header_bit(r, active_page);
     clear_header_bits(r+8, n-8, active_page);
+// Now if 2-word and vector allocations could possibly collide soon set
+// the limit register for 2-word allocation to prevent disaster.
+    if (vheaptop == heapstart) heaplimit = vfringe;
     return r;
 }
 
@@ -1102,13 +1158,9 @@ static void set_up_empty_page(page_header *p)
     memset(p->pinned_bitmap, 0, PAGE_BITMAP_SIZE);
 }
 
-static void allocate_next_page()
-{   printf("allocate_next_page\n");
-    my_abort();
-}
-
 void set_next_active_page()
-{   if (previous_active_page != NULL)
+{   printf("set_next_active_page\n");
+    if (previous_active_page != NULL)
     {   previous_active_page->page_chain = used_pages;
         used_pages = previous_active_page;
     }
@@ -1124,6 +1176,7 @@ void set_next_active_page()
     vfringe    = active_page->vfringe;
     vheaplimit = active_page->vheaplimit;
     vlen       = active_page->vlen;
+    vheaptop   = vheaplimit+vlen;
     vxor_chain = active_page->vxor_chain;
     heapstart  = active_page->heapstart;
     fringe     = active_page->fringe;
@@ -1132,6 +1185,23 @@ void set_next_active_page()
     xor_chain  = active_page->xor_chain;
     printf("Use page at %p: fringe = %p, heaplimit = %p\n",
         active_page, (void *)fringe, (void *)heaplimit);
+    active_pages_count++;
+    free_pages_count--;
+}
+
+static void allocate_next_page()
+{   printf("allocate_next_page\n");
+    fflush(stdout);
+// Here I should often do a minor garbage collection in a generational
+// sense. When I have the heap close to half full I should perform
+// a full garbage collection.
+// But until I have a generational collector in place I mostly just
+// grab another page from the pool.
+    if (active_pages_count > free_pages_count-1)
+    {   printf("Probably need to garbage collect\n");
+        my_abort();
+    }
+    set_next_active_page();
 }
 
 // This code allocates a segment by asking the operating system. On
@@ -1234,6 +1304,7 @@ void *allocate_segment(size_t n)
     }
 // r now refers to a new segment of size n, I want to structure it into
 // pages.
+    free_pages_count = active_pages_count = 0;
     for (size_t k=0; k<n; k+=CSL_PAGE_SIZE)
     {   page_header *p = (page_header *)((char *)r + k);
 // I do not even know if I really need a page_type field!
@@ -1242,7 +1313,9 @@ void *allocate_segment(size_t n)
         p->page_chain = free_pages;
         free_pages = p;
         set_up_empty_page(p);
+        free_pages_count++;
     }
+    printf("%" PRIu64 " pages available\n", (uint64_t)free_pages_count);
     return r;
 }
 
@@ -1884,6 +1957,7 @@ void init_heap_segments(double store_size)
     heap_small_bitmaps_2_ptr = &heap_small_bitmaps_2[SMALL_BITMAP_SIZE];
     spin_lock.clear(); //"spin_lock=ATOMIC_FLAG_INIT;" only for initialization.
     free_pages = used_pages = active_page = previous_active_page = NULL;
+    printf("Allocate %" PRIu64 " Kbytes\n", (uint64_t)free_space/1024);
     allocate_segment(free_space);
     set_next_active_page();
 

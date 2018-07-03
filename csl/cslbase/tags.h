@@ -1746,6 +1746,11 @@ static inline uintptr_t object_align_up(uintptr_t n)
                        (-(uintptr_t)sizeof(LispObject)));
 }
 
+static inline uintptr_t object_2_align_up(uintptr_t n)
+{   return (uintptr_t)((n + 2*sizeof(LispObject) - 1) &
+                       (-(uintptr_t)2*sizeof(LispObject)));
+}
+
 //static inline uintptr_t quadword_align_up(uintptr_t n)
 //{   return (uintptr_t)((n + 15) & (-(uintptr_t)16U));
 //}
