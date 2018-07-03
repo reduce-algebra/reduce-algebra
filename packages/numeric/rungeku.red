@@ -36,7 +36,7 @@ put ('num_odesolve,'psopfn,'rungekuttaeval);
 
 symbolic procedure rungekuttaeval u;
      % interface function;
-  begin scalar e,f,x,y,sx,sy,en,d,v,w,q;
+  begin scalar e,f,x,y,sx,sy,en,d,v,w,q,z;
     u := for each x in u collect reval x;
     u := accuracycontrol(u,20,6);
 
@@ -58,9 +58,11 @@ symbolic procedure rungekuttaeval u;
 
       % independent variable
     x :=car u; u :=cdr u;
-    if not eqcar(x,'equal) or not idp cadr x
-       or null (w:=revalnuminterval(caddr x,t))
-        then typerr(x,"expression `indep. variable=interval'");
+    if not eqcar(x,'equal) or not idp cadr x then typerr(x,"expression `indep. variable=interval'");
+    if not !*rounded then setdmode('rounded,z:=!*rounded:=t);
+    w:=revalnuminterval(caddr x,t);
+    if z then setdmode('rounded,z:=!*rounded:=nil);
+    if null w then typerr(x,"expression `indep. variable=interval'");
     sx:=car w; en:=cadr w; x := cadr x;
 
       % convert expressions to explicit ODE system.
@@ -152,7 +154,9 @@ symbolic procedure rungekutta2(f,xx,yy,xs,xe,ys,acc);
 
 symbolic procedure rungekuttares(l,st);
    % eliminate intermediate points.
-     if st=iterations!* then l else
+   % first element of l is the start point, therefore length(l) = st+1
+   % remove first element
+     if st=iterations!* then cdr l else
      << for i:=1:iterations!* collect
          <<for j:=1:m do l:= cdr l; car l>>
      >> where m=st/iterations!*;
