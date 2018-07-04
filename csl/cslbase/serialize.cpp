@@ -3547,7 +3547,7 @@ LispObject Lunserialize(LispObject env)
 // First an overview of the old code. I dumped a heap image by taking
 // each page of the heap and writing it out almost unaltered but with its
 // address in memory attached. Well that was the original ideal but because
-// pages wre not going to be loaded back at the same addresses and I could
+// pages were not going to be loaded back at the same addresses and I could
 // only guarantee consistency of relative addresses within a block I needed
 // to "unadjust" each pointer in the heap so it became encoded as a
 // block-number together with an offset. So I had to have code that
@@ -3707,6 +3707,7 @@ void warm_setup()
 // I must start by getting the heaps so that allocation etc is possible.
     void *p;
     size_t i;
+#ifndef CONSERVATIVE
     p = vheap_pages[vheap_pages_count++] = allocate_page("vheap warm setup");
     vfringe = (LispObject)(8 + (char *)doubleword_align_up((intptr_t)p));
     vheaplimit = (LispObject)((char *)vfringe + (CSL_PAGE_SIZE - 16));
@@ -3715,6 +3716,7 @@ void warm_setup()
     heaplimit = (intptr_t)p;
     fringe = (LispObject)((char *)heaplimit + CSL_PAGE_SIZE);
     heaplimit = (LispObject)((char *)heaplimit + SPARE);
+#endif
 
     set_up_function_tables();
 

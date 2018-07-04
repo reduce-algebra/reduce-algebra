@@ -443,20 +443,47 @@ static inline void clear_header_bit(LispObject p, page_header *page)
     page->objectstart_bitmap[n] &= ~bit;
 }
 
+//## The commented out version here was a model implementation to show the
+//## intended behaviour of the function that clears a succession of bits.
+
+//## static inline void clear_header_bits(LispObject p, size_t n, page_header *page)
+//## {   while (n != 0)
+//##     {   clear_header_bit(p, page);
+//##         p += 8;
+//##         n -= 8;
+//##     }
+//## }
+
 static inline void clear_header_bits(LispObject p, size_t n, page_header *page)
-{
-// This is not yet coded properly! I want to use word-at-a-time operations to
-// clear multiple bits. But working one entry at a time should yield correct
-// results, just not the best possible performance.
-    while (n != 0)
-    {   clear_header_bit(p, page);
-        p += 8;
-        n -= 8;
+{   if (n == 0) return; // degenerate simple case.
+// I sort out the first bit that needs clearing.
+    size_t first_offset = (p - (LispObject)page)/8;
+    size_t first_n = first_offset/64;
+    uint64_t first_bit = ((uint64_t)1)<<(first_offset%64);
+// Now the last bit that needs clearing.
+    size_t last_offset = (p + n - 1 - (LispObject)page)/8;
+    size_t last_n = last_offset/64;
+    uint64_t last_bit = ((uint64_t)1)<<(last_offset%64);
+// I will want to clear from the first bit onwards, so I will want to AND
+// with a value that has 1 bits up to but not including the bit.
+    uint64_t first_mask = first_bit - 1;
+// I will want to clear all bits beyond the last one, so the value to AND
+// with must have bits beyond last_bit all set and lower ones all clear.
+    uint64_t last_mask = -2*last_bit;
+// If start and finish points are both within the same 64-bit word I
+// need to merge my two masks.
+    if (first_n == last_n)
+        page->objectstart_bitmap[first_n] &= first_mask & last_mask;
+    else
+    {   page->objectstart_bitmap[first_n++] &= first_mask;
+// All words apart from the first and last simply get set to zero. This
+// inner loop is where there may be a big speedup here in the case of
+// large vectors.
+        while (first_n != last_n)
+            page->objectstart_bitmap[first_n++] = 0;
+// The final 64-bit word is special too.
+        page->objectstart_bitmap[first_n++] &= last_mask;
     }
-//  size_t offset = (p - (LispObject)page)/8;
-//  size_t n = offset/64;
-//  uint64_t bit = ((uint64_t)1)<<(offset%64);
-//  page->objectstart_bitmap[n] &= ~bit;
 }
 
 static inline bool is_pinned(LispObject p, page_header *page)
@@ -989,8 +1016,10 @@ static void get_2_words_past_pin()
 // Vector and 2-word items have just collided, well ALMOST because the vector
 // allocation may have used an odd number of words. To leave everything
 // tidy in case I need to do a linear scan (eg as part of a generational
-// collector) I fill in the 1-word gap with a nice padder.
-        if (fringe == vfringe-CELL)
+// collector) I fill in the 1-word gap with a nice padder. This issue can
+// never arise on a 32-bit platform because there a CONS cell is 8 bytes wide
+// and all vectors are allocated as a multiple of 8 bytes.
+        if (SIXTY_FOUR_BIT && fringe == vfringe-CELL)
         {   *(Header *)vfringe = make_padding_header(CELL);
 // Logically I want this padder not to be accepted by the conservative
 // collector as the start of a real object, so I want its "object start" bit
@@ -1021,8 +1050,9 @@ static void get_2_words_past_pin()
         heaplimit = vfringe;
 // It might be that the segment was in fact already totally full of vectors,
 // in which case I must garbage collect. I need to allow for the possibility
-// that vectors had filled all bar one word of the chunk.
-        if (fringe == vfringe+CELL)
+// that vectors had filled all bar one word of the chunk. This can only
+// arise on a 64-bit platform.
+        if (SIXTY_FOUR_BIT && fringe == vfringe+CELL)
         {   *(Header *)vfringe = make_padding_header(CELL);
             vfringe += CELL;
             allocate_next_page();
