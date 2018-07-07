@@ -1,8 +1,8 @@
-// allocate.cpp                            Copyright (C) 1989-2018 Codemist    
+// allocate.cpp                            Copyright (C) 1989-2018 Codemist
 
 //
 // Code to deal with storage allocation, both grabbing memory at the start
-// or a run and significant aspects of garbage collection. 
+// or a run and significant aspects of garbage collection.
 //
 
 /**************************************************************************
@@ -120,21 +120,22 @@ LispObject fringe, heaplimit;
 //   Recent (R). When a current page becomes full it is replaced with a new
 //      empty page, and the full page that had been current is re-badged as
 //      "recent". When that happens the previous recent page will have its
-//      content evacuated - that process representing a minor garbage collection.
+//      content evacuated - that process representing a minor garbage
+//      collection.
 //   Stable (S). When live material is moved out of an "old recent" page it is
 //      copied into the stable region. This will come to be the bulk of the
 //      active heap and uses as many pages as are called for. At any one time
 //      one of these pages will be the "stable fringe" where new material is
 //      added. In a multi-thread world there is just a single pool of stable
 //      heap.
-//   Free (F). Pages that are not in use are in this group. When a minor garbage
-//      collection places in a fresh stable page such that |S| > |F| then a full
-//      garbage collection is triggered. At that stage R is empty. The stable
-//      fringe page is then deemed part of what will become the new heap, and
-//      all material apart from that is copied into that and subsequent pages
-//      taken from free. The vacated pages are then re-labelled to form the
-//      new free region. While doing this the current page does not have
-//      its content relocated.
+//   Free (F). Pages that are not in use are in this group. When a minor
+//      garbage collection places in a fresh stable page such that |S| > |F|
+//      then a full garbage collection is triggered. At that stage R is empty.
+//      The stable fringe page is then deemed part of what will become the
+//      new heap, and all material apart from that is copied into that and
+//      subsequent pages taken from free. The vacated pages are then
+//      re-labelled to form the new free region. While doing this the current
+//      page does not have its content relocated.
 //
 // Within the heap I can maintain "dirty bits" that mark parts of pages where
 // data has been updated. I will arrange that as the start of a minor garbage
@@ -162,11 +163,11 @@ LispObject fringe, heaplimit;
 // minor disruption to storage elsewhere because of conservatism.
 // (3) The schemes I have for identifying dirty regions of memory are based on
 // storage protection and accepting an exception when a region is first written
-// to. Because subsequent memory access is unimpeded I expect this will have low
-// overhead. Memory protection is performed at a granularity substantially
+// to. Because subsequent memory access is unimpeded I expect this will have
+// low overhead. Memory protection is performed at a granularity substantially
 // smaller then the size of whole pages. My expectation is that almost all
-// writes to memory will be in either C or in symbol headers. Symbol headers will
-// be distributed across S, but I can imagine arranging that the major
+// writes to memory will be in either C or in symbol headers. Symbol headers
+// will be distributed across S, but I can imagine arranging that the major
 // garbage collection would copy all symbol headers from the oblist in such
 // a way as to leave them as a compact block (along with the vectors that
 // represent the object list itself). The hope is that the amount of memory
@@ -262,7 +263,7 @@ LispObject fringe, heaplimit;
 //     containing a reference to C as dirty, and all others as clean. I rather
 //     hope to be able to build up that information as part of steps (3) and
 //     (4) since they already need to test for references into C.
-// 
+//
 
 // Let me start to talk about the arrangement within a "page" (which
 // is a region of memory of size CSL_PAGE_SIZE, maybe 8 Mbytes).
@@ -276,27 +277,28 @@ LispObject fringe, heaplimit;
 // full the page is.
 // After are some bitmaps and then data..
 //
-//@@@@@@ The picture from here down is out of date! @@@@@@
 // The first sort of page to be discussed is used to store large vectors.
 // The format is as follows:
 //     type info      )
 //     chaining word  )
-//     fringe               )
-//     heaplimit            )
-//     next-fringe    )
-//     -              )
+//     fringe, vfringe and a bunch of other values that characterize the
+//     arrangement of free and pinned areas within the page. See lower down
+//     for details.
 //     [object start bitmap]
 //     [pin bitmap]
 //     start of used data
-//     ... used
-//     end of used data <----------- fringe
+//     ... used for vectors
+//     end of used data <----------- vfringe
 //     ... free
-//     end of available space <----- heaplimit
+//     end of available space <----- vheaplimit, vheaptop
 //     ... pinned data (must be a multiple of 2*CELL long)
-//     next-heaplimit
-//     next'-fringe  <-------------- next' fringe
+//     the exclusive OR of the addresses just beyond surrounding two
+//        pinned blocks.
+//     the length of the pinned block here
 //     ... free
-//     ... <------------------------ next heaplimit
+//     ... <------------------------ fringe
+//     ... used for cons cslls (and 2-CELL vectors)
+//     ... <------------------------ heapstart
 //     <end of page>
 //
 // The idea is that the whole page can be interrupted if "pinned" items
@@ -369,6 +371,7 @@ typedef struct page_header_
     uintptr_t vheapstart;
     uintptr_t vfringe;
     uintptr_t vheaplimit;
+    uintptr_t vheaptop;
     uintptr_t vlen;
     uintptr_t vxor_chain;
     uintptr_t heapstart;
@@ -376,9 +379,13 @@ typedef struct page_header_
     uintptr_t heaplimit;
     uintptr_t len;
     uintptr_t xor_chain;
+    uintptr_t padder_item_1;
+    uintptr_t padder_item_2;
+    uintptr_t padder_item_3;
 // Note that the fields thus far in this page header will use up
 // a multiple of 16 bytes, so doubleword alignment is assured for
-// the main data region.
+// the main data region. Guaranteeing that is what the padder items are
+// there for.
 
 // Ha ha. The bitmap as implemented here has bits in it that cover
 // all the page header (including itself) and that is a waste. But it is
@@ -391,7 +398,7 @@ typedef struct page_header_
 } page_header;
 
 // At any stage I will have one page that is "active", ie that I am
-// allocating structures within. 
+// allocating structures within.
 
 page_header *free_pages;
 page_header *used_pages;
@@ -566,7 +573,7 @@ void set_up_signal_handlers()
 //     handler. But after the  exit is caught by setjmp I want the
 //     exception to remain trapped.
     if (sigaction(SIGSEGV, &sa, NULL) == -1)
-        /* I can not thing of anything useful to do if I fail here! */; 
+        /* I can not thing of anything useful to do if I fail here! */;
 #ifdef SIGBUS
     if (sigaction(SIGBUS, &sa, NULL) == -1)
         /* I can not thing of anything useful to do if I fail here! */;
@@ -576,7 +583,7 @@ void set_up_signal_handlers()
         /* I can not thing of anything useful to do if I fail here! */;
 #endif
     if (sigaction(SIGFPE, &sa, NULL) == -1)
-        /* I can not thing of anything useful to do if I fail here! */; 
+        /* I can not thing of anything useful to do if I fail here! */;
 #else // !HAVE_SIGACTION
 #ifndef WIN32
 #error All platforms other than Windows are expected to support sigaction.
@@ -826,7 +833,7 @@ static void low_level_signal_handler(int signo)
 // to record what has happened and re-flag the page as read-write.
         int h = find_heap_segment((uintptr_t)addr);
         if (h >= 0)
-        {   
+        {
 // mprotect is not async signal safe, and I find uncertain explanations as
 // to whether it is thread-safe  (I believe it is on Linux). To be safe
 // I protect it with a spin-lock here. Well the spin lock could be expensive
@@ -1174,18 +1181,48 @@ static inline LispObject get_n_bytes(size_t n)
 // that the setup and use can be compared.
 
 static void set_up_empty_page(page_header *p)
-{   p->vheapstart = (uintptr_t)&(p->data[0]);
-    p->vfringe = p->vheapstart;
-    p->vheaplimit = (uintptr_t)p + CSL_PAGE_SIZE;
+{   p->vheapstart = p->vfringe = (uintptr_t)&(p->data[0]);
+    p->vheaptop = p->vheaplimit = (uintptr_t)p + CSL_PAGE_SIZE;
     p->len = p->vxor_chain = 0;
     p->heaplimit = p->vfringe;
-    p->fringe = p->vheaplimit;
-    p->heapstart = p->vheaplimit;
+    p->heapstart = p->fringe = p->vheaplimit;
     p->xor_chain = p->len = 0;
     memset(p->objectstart_bitmap,
         SIXTY_FOUR_BIT ? 0x55 : 0xff,
         PAGE_BITMAP_SIZE);
     memset(p->pinned_bitmap, 0, PAGE_BITMAP_SIZE);
+}
+
+void set_variables_from_page(page_header *p)
+{
+// Set the variable that are used when allocating within the active page.
+    vheapstart = p->vheapstart;
+    vfringe    = p->vfringe;
+    vheaplimit = p->vheaplimit;
+    vlen       = p->vlen;
+    vheaptop   = p->vheaptop;
+    vxor_chain = p->vxor_chain;
+    heapstart  = p->heapstart;
+    fringe     = p->fringe;
+    heaplimit  = p->heaplimit;
+    len        = p->len;
+    xor_chain  = p->xor_chain;
+}
+
+void save_variables_to_page(page_header *p)
+{
+// Dump global variable values back into a page header.
+    p->vheapstart   = vheapstart;
+    p->vfringe      = vfringe;   
+    p->vheaplimit   = vheaplimit;
+    p->vlen         = vlen;      
+    p->vheaptop     = vheaptop;  
+    p->vxor_chain   = vxor_chain;
+    p->heapstart    = heapstart; 
+    p->fringe       = fringe;    
+    p->heaplimit    = heaplimit; 
+    p->len          = len;       
+    p->xor_chain    = xor_chain; 
 }
 
 void set_next_active_page()
@@ -1201,18 +1238,7 @@ void set_next_active_page()
     free_pages = free_pages->page_chain;
     active_page->page_type = 0;
     active_page->page_chain = 0;
-// Set the variable that are used when allocating within the active page.
-    vheapstart = active_page->vheapstart;
-    vfringe    = active_page->vfringe;
-    vheaplimit = active_page->vheaplimit;
-    vlen       = active_page->vlen;
-    vheaptop   = vheaplimit+vlen;
-    vxor_chain = active_page->vxor_chain;
-    heapstart  = active_page->heapstart;
-    fringe     = active_page->fringe;
-    heaplimit  = active_page->heaplimit;
-    len        = active_page->len;
-    xor_chain  = active_page->xor_chain;
+    set_variables_from_page(active_page);
     printf("Use page at %p: fringe = %p, heaplimit = %p\n",
         active_page, (void *)fringe, (void *)heaplimit);
     active_pages_count++;
@@ -1649,41 +1675,111 @@ LispObject reduce_basic_vector_size(LispObject v, size_t len)
 // One must NEVER garbage collect while space has been borrowed in this
 // way. At present this scheme is only ever used while rehashing hash
 // tables.
+//
+// This is implemented by saving the state of the current active page,
+// starting allocation afresh in a new page, arranging that allocating more
+// than kalf the available pages will not trigger a garbage collection, and
+// in an ephemeral world arranging that filling each page just leads to
+// allocation of a new one rather than a minor collection. Then the perfectly
+// regular version of the allocation functions (eg get_n_bytes and hence
+// get_basic_vector and get_vector) will allocate in these new temporary
+// pages. At the end of "borrowing" the pages so allocated need to be
+// returned to the pool of available pages. The messiest issue about that
+// is that the internal maps showing where there are pinned items must be
+// recreated. For this to be possible I am going to insist that where there
+// are pinned blocks in the middle of pages that the bitmap entries that show
+// where they are get retained. At one time I had thought I might tidy up the
+// maps of pinned locations at the end of garbage collection - to support
+// borrowing I have to do it at the start.
+
+
+page_header *save_active_page;
+page_header *save_previous_active_page;
+uintptr_t save_vheapstart;
+uintptr_t save_vfringe;
+uintptr_t save_vheaplimit;
+uintptr_t save_vlen;
+uintptr_t save_vheaptop;
+uintptr_t save_vxor_chain;
+uintptr_t save_heapstart;
+uintptr_t save_fringe;
+uintptr_t save_heaplimit;
+uintptr_t save_len;
+uintptr_t save_xor_chain;
 
 void prepare_for_borrowing()
-{
+{   save_previous_active_page = previous_active_page;
+    save_active_page = active_page;
+    save_vheapstart  = vheapstart;
+    save_vfringe     = vfringe;
+    save_vheaplimit  = vheaplimit;
+    save_vlen        = vlen;
+    save_vheaptop    = vheaptop;
+    save_vxor_chain  = vxor_chain;
+    save_heapstart   = heapstart;
+    save_fringe      = fringe;
+    save_heaplimit   = heaplimit;
+    save_len         = len;
+    save_xor_chain   = xor_chain; 
+    allocate_next_page();
 }
 
 LispObject borrow_basic_vector(int tag, int type, size_t size)
-{
-    return 0;
+{   return get_basic_vector(tag, type, size);
 }
 
 LispObject borrow_vector(int tag, int type, size_t n)
-{   LispObject v;
-    if (n-CELL > VECTOR_CHUNK_BYTES)
-    {   size_t chunks = (n - CELL + VECTOR_CHUNK_BYTES - 1)/VECTOR_CHUNK_BYTES;
-        size_t i;
-        size_t last_size = (n - CELL) % VECTOR_CHUNK_BYTES;
-        if (last_size == 0) last_size = VECTOR_CHUNK_BYTES;
-        v = borrow_basic_vector(TAG_VECTOR, TYPE_INDEXVEC, CELL*(chunks+1));
-        for (i=0; i<chunks; i++)
-            basic_elt(v, i) = nil;
-        for (i=0; i<chunks; i++)
-        {   LispObject v1;
-            int k = i==chunks-1 ? last_size : VECTOR_CHUNK_BYTES;
-            push(v);
-            v1 = borrow_basic_vector(tag, type, k+CELL);
-            pop(v);
-            size_t k1 = k/CELL;
-            for (size_t j=0; j<k1; j++)
-                basic_elt(v1, j) = nil;
-            basic_elt(v, i) = v1;
-        }
-    }
-    else v = borrow_basic_vector(tag, type, n);
-    return v;
+{   return get_vector(tag, type, n);
 }
+
+
+// Now I want to think about the implementation of the copying garbage
+// collector. For that I will want to allocate copies of material in
+// what might be called the "new space". Well in fact it is nothing very
+// special in terms of half-spaces, it is just pages of memory not currently
+// occupied. So the allocation can be rather in the style of "borrowing", ie
+// it disables further garbage collection and just allocated in fresh pages.
+// However I will then want to perform a linear scan over these fresh pages,
+// so when I chain them up I want to make the list so that the page that is
+// allocated first comes on the front of the list and new ones get tagged
+// on the end.
+// There is a potential for fragmentation, especially in the presence of
+// pinned items. As a result the allocator will sometimes insert a padder
+// vector so that memory can be scanned linearly in a neat way.
+// I will chain those padder vectors together keeping them in sequential
+// order. When I need to allocate I will use a variant on first-fit to
+// try allocating within one of them. If I find space within one I will
+// use the meory at its low address and adjust thiungs so that the padder
+// moved upwards. There will be two circumstanmces when I remove a padder
+// block from the chain of spare space: one is when allocation from within
+// it reduces its size to just 1 word or fills it up completely. The other
+// is when the linear scan part of the GC reaches it. First fit can have a
+// nasty cost associated with scanning over many initial small chunks until
+// a large enough one is found. I will also want to fill up early chunks
+// so that they are well occupied by the time linear scan reaches them.
+// So my current and possibly over-complicated scheme would be to have
+// separate chains for chunks of size 2-6 and 7+ cons cells. When allocating
+// I do first fit on each of the chains, but limiting myself to a fixed
+// maximum number of cases scanned. If I do not find space to re-use that
+// way I will allocate in the normal sequential manner at the end of the
+// growing new heap. The change-over point at 7+ is so that allocating a
+// new symbol header only scans padder blocks that will have enough space, and
+// is done on he hypothesis that this might be a fairly common case. The
+// amounts of search involved are then:
+//  1-quad:    No search, the first 2-6 free block will always have space!
+//  2-6 quads: Check up to K blocks in the 2-6 freechain. Those might in fact
+//             all be of size just 2.
+//             But if allocation there fails then the first block on the
+//             7+ chain is a guaranteed success.
+//  7 quads:   The first 7+ block will be OK.
+//  8+ quads:  Search the first K items in the 7+ chain.
+// There is an issue of judgment as to a reasonable value for K, but I am
+// going to start bt expecting that that will be of secondary importance and
+// the balance between performance and fitting blocks in will not depend
+// critically on it. But a fairly small value such as 4 is where I might
+// start.
+// Obviously when an allocation is taken from a block that block can need to
+// be moved between the chains.
 
 
 
@@ -1881,7 +1977,7 @@ static inline LispObject find_object_start(uintptr_t v, page_header *p)
 // invalid if it is to within a padder object.
         if (v1 > v+length_of_header(h) ||
             type_of_header(h) == TYPE_PADDER) return 0;
-        
+
 // Both vectors and those numeric types that are stored with a header
 // will be returned as with TAG_VECTOR here. So for instance double-floats
 // and bignums are returned with dodgy tags, but for the purposes here that
@@ -1924,7 +2020,7 @@ void inner_reclaim(uintptr_t *sp)
 // References into the "current" page will not be treated as cause for
 // pinning. That is because I expect that there will be quite a few references
 // into that page on the stack and that would lead to many pinned items.
-// 
+//
         if (p == active_page) continue;
 // Reject it if the "pointer" is into the page header...
         if ((char *)v < (char *)&p->data) continue;
@@ -2317,7 +2413,7 @@ static void copy(LispObject *p)
                         continue;
                     }
                     *p = (LispObject)(vfr + tag);
-                    *(LispObject *)a = (LispObject)(vfr + TAG_FORWARD); 
+                    *(LispObject *)a = (LispObject)(vfr + TAG_FORWARD);
                     *(Header *)vfr = h;
 // I copy EVERYTHING from the old vector to the new one. By using memcpy
 // I can do so with no worry about strict aliasing or the exact type of
